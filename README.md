@@ -5,3 +5,5 @@ akra-engine-core
 
 Start game ;)
 Round I.
+My turn.
+Round II.
