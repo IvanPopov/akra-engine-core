@@ -1,0 +1,18 @@
+# Additional
+demos/
+docreator/
+preprocessor/
+analyzer/
+effects/
+
+# Project property files
+.html
+.bak
+.dds
+.png
+.zip
+.rar
+.back
+.prev
+
+server.js
