@@ -2,13 +2,18 @@
  * @author reinor
  */
 
+Enum([
+         CIRCLE,
+         UNCIRCLE
+     ], GROUPS_TYPE, a.ProgressiveMesh);
+
 function computeAdjacencyBuffer(pVertices,pIndexes){
     var nVerticesCount = pVertices.length/3;
     var i,j,k;
     var nVertex0,nVertex1,nVertex2;
-    var arrVerticesAdjacency = [];
+    var pVerticesAdjacency = [];
     for(i=0;i<nVerticesCount;i++){
-        arrVerticesAdjacency[i] = [];
+        pVerticesAdjacency[i] = [];
     }
     var pAdjacencyBuffer = [];
     for(i=0;i<pIndexes.length/3;i++){
@@ -24,41 +29,41 @@ function computeAdjacencyBuffer(pVertices,pIndexes){
         }
         if(nVertex0 < nVertex1){
             if(nVertex1 < nVertex2){
-                arrVerticesAdjacency[nVertex0].push([i,nVertex1,nVertex2]);
-                arrVerticesAdjacency[nVertex1].push([i,nVertex2]);
+                pVerticesAdjacency[nVertex0].push([i,nVertex1,nVertex2]);
+                pVerticesAdjacency[nVertex1].push([i,nVertex2]);
             }
             else if(nVertex0 < nVertex2){
-                arrVerticesAdjacency[nVertex0].push([i,nVertex2,nVertex1]);
-                arrVerticesAdjacency[nVertex2].push([i,nVertex1]);
+                pVerticesAdjacency[nVertex0].push([i,nVertex2,nVertex1]);
+                pVerticesAdjacency[nVertex2].push([i,nVertex1]);
             }
             else{
-                arrVerticesAdjacency[nVertex2].push([i,nVertex0,nVertex1]);
-                arrVerticesAdjacency[nVertex0].push([i,nVertex1]);
+                pVerticesAdjacency[nVertex2].push([i,nVertex0,nVertex1]);
+                pVerticesAdjacency[nVertex0].push([i,nVertex1]);
             }
         }
         else{
             if(nVertex0 < nVertex2){
-                arrVerticesAdjacency[nVertex1].push([i,nVertex0,nVertex2]);
-                arrVerticesAdjacency[nVertex0].push([i,nVertex2]);
+                pVerticesAdjacency[nVertex1].push([i,nVertex0,nVertex2]);
+                pVerticesAdjacency[nVertex0].push([i,nVertex2]);
             }
             else if(nVertex1 < nVertex2){
-                arrVerticesAdjacency[nVertex1].push([i,nVertex2,nVertex0]);
-                arrVerticesAdjacency[nVertex2].push([i,nVertex0]);
+                pVerticesAdjacency[nVertex1].push([i,nVertex2,nVertex0]);
+                pVerticesAdjacency[nVertex2].push([i,nVertex0]);
             }
             else{
-                arrVerticesAdjacency[nVertex2].push([i,nVertex1,nVertex0]);
-                arrVerticesAdjacency[nVertex1].push([i,nVertex0]);
+                pVerticesAdjacency[nVertex2].push([i,nVertex1,nVertex0]);
+                pVerticesAdjacency[nVertex1].push([i,nVertex0]);
             }
         }
         pAdjacencyBuffer[i] = [];
     }
     
-    //trace(arrVerticesAdjacency[325],"<---------325 vertex---------");
-    //trace(arrVerticesAdjacency);
+    //trace(pVerticesAdjacency[325],"<---------325 vertex---------");
+    //trace(pVerticesAdjacency);
     
     
-    for(i=0;i<arrVerticesAdjacency.length;i++){
-        var pVertex = arrVerticesAdjacency[i];
+    for(i=0;i<pVerticesAdjacency.length;i++){
+        var pVertex = pVerticesAdjacency[i];
         
         for(j=0;j<pVertex.length;j++){
             var pData1 = pVertex[j];
@@ -101,22 +106,16 @@ function computeAdjacencyBuffer(pVertices,pIndexes){
 };
 
 function performDownsampling(pVertices,pNormals,pIndexesOriginal,fThreshold){
-
-    //var t1 = new Date().getTime();
-    
-    var pIndexes = pIndexesOriginal.slice(0,pIndexesOriginal.length);
+    var pIndexes = pIndexesOriginal.slice(0,pIndexesOriginal.length); //копируем индексы
     optimizeMesh(pVertices,pIndexes);
 
-    var pAdjacencyBuffer = computeAdjacencyBuffer(pVertices,pIndexes);
-    //console.log("time >>>>",new Date().getTime() - t1);
-    //
-    //console.log(pAdjacencyBuffer);
 
 	var pVertexFaces = [];
-    var pVertexNeighbors = [];
 
     var pFacesNormals = []; //хранит нормали для каждого полигона
     //console.log(pNormals);
+    var t1 = new Date().getTime();
+
     if(pNormals){
         for(var i=0;i<pIndexes.length/3;i++){
             var pFaceNormals = [];//нормали для данного полигона
@@ -169,12 +168,11 @@ function performDownsampling(pVertices,pNormals,pIndexesOriginal,fThreshold){
             pFacesNormals.push(pTemp.concat(pTemp,pTemp));
         }
     }
-
+    trace(new Date().getTime() - t1,'<----finding normals time-----');
     //console.log(pFacesNormals);
 
 	for(var i=0;i<pVertices.length/3;i++){
 		pVertexFaces[i] = [];
-        pVertexNeighbors[i] = [];
 	}
 
 	for(var i=0;i<pIndexes.length;i++){
@@ -184,164 +182,157 @@ function performDownsampling(pVertices,pNormals,pIndexesOriginal,fThreshold){
     var pDeleteCandidates = [];
     for(var i=0; i<pVertexFaces.length;i++){
         if(pVertexFaces[i].length > 0){
-            pDeleteCandidates.push(i);
+            pDeleteCandidates[i] = i;
+        }
+        else{
+            pDeleteCandidates[i] = -1;
         }
     }
 
     //var iCurrentPosition;
-
+    var t1 = new Date().getTime();
+    var dt1=dt2=0,tmp1,tmp2;
     for(var i=0;i<pDeleteCandidates.length;i++){
         //trace(i,pDeleteCandidates.length,'<---------current condition------------');
-        var fMaxDeviation;
-        var pAverageNormal = [0,0,0];
+        
         var nCurrentVertex = pDeleteCandidates[i];
-        var pNeighbours = [];
 
-        for(var j=0;j<pVertexFaces[nCurrentVertex].length;j++){
-            var pFace = pIndexes.slice(pVertexFaces[nCurrentVertex][j]*3,pVertexFaces[nCurrentVertex][j]*3 + 3);
+        if(nCurrentVertex != -1){
+            var pNeighbours = [];
+            var fMaxDeviation;
+            var pAverageNormal = [0,0,0];
 
-            var pFaceNormals = pFacesNormals[pVertexFaces[nCurrentVertex][j]];
-            for(var k=0;k<3;k++){
-                pAverageNormal[k] += pFaceNormals[k] + pFaceNormals[k+3] + pFaceNormals[k+6];
+            tmp1 = new Date().getTime();
+            for(var j=0;j<pVertexFaces[nCurrentVertex].length;j++){
+                var pFaceStartIndex = pVertexFaces[nCurrentVertex][j]*3;
+                var pFaceNormals = pFacesNormals[pVertexFaces[nCurrentVertex][j]];
+                for(var k=0;k<3;k++){
+                    pAverageNormal[k] += pFaceNormals[k] + pFaceNormals[k+3] + pFaceNormals[k+6];
+                }
             }
 
-            //add Neighbours 
-            for(var k=0;k<3;k++){
-                var nVertex = pFace[k];
-                //так как вершины с меньшие текущего вертекса уже викинуты
-                if(nVertex > nCurrentVertex){
-                    if(pNeighbours.indexOf(nVertex) == -1){
-                        pNeighbours.push(nVertex);
+            var fLength = Math.sqrt(pAverageNormal[0]*pAverageNormal[0] + pAverageNormal[1]*pAverageNormal[1] + pAverageNormal[2]*pAverageNormal[2]);
+            if(fLength != 0){
+                pAverageNormal[0] = pAverageNormal[0]/fLength;
+                pAverageNormal[1] = pAverageNormal[1]/fLength;
+                pAverageNormal[2] = pAverageNormal[2]/fLength;
+            }
+
+            fMaxDeviation = 0;
+            for(var j=0;j<pVertexFaces[nCurrentVertex].length;j++){
+                var pFaceNormals = pFacesNormals[pVertexFaces[nCurrentVertex][j]];
+                //var pTemp;
+                var fDeviationX,fDeviationY,fDeviationZ;
+                for(var k=0;k<3;k++){
+                    fDeviationX = pAverageNormal[0] - pFaceNormals[3*k    ];
+                    fDeviationY = pAverageNormal[1] - pFaceNormals[3*k + 1];
+                    fDeviationZ = pAverageNormal[2] - pFaceNormals[3*k + 2];
+                    //console.log(pTemp);
+                    var fLength = Math.sqrt(fDeviationX*fDeviationX + fDeviationY*fDeviationY + fDeviationZ*fDeviationZ);
+
+                    if(fLength > fMaxDeviation){
+                        fMaxDeviation = fLength;
                     }
                 }
             }
-        }
+            dt1 += new Date().getTime() - tmp1;
+            //console.log(fMaxDeviation);
+            
+            if(fMaxDeviation < fThreshold){
 
-        var fLength = Math.sqrt(pAverageNormal[0]*pAverageNormal[0] + pAverageNormal[1]*pAverageNormal[1] + pAverageNormal[2]*pAverageNormal[2]);
-        if(fLength != 0){
-            pAverageNormal[0] = pAverageNormal[0]/fLength;
-            pAverageNormal[1] = pAverageNormal[1]/fLength;
-            pAverageNormal[2] = pAverageNormal[2]/fLength;
-        }
-
-        fMaxDeviation = 0;
-        for(var j=0;j<pVertexFaces[nCurrentVertex].length;j++){
-            var pFaceNormals = pFacesNormals[pVertexFaces[nCurrentVertex][j]];
-            var pTemp;
-            for(var k=0;k<3;k++){
-                pTemp = [
-                            pAverageNormal[0] - pFaceNormals[3*k    ],
-                            pAverageNormal[1] - pFaceNormals[3*k + 1],
-                            pAverageNormal[2] - pFaceNormals[3*k + 2]
-                        ];
-                //console.log(pTemp);
-                var fLength = Math.sqrt(pTemp[0]*pTemp[0] + pTemp[1]*pTemp[1] + pTemp[2]*pTemp[2]);
-
-                if(fLength > fMaxDeviation){
-                    fMaxDeviation = fLength;
+                for(var j=0;j<pVertexFaces[nCurrentVertex].length;j++){
+                    var pFaceStartIndex = pVertexFaces[nCurrentVertex][j]*3;
+                    //add Neighbours 
+                    for(var k=0;k<3;k++){
+                        var nVertex = pIndexes[pFaceStartIndex + k];//pFace[k];
+                        //так как вершины с меньшие текущего вертекса уже заведомо проставлены, как -1
+                        if(nVertex > nCurrentVertex){
+                            //проставляем вершины соседние с нашей, как -1
+                            pDeleteCandidates[nVertex] = -1;
+                        }
+                    }
                 }
+
+                
             }
-        }
-        //console.log(fMaxDeviation);
-        if(fMaxDeviation < fThreshold){
-            //удаляем из delete candidates все вершины, которые соседние с нашей
-            for(var j=0;j<pNeighbours.length;j++){
-                var iIndex = pDeleteCandidates.indexOf(pNeighbours[j],i);
-                if(iIndex != -1){
-                    pDeleteCandidates.splice(iIndex,1);
-                }
+            else{
+                pDeleteCandidates[i] = -1;
             }
-            // for(var j=0;j<pVertexFaces[nCurrentVertex].length;j++){
-            //     var pFace = pIndexes.slice(pVertexFaces[nCurrentVertex][j]*3,pVertexFaces[nCurrentVertex][j]*3 + 3);
-            //     for(var k=0;k<3;k++){
-            //         if(pFace[k] > nCurrentVertex){
-            //             var iIndex = pDeleteCandidates.indexOf(pFace[k],i);
-            //             if(iIndex != -1){
-            //                 pDeleteCandidates.splice(iIndex,1);
-            //             }
-            //         }
-            //     }
-            // }
-        }
-        else{
-            pDeleteCandidates.splice(i,1);
-            i--;
         }
     }
-    trace(pDeleteCandidates.length,"<------ delete candidates dirty ------");
 
-    //var nTmp = Math.floor(Math.random()*100);
-    //if(nTmp%2 == 1){
-    //    pDeleteCandidates.reverse();
-    //}
+    trace(new Date().getTime() - t1,'<----finding candidates time-----');
+    trace(dt1,dt2,'<-----dt1 dt2-----');
+    //убираем -1 из массива
+    var nOffset = 0;
+    for(var i=0;(i + nOffset)<pDeleteCandidates.length;i++){
+        while(pDeleteCandidates[i + nOffset] == -1){
+            nOffset++;
+        }
+        pDeleteCandidates[i] = pDeleteCandidates[i+nOffset];
+    }
+    pDeleteCandidates.length = pDeleteCandidates.length - nOffset;
 
-    // for(var i=0;i<pDeleteCandidates.length;i++){
-
-    //     var nVertexCandidate1 = pDeleteCandidates[i];
-
-    //     for(var j=i+1;j<pDeleteCandidates.length;j++){
-
-    //         var nVertexCandidate2 = pDeleteCandidates[j];
-
-    //         if(pVertexNeighbors[nVertexCandidate1].indexOf(nVertexCandidate2) != -1){
-    //             pDeleteCandidates.splice(j,1);
-    //             j--;
-    //         }
-    //     }
-    // }
-    //console.log(pDeleteCandidates);
-    trace(pDeleteCandidates.length,"<------ delete candidates cleared ------");
+    trace(pDeleteCandidates.length,"<------ delete candidates ------");
 
     var pDeletedFaces = []; //складываются грани, которые необходимо удалить после даусемплинга
 
     //var nVertex = Math.floor(530*Math.random());
     for(var i=0;i<pDeleteCandidates.length;i++){
         var nVertex = pDeleteCandidates[i];
-        
-        deleteVertex(nVertex,pVertexFaces[nVertex],pIndexes,pAdjacencyBuffer,pDeletedFaces);
-
-        //if(i%200 == 0){
-        //    trace(i,"<-----vertices removed------");
-        //}
+        deleteVertex(nVertex,pVertexFaces[nVertex],pIndexes,pDeletedFaces);
     }
+    
+    //сортировка необходима для более быстрого удаления
+    pDeletedFaces.sort(function(a,b){return a-b});
 
-    //sorting for easy delete without additional shifts
-    pDeletedFaces.sort(function(a,b){return b-a});
-    for(var i=0;i<pDeletedFaces.length;i++){
-        pIndexes.splice(pDeletedFaces[i]*3,3);
+    var nOffset = 0;
+    var nDeletedFace = pDeletedFaces[nOffset];
+    
+    var nPolygonsCount = pIndexes.length/3;
+
+    for(var i=nDeletedFace;(i+nOffset)<nPolygonsCount;i++){
+        while((i + nOffset) == nDeletedFace){
+            nOffset++;
+            nDeletedFace = pDeletedFaces[nOffset];
+        }
+        pIndexes[3*i    ] = pIndexes[3*(i+nOffset)    ];
+        pIndexes[3*i + 1] = pIndexes[3*(i+nOffset) + 1];
+        pIndexes[3*i + 2] = pIndexes[3*(i+nOffset) + 2];
+        //trace(nOffset);
     }
-    trace(pIndexes.length/3,"<-----------faces count------");
-    //alert(pIndexes.length/3);
-    //}
-    //console.log(pFaces);
-    //
+    pIndexes.length = pIndexes.length - nOffset*3;
+    trace(pIndexes.length/3,"<-----------new faces count------");
     return pIndexes;
 }
 
-function deleteVertex(nVertex,pFaces,pIndexes,pAdjacencyBuffer,pDeletedFaces){
+function deleteVertex(nVertex,pFacesNumbers,pIndexes,pDeletedFaces){
+    var pParticalPolygons = []; //только две вершины из трех, убираю ту, которую собираюсь удалить
+    for(var i=0; i<pFacesNumbers.length;i++){
+        pParticalPolygons[i] = pIndexes.slice(pFacesNumbers[i]*3,pFacesNumbers[i]*3+3);
+        //console.log(nVertex,pParticalPolygons[i]);
+        var iIndex = pParticalPolygons[i].indexOf(nVertex);
+        pParticalPolygons[i].splice(iIndex,1);
+    }
 
-    var pAdjacencyGroups = buildAdjacencyGroups(pFaces,pAdjacencyBuffer);
+    var pAdjacencyGroups = buildAdjacencyGroups(pParticalPolygons);
     //console.log(pAdjacencyGroups);
     if(pAdjacencyGroups.length>1){
         return;
     }
     for(var i=0;i<pAdjacencyGroups.length;i++){
-        pGroup = pAdjacencyGroups[i];
+        var pAdjacencyGroup = pAdjacencyGroups[i];
+        var pGroup = pAdjacencyGroup.group;
+        var pAdjacency = pAdjacencyGroup.adjacency;
 
         var nRootVertex; //вершина, в которой будут сходиться новые полигоны
         var nVertex1, nVertex2; // оставшиеся две новые вершины полигона
-        var pNewFaces = [];
 
         var nEndIndex;
 
-        //
-        //trace(pIndexes.slice(pGroup[0]*3,pGroup[0]*3+3));
-        //trace(pIndexes.slice(pGroup[pGroup.length-1]*3,pGroup[pGroup.length-1]*3+3));
-        //
-
         //если группа круговая, то при даунсемплинге число полигонов может быть уменьшено на 2
         //если группа не круговая, то число полигонов может быть уменьшено на 1
-        if(isCircleGroup(pGroup,pAdjacencyBuffer)){
+        if(pAdjacencyGroup.type == a.ProgressiveMesh.CIRCLE){
             nEndIndex = pGroup.length - 2;
             //trace("circle group <-----------");
         }
@@ -352,163 +343,116 @@ function deleteVertex(nVertex,pFaces,pIndexes,pAdjacencyBuffer,pDeletedFaces){
         }
 
         //ищем rootVertex
-        
-        var pFace1 = pIndexes.slice(pGroup[0]*3,pGroup[0]*3 + 3);
-        var pFace2 = pIndexes.slice(pGroup[1]*3,pGroup[1]*3 + 3);
-        var iIndex;
-        for(var j=0;j<3;j++){//face - triangle
-            if((iIndex = pFace1.indexOf(pFace2[j]))!=-1){
-                if(pFace2[j]!=nVertex){
-                    nVertex1 = pFace2[j];//смежная вершина, но не та которую надо удалить
-                }
-                pFace1.splice(iIndex,1);
-            }
-        }
-        if(pFace1.length > 0){
-            nRootVertex = pFace1[0];
-        }
-        else{
-            warning("наложенные треугольники");
-            return;
-        }
+        //TODO : выбрать rootVertex оптимальным способом
+
+        nRootVertex = pGroup[0];
 
         for(var j=0;j<nEndIndex;j++){
-            pFace1 = pIndexes.slice(pGroup[j]*3,pGroup[j]*3 + 3);
-            pFace2 = pIndexes.slice(pGroup[j+1]*3,pGroup[j+1]*3 + 3);
-            for(var k=0;k<3;k++){
-                if((iIndex = pFace2.indexOf(pFace1[k]))!=-1){
-                    pFace2.splice(iIndex,1);
-                }
-            }
-            if(pFace2.length > 0){
-                nVertex2 = pFace2[0]; //что осталось то и нужная (несмежная вершина)
-            }
-            else{
-                warning("наложенные треугольники");
-                return;
-            }
-            //trace(pIndexes.slice(pGroup[j]*3,pGroup[j]*3 + 3),"<-----------------pFace1---------");
-            //trace(pIndexes.slice(pGroup[j+1]*3,pGroup[j+1]*3 + 3),"<-----------------pFace2---------");
+            nVertex1 = pGroup[j + 1];
+            nVertex2 = pGroup[j + 2];
 
-            //запоминаем новый полигон
-            
-            pNewFaces.push(nRootVertex,nVertex1,nVertex2);
-            //console.log(nRootVertex,nVertex1,nVertex2);
-            //меняем позицию nVertex1
-
-            nVertex1 = nVertex2;
-        }
-
-        for(var j=0;j<pNewFaces.length;j++){
-            iIndex = pGroup[j]*3;
-            pIndexes[iIndex] = pNewFaces[3*j];
-            pIndexes[iIndex+1] = pNewFaces[3*j + 1];
-            pIndexes[iIndex+2] = pNewFaces[3*j + 2];
+            var iIndex = pFacesNumbers[pAdjacency[j]]*3;
+            pIndexes[iIndex    ] = nRootVertex;
+            pIndexes[iIndex + 1] = nVertex1;
+            pIndexes[iIndex + 2] = nVertex2;
         }
 
         //удаляем последние треугольники
         for(var j=nEndIndex;j<pGroup.length;j++){
-            pDeletedFaces.push(pGroup[j]);
+            pDeletedFaces.push(pFacesNumbers[pAdjacency[j]]);
         }
     }
 };
 
-function buildParticalAdjancecy(pFaces,pAdjacencyBuffer){
+function buildAdjacencyGroups(pParticalPolygons){
 
-    var iIndex;
+    //сначала надо определить смежность этих треугольников
 
-    var pParticalAdjacency = [];
+    var pPolygonsCopy = pParticalPolygons.slice(0,pParticalPolygons.length);
+    var pGroups = [];
+    for(var i=0;i<pPolygonsCopy.length;i++){
+        if(pPolygonsCopy[i]!=-1){
+            var pPolygon = pPolygonsCopy[i];
+            var nVertex0 = pPolygonsCopy[i][0];
+            var nVertex1 = pPolygonsCopy[i][1];
 
-    for(var i=0;i<pFaces.length;i++){
-        pParticalAdjacency[i] = [];
-        var pAdjacency = pAdjacencyBuffer[pFaces[i]];
-        //console.log(pFaces[i],pAdjacency);
-        for(var j=0;j<pAdjacency.length;j++){
-            if((iIndex = pFaces.indexOf(pAdjacency[j]))!=-1){
-                pParticalAdjacency[i].push(iIndex);
-                //pParticalAdjancecy[i].push(pAdjancecy[j]);
+            var nVertexCurrent = nVertex0;
+            var pGroup = [];
+            var pAdjacencyData = [i]
+
+            do{
+                var j;
+                for(j=i+1;j<pPolygonsCopy.length;j++){
+                    if(pPolygonsCopy[j]!=-1){
+                        if(pPolygonsCopy[j][0] == nVertexCurrent){
+                            pGroup.push(nVertexCurrent);
+                            pAdjacencyData.push(j);
+                            nVertexCurrent = pPolygonsCopy[j][1];
+                            pPolygonsCopy[j] = -1;
+                            break;
+                        }
+                        else if(pPolygonsCopy[j][1] == nVertexCurrent){
+                            pGroup.push(nVertexCurrent);
+                            pAdjacencyData.push(j);
+                            nVertexCurrent = pPolygonsCopy[j][0];
+                            pPolygonsCopy[j] = -1;
+                            break;
+                        }
+                    }
+                }
+            }while((j != pPolygonsCopy.length) && (nVertexCurrent != nVertex1));
+
+            if(nVertexCurrent == nVertex0){
+                pGroup.push(nVertex0);
+            }
+            else if(nVertexCurrent == nVertex1){
+                pGroup.push(nVertexCurrent);
+                pGroups.push({"group" : pGroup, "type" : a.ProgressiveMesh.CIRCLE, "adjacency" : pAdjacencyData});
+                pPolygonsCopy[i] = -1;
+                continue;
+            }
+            else{
+                nCurrentVertex = nVertex1;
+                //начинаем обходить в другую сторону, поэтому и вершины добавляются не в начало, а в конец
+                do{
+                    var j;
+                    for(j=i+1;j<pPolygonsCopy.length;j++){
+                        if(pPolygonsCopy[j]!=-1){
+                            if(pPolygonsCopy[j][0] == nVertexCurrent){
+                                pGroup.unshift(nVertexCurrent);
+                                pAdjacencyData.unshift(j);
+                                nVertexCurrent = pPolygonsCopy[j][1];
+                                pPolygonsCopy[j] = -1;
+                                break;
+                            }
+                            else if(pPolygonsCopy[j][1] == nVertexCurrent){
+                                pGroup.unshift(nVertexCurrent);
+                                pAdjacencyData.unshift(j);
+                                nVertexCurrent = pPolygonsCopy[j][0];
+                                pPolygonsCopy[j] = -1;
+                                break;
+                            }
+                        }
+                    }
+                }while(j != pPolygonsCopy.length);
+
+                pGroup.unshift(nCurrentVertex);
+                pGroups.push({"group" : pGroup, "type" : a.ProgressiveMesh.UNCIRCLE, "adjacency" : pAdjacencyData});
+                pPolygonsCopy[i] = -1;
+                continue;
             }
         }
     }
-    //console.log(pParticalAdjacency);
-    return pParticalAdjacency;
-};
-
-function buildAdjacencyGroups(pFaces,pAdjacencyBuffer){
-
-    var pParticalAdjacency = buildParticalAdjancecy(pFaces,pAdjacencyBuffer);
-    var pAdjacencyGroups = [];
-
-    for(var i=0;i<pFaces.length;i++){
-        if(pFaces[i]!=-1){
-            pAdjacencyGroups.push(buildAdjacencyGroup(i,pFaces,pParticalAdjacency));
-        }
-    }
-    return pAdjacencyGroups;
-    //console.log(pParticalAdjacency);
-    //console.log(pAdjacencyGroups);
-}
-
-function buildAdjacencyGroup(iStart,pFaces,pParticalAdjacency,pGroup){
-    if(pGroup == undefined){
-        pGroup = [];
-    }
-    pGroup.push(pFaces[iStart]);
-
-    for(var i=0;i<pParticalAdjacency[iStart].length;i++){
-        nFace = pParticalAdjacency[iStart][i];
-        var iIndex = pParticalAdjacency[nFace].indexOf(iStart);
-        pParticalAdjacency[nFace].splice(iIndex,1);
-    }
-
-    for(var i=0;i<pParticalAdjacency[iStart].length;i++){
-        nFace = pParticalAdjacency[iStart][i];
-        if(pFaces[nFace] != -1){
-            //ну если у нас круговая група, то у каждого элемента имеется два соседа,
-            //и после первого рекурсивного вызова все элементы попадут в группу,
-            //а если у нас не круговая группа, то у некоторых элементов количество соседей не два, а один
-            //и если мы начинаем с полигона у которога один сосед, то все нормально, а если у полигона два соседа
-            //то мы получим неупорядоченный массив, то есть массив не будет соответствовать реальной смежности
-            //поэтому то что сделано дает корректное заполнение массива смежности, то есть чтобы проход по массиву 
-            //соответствовал перемещению по треугольникам по часовой или против часовой стрелки
-            
-            if(i==0){
-                buildAdjacencyGroup(nFace,pFaces,pParticalAdjacency,pGroup);
-            }
-            else if(i==1){
-                var pTemp = buildAdjacencyGroup(nFace,pFaces,pParticalAdjacency);
-                pGroup = pTemp.reverse().concat(pGroup);
-            }
-        }
-    }
-    pFaces[iStart] = -1;
-    return pGroup;
-}
-
-function isCircleGroup(pGroup,pAdjacencyBuffer){
-    if(pGroup.length < 3){
-        return false;
-    }
-    var nStartFace = pGroup[0];
-    var nEndFace = pGroup[pGroup.length - 1];
-
-    var pAdjacency = pAdjacencyBuffer[nStartFace];
-
-    if(pAdjacency.indexOf(nEndFace) != -1){
-        return true;
-    }
-    else{
-        return false;
-    }
+    return pGroups;
 }
 
 function optimizeMesh(pVertices,pIndexes){
     var nVerticesCount = pVertices.length/3;
     var i,j,k;
     var nVertex0,nVertex1,nVertex2;
-    var arrVerticesAdjacency = [];
+    var pVerticesAdjacency = [];
     for(i=0;i<nVerticesCount;i++){
-        arrVerticesAdjacency[i] = [];
+        pVerticesAdjacency[i] = [];
     }
 
     for(i=0;i<pIndexes.length/3;i++){
@@ -524,38 +468,38 @@ function optimizeMesh(pVertices,pIndexes){
         }
         if(nVertex0 < nVertex1){
             if(nVertex1 < nVertex2){
-                arrVerticesAdjacency[nVertex0].push([i,nVertex1,nVertex2]);
-                arrVerticesAdjacency[nVertex1].push([i,nVertex2]);
+                pVerticesAdjacency[nVertex0].push([i,nVertex1,nVertex2]);
+                pVerticesAdjacency[nVertex1].push([i,nVertex2]);
             }
             else if(nVertex0 < nVertex2){
-                arrVerticesAdjacency[nVertex0].push([i,nVertex2,nVertex1]);
-                arrVerticesAdjacency[nVertex2].push([i,nVertex1]);
+                pVerticesAdjacency[nVertex0].push([i,nVertex2,nVertex1]);
+                pVerticesAdjacency[nVertex2].push([i,nVertex1]);
             }
             else{
-                arrVerticesAdjacency[nVertex2].push([i,nVertex0,nVertex1]);
-                arrVerticesAdjacency[nVertex0].push([i,nVertex1]);
+                pVerticesAdjacency[nVertex2].push([i,nVertex0,nVertex1]);
+                pVerticesAdjacency[nVertex0].push([i,nVertex1]);
             }
         }
         else{
             if(nVertex0 < nVertex2){
-                arrVerticesAdjacency[nVertex1].push([i,nVertex0,nVertex2]);
-                arrVerticesAdjacency[nVertex0].push([i,nVertex2]);
+                pVerticesAdjacency[nVertex1].push([i,nVertex0,nVertex2]);
+                pVerticesAdjacency[nVertex0].push([i,nVertex2]);
             }
             else if(nVertex1 < nVertex2){
-                arrVerticesAdjacency[nVertex1].push([i,nVertex2,nVertex0]);
-                arrVerticesAdjacency[nVertex2].push([i,nVertex0]);
+                pVerticesAdjacency[nVertex1].push([i,nVertex2,nVertex0]);
+                pVerticesAdjacency[nVertex2].push([i,nVertex0]);
             }
             else{
-                arrVerticesAdjacency[nVertex2].push([i,nVertex1,nVertex0]);
-                arrVerticesAdjacency[nVertex1].push([i,nVertex0]);
+                pVerticesAdjacency[nVertex2].push([i,nVertex1,nVertex0]);
+                pVerticesAdjacency[nVertex1].push([i,nVertex0]);
             }
         }
     }
     
     var pDeletedFaces = [];
 
-    for(i=0;i<arrVerticesAdjacency.length;i++){
-        var pVertex = arrVerticesAdjacency[i];
+    for(i=0;i<pVerticesAdjacency.length;i++){
+        var pVertex = pVerticesAdjacency[i];
         
         for(j=0;j<pVertex.length;j++){
             var pData1 = pVertex[j];
@@ -577,4 +521,33 @@ function optimizeMesh(pVertices,pIndexes){
     for(var i=0;i<pDeletedFaces.length;i++){
         pIndexes.splice(pDeletedFaces[i]*3,3);
     }
+}
+
+function binSearch(pArray,fValue,iStartIndex){
+    if(iStartIndex == undefined){
+        iStartIndex = 0;
+    }
+
+    var nEffectiveLength = pArray.length - iStartIndex;
+
+    var nStep = Math.ceil(nEffectiveLength/2);
+    var nPosition = iStartIndex + Math.floor(nEffectiveLength/2);
+    var nMaxIterationCount = Math.ceil(Math.log(nEffectiveLength)/Math.log(2))
+
+    for(var i=0;i<nMaxIterationCount;i++){
+        nStep = Math.ceil(nStep/2);
+        if(pArray[nPosition] == fValue){
+            return nPosition;
+        }
+        else if(pArray[nPosition] < fValue){
+            nPosition += nStep;
+        }
+        else{
+            nPosition -= nStep;
+        }
+    }
+    if(pArray[nPosition] == fValue){
+        return nPosition;
+    }
+    return -1;
 }
