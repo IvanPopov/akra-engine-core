@@ -226,7 +226,7 @@ Endif()
 Ifdef(__DEBUG)
 
 Define(a.isDebug, true)
-Define(HOME_DIR, '');
+Define(A_CORE_HOME, '');
 
 Number.prototype.printBinary = function (isPretty) {
     var res = '';
@@ -296,7 +296,7 @@ Define(error(x), function () {
 });
 
 Define(BUILD_PATH(FILE, PATH), function () {
-    PATH + FILE;
+    A_CORE_HOME + PATH + FILE;
 });
 
 Define(MEDIA_PATH(FILE, PATH), function () {
@@ -337,9 +337,9 @@ Endif()
 
 Ifdef(__RELEASE);
 
-Ifdef(HOME_DIR)
+Ifdef(A_CORE_HOME)
 Elseif()
-Define(HOME_DIR, '/');
+Define(A_CORE_HOME, '');
 Endif();
 
 Define(a.isDebug, false);
@@ -352,7 +352,7 @@ Define(assert(x), function () {error(x);});
 Define(ASSERT(x), function () {assert(x);});
 Define(assert(cond, comment), function () {if (!cond) error(comment);});
 Define(ASSERT(cond, comment), function () {assert(cond, comment);});
-Define(BUILD_PATH(FILE, PATH), function () {HOME_DIR + FILE;})
+Define(BUILD_PATH(FILE, PATH), function () {A_CORE_HOME + FILE;})
 Define(debug_print(x), function () {});
 Define(TRACE(x), function () {});
 Define(INLINE(), function () {});
@@ -492,6 +492,12 @@ Define(GEN_ARRAY(name, type, size), function () {
     }
 });
 
+Define(A_DEFINE_NAMESPACE(name), function () {
+    a.name = {};
+});
+Define(A_DEFINE_NAMESPACE(name, space), function () {
+    a.space.name = {};
+});
 Define(A_NAMESPACE(object, space), function () {
     a.space.object = object;
 });

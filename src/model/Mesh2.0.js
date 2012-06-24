@@ -17,7 +17,7 @@ function Mesh(pEngine, sName, eOptions) {
      * @private
      */
     this._sName = sName || null;
-
+ 
     //video buffer with all mesh data
     this._pDataBuffer = null;
 
