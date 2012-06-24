@@ -152,8 +152,8 @@ function performDownsampling(pVertices,pNormals,pIndexesOriginal,fThreshold){
             var nIndex2 = pIndexes[3*i + 2];
 
             var pVertex0 = pVertices.slice(3*nIndex0,3*nIndex0 + 3);
-            var pVertex1 = pVertices.slice(3*nIndex0,3*nIndex0 + 3);
-            var pVertex2 = pVertices.slice(3*nIndex0,3*nIndex0 + 3);
+            var pVertex1 = pVertices.slice(3*nIndex1,3*nIndex1 + 3);
+            var pVertex2 = pVertices.slice(3*nIndex2,3*nIndex2 + 3);
 
             Vec3.set(pVertex0,v3fVertex0);
             Vec3.set(pVertex1,v3fVertex1);
@@ -194,7 +194,7 @@ function performDownsampling(pVertices,pNormals,pIndexesOriginal,fThreshold){
         var nCurrentVertex = pDeleteCandidates[i];
 
         if(nCurrentVertex != -1){
-            var fMaxDeviation;
+            var fMaxAngle;
             var pAverageNormalX = 0;
             var pAverageNormalY = 0;
             var pAverageNormalZ = 0;
@@ -214,23 +214,20 @@ function performDownsampling(pVertices,pNormals,pIndexesOriginal,fThreshold){
                 pAverageNormalZ = pAverageNormalZ/fLength;
             }
 
-            fMaxDeviation = 0;
+            fMaxAngle = 0;
             for(var j=0;j<pVertexFaces[nCurrentVertex].length;j++){
-                var pNormalStartIndex = pVertexFaces[nCurrentVertex][j]*3
-                var fDeviationX,fDeviationY,fDeviationZ;
+                var pNormalStartIndex = pVertexFaces[nCurrentVertex][j]*3;
+
                 //используются средние нормали для полигона
-                fDeviationX = pAverageNormalX - pFacesNormals[pNormalStartIndex    ];
-                fDeviationY = pAverageNormalY - pFacesNormals[pNormalStartIndex + 1];
-                fDeviationZ = pAverageNormalZ - pFacesNormals[pNormalStartIndex + 2];
+                var fAngle = Math.acos(pAverageNormalX*pFacesNormals[pNormalStartIndex] 
+                    + pAverageNormalY*pFacesNormals[pNormalStartIndex + 1] + pAverageNormalZ*pFacesNormals[pNormalStartIndex + 2]);
 
-                var fLength = Math.sqrt(fDeviationX*fDeviationX + fDeviationY*fDeviationY + fDeviationZ*fDeviationZ);
-
-                if(fLength > fMaxDeviation){
-                    fMaxDeviation = fLength;
+                if(fAngle > fMaxAngle){
+                    fMaxAngle = fAngle;
                 }
             }
-            
-            if(fMaxDeviation < fThreshold){
+
+            if(fMaxAngle < fThreshold){
 
                 for(var j=0;j<pVertexFaces[nCurrentVertex].length;j++){
                     var pFaceStartIndex = pVertexFaces[nCurrentVertex][j]*3;
@@ -267,7 +264,7 @@ function performDownsampling(pVertices,pNormals,pIndexesOriginal,fThreshold){
 
     for(var i=0;i<pDeleteCandidates.length;i++){
         var nVertex = pDeleteCandidates[i];
-        deleteVertex(nVertex,pVertexFaces[nVertex],pIndexes,pDeletedFaces);
+        deleteVertex(nVertex,pVertexFaces[nVertex],pVertices,pIndexes,pDeletedFaces);
     }
     //сортировка необходима для более быстрого удаления
     pDeletedFaces.sort(function(a,b){return a-b});
@@ -293,7 +290,7 @@ function performDownsampling(pVertices,pNormals,pIndexesOriginal,fThreshold){
     return pIndexes;
 }
 
-function deleteVertex(nVertex,pFacesNumbers,pIndexes,pDeletedFaces){
+function deleteVertex(nVertex,pFacesNumbers,pVertices,pIndexes,pDeletedFaces){
     var pParticalPolygons = []; //содержит только две вершины из трех, убираю ту, которую собираюсь удалить
     for(var i=0; i<pFacesNumbers.length;i++){
         pParticalPolygons[i] = pIndexes.slice(pFacesNumbers[i]*3,pFacesNumbers[i]*3+3);
@@ -321,32 +318,57 @@ function deleteVertex(nVertex,pFacesNumbers,pIndexes,pDeletedFaces){
         //если группа не круговая, то число полигонов может быть уменьшено на 1
         if(pAdjacencyGroup.type == a.ProgressiveMesh.CIRCLE){
             nEndIndex = pGroup.length - 2;
-            //trace("circle group <-----------");
+            //ищем rootVertex
+            //TODO : выбрать rootVertex оптимальным способом
+
+            var nIndex = 3*nVertex;
+            var fDeletedVertexX = pVertices[nIndex    ];
+            var fDeletedVertexY = pVertices[nIndex + 1];
+            var fDeletedVertexZ = pVertices[nIndex + 2];
+
+            var fMinLength2 = Number.POSITIVE_INFINITY;
+            var nRootPointer;
+
+            var nGroupLength = pGroup.length;
+
+            for(var j=0;j<nGroupLength;j++){
+                nIndex = pGroup[j]*3;
+                var fCurrentVertexX = pVertices[nIndex    ];
+                var fCurrentVertexY = pVertices[nIndex + 1];
+                var fCurrentVertexZ = pVertices[nIndex + 2];
+
+                var fDirectionX = fCurrentVertexX - fDeletedVertexX;
+                var fDirectionY = fCurrentVertexY - fDeletedVertexY;
+                var fDirectionZ = fCurrentVertexZ - fDeletedVertexZ;
+
+                fLength2 = fDirectionX*fDirectionX + fDirectionY*fDirectionY + fDirectionZ*fDirectionZ;
+                if(fLength2 < fMinLength2){
+                    nRootPointer = j;
+                    //console.warn('we are here');
+                }
+            }
+
+            nRootVertex = pGroup[nRootPointer];
+
+            for(var j=0;j<nEndIndex;j++){
+                nVertex1 = pGroup[(nRootPointer + j + 1)%nGroupLength];
+                nVertex2 = pGroup[(nRootPointer + j + 2)%nGroupLength];
+
+                var iIndex = pFacesNumbers[pAdjacency[j]]*3;
+                pIndexes[iIndex    ] = nRootVertex;
+                pIndexes[iIndex + 1] = nVertex1;
+                pIndexes[iIndex + 2] = nVertex2;
+            }
+
+            //удаляем последние треугольники
+            for(var j=nEndIndex;j<pGroup.length;j++){
+                pDeletedFaces.push(pFacesNumbers[pAdjacency[j]]);
+            }   
         }
         else{
             nEndIndex = pGroup.length - 1;
             //trace("uncircle group <-----------");   
             return;
-        }
-
-        //ищем rootVertex
-        //TODO : выбрать rootVertex оптимальным способом
-
-        nRootVertex = pGroup[0];
-
-        for(var j=0;j<nEndIndex;j++){
-            nVertex1 = pGroup[j + 1];
-            nVertex2 = pGroup[j + 2];
-
-            var iIndex = pFacesNumbers[pAdjacency[j]]*3;
-            pIndexes[iIndex    ] = nRootVertex;
-            pIndexes[iIndex + 1] = nVertex1;
-            pIndexes[iIndex + 2] = nVertex2;
-        }
-
-        //удаляем последние треугольники
-        for(var j=nEndIndex;j<pGroup.length;j++){
-            pDeletedFaces.push(pFacesNumbers[pAdjacency[j]]);
         }
     }
 };
