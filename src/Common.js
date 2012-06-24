@@ -144,11 +144,17 @@ a.parseJSON = parseJSON;
  * @tparam String sHTML Исходный текст.
  * @treturn DocumentFragment
  */
-function toDOM(sHTML) {
+function toDOM(sHTML, useDocFragment) {
+    useDocFragment = useDocFragment === undefined? true: useDocFragment;
+    
     var pDivEl = document.createElement('div');
     var pDocFrag = document.createDocumentFragment();
 
     pDivEl.innerHTML = sHTML;
+
+    if (!useDocFragment) {
+        return pDivEl.childNodes;
+    }
 
     for (var i = 0, len = pDivEl.childNodes.length; i < len; ++i) {
         if (typeof pDivEl.childNodes[i] === 'undefined') {
@@ -493,10 +499,10 @@ Define(GEN_ARRAY(name, type, size), function () {
 });
 
 Define(A_DEFINE_NAMESPACE(name), function () {
-    a.name = {};
+    if (!a.name) a.name = {};
 });
 Define(A_DEFINE_NAMESPACE(name, space), function () {
-    a.space.name = {};
+    if (!a.space.name) a.space.name = {};
 });
 Define(A_NAMESPACE(object, space), function () {
     a.space.object = object;
