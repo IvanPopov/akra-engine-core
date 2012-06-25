@@ -1,5 +1,8 @@
 /**
- * @author reinor
+ * @author Igor Karateev
+ * @email iakarateev@gmail.com
+ * @brief файл содержит функции для даунсемплинга
+ * @file
  */
 
 Enum([
@@ -102,11 +105,48 @@ function computeAdjacencyBuffer(pVertices,pIndexes){
     return pAdjacencyBuffer;
 };
 
-function performDownsampling(pVertices,pNormals,pIndexesOriginal,fThreshold){
+/**
+ * @property generateLODLevels(Array pVertices,Array pIndexes,Array pNormals,int nLOD,float fThresholdMin = Math.PI/6,float fThresholdMax = Math.PI/3)
+ * функция генерирует несколько(nLOD) уровненей LOD, первый LOD уровень - это исходный меш
+ * @param pVertices массив вершин
+ * @param pIndexes массив индексов
+ * @param pNormals массив нормалей (может быть undefined, в таком случае нормали будут высчитаны налету)
+ * @param nLOD количество LOD уровней, которые необходимо сгенерировать
+ * @param fThresholdMin (опционально) минимальное пороговое значение (используеться в первом даунсемплинге)
+ * @param fThresholdMax (опционально) максимальное пороговое значение (используеться в последнем даунсемплинге)
+ * @treturn Array возвращает массив массивов новых индексов
+ */
+
+function generateLODLevels(pVertices,pIndexes,pNormals,nLOD,fThresholdMin,fThresholdMax){
+
+    if(fThresholdMin == undefined){
+        fThresholdMin = Math.PI/6;
+    }
+    if(fThresholdMax == undefined){
+        fThresholdMax = Math.PI/3;
+    }
+
+    var pLODLevels = [];
+    var pIndexesCopy = pIndexes.slice(0,pIndexes.length);
+    optimizeMesh(pVertices,pIndexesCopy);
+    pLODLevels.push(pIndexesCopy);
+    for(var i=1;i<nLOD;i++){
+        var fThresholdCurrent = fThresholdMin + (fThresholdMax - fThresholdMin)*(i-1)/(nLOD - 2);//так как даунсемплинг начинаеться с i=1, а не с i=0
+        var pNewIndexes;
+        if(i==1){
+            pNewIndexes = performDownsampling(pVertices,pLODLevels[i-1],pNormals,fThresholdCurrent);
+        }
+        else{
+            pNewIndexes = performDownsampling(pVertices,pLODLevels[i-1],undefined,fThresholdCurrent);
+        }
+        optimizeMesh(pVertices,pNewIndexes);
+        pLODLevels.push(pNewIndexes);
+    }
+    return pLODLevels;
+}
+
+function performDownsampling(pVertices,pIndexesOriginal,pNormals,fThreshold){
     var pIndexes = pIndexesOriginal.slice(0,pIndexesOriginal.length); //копируем индексы
-
-    optimizeMesh(pVertices,pIndexes);
-
 	var pVertexFaces = [];
     var pFacesNormals = []; //хранит нормали для каждого полигона
 
