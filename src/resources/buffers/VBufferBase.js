@@ -11,7 +11,7 @@ Enum([
          SoftwareBit,
 		 AlignmentBit //Выравнивание на 4
      ], // Софтварная реализация рендеринга
-     BufferFlagBits, a.VBufferBase);
+     VBUFFERBASE_OPTIONS, a.VBufferBase);
 	 
 
 	 

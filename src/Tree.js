@@ -18,7 +18,7 @@ function OcTree () {
     Enum([
              k_minimumTreeDepth = 1,
              k_maximumTreeDepth = 11
-         ], eConstants, a.Tree);
+         ], OCTREE_CONSTANTS, a.Tree);
     /**
      * List of OcTreeNodes on each level
      * @type Array<Array<OcTreeNode||Int>>(k_maximumTreeDepth)

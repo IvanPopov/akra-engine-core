@@ -228,11 +228,15 @@ Elseif()
     Define(__DEBUG, 1)
 Endif()
 
+If(A_CORE_HOME)
+
+Elseif()
+Define(A_CORE_HOME, '');
+Endif();
 
 Ifdef(__DEBUG)
 
 Define(a.isDebug, true)
-Define(A_CORE_HOME, '');
 
 Number.prototype.printBinary = function (isPretty) {
     var res = '';
@@ -342,11 +346,6 @@ Endif()
 ******************************************/
 
 Ifdef(__RELEASE);
-
-Ifdef(A_CORE_HOME)
-Elseif()
-Define(A_CORE_HOME, '');
-Endif();
 
 Define(a.isDebug, false);
 Define(debug_assert(cond, comment), function () {});
