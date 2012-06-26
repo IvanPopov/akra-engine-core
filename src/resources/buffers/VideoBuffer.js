@@ -119,22 +119,6 @@ DISPROPERTY(VideoBuffer, format);
 DISPROPERTY(VideoBuffer, magFilter);
 DISPROPERTY(VideoBuffer, minFilter);
 
-/**
- * @static
- * @type VertexDeclaration[]
- */
-//STATIC(VideoBuffer, pMarkupDeclaration, new a.VertexDeclaration([
-//    {nCount: 1, eType: a.DTYPE.INT, eUsage: 'INDEX'}
-//    {1, a.DTYPE.INT, 'SHIFT'}
-//]));
-
-/**
- * @static
- * @type VertexDeclaration[]
- */
-//STATIC(VideoBuffer, pDataDeclaration, VERTEX_DECLARATION([
-//    [4, a.DTYPE.FLOAT, 'VALUE']
-//]));
 
 /**
  * @property create(uint iByteSize, uint iFlags, ArrayBuffer pData)

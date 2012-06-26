@@ -241,7 +241,7 @@ function MeshMaterial (sName, pVertexData) {
 MeshMaterial.vertexDeclaration = function () {
     return new a.VertexDeclaration([
             {nCount: 17, eType: a.DTYPE.FLOAT, eUsage: 'MATERIAL'},
-            {nCount: 4, eType: a.DTYPE.FLOAT, eUsage: 'DIFFUSE', iOffset: -68},
+            {nCount: 4, eType: a.DTYPE.FLOAT, eUsage: 'DIFFUSE', iOffset: 0},
             {nCount: 4, eType: a.DTYPE.FLOAT, eUsage: 'AMBIENT'},
             {nCount: 4, eType: a.DTYPE.FLOAT, eUsage: 'SPECULAR'},
             {nCount: 4, eType: a.DTYPE.FLOAT, eUsage: 'EMISSION'},

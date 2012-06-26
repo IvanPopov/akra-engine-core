@@ -4,22 +4,126 @@
  */
 
 
+function DataFactory (pEngine) {
+    //video buffer with all mesh data
+    this._pDataBuffer = null;
+    this._pEngine = pEngine;
+    this._eDataOptions = 0;
+    this._pSubsetType = null;
+}
+
+PROPERTY(DataFactory, 'subsetType',
+    function () {
+        return this._pSubsetType;
+    },
+    function (pSubsetType) {
+        debug_assert(this._pSubsetType === null, 'subset type already set.');
+        this._pSubsetType = pSubsetType;
+    });
+
+DataFactory.prototype.getEngine = function() {
+    return this._pEngine;
+};
+
+DataFactory.prototype.getDataOptions = function() {
+    return this._eDataOptions;
+};
+
+// DataFactory.prototype.setDataOptions = function(eOptions) {
+//     this._eDataOptions = eOptions;
+// };
+
+/**
+ * @property getData(DECLARATION_USAGE eUsage) 
+ * @param eUsage Usage of desired data.
+ * @memberOf Mesh
+ * @return {VertexData} Data with given semantics or null.
+ */
+
+/**
+ * Find VertexData with given semantics/usage.
+ * @param  {String} sSemantics Data semantics.
+ * @return {VertexData} Data with given semantics or null.
+ */
+DataFactory.prototype.getData = function (sSemantics) {
+    var pData = pData = this.pDataBuffer._pVertexDataArray;
+    for (var i = 0; i < pData.length; i++) {
+        if (pData[i].hasSemantics(sSemantics)) {
+            return pData[i];
+        }
+    };
+
+    return null;
+};
+
+//публиный метод, для задания данных сразу для всех сабсетов
+DataFactory.prototype.setData = function (pDataDecl, pData) {     
+    var pVertexData;
+
+    pDataDecl = normalizeVertexDecl(pDataDecl);
+
+    for (var i = 0; i < pDataDecl.length; i++) {
+        assert(this.getData(pDataDecl[i]) === null, 
+            "data factory already contains data with similar vertex decloration.");
+    };
+
+    pVertexData = this._allocateData(pDataDecl, pData);
+
+    for (var i = 0; i < this._pSubsets.length; ++ i) {
+        this._pSubsets[i]._addData(pVertexData);
+    }
+
+    return pVertexData;
+};
+
+/**
+ * Положить данные в буфер.
+ * @private
+ */
+DataFactory.prototype._allocateData = function(pVertexDecl, pData) {
+    return this._pDataBuffer.allocateData(pVertexDecl, pData);
+};
 
 
-function Mesh(pEngine, sName, eOptions) {
-    Enum([
-        ADVANCED_INDEX = 0x01 //!< Save indicies into buffer (for ex. geometry shader simulation)
-        ], MESH_OPTIONS, a.Mesh);
+/**
+ * Allocate new data set.
+ * @param {Int} ePrimType Type of primitives.
+ * @param {Int} eOptions Опции. Определяют можно ли объединять в группы датасеты.
+ */
+DataFactory.prototype.allocateSubset = function (ePrimType, eOptions) {
+    debug_assert(this._pSubsetType !== null, 'subset type not specified.');
 
+    var iSubsetId = this._pSubsets.length;
+    var pDataset = new this._pSubsetType(this._pEngine);
+
+    debug_assert(pDataset.setup(this, iSubsetId, ePrimType, eOptions), 
+        'cannot setup submesh...');
+
+    this._pSubsets.push(pDataset);
+
+    return pDataset;
+};
+
+
+/**
+ * @protected
+ */
+DataFactory.prototype.setup = function (eOptions) {
+    this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource(sName + '_' + a.sid());
+    //TODO: add support for eOptions
+    this._pDataBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
+};
+
+A_NAMESPACE(DataFactory);
+
+function Mesh(pEngine, eOptions) {
+    A_CLASS;
     /**
      * Mesh name.
      * @type {String}
      * @private
      */
     this._sName = sName || null;
- 
-    //video buffer with all mesh data
-    this._pDataBuffer = null;
 
     //mesh Subsets
     this._pSubsets = [];
@@ -27,12 +131,10 @@ function Mesh(pEngine, sName, eOptions) {
     //default material
     this._pMaterials = [];
 
-    this._eOptions = 0;
-
-    this._pEngine = pEngine;
-
     this.setup(sName, eOptions);
 };
+
+EXTENDS(Mesh, a.DataFactory);
 
 PROPERTY(Mesh, 'materials',
     function () {
@@ -76,89 +178,11 @@ Mesh.prototype.addMaterial = function (sName, pMaterialData) {
     this._pMaterials.push(pMaterial);
 };
 
-// /**
-//  * Is this mesh use advanced index?
-//  * @return {Boolean} 
-//  */
-// Mesh.prototype.useAdvancedIndex = function() {
-//     return TEST_BIT(this._eOptions, a.Mesh.ADVANCED_INDEX);
-// };
 
-/**
- * @property getData(DECLARATION_USAGE eUsage) 
- * @param eUsage Usage of desired data.
- * @memberOf Mesh
- * @return {VertexData} Data with given semantics or null.
- */
+Mesh.prototype.setup = function(sName, eOptions) {
+    parent.setup(eOptions);
 
-/**
- * Find VertexData with given semantics/usage.
- * @param  {String} sSemantics Data semantics.
- * @return {VertexData} Data with given semantics or null.
- */
-Mesh.prototype.getData = function (sSemantics) {
-    var pData = pData = this.pDataBuffer._pVertexDataArray;
-    for (var i = 0; i < pData.length; i++) {
-        if (pData[i].hasSemantics(sSemantics)) {
-            return pData[i];
-        }
-    };
-
-    return null;
-};
-
-//публиный метод, для задания данных сразу для всех сабсетов
-Mesh.prototype.setData = function (pDataDecl, pData) {     
-    var pVertexData;
-
-    pDataDecl = normalizeVertexDecl(pDataDecl);
-
-    for (var i = 0; i < pDataDecl.length; i++) {
-        assert(this.getData(pDataDecl[i]) === null, "mesh already contains data with similar  vertex decloration.");
-    };
-
-    pVertexData = this._allocateData(pDataDecl, pData);
-
-    for (var i = 0; i < this._pSubsets.length; ++ i) {
-        this._pSubsets[i]._addData(pVertexData);
-    }
-
-    return pVertexData;
-};
-
-/**
- * Положить данные в буфер.
- */
-Mesh.prototype._allocateData = function(pVertexDecl, pData) {
-    return this._pDataBuffer.allocateData(pVertexDecl, pData);
-};
-
-
-/**
- * @param {String} Subset name.
- * @param {PRIMITIVE_TYPE} ePrimType Type of Subset primitive.
- * @param {TypedArray} pIndices Indices.
- */
-Mesh.prototype.allocateSubset = function (ePrimType, sName) {
-    var sName = sName || 'Subset_' + this._pSubsets.length;
-    var iSubsetId = this._pSubsets.length;
-    var pMeshSubset = new a.MeshSubset(this._pEngine);
-
-    debug_assert(pMeshSubset.setup(this, iSubsetId, sName, ePrimType), 
-        'cannot setup submesh...');
-
-    this._pSubsets.push(pMeshSubset);
-};
-
-
-/**
- * @protected
- */
-Mesh.prototype.setup = function (sName, eOptions) {
     this._sName = sName || 'unknown';
-    this._pDataBuffer = PR_DISPLAYMNGR.videoBufferPool().createResource(sName + '_' + a.sid());
-    //TODO: add support for eOptions
-    this._pDataBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
 };
 
 /**

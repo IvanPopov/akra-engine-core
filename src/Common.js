@@ -228,7 +228,7 @@ Elseif()
     Define(__DEBUG, 1)
 Endif()
 
-If(A_CORE_HOME)
+Ifdef(A_CORE_HOME)
 
 Elseif()
 Define(A_CORE_HOME, '');

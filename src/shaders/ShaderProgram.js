@@ -476,8 +476,6 @@ GLSLProgram.prototype.applyBufferMap = function (pBufferMap) {
  * @tparam VertexData pVertexData Data for apply.
  */
 GLSLProgram.prototype.applyBuffer = function (pVertexData) {
-
-    //TODO CALC CORRECT OFFSET! in all cases...
     var pDevice = this._pDevice;
     var iOffset = 0;
     var iStride = pVertexData.getStride();
@@ -500,20 +498,13 @@ GLSLProgram.prototype.applyBuffer = function (pVertexData) {
             }
 
             pAttr.pCurrentData = pVertexData;
-	        // trace('vertexAttribPointer', pAttr.iLocation,
-	        //                 pVertexElement.nCount,
-	        //                 pVertexElement.eType,
-	        //                 false,
-	        //                 iStride,
-	        //                 iOffset + pVertexElement.iOffset >= 0? iOffset + pVertexElement.iOffset: 0);
             pDevice.vertexAttribPointer(pAttr.iLocation,
                 pVertexElement.nCount,
                 pVertexElement.eType,
                 false,
                 iStride,
-                iOffset + pVertexElement.iOffset >= 0? iOffset + pVertexElement.iOffset: 0);
+                pVertexElement.iOffset);
         }
-        iOffset += pVertexElement.nCount * a.getTypeSize(pVertexElement.eType);
         pAttr.pCurrentData = pVertexData;
     }
 };
