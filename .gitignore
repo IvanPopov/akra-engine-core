@@ -6,13 +6,17 @@ analyzer/
 effects/
 
 # Project property files
-.html
-.bak
-.dds
-.png
-.zip
-.rar
-.back
-.prev
+*.html
+*.bak
+*.dds
+*.png
+*.zip
+*.rar
+*.back
+*.prev
+
+#project file
+*.sublime-project
+*.sublime-workspace
 
 server.js
