@@ -177,7 +177,6 @@ return new Uint8Array(this);
 return null;
 
 };
-console.log("/akra-engine-core/src/");
 Number.prototype.printBinary = function(isPretty) {
 var res="";
 for (i = 0; i < 32; ++i) {
@@ -9682,100 +9681,55 @@ return new a.RemoteFile(sUri, pMode);
 return pUri;
 
 };
-function UniqueManager(pEngine) {
-this._pEngine = pEngine;
-this._pHashMap =  {};
-for (var i=0; i < (a._pUniqObjects.length); ++i) {
-this._pHashMap[a._pUniqObjects[i]] =  {};
-
-}
-
+function HashBase() {
 ;
+this._eOptions = 0;
 
 }
 
-UniqueManager.prototype.create = function(pObjectType, pHashData) {
-var sType=pObjectType._sUniqType;
-var sHash=pObjectType.uHash(pHashData);
-var pObjectPool=this._pHashMap[sType];
-var pObject=pObjectPool[sHash];
-if (!pObject) {
-pObject = pObjectType.uCreate(this._pEngine, pHashData);
-pObject._sUniqHash = sHash;
-pObjectPool[sHash] = pObject;
-
-}
-
-return pObject;
+HashBase.prototype.changeable = function(bValue) {
+(bValue? this._eOptions |= 1 << 0 : this._eOptions &= ~(1 << 0));
 
 };
-UniqueManager.prototype.update = function(pObject, pHashData) {
-var pObjectType=pObject.constructor;
-var sType=pObjectType._sUniqType;
-var pObjectPool=this._pHashMap[sType];
-var sHashNext=pObjectType.uHash(pHashData);
-var pObjectNext=pObjectPool[sHashNext];
-var sHashPrev=pObject._sUniqHash;
-var pObjectPrev=pObject;
-if (!(!pObjectNext)) {
-var err=((((((("Error:: " + "you cannot use given hash, because it already in use.") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
-if (confirm(err + "Accept to exit, refuse to continue.")) {
-throw new Error("you cannot use given hash, because it already in use.");
+HashBase.prototype.isChangeable = function() {
+return (this._eOptions & (1 << 0)) != 0;
+
+};
+HashBase.prototype.setup = function(pData) {
+return false;
+
+};
+a.HashBase = HashBase;
+function StringHash(pData) {
+StringHash.ctor.apply(this, arguments);
+this._sHash = null;
 
 }
 
+a.extend(StringHash, a.HashBase);
+StringHash.prototype.toString = function() {
+return this._sHash;
 
-}
-
-;
-pObject._sUniqHash = sHashNext;
-pObjectPool[sHashNext] = pObject;
-if (sHashPrev) {
-delete (pObjectPool[sHashPrev]);
-
-}
-
+};
+StringHash.prototype.setup = function(sHash) {
+if (((this._sHash) === null) || (this.isChangeable())) {
+this._sHash = sHash;
 return true;
 
-};
-a._pUniqObjects = [];
-a.registerUniqObject = function(pObjectType, fnHash, fnCreate) {
-pObjectType._sUniqType = pObjectType.toString().match(/function\s*(\w+)/)[1];
-if (!(pObjectType.uCreate)) {
-pObjectType.uCreate = fnCreate || (function(pEngine, pHashData) {
-return new pObjectType(pEngine, pHashData);
-
-}
-);
-
 }
 
-if (!(pObjectType.uHash)) {
-pObjectType.uHash = fnHash || (pObjectType.prototype.uHash);
-
-}
-
-if (!pObjectType.uHash) {
-var err=((((((("Error:: " + "you must specify hash function for uniq object") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
-if (confirm(err + "Accept to exit, refuse to continue.")) {
-throw new Error("you must specify hash function for uniq object");
-
-}
-
-
-}
-
-;
-a._pUniqObjects.push(pObjectType._sUniqType);
+return false;
 
 };
-function Unique(pEngine) {
-this._sUniqHash = null;
-this._pUniqManager = pEngine.pUniqManager;
+a.StringHash = StringHash;
+function Unique() {
+var pHashData=((arguments.length) > 1? arguments[1] : arguments[0]);
 
 }
 
-a.UniqueManager = UniqueManager;
+Unique.prototype.computeHash = function(pHashData) {
+
+};
 a.Unique = Unique;
 (function() {
 function utf8_encode(argString) {
@@ -17498,11 +17452,10 @@ this._pManager.latestBuffer = pVertexBuffer;
 }
 
 pAttr.pCurrentData = pVertexData;
-pDevice.vertexAttribPointer(pAttr.iLocation, pVertexElement.nCount, pVertexElement.eType, false, iStride, ((iOffset + (pVertexElement.iOffset)) >= 0? iOffset + (pVertexElement.iOffset) : 0));
+pDevice.vertexAttribPointer(pAttr.iLocation, pVertexElement.nCount, pVertexElement.eType, false, iStride, pVertexElement.iOffset);
 
 }
 
-iOffset += (pVertexElement.nCount) * (a.getTypeSize(pVertexElement.eType));
 pAttr.pCurrentData = pVertexData;
 
 }
@@ -21139,7 +21092,7 @@ this._sName = sName;
 }
 
 MeshMaterial.vertexDeclaration = function() {
-return new a.VertexDeclaration([ {nCount: 17, eType: 5126, eUsage: "MATERIAL"},  {nCount: 4, eType: 5126, eUsage: "DIFFUSE", iOffset: -68},  {nCount: 4, eType: 5126, eUsage: "AMBIENT"},  {nCount: 4, eType: 5126, eUsage: "SPECULAR"},  {nCount: 4, eType: 5126, eUsage: "EMISSION"},  {nCount: 1, eType: 5126, eUsage: "SHININESS"}]);
+return new a.VertexDeclaration([ {nCount: 17, eType: 5126, eUsage: "MATERIAL"},  {nCount: 4, eType: 5126, eUsage: "DIFFUSE", iOffset: 0},  {nCount: 4, eType: 5126, eUsage: "AMBIENT"},  {nCount: 4, eType: 5126, eUsage: "SPECULAR"},  {nCount: 4, eType: 5126, eUsage: "EMISSION"},  {nCount: 1, eType: 5126, eUsage: "SHININESS"}]);
 
 };
 MeshMaterial.prototype.getProperty = function(eProperty) {
@@ -27418,54 +27371,37 @@ return this.iStride;
 }
 );
 VertexDeclaration.prototype.update = function() {
-this.iStride = this.offsetOf();
-
-};
-VertexDeclaration.prototype.offsetOf = function(eSemantics) {
-var iStride=0;
-var iNegativeStride=0;
-var t;
-if (eSemantics) {
-eSemantics = eSemantics.toUpperCase();
-
-}
-
-for (i = 0; i < (this.length); i++) {
-t = (iStride + (this[i].iSize)) + (this[i].iOffset);
-if (iStride < t) {
-iStride = t;
-iNegativeStride = 0;
-
-}
-else  {
-iNegativeStride += this[i].iSize;
-
-}
-
-t = ((iNegativeStride? iNegativeStride + (this[i].iOffset) : 0)) + iStride;
-if ((this[i].eUsage) === eSemantics) {
-return t - (this[i].iSize);
-
-}
-
-if (iStride < t) {
-iStride = t;
+var iStride;
+for (var i=0; i < (this.length); ++i) {
+iStride = (this[i].iSize) + (this[i].iOffset);
+if ((this.iStride) < iStride) {
+this.iStride = iStride;
 
 }
 
 
 }
 
-return iStride;
 
 };
 VertexDeclaration.prototype.append = function(pArrayElements) {
+if (!(pArrayElements instanceof Array)) {
+var err=((((((("Error:: " + "only array of vertex elements can be appended to vertex declaration.") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
+if (confirm(err + "Accept to exit, refuse to continue.")) {
+throw new Error("only array of vertex elements can be appended to vertex declaration.");
+
+}
+
+
+}
+
+;
 var iOffset;
 for (var i=0; i < (pArrayElements.length); i++) {
 iOffset = pArrayElements[i].iOffset;
 if (iOffset === undefined) {
-if (i != 0) {
-iOffset = this[i - 1].iOffset;
+if (i > 0) {
+iOffset = (this[i - 1].iOffset) + (this[i - 1].iSize);
 
 }
 else  {
@@ -27484,26 +27420,19 @@ this.update();
 
 };
 VertexDeclaration.prototype.extend = function(pVertexDecl) {
+var pElement;
 for (var i=0; i < (pVertexDecl.length); i++) {
-this.push(pVertexDecl[i].clone());
+pElement = pVertexDecl[i].clone();
+pElement.iOffset += this.iStride;
+this.push(pElement);
 
 }
 
-;
 this.update();
 
 };
 VertexDeclaration.prototype.hasSemantics = function(eSemantics) {
-for (i = 0; i < (this.length); i++) {
-if ((this[i].eUsage.toString().toUpperCase()) == (eSemantics.toString().toUpperCase())) {
-return true;
-
-}
-
-
-}
-
-return false;
+return (this.element(eSemantics)) !== null;
 
 };
 VertexDeclaration.prototype.element = function(eSemantics) {
@@ -27527,7 +27456,6 @@ pDecl.push(this[i].clone());
 
 }
 
-;
 pDecl.update();
 return pDecl;
 
@@ -27566,17 +27494,17 @@ this._iOffset = iOffset;
 this._nMemberCount = iCount;
 this._pVertexDeclaration = null;
 this._iStride = undefined;
+this._iID = this._pVertexBuffer.getNextID();
 if ((typeof pVertexDeclaration) == "number") {
 this._iStride = pVertexDeclaration;
 
 }
 else  {
 this._iStride = pVertexDeclaration.stride;
-this.setVertexDescription(pVertexDeclaration);
+this.setVertexDeclaration(pVertexDeclaration);
 
 }
 
-this._iID = this._pVertexBuffer.getNextID();
 if (!((this._pVertexBuffer.size) >= ((this.size) + (this.getOffset())))) {
 var err=((((((("Error:: " + "IndexData выходит за пределы IndexBuffer") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
 if (confirm(err + "Accept to exit, refuse to continue.")) {
@@ -27600,15 +27528,15 @@ return this._pVertexDeclaration;
 
 }
 );
-VertexData.prototype.getOffset = function() {
-return this._iOffset;
-
-};
 a.defineProperty(VertexData, "buffer", function() {
 return this._pVertexBuffer;
 
 }
 );
+VertexData.prototype.getOffset = function() {
+return this._iOffset;
+
+};
 VertexData.prototype.getVertexBuffer = function() {
 return this._pVertexBuffer;
 
@@ -27704,7 +27632,7 @@ this._nMemberCount = nCount;
 this._iStride = iStride;
 this._pVertexDeclaration = null;
 if ((typeof pVertexDeclaration) != "number") {
-this.setVertexDescription(pVertexDeclaration);
+this.setVertexDeclaration(pVertexDeclaration);
 
 }
 
@@ -27741,7 +27669,7 @@ return false;
 
 }
 
-this.setVertexDescription(pOldVertexDeclaration);
+this.setVertexDeclaration(pOldVertexDeclaration);
 return true;
 
 }
@@ -27754,7 +27682,6 @@ return false;
 
 };
 VertexData.prototype.setData = function(pData, iOffset, iSize, nCountStart, nCount) {
-var iCalcSize=0;
 switch(arguments.length) {
 case 5:
 var iStride=this.getStride();
@@ -27778,7 +27705,7 @@ var pDeclaration=this._pVertexDeclaration, pElement=null;
 if ((typeof (arguments[1])) == "string") {
 pElement = pDeclaration.element(arguments[1]);
 if (pElement) {
-return this.setData(pData, pDeclaration.offsetOf(arguments[1]), pElement.size, arguments[2], arguments[3]);
+return this.setData(pData, pElement.iOffset, pElement.iSize, arguments[2], arguments[3]);
 
 }
 
@@ -27806,14 +27733,13 @@ var pDeclaration=this._pVertexDeclaration, pElement=null;
 if ((typeof (arguments[1])) == "string") {
 pElement = pDeclaration.element(arguments[1]);
 if (pElement) {
-iCalcSize = pElement.size;
 arguments[2] = (arguments[2]) || 0;
 if (!(arguments[3])) {
-arguments[3] = (pData.buffer.byteLength) / iCalcSize;
+arguments[3] = (pData.buffer.byteLength) / (pElement.iSize);
 
 }
 
-return this.setData(pData, pDeclaration.offsetOf(arguments[1]), iCalcSize, arguments[2], arguments[3]);
+return this.setData(pData, pElement.iOffset, pElement.iSize, arguments[2], arguments[3]);
 
 }
 
@@ -27881,13 +27807,11 @@ case 3:
 ;
 
 case 1:
-var iCalcSize=0;
 var pDeclaration=this._pVertexDeclaration, pElement=null;
 if ((typeof (arguments[0])) == "string") {
 pElement = pDeclaration.element(arguments[0]);
 if (pElement) {
-iCalcSize = pElement.size;
-return this.getData(pDeclaration.offsetOf(arguments[0]), iCalcSize, arguments[1], arguments[2]);
+return this.getData(pElement.iOffset, pElement.iSize, arguments[1], arguments[2]);
 
 }
 
@@ -27911,7 +27835,7 @@ this._pVertexBuffer.activate();
 return true;
 
 };
-VertexData.prototype.setVertexDescription = function(pVertexDeclaration, iElementCount) {
+VertexData.prototype.setVertexDeclaration = function(pVertexDeclaration) {
 if (!(!(this._pVertexDeclaration))) {
 var err=((((((("Error:: " + "pVertexDeclaration уже выставлен") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
 if (confirm(err + "Accept to exit, refuse to continue.")) {
@@ -27925,27 +27849,7 @@ throw new Error("pVertexDeclaration уже выставлен");
 ;
 var iStride=0;
 var nVertexElementCount;
-if (iElementCount == undefined) {
-nVertexElementCount = pVertexDeclaration.length;
-
-}
-else  {
-nVertexElementCount = iElementCount;
-
-}
-
-if (!(nVertexElementCount <= (pVertexDeclaration.length))) {
-var err=((((((("Error:: " + "iElementCount больше размера pVertexDeclaration") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
-if (confirm(err + "Accept to exit, refuse to continue.")) {
-throw new Error("iElementCount больше размера pVertexDeclaration");
-
-}
-
-
-}
-
-;
-this._pVertexDeclaration = new VertexDeclaration(pVertexDeclaration);
+this._pVertexDeclaration = pVertexDeclaration.clone();
 iStride = this._pVertexDeclaration.stride;
 if (!(iStride < (256))) {
 var err=((((((("Error:: " + "stride max is 255 bytes") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
@@ -29084,19 +28988,135 @@ RenderableObject.prototype.renderCallback = function(pEntry, iActivationFlags) {
 
 };
 a.RenderableObject = RenderableObject;
-function Mesh(pEngine, sName, eOptions) {
-;
-this._sName = sName || null;
+function DataFactory(pEngine) {
 this._pDataBuffer = null;
+this._pEngine = pEngine;
+this._eDataOptions = 0;
+this._pSubsetType = null;
+
+}
+
+a.defineProperty(DataFactory, "subsetType", function() {
+return this._pSubsetType;
+
+}
+, function(pSubsetType) {
+if (!((this._pSubsetType) === null)) {
+var err=((((((("Error:: " + "subset type already set.") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
+if (confirm(err + "Accept to exit, refuse to continue.")) {
+throw new Error("subset type already set.");
+
+}
+
+
+}
+
+;
+this._pSubsetType = pSubsetType;
+
+}
+);
+DataFactory.prototype.getEngine = function() {
+return this._pEngine;
+
+};
+DataFactory.prototype.getDataOptions = function() {
+return this._eDataOptions;
+
+};
+DataFactory.prototype.getData = function(sSemantics) {
+var pData=pData = this.pDataBuffer._pVertexDataArray;
+for (var i=0; i < (pData.length); i++) {
+if (pData[i].hasSemantics(sSemantics)) {
+return pData[i];
+
+}
+
+
+}
+
+;
+return null;
+
+};
+DataFactory.prototype.setData = function(pDataDecl, pData) {
+var pVertexData;
+pDataDecl = normalizeVertexDecl(pDataDecl);
+for (var i=0; i < (pDataDecl.length); i++) {
+if (!((this.getData(pDataDecl[i])) === null)) {
+var err=((((((("Error:: " + "data factory already contains data with similar vertex decloration.") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
+if (confirm(err + "Accept to exit, refuse to continue.")) {
+throw new Error("data factory already contains data with similar vertex decloration.");
+
+}
+
+
+}
+
+;
+
+}
+
+;
+pVertexData = this._allocateData(pDataDecl, pData);
+for (var i=0; i < (this._pSubsets.length); ++i) {
+this._pSubsets[i]._addData(pVertexData);
+
+}
+
+return pVertexData;
+
+};
+DataFactory.prototype._allocateData = function(pVertexDecl, pData) {
+return this._pDataBuffer.allocateData(pVertexDecl, pData);
+
+};
+DataFactory.prototype.allocateSubset = function(ePrimType, eOptions) {
+if (!((this._pSubsetType) !== null)) {
+var err=((((((("Error:: " + "subset type not specified.") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
+if (confirm(err + "Accept to exit, refuse to continue.")) {
+throw new Error("subset type not specified.");
+
+}
+
+
+}
+
+;
+var iSubsetId=this._pSubsets.length;
+var pDataset=new this._pSubsetType(this._pEngine);
+if (!pDataset.setup(this, iSubsetId, ePrimType, eOptions)) {
+var err=((((((("Error:: " + "cannot setup submesh...") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
+if (confirm(err + "Accept to exit, refuse to continue.")) {
+throw new Error("cannot setup submesh...");
+
+}
+
+
+}
+
+;
+this._pSubsets.push(pDataset);
+return pDataset;
+
+};
+DataFactory.prototype.setup = function(eOptions) {
+this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource((sName + "_") + (a.sid()));
+this._pDataBuffer.create(0, 1 << 3);
+
+};
+a.DataFactory = DataFactory;
+function Mesh(pEngine, eOptions) {
+Mesh.ctor.apply(this, arguments);
+this._sName = sName || null;
 this._pSubsets = [];
 this._pMaterials = [];
-this._eOptions = 0;
-this._pEngine = pEngine;
 this.setup(sName, eOptions);
 
 }
 
 ;
+a.extend(Mesh, a.DataFactory);
 a.defineProperty(Mesh, "materials", function() {
 return this._pMaterials;
 
@@ -29152,75 +29172,9 @@ pMaterial.value = pMaterialData || (this.surfaceMaterial.material);
 this._pMaterials.push(pMaterial);
 
 };
-Mesh.prototype.getData = function(sSemantics) {
-var pData=pData = this.pDataBuffer._pVertexDataArray;
-for (var i=0; i < (pData.length); i++) {
-if (pData[i].hasSemantics(sSemantics)) {
-return pData[i];
-
-}
-
-
-}
-
-;
-return null;
-
-};
-Mesh.prototype.setData = function(pDataDecl, pData) {
-var pVertexData;
-pDataDecl = normalizeVertexDecl(pDataDecl);
-for (var i=0; i < (pDataDecl.length); i++) {
-if (!((this.getData(pDataDecl[i])) === null)) {
-var err=((((((("Error:: " + "mesh already contains data with similar  vertex decloration.") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
-if (confirm(err + "Accept to exit, refuse to continue.")) {
-throw new Error("mesh already contains data with similar  vertex decloration.");
-
-}
-
-
-}
-
-;
-
-}
-
-;
-pVertexData = this._allocateData(pDataDecl, pData);
-for (var i=0; i < (this._pSubsets.length); ++i) {
-this._pSubsets[i]._addData(pVertexData);
-
-}
-
-return pVertexData;
-
-};
-Mesh.prototype._allocateData = function(pVertexDecl, pData) {
-return this._pDataBuffer.allocateData(pVertexDecl, pData);
-
-};
-Mesh.prototype.allocateSubset = function(ePrimType, sName) {
-var sName=sName || ("Subset_" + (this._pSubsets.length));
-var iSubsetId=this._pSubsets.length;
-var pMeshSubset=new a.MeshSubset(this._pEngine);
-if (!pMeshSubset.setup(this, iSubsetId, sName, ePrimType)) {
-var err=((((((("Error:: " + "cannot setup submesh...") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
-if (confirm(err + "Accept to exit, refuse to continue.")) {
-throw new Error("cannot setup submesh...");
-
-}
-
-
-}
-
-;
-this._pSubsets.push(pMeshSubset);
-
-};
 Mesh.prototype.setup = function(sName, eOptions) {
+this.constructor.superclass.setup.call(this, eOptions);
 this._sName = sName || "unknown";
-this._pDataBuffer = this._pEngine.displayManager().videoBufferPool().createResource((sName + "_") + (a.sid()));
-this._pDataBuffer.create(0, 1 << 3);
 
 };
 function buildCubeMesh(pEngine, eOptions) {
@@ -30576,931 +30530,6 @@ pMesh.setNumFaces(nFaceCount);
 
 };
 a.ModelResource = ModelResource;
-function TerrainSection(pEngine) {
-this._pTerrainSystem = null;
-this._pSectorVerts = null;
-this._iHeightMapX;
-this._iHeightMapY;
-this._iSectorX;
-this._iSectorY;
-this._iXVerts = 0;
-this._iYVerts = 0;
-this._pWorldRect = new a.Rect3d();
-TerrainSection.superclass.constructor.apply(this, arguments);
-
-}
-
-;
-a.extend(TerrainSection, a.SceneObject);
-TerrainSection.prototype.pVertexDescription = new Array(2);
-TerrainSection.prototype.pVertexDescription[0] = new VertexDeclaration(1, "POSITION1", 5126, "POSITION");
-TerrainSection.prototype.pVertexDescription[1] = new VertexDeclaration(3, "NORMAL", 5126, "NORMAL");
-TerrainSection.prototype.sectorX = function() {
-return this._iSectorX;
-
-};
-TerrainSection.prototype.sectorY = function() {
-return this._iSectorY;
-
-};
-TerrainSection.prototype.terrainSystem = function() {
-return this._pTerrainSystem;
-
-};
-TerrainSection.prototype.sectorVertices = function() {
-return this._pSectorVerts;
-
-};
-TerrainSection.prototype.create = function(pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY, iXVerts, iYVerts, pWorldRect) {
-bResult = TerrainSection.superclass.create.apply(this, arguments);
-this.attachToParent(pRootNode);
-if (bResult) {
-this._pTerrainSystem = pParentSystem;
-this._iXVerts = iXVerts;
-this._iYVerts = iYVerts;
-this._iSectorX = iSectorX;
-this._iSectorY = iSectorY;
-this._pWorldRect.fX0 = pWorldRect.fX0;
-this._pWorldRect.fX1 = pWorldRect.fX1;
-this._pWorldRect.fY0 = pWorldRect.fY0;
-this._pWorldRect.fY1 = pWorldRect.fY1;
-this._iHeightMapX = iHeightMapX;
-this._iHeightMapY = iHeightMapY;
-bResult = this.buildVertexBuffer();
-this.accessLocalBounds().set(this._pWorldRect.fX0, this._pWorldRect.fX1, this._pWorldRect.fY0, this._pWorldRect.fY1, this._pWorldRect.fZ0, this._pWorldRect.fZ1);
-
-}
-
-return bResult;
-
-};
-TerrainSection.prototype.buildVertexBuffer = function() {
-var bResult=true;
-var sTempName;
-sTempName = (("terrain_section_" + (this._iSectorX)) + "_") + (this._iSectorY);
-this._pSectorVerts = this._pEngine.pDisplayManager.vertexBufferPool().createResource(sTempName);
-this._pWorldRect.fZ0 = 3.4e+38;
-this._pWorldRect.fZ1 = (-3.4e+38);
-if (this._pSectorVerts) {
-var pVerts=new Array(((this._iXVerts) * (this._iYVerts)) * 4);
-var v3fNormal=null;
-for (var y=0; y < (this._iYVerts); ++y) {
-for (var x=0; x < (this._iXVerts); ++x) {
-fHeight = this._pTerrainSystem.readWorldHeight((this._iHeightMapX) + x, (this._iHeightMapY) + y);
-pVerts[(((y * (this._iXVerts)) + x) * 4) + 0] = fHeight;
-v3fNormal = this._pTerrainSystem.readWorldNormal((this._iHeightMapX) + x, (this._iHeightMapY) + y);
-pVerts[(((y * (this._iXVerts)) + x) * 4) + 1] = v3fNormal[0];
-pVerts[(((y * (this._iXVerts)) + x) * 4) + 2] = v3fNormal[1];
-pVerts[(((y * (this._iXVerts)) + x) * 4) + 3] = v3fNormal[2];
-this._pWorldRect.fZ0 = Math.min(this._pWorldRect.fZ0, fHeight);
-this._pWorldRect.fZ1 = Math.max(this._pWorldRect.fZ1, fHeight);
-
-}
-
-
-}
-
-bResult = this._pSectorVerts.create((this._iXVerts) * (this._iYVerts), 16, 1 << a.VertexBuffer.RamBackupBit, new Float32Array(pVerts));
-pVerts = null;
-
-}
-else  {
-bResult = false;
-
-}
-
-return bResult;
-
-};
-TerrainSection.prototype.render = function() {
-this._pTerrainSystem.submitSection(this);
-
-};
-TerrainSection.prototype.renderCallback = function(entry, activationFlags) {
-this._pTerrainSystem.renderSection(this, activationFlags, entry);
-
-};
-TerrainSection.prototype.setVertexDescription = function() {
-bSuccess = this._pSectorVerts.setVertexDescription(a.TerrainSection.prototype.pVertexDescription, a.TerrainSection.prototype.pVertexDescription.length);
-if (!(bSuccess == true)) {
-var err=((((((("Error:: " + "TerrainSection.setVertexDescription _pVertexGrid.setVertexDescription is false") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
-if (confirm(err + "Accept to exit, refuse to continue.")) {
-throw new Error("TerrainSection.setVertexDescription _pVertexGrid.setVertexDescription is false");
-
-}
-
-
-}
-
-;
-return bSuccess;
-
-};
-a.TerrainSection = TerrainSection;
-function Terrain(pEngine) {
-this._pEngine = pEngine;
-this._pDevice = pEngine.pDevice;
-this._pRootNode = null;
-this._pWorldExtents = new a.Rect3d();
-this._v3fWorldSize = Vec3.create();
-this._v3fMapScale = Vec3.create();
-this._iSectorCountX;
-this._iSectorCountY;
-this._pSectorArray = null;
-this._pVertexGrid = null;
-this._pTriangles = null;
-this._pRenderMethod = null;
-this._v2fSectorSize = Vec2.create();
-this._pActiveCamera = null;
-this._iSectorShift;
-this._iSectorUnits;
-this._iSectorVerts;
-this._iTableWidth;
-this._iTableHeight;
-this._pHeightTable = null;
-this._pv3fNormalTable = null;
-this._fVScale = 1;
-this._fVLimit = 1;
-this.fVRatioLimit = 0.03;
-this.fVErrorScale = 1.33;
-
-}
-
-;
-Terrain.prototype.pVertexDescription = new Array(2);
-Terrain.prototype.pVertexDescription[0] = new a.VertexDeclaration(2, "POSITION0", 5126, "POSITION");
-Terrain.prototype.pVertexDescription[1] = new a.VertexDeclaration(2, "TEXCOORD0", 5126, "TEXCOORD");
-Terrain.prototype.tableWidth = function() {
-return this._iTableWidth;
-
-};
-Terrain.prototype.tableHeight = function() {
-return this._iTableHeight;
-
-};
-Terrain.prototype.mapScale = function() {
-return this._v3fMapScale;
-
-};
-Terrain.prototype.worldExtents = function() {
-return this._pWorldExtents;
-
-};
-Terrain.prototype.lodErrorScale = function() {
-return this._fVScale;
-
-};
-Terrain.prototype.lodRatioLimit = function() {
-return this._fVLimit;
-
-};
-Terrain.prototype.sectorShift = function() {
-return this._iSectorShift;
-
-};
-Terrain.sSectorVertex = function() {
-this.fHeight;
-this.v3fNormal = Vec3.create();
-
-};
-Terrain.prototype.elevationData = function() {
-this.fMinElevation;
-this.fMaxElevation;
-this.fMinNormalZ;
-this.fMaxNormalZ;
-this.fStrength;
-
-};
-Terrain.prototype.terrainTextureData = function() {
-this.pImage;
-this.fUvScale;
-this.pElevation = new this.elevationData();
-
-};
-Terrain.prototype.sample_data = function() {
-this.iColor;
-this.fScale;
-
-};
-Terrain.prototype.create = function(pRootNode, pHeightMap, worldExtents, iShift) {
-var bResult=false;
-this._iSectorShift = iShift;
-this._iSectorUnits = 1 << iShift;
-this._iSectorVerts = (this._iSectorUnits) + 1;
-this._pRootNode = pRootNode;
-this._pWorldExtents = worldExtents;
-this._v3fWorldSize = worldExtents.size();
-this._iTableWidth = pHeightMap.getWidth();
-this._iTableHeight = pHeightMap.getHeight();
-this._v3fMapScale[0] = (this._v3fWorldSize[0]) / (this._iTableWidth);
-this._v3fMapScale[1] = (this._v3fWorldSize[1]) / (this._iTableHeight);
-this._v3fMapScale[2] = (this._v3fWorldSize[2]) / 255;
-this.buildHeightAndNormalTables(pHeightMap);
-this._iSectorCountX = (this._iTableWidth) >> (this._iSectorShift);
-this._iSectorCountY = (this._iTableHeight) >> (this._iSectorShift);
-this._v2fSectorSize[0] = ((this._v3fWorldSize[0]) / (this._iSectorCountX));
-this._v2fSectorSize[1] = ((this._v3fWorldSize[1]) / (this._iSectorCountY));
-if (this.buildVertexBuffer()) {
-if (this.buildIndexBuffer()) {
-bResult = this.allocateSectors();
-this.setVertexDescription();
-
-}
-
-
-}
-
-return bResult;
-
-};
-Terrain.prototype.allocateSectors = function() {
-this._pSectorArray = new Array((this._iSectorCountX) * (this._iSectorCountY));
-for (var y=0; y < (this._iSectorCountY); ++y) {
-for (var x=0; x < (this._iSectorCountX); ++x) {
-v2fSectorPos = Vec2.create();
-v2fSectorPos[0] = ((this._pWorldExtents.fX0) + (x * (this._v2fSectorSize[0])));
-v2fSectorPos[1] = ((this._pWorldExtents.fY0) + (y * (this._v2fSectorSize[1])));
-r2fSectorRect = new a.Rect2d();
-r2fSectorRect.set(v2fSectorPos[0], (v2fSectorPos[0]) + (this._v2fSectorSize[0]), v2fSectorPos[1], (v2fSectorPos[1]) + (this._v2fSectorSize[1]));
-iXPixel = x << (this._iSectorShift);
-iYPixel = y << (this._iSectorShift);
-iIndex = (y * (this._iSectorCountX)) + x;
-this._pSectorArray[iIndex] = new a.TerrainSection(this._pEngine);
-if (!(this._pSectorArray[iIndex].create(this._pRootNode, this, x, y, iXPixel, iYPixel, this._iSectorVerts, this._iSectorVerts, r2fSectorRect))) {
-return false;
-
-}
-
-
-}
-
-
-}
-
-return true;
-
-};
-Terrain.prototype.setRenderMethod = function(pRenderMethod) {
-this._pRenderMethod = null;
-this._pRenderMethod = pRenderMethod;
-if (this._pRenderMethod) {
-this._pRenderMethod.addRef();
-
-}
-
-
-};
-Terrain.prototype.buildHeightAndNormalTables = function(pImage) {
-var pColor=new Uint8Array(4);
-this._pHeightTable = null;
-this._pv3fNormalTable = null;
-var iMaxY=this._iTableHeight;
-var iMaxX=this._iTableWidth;
-var x, y;
-this._pHeightTable = new Array(iMaxX * iMaxY);
-this._pv3fNormalTable = new Array(iMaxX * iMaxY);
-for (var i=0; i < (iMaxX * iMaxY); i++) {
-this._pv3fNormalTable[i] = Vec3.create();
-
-}
-
-if (pImage.isResourceLoaded()) {
-var fHeight;
-var iHeight;
-for (y = 0; y < iMaxY; y++) {
-for (x = 0; x < iMaxX; x++) {
-pImage.getPixelRGBA(x, y, pColor);
-iHeight = pColor[0];
-fHeight = (iHeight * (this._v3fMapScale[2])) + (this._pWorldExtents.fZ0);
-this._pHeightTable[(y * iMaxX) + x] = fHeight;
-
-}
-
-
-}
-
-
-}
-
-temp = new a.Texture(this._pEngine);
-fScale = ((this._iTableWidth) * (this._pWorldExtents.sizeZ())) / (this._pWorldExtents.sizeX());
-temp.generateNormalMap(pImage, 0, fScale);
-var pColorData=new Uint8Array((4 * iMaxY) * iMaxX);
-temp.getPixelRGBA(0, 0, iMaxX, iMaxY, pColorData);
-var i=0;
-for (y = 0; y < iMaxY; y++) {
-for (x = 0; x < iMaxX; x++) {
-i++;
-this._pv3fNormalTable[(y * iMaxX) + x][0] = (pColorData[(((y * iMaxX) + x) * 4) + 0]) - 127.5;
-this._pv3fNormalTable[(y * iMaxX) + x][1] = (pColorData[(((y * iMaxX) + x) * 4) + 1]) - 127.5;
-this._pv3fNormalTable[(y * iMaxX) + x][2] = (pColorData[(((y * iMaxX) + x) * 4) + 2]) - 127.5;
-Vec3.normalize(this._pv3fNormalTable[(y * iMaxX) + x]);
-
-}
-
-
-}
-
-temp.releaseTexture();
-
-};
-Terrain.prototype.readWorldHeight = function() {
-if ((arguments.length) == 2) {
-var iMapX=arguments[0];
-var iMapY=arguments[1];
-if (iMapX >= (this._iTableWidth)) {
-iMapX = (this._iTableWidth) - 1;
-
-}
-
-if (iMapY >= (this._iTableHeight)) {
-iMapY = (this._iTableHeight) - 1;
-
-}
-
-return this._pHeightTable[(iMapY * (this._iTableWidth)) + iMapX];
-
-}
-else  {
-var iMapIndex=arguments[0];
-if (!(iMapIndex < ((this._iTableWidth) * (this._iTableHeight)))) {
-var err=((((((("Error:: " + "invalid index") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
-if (confirm(err + "Accept to exit, refuse to continue.")) {
-throw new Error("invalid index");
-
-}
-
-
-}
-
-;
-return this._pHeightTable[iMapIndex];
-
-}
-
-
-};
-Terrain.prototype.tableIndex = function(iMapX, iMapY) {
-if (iMapX >= (this._iTableWidth)) {
-iMapX = (this._iTableWidth) - 1;
-
-}
-
-if (iMapY >= (this._iTableHeight)) {
-iMapY = (this._iTableHeight) - 1;
-
-}
-
-return (iMapY * (this._iTableWidth)) + iMapX;
-
-};
-Terrain.prototype.readWorldNormal = function(iMapX, iMapY) {
-if (iMapX >= (this._iTableWidth)) {
-iMapX = (this._iTableWidth) - 1;
-
-}
-
-if (iMapY >= (this._iTableHeight)) {
-iMapY = (this._iTableHeight) - 1;
-
-}
-
-return this._pv3fNormalTable[(iMapY * (this._iTableWidth)) + iMapX];
-
-};
-Terrain.prototype.calcWorldHeight = function(fWorldX, fWorldY) {
-fMapX = (fWorldX - (this._pWorldExtents.fX0)) / (this._pWorldExtents.sizeX());
-fMapY = (fWorldY - (this._pWorldExtents.fY0)) / (this._pWorldExtents.sizeY());
-return this.calcMapHeight(fMapX, fMapY);
-
-};
-Terrain.prototype.calcWorldNormal = function(v3fNormal, fWorldX, fWorldY) {
-fMapX = (fWorldX - (this._pWorldExtents.fX0)) / (this._pWorldExtents.sizeX());
-fMapY = (fWorldY - (this._pWorldExtents.fY0)) / (this._pWorldExtents.sizeY());
-this.calcMapNormal(v3fNormal, fMapX, fMapY);
-
-};
-Terrain.prototype.calcMapHeight = function(fMapX, fMapY) {
-var fTempMapX=fMapX * ((this._iTableWidth) - 1);
-var fTempMapY=fMapY * ((this._iTableHeight) - 1);
-var iMapX0=Math.floor(fTempMapX);
-var iMapY0=Math.floor(fTempMapY);
-fTempMapX -= iMapX0;
-fTempMapY -= iMapY0;
-iMapX0 = Math.max(0, Math.min(iMapX0, ((this._iTableWidth) - 1)));
-iMapY0 = Math.max(0, Math.min(iMapY0, ((this._iTableHeight) - 1)));
-var iMapX1=Math.max(0, Math.min((iMapX0 + 1), ((this._iTableWidth) - 1)));
-var iMapY1=Math.max(0, Math.min((iMapY0 + 1), ((this._iTableHeight) - 1)));
-var fH0=this.readWorldHeight(iMapX0, iMapY0);
-var fH1=this.readWorldHeight(iMapX1, iMapY0);
-var fH2=this.readWorldHeight(iMapX0, iMapY1);
-var fH3=this.readWorldHeight(iMapX1, iMapY1);
-var fAvgLo=(fH1 * fTempMapX) + (fH0 * (1 - fTempMapX));
-var fAvgHi=(fH3 * fTempMapX) + (fH2 * (1 - fTempMapX));
-return (fAvgHi * fTempMapY) + (fAvgLo * (1 - fTempMapY));
-
-};
-Terrain.prototype.calcMapNormal = function(v3fNormal, fTempMapX, fTempMapY) {
-var fMapX=fTempMapX * ((this._iTableWidth) - 1);
-var fMapY=fTempMapY * ((this._iTableHeight) - 1);
-var iMapX0=Math.floor(fMapX);
-var iMapY0=Math.floor(fMapY);
-fMapX -= iMapX0;
-fMapY -= iMapY0;
-iMapX0 = Math.max(0, Math.min(iMapX0, ((this._iTableWidth) - 1)));
-iMapY0 = Math.max(0, Math.min(iMapY0, ((this._iTableHeight) - 1)));
-var iMapX1=Math.max(0, Math.min((iMapX0 + 1), ((this._iTableWidth) - 1)));
-var iMapY1=Math.max(0, Math.min((iMapY0 + 1), ((this._iTableHeight) - 1)));
-v3fH0 = Vec3.create();
-v3fH0[0] = this.readWorldNormal(iMapX0, iMapY0)[0];
-v3fH0[1] = this.readWorldNormal(iMapX0, iMapY0)[1];
-v3fH0[2] = this.readWorldNormal(iMapX0, iMapY0)[2];
-v3fH1 = Vec3.create();
-v3fH1[0] = this.readWorldNormal(iMapX1, iMapY0)[0];
-v3fH1[1] = this.readWorldNormal(iMapX1, iMapY0)[1];
-v3fH1[2] = this.readWorldNormal(iMapX1, iMapY0)[2];
-v3fH2 = Vec3.create();
-v3fH2[0] = this.readWorldNormal(iMapX0, iMapY1)[0];
-v3fH2[1] = this.readWorldNormal(iMapX0, iMapY1)[1];
-v3fH2[2] = this.readWorldNormal(iMapX0, iMapY1)[2];
-v3fH3 = Vec3.create();
-v3fH3[0] = this.readWorldNormal(iMapX1, iMapY1)[0];
-v3fH3[1] = this.readWorldNormal(iMapX1, iMapY1)[1];
-v3fH3[2] = this.readWorldNormal(iMapX1, iMapY1)[2];
-v3fAvgLo = Vec3.create();
-Vec3.add(Vec3.scale(v3fH1, fMapX), Vec3.scale(v3fH0, 1 - fMapX), v3fAvgLo);
-v3fAvgHi = Vec3.create();
-Vec3.add(Vec3.scale(v3fH3, fMapX), Vec3.scale(v3fH2, 1 - fMapX), v3fAvgHi);
-Vec3.add(Vec3.scale(v3fAvgHi, fMapY), Vec3.scale(v3fAvgLo, 1 - fMapY), v3fNormal);
-Vec3.normalize(v3fNormal);
-
-};
-Terrain.prototype.generateTerrainImage = function(pTerrainImage, pTextureList, iTextureCount) {
-var bSuccess=false;
-var x, y, i;
-var iImage_width=pTerrainImage.getWidth();
-var iImage_height=pTerrainImage.getHeight();
-var fUStep=1 / (iImage_width - 1);
-var fVStep=1 / (iImage_height - 1);
-var pSamples=new Array(iTextureCount);
-pTerrainImage.lock();
-for (i = 0; i < iTextureCount; ++i) {
-pTextureList[i].pImage.lock();
-
-}
-
-for (y = 0; y < iImage_height; ++y) {
-for (x = 0; x < iImage_width; ++x) {
-var fU=x * fUStep;
-var fV=y * fVStep;
-var fTotalBlend=0;
-var fMap_height=this.calcMapHeight(fU, fV);
-var v3fNormal=Vec3.create();
-this.calcMapNormal(v3fNormal, fU, fV);
-for (i = 0; i < iTextureCount; ++i) {
-var fElevationScale=0;
-var fSlopeScale=0;
-if ((fMap_height >= (pTextureList[i].elevation.minElevation)) && (fMap_height <= (pTextureList[i].elevation.maxElevation))) {
-var fSpan=(pTextureList[i].elevation.maxElevation) - (pTextureList[i].elevation.minElevation);
-fElevationScale = fMap_height - (pTextureList[i].elevation.minElevation);
-fElevationScale *= 1 / fSpan;
-fElevationScale -= 0.5;
-fElevationScale *= 2;
-fElevationScale *= fElevationScale;
-fElevationScale = 1 - fElevationScale;
-
-}
-
-if (((v3fNormal[2]) >= (pTextureList[i].elevation.minNormalZ)) && ((v3fNormal[2]) <= (pTextureList[i].elevation.maxNormalZ))) {
-var fSpan=(pTextureList[i].elevation.maxNormalZ) - (pTextureList[i].elevation.minNormalZ);
-fSlopeScale = (v3fNormal[2]) - (pTextureList[i].elevation.minNormalZ);
-fSlopeScale *= 1 / fSpan;
-fSlopeScale -= 0.5;
-fSlopeScale *= 2;
-fSlopeScale *= fSlopeScale;
-fSlopeScale = 1 - fSlopeScale;
-
-}
-
-pSamples[i] = new this.sample_data();
-pSamples[i].fScale = ((pTextureList[i].elevation.strength) * fElevationScale) * fSlopeScale;
-fTotalBlend += pSamples[i].fScale;
-pTextureList[i].pImage.sampleColor(fU * (pTextureList[i].fUvScale), fV * (pTextureList[i].fUvScale), pSamples[i].iColor);
-
-}
-
-var fBlendScale=1 / fTotalBlend;
-var fRed=0;
-var fGreen=0;
-var fBlue=0;
-var fAlpha=0;
-for (i = 0; i < iTextureCount; ++i) {
-var fScale=(pSamples[i].fScale) * fBlendScale;
-fBlue += ((pSamples[i].iColor) & 255) * fScale;
-fGreen += (((pSamples[i].iColor) >> 8) & 255) * fScale;
-fRed += (((pSamples[i].iColor) >> 16) & 255) * fScale;
-fAlpha += (((pSamples[i].iColor) >> 24) & 255) * fScale;
-
-}
-
-var iR=Math.max(0, Math.min(fRed, 255));
-var iG=Math.max(0, Math.min(fGreen, 255));
-var iB=Math.max(0, Math.min(fBlue, 255));
-var iA=Math.max(0, Math.min(fAlpha, 255));
-var iColor=(((iA << 24) + (fR << 16)) + (iG << 8)) + iB;
-pTerrainImage.setColor(x, y, iColor);
-
-}
-
-
-}
-
-pTerrainImage.unlock();
-for (i = 0; i < iTextureCount; ++i) {
-pTextureList[i].pImage.unlock();
-
-}
-
-
-};
-Terrain.prototype.computeWeight = function(fValue, fMinExtent, fMaxExtent) {
-var fWeight=0;
-if ((fValue >= fMinExtent) && (fValue <= fMaxExtent)) {
-var fSpan=fMaxExtent - fMinExtent;
-fWeight = fValue - fMinExtent;
-fWeight *= 1 / fSpan;
-fWeight -= 0.5;
-fWeight *= 2;
-fWeight *= fWeight;
-fWeight = 1 - (Math.abs(fWeight));
-fWeight = Math.max(0.001, Math.min(fWeight, 1));
-
-}
-
-return fWeight;
-
-};
-Terrain.prototype.generateBlendImage = function(pBlendImage, pElevationData, iElevationDataCount, fnCallback) {
-var bSuccess=false;
-var x, y, i;
-var pColor=new Uint8Array(4);
-if (!(pBlendImage != null)) {
-var err=((((((("Error:: " + "pBlendImage is not valid") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
-if (confirm(err + "Accept to exit, refuse to continue.")) {
-throw new Error("pBlendImage is not valid");
-
-}
-
-
-}
-
-;
-iElevationDataCount = Math.min(iElevationDataCount, 4);
-var iImg_width=pBlendImage.getWidth();
-var iImg_height=pBlendImage.getHeight();
-var fUStep=1 / (iImg_width - 1);
-var fVStep=1 / (iImg_height - 1);
-v4fMask = new Array(4);
-v4fMask[0] = Vec4.create();
-v4fMask[0][0] = 1;
-v4fMask[0][1] = 0;
-v4fMask[0][2] = 0;
-v4fMask[0][3] = 0;
-v4fMask[1] = Vec4.create();
-v4fMask[1][0] = 0;
-v4fMask[1][1] = 1;
-v4fMask[1][2] = 0;
-v4fMask[1][3] = 0;
-v4fMask[2] = Vec4.create();
-v4fMask[2][0] = 0;
-v4fMask[2][1] = 0;
-v4fMask[2][2] = 1;
-v4fMask[2][3] = 0;
-v4fMask[3] = Vec4.create();
-v4fMask[3][0] = 0;
-v4fMask[3][1] = 0;
-v4fMask[3][2] = 0;
-v4fMask[3][3] = 1;
-for (y = 0; y < iImg_height; y++) {
-for (x = 0; x < iImg_width; x++) {
-var fTotalBlend=0;
-var v4fBlendFactors=Vec4.create();
-v4fBlendFactors[0] = 0;
-v4fBlendFactors[1] = 0;
-v4fBlendFactors[2] = 0;
-v4fBlendFactors[3] = 0;
-if (iElevationDataCount == 3) {
-v4fBlendFactors[3] = 255;
-
-}
-
-var fU=x * fUStep;
-var fV=y * fVStep;
-var fMap_height=this.calcMapHeight(fU, fV);
-var v3fNormal=Vec3.create();
-var v4fTemp=Vec4.create();
-this.calcMapNormal(v3fNormal, fU, fV);
-for (i = 0; i < iElevationDataCount; ++i) {
-var fElevationScale=this.computeWeight(fMap_height, pElevationData[i].fMinElevation, pElevationData[i].fMaxElevation);
-var fSlopeScale=this.computeWeight(v3fNormal[2], pElevationData[i].fMinNormalZ, pElevationData[i].fMaxNormalZ);
-var fScale=((pElevationData[i].fStrength) * fElevationScale) * fSlopeScale;
-Vec4.add(v4fBlendFactors, Vec4.scale(v4fMask[i], fScale, v4fTemp));
-fTotalBlend += fScale;
-
-}
-
-var fBlendScale=255 / fTotalBlend;
-v4fBlendFactors = Vec4.scale(v4fBlendFactors, fBlendScale);
-pColor[0] = Math.max(0, Math.min(v4fBlendFactors[0], 255));
-pColor[1] = Math.max(0, Math.min(v4fBlendFactors[1], 255));
-pColor[2] = Math.max(0, Math.min(v4fBlendFactors[2], 255));
-pColor[3] = Math.max(0, Math.min(v4fBlendFactors[3], 255));
-pBlendImage.setPixelRGBA(x, (iImg_height - y) - 1, pColor);
-
-}
-
-
-}
-
-
-};
-Terrain.prototype.pCodeTimerTerrainSystemRenderSection = new a.CodeTimer("cTerrainSystem_renderSection");
-Terrain.prototype.renderSection = function(pSection, iActivationFlags, pEntry) {
-var pEffectFile=this._pRenderMethod.getActiveEffect();
-var pSurfaceMaterial=this._pRenderMethod.getActiveMaterial();
-if (pEffectFile) {
-var pFunctionTimer=new a.FunctionTimer(this.pCodeTimerTerrainSystemRenderSection);
-if ((iActivationFlags & (1 << 1)) != 0) {
-pEffectFile.activatePass(pEntry.renderPass);
-
-}
-
-if ((iActivationFlags & (1 << 0)) != 0) {
-pEffectFile.begin();
-
-}
-
-if ((iActivationFlags & (1 << 4)) != 0) {
-pEffectFile.applyVertexBuffer(this._pVertexGrid);
-
-}
-
-if ((iActivationFlags & (1 << 5)) != 0) {
-pEffectFile.applyVertexBuffer(pSection.sectorVertices());
-
-}
-
-if ((iActivationFlags & (1 << 6)) != 0) {
-this._pTriangles.activate();
-
-}
-
-if ((iActivationFlags & (1 << 7)) != 0) {
-pEffectFile.applySurfaceMaterial(pSurfaceMaterial);
-
-}
-
-var iSectorX=pSection.sectorX();
-var iSectorY=pSection.sectorY();
-var v4fSectorOffset=Vec4.create();
-v4fSectorOffset[0] = 1;
-v4fSectorOffset[1] = 1;
-v4fSectorOffset[2] = ((this._pWorldExtents.fX0) + ((this._v2fSectorSize[0]) * iSectorX));
-v4fSectorOffset[3] = ((this._pWorldExtents.fY0) + ((this._v2fSectorSize[1]) * iSectorY));
-var v4fUvScaleOffset=Vec4.create();
-v4fUvScaleOffset[0] = (1 / (this._iSectorCountX));
-v4fUvScaleOffset[1] = (1 / (this._iSectorCountY));
-v4fUvScaleOffset[2] = iSectorX;
-v4fUvScaleOffset[3] = iSectorY;
-pEffectFile.setParameter(a.EffectResource.posScaleOffset, v4fSectorOffset);
-pEffectFile.setParameter(a.EffectResource.uvScaleOffset, v4fUvScaleOffset);
-if ((iActivationFlags & (1 << 1)) != 0) {
-pEffectFile.deactivatePass();
-
-}
-
-this._pDevice.drawElements(this._pTriangles.getPrimitiveType(), this._pTriangles.getCount(), this._pTriangles.getElementType(), 0);
-pFunctionTimer.destructor();
-
-}
-
-
-};
-Terrain.prototype.pCodeTimerTerrainSystemSubmitSection = new a.CodeTimer("cTerrainSystem_submitSection");
-Terrain.prototype.submitSection = function(pSection) {
-if (!(this._pRenderMethod.isResourceLoaded())) {
-return ;
-
-}
-
-var pRenderEntry;
-var pEffectFile=this._pRenderMethod.getActiveEffect();
-var pSurfaceMaterial=this._pRenderMethod.getActiveMaterial();
-if (pEffectFile) {
-var pFunctionTimer=new a.FunctionTimer(this.pCodeTimerTerrainSystemSubmitSection);
-var iTotalPasses=pEffectFile.totalPasses();
-var iSX=pSection.sectorX();
-var iSY=pSection.sectorY();
-var index=(iSY * (this._iSectorCountX)) + iSX;
-for (var iPass=0; iPass < iTotalPasses; ++iPass) {
-pRenderEntry = this._pEngine.pDisplayManager.openRenderQueue();
-pRenderEntry.hEffectFile = pEffectFile.resourceHandle();
-pRenderEntry.hSurfaceMaterial = pSurfaceMaterial.resourceHandle();
-pRenderEntry.modelType = 0;
-pRenderEntry.hModel = this._pVertexGrid.resourceHandle();
-pRenderEntry.modelParamA = pSection.sectorVertices().resourceHandle();
-pRenderEntry.modelParamB = this._pTriangles.resourceHandle();
-pRenderEntry.renderPass = iPass;
-pRenderEntry.pSceneNode = pSection;
-pRenderEntry.userData = 0;
-this._pEngine.pDisplayManager.closeRenderQueue(pRenderEntry);
-
-}
-
-pFunctionTimer.destructor();
-
-}
-
-
-};
-Terrain.prototype.setTessellationParameters = function(fVScale, fVLimit) {
-this._fVScale = fVScale;
-this._fVLimit = fVLimit;
-
-};
-Terrain.prototype.computeErrorMetricOfGrid = function(iXVerts, iYVerts, iXStep, iYStep, iXOffset, iYOffset) {
-var fResult=0;
-var iTotalRows=iYVerts - 1;
-var iTotalCells=iXVerts - 1;
-var iStartVert=(iYOffset * (this._iTableWidth)) + iXOffset;
-var iLineStep=iYStep * (this._iTableWidth);
-var fInvXStep=1 / iXStep;
-var fInvYStep=1 / iYStep;
-for (var j=0; j < iTotalRows; ++j) {
-var iIndexA=iStartVert;
-var iIndexB=iStartVert + iLineStep;
-var fCornerA=this.readWorldHeight(iIndexA);
-var fCornerB=this.readWorldHeight(iIndexB);
-for (var i=0; i < iTotalCells; ++i) {
-var iIndexC=iIndexA + iXStep;
-var iIndexD=iIndexB + iXStep;
-var fCornerC=this.readWorldHeight(iIndexC);
-var fCornerD=this.readWorldHeight(iIndexD);
-var fStepX0=(fCornerD - fCornerA) * fInvXStep;
-var fStepY0=(fCornerB - fCornerA) * fInvYStep;
-var fStepX1=(fCornerB - fCornerC) * fInvXStep;
-var fStepY1=(fCornerD - fCornerC) * fInvYStep;
-var iSubIndex=iIndexA;
-for (var y=0; y < iYStep; ++y) {
-for (var x=0; x < iXStep; ++x) {
-var fTrueHeight=this.readWorldHeight(iSubIndex);
-++iSubIndex;
-var fIntepolatedHeight;
-if (y < (iXStep - x)) {
-fIntepolatedHeight = (fCornerA + (fStepX0 * x)) + (fStepY0 * y);
-
-}
-else  {
-fIntepolatedHeight = (fCornerC + (fStepX1 * x)) + (fStepY1 * y);
-
-}
-
-var fDelta=Math.abs((fTrueHeight - fIntepolatedHeight));
-fResult = Math.max(fResult, fDelta);
-
-}
-
-iSubIndex = iIndexA + (y * (this._iTableWidth));
-
-}
-
-iIndexA = iIndexC;
-iIndexB = iIndexD;
-fCornerA = fCornerC;
-fCornerB = fCornerD;
-
-}
-
-iStartVert += iLineStep;
-
-}
-
-return fResult;
-
-};
-Terrain.prototype.buildVertexBuffer = function() {
-var sTempName;
-sTempName = "terrain_system_" + (a.sid());
-this._pVertexGrid = this._pEngine.pDisplayManager.vertexBufferPool().createResource(sTempName);
-v2fCellSize = Vec2.create();
-v2fCellSize[0] = ((this._v2fSectorSize[0]) / (this._iSectorUnits));
-v2fCellSize[1] = ((this._v2fSectorSize[1]) / (this._iSectorUnits));
-v2fVert = Vec2.create();
-v2fVert[0] = 0;
-v2fVert[1] = 0;
-var pVerts=new Array(((this._iSectorVerts) * (this._iSectorVerts)) * 4);
-for (var y=0; y < (this._iSectorVerts); ++y) {
-v2fVert[0] = 0;
-v2fVert[1] = (y * (v2fCellSize[1]));
-for (var x=0; x < (this._iSectorVerts); ++x) {
-pVerts[(((y * (this._iSectorVerts)) + x) * 4) + 0] = v2fVert[0];
-pVerts[(((y * (this._iSectorVerts)) + x) * 4) + 1] = v2fVert[1];
-pVerts[(((y * (this._iSectorVerts)) + x) * 4) + 2] = x / ((this._iSectorVerts) - 1);
-pVerts[(((y * (this._iSectorVerts)) + x) * 4) + 3] = y / ((this._iSectorVerts) - 1);
-v2fVert[0] += v2fCellSize[0];
-
-}
-
-
-}
-
-bResult = this._pVertexGrid.create((this._iSectorVerts) * (this._iSectorVerts), 16, 0, new Float32Array(pVerts));
-return bResult;
-
-};
-Terrain.prototype.setVertexDescription = function() {
-bSuccess = this._pVertexGrid.setVertexDescription(a.Terrain.prototype.pVertexDescription, a.Terrain.prototype.pVertexDescription.length);
-if (!(bSuccess == true)) {
-var err=((((((("Error:: " + "Terrain.setVertexDescription _pVertexGrid.setVertexDescription is false") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
-if (confirm(err + "Accept to exit, refuse to continue.")) {
-throw new Error("Terrain.setVertexDescription _pVertexGrid.setVertexDescription is false");
-
-}
-
-
-}
-
-;
-if (bSuccess == false) {
-return bSuccess;
-
-}
-
-for (var iIndex=0; iIndex < ((this._iSectorCountX) * (this._iSectorCountY)); iIndex++) {
-bSuccess = this._pSectorArray[iIndex].setVertexDescription();
-if (!(bSuccess == true)) {
-var err=((((((("Error:: " + "Terrain.setVertexDescription pSectorArray[iIndex].setRenderMethod is false") + "\n") + "\tfile: ") + "") + "\n") + "\tline: ") + "") + "\n";
-if (confirm(err + "Accept to exit, refuse to continue.")) {
-throw new Error("Terrain.setVertexDescription pSectorArray[iIndex].setRenderMethod is false");
-
-}
-
-
-}
-
-;
-
-}
-
-return bSuccess;
-
-};
-Terrain.prototype.buildIndexBuffer = function() {
-var sTempName;
-sTempName = "terrain_system_" + (a.sid());
-this._pTriangles = this._pEngine.pDisplayManager.indexBufferPool().createResource(sTempName);
-return this._pTriangles.createSingleStripGrid(this._iSectorVerts, this._iSectorVerts, 1, 1, this._iSectorVerts, 0);
-
-};
-Terrain.prototype.readUserInput = function() {
-if (this._pEngine.pKeymap.isKeyPress(107)) {
-this.fVRatioLimit += 0.001;
-console.log((((("[DEBUG][" + "") + "][") + "") + "]") + (("vRatioLimit: " + (this.fVRatioLimit)) + "\n"));
-
-}
-else if (this._pEngine.pKeymap.isKeyPress(109)) {
-this.fVRatioLimit -= 0.001;
-console.log((((("[DEBUG][" + "") + "][") + "") + "]") + (("vRatioLimit: " + (this.fVRatioLimit)) + "\n"));
-
-}
-
-
-if (this._pEngine.pKeymap.isKeyPress(106)) {
-this.fVErrorScale += 0.001;
-console.log((((("[DEBUG][" + "") + "][") + "") + "]") + (("vErrorScale: " + (this.fVErrorScale)) + "\n"));
-
-}
-else if (this._pEngine.pKeymap.isKeyPress(111)) {
-this.fVErrorScale -= 0.001;
-console.log((((("[DEBUG][" + "") + "][") + "") + "]") + (("vErrorScale: " + (this.fVErrorScale)) + "\n"));
-
-}
-
-
-if ((this.fVRatioLimit) < 0.001) {
-this.fVRatioLimit = 0.001;
-
-}
-
-if ((this.fVErrorScale) < 0.001) {
-this.fVErrorScale = 0.001;
-
-}
-
-this.setTessellationParameters(this.fVErrorScale, this.fVRatioLimit);
-
-};
-a.Terrain = Terrain;
 function UserData() {
 this.iMaterial = 0;
 this.iSubset = 0;
@@ -31892,7 +30921,6 @@ this.pDevice = null;
 this.pResourceManager = null;
 this.pDisplayManager = null;
 this.pShaderManager = null;
-this.pUniqManager = null;
 this._pRootNode = null;
 this._pDefaultCamera = null;
 this._pActiveCamera = null;
@@ -31938,7 +30966,6 @@ return false;
 this.pResourceManager = new a.ResourcePoolManager();
 this.pDisplayManager = new a.DisplayManager(this);
 this.pShaderManager = new a.ShaderManager(this);
-this.pUniqManager = new a.UniqueManager(this);
 a.UtilTimer(1);
 if (!(this.oneTimeSceneInit())) {
 if (!0) {
@@ -32085,10 +31112,6 @@ return this._pActiveCamera;
 };
 Engine.prototype.displayManager = function() {
 return this.pDisplayManager;
-
-};
-Engine.prototype.uniqManager = function() {
-return this.pUniqManager;
 
 };
 Engine.prototype.shaderManager = function() {
@@ -32476,4 +31499,4 @@ this._pDefaultCamera.addRelPosition(v3fOffset);
 
 };
 a.Engine = Engine;
-window["a"] = window["AKRA"] = a;
+window["a"] = window["akra"] = a;

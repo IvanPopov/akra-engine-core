@@ -2,6 +2,7 @@ Define(A_CORE_HOME, "/akra-engine-core/src/");
 Define(DEV_BUILD,1)
 Define(__AKRA_ENGINE__,true)
 Define(__DEBUG,1)
+Define(A_CORE_HOME,"")
 Define(a.isDebug,true)
 Define(PR_DISPLAYMNGR,this._pEngine.displayManager())
 Define(PR_UNIQMNGR,this._pEngine.uniqManager())
@@ -552,6 +553,9 @@ Enum([
 	SLOW
 ], FILE_THREAD_TRANSFER_MODES, a.FileThread.TRANSFER);
 Enum([
+	CHANGEABLE = 0
+], HASH_OPTIONS, a.HashBase);
+Enum([
 	FT_MAPPABLE = 1,
 	FT_UNMAPPABLE = 0
 ], BUFFERMAP_FLOW_TYPES, a.BufferMap);
@@ -834,9 +838,6 @@ Enum([
 	VIDEOBUFFER_HEADER_SIZE = 8
 ], VIDEOBUFFER_HEADER);
 Enum([
-	ADVANCED_INDEX = 1
-], MESH_OPTIONS, a.Mesh);
-Enum([
 	minLOD = 0,
 	maxLOD = 3,
 	totalLODlevels
@@ -975,10 +976,6 @@ Define(a.io.isAppend(MODE),function() {TEST_BIT(MODE, 3);})
 Define(a.io.isTrunc(MODE),function() {TEST_BIT(MODE, 4);})
 Define(FileThread.check(fn,args),function() {if (!(this._pFile)) {var pArgs=args;this.open(function() {fn.apply(this, pArgs);}, fnError);return ;}debug_assert((this._iThread) < 0, (("File(" + (this.name)) + ") already in use. \n thread: ") + (this._iThread));})
 Define(LocalFile.checkIfOpen(fn,args),function() {if (!(this._pFile)) {var pArgs=args;this.open(function() {fn.apply(this, pArgs);}, fnError || null);return ;}})
-Define(A_UNIQ(pObject,pEngine,pHashData),function() {pEngine.pUniqManager.getUniq(pObject, pHashData);})
-Define(A_UNIQ(pObject,pHashData),function() {this.pUniqManager.create(pObject, pHashData);})
-Define(A_UNIQ(pHashData),function() {this._pUniqManager.update(this, pHashData);})
-Define(A_REGISTER_UNIQ_OBJECT(__ARGS__),function() {a.registerUniqObject(__ARGS__);})
 Define(CLEAR_HANDLE(h),function() {h = INVALID_INDEX;})
 Define(VALID_HANDLE(h),function() {h != INVALID_INDEX;})
 Define(a.SimplePool(pEngine),function() {a.ResourcePool(pEngine, a.ResourcePoolItem);})
