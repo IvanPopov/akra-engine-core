@@ -151,40 +151,108 @@
 // a.Unique = Unique;
 
 
-
+/**
+ * Base hash class.
+ * @constructor
+ */
 function HashBase () {
+	'use strict';
+	
 	Enum([
 		CHANGEABLE = 0 //<! determines if the hash be updated
 		], HASH_OPTIONS, a.HashBase);
 	this._eOptions = 0;
+	this._isHashObject = true;
 }
 
+/**
+ * Get hash options.
+ * @return {Int} Options.
+ */
+HashBase.prototype.getOptions = function () {
+    'use strict';
+    
+	return this._eOptions;
+};
+
+HashBase.prototype.getOption = function (eOption) {
+    'use strict';
+
+	return TEST_BIT(this._eOptions, eOption);
+};
+
+/**
+ * Set hash option.
+ * @param {HASH_OPTIONS} eOption Option.
+ * @param {Boolean} bValue Is set?
+ */
+HashBase.prototype.setOption = function (eOption, bValue) {
+    'use strict';
+    
+	SET_BIT(this._eOptions, eOption, bValue);
+};
+
+/**
+ * Allow for hash to be changeable.
+ * @param  {Boolean} bValue Allow/Disallow
+ */
 HashBase.prototype.changeable = function (bValue) {
+	'use strict';
+
 	SET_BIT(this._eOptions, a.HashBase.CHANGEABLE, bValue);
 };
 HashBase.prototype.isChangeable = function () {
+	'use strict';
+	
 	return TEST_BIT(this._eOptions, a.HashBase.CHANGEABLE);
 };
 HashBase.prototype.setup = function (pData) {
+	'use strict';
+	
 	return false;
 };
 
 A_NAMESPACE(HashBase);
 
-function StringHash (pData) {
+
+/**
+ * @constructor
+ */
+function StringHash () {
+	'use strict';
+	
 	A_CLASS;
+
+	Enum([
+		CHANGEABLE = 0, //<! determines if the hash be updated
+		ALGORITHM_MD5 = 0x10
+	], STRINGHASH_OPTIONS, a.StringHash);
 
 	this._sHash = null;
 }
 
 EXTENDS(StringHash, a.HashBase);
 
+/**
+ * @property setOption(STRINGHASH_OPTIONS eOption, bValue)
+ * @memberof StringHash
+ */
+
 StringHash.prototype.toString = function() {
+	'use strict';
+	
 	return this._sHash;
 };
 
+
 StringHash.prototype.setup = function(sHash) {
+	'use strict';
+	
 	if (this._sHash === null || this.isChangeable()) {
+		if (this.getOption(a.StringHash.ALGORITHM_MD5)) {
+			sHash = sHash.md5();
+		}
+
 		this._sHash = sHash;	
 		return true;
 	}
@@ -196,19 +264,51 @@ A_NAMESPACE(StringHash);
 
 
 function Unique () {
-	var pHashData = (arguments.length > 1? arguments[1]: arguments[0]);
+	'use strict';
+	
+	this._pHash = null;
 
+	var pLast = arguments[arguments.length - 1];
 
+	if (pLast._isHashObject) {
+		return this._initUnique(pLast);
+	}	
 }
 
+Define(a.Unique.BUSY, 1);
 
-/**
- * @const
- * @param  {HashData} pHashData 
- * @return {String}   Hash.
- */
-Unique.prototype.computeHash = function(pHashData) {
-	// body...
+
+Unique.prototype._initUnique = function (pHash) {
+    //'use strict';
+
+    debug_assert(this._pHash === null, 'unique object already initialized.');
+
+	STATIC(_pHashMap, {});
+
+	var pHashMap = statics._pHashMap;
+	var pUniqCopy = pHashMap[pHash];
+
+	if (pUniqCopy !== a.Unique.BUSY && pUniqCopy !== undefined) {
+		return pUniqCopy;
+	}
+
+	if (statics.createUnique) {
+		if (pHashMap[pHash] === a.Unique.BUSY) {
+			return;
+		}
+
+		pHashMap[pHash] = a.Unique.BUSY;
+		//FIXME: Chrome Bitch!!! APPLY!
+		pUniqCopy = statics.createUnique.apply(window, arguments);
+		pHashMap[pHash] = pUniqCopy;
+		pUniqCopy._pHash = pHash;
+		return pUniqCopy;
+	}
+
+	this._pHash = pHash;
+	pHashMap[pHash] = this;
+
+	return null;
 };
 
 A_NAMESPACE(Unique);

@@ -59,10 +59,42 @@ a.extend = function (pChild) {
     //simplified call parent constructors
     pChild.ctor = function () {
         for (var i = 1; i < argv.length; ++i) {
-            argv[i].apply(this, arguments);
+            var pCtorValue = argv[i].apply(this, arguments);
+            if (pCtorValue !== undefined) {
+                return pCtorValue;
+            }
         }
     };
 };
+
+function now () {
+    'use strict';
+    return (new Date).getTime();
+}
+
+A_NAMESPACE(now);
+// function childOf (pChild, tParent) {
+//     'use strict';
+
+//     warning('childOf: function is dangerous and should not be used.');
+
+//     if (pChild.constructor === tParent) {
+//         return true;
+//     }
+
+//     var sParent = GET_FUNC_NAME(tParent);
+//     for (var k in pChild.constructor.superclasses) {
+//         if (k === sParent) {
+//             return true;
+//         }
+
+//         console.log('--->', pChild.constructor.superclasses[k]);
+//     };
+
+//     return false;
+// };
+
+//A_NAMESPACE(childOf);
 
 Define(EXTENDS(__ARGS__), function () {a.extend(__ARGS__)});
 
@@ -421,7 +453,7 @@ Define(DISPROPERTY(obj, $$property), function () {
     PROPERTY(obj, property, undefined, undefined);
 });
 
-Define(A_CLASS(args), function () { __FUNC__.ctor.apply(this, args); });
+Define(A_CLASS(args), function () { var _pCtorValue = __FUNC__.ctor.apply(this, args); if (_pCtorValue) return _pCtorValue; });
 Define(A_CLASS(), function () { A_CLASS(arguments) });
 Define(A_CLASS, A_CLASS());
 
@@ -510,6 +542,7 @@ Define(A_NAMESPACE(object, space), function () {
 Define(A_NAMESPACE(object), function () {
     a.object = object;
 });
+
 
 /**
  TRACER API
