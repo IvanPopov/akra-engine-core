@@ -68,4 +68,4 @@ Include('objects/');
 
 Include('Engine.js');
 
-window['a'] = window['AKRA'] = a;
+window['a'] = window['akra'] = a;
