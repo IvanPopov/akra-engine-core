@@ -9,6 +9,7 @@ Define(__AKRA_ENGINE__, true);
 Define(trace(__ARGS__), function () { console.log(__ARGS__); });
 
 
+
 /**
  * Implementation inheritance in Javascript.
  * @tparam pChild Child object.
@@ -66,6 +67,7 @@ a.extend = function (pChild) {
         }
     };
 };
+
 
 function now () {
     'use strict';
