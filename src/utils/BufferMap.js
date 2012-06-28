@@ -119,7 +119,7 @@ function BufferMap (pEngine) {
     this.reset();
 }
 
-a.extend(BufferMap, a.ReferenceCounter);
+EXTENDS(BufferMap, a.ReferenceCounter);
 
 /**
  * Current type of primitive which will be used for rendering.
@@ -273,23 +273,25 @@ BufferMap.prototype.reset = function () {
  * @property flow(Uint iFlow, VertexData pVertexData)
  * @param iFlow Number of Stream.
  * @param pVertexData Data flow for this stream.
- * @treturn Boolean
+ * @treturn Int flow number or -1 if error.
  */
 BufferMap.prototype.flow = function (iFlow, pVertexData) {
-    var pFlow;
+    'use strict';
     
-    if (arguments.length < 2) {
-        iFlow = this._nCompleteFlows;
-        pVertexData = arguments[0];
-    }
+    var pFlow;
 
+    if (arguments.length < 2) {
+        pVertexData = arguments[0];
+        iFlow = this._nCompleteFlows;
+    }
+  
     pFlow = this._pFlows[iFlow];
 
     debug_assert(iFlow < this.limit,
         'Invalid strem. Maximum allowable number of stream ' + this.limit + '.');
 
     if (!pVertexData || pFlow.pData === pVertexData) {
-        return false;
+        return -1;
     }
 
     if (pVertexData.buffer instanceof a.VertexBuffer) {
@@ -308,7 +310,7 @@ BufferMap.prototype.flow = function (iFlow, pVertexData) {
 
     pFlow.pData = pVertexData;
 
-    return this.update();
+    return this.update()? iFlow: -1;
 };
 
 /**
@@ -396,10 +398,14 @@ BufferMap.prototype._pushEtalon = function (pData) {
     this._pBuffersCompatibleMap[pData.resourceHandle()] = pData;
 };
 
-//Define(BufferMap.hash(pMap, eSemantics), function () {
-//    eSemantics + ((0x0000FFFF & pMap.toNumber()) | (pMap.resourceHandle() & 0xFFFF) << 16);
-//});
-
+BufferMap.prototype.findFlow = function (eSemantics) {
+    'use strict';
+    
+    for (var i = 0, pFlows = this._pFlows, pFlow; i < this._nCompleteFlows; ++ i) {
+        pFlow = this._pFlows[i];
+        trace(pFlow);
+    }
+};
 
 /**
  * Update the current BufferMap.
@@ -441,6 +447,8 @@ BufferMap.prototype.update = function () {
     }
     this._nCompleteFlows = nCompleteFlows;
     this._nCompleteVideoBuffers = nCompleteVideoBuffers;
+
+    return true;
 };
 
 BufferMap.prototype.draw = function () {};
@@ -449,5 +457,4 @@ BufferMap.prototype.drawArrays = function () {
     this._pDevice.drawArrays(this._ePrimitiveType, this._nStartIndex, this._nLength);
 };
 
-
-a.BufferMap = BufferMap;
+A_NAMESPACE(BufferMap);

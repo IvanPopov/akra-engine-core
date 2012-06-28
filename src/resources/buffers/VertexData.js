@@ -480,6 +480,7 @@ VertexData.prototype.resize = function (nCount, pVertexDeclaration) {
  * @return
  **/
 VertexData.prototype.setData = function (pData, iOffset, iSize, nCountStart, nCount) {
+
     switch (arguments.length) {
         case 5:
             var iStride = this.getStride();
@@ -540,7 +541,7 @@ VertexData.prototype.setData = function (pData, iOffset, iSize, nCountStart, nCo
             else if (arguments.length === 3) {
                 nCountStart = nCountStart || 0;
                 if (!nCount) {
-                    nCount = pData.buffer.byteLength / iSize;
+                    nCount = pData.byteLength / iSize;
                 }
 
                 return this.setData(pData, iOffset, iSize, nCountStart, nCount);

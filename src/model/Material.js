@@ -39,6 +39,10 @@ PROPERTY(MaterialBase, 'value',
     return this;
   },
   function (pMaterialBase) {
+    if (!pMaterialBase) {
+      return;
+    }
+    
     var pPoperties = __KEYS__(MATERIAL_COMPONENTS);
     
     for (var i in pPoperties) {

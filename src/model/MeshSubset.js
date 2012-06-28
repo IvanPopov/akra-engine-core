@@ -1,9 +1,8 @@
 /**
  * @ctor
  */
-function DataSubset() {
+function RenderDataSubset() {
     this._eOptions = 0;
-    this._ePrimType = 0;
     this._pFactory = null;
     this._iId = -1;
     this._pIndexBuffer = null;
@@ -16,7 +15,7 @@ PROPERTY(MeshSubset, 'factory',
         return this._pFactory;
     });
 
-DataSubset.prototype.setup = function(pFactory, iId, ePrimType, eOptions) {
+RenderDataSubset.prototype.setup = function(pFactory, iId, ePrimType, eOptions) {
     if (arguments.length < 4) {
         return false;
     }
@@ -29,20 +28,19 @@ DataSubset.prototype.setup = function(pFactory, iId, ePrimType, eOptions) {
     
     this._pFactory = pFactory;
     this._iId = iId;
-    this._ePrimType = ePrimType || a.PRIMTYPE.TRIANGLELIST;
-    this._pIndices = pIndicesData;
     this._pIndexBuffer = pIndexBuffer;
-    this._pMap = new a.BufferMap(pEngine);
+    this._pMap = new a.BufferMap(pFactory.getEngine());
+    this._pMap.primType = ePrimType || a.PRIMTYPE.TRIANGLELIST;
 
     return true;
 };
 
 //добавляем сабмешу ссылку на его данные.
-DataSubset.prototype._addData = function (pVertexData) {
-   return this._pMap.flow(pVertexData);
+RenderDataSubset.prototype._addData = function (pVertexData) {
+    return this._pMap.flow(pVertexData);
 };
 
-DataSubset.prototype.allocateIndex = function (pAttrDecl, pData) {
+RenderDataSubset.prototype.allocateIndex = function (pAttrDecl, pData) {
     var pIndexData = this._pIndexData;
     
     if (!pIndexData) {
@@ -53,9 +51,12 @@ DataSubset.prototype.allocateIndex = function (pAttrDecl, pData) {
     return pIndexData.extend(pAttrDecl, pData);
 };
 
-DataSubset.prototype.allocateData = function(pDataDecl, pData) {
-    return this._addData(this._pFactory._allocateData(pDataDecl));
+RenderDataSubset.prototype.allocateData = function(pDataDecl, pData) {
+    var pVertexData = this._pFactory._allocateData(pDataDecl, pData);
+    return this._addData(pVertexData);
 };
+
+A_NAMESPACE(RenderDataSubset);
 
 /**
  * @ctor
@@ -66,9 +67,9 @@ function MeshSubset (pEngine) {
     this._iMaterial = -1;
 }
 
-EXTENDS(MeshSubset, a.DataSubset, a.RenderableObject);
+EXTENDS(MeshSubset, a.RenderDataSubset, a.RenderableObject);
 
-PROPERTY(MeshSubset, 'parent',
+PROPERTY(MeshSubset, 'mesh',
     function () {
         return this.factory;
     });
@@ -78,7 +79,7 @@ MeshSubset.prototype.setup = function (pMesh, sName, iId, ePrimType) {
         return false;
     }
     //TODO: calc options for data set.
-    parent.setup(pMesh, iId, ePrimType);
+    parent.setup(pMesh, iId, ePrimType, 0);
 
     this.name = sName;
 
@@ -87,7 +88,9 @@ MeshSubset.prototype.setup = function (pMesh, sName, iId, ePrimType) {
 
 
 MeshSubset.prototype.setMaterial = function (iMaterial) {
-    
+    //if (this._pMap.has)
+    this._pMap.findFlow('MATERIAL');
+    trace('map:', this._pMap);
 };
 
 

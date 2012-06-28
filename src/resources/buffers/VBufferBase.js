@@ -337,7 +337,6 @@ VBufferBase.prototype.getEmptyVertexData = function(iCount,pVertexDeclaration,pV
 			iStride=pVertexDeclaration;
 		}
 		
-		
 		for(i=0;i<pHole.length;i++)
 		{		
 			//console.log((pHole[i].end,Math.alignUp(pHole[i].start,iStride)),iCount*iStride);	
@@ -346,7 +345,6 @@ VBufferBase.prototype.getEmptyVertexData = function(iCount,pVertexDeclaration,pV
 				Math.alignUp(pHole[i].start,iStride);
 			if((pHole[i].end-iAligStart)>=iCount*iStride)
 			{
-				
 				if(arguments.length==2)
 				{
 					var pVertexData=new a.VertexData(this, iAligStart, iCount, pVertexDeclaration);

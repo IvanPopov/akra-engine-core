@@ -64,7 +64,7 @@ function VideoBuffer (pEngine) {
 //        'для работы видеобуфера необходимо расширение a.EXTENTIONS.TEXTURE_FLOAT');
 }
 
-a.extend(VideoBuffer, a.VBufferBase, a.Texture);
+EXTENDS(VideoBuffer, a.VBufferBase, a.Texture);
 
 
 /**
@@ -77,7 +77,9 @@ PROPERTY(VideoBuffer, 'buffer', function () {
  * @getter Size of buffer in bytes.
  */
 PROPERTY(VideoBuffer, 'size', function () {
-    return this._iWidth * this._iHeight * this._numElementsPerPixel * this.typeSize;
+    return this._iWidth * this._iHeight * 
+        this._numElementsPerPixel * this.typeSize 
+        - VIDEOBUFFER_HEADER_SIZE * this.typeSize;
 });
 
 /**
@@ -175,6 +177,7 @@ VideoBuffer.prototype.create = function (iByteSize, iFlags, pData) {
     pTextureData.set(pHeader, 0);
 
     //---------------- TEMP SET DATA BEGIN -------------
+    //FIXME: correct set data..
     if (pData) {
         (new Uint8Array(pTextureData.buffer)).set(new Uint8Array(pData.buffer),
             (new Uint8Array(pHeader.buffer)).length);
@@ -221,14 +224,14 @@ VideoBuffer.prototype.create = function (iByteSize, iFlags, pData) {
 VideoBuffer.prototype.resize = function (iByteSize) {
     var pSize, pBackupCopy;
 
-    trace('resize request for', iByteSize, 'bytes');
+    //trace('resize request for', iByteSize, 'bytes');
 
     iByteSize = alignBytes(iByteSize, this.typeSize);
     pSize = a.calcPOTtextureSize((iByteSize + VIDEOBUFFER_HEADER_SIZE) /
         a.VideoBufferType.BYTES_PER_ELEMENT, this._numElementsPerPixel);
 
     if (TEST_BIT(this._iTypeFlags, a.VBufferBase.RamBackupBit)) {
-        pBackupCopy = new Uint8Array(iByteSize);
+        pBackupCopy = new Uint8Array(pSize.X * pSize.Y * this._numElementsPerPixel * this.typeSize);
         pBackupCopy.set(this._pBackupCopy);
         this._pBackupCopy = pBackupCopy;
         trace('backup copy size', pBackupCopy.byteLength, 'bytes');
@@ -284,6 +287,7 @@ VideoBuffer.prototype._header = function (iWidth, iHeight) {
  * @protected
  */
 VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
+    'use strict';
 
     var iTypeSize       = this.typeSize,                //размер элемента(обычно это float - 4 байта)
         nElementsPerPix = this.numElementsPerPixel,     //число float'ов в пикселе
@@ -304,7 +308,7 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
     if (this.size < iOffset + iSize) {
         this.resize(iOffset + iSize);
     }
-
+   
     if (this.isRAMBufferPresent()) {
         //trace('update backup copy from', iOffset, '/', this._pBackupCopy.byteLength, 'for', iSize, 'bytes');
         this._pBackupCopy.set(new Uint8Array(pData.slice(0, iSize)), iOffset);
@@ -318,13 +322,14 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
     iLeftShift  = iFrom % nElementsPerPix;
     iRightShift = ((iFrom + iCount) % nElementsPerPix);
     iBeginPix   = Math.floor(iFrom / nElementsPerPix);
-    iEndPix     = Math.ceil((iFrom + iCount) / nElementsPerPix);
+    iEndPix     = Math.floor((iFrom + iCount) / nElementsPerPix);
     nPixels     = iEndPix - iBeginPix;
     nElements   = nPixels * nElementsPerPix;
 
     pBufferData = new a.VideoBufferType(pData.slice(0, iSize));
 
     if (iLeftShift === 0 && iRightShift === 0) {
+
         var iWidth  = this.width;
         var iYmin   = Math.floor(iBeginPix / iWidth);
         var iYmax   = Math.ceil(iEndPix / iWidth);
@@ -334,11 +339,11 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
         var iBeginElement = 0, iEndElement = 0;
         var pParent = parent(Texture);
         var me = this;
-
         //hack: if iEndPixel is first pixel from next row
         iXend = (iXend === 0? iWidth: iXend);
 
         var fnWriteRect = function (iX, iY, iW, iH) {
+
             iBeginElement = iEndElement;
             iEndElement = iW * iH * nElementsPerPix + iEndElement;
             pParent.setPixelRGBA.call(me, iX, iY, iW, iH, new Float32Array(pBufferData.subarray(iBeginElement, iEndElement)));
@@ -368,7 +373,8 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
         if(this._pBackupCopy.byteLength < iRealOffset + iRealSize){
             this.resize(iRealOffset + iRealSize);
         }
-        return this.setData(this._pBackupCopy.buffer.slice(iRealOffset, iRealOffset + iRealSize), iRealOffset, iRealSize);
+        return this.setData(this._pBackupCopy.buffer.slice(iRealOffset, iRealOffset + 
+            iRealSize), iRealOffset, iRealSize);
     }
     else {
         trace('update via rendering...');

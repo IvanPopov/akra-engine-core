@@ -4,7 +4,7 @@
  */
 
 
-function DataFactory (pEngine) {
+function RenderDataFactory (pEngine) {
     //video buffer with all mesh data
     this._pDataBuffer = null;
     this._pEngine = pEngine;
@@ -12,7 +12,7 @@ function DataFactory (pEngine) {
     this._pSubsetType = null;
 }
 
-PROPERTY(DataFactory, 'subsetType',
+PROPERTY(RenderDataFactory, 'subsetType',
     function () {
         return this._pSubsetType;
     },
@@ -21,15 +21,15 @@ PROPERTY(DataFactory, 'subsetType',
         this._pSubsetType = pSubsetType;
     });
 
-DataFactory.prototype.getEngine = function() {
+RenderDataFactory.prototype.getEngine = function() {
     return this._pEngine;
 };
 
-DataFactory.prototype.getDataOptions = function() {
+RenderDataFactory.prototype.getDataOptions = function() {
     return this._eDataOptions;
 };
 
-// DataFactory.prototype.setDataOptions = function(eOptions) {
+// RenderDataFactory.prototype.setDataOptions = function(eOptions) {
 //     this._eDataOptions = eOptions;
 // };
 
@@ -45,7 +45,7 @@ DataFactory.prototype.getDataOptions = function() {
  * @param  {String} sSemantics Data semantics.
  * @return {VertexData} Data with given semantics or null.
  */
-DataFactory.prototype.getData = function (sSemantics) {
+RenderDataFactory.prototype.getData = function (sSemantics) {
     var pData = pData = this.pDataBuffer._pVertexDataArray;
     for (var i = 0; i < pData.length; i++) {
         if (pData[i].hasSemantics(sSemantics)) {
@@ -57,7 +57,7 @@ DataFactory.prototype.getData = function (sSemantics) {
 };
 
 //публиный метод, для задания данных сразу для всех сабсетов
-DataFactory.prototype.setData = function (pDataDecl, pData) {     
+RenderDataFactory.prototype.setData = function (pDataDecl, pData) {     
     var pVertexData;
 
     pDataDecl = normalizeVertexDecl(pDataDecl);
@@ -80,7 +80,7 @@ DataFactory.prototype.setData = function (pDataDecl, pData) {
  * Положить данные в буфер.
  * @private
  */
-DataFactory.prototype._allocateData = function(pVertexDecl, pData) {
+RenderDataFactory.prototype._allocateData = function(pVertexDecl, pData) {
     return this._pDataBuffer.allocateData(pVertexDecl, pData);
 };
 
@@ -90,7 +90,7 @@ DataFactory.prototype._allocateData = function(pVertexDecl, pData) {
  * @param {Int} ePrimType Type of primitives.
  * @param {Int} eOptions Опции. Определяют можно ли объединять в группы датасеты.
  */
-DataFactory.prototype.allocateSubset = function (ePrimType, eOptions) {
+RenderDataFactory.prototype.allocateSubset = function (ePrimType, eOptions) {
     debug_assert(this._pSubsetType !== null, 'subset type not specified.');
 
     var iSubsetId = this._pSubsets.length;
@@ -108,15 +108,15 @@ DataFactory.prototype.allocateSubset = function (ePrimType, eOptions) {
 /**
  * @protected
  */
-DataFactory.prototype.setup = function (eOptions) {
-    this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource(sName + '_' + a.sid());
+RenderDataFactory.prototype.setup = function (eOptions) {
+    this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource('data_factory_buffer' + '_' + a.sid());
     //TODO: add support for eOptions
     this._pDataBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
 };
 
-A_NAMESPACE(DataFactory);
+A_NAMESPACE(RenderDataFactory);
 
-function Mesh(pEngine, eOptions) {
+function Mesh(pEngine, eOptions, sName) {
     A_CLASS;
     /**
      * Mesh name.
@@ -134,7 +134,7 @@ function Mesh(pEngine, eOptions) {
     this.setup(sName, eOptions);
 };
 
-EXTENDS(Mesh, a.DataFactory);
+EXTENDS(Mesh, a.RenderDataFactory);
 
 PROPERTY(Mesh, 'materials',
     function () {
@@ -164,7 +164,7 @@ Mesh.prototype.material = function () {
 
 Mesh.prototype.addMaterial = function (sName, pMaterialData) {
     debug_assert(arguments.length < 7, "only base material supported now...");
-    debug_assert(this.meterial(sName) === null, 'material with name <' + sName + '> already exists');
+    debug_assert(this.material(sName) === null, 'material with name <' + sName + '> already exists');
 
     sName = sName || 'unknown';
 
@@ -173,12 +173,16 @@ Mesh.prototype.addMaterial = function (sName, pMaterialData) {
         this._pDataBuffer.getEmptyVertexData(1, a.MeshMaterial.vertexDeclaration())
     );
 
-    pMaterial.value = pMaterialData || this.surfaceMaterial.material; 
+    if (pMaterialData) {
+        pMaterial.value = pMaterialData;   
+    }
 
     this._pMaterials.push(pMaterial);
 };
 
 Mesh.prototype.setup = function(sName, eOptions) {
+    this.subsetType = a.MeshSubset;
+
     parent.setup(eOptions);
 
     this._sName = sName || 'unknown';
@@ -247,7 +251,7 @@ function buildCubeMesh (pEngine, eOptions) {
     ]);
 
 
-    pMesh = new a.Mesh(pEngine, 'cube');
+    pMesh = new a.Mesh(pEngine, eOptions, 'cube');
     pMesh.addMaterial('default');
 
     //iPos = pMesh.setData([VE_VEC3('POSITION')], pVerticesData);
@@ -259,14 +263,15 @@ function buildCubeMesh (pEngine, eOptions) {
 
     pSubMesh = pMesh.allocateSubset();
 
-    iPos = pSubMesh.setData([VE_VEC3('POSITION')], pVerticesData);
-    iNorm = pSubMesh.setData([VE_VEC3('NORMAL')], pNormalsData);
+    iPos = pSubMesh.allocateData([VE_VEC3('POSITION')], pVerticesData);
+    iNorm = pSubMesh.allocateData([VE_VEC3('NORMAL')], pNormalsData);
+    trace('pos and nor flows:', iPos, iNorm);
+    // pSubMesh.allocateIndex([VE_FLOAT('INDEX1')], pVertexIndicesData);
+    // pSubMesh.allocateIndex([VE_FLOAT('INDEX2')], pNormalIndicesData);
 
-    pSubMesh.allocateIndex([VE_FLOAT('INDEX1')], pVertexIndicesData);
-    pSubMesh.allocateIndex([VE_FLOAT('INDEX2')], pNormalIndicesData);
-
-    pSubMesh.index(iPos, 'INDEX1');
-    pSubMesh.index(iNorm, 'INDEX2');
+    // pSubMesh.index(iPos, 'INDEX1');
+    // pSubMesh.index(iNorm, 'INDEX2');
+    pSubMesh.setMaterial(0);
 
     return pMesh;
 }
