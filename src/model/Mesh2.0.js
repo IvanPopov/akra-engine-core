@@ -178,12 +178,12 @@ Mesh.prototype.addMaterial = function (sName, pMaterialData) {
     this._pMaterials.push(pMaterial);
 };
 
-
 Mesh.prototype.setup = function(sName, eOptions) {
     parent.setup(eOptions);
 
     this._sName = sName || 'unknown';
 };
+
 
 /**
  * @protected
@@ -194,7 +194,6 @@ Mesh.prototype.setup = function(sName, eOptions) {
 //     debug_assert(pSubset === pMeshSubset, 'Subset not from current mesh.');
 //     //FIXME: modify index for data
 // };
-
 
 
 function buildCubeMesh (pEngine, eOptions) {
@@ -271,7 +270,6 @@ function buildCubeMesh (pEngine, eOptions) {
 
     return pMesh;
 }
-
 
 
 //pSerialBuffer = this.displayManager().vertexBufferPool().createResource('cube_indices_' + a.sid());

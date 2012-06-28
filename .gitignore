@@ -4,6 +4,7 @@ docreator/
 preprocessor/
 analyzer/
 effects/
+compiled/
 
 # Project property files
 *.html
@@ -18,5 +19,10 @@ effects/
 #project file
 *.sublime-project
 *.sublime-workspace
+*.sublime-build
+
+#complete build
+compiled/*.js
+build/build.bat
 
 server.js

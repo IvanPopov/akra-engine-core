@@ -51,44 +51,55 @@ var begin = now();
 var home = null;
 var sDefine = '';
 
-for (var i = 2; i < process.argv.length; ++ i) {
-	switch (process.argv[i]) {
-		case '-h':
-		case '--home':
-			home = process.argv[++ i];
-			break;
-		case '-e':
-		case '--esprima':
-			esprima = require(process.argv[++ i]);
-			break;
-		case '-p':
-		case '--preprocessor':
-			if (esprima) {
-				preprocessor = require(process.argv[++ i]);
-			}
-			else {
-				include(process.argv[++ i]);
-				preprocessor = Preprocessor;
-			}	
-			break;
-		case '-i':
-		case '--input':
-			sFilename = __dirname  + '/' + process.argv[++ i];
-			sDefine = (home? 'Define(A_CORE_HOME, "' + home + '");\n': '');
-			sCode = preprocessor.code(sDefine + 'Include("' + sFilename + '");');
-			sMacro = preprocessor.extractFileMacro(sFilename, null, null, null, false);
-			//console.log(sMacro, sCode);
-			break;
-		case '-o':
-		case '--output':
-			sOutputFile = process.argv[++ i];
-			fs.writeFileSync(sOutputFile.substr(0, sOutputFile.lastIndexOf('/')) + '/Include.js', outputFileCode(sOutputFile), 'utf-8');
-			fs.writeFileSync(sOutputPath + sOutputFileCode, sCode, 'utf-8');
-			fs.writeFileSync(sOutputPath + sOutputFileMacro, sDefine + sMacro, 'utf-8');
-			console.log('Preprocessing is completed within ' + (now() - begin) + ' msek.')
-			console.log('Home dir set into: "' + (home? home: '') + '".');
-			break;
-		default:
-			usage();	
-	}
-};
+(function () {
+	for (var i = 2; i < process.argv.length; ++ i) {
+		switch (process.argv[i]) {
+			case '-h':
+			case '--home':
+				home = process.argv[++ i];
+				break;
+			case '-e':
+			case '--esprima':
+				esprima = require(process.argv[++ i]);
+				break;
+			case '-p':
+			case '--preprocessor':
+				if (esprima) {
+					preprocessor = require(process.argv[++ i]);
+				}
+				else {
+					include(process.argv[++ i]);
+					preprocessor = Preprocessor;
+				}	
+				break;
+			case '-i':
+			case '--input':
+				sFilename = __dirname  + '/' + process.argv[++ i];
+				sDefine = (home? 'Define(A_CORE_HOME, "' + home + '");\n': '');
+				preprocessor.log = true;
+				console.log('build starting ...');
+				try {
+					sCode = preprocessor.code(sDefine + 'Include("' + sFilename + '");');
+					sMacro = preprocessor.extractFileMacro(sFilename, null, null, null, false);
+				} catch (e) {
+					console.log('details: ')
+					console.log('\t',e);
+					return;
+				}
+				
+				//console.log(sMacro, sCode);
+				break;
+			case '-o':
+			case '--output':
+				sOutputFile = process.argv[++ i];
+				fs.writeFileSync(sOutputFile.substr(0, sOutputFile.lastIndexOf('/')) + '/Include.js', outputFileCode(sOutputFile), 'utf-8');
+				fs.writeFileSync(sOutputPath + sOutputFileCode, sCode, 'utf-8');
+				fs.writeFileSync(sOutputPath + sOutputFileMacro, sDefine + sMacro, 'utf-8');
+				console.log('Preprocessing is completed within ' + (now() - begin) + ' msek.')
+				console.log('Home dir set into: "' + (home? home: '') + '".');
+				break;
+			default:
+				usage();	
+		}
+	};
+})();
