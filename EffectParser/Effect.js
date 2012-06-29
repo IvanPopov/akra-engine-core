@@ -86,7 +86,12 @@ var T_KW_VERTEXSHADER = "vertexshader"
 var T_KW_PIXELFRAGMENT = "pixelfragment"
 var T_KW_VERTEXFRAGMENT = "vertexfragment"
 var T_KW_STATEBLOCK = "stateblock"
+var T_KW_STATEBLOCK_STATE = "stateblock_state"
+var T_KW_COMPILE_FRAGMENT = "compile_fragment"
 var T_KW_REGISTER = "register"
+var T_KW_COMPILE = "compile"
+var T_KW_SAMPLER_STATE = "sampler_state"
+
 var SIMPLEEXPR = "SimpleExpr";
 var CONSTANTEXPR = "ConstantExpr";
 var COMPLEXEXPR = "ComplexExpr";
@@ -244,6 +249,7 @@ var T_KW_IF = "if"
 var T_KW_ELSE = "else"
 var FROMEXPR = "FromExpr";
 var MEMEXPR = "MemExpr";
+
 
 var VERTEXUSAGE = 1;
 var FRAGMENTUSAGE = 2;
@@ -582,6 +588,20 @@ function EffectPointer(pVar, nDim) {
     this.sRealName = null;
     this.nDim = nDim || 0;
 }
+
+function EffectBuffer() {
+    this.pRealBuffer = null;
+    /**
+     * Pointer for real code
+     * @type {Object}
+     */
+    this.pSampler = null;
+    /**
+     * Pointer for real code
+     * @type {Object}
+     */
+    this.pHeader = null;
+}
 ;
 
 function EffectVariable() {
@@ -644,11 +664,16 @@ function EffectVariable() {
      * What buffer is used
      * @type {Object}
      */
-    this.pMemory = null;
+    this.pBuffer = null;
     /**
      * @type {EffectVariable[]}
      */
     this.pPointers = null;
+    /**
+     * Id of scope where variable has definition
+     * @type {Int}
+     */
+    this.iScope = 0;
 }
 
 EffectVariable.prototype.setType = function (pType) {
@@ -683,6 +708,11 @@ EffectVariable.prototype.cloneMe = function () {
     pVar.nDim = this.nDim;
     return pVar;
 };
+
+function EffectSampler() {
+
+}
+;
 
 function EffectFunction() {
     /**
@@ -781,6 +811,11 @@ function EffectFunction() {
      * @type {Object}
      */
     this.pStructTable = null;
+    /**
+     * Scope
+     * @type {Int}
+     */
+    this.iScope = 0;
 }
 EffectFunction.prototype.hasImplementation = function () {
     return this.pImplement ? true : false;
@@ -1017,7 +1052,7 @@ function Effect() {
     this._pCurrentStructFields = null;
     this._pCurrentStructOrders = null;
 
-
+    this._pCurrentVar = null;
     this._isCodeWrite = false;
     this._pCodeStack = [];
     this._pCode = null;
@@ -1042,8 +1077,9 @@ function Effect() {
     this._isVertex = false;
     this._isFragment = false;
 
+    this._isSampler = false;
+
     this._pCurrentFunction = null;
-    this.isMemoryExpr = false;
     this._sVarName = null;
     this._sLastFullName = null;
     this._pVarNameStack = null;
@@ -1082,7 +1118,7 @@ Effect.prototype.endCode = function () {
     this._pCodeFragment = this._pCodeStack[iLen][2] || null;
 };
 Effect.prototype.pushCode = function (pObj) {
-    if(!this._isCodeWrite){
+    if (!this._isCodeWrite) {
         warning("Pause???");
         return;
     }
@@ -1100,6 +1136,12 @@ Effect.prototype.pushCode = function (pObj) {
     }
 };
 
+Effect.prototype.newSampler = function () {
+    this._isSampler = true;
+};
+Effect.prototype.endSampler = function () {
+    this._isSampler = false;
+};
 Effect.prototype.newVarName = function () {
     this._isNewName = true;
     if (!this._pVarNameStack) {
@@ -1118,12 +1160,6 @@ Effect.prototype.newAddr = function () {
 };
 Effect.prototype.endAddr = function () {
     this._nAddr = 0;
-};
-Effect.prototype.newMemExpr = function () {
-    this.isMemoryExpr = true;
-};
-Effect.prototype.endMemExpr = function () {
-    this.isMemoryExpr = false;
 };
 Effect.prototype.newScope = function () {
     this._pScopeStack.push(this._nScope);
@@ -1163,7 +1199,7 @@ Effect.prototype.endFunction = function () {
     this._isFragment = false;
 };
 Effect.prototype.addVariable = function (pVar) {
-    function fnExtractStruct(sName, pStruct, pTable) {
+    function fnExtractStruct(sName, pStruct, pTable, iScope) {
         var pOrders = pStruct.pOrders;
         var sNewName;
         var pPointers;
@@ -1179,9 +1215,9 @@ Effect.prototype.addVariable = function (pVar) {
                 error("good bad and ugly)");
                 return;
             }
-            pTable[sNewName] = {"pPointers" : pPointers};
+            pTable[sNewName] = {"pPointers" : pPointers, "iScope" : iScope};
             if (!pOrders[i].pType.isBase()) {
-                fnExtractStruct(sNewName, pOrders[i].pType.pEffectType.pDesc, pTable);
+                fnExtractStruct(sNewName, pOrders[i].pType.pEffectType.pDesc, pTable, this._iScope);
             }
         }
     }
@@ -1198,6 +1234,7 @@ Effect.prototype.addVariable = function (pVar) {
         this._pCurrentScope.pVariableTable = {};
     }
     this._pCurrentScope.pVariableTable[pVar.sName] = pVar;
+    pVar.iScope = this._iScope;
     if (pVar.isPointer) {
         pVar.pPointers = [];
         for (var i = 0; i < pVar.nDim; i++) {
@@ -1208,8 +1245,79 @@ Effect.prototype.addVariable = function (pVar) {
         if (!this._pCurrentScope.pStructTable) {
             this._pCurrentScope.pStructTable = {};
         }
+        fnExtractStruct(pVar.sName, pVar.pType.pEffectType.pDesc, this._pCurrentScope.pStructTable);
+    }
+};
+Effect.prototype.addVariable = function (pVar) {
+    var isVertex = this._pCurrentFunction ? this._pCurrentFunction.isVertexShader : false;
 
+    function fnExtractStruct(sName, pStruct, pTable, iScope) {
+        var pOrders = pStruct.pOrders;
+        var sNewName;
+        var pPointers;
+        var pBuffer;
+        var isPointer;
 
+        for (var i = 0; i < pOrders.length; i++) {
+            sNewName = sName + "." + pOrders[i].sName;
+            pBuffer = null;
+            pPointers = null;
+            isPointer = false;
+            if (isVertex && !sName.search('.') && !pOrders[i].isPointer) {
+                pPointers = [];
+                pPointers.push(new EffectPointer(pVar, 0));
+                pBuffer = new EffectBuffer();
+                isPointer = undefined;
+            }
+            if (pOrders[i].isPointer) {
+                pPointers = [];
+                for (var j = 0; j < pOrders[i].nDim; j++) {
+                    pPointers.push(new EffectPointer(pVar, j));
+                }
+                if(isVertex){
+                    pBuffer = new EffectBuffer();
+                }
+                isPointer = true;
+            }
+            if (pTable[sNewName]) {
+                error("good bad and ugly)");
+                return;
+            }
+            pTable[sNewName] = {
+                "pPointers" : pPointers,
+                "iScope"    : iScope,
+                "isPointer" : isPointer,
+                "pBuffer"   : pBuffer
+            };
+            if (!pOrders[i].pType.isBase()) {
+                fnExtractStruct(sNewName, pOrders[i].pType.pEffectType.pDesc, pTable, this._iScope);
+            }
+        }
+    }
+
+    if (this._hasVariableDecl(pVar.sName)) {
+        error("Ohhh! You try to redeclarate varibale!");
+        return;
+    }
+    if (!this._pCurrentScope) {
+        this._pCurrentScope = {};
+        this._ppScopes[this._iScope] = this._pCurrentScope;
+    }
+    if (!this._pCurrentScope.pVariableTable) {
+        this._pCurrentScope.pVariableTable = {};
+    }
+    this._pCurrentScope.pVariableTable[pVar.sName] = pVar;
+    pVar.iScope = this._iScope;
+    if (pVar.isPointer) {
+        pVar.pPointers = [];
+        for (var i = 0; i < pVar.nDim; i++) {
+            pVar.pPointers.push(new EffectPointer(pVar, i));
+        }
+    }
+    if (!pVar.pType.isBase()) {
+        if (!this._pCurrentScope.pStructTable) {
+            this._pCurrentScope.pStructTable = {};
+        }
         fnExtractStruct(pVar.sName, pVar.pType.pEffectType.pDesc, this._pCurrentScope.pStructTable);
     }
 };
@@ -1485,6 +1593,15 @@ Effect.prototype.analyzeVariableDecl = function (pNode) {
     var pVar;
     var pType = new VariableType();
     this.analyzeUsageType(pChildren[0], pType);
+    var isSampler = false;
+    if (pType.pEffectType.isSampler()) {
+        isSampler = true;
+        this.newSampler();
+        if (this._iScope !== GLOBAL) {
+            error("Only global samplers support");
+            return;
+        }
+    }
     if (!pType.checkMe()) {
         error("You sucks. 1");
         return;
@@ -1498,6 +1615,9 @@ Effect.prototype.analyzeVariableDecl = function (pNode) {
         }
     }
     this._pCurrentType = null;
+    if (isSampler) {
+        this.endSampler();
+    }
 };
 Effect.prototype.analyzeUsageType = function (pNode, pType) {
     pType = pType || new VariableType();
@@ -1536,6 +1656,7 @@ Effect.prototype.analyzeVariable = function (pNode, pVar) {
         }
     }
     pVar = pVar || new EffectVariable();
+    this._pCurrentVar = pVar;
     this.analyzeVariableDim(pChildren[0], pVar);
     var i;
     var pResult = null;
@@ -1593,7 +1714,7 @@ Effect.prototype.analyzeVariableDim = function (pNode, pVar) {
     else if (pChildren.length === 4 && pChildren[3].sName === FROMEXPR) {
         pVar.isPointer = true;
         pVar.nDim++;
-        pVar.pMemory = this.analyzeFromExpr(pChildren[3]);
+        pVar.pBuffer = this.analyzeFromExpr(pChildren[3]);
     }
     else {
         if (!pVar.isArray) {
@@ -1612,7 +1733,15 @@ Effect.prototype.analyzeFromExpr = function (pNode) {
     var pChildren = pNode.pChildren;
     var pMem;
     if (pChildren[1].sName = T_NON_TYPE_ID) {
-        pMem = this.getBuffer(pChildren[1].sValue);
+        pMem = this.hasVariable(pChildren[1].sValue);
+        if (!pMem) {
+            error("bad 1");
+            return;
+        }
+        if (!pMem.pBuffer) {
+            error("bad 2");
+        }
+        pMem = pMem.pBuffer;
     }
     else {
         pMem = this.analyzeMemExpr(pChildren[1]);
@@ -1623,33 +1752,31 @@ Effect.prototype.analyzeMemExpr = function (pNode) {
     var pChildren = pNode.pChildren;
     var pMem;
     if (pChildren[1].sName === T_NON_TYPE_ID) {
-        pMem = this.hasVariable(pChildren[1].sValue).pMemory;
+        pMem = this.hasVariable(pChildren[1].sValue);
+        if (!pMem) {
+            error("bad 3");
+            return;
+        }
+        pMem = pMem.pBuffer;
     }
     else if (pChildren[1][1].sName === T_NON_TYPE_ID) {
-        pMem = this.hasVariable(pChildren[1][1].sValue).pMemory;
+        pMem = this.hasVariable(pChildren[1][1].sValue);
+        if (!pMem) {
+            error("bad 3");
+            return;
+        }
+        pMem = pMem.pBuffer;
     }
     else {
-        this.newMemExpr();
-        this.newCode();
-        var pCode = this.analyzeExpr(pChildren[1][1]);
-        var i = 0;
-        var sName = "";
-        for (i = 0; i < pCode.length; i++) {
-            if (pCode[i] === ".") {
-                sName += ".";
-            }
-            else {
-                sName += pCode[i].sName;
-            }
-        }
-        this.endCode();
-        this.endMemExpr();
-        var pProp = this.hasComplexVariable(sName);
-        if (!pProp.pMemory) {
+        this._isCodeWrite = false;
+        this.analyzeExpr(pChildren[1][1]);
+        this.isCodeWrite = true;
+        var pProp = this.hasComplexVariable(this._sLastFullName);
+        if (!pProp.pBuffer) {
             error("Nooooo");
             return;
         }
-        pMem = pProp.pMemory;
+        pMem = pProp.pBuffer;
     }
     if (!pMem) {
         error("Oh-oh, don`t cool enough");
@@ -1723,12 +1850,40 @@ Effect.prototype.analyzeInitExpr = function (pNode) {
  * @private
  */
 Effect.prototype.analyzeExpr = function (pNode) {
-    //TODO:memof && object Expr
     var pChildren = pNode.pChildren;
     var pRes;
+    var pVar;
     switch (pNode.sName) {
         case OBJECTEXPR:
-            this.pushCode(pChildren[0]);
+            if (pChildren[0].sValue === T_KW_STATEBLOCK_STATE) {
+                //ObjectExpr : T_KW_STATEBLOCK_STATE StateBlock
+                error("I don`t know what is this");
+                return;
+            }
+            if (pChildren[0].sValue === T_KW_COMPILE_FRAGMENT) {
+                //ObjectExpr : T_KW_COMPILE_FRAGMENT Target NonTypeId '(' ArgumentsOpt ')'
+                error("Farg sucks");
+                return;
+            }
+            if (pChildren[0].sValue === T_KW_COMPILE) {
+                //ObjectExpr : T_KW_COMPILE Target NonTypeId '(' ArgumentsOpt ')'
+                var pFunc = this.hasFunction(pChildren[2].sValue);
+                if (!pFunc) {
+                    error("yo, error");
+                    return;
+                }
+                this.pushCode(pChildren[2].sValue);
+                if (pChildren.length > 5) {
+                    //TODO: add support for these constructions
+                    error("Sorry but we now don`t support this constructions");
+                    return;
+                }
+                return;
+            }
+            else {
+                //ObjectExpr : T_KW_SAMPLER_STATE StateBlock
+                this.analyzeStateBlock(pChildren[1]);
+            }
             break;
 
         case COMPLEXEXPR:
@@ -1830,6 +1985,27 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 this._sVarName += ".";
                 this.pushCode(pChildren[1].sValue);
                 this.analyzeExpr(pChildren[2]);
+                if (pChildren.length === 4) {
+                    var pMem = this.analyzeMemExpr(pChildren[3]);
+                    if (!pMem) {
+                        error("bad 49");
+                        return;
+                    }
+                    pVar = this.hasComplexVariable(this._sVarName);
+                    if (!pVar) {
+                        error("bad 50");
+                        return;
+                    }
+                    if (!pVar.isPointer) {
+                        error("bad 51");
+                        return;
+                    }
+                    if (this._iScope !== pVar.iScope) {
+                        error("bad 52");
+                        return;
+                    }
+                    pVar.pBuffer = pMem;
+                }
             }
             else if (pChildren[1].sValue === "[") {
                 this.newVarName();
@@ -1932,6 +2108,8 @@ Effect.prototype.analyzeExpr = function (pNode) {
         case T_KW_FALSE:
             this.pushCode(pNode.sValue);
             break;
+        case MEMEXPR:
+            return this.analyzeMemExpr(pNode);
     }
 };
 Effect.prototype.analyzeConstTypeDim = function (pNode) {
@@ -2006,7 +2184,8 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
         var pEffectType = pType.pEffectType;
         this._pCurrentFunction = pFunction;
         this.newScope();
-        var i = 0;
+        pFunction.iScope = this._iScope;
+        var i;
         for (i in pFunction.pParameters) {
             this.addVariable(pFunction.pParameters[i]);
         }
@@ -2405,195 +2584,263 @@ Effect.prototype.analyzeStateBlock = function (pNode, pPass) {
 Effect.prototype.analyzeState = function (pNode, pPass) {
     var pChildren = pNode.pChildren;
     var i;
-    var sType = pChildren[0].sValue.toUpperCase();
     var eState = null;
-    var isVertex = false;
-    var isPixel = false;
-    var pExpr = pChildren[3].pChildren[0];
+    var pExpr = pChildren[2].pChildren[0];
+    var sType = pChildren[0].sValue.toUpperCase();
 
-    if (pChildren[1].sName === STATEINDEX) {
-        error("Unsupported state for pass... It`s webgl, baby(");
-        return pPass;
-    }
-    switch (sType) {
-        case 'ZENABLE':
-            eState = a.renderStateType.ZENABLE;
-            break;
-        case 'ZWRITEENABLE':
-            eState = a.renderStateType.ZWRITEENABLE;
-            break;
-        case 'SRCBLEND':
-            eState = a.renderStateType.SRCBLEND;
-            break;
-        case 'DESTBLEND':
-            eState = a.renderStateType.DESTBLEND;
-            break;
-        case 'CULLMODE':
-            eState = a.renderStateType.CULLMODE;
-            break;
-        case 'ZFUNC':
-            eState = a.renderStateType.ZFUNC;
-            break;
-        case 'DITHERENABLE':
-            eState = a.renderStateType.DITHERENABLE;
-            break;
-        case 'ALPHABLENDENABLE':
-            eState = a.renderStateType.ALPHABLENDENABLE;
-            break;
-        case 'ALPHATESTENABLE':
-            eState = a.renderStateType.ALPHATESTENABLE;
-            break;
-        case 'VERTEXSHADER':
-            isVertex = true;
-            break;
-        case 'PIXELSHADER' :
-            isPixel = true;
-            break;
-        default:
-            error('Unsupported render state type used: ' + sType + '. WebGl...');
-            eState = null;
-            return pPass;
-    }
-    if (isVertex || isPixel) {
-        if (pExpr.sName !== OBJECTEXPR) {
-            error("Bad compile state. I don`t know what bad, but something exactly going wrong.");
+    if (this._isSampler) {
+        var isTexture = false;
+        switch (sType) {
+            case "TEXTURE" :
+                isTexture = true;
+                break;
+            case "ADDRESSU":
+                eState = "ADDRESSU";
+                break;
+            case "ADDRESSV":
+                eState = "ADDRESSV";
+                break;
+            case "ADDRESSW":
+                eState = "ADDRESSW";
+                break;
+            case "BORDERCOLOR":
+                eState = "BORDERCOLOR";
+                break;
+            case "FILTER":
+                eState = "FILTER";
+                break;
+            case "MAXANISOTROPY":
+                eState = "MAXANISOTROPY";
+                break;
+            case "MAXLOD":
+                eState = "MAXLOD";
+                break;
+            case "MINLOD":
+                eState = "MINLOD";
+                break;
+            case "MIPLODBIAS":
+                eState = "MIPLODBIAS";
+                break;
+            case "COMPARISONFUNC":
+                eState = "COMPARISONFUNC";
+                break;
+            case "COMPARISONFILTER":
+                eState = "COMPARISONFILTER";
+                break;
+            default:
+                error("Oh no, but it is error");
+                return;
+        }
+        if (isTexture) {
+            var pTexture;
+            if (pExpr.sValue === "{" || pExpr.sValue === undefined ||
+                pChildren[3].pChildren[1].sName !== T_NON_TYPE_ID) {
+                error("Wrong wrong");
+                return;
+            }
+            pTexture = this.hasVariable(pChildren[3].pChildren[1].sValue);
+            if (!pTexture) {
+                error("bad with texture name");
+                return;
+            }
+            this._pCurrentVar.setTexture(pTexture);
             return;
         }
-        var pProgram = this.analyzeExpr(pExpr);
-        var pFunc = this.hasFunction(pProgram[0]);
-        if (isVertex) {
-            pPass.setVertexShader(pFunc);
-            pFunc.isVertexShader = true;
+        //TODO: add sampler valid tests
+        this._pCurrentVar.setState(eState, pExpr.sValue);
+        return;
+    }
+    else {
+        var isVertex = false;
+        var isPixel = false;
+
+        if (pChildren[1].sName === STATEINDEX) {
+            error("Unsupported state for pass... It`s webgl, baby(");
+            return pPass;
         }
-        else {
-            pPass.setFragmentShader(pFunc);
-            pFunc.isFragmentShader = true;
+        switch (sType) {
+            case 'ZENABLE':
+                eState = a.renderStateType.ZENABLE;
+                break;
+            case 'ZWRITEENABLE':
+                eState = a.renderStateType.ZWRITEENABLE;
+                break;
+            case 'SRCBLEND':
+                eState = a.renderStateType.SRCBLEND;
+                break;
+            case 'DESTBLEND':
+                eState = a.renderStateType.DESTBLEND;
+                break;
+            case 'CULLMODE':
+                eState = a.renderStateType.CULLMODE;
+                break;
+            case 'ZFUNC':
+                eState = a.renderStateType.ZFUNC;
+                break;
+            case 'DITHERENABLE':
+                eState = a.renderStateType.DITHERENABLE;
+                break;
+            case 'ALPHABLENDENABLE':
+                eState = a.renderStateType.ALPHABLENDENABLE;
+                break;
+            case 'ALPHATESTENABLE':
+                eState = a.renderStateType.ALPHATESTENABLE;
+                break;
+            case 'VERTEXSHADER':
+                isVertex = true;
+                break;
+            case 'PIXELSHADER' :
+                isPixel = true;
+                break;
+            default:
+                error('Unsupported render state type used: ' + sType + '. WebGl...');
+                eState = null;
+                return pPass;
         }
+        if (isVertex || isPixel) {
+            if (pExpr.sName !== OBJECTEXPR) {
+                error("Bad compile state. I don`t know what bad, but something exactly going wrong.");
+                return;
+            }
+            this.newCode()
+            this.analyzeExpr(pExpr);
+            var pProgram = this._pCode;
+            this.endCode();
+            var pFunc = this.hasFunction(pProgram[0]);
+            if (isVertex) {
+                pPass.setVertexShader(pFunc);
+                pFunc.isVertexShader = true;
+            }
+            else {
+                pPass.setFragmentShader(pFunc);
+                pFunc.isFragmentShader = true;
+            }
+            return pPass;
+        }
+        if (pExpr.sValue === "{" || pExpr.sValue === "<" ||
+            pExpr.sValue === undefined) {
+            error("Too difficult for webgl");
+        }
+        var sValue = pChildren[3].pChildren[0].sValue.toUpperCase();
+        var eValue;
+        //function fnRenderStateValueFromString(eState, sValue) {
+        switch (eState) {
+            case a.renderStateType.ALPHABLENDENABLE:
+            case a.renderStateType.ALPHATESTENABLE:
+                warning('ALPHABLENDENABLE/ALPHATESTENABLE not supported in WebGL.');
+            case a.renderStateType.DITHERENABLE:
+            case a.renderStateType.ZENABLE:
+            case a.renderStateType.ZWRITEENABLE:
+                switch (sValue) {
+                    case 'TRUE':
+                        eValue = true;
+                        break;
+                    case 'FALSE':
+                        eValue = false;
+                        break;
+                    default:
+                        error('Unsupported render state ALPHABLENDENABLE/ZENABLE/ZWRITEENABLE/DITHERENABLE value used: '
+                                  + sValue + '.');
+                        eValue = null;
+                }
+                break;
+            case a.renderStateType.SRCBLEND:
+            case a.renderStateType.DESTBLEND:
+                switch (sValue) {
+                    case 'ZERO':
+                        eValue = a.BLEND.ZERO;
+                        break;
+                    case 'ONE':
+                        eValue = a.BLEND.ONE;
+                        break;
+                    case 'SRCCOLOR':
+                        eValue = a.BLEND.SRCCOLOR;
+                        break;
+                    case 'INVSRCCOLOR':
+                        eValue = a.BLEND.INVSRCCOLOR;
+                        break;
+                    case 'SRCALPHA':
+                        eValue = a.BLEND.SRCALPHA;
+                        break;
+                    case 'INVSRCALPHA':
+                        eValue = a.BLEND.INVSRCALPHA;
+                        break;
+                    case 'DESTALPHA':
+                        eValue = a.BLEND.DESTALPHA;
+                        break;
+                    case 'INVDESTALPHA':
+                        eValue = a.BLEND.INVDESTALPHA;
+                        break;
+                    case 'DESTCOLOR':
+                        eValue = a.BLEND.DESTCOLOR;
+                        break;
+                    case 'INVDESTCOLOR':
+                        eValue = a.BLEND.INVDESTCOLOR;
+                        break;
+                    case 'SRCALPHASAT':
+                        eValue = a.BLEND.SRCALPHASAT;
+                        break;
+                    default:
+                        error('Unsupported render state SRCBLEND/DESTBLEND value used: ' + sValue + '.');
+                        eValue = null;
+                }
+                break;
+            case a.renderStateType.CULLMODE:
+                switch (sValue) {
+                    case 'NONE':
+                        eValue = a.CULLMODE.NONE;
+                        break;
+                    case 'CW':
+                        eValue = a.CULLMODE.CW;
+                        break;
+                    case 'CCW':
+                        eValue = a.CULLMODE.CCW;
+                        break;
+                    case 'FRONT_AND_BACK':
+                        eValue = a.CULLMODE.FRONT_AND_BACK;
+                        break;
+                    default:
+                        error('Unsupported render state SRCBLEND/DESTBLEND value used: ' + sValue + '.');
+                        eValue = null;
+                }
+                break;
+            case a.renderStateType.ZFUNC:
+                switch (sValue) {
+                    case 'NEVER':
+                        eValue = a.CMPFUNC.NEVER;
+                        break;
+                    case 'LESS':
+                        eValue = a.CMPFUNC.LESS;
+                        break;
+                    case 'EQUAL':
+                        eValue = a.CMPFUNC.EQUAL;
+                        break;
+                    case 'LESSEQUAL':
+                        eValue = a.CMPFUNC.LESSEQUAL;
+                        break;
+                    case 'GREATER':
+                        eValue = a.CMPFUNC.GREATER;
+                        break;
+                    case 'NOTEQUAL':
+                        eValue = a.CMPFUNC.NOTEQUAL;
+                        break;
+                    case 'GREATEREQUAL':
+                        eValue = a.CMPFUNC.GREATEREQUAL;
+                        break;
+                    case 'ALWAYS':
+                        eValue = a.CMPFUNC.ALWAYS;
+                        break;
+                    default:
+                        error('Unsupported render state ZFUNC value used: ' +
+                              sValue + '.');
+                        eValue = null;
+                }
+                break;
+        }
+
+        pPass.setState(eState, eValue);
         return pPass;
     }
-    if (pExpr.sValue === "{" || pExpr.sValue === "<" ||
-        pExpr.sValue === undefined) {
-        error("Too difficult for webgl");
-    }
-    var sValue = pChildren[3].pChildren[0].sValue.toUpperCase();
-    var eValue;
-    //function fnRenderStateValueFromString(eState, sValue) {
-    switch (eState) {
-        case a.renderStateType.ALPHABLENDENABLE:
-        case a.renderStateType.ALPHATESTENABLE:
-            warning('ALPHABLENDENABLE/ALPHATESTENABLE not supported in WebGL.');
-        case a.renderStateType.DITHERENABLE:
-        case a.renderStateType.ZENABLE:
-        case a.renderStateType.ZWRITEENABLE:
-            switch (sValue) {
-                case 'TRUE':
-                    eValue = true;
-                    break;
-                case 'FALSE':
-                    eValue = false;
-                    break;
-                default:
-                    error('Unsupported render state ALPHABLENDENABLE/ZENABLE/ZWRITEENABLE/DITHERENABLE value used: '
-                              + sValue + '.');
-                    eValue = null;
-            }
-            break;
-        case a.renderStateType.SRCBLEND:
-        case a.renderStateType.DESTBLEND:
-            switch (sValue) {
-                case 'ZERO':
-                    eValue = a.BLEND.ZERO;
-                    break;
-                case 'ONE':
-                    eValue = a.BLEND.ONE;
-                    break;
-                case 'SRCCOLOR':
-                    eValue = a.BLEND.SRCCOLOR;
-                    break;
-                case 'INVSRCCOLOR':
-                    eValue = a.BLEND.INVSRCCOLOR;
-                    break;
-                case 'SRCALPHA':
-                    eValue = a.BLEND.SRCALPHA;
-                    break;
-                case 'INVSRCALPHA':
-                    eValue = a.BLEND.INVSRCALPHA;
-                    break;
-                case 'DESTALPHA':
-                    eValue = a.BLEND.DESTALPHA;
-                    break;
-                case 'INVDESTALPHA':
-                    eValue = a.BLEND.INVDESTALPHA;
-                    break;
-                case 'DESTCOLOR':
-                    eValue = a.BLEND.DESTCOLOR;
-                    break;
-                case 'INVDESTCOLOR':
-                    eValue = a.BLEND.INVDESTCOLOR;
-                    break;
-                case 'SRCALPHASAT':
-                    eValue = a.BLEND.SRCALPHASAT;
-                    break;
-                default:
-                    error('Unsupported render state SRCBLEND/DESTBLEND value used: ' + sValue + '.');
-                    eValue = null;
-            }
-            break;
-        case a.renderStateType.CULLMODE:
-            switch (sValue) {
-                case 'NONE':
-                    eValue = a.CULLMODE.NONE;
-                    break;
-                case 'CW':
-                    eValue = a.CULLMODE.CW;
-                    break;
-                case 'CCW':
-                    eValue = a.CULLMODE.CCW;
-                    break;
-                case 'FRONT_AND_BACK':
-                    eValue = a.CULLMODE.FRONT_AND_BACK;
-                    break;
-                default:
-                    error('Unsupported render state SRCBLEND/DESTBLEND value used: ' + sValue + '.');
-                    eValue = null;
-            }
-            break;
-        case a.renderStateType.ZFUNC:
-            switch (sValue) {
-                case 'NEVER':
-                    eValue = a.CMPFUNC.NEVER;
-                    break;
-                case 'LESS':
-                    eValue = a.CMPFUNC.LESS;
-                    break;
-                case 'EQUAL':
-                    eValue = a.CMPFUNC.EQUAL;
-                    break;
-                case 'LESSEQUAL':
-                    eValue = a.CMPFUNC.LESSEQUAL;
-                    break;
-                case 'GREATER':
-                    eValue = a.CMPFUNC.GREATER;
-                    break;
-                case 'NOTEQUAL':
-                    eValue = a.CMPFUNC.NOTEQUAL;
-                    break;
-                case 'GREATEREQUAL':
-                    eValue = a.CMPFUNC.GREATEREQUAL;
-                    break;
-                case 'ALWAYS':
-                    eValue = a.CMPFUNC.ALWAYS;
-                    break;
-                default:
-                    error('Unsupported render state ZFUNC value used: ' +
-                          sValue + '.');
-                    eValue = null;
-            }
-            break;
-    }
-
-    pPass.setState(eState, eValue);
-    return pPass;
 };
 
 
