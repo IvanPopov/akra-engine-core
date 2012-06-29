@@ -247,8 +247,10 @@ VideoBuffer.prototype.resize = function (iByteSize) {
     }
 
     //trace('resize buffer from', this._iWidth, 'x', this._iHeight, ' to', pSize.X, 'x', pSize.Y);
+    parent(Texture).repack.call(this, pSize.X, pSize.Y);    
+    
 
-    parent(Texture).repack.call(this, pSize.X, pSize.Y);
+    
     //parent(Texture).setPixelRGBA.call(this, 0, 0, 2, 1, this._header(), 0);
     this._pHeader.setData(this._header());
 
