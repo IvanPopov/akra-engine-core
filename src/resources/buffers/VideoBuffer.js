@@ -19,6 +19,8 @@ Enum([
     VIDEOBUFFER_HEADER_SIZE = 8      //!< VideoBuffer header: header size
 ], VIDEOBUFFER_HEADER);
 
+Define(a.DECLUSAGE.TEXTURE_HEADER, 'TEXTURE_HEADER');
+
 /**
  * @typedef
  * VideoBuffer data type.
@@ -59,6 +61,12 @@ function VideoBuffer (pEngine) {
      */
     this._pRepackEffect = null;
 
+    /**
+     * Texture Header.
+     * @type {VertexData}
+     */
+    this._pHeader = null;
+
 
 //    debug_assert(a.info.graphics.getExtention(pEngine.pDevice, a.EXTENTIONS.TEXTURE_FLOAT),
 //        'для работы видеобуфера необходимо расширение a.EXTENTIONS.TEXTURE_FLOAT');
@@ -78,8 +86,7 @@ PROPERTY(VideoBuffer, 'buffer', function () {
  */
 PROPERTY(VideoBuffer, 'size', function () {
     return this._iWidth * this._iHeight * 
-        this._numElementsPerPixel * this.typeSize 
-        - VIDEOBUFFER_HEADER_SIZE * this.typeSize;
+        this._numElementsPerPixel * this.typeSize;
 });
 
 /**
@@ -168,19 +175,18 @@ VideoBuffer.prototype.create = function (iByteSize, iFlags, pData) {
         }
     }
     trace('POT texture size:',
-        (alignBytes(iByteSize, this.typeSize) + VIDEOBUFFER_HEADER_SIZE) / a.VideoBufferType.BYTES_PER_ELEMENT);
+        (alignBytes(iByteSize, this.typeSize)) / a.VideoBufferType.BYTES_PER_ELEMENT);
     // creating texture
-    pSize = a.calcPOTtextureSize((alignBytes(iByteSize, this.typeSize) + VIDEOBUFFER_HEADER_SIZE) /
+    pSize = a.calcPOTtextureSize((alignBytes(iByteSize, this.typeSize)) /
         a.VideoBufferType.BYTES_PER_ELEMENT, this._numElementsPerPixel);
-    pHeader = this._header(pSize.X, pSize.Y);
+    //pHeader = this._header(pSize.X, pSize.Y);
     pTextureData = new a.VideoBufferType(pSize.Z);
-    pTextureData.set(pHeader, 0);
+    //pTextureData.set(pHeader, 0);
 
     //---------------- TEMP SET DATA BEGIN -------------
     //FIXME: correct set data..
     if (pData) {
-        (new Uint8Array(pTextureData.buffer)).set(new Uint8Array(pData.buffer),
-            (new Uint8Array(pHeader.buffer)).length);
+        (new Uint8Array(pTextureData.buffer)).set(new Uint8Array(pData.buffer));
     }
     //---------------- TEMP SET DATA END ---------------
 
@@ -192,10 +198,6 @@ VideoBuffer.prototype.create = function (iByteSize, iFlags, pData) {
         this.destroy();
         return false;
     }
-
-    this.bind();
-    this._pEngine.pDevice.generateMipmap(this.target);
-    this.unbind();
 
     this.wraps = a.TWRAPMODE.CLAMP_TO_EDGE;
     this.wrapt = a.TWRAPMODE.CLAMP_TO_EDGE;
@@ -212,6 +214,9 @@ VideoBuffer.prototype.create = function (iByteSize, iFlags, pData) {
 //    if (pData) {
 //        this.setData(pData);
 //    }
+    
+    this._pHeader = this.allocateData([VE_VEC2(a.DECLUSAGE.TEXTURE_HEADER)], 
+        this._header(pSize.X, pSize.Y));    
 
     return true;
 };
@@ -227,7 +232,7 @@ VideoBuffer.prototype.resize = function (iByteSize) {
     //trace('resize request for', iByteSize, 'bytes');
 
     iByteSize = alignBytes(iByteSize, this.typeSize);
-    pSize = a.calcPOTtextureSize((iByteSize + VIDEOBUFFER_HEADER_SIZE) /
+    pSize = a.calcPOTtextureSize((iByteSize) /
         a.VideoBufferType.BYTES_PER_ELEMENT, this._numElementsPerPixel);
 
     if (TEST_BIT(this._iTypeFlags, a.VBufferBase.RamBackupBit)) {
@@ -244,7 +249,8 @@ VideoBuffer.prototype.resize = function (iByteSize) {
     //trace('resize buffer from', this._iWidth, 'x', this._iHeight, ' to', pSize.X, 'x', pSize.Y);
 
     parent(Texture).repack.call(this, pSize.X, pSize.Y);
-    parent(Texture).setPixelRGBA.call(this, 0, 0, 2, 1, this._header(), 0);
+    //parent(Texture).setPixelRGBA.call(this, 0, 0, 2, 1, this._header(), 0);
+    this._pHeader.setData(this._header());
 
     return true;
 };
@@ -316,7 +322,7 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
 
     debug_assert(iOffset % iTypeSize === 0 && iSize % iTypeSize === 0, "Incorrect data size or offset");
 
-    iFrom       = iOffset / iTypeSize + VIDEOBUFFER_HEADER_SIZE;
+    iFrom       = iOffset / iTypeSize;
     iCount      = iSize / iTypeSize;
 
     iLeftShift  = iFrom % nElementsPerPix;
