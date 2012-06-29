@@ -150,6 +150,8 @@ VertexDeclaration.prototype.update = function () {
             this.iStride = iStride
         }
     }
+
+    return true;
 };
 
 
@@ -181,17 +183,29 @@ VertexDeclaration.prototype.append = function (pArrayElements) {
             iOffset));
     }
 
-    this.update();
+    return this.update();
 };
 
 VertexDeclaration.prototype.extend = function (pVertexDecl) {
     var pElement;
+
+    for (var i = 0; i < this.length; ++ i) {
+        for (var j = 0; j < pVertexDecl.length; ++ j) {
+            if (pVertexDecl[j].eUsage == this[i].eUsage) {
+                trace('inconsistent declarations:', this, pVertexDecl);
+                debug_error('The attempt to combine the declaration containing the exact same semantics.');
+                return false;
+            }
+        }
+    }
+
     for (var i = 0; i < pVertexDecl.length; i++) {
         pElement = pVertexDecl[i].clone();
         pElement.iOffset += this.iStride;
         this.push(pElement);
     }
-    this.update();
+
+    return this.update();
 };
 
 VertexDeclaration.prototype.hasSemantics = function (eSemantics) {
@@ -385,6 +399,7 @@ VertexData.prototype.extend = function (pVertexDecl, pData) {
     //total bytes after extending
     var nTotalSize = nStrideNext * this.length;
     var pDecl = this.getVertexDeclaration().clone();
+
     //data migration
     var pDataPrev = new Uint8Array(this.getData());
     var pDataNext = new Uint8Array(nTotalSize);
@@ -395,7 +410,9 @@ VertexData.prototype.extend = function (pVertexDecl, pData) {
         pDataNext.set(pData.subarray(i * nStrideNew, (i + 1) * nStrideNew), iOffset + nStridePrev);
     }
 
-    pDecl.extend(pVertexDecl);
+    if (!pDecl.extend(pVertexDecl)) {
+        return false;
+    }
 
     if (!this.resize(nCount, pDecl)) {
         return false;

@@ -324,7 +324,7 @@ GLSLProgram.prototype._setupUniforms = function (pUniformList) {
 
     for (var k = 0; k < pUniformList.length; k++) {
         pUniforms[pUniformList[k]] = pDevice.getUniformLocation(pProgram, pUniformList[k]);
-        trace(pUniformList[k], pUniforms[pUniformList[k]]);
+        //trace(pUniformList[k], pUniforms[pUniformList[k]]);
     }
     //for fun...
 //    for (k = 0; k < pDevice.getProgramParameter(pProgram, pDevice.ACTIVE_UNIFORMS); ++k) {
@@ -351,8 +351,8 @@ GLSLProgram.prototype.autoSetup = function () {
     }
 
     pVertexDeclaration = new a.VertexDeclaration(pVertexDeclaration);
-    trace(pUniformList);
-    trace(pVertexDeclaration);
+    //trace(pUniformList);
+    //trace(pVertexDeclaration);
     return this.setup(pVertexDeclaration, pUniformList);
 };
 

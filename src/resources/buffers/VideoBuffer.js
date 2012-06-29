@@ -234,14 +234,14 @@ VideoBuffer.prototype.resize = function (iByteSize) {
         pBackupCopy = new Uint8Array(pSize.X * pSize.Y * this._numElementsPerPixel * this.typeSize);
         pBackupCopy.set(this._pBackupCopy);
         this._pBackupCopy = pBackupCopy;
-        trace('backup copy size', pBackupCopy.byteLength, 'bytes');
+        //trace('backup copy size', pBackupCopy.byteLength, 'bytes');
     }
 
     if (pSize.X <= this._iWidth && pSize.Y <= this._iHeight) {
         return true;
     }
 
-    trace('resize buffer from', this._iWidth, 'x', this._iHeight, ' to', pSize.X, 'x', pSize.Y);
+    //trace('resize buffer from', this._iWidth, 'x', this._iHeight, ' to', pSize.X, 'x', pSize.Y);
 
     parent(Texture).repack.call(this, pSize.X, pSize.Y);
     parent(Texture).setPixelRGBA.call(this, 0, 0, 2, 1, this._header(), 0);

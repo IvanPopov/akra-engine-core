@@ -147,7 +147,7 @@ PROPERTY(Mesh, 'materials',
  * @treturn MaterialBase Material.
  * @memberof Mesh
  */
-Mesh.prototype.material = function () {
+Mesh.prototype.getMaterial = function () {
     if (typeof arguments[0] === 'number') {
         return this._pMaterials[arguments[0]] || null;
     }
@@ -164,7 +164,7 @@ Mesh.prototype.material = function () {
 
 Mesh.prototype.addMaterial = function (sName, pMaterialData) {
     debug_assert(arguments.length < 7, "only base material supported now...");
-    debug_assert(this.material(sName) === null, 'material with name <' + sName + '> already exists');
+    debug_assert(this.getMaterial(sName) === null, 'material with name <' + sName + '> already exists');
 
     sName = sName || 'unknown';
 
@@ -173,9 +173,11 @@ Mesh.prototype.addMaterial = function (sName, pMaterialData) {
         this._pDataBuffer.getEmptyVertexData(1, a.MeshMaterial.vertexDeclaration())
     );
 
-    if (pMaterialData) {
-        pMaterial.value = pMaterialData;   
+    if (!pMaterialData) {
+        pMaterialData = new a.Material;
     }
+
+    pMaterial.value = pMaterialData;   
 
     this._pMaterials.push(pMaterial);
 };
@@ -188,102 +190,6 @@ Mesh.prototype.setup = function(sName, eOptions) {
     this._sName = sName || 'unknown';
 };
 
-
-/**
- * @protected
- */
-// Mesh.prototype.setAttributes = function(pMeshSubset, pAttrDecl, pData) {
-//     var pSubset = this._pSubsets[pMeshSubset._iId];
-
-//     debug_assert(pSubset === pMeshSubset, 'Subset not from current mesh.');
-//     //FIXME: modify index for data
-// };
-
-
-function buildCubeMesh (pEngine, eOptions) {
-    var pMesh,
-        pSubMesh;
-    var iPos, iNorm;
-
-    var pVerticesData = new Float32Array([
-        -0.5, 0.5, 0.5,
-        0.5, 0.5, 0.5,
-        -0.5, -0.5, 0.5,
-        0.5, -0.5, 0.5,
-        -0.5, 0.5, -0.5,
-        0.5, 0.5, -0.5,
-        -0.5, -0.5, -0.5,
-        0.5, -0.5, -0.5
-    ]);
-
-    var pNormalsData = new Float32Array([
-        1.0, 0.0, 0.0,
-        -1.0, 0.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, -1.0, 0.0,
-        0.0, 0.0, 1.0,
-        0.0, 0.0, -1.0
-    ]);
-
-    var pVertexIndicesData = new Float32Array([
-        0, 2, 3, 0, 3, 1,
-        0, 1, 5, 0, 5, 4,
-        6, 7, 3, 6, 3, 2,
-        0, 4, 6, 0, 6, 2,
-        3, 7, 5, 3, 5, 1,
-        5, 7, 6, 5, 6, 4
-    ]);
-    var pNormalIndicesData = new Float32Array([
-        4, 4, 4, 4, 4, 4,
-        2, 2, 2, 2, 2, 2,
-        3, 3, 3, 3, 3, 3,
-        1, 1, 1, 1, 1, 1,
-        0, 0, 0, 0, 0, 0,
-        5, 5, 5, 5, 5, 5
-    ]);
-    var pMaterialIndicesData = new Float32Array([
-        0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0
-    ]);
-
-
-    pMesh = new a.Mesh(pEngine, eOptions, 'cube');
-    pMesh.addMaterial('default');
-
-    //iPos = pMesh.setData([VE_VEC3('POSITION')], pVerticesData);
-    //iNorm = pMesh.setData([VE_VEC3('NORMAL')], pNormalsData);
-    //
-    //iIPos = pMesh.setData([VE_FLOAT('INDEX1')], pVertexIndicesData);
-    //iINorm = pMesh.setData([VE_FLOAT('INDEX2')], pNormalIndicesData);
-    
-
-    pSubMesh = pMesh.allocateSubset();
-
-    iPos = pSubMesh.allocateData([VE_VEC3('POSITION')], pVerticesData);
-    iNorm = pSubMesh.allocateData([VE_VEC3('NORMAL')], pNormalsData);
-    trace('pos and nor flows:', iPos, iNorm);
-    // pSubMesh.allocateIndex([VE_FLOAT('INDEX1')], pVertexIndicesData);
-    // pSubMesh.allocateIndex([VE_FLOAT('INDEX2')], pNormalIndicesData);
-
-    // pSubMesh.index(iPos, 'INDEX1');
-    // pSubMesh.index(iNorm, 'INDEX2');
-    pSubMesh.setMaterial(0);
-
-    return pMesh;
-}
-
-
-//pSerialBuffer = this.displayManager().vertexBufferPool().createResource('cube_indices_' + a.sid());
-//pSerialBuffer.create(pIndicesData.byteLength, FLAG(a.VBufferBase.RamBackupBit), pSerials);
-//
-//pSerials = pSerialBuffer.getVertexData(0, pSerialsData.length, new a.VertexDeclaration([
-//    {nCount: 1, eType:a.DTYPE.FLOAT, eUsage: 'POSITION'},
-//    {nCount: 1, eType:a.DTYPE.FLOAT, eUsage: 'NORMAL'}
-//]));
 
 A_NAMESPACE(Mesh);
 A_NAMESPACE(buildCubeMesh);

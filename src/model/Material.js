@@ -227,6 +227,8 @@ Material.prototype.setProperty = function(eProperty, pValue) {
   return null;
 };
 
+A_NAMESPACE(Material);
+
 /**
  * MeshMaterial class. 
  * @ctor

@@ -101,6 +101,7 @@ function BufferMap (pEngine) {
 
     this._nCompleteVideoBuffers = 0;
     this._pCompleteVideoBuffers = null;
+    this._nUsedFlows = 0;
 
     /**
      * Starting index for rendering without using global index.
@@ -229,6 +230,12 @@ PROPERTY(BufferMap, 'offset', function () {
 });
 
 
+BufferMap.prototype.getFlow = function (iFlow) {
+    'use strict';
+    
+    return this._pFlows[iFlow];
+};
+
 /**
  * Reset BufferMap.
  * @note After reset, buffer map removing all early used Flows/Mappers.
@@ -248,6 +255,7 @@ BufferMap.prototype.reset = function () {
     this._pFlows = new Array(nFlowLimit);
     for (var i = 0; i < nFlowLimit; i++) {
         this._pFlows[i] = {
+            iFlow: i,
             pData:  null,
             eType:  a.BufferMap.FT_UNMAPPABLE,
             pMapper:null
@@ -263,7 +271,7 @@ BufferMap.prototype.reset = function () {
 
     this._pCompleteVideoBuffers = new Array(nFlowLimit);
     this._nCompleteVideoBuffers = 0;
-
+    this._nUsedFlows = 0;
 
     this.draw = this.drawArrays;
 };
@@ -273,16 +281,16 @@ BufferMap.prototype.reset = function () {
  * @property flow(Uint iFlow, VertexData pVertexData)
  * @param iFlow Number of Stream.
  * @param pVertexData Data flow for this stream.
- * @treturn Int flow number or -1 if error.
+ * @return {!Boolean} Result.
  */
 BufferMap.prototype.flow = function (iFlow, pVertexData) {
     'use strict';
-    
+
     var pFlow;
 
     if (arguments.length < 2) {
         pVertexData = arguments[0];
-        iFlow = this._nCompleteFlows;
+        iFlow = (this._nUsedFlows ++);
     }
   
     pFlow = this._pFlows[iFlow];
@@ -348,7 +356,6 @@ BufferMap.prototype.findMapping = function (pMap, eSemantics) {
                 'You can not use maps with different indexing');
         }
     }
-
     return null;
 };
 
@@ -361,6 +368,7 @@ BufferMap.prototype.findMapping = function (pMap, eSemantics) {
  * @treturn Boolean Result of mapping.
  */
 BufferMap.prototype.mapping = function (iFlow, pMap, eSemantics) {
+
     var pMapper = this.findMapping(pMap, eSemantics);
     var pFlow = this._pFlows[iFlow];
 
@@ -398,19 +406,11 @@ BufferMap.prototype._pushEtalon = function (pData) {
     this._pBuffersCompatibleMap[pData.resourceHandle()] = pData;
 };
 
-BufferMap.prototype.findFlow = function (eSemantics) {
-    'use strict';
-    
-    for (var i = 0, pFlows = this._pFlows, pFlow; i < this._nCompleteFlows; ++ i) {
-        pFlow = this._pFlows[i];
-        trace(pFlow);
-    }
-};
-
 /**
  * Update the current BufferMap.
  */
 BufferMap.prototype.update = function () {
+
     var pFlows = this._pFlows;
     var pFlow, pMapper;
     var isMappable = false;
@@ -418,6 +418,7 @@ BufferMap.prototype.update = function () {
     var nCompleteFlows = 0;
     var pCompleteVideoBuffers = this._pCompleteVideoBuffers;
     var nCompleteVideoBuffers = 0;
+    var nUsedFlows = 0;
     var pVideoBuffer;
     var isVideoBufferAdded = false;
 
@@ -425,6 +426,10 @@ BufferMap.prototype.update = function () {
         pFlow = pFlows[i];
         pMapper = pFlow.pMapper;
         isMappable = (pFlow.eType === a.BufferMap.FT_MAPPABLE);
+        
+        if (pFlow.pData) {
+            nUsedFlows ++;
+        }
 
         if (pFlow.pData === null || (isMappable && pMapper === null)) {
             continue;
@@ -447,6 +452,7 @@ BufferMap.prototype.update = function () {
     }
     this._nCompleteFlows = nCompleteFlows;
     this._nCompleteVideoBuffers = nCompleteVideoBuffers;
+    this._nUsedFlows = nUsedFlows;
 
     return true;
 };
@@ -456,5 +462,59 @@ BufferMap.prototype.drawElements = function () {};
 BufferMap.prototype.drawArrays = function () {
     this._pDevice.drawArrays(this._ePrimitiveType, this._nStartIndex, this._nLength);
 };
+
+Ifdef (__DEBUG);
+
+BufferMap.prototype.toString = function () {
+    'use strict';
+    
+    function _an(sValue, n, bBackward) {
+        sValue = String(sValue);
+        bBackward = bBackward || false;
+        if (sValue.length < n) {
+            for (var i = 0, l = sValue.length; i < n - l; ++ i) {
+                if (!bBackward) {
+                    sValue += ' ';
+                }
+                else {
+                    sValue = ' ' + sValue;
+                }
+            }
+        }
+
+        return sValue;
+    }
+
+    var s = '\n\n', t;
+    s += '    Complete Flows   : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping     : OFFSET |    Additional    \n';
+    t  = '---------------------:-----------------+---------------------:------------------:--------+------------------\n';
+    // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
+    // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
+    s += t;
+
+    for (var i = 0; i < this._nCompleteFlows; ++ i) {
+        var pFlow = this._pCompleteFlows[i];
+        var pMapper = pFlow.pMapper;
+        var pVertexData = pFlow.pData;
+        var pDecl = pVertexData.getVertexDeclaration();
+        //trace(pMapper); window['pMapper'] = pMapper;
+        s += '#' + _an(pFlow.iFlow, 2) + ' ' + 
+            _an('[ ' + pDecl[0].eUsage + ' ]', 16) + ' : ' + _an(pDecl[0].iOffset, 6, true) + ' / ' + _an(pDecl[0].iSize, 6) + ' | ' + 
+            _an(pVertexData.resourceHandle(), 8, true) + ' / ' + _an(pVertexData.getOffset(), 8) + ' : ' + 
+            _an(pMapper.eSemantics, 17) + ': ' + _an(pMapper.pData.getVertexDeclaration().element(pMapper.eSemantics).iOffset, 6) + ' |                  \n';
+
+        for (var j = 1; j < pDecl.length; ++ j) {
+            s += '    ' + 
+            _an('[ ' + pDecl[j].eUsage + ' ]', 16) + ' : ' + _an(pDecl[j].iOffset, 6, true) + ' / ' + _an(pDecl[j].iSize, 6) +  
+                  ' |                     :                  :        |                  \n';
+        }
+
+        s += t;
+    };
+
+    return s + '\n\n';
+};
+
+Endif ();
 
 A_NAMESPACE(BufferMap);
