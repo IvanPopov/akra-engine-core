@@ -73,6 +73,7 @@ ShaderManager.prototype.activateProgram = function (pProgram) {
    // if (this._pActivatedPrograms[this._nLastActivatedProgram] !== pProgram) {
    //     trace('bind Program', pProgram.resourceHandle());
    //     this._pActivatedPrograms[++this._nLastActivatedProgram] = pProgram;
+   this._pActiveProgram = pProgram;
         pProgram.bind();
    // }
 };
@@ -83,9 +84,12 @@ ShaderManager.prototype.deactivateProgram = function (pProgram) {
      //   this._nLastActivatedProgram --;
         //pProgram.unbind(this._pActivatedPrograms[this._nLastActivatedProgram]);
     //}
+    this._pActiveProgram = null;
     pProgram.unbind();
 };
-
+ShaderManager.prototype.getActiveProgram = function() {
+    return this._pActiveProgram;
+};
 ShaderManager.prototype.activeTextures = new Array(32);
 
 /**

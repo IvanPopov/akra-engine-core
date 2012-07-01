@@ -351,8 +351,8 @@ GLSLProgram.prototype.autoSetup = function () {
     }
 
     pVertexDeclaration = new a.VertexDeclaration(pVertexDeclaration);
-    //trace(pUniformList);
-    //trace(pVertexDeclaration);
+    // trace(pUniformList);
+    // trace(pVertexDeclaration);
     return this.setup(pVertexDeclaration, pUniformList);
 };
 
@@ -463,7 +463,7 @@ GLSLProgram.prototype.applyBufferMap = function (pBufferMap) {
         }
     }
 
-    //TODO Правильно выбрать слот активации!!
+    //TODO: Правильно выбрать слот активации!!
     for (i = 0; i < pBufferMap._nCompleteVideoBuffers; i++) {
         //trace('activate buffer', i,'/',pBufferMap._nCompleteVideoBuffers);
         pBufferMap._pCompleteVideoBuffers[i].activate(i);
@@ -496,6 +496,13 @@ GLSLProgram.prototype.applyBuffer = function (pVertexData) {
                 pVertexBuffer.activate();
                 this._pManager.latestBuffer = pVertexBuffer;
             }
+
+            // trace('pDevice.vertexAttribPointer', pAttr.iLocation,
+            //     pVertexElement.nCount,
+            //     pVertexElement.eType,
+            //     false,
+            //     iStride,
+            //     pVertexElement.iOffset);
 
             pAttr.pCurrentData = pVertexData;
             pDevice.vertexAttribPointer(pAttr.iLocation,

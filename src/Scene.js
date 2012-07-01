@@ -868,7 +868,7 @@ SceneNode.prototype.worldForward = function () {
 SceneNode.prototype.getUp = SceneNode.prototype.worldUp;
 SceneNode.prototype.getRight = SceneNode.prototype.worldRight;
 SceneNode.prototype.getForward = SceneNode.prototype.worldForward;
-SceneNode.prototype.getPosition = SceneNode.prototype.worldPosition();
+SceneNode.prototype.getPosition = SceneNode.prototype.worldPosition;
 
 /**
  * Set new position.

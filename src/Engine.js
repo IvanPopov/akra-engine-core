@@ -352,9 +352,12 @@ Engine.prototype.renderScene = function () {
         pFirstMember = pFirstMember.nextSearchLink();
     }
 
-    if (this.littleRender) {
-        this.littleRender();
+Ifdef (__DEBUG);
+    //FIXME: remove direct render
+    if (this.directRender) {
+        this.directRender();
     }
+Endif ();
 
     return true;
 }

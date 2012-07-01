@@ -121,6 +121,32 @@ VertexElement.prototype.clone = function () {
     return new a.VertexElement(this.nCount, this.eType, this.eUsage, this.iOffset);
 };
 
+Ifdef (__DEBUG);
+
+VertexElement.prototype.toString = function() {
+    'use strict';
+
+    function _an(s, n, bBackward) {
+        s = String(s);
+        bBackward = ifndef(bBackward, false);
+        for (var i = 0, t = n - s.length; i < t; ++ i) {
+            if (bBackward) {
+                s = ' ' + s;
+            }
+            else {
+                s += ' ';
+            }
+        }
+        return s;
+    }
+
+    var s = '[ USAGE: ' + _an(this.eUsage, 12) + ', OFFSET ' + _an(this.iOffset, 4) + ' ]';
+
+    return s;
+};
+
+Endif ();
+
 A_NAMESPACE(VertexElement);
 
 function VertexDeclaration (pArrayElements) {
@@ -231,6 +257,23 @@ VertexDeclaration.prototype.clone = function () {
     pDecl.update();
     return pDecl
 };
+
+Ifdef (__DEBUG);
+
+VertexDeclaration.prototype.toString = function() {
+    'use strict';
+
+    var s = '';
+    s += '  VERTEX DECLARATION ( ' + this.iStride +' b. ) \n';
+    s += '---------------------------------------\n';
+    for (var i = 0; i < this.length; ++ i) {
+        s += this[i].toString() + '\n';
+    }
+
+    return s;
+};
+
+Endif ();
 
 A_NAMESPACE(VertexDeclaration);
 
@@ -419,6 +462,14 @@ VertexData.prototype.extend = function (pVertexDecl, pData) {
     }
 
     return this.setData(pDataNext, 0, nStrideNext);
+};
+
+VertexData.prototype.applyModifier = function(eSemantics, fnModifier) {
+    'use strict';
+
+    var pData = this.getTypedData(eSemantics);
+    fnModifier(pData);
+    this.setData(eSemantics, pData);
 };
 
 VertexData.prototype.resize = function (nCount, pVertexDeclaration) {
@@ -734,5 +785,26 @@ VertexData.prototype.hasSemantics = function (eSemantics) {
 VertexData.prototype.resourceHandle = function () {
     return this._pVertexBuffer.resourceHandle();
 }
+
+Ifdef (__DEBUG)
+
+VertexData.prototype.toString = function() {
+    'use strict';
+
+    var s = '';
+    s += '          VERTEX DATA  #' + this.toNumber() + '\n';
+    s += '---------------+-----------------------\n';
+    s += '        BUFFER : ' + this.resourceHandle() + '\n';
+    s += '          SIZE : ' + this.size + ' b.\n';
+    s += '        OFFSET : ' + this.getOffset() + ' b.\n';
+    s += '---------------+-----------------------\n';
+    s += ' MEMBERS COUNT : ' + this.getCount() + ' \n';
+    s += '        STRIDE : ' + this.getStride() + ' \n';
+    s += '---------------+-----------------------\n';
+    s += this.getVertexDeclaration().toString();
+    return s;
+};
+
+Endif ();
 
 A_NAMESPACE(VertexData);
