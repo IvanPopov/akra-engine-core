@@ -446,8 +446,11 @@ EffectType.prototype.hasEmptySemantic = function () {
     return this.pDesc.hasEmptySemantic();
 };
 EffectType.prototype.hasMultipleSemantic = function () {
-    return this.pDesc.hasMultipleSemantic;
+    return this.pDesc.hasMultipleSemantic();
 }
+EffectType.prototype.hasComplexType = function () {
+    return this.pDesc.hasComplexType();
+};
 EffectType.prototype.checkMe = function () {
     var i;
     if (!this.isAnalyzed) {
@@ -457,7 +460,8 @@ EffectType.prototype.checkMe = function () {
     for (i = 0; i < arguments.length; i++) {
         switch (arguments[i]) {
             case VERTEXUSAGE:
-                if (this.hasSemantic("POSITION") && !this.hasEmptySemantic() && !this.hasMultipleSemantic()) {
+                if (this.hasSemantic("POSITION") && !this.hasEmptySemantic() && !this.hasMultipleSemantic() &&
+                    !this.hasComplexType()) {
                     return true;
                 }
                 break;
@@ -511,6 +515,12 @@ function EffectStruct() {
     /**
      *
      * @type {Boolean}
+     * @private
+     */
+    this._hasComplexType = false;
+    /**
+     *
+     * @type {Boolean}
      */
     this.isAnalyzed = false;
 }
@@ -531,6 +541,9 @@ EffectStruct.prototype.analyzeSemantics = function () {
         if (!pOrders[i].sSemantic) {
             this._hasEmptySemantic = true;
             continue;
+        }
+        if (!pOrders[i].pType.isBase()) {
+            this._hasComplexType = true;
         }
         if (pSemantics[pOrders[i].sSemantic]) {
             this.hasMultipleSemantic = true;
@@ -578,6 +591,19 @@ EffectStruct.prototype.hasMultipleSemantic = function () {
             if (pOrders[j].sSemantic = pOrders[i].sSemantic) {
                 return true;
             }
+        }
+    }
+    return false;
+};
+EffectStruct.prototype.hasComplexType = function () {
+    if (this._pSemantics) {
+        return this._hasComplexType;
+    }
+    var pOrders = this.pOrders;
+    var i;
+    for (i = 0; i < pOrders.length; i++) {
+        if (!pOrders[i].pType.isBase()) {
+            return true;
         }
     }
     return false;
@@ -788,12 +814,14 @@ function EffectFunction() {
     this.isVertexShader = false;
     /**
      * Global variables used in function
-     * @type {EffectVariable[]}
+     * Pairs VariableName -> EffectVariable
+     * @type {Object}
      */
     this.pGlobalVariables = null;
     /**
-     * Another user-defined functions used in this function
-     * @type {EffectFunction[]}
+     * Global variables used in function
+     * Pairs: FunctionHash -> EffectFunction
+     * @type {Object}
      */
     this.pFunctions = null;
     /**
@@ -817,6 +845,18 @@ function EffectFunction() {
      */
     this.iScope = 0;
 }
+EffectFunction.prototype.addGlobalVariable = function (pVar) {
+    if (!this.pGlobalVariables) {
+        this.pGlobalVariables = {};
+    }
+    this.pGlobalVariables[pVar.sName] = pVar;
+};
+EffectFunction.prototype.addFunction = function (pFunc) {
+    if (!this.pFunctions) {
+        this.pFunctions = {};
+    }
+    this.pFunctions[pFunc.sHash] = pFunc;
+};
 EffectFunction.prototype.hasImplementation = function () {
     return this.pImplement ? true : false;
 };
@@ -1274,7 +1314,7 @@ Effect.prototype.addVariable = function (pVar) {
                 for (var j = 0; j < pOrders[i].nDim; j++) {
                     pPointers.push(new EffectPointer(pVar, j));
                 }
-                if(isVertex){
+                if (isVertex) {
                     pBuffer = new EffectBuffer();
                 }
                 isPointer = true;
@@ -1853,6 +1893,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
     var pChildren = pNode.pChildren;
     var pRes;
     var pVar;
+    var pFunction = this._pCurrentFunction;
     switch (pNode.sName) {
         case OBJECTEXPR:
             if (pChildren[0].sValue === T_KW_STATEBLOCK_STATE) {
@@ -2083,6 +2124,9 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 }
                 this._sVarName = pNode.sValue;
                 pRes = this.hasVariable(this._sVarName);
+                if (pFunction && pRes.iScope === GLOBAL) {
+                    pFunction.addGlobalVariable(pRes);
+                }
             }
             else {
                 this._sVarName += pNode.sValue;
