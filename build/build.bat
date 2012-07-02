@@ -10,4 +10,4 @@ IF EXIST %OUTPUT_FOLDER% GOTO END
 MD %OUTPUT_FOLDER%
 :END
 
-cd Z:\home\akra\www\akra-engine-core\build\ && node pack.js -h %CORE_LOCATION% -e %ESPRIMA% -p %PREPROCESSOR% -i %SRC% -o %OUTPUT_SCRIPT_NAME%
+cd C:\WebServers\home\akra\www\akra-engine-core\build && node pack.js -h %CORE_LOCATION% -e %ESPRIMA% -p %PREPROCESSOR% -i %SRC% -o %OUTPUT_SCRIPT_NAME%

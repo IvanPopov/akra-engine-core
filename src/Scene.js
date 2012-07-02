@@ -835,7 +835,7 @@ SceneNode.prototype.updateWorldVectors = function () {
 };
 /**
  * Getter for worldPosistion vector
- * @treturn Float32Array _v3fWorldPostion
+ * @treturn Float32Array _v3fWorldPosition
  */
 SceneNode.prototype.worldPosition = function () {
     this.updateWorldVectors();
@@ -1717,7 +1717,7 @@ SceneObject.prototype.prepareForRender = function () {
  * Call parent method. Default implementation does nothing.
  */
 SceneObject.prototype.render = function () {
-    SceneObject.superclass.render.apply(this, arguments);
+    //SceneObject.superclass.render.apply(this, arguments);
 };
 /**
  * if we queued ourselved for rendering with the

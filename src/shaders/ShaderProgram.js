@@ -445,6 +445,10 @@ GLSLProgram.prototype.applyMatrix4 = function (sName, pValue) {
     this._pDevice.uniformMatrix4fv(this._pUniformList[sName], false, pValue);
 };
 
+GLSLProgram.prototype.applyMatrix3 = function (sName, pValue) {
+    this._pDevice.uniformMatrix3fv(this._pUniformList[sName], false, pValue);
+};
+
 /**
  * Apply buffer map.
  * @tparam BufferMap pBufferMap

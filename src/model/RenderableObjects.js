@@ -39,7 +39,8 @@ PROPERTY(RenderableObject, 'renderMethod',
             this._pActiveSnaphot._pRenderMethod : null;
     },
     function (pRenderMethod) {
-        this.switchRenderMethod(this.addRenderMethod(pRenderMethod));
+        this.switchRenderMethod(
+            this.addRenderMethod(pRenderMethod));
     });
 
 PROPERTY(RenderableObject, 'effect',

@@ -3,8 +3,6 @@
  * @author Ivan Popov
  */
 
-
-
 function Mesh(pEngine, eOptions, sName) {
     A_CLASS;
     /**
@@ -13,10 +11,6 @@ function Mesh(pEngine, eOptions, sName) {
      * @private
      */
     this._sName = sName || null;
-
-    //mesh Subsets
-    this._pSubsets = [];
-
     //default material
     this._pMaterials = [];
 
@@ -25,7 +19,7 @@ function Mesh(pEngine, eOptions, sName) {
 
 EXTENDS(Mesh, a.RenderDataFactory);
 
-PROPERTY(Mesh, 'materials',
+PROPERTY(Mesh, 'flexMaterials',
     function () {
         return this._pMaterials;
     });
@@ -53,7 +47,7 @@ Mesh.prototype.allocateSubset = function(sName, ePrimType, eOptions) {
  * @treturn MaterialBase Material.
  * @memberof Mesh
  */
-Mesh.prototype.getMaterial = function () {
+Mesh.prototype.getFlexMaterial = function () {
     if (typeof arguments[0] === 'number') {
         return this._pMaterials[arguments[0]] || null;
     }
@@ -68,11 +62,11 @@ Mesh.prototype.getMaterial = function () {
     return null;
 };
 
-Mesh.prototype.addMaterial = function (sName, pMaterialData) {
+Mesh.prototype.addFlexMaterial = function (sName, pMaterialData) {
     'use strict';
 
     debug_assert(arguments.length < 7, "only base material supported now...");
-    debug_assert(this.getMaterial(sName) === null, 'material with name <' + sName + '> already exists');
+    debug_assert(this.getFlexMaterial(sName) === null, 'material with name <' + sName + '> already exists');
 
     sName = sName || 'unknown';
     var pMaterialId = this._pMaterials.length;
@@ -92,13 +86,14 @@ Mesh.prototype.addMaterial = function (sName, pMaterialData) {
     return true;
 };
 
-Mesh.prototype.setMaterial = function(iMaterial) {
+Mesh.prototype.setFlexMaterial = function(iMaterial) {
     'use strict';
 
     var bResult = true;
     for (var i = 0; i < this._pSubsets.length; ++ i) {
-        if (!this._pSubsets[i].setMaterial(iMaterial)) {
-            warning('cannot set material<' + iMaterial + '> for mesh<' + this.name + '> subset<' + this._pSubsets[i].name + '>');
+        if (!this._pSubsets[i].setFlexMaterial(iMaterial)) {
+            warning('cannot set material<' + iMaterial + '> for mesh<' + this.name + 
+                '> subset<' + this._pSubsets[i].name + '>');
             bResult = false;
         }
     }
@@ -114,5 +109,19 @@ Mesh.prototype.setup = function(sName, eOptions) {
     this._sName = sName || 'unknown';
 };
 
+/**
+ * destroy resource.
+ */
+Mesh.prototype.destroy = function () {
+    safe_delete_array(this._pSubsets);
+    safe_delete_array(this._pMaterials);
+    parent.destroy(this);
+};
+
+Mesh.prototype.destructor = function () {
+    'use strict';
+    
+    this.destroy();
+};
 
 A_NAMESPACE(Mesh);

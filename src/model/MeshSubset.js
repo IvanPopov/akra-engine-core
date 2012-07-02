@@ -33,25 +33,25 @@ MeshSubset.prototype.setup = function (pMesh, iId, ePrimType, eOptions) {
     return true;
 };
 
-MeshSubset.prototype.applyMaterial = function(sMaterial, pMaterialData) {
-    if (this._pFactory.addMaterial(sMaterial, pMaterialData)) {
-        return this.setMaterial(sMaterial);
+MeshSubset.prototype.applyFlexMaterial = function(sMaterial, pMaterialData) {
+    if (this._pFactory.addFlexMaterial(sMaterial, pMaterialData)) {
+        return this.setFlexMaterial(sMaterial);
     }
     return false;
 };
 
-MeshSubset.prototype.getMaterial = function(iMaterial) {
+MeshSubset.prototype.getFlexMaterial = function(iMaterial) {
     'use strict';
-    return this._pFactory.getMaterial(iMaterial);
+    return this._pFactory.getFlexMaterial(iMaterial);
 };
 
-MeshSubset.prototype.setMaterial = function (iMaterial) {
+MeshSubset.prototype.setFlexMaterial = function (iMaterial) {
     var pIndexData = this._pIndexData;
     var pMatFlow = this._pMap.getFlow(a.DECLUSAGE.MATERIAL);
     var eSemantics = 'INDEX_MAT';
     var pIndexDecl, pIndexData;
     var iMatFlow;
-    var pMaterial = this._pFactory.getMaterial(iMaterial);
+    var pMaterial = this._pFactory.getFlexMaterial(iMaterial);
     var iMat = pMaterial._pData.getOffset();
 
     if (!pMaterial) {

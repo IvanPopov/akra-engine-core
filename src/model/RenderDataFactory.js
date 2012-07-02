@@ -5,6 +5,7 @@ function RenderDataFactory (pEngine) {
     this._pEngine = pEngine;
     this._eDataOptions = 0;
     this._pSubsetType = null;
+    this._pSubsets = [];
 }
 
 PROPERTY(RenderDataFactory, 'subsetType',
@@ -115,6 +116,18 @@ RenderDataFactory.prototype.setup = function (eOptions) {
     this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource('data_factory_buffer' + '_' + a.sid());
     //TODO: add support for eOptions
     this._pDataBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
+};
+
+RenderDataFactory.prototype.destroy = function () {
+    'use strict';
+    
+    TODO('destroy this!');
+};
+
+RenderDataFactory.prototype.destructor = function () {
+    'use strict';
+    
+    this.destroy();
 };
 
 A_NAMESPACE(RenderDataFactory);
