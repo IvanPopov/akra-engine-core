@@ -8,9 +8,9 @@
  * @enum
  */
 Enum([VERTEX = 1, PIXEL, UNKNOWN = 0], SHADER_TYPES, a.Shader);
-Enum([VERT = 0, PIXL], SHADER_TYPES, a.Shader);
-Enum([GLOB, DECL, MAIN], SHADER_PARTS, a.Shader);
-Enum([ATTR = 1, UNI, VARY], SHADER_PARTS, a.Shader);
+Enum([VERT = 0, PIXL], SHADER_SHORT_TYPES, a.Shader);
+Enum([GLOB, DECL, MAIN], SHADER_DECLARATION_PARTS, a.Shader);
+Enum([ATTR = 1, UNI, VARY], SHADER_VARIABLE_PARTS, a.Shader);
 
 
 /**

@@ -19,6 +19,8 @@ Enum([
     VIDEOBUFFER_HEADER_SIZE = 8      //!< VideoBuffer header: header size
 ], VIDEOBUFFER_HEADER);
 
+Define(a.DECLUSAGE.TEXTURE_HEADER, 'TEXTURE_HEADER');
+
 /**
  * @typedef
  * VideoBuffer data type.
@@ -59,12 +61,18 @@ function VideoBuffer (pEngine) {
      */
     this._pRepackEffect = null;
 
+    /**
+     * Texture Header.
+     * @type {VertexData}
+     */
+    this._pHeader = null;
+
 
 //    debug_assert(a.info.graphics.getExtention(pEngine.pDevice, a.EXTENTIONS.TEXTURE_FLOAT),
 //        'для работы видеобуфера необходимо расширение a.EXTENTIONS.TEXTURE_FLOAT');
 }
 
-a.extend(VideoBuffer, a.VBufferBase, a.Texture);
+EXTENDS(VideoBuffer, a.VBufferBase, a.Texture);
 
 
 /**
@@ -77,7 +85,8 @@ PROPERTY(VideoBuffer, 'buffer', function () {
  * @getter Size of buffer in bytes.
  */
 PROPERTY(VideoBuffer, 'size', function () {
-    return this._iWidth * this._iHeight * this._numElementsPerPixel * this.typeSize;
+    return this._iWidth * this._iHeight * 
+        this._numElementsPerPixel * this.typeSize;
 });
 
 /**
@@ -119,22 +128,6 @@ DISPROPERTY(VideoBuffer, format);
 DISPROPERTY(VideoBuffer, magFilter);
 DISPROPERTY(VideoBuffer, minFilter);
 
-/**
- * @static
- * @type VertexDeclaration[]
- */
-//STATIC(VideoBuffer, pMarkupDeclaration, new a.VertexDeclaration([
-//    {nCount: 1, eType: a.DTYPE.INT, eUsage: 'INDEX'}
-//    {1, a.DTYPE.INT, 'SHIFT'}
-//]));
-
-/**
- * @static
- * @type VertexDeclaration[]
- */
-//STATIC(VideoBuffer, pDataDeclaration, VERTEX_DECLARATION([
-//    [4, a.DTYPE.FLOAT, 'VALUE']
-//]));
 
 /**
  * @property create(uint iByteSize, uint iFlags, ArrayBuffer pData)
@@ -182,18 +175,18 @@ VideoBuffer.prototype.create = function (iByteSize, iFlags, pData) {
         }
     }
     trace('POT texture size:',
-        (alignBytes(iByteSize, this.typeSize) + VIDEOBUFFER_HEADER_SIZE) / a.VideoBufferType.BYTES_PER_ELEMENT);
+        (alignBytes(iByteSize, this.typeSize)) / a.VideoBufferType.BYTES_PER_ELEMENT);
     // creating texture
-    pSize = a.calcPOTtextureSize((alignBytes(iByteSize, this.typeSize) + VIDEOBUFFER_HEADER_SIZE) /
+    pSize = a.calcPOTtextureSize((alignBytes(iByteSize, this.typeSize)) /
         a.VideoBufferType.BYTES_PER_ELEMENT, this._numElementsPerPixel);
-    pHeader = this._header(pSize.X, pSize.Y);
+    //pHeader = this._header(pSize.X, pSize.Y);
     pTextureData = new a.VideoBufferType(pSize.Z);
-    pTextureData.set(pHeader, 0);
+    //pTextureData.set(pHeader, 0);
 
     //---------------- TEMP SET DATA BEGIN -------------
+    //FIXME: correct set data..
     if (pData) {
-        (new Uint8Array(pTextureData.buffer)).set(new Uint8Array(pData.buffer),
-            (new Uint8Array(pHeader.buffer)).length);
+        (new Uint8Array(pTextureData.buffer)).set(new Uint8Array(pData.buffer));
     }
     //---------------- TEMP SET DATA END ---------------
 
@@ -205,10 +198,6 @@ VideoBuffer.prototype.create = function (iByteSize, iFlags, pData) {
         this.destroy();
         return false;
     }
-
-    this.bind();
-    this._pEngine.pDevice.generateMipmap(this.target);
-    this.unbind();
 
     this.wraps = a.TWRAPMODE.CLAMP_TO_EDGE;
     this.wrapt = a.TWRAPMODE.CLAMP_TO_EDGE;
@@ -225,6 +214,9 @@ VideoBuffer.prototype.create = function (iByteSize, iFlags, pData) {
 //    if (pData) {
 //        this.setData(pData);
 //    }
+    
+    this._pHeader = this.allocateData([VE_VEC2(a.DECLUSAGE.TEXTURE_HEADER)], 
+        this._header(pSize.X, pSize.Y));    
 
     return true;
 };
@@ -237,27 +229,30 @@ VideoBuffer.prototype.create = function (iByteSize, iFlags, pData) {
 VideoBuffer.prototype.resize = function (iByteSize) {
     var pSize, pBackupCopy;
 
-    trace('resize request for', iByteSize, 'bytes');
+    //trace('resize request for', iByteSize, 'bytes');
 
     iByteSize = alignBytes(iByteSize, this.typeSize);
-    pSize = a.calcPOTtextureSize((iByteSize + VIDEOBUFFER_HEADER_SIZE) /
+    pSize = a.calcPOTtextureSize((iByteSize) /
         a.VideoBufferType.BYTES_PER_ELEMENT, this._numElementsPerPixel);
 
     if (TEST_BIT(this._iTypeFlags, a.VBufferBase.RamBackupBit)) {
-        pBackupCopy = new Uint8Array(iByteSize);
+        pBackupCopy = new Uint8Array(pSize.X * pSize.Y * this._numElementsPerPixel * this.typeSize);
         pBackupCopy.set(this._pBackupCopy);
         this._pBackupCopy = pBackupCopy;
-        trace('backup copy size', pBackupCopy.byteLength, 'bytes');
+        //trace('backup copy size', pBackupCopy.byteLength, 'bytes');
     }
 
     if (pSize.X <= this._iWidth && pSize.Y <= this._iHeight) {
         return true;
     }
 
-    trace('resize buffer from', this._iWidth, 'x', this._iHeight, ' to', pSize.X, 'x', pSize.Y);
+    //trace('resize buffer from', this._iWidth, 'x', this._iHeight, ' to', pSize.X, 'x', pSize.Y);
+    parent(Texture).repack.call(this, pSize.X, pSize.Y);    
+    
 
-    parent(Texture).repack.call(this, pSize.X, pSize.Y);
-    parent(Texture).setPixelRGBA.call(this, 0, 0, 2, 1, this._header(), 0);
+    
+    //parent(Texture).setPixelRGBA.call(this, 0, 0, 2, 1, this._header(), 0);
+    this._pHeader.setData(this._header());
 
     return true;
 };
@@ -300,6 +295,7 @@ VideoBuffer.prototype._header = function (iWidth, iHeight) {
  * @protected
  */
 VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
+    'use strict';
 
     var iTypeSize       = this.typeSize,                //размер элемента(обычно это float - 4 байта)
         nElementsPerPix = this.numElementsPerPixel,     //число float'ов в пикселе
@@ -320,7 +316,7 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
     if (this.size < iOffset + iSize) {
         this.resize(iOffset + iSize);
     }
-
+   
     if (this.isRAMBufferPresent()) {
         //trace('update backup copy from', iOffset, '/', this._pBackupCopy.byteLength, 'for', iSize, 'bytes');
         this._pBackupCopy.set(new Uint8Array(pData.slice(0, iSize)), iOffset);
@@ -328,19 +324,20 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
 
     debug_assert(iOffset % iTypeSize === 0 && iSize % iTypeSize === 0, "Incorrect data size or offset");
 
-    iFrom       = iOffset / iTypeSize + VIDEOBUFFER_HEADER_SIZE;
+    iFrom       = iOffset / iTypeSize;
     iCount      = iSize / iTypeSize;
 
     iLeftShift  = iFrom % nElementsPerPix;
     iRightShift = ((iFrom + iCount) % nElementsPerPix);
     iBeginPix   = Math.floor(iFrom / nElementsPerPix);
-    iEndPix     = Math.ceil((iFrom + iCount) / nElementsPerPix);
+    iEndPix     = Math.floor((iFrom + iCount) / nElementsPerPix);
     nPixels     = iEndPix - iBeginPix;
     nElements   = nPixels * nElementsPerPix;
 
     pBufferData = new a.VideoBufferType(pData.slice(0, iSize));
 
     if (iLeftShift === 0 && iRightShift === 0) {
+
         var iWidth  = this.width;
         var iYmin   = Math.floor(iBeginPix / iWidth);
         var iYmax   = Math.ceil(iEndPix / iWidth);
@@ -350,11 +347,11 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
         var iBeginElement = 0, iEndElement = 0;
         var pParent = parent(Texture);
         var me = this;
-
         //hack: if iEndPixel is first pixel from next row
         iXend = (iXend === 0? iWidth: iXend);
 
         var fnWriteRect = function (iX, iY, iW, iH) {
+
             iBeginElement = iEndElement;
             iEndElement = iW * iH * nElementsPerPix + iEndElement;
             pParent.setPixelRGBA.call(me, iX, iY, iW, iH, new Float32Array(pBufferData.subarray(iBeginElement, iEndElement)));
@@ -384,7 +381,8 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
         if(this._pBackupCopy.byteLength < iRealOffset + iRealSize){
             this.resize(iRealOffset + iRealSize);
         }
-        return this.setData(this._pBackupCopy.buffer.slice(iRealOffset, iRealOffset + iRealSize), iRealOffset, iRealSize);
+        return this.setData(this._pBackupCopy.buffer.slice(iRealOffset, iRealOffset + 
+            iRealSize), iRealOffset, iRealSize);
     }
     else {
         trace('update via rendering...');

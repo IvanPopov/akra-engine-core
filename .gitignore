@@ -4,15 +4,25 @@ docreator/
 preprocessor/
 analyzer/
 effects/
+compiled/
 
 # Project property files
-.html
-.bak
-.dds
-.png
-.zip
-.rar
-.back
-.prev
+*.html
+*.bak
+*.dds
+*.png
+*.zip
+*.rar
+*.back
+*.prev
 
+#project file
+*.sublime-project
+*.sublime-workspace
+*.sublime-build
+
+#complete build
+compiled/*.js
+build/build.bat
+build.bat
 server.js

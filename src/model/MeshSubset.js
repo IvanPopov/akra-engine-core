@@ -1,82 +1,90 @@
+
 /**
  * @ctor
  */
-function MeshSubset (pEngine) {
+function MeshSubset (pEngine, sName) {
     A_CLASS;
 
-    /**
-     * @private
-     * @type {PRIMITIVE_TYPE}
-     */
-    this._ePrimType = 0;
-
-    //vertexData(vertexBuffer) with indices
-    //or IndexBuffer with indices
-    this._pIndexData = null;
-    this._pIndexBuffer = null;
-    this._pMap = new a.BufferMap(pEngine);
-    //parent mesh
-    this._pMesh = null;
-
-    //id
-    this._iId = 0;
-
-    this._iMaterial = -1;
+    this._sName = sName || null;
 }
 
-EXTENDS(MeshSubset, a.RenderableObject);
+EXTENDS(MeshSubset, a.RenderDataSubset, a.RenderableObject);
 
-PROPERTY(MeshSubset, 'parent',
+PROPERTY(RenderDataSubset, 'name',
     function () {
-        return this._pMesh;
+        return this._sName;
+    },
+    function (sName) {
+        this._sName = sName;
     });
 
-/**
- * @protected
- * @param  {Engine} pEngine    [description]
- * @param  {Mesh} pMesh      [description]
- * @param  {Uint} iId        [description]
- * @param  {String} sName      [description]
- * @param  {PRIMITIVE_TYPE} ePrimType  [description]
- * @param  {Uint} iPrimCount [description]
- */
-MeshSubset.prototype.setup = function (pMesh, iId, sName, pIndicesData, ePrimType) {
+PROPERTY(MeshSubset, 'mesh',
+    function () {
+        return this.factory;
+    });
+
+MeshSubset.prototype.setup = function (pMesh, iId, ePrimType, eOptions) {
     if (arguments.length < 4) {
         return false;
     }
-
-    this._pMesh = pMesh;
-    this._iId = iId;
-    this._ePrimType = ePrimType || a.PRIMTYPE.TRIANGLELIST;
-    this._pIndices = pIndicesData;
-    var pIndexBuffer = 
-        PR_DISPLAYMNGR.vertexBufferPool().createResource('submesh_' + this.name + '_' + a.sid());
-    pIndexBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
-    this._pIndexBuffer = pIndexBuffer;
-
-    this.name = sName;
+    //TODO: calc options for data set.
+    parent.setup(pMesh, iId, ePrimType, 0);
 
     return true;
 };
 
-MeshSubset.prototype.allocateIndex = function (pAttrDecl, pData) {
+MeshSubset.prototype.applyFlexMaterial = function(sMaterial, pMaterialData) {
+    if (this._pFactory.addFlexMaterial(sMaterial, pMaterialData)) {
+        return this.setFlexMaterial(sMaterial);
+    }
+    return false;
+};
+
+MeshSubset.prototype.getFlexMaterial = function(iMaterial) {
+    'use strict';
+    return this._pFactory.getFlexMaterial(iMaterial);
+};
+
+MeshSubset.prototype.setFlexMaterial = function (iMaterial) {
     var pIndexData = this._pIndexData;
+    var pMatFlow = this._pMap.getFlow(a.DECLUSAGE.MATERIAL);
+    var eSemantics = 'INDEX_MAT';
+    var pIndexDecl, pIndexData;
+    var iMatFlow;
+    var pMaterial = this._pFactory.getFlexMaterial(iMaterial);
+    var iMat = pMaterial._pData.getOffset();
+
+    if (!pMaterial) {
+        return false;
+    }
+
     
-    if (!pIndexData) {
-        this._pIndexData = this._pIndexBuffer.allocateData(pAttrDecl, pData);
-        return true;
+    if (pMatFlow) {
+        iMatFlow = pMatFlow.iFlow;
+        eSemantics = pMatFlow.pMapper.eSemantics;
+        pIndexData = pMatFlow.pMapper.pData;
+
+        this._addData(pMaterial._pData, iMatFlow);
+        return this.index(iMat, eSemantics, true);
+    }
+    else {
+        pIndexDecl = new a.VertexDeclaration([VE_FLOAT(eSemantics)]);
+        pIndexData = new Float32Array(pIndexData.getCount());    
+        iMatFlow = this._addData(pMaterial._pData);
+
+        debug_assert(iMatFlow >= 0, 'cannot add data flow with material for mesh subsset');
+
+        if (!this.allocateIndex(pIndexDecl, pIndexData)) {
+            trace('cannot allocate index for material!!!');
+            return false;
+        }
+
+        return this.index(iMat, eSemantics, true);
     }
     
-    return pIndexData.extend(pAttrDecl, pData);
+    return true;
 };
 
-MeshSubset.prototype.setMaterial = function (iMaterial) {
-    
-};
 
-//добавляем сабмешу ссылку на его данные.
-MeshSubset.prototype._addData = function (pVertexData) {
-    this._pMap.flow(pVertexData);
-}
 
 A_NAMESPACE(MeshSubset);

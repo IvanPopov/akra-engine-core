@@ -55,8 +55,11 @@ Include('resources/Texture.js');
 Include('resources/RenderMethod.js');
 
 Ifdef(DEV_BUILD)
+Include('model/RenderDataFactory.js');
+Include('model/RenderDataSubset.js');
 Include('model/RenderSnapshot.js');
 Include('model/RenderableObjects.js');
+Include('model/MeshSubset.js');
 Include('model/Mesh2.0.js');
 Elseif();
 Include('model/');
@@ -68,4 +71,4 @@ Include('objects/');
 
 Include('Engine.js');
 
-window['a'] = window['AKRA'] = a;
+window['a'] = window['akra'] = a;

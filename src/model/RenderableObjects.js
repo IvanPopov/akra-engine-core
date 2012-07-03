@@ -35,20 +35,26 @@ PROPERTY(RenderableObject, 'renderMethod',
      * @return {RenderMethod} 
      */
     function () {
-        return this._pActiveSnaphot._pRenderMethod;
+        return this._pActiveSnaphot? 
+            this._pActiveSnaphot._pRenderMethod : null;
     },
     function (pRenderMethod) {
-        this.switchRenderMethod(this.addRenderMethod(pRenderMethod));
+        this.switchRenderMethod(
+            this.addRenderMethod(pRenderMethod));
     });
 
 PROPERTY(RenderableObject, 'effect',
     function () {
-        return this._pActiveSnaphot._pRenderMethod._pEffect;
+        return this._pActiveSnaphot? 
+            this._pActiveSnaphot._pRenderMethod._pEffect : 
+            null;
     });
 
 PROPERTY(RenderableObject, 'surfaceMaterial',
     function () {
-        return this._pActiveSnaphot._pRenderMethod._pMaterial;
+        return this._pActiveSnaphot? 
+            this._pActiveSnaphot._pRenderMethod._pMaterial : 
+            null;
     });
 
 /**

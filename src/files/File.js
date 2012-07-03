@@ -18,7 +18,7 @@ if (a.info.support.api.webWorker) {
     a.extend(RemoteFileThread, a.FileThread);
 
     RemoteFileThread.prototype._pThreadManager
-        = new ThreadManager(BUILD_PATH('RemoteFile.thread.js', '/sources/files/threads/'));
+        = new ThreadManager(BUILD_PATH('RemoteFile.thread.js', 'files/threads/'));
     a.RemoteFile = RemoteFileThread;
 
     if (a.info.support.api.fileSystem) {
@@ -30,13 +30,13 @@ if (a.info.support.api.webWorker) {
         a.extend(LocalFileThread, a.FileThread);
 
         LocalFileThread.prototype._pThreadManager
-            = new ThreadManager(BUILD_PATH('LocalFile.thread.js', '/sources/files/threads/'));
+            = new ThreadManager(BUILD_PATH('LocalFile.thread.js', 'files/threads/'));
         a.LocalFile = LocalFileThread;
     }
     else if (a.info.support.api.localStorage) {
 
         If(FILE_MODULES_IMPLEMENTATION);
-        a.require(BUILD_PATH('LocalFileSimplified.plug.js', '/sources/files/plugins/'));
+        a.require(BUILD_PATH('LocalFileSimplified.plug.js', 'files/plugins/'));
         Elseif();
         Include('LocalFileSimplified.js');
         Endif();
@@ -50,7 +50,7 @@ if (a.info.support.api.webWorker) {
 else if (a.info.support.api.fileSystem) {
 
     If(FILE_MODULES_IMPLEMENTATION);
-    a.require(BUILD_PATH('LocalFile.plug.js', '/sources/files/plugins/'));
+    a.require(BUILD_PATH('LocalFile.plug.js', 'files/plugins/'));
     Elseif();
     Include('LocalFile.js');
     Endif();

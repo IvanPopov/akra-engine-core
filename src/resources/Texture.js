@@ -728,9 +728,9 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
 
     var pDevice = this._pEngine.pDevice;
 
-    if (!this._pRepackProgram) {
-        this._pRepackProgram = this._pEngine.displayManager().shaderProgramPool().createResource('A_repackTexture');
-        this._pRepackProgram.create(
+    if (!statics._pRepackProgram) {
+        statics._pRepackProgram = this._pEngine.displayManager().shaderProgramPool().createResource('A_repackTexture');
+        statics._pRepackProgram.create(
             "                                   \n\
             attribute float SERIALNUMBER;       \n\
             uniform vec2 sourceTextureSize;     \n\
@@ -741,12 +741,12 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
                                                 \n\
             void main(void){                    \n\
                 vData = texture2D(sourceTexture,\
-                vec2(mod(SERIALNUMBER,sourceTextureSize.x)/sourceTextureSize.x,\
-                (floor(SERIALNUMBER/sourceTextureSize.x))/sourceTextureSize.y));\n\
+                vec2((mod(SERIALNUMBER,sourceTextureSize.x) + .5)/sourceTextureSize.x,\
+                (floor(SERIALNUMBER/sourceTextureSize.x) + .5)/sourceTextureSize.y));\n\
                                                 \n\
                 gl_Position = vec4(2.*\
-                mod(SERIALNUMBER,destinationTextureSize.x)/destinationTextureSize.x - 1.,\n\
-                2.*floor(SERIALNUMBER/destinationTextureSize.x)/destinationTextureSize.y \
+                (mod(SERIALNUMBER,destinationTextureSize.x) + .5)/destinationTextureSize.x - 1.,\n\
+                2. * (floor(SERIALNUMBER/destinationTextureSize.x) + .5)/destinationTextureSize.y \
                 - 1.,0.,1.);\n\
             }                                   \n\
             ",
@@ -763,7 +763,7 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
     ", true);
     }
 
-    var pProgram = this._pRepackProgram;
+    var pProgram = statics._pRepackProgram;
     pProgram.activate();
 
     var pDestinationTexture = pDevice.createTexture();

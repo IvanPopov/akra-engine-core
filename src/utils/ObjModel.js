@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * @author Ivan Popov
  * @brief Loader for .obj files.
@@ -248,7 +248,7 @@ ObjModel.prototype.calcNormals = function (useSmoothing) {
     this._isObjectHasNormals = true;
 };
 
-
+//FIXME: переписать создание меша из OBJ модели!!
 a.loadMeshFromOBJ = function (pEngine, sFilename, eMeshOptions, fnCallback) {
     warn_assert(eMeshOptions == 0, 'loadMeshFromOBJ:: Опции еще не поддерживаются');
     var pModel = new a.ObjModel();

@@ -14,7 +14,7 @@ Enum([
     DIFFUSE = 'DIFFUSE',
     AMBIENT = 'AMBIENT',
     SPECULAR = 'SPECULAR',
-    EMISSION = 'EMISSION',
+    EMISSIVE = 'EMISSIVE',
     SHININESS = 'SHININESS',
     REFLECTIVE = 'REFLECTIVE',
     REFLECTIVITY = 'REFLECTIVITY',
@@ -32,6 +32,7 @@ Enum([
  */
 function MaterialBase () {
   this._sName = null;
+  this._iID = 0;
 }
 
 PROPERTY(MaterialBase, 'value',
@@ -39,6 +40,10 @@ PROPERTY(MaterialBase, 'value',
     return this;
   },
   function (pMaterialBase) {
+    if (!pMaterialBase) {
+      return;
+    }
+    
     var pPoperties = __KEYS__(MATERIAL_COMPONENTS);
     
     for (var i in pPoperties) {
@@ -57,6 +62,14 @@ PROPERTY(MaterialBase, 'name',
     function (sName) {
       this._sName = sName;
     });
+
+PROPERTY(MaterialBase, 'id',
+  function () {
+    return this._iID;
+  },
+  function (iID) {
+    this._iID = Number(iID);
+  });
 
 /**
  * Get material data, if it exists.
@@ -92,72 +105,88 @@ MaterialBase.prototype.setProperty = function(eProperty, pValue) {
 
 a.MaterialBase = MaterialBase;
 
-/**
- * Get diffuse property of material.
- */
-PROPERTY(MaterialBase, a.Material.DIFFUSE, 
-  function () {return this.getProperty(a.Material.DIFFUSE);},
-  function (c4fColor) {this.setProperty(a.Material.DIFFUSE);});
-/**
- * Get ambient property of material.
- */
-PROPERTY(MaterialBase, a.Material.AMBIENT, 
-  function () {return this.getProperty(a.Material.AMBIENT);},
-  function (c4fColor) {this.setProperty(a.Material.AMBIENT);});
-/**
- * Get specular property of material.
- */
-PROPERTY(MaterialBase, a.Material.SPECULAR, 
-  function () {return this.getProperty(a.Material.SPECULAR);},
-  function (c4fColor) {this.setProperty(a.Material.SPECULAR);});
-/**
- * Get emission property of material.
- */
-PROPERTY(MaterialBase, a.Material.EMISSION, 
-  function () {return this.getProperty(a.Material.EMISSION);},
-  function (c4fColor) {this.setProperty(a.Material.EMISSION);});
+for (var m in __KEYS__(MATERIAL_COMPONENTS)) {
+  (function (sComponent) {
+      PROPERTY(MaterialBase, sComponent.toLowerCase(), 
+      function () {return this.getProperty(sComponent);},
+      function (c4fColor) {this.setProperty(sComponent, c4fColor);});
+  })(__KEYS__(MATERIAL_COMPONENTS)[m]);
+}
 
-/**
- * Get shininess property of material.
- */
-PROPERTY(MaterialBase, a.Material.SHININESS, 
-  function () {return this.getProperty(a.Material.SHININESS);},
-  function (c4fColor) {this.setProperty(a.Material.SHININESS);});
+MaterialBase.prototype.toDefault = function() {
+  'use strict';
 
-/**
- * Get reflective property of material.
- */
-PROPERTY(MaterialBase, a.Material.REFLECTIVE, 
-  function () {return this.getProperty(a.Material.REFLECTIVE);},
-  function (c4fColor) {this.setProperty(a.Material.REFLECTIVE);});
+  this.diffuse = new a.Color4f(.5, 1.);
+  this.ambient = new a.Color4f(.55, 1.);
+  this.shininess = 55.;
+};
 
-/**
- * Get reflectivity property of material.
- */
-PROPERTY(MaterialBase, a.Material.REFLECTIVITY, 
-  function () {return this.getProperty(a.Material.REFLECTIVITY);},
-  function (c4fColor) {this.setProperty(a.Material.REFLECTIVITY);});
+// /**
+//  * Get diffuse property of material.
+//  */
+// PROPERTY(MaterialBase, a.Material.DIFFUSE, 
+//   function () {return this.getProperty(a.Material.DIFFUSE);},
+//   function (c4fColor) {this.setProperty(a.Material.DIFFUSE);});
+// /**
+//  * Get ambient property of material.
+//  */
+// PROPERTY(MaterialBase, a.Material.AMBIENT, 
+//   function () {return this.getProperty(a.Material.AMBIENT);},
+//   function (c4fColor) {this.setProperty(a.Material.AMBIENT);});
+// /**
+//  * Get specular property of material.
+//  */
+// PROPERTY(MaterialBase, a.Material.SPECULAR, 
+//   function () {return this.getProperty(a.Material.SPECULAR);},
+//   function (c4fColor) {this.setProperty(a.Material.SPECULAR);});
+// /**
+//  * Get EMISSIVE property of material.
+//  */
+// PROPERTY(MaterialBase, a.Material.EMISSIVE, 
+//   function () {return this.getProperty(a.Material.EMISSIVE);},
+//   function (c4fColor) {this.setProperty(a.Material.EMISSIVE);});
 
-/**
- * Get transparent property of material.
- */
-PROPERTY(MaterialBase, a.Material.TRANSPARENT, 
-  function () {return this.getProperty(a.Material.TRANSPARENT);},
-  function (c4fColor) {this.setProperty(a.Material.TRANSPARENT);});
+// /**
+//  * Get shininess property of material.
+//  */
+// PROPERTY(MaterialBase, a.Material.SHININESS, 
+//   function () {return this.getProperty(a.Material.SHININESS);},
+//   function (c4fColor) {this.setProperty(a.Material.SHININESS);});
 
-/**
- * Get transparentcy property of material.
- */
-PROPERTY(MaterialBase, a.Material.TRANSPARENCY, 
-  function () {return this.getProperty(a.Material.TRANSPARENCY);},
-  function (c4fColor) {this.setProperty(a.Material.TRANSPARENCY);});
+// /**
+//  * Get reflective property of material.
+//  */
+// PROPERTY(MaterialBase, a.Material.REFLECTIVE, 
+//   function () {return this.getProperty(a.Material.REFLECTIVE);},
+//   function (c4fColor) {this.setProperty(a.Material.REFLECTIVE);});
 
-/**
- * Get "index of refraction" property of material.
- */
-PROPERTY(MaterialBase, a.Material.INDEXOFREFRACTION, 
-  function () {return this.getProperty(a.Material.INDEXOFREFRACTION);},
-  function (c4fColor) {this.setProperty(a.Material.INDEXOFREFRACTION);});
+// /**
+//  * Get reflectivity property of material.
+//  */
+// PROPERTY(MaterialBase, a.Material.REFLECTIVITY, 
+//   function () {return this.getProperty(a.Material.REFLECTIVITY);},
+//   function (c4fColor) {this.setProperty(a.Material.REFLECTIVITY);});
+
+// /**
+//  * Get transparent property of material.
+//  */
+// PROPERTY(MaterialBase, a.Material.TRANSPARENT, 
+//   function () {return this.getProperty(a.Material.TRANSPARENT);},
+//   function (c4fColor) {this.setProperty(a.Material.TRANSPARENT);});
+
+// /**
+//  * Get transparentcy property of material.
+//  */
+// PROPERTY(MaterialBase, a.Material.TRANSPARENCY, 
+//   function () {return this.getProperty(a.Material.TRANSPARENCY);},
+//   function (c4fColor) {this.setProperty(a.Material.TRANSPARENCY);});
+
+// /**
+//  * Get "index of refraction" property of material.
+//  */
+// PROPERTY(MaterialBase, a.Material.INDEXOFREFRACTION, 
+//   function () {return this.getProperty(a.Material.INDEXOFREFRACTION);},
+//   function (c4fColor) {this.setProperty(a.Material.INDEXOFREFRACTION);});
 
 /**
  * Independent Material class.
@@ -180,7 +209,7 @@ function Material () {
    /**
     * @type ColorValue
     */
-   this.pEmission = new a.ColorValue;
+   this.pEMISSIVE = new a.ColorValue;
    /**
     * @type Float
     */
@@ -199,7 +228,7 @@ Material.prototype.getProperty = function(eProperty) {
     case a.Material.DIFFUSE:    return this.pDiffuse;
     case a.Material.AMBIENT:    return this.pAmbient;
     case a.Material.SPECULAR:   return this.pSpecular;
-    case a.Material.EMISSION:   return this.pEmission;
+    case a.Material.EMISSIVE:   return this.pEMISSIVE;
     case a.Material.SHININESS:  return this.pShininess;
   }
 
@@ -213,15 +242,18 @@ Material.prototype.getProperty = function(eProperty) {
  */
 Material.prototype.setProperty = function(eProperty, pValue) {
   switch (eProperty) {
-    case a.Material.DIFFUSE:    this.pDiffuse = pValue;
-    case a.Material.AMBIENT:    this.pAmbient = pValue;
-    case a.Material.SPECULAR:   this.pSpecular = pValue;
-    case a.Material.EMISSION:   this.pEmission = pValue;
-    case a.Material.SHININESS:  this.pShininess = pValue;
+    case a.Material.DIFFUSE:    this.pDiffuse = pValue; return true;
+    case a.Material.AMBIENT:    this.pAmbient = pValue; return true;
+    case a.Material.SPECULAR:   this.pSpecular = pValue; return true;
+    case a.Material.EMISSIVE:   this.pEMISSIVE = pValue; return true;
+    case a.Material.SHININESS:  this.pShininess = pValue; return true;
   }
   
   return null;
 };
+
+
+A_NAMESPACE(Material);
 
 /**
  * MeshMaterial class. 
@@ -230,9 +262,13 @@ Material.prototype.setProperty = function(eProperty, pValue) {
  * @param {VertexData} pVertexData Material storage.
  */
 function MeshMaterial (sName, pVertexData) {
+    A_CLASS;
+
     this._pData = pVertexData;
-    this._sName = sName;
+    this.name = sName;
 }
+
+EXTENDS(MeshMaterial, a.MaterialBase);
 
 /**
  * Declaration of material data.
@@ -241,10 +277,10 @@ function MeshMaterial (sName, pVertexData) {
 MeshMaterial.vertexDeclaration = function () {
     return new a.VertexDeclaration([
             {nCount: 17, eType: a.DTYPE.FLOAT, eUsage: 'MATERIAL'},
-            {nCount: 4, eType: a.DTYPE.FLOAT, eUsage: 'DIFFUSE', iOffset: -68},
+            {nCount: 4, eType: a.DTYPE.FLOAT, eUsage: 'DIFFUSE', iOffset: 0},
             {nCount: 4, eType: a.DTYPE.FLOAT, eUsage: 'AMBIENT'},
             {nCount: 4, eType: a.DTYPE.FLOAT, eUsage: 'SPECULAR'},
-            {nCount: 4, eType: a.DTYPE.FLOAT, eUsage: 'EMISSION'},
+            {nCount: 4, eType: a.DTYPE.FLOAT, eUsage: 'EMISSIVE'},
             {nCount: 1, eType: a.DTYPE.FLOAT, eUsage: 'SHININESS'}
         ]);
 };
@@ -254,7 +290,7 @@ MeshMaterial.prototype.getProperty = function(eProperty) {
     case a.Material.DIFFUSE:    return this._pData.getTypedData(a.DECLUSAGE.DIFFUSE,   0, 1);
     case a.Material.AMBIENT:    return this._pData.getTypedData(a.DECLUSAGE.AMBIENT,   0, 1);
     case a.Material.SPECULAR:   return this._pData.getTypedData(a.DECLUSAGE.SPECULAR,  0, 1);
-    case a.Material.EMISSION:   return this._pData.getTypedData(a.DECLUSAGE.EMISSION,  0, 1);
+    case a.Material.EMISSIVE:   return this._pData.getTypedData(a.DECLUSAGE.EMISSIVE,  0, 1);
     case a.Material.SHININESS:  return this._pData.getTypedData(a.DECLUSAGE.SHININESS, 0, 1)[0];
   }
 
@@ -263,11 +299,11 @@ MeshMaterial.prototype.getProperty = function(eProperty) {
 
 MeshMaterial.prototype.setProperty = function(eProperty, pValue) {
   switch (eProperty) {
-    case a.Material.DIFFUSE:    this._pData.setData(pValue, a.DECLUSAGE.DIFFUSE);
-    case a.Material.AMBIENT:    this._pData.setData(pValue, a.DECLUSAGE.AMBIENT);
-    case a.Material.SPECULAR:   this._pData.setData(pValue, a.DECLUSAGE.SPECULAR);
-    case a.Material.EMISSION:   this._pData.setData(pValue, a.DECLUSAGE.EMISSION);
-    case a.Material.SHININESS:  this._pData.setData(new Float32(fValue), a.DECLUSAGE.SHININESS);
+    case a.Material.DIFFUSE:    return this._pData.setData(pValue, a.DECLUSAGE.DIFFUSE);
+    case a.Material.AMBIENT:    return this._pData.setData(pValue, a.DECLUSAGE.AMBIENT);
+    case a.Material.SPECULAR:   return this._pData.setData(pValue, a.DECLUSAGE.SPECULAR);
+    case a.Material.EMISSIVE:   return this._pData.setData(pValue, a.DECLUSAGE.EMISSIVE);
+    case a.Material.SHININESS:  return this._pData.setData(new Float32(pValue), a.DECLUSAGE.SHININESS);
   }
   
   return null;
@@ -281,5 +317,5 @@ PROPERTY(MeshMaterial, 'data',
         this._pData.setData(pData, a.DECLUSAGE.MATERIAL);
     });
 
-a.MeshMaterial = MeshMaterial;
+A_NAMESPACE(MeshMaterial);
 
