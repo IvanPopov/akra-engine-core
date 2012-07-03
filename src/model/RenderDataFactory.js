@@ -69,11 +69,29 @@ RenderDataFactory.prototype.allocateData = function (pDataDecl, pData) {
     return pVertexData.getOffset();
 };
 
+RenderDataFactory.prototype.getDataLocation = function (sSemantics) {
+    'use strict';
+    var pDataList = this._pDataBuffer._pVertexDataArray;
+    
+    for (var i = 0; i < pDataList.length; i++) {
+        if (pDataList[i].hasSemantics(sSemantics)) {
+            return pDataList[i].getOffset();
+        }
+    };
+
+    return null;
+};
+
 /**
  * Положить данные в буфер.
  * @private
  */
 RenderDataFactory.prototype._allocateData = function(pVertexDecl, pData) {
+    if (!this._pDataBuffer) {
+        this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource('data_factory_buffer' + '_' + a.sid());
+        //TODO: add support for eOptions
+        this._pDataBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
+    }
     return this._pDataBuffer.allocateData(pVertexDecl, pData);
 };
 
@@ -103,6 +121,9 @@ RenderDataFactory.prototype.draw = function() {
     'use strict';
     var pProgram = this._pEngine.shaderManager().getActiveProgram();
     for (var i = 0; i < this._pSubsets.length; i++) {
+        if (this._pSubsets[i]._pIndexData === null) {
+            continue;
+        }
         pProgram.applyBufferMap(this._pSubsets[i]._pMap);
         this._pSubsets[i]._pMap.draw();
     };
@@ -113,9 +134,7 @@ RenderDataFactory.prototype.draw = function() {
  * @protected
  */
 RenderDataFactory.prototype.setup = function (eOptions) {
-    this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource('data_factory_buffer' + '_' + a.sid());
-    //TODO: add support for eOptions
-    this._pDataBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
+
 };
 
 RenderDataFactory.prototype.destroy = function () {

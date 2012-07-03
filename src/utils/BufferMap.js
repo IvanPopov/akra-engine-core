@@ -286,7 +286,7 @@ BufferMap.prototype.reset = function () {
 
     var pDevice = this._pEngine.pDevice;
     var nFlowLimit = Math.min(
-        a.info.graphics.maxVertexTextureImageUnits(pDevice),
+        16,//a.info.graphics.maxVertexTextureImageUnits(pDevice),
         a.info.graphics.maxVertexAttributes(pDevice)
     );
 
@@ -398,6 +398,7 @@ BufferMap.prototype.findMapping = function (pMap, eSemantics) {
     }
     return null;
 };
+
 
 /**
  * Setup mapping for given flow.
@@ -571,8 +572,8 @@ BufferMap.prototype.toString = function () {
     }
 
     var s = '\n\n', t;
-    s += '    Complete Flows   : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping     : OFFSET |    Additional    \n';
-    t  = '---------------------:-----------------+---------------------:------------------:--------+------------------\n';
+    s += '      Complete Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping     : OFFSET |    Additional    \n';
+    t  = '-------------------------:-----------------+---------------------:------------------:--------+------------------\n';
     // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
     // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
     s += t;
@@ -584,24 +585,26 @@ BufferMap.prototype.toString = function () {
         var pDecl = pVertexData.getVertexDeclaration();
         //trace(pMapper); window['pMapper'] = pMapper;
         s += '#' + _an(pFlow.iFlow, 2) + ' ' + 
-            _an('[ ' + pDecl[0].eUsage + ' ]', 16) + ' : ' + _an(pDecl[0].iOffset, 6, true) + ' / ' + _an(pDecl[0].iSize, 6) + ' | ' + 
+            _an('[ ' + pDecl[0].eUsage + ' ]', 20) + ' : ' + _an(pDecl[0].iOffset, 6, true) + ' / ' + _an(pDecl[0].iSize, 6) + ' | ' + 
             _an(pVertexData.resourceHandle(), 8, true) + ' / ' + _an(pVertexData.getOffset(), 8) + ' : ' + 
-            _an(pMapper.eSemantics, 17) + ': ' + _an(pMapper.pData.getVertexDeclaration().element(pMapper.eSemantics).iOffset, 6) + ' |                  \n';
+            (pMapper? _an(pMapper.eSemantics, 17) + ': ' + _an(pMapper.pData.getVertexDeclaration().element(pMapper.eSemantics).iOffset, 6) :
+            _an('-----', 17) + ': ' + _an('-----', 6)) + ' |                  \n';
+        
 
         for (var j = 1; j < pDecl.length; ++ j) {
             s += '    ' + 
-            _an('[ ' + pDecl[j].eUsage + ' ]', 16) + ' : ' + _an(pDecl[j].iOffset, 6, true) + ' / ' + _an(pDecl[j].iSize, 6) +  
+            _an('[ ' + pDecl[j].eUsage + ' ]', 20) + ' : ' + _an(pDecl[j].iOffset, 6, true) + ' / ' + _an(pDecl[j].iSize, 6) +  
                   ' |                     :                  :        |                  \n';
         }
         s += t;
     };
-    s += '=============================================================\n';
+    s += '=================================================================\n';
     s += '      PRIMITIVE TYPE : ' + '0x' + this.primType.toString(16) + '\n';
     s += '     PRIMITIVE COUNT : ' + this.primCount + '\n';
     s += '         START INDEX : ' + this.startIndex + '\n';
     s += '              LENGTH : ' + this.length + '\n';
     s += '  USING INDEX BUFFER : ' + (this.index? 'TRUE': 'FALSE') + '\n';
-    s += '=============================================================\n';
+    s += '=================================================================\n';
 
     return s + '\n\n';
 };

@@ -6,7 +6,9 @@ function RenderDataSubset() {
     this._pFactory = null;
     this._iId = -1;
     this._pIndexBuffer = null;
+    this._pAttribBuffer = null;
     this._pIndexData = null;
+    this._pAttribData = null;
     this._pMap = null;
     this._pMaps = [];
 }
@@ -20,16 +22,9 @@ RenderDataSubset.prototype.setup = function(pFactory, iId, ePrimType, eOptions) 
     if (arguments.length < 4) {
         return false;
     }
-
-    var pIndexBuffer;
-
-    pIndexBuffer = pFactory.getEngine().displayManager()
-        .vertexBufferPool().createResource('subset_' + a.sid());
-    pIndexBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
     
     this._pFactory = pFactory;
     this._iId = iId;
-    this._pIndexBuffer = pIndexBuffer;
     this._pMap = new a.BufferMap(pFactory.getEngine());
     this._pMap.primType = ePrimType || a.PRIMTYPE.TRIANGLELIST;
     this._pMaps.push(this._pMap);
@@ -45,8 +40,43 @@ RenderDataSubset.prototype._addData = function (pVertexData, iFlow) {
         this._pMap.flow(iFlow, pVertexData));
 };
 
+
+RenderDataSubset.prototype.allocateAttribute = function (pAttrDecl, pData) {
+    'use strict';
+    
+    var pIndexData = this._pIndexData;
+    var pAttribData = this._pAttribData;
+    var pAttribBuffer = this._pAttribBuffer;
+    var pFactory = this._pFactory;
+
+    if (!pAttribData) {
+        if (!pAttribBuffer) {
+            pAttribBuffer = pFactory.getEngine().displayManager()
+                .vertexBufferPool().createResource('subset_attrs_' + a.sid());
+            pAttribBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
+            this._pAttribBuffer = pAttribBuffer;
+        }
+
+        this._pAttribData = this._pAttribBuffer.allocateData(pAttrDecl, pData);
+        this._pMap.flow(this._pAttribData);
+        return this._pAttribData !== null;
+    }
+    
+    if (!pAttribData.extend(pAttrDecl, pData)) {
+        trace('invalid data for allocation:', arguments);
+        warning('cannot allocate attribute in data subset..');
+        return false;
+    }
+
+    return true;
+};
+
+
+
 RenderDataSubset.prototype.allocateIndex = function (pAttrDecl, pData) {
     var pIndexData = this._pIndexData;
+    var pIndexBuffer = this._pIndexBuffer;
+    var pFactory = this._pFactory;
     
 If (__DEBUG)
     for (var i = 0; i < pAttrDecl.length; i++) {
@@ -57,9 +87,15 @@ If (__DEBUG)
 Endif ();
 
     if (!pIndexData) {
-        this._pIndexData = this._pIndexBuffer.allocateData(pAttrDecl, pData);
+        if (!pIndexBuffer) {
+            pIndexBuffer = pFactory.getEngine().displayManager()
+                .vertexBufferPool().createResource('subset_' + a.sid());
+            pIndexBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
+            this._pIndexBuffer = pIndexBuffer;
+        }
+        this._pIndexData = pIndexBuffer.allocateData(pAttrDecl, pData);
         this._pIndexData._iAdditionCache = {};
-        return true;
+        return this._pIndexData !== null;
     }
     
     if (!pIndexData.extend(pAttrDecl, pData)) {
@@ -71,7 +107,13 @@ Endif ();
     return true;
 };
 
-RenderDataSubset.prototype.allocateData = function(pDataDecl, pData) {
+RenderDataSubset.prototype.allocateData = function(pDataDecl, pData, hasIndex) {
+    hasIndex = ifndef(hasIndex, true);
+
+    if (!hasIndex) {
+        return this.allocateAttribute(pDataDecl, pData);
+    }
+
     var pVertexData = this._pFactory._allocateData(pDataDecl, pData);
     var iFlow = this._addData(pVertexData);
     
@@ -93,6 +135,8 @@ RenderDataSubset.prototype.addIndexSet = function(usePreviousDataSet, ePrimType)
     }
 
     this._pIndexData = null;
+    this._pAttribData = null;
+
     if (usePreviousDataSet) {
         this._pMap = this._pMap.clone(false);
         
@@ -122,10 +166,17 @@ RenderDataSubset.prototype.getIndexSet = function() {
     return -1;
 };
 
+RenderDataSubset.prototype.getDataLocation = function (sSemantics) {
+    'use strict';
+    
+    return this._pFactory.getDataLocation(sSemantics);
+};
+
 RenderDataSubset.prototype.selectIndexSet = function(iSet) {
     if (this._pMaps[iSet]) {
         this._pMap = this._pMaps[iSet];
-        this._pIndexData = this._pIndexBuffer._pVertexDataArray[iSet];
+        this._pIndexData = this._pIndexBuffer? this._pIndexBuffer._pVertexDataArray[iSet]: null;
+        this._pAttribData = this._pAttribData? this._pAttribBuffer._pVertexDataArray[iSet]: null;
         return true;
     }
 
@@ -142,6 +193,7 @@ RenderDataSubset.prototype.selectIndexSet = function(iSet) {
  */
 RenderDataSubset.prototype.index = function (iData, eSemantics, useSame, iBeginWith) { 
     'use strict'
+
     iBeginWith = iBeginWith || 0;
     useSame = useSame || false;
     
@@ -177,14 +229,16 @@ RenderDataSubset.prototype.index = function (iData, eSemantics, useSame, iBeginW
     var iStride = pFlow.pData.stride;
     
     if (pIndexData._iAdditionCache[iIndexOffset] !== iAddition) {
-        iPrevAddition = pIndexData._iAdditionCache[iIndexOffset] || 0;
-        iRealAddition = iAddition - iPrevAddition;
         if (!useSame) {
+            iPrevAddition = pIndexData._iAdditionCache[iIndexOffset] || 0;
+            iRealAddition = iAddition - iPrevAddition;
+
             for (var i = 0; i < pData.length; i++) {
                 pData[i] = (pData[i] * iStride + iRealAddition) / iTypeSize;
             };
         }
         else {
+            iRealAddition = iAddition;
             for (var i = 0; i < pData.length; i++) {
                 pData[i] = (iBeginWith + iRealAddition) / iTypeSize;
             };   

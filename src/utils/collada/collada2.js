@@ -10,7 +10,10 @@ function Collada(pEngine, sFilename) {
     this._eState = a.Collada.STATE_UNKNOWN;
     this._fnCallback = null;
 
-    
+    this._pColladaRoot = null;
+
+    //cache
+    this._pCache = {};
 
     if (sFilename) {
         this.load(sFilename);
@@ -18,17 +21,14 @@ function Collada(pEngine, sFilename) {
 };
 
 Collada.prototype.load = function (sFilename) {
-    a.fopen(sFilename).read (function (sXMLData) {
+    var me = this;
+    a.fopen(sFilename).read(function (sXMLData) {
         var pParser = new DOMParser();
         var pXMLRootNode = pParser.parseFromString(sXMLData, "application/xml");
-        var pXMLCollada = pXMLRootNode.getElementsByTagName('COLLADA')[0];
+        var pXMLCollada = pXMLRootNode;//.getElementsByTagName('COLLADA')[0];
 
-        var begin = (new Date).getTime();
-        var pSourceModel = a.xml2json(pXMLCollada).toObj();
-        trace((new Date).getTime() - begin, 'ms needed for translating xml to json.');
-        
-        //if ()
-     
+        me._pColladaRoot = pXMLCollada;
+        me._emitEvent(a.Collada.STATE_LOADED);
     });
 };
 
@@ -36,15 +36,48 @@ Collada.prototype.isLoaded = function () {
     return TEST_BIT(this._eFlags, a.Collada.STATE_LOADED);
 };
 
-Collada.prototype._event = function (eEvent) {
-    this._fnCallback(eEvent, this);
+Collada.prototype._emitEvent = function (eEvent) {
+    if (this._fnCallback) {
+        this._fnCallback(eEvent, this);
+    }
 };
+
+Collada.prototype.getMesh = function (sId) {
+    if (this._pCache[sId]) {
+        return this._pMeshes[sId];
+    }
+
+    var pMeshData = a.xml2json(this._pColladaRoot.getElementById(sId)).toObj().mesh;
+
+    if (!pMeshData) {
+        return this._pCache[sId] = null;
+    }
+
+    for (var i in pMeshData.source) {
+        var pDecl = [];
+        var pTechnique = pMeshData.source[i].technique_common;
+        var pFloatArray = pMeshData.source[i].float_array
+
+        debug_assert('#' + pFloatArray['@id'] === pTechnique.accessor['@source'],
+            'accessor не пренадлежит данным в меше..');
+
+        for (var j = 0; j < Number(pTechnique.accessor['@stride']); j++) {
+            var pParam = pTechnique.accessor.param[j];
+                //pDecl
+            trace(pParam);
+        };
+    }
+
+    return pMeshData;
+};
+
+
 
 PROPERTY(Collada, 'onload', null, function (fnCallback) {
     this._fnCallback = fnCallback;
 
     if (this.isLoaded()) {
-        this._event(a.Collada.STATE_LOADED);
+        this._emitEvent(a.Collada.STATE_LOADED);
     }
 });
 

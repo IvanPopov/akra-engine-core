@@ -492,8 +492,11 @@ GLSLProgram.prototype.applyBuffer = function (pVertexData) {
     for (i = 0; i < pVertexData.getVertexElementCount(); i++) {
         pVertexElement = pVertexData._pVertexDeclaration[i];
         pAttr = pAttrs[pVertexElement.eUsage];
-
-        if (pAttr && pAttr.pCurrentData !== pVertexData) {
+        if (!pAttr) {
+            continue;
+        }
+        
+        if (pAttr.pCurrentData !== pVertexData) {
 
             if (isActive) {
                 isActive = true;
