@@ -124,4 +124,19 @@ Mesh.prototype.destructor = function () {
     this.destroy();
 };
 
+Mesh.prototype.getSubset = function () {
+    'use strict';
+    
+    if (typeof arguments[0] === 'number') {
+        return parent(RenderDataFactory).getSubset.call(this, arguments[0]);
+    }
+    else {
+        for (var i = 0; i < this._pSubsets; ++ i) {
+            if (this._pSubsets[i]._sName === arguments[0]) {
+                return this._pSubsets[i];
+            }
+        }
+    }
+};
+
 A_NAMESPACE(Mesh);

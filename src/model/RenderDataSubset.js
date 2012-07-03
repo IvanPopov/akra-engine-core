@@ -134,9 +134,6 @@ RenderDataSubset.prototype.addIndexSet = function(usePreviousDataSet, ePrimType)
         return false;
     }
 
-    this._pIndexData = null;
-    this._pAttribData = null;
-
     if (usePreviousDataSet) {
         this._pMap = this._pMap.clone(false);
         
@@ -146,6 +143,11 @@ RenderDataSubset.prototype.addIndexSet = function(usePreviousDataSet, ePrimType)
     }
     else {
         this._pMap = new a.BufferMap(this._pFactory.getEngine());
+    }
+
+    this._pIndexData = null;
+    if (this._pAttribData) {
+        error('index sets with attribues temprary unavailable...');    
     }
     
     this._pMap.primType = ePrimType || a.PRIMTYPE.TRIANGLELIST;
@@ -168,8 +170,18 @@ RenderDataSubset.prototype.getIndexSet = function() {
 
 RenderDataSubset.prototype.getDataLocation = function (sSemantics) {
     'use strict';
+
+    var pFlow; 
     
-    return this._pFactory.getDataLocation(sSemantics);
+    for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++ i) {
+        pFlow = pFlows[i];
+
+        if (pFlow.pData.hasSemantics(sSemantics)) {
+            return pFlow.pData.getOffset();
+        }
+    }
+
+    return -1;
 };
 
 RenderDataSubset.prototype.selectIndexSet = function(iSet) {
@@ -182,6 +194,8 @@ RenderDataSubset.prototype.selectIndexSet = function(iSet) {
 
     return false;
 };
+
+
 
 /**
  * Setup index.
@@ -196,6 +210,10 @@ RenderDataSubset.prototype.index = function (iData, eSemantics, useSame, iBeginW
 
     iBeginWith = iBeginWith || 0;
     useSame = useSame || false;
+
+    if (typeof iData === 'string') {
+        iData = this.getDataLocation(iData);
+    }
     
     var iFlow = -1;
     var iAddition, iRealAddition, iPrevAddition;
@@ -254,5 +272,7 @@ RenderDataSubset.prototype.index = function (iData, eSemantics, useSame, iBeginW
 
     return this._pMap.mapping(iFlow, pIndexData, eSemantics);
 };
+
+
 
 A_NAMESPACE(RenderDataSubset);

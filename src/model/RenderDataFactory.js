@@ -39,12 +39,16 @@ RenderDataFactory.prototype.getDataOptions = function() {
  * @return {VertexData} Data with given semantics or null.
  */
 RenderDataFactory.prototype.getData = function (sSemantics) {
-    var pData = pData = this._pDataBuffer._pVertexDataArray;
-    for (var i = 0; i < pData.length; i++) {
-        if (pData[i].hasSemantics(sSemantics)) {
-            return pData[i];
-        }
-    };
+    var pData;
+
+    if (this._pDataBuffer) {
+        pData = pData = this._pDataBuffer._pVertexDataArray;
+        for (var i = 0; i < pData.length; i++) {
+            if (pData[i].hasSemantics(sSemantics)) {
+                return pData[i];
+            }
+        };
+    }
 
     return null;
 };
@@ -71,15 +75,18 @@ RenderDataFactory.prototype.allocateData = function (pDataDecl, pData) {
 
 RenderDataFactory.prototype.getDataLocation = function (sSemantics) {
     'use strict';
-    var pDataList = this._pDataBuffer._pVertexDataArray;
-    
-    for (var i = 0; i < pDataList.length; i++) {
-        if (pDataList[i].hasSemantics(sSemantics)) {
-            return pDataList[i].getOffset();
-        }
-    };
 
-    return null;
+    if (this._pDataBuffer) {
+        var pDataList = this._pDataBuffer._pVertexDataArray;
+        
+        for (var i = 0; i < pDataList.length; i++) {
+            if (pDataList[i].hasSemantics(sSemantics)) {
+                return pDataList[i].getOffset();
+            }
+        };
+    }
+
+    return -1;
 };
 
 /**
@@ -129,6 +136,11 @@ RenderDataFactory.prototype.draw = function() {
     };
 };
 
+RenderDataFactory.prototype.getSubset = function (iSubset) {
+    'use strict';
+    
+    return this._pSubsets[iSubset];
+};
 
 /**
  * @protected

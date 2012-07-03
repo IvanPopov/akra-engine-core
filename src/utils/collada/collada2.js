@@ -42,7 +42,11 @@ Collada.prototype._emitEvent = function (eEvent) {
     }
 };
 
+
+
 Collada.prototype.getMesh = function (sId) {
+    sId = '#' + sId;
+
     if (this._pCache[sId]) {
         return this._pMeshes[sId];
     }
@@ -54,19 +58,25 @@ Collada.prototype.getMesh = function (sId) {
     }
 
     for (var i in pMeshData.source) {
-        var pDecl = [];
-        var pTechnique = pMeshData.source[i].technique_common;
-        var pFloatArray = pMeshData.source[i].float_array
+        switch (i) {
+            case 'polylist':
 
-        debug_assert('#' + pFloatArray['@id'] === pTechnique.accessor['@source'],
-            'accessor не пренадлежит данным в меше..');
-
-        for (var j = 0; j < Number(pTechnique.accessor['@stride']); j++) {
-            var pParam = pTechnique.accessor.param[j];
-                //pDecl
-            trace(pParam);
-        };
+                break;
+        }
     }
+
+    // for (var i in pMeshData.source) {
+    //     var pDecl = [];
+    //     var pTechnique = pMeshData.source[i].technique_common;
+    //     var pFloatArray = pMeshData.source[i].float_array
+
+    //     debug_assert('#' + pFloatArray['@id'] === pTechnique.accessor['@source'],
+    //         'accessor не пренадлежит данным в меше..');
+
+    //     for (var j = 0; j < Number(pTechnique.accessor['@stride']); j++) {
+    //         var pParam = pTechnique.accessor.param[j];
+    //     };
+    // }
 
     return pMeshData;
 };
