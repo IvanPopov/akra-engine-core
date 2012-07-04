@@ -192,18 +192,18 @@ Emitter.prototype.setParticleData = function(pVertexDecl,pData){
 				}
 				if(pVertexElement.eUsage == a.DECLUSAGE.POSITION){
 					if(nElementsPerPixel == 4){
-						parent(RenderDataSubset).allocateData.call(this,[VE_VEC4('POSITION'),{eCount: 0, eUsage:'EMITTER1', eType: a.DTYPE.UNSIGNED_BYTE, iOffset: 0}],pElementData);
+						this.allocateData([VE_VEC4('POSITION'),{eCount: 0, eUsage:'EMITTER1', eType: a.DTYPE.UNSIGNED_BYTE, iOffset: 0}],pElementData);
 					}
 					else if(nElementsPerPixel == 3){
-						parent(RenderDataSubset).allocateData.call(this,[VE_VEC3('POSITION')],pElementData);	
+						this.allocateData([VE_VEC3('POSITION')],pElementData);	
 					}
 				}
 				else{
 					if(nElementsPerPixel == 4){
-						parent(RenderDataSubset).allocateData.call(this,[VE_VEC4('VELOCITY')],pElementData);
+						this.allocateData([VE_VEC4('VELOCITY')],pElementData);
 					}
 					else if(nElementsPerPixel == 3){
-						parent(RenderDataSubset).allocateData.call(this,[VE_VEC3('VELOCITY')],pElementData);	
+						this.allocateData([VE_VEC3('VELOCITY')],pElementData);	
 					}
 				}
 			}
@@ -215,7 +215,7 @@ Emitter.prototype.setParticleData = function(pVertexDecl,pData){
 						pElementData[iSize*j + k] = pSubData[k];
 					}
 				}
-				parent(RenderDataSubset).allocateData.call(this,pVertexElement,pElementData);
+				this.allocateData(pVertexElement,pElementData);
 			}
 		}
 	}
@@ -237,14 +237,14 @@ Emitter.prototype.setParticleIndex = function(pAttrDecl,pData){
 	var nCount = pData.byteLength/iStride;
 	debug_assert(pData.byteLength%iStride == 0,"неверное количество данных");
 	debug_assert(nCount == this._nParticles,"количество данных не согласуеться с количеством частиц");
-	parent(RenderDataSubset).allocateIndex.call(this,pAttributeDeclaration,pData);
+	this.allocateIndex(pAttributeDeclaration,pData);
 };
 /**
- * связывает индексы и данные для этапа update
+ * связывает данные iData с индексом eSemantic для этапа update
  */
-Emitter.prototype.particleIndex = function(iIndex,sSemantics) {
-	parent(RenderDataSubset).selectIndexSet.call(this,this._iUpdateMapIndex);
-	parent(RenderDataSubset).setup.call(this,iIndex,sSemantics);
+Emitter.prototype.particleIndex = function(iData,eSemantics) {
+	this.selectIndexSet(this._iUpdateMapIndex);
+	this.index(iData,eSemantics);
 };
 
 /**
@@ -254,7 +254,7 @@ Emitter.prototype.setDrawData = function(pVertexDecl,pData){
 	'use strict';
 	if(!this._bParticleDataSetted){
 		if(this._eType != a.EMITTER.POINTS){
-			this._iDrawMapIndex = parent(RenderDataSubset).addIndexSet.call(this,true,a.PRIMTYPE.TRIANGLELIST);
+			this._iDrawMapIndex = this.addIndexSet.call(true,a.PRIMTYPE.TRIANGLELIST);
 		}
 		else{
 			this._iDrawMapIndex = this._iUpdateMapIndex;
@@ -267,7 +267,7 @@ Emitter.prototype.setDrawData = function(pVertexDecl,pData){
 	debug_assert(pData.byteLength%iStride == 0,"неверное количество данных");
 	debug_assert(nCount == this._eType * this._nParticles,"количество данных не согласуеться с количеством и типом частиц");
 
-	parent(RenderDataSubset).allocateData.call(this,pVertexDeclaration,pData);
+	this.allocateData(pVertexDeclaration,pData);
 }
 
 /**
@@ -314,21 +314,20 @@ Emitter.prototype.setDrawIndex = function(pAttrDecl,pData){
 					pElementData[6*4*j + iAddtionalOffset + k] = pSubData[k];
 				}
 			}
-			parent(RenderDataSubset).allocateIndex.call(this,pAttributeElement,pElementData);
+			this.allocateIndex(pAttributeElement,pElementData);
 		}
 	}
 	else{
-		parent(RenderDataSubset).allocateIndex.call(this,pAttributeDeclaration,pData);
+		this.allocateIndex(pAttributeDeclaration,pData);
 	}
-
 }
 
 /**
- * связывает индексы для финальной отрисовки
+ * связывает данные iData с индексом eSemantic для финальной отрисовки
  */
-Emitter.prototype.drawIndex = function(iIndex,sSemantics){
-	parent(RenderDataSubset).selectIndexSet.call(this,this._iDrawMapIndex);
-	parent(RenderDataSubset).setup.call(this,iIndex,sSemantics);
+Emitter.prototype.drawIndex = function(iData,eSemantics){
+	this.selectIndexSet(this._iDrawMapIndex);
+	this.index(iData,eSemantics);
 }
 
 Emitter.prototype.setTimeToLive = function(fTimeToLive){

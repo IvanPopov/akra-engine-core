@@ -61,11 +61,14 @@ Include('model/RenderSnapshot.js');
 Include('model/RenderableObjects.js');
 Include('model/MeshSubset.js');
 Include('model/Mesh2.0.js');
+Include('model/ProgressiveMesh.js');
 Elseif();
 Include('model/');
 Endif();
 
 Include('resources/ModelResource.js');
+
+Include('particles/');
 
 Include('objects/');
 
