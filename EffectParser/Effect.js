@@ -253,6 +253,10 @@ var MEMEXPR = "MemExpr";
 
 var VERTEXUSAGE = 1;
 var FRAGMENTUSAGE = 2;
+var STRUCTUSAGE = 3;
+var LOCALUSAGE = 4;
+var PARAMETRUSAGE = 5;
+var NOTUSAGE = -1;
 
 function VariableType() {
     /**
@@ -310,34 +314,50 @@ VariableType.prototype.isBase = function () {
     return this._isBase;
 };
 VariableType.prototype.checkMe = function () {
+    //TODO: add valid tests for variabletype
     var i;
     for (i = 0; i < arguments.length; i++) {
         switch (arguments[i]) {
+            case NOTUSAGE:
+                break;
             case VERTEXUSAGE:
                 if (this.isStruct() && this.pEffectType.checkMe(VERTEXUSAGE)) {
-                    return true;
+                    continue;
                 }
                 if (this.isBase() && this.sSemantic === "POSITION") {
-                    return true;
+                    continue;
                 }
-                break;
+                return false;
             case FRAGMENTUSAGE:
                 if (this.isStruct() && this.pEffectType.checkMe(FRAGMENTUSAGE)) {
-                    return true;
+                    continue;
                 }
                 if (this.isBase() && this.sSemantic === "COLOR") {
-                    return true;
+                    continue;
                 }
+                return false;
+            case STRUCTUSAGE:
+                if (this.pUsages) {
+                    return false;
+                }
+                break;
+            case PARAMETRUSAGE:
                 break;
             default:
                 warning("Unknown usage for check");
-                return true;
+                break;
         }
     }
-    return false;
+    return true;
 };
 VariableType.prototype.isEqual = function (pType) {
     if (this.pEffectType === pType.pEffectType) {
+        return true;
+    }
+    return false;
+};
+VariableType.prototype.isType = function (pEffectType) {
+    if (this.pEffectType === pEffectType) {
         return true;
     }
     return false;
@@ -350,7 +370,7 @@ VariableType.prototype.cloneMe = function () {
     pType.pUsages = this.pUsages;
     return pType;
 };
-VariableType.prototype.toString = function () {
+VariableType.prototype.toStr = function () {
     var sRes = "";
     var i;
     for (i = 0; this.pUsages && i < this.pUsages.length; i++) {
@@ -358,6 +378,9 @@ VariableType.prototype.toString = function () {
     }
     sRes += this.pEffectType.sName;
     return sRes;
+};
+VariableType.prototype.isSampler = function () {
+    return this.pEffectType.isSampler();
 };
 
 function EffectType(sName, sRealName, isBase) {
@@ -386,7 +409,13 @@ function EffectType(sName, sRealName, isBase) {
      */
     this._isBase = isBase || false;
 }
-
+EffectType.prototype.isSampler = function () {
+    if (this.sName === "sampler" || this.sName === "sampler1D" || this.sName === "sampler2D" ||
+        this.sName === "sampler3D" || this.sName === "samplercube") {
+        return true;
+    }
+    return false;
+};
 EffectType.prototype.fromStruct = function (pStruct) {
     this.sName = pStruct.sName;
     this.pDesc = pStruct;
@@ -678,7 +707,7 @@ EffectVariable.prototype.toCode = function () {
     //TODO: to string
 };
 EffectVariable.prototype.checkMe = function () {
-    //TODO: many and many tests
+    //TODO: many and many tests for varaibles
     return true;
 };
 EffectVariable.prototype.cloneMe = function () {
@@ -823,17 +852,17 @@ EffectFunction.prototype.calcHash = function () {
     var sHash = "";
     sHash += this.sName;
     var i;
-    for (i = 0; i < this.pParameters; i++) {
-        sHash += "!" + this.pParameters[i].pType.toString();
+    for (i = 0; i < this.pParamOrders.length; i++) {
+        sHash += "!" + this.pParamOrders[i].pType.toStr();
     }
-    sHash += "-->" + this.pReturnType.toString();
+    sHash += "-->" + this.pReturnType.toStr();
     return sHash;
 };
 EffectFunction.prototype.hash = function () {
     if (!this.sHash) {
         this.sHash = this.calcHash();
     }
-    return this.sHash();
+    return this.sHash;
 };
 EffectFunction.prototype.setSemantic = function (sSemantic) {
     this.sSementic = sSemantic;
@@ -962,6 +991,9 @@ EffectTechnique.prototype.addPass = function (pPass) {
     }
     this.pPassesNames[pPass.sName] = pPass;
 };
+EffectTechnique.prototype.setName = function (sName) {
+    this.sName = sName;
+};
 
 function EffectPass() {
     /**
@@ -1017,6 +1049,9 @@ EffectPass.prototype.setFragmentShader = function (pParam) {
 };
 EffectPass.prototype.setState = function (eState, eValue) {
     this.pStates[eState] = eValue;
+};
+EffectPass.prototype.setName = function (sName) {
+    this.sName = sName;
 };
 EffectPass.prototype.checkMe = function () {
     if (!(this.pFragmentFunc && this.pVertexFunc)) {
@@ -1094,7 +1129,20 @@ function Effect() {
 
     STATIC(pBaseFunctionsHash, {});
     STATIC(pBaseFunctionsName, {});
-    STATIC(pBaseTypes, {});
+    STATIC(pBaseTypes, {
+        "float"    : new EffectType("float", "float", true),
+        "int"      : new EffectType("int", "int", true),
+        "bool"     : new EffectType("bool", "bool", true),
+        "float2"   : new EffectType("float2", "vec2", true),
+        "float3"   : new EffectType("float3", "vec3", true),
+        "float4"   : new EffectType("float4", "vec4", true),
+        "float2x2" : new EffectType("float2x2", "mat2", true),
+        "float3x3" : new EffectType("float3x3", "mat3", true),
+        "float4x4" : new EffectType("float4x4", "mat4", true),
+        "string"   : new EffectType("string", "string", true),
+        "texture"  : new EffectType("texture", "texture", true),
+        "sampler"  : new EffectType("sampler", "sampler", true)
+    });
 
 }
 /**
@@ -1368,7 +1416,7 @@ Effect.prototype.addType = function (pType) {
     if (!this._pCurrentScope.pTypeTable) {
         this._pCurrentScope.pTypeTable = {};
     }
-    if (this._hasTypeDecl(pVar.sName)) {
+    if (this._hasTypeDecl(pType.sName)) {
         error("Ohhh! You try to redifenition type((!");
         return;
     }
@@ -1401,7 +1449,7 @@ Effect.prototype._hasTypeDecl = function (sTypeName) {
     return false;
 };
 Effect.prototype.isBaseType = function (sTypeName) {
-    //TODO: Add Base type TABLE
+    return this.constructor.pBaseTypes[sTypeName] || false;
 };
 Effect.prototype.addFunction = function (pFunction) {
     var sHash = pFunction.hash();
@@ -1436,28 +1484,36 @@ Effect.prototype.isBaseFunction = function (sFuncHash) {
 Effect.prototype.hasBaseFunctionName = function (sName) {
 
 };
-Effect.prototype.findFunction = function (sName, nParams) {
+Effect.prototype.findFunction = function (sName, pParams) {
     //TODO: find function
-    var pBase = this.hasBaseFunctionName(sName);
-    var i;
-    if (pBase) {
-        for (i = 0; i < pBase.length; i++) {
-            if (pBase[i].nParameters === nParams) {
-
-            }
-        }
+    var pFunctions = this._pFunctionTableByName[sName];
+    if (!pFunctions) {
+        return false;
     }
+    var i, j;
+    for (i = 0; i < pFunctions.length; i++) {
+
+    }
+    error("i don`t ready " + sName + " " + pParams);
 };
 
 Effect.prototype.convertType = function (pNode) {
     var pType;
     var pChildren = pNode.pChildren;
+    if (pNode.sName === T_TYPE_ID) {
+        pType = this.hasType(pNode.sValue);
+        if (!pType) {
+            error("bad 116");
+            return;
+        }
+        return pType;
+    }
     if (pNode.sName === T_KW_VOID) {
         pType = this.hasType(pNode.sValue);
         return pType;
     }
     if (pNode.sName === SCALARTYPE || pNode.sName === OBJECTTYPE) {
-        pType = this.hasType(pChildren[0].sValue);
+        pType = this.hasType(pChildren[pChildren.length - 1].sValue);
         if (!pType) {
             error("Something going wrong with type names(");
             return;
@@ -1472,20 +1528,20 @@ Effect.prototype.convertType = function (pNode) {
         var sTypeName;
         if (pNode.sName === MATRIXTYPE) {
             sTypeName = "matrix";
-            sTypeName += "<" + this.convertType(pChildren[2]).toCode();
+            sTypeName += "<" + this.convertType(pChildren[5]).toCode();
             this.newCode();
-            sTypeName += "," + this.evalHLSL(this.analyzeExpr(pChildren[4]));
+            sTypeName += "," + this.evalHLSL(this.analyzeExpr(pChildren[3]));
             this.endCode();
             this.newCode();
-            sTypeName += "," + this.evalHLSL(this.analyzeExpr(pChildren[6]));
+            sTypeName += "," + this.evalHLSL(this.analyzeExpr(pChildren[1]));
             this.endCode();
             sTypeName += ">";
         }
         else {
             sTypeName = "vector";
-            sTypeName += "<" + this.convertType(pChildren[2]).toCode();
+            sTypeName += "<" + this.convertType(pChildren[3]).toCode();
             this.newCode();
-            sTypeName += "," + this.evalHLSL(this.analyzeExpr(pChildren[4]));
+            sTypeName += "," + this.evalHLSL(this.analyzeExpr(pChildren[1]));
             this.endCode();
             sTypeName += ">";
         }
@@ -1540,7 +1596,7 @@ Effect.prototype.analyzeTypes = function () {
     var pChildren = this._pParseTree.pRoot.pChildren;
     var i;
     this.nCurrentDecl = 0;
-    for (i = 0; i < pChildren.length; i++) {
+    for (i = pChildren.length - 1; i >= 0; i--) {
         if (pChildren[i].sName === TYPEDECL) {
             this.nCurrentDecl++;
             this.analyzeTypeDecl(pChildren[i]);
@@ -1554,7 +1610,7 @@ Effect.prototype.preAnalyzeFunctions = function () {
     var pChildren = this._pParseTree.pRoot.pChildren;
     var i;
     this.nCurrentDecl = 0;
-    for (i = 0; i < pChildren.length; i++) {
+    for (i = pChildren.length - 1; i >= 0; i--) {
         if (pChildren[i].sName === FUNCTIONDECL) {
             this.nCurrentDecl++;
             this.analyzeFunctionDecl(pChildren[i]);
@@ -1568,7 +1624,7 @@ Effect.prototype.preAnalyzeTechniques = function () {
     var pChildren = this._pParseTree.pRoot.pChildren;
     var i;
     this.nCurrentDecl = 0;
-    for (i = 0; i < pChildren.length; i++) {
+    for (i = pChildren.length - 1; i >= 0; i--) {
         if (pChildren[i].sName === TECHIQUEDECL) {
             this.nCurrentDecl++;
             this.analyzeTechniqueDecl(pChildren[i]);
@@ -1582,7 +1638,7 @@ Effect.prototype.analyzeEffect = function () {
     var pChildren = this._pParseTree.pRoot.pChildren;
     var i;
     this.nCurrentDecl = 0;
-    for (i = 0; i < pChildren.length; i++) {
+    for (i = pChildren.length - 1; i >= 0; i--) {
         this.nCurrentDecl++;
         this.analyzeDecl(pChildren[i]);
     }
@@ -1620,7 +1676,7 @@ Effect.prototype.analyzeVariableDecl = function (pNode) {
     var i;
     var pVar;
     var pType = new VariableType();
-    this.analyzeUsageType(pChildren[0], pType);
+    this.analyzeUsageType(pChildren[pChildren.length - 1], pType);
     var isSampler = false;
     if (pType.pEffectType.isSampler()) {
         isSampler = true;
@@ -1630,12 +1686,12 @@ Effect.prototype.analyzeVariableDecl = function (pNode) {
             return;
         }
     }
-    if (!pType.checkMe()) {
+    if (!pType.checkMe(this._isStruct ? STRUCTUSAGE : -1, this._isLocal ? LOCALUSAGE : -1)) {
         error("You sucks. 1");
         return;
     }
     this._pCurrentType = pType;
-    for (i = 1; i < pChildren.length; i++) {
+    for (i = pChildren.length - 2; i >= 1; i--) {
         if (pChildren[i].sName === VARIABLE) {
             pVar = this.analyzeVariable(pChildren[i]);
             pVar.setType(pType);
@@ -1651,12 +1707,12 @@ Effect.prototype.analyzeUsageType = function (pNode, pType) {
     pType = pType || new VariableType();
     var pChildren = pNode.pChildren;
     var i;
-    for (i = 0; i < pChildren.length; i++) {
+    for (i = pChildren.length - 1; i >= 0; i--) {
         if (pChildren[i].sName === TYPE) {
             pType.setType(this.convertType(pChildren[i]));
         }
         if (pChildren[i].sName === USAGE) {
-            pType.setUsage(pChildren[i]);
+            pType.setUsage(pChildren[i].pChildren[0].sValue);
         }
     }
     return pType;
@@ -1668,7 +1724,7 @@ Effect.prototype.analyzeVariable = function (pNode, pVar) {
             error("Bad syntax! Bad variable declaration in annotation or local scope!");
             return;
         }
-        if (pChildren.length === 2 && pChildren[1].sName !== INITIALIZER) {
+        if (pChildren.length === 2 && pChildren[0].sName !== INITIALIZER) {
             error("Bad syntax! Bad variable declaration in annotation or local scope! Second must be Initializer.");
             return;
         }
@@ -1678,24 +1734,24 @@ Effect.prototype.analyzeVariable = function (pNode, pVar) {
             error("Bad syntax! Bad variable declaration in struct scope!");
             return;
         }
-        if (pChildren.length === 2 && pChildren[1].sName !== SEMANTIC) {
+        if (pChildren.length === 2 && pChildren[0].sName !== SEMANTIC) {
             error("Bad syntax! Bad variable declaration in struct scope! Second must be Semantic");
             return;
         }
     }
     pVar = pVar || new EffectVariable();
     this._pCurrentVar = pVar;
-    this.analyzeVariableDim(pChildren[0], pVar);
+    this.analyzeVariableDim(pChildren[pChildren.length - 1], pVar);
     var i;
     var pResult = null;
-    for (i = 1; i < pChildren.length; i++) {
-        if (pChildren[i] === ANNOTATION) {
+    for (i = pChildren.length - 2; i >= 0; i--) {
+        if (pChildren[i].sName === ANNOTATION) {
             pResult = this.analyzeAnnotation(pChildren[i], pVar);
         }
-        else if (pChildren[i] === SEMANTIC) {
+        else if (pChildren[i].sName === SEMANTIC) {
             pResult = this.analyzeSemantic(pChildren[i], pVar);
         }
-        else if (pChildren[i] === INITIALIZER) {
+        else if (pChildren[i].sName === INITIALIZER) {
             pResult = this.analyzeInitializer(pChildren[i], pVar);
         }
     }
@@ -1747,10 +1803,10 @@ Effect.prototype.analyzeVariableDim = function (pNode, pVar) {
         pVar.isPointer = true;
         pVar.nDim++;
     }
-    else if (pChildren.length === 4 && pChildren[3].sName === FROMEXPR) {
+    else if (pChildren.length === 4 && pChildren[0].sName === FROMEXPR) {
         pVar.isPointer = true;
         pVar.nDim++;
-        pVar.pBuffer = this.analyzeFromExpr(pChildren[3]);
+        pVar.pBuffer = this.analyzeFromExpr(pChildren[0]);
     }
     else {
         if (!pVar.isArray) {
@@ -1760,9 +1816,9 @@ Effect.prototype.analyzeVariableDim = function (pNode, pVar) {
             error("Sorry but glsl does not support multidimensional arrays!");
             return;
         }
-        pVar.iLength = this.evalHLSL(this.analyzeExpr(pChildren[2]));
+        pVar.iLength = this.evalHLSL(this.analyzeExpr(pChildren[pChildren.length - 3]));
     }
-    this.analyzeVariableDim(pChildren[0], pVar);
+    this.analyzeVariableDim(pChildren[pChildren.length - 1], pVar);
     return pVar;
 };
 Effect.prototype.analyzeFromExpr = function (pNode) {
@@ -1787,7 +1843,7 @@ Effect.prototype.analyzeFromExpr = function (pNode) {
 Effect.prototype.analyzeMemExpr = function (pNode) {
     var pChildren = pNode.pChildren;
     var pMem;
-    if (pChildren[1].sName === T_NON_TYPE_ID) {
+    if (pChildren[0].sName === T_NON_TYPE_ID) {
         pMem = this.hasVariable(pChildren[1].sValue);
         if (!pMem) {
             error("bad 3");
@@ -1795,8 +1851,8 @@ Effect.prototype.analyzeMemExpr = function (pNode) {
         }
         pMem = pMem.pBuffer;
     }
-    else if (pChildren[1][1].sName === T_NON_TYPE_ID) {
-        pMem = this.hasVariable(pChildren[1][1].sValue);
+    else if (pChildren[0][1].sName === T_NON_TYPE_ID) {
+        pMem = this.hasVariable(pChildren[0][1].sValue);
         if (!pMem) {
             error("bad 3");
             return;
@@ -1823,7 +1879,7 @@ Effect.prototype.analyzeAnnotation = function (pNode, pObj) {
     this.newAnnotation();
     var pChildren = pNode.pChildren;
     var i;
-    for (i = 0; i < pChildren.length; i++) {
+    for (i = pChildren.length - 1; i >= 0; i--) {
         if (pChildren[i].sName === VARIABLEDECL) {
             this.analyzeVariableDecl(pChildren[i]);
         }
@@ -1834,7 +1890,7 @@ Effect.prototype.analyzeAnnotation = function (pNode, pObj) {
 };
 Effect.prototype.analyzeSemantic = function (pNode, pVar) {
     pVar = pVar || new EffectVariable();
-    pVar.addSemantic(pNode.pChildren[1].sValue);
+    pVar.addSemantic(pNode.pChildren[0].sValue);
     return pVar;
 };
 Effect.prototype.analyzeInitializer = function (pNode, pVar) {
@@ -1842,14 +1898,14 @@ Effect.prototype.analyzeInitializer = function (pNode, pVar) {
     var pChildren = pNode.pChildren;
     var pInit;
     this.newCode();
-    if (pChildren[1].sValue === "{") {
+    if (pChildren[pChildren.length - 2].sValue === "{") {
         var i;
         var iLength = pVar.iLength * this._pCurrentType.iRows * this._pCurrentType.iColumns;
         if ((pChildren.length - 3) !== iLength * 2 - 1 &&
-            !((pChildren.length - 3) === iLength * 2 && pChildren[pChildren.length - 2].sValue === ",")) {
+            !((pChildren.length - 3) === iLength * 2 && pChildren[1].sValue === ",")) {
             error("Bad constructor");
         }
-        for (i = 2; i < pChildren.length - 1; i++) {
+        for (i = pChildren.length - 2; i >= 2; i--) {
             if (pChildren[i].sName === INITEXPR) {
                 this.analyzeInitExpr(pChildren[i]);
             }
@@ -1866,9 +1922,9 @@ Effect.prototype.analyzeInitializer = function (pNode, pVar) {
 Effect.prototype.analyzeInitExpr = function (pNode) {
     var pChildren = pNode.pChildren;
 
-    if (pChildren[0].sValue === "{") {
+    if (pChildren[pChildren.length - 1].sValue === "{") {
         var i;
-        for (i = 1; i < pChildren.length - 1; i++) {
+        for (i = pChildren.length - 2; i >= 1; i--) {
             if (pChildren[i].sName === INITEXPR) {
                 this.analyzeInitExpr(pChildren[i]);
             }
@@ -1896,19 +1952,19 @@ Effect.prototype.analyzeExpr = function (pNode) {
     var i;
     switch (sName) {
         case OBJECTEXPR:
-            if (pChildren[0].sValue === T_KW_STATEBLOCK_STATE) {
+            if (pChildren[pChildren.length - 1].sValue === T_KW_STATEBLOCK_STATE) {
                 //ObjectExpr : T_KW_STATEBLOCK_STATE StateBlock
                 error("I don`t know what is this");
                 return;
             }
-            if (pChildren[0].sValue === T_KW_COMPILE_FRAGMENT) {
+            if (pChildren[pChildren.length - 1].sValue === T_KW_COMPILE_FRAGMENT) {
                 //ObjectExpr : T_KW_COMPILE_FRAGMENT Target NonTypeId '(' ArgumentsOpt ')'
                 error("Frog sucks");
                 return;
             }
-            if (pChildren[0].sValue === T_KW_COMPILE) {
+            if (pChildren[pChildren.length - 1].sValue === T_KW_COMPILE) {
                 //ObjectExpr : T_KW_COMPILE Target NonTypeId '(' ArgumentsOpt ')'
-                pFunc = this.findFunction(pChildren[2].sValue);
+                pFunc = this.findFunction(pChildren[pChildren.length - 3].sValue);
                 if (!pFunc) {
                     error("yo, error");
                     return;
@@ -1923,7 +1979,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             }
             else {
                 //ObjectExpr : T_KW_SAMPLER_STATE StateBlock
-                this.analyzeStateBlock(pChildren[1]);
+                this.analyzeStateBlock(pChildren[0]);
                 this._pExprType = null;
             }
             break;
@@ -1931,27 +1987,28 @@ Effect.prototype.analyzeExpr = function (pNode) {
         case COMPLEXEXPR:
             if (this._nAddr > 0 &&
                 pChildren.length !== 3 &&
-                (pChildren[1].sValue !== POSTFIXEXPR || pChildren[1].sValue !== PRIMARYEXPR)) {
+                (pChildren[1].sName !== POSTFIXEXPR || pChildren[1].sName !== PRIMARYEXPR ||
+                 pChildren[1].sName !== COMPLEXEXPR)) {
                 error("Bad for dog 2");
                 break;
             }
             if (pChildren.length === 1) {
                 //ComplexExpr : ObjectExpr
-                this.analyzeExpr(pChildren[0]);
+                this.analyzeExpr(pChildren[pChildren.length - 1]);
                 break;
             }
             if (pChildren.length === 3) {
                 //ComplexExpr : '(' Expr ')'
-                this.pushCode(pChildren[0].sValue);
+                this.pushCode(pChildren[pChildren.length - 1].sValue);
                 this.analyzeExpr(pChildren[1]);
-                this.pushCode(pChildren[2].sValue);
+                this.pushCode(pChildren[0].sValue);
                 break;
             }
-            if (pChildren[0].sName === T_NON_TYPE_ID) {
+            if (pChildren[pChildren.length - 1].sName === T_NON_TYPE_ID) {
                 //ComplexExpr : NonTypeId '(' ArgumentsOpt ')'
                 var pTypes = [];
                 this.newCode();
-                for (i = 2; i < pChildren.length - 1; i++) {
+                for (i = pChildren.length - 2; i >= 2; i--) {
                     if (pChildren[i].sValue === ",") {
                         this.pushCode(pChildren[i]);
                     }
@@ -1962,7 +2019,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 }
                 var pCode = this._pCode;
                 this.endCode();
-                pFunc = this.findFunction(pChildren[0].sValue, pTypes);
+                pFunc = this.findFunction(pChildren[pChildren.length - 1].sValue, pTypes);
                 if (!pFunc) {
                     error("bad 108");
                     return;
@@ -1978,35 +2035,38 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 if (pFunction) {
                     pFunction.addFunction(pFunc);
                 }
+                this._pExprType = pType1;
+                break;
 
             }
-            else if (pChildren[0].sName === T_TYPE_ID) {
+            else if (pChildren[pChildren.length - 1].sName === T_TYPE_ID) {
                 //ComplexExpr : TypeId '(' ArgumentsOpt ')'
-                pType1 = this.hasType(pChildren[0].sValue);
+                pType1 = this.hasType(pChildren[pChildren.length - 1].sValue);
                 this.pushCode(pType1);
             }
-            else if (pChildren[0].sName === BASETYPE) {
+            else if (pChildren[pChildren.length - 1].sName === BASETYPE) {
                 //ComplexExpr : BaseType '(' ArgumentsOpt ')'
-                pType1 = this.convertType(pChildren[0])
+                pType1 = this.convertType(pChildren[pChildren.length - 1])
                 this.pushCode(pType1);
             }
-            this.pushCode(pChildren[1].sValue);
+            this.pushCode("(");
 
-            for (i = 2; i < pChildren.length - 1; i++) {
+            for (i = pChildren.length - 2; i >= 2; i--) {
                 if (pChildren[i].sValue === ",") {
                     this.pushCode(pChildren[i]);
                 }
                 else {
                     this.analyzeExpr(pChildren[i]);
+                    pTypes.push(this._pExprType);
                 }
             }
-            this.pushCode(pChildren[pChildren.length - 1]);
+            this.pushCode(")");
             this._pExprType = pType1;
             break;
 
         case PRIMARYEXPR:
             if (pChildren.length === 1) {
-                this.analyzeExpr(pChildren[0]);
+                this.analyzeExpr(pChildren[pChildren.length - 1]);
                 break;
             }
             var isNewAddr = false;
@@ -2016,7 +2076,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 isNewAddr = true;
             }
             this._nAddr++;
-            this.analyzeExpr(pChildren[1]);
+            this.analyzeExpr(pChildren[0]);
 
             if (isNewAddr) {
                 this._isCodeWrite = true;
@@ -2048,7 +2108,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             break;
 
         case POSTFIXEXPR:
-            if (this._nAddr > 0 && (pChildren.length === 2 || pChildren[1].sValue === "[")) {
+            if (this._nAddr > 0 && (pChildren.length === 2 || pChildren[0].sValue === "]")) {
                 error("Bad for dog");
                 break;
             }
@@ -2057,18 +2117,18 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 isNewVar = true;
                 this.newVarName();
             }
-            this.analyzeExpr(pChildren[0]);
+            this.analyzeExpr(pChildren[pChildren.length - 1]);
             pType1 = this._pExprType;
             if (pChildren.length === 2) {
-                this.pushCode(pChildren[1].sValue);
+                this.pushCode(pChildren[0].sValue);
             }
             else if (pChildren[1].sValue === ".") {
                 this._sVarName += ".";
-                this.pushCode(pChildren[1].sValue);
-                this.analyzeExpr(pChildren[2]);
+                this.pushCode(".");
+                this.analyzeExpr(pChildren[pChildren.length - 3]);
                 pType1 = this._pExprType;
                 if (pChildren.length === 4) {
-                    var pMem = this.analyzeFromExpr(pChildren[3]);
+                    var pMem = this.analyzeFromExpr(pChildren[0]);
                     if (!pMem) {
                         error("bad 49");
                         return;
@@ -2089,15 +2149,15 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     pVar.pBuffer = pMem;
                 }
             }
-            else if (pChildren[1].sValue === "[") {
+            else if (pChildren[0].sValue === "]") {
                 this.newVarName();
-                this.pushCode(pChildren[1].sValue);
-                this.analyzeExpr(pChildren[2]);
+                this.pushCode("[");
+                this.analyzeExpr(pChildren[1]);
                 if (!this._pExprType.isEqual(this.hasType("int"))) {
                     error("bad 107");
                     return;
                 }
-                this.pushCode(pChildren[3].sValue);
+                this.pushCode("]");
                 this.endVarName();
             }
             if (isNewVar) {
@@ -2108,11 +2168,11 @@ Effect.prototype.analyzeExpr = function (pNode) {
 
         case UNARYEXPR:
             if (pChildren.length === 1) {
-                this.analyzeExpr(pChildren[0]);
+                this.analyzeExpr(pChildren[pChildren.length - 1]);
                 break;
             }
-            this.pushCode(pChildren[0].sValue);
-            this.analyzeExpr(pChildren[1]);
+            this.pushCode(pChildren[pChildren.length - 1].sValue);
+            this.analyzeExpr(pChildren[0]);
             if (!this._pExprType.isBase()) {
                 error("bad 106");
                 return;
@@ -2121,22 +2181,22 @@ Effect.prototype.analyzeExpr = function (pNode) {
 
         case CASTEXPR:
             if (pChildren.length === 1) {
-                this.analyzeExpr(pChildren[0]);
+                this.analyzeExpr(pChildren[pChildren.length - 1]);
                 break;
             }
             this.pushCode("(");
-            this.analyzeConstTypeDim(pChildren[1]);
+            this.analyzeConstTypeDim(pChildren[2]);
             //Set this._pExprType in function above
             pType = this._pExprType;
             this.pushCode("(");
-            this.analyzeExpr(pChildren[3]);
+            this.analyzeExpr(pChildren[0]);
             this.pushCode(")");
             this.pushCode(")");
             this._pExprType = pType;
             break;
 
         case CONDITIONALEXPR:
-            this.analyzeExpr(pChildren[0]);
+            this.analyzeExpr(pChildren[pChildren.length - 1]);
             if (!this._pExprType.isEqual(this.hasType("bool"))) {
                 error("bad 105");
                 return;
@@ -2149,7 +2209,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 this.analyzeExpr(pChildren[2]);
                 pType1 = this._pExprType;
                 this.pushCode(":");
-                this.analyzeExpr(pChildren[4]);
+                this.analyzeExpr(pChildren[0]);
                 pType2 = this._pExprType;
                 if (!pType1.isEqual(pType2)) {
                     error("104");
@@ -2166,14 +2226,14 @@ Effect.prototype.analyzeExpr = function (pNode) {
         case ANDEXPR:
         case OREXPR:
         case ASSIGNMENTEXPR:
-            this.analyzeExpr(pChildren[0]);
+            this.analyzeExpr(pChildren[pChildren.length - 1]);
             pType1 = this._pExprType;
             if (pChildren.length === 1) {
                 break;
             }
             else {
                 this.pushCode(pChildren[1].sValue);
-                this.analyzeExpr(pChildren[2]);
+                this.analyzeExpr(pChildren[0]);
                 pType2 = this._pExprType;
             }
             if (sName === ASSIGNMENTEXPR && pChildren.length === 3) {
@@ -2285,7 +2345,7 @@ Effect.prototype.analyzeTypeDecl = function (pNode) {
     var pType = new EffectType();
     if (pChildren.length === 2) {
         //TypeDecl : StructDecl ';'
-        pType.fromStruct(this.analyzeStructDecl(pChildren[0]));
+        pType.fromStruct(this.analyzeStructDecl(pChildren[1]));
     }
     this.addType(pType);
     pNode.pAnalyzed = pType;
@@ -2293,14 +2353,14 @@ Effect.prototype.analyzeTypeDecl = function (pNode) {
 Effect.prototype.analyzeStructDecl = function (pNode, pStruct) {
     pStruct = pStruct || new EffectStruct();
     var pChildren = pNode.pChildren;
-    pStruct.sName = pChildren[1];
-    if (this.hasTypeName(pStruct.sName)) {
+    pStruct.sName = pChildren[pChildren.length - 2].sValue;
+    if (this.hasType(pStruct.sName)) {
         error("Very bad... You try to redefinition type(");
         return;
     }
     this.newStruct();
     var i;
-    for (i = 3; i < pChildren.length; i++) {
+    for (i = pChildren.length - 4; i >= 1; i--) {
         if (pChildren[i].sName === VARIABLEDECL) {
             this.analyzeVariableDecl(pChildren[i]);
         }
@@ -2317,9 +2377,9 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
     var pFunction;
     if (this.nStep === 1) {
         var hasDecl = false;
-        var pFunction = this.analyzeFunctionDef(pChildren[0]);
+        pFunction = this.analyzeFunctionDef(pChildren[pChildren.length - 1]);
 
-        if (pChildren[1].sValue !== ";") {
+        if (pChildren[pChildren.length - 2].sValue !== ";") {
             hasDecl = true;
         }
         else {
@@ -2329,13 +2389,14 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
 
         if (pFunc !== false && pFunc.hasImplementation() && hasDecl) {
             error("You try to redifinition function! Not good!");
+            return;
         }
         if (pFunc === false) {
             this.addFunction(pFunction);
         }
     }
     else {
-        pFunction = this.analyzeFunctionDef(pChildren[0]);
+        pFunction = this.analyzeFunctionDef(pChildren[pChildren.length - 1]);
         var pType = pFunction.pReturnType;
         var pEffectType = pType.pEffectType;
         this._pCurrentFunction = pFunction;
@@ -2347,7 +2408,6 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
         }
         if (pChildren.length === 3) {
             this.analyzeAnnotation(pChildren[1], pFunction);
-            i++;
         }
         if (pFunction.isVertexShader) {
             if (pType.checkMe(VERTEXUSAGE)) {
@@ -2373,7 +2433,7 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
         }
         this.newCode(pFunction.isVertexShader, pFunction.isFragmentShader);
 
-        this.analyzeStmtBlock(pChildren[1 + i]);
+        this.analyzeStmtBlock(pChildren[0]);
         pFunction.setImplement(this._pCode, this._pCodeVertex, this._pCodeFragment);
 
         this.endCode();
@@ -2388,14 +2448,14 @@ Effect.prototype.analyzeFunctionDef = function (pNode, pFunction) {
     }
     pFunction = pFunction || new EffectFunction();
     var pChildren = pNode.pChildren;
-    pFunction.pReturnType = this.analyzeUsageType(pChildren[0]);
-    pFunction.setName(pChildren[i].sName);
-    if (pChildren[2].sName === SEMANTIC) {
-        pFunction.setSemantic(pChildren[2][1].sValue);
-        this.analyzeParamList(pChildren[3], pFunction);
+    pFunction.pReturnType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
+    pFunction.setName(pChildren[pChildren.length - 2].sValue);
+    if (pChildren[0].sName === SEMANTIC) {
+        pFunction.setSemantic(pChildren[0].pChildren[0].sValue);
+        this.analyzeParamList(pChildren[1], pFunction);
     }
     else {
-        this.analyzeParamList(pChildren[2], pFunction);
+        this.analyzeParamList(pChildren[0], pFunction);
     }
     pFunction.calcHash();
     pNode.pAnalyzed = pFunction;
@@ -2406,7 +2466,7 @@ Effect.prototype.analyzeStmtBlock = function (pNode) {
     var i;
     this.newScope();
     this.pushCode("{");
-    for (i = 0; i < pChildren.length; i++) {
+    for (i = pChildren.length - 1; i >= 0; i--) {
         this.analyzeStmt(pChildren[i]);
     }
     this.pushCode("}");
@@ -2417,47 +2477,47 @@ Effect.prototype.analyzeStmt = function (pNode) {
     if (pChildren.length === 1) {
         this.analyzeSimpleStmt(pChildren[0]);
     }
-    else if (pChildren[0].sName === T_KW_WHILE) {
+    else if (pChildren[pChildren.length - 1].sName === T_KW_WHILE) {
         //Stmt : T_KW_WHILE '(' Expr ')' Stmt
         this.pushCode("while");
         this.pushCode("(");
         this.analyzeExpr(pChildren[2]);
         this.pushCode(")");
-        this.analyzeStmt(pChildren[4]);
+        this.analyzeStmt(pChildren[0]);
     }
-    else if (pChildren[0].sName === T_KW_FOR) {
+    else if (pChildren[pChildren.length - 1].sName === T_KW_FOR) {
         //Stmt : For '(' ForInit ForCond ForStep ')' Stmt
         this.pushCode("for");
         this.pushCode("(");
         this.newScope();
-        this.analyzeForInit(pChildren[2]);
+        this.analyzeForInit(pChildren[4]);
         this.analyzeForCond(pChildren[3]);
-        this.analyzeForStep(pChildren[4]);
+        this.analyzeForStep(pChildren[2]);
         this.pushCode(")");
-        this.analyzeStmt(pChildren[6]);
+        this.analyzeStmt(pChildren[0]);
         this.endScope();
     }
-    else if (pChildren[0].sName === T_KW_IF && pChildren.length === 5) {
+    else if (pChildren[pChildren.length - 1].sName === T_KW_IF && pChildren.length === 5) {
         //Stmt : T_KW_IF '(' Expr ')' Stmt
         this.pushCode("if");
         this.pushCode("(");
         this.analyzeExpr(pChildren[2]);
         this.pushCode(")");
-        this.analyzeStmt(pChildren[4]);
+        this.analyzeStmt(pChildren[0]);
     }
     else {
         //Stmt : T_KW_IF '(' Expr ')' NonIfStmt T_KW_ELSE Stmt
         this.pushCode("if");
         this.pushCode("(");
-        this.analyzeExpr(pChildren[2]);
+        this.analyzeExpr(pChildren[4]);
         this.pushCode(")");
-        this.analyzeNonIfStmt(pChildren[4]);
+        this.analyzeNonIfStmt(pChildren[2]);
         this.pushCode("else");
-        this.analyzeStmt(pChildren[6]);
+        this.analyzeStmt(pChildren[0]);
     }
 };
 Effect.prototype.analyzeForInit = function (pNode) {
-    pNode = pNode.pChildren[0];
+    pNode = pNode.pChildren[pNode.pChildren.length - 1];
     var pChildren = pNode.pChildren;
     if (pNode.sName !== VARIABLEDECL) {
         error("Sorry but webgl support only for-init-statement with variableDecl");
@@ -2470,7 +2530,7 @@ Effect.prototype.analyzeForInit = function (pNode) {
     this.analyzeVariableDecl(pNode);
 };
 Effect.prototype.analyzeForCond = function (pNode) {
-    pNode = pNode.pChildren[0];
+    pNode = pNode.pChildren[pNode.pChildren.length - 1];
     if (pNode.sName !== RELATIONALEXPR || pNode.sName !== EQUALITYEXPR) {
         error("Something going wrong...in for cond");
         return;
@@ -2479,7 +2539,7 @@ Effect.prototype.analyzeForCond = function (pNode) {
 };
 Effect.prototype.analyzeForStep = function (pNode) {
     if (pNode.pChildren) {
-        pNode = pNode.pChildren[0];
+        pNode = pNode.pChildren[pNode.pChildren.length - 1];
     }
     if (pNode.sName !== POSTFIXEXPR || pNode.sName !== ASSIGNMENTEXPR) {
         error("Something going wrong... in for step");
@@ -2493,40 +2553,40 @@ Effect.prototype.analyzeNonIfStmt = function (pNode) {
     if (pChildren.length === 1) {
         this.analyzeSimpleStmt(pChildren[0]);
     }
-    else if (pChildren[0].sName === T_KW_WHILE) {
+    else if (pChildren[pChildren.length - 1].sName === T_KW_WHILE) {
         //Stmt : T_KW_WHILE '(' Expr ')' Stmt
         this.pushCode("while");
         this.pushCode("(");
         this.analyzeExpr(pChildren[2]);
         this.pushCode(")");
-        this.analyzeNonIfStmt(pChildren[4]);
+        this.analyzeNonIfStmt(pChildren[0]);
     }
-    else if (pChildren[0].sName === T_KW_FOR) {
+    else if (pChildren[pChildren.length - 1].sName === T_KW_FOR) {
         //Stmt : For '(' ForInit ForCond ForStep ')' Stmt
         this.pushCode("for");
         this.pushCode("(");
         this.newScope();
-        this.analyzeForInit(pChildren[2]);
+        this.analyzeForInit(pChildren[4]);
         this.analyzeForCond(pChildren[3]);
-        this.analyzeForStep(pChildren[4]);
+        this.analyzeForStep(pChildren[2]);
         this.pushCode(")");
-        this.analyzeNonIfStmt(pChildren[6]);
+        this.analyzeNonIfStmt(pChildren[0]);
         this.endScope();
     }
 };
 Effect.prototype.analyzeSimpleStmt = function (pNode) {
     var pChildren = pNode.pChildren;
     var pFunction = this._pCurrentFunction;
-    if (pChildren[0].sValue === ";") {
+    if (pChildren[pChildren.length - 1].sValue === ";") {
         //SimpleStmt : ';' --AN
         return;
     }
-    else if (pChildren[0].sName === EXPR) {
+    else if (pChildren[pChildren.length - 1].sName === EXPR) {
         //SimpleStmt : Expr ';'
-        this.analyzeExpr(pChildren[0]);
+        this.analyzeExpr(pChildren[pChildren.length - 1]);
         this.pushCode(";");
     }
-    else if (pChildren[0].sName === T_KW_RETURN && pChildren.length === 2) {
+    else if (pChildren[pChildren.length - 1].sName === T_KW_RETURN && pChildren.length === 2) {
         //SimpleStmt : T_KW_RETURN ';'
 //        if (this._pCodeVertex || this._pCodeFragment) {
 //            error("So sad, but you can`t do this with us.");
@@ -2539,7 +2599,7 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
         this.pushCode("return");
         this.pushCode(";");
     }
-    else if (pChildren[0].sName === T_KW_RETURN && pChildren.length === 3) {
+    else if (pChildren[pChildren.length - 1].sName === T_KW_RETURN && pChildren.length === 3) {
         //SimpleStmt : T_KW_RETURN Expr ';'
         this._pCode.push("return");
 
@@ -2581,38 +2641,38 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
                 this._pCodeFragment.push(pType.pEffectType.pOrders[0], ";");
             }
         }
-        this._pCode(";");
+        this._pCode.push(";");
     }
-    else if (pChildren[0].sName === T_KW_DO) {
+    else if (pChildren[pChildren.length - 1].sName === T_KW_DO) {
         //SimpleStmt : T_KW_DO Stmt T_KW_WHILE '(' Expr ')' ';'
         this.pushCode("do");
-        this.analyzeStmt(pChildren[1]);
+        this.analyzeStmt(pChildren[5]);
         this.pushCode("while");
         this.pushCode("(");
-        this.analyzeExpr(pChildren[4]);
+        this.analyzeExpr(pChildren[2]);
         this.pushCode(")");
         this.pushCode(";");
     }
-    else if (pChildren[0].sName === STATEBLOCK) {
+    else if (pChildren[pChildren.length - 1].sName === STATEBLOCK) {
         //SimpleStmt : StmtBlock
-        this.analyzeStmtBlock(pChildren[0]);
+        this.analyzeStmtBlock(pChildren[pChildren.length - 1]);
     }
-    else if (pChildren[0].sName === T_KW_DISCARD) {
+    else if (pChildren[pChildren.length - 1].sName === T_KW_DISCARD) {
         //SimpleStmt : T_KW_DISCARD ';'
         this.pushCode("discard");
         this.pushCode(";");
     }
-    else if (pChildren[0].sName === TYPEDECL) {
+    else if (pChildren[pChildren.length - 1].sName === TYPEDECL) {
         //SimpleStmt : TypeDecl
         this.analyzeTypeDecl(pChildren[0]);
     }
-    else if (pChildren[0].sName === VARIABLEDECL) {
+    else if (pChildren[pChildren.length - 1].sName === VARIABLEDECL) {
         //SimpleStmt : VariableDecl
         this.analyzeVariableDecl(pChildren[0]);
     }
     else {
         //SimpleStmt : VarStructDecl
-        this.analyzeVarStructDecl(pChildren[0]);
+        this.analyzeVarStructDecl(pChildren[pChildren.length - 1]);
     }
 };
 
@@ -2621,7 +2681,7 @@ Effect.prototype.analyzeParamList = function (pNode, pFunction) {
     var i;
     var pVar;
     pFunction.pParameters = {};
-    for (i = 1; i < pChildren.length - 1; i++) {
+    for (i = pChildren.length - 2; i >= 1; i--) {
         if (pChildren[i].sName === PARAMETERDECL) {
             pVar = this.analyzeParameterDecl(pChildren[i]);
             if (!pVar.checkMe()) {
@@ -2636,34 +2696,35 @@ Effect.prototype.analyzeParamList = function (pNode, pFunction) {
 Effect.prototype.analyzeParameterDecl = function (pNode) {
     var pChildren = pNode.pChildren;
     var pVar = new EffectVariable();
-    pVar.pType = this.analyzeParamUsageType(pChildren[0]);
-    if (!pVar.pType.checkMe()) {
+    pVar.pType = this.analyzeParamUsageType(pChildren[1]);
+    if (!pVar.pType.checkMe(PARAMETRUSAGE)) {
         error("You sucks 2");
         return;
     }
-    pVar = this.analyzeVariable(pChildren[1], pVar);
+    pVar = this.analyzeVariable(pChildren[0], pVar);
     return pVar;
 };
 Effect.prototype.analyzeParamUsageType = function (pNode, pType) {
     pType = pType || new VariableType();
     var pChildren = pNode.pChildren;
     var i;
-    for (i = 0; i < pChildren.length; i++) {
+    for (i = pChildren.length - 1; i >= 0; i--) {
         if (pChildren[i].sName === TYPE) {
             pType.setType(this.convertType(pChildren[i]));
         }
         if (pChildren[i].sName === PARAMUSAGE) {
-            pType.setUsage(pChildren[i], (this._isLocal || this._isAnnotation));
+            pType.setUsage(pChildren[i].pChildren[0].sValue);
         }
     }
+    return pType;
 };
 Effect.prototype.analyzeVarStructDecl = function (pNode) {
     var pChildren = pNode.pChildren;
     var i;
     var pVar;
-    var pType = this.analyzeUsageStructDecl(pChildren[0]);
+    var pType = this.analyzeUsageStructDecl(pChildren[pChildren.length - 1]);
     this._pCurrentType = pType;
-    for (i = 1; i < pChildren.length; i++) {
+    for (i = pChildren.length - 2; i >= 0; i--) {
         if (pChildren[i].sName === VARIABLE) {
             pVar = this.analyzeVariable(pChildren[i]);
             pVar.setType(pType);
@@ -2676,11 +2737,11 @@ Effect.prototype.analyzeUsageStructDecl = function (pNode, pType) {
     pType = pType || new VariableType();
     var pChildren = pNode.pChildren;
     var i;
-    for (i = 0; i < pChildren.length - 1; i++) {
-        pType.setUsage(pChildren[i]);
+    for (i = pChildren.length - 1; i >= 1; i--) {
+        pType.setUsage(pChildren[i].pChildren[0].sValue);
     }
     var pEffectType = new EffectType();
-    pEffectType.fromStruct(this.analyzeStructDecl(pChildren[i]));
+    pEffectType.fromStruct(this.analyzeStructDecl(pChildren[0]));
     this.addType(pEffectType);
     pType.setType(pEffectType);
 
@@ -2690,12 +2751,12 @@ Effect.prototype.analyzeTechniqueDecl = function (pNode) {
     var pChildren = pNode.pChildren;
     var i = 0;
     var pTech = new EffectTechnique();
-    pTech.setName(pChildren[1].sValue);
-    if (pChildren[2].sName === ANNOTATION) {
-        this.analyzeAnnotation(pChildren[2], pTech);
+    pTech.setName(pChildren[pChildren.length - 2].sValue);
+    if (pChildren[1].sName === ANNOTATION) {
+        this.analyzeAnnotation(pChildren[1], pTech);
         i++;
     }
-    this.analyzeTechniqueBody(pChildren[2 + i], pTech);
+    this.analyzeTechniqueBody(pChildren[0], pTech);
     this.addTechnique(pTech);
     pNode.pAnalyzed = pTech;
     return pTech;
@@ -2707,7 +2768,7 @@ Effect.prototype.analyzeTechniqueBody = function (pNode, pTechnique) {
     var pChildren = pNode.pChildren;
     var i;
     var pPass;
-    for (i = 1; i < pChildren.length - 1; i++) {
+    for (i = pChildren.length - 2; i >= 1; i--) {
         pPass = this.analyzePassDecl(pChildren[i]);
         if (!pPass.checkMe()) {
             error("something bad with your pass");
@@ -2720,21 +2781,20 @@ Effect.prototype.analyzePassDecl = function (pNode, pPass) {
     pPass = pPass || new EffectPass();
     var pChildren = pNode.pChildren;
     var i = 0;
-    if (pChildren[1].sName === T_NON_TYPE_ID || pChildren[1].sName === T_TYPE_ID) {
-        pPass.setName(pChildren[1].sValue);
-        i++;
+    if (pChildren[pChildren.length - 2].sName === T_NON_TYPE_ID ||
+        pChildren[pChildren.length - 2].sName === T_TYPE_ID) {
+        pPass.setName(pChildren[pChildren.length - 2].sValue);
     }
-    if (pChildren[1 + i] === ANNOTATION) {
-        this.analyzeAnnotation(pChildren[1 + i], pPass);
-        i++;
+    if (pChildren[1].sName === ANNOTATION) {
+        this.analyzeAnnotation(pChildren[1], pPass);
     }
-    this.analyzeStateBlock(pChildren[1 + i], pPass);
+    this.analyzeStateBlock(pChildren[0], pPass);
     return pPass;
 };
 Effect.prototype.analyzeStateBlock = function (pNode, pPass) {
     var pChildren = pNode.pChildren;
     var i;
-    for (i = 1; i < pChildren.length - 1; i++) {
+    for (i = pChildren.length - 2; i >= 1; i--) {
         this.analyzeState(pChildren[i], pPass);
     }
 };
@@ -2742,8 +2802,13 @@ Effect.prototype.analyzeState = function (pNode, pPass) {
     var pChildren = pNode.pChildren;
     var i;
     var eState = null;
-    var pExpr = pChildren[2].pChildren[0];
-    var sType = pChildren[0].sValue.toUpperCase();
+    if (pChildren[pChildren.length - 2].sName === STATEINDEX) {
+        error("don`t very bad for state");
+        return;
+    }
+    var pStateExpr = pChildren[pChildren.length - 3];
+    var pExpr = pStateExpr.pChildren[pStateExpr.pChildren.length - 1];
+    var sType = pChildren[pChildren.length - 1].sValue.toUpperCase();
 
     if (this._isSampler) {
         var isTexture = false;
@@ -2791,11 +2856,11 @@ Effect.prototype.analyzeState = function (pNode, pPass) {
         if (isTexture) {
             var pTexture;
             if (pExpr.sValue === "{" || pExpr.sValue === undefined ||
-                pChildren[3].pChildren[1].sName !== T_NON_TYPE_ID) {
+                pStateExpr.pChildren[1].sName !== T_NON_TYPE_ID) {
                 error("Wrong wrong");
                 return;
             }
-            pTexture = this.hasVariable(pChildren[3].pChildren[1].sValue);
+            pTexture = this.hasVariable(pStateExpr.pChildren[1].sValue);
             if (!pTexture) {
                 error("bad with texture name");
                 return;
@@ -2811,10 +2876,6 @@ Effect.prototype.analyzeState = function (pNode, pPass) {
         var isVertex = false;
         var isPixel = false;
 
-        if (pChildren[1].sName === STATEINDEX) {
-            error("Unsupported state for pass... It`s webgl, baby(");
-            return pPass;
-        }
         switch (sType) {
             case 'ZENABLE':
                 eState = a.renderStateType.ZENABLE;
@@ -2874,7 +2935,7 @@ Effect.prototype.analyzeState = function (pNode, pPass) {
             pExpr.sValue === undefined) {
             error("Too difficult for webgl");
         }
-        var sValue = pChildren[3].pChildren[0].sValue.toUpperCase();
+        var sValue = pExpr.sValue.toUpperCase();
         var eValue;
         //function fnRenderStateValueFromString(eState, sValue) {
         switch (eState) {
@@ -2996,41 +3057,33 @@ Effect.prototype.analyzeState = function (pNode, pPass) {
     }
 };
 
-
-Effect.prototype.getTypeFromTable = function (sName) {
-    return this._pTypeTable[sName];
-};
-
-Effect.prototype.hasTypeName = function (sName) {
-
-};
-Effect.prototype.isBaseType = function (pNode) {
-    switch (pNode.sName) {
-        case T_KW_VOID:
-        case T_KW_BOOL:
-        case T_KW_INT:
-        case T_KW_HALF:
-        case T_KW_FLOAT:
-        case T_KW_DOUBLE:
-        case T_KW_VECTOR:
-        case T_KW_MATRIX:
-        case T_KW_STRING:
-        case T_KW_TEXTURE:
-        case T_KW_TEXTURE1D:
-        case T_KW_TEXTURE2D:
-        case T_KW_TEXTURE3D:
-        case T_KW_TEXTURECUBE:
-        case T_KW_SAMPLER:
-        case T_KW_SAMPLER1D:
-        case T_KW_SAMPLER2D:
-        case T_KW_SAMPLER3D:
-        case T_KW_SAMPLERCUBE:
-        case T_KW_PIXELSHADER:
-        case T_KW_VERTEXSHADER:
-        case T_KW_PIXELFRAGMENT:
-        case T_KW_VERTEXFRAGMENT:
-        case T_KW_STATEBLOCK:
-            return true;
-    }
-    return false;
-};
+//Effect.prototype.isBaseType = function (pNode) {
+//    switch (pNode.sName) {
+//        case T_KW_VOID:
+//        case T_KW_BOOL:
+//        case T_KW_INT:
+//        case T_KW_HALF:
+//        case T_KW_FLOAT:
+//        case T_KW_DOUBLE:
+//        case T_KW_VECTOR:
+//        case T_KW_MATRIX:
+//        case T_KW_STRING:
+//        case T_KW_TEXTURE:
+//        case T_KW_TEXTURE1D:
+//        case T_KW_TEXTURE2D:
+//        case T_KW_TEXTURE3D:
+//        case T_KW_TEXTURECUBE:
+//        case T_KW_SAMPLER:
+//        case T_KW_SAMPLER1D:
+//        case T_KW_SAMPLER2D:
+//        case T_KW_SAMPLER3D:
+//        case T_KW_SAMPLERCUBE:
+//        case T_KW_PIXELSHADER:
+//        case T_KW_VERTEXSHADER:
+//        case T_KW_PIXELFRAGMENT:
+//        case T_KW_VERTEXFRAGMENT:
+//        case T_KW_STATEBLOCK:
+//            return true;
+//    }
+//    return false;
+//};
