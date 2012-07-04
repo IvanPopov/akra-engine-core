@@ -68,7 +68,8 @@ Endif();
 Include('resources/ModelResource.js');
 
 Include('objects/');
-
 Include('Engine.js');
 
 window['a'] = window['akra'] = a;
+
+Include('../../akra-engine-general/analyzer/A_Analyzer.js');

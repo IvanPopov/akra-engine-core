@@ -331,12 +331,12 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
     iRightShift = ((iFrom + iCount) % nElementsPerPix);
     iBeginPix   = Math.floor(iFrom / nElementsPerPix);
     iEndPix     = Math.floor((iFrom + iCount) / nElementsPerPix);
-    nPixels     = iEndPix - iBeginPix;
+    nPixels     = Math.ceil((iFrom + iCount) / nElementsPerPix) - Math.floor(iFrom / nElementsPerPix);
     nElements   = nPixels * nElementsPerPix;
 
     pBufferData = new a.VideoBufferType(pData.slice(0, iSize));
 
-    if (iLeftShift === 0 && iRightShift === 0) {
+    if (iLeftShift === 0 && iRightShift === 0 && 0) {
 
         var iWidth  = this.width;
         var iYmin   = Math.floor(iBeginPix / iWidth);
@@ -396,7 +396,7 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
                 //set shift for fisrt pixel
                 pMarkupData[n + 1] = iLeftShift;
             }
-            else if (i === nPixels - 1 && iLeftShift) {
+            else if (i === nPixels - 1) {
                 //negative shift for ending pixel
                 pMarkupData[n + 1] = -iRightShift;
             }
@@ -404,7 +404,7 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
                 pMarkupData[n + 1] = 0;
             }
 
-            if (pMarkupData[n + 1] >= 0) {
+/*            if (pMarkupData[n + 1] >= 0) {
                 f = i * nElementsPerPix;
                 if (n == 0) {
                     f += iLeftShift;
@@ -418,12 +418,17 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
 
             for (var e = 0; e < t; ++e) {
                 pRealData[f + e] = pBufferData[u++];
-            }
+            }*/
 
             pMarkupData[n] = iBeginPix + i;
         }
 
+        for (var i = 0; i < iCount; i++) {
+            pRealData[iLeftShift + i] = pBufferData[i];
+        };
 
+        trace('>>>>>>>>>>>>>>>>>>> offset:', iOffset, ' >>> left shift: ', iLeftShift, ' >>> right shift: ', iRightShift)
+        trace(' >>> begin pixel: ', iBeginPix, ' >>> end pixel: ', iEndPix);
         trace('writing', iCount, 'elements from', iFrom, 'with data', pBufferData);
         trace('markup  data:', pMarkupData, pMarkupData.length, 'first element:', pMarkupData.subarray(0, 2), 'end element:', pMarkupData.subarray(pMarkupData.length - 2, pMarkupData.length));
         trace('buffer data:', pRealData, pRealData.length);
@@ -455,68 +460,59 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
 
         var pDevice = this._pEngine.pDevice;
 
-        if (!this._pUpdateProgram) {
-            this._pUpdateProgram = this._pEngine.displayManager().shaderProgramPool().createResource('A_updateVideoBuffer');
-            this._pUpdateProgram.create(
-                " \
-                uniform sampler2D sourceTexture;                                                \n\
-                attribute vec4  VALUE;                                                          \n\
-                attribute float INDEX;                                                          \n\
-                attribute float SHIFT;                                                          \n\
-                                                                                                \n\
-                uniform vec2 size;                                                              \n\
-                                                                                                \n\
-                varying vec4 color;                                                            \n\
-                                                                                                \n\
-                void main(void){                                                                \n\
-                    vec4 value = VALUE;                                                         \n\
-                    float  serial = float(INDEX);                                               \n\
-                                                                                                \n\
-                    int shift = int(SHIFT);                                                     \n\
-                    if (shift != 0) { \
-                        color = texture2D(sourceTexture, vec2(mod(serial, size.x) /            \n\
-                            size.x + .5 / size.x, floor(serial / size.x) / size.y + .5 / size.y));                              \n\
-                        if (shift == 1) {               \n\
-                            color = vec4(color.r, value.gba);      \n\
-                        }                               \n\
-                        else if (shift == 2) {          \n\
-                            color = vec4(color.rg, value.ba);        \n\
-                        }                               \n\
-                        else if (shift == 3) {          \n\
-                            color = vec4(color.rgb, value.a);          \n\
-                        }                               \n\
-                        else if (shift == -1) {         \n\
-                            color = vec4(value.r, color.gba);      \n\
-                        }                               \n\
-                        else if (shift == -2) {         \n\
-                            color = vec4(value.rg, color.ba);        \n\
-                        }                               \n\
-                        else {                          \n\
-                            color = vec4(value.rgb, color.a);          \n\
-                        }                                                                       \n\
-                    }\
-                    else                                                                                               \n\
-                        color = value;                                                              \n\
-                    gl_Position = vec4(2. * mod(serial, size.x) / size.x - 1. + .5 / size.x,                  \n\
-                                    2. * floor(serial / size.x) / size.y - 1. + .5 / size.y, 0., 1.);        \n\
-                }                                                                               \n\
-                ",
-                "                                   \n\
-                #ifdef GL_ES                        \n\
-                    precision highp float;          \n\
-                #endif                              \n\
-                                                    \n\
-                varying vec4 color;                 \n\
-                                                    \n\
-                void main(void){                    \n\
-                    gl_FragColor = color;           \n\
-                }                                   \n\
-            ", true);
+        var pFramebuffer = pDevice.createFramebuffer();
+        pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pFramebuffer);
+
+Ifdef (TEXTURE_REDRAW)
+        if (!statics._pCopyProgram) {
+            statics._pCopyProgram = this._pEngine.displayManager().shaderProgramPool().createResource('A_copyTexture');
+            var pShaderSource = loadGLSLSource('../effects/', 'copy_texture.glsl');
+            statics._pCopyProgram.create(pShaderSource.vertex, pShaderSource.fragment, true);
         }
 
-        var pProgram = this._pUpdateProgram;
+        var pCopyProgram = statics._pCopyProgram;
+        pCopyProgram.activate();
+
+        pDevice.disableVertexAttribArray(1);
+        pDevice.disableVertexAttribArray(2);
+
+        var pCopyData = new Float32Array([-1,-1,-1,1,1,-1,1,1]);
+
+        var pCopyBuffer = pDevice.createBuffer();
+        pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pCopyBuffer);
+        pDevice.bufferData(pDevice.ARRAY_BUFFER, pCopyData, pDevice.STREAM_DRAW);
+        pDevice.vertexAttribPointer(pCopyProgram._pAttributesByName['POSITION'].iLocation, 2, pDevice.FLOAT, false, 0, 0);
+
+        var pCopyTexture = pDevice.createTexture();
+        pDevice.activeTexture(0x84C0 + 1);
+        pDevice.bindTexture(pDevice.TEXTURE_2D,pCopyTexture);
+        pDevice.texImage2D(pDevice.TEXTURE_2D, 0, this._eFormat, this._iWidth, this._iHeight, 0, this._eFormat, this._eType, null);
+        pDevice.texParameteri(pDevice.TEXTURE_2D, a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
+        pDevice.texParameteri(pDevice.TEXTURE_2D, a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
+        pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MAG_FILTER, pDevice.NEAREST);
+        pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MIN_FILTER, pDevice.NEAREST);
+
+        pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
+            pDevice.TEXTURE_2D, pCopyTexture, 0);
+
+        this.activate(0);
+        pCopyProgram.applyInt('src',0);
+
+        pDevice.drawArrays(a.PRIMTYPE.TRIANGLESTRIP, 0, 4);
+Endif ();
+A_TRACER.BEGIN();
+        if (!statics._pUpdateProgram) {
+            statics._pUpdateProgram = this._pEngine.displayManager().shaderProgramPool().createResource('A_updateVideoBuffer');
+            var pShaderSource = loadGLSLSource('../effects/', 'update_video_buffer.glsl');
+            statics._pUpdateProgram.create(pShaderSource.vertex, pShaderSource.fragment, true);
+        }
+
+        var pProgram = statics._pUpdateProgram;
         pProgram.activate();
 
+        pDevice.enableVertexAttribArray(0);
+        pDevice.enableVertexAttribArray(1);
+        pDevice.enableVertexAttribArray(2);
         //var pDestinationTexture = pDevice.createTexture();
         //pDevice.activeTexture(pDevice.TEXTURE1);
         //pDevice.bindTexture(pDevice.TEXTURE_2D, pDestinationTexture);
@@ -524,8 +520,9 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
         //pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MAG_FILTER, pDevice.NEAREST);
         //pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MIN_FILTER, pDevice.NEAREST);
 
-        var pFramebuffer = pDevice.createFramebuffer();
-        pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pFramebuffer);
+        
+
+        
         pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
             pDevice.TEXTURE_2D, this._pTexture, 0);
 
@@ -537,12 +534,17 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
         pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pMarkupBuffer);
         pDevice.bufferData(pDevice.ARRAY_BUFFER, pMarkupData, pDevice.STREAM_DRAW);
 
-        this.activate(0);
+        //this.activate(0);
+        pDevice.activeTexture(pDevice.TEXTURE0);
+        pDevice.bindTexture(pDevice.TEXTURE_2D, this._pTexture);
         //pDevice.pixelStorei(a.WEBGLS.UNPACK_FLIP_Y_WEBGL, false);
 
         pProgram.applyVector2('size', this._iWidth, this._iHeight);
+Ifdef (TEXTURE_REDRAW)
+        pProgram.applyInt('sourceTexture', 1);
+Elseif ();
         pProgram.applyInt('sourceTexture', 0);
-
+Endif ();
         pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pValueBuffer);
         pDevice.vertexAttribPointer(pProgram._pAttributesByName['VALUE'].iLocation, 4, pDevice.FLOAT, false, 0, 0);
 
@@ -553,22 +555,24 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
         pDevice.viewport(0, 0, this._iWidth, this._iHeight);
 
         pDevice.drawArrays(0, 0, nPixels);
+        
         pDevice.flush();
-
+A_TRACER.END();
         pDevice.bindBuffer(pDevice.ARRAY_BUFFER, null);
         pDevice.deleteBuffer(pValueBuffer);
         pDevice.deleteBuffer(pMarkupBuffer);
 
         pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, null);
         pDevice.deleteFramebuffer(pFramebuffer);
-
+Ifdef (TEXTURE_REDRAW)
+        pDevice.deleteTexture(pCopyTexture);
+Endif ();
         //pDevice.bindTexture(pDevice.TEXTURE_2D, this._pTexture);
         //pDevice.pixelStorei(a.WEBGLS.UNPACK_FLIP_Y_WEBGL, true);
         //pDevice.bindTexture(pDevice.TEXTURE_2D, null);
 
         //pProgram.detach();
         pProgram.deactivate();
-
     }
 
     return true;

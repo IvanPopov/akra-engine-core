@@ -4,6 +4,16 @@
  * @email <vantuziast@odserve.org>
  */
 
+function loadGLSLSource(sPath, sFilename) {
+    var sShader = a.ajax({url: sPath + sFilename, async: false}).data;
+    var fnReplacer = function (sSource, sMatch) {
+        return a.ajax({url: sPath + sMatch, async: false}).data;
+    }
+
+    sShader = sShader.replace(/\#include\s+\"([\w\.]+)\"/ig, fnReplacer);
+    sShader = sShader.split('//<-- split -- >');
+    return {vertex: sShader[0], fragment: sShader[1]};
+}
 
 /**
  * Basic class(interface) for platform

@@ -1,7 +1,10 @@
 /**
  * @ctor
  */
+
+
 function RenderDataSubset() {
+
     this._eOptions = 0;
     this._pFactory = null;
     this._iId = -1;
@@ -13,6 +16,8 @@ function RenderDataSubset() {
     this._pMaps = [];
 }
 
+EXTENDS(RenderDataSubset, a.ReferenceCounter);
+
 PROPERTY(MeshSubset, 'factory',
     function () {
         return this._pFactory;
@@ -23,6 +28,7 @@ RenderDataSubset.prototype.setup = function(pFactory, iId, ePrimType, eOptions) 
         return false;
     }
     
+    this._eOptions = eOptions;
     this._pFactory = pFactory;
     this._iId = iId;
     this._pMap = new a.BufferMap(pFactory.getEngine());
@@ -156,6 +162,22 @@ RenderDataSubset.prototype.addIndexSet = function(usePreviousDataSet, ePrimType)
     return this._pMap.length - 1;
 };
 
+RenderDataSubset.prototype.getIndices = function () {
+    'use strict';
+    
+    return this._pIndexData;
+};
+
+/**
+ * @protected
+ * @param  {String} sSemantics Declaration semantics.
+ */
+RenderDataSubset.prototype.getDataFlow = function (sSemantics) {
+    'use strict';
+    
+    return this._pMap.getFlow(a.DECLUSAGE.MATERIAL);
+};
+
 RenderDataSubset.prototype.getIndexSet = function() {
     'use strict';
 
@@ -168,6 +190,12 @@ RenderDataSubset.prototype.getIndexSet = function() {
     return -1;
 };
 
+RenderDataSubset.prototype.hasSemantics = function (sSemantics) {
+    'use strict';
+
+    return this.getDataFlow(sSemantics) !== null;
+};
+
 RenderDataSubset.prototype.getDataLocation = function (sSemantics) {
     'use strict';
 
@@ -176,7 +204,7 @@ RenderDataSubset.prototype.getDataLocation = function (sSemantics) {
     for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++ i) {
         pFlow = pFlows[i];
 
-        if (pFlow.pData.hasSemantics(sSemantics)) {
+        if (pFlow.pData && pFlow.pData.hasSemantics(sSemantics)) {
             return pFlow.pData.getOffset();
         }
     }

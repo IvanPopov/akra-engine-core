@@ -1320,10 +1320,10 @@ function COLLADA (pEngine, sFilename, fnCallback) {
     function buildMesh (pGeometry) {
         var pMeshData = pGeometry.pMesh;
         var pMesh = new a.Mesh(pEngine, 0, pGeometry.id);
-
+        //FLAG(a.Mesh.VB_READABLE)
         for (var i = 0; i < pMeshData.pPolygons.length; ++ i) {
             var pPolygons = pMeshData.pPolygons[i];
-            pMesh.allocateSubset('submesh-' + i, pPolygons.eType);
+            pMesh.createSubset('submesh-' + i, pPolygons.eType);
         }
 
         for (var i = 0; i < pMeshData.pPolygons.length; ++ i) {
@@ -1332,14 +1332,16 @@ function COLLADA (pEngine, sFilename, fnCallback) {
             for (var j = 0; j < pPolygons.pInput.length; ++ j) {
                 var sSemantic = pPolygons.pInput[j].sSemantic;
 
-                if (pMesh.getDataLocation(sSemantic) < 0) {
+                if (pMesh._pFactory.getDataLocation(sSemantic) < 0) {
                     var pDecl, pData = pPolygons.pInput[j].pArray;
                     switch (sSemantic) {
                         case a.DECLUSAGE.POSITION:
                             pDecl = [VE_FLOAT3(a.DECLUSAGE.POSITION)];
+                            pMesh._pFactory.allocateData(pDecl, pData);
                             break;
                         case a.DECLUSAGE.NORMAL:
                             pDecl = [VE_FLOAT3(a.DECLUSAGE.NORMAL)];
+                            pMesh._pFactory.allocateData(pDecl, pData);
                             break;
                         case a.DECLUSAGE.TEXCOORD:
                             pDecl = [VE_FLOAT2(a.DECLUSAGE.TEXCOORD)];
@@ -1348,7 +1350,7 @@ function COLLADA (pEngine, sFilename, fnCallback) {
                             error('unsupported semantics used: ' + sSemantic);
                     }
 
-                    pMesh.allocateData(pDecl, pData);
+                    //pMesh._pFactory.allocateData(pDecl, pData);
                     // trace(pMesh._pDataBuffer.size, 'bytes', pMesh._pDataBuffer._iWidth, pMesh._pDataBuffer._iHeight);
                 }
             }
@@ -1357,16 +1359,16 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         for (var i = 0; i < pMeshData.pPolygons.length; ++ i) {
             var pPolygons = pMeshData.pPolygons[i];
             var pSubMesh = pMesh.getSubset(i);
-
+            var pSubMeshData = pSubMesh._pRenderData;
             var pDecl = [];
             for (var j = 0; j < pPolygons.pInput.length; ++ j) {
                 pDecl.push(VE_FLOAT('INDEX_' + pPolygons.pInput[j].sSemantic));
             }
 
-            pSubMesh.allocateIndex(pDecl, new Float32Array(pPolygons.p));
+            pSubMeshData.allocateIndex(pDecl, new Float32Array(pPolygons.p));
 
             for (var j = 0; j < pDecl.length; ++ j) {
-                pSubMesh.index(pPolygons.pInput[j].sSemantic, pDecl[j].eUsage);
+                pSubMeshData.index(pPolygons.pInput[j].sSemantic, pDecl[j].eUsage);
             }
 
             var sMat = pMeshData.pPolygons[i].sMaterial;
@@ -1375,17 +1377,22 @@ function COLLADA (pEngine, sFilename, fnCallback) {
             if (sMat === 'shinny-fx') {
                 sMat = 'shiny-fx';
             }
-            var pMat = pLib['library_effects'].effect[sMat].pProfileCommon.pTechnique.pValue;
-            pSubMesh.applyFlexMaterial(sMat, pMat);
+            //var pMat = pLib['library_effects'].effect[sMat].pProfileCommon.pTechnique.pValue;
+            //pSubMesh.applyFlexMaterial(sMat, pMat);
         }
         
-        //pMesh.addFlexMaterial('default');
-        //pMesh.setFlexMaterial('default');
-        
-        // for (var i = 0; i < pMesh._pSubsets.length; i++) {
-        //     trace(pMesh._pSubsets[i]._pMap.toString());
-        // };
-        
+/*        var pMat = new a.Material;
+        pMat.diffuse = new a.Color4f(1,1,1,0);
+        pMat.ambient = new a.Color4f(1,1,1,0);
+        pMat.shininess = 70;*/
+        pMesh.addFlexMaterial('default'/*, pMat*/);
+        pMesh.setFlexMaterial('default');
+
+/*        
+        for (var i = 0; i < pMesh._pSubMeshes.length; i++) {
+            trace(pMesh.getSubset(i)._pRenderData._pMap.toString());
+        };
+        */
 
         if (!pMeshData) {
             return null;
@@ -1462,7 +1469,7 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         trace(pLib['library_effects']);
         for (var i in pLib['library_geometries'].geometry) {
             trace(pLib['library_geometries'].geometry[i]);
-            for(var j = 0; j < 200; j++){
+            for(var j = 0; j < 1; j++){
                 pMeshes.push(buildMesh(pLib['library_geometries'].geometry[i]));
                 trace("model", j);
             }
