@@ -884,7 +884,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
         }
         else {
             for (var i = 0; i < nMipMaps; i++) {
-                trace('Texture:: creating texture miplevel:', i);
+                //trace('Texture:: creating texture miplevel:', i);
                 pDevice.texImage2D(a.TTYPE.TEXTURE_2D, i, this._eFormat, this._iWidth,
                     this._iHeight, 0, this._eFormat, this._eType, pData[i] ? pData[i] : null);
             }
@@ -914,11 +914,11 @@ Texture.prototype.unbind = function () {
 
 Texture.prototype.activate = function (iSlot) {
     var pManager = this._pEngine.pShaderManager;
-    if (pManager.activeTextures[iSlot] !== this) {
+    //if (pManager.activeTextures[iSlot] !== this) {
         this._pEngine.pDevice.activeTexture(a.TEXTUREUNIT.TEXTURE + (iSlot || 0));
         this.bind();
-        pManager.activeTextures[iSlot] = this;
-    }
+        //pManager.activeTextures[iSlot] = this;
+    //}
 };
 
 /**

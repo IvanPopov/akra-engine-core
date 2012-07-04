@@ -64,6 +64,7 @@ function ShaderManager (pEngine) {
          eTextureHandles, a.ShaderManager);
 
     this.pEngine = pEngine;
+    this._pActiveProgram = null;
 //    this._pActivatedPrograms = new Array(32);
 //    this._pActivatedPrograms[0] = 0;
 //    this._nLastActivatedProgram = 0;

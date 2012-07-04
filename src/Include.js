@@ -72,4 +72,4 @@ Include('Engine.js');
 
 window['a'] = window['akra'] = a;
 
-Include('../../akra-engine-general/analyzer/A_Analyzer.js');
+//Include('../../akra-engine-general/analyzer/A_Analyzer.js');

@@ -1337,11 +1337,9 @@ function COLLADA (pEngine, sFilename, fnCallback) {
                     switch (sSemantic) {
                         case a.DECLUSAGE.POSITION:
                             pDecl = [VE_FLOAT3(a.DECLUSAGE.POSITION)];
-                            pMesh._pFactory.allocateData(pDecl, pData);
                             break;
                         case a.DECLUSAGE.NORMAL:
                             pDecl = [VE_FLOAT3(a.DECLUSAGE.NORMAL)];
-                            pMesh._pFactory.allocateData(pDecl, pData);
                             break;
                         case a.DECLUSAGE.TEXCOORD:
                             pDecl = [VE_FLOAT2(a.DECLUSAGE.TEXCOORD)];
@@ -1350,7 +1348,7 @@ function COLLADA (pEngine, sFilename, fnCallback) {
                             error('unsupported semantics used: ' + sSemantic);
                     }
 
-                    //pMesh._pFactory.allocateData(pDecl, pData);
+                    pMesh._pFactory.allocateData(pDecl, pData);
                     // trace(pMesh._pDataBuffer.size, 'bytes', pMesh._pDataBuffer._iWidth, pMesh._pDataBuffer._iHeight);
                 }
             }
@@ -1377,16 +1375,16 @@ function COLLADA (pEngine, sFilename, fnCallback) {
             if (sMat === 'shinny-fx') {
                 sMat = 'shiny-fx';
             }
-            //var pMat = pLib['library_effects'].effect[sMat].pProfileCommon.pTechnique.pValue;
-            //pSubMesh.applyFlexMaterial(sMat, pMat);
+            var pMat = pLib['library_effects'].effect[sMat].pProfileCommon.pTechnique.pValue;
+            pSubMesh.applyFlexMaterial(sMat, pMat);
         }
         
 /*        var pMat = new a.Material;
         pMat.diffuse = new a.Color4f(1,1,1,0);
         pMat.ambient = new a.Color4f(1,1,1,0);
         pMat.shininess = 70;*/
-        pMesh.addFlexMaterial('default'/*, pMat*/);
-        pMesh.setFlexMaterial('default');
+        //pMesh.addFlexMaterial('default'/*, pMat*/);
+        //pMesh.setFlexMaterial('default');
 
 /*        
         for (var i = 0; i < pMesh._pSubMeshes.length; i++) {

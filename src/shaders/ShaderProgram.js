@@ -293,8 +293,8 @@ GLSLProgram.prototype.create = function (sVertexCode, sPixelCode, bSetup) {
     pDevice.attachShader(pHardwareProgram, this._buildShader(a.SHADERTYPE.PIXEL, sPixelCode));
     pDevice.linkProgram(pHardwareProgram);
     if (!pDevice.getProgramParameter(pHardwareProgram, pDevice.VALIDATE_STATUS)) {
-        trace('program not valid', this.findResourceName());
-        trace(pDevice.getProgramInfoLog(pHardwareProgram));
+        //trace('program not valid', this.findResourceName());
+        //trace(pDevice.getProgramInfoLog(pHardwareProgram));
     }
     debug_assert_win(pDevice.getProgramParameter(pHardwareProgram, pDevice.LINK_STATUS),
         'cannot link program', this._programInfoLog());
@@ -497,7 +497,8 @@ GLSLProgram.prototype.applyBuffer = function (pVertexData) {
         pAttr;
     var pVertexElement;
     var pVertexBuffer = pVertexData.buffer;
-    var isActive = this._pManager.latestBuffer !== pVertexBuffer;
+    var isActive = this._pManager._pActiveProgram? 
+        this._pManager._pActiveProgram.latestBuffer !== pVertexBuffer: false;
 
     for (i = 0; i < pVertexData.getVertexElementCount(); i++) {
         pVertexElement = pVertexData._pVertexDeclaration[i];
@@ -506,7 +507,7 @@ GLSLProgram.prototype.applyBuffer = function (pVertexData) {
             continue;
         }
         
-        if (pAttr.pCurrentData !== pVertexData) {
+        if (pAttr.pCurrentData !== pVertexData || 1) {
 
             if (isActive) {
                 isActive = true;

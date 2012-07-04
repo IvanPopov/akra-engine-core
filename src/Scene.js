@@ -920,7 +920,15 @@ SceneNode.prototype.addPosition = function (pPos) {
  */
 SceneNode.prototype.addRelPosition = function (pPos) {
     var m4fLocal = this._m4fLocalMatrix;
-    var fX = pPos.X, fY = pPos.Y, fZ = pPos.Z;
+    var fX, fY, fZ;
+    if (arguments.length < 3) {
+        fX = pPos.X, fY = pPos.Y, fZ = pPos.Z;
+    }
+    else {
+        fX = arguments.X;
+        fY = arguments.Y;
+        fZ = arguments.Z;
+    }
     m4fLocal._14 += m4fLocal._11 * fX + m4fLocal._12 * fY + m4fLocal._13 * fZ;
     m4fLocal._24 += m4fLocal._21 * fX + m4fLocal._22 * fY + m4fLocal._23 * fZ;
     m4fLocal._34 += m4fLocal._31 * fX + m4fLocal._32 * fY + m4fLocal._33 * fZ;
