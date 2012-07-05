@@ -1,7 +1,8 @@
 
 function RenderDataFactory (pEngine) {
     Enum([
-        VB_READABLE = a.VBufferBase.RamBackupBit
+        VB_READABLE = FLAG(a.VBufferBase.RamBackupBit),
+        RDS_ADVANCED_INDEX = FLAG(0x10)
     ], RENDERDATA_OPTIONS, a.RenderDataFactory);
 
     //video buffer with all mesh data
@@ -39,19 +40,27 @@ RenderDataFactory.prototype.getDataOptions = function() {
 
 /**
  * Find VertexData with given semantics/usage.
- * @param  {String} sSemantics Data semantics.
  * @return {VertexData} Data with given semantics or null.
  */
-RenderDataFactory.prototype.getData = function (sSemantics) {
+RenderDataFactory.prototype.getData = function () {
     var pData;
 
     if (this._pDataBuffer) {
         pData = pData = this._pDataBuffer._pVertexDataArray;
-        for (var i = 0; i < pData.length; i++) {
-            if (pData[i].hasSemantics(sSemantics)) {
-                return pData[i];
-            }
-        };
+        if (typeof arguments[0] === 'string') {
+            for (var i = 0; i < pData.length; i++) {
+                if (pData[i].hasSemantics(arguments[0])) {
+                    return pData[i];
+                }
+            };
+        }
+        else {
+            for (var i = 0; i < pData.length; i++) {
+                if (pData[i].getOffset() === arguments[0]) {
+                    return pData[i];
+                }
+            };
+        }
     }
 
     return null;
@@ -96,9 +105,15 @@ RenderDataFactory.prototype.getDataLocation = function (sSemantics) {
 RenderDataFactory.prototype._createDataBuffer = function () {
     'use strict';
     //TODO: add support for eOptions
-    trace('data options ::', this._eDataOptions);
+    var iVbOption = 0;
+    var iOptions = this._eDataOptions;
+
+    if (iOptions & a.RenderDataFactory.VB_READABLE) {
+        SET_BIT(iVbOption, FLAG(a.VBufferBase.ReadableBit));
+    }
+    
     this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource('data_factory_buffer' + '_' + a.sid());
-    this._pDataBuffer.create(0, this._eDataOptions);
+    this._pDataBuffer.create(0, iVbOption);
     this._pDataBuffer.addRef();
     return this._pDataBuffer !== null;
 };
@@ -128,6 +143,8 @@ RenderDataFactory.prototype.allocateSubset = function (ePrimType, eOptions) {
 
     var iSubsetId = this._pSubsets.length;
     var pDataset = new this._pSubsetType(this._pEngine);
+
+    eOptions |= this._eDataOptions;
 
     if (!pDataset.setup(this, iSubsetId, ePrimType, eOptions)) {
         debug_error('cannot setup submesh...');

@@ -1319,8 +1319,10 @@ function COLLADA (pEngine, sFilename, fnCallback) {
 
     function buildMesh (pGeometry) {
         var pMeshData = pGeometry.pMesh;
-        var pMesh = new a.Mesh(pEngine, 0, pGeometry.id);
-        //FLAG(a.Mesh.VB_READABLE)
+        var pMesh = new a.Mesh(pEngine, 
+            a.Mesh.VB_READABLE|a.Mesh.RDS_ADVANCED_INDEX, 
+            pGeometry.id);
+        
         for (var i = 0; i < pMeshData.pPolygons.length; ++ i) {
             var pPolygons = pMeshData.pPolygons[i];
             pMesh.createSubset('submesh-' + i, pPolygons.eType);

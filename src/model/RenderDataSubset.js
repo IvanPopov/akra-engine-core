@@ -4,7 +4,6 @@
 
 
 function RenderDataSubset() {
-
     this._eOptions = 0;
     this._pFactory = null;
     this._iId = -1;
@@ -27,25 +26,97 @@ RenderDataSubset.prototype.setup = function(pFactory, iId, ePrimType, eOptions) 
     if (arguments.length < 4) {
         return false;
     }
-    
+
     this._eOptions = eOptions;
     this._pFactory = pFactory;
     this._iId = iId;
     this._pMap = new a.BufferMap(pFactory.getEngine());
     this._pMap.primType = ePrimType || a.PRIMTYPE.TRIANGLELIST;
     this._pMaps.push(this._pMap);
-
+    this._pMap._pI2IDataCache = {};
     return true;
 };
 
-//добавляем сабмешу ссылку на его данные.
-RenderDataSubset.prototype._addData = function (pVertexData, iFlow) {
+Enum([
+    DT_ISOLATED = 0,   //положить данные в текстуру, и больше ничего не делать.
+    DT_INDEXED,        //обычные даннае из текстуры, доступные по индексу.
+    DT_I2I,            //данные по 2йному индексу.
+    DT_DIRECT          //непосредственно данные для атрибута.
+    ], RENDERDATASUBSET_DATA_TYPES, a.RenderDataSubset);
+
+RenderDataSubset.prototype._allocateData = function (pDataDecl, pData, eType) {
     'use strict';
+
+    if (eType === a.RenderDataSubset.DT_DIRECT) {
+        return this.allocateAttribute(pDataDecl, pData);
+    }
+
+    var iFlow;
+    var pVertexData = this._pFactory._allocateData(pDataDecl, pData);
+    var iOffset = pVertexData.getOffset();
+
+    iFlow = this._addData(pVertexData, undefined, eType);
+    
+    if (iFlow < 0) {
+        trace('invalid data', pDataDecl, pData);
+        debug_assert('cannot allocate data for submesh');
+        return -1;
+    }
+
+    return iOffset;
+};
+
+//добавляем сабмешу ссылку на его данные.
+RenderDataSubset.prototype._addData = function (pVertexData, iFlow, eType) {
+    'use strict';
+
+    if ((arguments.length < 3 && this.useAdvancedIndex()) || 
+        arguments[2] === a.RenderDataSubset.DT_I2I) {
+        return this._registerData(pVertexData);
+    }
 
     return (iFlow === undefined? this._pMap.flow(pVertexData): 
         this._pMap.flow(iFlow, pVertexData));
 };
 
+RenderDataSubset.prototype._registerData = function (pVertexData) {
+    'use strict';
+    var iOffset = pVertexData.getOffset();
+    var pDataDecl = pVertexData.getVertexDeclaration();
+    for (var i = 0; i < pDataDecl.length; i++) {
+        this._pMap._pI2IDataCache[pDataDecl[i].eUsage] = iOffset;
+    };
+
+    return 0;
+};
+
+RenderDataSubset.prototype.allocateData = function(pDataDecl, pData, hasIndex) {
+    'use strict';
+    
+    var eType = a.RenderDataSubset.DT_INDEXED;
+    
+    hasIndex = ifndef(hasIndex, true);
+    if (!hasIndex) {
+        eType = a.RenderDataSubset.DT_DIRECT;
+    }
+    else if (this.useAdvancedIndex()) {
+        eType = a.RenderDataSubset.DT_I2I;
+    }
+
+    return this._allocateData(pDataDecl, pData, eType);
+};
+
+RenderDataSubset.prototype.useAdvancedIndex = function () {
+    'use strict';
+    return (this._eOptions & a.RenderDataFactory.RDS_ADVANCED_INDEX) != 0;
+};
+
+
+RenderDataSubset.prototype.releaseData = function (iDataLocation) {
+    'use strict';
+        
+    //TODO: release data.
+};
 
 RenderDataSubset.prototype.allocateAttribute = function (pAttrDecl, pData) {
     'use strict';
@@ -78,13 +149,57 @@ RenderDataSubset.prototype.allocateAttribute = function (pAttrDecl, pData) {
 };
 
 
+RenderDataSubset.prototype._allocateAdvancedIndex = function (pAttrDecl, pData) {
+    'use strict';
+    
+    var pDecl = a.normalizeVertexDecl(pAttrDecl);
+    var nCount = pData.byteLength / pDecl.iStride;
+    //TODO: remove index dublicates
+    var iIndLoc = this._allocateData(pAttrDecl, pData, a.RenderDataSubset.DT_INDEXED);
 
-RenderDataSubset.prototype.allocateIndex = function (pAttrDecl, pData) {
+    var sI2ISemantics = 'INDEX_' + pDecl[0].eUsage;
+    var pI2IDecl = VE_FLOAT(sI2ISemantics);
+    var pI2IData = new Float32Array(nCount);
+
+    for (var i = 0; i < pI2IData.length; i++) {
+        pI2IData[i] = i;
+    };
+
+    if (!this._allocateIndex(pI2IDecl, pI2IData)) {
+        this.releaseData(iIndLoc);
+        pI2IData = null;
+        pI2IDecl = null;
+        warning('cannot allocate index for index in render data subset');
+        return false;
+    }
+
+    return true;
+};
+
+RenderDataSubset.prototype._createIndex = function (pAttrDecl, pData) {
+    'use strict';
+
+    if (!this._pIndexBuffer) {
+        this._pIndexBuffer = this._pFactory.getEngine().displayManager()
+            .vertexBufferPool().createResource('subset_' + a.sid());
+        this._pIndexBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
+    }
+
+    this._pIndexData = this._pIndexBuffer.allocateData(pAttrDecl, pData);
+    this._pIndexData._iAdditionCache = {};
+
+    return this._pIndexData !== null;
+};
+
+RenderDataSubset.prototype._allocateIndex = function (pAttrDecl, pData) {
+    'use strict';
+    
     var pIndexData = this._pIndexData;
     var pIndexBuffer = this._pIndexBuffer;
     var pFactory = this._pFactory;
+    'use strict';
     
-If (__DEBUG)
+Ifdef (__DEBUG)
     for (var i = 0; i < pAttrDecl.length; i++) {
         if (pAttrDecl[i].eType !== a.DTYPE.FLOAT) {
             return false;
@@ -92,19 +207,11 @@ If (__DEBUG)
     };
 Endif ();
 
-    if (!pIndexData) {
-        if (!pIndexBuffer) {
-            pIndexBuffer = pFactory.getEngine().displayManager()
-                .vertexBufferPool().createResource('subset_' + a.sid());
-            pIndexBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
-            this._pIndexBuffer = pIndexBuffer;
-        }
-        this._pIndexData = pIndexBuffer.allocateData(pAttrDecl, pData);
-        this._pIndexData._iAdditionCache = {};
-        return this._pIndexData !== null;
+    if (!this._pIndexData) {
+        return this._createIndex(pAttrDecl, pData);
     }
     
-    if (!pIndexData.extend(pAttrDecl, pData)) {
+    if (!this._pIndexData.extend(pAttrDecl, pData)) {
         trace('invalid data for allocation:', arguments);
         warning('cannot allocate index in data subset..');
         return false;
@@ -113,24 +220,13 @@ Endif ();
     return true;
 };
 
-RenderDataSubset.prototype.allocateData = function(pDataDecl, pData, hasIndex) {
-    hasIndex = ifndef(hasIndex, true);
-
-    if (!hasIndex) {
-        return this.allocateAttribute(pDataDecl, pData);
+RenderDataSubset.prototype.allocateIndex = function (pAttrDecl, pData) {
+    if (this.useAdvancedIndex()) {
+        return this._allocateAdvancedIndex(pAttrDecl, pData);
     }
-
-    var pVertexData = this._pFactory._allocateData(pDataDecl, pData);
-    var iFlow = this._addData(pVertexData);
-    
-    if (iFlow < 0) {
-        trace('invalid data', pDataDecl, pData);
-        debug_assert('cannot allocate data for submesh');
-        return -1;
-    }
-
-    return pVertexData.getOffset();
+    return this._allocateIndex(pAttrDecl, pData);
 };
+
 
 RenderDataSubset.prototype.addIndexSet = function(usePreviousDataSet, ePrimType) {
     'use strict';
@@ -168,16 +264,6 @@ RenderDataSubset.prototype.getIndices = function () {
     return this._pIndexData;
 };
 
-/**
- * @protected
- * @param  {String} sSemantics Declaration semantics.
- */
-RenderDataSubset.prototype.getDataFlow = function (sSemantics) {
-    'use strict';
-    
-    return this._pMap.getFlow(a.DECLUSAGE.MATERIAL);
-};
-
 RenderDataSubset.prototype.getIndexSet = function() {
     'use strict';
 
@@ -193,23 +279,13 @@ RenderDataSubset.prototype.getIndexSet = function() {
 RenderDataSubset.prototype.hasSemantics = function (sSemantics) {
     'use strict';
 
-    return this.getDataFlow(sSemantics) !== null;
+    return this.getFlow(sSemantics) !== null;
 };
 
 RenderDataSubset.prototype.getDataLocation = function (sSemantics) {
     'use strict';
-
-    var pFlow; 
-    
-    for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++ i) {
-        pFlow = pFlows[i];
-
-        if (pFlow.pData && pFlow.pData.hasSemantics(sSemantics)) {
-            return pFlow.pData.getOffset();
-        }
-    }
-
-    return -1;
+    var pData = this.getData(sSemantics);
+    return pData? pData.getOffset(): -1;
 };
 
 RenderDataSubset.prototype.selectIndexSet = function(iSet) {
@@ -227,13 +303,17 @@ RenderDataSubset.prototype.selectIndexSet = function(iSet) {
 /**
  * @protected
  */
-RenderDataSubset.prototype.getFlow = function (iDataLocation) {
+RenderDataSubset.prototype.getFlow = function () {
     'use strict';
     
+    if (typeof arguments[0] === 'string') {
+        return this._pMap.getFlow(arguments[0]);
+    }
+
     for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++ i) {
         var pFlow = pFlows[i];
 
-        if (pFlow.pData && pFlow.pData.getOffset() === iDataLocation) {
+        if (pFlow.pData && pFlow.pData.getOffset() === arguments[0]) {
             return pFlow;
         }
     }
@@ -244,10 +324,32 @@ RenderDataSubset.prototype.getFlow = function (iDataLocation) {
 /**
  * @protected
  */
-RenderDataSubset.prototype.getData = function (iDataLocation) {
+RenderDataSubset.prototype.getData = function () {
     'use strict';
     
-    var pFlow = this.getFlow(iDataLocation);
+    var pFlow;
+
+    if (this.useAdvancedIndex() && arguments.length < 2) {
+        if (typeof arguments[0] === 'string') {
+            return this.getData(this._pMap._pI2IDataCache[arguments[0]]);    
+        }
+        
+        return this._pFactory.getData(arguments[0]);
+    }
+
+    if (typeof arguments[0] === 'string') {
+        for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++ i) {
+            pFlow = pFlows[i];
+
+            if (pFlow.pData && pFlow.pData.hasSemantics(arguments[0])) {
+                return pFlow.pData;
+            }
+        }
+
+        return null;
+    }
+
+    pFlow = this.getFlow(arguments[0]);
     return pFlow === null ? null: pFlow.pData;
 };
 
@@ -265,16 +367,44 @@ RenderDataSubset.prototype.index = function (iData, eSemantics, useSame, iBeginW
     iBeginWith = iBeginWith || 0;
     useSame = useSame || false;
 
-    if (typeof iData === 'string') {
-        iData = this.getDataLocation(iData);
-    }
-    
     var iFlow = -1;
     var iAddition, iRealAddition, iPrevAddition;
     var pFlow;
-    var pData;
+    var pData, pRealData;
     var iIndexOffset;
     var pIndexData = this._pIndexData;
+    var sData;
+    var iStride;
+    var iTypeSize = 4.0;//a.getTypeSize(a.DTYPE.FLOAT);
+
+    if (this.useAdvancedIndex()) {
+        pRealData = this.getData(iData);
+
+            trace(this._pMap._pI2IDataCache);
+
+        
+        iAddition = pRealData.getOffset();
+        iStride = pRealData.stride;
+        
+        
+        trace('recalc indices<', eSemantics,'> values for data<', this.getData(iData).getVertexDeclaration()[0].eUsage,'> with addition', iAddition);
+        
+
+        pData = this.getData(eSemantics, true); //индекс, который подал юзер
+        
+
+        pData.applyModifier(eSemantics, function (pTypedData) {
+            for (var i = 0; i < pTypedData.length; i++) {
+                pTypedData[i] = (pTypedData[i] * iStride + iAddition) / iTypeSize;
+            };
+        });
+        
+        iData = pData.getOffset();
+        eSemantics = 'INDEX_' + eSemantics;
+    }
+    else if (typeof arguments[0] === 'string') {
+        iData = this.getDataLocation(iData);
+    }
     
     pFlow = this.getFlow(iData);
 
@@ -291,8 +421,8 @@ RenderDataSubset.prototype.index = function (iData, eSemantics, useSame, iBeginW
         return false;
     }
 
-    var iTypeSize = 4.0;//a.getTypeSize(a.DTYPE.FLOAT);
-    var iStride = pFlow.pData.stride;
+    
+    iStride = pFlow.pData.stride;
     
     if (pIndexData._iAdditionCache[iIndexOffset] !== iAddition) {
         if (!useSame) {
@@ -321,6 +451,26 @@ RenderDataSubset.prototype.index = function (iData, eSemantics, useSame, iBeginW
     return this._pMap.mapping(iFlow, pIndexData, eSemantics);
 };
 
+RenderDataSubset.prototype.getPrimitiveCount = function () {
+    'use strict';
+    
+    return this._pMap.primCount;
+};
 
+Ifdef (__DEBUG);
+
+RenderDataSubset.prototype.toString = function () {
+    'use strict';
+    
+    var s; 
+    s  = 'RENDER DATA SUBSET: #' + this._iId + '\n';
+    s += '        ATTRIBUTES: ' + (this._pAttribData? 'TRUE': 'FALSE') + '\n';
+    s += '----------------------------------------------------------------\n';
+    s += this._pMap.toString();
+
+    return s;
+};
+
+Endif ();
 
 A_NAMESPACE(RenderDataSubset);

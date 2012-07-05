@@ -7,7 +7,8 @@ function Mesh(pEngine, eOptions, sName, pDataFactory) {
     A_CLASS;
 
     Enum([
-        VB_READABLE = a.VBufferBase.RamBackupBit
+        VB_READABLE = a.RenderDataFactory.VB_READABLE,
+        RDS_ADVANCED_INDEX = a.RenderDataFactory.RDS_ADVANCED_INDEX
         ], MESH_OPTIONS, a.Mesh);
     /**
      * Mesh name.
@@ -142,9 +143,8 @@ Mesh.prototype.setFlexMaterial = function(iMaterial) {
 Mesh.prototype.setup = function(sName, pDataFactory, eOptions) {
     if (!pDataFactory) {
         this._pFactory = new a.RenderDataFactory(this._pEngine);
-        //TODO: calc normal options
-        this._pFactory.setup(eOptions);
     }
+    //TODO: calc normal options
     this._pFactory.setup(eOptions);
     this._sName = sName || 'unknown';
 };

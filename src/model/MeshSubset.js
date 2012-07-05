@@ -56,7 +56,7 @@ MeshSubset.prototype.hasFlexMaterial = function () {
 MeshSubset.prototype.setFlexMaterial = function (iMaterial) {
     var pRenderData = this._pRenderData;
     var pIndexData = pRenderData.getIndices();
-    var pMatFlow = pRenderData.getDataFlow(a.DECLUSAGE.MATERIAL);
+    var pMatFlow = pRenderData.getFlow(a.DECLUSAGE.MATERIAL);
     var eSemantics = 'INDEX_FLEXMAT';
     var pIndexDecl, pIndexData;
     var iMatFlow;
