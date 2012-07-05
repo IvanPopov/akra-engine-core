@@ -1,14 +1,21 @@
 
 /**
- * @ctor
+ * @constructor
  */
-function MeshSubset (pEngine, sName) {
+function MeshSubset (pMesh, pRenderData, sName) {
     A_CLASS;
 
+    debug_assert(pRenderData, 
+        'you must specify parent mesh for creation mesh subset');
+    debug_assert(pRenderData, 
+        'you must specify render data for creation mesh subset');
+
+    this._pRenderData = pRenderData;
     this._sName = sName || null;
+    this._pMesh = pMesh;
 }
 
-EXTENDS(MeshSubset, a.RenderDataSubset, a.RenderableObject);
+EXTENDS(MeshSubset, a.RenderableObject);
 
 PROPERTY(RenderDataSubset, 'name',
     function () {
@@ -20,21 +27,16 @@ PROPERTY(RenderDataSubset, 'name',
 
 PROPERTY(MeshSubset, 'mesh',
     function () {
-        return this.factory;
+        return this._pMesh;
     });
 
-MeshSubset.prototype.setup = function (pMesh, iId, ePrimType, eOptions) {
-    if (arguments.length < 4) {
-        return false;
-    }
-    //TODO: calc options for data set.
-    parent.setup(pMesh, iId, ePrimType, 0);
-
-    return true;
-};
+PROPERTY(MeshSubset, 'data',
+    function () {
+        return this._pRenderData;
+    });
 
 MeshSubset.prototype.applyFlexMaterial = function(sMaterial, pMaterialData) {
-    if (this._pFactory.addFlexMaterial(sMaterial, pMaterialData)) {
+    if (this._pMesh.addFlexMaterial(sMaterial, pMaterialData)) {
         return this.setFlexMaterial(sMaterial);
     }
     return false;
@@ -42,16 +44,23 @@ MeshSubset.prototype.applyFlexMaterial = function(sMaterial, pMaterialData) {
 
 MeshSubset.prototype.getFlexMaterial = function(iMaterial) {
     'use strict';
-    return this._pFactory.getFlexMaterial(iMaterial);
+    return this._pMesh.getFlexMaterial(iMaterial);
+};
+
+MeshSubset.prototype.hasFlexMaterial = function () {
+    'use strict';
+    
+    return this._pRenderData.hasSemantics(a.DECLUSAGE.MATERIAL);
 };
 
 MeshSubset.prototype.setFlexMaterial = function (iMaterial) {
-    var pIndexData = this._pIndexData;
-    var pMatFlow = this._pMap.getFlow(a.DECLUSAGE.MATERIAL);
-    var eSemantics = 'INDEX_MAT';
+    var pRenderData = this._pRenderData;
+    var pIndexData = pRenderData.getIndices();
+    var pMatFlow = pRenderData.getDataFlow(a.DECLUSAGE.MATERIAL);
+    var eSemantics = 'INDEX_FLEXMAT';
     var pIndexDecl, pIndexData;
     var iMatFlow;
-    var pMaterial = this._pFactory.getFlexMaterial(iMaterial);
+    var pMaterial = this._pMesh.getFlexMaterial(iMaterial);
     var iMat = pMaterial._pData.getOffset();
 
     if (!pMaterial) {
@@ -64,22 +73,22 @@ MeshSubset.prototype.setFlexMaterial = function (iMaterial) {
         eSemantics = pMatFlow.pMapper.eSemantics;
         pIndexData = pMatFlow.pMapper.pData;
 
-        this._addData(pMaterial._pData, iMatFlow);
-        return this.index(iMat, eSemantics, true);
+        pRenderData._addData(pMaterial._pData, iMatFlow);
+        return pRenderData.index(iMat, eSemantics, true);
     }
     else {
         pIndexDecl = new a.VertexDeclaration([VE_FLOAT(eSemantics)]);
         pIndexData = new Float32Array(pIndexData.getCount());    
-        iMatFlow = this._addData(pMaterial._pData);
+        iMatFlow = pRenderData._addData(pMaterial._pData);
 
         debug_assert(iMatFlow >= 0, 'cannot add data flow with material for mesh subsset');
 
-        if (!this.allocateIndex(pIndexDecl, pIndexData)) {
+        if (!pRenderData.allocateIndex(pIndexDecl, pIndexData)) {
             trace('cannot allocate index for material!!!');
             return false;
         }
 
-        return this.index(iMat, eSemantics, true);
+        return pRenderData.index(iMat, eSemantics, true);
     }
     
     return true;

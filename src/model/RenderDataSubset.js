@@ -1,7 +1,10 @@
 /**
  * @ctor
  */
+
+
 function RenderDataSubset() {
+
     this._eOptions = 0;
     this._pFactory = null;
     this._iId = -1;
@@ -13,6 +16,8 @@ function RenderDataSubset() {
     this._pMaps = [];
 }
 
+EXTENDS(RenderDataSubset, a.ReferenceCounter);
+
 PROPERTY(MeshSubset, 'factory',
     function () {
         return this._pFactory;
@@ -23,6 +28,7 @@ RenderDataSubset.prototype.setup = function(pFactory, iId, ePrimType, eOptions) 
         return false;
     }
     
+    this._eOptions = eOptions;
     this._pFactory = pFactory;
     this._iId = iId;
     this._pMap = new a.BufferMap(pFactory.getEngine());
@@ -134,9 +140,6 @@ RenderDataSubset.prototype.addIndexSet = function(usePreviousDataSet, ePrimType)
         return false;
     }
 
-    this._pIndexData = null;
-    this._pAttribData = null;
-
     if (usePreviousDataSet) {
         this._pMap = this._pMap.clone(false);
         
@@ -147,11 +150,32 @@ RenderDataSubset.prototype.addIndexSet = function(usePreviousDataSet, ePrimType)
     else {
         this._pMap = new a.BufferMap(this._pFactory.getEngine());
     }
+
+    this._pIndexData = null;
+    if (this._pAttribData) {
+        error('index sets with attribues temprary unavailable...');    
+    }
     
     this._pMap.primType = ePrimType || a.PRIMTYPE.TRIANGLELIST;
     this._pMaps.push(this._pMap);
 
     return this._pMap.length - 1;
+};
+
+RenderDataSubset.prototype.getIndices = function () {
+    'use strict';
+    
+    return this._pIndexData;
+};
+
+/**
+ * @protected
+ * @param  {String} sSemantics Declaration semantics.
+ */
+RenderDataSubset.prototype.getDataFlow = function (sSemantics) {
+    'use strict';
+    
+    return this._pMap.getFlow(a.DECLUSAGE.MATERIAL);
 };
 
 RenderDataSubset.prototype.getIndexSet = function() {
@@ -166,10 +190,26 @@ RenderDataSubset.prototype.getIndexSet = function() {
     return -1;
 };
 
+RenderDataSubset.prototype.hasSemantics = function (sSemantics) {
+    'use strict';
+
+    return this.getDataFlow(sSemantics) !== null;
+};
+
 RenderDataSubset.prototype.getDataLocation = function (sSemantics) {
     'use strict';
+
+    var pFlow; 
     
-    return this._pFactory.getDataLocation(sSemantics);
+    for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++ i) {
+        pFlow = pFlows[i];
+
+        if (pFlow.pData && pFlow.pData.hasSemantics(sSemantics)) {
+            return pFlow.pData.getOffset();
+        }
+    }
+
+    return -1;
 };
 
 RenderDataSubset.prototype.selectIndexSet = function(iSet) {
@@ -181,6 +221,34 @@ RenderDataSubset.prototype.selectIndexSet = function(iSet) {
     }
 
     return false;
+};
+
+
+/**
+ * @protected
+ */
+RenderDataSubset.prototype.getFlow = function (iDataLocation) {
+    'use strict';
+    
+    for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++ i) {
+        var pFlow = pFlows[i];
+
+        if (pFlow.pData && pFlow.pData.getOffset() === iDataLocation) {
+            return pFlow;
+        }
+    }
+
+    return null;
+};
+
+/**
+ * @protected
+ */
+RenderDataSubset.prototype.getData = function (iDataLocation) {
+    'use strict';
+    
+    var pFlow = this.getFlow(iDataLocation);
+    return pFlow === null ? null: pFlow.pData;
 };
 
 /**
@@ -196,6 +264,10 @@ RenderDataSubset.prototype.index = function (iData, eSemantics, useSame, iBeginW
 
     iBeginWith = iBeginWith || 0;
     useSame = useSame || false;
+
+    if (typeof iData === 'string') {
+        iData = this.getDataLocation(iData);
+    }
     
     var iFlow = -1;
     var iAddition, iRealAddition, iPrevAddition;
@@ -204,19 +276,13 @@ RenderDataSubset.prototype.index = function (iData, eSemantics, useSame, iBeginW
     var iIndexOffset;
     var pIndexData = this._pIndexData;
     
-    for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++ i) {
-        pFlow = pFlows[i];
+    pFlow = this.getFlow(iData);
 
-        if (pFlow.pData && pFlow.pData.getOffset() === iData) {
-            iFlow = pFlow.iFlow;
-            break;
-        }
-    }
-
-    if (iFlow < 0) {
+    if (pFlow === null) {
         return false;
     }
 
+    iFlow = pFlow.iFlow;
     iIndexOffset = pIndexData._pVertexDeclaration.element(eSemantics).iOffset;
     pData = pIndexData.getTypedData(eSemantics);
     iAddition = iData;
@@ -254,5 +320,7 @@ RenderDataSubset.prototype.index = function (iData, eSemantics, useSame, iBeginW
 
     return this._pMap.mapping(iFlow, pIndexData, eSemantics);
 };
+
+
 
 A_NAMESPACE(RenderDataSubset);

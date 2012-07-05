@@ -4,6 +4,32 @@
  * @email <vantuziast@odserve.org>
  */
 
+function loadGLSLSource(sPath, sFilename) {
+    var sShader = a.ajax({url: sPath + sFilename, async: false}).data;
+    var fnReplacer = function (sSource, sMatch) {
+        return a.ajax({url: sPath + sMatch, async: false}).data;
+    }
+
+    sShader = sShader.replace(/\#include\s+\"([\w\.]+)\"/ig, fnReplacer);
+    sShader = sShader.split('//<-- split -- >');
+    return {vertex: sShader[0], fragment: sShader[1]};
+}
+
+function loadProgram(pEngine, sPath) {
+    var pPath = sPath.split('/'); 
+    var sProg = pPath.pop();
+    sPath = pPath.join('/');
+    if (sPath.length) {
+        sPath += '/';
+    }
+    pShaderSource = loadGLSLSource(sPath, sProg);
+    pProgram = pEngine.displayManager().shaderProgramPool().createResource(sProg);
+    pProgram.create(pShaderSource.vertex, pShaderSource.fragment, true);
+    return pProgram;
+}
+
+A_NAMESPACE(loadProgram);
+A_NAMESPACE(loadGLSLSource);
 
 /**
  * Basic class(interface) for platform
@@ -283,8 +309,8 @@ GLSLProgram.prototype.create = function (sVertexCode, sPixelCode, bSetup) {
     pDevice.attachShader(pHardwareProgram, this._buildShader(a.SHADERTYPE.PIXEL, sPixelCode));
     pDevice.linkProgram(pHardwareProgram);
     if (!pDevice.getProgramParameter(pHardwareProgram, pDevice.VALIDATE_STATUS)) {
-        trace('program not valid', this.findResourceName());
-        trace(pDevice.getProgramInfoLog(pHardwareProgram));
+        //trace('program not valid', this.findResourceName());
+        //trace(pDevice.getProgramInfoLog(pHardwareProgram));
     }
     debug_assert_win(pDevice.getProgramParameter(pHardwareProgram, pDevice.LINK_STATUS),
         'cannot link program', this._programInfoLog());
@@ -487,7 +513,8 @@ GLSLProgram.prototype.applyBuffer = function (pVertexData) {
         pAttr;
     var pVertexElement;
     var pVertexBuffer = pVertexData.buffer;
-    var isActive = this._pManager.latestBuffer !== pVertexBuffer;
+    var isActive = this._pManager._pActiveProgram? 
+        this._pManager._pActiveProgram.latestBuffer !== pVertexBuffer: false;
 
     for (i = 0; i < pVertexData.getVertexElementCount(); i++) {
         pVertexElement = pVertexData._pVertexDeclaration[i];
@@ -496,7 +523,7 @@ GLSLProgram.prototype.applyBuffer = function (pVertexData) {
             continue;
         }
         
-        if (pAttr.pCurrentData !== pVertexData) {
+        if (pAttr.pCurrentData !== pVertexData || 1) {
 
             if (isActive) {
                 isActive = true;

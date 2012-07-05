@@ -802,7 +802,8 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
 
     pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pRenderIndexBuffer);
     pDevice.vertexAttribPointer(pProgram._pAttributesByName['SERIALNUMBER'].iLocation, 1, pDevice.FLOAT, false, 0, 0);
-
+    pDevice.disableVertexAttribArray(1);
+    pDevice.disableVertexAttribArray(2);
 
     pDevice.viewport(0, 0, iWidth, iHeight);
     pDevice.drawArrays(0, 0, pRenderIndexData.length);
@@ -883,7 +884,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
         }
         else {
             for (var i = 0; i < nMipMaps; i++) {
-                trace('Texture:: creating texture miplevel:', i);
+                //trace('Texture:: creating texture miplevel:', i);
                 pDevice.texImage2D(a.TTYPE.TEXTURE_2D, i, this._eFormat, this._iWidth,
                     this._iHeight, 0, this._eFormat, this._eType, pData[i] ? pData[i] : null);
             }
@@ -901,6 +902,8 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
 
     return true;
 };
+
+
 Texture.prototype.bind = function () {
     this._pEngine.pDevice.bindTexture(this.target, this._pTexture);
 };
@@ -911,11 +914,11 @@ Texture.prototype.unbind = function () {
 
 Texture.prototype.activate = function (iSlot) {
     var pManager = this._pEngine.pShaderManager;
-    if (pManager.activeTextures[iSlot] !== this) {
+    //if (pManager.activeTextures[iSlot] !== this) {
         this._pEngine.pDevice.activeTexture(a.TEXTUREUNIT.TEXTURE + (iSlot || 0));
         this.bind();
-        pManager.activeTextures[iSlot] = this;
-    }
+        //pManager.activeTextures[iSlot] = this;
+    //}
 };
 
 /**

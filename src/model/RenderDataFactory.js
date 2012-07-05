@@ -1,5 +1,9 @@
 
 function RenderDataFactory (pEngine) {
+    Enum([
+        VB_READABLE = a.VBufferBase.RamBackupBit
+    ], RENDERDATA_OPTIONS, a.RenderDataFactory);
+
     //video buffer with all mesh data
     this._pDataBuffer = null;
     this._pEngine = pEngine;
@@ -39,12 +43,16 @@ RenderDataFactory.prototype.getDataOptions = function() {
  * @return {VertexData} Data with given semantics or null.
  */
 RenderDataFactory.prototype.getData = function (sSemantics) {
-    var pData = pData = this._pDataBuffer._pVertexDataArray;
-    for (var i = 0; i < pData.length; i++) {
-        if (pData[i].hasSemantics(sSemantics)) {
-            return pData[i];
-        }
-    };
+    var pData;
+
+    if (this._pDataBuffer) {
+        pData = pData = this._pDataBuffer._pVertexDataArray;
+        for (var i = 0; i < pData.length; i++) {
+            if (pData[i].hasSemantics(sSemantics)) {
+                return pData[i];
+            }
+        };
+    }
 
     return null;
 };
@@ -71,15 +79,28 @@ RenderDataFactory.prototype.allocateData = function (pDataDecl, pData) {
 
 RenderDataFactory.prototype.getDataLocation = function (sSemantics) {
     'use strict';
-    var pDataList = this._pDataBuffer._pVertexDataArray;
-    
-    for (var i = 0; i < pDataList.length; i++) {
-        if (pDataList[i].hasSemantics(sSemantics)) {
-            return pDataList[i].getOffset();
-        }
-    };
 
-    return null;
+    if (this._pDataBuffer) {
+        var pDataList = this._pDataBuffer._pVertexDataArray;
+        
+        for (var i = 0; i < pDataList.length; i++) {
+            if (pDataList[i].hasSemantics(sSemantics)) {
+                return pDataList[i].getOffset();
+            }
+        };
+    }
+
+    return -1;
+};
+
+RenderDataFactory.prototype._createDataBuffer = function () {
+    'use strict';
+    //TODO: add support for eOptions
+    trace('data options ::', this._eDataOptions);
+    this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource('data_factory_buffer' + '_' + a.sid());
+    this._pDataBuffer.create(0, this._eDataOptions);
+    this._pDataBuffer.addRef();
+    return this._pDataBuffer !== null;
 };
 
 /**
@@ -88,9 +109,10 @@ RenderDataFactory.prototype.getDataLocation = function (sSemantics) {
  */
 RenderDataFactory.prototype._allocateData = function(pVertexDecl, pData) {
     if (!this._pDataBuffer) {
-        this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource('data_factory_buffer' + '_' + a.sid());
-        //TODO: add support for eOptions
-        this._pDataBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
+        this._createDataBuffer();
+    }
+    if (!pData) {
+        return this._pDataBuffer.getEmptyVertexData(1, pVertexDecl);
     }
     return this._pDataBuffer.allocateData(pVertexDecl, pData);
 };
@@ -117,9 +139,18 @@ RenderDataFactory.prototype.allocateSubset = function (ePrimType, eOptions) {
     return pDataset;
 };
 
-RenderDataFactory.prototype.draw = function() {
+Ifdef (__DEBUG);
+
+RenderDataFactory.prototype.draw = function(iSubset) {
     'use strict';
     var pProgram = this._pEngine.shaderManager().getActiveProgram();
+
+    if (iSubset !== undefined) {
+        pProgram.applyBufferMap(this._pSubsets[iSubset]._pMap);
+        this._pSubsets[iSubset]._pMap.draw();
+        return;
+    }
+
     for (var i = 0; i < this._pSubsets.length; i++) {
         if (this._pSubsets[i]._pIndexData === null) {
             continue;
@@ -129,18 +160,38 @@ RenderDataFactory.prototype.draw = function() {
     };
 };
 
+Endif ();
+
+RenderDataFactory.prototype.getSubset = function (iSubset) {
+    'use strict';
+    
+    return this._pSubsets[iSubset];
+};
 
 /**
  * @protected
  */
 RenderDataFactory.prototype.setup = function (eOptions) {
-
+    this._eDataOptions = eOptions;
+    if (!this._pSubsetType) {
+        this._pSubsetType = a.RenderDataSubset;
+    }
 };
 
 RenderDataFactory.prototype.destroy = function () {
     'use strict';
     
-    TODO('destroy this!');
+    safe_delete_array(this._pSubsets);
+    
+    if (this._pDataBuffer) {
+        this._pDataBuffer.relese();
+        this._pDataBuffer.destroy();
+        this._pDataBuffer = null;
+    }
+
+    this._pEngine = null;
+    this._eDataOptions = 0;
+    this._pSubsetType = null;
 };
 
 RenderDataFactory.prototype.destructor = function () {

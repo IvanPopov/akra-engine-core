@@ -34,7 +34,7 @@ function SurfaceMaterial (pEngine) {
     * @private
     * @type Material
     */
-   this._pMaterial = new a.Material;
+   this._pMaterial = null;
     /**
      * @private
      * @type Int
@@ -61,7 +61,7 @@ function SurfaceMaterial (pEngine) {
      */
     this._pTextureMatrix = new Array(a.SurfaceMaterial.maxTexturesPerSurface);
 
-    this.setMaterial(0);
+    //this.setMaterial(0);
 }
 
 
@@ -82,16 +82,16 @@ PROPERTY(SurfaceMaterial, 'material',
      * @treturn Boolean
      */
     function (pMaterial) {
-        if (pMaterial) {
-           this._pMaterial.value = pMaterial;
+        if (this._pMaterial) {
+            if (pMaterial) {
+               this._pMaterial.value = pMaterial;
+            }
+            else {
+               // set default material
+               this._pMaterial.pDiffuse = new a.ColorValue(.5, .5, .5, 1.);
+               this._pMaterial.pSpecular = new a.ColorValue(.5, .5, .5, 1.);
+            }
         }
-        else {
-           // set default material
-           this._pMaterial.pDiffuse = new a.ColorValue(.5, .5, .5, 1.);
-           this._pMaterial.pSpecular = new a.ColorValue(.5, .5, .5, 1.);
-        }
-
-        return true;
     });
 
 PROPERTY(SurfaceMaterial, 'totalTextures',
@@ -112,6 +112,37 @@ PROPERTY(SurfaceMaterial, 'textureFlags',
     function () {
         return this._iTextureFlags;
     });
+
+SurfaceMaterial.prototype.isEqual = function (pSurfaceMaterial) {
+    'use strict';
+
+    if (this._nTotalTextures === pSurfaceMaterial._nTotalTextures && 
+        this._iTextureFlags === pSurfaceMaterial._iTextureFlags && 
+        this._iTextureMatrixFlags === pSurfaceMaterial._iTextureMatrixFlags) {
+        
+        if ((this._pMaterial && this._pMaterial.isEqual(pSurfaceMaterial._pMaterial))
+            || (pSurfaceMaterial._pMaterial === null)) {
+            
+            for (var i = 0; i < this._pTexture.length; i++) {
+                if (this._pTexture[i] !== pSurfaceMaterial._pTexture[i]) {
+                    return false;
+                }
+            };
+
+            for (var i = 0; i< this._pTextureMatrix; ++ i) {
+                for (var j = 0; j < this._pTextureMatrix[i].length; j++) {
+                    if (this._pTextureMatrix[i][j] !== pSurfaceMaterial._pTextureMatrix[i][j]) {
+                        return false;
+                    }
+                };
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+};
 
 /**
  * Get texture.

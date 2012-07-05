@@ -384,7 +384,14 @@ function RenderMethod () {
     this._pMaterial = null;
 }
 
-EXTENDS(RenderMethod, a.ResourcePoolItem, a.Unique);
+EXTENDS(RenderMethod, a.ResourcePoolItem);
+
+RenderMethod.prototype.isEqual = function (pRenderMethod) {
+    'use strict';
+    
+    return this._pEffect.isEqual(pRenderMethod._pEffect) && 
+        this._pMaterial.isEqual(pRenderMethod._pMaterial);
+};
 
 /**
  * Return effect.

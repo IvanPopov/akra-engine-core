@@ -47,9 +47,9 @@
     }
 
 
-    Include('libs/xml/xml2json.js');
+    //Include('libs/xml/xml2json.js');
 
-    a.xml2json = xml2json;
+    //a.xml2json = xml2json;
 
 })();
  
