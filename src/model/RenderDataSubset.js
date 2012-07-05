@@ -224,6 +224,32 @@ RenderDataSubset.prototype.selectIndexSet = function(iSet) {
 };
 
 
+/**
+ * @protected
+ */
+RenderDataSubset.prototype.getFlow = function (iDataLocation) {
+    'use strict';
+    
+    for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++ i) {
+        var pFlow = pFlows[i];
+
+        if (pFlow.pData && pFlow.pData.getOffset() === iDataLocation) {
+            return pFlow;
+        }
+    }
+
+    return null;
+};
+
+/**
+ * @protected
+ */
+RenderDataSubset.prototype.getData = function (iDataLocation) {
+    'use strict';
+    
+    var pFlow = this.getFlow(iDataLocation);
+    return pFlow === null ? null: pFlow.pData;
+};
 
 /**
  * Setup index.
@@ -250,19 +276,13 @@ RenderDataSubset.prototype.index = function (iData, eSemantics, useSame, iBeginW
     var iIndexOffset;
     var pIndexData = this._pIndexData;
     
-    for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++ i) {
-        pFlow = pFlows[i];
+    pFlow = this.getFlow(iData);
 
-        if (pFlow.pData && pFlow.pData.getOffset() === iData) {
-            iFlow = pFlow.iFlow;
-            break;
-        }
-    }
-
-    if (iFlow < 0) {
+    if (pFlow === null) {
         return false;
     }
 
+    iFlow = pFlow.iFlow;
     iIndexOffset = pIndexData._pVertexDeclaration.element(eSemantics).iOffset;
     pData = pIndexData.getTypedData(eSemantics);
     iAddition = iData;

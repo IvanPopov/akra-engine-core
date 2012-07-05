@@ -15,6 +15,22 @@ function loadGLSLSource(sPath, sFilename) {
     return {vertex: sShader[0], fragment: sShader[1]};
 }
 
+function loadProgram(pEngine, sPath) {
+    var pPath = sPath.split('/'); 
+    var sProg = pPath.pop();
+    sPath = pPath.join('/');
+    if (sPath.length) {
+        sPath += '/';
+    }
+    pShaderSource = loadGLSLSource(sPath, sProg);
+    pProgram = pEngine.displayManager().shaderProgramPool().createResource(sProg);
+    pProgram.create(pShaderSource.vertex, pShaderSource.fragment, true);
+    return pProgram;
+}
+
+A_NAMESPACE(loadProgram);
+A_NAMESPACE(loadGLSLSource);
+
 /**
  * Basic class(interface) for platform
  * independent shader program.

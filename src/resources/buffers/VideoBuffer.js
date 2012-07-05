@@ -416,11 +416,7 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
         pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pFramebuffer);
 
 Ifdef (TEXTURE_REDRAW)
-        if (!statics._pCopyProgram) {
-            statics._pCopyProgram = this._pEngine.displayManager().shaderProgramPool().createResource('A_copyTexture');
-            pShaderSource = loadGLSLSource('../effects/', 'copy_texture.glsl');
-            statics._pCopyProgram.create(pShaderSource.vertex, pShaderSource.fragment, true);
-        }
+        STATIC(_pCopyProgram, a.loadProgram(this._pEngine, '../effects/copy_texture.glsl'));
 
         var pCopyProgram = statics._pCopyProgram;
         pCopyProgram.activate();
@@ -453,11 +449,7 @@ Ifdef (TEXTURE_REDRAW)
         pDevice.drawArrays(a.PRIMTYPE.TRIANGLESTRIP, 0, 4);
 Endif ();
 
-        if (!statics._pUpdateProgram) {
-            statics._pUpdateProgram = this._pEngine.displayManager().shaderProgramPool().createResource('A_updateVideoBuffer');
-            pShaderSource = loadGLSLSource('../effects/', 'update_video_buffer.glsl');
-            statics._pUpdateProgram.create(pShaderSource.vertex, pShaderSource.fragment, true);
-        }
+        STATIC(_pUpdateProgram, a.loadProgram(this._pEngine, '../effects/update_video_buffer.glsl'));
 
         pProgram = statics._pUpdateProgram;
         pProgram.activate();
