@@ -368,39 +368,74 @@ SceneModel.prototype.prepareForRender = function () {
 
 SceneModel.prototype.render = function () {
     parent.render(this);
-    return;
 
-    var pDisplayManager = this._pEngine.pDisplayManager;
-    var pMeshSubset = null;
+    //------------------------------------------------
+    //Temprary render..
+    if (this.bNoRender) {
+        return;
+    }
 
-    for (var i = 0, nSubsets = this._pMesh._pSubsets.length; i < nSubsets; i ++) {
-        pMeshSubset = this._pMesh._pSubsets[i];
+    var pEngine = this._pEngine;
+    var pCamera = pEngine._pDefaultCamera;
+    var pMesh = this.findMesh();
+    var pProgram = pEngine.pDrawMeshI2IProg;
+    var pDevice = pEngine.pDevice;
+    var pModel = this;
 
-        if (!pMeshSubset.isRenderable()) {
-            continue;
-        }
+    if (!pMesh) {
+        return;
+    }
 
-        var pEffect = pMeshSubset.effect;
-        var pMaterial = pMeshSubset.surfaceMaterial;
-        var nPasses = pEffect.totalPasses();
+    pProgram.activate();
+    pDevice.enableVertexAttribArray(0);
+    pDevice.enableVertexAttribArray(1);
+    pDevice.enableVertexAttribArray(2);
 
-        for (var iPass = 0; iPass < nPasses; iPass++) {
-            var pRenderEntry = pDisplayManager.openRenderQueue();
-            //TODO: использовать правильные параметры для занесения объекта в очередь.
-            pRenderEntry.pRendarableObject = pMeshSubset;
-            pRenderEntry.boneCount = 0;
-            pRenderEntry.detailLevel = 0;
-            pRenderEntry.modelType = a.RenderEntry.modelEntry;
-            pRenderEntry.hModel = this._hModelHandle
-            pRenderEntry.modelParamA = this._iModelFrameIndex;
-            pRenderEntry.modelParamB = pMaterial.resourceHandle();
-            pRenderEntry.renderPass = iPass;
-            pRenderEntry.pSceneNode = this;
-            pRenderEntry.userData = 0;
+    pProgram.applyFloat('INDEX_INDEX_POSITION_OFFSET', 0);
+    pProgram.applyFloat('INDEX_INDEX_NORMAL_OFFSET', 1);
+    pProgram.applyFloat('INDEX_INDEX_FLEXMAT_OFFSET', 2);
 
-            pDisplayManager.closeRenderQueue(pRenderEntry);
-        }
-    } 
+    pProgram.applyMatrix4('model_mat', pModel.worldMatrix());
+    pProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
+    pProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
+    pProgram.applyMatrix3('normal_mat', pModel.normalMatrix());
+    pProgram.applyVector3('eye_pos', pCamera.worldPosition());
+        
+    pMesh.draw();
+
+    //------------------------------------------------
+
+    // var pDisplayManager = this._pEngine.pDisplayManager;
+    // var pMeshSubset = null;
+
+    // for (var i = 0, nSubsets = this._pMesh._pSubsets.length; i < nSubsets; i ++) {
+    //     pMeshSubset = this._pMesh._pSubsets[i];
+
+    //     if (!pMeshSubset.isRenderable()) {
+    //         continue;
+    //     }
+
+    //     var pEffect = pMeshSubset.effect;
+    //     var pMaterial = pMeshSubset.surfaceMaterial;
+    //     var nPasses = pEffect.totalPasses();
+
+    //     for (var iPass = 0; iPass < nPasses; iPass++) {
+    //         var pRenderEntry = pDisplayManager.openRenderQueue();
+    //         //TODO: использовать правильные параметры для занесения объекта в очередь.
+    //         pRenderEntry.pRendarableObject = pMeshSubset;
+    //         pRenderEntry.boneCount = 0;
+    //         pRenderEntry.detailLevel = 0;
+    //         pRenderEntry.modelType = a.RenderEntry.modelEntry;
+    //         pRenderEntry.hModel = this._hModelHandle
+    //         pRenderEntry.modelParamA = this._iModelFrameIndex;
+    //         pRenderEntry.modelParamB = pMaterial.resourceHandle();
+    //         pRenderEntry.renderPass = iPass;
+    //         pRenderEntry.pSceneNode = this;
+    //         pRenderEntry.userData = 0;
+
+    //         pDisplayManager.closeRenderQueue(pRenderEntry);
+    //     }
+    // } 
 };
 
 SceneModel.prototype.renderCallback = function (pEntry, iActivationFlags) {

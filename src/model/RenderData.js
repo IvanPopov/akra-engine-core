@@ -422,9 +422,9 @@ RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType) {
     'use strict';
     usePreviousDataSet = ifndef(usePreviousDataSet, true);
 
-    if (this._pIndexData === null) {
-        return false;
-    }
+    // if (this._pIndexData === null) {
+    //     return false;
+    // }
 
     if (usePreviousDataSet) {
         this._pMap = this._pMap.clone(false);
@@ -445,7 +445,7 @@ RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType) {
     this._pMap.primType = ePrimType || a.PRIMTYPE.TRIANGLELIST;
     this._pMaps.push(this._pMap);
 
-    return this._pMap.length - 1;
+    return this._pMaps.length - 1;
 };
 
 /**
@@ -484,12 +484,13 @@ RenderData.prototype.getIndexSet = function() {
 /**
  * Check whether the semantics used in this data set.
  * @param  {DECLARATION_USAGE|String}  sSemantics Data semantics.
+ * @param {Boolean=true} bSearchComplete Search only in complete flows.
  * @return {Boolean}        Result.
  */
-RenderData.prototype.hasSemantics = function (sSemantics) {
+RenderData.prototype.hasSemantics = function (sSemantics, bSearchComplete) {
     'use strict';
 
-    return this.getFlow(sSemantics) !== null;
+    return this.getFlow(sSemantics, bSearchComplete) !== null;
 };
 
 
@@ -519,15 +520,16 @@ RenderData.prototype.getIndices = function () {
  * @protected
  * Get data flow by semantics or data location.
  * @property getFlow(Int iDataLocation)
- * @property getFlow(String sSemantics)
- * @property getFlow(DECLARATION_USAGE eSemantics)
+ * @property getFlow(String sSemantics, Boolean bSearchComplete=true)
+ * @property getFlow(DECLARATION_USAGE eSemantics, Boolean bSearchComplete=true)
+ * @param {Boolean=false} bSearchComplete Search semantics only in complete flows.
  * @return {Object} Data flow.
  */
 RenderData.prototype.getFlow = function () {
     'use strict';
     
     if (typeof arguments[0] === 'string') {
-        return this._pMap.getFlow(arguments[0]);
+        return this._pMap.getFlow(arguments[0], arguments[1]);
     }
 
     for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++ i) {

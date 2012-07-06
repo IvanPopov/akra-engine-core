@@ -248,9 +248,20 @@ BufferMap.prototype.getFlow = function (iFlow, bComplete) {
     bComplete = ifndef(bComplete, true);
 
     if (typeof arguments[0] === 'string') {
-        for (var i = 0, pFlows = (bComplete? 
-                this._pCompleteFlows: this._pFlows); i < this._nCompleteFlows; ++ i) {
-            if (!pFlows[i]) {
+        var nTotal; 
+        var pFlows;
+        
+        if (bComplete) {
+            pFlows = this._pCompleteFlows;
+            nTotal = this._nCompleteFlows;
+        }
+        else {
+            pFlows = this._pFlows;
+            nTotal = this._pFlows.length;
+        }
+
+        for (var i = 0; i < nTotal; ++ i) {
+            if (!pFlows[i].pData) {
                 continue;
             }
             if (pFlows[i].pData.hasSemantics(arguments[0])) {

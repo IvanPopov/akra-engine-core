@@ -29,6 +29,10 @@ Enum([
     INDEX1,
     INDEX2,
     INDEX3,
+    INDEX10 = "INDEX10", //system indices starts from 10
+    INDEX11,
+    INDEX12,
+    INDEX13,
     MATERIAL = "MATERIAL",
     MATERIAL1,
     MATERIAL2,

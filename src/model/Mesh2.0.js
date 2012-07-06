@@ -4,12 +4,18 @@
  */
 
 function Mesh(pEngine, eOptions, sName, pDataFactory) {
-    A_CLASS;
+    //A_CLASS;
+    a.ReferenceCounter.call(this);
 
     Enum([
         VB_READABLE = a.RenderDataFactory.VB_READABLE,
         RD_ADVANCED_INDEX = a.RenderDataFactory.RD_ADVANCED_INDEX
         ], MESH_OPTIONS, a.Mesh);
+
+    Enum([
+        GEOMETRY_ONLY = 0x00,   //<! copy only geometry
+        SHARED_GEOMETRY = 0x01  //<! use shared geometry
+        ], MESH_CLONEOPTIONS, a.Mesh);
     /**
      * Mesh name.
      * @type {String}
@@ -17,20 +23,20 @@ function Mesh(pEngine, eOptions, sName, pDataFactory) {
      */
     this._sName = sName || null;
     //default material
-    this._pMaterials = [];
+    this._pFlexMaterials = null;
 
     this._pFactory = null;
-    this._pSubMeshes = [];
     this._pEngine = pEngine;
+    this._eOptions = 0;
 
-    this.setup(sName, pDataFactory, eOptions);
+    this.setup(sName, eOptions, pDataFactory);
 };
 
-EXTENDS(Mesh, a.ReferenceCounter);
+EXTENDS(Mesh, Array, a.ReferenceCounter);
 
 PROPERTY(Mesh, 'flexMaterials',
     function () {
-        return this._pMaterials;
+        return this._pFlexMaterials;
     });
 
 PROPERTY(Mesh, 'name',
@@ -42,6 +48,13 @@ PROPERTY(Mesh, 'data',
     function () {
         return this._pFactory;
     });
+
+
+Mesh.prototype.getOptions = function () {
+    'use strict';
+    
+    return this._eOptions;
+};
 
 Mesh.prototype.getEngine = function () {
     'use strict';
@@ -55,6 +68,30 @@ Mesh.prototype.draw = function (iSubset) {
     this._pFactory.draw(iSubset);
 };
 
+/**
+ * @protected
+ * Replace materials for this mesh.
+ */
+Mesh.prototype.replaceFlexMaterials = function (pFlexMaterials) {
+    'use strict';
+    
+    this._pFlexMaterials = pFlexMaterials;
+};
+
+Mesh.prototype.setup = function(sName, eOptions, pDataFactory) {
+    if (!pDataFactory) {
+        this._pFactory = new a.RenderDataFactory(this._pEngine);
+        this._pFactory.setup(eOptions);
+    }
+    else {
+        this._pFactory = pDataFactory;
+    }
+    
+    this._eOptions = eOptions || 0;
+    this._sName = sName || 'unknown';
+};
+
+
 Mesh.prototype.createSubset = function(sName, ePrimType, eOptions) {
     var pSubset, pSubMesh;
     //TODO: modify options and create options for data dactory.
@@ -66,8 +103,7 @@ Mesh.prototype.createSubset = function(sName, ePrimType, eOptions) {
     }
 
     pSubMesh = new a.MeshSubset(this, pSubset, sName);
-    this._pSubMeshes.push(pSubMesh);
-
+    this.push(pSubMesh);
     return pSubMesh;
 };
 
@@ -78,11 +114,16 @@ Mesh.prototype.createSubset = function(sName, ePrimType, eOptions) {
  * @memberof Mesh
  */
 Mesh.prototype.getFlexMaterial = function () {
+    
+    if (!this._pFlexMaterials) {
+        return null;
+    }
+
     if (typeof arguments[0] === 'number') {
-        return this._pMaterials[arguments[0]] || null;
+        return this._pFlexMaterials[arguments[0]] || null;
     }
     else {
-        for (var i = 0, pMaterials = this._pMaterials; i < pMaterials.length; ++ i) {
+        for (var i = 0, pMaterials = this._pFlexMaterials; i < pMaterials.length; ++ i) {
             if (pMaterials[i]._sName === arguments[0]) {
                 return pMaterials[i];
             }
@@ -98,17 +139,23 @@ Mesh.prototype.addFlexMaterial = function (sName, pMaterialData) {
     var pMaterialId;
 
     debug_assert(arguments.length < 7, "only base material supported now...");
-    debug_assert(this.getFlexMaterial(sName) === null, 'material with name <' + sName + '> already exists');
+    //debug_assert(this.getFlexMaterial(sName) === null, 'material with name <' + sName + '> already exists');
 
     sName = sName || 'unknown';
 
     pMaterial = this.getFlexMaterial(sName);
     if (pMaterial) {
-        pMaterial.value = pMaterialData;
+        if (pMaterialData) {
+           pMaterial.value = pMaterialData; 
+        }
         return true;
     }
 
-    pMaterialId = this._pMaterials.length;
+    if (!this._pFlexMaterials) {
+        this._pFlexMaterials = [];
+    }
+
+    pMaterialId = this._pFlexMaterials.length;
     pMaterial = new a.MeshMaterial(
         sName, 
         this._pFactory._allocateData(a.MeshMaterial.vertexDeclaration(), null)
@@ -121,7 +168,7 @@ Mesh.prototype.addFlexMaterial = function (sName, pMaterialData) {
 
     pMaterial.value = pMaterialData;   
     pMaterial.id = pMaterialId;
-    this._pMaterials.push(pMaterial);
+    this._pFlexMaterials.push(pMaterial);
     return true;
 };
 
@@ -129,10 +176,10 @@ Mesh.prototype.setFlexMaterial = function(iMaterial) {
     'use strict';
 
     var bResult = true;
-    for (var i = 0; i < this._pSubMeshes.length; ++ i) {
-        if (!this._pSubMeshes[i].setFlexMaterial(iMaterial)) {
+    for (var i = 0; i < this.length; ++ i) {
+        if (!this[i].setFlexMaterial(iMaterial)) {
             warning('cannot set material<' + iMaterial + '> for mesh<' + this.name + 
-                '> subset<' + this._pSubMeshes[i].name + '>');
+                '> subset<' + this[i].name + '>');
             bResult = false;
         }
     }
@@ -140,21 +187,12 @@ Mesh.prototype.setFlexMaterial = function(iMaterial) {
     return bResult;
 };
 
-Mesh.prototype.setup = function(sName, pDataFactory, eOptions) {
-    if (!pDataFactory) {
-        this._pFactory = new a.RenderDataFactory(this._pEngine);
-    }
-    //TODO: calc normal options
-    this._pFactory.setup(eOptions);
-    this._sName = sName || 'unknown';
-};
 
 /**
  * destroy resource.
  */
 Mesh.prototype.destroy = function () {
-    safe_delete_array(this._pMaterials);
-    safe_delete_array(this._pSubMeshes);
+    this._pFlexMaterials = null;
     this._pFactory.destroy(this);
 };
 
@@ -168,15 +206,50 @@ Mesh.prototype.getSubset = function () {
     'use strict';
     
     if (typeof arguments[0] === 'number') {
-        return this._pSubMeshes[arguments[0]];
+        return this[arguments[0]];
     }
     else {
-        for (var i = 0; i < this._pSubMeshes; ++ i) {
-            if (this._pSubMeshes[i]._sName === arguments[0]) {
-                return this._pSubMeshes[i];
+        for (var i = 0; i < this.length; ++ i) {
+            if (this[i]._sName === arguments[0]) {
+                return this[i];
             }
         }
     }
+};
+
+Mesh.prototype.clone = function (eCloneOptions) {
+    'use strict';
+    
+    var pClone = null;
+    var pRenderData;
+    var pSubMesh;
+
+    if (eCloneOptions & a.Mesh.SHARED_GEOMETRY) {
+        pClone = new a.Mesh(this.getEngine(), this.getOptions(), this.name, this.data);
+        
+        for (var i = 0; i < this.length; ++ i) {
+            pRenderData = this[i].data;
+            pRenderData.addRef();
+            pSubMesh = new a.MeshSubset(this, pRenderData, this[i].name);
+            pClone.push(pSubMesh);
+        }
+
+        pClone.replaceFlexMaterials(this.flexMaterials);
+
+        trace('created clone', pClone);
+    }
+    else {
+        //TODO: clone mesh data.
+    }
+
+    if (eCloneOptions & a.Mesh.GEOMETRY_ONLY) {
+        return pClone;
+    }
+    else {
+        //TODO: clone mesh shading
+    }
+
+    return pClone;
 };
 
 A_NAMESPACE(Mesh);
