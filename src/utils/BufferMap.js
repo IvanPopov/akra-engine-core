@@ -572,8 +572,8 @@ BufferMap.prototype.toString = function () {
     }
 
     var s = '\n\n', t;
-    s += '      Complete Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping     : OFFSET |    Additional    \n';
-    t  = '-------------------------:-----------------+---------------------:------------------:--------+------------------\n';
+    s += '      Complete Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping             : OFFSET |    Additional    \n';
+    t  = '-------------------------:-----------------+---------------------:--------------------------:--------+------------------\n';
     // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
     // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
     s += t;
@@ -587,14 +587,14 @@ BufferMap.prototype.toString = function () {
         s += '#' + _an(pFlow.iFlow, 2) + ' ' + 
             _an('[ ' + pDecl[0].eUsage + ' ]', 20) + ' : ' + _an(pDecl[0].iOffset, 6, true) + ' / ' + _an(pDecl[0].iSize, 6) + ' | ' + 
             _an(pVertexData.resourceHandle(), 8, true) + ' / ' + _an(pVertexData.getOffset(), 8) + ' : ' + 
-            (pMapper? _an(pMapper.eSemantics, 17) + ': ' + _an(pMapper.pData.getVertexDeclaration().element(pMapper.eSemantics).iOffset, 6) :
-            _an('-----', 17) + ': ' + _an('-----', 6)) + ' |                  \n';
+            (pMapper? _an(pMapper.eSemantics, 25) + ': ' + _an(pMapper.pData.getVertexDeclaration().element(pMapper.eSemantics).iOffset, 6) :
+            _an('-----', 25) + ': ' + _an('-----', 6)) + ' |                  \n';
         
 
         for (var j = 1; j < pDecl.length; ++ j) {
             s += '    ' + 
             _an('[ ' + pDecl[j].eUsage + ' ]', 20) + ' : ' + _an(pDecl[j].iOffset, 6, true) + ' / ' + _an(pDecl[j].iSize, 6) +  
-                  ' |                     :                  :        |                  \n';
+                  ' |                     :                          :        |                  \n';
         }
         s += t;
     };

@@ -1,7 +1,8 @@
 
 function RenderDataFactory (pEngine) {
     Enum([
-        VB_READABLE = a.VBufferBase.RamBackupBit
+        VB_READABLE = FLAG(a.VBufferBase.RamBackupBit),
+        RD_ADVANCED_INDEX = FLAG(0x10)
     ], RENDERDATA_OPTIONS, a.RenderDataFactory);
 
     //video buffer with all mesh data
@@ -9,10 +10,10 @@ function RenderDataFactory (pEngine) {
     this._pEngine = pEngine;
     this._eDataOptions = 0;
     this._pSubsetType = null;
-    this._pSubsets = [];
+    this._pDataArray = [];
 }
 
-PROPERTY(RenderDataFactory, 'subsetType',
+PROPERTY(RenderDataFactory, 'dataType',
     function () {
         return this._pSubsetType;
     },
@@ -39,22 +40,44 @@ RenderDataFactory.prototype.getDataOptions = function() {
 
 /**
  * Find VertexData with given semantics/usage.
- * @param  {String} sSemantics Data semantics.
  * @return {VertexData} Data with given semantics or null.
  */
-RenderDataFactory.prototype.getData = function (sSemantics) {
+RenderDataFactory.prototype.getData = function () {
     var pData;
 
     if (this._pDataBuffer) {
         pData = pData = this._pDataBuffer._pVertexDataArray;
-        for (var i = 0; i < pData.length; i++) {
-            if (pData[i].hasSemantics(sSemantics)) {
-                return pData[i];
-            }
-        };
+        if (typeof arguments[0] === 'string') {
+            for (var i = 0; i < pData.length; i++) {
+                if (pData[i].hasSemantics(arguments[0])) {
+                    return pData[i];
+                }
+            };
+        }
+        else {
+            for (var i = 0; i < pData.length; i++) {
+                if (pData[i].getOffset() === arguments[0]) {
+                    return pData[i];
+                }
+            };
+        }
     }
 
     return null;
+};
+
+/**
+ * Положить данные в буфер.
+ * @private
+ */
+RenderDataFactory.prototype._allocateData = function(pVertexDecl, pData) {
+    if (!this._pDataBuffer) {
+        this._createDataBuffer();
+    }
+    if (!pData) {
+        return this._pDataBuffer.getEmptyVertexData(1, pVertexDecl);
+    }
+    return this._pDataBuffer.allocateData(pVertexDecl, pData);
 };
 
 //публиный метод, для задания данных сразу для всех сабсетов
@@ -70,8 +93,8 @@ RenderDataFactory.prototype.allocateData = function (pDataDecl, pData) {
 
     pVertexData = this._allocateData(pDataDecl, pData);
 
-    for (var i = 0; i < this._pSubsets.length; ++ i) {
-        this._pSubsets[i]._addData(pVertexData);
+    for (var i = 0; i < this._pDataArray.length; ++ i) {
+        this._pDataArray[i]._addData(pVertexData);
     }
 
     return pVertexData.getOffset();
@@ -96,45 +119,45 @@ RenderDataFactory.prototype.getDataLocation = function (sSemantics) {
 RenderDataFactory.prototype._createDataBuffer = function () {
     'use strict';
     //TODO: add support for eOptions
-    trace('data options ::', this._eDataOptions);
+    var iVbOption = 0;
+    var iOptions = this._eDataOptions;
+
+    if (iOptions & a.RenderDataFactory.VB_READABLE) {
+        SET_BIT(iVbOption, FLAG(a.VBufferBase.ReadableBit));
+    }
+    
     this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource('data_factory_buffer' + '_' + a.sid());
-    this._pDataBuffer.create(0, this._eDataOptions);
+    this._pDataBuffer.create(0, iVbOption);
     this._pDataBuffer.addRef();
     return this._pDataBuffer !== null;
 };
 
-/**
- * Положить данные в буфер.
- * @private
- */
-RenderDataFactory.prototype._allocateData = function(pVertexDecl, pData) {
-    if (!this._pDataBuffer) {
-        this._createDataBuffer();
-    }
-    if (!pData) {
-        return this._pDataBuffer.getEmptyVertexData(1, pVertexDecl);
-    }
-    return this._pDataBuffer.allocateData(pVertexDecl, pData);
-};
 
+RenderDataFactory.prototype.getRenderData = function (iSubset) {
+    'use strict';
+    
+    return this._pDataArray[iSubset];
+};
 
 /**
  * Allocate new data set.
  * @param {Int} ePrimType Type of primitives.
  * @param {Int} eOptions Опции. Определяют можно ли объединять в группы датасеты.
  */
-RenderDataFactory.prototype.allocateSubset = function (ePrimType, eOptions) {
+RenderDataFactory.prototype.getEmptyRenderData = function (ePrimType, eOptions) {
     debug_assert(this._pSubsetType !== null, 'subset type not specified.');
 
-    var iSubsetId = this._pSubsets.length;
+    var iSubsetId = this._pDataArray.length;
     var pDataset = new this._pSubsetType(this._pEngine);
+
+    eOptions |= this._eDataOptions;
 
     if (!pDataset.setup(this, iSubsetId, ePrimType, eOptions)) {
         debug_error('cannot setup submesh...');
     }
     
 
-    this._pSubsets.push(pDataset);
+    this._pDataArray.push(pDataset);
 
     return pDataset;
 };
@@ -143,30 +166,20 @@ Ifdef (__DEBUG);
 
 RenderDataFactory.prototype.draw = function(iSubset) {
     'use strict';
-    var pProgram = this._pEngine.shaderManager().getActiveProgram();
+    
 
     if (iSubset !== undefined) {
-        pProgram.applyBufferMap(this._pSubsets[iSubset]._pMap);
-        this._pSubsets[iSubset]._pMap.draw();
-        return;
+        return this._pDataArray[iSubset].draw();
     }
 
-    for (var i = 0; i < this._pSubsets.length; i++) {
-        if (this._pSubsets[i]._pIndexData === null) {
-            continue;
-        }
-        pProgram.applyBufferMap(this._pSubsets[i]._pMap);
-        this._pSubsets[i]._pMap.draw();
+    for (var i = 0; i < this._pDataArray.length; i++) {
+        this._pDataArray[i].draw();
     };
+
+    return true;
 };
 
 Endif ();
-
-RenderDataFactory.prototype.getSubset = function (iSubset) {
-    'use strict';
-    
-    return this._pSubsets[iSubset];
-};
 
 /**
  * @protected
@@ -174,14 +187,14 @@ RenderDataFactory.prototype.getSubset = function (iSubset) {
 RenderDataFactory.prototype.setup = function (eOptions) {
     this._eDataOptions = eOptions;
     if (!this._pSubsetType) {
-        this._pSubsetType = a.RenderDataSubset;
+        this._pSubsetType = a.RenderData;
     }
 };
 
 RenderDataFactory.prototype.destroy = function () {
     'use strict';
     
-    safe_delete_array(this._pSubsets);
+    safe_delete_array(this._pDataArray);
     
     if (this._pDataBuffer) {
         this._pDataBuffer.relese();

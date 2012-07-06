@@ -469,7 +469,7 @@ VertexData.prototype.applyModifier = function(eSemantics, fnModifier) {
 
     var pData = this.getTypedData(eSemantics);
     fnModifier(pData);
-    this.setData(eSemantics, pData);
+    return this.setData(pData, eSemantics);
 };
 
 VertexData.prototype.resize = function (nCount, pVertexDeclaration) {

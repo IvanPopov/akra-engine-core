@@ -7,7 +7,8 @@ function Mesh(pEngine, eOptions, sName, pDataFactory) {
     A_CLASS;
 
     Enum([
-        VB_READABLE = a.VBufferBase.RamBackupBit
+        VB_READABLE = a.RenderDataFactory.VB_READABLE,
+        RD_ADVANCED_INDEX = a.RenderDataFactory.RD_ADVANCED_INDEX
         ], MESH_OPTIONS, a.Mesh);
     /**
      * Mesh name.
@@ -57,7 +58,7 @@ Mesh.prototype.draw = function (iSubset) {
 Mesh.prototype.createSubset = function(sName, ePrimType, eOptions) {
     var pSubset, pSubMesh;
     //TODO: modify options and create options for data dactory.
-    pSubset = this._pFactory.allocateSubset(ePrimType, eOptions);
+    pSubset = this._pFactory.getEmptyRenderData(ePrimType, eOptions);
     pSubset.addRef();
 
     if (!pSubset) {
@@ -142,9 +143,8 @@ Mesh.prototype.setFlexMaterial = function(iMaterial) {
 Mesh.prototype.setup = function(sName, pDataFactory, eOptions) {
     if (!pDataFactory) {
         this._pFactory = new a.RenderDataFactory(this._pEngine);
-        //TODO: calc normal options
-        this._pFactory.setup(eOptions);
     }
+    //TODO: calc normal options
     this._pFactory.setup(eOptions);
     this._sName = sName || 'unknown';
 };

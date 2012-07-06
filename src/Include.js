@@ -56,7 +56,7 @@ Include('resources/RenderMethod.js');
 
 Ifdef(DEV_BUILD)
 Include('model/RenderDataFactory.js');
-Include('model/RenderDataSubset.js');
+Include('model/RenderData.js');
 Include('model/RenderSnapshot.js');
 Include('model/RenderableObjects.js');
 Include('model/MeshSubset.js');
