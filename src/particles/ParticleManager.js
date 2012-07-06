@@ -58,7 +58,7 @@ ParticleManager.prototype.createEmitter = function(nParticles){
 	pDataSubset.addRef();
 
     var iEmitterId = this._pEmitters.length;
-    var pEmitter = new Emitter(this._pEngine,pDataSubset,iEmitterId,nParticles);
+    var pEmitter = new Emitter(this._pEngine,this,pDataSubset,iEmitterId,nParticles);
 
     this._pEmitters.push(pEmitter);
 
@@ -94,13 +94,13 @@ ParticleManager.prototype.createEmitter = function(nParticles){
 
 A_NAMESPACE(ParticleManager);
 
-function Emitter(pEngine,pDataSubset,iId,nParticles){
+function Emitter(pEngine,pParticleManager,pDataSubset,iId,nParticles){
 	'use strict';
 
 	A_CLASS;
 
 	this._pEngine = pEngine;
-	//this._pParticleManager = pParticleManager;
+	this._pParticleManager = pParticleManager;
 	this._pDataSubset = pDataSubset;
 	this._iId = iId;
 	this._eType = -1; //тип источника - точки, треугольники, билборд, объект или меш
@@ -110,11 +110,10 @@ function Emitter(pEngine,pDataSubset,iId,nParticles){
 	this._bParticleDataSetted = false;
 	this._bEmitterTypeSetted = false;
 
-	this._fTime = 0; //текущее время для источника
-	this._fTTL = 0; //время жизни источника
+	this._fTTL = 0; //время жизни источника в секундах
 
 	this._iUpdateMapIndex = this._pDataSubset.getIndexSet();//номер карты используемой при update
-	this._iObjectMapIndex = -1; //номер карты используемой для хранения j,]trnf
+	this._iObjectMapIndex = -1; //номер карты используемой для хранения объекта
 	this._iDrawMapIndex = -1; //номер карты используемой при финальной отрисовке
 	this._pParticleData = null; //объект хранящий данные частиц
 	this._pParticleDataDeclaration = null;//декларация для данных частиц
@@ -130,8 +129,15 @@ function Emitter(pEngine,pDataSubset,iId,nParticles){
 	 */
 	this._nDrawIndexLength = -1;
 
+	this._fnUpdate = null; //пользовательская функция для обновления частиц
+	this._fnDraw = null; //пользовательская функция для отрисовки частиц
 
+	this._fTime = 0; //текущее время для источника в секундах
+	this._fDt = 0; //текущий шаг по времени в секундах
+	this._nStep = 0; //номер текущего шага по времени
 
+	this._nPreviousTime = 0; //реальное время в миллисекундах, на предыдущем шаге
+	this._nCurrentTime = 0; //еальное время в миллисекундах на текущем шаге
 }
 
 EXTENDS(Emitter, a.SceneObject, a.RenderableObject);
@@ -159,8 +165,8 @@ Emitter.prototype.setParticleData = function(pVertexDecl,pData){
 			var iSize = pVertexElement.iSize;
 			var pElementData;
 
-			if(pVertexElement.eUsage == a.DECLUSAGE.POSITION
-				|| pVertexElement.eUsage == a.DECLUSAGE.VELOCITY){
+			if(pVertexElement.eUsage == 'PARTICLE_POSITION'
+				|| pVertexElement.eUsage == 'PARTICLE_VELOCITY'){
 
 				debug_assert(pVertexElement.eType == a.DTYPE.FLOAT,"позиции и скорости должна быть типа float");
 				debug_assert(iSize <= nElementsPerPixel,"длина скорости и позиции не должна превышать количества элементов на пиксель в текстуре");
@@ -188,20 +194,20 @@ Emitter.prototype.setParticleData = function(pVertexDecl,pData){
 						}
 					}
 				}
-				if(pVertexElement.eUsage == a.DECLUSAGE.POSITION){
+				if(pVertexElement.eUsage == 'PARTICLE_POSITION'){
 					if(nElementsPerPixel == 4){
-						pVertexElement = [VE_VEC4('POSITION')];
+						pVertexElement = [VE_VEC4('PARTICLE_POSITION')];
 					}
 					else if(nElementsPerPixel == 3){
-						pVertexElement = [VE_VEC3('POSITION')];
+						pVertexElement = [VE_VEC3('PARTICLE_POSITION')];
 					}
 				}
 				else{
 					if(nElementsPerPixel == 4){
-						pVertexElement = [VE_VEC4('VELOCITY')];
+						pVertexElement = [VE_VEC4('PARTICLE_VELOCITY')];
 					}
 					else if(nElementsPerPixel == 3){
-						pVertexElement = [VE_VEC3('VELOCITY')];
+						pVertexElement = [VE_VEC3('PARTICLE_VELOCITY')];
 					}
 				}
 			}
@@ -353,16 +359,34 @@ Emitter.prototype.objectIndex = function(iData,eSemantic){
 	return this._pDataSubset.index(iData,eSemantic);
 }
 
+/**
+ * устанавливается время жизни источника
+ */
+
+Emitter.prototype.setLiveTime = function(fTTL){
+	'use strict'
+	this._fTTL = fTTL;
+};
+
+/**
+ * активация источника
+ */
 Emitter.prototype.activate = function(){
 	//готов ли источник (должны быть проставлены позиции, скорости, и время жизни)
 	
-
-	if(1){
+	this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
+	if(this._pDataSubset.hasSemantics('PARTICLE_POSITION') &&
+		this._pDataSubset.hasSemantics('PARTICLE_VELOCITY') &&
+		this._fTTL > 0){
 		this._generateIndices();
 		this._isActive = true;
+		this._nPreviousTime = a.now();
 	}
-}
+};
 
+/**
+ * генерируются индексы и атрибуты для обновления и отрисовки частиц
+ */
 Emitter.prototype._generateIndices = function(){
 	var pUpdateIndex = new Float32Array(this._nParticles);
 	var pDrawIndex;
@@ -387,14 +411,89 @@ Emitter.prototype._generateIndices = function(){
 
 	this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
 	this._pDataSubset.allocateIndex([VE_FLOAT('UPDATE_INDEX')],pUpdateIndex);
-	this._pDataSubset.index(this._pDataSubset.getDataLocation('POSITION'),'UPDATE_INDEX');
+	this._pDataSubset.index(this._pDataSubset.getDataLocation('PARTICLE_POSITION'),'UPDATE_INDEX');
 
 	if(this._etype != a.EMITTER.MESH){
 		this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
-		this._pDataSubset.allocateAttribute([VE_FLOAT('POSITION_INDEX')],pDrawIndex);
+		this._pDataSubset.allocateAttribute([VE_FLOAT('PARTICLE_POSITION_INDEX')],pDrawIndex);
 	}
 
-}
+};
+
+PROPERTY(Emitter,updateRoutine,
+	function(){
+		'use strict';
+		return this._fnUpdate;
+	},
+	function(fnUpdate){
+		'use strict';
+		this._fnUpdate = fnUpdate;
+	}
+);
+
+PROPERTY(Emitter,drawRoutine,
+	function(){
+		'use strict';
+		return this._fnDraw;
+	},
+	function(fnDraw){
+		'use strict';
+		this._fnDraw = fnDraw;
+	}
+);
+
+/**
+ * перегруженный update от SceneObject
+ */
+Emitter.prototype.update = function(){
+	'use strict';
+	if(this._isActive){
+		this._update();
+	}
+};
+
+/**
+ * здесь происходит реальное обновление источника
+ */
+
+Emitter.prototype._update = function(){
+	'use strict';
+	var this._fTime += this._fDt;
+	this._fTimeCurrent = a.now();
+	this._fDt = (this._fTimeCurrent - this._fTimePrevious)/1000;
+	this._fTimePrevious = this._fTimeCurrent;
+	this._nStep++;//увеличиваем номер шага по времени
+
+	this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
+
+	//TODO:
+	//цикл по passes в update renderMethod-е
+
+	this._fnUpdate(this._fDt,this._fTime,this._nStep,'velocity');
+	this._pDataSubset.draw();
+
+	this._fnUpdate(this._fDt,this._fTime,this._nStep,'position');
+	this._pDataSubset.draw();
+};
+
+/**
+ * перегруженный render от SceneObject
+ */
+Emitter.prototype.render = function() {
+	'use strict';
+	//TODO:
+	//использовать очередь рендеринга
+	if(this._isActive){
+		this.renderCallback();
+	}
+};
+
+Emitter.prototype.renderCallback = function() {
+	'use strict';
+	this._pDataSubset.selectIndexSet(this._iDrawMapIndex);
+	this._fnDraw(this._fDt,this._fTime,this._nStep,'draw');
+	this._pDataSubset.draw();
+};
 
 A_NAMESPACE(Emitter);
 
