@@ -2,8 +2,9 @@
 function RenderDataFactory (pEngine) {
     Enum([
         VB_READABLE = FLAG(a.VBufferBase.RamBackupBit),
-        RD_ADVANCED_INDEX = FLAG(0x10)
-    ], RENDERDATA_OPTIONS, a.RenderDataFactory);
+        RD_ADVANCED_INDEX = a.RenderData.ADVANCED_INDEX,
+        RD_SINGLE_INDEX = a.RenderData.SINGLE_INDEX
+    ], RENDERDATAFACTORY_OPTIONS, a.RenderDataFactory);
 
     //video buffer with all mesh data
     this._pDataBuffer = null;

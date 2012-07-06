@@ -24,6 +24,11 @@ function RenderData() {
         DT_DIRECT          //<! непосредственно данные для атрибута.
     ], RENDERDATA_DATA_TYPES, a.RenderData);
 
+    Enum([
+        ADVANCED_INDEX = FLAG(0x10),    //<! использовать индекс на индекс упаковку данных
+        SINGLE_INDEX = FLAG(0x11)       //<! создать RenderData как классические данные, с данными только в аттрибутах, без использования видео буфферов.
+        ], RENDERDATA_OPTIONS, a.RenderData);
+
     /**
      * Options.
      * @type {Number}
@@ -103,7 +108,7 @@ PROPERTY(RenderData, 'factory',
  * @param  {RenderDataFactory}  pFactory  Factory of this data.
  * @param  {Number}             iId       Identifier.
  * @param  {PRIMITIVE_TYPE=TRIANGLELIST}     ePrimType Base type of primitives for rendering this data.
- * @param  {Int=0}                eOptions  Options.
+ * @param  {RENDERDATA_OPTIONS}                eOptions  Options.
  * @return {Boolean} Result.
  */
 RenderData.prototype.setup = function(pFactory, iId, ePrimType, eOptions) {
@@ -118,6 +123,9 @@ RenderData.prototype.setup = function(pFactory, iId, ePrimType, eOptions) {
     this._pMap.primType = ePrimType || a.PRIMTYPE.TRIANGLELIST;
     this._pMaps.push(this._pMap);
     this._pMap._pI2IDataCache = {};
+
+    debug_assert(this.useSingleIndex() === false, 'single indexed data not implimented');
+
     return true;
 };
 
@@ -205,7 +213,8 @@ RenderData.prototype.allocateData = function(pDataDecl, pData, hasIndex) {
     var eType = a.RenderData.DT_INDEXED;
     
     hasIndex = ifndef(hasIndex, true);
-    if (!hasIndex) {
+
+    if (!hasIndex || this.useSingleIndex()) {
         eType = a.RenderData.DT_DIRECT;
     }
     else if (this.useAdvancedIndex()) {
@@ -222,9 +231,21 @@ RenderData.prototype.allocateData = function(pDataDecl, pData, hasIndex) {
  */
 RenderData.prototype.useAdvancedIndex = function () {
     'use strict';
-    return (this._eOptions & a.RenderDataFactory.RD_ADVANCED_INDEX) != 0;
+    return (this._eOptions & a.RenderData.ADVANCED_INDEX) != 0;
 };
 
+
+RenderData.prototype.useSingleIndex = function () {
+    'use strict';
+    
+    return (this._eOptions & a.RenderData.SINGLE_INDEX) != 0;
+};
+
+RenderData.prototype.useMultiIndex = function () {
+    'use strict';
+    
+    return (this._eOptions & a.RenderData.SINGLE_INDEX) == 0;
+};
 
 /**
  * Remove data from this render data.
@@ -249,7 +270,8 @@ RenderData.prototype.allocateAttribute = function (pAttrDecl, pData) {
     'use strict';
     
     var pIndexData = this._pIndexData;
-    var pAttribData = this._pAttribData;
+    //var pAttribData = this._pAttribData;
+    var pAttribData = this._pMap._pAttribData;
     var pAttribBuffer = this._pAttribBuffer;
     var pFactory = this._pFactory;
 
@@ -262,10 +284,11 @@ RenderData.prototype.allocateAttribute = function (pAttrDecl, pData) {
         }
 
         this._pAttribData = this._pAttribBuffer.allocateData(pAttrDecl, pData);
+        this._pMap._pAttribData = this._pAttribData;
         this._pMap.flow(this._pAttribData);
         return this._pAttribData !== null;
     }
-    
+
     if (!pAttribData.extend(pAttrDecl, pData)) {
         trace('invalid data for allocation:', arguments);
         warning('cannot allocate attribute in data subset..');
@@ -322,15 +345,20 @@ RenderData.prototype._allocateAdvancedIndex = function (pAttrDecl, pData) {
  */
 RenderData.prototype._createIndex = function (pAttrDecl, pData) {
     'use strict';
-
     if (!this._pIndexBuffer) {
-        this._pIndexBuffer = this._pFactory.getEngine().displayManager()
-            .vertexBufferPool().createResource('subset_' + a.sid());
-        this._pIndexBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
+        if (this.useMultiIndex()) {
+            this._pIndexBuffer = this._pFactory.getEngine().displayManager()
+                .vertexBufferPool().createResource('subset_' + a.sid());
+            this._pIndexBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
+        }
+        else {
+            //TODO: add support for sinle indexed mesh.
+        }
     }
 
     this._pIndexData = this._pIndexBuffer.allocateData(pAttrDecl, pData);
     this._pIndexData._iAdditionCache = {};
+    this._pMap._pIndexData = this._pIndexData;
 
     return this._pIndexData !== null;
 };
@@ -362,7 +390,6 @@ Endif ();
     if (!this._pIndexData) {
         return this._createIndex(pAttrDecl, pData);
     }
-    
     if (!this._pIndexData.extend(pAttrDecl, pData)) {
         trace('invalid data for allocation:', arguments);
         warning('cannot allocate index in data subset..');
@@ -396,10 +423,6 @@ RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType) {
     'use strict';
     usePreviousDataSet = ifndef(usePreviousDataSet, true);
 
-    if (this._pIndexData === null) {
-        return false;
-    }
-
     if (usePreviousDataSet) {
         this._pMap = this._pMap.clone(false);
         
@@ -419,7 +442,7 @@ RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType) {
     this._pMap.primType = ePrimType || a.PRIMTYPE.TRIANGLELIST;
     this._pMaps.push(this._pMap);
 
-    return this._pMap.length - 1;
+    return this._pMaps.length - 1;
 };
 
 /**
@@ -430,8 +453,8 @@ RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType) {
 RenderData.prototype.selectIndexSet = function(iSet) {
     if (this._pMaps[iSet]) {
         this._pMap = this._pMaps[iSet];
-        this._pIndexData = this._pIndexBuffer? this._pIndexBuffer._pVertexDataArray[iSet]: null;
-        this._pAttribData = this._pAttribData? this._pAttribBuffer._pVertexDataArray[iSet]: null;
+        this._pIndexData = this._pMap._pIndexData ? this._pMap._pIndexData : null;//this._pIndexBuffer? this._pIndexBuffer._pVertexDataArray[iSet]: null;
+        this._pAttribData = this._pMap._pAttribData ? this._pMap._pAttribData : this;//null._pAttribData? this._pAttribBuffer._pVertexDataArray[iSet]: null;
         return true;
     }
 
@@ -458,12 +481,13 @@ RenderData.prototype.getIndexSet = function() {
 /**
  * Check whether the semantics used in this data set.
  * @param  {DECLARATION_USAGE|String}  sSemantics Data semantics.
+ * @param {Boolean=true} bSearchComplete Search only in complete flows.
  * @return {Boolean}        Result.
  */
-RenderData.prototype.hasSemantics = function (sSemantics) {
+RenderData.prototype.hasSemantics = function (sSemantics, bSearchComplete) {
     'use strict';
 
-    return this.getFlow(sSemantics) !== null;
+    return this.getFlow(sSemantics, bSearchComplete) !== null;
 };
 
 
@@ -493,15 +517,16 @@ RenderData.prototype.getIndices = function () {
  * @protected
  * Get data flow by semantics or data location.
  * @property getFlow(Int iDataLocation)
- * @property getFlow(String sSemantics)
- * @property getFlow(DECLARATION_USAGE eSemantics)
+ * @property getFlow(String sSemantics, Boolean bSearchComplete=true)
+ * @property getFlow(DECLARATION_USAGE eSemantics, Boolean bSearchComplete=true)
+ * @param {Boolean=false} bSearchComplete Search semantics only in complete flows.
  * @return {Object} Data flow.
  */
 RenderData.prototype.getFlow = function () {
     'use strict';
     
     if (typeof arguments[0] === 'string') {
-        return this._pMap.getFlow(arguments[0]);
+        return this._pMap.getFlow(arguments[0], arguments[1]);
     }
 
     for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++ i) {

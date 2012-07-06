@@ -1,32 +1,3 @@
-// function Emitter(){
-// 	this._pDirection
-// }
-
-// var pDecl = new a.VertexDeclaration([
-//  VE_VEC3('POSITION'),
-//  VE_VEC3('NORMAL'),
-//  VE_VEC3('TEXCOORD')
-// ]);
-
-
-// function Manager(pEngine) {
-//  this._pEngine = pEngine;
-//  this._pVideoBuffer = null;
-// }
-
-// Manager.prototype.init = function() {
-//  this._pVideoBuffer = 
-//   this._pEngine.displayManager().videoBufferPool().createResource('...');
-//  this._pVideoBuffer.create(0, FLAG(a.VBufferBase.ReadableBit));
-// };
-
-// Manager.prototype.createEmitter = function(nParticles, pDecl) {
-//  var pEmitterData = null;
-
-//  pEmitterData = this._pVideoBuffer.getEmptyVertexData(nParticles, pDecl);
-//  pEmitterData.getData('position.x');
-// };
-
 Enum(
 	[ 
 		POINT = 1,
@@ -38,63 +9,33 @@ Enum(
 
 function ParticleManager(pEngine){
 	'use strict';
-	this._pVideoBuffer = null;
-
 	this._pEmitters = [];
 	//this._nEmitterCount = 0;
 
-	this._nCounter = 0;
-	this._isUpdated = false;
-	this._isRendered = false;
+	//this._nCounter = 0;
+	//this._isUpdated = false;
+	//this._isRendered = false;
+	this._pEngine = pEngine;
 
 	this._pDataFactory = new a.RenderDataFactory(pEngine);
-	this._pDataFactory.subsetType = a.RenderDataSubset;
-}
+	this._pDataFactory.dataType = a.RenderData;
+	this._pDataFactory.setup(a.RenderDataFactory.VB_READABLE);
+};
 
-ParticleManager.prototype.createEmitter = function(nParticles){
+ParticleManager.prototype.createEmitter = function(eType,nParticles){
 	'use strict';
-
-	var pDataSubset = this._pDataFactory.allocateSubset(a.PRIMTYPE.POINTS,0);
-	pDataSubset.addRef();
-
-    var iEmitterId = this._pEmitters.length;
-    var pEmitter = new Emitter(this._pEngine,this,pDataSubset,iEmitterId,nParticles);
+	var iId = this._pEmitters.length;
+	var pDataSubset = this._pDataFactory.getEmptyRenderData(a.PRIMTYPE.POINTLIST,0);
+    var pEmitter = new Emitter(this._pEngine,this,pDataSubset,eType,nParticles,iId);
 
     this._pEmitters.push(pEmitter);
 
     return pEmitter;
-}
-
-// ParticleManager.prototype._update = function(){
-// 	'use strict';
-// 	if(!this._isUpdated){
-// 		this._isUpdated = true;
-// 		this._isRendered = false;
-// 		this._updateCycle();
-// 	}
-// }
-
-// ParticleManager.prototype._updateCycle = function(){
-// 	'use strict';
-// }
-
-// ParticleManager.prototype._render = function(){
-// 	'use strict';
-// 	if(!this._isRendered){
-// 		this._isRendered = true;
-// 		this._isUpdated = false;
-// 		this._renderCycle();
-// 	}
-// }
-
-// ParticleManager.prototype._renderCycle = function(){
-// 	'use strict';
-// 	//for(var i=0;i<)
-// }
+};
 
 A_NAMESPACE(ParticleManager);
 
-function Emitter(pEngine,pParticleManager,pDataSubset,iId,nParticles){
+function Emitter(pEngine,pParticleManager,pDataSubset,eType,nParticles,iId){
 	'use strict';
 
 	A_CLASS;
@@ -103,22 +44,21 @@ function Emitter(pEngine,pParticleManager,pDataSubset,iId,nParticles){
 	this._pParticleManager = pParticleManager;
 	this._pDataSubset = pDataSubset;
 	this._iId = iId;
-	this._eType = -1; //тип источника - точки, треугольники, билборд, объект или меш
+	this._eType = eType; //тип источника - точки, треугольники, билборд, объект или меш
 	this._nParticles = nParticles;
 
 	this._isActive = false; // активен ли источник
 	this._bParticleDataSetted = false;
-	this._bEmitterTypeSetted = false;
 
 	this._fTTL = 0; //время жизни источника в секундах
 
 	this._iUpdateMapIndex = this._pDataSubset.getIndexSet();//номер карты используемой при update
-	this._iObjectMapIndex = -1; //номер карты используемой для хранения объекта
 	this._iDrawMapIndex = -1; //номер карты используемой при финальной отрисовке
 	this._pParticleData = null; //объект хранящий данные частиц
 	this._pParticleDataDeclaration = null;//декларация для данных частиц
-	this._pObjectData = null; //объект хранящий данные модели
-	this._pObjectDataDeclaration = null;//декларация данных для объекта
+	//this._iObjectMapIndex = -1; //номер карты используемой для хранения объекта
+	//this._pObjectData = null; //объект хранящий данные модели
+	//this._pObjectDataDeclaration = null;//декларация данных для объекта
 
 	this._pMesh = null;//указатель на mesh, используется если тип источника выставлен, как mesh
 
@@ -138,9 +78,37 @@ function Emitter(pEngine,pParticleManager,pDataSubset,iId,nParticles){
 
 	this._nPreviousTime = 0; //реальное время в миллисекундах, на предыдущем шаге
 	this._nCurrentTime = 0; //еальное время в миллисекундах на текущем шаге
+
+	this._setup();
 }
 
 EXTENDS(Emitter, a.SceneObject, a.RenderableObject);
+
+Emitter.prototype._setup = function() {
+	'use strict';
+	switch (this._eType){
+		case a.EMITTER.POINT : 
+			//this._nPointsPerParticle = 1;
+			this._nDrawIndexLength = 1 * this._nParticles; //просто точки
+			break;
+		case a.EMITTER.TRIANGLE :
+			//this._nPointsPerParticle = 3;
+			this._nDrawIndexLength = 3 * this._nParticles; //треугольник
+			break;
+		case a.EMITTER.BILLBOARD :
+			//this._nPointsPerParticle = 4;
+			this._nDrawIndexLength = 6 * this._nParticles; //два треугольника
+			break;
+		case a.EMITTER.OBJECT :
+		case a.EMITTER.MESH : 
+			break;
+		default :
+			console.error('неверный тип частиц');
+			this._eType = a.EMITTER.POINTLIST;
+			break;
+	}
+};
+
 
 /**
  * выставляються данные для частиц в целом (т.е координаты центра, скорости и т.д.)
@@ -152,10 +120,11 @@ Emitter.prototype.setParticleData = function(pVertexDecl,pData){
 		console.error("нельзя добавлять данные для частиц после добавления данных для объекта");
 		return;
 	}
-	pData = new Uint8Array(pData);
-	var pVertexDeclaration = normalizeVertexDecl(pVertexDeclaration);
+	pData = new Uint8Array(pData.buffer);
+	var pVertexDeclaration = normalizeVertexDecl(pVertexDecl);
 	var iStride = pVertexDeclaration.stride;
-	var nElementsPerPixel = this._pDataSubset._pFactory._pVideoBuffer._numElementsPerPixel;
+	//var nElementsPerPixel = this._pDataSubset._pFactory._pVideoBuffer._numElementsPerPixel;
+	var nElementsPerPixel = 4;
 	if(!this._isActive){
 		debug_assert(pData.byteLength%iStride == 0,"неверное количество данных");
 		debug_assert(this._nParticles == pData.byteLength/iStride,"количество данных не соответствует количеству частиц");
@@ -169,10 +138,10 @@ Emitter.prototype.setParticleData = function(pVertexDecl,pData){
 				|| pVertexElement.eUsage == 'PARTICLE_VELOCITY'){
 
 				debug_assert(pVertexElement.eType == a.DTYPE.FLOAT,"позиции и скорости должна быть типа float");
-				debug_assert(iSize <= nElementsPerPixel,"длина скорости и позиции не должна превышать количества элементов на пиксель в текстуре");
+				debug_assert(pVertexElement.nCount <= nElementsPerPixel,"длина скорости и позиции не должна превышать количества элементов на пиксель в текстуре");
 
 				var pElementData; 
-				if(iSize < nElementsPerPixel){
+				if(pVertexElement.nCount < nElementsPerPixel){
 					var iOffset = pVertexElement.iOffset;
 					pElementData = new Uint8Array(4*this._nParticles*nElementsPerPixel);//умножить на 4 так как это float32 
 
@@ -233,54 +202,21 @@ Emitter.prototype.setParticleData = function(pVertexDecl,pData){
 };
 
 /**
- * выставляется тип частиц
- */
-
-Emitter.prototype.setDrawType = function(eType){
-	'use strict';
-
-	debug_assert(this._eType == -1,"тип частиц уже выставлен");
-
-	switch (eType){
-		case a.EMITTER.POINT : 
-			//this._nPointsPerParticle = 1;
-			this._nDrawIndexLength = 1 * this._nParticles; //просто точки
-			break;
-		case a.EMITTER.TRIANGLE :
-			//this._nPointsPerParticle = 3;
-			this._nDrawIndexLength = 3 * this._nParticles; //треугольник
-			break;
-		case a.EMITTER.BILLBOARD :
-			//this._nPointsPerParticle = 4;
-			this._nDrawIndexLength = 6 * this._nParticles; //два треугольника
-			break;
-		case a.EMITTER.OBJECT :
-		case a.EMITTER.MESH : 
-			break;
-		default :
-			return;
-	}
-	this._eType = eType;
-};
-
-/**
  * выставляются данные для объекта, который необходимо отрисовывать, как частицу
  */
 Emitter.prototype.setObjectData = function(pVertexDecl,pData){
 	'use strict';
-	if(this._eType == a.EMITTER.OBJECT){
+	if(this._eType != a.EMITTER.OBJECT){
 		error("используемый тип частиц объектом не является");
 		return;
 	}
 
-	////////////
-	
 	if(!this._bParticleDataSetted){
-		this._iObjectMapIndex = this._pDataSubset.addIndexSet.call(true,a.PRIMTYPE.TRIANGLELIST);
+		this._iDrawMapIndex = this._pDataSubset.addIndexSet(true,a.PRIMTYPE.TRIANGLELIST);
 		this._bParticleDataSetted = true;
 	}
 
-	// pData = new Uint8Array(pData);
+	// pData = new Uint8Array(pData.buffer);
 	// var pVertexDeclaration = normalizeVertexDecl(pVertexDecl);
 	// var iStride = pVertexDeclaration.iStride;
 	// var pElementData;
@@ -315,31 +251,31 @@ Emitter.prototype.setObjectData = function(pVertexDecl,pData){
 
 Emitter.prototype.setObjectIndex = function(pAttrDecl,pData){
 	'use strict';
-	if(this._eType == a.EMITTER.OBJECT){
+	if(this._eType != a.EMITTER.OBJECT){
 		error("используемый тип частиц объектом не является");
 		return;
 	}
 
 	////////////
 	
-	pData = new Uint8Array(pData);
+	pData = new Uint8Array(pData.buffer);
 	var pDataExtended = new Uint8Array(pData.byteLength*this._nParticles); //необходимо для того, чтобы рендерить все объекты-частицы за один проход
 	for(var i=0;i<this._nParticles;i++){
 		pDataExtended.set(pData,pData.byteLength*i);
 	}
-	return this._pDataSubset.setIndex.allocateIndex(pAttrDecl,pDataExtended);
+	return this._pDataSubset.allocateIndex(pAttrDecl,pDataExtended);
 };
 
 Emitter.prototype.setObjectAttribute = function(pAttrDecl,pData){
 	'use strict';
-	if(this._eType == a.EMITTER.OBJECT){
+	if(this._eType != a.EMITTER.OBJECT){
 		error("используемый тип частиц объектом не является");
 		return;
 	}
 
 	////////////
 	
-	pData = new Uint8Array(pData);
+	pData = new Uint8Array(pData.buffer);
 	var pDataExtended = new Uint8Array(pData.byteLength*this._nParticles); //необходимо для того, чтобы рендерить все объекты-частицы за один проход
 	for(var i=0;i<this._nParticles;i++){
 		pDataExtended.set(pData,pData.byteLength*i);
@@ -349,7 +285,7 @@ Emitter.prototype.setObjectAttribute = function(pAttrDecl,pData){
 
 Emitter.prototype.objectIndex = function(iData,eSemantic){
 	'use strict';
-	if(this._eType == a.EMITTER.OBJECT){
+	if(this._eType != a.EMITTER.OBJECT){
 		error("используемый тип частиц объектом не является");
 		return;
 	}
@@ -375,8 +311,8 @@ Emitter.prototype.activate = function(){
 	//готов ли источник (должны быть проставлены позиции, скорости, и время жизни)
 	
 	this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
-	if(this._pDataSubset.hasSemantics('PARTICLE_POSITION') &&
-		this._pDataSubset.hasSemantics('PARTICLE_VELOCITY') &&
+	if(this._pDataSubset.hasSemantics('PARTICLE_POSITION',false) &&
+		this._pDataSubset.hasSemantics('PARTICLE_VELOCITY',false) &&
 		this._fTTL > 0){
 		this._generateIndices();
 		this._isActive = true;
@@ -408,19 +344,18 @@ Emitter.prototype._generateIndices = function(){
 			}
 		}
 	}
-
 	this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
 	this._pDataSubset.allocateIndex([VE_FLOAT('UPDATE_INDEX')],pUpdateIndex);
 	this._pDataSubset.index(this._pDataSubset.getDataLocation('PARTICLE_POSITION'),'UPDATE_INDEX');
 
 	if(this._etype != a.EMITTER.MESH){
-		this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
-		this._pDataSubset.allocateAttribute([VE_FLOAT('PARTICLE_POSITION_INDEX')],pDrawIndex);
+		this._pDataSubset.selectIndexSet(this._iDrawMapIndex);
+		this._pDataSubset.allocateAttribute([VE_FLOAT('INDEX_PARTICLE_POSITION')],pDrawIndex);
 	}
 
 };
 
-PROPERTY(Emitter,updateRoutine,
+PROPERTY(Emitter,'updateRoutine',
 	function(){
 		'use strict';
 		return this._fnUpdate;
@@ -431,7 +366,7 @@ PROPERTY(Emitter,updateRoutine,
 	}
 );
 
-PROPERTY(Emitter,drawRoutine,
+PROPERTY(Emitter,'drawRoutine',
 	function(){
 		'use strict';
 		return this._fnDraw;
@@ -447,7 +382,8 @@ PROPERTY(Emitter,drawRoutine,
  */
 Emitter.prototype.update = function(){
 	'use strict';
-	if(this._isActive){
+
+	if(this._isActive && this._fnUpdate!=null){
 		this._update();
 	}
 };
@@ -458,10 +394,10 @@ Emitter.prototype.update = function(){
 
 Emitter.prototype._update = function(){
 	'use strict';
-	var this._fTime += this._fDt;
-	this._fTimeCurrent = a.now();
-	this._fDt = (this._fTimeCurrent - this._fTimePrevious)/1000;
-	this._fTimePrevious = this._fTimeCurrent;
+	this._fTime += this._fDt;
+	this._nCurrentTime = a.now();
+	this._fDt = (this._nCurrentTime - this._nPreviousTime)/1000;
+	this._nPreviousTime = this._nCurrentTime;
 	this._nStep++;//увеличиваем номер шага по времени
 
 	this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
@@ -470,10 +406,10 @@ Emitter.prototype._update = function(){
 	//цикл по passes в update renderMethod-е
 
 	this._fnUpdate(this._fDt,this._fTime,this._nStep,'velocity');
-	this._pDataSubset.draw();
+	this._pDataSubset._pMap.draw();
 
 	this._fnUpdate(this._fDt,this._fTime,this._nStep,'position');
-	this._pDataSubset.draw();
+	this._pDataSubset._pMap.draw();
 };
 
 /**
@@ -483,7 +419,7 @@ Emitter.prototype.render = function() {
 	'use strict';
 	//TODO:
 	//использовать очередь рендеринга
-	if(this._isActive){
+	if(this._isActive && this._fnDraw!=null){
 		this.renderCallback();
 	}
 };
