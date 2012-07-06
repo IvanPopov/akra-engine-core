@@ -1401,27 +1401,40 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         return pMesh;
     };
 
-    function buildHieraryNode (pNodes) {
+    function buildSceneNode (pNodes) {
         if (!pNodes) {
             return null;
         }
 
+        var pSceneNodeSibling = null;
         var pNode = null;
+        var pSceneNode = null;
 
         for (var i = pNodes.length - 1; i >= 0; i --) {
             pNode = pNodes[i];
-
-            buildHieraryNode(pNode.pChildNodes);
-
-            if (pNode.pGeometry) {
-                pMeshes.push(buildMesh(pNode.pGeometry.pGeometry));
+            
+            if (!pNode) {
+                continue;
             }
 
-            //Mat4.set(pNode.m4fTransform, pFrame.m4fTransformationMatrix);
-            //nTotalHierarhyNodes ++;
+            pSceneNodeSibling = pSceneNode;
+
+            if (pNode.pGeometry) {
+                pSceneNode = new a.SceneModel(pEngine);
+                //pSceneNode.addMesh(buildMesh(pNode.pGeometry));
+            }
+            else {
+                pSceneNode = new a.SceneNode(pEngine);
+            }
+
+            pSceneNode.create();
+            pSceneNode.setSibling(pSceneNodeSibling);
+            pSceneNode.addChild(buildSceneNode(pNode.pChildNodes));
+
+            Mat4.set(pNode.m4fTransform, pSceneNode.accessLocalMatrix());
         }
 
-        return null;
+        return pSceneNode;
     }
 
     function buildMaterial (pMaterial) {
@@ -1429,8 +1442,7 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         return pMaterial;
     }
 
-    function buildHierarhy () {
-        //console.log('scene founded:', pScene.id, pScene);
+    function buildScene () {
         var m4fRootTransform = buildAssetMatrix();
 
         for (var i = 0; i < pScene.pNodes.length; i++) {
@@ -1438,8 +1450,8 @@ function COLLADA (pEngine, sFilename, fnCallback) {
             Mat4.mult(pNode.m4fTransform, m4fRootTransform);
         }
 
-        return buildHieraryNode(pScene.pNodes);
-    }
+        return buildSceneNode(pScene.pNodes);
+    };
 
     var pMeshes = [];
 
@@ -1464,7 +1476,7 @@ function COLLADA (pEngine, sFilename, fnCallback) {
 
         pScene = COLLADAScene(firstChild(pXMLCollada, 'scene'));
         //fnCallback(buildFramList(), nTotalHierarhyNodes);
-        //buildHierarhy();
+        //buildScene();
         //trace(pLib['library_materials']);
         //trace(pLib['library_effects']);
         for (var i in pLib['library_geometries'].geometry) {
@@ -1474,6 +1486,8 @@ function COLLADA (pEngine, sFilename, fnCallback) {
                 //trace("model", j);
             }
         }
+
+        trace('collada scene tree: ', buildScene());
 
         fnCallback(pMeshes);
     });

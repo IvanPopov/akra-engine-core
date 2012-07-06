@@ -330,7 +330,11 @@ function SceneModel(pEngine, pMesh) {
      */
     this._iModelFrameIndex = 0;
     this._hModelHandle = 0;
-    this._pMesh = pMesh || null;
+    this._pMeshes = new Array(1);
+
+    if (pMesh) {
+        this.addMesh(pMesh);
+    }
 }
 
 EXTENDS(SceneModel, a.SceneObject);
@@ -470,24 +474,39 @@ SceneModel.prototype.renderCallback = function (pEntry, iActivationFlags) {
 };
 
 
-/**
- *
- * @tparam ModelResource pModel
- * @tparam Uint iFrameIndex
- */
-SceneModel.prototype.setModelResource = function (pModel, iFrameIndex) {
-    safe_release(this._pModelResource);
-    iFrameIndex = iFrameIndex || 0;
+// /**
+//  *
+//  * @tparam ModelResource pModel
+//  * @tparam Uint iFrameIndex
+//  */
+// SceneModel.prototype.setModelResource = function (pModel, iFrameIndex) {
+//     safe_release(this._pModelResource);
+//     iFrameIndex = iFrameIndex || 0;
 
-    this._nTotalBoneMatrices = 0;
-    this._iModelFrameIndex = iFrameIndex;
-    this._pModelResource = pModel;
+//     this._nTotalBoneMatrices = 0;
+//     this._iModelFrameIndex = iFrameIndex;
+//     this._pModelResource = pModel;
 
-    if (this._pModelResource) {
-        this._pModelResource.addRef();
+//     if (this._pModelResource) {
+//         this._pModelResource.addRef();
 
-        this.accessLocalBounds().eq(this.boundingBox());
+//         this.accessLocalBounds().eq(this.boundingBox());
+//     }
+// };
+
+SceneModel.prototype.addMesh = function (pMesh) {
+    'use strict';
+    if (!pMesh) {
+        return false;
     }
+    this._pMeshes[0] = pMesh;
+    return true;
+};
+
+SceneModel.prototype.findMesh = function (iMesh) {
+    'use strict';
+    iMesh = iMesh || 0;
+    return this._pMeshes[iMesh];
 };
 
 A_NAMESPACE(SceneModel);

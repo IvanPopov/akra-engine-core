@@ -24,6 +24,11 @@ function RenderData() {
         DT_DIRECT          //<! непосредственно данные для атрибута.
     ], RENDERDATA_DATA_TYPES, a.RenderData);
 
+    Enum([
+        ADVANCED_INDEX = FLAG(0x10),    //<! использовать индекс на индекс упаковку данных
+        SINGLE_INDEX = FLAG(0x11)       //<! создать RenderData как классические данные, с данными только в аттрибутах, без использования видео буфферов.
+        ], RENDERDATA_OPTIONS, a.RenderData);
+
     /**
      * Options.
      * @type {Number}
@@ -103,7 +108,7 @@ PROPERTY(RenderData, 'factory',
  * @param  {RenderDataFactory}  pFactory  Factory of this data.
  * @param  {Number}             iId       Identifier.
  * @param  {PRIMITIVE_TYPE=TRIANGLELIST}     ePrimType Base type of primitives for rendering this data.
- * @param  {Int=0}                eOptions  Options.
+ * @param  {RENDERDATA_OPTIONS}                eOptions  Options.
  * @return {Boolean} Result.
  */
 RenderData.prototype.setup = function(pFactory, iId, ePrimType, eOptions) {
@@ -118,6 +123,9 @@ RenderData.prototype.setup = function(pFactory, iId, ePrimType, eOptions) {
     this._pMap.primType = ePrimType || a.PRIMTYPE.TRIANGLELIST;
     this._pMaps.push(this._pMap);
     this._pMap._pI2IDataCache = {};
+
+    debug_assert(this.useSingleIndex() === false, 'single indexed data not implimented');
+
     return true;
 };
 
@@ -205,7 +213,8 @@ RenderData.prototype.allocateData = function(pDataDecl, pData, hasIndex) {
     var eType = a.RenderData.DT_INDEXED;
     
     hasIndex = ifndef(hasIndex, true);
-    if (!hasIndex) {
+
+    if (!hasIndex || this.useSingleIndex()) {
         eType = a.RenderData.DT_DIRECT;
     }
     else if (this.useAdvancedIndex()) {
@@ -222,9 +231,21 @@ RenderData.prototype.allocateData = function(pDataDecl, pData, hasIndex) {
  */
 RenderData.prototype.useAdvancedIndex = function () {
     'use strict';
-    return (this._eOptions & a.RenderDataFactory.RD_ADVANCED_INDEX) != 0;
+    return (this._eOptions & a.RenderData.ADVANCED_INDEX) != 0;
 };
 
+
+RenderData.prototype.useSingleIndex = function () {
+    'use strict';
+    
+    return (this._eOptions & a.RenderData.SINGLE_INDEX) != 0;
+};
+
+RenderData.prototype.useMultiIndex = function () {
+    'use strict';
+    
+    return (this._eOptions & a.RenderData.SINGLE_INDEX) == 0;
+};
 
 /**
  * Remove data from this render data.
@@ -324,9 +345,14 @@ RenderData.prototype._createIndex = function (pAttrDecl, pData) {
     'use strict';
 
     if (!this._pIndexBuffer) {
-        this._pIndexBuffer = this._pFactory.getEngine().displayManager()
-            .vertexBufferPool().createResource('subset_' + a.sid());
-        this._pIndexBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
+        if (this.useMultiIndex()) {
+            this._pIndexBuffer = this._pFactory.getEngine().displayManager()
+                .vertexBufferPool().createResource('subset_' + a.sid());
+            this._pIndexBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
+        }
+        else {
+            //TODO: add support for sinle indexed mesh.
+        }
     }
 
     this._pIndexData = this._pIndexBuffer.allocateData(pAttrDecl, pData);
