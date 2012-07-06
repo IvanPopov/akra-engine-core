@@ -1320,7 +1320,7 @@ function COLLADA (pEngine, sFilename, fnCallback) {
     function buildMesh (pGeometry) {
         var pMeshData = pGeometry.pMesh;
         var pMesh = new a.Mesh(pEngine, 
-            a.Mesh.VB_READABLE|a.Mesh.RDS_ADVANCED_INDEX, 
+            a.Mesh.VB_READABLE|a.Mesh.RD_ADVANCED_INDEX, 
             pGeometry.id);
         
         for (var i = 0; i < pMeshData.pPolygons.length; ++ i) {
@@ -1465,13 +1465,13 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         pScene = COLLADAScene(firstChild(pXMLCollada, 'scene'));
         //fnCallback(buildFramList(), nTotalHierarhyNodes);
         //buildHierarhy();
-        trace(pLib['library_materials']);
-        trace(pLib['library_effects']);
+        //trace(pLib['library_materials']);
+        //trace(pLib['library_effects']);
         for (var i in pLib['library_geometries'].geometry) {
             trace(pLib['library_geometries'].geometry[i]);
             for(var j = 0; j < 1; j++){
                 pMeshes.push(buildMesh(pLib['library_geometries'].geometry[i]));
-                trace("model", j);
+                //trace("model", j);
             }
         }
 

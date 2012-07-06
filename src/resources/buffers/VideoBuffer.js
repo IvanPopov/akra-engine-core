@@ -191,7 +191,7 @@ VideoBuffer.prototype.create = function (iByteSize, iFlags, pData) {
     //---------------- TEMP SET DATA END ---------------
 
 
-    trace('creating texture: ', pSize.X, 'x', pSize.Y);
+    //trace('creating texture: ', pSize.X, 'x', pSize.Y);
 
     if (!parent(Texture).createTexture.call(this, pSize.X, pSize.Y, 0, a.IFORMAT.RGBA, a.ITYPE.FLOAT, pTextureData)) {
         debug_error('Cannot create video buffer.');
@@ -246,7 +246,7 @@ VideoBuffer.prototype.resize = function (iByteSize) {
         return true;
     }
 
-    trace('resize vb :: from', this._iWidth, 'x', this._iHeight, ' to', pSize.X, 'x', pSize.Y);
+    //trace('resize vb :: from', this._iWidth, 'x', this._iHeight, ' to', pSize.X, 'x', pSize.Y);
     parent(Texture).repack.call(this, pSize.X, pSize.Y);    
     
 

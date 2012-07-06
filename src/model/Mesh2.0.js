@@ -8,7 +8,7 @@ function Mesh(pEngine, eOptions, sName, pDataFactory) {
 
     Enum([
         VB_READABLE = a.RenderDataFactory.VB_READABLE,
-        RDS_ADVANCED_INDEX = a.RenderDataFactory.RDS_ADVANCED_INDEX
+        RD_ADVANCED_INDEX = a.RenderDataFactory.RD_ADVANCED_INDEX
         ], MESH_OPTIONS, a.Mesh);
     /**
      * Mesh name.
@@ -58,7 +58,7 @@ Mesh.prototype.draw = function (iSubset) {
 Mesh.prototype.createSubset = function(sName, ePrimType, eOptions) {
     var pSubset, pSubMesh;
     //TODO: modify options and create options for data dactory.
-    pSubset = this._pFactory.allocateSubset(ePrimType, eOptions);
+    pSubset = this._pFactory.getEmptyRenderData(ePrimType, eOptions);
     pSubset.addRef();
 
     if (!pSubset) {

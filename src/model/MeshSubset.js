@@ -17,7 +17,7 @@ function MeshSubset (pMesh, pRenderData, sName) {
 
 EXTENDS(MeshSubset, a.RenderableObject);
 
-PROPERTY(RenderDataSubset, 'name',
+PROPERTY(MeshSubset, 'name',
     function () {
         return this._sName;
     },
