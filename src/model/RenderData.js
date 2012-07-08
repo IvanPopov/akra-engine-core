@@ -87,9 +87,15 @@ function RenderData() {
 
     /**
      * Buffer maps of all index sets.
-     * @type {Array}
+     * @type {Array.<Object>}
      */
-    this._pMaps = [];
+    this._pIndicesArray = [];
+
+    /**
+     * Current index set.
+     * @type {Int}
+     */
+    this._iIndexSet = 0;
 }
 
 EXTENDS(RenderData, a.ReferenceCounter);
@@ -120,8 +126,8 @@ RenderData.prototype.setup = function(pFactory, iId, ePrimType, eOptions) {
     this._pFactory = pFactory;
     this._iId = iId;
     this._pMap = new a.BufferMap(pFactory.getEngine());
-    this._pMap.primType = ePrimType || a.PRIMTYPE.TRIANGLELIST;
-    this._pMaps.push(this._pMap);
+    this._pMap.primType = ifndef(ePrimType, a.PRIMTYPE.TRIANGLELIST);
+    this._pIndicesArray.push({pMap: this._pMap, pIndexData: null, pAttribData: null, sName: '.main'});
     this._pMap._pI2IDataCache = {};
 
     debug_assert(this.useSingleIndex() === false, 'single indexed data not implimented');
@@ -371,7 +377,7 @@ RenderData.prototype._createIndex = function (pAttrDecl, pData) {
  */
 RenderData.prototype._allocateIndex = function (pAttrDecl, pData) {
     'use strict';
-    
+
     var pIndexData = this._pIndexData;
     var pIndexBuffer = this._pIndexBuffer;
     var pFactory = this._pFactory;
@@ -418,7 +424,7 @@ RenderData.prototype.allocateIndex = function (pAttrDecl, pData) {
  * all data, that was be added previously.
  * @param {PRIMITIVE_TYPE} ePrimType    Type of primitives.
  */
-RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType) {
+RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType, sName) {
     'use strict';
     usePreviousDataSet = ifndef(usePreviousDataSet, true);
 
@@ -435,17 +441,20 @@ RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType) {
     }
     else {
         this._pMap = new a.BufferMap(this._pFactory.getEngine());
+        this._pAttribData = null;
     }
 
-    this._pIndexData = null;
-    if (this._pAttribData) {
-        error('index sets with attribues temprary unavailable...');    
-    }
-    
     this._pMap.primType = ePrimType || a.PRIMTYPE.TRIANGLELIST;
-    this._pMaps.push(this._pMap);
+    this._pIndexData = null;
+    this._iIndexSet = this._pIndicesArray.length;
+    this._pIndicesArray.push({
+        pMap: this._pMap, 
+        pIndexData: this._pIndexData, 
+        pAttribData: this._pAttribData, 
+        sName: sName
+    });
 
-    return this._pMaps.length - 1;
+    return  this._iIndexSet;
 };
 
 /**
@@ -454,10 +463,12 @@ RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType) {
  * @return {Boolean}      Result.
  */
 RenderData.prototype.selectIndexSet = function(iSet) {
-    if (this._pMaps[iSet]) {
-        this._pMap = this._pMaps[iSet];
-        this._pIndexData = this._pIndexBuffer? this._pIndexBuffer._pVertexDataArray[iSet]: null;
-        this._pAttribData = this._pAttribData? this._pAttribBuffer._pVertexDataArray[iSet]: null;
+    var pIndexSet = this._pIndicesArray[iSet];
+    if (pIndexSet) {
+        this._pMap = pIndexSet.pMap;
+        this._pIndexData = pIndexSet.pIndexData;
+        this._pAttribData = pIndexSet.pAttribData;
+        this._iIndexSet = iSet;
         return true;
     }
 
@@ -472,13 +483,7 @@ RenderData.prototype.selectIndexSet = function(iSet) {
 RenderData.prototype.getIndexSet = function() {
     'use strict';
 
-    for (var i = 0; i < this._pMaps.length; ++ i) {
-        if (this._pMaps[i] === this._pMap) {
-            return i;
-        }
-    }
-
-    return -1;
+    return this._iIndexSet;
 };
 
 /**
@@ -649,7 +654,7 @@ RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) {
 
     
     iStride = pFlow.pData.stride;
-    
+
     if (pIndexData._iAdditionCache[iIndexOffset] !== iAddition) {
         if (!useSame) {
             iPrevAddition = pIndexData._iAdditionCache[iIndexOffset] || 0;
@@ -668,7 +673,7 @@ RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) {
 
         //remeber addition, that we added to index.
         pIndexData._iAdditionCache[iIndexOffset] = iAddition;
-        
+
         if (!pIndexData.setData(pData, eSemantics)) {
             return false;
         }

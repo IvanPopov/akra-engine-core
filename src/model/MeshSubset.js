@@ -5,14 +5,11 @@
 function MeshSubset (pMesh, pRenderData, sName) {
     A_CLASS;
 
-    debug_assert(pRenderData, 
-        'you must specify parent mesh for creation mesh subset');
-    debug_assert(pRenderData, 
-        'you must specify render data for creation mesh subset');
+    this._pRenderData = null;
+    this._sName = null;
+    this._pMesh = null;
 
-    this._pRenderData = pRenderData;
-    this._sName = sName || null;
-    this._pMesh = pMesh;
+    this.setup(pMesh, pRenderData, sName);
 }
 
 EXTENDS(MeshSubset, a.RenderableObject);
@@ -34,6 +31,38 @@ PROPERTY(MeshSubset, 'data',
     function () {
         return this._pRenderData;
     });
+
+MeshSubset.prototype.setup = function(pMesh, pRenderData, sName) {
+    debug_assert(this._pMesh === null, 'mesh subset already prepared');
+    debug_assert(pMesh, 'you must specify parent mesh for creation mesh subset');
+    debug_assert(pRenderData, 'you must specify render data for creation mesh subset');
+
+    this._pMesh = pMesh;
+    this._pRenderData = pRenderData;
+    this._sName = sName || null;
+
+    parent.setup(pMesh.getEngine(), sName);
+};
+
+MeshSubset.prototype.boundingBox = function () {
+    //TODO: calc bounding box
+};
+
+MeshSubset.prototype.boundingSphere = function () {
+    //TODO: calc bounding sphere
+};
+
+MeshSubset.prototype.computeNormals = function () {
+    //TODO: calc normals
+};
+
+MeshSubset.prototype.computeTangents = function () {
+    //TODO: compute normals
+};
+
+MeshSubset.prototype.computeBinormals = function () {
+    //TODO: calc binormals
+};
 
 MeshSubset.prototype.applyFlexMaterial = function(sMaterial, pMaterialData) {
     if (this._pMesh.addFlexMaterial(sMaterial, pMaterialData)) {

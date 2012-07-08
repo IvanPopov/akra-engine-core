@@ -465,7 +465,7 @@ VertexData.prototype.extend = function (pVertexDecl, pData) {
         return false;
     }
 
-    return this.setData(pDataNext, 0, nStrideNext);
+    return this.setData(pDataNext, 0, nStrideNext);;
 };
 
 VertexData.prototype.applyModifier = function(eSemantics, fnModifier) {
@@ -557,6 +557,7 @@ VertexData.prototype.setData = function (pData, iOffset, iSize, nCountStart, nCo
         case 5:
             var iStride = this.getStride();
             if (iStride != iSize) {
+                //FIXME: очень тормознутое место, крайне медленно работает...
                 for (var i = nCountStart; i < nCount + nCountStart; i++) {
                     this._pVertexBuffer.setData(pData.buffer.slice(iSize * (i - nCountStart),
                         iSize * (i - nCountStart) + iSize), iStride * i + iOffset + this.getOffset(),

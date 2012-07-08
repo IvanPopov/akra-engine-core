@@ -378,7 +378,7 @@ SceneModel.prototype.render = function () {
     var pEngine = this._pEngine;
     var pCamera = pEngine._pDefaultCamera;
     var pMesh = this.findMesh();
-    var pProgram = pEngine.pDrawMeshI2IProg;
+    var pProgram = null;
     var pDevice = pEngine.pDevice;
     var pModel = this;
 
@@ -386,15 +386,24 @@ SceneModel.prototype.render = function () {
         return;
     }
 
+    if (pMesh[0].data.useAdvancedIndex()) {
+        pProgram = pEngine.pDrawMeshI2IProg;
+    }
+    else {
+        pProgram = pEngine.pDrawMeshProg;
+    }
+
     pProgram.activate();
     pDevice.enableVertexAttribArray(0);
     pDevice.enableVertexAttribArray(1);
     pDevice.enableVertexAttribArray(2);
 
-    pProgram.applyFloat('INDEX_INDEX_POSITION_OFFSET', 0);
-    pProgram.applyFloat('INDEX_INDEX_NORMAL_OFFSET', 1);
-    pProgram.applyFloat('INDEX_INDEX_FLEXMAT_OFFSET', 2);
-
+    if (pMesh[0].data.useAdvancedIndex()) {
+        pProgram.applyFloat('INDEX_INDEX_POSITION_OFFSET', 0);
+        pProgram.applyFloat('INDEX_INDEX_NORMAL_OFFSET', 1);
+        pProgram.applyFloat('INDEX_INDEX_FLEXMAT_OFFSET', 2);
+    }
+    
     pProgram.applyMatrix4('model_mat', pModel.worldMatrix());
     pProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
     pProgram.applyMatrix4('view_mat', pCamera.viewMatrix());

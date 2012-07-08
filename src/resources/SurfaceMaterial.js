@@ -34,7 +34,7 @@ function SurfaceMaterial (pEngine) {
     * @private
     * @type Material
     */
-   this._pMaterial = null;
+   this._pMaterial = new a.Material();
     /**
      * @private
      * @type Int
@@ -61,11 +61,11 @@ function SurfaceMaterial (pEngine) {
      */
     this._pTextureMatrix = new Array(a.SurfaceMaterial.maxTexturesPerSurface);
 
-    //this.setMaterial(0);
+    this.setMaterial();
 }
 
 
-EXTENDS(SurfaceMaterial, a.ResourcePoolItem, a.Unique);
+EXTENDS(SurfaceMaterial, a.ResourcePoolItem);
 
 
 
@@ -82,15 +82,13 @@ PROPERTY(SurfaceMaterial, 'material',
      * @treturn Boolean
      */
     function (pMaterial) {
-        if (this._pMaterial) {
-            if (pMaterial) {
-               this._pMaterial.value = pMaterial;
-            }
-            else {
-               // set default material
-               this._pMaterial.pDiffuse = new a.ColorValue(.5, .5, .5, 1.);
-               this._pMaterial.pSpecular = new a.ColorValue(.5, .5, .5, 1.);
-            }
+        if (pMaterial) {
+           this._pMaterial.value = pMaterial;
+        }
+        else {
+           // set default material
+           this._pMaterial.pDiffuse = new a.ColorValue(.5, .5, .5, 1.);
+           this._pMaterial.pSpecular = new a.ColorValue(.5, .5, .5, 1.);
         }
     });
 
@@ -112,6 +110,10 @@ PROPERTY(SurfaceMaterial, 'textureFlags',
     function () {
         return this._iTextureFlags;
     });
+
+SurfaceMaterial.prototype.setMaterial = function(pMaterial) {
+    this.material = pMaterial || null;
+};
 
 SurfaceMaterial.prototype.isEqual = function (pSurfaceMaterial) {
     'use strict';

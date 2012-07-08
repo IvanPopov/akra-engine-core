@@ -345,11 +345,11 @@ Define(a.EffectResourceManager(pEngine), function () {
 
 //===============================================
 
-function EffectAccessor (pEngine) {
-    this._pShaderManager = pEngine.pShaderManager;
-    this._pEffectResource = null;
-}
+// function EffectAccessor (pEngine) {
+//     this._pShaderManager = pEngine.pShaderManager;
+//     this._pEffectResource = null;
+// }
 
-EffectAccessor.prototype.addComponent = function(sComponentName, nShift) {
+// EffectAccessor.prototype.addComponent = function(sComponentName, nShift) {
     
-};
+// };

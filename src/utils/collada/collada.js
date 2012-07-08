@@ -1317,6 +1317,30 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         return m4fAsset;
     }
 
+
+    function buildMaterials (pMesh, pMeshNode) {
+        //trace(pMesh[0], pMeshNode, pLib['library_materials'], pLib['library_effects'], '<< debug');
+        var pMaterials = pMeshNode.pMaterials;
+        var pEffects = pLib['library_effects'];
+        var pInputs = pMaterials.pVertexInput;
+
+        for (var sMaterial in pMaterials) {
+            var pEffect = pEffects.effect[pMaterials[sMaterial].sUrl.substr(1)];
+            var pMaterial = pEffect.pProfileCommon.pTechnique.pValue;
+
+            for (var j = 0; j < pMesh.length; ++ j) {
+                var pSubMesh = pMesh[j];
+
+                if (pSubMesh.material.name === sMaterial) {
+                    pSubMesh.material = pMaterial;
+                    pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
+                }
+            }
+            trace('try to apply mat:', pMaterial);
+        }
+
+        return pMesh;
+    }
     
     /**
      * Build a mesh according to node <mesh>.
@@ -1333,15 +1357,19 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         if (!pNodeData) {
             return null;
         }
-        trace('constructing mesh:', sMeshName);
+        
         if (pMeshList && pMeshList[sMeshName]) {
             //mesh with same geometry data
-            trace('cloning mesh with name: ', sMeshName);
-            return pMeshList[sMeshName].clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY);
+            return buildMaterials(
+                pMeshList[sMeshName].clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
+                pMeshNode);
         }
+        
+        trace('--- building started ---');
+        var iBegin = a.now();
 
         var pMesh = new a.Mesh(pEngine, 
-            a.Mesh.VB_READABLE|a.Mesh.RD_ADVANCED_INDEX, 
+              0,//a.Mesh.VB_READABLE|a.Mesh.RD_ADVANCED_INDEX,  
             sMeshName);
         var pPolyGroup = pNodeData.pPolygons;
         var pMeshData = pMesh.data;
@@ -1377,16 +1405,19 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
             }
         }
 
+        trace('data filled:', a.now() - iBegin, 'ms');
+
+
         //add indices to data
         for (var i = 0; i < pPolyGroup.length; ++ i) {
             var pPolygons = pPolyGroup[i];
             var pSubMesh = pMesh.getSubset(i);
             var pSubMeshData = pSubMesh.data;
-            var pDecl = [];
+            var pDecl = new Array(pPolygons.pInput.length);
             var iIndex = 0;
 
             for (var j = 0; j < pPolygons.pInput.length; ++ j) {
-                pDecl.push(VE_FLOAT(a.DECLUSAGE.INDEX + (iIndex ++)));
+                pDecl[j] = VE_FLOAT(a.DECLUSAGE.INDEX + (iIndex ++));
             }
 
             pSubMeshData.allocateIndex(pDecl, new Float32Array(pPolygons.p));
@@ -1395,13 +1426,22 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
                 pSubMeshData.index(pPolygons.pInput[j].sSemantic, pDecl[j].eUsage);
             }
 
-            pSubMesh.applyFlexMaterial('default');
-            //TODO: setup material
+            pSubMesh.material.name = pPolygons.sMaterial;
         }
 
+        pMesh.addFlexMaterial('default');
+        pMesh.setFlexMaterial('default');
+
+        trace('indices added:', a.now() - iBegin, 'ms');
+        trace('--- complete ---');
+
+        trace('loaded mesh<', sMeshName,'>:');
+        for (var i = 0; i < pMesh.length; ++i) {
+             trace('\tsubmesh<', pMesh[i].name,'>:', pMesh[i].data.getPrimitiveCount(), 'polygons');
+        }
         
         pMeshList[sMeshName] = pMesh;
-        return pMesh;
+        return buildMaterials(pMesh, pMeshNode);
     };
 
     function buildSceneNode (pNodes, pParentNode, pMeshList) {
@@ -1476,23 +1516,13 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         ];
 
         pAsset = COLLADAAsset(firstChild(pXMLCollada, 'asset'));
+       
         for (var i = 0; i < pTemplate.length; i++) {
             pLib[pTemplate[i].sLib] =
                 COLLADALibrary(firstChild(pXMLCollada, pTemplate[i].sLib), pTemplate[i].sElement, pTemplate[i].fn);
         }
 
         pScene = COLLADAScene(firstChild(pXMLCollada, 'scene'));
-        // //fnCallback(buildFramList(), nTotalHierarhyNodes);
-        // //buildScene();
-        // //trace(pLib['library_materials']);
-        // //trace(pLib['library_effects']);
-        // for (var i in pLib['library_geometries'].geometry) {
-        //     trace(pLib['library_geometries'].geometry[i]);
-        //     for(var j = 0; j < 1; j++){
-        //         pMeshes.push(buildMesh(pLib['library_geometries'].geometry[i]));
-        //         //trace("model", j);
-        //     }
-        // }
 
         fnCallback(buildScene());
     }
