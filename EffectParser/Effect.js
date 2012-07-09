@@ -614,6 +614,9 @@ EffectStruct.prototype.toCode = function () {
 EffectStruct.prototype.checkMe = function () {
     return true;
 };
+EffectStruct.prototype.hasField = function (sName) {
+    return this.pFields[sName] || false;
+};
 EffectStruct.prototype.analyzeSemantics = function () {
     if (this.isAnalyzed) {
         return;
@@ -711,7 +714,9 @@ function EffectBuffer() {
      * @type {Object}
      */
     this.pHeader = null;
+    this.id = EffectBuffer.nCount++;
 }
+EffectBuffer.nCount = 0;
 ;
 
 function EffectVariable() {
@@ -1006,7 +1011,7 @@ EffectFunction.prototype.calcHash = function () {
     sHash += this.sName;
     var i;
     if (!this.pTypes) {
-        for (i = 0; i < this.pParamOrders.length; i++) {
+        for (i = 0; this.pParamOrders ? i < this.pParamOrders.length : false; i++) {
             sHash += "!" + this.pParamOrders[i].pType.toStr();
         }
     }
@@ -1275,6 +1280,7 @@ function Effect() {
     this._isAnnotation = false;
     this._isStruct = false;
     this._isFunction = false;
+    this._isToJS = false;
 
     this._pFunctionTableByHash = {};
     this._pFunctionTableByName = {};
@@ -1292,6 +1298,7 @@ function Effect() {
     this._pVarNameStack = null;
     this._isNewName = false;
     this._isNewComplexName = false;
+    this._isTypeAnalayzed = false;
     this._pExprType = null;
 
     this._nAddr = 0;
@@ -1527,9 +1534,19 @@ Effect.prototype._addSystemFunction = function (sName, pReturn, pParamsType, pTe
  * @tparam Array pVal List of some hlsl instructions.
  */
 Effect.prototype.evalHLSL = function (pCode) {
-    //TODO:Translate to JS some const hlsl expressions
+//    if(this._isToJS){
+//        //TODO:Translate to JS some const hlsl expressions
+//    }
+//    if(this._isCodeWrite){
+//
+//    }
     if (!pCode) {
         return null;
+    }
+    if (pCode.length === 1) {
+        if (typeof(pCode[0]) === "string") {
+            return pCode[0];
+        }
     }
     console.log("Need to eval this code: ", pCode);
 };
@@ -1640,8 +1657,8 @@ Effect.prototype.endFunction = function () {
     this._isFragment = false;
 };
 
-Effect.prototype.addVariable = function (pVar) {
-    var isVertex = this._pCurrentFunction ? this._pCurrentFunction.isVertexShader : false;
+Effect.prototype.addVariable = function (pVar, isParams) {
+    isParams = isParams || false;
 
     function fnExtractStruct(sName, pStruct, pTable, iScope) {
         var pOrders = pStruct.pOrders;
@@ -1655,7 +1672,7 @@ Effect.prototype.addVariable = function (pVar) {
             pBuffer = null;
             pPointers = null;
             isPointer = false;
-            if (isVertex && !sName.search('.') && !pOrders[i].isPointer) {
+            if (isParams && !sName.search('.') && !pOrders[i].isPointer) {
                 pPointers = [];
                 pPointers.push(new EffectPointer(pVar, 0));
                 pBuffer = new EffectBuffer();
@@ -1666,7 +1683,7 @@ Effect.prototype.addVariable = function (pVar) {
                 for (var j = 0; j < pOrders[i].nDim; j++) {
                     pPointers.push(new EffectPointer(pVar, j));
                 }
-                if (isVertex) {
+                if (isParams) {
                     pBuffer = new EffectBuffer();
                 }
                 isPointer = true;
@@ -1683,7 +1700,7 @@ Effect.prototype.addVariable = function (pVar) {
                 "pType"     : pOrders[i].pType
             };
             if (!pOrders[i].pType.isBase()) {
-                fnExtractStruct(sNewName, pOrders[i].pType.pEffectType.pDesc, pTable, this._iScope);
+                fnExtractStruct(sNewName, pOrders[i].pType.pEffectType.pDesc, pTable, iScope);
             }
         }
     }
@@ -1711,7 +1728,7 @@ Effect.prototype.addVariable = function (pVar) {
         if (!this._pCurrentScope.pStructTable) {
             this._pCurrentScope.pStructTable = {};
         }
-        fnExtractStruct(pVar.sName, pVar.pType.pEffectType.pDesc, this._pCurrentScope.pStructTable);
+        fnExtractStruct(pVar.sName, pVar.pType.pEffectType.pDesc, this._pCurrentScope.pStructTable, this._iScope);
     }
 };
 Effect.prototype.hasVariable = function (sName) {
@@ -1986,30 +2003,30 @@ Effect.prototype.analyze = function (pTree) {
         warning("Wrong argument! You must put an object of parse tree class!");
         return false;
     }
-    try {
-        var pRoot = pTree.pRoot;
-        var i;
-        this._pParseTree = pTree;
-        var time = a.now();
-        this.newScope();
+//    try {
+    var pRoot = pTree.pRoot;
+    var i;
+    this._pParseTree = pTree;
+    var time = a.now();
+    this.newScope();
 //        for (i = 0; i < pRoot.pChildren.length; i++) {
 //            this.analyzeDecl(pRoot.pChildren[i]);
 //        }
-        this.firstStep();
-        this.analyzeTypes();
-        this.preAnalyzeFunctions();
-        this.preAnalyzeTechniques();
-        this.secondStep();
-        this.analyzeEffect();
-        this.checkEffect();
-        this.endScope();
-        console.log(a.now() - time);
-        return true;
-    }
-    catch (e) {
-        console.error(e);
-        return false;
-    }
+    this.firstStep();
+    this.analyzeTypes();
+    this.preAnalyzeFunctions();
+    this.preAnalyzeTechniques();
+    this.secondStep();
+    this.analyzeEffect();
+    this.checkEffect();
+    this.endScope();
+    console.log(a.now() - time);
+    return true;
+//    }
+//    catch (e) {
+//        console.error(e);
+//        return false;
+//    }
 };
 Effect.prototype.firstStep = function () {
     this.nStep = 1;
@@ -2228,11 +2245,16 @@ Effect.prototype.addVariableDecl = function (pVar) {
 Effect.prototype.analyzeVariableDim = function (pNode, pVar) {
     pVar = pVar || new EffectVariable();
     var pChildren = pNode.pChildren;
+    var pCode;
     if (pChildren.length === 1) {
         pVar.sName = pChildren[0].sValue;
         return pVar;
     }
     if (pChildren.length === 3) {
+        if (!this._isStruct) {
+            error("For variables this are not good");
+            return;
+        }
         pVar.isPointer = true;
         pVar.nDim++;
     }
@@ -2249,7 +2271,11 @@ Effect.prototype.analyzeVariableDim = function (pNode, pVar) {
             error("Sorry but glsl does not support multidimensional arrays!");
             return;
         }
-        pVar.iLength = this.evalHLSL(this.analyzeExpr(pChildren[pChildren.length - 3]));
+        this.newCode();
+        this.analyzeExpr(pChildren[pChildren.length - 3]);
+        pCode = this._pCode;
+        this.endCode();
+        pVar.iLength = this.evalHLSL(pCode);
     }
     this.analyzeVariableDim(pChildren[pChildren.length - 1], pVar);
     return pVar;
@@ -2257,7 +2283,7 @@ Effect.prototype.analyzeVariableDim = function (pNode, pVar) {
 Effect.prototype.analyzeFromExpr = function (pNode) {
     var pChildren = pNode.pChildren;
     var pMem;
-    if (pChildren[1].sName = T_NON_TYPE_ID) {
+    if (pChildren[1].sName === T_NON_TYPE_ID) {
         pMem = this.hasVariable(pChildren[1].sValue);
         if (!pMem) {
             error("bad 1");
@@ -2276,6 +2302,7 @@ Effect.prototype.analyzeFromExpr = function (pNode) {
 Effect.prototype.analyzeMemExpr = function (pNode) {
     var pChildren = pNode.pChildren;
     var pMem;
+    var pVar;
     if (pChildren[0].sName === T_NON_TYPE_ID) {
         pMem = this.hasVariable(pChildren[1].sValue);
         if (!pMem) {
@@ -2284,24 +2311,22 @@ Effect.prototype.analyzeMemExpr = function (pNode) {
         }
         pMem = pMem.pBuffer;
     }
-    else if (pChildren[0][1].sName === T_NON_TYPE_ID) {
-        pMem = this.hasVariable(pChildren[0][1].sValue);
-        if (!pMem) {
-            error("bad 3");
-            return;
-        }
-        pMem = pMem.pBuffer;
-    }
     else {
         this._isCodeWrite = false;
-        this.analyzeExpr(pChildren[1][1]);
-        this.isCodeWrite = true;
-        var pProp = this.hasComplexVariable(this._sLastFullName);
-        if (!pProp.pBuffer) {
+        this.analyzeExpr(pChildren[0]);
+        this._isCodeWrite = true;
+
+        if (this._sLastFullName.search(".") !== -1) {
+            pVar = this.hasComplexVariable(this._sLastFullName);
+        }
+        else {
+            pVar = this.hasVariable(this._sLastFullName);
+        }
+        if (!pVar.pBuffer) {
             error("Nooooo");
             return;
         }
-        pMem = pProp.pBuffer;
+        pMem = pVar.pBuffer;
     }
     if (!pMem) {
         error("Oh-oh, don`t cool enough");
@@ -2384,6 +2409,8 @@ Effect.prototype.analyzeExpr = function (pNode) {
     var pFunc;
     var i, j;
     var isNewVar = false;
+    var isComplexVar = false;
+    var sTypeName;
 
     switch (sName) {
         case OBJECTEXPR:
@@ -2432,11 +2459,16 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 this.analyzeExpr(pChildren[pChildren.length - 1]);
                 break;
             }
-            if (pChildren.length === 3) {
+            if (!(pChildren.length === 3 &&
+                  (pChildren[1].sName === POSTFIXEXPR || pChildren[1].sName === COMPLEXEXPR ||
+                   pChildren[1].sValue !== undefined))) {
+                this._isNewComplexName = false;
+            }
+            if (pChildren.length === 3 && pChildren[2].sValue === "(") {
                 //ComplexExpr : '(' Expr ')'
-                this.pushCode(pChildren[pChildren.length - 1].sValue);
+                this.pushCode("(");
                 this.analyzeExpr(pChildren[1]);
-                this.pushCode(pChildren[0].sValue);
+                this.pushCode(")");
                 break;
             }
             if (pChildren[pChildren.length - 1].sName === T_NON_TYPE_ID) {
@@ -2513,7 +2545,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 this.analyzeExpr(pChildren[pChildren.length - 1]);
                 break;
             }
-            if(this._isNewName){
+            if (this._isNewName) {
                 error("something going wrong. maybe you use @some.any but correct - @(some.any)");
                 return;
             }
@@ -2530,7 +2562,6 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 this._isCodeWrite = true;
                 var pRes;
                 if (this._sLastFullName.search('.') !== -1) {
-                    console.log(this._sLastFullName);
                     pRes = this.hasComplexVariable(this._sLastFullName);
                     if (!pRes) {
                         error("oh-ah");
@@ -2544,8 +2575,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 }
                 else {
                     pRes = this.hasVariable(this._sLastFullName);
-                    if(!pRes){
-                        console.log(this._sLastFullName);
+                    if (!pRes) {
                         error("ah-ah");
                         break;
                     }
@@ -2566,28 +2596,78 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 error("Bad for dog");
                 break;
             }
+            if ((pChildren[pChildren.length - 1].sName === PRIMARYEXPR && pChildren.length !== 2) ||
+                pChildren[pChildren.length - 1].sName === OBJECTEXPR) {
+                error("Unssuported construction");
+                return;
+            }
+            if (pChildren.length === 2 && pChildren[1].sName === PRIMARYEXPR) {
+                this.analyzeExpr(pChildren[pChildren.length - 1]);
+                this.pushCode(pChildren[0].sValue);
+                this._pExprType = this.hasType("ptr");
+                return;
+            }
             isNewVar = false;
-            if (!this._isNewName) {
-                isNewVar = true;
-                this.newVarName();
+            isComplexVar = false;
+            if (pChildren[pChildren.length - 1].sName === COMPLEXEXPR) {
+                this._isNewComplexName = true;
+                isComplexVar = true;
+                if (this._isNewName) {
+                    error("you are very unlucky or stupid. You can choose)");
+                    return;
+                }
+            }
+            else {
+                if (!this._isNewName) {
+                    isNewVar = true;
+                    this.newVarName();
+                }
             }
             this.analyzeExpr(pChildren[pChildren.length - 1]);
+            if (isComplexVar) {
+                if (this._isNewComplexName) {
+                    isNewVar = true;
+                    this.newVarName();
+                    this._sVarName = this._sLastFullName;
+                    this._isTypeAnalayzed = false;
+                }
+                else {
+                    this._isTypeAnalayzed = true;
+                }
+                this._isNewComplexName = false;
+            }
             pType1 = this._pExprType;
             if (pChildren.length === 2) {
                 this.pushCode(pChildren[0].sValue);
             }
-            else if (pChildren[1].sValue === ".") {
-                this._sVarName += ".";
+            else if (pChildren[pChildren.length - 2].sValue === ".") {
+                if (!isComplexVar || isNewVar) {
+                    this._sVarName += ".";
+                }
                 this.pushCode(".");
                 this.analyzeExpr(pChildren[pChildren.length - 3]);
                 pType1 = this._pExprType;
                 if (pChildren.length === 4) {
+                    if (!isNewVar) {
+                        error("not this way");
+                        return;
+                    }
+                    pVar = this.hasComplexVariable(this._sVarName);
+                    if (isNewVar) {
+                        this.endVarName();
+                        isNewVar = false;
+                    }
+                    if (isComplexVar) {
+                        this._isTypeAnalayzed = false;
+                        isComplexVar = false;
+                    }
                     var pMem = this.analyzeFromExpr(pChildren[0]);
+
                     if (!pMem) {
                         error("bad 49");
                         return;
                     }
-                    pVar = this.hasComplexVariable(this._sVarName);
+
                     if (!pVar) {
                         error("bad 50");
                         return;
@@ -2616,6 +2696,9 @@ Effect.prototype.analyzeExpr = function (pNode) {
             }
             if (isNewVar) {
                 this.endVarName();
+            }
+            if (isComplexVar) {
+                this._isTypeAnalayzed = false;
             }
             this._pExprType = pType1;
             break;
@@ -2723,19 +2806,54 @@ Effect.prototype.analyzeExpr = function (pNode) {
             break;
 
         case T_NON_TYPE_ID:
-            var isTranslate = true;
-            if (this._pCode.length > 0 && this._pCode[this._pCode.length - 1] === ".") {
-                isTranslate = false;
+//            var isTranslate = true;
+//            if (this._pCode.length > 0 && this._pCode[this._pCode.length - 1] === ".") {
+//                isTranslate = false;
+//            }
+            pType = this._pExprType ? (this._pExprType.pEffectType ? this._pExprType.pEffectType : this._pExprType) : null;
+            if (this._isTypeAnalayzed) {
+                //Проверяем тип
+                if (pType.isBase()) {
+                    if (
+                        this.constructor.pVectorSuffix[pNode.sValue] === null &&
+                        (
+                            pType.sName === "float2" ||
+                            pType.sName === "float3" ||
+                            pType.sName === "float4" ||
+                            pType.sName === "int2" ||
+                            pType.sName === "int3" ||
+                            pType.sName === "int4"
+                            )
+                        ) {
+                        var sTypeName = "";
+                        if (pType.sName === "float2" ||
+                            pType.sName === "float3" ||
+                            pType.sName === "float4") {
+                            sTypeName = "float";
+                        }
+                        else {
+                            sTypeName = "int";
+                        }
+                        sTypeName += pNode.sValue.length === 1 ? "" : pNode.sValue.length;
+                        this._pExprType = this.hasType(sTypeName);
+                        pRes = pNode.sValue;
+                    }
+                }
+                else {
+                    pVar = pType.pDesc.hasField(pNode.sValue);
+                    if (pVar) {
+                        this._pExprType = pVar.pType;
+                        pRes = pNode.sValue;
+                    }
+                }
             }
-
-            if (isTranslate) {
+            else if ((this._sVarName === "" && this._isNewName) || !this._isNewName) {
                 isNewVar = false;
                 if (!this._isNewName) {
                     this.newVarName();
                     isNewVar = true;
                 }
                 if (this._sVarName && this._sVarName.length > 0) {
-                    console.log(this._sVarName);
                     error("Oh-no");
                     return;
                 }
@@ -2761,19 +2879,19 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 if (
                     this.constructor.pVectorSuffix[pNode.sValue] === null &&
                     (
-                        this._pExprType.pEffectType.sName === "float2" ||
-                        this._pExprType.pEffectType.sName === "float3" ||
-                        this._pExprType.pEffectType.sName === "float4" ||
-                        this._pExprType.pEffectType.sName === "int2" ||
-                        this._pExprType.pEffectType.sName === "int3" ||
-                        this._pExprType.pEffectType.sName === "int4"
+                        pType.sName === "float2" ||
+                        pType.sName === "float3" ||
+                        pType.sName === "float4" ||
+                        pType.sName === "int2" ||
+                        pType.sName === "int3" ||
+                        pType.sName === "int4"
                         )
                     ) {
                     pRes = pNode.sValue;
-                    var sTypeName = "";
-                    if (this._pExprType.pEffectType.sName === "float2" ||
-                        this._pExprType.pEffectType.sName === "float3" ||
-                        this._pExprType.pEffectType.sName === "float4") {
+                    sTypeName = "";
+                    if (pType.sName === "float2" ||
+                        pType.sName === "float3" ||
+                        pType.sName === "float4") {
                         sTypeName = "float";
                     }
                     else {
@@ -2789,6 +2907,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         error("Not this variable " + this._sVarName);
                         return;
                     }
+
                     pRes.isUsed = true;
                     this._pExprType = pRes.pType;
                     pRes = pNode.sValue;
@@ -2904,7 +3023,7 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
         pFunction.iScope = this._iScope;
         var i;
         for (i in pFunction.pParameters) {
-            this.addVariable(pFunction.pParameters[i]);
+            this.addVariable(pFunction.pParameters[i], true);
         }
         if (pChildren.length === 3) {
             this.analyzeAnnotation(pChildren[1], pFunction);
