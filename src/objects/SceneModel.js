@@ -330,7 +330,11 @@ function SceneModel(pEngine, pMesh) {
      */
     this._iModelFrameIndex = 0;
     this._hModelHandle = 0;
-    this._pMesh = pMesh || null;
+    this._pMeshes = new Array(1);
+
+    if (pMesh) {
+        this.addMesh(pMesh);
+    }
 }
 
 EXTENDS(SceneModel, a.SceneObject);
@@ -364,39 +368,83 @@ SceneModel.prototype.prepareForRender = function () {
 
 SceneModel.prototype.render = function () {
     parent.render(this);
-    return;
 
-    var pDisplayManager = this._pEngine.pDisplayManager;
-    var pMeshSubset = null;
+    //------------------------------------------------
+    //Temprary render..
+    if (this.bNoRender) {
+        return;
+    }
 
-    for (var i = 0, nSubsets = this._pMesh._pSubsets.length; i < nSubsets; i ++) {
-        pMeshSubset = this._pMesh._pSubsets[i];
+    var pEngine = this._pEngine;
+    var pCamera = pEngine._pDefaultCamera;
+    var pMesh = this.findMesh();
+    var pProgram = null;
+    var pDevice = pEngine.pDevice;
+    var pModel = this;
 
-        if (!pMeshSubset.isRenderable()) {
-            continue;
-        }
+    if (!pMesh) {
+        return;
+    }
 
-        var pEffect = pMeshSubset.effect;
-        var pMaterial = pMeshSubset.surfaceMaterial;
-        var nPasses = pEffect.totalPasses();
+    if (pMesh[0].data.useAdvancedIndex()) {
+        pProgram = pEngine.pDrawMeshI2IProg;
+    }
+    else {
+        pProgram = pEngine.pDrawMeshProg;
+    }
 
-        for (var iPass = 0; iPass < nPasses; iPass++) {
-            var pRenderEntry = pDisplayManager.openRenderQueue();
-            //TODO: использовать правильные параметры для занесения объекта в очередь.
-            pRenderEntry.pRendarableObject = pMeshSubset;
-            pRenderEntry.boneCount = 0;
-            pRenderEntry.detailLevel = 0;
-            pRenderEntry.modelType = a.RenderEntry.modelEntry;
-            pRenderEntry.hModel = this._hModelHandle
-            pRenderEntry.modelParamA = this._iModelFrameIndex;
-            pRenderEntry.modelParamB = pMaterial.resourceHandle();
-            pRenderEntry.renderPass = iPass;
-            pRenderEntry.pSceneNode = this;
-            pRenderEntry.userData = 0;
+    pProgram.activate();
+    pDevice.enableVertexAttribArray(0);
+    pDevice.enableVertexAttribArray(1);
+    pDevice.enableVertexAttribArray(2);
 
-            pDisplayManager.closeRenderQueue(pRenderEntry);
-        }
-    } 
+    if (pMesh[0].data.useAdvancedIndex()) {
+        pProgram.applyFloat('INDEX_INDEX_POSITION_OFFSET', 0);
+        pProgram.applyFloat('INDEX_INDEX_NORMAL_OFFSET', 1);
+        pProgram.applyFloat('INDEX_INDEX_FLEXMAT_OFFSET', 2);
+    }
+    
+    pProgram.applyMatrix4('model_mat', pModel.worldMatrix());
+    pProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
+    pProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
+    pProgram.applyMatrix3('normal_mat', pModel.normalMatrix());
+    pProgram.applyVector3('eye_pos', pCamera.worldPosition());
+        
+    pMesh.draw();
+
+    //------------------------------------------------
+
+    // var pDisplayManager = this._pEngine.pDisplayManager;
+    // var pMeshSubset = null;
+
+    // for (var i = 0, nSubsets = this._pMesh._pSubsets.length; i < nSubsets; i ++) {
+    //     pMeshSubset = this._pMesh._pSubsets[i];
+
+    //     if (!pMeshSubset.isRenderable()) {
+    //         continue;
+    //     }
+
+    //     var pEffect = pMeshSubset.effect;
+    //     var pMaterial = pMeshSubset.surfaceMaterial;
+    //     var nPasses = pEffect.totalPasses();
+
+    //     for (var iPass = 0; iPass < nPasses; iPass++) {
+    //         var pRenderEntry = pDisplayManager.openRenderQueue();
+    //         //TODO: использовать правильные параметры для занесения объекта в очередь.
+    //         pRenderEntry.pRendarableObject = pMeshSubset;
+    //         pRenderEntry.boneCount = 0;
+    //         pRenderEntry.detailLevel = 0;
+    //         pRenderEntry.modelType = a.RenderEntry.modelEntry;
+    //         pRenderEntry.hModel = this._hModelHandle
+    //         pRenderEntry.modelParamA = this._iModelFrameIndex;
+    //         pRenderEntry.modelParamB = pMaterial.resourceHandle();
+    //         pRenderEntry.renderPass = iPass;
+    //         pRenderEntry.pSceneNode = this;
+    //         pRenderEntry.userData = 0;
+
+    //         pDisplayManager.closeRenderQueue(pRenderEntry);
+    //     }
+    // } 
 };
 
 SceneModel.prototype.renderCallback = function (pEntry, iActivationFlags) {
@@ -470,24 +518,39 @@ SceneModel.prototype.renderCallback = function (pEntry, iActivationFlags) {
 };
 
 
-/**
- *
- * @tparam ModelResource pModel
- * @tparam Uint iFrameIndex
- */
-SceneModel.prototype.setModelResource = function (pModel, iFrameIndex) {
-    safe_release(this._pModelResource);
-    iFrameIndex = iFrameIndex || 0;
+// /**
+//  *
+//  * @tparam ModelResource pModel
+//  * @tparam Uint iFrameIndex
+//  */
+// SceneModel.prototype.setModelResource = function (pModel, iFrameIndex) {
+//     safe_release(this._pModelResource);
+//     iFrameIndex = iFrameIndex || 0;
 
-    this._nTotalBoneMatrices = 0;
-    this._iModelFrameIndex = iFrameIndex;
-    this._pModelResource = pModel;
+//     this._nTotalBoneMatrices = 0;
+//     this._iModelFrameIndex = iFrameIndex;
+//     this._pModelResource = pModel;
 
-    if (this._pModelResource) {
-        this._pModelResource.addRef();
+//     if (this._pModelResource) {
+//         this._pModelResource.addRef();
 
-        this.accessLocalBounds().eq(this.boundingBox());
+//         this.accessLocalBounds().eq(this.boundingBox());
+//     }
+// };
+
+SceneModel.prototype.addMesh = function (pMesh) {
+    'use strict';
+    if (!pMesh) {
+        return false;
     }
+    this._pMeshes[0] = pMesh;
+    return true;
+};
+
+SceneModel.prototype.findMesh = function (iMesh) {
+    'use strict';
+    iMesh = iMesh || 0;
+    return this._pMeshes[iMesh];
 };
 
 A_NAMESPACE(SceneModel);

@@ -22,12 +22,14 @@
  Functions with prefix <build> needs for creating real engine objects, that will be used by Engine.
  */
 
-function COLLADA (pEngine, sFilename, fnCallback) {
+function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
+    isFileContent = isFileContent || false;
+
     /* COMMON SETTINGS
      ------------------------------------------------------
      */
     var COLLADA_REDUCE_MESH_INDECES = 1;
-
+    var sFilename = isFileContent? 'unknown': sFile;
 
     /* COMMON FUNCTIONS
      ------------------------------------------------------
@@ -1315,21 +1317,71 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         return m4fAsset;
     }
 
-    var nTotalHierarhyNodes = 0;
 
-    function buildMesh (pGeometry) {
-        var pMeshData = pGeometry.pMesh;
-        var pMesh = new a.Mesh(pEngine, 
-            a.Mesh.VB_READABLE|a.Mesh.RD_ADVANCED_INDEX, 
-            pGeometry.id);
-        
-        for (var i = 0; i < pMeshData.pPolygons.length; ++ i) {
-            var pPolygons = pMeshData.pPolygons[i];
-            pMesh.createSubset('submesh-' + i, pPolygons.eType);
+    function buildMaterials (pMesh, pMeshNode) {
+        //trace(pMesh[0], pMeshNode, pLib['library_materials'], pLib['library_effects'], '<< debug');
+        var pMaterials = pMeshNode.pMaterials;
+        var pEffects = pLib['library_effects'];
+        var pInputs = pMaterials.pVertexInput;
+
+        for (var sMaterial in pMaterials) {
+            var pEffect = pEffects.effect[pMaterials[sMaterial].sUrl.substr(1)];
+            var pMaterial = pEffect.pProfileCommon.pTechnique.pValue;
+
+            for (var j = 0; j < pMesh.length; ++ j) {
+                var pSubMesh = pMesh[j];
+
+                if (pSubMesh.material.name === sMaterial) {
+                    pSubMesh.material = pMaterial;
+                    pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
+                }
+            }
+            trace('try to apply mat:', pMaterial);
         }
 
-        for (var i = 0; i < pMeshData.pPolygons.length; ++ i) {
-            var pPolygons = pMeshData.pPolygons[i];
+        return pMesh;
+    }
+    
+    /**
+     * Build a mesh according to node <mesh>.
+     * Cache all created meshes into <pMeshList>.
+     */
+    function buildMesh (pMeshNode, pMeshList) {
+        'use strict';
+        trace(pMeshNode);
+
+        var pGeometry = pMeshNode.pGeometry;
+        var pNodeData = pGeometry.pMesh;
+        var sMeshName = pGeometry.id;
+
+        if (!pNodeData) {
+            return null;
+        }
+        
+        if (pMeshList && pMeshList[sMeshName]) {
+            //mesh with same geometry data
+            return buildMaterials(
+                pMeshList[sMeshName].clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
+                pMeshNode);
+        }
+        
+        trace('--- building started ---');
+        var iBegin = a.now();
+
+        var pMesh = new a.Mesh(pEngine, 
+              0,//a.Mesh.VB_READABLE|a.Mesh.RD_ADVANCED_INDEX,  
+            sMeshName);
+        var pPolyGroup = pNodeData.pPolygons;
+        var pMeshData = pMesh.data;
+        
+        //creating subsets
+        for (var i = 0; i < pPolyGroup.length; ++ i) {
+            pMesh.createSubset('submesh-' + i, pPolyGroup[i].eType);
+        }
+
+        //filling data
+        for (var i = 0; i < pPolyGroup.length; ++ i) {
+            var pPolygons = pPolyGroup[i];
 
             for (var j = 0; j < pPolygons.pInput.length; ++ j) {
                 var sSemantic = pPolygons.pInput[j].sSemantic;
@@ -1338,31 +1390,34 @@ function COLLADA (pEngine, sFilename, fnCallback) {
                     var pDecl, pData = pPolygons.pInput[j].pArray;
                     switch (sSemantic) {
                         case a.DECLUSAGE.POSITION:
-                            pDecl = [VE_FLOAT3(a.DECLUSAGE.POSITION)];
-                            break;
                         case a.DECLUSAGE.NORMAL:
-                            pDecl = [VE_FLOAT3(a.DECLUSAGE.NORMAL)];
+                            pDecl = [VE_FLOAT3(sSemantic)];
                             break;
                         case a.DECLUSAGE.TEXCOORD:
-                            pDecl = [VE_FLOAT2(a.DECLUSAGE.TEXCOORD)];
+                            pDecl = [VE_FLOAT2(sSemantic)];
                             break;
                         default:
                             error('unsupported semantics used: ' + sSemantic);
                     }
 
-                    pMesh._pFactory.allocateData(pDecl, pData);
-                    // trace(pMesh._pDataBuffer.size, 'bytes', pMesh._pDataBuffer._iWidth, pMesh._pDataBuffer._iHeight);
+                    pMeshData.allocateData(pDecl, pData);
                 }
             }
         }
 
-        for (var i = 0; i < pMeshData.pPolygons.length; ++ i) {
-            var pPolygons = pMeshData.pPolygons[i];
+        trace('data filled:', a.now() - iBegin, 'ms');
+
+
+        //add indices to data
+        for (var i = 0; i < pPolyGroup.length; ++ i) {
+            var pPolygons = pPolyGroup[i];
             var pSubMesh = pMesh.getSubset(i);
-            var pSubMeshData = pSubMesh._pRenderData;
-            var pDecl = [];
+            var pSubMeshData = pSubMesh.data;
+            var pDecl = new Array(pPolygons.pInput.length);
+            var iIndex = 0;
+
             for (var j = 0; j < pPolygons.pInput.length; ++ j) {
-                pDecl.push(VE_FLOAT('INDEX_' + pPolygons.pInput[j].sSemantic));
+                pDecl[j] = VE_FLOAT(a.DECLUSAGE.INDEX + (iIndex ++));
             }
 
             pSubMeshData.allocateIndex(pDecl, new Float32Array(pPolygons.p));
@@ -1371,57 +1426,62 @@ function COLLADA (pEngine, sFilename, fnCallback) {
                 pSubMeshData.index(pPolygons.pInput[j].sSemantic, pDecl[j].eUsage);
             }
 
-            var sMat = pMeshData.pPolygons[i].sMaterial;
-            sMat = sMat.substr(0, sMat.length - 2);
-            sMat += '-fx';
-            if (sMat === 'shinny-fx') {
-                sMat = 'shiny-fx';
-            }
-            var pMat = pLib['library_effects'].effect[sMat].pProfileCommon.pTechnique.pValue;
-            pSubMesh.applyFlexMaterial(sMat, pMat);
+            pSubMesh.material.name = pPolygons.sMaterial;
+        }
+
+        pMesh.addFlexMaterial('default');
+        pMesh.setFlexMaterial('default');
+
+        trace('indices added:', a.now() - iBegin, 'ms');
+        trace('--- complete ---');
+
+        trace('loaded mesh<', sMeshName,'>:');
+        for (var i = 0; i < pMesh.length; ++i) {
+             trace('\tsubmesh<', pMesh[i].name,'>:', pMesh[i].data.getPrimitiveCount(), 'polygons');
         }
         
-/*        var pMat = new a.Material;
-        pMat.diffuse = new a.Color4f(1,1,1,0);
-        pMat.ambient = new a.Color4f(1,1,1,0);
-        pMat.shininess = 70;*/
-        //pMesh.addFlexMaterial('default'/*, pMat*/);
-        //pMesh.setFlexMaterial('default');
-
-/*        
-        for (var i = 0; i < pMesh._pSubMeshes.length; i++) {
-            trace(pMesh.getSubset(i)._pRenderData._pMap.toString());
-        };
-        */
-
-        if (!pMeshData) {
-            return null;
-        }
-
-        return pMesh;
+        pMeshList[sMeshName] = pMesh;
+        return buildMaterials(pMesh, pMeshNode);
     };
 
-    function buildHieraryNode (pNodes) {
+    function buildSceneNode (pNodes, pParentNode, pMeshList) {
+        pParentNode = pParentNode || null;
+
         if (!pNodes) {
             return null;
         }
 
+        var pSceneNodeSibling = null;
         var pNode = null;
+        var pSceneNode = null;
+        var pMesh = null;
 
         for (var i = pNodes.length - 1; i >= 0; i --) {
             pNode = pNodes[i];
-
-            buildHieraryNode(pNode.pChildNodes);
-
-            if (pNode.pGeometry) {
-                pMeshes.push(buildMesh(pNode.pGeometry.pGeometry));
+            
+            if (!pNode) {
+                continue;
             }
 
-            //Mat4.set(pNode.m4fTransform, pFrame.m4fTransformationMatrix);
-            //nTotalHierarhyNodes ++;
+            pSceneNodeSibling = pSceneNode;
+
+            if (pNode.pGeometry) {
+                pSceneNode = new a.SceneModel(pEngine);
+                pSceneNode.addMesh(buildMesh(pNode.pGeometry, pMeshList));
+            }
+            else {
+                pSceneNode = new a.SceneNode(pEngine);
+            }
+
+            pSceneNode.create();
+            pSceneNode.setInheritance(a.Scene.k_inheritAll);
+            pSceneNode.attachToParent(pParentNode)
+            Mat4.set(pNode.m4fTransform, pSceneNode.accessLocalMatrix());
+
+            buildSceneNode(pNode.pChildNodes, pSceneNode, pMeshList)
         }
 
-        return null;
+        return pSceneNode;
     }
 
     function buildMaterial (pMaterial) {
@@ -1429,8 +1489,7 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         return pMaterial;
     }
 
-    function buildHierarhy () {
-        //console.log('scene founded:', pScene.id, pScene);
+    function buildScene () {
         var m4fRootTransform = buildAssetMatrix();
 
         for (var i = 0; i < pScene.pNodes.length; i++) {
@@ -1438,12 +1497,12 @@ function COLLADA (pEngine, sFilename, fnCallback) {
             Mat4.mult(pNode.m4fTransform, m4fRootTransform);
         }
 
-        return buildHieraryNode(pScene.pNodes);
-    }
+        return buildSceneNode(pScene.pNodes, null, {});
+    };
 
     var pMeshes = [];
 
-    a.fopen(sFilename).read (function (sXMLData) {
+    function readCollada(sXMLData) {
         var pParser = new DOMParser();
         var pXMLRootNode = pParser.parseFromString(sXMLData, "application/xml");
         var pXMLCollada = pXMLRootNode.getElementsByTagName('COLLADA')[0];
@@ -1457,27 +1516,23 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         ];
 
         pAsset = COLLADAAsset(firstChild(pXMLCollada, 'asset'));
+       
         for (var i = 0; i < pTemplate.length; i++) {
             pLib[pTemplate[i].sLib] =
                 COLLADALibrary(firstChild(pXMLCollada, pTemplate[i].sLib), pTemplate[i].sElement, pTemplate[i].fn);
         }
 
         pScene = COLLADAScene(firstChild(pXMLCollada, 'scene'));
-        //fnCallback(buildFramList(), nTotalHierarhyNodes);
-        //buildHierarhy();
-        //trace(pLib['library_materials']);
-        //trace(pLib['library_effects']);
-        for (var i in pLib['library_geometries'].geometry) {
-            trace(pLib['library_geometries'].geometry[i]);
-            for(var j = 0; j < 1; j++){
-                pMeshes.push(buildMesh(pLib['library_geometries'].geometry[i]));
-                //trace("model", j);
-            }
-        }
 
-        fnCallback(pMeshes);
-    });
+        fnCallback(buildScene());
+    }
 
+    if (!isFileContent) {
+        a.fopen(sFilename).read(readCollada);
+    }
+    else {
+        readCollada(sFile);
+    }
 }
 
 a.COLLADA = COLLADA;

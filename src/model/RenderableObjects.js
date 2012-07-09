@@ -8,12 +8,12 @@
  * @ctor
  * @param {Engine} pEngine Engine instance.
  */
-function RenderableObject(pEngine) {
+function RenderableObject() {
     /**
      * @private
      * @type {ShaderManager}
      */
-	this._pEngine = pEngine;
+	this._pEngine = null;
 
     /**
      * @private
@@ -25,9 +25,8 @@ function RenderableObject(pEngine) {
      * Active snapshot, i.e. snapshot with active render method.
      * @type {RenderSnapshot}
      */
-	this._pActiveSnaphot = null;
+	this._pActiveSnapshot = null;
 }
-
 
 PROPERTY(RenderableObject, 'renderMethod',
     /**
@@ -35,8 +34,7 @@ PROPERTY(RenderableObject, 'renderMethod',
      * @return {RenderMethod} 
      */
     function () {
-        return this._pActiveSnaphot? 
-            this._pActiveSnaphot._pRenderMethod : null;
+        return this._pActiveSnapshot._pRenderMethod;
     },
     function (pRenderMethod) {
         this.switchRenderMethod(
@@ -45,24 +43,37 @@ PROPERTY(RenderableObject, 'renderMethod',
 
 PROPERTY(RenderableObject, 'effect',
     function () {
-        return this._pActiveSnaphot? 
-            this._pActiveSnaphot._pRenderMethod._pEffect : 
-            null;
+        return this._pActiveSnapshot._pRenderMethod._pEffect;
     });
 
 PROPERTY(RenderableObject, 'surfaceMaterial',
     function () {
-        return this._pActiveSnaphot? 
-            this._pActiveSnaphot._pRenderMethod._pMaterial : 
-            null;
+        return this._pActiveSnapshot._pRenderMethod._pMaterial;
     });
+
+PROPERTY(RenderableObject, 'material',
+    function () {
+        return this.surfaceMaterial.material;
+    });
+
+RenderableObject.prototype.getEngine = function() {
+    return this._pEngine;
+};
+
+RenderableObject.prototype.setup = function(pEngine, sDefaulMethodName) {
+    this._pEngine = pEngine;
+
+    if (this.addRenderMethod(sDefaulMethodName) < 0 || this.switchRenderMethod(0) === false) {
+        error('cannot add & switch render method to default');
+    }
+};
 
 /**
  * @destructor
  */
 RenderableObject.prototype.destructor = function() {
     this._pShaderManager = null;
-    this._pActiveSnaphot = null;
+    this._pActiveSnapshot = null;
     safe_delete_array(this._pSnapshots);
 };
 
@@ -82,13 +93,21 @@ RenderableObject.prototype.destructor = function() {
  * @return {Uint} Number of added render method.
  */
 RenderableObject.prototype.addRenderMethod = function(pRenderMethod, sName) {
-	var pRenderSnapshot = new a.RenderSnapshot;
+    var pRenderSnapshot = new a.RenderSnapshot;
+
+    if (arguments.length < 2) {
+        sName = arguments[0];
+        pRenderMethod = this.getEngine().displayManager().renderMethodPool().createResource('render-method-' + (sName || '') + a.sid());
+        pRenderMethod.setMaterial();
+        pRenderMethod.setEffect();
+    }
+
 
     debug_assert(pRenderMethod.getEngine() === this._pEngine,
         'Render method should belong to the same engine instance that the renderable object.');
 
     pRenderSnapshot.method = pRenderMethod;
-    pRenderSnapshot.name = sName;
+    pRenderSnapshot.name = sName || pRenderMethod.findResourceName();
 
     for (var i = 0; i < this._pSnapshots.length; i++) {
         if (this._pSnapshots[i] === null) {
@@ -97,7 +116,7 @@ RenderableObject.prototype.addRenderMethod = function(pRenderMethod, sName) {
         }
     };
 
-    this._pSnapshots[i].push(pRenderSnapshot);
+    this._pSnapshots.push(pRenderSnapshot);
     return this._pSnapshots.length - 1;
 };
 
@@ -127,7 +146,7 @@ RenderableObject.prototype.findRenderMethod = function() {
         iMethod = Math.abs(this._pSnapshots.length + iMethod);
     }
 
-    if (iMethod < this._pSnapshots.length) {
+    if (iMethod >= this._pSnapshots.length) {
         return -1;
     }
 
@@ -150,12 +169,12 @@ RenderableObject.prototype.findRenderMethod = function() {
  */
 RenderableObject.prototype.switchRenderMethod = function() {
     var iSnapshot = this.findRenderMethod(arguments[0]);
-    
+
     if (iSnapshot < 0) {
         return false;
     }
 
-    this._pActiveSnaphot = this._pSnapshots[iSnapshot];
+    this._pActiveSnapshot = this._pSnapshots[iSnapshot];
     return true;
 };
 
@@ -191,7 +210,7 @@ RenderableObject.prototype.removeRenderMethod = function() {
  * @return {Boolean}
  */
 RenderableObject.prototype.isReadyForRender = function() {
-    return this._pActiveSnaphot.isReady();
+    return this._pActiveSnapshot.isReady();
 };
 
 /**

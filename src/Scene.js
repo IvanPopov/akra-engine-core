@@ -759,7 +759,7 @@ SceneNode.prototype.createSubNode = function () {
             node._pSubNodeGroupOwner = this;
             return node;
         default:
-            var node = new cSceneNode();
+            var node = new a.SceneNode();
             node.create();
             node._pSubNodeGroupOwner = this;
             return node;

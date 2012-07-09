@@ -30,8 +30,8 @@ Enum([
  * @ctor
  * Constructor.
  */
-function MaterialBase () {
-  this._sName = null;
+function MaterialBase (sName) {
+  this._sName = sName || 'unknown';
   this._iID = 0;
 }
 
@@ -117,82 +117,16 @@ MaterialBase.prototype.toDefault = function() {
   'use strict';
 
   this.diffuse = new a.Color4f(.5, 1.);
-  this.ambient = new a.Color4f(.55, 1.);
+  this.ambient = new a.Color4f(.8, 1.);
+  this.specular = new a.Color4f(.5, 1.)
   this.shininess = 55.;
 };
-
-// /**
-//  * Get diffuse property of material.
-//  */
-// PROPERTY(MaterialBase, a.Material.DIFFUSE, 
-//   function () {return this.getProperty(a.Material.DIFFUSE);},
-//   function (c4fColor) {this.setProperty(a.Material.DIFFUSE);});
-// /**
-//  * Get ambient property of material.
-//  */
-// PROPERTY(MaterialBase, a.Material.AMBIENT, 
-//   function () {return this.getProperty(a.Material.AMBIENT);},
-//   function (c4fColor) {this.setProperty(a.Material.AMBIENT);});
-// /**
-//  * Get specular property of material.
-//  */
-// PROPERTY(MaterialBase, a.Material.SPECULAR, 
-//   function () {return this.getProperty(a.Material.SPECULAR);},
-//   function (c4fColor) {this.setProperty(a.Material.SPECULAR);});
-// /**
-//  * Get EMISSIVE property of material.
-//  */
-// PROPERTY(MaterialBase, a.Material.EMISSIVE, 
-//   function () {return this.getProperty(a.Material.EMISSIVE);},
-//   function (c4fColor) {this.setProperty(a.Material.EMISSIVE);});
-
-// /**
-//  * Get shininess property of material.
-//  */
-// PROPERTY(MaterialBase, a.Material.SHININESS, 
-//   function () {return this.getProperty(a.Material.SHININESS);},
-//   function (c4fColor) {this.setProperty(a.Material.SHININESS);});
-
-// /**
-//  * Get reflective property of material.
-//  */
-// PROPERTY(MaterialBase, a.Material.REFLECTIVE, 
-//   function () {return this.getProperty(a.Material.REFLECTIVE);},
-//   function (c4fColor) {this.setProperty(a.Material.REFLECTIVE);});
-
-// /**
-//  * Get reflectivity property of material.
-//  */
-// PROPERTY(MaterialBase, a.Material.REFLECTIVITY, 
-//   function () {return this.getProperty(a.Material.REFLECTIVITY);},
-//   function (c4fColor) {this.setProperty(a.Material.REFLECTIVITY);});
-
-// /**
-//  * Get transparent property of material.
-//  */
-// PROPERTY(MaterialBase, a.Material.TRANSPARENT, 
-//   function () {return this.getProperty(a.Material.TRANSPARENT);},
-//   function (c4fColor) {this.setProperty(a.Material.TRANSPARENT);});
-
-// /**
-//  * Get transparentcy property of material.
-//  */
-// PROPERTY(MaterialBase, a.Material.TRANSPARENCY, 
-//   function () {return this.getProperty(a.Material.TRANSPARENCY);},
-//   function (c4fColor) {this.setProperty(a.Material.TRANSPARENCY);});
-
-// /**
-//  * Get "index of refraction" property of material.
-//  */
-// PROPERTY(MaterialBase, a.Material.INDEXOFREFRACTION, 
-//   function () {return this.getProperty(a.Material.INDEXOFREFRACTION);},
-//   function (c4fColor) {this.setProperty(a.Material.INDEXOFREFRACTION);});
 
 /**
  * Independent Material class.
  * @ctor
  */
-function Material () {
+function Material (sName) {
    A_CLASS;
    /**
     * @type ColorValue
@@ -265,7 +199,6 @@ function MeshMaterial (sName, pVertexData) {
     A_CLASS;
 
     this._pData = pVertexData;
-    this.name = sName;
 }
 
 EXTENDS(MeshMaterial, a.MaterialBase);
