@@ -120,7 +120,7 @@ RenderData.prototype.setup = function(pFactory, iId, ePrimType, eOptions) {
     this._pFactory = pFactory;
     this._iId = iId;
     this._pMap = new a.BufferMap(pFactory.getEngine());
-    this._pMap.primType = ePrimType || a.PRIMTYPE.TRIANGLELIST;
+    this._pMap.primType = ifndef(ePrimType,a.PRIMTYPE.TRIANGLELIST);
     this._pMaps.push(this._pMap);
     this._pMap._pI2IDataCache = {};
 
@@ -687,6 +687,7 @@ RenderData.prototype.draw = function () {
             return;
     }
 
+    
     this._pFactory._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pMap);
     return this._pMap.draw();
 };

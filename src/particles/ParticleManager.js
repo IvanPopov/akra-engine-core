@@ -77,12 +77,20 @@ function Emitter(pEngine,pParticleManager,pDataSubset,eType,nParticles,iId){
 	this._nStep = 0; //номер текущего шага по времени
 
 	this._nPreviousTime = 0; //реальное время в миллисекундах, на предыдущем шаге
-	this._nCurrentTime = 0; //еальное время в миллисекундах на текущем шаге
+	this._nCurrentTime = 0; //реальное время в миллисекундах на текущем шаге
+
+	this._pPrograms = []; //временная мера, потом все будет через renderMethod
 
 	this._setup();
 }
 
 EXTENDS(Emitter, a.SceneObject, a.RenderableObject);
+
+//временная функция потом все будет делаться через renderMethod
+Emitter.prototype.setProgram = function(pProgram){
+	'use strict';
+	this._pPrograms.push(pProgram);
+};
 
 Emitter.prototype._setup = function() {
 	'use strict';
@@ -192,13 +200,14 @@ Emitter.prototype.setParticleData = function(pVertexDecl,pData){
 			if(this._pParticleData == null){
 				var iDataLocation = this._pDataSubset.allocateData(pVertexElement,pElementData);
 				this._pParticleData = this._pDataSubset.getData(iDataLocation);
-				this._pParticleDataDeclaration = this._pParticleData.getVertexDeclaration();			
+				//this._pParticleDataDeclaration = this._pParticleData.getVertexDeclaration();			
 			}
 			else{
 				this._pParticleData.extend(pVertexElement,pElementData);
 			}
 		}
 	}
+	//trace(this._pParticleData.getVertexDeclaration(),this._pParticleDataDeclaration);
 };
 
 /**
@@ -255,7 +264,7 @@ Emitter.prototype.setObjectIndex = function(pAttrDecl,pData){
 		error("используемый тип частиц объектом не является");
 		return;
 	}
-
+	//trace(pData.length);
 	////////////
 	
 	pData = new Uint8Array(pData.buffer);
@@ -291,8 +300,7 @@ Emitter.prototype.objectIndex = function(iData,eSemantic){
 	}
 
 	////////////
-	
-	return this._pDataSubset.index(iData,eSemantic);
+	return this._pDataSubset.index(iData,eSemantic);	
 }
 
 /**
@@ -331,6 +339,10 @@ Emitter.prototype._generateIndices = function(){
 		pUpdateIndex[i] = i;
 	}
 
+	var iPos = this._pDataSubset.getDataLocation('PARTICLE_POSITION');
+	var pDeclaration = this._pParticleData.getVertexDeclaration();
+	var iStride = pDeclaration.iStride;
+
 	if(this._eType == a.EMITTER.OBJECT){
 		this._pDataSubset.selectIndexSet(this._iDrawMapIndex);
 		this._nDrawIndexLength = this._pDataSubset.getPrimitiveCount()*3;//пока поддерживается только TRIANGLELIST
@@ -340,19 +352,32 @@ Emitter.prototype._generateIndices = function(){
 		var nParticleDrawLength = this._nDrawIndexLength/this._nParticles;
 		for(var i=0;i<this._nParticles;i++){
 			for(var j=0;j<nParticleDrawLength;j++){
+				//pDrawIndex[i*nParticleDrawLength + j] = iPos + i*iStride;
 				pDrawIndex[i*nParticleDrawLength + j] = i;
 			}
 		}
 	}
+
+	
+
 	this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
 	this._pDataSubset.allocateIndex([VE_FLOAT('UPDATE_INDEX')],pUpdateIndex);
-	this._pDataSubset.index(this._pDataSubset.getDataLocation('PARTICLE_POSITION'),'UPDATE_INDEX');
+	this._pDataSubset.index(iPos,'UPDATE_INDEX');
+
+	trace('position attribute--->',pDrawIndex.length);
 
 	if(this._etype != a.EMITTER.MESH){
 		this._pDataSubset.selectIndexSet(this._iDrawMapIndex);
-		this._pDataSubset.allocateAttribute([VE_FLOAT('INDEX_PARTICLE_POSITION')],pDrawIndex);
+		//this._pDataSubset.allocateAttribute([VE_FLOAT('INDEX_PARTICLE_POSITION')],pDrawIndex);
+		//trace(pDrawIndex);
+		this._pDataSubset.allocateIndex([VE_FLOAT('INDEX_PARTICLE_POSITION')],pDrawIndex);
+		this._pDataSubset.index(iPos,'INDEX_PARTICLE_POSITION');
 	}
 
+	// var pRenderData = this._pDataSubset;
+	// iPos = pRenderData.getDataLocation('PARTICLE_POSITION');
+	// pRenderData.selectIndexSet('draw');
+	// pRenderData.index(iPos, )
 };
 
 PROPERTY(Emitter,'updateRoutine',
@@ -401,15 +426,34 @@ Emitter.prototype._update = function(){
 	this._nStep++;//увеличиваем номер шага по времени
 
 	this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
+	
+	//trace(this._pDataSubset.toString());
+
+	pProgram = this._pPrograms[0];
+
+	this._pEngine.pDevice.enableVertexAttribArray(0);
+
+	pProgram.activate();
 
 	//TODO:
 	//цикл по passes в update renderMethod-е
+	var pDeclaration = this._pParticleData.getVertexDeclaration();
+	pProgram.applyFloat('INDEX_PARTICLE_VELOCITY_OFFSET',pDeclaration.element('PARTICLE_VELOCITY').iOffset);
 
-	this._fnUpdate(this._fDt,this._fTime,this._nStep,'velocity');
-	this._pDataSubset._pMap.draw();
+	this._fnUpdate(this._fDt,this._fTime,this._nStep,pProgram,'velocity');
 
-	this._fnUpdate(this._fDt,this._fTime,this._nStep,'position');
-	this._pDataSubset._pMap.draw();
+	//trace(this._pDataSubset);
+
+	this._pDataSubset.draw();
+
+	pProgram = this._pPrograms[1];
+	pProgram.activate();
+
+	pProgram.applyFloat('INDEX_PARTICLE_VELOCITY_OFFSET',pDeclaration.element('PARTICLE_VELOCITY').iOffset);
+	pProgram.applyFloat('INDEX_PARTICLE_POSITION_OFFSET',pDeclaration.element('PARTICLE_POSITION').iOffset);
+
+	this._fnUpdate(this._fDt,this._fTime,this._nStep,pProgram,'position');
+	//this._pDataSubset._pMap.draw();
 };
 
 /**
@@ -426,8 +470,18 @@ Emitter.prototype.render = function() {
 
 Emitter.prototype.renderCallback = function() {
 	'use strict';
+	return;
+	this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
+	var pDeclaration = this._pParticleData.getVertexDeclaration();
+	var iOffset = pDeclaration.element('PARTICLE_POSITION').iOffset
+
 	this._pDataSubset.selectIndexSet(this._iDrawMapIndex);
-	this._fnDraw(this._fDt,this._fTime,this._nStep,'draw');
+	pProgram = this._pPrograms[this._pPrograms.length - 1];
+	pProgram.activate();
+
+	pProgram.applyFloat('INDEX_PARTICLE_POSITION_OFFSET',iOffset);
+	this._fnDraw(this._fDt,this._fTime,this._nStep,pProgram,'draw');
+	//trace(this._pDataSubset.toString());
 	this._pDataSubset.draw();
 };
 
