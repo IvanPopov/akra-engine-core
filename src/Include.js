@@ -31,13 +31,8 @@ Include('Scene.js');
 Include('objects/Camera.js');
 Include('Tree.js');
 
-/* Shaders */
 Include('shaders/');
-
-//Include('effects/');
-Ifdef(DEV_BUILD)
-Include('model/Material.js');
-Endif();
+Include('materials/');
 
 Include('resources/SurfaceMaterial.js');
 Include('resources/EffectResource.js');
@@ -51,21 +46,11 @@ Include('resources/buffers/');
 
 Include('resources/Img.js');
 Include('resources/Texture.js');
-
 Include('resources/RenderMethod.js');
 
-Ifdef(DEV_BUILD)
-Include('model/RenderData.js');
-Include('model/RenderDataFactory.js');
-Include('model/RenderSnapshot.js');
-Include('model/RenderableObjects.js');
-Include('model/MeshSubset.js');
-Include('model/Mesh2.0.js');
-Include('model/ProgressiveMesh.js');
-Elseif();
-Include('model/');
-Endif();
 
+Include('render/');
+Include('model/');
 Include('resources/ModelResource.js');
 
 Include('particles/');
