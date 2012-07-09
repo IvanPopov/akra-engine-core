@@ -389,19 +389,25 @@ SceneModel.prototype.render = function () {
     if (pMesh[0].data.useAdvancedIndex()) {
         pProgram = pEngine.pDrawMeshI2IProg;
     }
+    else if (pMesh[0].surfaceMaterial.totalTextures) {
+        pProgram = pEngine.pDrawMeshTexProg;
+    }
     else {
         pProgram = pEngine.pDrawMeshProg;
+        
     }
 
     pProgram.activate();
-    pDevice.enableVertexAttribArray(0);
-    pDevice.enableVertexAttribArray(1);
-    pDevice.enableVertexAttribArray(2);
+    
 
     if (pMesh[0].data.useAdvancedIndex()) {
         pProgram.applyFloat('INDEX_INDEX_POSITION_OFFSET', 0);
         pProgram.applyFloat('INDEX_INDEX_NORMAL_OFFSET', 1);
         pProgram.applyFloat('INDEX_INDEX_FLEXMAT_OFFSET', 2);
+    }
+
+    if (pMesh[0].surfaceMaterial.totalTextures) {
+        
     }
     
     pProgram.applyMatrix4('model_mat', pModel.worldMatrix());

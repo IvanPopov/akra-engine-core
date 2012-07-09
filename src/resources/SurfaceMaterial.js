@@ -29,6 +29,28 @@ function SurfaceMaterial (pEngine) {
              textureFileVersion = 1
          ], SURFACEMATERIAL_CONSTANTS, a.SurfaceMaterial);
 
+    Enum([
+        TEXTURE0 = 0,
+        TEXTURE1,
+        TEXTURE2,
+        TEXTURE3,
+        TEXTURE4,
+        TEXTURE5,
+        TEXTURE6,
+        TEXTURE7,
+        TEXTURE8,
+        TEXTURE9,
+        TEXTURE10,
+        TEXTURE11,
+        TEXTURE12,
+        TEXTURE13,
+        TEXTURE14,
+        TEXTURE15,
+        DIFFUSE = a.SurfaceMaterial.TEXTURE1,
+        AMBIENT,
+        SPECULAR,
+        EMISSIVE
+        ], SURFACEMATERIAL_TEXTURES, a.SurfaceMaterial);
 
    /**
     * @private

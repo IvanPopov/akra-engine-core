@@ -413,8 +413,8 @@ Ifdef (TEXTURE_REDRAW)
         var pCopyProgram = statics._pCopyProgram;
         pCopyProgram.activate();
 
-        pDevice.disableVertexAttribArray(1);
-        pDevice.disableVertexAttribArray(2);
+        // pDevice.disableVertexAttribArray(1);
+        // pDevice.disableVertexAttribArray(2);
 
         var pCopyData = new Float32Array([-1,-1,-1,1,1,-1,1,1]);
 
@@ -446,9 +446,9 @@ Endif ();
         pProgram = statics._pUpdateProgram;
         pProgram.activate();
 
-        pDevice.enableVertexAttribArray(0);
-        pDevice.enableVertexAttribArray(1);
-        pDevice.enableVertexAttribArray(2);
+        // pDevice.enableVertexAttribArray(0);
+        // pDevice.enableVertexAttribArray(1);
+        // pDevice.enableVertexAttribArray(2);
         
         pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
             pDevice.TEXTURE_2D, this._pTexture, 0);

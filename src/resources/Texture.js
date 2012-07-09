@@ -802,8 +802,8 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
 
     pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pRenderIndexBuffer);
     pDevice.vertexAttribPointer(pProgram._pAttributesByName['SERIALNUMBER'].iLocation, 1, pDevice.FLOAT, false, 0, 0);
-    pDevice.disableVertexAttribArray(1);
-    pDevice.disableVertexAttribArray(2);
+    // pDevice.disableVertexAttribArray(1);
+    // pDevice.disableVertexAttribArray(2);
 
     pDevice.viewport(0, 0, iWidth, iHeight);
     pDevice.drawArrays(0, 0, pRenderIndexData.length);

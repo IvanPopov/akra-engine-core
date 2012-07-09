@@ -96,6 +96,7 @@ function RenderData() {
      * @type {Int}
      */
     this._iIndexSet = 0;
+
 }
 
 EXTENDS(RenderData, a.ReferenceCounter);
@@ -289,6 +290,7 @@ RenderData.prototype.allocateAttribute = function (pAttrDecl, pData) {
         }
 
         this._pAttribData = this._pAttribBuffer.allocateData(pAttrDecl, pData);
+        this._pIndicesArray[this._iIndexSet].pAttribData = this._pAttribData;
         this._pMap.flow(this._pAttribData);
         return this._pAttribData !== null;
     }
@@ -363,7 +365,7 @@ RenderData.prototype._createIndex = function (pAttrDecl, pData) {
 
     this._pIndexData = this._pIndexBuffer.allocateData(pAttrDecl, pData);
     this._pIndexData._iAdditionCache = {};
-
+    this._pIndicesArray[this._iIndexSet].pIndexData = this._pIndexData;
     return this._pIndexData !== null;
 };
 
@@ -394,7 +396,7 @@ Endif ();
     if (!this._pIndexData) {
         return this._createIndex(pAttrDecl, pData);
     }
-    
+
     if (!this._pIndexData.extend(pAttrDecl, pData)) {
         trace('invalid data for allocation:', arguments);
         warning('cannot allocate index in data subset..');
@@ -432,9 +434,10 @@ RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType, sName
     //     return false;
     // }
 
+
     if (usePreviousDataSet) {
         this._pMap = this._pMap.clone(false);
-        
+
         if (!this._pMap) {
             return -1;
         }
@@ -444,7 +447,7 @@ RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType, sName
         this._pAttribData = null;
     }
 
-    this._pMap.primType = ePrimType || a.PRIMTYPE.TRIANGLELIST;
+    this._pMap.primType = ifndef(ePrimType, a.PRIMTYPE.TRIANGLELIST);
     this._pIndexData = null;
     this._iIndexSet = this._pIndicesArray.length;
     this._pIndicesArray.push({
@@ -463,7 +466,9 @@ RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType, sName
  * @return {Boolean}      Result.
  */
 RenderData.prototype.selectIndexSet = function(iSet) {
+
     var pIndexSet = this._pIndicesArray[iSet];
+
     if (pIndexSet) {
         this._pMap = pIndexSet.pMap;
         this._pIndexData = pIndexSet.pIndexData;
@@ -694,6 +699,7 @@ RenderData.prototype.draw = function () {
     if (this._pIndexData === null) {
             return;
     }
+
 
     this._pFactory._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pMap);
     return this._pMap.draw();

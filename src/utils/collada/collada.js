@@ -1225,20 +1225,28 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
     //================================================================
 
     function buildMaterials (pMesh, pMeshNode) {
+        'use strict';
         
         var pMaterials = pMeshNode.pMaterials;
         var pEffects = pLib['library_effects'];
-        var pInputs = pMaterials.pVertexInput;
-        trace(pMaterials, '<< pMaterials');
+
         for (var sMaterial in pMaterials) {
+            var pInputs = pMaterials[sMaterial].pVertexInput;
             var pEffect = pEffects.effect[pMaterials[sMaterial].sUrl.substr(1)];
             var pMaterial = pEffect.pProfileCommon.pTechnique.pValue;
+            trace(pInputs, '<< inputs');
+
+            for (var j = 0; j < pInputs.length;++ j) {
+                var pVertexInput = pInputs[j];
+                trace(pVertexInput, '<< pVertexInput');
+            }
 
             for (var j = 0; j < pMesh.length; ++ j) {
                 var pSubMesh = pMesh[j];
 
                 if (pSubMesh.material.name === sMaterial) {
-                    pSubMesh.material = pMaterial;
+                    pSubMesh.material.value = pMaterial;
+                    //FIXME: remove flex material setup(needs only demo with flexmats..)
                     pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
                 }
             }
@@ -1391,11 +1399,6 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         }
 
         return pSceneNode;
-    }
-
-    function buildMaterial (pMaterial) {
-        TODO('build material');
-        return pMaterial;
     }
 
     function buildScene () {

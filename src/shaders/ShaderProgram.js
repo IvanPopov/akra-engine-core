@@ -15,15 +15,29 @@ function loadGLSLSource(sPath, sFilename) {
     return {vertex: sShader[0], fragment: sShader[1]};
 }
 
-function loadProgram(pEngine, sPath) {
+function loadProgram(pEngine, sPath, pFlags) {
     var pPath = sPath.split('/'); 
     var sProg = pPath.pop();
+    var sDefine = '';
+
     sPath = pPath.join('/');
+    
     if (sPath.length) {
         sPath += '/';
     }
+
+    if (pFlags) {
+        for (var sFlag in pFlags) {
+            sDefine = '#define ' + sFlag + ' ' + pFlags[sFlag] + '\n';
+        }
+    }
+
     pShaderSource = loadGLSLSource(sPath, sProg);
-    pProgram = pEngine.displayManager().shaderProgramPool().createResource(sProg);
+    pProgram = pEngine.displayManager().shaderProgramPool().createResource(sProg + sDefine);
+
+    pShaderSource.vertex = sDefine + pShaderSource.vertex;
+    pShaderSource.fragment = sDefine + pShaderSource.fragment;
+
     pProgram.create(pShaderSource.vertex, pShaderSource.fragment, true);
     return pProgram;
 }
@@ -200,6 +214,12 @@ function GLSLProgram(pEngine) {
 }
 
 a.extend(GLSLProgram, ShaderProgram);
+
+GLSLProgram.prototype.getAttribCount = function () {
+    'use strict';
+    
+    return this._nAttrsUsed;
+};
 
 /**
  * Is this program active now?
@@ -421,7 +441,7 @@ GLSLProgram.prototype.setup = function (pVertexDeclaration, pUniformList) {
         iAttrUsed++;
         pAttrsByName[sAttrName] = pAttr;
 
-        pDevice.enableVertexAttribArray(iLocation);
+        //pDevice.enableVertexAttribArray(iLocation);
     }
 
     this._nAttrsUsed = iAttrUsed;
@@ -549,6 +569,8 @@ GLSLProgram.prototype.applyBuffer = function (pVertexData) {
         pAttr.pCurrentData = pVertexData;
     }
 };
+
+
 
 GLSLProgram.prototype.applyVector2 = function (sName) {
     var pDevice = this._pDevice;
