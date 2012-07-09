@@ -20,7 +20,17 @@ function ParticleManager(pEngine){
 	this._pDataFactory = new a.RenderDataFactory(pEngine);
 	this._pDataFactory.dataType = a.RenderData;
 	this._pDataFactory.setup(a.RenderDataFactory.VB_READABLE);
+
+	this._pFramebuffer = null;
+
+	this._setup();
 };
+
+ParticleManager.prototype._setup = function(){
+	'use strict';
+	var pDevice = this._pEngine.pDevice;
+	this._pFramebuffer = pDevice.createFramebuffer();
+}
 
 ParticleManager.prototype.createEmitter = function(eType,nParticles){
 	'use strict';
@@ -141,16 +151,16 @@ Emitter.prototype.setParticleData = function(pVertexDecl,pData){
 			var pVertexElement = pVertexDeclaration[i];
 			var iSize = pVertexElement.iSize;
 			var pElementData;
+			var iOffset = pVertexElement.iOffset;
 
 			if(pVertexElement.eUsage == 'PARTICLE_POSITION'
-				|| pVertexElement.eUsage == 'PARTICLE_VELOCITY'){
+				|| pVertexElement.eUsage == 'PARTICLE_VELOCITY' || 1){
 
 				debug_assert(pVertexElement.eType == a.DTYPE.FLOAT,"позиции и скорости должна быть типа float");
 				debug_assert(pVertexElement.nCount <= nElementsPerPixel,"длина скорости и позиции не должна превышать количества элементов на пиксель в текстуре");
 
 				var pElementData; 
 				if(pVertexElement.nCount < nElementsPerPixel){
-					var iOffset = pVertexElement.iOffset;
 					pElementData = new Uint8Array(4*this._nParticles*nElementsPerPixel);//умножить на 4 так как это float32 
 
 					for(var j=0;j<this._nParticles;j++){
@@ -172,29 +182,20 @@ Emitter.prototype.setParticleData = function(pVertexDecl,pData){
 					}
 				}
 				if(pVertexElement.eUsage == 'PARTICLE_POSITION'){
-					if(nElementsPerPixel == 4){
-						pVertexElement = [VE_VEC4('PARTICLE_POSITION')];
-					}
-					else if(nElementsPerPixel == 3){
-						pVertexElement = [VE_VEC3('PARTICLE_POSITION')];
-					}
+					pVertexElement = [VE_VEC4('PARTICLE_POSITION')];
+				}
+				else if(pVertexElement.eUsage == 'PARTICLE_VELOCITY'){
+					pVertexElement = [VE_VEC4('PARTICLE_VELOCITY')];
 				}
 				else{
-					if(nElementsPerPixel == 4){
-						pVertexElement = [VE_VEC4('PARTICLE_VELOCITY')];
-					}
-					else if(nElementsPerPixel == 3){
-						pVertexElement = [VE_VEC3('PARTICLE_VELOCITY')];
-					}
+					pVertexElement = [VE_VEC4(pVertexElement.eUsage)];	
 				}
 			}
 			else{
 				pElementData = new Uint8Array(iSize*this._nParticles);
 				for(var j=0;j<this._nParticles;j++){
 					var pSubData = pData.subarray(j*iStride + iOffset,j*iStride + iOffset + iSize);
-					for(var k=0;k<iSize;k++){
-						pElementData[iSize*j + k] = pSubData[k];
-					}
+					pElementData.set(pSubData,iSize*j);
 				}
 			}
 			if(this._pParticleData == null){
@@ -207,6 +208,7 @@ Emitter.prototype.setParticleData = function(pVertexDecl,pData){
 			}
 		}
 	}
+	//trace(this._pParticleData.toString());
 	//trace(this._pParticleData.getVertexDeclaration(),this._pParticleDataDeclaration);
 };
 
@@ -221,7 +223,7 @@ Emitter.prototype.setObjectData = function(pVertexDecl,pData){
 	}
 
 	if(!this._bParticleDataSetted){
-		this._iDrawMapIndex = this._pDataSubset.addIndexSet(true,a.PRIMTYPE.TRIANGLELIST);
+		this._iDrawMapIndex = this._pDataSubset.addIndexSet(true, a.PRIMTYPE.TRIANGLELIST, 'draw');
 		this._bParticleDataSetted = true;
 	}
 
@@ -358,20 +360,20 @@ Emitter.prototype._generateIndices = function(){
 		}
 	}
 
-	
-
 	this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
-	this._pDataSubset.allocateIndex([VE_FLOAT('UPDATE_INDEX')],pUpdateIndex);
-	this._pDataSubset.index(iPos,'UPDATE_INDEX');
-
-	trace('position attribute--->',pDrawIndex.length);
+	this._pDataSubset.allocateIndex([VE_FLOAT('INDEX_UPDATE')],pUpdateIndex);
+	this._pDataSubset.index(iPos,'INDEX_UPDATE');
 
 	if(this._etype != a.EMITTER.MESH){
 		this._pDataSubset.selectIndexSet(this._iDrawMapIndex);
 		//this._pDataSubset.allocateAttribute([VE_FLOAT('INDEX_PARTICLE_POSITION')],pDrawIndex);
 		//trace(pDrawIndex);
-		this._pDataSubset.allocateIndex([VE_FLOAT('INDEX_PARTICLE_POSITION')],pDrawIndex);
-		this._pDataSubset.index(iPos,'INDEX_PARTICLE_POSITION');
+		if (!this._pDataSubset.allocateIndex([VE_FLOAT('INDEX_PARTICLE')],pDrawIndex)) {
+			error('cannot allocate index: INDEX_PARTICLE');
+		}
+		//trace(this._pDataSubset.toString())
+
+		this._pDataSubset.index(iPos,'INDEX_PARTICLE');
 	}
 
 	// var pRenderData = this._pDataSubset;
@@ -407,7 +409,6 @@ PROPERTY(Emitter,'drawRoutine',
  */
 Emitter.prototype.update = function(){
 	'use strict';
-
 	if(this._isActive && this._fnUpdate!=null){
 		this._update();
 	}
@@ -419,41 +420,72 @@ Emitter.prototype.update = function(){
 
 Emitter.prototype._update = function(){
 	'use strict';
+	var pDevice = this._pEngine.pDevice;
+	var pFramebuffer = this._pParticleManager._pFramebuffer;
+
+	pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,pFramebuffer);
+	
+	
+	var pDataBuffer = this._pParticleManager._pDataFactory._pDataBuffer;
+	pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER,pDevice.COLOR_ATTACHMENT0,pDevice.TEXTURE_2D,pDataBuffer._pTexture,0);
+	var iHeight = pDataBuffer.height;
+	var iWidth = pDataBuffer.width;
+	
+	pDevice.viewport(0,0,iWidth,iHeight);
+
 	this._fTime += this._fDt;
 	this._nCurrentTime = a.now();
 	this._fDt = (this._nCurrentTime - this._nPreviousTime)/1000;
 	this._nPreviousTime = this._nCurrentTime;
 	this._nStep++;//увеличиваем номер шага по времени
 
+	var pDeclaration = this._pParticleData.getVertexDeclaration();
+
+	var iVelocityOfsset = pDeclaration.element('PARTICLE_VELOCITY').iOffset/4.;
+	var iPositionOffset = pDeclaration.element('PARTICLE_POSITION').iOffset/4.;
+	var iLiveTimeOffset = pDeclaration.element('LIVE_TIME').iOffset/4.;
+	//trace(pDeclaration);
+	//console.error('-----------------><--------------------');
+
+
 	this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
 	
 	//trace(this._pDataSubset.toString());
 
+	//velocity update
+
 	pProgram = this._pPrograms[0];
-
-	this._pEngine.pDevice.enableVertexAttribArray(0);
-
 	pProgram.activate();
 
 	//TODO:
 	//цикл по passes в update renderMethod-е
-	var pDeclaration = this._pParticleData.getVertexDeclaration();
-	pProgram.applyFloat('INDEX_PARTICLE_VELOCITY_OFFSET',pDeclaration.element('PARTICLE_VELOCITY').iOffset);
+	
+	pProgram.applyFloat('INDEX_PARTICLE_VELOCITY_OFFSET',iVelocityOfsset);
+	pProgram.applyFloat('INDEX_PARTICLE_POSITION_OFFSET',iPositionOffset);
+	pProgram.applyFloat('INDEX_LIVE_TIME_OFFSET',iLiveTimeOffset);
 
 	this._fnUpdate(this._fDt,this._fTime,this._nStep,pProgram,'velocity');
 
-	//trace(this._pDataSubset);
-
+	//trace(this._pDataSubset.toString(), this._pDataSubset);
+	//statics.iCount++;
+	
 	this._pDataSubset.draw();
+	
+
+	//position update
 
 	pProgram = this._pPrograms[1];
 	pProgram.activate();
 
-	pProgram.applyFloat('INDEX_PARTICLE_VELOCITY_OFFSET',pDeclaration.element('PARTICLE_VELOCITY').iOffset);
-	pProgram.applyFloat('INDEX_PARTICLE_POSITION_OFFSET',pDeclaration.element('PARTICLE_POSITION').iOffset);
+	pProgram.applyFloat('INDEX_PARTICLE_VELOCITY_OFFSET',iVelocityOfsset);
+	pProgram.applyFloat('INDEX_PARTICLE_POSITION_OFFSET',iPositionOffset);
+	pProgram.applyFloat('INDEX_LIVE_TIME_OFFSET',iLiveTimeOffset);
 
 	this._fnUpdate(this._fDt,this._fTime,this._nStep,pProgram,'position');
-	//this._pDataSubset._pMap.draw();
+	this._pDataSubset.draw();
+
+	pDevice.flush();
+	pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,null);
 };
 
 /**
@@ -470,16 +502,19 @@ Emitter.prototype.render = function() {
 
 Emitter.prototype.renderCallback = function() {
 	'use strict';
-	return;
+	
 	this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
 	var pDeclaration = this._pParticleData.getVertexDeclaration();
-	var iOffset = pDeclaration.element('PARTICLE_POSITION').iOffset
+	var iPositionOffset = pDeclaration.element('PARTICLE_POSITION').iOffset/4.;//оффсет во float-ах
+	var iColourOffset = pDeclaration.element('PARTICLE_COLOUR').iOffset/4.;
 
 	this._pDataSubset.selectIndexSet(this._iDrawMapIndex);
 	pProgram = this._pPrograms[this._pPrograms.length - 1];
 	pProgram.activate();
 
-	pProgram.applyFloat('INDEX_PARTICLE_POSITION_OFFSET',iOffset);
+	pProgram.applyFloat('INDEX_PARTICLE_POSITION_OFFSET',iPositionOffset);
+	pProgram.applyFloat('INDEX_PARTICLE_COLOUR_OFFSET',iColourOffset);
+	
 	this._fnDraw(this._fDt,this._fTime,this._nStep,pProgram,'draw');
 	//trace(this._pDataSubset.toString());
 	this._pDataSubset.draw();
