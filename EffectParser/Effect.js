@@ -133,6 +133,7 @@ var STRUCT = 10;
 var PROGRAM = "Program"
 var DECLS = "Decls"
 var DECL = "Decl"
+var USEDECL = "UseDecl"
 var USAGES = "Usages"
 var USAGE = "Usage"
 var CONSTUSAGES = "ConstUsages"
@@ -249,6 +250,8 @@ var T_KW_IF = "if"
 var T_KW_ELSE = "else"
 var FROMEXPR = "FromExpr";
 var MEMEXPR = "MemExpr";
+var T_KW_USE = "use"
+var T_KW_STRICT = "strict"
 
 
 var VERTEXUSAGE = 1;
@@ -256,7 +259,10 @@ var FRAGMENTUSAGE = 2;
 var STRUCTUSAGE = 3;
 var LOCALUSAGE = 4;
 var PARAMETRUSAGE = 5;
+var VERTEXUSAGEPARAM = 6;
+var GLOBALUSAGE = 7;
 var NOTUSAGE = -1;
+
 
 function GLSLExpr(sTemplate) {
     this.pArgs = {};
@@ -336,7 +342,7 @@ VariableType.prototype.setUsage = function (sValue) {
         this.pUsagesName = {};
     }
     this.pUsages.push(sValue);
-    if (this.pUsagesName[sValue]) {
+    if (this.pUsagesName[sValue] === null) {
         error("same usage 2 times");
         return;
     }
@@ -402,7 +408,20 @@ VariableType.prototype.checkMe = function () {
                     return false;
                 }
                 break;
+            case VERTEXUSAGEPARAM:
+                if (!this.pEffectType.checkMe(VERTEXUSAGEPARAM)) {
+                    return false;
+                }
+                break;
             case PARAMETRUSAGE:
+                break;
+            case LOCALUSAGE:
+                if (this.pUsagesName["uniform"] === null ||
+                    this.pUsagesName["global"] === null) {
+                    return false;
+                }
+                break;
+            case GLOBALUSAGE:
                 break;
             default:
                 warning("Unknown usage for check");
@@ -536,7 +555,7 @@ EffectType.prototype.hasComplexType = function () {
     return this.pDesc.hasComplexType();
 };
 EffectType.prototype.checkMe = function () {
-    var i;
+    var i, j;
     if (!this.isAnalyzed) {
         this.pDesc.analyzeSemantics();
         this.isAnalyzed = true;
@@ -544,22 +563,34 @@ EffectType.prototype.checkMe = function () {
     for (i = 0; i < arguments.length; i++) {
         switch (arguments[i]) {
             case VERTEXUSAGE:
-                if (this.hasSemantic("POSITION") && !this.hasEmptySemantic() && !this.hasMultipleSemantic() &&
-                    !this.hasComplexType()) {
-                    return true;
+                if (!this.hasSemantic("POSITION") || this.hasEmptySemantic() || this.hasMultipleSemantic() ||
+                    this.hasComplexType()) {
+                    return false;
                 }
                 break;
             case FRAGMENTUSAGE:
-                if (this.pDesc.pOrders.length === 1 && this.hasSemantic("COLOR")) {
-                    return true;
+                if (this.pDesc.pOrders.length !== 1 || !this.hasSemantic("COLOR")) {
+                    return false;
+                }
+                break;
+            case VERTEXUSAGEPARAM:
+                if (this.hasEmptySemantic() || this.hasMultipleSemantic()) {
+                    return false;
+                }
+                if (this.hasComplexType()) {
+                    for (j = 0; j < this.pDesc.pOrders.length; j++) {
+                        if (!this.pDesc.pOrders[j].pType.checkMe(VERTEXUSAGEPARAM)) {
+                            return false;
+                        }
+                    }
                 }
                 break;
             default:
                 warning("Unknown usage for check");
-                return true;
+                break;
         }
     }
-    return false;
+    return true;
 };
 
 function EffectStruct() {
@@ -633,7 +664,7 @@ EffectStruct.prototype.analyzeSemantics = function () {
             this._hasComplexType = true;
         }
         if (pSemantics[pOrders[i].sSemantic]) {
-            this.hasMultipleSemantic = true;
+            this._hasMultipleSemantic = true;
             continue;
         }
         pSemantics[pOrders[i].sSemantic] = pOrders[i];
@@ -793,6 +824,9 @@ function EffectVariable() {
     this.pTexture = null;
     this.pStates = null;
     this.isSampler = null;
+    this.isParametr = false;
+    this.isUniform = false;
+    this.isGlobal = false;
 }
 
 EffectVariable.prototype.isConst = function () {
@@ -818,6 +852,10 @@ EffectVariable.prototype.isConstInit = function () {
 };
 EffectVariable.prototype.setType = function (pType) {
     this.pType = pType;
+    if (pType.pUsagesName) {
+        this.isUniform = pType.pUsagesName["uniform"] === null ? true : false;
+        this.isGlobal = pType.pUsagesName["global"] === null ? true : false;
+    }
 };
 EffectVariable.prototype.addAnnotation = function (pAnnotation) {
     this.pAnnotation = pAnnotation;
@@ -959,14 +997,9 @@ function EffectFunction(sName, pGLSLExpr, pTypes) {
     this.pFunctions = null;
     /**
      *
-     * @type {EffectFragment}
-     */
-    this.pFragmentShader = null;
-    /**
-     *
      * @type {EffectVertex}
      */
-    this.pVertexShader = null;
+    this.pShader = null;
     /**
      * Pairs: Name of variable -> fields of struct
      * @type {Object}
@@ -987,6 +1020,7 @@ function EffectFunction(sName, pGLSLExpr, pTypes) {
      * @type {EffectType[]}
      */
     this.pTypes = pTypes || null;
+    this.pUniforms = null;
 }
 EffectFunction.prototype.isConst = function () {
     return this.isConstant;
@@ -995,7 +1029,19 @@ EffectFunction.prototype.addGlobalVariable = function (pVar) {
     if (!this.pGlobalVariables) {
         this.pGlobalVariables = {};
     }
+    if (this.pUniforms && this.pUniforms[pVar.sName]) {
+        delete this.pUniforms[pVar.sName];
+    }
     this.pGlobalVariables[pVar.sName] = pVar;
+};
+EffectFunction.prototype.addUniform = function (pVar) {
+    if (!this.pUniforms) {
+        this.pUniforms = {};
+    }
+    if (this.pGlobalVariables && this.pGlobalVariables[pVar.sName]) {
+        return;
+    }
+    this.pUniforms[pVar.sName] = pVar;
 };
 EffectFunction.prototype.addFunction = function (pFunc) {
     if (!this.pFunctions) {
@@ -1049,21 +1095,84 @@ EffectFunction.prototype.addParameter = function (pVar) {
     }
     this.pParamOrders.push(pVar);
     this.pParameters[pVar.sName] = pVar;
+    pVar.isParametr = true;
+    if (pVar.isUniform) {
+        pVar.isUniform = true;
+        this.addUniform(pVar);
+    }
     if (!pVar.pInitializer) {
         this.nParamsNeeded = this.pParamOrders.length;
     }
 };
-EffectFunction.prototype.setImplement = function (pImplement, pVertexImplement, pFragmentImplement) {
+EffectFunction.prototype.setImplement = function (pImplement, pShaderImplement) {
     this.pImplement = pImplement;
-    if (this.pVertexShader) {
-        this.pVertexShader.setImplement(pVertexImplement);
-    }
-    if (this.pFragmentShader) {
-        this.pFragmentShader.setImplement(pFragmentImplement);
+    if (this.pShader) {
+        this.pShader.setImplement(pShaderImplement);
     }
 };
 EffectFunction.prototype.checkMe = function () {
-    //TODO: many tests
+    var i, j, k;
+    var pType;
+    var pVar;
+    var pSemantics;
+    var isOne = false;
+    for (i = 0; i < arguments.length; i++) {
+        switch (arguments[i]) {
+            case VERTEXUSAGE:
+                if (!this.pReturnType.checkMe(VERTEXUSAGE)) {
+                    return false;
+                }
+                pSemantics = {};
+                for (j = 0; j < this.pParamOrders.length; j++) {
+                    pVar = this.pParamOrders[j];
+                    pType = pVar.pType;
+                    if (pType.pUsagesName["uniform"] === null) {
+                        continue;
+                    }
+                    if (isOne === true) {
+                        return false;
+                    }
+                    if (isOne === undefined) {
+                        if (pVar.sSemantic === null) {
+                            isOne = true;
+                        }
+                        else {
+                            isOne = false;
+                        }
+                    }
+                    if (pType.isBase()) {
+                        isOne = false;
+                        if (pVar.sSemantic === null) {
+                            return false;
+                        }
+                        if (pSemantics[pVar.sSemantic] === null) {
+                            return false;
+                        }
+                        pSemantics[pVar.sSemantic] = null;
+                        continue;
+                    }
+                    if (!pType.checkMe(VERTEXUSAGEPARAM)) {
+                        return false;
+                    }
+                    for (k = 0; k < pType.pEffectType.pDesc.pOrders.length; k++) {
+                        pVar = pType.pEffectType.pDesc.pOrders[k];
+                        if (pSemantics[pVar.sSemantic] === null) {
+                            return false;
+                        }
+                        pSemantics[pVar.sSemantic] = null;
+                    }
+                }
+                break;
+            case FRAGMENTUSAGE:
+                if (this.pReturnType.checkMe(FRAGMENTUSAGE)) {
+                    return true;
+                }
+                break;
+            default:
+                warning("Unknown usage for check");
+                return true;
+        }
+    }
     return true;
 };
 
@@ -1268,8 +1377,7 @@ function Effect() {
     this._isCodeWrite = false;
     this._pCodeStack = [];
     this._pCode = null;
-    this._pCodeVertex = null;
-    this._pCodeFragment = null;
+    this._pCodeShader = null;
 
     this._iScope = 0;
     this._nScope = 0;
@@ -1302,6 +1410,9 @@ function Effect() {
     this._pExprType = null;
 
     this._nAddr = 0;
+
+    this._isStrictMode = false;
+    this._isWriteVar = false;
 
     STATIC(pBaseFunctionsHash, {});
     STATIC(pBaseFunctionsName, {});
@@ -1464,6 +1575,7 @@ function Effect() {
     this._addSystemFunction("mul", null, [null, null], ["float", "int", "float2", "float3", "float4"], "$1*$2");
     this._addSystemFunction("tex2D", "float4", ["sampler", "float2"], null, "texture2D($1,$2)");
 }
+
 /**
  * Add system function
  * @tparam {String} sName
@@ -1551,12 +1663,11 @@ Effect.prototype.evalHLSL = function (pCode) {
     console.log("Need to eval this code: ", pCode);
 };
 
-Effect.prototype.newCode = function (isVertex, isFragment) {
+Effect.prototype.newCode = function (isShader) {
     this._isCodeWrite = true;
     this._pCode = [];
-    this._pCodeVertex = isVertex ? [] : null;
-    this._pCodeFragment = isFragment ? [] : null;
-    this._pCodeStack.push([this._pCode, this._pCodeVertex, this._pCodeFragment]);
+    this._pCodeShader = isShader ? [] : null;
+    this._pCodeStack.push([this._pCode, this._pCodeShader]);
 };
 Effect.prototype.endCode = function () {
     this._pCodeStack.pop();
@@ -1564,13 +1675,11 @@ Effect.prototype.endCode = function () {
     if (iLen < 0) {
         this._isCodeWrite = false;
         this._pCode = null;
-        this._pCodeVertex = null;
-        this._pCodeFragment = null;
+        this._pCodeShader = null;
         return;
     }
     this._pCode = this._pCodeStack[iLen][0] || null;
-    this._pCodeVertex = this._pCodeStack[iLen][1] || null;
-    this._pCodeFragment = this._pCodeStack[iLen][2] || null;
+    this._pCodeShader = this._pCodeStack[iLen][1] || null;
 };
 Effect.prototype.pushCode = function (pObj) {
     if (!this._isCodeWrite) {
@@ -1583,8 +1692,8 @@ Effect.prototype.pushCode = function (pObj) {
     else {
         warning("Do you really want it?");
     }
-    if (this._pCodeVertex) {
-        this._pCodeVertex.push(pObj);
+    if (this._pCodeShader) {
+        this._pCodeShader.push(pObj);
     }
     if (this._pCodeFragment) {
         this._pCodeFragment.push(pObj);
@@ -1623,7 +1732,10 @@ Effect.prototype.newScope = function () {
     this._pCurrentScope = null;
 };
 Effect.prototype.endScope = function () {
-    this._pScopeStack.pop()
+    if (this._pCurrentScope && this._pCurrentScope.isStrict) {
+        this._isStrictMode = false;
+    }
+    this._pScopeStack.pop();
     this._iScope = this._pScopeStack[this._pScopeStack.length - 1];
     if (this._iScope === undefined) {
         this._iScope = -1;
@@ -1660,7 +1772,7 @@ Effect.prototype.endFunction = function () {
 Effect.prototype.addVariable = function (pVar, isParams) {
     isParams = isParams || false;
 
-    function fnExtractStruct(sName, pStruct, pTable, iScope) {
+    function fnExtractStruct(sName, pStruct, pTable, me) {
         var pOrders = pStruct.pOrders;
         var sNewName;
         var pPointers;
@@ -1672,11 +1784,11 @@ Effect.prototype.addVariable = function (pVar, isParams) {
             pBuffer = null;
             pPointers = null;
             isPointer = false;
-            if (isParams && !sName.search('.') && !pOrders[i].isPointer) {
+            if (isParams && sName.search('.') === -1 && !pOrders[i].isPointer) {
                 pPointers = [];
                 pPointers.push(new EffectPointer(pVar, 0));
                 pBuffer = new EffectBuffer();
-                isPointer = undefined;
+                isPointer = me._isStrictMode ? false : undefined;
             }
             if (pOrders[i].isPointer) {
                 pPointers = [];
@@ -1694,13 +1806,13 @@ Effect.prototype.addVariable = function (pVar, isParams) {
             }
             pTable[sNewName] = {
                 "pPointers" : pPointers,
-                "iScope"    : iScope,
+                "iScope"    : me.iScope,
                 "isPointer" : isPointer,
                 "pBuffer"   : pBuffer,
                 "pType"     : pOrders[i].pType
             };
             if (!pOrders[i].pType.isBase()) {
-                fnExtractStruct(sNewName, pOrders[i].pType.pEffectType.pDesc, pTable, iScope);
+                fnExtractStruct(sNewName, pOrders[i].pType.pEffectType.pDesc, pTable, me);
             }
         }
     }
@@ -1718,6 +1830,9 @@ Effect.prototype.addVariable = function (pVar, isParams) {
     }
     this._pCurrentScope.pVariableTable[pVar.sName] = pVar;
     pVar.iScope = this._iScope;
+    if (isParams) {
+        pVar.isParametr = true;
+    }
     if (pVar.isPointer) {
         pVar.pPointers = [];
         for (var i = 0; i < pVar.nDim; i++) {
@@ -1728,7 +1843,7 @@ Effect.prototype.addVariable = function (pVar, isParams) {
         if (!this._pCurrentScope.pStructTable) {
             this._pCurrentScope.pStructTable = {};
         }
-        fnExtractStruct(pVar.sName, pVar.pType.pEffectType.pDesc, this._pCurrentScope.pStructTable, this._iScope);
+        fnExtractStruct(pVar.sName, pVar.pType.pEffectType.pDesc, this._pCurrentScope.pStructTable, this);
     }
 };
 Effect.prototype.hasVariable = function (sName) {
@@ -2019,7 +2134,7 @@ Effect.prototype.analyze = function (pTree) {
     this.secondStep();
     this.analyzeEffect();
     this.checkEffect();
-    this.endScope();
+    this.endScope(1);
     console.log(a.now() - time);
     return true;
 //    }
@@ -2114,6 +2229,18 @@ Effect.prototype.analyzeDecl = function (pNode) {
         case TECHIQUEDECL:
             this.analyzeTechniqueDecl(pNode);
             break;
+        case USEDECL:
+            this.analyzeUseDecl(pNode);
+            break;
+    }
+};
+Effect.prototype.analyzeUseDecl = function (pNode) {
+    var pChildren = pNode.pChildren;
+    if (pChildren[0].sValue === T_KW_STRICT) {
+        if (!this._isStrictMode) {
+            this._pCurrentScope.isStrict = true;
+            this._isStrictMode = true;
+        }
     }
 };
 Effect.prototype.analyzeVariableDecl = function (pNode) {
@@ -2411,6 +2538,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
     var isNewVar = false;
     var isComplexVar = false;
     var sTypeName;
+    var isWriteMode = false;
 
     switch (sName) {
         case OBJECTEXPR:
@@ -2490,6 +2618,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     return;
                 }
                 pType1 = pFunc.pReturnType;
+
                 if (pFunc.isSystem) {
                     this.pushCode(pFunc.pGLSLExpr.toGLSL(pArguments));
                 }
@@ -2762,7 +2891,10 @@ Effect.prototype.analyzeExpr = function (pNode) {
         case EQUALITYEXPR:
         case ANDEXPR:
         case OREXPR:
-        case ASSIGNMENTEXPR:
+            if (this._isWriteVar) {
+                error("you are doing so bad and ugly things(");
+                return;
+            }
             this.analyzeExpr(pChildren[pChildren.length - 1]);
             pType1 = this._pExprType;
             if (pChildren.length === 1) {
@@ -2773,15 +2905,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 this.analyzeExpr(pChildren[0]);
                 pType2 = this._pExprType;
             }
-            if (sName === ASSIGNMENTEXPR && pChildren.length === 3) {
-//                if (!pType1.isEqual(pType2)) {
-//                    console.log(pNode);
-//                    error("Bad 191");
-//                    return;
-//                }
-                this._pExprType = pType1;
-            }
-            else if (sName === OREXPR || sName === ANDEXPR) {
+            if (sName === OREXPR || sName === ANDEXPR) {
                 pType = this.hasType("bool");
                 if (!(pType1.isEqual(pType) && pType2.isEqual(pType))) {
                     error("bad 101");
@@ -2801,6 +2925,29 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     error("bad 103");
                     return;
                 }
+                this._pExprType = pType1;
+            }
+            break;
+        case ASSIGNMENTEXPR:
+            if (!this._isWriteVar) {
+                this._isWriteVar = true;
+                isWriteMode = true;
+            }
+            this.analyzeExpr(pChildren[pChildren.length - 1]);
+            if (isWriteMode) {
+                isWriteMode = false;
+                this._isWriteVar = false;
+            }
+            pType1 = this._pExprType;
+            this.pushCode(pChildren[1].sValue);
+            this.analyzeExpr(pChildren[0]);
+            pType2 = this._pExprType;
+            if (sName === ASSIGNMENTEXPR && pChildren.length === 3) {
+//                if (!pType1.isEqual(pType2)) {
+//                    console.log(pNode);
+//                    error("Bad 191");
+//                    return;
+//                }
                 this._pExprType = pType1;
             }
             break;
@@ -2860,14 +3007,24 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 this._sVarName = pNode.sValue;
                 pRes = this.hasVariable(this._sVarName);
                 if (!pRes) {
+                    console.log(this, this._sVarName);
                     error("not good for you");
                     return;
                 }
-                if (pFunction && pRes.iScope === GLOBAL) {
-                    pFunction.addGlobalVariable(pRes);
-                    if (!pRes.isConst()) {
-                        pFunction.isConstant = false;
+                if (pRes.isUniform && this._isWriteVar) {
+                    error("don`t even try to do this, bitch.");
+                    return;
+                }
+                if (pFunction && !pRes.isConst()) {
+                    if (pRes.iScope === GLOBAL) {
+                        if (this._isWriteVar) {
+                            pFunction.addGlobalVariable(pRes);
+                        }
+                        else {
+                            pFunction.addUniform(pRes);
+                        }
                     }
+                    pFunction.isConstant = false;
                 }
                 this._pExprType = pRes.pType;
                 if (isNewVar) {
@@ -3029,31 +3186,31 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
             this.analyzeAnnotation(pChildren[1], pFunction);
         }
         if (pFunction.isVertexShader) {
-            if (!pType.checkMe(VERTEXUSAGE)) {
+            if (!pFunction.checkMe(VERTEXUSAGE)) {
                 error("Vertex is not vertex enough");
             }
-            pFunction.pVertexShader = new EffectVertex();
+            pFunction.pShader = new EffectVertex();
             //Add Varyings
             if (pType.isStruct()) {
                 var pVars = pEffectType.pDesc.pOrders;
                 for (i = 0; i < pVars.length; i++) {
                     if (pVars[i].sSemantic !== "POSITION" && pVars[i].sSemantic !== "PSIZE") {
-                        pFunction.pVertexShader.addVarying(pVars[i]);
+                        pFunction.pShader.addVarying(pVars[i]);
                     }
                 }
-                pFunction.pVertexShader.createReturnVar(pFunction.pReturnType);
+                pFunction.pShader.createReturnVar(pFunction.pReturnType);
             }
         }
         if (pFunction.isFragmentShader) {
-            if (!pType.checkMe(FRAGMENTUSAGE)) {
+            if (!pFunction.checkMe(FRAGMENTUSAGE)) {
                 error("Pixel is not pixel enough");
             }
-            pFunction.pFragmentShader = new EffectFragment();
+            pFunction.pShader = new EffectFragment();
         }
-        this.newCode(pFunction.isVertexShader, pFunction.isFragmentShader);
+        this.newCode(pFunction.isVertexShader || pFunction.isFragmentShader);
 
         this.analyzeStmtBlock(pChildren[0]);
-        pFunction.setImplement(this._pCode, this._pCodeVertex, this._pCodeFragment);
+        pFunction.setImplement(this._pCode, this._pCodeShader);
 
         this.endCode();
         this.endScope();
@@ -3206,7 +3363,7 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
 //            error("So sad, but you can`t do this with us.");
 //            return;
 //        }
-        if (!pFunction.pReturnType.isVoid() && !(pFunction.pVertexShader || pFunction.pFragmentShader)) {
+        if (!pFunction.pReturnType.isVoid() && !(pFunction.pShader)) {
             error("It`s not JS, baby.");
             return;
         }
@@ -3218,41 +3375,41 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
         this._pCode.push("return");
 
         var pType = pFunction.pReturnType;
-        if (this._pCodeVertex) {
+        if (pFunction.isVertexShader) {
             if (pType.isBase()) {
-                this._pCodeVertex.push("gl_Position = (");
+                this._pCodeShader.push("gl_Position = (");
             }
             else {
-                var pVar = pFunction.pVertexShader.pReturnVariable;
-                this._pCodeVertex.push(pVar, "=", "(");
+                var pVar = pFunction.pShader.pReturnVariable;
+                this._pCodeShader.push(pVar, "=", "(");
             }
         }
-        if (this._pCodeFragment) {
-            this._pCodeFragment.push("gl_FragColor = (");
+        if (pFunction.isFragmentShader) {
+            this._pCodeShader.push("gl_FragColor = (");
         }
         this.analyzeExpr(pChildren[1]);
-        if (this._pCodeVertex) {
-            this._pCodeVertex.push(");");
+        if (pFunction.isVertexShader) {
+            this._pCodeShader.push(");");
             if (!pType.isBase()) {
                 var i;
-                var pVaryings = pFunction.pVertexShader._pVaryings;
+                var pVaryings = pFunction.pShader._pVaryings;
                 for (i = 0; i < pVaryings.length; i++) {
-                    this._pCodeVertex.push(pVaryings[i], "=", pVar, ".", pVaryings[i].sName, ";");
+                    this._pCodeShader.push(pVaryings[i], "=", pVar, ".", pVaryings[i].sName, ";");
                 }
-                this._pCodeVertex.push("gl_Position", "=", pVar, ".",
+                this._pCodeShader.push("gl_Position", "=", pVar, ".",
                                        pVar.pType.pEffectType.pDesc._pSemantics["POSITION"].sName,
                                        ";");
                 var pPointSize = pVar.pType.pEffectType.pDesc._pSemantics["PSIZE"];
                 if (pPointSize) {
-                    this._pCodeVertex.push("gl_PointSize", "=", pVar, ".", pPointSize.sName, ";");
+                    this._pCodeShader.push("gl_PointSize", "=", pVar, ".", pPointSize.sName, ";");
                 }
             }
         }
-        if (this._pCodeFragment) {
-            this._pCodeFragment.push(");");
+        if (pFunction.isFragmentShader) {
+            this._pCodeShader.push(");");
             if (pType.isStruct()) {
-                this._pCodeFragment.push(".");
-                this._pCodeFragment.push(pType.pEffectType.pOrders[0], ";");
+                this._pCodeShader.push(".");
+                this._pCodeShader.push(pType.pEffectType.pOrders[0], ";");
             }
         }
         this._pCode.push(";");
@@ -3315,7 +3472,7 @@ Effect.prototype.analyzeParamList = function (pNode, pFunction) {
 Effect.prototype.analyzeParameterDecl = function (pNode) {
     var pChildren = pNode.pChildren;
     var pVar = new EffectVariable();
-    pVar.pType = this.analyzeParamUsageType(pChildren[1]);
+    pVar.setType(this.analyzeParamUsageType(pChildren[1]));
     if (!pVar.pType.checkMe(PARAMETRUSAGE)) {
         error("You sucks 2");
         return;
