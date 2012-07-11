@@ -242,59 +242,56 @@ Pathinfo.prototype.toString = function () {
     return (this.sDirname ? this.sDirname + '/' : '') + (this.basename);
 };
 
-Object.defineProperty(Pathinfo.prototype, "data", {
-    get: function () {
+PROPERTY(Pathinfo, 'data',
+     function () {
         return this.toString();
     },
-    set: function (sPath) {
+    function (sPath) {
         this.set(sPath);
-    }
-});
+    });
 
-Object.defineProperty(Pathinfo.prototype, "path", {
-    get: function () {
+PROPERTY(Pathinfo, 'path',
+    function () {
         return this.toString();
     },
-    set: function (sPath) {
+    function (sPath) {
         this.set(sPath);
-    }
-});
+    });
 
-Object.defineProperty(Pathinfo.prototype, "dirname", {
-    get: function () {
+
+PROPERTY(Pathinfo, 'dirname',
+    function () {
         return this.sDirname;
-    }
-});
-Object.defineProperty(Pathinfo.prototype, "filename", {
-    get: function () {
+    });
+
+PROPERTY(Pathinfo, 'filename',
+    function () {
         return this.sFilename;
     },
-    set: function (sFilename) {
+    function (sFilename) {
         this.basename = sFilename + '.' + this.sExtension;
-    }
-});
-Object.defineProperty(Pathinfo.prototype, "ext", {
-    get: function () {
+    });
+
+PROPERTY(Pathinfo, 'ext',
+    function () {
         return this.sExtension;
-    }
-});
+    });
 
 
-Object.defineProperty(Pathinfo.prototype, "extention", {
-    get: function () {
+PROPERTY(Pathinfo, 'extention',
+    function () {
         return this.sExtension;
     },
-    set: function (sExt) {
+    function (sExt) {
         this.basename = this.sFilename + '.' + sExt;
-    }
-});
+    });
 
-Object.defineProperty(Pathinfo.prototype, "basename", {
-    get: function () {
+PROPERTY(Pathinfo, 'basename',
+    function () {
         return (this.sFilename ? this.sFilename + (this.sExtension ?
             '.' + this.sExtension : '') : '');
     },
-    set: function (sBasename) {
+    function (sBasename) {
         var nPos = sBasename.lastIndexOf('.');
         if (nPos < 0) {
             this.sFilename = sBasename.substr(0);
@@ -304,8 +301,13 @@ Object.defineProperty(Pathinfo.prototype, "basename", {
             this.sFilename = sBasename.substr(0, nPos);
             this.sExtension = sBasename.substr(nPos + 1);
         }
-    }
-});
+    });
+
+Pathinfo.prototype.isAbsolute = function () {
+    'use strict';
+    
+    return this.sDirname[0] === '/'? true: false;
+};
 
 a.Pathinfo = Pathinfo;
 a.pathinfo = function (sPath) {

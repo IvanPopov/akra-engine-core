@@ -617,6 +617,13 @@ GLSLProgram.prototype.applyVector4 = function (sName) {
 GLSLProgram.prototype.applyInt = function (sName, iValue) {
     this._pDevice.uniform1i(this._pUniformList[sName], iValue);
 };
+
+GLSLProgram.prototype.applySampler2D = function (sName, iValue) {
+    'use strict';
+    
+    return this.applyInt(sName, iValue);
+};
+
 GLSLProgram.prototype.applyFloat = function (sName, fValue) {
     this._pDevice.uniform1f(this._pUniformList[sName], fValue);
 };

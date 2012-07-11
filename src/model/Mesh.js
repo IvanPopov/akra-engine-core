@@ -68,6 +68,18 @@ Mesh.prototype.draw = function (iSubset) {
     this._pFactory.draw(iSubset);
 };
 
+Mesh.prototype.isReadyForRender = function () {
+    'use strict';
+    
+    for (var i = 0; i < this.length; ++ i) {
+        if (!this[i].isReadyForRender()) {
+            return false;
+        }
+    }
+    
+    return true;
+};
+
 /**
  * @protected
  * Replace materials for this mesh.

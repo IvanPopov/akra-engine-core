@@ -446,7 +446,7 @@ PROPERTY(RenderMethod, 'material',
 
         if (typeof pValue === 'string') {
             pMaterial = 
-                this._pEngine.pDisplayManager.materialPool().loadResource(pValue);
+                this._pEngine.pDisplayManager.surfaceMaterialPool().loadResource(pValue);
         }
         else if (pValue) {
             pMaterial = pValue;
@@ -458,6 +458,18 @@ PROPERTY(RenderMethod, 'material',
 
         this._pMaterial = pMaterial;
         this.connect(pMaterial, a.ResourcePoolItem.Loaded);
+
+        //==============================================================================
+        // var me = this;
+        // trace('me get material :)');
+        // pMaterial.setChangesNotifyRoutine(function() {
+        //                 if (pMaterial.isResourceLoaded()) {
+        //                     trace('Material <', pMaterial.findResourceName(), '> loaded'); 
+        //                     trace('Number of textures in material:', pMaterial.totalTextures)
+        //                     trace('me loaded? - ', me.isResourceLoaded());
+        //                 }
+        //             });
+        //==============================================================================
 
         pMaterial.addRef();
     });
@@ -483,7 +495,7 @@ RenderMethod.prototype.createResource = function() {
     // signal that the resource is now created,
     // but has not been enabled
     this.notifyCreated();
-    this.notifyDisabled();
+    //this.notifyDisabled();
 
     return true;
 };

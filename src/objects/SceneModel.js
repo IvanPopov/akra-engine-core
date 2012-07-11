@@ -382,41 +382,61 @@ SceneModel.prototype.render = function () {
     var pDevice = pEngine.pDevice;
     var pModel = this;
 
-    if (!pMesh) {
+    if (!pMesh || !pMesh.isReadyForRender()) {
         return;
     }
+ 
+    for (var i = 0; i < pMesh.length; ++ i) {
+        var pSubMesh = pMesh[i];
+        var pSurface = pSubMesh.surfaceMaterial;
+        var iTextureFlags = pSurface.textureFlags;
+        var iTexActivator = 1;
 
-    if (pMesh[0].data.useAdvancedIndex()) {
-        pProgram = pEngine.pDrawMeshI2IProg;
-    }
-    else if (pMesh[0].surfaceMaterial.totalTextures) {
-        pProgram = pEngine.pDrawMeshTexProg;
-    }
-    else {
-        pProgram = pEngine.pDrawMeshProg;
+        if (pSubMesh.data.useAdvancedIndex()) {
+            pProgram = pEngine.pDrawMeshI2IProg;
+        }
+        else if (pSubMesh.surfaceMaterial.totalTextures) {
+            pProgram = pEngine.pDrawMeshTexProg;
+        }
+        else {
+            pProgram = pEngine.pDrawMeshProg;
+            
+        }
+
+        pProgram.activate();
+
+        if (pSubMesh.data.useAdvancedIndex()) {
+            pProgram.applyFloat('INDEX_INDEX_POSITION_OFFSET', 0);
+            pProgram.applyFloat('INDEX_INDEX_NORMAL_OFFSET', 1);
+            pProgram.applyFloat('INDEX_INDEX_FLEXMAT_OFFSET', 2);
+        }
         
-    }
+        pProgram.applyMatrix4('model_mat', pModel.worldMatrix());
+        pProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
+        pProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
+        pProgram.applyMatrix3('normal_mat', pModel.normalMatrix());
+        pProgram.applyVector3('eye_pos', pCamera.worldPosition());
 
-    pProgram.activate();
-    
-
-    if (pMesh[0].data.useAdvancedIndex()) {
-        pProgram.applyFloat('INDEX_INDEX_POSITION_OFFSET', 0);
-        pProgram.applyFloat('INDEX_INDEX_NORMAL_OFFSET', 1);
-        pProgram.applyFloat('INDEX_INDEX_FLEXMAT_OFFSET', 2);
-    }
-
-    if (pMesh[0].surfaceMaterial.totalTextures) {
         
+        if (pSurface.totalTextures) {
+            for (var i = 0; i < a.SurfaceMaterial.maxTexturesPerSurface; ++ i) {
+                if (!TEST_BIT(iTextureFlags, i)) {
+                    continue;
+                }
+
+                pSurface.texture(i).activate(iTexActivator);
+                pProgram.applySampler2D('TEXTURE' + i, iTexActivator);
+                //trace('pProgram.applySampler2D(', 'TEXTURE' + i,',', iTexActivator,')');
+                iTexActivator ++;
+            }
+
+            pProgram.applySampler2D('TEXTURE' + 1, 19);
+            pProgram.applySampler2D('TEXTURE' + 2, 19);
+            pProgram.applySampler2D('TEXTURE' + 3, 19);
+        }
+
+        pSubMesh.draw();
     }
-    
-    pProgram.applyMatrix4('model_mat', pModel.worldMatrix());
-    pProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
-    pProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
-    pProgram.applyMatrix3('normal_mat', pModel.normalMatrix());
-    pProgram.applyVector3('eye_pos', pCamera.worldPosition());
-        
-    pMesh.draw();
 
     //------------------------------------------------
 

@@ -333,10 +333,10 @@ Texture.prototype.createResource = function () {
  */
 Texture.prototype.releaseTexture = function () {
     var pDevice = this._pEngine.pDevice;
-    if (pDevice.isTexture(this._pTexture)) {
+    if (this._pTexture) {
         pDevice.deleteTexture(this._pTexture);
     }
-    if (pDevice.isFramebuffer(this._pFrameBuffer)) {
+    if (this._pFrameBuffer) {
         pDevice.deleteFramebuffer(this._pFrameBuffer);
     }
     this._pTexture = null;
@@ -682,7 +682,7 @@ Texture.prototype.uploadImage = function (pImage) {
             Math.floor(this.minFilter - a.TFILTER.NEAREST_MIPMAP_NEAREST) / 2 + a.TFILTER.NEAREST);
         //pDevice.generateMipmap(a.TTYPE.TEXTURE_2D);
     }
-
+    //trace('uploaded image to texture: ', this._iWidth, 'x', this._iHeight);
     this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
     this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
     this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
