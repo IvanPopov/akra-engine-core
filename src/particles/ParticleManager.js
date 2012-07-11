@@ -65,7 +65,8 @@ function Emitter(pEngine,pParticleManager,pDataSubset,eType,nParticles,iId){
 	this._iUpdateMapIndex = this._pDataSubset.getIndexSet();//номер карты используемой при update
 	this._iDrawMapIndex = -1; //номер карты используемой при финальной отрисовке
 	this._pParticleData = null; //объект хранящий данные частиц
-	this._pParticleDataDeclaration = null;//декларация для данных частиц
+	this._pObjectData = null;//объект хранящий данные для объектов (используеться только для биллбордов и треугольников)
+	//this._pParticleDataDeclaration = null;//декларация для данных частиц
 	//this._iObjectMapIndex = -1; //номер карты используемой для хранения объекта
 	//this._pObjectData = null; //объект хранящий данные модели
 	//this._pObjectDataDeclaration = null;//декларация данных для объекта
@@ -91,7 +92,10 @@ function Emitter(pEngine,pParticleManager,pDataSubset,eType,nParticles,iId){
 
 	this._pPrograms = []; //временная мера, потом все будет через renderMethod
 
-	this._pParticleOffsetsList = {};
+	this._pParticleOffsetsList = {}; //храняться оффсеты для данных частиц
+	this._pObjectOffsetsList = {}; //храняться оффсеты для данных объекста (только для биллбордов и треугольников)
+
+	this._fTimeAcceleration = 1;//уровень ускорения времени по сравнению с реальным
 
 	this._setup();
 }
@@ -140,8 +144,14 @@ Emitter.prototype.setParticleData = function(pVertexDecl,pData){
 		console.error("нельзя добавлять данные для частиц после добавления данных для объекта");
 		return;
 	}
-	pData = new Uint8Array(pData.buffer);
 	var pVertexDeclaration = normalizeVertexDecl(pVertexDecl);
+
+	if(pVertexDeclaration.hasSemantics('POSITION')){
+		error('семантику POSITION апрещено использовать для данных частиц, используйте PARTICLE_POSITION');
+		return;
+	}
+
+	pData = new Uint8Array(pData.buffer);
 	var iStride = pVertexDeclaration.stride;
 	//var nElementsPerPixel = this._pDataSubset._pFactory._pVideoBuffer._numElementsPerPixel;
 	var nElementsPerPixel = 4;
@@ -163,27 +173,12 @@ Emitter.prototype.setParticleData = function(pVertexDecl,pData){
 				debug_assert(pVertexElement.nCount <= nElementsPerPixel,"длина скорости и позиции не должна превышать количества элементов на пиксель в текстуре");
 
 				var pElementData; 
-				if(pVertexElement.nCount < nElementsPerPixel){
-					pElementData = new Uint8Array(4*this._nParticles*nElementsPerPixel);//умножить на 4 так как это float32 
-
-					for(var j=0;j<this._nParticles;j++){
-
-						var pSubData = pData.subarray(j*iStride + iOffset,j*iStride + iOffset + iSize);
-						for(var k=0;k<iSize;k++){
-							pElementData[4*nElementsPerPixel*j + k] = pSubData[k];
-						}
-					}
-					
+				pElementData = new Uint8Array(4*this._nParticles*nElementsPerPixel);//умножить на 4 так как это float32 
+				for(var j=0;j<this._nParticles;j++){
+					var pSubData = pData.subarray(j*iStride + iOffset,j*iStride + iOffset + iSize);
+					pElementData.set(pSubData,4*nElementsPerPixel*j)
 				}
-				else{
-					pElementData = new Uint8Array(iSize*this._nParticles);
-					for(var j=0;j<this._nParticles;j++){
-						var pSubData = pData.subarray(j*iStride + iOffset,j*iStride + iOffset + iSize);
-						for(var k=0;k<iSize;k++){
-							pElementData[iSize*j + k] = pSubData[k];
-						}
-					}
-				}
+
 				if(pVertexElement.eUsage == 'PARTICLE_POSITION'){
 					pNewVertexDeclaration = [VE_VEC4('PARTICLE_POSITION')];
 				}
@@ -223,10 +218,62 @@ Emitter.prototype.setParticleData = function(pVertexDecl,pData){
 Emitter.prototype._setObjectData = function(pVertexDecl,pData){
 	'use strict';
 	if(!this._bParticleDataSetted){
-		this._iDrawMapIndex = this._pDataSubset.addIndexSet(true, a.PRIMTYPE.TRIANGLELIST, 'draw');
+		if(this._eType == a.EMITTER.BILLBOARD){
+			this._iDrawMapIndex = this._pDataSubset.addIndexSet(true, a.PRIMTYPE.TRIANGLESTRIP, 'draw');	
+		}
+		else{
+			this._iDrawMapIndex = this._pDataSubset.addIndexSet(true, a.PRIMTYPE.TRIANGLELIST, 'draw');		
+		}
 		this._bParticleDataSetted = true;
 	}
-	return this._pDataSubset.allocateData(pVertexDecl,pData);
+	if(this._eType == a.EMITTER.OBJECT){
+		return this._pDataSubset.allocateData(pVertexDecl,pData);
+	}
+	else{
+		var pVertexDeclaration = normalizeVertexDecl(pVertexDecl);
+		pData = new Uint8Array(pData.buffer);
+		var nElementsPerPixel = 4;
+		var iStride = pVertexDeclaration.iStride;
+
+		var pElementData;
+		var nEndIndex;
+		if(this._eType == a.EMITTER.BILLBOARD){
+			pElementData = new Uint8Array(16*nElementsPerPixel);//умножить на 4 так как это float32 и еще на 4, так как у биллборда только 4 вершины
+			nEndIndex = 4;
+		}
+		else{
+			//this._eType == a.EMITTER.TRIANGLE
+			pElementData = new Uint8Array(12*nElementsPerPixel);//умножить на 4 так как это float32 и еще на 3, так как у треугольника только 3 вершины	
+			nEndIndex = 3;
+		}
+
+		for(var i=0;i<pVertexDeclaration.length;i++){
+			var pVertexElement = pVertexDeclaration[i];
+			var iSize = pVertexElement.iSize;
+			var iOffset = pVertexElement.iOffset;
+			
+			var pNewVertexDeclaration;
+
+			for(var j=0;j<nEndIndex;j++){
+				var pSubData = pData.subarray(j*iStride + iOffset,j*iStride + iOffset + iSize);
+				pElementData.set(pSubData,4*nElementsPerPixel*j);//умножить на 4 так как float32
+			}
+			pNewVertexDeclaration = [VE_VEC4(pVertexElement.eUsage)];
+		}
+		
+		if(this._pObjectData == null){
+			var iDataLocation = this._pDataSubset.allocateData(pNewVertexDeclaration,pElementData);
+			this._pObjectData = this._pDataSubset.getData(iDataLocation);	
+		}
+		else{
+			this._pObjectData.extend(pNewVertexDeclaration,pElementData);
+		}
+		var pDeclaration = this._pObjectData.getVertexDeclaration();//пока будет так для надежности
+		var iOffset = pDeclaration.element(pVertexElement.eUsage).iOffset/4.;
+		var sUniformName = 'INDEX_' + pVertexElement.eUsage + '_OFFSET';
+
+		this._pObjectOffsetsList[sUniformName] = iOffset;
+	}
 }
 
 Emitter.prototype._setObjectIndex = function(pAttrDecl,pData) {
@@ -259,45 +306,70 @@ Emitter.prototype._objectIndex = function(iData,eSemantic){
  */
 Emitter.prototype.setObjectData = function(pVertexDecl,pData){
 	'use strict';
-	if(this._eType != a.EMITTER.OBJECT){
+	var pVertexDeclaration = normalizeVertexDecl(pVertexDecl);
+	if(this._eType == a.EMITTER.OBJECT){
+		return this._setObjectData(pVertexDecl,pData);
+	}
+	else if(this._eType == a.EMITTER.BILLBOARD){
+		if(pVertexDeclaration.hasSemantics('POSITION')){
+			error('семантика POSITION запрещена для биллборда');
+			return;
+		}
+		var iStride = pVertexDeclaration.iStride;
+		if(pData.byteLength/iStride != 4){
+			error("неверное количество данных, для биллборда можно выставить данные только для четырех вершин");
+			return;
+		}
+		this._setObjectData(pVertexDeclaration,pData);
+	}
+	else if(this._eType == a.EMITTER.TRIANGLE){
+		if(pVertexDeclaration.hasSemantics('POSITION')){
+			error('семантика POSITION запрещена для частиц-треугольников');
+			return;
+		}
+		var iStride = pVertexDeclaration.iStride;
+		if(pData.byteLength/iStride != 3){
+			error("неверное количество данных, для треугольника можно выставить данные только для трех вершин");
+			return;
+		}
+		this._setObjectData(pVertexDeclaration,pData);
+	}
+	else{
 		error("используемый тип частиц объектом не является");
 		return;
 	}
 	
-	return this._setObjectData(pVertexDecl,pData);
 };
 
 Emitter.prototype.setObjectIndex = function(pAttrDecl,pData){
 	'use strict';
-	if(this._eType != a.EMITTER.OBJECT){
-		error("используемый тип частиц объектом не является");
-		return;
+	if(this._eType == a.EMITTER.OBJECT){
+		return this._setObjectIndex(pAttrDecl,pData);
 	}
-	return this._setObjectIndex(pAttrDecl,pData);
+	error("данную функцию можно использовать только для частиц-объектов");
+	return;
+	
 };
 
 Emitter.prototype.setObjectAttribute = function(pAttrDecl,pData){
 	'use strict';
-	if(this._eType != a.EMITTER.OBJECT){
-		error("используемый тип частиц объектом не является");
-		return;
+	if(this._eType == a.EMITTER.OBJECT){
+		return this._setObjectAttribute(pAttrDecl,pData);
 	}
-	return this._setObjectAttribute(pAttrDecl,pData);
+	error("данную функцию можно использовать только для частиц-объектов");
+	return;
+	
 };
 
 Emitter.prototype.objectIndex = function(iData,eSemantic){
 	'use strict';
-	if(this._eType != a.EMITTER.OBJECT){
-		error("используемый тип частиц объектом не является");
-		return;
+	if(this._eType == a.EMITTER.OBJECT){
+		return this._objectIndex(iData,eSemantic);	
 	}
-	return this._objectIndex(iData,eSemantic);	
+	error("данную функцию можно использовать только для частиц-объектов");
+	return;
+	
 };
-
-// Emitter.prototype.set = function(first_argument) {
-// 	'use strict';
-// 	// body...
-// };
 
 /**
  * устанавливается время жизни источника
@@ -307,6 +379,11 @@ Emitter.prototype.setLiveTime = function(fTTL){
 	'use strict'
 	this._fTTL = fTTL;
 };
+
+Emitter.prototype.setTimeAcceleration = function(fTimeAcceleration){
+	'use strict';
+	this._fTimeAcceleration = fTimeAcceleration;
+}
 
 /**
  * активация источника
@@ -318,9 +395,14 @@ Emitter.prototype.activate = function(){
 	if(this._pDataSubset.hasSemantics('PARTICLE_POSITION',false) &&
 		this._pDataSubset.hasSemantics('PARTICLE_VELOCITY',false) &&
 		this._fTTL > 0){
-		this._generateIndices();
-		this._isActive = true;
-		this._nPreviousTime = a.now();
+		if(this._generateIndices()){
+			this._isActive = true;
+			this._nPreviousTime = a.now();
+			return true;
+		}
+		else{
+			return false;
+		}
 	}
 };
 
@@ -331,6 +413,11 @@ Emitter.prototype._generateIndices = function(){
 	var pUpdateIndex = new Float32Array(this._nParticles);
 	var pDrawIndex;
 
+	if(this._iDrawMapIndex == -1 && this._eType == a.EMITTER.OBJECT){
+		error('данные объекта не выставлены');
+		return false;
+	}
+
 	for(var i=0;i<this._nParticles;i++){
 		pUpdateIndex[i] = i;
 	}
@@ -339,41 +426,54 @@ Emitter.prototype._generateIndices = function(){
 	var pDeclaration = this._pParticleData.getVertexDeclaration();
 	var iStride = pDeclaration.iStride;
 
-	if(this._eType == a.EMITTER.OBJECT){
-		this._pDataSubset.selectIndexSet(this._iDrawMapIndex);
+	this._pDataSubset.selectIndexSet(this._iDrawMapIndex);
+
+	if(this._eType == a.EMITTER.TRIANGLE){
+		//заполняем семантику POSITION у объекта и генерируем индекс для рисования
+		this._setObjectData([VE_VEC3('POSITION')],new Float32Array([-0.5,-Math.sqrt(3)/6,0,  0,Math.sqrt(3)/3,0,   0.5,-Math.sqrt(3)/6,0]));
+		this._setObjectIndex([VE_FLOAT('INDEX_POSITION')],new Float32Array([0,1,2]));
+		var iObjectDataPosition = this._pDataSubset.getDataLocation('POSITION');
+		this._objectIndex(iObjectDataPosition,'INDEX_POSITION');
+	}
+	else if(this._eType == a.EMITTER.BILLBOARD){
+		//заполняем семантику POSITION у объекта и генерируем индекс для рисования
+		this._setObjectData([VE_VEC3('POSITION')],new Float32Array([-1,-1,0,  -1,1,0,  1,-1,0,  1,1,0]));
+		//this._setObjectIndex([VE_FLOAT('INDEX_POSITION')],new Float32Array([0,1,2,1,2,3]));
+		this._setObjectIndex([VE_FLOAT('INDEX_POSITION')],new Float32Array([0,0,1,2,3,3]));//рисуем TRIANGLESTRIP
+
+		var iObjectDataPosition = this._pDataSubset.getDataLocation('POSITION');
+		this._objectIndex(iObjectDataPosition,'INDEX_POSITION');
+	}
+	else if(this._eType == a.EMITTER.OBJECT){
 		this._nDrawIndexLength = this._pDataSubset.getPrimitiveCount()*3;//пока поддерживается только TRIANGLELIST
 	}
-	if(this._eType != a.EMITTER.MESH){
+
+	if(this._eType != a.EMITTER.MESH && this._eType != a.EMITTER.POINT){
+		//для POINT,TRIANGLE и BILLBORD this._nDrawIndexLength выставлено в функции _setup
 		pDrawIndex = new Float32Array(this._nDrawIndexLength);
 		var nParticleDrawLength = this._nDrawIndexLength/this._nParticles;
 		for(var i=0;i<this._nParticles;i++){
 			for(var j=0;j<nParticleDrawLength;j++){
-				//pDrawIndex[i*nParticleDrawLength + j] = iPos + i*iStride;
 				pDrawIndex[i*nParticleDrawLength + j] = i;
 			}
 		}
 	}
 
+	trace(this._pDataSubset.toString());
+
 	this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
 	this._pDataSubset.allocateIndex([VE_FLOAT('INDEX_UPDATE')],pUpdateIndex);
 	this._pDataSubset.index(iPos,'INDEX_UPDATE');
 
-	if(this._etype != a.EMITTER.MESH){
+	if(this._eType != a.EMITTER.MESH && this._eType != a.EMITTER.POINT){
 		this._pDataSubset.selectIndexSet(this._iDrawMapIndex);
-		//this._pDataSubset.allocateAttribute([VE_FLOAT('INDEX_PARTICLE_POSITION')],pDrawIndex);
-		//trace(pDrawIndex);
 		if (!this._pDataSubset.allocateIndex([VE_FLOAT('INDEX_PARTICLE')],pDrawIndex)) {
 			error('cannot allocate index: INDEX_PARTICLE');
 		}
-		//trace(this._pDataSubset.toString())
-
 		this._pDataSubset.index(iPos,'INDEX_PARTICLE');
 	}
 
-	// var pRenderData = this._pDataSubset;
-	// iPos = pRenderData.getDataLocation('PARTICLE_POSITION');
-	// pRenderData.selectIndexSet('draw');
-	// pRenderData.index(iPos, )
+	return true;
 };
 
 PROPERTY(Emitter,'updateRoutine',
@@ -403,6 +503,7 @@ PROPERTY(Emitter,'drawRoutine',
  */
 Emitter.prototype.update = function(){
 	'use strict';
+	parent(SceneObject).update.call(this);
 	if(this._isActive && this._fnUpdate!=null){
 		this._update();
 	}
@@ -429,7 +530,7 @@ Emitter.prototype._update = function(){
 
 	this._fTime += this._fDt;
 	this._nCurrentTime = a.now();
-	this._fDt = (this._nCurrentTime - this._nPreviousTime)/1000;
+	this._fDt = this._fTimeAcceleration*(this._nCurrentTime - this._nPreviousTime)/1000;
 	this._nPreviousTime = this._nCurrentTime;
 	this._nStep++;//увеличиваем номер шага по времени
 
@@ -502,9 +603,12 @@ Emitter.prototype.render = function() {
 Emitter.prototype.renderCallback = function() {
 	'use strict';
 	
-	this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
-
-	this._pDataSubset.selectIndexSet(this._iDrawMapIndex);
+	if(this._eType == a.EMITTER.POINT){
+		this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
+	}
+	else{
+		this._pDataSubset.selectIndexSet(this._iDrawMapIndex);
+	}
 	pProgram = this._pPrograms[this._pPrograms.length - 1];
 	pProgram.activate();
 
@@ -512,6 +616,14 @@ Emitter.prototype.renderCallback = function() {
 
 	pUniformList = pProgram._pUniformList; 
 
+	if(this._eType == a.EMITTER.TRIANGLE || this._eType == a.EMITTER.BILLBOARD){
+		for(var sName in this._pObjectOffsetsList){
+			var iOffset = this._pObjectOffsetsList[sName];
+			if(pUniformList[sName] != undefined){
+				pProgram.applyFloat(sName,iOffset);
+			}	
+		}
+	}
 	for(var sName in this._pParticleOffsetsList){
 		var iOffset = this._pParticleOffsetsList[sName];
 		if(pUniformList[sName] != undefined){
@@ -519,17 +631,19 @@ Emitter.prototype.renderCallback = function() {
 		}
 	}
 	
-	this._fnDraw(this._fDt,this._fTime,this._nStep,pProgram,'draw');
+	this._fnDraw(this._fDt,this._fTime,this._nStep,pProgram,'draw',this);
 
 	var pDevice = this._pEngine.pDevice;
 	//trace(this._pDataSubset.toString());
 	pDevice.enable(pDevice.BLEND);
-    pDevice.disable(pDevice.DEPTH_TEST);
+	pDevice.depthFunc(pDevice.ALWAYS);
+    //pDevice.disable(pDevice.DEPTH_TEST);
     pDevice.blendFunc(pDevice.SRC_ALPHA, pDevice.ONE_MINUS_SRC_ALPHA);
 
 	this._pDataSubset.draw();
 
-	pDevice.enable(pDevice.DEPTH_TEST);
+	pDevice.depthFunc(pDevice.LESS);
+	//pDevice.enable(pDevice.DEPTH_TEST);
     //pDevice.blendFunc(pDevice.ONE, pDevice.ONE);
     pDevice.disable(pDevice.BLEND);
 };
