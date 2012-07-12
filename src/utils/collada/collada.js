@@ -51,8 +51,23 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
     ];
 
     var pSupportedJointFormat = [
-        {sName: 'WEIGHT', sType: 'float'}
+        {sName: 'JOINT', sType: 'name'}
     ];
+
+    var pSupportedInvBindMatrixFormat = [
+        {sName: 'TRANSFORM', sType: 'float4x4'}
+    ];
+
+    var pFormatStrideTable = {
+        'float': 1,
+        'float2': 2,
+        'float3': 3,
+        'float4': 4,
+        'float3x3': 9,
+        'float4x4': 16,
+        'int': 1,
+        'name': 1
+    };
 
     var pLinks = {};
     var pAsset = null;
@@ -62,6 +77,15 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
     var pVisualScenes = null;
     var pScene = null;
     var pLib = {};
+
+    function calcFormatStride (pFormat) {
+        var iStride = 0;
+        for (var i = 0; i < pFormat.length; ++ i) {
+            iStride += pFormatStrideTable[pFormat[i].sType];
+        }
+
+        return iStride;
+    }
 
     function link (id, pTarget) {
         if (typeof id !== 'string') {
@@ -469,6 +493,27 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
                     debug_error('semantics are different from JOINT/INV_BIND_MATRIX is not supported in the <joints /> tag');
             }
         });
+        
+        var m4fTmp = new Matrix4;
+
+        for (var i in pJoints.pInput) {
+            prepareInput(pJoints.pInput[i]);
+
+            if (i === 'INV_BIND_MATRIX') {
+                var pInvMatrixArray = pJoints.pInput[i].pArray;
+                for (var i = 0; i < pInvMatrixArray.length; i += 16) {
+                    for (var j = 0; j < 16; ++ j) {
+                        m4fTmp[j] = pInvMatrixArray[i + j];
+                    }
+
+                    Mat4.transpose(m4fTmp);
+
+                    for (var j = 0; j < 16; ++ j) {
+                        pInvMatrixArray[i + j] = m4fTmp[j];
+                    }
+                }
+            }
+        }
 
         return pJoints;
     }
@@ -697,13 +742,15 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
             case 'JOINT':
                 pInput.sArrayId = COLLADAGetSourceData(pInput.sSource, pSupportedJointFormat);
                 break;
+            case 'INV_BIND_MATRIX':
+                pInput.sArrayId = COLLADAGetSourceData(pInput.sSource, pSupportedInvBindMatrixFormat);
+                break;
             case 'UV':
             case 'OUT_TANGENT':
             case 'OUTPUT':
             case 'MORPH_WEIGHT':
             case 'MORPH_TARGET':
             case 'LINEAR_STEPS':
-            case 'INV_BIND_MATRIX':
             case 'INTERPOLATION':
             case 'IN_TANGENT':
             case 'INPUT':
@@ -720,7 +767,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
     }
 
     function COLLADAGetSourceData (sSourceId, pFormat) {
-        var nStride = pFormat.length;
+        var nStride = calcFormatStride(pFormat);
         var pSource = source(sSourceId);
         debug_assert(pSource, '<source /> with id <' + sSourceId + '> not founded');
 
@@ -731,10 +778,12 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         debug_assert(pAccess.iStride <= nStride,
                '<source /> width id' + sSourceId + ' has unsupported stride: ' + pAccess.iStride);
 
-        for (var i in pAccess.param) {
-            if (pAccess.param[i].sName != pFormat[i].sName ||
-                pAccess.param[i].sType != pFormat[i].sType) {
-                debug_error('vertices accessor has unsupported format');
+        for (var i in pAccess.pParam) {
+            if (pAccess.pParam[i].sName.toLowerCase() != pFormat[i].sName.toLowerCase() ||
+                pAccess.pParam[i].sType.toLowerCase() != pFormat[i].sType.toLowerCase()) {
+                trace('expected format: ', pFormat);
+                trace('given format: ', pAccess.pParam);
+                debug_error('accessor of <' + sSourceId + '> has unsupported format');
             }
         }
         return (pAccess.sSource);
@@ -810,13 +859,14 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         var pSkin = {
             m4fShapeMatrix: COLLADAData(firstChild(pXML, 'bind_shape_matrix')),
             pSource: [],
-            pJoint: null,
+            pGeometry: source(attr(pXML, 'source')),
+            pJoints: null,
             pVertexWeights: null
 
             //TODO:  add other parameters to skin section
         }
 
-        var id, tmp, pJoints, pPos;
+        var tmp;
 
         eachChild(pXML, function (pXMLData, sName) {
             switch (sName) {
@@ -824,7 +874,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
                     pSkin.pSource.push(COLLADASource(pXMLData));
                     break;
                 case 'joints':
-                    pJoints = COLLADAJoints(pXMLData);
+                    pSkin.pJoints = COLLADAJoints(pXMLData);
                     break;
                 case 'vertex_weights':
                     tmp = COLLADAVertexWeights(pXMLData);
@@ -835,6 +885,8 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
                     break;
             }
         });
+
+        return pSkin;
     }
 
     function COLLADAController (pXML) {
@@ -847,10 +899,13 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
 
         link(pController);
 
-        var pXMLData = firstChild(pXML);
+        var pXMLData = firstChild(pXML, 'skin');
 
-        if (pXMLData.nodeName == 'skin') {
+        if (pXMLData) {
             pController.pSkin = COLLADASkin(pXMLData);
+        }
+        else {
+            return null;
         }
 
         return (pController);
@@ -975,6 +1030,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
             if (pXMLData) {
                 eachChild(pXMLData, function (pXMLData, sName) {
                     switch (sName) {
+                        case 'float':
                         case 'color':
                             pMat[pList[i]] = COLLADAData(pXMLData);
                             break;
@@ -989,7 +1045,9 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
 
             }
         }
+
         pMat.shininess *= 10.0;
+
         return pMat;
     }
 
@@ -1037,6 +1095,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
             switch (sName) {
                 case 'profile_COMMON':
                     pEffect.pProfileCommon = COLLADAProfileCommon(pXMLData);
+                    pEffect.pProfileCommon.pTechnique.pValue.name = pEffect.id;
                     break;
                 case 'extra':
                     break;
@@ -1108,8 +1167,6 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
             pInst.pSkeleton.push(stringData(pXMLData));
         }); 
 
-        trace(pInst, '<< instance controller');
-
         return pInst;
     }
 
@@ -1122,7 +1179,9 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         return pInst;
     }
 
-    function COLLADANode(pXML) {
+    function COLLADANode(pXML, iDepth) {
+        iDepth = iDepth || 0;
+
         var pNode = {
             id:          attr(pXML, 'id'),
             sid:         attr(pXML, 'sid'),
@@ -1132,7 +1191,8 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
             m4fTransform: Mat4.identity(new Matrix4),
             pGeometry:   [],
             pController: [],
-            pChildNodes: []
+            pChildNodes: [],
+            iDepth: iDepth
         };
 
         var m4fTransform = Mat4.identity(new Matrix4), m4fMatrix;
@@ -1153,10 +1213,10 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
                     pNode.pGeometry.push(COLLADAInstanceGeometry(pXMLData));
                     break;
                 case 'instance_controller':
-                    //pNode.pController.push(COLLADAInstanceController(pXMLData));
+                    pNode.pController.push(COLLADAInstanceController(pXMLData));
                     break;
                 case 'node':
-                    pNode.pChildNodes.push(COLLADANode(pXMLData));
+                    pNode.pChildNodes.push(COLLADANode(pXMLData, iDepth + 1));
                     break;
             }
         });
@@ -1219,7 +1279,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
             
             //modify path to the textures relative to a given file
             if (sFilename) {
-                if (!a.pathinfo(sFilename).isAbsolute() && !a.pathinfo(pImage.sImagePath).isAbsolute()) {
+                if (!a.pathinfo(sPath).isAbsolute()) {
                     sPath = a.pathinfo(sFilename).dirname + '/' + sPath;   
                 }
             }
@@ -1316,6 +1376,11 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         return pScene;
     }
 
+
+    //================================================================
+    // BUILD ENGINE OBJECTS
+    //================================================================
+    //
     function buildAssetMatrix () {
         var fUnit = pAsset.pUnit.fMeter;
         var sUPaxis = pAsset.sUPaxis;
@@ -1327,10 +1392,6 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
 
         return m4fAsset;
     }
-
-    //================================================================
-    // BUILD ENGINE OBJECTS
-    //================================================================
 
     function buildMaterials (pMesh, pMeshNode) {
         'use strict';
@@ -1348,7 +1409,9 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
                 var pSubMesh = pMesh[j];
 
                 if (pSubMesh.material.name === sMaterial) {
+                    //setup materials
                     pSubMesh.material.value = pMaterial;
+
                     //FIXME: remove flex material setup(needs only demo with flexmats..)
                     pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
 
@@ -1371,12 +1434,6 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
                         var iTexture = __ENUM__(SURFACEMATERIAL_TEXTURES)[c.toUpperCase()];
 
                         pSurfaceMaterial.setTexture(iTexture, pTexture, iTexCoord);
-
-                        // pTexture.setChangesNotifyRoutine(function() {
-                        //     if (pTexture.isResourceLoaded()) {
-                        //         trace('Texture <', pColladaImage.pImage.sImagePath, '> loaded');
-                        //     }
-                        // });
                     }
                 }
             }
@@ -1493,6 +1550,109 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         return buildMaterials(pMesh, pMeshNode);
     };
 
+    function findNode (pNodes, sNode, fnNodeCallback) {
+        sNode = sNode || null;
+        fnNodeCallback = fnNodeCallback || null;
+
+        var pNode = null;
+        var pRootJoint = null;
+
+        for (var i = pNodes.length - 1; i >= 0; i --) {
+            pNode = pNodes[i];
+            
+            if (pNode === null) {
+                continue;
+            }
+     
+            if (sNode && '#' + pNode.id === sNode) {
+                return pNode;
+            }
+
+            if (fnNodeCallback) {
+                fnNodeCallback(pNode);
+            }
+
+            if (pNode.pChildNodes) {
+                pRootJoint = findNode(pNode.pChildNodes, sNode, fnNodeCallback);
+                
+                if (pRootJoint) {
+                    return pRootJoint;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    function buildBoneList (pControllerInstance) {
+        var pController = pControllerInstance.pController;
+        var pSkin = pController.pSkin;
+        var pBoneList = pSkin.pJoints.pInput['JOINT'].pArray;
+        var pSkeleton = pControllerInstance.pSkeleton;
+        
+        var pExpectedRootNode = source(pSkeleton.first);
+        var iCount = 1;
+        var pNode;
+        var pRootNode = null;
+        var pSkeletonCache = null;
+
+        for (var i = 1; i < pSkeleton.length; i++) {
+            pNode = source(pSkeleton[i]);
+            if (pNode) {
+                if (pNode.iDepth < pExpectedRootNode.iDepth) {
+                    iCount = 1;
+                    pExpectedRootNode = pNode;
+                }
+                else if (pNode.iDepth == pExpectedRootNode.iDepth) {
+                    iCount ++;
+                }
+            }
+        };
+
+        debug_assert(pExpectedRootNode && iCount === 1, 'invalid skeleton hierarhy, root node ' + 
+            'not found or root is not singleton');
+
+Ifdef (__DEBUG);
+
+        pSkeletonCache = {};
+
+        for (var i = 0; i < pSkeleton.length; i++) {
+            pSkeletonCache[pSkeleton[i].substr(1)] = false;
+        };
+
+        pSkeletonCache[pExpectedRootNode.id] = true;
+
+        findNode(pExpectedRootNode.pChildNodes, null, function (pNode) {
+            if (pSkeletonCache[pNode.id] === false) {
+                pSkeletonCache[pNode.id] = true;
+            }
+        });
+
+
+        for (var s in pSkeletonCache) {
+            if (pSkeletonCache[s] === false) {
+                error('not all <skeleton> elements founded in root <skeleton>, ' + 
+                    'some thing going wrong...');
+            }
+        }
+
+Endif ();
+
+        pRootNode = pExpectedRootNode;
+      
+    }
+
+    function buildSkinMesh (pSkinMeshNode, pMeshList) {
+        var pMeshNode = {
+            pGeometry: pSkinMeshNode.pController.pSkin.pGeometry,
+            pMaterials: pSkinMeshNode.pMaterials
+        }
+
+        buildBoneList(pSkinMeshNode);
+
+        return buildMesh(pMeshNode, pMeshList);
+    }
+
     function buildSceneNode (pNodes, pParentNode, pMeshList) {
         pParentNode = pParentNode || null;
 
@@ -1500,10 +1660,11 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
             return null;
         }
 
-        var pSceneNodeSibling = null;
+        //var pSceneNodeSibling = null;
         var pNode = null;
         var pSceneNode = null;
         var pMesh = null;
+        var pGeometry = null;
 
         for (var i = pNodes.length - 1; i >= 0; i --) {
             pNode = pNodes[i];
@@ -1512,13 +1673,21 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
                 continue;
             }
 
-            pSceneNodeSibling = pSceneNode;
+            //pSceneNodeSibling = pSceneNode;
 
-            if (pNode.pGeometry.length) {
+            if (pNode.pController.length) {
+                
+                pSceneNode = new a.SceneModel(pEngine);
+
+                for (var m = 0; m < pNode.pController.length; ++ m) {
+                    pSceneNode.addMesh(buildSkinMesh(pNode.pController[m], pMeshList));  
+                }
+            } 
+            else if (pNode.pGeometry.length) {
                 pSceneNode = new a.SceneModel(pEngine);
 
                 for (var m = 0; m < pNode.pGeometry.length; ++ m) {
-                  pSceneNode.addMesh(buildMesh(pNode.pGeometry[m], pMeshList));  
+                    pSceneNode.addMesh(buildMesh(pNode.pGeometry[m], pMeshList));  
                 }
             }
             else {

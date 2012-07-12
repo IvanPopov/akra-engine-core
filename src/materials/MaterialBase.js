@@ -9,6 +9,7 @@ Enum([
     AMBIENT = 'AMBIENT',
     SPECULAR = 'SPECULAR',
     EMISSIVE = 'EMISSIVE',
+    EMISSION = 'EMISSIVE',
     SHININESS = 'SHININESS',
     REFLECTIVE = 'REFLECTIVE',
     REFLECTIVITY = 'REFLECTIVITY',
@@ -38,11 +39,14 @@ PROPERTY(MaterialBase, 'value',
       return;
     }
     
-    var pPoperties = __KEYS__(MATERIAL_COMPONENTS);
+    var pPoperties = __ENUM__(MATERIAL_COMPONENTS);
     
     for (var i in pPoperties) {
-      this.setProperty(pPoperties[i], 
-        pMaterialBase.getProperty(pPoperties[i]));
+      if (i === 'EMISSION') {
+        continue;
+      }
+
+      this.setProperty(i, pMaterialBase.getProperty(i));
     }
   });
 
@@ -99,12 +103,12 @@ MaterialBase.prototype.setProperty = function(eProperty, pValue) {
 
 a.MaterialBase = MaterialBase;
 
-for (var m in __KEYS__(MATERIAL_COMPONENTS)) {
-  (function (sComponent) {
+for (var m in __ENUM__(MATERIAL_COMPONENTS)) {
+  (function (sComponent, eValue) {
       PROPERTY(MaterialBase, sComponent.toLowerCase(), 
-      function () {return this.getProperty(sComponent);},
-      function (c4fColor) {this.setProperty(sComponent, c4fColor);});
-  })(__KEYS__(MATERIAL_COMPONENTS)[m]);
+      function () {return this.getProperty(eValue);},
+      function (c4fColor) {this.setProperty(eValue, c4fColor);});
+  })(m, __ENUM__(MATERIAL_COMPONENTS)[m]);
 }
 
 MaterialBase.prototype.toDefault = function() {
@@ -115,3 +119,30 @@ MaterialBase.prototype.toDefault = function() {
   this.specular = new a.Color4f(.5, 1.)
   this.shininess = 55.;
 };
+
+Ifdef (__DEBUG);
+
+MaterialBase.prototype.toString = function () {
+    'use strict';
+    
+    var s = '';
+    function printColor (pColor) {
+      var r = Math.floor(pColor.R * 255);
+      var g = Math.floor(pColor.G * 255);
+      var b = Math.floor(pColor.B * 255);
+      var a = Math.floor(pColor.A * 255);
+      return '0x' + r.toHex(2) + g.toHex(2) + b.toHex(2) + a.toHex(2) + 
+        '  (R: ' + pColor.R.toFixed(2) + ', G: ' + pColor.G.toFixed(2) + 
+        ', B: ' + pColor.B.toFixed(2) + ', A: ' + pColor.A.toFixed(2) + ')';
+    }
+    s += 'MATERIAL: ' + this.name + '\n';
+    s += '----------------------------------------------\n';
+    s += ' diffuse: ' + printColor(this.diffuse) + '\n';
+    s += ' ambient: ' + printColor(this.ambient) + '\n';
+    s += 'emissive: ' + printColor(this.emissive) + '\n';
+    s += 'specular: ' + printColor(this.specular) + '\n';
+    s += 'shininess: ' + this.shininess + '\n';
+    return s;
+};
+
+Endif ();

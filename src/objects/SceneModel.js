@@ -389,8 +389,6 @@ SceneModel.prototype.render = function () {
     for (var i = 0; i < pMesh.length; ++ i) {
         var pSubMesh = pMesh[i];
         var pSurface = pSubMesh.surfaceMaterial;
-        var iTextureFlags = pSurface.textureFlags;
-        var iTexActivator = 1;
 
         if (pSubMesh.data.useAdvancedIndex()) {
             pProgram = pEngine.pDrawMeshI2IProg;
@@ -419,20 +417,21 @@ SceneModel.prototype.render = function () {
 
         
         if (pSurface.totalTextures) {
-            for (var i = 0; i < a.SurfaceMaterial.maxTexturesPerSurface; ++ i) {
-                if (!TEST_BIT(iTextureFlags, i)) {
+            var iTextureFlags = pSurface.textureFlags;
+            var iTexActivator = 1;
+            
+            for (var j = 0; j < a.SurfaceMaterial.maxTexturesPerSurface; ++ j) {
+                if (!TEST_BIT(iTextureFlags, j)) {
+                    if (j < 4) {
+                        pProgram.applySampler2D('TEXTURE' + j, 15);
+                    }
                     continue;
                 }
 
-                pSurface.texture(i).activate(iTexActivator);
-                pProgram.applySampler2D('TEXTURE' + i, iTexActivator);
-                //trace('pProgram.applySampler2D(', 'TEXTURE' + i,',', iTexActivator,')');
+                pSurface.texture(j).activate(iTexActivator);
+                pProgram.applySampler2D('TEXTURE' + j, iTexActivator);
                 iTexActivator ++;
             }
-
-            pProgram.applySampler2D('TEXTURE' + 1, 19);
-            pProgram.applySampler2D('TEXTURE' + 2, 19);
-            pProgram.applySampler2D('TEXTURE' + 3, 19);
         }
 
         pSubMesh.draw();

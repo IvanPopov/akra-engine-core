@@ -44,8 +44,34 @@
 
     String.prototype.replaceAt = function (n, chr) {
         return this.substr(0, n) + chr + this.substr(n + chr.length);
-    }
+    };
 
+    Number.prototype.toHex = function (iLength) {
+        'use strict';
+        var sValue = this.toString(16);
+        for (var i = 0; i < iLength - sValue.length; ++ i) {
+            sValue = '0' + sValue;
+        }
+        return sValue;
+    };
+
+    Object.defineProperty(Array.prototype, 'last', {
+        enumerable: false,
+        configurable: true,
+        get: function() {
+            return this[this.length - 1];
+        },
+        set: undefined
+    });
+
+    Object.defineProperty(Array.prototype, 'el', {
+        enumerable: false,
+        configurable: true,
+        value: function (i) {i = i || 0; return this[i < 0? this.length + i: i];} 
+    });
+
+
+    Define(first, __[0]);
 
     //Include('libs/xml/xml2json.js');
 
