@@ -696,7 +696,7 @@ RenderData.prototype.draw = function () {
 
     var pProgram;
 
-    if (this._pIndexData === null) {
+    if (this._pIndexData === null && this._pAttribData === null) {
             return;
     }
 

@@ -53,7 +53,11 @@ Include('render/');
 Include('model/');
 Include('resources/ModelResource.js');
 
+/*particle system*/
 Include('particles/');
+
+/*sprites*/
+Include('sprites/');
 
 Include('objects/');
 Include('Engine.js');

@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @brief файл содержит реализацию эмиттеров и эмиттер менеджера в Akra Engine
+ * @author Igor Karateev
+ * @email iakarateev@gmail.com
+ */
+
 Enum(
 	[ 
 		POINT = 1,
@@ -32,28 +39,22 @@ ParticleManager.prototype._setup = function(){
 	this._pFramebuffer = pDevice.createFramebuffer();
 }
 
-ParticleManager.prototype.createEmitter = function(eType,nParticles){
+ParticleManager.prototype.registerEmitter = function(pEmitter){
 	'use strict';
-	var iId = this._pEmitters.length;
 	var pDataSubset = this._pDataFactory.getEmptyRenderData(a.PRIMTYPE.POINTLIST,0);
-    var pEmitter = new Emitter(this._pEngine,this,pDataSubset,eType,nParticles,iId);
-
     this._pEmitters.push(pEmitter);
 
-    return pEmitter;
-};
+    return pDataSubset;
+}
 
 A_NAMESPACE(ParticleManager);
 
-function Emitter(pEngine,pParticleManager,pDataSubset,eType,nParticles,iId){
+function Emitter(pEngine,eType,nParticles){
 	'use strict';
-
 	A_CLASS;
 
 	this._pEngine = pEngine;
-	this._pParticleManager = pParticleManager;
-	this._pDataSubset = pDataSubset;
-	this._iId = iId;
+	this._pDataSubset = pEngine.particleManager().registerEmitter(this);
 	this._eType = eType; //тип источника - точки, треугольники, билборд, объект или меш
 	this._nParticles = nParticles;
 
@@ -211,8 +212,6 @@ Emitter.prototype.setParticleData = function(pVertexDecl,pData){
 			this._pParticleOffsetsList[sUniformName] = iOffset;
 		}
 	}
-	//trace(this._pParticleData.toString());
-	//trace(this._pParticleData.getVertexDeclaration(),this._pParticleDataDeclaration);
 };
 
 Emitter.prototype._setObjectData = function(pVertexDecl,pData){
@@ -389,8 +388,8 @@ Emitter.prototype.setTimeAcceleration = function(fTimeAcceleration){
  * активация источника
  */
 Emitter.prototype.activate = function(){
+	'use strict';
 	//готов ли источник (должны быть проставлены позиции, скорости, и время жизни)
-	
 	this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
 	if(this._pDataSubset.hasSemantics('PARTICLE_POSITION',false) &&
 		this._pDataSubset.hasSemantics('PARTICLE_VELOCITY',false) &&
@@ -410,6 +409,8 @@ Emitter.prototype.activate = function(){
  * генерируются индексы и атрибуты для обновления и отрисовки частиц
  */
 Emitter.prototype._generateIndices = function(){
+	'use strict';
+
 	var pUpdateIndex = new Float32Array(this._nParticles);
 	var pDrawIndex;
 
@@ -459,7 +460,8 @@ Emitter.prototype._generateIndices = function(){
 		}
 	}
 
-	trace(this._pDataSubset.toString());
+	// trace(this._pDataSubset.toString());
+	// trace(this._pObjectData.getTypedData('TEXTURE_POSITION'),this._pObjectData.getTypedData('POSITION'));
 
 	this._pDataSubset.selectIndexSet(this._iUpdateMapIndex);
 	this._pDataSubset.allocateIndex([VE_FLOAT('INDEX_UPDATE')],pUpdateIndex);
@@ -516,12 +518,11 @@ Emitter.prototype.update = function(){
 Emitter.prototype._update = function(){
 	'use strict';
 	var pDevice = this._pEngine.pDevice;
-	var pFramebuffer = this._pParticleManager._pFramebuffer;
+	var pFramebuffer = this._pEngine.particleManager()._pFramebuffer;
 
 	pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,pFramebuffer);
 	
-	
-	var pDataBuffer = this._pParticleManager._pDataFactory._pDataBuffer;
+	var pDataBuffer = this._pEngine.particleManager()._pDataFactory._pDataBuffer;
 	pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER,pDevice.COLOR_ATTACHMENT0,pDevice.TEXTURE_2D,pDataBuffer._pTexture,0);
 	var iHeight = pDataBuffer.height;
 	var iWidth = pDataBuffer.width;
@@ -596,7 +597,7 @@ Emitter.prototype.render = function() {
 	//TODO:
 	//использовать очередь рендеринга
 	if(this._isActive && this._fnDraw!=null){
-		this.renderCallback();
+		//this.renderCallback();
 	}
 };
 
@@ -631,20 +632,16 @@ Emitter.prototype.renderCallback = function() {
 		}
 	}
 	
-	this._fnDraw(this._fDt,this._fTime,this._nStep,pProgram,'draw',this);
+	this._fnDraw(this._fDt,this._fTime,this._nStep,pProgram,'draw');
 
 	var pDevice = this._pEngine.pDevice;
-	//trace(this._pDataSubset.toString());
 	pDevice.enable(pDevice.BLEND);
-	pDevice.depthFunc(pDevice.ALWAYS);
-    //pDevice.disable(pDevice.DEPTH_TEST);
+    pDevice.disable(pDevice.DEPTH_TEST);
     pDevice.blendFunc(pDevice.SRC_ALPHA, pDevice.ONE_MINUS_SRC_ALPHA);
 
 	this._pDataSubset.draw();
 
-	pDevice.depthFunc(pDevice.LESS);
-	//pDevice.enable(pDevice.DEPTH_TEST);
-    //pDevice.blendFunc(pDevice.ONE, pDevice.ONE);
+	pDevice.enable(pDevice.DEPTH_TEST);
     pDevice.disable(pDevice.BLEND);
 };
 
