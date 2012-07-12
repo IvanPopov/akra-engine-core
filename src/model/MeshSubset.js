@@ -123,6 +123,10 @@ MeshSubset.prototype.setFlexMaterial = function (iMaterial) {
     return true;
 };
 
-
+MeshSubset.prototype.draw = function () {
+    'use strict';
+    
+    this._pRenderData.draw();
+};
 
 A_NAMESPACE(MeshSubset);

@@ -299,6 +299,13 @@ RenderSnapshot.prototype.hasRenderMethod = function () {
  * @return {Boolean} 
  */
 RenderSnapshot.prototype.isReady = function() {
+    // if (!this._pRenderMethod.isResourceLoaded()) {
+    //     trace(this._pRenderMethod.findResourceName(), 'not loaded');
+    // }
+    // else {
+    //     trace(this._pRenderMethod.findResourceName(), 'loaded')
+    //     trace('isResourceDisabled:',this._pRenderMethod.isResourceDisabled());
+    // }
     return this._pRenderMethod.isResourceLoaded() && 
         !this._pRenderMethod.isResourceDisabled();
 };

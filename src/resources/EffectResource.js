@@ -48,6 +48,8 @@ function EffectResource (pEngine) {
     this._pPassStates = [];
 
     this._pModificationCallbacks = [];
+
+
 }
 
 
