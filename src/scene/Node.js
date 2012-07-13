@@ -1,31 +1,15 @@
-/**
- * @file
- * @brief functions and classes to Scene
- * @author sss
- *
- * Classes reload:
- * cSceneNode,
- * cSubNodeGroup,
- * cOrientation,
- * cSceneObject,
- */
 var TEMPSCENEVECTOR3FORCALC0 = Vec3.create();
 var TEMPSCENEMATRIX4FORCALC0 = Mat4.create();
 
-/**
- * Scene node Class
- * @extends ReferenceCounter
- * @ctor
- * Constructor.
- * The constructor initializes all papams for SceneNode
- */
-function SceneNode (pEngine) {
+function Node(){
+    A_CLASS;
     Enum([
              k_setForDestruction = 0,
              k_newLocalMatrix,
              k_newWorldMatrix,
              k_rebuildInverseWorldMatrix,
              k_rebuildWorldVectors,
+             k_rebuildNormalMatrix,
              k_ignoreOrientation
          ], eUpdateDataFlagBits, a.Scene);
     Enum([
@@ -33,34 +17,26 @@ function SceneNode (pEngine) {
              k_inheritRotScaleOnly,
              k_inheritAll
          ], eInheritance, a.Scene);
-
-    debug_assert(pEngine, "SceneNode. Engine не передан");
-
-    this._pEngine = pEngine;
+    
+    this._m4fLocalMatrix = null;
     /**
      * Matrix
      * @private
      * @type Float32Array
      */
-    this._m4fLocalMatrix = Mat4.create();
+    this._m4fWorldMatrix = null;
     /**
      * Matrix
      * @private
      * @type Float32Array
      */
-    this._m4fWorldMatrix = Mat4.create();
+    this._m4fInverseWorldMatrix = null;
     /**
      * Matrix
      * @private
      * @type Float32Array
      */
-    this._m4fInverseWorldMatrix = Mat4.create();
-    /**
-     * Matrix
-     * @private
-     * @type Float32Array
-     */
-    this._m3fNormalMatrix = Mat3.create();
+    this._m3fNormalMatrix = null;
     /**
      * Bit flag
      * @private
@@ -86,18 +62,6 @@ function SceneNode (pEngine) {
      */
     this._pChild = null;
     /**
-     * Pointer to sub node group
-     * @private
-     * @type SubNodeGroup
-     */
-    this._pSubNodeGroupData = null;
-    /**
-     * Pointer to sub node group owner
-     * @private
-     * @type SceneNode
-     */
-    this._pSubNodeGroupOwner = null;
-    /**
      * Inheritance from  eInheritance
      * @private
      * @type Int
@@ -108,36 +72,53 @@ function SceneNode (pEngine) {
      * @private
      * @type Float32Array
      */
-    this._v3fWorldPosition = Vec3.create();
+    this._v3fWorldPosition = null;
     /**
      * World Right
      * @private
      * @type Float32Array
      */
-    this._v3fWorldRight = Vec3.create();
+    this._v3fWorldRight = null;
     /**
      * World up
      * @private
      * @type Float32Array
      */
-    this._v3fWorldUp = Vec3.create();
+    this._v3fWorldUp = null;
     /**
      * World forward
      * @private
      * @type Float32Array
      */
-    this._v3fWorldForward = Vec3.create();
+    this._v3fWorldForward = null;
 
-    SceneNode.superclass.constructor.apply(this);
+    this._sName = null;
 }
 
-a.extend(SceneNode, a.ReferenceCounter);
+EXTENDS(Node, a.ReferenceCounter);
 
-/**
- * Get parent
- * @treturn SceneNode _pParent
- */
-SceneNode.prototype.parent = function () {
+PROPERTY(Joint, 'name',
+    function () {
+        return this._sName;
+    },
+    function (sName) {
+        this._sName = sName;
+    });
+
+Node.prototype.setName = function (sName) {
+    'use strict';
+    
+    this._sName = sName;
+};
+
+Node.prototype.getName = function () {
+    'use strict';
+    
+    return this._sName;
+};
+
+
+Node.prototype.parent = function () {
     INLINE();
     return this._pParent;
 };
@@ -145,7 +126,7 @@ SceneNode.prototype.parent = function () {
  * Get sibling
  * @treturn SceneNode _pSibling
  */
-SceneNode.prototype.sibling = function () {
+Node.prototype.sibling = function () {
     INLINE();
     return this._pSibling;
 };
@@ -153,7 +134,7 @@ SceneNode.prototype.sibling = function () {
  * Get child
  * @treturn SceneNode _pChild
  */
-SceneNode.prototype.child = function () {
+Node.prototype.child = function () {
     INLINE();
     return this._pChild;
 };
@@ -161,7 +142,7 @@ SceneNode.prototype.child = function () {
  * Get worldMatrix
  * @treturn Float32Array _m4fWorldMatrix
  */
-SceneNode.prototype.worldMatrix = function () {
+Node.prototype.worldMatrix = function () {
     INLINE();
     return this._m4fWorldMatrix;
 };
@@ -169,16 +150,19 @@ SceneNode.prototype.worldMatrix = function () {
  * Get normal matrix
  * @treturn Matrix3 _m4fWorldMatrix
  */
-SceneNode.prototype.normalMatrix = function () {
-    INLINE();
-    return Mat3.transpose(Mat4.toInverseMat3(this._m4fWorldMatrix, this._m3fNormalMatrix));
+Node.prototype.normalMatrix = function () {
+    if (TEST_BIT(this._iUpdateFlags, a.Scene.k_rebuildNormalMatrix)) {
+        Mat3.transpose(Mat4.toInverseMat3(this._m4fWorldMatrix, this._m3fNormalMatrix));
+        CLEAR_BIT(this._iUpdateFlags, a.Scene.k_rebuildNormalMatrix);
+    }
+    return this._m3fNormalMatrix;
 };
 
 /**
  * Get localMatrix
  * @treturn Float32Array _m4fLocalMatrix
  */
-SceneNode.prototype.localMatrix = function () {
+Node.prototype.localMatrix = function () {
     INLINE();
     return this._m4fLocalMatrix;
 };
@@ -186,7 +170,7 @@ SceneNode.prototype.localMatrix = function () {
  * Get inverseWorldMatrix
  * @treturn Float32Array _m4fInverseWorldMatrix
  */
-SceneNode.prototype.inverseWorldMatrix = function () {
+Node.prototype.inverseWorldMatrix = function () {
     INLINE();
     // if the inverse matrix is out of date, compute it now
     if (TEST_BIT(this._iUpdateFlags, a.Scene.k_rebuildInverseWorldMatrix)) {
@@ -199,39 +183,16 @@ SceneNode.prototype.inverseWorldMatrix = function () {
  * Get updateFlags
  * @treturn Int _iUpdateFlags
  */
-SceneNode.prototype.updateFlags = function () {
+Node.prototype.updateFlags = function () {
     INLINE();
     return this._iUpdateFlags;
 };
+
 /**
- * Get SubNodeGroupData
- * @treturn SubNodeGroup _pSubNodeGroupData
- */
-SceneNode.prototype.subNodeGroupData = function () {
-    INLINE();
-    return this._pSubNodeGroupData;
-};
-/**
- * Get subNodeGroupOwner
- * @treturn SceneNode _pSubNodeGroupOwner
- */
-SceneNode.prototype.subNodeGroupOwner = function () {
-    INLINE();
-    return this._pSubNodeGroupOwner;
-};
-/**
- * Set subNodeGroupOwner
- * @tparam SceneNode pOwner
- */
-SceneNode.prototype.setSubNodeGroupOwner = function (pOwner) {
-    INLINE();
-    this._pSubNodeGroupOwner = pOwner;
-};
-/**
- * Parent is not undef
- * @treturn Boolean
- */
-SceneNode.prototype.hasParent = function () {
+* Parent is not undef
+* @treturn Boolean
+*/
+Node.prototype.hasParent = function () {
     INLINE();
     if (this._pParent) {
         return true;
@@ -239,10 +200,10 @@ SceneNode.prototype.hasParent = function () {
     return false;
 };
 /**
- * Child is not undef
- * @treturn Boolean
- */
-SceneNode.prototype.hasChild = function () {
+* Child is not undef
+* @treturn Boolean
+*/
+Node.prototype.hasChild = function () {
     INLINE();
     if (this._pChild) {
         return true;
@@ -250,10 +211,10 @@ SceneNode.prototype.hasChild = function () {
     return false;
 };
 /**
- * Sibling is not undef
- * @treturn Boolean
- */
-SceneNode.prototype.hasSibling = function () {
+* Sibling is not undef
+* @treturn Boolean
+*/
+Node.prototype.hasSibling = function () {
     INLINE();
     if (this._pSibling) {
         return true;
@@ -261,17 +222,17 @@ SceneNode.prototype.hasSibling = function () {
     return false;
 };
 /**
- * SET_BIT(_iUpdateFlags, k_newLocalMatrix);
- */
-SceneNode.prototype.setUpdatedLocalMatrixFlag = function () {
+* SET_BIT(_iUpdateFlags, k_newLocalMatrix);
+*/
+Node.prototype.setUpdatedLocalMatrixFlag = function () {
     INLINE();
     SET_BIT(this._iUpdateFlags, a.Scene.k_newLocalMatrix);
 };
 /**
- * Get loclaMatrix with some set_bits
- * @treturn Float32Array _m4fLocalMatrix
- */
-SceneNode.prototype.accessLocalMatrix = function () {
+* Get loclaMatrix with some set_bits
+* @treturn Float32Array _m4fLocalMatrix
+*/
+Node.prototype.accessLocalMatrix = function () {
     INLINE();
     this.setUpdatedLocalMatrixFlag();
     SET_BIT(this._iUpdateFlags, a.Scene.k_ignoreOrientation);
@@ -280,62 +241,18 @@ SceneNode.prototype.accessLocalMatrix = function () {
 
 
 /**
- * Test bit k_newWorldMatrix
- * @treturn Boolean
- */
-SceneNode.prototype.isWorldMatrixNew = function () {
+* Test bit k_newWorldMatrix
+* @treturn Boolean
+*/
+Node.prototype.isWorldMatrixNew = function () {
     INLINE();
     return TEST_BIT(this._iUpdateFlags, a.Scene.k_newWorldMatrix);
 };
-/**
- * Set Local and World Natrix identify
- * @treturn Boolean
- */
-SceneNode.prototype.create = function () {
-    //this._m4fLocalMatrix = Mat4.create();
-    Mat4.identity(this._m4fLocalMatrix);
-    //this._m4fWorldMatrix = Mat4.create();
-    Mat4.identity(this._m4fWorldMatrix);
-    //Mat4.identity(this._m4fInverseWorldMatrix);
+
+Node.prototype.create = function () {
     return true;
 };
-/**
- * Create from resource
- * @tparam Int iModelResource
- * @treturn Boolean
- */
-SceneNode.prototype.createFromResource = function (iModelResource) {
-    // dump any current animation data
-    this.releaseGroupData();
-
-    this._pSubNodeGroupData = new SubNodeGroup();
-    if (this._pSubNodeGroupData.create(this, iModelResource)) {
-        return true;
-    }
-    else {
-        delete this._pSubNodeGroupData;
-    }
-    return false;
-};
-/**
- * Safe delete pSubNodeGroupData
- * @private
- */
-SceneNode.prototype.releaseGroupData = function () {
-    if (this._pSubNodeGroupData) {
-        this._pSubNodeGroupData.destroy();
-        delete this._pSubNodeGroupData;
-    }
-}
-
-/**
- * Destroys the object. The object is removed from it's parent (if any) and all Children
- * Objects are orphaned (parent set to NULL).
- */
-SceneNode.prototype.destroy = function () {
-    // release any group information
-    this.releaseGroupData();
-
+Node.prototype.destroy = function () {
     // destroy anything attached to this node
     //	destroySceneObject();
     // promote any children up to our parent
@@ -346,15 +263,13 @@ SceneNode.prototype.destroy = function () {
     debug_assert(this.referenceCount() == 0, "Attempting to delete a scene node which is still in use");
     debug_assert(this._pSibling == null, "Failure Destroying Node");
     debug_assert(this._pChild == null, "Failure Destroying Node");
-    // clear pLink information
-    this._pSubNodeGroupOwner = null;
 };
 /**
  * Sets the internal pointer to the First sibling object
  * @tparam SceneNode pNode
  * @private
  */
-SceneNode.prototype.setSibling = function (pNode) {
+Node.prototype.setSibling = function (pNode) {
     this._pSibling = pNode;
 };
 /**
@@ -362,7 +277,7 @@ SceneNode.prototype.setSibling = function (pNode) {
  * @tparam SceneNode pNode
  * @private
  */
-SceneNode.prototype.setChild = function (pNode) {
+Node.prototype.setChild = function (pNode) {
     this._pChild = pNode;
 };
 /**
@@ -371,7 +286,7 @@ SceneNode.prototype.setChild = function (pNode) {
  * @tparam SceneNode pSibling
  * @private
  */
-SceneNode.prototype.addSibling = function (pSibling) {
+Node.prototype.addSibling = function (pSibling) {
     if (pSibling) {
         // replace objects current sibling pointer with this new one
         pSibling.setSibling(this._pSibling);
@@ -384,7 +299,7 @@ SceneNode.prototype.addSibling = function (pSibling) {
  * @tparam SceneNode pChild
  * @private
  */
-SceneNode.prototype.addChild = function (pChild) {
+Node.prototype.addChild = function (pChild) {
     if (pChild) {
         // Replace the new child's sibling pointer with our old first child.
         pChild.setSibling(this._pChild);
@@ -398,7 +313,7 @@ SceneNode.prototype.addChild = function (pChild) {
  * @tparam SceneNode pChild
  * @private
  */
-SceneNode.prototype.removeChild = function (pChild) {
+Node.prototype.removeChild = function (pChild) {
     if (this._pChild && pChild) {
         if (this._pChild == pChild) {
             this._pChild = pChild.sibling();
@@ -424,7 +339,7 @@ SceneNode.prototype.removeChild = function (pChild) {
  * Removes all Children from this parent object
  * @private
  */
-SceneNode.prototype.removeAllChildren = function () {
+Node.prototype.removeAllChildren = function () {
     // keep removing children until end of chain is reached
     while (this._pChild != 0) {
         var NextSibling = this._pChild.sibling();
@@ -436,7 +351,7 @@ SceneNode.prototype.removeAllChildren = function () {
  * Attaches this object ot a new parent. Same as calling the parent's addChild() routine.
  * @tparam SceneNode pParent
  */
-SceneNode.prototype.attachToParent = function (pParent) {
+Node.prototype.attachToParent = function (pParent) {
     if (pParent != this._pParent) {
         this.detachFromParent();
         if (pParent) {
@@ -453,13 +368,13 @@ SceneNode.prototype.attachToParent = function (pParent) {
  * Setter for iInheritance
  * @tparam Int iSetting Value from eInheritance
  */
-SceneNode.prototype.setInheritance = function (iSetting) {
+Node.prototype.setInheritance = function (iSetting) {
     this._iInheritance = iSetting;
 };
 /**
  * Detach this object from his parent. Refresh local and world matrix
  */
-SceneNode.prototype.detachFromParent = function () {
+Node.prototype.detachFromParent = function () {
     // tell our current parent to release us
     if (this._pParent) {
         this._pParent.removeChild(this);
@@ -477,7 +392,7 @@ SceneNode.prototype.detachFromParent = function () {
 /**
  * Attaches this object's children to it's parent, promoting them up the tree
  */
-SceneNode.prototype.promoteChildren = function () {
+Node.prototype.promoteChildren = function () {
     // Do I have any children to promote?
     while (this._pChild != null) {
         var NextSibling = this._pChild.sibling();
@@ -489,7 +404,7 @@ SceneNode.prototype.promoteChildren = function () {
  * Set new parent for all children
  * @tparam SceneNode pParent
  */
-SceneNode.prototype.relocateChildren = function (pParent) {
+Node.prototype.relocateChildren = function (pParent) {
     if (pParent != this) {
         // Do I have any children to relocate?
         while (this._pChild != 0) {
@@ -504,7 +419,7 @@ SceneNode.prototype.relocateChildren = function (pParent) {
  * @tparam SceneNode pSibling
  * @treturn Boolean
  */
-SceneNode.prototype.isASibling = function (pSibling) {
+Node.prototype.isASibling = function (pSibling) {
     if (!pSibling) {
         return false;
     }
@@ -524,7 +439,7 @@ SceneNode.prototype.isASibling = function (pSibling) {
  * @tparam SceneNode pChild\
  * @treturn Boolean
  */
-SceneNode.prototype.isAChild = function (pChild) {
+Node.prototype.isAChild = function (pChild) {
     if (!pChild) {
         return (false);
     }
@@ -547,7 +462,7 @@ SceneNode.prototype.isAChild = function (pChild) {
  * @tparam Boolean SearchEntireTree
  * @treturn Boolean
  */
-SceneNode.prototype.isInFamily = function (pNode, SearchEntireTree) {
+Node.prototype.isInFamily = function (pNode, SearchEntireTree) {
     if (!pNode) {
         return (false);
     }
@@ -581,7 +496,7 @@ SceneNode.prototype.isInFamily = function (pNode, SearchEntireTree) {
  * Returns the current number of siblings of this object.
  * @treturn Int
  */
-SceneNode.prototype.siblingCount = function () {
+Node.prototype.siblingCount = function () {
     var count = 0;
     if (this._pParent) {
         var pNextSibling = this._pParent.child();
@@ -598,7 +513,7 @@ SceneNode.prototype.siblingCount = function () {
  * Returns the current number of children of this object
  * @treturn Boolean
  */
-SceneNode.prototype.childCount = function () {
+Node.prototype.childCount = function () {
     var count = 0;
     pNextChild = this.child();
     if (pNextChild) {
@@ -613,37 +528,18 @@ SceneNode.prototype.childCount = function () {
 /**
  * Update matrix
  */
-SceneNode.prototype.update = function () {
+Node.prototype.update = function () {
     // derived classes update the local matrix
     // then call this base function to complete
     // the update
     this.recalcWorldMatrix();
-    // if there is a group attached, update it
-    if (this._pSubNodeGroupData) {
-        this._pSubNodeGroupData.update();
-    }
-    ;
 };
-/**
- * Prepare for update matrix of node
- */
-SceneNode.prototype.prepareForUpdate = function () {
+Node.prototype.prepareForUpdate = function () {
     // clear the temporary flags
     a.BitFlags.clearFlags(this._iUpdateFlags, FLAG(a.Scene.k_newLocalMatrix) | FLAG(a.Scene.k_newWorldMatrix));
 };
-/**
- * Prepare for render
- * Base class does nothing. Derived classes
- * should set their LOD levels and prepare
- * for a call to render
- */
-SceneNode.prototype.prepareForRender = function () {
 
-};
-/**
- * Update all child and sibling nodes
- */
-SceneNode.prototype.recursiveUpdate = function () {
+Node.prototype.recursiveUpdate = function () {
     // update myself
     this.update();
     // update my sibling
@@ -658,26 +554,9 @@ SceneNode.prototype.recursiveUpdate = function () {
     this.prepareForUpdate();
 };
 /**
- * This function renders everything in the scene.
- * it is only used by the model viewing tool
- */
-SceneNode.prototype.recursiveRender = function () {
-    // render myself
-    this.prepareForRender();
-    this.render();
-    // render my sibling
-    if (this.sibling()) {
-        this.sibling().recursiveRender();
-    }
-    // render my child
-    if (this.child()) {
-        this.child().recursiveRender();
-    }
-};
-/**
  * Recalculate world Matrix
  */
-SceneNode.prototype.recalcWorldMatrix = function () {
+Node.prototype.recalcWorldMatrix = function () {
     var isParentMoved = this._pParent && this._pParent.isWorldMatrixNew();
     var isWeMoved = TEST_BIT(this._iUpdateFlags, a.Scene.k_newLocalMatrix);
     if (isWeMoved || isParentMoved) {
@@ -739,46 +618,13 @@ SceneNode.prototype.recalcWorldMatrix = function () {
         // and it's inverse & vectors are out of date
         a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_rebuildInverseWorldMatrix, true);
         a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_rebuildWorldVectors, true);
+        a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_rebuildNormalMatrix, true);
     }
-};
-/**
- * @property SceneNode createSubNode(ModelResource pModelResource, int frameIndex)
- * Create subnode from model resource
- * @memberof SceneNode
- */
-/**
- * Create subnode
- * @treturn SceneNode
- */
-SceneNode.prototype.createSubNode = function () {
-    switch (arguments.length) {
-        case 2:
-            var node = new a.SceneModel();
-            node.create();
-            node.setModelResource(pModelResource, frameIndex);
-            node._pSubNodeGroupOwner = this;
-            return node;
-        default:
-            var node = new a.SceneNode();
-            node.create();
-            node._pSubNodeGroupOwner = this;
-            return node;
-    }
-};
-/**
- * Destroy subNode
- * @tparam SceneNode pSubNode
- */
-SceneNode.prototype.destroySubNode = function (pSubNode) {
-    pSubNode.destroy();
-    pSubNode._pSubNodeGroupOwner = null;
-    delete pSubNode;
-    pSubNode = null;
 };
 /**
  * Update world vectors(up, right, up, forward, position) from worldMatrix
  */
-SceneNode.prototype.updateWorldVectors = function () {
+Node.prototype.updateWorldVectors = function () {
     // we only do this when nessesary
     if (TEST_BIT(this._iUpdateFlags, a.Scene.k_rebuildWorldVectors)) {
         var fX, fY, fZ, fW;
@@ -835,9 +681,9 @@ SceneNode.prototype.updateWorldVectors = function () {
 };
 /**
  * Getter for worldPosistion vector
- * @treturn Float32Array _v3fWorldPosition
+ * @treturn Float32Array _v3fWorldPostion
  */
-SceneNode.prototype.worldPosition = function () {
+Node.prototype.worldPosition = function () {
     this.updateWorldVectors();
     return this._v3fWorldPosition;
 };
@@ -845,7 +691,7 @@ SceneNode.prototype.worldPosition = function () {
  * Getter for worldRight vector
  * @treturn Float32Array _v3fWorldRight
  */
-SceneNode.prototype.worldRight = function () {
+Node.prototype.worldRight = function () {
     this.updateWorldVectors();
     return this._v3fWorldRight;
 };
@@ -853,7 +699,7 @@ SceneNode.prototype.worldRight = function () {
  * Getter for worldUp vecror
  * @treturn Float32Array _v3fWorldUp
  */
-SceneNode.prototype.worldUp = function () {
+Node.prototype.worldUp = function () {
     this.updateWorldVectors();
     return this._v3fWorldUp;
 };
@@ -861,21 +707,22 @@ SceneNode.prototype.worldUp = function () {
  * Getter for worldForward vecror
  * @treturn Float32Array _v3fWorldForward
  */
-SceneNode.prototype.worldForward = function () {
+Node.prototype.worldForward = function () {
     this.updateWorldVectors();
     return this._v3fWorldForward;
 };
-SceneNode.prototype.getUp = SceneNode.prototype.worldUp;
-SceneNode.prototype.getRight = SceneNode.prototype.worldRight;
-SceneNode.prototype.getForward = SceneNode.prototype.worldForward;
-SceneNode.prototype.getPosition = SceneNode.prototype.worldPosition;
+Node.prototype.getUp = Node.prototype.worldUp;
+Node.prototype.getRight = Node.prototype.worldRight;
+Node.prototype.getForward = Node.prototype.worldForward;
+Node.prototype.getPosition = Node.prototype.worldPosition;
+
 
 /**
  * Set new position.
  * _v3fPostion = pPos
  * @tparam Float32Array pPos 3d vector
  */
-SceneNode.prototype.setPosition = function (pPos) {
+Node.prototype.setPosition = function (pPos) {
     var m4fLocal = this._m4fLocalMatrix;
     m4fLocal._14 = pPos.X;
     m4fLocal._24 = pPos.Y;
@@ -889,7 +736,7 @@ SceneNode.prototype.setPosition = function (pPos) {
  * _v3fPostion = _v3fRight*pPos.X + _v3fUp*pos.Y + _v3fForward*pos.Z
  * @tparam Float32Array pPos 3d vector
  */
-SceneNode.prototype.setRelPosition = function (pPos) {
+Node.prototype.setRelPosition = function (pPos) {
     var m4fLocal = this._m4fLocalMatrix;
     var fX = pPos.X, fY = pPos.Y, fZ = pPos.Z;
     m4fLocal._14 = m4fLocal._11 * fX + m4fLocal._12 * fY + m4fLocal._13 * fZ;
@@ -904,7 +751,7 @@ SceneNode.prototype.setRelPosition = function (pPos) {
  * _v3fPostion += pPos
  * @tparam Float32Array pPos 3d vector
  */
-SceneNode.prototype.addPosition = function (pPos) {
+Node.prototype.addPosition = function (pPos) {
     var m4fLocal = this._m4fLocalMatrix;
     m4fLocal._14 += pPos.X;
     m4fLocal._24 += pPos.Y;
@@ -918,7 +765,7 @@ SceneNode.prototype.addPosition = function (pPos) {
  * _v3fPostion += _v3fRight*pPos.X + _v3fUp*pos.Y + _v3fForward*pos.Z
  * @tparam Float32Array pPos 3d vector
  */
-SceneNode.prototype.addRelPosition = function (pPos) {
+Node.prototype.addRelPosition = function (pPos) {
     var m4fLocal = this._m4fLocalMatrix;
     var fX, fY, fZ;
     if (arguments.length < 3) {
@@ -957,7 +804,7 @@ SceneNode.prototype.addRelPosition = function (pPos) {
  * roll->pitch->yaw = z -> x -> y
  * @memberof SceneNode
  */
-SceneNode.prototype.setRotation = function () {
+Node.prototype.setRotation = function () {
     var m4fRot;
     var m4fLocal = this._m4fLocalMatrix;
     switch (arguments.length) {
@@ -1040,7 +887,7 @@ SceneNode.prototype.setRotation = function () {
  * roll->pitch->yaw = z -> x -> y
  * @memberof SceneNode
  */
-SceneNode.prototype.addRelRotation = function () {
+Node.prototype.addRelRotation = function () {
     var m4fRot;
     var m4fLocal = this._m4fLocalMatrix;
     switch (arguments.length) {
@@ -1105,7 +952,7 @@ SceneNode.prototype.addRelRotation = function () {
  * roll->pitch->yaw = z -> x -> y
  * @memberof SceneNode
  */
-SceneNode.prototype.addRotation = function () {
+Node.prototype.addRotation = function () {
     var m4fRot;
     var m4fLocal = this._m4fLocalMatrix;
 
@@ -1177,7 +1024,7 @@ SceneNode.prototype.addRotation = function () {
  * Setup scale
  * @tparam Float scale
  */
-SceneNode.prototype.setScale = function (scale) {
+Node.prototype.setScale = function (scale) {
     var m4fLocal = this._m4fLocalMatrix;
     if (typeof(scale) == "number") {
         m4fLocal._11 *= scale;
@@ -1193,552 +1040,72 @@ SceneNode.prototype.setScale = function (scale) {
 };
 
 
-/**
- * SubNode group
- * @ctor
- * Constructor
- */
-function SubNodeGroup () {
-    /**
-     * Parent node of group
-     * @type SceneNode
-     * @private
-     */
-    this._pParentNode = null;
-    /**
-     * ModelResource
-     * @type ModelResource
-     * @private
-     */
-    this._pModelResource = null;
-    /**
-     * Count of subnodes
-     * @type Int
-     * @private
-     */
-    this._totalSubNodes = 0;
-    /**
-     * SubNode list
-     * @type Array(SceneNode)
-     * @private
-     */
-    this._ppSubNodePtrList = null;
-    /**
-     * Count of named subnodes
-     * @type Int
-     * @private
-     */
-    this._totalNamedSubNodes = 0;
-    /**
-     * Named SubNode list
-     * @type Array(SceneNode)
-     * @private
-     */
-    this._ppNamedSubNodePtrList = null;
-    /**
-     * Animation controller
-     * @type AnimationController
-     * @private
-     */
-    this._animController = null;
-}
-;
-/**
- * Getter
- * @treturn ModelResource
- */
-SubNodeGroup.prototype.modelResource = function () {
-    INLINE();
-    return this._pModelResource;
-};
-/**
- * Getter
- * @treturn Int
- */
-SubNodeGroup.prototype.totalSubNodes = function () {
-    INLINE();
-    return this._totalSubNodes;
-};
-/**
- * Getter for subnode by index
- * @tparam Int index
- * @treturn SceneNode
- */
-SubNodeGroup.prototype.subNodePtr = function (index) {
-    INLINE();
-    debug_assert(index < this._totalSubNodes, "invalid subnode index");
-    return this._ppSubNodePtrList[index];
-};
-/**
- * Getter
- * @treturn Int
- */
-SubNodeGroup.prototype.totalNamedSubNodes = function () {
-    INLINE();
-    return this._totalNamedSubNodes;
-};
-/**
- * Getter for subnode by index
- * @tparam Int index
- * @treturn SceneNode
- */
-SubNodeGroup.prototype.namedSubNodePtr = function (index) {
-    INLINE();
-    debug_assert(index < this._totalNamedSubNodes, "invalid subnode index");
-    return this._ppNamedSubNodePtrList[index];
-};
-/**
- * Getter
- * @treturn AnimationController
- */
-SubNodeGroup.prototype.animController = function () {
-    INLINE();
-    return this._animController;
-};
-/**
- * Create
- * @tparam SceneNode pRootNode
- * @tparam Int iModelResource handle of resource in pool
- */
-SubNodeGroup.prototype.create = function (pRootNode, iModelResource) {
-    // destroy any local data
-    this.destroy();
+Ifdef (__DEBUG);
 
-    this._pParentNode = pRootNode;
-    this._pModelResource = a.displayManager().modelPool().getResource(ModelResource);
-    if (this._pModelResource) {
-        // clone the frame tree
-        this._totalSubNodes = this._pModelResource.totalFrames();
-        this._totalNamedSubNodes = 0;
-        this._ppSubNodePtrList = new Array();
-        this._ppNamedSubNodePtrList = new Array();
-        // copy the frame nodes locally
-        for (var i = 0; i < this._totalSubNodes; ++i) {
-            // is a scene object attached to this node?
-            var pMeshContainer = this._pModelResource.frame(i).pMeshContainer;
-            // create this node
-            if (pMeshContainer) {
-                this._ppSubNodePtrList[i] = pRootNode.createSubNode(this._pModelResource, i);
-            }
-            else {
-                this._ppSubNodePtrList[i] = pRootNode.createSubNode();
-            }
-            // pLink to the proper parent node
-            var parentIndex = this._pModelResource.frame(i).parentIndex;
+Node.prototype.dumpHierarchy = function (iDepth, pParent) {
+    'use strict';
 
-            debug_assert(parentIndex == a.define.MAXUINT16, parentIndex < this._pModelResource.frame(i).frameIndex,
-                         "invalid model resource");
+    iDepth = iDepth || 0;
+    pParent = pParent || null;
 
-            if (parentIndex == a.define.MAXUINT16) {
-                this._ppSubNodePtrList[i].attachToParent(pRootNode);
-            }
-            else {
-                this._ppSubNodePtrList[i].attachToParent(this._ppSubNodePtrList[parentIndex]);
-            }
-            // set the local matrix of the sub node
-            var pLocalMatrix = this._pSubNodePtrList[i].accessLocalMatrix();
-            Mat4.set(this._pModelResource.frame(i).TransformationMatrix, pLocalMatrix);
+    var sName = this.getName();
+    var pNode = {
+        name: sName || 'unknown',
+        id: iDepth,
+        data: {},
+        children: []
+    };
 
-            // if the source was a named node, register with the animation controller
-            if (this._pModelResource.frame(i).Name) {
-                this._ppNamedSubNodePtrList[this._totalNamedSubNodes] = this._ppSubNodePtrList[i];
-                ++this._totalNamedSubNodes;
-            }
-        }
-        this._animController.create(this, iModelResource);
-        return true;
+    var pSibling = this.sibling();
+    var pChild = this.child();
+
+    if (pSibling) {
+        pSibling.dumpHierarchy(iDepth + 0.01, pParent);
     }
-    return false;
-};
-/**
- * Destroy all local data
- */
-SubNodeGroup.prototype.destroy = function () {
-    this._animController.destroy();
-    // delete our allocations
-    if (this._ppSubNodePtrList) {
-        for (var i = 0; i < this._totalSubNodes; ++i) {
-            this._pParentNode.destroySubNode(this._ppSubNodePtrList[i]);
-        }
+
+    if (pChild) {
+        pChild.dumpHierarchy(Math.floor(iDepth) + 1, pNode);
     }
-    ;
-    delete this._ppSubNodePtrList;
-    delete this._ppNamedSubNodePtrList;
-    this._totalSubNodes = 0;
-    this._totalNamedSubNodes = 0;
-    // release our reference to the source model
-    this._pModelResource.release();
-    this._pModelResource = null;
-}
-/**
- * Play the current animation
- */
-SubNodeGroup.prototype.update = function () {
-    this._animController.update();
-};
-/**
- * Signal all the subnodes to recalc
- */
-SubNodeGroup.prototype.adjustForAnimationStep = function () {
-    for (var i = 0; i < this._totalNamedSubNodes; ++i) {
-        this._ppNamedSubNodePtrList[i].setUpdatedLocalMatrixFlag();
+
+    if (pParent) {
+        pParent.children.push(pNode);
     }
-};
-/**
- * Scene object Class
- * @extends SceneNode
- * @ctor
- * Constructor.
- * The constructor initializes all papams for SceneObject
- */
-function SceneObject (pEngine) {
 
-    SceneObject.superclass.constructor.apply(this, arguments);
-
-    Enum([
-             k_newLocalBounds = 0,
-             k_newWorldBounds
-         ], eObjectFlagBits, a.Scene);
-
-    // bounding box information
-    /**
-     * Bit flag
-     * @type Int
-     * @private
-     */
-    this._iObjectFlags = 0;
-    /**
-     * Local bounding rect
-     * @type Rect3d
-     * @private
-     */
-    this._pLocalBounds = new a.Rect3d();
-    /**
-     * World bounding rect
-     * @type Rect3d
-     * @private
-     */
-    this._pWorldBounds = new a.Rect3d();
-
-    // world Tree membership information
-    /**
-     * Tree object
-     * @type OcTree
-     * @private
-     */
-    this._pOcTree = null;
-    /**
-     * Tree node where object place
-     * @type OcTreeNode
-     * @private
-     */
-    this._pOcTreeNode = null;
-    /**
-     * Link for object
-     * @type SceneObject
-     * @private
-     */
-    this._pForwardTreeLink = null;
-    /**
-     * Link for object
-     * @type SceneObject
-     * @private
-     */
-    this._pRearTreeLink = null;
-
-    // Tree search result links
-    /**
-     * Link for object
-     * @type SceneObject
-     * @private
-     */
-    this._pForwardSearchLink = null;
-    /**
-     * Link for object
-     * @type SceneObject
-     * @private
-     */
-    this._pRearSearchLink = null;
-}
-;
-
-EXTENDS(SceneObject, SceneNode);
-
-/**
- * Setter
- * @tparam Rect3d pBox
- */
-SceneObject.prototype.setWorldBounds = function (pBox) {
-    INLINE();
-    this._pWorldBounds = pBox;
-};
-/**
- * Setter
- * @tparam SceneObject pForwardLink
- */
-SceneObject.prototype.setForwardSearchLink = function (pForwardLink) {
-    INLINE();
-    this._pForwardSearchLink = pForwardLink;
-};
-/**
- * Setter
- * @tparam SceneObject pRearLink
- */
-SceneObject.prototype.setRearSearchLink = function (pRearLink) {
-    INLINE();
-    this._pRearSearchLink = pRearLink;
-};
-/**
- * Getter
- * @treturn Int
- */
-SceneObject.prototype.objectFlags = function () {
-    INLINE();
-    return this._iObjectFlags;
-};
-/**
- * Accessor to LocalBounds. Set right bits in _iObjectFlags
- * @treturn Rect3d
- */
-SceneObject.prototype.accessLocalBounds = function () {
-    INLINE();
-    a.BitFlags.setBit(this._iObjectFlags, a.Scene.k_newLocalBounds, true);
-    return this._pLocalBounds;
+    return pNode;
 };
 
 
-/**
- * Getter
- * @treturn OcTreeNode
- */
-SceneObject.prototype.treeNode = function () {
-    INLINE();
-    return this._pOcTreeNode;
-};
-/**
- * Getter
- * @treturn SceneObject
- */
-SceneObject.prototype.forwardTreeLink = function () {
-    INLINE();
-    return this._pForwardTreeLink;
-};
-/**
- * Getter
- * @treturn SceneObject
- */
-SceneObject.prototype.rearTreeLink = function () {
-    INLINE();
-    return this._pRearTreeLink;
-};
-/**
- * Setter for treeNode
- * @tparam OcTreeNode pParentNode
- */
-SceneObject.prototype.setOcTreeData = function (pParentNode) {
-    INLINE();
-    this._pOcTreeNode = pParentNode;
-};
-/**
- * Setter
- * @tparam SceneObject pLink
- */
-SceneObject.prototype.setForwardTreeLink = function (pLink) {
-    INLINE();
-    this._pForwardTreeLink = pLink;
-};
-/**
- * Setter
- * @tparam SceneObject pLink
- */
-SceneObject.prototype.setRearTreeLink = function (pLink) {
-    INLINE();
-    this._pRearTreeLink = pLink;
-};
-/**
- * Getter
- * @treturn Rect3d
- */
-SceneObject.prototype.localBounds = function () {
-    INLINE();
-    return this._pLocalBounds;
-};
-/**
- * Getter
- * @treturn Rect3d
- */
-SceneObject.prototype.worldBounds = function () {
-    INLINE();
-    return this._pWorldBounds;
-};
-/**
- * Test world bounds is new or not
- * @treturn Boolean
- */
-SceneObject.prototype.isWorldBoundsNew = function () {
-    INLINE();
-    return TEST_BIT(this._iObjectFlags, a.Scene.k_newWorldBounds);
-};
-/**
- * Getter for _pForwardSearchLink
- * @treturn SceneObject
- */
-SceneObject.prototype.nextSearchLink = function () {
-    INLINE();
-    return this._pForwardSearchLink;
-};
-/**
- * Init object
- * @treturn Boolean
- */
-SceneObject.prototype.create = function () {
-    var result = SceneObject.superclass.create.apply(this, arguments);
-    if (result) {
-        this.attachToOcTree(this._pEngine.getSceneTree());
+Node.prototype.toString = function (isRecursive, iDepth) {
+    'use strict';
+    
+    iDepth = iDepth || 0;
+    isRecursive = isRecursive || false;
+
+    if (!isRecursive) {
+        return '<node' + (this._sName? ' ' + this._sName: '') + '>';
     }
-    return result;
-};
-/**
- * Destroys the object. The object is removed from it's parent (if any) and all Children
- * Objects are orphaned (parent set to NULL).
- */
-SceneObject.prototype.destroy = function () {
-    // remove ourselves from the tree (if any)
-    this.detachFromOcTree();
-    SceneObject.superclass.destroy.apply(this, arguments);
-};
-/**
- * Prapare for update object
- */
-SceneObject.prototype.prepareForUpdate = function () {
-    SceneObject.superclass.prepareForUpdate.apply(this, arguments);
-    // clear the temporary flags
-    a.BitFlags.clearFlags(this._iObjectFlags, FLAG(a.Scene.k_newLocalBounds)
-        | FLAG(a.Scene.k_newWorldBounds));
-};
-/**
- * Update object(matrix, bounds, tree membership)
- */
-SceneObject.prototype.update = function () {
-    SceneObject.superclass.update.apply(this, arguments);
-    // do we need to update our local matrix?
 
-    // derived classes update the local matrix
-    // then call this base function to complete
-    // the update
-    this.recalcWorldBounds();
-    this.refreshOcTreeMembership();
-};
-/**
- * Recalculate world bounds
- */
-SceneObject.prototype.recalcWorldBounds = function () {
-    // nodes only get their bounds updated
-    // as nessesary
-    if (TEST_BIT(this._iObjectFlags, a.Scene.k_newLocalBounds)
-        || this.isWorldMatrixNew()) {
-        // transform our local rectangle 
-        // by the current world matrix
-        this._pWorldBounds.set(this._pLocalBounds);
-        // make sure we have some degree of thickness
-        if (this._pOcTree) {
-            this._pWorldBounds.fX1 = Math.max(this._pWorldBounds.fX1, this._pWorldBounds.fX0 + 0.01);
-            this._pWorldBounds.fY1 = Math.max(this._pWorldBounds.fY1, this._pWorldBounds.fY0 + 0.01);
-            this._pWorldBounds.fZ1 = Math.max(this._pWorldBounds.fZ1, this._pWorldBounds.fZ0 + 0.01);
-        }
-        this._pWorldBounds.transform(this.worldMatrix());
-        // set the flag that our bounding box has changed
-        a.BitFlags.setBit(this._iObjectFlags, a.Scene.k_newWorldBounds, true);
+    var pSibling = this.sibling();
+    var pChild = this.child();
+    var s = '';
+
+    for (var i = 0; i < iDepth; ++ i) {
+        s += ':  ';
     }
-};
-/**
- * Refresh tree index of object
- */
-SceneObject.prototype.refreshOcTreeMembership = function () {
-    if (this._pOcTree
-        && TEST_BIT(this._iObjectFlags, a.Scene.k_newWorldBounds)) {
-        this._pOcTree.addOrUpdateSceneObject(this);
+
+    s += '+----' + this.toString() + '\n';
+
+    if (pChild) {
+        s += pChild.toString(true, iDepth + 1);
     }
-};
-/**
- * Add object in tree
- * @tparam OcTree pParentTree
- */
-SceneObject.prototype.attachToOcTree = function (pParentTree) {
-    this.detachFromOcTree();
-    this._pOcTree = pParentTree;
-    this._pOcTree.addOrUpdateSceneObject(this);
-};
-/**
- * Delete object from tree
- */
-SceneObject.prototype.detachFromOcTree = function () {
-    if (this._pOcTreeNode) {
-        this._pOcTreeNode.removeMember(this);
-        this._pOcTreeNode = null;
+
+    if (pSibling) {
+        s += pSibling.toString(true, iDepth);
     }
-    this._pOcTree = null;
-    this._pForwardTreeLink = null;
-    this._pRearTreeLink = null;
-};
-/**
- * Make object availeable for search
- * @tparam SceneObject pRearLink
- * @tparam SceneObject pForwardLink
- */
-SceneObject.prototype.attachToSearchResult = function (pRearLink, pForwardLink) {
-    this._pForwardSearchLink = pForwardLink;
-    this._pRearSearchLink = pRearLink;
-    if (this._pForwardSearchLink) {
-        this._pForwardSearchLink.setRearSearchLink(this);
-    }
-    if (this._pRearSearchLink) {
-        this._pRearSearchLink.setForwardSearchLink(this);
-    }
-};
-/**
- * Make object not availeable for search
- */
-SceneObject.prototype.detachFromSearchResult = function () {
-    if (this._pForwardSearchLink) {
-        this._pForwardSearchLink.setRearSearchLink(this._pRearSearchLink);
-    }
-    if (this._pRearSearchLink) {
-        this._pRearSearchLink.setForwardSearchLink(this._pForwardSearchLink);
-    }
-    this._pForwardSearchLink = null;
-    this._pRearSearchLink = null;
-};
-/**
- * Set search results to null
- */
-SceneObject.prototype.clearSearchResults = function () {
-    this._pRearSearchLink = null;
-    this._pForwardSearchLink = null;
-};
-/**
- * default implementation does nothing
- */
-SceneObject.prototype.prepareForRender = function () {
-};
-/**
- * Call parent method. Default implementation does nothing.
- */
-SceneObject.prototype.render = function () {
-    //SceneObject.superclass.render.apply(this, arguments);
-};
-/**
- * if we queued ourselved for rendering with the
- * display manager, we will get this function
- * called when it is our turn to render
- * activationFlags contains a set of bit flags
- * held in the eActivationFlagBits enum (render_queue.h)
- * which tell us what resources we need to activate
- * in order to render ourselves.
- */
-SceneObject.prototype.renderCallback = function (entry, activationFlags) {
+
+    return s;
 };
 
-a.SceneNode = SceneNode;
-a.SubNodeGroup = SubNodeGroup;
-a.SceneObject = SceneObject;
+Endif ();
+
+A_NAMESPACE(Node);

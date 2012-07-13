@@ -578,5 +578,21 @@ SceneModel.prototype.findMesh = function (iMesh) {
     return this._pMeshes[iMesh];
 };
 
+Ifdef (__DEBUG);
+
+SceneModel.prototype.toString = function (isRecursive, iDepth) {
+    'use strict';
+    
+    isRecursive = isRecursive || false;
+
+    if (!isRecursive) {
+        return '<model' + (this._sName? ' ' + this._sName: '') + '>';
+    }
+
+    return SceneObject.prototype.toString.call(this, isRecursive, iDepth);
+}
+
+Endif ();
+
 A_NAMESPACE(SceneModel);
 
