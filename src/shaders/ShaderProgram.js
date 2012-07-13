@@ -544,7 +544,6 @@ GLSLProgram.prototype.applyBuffer = function (pVertexData) {
         }
         
         if (pAttr.pCurrentData !== pVertexData || 1) {
-
             if (isActive) {
                 isActive = true;
                 pVertexBuffer.activate();

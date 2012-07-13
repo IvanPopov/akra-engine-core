@@ -53,6 +53,8 @@ function Engine () {
     this.pResourceManager = null;
     this.pDisplayManager = null;
     this.pShaderManager = null;
+    this.pParticleManager = null;
+    this.pSpriteManager = null;
     // this.pUniqManager = null;
 
     this._pRootNode = null; //Корень дерева сцены
@@ -105,6 +107,8 @@ Engine.prototype.create = function (sCanvasId) {
     this.pResourceManager = new a.ResourcePoolManager();
     this.pDisplayManager = new a.DisplayManager(this);
     this.pShaderManager = new a.ShaderManager(this);
+    this.pParticleManager = new a.ParticleManager(this);
+    this.pSpriteManager = new a.SpriteManager(this);
     // this.pUniqManager = new a.UniqueManager(this);
 
     //Запускаем таймер приложения
@@ -278,6 +282,14 @@ Engine.prototype.getActiveCamera = function () {
 
 Engine.prototype.displayManager = function () {
     return this.pDisplayManager;
+};
+
+Engine.prototype.particleManager = function(){
+    return this.pParticleManager;
+};
+
+Engine.prototype.spriteManager = function(){
+    return this.pSpriteManager;
 };
 
 // Engine.prototype.uniqManager = function() {
