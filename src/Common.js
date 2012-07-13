@@ -9,6 +9,7 @@ Define(__AKRA_ENGINE__, true);
 Define(trace(__ARGS__), function () { console.log(__ARGS__); });
 
 
+
 /**
  * Implementation inheritance in Javascript.
  * @tparam pChild Child object.
@@ -59,10 +60,43 @@ a.extend = function (pChild) {
     //simplified call parent constructors
     pChild.ctor = function () {
         for (var i = 1; i < argv.length; ++i) {
-            argv[i].apply(this, arguments);
+            var pCtorValue = argv[i].apply(this, arguments);
+            if (pCtorValue !== undefined) {
+                return pCtorValue;
+            }
         }
     };
 };
+
+
+function now () {
+    'use strict';
+    return (new Date).getTime();
+}
+
+A_NAMESPACE(now);
+// function childOf (pChild, tParent) {
+//     'use strict';
+
+//     warning('childOf: function is dangerous and should not be used.');
+
+//     if (pChild.constructor === tParent) {
+//         return true;
+//     }
+
+//     var sParent = GET_FUNC_NAME(tParent);
+//     for (var k in pChild.constructor.superclasses) {
+//         if (k === sParent) {
+//             return true;
+//         }
+
+//         console.log('--->', pChild.constructor.superclasses[k]);
+//     };
+
+//     return false;
+// };
+
+//A_NAMESPACE(childOf);
 
 Define(EXTENDS(__ARGS__), function () {a.extend(__ARGS__)});
 
@@ -144,11 +178,17 @@ a.parseJSON = parseJSON;
  * @tparam String sHTML Исходный текст.
  * @treturn DocumentFragment
  */
-function toDOM(sHTML) {
+function toDOM(sHTML, useDocFragment) {
+    useDocFragment = useDocFragment === undefined? true: useDocFragment;
+    
     var pDivEl = document.createElement('div');
     var pDocFrag = document.createDocumentFragment();
 
     pDivEl.innerHTML = sHTML;
+
+    if (!useDocFragment) {
+        return pDivEl.childNodes;
+    }
 
     for (var i = 0, len = pDivEl.childNodes.length; i < len; ++i) {
         if (typeof pDivEl.childNodes[i] === 'undefined') {
@@ -222,11 +262,15 @@ Elseif()
     Define(__DEBUG, 1)
 Endif()
 
+Ifdef(A_CORE_HOME)
+
+Elseif()
+Define(A_CORE_HOME, '');
+Endif();
 
 Ifdef(__DEBUG)
 
 Define(a.isDebug, true)
-Define(HOME_DIR, '');
 
 Number.prototype.printBinary = function (isPretty) {
     var res = '';
@@ -296,7 +340,7 @@ Define(error(x), function () {
 });
 
 Define(BUILD_PATH(FILE, PATH), function () {
-    PATH + FILE;
+    A_CORE_HOME + PATH + FILE;
 });
 
 Define(MEDIA_PATH(FILE, PATH), function () {
@@ -337,11 +381,6 @@ Endif()
 
 Ifdef(__RELEASE);
 
-Ifdef(HOME_DIR)
-Elseif()
-Define(HOME_DIR, '/');
-Endif();
-
 Define(a.isDebug, false);
 Define(debug_assert(cond, comment), function () {});
 Define(warning(x), function () {console.warn(x);});
@@ -352,7 +391,7 @@ Define(assert(x), function () {error(x);});
 Define(ASSERT(x), function () {assert(x);});
 Define(assert(cond, comment), function () {if (!cond) error(comment);});
 Define(ASSERT(cond, comment), function () {assert(cond, comment);});
-Define(BUILD_PATH(FILE, PATH), function () {HOME_DIR + FILE;})
+Define(BUILD_PATH(FILE, PATH), function () {A_CORE_HOME + FILE;})
 Define(debug_print(x), function () {});
 Define(TRACE(x), function () {});
 Define(INLINE(), function () {});
@@ -416,7 +455,7 @@ Define(DISPROPERTY(obj, $$property), function () {
     PROPERTY(obj, property, undefined, undefined);
 });
 
-Define(A_CLASS(args), function () { __FUNC__.ctor.apply(this, args); });
+Define(A_CLASS(args), function () { var _pCtorValue = __FUNC__.ctor.apply(this, args); if (_pCtorValue) return _pCtorValue; });
 Define(A_CLASS(), function () { A_CLASS(arguments) });
 Define(A_CLASS, A_CLASS());
 
@@ -492,6 +531,12 @@ Define(GEN_ARRAY(name, type, size), function () {
     }
 });
 
+Define(A_DEFINE_NAMESPACE(name), function () {
+    if (!a.name) a.name = {};
+});
+Define(A_DEFINE_NAMESPACE(name, space), function () {
+    if (!a.space.name) a.space.name = {};
+});
 Define(A_NAMESPACE(object, space), function () {
     a.space.object = object;
 });
@@ -499,6 +544,7 @@ Define(A_NAMESPACE(object, space), function () {
 Define(A_NAMESPACE(object), function () {
     a.object = object;
 });
+
 
 /**
  TRACER API

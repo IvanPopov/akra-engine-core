@@ -226,7 +226,7 @@ ApiInfo.prototype.checkWebGL = function () {
 };
 
 ApiInfo.prototype.chechTransferableObjects = function () {
-    var pWorker = new Worker(BUILD_PATH('EmptyThread.thread.js', '/sources/files/threads/'));//FIXME
+    var pWorker = new Worker(BUILD_PATH('EmptyThread.thread.js', 'files/threads/'));//FIXME
     pWorker.postMessage = pWorker.webkitPostMessage || pWorker.postMessage;
 
     var ab = new ArrayBuffer(1);
@@ -278,7 +278,7 @@ a.info = {
 
     uri:  a.uri(document.location.href),
     path: {
-        modules: HOME_DIR
+        modules: A_CORE_HOME
     },
     is:   {
 

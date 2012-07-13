@@ -22,24 +22,17 @@
  Functions with prefix <build> needs for creating real engine objects, that will be used by Engine.
  */
 
-function COLLADA (pEngine, sFilename, fnCallback) {
+function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
+    isFileContent = isFileContent || false;
+
     /* COMMON SETTINGS
      ------------------------------------------------------
      */
-    var COLLADA_REDUCE_MESH_INDECES = 1;
-
+    var sFilename = isFileContent? null: sFile;
 
     /* COMMON FUNCTIONS
      ------------------------------------------------------
      */
-
-    var iTimeBegin = (new Date()).getTime();
-
-    function timestamp (msg) {
-        console.log((new Date()).getTime() - iTimeBegin + ' ms  ', '[ ' + msg + ' ]');
-    }
-
-    timestamp('loading model <' + sFilename + ' />');
 
     var pSupportedVertexFormat = [
         {sName: 'X', sType: 'float'},
@@ -53,6 +46,29 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         {sName: 'P', sType: 'float'}
     ];
 
+    var pSupportedWeightFormat = [
+        {sName: 'WEIGHT', sType: 'float'}
+    ];
+
+    var pSupportedJointFormat = [
+        {sName: 'JOINT', sType: 'name'}
+    ];
+
+    var pSupportedInvBindMatrixFormat = [
+        {sName: 'TRANSFORM', sType: 'float4x4'}
+    ];
+
+    var pFormatStrideTable = {
+        'float': 1,
+        'float2': 2,
+        'float3': 3,
+        'float4': 4,
+        'float3x3': 9,
+        'float4x4': 16,
+        'int': 1,
+        'name': 1
+    };
+
     var pLinks = {};
     var pAsset = null;
     var pEffects = null;
@@ -60,6 +76,16 @@ function COLLADA (pEngine, sFilename, fnCallback) {
     var pGeometries = null;
     var pVisualScenes = null;
     var pScene = null;
+    var pLib = {};
+
+    function calcFormatStride (pFormat) {
+        var iStride = 0;
+        for (var i = 0; i < pFormat.length; ++ i) {
+            iStride += pFormatStrideTable[pFormat[i].sType];
+        }
+
+        return iStride;
+    }
 
     function link (id, pTarget) {
         if (typeof id !== 'string') {
@@ -156,6 +182,10 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         return string2Array(sData, ppData, parseBool, iFrom);
     }
 
+    function string2StringArray (sData, ppData, iFrom) {
+        return string2Array(sData, ppData, String, iFrom);
+    }
+
     function eachChild (pXML, fnCallback) {
         //eachNode(pXML.getChildNodes(), fnCallback);
         eachNode(pXML.childNodes, fnCallback);
@@ -227,6 +257,7 @@ function COLLADA (pEngine, sFilename, fnCallback) {
                 }
             }
         }
+
         return pData;
     }
 
@@ -286,7 +317,8 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         var pConv = {
             'int':   [Int32Array, string2IntArray],
             'float': [Float32Array, string2FloatArray],
-            'bool':  [Array, string2BoolArray]
+            'bool':  [Array, string2BoolArray],
+            'string':[Array, string2StringArray]
         };
 
         var fnData = function (n, sType) {
@@ -318,14 +350,18 @@ function COLLADA (pEngine, sFilename, fnCallback) {
                 return COLLADATranslate(pXML);
             case 'scale':
                 return COLLADAScale(pXML);
+            case 'bind_shape_matrix':
             case 'matrix':
-                return Mat4.transpose(fnData(16, 'float'))
+                return Mat4.transpose(fnData(16, 'float'));
             case 'float_array':
                 return fnData(parseInt(attr(pXML, 'count')), 'float');
             case 'int_array':
                 return fnData(parseInt(attr(pXML, 'count')), 'int');
             case 'bool_array':
                 return fnData(parseInt(attr(pXML, 'count')), 'bool');
+            case 'Name_array':
+            case 'name_array':
+                return fnData(parseInt(attr(pXML, 'count')), 'string')
             case 'sampler2D':
                 return COLLADASampler2D(pXML);
             case 'surface':
@@ -397,15 +433,20 @@ function COLLADA (pEngine, sFilename, fnCallback) {
     function COLLADASource (pXML) {
         var pSource = {
             pArray:           {},
-            pTechniqueCommon: null
+            pTechniqueCommon: null,
+            id: attr(pXML, 'id'),
+            name: attr(pXML, 'name')
         };
+
+        link(pSource);
 
         eachChild(pXML, function (pXMLData, sName) {
             var tmp, id;
-            switch (sName) {
+            switch (sName.toLowerCase()) {
                 case 'int_array':
                 case 'bool_array':
                 case 'float_array':
+                case 'name_array':
                     tmp = COLLADAData(pXMLData);
 
                     id = attr(pXMLData, 'id');
@@ -424,6 +465,7 @@ function COLLADA (pEngine, sFilename, fnCallback) {
 
     function COLLADAVertices (pXML) {
         var pVerices = {id: attr(pXML, 'id'), pInput: {}};
+
         eachByTag(pXML, 'input', function (pXMLData) {
             switch (attr(pXMLData, 'semantic')) {
                 case 'POSITION':
@@ -435,6 +477,45 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         });
 
         return pVerices;
+    }
+
+    function COLLADAJoints (pXML) {
+        var pJoints = {pInput: {}};
+        eachByTag(pXML, 'input', function (pXMLData) {
+            switch (attr(pXMLData, 'semantic')) {
+                case 'JOINT':
+                    pJoints.pInput['JOINT'] = COLLADAInput(pXMLData);
+                    break;
+                case 'INV_BIND_MATRIX':
+                    pJoints.pInput['INV_BIND_MATRIX'] = COLLADAInput(pXMLData);
+                    break;
+                default:
+                    debug_error('semantics are different from JOINT/INV_BIND_MATRIX is not supported in the <joints /> tag');
+            }
+        });
+        
+        var m4fTmp = new Matrix4;
+
+        for (var i in pJoints.pInput) {
+            prepareInput(pJoints.pInput[i]);
+
+            if (i === 'INV_BIND_MATRIX') {
+                var pInvMatrixArray = pJoints.pInput[i].pArray;
+                for (var i = 0; i < pInvMatrixArray.length; i += 16) {
+                    for (var j = 0; j < 16; ++ j) {
+                        m4fTmp[j] = pInvMatrixArray[i + j];
+                    }
+
+                    Mat4.transpose(m4fTmp);
+
+                    for (var j = 0; j < 16; ++ j) {
+                        pInvMatrixArray[i + j] = m4fTmp[j];
+                    }
+                }
+            }
+        }
+
+        return pJoints;
     }
 
     function polygonToTriangles (pXML, iStride) {
@@ -549,6 +630,7 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         return pIndexes;
     }
 
+
     function COLLADAPolygons (pXML, sType) {
         var pPolygons = {
             pInput:    [], //потоки данных
@@ -606,30 +688,69 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         return pPolygons;
     }
 
+    function COLLADAVertexWeights (pXML) {
+        var pVertexWeights = {
+            iCount: parseInt(attr(pXML, 'count')),
+            pInput: [],
+            pVcount: null,
+            pV: null
+        };
+
+        var iOffset = 0;
+        eachByTag(pXML, 'input', function (pXMLData) {
+            pVertexWeights.pInput.push(COLLADAInput(pXMLData, iOffset));
+            iOffset++;
+        });
+
+        var pVcountData, pVData;
+        pVcountData = new Array(pVertexWeights.iCount);
+        string2IntArray(stringData(firstChild(pXML, 'vcount')), pVcountData);
+        pVertexWeights.pVcount = pVcountData;
+
+        
+        var n = 0;
+        for (var i = 0; i < pVcountData.length; ++ i) {
+            n += pVcountData[i];
+        }
+        n *= pVertexWeights.pInput.length;
+
+
+        pVData = new Array(n);
+        string2IntArray(stringData(firstChild(pXML, 'v')), pVData);
+        pVertexWeights.pV = pVData; 
+
+        return pVertexWeights;  
+    }
+
     function prepareInput (pInput) {
         switch (pInput.sSemantic) {
+            case 'TEXTANGENT':
+            case 'TEXBINORMAL':
             case 'VERTEX':
             case 'NORMAL':
             case 'TANGENT':
             case 'BINORMAL':
             case 'POSITION':
-                pInput.sArrayId = getCOLLADASourceData(pInput.sSource, pSupportedVertexFormat);
+                pInput.sArrayId = COLLADAGetSourceData(pInput.sSource, pSupportedVertexFormat);
                 break;
             case 'TEXCOORD':
-                pInput.sArrayId = getCOLLADASourceData(pInput.sSource, pSupportedTextureFormat);
+                pInput.sArrayId = COLLADAGetSourceData(pInput.sSource, pSupportedTextureFormat);
                 break;
-            case 'TEXTANGENT':
-            case 'TEXBINORMAL':
-
             case 'WEIGHT':
+                pInput.sArrayId = COLLADAGetSourceData(pInput.sSource, pSupportedWeightFormat);
+                break;
+            case 'JOINT':
+                pInput.sArrayId = COLLADAGetSourceData(pInput.sSource, pSupportedJointFormat);
+                break;
+            case 'INV_BIND_MATRIX':
+                pInput.sArrayId = COLLADAGetSourceData(pInput.sSource, pSupportedInvBindMatrixFormat);
+                break;
             case 'UV':
             case 'OUT_TANGENT':
             case 'OUTPUT':
             case 'MORPH_WEIGHT':
             case 'MORPH_TARGET':
             case 'LINEAR_STEPS':
-            case 'JOINT':
-            case 'INV_BIND_MATRIX':
             case 'INTERPOLATION':
             case 'IN_TANGENT':
             case 'INPUT':
@@ -637,7 +758,7 @@ function COLLADA (pEngine, sFilename, fnCallback) {
             case 'CONTINUITY':
             case 'COLOR':
             default:
-                debug_error('unsupported semantic used <' + pInput[i].sSemantic + '>');
+                debug_error('unsupported semantic used <' + pInput.sSemantic + '>');
         }
 
         pInput.pArray = source(pInput.sArrayId);
@@ -645,69 +766,8 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         return pInput;
     }
 
-    function prepareMesh (pMesh) {
-        for (var i = 0; i < pMesh.pPolygons.length; i++) {
-            pMesh.pPolygons[i].pDeclarations = [];
-            for (var j = 0, pInput = pMesh.pPolygons[i].pInput; j < pInput.length; ++j) {
-                var pVertDecl = new VertexDeclaration(pInput[j].pAccessor.iStride, pInput[j].sSemantic, a.DTYPE.FLOAT,
-                                                      a.declarationSemanticFromString(pInput[j].sSemantic));
-                pVertDecl.iIndexOffset = pInput[j].iOffset;
-                pMesh.pPolygons[i].pDeclarations.push([pVertDecl]);
-            }
-
-            delete pMesh.pPolygons[i].pInput;
-        }
-
-        pMesh.pData = [];
-
-        for (var i in pMesh.pSource) {
-            var pAccess = pMesh.pSource[i].pTechniqueCommon.pAccessor;
-            var pArr = source(pAccess.sSource);
-            pMesh.pData.push({pData: pArr, nCount: pAccess.iCount, iStride: pAccess.iStride});
-            //console.log(pMesh.pData);
-        }
-        delete pMesh.pSource;
-    }
-
-    /**
-     * Подготовка меша и сведение всех индексов к одному.
-     * @param pMesh Неподготовленный объект меша, возвращаемый функцией COLLADAMesh
-     */
-    function prepareMeshWithReducedIndices (pMesh) {
-        var pMem = {};
-        for (var i = 0; i < pMesh.pPolygons.length; i++) {
-            pMem = reduceToSingleIndex(pMesh.pPolygons[i], pMem);
-            pMesh.pPolygons[i].p = pMem.indices;
-            delete pMesh.pPolygons[i].pInput;
-            //console.log(pMem.indices);
-            var pVertexDeclaration = [];
-
-            for (var j = 0, pInput = pMem.cache; j < pInput.length; ++j) {
-                var pVertDecl = new VertexDeclaration(pInput[j].pAccessor.iStride, pInput[j].sSemantic, a.DTYPE.FLOAT,
-                                                      a.declarationSemanticFromString(pInput[j].sSemantic));
-                pVertDecl.iIndexOffset = 0;
-                pVertexDeclaration.push(pVertDecl);
-            }
-
-            pMesh.pPolygons[i].pDeclarations = [pVertexDeclaration];
-        }
-
-        pMesh.pData = [{pData: pMem.pData, nCount: pMem.pData.length / pMem.iStride, iStride: pMem.iStride}];
-        delete pMesh.pSource;
-//        console.log('------------------------------------------');
-//        for (var i = 0; i < pMem.pData.length / 6; i++) {
-//            for (var j = 0; j < 3; j++) {
-//                console.log(pMem.pData[i * 6] + ', ' + pMem.pData[i * 6 + 1] + ', ' + pMem.pData[i * 6 + 2] + ',');
-//            }
-//        }
-//        console.log(pMem.pData)
-//        console.log('real', pMem.pData.length, '/', pMesh.pData[0].nCount, ':', pMem.iStride);
-//        console.log('------------------------------------------');
-        pMem = null;
-    }
-
-    var getCOLLADASourceData = function (sSourceId, pFormat) {
-        var nStride = pFormat.length;
+    function COLLADAGetSourceData (sSourceId, pFormat) {
+        var nStride = calcFormatStride(pFormat);
         var pSource = source(sSourceId);
         debug_assert(pSource, '<source /> with id <' + sSourceId + '> not founded');
 
@@ -718,117 +778,21 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         debug_assert(pAccess.iStride <= nStride,
                '<source /> width id' + sSourceId + ' has unsupported stride: ' + pAccess.iStride);
 
-        for (var i in pAccess.param) {
-            if (pAccess.param[i].sName != pFormat[i].sName ||
-                pAccess.param[i].sType != pFormat[i].sType) {
-                debug_error('vertices accessor has unsupported format');
+        for (var i in pAccess.pParam) {
+            if (pAccess.pParam[i].sName.toLowerCase() != pFormat[i].sName.toLowerCase() ||
+                pAccess.pParam[i].sType.toLowerCase() != pFormat[i].sType.toLowerCase()) {
+                trace('expected format: ', pFormat);
+                trace('given format: ', pAccess.pParam);
+                debug_error('accessor of <' + sSourceId + '> has unsupported format');
             }
         }
         return (pAccess.sSource);
     }
 
-    /**
-     * Сведение индексов к одному, для о одной полигональной группы.
-     * @param pPolygons Массив полигонов (объектов, которые вовращает функция COLLADAPolygon)
-     * @param pMem Кеш с информацией о сведенных индексах у предыдущих полигональных груп
-     * @return {*}
-     */
-    function reduceToSingleIndex (pPolygons, pMem) {
-        if (pPolygons.eType != a.PRIMTYPE.TRIANGLELIST) {
-            debug_error('cannot reduce index for type <' + pPolygons.eType + '>');
-        }
-
-        var pInput = pPolygons.pInput;
-        var pVertices;
-        var n;
-
-        var iStride = 0;
-        var pShoter = [];
-
-        if (pMem.cache) {
-            pShoter = pMem.cache;
-            iStride = pMem.iStride;
-        }
-
-        if (pShoter.length && pShoter.length != pInput.length) {
-            debug_error('it is impossible to reduce to a single index of polygon with different numbers of indices');
-        }
-
-        if (iStride == 0) {
-            for (var i = 0; i < pInput.length; ++i) {
-                pShoter[i] = {
-                    iOffset:   pInput[i].iOffset,
-                    sSource:   pInput[i].sSource,
-                    sSemantic: pInput[i].sSemantic,
-                    pArray:    pInput[i].pArray,
-                    pAccessor: pInput[i].pAccessor
-                };
-
-                iStride += pShoter[i].pAccessor.iStride;
-            }
-        }
-        //для каждого потока, вычислим смещение (в элементах) в результирующем массиве.
-        n = 0;
-        pShoter[0].iStrideOffset = 0;
-        for (var i = 1; i < pShoter.length; i++) {
-            n += pShoter[i - 1].pAccessor.iStride;
-            pShoter[i].iStrideOffset = n;
-        }
-
-        //создадим результирующий массив (по умолчанию минимально возможной длины)
-
-        var pRes = pMem.pData || [];
-        var pIndexRes = [];
-
-        pMem.indices = pIndexRes;
-        pMem.pData = pRes;
-
-        n = pMem.n || 0;
-
-        function glueIndex (pData, iFrom, iStride) {
-            var s = '';
-            for (var i = 0, n = iFrom * iStride; i < iStride; i++) {
-                s += pData[n + i];
-            }
-            return s;
-        }
-
-        for (var nIn = lastElement(pShoter).iOffset + 1,
-                 i = 0, nEl = pPolygons.p.length / nIn; i < nEl; i++) {
-            var sHash = glueIndex(pPolygons.p, i, nIn);
-            var nPos = pMem[sHash];
-
-            if (nPos === undefined) {
-                //console.log(sHash, 'y');
-                for (var j = 0, iNin = i * nIn; j < pShoter.length; j++) {
-                    var iIndexFrom = pPolygons.p[iNin + pShoter[j].iOffset];
-                    var iShift = n * iStride + pShoter[j].iStrideOffset;
-                    //console.log('from', iIndexFrom);
-                    for (var s = pShoter[j].pAccessor.iStride, iFrom = iIndexFrom * s, k = 0; k < s; ++k) {
-                        pRes[iShift + k] = pShoter[j].pArray[iFrom + k];
-                        //console.log('data', pShoter[j].pArray[iFrom + k]);
-                    }
-                }
-
-                pMem[sHash] = n;
-                pIndexRes.push(n);
-                n++;
-            }
-            else {
-                //console.log(sHash, 'n');
-                pIndexRes.push(nPos);
-            }
-        }
-        pMem.n = n;
-        pMem.cache = pShoter;
-        pMem.iStride = iStride;
-
-        return pMem;
-    }
-
+    
     function COLLADAMesh (pXML) {
         var pMesh = {
-            pSource:   {},
+            pSource:   [],
             pPolygons: []
         };
         var id, tmp, pVertices, pPos;
@@ -836,9 +800,7 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         eachChild(pXML, function (pXMLData, sName) {
             switch (sName) {
                 case 'source':
-                    id = attr(pXMLData, 'id');
-                    pMesh.pSource[id] = COLLADASource(pXMLData);
-                    link(id, pMesh.pSource[id]);
+                    pMesh.pSource.push(COLLADASource(pXMLData));
                     break;
                 case 'vertices':
                     pVertices = COLLADAVertices(pXMLData);
@@ -870,13 +832,6 @@ function COLLADA (pEngine, sFilename, fnCallback) {
             }
         });
 
-        if (COLLADA_REDUCE_MESH_INDECES) {
-            prepareMeshWithReducedIndices(pMesh)
-        }
-        else {
-            prepareMesh(pMesh);
-        }
-
         return pMesh;
     }
 
@@ -898,6 +853,62 @@ function COLLADA (pEngine, sFilename, fnCallback) {
             pGeometrie.pMesh = COLLADAMesh(pXMLData);
         }
         return (pGeometrie);
+    }
+
+    function COLLADASkin (pXML) {
+        var pSkin = {
+            m4fShapeMatrix: COLLADAData(firstChild(pXML, 'bind_shape_matrix')),
+            pSource: [],
+            pGeometry: source(attr(pXML, 'source')),
+            pJoints: null,
+            pVertexWeights: null
+
+            //TODO:  add other parameters to skin section
+        }
+
+        var tmp;
+
+        eachChild(pXML, function (pXMLData, sName) {
+            switch (sName) {
+                case 'source':
+                    pSkin.pSource.push(COLLADASource(pXMLData));
+                    break;
+                case 'joints':
+                    pSkin.pJoints = COLLADAJoints(pXMLData);
+                    break;
+                case 'vertex_weights':
+                    tmp = COLLADAVertexWeights(pXMLData);
+                    for (var i = 0; i < tmp.pInput.length; ++i) {
+                        prepareInput(tmp.pInput[i]);
+                    }
+                    pSkin.pVertexWeights = (tmp);
+                    break;
+            }
+        });
+
+        return pSkin;
+    }
+
+    function COLLADAController (pXML) {
+        var pController = {
+            pSkin: null,
+            pMorph: null,
+            sName: attr(pXML, 'name'),
+            id:    attr(pXML, 'id')
+        };
+
+        link(pController);
+
+        var pXMLData = firstChild(pXML, 'skin');
+
+        if (pXMLData) {
+            pController.pSkin = COLLADASkin(pXMLData);
+        }
+        else {
+            return null;
+        }
+
+        return (pController);
     }
 
     /*  COLLADA MATERIAL SECTION
@@ -993,37 +1004,49 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         pTexture.pSampler = source(pTexture.sSampler);
         pTexture.pSurface = source(pTexture.pSampler.pValue.sSource);
         pTexture.pImage = source(pTexture.pSurface.pValue.sInitFrom);
+
         return pTexture;
     }
 
     function COLLADAPhong (pXML) {
-        var pMat = new a.MaterialEx;
+        var pMat = new a.Material;
         var pXMLData;
-
         var pList = [
-            'pEmission', 'pAmbient', 'pDiffuse',
-            'fShininess', 'pReflective', 'fReflectivity',
-            'pTransparent', 'fTransparency', 'pSpecular'
+            'emission', 
+            'ambient', 
+            'diffuse',
+            'shininess', 
+            'reflective', 
+            'reflectivity',
+            'transparent', 
+            'transparency', 
+            'specular'
         ];
 
-        pMat.pCTexture = {};
+        pMat.pTextures = {};
 
         for (var i = 0; i < pList.length; i++) {
-            pXMLData = firstChild(pXML, pList[i].substr(1).toLowerCase());
+            pXMLData = firstChild(pXML, pList[i]);
             if (pXMLData) {
                 eachChild(pXMLData, function (pXMLData, sName) {
                     switch (sName) {
+                        case 'float':
                         case 'color':
                             pMat[pList[i]] = COLLADAData(pXMLData);
                             break;
                         case 'texture':
                             var pTexture = COLLADATexture(pXMLData);
-                            pMat.pCTexture[pTexture.sTexcoord] = pTexture;
+                            pMat.pTextures[pList[i]] = {
+                                sParam: pTexture.sTexcoord,
+                                pTexture: pTexture
+                            };
                     }
                 });
 
             }
         }
+
+        pMat.shininess *= 10.0;
 
         return pMat;
     }
@@ -1072,6 +1095,7 @@ function COLLADA (pEngine, sFilename, fnCallback) {
             switch (sName) {
                 case 'profile_COMMON':
                     pEffect.pProfileCommon = COLLADAProfileCommon(pXMLData);
+                    pEffect.pProfileCommon.pTechnique.pValue.name = pEffect.id;
                     break;
                 case 'extra':
                     break;
@@ -1083,48 +1107,81 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         return pEffect;
     }
 
+     /*  COLLADA ANIMATION
+     * -------------------------------------------------------
+     */
+    
+
+
     /*  COLLADA VISUAL SCENE
      * -------------------------------------------------------
      */
+    
+    function COLLADABindMaterial (pXML) {
+        if (!pXML) {
+            return null;
+        }
 
-    function COLLADAInstanceGeometry (pXML) {
-        var pInst = {
-            pGeometry: source(attr(pXML, 'url')),
-            pMaterials: {}
-        };
-        var pSourceMat = null, pMat = null;
-        eachByTag(pXML, 'bind_material', function (pXMLData) {
-            var pTech = firstChild(pXMLData, 'technique_common');
-            eachByTag(pTech, 'instance_material', function (pInstMat) {
 
-                pSourceMat = source(attr(pInstMat, 'target'));
-                pMat = {sUrl: pSourceMat.pInstanceEffect.sUrl, pVertexInput: []};
+        var pMaterials = {};
+        var pMat = null;
+        var pSourceMat = null;
+        var pTech = firstChild(pXML, 'technique_common');
 
-                eachByTag(pInstMat, 'bind_vertex_input', function (pXMLVertexInput) {
-                    var sInputSemantic = attr(pXMLVertexInput, 'input_semantic');
+        eachByTag(pTech, 'instance_material', function (pInstMat) {
 
-                    if (sInputSemantic !== 'TEXCOORD') {
-                        debug_error('unsupported vertex input semantics founded: ' + sSemantic);
-                    }
+            pSourceMat = source(attr(pInstMat, 'target'));
+            pMat = {sUrl: pSourceMat.pInstanceEffect.sUrl, pVertexInput: {}};
 
-                    var sSemantic = attr(pXMLVertexInput, 'semantic');
-                    var sInputSet = parseInt(attr(pXMLVertexInput, 'input_set'));
+            eachByTag(pInstMat, 'bind_vertex_input', function (pXMLVertexInput) {
+                var sInputSemantic = attr(pXMLVertexInput, 'input_semantic');
 
-                    pMat.pVertexInput.push({
-                                               'sSemantic': sSemantic,
-                                               'sInputSet': sInputSet,
-                                               'sInputSemantic': sInputSemantic
-                                           });
-                });
+                if (sInputSemantic !== 'TEXCOORD') {
+                    debug_error('unsupported vertex input semantics founded: ' + sSemantic);
+                }
 
-                pInst.pMaterials[attr(pInstMat, 'symbol')] = pMat;
+                var sSemantic = attr(pXMLVertexInput, 'semantic');
+                var sInputSet = parseInt(attr(pXMLVertexInput, 'input_set'));
+
+                pMat.pVertexInput[sSemantic] = {
+                                           'sSemantic': sSemantic,
+                                           'sInputSet': sInputSet,
+                                           'sInputSemantic': sInputSemantic
+                                       };
             });
+
+            pMaterials[attr(pInstMat, 'symbol')] = pMat;
         });
+      
+      return pMaterials;
+    }
+
+    function COLLADAInstanceController (pXML) {
+        var pInst = {
+            pController: source(attr(pXML, 'url')),
+            pMaterials: COLLADABindMaterial(firstChild(pXML, 'bind_material')),
+            pSkeleton: []
+        };
+
+        eachByTag(pXML, 'skeleton', function (pXMLData) {
+            pInst.pSkeleton.push(stringData(pXMLData));
+        }); 
 
         return pInst;
     }
 
-    function COLLADANode(pXML) {
+    function COLLADAInstanceGeometry (pXML) {
+        var pInst = {
+            pGeometry: source(attr(pXML, 'url')),
+            pMaterials: COLLADABindMaterial(firstChild(pXML, 'bind_material'))
+        };
+
+        return pInst;
+    }
+
+    function COLLADANode(pXML, iDepth) {
+        iDepth = iDepth || 0;
+
         var pNode = {
             id:          attr(pXML, 'id'),
             sid:         attr(pXML, 'sid'),
@@ -1132,8 +1189,10 @@ function COLLADA (pEngine, sFilename, fnCallback) {
             sType:        attr(pXML, 'type'),
             sLayer:       attr(pXML, 'layer'),
             m4fTransform: Mat4.identity(new Matrix4),
-            pGeometry:   null,
-            pChildNodes: []
+            pGeometry:   [],
+            pController: [],
+            pChildNodes: [],
+            iDepth: iDepth
         };
 
         var m4fTransform = Mat4.identity(new Matrix4), m4fMatrix;
@@ -1151,15 +1210,20 @@ function COLLADA (pEngine, sFilename, fnCallback) {
                     Mat4.mult(pNode.m4fTransform, m4fMatrix);
                     break;
                 case 'instance_geometry':
-                    pNode.pGeometry = COLLADAInstanceGeometry(pXMLData);
-                    //attr(pXMLData, 'url')
+                    pNode.pGeometry.push(COLLADAInstanceGeometry(pXMLData));
+                    break;
+                case 'instance_controller':
+                    pNode.pController.push(COLLADAInstanceController(pXMLData));
                     break;
                 case 'node':
-                    pNode.pChildNodes.push(COLLADANode(pXMLData));
+                    pNode.pChildNodes.push(COLLADANode(pXMLData, iDepth + 1));
                     break;
             }
         });
-        if (!pNode.pGeometry && !pNode.pChildNodes.length) {
+
+        if (!pNode.pGeometry.length && 
+            !pNode.pController.length && 
+            !pNode.pChildNodes.length) {
             return null;
         }
 
@@ -1205,12 +1269,22 @@ function COLLADA (pEngine, sFilename, fnCallback) {
             pData: null,
             sImagePath: null
         };
+        var sPath = null;
 
         link(pImage);
 
         var pXMLInitData, pXMLData;
         if (pXMLInitData = firstChild(pXML, 'init_from')) {
-            pImage.sImagePath = stringData(pXMLInitData);
+            sPath = stringData(pXMLInitData);
+            
+            //modify path to the textures relative to a given file
+            if (sFilename) {
+                if (!a.pathinfo(sPath).isAbsolute()) {
+                    sPath = a.pathinfo(sFilename).dirname + '/' + sPath;   
+                }
+            }
+
+            pImage.sImagePath = sPath;
         }
         else if (pXMLData = firstChild(pXML, 'data')) {
             debug_error('image loading from <data /> tag unsupported yet.');
@@ -1302,6 +1376,11 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         return pScene;
     }
 
+
+    //================================================================
+    // BUILD ENGINE OBJECTS
+    //================================================================
+    //
     function buildAssetMatrix () {
         var fUnit = pAsset.pUnit.fMeter;
         var sUPaxis = pAsset.sUPaxis;
@@ -1314,133 +1393,319 @@ function COLLADA (pEngine, sFilename, fnCallback) {
         return m4fAsset;
     }
 
-    var nTotalFrames = 0;
+    function buildMaterials (pMesh, pMeshNode) {
+        'use strict';
+        
+        var pMaterials = pMeshNode.pMaterials;
+        var pEffects = pLib['library_effects'];
 
-    function buildFrame (pNodes) {
-        if (!pNodes) return null;
+        for (var sMaterial in pMaterials) {
+            var pInputs = pMaterials[sMaterial].pVertexInput;
+            var pEffect = pEffects.effect[pMaterials[sMaterial].sUrl.substr(1)];
+            var pMaterial = pEffect.pProfileCommon.pTechnique.pValue;
 
-        var pFrameSibling = null;
-        var pNode = null;
-        var pFrame = null;
 
-        for (var i = pNodes.length - 1; i >= 0; i --) {
-            pNode = pNodes[i];
-            pFrameSibling = pFrame;
-            pFrame = new a.Frame(pNode.sName);
-            pFrame.pFrameSibling = pFrameSibling;
-            pFrame.pFrameFirstChild = buildFrame(pNode.pChildNodes);
-            if (pNode.pGeometry) {
-                pFrame.pMeshContainer = buildMeshContainer(pNode.pGeometry);
+            for (var j = 0; j < pMesh.length; ++ j) {
+                var pSubMesh = pMesh[j];
+
+                if (pSubMesh.material.name === sMaterial) {
+                    //setup materials
+                    pSubMesh.material.value = pMaterial;
+
+                    //FIXME: remove flex material setup(needs only demo with flexmats..)
+                    pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
+
+                    //setup textures
+                    for (var c in pMaterial.pTextures) {
+                        var pTextureObject = pMaterial.pTextures[c];
+                        var pInput = pInputs[pTextureObject.sParam];
+                        
+                        if (!pInput) {
+                            continue;
+                        }
+ 
+                        var sInputSemantics = pInputs[pTextureObject.sParam].sInputSemantic;
+                        var pColladaImage = pTextureObject.pTexture;
+                        var pSurfaceMaterial = pSubMesh.surfaceMaterial;
+                        var pTexture = pEngine.displayManager().texturePool().loadResource(
+                            pColladaImage.pImage.sImagePath);
+                        var pMatches = sInputSemantics.match(/^(.*?\w)(\d+)$/i);
+                        var iTexCoord = (pMatches? pMatches[2]: 0);
+                        var iTexture = __ENUM__(SURFACEMATERIAL_TEXTURES)[c.toUpperCase()];
+
+                        pSurfaceMaterial.setTexture(iTexture, pTexture, iTexCoord);
+                    }
+                }
             }
-            Mat4.set(pNode.m4fTransform, pFrame.m4fTransformationMatrix);
-
-            nTotalFrames ++;
+            //trace('try to apply mat:', pMaterial);
         }
-
-        return pFrame;
-    }
-
-    function buildMesh (pGeometry) {
-        var pMesh = new a.Mesh(pEngine);
-        var pCMesh = pGeometry.pMesh;
-        var sUniqName = pGeometry.sName + a.sid();
-
-        debug_assert(pCMesh, 'buildMesh:: mesh not founded.');
-        debug_assert(pCMesh.pData.length == 1, 'multi index mesh unsupported');
-
-        var pData = pCMesh.pData[0];
-        var pPolygons = pCMesh.pPolygons;
-
-        var pVertexBuffer = pEngine.displayManager().vertexBufferPool().createResource(sUniqName);
-        var pIndexBuffer = pEngine.displayManager().indexBufferPool().createResource(sUniqName);
-
-        var pMeshAreas = [];
-        var pIndexes = [];
-        var iElSize = a.getTypeSize(a.DTYPE.FLOAT);
-        var pVertexDescription = pPolygons[0].pDeclarations[0];
-
-        for (var i = 0, iFaceStart = 0; i < pPolygons.length; i++) {
-            var pPolyGroup = pPolygons[i];
-
-            debug_assert(pPolyGroup.pDeclarations.length == 1, 'multiply vertex declarations unsupported');
-
-            var pArea = new a.MeshArea(i, iFaceStart, pPolyGroup.p.length / 3, 0, 0);
-
-            iFaceStart += pArea.iFaceCount;
-            pMeshAreas.push(pArea);
-            pIndexes = pIndexes.concat(pPolyGroup.p);
-        }
-
-        pVertexBuffer.create(pData.nCount, pData.iStride * iElSize,
-                             FLAG(a.VertexBuffer.RamBackupBit), new Float32Array(pData.pData));
-        pVertexBuffer.setVertexDescription(pVertexDescription);
-        pIndexBuffer.create(a.PRIMTYPE.TRIANGLELIST, pIndexes.length, FLAG(a.IndexBuffer.RamBackupBit), pIndexes, 2);
-
-        pMesh._nFaces = pIndexes.length / 3.0;
-        pMesh._nVertices = pData.nCount;
-        pMesh._eOptions = 0;
-        pMesh._pVertexBuffer = pVertexBuffer;
-        pMesh._pIndexBuffer = pIndexBuffer;
-        pMesh._pVertexDeclaration = pVertexDescription;
-        pMesh._pAreaTable = pMeshAreas;
-        pMesh._nBytesPerVertex = pData.iStride * iElSize;
 
         return pMesh;
     }
+    
+    /**
+     * Build a mesh according to node <mesh>.
+     * Cache all created meshes into <pMeshList>.
+     */
+    function buildMesh (pMeshNode, pMeshList) {
+        'use strict';
+        //trace(pMeshNode);
 
-    function buildMeshContainer (pGeometry) {
-        var pMeshContainer = new a.MeshContainer;
-        var pMesh = buildMesh(pGeometry.pGeometry);
-        var pMeshData = new a.MeshData(a.MESHDATATYPE.MESH, pMesh)
+        var pGeometry = pMeshNode.pGeometry;
+        var pNodeData = pGeometry.pMesh;
+        var sMeshName = pGeometry.id;
 
-        var pMaterials = [],
-            pMat,
-            pSourceMat,
-            pCMaterial,
-            pCTexture;
+        if (!pNodeData) {
+            return null;
+        }
+        
+        if (pMeshList && pMeshList[sMeshName]) {
+            //mesh with same geometry data
+            return buildMaterials(
+                pMeshList[sMeshName].clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
+                pMeshNode);
+        }
+        
+        trace('--- building started ---');
+        var iBegin = a.now();
 
-        var pPolygons = pGeometry.pGeometry.pMesh.pPolygons;
+        var pMesh = new a.Mesh(pEngine, 
+              0,//a.Mesh.VB_READABLE|a.Mesh.RD_ADVANCED_INDEX,  
+            sMeshName);
+        var pPolyGroup = pNodeData.pPolygons;
+        var pMeshData = pMesh.data;
+        
+        //creating subsets
+        for (var i = 0; i < pPolyGroup.length; ++ i) {
+            pMesh.createSubset('submesh-' + i, pPolyGroup[i].eType);
+        }
 
-        for (var i = 0; i < pPolygons.length; i++) {
-            var pPolyGroup = pPolygons[i];
+        //filling data
+        for (var i = 0; i < pPolyGroup.length; ++ i) {
+            var pPolygons = pPolyGroup[i];
 
-            pMaterials[i] = null;
+            for (var j = 0; j < pPolygons.pInput.length; ++ j) {
+                var sSemantic = pPolygons.pInput[j].sSemantic;
 
-            if (pPolyGroup.sMaterial) {
-                pCMaterial = pGeometry.pMaterials[pPolyGroup.sMaterial];
-                pSourceMat = source(pCMaterial.sUrl).pProfileCommon.pTechnique.pValue;
-                pMat = new a.MaterialBase();
-
-                a.MaterialBase.set(pSourceMat, pMat);
-
-                if (pCMaterial.pVertexInput.length > 0) {
-                    if (pCMaterial.pVertexInput.length > 1) {
-                        debug_error('supported only one vertex input...');
+                if (pMesh._pFactory.getDataLocation(sSemantic) < 0) {
+                    var pDecl, pData = pPolygons.pInput[j].pArray;
+                    switch (sSemantic) {
+                        case a.DECLUSAGE.POSITION:
+                        case a.DECLUSAGE.NORMAL:
+                            pDecl = [VE_FLOAT3(sSemantic)];
+                            break;
+                        case a.DECLUSAGE.TEXCOORD:
+                        case a.DECLUSAGE.TEXCOORD1:
+                        case a.DECLUSAGE.TEXCOORD2:
+                        case a.DECLUSAGE.TEXCOORD3:
+                        case a.DECLUSAGE.TEXCOORD4:
+                        case a.DECLUSAGE.TEXCOORD5:
+                            pDecl = [VE_FLOAT2(sSemantic)];
+                            break;
+                        default:
+                            error('unsupported semantics used: ' + sSemantic);
                     }
 
-                    pCTexture = pSourceMat.pCTexture[pCMaterial.pVertexInput[0].sSemantic]
-                    if (pCTexture) {
-                        pMat.sTextureFilename = pCTexture.pImage.sImagePath;
-                    }
+                    pMeshData.allocateData(pDecl, pData);
                 }
-
-                pMaterials[i] = pMat;
-
             }
         }
 
-        pMeshContainer.create(pGeometry.sName, pMeshData, pMaterials, null, null);
+        trace('data filled:', a.now() - iBegin, 'ms');
 
-        return pMeshContainer;
+
+        //add indices to data
+        for (var i = 0; i < pPolyGroup.length; ++ i) {
+            var pPolygons = pPolyGroup[i];
+            var pSubMesh = pMesh.getSubset(i);
+            var pSubMeshData = pSubMesh.data;
+            var pDecl = new Array(pPolygons.pInput.length);
+            var iIndex = 0;
+
+            for (var j = 0; j < pPolygons.pInput.length; ++ j) {
+                pDecl[j] = VE_FLOAT(a.DECLUSAGE.INDEX + (iIndex ++));
+            }
+
+            pSubMeshData.allocateIndex(pDecl, new Float32Array(pPolygons.p));
+
+            for (var j = 0; j < pDecl.length; ++ j) {
+                pSubMeshData.index(pPolygons.pInput[j].sSemantic, pDecl[j].eUsage);
+            }
+
+            pSubMesh.material.name = pPolygons.sMaterial;
+        }
+
+        pMesh.addFlexMaterial('default');
+        pMesh.setFlexMaterial('default');
+
+        trace('indices added:', a.now() - iBegin, 'ms');
+        trace('--- complete ---');
+
+        trace('loaded mesh<', sMeshName,'>:');
+        for (var i = 0; i < pMesh.length; ++i) {
+             trace('\tsubmesh<', pMesh[i].name,'>:', pMesh[i].data.getPrimitiveCount(), 'polygons');
+        }
+        
+        pMeshList[sMeshName] = pMesh;
+        return buildMaterials(pMesh, pMeshNode);
+    };
+
+    function findNode (pNodes, sNode, fnNodeCallback) {
+        sNode = sNode || null;
+        fnNodeCallback = fnNodeCallback || null;
+
+        var pNode = null;
+        var pRootJoint = null;
+
+        for (var i = pNodes.length - 1; i >= 0; i --) {
+            pNode = pNodes[i];
+            
+            if (pNode === null) {
+                continue;
+            }
+     
+            if (sNode && '#' + pNode.id === sNode) {
+                return pNode;
+            }
+
+            if (fnNodeCallback) {
+                fnNodeCallback(pNode);
+            }
+
+            if (pNode.pChildNodes) {
+                pRootJoint = findNode(pNode.pChildNodes, sNode, fnNodeCallback);
+                
+                if (pRootJoint) {
+                    return pRootJoint;
+                }
+            }
+        }
+
+        return null;
     }
 
-    function buildMaterial (pMaterial) {
-        timestamp('building material: ' + pMaterial.id);
-        return pMaterial;
+    function buildBoneList (pControllerInstance) {
+        var pController = pControllerInstance.pController;
+        var pSkin = pController.pSkin;
+        var pBoneList = pSkin.pJoints.pInput['JOINT'].pArray;
+        var pSkeleton = pControllerInstance.pSkeleton;
+        
+        var pExpectedRootNode = source(pSkeleton.first);
+        var iCount = 1;
+        var pNode;
+        var pRootNode = null;
+        var pSkeletonCache = null;
+
+        for (var i = 1; i < pSkeleton.length; i++) {
+            pNode = source(pSkeleton[i]);
+            if (pNode) {
+                if (pNode.iDepth < pExpectedRootNode.iDepth) {
+                    iCount = 1;
+                    pExpectedRootNode = pNode;
+                }
+                else if (pNode.iDepth == pExpectedRootNode.iDepth) {
+                    iCount ++;
+                }
+            }
+        };
+
+        debug_assert(pExpectedRootNode && iCount === 1, 'invalid skeleton hierarhy, root node ' + 
+            'not found or root is not singleton');
+
+Ifdef (__DEBUG);
+
+        pSkeletonCache = {};
+
+        for (var i = 0; i < pSkeleton.length; i++) {
+            pSkeletonCache[pSkeleton[i].substr(1)] = false;
+        };
+
+        pSkeletonCache[pExpectedRootNode.id] = true;
+
+        findNode(pExpectedRootNode.pChildNodes, null, function (pNode) {
+            if (pSkeletonCache[pNode.id] === false) {
+                pSkeletonCache[pNode.id] = true;
+            }
+        });
+
+
+        for (var s in pSkeletonCache) {
+            if (pSkeletonCache[s] === false) {
+                error('not all <skeleton> elements founded in root <skeleton>, ' + 
+                    'some thing going wrong...');
+            }
+        }
+
+Endif ();
+
+        pRootNode = pExpectedRootNode;
+      
     }
 
-    function buildFramList () {
-        //console.log('scene founded:', pScene.id, pScene);
+    function buildSkinMesh (pSkinMeshNode, pMeshList) {
+        var pMeshNode = {
+            pGeometry: pSkinMeshNode.pController.pSkin.pGeometry,
+            pMaterials: pSkinMeshNode.pMaterials
+        }
+
+        buildBoneList(pSkinMeshNode);
+
+        return buildMesh(pMeshNode, pMeshList);
+    }
+
+    function buildSceneNode (pNodes, pParentNode, pMeshList) {
+        pParentNode = pParentNode || null;
+
+        if (!pNodes) {
+            return null;
+        }
+
+        //var pSceneNodeSibling = null;
+        var pNode = null;
+        var pSceneNode = null;
+        var pMesh = null;
+        var pGeometry = null;
+
+        for (var i = pNodes.length - 1; i >= 0; i --) {
+            pNode = pNodes[i];
+            
+            if (!pNode) {
+                continue;
+            }
+
+            //pSceneNodeSibling = pSceneNode;
+
+            if (pNode.pController.length) {
+                
+                pSceneNode = new a.SceneModel(pEngine);
+
+                for (var m = 0; m < pNode.pController.length; ++ m) {
+                    pSceneNode.addMesh(buildSkinMesh(pNode.pController[m], pMeshList));  
+                }
+            } 
+            else if (pNode.pGeometry.length) {
+                pSceneNode = new a.SceneModel(pEngine);
+
+                for (var m = 0; m < pNode.pGeometry.length; ++ m) {
+                    pSceneNode.addMesh(buildMesh(pNode.pGeometry[m], pMeshList));  
+                }
+            }
+            else {
+                pSceneNode = new a.SceneNode(pEngine);
+            }
+
+            pSceneNode.create();
+            pSceneNode.setInheritance(a.Scene.k_inheritAll);
+            pSceneNode.attachToParent(pParentNode)
+            Mat4.set(pNode.m4fTransform, pSceneNode.accessLocalMatrix());
+
+            buildSceneNode(pNode.pChildNodes, pSceneNode, pMeshList)
+        }
+
+        return pSceneNode;
+    }
+
+    function buildScene () {
         var m4fRootTransform = buildAssetMatrix();
 
         for (var i = 0; i < pScene.pNodes.length; i++) {
@@ -1448,34 +1713,43 @@ function COLLADA (pEngine, sFilename, fnCallback) {
             Mat4.mult(pNode.m4fTransform, m4fRootTransform);
         }
 
-        return buildFrame(pScene.pNodes);
-    }
+        return buildSceneNode(pScene.pNodes, null, {});
+    };
 
-    a.fopen(sFilename).read (function (sXMLData) {
+    var pMeshes = [];
+
+    function readCollada(sXMLData) {
         var pParser = new DOMParser();
         var pXMLRootNode = pParser.parseFromString(sXMLData, "application/xml");
         var pXMLCollada = pXMLRootNode.getElementsByTagName('COLLADA')[0];
 
-
-        var pLib = {};
         var pTemplate = [
             {sLib: 'library_images',        sElement: 'image',          fn: COLLADAImage},
             {sLib: 'library_effects',       sElement: 'effect',         fn: COLLADAEffect},
             {sLib: 'library_materials',     sElement: 'material',       fn: COLLADAMaterial},
             {sLib: 'library_geometries',    sElement: 'geometry',       fn: COLLADAGeometrie},
+            {sLib: 'library_controllers',   sElement: 'controller',     fn: COLLADAController},
             {sLib: 'library_visual_scenes', sElement: 'visual_scene',   fn: COLLADAVisualScene}
         ];
 
         pAsset = COLLADAAsset(firstChild(pXMLCollada, 'asset'));
+       
         for (var i = 0; i < pTemplate.length; i++) {
             pLib[pTemplate[i].sLib] =
                 COLLADALibrary(firstChild(pXMLCollada, pTemplate[i].sLib), pTemplate[i].sElement, pTemplate[i].fn);
         }
+
         pScene = COLLADAScene(firstChild(pXMLCollada, 'scene'));
 
-        fnCallback(buildFramList(), nTotalFrames);
-    });
+        fnCallback(buildScene());
+    }
 
+    if (!isFileContent) {
+        a.fopen(sFilename).read(readCollada);
+    }
+    else {
+        readCollada(sFile);
+    }
 }
 
 a.COLLADA = COLLADA;

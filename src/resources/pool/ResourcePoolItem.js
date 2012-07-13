@@ -15,11 +15,11 @@
 
 
 /**
- * @enum null
+ * @enum RESOURCE_CODE
  * Определяет недействительный код
  * @memberof ResourceCode
  **/
-Enum([INVALID_CODE = 0xFFFFFFFF], null, a.ResourceCode);
+Enum([INVALID_CODE = 0xFFFFFFFF], RESOURCE_CODE, a.ResourceCode);
 
 /**
  * @property ResourceCode()

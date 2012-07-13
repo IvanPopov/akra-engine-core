@@ -333,10 +333,10 @@ Texture.prototype.createResource = function () {
  */
 Texture.prototype.releaseTexture = function () {
     var pDevice = this._pEngine.pDevice;
-    if (pDevice.isTexture(this._pTexture)) {
+    if (this._pTexture) {
         pDevice.deleteTexture(this._pTexture);
     }
-    if (pDevice.isFramebuffer(this._pFrameBuffer)) {
+    if (this._pFrameBuffer) {
         pDevice.deleteFramebuffer(this._pFrameBuffer);
     }
     this._pTexture = null;
@@ -682,7 +682,7 @@ Texture.prototype.uploadImage = function (pImage) {
             Math.floor(this.minFilter - a.TFILTER.NEAREST_MIPMAP_NEAREST) / 2 + a.TFILTER.NEAREST);
         //pDevice.generateMipmap(a.TTYPE.TEXTURE_2D);
     }
-
+    //trace('uploaded image to texture: ', this._iWidth, 'x', this._iHeight);
     this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
     this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
     this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
@@ -728,9 +728,9 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
 
     var pDevice = this._pEngine.pDevice;
 
-    if (!this._pRepackProgram) {
-        this._pRepackProgram = this._pEngine.displayManager().shaderProgramPool().createResource('A_repackTexture');
-        this._pRepackProgram.create(
+    if (!statics._pRepackProgram) {
+        statics._pRepackProgram = this._pEngine.displayManager().shaderProgramPool().createResource('A_repackTexture');
+        statics._pRepackProgram.create(
             "                                   \n\
             attribute float SERIALNUMBER;       \n\
             uniform vec2 sourceTextureSize;     \n\
@@ -741,12 +741,12 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
                                                 \n\
             void main(void){                    \n\
                 vData = texture2D(sourceTexture,\
-                vec2(mod(SERIALNUMBER,sourceTextureSize.x)/sourceTextureSize.x,\
-                (floor(SERIALNUMBER/sourceTextureSize.x))/sourceTextureSize.y));\n\
+                vec2((mod(SERIALNUMBER,sourceTextureSize.x) + .5)/sourceTextureSize.x,\
+                (floor(SERIALNUMBER/sourceTextureSize.x) + .5)/sourceTextureSize.y));\n\
                                                 \n\
                 gl_Position = vec4(2.*\
-                mod(SERIALNUMBER,destinationTextureSize.x)/destinationTextureSize.x - 1.,\n\
-                2.*floor(SERIALNUMBER/destinationTextureSize.x)/destinationTextureSize.y \
+                (mod(SERIALNUMBER,destinationTextureSize.x) + .5)/destinationTextureSize.x - 1.,\n\
+                2. * (floor(SERIALNUMBER/destinationTextureSize.x) + .5)/destinationTextureSize.y \
                 - 1.,0.,1.);\n\
             }                                   \n\
             ",
@@ -763,7 +763,7 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
     ", true);
     }
 
-    var pProgram = this._pRepackProgram;
+    var pProgram = statics._pRepackProgram;
     pProgram.activate();
 
     var pDestinationTexture = pDevice.createTexture();
@@ -802,7 +802,8 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
 
     pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pRenderIndexBuffer);
     pDevice.vertexAttribPointer(pProgram._pAttributesByName['SERIALNUMBER'].iLocation, 1, pDevice.FLOAT, false, 0, 0);
-
+    // pDevice.disableVertexAttribArray(1);
+    // pDevice.disableVertexAttribArray(2);
 
     pDevice.viewport(0, 0, iWidth, iHeight);
     pDevice.drawArrays(0, 0, pRenderIndexData.length);
@@ -883,7 +884,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
         }
         else {
             for (var i = 0; i < nMipMaps; i++) {
-                trace('Texture:: creating texture miplevel:', i);
+                //trace('Texture:: creating texture miplevel:', i);
                 pDevice.texImage2D(a.TTYPE.TEXTURE_2D, i, this._eFormat, this._iWidth,
                     this._iHeight, 0, this._eFormat, this._eType, pData[i] ? pData[i] : null);
             }
@@ -901,6 +902,8 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
 
     return true;
 };
+
+
 Texture.prototype.bind = function () {
     this._pEngine.pDevice.bindTexture(this.target, this._pTexture);
 };
@@ -911,11 +914,11 @@ Texture.prototype.unbind = function () {
 
 Texture.prototype.activate = function (iSlot) {
     var pManager = this._pEngine.pShaderManager;
-    if (pManager.activeTextures[iSlot] !== this) {
+    //if (pManager.activeTextures[iSlot] !== this) {
         this._pEngine.pDevice.activeTexture(a.TEXTUREUNIT.TEXTURE + (iSlot || 0));
         this.bind();
-        pManager.activeTextures[iSlot] = this;
-    }
+        //pManager.activeTextures[iSlot] = this;
+    //}
 };
 
 /**

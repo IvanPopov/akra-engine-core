@@ -384,7 +384,14 @@ function RenderMethod () {
     this._pMaterial = null;
 }
 
-EXTENDS(RenderMethod, a.ResourcePoolItem, a.Unique);
+EXTENDS(RenderMethod, a.ResourcePoolItem);
+
+RenderMethod.prototype.isEqual = function (pRenderMethod) {
+    'use strict';
+    
+    return (this._pEffect && this._pEffect.isEqual(pRenderMethod._pEffect)) && 
+        (this._pMaterial && this._pMaterial.isEqual(pRenderMethod._pMaterial));
+};
 
 /**
  * Return effect.
@@ -397,15 +404,21 @@ PROPERTY(RenderMethod, 'effect',
     function (pValue) {
         var pEffect = null;
 
-        this.disconnect(this._pEffect, a.ResourcePoolItem.Loaded);
-        safe_release(this._pEffect);
-
+        if (this._pEffect) {
+            this.disconnect(this._pEffect, a.ResourcePoolItem.Loaded);
+            safe_release(this._pEffect);
+        }
+        
         if (typeof pValue === 'string') {
             pEffect = 
                 this._pEngine.pDisplayManager.effectPool().loadResource(pValue);
         }
-        else {
+        else if (pValue) {
             pEffect = pValue;
+        }
+        else {
+            pEffect = 
+                this._pEngine.pDisplayManager.effectPool().createResource('effect-' + a.sid());
         }
 
         this._pEffect = pEffect;
@@ -426,28 +439,50 @@ PROPERTY(RenderMethod, 'material',
     function (pValue) {
         var pMaterial = null;
 
-        this.disconnect(this._pMaterial, a.ResourcePoolItem.Loaded);
-        safe_release(this._pMaterial);
+        if (this._pMaterial) {
+            this.disconnect(this._pMaterial, a.ResourcePoolItem.Loaded);
+            safe_release(this._pMaterial);
+        }
 
         if (typeof pValue === 'string') {
             pMaterial = 
-                this._pEngine.pDisplayManager.materialPool().loadResource(pValue);
+                this._pEngine.pDisplayManager.surfaceMaterialPool().loadResource(pValue);
         }
-        else {
+        else if (pValue) {
             pMaterial = pValue;
         }
+        else {
+            pMaterial = 
+                this._pEngine.pDisplayManager.surfaceMaterialPool().createResource('material-' + a.sid());
+        }
 
-        this._pMateria = pMaterial;
+        this._pMaterial = pMaterial;
         this.connect(pMaterial, a.ResourcePoolItem.Loaded);
+
+        //==============================================================================
+        // var me = this;
+        // trace('me get material :)');
+        // pMaterial.setChangesNotifyRoutine(function() {
+        //                 if (pMaterial.isResourceLoaded()) {
+        //                     trace('Material <', pMaterial.findResourceName(), '> loaded'); 
+        //                     trace('Number of textures in material:', pMaterial.totalTextures)
+        //                     trace('me loaded? - ', me.isResourceLoaded());
+        //                 }
+        //             });
+        //==============================================================================
 
         pMaterial.addRef();
     });
 
-a.RenderMethod = RenderMethod;
+RenderMethod.prototype.setEffect = function(pEffect) {
+    this.effect = pEffect || null;
+};
 
-Define(a.RenderMethodManager(pEngine), function () {
-    a.ResourcePool(pEngine, a.RenderMethod)
-});
+RenderMethod.prototype.setMaterial = function(pMaterial) {
+    this.material = pMaterial || null;
+};
+
+
 
 /**
  * creates resource
@@ -460,7 +495,7 @@ RenderMethod.prototype.createResource = function() {
     // signal that the resource is now created,
     // but has not been enabled
     this.notifyCreated();
-    this.notifyDisabled();
+    //this.notifyDisabled();
 
     return true;
 };
@@ -485,6 +520,7 @@ RenderMethod.prototype.destroyResource = function() {
 
     return false;
 };
+
 
 
 /**
@@ -529,3 +565,9 @@ RenderMethod.prototype.loadResource = function (sFileName) {
 RenderMethod.prototype.saveResource = function (sFileName) {
     return false;
 }
+
+A_NAMESPACE(RenderMethod);
+
+Define(a.RenderMethodManager(pEngine), function () {
+    a.ResourcePool(pEngine, a.RenderMethod)
+});

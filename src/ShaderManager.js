@@ -64,17 +64,30 @@ function ShaderManager (pEngine) {
          eTextureHandles, a.ShaderManager);
 
     this.pEngine = pEngine;
+    this._pActiveProgram = null;
+    this._nAttrsUsed = 0;
 //    this._pActivatedPrograms = new Array(32);
 //    this._pActivatedPrograms[0] = 0;
 //    this._nLastActivatedProgram = 0;
 }
 
 ShaderManager.prototype.activateProgram = function (pProgram) {
-   // if (this._pActivatedPrograms[this._nLastActivatedProgram] !== pProgram) {
-   //     trace('bind Program', pProgram.resourceHandle());
-   //     this._pActivatedPrograms[++this._nLastActivatedProgram] = pProgram;
-        pProgram.bind();
-   // }
+
+    var pDevice = this.pEngine.pDevice;
+    
+    pProgram.bind();
+    
+
+    for (var i = pProgram.getAttribCount(); i < this._nAttrsUsed; i++) {
+        pDevice.disableVertexAttribArray(i);
+    };
+  
+    for (var i = 0; i < pProgram.getAttribCount(); i++) {
+        pDevice.enableVertexAttribArray(i);
+    };
+
+    this._pActiveProgram = pProgram;
+    this._nAttrsUsed = pProgram.getAttribCount();
 };
 
 ShaderManager.prototype.deactivateProgram = function (pProgram) {
@@ -83,9 +96,12 @@ ShaderManager.prototype.deactivateProgram = function (pProgram) {
      //   this._nLastActivatedProgram --;
         //pProgram.unbind(this._pActivatedPrograms[this._nLastActivatedProgram]);
     //}
+    this._pActiveProgram = null;
     pProgram.unbind();
 };
-
+ShaderManager.prototype.getActiveProgram = function() {
+    return this._pActiveProgram;
+};
 ShaderManager.prototype.activeTextures = new Array(32);
 
 /**

@@ -759,7 +759,7 @@ SceneNode.prototype.createSubNode = function () {
             node._pSubNodeGroupOwner = this;
             return node;
         default:
-            var node = new cSceneNode();
+            var node = new a.SceneNode();
             node.create();
             node._pSubNodeGroupOwner = this;
             return node;
@@ -835,7 +835,7 @@ SceneNode.prototype.updateWorldVectors = function () {
 };
 /**
  * Getter for worldPosistion vector
- * @treturn Float32Array _v3fWorldPostion
+ * @treturn Float32Array _v3fWorldPosition
  */
 SceneNode.prototype.worldPosition = function () {
     this.updateWorldVectors();
@@ -868,7 +868,7 @@ SceneNode.prototype.worldForward = function () {
 SceneNode.prototype.getUp = SceneNode.prototype.worldUp;
 SceneNode.prototype.getRight = SceneNode.prototype.worldRight;
 SceneNode.prototype.getForward = SceneNode.prototype.worldForward;
-SceneNode.prototype.getPosition = SceneNode.prototype.worldPosition();
+SceneNode.prototype.getPosition = SceneNode.prototype.worldPosition;
 
 /**
  * Set new position.
@@ -920,7 +920,15 @@ SceneNode.prototype.addPosition = function (pPos) {
  */
 SceneNode.prototype.addRelPosition = function (pPos) {
     var m4fLocal = this._m4fLocalMatrix;
-    var fX = pPos.X, fY = pPos.Y, fZ = pPos.Z;
+    var fX, fY, fZ;
+    if (arguments.length < 3) {
+        fX = pPos.X, fY = pPos.Y, fZ = pPos.Z;
+    }
+    else {
+        fX = arguments.X;
+        fY = arguments.Y;
+        fZ = arguments.Z;
+    }
     m4fLocal._14 += m4fLocal._11 * fX + m4fLocal._12 * fY + m4fLocal._13 * fZ;
     m4fLocal._24 += m4fLocal._21 * fX + m4fLocal._22 * fY + m4fLocal._23 * fZ;
     m4fLocal._34 += m4fLocal._31 * fX + m4fLocal._32 * fY + m4fLocal._33 * fZ;
@@ -1717,7 +1725,7 @@ SceneObject.prototype.prepareForRender = function () {
  * Call parent method. Default implementation does nothing.
  */
 SceneObject.prototype.render = function () {
-    SceneObject.superclass.render.apply(this, arguments);
+    //SceneObject.superclass.render.apply(this, arguments);
 };
 /**
  * if we queued ourselved for rendering with the

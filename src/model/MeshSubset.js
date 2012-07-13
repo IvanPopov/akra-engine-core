@@ -1,82 +1,132 @@
+
 /**
- * @ctor
+ * @constructor
  */
-function MeshSubset (pEngine) {
+function MeshSubset (pMesh, pRenderData, sName) {
     A_CLASS;
 
-    /**
-     * @private
-     * @type {PRIMITIVE_TYPE}
-     */
-    this._ePrimType = 0;
-
-    //vertexData(vertexBuffer) with indices
-    //or IndexBuffer with indices
-    this._pIndexData = null;
-    this._pIndexBuffer = null;
-    this._pMap = new a.BufferMap(pEngine);
-    //parent mesh
+    this._pRenderData = null;
+    this._sName = null;
     this._pMesh = null;
 
-    //id
-    this._iId = 0;
-
-    this._iMaterial = -1;
+    this.setup(pMesh, pRenderData, sName);
 }
 
 EXTENDS(MeshSubset, a.RenderableObject);
 
-PROPERTY(MeshSubset, 'parent',
+PROPERTY(MeshSubset, 'name',
+    function () {
+        return this._sName;
+    },
+    function (sName) {
+        this._sName = sName;
+    });
+
+PROPERTY(MeshSubset, 'mesh',
     function () {
         return this._pMesh;
     });
 
-/**
- * @protected
- * @param  {Engine} pEngine    [description]
- * @param  {Mesh} pMesh      [description]
- * @param  {Uint} iId        [description]
- * @param  {String} sName      [description]
- * @param  {PRIMITIVE_TYPE} ePrimType  [description]
- * @param  {Uint} iPrimCount [description]
- */
-MeshSubset.prototype.setup = function (pMesh, iId, sName, pIndicesData, ePrimType) {
-    if (arguments.length < 4) {
+PROPERTY(MeshSubset, 'data',
+    function () {
+        return this._pRenderData;
+    });
+
+MeshSubset.prototype.setup = function(pMesh, pRenderData, sName) {
+    debug_assert(this._pMesh === null, 'mesh subset already prepared');
+    debug_assert(pMesh, 'you must specify parent mesh for creation mesh subset');
+    debug_assert(pRenderData, 'you must specify render data for creation mesh subset');
+
+    this._pMesh = pMesh;
+    this._pRenderData = pRenderData;
+    this._sName = sName || null;
+
+    parent.setup(pMesh.getEngine(), sName);
+};
+
+MeshSubset.prototype.boundingBox = function () {
+    //TODO: calc bounding box
+};
+
+MeshSubset.prototype.boundingSphere = function () {
+    //TODO: calc bounding sphere
+};
+
+MeshSubset.prototype.computeNormals = function () {
+    //TODO: calc normals
+};
+
+MeshSubset.prototype.computeTangents = function () {
+    //TODO: compute normals
+};
+
+MeshSubset.prototype.computeBinormals = function () {
+    //TODO: calc binormals
+};
+
+MeshSubset.prototype.applyFlexMaterial = function(sMaterial, pMaterialData) {
+    if (this._pMesh.addFlexMaterial(sMaterial, pMaterialData)) {
+        return this.setFlexMaterial(sMaterial);
+    }
+    return false;
+};
+
+MeshSubset.prototype.getFlexMaterial = function(iMaterial) {
+    'use strict';
+    return this._pMesh.getFlexMaterial(iMaterial);
+};
+
+MeshSubset.prototype.hasFlexMaterial = function () {
+    'use strict';
+    
+    return this._pRenderData.hasSemantics(a.DECLUSAGE.MATERIAL);
+};
+
+MeshSubset.prototype.setFlexMaterial = function (iMaterial) {
+    var pRenderData = this._pRenderData;
+    var pIndexData = pRenderData.getIndices();
+    var pMatFlow = pRenderData.getFlow(a.DECLUSAGE.MATERIAL);
+    var eSemantics = a.DECLUSAGE.INDEX10;
+    var pIndexDecl, pIndexData;
+    var iMatFlow;
+    var pMaterial = this._pMesh.getFlexMaterial(iMaterial);
+    var iMat = pMaterial._pData.getOffset();
+
+    if (!pMaterial) {
         return false;
     }
 
-    this._pMesh = pMesh;
-    this._iId = iId;
-    this._ePrimType = ePrimType || a.PRIMTYPE.TRIANGLELIST;
-    this._pIndices = pIndicesData;
-    var pIndexBuffer = 
-        PR_DISPLAYMNGR.vertexBufferPool().createResource('submesh_' + this.name + '_' + a.sid());
-    pIndexBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
-    this._pIndexBuffer = pIndexBuffer;
+    
+    if (pMatFlow) {
+        iMatFlow = pMatFlow.iFlow;
+        eSemantics = pMatFlow.pMapper.eSemantics;
+        pIndexData = pMatFlow.pMapper.pData;
 
-    this.name = sName;
+        pRenderData._addData(pMaterial._pData, iMatFlow);
+        return pRenderData.index(iMat, eSemantics, true);
+    }
+    else {
+        pIndexDecl = new a.VertexDeclaration([VE_FLOAT(eSemantics)]);
+        pIndexData = new Float32Array(pIndexData.getCount());    
+        iMatFlow = pRenderData._addData(pMaterial._pData);
 
+        debug_assert(iMatFlow >= 0, 'cannot add data flow with material for mesh subsset');
+
+        if (!pRenderData.allocateIndex(pIndexDecl, pIndexData)) {
+            trace('cannot allocate index for material!!!');
+            return false;
+        }
+
+        return pRenderData.index(iMat, eSemantics, true);
+    }
+    
     return true;
 };
 
-MeshSubset.prototype.allocateIndex = function (pAttrDecl, pData) {
-    var pIndexData = this._pIndexData;
+MeshSubset.prototype.draw = function () {
+    'use strict';
     
-    if (!pIndexData) {
-        this._pIndexData = this._pIndexBuffer.allocateData(pAttrDecl, pData);
-        return true;
-    }
-    
-    return pIndexData.extend(pAttrDecl, pData);
+    this._pRenderData.draw();
 };
-
-MeshSubset.prototype.setMaterial = function (iMaterial) {
-    
-};
-
-//добавляем сабмешу ссылку на его данные.
-MeshSubset.prototype._addData = function (pVertexData) {
-    this._pMap.flow(pVertexData);
-}
 
 A_NAMESPACE(MeshSubset);

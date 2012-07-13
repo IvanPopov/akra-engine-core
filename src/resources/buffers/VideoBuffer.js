@@ -19,12 +19,14 @@ Enum([
     VIDEOBUFFER_HEADER_SIZE = 8      //!< VideoBuffer header: header size
 ], VIDEOBUFFER_HEADER);
 
+Define(a.DECLUSAGE.TEXTURE_HEADER, 'TEXTURE_HEADER');
+
 /**
  * @typedef
  * VideoBuffer data type.
  */
 Define(a.VideoBufferType, Float32Array);
-Define(VIDEOBUFFER_MIN_SIZE, 32);
+Define(VIDEOBUFFER_MIN_SIZE, 4096);
 
 function alignBytes (iByteSize, iTypeSize) {
     var m = iByteSize % iTypeSize;
@@ -59,12 +61,18 @@ function VideoBuffer (pEngine) {
      */
     this._pRepackEffect = null;
 
+    /**
+     * Texture Header.
+     * @type {VertexData}
+     */
+    this._pHeader = null;
+
 
 //    debug_assert(a.info.graphics.getExtention(pEngine.pDevice, a.EXTENTIONS.TEXTURE_FLOAT),
 //        'для работы видеобуфера необходимо расширение a.EXTENTIONS.TEXTURE_FLOAT');
 }
 
-a.extend(VideoBuffer, a.VBufferBase, a.Texture);
+EXTENDS(VideoBuffer, a.VBufferBase, a.Texture);
 
 
 /**
@@ -77,7 +85,8 @@ PROPERTY(VideoBuffer, 'buffer', function () {
  * @getter Size of buffer in bytes.
  */
 PROPERTY(VideoBuffer, 'size', function () {
-    return this._iWidth * this._iHeight * this._numElementsPerPixel * this.typeSize;
+    return this._iWidth * this._iHeight * 
+        this._numElementsPerPixel * this.typeSize;
 });
 
 /**
@@ -119,22 +128,6 @@ DISPROPERTY(VideoBuffer, format);
 DISPROPERTY(VideoBuffer, magFilter);
 DISPROPERTY(VideoBuffer, minFilter);
 
-/**
- * @static
- * @type VertexDeclaration[]
- */
-//STATIC(VideoBuffer, pMarkupDeclaration, new a.VertexDeclaration([
-//    {nCount: 1, eType: a.DTYPE.INT, eUsage: 'INDEX'}
-//    {1, a.DTYPE.INT, 'SHIFT'}
-//]));
-
-/**
- * @static
- * @type VertexDeclaration[]
- */
-//STATIC(VideoBuffer, pDataDeclaration, VERTEX_DECLARATION([
-//    [4, a.DTYPE.FLOAT, 'VALUE']
-//]));
 
 /**
  * @property create(uint iByteSize, uint iFlags, ArrayBuffer pData)
@@ -181,34 +174,30 @@ VideoBuffer.prototype.create = function (iByteSize, iFlags, pData) {
             this._pBackupCopy.set(new Uint8Array(pData.buffer), 0);
         }
     }
-    trace('POT texture size:',
-        (alignBytes(iByteSize, this.typeSize) + VIDEOBUFFER_HEADER_SIZE) / a.VideoBufferType.BYTES_PER_ELEMENT);
+    // trace('POT texture size:',
+    //     (alignBytes(iByteSize, this.typeSize)) / a.VideoBufferType.BYTES_PER_ELEMENT);
     // creating texture
-    pSize = a.calcPOTtextureSize((alignBytes(iByteSize, this.typeSize) + VIDEOBUFFER_HEADER_SIZE) /
+    pSize = a.calcPOTtextureSize((alignBytes(iByteSize, this.typeSize)) /
         a.VideoBufferType.BYTES_PER_ELEMENT, this._numElementsPerPixel);
-    pHeader = this._header(pSize.X, pSize.Y);
+    //pHeader = this._header(pSize.X, pSize.Y);
     pTextureData = new a.VideoBufferType(pSize.Z);
-    pTextureData.set(pHeader, 0);
+    //pTextureData.set(pHeader, 0);
 
     //---------------- TEMP SET DATA BEGIN -------------
+    //FIXME: correct set data..
     if (pData) {
-        (new Uint8Array(pTextureData.buffer)).set(new Uint8Array(pData.buffer),
-            (new Uint8Array(pHeader.buffer)).length);
+        (new Uint8Array(pTextureData.buffer)).set(new Uint8Array(pData.buffer));
     }
     //---------------- TEMP SET DATA END ---------------
 
 
-    trace('creating texture: ', pSize.X, 'x', pSize.Y);
+    //trace('creating texture: ', pSize.X, 'x', pSize.Y);
 
     if (!parent(Texture).createTexture.call(this, pSize.X, pSize.Y, 0, a.IFORMAT.RGBA, a.ITYPE.FLOAT, pTextureData)) {
         debug_error('Cannot create video buffer.');
         this.destroy();
         return false;
     }
-
-    this.bind();
-    this._pEngine.pDevice.generateMipmap(this.target);
-    this.unbind();
 
     this.wraps = a.TWRAPMODE.CLAMP_TO_EDGE;
     this.wrapt = a.TWRAPMODE.CLAMP_TO_EDGE;
@@ -225,6 +214,9 @@ VideoBuffer.prototype.create = function (iByteSize, iFlags, pData) {
 //    if (pData) {
 //        this.setData(pData);
 //    }
+    
+    this._pHeader = this.allocateData([VE_VEC2(a.DECLUSAGE.TEXTURE_HEADER)], 
+        this._header(pSize.X, pSize.Y));    
 
     return true;
 };
@@ -237,27 +229,30 @@ VideoBuffer.prototype.create = function (iByteSize, iFlags, pData) {
 VideoBuffer.prototype.resize = function (iByteSize) {
     var pSize, pBackupCopy;
 
-    trace('resize request for', iByteSize, 'bytes');
+    //trace('resize request for', iByteSize, 'bytes');
 
     iByteSize = alignBytes(iByteSize, this.typeSize);
-    pSize = a.calcPOTtextureSize((iByteSize + VIDEOBUFFER_HEADER_SIZE) /
+    pSize = a.calcPOTtextureSize((iByteSize) /
         a.VideoBufferType.BYTES_PER_ELEMENT, this._numElementsPerPixel);
 
     if (TEST_BIT(this._iTypeFlags, a.VBufferBase.RamBackupBit)) {
-        pBackupCopy = new Uint8Array(iByteSize);
+        pBackupCopy = new Uint8Array(pSize.X * pSize.Y * this._numElementsPerPixel * this.typeSize);
         pBackupCopy.set(this._pBackupCopy);
         this._pBackupCopy = pBackupCopy;
-        trace('backup copy size', pBackupCopy.byteLength, 'bytes');
+        //trace('backup copy size', pBackupCopy.byteLength, 'bytes');
     }
 
     if (pSize.X <= this._iWidth && pSize.Y <= this._iHeight) {
         return true;
     }
 
-    trace('resize buffer from', this._iWidth, 'x', this._iHeight, ' to', pSize.X, 'x', pSize.Y);
+    //trace('resize vb :: from', this._iWidth, 'x', this._iHeight, ' to', pSize.X, 'x', pSize.Y);
+    parent(Texture).repack.call(this, pSize.X, pSize.Y);    
+    
 
-    parent(Texture).repack.call(this, pSize.X, pSize.Y);
-    parent(Texture).setPixelRGBA.call(this, 0, 0, 2, 1, this._header(), 0);
+    
+    //parent(Texture).setPixelRGBA.call(this, 0, 0, 2, 1, this._header(), 0);
+    this._pHeader.setData(this._header());
 
     return true;
 };
@@ -299,7 +294,8 @@ VideoBuffer.prototype._header = function (iWidth, iHeight) {
  * @treturn Boolean
  * @protected
  */
-VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
+VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy) {
+    'use strict';
 
     var iTypeSize       = this.typeSize,                //размер элемента(обычно это float - 4 байта)
         nElementsPerPix = this.numElementsPerPixel,     //число float'ов в пикселе
@@ -314,28 +310,29 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
         nPixels,                                        //число пикселей
         nElements;
 
+    bUpdateRamCopy = ifndef (bUpdateRamCopy, true);
     iOffset = iOffset || 0;
     iSize = iSize || pData.byteLength;
 
     if (this.size < iOffset + iSize) {
         this.resize(iOffset + iSize);
     }
-
-    if (this.isRAMBufferPresent()) {
+   
+    if (this.isRAMBufferPresent() && bUpdateRamCopy) {
         //trace('update backup copy from', iOffset, '/', this._pBackupCopy.byteLength, 'for', iSize, 'bytes');
         this._pBackupCopy.set(new Uint8Array(pData.slice(0, iSize)), iOffset);
     }
 
     debug_assert(iOffset % iTypeSize === 0 && iSize % iTypeSize === 0, "Incorrect data size or offset");
 
-    iFrom       = iOffset / iTypeSize + VIDEOBUFFER_HEADER_SIZE;
+    iFrom       = iOffset / iTypeSize;
     iCount      = iSize / iTypeSize;
 
     iLeftShift  = iFrom % nElementsPerPix;
     iRightShift = ((iFrom + iCount) % nElementsPerPix);
     iBeginPix   = Math.floor(iFrom / nElementsPerPix);
-    iEndPix     = Math.ceil((iFrom + iCount) / nElementsPerPix);
-    nPixels     = iEndPix - iBeginPix;
+    iEndPix     = Math.floor((iFrom + iCount) / nElementsPerPix);
+    nPixels     = Math.ceil((iFrom + iCount) / nElementsPerPix) - Math.floor(iFrom / nElementsPerPix);
     nElements   = nPixels * nElementsPerPix;
 
     pBufferData = new a.VideoBufferType(pData.slice(0, iSize));
@@ -350,7 +347,6 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
         var iBeginElement = 0, iEndElement = 0;
         var pParent = parent(Texture);
         var me = this;
-
         //hack: if iEndPixel is first pixel from next row
         iXend = (iXend === 0? iWidth: iXend);
 
@@ -372,162 +368,88 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
         }
     }
     else if (this.isReadable()) {
-        var iBackShift = ((iOffset / iTypeSize) % nElementsPerPix) * iTypeSize;
-        var iRealOffset = iOffset - iBackShift;
-        var iRealSize = iSize + iBackShift;
-        var iFrontShift = (iRealSize / iTypeSize) % nElementsPerPix;
-
-        if (iFrontShift > 0) {
-            iRealSize += (nElementsPerPix - iFrontShift) * iTypeSize;
-        }
-
-        if(this._pBackupCopy.byteLength < iRealOffset + iRealSize){
-            this.resize(iRealOffset + iRealSize);
-        }
-        return this.setData(this._pBackupCopy.buffer.slice(iRealOffset, iRealOffset + iRealSize), iRealOffset, iRealSize);
+        var iRealOffset = iBeginPix * nElementsPerPix * iTypeSize;
+        var iRealSize = nElements * iTypeSize;
+        var iTotalSize = iRealOffset + iRealSize;
+        
+        return this.setData(
+            this._pBackupCopy.buffer.slice(iRealOffset, iTotalSize), 
+            iRealOffset, iRealSize, false);
     }
     else {
-        trace('update via rendering...');
-
+        
         var pMarkupData = new Float32Array(nPixels * 2);
         var pRealData = new Float32Array(nElements);
 
-        for (var i = 0, n = 0, f, t, u = 0; i < nPixels; ++i) {
-            n = 2 * i;
-            if (i === 0) {
-                //set shift for fisrt pixel
-                pMarkupData[n + 1] = iLeftShift;
-            }
-            else if (i === nPixels - 1 && iLeftShift) {
-                //negative shift for ending pixel
-                pMarkupData[n + 1] = -iRightShift;
-            }
-            else {
-                pMarkupData[n + 1] = 0;
-            }
+        pMarkupData[0] = iBeginPix;
+        pMarkupData[1] = iLeftShift;
+        pMarkupData[2 * nPixels - 1] = - iRightShift;
+        pMarkupData[2 * nPixels - 2] = iBeginPix + nPixels - 1;
 
-            if (pMarkupData[n + 1] >= 0) {
-                f = i * nElementsPerPix;
-                if (n == 0) {
-                    f += iLeftShift;
-                }
-                t = Math.min((i + 1) * nElementsPerPix - f, pBufferData.length);
-            }
-            else {
-                f = i * nElementsPerPix;
-                t = Math.min(Math.abs(pMarkupData[n + 1]), pBufferData.length - u);
-            }
-
-            for (var e = 0; e < t; ++e) {
-                pRealData[f + e] = pBufferData[u++];
-            }
-
-            pMarkupData[n] = iBeginPix + i;
+        for (var i = 1; i < nPixels - 1; ++i) {
+            pMarkupData[2 * i] = iBeginPix + i;
         }
 
+        for (var i = 0; i < iCount; i++) {
+            pRealData[iLeftShift + i] = pBufferData[i];
+        };
 
-        trace('writing', iCount, 'elements from', iFrom, 'with data', pBufferData);
-        trace('markup  data:', pMarkupData, pMarkupData.length, 'first element:', pMarkupData.subarray(0, 2), 'end element:', pMarkupData.subarray(pMarkupData.length - 2, pMarkupData.length));
-        trace('buffer data:', pRealData, pRealData.length);
-
-
-        /*
-         var pUpdateEffect = this._pUpdateEffect;
-         //var iMarkupBuffer = pUpdateEffect.createBuffer(a.BTYPE.ARRAY_BUFFER, a.BUSAGE.STREAM_DRAW, 0, pMarkupData);
-         //var iDataBuffer = pUpdateEffect.createBuffer(a.BTYPE.ARRAY_BUFFER, a.BUSAGE.STREAM_DRAW, 0, pBufferData);
-
-         pUpdateEffect.begin();
-         pUpdateEffect.activatePass(0);
-
-         //pUpdateEffect.setParameter('sourceTexture', this);
-         //pUpdateEffect.setParameter('size', Vec2.create(this._iWidth, this._iHeight));
-         //pUpdateEffect.applyBuffer(iMarkupBuffer, statics.pMarkupDeclaration);
-         //pUpdateEffect.applyBuffer(iDataBuffer, statics.pDataDeclaration);
-         //pUpdateEffect.applyDrawRange(0, iCount);
-         //pUpdateEffect.setup(SM_RENDER_TO_TEXTUE | SM_CLONE_TEXTURE, this);
-
-         //pUpdateEffect.render(); //TODO RENDER!!!
-
-         pUpdateEffect.deactivatePass();
-         pUpdateEffect.end();
-
-         //pUpdateEffect.deleteBuffer(iMarkupBuffer);
-         //pUpdateEffect.deleteBuffer(iDataBuffer);
-         */
+        // trace('>>>>>>>>>>>>>>>>>>> offset:', iOffset, ' >>> left shift: ', iLeftShift, ' >>> right shift: ', iRightShift)
+        // trace(' >>> begin pixel: ', iBeginPix, ' >>> end pixel: ', iEndPix);
+        // trace('writing', iCount, 'elements from', iFrom, 'with data', pBufferData);
+        // trace('markup  data:', pMarkupData, pMarkupData.length, 'first element:', pMarkupData.subarray(0, 2), 'end element:', pMarkupData.subarray(pMarkupData.length - 2, pMarkupData.length));
+        // trace('buffer data:', pRealData, pRealData.length);
+        //console.warn('rendering to vb.:: ', 'writing', iCount, 'elements from', iFrom, 'with data', pBufferData);
 
         var pDevice = this._pEngine.pDevice;
+        var pShaderSource;
+        var pFramebuffer = pDevice.createFramebuffer();
+        var pProgram;
+        pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pFramebuffer);
 
-        if (!this._pUpdateProgram) {
-            this._pUpdateProgram = this._pEngine.displayManager().shaderProgramPool().createResource('A_updateVideoBuffer');
-            this._pUpdateProgram.create(
-                " \
-                uniform sampler2D sourceTexture;                                                \n\
-                attribute vec4  VALUE;                                                          \n\
-                attribute float INDEX;                                                          \n\
-                attribute float SHIFT;                                                          \n\
-                                                                                                \n\
-                uniform vec2 size;                                                              \n\
-                                                                                                \n\
-                varying vec4 color;                                                            \n\
-                                                                                                \n\
-                void main(void){                                                                \n\
-                    vec4 value = VALUE;                                                         \n\
-                    float  serial = float(INDEX);                                               \n\
-                                                                                                \n\
-                    int shift = int(SHIFT);                                                     \n\
-                    if (shift != 0) { \
-                        color = texture2D(sourceTexture, vec2(mod(serial, size.x) /            \n\
-                            size.x + .5 / size.x, floor(serial / size.x) / size.y + .5 / size.y));                              \n\
-                        if (shift == 1) {               \n\
-                            color = vec4(color.r, value.gba);      \n\
-                        }                               \n\
-                        else if (shift == 2) {          \n\
-                            color = vec4(color.rg, value.ba);        \n\
-                        }                               \n\
-                        else if (shift == 3) {          \n\
-                            color = vec4(color.rgb, value.a);          \n\
-                        }                               \n\
-                        else if (shift == -1) {         \n\
-                            color = vec4(value.r, color.gba);      \n\
-                        }                               \n\
-                        else if (shift == -2) {         \n\
-                            color = vec4(value.rg, color.ba);        \n\
-                        }                               \n\
-                        else {                          \n\
-                            color = vec4(value.rgb, color.a);          \n\
-                        }                                                                       \n\
-                    }\
-                    else                                                                                               \n\
-                        color = value;                                                              \n\
-                    gl_Position = vec4(2. * mod(serial, size.x) / size.x - 1. + .5 / size.x,                  \n\
-                                    2. * floor(serial / size.x) / size.y - 1. + .5 / size.y, 0., 1.);        \n\
-                }                                                                               \n\
-                ",
-                "                                   \n\
-                #ifdef GL_ES                        \n\
-                    precision highp float;          \n\
-                #endif                              \n\
-                                                    \n\
-                varying vec4 color;                 \n\
-                                                    \n\
-                void main(void){                    \n\
-                    gl_FragColor = color;           \n\
-                }                                   \n\
-            ", true);
-        }
+Ifdef (TEXTURE_REDRAW)
+        STATIC(_pCopyProgram, a.loadProgram(this._pEngine, '../effects/copy_texture.glsl'));
 
-        var pProgram = this._pUpdateProgram;
+        var pCopyProgram = statics._pCopyProgram;
+        pCopyProgram.activate();
+
+        // pDevice.disableVertexAttribArray(1);
+        // pDevice.disableVertexAttribArray(2);
+
+        var pCopyData = new Float32Array([-1,-1,-1,1,1,-1,1,1]);
+
+        var pCopyBuffer = pDevice.createBuffer();
+        pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pCopyBuffer);
+        pDevice.bufferData(pDevice.ARRAY_BUFFER, pCopyData, pDevice.STREAM_DRAW);
+        pDevice.vertexAttribPointer(pCopyProgram._pAttributesByName['POSITION'].iLocation, 2, pDevice.FLOAT, false, 0, 0);
+
+        var pCopyTexture = pDevice.createTexture();
+        pDevice.activeTexture(0x84C0 + 1);
+        pDevice.bindTexture(pDevice.TEXTURE_2D,pCopyTexture);
+        pDevice.texImage2D(pDevice.TEXTURE_2D, 0, this._eFormat, this._iWidth, this._iHeight, 0, this._eFormat, this._eType, null);
+        pDevice.texParameteri(pDevice.TEXTURE_2D, a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
+        pDevice.texParameteri(pDevice.TEXTURE_2D, a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
+        pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MAG_FILTER, pDevice.NEAREST);
+        pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MIN_FILTER, pDevice.NEAREST);
+
+        pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
+            pDevice.TEXTURE_2D, pCopyTexture, 0);
+
+        this.activate(0);
+        pCopyProgram.applyInt('src',0);
+
+        pDevice.drawArrays(a.PRIMTYPE.TRIANGLESTRIP, 0, 4);
+Endif ();
+
+        STATIC(_pUpdateProgram, a.loadProgram(this._pEngine, '../effects/update_video_buffer.glsl'));
+
+        pProgram = statics._pUpdateProgram;
         pProgram.activate();
 
-        //var pDestinationTexture = pDevice.createTexture();
-        //pDevice.activeTexture(pDevice.TEXTURE1);
-        //pDevice.bindTexture(pDevice.TEXTURE_2D, pDestinationTexture);
-        //pDevice.texImage2D(pDevice.TEXTURE_2D, 0, eFormat, iWidth, iHeight, 0, eFormat, eType, null);
-        //pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MAG_FILTER, pDevice.NEAREST);
-        //pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MIN_FILTER, pDevice.NEAREST);
-
-        var pFramebuffer = pDevice.createFramebuffer();
-        pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pFramebuffer);
+        // pDevice.enableVertexAttribArray(0);
+        // pDevice.enableVertexAttribArray(1);
+        // pDevice.enableVertexAttribArray(2);
+        
         pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
             pDevice.TEXTURE_2D, this._pTexture, 0);
 
@@ -540,11 +462,15 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
         pDevice.bufferData(pDevice.ARRAY_BUFFER, pMarkupData, pDevice.STREAM_DRAW);
 
         this.activate(0);
-        //pDevice.pixelStorei(a.WEBGLS.UNPACK_FLIP_Y_WEBGL, false);
+        //pDevice.activeTexture(0x84C0);
+        //pDevice.bindTexture(pDevice.TEXTURE_2D, this._pTexture);
 
         pProgram.applyVector2('size', this._iWidth, this._iHeight);
+Ifdef (TEXTURE_REDRAW)
+        pProgram.applyInt('sourceTexture', 1);
+Elseif ();
         pProgram.applyInt('sourceTexture', 0);
-
+Endif ();
         pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pValueBuffer);
         pDevice.vertexAttribPointer(pProgram._pAttributesByName['VALUE'].iLocation, 4, pDevice.FLOAT, false, 0, 0);
 
@@ -555,6 +481,7 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
         pDevice.viewport(0, 0, this._iWidth, this._iHeight);
 
         pDevice.drawArrays(0, 0, nPixels);
+        
         pDevice.flush();
 
         pDevice.bindBuffer(pDevice.ARRAY_BUFFER, null);
@@ -564,13 +491,11 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize) {
         pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, null);
         pDevice.deleteFramebuffer(pFramebuffer);
 
-        //pDevice.bindTexture(pDevice.TEXTURE_2D, this._pTexture);
-        //pDevice.pixelStorei(a.WEBGLS.UNPACK_FLIP_Y_WEBGL, true);
-        //pDevice.bindTexture(pDevice.TEXTURE_2D, null);
+Ifdef (TEXTURE_REDRAW)
+        pDevice.deleteTexture(pCopyTexture);
+Endif ();
 
-        //pProgram.detach();
         pProgram.deactivate();
-
     }
 
     return true;
