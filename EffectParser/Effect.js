@@ -331,7 +331,7 @@ function VariableType() {
      */
     this.pUsages = null;
     this.pUsagesName = null;
-
+    this.isMixible = false;
 }
 
 VariableType.prototype.setUsage = function (sValue) {
@@ -469,10 +469,17 @@ VariableType.prototype.isSampler = function () {
     return this.pEffectType.isSampler();
 };
 VariableType.prototype.isConst = function () {
-    if (this.pUsagesName && this.pUsagesName["const"]) {
+    if (this.pUsagesName && this.pUsagesName["const"] === null) {
         return true;
     }
     return false;
+};
+VariableType.prototype.setMixible = function () {
+    if (!this.pEffectType || this.isMixible) {
+        return;
+    }
+    this.isMixible = true;
+    this.pEffectType.setMixible();
 };
 
 function EffectType(sName, sRealName, isBase, iSize) {
@@ -505,6 +512,7 @@ function EffectType(sName, sRealName, isBase, iSize) {
      * @type {Int}
      */
     this.iSize = iSize || 0;
+    this.isMixible = false;
 }
 EffectType.prototype.isEqual = function (pType) {
     if (pType instanceof VariableType) {
@@ -592,6 +600,13 @@ EffectType.prototype.checkMe = function () {
     }
     return true;
 };
+EffectType.prototype.setMixible = function () {
+    if (!this.pDesc || this.isMixible) {
+        return;
+    }
+    this.isMixible = true;
+    this.pDesc.setMixible();
+};
 
 function EffectStruct() {
     /**
@@ -638,6 +653,11 @@ function EffectStruct() {
      * @type {Boolean}
      */
     this.isAnalyzed = false;
+    /**
+     * Are this struct mixible or not
+     * @type {Boolean}
+     */
+    this.isMixible = false;
 }
 EffectStruct.prototype.toCode = function () {
     //TODO: to string
@@ -725,6 +745,24 @@ EffectStruct.prototype.hasComplexType = function () {
         }
     }
     return false;
+};
+EffectStruct.prototype.setMixible = function () {
+    if (this.isMixible) {
+        return;
+    }
+    if (!this.isAnalyzed) {
+        this.analyzeSemantics();
+    }
+    if (this.hasEmptySemantic() || this.hasMultipleSemantic()) {
+        error("you are bad man(woman).");
+        return;
+    }
+    var pOrders = this.pOrders;
+    var i;
+    for (i = 0; i < pOrders.length; i++) {
+        pOrders[i].setMixible();
+    }
+    this.isMixible = true;
 };
 
 function EffectPointer(pVar, nDim) {
@@ -827,6 +865,7 @@ function EffectVariable() {
     this.isParametr = false;
     this.isUniform = false;
     this.isGlobal = false;
+    this.isMixible = false;
 }
 
 EffectVariable.prototype.isConst = function () {
@@ -899,6 +938,13 @@ EffectVariable.prototype.setState = function (eState, eValue) {
         return;
     }
     this.pStates[eState] = eValue;
+};
+EffectVariable.prototype.setMixible = function () {
+    if (this.isUniform || this.isMixible) {
+        return;
+    }
+    this.isMixible = true;
+    this.pType.setMixible();
 };
 
 function EffectFunction(sName, pGLSLExpr, pTypes) {
@@ -1809,7 +1855,8 @@ Effect.prototype.addVariable = function (pVar, isParams) {
                 "iScope"    : me.iScope,
                 "isPointer" : isPointer,
                 "pBuffer"   : pBuffer,
-                "pType"     : pOrders[i].pType
+                "pType"     : pOrders[i].pType,
+                "sName"     : pOrders[i].isMixible ? pOrders[i].sSemantic : pOrders[i].sName
             };
             if (!pOrders[i].pType.isBase()) {
                 fnExtractStruct(sNewName, pOrders[i].pType.pEffectType.pDesc, pTable, me);
@@ -2538,6 +2585,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
     var isNewVar = false;
     var isComplexVar = false;
     var sTypeName;
+    var pCodeFragment;
     var isWriteMode = false;
 
     switch (sName) {
@@ -2620,7 +2668,10 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 pType1 = pFunc.pReturnType;
 
                 if (pFunc.isSystem) {
-                    this.pushCode(pFunc.pGLSLExpr.toGLSL(pArguments));
+                    pCodeFragment = pFunc.pGLSLExpr.toGLSL(pArguments);
+                    for(i = 0; i< pCodeFragment.length; i++){
+                        this.pushCode(pCodeFragment[i]);
+                    }
                 }
                 else {
                     this.pushCode(pFunc);
@@ -3004,6 +3055,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     error("Oh-no");
                     return;
                 }
+
                 this._sVarName = pNode.sValue;
                 pRes = this.hasVariable(this._sVarName);
                 if (!pRes) {
@@ -3011,9 +3063,20 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     error("not good for you");
                     return;
                 }
-                if (pRes.isUniform && this._isWriteVar) {
-                    error("don`t even try to do this, bitch.");
-                    return;
+                if (this._isWriteVar) {
+                    if (pRes.isUniform) {
+                        error("don`t even try to do this, bitch.1");
+                        return;
+                    }
+                    if (pRes.isConst()) {
+                        error("don`t even try to do this, bitch.2");
+                        return;
+                    }
+                    if (pRes.isParametr && pFunction && (pFunction.isVertexShader || pFunction.isFragmentShader)) {
+                        console.log(pRes.isConst());
+                        error("don`t even try to do this, bitch.3");
+                        return;
+                    }
                 }
                 if (pFunction && !pRes.isConst()) {
                     if (pRes.iScope === GLOBAL) {
@@ -3067,7 +3130,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
 
                     pRes.isUsed = true;
                     this._pExprType = pRes.pType;
-                    pRes = pNode.sValue;
+                    pRes = pRes.sName;
                 }
             }
             if (!pRes) {
@@ -3647,6 +3710,7 @@ Effect.prototype.analyzeState = function (pNode, pPass) {
         return;
     }
     else {
+        //Pass
         var isVertex = false;
         var isPixel = false;
 
@@ -3698,6 +3762,12 @@ Effect.prototype.analyzeState = function (pNode, pPass) {
             if (isVertex) {
                 pPass.setVertexShader(pFunc);
                 pFunc.isVertexShader = true;
+                for (i = 0; i < pFunc.pParamOrders.length; i++) {
+                    pFunc.pParamOrders[i].setMixible();
+                }
+                if (pFunc.pReturnType.pEffectType.pDesc) {
+                    pFunc.pReturnType.setMixible();
+                }
             }
             else {
                 pPass.setFragmentShader(pFunc);
