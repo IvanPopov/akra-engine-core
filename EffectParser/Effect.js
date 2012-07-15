@@ -252,6 +252,13 @@ var FROMEXPR = "FromExpr";
 var MEMEXPR = "MemExpr";
 var T_KW_USE = "use"
 var T_KW_STRICT = "strict"
+var IMPORTDECL = "ImportDecl";
+var PROVIDEDECL = "ProvideDecl";
+var STATEIF = "StateIf";
+var STATESWITCH = "StateSwitch";
+var CASESTATE = "CaseState";
+var DEFAULTSTATE = "DefaultState";
+var PASSSTATE = "PassState";
 
 
 var VERTEXUSAGE = 1;
@@ -280,7 +287,6 @@ function GLSLExpr(sTemplate) {
         }
     }
 }
-
 GLSLExpr.prototype.toGLSL = function (pArguments) {
     var i = 0, j;
     var pExpr = this.pExpr;
@@ -333,7 +339,6 @@ function VariableType() {
     this.pUsagesName = null;
     this.isMixible = false;
 }
-
 VariableType.prototype.setUsage = function (sValue) {
     if (!this.pUsages) {
         this.pUsages = [];
@@ -786,7 +791,6 @@ function EffectBuffer() {
     this.id = EffectBuffer.nCount++;
 }
 EffectBuffer.nCount = 0;
-;
 
 function EffectVariable() {
     /**
@@ -867,7 +871,6 @@ function EffectVariable() {
     this.isGlobal = false;
     this.isMixible = false;
 }
-
 EffectVariable.prototype.isConst = function () {
     return this.pType.isConst();
 };
@@ -1121,7 +1124,7 @@ EffectFunction.prototype.hash = function () {
     }
     return this.sHash;
 };
-EffectFunction.prototype.setSemantic = function (sSemantic) {
+EffectFunction.prototype.addSemantic = function (sSemantic) {
     this.sSementic = sSemantic;
     this.pReturnType.sSemantic = sSemantic;
 };
@@ -1251,8 +1254,6 @@ function EffectVertex() {
      */
     this.pReturnVariable = null;
 }
-
-;
 EffectVertex.prototype.addVarying = function (pVar) {
     if (this._pVaryingsSemantic[pVar.sSemantic]) {
         error("don`t do so bad things");
@@ -1283,7 +1284,6 @@ function EffectFragment() {
      */
     this._pVaryings = [];
 }
-
 EffectFragment.prototype.setImplement = function (pImplement) {
     this._pCode = pImplement;
 };
@@ -1300,6 +1300,16 @@ function EffectTechnique() {
      */
     this.pPassesNames = {};
     /**
+     * Is technique is posteffect or effect
+     * @type {Boolean}
+     */
+    this.isPostEffect = false;
+    /**
+     * Annotations for technique
+     * @type {Object}
+     */
+    this.pAnnotation = null;
+    /**
      * @type {String}
      */
     this.sName = "";
@@ -1309,7 +1319,6 @@ function EffectTechnique() {
      */
     this.sRealName = "";
 }
-
 EffectTechnique.prototype.addPass = function (pPass) {
     this.pPasses.push(pPass);
     if (this.pPassesNames[pPass.sName]) {
@@ -1320,18 +1329,34 @@ EffectTechnique.prototype.addPass = function (pPass) {
 EffectTechnique.prototype.setName = function (sName) {
     this.sName = sName;
 };
+EffectTechnique.prototype.addSemantic = function (sSemantic) {
+    sSemantic = sSemantic.toUpperCase();
+    if (sSemantic === "POSTEFFECT") {
+        this.isPostEffect = true;
+    }
+    else if (sSemantic === "EFFECT") {
+        this.isPostEffect = false;
+    }
+    else {
+        error("bad 301");
+        return;
+    }
+};
+EffectTechnique.prototype.addAnnotation = function (pAnnotation) {
+    this.pAnnotation = pAnnotation;
+};
 
 function EffectPass() {
     /**
      *
      * @type {String}
      */
-    this.sVertexName = "";
+    this.sVertex = "";
     /**
      *
      * @type {String}
      */
-    this.sFragmentName = "";
+    this.sFragment = "";
     /**
      * Pairse: eState -> StateValue
      * @type {Object}
@@ -1356,8 +1381,14 @@ function EffectPass() {
      * @type {String}
      */
     this.sRealName = "";
+    this.pAnnotation = null;
+    this.sJSCode = "";
+    this.pJSStates = null;
+    this.pGlobalVariables = null;
+    this.isComplex = false;
+    this.pGlobalValues = null;
+    this.pFuncHash = null;
 }
-
 EffectPass.prototype.setVertexShader = function (pParam) {
     if (typeof(pParam) === "string") {
         this.sVertexName = pParam;
@@ -1374,22 +1405,63 @@ EffectPass.prototype.setFragmentShader = function (pParam) {
         this.pFragmentFunc = pParam;
     }
 };
+EffectPass.prototype.setJSVertexShader = function (pFunc) {
+    if (!this.pFuncHash) {
+        this.pFuncHash = {};
+    }
+    this.pFuncHash[pFunc.hash()] = pFunc;
+    this.sJSCode += "this.sVertex=\"" + pFunc.hash() + "\";";
+};
+EffectPass.prototype.setJSFragmentShader = function (pFunc) {
+    if (!this.pFuncHash) {
+        this.pFuncHash = {};
+    }
+    this.pFuncHash[pFunc.hash()] = pFunc;
+    this.sJSCode += "this.sFragment=\"" + pFunc.hash() + "\";";
+};
+EffectPass.prototype.prepare = function () {
+    'use strict'
+    this.pStates = {};
+    this.sFragment = null;
+    this.sVertex = null;
+    eval(this.sJSCode);
+    if (this.sVertex !== null) {
+        this.pVertexFunc = this.pFuncHash[this.sVertex];
+    }
+    else {
+        this.pVertexFunc = null;
+    }
+    if (this.sFragment !== null) {
+        this.pFragmentFunc = this.pFuncHash[this.sFragment];
+    }
+    else {
+        this.pFragmentFunc = null;
+    }
+
+};
 EffectPass.prototype.setState = function (eState, eValue) {
     this.pStates[eState] = eValue;
+};
+EffectPass.prototype.setJSState = function (eState, eValue) {
+    this.sJSCode += "this.pStates[" + eState + "]=" + eValue + ";";
+};
+EffectPass.prototype.addAnnotation = function (pAnnotation) {
+    this.pAnnotation = pAnnotation;
 };
 EffectPass.prototype.setName = function (sName) {
     this.sName = sName;
 };
 EffectPass.prototype.checkMe = function () {
-    if (!(this.pFragmentFunc && this.pVertexFunc)) {
-        return false;
-    }
-    if (this.pFragmentFunc.pParamOrders.length !== 1) {
-        return false;
-    }
-    if (!this.pFragmentFunc.pParamOrders[0].pType.isEqual(this.pVertexFunc.pReturnType)) {
-        return false;
-    }
+//    if (!(this.pFragmentFunc && this.pVertexFunc)) {
+//        return false;
+//    }
+//    if (this.pFragmentFunc.pParamOrders.length !== 1) {
+//        return false;
+//    }
+//    if (!this.pFragmentFunc.pParamOrders[0].pType.isEqual(this.pVertexFunc.pReturnType)) {
+//        return false;
+//    }
+    //TODO: some not trivial checks
     return true;
 };
 
@@ -1463,165 +1535,164 @@ function Effect() {
     STATIC(pBaseFunctionsHash, {});
     STATIC(pBaseFunctionsName, {});
     STATIC(pBaseTypes, {
-        "void"         : new EffectType("void", "void", true, 1),
-        "float"        : new EffectType("float", "float", true, 1),
-        "int"          : new EffectType("int", "int", true, 1),
-        "bool"         : new EffectType("bool", "bool", true, 1),
-        "float2"       : new EffectType("float2", "vec2", true, 2),
-        "float3"       : new EffectType("float3", "vec3", true, 3),
-        "float4"       : new EffectType("float4", "vec4", true, 4),
-        "float2x2"     : new EffectType("float2x2", "mat2", true, 4),
-        "float3x3"     : new EffectType("float3x3", "mat3", true, 9),
-        "float4x4"     : new EffectType("float4x4", "mat4", true, 16),
-        "string"       : new EffectType("string", "string", true, 1),
-        "texture"      : new EffectType("texture", "texture", true, 1),
-        "sampler"      : new EffectType("sampler", "sampler", true, 1),
-        "ptr"          : new EffectType("ptr", "float", true, 1),
-        "video_buffer" : new EffectType("video_buffer", "video_buffer", true, 1)
+        "void":new EffectType("void", "void", true, 1),
+        "float":new EffectType("float", "float", true, 1),
+        "int":new EffectType("int", "int", true, 1),
+        "bool":new EffectType("bool", "bool", true, 1),
+        "float2":new EffectType("float2", "vec2", true, 2),
+        "float3":new EffectType("float3", "vec3", true, 3),
+        "float4":new EffectType("float4", "vec4", true, 4),
+        "float2x2":new EffectType("float2x2", "mat2", true, 4),
+        "float3x3":new EffectType("float3x3", "mat3", true, 9),
+        "float4x4":new EffectType("float4x4", "mat4", true, 16),
+        "string":new EffectType("string", "string", true, 1),
+        "texture":new EffectType("texture", "texture", true, 1),
+        "sampler":new EffectType("sampler", "sampler", true, 1),
+        "ptr":new EffectType("ptr", "float", true, 1),
+        "video_buffer":new EffectType("video_buffer", "video_buffer", true, 1)
     });
     STATIC(pVectorSuffix, {
-        "x"    : null,
-        "y"    : null,
-        "z"    : null,
-        "w"    : null,
-        "xy"   : null,
-        "xz"   : null,
-        "xw"   : null,
-        "yx"   : null,
-        "yz"   : null,
-        "yw"   : null,
-        "zx"   : null,
-        "zy"   : null,
-        "zw"   : null,
-        "wx"   : null,
-        "wy"   : null,
-        "wz"   : null,
-        "xyz"  : null,
-        "xyw"  : null,
-        "xzy"  : null,
-        "xzw"  : null,
-        "xwy"  : null,
-        "xwz"  : null,
-        "yxz"  : null,
-        "yxw"  : null,
-        "yzx"  : null,
-        "yzw"  : null,
-        "ywx"  : null,
-        "ywz"  : null,
-        "zxy"  : null,
-        "zxw"  : null,
-        "zyx"  : null,
-        "zyw"  : null,
-        "zwx"  : null,
-        "zwy"  : null,
-        "wxy"  : null,
-        "wxz"  : null,
-        "wyx"  : null,
-        "wyz"  : null,
-        "wzx"  : null,
-        "wzy"  : null,
-        "xyzw" : null,
-        "xywz" : null,
-        "xzyw" : null,
-        "xzwy" : null,
-        "xwyz" : null,
-        "xwzy" : null,
-        "yxzw" : null,
-        "yxwz" : null,
-        "yzxw" : null,
-        "yzwx" : null,
-        "ywxz" : null,
-        "ywzx" : null,
-        "zxyw" : null,
-        "zxwy" : null,
-        "zyxw" : null,
-        "zywx" : null,
-        "zwxy" : null,
-        "zwyx" : null,
-        "wxyz" : null,
-        "wxzy" : null,
-        "wyxz" : null,
-        "wyzx" : null,
-        "wzxy" : null,
-        "wzyx" : null,
-        "s"    : null,
-        "t"    : null,
-        "st"   : null,
-        "ts"   : null,
-        "p"    : null,
-        "q"    : null,
-        "pq"   : null,
-        "qp"   : null,
-        "r"    : null,
-        "g"    : null,
-        "b"    : null,
-        "a"    : null,
-        "rg"   : null,
-        "rb"   : null,
-        "ra"   : null,
-        "gr"   : null,
-        "gb"   : null,
-        "ga"   : null,
-        "br"   : null,
-        "bg"   : null,
-        "ba"   : null,
-        "ar"   : null,
-        "ag"   : null,
-        "ab"   : null,
-        "rgb"  : null,
-        "rga"  : null,
-        "rbg"  : null,
-        "rba"  : null,
-        "rag"  : null,
-        "rab"  : null,
-        "grb"  : null,
-        "gra"  : null,
-        "gbr"  : null,
-        "gba"  : null,
-        "gar"  : null,
-        "gab"  : null,
-        "brg"  : null,
-        "bra"  : null,
-        "bgr"  : null,
-        "bga"  : null,
-        "bar"  : null,
-        "bag"  : null,
-        "arg"  : null,
-        "arb"  : null,
-        "agr"  : null,
-        "agb"  : null,
-        "abr"  : null,
-        "abg"  : null,
-        "rgba" : null,
-        "rgab" : null,
-        "rbga" : null,
-        "rbag" : null,
-        "ragb" : null,
-        "rabg" : null,
-        "grba" : null,
-        "grab" : null,
-        "gbra" : null,
-        "gbar" : null,
-        "garb" : null,
-        "gabr" : null,
-        "brga" : null,
-        "brag" : null,
-        "bgra" : null,
-        "bgar" : null,
-        "barg" : null,
-        "bagr" : null,
-        "argb" : null,
-        "arbg" : null,
-        "agrb" : null,
-        "agbr" : null,
-        "abrg" : null,
-        "abgr" : null
+        "x":null,
+        "y":null,
+        "z":null,
+        "w":null,
+        "xy":null,
+        "xz":null,
+        "xw":null,
+        "yx":null,
+        "yz":null,
+        "yw":null,
+        "zx":null,
+        "zy":null,
+        "zw":null,
+        "wx":null,
+        "wy":null,
+        "wz":null,
+        "xyz":null,
+        "xyw":null,
+        "xzy":null,
+        "xzw":null,
+        "xwy":null,
+        "xwz":null,
+        "yxz":null,
+        "yxw":null,
+        "yzx":null,
+        "yzw":null,
+        "ywx":null,
+        "ywz":null,
+        "zxy":null,
+        "zxw":null,
+        "zyx":null,
+        "zyw":null,
+        "zwx":null,
+        "zwy":null,
+        "wxy":null,
+        "wxz":null,
+        "wyx":null,
+        "wyz":null,
+        "wzx":null,
+        "wzy":null,
+        "xyzw":null,
+        "xywz":null,
+        "xzyw":null,
+        "xzwy":null,
+        "xwyz":null,
+        "xwzy":null,
+        "yxzw":null,
+        "yxwz":null,
+        "yzxw":null,
+        "yzwx":null,
+        "ywxz":null,
+        "ywzx":null,
+        "zxyw":null,
+        "zxwy":null,
+        "zyxw":null,
+        "zywx":null,
+        "zwxy":null,
+        "zwyx":null,
+        "wxyz":null,
+        "wxzy":null,
+        "wyxz":null,
+        "wyzx":null,
+        "wzxy":null,
+        "wzyx":null,
+        "s":null,
+        "t":null,
+        "st":null,
+        "ts":null,
+        "p":null,
+        "q":null,
+        "pq":null,
+        "qp":null,
+        "r":null,
+        "g":null,
+        "b":null,
+        "a":null,
+        "rg":null,
+        "rb":null,
+        "ra":null,
+        "gr":null,
+        "gb":null,
+        "ga":null,
+        "br":null,
+        "bg":null,
+        "ba":null,
+        "ar":null,
+        "ag":null,
+        "ab":null,
+        "rgb":null,
+        "rga":null,
+        "rbg":null,
+        "rba":null,
+        "rag":null,
+        "rab":null,
+        "grb":null,
+        "gra":null,
+        "gbr":null,
+        "gba":null,
+        "gar":null,
+        "gab":null,
+        "brg":null,
+        "bra":null,
+        "bgr":null,
+        "bga":null,
+        "bar":null,
+        "bag":null,
+        "arg":null,
+        "arb":null,
+        "agr":null,
+        "agb":null,
+        "abr":null,
+        "abg":null,
+        "rgba":null,
+        "rgab":null,
+        "rbga":null,
+        "rbag":null,
+        "ragb":null,
+        "rabg":null,
+        "grba":null,
+        "grab":null,
+        "gbra":null,
+        "gbar":null,
+        "garb":null,
+        "gabr":null,
+        "brga":null,
+        "brag":null,
+        "bgra":null,
+        "bgar":null,
+        "barg":null,
+        "bagr":null,
+        "argb":null,
+        "arbg":null,
+        "agrb":null,
+        "agbr":null,
+        "abrg":null,
+        "abgr":null
     });
     this._addSystemFunction("dot", "float", [null, null], ["float", "float2", "float3", "float4"], "dot($1,$2)");
     this._addSystemFunction("mul", null, [null, null], ["float", "int", "float2", "float3", "float4"], "$1*$2");
     this._addSystemFunction("tex2D", "float4", ["sampler", "float2"], null, "texture2D($1,$2)");
 }
-
 /**
  * Add system function
  * @tparam {String} sName
@@ -1851,12 +1922,12 @@ Effect.prototype.addVariable = function (pVar, isParams) {
                 return;
             }
             pTable[sNewName] = {
-                "pPointers" : pPointers,
-                "iScope"    : me.iScope,
-                "isPointer" : isPointer,
-                "pBuffer"   : pBuffer,
-                "pType"     : pOrders[i].pType,
-                "sName"     : pOrders[i].isMixible ? pOrders[i].sSemantic : pOrders[i].sName
+                "pPointers":pPointers,
+                "iScope":me.iScope,
+                "isPointer":isPointer,
+                "pBuffer":pBuffer,
+                "pType":pOrders[i].pType,
+                "sName":pOrders[i].isMixible ? pOrders[i].sSemantic : pOrders[i].sName
             };
             if (!pOrders[i].pType.isBase()) {
                 fnExtractStruct(sNewName, pOrders[i].pType.pEffectType.pDesc, pTable, me);
@@ -2279,6 +2350,12 @@ Effect.prototype.analyzeDecl = function (pNode) {
         case USEDECL:
             this.analyzeUseDecl(pNode);
             break;
+        case PROVIDEDECL:
+            this.analyzeProvideDecl(pNode);
+            break;
+        case IMPORTDECL:
+            this.analyzeImportDecl(pNode);
+            break;
     }
 };
 Effect.prototype.analyzeUseDecl = function (pNode) {
@@ -2520,10 +2597,9 @@ Effect.prototype.analyzeAnnotation = function (pNode, pObj) {
     this.endAnnotation();
     return pObj;
 };
-Effect.prototype.analyzeSemantic = function (pNode, pVar) {
-    pVar = pVar || new EffectVariable();
-    pVar.addSemantic(pNode.pChildren[0].sValue);
-    return pVar;
+Effect.prototype.analyzeSemantic = function (pNode, pObj) {
+    pObj.addSemantic(pNode.pChildren[0].sValue);
+    return pObj;
 };
 Effect.prototype.analyzeInitializer = function (pNode, pVar) {
     pVar = pVar || new EffectVariable();
@@ -2626,7 +2702,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             if (this._nAddr > 0 &&
                 pChildren.length !== 3 &&
                 (pChildren[1].sName !== POSTFIXEXPR || pChildren[1].sName !== PRIMARYEXPR ||
-                 pChildren[1].sName !== COMPLEXEXPR)) {
+                    pChildren[1].sName !== COMPLEXEXPR)) {
                 error("Bad for dog 2");
                 break;
             }
@@ -2636,8 +2712,8 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 break;
             }
             if (!(pChildren.length === 3 &&
-                  (pChildren[1].sName === POSTFIXEXPR || pChildren[1].sName === COMPLEXEXPR ||
-                   pChildren[1].sValue !== undefined))) {
+                (pChildren[1].sName === POSTFIXEXPR || pChildren[1].sName === COMPLEXEXPR ||
+                    pChildren[1].sValue !== undefined))) {
                 this._isNewComplexName = false;
             }
             if (pChildren.length === 3 && pChildren[2].sValue === "(") {
@@ -2669,7 +2745,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
 
                 if (pFunc.isSystem) {
                     pCodeFragment = pFunc.pGLSLExpr.toGLSL(pArguments);
-                    for(i = 0; i< pCodeFragment.length; i++){
+                    for (i = 0; i < pCodeFragment.length; i++) {
                         this.pushCode(pCodeFragment[i]);
                     }
                 }
@@ -2703,7 +2779,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             }
             else if (pChildren[pChildren.length - 1].sName === BASETYPE) {
                 //ComplexExpr : BaseType '(' ArgumentsOpt ')'
-                pType1 = this.convertType(pChildren[pChildren.length - 1])
+                pType1 = this.convertType(pChildren[pChildren.length - 1]);
                 this.pushCode(pType1);
             }
             this.pushCode("(");
@@ -3014,14 +3090,14 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 if (pType.isBase()) {
                     if (
                         this.constructor.pVectorSuffix[pNode.sValue] === null &&
-                        (
-                            pType.sName === "float2" ||
-                            pType.sName === "float3" ||
-                            pType.sName === "float4" ||
-                            pType.sName === "int2" ||
-                            pType.sName === "int3" ||
-                            pType.sName === "int4"
-                            )
+                            (
+                                pType.sName === "float2" ||
+                                    pType.sName === "float3" ||
+                                    pType.sName === "float4" ||
+                                    pType.sName === "int2" ||
+                                    pType.sName === "int3" ||
+                                    pType.sName === "int4"
+                                )
                         ) {
                         var sTypeName = "";
                         if (pType.sName === "float2" ||
@@ -3098,14 +3174,14 @@ Effect.prototype.analyzeExpr = function (pNode) {
             else {
                 if (
                     this.constructor.pVectorSuffix[pNode.sValue] === null &&
-                    (
-                        pType.sName === "float2" ||
-                        pType.sName === "float3" ||
-                        pType.sName === "float4" ||
-                        pType.sName === "int2" ||
-                        pType.sName === "int3" ||
-                        pType.sName === "int4"
-                        )
+                        (
+                            pType.sName === "float2" ||
+                                pType.sName === "float3" ||
+                                pType.sName === "float4" ||
+                                pType.sName === "int2" ||
+                                pType.sName === "int3" ||
+                                pType.sName === "int4"
+                            )
                     ) {
                     pRes = pNode.sValue;
                     sTypeName = "";
@@ -3290,7 +3366,7 @@ Effect.prototype.analyzeFunctionDef = function (pNode, pFunction) {
     pFunction.pReturnType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
     pFunction.setName(pChildren[pChildren.length - 2].sValue);
     if (pChildren[0].sName === SEMANTIC) {
-        pFunction.setSemantic(pChildren[0].pChildren[0].sValue);
+        pFunction.addSemantic(pChildren[0].pChildren[0].sValue);
         this.analyzeParamList(pChildren[1], pFunction);
     }
     else {
@@ -3460,8 +3536,8 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
                     this._pCodeShader.push(pVaryings[i], "=", pVar, ".", pVaryings[i].sName, ";");
                 }
                 this._pCodeShader.push("gl_Position", "=", pVar, ".",
-                                       pVar.pType.pEffectType.pDesc._pSemantics["POSITION"].sName,
-                                       ";");
+                    pVar.pType.pEffectType.pDesc._pSemantics["POSITION"].sName,
+                    ";");
                 var pPointSize = pVar.pType.pEffectType.pDesc._pSemantics["PSIZE"];
                 if (pPointSize) {
                     this._pCodeShader.push("gl_PointSize", "=", pVar, ".", pPointSize.sName, ";");
@@ -3590,12 +3666,18 @@ Effect.prototype.analyzeTechniqueDecl = function (pNode) {
     var pChildren = pNode.pChildren;
     var i = 0;
     var pTech = new EffectTechnique();
-    pTech.setName(pChildren[pChildren.length - 2].sValue);
-    if (pChildren[1].sName === ANNOTATION) {
-        this.analyzeAnnotation(pChildren[1], pTech);
-        i++;
+    pTech.setName(this.analyzeComplexName(pChildren[pChildren.length - 2]));
+    for (i = pChildren.length - 3; i >= 0; i--) {
+        if (pChildren[i].sName === ANNOTATION) {
+            this.analyzeAnnotation(pChildren[i], pTech);
+        }
+        else if (pChildren[i].sName === SEMANTIC) {
+            this.analyzeSemantic(pChildren[i], pTech);
+        }
+        else {
+            this.analyzeTechniqueBody(pChildren[i], pTech);
+        }
     }
-    this.analyzeTechniqueBody(pChildren[0], pTech);
     this.addTechnique(pTech);
     pNode.pAnalyzed = pTech;
     return pTech;
@@ -3609,6 +3691,12 @@ Effect.prototype.analyzeTechniqueBody = function (pNode, pTechnique) {
     var pPass;
     for (i = pChildren.length - 2; i >= 1; i--) {
         pPass = this.analyzePassDecl(pChildren[i]);
+        if (!pPass) {
+            continue;
+        }
+        if (!pPass.isComplex) {
+            pPass.prepare();
+        }
         if (!pPass.checkMe()) {
             error("something bad with your pass");
         }
@@ -3617,9 +3705,15 @@ Effect.prototype.analyzeTechniqueBody = function (pNode, pTechnique) {
     return pTechnique;
 };
 Effect.prototype.analyzePassDecl = function (pNode, pPass) {
-    pPass = pPass || new EffectPass();
     var pChildren = pNode.pChildren;
     var i = 0;
+    if (pChildren.length === 1) {
+        if (pChildren[0].sName === IMPORTDECL) {
+            this.analyzeImportDecl(pChildren[0]);
+        }
+        return;
+    }
+    pPass = pPass || new EffectPass();
     if (pChildren[pChildren.length - 2].sName === T_NON_TYPE_ID ||
         pChildren[pChildren.length - 2].sName === T_TYPE_ID) {
         pPass.setName(pChildren[pChildren.length - 2].sValue);
@@ -3627,14 +3721,314 @@ Effect.prototype.analyzePassDecl = function (pNode, pPass) {
     if (pChildren[1].sName === ANNOTATION) {
         this.analyzeAnnotation(pChildren[1], pPass);
     }
-    this.analyzeStateBlock(pChildren[0], pPass);
+    this.analyzePassStateBlock(pChildren[0], pPass);
     return pPass;
 };
-Effect.prototype.analyzeStateBlock = function (pNode, pPass) {
+Effect.prototype.analyzePassStateBlock = function (pNode, pPass) {
+    var pChildren = pNode.pChildren;
+    var i;
+    if (pPass.isComplex) {
+        pPass.sJSCode += "{";
+    }
+    for (i = pChildren.length - 2; i >= 1; i--) {
+        this.analyzePassState(pChildren[i], pPass);
+    }
+    if (pPass.isComplex) {
+        pPass.sJSCode += "}";
+    }
+};
+Effect.prototype.analyzePassState = function (pNode, pPass) {
+    var pChildren = pNode.pChildren;
+    var i;
+    var eState = null;
+    if (pChildren.length === 1) {
+        if (pChildren[0].sName === STATEIF) {
+            this.analyzeStateIf(pNode, pPass);
+        }
+        else {
+            this.analyzeStateSwitch(pNode, pPass)
+        }
+        return;
+    }
+    if (pChildren[pChildren.length - 2].sName === STATEINDEX) {
+        error("don`t very bad for state");
+        return;
+    }
+    var pStateExpr = pChildren[pChildren.length - 3];
+    var pExpr = pStateExpr.pChildren[pStateExpr.pChildren.length - 1];
+    var sType = pChildren[pChildren.length - 1].sValue.toUpperCase();
+    var isVertex = false;
+    var isPixel = false;
+
+    switch (sType) {
+        case 'ZENABLE':
+            eState = a.renderStateType.ZENABLE;
+            break;
+        case 'ZWRITEENABLE':
+            eState = a.renderStateType.ZWRITEENABLE;
+            break;
+        case 'SRCBLEND':
+            eState = a.renderStateType.SRCBLEND;
+            break;
+        case 'DESTBLEND':
+            eState = a.renderStateType.DESTBLEND;
+            break;
+        case 'CULLMODE':
+            eState = a.renderStateType.CULLMODE;
+            break;
+        case 'ZFUNC':
+            eState = a.renderStateType.ZFUNC;
+            break;
+        case 'DITHERENABLE':
+            eState = a.renderStateType.DITHERENABLE;
+            break;
+        case 'ALPHABLENDENABLE':
+            eState = a.renderStateType.ALPHABLENDENABLE;
+            break;
+        case 'ALPHATESTENABLE':
+            eState = a.renderStateType.ALPHATESTENABLE;
+            break;
+        case 'VERTEXSHADER':
+            isVertex = true;
+            break;
+        case 'PIXELSHADER' :
+            isPixel = true;
+            break;
+        default:
+            error('Unsupported render state type used: ' + sType + '. WebGl...');
+            eState = null;
+            return pPass;
+    }
+    if (isVertex || isPixel) {
+        if (pExpr.sName !== OBJECTEXPR) {
+            error("Bad compile state. I don`t know what bad, but something exactly going wrong.");
+            return;
+        }
+        var pFunc = this.analyzeExpr(pExpr);
+        if (isVertex) {
+            pPass.setJSVertexShader(pFunc);
+            pFunc.isVertexShader = true;
+            for (i = 0; i < pFunc.pParamOrders.length; i++) {
+                pFunc.pParamOrders[i].setMixible();
+            }
+            if (pFunc.pReturnType.pEffectType.pDesc) {
+                pFunc.pReturnType.setMixible();
+            }
+        }
+        else {
+            pPass.setJSFragmentShader(pFunc);
+            pFunc.isFragmentShader = true;
+        }
+        return pPass;
+    }
+    if (pExpr.sValue === "{" || pExpr.sValue === "<" ||
+        pExpr.sValue === undefined) {
+        error("Too difficult for webgl");
+    }
+    var sValue = pExpr.sValue.toUpperCase();
+    var eValue;
+    //function fnRenderStateValueFromString(eState, sValue) {
+    switch (eState) {
+        case a.renderStateType.ALPHABLENDENABLE:
+        case a.renderStateType.ALPHATESTENABLE:
+            warning('ALPHABLENDENABLE/ALPHATESTENABLE not supported in WebGL.');
+        case a.renderStateType.DITHERENABLE:
+        case a.renderStateType.ZENABLE:
+        case a.renderStateType.ZWRITEENABLE:
+            switch (sValue) {
+                case 'TRUE':
+                    eValue = true;
+                    break;
+                case 'FALSE':
+                    eValue = false;
+                    break;
+                default:
+                    error('Unsupported render state ALPHABLENDENABLE/ZENABLE/ZWRITEENABLE/DITHERENABLE value used: '
+                        + sValue + '.');
+                    eValue = null;
+            }
+            break;
+        case a.renderStateType.SRCBLEND:
+        case a.renderStateType.DESTBLEND:
+            switch (sValue) {
+                case 'ZERO':
+                    eValue = a.BLEND.ZERO;
+                    break;
+                case 'ONE':
+                    eValue = a.BLEND.ONE;
+                    break;
+                case 'SRCCOLOR':
+                    eValue = a.BLEND.SRCCOLOR;
+                    break;
+                case 'INVSRCCOLOR':
+                    eValue = a.BLEND.INVSRCCOLOR;
+                    break;
+                case 'SRCALPHA':
+                    eValue = a.BLEND.SRCALPHA;
+                    break;
+                case 'INVSRCALPHA':
+                    eValue = a.BLEND.INVSRCALPHA;
+                    break;
+                case 'DESTALPHA':
+                    eValue = a.BLEND.DESTALPHA;
+                    break;
+                case 'INVDESTALPHA':
+                    eValue = a.BLEND.INVDESTALPHA;
+                    break;
+                case 'DESTCOLOR':
+                    eValue = a.BLEND.DESTCOLOR;
+                    break;
+                case 'INVDESTCOLOR':
+                    eValue = a.BLEND.INVDESTCOLOR;
+                    break;
+                case 'SRCALPHASAT':
+                    eValue = a.BLEND.SRCALPHASAT;
+                    break;
+                default:
+                    error('Unsupported render state SRCBLEND/DESTBLEND value used: ' + sValue + '.');
+                    eValue = null;
+            }
+            break;
+        case a.renderStateType.CULLMODE:
+            switch (sValue) {
+                case 'NONE':
+                    eValue = a.CULLMODE.NONE;
+                    break;
+                case 'CW':
+                    eValue = a.CULLMODE.CW;
+                    break;
+                case 'CCW':
+                    eValue = a.CULLMODE.CCW;
+                    break;
+                case 'FRONT_AND_BACK':
+                    eValue = a.CULLMODE.FRONT_AND_BACK;
+                    break;
+                default:
+                    error('Unsupported render state SRCBLEND/DESTBLEND value used: ' + sValue + '.');
+                    eValue = null;
+            }
+            break;
+        case a.renderStateType.ZFUNC:
+            switch (sValue) {
+                case 'NEVER':
+                    eValue = a.CMPFUNC.NEVER;
+                    break;
+                case 'LESS':
+                    eValue = a.CMPFUNC.LESS;
+                    break;
+                case 'EQUAL':
+                    eValue = a.CMPFUNC.EQUAL;
+                    break;
+                case 'LESSEQUAL':
+                    eValue = a.CMPFUNC.LESSEQUAL;
+                    break;
+                case 'GREATER':
+                    eValue = a.CMPFUNC.GREATER;
+                    break;
+                case 'NOTEQUAL':
+                    eValue = a.CMPFUNC.NOTEQUAL;
+                    break;
+                case 'GREATEREQUAL':
+                    eValue = a.CMPFUNC.GREATEREQUAL;
+                    break;
+                case 'ALWAYS':
+                    eValue = a.CMPFUNC.ALWAYS;
+                    break;
+                default:
+                    error('Unsupported render state ZFUNC value used: ' +
+                        sValue + '.');
+                    eValue = null;
+            }
+            break;
+    }
+
+    pPass.setJSState(eState, eValue);
+    return pPass;
+};
+Effect.prototype.analyzeStateIf = function (pNode, pPass) {
+    var pChildren = pNode.pChildren;
+    var pCode;
+    pPass.isComplex = true;
+    pPass.sJSCode += "if(";
+    this.newCode();
+    this.analyzeExpr(pChildren[4]);
+    pCode = this._pCode;
+    this.endCode();
+    //TODO: analyze expr
+    pPass.sJSCode += ")";
+    this.analyzePassStateBlock(pChildren[2]);
+    pPass.sJSCode += "else";
+    if (pChildren[0].sName === STATEIF) {
+        this.analyzeStateIf(pChildren[0], pPass);
+    }
+};
+Effect.prototype.analyzeStateSwitch = function (pNode, pPass) {
+    var pChildren = pNode.pChildren;
+    var pCode;
+    var i;
+    pPass.isComplex = true;
+    pPass.sJSCode += "switch(";
+    this.newCode();
+    this.analyzeExpr(pNode);
+    pCode = this._pCode;
+    this.endCode();
+    //TODO: analyze expr
+    pPass.sJSCode += ")";
+    this.analyzeCaseBlock(pChildren[0], pPass);
+};
+Effect.prototype.analyzeCaseBlock = function (pNode, pPass) {
+    var pChildren = pNode.pChildren;
+    var i;
+    pPass.sJSCode += "{";
+    for (i = 0; i < pChildren.length; i++) {
+        if (pChildren[i].sName === CASESTATE) {
+            this.analyzeCaseState(pChildren[i], pPass);
+        }
+        else {
+            this.analyzeDefaultState(pChildren[i], pPass);
+        }
+    }
+    pPass.sJSCode += "}";
+};
+Effect.prototype.analyzeCaseState = function (pNode, pPass) {
+    var pChildren = pNode.pChildren;
+    var pCode;
+    var i;
+    pPass.sJSCode += "case ";
+    this.newCode();
+    this.analyzeExpr(pChildren[pChildren.length - 2]);
+    pCode = this._pCode;
+    this.endCode();
+    //TODO: analyze dword
+    pPass.sJSCode += ":";
+    for (i = pChildren.length - 4; i >= 0; i--) {
+        if (pChildren[i].sName === PASSSTATE) {
+            this.analyzePassState(pChildren[i], pPass);
+        }
+        else {
+            pPass.sJSCode += pChildren[i].sValue;
+        }
+    }
+};
+Effect.prototype.analyzeDefaultState = function (pNode, pPass) {
+    var pChildren = pNode.pChildren;
+    var pCode;
+    var i;
+    pPass.sJSCode += "default:";
+    for (i = pChildren.length - 3; i >= 0; i--) {
+        if (pChildren[i].sName === PASSSTATE) {
+            this.analyzePassState(pChildren[i], pPass);
+        }
+        else {
+            pPass.sJSCode += pChildren[i].sValue;
+        }
+    }
+};
+Effect.prototype.analyzeStateBlock = function (pNode, pVar) {
     var pChildren = pNode.pChildren;
     var i;
     for (i = pChildren.length - 2; i >= 1; i--) {
-        this.analyzeState(pChildren[i], pPass);
+        this.analyzeState(pChildren[i], pVar);
     }
 };
 Effect.prototype.analyzeState = function (pNode, pPass) {
@@ -3648,255 +4042,85 @@ Effect.prototype.analyzeState = function (pNode, pPass) {
     var pStateExpr = pChildren[pChildren.length - 3];
     var pExpr = pStateExpr.pChildren[pStateExpr.pChildren.length - 1];
     var sType = pChildren[pChildren.length - 1].sValue.toUpperCase();
-
-    if (this._isSampler) {
-        var isTexture = false;
-        switch (sType) {
-            case "TEXTURE" :
-                isTexture = true;
-                break;
-            case "ADDRESSU":
-                eState = "ADDRESSU";
-                break;
-            case "ADDRESSV":
-                eState = "ADDRESSV";
-                break;
-            case "ADDRESSW":
-                eState = "ADDRESSW";
-                break;
-            case "BORDERCOLOR":
-                eState = "BORDERCOLOR";
-                break;
-            case "MAGFILTER":
-                eState = "MAGFILTER";
-                break;
-            case "MAXANISOTROPY":
-                eState = "MAXANISOTROPY";
-                break;
-            case "MAXMIPLEVEL":
-                eState = "MAXMIPLEVEL";
-                break;
-            case "MINFILTER":
-                eState = "MINFILTER";
-                break;
-            case "MIPFILTER":
-                eState = "MIPFILTER";
-                break;
-            case "MIPMAPLODBIAS":
-                eState = "MIPMAPLODBIAS";
-                break;
-            default:
-                error("Oh no, but it is error " + sType);
-                return;
-        }
-        if (isTexture) {
-            var pTexture;
-            if (pExpr.sValue === "{" || pExpr.sValue === undefined ||
-                pStateExpr.pChildren[1].sName !== T_NON_TYPE_ID) {
-                error("Wrong wrong");
-                return;
-            }
-            pTexture = this.hasVariable(pStateExpr.pChildren[1].sValue);
-            if (!pTexture) {
-                console.log(pStateExpr);
-                error("bad with texture name");
-                return;
-            }
-            this._pCurrentVar.setTexture(pTexture);
+    var isTexture = false;
+    switch (sType) {
+        case "TEXTURE" :
+            isTexture = true;
+            break;
+        case "ADDRESSU":
+            eState = "ADDRESSU";
+            break;
+        case "ADDRESSV":
+            eState = "ADDRESSV";
+            break;
+        case "ADDRESSW":
+            eState = "ADDRESSW";
+            break;
+        case "BORDERCOLOR":
+            eState = "BORDERCOLOR";
+            break;
+        case "MAGFILTER":
+            eState = "MAGFILTER";
+            break;
+        case "MAXANISOTROPY":
+            eState = "MAXANISOTROPY";
+            break;
+        case "MAXMIPLEVEL":
+            eState = "MAXMIPLEVEL";
+            break;
+        case "MINFILTER":
+            eState = "MINFILTER";
+            break;
+        case "MIPFILTER":
+            eState = "MIPFILTER";
+            break;
+        case "MIPMAPLODBIAS":
+            eState = "MIPMAPLODBIAS";
+            break;
+        default:
+            error("Oh no, but it is error " + sType);
+            return;
+    }
+    if (isTexture) {
+        var pTexture;
+        if (pExpr.sValue === "{" || pExpr.sValue === undefined ||
+            pStateExpr.pChildren[1].sName !== T_NON_TYPE_ID) {
+            error("Wrong wrong");
             return;
         }
-        //TODO: add sampler valid tests
-        this._pCurrentVar.setState(eState, pExpr.sValue);
+        pTexture = this.hasVariable(pStateExpr.pChildren[1].sValue);
+        if (!pTexture) {
+            console.log(pStateExpr);
+            error("bad with texture name");
+            return;
+        }
+        this._pCurrentVar.setTexture(pTexture);
         return;
     }
-    else {
-        //Pass
-        var isVertex = false;
-        var isPixel = false;
-
-        switch (sType) {
-            case 'ZENABLE':
-                eState = a.renderStateType.ZENABLE;
-                break;
-            case 'ZWRITEENABLE':
-                eState = a.renderStateType.ZWRITEENABLE;
-                break;
-            case 'SRCBLEND':
-                eState = a.renderStateType.SRCBLEND;
-                break;
-            case 'DESTBLEND':
-                eState = a.renderStateType.DESTBLEND;
-                break;
-            case 'CULLMODE':
-                eState = a.renderStateType.CULLMODE;
-                break;
-            case 'ZFUNC':
-                eState = a.renderStateType.ZFUNC;
-                break;
-            case 'DITHERENABLE':
-                eState = a.renderStateType.DITHERENABLE;
-                break;
-            case 'ALPHABLENDENABLE':
-                eState = a.renderStateType.ALPHABLENDENABLE;
-                break;
-            case 'ALPHATESTENABLE':
-                eState = a.renderStateType.ALPHATESTENABLE;
-                break;
-            case 'VERTEXSHADER':
-                isVertex = true;
-                break;
-            case 'PIXELSHADER' :
-                isPixel = true;
-                break;
-            default:
-                error('Unsupported render state type used: ' + sType + '. WebGl...');
-                eState = null;
-                return pPass;
+    //TODO: add sampler valid tests
+    this._pCurrentVar.setState(eState, pExpr.sValue);
+    return;
+};
+Effect.prototype.analyzeComplexName = function (pNode) {
+    var pChildren = pNode.pChildren;
+    var sName = "";
+    var i;
+    for (i = 0; i < pChildren.length; i++) {
+        if (pChildren[i].sValue === undefined) {
+            error("something are very bad with you 10");
+            return;
         }
-        if (isVertex || isPixel) {
-            if (pExpr.sName !== OBJECTEXPR) {
-                error("Bad compile state. I don`t know what bad, but something exactly going wrong.");
-                return;
-            }
-            var pFunc = this.analyzeExpr(pExpr);
-            if (isVertex) {
-                pPass.setVertexShader(pFunc);
-                pFunc.isVertexShader = true;
-                for (i = 0; i < pFunc.pParamOrders.length; i++) {
-                    pFunc.pParamOrders[i].setMixible();
-                }
-                if (pFunc.pReturnType.pEffectType.pDesc) {
-                    pFunc.pReturnType.setMixible();
-                }
-            }
-            else {
-                pPass.setFragmentShader(pFunc);
-                pFunc.isFragmentShader = true;
-            }
-            return pPass;
-        }
-        if (pExpr.sValue === "{" || pExpr.sValue === "<" ||
-            pExpr.sValue === undefined) {
-            error("Too difficult for webgl");
-        }
-        var sValue = pExpr.sValue.toUpperCase();
-        var eValue;
-        //function fnRenderStateValueFromString(eState, sValue) {
-        switch (eState) {
-            case a.renderStateType.ALPHABLENDENABLE:
-            case a.renderStateType.ALPHATESTENABLE:
-                warning('ALPHABLENDENABLE/ALPHATESTENABLE not supported in WebGL.');
-            case a.renderStateType.DITHERENABLE:
-            case a.renderStateType.ZENABLE:
-            case a.renderStateType.ZWRITEENABLE:
-                switch (sValue) {
-                    case 'TRUE':
-                        eValue = true;
-                        break;
-                    case 'FALSE':
-                        eValue = false;
-                        break;
-                    default:
-                        error('Unsupported render state ALPHABLENDENABLE/ZENABLE/ZWRITEENABLE/DITHERENABLE value used: '
-                                  + sValue + '.');
-                        eValue = null;
-                }
-                break;
-            case a.renderStateType.SRCBLEND:
-            case a.renderStateType.DESTBLEND:
-                switch (sValue) {
-                    case 'ZERO':
-                        eValue = a.BLEND.ZERO;
-                        break;
-                    case 'ONE':
-                        eValue = a.BLEND.ONE;
-                        break;
-                    case 'SRCCOLOR':
-                        eValue = a.BLEND.SRCCOLOR;
-                        break;
-                    case 'INVSRCCOLOR':
-                        eValue = a.BLEND.INVSRCCOLOR;
-                        break;
-                    case 'SRCALPHA':
-                        eValue = a.BLEND.SRCALPHA;
-                        break;
-                    case 'INVSRCALPHA':
-                        eValue = a.BLEND.INVSRCALPHA;
-                        break;
-                    case 'DESTALPHA':
-                        eValue = a.BLEND.DESTALPHA;
-                        break;
-                    case 'INVDESTALPHA':
-                        eValue = a.BLEND.INVDESTALPHA;
-                        break;
-                    case 'DESTCOLOR':
-                        eValue = a.BLEND.DESTCOLOR;
-                        break;
-                    case 'INVDESTCOLOR':
-                        eValue = a.BLEND.INVDESTCOLOR;
-                        break;
-                    case 'SRCALPHASAT':
-                        eValue = a.BLEND.SRCALPHASAT;
-                        break;
-                    default:
-                        error('Unsupported render state SRCBLEND/DESTBLEND value used: ' + sValue + '.');
-                        eValue = null;
-                }
-                break;
-            case a.renderStateType.CULLMODE:
-                switch (sValue) {
-                    case 'NONE':
-                        eValue = a.CULLMODE.NONE;
-                        break;
-                    case 'CW':
-                        eValue = a.CULLMODE.CW;
-                        break;
-                    case 'CCW':
-                        eValue = a.CULLMODE.CCW;
-                        break;
-                    case 'FRONT_AND_BACK':
-                        eValue = a.CULLMODE.FRONT_AND_BACK;
-                        break;
-                    default:
-                        error('Unsupported render state SRCBLEND/DESTBLEND value used: ' + sValue + '.');
-                        eValue = null;
-                }
-                break;
-            case a.renderStateType.ZFUNC:
-                switch (sValue) {
-                    case 'NEVER':
-                        eValue = a.CMPFUNC.NEVER;
-                        break;
-                    case 'LESS':
-                        eValue = a.CMPFUNC.LESS;
-                        break;
-                    case 'EQUAL':
-                        eValue = a.CMPFUNC.EQUAL;
-                        break;
-                    case 'LESSEQUAL':
-                        eValue = a.CMPFUNC.LESSEQUAL;
-                        break;
-                    case 'GREATER':
-                        eValue = a.CMPFUNC.GREATER;
-                        break;
-                    case 'NOTEQUAL':
-                        eValue = a.CMPFUNC.NOTEQUAL;
-                        break;
-                    case 'GREATEREQUAL':
-                        eValue = a.CMPFUNC.GREATEREQUAL;
-                        break;
-                    case 'ALWAYS':
-                        eValue = a.CMPFUNC.ALWAYS;
-                        break;
-                    default:
-                        error('Unsupported render state ZFUNC value used: ' +
-                              sValue + '.');
-                        eValue = null;
-                }
-                break;
-        }
-
-        pPass.setState(eState, eValue);
-        return pPass;
+        sName += pChildren[i].sValue;
     }
+    return sName;
+};
+Effect.prototype.analyzeImportDecl = function (pNode) {
+    //TODO: analyzeImportDecl
+    error("analyzeImportDecl---> TODO me, please");
+    return;
+};
+Effect.prototype.analyzeProvideDecl = function (pNode) {
+    //TODO: analyzeProvideDecl
+    error("analyzeProvideDecl---> TODO me, please");
+    return;
 };
