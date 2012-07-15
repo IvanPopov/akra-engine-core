@@ -8,6 +8,7 @@ function MeshSubset (pMesh, pRenderData, sName) {
     this._pRenderData = null;
     this._sName = null;
     this._pMesh = null;
+    this._pSkin = null;
 
     this.setup(pMesh, pRenderData, sName);
 }
@@ -30,6 +31,11 @@ PROPERTY(MeshSubset, 'mesh',
 PROPERTY(MeshSubset, 'data',
     function () {
         return this._pRenderData;
+    });
+
+PROPERTY(MeshSubset, 'skin',
+    function () {
+        return this._pSkin;
     });
 
 MeshSubset.prototype.setup = function(pMesh, pRenderData, sName) {
@@ -62,6 +68,20 @@ MeshSubset.prototype.computeTangents = function () {
 
 MeshSubset.prototype.computeBinormals = function () {
     //TODO: calc binormals
+};
+
+MeshSubset.prototype.isSkinned = function() {
+    return this._pSkin !== null;
+};
+
+MeshSubset.prototype.hasSkin = MeshSubset.prototype.isSkinned;
+
+MeshSubset.prototype.getSkin = function() {
+    return this._pSkin;
+};
+
+MeshSubset.prototype.setSkin = function(pSkin) {
+    this._pSkin = pSkin;
 };
 
 MeshSubset.prototype.applyFlexMaterial = function(sMaterial, pMaterialData) {

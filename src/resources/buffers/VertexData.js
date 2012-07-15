@@ -66,18 +66,22 @@ Define(VE_FLOAT(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 1, of
 Define(VE_FLOAT3(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 3, offset); });
 Define(VE_FLOAT2(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 2, offset); });
 Define(VE_FLOAT4(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 4, offset); });
+Define(VE_FLOAT4x4(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 16, offset); });
 Define(VE_VEC2(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 2, offset); });
 Define(VE_VEC3(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 3, offset); });
 Define(VE_VEC4(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 4, offset); });
+Define(VE_MAT4(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 16, offset); });
 Define(VE_INT(name, offset), function () {VE_CUSTOM(name, a.DTYPE.INT, 1, offset);});
 
 Define(VE_FLOAT(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT); });
 Define(VE_FLOAT3(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 3); });
 Define(VE_FLOAT4(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 4); });
+Define(VE_FLOAT4x4(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 16); });
 Define(VE_FLOAT2(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 2); });
 Define(VE_VEC2(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 2); });
 Define(VE_VEC3(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 3); });
 Define(VE_VEC4(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 4); });
+Define(VE_MAT4(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 16); });
 Define(VE_INT(name), function () {VE_CUSTOM(name, a.DTYPE.INT)});
 
 

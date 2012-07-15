@@ -415,6 +415,9 @@ SceneModel.prototype.render = function () {
         pProgram.applyMatrix3('normal_mat', pModel.normalMatrix());
         pProgram.applyVector3('eye_pos', pCamera.worldPosition());
 
+        if (pSubMesh.isSkinned()) {
+            pSubMesh.skin.applyBoneMatrices();
+        }
         
         if (pSurface.totalTextures) {
             var iTextureFlags = pSurface.textureFlags;

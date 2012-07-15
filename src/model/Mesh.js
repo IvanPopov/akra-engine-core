@@ -229,6 +229,16 @@ Mesh.prototype.getSubset = function () {
     }
 };
 
+
+Mesh.prototype.setSkin = function(pSkin) {
+    for (var i = 0; i < this.length; ++ i) {
+        this[i].setSkin(pSkin);
+    };
+};
+
+
+
+
 Mesh.prototype.clone = function (eCloneOptions) {
     'use strict';
     
@@ -248,7 +258,7 @@ Mesh.prototype.clone = function (eCloneOptions) {
 
         pClone.replaceFlexMaterials(this.flexMaterials);
 
-        trace('created clone', pClone);
+        //trace('created clone', pClone);
     }
     else {
         //TODO: clone mesh data.

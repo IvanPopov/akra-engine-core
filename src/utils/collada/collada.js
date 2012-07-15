@@ -59,21 +59,21 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
     ];
 
     var pFormatStrideTable = {
-        'float': 1,
-        'float2': 2,
-        'float3': 3,
-        'float4': 4,
+        'float':    1,
+        'float2':   2,
+        'float3':   3,
+        'float4':   4,
         'float3x3': 9,
         'float4x4': 16,
-        'int': 1,
-        'name': 1
+        'int':      1,
+        'name':     1
     };
 
     var pLinks = {};
-    var pAsset = null;
-    var pScene = null;
     var pLib = {};
-    var pCache = {};
+    var pCache = {
+        '@joint': {} //joint_name --> controller
+    };
 
     function calcFormatStride (pFormat) {
         var iStride = 0;
@@ -491,23 +491,16 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
             }
         });
         
-        var m4fTmp = new Matrix4;
 
         for (var i in pJoints.pInput) {
             prepareInput(pJoints.pInput[i]);
 
             if (i === 'INV_BIND_MATRIX') {
-                var pInvMatrixArray = pJoints.pInput[i].pArray;
+
+                var pInvMatrixArray = new Float32Array(pJoints.pInput[i].pArray);
+
                 for (var i = 0; i < pInvMatrixArray.length; i += 16) {
-                    for (var j = 0; j < 16; ++ j) {
-                        m4fTmp[j] = pInvMatrixArray[i + j];
-                    }
-
-                    Mat4.transpose(m4fTmp);
-
-                    for (var j = 0; j < 16; ++ j) {
-                        pInvMatrixArray[i + j] = m4fTmp[j];
-                    }
+                    Mat4.transpose(new Float32Array(pInvMatrixArray.buffer, i * Float32Array.BYTES_PER_ELEMENT, 16));
                 }
             }
         }
@@ -711,6 +704,8 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         }
         n *= pVertexWeights.pInput.length;
 
+       debug_assert(pVertexWeights.pInput.length === 2, 
+            'more than 2 inputs in <vertex_weights/> not supported currently');
 
         pVData = new Array(n);
         string2IntArray(stringData(firstChild(pXML, 'v')), pVData);
@@ -1379,7 +1374,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
     // BUILD ENGINE OBJECTS
     //================================================================
     //
-    function buildAssetMatrix () {
+    function buildAssetMatrix (pAsset) {
         var fUnit = pAsset.pUnit.fMeter;
         var sUPaxis = pAsset.sUPaxis;
         var m4fAsset = Mat4.diagonal(new Matrix4, [fUnit, fUnit, fUnit, 1.0]);
@@ -1463,7 +1458,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
                 pMeshNode);
         }
         
-        trace('--- building started ---');
+        // trace('--- building started ---');
         var iBegin = a.now();
 
         var pMesh = new a.Mesh(pEngine, 
@@ -1508,7 +1503,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
             }
         }
 
-        trace('data filled:', a.now() - iBegin, 'ms');
+        // trace('data filled:', a.now() - iBegin, 'ms');
 
 
         //add indices to data
@@ -1535,19 +1530,19 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         pMesh.addFlexMaterial('default');
         pMesh.setFlexMaterial('default');
 
-        trace('indices added:', a.now() - iBegin, 'ms');
-        trace('--- complete ---');
+        // trace('indices added:', a.now() - iBegin, 'ms');
+        // trace('--- complete ---');
 
-        trace('loaded mesh<', sMeshName,'>:');
-        for (var i = 0; i < pMesh.length; ++i) {
-             trace('\tsubmesh<', pMesh[i].name,'>:', pMesh[i].data.getPrimitiveCount(), 'polygons');
-        }
+        // trace('loaded mesh<', sMeshName,'>:');
+        // for (var i = 0; i < pMesh.length; ++i) {
+        //      trace('\tsubmesh<', pMesh[i].name,'>:', pMesh[i].data.getPrimitiveCount(), 'polygons');
+        // }
         
         pMeshList[sMeshName] = pMesh;
         return buildMaterials(pMesh, pMeshNode);
     };
 
-/*    function findNode (pNodes, sNode, fnNodeCallback) {
+    function findNode (pNodes, sNode, fnNodeCallback) {
         sNode = sNode || null;
         fnNodeCallback = fnNodeCallback || null;
 
@@ -1579,76 +1574,42 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         }
 
         return null;
-    }*/
-/*
-    function buildBoneList (pControllerInstance) {
-        var pController = pControllerInstance.pController;
-        var pSkin = pController.pSkin;
-        var pBoneList = pSkin.pJoints.pInput['JOINT'].pArray;
-        var pSkeleton = pControllerInstance.pSkeleton;
-        
-        var pExpectedRootNode = source(pSkeleton.first);
-        var iCount = 1;
-        var pNode;
-        var pRootNode = null;
-        var pSkeletonCache = null;
-
-        for (var i = 1; i < pSkeleton.length; i++) {
-            pNode = source(pSkeleton[i]);
-            if (pNode) {
-                if (pNode.iDepth < pExpectedRootNode.iDepth) {
-                    iCount = 1;
-                    pExpectedRootNode = pNode;
-                }
-                else if (pNode.iDepth == pExpectedRootNode.iDepth) {
-                    iCount ++;
-                }
-            }
-        };
-
-        debug_assert(pExpectedRootNode && iCount === 1, 'invalid skeleton hierarhy, root node ' + 
-            'not found or root is not singleton');
-
-Ifdef (__DEBUG);
-
-        pSkeletonCache = {};
-
-        for (var i = 0; i < pSkeleton.length; i++) {
-            pSkeletonCache[pSkeleton[i].substr(1)] = false;
-        };
-
-        pSkeletonCache[pExpectedRootNode.id] = true;
-
-        findNode(pExpectedRootNode.pChildNodes, null, function (pNode) {
-            if (pSkeletonCache[pNode.id] === false) {
-                pSkeletonCache[pNode.id] = true;
-            }
-        });
-
-
-        for (var s in pSkeletonCache) {
-            if (pSkeletonCache[s] === false) {
-                error('not all <skeleton> elements founded in root <skeleton>, ' + 
-                    'some thing going wrong...');
-            }
-        }
-
-Endif ();
-
-        pRootNode = pExpectedRootNode;
-      
     }
 
-*/   
+
     function buildSkinMesh (pSkinMeshNode) {
-        var pMeshNode = {
-            pGeometry: pSkinMeshNode.pController.pSkin.pGeometry,
-            pMaterials: pSkinMeshNode.pMaterials
-        }
+        'use strict';
 
-        //buildBoneList(pSkinMeshNode);
+        var pController = pSkinMeshNode.pController;
+        var pBoneList = pController.pSkin.pJoints.pInput['JOINT'].pArray;
+        var pSkeletonsList = pSkinMeshNode.pSkeleton;
+        var pGeometry = pSkinMeshNode.pController.pSkin.pGeometry;
+        var pMaterials = pSkinMeshNode.pMaterials;
 
-        return buildMesh(pMeshNode);
+        var pBoneCache = pCache['@joint'];
+        
+        var pMesh;
+        var pSkeleton;
+        var pSkin;
+
+        
+        pMesh = buildMesh({pGeometry: pGeometry, pMaterials: pMaterials});
+        pSkeleton = new a.Skeleton(pEngine, pSkeletonsList[0]);
+        pSkeleton.setup(pBoneList.length);
+        pSkin = new a.Skin(pMesh, pSkeleton);
+        pMesh.setSkin(pSkin);
+      
+        for (var i = 0; i < pBoneList.length; ++ i) {
+            var sBoneName = pBoneList[i];
+
+            debug_assert(pBoneCache[sBoneName] == undefined, 'joint already used by another controller');
+
+            pBoneCache[sBoneName] = pSkeleton;
+        };
+
+        
+
+        return pMesh;
     }
 
     /**
@@ -1683,15 +1644,24 @@ Endif ();
     }
 
     function buildJointNode (pNode) {
-        var pJointNode = new a.Joint();
+        var pBoneCache = pCache['@joint'];
+        var pJointNode;
+        var sBoneName = pNode.sid;
+        var pSkeleton = pBoneCache[sBoneName];
 
-        pJointNode.create();
-        pJointNode.boneName = pNode.sid;
+        if (!pSkeleton) {
+            return buildSceneNode(pNode);
+        }
 
+        pJointNode = pSkeleton.createBone(sBoneName);
+
+        
         //draw joints...............
-        var pSceneNode = pEngine.appendMesh(pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
+        var pSceneNode = pEngine.appendMesh(
+            pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
             pJointNode);
-        pSceneNode.setScale(.5);
+
+        pSceneNode.setScale(.25);
 
         return pJointNode;
     }
@@ -1718,7 +1688,7 @@ Endif ();
             }
 
             //pSceneNodeSibling = pHierarchyNode;
-            if (pNode.sType == 'JOINT') {
+            if (pNode.sType === 'JOINT') {
                 pHierarchyNode = buildJointNode(pNode);
             }
             else {
@@ -1732,18 +1702,20 @@ Endif ();
             m4fLocalMatrix = pHierarchyNode.accessLocalMatrix();
             Mat4.set(pNode.m4fTransform, m4fLocalMatrix);
 
-            buildNodes(pNode.pChildNodes, pHierarchyNode)
+            buildNodes(pNode.pChildNodes, pHierarchyNode);
         }
 
         return pHierarchyNode;
     }
 
-    function buildScene () {
-        var m4fRootTransform = buildAssetMatrix();
-        var pNodes = [];
+    function buildScene (pSceneRoot, m4fRootTransform) {
+        m4fRootTransform = m4fRootTransform || Mat4.identity(new Matrix4);
 
-        for (var i = 0; i < pScene.pNodes.length; i++) {
-            var pNode = pScene.pNodes[i];
+        var pNodes = [];
+        var pNode = null;
+
+        for (var i = 0; i < pSceneRoot.pNodes.length; i++) {
+            pNode = pSceneRoot.pNodes[i];
             Mat4.mult(pNode.m4fTransform, m4fRootTransform);
             pNodes.push(buildNodes([pNode], null));
         }
@@ -1767,16 +1739,16 @@ Endif ();
             {sLib: 'library_visual_scenes', sElement: 'visual_scene',   fn: COLLADAVisualScene}
         ];
 
-        pAsset = COLLADAAsset(firstChild(pXMLCollada, 'asset'));
-       
         for (var i = 0; i < pTemplate.length; i++) {
             pLib[pTemplate[i].sLib] =
                 COLLADALibrary(firstChild(pXMLCollada, pTemplate[i].sLib), pTemplate[i].sElement, pTemplate[i].fn);
         }
 
-        pScene = COLLADAScene(firstChild(pXMLCollada, 'scene'));
+        var pAsset = COLLADAAsset(firstChild(pXMLCollada, 'asset'));
+        var m4fRootTransform = buildAssetMatrix(pAsset);
+        var pSceneRoot = COLLADAScene(firstChild(pXMLCollada, 'scene'));
 
-        fnCallback(buildScene());
+        fnCallback(buildScene(pSceneRoot, m4fRootTransform));
     }
 
     if (!isFileContent) {

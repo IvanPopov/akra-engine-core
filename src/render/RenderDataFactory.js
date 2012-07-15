@@ -75,13 +75,18 @@ RenderDataFactory.prototype._allocateData = function(pVertexDecl, pData) {
     if (!this._pDataBuffer) {
         this._createDataBuffer();
     }
-    if (!pData) {
-        return this._pDataBuffer.getEmptyVertexData(1, pVertexDecl);
+    
+    if ((arguments.length < 2) || (typeof arguments[1] === 'number') || pData === null) {
+        return this._pDataBuffer.getEmptyVertexData(pData || 1, pVertexDecl);
     }
+
     return this._pDataBuffer.allocateData(pVertexDecl, pData);
 };
 
 //публиный метод, для задания данных сразу для всех сабсетов
+/**
+ * @property allocateData(pDataDecl, iSize)
+ */
 RenderDataFactory.prototype.allocateData = function (pDataDecl, pData) {     
     var pVertexData;
 

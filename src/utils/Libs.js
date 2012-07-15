@@ -70,6 +70,12 @@
         value: function (i) {i = i || 0; return this[i < 0? this.length + i: i];} 
     });
 
+    Object.defineProperty(Array.prototype, 'clear', {
+        enumerable: false,
+        configurable: true,
+        value: function () {this.length = 0;} 
+    });
+
 
     Define(first, __[0]);
 

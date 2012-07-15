@@ -1,7 +1,10 @@
-function Joint () {
+function Joint (pSkeleton) {
 	A_CLASS;
 
+    debug_assert(pSkeleton, 'joint must managed by any skeleton');
+
 	this._sBone = null;
+    this._pSkeleton = pSkeleton;
 }
 
 EXTENDS(Joint, a.Node);
@@ -16,6 +19,10 @@ PROPERTY(Joint, 'boneName',
 		this._sBone = sBone;
 	});
 
+
+Joint.prototype.skeleton = function() {
+    return this._pSkeleton;
+};
 
 /**
  * Create joint.
@@ -43,6 +50,13 @@ Joint.prototype.create = function (ppWorldMatrix, ppLocalMatrix, ppInverseWorldM
     this.setInheritance(a.Scene.k_inheritAll);
 
     return true;
+};
+
+
+Joint.prototype.recalcWorldMatrix = function() {
+    if (Node.prototype.recalcWorldMatrix.call(this)) {
+        this._pSkeleton._iFlags |= a.Skeleton.JOINTS_MOVED;
+    }
 };
 
 

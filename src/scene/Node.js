@@ -97,12 +97,19 @@ function Node(){
 
 EXTENDS(Node, a.ReferenceCounter);
 
-PROPERTY(Joint, 'name',
+PROPERTY(Node, 'name',
     function () {
         return this._sName;
     },
     function (sName) {
         this._sName = sName;
+    });
+
+PROPERTY(Node, 'depth',
+    function () {
+        var iDepth = -1;
+        for (var pNode = this; pNode; pNode = pNode.parent(), ++ iDepth);
+        return iDepth;
     });
 
 Node.prototype.setName = function (sName) {
@@ -122,6 +129,8 @@ Node.prototype.parent = function () {
     INLINE();
     return this._pParent;
 };
+
+
 /**
  * Get sibling
  * @treturn SceneNode _pSibling
@@ -619,7 +628,10 @@ Node.prototype.recalcWorldMatrix = function () {
         a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_rebuildInverseWorldMatrix, true);
         a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_rebuildWorldVectors, true);
         a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_rebuildNormalMatrix, true);
+        return true;
     }
+
+    return false;
 };
 /**
  * Update world vectors(up, right, up, forward, position) from worldMatrix
@@ -1093,7 +1105,7 @@ Node.prototype.toString = function (isRecursive, iDepth) {
         s += ':  ';
     }
 
-    s += '+----' + this.toString() + '\n';
+    s += '+----[depth: ' + this.depth + ']' + this.toString() + '\n';
 
     if (pChild) {
         s += pChild.toString(true, iDepth + 1);
