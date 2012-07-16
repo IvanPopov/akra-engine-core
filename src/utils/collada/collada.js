@@ -72,7 +72,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
     var pLinks = {};
     var pLib = {};
     var pCache = {
-        '@joint': {} //joint_name --> controller
+        '@joint': {}       //joint_name --> {skeleton, controller, index}
     };
 
     function calcFormatStride (pFormat) {
@@ -478,13 +478,20 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
 
     function COLLADAJoints (pXML) {
         var pJoints = {pInput: {}};
+        var pArrayBuffer;
+        var pMatrixArray;
+        var iCount;
+        var pInput;
+        var pInvMatrixArray;
+
         eachByTag(pXML, 'input', function (pXMLData) {
             switch (attr(pXMLData, 'semantic')) {
                 case 'JOINT':
                     pJoints.pInput['JOINT'] = COLLADAInput(pXMLData);
                     break;
                 case 'INV_BIND_MATRIX':
-                    pJoints.pInput['INV_BIND_MATRIX'] = COLLADAInput(pXMLData);
+                    pInput = COLLADAInput(pXMLData);
+                    pJoints.pInput['INV_BIND_MATRIX'] = pInput;
                     break;
                 default:
                     debug_error('semantics are different from JOINT/INV_BIND_MATRIX is not supported in the <joints /> tag');
@@ -497,11 +504,16 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
 
             if (i === 'INV_BIND_MATRIX') {
 
-                var pInvMatrixArray = new Float32Array(pJoints.pInput[i].pArray);
+                pInvMatrixArray = new Float32Array(pJoints.pInput[i].pArray);
+                iCount = pInvMatrixArray.length / 16;
+                pMatrixArray = new Array(iCount);
 
-                for (var i = 0; i < pInvMatrixArray.length; i += 16) {
-                    Mat4.transpose(new Float32Array(pInvMatrixArray.buffer, i * Float32Array.BYTES_PER_ELEMENT, 16));
+                for (var j = 0, n = 0; j < pInvMatrixArray.length; j += 16) {
+                    pMatrixArray[n ++] = 
+                        Mat4.transpose(new Float32Array(pInvMatrixArray.buffer, j * Float32Array.BYTES_PER_ELEMENT, 16));
                 }
+
+                pJoints.pInput[i].pArray = pMatrixArray;
             }
         }
 
@@ -858,7 +870,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
             //TODO:  add other parameters to skin section
         }
 
-        var tmp;
+        var tmp, pInput;
 
         eachChild(pXML, function (pXMLData, sName) {
             switch (sName) {
@@ -870,9 +882,12 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
                     break;
                 case 'vertex_weights':
                     tmp = COLLADAVertexWeights(pXMLData);
+                    
                     for (var i = 0; i < tmp.pInput.length; ++i) {
-                        prepareInput(tmp.pInput[i]);
+                        pInput = tmp.pInput[i];
+                        prepareInput(pInput);
                     }
+
                     pSkin.pVertexWeights = (tmp);
                     break;
             }
@@ -1462,7 +1477,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         var iBegin = a.now();
 
         var pMesh = new a.Mesh(pEngine, 
-              0,//a.Mesh.VB_READABLE|a.Mesh.RD_ADVANCED_INDEX,  
+              a.Mesh.VB_READABLE,//|a.Mesh.RD_ADVANCED_INDEX,  //0,//
             sMeshName);
         var pPolyGroup = pNodeData.pPolygons;
         var pMeshData = pMesh.data;
@@ -1583,28 +1598,54 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         var pController = pSkinMeshNode.pController;
         var pBoneList = pController.pSkin.pJoints.pInput['JOINT'].pArray;
         var pSkeletonsList = pSkinMeshNode.pSkeleton;
-        var pGeometry = pSkinMeshNode.pController.pSkin.pGeometry;
+        var pGeometry = pController.pSkin.pGeometry;
         var pMaterials = pSkinMeshNode.pMaterials;
+        var pVertexWeights = pController.pSkin.pVertexWeights;
+        var pWeightsData = null;
 
         var pBoneCache = pCache['@joint'];
-        
+
         var pMesh;
         var pSkeleton;
         var pSkin;
-
+        var pSkinData;
         
         pMesh = buildMesh({pGeometry: pGeometry, pMaterials: pMaterials});
         pSkeleton = new a.Skeleton(pEngine, pSkeletonsList[0]);
         pSkeleton.setup(pBoneList.length);
         pSkin = new a.Skin(pMesh, pSkeleton);
-        pMesh.setSkin(pSkin);
+        
+        var pPosData;
+        if (pPosData = pMesh.data.getData('POSITION')) {
+            pPosData.extend(VE_FLOAT('SOME'), null);
+        }
+
+        for (var i = 0; i < pVertexWeights.pInput.length; ++ i) {
+            if (pVertexWeights.pInput[i].sSemantic === 'WEIGHT') {
+                pWeightsData = pVertexWeights.pInput[i].pArray;
+                break;
+            }
+        }
+        
+        if (!pSkin.setVertexWeights(
+            new Float32Array(pVertexWeights.pVcount), 
+            new Float32Array(pVertexWeights.pV), 
+            new Float32Array(pWeightsData))) {
+            error('cannot set vertex weight info to skin');
+        }
+
+        //pMesh.setSkin(pSkin);
       
         for (var i = 0; i < pBoneList.length; ++ i) {
             var sBoneName = pBoneList[i];
 
             debug_assert(pBoneCache[sBoneName] == undefined, 'joint already used by another controller');
 
-            pBoneCache[sBoneName] = pSkeleton;
+            pBoneCache[sBoneName] = {
+                pController: pController, 
+                pSkeleton: pSkeleton, 
+                iIndex: i
+            };
         };
 
         
@@ -1644,17 +1685,21 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
     }
 
     function buildJointNode (pNode) {
-        var pBoneCache = pCache['@joint'];
         var pJointNode;
         var sBoneName = pNode.sid;
-        var pSkeleton = pBoneCache[sBoneName];
+        var pBoneCache = pCache['@joint'][sBoneName];
 
-        if (!pSkeleton) {
+        if (!pBoneCache) {
             return buildSceneNode(pNode);
         }
 
-        pJointNode = pSkeleton.createBone(sBoneName);
+        var pSkeleton = pBoneCache.pSkeleton;
+        var pController = pBoneCache.pController;
+        var pBoneIndex = pBoneCache.iIndex;
+        var m4fBoneOffsetMatrix = pController.pSkin.pJoints.pInput['INV_BIND_MATRIX'].pArray[pBoneIndex];
 
+        pJointNode = pSkeleton.createBone(sBoneName);
+        pJointNode.setBoneOffsetMatrix(m4fBoneOffsetMatrix);
         
         //draw joints...............
         var pSceneNode = pEngine.appendMesh(

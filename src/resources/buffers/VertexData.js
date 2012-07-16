@@ -84,7 +84,8 @@ Define(VE_VEC4(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 4); });
 Define(VE_MAT4(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 16); });
 Define(VE_INT(name), function () {VE_CUSTOM(name, a.DTYPE.INT)});
 
-
+Define(VE_END(offset), function () {VE_CUSTOM('***', a.DTYPE.UNSIGNED_BYTE, 0, offset)});
+Define(VE_END(),     function () {VE_CUSTOM('***', a.DTYPE.UNSIGNED_BYTE, 0)});
 
 /**
  * @property VertexDeclaration(Int count, String sAttrName)
@@ -99,7 +100,7 @@ Define(VE_INT(name), function () {VE_CUSTOM(name, a.DTYPE.INT)});
  * Constructor of VertexDeclaration class
  **/
 function VertexElement (nCount, eType, eUsage, iOffset) {
-    this.nCount = nCount || 1;
+    this.nCount = ifndef(nCount, 1);
     this.eType = eType || a.DTYPE.FLOAT;
     this.eUsage = eUsage || a.DECLUSAGE.POSITION;
     this.eUsage = this.eUsage.toString().toUpperCase();
@@ -121,6 +122,17 @@ PROPERTY(VertexElement, "size", function () {
  */
 VertexElement.prototype.update = function () {
     this.iSize = this.nCount * a.getTypeSize(this.eType);
+    this.iIndex = 0;
+    this.eSematics = null;
+
+    var pMatches = this.eUsage.match(/^(.*?\w)(\d+)$/i);
+    if (pMatches) {
+        this.eSematics = pMatches[1];
+        this.iIndex = Number(pMatches[2]);
+    }
+    else {
+        this.eSematics = this.eUsage;
+    }
 };
 
 /**
@@ -195,9 +207,19 @@ VertexDeclaration.prototype.update = function () {
  * Append array of vertex elements.
  * @param  {!Array.<VertexElement>} pArrayElements Elements to append.
  */
-VertexDeclaration.prototype.append = function (pArrayElements) {
-    debug_assert(pArrayElements instanceof Array, 
-        'only array of vertex elements can be appended to vertex declaration.');
+VertexDeclaration.prototype.append = function () {
+    'use strict';
+    var pArrayElements;
+    
+    if (!(arguments[0] instanceof Array)) {
+        pArrayElements = arguments;
+    }
+    else {
+        pArrayElements = arguments[0];
+    }
+
+    // debug_assert(pArrayElements instanceof Array, 
+    //     'only array of vertex elements can be appended to vertex declaration.');
 
     var iOffset;
 
@@ -439,7 +461,7 @@ PROPERTY(VertexData, 'stride',
 
 VertexData.prototype.extend = function (pVertexDecl, pData) {
     pVertexDecl = a.normalizeVertexDecl(pVertexDecl);
-    pData = new Uint8Array(pData.buffer);
+    pData = pData? new Uint8Array(pData.buffer): new Uint8Array(this.getCount() * pVertexDecl.stride);
 
     debug_assert(this.length === pData.byteLength / pVertexDecl.stride,
         'invalid data size for extending');
@@ -484,6 +506,7 @@ VertexData.prototype.applyModifier = function(eSemantics, fnModifier) {
 
 VertexData.prototype.resize = function (nCount, pVertexDeclaration) {
     var iStride = 0;
+    var iOldOffset = this.getOffset();
 
     if (arguments.length == 2) {
         if (typeof(pVertexDeclaration) == "number") {
@@ -512,6 +535,11 @@ VertexData.prototype.resize = function (nCount, pVertexDeclaration) {
             if (pOldVertexBuffer.getEmptyVertexData(nCount, pVertexDeclaration, this) !== this) {
                 return false;
             }
+
+            if (this.getOffset() != iOldOffset) {
+                warning('vertex data moved from ' + iOldOffset + ' ---> ' + this.getOffset());
+            }
+
             return true;
         }
     }
@@ -532,6 +560,11 @@ VertexData.prototype.resize = function (nCount, pVertexDeclaration) {
             }
 
             this.setVertexDeclaration(pOldVertexDeclaration);
+
+            if (this.getOffset() != iOldOffset) {
+                warning('vertex data moved from ' + iOldOffset + ' ---> ' + this.getOffset());
+            }
+
             return true;
         }
     }
@@ -588,6 +621,7 @@ VertexData.prototype.setData = function (pData, iOffset, iSize, nCountStart, nCo
                         pElement.iSize,
                         arguments[2], arguments[3]);
                 }
+
                 return false;
             }
             else {

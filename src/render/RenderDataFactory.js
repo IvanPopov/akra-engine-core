@@ -76,6 +76,8 @@ RenderDataFactory.prototype._allocateData = function(pVertexDecl, pData) {
         this._createDataBuffer();
     }
     
+    pVertexDecl = normalizeVertexDecl(pVertexDecl);
+
     if ((arguments.length < 2) || (typeof arguments[1] === 'number') || pData === null) {
         return this._pDataBuffer.getEmptyVertexData(pData || 1, pVertexDecl);
     }

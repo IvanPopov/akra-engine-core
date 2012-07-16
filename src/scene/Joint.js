@@ -5,6 +5,8 @@ function Joint (pSkeleton) {
 
 	this._sBone = null;
     this._pSkeleton = pSkeleton;
+    this._m4fBoneMatrix = null;
+    this._m4fBoneOffsetMatrix = null;
 }
 
 EXTENDS(Joint, a.Node);
@@ -19,6 +21,23 @@ PROPERTY(Joint, 'boneName',
 		this._sBone = sBone;
 	});
 
+Joint.prototype.getBoneOffsetMatrix = function () {
+    'use strict';
+    
+    return this._m4fBoneOffsetMatrix;
+};
+
+Joint.prototype.setBoneOffsetMatrix = function (m4fBoneOffsetMatrix) {
+    'use strict';
+    
+    Mat4.set(m4fBoneOffsetMatrix, this._m4fBoneOffsetMatrix);
+};
+
+Joint.prototype.boneMatrix = function () {
+    'use strict';
+    
+    return this._m4fBoneMatrix;
+};
 
 Joint.prototype.skeleton = function() {
     return this._pSkeleton;
@@ -29,16 +48,21 @@ Joint.prototype.skeleton = function() {
  * Предпологается, что joint может быть как самостоятельным нодом со
  * своими матрицами, так и пересчитывать матрицы поданные извне.
  */
-Joint.prototype.create = function (ppWorldMatrix, ppLocalMatrix, ppInverseWorldMatrix) {
+Joint.prototype.create = function (ppBoneMatrix, pBoneOffsetMatrix) {
     'use strict';
 
-    ppWorldMatrix = ppWorldMatrix || Mat4.identity(new Matrix4);
-    ppLocalMatrix = ppLocalMatrix || Mat4.identity(new Matrix4);
-    ppInverseWorldMatrix = ppInverseWorldMatrix || Mat4.identity(new Matrix4);
+    pBoneOffsetMatrix = pBoneOffsetMatrix || Mat4.identity(new Matrix4);
+    ppBoneMatrix = ppBoneMatrix || Mat4.identity(new Matrix4);
 
-    this._m4fWorldMatrix = ppWorldMatrix;
-    this._m4fLocalMatrix = ppLocalMatrix;
-    this._m4fInverseWorldMatrix = ppInverseWorldMatrix;
+    var pWorldMatrix = Mat4.identity(new Matrix4);
+    var pLocalMatrix = Mat4.identity(new Matrix4);
+    var pInverseWorldMatrix = Mat4.identity(new Matrix4);
+
+    this._m4fWorldMatrix = pWorldMatrix;
+    this._m4fLocalMatrix = pLocalMatrix;
+    this._m4fInverseWorldMatrix = pInverseWorldMatrix;
+    this._m4fBoneOffsetMatrix = pBoneOffsetMatrix;
+    this._m4fBoneMatrix = ppBoneMatrix;
 
     this._v3fWorldPosition = Vec3.create();
     this._v3fWorldRight = Vec3.create();
@@ -55,6 +79,7 @@ Joint.prototype.create = function (ppWorldMatrix, ppLocalMatrix, ppInverseWorldM
 
 Joint.prototype.recalcWorldMatrix = function() {
     if (Node.prototype.recalcWorldMatrix.call(this)) {
+        Mat4.mult(this._m4fWorldMatrix, this._m4fBoneOffsetMatrix, this._m4fBoneMatrix);
         this._pSkeleton._iFlags |= a.Skeleton.JOINTS_MOVED;
     }
 };

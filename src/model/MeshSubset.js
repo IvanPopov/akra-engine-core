@@ -80,8 +80,31 @@ MeshSubset.prototype.getSkin = function() {
     return this._pSkin;
 };
 
-MeshSubset.prototype.setSkin = function(pSkin) {
-    this._pSkin = pSkin;
+MeshSubset.prototype.setSkin = function(pSkin, pSkinIndex) {
+    return false;
+    // debug_assert(!pSkinIndex, 'skin index now unsupported, sorry ...');
+
+    // var pPositionFlow;
+    // var eSemantics;
+    // var iBoneInfMetaFlow;
+    // var pBoneInfMetaFlow;
+    
+    // pPositionFlow = this.data.getFlow(a.DECLUSAGE.POSITION);
+    // iBoneInfMetaFlow = this.data._addData(pSkin.getInfluenceMetaData());
+
+    // pBoneInfMetaFlow = this.data._pMap._pFlows[iBoneInfMetaFlow];
+
+    // debug_assert(pPositionFlow, 'skin require position with indices in mesh subset');
+
+    // eSemantics = pPositionFlow.pMapper.eSemantics;
+
+    // this.data._pMap.mapping(iBoneInfMetaFlow, pPositionFlow.pMapper.pData, eSemantics,
+    //     (-pPositionFlow.pData.getOffset() + pBoneInfMetaFlow.pData.getOffset()));
+    
+    // //trace(this.data.toString());
+    
+    
+    // this._pSkin = pSkin;
 };
 
 MeshSubset.prototype.applyFlexMaterial = function(sMaterial, pMaterialData) {
