@@ -385,6 +385,16 @@ SceneModel.prototype.render = function () {
     if (!pMesh || !pMesh.isReadyForRender()) {
         return;
     }
+
+    var pDeferredTexture = pEngine.pDeferredTexture;
+    var pFrameBuffer = pDeferredTexture._pFrameBuffer;
+    var pDevice = pEngine.pDevice;
+
+    //bind framebuffer
+    pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,pFrameBuffer);
+
+    pDevice.clearColor(0,0,0,0);
+    pDevice.clear(pDevice.COLOR_BUFFER_BIT | pDevice.DEPTH_BUFFER_BIT | pDevice.STENCIL_BUFFER_BIT);
  
     for (var i = 0; i < pMesh.length; ++ i) {
         var pSubMesh = pMesh[i];
@@ -401,6 +411,8 @@ SceneModel.prototype.render = function () {
             
         }
 
+        pProgram = pEngine.pDrawMeshDeffered;
+
         pProgram.activate();
 
         if (pSubMesh.data.useAdvancedIndex()) {
@@ -415,7 +427,6 @@ SceneModel.prototype.render = function () {
         pProgram.applyMatrix3('normal_mat', pModel.normalMatrix());
         pProgram.applyVector3('eye_pos', pCamera.worldPosition());
 
-        
         if (pSurface.totalTextures) {
             var iTextureFlags = pSurface.textureFlags;
             var iTexActivator = 1;
@@ -436,6 +447,18 @@ SceneModel.prototype.render = function () {
 
         pSubMesh.draw();
     }
+    //pDevice.flush();
+
+    pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,null);
+
+    pProgram = pEngine.pDefferedToScreen;
+    pProgram.activate();
+    pDeferredTexture.activate(0);
+    pProgram.applyInt('deferredTexture',0);
+    pProgram.applyVector2('maxTextureCoordinates',pEngine.pCanvas.width/pDeferredTexture.width,pEngine.pCanvas.height/pDeferredTexture.height);
+    var pMap = pEngine.pDefferedBufferMap;
+    pProgram.applyBufferMap(pMap);
+    pMap.drawArrays();
 
     //------------------------------------------------
 
