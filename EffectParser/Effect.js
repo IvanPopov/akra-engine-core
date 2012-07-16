@@ -260,6 +260,9 @@ var CASESTATE = "CaseState";
 var DEFAULTSTATE = "DefaultState";
 var PASSSTATE = "PassState";
 
+var SYSTEMVAR = "engine";
+var UNDEFINEDTYPE = 7;
+
 
 var VERTEXUSAGE = 1;
 var FRAGMENTUSAGE = 2;
@@ -338,6 +341,7 @@ function VariableType() {
     this.pUsages = null;
     this.pUsagesName = null;
     this.isMixible = false;
+    this.isVSInput = false;
 }
 VariableType.prototype.setUsage = function (sValue) {
     if (!this.pUsages) {
@@ -459,6 +463,7 @@ VariableType.prototype.cloneMe = function () {
     pType._isBase = this._isBase;
     pType.sSemantic = this.sSemantic;
     pType.pUsages = this.pUsages;
+    pType.isVSInput = this.isVSInput;
     return pType;
 };
 VariableType.prototype.toStr = function () {
@@ -485,6 +490,10 @@ VariableType.prototype.setMixible = function () {
     }
     this.isMixible = true;
     this.pEffectType.setMixible();
+};
+VariableType.prototype.setVSInput = function () {
+    this.isVSInput = true;
+    this.pEffectType.setVSInput();
 };
 
 function EffectType(sName, sRealName, isBase, iSize) {
@@ -518,6 +527,7 @@ function EffectType(sName, sRealName, isBase, iSize) {
      */
     this.iSize = iSize || 0;
     this.isMixible = false;
+    this.isVSInput = false;
 }
 EffectType.prototype.isEqual = function (pType) {
     if (pType instanceof VariableType) {
@@ -611,6 +621,9 @@ EffectType.prototype.setMixible = function () {
     }
     this.isMixible = true;
     this.pDesc.setMixible();
+};
+EffectType.prototype.setVSInput = function () {
+    this.isVSInput = true;
 };
 
 function EffectStruct() {
@@ -870,6 +883,7 @@ function EffectVariable() {
     this.isUniform = false;
     this.isGlobal = false;
     this.isMixible = false;
+    this.isVSInput = false;
 }
 EffectVariable.prototype.isConst = function () {
     return this.pType.isConst();
@@ -895,8 +909,8 @@ EffectVariable.prototype.isConstInit = function () {
 EffectVariable.prototype.setType = function (pType) {
     this.pType = pType;
     if (pType.pUsagesName) {
-        this.isUniform = pType.pUsagesName["uniform"] === null ? true : false;
-        this.isGlobal = pType.pUsagesName["global"] === null ? true : false;
+        this.isUniform = (pType.pUsagesName["uniform"] === null) ? true : false;
+        this.isGlobal = (pType.pUsagesName["global"] === null) ? true : false;
     }
 };
 EffectVariable.prototype.addAnnotation = function (pAnnotation) {
@@ -948,6 +962,12 @@ EffectVariable.prototype.setMixible = function () {
     }
     this.isMixible = true;
     this.pType.setMixible();
+};
+EffectVariable.prototype.setVSInput = function () {
+    //TODO: set VSIput
+    this.isVSInput = true;
+    this.pType.setVSInput();
+    warning("setVSInput ---> You must do me");
 };
 
 function EffectFunction(sName, pGLSLExpr, pTypes) {
@@ -1070,6 +1090,8 @@ function EffectFunction(sName, pGLSLExpr, pTypes) {
      */
     this.pTypes = pTypes || null;
     this.pUniforms = null;
+    this.pMainInputVar = null;
+    this.pTwin = null;
 }
 EffectFunction.prototype.isConst = function () {
     return this.isConstant;
@@ -1175,7 +1197,7 @@ EffectFunction.prototype.checkMe = function () {
                 for (j = 0; j < this.pParamOrders.length; j++) {
                     pVar = this.pParamOrders[j];
                     pType = pVar.pType;
-                    if (pType.pUsagesName["uniform"] === null) {
+                    if (pType.pUsagesName && pType.pUsagesName["uniform"] === null) {
                         continue;
                     }
                     if (isOne === true) {
@@ -1224,6 +1246,15 @@ EffectFunction.prototype.checkMe = function () {
     }
     return true;
 };
+EffectFunction.prototype.createTwin = function () {
+    if (!this.pMainInputVar) {
+        error("Twin available only for Vertex Shader with Struct Attrib");
+        return;
+    }
+    this.pShader.pTwin = this.pMainInputVar.cloneMe();
+    this.pTwin = this.pShader.pTwin;
+    this.pTwin.sName = this.pTwin.sName + "_clone";
+};
 
 function EffectVertex() {
     /**
@@ -1253,6 +1284,7 @@ function EffectVertex() {
      * @type {EffectVariable}
      */
     this.pReturnVariable = null;
+    this.pTwin = null;
 }
 EffectVertex.prototype.addVarying = function (pVar) {
     if (this._pVaryingsSemantic[pVar.sSemantic]) {
@@ -1388,6 +1420,7 @@ function EffectPass() {
     this.isComplex = false;
     this.pGlobalValues = null;
     this.pFuncHash = null;
+    this.pCode = [];
 }
 EffectPass.prototype.setVertexShader = function (pParam) {
     if (typeof(pParam) === "string") {
@@ -1410,14 +1443,30 @@ EffectPass.prototype.setJSVertexShader = function (pFunc) {
         this.pFuncHash = {};
     }
     this.pFuncHash[pFunc.hash()] = pFunc;
-    this.sJSCode += "this.sVertex=\"" + pFunc.hash() + "\";";
+    this.pushCode("this.sVertex=\"" + pFunc.hash() + "\";");
 };
 EffectPass.prototype.setJSFragmentShader = function (pFunc) {
     if (!this.pFuncHash) {
         this.pFuncHash = {};
     }
     this.pFuncHash[pFunc.hash()] = pFunc;
-    this.sJSCode += "this.sFragment=\"" + pFunc.hash() + "\";";
+    this.pushCode("this.sFragment=\"" + pFunc.hash() + "\";");
+};
+EffectPass.prototype.addGlobalVariable = function (pVar) {
+    if (!this.pGlobalVariables) {
+        this.pGlobalVariables = {};
+    }
+    this.pGlobalVariables[pVar.sName] = pVar;
+};
+EffectPass.prototype.finalize = function () {
+    if (this.sJSCode !== "") {
+        this.pCode.push(this.sJSCode);
+    }
+    if (!this.isComplex) {
+        this.prepare();
+        return;
+    }
+    this.sJSCode = "";
 };
 EffectPass.prototype.prepare = function () {
     'use strict'
@@ -1443,7 +1492,7 @@ EffectPass.prototype.setState = function (eState, eValue) {
     this.pStates[eState] = eValue;
 };
 EffectPass.prototype.setJSState = function (eState, eValue) {
-    this.sJSCode += "this.pStates[" + eState + "]=" + eValue + ";";
+    this.pushCode("this.pStates[" + eState + "]=" + eValue + ";");
 };
 EffectPass.prototype.addAnnotation = function (pAnnotation) {
     this.pAnnotation = pAnnotation;
@@ -1464,8 +1513,27 @@ EffectPass.prototype.checkMe = function () {
     //TODO: some not trivial checks
     return true;
 };
+EffectPass.prototype.pushCode = function (pCodePart) {
+    if (typeof(pCodePart) === "string") {
+        this.sJSCode += pCodePart;
+        return;
+    }
+    if (this.sJSCode !== "") {
+        this.pCode.push(this.sJSCode);
+        this.sJSCode = "";
+    }
+    this.pCode.push(pCodePart);
+};
 
 function Effect() {
+    Enum([
+             DEFAULT = 0,
+             NOTTRANSLATE,
+             ATTRIBSTART,
+             ATTRIB,
+             UNNAME
+         ], PARSINGPROPERTY, a.Effect.Var);
+
     this.pParams = {};
     this.pTechiques = {};
     this.pFuctions = {};
@@ -1496,6 +1564,7 @@ function Effect() {
     this._pCodeStack = [];
     this._pCode = null;
     this._pCodeShader = null;
+    this._sCode = "";
 
     this._iScope = 0;
     this._nScope = 0;
@@ -1531,163 +1600,175 @@ function Effect() {
 
     this._isStrictMode = false;
     this._isWriteVar = false;
+    this._pCurrentPass = null;
+    this._pVarPropertyStack = null;
+    /**
+     * Some parsing property of current analyzed variable
+     * 0 - Don`t unname, and full translate
+     * 1 - Don`t translate
+     * 2 - Translate as attribute
+     * 3 - full unname
+     * @type {Number}
+     * @private
+     */
+    this._eVarProperty = a.Effect.Var.DEFAULT;
 
     STATIC(pBaseFunctionsHash, {});
     STATIC(pBaseFunctionsName, {});
     STATIC(pBaseTypes, {
-        "void":new EffectType("void", "void", true, 1),
-        "float":new EffectType("float", "float", true, 1),
-        "int":new EffectType("int", "int", true, 1),
-        "bool":new EffectType("bool", "bool", true, 1),
-        "float2":new EffectType("float2", "vec2", true, 2),
-        "float3":new EffectType("float3", "vec3", true, 3),
-        "float4":new EffectType("float4", "vec4", true, 4),
-        "float2x2":new EffectType("float2x2", "mat2", true, 4),
-        "float3x3":new EffectType("float3x3", "mat3", true, 9),
-        "float4x4":new EffectType("float4x4", "mat4", true, 16),
-        "string":new EffectType("string", "string", true, 1),
-        "texture":new EffectType("texture", "texture", true, 1),
-        "sampler":new EffectType("sampler", "sampler", true, 1),
-        "ptr":new EffectType("ptr", "float", true, 1),
-        "video_buffer":new EffectType("video_buffer", "video_buffer", true, 1)
+        "void"         : new EffectType("void", "void", true, 1),
+        "float"        : new EffectType("float", "float", true, 1),
+        "int"          : new EffectType("int", "int", true, 1),
+        "bool"         : new EffectType("bool", "bool", true, 1),
+        "float2"       : new EffectType("float2", "vec2", true, 2),
+        "float3"       : new EffectType("float3", "vec3", true, 3),
+        "float4"       : new EffectType("float4", "vec4", true, 4),
+        "float2x2"     : new EffectType("float2x2", "mat2", true, 4),
+        "float3x3"     : new EffectType("float3x3", "mat3", true, 9),
+        "float4x4"     : new EffectType("float4x4", "mat4", true, 16),
+        "string"       : new EffectType("string", "string", true, 1),
+        "texture"      : new EffectType("texture", "texture", true, 1),
+        "sampler"      : new EffectType("sampler", "sampler", true, 1),
+        "ptr"          : new EffectType("ptr", "float", true, 1),
+        "video_buffer" : new EffectType("video_buffer", "video_buffer", true, 1)
     });
     STATIC(pVectorSuffix, {
-        "x":null,
-        "y":null,
-        "z":null,
-        "w":null,
-        "xy":null,
-        "xz":null,
-        "xw":null,
-        "yx":null,
-        "yz":null,
-        "yw":null,
-        "zx":null,
-        "zy":null,
-        "zw":null,
-        "wx":null,
-        "wy":null,
-        "wz":null,
-        "xyz":null,
-        "xyw":null,
-        "xzy":null,
-        "xzw":null,
-        "xwy":null,
-        "xwz":null,
-        "yxz":null,
-        "yxw":null,
-        "yzx":null,
-        "yzw":null,
-        "ywx":null,
-        "ywz":null,
-        "zxy":null,
-        "zxw":null,
-        "zyx":null,
-        "zyw":null,
-        "zwx":null,
-        "zwy":null,
-        "wxy":null,
-        "wxz":null,
-        "wyx":null,
-        "wyz":null,
-        "wzx":null,
-        "wzy":null,
-        "xyzw":null,
-        "xywz":null,
-        "xzyw":null,
-        "xzwy":null,
-        "xwyz":null,
-        "xwzy":null,
-        "yxzw":null,
-        "yxwz":null,
-        "yzxw":null,
-        "yzwx":null,
-        "ywxz":null,
-        "ywzx":null,
-        "zxyw":null,
-        "zxwy":null,
-        "zyxw":null,
-        "zywx":null,
-        "zwxy":null,
-        "zwyx":null,
-        "wxyz":null,
-        "wxzy":null,
-        "wyxz":null,
-        "wyzx":null,
-        "wzxy":null,
-        "wzyx":null,
-        "s":null,
-        "t":null,
-        "st":null,
-        "ts":null,
-        "p":null,
-        "q":null,
-        "pq":null,
-        "qp":null,
-        "r":null,
-        "g":null,
-        "b":null,
-        "a":null,
-        "rg":null,
-        "rb":null,
-        "ra":null,
-        "gr":null,
-        "gb":null,
-        "ga":null,
-        "br":null,
-        "bg":null,
-        "ba":null,
-        "ar":null,
-        "ag":null,
-        "ab":null,
-        "rgb":null,
-        "rga":null,
-        "rbg":null,
-        "rba":null,
-        "rag":null,
-        "rab":null,
-        "grb":null,
-        "gra":null,
-        "gbr":null,
-        "gba":null,
-        "gar":null,
-        "gab":null,
-        "brg":null,
-        "bra":null,
-        "bgr":null,
-        "bga":null,
-        "bar":null,
-        "bag":null,
-        "arg":null,
-        "arb":null,
-        "agr":null,
-        "agb":null,
-        "abr":null,
-        "abg":null,
-        "rgba":null,
-        "rgab":null,
-        "rbga":null,
-        "rbag":null,
-        "ragb":null,
-        "rabg":null,
-        "grba":null,
-        "grab":null,
-        "gbra":null,
-        "gbar":null,
-        "garb":null,
-        "gabr":null,
-        "brga":null,
-        "brag":null,
-        "bgra":null,
-        "bgar":null,
-        "barg":null,
-        "bagr":null,
-        "argb":null,
-        "arbg":null,
-        "agrb":null,
-        "agbr":null,
-        "abrg":null,
-        "abgr":null
+        "x"    : null,
+        "y"    : null,
+        "z"    : null,
+        "w"    : null,
+        "xy"   : null,
+        "xz"   : null,
+        "xw"   : null,
+        "yx"   : null,
+        "yz"   : null,
+        "yw"   : null,
+        "zx"   : null,
+        "zy"   : null,
+        "zw"   : null,
+        "wx"   : null,
+        "wy"   : null,
+        "wz"   : null,
+        "xyz"  : null,
+        "xyw"  : null,
+        "xzy"  : null,
+        "xzw"  : null,
+        "xwy"  : null,
+        "xwz"  : null,
+        "yxz"  : null,
+        "yxw"  : null,
+        "yzx"  : null,
+        "yzw"  : null,
+        "ywx"  : null,
+        "ywz"  : null,
+        "zxy"  : null,
+        "zxw"  : null,
+        "zyx"  : null,
+        "zyw"  : null,
+        "zwx"  : null,
+        "zwy"  : null,
+        "wxy"  : null,
+        "wxz"  : null,
+        "wyx"  : null,
+        "wyz"  : null,
+        "wzx"  : null,
+        "wzy"  : null,
+        "xyzw" : null,
+        "xywz" : null,
+        "xzyw" : null,
+        "xzwy" : null,
+        "xwyz" : null,
+        "xwzy" : null,
+        "yxzw" : null,
+        "yxwz" : null,
+        "yzxw" : null,
+        "yzwx" : null,
+        "ywxz" : null,
+        "ywzx" : null,
+        "zxyw" : null,
+        "zxwy" : null,
+        "zyxw" : null,
+        "zywx" : null,
+        "zwxy" : null,
+        "zwyx" : null,
+        "wxyz" : null,
+        "wxzy" : null,
+        "wyxz" : null,
+        "wyzx" : null,
+        "wzxy" : null,
+        "wzyx" : null,
+        "s"    : null,
+        "t"    : null,
+        "st"   : null,
+        "ts"   : null,
+        "p"    : null,
+        "q"    : null,
+        "pq"   : null,
+        "qp"   : null,
+        "r"    : null,
+        "g"    : null,
+        "b"    : null,
+        "a"    : null,
+        "rg"   : null,
+        "rb"   : null,
+        "ra"   : null,
+        "gr"   : null,
+        "gb"   : null,
+        "ga"   : null,
+        "br"   : null,
+        "bg"   : null,
+        "ba"   : null,
+        "ar"   : null,
+        "ag"   : null,
+        "ab"   : null,
+        "rgb"  : null,
+        "rga"  : null,
+        "rbg"  : null,
+        "rba"  : null,
+        "rag"  : null,
+        "rab"  : null,
+        "grb"  : null,
+        "gra"  : null,
+        "gbr"  : null,
+        "gba"  : null,
+        "gar"  : null,
+        "gab"  : null,
+        "brg"  : null,
+        "bra"  : null,
+        "bgr"  : null,
+        "bga"  : null,
+        "bar"  : null,
+        "bag"  : null,
+        "arg"  : null,
+        "arb"  : null,
+        "agr"  : null,
+        "agb"  : null,
+        "abr"  : null,
+        "abg"  : null,
+        "rgba" : null,
+        "rgab" : null,
+        "rbga" : null,
+        "rbag" : null,
+        "ragb" : null,
+        "rabg" : null,
+        "grba" : null,
+        "grab" : null,
+        "gbra" : null,
+        "gbar" : null,
+        "garb" : null,
+        "gabr" : null,
+        "brga" : null,
+        "brag" : null,
+        "bgra" : null,
+        "bgar" : null,
+        "barg" : null,
+        "bagr" : null,
+        "argb" : null,
+        "arbg" : null,
+        "agrb" : null,
+        "agbr" : null,
+        "abrg" : null,
+        "abgr" : null
     });
     this._addSystemFunction("dot", "float", [null, null], ["float", "float2", "float3", "float4"], "dot($1,$2)");
     this._addSystemFunction("mul", null, [null, null], ["float", "int", "float2", "float3", "float4"], "$1*$2");
@@ -1783,7 +1864,7 @@ Effect.prototype.evalHLSL = function (pCode) {
 Effect.prototype.newCode = function (isShader) {
     this._isCodeWrite = true;
     this._pCode = [];
-    this._pCodeShader = isShader ? [] : null;
+    this._pCodeShader = (isShader || this._pCodeShader) ? [] : null;
     this._pCodeStack.push([this._pCode, this._pCodeShader]);
 };
 Effect.prototype.endCode = function () {
@@ -1812,9 +1893,6 @@ Effect.prototype.pushCode = function (pObj) {
     if (this._pCodeShader) {
         this._pCodeShader.push(pObj);
     }
-    if (this._pCodeFragment) {
-        this._pCodeFragment.push(pObj);
-    }
 };
 
 Effect.prototype.newSampler = function () {
@@ -1828,13 +1906,19 @@ Effect.prototype.newVarName = function () {
     if (!this._pVarNameStack) {
         this._pVarNameStack = [];
     }
+    if (!this._pVarPropertyStack) {
+        this._pVarPropertyStack = [];
+    }
     this._pVarNameStack.push(this._sVarName);
+    this._pVarPropertyStack.push(this._eVarProperty);
     this._sVarName = "";
+    this._eVarProperty = 0;
 };
 Effect.prototype.endVarName = function () {
     this._isNewName = false;
     this._sLastFullName = this._sVarName;
     this._sVarName = this._pVarNameStack.pop();
+    this._eVarProperty = this._pVarPropertyStack.pop() || a.Effect.Var.DEFAULT;
 };
 Effect.prototype.newAddr = function () {
     this._nAddr = 0;
@@ -1922,12 +2006,12 @@ Effect.prototype.addVariable = function (pVar, isParams) {
                 return;
             }
             pTable[sNewName] = {
-                "pPointers":pPointers,
-                "iScope":me.iScope,
-                "isPointer":isPointer,
-                "pBuffer":pBuffer,
-                "pType":pOrders[i].pType,
-                "sName":pOrders[i].isMixible ? pOrders[i].sSemantic : pOrders[i].sName
+                "pPointers" : pPointers,
+                "iScope"    : me.iScope,
+                "isPointer" : isPointer,
+                "pBuffer"   : pBuffer,
+                "pType"     : pOrders[i].pType,
+                "sName"     : pOrders[i].isMixible ? pOrders[i].sSemantic : pOrders[i].sName
             };
             if (!pOrders[i].pType.isBase()) {
                 fnExtractStruct(sNewName, pOrders[i].pType.pEffectType.pDesc, pTable, me);
@@ -2248,6 +2332,7 @@ Effect.prototype.analyze = function (pTree) {
     this.firstStep();
     this.analyzeTypes();
     this.preAnalyzeFunctions();
+    this.preAnalyzeVariables();
     this.preAnalyzeTechniques();
     this.secondStep();
     this.analyzeEffect();
@@ -2295,6 +2380,22 @@ Effect.prototype.preAnalyzeFunctions = function () {
         }
     }
 };
+Effect.prototype.preAnalyzeVariables = function () {
+    var pChildren = this._pParseTree.pRoot.pChildren;
+    var i;
+    this.nCurrentDecl = 0;
+    for (i = pChildren.length - 1; i >= 0; i--) {
+        if (pChildren[i].sName === VARIABLEDECL) {
+            this.nCurrentDecl++;
+            this.analyzeVariableDecl(pChildren[i]);
+        }
+        if (pChildren[i].sName === VARSTRUCTDECL) {
+            this.nCurrentDecl++;
+            this.analyzeVarStructDecl(pChildren[i]);
+        }
+    }
+};
+
 /**
  * Analyze techniques
  */
@@ -2398,6 +2499,7 @@ Effect.prototype.analyzeVariableDecl = function (pNode) {
     if (isSampler) {
         this.endSampler();
     }
+    pNode.pAnalyzed = true;
 };
 Effect.prototype.analyzeUsageType = function (pNode, pType) {
     pType = pType || new VariableType();
@@ -2475,9 +2577,9 @@ Effect.prototype.addVariableDecl = function (pVar) {
             return;
         }
         pVar.pDefaultValue = this.evalHLSL(pVar.pInitializer);
-    }
-    if (pVar.isConst() && pVar.isConstInit()) {
-        this.addConstant(pVar);
+        if (pVar.isConst() && pVar.isConstInit()) {
+            this.addConstant(pVar);
+        }
     }
     this.addVariable(pVar);
     if (this._isCodeWrite) {
@@ -2486,8 +2588,13 @@ Effect.prototype.addVariableDecl = function (pVar) {
         if (pVar.pInitializer) {
             this.pushCode("=");
             var i;
-            for (i = 0; i < pVar.pInitializer.length; i++) {
-                this.pushCode(pVar.pInitializer[i]);
+            var pCode = pVar.pInitializer[0];
+            var pCodeShader = pVar.pInitializer[1];
+            for (i = 0; pCode && i < pCode.length; i++) {
+                this._pCode.push(pCode[i]);
+            }
+            for (i = 0; pCodeShader && i < pCodeShader.length; i++) {
+                this._pCodeShader.push(pCodeShader[i]);
             }
         }
         this.pushCode(";");
@@ -2622,7 +2729,12 @@ Effect.prototype.analyzeInitializer = function (pNode, pVar) {
     else {
         this.analyzeExpr(pNode.pChildren[0]);
     }
-    pInit = this._pCode;
+    if (this._pCurrentFunction) {
+        pInit = [this._pCode, this._pCodeShader];
+    }
+    else{
+        pInit = this._pCode;
+    }
     this.endCode();
     pVar.addInitializer(pInit);
     return pVar;
@@ -2650,6 +2762,7 @@ Effect.prototype.analyzeInitExpr = function (pNode) {
  * @private
  */
 Effect.prototype.analyzeExpr = function (pNode) {
+    //'use strict';
     var pChildren = pNode.pChildren;
     var pRes;
     var pVar;
@@ -2663,6 +2776,8 @@ Effect.prototype.analyzeExpr = function (pNode) {
     var sTypeName;
     var pCodeFragment;
     var isWriteMode = false;
+    var pCode, pCodeShader;
+    var isFlag = false; //temp flag
 
     switch (sName) {
         case OBJECTEXPR:
@@ -2702,7 +2817,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             if (this._nAddr > 0 &&
                 pChildren.length !== 3 &&
                 (pChildren[1].sName !== POSTFIXEXPR || pChildren[1].sName !== PRIMARYEXPR ||
-                    pChildren[1].sName !== COMPLEXEXPR)) {
+                 pChildren[1].sName !== COMPLEXEXPR)) {
                 error("Bad for dog 2");
                 break;
             }
@@ -2712,8 +2827,8 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 break;
             }
             if (!(pChildren.length === 3 &&
-                (pChildren[1].sName === POSTFIXEXPR || pChildren[1].sName === COMPLEXEXPR ||
-                    pChildren[1].sValue !== undefined))) {
+                  (pChildren[1].sName === POSTFIXEXPR || pChildren[1].sName === COMPLEXEXPR ||
+                   pChildren[1].sValue !== undefined))) {
                 this._isNewComplexName = false;
             }
             if (pChildren.length === 3 && pChildren[2].sValue === "(") {
@@ -2877,6 +2992,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 if (!this._isNewName) {
                     isNewVar = true;
                     this.newVarName();
+                    this.newCode();
                 }
             }
             this.analyzeExpr(pChildren[pChildren.length - 1]);
@@ -2884,6 +3000,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 if (this._isNewComplexName) {
                     isNewVar = true;
                     this.newVarName();
+                    this.newCode();
                     this._sVarName = this._sLastFullName;
                     this._isTypeAnalayzed = false;
                 }
@@ -2911,6 +3028,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     pVar = this.hasComplexVariable(this._sVarName);
                     if (isNewVar) {
                         this.endVarName();
+                        this.endCode();
                         isNewVar = false;
                     }
                     if (isComplexVar) {
@@ -2951,6 +3069,56 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 this.endVarName();
             }
             if (isNewVar) {
+                pCode = this._pCode;
+                pCodeShader = this._pCodeShader;
+                this.endCode();
+                isFlag = false;
+                for (i = 0; pCode && i < pCode.length; i++) {
+                    if (this._isCodeWrite) {
+                        this._pCode.push(pCode[i]);
+                    }
+                }
+                if (this._eVarProperty === a.Effect.Var.ATTRIB) {
+                    if (pType1.isBase()) {
+                        for (i = 1; i < pCodeShader.length; i++) {
+                            if (isFlag) {
+                                if (this._isCodeWrite) {
+                                    this._pCodeShader.push(pCodeShader[i]);
+                                }
+                            }
+                            else {
+                                if (pCodeShader[i] === ".") {
+                                    isFlag = true;
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        for (i = 0; i < pCodeShader.length; i++) {
+                            if (pCodeShader[i] === this._pCurrentFunction.pMainInputVar) {
+                                if (this._isCodeWrite) {
+                                    if (!this._pCurrentFunction.pTwin) {
+                                        this._pCurrentFunction.createTwin();
+                                    }
+                                    this._pCodeShader.push(this._pCurrentFunction.pTwin);
+                                }
+                            }
+                            else {
+                                if (this._isCodeWrite) {
+                                    this._pCodeShader.push(pCodeShader[i]);
+                                }
+                            }
+                        }
+                    }
+                    this._eVarProperty === a.Effect.Var.DEFAULT;
+                }
+                else {
+                    for (i = 0; pCodeShader && i < pCodeShader.length; i++) {
+                        if (this._isCodeWrite) {
+                            this._pCodeShader.push(pCodeShader[i]);
+                        }
+                    }
+                }
                 this.endVarName();
             }
             if (isComplexVar) {
@@ -3028,20 +3196,21 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 break;
             }
             else {
-                this.pushCode(pChildren[1].sValue);
+                this.pushCode(" " + pChildren[1].sValue + " ");
                 this.analyzeExpr(pChildren[0]);
                 pType2 = this._pExprType;
             }
             if (sName === OREXPR || sName === ANDEXPR) {
                 pType = this.hasType("bool");
-                if (!(pType1.isEqual(pType) && pType2.isEqual(pType))) {
+                if (pType1 !== UNDEFINEDTYPE && pType2 !== UNDEFINEDTYPE &&
+                    !(pType1.isEqual(pType) && pType2.isEqual(pType))) {
                     error("bad 101");
                     return;
                 }
                 this._pExprType = pType;
             }
             else if (sName === EQUALITYEXPR || sName === RELATIONALEXPR) {
-                if (!pType1.isEqual(pType2)) {
+                if (pType1 !== UNDEFINEDTYPE && pType2 !== UNDEFINEDTYPE && !pType1.isEqual(pType2)) {
                     error("bad 102");
                     return;
                 }
@@ -3080,24 +3249,24 @@ Effect.prototype.analyzeExpr = function (pNode) {
             break;
 
         case T_NON_TYPE_ID:
-//            var isTranslate = true;
-//            if (this._pCode.length > 0 && this._pCode[this._pCode.length - 1] === ".") {
-//                isTranslate = false;
-//            }
+            if (this._eVarProperty === a.Effect.Var.NOTTRANSLATE) {
+                this.pushCode(pNode.sValue);
+                return;
+            }
             pType = this._pExprType ? (this._pExprType.pEffectType ? this._pExprType.pEffectType : this._pExprType) : null;
             if (this._isTypeAnalayzed) {
                 //Проверяем тип
                 if (pType.isBase()) {
                     if (
                         this.constructor.pVectorSuffix[pNode.sValue] === null &&
-                            (
-                                pType.sName === "float2" ||
-                                    pType.sName === "float3" ||
-                                    pType.sName === "float4" ||
-                                    pType.sName === "int2" ||
-                                    pType.sName === "int3" ||
-                                    pType.sName === "int4"
-                                )
+                        (
+                            pType.sName === "float2" ||
+                            pType.sName === "float3" ||
+                            pType.sName === "float4" ||
+                            pType.sName === "int2" ||
+                            pType.sName === "int3" ||
+                            pType.sName === "int4"
+                            )
                         ) {
                         var sTypeName = "";
                         if (pType.sName === "float2" ||
@@ -3133,55 +3302,90 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 }
 
                 this._sVarName = pNode.sValue;
-                pRes = this.hasVariable(this._sVarName);
-                if (!pRes) {
-                    console.log(this, this._sVarName);
-                    error("not good for you");
-                    return;
+                if (this._sVarName === SYSTEMVAR) {
+                    if (!this._pCurrentPass) {
+                        error("'engine' variable available only in pass");
+                        return;
+                    }
+                    this._eVarProperty = a.Effect.Var.NOTTRANSLATE;
+                    pRes = this._sVarName;
+                    this._pExprType = UNDEFINEDTYPE;
                 }
-                if (this._isWriteVar) {
-                    if (pRes.isUniform) {
-                        error("don`t even try to do this, bitch.1");
+                else {
+                    pRes = this.hasVariable(this._sVarName);
+                    if (!pRes) {
+                        console.log(this, this._sVarName);
+                        error("not good for you");
                         return;
                     }
-                    if (pRes.isConst()) {
-                        error("don`t even try to do this, bitch.2");
-                        return;
-                    }
-                    if (pRes.isParametr && pFunction && (pFunction.isVertexShader || pFunction.isFragmentShader)) {
-                        console.log(pRes.isConst());
-                        error("don`t even try to do this, bitch.3");
-                        return;
-                    }
-                }
-                if (pFunction && !pRes.isConst()) {
-                    if (pRes.iScope === GLOBAL) {
-                        if (this._isWriteVar) {
-                            pFunction.addGlobalVariable(pRes);
+                    if (this._isWriteVar) {
+                        if (pRes.isUniform) {
+                            error("don`t even try to do this, bitch.1");
+                            return;
                         }
-                        else {
-                            pFunction.addUniform(pRes);
+                        if (pRes.isConst()) {
+                            error("don`t even try to do this, bitch.2");
+                            return;
+                        }
+                        if (pRes.isParametr && pFunction && (pFunction.isVertexShader || pFunction.isFragmentShader)) {
+                            error("don`t even try to do this, bitch.3");
+                            return;
                         }
                     }
-                    pFunction.isConstant = false;
-                }
-                this._pExprType = pRes.pType;
-                if (isNewVar) {
-                    this.endVarName();
-                    isNewVar = false;
+                    if (this._pCurrentPass) {
+                        this._pCurrentPass.addGlobalVariable(pRes);
+                        this.pushCode("this.pGlobalValues.");
+                    }
+                    if (pRes.isVSInput) {
+                        this._eVarProperty = a.Effect.Var.ATTRIB;
+                        this._pExprType = pRes.pType;
+                        if (isNewVar) {
+                            this.endVarName();
+                            isNewVar = false;
+                            if (!pFunction.pTwin) {
+                                pFunction.createTwin();
+                            }
+                            this._eVarProperty = a.Effect.Var.DEFAULT;
+                            if (this._isCodeWrite) {
+                                if (this._pCode) {
+                                    this._pCode.push(pRes);
+                                }
+                                if (this._pCodeShader) {
+                                    this._pCodeShader.push(pFunction.pTwin);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    if (pFunction && !pRes.isConst()) {
+                        if (pRes.iScope === GLOBAL) {
+                            if (this._isWriteVar) {
+                                pFunction.addGlobalVariable(pRes);
+                            }
+                            else {
+                                pFunction.addUniform(pRes);
+                            }
+                        }
+                        pFunction.isConstant = false;
+                    }
+                    this._pExprType = pRes.pType;
+                    if (isNewVar) {
+                        this.endVarName();
+                        isNewVar = false;
+                    }
                 }
             }
             else {
                 if (
                     this.constructor.pVectorSuffix[pNode.sValue] === null &&
-                        (
-                            pType.sName === "float2" ||
-                                pType.sName === "float3" ||
-                                pType.sName === "float4" ||
-                                pType.sName === "int2" ||
-                                pType.sName === "int3" ||
-                                pType.sName === "int4"
-                            )
+                    (
+                        pType.sName === "float2" ||
+                        pType.sName === "float3" ||
+                        pType.sName === "float4" ||
+                        pType.sName === "int2" ||
+                        pType.sName === "int3" ||
+                        pType.sName === "int4"
+                        )
                     ) {
                     pRes = pNode.sValue;
                     sTypeName = "";
@@ -3536,8 +3740,8 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
                     this._pCodeShader.push(pVaryings[i], "=", pVar, ".", pVaryings[i].sName, ";");
                 }
                 this._pCodeShader.push("gl_Position", "=", pVar, ".",
-                    pVar.pType.pEffectType.pDesc._pSemantics["POSITION"].sName,
-                    ";");
+                                       pVar.pType.pEffectType.pDesc._pSemantics["POSITION"].sName,
+                                       ";");
                 var pPointSize = pVar.pType.pEffectType.pDesc._pSemantics["PSIZE"];
                 if (pPointSize) {
                     this._pCodeShader.push("gl_PointSize", "=", pVar, ".", pPointSize.sName, ";");
@@ -3647,6 +3851,7 @@ Effect.prototype.analyzeVarStructDecl = function (pNode) {
         }
     }
     this._pCurrentType = null;
+    pNode.pAnalyzed = true;
 };
 Effect.prototype.analyzeUsageStructDecl = function (pNode, pType) {
     pType = pType || new VariableType();
@@ -3694,9 +3899,6 @@ Effect.prototype.analyzeTechniqueBody = function (pNode, pTechnique) {
         if (!pPass) {
             continue;
         }
-        if (!pPass.isComplex) {
-            pPass.prepare();
-        }
         if (!pPass.checkMe()) {
             error("something bad with your pass");
         }
@@ -3721,20 +3923,23 @@ Effect.prototype.analyzePassDecl = function (pNode, pPass) {
     if (pChildren[1].sName === ANNOTATION) {
         this.analyzeAnnotation(pChildren[1], pPass);
     }
+    this._pCurrentPass = pPass;
     this.analyzePassStateBlock(pChildren[0], pPass);
+    this._pCurrentPass = null;
+    pPass.finalize();
     return pPass;
 };
 Effect.prototype.analyzePassStateBlock = function (pNode, pPass) {
     var pChildren = pNode.pChildren;
     var i;
     if (pPass.isComplex) {
-        pPass.sJSCode += "{";
+        pPass.pushCode("{");
     }
     for (i = pChildren.length - 2; i >= 1; i--) {
         this.analyzePassState(pChildren[i], pPass);
     }
     if (pPass.isComplex) {
-        pPass.sJSCode += "}";
+        pPass.pushCode("}");
     }
 };
 Effect.prototype.analyzePassState = function (pNode, pPass) {
@@ -3743,10 +3948,10 @@ Effect.prototype.analyzePassState = function (pNode, pPass) {
     var eState = null;
     if (pChildren.length === 1) {
         if (pChildren[0].sName === STATEIF) {
-            this.analyzeStateIf(pNode, pPass);
+            this.analyzeStateIf(pChildren[0], pPass);
         }
         else {
-            this.analyzeStateSwitch(pNode, pPass)
+            this.analyzeStateSwitch(pChildren[0], pPass)
         }
         return;
     }
@@ -3805,11 +4010,32 @@ Effect.prototype.analyzePassState = function (pNode, pPass) {
             return;
         }
         var pFunc = this.analyzeExpr(pExpr);
+        var pParam;
+        var isInput = undefined;
         if (isVertex) {
             pPass.setJSVertexShader(pFunc);
             pFunc.isVertexShader = true;
             for (i = 0; i < pFunc.pParamOrders.length; i++) {
-                pFunc.pParamOrders[i].setMixible();
+                pParam = pFunc.pParamOrders[i];
+                pParam.setMixible();
+                if (!pParam.sSemantic && pParam.isUniform === false) {
+                    if (isInput === false) {
+                        error("You cannot use attribute in struct and attrib as paramters");
+                        return;
+                    }
+                    isInput = true;
+                    pParam.setVSInput();
+                    pFunc.pMainInputVar = pParam;
+                    continue;
+                }
+                if (pParam.sSemantic && pParam.isUniform === false) {
+                    if (isInput === true) {
+                        error("You cannot use attribute in struct and attrib as paramters");
+                        return;
+                    }
+                    isInput = false;
+                    continue;
+                }
             }
             if (pFunc.pReturnType.pEffectType.pDesc) {
                 pFunc.pReturnType.setMixible();
@@ -3844,7 +4070,7 @@ Effect.prototype.analyzePassState = function (pNode, pPass) {
                     break;
                 default:
                     error('Unsupported render state ALPHABLENDENABLE/ZENABLE/ZWRITEENABLE/DITHERENABLE value used: '
-                        + sValue + '.');
+                              + sValue + '.');
                     eValue = null;
             }
             break;
@@ -3936,7 +4162,7 @@ Effect.prototype.analyzePassState = function (pNode, pPass) {
                     break;
                 default:
                     error('Unsupported render state ZFUNC value used: ' +
-                        sValue + '.');
+                          sValue + '.');
                     eValue = null;
             }
             break;
@@ -3948,18 +4174,24 @@ Effect.prototype.analyzePassState = function (pNode, pPass) {
 Effect.prototype.analyzeStateIf = function (pNode, pPass) {
     var pChildren = pNode.pChildren;
     var pCode;
+    var i;
     pPass.isComplex = true;
-    pPass.sJSCode += "if(";
+    pPass.pushCode("if(");
     this.newCode();
     this.analyzeExpr(pChildren[4]);
     pCode = this._pCode;
     this.endCode();
-    //TODO: analyze expr
-    pPass.sJSCode += ")";
-    this.analyzePassStateBlock(pChildren[2]);
-    pPass.sJSCode += "else";
+    for (i = 0; i < pCode.length; i++) {
+        pPass.pushCode(pCode[i]);
+    }
+    pPass.pushCode(")");
+    this.analyzePassStateBlock(pChildren[2], pPass);
+    pPass.pushCode("else");
     if (pChildren[0].sName === STATEIF) {
         this.analyzeStateIf(pChildren[0], pPass);
+    }
+    else {
+        this.analyzePassStateBlock(pChildren[0], pPass);
     }
 };
 Effect.prototype.analyzeStateSwitch = function (pNode, pPass) {
@@ -3967,19 +4199,21 @@ Effect.prototype.analyzeStateSwitch = function (pNode, pPass) {
     var pCode;
     var i;
     pPass.isComplex = true;
-    pPass.sJSCode += "switch(";
+    pPass.pushCode("switch(");
     this.newCode();
     this.analyzeExpr(pNode);
     pCode = this._pCode;
     this.endCode();
-    //TODO: analyze expr
-    pPass.sJSCode += ")";
+    for (i = 0; i < pCode.length; i++) {
+        pPass.pushCode(pCode[i]);
+    }
+    pPass.pushCode(")");
     this.analyzeCaseBlock(pChildren[0], pPass);
 };
 Effect.prototype.analyzeCaseBlock = function (pNode, pPass) {
     var pChildren = pNode.pChildren;
     var i;
-    pPass.sJSCode += "{";
+    pPass.pushCode("{");
     for (i = 0; i < pChildren.length; i++) {
         if (pChildren[i].sName === CASESTATE) {
             this.analyzeCaseState(pChildren[i], pPass);
@@ -3988,39 +4222,40 @@ Effect.prototype.analyzeCaseBlock = function (pNode, pPass) {
             this.analyzeDefaultState(pChildren[i], pPass);
         }
     }
-    pPass.sJSCode += "}";
+    pPass.pushCode("}");
 };
 Effect.prototype.analyzeCaseState = function (pNode, pPass) {
     var pChildren = pNode.pChildren;
     var pCode;
     var i;
-    pPass.sJSCode += "case ";
+    pPass.pushCode("case ");
     this.newCode();
     this.analyzeExpr(pChildren[pChildren.length - 2]);
     pCode = this._pCode;
     this.endCode();
-    //TODO: analyze dword
-    pPass.sJSCode += ":";
+    for (i = 0; i < pCode.length; i++) {
+        pPass.pushCode(pCode[i]);
+    }
+    pPass.pushCode(":");
     for (i = pChildren.length - 4; i >= 0; i--) {
         if (pChildren[i].sName === PASSSTATE) {
             this.analyzePassState(pChildren[i], pPass);
         }
         else {
-            pPass.sJSCode += pChildren[i].sValue;
+            pPass.pushCode(pChildren[i].sValue);
         }
     }
 };
 Effect.prototype.analyzeDefaultState = function (pNode, pPass) {
     var pChildren = pNode.pChildren;
-    var pCode;
     var i;
-    pPass.sJSCode += "default:";
+    pPass.pushCode("default:");
     for (i = pChildren.length - 3; i >= 0; i--) {
         if (pChildren[i].sName === PASSSTATE) {
             this.analyzePassState(pChildren[i], pPass);
         }
         else {
-            pPass.sJSCode += pChildren[i].sValue;
+            pPass.pushCode(pChildren[i].sValue);
         }
     }
 };
