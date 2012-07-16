@@ -861,7 +861,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
 
     this.bind();
     pDevice.pixelStorei(pDevice.UNPACK_ALIGNMENT, 1);
-    //this.flipY()
+    //this.flipY();
 
     if (TEST_BIT(eFlags, a.Texture.MipMaps)) {
         nMipMaps = Math.ceil(Math.max(Math.log(this._iWidth) / Math.LN2, Math.log(this._iHeight) / Math.LN2)) + 1;
