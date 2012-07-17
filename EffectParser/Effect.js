@@ -1279,6 +1279,7 @@ function EffectVertex() {
      * @private
      */
     this._pAttributes = [];
+    this._pAttrSemantics = {};
     /**
      *
      * @type {EffectVariable}
@@ -1301,6 +1302,24 @@ EffectVertex.prototype.createReturnVar = function (pType) {
     this.pReturnVariable = new EffectVariable();
     this.pReturnVariable.sName = "temp_return_variable";
     this.pReturnVariable.pType = pType.cloneMe();
+};
+EffectVertex.prototype.addAttribute = function (pVar) {
+    var pAttr;
+    if (!pVar.isVSInput) {
+        pAttr = pVar.cloneMe();
+        pAttr.sName = pAttr.sSemantic;
+        this._pAttributes.push(pAttr);
+        this._pAttrSemantics[pAttr.sSemantic] = pAttr;
+        return;
+    }
+    var i;
+    var pVars = pVar.pType.pEffectType.pDesc.pOrders;
+    for (i = 0; i < pVars.length; i++) {
+        pAttr = pVars[i].cloneMe();
+        pAttr.sName = pAttr.sSemantic;
+        this._pAttributes.push(pAttr);
+        this._pAttrSemantics[pAttr.sSemantic] = pAttr;
+    }
 };
 
 function EffectFragment() {
@@ -2732,7 +2751,7 @@ Effect.prototype.analyzeInitializer = function (pNode, pVar) {
     if (this._pCurrentFunction) {
         pInit = [this._pCode, this._pCodeShader];
     }
-    else{
+    else {
         pInit = this._pCode;
     }
     this.endCode();
@@ -2778,6 +2797,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
     var isWriteMode = false;
     var pCode, pCodeShader;
     var isFlag = false; //temp flag
+    var pTemp = null; //some temp obj for anything
 
     switch (sName) {
         case OBJECTEXPR:
@@ -2980,10 +3000,26 @@ Effect.prototype.analyzeExpr = function (pNode) {
             }
             isNewVar = false;
             isComplexVar = false;
-            if (pChildren[pChildren.length - 1].sName === COMPLEXEXPR) {
+            isFlag = false;
+            if (!this._isNewComplexName) {
+                pTemp = pChildren[pChildren.length - 1];
+                while (true) {
+                    if (pTemp.sName === COMPLEXEXPR) {
+                        isFlag = true;
+                        break;
+                    }
+                    if (pTemp.sValue !== undefined) {
+                        break;
+                    }
+                    pTemp = pTemp.pChildren[pTemp.pChildren.length - 1];
+                }
+            }
+            if (isFlag) {
                 this._isNewComplexName = true;
                 isComplexVar = true;
-                if (this._isNewName) {
+                isFlag = false;
+                if (this._isNewName && this._sVarName !== "") {
+                    console.log(pNode, this._isNewName);
                     error("you are very unlucky or stupid. You can choose)");
                     return;
                 }
@@ -3078,10 +3114,10 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         this._pCode.push(pCode[i]);
                     }
                 }
-                if (this._eVarProperty === a.Effect.Var.ATTRIB) {
+                if (this._eVarProperty === a.Effect.Var.ATTRIB || this._eVarProperty === a.Effect.Var.ATTRIBSTART) {
                     if (pType1.isBase()) {
                         for (i = 1; i < pCodeShader.length; i++) {
-                            if (isFlag) {
+                            if (isFlag === true) {
                                 if (this._isCodeWrite) {
                                     this._pCodeShader.push(pCodeShader[i]);
                                 }
@@ -3110,7 +3146,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                             }
                         }
                     }
-                    this._eVarProperty === a.Effect.Var.DEFAULT;
+                    this._eVarProperty = a.Effect.Var.DEFAULT;
                 }
                 else {
                     for (i = 0; pCodeShader && i < pCodeShader.length; i++) {
@@ -3286,7 +3322,18 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     pVar = pType.pDesc.hasField(pNode.sValue);
                     if (pVar) {
                         this._pExprType = pVar.pType;
-                        pRes = pNode.sValue;
+                        if (pVar.isMixible) {
+                            if (this._eVarProperty === a.Effect.Var.ATTRIBSTART) {
+                                pRes = pFunction.pShader._pAttrSemantics[pVar.sSemantic];
+                                this._eVarProperty = a.Effect.Var.ATTRIB;
+                            }
+                            else {
+                                pRes = pVar.sSemantic;
+                            }
+                        }
+                        else {
+                            pRes = pNode.sValue;
+                        }
                     }
                 }
             }
@@ -3337,7 +3384,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         this.pushCode("this.pGlobalValues.");
                     }
                     if (pRes.isVSInput) {
-                        this._eVarProperty = a.Effect.Var.ATTRIB;
+                        this._eVarProperty = a.Effect.Var.ATTRIBSTART;
                         this._pExprType = pRes.pType;
                         if (isNewVar) {
                             this.endVarName();
@@ -3407,10 +3454,21 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         error("Not this variable " + this._sVarName);
                         return;
                     }
-
                     pRes.isUsed = true;
                     this._pExprType = pRes.pType;
-                    pRes = pRes.sName;
+                    if (this._isCodeWrite) {
+                        this._pCode.push(pRes.sName);
+                    }
+                    if (this._eVarProperty === a.Effect.Var.ATTRIBSTART) {
+                        this._eVarProperty = a.Effect.Var.ATTRIB;
+                        pRes = pFunction.pShader._pAttrSemantics[pRes.sName];
+                        pRes.isUsed = true;
+                        this._pExprType = pRes.pType;
+                        if (this._isCodeWrite) {
+                            this._pCodeShader.push(pRes);
+                        }
+                    }
+                    break;
                 }
             }
             if (!pRes) {
@@ -3533,6 +3591,11 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
                 error("Vertex is not vertex enough");
             }
             pFunction.pShader = new EffectVertex();
+            for (i = 0; i < pFunction.pParamOrders.length; i++) {
+                if (pFunction.pParamOrders[i].isUniform === false) {
+                    pFunction.pShader.addAttribute(pFunction.pParamOrders[i]);
+                }
+            }
             //Add Varyings
             if (pType.isStruct()) {
                 var pVars = pEffectType.pDesc.pOrders;
@@ -4017,7 +4080,9 @@ Effect.prototype.analyzePassState = function (pNode, pPass) {
             pFunc.isVertexShader = true;
             for (i = 0; i < pFunc.pParamOrders.length; i++) {
                 pParam = pFunc.pParamOrders[i];
-                pParam.setMixible();
+                if (pParam.isUniform === false) {
+                    pParam.setMixible();
+                }
                 if (!pParam.sSemantic && pParam.isUniform === false) {
                     if (isInput === false) {
                         error("You cannot use attribute in struct and attrib as paramters");
