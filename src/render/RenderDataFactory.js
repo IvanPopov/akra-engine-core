@@ -14,6 +14,11 @@ function RenderDataFactory (pEngine) {
     this._pDataArray = [];
 }
 
+PROPERTY(RenderDataFactory, 'buffer',
+    function () {
+        return this._pDataBuffer;
+    });
+
 PROPERTY(RenderDataFactory, 'dataType',
     function () {
         return this._pSubsetType;
@@ -72,17 +77,24 @@ RenderDataFactory.prototype.getData = function () {
  * @private
  */
 RenderDataFactory.prototype._allocateData = function(pVertexDecl, pData) {
+    'use strict';
+    
     if (!this._pDataBuffer) {
         this._createDataBuffer();
     }
-    
-    pVertexDecl = normalizeVertexDecl(pVertexDecl);
 
+    pVertexDecl = normalizeVertexDecl(pVertexDecl);
+    var pVertexData;
+    
     if ((arguments.length < 2) || (typeof arguments[1] === 'number') || pData === null) {
-        return this._pDataBuffer.getEmptyVertexData(pData || 1, pVertexDecl);
+        pVertexData = this._pDataBuffer.getEmptyVertexData(pData || 1, pVertexDecl);
+    }
+    else {
+        pVertexData = this._pDataBuffer.allocateData(pVertexDecl, pData);    
     }
 
-    return this._pDataBuffer.allocateData(pVertexDecl, pData);
+    debug_assert(pVertexData !== null, 'cannot allocate data:\n' + pVertexDecl.toString());
+    return pVertexData;
 };
 
 //публиный метод, для задания данных сразу для всех сабсетов
@@ -94,10 +106,14 @@ RenderDataFactory.prototype.allocateData = function (pDataDecl, pData) {
 
     pDataDecl = normalizeVertexDecl(pDataDecl);
 
+Ifdef (__DEBUG);
+    
     for (var i = 0; i < pDataDecl.length; i++) {
-        assert(this.getData(pDataDecl[i].eUsage) === null, 
+        assert(this.getData(pDataDecl[i].eUsage) === null || pDataDecl[i].nCount === 0, 
             "data factory already contains data with similar vertex decloration.");
     };
+
+Endif ();
 
     pVertexData = this._allocateData(pDataDecl, pData);
 

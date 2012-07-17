@@ -28,7 +28,7 @@ function loadProgram(pEngine, sPath, pFlags) {
 
     if (pFlags) {
         for (var sFlag in pFlags) {
-            sDefine = '#define ' + sFlag + ' ' + pFlags[sFlag] + '\n';
+            sDefine += '#define ' + sFlag + ' ' + pFlags[sFlag] + '\n';
         }
     }
 

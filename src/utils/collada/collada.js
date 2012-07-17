@@ -473,6 +473,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
             }
         });
 
+
         return pVerices;
     }
 
@@ -509,8 +510,9 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
                 pMatrixArray = new Array(iCount);
 
                 for (var j = 0, n = 0; j < pInvMatrixArray.length; j += 16) {
-                    pMatrixArray[n ++] = 
-                        Mat4.transpose(new Float32Array(pInvMatrixArray.buffer, j * Float32Array.BYTES_PER_ELEMENT, 16));
+                    pMatrixArray[n ++] = Mat4.transpose
+                        (new Float32Array(pInvMatrixArray.buffer, j * Float32Array.BYTES_PER_ELEMENT, 16));
+                    //trace(Mat4.str(pMatrixArray[n-1]));
                 }
 
                 pJoints.pInput[i].pArray = pMatrixArray;
@@ -795,6 +797,8 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
 
     
     function COLLADAMesh (pXML) {
+        'use strict';
+        
         var pMesh = {
             pSource:   [],
             pPolygons: []
@@ -818,6 +822,8 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
                 case 'polylist':
                     tmp = COLLADAPolygons(pXMLData, sName);
                     for (var i = 0; i < tmp.pInput.length; ++i) {
+                        pPos = null;
+
                         if (tmp.pInput[i].sSemantic == 'VERTEX') {
                             if (tmp.pInput[i].sSource == '#' + pVertices.id) {
                                 pPos = pVertices.pInput['POSITION'];
@@ -829,6 +835,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
                                 debug_error('<input /> with semantic VERTEX must refer to <vertices /> tag in same mesh.');
                             }
                         }
+
                         prepareInput(tmp.pInput[i]);
                     }
                     pMesh.pPolygons.push(tmp);
@@ -1484,7 +1491,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         
         //creating subsets
         for (var i = 0; i < pPolyGroup.length; ++ i) {
-            pMesh.createSubset('submesh-' + i, a.PRIMTYPE.LINELIST/*pPolyGroup[i].eType*/);
+            pMesh.createSubset('submesh-' + i, 0/*a.PRIMTYPE.LINELIST*//*pPolyGroup[i].eType*/);
         }
 
         //filling data
@@ -1495,11 +1502,25 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
                 var sSemantic = pPolygons.pInput[j].sSemantic;
 
                 if (pMesh._pFactory.getDataLocation(sSemantic) < 0) {
-                    var pDecl, pData = pPolygons.pInput[j].pArray;
+                    var pDecl, pData = pPolygons.pInput[j].pArray, pDataExt;
                     switch (sSemantic) {
                         case a.DECLUSAGE.POSITION:
                         case a.DECLUSAGE.NORMAL:
-                            pDecl = [VE_FLOAT3(sSemantic)];
+                            /*
+                                Extend POSITION and NORMAL from {x,y,z} --> {x,y,z,w};
+                             */
+
+                            pDataExt = new Float32Array(pData.length / 3 * 4);
+
+                            for (var y = 0, n = m = 0, l = pData.length / 3; y < l; y ++, n++) {
+                                pDataExt[n ++] = pData[m ++];
+                                pDataExt[n ++] = pData[m ++];
+                                pDataExt[n ++] = pData[m ++];
+                            };
+
+                            pData = pDataExt;
+
+                            pDecl = [VE_FLOAT3(sSemantic), VE_END(16)];
                             break;
                         case a.DECLUSAGE.TEXCOORD:
                         case a.DECLUSAGE.TEXCOORD1:
@@ -1615,10 +1636,6 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         pSkeleton.setup(pBoneList.length);
         pSkin = new a.Skin(pMesh, pSkeleton);
         
-        var pPosData;
-        if (pPosData = pMesh.data.getData('POSITION')) {
-            pPosData.extend(VE_FLOAT('SOME'), null);
-        }
 
         for (var i = 0; i < pVertexWeights.pInput.length; ++ i) {
             if (pVertexWeights.pInput[i].sSemantic === 'WEIGHT') {
@@ -1634,8 +1651,11 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
             error('cannot set vertex weight info to skin');
         }
 
-        //pMesh.setSkin(pSkin);
-      
+        pMesh.setSkin(pSkin);
+
+        //debug begin
+        //Skin.debugMeshSubset(pMesh[0]);
+        //debug end
         for (var i = 0; i < pBoneList.length; ++ i) {
             var sBoneName = pBoneList[i];
 

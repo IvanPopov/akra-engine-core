@@ -601,15 +601,15 @@ BufferMap.prototype.toString = function () {
         var pDecl = pVertexData.getVertexDeclaration();
         //trace(pMapper); window['pMapper'] = pMapper;
         s += '#' + _an(pFlow.iFlow, 2) + ' ' + 
-            _an('[ ' + pDecl[0].eUsage + ' ]', 20) + ' : ' + _an(pDecl[0].iOffset, 6, true) + ' / ' + _an(pDecl[0].iSize, 6) + ' | ' + 
+            _an('[ ' + (pDecl[0].eUsage !== a.DECLUSAGE.END? pDecl[0].eUsage: '<end>') + ' ]', 20) + ' : ' + _an(pDecl[0].iOffset, 6, true) + ' / ' + _an(pDecl[0].iSize, 6) + ' | ' + 
             _an(pVertexData.resourceHandle(), 8, true) + ' / ' + _an(pVertexData.getOffset(), 8) + ' : ' + 
-            (pMapper? _an(pMapper.eSemantics, 15) + ' / ' + _an(pMapper.iAddition, 7, true) + ': ' + _an(pMapper.pData.getVertexDeclaration().element(pMapper.eSemantics).iOffset, 6) :
+            (pMapper? _an(pMapper.eSemantics, 15, true) + ' / ' + _an(pMapper.iAddition, 7) + ': ' + _an(pMapper.pData.getVertexDeclaration().element(pMapper.eSemantics).iOffset, 6) :
             _an('-----', 25) + ': ' + _an('-----', 6)) + ' |                  \n';
         
 
         for (var j = 1; j < pDecl.length; ++ j) {
             s += '    ' + 
-            _an('[ ' + pDecl[j].eUsage + ' ]', 20) + ' : ' + _an(pDecl[j].iOffset, 6, true) + ' / ' + _an(pDecl[j].iSize, 6) +  
+            _an('[ ' + (pDecl[j].eUsage !== a.DECLUSAGE.END? pDecl[j].eUsage: '<end>') + ' ]', 20) + ' : ' + _an(pDecl[j].iOffset, 6, true) + ' / ' + _an(pDecl[j].iSize, 6) +  
                   ' |                     :                          :        |                  \n';
         }
         s += t;

@@ -76,6 +76,16 @@
         value: function () {this.length = 0;} 
     });
 
+    Object.defineProperty(Array.prototype, 'swap', {
+        enumerable: false,
+        configurable: true,
+        value: function (i, j) {
+            if (i < this.length && j < this.length) {
+                var t = this[i]; this[i] = this[j]; this[j] = t;
+            }
+        }    
+    });
+
 
     Define(first, __[0]);
 

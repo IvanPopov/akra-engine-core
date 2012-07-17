@@ -365,7 +365,7 @@ SceneModel.prototype.destructor = function () {
 SceneModel.prototype.prepareForRender = function () {
    
 };
-
+var bLocker = true;
 SceneModel.prototype.render = function () {
     parent.render(this);
 
@@ -390,7 +390,10 @@ SceneModel.prototype.render = function () {
         var pSubMesh = pMesh[i];
         var pSurface = pSubMesh.surfaceMaterial;
 
-        if (pSubMesh.data.useAdvancedIndex()) {
+        if (pSubMesh.isSkinned()) {
+            pProgram = pEngine.pDrawMeshAnimProg;
+        }
+        else if (pSubMesh.data.useAdvancedIndex()) {
             pProgram = pEngine.pDrawMeshI2IProg;
         }
         else if (pSubMesh.surfaceMaterial.totalTextures) {
@@ -417,6 +420,10 @@ SceneModel.prototype.render = function () {
 
         if (pSubMesh.isSkinned()) {
             pSubMesh.skin.applyBoneMatrices();
+            if (bLocker) {
+                Skin.debugMeshSubset(pSubMesh);
+                bLocker = false;
+            }
         }
         
         if (pSurface.totalTextures) {

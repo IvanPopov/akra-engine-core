@@ -29,7 +29,9 @@ Joint.prototype.getBoneOffsetMatrix = function () {
 
 Joint.prototype.setBoneOffsetMatrix = function (m4fBoneOffsetMatrix) {
     'use strict';
-    
+    //Mat4.transpose(m4fBoneOffsetMatrix);
+    //debug_assert(m4fBoneOffsetMatrix, 'you must specify bone offset matrix');
+    //trace(Mat4.str(m4fBoneOffsetMatrix), 'bone >> ', this.boneName);
     Mat4.set(m4fBoneOffsetMatrix, this._m4fBoneOffsetMatrix);
 };
 
@@ -79,7 +81,12 @@ Joint.prototype.create = function (ppBoneMatrix, pBoneOffsetMatrix) {
 
 Joint.prototype.recalcWorldMatrix = function() {
     if (Node.prototype.recalcWorldMatrix.call(this)) {
-        Mat4.mult(this._m4fWorldMatrix, this._m4fBoneOffsetMatrix, this._m4fBoneMatrix);
+        //Mat4.mult(this._m4fWorldMatrix, this._m4fBoneOffsetMatrix, this._m4fBoneMatrix);
+        Mat4.mult(this._m4fBoneOffsetMatrix, this._m4fWorldMatrix, this._m4fBoneMatrix);
+    
+        //Mat4.transpose(this._m4fBoneMatrix);
+        //Mat4.set(this._m4fWorldMatrix, this._m4fBoneMatrix);
+        
         this._pSkeleton._iFlags |= a.Skeleton.JOINTS_MOVED;
     }
 };

@@ -109,6 +109,11 @@ PROPERTY(RenderData, 'factory',
         return this._pFactory;
     });
 
+PROPERTY(RenderData, 'buffer',
+    function () {
+        return this._pFactory;
+    });
+
 /**
  * @protected
  * Setup.

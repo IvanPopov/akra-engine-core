@@ -9,6 +9,7 @@ Enum([
     POSITION3,
     BLENDWEIGHT = "BLENDWEIGHT",
     BLENDINDICES = "BLENDINDICES",
+    BLENDMETA = "BLENDMETA",
     NORMAL = "NORMAL",
     NORMAL1,
     NORMAL2,
@@ -43,7 +44,8 @@ Enum([
     SPECULAR = "SPECULAR",
     EMISSIVE = "EMISSIVE",
     SHININESS = "SHININESS",
-    UNKNOWN = "UNKNOWN"
+    UNKNOWN = "UNKNOWN",
+    END = "\u000D"
 ], DECLARATION_USAGE, a.DECLUSAGE);
 
 
@@ -84,8 +86,8 @@ Define(VE_VEC4(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 4); });
 Define(VE_MAT4(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 16); });
 Define(VE_INT(name), function () {VE_CUSTOM(name, a.DTYPE.INT)});
 
-Define(VE_END(offset), function () {VE_CUSTOM('***', a.DTYPE.UNSIGNED_BYTE, 0, offset)});
-Define(VE_END(),     function () {VE_CUSTOM('***', a.DTYPE.UNSIGNED_BYTE, 0)});
+Define(VE_END(offset), function () {VE_CUSTOM(a.DECLUSAGE.END, a.DTYPE.UNSIGNED_BYTE, 0, offset)});
+Define(VE_END(),     function () {VE_CUSTOM(a.DECLUSAGE.END, a.DTYPE.UNSIGNED_BYTE, 0)});
 
 /**
  * @property VertexDeclaration(Int count, String sAttrName)
@@ -192,11 +194,22 @@ PROPERTY(VertexDeclaration, "stride", function () {
  */
 VertexDeclaration.prototype.update = function () {
     var iStride;
+    
     for (var i = 0; i < this.length; ++ i) {
+        if (this[i].eUsage === a.DECLUSAGE.END) {
+            this.swap(i, i + 1);
+        }
+
         iStride = this[i].iSize + this[i].iOffset;
         if (this.iStride < iStride) {
             this.iStride = iStride
         }
+    }
+
+    var pLast = this.last;
+    
+    if (pLast.eUsage === a.DECLUSAGE.END && pLast.iOffset < this.iStride) {
+        pLast.iOffset = this.iStride;
     }
 
     return true;
@@ -222,7 +235,6 @@ VertexDeclaration.prototype.append = function () {
     //     'only array of vertex elements can be appended to vertex declaration.');
 
     var iOffset;
-
     for (var i = 0; i < pArrayElements.length; i++) {
         iOffset = pArrayElements[i].iOffset;
         if (iOffset === undefined) {
