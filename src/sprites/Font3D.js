@@ -23,6 +23,9 @@ function Font3D (pEngine,iSize, sColor, sFontFamily, isBold, isItalic) {
     this._sBold = null;
     this._sItalic = null;
 
+    this._pLetterMap = {}; //карта, в которой хранятся соответствия между буквами и текстурными координатами;
+    this._iLettersX = 0; //количество букв, которое лежит в текстуре по оси Х
+    this._iLettersY = 0; //количество букв, которое лежит в текстуре по оси Y
     //////////////////////////////////////
     this._iFontSize = iSize;
     this._sFontSize = String(iSize) + 'px';
@@ -53,12 +56,12 @@ Font3D.prototype._rasterize = function() {
     'use strict';
 
     var nLetters = 128;//пока только английские символы
-    var iSizeX = Math.ceilingPowerOfTwo(Math.sqrt(nLetters));
-    var iSizeY = Math.ceilingPowerOfTwo(nLetters/iSizeX);
+    var iLettersX = this._iLettersX = Math.ceilingPowerOfTwo(Math.sqrt(nLetters));
+    var iLettersY = this._iLettersY = Math.ceilingPowerOfTwo(nLetters/iLettersX);
     //домножаем на размер шрифта
-    var iTextureSizeX = Math.ceil(iSizeX * this._iFontSize);
-    var iTextureSizeY = Math.ceil(iSizeY * this._iFontSize); 
-    trace(iSizeX,iSizeY,nLetters);
+    var iTextureSizeX = Math.ceil(iLettersX * this._iFontSize);
+    var iTextureSizeY = Math.ceil(iLettersY * this._iFontSize); 
+    trace(iLettersX,iLettersY,nLetters);
     
     var pTextCanvas = document.createElement('canvas');
     pTextCanvas.width  = iTextureSizeX;
@@ -78,27 +81,48 @@ Font3D.prototype._rasterize = function() {
     pContext2D.font = sFont;
 
     for(var i=0;i<nLetters;i++){
-        var pChar = String.fromCharCode(i);
-        var iPositionX = (i%iSizeX)*this._iFontSize;
-        var iPositionY = (Math.floor(i/iSizeX))*this._iFontSize;
+        var sChar = String.fromCharCode(i);
+        var iPositionX = (i%iLettersX)*this._iFontSize;
+        var iPositionY = (Math.floor(i/iLettersX))*this._iFontSize;
         //trace(iPositionX,iPositionY);
-        pContext2D.fillText(pChar,iPositionX,iPositionY,this._iFontSize);
+        pContext2D.fillText(sChar,iPositionX,iPositionY,this._iFontSize);
     }
 
     var imageData = pContext2D.getImageData(0, 0, pTextCanvas.width, pTextCanvas.height);
 
-    this.flipY(true);
+    //this.flipY(true);
     this.createTexture(iTextureSizeX,iTextureSizeY,0,a.IFORMAT.RGBA8,a.ITYPE.UNSIGNED_BYTE,new Uint8Array(imageData.data));
     this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
     this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+
+    this._generateLetterMap();
 };
 
 /**
- * возвращает текстурные координаты, описывающие букву с кодом iCode
+ * генерируем карту соответствий букв и текстурных координат
  */
-Font3D.prototype.textureCoordAt = function(iCode) {
+Font3D.prototype._generateLetterMap = function() {
     'use strict';
-    // body...
+    var pLetterMap = this._pLetterMap;
+    var nLetters = 128;//пока только английские буквы
+
+    var iLettersX = this._iLettersX;
+    var iLettersY = this._iLettersY
+
+    for(var i=0;i<nLetters;i++){
+        var sChar = String.fromCharCode(i);
+        // if(sChar == '!'){
+        //     trace('!',i,iLettersX,iLettersY,(i%iLettersX)/iLettersX,Math.floor(i/iLettersX)/iLettersY);
+        // }
+        pLetterMap[sChar] = [(i%iLettersX)/iLettersX,(Math.floor(i/iLettersX) - 0.75)/iLettersY];
+    }
 };
+
+PROPERTY(Font3D,'letterMap',
+    function(){
+        'use strict';
+        return this._pLetterMap;
+    }
+)
 
 A_NAMESPACE(Font3D);
