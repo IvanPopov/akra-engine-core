@@ -1216,9 +1216,9 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
 
         eachChild(pXML, function (pXMLData, sName) {
             switch (sName) {
+                case 'rotate':
                 case 'matrix':
                 case 'translate':
-                case 'rotate':
                 case 'scale':
                     m4fMatrix = COLLADAData(pXMLData);
                     Mat4.mult(pNode.m4fTransform, m4fMatrix);
@@ -1491,7 +1491,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         
         //creating subsets
         for (var i = 0; i < pPolyGroup.length; ++ i) {
-            pMesh.createSubset('submesh-' + i, 0/*a.PRIMTYPE.LINELIST*//*pPolyGroup[i].eType*/);
+            pMesh.createSubset('submesh-' + i, a.PRIMTYPE.LINELIST/*pPolyGroup[i].eType*/);
         }
 
         //filling data
@@ -1653,9 +1653,6 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
 
         pMesh.setSkin(pSkin);
 
-        //debug begin
-        //Skin.debugMeshSubset(pMesh[0]);
-        //debug end
         for (var i = 0; i < pBoneList.length; ++ i) {
             var sBoneName = pBoneList[i];
 
@@ -1715,10 +1712,10 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
 
         var pSkeleton = pBoneCache.pSkeleton;
         var pController = pBoneCache.pController;
-        var pBoneIndex = pBoneCache.iIndex;
-        var m4fBoneOffsetMatrix = pController.pSkin.pJoints.pInput['INV_BIND_MATRIX'].pArray[pBoneIndex];
+        var iBoneIndex = pBoneCache.iIndex;
+        var m4fBoneOffsetMatrix = pController.pSkin.pJoints.pInput['INV_BIND_MATRIX'].pArray[iBoneIndex];
 
-        pJointNode = pSkeleton.createBone(sBoneName);
+        pJointNode = pSkeleton.createBone(sBoneName, iBoneIndex);
         pJointNode.setBoneOffsetMatrix(m4fBoneOffsetMatrix);
         
         //draw joints...............

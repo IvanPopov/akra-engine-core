@@ -22,6 +22,11 @@ PROPERTY(Skin, 'data',
         return this._pMesh.data;
     });
 
+PROPERTY(Skin, 'skeleton',
+    function () {
+        return this._pSkeleton;
+    });
+
 Skin.prototype.hasSkeleton = function() {
     return this._pSkeleton !== null;
 };
@@ -37,7 +42,8 @@ Skin.prototype.setSkeleton = function(pSkeleton) {
     this._pSkeleton = pSkeleton;
 
     var pData = this._pMesh.data;
-    var iData = pData.allocateData(VE_MAT4('BONE_MATRIX'), pSkeleton.getTransformationMatricesData());
+    var iData = pData.allocateData(VE_MAT4('BONE_MATRIX'), 
+        pSkeleton.getTransformationMatricesData());
 
     this._pBoneTransformMatrices = pData.getData(iData);
 };
@@ -89,34 +95,34 @@ Skin.prototype.setIfluences = function (pInfluencesCount, pInfluences) {
     var iWeightsLoc = 0;
 
     //получаем копию массива влияний
-    //trace(pInfluences);
     pInfluences = new Float32Array(pInfluences);
 
     //вычисляем адресса матриц транфсормации и весов
     iTransformLoc = this._pBoneTransformMatrices.getOffset() / a.DTYPE.BYTES_PER_FLOAT;
     iWeightsLoc = this._pWeightData.getOffset() / a.DTYPE.BYTES_PER_FLOAT;
 
-    for (var i = 0, n = pInfluences.length / 2; i < n; i += 2) {
+
+    for (var i = 0, n = pInfluences.length; i < n; i += 2) {
         pInfluences[i] = pInfluences[i] * 16 + iTransformLoc;
         pInfluences[i + 1] += iWeightsLoc;
     };
+    
 
     //запоминаем модифицированную информацию о влияниях
     this._pInfData = pData._allocateData([
-        VE_FLOAT('BONE_INF_DATA'),          //адресс матрицы кости
-        VE_FLOAT('BONE_WEIGHT_IND')         //адресс весового коэффициента
+        VE_FLOAT('BONE_INF_DATA'),          //адрес матрицы кости
+        VE_FLOAT('BONE_WEIGHT_IND')         //адрес весового коэффициента
         ], 
         pInfluences);
 
     iInfLoc = this._pInfData.getOffset() / a.DTYPE.BYTES_PER_FLOAT;
-    trace('influence location:', iInfLoc);
+
     //подсчет мета данных, которые укажут, где взять влияния на кость..
     for (var i = 0, j = 0, n = iInfLoc; i < pInfluencesMeta.length; i += 2) {
         var iCount = pInfluencesCount[j ++];
         pInfluencesMeta[i] = iCount;        //число влияний на вершину
         pInfluencesMeta[i + 1] = n;         //адресс начала информации о влияниях 
                                             //(пары индекс коэф. веса и индекс матрицы)
-        if (i == 0) trace('first influence location is', pInfluencesMeta[i + 1]);
         n += 2 * iCount;
     };
 
@@ -125,7 +131,7 @@ Skin.prototype.setIfluences = function (pInfluencesCount, pInfluences) {
         VE_FLOAT('BONE_INF_COUNT'),         //число костей и весов, влияющих на вершину
         VE_FLOAT('BONE_INF_LOC'),           //адресс начала влияний на вершину
         ], pInfluencesMeta);
-    trace('influence meta location:',this._pInfMetaData.getOffset()/4)
+
     return this._pInfMetaData !== null && 
             this._pInfData !== null;
 };
@@ -151,11 +157,7 @@ Skin.prototype.applyBoneMatrices = function() {
         this._pSkeleton.synced();
         pData = this._pSkeleton._pBoneTransformsData;
 
-        trace('>> apply bone matrices');
-        
         bResult = this._pBoneTransformMatrices.setData(pData, 0, pData.byteLength);
-
-
 
         return bResult;
     }
@@ -195,15 +197,18 @@ Skin.prototype.bind = function (pData) {
 
 Skin.debugMeshSubset = function (pSubMesh) {
 
+        var pMesh = pSubMesh.mesh;
         var pSkin = pSubMesh.skin;
         var pMatData = pSkin.getBoneTransforms();
         var pPosData = pSubMesh.data.getData('POSITION');
+        var pEngine = pMesh.getEngine();
         
         pPosData = pPosData.getTypedData(a.DECLUSAGE.BLENDMETA);
 
         var pVideoBuffer = pSubMesh.mesh.data.buffer;
-        var iFrom = 600, iTo = 601;
-
+        var iFrom = 2618, iTo = 2619;
+        var pWeights = pSkin.getWeights().getTypedData('BONE_WEIGHT');
+        //trace(pWeights);
         trace('===== debug vertices from ', iFrom, 'to', iTo, ' ======');
         trace('transformation data location:', pMatData.getOffset() / 4.);
         trace('155 weight: ',pSkin.getWeights().getTypedData('BONE_WEIGHT')[155]);
@@ -228,6 +233,67 @@ Skin.debugMeshSubset = function (pSubMesh) {
                 trace(Mat4.str(pMatrixData));
             }
         }
+
+        trace('#############################################');
+
+        for (var i = 0; i < pPosData.length; i ++) {
+            var pMetaData = new Float32Array(pVideoBuffer.getData(4 * pPosData[i], 8));
+            for (var j = 0; j < pMetaData.X; ++ j) {
+                var pInfData = new Float32Array(pVideoBuffer.getData(4 * (pMetaData.Y + 2 * j), 8));
+                var iWeightsIndex = pInfData.Y - 30432;
+             
+                var fWeightOrigin = pWeights[iWeightsIndex];
+                var pWeightData = new Float32Array(pVideoBuffer.getData(4 * (pInfData.Y), 4));
+                var fWeight = pWeightData[0];
+                    
+                if (Math.abs(fWeight - fWeightOrigin) > 0.001) {
+                    alert(1);
+                    trace('weight with index', iWeightsIndex, 'has wrong weight', fWeightOrigin,'/',fWeightOrigin);
+                }    
+                 
+                //var pWeightData = new Float32Array(pVideoBuffer.getData(4 * (pInfData.Y), 4));
+                //var pMatrixData = new Float32Array(pVideoBuffer.getData(4 * (pInfData.X), 4 * 16));
+            }
+        }
+
+        trace ('##############################################');
+        // var pBoneTransformMatrices = pSkin._pBoneTransformMatrices;
+        // var pBonetmData = pBoneTransformMatrices.getTypedData('BONE_MATRIX'); 
+
+        // for (var i = 0; i < pBonetmData.length; i += 16) {
+        //     trace('bone transform matrix data >>> ');
+        //     trace(Mat4.str(pBonetmData.subarray(i, i + 16)));
+        // };
+         
+        
+        //for (var i = 0; i < pMesh.length; i++) {
+        // var i = pMesh.length - 1;
+        //     var pPosData = pMesh[i].data.getData('POSITION').getTypedData('POSITION');
+        //     var pIndData = pMesh[i].data._pIndexData.getTypedData('INDEX0');
+      
+        //     var j = pIndData[pIndData.length - 1];
+        //     var j0 = pMesh[i].data.getData('POSITION').getOffset()/4;   
+
+        //     j -= j0;
+        //     j/=4;
+
+        //     trace('last index >> ', j);
+        //     trace('pos data size', pPosData.length);
+
+        //     var pVertex = pPosData.subarray(j * 3, j * 3 + 3);
+
+        //     trace('last vertex in submesh >> ', pVertex[0], pVertex[1], pVertex[2]);
+
+        //         var pSceneNode = pEngine.appendMesh(
+        //             pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
+        //             pEngine.getRootNode());
+
+        //         pSceneNode.setPosition(pVertex);   
+        //         pSceneNode.setScale(0.1);
+        //     var pMeta = pSkin.getInfluenceMetaData().getTypedData('BONE_INF_COUNT');
+        //     trace(pMeta[j], 'count << ');
+
+        //};
 }
 
 A_NAMESPACE(Skin);

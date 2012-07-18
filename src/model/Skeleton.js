@@ -121,11 +121,11 @@ Skeleton.prototype.setup = function(nBones) {
 
 
 
-Skeleton.prototype.createBone = function(sName) {
+Skeleton.prototype.createBone = function(sName, iBoneIndex) {
 	debug_assert(this._nBones < this.getMaxBoneCount(), 'limit of bones reached for given skeleton');
 
 	var pJoint = new a.Joint(this);
-	var iBoneSlot = this._nBones;
+	var iBoneSlot = ifndef(iBoneIndex, this._nBones);
 	var m4fBoneTransform = this._pBoneTransforms[iBoneSlot];
 	var sBoneName = sName || ('bone' + iBoneSlot);
 
@@ -134,10 +134,11 @@ Skeleton.prototype.createBone = function(sName) {
 	pJoint.create(m4fBoneTransform);
     pJoint.boneName = sBoneName;
 
-    this._pJoints[this._nBones ++] = pJoint;
+    this._pJoints[iBoneSlot] = pJoint;
     this._pJointsByName[sBoneName] = pJoint;
     this._pRootJoints = null;
-    //trace('create bone:', sName, iBoneSlot, '/', this.getMaxBoneCount());
+    this._nBones ++
+
     return pJoint;
 };
 

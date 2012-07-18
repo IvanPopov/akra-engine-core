@@ -137,7 +137,6 @@ MeshSubset.prototype.setSkin = function(pSkin) {
 
     for (var i = 0; i < pMetaData.length; ++ i) {
         pMetaData[i] = iInfMetaDataLoc + i * iInfMetaDataStride;
-        if (i === 0) trace('first influence meta location is ', pMetaData[i]);
     }
 
     //обновляем адресса мета данных вершин

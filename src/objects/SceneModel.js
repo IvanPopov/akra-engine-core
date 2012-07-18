@@ -401,7 +401,6 @@ SceneModel.prototype.render = function () {
         }
         else {
             pProgram = pEngine.pDrawMeshProg;
-            
         }
 
         pProgram.activate();
@@ -420,8 +419,12 @@ SceneModel.prototype.render = function () {
 
         if (pSubMesh.isSkinned()) {
             pSubMesh.skin.applyBoneMatrices();
+            
             if (bLocker) {
-                Skin.debugMeshSubset(pSubMesh);
+                
+                pSubMesh.skin.skeleton.getRootBone().setPosition([10, 0, 0]);
+                
+                //Skin.debugMeshSubset(pSubMesh);
                 bLocker = false;
             }
         }

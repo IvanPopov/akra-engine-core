@@ -56,13 +56,12 @@ Joint.prototype.create = function (ppBoneMatrix, pBoneOffsetMatrix) {
     pBoneOffsetMatrix = pBoneOffsetMatrix || Mat4.identity(new Matrix4);
     ppBoneMatrix = ppBoneMatrix || Mat4.identity(new Matrix4);
 
-    var pWorldMatrix = Mat4.identity(new Matrix4);
-    var pLocalMatrix = Mat4.identity(new Matrix4);
-    var pInverseWorldMatrix = Mat4.identity(new Matrix4);
 
-    this._m4fWorldMatrix = pWorldMatrix;
-    this._m4fLocalMatrix = pLocalMatrix;
-    this._m4fInverseWorldMatrix = pInverseWorldMatrix;
+
+    this._m4fWorldMatrix = Mat4.identity(new Matrix4);
+    this._m4fLocalMatrix = Mat4.identity(new Matrix4);
+    this._m4fInverseWorldMatrix = Mat4.identity(new Matrix4);
+    
     this._m4fBoneOffsetMatrix = pBoneOffsetMatrix;
     this._m4fBoneMatrix = ppBoneMatrix;
 
@@ -81,12 +80,7 @@ Joint.prototype.create = function (ppBoneMatrix, pBoneOffsetMatrix) {
 
 Joint.prototype.recalcWorldMatrix = function() {
     if (Node.prototype.recalcWorldMatrix.call(this)) {
-        //Mat4.mult(this._m4fWorldMatrix, this._m4fBoneOffsetMatrix, this._m4fBoneMatrix);
-        Mat4.mult(this._m4fBoneOffsetMatrix, this._m4fWorldMatrix, this._m4fBoneMatrix);
-    
-        //Mat4.transpose(this._m4fBoneMatrix);
-        //Mat4.set(this._m4fWorldMatrix, this._m4fBoneMatrix);
-        
+        Mat4.mult(this._m4fWorldMatrix, this._m4fBoneOffsetMatrix, this._m4fBoneMatrix);
         this._pSkeleton._iFlags |= a.Skeleton.JOINTS_MOVED;
     }
 };

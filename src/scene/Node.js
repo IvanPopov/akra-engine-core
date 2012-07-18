@@ -734,7 +734,9 @@ Node.prototype.getPosition = Node.prototype.worldPosition;
  * _v3fPostion = pPos
  * @tparam Float32Array pPos 3d vector
  */
-Node.prototype.setPosition = function (pPos) {
+Node.prototype.setPosition = function () {
+    var pPos = arguments.length === 1? arguments[0]: arguments;
+
     var m4fLocal = this._m4fLocalMatrix;
     m4fLocal._14 = pPos.X;
     m4fLocal._24 = pPos.Y;
@@ -748,7 +750,8 @@ Node.prototype.setPosition = function (pPos) {
  * _v3fPostion = _v3fRight*pPos.X + _v3fUp*pos.Y + _v3fForward*pos.Z
  * @tparam Float32Array pPos 3d vector
  */
-Node.prototype.setRelPosition = function (pPos) {
+Node.prototype.setRelPosition = function () {
+    var pPos = arguments.length === 1? arguments[0]: arguments;
     var m4fLocal = this._m4fLocalMatrix;
     var fX = pPos.X, fY = pPos.Y, fZ = pPos.Z;
     m4fLocal._14 = m4fLocal._11 * fX + m4fLocal._12 * fY + m4fLocal._13 * fZ;
