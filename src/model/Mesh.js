@@ -3,13 +3,13 @@
  * @author Ivan Popov
  */
 
-function Mesh(pEngine, eOptions, sName, pDataFactory) {
+function Mesh(pEngine, eOptions, sName, pDataBuffer) {
     //A_CLASS;
     a.ReferenceCounter.call(this);
 
     Enum([
-        VB_READABLE = a.RenderDataFactory.VB_READABLE,
-        RD_ADVANCED_INDEX = a.RenderDataFactory.RD_ADVANCED_INDEX
+        VB_READABLE = a.RenderDataBuffer.VB_READABLE,
+        RD_ADVANCED_INDEX = a.RenderDataBuffer.RD_ADVANCED_INDEX
         ], MESH_OPTIONS, a.Mesh);
 
     Enum([
@@ -25,11 +25,11 @@ function Mesh(pEngine, eOptions, sName, pDataFactory) {
     //default material
     this._pFlexMaterials = null;
 
-    this._pFactory = null;
+    this._pBuffer = null;
     this._pEngine = pEngine;
     this._eOptions = 0;
 
-    this.setup(sName, eOptions, pDataFactory);
+    this.setup(sName, eOptions, pDataBuffer);
 };
 
 EXTENDS(Mesh, Array, a.ReferenceCounter);
@@ -44,9 +44,17 @@ PROPERTY(Mesh, 'name',
         return this._sName;
     });
 
+/**
+ * @deprecated
+ */
 PROPERTY(Mesh, 'data',
     function () {
-        return this._pFactory;
+        return this._pBuffer;
+    });
+
+PROPERTY(Mesh, 'buffer',
+    function () {
+        return this._pBuffer;
     });
 
 
@@ -62,10 +70,10 @@ Mesh.prototype.getEngine = function () {
     return this._pEngine;
 };
 
-Mesh.prototype.draw = function (iSubset) {
+Mesh.prototype.drawSubset = function (iSubset) {
     'use strict';
     
-    this._pFactory.draw(iSubset);
+    this._pBuffer.draw(iSubset);
 };
 
 Mesh.prototype.isReadyForRender = function () {
@@ -80,34 +88,30 @@ Mesh.prototype.isReadyForRender = function () {
     return true;
 };
 
-/**
- * @protected
- * Replace materials for this mesh.
- */
-Mesh.prototype.replaceFlexMaterials = function (pFlexMaterials) {
-    'use strict';
-    
-    this._pFlexMaterials = pFlexMaterials;
-};
 
-Mesh.prototype.setup = function(sName, eOptions, pDataFactory) {
-    if (!pDataFactory) {
-        this._pFactory = new a.RenderDataFactory(this._pEngine);
-        this._pFactory.setup(eOptions);
+Mesh.prototype.setup = function(sName, eOptions, pDataBuffer) {
+    debug_assert(this._pBuffer === null, 'mesh already setuped.');
+
+    if (!pDataBuffer) {
+        this._pBuffer = new a.RenderDataBuffer(this._pEngine);
+        this._pBuffer.setup(eOptions);
     }
     else {
-        this._pFactory = pDataFactory;
+        this._pBuffer = pDataBuffer;
     }
     
+    this._pBuffer.addRef();
     this._eOptions = eOptions || 0;
     this._sName = sName || 'unknown';
+
+    return true;
 };
 
 
 Mesh.prototype.createSubset = function(sName, ePrimType, eOptions) {
     var pSubset, pSubMesh;
     //TODO: modify options and create options for data dactory.
-    pSubset = this._pFactory.getEmptyRenderData(ePrimType, eOptions);
+    pSubset = this._pBuffer.getEmptyRenderData(ePrimType, eOptions);
     pSubset.addRef();
 
     if (!pSubset) {
@@ -117,6 +121,17 @@ Mesh.prototype.createSubset = function(sName, ePrimType, eOptions) {
     pSubMesh = new a.MeshSubset(this, pSubset, sName);
     this.push(pSubMesh);
     return pSubMesh;
+};
+
+
+/**
+ * @protected
+ * Replace materials for this mesh.
+ */
+Mesh.prototype.replaceFlexMaterials = function (pFlexMaterials) {
+    'use strict';
+    
+    this._pFlexMaterials = pFlexMaterials;
 };
 
 /**
@@ -170,7 +185,7 @@ Mesh.prototype.addFlexMaterial = function (sName, pMaterialData) {
     pMaterialId = this._pFlexMaterials.length;
     pMaterial = new a.MeshMaterial(
         sName, 
-        this._pFactory._allocateData(a.MeshMaterial.vertexDeclaration(), null)
+        this._pBuffer._allocateData(a.MeshMaterial.vertexDeclaration(), null)
     );
 
     if (!pMaterialData) {
@@ -205,7 +220,7 @@ Mesh.prototype.setFlexMaterial = function(iMaterial) {
  */
 Mesh.prototype.destroy = function () {
     this._pFlexMaterials = null;
-    this._pFactory.destroy(this);
+    this._pBuffer.destroy(this);
 };
 
 Mesh.prototype.destructor = function () {

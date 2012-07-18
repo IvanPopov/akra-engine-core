@@ -11,7 +11,7 @@
  * @constructor
  * @system
  */
-function RenderData() {
+function RenderData(pBuffer) {
     /**
      * @enum
      * @private
@@ -26,7 +26,8 @@ function RenderData() {
 
     Enum([
         ADVANCED_INDEX = FLAG(0x10),    //<! использовать индекс на индекс упаковку данных
-        SINGLE_INDEX = FLAG(0x11)       //<! создать RenderData как классические данные, с данными только в аттрибутах, без использования видео буфферов.
+        SINGLE_INDEX = FLAG(0x11),      //<! создать RenderData как классические данные, с данными только в аттрибутах, без использования видео буфферов.
+        RENDERABLE = FLAG(0x12)         //<! определяет, будет ли объект редерится
         ], RENDERDATA_OPTIONS, a.RenderData);
 
     /**
@@ -37,11 +38,11 @@ function RenderData() {
     this._eOptions = 0;
 
     /**
-     * Factory, that create this class. 
+     * Buffer, that create this class. 
      * @private
-     * @type {RenderDataFactory}
+     * @type {RenderDataBuffer}
      */
-    this._pFactory = null;
+    this._pBuffer = pBuffer || null;
 
     /**
      * ID of this data.
@@ -101,44 +102,54 @@ function RenderData() {
 
 EXTENDS(RenderData, a.ReferenceCounter);
 
-/**
- * Get factory of this data.
- */
-PROPERTY(RenderData, 'factory',
-    function () {
-        return this._pFactory;
-    });
 
 PROPERTY(RenderData, 'buffer',
     function () {
-        return this._pFactory;
+        return this._pBuffer;
     });
 
 /**
  * @protected
  * Setup.
- * @param  {RenderDataFactory}  pFactory  Factory of this data.
+ * @param  {RenderDataBuffer}  pBuffer  Buffer of this data.
  * @param  {Number}             iId       Identifier.
  * @param  {PRIMITIVE_TYPE=TRIANGLELIST}     ePrimType Base type of primitives for rendering this data.
  * @param  {RENDERDATA_OPTIONS}                eOptions  Options.
  * @return {Boolean} Result.
  */
-RenderData.prototype.setup = function(pFactory, iId, ePrimType, eOptions) {
-    if (arguments.length < 4) {
-        return false;
+RenderData.prototype.setup = function(pBuffer, iId, ePrimType, eOptions) {
+    if (this._pBuffer === null && arguments.length < 2) {
+       return false;
     }
 
     this._eOptions = eOptions;
-    this._pFactory = pFactory;
+    this._pBuffer = pBuffer;
     this._iId = iId;
-    this._pMap = new a.BufferMap(pFactory.getEngine());
+
+    //setup buffer map
+    this._pMap = new a.BufferMap(pBuffer.getEngine());
     this._pMap.primType = ifndef(ePrimType, a.PRIMTYPE.TRIANGLELIST);
-    this._pIndicesArray.push({pMap: this._pMap, pIndexData: null, pAttribData: null, sName: '.main'});
     this._pMap._pI2IDataCache = {};
+
+    //setup default index set
+    this._pIndicesArray.push({
+        pMap: this._pMap, 
+        pIndexData: null, 
+        pAttribData: null, 
+        sName: '.main'
+    });
 
     debug_assert(this.useSingleIndex() === false, 'single indexed data not implimented');
 
     return true;
+};
+
+RenderData.prototype.renderable = function(bValue) {
+    SET_ALL(this._eOptions, a.RenderData.RENDERABLE, bValue);
+};
+
+RenderData.prototype.isRenderable = function() {
+    return this._eOptions & a.RenderData.RENDERABLE;
 };
 
 /**
@@ -156,7 +167,7 @@ RenderData.prototype._allocateData = function (pDataDecl, pData, eType) {
     }
 
     var iFlow;
-    var pVertexData = this._pFactory._allocateData(pDataDecl, pData);
+    var pVertexData = this._pBuffer._allocateData(pDataDecl, pData);
     var iOffset = pVertexData.getOffset();
 
     iFlow = this._addData(pVertexData, undefined, eType);
@@ -284,11 +295,11 @@ RenderData.prototype.allocateAttribute = function (pAttrDecl, pData) {
     var pIndexData = this._pIndexData;
     var pAttribData = this._pAttribData;
     var pAttribBuffer = this._pAttribBuffer;
-    var pFactory = this._pFactory;
+    var pBuffer = this._pBuffer;
 
     if (!pAttribData) {
         if (!pAttribBuffer) {
-            pAttribBuffer = pFactory.getEngine().displayManager()
+            pAttribBuffer = pBuffer.getEngine().displayManager()
                 .vertexBufferPool().createResource('render_data_attrs_' + a.sid());
             pAttribBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
             this._pAttribBuffer = pAttribBuffer;
@@ -359,7 +370,7 @@ RenderData.prototype._createIndex = function (pAttrDecl, pData) {
 
     if (!this._pIndexBuffer) {
         if (this.useMultiIndex()) {
-            this._pIndexBuffer = this._pFactory.getEngine().displayManager()
+            this._pIndexBuffer = this._pBuffer.getEngine().displayManager()
                 .vertexBufferPool().createResource('subset_' + a.sid());
             this._pIndexBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
         }
@@ -387,7 +398,7 @@ RenderData.prototype._allocateIndex = function (pAttrDecl, pData) {
 
     var pIndexData = this._pIndexData;
     var pIndexBuffer = this._pIndexBuffer;
-    var pFactory = this._pFactory;
+    var pBuffer = this._pBuffer;
     'use strict';
     
 Ifdef (__DEBUG)
@@ -448,7 +459,7 @@ RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType, sName
         }
     }
     else {
-        this._pMap = new a.BufferMap(this._pFactory.getEngine());
+        this._pMap = new a.BufferMap(this._pBuffer.getEngine());
         this._pAttribData = null;
     }
 
@@ -575,7 +586,7 @@ RenderData.prototype.getData = function () {
             return this.getData(this._pMap._pI2IDataCache[arguments[0]]);    
         }
         
-        return this._pFactory.getData(arguments[0]);
+        return this._pBuffer.getData(arguments[0]);
     }
 
     if (typeof arguments[0] === 'string') {
@@ -698,16 +709,13 @@ RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) {
  */
 RenderData.prototype.draw = function () {
     'use strict';
-
-    var pProgram;
-
-    if (this._pIndexData === null) {
-            return;
+    
+    if (this._eOptions & a.RenderData.RENDERABLE) {
+        this._pBuffer._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pMap);
+        return this._pMap.draw();
     }
 
-
-    this._pFactory._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pMap);
-    return this._pMap.draw();
+    return false;
 };
 
 Ifdef (__DEBUG);

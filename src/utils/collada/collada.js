@@ -1501,7 +1501,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
             for (var j = 0; j < pPolygons.pInput.length; ++ j) {
                 var sSemantic = pPolygons.pInput[j].sSemantic;
 
-                if (pMesh._pFactory.getDataLocation(sSemantic) < 0) {
+                if (pMesh.buffer.getDataLocation(sSemantic) < 0) {
                     var pDecl, pData = pPolygons.pInput[j].pArray, pDataExt;
                     switch (sSemantic) {
                         case a.DECLUSAGE.POSITION:

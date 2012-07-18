@@ -207,6 +207,14 @@ MeshSubset.prototype.setFlexMaterial = function (iMaterial) {
     return true;
 };
 
+MeshSubset.prototype.show = function() {
+    this.data.renderable(true);
+};
+
+MeshSubset.prototype.hide = function() {
+    this.datq.renderable(false);
+};
+
 MeshSubset.prototype.draw = function () {
     'use strict';
     

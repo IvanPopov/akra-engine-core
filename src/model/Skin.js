@@ -17,6 +17,14 @@ function Skin (pMesh, pSkeleton) {
     this._pTiedData = [];
 }
 
+PROPERTY(Skin, 'buffer',
+    function () {
+        return this._pMesh.buffer;
+    });
+
+/**
+ * @deprecated
+ */
 PROPERTY(Skin, 'data',
     function () {
         return this._pMesh.data;
@@ -174,13 +182,15 @@ Skin.prototype.getBoneTransforms = function () {
 
 Skin.prototype.isAffect = function (pData) {
     'use strict';
-    
-    for (var i = 0; i < this._pTiedData.length; i++) {
-        if (this._pTiedData[i] === pData) {
-            return true;
-        }
-    };
 
+    if (pData) {
+        for (var i = 0; i < this._pTiedData.length; i++) {
+            if (this._pTiedData[i] === pData) {
+                return true;
+            }
+        };
+    }
+    
     return false;
 };
 
@@ -194,6 +204,8 @@ Skin.prototype.bind = function (pData) {
 
     this._pTiedData.push(pData);
 };
+
+Ifdef (__DEBUG);
 
 Skin.debugMeshSubset = function (pSubMesh) {
 
@@ -295,5 +307,7 @@ Skin.debugMeshSubset = function (pSubMesh) {
 
         //};
 }
+
+Endif ();
 
 A_NAMESPACE(Skin);

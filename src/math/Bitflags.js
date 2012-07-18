@@ -93,6 +93,10 @@ Define(CLEAR_ALL(value, set), function () {
     ((value) &= ~(set));
 });
 
+Define(SET_ALL(value, set, setting), function () {
+    (setting ? SET_ALL(value, set) : CLEAR_ALL(value, set))
+});
+
 /**
  * @def a.BitFlags.equal(value, src)
  * Прирасваивает числу @a value число @a src
