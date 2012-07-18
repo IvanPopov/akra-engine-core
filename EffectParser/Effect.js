@@ -261,6 +261,10 @@ var DEFAULTSTATE = "DefaultState";
 var PASSSTATE = "PassState";
 
 var SYSTEMVAR = "engine";
+/**
+ * Type for system(defined in js) variables, only for pass
+ * @type {Int}
+ */
 var UNDEFINEDTYPE = 7;
 
 
@@ -813,6 +817,7 @@ function EffectBuffer() {
      * @type {Object}
      */
     this.pHeader = null;
+    this.isUniform = false;
     this.id = EffectBuffer.nCount++;
 }
 EffectBuffer.nCount = 0;
@@ -999,26 +1004,82 @@ EffectVariable.prototype.setFSInput = function () {
     this.pType.setFSInput();
 };
 
-function EffectFunction(sName, pGLSLExpr, pTypes) {
+function EffectBaseFunction() {
+    var pFunction;
+    if (arguments.length === 1) {
+        pFunction = arguments[0];
+    }
     /**
      *
      * @type {String}
      */
+    this.sName = null;
+    this.sRealName = null;
+    this.pFunction = pFunction || null;
+    this.sSementic = pFunction ? pFunction.sSemantic : null;
+    this.pReturnType = pFunction ? pFunction.pReturnType : null;
+    this.pGlobalVariables = pFunction ? pFunction.pGlobalVariables : null;
+    this.pUniforms = pFunction ? pFunction.pUniforms : null;
+    this.pMainInputVar = pFunction ? pFunction.pMainInputVar : null;
+    /**
+     * Code of function
+     * @type {Object[]}
+     */
+    this.pImplement = null;
+    this.iScope = 0;
+    /**
+     * Global variables used in function
+     * Pairs: FunctionHash -> EffectFunction
+     * @type {Object}
+     */
+    this.pFunctions = null;
+}
+EffectBaseFunction.prototype.addGlobalVariable = function (pVar) {
+    if (!this.pGlobalVariables) {
+        this.pGlobalVariables = {};
+    }
+    if (this.pUniforms && this.pUniforms[pVar.sName]) {
+        delete this.pUniforms[pVar.sName];
+    }
+    this.pGlobalVariables[pVar.sName] = pVar;
+};
+EffectBaseFunction.prototype.addUniform = function (pVar) {
+    if (!this.pUniforms) {
+        this.pUniforms = {};
+    }
+    if (this.pGlobalVariables && this.pGlobalVariables[pVar.sName]) {
+        return;
+    }
+    this.pUniforms[pVar.sName] = pVar;
+};
+EffectBaseFunction.prototype.addFunction = function (pFunc) {
+    if (!this.pFunctions) {
+        this.pFunctions = {};
+    }
+    this.pFunctions[pFunc.sHash] = pFunc;
+};
+EffectBaseFunction.prototype.hasImplementation = function () {
+    return this.pImplement ? true : false;
+};
+EffectBaseFunction.prototype.setName = function (sName) {
+    this.sName = sName;
+};
+EffectBaseFunction.prototype.addSemantic = function (sSemantic) {
+    this.sSementic = sSemantic;
+    this.pReturnType.sSemantic = sSemantic;
+};
+EffectBaseFunction.prototype.setImplement = function (pImplement) {
+    this.pImplement = pImplement;
+};
+
+function EffectFunction(sName, pGLSLExpr, pTypes) {
+    A_CLASS;
     this.sName = sName || null;
     /**
      * For builtin fucntions
      * @type {GLSLExpr}
      */
     this.pGLSLExpr = pGLSLExpr || null;
-    /**
-     *
-     * @type {String}
-     */
-    this.sRealName = null;
-    /**
-     * @type VariableType
-     */
-    this.pReturnType = null;
     /**
      * Pairs: ParamName -> EffectVariable
      * @type {Object}
@@ -1034,21 +1095,10 @@ function EffectFunction(sName, pGLSLExpr, pTypes) {
      */
     this.pParamOrders = null;
     /**
-     *
-     * @type {String}
-     */
-    this.sSementic = null;
-    /**
      * Hash code for function(for fast search)
      * @type {String}
      */
     this.sHash = null;
-    /**
-     * Code of function
-     * @type {Object[]}
-     */
-    this.pImplement = null;
-
     //restrictions for function
     /**
      * may use like constant expression
@@ -1070,7 +1120,6 @@ function EffectFunction(sName, pGLSLExpr, pTypes) {
      * @type {Boolean}
      */
     this.isBufferNeed = false;
-
     /**
      * may be used like fragment shader(there is in pass decl)
      * @type {Boolean}
@@ -1082,18 +1131,6 @@ function EffectFunction(sName, pGLSLExpr, pTypes) {
      */
     this.isVertexShader = false;
     /**
-     * Global variables used in function
-     * Pairs VariableName -> EffectVariable
-     * @type {Object}
-     */
-    this.pGlobalVariables = null;
-    /**
-     * Global variables used in function
-     * Pairs: FunctionHash -> EffectFunction
-     * @type {Object}
-     */
-    this.pFunctions = null;
-    /**
      *
      * @type {EffectVertex}
      */
@@ -1104,11 +1141,6 @@ function EffectFunction(sName, pGLSLExpr, pTypes) {
      */
     this.pStructTable = null;
     /**
-     * Scope
-     * @type {Int}
-     */
-    this.iScope = 0;
-    /**
      * System function or not
      * @type {Boolean}
      */
@@ -1118,39 +1150,10 @@ function EffectFunction(sName, pGLSLExpr, pTypes) {
      * @type {EffectType[]}
      */
     this.pTypes = pTypes || null;
-    this.pUniforms = null;
-    this.pMainInputVar = null;
-    this.pTwin = null;
 }
+EXTENDS(EffectFunction, EffectBaseFunction);
 EffectFunction.prototype.isConst = function () {
     return this.isConstant;
-};
-EffectFunction.prototype.addGlobalVariable = function (pVar) {
-    if (!this.pGlobalVariables) {
-        this.pGlobalVariables = {};
-    }
-    if (this.pUniforms && this.pUniforms[pVar.sName]) {
-        delete this.pUniforms[pVar.sName];
-    }
-    this.pGlobalVariables[pVar.sName] = pVar;
-};
-EffectFunction.prototype.addUniform = function (pVar) {
-    if (!this.pUniforms) {
-        this.pUniforms = {};
-    }
-    if (this.pGlobalVariables && this.pGlobalVariables[pVar.sName]) {
-        return;
-    }
-    this.pUniforms[pVar.sName] = pVar;
-};
-EffectFunction.prototype.addFunction = function (pFunc) {
-    if (!this.pFunctions) {
-        this.pFunctions = {};
-    }
-    this.pFunctions[pFunc.sHash] = pFunc;
-};
-EffectFunction.prototype.hasImplementation = function () {
-    return this.pImplement ? true : false;
 };
 EffectFunction.prototype.calcHash = function () {
     var sHash = "";
@@ -1175,13 +1178,6 @@ EffectFunction.prototype.hash = function () {
     }
     return this.sHash;
 };
-EffectFunction.prototype.addSemantic = function (sSemantic) {
-    this.sSementic = sSemantic;
-    this.pReturnType.sSemantic = sSemantic;
-};
-EffectFunction.prototype.setName = function (sName) {
-    this.sName = sName;
-};
 EffectFunction.prototype.addParameter = function (pVar) {
     if (!this.pParameters) {
         this.pParameters = {};
@@ -1202,12 +1198,6 @@ EffectFunction.prototype.addParameter = function (pVar) {
     }
     if (!pVar.pInitializer) {
         this.nParamsNeeded = this.pParamOrders.length;
-    }
-};
-EffectFunction.prototype.setImplement = function (pImplement, pShaderImplement) {
-    this.pImplement = pImplement;
-    if (this.pShader) {
-        this.pShader.setImplement(pShaderImplement);
     }
 };
 EffectFunction.prototype.checkMe = function () {
@@ -1276,13 +1266,8 @@ EffectFunction.prototype.checkMe = function () {
     return true;
 };
 
-
 function EffectVertex(pFunction) {
-    /**
-     * @type {Object[]}
-     * @private
-     */
-    this._pCode = [];
+    A_CLASS;
     /**
      *
      * @type {EffectVariable[]}
@@ -1307,14 +1292,9 @@ function EffectVertex(pFunction) {
      */
     this.pReturnVariable = null;
     this.pTwin = null;
-    this.pFunction = pFunction || null;
-    this.sSementic = pFunction ? pFunction.sSemantic : null;
-    this.pReturnType = pFunction ? pFunction.pReturnType : null;
-    this.pGlobalVariables = pFunction ? pFunction.pGlobalVariables : null;
-    this.pUniforms = pFunction ? pFunction.pUniforms : null;
-    this.pMainInputVar = pFunction ? pFunction.pMainInputVar : null;
     this.isLocalOut = false;
 }
+EXTENDS(EffectVertex, EffectBaseFunction);
 EffectVertex.prototype.addVarying = function (pVar) {
     if (this._pVaryingsSemantics[pVar.sSemantic]) {
         error("don`t do so bad things");
@@ -1322,9 +1302,6 @@ EffectVertex.prototype.addVarying = function (pVar) {
     var pNewVar = pVar.cloneMe();
     this._pVaryingsSemantics[pNewVar.sSemantic] = pNewVar;
     this._pVaryings.push(pNewVar);
-};
-EffectVertex.prototype.setImplement = function (pImplement) {
-    this._pCode = pImplement;
 };
 EffectVertex.prototype.createReturnVar = function (pType) {
     this.pReturnVariable = new EffectVariable();
@@ -1359,6 +1336,7 @@ EffectVertex.prototype.createTwinIn = function () {
 };
 
 function EffectFragment(pFunction) {
+    A_CLASS;
     /**
      * @type {Object[]}
      * @private
@@ -1382,17 +1360,9 @@ function EffectFragment(pFunction) {
      */
     this.pReturnVariable = null;
     this.pTwin = null;
-    this.pFunction = pFunction || null;
-    this.sSementic = pFunction ? pFunction.sSemantic : null;
-    this.pReturnType = pFunction ? pFunction.pReturnType : null;
-    this.pGlobalVariables = pFunction ? pFunction.pGlobalVariables : null;
-    this.pUniforms = pFunction ? pFunction.pUniforms : null;
-    this.pMainInputVar = pFunction ? pFunction.pMainInputVar : null;
     this.isLocalOut = false;
 }
-EffectFragment.prototype.setImplement = function (pImplement) {
-    this._pCode = pImplement;
-};
+EXTENDS(EffectFragment, EffectBaseFunction);
 EffectFragment.prototype.createTwinIn = function () {
     if (!this.pMainInputVar) {
         error("Twin available only for Vertex Shader with Struct Attrib");
@@ -1625,6 +1595,23 @@ EffectPass.prototype.pushCode = function (pCodePart) {
     this.pCode.push(pCodePart);
 };
 
+/**
+ * Block of code
+ * @constructor
+ */
+function EffectBlock(eType) {
+    Enum([
+             DEFAULT = 1,
+             MEMREAD = 2
+         ], EFFECTBLOCK, a.Effect.Code);
+    this.eType = eType || a.Effect.Code.DEFAULT;
+    this._pCode = null;
+    this._pVar = null;
+}
+EffectBlock.prototype.toCode = function () {
+    return this._pCode;
+};
+
 function Effect() {
     Enum([
              DEFAULT = 0,
@@ -1684,6 +1671,8 @@ function Effect() {
 
     this._pFunctionTableByHash = {};
     this._pFunctionTableByName = {};
+    this._pFunctionBlackList = {};
+    this._pShaders = {};
 
     this.nCurrentDecl = 0;
 
@@ -1707,6 +1696,13 @@ function Effect() {
     this._isWriteVar = false;
     this._pCurrentPass = null;
     this._pVarPropertyStack = null;
+
+    /**
+     * Arrays of variables that need to reRead from memory after stmt.
+     * @type {Array}
+     * @private
+     */
+    this._pMemReadVars = null;
     /**
      * Some parsing property of current analyzed variable
      * 0 - Don`t unname, and full translate
@@ -1718,6 +1714,7 @@ function Effect() {
      */
     this._eVarProperty = a.Effect.Var.DEFAULT;
     this._eFuncProperty = a.Effect.Var.DEFAULT;
+    this._pLastVar = null;
 
     STATIC(pBaseFunctionsHash, {});
     STATIC(pBaseFunctionsName, {});
@@ -1997,7 +1994,12 @@ Effect.prototype.pushCode = function (pObj) {
         warning("Do you really want it?");
     }
 };
-
+Effect.prototype.newMemRead = function () {
+    this._pMemReadVars = [];
+};
+Effect.prototype.endMemRead = function () {
+    this._pMemReadVars = null;
+};
 Effect.prototype.newSampler = function () {
     this._isSampler = true;
 };
@@ -2075,8 +2077,7 @@ Effect.prototype.endFunction = function () {
 
 Effect.prototype.addVariable = function (pVar, isParams) {
     isParams = isParams || false;
-
-    function fnExtractStruct(sName, pStruct, pTable, me) {
+    function fnExtractStruct(sName, pStruct, pTable, iDepth, me) {
         var pOrders = pStruct.pOrders;
         var sNewName;
         var pPointers;
@@ -2088,12 +2089,6 @@ Effect.prototype.addVariable = function (pVar, isParams) {
             pBuffer = null;
             pPointers = null;
             isPointer = false;
-            if (isParams && sName.search('.') === -1 && !pOrders[i].isPointer) {
-                pPointers = [];
-                pPointers.push(new EffectPointer(pVar, 0));
-                pBuffer = new EffectBuffer();
-                isPointer = me._isStrictMode ? false : undefined;
-            }
             if (pOrders[i].isPointer) {
                 pPointers = [];
                 for (var j = 0; j < pOrders[i].nDim; j++) {
@@ -2104,20 +2099,31 @@ Effect.prototype.addVariable = function (pVar, isParams) {
                 }
                 isPointer = true;
             }
+            else {
+                if (!me._isStrictMode && isParams && iDepth === 0) {
+                    isPointer = undefined;
+                    pPointers = [];
+                    pPointers.push(new EffectPointer(pVar, 0));
+                    pBuffer = new EffectBuffer();
+                }
+            }
+
             if (pTable[sNewName]) {
                 error("good bad and ugly)");
                 return;
             }
             pTable[sNewName] = {
                 "pPointers" : pPointers,
-                "iScope"    : me.iScope,
+                "iScope"    : me._iScope,
                 "isPointer" : isPointer,
                 "pBuffer"   : pBuffer,
                 "pType"     : pOrders[i].pType,
+                "isArray"   : pOrders[i].isArray,
                 "sName"     : pOrders[i].isMixible ? pOrders[i].sSemantic : pOrders[i].sName
             };
             if (!pOrders[i].pType.isBase()) {
-                fnExtractStruct(sNewName, pOrders[i].pType.pEffectType.pDesc, pTable, me);
+                iDepth++;
+                fnExtractStruct(sNewName, pOrders[i].pType.pEffectType.pDesc, pTable, iDepth, me);
             }
         }
     }
@@ -2138,6 +2144,15 @@ Effect.prototype.addVariable = function (pVar, isParams) {
     if (isParams) {
         pVar.isParametr = true;
     }
+    if (pVar.pType.isEqual(this.hasType("video_buffer"))) {
+        if (this._iScope !== GLOBAL && !(isParams && pVar.isUniform)) {
+            error("You can not declarate video buffer here");
+            return;
+        }
+        pVar.pBuffer = new EffectBuffer();
+        pVar.pBuffer.isUniform = true;
+        this.addBuffer(pVar);
+    }
     if (pVar.isPointer) {
         pVar.pPointers = [];
         for (var i = 0; i < pVar.nDim; i++) {
@@ -2148,8 +2163,12 @@ Effect.prototype.addVariable = function (pVar, isParams) {
         if (!this._pCurrentScope.pStructTable) {
             this._pCurrentScope.pStructTable = {};
         }
-        fnExtractStruct(pVar.sName, pVar.pType.pEffectType.pDesc, this._pCurrentScope.pStructTable, this);
+        fnExtractStruct(pVar.sName, pVar.pType.pEffectType.pDesc, this._pCurrentScope.pStructTable, 0, this);
     }
+};
+Effect.prototype.addBuffer = function (pVar) {
+    //TODO: may be
+    warning("addBuffer ---> May be I should not be here");
 };
 Effect.prototype.hasVariable = function (sName) {
     var ppScopes = this._ppScopes;
@@ -2288,12 +2307,12 @@ Effect.prototype.findBaseFunction = function (sName, pParams) {
     return pFunc;
 };
 Effect.prototype.findFunction = function (sName, pParams) {
-    //TODO: find function
     var pFunctions = this._pFunctionTableByName[sName];
     var pFunc = null;
     var i, j;
     if (pFunctions) {
         if (pParams === null) {
+            //Find function for pass
             if (pFunctions.length > 1) {
                 error("Now so states are not support");
                 return;
@@ -2354,7 +2373,22 @@ Effect.prototype.findFunction = function (sName, pParams) {
     }
     return null;
 };
-
+Effect.prototype.setBadFunction = function (pFunction) {
+    this._pFunctionTableByHash[pFunction.hash()] = null;
+    this._pFunctionBlackList[pFunction.hash()] = pFunction;
+    var pTable = this._pFunctionTableByName[pFunction.sName];
+    var i;
+    if (pTable.length === 1) {
+        this._pFunctionTableByName[pFunction.sName] = null;
+        return;
+    }
+    for (i = 0; i < pTable.length; i++) {
+        if (pTable[i] === pFunction) {
+            this._pFunctionTableByName.splice(i, 1);
+            return;
+        }
+    }
+};
 Effect.prototype.convertType = function (pNode) {
     var pType;
     var pChildren = pNode.pChildren;
@@ -2577,6 +2611,10 @@ Effect.prototype.analyzeVariableDecl = function (pNode) {
     var pVar;
     var pType = new VariableType();
     this.analyzeUsageType(pChildren[pChildren.length - 1], pType);
+    if (pType.isEqual(this.hasType("video_buffer")) && this._iScope !== GLOBAL) {
+        error("Declarations of video buffer are available only in Global scope");
+        return;
+    }
     var isSampler = false;
     if (pType.pEffectType.isSampler()) {
         isSampler = true;
@@ -2763,6 +2801,7 @@ Effect.prototype.analyzeFromExpr = function (pNode) {
     else {
         pMem = this.analyzeMemExpr(pChildren[1]);
     }
+    this._pExprType = this.hasType("video_buffer");
     return pMem;
 };
 Effect.prototype.analyzeMemExpr = function (pNode) {
@@ -2788,8 +2827,12 @@ Effect.prototype.analyzeMemExpr = function (pNode) {
         else {
             pVar = this.hasVariable(this._sLastFullName);
         }
+        if (!pVar) {
+            error("Unknown variable 101");
+            return;
+        }
         if (!pVar.pBuffer) {
-            error("Nooooo");
+            error("Varibale has no buffer");
             return;
         }
         pMem = pVar.pBuffer;
@@ -2797,6 +2840,7 @@ Effect.prototype.analyzeMemExpr = function (pNode) {
     if (!pMem) {
         error("Oh-oh, don`t cool enough");
     }
+    this._pExprType = this.hasType("video_buffer");
     return pMem;
 };
 Effect.prototype.analyzeAnnotation = function (pNode, pObj) {
@@ -3003,7 +3047,10 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         }
                     }
                     this.pushCode(")");
-                    if (pFunction && this._eFuncProperty === a.Effect.Func.FUNCTION) {
+                    if (this._eFuncProperty === a.Effect.Func.FUNCTION ||
+                        ((this._eFuncProperty === a.Effect.Func.VERTEX ||
+                          this._eFuncProperty === a.Effect.Func.FRAGMENT) &&
+                         pFunction.pFunction.pImplement === null)) {
                         pFunction.addFunction(pFunc);
                         if (!pFunc.isConstant) {
                             pFunction.isConstant = false;
@@ -3061,28 +3108,33 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 var pRes;
                 if (this._sLastFullName.search('.') !== -1) {
                     pRes = this.hasComplexVariable(this._sLastFullName);
-//                  if(pRes.pBuffer)
-                    if (!pRes) {
-                        error("oh-ah");
-                        break;
-                    }
-                    pRes = pRes.pPointers[this._nAddr - 1];
-                    if (!pRes) {
-                        error("@@@@ - why are you do this");
-                        break;
-                    }
                 }
                 else {
                     pRes = this.hasVariable(this._sLastFullName);
-                    if (!pRes) {
-                        error("ah-ah");
-                        break;
-                    }
-                    pRes = pRes.pPointers[this._nAddr - 1];
-                    if (!pRes) {
-                        error("@ - why are you do this?");
-                        break;
-                    }
+                }
+                if (!pRes) {
+                    error("oh-ah");
+                    break;
+                }
+                if (!pRes.pBuffer) {
+                    error("Previously you must to definite buffer for variable");
+                    return;
+                }
+                if (pRes.isPointer === false) {
+                    error("only for index");
+                    return;
+                }
+                if (pRes.isPointer === undefined) {
+                    pRes.isPointer = true;
+                }
+                this._pLastVar = pRes;
+                if (this._isWriteVar) {
+                    this._pMemReadVars.push(pRes);
+                }
+                pRes = pRes.pPointers[this._nAddr - 1];
+                if (!pRes) {
+                    error("@@@@ - why are you do this");
+                    break;
                 }
                 this.pushCode(pRes);
                 this.endAddr();
@@ -3101,7 +3153,11 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 return;
             }
             if (pChildren.length === 2 && pChildren[1].sName === PRIMARYEXPR) {
+
                 this.analyzeExpr(pChildren[pChildren.length - 1]);
+
+                this._pMemReadVars.push(this._pLastVar);
+                console.log("i`m here", this._pLastVar,this._pMemReadVars);
                 this.pushCode(pChildren[0].sValue);
                 this._pExprType = this.hasType("ptr");
                 return;
@@ -3176,6 +3232,18 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         return;
                     }
                     pVar = this.hasComplexVariable(this._sVarName);
+                    if (!pVar) {
+                        error("bad 50");
+                        return;
+                    }
+                    if (pVar.isPointer === false) {
+                        error("bad 51");
+                        return;
+                    }
+                    if(pVar.isPointer === undefined){
+                        pVar.isPointer = true;
+                    }
+                    this._pMemReadVars.push(pVar);
                     if (isNewVar) {
                         this.endVarName();
                         if (this._eFuncProperty === a.Effect.Func.VERTEX ||
@@ -3189,19 +3257,12 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         isComplexVar = false;
                     }
                     var pMem = this.analyzeFromExpr(pChildren[0]);
-
                     if (!pMem) {
                         error("bad 49");
                         return;
                     }
-
-                    if (!pVar) {
-                        error("bad 50");
-                        return;
-                    }
-                    if (!pVar.isPointer) {
-                        error("bad 51");
-                        return;
+                    if (this._eFuncProperty === a.Effect.Func.FUNCTION && !pMem.isUniform) {
+                        throw ERRORBADFUNCTION;
                     }
                     if (this._iScope !== pVar.iScope) {
                         error("bad 52");
@@ -3211,6 +3272,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 }
             }
             else if (pChildren[0].sValue === "]") {
+                pVar = this._pLastVar;
                 this.newVarName();
                 this.pushCode("[");
                 this.analyzeExpr(pChildren[1]);
@@ -3220,6 +3282,60 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 }
                 this.pushCode("]");
                 this.endVarName();
+                if (pType1 !== UNDEFINEDTYPE && pType1.isBase()) {
+                    if (pType1.isEqual(this.hasType("float4x4"))) {
+                        pType1 = this.hasType("float4");
+                    }
+                    else if (pType1.isEqual(this.hasType("float3x3"))) {
+                        pType1 = this.hasType("float3");
+                    }
+                    else if (pType1.isEqual(this.hasType("float2x2"))) {
+                        pType1 = this.hasType("float2");
+                    }
+                    else if (pType1.isEqual(this.hasType("float4")) ||
+                             pType1.isEqual(this.hasType("float3")) ||
+                             pType1.isEqual(this.hasType("float2"))) {
+                        pType1 = this.hasType("float");
+                    }
+                    else if (pType1.isEqual(this.hasType("int4x4"))) {
+                        pType1 = this.hasType("int4");
+                    }
+                    else if (pType1.isEqual(this.hasType("int3x3"))) {
+                        pType1 = this.hasType("int3");
+                    }
+                    else if (pType1.isEqual(this.hasType("int2x2"))) {
+                        pType1 = this.hasType("int2");
+                    }
+                    else if (pType1.isEqual(this.hasType("int4")) ||
+                             pType1.isEqual(this.hasType("int3")) ||
+                             pType1.isEqual(this.hasType("int2"))) {
+                        pType1 = this.hasType("int");
+                    }
+                    else if (pType1.isEqual(this.hasType("bool4x4"))) {
+                        pType1 = this.hasType("bool4");
+                    }
+                    else if (pType1.isEqual(this.hasType("bool3x3"))) {
+                        pType1 = this.hasType("bool3");
+                    }
+                    else if (pType1.isEqual(this.hasType("bool2x2"))) {
+                        pType1 = this.hasType("bool2");
+                    }
+                    else if (pType1.isEqual(this.hasType("bool4")) ||
+                             pType1.isEqual(this.hasType("bool3")) ||
+                             pType1.isEqual(this.hasType("bool2"))) {
+                        pType1 = this.hasType("bool");
+                    }
+                    else {
+                        error("it`s not an array");
+                        return;
+                    }
+                }
+                else if (pType1 !== UNDEFINEDTYPE) {
+                    if (!pVar || !pVar.isArray) {
+                        error("[] - only for arrays");
+                        return;
+                    }
+                }
             }
             if (isNewVar) {
                 if (this._eFuncProperty === a.Effect.Func.VERTEX ||
@@ -3428,25 +3544,28 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 }
                 else {
                     pVar = pType.pDesc.hasField(pNode.sValue);
-                    if (pVar) {
-                        this._pExprType = pVar.pType;
-                        if (pVar.isMixible) {
-                            if (this._eVarProperty === a.Effect.Var.PARAMSTART) {
-                                if (this._eFuncProperty === a.Effect.Func.VERTEX) {
-                                    pRes = pFunction._pAttrSemantics[pVar.sSemantic];
-                                }
-                                else if (this._eFuncProperty === a.Effect.Func.FRAGMENT) {
-                                    pRes = pFunction._pVaryingsSemantics[pVar.sSemantic];
-                                }
-                                this._eVarProperty = a.Effect.Var.PARAM;
+                    if (!pVar) {
+                        error("Return type is not enough cool for you.");
+                        return;
+                    }
+                    this._pLastVar = pVar;
+                    this._pExprType = pVar.pType;
+                    if (pVar.isMixible) {
+                        if (this._eVarProperty === a.Effect.Var.PARAMSTART) {
+                            if (this._eFuncProperty === a.Effect.Func.VERTEX) {
+                                pRes = pFunction._pAttrSemantics[pVar.sSemantic];
                             }
-                            else {
-                                pRes = pVar.sSemantic;
+                            else if (this._eFuncProperty === a.Effect.Func.FRAGMENT) {
+                                pRes = pFunction._pVaryingsSemantics[pVar.sSemantic];
                             }
+                            this._eVarProperty = a.Effect.Var.PARAM;
                         }
                         else {
-                            pRes = pNode.sValue;
+                            pRes = pVar.sSemantic;
                         }
+                    }
+                    else {
+                        pRes = pNode.sValue;
                     }
                 }
             }
@@ -3478,6 +3597,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         error("not good for you");
                         return;
                     }
+                    this._pLastVar = pRes;
                     if (this._isWriteVar === true) {
                         if (pRes.isUniform) {
                             error("don`t even try to do this, bitch.1");
@@ -3540,7 +3660,11 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     }
 
                     if (pFunction && !pRes.isConst()) {
-                        if (pRes.iScope === GLOBAL && this._eFuncProperty === a.Effect.Func.FUNCTION) {
+                        if (pRes.iScope === GLOBAL &&
+                            (this._eFuncProperty === a.Effect.Func.FUNCTION ||
+                             ((this._eFuncProperty === a.Effect.Func.VERTEX ||
+                               this._eFuncProperty === a.Effect.Func.FRAGMENT) &&
+                              pFunction.pFunction.pImplement === null))) {
                             if (this._isWriteVar === true) {
                                 pFunction.addGlobalVariable(pRes);
                             }
@@ -3589,14 +3713,15 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         error("Not this variable " + this._sVarName);
                         return;
                     }
+                    this._pLastVar = pRes;
                     pRes.isUsed = true;
                     this._pExprType = pRes.pType;
 
                     if (this._eVarProperty === a.Effect.Var.PARAMSTART) {
-                        if(this._eFuncProperty === a.Effect.Func.VERTEX){
+                        if (this._eFuncProperty === a.Effect.Func.VERTEX) {
                             pRes = pFunction._pAttrSemantics[pRes.sName];
                         }
-                        else if(this._eFuncProperty === a.Effect.Func.FRAGMENT){
+                        else if (this._eFuncProperty === a.Effect.Func.FRAGMENT) {
                             pRes = pFunction._pVaryingsSemantics[pRes.sName];
                         }
                         this._eVarProperty = a.Effect.Var.PARAM;
@@ -3734,6 +3859,7 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
             if (e === ERRORBADFUNCTION) {
                 console.log(e);
                 pFunction.pImplement = null;
+                this.setBadFunction(pFunction);
             }
             else {
                 throw e;
@@ -3766,14 +3892,19 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
             this.analyzeStmtBlock(pChildren[0]);
             pFunction.pShader.setImplement(this._pCode);
             this.endCode();
+            if (this._pShaders[pFunction.hash()]) {
+                error("Blyat`");
+                return;
+            }
+            this._pShaders[pFunction.hash()] = pFunction.pShader;
         }
-        if (pFunction.isFragmentShader) {
+        else if (pFunction.isFragmentShader) {
             if (!pFunction.checkMe(FRAGMENTUSAGE)) {
                 error("Pixel is not pixel enough");
             }
 
             this._eFuncProperty = a.Effect.Func.FRAGMENT;
-            pFunction.pShader = new EffectFragment();
+            pFunction.pShader = new EffectFragment(pFunction);
             this._pCurrentFunction = pFunction.pShader;
             for (i = 0; i < pFunction.pParamOrders.length; i++) {
                 if (pFunction.pParamOrders[i].isUniform === false) {
@@ -3784,6 +3915,11 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
             this.analyzeStmtBlock(pChildren[0]);
             pFunction.pShader.setImplement(this._pCode);
             this.endCode();
+            if (this._pShaders[pFunction.hash()]) {
+                error("Blyat` 2");
+                return;
+            }
+            this._pShaders[pFunction.hash()] = pFunction.pShader;
         }
         this.endScope();
         this._eVarProperty = a.Effect.Func.DEFAULT;
@@ -3928,6 +4064,7 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
     var pFunction = this._pCurrentFunction;
     var pCode;
     var i;
+    this.newMemRead();
     if (pChildren[pChildren.length - 1].sValue === ";") {
         //SimpleStmt : ';' --AN
         return;
@@ -3998,7 +4135,7 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
         else if (this._eFuncProperty === a.Effect.Func.FRAGMENT) {
             this.pushCode("gl_FragColor=(");
             this.analyzeExpr(pChildren[1]);
-            if(!this._pExprType.isEqual(this.hasType("float4"))) {
+            if (!this._pExprType.isEqual(this.hasType("float4"))) {
                 error("For fragment shader return type must be float4");
                 return;
             }
@@ -4046,6 +4183,11 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
         this.analyzeExpr(pChildren[pChildren.length - 1]);
         this.pushCode(";");
     }
+    if (this._pMemReadVars.length) {
+        //TODO: add memread blocks
+        console.log("MemRead vars", this._pMemReadVars, this._pCurrentFunction);
+    }
+    this.endMemRead();
 };
 
 Effect.prototype.analyzeParamList = function (pNode, pFunction) {
