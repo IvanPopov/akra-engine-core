@@ -13,6 +13,7 @@ function Text3D(pEngine,pFont){
 	A_CLASS;
 	this._pFont = pFont;
 	this._v4fBackgroundColor = Vec4.create(0.,0.,0.,0.);
+	this._v4fFontColor = Vec4.create(0.,0.,0.,0.);
 
 	this._nLineQuantity = 0;
 	this._nLineLength = 0;
@@ -20,7 +21,7 @@ function Text3D(pEngine,pFont){
 	STATIC(pTextProg,a.loadProgram(pEngine,'../effects/text3D.glsl'));
 
 	this.setProgram(Text3D.pTextProg);
-	this.setGeometry(1,1);
+	this.setGeometry(2,2);
 
 	this.drawRoutine = function(){
 		'use strict';
@@ -33,12 +34,22 @@ function Text3D(pEngine,pFont){
 		pProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
 
 		//text unifoms
-		trace(this._nLineLength,this._nLineQuantity);
+		//trace(this._nLineLength,this._nLineQuantity);
 		pProgram.applyFloat('nLineLength',this._nLineLength);
 		pProgram.applyFloat('nLineQuantity',this._nLineQuantity);
 		pProgram.applyFloat('startIndex',this._pRenderData.getDataLocation('STRING_DATA')/4.);
 
-		pProgram.applyVector2('textTextureSteps',1./this._pFont._iLettersX,1./this._pFont._iLettersY);
+		//set screen parameters (ограничивают максимальный размер текста на экране размером шрифта)
+		pProgram.applyVector2('v2fCanvasSizes',this._pEngine.pCanvas.width,this._pEngine.pCanvas.height);
+		//pProgram.applyVector2('v2fTextSizes',);
+		pProgram.applyFloat('nFontSize',this._pFont.size);
+
+		//set font colors
+		pProgram.applyVector4('v4fBackgroundColor',this._v4fBackgroundColor);
+		pProgram.applyVector4('v4fFontColor',this._v4fFontColor);
+		//
+		
+		pProgram.applyVector2('textTextureSteps',1./this._pFont._nLettersX,1./this._pFont._nLettersY);
 
 		this._pFont.activate(1);
 		pProgram.applyInt('textTexture',1);
@@ -76,10 +87,11 @@ Text3D.prototype.setText = function(sString){
 	var nStartDataOffset = nLineQuantity;//номер откуда начинаются данные текущей линии
 
 	var sChar;
+	var nMaxPixelLength;
 	//когда i=sString.length заведомо попадаем в if как и нужно
 	for(var i=0;i<=sString.length;i++){
 		sChar = sString[i];
-		trace(sChar,nLineLength);
+		//trace(sChar,nLineLength);
 		if(sChar == '\n' || i == sString.length){
 
 			pStringData[4*nLine    ] = nLineLength;
@@ -100,7 +112,7 @@ Text3D.prototype.setText = function(sString){
 			nLineLength++;
 		}
 	}
-	trace(pStringData);
+	//trace(pStringData);
 	this._nLineQuantity = nLineQuantity;
 	this._nLineLength = nMaxLineLength;
 
@@ -116,9 +128,26 @@ Text3D.prototype.setText = function(sString){
 	// trace(pStringData);
 };
 
-Text3D.prototype.setBackgroundColor = function(v4fColor) {
-	'use strict';
-	Vec4.set(v4fColor,this._v4fBackgroundColor);
-};
+PROPERTY(Text3D,'backgroundColor',
+	function(){
+		'use strict';
+		return this._v4fBackgroundColor;
+	},
+	function(v4fBackgroundColor){
+		'use strict';
+		Vec4.set(v4fBackgroundColor,this._v4fBackgroundColor)
+	}
+);
+
+PROPERTY(Text3D,'fontColor',
+	function(){
+		'use strict';
+		return this._v4fFontColor;
+	},
+	function(v4fFontColor){
+		'use strict';
+		Vec4.set(v4fFontColor,this._v4fFontColor);
+	}
+);
 
 A_NAMESPACE(Text3D);
