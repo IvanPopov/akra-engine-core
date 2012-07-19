@@ -97,7 +97,6 @@ function RenderData(pBuffer) {
      * @type {Int}
      */
     this._iIndexSet = 0;
-
 }
 
 EXTENDS(RenderData, a.ReferenceCounter);
@@ -122,7 +121,9 @@ RenderData.prototype.setup = function(pBuffer, iId, ePrimType, eOptions) {
        return false;
     }
 
-    this._eOptions = eOptions;
+    this.renderable(true);
+
+    this._eOptions |= eOptions;
     this._pBuffer = pBuffer;
     this._iId = iId;
 
@@ -149,7 +150,7 @@ RenderData.prototype.renderable = function(bValue) {
 };
 
 RenderData.prototype.isRenderable = function() {
-    return this._eOptions & a.RenderData.RENDERABLE;
+    return this._eOptions & a.RenderData.RENDERABLE? true: false;
 };
 
 /**

@@ -17,8 +17,9 @@ function DebugWindow (sCaption) {
         "width=640,height=230,resizable=no,scrollbars=yes,status=no,menubar=no,location=no");
 
     this.win.focus();
+    var me = this;
 
-    window.onunload = function () {this.win.close();};
+    window.onunload = function () {me.win.close();};
 
     this.print("<!DOCTYPE html><html><head>", 1);
     this.print("<title>" + (sCaption ? sCaption : 'console') + "</title>", 1);

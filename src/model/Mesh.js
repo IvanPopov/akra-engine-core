@@ -76,6 +76,14 @@ Mesh.prototype.drawSubset = function (iSubset) {
     this._pBuffer.draw(iSubset);
 };
 
+Mesh.prototype.draw = function () {
+    'use strict';
+    
+    for (var i = 0; i < this.length; i++) {
+        this[i].draw();
+    };
+};
+
 Mesh.prototype.isReadyForRender = function () {
     'use strict';
     

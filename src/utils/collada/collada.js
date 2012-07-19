@@ -22,13 +22,23 @@
  Functions with prefix <build> needs for creating real engine objects, that will be used by Engine.
  */
 
-function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
-    isFileContent = isFileContent || false;
+/*
+
+{
+    sile: <path to model>,
+    content: <content of model>
+}
+
+ */
+
+function COLLADA (pEngine, pSettings) {
 
     /* COMMON SETTINGS
      ------------------------------------------------------
      */
-    var sFilename = isFileContent? null: sFile;
+    var sFilename = pSettings.file || null;
+    var sContent = pSettings.content || null;
+    var fnCallback = pSettings.success || null;
 
     /* COMMON FUNCTIONS
      ------------------------------------------------------
@@ -72,7 +82,8 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
     var pLinks = {};
     var pLib = {};
     var pCache = {
-        '@joint': {}       //joint_name --> {skeleton, controller, index}
+        '@joint': {},       //joint_name --> {skeleton, controller, index}
+        '@mesh': {}         //mesh_name --> mesh
     };
 
     function calcFormatStride (pFormat) {
@@ -1464,7 +1475,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
     function buildMesh (pMeshNode) {
         'use strict';
 
-        var pMeshList = pCache;
+        var pMeshList = pCache['@mesh'];
         var pGeometry = pMeshNode.pGeometry;
         var pNodeData = pGeometry.pMesh;
         var sMeshName = pGeometry.id;
@@ -1810,15 +1821,21 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         var m4fRootTransform = buildAssetMatrix(pAsset);
         var pSceneRoot = COLLADAScene(firstChild(pXMLCollada, 'scene'));
 
-        fnCallback(buildScene(pSceneRoot, m4fRootTransform));
+        if (fnCallback) {
+            fnCallback(buildScene(pSceneRoot, m4fRootTransform));
+        }
     }
 
-    if (!isFileContent) {
+    if (sFilename) {
         a.fopen(sFilename).read(readCollada);
+        return true;
     }
-    else {
-        readCollada(sFile);
+    else if (sContent) {
+        readCollada(sContent);
+        return true;
     }
+
+    return false;
 }
 
 a.COLLADA = COLLADA;
