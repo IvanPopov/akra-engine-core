@@ -152,7 +152,7 @@ MeshSubset.prototype.applyFlexMaterial = function(sMaterial, pMaterialData) {
     if (this._pMesh.addFlexMaterial(sMaterial, pMaterialData)) {
         return this.setFlexMaterial(sMaterial);
     }
-    return false;
+    return null;
 };
 
 MeshSubset.prototype.getFlexMaterial = function(iMaterial) {

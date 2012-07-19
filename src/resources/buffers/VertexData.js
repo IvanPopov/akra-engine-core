@@ -29,6 +29,7 @@ Enum([
     DEPTH = "DEPTH",
     SAMPLE = "SAMPLE",
     INDEX = "INDEX",
+	INDEX0 = "INDEX0",
     INDEX1,
     INDEX2,
     INDEX3,
@@ -282,15 +283,38 @@ VertexDeclaration.prototype.hasSemantics = function (eSemantics) {
     return this.element(eSemantics) !== null;
 };
 
-VertexDeclaration.prototype.element = function (eSemantics) {
-    eSemantics = eSemantics.toUpperCase();
-    for (var i = 0; i < this.length; ++i) {
-        if (this[i].eUsage === eSemantics) {
-            return this[i];
-        }
-    }
 
-    return null;
+
+
+/**
+ * Получение VertexElement из VertexDeclaration по признакам
+ * @property element(DECLARATION_USAGE eSemantics)
+ * @property element(DECLARATION_USAGE eSemantics, Int nCount)
+ * @param eSemantics семантика VertexElement
+ * @param nCount количество элементов в VertexElement
+ * @return VertexElement
+ */
+VertexDeclaration.prototype.element = function (eSemantics, nCount)
+{
+	if(arguments.length==1)
+	{
+		eSemantics = eSemantics.toUpperCase();
+		for (var i = 0; i < this.length; ++i) {
+			if (this[i].eUsage === eSemantics) {
+				return this[i];
+			}
+		}
+	}
+	else if(arguments.length==2)
+	{
+		eSemantics = eSemantics.toUpperCase();
+		for (var i = 0; i < this.length; ++i) {
+			if (this[i].eUsage === eSemantics && this[i].nCount == nCount) {
+				return this[i];
+			}
+		}
+	}
+	return null;
 };
 
 VertexDeclaration.prototype.clone = function () {
@@ -694,18 +718,17 @@ VertexData.prototype.getTypedData = function (eUsage, iFrom, iCount) {
     return null;
 };
 
-/**
- * @property getData(sSematic)
- * @param sSematic  имя сематики, которую получаем
- * Получить определенные элементы из буффера
- * @return
- **/
-
 
 /**
  * @property getData(Int iOffset, Int iSize)
+ * @property getData(Int iOffset, Int iSize, Int iFrom, Int iCount)
+ * @property getData(DECLARATION_USAGE eSematic)
+ * @property getData(DECLARATION_USAGE eSematic,Int iFrom, Int iCount)
+ * @param eSematic семантика данных
  * @param iOffset смещение данных относительно начала строки
  * @param iSize размер этих данных в одной строке
+ * @param iFrom начиная с какой строки нужны данные
+ * @param iCount сколько строк данных нужны
  * Получить определенные элементы из буффера
  * @return
  **/
@@ -713,8 +736,10 @@ VertexData.prototype.getData = function (iOffset, iSize, iFrom, iCount) {
     switch (arguments.length) {
         case 4:
         case 2:
-            if (typeof arguments[0] === 'string') {
-                return this.getData(arguments[0], arguments[1], 0, this._nMemberCount);
+            if (typeof arguments[0] === 'string')
+			{
+				return null;
+                //return this.getData(arguments[0], arguments[1], 0, this._nMemberCount); неправильно!!!
             }
 
             iFrom = iFrom || 0;

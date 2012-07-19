@@ -418,56 +418,67 @@ a.VertexBuffer = VertexBuffer;
 
 /**
  * Computes a coordinate-axis oriented bounding box.
- * @treturn Rect3d Bounding rect
+ * @property computeBoundingBox(VertexData pVertexData, Rect3D pBoundingBox)
+ * @treturn Boolean
  */
-function computeBoundingBox (pVertexBuffer, nCount, nStride, v3fMin, v3fMax) {
-    if (pVertexBuffer && nCount !== undefined && nStride !== undefined) {
-        var fX0 = 0, fY0 = 0, fZ0 = 0,
-            fX1 = 0, fY1 = 0, fZ1 = 0;
-        var fTemp;
-        var i = 0;
-        var pData = pVertexBuffer.getData();
-        if (pData) {
-            var pTempData;
-			
-            pTempData = new Float32Array(pData, i, 3);
-            fX0 = fX1 = pTempData[0];
-            fX1 = fY1 = pTempData[1];
-            fZ0 = fZ1 = pTempData[2];
-            for (i = nStride; i < nStride * nCount; i += nStride) {
-			
-                pTempData = new Float32Array(pData, i, 3);
-                fTemp = pTempData[0];
-                fX0 = fX0 > fTemp ? fTemp : fX0; //Min
-                fX1 = fX1 > fTemp ? fX1 : fTemp; //Max
+function computeBoundingBox (pVertexData, pBoundingBox)
+{
+	var fX0 = 0, fY0 = 0, fZ0 = 0,
+		fX1 = 0, fY1 = 0, fZ1 = 0;
+	var fTemp, pTempData;
+	var i = 0;
+	var pVertexDeclaration,pVertexElement,pData;
+	var nStride,nCount;
 
-                fTemp = pTempData[1];
-                fY0 = fY0 > fTemp ? fTemp : fY0; //Min
-                fY1 = fY1 > fTemp ? fY1 : fTemp; //Max
+	if (pVertexData && pBoundingBox )
+	{
+		pVertexDeclaration=pVertexData.getVertexDeclaration();
+		if(!pVertexDeclaration)
+			return false;
 
-                fTemp = pTempData[2];
-                fZ0 = fZ0 > fTemp ? fTemp : fZ0; //Min
-                fZ1 = fZ1 > fTemp ? fZ1 : fTemp; //Max
-            }
-            v3fMin.X = fX0;
-            v3fMin.Y = fY0;
-            v3fMin.Z = fZ0;
+		pVertexElement=pVertexDeclaration.element(a.DECLUSAGE.POSITION,3);
+		if(!pVertexDeclaration)
+			return false;
 
-            v3fMax.X = fX1;
-            v3fMax.Y = fY1;
-            v3fMax.Z = fZ1;
-            return true;
-        }
-    }
+		nCount=pVertexData.length;
+		nStride=pVertexElement.iSize;
+
+		pData=pVertexData.getData(pVertexElement.iOffset,pVertexElement.iSize);
+		if (!pData)
+			return false;
+
+		pTempData = new Float32Array(pData, 0, 3);
+		fX0 = fX1 = pTempData[0];
+		fY0 = fY1 = pTempData[1];
+		fZ0 = fZ1 = pTempData[2];
+		for (i = nStride; i < nStride * nCount; i += nStride) {
+
+			pTempData = new Float32Array(pData, i, 3);
+			fTemp = pTempData[0];
+			fX0 = fX0 > fTemp ? fTemp : fX0; //Min
+			fX1 = fX1 > fTemp ? fX1 : fTemp; //Max
+
+			fTemp = pTempData[1];
+			fY0 = fY0 > fTemp ? fTemp : fY0; //Min
+			fY1 = fY1 > fTemp ? fY1 : fTemp; //Max
+
+			fTemp = pTempData[2];
+			fZ0 = fZ0 > fTemp ? fTemp : fZ0; //Min
+			fZ1 = fZ1 > fTemp ? fZ1 : fTemp; //Max
+		}
+		pBoundingBox.set(fX0,fX1,fY0,fY1,fZ0,fZ1);
+		return true;
+	}
+
     return false;
-}
-;
-
+};
 a.computeBoundingBox = computeBoundingBox;
+
+
 Enum([
          FAST,
          MINIMAL
-     ], SPHERE_CALCULATION_TYPE, a.Sphere);
+     ], SPHERE_CALCULATION_TYPE, a.TSPHERE);
 /**
  * Computes a bounding sphere - not minimal. Also if it need compute dounding box
  * @tparam VertexBuffer pVertexBuffer

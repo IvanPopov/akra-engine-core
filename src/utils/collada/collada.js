@@ -1491,7 +1491,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         
         //creating subsets
         for (var i = 0; i < pPolyGroup.length; ++ i) {
-            pMesh.createSubset('submesh-' + i, a.PRIMTYPE.LINELIST/*pPolyGroup[i].eType*/);
+            pMesh.createSubset('submesh-' + i, pPolyGroup[i].eType);
         }
 
         //filling data
@@ -1675,6 +1675,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
      */
     function buildSceneNode (pNode) {
         var pSceneNode = null;
+		var pMesh;
 
         if (pNode.pController.length) {
             
@@ -1689,8 +1690,12 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
             pSceneNode = new a.SceneModel(pEngine);
             pSceneNode.create();
 
-            for (var m = 0; m < pNode.pGeometry.length; ++ m) {
-                pSceneNode.addMesh(buildMesh(pNode.pGeometry[m]));  
+            for (var m = 0; m < pNode.pGeometry.length; ++ m)
+			{
+				pMesh=buildMesh(pNode.pGeometry[m]);
+                pSceneNode.addMesh(pMesh);
+				pMesh.createBoundingBox();
+				pMesh.drawBoundingBox();
             }
         }
         else {
