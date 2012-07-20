@@ -68,6 +68,7 @@ Text3D.prototype.setText = function(sString){
 	'use strict';
 	var pFont = this._pFont;
 	var pLetterMap = pFont.letterMap;
+	var pMeasureContext = pFont.context;
 
 	var nLineQuantity = 1;
 	for(var i=0;i<sString.length;i++){
@@ -79,7 +80,6 @@ Text3D.prototype.setText = function(sString){
 	//веделяем память под все данные,
 	//т.е указатели на строки и на данные в строках,
 	//которая чудесным образом совпадает с длинной строки + 1 (+1 так как в начальной строке нет \n)
-	
 	var pStringData = new Float32Array(4*(sString.length + 1));
 	var nOffset = nLineQuantity*4;
 	var nLineLength = 0;
@@ -99,6 +99,11 @@ Text3D.prototype.setText = function(sString){
 			pStringData[4*nLine + 1] = nStartDataOffset;
 
 			nStartDataOffset += nLineLength;
+
+			var sLine = sString.substr(i - nLineLength,nLineLength);
+			var nWidth = pMeasureContext.measureText(sLine).width;
+			trace(sLine,nWidth);
+
 
 			if(nLineLength > nMaxLineLength){
 				nMaxLineLength = nLineLength;

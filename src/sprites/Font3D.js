@@ -48,81 +48,6 @@ function Font3D (pEngine, nSize, sFontFamily, isBold, isItalic) {
 
 EXTENDS(Font3D,a.Texture);
 
-Font3D.prototype._rasterize = function() {
-    'use strict';
-
-    var nLetters = 128;//пока только английские символы
-    var nLettersX = this._nLettersX = Math.ceilingPowerOfTwo(Math.sqrt(nLetters));
-    var nLettersY = this._nLettersY = Math.ceilingPowerOfTwo(nLetters/nLettersX);
-    //домножаем на размер шрифта
-    var nTextureSizeX = Math.ceil(nLettersX * this._nFontSize);
-    var nTextureSizeY = Math.ceil(nLettersY * this._nFontSize); 
-    //trace(iLettersX,iLettersY,nLetters);
-    
-    var pTextCanvas = this._pContext = document.createElement('canvas');
-    pTextCanvas.width  = nTextureSizeX;
-    pTextCanvas.height = nTextureSizeY;
-    var pContext2D = pTextCanvas.getContext('2d');
-
-    pContext2D.fillStyle = this._sFontColor;
-
-    var sFont = "";
-    if(this._isBold){
-        sFont += this._sBold + " ";
-    }
-    if(this._isItalic){
-        sFont += this._sItalic + " ";
-    }
-    sFont += this._sFontSize + " black";
-
-    pContext2D.font = sFont;
-    
-
-    for(var i=0;i<nLetters;i++){
-        var sChar = String.fromCharCode(i);
-        var iPositionX = (i%nLettersX)*this._nFontSize;
-        var iPositionY = (Math.floor(i/nLettersX))*this._nFontSize;
-        //trace(iPositionX,iPositionY);
-        pContext2D.fillText(sChar,iPositionX,iPositionY,this._nFontSize);
-        var metrics = pContext2D.measureText(sChar);
-        trace(sChar,metrics);
-    }
-    var str = 'black';
-    var metrics = pContext2D.measureText(str);
-    trace(str,metrics);
-
-    var imageData = pContext2D.getImageData(0, 0, pTextCanvas.width, pTextCanvas.height);
-
-    //this.flipY(true);
-    this.createTexture(nTextureSizeX,nTextureSizeY,0,a.IFORMAT.RGBA8,a.ITYPE.UNSIGNED_BYTE,new Uint8Array(imageData.data));
-    this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
-    this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
-
-    this._generateLetterMap();
-};
-
-/**
- * генерируем карту соответствий букв и текстурных координат
- */
-Font3D.prototype._generateLetterMap = function() {
-    'use strict';
-    var pLetterMap = this._pLetterMap;
-    var nLetters = 128;//пока только английские буквы
-
-    var nLettersX = this._nLettersX;
-    var nLettersY = this._nLettersY
-
-    for(var i=0;i<nLetters;i++){
-        var sChar = String.fromCharCode(i);
-        // if(sChar == '!'){
-        //     trace('!',i,iLettersX,iLettersY,(i%iLettersX)/iLettersX,Math.floor(i/iLettersX)/iLettersY);
-        // }
-        //ложим координаты начала буквы и шаги по текстуре необходимые чтобы получить конец буквы
-        pLetterMap[sChar] = [(i%nLettersX)/nLettersX,(Math.floor(i/nLettersX) - 0.75)/nLettersY,1./this._nLettersX,1./this._nLettersY];
-
-    }
-};
-
 PROPERTY(Font3D,'letterMap',
     function(){
         'use strict';
@@ -141,5 +66,65 @@ PROPERTY(Font3D,'context',
         return this._pContext;
     }
 );
+
+Font3D.prototype._rasterize = function() {
+    'use strict';
+
+    var pLetterMap = this._pLetterMap;
+
+    var nLetters = 128;//пока только английские символы
+    var nLettersX = this._nLettersX = Math.ceilingPowerOfTwo(Math.sqrt(nLetters));
+    var nLettersY = this._nLettersY = Math.ceilingPowerOfTwo(nLetters/nLettersX);
+    //домножаем на размер шрифта
+    var nTextureSizeX = Math.ceil(nLettersX * this._nFontSize);
+    var nTextureSizeY = Math.ceil(nLettersY * this._nFontSize); 
+    //trace(iLettersX,iLettersY,nLetters);
+    
+    var pTextCanvas = document.createElement('canvas');
+    pTextCanvas.width  = nTextureSizeX;
+    pTextCanvas.height = nTextureSizeY;
+    var pContext2D = this._pContext =pTextCanvas.getContext('2d');
+
+    pContext2D.fillStyle = this._sFontColor;
+
+    var sFont = "";
+    if(this._isBold){
+        sFont += this._sBold + " ";
+    }
+    if(this._isItalic){
+        sFont += this._sItalic + " ";
+    }
+    sFont += this._sFontSize + " black";
+
+    pContext2D.font = sFont;
+    
+
+    for(var i=0;i<nLetters;i++){
+        var sChar = String.fromCharCode(i);
+
+        var metrics = pContext2D.measureText(sChar);
+        trace(sChar,metrics);
+
+        var relativeWidth = metrics.width/nTextureSizeX;
+
+        var iPositionX = (i%nLettersX)*this._nFontSize;
+        var iPositionY = (Math.floor(i/nLettersX))*this._nFontSize;
+        //trace(iPositionX,iPositionY);
+        pContext2D.fillText(sChar,iPositionX,iPositionY,this._nFontSize);
+        //заполняем карту соответствий
+        pLetterMap[sChar] = [(i%nLettersX)/nLettersX,(Math.floor(i/nLettersX) - 0.75)/nLettersY,/*1./this._nLettersX*/relativeWidth,1./this._nLettersY];
+        
+    }
+    var str = 'black';
+    var metrics = pContext2D.measureText(str);
+    trace(str,metrics);
+
+    var imageData = pContext2D.getImageData(0, 0, pTextCanvas.width, pTextCanvas.height);
+
+    //this.flipY(true);
+    this.createTexture(nTextureSizeX,nTextureSizeY,0,a.IFORMAT.RGBA8,a.ITYPE.UNSIGNED_BYTE,new Uint8Array(imageData.data));
+    this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+    this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+};
 
 A_NAMESPACE(Font3D);
