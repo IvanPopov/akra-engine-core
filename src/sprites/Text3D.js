@@ -51,8 +51,6 @@ function Text3D(pEngine,pFont){
 		pProgram.applyVector4('v4fBackgroundColor',this._v4fBackgroundColor);
 		pProgram.applyVector4('v4fFontColor',this._v4fFontColor);
 		//
-		
-		pProgram.applyVector2('textTextureSteps',1./this._pFont._nLettersX,1./this._pFont._nLettersY);
 
 		this._pFont.activate(1);
 		pProgram.applyInt('textTexture',1);
@@ -110,8 +108,10 @@ Text3D.prototype.setText = function(sString){
 		}
 		else{
 			var pTextureData = pLetterMap[sChar];
-			pStringData[nOffset + 4*(i-nLine)    ] = pTextureData.X;//[0]
-			pStringData[nOffset + 4*(i-nLine) + 1] = pTextureData.Y;//[1]
+			pStringData[nOffset + 4*(i-nLine)    ] = pTextureData.X;//текстурные координаты начала буквы
+			pStringData[nOffset + 4*(i-nLine) + 1] = pTextureData.Y;//
+			pStringData[nOffset + 4*(i-nLine) + 2] = pTextureData.Z;//шаг по текстуре необходимый для того, чтобы 
+			pStringData[nOffset + 4*(i-nLine) + 3] = pTextureData.W;//получить конец буквы
 			nLineLength++;
 		}
 	}

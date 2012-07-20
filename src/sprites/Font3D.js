@@ -117,7 +117,9 @@ Font3D.prototype._generateLetterMap = function() {
         // if(sChar == '!'){
         //     trace('!',i,iLettersX,iLettersY,(i%iLettersX)/iLettersX,Math.floor(i/iLettersX)/iLettersY);
         // }
-        pLetterMap[sChar] = [(i%nLettersX)/nLettersX,(Math.floor(i/nLettersX) - 0.75)/nLettersY];
+        //ложим координаты начала буквы и шаги по текстуре необходимые чтобы получить конец буквы
+        pLetterMap[sChar] = [(i%nLettersX)/nLettersX,(Math.floor(i/nLettersX) - 0.75)/nLettersY,1./this._nLettersX,1./this._nLettersY];
+
     }
 };
 
