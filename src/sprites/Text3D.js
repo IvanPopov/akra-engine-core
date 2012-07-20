@@ -15,6 +15,8 @@ function Text3D(pEngine,pFont){
 	this._v4fBackgroundColor = Vec4.create(0.,0.,0.,0.);
 	this._v4fFontColor = Vec4.create(0.,0.,0.,0.);
 
+	this._fDistanceMultiplier = 1.;
+
 	this._nLineQuantity = 0;
 	this._nLineLength = 0;
 	
@@ -43,6 +45,7 @@ function Text3D(pEngine,pFont){
 		pProgram.applyVector2('v2fCanvasSizes',this._pEngine.pCanvas.width,this._pEngine.pCanvas.height);
 		//pProgram.applyVector2('v2fTextSizes',);
 		pProgram.applyFloat('nFontSize',this._pFont.size);
+		pProgram.applyFloat('fDistanceMultiplier',this._fDistanceMultiplier);
 
 		//set font colors
 		pProgram.applyVector4('v4fBackgroundColor',this._v4fBackgroundColor);
@@ -128,6 +131,15 @@ Text3D.prototype.setText = function(sString){
 	// trace(pStringData);
 };
 
+Text3D.prototype.setDistanceMultiplier = function(fMultiplier) {
+	'use strict';
+	if(fMultiplier < 0){
+		err("значение множителя не может быть меньше нуля");
+		return;
+	}
+	this._fDistanceMultiplier = fMultiplier;
+};
+
 PROPERTY(Text3D,'backgroundColor',
 	function(){
 		'use strict';
@@ -149,5 +161,28 @@ PROPERTY(Text3D,'fontColor',
 		Vec4.set(v4fFontColor,this._v4fFontColor);
 	}
 );
+
+PROPERTY(Text3D,'fixedSize',
+	function(){
+		'use strict';
+		if(this._fDistanceMultiplier == 0.){
+			return true;
+		}
+		else{
+			return false;
+		}
+	},
+	function(isFixed){
+		'use strict';
+		if(isFixed){
+			this._fDistanceMultiplier = 0.;
+		}
+		else{
+			this._fDistanceMultiplier = 1.;	
+		}
+	}
+);
+
+
 
 A_NAMESPACE(Text3D);

@@ -99,13 +99,13 @@ Keymap.prototype.dispatch = function (pEvent) {
     else if (e.type == "keyup") {
         //console.log("onkeyup",code);
         this.pMap[code] = false;
-        if (e.altKey) {
+        if(code == a.KEY.ALT){
             this.isAlt = false;
         }
-        if (e.ctrlKey) {
+        if(code == a.KEY.CTRL){
             this.isCtrl = false;
         }
-        if (e.shiftKey) {
+        if(code == a.KEY.SHIFT){
             this.isShift = false;
         }
     }
