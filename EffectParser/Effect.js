@@ -507,6 +507,12 @@ VariableType.prototype.setFSInput = function () {
     this.isFSInput = true;
     this.pEffectType.setFSInput();
 };
+VariableType.prototype.hasIndexData = function () {
+    if (!this.isBase()) {
+        return this.pEffectType.hasIndexData();
+    }
+    return false;
+};
 
 function EffectType(sName, sRealName, isBase, iSize) {
     /**
@@ -641,6 +647,12 @@ EffectType.prototype.setVSInput = function () {
 EffectType.prototype.setFSInput = function () {
     this.isFSInput = true;
 };
+EffectType.prototype.hasIndexData = function () {
+    if (this.pDesc) {
+        return this.pDesc.hasIndexData();
+    }
+    return false;
+};
 
 function EffectStruct() {
     /**
@@ -692,6 +704,7 @@ function EffectStruct() {
      * @type {Boolean}
      */
     this.isMixible = false;
+    this._hasIndexData = null;
 }
 EffectStruct.prototype.toCode = function () {
     //TODO: to string
@@ -747,9 +760,10 @@ EffectStruct.prototype.hasEmptySemantic = function () {
     var i;
     for (i = 0; i < pOrders.length; i++) {
         if (!pOrders[i].sSemantic) {
-            return true;
+            this._hasEmptySemantic = true;
         }
     }
+    this._hasEmptySemantic = false;
     return false;
 };
 EffectStruct.prototype.hasMultipleSemantic = function () {
@@ -761,10 +775,12 @@ EffectStruct.prototype.hasMultipleSemantic = function () {
     for (i = 0; i < pOrders.length; i++) {
         for (j = i + 1; j < pOrders.length; j++) {
             if (pOrders[j].sSemantic = pOrders[i].sSemantic) {
-                return true;
+                this._hasMultipleSemantic = true;
+                break;
             }
         }
     }
+    this._hasMultipleSemantic = false;
     return false;
 };
 EffectStruct.prototype.hasComplexType = function () {
@@ -775,9 +791,11 @@ EffectStruct.prototype.hasComplexType = function () {
     var i;
     for (i = 0; i < pOrders.length; i++) {
         if (!pOrders[i].pType.isBase()) {
-            return true;
+            this._hasComplexType = true;
+            break;
         }
     }
+    this._hasComplexType = false;
     return false;
 };
 EffectStruct.prototype.setMixible = function () {
@@ -797,6 +815,25 @@ EffectStruct.prototype.setMixible = function () {
         pOrders[i].setMixible();
     }
     this.isMixible = true;
+};
+EffectStruct.prototype.hasIndexData = function () {
+    if (this._hasIndexData !== null) {
+        return this._hasIndexData;
+    }
+    var pOrders = this.pOrders;
+    var i;
+    for (i = 0; i < pOrders.length; i++) {
+        if (!pOrders[i].isPointer) {
+            this._hasIndexData = true;
+            break;
+        }
+        if ((!pOrders[i].pType.isBase()) && pOrders[i].pType.pEffectType.pDesc.hasIndexData()) {
+            this._hasIndexData = true;
+            break;
+        }
+    }
+    this._hasIndexData = false;
+    return this._hasIndexData;
 };
 
 function EffectPointer(pVar, nDim) {
@@ -1027,12 +1064,14 @@ function EffectBaseFunction() {
      */
     this.pImplement = null;
     this.iScope = 0;
+    this.pScopeStack = null;
     /**
      * Global variables used in function
      * Pairs: FunctionHash -> EffectFunction
      * @type {Object}
      */
     this.pFunctions = null;
+    this.pMemBlocks = {};
 }
 EffectBaseFunction.prototype.addGlobalVariable = function (pVar) {
     if (!this.pGlobalVariables) {
@@ -1041,7 +1080,11 @@ EffectBaseFunction.prototype.addGlobalVariable = function (pVar) {
     if (this.pUniforms && this.pUniforms[pVar.sName]) {
         delete this.pUniforms[pVar.sName];
     }
+    if (this.pGlobalVariables[pVar.sName]) {
+        return false;
+    }
     this.pGlobalVariables[pVar.sName] = pVar;
+    return true;
 };
 EffectBaseFunction.prototype.addUniform = function (pVar) {
     if (!this.pUniforms) {
@@ -1050,7 +1093,11 @@ EffectBaseFunction.prototype.addUniform = function (pVar) {
     if (this.pGlobalVariables && this.pGlobalVariables[pVar.sName]) {
         return;
     }
+    if (this.pUniforms[pVar.sName]) {
+        return false;
+    }
     this.pUniforms[pVar.sName] = pVar;
+    return true;
 };
 EffectBaseFunction.prototype.addFunction = function (pFunc) {
     if (!this.pFunctions) {
@@ -1599,17 +1646,23 @@ EffectPass.prototype.pushCode = function (pCodePart) {
  * Block of code
  * @constructor
  */
-function EffectBlock(eType) {
+function EffectBlock(eType, pObj) {
     Enum([
              DEFAULT = 1,
              MEMREAD = 2
          ], EFFECTBLOCK, a.Effect.Code);
     this.eType = eType || a.Effect.Code.DEFAULT;
     this._pCode = null;
-    this._pVar = null;
+    this._pVar = pObj || null;
 }
 EffectBlock.prototype.toCode = function () {
     return this._pCode;
+};
+EffectBlock.prototype.pushCode = function(pObj){
+    if(!this._pCode){
+        this._pCode = [];
+    }
+    this._pCode.push(pObj);
 };
 
 function Effect() {
@@ -1629,7 +1682,6 @@ function Effect() {
 
     this.pParams = {};
     this.pTechiques = {};
-    this.pFuctions = {};
     this.pPasses = {};
     this.nStep = 0;
 
@@ -1653,7 +1705,6 @@ function Effect() {
     this._pCurrentStructOrders = null;
 
     this._pCurrentVar = null;
-    this._isCodeWrite = false;
     this._pCodeStack = [];
     this._pCode = null;
     this._sCode = "";
@@ -1666,6 +1717,7 @@ function Effect() {
 
     this._isAnnotation = false;
     this._isStruct = false;
+    this._isParam = false;
     this._isFunction = false;
     this._isToJS = false;
 
@@ -1950,7 +2002,7 @@ Effect.prototype.evalHLSL = function (pCode) {
 //    if(this._isToJS){
 //        //TODO:Translate to JS some const hlsl expressions
 //    }
-//    if(this._isCodeWrite){
+//    if(){
 //
 //    }
     if (!pCode) {
@@ -1964,35 +2016,34 @@ Effect.prototype.evalHLSL = function (pCode) {
     console.log("Need to eval this code: ", pCode);
 };
 
-Effect.prototype.newCode = function (isShader) {
-    this._isCodeWrite = true;
+Effect.prototype.newCode = function () {
     this._pCode = [];
-    this._pCodeShader = (isShader || this._pCodeShader) ? [] : null;
-    this._pCodeStack.push([this._pCode, this._pCodeShader]);
+    this._pCode.isWrite = true;
+    this._pCodeStack.push(this._pCode);
 };
 Effect.prototype.endCode = function () {
     this._pCodeStack.pop();
     var iLen = this._pCodeStack.length - 1;
     if (iLen < 0) {
-        this._isCodeWrite = false;
         this._pCode = null;
-        this._pCodeShader = null;
         return;
     }
-    this._pCode = this._pCodeStack[iLen][0] || null;
-    this._pCodeShader = this._pCodeStack[iLen][1] || null;
+    this._pCode = this._pCodeStack[iLen] || null;
 };
 Effect.prototype.pushCode = function (pObj) {
-    if (!this._isCodeWrite) {
-        warning("Pause???");
+    if (this._pCode && !this._pCode.isWrite) {
         return;
     }
-    if (this._pCode) {
-        this._pCode.push(pObj);
+    this._pCode.push(pObj);
+};
+Effect.prototype.setWrite = function (isWrite) {
+    this._pCode.isWrite = isWrite;
+};
+Effect.prototype.isCodeWrite = function () {
+    if (this._pCode && this._pCode.isWrite) {
+        return true;
     }
-    else {
-        warning("Do you really want it?");
-    }
+    return false;
 };
 Effect.prototype.newMemRead = function () {
     this._pMemReadVars = [];
@@ -2033,6 +2084,9 @@ Effect.prototype.endAddr = function () {
 };
 Effect.prototype.newScope = function () {
     this._pScopeStack.push(this._nScope);
+    if (this._pCurrentFunction && this._pCurrentFunction.pScopeStack) {
+        this._pCurrentFunction.pScopeStack.push(this._nScope);
+    }
     this._iScope = this._nScope;
     this._nScope++;
     this._pCurrentScope = null;
@@ -2157,6 +2211,9 @@ Effect.prototype.addVariable = function (pVar, isParams) {
         pVar.pPointers = [];
         for (var i = 0; i < pVar.nDim; i++) {
             pVar.pPointers.push(new EffectPointer(pVar, i));
+        }
+        if (isParams) {
+            pVar.pBuffer = new EffectBuffer();
         }
     }
     if (!pVar.pType.isBase()) {
@@ -2373,7 +2430,7 @@ Effect.prototype.findFunction = function (sName, pParams) {
     }
     return null;
 };
-Effect.prototype.setBadFunction = function (pFunction) {
+Effect.prototype.addToBlackList = function (pFunction) {
     this._pFunctionTableByHash[pFunction.hash()] = null;
     this._pFunctionBlackList[pFunction.hash()] = pFunction;
     var pTable = this._pFunctionTableByName[pFunction.sName];
@@ -2473,8 +2530,9 @@ Effect.prototype.analyze = function (pTree) {
     this.preAnalyzeTechniques();
     this.secondStep();
     this.analyzeEffect();
+    this.postAnalyzeEffect();
     this.checkEffect();
-    this.endScope(1);
+    this.endScope();
     console.log(a.now() - time);
     return true;
 //    }
@@ -2558,6 +2616,78 @@ Effect.prototype.analyzeEffect = function () {
         this.nCurrentDecl++;
         this.analyzeDecl(pChildren[i]);
     }
+};
+
+Effect.prototype.postAnalyzeEffect = function () {
+    //check for used blacklist functions
+    var isNewDelete = true;
+    var i, j, k, l;
+    var pFunction;
+    while (isNewDelete) {
+        isNewDelete = false;
+        for (i in this._pFunctionTableByHash) {
+            pFunction = this._pFunctionTableByHash[i];
+            if (!pFunction) {
+                continue;
+            }
+            for (j in pFunction.pFunctions) {
+                if (this._pFunctionBlackList[j]) {
+                    this.addToBlackList(pFunction);
+                    isNewDelete = true;
+                }
+            }
+        }
+    }
+    //generate list of global and uniform variables for functions
+    var isNewVar = true;
+    var pGlobals, pUniforms;
+    while (isNewVar) {
+        isNewVar = false;
+        for (i in this._pFunctionTableByHash) {
+            pFunction = this._pFunctionTableByHash[i];
+            if (!pFunction) {
+                continue;
+            }
+            for (j in pFunction.pFunctions) {
+                pGlobals = pFunction.pFunctions[j].pGlobalVariables;
+                pUniforms = pFunction.pFunctions[j].pUniforms;
+                for (k in pUniforms) {
+                    if (pFunction.addUniform(pUniforms[k])) {
+
+                        isNewVar = true;
+                    }
+                }
+                for (k in pGlobals) {
+                    if (pFunction.addGlobalVariable(pGlobals[k])) {
+                        isNewVar = true;
+                    }
+                }
+            }
+        }
+    }
+    //generate effectBlock`s code
+    var pBlock;
+    var pVar;
+    for (i in this._pFunctionTableByHash) {
+        pFunction = this._pFunctionTableByHash[i];
+        if (!pFunction) {
+            continue;
+        }
+        for(j in pFunction.pMemBlocks){
+            pBlock = pFunction.pMemBlocks[j];
+            pVar = pBlock._pVar;
+            if(pVar.pType.isBase()){
+                pBlock.pushCode(pVar);
+                pBlock.pushCode("=");
+                if(pVar.pType.isEqual(this.hasType("float"))){
+                    pBlock.pushCode("A_extractFloat(");
+
+                }
+            }
+        }
+    }
+    //TODO: generate list of usages of GLOBAL var for shader manager
+    //TODO: add shaders to passes, and check them for valid
 };
 /**
  * Check effect after analyze for correctness of all instructions
@@ -2731,7 +2861,7 @@ Effect.prototype.addVariableDecl = function (pVar) {
     }
     else {
         this.addVariable(pVar);
-        if (this._isCodeWrite) {
+        if (this.isCodeWrite()) {
             this.pushCode(pVar.pType);
             this.pushCode(pVar);
             if (pVar.pInitializer) {
@@ -2755,10 +2885,11 @@ Effect.prototype.analyzeVariableDim = function (pNode, pVar) {
         return pVar;
     }
     if (pChildren.length === 3) {
-        if (!this._isStruct) {
+        if (!this._isStruct && !this._isParam) {
             error("For variables this are not good");
             return;
         }
+        console.log(pVar, pNode);
         pVar.isPointer = true;
         pVar.nDim++;
     }
@@ -2808,8 +2939,9 @@ Effect.prototype.analyzeMemExpr = function (pNode) {
     var pChildren = pNode.pChildren;
     var pMem;
     var pVar;
+    var isCodeWrite;
     if (pChildren[0].sName === T_NON_TYPE_ID) {
-        pMem = this.hasVariable(pChildren[1].sValue);
+        pMem = this.hasVariable(pChildren[0].sValue);
         if (!pMem) {
             error("bad 3");
             return;
@@ -2817,9 +2949,10 @@ Effect.prototype.analyzeMemExpr = function (pNode) {
         pMem = pMem.pBuffer;
     }
     else {
-        this._isCodeWrite = false;
+        isCodeWrite = this.isCodeWrite();
+        this.setWrite(false);
         this.analyzeExpr(pChildren[0]);
-        this._isCodeWrite = true;
+        this.setWrite(isCodeWrite);
 
         if (this._sLastFullName.search(".") !== -1) {
             pVar = this.hasComplexVariable(this._sLastFullName);
@@ -2839,6 +2972,9 @@ Effect.prototype.analyzeMemExpr = function (pNode) {
     }
     if (!pMem) {
         error("Oh-oh, don`t cool enough");
+    }
+    if (this._eFuncProperty === a.Effect.Func.FUNCTION && !pMem.isUniform) {
+        throw ERRORBADFUNCTION;
     }
     this._pExprType = this.hasType("video_buffer");
     return pMem;
@@ -2923,6 +3059,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
     var sTypeName;
     var pCodeFragment;
     var isWriteMode = false;
+    var isCodeWrite;
     var pCode, pCodeShader;
     var isFlag = false; //temp flag
     var pTemp = null; //some temp obj for anything
@@ -3096,7 +3233,8 @@ Effect.prototype.analyzeExpr = function (pNode) {
             }
             var isNewAddr = false;
             if (this._nAddr === 0) {
-                this._isCodeWrite = false;
+                isCodeWrite = this.isCodeWrite();
+                this.setWrite(false);
                 this.newAddr();
                 isNewAddr = true;
             }
@@ -3104,7 +3242,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             this.analyzeExpr(pChildren[0]);
 
             if (isNewAddr) {
-                this._isCodeWrite = true;
+                this.setWrite(isCodeWrite);
                 var pRes;
                 if (this._sLastFullName.search('.') !== -1) {
                     pRes = this.hasComplexVariable(this._sLastFullName);
@@ -3153,11 +3291,8 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 return;
             }
             if (pChildren.length === 2 && pChildren[1].sName === PRIMARYEXPR) {
-
                 this.analyzeExpr(pChildren[pChildren.length - 1]);
-
                 this._pMemReadVars.push(this._pLastVar);
-                console.log("i`m here", this._pLastVar,this._pMemReadVars);
                 this.pushCode(pChildren[0].sValue);
                 this._pExprType = this.hasType("ptr");
                 return;
@@ -3183,7 +3318,6 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 isComplexVar = true;
                 isFlag = false;
                 if (this._isNewName && this._sVarName !== "") {
-                    console.log(pNode, this._isNewName);
                     error("you are very unlucky or stupid. You can choose)");
                     return;
                 }
@@ -3240,7 +3374,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         error("bad 51");
                         return;
                     }
-                    if(pVar.isPointer === undefined){
+                    if (pVar.isPointer === undefined) {
                         pVar.isPointer = true;
                     }
                     this._pMemReadVars.push(pVar);
@@ -3261,6 +3395,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         error("bad 49");
                         return;
                     }
+
                     if (this._eFuncProperty === a.Effect.Func.FUNCTION && !pMem.isUniform) {
                         throw ERRORBADFUNCTION;
                     }
@@ -3343,7 +3478,8 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     pCode = this._pCode;
                     this.endCode();
                     isFlag = false;
-                    if (this._eVarProperty === a.Effect.Var.PARAM || this._eVarProperty === a.Effect.Var.PARAMSTART) {
+                    if (this._eVarProperty === a.Effect.Var.PARAM ||
+                        this._eVarProperty === a.Effect.Var.PARAMSTART) {
                         if (pType1.isBase()) {
                             for (i = 1; pCode && i < pCode.length; i++) {
                                 if (isFlag === true) {
@@ -3359,7 +3495,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         else {
                             for (i = 0; pCode && i < pCode.length; i++) {
                                 if (pCode[i] === this._pCurrentFunction.pMainInputVar) {
-                                    if (this._isCodeWrite) {
+                                    if (this.isCodeWrite()) {
                                         if (!this._pCurrentFunction.pTwin) {
                                             this._pCurrentFunction.createTwinIn();
                                         }
@@ -3598,6 +3734,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         return;
                     }
                     this._pLastVar = pRes;
+                    pRes.isUsed = true;
                     if (this._isWriteVar === true) {
                         if (pRes.isUniform) {
                             error("don`t even try to do this, bitch.1");
@@ -3607,7 +3744,8 @@ Effect.prototype.analyzeExpr = function (pNode) {
                             error("don`t even try to do this, bitch.2");
                             return;
                         }
-                        if (pRes.isParametr && pFunction && (pFunction.isVertexShader || pFunction.isFragmentShader)) {
+                        if (pRes.isParametr && pFunction &&
+                            (pFunction.isVertexShader || pFunction.isFragmentShader)) {
                             error("don`t even try to do this, bitch.3");
                             return;
                         }
@@ -3812,27 +3950,24 @@ Effect.prototype.analyzeStructDecl = function (pNode, pStruct) {
 
 Effect.prototype.analyzeFunctionDecl = function (pNode) {
     var pChildren = pNode.pChildren;
-//    this.newFunction();
     var pFunction;
     if (this.nStep === 1) {
-        var hasDecl = false;
         pFunction = this.analyzeFunctionDef(pChildren[pChildren.length - 1]);
 
-        if (pChildren[pChildren.length - 2].sValue !== ";") {
-            hasDecl = true;
+        if (pChildren[0].sValue !== ";") {
+            pFunction.pImplement = true;
         }
         else {
-            pNode.pAnalyzed = pFunction;
+            pNode.pAnalyzed = true;
+            return;
         }
         var pFunc = this._hasFunctionDecl(pFunction.hash());
 
-        if (pFunc !== false && pFunc.hasImplementation() && hasDecl) {
+        if (pFunc) {
             error("You try to redifinition function! Not good!");
             return;
         }
-        if (pFunc === false) {
-            this.addFunction(pFunction);
-        }
+        this.addFunction(pFunction);
     }
     else {
         pFunction = this.analyzeFunctionDef(pChildren[pChildren.length - 1]);
@@ -3842,6 +3977,7 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
         this._pCurrentFunction = pFunction;
         this.newScope();
         pFunction.iScope = this._iScope;
+        pFunction.pScopeStack = [this._iScope];
         var i;
         for (i in pFunction.pParameters) {
             this.addVariable(pFunction.pParameters[i], true);
@@ -3857,9 +3993,14 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
         }
         catch (e) {
             if (e === ERRORBADFUNCTION) {
-                console.log(e);
+                while (this._iScope !== pFunction.iScope) {
+                    this.endScope();
+                }
+                warning("Bad function: " + pFunction.sName);
                 pFunction.pImplement = null;
-                this.setBadFunction(pFunction);
+                this._pCodeStack = [];
+                this._pCode = null;
+                this.addToBlackList(pFunction);
             }
             else {
                 throw e;
@@ -3872,6 +4013,8 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
 
             this._eFuncProperty = a.Effect.Func.VERTEX;
             pFunction.pShader = new EffectVertex(pFunction);
+            pFunction.pShader.iScope = this._iScope;
+            pFunction.pShader.pScopeStack = [this._iScope];
             this._pCurrentFunction = pFunction.pShader;
             for (i = 0; i < pFunction.pParamOrders.length; i++) {
                 if (pFunction.pParamOrders[i].isUniform === false) {
@@ -3905,6 +4048,8 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
 
             this._eFuncProperty = a.Effect.Func.FRAGMENT;
             pFunction.pShader = new EffectFragment(pFunction);
+            pFunction.pShader.iScope = this._iScope;
+            pFunction.pShader.pScopeStack = [this._iScope];
             this._pCurrentFunction = pFunction.pShader;
             for (i = 0; i < pFunction.pParamOrders.length; i++) {
                 if (pFunction.pParamOrders[i].isUniform === false) {
@@ -4064,10 +4209,15 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
     var pFunction = this._pCurrentFunction;
     var pCode;
     var i;
-    this.newMemRead();
+    var sHash;
+    var isMemRead = false;
     if (pChildren[pChildren.length - 1].sValue === ";") {
         //SimpleStmt : ';' --AN
         return;
+    }
+    else if (pChildren[pChildren.length - 1].sName === STMTBLOCK) {
+        //SimpleStmt : StmtBlock
+        this.analyzeStmtBlock(pChildren[0]);
     }
     else if (pChildren[pChildren.length - 1].sValue === T_KW_RETURN && pChildren.length === 2) {
         //SimpleStmt : T_KW_RETURN ';'
@@ -4171,6 +4321,8 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
         this.analyzeTypeDecl(pChildren[0]);
     }
     else if (pChildren[pChildren.length - 1].sName === VARIABLEDECL) {
+        this.newMemRead();
+        isMemRead = true;
         //SimpleStmt : VariableDecl
         this.analyzeVariableDecl(pChildren[0]);
     }
@@ -4179,21 +4331,33 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
         this.analyzeVarStructDecl(pChildren[0]);
     }
     else {
+        this.newMemRead();
+        isMemRead = true;
         //SimpleStmt : Expr ';'
         this.analyzeExpr(pChildren[pChildren.length - 1]);
         this.pushCode(";");
     }
-    if (this._pMemReadVars.length) {
-        //TODO: add memread blocks
-        console.log("MemRead vars", this._pMemReadVars, this._pCurrentFunction);
+    if (isMemRead) {
+        if (this._pMemReadVars.length) {
+            //TODO: add memread blocks
+            for (i = 0; i < this._pMemReadVars.length; i++) {
+                sHash = this._pMemReadVars[i].sName + "!" + this._pMemReadVars[i].iScope;
+                if (!this._pCurrentFunction.pMemBlocks[sHash]) {
+                    this._pCurrentFunction.pMemBlocks[sHash] = new EffectBlock(a.Effect.Code.MEMREAD,
+                                                                               this._pMemReadVars[i]);
+                }
+                this.pushCode(this._pCurrentFunction.pMemBlocks[sHash]);
+            }
+        }
+        this.endMemRead();
     }
-    this.endMemRead();
 };
 
 Effect.prototype.analyzeParamList = function (pNode, pFunction) {
     var pChildren = pNode.pChildren;
     var i;
     var pVar;
+    this._isParam = true;
     pFunction.pParameters = {};
     for (i = pChildren.length - 2; i >= 1; i--) {
         if (pChildren[i].sName === PARAMETERDECL) {
@@ -4205,6 +4369,7 @@ Effect.prototype.analyzeParamList = function (pNode, pFunction) {
             pFunction.addParameter(pVar);
         }
     }
+    this._isParam = false;
     return pFunction;
 };
 Effect.prototype.analyzeParameterDecl = function (pNode) {
