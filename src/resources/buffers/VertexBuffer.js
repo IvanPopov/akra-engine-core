@@ -475,6 +475,86 @@ function computeBoundingBox (pVertexData, pBoundingBox)
 a.computeBoundingBox = computeBoundingBox;
 
 
+/**
+ * Computes data for cascade BoundingBox
+ * @property computeDataForCascadeBoundingBox(Rect3d pBoundingBox, Array pVertexs, Array pIndexes,fMinSize)
+ * @treturn Boolean
+ */
+function computeDataForCascadeBoundingBox(pBoundingBox,pVertexes,pIndexes, fMinSize)
+{
+
+	var pInd;
+	var pPoints;
+	var i, j, k;
+
+	pPoints = new Array(8);
+	for(i=0;i<8;i++)
+	{
+		pPoints[i]=new Array(4);
+		for(j=0;j<4;j++)
+			pPoints[i][j]=Vec3.create(0,0,0);
+	}
+
+	//Выставление точек Rect3d
+	Vec3.set([pBoundingBox.fX0,pBoundingBox.fY0,pBoundingBox.fZ0],pPoints[0][0]);
+	Vec3.set([pBoundingBox.fX0,pBoundingBox.fY1,pBoundingBox.fZ0],pPoints[1][0]);
+	Vec3.set([pBoundingBox.fX0,pBoundingBox.fY0,pBoundingBox.fZ1],pPoints[2][0]);
+	Vec3.set([pBoundingBox.fX0,pBoundingBox.fY1,pBoundingBox.fZ1],pPoints[3][0]);
+	Vec3.set([pBoundingBox.fX1,pBoundingBox.fY0,pBoundingBox.fZ0],pPoints[4][0]);
+	Vec3.set([pBoundingBox.fX1,pBoundingBox.fY1,pBoundingBox.fZ0],pPoints[5][0]);
+	Vec3.set([pBoundingBox.fX1,pBoundingBox.fY0,pBoundingBox.fZ1],pPoints[6][0]);
+	Vec3.set([pBoundingBox.fX1,pBoundingBox.fY1,pBoundingBox.fZ1],pPoints[7][0]);
+
+	var fTempFunc=function(pPoints,iPoint,iToPoint1,iToPoint2,iToPoint3)
+	{
+		for(var i=0;i<3;i++)
+		{
+			Vec3.subtract(pPoints[arguments[i+2]][0],pPoints[iPoint][0],pPoints[iPoint][i+1]);
+			if(Vec3.length(pPoints[iPoint][i+1])>fMinSize)
+			{
+				Vec3.scale(pPoints[iPoint][i+1],0.1);
+			}
+			Vec3.add(pPoints[iPoint][i+1],pPoints[iPoint][0]);
+		}
+	}
+
+	fTempFunc(pPoints,0,1,2,4);
+	fTempFunc(pPoints,1,0,3,5);
+	fTempFunc(pPoints,2,0,3,6);
+	fTempFunc(pPoints,3,1,2,7);
+	fTempFunc(pPoints,4,0,5,6);
+	fTempFunc(pPoints,5,1,4,7);
+	fTempFunc(pPoints,6,2,4,7);
+	fTempFunc(pPoints,7,3,5,6);
+
+	for(i=0;i<8;i++)
+	{
+		for(j=0;j<4;j++)
+		{
+			for(k=0;k<3;k++)
+			{
+				pVertexes[i*12+j*3+k]=pPoints[i][j][k];
+			}
+		}
+	}
+	pInd = [0, 1, 0, 2, 0, 3,
+		4, 5, 4, 6, 4, 7,
+		8, 9, 8,10, 8,11,
+		12,13,12,14,12,15,
+		16,17,16,18,16,19,
+		20,21,20,22,20,23,
+		24,25,24,26,24,27,
+		28,29,28,30,28,31];
+
+	for(i in pInd)
+	{
+		pIndexes[i]=pInd[i];
+	}
+
+	return true;
+}
+a.computeDataForCascadeBoundingBox = computeDataForCascadeBoundingBox;
+
 Enum([
          FAST,
          MINIMAL

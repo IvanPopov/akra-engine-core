@@ -1694,8 +1694,9 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
 			{
 				pMesh=buildMesh(pNode.pGeometry[m]);
                 pSceneNode.addMesh(pMesh);
+				pMesh.createAndShowSubBoundingBox();
 				pMesh.createBoundingBox();
-				pMesh.drawBoundingBox();
+				pMesh.showBoundingBox();
             }
         }
         else {

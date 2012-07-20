@@ -97,6 +97,7 @@ function RenderData() {
      */
     this._iIndexSet = 0;
 
+	this._iRenderable = 1;
 }
 
 EXTENDS(RenderData, a.ReferenceCounter);
@@ -496,6 +497,24 @@ RenderData.prototype.getIndexSet = function() {
     return this._iIndexSet;
 };
 
+
+/**
+ */
+RenderData.prototype.setRenderable = function(iIndexSet, bValue) {
+	'use strict';
+	iIndexSet=ifndef(iIndexSet, this.getIndexSet());
+	bValue=ifndef(bValue, true);
+	SET_BIT(this._iRenderable,iIndexSet, bValue);
+	return true;
+};
+
+RenderData.prototype.isRenderable = function(iIndexSet) {
+	'use strict';
+	iIndexSet=ifndef(iIndexSet, this.getIndexSet());
+	return TEST_BIT(this._iRenderable,iIndexSet);
+};
+
+
 /**
  * Check whether the semantics used in this data set.
  * @param  {DECLARATION_USAGE|String}  sSemantics Data semantics.
@@ -698,16 +717,18 @@ RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) {
  */
 RenderData.prototype.draw = function () {
     'use strict';
+	var isOK=true;
+	var i;
+	for(i=0; i<this._pIndicesArray.length;i++)
+	{
+		if(this.isRenderable(i))
+		{
+			this._pFactory._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pIndicesArray[i].pMap);
+			isOK&=this._pIndicesArray[i].pMap.draw();
 
-    var pProgram;
-
-    if (this._pIndexData === null) {
-            return;
-    }
-
-
-    this._pFactory._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pMap);
-    return this._pMap.draw();
+		}
+	}
+	return isOK;
 };
 
 Ifdef (__DEBUG);
