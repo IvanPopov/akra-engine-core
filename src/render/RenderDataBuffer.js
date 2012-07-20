@@ -117,8 +117,9 @@ RenderDataBuffer.prototype.allocateData = function (pDataDecl, pData) {
 Ifdef (__DEBUG);
     
     for (var i = 0; i < pDataDecl.length; i++) {
-        assert(this.getData(pDataDecl[i].eUsage) === null || pDataDecl[i].nCount === 0, 
-            "data buffer already contains data with similar vertex decloration.");
+        if (this.getData(pDataDecl[i].eUsage) !== null && pDataDecl[i].nCount !== 0) { 
+            warning("data buffer already contains data with similar vertex decloration.");
+        }
     };
 
 Endif ();

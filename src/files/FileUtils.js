@@ -408,7 +408,7 @@ function ThreadManager (sScript, pWorker) {
     //TRACE('thread manager used: ' + sScript + ' worker(' + (pWorker? 'not standart': 'standart') + ')');
 
     Enum([WORKER_BUSY, WORKER_FREE], WORKER_STATUS, a.ThreadManager);
-    Define(a.ThreadManager.MAX_THREAD_NUM, 32);
+    Define(a.ThreadManager.MAX_THREAD_NUM, 512);
     Define(a.ThreadManager.INIT_THREAD_NUM, 4);
 
 

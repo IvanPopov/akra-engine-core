@@ -1,6 +1,8 @@
 function Skin (pMesh, pSkeleton) {
 	debug_assert(pMesh, 'you must specify mesh for skin');
 
+    //bind shape matrix from collada
+    this._m4fBindMatrix = new Matrix4;
 	this._pMesh = pMesh;
 	this._pSkeleton = null;
 	this._pBoneTransformMatrices = null;
@@ -15,6 +17,8 @@ function Skin (pMesh, pSkeleton) {
 
     //список всех VertexData, к которым подвязан данный скин
     this._pTiedData = [];
+
+    Mat4.identity(this._m4fBindMatrix);
 }
 
 PROPERTY(Skin, 'buffer',
@@ -34,6 +38,19 @@ PROPERTY(Skin, 'skeleton',
     function () {
         return this._pSkeleton;
     });
+
+
+Skin.prototype.setBindMatrix = function (m4fMatrix) {
+    'use strict';
+        
+    Mat4.set(m4fMatrix, this._m4fBindMatrix);
+};
+
+Skin.prototype.getBindMatrix = function () {
+    'use strict';
+    
+    return this._m4fBindMatrix;
+};
 
 Skin.prototype.hasSkeleton = function() {
     return this._pSkeleton !== null;

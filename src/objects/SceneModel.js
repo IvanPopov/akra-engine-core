@@ -418,6 +418,7 @@ SceneModel.prototype.render = function () {
         pProgram.applyVector3('eye_pos', pCamera.worldPosition());
 
         if (pSubMesh.isSkinned()) {
+            pProgram.applyMatrix4('bind_matrix', pSubMesh.skin.getBindMatrix());
             pSubMesh.skin.applyBoneMatrices();
             
             if (bLocker) {
