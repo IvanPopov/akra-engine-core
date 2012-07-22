@@ -105,7 +105,11 @@ Mesh.prototype.setup = function(sName, eOptions, pDataBuffer) {
         this._pBuffer.setup(eOptions);
     }
     else {
+        debug_assert (pDataBuffer.getEngine() === this.getEngine(), 
+            'you can not use a buffer with a different context');
+        
         this._pBuffer = pDataBuffer;
+        eOptions |= pDataBuffer.getOptions();
     }
     
     this._pBuffer.addRef();

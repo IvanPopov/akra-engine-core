@@ -529,6 +529,7 @@ RenderData.prototype.hasSemantics = function (sSemantics, bSearchComplete) {
 RenderData.prototype.getDataLocation = function (sSemantics) {
     'use strict';
     var pData = this.getData(sSemantics);
+
     return pData? pData.getOffset(): -1;
 };
 
@@ -593,13 +594,12 @@ RenderData.prototype.getData = function () {
     if (typeof arguments[0] === 'string') {
         for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++ i) {
             pFlow = pFlows[i];
-
-            if (pFlow.pData && pFlow.pData.hasSemantics(arguments[0])) {
+            if (pFlow.pData != null && pFlow.pData.hasSemantics(arguments[0])) {
                 return pFlow.pData;
             }
         }
 
-        return null;
+        return null;//this._pBuffer.getData(arguments[0]);
     }
 
     pFlow = this.getFlow(arguments[0]);
@@ -657,6 +657,8 @@ RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) {
     }
     else if (typeof arguments[0] === 'string') {
         iData = this.getDataLocation(iData);
+
+        debug_assert (iData >= 0, 'cannot find data with semantics: ' + arguments[0]);
     }
     
     pFlow = this.getFlow(iData);

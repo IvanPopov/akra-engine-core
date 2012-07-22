@@ -1500,14 +1500,15 @@ function COLLADA (pEngine, pSettings) {
                             continue;
                         }
  
-                        var sInputSemantics = pInputs[pTextureObject.sParam].sInputSemantic;
-                        var pColladaImage = pTextureObject.pTexture;
-                        var pSurfaceMaterial = pSubMesh.surfaceMaterial;
-                        var pTexture = pEngine.displayManager().texturePool().loadResource(
-                            pColladaImage.pImage.sImagePath);
-                        var pMatches = sInputSemantics.match(/^(.*?\w)(\d+)$/i);
-                        var iTexCoord = (pMatches? pMatches[2]: 0);
-                        var iTexture = __ENUM__(SURFACEMATERIAL_TEXTURES)[c.toUpperCase()];
+                        var sInputSemantics     = pInputs[pTextureObject.sParam].sInputSemantic;
+                        var pColladaImage       = pTextureObject.pTexture;
+                        var pSurfaceMaterial    = pSubMesh.surfaceMaterial;
+                        var pTexture            = pEngine.displayManager().texturePool().loadResource(
+                                                    pColladaImage.pImage.sImagePath);
+                        
+                        var pMatches    = sInputSemantics.match(/^(.*?\w)(\d+)$/i);
+                        var iTexCoord   = (pMatches? pMatches[2]: 0);
+                        var iTexture    = __ENUM__(SURFACEMATERIAL_TEXTURES)[c.toUpperCase()];
 
                         pSurfaceMaterial.setTexture(iTexture, pTexture, iTexCoord);
                     }
@@ -1545,9 +1546,9 @@ function COLLADA (pEngine, pSettings) {
         var iBegin = a.now();
 
         var pMesh = new a.Mesh(pEngine, 
-              a.Mesh.VB_READABLE,//|a.Mesh.RD_ADVANCED_INDEX,  //0,//
+            a.Mesh.VB_READABLE, //|a.Mesh.RD_ADVANCED_INDEX,  //0,//
             sMeshName,
-            sharedBuffer()); //shared buffer, if exists
+            sharedBuffer());    //shared buffer, if supported
 
         var pPolyGroup = pNodeData.pPolygons;
         var pMeshData = pMesh.data;
@@ -1558,14 +1559,18 @@ function COLLADA (pEngine, pSettings) {
         }
 
         //filling data
-        for (var i = 0; i < pPolyGroup.length; ++ i) {
+        for (var i = 0, pUsedSemantics = {}; i < pPolyGroup.length; ++ i) {
             var pPolygons = pPolyGroup[i];
 
             for (var j = 0; j < pPolygons.pInput.length; ++ j) {
                 var sSemantic = pPolygons.pInput[j].sSemantic;
-
-                if (pMesh.buffer.getDataLocation(sSemantic) < 0) {
-                    var pDecl, pData = pPolygons.pInput[j].pArray, pDataExt;
+                var pData = pPolygons.pInput[j].pArray;
+                var pDecl, pDataExt;
+                
+                //if (pMesh.buffer.getDataLocation(sSemantic) < 0) {
+                if (!pUsedSemantics[sSemantic]) {
+                    pUsedSemantics[sSemantic] = true;
+                    
                     switch (sSemantic) {
                         case a.DECLUSAGE.POSITION:
                         case a.DECLUSAGE.NORMAL:
@@ -1582,7 +1587,6 @@ function COLLADA (pEngine, pSettings) {
                             };
 
                             pData = pDataExt;
-
                             pDecl = [VE_FLOAT3(sSemantic), VE_END(16)];
                             break;
                         case a.DECLUSAGE.TEXCOORD:
@@ -1597,16 +1601,19 @@ function COLLADA (pEngine, pSettings) {
                             error('unsupported semantics used: ' + sSemantic);
                     }
 
-                    pMeshData.allocateData(pDecl, pData);
+                    trace('data location for ', sSemantic, ':', 
+                        pMeshData.allocateData(pDecl, pData)
+                        );
                 }
             }
         }
 
-        // trace('data filled:', a.now() - iBegin, 'ms');
+        //trace('data filled:', a.now() - iBegin, 'ms');
 
 
         //add indices to data
         for (var i = 0; i < pPolyGroup.length; ++ i) {
+            trace('indices for submesh: ', i);
             var pPolygons = pPolyGroup[i];
             var pSubMesh = pMesh.getSubset(i);
             var pSubMeshData = pSubMesh.data;
@@ -1620,7 +1627,9 @@ function COLLADA (pEngine, pSettings) {
             pSubMeshData.allocateIndex(pDecl, new Float32Array(pPolygons.p));
 
             for (var j = 0; j < pDecl.length; ++ j) {
-                pSubMeshData.index(pPolygons.pInput[j].sSemantic, pDecl[j].eUsage);
+                var sSemantic = pPolygons.pInput[j].sSemantic;
+                trace('index for data ', sSemantic, ' with location: ', pSubMeshData.getDataLocation(sSemantic));
+                pSubMeshData.index(sSemantic, pDecl[j].eUsage);
             }
 
             pSubMesh.material.name = pPolygons.sMaterial;
@@ -1629,18 +1638,19 @@ function COLLADA (pEngine, pSettings) {
         pMesh.addFlexMaterial('default');
         pMesh.setFlexMaterial('default');
 
-        // trace('indices added:', a.now() - iBegin, 'ms');
-        // trace('--- complete ---');
+        //trace('indices added:', a.now() - iBegin, 'ms');
+        //trace('--- complete ---');
 
-        // trace('loaded mesh<', sMeshName,'>:');
-        // for (var i = 0; i < pMesh.length; ++i) {
-        //      trace('\tsubmesh<', pMesh[i].name,'>:', pMesh[i].data.getPrimitiveCount(), 'polygons');
-        // }
-        
+        trace('loaded mesh<', sMeshName,'>:');
+        for (var i = 0; i < pMesh.length; ++i) {
+            trace('\tsubmesh<', pMesh[i].name,'>:', pMesh[i].data.getPrimitiveCount(), 'polygons');
+            //trace(pMesh[i].data.toString());
+        }
+
         //adding all data to cahce data
         pMeshList[sMeshName] = pMesh;
         
-        //sharedBuffer(pMesh.buffer);
+        sharedBuffer(pMesh.buffer);
 
         return buildMaterials(pMesh, pMeshNode);
     };
@@ -1700,7 +1710,7 @@ function COLLADA (pEngine, pSettings) {
         var pSkinData;
         
         pMesh = buildMesh({pGeometry: pGeometry, pMaterials: pMaterials});
-        /*
+        
         pSkeleton = new a.Skeleton(pEngine, pSkeletonsList[0]);
         pSkeleton.setup(pBoneList.length);
         pSkin = new a.Skin(pMesh, pSkeleton);
@@ -1733,9 +1743,7 @@ function COLLADA (pEngine, pSettings) {
                 iIndex: i
             };
         };
- */
-        
-
+ 
         return pMesh;
     }
 
