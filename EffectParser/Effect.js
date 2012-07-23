@@ -23,262 +23,212 @@ function loadEffectFile(sSource, iType) {
     }
 }
 ;
-//Define(VARDECL, "VariableDecl");
-//Define(TYPEDECL, "TypeDecl");
-//Define(STRUCTDECL, "VarStructDecl");
-//Define(FUNCDECL, "FunctionDecl");
-//Define(TECHDECL, "TechniqueDecl");
-//Define(USAGES, "Usages");
-//Define(TYPE, "Type");
-//Define(VARIABLE, "Variable");
-var VARIABLEDECL = "VariableDecl";
-var TYPEDECL = "TypeDecl";
-var VARSTRUCTDECL = "VarStructDecl";
-var FUNCTIONDECL = "FunctionDecl";
-var TECHIQUEDECL = "TechniqueDecl";
-var USAGE = "Usages";
-var TYPE = "EffectType";
-var VARIABLE = "EffectVariable";
-var SEMANTIC = "Semantic";
-var ANNOTATION = "Annotation";
-var INITIALIZER = "Initializer";
-var CONST = "const";
-var ROW_MAJOR = "row_major";
-var COLUMN_MAJOR = "column_major";
-var UNIFORM = "uniform";
-var STATIC = "static";
-var SHARED = "shared";
-var EXTERN = "extern";
-var INLINE = "inline";
 
-var T_KW_STATIC = "static"
-var T_KW_UNIFORM = "uniform"
-var T_KW_EXTERN = "extern"
-var T_KW_VOLATILE = "volatile"
-var T_KW_INLINE = "inline"
-var T_KW_SHARED = "shared"
-var T_KW_CONST = "const"
-var T_KW_ROW_MAJOR = "row_major"
-var T_KW_COLUMN_MAJOR = "column_major"
-var T_KW_TYPEDEF = "typedef"
-var T_KW_STRUCT = "struct"
-var T_KW_VOID = "void"
-var T_KW_BOOL = "bool"
-var T_KW_INT = "int"
-var T_KW_HALF = "half"
-var T_KW_FLOAT = "float"
-var T_KW_DOUBLE = "double"
-var T_KW_VECTOR = "vector"
-var T_KW_MATRIX = "matrix"
-var T_KW_STRING = "string"
-var T_KW_TEXTURE = "texture"
-var T_KW_TEXTURE1D = "texture1D"
-var T_KW_TEXTURE2D = "texture2D"
-var T_KW_TEXTURE3D = "texture3D"
-var T_KW_TEXTURECUBE = "texturecube"
-var T_KW_SAMPLER = "sampler"
-var T_KW_SAMPLER1D = "sampler1D"
-var T_KW_SAMPLER2D = "sampler2D"
-var T_KW_SAMPLER3D = "sampler3D"
-var T_KW_SAMPLERCUBE = "samplercube"
-var T_KW_PIXELSHADER = "pixelshader"
-var T_KW_VERTEXSHADER = "vertexshader"
-var T_KW_PIXELFRAGMENT = "pixelfragment"
-var T_KW_VERTEXFRAGMENT = "vertexfragment"
-var T_KW_STATEBLOCK = "stateblock"
-var T_KW_STATEBLOCK_STATE = "stateblock_state"
-var T_KW_COMPILE_FRAGMENT = "compile_fragment"
-var T_KW_REGISTER = "register"
-var T_KW_COMPILE = "compile"
-var T_KW_SAMPLER_STATE = "sampler_state"
+var GLOBAL_VARS = {
+    VARIABLEDECL          : "VariableDecl",
+    TYPEDECL              : "TypeDecl",
+    VARSTRUCTDECL         : "VarStructDecl",
+    FUNCTIONDECL          : "FunctionDecl",
+    TECHIQUEDECL          : "TechniqueDecl",
+    USAGES                : "Usages",
+    SEMANTIC              : "Semantic",
+    ANNOTATION            : "Annotation",
+    INITIALIZER           : "Initializer",
+    CONST                 : "const",
+    ROW_MAJOR             : "row_major",
+    COLUMN_MAJOR          : "column_major",
+    UNIFORM               : "uniform",
+    STATIC                : "static",
+    SHARED                : "shared",
+    EXTERN                : "extern",
+    INLINE                : "inline",
+    TYPE                  : "Type",
+    VARIABLE              : "Variable",
+    T_KW_STATIC           : "static",
+    T_KW_UNIFORM          : "uniform",
+    T_KW_EXTERN           : "extern",
+    T_KW_VOLATILE         : "volatile",
+    T_KW_INLINE           : "inline",
+    T_KW_SHARED           : "shared",
+    T_KW_CONST            : "const",
+    T_KW_ROW_MAJOR        : "row_major",
+    T_KW_COLUMN_MAJOR     : "column_major",
+    T_KW_TYPEDEF          : "typedef",
+    T_KW_STRUCT           : "struct",
+    T_KW_VOID             : "void",
+    T_KW_BOOL             : "bool",
+    T_KW_INT              : "int",
+    T_KW_HALF             : "half",
+    T_KW_FLOAT            : "float",
+    T_KW_DOUBLE           : "double",
+    T_KW_VECTOR           : "vector",
+    T_KW_MATRIX           : "matrix",
+    T_KW_STRING           : "string",
+    T_KW_TEXTURE          : "texture",
+    T_KW_TEXTURE1D        : "texture1D",
+    T_KW_TEXTURE2D        : "texture2D",
+    T_KW_TEXTURE3D        : "texture3D",
+    T_KW_TEXTURECUBE      : "texturecube",
+    T_KW_SAMPLER          : "sampler",
+    T_KW_SAMPLER1D        : "sampler1D",
+    T_KW_SAMPLER2D        : "sampler2D",
+    T_KW_SAMPLER3D        : "sampler3D",
+    T_KW_SAMPLERCUBE      : "samplercube",
+    T_KW_PIXELSHADER      : "pixelshader",
+    T_KW_VERTEXSHADER     : "vertexshader",
+    T_KW_PIXELFRAGMENT    : "pixelfragment",
+    T_KW_VERTEXFRAGMENT   : "vertexfragment",
+    T_KW_STATEBLOCK       : "stateblock",
+    T_KW_STATEBLOCK_STATE : "stateblock_state",
+    T_KW_COMPILE_FRAGMENT : "compile_fragment",
+    T_KW_REGISTER         : "register",
+    T_KW_COMPILE          : "compile",
+    T_KW_SAMPLER_STATE    : "sampler_state",
+    T_NON_TYPE_ID         : "T_NON_TYPE_ID",
+    T_TYPE_ID             : "T_TYPE_ID",
+    T_STRING              : "T_STRING",
+    T_FLOAT               : "T_FLOAT",
+    T_UINT                : "T_UINT",
+    T_KW_TRUE             : "T_KW_TRUE",
+    T_KW_FALSE            : "T_KW_FALSE",
+    GLOBAL                : 0,
+    PROGRAM               : "Program",
+    DECLS                 : "Decls",
+    DECL                  : "Decl",
+    USEDECL               : "UseDecl",
+    USAGE                 : "Usage",
+    CONSTUSAGES           : "ConstUsages",
+    CONSTUSAGE            : "ConstUsage",
+    USAGETYPE             : "UsageType",
+    USAGESTRUCTDECL       : "UsageStructDecl",
+    TYPEDEFS              : "TypeDefs",
+    CONSTTYPE             : "ConstType",
+    CONSTTYPEDIM          : "ConstTypeDim",
+    BASETYPE              : "BaseType",
+    SCALARTYPE            : "ScalarType",
+    VECTORTYPE            : "VectorType",
+    MATRIXTYPE            : "MatrixType",
+    OBJECTTYPE            : "ObjectType",
+    STRUCT                : "Struct",
+    STRUCTDECL            : "StructDecl",
+    CONSTSTRUCTDECL       : "ConstStructDecl",
+    STRUCTBEGIN           : "StructBegin",
+    STRUCTDECLS           : "StructDecls",
+    STRUCTEND             : "StructEnd",
+    SEMANTICS             : "Semantics",
+    SEMANTICSOPT          : "SemanticsOpt",
+    REGISTER              : "Register",
+    ANNOTATIONOPT         : "AnnotationOpt",
+    ANNOTATIONBEGIN       : "AnnotationBegin",
+    ANNOTATIONDECLS       : "AnnotationDecls",
+    ANNOTATIONEND         : "AnnotationEnd",
+    INITIALIZEROPT        : "InitializerOpt",
+    VARIABLES             : "Variables",
+    VARIABLEDIM           : "VariableDim",
+    FUNCTIONDEF           : "FunctionDef",
+    PARAMLIST             : "ParamList",
+    PARAMLISTBEGIN        : "ParamListBegin",
+    PARAMLISTEND          : "ParamListEnd",
+    PARAMETERDECLS        : "ParameterDecls",
+    PARAMETERDECL         : "ParameterDecl",
+    PARAMUSAGETYPE        : "ParamUsageType",
+    PARAMUSAGES           : "ParamUsages",
+    PARAMUSAGE            : "ParamUsage",
+    TECHNIQUEDECL         : "TechniqueDecl",
+    TECHNIQUEBODY         : "TechniqueBody",
+    TECHNIQUEBEGIN        : "TechniqueBegin",
+    TECHNIQUEEND          : "TechniqueEnd",
+    PASSDECLS             : "PassDecls",
+    PASSDECL              : "PassDecl",
+    STATEBLOCK            : "StateBlock",
+    STATEBLOCKBEGIN       : "StateBlockBegin",
+    STATEBLOCKEND         : "StateBlockEnd",
+    STATES                : "States",
+    STATE                 : "State",
+    STATEINDEX            : "StateIndex",
+    STATEEXPRBEGIN        : "StateExprBegin",
+    STATEEXPREND          : "StateExprEnd",
+    STMTBLOCK             : "StmtBlock",
+    STMTBLOCKBEGIN        : "StmtBlockBegin",
+    STMTBLOCKEND          : "StmtBlockEnd",
+    STMTS                 : "Stmts",
+    SIMPLESTMT            : "SimpleStmt",
+    NONIFSTMT             : "NonIfStmt",
+    STMT                  : "Stmt",
+    FOR                   : "For",
+    FORINIT               : "ForInit",
+    FORCOND               : "ForCond",
+    FORSTEP               : "ForStep",
+    DWORDEXPR             : "DwordExpr",
+    STATEEXPR             : "StateExpr",
+    SIMPLEEXPR            : "SimpleExpr",
+    COMPLEXEXPR           : "ComplexExpr",
+    OBJECTEXPR            : "ObjectExpr",
+    PRIMARYEXPR           : "PrimaryExpr",
+    POSTFIXEXPR           : "PostfixExpr",
+    UNARYEXPR             : "UnaryExpr",
+    CASTEXPR              : "CastExpr",
+    MULEXPR               : "MulExpr",
+    ADDEXPR               : "AddExpr",
+    RELATIONALEXPR        : "RelationalExpr",
+    EQUALITYEXPR          : "EqualityExpr",
+    ANDEXPR               : "AndExpr",
+    OREXPR                : "OrExpr",
+    CONDITIONALEXPR       : "ConditionalExpr",
+    ASSIGNMENTEXPR        : "AssignmentExpr",
+    ARGUMENTS             : "Arguments",
+    ARGUMENTSOPT          : "ArgumentsOpt",
+    INITEXPR              : "InitExpr",
+    INITEXPRS             : "InitExprs",
+    CONSTANTEXPR          : "ConstantExpr",
+    EXPR                  : "Expr",
+    DWORD                 : "Dword",
+    DWORDID               : "DwordId",
+    ID                    : "Id",
+    IDOPT                 : "IdOpt",
+    TARGET                : "Target",
+    UINT                  : "Uint",
+    FLOAT                 : "Float",
+    STRINGS               : "Strings",
+    STRING                : "String",
+    TYPEID                : "TypeId",
+    NONTYPEID             : "NonTypeId",
+    T_KW_FOR              : "for",
+    T_KW_RETURN           : "return",
+    T_KW_DO               : "do",
+    T_KW_DISCARD          : "discard",
+    T_KW_WHILE            : "while",
+    T_KW_IF               : "if",
+    T_KW_ELSE             : "else",
 
-var SIMPLEEXPR = "SimpleExpr";
-var CONSTANTEXPR = "ConstantExpr";
-var COMPLEXEXPR = "ComplexExpr";
-var OBJECTEXPR = "ObjectExpr";
-var PRIMARYEXPR = "PrimaryExpr";
-var POSTFIXEXPR = "PostfixExpr";
-var UNARYEXPR = "UnaryExpr";
-var CASTEXPR = "CastExpr";
-var MULEXPR = "MulExpr";
-var ADDEXPR = "AddExpr";
-var RELATIONALEXPR = "RelationalExpr";
-var EQUALITYEXPR = "EqualityExpr";
-var ANDEXPR = "AndExpr";
-var OREXPR = "OrExpr";
-var CONDITIONALEXPR = "ConditionalExpr";
-var ASSIGNMENTEXPR = "AssignmentExpr";
-var BASETYPE = "BaseType";
+    FROMEXPR     : "FromExpr",
+    MEMEXPR      : "MemExpr",
+    T_KW_USE     : "use",
+    T_KW_STRICT  : "strict",
+    IMPORTDECL   : "ImportDecl",
+    PROVIDEDECL  : "ProvideDecl",
+    STATEIF      : "StateIf",
+    STATESWITCH  : "StateSwitch",
+    CASESTATE    : "CaseState",
+    DEFAULTSTATE : "DefaultState",
+    PASSSTATE    : "PassState",
 
-var STMTBLOCK = "StmtBlock";
-
-var CONSTTYPEDIM = "ConstTypeDim";
-var SCALARTYPE = "ScalarType";
-var VECTORTYPE = "VectorType";
-var MATRIXTYPE = "MatrixType";
-var OBJECTTYPE = "ObjectType";
-
-var T_NON_TYPE_ID = "T_NON_TYPE_ID";
-var T_TYPE_ID = "T_TYPE_ID";
-var T_STRING = "T_STRING";
-var T_FLOAT = "T_FLOAT";
-var T_UINT = "T_UINT";
-var T_KW_TRUE = "T_KW_TRUE";
-var T_KW_FALSE = "T_KW_FALSE";
-
-var GLOBAL = 0;
-
-var STRUCT = 10;
-
-var PROGRAM = "Program"
-var DECLS = "Decls"
-var DECL = "Decl"
-var USEDECL = "UseDecl"
-var USAGES = "Usages"
-var USAGE = "Usage"
-var CONSTUSAGES = "ConstUsages"
-var CONSTUSAGE = "ConstUsage"
-var USAGETYPE = "UsageType"
-var USAGESTRUCTDECL = "UsageStructDecl"
-var TYPEDECL = "TypeDecl"
-var TYPEDEFS = "TypeDefs"
-var TYPE = "Type"
-var CONSTTYPE = "ConstType"
-var CONSTTYPEDIM = "ConstTypeDim"
-var BASETYPE = "BaseType"
-var SCALARTYPE = "ScalarType"
-var VECTORTYPE = "VectorType"
-var MATRIXTYPE = "MatrixType"
-var OBJECTTYPE = "ObjectType"
-var STRUCT = "Struct"
-var STRUCTDECL = "StructDecl"
-var CONSTSTRUCTDECL = "ConstStructDecl"
-var STRUCTBEGIN = "StructBegin"
-var STRUCTDECLS = "StructDecls"
-var STRUCTEND = "StructEnd"
-var SEMANTIC = "Semantic"
-var SEMANTICS = "Semantics"
-var SEMANTICSOPT = "SemanticsOpt"
-var REGISTER = "Register"
-var ANNOTATION = "Annotation"
-var ANNOTATIONOPT = "AnnotationOpt"
-var ANNOTATIONBEGIN = "AnnotationBegin"
-var ANNOTATIONDECLS = "AnnotationDecls"
-var ANNOTATIONEND = "AnnotationEnd"
-var INITIALIZER = "Initializer"
-var INITIALIZEROPT = "InitializerOpt"
-var VARIABLEDECL = "VariableDecl"
-var VARSTRUCTDECL = "VarStructDecl"
-var VARIABLES = "Variables"
-var VARIABLE = "Variable"
-var VARIABLEDIM = "VariableDim"
-var FUNCTIONDECL = "FunctionDecl"
-var FUNCTIONDEF = "FunctionDef"
-var PARAMLIST = "ParamList"
-var PARAMLISTBEGIN = "ParamListBegin"
-var PARAMLISTEND = "ParamListEnd"
-var PARAMETERDECLS = "ParameterDecls"
-var PARAMETERDECL = "ParameterDecl"
-var PARAMUSAGETYPE = "ParamUsageType"
-var PARAMUSAGES = "ParamUsages"
-var PARAMUSAGE = "ParamUsage"
-var TECHNIQUEDECL = "TechniqueDecl"
-var TECHNIQUEBODY = "TechniqueBody"
-var TECHNIQUEBEGIN = "TechniqueBegin"
-var TECHNIQUEEND = "TechniqueEnd"
-var PASSDECLS = "PassDecls"
-var PASSDECL = "PassDecl"
-var STATEBLOCK = "StateBlock"
-var STATEBLOCKBEGIN = "StateBlockBegin"
-var STATEBLOCKEND = "StateBlockEnd"
-var STATES = "States"
-var STATE = "State"
-var STATEINDEX = "StateIndex"
-var STATEEXPRBEGIN = "StateExprBegin"
-var STATEEXPREND = "StateExprEnd"
-var STMTBLOCK = "StmtBlock"
-var STMTBLOCKBEGIN = "StmtBlockBegin"
-var STMTBLOCKEND = "StmtBlockEnd"
-var STMTS = "Stmts"
-var SIMPLESTMT = "SimpleStmt"
-var NONIFSTMT = "NonIfStmt"
-var STMT = "Stmt"
-var FOR = "For"
-var FORINIT = "ForInit"
-var FORCOND = "ForCond"
-var FORSTEP = "ForStep"
-var DWORDEXPR = "DwordExpr"
-var STATEEXPR = "StateExpr"
-var SIMPLEEXPR = "SimpleExpr"
-var COMPLEXEXPR = "ComplexExpr"
-var OBJECTEXPR = "ObjectExpr"
-var PRIMARYEXPR = "PrimaryExpr"
-var POSTFIXEXPR = "PostfixExpr"
-var UNARYEXPR = "UnaryExpr"
-var CASTEXPR = "CastExpr"
-var MULEXPR = "MulExpr"
-var ADDEXPR = "AddExpr"
-var RELATIONALEXPR = "RelationalExpr"
-var EQUALITYEXPR = "EqualityExpr"
-var ANDEXPR = "AndExpr"
-var OREXPR = "OrExpr"
-var CONDITIONALEXPR = "ConditionalExpr"
-var ASSIGNMENTEXPR = "AssignmentExpr"
-var ARGUMENTS = "Arguments"
-var ARGUMENTSOPT = "ArgumentsOpt"
-var INITEXPR = "InitExpr"
-var INITEXPRS = "InitExprs"
-var CONSTANTEXPR = "ConstantExpr"
-var EXPR = "Expr"
-var DWORD = "Dword"
-var DWORDID = "DwordId"
-var ID = "Id"
-var IDOPT = "IdOpt"
-var TARGET = "Target"
-var UINT = "Uint"
-var FLOAT = "Float"
-var STRINGS = "Strings"
-var STRING = "String"
-var TYPEID = "TypeId"
-var NONTYPEID = "NonTypeId"
-var T_KW_FOR = "for"
-var T_KW_RETURN = "return"
-var T_KW_DO = "do"
-var T_KW_DISCARD = "discard"
-var T_KW_WHILE = "while"
-var T_KW_IF = "if"
-var T_KW_ELSE = "else"
-var FROMEXPR = "FromExpr";
-var MEMEXPR = "MemExpr";
-var T_KW_USE = "use"
-var T_KW_STRICT = "strict"
-var IMPORTDECL = "ImportDecl";
-var PROVIDEDECL = "ProvideDecl";
-var STATEIF = "StateIf";
-var STATESWITCH = "StateSwitch";
-var CASESTATE = "CaseState";
-var DEFAULTSTATE = "DefaultState";
-var PASSSTATE = "PassState";
-
-var SYSTEMVAR = "engine";
-/**
- * Type for system(defined in js) variables, only for pass
- * @type {Int}
- */
-var UNDEFINEDTYPE = 7;
+    SYSTEMVAR     : "engine",
+    UNDEFINEDTYPE : 7,
 
 
-var VERTEXUSAGE = 1;
-var FRAGMENTUSAGE = 2;
-var STRUCTUSAGE = 3;
-var LOCALUSAGE = 4;
-var PARAMETRUSAGE = 5;
-var VERTEXUSAGEPARAM = 6;
-var GLOBALUSAGE = 7;
-var NOTUSAGE = -1;
+    VERTEXUSAGE      : 1,
+    FRAGMENTUSAGE    : 2,
+    STRUCTUSAGE      : 3,
+    LOCALUSAGE       : 4,
+    PARAMETRUSAGE    : 5,
+    VERTEXUSAGEPARAM : 6,
+    GLOBALUSAGE      : 7,
+    NOTUSAGE         : -1,
 
-var ERRORBADFUNCTION = 147;
-var SHADEROUT = "Out";
+    ERRORBADFUNCTION : 147,
+    SHADEROUT        : "Out"
+};
 
 
 function GLSLExpr(sTemplate) {
@@ -402,43 +352,43 @@ VariableType.prototype.checkMe = function () {
     var i;
     for (i = 0; i < arguments.length; i++) {
         switch (arguments[i]) {
-            case NOTUSAGE:
+            case GLOBAL_VARS.NOTUSAGE:
                 break;
-            case VERTEXUSAGE:
-                if (this.isStruct() && this.pEffectType.checkMe(VERTEXUSAGE)) {
+            case GLOBAL_VARS.VERTEXUSAGE:
+                if (this.isStruct() && this.pEffectType.checkMe(GLOBAL_VARS.VERTEXUSAGE)) {
                     continue;
                 }
                 if (this.isBase() && this.sSemantic === "POSITION") {
                     continue;
                 }
                 return false;
-            case FRAGMENTUSAGE:
-                if (this.isStruct() && this.pEffectType.checkMe(FRAGMENTUSAGE)) {
+            case GLOBAL_VARS.FRAGMENTUSAGE:
+                if (this.isStruct() && this.pEffectType.checkMe(GLOBAL_VARS.FRAGMENTUSAGE)) {
                     continue;
                 }
                 if (this.isBase() && this.sSemantic === "COLOR") {
                     continue;
                 }
                 return false;
-            case STRUCTUSAGE:
+            case GLOBAL_VARS.STRUCTUSAGE:
                 if (this.pUsages) {
                     return false;
                 }
                 break;
-            case VERTEXUSAGEPARAM:
-                if (!this.pEffectType.checkMe(VERTEXUSAGEPARAM)) {
+            case GLOBAL_VARS.VERTEXUSAGEPARAM:
+                if (!this.pEffectType.checkMe(GLOBAL_VARS.VERTEXUSAGEPARAM)) {
                     return false;
                 }
                 break;
-            case PARAMETRUSAGE:
+            case GLOBAL_VARS.PARAMETRUSAGE:
                 break;
-            case LOCALUSAGE:
+            case GLOBAL_VARS.LOCALUSAGE:
                 if (this.pUsagesName["uniform"] === null ||
                     this.pUsagesName["global"] === null) {
                     return false;
                 }
                 break;
-            case GLOBALUSAGE:
+            case GLOBAL_VARS.GLOBALUSAGE:
                 break;
             default:
                 warning("Unknown usage for check");
@@ -604,24 +554,24 @@ EffectType.prototype.checkMe = function () {
     }
     for (i = 0; i < arguments.length; i++) {
         switch (arguments[i]) {
-            case VERTEXUSAGE:
+            case GLOBAL_VARS.VERTEXUSAGE:
                 if (!this.hasSemantic("POSITION") || this.hasEmptySemantic() || this.hasMultipleSemantic() ||
                     this.hasComplexType()) {
                     return false;
                 }
                 break;
-            case FRAGMENTUSAGE:
+            case GLOBAL_VARS.FRAGMENTUSAGE:
                 if (this.pDesc.pOrders.length !== 1 || !this.hasSemantic("COLOR")) {
                     return false;
                 }
                 break;
-            case VERTEXUSAGEPARAM:
+            case GLOBAL_VARS.VERTEXUSAGEPARAM:
                 if (this.hasEmptySemantic() || this.hasMultipleSemantic()) {
                     return false;
                 }
                 if (this.hasComplexType()) {
                     for (j = 0; j < this.pDesc.pOrders.length; j++) {
-                        if (!this.pDesc.pOrders[j].pType.checkMe(VERTEXUSAGEPARAM)) {
+                        if (!this.pDesc.pOrders[j].pType.checkMe(GLOBAL_VARS.VERTEXUSAGEPARAM)) {
                             return false;
                         }
                     }
@@ -848,12 +798,12 @@ function EffectBuffer() {
      * Pointer for real code
      * @type {Object}
      */
-    this.pSampler = null;
+    this.pSampler = {pData : null};
     /**
      * Pointer for real code
      * @type {Object}
      */
-    this.pHeader = null;
+    this.pHeader = {pData : null};
     this.isUniform = false;
     this.id = EffectBuffer.nCount++;
 }
@@ -1071,7 +1021,9 @@ function EffectBaseFunction() {
      * @type {Object}
      */
     this.pFunctions = null;
+    this._pBaseMemBlocks = {};
     this.pMemBlocks = {};
+    this._pExtractFunctions = null;
 }
 EffectBaseFunction.prototype.addGlobalVariable = function (pVar) {
     if (!this.pGlobalVariables) {
@@ -1117,6 +1069,27 @@ EffectBaseFunction.prototype.addSemantic = function (sSemantic) {
 };
 EffectBaseFunction.prototype.setImplement = function (pImplement) {
     this.pImplement = pImplement;
+};
+EffectBaseFunction.prototype.memBlock = function (pVar, iPointer) {
+    var sName = pVar.sName + "?";
+    sName += pVar.iScope + "@";
+    var pBase;
+    var pBlock;
+    if (!this._pBaseMemBlocks[sName]) {
+        this._pBaseMemBlocks[sName] = new MemBlock(pVar);
+    }
+    pBase = this._pBaseMemBlocks[sName];
+    if (iPointer === undefined) {
+        pBlock = pBase;
+    }
+    else {
+        sName += iPointer !== undefined ? iPointer : ""
+        if (!this.pMemBlocks[sName]) {
+            this.pMemBlocks[sName] = new MemBlock(pBase, iPointer);
+            pBlock = this.pMemBlocks[sName];
+        }
+    }
+    return pBlock;
 };
 
 function EffectFunction(sName, pGLSLExpr, pTypes) {
@@ -1255,8 +1228,8 @@ EffectFunction.prototype.checkMe = function () {
     var isOne = false;
     for (i = 0; i < arguments.length; i++) {
         switch (arguments[i]) {
-            case VERTEXUSAGE:
-                if (!this.pReturnType.checkMe(VERTEXUSAGE)) {
+            case GLOBAL_VARS.VERTEXUSAGE:
+                if (!this.pReturnType.checkMe(GLOBAL_VARS.VERTEXUSAGE)) {
                     return false;
                 }
                 pSemantics = {};
@@ -1288,7 +1261,7 @@ EffectFunction.prototype.checkMe = function () {
                         pSemantics[pVar.sSemantic] = null;
                         continue;
                     }
-                    if (!pType.checkMe(VERTEXUSAGEPARAM)) {
+                    if (!pType.checkMe(GLOBAL_VARS.VERTEXUSAGEPARAM)) {
                         return false;
                     }
                     for (k = 0; k < pType.pEffectType.pDesc.pOrders.length; k++) {
@@ -1300,8 +1273,8 @@ EffectFunction.prototype.checkMe = function () {
                     }
                 }
                 break;
-            case FRAGMENTUSAGE:
-                if (this.pReturnType.checkMe(FRAGMENTUSAGE)) {
+            case GLOBAL_VARS.FRAGMENTUSAGE:
+                if (this.pReturnType.checkMe(GLOBAL_VARS.FRAGMENTUSAGE)) {
                     return true;
                 }
                 break;
@@ -1352,7 +1325,7 @@ EffectVertex.prototype.addVarying = function (pVar) {
 };
 EffectVertex.prototype.createReturnVar = function (pType) {
     this.pReturnVariable = new EffectVariable();
-    this.pReturnVariable.sName = SHADEROUT;
+    this.pReturnVariable.sName = GLOBAL_VARS.SHADEROUT;
     this.pReturnVariable.pType = pType.cloneMe();
 };
 EffectVertex.prototype.addAttribute = function (pVar) {
@@ -1646,23 +1619,42 @@ EffectPass.prototype.pushCode = function (pCodePart) {
  * Block of code
  * @constructor
  */
-function EffectBlock(eType, pObj) {
-    Enum([
-             DEFAULT = 1,
-             MEMREAD = 2
-         ], EFFECTBLOCK, a.Effect.Code);
-    this.eType = eType || a.Effect.Code.DEFAULT;
-    this._pCode = null;
-    this._pVar = pObj || null;
+function MemBlock() {
+    this._pCodeData = null;
+    this._pCodeIndex = null;
+    if (arguments.length === 1) {
+        this._pVar = arguments[0];
+        this._iPointer = -1;
+        this._pBuffer = arguments[0].pBuffer;
+        this._pBaseBlock = null;
+    }
+    else if (arguments.length === 2) {
+        this._pBaseBlock = arguments[0];
+        this._iPointer = arguments[1];
+        this._pVar = arguments[0]._pVar;
+        this._pBuffer = arguments[0]._pBuffer;
+    }
 }
-EffectBlock.prototype.toCode = function () {
+
+MemBlock.prototype.toCode = function () {
     return this._pCode;
 };
-EffectBlock.prototype.pushCode = function(pObj){
-    if(!this._pCode){
-        this._pCode = [];
+MemBlock.prototype.addIndexData = function () {
+    var pVar = this._pVar;
+    var pCode;
+    var i;
+    if (!this._pBaseBlock) {
+        this._pCodeIndex = [];
+        for (i = pVar.pPointers.length - 2; i >= 0; i--) {
+            pCode = [];
+            pCode.push(pVar.pPointers[i], "=A_extractFloat(", this._pBuffer.pSampler,
+                       ",", this._pBuffer.pHeader, ",", pVar.pPointers[i + 1], ");");
+            this._pCodeIndex.push(pCode);
+        }
     }
-    this._pCode.push(pObj);
+    else {
+        this._pCodeIndex = this._pBaseBlock._pCodeIndex.slice(0, this._iPointer);
+    }
 };
 
 function Effect() {
@@ -1681,7 +1673,7 @@ function Effect() {
          ], ANALYZEDPROPERTY, a.Effect.Func);
 
     this.pParams = {};
-    this.pTechiques = {};
+    this.pTechniques = {};
     this.pPasses = {};
     this.nStep = 0;
 
@@ -1725,6 +1717,7 @@ function Effect() {
     this._pFunctionTableByName = {};
     this._pFunctionBlackList = {};
     this._pShaders = {};
+    this._pShadersBlackList = {};
 
     this.nCurrentDecl = 0;
 
@@ -2128,25 +2121,133 @@ Effect.prototype.endFunction = function () {
     this._isVertex = false;
     this._isFragment = false;
 };
+Effect.prototype.addMemBlock = function (pVar, iPointer) {
+    if (!this._pMemReadVars) {
+        return;
+    }
+    var pFunction = this._pCurrentFunction;
+    if (!pFunction) {
+        error("You can`t doing something with memory in nonfunction scope");
+        return;
+    }
+
+    var i;
+    var index = this._pMemReadVars.length;
+    var pBlock;
+    for (i = 0; i < this._pMemReadVars.length; i++) {
+        pBlock = this._pMemReadVars[i];
+        if (pBlock._pVar === pVar && pBlock._iPointer === -1) {
+            return;
+        }
+        if (pBlock._pVar === pVar && (iPointer === undefined || pBlock._iPointer > iPointer)) {
+            index = i;
+            break;
+        }
+    }
+    this._pMemReadVars[index] = pFunction.memBlock(pVar, iPointer);
+};
+Effect.prototype.addBaseVarMemCode = function (pBlock, pVar) {
+    pVar = pVar || pBlock._pVar;
+    if (!pVar.pType.isBase()) {
+        error("Only base type");
+        return;
+    }
+    if (!pVar.isUsed) {
+        return;
+    }
+    if (!pBlock._pCodeData) {
+        pBlock._pCodeData = [];
+    }
+    pBlock._pCodeData.push(pVar);
+    pBlock._pCodeData.push("=(");
+    if (pVar.pType.isEqual(this.hasType("float")) || pVar.pType.isEqual(this.hasType("bool"))) {
+        pBlock._pCodeData.push("A_extractFloat(");
+        this._pExtractFunctions["float"] = null;
+    }
+    else if (pVar.pType.isEqual(this.hasType("int"))) {
+        pBlock._pCodeData.push("int(A_extractFloat(");
+        this._pExtractFunctions["float"] = null;
+    }
+    else if (pVar.pType.isEqual(this.hasType("float2"))) {
+        pBlock._pCodeData.push("A_extractVec2(");
+        this._pExtractFunctions["vec2"] = null;
+    }
+    else if (pVar.pType.isEqual(this.hasType("float3"))) {
+        pBlock._pCodeData.push("A_extractVec3(");
+        this._pExtractFunctions["vec3"] = null;
+    }
+    else if (pVar.pType.isEqual(this.hasType("float4"))) {
+        pBlock._pCodeData.push("A_extractVec4(");
+        this._pExtractFunctions["vec4"] = null;
+    }
+    else if (pVar.pType.isEqual(this.hasType("int2"))) {
+        pBlock._pCodeData.push("ivec2(A_extractVec2(");
+        this._pExtractFunctions["vec2"] = null;
+    }
+    else if (pVar.pType.isEqual(this.hasType("int3"))) {
+        pBlock._pCodeData.push("ivec3(A_extractVec3(");
+        this._pExtractFunctions["vec3"] = null;
+    }
+    else if (pVar.pType.isEqual(this.hasType("int4"))) {
+        pBlock._pCodeData.push("ivec4(A_extractVec4(");
+        this._pExtractFunctions["vec4"] = null;
+    }
+    else if (pVar.pType.isEqual(this.hasType("bool2"))) {
+        pBlock._pCodeData.push("bvec2(A_extractVec2(");
+        this._pExtractFunctions["vec2"] = null;
+    }
+    else if (pVar.pType.isEqual(this.hasType("bool3"))) {
+        pBlock._pCodeData.push("bvec3(A_extractVec3(");
+        this._pExtractFunctions["vec3"] = null;
+    }
+    else if (pVar.pType.isEqual(this.hasType("bool4"))) {
+        pBlock._pCodeData.push("bvec4(A_extractVec4(");
+        this._pExtractFunctions["vec4"] = null;
+    }
+    else if (pVar.pType.isEqual(this.hasType("float4x4"))) {
+        pBlock._pCodeData.push("A_extractMat4(");
+        this._pExtractFunctions["Mat4"] = null;
+    }
+    else {
+        error("We don`t support another simple type");
+        return;
+    }
+    pBlock._pCodeData.push(pBlock._pBuffer.pSampler, ",", pBlock._pBuffer.pHeader, ",", pVar.pPointers[0]);
+    if (pVar.pType.isEqual(this.hasType("float")) ||
+        pVar.pType.isEqual(this.hasType("float4x4")) ||
+        pVar.pType.isEqual(this.hasType("float2")) ||
+        pVar.pType.isEqual(this.hasType("float3")) ||
+        pVar.pType.isEqual(this.hasType("float4"))) {
+        pBlock._pCodeData.push(");");
+    }
+    else if (pVar.pType.isEqual(this.hasType("bool"))) {
+        pBlock._pCodeData.push("!=0.0);");
+    }
+    else {
+        pBlock._pCodeData.push("));")
+    }
+};
 
 Effect.prototype.addVariable = function (pVar, isParams) {
     isParams = isParams || false;
-    function fnExtractStruct(sName, pStruct, pTable, iDepth, me) {
+    function fnExtractStruct(sName, pFirst, pStruct, pTable, iDepth, me) {
         var pOrders = pStruct.pOrders;
         var sNewName;
         var pPointers;
         var pBuffer;
         var isPointer;
+        var sPrev;
 
         for (var i = 0; i < pOrders.length; i++) {
-            sNewName = sName + "." + pOrders[i].sName;
+            sPrev = sName + "." + pOrders[i].sName;
+            sNewName = pFirst.sName + sPrev;
             pBuffer = null;
             pPointers = null;
             isPointer = false;
             if (pOrders[i].isPointer) {
                 pPointers = [];
                 for (var j = 0; j < pOrders[i].nDim; j++) {
-                    pPointers.push(new EffectPointer(pVar, j));
+                    pPointers.push(new EffectPointer(pOrders[i], j));
                 }
                 if (isParams) {
                     pBuffer = new EffectBuffer();
@@ -2157,7 +2258,7 @@ Effect.prototype.addVariable = function (pVar, isParams) {
                 if (!me._isStrictMode && isParams && iDepth === 0) {
                     isPointer = undefined;
                     pPointers = [];
-                    pPointers.push(new EffectPointer(pVar, 0));
+                    pPointers.push(new EffectPointer(pOrders[i], 0));
                     pBuffer = new EffectBuffer();
                 }
             }
@@ -2167,17 +2268,19 @@ Effect.prototype.addVariable = function (pVar, isParams) {
                 return;
             }
             pTable[sNewName] = {
-                "pPointers" : pPointers,
-                "iScope"    : me._iScope,
-                "isPointer" : isPointer,
-                "pBuffer"   : pBuffer,
-                "pType"     : pOrders[i].pType,
-                "isArray"   : pOrders[i].isArray,
-                "sName"     : pOrders[i].isMixible ? pOrders[i].sSemantic : pOrders[i].sName
+                "pPointers"     : pPointers,
+                "iScope"        : me._iScope,
+                "isPointer"     : isPointer,
+                "pBuffer"       : pBuffer,
+                "pType"         : pOrders[i].pType,
+                "isArray"       : pOrders[i].isArray,
+                "pFirst"        : pFirst,
+                "sPreviousName" : sName,
+                "sName"         : pOrders[i].isMixible ? pOrders[i].sSemantic : pOrders[i].sName
             };
             if (!pOrders[i].pType.isBase()) {
                 iDepth++;
-                fnExtractStruct(sNewName, pOrders[i].pType.pEffectType.pDesc, pTable, iDepth, me);
+                fnExtractStruct(sPrev, pFirst, pOrders[i].pType.pEffectType.pDesc, pTable, iDepth, me);
             }
         }
     }
@@ -2199,7 +2302,7 @@ Effect.prototype.addVariable = function (pVar, isParams) {
         pVar.isParametr = true;
     }
     if (pVar.pType.isEqual(this.hasType("video_buffer"))) {
-        if (this._iScope !== GLOBAL && !(isParams && pVar.isUniform)) {
+        if (this._iScope !== GLOBAL_VARS.GLOBAL && !(isParams && pVar.isUniform)) {
             error("You can not declarate video buffer here");
             return;
         }
@@ -2220,7 +2323,7 @@ Effect.prototype.addVariable = function (pVar, isParams) {
         if (!this._pCurrentScope.pStructTable) {
             this._pCurrentScope.pStructTable = {};
         }
-        fnExtractStruct(pVar.sName, pVar.pType.pEffectType.pDesc, this._pCurrentScope.pStructTable, 0, this);
+        fnExtractStruct("", pVar, pVar.pType.pEffectType.pDesc, this._pCurrentScope.pStructTable, 0, this);
     }
 };
 Effect.prototype.addBuffer = function (pVar) {
@@ -2430,7 +2533,7 @@ Effect.prototype.findFunction = function (sName, pParams) {
     }
     return null;
 };
-Effect.prototype.addToBlackList = function (pFunction) {
+Effect.prototype.addFunctionToBlackList = function (pFunction) {
     this._pFunctionTableByHash[pFunction.hash()] = null;
     this._pFunctionBlackList[pFunction.hash()] = pFunction;
     var pTable = this._pFunctionTableByName[pFunction.sName];
@@ -2446,10 +2549,16 @@ Effect.prototype.addToBlackList = function (pFunction) {
         }
     }
 };
+Effect.prototype.addShaderToBlackList = function (pShader) {
+    this._pShadersBlackList[pShader.pFunction.hash()] = pShader;
+    this._pShaders[pShader.pFunction.hash()] = null;
+    error("bad shader " + pShader.pFunction.sName);
+    return;
+};
 Effect.prototype.convertType = function (pNode) {
     var pType;
     var pChildren = pNode.pChildren;
-    if (pNode.sName === T_TYPE_ID) {
+    if (pNode.sName === GLOBAL_VARS.T_TYPE_ID) {
         pType = this.hasType(pNode.sValue);
         if (!pType) {
             error("bad 116");
@@ -2457,11 +2566,11 @@ Effect.prototype.convertType = function (pNode) {
         }
         return pType;
     }
-    if (pNode.sName === T_KW_VOID) {
+    if (pNode.sName === GLOBAL_VARS.T_KW_VOID) {
         pType = this.hasType(pNode.sValue);
         return pType;
     }
-    if (pNode.sName === SCALARTYPE || pNode.sName === OBJECTTYPE) {
+    if (pNode.sName === GLOBAL_VARS.SCALARTYPE || pNode.sName === GLOBAL_VARS.OBJECTTYPE) {
         pType = this.hasType(pChildren[pChildren.length - 1].sValue);
         if (!pType) {
             error("Something going wrong with type names(");
@@ -2469,13 +2578,13 @@ Effect.prototype.convertType = function (pNode) {
         }
         return pType;
     }
-    if (pNode.sName === MATRIXTYPE || pNode.sName === VECTORTYPE) {
+    if (pNode.sName === GLOBAL_VARS.MATRIXTYPE || pNode.sName === GLOBAL_VARS.VECTORTYPE) {
         if (pChildren.length === 1) {
             pType = this.hasType(pChildren[0].sValue);
             return pType;
         }
         var sTypeName;
-        if (pNode.sName === MATRIXTYPE) {
+        if (pNode.sName === GLOBAL_VARS.MATRIXTYPE) {
             sTypeName = "matrix";
             sTypeName += "<" + this.convertType(pChildren[5]).toCode();
             this.newCode();
@@ -2497,7 +2606,7 @@ Effect.prototype.convertType = function (pNode) {
         pType = this.hasType(sTypeName);
         return pType;
     }
-    if (pNode.sName === BASETYPE || pNode.sName === TYPE) {
+    if (pNode.sName === GLOBAL_VARS.BASETYPE || pNode.sName === GLOBAL_VARS.TYPE) {
         return this.convertType(pChildren[0]);
     }
     return pType;
@@ -2555,7 +2664,7 @@ Effect.prototype.analyzeTypes = function () {
     var i;
     this.nCurrentDecl = 0;
     for (i = pChildren.length - 1; i >= 0; i--) {
-        if (pChildren[i].sName === TYPEDECL) {
+        if (pChildren[i].sName === GLOBAL_VARS.TYPEDECL) {
             this.nCurrentDecl++;
             this.analyzeTypeDecl(pChildren[i]);
         }
@@ -2569,7 +2678,7 @@ Effect.prototype.preAnalyzeFunctions = function () {
     var i;
     this.nCurrentDecl = 0;
     for (i = pChildren.length - 1; i >= 0; i--) {
-        if (pChildren[i].sName === FUNCTIONDECL) {
+        if (pChildren[i].sName === GLOBAL_VARS.FUNCTIONDECL) {
             this.nCurrentDecl++;
             this.analyzeFunctionDecl(pChildren[i]);
         }
@@ -2580,17 +2689,16 @@ Effect.prototype.preAnalyzeVariables = function () {
     var i;
     this.nCurrentDecl = 0;
     for (i = pChildren.length - 1; i >= 0; i--) {
-        if (pChildren[i].sName === VARIABLEDECL) {
+        if (pChildren[i].sName === GLOBAL_VARS.VARIABLEDECL) {
             this.nCurrentDecl++;
             this.analyzeVariableDecl(pChildren[i]);
         }
-        if (pChildren[i].sName === VARSTRUCTDECL) {
+        if (pChildren[i].sName === GLOBAL_VARS.VARSTRUCTDECL) {
             this.nCurrentDecl++;
             this.analyzeVarStructDecl(pChildren[i]);
         }
     }
 };
-
 /**
  * Analyze techniques
  */
@@ -2599,7 +2707,7 @@ Effect.prototype.preAnalyzeTechniques = function () {
     var i;
     this.nCurrentDecl = 0;
     for (i = pChildren.length - 1; i >= 0; i--) {
-        if (pChildren[i].sName === TECHIQUEDECL) {
+        if (pChildren[i].sName === GLOBAL_VARS.TECHIQUEDECL) {
             this.nCurrentDecl++;
             this.analyzeTechniqueDecl(pChildren[i]);
         }
@@ -2617,7 +2725,6 @@ Effect.prototype.analyzeEffect = function () {
         this.analyzeDecl(pChildren[i]);
     }
 };
-
 Effect.prototype.postAnalyzeEffect = function () {
     //check for used blacklist functions
     var isNewDelete = true;
@@ -2632,7 +2739,7 @@ Effect.prototype.postAnalyzeEffect = function () {
             }
             for (j in pFunction.pFunctions) {
                 if (this._pFunctionBlackList[j]) {
-                    this.addToBlackList(pFunction);
+                    this.addFunctionToBlackList(pFunction);
                     isNewDelete = true;
                 }
             }
@@ -2653,7 +2760,6 @@ Effect.prototype.postAnalyzeEffect = function () {
                 pUniforms = pFunction.pFunctions[j].pUniforms;
                 for (k in pUniforms) {
                     if (pFunction.addUniform(pUniforms[k])) {
-
                         isNewVar = true;
                     }
                 }
@@ -2673,20 +2779,92 @@ Effect.prototype.postAnalyzeEffect = function () {
         if (!pFunction) {
             continue;
         }
-        for(j in pFunction.pMemBlocks){
-            pBlock = pFunction.pMemBlocks[j];
+        if (pFunction._pBaseMemBlocks) {
+            this._pExtractFunctions = {};
+        }
+        for (j in pFunction._pBaseMemBlocks) {
+            pBlock = pFunction._pBaseMemBlocks[j];
             pVar = pBlock._pVar;
-            if(pVar.pType.isBase()){
-                pBlock.pushCode(pVar);
-                pBlock.pushCode("=");
-                if(pVar.pType.isEqual(this.hasType("float"))){
-                    pBlock.pushCode("A_extractFloat(");
+            pBlock.addIndexData();
+            if (!pVar.pType.isBase()) {
+                error("We haven`t support non base type yet");
+                return;
+            }
+            else {
+                this.addBaseVarMemCode(pBlock);
+            }
+        }
+    }
 
+    //check vertex and fragment shaders for blacklist
+    var pShader;
+    var isVertex;
+    isNewDelete = true;
+    while (isNewDelete) {
+        isNewDelete = false;
+        for (i in this._pShaders) {
+            pShader = this._pShaders[i];
+            if (!pShader) {
+                continue;
+            }
+            isVertex = pShader instanceof EffectVertex;
+            for (j in pShader.pFunctions) {
+                if (this._pFunctionBlackList[pShader.pFunctions[j].hash()] ||
+                    (isVertex && pShader.pFunctions[j].isOnlyFragment)) {
+                    this.addShaderToBlackList(pShader);
+                    isNewDelete = true;
+                    break;
                 }
             }
         }
     }
-    //TODO: generate list of usages of GLOBAL var for shader manager
+    //global vars and uniforms for shaders
+    isNewVar = true;
+    while (isNewVar) {
+        isNewVar = false;
+        for (i in this._pShaders) {
+            pShader = this._pShaders[i];
+            if (!pShader) {
+                continue;
+            }
+            pFunction = pShader.pFunction;
+            if (pFunction.pImplement) {
+                continue;
+            }
+            for (j in pShader.pFunctions) {
+                pGlobals = pShader.pFunctions[j].pGlobalVariables;
+                pUniforms = pShader.pFunctions[j].pUniforms;
+                for (k in pUniforms) {
+                    if (pShader.addUniform(pUniforms[k])) {
+                        isNewVar = true;
+                    }
+                }
+                for (k in pGlobals) {
+                    if (pShader.addGlobalVariable(pGlobals[k])) {
+                        isNewVar = true;
+                    }
+                }
+            }
+        }
+    }
+    //check passes for used valid shaders
+    var pPass;
+    for (i in this.pTechniques) {
+        for(j = 0; j < this.pTechniques[i].pPasses.length; j++){
+            pPass = this.pTechniques[i].pPasses[j];
+            for(k in pPass.pFuncHash){
+                pShader = this._pShaders[k];
+                if(!pShader){
+                    error("You pass isn`t valid");
+                    return;
+                }
+                pPass.pFuncHash[k] = pShader;
+                if(!pPass.isComplex){
+                    pPass.prepare();
+                }
+            }
+        }
+    }
     //TODO: add shaders to passes, and check them for valid
 };
 /**
@@ -2700,35 +2878,35 @@ Effect.prototype.analyzeDecl = function (pNode) {
         return;
     }
     switch (pNode.sName) {
-        case VARIABLEDECL:
+        case GLOBAL_VARS.VARIABLEDECL:
             this.analyzeVariableDecl(pNode);
             break;
-        case TYPEDECL:
+        case GLOBAL_VARS.TYPEDECL:
             this.analyzeTypeDecl(pNode);
             break;
-        case FUNCTIONDECL:
+        case GLOBAL_VARS.FUNCTIONDECL:
             this.analyzeFunctionDecl(pNode);
             break;
-        case VARSTRUCTDECL:
+        case GLOBAL_VARS.VARSTRUCTDECL:
             this.analyzeVarStructDecl(pNode);
             break;
-        case TECHIQUEDECL:
+        case GLOBAL_VARS.TECHIQUEDECL:
             this.analyzeTechniqueDecl(pNode);
             break;
-        case USEDECL:
+        case GLOBAL_VARS.USEDECL:
             this.analyzeUseDecl(pNode);
             break;
-        case PROVIDEDECL:
+        case GLOBAL_VARS.PROVIDEDECL:
             this.analyzeProvideDecl(pNode);
             break;
-        case IMPORTDECL:
+        case GLOBAL_VARS.IMPORTDECL:
             this.analyzeImportDecl(pNode);
             break;
     }
 };
 Effect.prototype.analyzeUseDecl = function (pNode) {
     var pChildren = pNode.pChildren;
-    if (pChildren[0].sValue === T_KW_STRICT) {
+    if (pChildren[0].sValue === GLOBAL_VARS.T_KW_STRICT) {
         if (!this._isStrictMode) {
             this._pCurrentScope.isStrict = true;
             this._isStrictMode = true;
@@ -2741,7 +2919,7 @@ Effect.prototype.analyzeVariableDecl = function (pNode) {
     var pVar;
     var pType = new VariableType();
     this.analyzeUsageType(pChildren[pChildren.length - 1], pType);
-    if (pType.isEqual(this.hasType("video_buffer")) && this._iScope !== GLOBAL) {
+    if (pType.isEqual(this.hasType("video_buffer")) && this._iScope !== GLOBAL_VARS.GLOBAL) {
         error("Declarations of video buffer are available only in Global scope");
         return;
     }
@@ -2749,18 +2927,18 @@ Effect.prototype.analyzeVariableDecl = function (pNode) {
     if (pType.pEffectType.isSampler()) {
         isSampler = true;
         this.newSampler();
-        if (this._iScope !== GLOBAL) {
+        if (this._iScope !== GLOBAL_VARS.GLOBAL) {
             error("Only global samplers support");
             return;
         }
     }
-    if (!pType.checkMe(this._isStruct ? STRUCTUSAGE : -1, this._isLocal ? LOCALUSAGE : -1)) {
+    if (!pType.checkMe(this._isStruct ? GLOBAL_VARS.STRUCTUSAGE : -1, this._isLocal ? GLOBAL_VARS.LOCALUSAGE : -1)) {
         error("You sucks. 1");
         return;
     }
     this._pCurrentType = pType;
     for (i = pChildren.length - 2; i >= 1; i--) {
-        if (pChildren[i].sName === VARIABLE) {
+        if (pChildren[i].sName === GLOBAL_VARS.VARIABLE) {
             pVar = this.analyzeVariable(pChildren[i]);
             pVar.setType(pType);
             this.addVariableDecl(pVar);
@@ -2777,10 +2955,10 @@ Effect.prototype.analyzeUsageType = function (pNode, pType) {
     var pChildren = pNode.pChildren;
     var i;
     for (i = pChildren.length - 1; i >= 0; i--) {
-        if (pChildren[i].sName === TYPE) {
+        if (pChildren[i].sName === GLOBAL_VARS.TYPE) {
             pType.setType(this.convertType(pChildren[i]));
         }
-        if (pChildren[i].sName === USAGE) {
+        if (pChildren[i].sName === GLOBAL_VARS.USAGE) {
             pType.setUsage(pChildren[i].pChildren[0].sValue);
         }
     }
@@ -2788,12 +2966,12 @@ Effect.prototype.analyzeUsageType = function (pNode, pType) {
 };
 Effect.prototype.analyzeVariable = function (pNode, pVar) {
     var pChildren = pNode.pChildren;
-    if (this._isAnnotation || this._iScope > GLOBAL) {
+    if (this._isAnnotation || this._iScope > GLOBAL_VARS.GLOBAL) {
         if (pChildren.length > 2) {
             error("Bad syntax! Bad variable declaration in annotation or local scope!");
             return;
         }
-        if (pChildren.length === 2 && pChildren[0].sName !== INITIALIZER) {
+        if (pChildren.length === 2 && pChildren[0].sName !== GLOBAL_VARS.INITIALIZER) {
             error("Bad syntax! Bad variable declaration in annotation or local scope! Second must be Initializer.");
             return;
         }
@@ -2803,7 +2981,7 @@ Effect.prototype.analyzeVariable = function (pNode, pVar) {
             error("Bad syntax! Bad variable declaration in struct scope!");
             return;
         }
-        if (pChildren.length === 2 && pChildren[0].sName !== SEMANTIC) {
+        if (pChildren.length === 2 && pChildren[0].sName !== GLOBAL_VARS.SEMANTIC) {
             error("Bad syntax! Bad variable declaration in struct scope! Second must be Semantic");
             return;
         }
@@ -2814,13 +2992,13 @@ Effect.prototype.analyzeVariable = function (pNode, pVar) {
     var i;
     var pResult = null;
     for (i = pChildren.length - 2; i >= 0; i--) {
-        if (pChildren[i].sName === ANNOTATION) {
+        if (pChildren[i].sName === GLOBAL_VARS.ANNOTATION) {
             pResult = this.analyzeAnnotation(pChildren[i], pVar);
         }
-        else if (pChildren[i].sName === SEMANTIC) {
+        else if (pChildren[i].sName === GLOBAL_VARS.SEMANTIC) {
             pResult = this.analyzeSemantic(pChildren[i], pVar);
         }
-        else if (pChildren[i].sName === INITIALIZER) {
+        else if (pChildren[i].sName === GLOBAL_VARS.INITIALIZER) {
             pResult = this.analyzeInitializer(pChildren[i], pVar);
         }
     }
@@ -2842,7 +3020,7 @@ Effect.prototype.addVariableDecl = function (pVar) {
         this._pCurrentStructOrders.push(pVar);
         return true;
     }
-    if (this._iScope === GLOBAL) {
+    if (this._iScope === GLOBAL_VARS.GLOBAL) {
         if (pVar.isConstInit() === false) {
             error("Don`t do this, bad boy");
             return;
@@ -2852,7 +3030,7 @@ Effect.prototype.addVariableDecl = function (pVar) {
             this.addConstant(pVar);
         }
     }
-    if (pVar.sName === SHADEROUT && this._eFuncProperty === a.Effect.Func.VERTEX) {
+    if (pVar.sName === GLOBAL_VARS.SHADEROUT && this._eFuncProperty === a.Effect.Func.VERTEX) {
         if (!pVar.pType.isEqual(this._pCurrentFunction.pReturnType)) {
             error("Type of 'Out' variable are incorrect");
             return;
@@ -2889,11 +3067,10 @@ Effect.prototype.analyzeVariableDim = function (pNode, pVar) {
             error("For variables this are not good");
             return;
         }
-        console.log(pVar, pNode);
         pVar.isPointer = true;
         pVar.nDim++;
     }
-    else if (pChildren.length === 4 && pChildren[0].sName === FROMEXPR) {
+    else if (pChildren.length === 4 && pChildren[0].sName === GLOBAL_VARS.FROMEXPR) {
         pVar.isPointer = true;
         pVar.nDim++;
         pVar.pBuffer = this.analyzeFromExpr(pChildren[0]);
@@ -2918,7 +3095,7 @@ Effect.prototype.analyzeVariableDim = function (pNode, pVar) {
 Effect.prototype.analyzeFromExpr = function (pNode) {
     var pChildren = pNode.pChildren;
     var pMem;
-    if (pChildren[1].sName === T_NON_TYPE_ID) {
+    if (pChildren[1].sName === GLOBAL_VARS.T_NON_TYPE_ID) {
         pMem = this.hasVariable(pChildren[1].sValue);
         if (!pMem) {
             error("bad 1");
@@ -2940,7 +3117,7 @@ Effect.prototype.analyzeMemExpr = function (pNode) {
     var pMem;
     var pVar;
     var isCodeWrite;
-    if (pChildren[0].sName === T_NON_TYPE_ID) {
+    if (pChildren[0].sName === GLOBAL_VARS.T_NON_TYPE_ID) {
         pMem = this.hasVariable(pChildren[0].sValue);
         if (!pMem) {
             error("bad 3");
@@ -2954,7 +3131,7 @@ Effect.prototype.analyzeMemExpr = function (pNode) {
         this.analyzeExpr(pChildren[0]);
         this.setWrite(isCodeWrite);
 
-        if (this._sLastFullName.search(".") !== -1) {
+        if (this._sLastFullName.indexOf(".") !== -1) {
             pVar = this.hasComplexVariable(this._sLastFullName);
         }
         else {
@@ -2974,7 +3151,7 @@ Effect.prototype.analyzeMemExpr = function (pNode) {
         error("Oh-oh, don`t cool enough");
     }
     if (this._eFuncProperty === a.Effect.Func.FUNCTION && !pMem.isUniform) {
-        throw ERRORBADFUNCTION;
+        throw GLOBAL_VARS.ERRORBADFUNCTION;
     }
     this._pExprType = this.hasType("video_buffer");
     return pMem;
@@ -2984,7 +3161,7 @@ Effect.prototype.analyzeAnnotation = function (pNode, pObj) {
     var pChildren = pNode.pChildren;
     var i;
     for (i = pChildren.length - 1; i >= 0; i--) {
-        if (pChildren[i].sName === VARIABLEDECL) {
+        if (pChildren[i].sName === GLOBAL_VARS.VARIABLEDECL) {
             this.analyzeVariableDecl(pChildren[i]);
         }
     }
@@ -3009,7 +3186,7 @@ Effect.prototype.analyzeInitializer = function (pNode, pVar) {
             error("Bad constructor");
         }
         for (i = pChildren.length - 3; i >= 1; i--) {
-            if (pChildren[i].sName === INITEXPR) {
+            if (pChildren[i].sName === GLOBAL_VARS.INITEXPR) {
                 this.analyzeInitExpr(pChildren[i]);
             }
         }
@@ -3028,7 +3205,7 @@ Effect.prototype.analyzeInitExpr = function (pNode) {
     if (pChildren[pChildren.length - 1].sValue === "{") {
         var i;
         for (i = pChildren.length - 2; i >= 1; i--) {
-            if (pChildren[i].sName === INITEXPR) {
+            if (pChildren[i].sName === GLOBAL_VARS.INITEXPR) {
                 this.analyzeInitExpr(pChildren[i]);
             }
         }
@@ -3065,18 +3242,18 @@ Effect.prototype.analyzeExpr = function (pNode) {
     var pTemp = null; //some temp obj for anything
 
     switch (sName) {
-        case OBJECTEXPR:
-            if (pChildren[pChildren.length - 1].sValue === T_KW_STATEBLOCK_STATE) {
+        case GLOBAL_VARS.OBJECTEXPR:
+            if (pChildren[pChildren.length - 1].sValue === GLOBAL_VARS.T_KW_STATEBLOCK_STATE) {
                 //ObjectExpr : T_KW_STATEBLOCK_STATE StateBlock
                 error("I don`t know what is this");
                 return;
             }
-            if (pChildren[pChildren.length - 1].sValue === T_KW_COMPILE_FRAGMENT) {
+            if (pChildren[pChildren.length - 1].sValue === GLOBAL_VARS.T_KW_COMPILE_FRAGMENT) {
                 //ObjectExpr : T_KW_COMPILE_FRAGMENT Target NonTypeId '(' ArgumentsOpt ')'
                 error("Frog sucks");
                 return;
             }
-            if (pChildren[pChildren.length - 1].sValue === T_KW_COMPILE) {
+            if (pChildren[pChildren.length - 1].sValue === GLOBAL_VARS.T_KW_COMPILE) {
                 //ObjectExpr : T_KW_COMPILE Target NonTypeId '(' ArgumentsOpt ')'
                 pFunc = this.findFunction(pChildren[pChildren.length - 3].sValue, null);
                 if (!pFunc) {
@@ -3098,11 +3275,11 @@ Effect.prototype.analyzeExpr = function (pNode) {
             }
             break;
 
-        case COMPLEXEXPR:
+        case GLOBAL_VARS.COMPLEXEXPR:
             if (this._nAddr > 0 &&
                 pChildren.length !== 3 &&
-                (pChildren[1].sName !== POSTFIXEXPR || pChildren[1].sName !== PRIMARYEXPR ||
-                 pChildren[1].sName !== COMPLEXEXPR)) {
+                (pChildren[1].sName !== GLOBAL_VARS.POSTFIXEXPR || pChildren[1].sName !== GLOBAL_VARS.PRIMARYEXPR ||
+                 pChildren[1].sName !== GLOBAL_VARS.COMPLEXEXPR)) {
                 error("Bad for dog 2");
                 break;
             }
@@ -3112,7 +3289,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 break;
             }
             if (!(pChildren.length === 3 &&
-                  (pChildren[1].sName === POSTFIXEXPR || pChildren[1].sName === COMPLEXEXPR ||
+                  (pChildren[1].sName === GLOBAL_VARS.POSTFIXEXPR || pChildren[1].sName === GLOBAL_VARS.COMPLEXEXPR ||
                    pChildren[1].sValue !== undefined))) {
                 this._isNewComplexName = false;
             }
@@ -3123,7 +3300,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 this.pushCode(")");
                 break;
             }
-            if (pChildren[pChildren.length - 1].sName === T_NON_TYPE_ID) {
+            if (pChildren[pChildren.length - 1].sName === GLOBAL_VARS.T_NON_TYPE_ID) {
                 //ComplexExpr : NonTypeId '(' ArgumentsOpt ')'
                 var pTypes = [];
                 var pArguments = [];
@@ -3198,12 +3375,12 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 break;
 
             }
-            else if (pChildren[pChildren.length - 1].sName === T_TYPE_ID) {
+            else if (pChildren[pChildren.length - 1].sName === GLOBAL_VARS.T_TYPE_ID) {
                 //ComplexExpr : TypeId '(' ArgumentsOpt ')'
                 pType1 = this.hasType(pChildren[pChildren.length - 1].sValue);
                 this.pushCode(pType1);
             }
-            else if (pChildren[pChildren.length - 1].sName === BASETYPE) {
+            else if (pChildren[pChildren.length - 1].sName === GLOBAL_VARS.BASETYPE) {
                 //ComplexExpr : BaseType '(' ArgumentsOpt ')'
                 pType1 = this.convertType(pChildren[pChildren.length - 1]);
                 this.pushCode(pType1);
@@ -3222,7 +3399,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             this._pExprType = pType1;
             break;
 
-        case PRIMARYEXPR:
+        case GLOBAL_VARS.PRIMARYEXPR:
             if (pChildren.length === 1) {
                 this.analyzeExpr(pChildren[pChildren.length - 1]);
                 break;
@@ -3244,7 +3421,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             if (isNewAddr) {
                 this.setWrite(isCodeWrite);
                 var pRes;
-                if (this._sLastFullName.search('.') !== -1) {
+                if (this._sLastFullName.indexOf(".") !== -1) {
                     pRes = this.hasComplexVariable(this._sLastFullName);
                 }
                 else {
@@ -3258,6 +3435,11 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     error("Previously you must to definite buffer for variable");
                     return;
                 }
+                if (this._eFuncProperty === a.Effect.Func.FUNCTION && !pRes.pBuffer.isUniform) {
+                    //In function only global buffers are available
+                    throw GLOBAL_VARS.ERRORBADFUNCTION;
+                    return;
+                }
                 if (pRes.isPointer === false) {
                     error("only for index");
                     return;
@@ -3267,7 +3449,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 }
                 this._pLastVar = pRes;
                 if (this._isWriteVar) {
-                    this._pMemReadVars.push(pRes);
+                    this.addMemBlock(pRes, this._nAddr - 1);
                 }
                 pRes = pRes.pPointers[this._nAddr - 1];
                 if (!pRes) {
@@ -3280,19 +3462,21 @@ Effect.prototype.analyzeExpr = function (pNode) {
             this._pExprType = this.hasType("ptr");
             break;
 
-        case POSTFIXEXPR:
+        case GLOBAL_VARS.POSTFIXEXPR:
             if (this._nAddr > 0 && (pChildren.length === 2 || pChildren[0].sValue === "]")) {
                 error("Bad for dog");
                 break;
             }
-            if ((pChildren[pChildren.length - 1].sName === PRIMARYEXPR && pChildren.length !== 2) ||
-                pChildren[pChildren.length - 1].sName === OBJECTEXPR) {
+            if ((pChildren[pChildren.length - 1].sName === GLOBAL_VARS.PRIMARYEXPR && pChildren.length !== 2) ||
+                pChildren[pChildren.length - 1].sName === GLOBAL_VARS.OBJECTEXPR) {
                 error("Unssuported construction");
                 return;
             }
-            if (pChildren.length === 2 && pChildren[1].sName === PRIMARYEXPR) {
+            if (pChildren.length === 2 && pChildren[1].sName === GLOBAL_VARS.PRIMARYEXPR) {
+                isWriteMode = this._isWriteVar;
+                this._isWriteVar = true;
                 this.analyzeExpr(pChildren[pChildren.length - 1]);
-                this._pMemReadVars.push(this._pLastVar);
+                this._isWriteVar = isWriteMode;
                 this.pushCode(pChildren[0].sValue);
                 this._pExprType = this.hasType("ptr");
                 return;
@@ -3303,7 +3487,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             if (!this._isNewComplexName) {
                 pTemp = pChildren[pChildren.length - 1];
                 while (true) {
-                    if (pTemp.sName === COMPLEXEXPR) {
+                    if (pTemp.sName === GLOBAL_VARS.COMPLEXEXPR) {
                         isFlag = true;
                         break;
                     }
@@ -3377,7 +3561,6 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     if (pVar.isPointer === undefined) {
                         pVar.isPointer = true;
                     }
-                    this._pMemReadVars.push(pVar);
                     if (isNewVar) {
                         this.endVarName();
                         if (this._eFuncProperty === a.Effect.Func.VERTEX ||
@@ -3397,13 +3580,14 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     }
 
                     if (this._eFuncProperty === a.Effect.Func.FUNCTION && !pMem.isUniform) {
-                        throw ERRORBADFUNCTION;
+                        throw GLOBAL_VARS.ERRORBADFUNCTION;
                     }
                     if (this._iScope !== pVar.iScope) {
                         error("bad 52");
                         return;
                     }
                     pVar.pBuffer = pMem;
+                    this.addMemBlock(pVar);
                 }
             }
             else if (pChildren[0].sValue === "]") {
@@ -3417,7 +3601,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 }
                 this.pushCode("]");
                 this.endVarName();
-                if (pType1 !== UNDEFINEDTYPE && pType1.isBase()) {
+                if (pType1 !== GLOBAL_VARS.UNDEFINEDTYPE && pType1.isBase()) {
                     if (pType1.isEqual(this.hasType("float4x4"))) {
                         pType1 = this.hasType("float4");
                     }
@@ -3465,7 +3649,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         return;
                     }
                 }
-                else if (pType1 !== UNDEFINEDTYPE) {
+                else if (pType1 !== GLOBAL_VARS.UNDEFINEDTYPE) {
                     if (!pVar || !pVar.isArray) {
                         error("[] - only for arrays");
                         return;
@@ -3523,7 +3707,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             this._pExprType = pType1;
             break;
 
-        case UNARYEXPR:
+        case GLOBAL_VARS.UNARYEXPR:
             if (pChildren.length === 1) {
                 this.analyzeExpr(pChildren[pChildren.length - 1]);
                 break;
@@ -3536,7 +3720,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             }
             break;
 
-        case CASTEXPR:
+        case GLOBAL_VARS.CASTEXPR:
             if (pChildren.length === 1) {
                 this.analyzeExpr(pChildren[pChildren.length - 1]);
                 break;
@@ -3552,7 +3736,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             this._pExprType = pType;
             break;
 
-        case CONDITIONALEXPR:
+        case GLOBAL_VARS.CONDITIONALEXPR:
             this.analyzeExpr(pChildren[pChildren.length - 1]);
             if (!this._pExprType.isEqual(this.hasType("bool"))) {
                 error("bad 105");
@@ -3576,12 +3760,12 @@ Effect.prototype.analyzeExpr = function (pNode) {
             }
             break;
 
-        case MULEXPR:
-        case ADDEXPR:
-        case RELATIONALEXPR:
-        case EQUALITYEXPR:
-        case ANDEXPR:
-        case OREXPR:
+        case GLOBAL_VARS.MULEXPR:
+        case GLOBAL_VARS.ADDEXPR:
+        case GLOBAL_VARS.RELATIONALEXPR:
+        case GLOBAL_VARS.EQUALITYEXPR:
+        case GLOBAL_VARS.ANDEXPR:
+        case GLOBAL_VARS.OREXPR:
             if (this._isWriteVar === true) {
                 error("you are doing so bad and ugly things(");
                 return;
@@ -3596,23 +3780,23 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 this.analyzeExpr(pChildren[0]);
                 pType2 = this._pExprType;
             }
-            if (sName === OREXPR || sName === ANDEXPR) {
+            if (sName === GLOBAL_VARS.OREXPR || sName === GLOBAL_VARS.ANDEXPR) {
                 pType = this.hasType("bool");
-                if (pType1 !== UNDEFINEDTYPE && pType2 !== UNDEFINEDTYPE &&
+                if (pType1 !== GLOBAL_VARS.UNDEFINEDTYPE && pType2 !== GLOBAL_VARS.UNDEFINEDTYPE &&
                     !(pType1.isEqual(pType) && pType2.isEqual(pType))) {
                     error("bad 101");
                     return;
                 }
                 this._pExprType = pType;
             }
-            else if (sName === EQUALITYEXPR || sName === RELATIONALEXPR) {
-                if (pType1 !== UNDEFINEDTYPE && pType2 !== UNDEFINEDTYPE && !pType1.isEqual(pType2)) {
+            else if (sName === GLOBAL_VARS.EQUALITYEXPR || sName === GLOBAL_VARS.RELATIONALEXPR) {
+                if (pType1 !== GLOBAL_VARS.UNDEFINEDTYPE && pType2 !== GLOBAL_VARS.UNDEFINEDTYPE && !pType1.isEqual(pType2)) {
                     error("bad 102");
                     return;
                 }
                 this._pExprType = this.hasType("bool");
             }
-            else if (sName === ADDEXPR) {
+            else if (sName === GLOBAL_VARS.ADDEXPR) {
                 if (!(pType1.isBase() && pType2.isBase())) {
                     error("bad 103");
                     return;
@@ -3620,7 +3804,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 this._pExprType = pType1;
             }
             break;
-        case ASSIGNMENTEXPR:
+        case GLOBAL_VARS.ASSIGNMENTEXPR:
             if (this._isWriteVar === false) {
                 this._isWriteVar = true;
                 isWriteMode = true;
@@ -3634,7 +3818,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             this.pushCode(pChildren[1].sValue);
             this.analyzeExpr(pChildren[0]);
             pType2 = this._pExprType;
-            if (sName === ASSIGNMENTEXPR && pChildren.length === 3) {
+            if (sName === GLOBAL_VARS.ASSIGNMENTEXPR && pChildren.length === 3) {
 //                if (!pType1.isEqual(pType2)) {
 //                    console.log(pNode);
 //                    error("Bad 191");
@@ -3644,7 +3828,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             }
             break;
 
-        case T_NON_TYPE_ID:
+        case GLOBAL_VARS.T_NON_TYPE_ID:
             if (this._eVarProperty === a.Effect.Var.NOTTRANSLATE) {
                 this.pushCode(pNode.sValue);
                 return;
@@ -3717,19 +3901,18 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 }
 
                 this._sVarName = pNode.sValue;
-                if (this._sVarName === SYSTEMVAR) {
+                if (this._sVarName === GLOBAL_VARS.SYSTEMVAR) {
                     if (!this._pCurrentPass) {
                         error("'engine' variable available only in pass");
                         return;
                     }
                     this._eVarProperty = a.Effect.Var.NOTTRANSLATE;
                     pRes = this._sVarName;
-                    this._pExprType = UNDEFINEDTYPE;
+                    this._pExprType = GLOBAL_VARS.UNDEFINEDTYPE;
                 }
                 else {
                     pRes = this.hasVariable(this._sVarName);
                     if (!pRes) {
-                        console.log(this, this._sVarName);
                         error("not good for you");
                         return;
                     }
@@ -3745,7 +3928,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                             return;
                         }
                         if (pRes.isParametr && pFunction &&
-                            (pFunction.isVertexShader || pFunction.isFragmentShader)) {
+                            (pFunction.isVertexShader || pFunction.isFragmentShader) && this._nAddr === 0) {
                             error("don`t even try to do this, bitch.3");
                             return;
                         }
@@ -3798,7 +3981,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     }
 
                     if (pFunction && !pRes.isConst()) {
-                        if (pRes.iScope === GLOBAL &&
+                        if (pRes.iScope === GLOBAL_VARS.GLOBAL &&
                             (this._eFuncProperty === a.Effect.Func.FUNCTION ||
                              ((this._eFuncProperty === a.Effect.Func.VERTEX ||
                                this._eFuncProperty === a.Effect.Func.FRAGMENT) &&
@@ -3878,26 +4061,26 @@ Effect.prototype.analyzeExpr = function (pNode) {
             this.pushCode(pRes);
             break;
 
-        case T_STRING:
-        case T_UINT:
-        case T_FLOAT:
-        case T_KW_TRUE:
-        case T_KW_FALSE:
+        case GLOBAL_VARS.T_STRING:
+        case GLOBAL_VARS.T_UINT:
+        case GLOBAL_VARS.T_FLOAT:
+        case GLOBAL_VARS.T_KW_TRUE:
+        case GLOBAL_VARS.T_KW_FALSE:
             this.pushCode(pNode.sValue);
-            if (sName === T_STRING) {
+            if (sName === GLOBAL_VARS.T_STRING) {
                 this._pExprType = this.hasType("string");
             }
-            else if (sName === T_UINT) {
+            else if (sName === GLOBAL_VARS.T_UINT) {
                 this._pExprType = this.hasType("int");
             }
-            else if (sName === T_FLOAT) {
+            else if (sName === GLOBAL_VARS.T_FLOAT) {
                 this._pExprType = this.hasType("float");
             }
             else {
                 this._pExprType = this.hasType("bool");
             }
             break;
-        case MEMEXPR:
+        case GLOBAL_VARS.MEMEXPR:
             return this.analyzeMemExpr(pNode);
     }
 };
@@ -3938,7 +4121,7 @@ Effect.prototype.analyzeStructDecl = function (pNode, pStruct) {
     this.newStruct();
     var i;
     for (i = pChildren.length - 4; i >= 1; i--) {
-        if (pChildren[i].sName === VARIABLEDECL) {
+        if (pChildren[i].sName === GLOBAL_VARS.VARIABLEDECL) {
             this.analyzeVariableDecl(pChildren[i]);
         }
     }
@@ -3992,7 +4175,7 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
             this.endCode();
         }
         catch (e) {
-            if (e === ERRORBADFUNCTION) {
+            if (e === GLOBAL_VARS.ERRORBADFUNCTION) {
                 while (this._iScope !== pFunction.iScope) {
                     this.endScope();
                 }
@@ -4000,14 +4183,18 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
                 pFunction.pImplement = null;
                 this._pCodeStack = [];
                 this._pCode = null;
-                this.addToBlackList(pFunction);
+                this._nAddr = 0;
+                this._isWriteVar = false;
+                this._isNewName = false;
+                this._isNewComplexName = false;
+                this.addFunctionToBlackList(pFunction);
             }
             else {
                 throw e;
             }
         }
         if (pFunction.isVertexShader) {
-            if (!pFunction.checkMe(VERTEXUSAGE)) {
+            if (!pFunction.checkMe(GLOBAL_VARS.VERTEXUSAGE)) {
                 error("Vertex is not vertex enough");
             }
 
@@ -4042,7 +4229,7 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
             this._pShaders[pFunction.hash()] = pFunction.pShader;
         }
         else if (pFunction.isFragmentShader) {
-            if (!pFunction.checkMe(FRAGMENTUSAGE)) {
+            if (!pFunction.checkMe(GLOBAL_VARS.FRAGMENTUSAGE)) {
                 error("Pixel is not pixel enough");
             }
 
@@ -4080,7 +4267,7 @@ Effect.prototype.analyzeFunctionDef = function (pNode, pFunction) {
     var pChildren = pNode.pChildren;
     pFunction.pReturnType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
     pFunction.setName(pChildren[pChildren.length - 2].sValue);
-    if (pChildren[0].sName === SEMANTIC) {
+    if (pChildren[0].sName === GLOBAL_VARS.SEMANTIC) {
         pFunction.addSemantic(pChildren[0].pChildren[0].sValue);
         this.analyzeParamList(pChildren[1], pFunction);
     }
@@ -4107,7 +4294,7 @@ Effect.prototype.analyzeStmt = function (pNode) {
     if (pChildren.length === 1) {
         this.analyzeSimpleStmt(pChildren[0]);
     }
-    else if (pChildren[pChildren.length - 1].sName === T_KW_WHILE) {
+    else if (pChildren[pChildren.length - 1].sName === GLOBAL_VARS.T_KW_WHILE) {
         //Stmt : T_KW_WHILE '(' Expr ')' Stmt
         this.pushCode("while");
         this.pushCode("(");
@@ -4115,7 +4302,7 @@ Effect.prototype.analyzeStmt = function (pNode) {
         this.pushCode(")");
         this.analyzeStmt(pChildren[0]);
     }
-    else if (pChildren[pChildren.length - 1].sName === T_KW_FOR) {
+    else if (pChildren[pChildren.length - 1].sName === GLOBAL_VARS.T_KW_FOR) {
         //Stmt : For '(' ForInit ForCond ForStep ')' Stmt
         this.pushCode("for");
         this.pushCode("(");
@@ -4127,7 +4314,7 @@ Effect.prototype.analyzeStmt = function (pNode) {
         this.analyzeStmt(pChildren[0]);
         this.endScope();
     }
-    else if (pChildren[pChildren.length - 1].sName === T_KW_IF && pChildren.length === 5) {
+    else if (pChildren[pChildren.length - 1].sName === GLOBAL_VARS.T_KW_IF && pChildren.length === 5) {
         //Stmt : T_KW_IF '(' Expr ')' Stmt
         this.pushCode("if");
         this.pushCode("(");
@@ -4149,7 +4336,7 @@ Effect.prototype.analyzeStmt = function (pNode) {
 Effect.prototype.analyzeForInit = function (pNode) {
     pNode = pNode.pChildren[pNode.pChildren.length - 1];
     var pChildren = pNode.pChildren;
-    if (pNode.sName !== VARIABLEDECL) {
+    if (pNode.sName !== GLOBAL_VARS.VARIABLEDECL) {
         error("Sorry but webgl support only for-init-statement with variableDecl");
         return;
     }
@@ -4161,7 +4348,7 @@ Effect.prototype.analyzeForInit = function (pNode) {
 };
 Effect.prototype.analyzeForCond = function (pNode) {
     pNode = pNode.pChildren[pNode.pChildren.length - 1];
-    if (pNode.sName !== RELATIONALEXPR || pNode.sName !== EQUALITYEXPR) {
+    if (pNode.sName !== GLOBAL_VARS.RELATIONALEXPR || pNode.sName !== GLOBAL_VARS.EQUALITYEXPR) {
         error("Something going wrong...in for cond");
         return;
     }
@@ -4171,7 +4358,7 @@ Effect.prototype.analyzeForStep = function (pNode) {
     if (pNode.pChildren) {
         pNode = pNode.pChildren[pNode.pChildren.length - 1];
     }
-    if (pNode.sName !== POSTFIXEXPR || pNode.sName !== ASSIGNMENTEXPR) {
+    if (pNode.sName !== GLOBAL_VARS.POSTFIXEXPR || pNode.sName !== GLOBAL_VARS.ASSIGNMENTEXPR) {
         error("Something going wrong... in for step");
         return;
     }
@@ -4183,7 +4370,7 @@ Effect.prototype.analyzeNonIfStmt = function (pNode) {
     if (pChildren.length === 1) {
         this.analyzeSimpleStmt(pChildren[0]);
     }
-    else if (pChildren[pChildren.length - 1].sName === T_KW_WHILE) {
+    else if (pChildren[pChildren.length - 1].sName === GLOBAL_VARS.T_KW_WHILE) {
         //Stmt : T_KW_WHILE '(' Expr ')' Stmt
         this.pushCode("while");
         this.pushCode("(");
@@ -4191,7 +4378,7 @@ Effect.prototype.analyzeNonIfStmt = function (pNode) {
         this.pushCode(")");
         this.analyzeNonIfStmt(pChildren[0]);
     }
-    else if (pChildren[pChildren.length - 1].sName === T_KW_FOR) {
+    else if (pChildren[pChildren.length - 1].sName === GLOBAL_VARS.T_KW_FOR) {
         //Stmt : For '(' ForInit ForCond ForStep ')' Stmt
         this.pushCode("for");
         this.pushCode("(");
@@ -4209,25 +4396,24 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
     var pFunction = this._pCurrentFunction;
     var pCode;
     var i;
-    var sHash;
     var isMemRead = false;
     if (pChildren[pChildren.length - 1].sValue === ";") {
         //SimpleStmt : ';' --AN
         return;
     }
-    else if (pChildren[pChildren.length - 1].sName === STMTBLOCK) {
+    else if (pChildren[pChildren.length - 1].sName === GLOBAL_VARS.STMTBLOCK) {
         //SimpleStmt : StmtBlock
         this.analyzeStmtBlock(pChildren[0]);
     }
-    else if (pChildren[pChildren.length - 1].sValue === T_KW_RETURN && pChildren.length === 2) {
+    else if (pChildren[pChildren.length - 1].sValue === GLOBAL_VARS.T_KW_RETURN && pChildren.length === 2) {
         //SimpleStmt : T_KW_RETURN ';'
 //        if (this._pCodeVertex || this._pCodeFragment) {
 //            error("So sad, but you can`t do this with us.");
 //            return;
 //        }
-        if (!pFunction.pReturnType.isVoid() && pFunction instanceof EffectFunction) {
+        if (!pFunction.pReturnType.isVoid() && this._eFuncProperty === a.Effect.Func.FUNCTION) {
             if (pFunction.isVertexShader || pFunction.isFragmentShader) {
-                throw ERRORBADFUNCTION;
+                throw GLOBAL_VARS.ERRORBADFUNCTION;
             }
             else {
                 error("It`s not JS, baby.");
@@ -4237,7 +4423,7 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
         this.pushCode("return");
         this.pushCode(";");
     }
-    else if (pChildren[pChildren.length - 1].sValue === T_KW_RETURN && pChildren.length === 3) {
+    else if (pChildren[pChildren.length - 1].sValue === GLOBAL_VARS.T_KW_RETURN && pChildren.length === 3) {
         //SimpleStmt : T_KW_RETURN Expr ';'
         if (this._eFuncProperty === a.Effect.Func.FUNCTION) {
             this.pushCode("return");
@@ -4297,7 +4483,7 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
             return;
         }
     }
-    else if (pChildren[pChildren.length - 1].sName === T_KW_DO) {
+    else if (pChildren[pChildren.length - 1].sName === GLOBAL_VARS.T_KW_DO) {
         //SimpleStmt : T_KW_DO Stmt T_KW_WHILE '(' Expr ')' ';'
         this.pushCode("do");
         this.analyzeStmt(pChildren[5]);
@@ -4307,26 +4493,31 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
         this.pushCode(")");
         this.pushCode(";");
     }
-    else if (pChildren[pChildren.length - 1].sName === STATEBLOCK) {
+    else if (pChildren[pChildren.length - 1].sName === GLOBAL_VARS.STATEBLOCK) {
         //SimpleStmt : StmtBlock
         this.analyzeStmtBlock(pChildren[pChildren.length - 1]);
     }
-    else if (pChildren[pChildren.length - 1].sName === T_KW_DISCARD) {
+    else if (pChildren[pChildren.length - 1].sName === GLOBAL_VARS.T_KW_DISCARD) {
         //SimpleStmt : T_KW_DISCARD ';'
+        if (this._eFuncProperty === a.Effect.Func.VERTEX) {
+            error("Discard only for fragment shaders");
+            return;
+        }
+        this._pCurrentFunction.isOnlyFragment = true;
         this.pushCode("discard");
         this.pushCode(";");
     }
-    else if (pChildren[pChildren.length - 1].sName === TYPEDECL) {
+    else if (pChildren[pChildren.length - 1].sName === GLOBAL_VARS.TYPEDECL) {
         //SimpleStmt : TypeDecl
         this.analyzeTypeDecl(pChildren[0]);
     }
-    else if (pChildren[pChildren.length - 1].sName === VARIABLEDECL) {
+    else if (pChildren[pChildren.length - 1].sName === GLOBAL_VARS.VARIABLEDECL) {
         this.newMemRead();
         isMemRead = true;
         //SimpleStmt : VariableDecl
         this.analyzeVariableDecl(pChildren[0]);
     }
-    else if (pChildren[pChildren.length - 1].sName === VARSTRUCTDECL) {
+    else if (pChildren[pChildren.length - 1].sName === GLOBAL_VARS.VARSTRUCTDECL) {
         //SimpleStmt : VarStructDecl
         this.analyzeVarStructDecl(pChildren[0]);
     }
@@ -4338,16 +4529,9 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
         this.pushCode(";");
     }
     if (isMemRead) {
-        if (this._pMemReadVars.length) {
-            //TODO: add memread blocks
-            for (i = 0; i < this._pMemReadVars.length; i++) {
-                sHash = this._pMemReadVars[i].sName + "!" + this._pMemReadVars[i].iScope;
-                if (!this._pCurrentFunction.pMemBlocks[sHash]) {
-                    this._pCurrentFunction.pMemBlocks[sHash] = new EffectBlock(a.Effect.Code.MEMREAD,
-                                                                               this._pMemReadVars[i]);
-                }
-                this.pushCode(this._pCurrentFunction.pMemBlocks[sHash]);
-            }
+        for (i = 0; i < this._pMemReadVars.length; i++) {
+            this.pushCode(this._pMemReadVars[i]);
+            this.pushCode(";")
         }
         this.endMemRead();
     }
@@ -4360,7 +4544,7 @@ Effect.prototype.analyzeParamList = function (pNode, pFunction) {
     this._isParam = true;
     pFunction.pParameters = {};
     for (i = pChildren.length - 2; i >= 1; i--) {
-        if (pChildren[i].sName === PARAMETERDECL) {
+        if (pChildren[i].sName === GLOBAL_VARS.PARAMETERDECL) {
             pVar = this.analyzeParameterDecl(pChildren[i]);
             if (!pVar.checkMe()) {
                 error("You sucks 2");
@@ -4376,7 +4560,7 @@ Effect.prototype.analyzeParameterDecl = function (pNode) {
     var pChildren = pNode.pChildren;
     var pVar = new EffectVariable();
     pVar.setType(this.analyzeParamUsageType(pChildren[1]));
-    if (!pVar.pType.checkMe(PARAMETRUSAGE)) {
+    if (!pVar.pType.checkMe(GLOBAL_VARS.PARAMETRUSAGE)) {
         error("You sucks 2");
         return;
     }
@@ -4388,10 +4572,10 @@ Effect.prototype.analyzeParamUsageType = function (pNode, pType) {
     var pChildren = pNode.pChildren;
     var i;
     for (i = pChildren.length - 1; i >= 0; i--) {
-        if (pChildren[i].sName === TYPE) {
+        if (pChildren[i].sName === GLOBAL_VARS.TYPE) {
             pType.setType(this.convertType(pChildren[i]));
         }
-        if (pChildren[i].sName === PARAMUSAGE) {
+        if (pChildren[i].sName === GLOBAL_VARS.PARAMUSAGE) {
             pType.setUsage(pChildren[i].pChildren[0].sValue);
         }
     }
@@ -4404,7 +4588,7 @@ Effect.prototype.analyzeVarStructDecl = function (pNode) {
     var pType = this.analyzeUsageStructDecl(pChildren[pChildren.length - 1]);
     this._pCurrentType = pType;
     for (i = pChildren.length - 2; i >= 0; i--) {
-        if (pChildren[i].sName === VARIABLE) {
+        if (pChildren[i].sName === GLOBAL_VARS.VARIABLE) {
             pVar = this.analyzeVariable(pChildren[i]);
             pVar.setType(pType);
             this.addVariableDecl(pVar);
@@ -4433,10 +4617,10 @@ Effect.prototype.analyzeTechniqueDecl = function (pNode) {
     var pTech = new EffectTechnique();
     pTech.setName(this.analyzeComplexName(pChildren[pChildren.length - 2]));
     for (i = pChildren.length - 3; i >= 0; i--) {
-        if (pChildren[i].sName === ANNOTATION) {
+        if (pChildren[i].sName === GLOBAL_VARS.ANNOTATION) {
             this.analyzeAnnotation(pChildren[i], pTech);
         }
-        else if (pChildren[i].sName === SEMANTIC) {
+        else if (pChildren[i].sName === GLOBAL_VARS.SEMANTIC) {
             this.analyzeSemantic(pChildren[i], pTech);
         }
         else {
@@ -4448,7 +4632,7 @@ Effect.prototype.analyzeTechniqueDecl = function (pNode) {
     return pTech;
 };
 Effect.prototype.addTechnique = function (pTechnique) {
-    this.pTechiques[pTechnique.sName] = pTechnique;
+    this.pTechniques[pTechnique.sName] = pTechnique;
 };
 Effect.prototype.analyzeTechniqueBody = function (pNode, pTechnique) {
     var pChildren = pNode.pChildren;
@@ -4470,17 +4654,17 @@ Effect.prototype.analyzePassDecl = function (pNode, pPass) {
     var pChildren = pNode.pChildren;
     var i = 0;
     if (pChildren.length === 1) {
-        if (pChildren[0].sName === IMPORTDECL) {
+        if (pChildren[0].sName === GLOBAL_VARS.IMPORTDECL) {
             this.analyzeImportDecl(pChildren[0]);
         }
         return;
     }
     pPass = pPass || new EffectPass();
-    if (pChildren[pChildren.length - 2].sName === T_NON_TYPE_ID ||
-        pChildren[pChildren.length - 2].sName === T_TYPE_ID) {
+    if (pChildren[pChildren.length - 2].sName === GLOBAL_VARS.T_NON_TYPE_ID ||
+        pChildren[pChildren.length - 2].sName === GLOBAL_VARS.T_TYPE_ID) {
         pPass.setName(pChildren[pChildren.length - 2].sValue);
     }
-    if (pChildren[1].sName === ANNOTATION) {
+    if (pChildren[1].sName === GLOBAL_VARS.ANNOTATION) {
         this.analyzeAnnotation(pChildren[1], pPass);
     }
     this._pCurrentPass = pPass;
@@ -4507,7 +4691,7 @@ Effect.prototype.analyzePassState = function (pNode, pPass) {
     var i;
     var eState = null;
     if (pChildren.length === 1) {
-        if (pChildren[0].sName === STATEIF) {
+        if (pChildren[0].sName === GLOBAL_VARS.STATEIF) {
             this.analyzeStateIf(pChildren[0], pPass);
         }
         else {
@@ -4515,7 +4699,7 @@ Effect.prototype.analyzePassState = function (pNode, pPass) {
         }
         return;
     }
-    if (pChildren[pChildren.length - 2].sName === STATEINDEX) {
+    if (pChildren[pChildren.length - 2].sName === GLOBAL_VARS.STATEINDEX) {
         error("don`t very bad for state");
         return;
     }
@@ -4565,7 +4749,7 @@ Effect.prototype.analyzePassState = function (pNode, pPass) {
             return pPass;
     }
     if (isVertex || isPixel) {
-        if (pExpr.sName !== OBJECTEXPR) {
+        if (pExpr.sName !== GLOBAL_VARS.OBJECTEXPR) {
             error("Bad compile state. I don`t know what bad, but something exactly going wrong.");
             return;
         }
@@ -4762,7 +4946,7 @@ Effect.prototype.analyzeStateIf = function (pNode, pPass) {
     pPass.pushCode(")");
     this.analyzePassStateBlock(pChildren[2], pPass);
     pPass.pushCode("else");
-    if (pChildren[0].sName === STATEIF) {
+    if (pChildren[0].sName === GLOBAL_VARS.STATEIF) {
         this.analyzeStateIf(pChildren[0], pPass);
     }
     else {
@@ -4790,7 +4974,7 @@ Effect.prototype.analyzeCaseBlock = function (pNode, pPass) {
     var i;
     pPass.pushCode("{");
     for (i = 0; i < pChildren.length; i++) {
-        if (pChildren[i].sName === CASESTATE) {
+        if (pChildren[i].sName === GLOBAL_VARS.CASESTATE) {
             this.analyzeCaseState(pChildren[i], pPass);
         }
         else {
@@ -4813,7 +4997,7 @@ Effect.prototype.analyzeCaseState = function (pNode, pPass) {
     }
     pPass.pushCode(":");
     for (i = pChildren.length - 4; i >= 0; i--) {
-        if (pChildren[i].sName === PASSSTATE) {
+        if (pChildren[i].sName === GLOBAL_VARS.PASSSTATE) {
             this.analyzePassState(pChildren[i], pPass);
         }
         else {
@@ -4826,7 +5010,7 @@ Effect.prototype.analyzeDefaultState = function (pNode, pPass) {
     var i;
     pPass.pushCode("default:");
     for (i = pChildren.length - 3; i >= 0; i--) {
-        if (pChildren[i].sName === PASSSTATE) {
+        if (pChildren[i].sName === GLOBAL_VARS.PASSSTATE) {
             this.analyzePassState(pChildren[i], pPass);
         }
         else {
@@ -4845,7 +5029,7 @@ Effect.prototype.analyzeState = function (pNode, pPass) {
     var pChildren = pNode.pChildren;
     var i;
     var eState = null;
-    if (pChildren[pChildren.length - 2].sName === STATEINDEX) {
+    if (pChildren[pChildren.length - 2].sName === GLOBAL_VARS.STATEINDEX) {
         error("don`t very bad for state");
         return;
     }
@@ -4894,7 +5078,7 @@ Effect.prototype.analyzeState = function (pNode, pPass) {
     if (isTexture) {
         var pTexture;
         if (pExpr.sValue === "{" || pExpr.sValue === undefined ||
-            pStateExpr.pChildren[1].sName !== T_NON_TYPE_ID) {
+            pStateExpr.pChildren[1].sName !== GLOBAL_VARS.T_NON_TYPE_ID) {
             error("Wrong wrong");
             return;
         }
