@@ -1472,7 +1472,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         if (!pNodeData) {
             return null;
         }
-        
+
         if (pMeshList && pMeshList[sMeshName]) {
             //mesh with same geometry data
             return buildMaterials(
@@ -1480,7 +1480,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
                 pMeshNode);
         }
         
-        // trace('--- building started ---');
+        trace('--- building started ---');
         var iBegin = a.now();
 
         var pMesh = new a.Mesh(pEngine, 
@@ -1539,7 +1539,7 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
             }
         }
 
-        // trace('data filled:', a.now() - iBegin, 'ms');
+        trace('data filled:', a.now() - iBegin, 'ms');
 
 
         //add indices to data
@@ -1566,13 +1566,20 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         pMesh.addFlexMaterial('default');
         pMesh.setFlexMaterial('default');
 
-        // trace('indices added:', a.now() - iBegin, 'ms');
-        // trace('--- complete ---');
+        trace('indices added:', a.now() - iBegin, 'ms');
+        trace('--- complete ---');
 
-        // trace('loaded mesh<', sMeshName,'>:');
-        // for (var i = 0; i < pMesh.length; ++i) {
-        //      trace('\tsubmesh<', pMesh[i].name,'>:', pMesh[i].data.getPrimitiveCount(), 'polygons');
-        // }
+		pMesh.createAndShowSubBoundingSphere();
+
+        trace('loaded mesh<', sMeshName,'>:');
+        for (var i = 0; i < pMesh.length; ++i) {
+            trace('\tsubmesh<', pMesh[i].name,'>:', pMesh[i].data.getPrimitiveCount(), 'polygons');
+			for (var j = 0; j < pMesh[i].data.getNumIndexSet(); j++)
+			{
+				trace('\t\tset name:', pMesh[i].data.getIndexSetName(j));
+
+			}
+        }
         
         pMeshList[sMeshName] = pMesh;
         return buildMaterials(pMesh, pMeshNode);
@@ -1694,9 +1701,11 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
 			{
 				pMesh=buildMesh(pNode.pGeometry[m]);
                 pSceneNode.addMesh(pMesh);
-				pMesh.createAndShowSubBoundingBox();
-				pMesh.createBoundingBox();
-				pMesh.showBoundingBox();
+				//pMesh.createAndShowSubBoundingBox();
+				//pMesh.createBoundingBox();
+				//pMesh.showBoundingBox();
+				//pMesh.createBoundingSphere();
+				//pMesh.showBoundingSphere();
             }
         }
         else {

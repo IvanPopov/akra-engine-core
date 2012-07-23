@@ -115,6 +115,7 @@ PROPERTY(RenderData, 'buffer',
         return this._pFactory;
     });
 
+
 /**
  * @protected
  * Setup.
@@ -466,6 +467,15 @@ RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType, sName
     return  this._iIndexSet;
 };
 
+RenderData.prototype.getNumIndexSet = function () {
+	return this._pIndicesArray.length;
+};
+
+RenderData.prototype.getIndexSetName = function (iSet) {
+	iSet = ifndef(iSet, this._iIndexSet);
+	return this._pIndicesArray[iSet].sName;
+};
+
 /**
  * Select set of indices.
  * @param  {Int} iSet Set number.
@@ -665,7 +675,7 @@ RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) {
     else if (typeof arguments[0] === 'string') {
         iData = this.getDataLocation(iData);
     }
-    
+
     pFlow = this.getFlow(iData);
 
     if (pFlow === null) {
@@ -718,14 +728,15 @@ RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) {
 RenderData.prototype.draw = function () {
     'use strict';
 	var isOK=true;
+	var bResult;
 	var i;
-	for(i=0; i<this._pIndicesArray.length;i++)
+	for(i=0; i < this._pIndicesArray.length; i++)
 	{
 		if(this.isRenderable(i))
 		{
 			this._pFactory._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pIndicesArray[i].pMap);
-			isOK&=this._pIndicesArray[i].pMap.draw();
-
+			bResult = this._pIndicesArray[i].pMap.draw();
+			isOK = isOK && bResult;
 		}
 	}
 	return isOK;

@@ -419,6 +419,8 @@ a.VertexBuffer = VertexBuffer;
 /**
  * Computes a coordinate-axis oriented bounding box.
  * @property computeBoundingBox(VertexData pVertexData, Rect3D pBoundingBox)
+ * @tparam pVertexData VertexData буфер с данными для подсчета BoundingBox
+ * @tparam pBoundingBox BoundingBox
  * @treturn Boolean
  */
 function computeBoundingBox (pVertexData, pBoundingBox)
@@ -430,54 +432,59 @@ function computeBoundingBox (pVertexData, pBoundingBox)
 	var pVertexDeclaration,pVertexElement,pData;
 	var nStride,nCount;
 
-	if (pVertexData && pBoundingBox )
+	if (!pVertexData || !pBoundingBox )
 	{
-		pVertexDeclaration=pVertexData.getVertexDeclaration();
-		if(!pVertexDeclaration)
-			return false;
-
-		pVertexElement=pVertexDeclaration.element(a.DECLUSAGE.POSITION,3);
-		if(!pVertexDeclaration)
-			return false;
-
-		nCount=pVertexData.length;
-		nStride=pVertexElement.iSize;
-
-		pData=pVertexData.getData(pVertexElement.iOffset,pVertexElement.iSize);
-		if (!pData)
-			return false;
-
-		pTempData = new Float32Array(pData, 0, 3);
-		fX0 = fX1 = pTempData[0];
-		fY0 = fY1 = pTempData[1];
-		fZ0 = fZ1 = pTempData[2];
-		for (i = nStride; i < nStride * nCount; i += nStride) {
-
-			pTempData = new Float32Array(pData, i, 3);
-			fTemp = pTempData[0];
-			fX0 = fX0 > fTemp ? fTemp : fX0; //Min
-			fX1 = fX1 > fTemp ? fX1 : fTemp; //Max
-
-			fTemp = pTempData[1];
-			fY0 = fY0 > fTemp ? fTemp : fY0; //Min
-			fY1 = fY1 > fTemp ? fY1 : fTemp; //Max
-
-			fTemp = pTempData[2];
-			fZ0 = fZ0 > fTemp ? fTemp : fZ0; //Min
-			fZ1 = fZ1 > fTemp ? fZ1 : fTemp; //Max
-		}
-		pBoundingBox.set(fX0,fX1,fY0,fY1,fZ0,fZ1);
-		return true;
+		return false;
 	}
 
-    return false;
+	pVertexDeclaration=pVertexData.getVertexDeclaration();
+	if(!pVertexDeclaration)
+		return false;
+
+	pVertexElement=pVertexDeclaration.element(a.DECLUSAGE.POSITION,3);
+	if(!pVertexDeclaration)
+		return false;
+
+	nCount=pVertexData.length;
+	nStride=pVertexElement.iSize;
+
+	pData=pVertexData.getData(pVertexElement.iOffset,pVertexElement.iSize);
+	if (!pData)
+		return false;
+
+	pTempData = new Float32Array(pData, 0, 3);
+	fX0 = fX1 = pTempData[0];
+	fY0 = fY1 = pTempData[1];
+	fZ0 = fZ1 = pTempData[2];
+	for (i = nStride; i < nStride * nCount; i += nStride) {
+
+		pTempData = new Float32Array(pData, i, 3);
+		fTemp = pTempData[0];
+		fX0 = fX0 > fTemp ? fTemp : fX0; //Min
+		fX1 = fX1 > fTemp ? fX1 : fTemp; //Max
+
+		fTemp = pTempData[1];
+		fY0 = fY0 > fTemp ? fTemp : fY0; //Min
+		fY1 = fY1 > fTemp ? fY1 : fTemp; //Max
+
+		fTemp = pTempData[2];
+		fZ0 = fZ0 > fTemp ? fTemp : fZ0; //Min
+		fZ1 = fZ1 > fTemp ? fZ1 : fTemp; //Max
+	}
+	pBoundingBox.set(fX0,fX1,fY0,fY1,fZ0,fZ1);
+
+    return true;
 };
 a.computeBoundingBox = computeBoundingBox;
 
 
 /**
  * Computes data for cascade BoundingBox
- * @property computeDataForCascadeBoundingBox(Rect3d pBoundingBox, Array pVertexs, Array pIndexes,fMinSize)
+ * @property computeDataForCascadeBoundingBox(Rect3d pBoundingBox, Array pVertexs, Array pIndexes, Float fMinSize)
+ * @tparam pBoundingBox BoundingBox
+ * @tparam pVertexs координаты вершин
+ * @tparam pIndexes индексы вершин
+ * @tparam fMinSize минимальный размер рисочек
  * @treturn Boolean
  */
 function computeDataForCascadeBoundingBox(pBoundingBox,pVertexes,pIndexes, fMinSize)
@@ -559,107 +566,150 @@ Enum([
          FAST,
          MINIMAL
      ], SPHERE_CALCULATION_TYPE, a.TSPHERE);
+
 /**
- * Computes a bounding sphere - not minimal. Also if it need compute dounding box
- * @tparam VertexBuffer pVertexBuffer
- * @tparam Int nCount Number of vertices.
- * @tparam Rect3d pRect Bounding rect
- * @tparam Float32Array v4fOut Out vector, (x,y,z) - center of sphere, w - radius sphere.
- * @treturn Float32Array Output vector
+ * Computes a bounding sphere.
+ * @property computeBoundingSphereFast (VertexData pVertexData, Sphere pSphere, SPHERE_CALCULATION_TYPE eSphereType,Rect3D pBoundingBox)
+ * @tparam VertexData VertexData.
+ * @tparam pBoundingBox Bounding rect
+ * @tparam pSphere BoundingSphere
+ * @tparam eSphereType Type of BoundingSphere
+ * @treturn Boolean
  */
-function computeBoundingSphereFast (pVertexBuffer, nCount, pRect, v4fOut) {
-    var fX0 = 0, fY0 = 0, fZ0 = 0,
-        fX1 = 0, fY1 = 0, fZ1 = 0;
-    var i = 0;
-    var data = pVertexBuffer.getData();
-    if (pRect) {
-        fX0 = pRect.fX0;
-        fY0 = pRect.fY0;
-        fZ0 = pRect.fZ0;
-        fX1 = pRect.fX1;
-        fY1 = pRect.fY1;
-        fZ1 = pRect.fZ1;
-    }
-    if (!pRect || pRect.isClear()) {
-        var fTemp;
-        if (nCount) {
-            fX0 = fX1 = data[i];
-            fX1 = fY1 = data[i + 1];
-            fZ0 = fZ1 = data[i + 2];
-            for (i = 3; i < 3 * nCount; i += 3) {
-                fTemp = data[i];
-                fX0 = fX0 > fTemp ? fTemp : fX0; //Min
-                fX1 = fX1 > fTemp ? fX1 : fTemp; //Max
+function computeBoundingSphere( pVertexData, pSphere, eSphereType, pBoundingBox)
+{
+	if(!eSphereType||eSphereType==a.TSPHERE.FAST)
+	{
+		return a.computeBoundingSphereFast ( pVertexData, pSphere,pBoundingBox);
+	}
+	else
+	{
+		return a.computeBoundingSphereMinimal (pVertexData, pSphere);
+	}
 
-                fTemp = data[i + 1];
-                fY0 = fY0 > fTemp ? fTemp : fY0; //Min
-                fY1 = fY1 > fTemp ? fY1 : fTemp; //Max
+}
 
-                fTemp = data[i + 2];
-                fZ0 = fZ0 > fTemp ? fTemp : fZ0; //Min
-                fZ1 = fZ1 > fTemp ? fZ1 : fTemp; //Max
-            }
-        }
-        if (pRect) {
-            pRect.fX0 = fX0;
-            pRect.fY0 = fY0;
-            pRect.fZ0 = fZ0;
-            pRect.fX1 = fX1;
-            pRect.fY1 = fY1;
-            pRect.fZ1 = fZ1;
-        }
+a.computeBoundingSphere=computeBoundingSphere;
+
+
+ /**
+ * Computes a bounding sphere - not minimal. Also if it need compute dounding box
+ * @property computeBoundingSphereFast (VertexData pVertexData, Sphere pSphere,Rect3D pBoundingBox)
+ * @tparam VertexData VertexData.
+ * @tparam Rect3d pBoundingBox Bounding rect
+ * @tparam pSphere BoundingSphere
+ * @treturn Boolean
+ */
+function computeBoundingSphereFast ( pVertexData, pSphere,pBoundingBox)
+{
+    var i;
+	var pVertexDeclaration,pVertexElement;
+	var nCount,nStride;
+	var pData, pTempData ;
+
+	if(!pSphere||!pVertexData)
+	{
+		return false;
+	}
+
+
+	pVertexDeclaration=pVertexData.getVertexDeclaration();
+	if(!pVertexDeclaration)
+		return false;
+
+
+	pVertexElement=pVertexDeclaration.element(a.DECLUSAGE.POSITION,3);
+	if(!pVertexDeclaration)
+		return false;
+
+
+	nCount=pVertexData.length;
+	nStride=pVertexElement.iSize;
+
+	pData=pVertexData.getData(pVertexElement.iOffset,pVertexElement.iSize);
+	if (!pData)
+		return false;
+
+	if (!pBoundingBox)
+	{
+		pBoundingBox=new Rect3d();
+	}
+	if (pBoundingBox.isClear())
+	{
+		if(!a.computeBoundingBox(pVertexData,pBoundingBox))
+		{
+			return false;
+		}
     }
-    if (!v4fOut) {
-        v4fOut = Vec4.create();
-    }
-    var fCenterX = (fX0 + fX1) / 2;
-    var fCenterY = (fY0 + fY1) / 2;
-    var fCenterZ = (fZ0 + fZ1) / 2;
+
+    var fCenterX = (pBoundingBox.fX0 + pBoundingBox.fX1) / 2;
+    var fCenterY = (pBoundingBox.fY0 + pBoundingBox.fY1) / 2;
+    var fCenterZ = (pBoundingBox.fZ0 + pBoundingBox.fZ1) / 2;
     var fRadius = 0;
     var fDistance = 0;
-    for (i = 0; i < 3 * nCount; i += 3) {
-        fDistance = (data[i] - fCenterX) * (data[i] - fCenterX) +
-            (data[i + 1] - fCenterY) * (data[i + 1] - fCenterY) +
-            (data[i + 2] - fCenterZ) * (data[i + 2] - fCenterZ);
+    for (i = 0; i < nStride * nCount; i += nStride)
+	{
+		pTempData = new Float32Array(pData, i, 3);
+        fDistance = (pTempData[0] - fCenterX) * (pTempData[0] - fCenterX) +
+            (pTempData[1] - fCenterY) * (pTempData[1] - fCenterY) +
+            (pTempData[2] - fCenterZ) * (pTempData[2] - fCenterZ);
         fRadius = fDistance > fRadius ? fDistance : fRadius;
     }
-    v4fOut[0] = fCenterX;
-    v4fOut[1] = fCenterY;
-    v4fOut[2] = fCenterZ;
-    v4fOut[3] = Math.sqrt(fRadius);
-    return v4fOut;
+	pSphere.set(fCenterX,fCenterY,fCenterZ,Math.sqrt(fRadius));
+    return true;
 }
 ;
 a.computeBoundingSphereFast = computeBoundingSphereFast;
+
+
+
+
 /**
  * Computes a bounding sphere - minimal.
- * @tparam VertexBuffer pVertexBuffer
- * @tparam Int nCount Number of vertices.
- * @tparam Float32Array v4fOut Out vector, (x,y,z) - center of sphere, w - radius sphere.
- * @treturn Float32Array Output vector
+ * computeBoundingSphereMinimal (VertexData pVertexData,Sphere pSphere)
+ * @tparam pVertexBuffer VertexData
+ * @tparam pSphere BoundingSphere
+ * @treturn Boolean
  */
-function computeBoundingSphereMinimal (pVertexBuffer, nCount, nStride, pSphere) {
-    var pData = pVertexBuffer.getData();
-    if (!pData || !pSphere) {
-        return false;
-    }
+function computeBoundingSphereMinimal (pVertexData, pSphere)
+{
     var i = 0, j = 0, k = 0;
     var points = [];
     var length = 0;
     var isAdd = false;
     var isNew = true;
-
     var fDiametr = 0;
     var fDistance = 0;
 
-    var pTempData1;
-    var pTempData2;
-    //
+	var pVertexDeclaration,pVertexElement;
+	var nCount,nStride;
+	var pData, pTempData1,pTempData2;
+
+	if(!pSphere||!pVertexData)
+	{
+		return false;
+	}
+
+	pVertexDeclaration=pVertexData.getVertexDeclaration();
+	if(!pVertexDeclaration)
+		return false;
+
+	pVertexElement=pVertexDeclaration.element(a.DECLUSAGE.POSITION,3);
+	if(!pVertexDeclaration)
+		return false;
+
+	nCount=pVertexData.length;
+	nStride=pVertexElement.iSize;
+
+	pData=pVertexData.getData(pVertexElement.iOffset,pVertexElement.iSize);
+	if (!pData)
+		return false;
+
 
     for (i = 0; i < nStride * nCount; i += nStride) {
         isNew = true;
         isAdd = false;
-        pTempData1 = new Float32Array(pData.buffer, i, 3);
+        pTempData1 = new Float32Array(pData, i, 3);
         for (k = 0; k < points.length; k += 3) {
             if (points[k] == pTempData1[0] &&
                 points[k + 1] == pTempData1[1] &&
@@ -670,7 +720,7 @@ function computeBoundingSphereMinimal (pVertexBuffer, nCount, nStride, pSphere) 
         }
         if (isNew) {
             for (j = i + nStride; j < nStride * nCount; j += nStride) {
-                pTempData2 = new Float32Array(pData.buffer, j, 3);
+                pTempData2 = new Float32Array(pData, j, 3);
                 fDistance = (pTempData1[0] - pTempData2[0]) * (pTempData1[0] - pTempData2[0]) +
                     (pTempData1[1] - pTempData2[1]) * (pTempData1[1] - pTempData2[1]) +
                     (pTempData1[2] - pTempData2[2]) * (pTempData1[2] - pTempData2[2]);
@@ -725,8 +775,11 @@ function computeBoundingSphereMinimal (pVertexBuffer, nCount, nStride, pSphere) 
 ;
 a.computeBoundingSphereMinimal = computeBoundingSphereMinimal;
 
-function computeGeneralizingSphere (pSphereA, pSphereB, pSphereDest) {
-    if (!pSphereDest) {
+
+function computeGeneralizingSphere (pSphereA, pSphereB, pSphereDest)
+{
+    if (!pSphereDest)
+	{
         pSphereDest = pSphereA;
     }
 
@@ -760,10 +813,64 @@ function computeGeneralizingSphere (pSphereA, pSphereB, pSphereDest) {
         Vec3.scale(Vec3.add(Vec3.add(v3fC1, v3fC2, v3fTemp), Vec3.scale(v3fN, (fR1 - fR2) / (fR1 + fR2))), .5);
 }
 
-a.computeGeneralizingSphere = computeGeneralizingSphere;
+A_NAMESPACE(computeGeneralizingSphere);
 
+/**
+ * Computes data for cascade BoundingSphere
+ * @property computeDataForCascadeBoundingBox(Sphere pBoundingSphere, Array pVertexs, Array pIndexes, Float fMinSize)
+ * @tparam pBoundingSphere BoundingSphere
+ * @tparam pVertexs координаты вершин
+ * @tparam pIndexes индексы вершин
+ * @tparam fMinSize минимальный размер рисочек
+ * @treturn Boolean
+ */
+function computeDataForCascadeBoundingSphere(pBoundingSphere,pVertexes,pIndexes, fMinSize)
+{
+	var fTheta,fDelta, fAlpha;
+	var nCount=10;
+	var i,j,k,a;
+	fDelta= 2*Math.PI/nCount;
 
+	for(i=0;i<=nCount/2;i++)
+	{
+		fTheta=-Math.PI+(i*fDelta);
+		for(j=0;j<=nCount;j++)
+		{
+			fAlpha=j*fDelta;
+			pVertexes[(i*(nCount+1)+j)*3+0]=pBoundingSphere.v3fCenter.X+pBoundingSphere.fRadius*Math.sin(fTheta)*Math.cos(fAlpha);
+			pVertexes[(i*(nCount+1)+j)*3+1]=pBoundingSphere.v3fCenter.Y+pBoundingSphere.fRadius*Math.sin(fTheta)*Math.sin(fAlpha);
+			pVertexes[(i*(nCount+1)+j)*3+2]=pBoundingSphere.v3fCenter.Z+pBoundingSphere.fRadius*Math.cos(fTheta);
+		}
+	}
 
+	for(i=0;i<nCount/2;i++)
+	{
+		for(j=0;j<nCount;j++)
+		{
+			pIndexes[(i*(nCount)+j)*12+0]=i*(nCount+1)+j;
+			pIndexes[(i*(nCount)+j)*12+1]=i*(nCount+1)+j+1;
+
+			pIndexes[(i*(nCount)+j)*12+2]=i*(nCount+1)+j+2+nCount;
+			pIndexes[(i*(nCount)+j)*12+3]=i*(nCount+1)+j;
+
+			pIndexes[(i*(nCount)+j)*12+4]=i*(nCount+1)+j+1;
+			pIndexes[(i*(nCount)+j)*12+5]=i*(nCount+1)+j+2+nCount;
+
+			pIndexes[(i*(nCount)+j)*12+6]=i*(nCount+1)+j;
+			pIndexes[(i*(nCount)+j)*12+7]=i*(nCount+1)+j+1+nCount;
+
+			pIndexes[(i*(nCount)+j)*12+8]=i*(nCount+1)+j+2+nCount;
+			pIndexes[(i*(nCount)+j)*12+9]=i*(nCount+1)+j+1+nCount;
+
+			pIndexes[(i*(nCount)+j)*12+10]=i*(nCount+1)+j+2+nCount;
+			pIndexes[(i*(nCount)+j)*12+11]=i*(nCount+1)+j;
+		}
+	}
+
+	return true;
+}
+
+a.computeDataForCascadeBoundingSphere=computeDataForCascadeBoundingSphere;
 
 
 
