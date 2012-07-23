@@ -27,7 +27,7 @@ Include('utils/');
 /* Resource Pool */
 Include('resources/pool/');
 
-Include('Scene.js');
+Include('scene/');
 Include('objects/Camera.js');
 Include('Tree.js');
 
