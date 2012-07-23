@@ -11,6 +11,10 @@
 function Text3D(pEngine,pFont){
 	'use strict';
 	A_CLASS;
+
+	STATIC(pTextProg,a.loadProgram(pEngine,'../effects/text3D.glsl'));
+	STATIC(pDrawRoutine,DrawRoutineText3D);
+
 	this._pFont = pFont;
 	this._v4fBackgroundColor = Vec4.create(0.,0.,0.,0.);
 	this._v4fFontColor = Vec4.create(0.,0.,0.,0.);
@@ -19,44 +23,10 @@ function Text3D(pEngine,pFont){
 
 	this._nLineQuantity = 0;
 	this._nLineLength = 0;
-	
-	STATIC(pTextProg,a.loadProgram(pEngine,'../effects/text3D.glsl'));
 
-	this.setProgram(Text3D.pTextProg);
 	this.setGeometry(2,2);
-
-	this.drawRoutine = function(){
-		'use strict';
-
-		var pProgram = Text3D.pTextProg;
-		var pCamera = this._pEngine._pDefaultCamera;
-
-		pProgram.applyMatrix4('model_mat', this.worldMatrix());
-		pProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
-		pProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
-
-		//text unifoms
-		//trace(this._nLineLength,this._nLineQuantity);
-		pProgram.applyFloat('nLineLength',this._nLineLength);
-		pProgram.applyFloat('nLineQuantity',this._nLineQuantity);
-		pProgram.applyFloat('startIndex',this._pRenderData.getDataLocation('STRING_DATA')/4.);
-
-		//set screen parameters (ограничивают максимальный размер текста на экране размером шрифта)
-		pProgram.applyVector2('v2fCanvasSizes',this._pEngine.pCanvas.width,this._pEngine.pCanvas.height);
-		//pProgram.applyVector2('v2fTextSizes',);
-		pProgram.applyFloat('nFontSize',this._pFont.size);
-		pProgram.applyFloat('fDistanceMultiplier',this._fDistanceMultiplier);
-
-		//set font colors
-		pProgram.applyVector4('v4fBackgroundColor',this._v4fBackgroundColor);
-		pProgram.applyVector4('v4fFontColor',this._v4fFontColor);
-		//
-
-		this._pFont.activate(1);
-		pProgram.applyInt('textTexture',1);
-
-		///////////////////////////////////////////
-	}
+	this.setProgram(statics.pTextProg);
+	this.drawRoutine = statics.pDrawRoutine;
 };
 
 EXTENDS(Text3D,a.Sprite);
@@ -188,6 +158,35 @@ PROPERTY(Text3D,'fixedSize',
 	}
 );
 
-
-
 A_NAMESPACE(Text3D);
+
+function DrawRoutineText3D(pProgram){
+	'use strict';
+	var pCamera = this._pEngine._pDefaultCamera;
+
+	pProgram.applyMatrix4('model_mat', this.worldMatrix());
+	pProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
+	pProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
+
+	//text unifoms
+	//trace(this._nLineLength,this._nLineQuantity);
+	pProgram.applyFloat('nLineLength',this._nLineLength);
+	pProgram.applyFloat('nLineQuantity',this._nLineQuantity);
+	pProgram.applyFloat('startIndex',this._pRenderData.getDataLocation('STRING_DATA')/4.);
+
+	//set screen parameters (ограничивают максимальный размер текста на экране размером шрифта)
+	pProgram.applyVector2('v2fCanvasSizes',this._pEngine.pCanvas.width,this._pEngine.pCanvas.height);
+	//pProgram.applyVector2('v2fTextSizes',);
+	pProgram.applyFloat('nFontSize',this._pFont.fontSize);
+	pProgram.applyFloat('fDistanceMultiplier',this._fDistanceMultiplier);
+
+	//set font colors
+	pProgram.applyVector4('v4fBackgroundColor',this._v4fBackgroundColor);
+	pProgram.applyVector4('v4fFontColor',this._v4fFontColor);
+	//
+
+	this._pFont.activate(1);
+	pProgram.applyInt('textTexture',1);
+
+	///////////////////////////////////////////
+}

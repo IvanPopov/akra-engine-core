@@ -22,9 +22,17 @@ function Font3D (pEngine, nSize, sFontFamily, isBold, isItalic) {
     this._sBold = null;
     this._sItalic = null;
 
+    this._isMonospace = true;
+    this._nFontWidth = -1; //ширина шрифта имеет силу только для моноспейсовых шрифтов, иначе -1
+
+    this._pFontMetrics = null;//объект содержащий метрику шрифта
+
     this._pLetterMap = {}; //карта, в которой хранятся соответствия между буквами и текстурными координатами;
     this._nLettersX = 0; //количество букв, которое лежит в текстуре по оси Х
     this._nLettersY = 0; //количество букв, которое лежит в текстуре по оси Y
+
+    this._nTotalFontSize = 0; //полный размер шрифта (от высшей точки самого высокого знака до самой нижней точки ничнего)
+                                //он больше полного размера шрифта
     //////////////////////////////////////
     this._nFontSize = nSize;
     this._sFontSize = String(nSize) + 'px';
@@ -36,12 +44,18 @@ function Font3D (pEngine, nSize, sFontFamily, isBold, isItalic) {
     if (this._isBold) {
         this._sBold = 'bold';
     }
+    else{
+        this._sBold = 'normal';
+    }
     //////////////////////////////////////
     if (this._isItalic) {
         this._sItalic = 'italic';
     }
+    else{
+        this._sItalic = 'normal';
+    }
     //////////////////////////////////////
-    //
+
     this._pContext = null;//2d конетекст необходимый для того чтобы измерать тест, написанный шрифтом
     this._rasterize();
 };
@@ -55,14 +69,37 @@ PROPERTY(Font3D,'letterMap',
     }
 );
 
-PROPERTY(Font3D,'size',
+PROPERTY(Font3D,'fontSize',
     function(){
+        'use strict';
         return this._nFontSize;
+    }
+);
+
+PROPERTY(Font3D,'totalFontSize',
+    function(){
+        'use strict';
+        return this._nTotalFontSize;
+    }
+);
+
+PROPERTY(Font3D,'fontWidth',
+    function(){
+        'use strict';
+        return this._nFontWidth;
+    }
+);
+
+PROPERTY(Font3D,'isMonospace',
+    function(){
+        'use strict';
+        return this._isMonospace;
     }
 );
 
 PROPERTY(Font3D,'context',
     function(){
+        'use strict';
         return this._pContext;
     }
 );
@@ -73,58 +110,268 @@ Font3D.prototype._rasterize = function() {
     var pLetterMap = this._pLetterMap;
 
     var nLetters = 128;//пока только английские символы
-    var nLettersX = this._nLettersX = Math.ceilingPowerOfTwo(Math.sqrt(nLetters));
-    var nLettersY = this._nLettersY = Math.ceilingPowerOfTwo(nLetters/nLettersX);
-    //домножаем на размер шрифта
-    var nTextureSizeX = Math.ceil(nLettersX * this._nFontSize);
-    var nTextureSizeY = Math.ceil(nLettersY * this._nFontSize); 
-    //trace(iLettersX,iLettersY,nLetters);
     
     var pTextCanvas = document.createElement('canvas');
-    pTextCanvas.width  = nTextureSizeX;
-    pTextCanvas.height = nTextureSizeY;
     var pContext2D = this._pContext =pTextCanvas.getContext('2d');
 
     pContext2D.fillStyle = this._sFontColor;
 
     var sFont = "";
-    if(this._isBold){
-        sFont += this._sBold + " ";
-    }
     if(this._isItalic){
         sFont += this._sItalic + " ";
     }
-    sFont += this._sFontSize + " black";
+    if(this._isBold){
+        sFont += this._sBold + " ";
+    }
+    sFont += this._sFontSize + " ";
+    sFont += this._sFontFamily;
 
     pContext2D.font = sFont;
-    
 
-    for(var i=0;i<nLetters;i++){
-        var sChar = String.fromCharCode(i);
+    var pFontMetrics = this._pFontMetrics = this._getFontMetrics(this._sItalic,this._sBold,this._nFontSize,this._sFontFamily);
+    this._nTotalFontSize = pFontMetrics.fontMetrics.maxHeight;
 
-        var metrics = pContext2D.measureText(sChar);
-        trace(sChar,metrics);
+    trace(pFontMetrics);
 
-        var relativeWidth = metrics.width/nTextureSizeX;
-
-        var iPositionX = (i%nLettersX)*this._nFontSize;
-        var iPositionY = (Math.floor(i/nLettersX))*this._nFontSize;
-        //trace(iPositionX,iPositionY);
-        pContext2D.fillText(sChar,iPositionX,iPositionY,this._nFontSize);
-        //заполняем карту соответствий
-        pLetterMap[sChar] = [(i%nLettersX)/nLettersX,(Math.floor(i/nLettersX) - 0.75)/nLettersY,/*1./this._nLettersX*/relativeWidth,1./this._nLettersY];
-        
+    this._monospaceTest();
+    var pTextureSizes = this._defineTextureSizes();
+    if(pTextureSizes.nTextureWidth == -1 || pTextureSizes.nTextureHeight == -1){
+        return;
     }
-    var str = 'black';
-    var metrics = pContext2D.measureText(str);
-    trace(str,metrics);
 
-    var imageData = pContext2D.getImageData(0, 0, pTextCanvas.width, pTextCanvas.height);
+    var nTextureWidth = pTextureSizes.nTextureWidth;
+    var nTextureHeight = pTextureSizes.nTextureHeight;
+
+    ////////////set the sizes of the canvas/////
+    pTextCanvas.width = nTextureWidth;
+    pTextCanvas.height = nTextureHeight;
+    pContext2D.font = sFont;//снова выставляем шрифт так как он слетает
+    pContext2D.textBaseline = 'top';//y в fillText соответствует выравниванию верхнему краю
+    pContext2D.textAlignment = 'start';
+    ////////////////////////////////////////////
+    
+    var nVerticalStep = Math.ceilingPowerOfTwo(this._nTotalFontSize);
+    var nLineNumber = pTextureSizes.nTextureHeight/nVerticalStep;
+    var j=0;
+    var nStartIndex;
+    var nCurrentLineWidth;
+
+    var relativeWidth;
+    var relativeHeight = this._nTotalFontSize/nTextureHeight;
+
+    for(var i=0;i<nLineNumber;i++){
+        nCurrentLineWidth = 0;
+        nStartIndex = j;
+
+        var iPositionY = i*nVerticalStep;
+
+        for(j=nStartIndex;j<nLetters;j++){
+
+            var iPositionX = nCurrentLineWidth;
+
+            var sChar = String.fromCharCode(j);
+            var nWidth = pFontMetrics.lettersMetrics[sChar].width;
+            relativeWidth = (nWidth-1)/nTextureWidth;
+
+            nCurrentLineWidth += nWidth;
+            if(nCurrentLineWidth > nTextureWidth){
+                j--;
+                break;
+            }
+            pContext2D.fillText(sChar,iPositionX,iPositionY,nWidth);
+            pLetterMap[sChar] = [iPositionX/nTextureWidth,iPositionY/nTextureHeight, relativeWidth, relativeHeight];
+        }
+        if(j == nLetters){
+            break;
+        }
+    }
+
+    var pImageData = pContext2D.getImageData(0, 0, pTextCanvas.width, pTextCanvas.height);
 
     //this.flipY(true);
-    this.createTexture(nTextureSizeX,nTextureSizeY,0,a.IFORMAT.RGBA8,a.ITYPE.UNSIGNED_BYTE,new Uint8Array(imageData.data));
+    this.createTexture(nTextureWidth,nTextureHeight,0,a.IFORMAT.RGBA8,a.ITYPE.UNSIGNED_BYTE,new Uint8Array(pImageData.data));
     this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
     this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+};
+
+Font3D.prototype._getFontMetrics = function(sStyle,sWeight,nSize,sFontFamily) {
+    'use strict';
+    if(arguments.length < 4){
+        error('not enough arguments in function getFontMetrics');
+        return;
+    }
+
+    var sFont = sStyle + " " + sWeight + " " + nSize + "px" + " " + sFontFamily;
+
+    var pCanvas = document.createElement('canvas');
+    document.body.appendChild(pCanvas);
+    pCanvas.width = 2.*nSize + 1; //растеризуем по одной букве
+    pCanvas.height = 2.*nSize + 1;//вдвое больших размеров должно хватить
+    var pContext2D = this._pContext =pCanvas.getContext('2d');
+    pContext2D.font = sFont;
+    pContext2D.textBaseline = 'middle';//y в fillText соответствует выравниванию верхнему краю
+    pContext2D.textAlign = 'center';
+
+    var nLetters = 128;//пока только английские символы
+
+    var pLettersMetrics = {};
+
+    var nWidth;
+    var nHeight;
+    var nMaxLeft,nMaxRight,nMaxTop,nMaxBottom;
+    for(var i=0;i<nLetters;i++){
+        var sChar = String.fromCharCode(i);
+        nWidth = pContext2D.measureText(sChar).width;
+        nHeight = nSize;
+
+        nMaxLeft = -Math.ceil(nWidth/2);
+        nMaxRight = Math.ceil(nWidth/2);
+
+        nMaxTop = -Math.ceil(nSize/2);//ось вниз
+        nMaxBottom = Math.ceil(nSize/2);
+
+        if(nWidth == 0){
+            //непечатные симолы
+            pLettersMetrics[sChar] = {'left' : 0,'top' : 0,'right' : 0, 'bottom' : 0, 'width' : 0, 'height' : 0};
+            continue;
+        }
+        else{
+            pLettersMetrics[sChar] = {'left' : nMaxLeft,'top' : nMaxTop,'right' : nMaxRight, 'bottom' : nMaxBottom,
+             'width' : nMaxRight - nMaxLeft + 1, 'height' : nMaxBottom - nMaxTop + 1};
+        }
+        pContext2D.fillText(sChar,nSize,nSize);//рисуем в центре канваса
+        var pImageData = pContext2D.getImageData(0, 0, pCanvas.width, pCanvas.height);
+        // if(sChar == 'f'){
+        //     //break;
+        // }
+        for(var iY=0;iY<pCanvas.height;iY++){
+            for(var iX=0;iX<pCanvas.width;iX++){
+                var alpha = pImageData.data[4*(iY*pCanvas.width + iX) + 3];//альфа компонента
+                if(alpha != 0){
+                    var iRealX = iX - nSize;
+                    var iRealY = iY - nSize;
+                    if(iRealX < nMaxLeft){
+                        nMaxLeft = iRealX;
+                    }
+                    else if(iRealX > nMaxRight){
+                        nMaxRight = iRealX;
+                    }
+                    if(iRealY < nMaxTop){
+                        nMaxTop = iRealY;
+                    }
+                    else if(iRealY > nMaxBottom){
+                        nMaxBottom = iRealY;
+                    }
+                }
+            }
+        }
+        pLettersMetrics[sChar].left = nMaxLeft;
+        pLettersMetrics[sChar].right = nMaxRight;
+        pLettersMetrics[sChar].top = nMaxTop;
+        pLettersMetrics[sChar].bottom = nMaxBottom;
+        pLettersMetrics[sChar].width = nMaxRight - nMaxLeft + 1;
+        pLettersMetrics[sChar].height = nMaxBottom - nMaxTop + 1;
+        pContext2D.clearRect(0, 0, pCanvas.width, pCanvas.height);  
+    }
+
+    nMaxRight = 0;
+    nMaxBottom = 0;
+    nMaxLeft = 0;
+    nMaxTop = 0;
+
+    for(var sChar in pLettersMetrics){
+        var pMetrics = pLettersMetrics[sChar];
+        if(pMetrics.right > nMaxRight){
+            nMaxRight = pMetrics.right;
+        }
+        if(pMetrics.left < nMaxLeft){
+            nMaxLeft = pMetrics.left;
+        }
+        if(pMetrics.bottom > nMaxBottom){
+            nMaxBottom = pMetrics.bottom;
+        }
+        if(pMetrics.top < nMaxTop){
+            nMaxTop = pMetrics.top;
+        }
+    }
+    var pFontMetrics = {'maxLeft' : nMaxLeft, 'maxTop' : nMaxTop,'maxRight' : nMaxRight, 'maxBottom' : nMaxBottom,
+     'maxWidth' : nMaxRight - nMaxLeft + 1, 'maxHeight' : nMaxBottom - nMaxTop + 1};
+    return {'lettersMetrics' : pLettersMetrics,'fontMetrics' : pFontMetrics};
+};
+
+Font3D.prototype._monospaceTest = function() {
+    'use strict';
+    var nBaseWidth = this._pFontMetrics.fontMetrics.maxWidth;
+
+    var pLettersMetrics = this._pFontMetrics.lettersMetrics;
+    for(var sChar in pLettersMetrics){
+        if(pLettersMetrics[sChar].width != 0 && pLettersMetrics[sChar].width != nBaseWidth){
+            this._isMonospace = true;
+        }
+    }
+
+    if(this._isMonospace){
+        this._nFontWidth = nBaseWidth;
+    }
+};
+
+Font3D.prototype._defineTextureSizes = function(){
+    'use strict';
+    var nMaxTextureSize = a.info.graphics.maxTextureSize(this._pEngine.getDevice());
+    var nLetters = 128;//пока только английские символы
+
+    var nFontTotalWidth = 0;
+
+    var pLettersMetrics = this._pFontMetrics.lettersMetrics;
+
+    for(var sChar in pLettersMetrics){
+        nFontTotalWidth += pLettersMetrics[sChar].width;
+    }
+
+    var nTextureWidth = Math.ceilingPowerOfTwo(nFontTotalWidth); //размеры текстуры кратны двойке, для того чтобы ставить линейные фильтры
+    var nTextureHeight = Math.ceilingPowerOfTwo(this._nFontSize);
+    var nVerticalStep = nTextureHeight;
+
+    while(nTextureWidth > nMaxTextureSize){
+        nTextureWidth /= 2;
+        nTextureHeight *=2;
+    }
+
+    if(nTextureWidth < 1. || nTextureHeight > nMaxTextureSize){
+        error("слишком большой размер шрифта для растеризации");
+        return {'nTextureWidth' : -1,'nTextureHeight' : -1};
+    }
+
+    //проверяем влезет ли в текущий размер текстуры весь текст
+    
+    var nLineNumber = nTextureHeight/nVerticalStep;
+    var j = 0;
+    var nStartIndex;
+    var nCurrentLineWidth;
+    for(var i=0;i<nLineNumber;i++){
+        nCurrentLineWidth = 0;
+        nStartIndex = j;
+        for(j=nStartIndex;j<nLetters;j++){
+            var sChar = String.fromCharCode(i);
+            nCurrentLineWidth += pLettersMetrics[sChar].width;
+            if(nCurrentLineWidth > nTextureWidth){
+                j--;
+                break;
+            }
+        }
+        if(j == nLetters){
+            break;
+        }
+    }
+    if(j<nLetters){
+        nTextureHeight*=2;
+        //этого должно хватить, так как размер изначально площадь текстуры была такой чтобы все влезло
+        //поэтому такого увеличения размера точно должно хватить
+        if(nTextureHeight > nMaxTextureSize){
+            return {'nTextureWidth' : -1,'nTextureHeight' : -1};
+        }
+    }
+    return {'nTextureWidth' : nTextureWidth,'nTextureHeight' : nTextureHeight};
 };
 
 A_NAMESPACE(Font3D);
