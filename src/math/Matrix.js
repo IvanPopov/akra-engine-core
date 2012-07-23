@@ -113,6 +113,24 @@ Define(Vec4.set(_x, _y, _z, _w, v), function () {
     v.W = _w;
 });
 
+Define(Quaternion(), function () {
+    glMatrixArrayType(4);
+})
+
+Define(Quaternion4, Quaternion);
+
+Define(Quaternion(x, y, z, w), function () {
+    glMatrixArrayType([x, y, z, w]);
+});
+
+Define(Quaternion(c, w), function () {
+    glMatrixArrayType([c, c, c, w]);
+});
+
+Define(Quaternion(c), function () {
+    glMatrixArrayType([c, c, c, c]);
+});
+
 Define(Vector2(), function () {
     glMatrixArrayType(2);
 });

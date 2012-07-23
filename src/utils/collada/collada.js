@@ -63,11 +63,38 @@ function COLLADA (pEngine, pSettings) {
     ];
 
     var pSupportedJointFormat = [
-        {sName: 'JOINT', sType: ['name', 'IDREF']}
+        {sName: 'JOINT', sType: ['Name', 'IDREF']}
     ];
 
     var pSupportedInvBindMatrixFormat = [
         {sName: 'TRANSFORM', sType: 'float4x4'}
+    ];
+
+    var pSupportedInterpolationFormat = [
+        {sName: 'INTERPOLATION', sType: 'Name'}
+    ];
+
+    var pSupportedInputFormat = [
+        {sName: 'TIME', sType: 'float'}
+    ];
+
+    var pSupportedOutputFormat = [
+        {sName: ['X', 'ANGLE', null], sType: 'float'},
+        {sName: 'Y', sType: 'float'},
+        {sName: 'Z', sType: 'float'}
+    ];
+
+    var pSupportedTangentFormat = [
+        {sName: 'X', sType: 'float'},
+        {sName: 'Y', sType: 'float'},
+        {sName: 'X', sType: 'float'},
+        {sName: 'Y', sType: 'float'},
+        {sName: 'X', sType: 'float'},
+        {sName: 'Y', sType: 'float'},
+        {sName: 'X', sType: 'float'},
+        {sName: 'Y', sType: 'float'},
+        {sName: 'X', sType: 'float'},
+        {sName: 'Y', sType: 'float'}
     ];
 
     var pFormatStrideTable = {
@@ -79,6 +106,7 @@ function COLLADA (pEngine, pSettings) {
         'float4x4': 16,
         'int':      1,
         'name':     1,
+        'Name':     1,
         'IDREF':    1
     };
 
@@ -89,6 +117,48 @@ function COLLADA (pEngine, pSettings) {
         '@mesh': {},             //mesh_name --> mesh
         '@sharedBuffer': null
     };
+
+
+    function getSupportedFormat(sSemantic) {
+        switch (sSemantic) {
+            case 'TEXTANGENT':
+            case 'TEXBINORMAL':
+            case 'VERTEX':
+            case 'NORMAL':
+            case 'TANGENT':
+            case 'BINORMAL':
+            case 'POSITION':
+                return pSupportedVertexFormat;
+            case 'TEXCOORD':
+                return pSupportedTextureFormat;
+            case 'WEIGHT':
+                return pSupportedWeightFormat;
+            case 'JOINT':
+                return pSupportedJointFormat;
+            case 'INV_BIND_MATRIX':
+                return pSupportedInvBindMatrixFormat;
+            case 'INTERPOLATION':
+                return pSupportedInterpolationFormat;
+            case 'IN_TANGENT':
+                return pSupportedTangentFormat;
+            case 'INPUT':
+                return pSupportedInputFormat;
+            case 'OUT_TANGENT':
+                return pSupportedTangentFormat;
+            case 'OUTPUT':
+                return pSupportedOutputFormat;
+            case 'UV':
+            case 'MORPH_WEIGHT':
+            case 'MORPH_TARGET':
+            case 'LINEAR_STEPS':
+            case 'IMAGE':
+            case 'CONTINUITY':
+            case 'COLOR':
+                return null; 
+        }
+        debug_error('unknown semantics founded: ' + sSemantic);
+        return null;
+    }
 
     function sharedBuffer (pBuffer) {
         'use strict';
@@ -298,21 +368,52 @@ function COLLADA (pEngine, pSettings) {
      ------------------------------------------------------------------------
      *********************************/
 
-    function COLLADAScale (pXML) {
+    //common tag for all kinf of transforms, such as Rotate, Translate & Matrix
+    function COLLADATransform (pXML) {
+        var pTransform = {
+            sid: attr(pXML, 'sid'),
+            pValue: null,
+            sName: String(pXML.nodeName)
+        };
+        var v4f;
+        switch (pTransform.sName) {
+            case 'rotate':
+                v4f = new Vector4();
+                string2FloatArray(stringData(pXML),  v4f);
+                pTransform.pValue = new Vector4(v4f.W * Math.PI / 180.0, v4f.X, v4f.Y, v4f.Z);
+                break;
+            case 'translate':
+            case 'scale':
+                pTransform.pValue = new Vector3;
+                string2FloatArray(stringData(pXML),  pTransform.pValue);
+                break;
+            case 'matrix':
+                pTransform.pValue = new Matrix4;
+                string2FloatArray(stringData(pXML),  pTransform.pValue);
+                Mat4.transpose(pTransform.pValue);
+                break;
+            default:
+                debug_error('unsupported transform detected: ' + sName);
+        }
+
+        return pTransform;
+    }
+
+    function COLLADAScaleMatrix (pXML) {
         var v3fScale = new Vector3;
         string2FloatArray(stringData(pXML), v3fScale);
 
         return Mat4.diagonal(new Matrix4, [v3fScale.X, v3fScale.Y, v3fScale.Z, 1.0]);
     }
 
-    function COLLADATranslate (pXML) {
+    function COLLADATranslateMatrix (pXML) {
         var v3fTranslate = new Vector3;
         string2FloatArray(stringData(pXML), v3fTranslate);
 
         return Vec3.toTranslationMatrix(v3fTranslate);
     }
 
-    function COLLADARotate (pXML) {
+    function COLLADARotateMatrix (pXML) {
         var v4f = new Vector4;
         string2FloatArray(stringData(pXML), v4f);
         return Mat4.rotate(Mat4.identity(new Matrix4), v4f.W * Math.PI / 180.0, [v4f.X, v4f.Y, v4f.Z]);
@@ -374,11 +475,11 @@ function COLLADA (pEngine, pSettings) {
             case 'color':
                 return fnData(4, 'float');
             case 'rotate':
-                return COLLADARotate(pXML);
+                return COLLADARotateMatrix(pXML);
             case 'translate':
-                return COLLADATranslate(pXML);
+                return COLLADATranslateMatrix(pXML);
             case 'scale':
-                return COLLADAScale(pXML);
+                return COLLADAScaleMatrix(pXML);
             case 'bind_shape_matrix':
             case 'matrix':
                 return Mat4.transpose(fnData(16, 'float'));
@@ -763,44 +864,10 @@ function COLLADA (pEngine, pSettings) {
     }
 
     function prepareInput (pInput) {
-        switch (pInput.sSemantic) {
-            case 'TEXTANGENT':
-            case 'TEXBINORMAL':
-            case 'VERTEX':
-            case 'NORMAL':
-            case 'TANGENT':
-            case 'BINORMAL':
-            case 'POSITION':
-                pInput.sArrayId = COLLADAGetSourceData(pInput.sSource, pSupportedVertexFormat);
-                break;
-            case 'TEXCOORD':
-                pInput.sArrayId = COLLADAGetSourceData(pInput.sSource, pSupportedTextureFormat);
-                break;
-            case 'WEIGHT':
-                pInput.sArrayId = COLLADAGetSourceData(pInput.sSource, pSupportedWeightFormat);
-                break;
-            case 'JOINT':
-                pInput.sArrayId = COLLADAGetSourceData(pInput.sSource, pSupportedJointFormat);
-                break;
-            case 'INV_BIND_MATRIX':
-                pInput.sArrayId = COLLADAGetSourceData(pInput.sSource, pSupportedInvBindMatrixFormat);
-                break;
-            case 'UV':
-            case 'OUT_TANGENT':
-            case 'OUTPUT':
-            case 'MORPH_WEIGHT':
-            case 'MORPH_TARGET':
-            case 'LINEAR_STEPS':
-            case 'INTERPOLATION':
-            case 'IN_TANGENT':
-            case 'INPUT':
-            case 'IMAGE':
-            case 'CONTINUITY':
-            case 'COLOR':
-            default:
-                debug_error('unsupported semantic used <' + pInput.sSemantic + '>');
-        }
+        var pSupportedFormat = getSupportedFormat(pInput.sSemantic);
+        debug_assert(pSupportedFormat, 'unsupported semantic used <' + pInput.sSemantic + '>');
 
+        pInput.sArrayId = COLLADAGetSourceData(pInput.sSource, pSupportedFormat);
         pInput.pArray = source(pInput.sArrayId);
 
         pInput.pAccessor = source(pInput.sSource).pTechniqueCommon.pAccessor;
@@ -828,8 +895,23 @@ function COLLADA (pEngine, pSettings) {
         }
 
         for (var i in pAccess.pParam) {
-            if (pAccess.pParam[i].sName.toLowerCase() != pFormat[i].sName.toLowerCase()) {
-               fnUnsupportedFormatError();
+            if (typeof pFormat[i].sName === 'string') {
+                if (pAccess.pParam[i].sName.toLowerCase() != pFormat[i].sName.toLowerCase()) {
+                   fnUnsupportedFormatError();
+                }
+            }
+            else {
+                isFormatSupported = false;
+   
+                for (var f = 0; f < pFormat[i].sName.length; ++ f) {
+                    if ((pAccess.pParam[i].sName || '').toLowerCase() == (pFormat[i].sName[f] || '').toLowerCase()) {
+                        isFormatSupported = true;
+                    }
+                }
+
+                if (!isFormatSupported) {
+                    fnUnsupportedFormatError();
+                }
             }
 
             if (typeof pFormat[i].sType === 'string') {
@@ -1267,11 +1349,12 @@ function COLLADA (pEngine, pSettings) {
             pGeometry:   [],
             pController: [],
             pChildNodes: [],
-            iDepth: iDepth
+            iDepth: iDepth,
+            pTransforms: []
         };
 
         var m4fTransform = Mat4.identity(new Matrix4), m4fMatrix;
-        var sType, id;
+        var sType, id, sid;
 
         link(pNode);
 
@@ -1281,6 +1364,8 @@ function COLLADA (pEngine, pSettings) {
                 case 'matrix':
                 case 'translate':
                 case 'scale':
+                    pNode.pTransforms.push(COLLADATransform(pXMLData, pNode.id));
+
                     m4fMatrix = COLLADAData(pXMLData);
                     Mat4.mult(pNode.m4fTransform, m4fMatrix);
                     break;
@@ -1450,6 +1535,84 @@ function COLLADA (pEngine, pSettings) {
         }
 
         return pScene;
+    }
+
+
+    /*  COLLADA ANIMATIONS
+     * -------------------------------------------------------
+     */
+
+    function COLLADAAnimationSampler (pXML) {
+        'use strict';
+        
+        var pSampler = {
+            pInput: {},
+            id: attr(pXML, 'id')
+        };
+
+        link(pSampler);
+
+        var pInput;
+        eachByTag(pXML, 'input', function (pXMLData) {
+            var sSemantic = attr(pXMLData, 'semantic');
+            switch (sSemantic) {
+                case 'INPUT':
+                case 'OUTPUT':
+                case 'INTERPOLATION':
+                case 'IN_TANGENT':
+                case 'OUT_TANGENT':
+                    pInput = COLLADAInput(pXMLData);
+                    pSampler.pInput[sSemantic] = pInput;
+                    prepareInput(pInput);
+
+                    break;
+                default:
+                    debug_error('semantics are different from OUTPUT/INTERPOLATION/IN_TANGENT/OUT_TANGENT is not supported in the <sampler /> tag');
+            }
+        });
+
+        return pSampler;
+    }
+
+    function COLLADAAnimationChannel (pXML) {
+        'use strict';
+        
+        var pChannel = {
+            pSource: source(attr(pXML, 'source')),
+            pTarget: attr(pXML, 'target')
+        };
+
+        return pChannel;
+    }
+
+    function COLLADAAnimation (pXML) {
+        'use strict';
+        
+        var pAnimation = {
+            pSource:   [],
+            pSampler: [],
+            pChannel: [],
+            id: attr(pXML, 'id'),
+            name: attr(pXML, 'name')
+        };
+
+        link(pAnimation);
+
+        eachChild(pXML, function (pXMLData, sName) {
+            switch (sName) {
+                case 'source':
+                    pAnimation.pSource.push(COLLADASource(pXMLData));
+                    break;
+                case 'sampler':
+                    pAnimation.pSampler.push(COLLADAAnimationSampler(pXMLData));
+                    break;
+                case 'channel':
+                    pAnimation.pChannel.push(COLLADAAnimationChannel(pXMLData));
+                    break;
+            }
+        });
+
+        return pAnimation;
     }
 
 
@@ -1875,6 +2038,7 @@ function COLLADA (pEngine, pSettings) {
             {sLib: 'library_materials',     sElement: 'material',       fn: COLLADAMaterial},
             {sLib: 'library_geometries',    sElement: 'geometry',       fn: COLLADAGeometrie},
             {sLib: 'library_controllers',   sElement: 'controller',     fn: COLLADAController},
+            {sLib: 'library_animations',    sElement: 'animation',      fn: COLLADAAnimation},
             {sLib: 'library_visual_scenes', sElement: 'visual_scene',   fn: COLLADAVisualScene}
         ];
 
