@@ -160,7 +160,7 @@ RenderDataBuffer.prototype._createDataBuffer = function () {
     if (iOptions & a.RenderDataBuffer.VB_READABLE) {
         SET_BIT(iVbOption, FLAG(a.VBufferBase.ReadableBit));
     }
-    trace('creating new video buffer for render data buffer ...');
+    //trace('creating new video buffer for render data buffer ...');
     this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource('render_data_buffer' + '_' + a.sid());
     this._pDataBuffer.create(0, iVbOption);
     this._pDataBuffer.addRef();

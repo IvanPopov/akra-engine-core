@@ -191,20 +191,59 @@ function COLLADA (pEngine, pSettings) {
     }
 
     function source (key) {
-//    if (key[0] != '#') {
-//        debug_error('incorrect key used <' + key + '>');
-//    }
-//    else {
-//        key = key.substr(1);
-//    }
         if (key.charAt(0) !== '#') {
             key = '#' + key;
         }
-
+        
         var pElement = pLinks[key];
-        debug_assert (pElement, 'cannot find element with id: ' + key);
 
-        return pElement;
+        if (!pElement) {
+            warning ('cannot find element with id: ' + key);
+        }
+
+        return pElement || null;
+    }
+
+    function target (sPath) {
+        var iPos = sPath.lastIndexOf('.');
+        
+        if (iPos < 0) {
+            return source(sPath);
+        }
+
+        var pSource = source(sPath.substr(0, iPos));
+        var sValue = sPath.substr(iPos + 1);
+
+        switch (sValue) {
+            case 'X':
+                return pSource.pValue.X;
+            case 'Y':
+                return pSource.pValue.Y;
+            case 'Z':
+                return pSource.pValue.Z;
+            case 'W':
+                return pSource.pValue.W;
+            case 'ANGLE':
+                return pSource.pValue[0];
+        }
+
+        var pMatches;
+
+        pMatches = sValue.match(/^\((\d+)\)$/);
+        
+        if (pMatches) {
+            return pSource[Number(pMatches[1])];
+        }
+
+        pMatches = sValue.match(/^\((\d+)\)\((\d+)\)$/) 
+
+        if (pMatches) {
+            //TODO: matrix extraction...
+            //pSource[Number(pMatches[1])]
+            TODO('matrix element?');
+        }
+
+        debug_error ('unsupported target value founded: ' + sValue);
     }
 
     function printArray (pArr, nRow, nCol) {
@@ -369,12 +408,17 @@ function COLLADA (pEngine, pSettings) {
      *********************************/
 
     //common tag for all kinf of transforms, such as Rotate, Translate & Matrix
-    function COLLADATransform (pXML) {
+    function COLLADATransform (pXML, id) {
         var pTransform = {
             sid: attr(pXML, 'sid'),
             pValue: null,
             sName: String(pXML.nodeName)
         };
+
+        if (id && pTransform.sid) {
+            link(id + '/' + pTransform.sid, pTransform);
+        }
+
         var v4f;
         switch (pTransform.sName) {
             case 'rotate':
@@ -1579,8 +1623,10 @@ function COLLADA (pEngine, pSettings) {
         
         var pChannel = {
             pSource: source(attr(pXML, 'source')),
-            pTarget: attr(pXML, 'target')
+            pTarget: null
         };
+
+        var pTarget = target(attr(pXML, 'target'));
 
         return pChannel;
     }
@@ -1764,9 +1810,10 @@ function COLLADA (pEngine, pSettings) {
                             error('unsupported semantics used: ' + sSemantic);
                     }
 
-                    trace('data location for ', sSemantic, ':', 
-                        pMeshData.allocateData(pDecl, pData)
-                        );
+                    pMeshData.allocateData(pDecl, pData);
+                    //trace('data location for ', sSemantic, ':', 
+                    //    pMeshData.allocateData(pDecl, pData)
+                    //    );
                 }
             }
         }
@@ -1776,7 +1823,7 @@ function COLLADA (pEngine, pSettings) {
 
         //add indices to data
         for (var i = 0; i < pPolyGroup.length; ++ i) {
-            trace('indices for submesh: ', i);
+            //trace('indices for submesh: ', i);
             var pPolygons = pPolyGroup[i];
             var pSubMesh = pMesh.getSubset(i);
             var pSubMeshData = pSubMesh.data;
@@ -1791,7 +1838,7 @@ function COLLADA (pEngine, pSettings) {
 
             for (var j = 0; j < pDecl.length; ++ j) {
                 var sSemantic = pPolygons.pInput[j].sSemantic;
-                trace('index for data ', sSemantic, ' with location: ', pSubMeshData.getDataLocation(sSemantic));
+                //trace('index for data ', sSemantic, ' with location: ', pSubMeshData.getDataLocation(sSemantic));
                 pSubMeshData.index(sSemantic, pDecl[j].eUsage);
             }
 
@@ -1804,11 +1851,11 @@ function COLLADA (pEngine, pSettings) {
         //trace('indices added:', a.now() - iBegin, 'ms');
         //trace('--- complete ---');
 
-        trace('loaded mesh<', sMeshName,'>:');
-        for (var i = 0; i < pMesh.length; ++i) {
-            trace('\tsubmesh<', pMesh[i].name,'>:', pMesh[i].data.getPrimitiveCount(), 'polygons');
-            //trace(pMesh[i].data.toString());
-        }
+        // trace('loaded mesh<', sMeshName,'>:');
+        // for (var i = 0; i < pMesh.length; ++i) {
+        //     trace('\tsubmesh<', pMesh[i].name,'>:', pMesh[i].data.getPrimitiveCount(), 'polygons');
+        //     //trace(pMesh[i].data.toString());
+        // }
 
         //adding all data to cahce data
         pMeshList[sMeshName] = pMesh;
@@ -2038,8 +2085,8 @@ function COLLADA (pEngine, pSettings) {
             {sLib: 'library_materials',     sElement: 'material',       fn: COLLADAMaterial},
             {sLib: 'library_geometries',    sElement: 'geometry',       fn: COLLADAGeometrie},
             {sLib: 'library_controllers',   sElement: 'controller',     fn: COLLADAController},
-            {sLib: 'library_animations',    sElement: 'animation',      fn: COLLADAAnimation},
-            {sLib: 'library_visual_scenes', sElement: 'visual_scene',   fn: COLLADAVisualScene}
+            {sLib: 'library_visual_scenes', sElement: 'visual_scene',   fn: COLLADAVisualScene},
+            {sLib: 'library_animations',    sElement: 'animation',      fn: COLLADAAnimation}
         ];
 
         for (var i = 0; i < pTemplate.length; i++) {

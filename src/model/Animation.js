@@ -1,4 +1,7 @@
-function Animation (sJoint) {
+function AnimationFrame (sJoint) {
+	//time in ms
+	this._iTime = 0;
+
 	//not nessecary
 	this._sJointName = sJoint || null; 
 	
@@ -35,7 +38,7 @@ function Animation (sJoint) {
 	this._pMatrixKeys = [];
 }
 
-A_NAMESPACE(Animation);
+A_NAMESPACE(AnimationFrame);
 
 function AnimationsSet () {
 	this._sName = sName || null;
@@ -51,7 +54,7 @@ function AnimationsSet () {
 
 	/**
 	 * Animations.
-	 * @type {Array.<Animation>}
+	 * @type {Array.<AnimationFrame>}
 	 */
 	this._pAnimations = [];
 }
