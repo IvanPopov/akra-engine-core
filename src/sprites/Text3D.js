@@ -23,6 +23,7 @@ function Text3D(pEngine,pFont){
 
 	this._nLineQuantity = 0;
 	this._nLineLength = 0;
+	this._nPixelLineLingth = 0;
 
 	this.setGeometry(2,2);
 	this.setProgram(statics.pTextProg);
@@ -37,7 +38,9 @@ EXTENDS(Text3D,a.Sprite);
 Text3D.prototype.setText = function(sString){
 	'use strict';
 	var pFont = this._pFont;
+	trace('is Monospace',pFont.isMonospace);
 	var pLetterMap = pFont.letterMap;
+	var pFontMetrics = pFont.fontMetrics;
 	var pMeasureContext = pFont.context;
 
 	var nLineQuantity = 1;
@@ -58,7 +61,8 @@ Text3D.prototype.setText = function(sString){
 	var nStartDataOffset = nLineQuantity;//номер откуда начинаются данные текущей линии
 
 	var sChar;
-	var nMaxPixelLength;
+	var nMaxPixelLength = 0;
+	var nPixelLength = 0;
 	//когда i=sString.length заведомо попадаем в if как и нужно
 	for(var i=0;i<=sString.length;i++){
 		sChar = sString[i];
@@ -78,7 +82,12 @@ Text3D.prototype.setText = function(sString){
 			if(nLineLength > nMaxLineLength){
 				nMaxLineLength = nLineLength;
 			}
+
+			if(nPixelLength > nMaxPixelLength){
+				nMaxPixelLength = nPixelLength;
+			}
 			nLineLength = 0;
+			nPixelLength = 0;
 			nLine++;
 		}
 		else{
@@ -87,12 +96,17 @@ Text3D.prototype.setText = function(sString){
 			pStringData[nOffset + 4*(i-nLine) + 1] = pTextureData.Y;//
 			pStringData[nOffset + 4*(i-nLine) + 2] = pTextureData.Z;//шаг по текстуре необходимый для того, чтобы 
 			pStringData[nOffset + 4*(i-nLine) + 3] = pTextureData.W;//получить конец буквы
+
+			nPixelLength += pFontMetrics.lettersMetrics[sChar].width; //длина в пикселях
+
 			nLineLength++;
 		}
 	}
+	trace('nMaxpixleLingth',nMaxPixelLength);
 	//trace(pStringData);
 	this._nLineQuantity = nLineQuantity;
 	this._nLineLength = nMaxLineLength;
+	this._nPixelLineLingth = nMaxPixelLength;
 
 	var pIndex = new Float32Array(4);
 	for(var i=0;i<4;i++){
@@ -174,6 +188,8 @@ function DrawRoutineText3D(pProgram){
 	pProgram.applyFloat('nLineQuantity',this._nLineQuantity);
 	pProgram.applyFloat('startIndex',this._pRenderData.getDataLocation('STRING_DATA')/4.);
 
+	pProgram.applyVector2('nPixelsSizes',this._nPixelLineLingth,this._pFont.fontMetrics.fontMetrics.maxHeight*this._nLineQuantity);
+
 	//set screen parameters (ограничивают максимальный размер текста на экране размером шрифта)
 	pProgram.applyVector2('v2fCanvasSizes',this._pEngine.pCanvas.width,this._pEngine.pCanvas.height);
 	//pProgram.applyVector2('v2fTextSizes',);
@@ -187,6 +203,11 @@ function DrawRoutineText3D(pProgram){
 
 	this._pFont.activate(1);
 	pProgram.applyInt('textTexture',1);
+
+	// var pDevice = this._pEngine.pDevice;
+	// pDevice.disable(pDevice.DEPTH_TEST);
+ //    pDevice.enable(pDevice.BLEND);
+ //    pDevice.blendFunc(pDevice.SRC_ALPHA, pDevice.ONE_MINUS_SRC_ALPHA);
 
 	///////////////////////////////////////////
 }

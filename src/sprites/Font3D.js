@@ -104,6 +104,13 @@ PROPERTY(Font3D,'context',
     }
 );
 
+PROPERTY(Font3D,'fontMetrics',
+    function(){
+        'use strict';
+        return this._pFontMetrics;
+    }
+);
+
 Font3D.prototype._rasterize = function() {
     'use strict';
 
@@ -112,17 +119,14 @@ Font3D.prototype._rasterize = function() {
     var nLetters = 128;//пока только английские символы
     
     var pTextCanvas = document.createElement('canvas');
+    //document.body.appendChild(pTextCanvas);
     var pContext2D = this._pContext =pTextCanvas.getContext('2d');
 
     pContext2D.fillStyle = this._sFontColor;
 
     var sFont = "";
-    if(this._isItalic){
-        sFont += this._sItalic + " ";
-    }
-    if(this._isBold){
-        sFont += this._sBold + " ";
-    }
+    sFont += this._sItalic + " ";
+    sFont += this._sBold + " ";
     sFont += this._sFontSize + " ";
     sFont += this._sFontFamily;
 
@@ -167,9 +171,12 @@ Font3D.prototype._rasterize = function() {
 
         for(j=nStartIndex;j<nLetters;j++){
 
-            var iPositionX = nCurrentLineWidth;
-
             var sChar = String.fromCharCode(j);
+
+            var iPositionX = nCurrentLineWidth;
+            var iCenterOffsetX = -pFontMetrics.lettersMetrics[sChar].left;//так как некоторые буквы заезжают за левый край,
+                                                                        //то такое смещение должно решить эту проблему;
+            
             var nWidth = pFontMetrics.lettersMetrics[sChar].width;
             relativeWidth = (nWidth-1)/nTextureWidth;
 
@@ -178,7 +185,7 @@ Font3D.prototype._rasterize = function() {
                 j--;
                 break;
             }
-            pContext2D.fillText(sChar,iPositionX,iPositionY,nWidth);
+            pContext2D.fillText(sChar,iPositionX + iCenterOffsetX,iPositionY,nWidth);
             pLetterMap[sChar] = [iPositionX/nTextureWidth,iPositionY/nTextureHeight, relativeWidth, relativeHeight];
         }
         if(j == nLetters){
@@ -190,6 +197,8 @@ Font3D.prototype._rasterize = function() {
 
     //this.flipY(true);
     this.createTexture(nTextureWidth,nTextureHeight,0,a.IFORMAT.RGBA8,a.ITYPE.UNSIGNED_BYTE,new Uint8Array(pImageData.data));
+    // this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
+    // this.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
     this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
     this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
 };
@@ -204,13 +213,16 @@ Font3D.prototype._getFontMetrics = function(sStyle,sWeight,nSize,sFontFamily) {
     var sFont = sStyle + " " + sWeight + " " + nSize + "px" + " " + sFontFamily;
 
     var pCanvas = document.createElement('canvas');
-    document.body.appendChild(pCanvas);
-    pCanvas.width = 2.*nSize + 1; //растеризуем по одной букве
-    pCanvas.height = 2.*nSize + 1;//вдвое больших размеров должно хватить
+    //document.body.appendChild(pCanvas);
+    pCanvas.width = 2.*nSize; //растеризуем по одной букве
+    pCanvas.height = 2.*nSize;//вдвое больших размеров должно хватить
     var pContext2D = this._pContext =pCanvas.getContext('2d');
     pContext2D.font = sFont;
-    pContext2D.textBaseline = 'middle';//y в fillText соответствует выравниванию верхнему краю
-    pContext2D.textAlign = 'center';
+    pContext2D.textBaseline = 'top';//y в fillText соответствует выравниванию верхнему краю
+    pContext2D.textAlign = 'start';
+
+    var nOffsetX = Math.ceil(nSize/2.);//чтобы буква рисовалась примерно в центре
+    var nOffsetY = Math.ceil(nSize/2.);
 
     var nLetters = 128;//пока только английские символы
 
@@ -224,14 +236,14 @@ Font3D.prototype._getFontMetrics = function(sStyle,sWeight,nSize,sFontFamily) {
         nWidth = pContext2D.measureText(sChar).width;
         nHeight = nSize;
 
-        nMaxLeft = -Math.ceil(nWidth/2);
-        nMaxRight = Math.ceil(nWidth/2);
+        nMaxLeft = 0;
+        nMaxRight = nWidth-1;
 
-        nMaxTop = -Math.ceil(nSize/2);//ось вниз
-        nMaxBottom = Math.ceil(nSize/2);
+        nMaxTop = 0;
+        nMaxBottom = 0;
 
         if(nWidth == 0){
-            //непечатные симолы
+            //непечатные символы
             pLettersMetrics[sChar] = {'left' : 0,'top' : 0,'right' : 0, 'bottom' : 0, 'width' : 0, 'height' : 0};
             continue;
         }
@@ -239,28 +251,31 @@ Font3D.prototype._getFontMetrics = function(sStyle,sWeight,nSize,sFontFamily) {
             pLettersMetrics[sChar] = {'left' : nMaxLeft,'top' : nMaxTop,'right' : nMaxRight, 'bottom' : nMaxBottom,
              'width' : nMaxRight - nMaxLeft + 1, 'height' : nMaxBottom - nMaxTop + 1};
         }
-        pContext2D.fillText(sChar,nSize,nSize);//рисуем в центре канваса
+        pContext2D.fillText(sChar,nOffsetX,nOffsetY);//рисуем в центре канваса 
         var pImageData = pContext2D.getImageData(0, 0, pCanvas.width, pCanvas.height);
-        // if(sChar == 'f'){
-        //     //break;
-        // }
         for(var iY=0;iY<pCanvas.height;iY++){
             for(var iX=0;iX<pCanvas.width;iX++){
                 var alpha = pImageData.data[4*(iY*pCanvas.width + iX) + 3];//альфа компонента
                 if(alpha != 0){
-                    var iRealX = iX - nSize;
-                    var iRealY = iY - nSize;
+                    var iRealX = iX - nOffsetX;
+                    var iRealY = iY - nOffsetY;
+
+                    /**
+                     * так как выравнивание выставлено top, то
+                     * nMaxTop всегда 0
+                     */
                     if(iRealX < nMaxLeft){
                         nMaxLeft = iRealX;
                     }
                     else if(iRealX > nMaxRight){
                         nMaxRight = iRealX;
                     }
-                    if(iRealY < nMaxTop){
-                        nMaxTop = iRealY;
-                    }
                     else if(iRealY > nMaxBottom){
                         nMaxBottom = iRealY;
+                    }
+                    if(sChar == 's'){
+                        if(alpha < 1.)
+                        trace('non 1');
                     }
                 }
             }
