@@ -1,7 +1,6 @@
 /**
  * @author sss
  */
-
 Enum([
          BAD_TOKEN_ERROR = 11,
          UNKNOWN_TOKEN = 12
@@ -797,7 +796,6 @@ ParserBase.prototype._generateRules = function (sSource) {
         }
     }
 };
-
 ParserBase.prototype._generateFirstState_LR0 = function () {
     var pState = new State();
     var pItem = new Item(this._ppRules[START_SYMBOL][0], 0);
@@ -814,7 +812,6 @@ ParserBase.prototype._generateFirstState_LR = function () {
     this._closure(pState);
     this._pushState(pState);
 };
-
 ParserBase.prototype._closure_LR0 = function (pState) {
     var pItems = pState.pItems;
     var i, j;
@@ -860,7 +857,6 @@ ParserBase.prototype._closure = function (pState) {
     }
     return pState;
 };
-
 ParserBase.prototype._nextState_LR0 = function (pState, sSymbol) {
     var pItems = pState.pItems;
     var i;
@@ -883,7 +879,6 @@ ParserBase.prototype._nextState_LR = function (pState, sSymbol) {
     }
     return pNewState;
 };
-
 ParserBase.prototype._deleteNotBaseItems = function () {
     var i;
     for (i in this._pStates) {
@@ -977,7 +972,6 @@ ParserBase.prototype._expandExpected = function () {
         i++;
     }
 };
-
 ParserBase.prototype._generateStates_LR0 = function () {
     this._generateFirstState_LR0();
     var i;
@@ -1029,7 +1023,6 @@ ParserBase.prototype._generateStates_LALR = function () {
         this._closure(pStates[i]);
     }
 };
-
 ParserBase.prototype._calcBaseItem = function () {
     var num = 0;
     for (var i in this._pStates) {
@@ -1064,7 +1057,6 @@ ParserBase.prototype._printExpectedTable = function () {
     }
     console.log(sMsg);
 };
-
 ParserBase.prototype._addReducing = function (pState) {
     var i, j;
     var pItems = pState.pItems;
@@ -1120,7 +1112,6 @@ ParserBase.prototype._buildSyntaxTable = function () {
         this._addShift(pState);
     }
 };
-
 ParserBase.prototype._readToken = function () {
     return this._pLex.getNextToken();
 };
@@ -1137,7 +1128,6 @@ ParserBase.prototype._defaultInit = function(){
     this.pSyntaxTree = new Tree();
     this.pSymbolTable = {};
 };
-
 ParserBase.prototype.isTypeId = function (sValue) {
     return !!(this.pSymbolTable[sValue] && this.pSymbolTable[sValue].isType);
 };
@@ -1221,62 +1211,17 @@ ParserBase.prototype.parse = function (sSource) {
         }
         if (!isError) {
             pTree.setRoot();
-            console.log("All good!!!!");
-            console.log("Syntax Tree", pTree);
+            trace("Syntax analyze of source file is good");
             return true;
         }
         else {
-            console.log("Error!!!", pToken);
+            trace("Error!!!", pToken);
             return pToken;
         }
     }
     catch (e) {
         console.error(e.stack);
     }
-};
-
-function EffectParser() {
-    A_CLASS;
-    this._pAdditionalFunctions = {
-        addType : this.addType
-    };
-}
-EXTENDS(EffectParser, ParserBase);
-EffectParser.prototype.addType = function (pRule) {
-    var pTree = this.pSyntaxTree;
-    var pNode = pTree._pNodes[pTree._pNodes.length - 1];
-    pNode = pNode.pChildren[pNode.pChildren.length - 1];
-//    console.log(pNode)
-    var sName = pNode.pChildren[pNode.pChildren.length - 2].sValue;
-    this.pSymbolTable[sName] = {isType : 1};
-//    var pTree = this.pSyntaxTree;
-//    var pNode = pTree._pNodes[pTree._pNodes.length - 1];
-//    pNode = pNode.pChildren[pNode.pChildren.length - 1];
-//    pNode = pNode.pChildren[pNode.pChildren.length - 2];
-//    pNode = pNode.pChildren[pNode.pChildren.length - 1];
-//    pNode = pNode.pChildren[pNode.pChildren.length - 1];
-//    console.log(pNode)
-//    var sName = pNode.sValue;
-//    this.pSymbolTable[sName] = {isType : 1};
-};
-EffectParser.prototype._defaultInit = function(){
-    this.iIndex = 0;
-    this._pStack = [0];
-    this.pSyntaxTree = new Tree();
-    this.pSymbolTable = {
-        float2   : {isType : 1},
-        float3   : {isType : 1},
-        float4   : {isType : 1},
-        float2x2 : {isType : 1},
-        float3x3 : {isType : 1},
-        float4x4 : {isType : 1},
-        int2     : {isType : 1},
-        int3     : {isType : 1},
-        int4     : {isType : 1},
-        bool2    : {isType : 1},
-        bool3    : {isType : 1},
-        bool4    : {isType : 1}
-    };
 };
 
 function Lexer(pParser) {
@@ -1358,7 +1303,6 @@ Lexer.prototype.getNextToken = function () {
     }
     return pToken;
 };
-
 Lexer.prototype._error = function (sMsg, pInfo) {
     trace(statics(errorMessages)[sMsg], pInfo);
     error(statics(errorMessages)[sMsg]);
@@ -1384,7 +1328,6 @@ Lexer.prototype._identifyTokenType = function () {
     }
     return a.Parser.TokenType.UNKNOWN;
 };
-
 Lexer.prototype._isNumberStart = function () {
     var ch = this._currentChar();
     if ((ch >= '0') && (ch <= '9')) {
@@ -1432,7 +1375,6 @@ Lexer.prototype._isWhiteSpaceStart = function () {
     }
     return false;
 };
-
 Lexer.prototype._isLineTerminator = function (ch) {
     return (ch === '\n' || ch === '\r' || ch === '\u2028' || ch === '\u2029');
 };
@@ -1453,7 +1395,6 @@ Lexer.prototype._nextChar = function () {
 Lexer.prototype._currentChar = function () {
     return this.sSource[this.iIndex];
 };
-
 Lexer.prototype._scanString = function () {
     var chFirst = this._currentChar();
     var sValue = chFirst;
@@ -1743,3 +1684,50 @@ Lexer.prototype._scanIdentifier = function () {
                     });
     }
 };
+
+function EffectParser() {
+    A_CLASS;
+    this._pAdditionalFunctions = {
+        addType : this.addType
+    };
+}
+EXTENDS(EffectParser, ParserBase);
+EffectParser.prototype.addType = function (pRule) {
+    var pTree = this.pSyntaxTree;
+    var pNode = pTree._pNodes[pTree._pNodes.length - 1];
+    pNode = pNode.pChildren[pNode.pChildren.length - 1];
+//    console.log(pNode)
+    var sName = pNode.pChildren[pNode.pChildren.length - 2].sValue;
+    this.pSymbolTable[sName] = {isType : 1};
+//    var pTree = this.pSyntaxTree;
+//    var pNode = pTree._pNodes[pTree._pNodes.length - 1];
+//    pNode = pNode.pChildren[pNode.pChildren.length - 1];
+//    pNode = pNode.pChildren[pNode.pChildren.length - 2];
+//    pNode = pNode.pChildren[pNode.pChildren.length - 1];
+//    pNode = pNode.pChildren[pNode.pChildren.length - 1];
+//    console.log(pNode)
+//    var sName = pNode.sValue;
+//    this.pSymbolTable[sName] = {isType : 1};
+};
+EffectParser.prototype._defaultInit = function(){
+    this.iIndex = 0;
+    this._pStack = [0];
+    this.pSyntaxTree = new Tree();
+    this.pSymbolTable = {
+        float2   : {isType : 1},
+        float3   : {isType : 1},
+        float4   : {isType : 1},
+        float2x2 : {isType : 1},
+        float3x3 : {isType : 1},
+        float4x4 : {isType : 1},
+        int2     : {isType : 1},
+        int3     : {isType : 1},
+        int4     : {isType : 1},
+        bool2    : {isType : 1},
+        bool3    : {isType : 1},
+        bool4    : {isType : 1}
+    };
+};
+
+a.util.parser = new EffectParser();
+a.util.parser.init(a.ajax({url: 'http://akra/akra-engine-general/media/grammars/HLSL_grammar.gr', async: false}).data);

@@ -7,7 +7,6 @@ function ComponentBlend() {
     this._nTotalPasses = 0;
     this._hasPostComponent = false;
 }
-;
 /**
  * Add component to blend
  * @tparam pComponent
@@ -54,7 +53,6 @@ function EffectBlend() {
     this._nLastShift = 0;
     this._nLastPasses = 0;
 }
-;
 /**
  * Add component to blend
  * @tparam pComponent

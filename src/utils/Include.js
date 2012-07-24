@@ -10,3 +10,13 @@ Include('BufferMap.js');
 Include('ObjModel.js');
 //Include('collada/Collada.js');
 Include('collada/Collada2.js');
+
+Ifdef(__IDE)
+
+Elseif()
+Define(__IDE, true);
+Endif();
+
+Ifdef(__IDE)
+
+Include('Parser.js');
