@@ -1,5 +1,6 @@
 var TEMPSCENEVECTOR3FORCALC0 = Vec3.create();
 var TEMPSCENEMATRIX4FORCALC0 = Mat4.create();
+var TEMPSCENEVECTOR4FORCALC0 = Mat4.create();
 
 function Node(){
     A_CLASS;
@@ -905,6 +906,7 @@ Node.prototype.setRotation = function () {
 Node.prototype.addRelRotation = function () {
     var m4fRot;
     var m4fLocal = this._m4fLocalMatrix;
+    
     switch (arguments.length) {
         case 1:
             m4fRot = arguments[0];
@@ -921,8 +923,12 @@ Node.prototype.addRelRotation = function () {
             Mat4.rotateX(m4fRot, pitch);
             Mat4.rotateZ(m4fRot, roll);
             break;
+        case 4:
+            Mat4.rotate(m4fLocal, arguments[3], arguments);
+            a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
+            return;
     }
-    ;
+    
 
     var a11 = m4fLocal._11, a21 = m4fLocal._21, a31 = m4fLocal._31;
     var a12 = m4fLocal._12, a22 = m4fLocal._22, a32 = m4fLocal._32;

@@ -142,4 +142,22 @@ Skeleton.prototype.createBone = function(sName, iBoneIndex) {
     return pJoint;
 };
 
+Skeleton.prototype.findJoint = function (sName) {
+    'use strict';
+    
+    var pJoints = this._pJoints;
+
+	for (var i = 0; i < pJoints.length; ++ i) {
+		if (!pJoints[i]) {
+			continue;
+		}
+
+		if (pJoints[i].name === sName) {
+			return pJoints[i];
+		}
+	}
+
+	return null;
+};
+
 A_NAMESPACE(Skeleton);
