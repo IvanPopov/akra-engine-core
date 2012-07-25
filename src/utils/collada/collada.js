@@ -1566,10 +1566,10 @@ function COLLADA (pEngine, sFile, fnCallback, isFileContent) {
         pMesh.addFlexMaterial('default');
         pMesh.setFlexMaterial('default');
 
-       /* trace('indices added:', a.now() - iBegin, 'ms');
-        trace('--- complete ---');*/
+		trace('indices added:', a.now() - iBegin, 'ms');
+        //trace('--- complete ---');
 
-		pMesh.createAndShowSubBoundingSphere();
+		//pMesh.createAndShowSubBoundingSphere();
 
        /* trace('loaded mesh<', sMeshName,'>:');
         for (var i = 0; i < pMesh.length; ++i) {

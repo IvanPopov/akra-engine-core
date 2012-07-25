@@ -27,7 +27,7 @@ function VertexBuffer ()
 {
   	A_CLASS;
 	this._pDevice = this._pEngine.pDevice;
-	this._iByteSize = undefined;	
+	this._iByteSize = undefined;
 }
 
 a.extend(VertexBuffer, a.ResourcePoolItem, a.VBufferBase);

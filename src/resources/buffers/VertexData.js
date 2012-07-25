@@ -609,7 +609,7 @@ VertexData.prototype.resize = function (nCount, pVertexDeclaration) {
 }
 
 /**
- * @property setData(ArrayBuffer pData, String sSematic)
+ * @property setData(ArrayBuffer pData, String sSematic,Int nCountStart, Int nCoun)
  * @param pData данные одного типа
  * @param sSematic имя сематики, которую заполняем
  * Выставить определеные элементы в буфере
@@ -617,7 +617,7 @@ VertexData.prototype.resize = function (nCount, pVertexDeclaration) {
  **/
 
 /**
- * @property setData(ArrayBuffer pData,Int iOffset, Int iSize)
+ * @property setData(ArrayBuffer pData,Int iOffset, Int iSize, Int nCountStart, Int nCount)
  * @param pData данные одного типа
  * @param iOffset смещение данных относительно начала строки
  * @param iSize размер этих данных в одной строке
@@ -626,6 +626,7 @@ VertexData.prototype.resize = function (nCount, pVertexDeclaration) {
  * Выставить определеные элементы в буфере
  * @return
  **/
+
 VertexData.prototype.setData = function (pData, iOffset, iSize, nCountStart, nCount) {
 
     switch (arguments.length) {
@@ -633,11 +634,41 @@ VertexData.prototype.setData = function (pData, iOffset, iSize, nCountStart, nCo
             var iStride = this.getStride();
             if (iStride != iSize) {
                 //FIXME: очень тормознутое место, крайне медленно работает...
-                for (var i = nCountStart; i < nCount + nCountStart; i++) {
-                    this._pVertexBuffer.setData(pData.buffer.slice(iSize * (i - nCountStart),
-                        iSize * (i - nCountStart) + iSize), iStride * i + iOffset + this.getOffset(),
-                        iSize);
-                }
+				if(this._pVertexBuffer.isRAMBufferPresent()&&nCount>1)
+				{
+					//var time=a.now();
+					var pBackupBuf = new Uint8Array(this._pVertexBuffer.getData());
+					var pDataU8=new Uint8Array(pData.buffer);
+					var k;
+					var iOffsetBuffer=this.getOffset();
+					for (var i = nCountStart; i < nCount + nCountStart; i++)
+					{
+						for(k=0;k<iSize;k++)
+						{
+							pBackupBuf[iStride * i + iOffset + iOffsetBuffer+k]=pDataU8[iSize * (i - nCountStart)+k];
+						}
+						//pBufSwap=pData.buffer.slice(iSize * (i - nCountStart),iSize * (i - nCountStart) + iSize);
+						//pBackupBuf.set(new Uint8Array(pBufSwap),iStride * i + iOffset + this.getOffset());
+					}
+					this._pVertexBuffer.setData(pBackupBuf.buffer,0,this._pVertexBuffer.size);
+				}
+				else
+				{
+					//var time=a.now();
+					for (var i = nCountStart; i < nCount + nCountStart; i++)
+					{
+						this._pVertexBuffer.setData(
+								pData.buffer.slice(
+									iSize * (i - nCountStart),
+									iSize * (i - nCountStart) + iSize),
+								iStride * i + iOffset + this.getOffset(),
+								iSize);
+					}
+
+					//this.setData.count++;
+					//console.log("Stride",iStride,"Offset",iOffset, "Size", iSize,"Count",nCount);
+					//console.log("BUG",this.setData.count, a.now()-time);
+				}
             }
             else {
                 this._pVertexBuffer.setData(pData.buffer.slice(0, iStride * nCount), iOffset + this.getOffset(),
@@ -705,6 +736,7 @@ VertexData.prototype.setData = function (pData, iOffset, iSize, nCountStart, nCo
     return false;
 }
 
+//VertexData.prototype.setData.count=0;
 
 VertexData.prototype.getTypedData = function (eUsage, iFrom, iCount) {
     eUsage = eUsage || this._pVertexDeclaration[0].eUsage;
