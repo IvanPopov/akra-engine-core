@@ -279,6 +279,7 @@ function VariableType() {
     this.isMixible = false;
     this.isVSInput = false;
     this.isFSInput = false;
+    this._sCode = null;
 }
 VariableType.prototype.setUsage = function (sValue) {
     if (!this.pUsages) {
@@ -309,7 +310,16 @@ VariableType.prototype.setType = function (pType) {
     }
 };
 VariableType.prototype.toCode = function () {
-    //TODO: to string
+    if (this._sCode) {
+        return this._sCode;
+    }
+    var i;
+    this._sCode = "";
+    for (i = 0; this.pUsages && i < this.pUsages.length; i++) {
+        this._sCode += this.pUsages[i] + " ";
+    }
+    this._sCode += this.pEffectType.toCodeString();
+    return this._sCode;
 };
 VariableType.prototype.isStruct = function () {
     if (this.pEffectType && this.pEffectType.isStruct) {
@@ -378,15 +388,9 @@ VariableType.prototype.checkMe = function () {
 };
 VariableType.prototype.isEqual = function (pType) {
     if (pType instanceof VariableType) {
-        if (this.pEffectType === pType.pEffectType) {
-            return true;
-        }
-        return false;
+        return this.pEffectType.isEqual(pType.pEffectType);
     }
-    if (this.pEffectType.isEqual(pType)) {
-        return true;
-    }
-    return false;
+    return this.pEffectType.isEqual(pType);
 };
 VariableType.prototype.isType = function (pEffectType) {
     if (this.pEffectType === pEffectType) {
@@ -476,18 +480,69 @@ function EffectType(sName, sRealName, isBase, iSize) {
     this.isMixible = false;
     this.isVSInput = false;
     this.isFSInput = false;
+    this._sCode = null;
+    this._sHash = isBase ? sRealName : null;
+    this._sStrongHash = isBase ? sRealName : null;
+    this.iScope = -1;
 }
+EffectType.prototype.hash = function () {
+    if (!this._sHash) {
+        this.calcHash();
+    }
+    return this._sHash;
+}
+EffectType.prototype.strongHash = function () {
+    if (!this._sStrongHash) {
+        this.calcHash();
+    }
+    return this._sStrongHash;
+}
+EffectType.prototype.calcHash = function () {
+    if (this._isBase) {
+        this._sHash = this.sRealName;
+        this._sStrongHash = this.sRealName;
+        return;
+    }
+    var sHash = "{";
+    var sStrongHash = "{";
+    var i, j;
+    var pField;
+    var pType;
+    for (i = 0; i < this.pDesc.pOrders.length; i++) {
+        pField = this.pDesc.pOrders[i];
+        pType = pField.pType;
+        for (j = 0; pType.pUsages && j < pType.pUsages.length; j++) {
+            sHash += pType.pUsages[j] + "|";
+            sStrongHash += pType.pUsages[j] + "|";
+        }
+        sHash += pType.pEffectType.hash();
+        sStrongHash += pType.pEffectType.strongHash();
+        if (pField.isArray) {
+            sHash += ":" + pField.iLength;
+            sStrongHash += ":" + pField.iLength;
+        }
+        if (pField.isPointer) {
+            sStrongHash += "@" + pField.nDim;
+        }
+        sHash += ";";
+        sStrongHash += ";";
+    }
+    sHash += "}";
+    sStrongHash += "}";
+    this._sHash = sHash;
+    this._sStrongHash = sStrongHash;
+};
 EffectType.prototype.isEqual = function (pType) {
     if (pType instanceof VariableType) {
-        if (pType.pEffectType === this) {
-            return true;
-        }
-        return false;
+        return this.hash() === pType.pEffectType.hash();
     }
-    if (pType === this) {
-        return true;
+    return this.hash() === pType.hash();
+};
+EffectType.prototype.isStrictEqual = function (pType) {
+    if (pType instanceof VariableType) {
+        return this.strongHash() === pType.pEffectType.strongHash();
     }
-    return false;
+    return this.strongHash() === pType.strongHash();
 };
 EffectType.prototype.isConst = function () {
     return true;
@@ -511,7 +566,26 @@ EffectType.prototype.isBase = function () {
     return this._isBase;
 };
 EffectType.prototype.toCode = function () {
-    //TODO: to string
+    if (this._sCode) {
+        return this._sCode;
+    }
+    if (this._isBase) {
+        this._sCode = this.sRealName;
+    }
+    else {
+        this._sCode = "struct " + this.sRealName;
+        this._sCode += this.pDesc.toCode();
+    }
+    return this._sCode;
+};
+EffectType.prototype.toCodeString = function () {
+    if (this.sRealName) {
+        return this.sRealName;
+    }
+    else {
+        error("I should not be here. Something bad have happened.");
+        return;
+    }
 };
 EffectType.prototype.hasSemantic = function (sSemantic) {
     return this.pDesc.hasSemantic(sSemantic) || false;
@@ -582,6 +656,12 @@ EffectType.prototype.hasIndexData = function () {
     }
     return false;
 };
+EffectType.prototype.globalUsedTypes = function (){
+    if(this._isBase){
+        return null;
+    }
+    return this.pDesc.globalUsedTypes();
+};
 
 function EffectStruct() {
     /**
@@ -634,9 +714,20 @@ function EffectStruct() {
      */
     this.isMixible = false;
     this._hasIndexData = null;
+    this._sCode = null;
+    this.pGlobalUsedTypes = null;
 }
 EffectStruct.prototype.toCode = function () {
-    //TODO: to string
+    if (this._sCode) {
+        return this._sCode;
+    }
+    this._sCode = "{";
+    var i;
+    for (i = 0; i < this.pOrders.length; i++) {
+        this._sCode += this.pOrders[i].pType.toCode() + " " + this.pOrders[i].toCode() + ";";
+    }
+    this._sCode += "}";
+    return this._sCode;
 };
 EffectStruct.prototype.checkMe = function () {
     return true;
@@ -763,6 +854,31 @@ EffectStruct.prototype.hasIndexData = function () {
     }
     this._hasIndexData = false;
     return this._hasIndexData;
+};
+EffectStruct.prototype.globalUsedTypes = function () {
+    if (this.pGlobalUsedTypes) {
+        return this.pGlobalUsedTypes;
+    }
+    var pTypes = {};
+    var pType;
+    var i, j;
+    var isOk = false;
+    var pTypes1;
+    for (i = 0; i < this.pOrders.length; i++) {
+        pType = this.pOrders[i].pType.pEffectType;
+        if (pType.iScope === a.fx.GLOBAL_VARS.GLOBAL) {
+            pTypes[pType.sName] = pType;
+            isOk = true;
+            pTypes1 = pType.pDesc.globalUsedTypes();
+            for (j in pTypes1) {
+                pTypes[pTypes1[j].sName] = pTypes1[j];
+            }
+        }
+    }
+    if (isOk) {
+        this.pGlobalUsedTypes = pTypes;
+    }
+    return this.pGlobalUsedTypes;
 };
 
 function EffectPointer(pVar, nDim) {
@@ -1003,6 +1119,9 @@ function EffectBaseFunction() {
     this._pBaseMemBlocks = {};
     this.pMemBlocks = {};
     this._pExtractFunctions = null;
+    this._sDefinition = null;
+    this.pGlobalUsedTypes = {};
+    this._isGlobalTypesAnalyzed = false;
 }
 EffectBaseFunction.prototype.addGlobalVariable = function (pVar) {
     if (!this.pGlobalVariables) {
@@ -1031,10 +1150,62 @@ EffectBaseFunction.prototype.addUniform = function (pVar) {
     return true;
 };
 EffectBaseFunction.prototype.addFunction = function (pFunc) {
+    if (pFunc === this) {
+        error("Recursion don`t support");
+        return;
+    }
     if (!this.pFunctions) {
         this.pFunctions = {};
     }
     this.pFunctions[pFunc.sHash] = pFunc;
+};
+EffectBaseFunction.prototype.addType = function (pType) {
+    if (!pType) {
+        return false;
+    }
+    var isNewType = false;
+    var pTypes;
+    if (pType instanceof EffectType) {
+        if (!this.pGlobalUsedTypes[pType.sName]) {
+            this.pGlobalUsedTypes[pType.sName] = pType;
+            isNewType = true;
+        }
+        pTypes = pType.globalUsedTypes();
+        for (var i in pTypes) {
+            if(!this.pGlobalUsedTypes[pTypes[i].sName]){
+                this.pGlobalUsedTypes[pTypes[i].sName] = pTypes[i];
+                isNewType = true;
+            }
+        }
+        return isNewType;
+    }
+
+    for (var i in pType) {
+        if (this.addType(pType[i])) {
+            isNewType = true;
+        }
+    }
+    return isNewType;
+};
+EffectBaseFunction.prototype.globalUsedTypes = function () {
+    if (this._isGlobalTypesAnalyzed) {
+        return this.pGlobalUsedTypes;
+    }
+    var isNewType = false;
+    var pTypes;
+    var i, j;
+    while (isNewType) {
+        isNewType = false;
+        for (i = 0; i < this.pScopeStack.length; i++) {
+            pTypes = this._ppScopes[this.pScopeStack[i]].pTypeTable;
+            for (j in pTypes) {
+                if (this.addType(pTypes[j].globalUsedTypes())) {
+                    isNewType = true;
+                }
+            }
+        }
+    }
+    return isNewType;
 };
 EffectBaseFunction.prototype.hasImplementation = function () {
     return this.pImplement ? true : false;
@@ -1069,6 +1240,9 @@ EffectBaseFunction.prototype.memBlock = function (pVar, iPointer) {
         }
     }
     return pBlock;
+};
+EffectBaseFunction.prototype.generateDefinitionCode = function () {
+    this._sDefinition = this.pReturnType.toCode() + " " + this.sRealName + "()";
 };
 
 function EffectFunction(sName, pGLSLExpr, pTypes) {
@@ -1263,6 +1437,21 @@ EffectFunction.prototype.checkMe = function () {
         }
     }
     return true;
+};
+EffectFunction.prototype.generateDefinitionCode = function () {
+    this._sDefinition = this.pReturnType.toCode() + " " + this.sRealName + "(";
+    var i, j;
+    var pType;
+    for (i = 0; i < this.pParamOrders.length; i++) {
+        pType = this.pParamOrders[i].pType;
+        if (!(pType.pUsagesName && pType.pUsagesName["uniform"] === null)) {
+            this._sDefinition += pType.toCode();
+            if (i !== this.pParamOrders.length - 1) {
+                this._sDefinition += ","
+            }
+        }
+    }
+    this._sDefinition += ")"
 };
 
 function EffectVertex(pFunction) {
@@ -1636,7 +1825,7 @@ MemBlock.prototype.addIndexData = function () {
     }
 };
 
-function Effect() {
+function Effect(pManager, id) {
     Enum([
              DEFAULT = 0,
              NOTTRANSLATE,
@@ -1650,7 +1839,12 @@ function Effect() {
              VERTEX,
              FRAGMENT
          ], ANALYZEDPROPERTY, a.Effect.Func);
-
+    if (!pManager) {
+        error("You must set ShaderManager for Effect correct work");
+        return;
+    }
+    this._pShaderManager = pManager;
+    this._id = id;
     this.pParams = {};
     this.pTechniques = {};
     this.pPasses = {};
@@ -1740,6 +1934,9 @@ function Effect() {
     this._eFuncProperty = a.Effect.Var.DEFAULT;
     this._pLastVar = null;
 
+    this._nTempStruct = 0;
+
+    STATIC(sTempStructName, "TEMPSTRUCTNAME_")
     STATIC(pBaseFunctionsHash, {});
     STATIC(pBaseFunctionsName, {});
     STATIC(pBaseTypes, {
@@ -2276,6 +2473,7 @@ Effect.prototype.addVariable = function (pVar, isParams) {
         this._pCurrentScope.pVariableTable = {};
     }
     this._pCurrentScope.pVariableTable[pVar.sName] = pVar;
+    pVar.sRealName = pVar.sName + "_" + this._iScope + "_" + this._id;
     pVar.iScope = this._iScope;
     if (isParams) {
         pVar.isParametr = true;
@@ -2353,6 +2551,9 @@ Effect.prototype.addType = function (pType) {
         return;
     }
     this._pCurrentScope.pTypeTable[pType.sName] = pType;
+    pType.sRealName = pType.sName + "_" + this._iScope + "_" + this._id;
+    pType.iScope = this._iScope;
+    pType.calcHash();
 };
 Effect.prototype.hasType = function (sTypeName) {
     var pType = this.isBaseType(sTypeName);
@@ -2407,6 +2608,8 @@ Effect.prototype.addFunction = function (pFunction) {
         this._pFunctionTableByName[pFunction.sName] = [];
     }
     this._pFunctionTableByName[pFunction.sName].push(pFunction);
+    pFunction.sRealName = pFunction.sName + "_" + this._id;
+    pFunction.generateDefinitionCode();
 
 };
 Effect.prototype.hasFunction = function (sFuncName) {
@@ -2543,6 +2746,10 @@ Effect.prototype.convertType = function (pNode) {
             error("bad 116");
             return;
         }
+        return pType;
+    }
+    if (pNode.sName === a.fx.GLOBAL_VARS.STRUCT) {
+        pType = this.analyzeStruct(pNode);
         return pType;
     }
     if (pNode.sName === a.fx.GLOBAL_VARS.T_KW_VOID) {
@@ -2814,7 +3021,23 @@ Effect.prototype.postAnalyzeEffect = function () {
             }
         }
     }
+    //generate list of used types
+    var isNewType = true;
 
+    while (isNewType) {
+        isNewType = false;
+        for (i in this._pFunctionTableByHash) {
+            pFunction = this._pFunctionTableByHash[i];
+            if (!pFunction) {
+                continue;
+            }
+            for (j in pFunction.pFunctions) {
+                if (pFunction.addType(pFunction.pFunctions[j].globalUsedTypes())) {
+                    isNewType = true;
+                }
+            }
+        }
+    }
     //check vertex and fragment shaders for blacklist
     var pShader;
     var isVertex;
@@ -2884,6 +3107,8 @@ Effect.prototype.postAnalyzeEffect = function () {
             }
         }
     }
+    //TODO: analyze used types and used functions for shaders
+
     //TODO: add shaders to passes, and check them for valid
 };
 /**
@@ -2938,6 +3163,10 @@ Effect.prototype.analyzeVariableDecl = function (pNode) {
     var pVar;
     var pType = new VariableType();
     this.analyzeUsageType(pChildren[pChildren.length - 1], pType);
+    if (pType.pEffectType.iScope === a.fx.GLOBAL_VARS.GLOBAL &&
+        this._eFuncProperty !== a.Effect.Func.DEFAULT) {
+        this._pCurrentFunction.addType(pType.pEffectType);
+    }
     if (pType.isEqual(this.hasType("video_buffer")) && this._iScope !== a.fx.GLOBAL_VARS.GLOBAL) {
         error("Declarations of video buffer are available only in Global scope");
         return;
@@ -3029,7 +3258,6 @@ Effect.prototype.addVariableDecl = function (pVar) {
         error("You sucks 2");
         return;
     }
-
     if (this._isAnnotation) {
         pVar.pDefaultValue = this.evalHLSL(pVar.pInitializer);
         this._pCurrentAnnotation[pVar.sName] = pVar.sValue;
@@ -3756,6 +3984,10 @@ Effect.prototype.analyzeExpr = function (pNode) {
             this.pushCode(")");
             this.pushCode(")");
             this._pExprType = pType;
+            if (pType.iScope === a.fx.GLOBAL_VARS.GLOBAL &&
+                this._eFuncProperty !== a.Effect.Func.DEFAULT) {
+                pFunction.addType(pType);
+            }
             break;
 
         case a.fx.GLOBAL_VARS.CONDITIONALEXPR:
@@ -3893,6 +4125,10 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     }
                     this._pLastVar = pVar;
                     this._pExprType = pVar.pType;
+                    if (this._pExprType.pEffectType.iScope === a.fx.GLOBAL_VARS.GLOBAL &&
+                        this._eFuncProperty !== a.Effect.Func.DEFAULT) {
+                        pFunction.addType(this._pExprType.pEffectType);
+                    }
                     if (pVar.isMixible) {
                         if (this._eVarProperty === a.Effect.Var.PARAMSTART) {
                             if (this._eFuncProperty === a.Effect.Func.VERTEX) {
@@ -4019,6 +4255,10 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         pFunction.isConstant = false;
                     }
                     this._pExprType = pRes.pType;
+                    if (this._pExprType.pEffectType.iScope === a.fx.GLOBAL_VARS.GLOBAL &&
+                        this._eFuncProperty !== a.Effect.Func.DEFAULT) {
+                        pFunction.addType(this._pExprType.pEffectType);
+                    }
                     if (isNewVar) {
                         this.endVarName();
                         isNewVar = false;
@@ -4074,6 +4314,10 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     }
                     else {
                         pRes = pRes.sName;
+                    }
+                    if (this._pExprType.pEffectType.iScope === a.fx.GLOBAL_VARS.GLOBAL &&
+                        this._eFuncProperty !== a.Effect.Func.DEFAULT) {
+                        pFunction.addType(this._pExprType.pEffectType);
                     }
                 }
             }
@@ -4132,6 +4376,10 @@ Effect.prototype.analyzeTypeDecl = function (pNode) {
     }
     this.addType(pType);
     pNode.pAnalyzed = pType;
+    if (this.isCodeWrite()) {
+        this.pushCode(pType);
+        this.pushCode(";");
+    }
 };
 Effect.prototype.analyzeStructDecl = function (pNode, pStruct) {
     pStruct = pStruct || new EffectStruct();
@@ -4153,7 +4401,35 @@ Effect.prototype.analyzeStructDecl = function (pNode, pStruct) {
     this.endStruct();
     return pStruct;
 };
-
+Effect.prototype.analyzeStruct = function (pNode) {
+    if (this._isStruct) {
+        error("Embedded struct definition");
+        return;
+    }
+    var pStruct = new EffectStruct();
+    var pChildren = pNode.pChildren;
+    pStruct.sName = statics.sTempStructName + this._nTempStruct;
+    this._nTempStruct++;
+    this.newStruct();
+    var i;
+    for (i = pChildren.length - 4; i >= 1; i--) {
+        if (pChildren[i].sName === a.fx.GLOBAL_VARS.VARIABLEDECL) {
+            this.analyzeVariableDecl(pChildren[i]);
+        }
+    }
+    pStruct.pFields = this._pCurrentStructFields;
+    pStruct.pOrders = this._pCurrentStructOrders;
+    this.endStruct();
+    var pType = new EffectType();
+    pType.fromStruct(pStruct);
+    this.addType(pType);
+    pNode.pAnalyzed = pType;
+    if (this.isCodeWrite()) {
+        this.pushCode(pType);
+        this.pushCode(";");
+    }
+    return pType;
+};
 Effect.prototype.analyzeFunctionDecl = function (pNode) {
     var pChildren = pNode.pChildren;
     var pFunction;
@@ -4610,6 +4886,10 @@ Effect.prototype.analyzeVarStructDecl = function (pNode) {
     var pVar;
     var pType = this.analyzeUsageStructDecl(pChildren[pChildren.length - 1]);
     this._pCurrentType = pType;
+    if (this.isCodeWrite()) {
+        this.pushCode(pType);
+        this.pushCode(";");
+    }
     for (i = pChildren.length - 2; i >= 0; i--) {
         if (pChildren[i].sName === a.fx.GLOBAL_VARS.VARIABLE) {
             pVar = this.analyzeVariable(pChildren[i]);

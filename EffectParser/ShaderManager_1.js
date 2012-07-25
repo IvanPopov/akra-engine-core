@@ -139,9 +139,8 @@ function ShaderManager(pEngine) {
     this.pEngine = pEngine;
 
     this._pComponentPool = {};
-    this._pFXPool = new a.EffectFileManager(pEngine);
-    this._pFXPool.initialize(16);
     this._pEffectResources = {};
+    this._nEffectFile = 1;
     this._pEffectInfo = {};
     this._pShaderPrograms = {};
     this._ppLoadedEffects = {};
@@ -163,46 +162,46 @@ function ShaderManager(pEngine) {
 /**
  * Load *.fx file or *.abf
  * @tparam String sFileName
- * @tparam String sName name of Effect. So name of components from file will be: "sName" + ":" + "sTechniqueName"\n
- *                      Example: "baseEffect:GEOMETRY", "lightEffect:POINT"
+ * @tparam String sName name of Effect. It`s need if in effect there are no provide.\n
+ *         So name of components from file will be: "sName" + ":" + "sTechniqueName"\n
+ *         Example: "baseEffect:GEOMETRY", "lightEffect:POINT"
  */
-ShaderManager.prototype.loadEffectFile = function (sFileName, sName) {
+ShaderManager.prototype.loadEffectFile = function (sFileName, sEffectName) {
     var reExt = /^(.+)(\.fx|\.abf)$/;
     var pRes = reExt.exec(sFileName);
     var pEffect;
+    var sSource;
     if (!pRes) {
-        warning("File has wrong extension! It must be .fx or .abf!");
+        warning("File has wrong extension! It must be .fx!");
         return false;
     }
-    sName = sName || pRes[0];
-    pEffect = this._ppLoadedEffects[sFileName];
-    var me = this;
-    var fnInitEffect = function () {
-        if (this.isResourceLoaded()) {
-            this.delChangesNotifyRoutine(fnInitEffect);
-            var pTechniques = pEffect.pTechniques;
-            for (var i in pTechniques) {
-                if (!me.initComponent(sName, pTechniques[i])) {
-                    warning("Can not initialize component from effect " + sFileName +
-                            " with name " + pTechniques[i].name + "!");
-                }
-            }
-        }
+    sEffectName = sEffectName || pRes[1];
+    pEffect = new a.fx.Effect(this, this._nEffectFile);
+    this._nEffectFile++;
+    sSource = a.ajax({url:sFileName, async: false}).data;
+    var isLoadOk = pEffect.analyze(a.util.parser.parse(sSource));
+    if(!isLoadOk){
+        warning("Effect file:(\"" + sFileName + "\")can not be loaded");
+        return false;
     }
-    if (!pEffect) {
-        pEffect = this._ppLoadedEffects[sFileName] = this._pFXPool.loadResource(sFileName);
-        pEffect.setChangesNotifyRoutine(fnInitEffect);
-    }
-
-    var pWaitList = this._ppWaitList;
     var i;
-    for (i in pWaitList) {
-        if (this._pComponentPool[i]) {
-            pWaitList[i].componentReady(i);
-            continue;
+    var pTechniques = pEffect.pTechniques;
+    for(i in pTechniques){
+        if(!this.initComponent(pTechniques[i], sEffectName)){
+            warning("Can not initialize component from effect " + sFileName +
+                    " with name " + pTechniques[i].sName + "!");
         }
-        warning("Component " + i + " don`t loaded yet.");
     }
+//
+//    var pWaitList = this._ppWaitList;
+//    var i;
+//    for (i in pWaitList) {
+//        if (this._pComponentPool[i]) {
+//            pWaitList[i].componentReady(i);
+//            continue;
+//        }
+//        warning("Component " + i + " don`t loaded yet.");
+//    }
 };
 /**
  * Initialization component from technique. Name of component will be 'sEffectName' + ':' + 'pTechnique.sName'
@@ -210,18 +209,20 @@ ShaderManager.prototype.loadEffectFile = function (sFileName, sName) {
  * @tparam pTechnique
  * @treturn Boolean True if all Ok, False if we already have this component.
  */
-ShaderManager.prototype.initComponent = function (sEffectName, pTechnique) {
-    var sName = sEffectName + ":" + pTechnique.sName;
-    if (this._pComponentPool[sName]) {
-        warning("We already load component with name: " + sName);
-        return false;
-    }
-    else {
-        var pComponent = new a.Component();
-        pComponent.set(sName, pTechnique);
-        this._pComponentPool[sName] = pComponent;
-        return true;
-    }
+ShaderManager.prototype.initComponent = function (pTechnique, sEffectName) {
+//    var sName = sEffectName + ":" + pTechnique.sName;
+//    if (this._pComponentPool[sName]) {
+//        warning("We already load component with name: " + sName);
+//        return false;
+//    }
+//    else {
+//        var pComponent = new a.Component();
+//        pComponent.set(sName, pTechnique);
+//        this._pComponentPool[sName] = pComponent;
+//        return true;
+//    }
+    //TODO: init component
+    warning("init component");
 };
 
 /**

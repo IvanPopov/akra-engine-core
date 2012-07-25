@@ -64,10 +64,60 @@ function ShaderManager (pEngine) {
          eTextureHandles, a.ShaderManager);
 
     this.pEngine = pEngine;
+    this._nEffectFile = 1;
 //    this._pActivatedPrograms = new Array(32);
 //    this._pActivatedPrograms[0] = 0;
 //    this._nLastActivatedProgram = 0;
 }
+
+/**
+ * Load *.fx file or *.abf
+ * @tparam String sFileName
+ * @tparam String sName name of Effect. It`s need if in effect there are no provide.\n
+ *         So name of components from file will be: "sName" + ":" + "sTechniqueName"\n
+ *         Example: "baseEffect:GEOMETRY", "lightEffect:POINT"
+ */
+ShaderManager.prototype.loadEffectFile = function (sFileName, sEffectName) {
+    var reExt = /^(.+)(\.fx|\.abf)$/;
+    var pRes = reExt.exec(sFileName);
+    var pEffect;
+    var sSource;
+    if (!pRes) {
+        warning("File has wrong extension! It must be .fx!");
+        return false;
+    }
+    sEffectName = sEffectName || pRes[1];
+    pEffect = new a.fx.Effect(this, this._nEffectFile);
+    this._nEffectFile++;
+    sSource = a.ajax({url:sFileName, async: false}).data;
+    a.util.parser.parse(sSource);
+    var isLoadOk = pEffect.analyze(a.util.parser.pSyntaxTree);
+    trace(pEffect);
+    if(!isLoadOk){
+        warning("Effect file:(\"" + sFileName + "\")can not be loaded");
+        return false;
+    }
+    var i;
+    var pTechniques = pEffect.pTechniques;
+    for(i in pTechniques){
+        if(!this.initComponent(pTechniques[i], sEffectName)){
+            warning("Can not initialize component from effect " + sFileName +
+                    " with name " + pTechniques[i].sName + "!");
+        }
+    }
+};
+/**
+ * Initialization component from technique. Name of component will be 'sEffectName' + ':' + 'pTechnique.sName'
+ * @tparam sEffectName
+ * @tparam pTechnique
+ * @treturn Boolean True if all Ok, False if we already have this component.
+ */
+ShaderManager.prototype.initComponent = function (pTechnique, sEffectName) {
+    //TODO: init component
+    warning("init component");
+    return true;
+};
+
 
 ShaderManager.prototype.activateProgram = function (pProgram) {
    // if (this._pActivatedPrograms[this._nLastActivatedProgram] !== pProgram) {

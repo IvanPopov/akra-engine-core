@@ -1304,8 +1304,8 @@ Lexer.prototype.getNextToken = function () {
     return pToken;
 };
 Lexer.prototype._error = function (sMsg, pInfo) {
-    trace(statics(errorMessages)[sMsg], pInfo);
-    error(statics(errorMessages)[sMsg]);
+    trace(statics.errorMessages[sMsg], pInfo);
+    error(statics.errorMessages[sMsg]);
 };
 Lexer.prototype._identifyTokenType = function () {
     if (this._isIdentifierStart()) {
