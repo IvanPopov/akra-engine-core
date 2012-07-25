@@ -133,7 +133,7 @@ Font3D.prototype._rasterize = function() {
     pContext2D.font = sFont;
 
     var pFontMetrics = this._pFontMetrics = this._getFontMetrics(this._sItalic,this._sBold,this._nFontSize,this._sFontFamily);
-    this._nTotalFontSize = pFontMetrics.fontMetrics.maxHeight;
+    this._nTotalFontSize = pFontMetrics.fontMetrics.height;
 
     trace(pFontMetrics);
 
@@ -174,10 +174,11 @@ Font3D.prototype._rasterize = function() {
             var sChar = String.fromCharCode(j);
 
             var iPositionX = nCurrentLineWidth;
-            var iCenterOffsetX = -pFontMetrics.lettersMetrics[sChar].left;//так как некоторые буквы заезжают за левый край,
-                                                                        //то такое смещение должно решить эту проблему;
+            //так как некоторые буквы заезжают за левый край,
+            //то такое смещение должно решить эту проблему;
+            var iCenterOffsetX = -pFontMetrics.lettersMetrics[sChar].left;
             
-            var nWidth = pFontMetrics.lettersMetrics[sChar].width;
+            var nWidth = pFontMetrics.lettersMetrics[sChar].realWidth;
             relativeWidth = (nWidth-1)/nTextureWidth;
 
             nCurrentLineWidth += nWidth;
@@ -230,7 +231,7 @@ Font3D.prototype._getFontMetrics = function(sStyle,sWeight,nSize,sFontFamily) {
 
     var nWidth;
     var nHeight;
-    var nMaxLeft,nMaxRight,nMaxTop,nMaxBottom;
+    var nMaxLeft,nMaxRight,nMaxTop,nMaxBottom,nMaxTypographicalWidth;
     for(var i=0;i<nLetters;i++){
         var sChar = String.fromCharCode(i);
         nWidth = pContext2D.measureText(sChar).width;
@@ -241,15 +242,18 @@ Font3D.prototype._getFontMetrics = function(sStyle,sWeight,nSize,sFontFamily) {
 
         nMaxTop = 0;
         nMaxBottom = 0;
+        nMaxTypographicalWidth = 0;
 
         if(nWidth == 0){
             //непечатные символы
-            pLettersMetrics[sChar] = {'left' : 0,'top' : 0,'right' : 0, 'bottom' : 0, 'width' : 0, 'height' : 0};
+            pLettersMetrics[sChar] = {'left' : 0,'top' : 0,'right' : 0,
+                'bottom' : 0,'height' : 0,'realWidth' : 0, 'typographicalWidth' : nWidth};
             continue;
         }
         else{
-            pLettersMetrics[sChar] = {'left' : nMaxLeft,'top' : nMaxTop,'right' : nMaxRight, 'bottom' : nMaxBottom,
-             'width' : nMaxRight - nMaxLeft + 1, 'height' : nMaxBottom - nMaxTop + 1};
+            pLettersMetrics[sChar] = {'left' : nMaxLeft,'top' : nMaxTop,'right' : nMaxRight,
+             'bottom' : nMaxBottom,'height' : nMaxBottom - nMaxTop + 1,
+             'realWidth' : nMaxRight - nMaxLeft + 1, 'typographicalWidth' : nWidth};
         }
         pContext2D.fillText(sChar,nOffsetX,nOffsetY);//рисуем в центре канваса 
         var pImageData = pContext2D.getImageData(0, 0, pCanvas.width, pCanvas.height);
@@ -273,10 +277,10 @@ Font3D.prototype._getFontMetrics = function(sStyle,sWeight,nSize,sFontFamily) {
                     else if(iRealY > nMaxBottom){
                         nMaxBottom = iRealY;
                     }
-                    if(sChar == 's'){
-                        if(alpha < 1.)
-                        trace('non 1');
-                    }
+                    // if(sChar == 's'){
+                    //     if(alpha < 1.)
+                    //     trace('non 1');
+                    // }
                 }
             }
         }
@@ -284,8 +288,8 @@ Font3D.prototype._getFontMetrics = function(sStyle,sWeight,nSize,sFontFamily) {
         pLettersMetrics[sChar].right = nMaxRight;
         pLettersMetrics[sChar].top = nMaxTop;
         pLettersMetrics[sChar].bottom = nMaxBottom;
-        pLettersMetrics[sChar].width = nMaxRight - nMaxLeft + 1;
         pLettersMetrics[sChar].height = nMaxBottom - nMaxTop + 1;
+        pLettersMetrics[sChar].realWidth = nMaxRight - nMaxLeft + 1;
         pContext2D.clearRect(0, 0, pCanvas.width, pCanvas.height);  
     }
 
@@ -293,6 +297,7 @@ Font3D.prototype._getFontMetrics = function(sStyle,sWeight,nSize,sFontFamily) {
     nMaxBottom = 0;
     nMaxLeft = 0;
     nMaxTop = 0;
+    nMaxTypographicalWidth = 0;
 
     for(var sChar in pLettersMetrics){
         var pMetrics = pLettersMetrics[sChar];
@@ -308,19 +313,25 @@ Font3D.prototype._getFontMetrics = function(sStyle,sWeight,nSize,sFontFamily) {
         if(pMetrics.top < nMaxTop){
             nMaxTop = pMetrics.top;
         }
+        if(pMetrics.typographicalWidth > nMaxTypographicalWidth){
+            nMaxTypographicalWidth = pMetrics.typographicalWidth;
+        }
     }
-    var pFontMetrics = {'maxLeft' : nMaxLeft, 'maxTop' : nMaxTop,'maxRight' : nMaxRight, 'maxBottom' : nMaxBottom,
-     'maxWidth' : nMaxRight - nMaxLeft + 1, 'maxHeight' : nMaxBottom - nMaxTop + 1};
+    var pFontMetrics = {'left' : nMaxLeft, 'top' : nMaxTop,'right' : nMaxRight, 'bottom' : nMaxBottom,
+     'height' : nMaxBottom - nMaxTop + 1,'realWidth' : nMaxRight - nMaxLeft + 1,
+        'typographicalWidth' : nMaxTypographicalWidth};
+
     return {'lettersMetrics' : pLettersMetrics,'fontMetrics' : pFontMetrics};
 };
 
 Font3D.prototype._monospaceTest = function() {
     'use strict';
-    var nBaseWidth = this._pFontMetrics.fontMetrics.maxWidth;
+    var nBaseWidth = this._pFontMetrics.fontMetrics.typographicalWidth;
 
     var pLettersMetrics = this._pFontMetrics.lettersMetrics;
     for(var sChar in pLettersMetrics){
-        if(pLettersMetrics[sChar].width != 0 && pLettersMetrics[sChar].width != nBaseWidth){
+        if(pLettersMetrics[sChar].typographicalWidth != 0 
+            && pLettersMetrics[sChar].typographicalWidth != nBaseWidth){
             this._isMonospace = true;
         }
     }
@@ -340,11 +351,11 @@ Font3D.prototype._defineTextureSizes = function(){
     var pLettersMetrics = this._pFontMetrics.lettersMetrics;
 
     for(var sChar in pLettersMetrics){
-        nFontTotalWidth += pLettersMetrics[sChar].width;
+        nFontTotalWidth += pLettersMetrics[sChar].realWidth;
     }
 
     var nTextureWidth = Math.ceilingPowerOfTwo(nFontTotalWidth); //размеры текстуры кратны двойке, для того чтобы ставить линейные фильтры
-    var nTextureHeight = Math.ceilingPowerOfTwo(this._nFontSize);
+    var nTextureHeight = Math.ceilingPowerOfTwo(this._nTotalFontSize);
     var nVerticalStep = nTextureHeight;
 
     while(nTextureWidth > nMaxTextureSize){
@@ -368,7 +379,7 @@ Font3D.prototype._defineTextureSizes = function(){
         nStartIndex = j;
         for(j=nStartIndex;j<nLetters;j++){
             var sChar = String.fromCharCode(i);
-            nCurrentLineWidth += pLettersMetrics[sChar].width;
+            nCurrentLineWidth += pLettersMetrics[sChar].realWidth;
             if(nCurrentLineWidth > nTextureWidth){
                 j--;
                 break;

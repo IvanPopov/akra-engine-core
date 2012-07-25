@@ -32,103 +32,6 @@ function Text3D(pEngine,pFont){
 
 EXTENDS(Text3D,a.Sprite);
 
-/**
- * @param sString строка с текстом
- */
-Text3D.prototype.setText = function(sString){
-	'use strict';
-	var pFont = this._pFont;
-	trace('is Monospace',pFont.isMonospace);
-	var pLetterMap = pFont.letterMap;
-	var pFontMetrics = pFont.fontMetrics;
-	var pMeasureContext = pFont.context;
-
-	var nLineQuantity = 1;
-	for(var i=0;i<sString.length;i++){
-		if(sString[i] == '\n'){
-			nLineQuantity++;
-		}
-	};
-
-	//веделяем память под все данные,
-	//т.е указатели на строки и на данные в строках,
-	//которая чудесным образом совпадает с длинной строки + 1 (+1 так как в начальной строке нет \n)
-	var pStringData = new Float32Array(4*(sString.length + 1));
-	var nOffset = nLineQuantity*4;
-	var nLineLength = 0;
-	var nMaxLineLength = 0;
-	var nLine = 0;//номер линии (отсчет с нуля)
-	var nStartDataOffset = nLineQuantity;//номер откуда начинаются данные текущей линии
-
-	var sChar;
-	var nMaxPixelLength = 0;
-	var nPixelLength = 0;
-	//когда i=sString.length заведомо попадаем в if как и нужно
-	for(var i=0;i<=sString.length;i++){
-		sChar = sString[i];
-		//trace(sChar,nLineLength);
-		if(sChar == '\n' || i == sString.length){
-
-			pStringData[4*nLine    ] = nLineLength;
-			pStringData[4*nLine + 1] = nStartDataOffset;
-
-			nStartDataOffset += nLineLength;
-
-			var sLine = sString.substr(i - nLineLength,nLineLength);
-			var nWidth = pMeasureContext.measureText(sLine).width;
-			trace(sLine,nWidth);
-
-
-			if(nLineLength > nMaxLineLength){
-				nMaxLineLength = nLineLength;
-			}
-
-			if(nPixelLength > nMaxPixelLength){
-				nMaxPixelLength = nPixelLength;
-			}
-			nLineLength = 0;
-			nPixelLength = 0;
-			nLine++;
-		}
-		else{
-			var pTextureData = pLetterMap[sChar];
-			pStringData[nOffset + 4*(i-nLine)    ] = pTextureData.X;//текстурные координаты начала буквы
-			pStringData[nOffset + 4*(i-nLine) + 1] = pTextureData.Y;//
-			pStringData[nOffset + 4*(i-nLine) + 2] = pTextureData.Z;//шаг по текстуре необходимый для того, чтобы 
-			pStringData[nOffset + 4*(i-nLine) + 3] = pTextureData.W;//получить конец буквы
-
-			nPixelLength += pFontMetrics.lettersMetrics[sChar].width; //длина в пикселях
-
-			nLineLength++;
-		}
-	}
-	trace('nMaxpixleLingth',nMaxPixelLength);
-	//trace(pStringData);
-	this._nLineQuantity = nLineQuantity;
-	this._nLineLength = nMaxLineLength;
-	this._nPixelLineLingth = nMaxPixelLength;
-
-	var pIndex = new Float32Array(4);
-	for(var i=0;i<4;i++){
-		pIndex[i] = i;
-	}
-
-	this._pRenderData.allocateData(VE_VEC4('STRING_DATA'),pStringData);
-	this._pRenderData.allocateIndex(VE_FLOAT('INDEX1'),pIndex);
-	this._pRenderData.index(this._pRenderData.getDataLocation('STRING_DATA'),'INDEX1');
-	// trace(nLineQuantity);
-	// trace(pStringData);
-};
-
-Text3D.prototype.setDistanceMultiplier = function(fMultiplier) {
-	'use strict';
-	if(fMultiplier < 0){
-		err("значение множителя не может быть меньше нуля");
-		return;
-	}
-	this._fDistanceMultiplier = fMultiplier;
-};
-
 PROPERTY(Text3D,'backgroundColor',
 	function(){
 		'use strict';
@@ -172,6 +75,184 @@ PROPERTY(Text3D,'fixedSize',
 	}
 );
 
+/**
+ * @param sString строка с текстом
+ */
+Text3D.prototype.setText = function(sString){
+	'use strict';
+	var pFont = this._pFont;
+	trace('is Monospace',pFont.isMonospace);
+	var pLetterMap = pFont.letterMap;
+	var pFontMetrics = pFont.fontMetrics;
+	var pMeasureContext = pFont.context;
+	var nLineLength = 0;
+	var nMaxLineLength = 0;
+	var nPixelLength = 0;
+	var nMaxPixelLength = 0;
+
+	var nLineQuantity = 1;
+
+	var pLinesInfo = [];
+
+	for(var i=0;i<sString.length;i++){
+		var sChar = sString[i];
+		if(sChar == '\n'){
+
+			nMaxLineLength = (nLineLength > nMaxLineLength) ? nLineLength : nMaxLineLength;
+			nMaxPixelLength = (nPixelLength > nMaxPixelLength) ? nPixelLength : nMaxPixelLength;
+			pLinesInfo.push({'nLetters' : nLineLength, 'nPixelLength' : nPixelLength});
+
+			nLineLength = 0;
+			nPixelLength = 0;
+			nLineQuantity++;
+		}
+		else{
+			nLineLength++;
+			//длина в пикселях
+			nPixelLength += pFontMetrics.lettersMetrics[sChar].typographicalWidth;
+		}
+	}
+
+	nMaxLineLength = (nLineLength > nMaxLineLength) ? nLineLength : nMaxLineLength;
+	nMaxPixelLength = (nPixelLength > nMaxPixelLength) ? nPixelLength : nMaxPixelLength;
+	pLinesInfo.push({'nLetters' : nLineLength, 'nPixelLength' : nPixelLength});
+
+	this._nLineQuantity = nLineQuantity;
+	this._nLineLength = nMaxLineLength;
+	this._nPixelLineLingth = nMaxPixelLength;
+
+	var fAveragePixelsWidthPerLetter = nMaxPixelLength/nMaxLineLength;
+
+	//веделяем память под все данные,
+	//т.е указатели на строки и на данные в строках,
+	//которая чудесным образом совпадает с длинной строки + 1 (+1 так как в начальной строке нет \n)
+	
+	var nTotalRequiredData = (sString.length + 1)
+			+ nLineQuantity*nMaxLineLength //хранится инфа, 
+			+ (sString.length - nLineQuantity + 1);
+
+	var pStringData = new Float32Array(4*nTotalRequiredData);
+
+	// var nOffset = nLineQuantity*4;
+	
+	// var nLine = 0;//номер линии (отсчет с нуля)
+	// var nStartDataOffset = nLineQuantity;//номер откуда начинаются данные первой линии
+
+	// var sChar;
+	
+	var nCurrentIndex = 0;//указывает на текущую букву
+	var nStringDataOffset = nLineQuantity;
+	var nLetterInfoOffset = nLineQuantity + nMaxLineLength*nLineQuantity;
+	for(var i=0;i<pLinesInfo.length;i++){
+		var pLine = pLinesInfo[i];
+		var nCurrentPixelLength = 0;
+		pStringData[4*i    ] = nStringDataOffset;
+		pStringData[4*i + 1] = nLetterInfoOffset;
+
+		for(var j=0;j<nMaxLineLength;j++){
+			if(j<pLine.nLetters){
+				var sChar = sString[nCurrentIndex];	
+				var pLetterMetrics = pFontMetrics.lettersMetrics[sChar];
+				trace(sChar,pLetterMetrics,nMaxLineLength);
+				var nTypographicalWidth = pLetterMetrics.typographicalWidth;
+
+				var nStartPosition = Math.floor(nCurrentPixelLength/fAveragePixelsWidthPerLetter);
+				var nEndPosition = Math.floor((nCurrentPixelLength 
+											+ nTypographicalWidth - 1)/fAveragePixelsWidthPerLetter);
+
+				var fPixelStartPosition = nCurrentPixelLength%fAveragePixelsWidthPerLetter;
+				var fPixelEndPosition = (nCurrentPixelLength + nTypographicalWidth - 1)
+											%fAveragePixelsWidthPerLetter;
+
+				var nCurrentPosition = nStartPosition;
+
+				var nPositions = nEndPosition - nStartPosition + 1;
+				//trace(j,nPositions,fAveragePixelsWidthPerLetter)
+				var nLetterStartPosition = 0;
+				var nLetterEndPosition = 0;
+				var nStartIndex = 0;
+				if(fPixelStartPosition != 0){
+					nStartIndex = 1;
+					nLetterStartPosition = fAveragePixelsWidthPerLetter - fPixelStartPosition;
+					nLetterEndPosition = 
+						(nLetterStartPosition + fAveragePixelsWidthPerLetter < nTypographicalWidth) ?
+							nLetterStartPosition + fAveragePixelsWidthPerLetter : nTypographicalWidth;
+				}
+				for(var k=0;k < nPositions;k++){
+					var nCurrentDataPosition = nLineQuantity 
+						+ i*nMaxPixelLength + nStartPosition + k;
+
+					pStringData[4*nCurrentDataPosition    ] = j;
+					pStringData[4*nCurrentDataPosition + 1] = nTypographicalWidth;
+					pStringData[4*nCurrentDataPosition + 2] = nLetterStartPosition;
+					pStringData[4*nCurrentDataPosition + 3] = nLetterEndPosition;
+					
+					nLetterStartPosition += fAveragePixelsWidthPerLetter;
+					nLetterEndPosition = 
+					(nLetterStartPosition + fAveragePixelsWidthPerLetter < nTypographicalWidth) ?
+						nLetterStartPosition + fAveragePixelsWidthPerLetter : nTypographicalWidth;
+
+				}
+
+				//заполняем данные о букве
+
+				var pLetterMetrics = pFontMetrics.lettersMetrics[sChar];
+				var pLetterData = pLetterMap[sChar];
+				nCurrentDataPosition = nLetterInfoOffset + 2*j;
+
+				for(var k=0;k<4;k++){
+					pStringData[4*nCurrentDataPosition + k] = pLetterData[k];
+				}
+
+				nCurrentDataPosition++;
+				pStringData[4*nCurrentDataPosition    ] = pLetterMetrics.left;
+				pStringData[4*nCurrentDataPosition + 1] = pLetterMetrics.right;
+
+
+				nCurrentPixelLength += nTypographicalWidth;
+
+				nCurrentIndex++;
+			}
+			else{
+				var nStartPosition = Math.floor(nCurrentPixelLength/fAveragePixelsWidthPerLetter);
+				var fPixelStartPosition = nCurrentPixelLength%fAveragePixelsWidthPerLetter;
+				if(fPixelStartPosition == 0){
+
+					var nCurrentDataPosition = nLineQuantity + 
+									i*nMaxPixelLength + nStartPosition;
+
+					pStringData[4*nCurrentDataPosition] = -1;
+				}
+				nCurrentPixelLength += (fAveragePixelsWidthPerLetter - fPixelStartPosition);
+			}
+		}
+
+		nStringDataOffset += nMaxLineLength;
+		nLetterInfoOffset += pLine.letters;
+		nCurrentIndex++;//пропускаем \n
+	}
+
+	var pIndex = new Float32Array(4);
+	for(var i=0;i<4;i++){
+		pIndex[i] = i;
+	}
+
+	this._pRenderData.allocateData(VE_VEC4('STRING_DATA'),pStringData);
+	this._pRenderData.allocateIndex(VE_FLOAT('INDEX1'),pIndex);
+	this._pRenderData.index(this._pRenderData.getDataLocation('STRING_DATA'),'INDEX1');
+	// trace(nLineQuantity);
+	// trace(pStringData);
+};
+
+Text3D.prototype.setDistanceMultiplier = function(fMultiplier) {
+	'use strict';
+	if(fMultiplier < 0){
+		err("значение множителя не может быть меньше нуля");
+		return;
+	}
+	this._fDistanceMultiplier = fMultiplier;
+};
+
 A_NAMESPACE(Text3D);
 
 function DrawRoutineText3D(pProgram){
@@ -183,17 +264,17 @@ function DrawRoutineText3D(pProgram){
 	pProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
 
 	//text unifoms
-	//trace(this._nLineLength,this._nLineQuantity);
 	pProgram.applyFloat('nLineLength',this._nLineLength);
 	pProgram.applyFloat('nLineQuantity',this._nLineQuantity);
 	pProgram.applyFloat('startIndex',this._pRenderData.getDataLocation('STRING_DATA')/4.);
 
-	pProgram.applyVector2('nPixelsSizes',this._nPixelLineLingth,this._pFont.fontMetrics.fontMetrics.maxHeight*this._nLineQuantity);
+	pProgram.applyVector2('nPixelsSizes',this._nPixelLineLingth,
+		this._pFont.fontMetrics.fontMetrics.height*this._nLineQuantity);
 
 	//set screen parameters (ограничивают максимальный размер текста на экране размером шрифта)
 	pProgram.applyVector2('v2fCanvasSizes',this._pEngine.pCanvas.width,this._pEngine.pCanvas.height);
 	//pProgram.applyVector2('v2fTextSizes',);
-	pProgram.applyFloat('nFontSize',this._pFont.fontSize);
+	pProgram.applyFloat('nFontSize',this._pFont.totalFontSize);
 	pProgram.applyFloat('fDistanceMultiplier',this._fDistanceMultiplier);
 
 	//set font colors
