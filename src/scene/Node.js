@@ -369,7 +369,7 @@ Node.prototype.attachToParent = function (pParent) {
             //this._pParent.addRef();
             // adjust my local matrix to be relative to this new parent
             var invertedParentMatrix = Mat4.inverse(this._pParent._m4fWorldMatrix);
-            Mat4.multiply(this._m4fLocalMatrix, invertedParentMatrix);
+			Mat4.multiply(this._m4fLocalMatrix, invertedParentMatrix);
         }
     }
 };
