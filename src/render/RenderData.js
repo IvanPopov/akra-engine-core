@@ -97,6 +97,7 @@ function RenderData() {
      */
     this._iIndexSet = 0;
 
+	this._iRenderable = 1;
 }
 
 EXTENDS(RenderData, a.ReferenceCounter);
@@ -108,6 +109,12 @@ PROPERTY(RenderData, 'factory',
     function () {
         return this._pFactory;
     });
+
+PROPERTY(RenderData, 'buffer',
+    function () {
+        return this._pFactory;
+    });
+
 
 /**
  * @protected
@@ -460,6 +467,15 @@ RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType, sName
     return  this._iIndexSet;
 };
 
+RenderData.prototype.getNumIndexSet = function () {
+	return this._pIndicesArray.length;
+};
+
+RenderData.prototype.getIndexSetName = function (iSet) {
+	iSet = ifndef(iSet, this._iIndexSet);
+	return this._pIndicesArray[iSet].sName;
+};
+
 /**
  * Select set of indices.
  * @param  {Int} iSet Set number.
@@ -490,6 +506,24 @@ RenderData.prototype.getIndexSet = function() {
 
     return this._iIndexSet;
 };
+
+
+/**
+ */
+RenderData.prototype.setRenderable = function(iIndexSet, bValue) {
+	'use strict';
+	iIndexSet=ifndef(iIndexSet, this.getIndexSet());
+	bValue=ifndef(bValue, true);
+	SET_BIT(this._iRenderable,iIndexSet, bValue);
+	return true;
+};
+
+RenderData.prototype.isRenderable = function(iIndexSet) {
+	'use strict';
+	iIndexSet=ifndef(iIndexSet, this.getIndexSet());
+	return TEST_BIT(this._iRenderable,iIndexSet);
+};
+
 
 /**
  * Check whether the semantics used in this data set.
@@ -641,7 +675,7 @@ RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) {
     else if (typeof arguments[0] === 'string') {
         iData = this.getDataLocation(iData);
     }
-    
+
     pFlow = this.getFlow(iData);
 
     if (pFlow === null) {
@@ -694,15 +728,20 @@ RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) {
 RenderData.prototype.draw = function () {
     'use strict';
 
-    var pProgram;
+	var isOK=true;
+	var bResult;
+	var i;
+	for(i=0; i < this._pIndicesArray.length; i++)
+	{
+		if(this.isRenderable(i))
+		{
+			this._pFactory._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pIndicesArray[i].pMap);
+			bResult = this._pIndicesArray[i].pMap.draw();
+			isOK = isOK && bResult;
+		}
+	}
+	return isOK;
 
-    if (this._pIndexData === null && this._pAttribData === null) {
-            return;
-    }
-
-
-    this._pFactory._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pMap);
-    return this._pMap.draw();
 };
 
 Ifdef (__DEBUG);

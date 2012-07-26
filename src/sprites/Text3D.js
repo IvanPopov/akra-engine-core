@@ -102,6 +102,7 @@ Text3D.prototype.setText = function(sString){
 			nMaxPixelLength = (nPixelLength > nMaxPixelLength) ? nPixelLength : nMaxPixelLength;
 			pLinesInfo.push({'nLetters' : nLineLength, 'nPixelLength' : nPixelLength});
 
+
 			nLineLength = 0;
 			nPixelLength = 0;
 			nLineQuantity++;
@@ -121,7 +122,9 @@ Text3D.prototype.setText = function(sString){
 	this._nLineLength = nMaxLineLength;
 	this._nPixelLineLingth = nMaxPixelLength;
 
+
 	var fAveragePixelsWidthPerLetter = nMaxPixelLength/nMaxLineLength;
+
 
 	//веделяем память под все данные,
 	//т.е указатели на строки и на данные в строках,
@@ -140,14 +143,17 @@ Text3D.prototype.setText = function(sString){
 
 	// var sChar;
 	
+
 	var nCurrentIndex = 0;//указывает на текущую букву
 	var nStringDataOffset = nLineQuantity;
 	var nLetterInfoOffset = nLineQuantity + nMaxLineLength*nLineQuantity;
+
 	for(var i=0;i<pLinesInfo.length;i++){
 		var pLine = pLinesInfo[i];
 		var nCurrentPixelLength = 0;
 		pStringData[4*i    ] = nStringDataOffset;
 		pStringData[4*i + 1] = nLetterInfoOffset;
+
 
 		for(var j=0;j<nMaxLineLength;j++){
 			if(j<pLine.nLetters){
@@ -232,6 +238,7 @@ Text3D.prototype.setText = function(sString){
 		nCurrentIndex++;//пропускаем \n
 	}
 
+
 	var pIndex = new Float32Array(4);
 	for(var i=0;i<4;i++){
 		pIndex[i] = i;
@@ -264,6 +271,7 @@ function DrawRoutineText3D(pProgram){
 	pProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
 
 	//text unifoms
+
 	pProgram.applyFloat('nLineLength',this._nLineLength);
 	pProgram.applyFloat('nLineQuantity',this._nLineQuantity);
 	pProgram.applyFloat('startIndex',this._pRenderData.getDataLocation('STRING_DATA')/4.);

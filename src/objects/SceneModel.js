@@ -365,7 +365,7 @@ SceneModel.prototype.destructor = function () {
 SceneModel.prototype.prepareForRender = function () {
    
 };
-
+var bLocker = true;
 SceneModel.prototype.render = function () {
     parent.render(this);
 
@@ -386,21 +386,14 @@ SceneModel.prototype.render = function () {
         return;
     }
 
-    var pDeferredTexture = pEngine.pDeferredTexture;
-    var pFrameBuffer = pDeferredTexture._pFrameBuffer;
-    var pDevice = pEngine.pDevice;
-
-    //bind framebuffer
-    pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,pFrameBuffer);
-
-    pDevice.clearColor(0,0,0,0);
-    pDevice.clear(pDevice.COLOR_BUFFER_BIT | pDevice.DEPTH_BUFFER_BIT | pDevice.STENCIL_BUFFER_BIT);
- 
     for (var i = 0; i < pMesh.length; ++ i) {
         var pSubMesh = pMesh[i];
         var pSurface = pSubMesh.surfaceMaterial;
 
-        if (pSubMesh.data.useAdvancedIndex()) {
+        if (pSubMesh.isSkinned()) {
+            pProgram = pEngine.pDrawMeshAnimProg;
+        }
+        else if (pSubMesh.data.useAdvancedIndex()) {
             pProgram = pEngine.pDrawMeshI2IProg;
         }
         else if (pSubMesh.surfaceMaterial.totalTextures) {
@@ -408,10 +401,7 @@ SceneModel.prototype.render = function () {
         }
         else {
             pProgram = pEngine.pDrawMeshProg;
-            
         }
-
-        pProgram = pEngine.pDrawMeshDeffered;
 
         pProgram.activate();
 
@@ -427,6 +417,19 @@ SceneModel.prototype.render = function () {
         pProgram.applyMatrix3('normal_mat', pModel.normalMatrix());
         pProgram.applyVector3('eye_pos', pCamera.worldPosition());
 
+
+        if (pSubMesh.isSkinned()) {
+            pSubMesh.skin.applyBoneMatrices();
+            
+            if (bLocker) {
+                
+                pSubMesh.skin.skeleton.getRootBone().setPosition([10, 0, 0]);
+                
+                //Skin.debugMeshSubset(pSubMesh);
+                bLocker = false;
+            }
+        }
+        
         if (pSurface.totalTextures) {
             var iTextureFlags = pSurface.textureFlags;
             var iTexActivator = 1;
@@ -447,18 +450,7 @@ SceneModel.prototype.render = function () {
 
         pSubMesh.draw();
     }
-    //pDevice.flush();
-
-    pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,null);
-
-    pProgram = pEngine.pDefferedToScreen;
-    pProgram.activate();
-    pDeferredTexture.activate(0);
-    pProgram.applyInt('deferredTexture',0);
-    pProgram.applyVector2('maxTextureCoordinates',pEngine.pCanvas.width/pDeferredTexture.width,pEngine.pCanvas.height/pDeferredTexture.height);
-    var pMap = pEngine.pDefferedBufferMap;
-    pProgram.applyBufferMap(pMap);
-    pMap.drawArrays();
+    
 
     //------------------------------------------------
 
@@ -600,6 +592,22 @@ SceneModel.prototype.findMesh = function (iMesh) {
     iMesh = iMesh || 0;
     return this._pMeshes[iMesh];
 };
+
+Ifdef (__DEBUG);
+
+SceneModel.prototype.toString = function (isRecursive, iDepth) {
+    'use strict';
+    
+    isRecursive = isRecursive || false;
+
+    if (!isRecursive) {
+        return '<model' + (this._sName? ' ' + this._sName: '') + '>';
+    }
+
+    return SceneObject.prototype.toString.call(this, isRecursive, iDepth);
+}
+
+Endif ();
 
 A_NAMESPACE(SceneModel);
 

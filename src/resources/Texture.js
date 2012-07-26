@@ -30,7 +30,8 @@ function Texture (pEngine) {
         CubeMap,
         MipMaps,
         RenderTarget,
-        Paletized
+        Paletized,
+		Dinamic
     ], eTextureFlags, a.Texture);
 
     /**
@@ -532,24 +533,45 @@ Texture.prototype._loadCubeTextureFromMemory = function (pMemory) {
  * @treturn Boolean Результат.
  */
 // Переписать, херь написана
-Texture.prototype.loadResource = function (sFileName) {
-    if (!sFileName) {
+Texture.prototype.loadResource = function (sFileName)
+{
+    if (!sFileName)
+	{
         var sResourceName = this.findResourceName();
         if (sResourceName) {
             sFileName = sResourceName;
         }
     }
+	var me = this;
 
-    var pImage = new a.Img(this._pEngine);
-    var me = this;
 
-    pImage.load(sFileName,
-        function () {
-            me.uploadImage(pImage);
-        }
-    );
-
-    return true;
+	if((sFileName.nodeName)&&
+		(sFileName.nodeName.toLowerCase()=="canvas"||sFileName.nodeName.toLowerCase()=="img"||sFileName.nodeName.toLowerCase()=="video"))
+	{
+		me.uploadHTMLElement(sFileName);
+		return true;
+	}
+	else if((sExt=(a.pathinfo(sFileName).ext))&&(sExt=="bmp"||sExt=="jpeg"||sExt=="gif"||sExt=="png"))
+	{
+		var pImage = new Image();
+		pImage.onload=function ()
+		{
+				me.uploadHTMLElement(pImage);
+		}
+		pImage.src = sFileName;
+		return true;
+	}
+	else
+	{
+		var pImage = new a.Img(this._pEngine);
+		pImage.load(sFileName,
+			function () {
+				me.uploadImage(pImage);
+			}
+		);
+		return true;
+	}
+    return false;
 };
 
 
@@ -592,6 +614,38 @@ Texture.prototype.uploadCubeFace = function (pImage, eFace, isCopyAll) {
     isCopyAll = isCopyAll || true;
     TODO('Texture::uploadCubeFace()');
 };
+
+Texture.prototype.uploadHTMLElement= function (pElement)
+{
+	var pDevice = this._pEngine.pDevice;
+	this.releaseTexture();
+	this._pTexture = pDevice.createTexture();
+	this._pFrameBuffer = pDevice.createFramebuffer();
+
+	this._iWidth = pElement.width;
+	this._iHeight = pElement.height;
+	this._eFormat = a.IFORMATSHORT.RGBA;
+	this._eType = a.ITYPE.UNSIGNED_BYTE;
+
+	if(pElement.nodeName.toLowerCase()=="video")
+	{
+		SET_BIT(this._iFlags, a.Texture.Dinamic);
+	}
+
+	this.bind();
+	this.flipY();
+	pDevice.texImage2D(a.TTYPE.TEXTURE_2D, 0, this._eFormat, this._eFormat,
+		this._eType, pElement);
+
+	this.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
+	this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
+	this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
+	this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
+	this.unbind();
+
+	this.notifyLoaded();
+	this.notifyRestored();
+}
 
 
 Texture.prototype.uploadImage = function (pImage) {

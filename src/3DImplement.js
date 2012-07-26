@@ -195,6 +195,22 @@ Enum([
          FLOAT = 0x1406
      ], DTYPE, a.DTYPE);
 
+Enum([
+    BYTES_PER_BYTE = 1,
+    BYTES_PER_UNSIGNED_BYTE = 1,
+    BYTES_PER_UBYTE = 1,
+
+    BYTES_PER_SHORT = 2,
+    BYTES_PER_UNSIGNED_SHORT = 2,
+    BYTES_PER_USHORT = 2,
+
+    BYTES_PER_INT = 4,
+    BYTES_PER_UNSIGNED_INT = 4,
+    BYTES_PER_UINT = 4,
+
+    BYTES_PER_FLOAT = 4
+    ], DTYPE_SIZE, a.DTYPE);
+
 
 Enum([
 	     PIXEL = 0x8B30,

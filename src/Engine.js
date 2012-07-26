@@ -334,6 +334,7 @@ Engine.prototype.notifyInitDeviceObjects = function () {
     return true;
 }
 
+
 /**
  * @property renderScene()
  * действия при рендеринге сценны
