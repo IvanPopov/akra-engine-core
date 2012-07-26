@@ -135,7 +135,7 @@ Font3D.prototype._rasterize = function() {
     var pFontMetrics = this._pFontMetrics = this._getFontMetrics(this._sItalic,this._sBold,this._nFontSize,this._sFontFamily);
     this._nTotalFontSize = pFontMetrics.fontMetrics.height;
 
-    trace(pFontMetrics);
+    //trace(pFontMetrics);
 
     this._monospaceTest();
     var pTextureSizes = this._defineTextureSizes();
@@ -332,7 +332,7 @@ Font3D.prototype._monospaceTest = function() {
     for(var sChar in pLettersMetrics){
         if(pLettersMetrics[sChar].typographicalWidth != 0 
             && pLettersMetrics[sChar].typographicalWidth != nBaseWidth){
-            this._isMonospace = true;
+            this._isMonospace = false;
         }
     }
 
