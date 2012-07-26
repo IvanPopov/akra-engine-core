@@ -81,11 +81,10 @@ Animation.prototype.play = function (fTime) {
 
 	for (var i = pTracks.length - 1, pTrack; i >= 0; i--) {
 		pTrack = pTracks[i];
-		trace(pTrack.fStartTime, '<', fCurTime, '<', pTrack.fEndTime);
 		if (pTrack.fStartTime <= fCurTime && pTrack.fEndTime > fCurTime) {
-			if (pTrack.fTime > fCurTime) {
-				pTrack.reset();
-			}
+			// if (pTrack.fTime > fCurTime) {
+			// 	pTrack.reset();
+			// }
 
 			pTrack.play(fCurTime);
 		}

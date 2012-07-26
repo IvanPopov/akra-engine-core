@@ -37,11 +37,14 @@ function COLLADA (pEngine, pSettings) {
     /* COMMON SETTINGS
      ------------------------------------------------------
      */
-    var sFilename = pSettings.file || null;
-    var sContent = pSettings.content || null;
-    var fnCallback = pSettings.success || null;
-    var useSharedBuffer = ifndef(pSettings.sharedBuffer, true);
-    var iAnimationOptions = ifndef(pSettings.animationOptions, a.Animation.REPEAT);
+    var sFilename           = pSettings.file || null;
+    var sContent            = pSettings.content || null;
+    var fnCallback          = pSettings.success || null;
+    var useSharedBuffer     = ifndef(pSettings.sharedBuffer, true);
+    var iAnimationOptions   = ifndef(pSettings.animationOptions, a.Animation.REPEAT);
+    var useAnimation        = ifndef(pSettings.animation, true);
+    var useScene            = ifndef(pSettings.scene, true);
+
 
     /* COMMON FUNCTIONS
      ------------------------------------------------------
@@ -118,6 +121,20 @@ function COLLADA (pEngine, pSettings) {
         '@mesh': {},             //mesh_name --> mesh
         '@sharedBuffer': null
     };
+
+    var pSceneTemplate = [
+        {sLib: 'library_images',        sElement: 'image',          fn: COLLADAImage},
+        {sLib: 'library_effects',       sElement: 'effect',         fn: COLLADAEffect},
+        {sLib: 'library_materials',     sElement: 'material',       fn: COLLADAMaterial},
+        {sLib: 'library_geometries',    sElement: 'geometry',       fn: COLLADAGeometrie},
+        {sLib: 'library_controllers',   sElement: 'controller',     fn: COLLADAController},
+        {sLib: 'library_visual_scenes', sElement: 'visual_scene',   fn: COLLADAVisualScene}
+    ];
+
+    var pAnimationTemplate = [
+        {sLib: 'library_animations',    sElement: 'animation',      fn: COLLADAAnimation}
+    ];
+
 
 
     function getSupportedFormat(sSemantic) {
@@ -211,6 +228,7 @@ function COLLADA (pEngine, pSettings) {
         var pSource;
         var pValue;
         var pMatches;
+        var jPos = 0;
 
         iPos = sPath.lastIndexOf('/');
             
@@ -221,12 +239,17 @@ function COLLADA (pEngine, pSettings) {
         iPos = sPath.lastIndexOf('.');
         
         if (iPos < 0) {
+            iPos = sPath.lastIndexOf('(');
+            jPos = -1;
+        }
+
+        if (iPos < 0) {
             pObject.pObject = source(sPath);
             return pObject;
         }
-
+  trace(sPath.substr(0, iPos), '-->', sPath.substr(iPos + jPos + 1));
         pSource = source(sPath.substr(0, iPos));
-        sValue = sPath.substr(iPos + 1);
+        sValue = sPath.substr(iPos + jPos + 1);
         pObject.pObject = pSource;
 
         if (!pSource) {
@@ -1777,7 +1800,7 @@ function COLLADA (pEngine, pSettings) {
                 pTrack = new a.AnimationRotation(sJoint, [v4f[1], v4f[2], v4f[3]]);
 
                 for (var i = 0; i < pTimeMarks.length; i++) {
-                    pTrack.addKeyFrame(pTimeMarks[i], pOutputValues[i]);
+                    pTrack.addKeyFrame(pTimeMarks[i], pOutputValues[i] / 180.0 * Math.PI);
                 };
 
             break;
@@ -1947,10 +1970,11 @@ function COLLADA (pEngine, pSettings) {
             var pPolygons = pPolyGroup[i];
 
             for (var j = 0; j < pPolygons.pInput.length; ++ j) {
-                var sSemantic = pPolygons.pInput[j].sSemantic;
-                var pData = pPolygons.pInput[j].pArray;
+                var pInput = pPolygons.pInput[j];
+                var sSemantic = pInput.sSemantic;
+                var pData = pInput.pArray;
                 var pDecl, pDataExt;
-                
+           
                 //if (pMesh.buffer.getDataLocation(sSemantic) < 0) {
                 if (!pUsedSemantics[sSemantic]) {
                     pUsedSemantics[sSemantic] = true;
@@ -1979,7 +2003,7 @@ function COLLADA (pEngine, pSettings) {
                         case a.DECLUSAGE.TEXCOORD3:
                         case a.DECLUSAGE.TEXCOORD4:
                         case a.DECLUSAGE.TEXCOORD5:
-                            pDecl = [VE_FLOAT2(sSemantic)];
+                            pDecl = [VE_CUSTOM(sSemantic, a.DTYPE.FLOAT, pInput.pAccessor.iStride)];
                             break;
                         default:
                             error('unsupported semantics used: ' + sSemantic);
@@ -2219,7 +2243,7 @@ function COLLADA (pEngine, pSettings) {
                 pHierarchyNode = buildSceneNode(pNode);
             }
             
-            pHierarchyNode.setName(pNode.sName);
+            pHierarchyNode.setName(pNode.id);//pNode.sName
             pHierarchyNode.setInheritance(a.Scene.k_inheritAll);
             pHierarchyNode.attachToParent(pParentNode)
 
@@ -2249,33 +2273,46 @@ function COLLADA (pEngine, pSettings) {
 
     var pMeshes = [];
 
+    function readLibraries(pXMLCollada, pTemplate, ppLibraries) {
+        ppLibraries = ppLibraries || pLib;
+        for (var i = 0; i < pTemplate.length; i++) {
+            ppLibraries[pTemplate[i].sLib] =
+                COLLADALibrary(firstChild(pXMLCollada, pTemplate[i].sLib), pTemplate[i].sElement, pTemplate[i].fn);
+        }
+    }
+
     function readCollada(sXMLData) {
         var pParser = new DOMParser();
         var pXMLRootNode = pParser.parseFromString(sXMLData, "application/xml");
         var pXMLCollada = pXMLRootNode.getElementsByTagName('COLLADA')[0];
 
-        var pTemplate = [
-            {sLib: 'library_images',        sElement: 'image',          fn: COLLADAImage},
-            {sLib: 'library_effects',       sElement: 'effect',         fn: COLLADAEffect},
-            {sLib: 'library_materials',     sElement: 'material',       fn: COLLADAMaterial},
-            {sLib: 'library_geometries',    sElement: 'geometry',       fn: COLLADAGeometrie},
-            {sLib: 'library_controllers',   sElement: 'controller',     fn: COLLADAController},
-            {sLib: 'library_visual_scenes', sElement: 'visual_scene',   fn: COLLADAVisualScene},
-            {sLib: 'library_animations',    sElement: 'animation',      fn: COLLADAAnimation}
-        ];
+        var pAsset;
+        var m4fRootTransform;
+        var pSceneRoot;
+        var pAnimations;
 
-        for (var i = 0; i < pTemplate.length; i++) {
-            pLib[pTemplate[i].sLib] =
-                COLLADALibrary(firstChild(pXMLCollada, pTemplate[i].sLib), pTemplate[i].sElement, pTemplate[i].fn);
+        var pSceneOutput = null;
+        var pAnimationOutput = null;
+        
+        if (useScene) {
+            readLibraries(pXMLCollada, pSceneTemplate);
+
+            pAsset = COLLADAAsset(firstChild(pXMLCollada, 'asset'));
+            m4fRootTransform = buildAssetMatrix(pAsset);
+            pSceneRoot = COLLADAScene(firstChild(pXMLCollada, 'scene'));
+            pSceneOutput = buildScene(pSceneRoot, m4fRootTransform);
         }
 
-        var pAsset = COLLADAAsset(firstChild(pXMLCollada, 'asset'));
-        var m4fRootTransform = buildAssetMatrix(pAsset);
-        var pSceneRoot = COLLADAScene(firstChild(pXMLCollada, 'scene'));
-        var pAnimations = pLib['library_animations'].animation;
+        if (useAnimation) {
+            readLibraries(pXMLCollada, pAnimationTemplate);
+
+            pAnimations = pLib['library_animations'].animation;
+            pAnimationOutput = buildAnimations(pAnimations);
+        }
+        
 
         if (fnCallback) {
-            fnCallback.call(pEngine, buildScene(pSceneRoot, m4fRootTransform), buildAnimations(pAnimations));
+            fnCallback.call(pEngine, pSceneOutput, pAnimationOutput);
         }
     }
 

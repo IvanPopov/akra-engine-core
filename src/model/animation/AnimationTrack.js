@@ -37,13 +37,12 @@ AnimationTrack.prototype.addKeyFrame = function (fTime, pValue) {
     		pFrame = arguments[0];
     }
 
-   // if (nTotalFrames) {
-    //	iFrame = this.findKeyFrameByTime(pFrame.fTime);
-	//	pKeyFrames.splice(iFrame, 0, pFrame);
-	//}
-	//else {
+   if (nTotalFrames && (iFrame = this.findKeyFrameByTime(pFrame.fTime)) >= 0) {
+		pKeyFrames.splice(iFrame, 0, pFrame);
+	}
+	else {
 		pKeyFrames.push(pFrame);
-	//}
+	}
 
 	return this.update();
 };
@@ -73,15 +72,12 @@ AnimationTrack.prototype.findKeyFrameByTime = function (fTime) {
     var pKeyFrames	= this._pKeyFrames;
     var nTotalFrames = pKeyFrames.length;
 	
-	if (pKeyFrames[nTotalFrames - 1].fTime < fTime) {
+	if (pKeyFrames[nTotalFrames - 1].fTime == fTime) {
 		return nTotalFrames - 1;
-	}
-	else if (pKeyFrames[0].fTime > pFrame.fTime) {
-		return 0;
 	}
 	else {
 		for (var i = nTotalFrames - 1; i >= 0; i--) {
-			if (pKeyFrames[i].fTime > fTime && pKeyFrames[i - 1].fTime < fTime) {
+			if (pKeyFrames[i].fTime > fTime && pKeyFrames[i - 1].fTime <= fTime) {
 				return i - 1;
 			}
 		}
@@ -111,8 +107,9 @@ AnimationTrack.prototype.bind = function (sJoint, pSkeleton) {
 			}
 	}
 
-	debug_assert(pJoint, 'cannot bind this track, because joint<' + this._sTarget + 
+	debug_assert(pJoint, 'cannot bind track, because joint<' + this._sTarget + 
 		'> not exists in given skeleton');
+
 
 	this._pTarget = pJoint;
 	return true;
@@ -121,24 +118,15 @@ AnimationTrack.prototype.bind = function (sJoint, pSkeleton) {
 AnimationTrack.prototype.play = function (fTime) {
     'use strict';
 
-    var pFrames = this._pKeyFrames;
-	var iFrame = this.iCurrentFrame;
-	var pFrame = pFrames[iFrame];
-	var pNextFrame = pFrames[iFrame + 1];
+	var iFrame;
 	var fBlend;
 
-	while (pNextFrame.fTime < fTime) {
-		//this.iCurrentFrame = this.findKeyFrameByTime(fTime);
+	for (iFrame = 0; this._pKeyFrames[iFrame + 1].fTime < fTime; ++ iFrame);
+	//trace(this._pKeyFrames[iFrame].fTime, '<', fTime, '<', this._pKeyFrames[iFrame + 1].fTime);
 
-		iFrame = this.iCurrentFrame + 1;
-		pFrame = pFrames[iFrame];
-		pNextFrame = pFrames[iFrame + 1];
-		//warning('fast forwarding animation to time: ' + fTime);
-	}
-
-	fBlend = fTime - pStartFrame.fTime;
-
+	fBlend = (fTime - this._pKeyFrames[iFrame].fTime) / (this._pKeyFrames[iFrame + 1].fTime - this._pKeyFrames[iFrame].fTime);
 	debug_assert(fBlend >= 0. && fBlend <= 1., 'incorrect blende weight: ' + fBlend);
+	//trace(fBlend);
 	this.fTime = fTime;
 	this.apply(iFrame, fBlend);
 };
@@ -156,10 +144,10 @@ AnimationTrack.prototype.rewind = function (fTime) {
 
 AnimationTrack.prototype.reset = function () {
     'use strict';
-    
 	this.fTime = 0;
 	this.iCurrentFrame = 0;
 };
+    
 
 A_NAMESPACE(AnimationTrack);
 
@@ -179,8 +167,8 @@ AnimationRotation.prototype.apply = function (iKeyFrame, fBlend) {
 	var pEndFrame = this._pKeyFrames[iKeyFrame + 1];
 	var fValue = ((pEndFrame.pValue * fBlend) + ((1. - fBlend) * pStartFrame.pValue));
 
-	trace('add rel rotation to ', this._pTarget, fValue);
-	this._pTarget.addRelRotation(this._v3fAxis, fValue);
+	//trace('add rel rotation to ', this._pTarget, fValue);
+	this._pTarget.setRotation(this._v3fAxis, fValue);
 };
 
 A_NAMESPACE(AnimationRotation);
@@ -201,7 +189,7 @@ AnimationTranslation.prototype.apply = function (iKeyFrame, fBlend) {
 	var fY = ((pEndFrame.pValue.Y * fBlend) + ((1. - fBlend) * pStartFrame.pValue.Y));
 	var fZ = ((pEndFrame.pValue.Z * fBlend) + ((1. - fBlend) * pStartFrame.pValue.Z));
 	
-	this._pTarget.addRelPosition(fX, fY, fZ);
+	//this._pTarget.setPosition(fX, fY, fZ);
 };
 
 A_NAMESPACE(AnimationTranslation);

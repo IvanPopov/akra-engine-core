@@ -152,7 +152,7 @@ Skeleton.prototype.findJoint = function (sName) {
 			continue;
 		}
 
-		if (pJoints[i].name === sName) {
+		if (pJoints[i].boneName === sName) {
 			return pJoints[i];
 		}
 	}
