@@ -122,11 +122,13 @@ AnimationTrack.prototype.play = function (fTime) {
 	var fBlend;
 
 	for (iFrame = 0; this._pKeyFrames[iFrame + 1].fTime < fTime; ++ iFrame);
-	//trace(this._pKeyFrames[iFrame].fTime, '<', fTime, '<', this._pKeyFrames[iFrame + 1].fTime);
 
+	//trace(this._pKeyFrames[iFrame].fTime, '<', fTime, '<', this._pKeyFrames[iFrame + 1].fTime);
+	//if (iFrame === 34)
+	//	trace(iFrame, '-->', iFrame + 1, '/', this._pKeyFrames.length);
 	fBlend = (fTime - this._pKeyFrames[iFrame].fTime) / (this._pKeyFrames[iFrame + 1].fTime - this._pKeyFrames[iFrame].fTime);
 	debug_assert(fBlend >= 0. && fBlend <= 1., 'incorrect blende weight: ' + fBlend);
-	//trace(fBlend);
+	//trace(iFrame, fBlend);
 	this.fTime = fTime;
 	this.apply(iFrame, fBlend);
 };
@@ -165,10 +167,11 @@ AnimationRotation.prototype.apply = function (iKeyFrame, fBlend) {
     
 	var pStartFrame = this._pKeyFrames[iKeyFrame];
 	var pEndFrame = this._pKeyFrames[iKeyFrame + 1];
-	var fValue = ((pEndFrame.pValue * fBlend) + ((1. - fBlend) * pStartFrame.pValue));
+	var fValue = ((pEndFrame.pValue * (1. - fBlend)) + (fBlend * pStartFrame.pValue));
 
 	//trace('add rel rotation to ', this._pTarget, fValue);
 	this._pTarget.setRotation(this._v3fAxis, fValue);
+	TODO('rotation animation');
 };
 
 A_NAMESPACE(AnimationRotation);
@@ -190,6 +193,36 @@ AnimationTranslation.prototype.apply = function (iKeyFrame, fBlend) {
 	var fZ = ((pEndFrame.pValue.Z * fBlend) + ((1. - fBlend) * pStartFrame.pValue.Z));
 	
 	//this._pTarget.setPosition(fX, fY, fZ);
+	TODO('translation animation');
 };
 
 A_NAMESPACE(AnimationTranslation);
+
+function AnimationMatrixModification (sTarget, iElement) {
+    A_CLASS;
+
+    this._iElement = iElement;
+}
+
+EXTENDS(AnimationMatrixModification, a.AnimationTrack);
+
+AnimationMatrixModification.prototype.apply = function (iKeyFrame, fBlend) {
+    'use strict';
+
+	var pStartFrame = this._pKeyFrames[iKeyFrame];
+	var pEndFrame = this._pKeyFrames[iKeyFrame + 1];
+	var fValue = ((pEndFrame.pValue * fBlend) + ((1. - fBlend) * pStartFrame.pValue));
+	var m4fLocalMatrix = this._pTarget.accessLocalMatrix();
+
+	//trace(iKeyFrame, '/', fBlend.toFixed(3), ':: frame / blend');
+	//trace('(', pStartFrame.fTime, ')', pStartFrame.pValue, '--->', '(', pEndFrame.fTime, ')', pEndFrame.pValue, 'blend:', fBlend);
+	//trace('update element ', this._iElement, 'from', m4fLocalMatrix[this._iElement],'to', fValue);
+	
+	//trace('before > \n', Mat4.shaderStr(m4fLocalMatrix));
+	if (this._iElement === 15) return;
+	m4fLocalMatrix[this._iElement] = fValue;
+	//trace('after > \n', Mat4.shaderStr(m4fLocalMatrix));
+	
+};
+
+A_NAMESPACE(AnimationMatrixModification);

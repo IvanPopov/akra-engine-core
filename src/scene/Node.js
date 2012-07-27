@@ -1049,12 +1049,28 @@ Node.prototype.setScale = function (scale) {
     var m4fLocal = this._m4fLocalMatrix;
     if (typeof(scale) == "number") {
         m4fLocal._11 *= scale;
+        m4fLocal._21 *= scale;
+        m4fLocal._31 *= scale;
+        
+        m4fLocal._12 *= scale;
         m4fLocal._22 *= scale;
+        m4fLocal._32 *= scale;
+
+        m4fLocal._13 *= scale;
+        m4fLocal._23 *= scale;
         m4fLocal._33 *= scale;
     }
     else {
         m4fLocal._11 *= scale.X;
+        m4fLocal._21 *= scale.X;
+        m4fLocal._31 *= scale.X;
+        
+        m4fLocal._12 *= scale.Y;
         m4fLocal._22 *= scale.Y;
+        m4fLocal._32 *= scale.Y;
+
+        m4fLocal._13 *= scale.Z;
+        m4fLocal._23 *= scale.Z;
         m4fLocal._33 *= scale.Z;
     }
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);

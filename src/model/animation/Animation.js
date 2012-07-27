@@ -73,7 +73,7 @@ Animation.prototype.play = function (fTime) {
     var pTracks = this._pTracks;
 
     if (this._eOptions & a.Animation.REPEAT) {
-    	fCurTime = Math.modulus(fCurTime, this._fDuration);
+    	fCurTime = fCurTime - Math.floor(fCurTime / this._fDuration) * this._fDuration;
     }
     else if (fCurTime < 0 || fCurTime >= this._fDuration) {
 	    return;
@@ -81,11 +81,10 @@ Animation.prototype.play = function (fTime) {
 
 	for (var i = pTracks.length - 1, pTrack; i >= 0; i--) {
 		pTrack = pTracks[i];
-		if (pTrack.fStartTime <= fCurTime && pTrack.fEndTime > fCurTime) {
+		if (pTrack.fStartTime <= fCurTime && pTrack.fEndTime > fCurTime) { //Math.abs(pTrack.fTime - fCurTime) > 0.01
 			// if (pTrack.fTime > fCurTime) {
 			// 	pTrack.reset();
 			// }
-
 			pTrack.play(fCurTime);
 		}
 	};

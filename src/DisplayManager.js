@@ -76,6 +76,8 @@ function Font2D (iSize, sColor, sFontFamily, isBold, isItalic) {
 ;
 
 function String2D (iX, iY, pFont, sStr, pDiv) {
+    pFont = pFont || new a.Font2D();
+
     var pSpan = document.createElement('span');
 
     pSpan.style.position = 'absolute';

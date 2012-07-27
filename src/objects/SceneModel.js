@@ -363,7 +363,15 @@ SceneModel.prototype.destructor = function () {
 };
 
 SceneModel.prototype.prepareForRender = function () {
-   
+    var pSkin = this.findMesh()[0].getSkin();
+    var pAnimations = this.pAnimations;
+    // if (pSkin && pAnimations) {
+    //     var pSkeleton = pSkin.skeleton;
+
+    //     for (var i = 0; i < pAnimations.length; ++ i) {
+    //         pAnimations[i].play(a.now() / 10000.0);
+    //     }  
+    // }
 };
 
 SceneModel.prototype.render = function () {

@@ -239,7 +239,7 @@ function COLLADA (pEngine, pSettings) {
         iPos = sPath.lastIndexOf('.');
         
         if (iPos < 0) {
-            iPos = sPath.lastIndexOf('(');
+            iPos = sPath.indexOf('(');
             jPos = -1;
         }
 
@@ -247,7 +247,7 @@ function COLLADA (pEngine, pSettings) {
             pObject.pObject = source(sPath);
             return pObject;
         }
-  trace(sPath.substr(0, iPos), '-->', sPath.substr(iPos + jPos + 1));
+
         pSource = source(sPath.substr(0, iPos));
         sValue = sPath.substr(iPos + jPos + 1);
         pObject.pObject = pSource;
@@ -281,15 +281,15 @@ function COLLADA (pEngine, pSettings) {
         pMatches = sValue.match(/^\((\d+)\)$/);
         
         if (pMatches) {
-            pObject.pValue = pSource[Number(pMatches[1])];
+            pObject.pValue = Number(pMatches[1]);
         }
 
         pMatches = sValue.match(/^\((\d+)\)\((\d+)\)$/) 
 
         if (pMatches) {
-            //TODO: matrix extraction...
-            //pSource[Number(pMatches[1])]
-            TODO('matrix element?');
+            //trace(pMatches, '--->',  Number(pMatches[2]) * 4 + Number(pMatches[1]));
+            //pObject.pValue = Number(pMatches[2]) * 4 + Number(pMatches[1]);
+            pObject.pValue = Number(pMatches[1]) * 4 + Number(pMatches[2]);
         }
 
         debug_assert (pObject.pValue !== undefined, 'unsupported target value founded: ' + sValue);
@@ -1755,16 +1755,9 @@ function COLLADA (pEngine, pSettings) {
     // BUILD ENGINE OBJECTS
     //================================================================
     
-    function buildAnimationTrack (pAnimationData) {
+    function buildAnimationTrack (pChannel) {
         'use strict';
     
-        if (pAnimationData.pChannel.length < 1) {
-            return null;
-        }
-
-        debug_assert(pAnimationData.pChannel.length === 1, 'animation with more than 1 channel unsupported...');
-
-        var pChannel = pAnimationData.pChannel[0];
         var sJoint = source(pChannel.pTarget.pSource.id).sName;
         var pTrack = null;
         var pSampler = pChannel.pSource;
@@ -1786,7 +1779,7 @@ function COLLADA (pEngine, pSettings) {
             case 'translate':
                 pTrack = new a.AnimationTranslation(sJoint);
                 
-                for (var i = 0, v3f = new Array(3), n; i < pTimeMarks.length; i++) {
+                for (var i = 0, v3f = new Array(3), n; i < pTimeMarks.length; ++ i) {
                     n = i * 3;
                     v3f.X = pOutputValues[i * 3];
                     v3f.Y = pOutputValues[i * 3 + 1];
@@ -1794,15 +1787,25 @@ function COLLADA (pEngine, pSettings) {
                     pTrack.addKeyFrame(pTimeMarks[i], [v3f.X, v3f.Y, v3f.Z]);
                 };
 
-            break;
+                break;
             case 'rotate':
                 v4f = pTransform.pValue;
                 pTrack = new a.AnimationRotation(sJoint, [v4f[1], v4f[2], v4f[3]]);
-
-                for (var i = 0; i < pTimeMarks.length; i++) {
+                
+                debug_assert(pOutput.pAccessor.iStride === 1, 
+                    'matrix modification supported only for one parameter modification');
+                
+                for (var i = 0; i < pTimeMarks.length; ++ i) {
                     pTrack.addKeyFrame(pTimeMarks[i], pOutputValues[i] / 180.0 * Math.PI);
                 };
 
+                break;
+            case 'matrix':
+                pTrack = new a.AnimationMatrixModification(sJoint, pChannel.pTarget.pValue);
+
+                for (var i = 0; i < pTimeMarks.length; ++ i) {
+                    pTrack.addKeyFrame(pTimeMarks[i], pOutputValues[i]);
+                }
             break;
             default:
                 debug_error('unsupported animation typed founeed: ' + sTransform);
@@ -1817,11 +1820,14 @@ function COLLADA (pEngine, pSettings) {
         var pSubAnimations = pAnimationData.pAnimations;
         var pSubTracks;
         var pTrackList = [];
-        var pTrack = buildAnimationTrack(pAnimationData);
+        var pTrack;
+        var pChannels = pAnimationData.pChannel;
 
-        if (pTrack) {
-            pTrackList.push(pTrack);
+        for (var i = 0; i < pChannels.length; ++ i) {
+             pTrack = buildAnimationTrack(pChannels[i]);
+             pTrackList.push(pTrack);
         }
+        
 
         if (pSubAnimations) {
             for (var i = 0; i < pSubAnimations.length; ++ i) {
@@ -1916,6 +1922,10 @@ function COLLADA (pEngine, pSettings) {
                         var pMatches    = sInputSemantics.match(/^(.*?\w)(\d+)$/i);
                         var iTexCoord   = (pMatches? pMatches[2]: 0);
                         var iTexture    = __ENUM__(SURFACEMATERIAL_TEXTURES)[c.toUpperCase()];
+
+                        if (iTexture === undefined) {
+                            continue;
+                        }
 
                         pSurfaceMaterial.setTexture(iTexture, pTexture, iTexCoord);
                     }
@@ -2120,6 +2130,8 @@ function COLLADA (pEngine, pSettings) {
         
         pMesh = buildMesh({pGeometry: pGeometry, pMaterials: pMaterials});
         
+        return pMesh;
+
         pSkeleton = new a.Skeleton(pEngine, pSkeletonsList[0]);
         pSkeleton.setup(pBoneList.length);
         pSkin = new a.Skin(pMesh, pSkeleton);
@@ -2205,11 +2217,11 @@ function COLLADA (pEngine, pSettings) {
         pJointNode.setBoneOffsetMatrix(m4fBoneOffsetMatrix);
         
         //draw joints...............
-        var pSceneNode = pEngine.appendMesh(
-            pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
-            pJointNode);
+        // var pSceneNode = pEngine.appendMesh(
+        //     pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
+        //     pJointNode);
 
-        pSceneNode.setScale(.25);
+        // pSceneNode.setScale(.25);
 
         return pJointNode;
     }

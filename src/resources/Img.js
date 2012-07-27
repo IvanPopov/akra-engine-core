@@ -1072,6 +1072,7 @@ Img.prototype.load=function(sFileName, fnCallBack)
         }
         else
         {
+            trace(sFileName);
             debug_error("Данный тип графического файла не поддерживается("+dwMagic+")");
             isOk=false;
         }
