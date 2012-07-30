@@ -10,6 +10,7 @@ function Skin (pMesh
 	this._pBoneTransformMatrixData = null;
 
     this._pBoneTransformMatrices = null;
+    this._pBoneOffsetMatrixBuffer = null;
     this._pJointNames = null;
     this._pBoneOffsetMatrices = null;
     this._pJointMatrices = null;
@@ -95,8 +96,7 @@ Skin.prototype.setSkeleton = function(pSkeleton) {
     this._pJointMatrices = new Array(nMatrices);
 
     for (var i = 0; i < nMatrices; i++) {
-        this._pJointMatrices[i] = this._pSkeleton.findJoint(this._pJointNames[i]);
-
+        this._pJointMatrices[i] = this._pSkeleton.findJoint(this._pJointNames[i]).worldMatrix();
         debug_assert(this._pJointMatrices[i], 'joint<' + this._pJointNames[i] + '> must exists...');
     };
 
@@ -129,8 +129,10 @@ Skin.prototype.setBoneOffsetMatrices = function (pMatrices) {
     this._pBoneTransformMatrices = new Array(nMatrices);
 
     for (var i = 0; i < nMatrices; i++) {
-        this._pBoneTransformMatrices[i] = pMatrixData.subarray(i * 16, 16);
+        this._pBoneTransformMatrices[i] = pMatrixData.subarray(i * 16, (i + 1) * 16);
     };
+
+    this._pBoneOffsetMatrixBuffer = pMatrixData;
 };
 
 //загрузить веса вершин
@@ -254,7 +256,7 @@ Skin.prototype.applyBoneMatrices = function() {
         Mat4.mult(this._pJointMatrices[i], this._pBoneOffsetMatrices[i], this._pBoneTransformMatrices[i]);
     };
 
-    pData = this._pBoneTransformMatrices;
+    pData = this._pBoneOffsetMatrixBuffer;
     bResult = this._pBoneTransformMatrixData.setData(pData, 0, pData.byteLength);
 
     return bResult;

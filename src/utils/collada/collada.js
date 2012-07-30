@@ -114,12 +114,20 @@ function COLLADA (pEngine, pSettings) {
         'IDREF':    1
     };
 
+    var pConvFormats = {
+        'int':   [Int32Array, string2IntArray],
+        'float': [Float32Array, string2FloatArray],
+        'bool':  [Array, string2BoolArray],
+        'string':[Array, string2StringArray]
+    };
+
     var pLinks = {};
     var pLib = {};
     var pCache = {
         '@joint': {},            //joint_name --> {skeleton, controller, index}
         '@mesh': {},             //mesh_name --> mesh
         '@skeletons': {},
+        '@skin': [],
         '@sharedBuffer': null
     };
 
@@ -540,17 +548,10 @@ function COLLADA (pEngine, pSettings) {
     function COLLADAData (pXML) {
         var sName = pXML.nodeName, pData;
 
-        var pConv = {
-            'int':   [Int32Array, string2IntArray],
-            'float': [Float32Array, string2FloatArray],
-            'bool':  [Array, string2BoolArray],
-            'string':[Array, string2StringArray]
-        };
-
-        var fnData = function (n, sType) {
-            var pData = new pConv[sType][0](n);
-            pConv[sType][1](stringData(pXML), pData);
-            if (n == 1) {
+        var fnData = function (n, sType, isArray) {
+            var pData = new pConvFormats[sType][0](n);
+            pConvFormats[sType][1](stringData(pXML), pData);
+            if (n == 1 && !isArray) {
                 return pData[0];
             }
             return pData;
@@ -580,15 +581,15 @@ function COLLADA (pEngine, pSettings) {
             case 'matrix':
                 return Mat4.transpose(fnData(16, 'float'));
             case 'float_array':
-                return fnData(parseInt(attr(pXML, 'count')), 'float');
+                return fnData(parseInt(attr(pXML, 'count')), 'float', true);
             case 'int_array':
-                return fnData(parseInt(attr(pXML, 'count')), 'int');
+                return fnData(parseInt(attr(pXML, 'count')), 'int', true);
             case 'bool_array':
-                return fnData(parseInt(attr(pXML, 'count')), 'bool');
+                return fnData(parseInt(attr(pXML, 'count')), 'bool', true);
             case 'Name_array':
             case 'name_array':
             case 'IDREF_array':
-                return fnData(parseInt(attr(pXML, 'count')), 'string')
+                return fnData(parseInt(attr(pXML, 'count')), 'string', true)
             case 'sampler2D':
                 return COLLADASampler2D(pXML);
             case 'surface':
@@ -974,8 +975,8 @@ function COLLADA (pEngine, pSettings) {
 
         pInput.sArrayId = COLLADAGetSourceData(pInput.sSource, pSupportedFormat);
         pInput.pArray = source(pInput.sArrayId);
-
         pInput.pAccessor = source(pInput.sSource).pTechniqueCommon.pAccessor;
+
         return pInput;
     }
 
@@ -1427,7 +1428,7 @@ function COLLADA (pEngine, pSettings) {
         };
 
         eachByTag(pXML, 'skeleton', function (pXMLData) {
-            pInst.pSkeleton.push(stringData(pXMLData));
+            pInst.pSkeleton.push(stringData(pXMLData).substr(1));
         }); 
 
         return pInst;
@@ -1984,7 +1985,7 @@ function COLLADA (pEngine, pSettings) {
         
         //creating subsets
         for (var i = 0; i < pPolyGroup.length; ++ i) {
-            pMesh.createSubset('submesh-' + i, pPolyGroup[i].eType/*a.PRIMTYPE.LINELIST*/);
+            pMesh.createSubset('submesh-' + i, a.PRIMTYPE.LINELIST/*pPolyGroup[i].eType*/);
         }
 
         //filling data
@@ -2101,7 +2102,7 @@ function COLLADA (pEngine, pSettings) {
         var pGeometry           = pSkinData.pGeometry;
         var m4fBindMatrix       = pSkinData.m4fShapeMatrix;
         var pVertexWeights      = pSkinData.pVertexWeights;
-        trace('>>>', pBoneList instanceof Array, pSkinData.pJoints.pInput['JOINT'].pArray, '<<<');
+
         var pMesh;
         var pSkeleton;
         var pSkin;
@@ -2130,6 +2131,8 @@ function COLLADA (pEngine, pSettings) {
         for (var i = 0; i < pSkeletonsList.length; ++ i) {
             pCache['@skeletons'][pSkeletonsList[i]] = pSkeleton;
         }
+
+        pCache['@skin'].push(pSkin);
 
         return pMesh;
     }
@@ -2244,16 +2247,18 @@ function COLLADA (pEngine, pSettings) {
 
         if (!pJointNode) {
             pJointNode = new a.Joint();
+            pJointNode.create();
             pJointNode.boneName = sJointSid;
-
+            
 Ifdef (__DEBUG);
             //draw joints
             var pSceneNode = pEngine.appendMesh(
                 pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
                 pJointNode);
 
-            pSceneNode.setScale(.1);
+            pSceneNode.setScale(1.);
 Endif ();
+
         }
 
         if (pCache['@skeletons'][sJointName]) {
@@ -2354,6 +2359,10 @@ Endif ();
             pSceneRoot = COLLADAScene(firstChild(pXMLCollada, 'scene'));
 
             pSceneOutput = buildScene(pSceneRoot, m4fRootTransform);
+
+            for (var i in pCache['@skin']) {
+                pCache['@skin'][i].setSkeleton();
+            }
         }
 
         if (useAnimation) {

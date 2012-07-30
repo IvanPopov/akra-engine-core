@@ -108,6 +108,10 @@ Skeleton.prototype.findJoint = function (sName) {
     function checkNode (pNode, sName) {
     	var pTarget = null;
 
+    	if (!pNode) {
+    		return null;
+    	}
+
     	if (pNode.boneName === sName) {
     		return pNode;
     	}
