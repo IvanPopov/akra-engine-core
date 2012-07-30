@@ -18,7 +18,8 @@ function DebugWindow (sCaption) {
 
     this.win.focus();
 
-    window.onunload = function () {this.win.close();};
+    var me = this;
+    window.onunload = function () {me.win.close();};
 
     this.print("<!DOCTYPE html><html><head>", 1);
     this.print("<title>" + (sCaption ? sCaption : 'console') + "</title>", 1);

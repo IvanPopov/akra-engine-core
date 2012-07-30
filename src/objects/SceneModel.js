@@ -385,7 +385,7 @@ SceneModel.prototype.render = function () {
     if (!pMesh || !pMesh.isReadyForRender()) {
         return;
     }
-
+    
     for (var i = 0; i < pMesh.length; ++ i) {
         var pSubMesh = pMesh[i];
         var pSurface = pSubMesh.surfaceMaterial;
