@@ -897,16 +897,17 @@ EffectStruct.prototype.canMixible = function () {
     return this._canMixible;
 };
 
-function EffectPointer(pVar, nDim) {
+function EffectPointer(pVar, nDim, sRealVarName) {
     this.pVar = pVar || null;
     this.sRealName = null;
     this.nDim = nDim || 0;
+    this.sRealVarName = sRealVarName || null;
 }
 EffectPointer.prototype.toCode = function () {
     if (this.sRealName) {
         return this.sRealName;
     }
-    this.sRealName = this.pVar.sRealName;
+    this.sRealName = this.sRealVarName || this.pVar.sRealName;
     for (i = 0; i <= this.nDim; i++) {
         this.sRealName += "_index";
     }
@@ -2655,26 +2656,27 @@ Effect.prototype.addBaseVarMemCode = function (pFunction, pBlock, pVar) {
 
 Effect.prototype.addVariable = function (pVar, isParams) {
     isParams = isParams || false;
-    function fnExtractStruct(sName, pFirst, pStruct, pTable, iDepth, me) {
+    function fnExtractStruct(sName, pFirst, sPrevReal, pStruct, pTable, iDepth, me) {
         var pOrders = pStruct.pOrders;
         var sNewName;
         var pPointers;
         var pBuffer;
         var isPointer;
         var sPrev;
-        var sPrevReal;
+        var sPrevRealSave = sPrevReal;
 
         for (var i = 0; i < pOrders.length; i++) {
+            sPrevReal = sPrevRealSave;
             sPrev = sName + "." + pOrders[i].sName;
-            sPrevReal =
             sNewName = pFirst.sName + sPrev;
             pBuffer = null;
             pPointers = null;
             isPointer = false;
+            sPrevReal = sPrevReal + "_" + pOrders[i].sRealName;
             if (pOrders[i].isPointer) {
                 pPointers = [];
                 for (var j = 0; j < pOrders[i].nDim; j++) {
-                    pPointers.push(new EffectPointer(pOrders[i], j));
+                    pPointers.push(new EffectPointer(pOrders[i], j, sPrevReal));
                 }
                 if (isParams) {
                     pBuffer = new EffectBuffer();
@@ -2685,7 +2687,7 @@ Effect.prototype.addVariable = function (pVar, isParams) {
                 if (!me._isStrictMode && isParams && iDepth === 0) {
                     isPointer = undefined;
                     pPointers = [];
-                    pPointers.push(new EffectPointer(pOrders[i], 0));
+                    pPointers.push(new EffectPointer(pOrders[i], 0, sPrevReal));
                     pBuffer = new EffectBuffer();
                 }
             }
@@ -2704,11 +2706,12 @@ Effect.prototype.addVariable = function (pVar, isParams) {
                 "pFirst"        : pFirst,
                 "pVar"          : pOrders[i],
                 "sPreviousName" : sName,
-                "sName"         : pOrders[i].sRealName
+                "sName"         : pOrders[i].sRealName,
+                "sRealName"     : sPrevRealSave + "." + pOrders[i].sRealName
             };
             if (!pOrders[i].pType.isBase()) {
                 iDepth++;
-                fnExtractStruct(sPrev, pFirst, pOrders[i].pType.pEffectType.pDesc, pTable, iDepth, me);
+                fnExtractStruct(sPrev, pFirst, sPrevReal, pOrders[i].pType.pEffectType.pDesc, pTable, iDepth, me);
             }
         }
     }
@@ -2766,7 +2769,7 @@ Effect.prototype.addVariable = function (pVar, isParams) {
         if (!this._pCurrentScope.pStructTable) {
             this._pCurrentScope.pStructTable = {};
         }
-        fnExtractStruct("", pVar, pVar.pType.pEffectType.pDesc, this._pCurrentScope.pStructTable, 0, this);
+        fnExtractStruct("", pVar, pVar.sRealName, pVar.pType.pEffectType.pDesc, this._pCurrentScope.pStructTable, 0, this);
     }
 };
 Effect.prototype.addBuffer = function (pVar) {
