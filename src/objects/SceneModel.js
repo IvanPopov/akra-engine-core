@@ -363,7 +363,11 @@ SceneModel.prototype.destructor = function () {
 };
 
 SceneModel.prototype.prepareForRender = function () {
-    var pSkin = this.findMesh()[0].getSkin();
+    var pMesh = this.findMesh();
+    if (!pMesh) {
+        return;
+    }
+    var pSkin = pMesh[0].getSkin();
     var pAnimations = this.pAnimations;
     // if (pSkin && pAnimations) {
     //     var pSkeleton = pSkin.skeleton;
@@ -393,7 +397,7 @@ SceneModel.prototype.render = function () {
     if (!pMesh || !pMesh.isReadyForRender()) {
         return;
     }
- 
+
     for (var i = 0; i < pMesh.length; ++ i) {
         var pSubMesh = pMesh[i];
         var pSurface = pSubMesh.surfaceMaterial;
@@ -428,6 +432,8 @@ SceneModel.prototype.render = function () {
         if (pSubMesh.isSkinned()) {
             pProgram.applyMatrix4('bind_matrix', pSubMesh.skin.getBindMatrix());
             pSubMesh.skin.applyBoneMatrices();
+            //trace(pSubMesh.skin.skeleton._pJoints);
+            //trace(Mat4.str(pSubMesh.skin.skeleton.getRootBone().getBoneOffsetMatrix()));
         }
         
         if (pSurface.totalTextures) {

@@ -113,6 +113,18 @@ PROPERTY(Node, 'depth',
         return iDepth;
     });
 
+Node.prototype.childOf = function (pParent) {
+    'use strict';
+    
+    for (var pNode = this; pNode; pNode = pNode.parent()) {
+        if (pNode.parent() === pParent) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
 Node.prototype.setName = function (sName) {
     'use strict';
     

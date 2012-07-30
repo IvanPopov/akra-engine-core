@@ -119,6 +119,7 @@ function COLLADA (pEngine, pSettings) {
     var pCache = {
         '@joint': {},            //joint_name --> {skeleton, controller, index}
         '@mesh': {},             //mesh_name --> mesh
+        '@skeletons': {},
         '@sharedBuffer': null
     };
 
@@ -926,13 +927,22 @@ function COLLADA (pEngine, pSettings) {
         var pVertexWeights = {
             iCount: parseInt(attr(pXML, 'count')),
             pInput: [],
+            pWeightInput: null,
             pVcount: null,
             pV: null
         };
 
         var iOffset = 0;
+        var pInput;
+
         eachByTag(pXML, 'input', function (pXMLData) {
-            pVertexWeights.pInput.push(COLLADAInput(pXMLData, iOffset));
+            pInput = COLLADAInput(pXMLData, iOffset);
+            
+            if (pInput.sSemantic === 'WEIGHT') {
+                pVertexWeights.pWeightInput = pInput;
+            }
+
+            pVertexWeights.pInput.push(pInput);
             iOffset++;
         });
 
@@ -1410,6 +1420,7 @@ function COLLADA (pEngine, pSettings) {
 
     function COLLADAInstanceController (pXML) {
         var pInst = {
+            sUrl: attr(pXML, 'url'),
             pController: source(attr(pXML, 'url')),
             pMaterials: COLLADABindMaterial(firstChild(pXML, 'bind_material')),
             pSkeleton: []
@@ -1445,7 +1456,8 @@ function COLLADA (pEngine, pSettings) {
             pController: [],
             pChildNodes: [],
             iDepth: iDepth,
-            pTransforms: []
+            pTransforms: [],
+            pConstructedNode: null //<! узел, в котором будет хранится ссылка на реальный игровой нод, построенный по нему
         };
 
         var m4fTransform = Mat4.identity(new Matrix4), m4fMatrix;
@@ -2074,6 +2086,76 @@ function COLLADA (pEngine, pSettings) {
         return buildMaterials(pMesh, pMeshNode);
     };
 
+    function buildSkinMesh (pSkinMeshNode) {
+        'use strict';
+
+        var pController         = pSkinMeshNode.pController;
+        var pSkeletonsList      = pSkinMeshNode.pSkeleton;
+        var pMaterials          = pSkinMeshNode.pMaterials;
+
+        var pSkinData           = pController.pSkin;
+        
+        //skin data
+        var pBoneList           = pSkinData.pJoints.pInput['JOINT'].pArray;
+        var pBoneOffsetMatrices = pSkinData.pJoints.pInput['INV_BIND_MATRIX'].pArray;
+        var pGeometry           = pSkinData.pGeometry;
+        var m4fBindMatrix       = pSkinData.m4fShapeMatrix;
+        var pVertexWeights      = pSkinData.pVertexWeights;
+        trace('>>>', pBoneList instanceof Array, pSkinData.pJoints.pInput['JOINT'].pArray, '<<<');
+        var pMesh;
+        var pSkeleton;
+        var pSkin;
+        
+
+        pSkeleton = new a.Skeleton(pEngine, pSkeletonsList[0]); 
+
+        pMesh = buildMesh({pGeometry: pGeometry, pMaterials: pMaterials});
+        
+        pSkin = new a.Skin(pMesh);
+        pSkin.setBindMatrix(m4fBindMatrix);
+        pSkin.setBoneNames(pBoneList);
+        pSkin.setBoneOffsetMatrices(pBoneOffsetMatrices);
+        pSkin.setSkeleton(pSkeleton);
+        
+        if (!pSkin.setVertexWeights(
+            new Float32Array(pVertexWeights.pVcount), 
+            new Float32Array(pVertexWeights.pV), 
+            new Float32Array(pVertexWeights.pWeightInput.pArray))) {
+            error('cannot set vertex weight info to skin');
+        }
+
+        pMesh.setSkin(pSkin);
+        
+        //cache all skeleton roots
+        for (var i = 0; i < pSkeletonsList.length; ++ i) {
+            pCache['@skeletons'][pSkeletonsList[i]] = pSkeleton;
+        }
+
+        return pMesh;
+    }
+
+    function buildMeshes (pSceneRoot) {
+        findNode(pSceneRoot.pNodes, null, function (pNode) {
+            var pController;
+            var pGeometry;
+
+            if (pNode.pController.length) {
+                for (var m = 0; m < pNode.pController.length; ++ m) {
+                    pController = pNode.pController[m];
+                    pNode[pController.sUrl] = buildSkinMesh(pController);
+                }
+            } 
+            else if (pNode.pGeometry.length) {
+                for (var m = 0; m < pNode.pGeometry.length; ++ m) {
+                    pGeometry = pNode.pGeometry[m];
+                    pNode[pGeometry.sUrl] = buildMesh(pGeometry);
+                }
+            }
+        });
+    }
+
+
+
     function findNode (pNodes, sNode, fnNodeCallback) {
         sNode = sNode || null;
         fnNodeCallback = fnNodeCallback || null;
@@ -2109,119 +2191,74 @@ function COLLADA (pEngine, pSettings) {
     }
 
 
-    function buildSkinMesh (pSkinMeshNode) {
-        'use strict';
-
-        var pController = pSkinMeshNode.pController;
-        var pBoneList = pController.pSkin.pJoints.pInput['JOINT'].pArray;
-        var pSkeletonsList = pSkinMeshNode.pSkeleton;
-        var pGeometry = pController.pSkin.pGeometry;
-        var pMaterials = pSkinMeshNode.pMaterials;
-        var m4fBindMatrix = pController.pSkin.m4fShapeMatrix;
-        var pVertexWeights = pController.pSkin.pVertexWeights;
-        var pWeightsData = null;
-
-        var pBoneCache = pCache['@joint'];
-
-        var pMesh;
-        var pSkeleton;
-        var pSkin;
-        var pSkinData;
-        
-        pMesh = buildMesh({pGeometry: pGeometry, pMaterials: pMaterials});
-        
-        return pMesh;
-
-        pSkeleton = new a.Skeleton(pEngine, pSkeletonsList[0]);
-        pSkeleton.setup(pBoneList.length);
-        pSkin = new a.Skin(pMesh, pSkeleton);
-        pSkin.setBindMatrix(m4fBindMatrix);
-
-        for (var i = 0; i < pVertexWeights.pInput.length; ++ i) {
-            if (pVertexWeights.pInput[i].sSemantic === 'WEIGHT') {
-                pWeightsData = pVertexWeights.pInput[i].pArray;
-                break;
-            }
-        }
-        
-        if (!pSkin.setVertexWeights(
-            new Float32Array(pVertexWeights.pVcount), 
-            new Float32Array(pVertexWeights.pV), 
-            new Float32Array(pWeightsData))) {
-            error('cannot set vertex weight info to skin');
-        }
-
-        pMesh.setSkin(pSkin);
-
-        for (var i = 0; i < pBoneList.length; ++ i) {
-            var sBoneName = pBoneList[i];
-
-            debug_assert(pBoneCache[sBoneName] == undefined, 'joint already used by another controller');
-
-            pBoneCache[sBoneName] = {
-                pController: pController, 
-                pSkeleton: pSkeleton, 
-                iIndex: i
-            };
-        };
- 
-        return pMesh;
-    }
-
     /**
      * Build SceneNode (Node with visual objects)
      */
+    
+
     function buildSceneNode (pNode) {
-        var pSceneNode = null;
+        var pSceneNode = pNode.pConstructedNode;
+        var pController, 
+            pGeometry;
+
+        if (!pSceneNode) {
+            if (pNode.pController.length || pNode.pGeometry.length) {
+                 pSceneNode = new a.SceneModel(pEngine);
+            }
+            else {
+                pSceneNode = new a.SceneNode(pEngine);
+            }
+
+            pSceneNode.create();
+        }
 
         if (pNode.pController.length) {
-            
-            pSceneNode = new a.SceneModel(pEngine);
-            pSceneNode.create();
-
             for (var m = 0; m < pNode.pController.length; ++ m) {
-                pSceneNode.addMesh(buildSkinMesh(pNode.pController[m]));  
+                pController = pNode[pNode.pController[m].sUrl];
+
+                debug_assert(pController, 
+                    'cannot find instance_controller<' + pNode.pController[m].sUrl + '>\'s data');
+
+                pSceneNode.addMesh(pController);  
             }
         } 
         else if (pNode.pGeometry.length) {
-            pSceneNode = new a.SceneModel(pEngine);
-            pSceneNode.create();
-
             for (var m = 0; m < pNode.pGeometry.length; ++ m) {
-                pSceneNode.addMesh(buildMesh(pNode.pGeometry[m]));  
+                pGeometry = pNode[pNode.pGeometry[m].sUrl];
+                
+                debug_assert(pController, 
+                    'cannot find instance_geometry<' + pNode.pGeometry[m].sUrl + '>\'s data');
+                
+                pSceneNode.addMesh(pGeometry);  
             }
-        }
-        else {
-            pSceneNode = new a.SceneNode(pEngine);
-            pSceneNode.create();
         }
 
         return pSceneNode;
     }
 
     function buildJointNode (pNode) {
-        var pJointNode;
-        var sBoneSid = pNode.sid;
-        var pBoneCache = pCache['@joint'][sBoneSid];
+        var pJointNode = pNode.pConstructedNode;
+        var sJointSid = pNode.sid;
+        var sJointName = pNode.id;
+        var pSkeleton;
 
-        if (!pBoneCache) {
-            return buildSceneNode(pNode);
+        if (!pJointNode) {
+            pJointNode = new a.Joint();
+            pJointNode.boneName = sJointSid;
+
+Ifdef (__DEBUG);
+            //draw joints
+            var pSceneNode = pEngine.appendMesh(
+                pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
+                pJointNode);
+
+            pSceneNode.setScale(.1);
+Endif ();
         }
 
-        var pSkeleton = pBoneCache.pSkeleton;
-        var pController = pBoneCache.pController;
-        var iBoneIndex = pBoneCache.iIndex;
-        var m4fBoneOffsetMatrix = pController.pSkin.pJoints.pInput['INV_BIND_MATRIX'].pArray[iBoneIndex];
-
-        pJointNode = pSkeleton.createBone(pNode.sName, iBoneIndex);
-        pJointNode.setBoneOffsetMatrix(m4fBoneOffsetMatrix);
-        
-        //draw joints...............
-        // var pSceneNode = pEngine.appendMesh(
-        //     pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
-        //     pJointNode);
-
-        // pSceneNode.setScale(.25);
+        if (pCache['@skeletons'][sJointName]) {
+            pCache['@skeletons'][sJointName].addRootJoint(pJointNode);
+        }
 
         return pJointNode;
     }
@@ -2259,6 +2296,9 @@ function COLLADA (pEngine, pSettings) {
             pHierarchyNode.setInheritance(a.Scene.k_inheritAll);
             pHierarchyNode.attachToParent(pParentNode)
 
+            //cache already constructed nodes
+            pNode.pConstructedNode = pHierarchyNode;
+
             m4fLocalMatrix = pHierarchyNode.accessLocalMatrix();
             Mat4.set(pNode.m4fTransform, m4fLocalMatrix);
 
@@ -2274,6 +2314,8 @@ function COLLADA (pEngine, pSettings) {
         var pNodes = [];
         var pNode = null;
 
+        buildMeshes(pSceneRoot);
+
         for (var i = 0; i < pSceneRoot.pNodes.length; i++) {
             pNode = pSceneRoot.pNodes[i];
             Mat4.mult(pNode.m4fTransform, m4fRootTransform);
@@ -2282,8 +2324,6 @@ function COLLADA (pEngine, pSettings) {
 
         return pNodes;
     };
-
-    var pMeshes = [];
 
     function readLibraries(pXMLCollada, pTemplate, ppLibraries) {
         ppLibraries = ppLibraries || pLib;
@@ -2312,6 +2352,7 @@ function COLLADA (pEngine, pSettings) {
             pAsset = COLLADAAsset(firstChild(pXMLCollada, 'asset'));
             m4fRootTransform = buildAssetMatrix(pAsset);
             pSceneRoot = COLLADAScene(firstChild(pXMLCollada, 'scene'));
+
             pSceneOutput = buildScene(pSceneRoot, m4fRootTransform);
         }
 
