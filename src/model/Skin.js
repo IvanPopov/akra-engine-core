@@ -1,12 +1,18 @@
-function Skin (pMesh
-    //, pSkeleton
-    ) {
-	debug_assert(pMesh, 'you must specify mesh for skin');
+/**
+ * @protected
+ * @param {RenderDataBuffer} pRenderDataBuffer Parent Mesh
+ */
+function Skin (pRenderDataBuffer) {
+    if (arguments[0] instanceof a.Mesh) {
+        pRenderDataBuffer = arguments[0].data;
+    }
+    
+	debug_assert(pRenderDataBuffer, 'you must specify mesh for skin');
 
     //bind shape matrix from collada
     this._m4fBindMatrix = new Matrix4;
-	this._pMesh = pMesh;
-	this._pSkeleton = null;
+	this._pRenderDataBuffer = pRenderDataBuffer;
+	this._pSkeleton = null; 
 	this._pBoneTransformMatrixData = null;
 
     this._pBoneTransformMatrices = null;
@@ -28,7 +34,7 @@ function Skin (pMesh
 
 PROPERTY(Skin, 'buffer',
     function () {
-        return this._pMesh.buffer;
+        return this._pRenderDataBuffer;
     });
 
 /**
@@ -36,7 +42,7 @@ PROPERTY(Skin, 'buffer',
  */
 PROPERTY(Skin, 'data',
     function () {
-        return this._pMesh.data;
+        return this._pRenderDataBuffer;
     });
 
 PROPERTY(Skin, 'skeleton',
@@ -73,32 +79,20 @@ Skin.prototype.getSkeleton = function() {
 Skin.prototype.setSkeleton = function(pSkeleton) {
     'use strict';
     
-    if (arguments.length === 0) {
-        return this.setSkeleton(this._pSkeleton);
-    }
-
-    if (!pSkeleton) {
+    if (!pSkeleton || pSkeleton.totalBones < this.totalBones) {
         return false;
     }
 
     var nMatrices = this.totalBones;
 
-    this._pSkeleton = pSkeleton;
-
-    if (pSkeleton.getRootJoints().length === 0) {
-        return;
-    }
-
-    if (pSkeleton.totalBones < this.totalBones) {
-        return false;
-    }
-
     this._pJointMatrices = new Array(nMatrices);
 
     for (var i = 0; i < nMatrices; i++) {
-        this._pJointMatrices[i] = this._pSkeleton.findJoint(this._pJointNames[i]).worldMatrix();
+        this._pJointMatrices[i] = pSkeleton.findJoint(this._pJointNames[i]).worldMatrix();
         debug_assert(this._pJointMatrices[i], 'joint<' + this._pJointNames[i] + '> must exists...');
     };
+
+    this._pSkeleton = pSkeleton;
 
     return true;
 };
@@ -118,12 +112,11 @@ Skin.prototype.setBoneOffsetMatrices = function (pMatrices) {
         'number of matrix names must equal matrices data length:\n' + pMatrixNames.length + ' / ' + pMatrices.length);
 
     var nMatrices = pMatrixNames.length;
-    var pData = this._pMesh.data;
+    var pData = this.data;
     var pMatrixData = new Float32Array(nMatrices * 16);
-    var iData = pData.allocateData(VE_MAT4('BONE_MATRIX'), pMatrixData);
 
     this._pBoneOffsetMatrices = pMatrices;//FIXME: правильно положить матрицы...
-    this._pBoneTransformMatrixData = pData.getData(iData);
+    this._pBoneTransformMatrixData = pData._allocateData(VE_MAT4('BONE_MATRIX'), pMatrixData);
    
 
     this._pBoneTransformMatrices = new Array(nMatrices);
@@ -235,34 +228,39 @@ Skin.prototype.setVertexWeights = function(pInfluencesCount, pInfluences, pWeigh
 };
 
 Skin.prototype.applyBoneMatrices = function() {
-    debug_assert(this._pSkeleton, 'mesh does not have any skeleton data');
+    'use strict';
+    
+    //debug_assert(this._pSkeleton, 'mesh does not have any skeleton data');
 
     var pData;
-    var bResult;
+    var bResult;     
+    var nMatrices;
 
+    //if (this._pSkeleton.isUpdated()) {
+        nMatrices = this.totalBones; 
 
+        for (var i = 0; i < nMatrices; i++) {
+            Mat4.mult(this._pJointMatrices[i], this._pBoneOffsetMatrices[i], this._pBoneTransformMatrices[i]);
+        };
 
-    // if (this._pSkeleton.isUpdated()) {
-    //     this._pSkeleton.synced();
-    //     pData = this._pSkeleton._pBoneTransformsData;
-
-    //     bResult = this._pBoneTransformMatrixData.setData(pData, 0, pData.byteLength);
-
-    //     return bResult;
-    // }
-     
-    var nMatrices = this.totalBones; 
-    for (var i = 0; i < nMatrices; i++) {
-        Mat4.mult(this._pJointMatrices[i], this._pBoneOffsetMatrices[i], this._pBoneTransformMatrices[i]);
-    };
-
-    pData = this._pBoneOffsetMatrixBuffer;
-    bResult = this._pBoneTransformMatrixData.setData(pData, 0, pData.byteLength);
+        pData = this._pBoneOffsetMatrixBuffer;
+        bResult = this._pBoneTransformMatrixData.setData(pData, 0, pData.byteLength);
+    //}
 
     return bResult;
 };
 
 Skin.prototype.apply = Skin.prototype.applyBoneMatrices;
+
+Skin.prototype.isReady = function () {
+    'use strict';
+    
+    return 
+    this._pInfMetaData && this._pInfData && this._pWeightData && 
+    this._pBoneOffsetMatrixBuffer && this._pBoneOffsetMatrices && 
+    this._pJointNames &&
+    this._m4fBindMatrix;
+};
 
 //все матрицы транфсофрмации костей
 Skin.prototype.getBoneTransforms = function () {
@@ -285,7 +283,7 @@ Skin.prototype.isAffect = function (pData) {
     return false;
 };
 
-Skin.prototype.bind = function (pData) {
+Skin.prototype.attach = function (pData) {
     'use strict';
     
     debug_assert(pData.stride === 16, 'you cannot add skin to mesh with POSITION: {x, y, z}' + 

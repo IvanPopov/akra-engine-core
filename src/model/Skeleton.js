@@ -12,8 +12,17 @@ function Skeleton (pEngine, sName) {
 		//JOINTS_MOVED = 0x01
 		], SKELETON_FLAGS, a.Skeleton);
 
-	this._pRootJoints = [];
 	this._sName = sName || null;
+
+	//корневые joint'ы
+	this._pRootJoints = [];
+	
+	//перечень joint'ов по именам
+	this._pJointList = null;
+
+	//все joint'ы у которых нет потомков и братьев
+	//нужны чтобы отслеживать изменения в скелете
+	this._pNotificationJoints = null
 
 	//если положения joint'ов были изменены, то переменная выставляется в true.
 	this._iFlags = false;
@@ -21,15 +30,13 @@ function Skeleton (pEngine, sName) {
 
 PROPERTY(Skeleton, 'totalBones',
 	function () {
-		//FIXME: real calc total bones
-		return MAX_UINT32;
+		return Object.keys(this._pJointList).length;
 	});
 
 PROPERTY(Skeleton, 'name',
 	function () {
 		return this._sName;
 	});
-
 
 
 Skeleton.prototype.getRootJoint = function() {
@@ -41,11 +48,13 @@ Skeleton.prototype.getRootJoint = function() {
 Skeleton.prototype.getRootJoints = function () {
     'use strict';
     
- //    if (!this._pRootJoints) {
-	// 	this._deriveRootJoints();
-	// }
-
 	return this._pRootJoints;
+};
+
+Skeleton.prototype.isUpdated = function () {
+    'use strict';
+    
+	return true;
 };
 
 Skeleton.prototype.addRootJoint = function (pJoint) {
@@ -66,77 +75,52 @@ Skeleton.prototype.addRootJoint = function (pJoint) {
 
 	this._pRootJoints.push(pJoint);
 
-	return true;
+	return this.update();
 };
 
-// Skeleton.prototype._deriveRootJoints = function() {
-// 	TODO('_deriveRootJoints()');
-// 	if (this._pRootJoints === null) {
-// 		this._pRootJoints = [];
-// 	}
+Skeleton.prototype.update = function () {
+    'use strict';
+    
+    var pRootJoints = this._pRootJoints;
+    var pJointList = this._pJointList = {};
+    var pNotificationJoints = this._pNotificationJoints = [];
 
-// 	var pRootJoints = this._pRootJoints;
+    function findJoints (pNode) {
+    	var sJoint;
 
-// 	pRootJoints.clear();	
+    	if (pNode) {
+	    	sJoint = pNode.boneName;
 
-// 	var pExpectedRootJoint = this._pJoints[0];
-//     var iCount = 1;
+	    	if (sJoint) {
+	    		debug_assert(!pJointList[sJoint], 
+	    			'joint with name<' + sJoint + '> already exists in skeleton <' + this._sName + '>');
+	    		pJointList[sJoint] = pNode;
+	    	}
 
-//     for (var i = 1, pJoint; i < this._nBones; ++ i) {
-//         pJoint = this._pJoints[i];
+	    	findJoints(pNode.sibling());
+	    	findJoints(pNode.child());
+    	}
+    }
 
-//         if (pJoint.depth < pExpectedRootJoint.depth) {
-//             iCount = 1;
-//             pExpectedRootJoint = pJoint;
-//         }
-//         else if (pJoint.depth == pExpectedRootJoint.depth) {
-//             iCount ++;
-//         }
-//     };
+    for (var i = 0; i < pRootJoints.length; i++) {
+    	findJoints(pRootJoints[i]);
+    };
 
-//     debug_assert(pExpectedRootJoint, 'invalid skeleton hierarhy, root node not found');
-//     debug_assert(iCount === 1, 'invalid skeleton hierarhy, root is not singleton(' + iCount + ')');
+	for (var sJoint in pJointList) {
+		var pJoint = pJointList[sJoint];
 
-//     pRootJoints.push(pExpectedRootJoint);
-// };
+    	if (pJoint.sibling() == null && pJoint.child() == null) {
+    		pNotificationJoints.push(pJoint);
+    	}
+    };    
+
+	return true;
+};
 
 Skeleton.prototype.findJoint = function (sName) {
     'use strict';
 
-    var pRootJoints = this._pRootJoints;
-    
-    function checkNode (pNode, sName) {
-    	var pTarget = null;
-
-    	if (!pNode) {
-    		return null;
-    	}
-
-    	if (pNode.boneName === sName) {
-    		return pNode;
-    	}
-
-    	pTarget = checkNode(pNode.sibling(), sName);
-
-    	if (pTarget) {
-    		return pTarget;
-    	}
-
-    	pTarget = checkNode(pNode.child(), sName);
-
-    	return pTarget;
-    }
-
-    for (var i = 0; i < pRootJoints.length; i++) {
-    	var pNode = pRootJoints[i];
-    	var pTarget = checkNode(pNode, sName);
-    	
-    	if (pTarget) {
-    		return pTarget;
-    	}
-    };
-
-    return null;
+    return this._pJointList[sName];
 };
 
 A_NAMESPACE(Skeleton);

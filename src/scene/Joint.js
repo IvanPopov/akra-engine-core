@@ -2,6 +2,7 @@ function Joint () {
 	A_CLASS;
 
 	this._sBone = null;
+    this._iUpdated = 0;
 }
 
 EXTENDS(Joint, a.Node);
@@ -33,6 +34,11 @@ Joint.prototype.create = function () {
     return true;
 };
 
+Joint.prototype.recalcWorldMatrix = function () {
+    'use strict';
+    
+    return Node.prototype.recalcWorldMatrix.call(this) && (this._iUpdated ++);
+};
 
 Ifdef (__DEBUG);
 

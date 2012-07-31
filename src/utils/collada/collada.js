@@ -40,10 +40,11 @@ function COLLADA (pEngine, pSettings) {
     var sFilename           = pSettings.file || null;
     var sContent            = pSettings.content || null;
     var fnCallback          = pSettings.success || null;
-    var useSharedBuffer     = ifndef(pSettings.sharedBuffer, true);
+    var useSharedBuffer     = ifndef(pSettings.sharedBuffer, false);
     var iAnimationOptions   = ifndef(pSettings.animationOptions, a.Animation.REPEAT);
     var useAnimation        = ifndef(pSettings.animation, true);
     var useScene            = ifndef(pSettings.scene, true);
+    var useWireframe           = ifndef(pSettings.wireframe, false);
 
 
     /* COMMON FUNCTIONS
@@ -124,10 +125,7 @@ function COLLADA (pEngine, pSettings) {
     var pLinks = {};
     var pLib = {};
     var pCache = {
-        '@joint': {},            //joint_name --> {skeleton, controller, index}
         '@mesh': {},             //mesh_name --> mesh
-        '@skeletons': {},
-        '@skin': [],
         '@sharedBuffer': null
     };
 
@@ -1985,7 +1983,7 @@ function COLLADA (pEngine, pSettings) {
         
         //creating subsets
         for (var i = 0; i < pPolyGroup.length; ++ i) {
-            pMesh.createSubset('submesh-' + i, a.PRIMTYPE.LINELIST/*pPolyGroup[i].eType*/);
+            pMesh.createSubset('submesh-' + i, useWireframe? a.PRIMTYPE.LINELIST: pPolyGroup[i].eType);
         }
 
         //filling data
@@ -2033,7 +2031,7 @@ function COLLADA (pEngine, pSettings) {
                     }
 
                     pMeshData.allocateData(pDecl, pData);
-                    //trace('data location for ', sSemantic, ':', 
+                    // trace('data location for ', sSemantic, ':', 
                     //    pMeshData.allocateData(pDecl, pData)
                     //    );
                 }
@@ -2087,11 +2085,23 @@ function COLLADA (pEngine, pSettings) {
         return buildMaterials(pMesh, pMeshNode);
     };
 
+    function buildSkeleton (pSkinMeshNode) {
+        var pSkeletonsList      = pSkinMeshNode.pSkeleton;
+        var pSkeleton           = null;
+
+        pSkeleton = new a.Skeleton(pEngine, pSkeletonsList[0]); 
+
+        for (var i = 0; i < pSkeletonsList.length; ++ i) {
+            pSkeleton.addRootJoint(source(pSkeletonsList[i]).pConstructedNode);
+        }
+
+        return pSkeleton;
+    }
+
     function buildSkinMesh (pSkinMeshNode) {
         'use strict';
 
         var pController         = pSkinMeshNode.pController;
-        var pSkeletonsList      = pSkinMeshNode.pSkeleton;
         var pMaterials          = pSkinMeshNode.pMaterials;
 
         var pSkinData           = pController.pSkin;
@@ -2106,12 +2116,10 @@ function COLLADA (pEngine, pSettings) {
         var pMesh;
         var pSkeleton;
         var pSkin;
-        
+    
+        pSkeleton = buildSkeleton(pSkinMeshNode);
+        pMesh     = buildMesh({pGeometry: pGeometry, pMaterials: pMaterials});
 
-        pSkeleton = new a.Skeleton(pEngine, pSkeletonsList[0]); 
-
-        pMesh = buildMesh({pGeometry: pGeometry, pMaterials: pMaterials});
-        
         pSkin = new a.Skin(pMesh);
         pSkin.setBindMatrix(m4fBindMatrix);
         pSkin.setBoneNames(pBoneList);
@@ -2126,35 +2134,35 @@ function COLLADA (pEngine, pSettings) {
         }
 
         pMesh.setSkin(pSkin);
-        
-        //cache all skeleton roots
-        for (var i = 0; i < pSkeletonsList.length; ++ i) {
-            pCache['@skeletons'][pSkeletonsList[i]] = pSkeleton;
-        }
-
-        pCache['@skin'].push(pSkin);
 
         return pMesh;
     }
 
-    function buildMeshes (pSceneRoot) {
-        findNode(pSceneRoot.pNodes, null, function (pNode) {
-            var pController;
-            var pGeometry;
+    function buildInstance(pInstances, fnBuilder, pSceneNode) {
+        var pInstance = null;
+        var pInstanceList = [];
 
-            if (pNode.pController.length) {
-                for (var m = 0; m < pNode.pController.length; ++ m) {
-                    pController = pNode.pController[m];
-                    pNode[pController.sUrl] = buildSkinMesh(pController);
-                }
-            } 
-            else if (pNode.pGeometry.length) {
-                for (var m = 0; m < pNode.pGeometry.length; ++ m) {
-                    pGeometry = pNode.pGeometry[m];
-                    pNode[pGeometry.sUrl] = buildMesh(pGeometry);
-                }
-            }
+        for (var m = 0; m < pInstances.length; ++ m) {
+            pInstance = fnBuilder(pInstances[m]);
+            pInstanceList.push(pInstance);
+
+            debug_assert(pInstance, 'cannot find instance <' + pInstances[m].sUrl + '>\'s data');
+
+            pSceneNode.addMesh(pInstance);  
+        }
+
+        return pInstanceList;
+    }
+
+    function buildMeshes (pSceneRoot) {
+        var pMeshes = [];
+
+        findNode(pSceneRoot.pNodes, null, function (pNode) {
+            pMeshes.insert(buildInstance(pNode.pController, buildSkinMesh, pNode.pConstructedNode));
+            pMeshes.insert(buildInstance(pNode.pGeometry, buildMesh, pNode.pConstructedNode));
         });
+
+        return pMeshes;
     }
 
 
@@ -2215,26 +2223,7 @@ function COLLADA (pEngine, pSettings) {
             pSceneNode.create();
         }
 
-        if (pNode.pController.length) {
-            for (var m = 0; m < pNode.pController.length; ++ m) {
-                pController = pNode[pNode.pController[m].sUrl];
-
-                debug_assert(pController, 
-                    'cannot find instance_controller<' + pNode.pController[m].sUrl + '>\'s data');
-
-                pSceneNode.addMesh(pController);  
-            }
-        } 
-        else if (pNode.pGeometry.length) {
-            for (var m = 0; m < pNode.pGeometry.length; ++ m) {
-                pGeometry = pNode[pNode.pGeometry[m].sUrl];
-                
-                debug_assert(pController, 
-                    'cannot find instance_geometry<' + pNode.pGeometry[m].sUrl + '>\'s data');
-                
-                pSceneNode.addMesh(pGeometry);  
-            }
-        }
+        
 
         return pSceneNode;
     }
@@ -2256,13 +2245,9 @@ Ifdef (__DEBUG);
                 pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
                 pJointNode);
 
-            pSceneNode.setScale(1.);
+            pSceneNode.setScale(0.1);
 Endif ();
 
-        }
-
-        if (pCache['@skeletons'][sJointName]) {
-            pCache['@skeletons'][sJointName].addRootJoint(pJointNode);
         }
 
         return pJointNode;
@@ -2319,8 +2304,6 @@ Endif ();
         var pNodes = [];
         var pNode = null;
 
-        buildMeshes(pSceneRoot);
-
         for (var i = 0; i < pSceneRoot.pNodes.length; i++) {
             pNode = pSceneRoot.pNodes[i];
             Mat4.mult(pNode.m4fTransform, m4fRootTransform);
@@ -2354,15 +2337,12 @@ Endif ();
         if (useScene) {
             readLibraries(pXMLCollada, pSceneTemplate);
 
-            pAsset = COLLADAAsset(firstChild(pXMLCollada, 'asset'));
-            m4fRootTransform = buildAssetMatrix(pAsset);
-            pSceneRoot = COLLADAScene(firstChild(pXMLCollada, 'scene'));
+            pAsset      = COLLADAAsset(firstChild(pXMLCollada, 'asset'));
+            pSceneRoot  = COLLADAScene(firstChild(pXMLCollada, 'scene'));
 
-            pSceneOutput = buildScene(pSceneRoot, m4fRootTransform);
-
-            for (var i in pCache['@skin']) {
-                pCache['@skin'][i].setSkeleton();
-            }
+            m4fRootTransform    = buildAssetMatrix(pAsset);
+            pSceneOutput        = buildScene(pSceneRoot, m4fRootTransform);
+            pMeshList           = buildMeshes(pSceneRoot);
         }
 
         if (useAnimation) {

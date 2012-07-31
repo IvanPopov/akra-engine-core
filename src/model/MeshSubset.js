@@ -122,7 +122,7 @@ MeshSubset.prototype.setSkin = function(pSkin) {
 
     //подвязывем скин, к данным с вершинами текущего подмеша.
     //т.е. добавляем разметку в конец каждого пикселя
-    pSkin.bind(pPosData);
+    pSkin.attach(pPosData);
 
     //получаем данные разметки
     pMetaData = pPosData.getTypedData(a.DECLUSAGE.BLENDMETA);

@@ -111,7 +111,9 @@ RenderDataBuffer.prototype._allocateData = function(pVertexDecl, pData) {
 /**
  * @property allocateData(pDataDecl, iSize)
  */
-RenderDataBuffer.prototype.allocateData = function (pDataDecl, pData) {     
+RenderDataBuffer.prototype.allocateData = function (pDataDecl, pData, isCommon) {     
+    isCommon = ifndef(isCommon, true);
+
     var pVertexData;
 
     pDataDecl = normalizeVertexDecl(pDataDecl);
@@ -120,7 +122,8 @@ Ifdef (__DEBUG);
     
     for (var i = 0; i < pDataDecl.length; i++) {
         if (this.getData(pDataDecl[i].eUsage) !== null && pDataDecl[i].nCount !== 0) { 
-            warning("data buffer already contains data with similar vertex decloration.");
+            warning("data buffer already contains data with similar vertex decloration <" + 
+                pDataDecl[i].eUsage + ">.");
         }
     };
 
@@ -128,8 +131,10 @@ Endif ();
 
     pVertexData = this._allocateData(pDataDecl, pData);
 
-    for (var i = 0; i < this._pDataArray.length; ++ i) {
-        this._pDataArray[i]._addData(pVertexData);
+    if (isCommon) {
+        for (var i = 0; i < this._pDataArray.length; ++ i) {
+            this._pDataArray[i]._addData(pVertexData);
+        }
     }
 
     return pVertexData.getOffset();

@@ -264,8 +264,6 @@ Mesh.prototype.setSkin = function(pSkin) {
 };
 
 
-
-
 Mesh.prototype.clone = function (eCloneOptions) {
     'use strict';
     

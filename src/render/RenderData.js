@@ -244,7 +244,7 @@ RenderData.prototype.allocateData = function(pDataDecl, pData, hasIndex) {
     else if (this.useAdvancedIndex()) {
         eType = a.RenderData.DT_I2I;
     }
-
+    
     return this._allocateData(pDataDecl, pData, eType);
 };
 

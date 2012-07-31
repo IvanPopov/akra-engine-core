@@ -342,7 +342,8 @@ BufferMap.prototype.flow = function (iFlow, pVertexData) {
         pVertexData = arguments[0];
         iFlow = (this._nUsedFlows ++);
     }
-  
+    // trace(iFlow, '<<==', pVertexData.getVertexDeclaration().toString());
+    // console.log((new Error).stack);
     pFlow = this._pFlows[iFlow];
 
     debug_assert(iFlow < this.limit,

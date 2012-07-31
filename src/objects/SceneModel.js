@@ -377,7 +377,7 @@ SceneModel.prototype.prepareForRender = function () {
     //     }  
     // }
 };
-
+var lock = false;
 SceneModel.prototype.render = function () {
     parent.render(this);
 
@@ -403,7 +403,12 @@ SceneModel.prototype.render = function () {
         var pSurface = pSubMesh.surfaceMaterial;
 
         if (pSubMesh.isSkinned()) {
-            pProgram = pEngine.pDrawMeshAnimProg;
+            if (pSubMesh.surfaceMaterial.totalTextures) {
+                pProgram = pEngine.pDrawMeshAnimProgTex;
+            }
+            else {
+                pProgram = pEngine.pDrawMeshAnimProg;
+            }
         }
         else if (pSubMesh.data.useAdvancedIndex()) {
             pProgram = pEngine.pDrawMeshI2IProg;
