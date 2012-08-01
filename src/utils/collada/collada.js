@@ -102,6 +102,7 @@ function COLLADA (pEngine, pSettings) {
         {sName: 'Y', sType: 'float'}
     ];
 
+
     var pFormatStrideTable = {
         'float':    1,
         'float2':   2,
@@ -1670,6 +1671,7 @@ function COLLADA (pEngine, pSettings) {
     }
 
 
+
     /*  COLLADA ANIMATIONS
      * -------------------------------------------------------
      */
@@ -1920,6 +1922,7 @@ function COLLADA (pEngine, pSettings) {
         return pAnimationsList;
     }
 
+
     function buildAssetMatrix (pAsset) {
         var fUnit = pAsset.pUnit.fMeter;
         var sUPaxis = pAsset.sUPaxis;
@@ -2001,7 +2004,7 @@ function COLLADA (pEngine, pSettings) {
         if (!pNodeData) {
             return null;
         }
-        
+
         if (pMeshList && pMeshList[sMeshName]) {
             //mesh with same geometry data
             return buildMaterials(
@@ -2080,6 +2083,7 @@ function COLLADA (pEngine, pSettings) {
         //trace('data filled:', a.now() - iBegin, 'ms');
 
 
+
         //add indices to data
         for (var i = 0; i < pPolyGroup.length; ++ i) {
             //trace('indices for submesh: ', i);
@@ -2123,6 +2127,7 @@ function COLLADA (pEngine, pSettings) {
 
         return buildMaterials(pMesh, pMeshNode);
     };
+
 
     function buildSkeleton (pSkinMeshNode) {
         var pSkeletonsList      = pSkinMeshNode.pSkeleton;
@@ -2208,7 +2213,6 @@ function COLLADA (pEngine, pSettings) {
 
         return pMeshes;
     }
-
 
 
     function findNode (pNodes, sNode, fnNodeCallback) {

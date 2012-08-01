@@ -1,4 +1,3 @@
-
 /**
  * @constructor
  */
@@ -9,7 +8,8 @@ function MeshSubset (pMesh, pRenderData, sName) {
     this._sName = null;
     this._pMesh = null;
     this._pSkin = null;
-
+	this._pBoundingBox = null;
+	this._pBoundingSphere = null;
     this.setup(pMesh, pRenderData, sName);
 }
 
@@ -50,13 +50,185 @@ MeshSubset.prototype.setup = function(pMesh, pRenderData, sName) {
     parent.setup(pMesh.getEngine(), sName);
 };
 
-MeshSubset.prototype.boundingBox = function () {
-    //TODO: calc bounding box
+MeshSubset.prototype.createBoundingBox = function ()
+{
+	var pVertexData;
+	var pNewBoundingBox;
+
+	pNewBoundingBox = new a.Rect3d();
+	pVertexData=this.data.getData(a.DECLUSAGE.POSITION);
+	if(!pVertexData)
+		return false;
+	if(a.computeBoundingBox(pVertexData,pNewBoundingBox)== false)
+		return false;
+
+	this._pBoundingBox = pNewBoundingBox;
+	return true;
 };
 
-MeshSubset.prototype.boundingSphere = function () {
-    //TODO: calc bounding sphere
+MeshSubset.prototype.deleteBoundingBox = function()
+{
+	this._pBoundingBox = null;
+	return true;
+}
+
+MeshSubset.prototype.getBoundingBox = function ()
+{
+	return this._pBoundingBox;
 };
+
+MeshSubset.prototype.showBoundingBox = function()
+{
+	var pMaterial;
+	var iData;
+	var iCurrentIndexSet;
+	var pPoints,pIndexes;
+
+	if(!this._pBoundingBox)
+	{
+		return false;
+	}
+
+	pPoints = new Array();
+	pIndexes = new Array();
+	a.computeDataForCascadeBoundingBox(this._pBoundingBox,pPoints,pIndexes,10.0);
+
+	iCurrentIndexSet=this.data.getIndexSet();
+	if(!this.data.selectIndexSet(".BoundingBox"))
+	{
+		this.data.addIndexSet(true, a.PRIMTYPE.LINELIST,".BoundingBox");
+		iData=this.data.allocateData(
+				[VE_FLOAT3(a.DECLUSAGE.POSITION)],
+				new Float32Array(pPoints));
+
+		this.data.allocateIndex([VE_FLOAT(a.DECLUSAGE.INDEX0)],new Float32Array(pIndexes));
+
+		this.data.index(iData,a.DECLUSAGE.INDEX0);
+
+		this.applyFlexMaterial(".MaterialBoundingBox");
+		pMaterial = this.getFlexMaterial(".MaterialBoundingBox");
+		pMaterial.emissive = new a.Color4f(0.0, 0.0, 1.0, 1.0);
+		pMaterial.diffuse  = new a.Color4f(0.0, 0.0, 1.0, 1.0);
+	}
+	else
+	{
+		this.data.getData(a.DECLUSAGE.POSITION).setData(new Float32Array(pPoints),a.DECLUSAGE.POSITION);
+	}
+	this.data.setRenderable();
+	this.data.selectIndexSet(iCurrentIndexSet);
+
+	return true;
+}
+
+MeshSubset.prototype.hideBoundingBox = function()
+{
+	var iCurrentIndexSet;
+	iCurrentIndexSet=this.data.getIndexSet();
+
+	if(!this.data.selectIndexSet(".BoundingBox"))
+	{
+		return false;
+	}
+	else
+	{
+		this.data.setRenderable(this.data.getIndexSet(),false);
+	}
+
+	return this.data.selectIndexSet(iCurrentIndexSet);
+}
+
+MeshSubset.prototype.createBoundingSphere = function ()
+{
+	var pVertexData;
+	var pNewBoundingSphere;
+
+	pNewBoundingSphere = new a.Sphere();
+	pVertexData=this.data.getData(a.DECLUSAGE.POSITION);
+
+	if(!pVertexData)
+		return false;
+	if(a.computeBoundingSphere(pVertexData,pNewBoundingSphere,this._pBoundingBox)==false)
+		return false;
+
+
+	this._pBoundingSphere = pNewBoundingSphere;
+
+	return true;
+};
+
+MeshSubset.prototype.deleteBoundingSphere = function()
+{
+	this._pBoundingSphere = null;
+	return true;
+}
+
+MeshSubset.prototype.getBoundingSphere = function ()
+{
+	return this._pBoundingSphere;
+};
+
+MeshSubset.prototype.showBoundingSphere = function()
+{
+	var pMaterial;
+	var iData;
+	var iCurrentIndexSet;
+	var pPoints,pIndexes;
+
+	if(!this._pBoundingSphere)
+	{
+		return false;
+	}
+
+	pPoints = new Array();
+	pIndexes = new Array();
+	a.computeDataForCascadeBoundingSphere(this._pBoundingSphere,pPoints,pIndexes);
+
+	iCurrentIndexSet=this.data.getIndexSet();
+	if(!this.data.selectIndexSet(".BoundingSphere"))
+	{
+		this.data.addIndexSet(false, a.PRIMTYPE.LINELIST,".BoundingSphere");
+		iData=this.data.allocateData(
+			[VE_FLOAT3(a.DECLUSAGE.POSITION)],
+			new Float32Array(pPoints));
+
+
+		this.data.allocateIndex([VE_FLOAT(a.DECLUSAGE.INDEX0)],new Float32Array(pIndexes));
+
+		this.data.index(iData,a.DECLUSAGE.INDEX0);
+
+		this.applyFlexMaterial(".MaterialBoundingSphere");
+		pMaterial = this.getFlexMaterial(".MaterialBoundingSphere");
+		pMaterial.emissive = new a.Color4f(0.0, 0.0, 1.0, 1.0);
+		pMaterial.diffuse  = new a.Color4f(0.0, 0.0, 1.0, 1.0);
+	}
+	else
+	{
+		this.data.getData(a.DECLUSAGE.POSITION).setData(new Float32Array(pPoints),a.DECLUSAGE.POSITION);
+	}
+
+	this.data.setRenderable();
+	this.data.selectIndexSet(iCurrentIndexSet);
+
+	return true;
+}
+
+MeshSubset.prototype.hideBoundingSphere= function()
+{
+	var iCurrentIndexSet;
+	iCurrentIndexSet=this.data.getIndexSet();
+
+	if(!this.data.selectIndexSet(".BoundingSphere"))
+	{
+		return false;
+	}
+	else
+	{
+		this.data.setRenderable(this.data.getIndexSet(),false);
+	}
+
+	return this.data.selectIndexSet(iCurrentIndexSet);
+}
+
 
 MeshSubset.prototype.computeNormals = function () {
     //TODO: calc normals
@@ -152,7 +324,7 @@ MeshSubset.prototype.applyFlexMaterial = function(sMaterial, pMaterialData) {
     if (this._pMesh.addFlexMaterial(sMaterial, pMaterialData)) {
         return this.setFlexMaterial(sMaterial);
     }
-    return false;
+    return null;
 };
 
 MeshSubset.prototype.getFlexMaterial = function(iMaterial) {
@@ -207,18 +379,18 @@ MeshSubset.prototype.setFlexMaterial = function (iMaterial) {
     return true;
 };
 
+MeshSubset.prototype.draw = function () {
+    'use strict';
+    
+    this._pRenderData.draw();
+};
+
 MeshSubset.prototype.show = function() {
     this.data.renderable(true);
 };
 
 MeshSubset.prototype.hide = function() {
     this.datq.renderable(false);
-};
-
-MeshSubset.prototype.draw = function () {
-    'use strict';
-    
-    this._pRenderData.draw();
 };
 
 A_NAMESPACE(MeshSubset);

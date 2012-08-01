@@ -377,7 +377,7 @@ SceneModel.prototype.prepareForRender = function () {
     //     }  
     // }
 };
-var lock = false;
+
 SceneModel.prototype.render = function () {
     parent.render(this);
 
@@ -403,6 +403,7 @@ SceneModel.prototype.render = function () {
         var pSurface = pSubMesh.surfaceMaterial;
 
         if (pSubMesh.isSkinned()) {
+
             if (pSubMesh.surfaceMaterial.totalTextures) {
                 pProgram = pEngine.pDrawMeshAnimProgTex;
             }
@@ -434,6 +435,7 @@ SceneModel.prototype.render = function () {
         pProgram.applyMatrix3('normal_mat', pModel.normalMatrix());
         pProgram.applyVector3('eye_pos', pCamera.worldPosition());
 
+
         if (pSubMesh.isSkinned()) {
             pProgram.applyMatrix4('bind_matrix', pSubMesh.skin.getBindMatrix());
             pSubMesh.skin.applyBoneMatrices();
@@ -461,6 +463,7 @@ SceneModel.prototype.render = function () {
 
         pSubMesh.draw();
     }
+    
 
     //------------------------------------------------
 
@@ -626,6 +629,7 @@ SceneModel.prototype.toString = function (isRecursive, iDepth) {
         }
 
         return sData;
+
     }
 
     return SceneObject.prototype.toString.call(this, isRecursive, iDepth);

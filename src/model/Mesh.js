@@ -29,7 +29,10 @@ function Mesh(pEngine, eOptions, sName, pDataBuffer) {
     this._pEngine = pEngine;
     this._eOptions = 0;
 
-    this.setup(sName, eOptions, pDataBuffer);
+	this._pBoundingBox = null;
+	this._pBoundingSphere = null;
+
+    this.setup(sName, eOptions, pDataFactory);
 };
 
 EXTENDS(Mesh, Array, a.ReferenceCounter);
@@ -136,6 +139,7 @@ Mesh.prototype.createSubset = function(sName, ePrimType, eOptions) {
 };
 
 
+
 /**
  * @protected
  * Replace materials for this mesh.
@@ -145,6 +149,13 @@ Mesh.prototype.replaceFlexMaterials = function (pFlexMaterials) {
     
     this._pFlexMaterials = pFlexMaterials;
 };
+
+Mesh.prototype.freeSubset = function(sName)
+{
+	debug_error("Метод freeSubset не реализован");
+	return false;
+}
+
 
 /**
  * @property material(String sName)
@@ -254,6 +265,7 @@ Mesh.prototype.getSubset = function () {
             }
         }
     }
+	return null;
 };
 
 
@@ -262,6 +274,15 @@ Mesh.prototype.setSkin = function(pSkin) {
         this[i].setSkin(pSkin);
     };
 };
+
+
+
+Mesh.prototype.setSkin = function(pSkin) {
+    for (var i = 0; i < this.length; ++ i) {
+        this[i].setSkin(pSkin);
+    };
+};
+
 
 
 Mesh.prototype.clone = function (eCloneOptions) {
@@ -298,5 +319,247 @@ Mesh.prototype.clone = function (eCloneOptions) {
 
     return pClone;
 };
+
+Mesh.prototype.createAndShowSubBoundingBox = function()
+{
+	for(i=0;i<this.length;i++)
+	{
+		pSubMesh=this.getSubset(i);
+		pSubMesh.createBoundingBox();
+		pSubMesh.showBoundingBox();
+		//console.log("SubMesh" + i);
+	}
+}
+
+Mesh.prototype.createAndShowSubBoundingSphere = function()
+{
+	for(i=0;i<this.length;i++)
+	{
+		pSubMesh=this.getSubset(i);
+		pSubMesh.createBoundingSphere();
+		pSubMesh.showBoundingSphere();
+		//console.log("SubMesh" + i);
+	}
+}
+
+Mesh.prototype.createBoundingBox = function()
+{
+	var pVertexData;
+	var pSubMesh;
+	var pNewBoundingBox;
+	var pTempBoundingBox;
+	var i;
+
+	pNewBoundingBox = new a.Rect3d();
+	pTempBoundingBox = new a.Rect3d();
+
+	pSubMesh=this.getSubset(0);
+	pVertexData=pSubMesh.data.getData(a.DECLUSAGE.POSITION);
+	if(!pVertexData)
+		return false;
+	if(a.computeBoundingBox(pVertexData,pNewBoundingBox)== false)
+		return false;
+
+	for(i=1;i<this.length;i++)
+	{
+		pSubMesh=this.getSubset(i);
+		pVertexData=pSubMesh.data.getData(a.DECLUSAGE.POSITION);
+		if(!pVertexData)
+			return false;
+		if(a.computeBoundingBox(pVertexData,pTempBoundingBox)== false)
+			return false;
+
+		pNewBoundingBox.fX0=Math.min(pNewBoundingBox.fX0,pTempBoundingBox.fX0);
+		pNewBoundingBox.fY0=Math.min(pNewBoundingBox.fY0,pTempBoundingBox.fY0);
+		pNewBoundingBox.fZ0=Math.min(pNewBoundingBox.fZ0,pTempBoundingBox.fZ0);
+
+		pNewBoundingBox.fX1=Math.max(pNewBoundingBox.fX1,pTempBoundingBox.fX1);
+		pNewBoundingBox.fY1=Math.max(pNewBoundingBox.fY1,pTempBoundingBox.fY1);
+		pNewBoundingBox.fZ1=Math.max(pNewBoundingBox.fZ1,pTempBoundingBox.fZ1);
+	}
+
+	this._pBoundingBox = pNewBoundingBox;
+	return true;
+}
+
+Mesh.prototype.deleteBoundingBox = function()
+{
+	this._pBoundingBox = null;
+	return true;
+}
+
+Mesh.prototype.getBoundingBox = function ()
+{
+	return this._pBoundingBox;
+}
+
+Mesh.prototype.showBoundingBox = function()
+{
+	var pSubMesh,pMaterial;
+	var iData;
+	var pPoints,pIndexes;
+
+	if(!this._pBoundingBox)
+	{
+		return false;
+	}
+
+	pPoints = new Array();
+	pIndexes = new Array();
+	a.computeDataForCascadeBoundingBox(this._pBoundingBox,pPoints,pIndexes,400.0);
+
+	pSubMesh=this.getSubset(".BoundingBox");
+	if(!pSubMesh)
+	{
+		pSubMesh=this.createSubset(".BoundingBox",a.PRIMTYPE.LINELIST,(1<<a.VBufferBase.ManyDrawBit));
+		if(!pSubMesh)
+			return false;
+
+		iData=pSubMesh.data.allocateData(
+			[VE_FLOAT3(a.DECLUSAGE.POSITION)],
+			new Float32Array(pPoints));
+
+		pSubMesh.data.allocateIndex([VE_FLOAT(a.DECLUSAGE.INDEX0)],new Float32Array(pIndexes));
+
+		pSubMesh.data.index(iData,a.DECLUSAGE.INDEX0);
+
+		pSubMesh.applyFlexMaterial(".MaterialBoundingBox");
+		pMaterial = pSubMesh.getFlexMaterial(".MaterialBoundingBox");
+		pMaterial.emissive = new a.Color4f(1.0, 0.0, 0.0, 1.0);
+		pMaterial.diffuse = new a.Color4f(1.0, 0.0, 0.0, 1.0);
+		pMaterial.ambient = new a.Color4f(1.0, 0.0, 0.0, 1.0);
+		pMaterial.specular = new a.Color4f(1.0, 0.0, 0.0, 1.0);
+	}
+	else
+	{
+		pSubMesh.data.getData(a.DECLUSAGE.POSITION).setData(new Float32Array(pPoints),a.DECLUSAGE.POSITION);
+	}
+
+	pSubMesh.data.setRenderable();
+	return true;
+}
+
+Mesh.prototype.hideBoundingBox = function()
+{
+	var pSubMesh;
+	pSubMesh=this.getSubset(".BoundingBox");
+	if(!pSubMesh)
+	{
+		return false;
+	}
+
+	return pSubMeshs.data.setRenderable(this.data.getIndexSet(),false);
+}
+
+
+Mesh.prototype.createBoundingSphere = function()
+{
+	var pVertexData;
+	var pSubMesh;
+	var pNewBoundingSphere,pTempBoundingSphere;
+	var i;
+
+	pNewBoundingSphere = new a.Sphere();
+	pTempBoundingSphere = new a.Sphere();
+
+
+	pSubMesh=this.getSubset(0);
+	pVertexData=pSubMesh.data.getData(a.DECLUSAGE.POSITION);
+	if(!pVertexData)
+	{
+		return false;
+	}
+
+
+	if(a.computeBoundingSphere(pVertexData,pNewBoundingSphere)== false)
+	{
+		return false;
+	}
+
+	for(i=1;i<this.length;i++)
+	{
+
+		pSubMesh=this.getSubset(i);
+		pVertexData=pSubMesh.data.getData(a.DECLUSAGE.POSITION);
+		if(!pVertexData)
+			return false;
+		if(a.computeBoundingSphere(pVertexData,pTempBoundingSphere)== false)
+			return false;
+
+		a.computeGeneralizingSphere(pNewBoundingSphere,pTempBoundingSphere)
+	}
+
+	this._pBoundingSphere = pNewBoundingSphere;
+	return true;
+}
+
+Mesh.prototype.deleteBoundingSphere = function()
+{
+	this._pBoundingSphere = null;
+	return true;
+}
+
+Mesh.prototype.getBoundingSphere = function ()
+{
+	return this._pBoundingSphere;
+}
+
+Mesh.prototype.showBoundingSphere = function()
+{
+	var pSubMesh,pMaterial;
+	var iData;
+	var pPoints,pIndexes;
+
+	if(!this._pBoundingSphere)
+	{
+		return false;
+	}
+
+	pPoints = new Array();
+	pIndexes = new Array();
+	a.computeDataForCascadeBoundingSphere(this._pBoundingSphere,pPoints,pIndexes);
+
+	pSubMesh=this.getSubset(".BoundingSphere");
+	if(!pSubMesh)
+	{
+		pSubMesh=this.createSubset(".BoundingSphere",a.PRIMTYPE.LINELIST,(1<<a.VBufferBase.ManyDrawBit));
+		if(!pSubMesh)
+			return false;
+
+		iData=pSubMesh.data.allocateData(
+			[VE_FLOAT3(a.DECLUSAGE.POSITION)],
+			new Float32Array(pPoints));
+
+		pSubMesh.data.allocateIndex([VE_FLOAT(a.DECLUSAGE.INDEX0)],new Float32Array(pIndexes));
+
+		pSubMesh.data.index(iData,a.DECLUSAGE.INDEX0);
+
+		pSubMesh.applyFlexMaterial(".MaterialBoundingSphere");
+		pMaterial = pSubMesh.getFlexMaterial(".MaterialBoundingSphere");
+		pMaterial.emissive = new a.Color4f(1.0, 0.0, 0.0, 1.0);
+		pMaterial.diffuse  = new a.Color4f(1.0, 0.0, 0.0, 1.0);
+		pMaterial.ambient  = new a.Color4f(1.0, 0.0, 0.0, 1.0);
+		pMaterial.specular = new a.Color4f(1.0, 0.0, 0.0, 1.0);
+	}
+	else
+	{
+		pSubMesh.data.getData(a.DECLUSAGE.POSITION).setData(new Float32Array(pPoints),a.DECLUSAGE.POSITION);
+	}
+
+	pSubMesh.data.setRenderable();
+	return true;
+}
+
+Mesh.prototype.hideBoundingSphere= function()
+{
+	var pSubMesh;
+	pSubMesh=this.getSubset(".BoundingSphere");
+	if(!pSubMesh)
+	{
+		return false;
+	}
+
+	return pSubMeshs.data.setRenderable(this.data.getIndexSet(),false);
+}
 
 A_NAMESPACE(Mesh);

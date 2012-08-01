@@ -603,6 +603,7 @@ BufferMap.prototype.toString = function () {
         var pDecl = pVertexData.getVertexDeclaration();
         //trace(pMapper); window['pMapper'] = pMapper;
         s += '#' + _an(pFlow.iFlow, 2) + ' ' + 
+
             _an('[ ' + (pDecl[0].eUsage !== a.DECLUSAGE.END? pDecl[0].eUsage: '<end>') + ' ]', 20) + 
             ' : ' + _an(pDecl[0].iOffset, 6, true) + ' / ' + _an(pDecl[0].iSize, 6) + 
             ' | ' + 
@@ -610,6 +611,7 @@ BufferMap.prototype.toString = function () {
             ' : ' + 
             (pMapper? _an(pMapper.eSemantics, 15, true) + ' / ' + _an(pMapper.iAddition, 7) + ': ' + 
                 _an(pMapper.pData.getVertexDeclaration().element(pMapper.eSemantics).iOffset, 6) :
+
             _an('-----', 25) + ': ' + _an('-----', 6)) + ' |                  \n';
         
 

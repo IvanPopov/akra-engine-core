@@ -193,6 +193,22 @@ Define(a.Color3.val(r, g, b, c), function () {
     c.B = b;
 });
 
+
+
+//Magic for Canvas type
+Define(BMP_MAGIC,0x4D4A);
+Define(PNG_MAGIC1,0x474E5089);
+Define(PNG_MAGIC2,0x0A1A0A0D);
+Define(JPEG_MAGIC,0xD8FF);
+Define(GIF_MAGIC,0x38464947);
+
+
+
+
+
+
+
+
 Define(DDS_MAGIC,0x20534444);
 //  DDS_header.dwFlags
 Define(DDSD_CAPS,0x00000001);
@@ -421,11 +437,6 @@ Img.prototype.saveResource = function (sFilename) {
  * @tpram sFilename Имя текстуры (или NULL, что бы использовать имя ресурса).
  * @treturn Boolean Результат.
  */
- 
-
-
-
-
 
 //Длинна блока в пикселях(getDivSize на getDivSize);
 Img.prototype.getDivSize=function()
@@ -441,7 +452,6 @@ Img.prototype.getDivSize=function()
         return 1;
     }
 }
-
 
 //Размер блока в байтах
 Img.prototype.getBlockBytes=function()
@@ -475,9 +485,6 @@ Img.prototype.getBlockBytes=function()
         return 0;
     }
 }
-
-
-
 
 Img.prototype.getWidth=function(iMipLevel)
 {
@@ -777,8 +784,10 @@ Img.prototype.loadResource = function (sFileName)
 
 /**
  * @property load(String sFileName, Function fnCallback)
+ * @property load(Canvas pCanvas, Function fnCallback)
  * Загрузка картинки по указанному пути
  * @memberof Img
+ * @param pCanvas канвас, с которого грузиться картинка
  * @param sFileName путь, откуда будет грузиться картинка
  * @param fnCallback функция которая вызовется после успешной загрузки
  **/
@@ -789,10 +798,98 @@ Img.prototype.load=function(sFileName, fnCallBack)
 	var nMipMap=1; //количество мипмапов
 	var nCubeMap=1;    //количесвто картинок образующих кубе ма
 	var nVolume=1;
+	var sExt;
+	if((sFileName.nodeName)&&sFileName.nodeName.toLowerCase()=="canvas")
+	{
+		me._iFlags=0;
+		me._iWidth=sFileName.width; //Ширина изображение
+		me._iHeight=sFileName.height; //Высота изображения
+		var pTempContext = sFileName.getContext('2d');
+		if(!pTempContext)
+		{
+			if(fnCallBack)
+			{
+				fnCallBack(false);
+			}
+			return;
+		}
 
-	
-    a.fopen(sFileName, 'rb').onread = function(pData)
-    {
+		var pImageData = pTempContext.getImageData(0, 0,sFileName.heigh, sFileName.heigh);
+		me._pData=new Array(nVolume);
+		me._pData[0]=new Array(nCubeMap);
+		me._pData[0][0]=new Array(nMipMap);
+		me._pData[0][0][0]=new ArrayBuffer(pImageData.data.buffer.slice(0,pImageData.data.buffer.byteLength));
+		me._eFormat=a.IFORMAT.RGBA8;
+		me._iCubeFlags=0;
+		if(fnCallBack)
+		{
+			fnCallBack(true);
+		}
+		return;
+	}
+	else if((sExt=a.pathinfo(sFileName).ext)&&(sExt=="bmp"||sExt=="jpeg"||sExt=="gif"||sExt=="png"))
+	{
+		var pImg = new Image();
+		var pTempCanvas = document.createElement('canvas');
+		if(!pTempCanvas)
+		{
+			if(fnCallBack)
+			{
+				fnCallBack(false);
+			}
+			return;
+		}
+		pImg.onerror = function()
+		{
+			if(fnCallBack)
+			{
+				fnCallBack(false);
+			}
+		}
+		pImg.onabort = function()
+		{
+			if(fnCallBack)
+			{
+				fnCallBack(false);
+			}
+		}
+		pImg.onload = function()
+		{
+			me._iFlags=0;
+			me._iWidth=pImg.width; //Ширина изображение
+			me._iHeight=pImg.height; //Высота изображения
+			pTempCanvas.width=pImg.width;
+			pTempCanvas.height=pImg.height;
+			var pTempContext = pTempCanvas.getContext('2d');
+			if(!pTempContext)
+			{
+				if(fnCallBack)
+				{
+					fnCallBack(false);
+				}
+				return;
+			}
+
+			pTempContext.drawImage(pImg, 0, 0);
+			var pImageData = pTempContext.getImageData(0, 0,pTempCanvas.heigh, pTempCanvas.heigh);
+			me._pData=new Array(nVolume);
+			me._pData[0]=new Array(nCubeMap);
+			me._pData[0][0]=new Array(nMipMap);
+			me._pData[0][0][0]=new ArrayBuffer(pImageData.data.buffer.slice(0,pImageData.data.buffer.byteLength));
+			me._eFormat=a.IFORMAT.RGBA8;
+			me._iCubeFlags=0;
+			if(fnCallBack)
+			{
+				fnCallBack(true);
+			}
+		}
+		pImg.src = sFileName;
+		return;
+	}
+	else
+	{
+    	a.fopen(sFileName, 'rb').onread = function(pData)
+    	{
 
         var iOffset=0;
         var isOk=false;
@@ -801,8 +898,11 @@ Img.prototype.load=function(sFileName, fnCallBack)
 		me._iFlags=0;
 		
         //Определение типа формата и умеем ли мы его разбирать		
-        var dwMagic =(new Uint32Array(pData,0,1))[0];
-        if(dwMagic==DDS_MAGIC) //DDS
+        var dwMagic4 = (new Uint32Array(pData,0,1))[0];
+		var dwMagic2 = (new Uint16Array(pData,0,1))[0];
+		var dwMagic8_1 = dwMagic4
+		var dwMagic8_2= (new Uint32Array(pData,4,1))[0];
+        if(dwMagic4==DDS_MAGIC) //DDS
         {
             //Считываем dds header
             /*typedef struct {
@@ -1070,8 +1170,15 @@ Img.prototype.load=function(sFileName, fnCallBack)
 			
             isOk=true;
         }
-        else
+		else if(dwMagic2 == BMP_MAGIC||
+				(dwMagic8_1 == PNG_MAGIC1 && dwMagic8_2 ==PNG_MAGIC2)||
+				dwMagic2==JPEG_MAGIC||GIF_MAGIC)
+		{
+				debug_error("Должны были прогрузиться через canvas");
+		}
+		else
         {
+
             trace(sFileName);
             debug_error("Данный тип графического файла не поддерживается("+dwMagic+")");
             isOk=false;
@@ -1189,13 +1296,20 @@ Img.prototype.load=function(sFileName, fnCallBack)
 			}
 		}
 		//console.log("Результат: Общая длинна",iOffset,"iFlags", me._iFlags, "iCubeFlags",me._iCubeFlags);
-       
+
 
         if(fnCallBack)
         {
             fnCallBack(isOk);
         }
-    };
+    	};
+		return;
+	}
+
+	if(fnCallBack)
+	{
+		fnCallBack(false);
+	}
 };
 
 

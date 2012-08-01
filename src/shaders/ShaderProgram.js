@@ -28,12 +28,14 @@ function loadProgram(pEngine, sPath, pFlags) {
 
     if (pFlags) {
         for (var sFlag in pFlags) {
+
             if (pFlags[sFlag] === false) {
                 sDefine += '#undef ' + sFlag + '\n';
             }
             else {
                 sDefine += '#define ' + sFlag + ' ' + pFlags[sFlag] + '\n';    
             }
+
         }
     }
 
@@ -574,7 +576,6 @@ GLSLProgram.prototype.applyBuffer = function (pVertexData) {
         }
         
         if (pAttr.pCurrentData !== pVertexData || 1) {
-
             if (isActive) {
                 isActive = true;
                 pVertexBuffer.activate();
