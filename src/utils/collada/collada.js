@@ -44,8 +44,8 @@ function COLLADA (pEngine, pSettings) {
     var iAnimationOptions   = ifndef(pSettings.animationOptions, a.Animation.REPEAT);
     var useAnimation        = ifndef(pSettings.animation, true);
     var useScene            = ifndef(pSettings.scene, true);
-    var useWireframe           = ifndef(pSettings.wireframe, false);
-
+    var useWireframe        = ifndef(pSettings.wireframe, false);
+    var bDrawJoints         = ifndef(pSettings.drawJoints, false);
 
     /* COMMON FUNCTIONS
      ------------------------------------------------------
@@ -84,7 +84,7 @@ function COLLADA (pEngine, pSettings) {
     ];
 
     var pSupportedOutputFormat = [
-        {sName: ['X', 'ANGLE', null], sType: 'float'},
+        {sName: ['TRANSFORM', 'X', 'ANGLE', null], sType: ['float4x4', 'float']},
         {sName: 'Y', sType: 'float'},
         {sName: 'Z', sType: 'float'}
     ];
@@ -231,7 +231,7 @@ function COLLADA (pEngine, pSettings) {
 
     function target (sPath) {
         var iPos;
-        var pObject = {};
+        var pObject = {pValue: null};
         var pSource;
         var pValue;
         var pMatches;
@@ -306,15 +306,19 @@ function COLLADA (pEngine, pSettings) {
 
     function printArray (pArr, nRow, nCol) {
         var s = '\n';
+
         for (var i = 0; i < pArr.length; ++i) {
             if (i % nCol == 0) {
                 s += '  ';
             }
+
             s += pArr[i] + ', ';
+
             if ((i + 1) % nRow == 0) {
                 s += '\n';
             }
         }
+        
         return s;
     }
 
@@ -476,6 +480,9 @@ function COLLADA (pEngine, pSettings) {
         if (id && pTransform.sid) {
             link(id + '/' + pTransform.sid, pTransform);
         }
+        else {
+            link(id + '/' + pTransform.sName, pTransform);
+        }
 
         var v4f;
         switch (pTransform.sName) {
@@ -497,6 +504,8 @@ function COLLADA (pEngine, pSettings) {
             default:
                 debug_error('unsupported transform detected: ' + sName);
         }
+
+
 
         return pTransform;
     }
@@ -988,6 +997,10 @@ function COLLADA (pEngine, pSettings) {
 
         var pAccess = pTech.pAccessor;
         var isFormatSupported;
+
+        if (!(pAccess.iStride <= nStride)) {
+            trace(pAccess.iStride, '/', nStride);
+        }
 
         debug_assert(pAccess.iStride <= nStride,
                '<source /> width id' + sSourceId + ' has unsupported stride: ' + pAccess.iStride);
@@ -1650,7 +1663,7 @@ function COLLADA (pEngine, pSettings) {
         var pScene = source(attr(pXMLData, 'url'));
 
         if (!pXMLData || !pScene) {
-            debug_error('collada model: ' + sFilename + ' has no visual scenes.');
+            debug_warning('collada model: ' + sFilename + ' has no visual scenes.');
         }
 
         return pScene;
@@ -1769,22 +1782,29 @@ function COLLADA (pEngine, pSettings) {
     function buildAnimationTrack (pChannel) {
         'use strict';
     
-        var sJoint = source(pChannel.pTarget.pSource.id).sName;
+        var sNodeId = pChannel.pTarget.pSource.id;
+        var sJoint = source(sNodeId).sid;
         var pTrack = null;
         var pSampler = pChannel.pSource;
 
         debug_assert(pSampler, 'could not find sampler for animation channel');
         
-        var pInput = pSampler.pInput['INPUT'];
-        var pOutput = pSampler.pInput['OUTPUT'];
-        var pInterpolation = pSampler.pInput['INTERPOLATION'];
-        var pTimeMarks = pInput.pArray;
-        var pOutputValues = pOutput.pArray;
+        var pInput          = pSampler.pInput['INPUT'];
+        var pOutput         = pSampler.pInput['OUTPUT'];
+        var pInterpolation  = pSampler.pInput['INTERPOLATION'];
+        
+        var pTimeMarks      = pInput.pArray;
+        var pOutputValues   = pOutput.pArray;
 
         var pTransform = pChannel.pTarget.pObject
         var sTransform = pTransform.sName;
         var v4f;
         var pValue;
+        var nMatrices;
+
+        // if (sJoint == null) {
+        //     warning('node\'s <' + pChannel.pTarget.pSource.id + '> "sid" attribute is null');
+        // }
 
         switch (sTransform) {
             case 'translate':
@@ -1812,14 +1832,33 @@ function COLLADA (pEngine, pSettings) {
 
                 break;
             case 'matrix':
-                pTrack = new a.AnimationMatrixModification(sJoint, pChannel.pTarget.pValue);
+                pValue = pChannel.pTarget.pValue;
+                if (pValue === null) {
+                    pTrack = new a.AnimationTransformation(sJoint);
+                    nMatrices = pOutputValues.length / 16;
+                    pOutputValues = new Float32Array(pOutputValues);
 
-                for (var i = 0; i < pTimeMarks.length; ++ i) {
-                    pTrack.addKeyFrame(pTimeMarks[i], pOutputValues[i]);
+                    debug_assert(nMatrices % 1 === 0.0, 
+                        'incorrect output length of transformation data (' + pOutputValues.length + ')');
+
+                    for (var i = 0; i < nMatrices; i ++) {
+                        pTrack.addKeyFrame(pTimeMarks[i], Mat4.transpose(pOutputValues.subarray(i * 16, i * 16 + 16))); 
+                    };
+                }
+                else {
+                    pTrack = new a.AnimationMatrixModification(sJoint, pValue);
+
+                    for (var i = 0; i < pTimeMarks.length; ++ i) {
+                        pTrack.addKeyFrame(pTimeMarks[i], pOutputValues[i]);
+                    }   
                 }
             break;
             default:
                 debug_error('unsupported animation typed founeed: ' + sTransform);
+        }
+
+        if (pTrack) {
+            pTrack.nodeName = sNodeId;
         }
 
         return pTrack;
@@ -2134,11 +2173,14 @@ function COLLADA (pEngine, pSettings) {
         }
 
         pMesh.setSkin(pSkin);
+        pSkeleton.attachMesh(pMesh);
 
         return pMesh;
     }
 
-    function buildInstance(pInstances, fnBuilder, pSceneNode) {
+    function buildInstance(pInstances, fnBuilder, pSceneNode, bAttach) {
+        bAttach = bAttach || false;
+
         var pInstance = null;
         var pInstanceList = [];
 
@@ -2148,7 +2190,9 @@ function COLLADA (pEngine, pSettings) {
 
             debug_assert(pInstance, 'cannot find instance <' + pInstances[m].sUrl + '>\'s data');
 
-            pSceneNode.addMesh(pInstance);  
+            if (bAttach) {
+                pSceneNode.addMesh(pInstance);  
+            }
         }
 
         return pInstanceList;
@@ -2158,8 +2202,8 @@ function COLLADA (pEngine, pSettings) {
         var pMeshes = [];
 
         findNode(pSceneRoot.pNodes, null, function (pNode) {
-            pMeshes.insert(buildInstance(pNode.pController, buildSkinMesh, pNode.pConstructedNode));
-            pMeshes.insert(buildInstance(pNode.pGeometry, buildMesh, pNode.pConstructedNode));
+            pMeshes.insert(buildInstance(pNode.pController, buildSkinMesh, pNode.pConstructedNode, false));
+            pMeshes.insert(buildInstance(pNode.pGeometry, buildMesh, pNode.pConstructedNode, true));
         });
 
         return pMeshes;
@@ -2214,7 +2258,7 @@ function COLLADA (pEngine, pSettings) {
 
         if (!pSceneNode) {
             if (pNode.pController.length || pNode.pGeometry.length) {
-                 pSceneNode = new a.SceneModel(pEngine);
+                pSceneNode = new a.SceneModel(pEngine);
             }
             else {
                 pSceneNode = new a.SceneNode(pEngine);
@@ -2222,8 +2266,6 @@ function COLLADA (pEngine, pSettings) {
 
             pSceneNode.create();
         }
-
-        
 
         return pSceneNode;
     }
@@ -2240,12 +2282,14 @@ function COLLADA (pEngine, pSettings) {
             pJointNode.boneName = sJointSid;
             
 Ifdef (__DEBUG);
+    if (bDrawJoints) {
             //draw joints
             var pSceneNode = pEngine.appendMesh(
                 pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
                 pJointNode);
 
             pSceneNode.setScale(0.1);
+    }
 Endif ();
 
         }
@@ -2322,6 +2366,8 @@ Endif ();
     }
 
     function readCollada(sXMLData) {
+        'use strict';
+        
         var pParser = new DOMParser();
         var pXMLRootNode = pParser.parseFromString(sXMLData, "application/xml");
         var pXMLCollada = pXMLRootNode.getElementsByTagName('COLLADA')[0];
@@ -2329,10 +2375,10 @@ Endif ();
         var pAsset;
         var m4fRootTransform;
         var pSceneRoot;
-        var pAnimations;
 
         var pSceneOutput = null;
         var pAnimationOutput = null;
+        var pMeshOutput = null;
         
         if (useScene) {
             readLibraries(pXMLCollada, pSceneTemplate);
@@ -2340,21 +2386,24 @@ Endif ();
             pAsset      = COLLADAAsset(firstChild(pXMLCollada, 'asset'));
             pSceneRoot  = COLLADAScene(firstChild(pXMLCollada, 'scene'));
 
-            m4fRootTransform    = buildAssetMatrix(pAsset);
-            pSceneOutput        = buildScene(pSceneRoot, m4fRootTransform);
-            pMeshList           = buildMeshes(pSceneRoot);
+            if (pSceneRoot) {
+                m4fRootTransform    = buildAssetMatrix(pAsset);
+                pSceneOutput        = buildScene(pSceneRoot, m4fRootTransform);
+                pMeshOutput         = buildMeshes(pSceneRoot);
+            }
         }
 
         if (useAnimation) {
             readLibraries(pXMLCollada, pAnimationTemplate);
 
-            pAnimations = pLib['library_animations'].animation;
-            pAnimationOutput = buildAnimations(pAnimations);
+            if (pLib['library_animations']) {
+                pAnimationOutput = buildAnimations(pLib['library_animations'].animation);
+            }
         }
         
 
         if (fnCallback) {
-            fnCallback.call(pEngine, pSceneOutput, pAnimationOutput);
+            fnCallback.call(pEngine, pSceneOutput, pMeshOutput, pAnimationOutput);
         }
     }
 

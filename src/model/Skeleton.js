@@ -13,6 +13,7 @@ function Skeleton (pEngine, sName) {
 		], SKELETON_FLAGS, a.Skeleton);
 
 	this._sName = sName || null;
+	this._pEngine = pEngine;
 
 	//корневые joint'ы
 	this._pRootJoints = [];
@@ -23,6 +24,8 @@ function Skeleton (pEngine, sName) {
 	//все joint'ы у которых нет потомков и братьев
 	//нужны чтобы отслеживать изменения в скелете
 	this._pNotificationJoints = null
+
+	this._pMeshNode = null;
 
 	//если положения joint'ов были изменены, то переменная выставляется в true.
 	this._iFlags = false;
@@ -38,6 +41,17 @@ PROPERTY(Skeleton, 'name',
 		return this._sName;
 	});
 
+PROPERTY(Skeleton, 'root',
+	function () {
+		return this._pRootJoints[0] || null;
+	});
+
+
+Skeleton.prototype.getEngine = function () {
+    'use strict';
+    
+	return this._pEngine;
+};
 
 Skeleton.prototype.getRootJoint = function() {
 	'use strict';
@@ -121,6 +135,39 @@ Skeleton.prototype.findJoint = function (sName) {
     'use strict';
 
     return this._pJointList[sName];
+};
+
+Skeleton.prototype.findJointByName = function (sName) {
+    'use strict';
+    
+	for (var s in this._pJointList) {
+		if (this._pJointList[s].name === sName) {
+			return this._pJointList[s];
+		}
+	}
+
+	return null;
+};
+
+Skeleton.prototype.attachMesh = function (pMesh) {
+    'use strict';
+	
+    debug_assert(this.getEngine() === pMesh.getEngine(), 'mesh must be from same engine instance');
+
+    if (this._pMeshNode == null) {
+    	this._pMeshNode = new a.SceneModel(this.getEngine());
+    	this._pMeshNode.create();
+    	this._pMeshNode.attachToParent(this.root);
+    }
+
+    this._pMeshNode.name = this.name + "[mesh-container]";
+    this._pMeshNode.addMesh(pMesh);
+};
+
+Skeleton.prototype.detachMesh = function () {
+    'use strict';
+    
+	//TODO: write detach method.
 };
 
 A_NAMESPACE(Skeleton);

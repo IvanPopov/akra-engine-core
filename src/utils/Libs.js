@@ -90,7 +90,7 @@
         enumerable: false,
         configurable: true,
         value: function (pElement) {
-            if (pElement.length) {
+            if (typeof pElement.length === 'number') {
                 for (var i = 0, n = pElement.length; i < n; ++ i) {
                     this.push(pElement[i]);
                 };

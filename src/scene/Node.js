@@ -113,6 +113,26 @@ PROPERTY(Node, 'depth',
         return iDepth;
     });
 
+Node.prototype.findNode = function (sNodeName) {
+    'use strict';
+
+    var pNode = null;
+
+    if (this._sName === sNodeName) {
+        return this;
+    }
+
+    if (this._pSibling) {
+        pNode = this._pSibling.findNode(sNodeName);
+    }
+
+    if (pNode == null && this._pChild) {
+        pNode = this._pChild.findNode(sNodeName);
+    }
+
+    return pNode;
+};
+
 Node.prototype.childOf = function (pParent) {
     'use strict';
     
@@ -704,6 +724,7 @@ Node.prototype.updateWorldVectors = function () {
         a.BitFlags.clearBit(this._iUpdateFlags, a.Scene.k_rebuildWorldVectors);
     }
 };
+
 /**
  * Getter for worldPosistion vector
  * @treturn Float32Array _v3fWorldPostion

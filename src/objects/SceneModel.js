@@ -330,7 +330,7 @@ function SceneModel(pEngine, pMesh) {
      */
     this._iModelFrameIndex = 0;
     this._hModelHandle = 0;
-    this._pMeshes = new Array(1);
+    this._pMeshes = [];
 
     if (pMesh) {
         this.addMesh(pMesh);
@@ -593,14 +593,14 @@ SceneModel.prototype.addMesh = function (pMesh) {
     if (!pMesh) {
         return false;
     }
-    this._pMeshes[0] = pMesh;
+    this._pMeshes.push(pMesh);
     return true;
 };
 
 SceneModel.prototype.findMesh = function (iMesh) {
     'use strict';
     iMesh = iMesh || 0;
-    return this._pMeshes[iMesh];
+    return this._pMeshes[iMesh] || null;
 };
 
 Ifdef (__DEBUG);
@@ -611,7 +611,21 @@ SceneModel.prototype.toString = function (isRecursive, iDepth) {
     isRecursive = isRecursive || false;
 
     if (!isRecursive) {
-        return '<model' + (this._sName? ' ' + this._sName: '') + '>';
+        var sData = '<model' + (this._sName? ' ' + this._sName: '') + '(' + this._pMeshes.length + ')' +  '>';
+        
+        if (this._pMeshes.length) {
+
+            sData += '( ';
+
+            for (var i = 0; i < this._pMeshes.length; i++) {
+                sData += (i > 0? ',': '') + this._pMeshes[i].name;
+            };
+
+            sData += ' )';
+        
+        }
+
+        return sData;
     }
 
     return SceneObject.prototype.toString.call(this, isRecursive, iDepth);

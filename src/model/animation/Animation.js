@@ -50,14 +50,14 @@ Animation.prototype.attachToTimeline = function (fStartTime) {
 	this._fStartTime = fStartTime;
 };
 
-Animation.prototype.bind = function (pSkeleton) {
+Animation.prototype.bind = function (pTarget) {
     'use strict';
    
    	var pTracks = this._pTracks; 
    	var bResult = true;
 
 	for (var i = pTracks.length - 1; i >= 0; i--) {
-		if (!pTracks[i].bind(pSkeleton)) {
+		if (!pTracks[i].bind(pTarget)) {
 			trace('cannot bind animation track [', i, '] to joint <', pTracks[i]._sTarget, '>');
 			bResult = false;
 		}

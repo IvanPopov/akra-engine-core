@@ -21,6 +21,14 @@ function AnimationTrack (sTarget) {
 	this.iCurrentFrame = 0;
 }
 
+PROPERTY(AnimationTrack, 'nodeName',
+	function () {
+		return this._sNode;
+	},
+	function (sValue) {
+		this._sNode = sValue;
+	});
+
 AnimationTrack.prototype.addKeyFrame = function (fTime, pValue) {
     'use strict';
     
@@ -86,32 +94,47 @@ AnimationTrack.prototype.findKeyFrameByTime = function (fTime) {
 	return -1;
 };
 
-AnimationTrack.prototype.bind = function (sJoint, pSkeleton) {
+AnimationTrack.prototype.bind = function () {
     'use strict';
     
-	var pJoint = null;
+	var pNode = null;
+	var pSkeleton;
+	var sJoint;
+	var pRootNode;
 
 	switch (arguments.length) {
 		case 2:
+			sJoint = arguments[0];
+			pSkeleton = arguments[1];
+
 			this._sTarget = sJoint;
-			pJoint = pSkeleton.findJoint(sJoint);
+			pNode = pSkeleton.findJoint(sJoint);
+
 			break;
 		case 1:
 		default:
 			if (arguments[0] instanceof a.Skeleton) {
+				
+				if (this._sTarget == null) {
+					return false;
+				}
+
 				pSkeleton = arguments[0];
-				pJoint = pSkeleton.findJoint(this._sTarget);
+				pNode = pSkeleton.findJoint(this._sTarget);
+			}
+			else if (arguments[0] instanceof a.Node) {
+				pRootNode = arguments[0];
+				pNode = pRootNode.findNode(this.nodeName);
 			}
 			else {
-				pJoint = arguments[0];
+				pNode = arguments[0];
 			}
 	}
 
-	debug_assert(pJoint, 'cannot bind track, because joint<' + this._sTarget + 
+	debug_assert(pNode, 'cannot bind track, because node<' + this._sTarget + ', ' + this._sNode + 
 		'> not exists in given skeleton');
 
-
-	this._pTarget = pJoint;
+	this._pTarget = pNode;
 	return true;
 };
 
@@ -214,15 +237,29 @@ AnimationMatrixModification.prototype.apply = function (iKeyFrame, fBlend) {
 	var fValue = ((pEndFrame.pValue * fBlend) + ((1. - fBlend) * pStartFrame.pValue));
 	var m4fLocalMatrix = this._pTarget.accessLocalMatrix();
 
-	//trace(iKeyFrame, '/', fBlend.toFixed(3), ':: frame / blend');
-	//trace('(', pStartFrame.fTime, ')', pStartFrame.pValue, '--->', '(', pEndFrame.fTime, ')', pEndFrame.pValue, 'blend:', fBlend);
-	//trace('update element ', this._iElement, 'from', m4fLocalMatrix[this._iElement],'to', fValue);
-	
-	//trace('before > \n', Mat4.shaderStr(m4fLocalMatrix));
-	if (this._iElement === 15) return;
-	m4fLocalMatrix[this._iElement] = fValue;
-	//trace('after > \n', Mat4.shaderStr(m4fLocalMatrix));
-	
+	m4fLocalMatrix[this._iElement] = this._iElement === 15? (fValue || 1) : fValue;
 };
 
 A_NAMESPACE(AnimationMatrixModification);
+
+function AnimationTransformation (sTarget) {
+    A_CLASS;
+}
+
+EXTENDS(AnimationTransformation, a.AnimationTrack);
+
+AnimationTransformation.prototype.apply = function (iKeyFrame, fBlend) {
+    'use strict';
+
+	var pStartFrame = this._pKeyFrames[iKeyFrame];
+	var pEndFrame = this._pKeyFrames[iKeyFrame + 1];
+	var m4fLocalMatrix = this._pTarget.accessLocalMatrix();
+	var fValue;
+
+	for (var i = 0; i < 16; i++) {
+		fValue = ((pEndFrame.pValue[i] * fBlend) + ((1. - fBlend) * pStartFrame.pValue[i]));
+		//m4fLocalMatrix[i] = i === 15? (fValue || 1) : fValue;
+	};
+};
+
+A_NAMESPACE(AnimationTransformation);
