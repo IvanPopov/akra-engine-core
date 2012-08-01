@@ -1297,7 +1297,6 @@ Img.prototype.load=function(sFileName, fnCallBack)
 		}
 		//console.log("Результат: Общая длинна",iOffset,"iFlags", me._iFlags, "iCubeFlags",me._iCubeFlags);
 
-
         if(fnCallBack)
         {
             fnCallBack(isOk);

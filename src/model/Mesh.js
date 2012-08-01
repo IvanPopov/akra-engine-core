@@ -29,6 +29,7 @@ function Mesh(pEngine, eOptions, sName, pDataBuffer) {
     this._pEngine = pEngine;
     this._eOptions = 0;
 
+
 	this._pBoundingBox = null;
 	this._pBoundingSphere = null;
 
@@ -139,7 +140,6 @@ Mesh.prototype.createSubset = function(sName, ePrimType, eOptions) {
 };
 
 
-
 /**
  * @protected
  * Replace materials for this mesh.
@@ -150,12 +150,12 @@ Mesh.prototype.replaceFlexMaterials = function (pFlexMaterials) {
     this._pFlexMaterials = pFlexMaterials;
 };
 
+
 Mesh.prototype.freeSubset = function(sName)
 {
 	debug_error("Метод freeSubset не реализован");
 	return false;
 }
-
 
 /**
  * @property material(String sName)
@@ -267,14 +267,6 @@ Mesh.prototype.getSubset = function () {
     }
 	return null;
 };
-
-
-Mesh.prototype.setSkin = function(pSkin) {
-    for (var i = 0; i < this.length; ++ i) {
-        this[i].setSkin(pSkin);
-    };
-};
-
 
 
 Mesh.prototype.setSkin = function(pSkin) {

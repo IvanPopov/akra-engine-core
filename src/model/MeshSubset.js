@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /**
  * @constructor
  */
@@ -252,73 +253,6 @@ MeshSubset.prototype.getSkin = function() {
     return this._pSkin;
 };
 
-//исходим из того, что данные скина 1:1 соотносятся с вершинами.
-MeshSubset.prototype.setSkin = function(pSkin) {
-    'use strict';
-
-    var pPosData;
-    var pPositionFlow;
-    var pMetaData;
-
-    var pInfMetaData;       //мета данные разметки
-    var iInfMetaDataLoc;    //адресс мета данных во флотах
-    var iInfMetaDataStride; //шаг мета данных во флотах
-
-    /*
-     Получаем данные вершин, чтобы проложить в {W} компоненту адерсс мета информации,
-     о влиянии на данную вершины.
-     */
-
-    //получаем поток данных с вершиными
-    pPositionFlow = this.data.getFlow(a.DECLUSAGE.POSITION);
-    debug_assert(pPositionFlow, 'skin require position with indices in mesh subset');
-    
-    pPosData = pPositionFlow.pData;
-
-    //проверяем, что данные еще не подвязаны к другому Skin'у
-    if (pPosData.hasSemantics(a.DECLUSAGE.BLENDMETA)) {
-        //тоже самый skin?
-        if (pSkin.isAffect(pPosData)) {
-            this._pSkin = pSkin;
-            return true;
-        }
-
-        debug_assert(0, 'mesh subset already has another skin');
-        return false;
-    }
-
-    //проверяем, что текущий подмеш пренадлежит мешу, на который натягивается skin,
-    //или его клону.
-    debug_assert(this.data.buffer == pSkin.data, 
-        'can not bind to skin mesh subset that does not belong skin\'s mesh.')
-
-    //подвязывем скин, к данным с вершинами текущего подмеша.
-    //т.е. добавляем разметку в конец каждого пикселя
-    pSkin.attach(pPosData);
-
-    //получаем данные разметки
-    pMetaData = pPosData.getTypedData(a.DECLUSAGE.BLENDMETA);
-
-    //если по каким то причинам нет разметки...
-    debug_assert(pMetaData, 'you must specify location for storage blending data');
-
-    //выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
-    pInfMetaData = pSkin.getInfluenceMetaData();
-    iInfMetaDataLoc = pInfMetaData.getOffset() / a.DTYPE.BYTES_PER_FLOAT;
-    iInfMetaDataStride = pInfMetaData.stride / a.DTYPE.BYTES_PER_FLOAT;
-
-    for (var i = 0; i < pMetaData.length; ++ i) {
-        pMetaData[i] = iInfMetaDataLoc + i * iInfMetaDataStride;
-    }
-
-    //обновляем адресса мета данных вершин
-    pPosData.setData(pMetaData, a.DECLUSAGE.BLENDMETA);
-
-    //trace(this.data.toString());
-    this._pSkin = pSkin;
-
-    return true;
-};
 
 MeshSubset.prototype.applyFlexMaterial = function(sMaterial, pMaterialData) {
     if (this._pMesh.addFlexMaterial(sMaterial, pMaterialData)) {
@@ -391,6 +325,75 @@ MeshSubset.prototype.show = function() {
 
 MeshSubset.prototype.hide = function() {
     this.datq.renderable(false);
+};
+
+
+//исходим из того, что данные скина 1:1 соотносятся с вершинами.
+MeshSubset.prototype.setSkin = function(pSkin) {
+    'use strict';
+
+    var pPosData;
+    var pPositionFlow;
+    var pMetaData;
+
+    var pInfMetaData;       //мета данные разметки
+    var iInfMetaDataLoc;    //адресс мета данных во флотах
+    var iInfMetaDataStride; //шаг мета данных во флотах
+
+    /*
+     Получаем данные вершин, чтобы проложить в {W} компоненту адерсс мета информации,
+     о влиянии на данную вершины.
+     */
+
+    //получаем поток данных с вершиными
+    pPositionFlow = this.data.getFlow(a.DECLUSAGE.POSITION);
+    debug_assert(pPositionFlow, 'skin require position with indices in mesh subset');
+    
+    pPosData = pPositionFlow.pData;
+
+    //проверяем, что данные еще не подвязаны к другому Skin'у
+    if (pPosData.hasSemantics(a.DECLUSAGE.BLENDMETA)) {
+        //тоже самый skin?
+        if (pSkin.isAffect(pPosData)) {
+            this._pSkin = pSkin;
+            return true;
+        }
+
+        debug_assert(0, 'mesh subset already has another skin');
+        return false;
+    }
+
+    //проверяем, что текущий подмеш пренадлежит мешу, на который натягивается skin,
+    //или его клону.
+    debug_assert(this.data.buffer == pSkin.data, 
+        'can not bind to skin mesh subset that does not belong skin\'s mesh.')
+
+    //подвязывем скин, к данным с вершинами текущего подмеша.
+    //т.е. добавляем разметку в конец каждого пикселя
+    pSkin.attach(pPosData);
+
+    //получаем данные разметки
+    pMetaData = pPosData.getTypedData(a.DECLUSAGE.BLENDMETA);
+
+    //если по каким то причинам нет разметки...
+    debug_assert(pMetaData, 'you must specify location for storage blending data');
+
+    //выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
+    pInfMetaData = pSkin.getInfluenceMetaData();
+    iInfMetaDataLoc = pInfMetaData.getOffset() / a.DTYPE.BYTES_PER_FLOAT;
+    iInfMetaDataStride = pInfMetaData.stride / a.DTYPE.BYTES_PER_FLOAT;
+
+    for (var i = 0; i < pMetaData.length; ++ i) {
+        pMetaData[i] = iInfMetaDataLoc + i * iInfMetaDataStride;
+    }
+
+    //обновляем адресса мета данных вершин
+    pPosData.setData(pMetaData, a.DECLUSAGE.BLENDMETA);
+
+    //trace(this.data.toString());
+    this._pSkin = pSkin;
+
+    return true;
 };
 
 A_NAMESPACE(MeshSubset);

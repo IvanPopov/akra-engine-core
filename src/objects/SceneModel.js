@@ -403,7 +403,6 @@ SceneModel.prototype.render = function () {
         var pSurface = pSubMesh.surfaceMaterial;
 
         if (pSubMesh.isSkinned()) {
-
             if (pSubMesh.surfaceMaterial.totalTextures) {
                 pProgram = pEngine.pDrawMeshAnimProgTex;
             }
@@ -629,7 +628,6 @@ SceneModel.prototype.toString = function (isRecursive, iDepth) {
         }
 
         return sData;
-
     }
 
     return SceneObject.prototype.toString.call(this, isRecursive, iDepth);

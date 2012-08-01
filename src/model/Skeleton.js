@@ -9,16 +9,23 @@
 
 function Skeleton (pEngine, sName) {
 	Enum ([
-		JOINTS_MOVED = 0x01
+		//JOINTS_MOVED = 0x01
 		], SKELETON_FLAGS, a.Skeleton);
 
-	this._nBones = 0;
-	this._pBoneTransforms = null;
-	this._pBoneTransformsData = null;
-	this._pJoints = null;
-	this._pRootJoints = null;
-	this._pJointsByName = null;
 	this._sName = sName || null;
+	this._pEngine = pEngine;
+
+	//корневые joint'ы
+	this._pRootJoints = [];
+	
+	//перечень joint'ов по именам
+	this._pJointList = null;
+
+	//все joint'ы у которых нет потомков и братьев
+	//нужны чтобы отслеживать изменения в скелете
+	this._pNotificationJoints = null
+
+	this._pMeshNode = null;
 
 	//если положения joint'ов были изменены, то переменная выставляется в true.
 	this._iFlags = false;
@@ -26,7 +33,7 @@ function Skeleton (pEngine, sName) {
 
 PROPERTY(Skeleton, 'totalBones',
 	function () {
-		return this._nBones;
+		return Object.keys(this._pJointList).length;
 	});
 
 PROPERTY(Skeleton, 'name',
@@ -34,112 +41,133 @@ PROPERTY(Skeleton, 'name',
 		return this._sName;
 	});
 
-/**
- * The maximum number of bones that can be placed in the current skeleton.
- * @return {Uint}
- */
-Skeleton.prototype.getMaxBoneCount = function() {
-	return this._pBoneTransforms? this._pBoneTransforms.length: 0;
+PROPERTY(Skeleton, 'root',
+	function () {
+		return this._pRootJoints[0] || null;
+	});
+
+
+Skeleton.prototype.getEngine = function () {
+    'use strict';
+    
+	return this._pEngine;
 };
 
-Skeleton.prototype.getRootBone = function() {
-	if (!this._pRootJoints) {
-		this._deriveRootJoints();
-	}
-
-	return this._pRootJoints[0];
+Skeleton.prototype.getRootJoint = function() {
+	'use strict';
+	
+	return this.getRootJoints()[0];
 };
 
-Skeleton.prototype.getTransformationMatricesData = function() {
-	return this._pBoneTransformsData;
+Skeleton.prototype.getRootJoints = function () {
+    'use strict';
+    
+	return this._pRootJoints;
 };
 
-Skeleton.prototype.getTransformationMatrices = function() {
-	return this._pBoneTransforms;
+Skeleton.prototype.isUpdated = function () {
+    'use strict';
+    
+	return true;
 };
 
-Skeleton.prototype.isUpdated = function() {
-	//TODO: учесть все возможные обновления.
-	return this._iFlags & a.Skeleton.JOINTS_MOVED;
-};
+Skeleton.prototype.addRootJoint = function (pJoint) {
+    'use strict';
+    
+    debug_assert(pJoint instanceof a.Joint, 'node must be joint');
 
-//метод нужен, чтобы указать, что меши уже синхронизировались с данным скелетом
-Skeleton.prototype.synced = function() {
-	this._iFlags &= ~ a.Skeleton.JOINTS_MOVED;
-};
+    var pRootJoints = this._pRootJoints;
 
-Skeleton.prototype._jointsMoved = function() {
-	this._iFlags |= a.Skeleton.JOINTS_MOVED;
-};
-
-Skeleton.prototype._deriveRootJoints = function() {
-	if (this._pRootJoints === null) {
-		this._pRootJoints = [];
-	}
-
-	var pRootJoints = this._pRootJoints;
-
-	pRootJoints.clear();	
-
-	var pExpectedRootJoint = this._pJoints[0];
-    var iCount = 1;
-
-    for (var i = 1, pJoint; i < this._nBones; ++ i) {
-        pJoint = this._pJoints[i];
-
-        if (pJoint.depth < pExpectedRootJoint.depth) {
-            iCount = 1;
-            pExpectedRootJoint = pJoint;
-        }
-        else if (pJoint.depth == pExpectedRootJoint.depth) {
-            iCount ++;
-        }
-    };
-
-    debug_assert(pExpectedRootJoint, 'invalid skeleton hierarhy, root node not found');
-    debug_assert(iCount === 1, 'invalid skeleton hierarhy, root is not singleton(' + iCount + ')');
-
-    pRootJoints.push(pExpectedRootJoint);
-};
-
-Skeleton.prototype.setup = function(nBones) {
-	debug_assert(this._pBoneTransforms === null, 'skeleton already setuped');
-
-	var pBoneBuffer = new ArrayBuffer(nBones * 16 * a.DTYPE.BYTES_PER_FLOAT);
-	var pBoneTransforms = new Array(nBones);
-
-	for (var i = 0; i < nBones; ++ i) {
-		pBoneTransforms[i] = 
-			Mat4.identity(new Float32Array(pBoneBuffer, i * 16 * a.DTYPE.BYTES_PER_FLOAT, 16));
+	for (var i = 0; i < pRootJoints.length; i++) {
+		if (pJoint.childOf(pRootJoints[i])) {
+			return false;
+		}	
+		else if (pRootJoints[i].childOf(pJoint)) {
+			pRootJoints.splice(i, 1);
+		}
 	};
 
-	this._pBoneTransforms = pBoneTransforms;
-	this._pJoints = new Array(nBones);
-	this._pJointsByName = {};
-	this._pBoneTransformsData = new Float32Array(pBoneBuffer);
+	this._pRootJoints.push(pJoint);
+
+	return this.update();
 };
 
+Skeleton.prototype.update = function () {
+    'use strict';
+    
+    var pRootJoints = this._pRootJoints;
+    var pJointList = this._pJointList = {};
+    var pNotificationJoints = this._pNotificationJoints = [];
 
+    function findJoints (pNode) {
+    	var sJoint;
 
-Skeleton.prototype.createBone = function(sName, iBoneIndex) {
-	debug_assert(this._nBones < this.getMaxBoneCount(), 'limit of bones reached for given skeleton');
+    	if (pNode) {
+	    	sJoint = pNode.boneName;
 
-	var pJoint = new a.Joint(this);
-	var iBoneSlot = ifndef(iBoneIndex, this._nBones);
-	var m4fBoneTransform = this._pBoneTransforms[iBoneSlot];
-	var sBoneName = sName || ('bone' + iBoneSlot);
+	    	if (sJoint) {
+	    		debug_assert(!pJointList[sJoint], 
+	    			'joint with name<' + sJoint + '> already exists in skeleton <' + this._sName + '>');
+	    		pJointList[sJoint] = pNode;
+	    	}
 
-	debug_assert(!this._pJointsByName[sBoneName], 'bone with this name already exists in this skeleton');
+	    	findJoints(pNode.sibling());
+	    	findJoints(pNode.child());
+    	}
+    }
 
-	pJoint.create(m4fBoneTransform);
-    pJoint.boneName = sBoneName;
+    for (var i = 0; i < pRootJoints.length; i++) {
+    	findJoints(pRootJoints[i]);
+    };
 
-    this._pJoints[iBoneSlot] = pJoint;
-    this._pJointsByName[sBoneName] = pJoint;
-    this._pRootJoints = null;
-    this._nBones ++
+	for (var sJoint in pJointList) {
+		var pJoint = pJointList[sJoint];
 
-    return pJoint;
+    	if (pJoint.sibling() == null && pJoint.child() == null) {
+    		pNotificationJoints.push(pJoint);
+    	}
+    };    
+
+	return true;
+};
+
+Skeleton.prototype.findJoint = function (sName) {
+    'use strict';
+
+    return this._pJointList[sName];
+};
+
+Skeleton.prototype.findJointByName = function (sName) {
+    'use strict';
+    
+	for (var s in this._pJointList) {
+		if (this._pJointList[s].name === sName) {
+			return this._pJointList[s];
+		}
+	}
+
+	return null;
+};
+
+Skeleton.prototype.attachMesh = function (pMesh) {
+    'use strict';
+	
+    debug_assert(this.getEngine() === pMesh.getEngine(), 'mesh must be from same engine instance');
+
+    if (this._pMeshNode == null) {
+    	this._pMeshNode = new a.SceneModel(this.getEngine());
+    	this._pMeshNode.create();
+    	this._pMeshNode.attachToParent(this.root);
+    }
+
+    this._pMeshNode.name = this.name + "[mesh-container]";
+    this._pMeshNode.addMesh(pMesh);
+};
+
+Skeleton.prototype.detachMesh = function () {
+    'use strict';
+    
+	//TODO: write detach method.
 };
 
 A_NAMESPACE(Skeleton);

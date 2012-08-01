@@ -28,14 +28,12 @@ function loadProgram(pEngine, sPath, pFlags) {
 
     if (pFlags) {
         for (var sFlag in pFlags) {
-
             if (pFlags[sFlag] === false) {
                 sDefine += '#undef ' + sFlag + '\n';
             }
             else {
                 sDefine += '#define ' + sFlag + ' ' + pFlags[sFlag] + '\n';    
             }
-
         }
     }
 

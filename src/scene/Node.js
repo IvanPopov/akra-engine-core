@@ -1,5 +1,6 @@
 var TEMPSCENEVECTOR3FORCALC0 = Vec3.create();
 var TEMPSCENEMATRIX4FORCALC0 = Mat4.create();
+var TEMPSCENEVECTOR4FORCALC0 = Mat4.create();
 
 function Node(){
     A_CLASS;
@@ -111,6 +112,38 @@ PROPERTY(Node, 'depth',
         for (var pNode = this; pNode; pNode = pNode.parent(), ++ iDepth);
         return iDepth;
     });
+
+Node.prototype.findNode = function (sNodeName) {
+    'use strict';
+
+    var pNode = null;
+
+    if (this._sName === sNodeName) {
+        return this;
+    }
+
+    if (this._pSibling) {
+        pNode = this._pSibling.findNode(sNodeName);
+    }
+
+    if (pNode == null && this._pChild) {
+        pNode = this._pChild.findNode(sNodeName);
+    }
+
+    return pNode;
+};
+
+Node.prototype.childOf = function (pParent) {
+    'use strict';
+    
+    for (var pNode = this; pNode; pNode = pNode.parent()) {
+        if (pNode.parent() === pParent) {
+            return true;
+        }
+    }
+
+    return false;
+};
 
 Node.prototype.setName = function (sName) {
     'use strict';
@@ -691,6 +724,7 @@ Node.prototype.updateWorldVectors = function () {
         a.BitFlags.clearBit(this._iUpdateFlags, a.Scene.k_rebuildWorldVectors);
     }
 };
+
 /**
  * Getter for worldPosistion vector
  * @treturn Float32Array _v3fWorldPostion
@@ -905,6 +939,7 @@ Node.prototype.setRotation = function () {
 Node.prototype.addRelRotation = function () {
     var m4fRot;
     var m4fLocal = this._m4fLocalMatrix;
+    
     switch (arguments.length) {
         case 1:
             m4fRot = arguments[0];
@@ -921,8 +956,12 @@ Node.prototype.addRelRotation = function () {
             Mat4.rotateX(m4fRot, pitch);
             Mat4.rotateZ(m4fRot, roll);
             break;
+        case 4:
+            Mat4.rotate(m4fLocal, arguments[3], arguments);
+            a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
+            return;
     }
-    ;
+    
 
     var a11 = m4fLocal._11, a21 = m4fLocal._21, a31 = m4fLocal._31;
     var a12 = m4fLocal._12, a22 = m4fLocal._22, a32 = m4fLocal._32;
@@ -1043,12 +1082,28 @@ Node.prototype.setScale = function (scale) {
     var m4fLocal = this._m4fLocalMatrix;
     if (typeof(scale) == "number") {
         m4fLocal._11 *= scale;
+        m4fLocal._21 *= scale;
+        m4fLocal._31 *= scale;
+        
+        m4fLocal._12 *= scale;
         m4fLocal._22 *= scale;
+        m4fLocal._32 *= scale;
+
+        m4fLocal._13 *= scale;
+        m4fLocal._23 *= scale;
         m4fLocal._33 *= scale;
     }
     else {
         m4fLocal._11 *= scale.X;
+        m4fLocal._21 *= scale.X;
+        m4fLocal._31 *= scale.X;
+        
+        m4fLocal._12 *= scale.Y;
         m4fLocal._22 *= scale.Y;
+        m4fLocal._32 *= scale.Y;
+
+        m4fLocal._13 *= scale.Z;
+        m4fLocal._23 *= scale.Z;
         m4fLocal._33 *= scale.Z;
     }
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);

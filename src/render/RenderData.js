@@ -98,8 +98,8 @@ function RenderData(pBuffer) {
      */
     this._iIndexSet = 0;
 
-	this._iRenderable = 1;
 
+	this._iRenderable = 1;
 }
 
 EXTENDS(RenderData, a.ReferenceCounter);
@@ -108,11 +108,6 @@ EXTENDS(RenderData, a.ReferenceCounter);
 PROPERTY(RenderData, 'buffer',
     function () {
         return this._pBuffer;
-    });
-
-PROPERTY(RenderData, 'buffer',
-    function () {
-        return this._pFactory;
     });
 
 
@@ -762,7 +757,6 @@ RenderData.prototype.draw = function () {
 		}
 	}
 	return isOK;
-
 };
 
 Ifdef (__DEBUG);
