@@ -330,7 +330,7 @@ function SceneModel(pEngine, pMesh) {
      */
     this._iModelFrameIndex = 0;
     this._hModelHandle = 0;
-    this._pMeshes = new Array(1);
+    this._pMeshes = [];
 
     if (pMesh) {
         this.addMesh(pMesh);
@@ -363,9 +363,21 @@ SceneModel.prototype.destructor = function () {
 };
 
 SceneModel.prototype.prepareForRender = function () {
-   
-};
+    var pMesh = this.findMesh();
+    if (!pMesh) {
+        return;
+    }
+    var pSkin = pMesh[0].getSkin();
+    var pAnimations = this.pAnimations;
+    // if (pSkin && pAnimations) {
+    //     var pSkeleton = pSkin.skeleton;
 
+    //     for (var i = 0; i < pAnimations.length; ++ i) {
+    //         pAnimations[i].play(a.now() / 10000.0);
+    //     }  
+    // }
+};
+var lock = false;
 SceneModel.prototype.render = function () {
     parent.render(this);
 
@@ -385,14 +397,20 @@ SceneModel.prototype.render = function () {
     if (!pMesh || !pMesh.isReadyForRender()) {
         return;
     }
- 
+
     for (var i = 0; i < pMesh.length; ++ i) {
         var pSubMesh = pMesh[i];
         var pSurface = pSubMesh.surfaceMaterial;
-        var iTextureFlags = pSurface.textureFlags;
-        var iTexActivator = 1;
 
-        if (pSubMesh.data.useAdvancedIndex()) {
+        if (pSubMesh.isSkinned()) {
+            if (pSubMesh.surfaceMaterial.totalTextures) {
+                pProgram = pEngine.pDrawMeshAnimProgTex;
+            }
+            else {
+                pProgram = pEngine.pDrawMeshAnimProg;
+            }
+        }
+        else if (pSubMesh.data.useAdvancedIndex()) {
             pProgram = pEngine.pDrawMeshI2IProg;
         }
         else if (pSubMesh.surfaceMaterial.totalTextures) {
@@ -400,7 +418,6 @@ SceneModel.prototype.render = function () {
         }
         else {
             pProgram = pEngine.pDrawMeshProg;
-            
         }
 
         pProgram.activate();
@@ -417,22 +434,29 @@ SceneModel.prototype.render = function () {
         pProgram.applyMatrix3('normal_mat', pModel.normalMatrix());
         pProgram.applyVector3('eye_pos', pCamera.worldPosition());
 
+        if (pSubMesh.isSkinned()) {
+            pProgram.applyMatrix4('bind_matrix', pSubMesh.skin.getBindMatrix());
+            pSubMesh.skin.applyBoneMatrices();
+            //trace(pSubMesh.skin.skeleton._pJoints);
+            //trace(Mat4.str(pSubMesh.skin.skeleton.getRootBone().getBoneOffsetMatrix()));
+        }
         
         if (pSurface.totalTextures) {
-            for (var i = 0; i < a.SurfaceMaterial.maxTexturesPerSurface; ++ i) {
-                if (!TEST_BIT(iTextureFlags, i)) {
+            var iTextureFlags = pSurface.textureFlags;
+            var iTexActivator = 1;
+            
+            for (var j = 0; j < a.SurfaceMaterial.maxTexturesPerSurface; ++ j) {
+                if (!TEST_BIT(iTextureFlags, j)) {
+                    if (j < 4) {
+                        pProgram.applySampler2D('TEXTURE' + j, 15);
+                    }
                     continue;
                 }
 
-                pSurface.texture(i).activate(iTexActivator);
-                pProgram.applySampler2D('TEXTURE' + i, iTexActivator);
-                //trace('pProgram.applySampler2D(', 'TEXTURE' + i,',', iTexActivator,')');
+                pSurface.texture(j).activate(iTexActivator);
+                pProgram.applySampler2D('TEXTURE' + j, iTexActivator);
                 iTexActivator ++;
             }
-
-            pProgram.applySampler2D('TEXTURE' + 1, 19);
-            pProgram.applySampler2D('TEXTURE' + 2, 19);
-            pProgram.applySampler2D('TEXTURE' + 3, 19);
         }
 
         pSubMesh.draw();
@@ -569,15 +593,45 @@ SceneModel.prototype.addMesh = function (pMesh) {
     if (!pMesh) {
         return false;
     }
-    this._pMeshes[0] = pMesh;
+    this._pMeshes.push(pMesh);
     return true;
 };
 
 SceneModel.prototype.findMesh = function (iMesh) {
     'use strict';
     iMesh = iMesh || 0;
-    return this._pMeshes[iMesh];
+    return this._pMeshes[iMesh] || null;
 };
+
+Ifdef (__DEBUG);
+
+SceneModel.prototype.toString = function (isRecursive, iDepth) {
+    'use strict';
+    
+    isRecursive = isRecursive || false;
+
+    if (!isRecursive) {
+        var sData = '<model' + (this._sName? ' ' + this._sName: '') + '(' + this._pMeshes.length + ')' +  '>';
+        
+        if (this._pMeshes.length) {
+
+            sData += '( ';
+
+            for (var i = 0; i < this._pMeshes.length; i++) {
+                sData += (i > 0? ',': '') + this._pMeshes[i].name;
+            };
+
+            sData += ' )';
+        
+        }
+
+        return sData;
+    }
+
+    return SceneObject.prototype.toString.call(this, isRecursive, iDepth);
+}
+
+Endif ();
 
 A_NAMESPACE(SceneModel);
 

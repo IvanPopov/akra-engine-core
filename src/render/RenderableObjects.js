@@ -246,27 +246,33 @@ RenderableObject.prototype.getRenderMethod = function() {
     return this._pSnapshots[iMethod]._pRenderMethod;
 };
 
-/**
- * By default, scene nodes do not render.
- * Derived classes must provide
- * any functionality needed.
- */
-RenderableObject.prototype.render = function () {
+//All renderable objects must have draw method...
+RenderableObject.prototype.draw = function () {
+    'use strict';
+    return false;
 };
 
+// /**
+//  * By default, scene nodes do not render.
+//  * Derived classes must provide
+//  * any functionality needed.
+//  */
+// RenderableObject.prototype.render = function () {
+// };
 
-/**
- * If we queued ourselved for rendering with the
- * display manager, we will get this function
- * called when it is our turn to render.
- * iActivationFlags contains a set of bit flags
- * held in the eActivationFlagBits enum
- * which tell us what resources we need to activate
- * in order to render ourselves.
- * @tparam RenderEntry pEntry
- * @tparam Int iActivationFlags
- */
-RenderableObject.prototype.renderCallback = function (pEntry, iActivationFlags) {
-};
+
+//     /**
+//      * If we queued ourselved for rendering with the
+//      * display manager, we will get this function
+//      * called when it is our turn to render.
+//      * iActivationFlags contains a set of bit flags
+//      * held in the eActivationFlagBits enum
+//      * which tell us what resources we need to activate
+//      * in order to render ourselves.
+//      * @tparam RenderEntry pEntry
+//      * @tparam Int iActivationFlags
+//      */
+//     RenderableObject.prototype.renderCallback = function (pEntry, iActivationFlags) {
+//     };
 
 a.RenderableObject = RenderableObject;

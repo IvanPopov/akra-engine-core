@@ -297,10 +297,7 @@ a.initDevice = function (pDevice) {
     };
 
 
-    var pExtentions = [
-        a.EXTENTIONS.COMPRESSED_TEXTURES,
-        a.EXTENTIONS.TEXTURE_FLOAT
-    ];
+    var pExtentions = __KEYS__(GRAPHICS_EXTENTIONS);
 
     var pExtentionsList = {};
     for (var i = 0, pExt; i < pExtentions.length; ++i) {
@@ -325,6 +322,9 @@ a.initDevice = function (pDevice) {
                 }
 
             }
+        }
+        else {
+            warning('cannot load extension: ' + pExtentions[i]);
         }
     }
 

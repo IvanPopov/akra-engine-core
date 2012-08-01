@@ -27,7 +27,7 @@ function Material (sName) {
    /**
     * @type ColorValue
     */
-   this.pEMISSIVE = new a.ColorValue;
+   this.pEmissive = new a.ColorValue;
    /**
     * @type Float
     */
@@ -46,7 +46,7 @@ Material.prototype.getProperty = function(eProperty) {
     case a.Material.DIFFUSE:    return this.pDiffuse;
     case a.Material.AMBIENT:    return this.pAmbient;
     case a.Material.SPECULAR:   return this.pSpecular;
-    case a.Material.EMISSIVE:   return this.pEMISSIVE;
+    case a.Material.EMISSIVE:   return this.pEmissive;
     case a.Material.SHININESS:  return this.pShininess;
   }
 
@@ -63,7 +63,7 @@ Material.prototype.setProperty = function(eProperty, pValue) {
     case a.Material.DIFFUSE:    this.pDiffuse = pValue; return true;
     case a.Material.AMBIENT:    this.pAmbient = pValue; return true;
     case a.Material.SPECULAR:   this.pSpecular = pValue; return true;
-    case a.Material.EMISSIVE:   this.pEMISSIVE = pValue; return true;
+    case a.Material.EMISSIVE:   this.pEmissive = pValue; return true;
     case a.Material.SHININESS:  this.pShininess = pValue; return true;
   }
   

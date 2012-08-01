@@ -113,6 +113,24 @@ Define(Vec4.set(_x, _y, _z, _w, v), function () {
     v.W = _w;
 });
 
+Define(Quaternion(), function () {
+    glMatrixArrayType(4);
+})
+
+Define(Quaternion4, Quaternion);
+
+Define(Quaternion(x, y, z, w), function () {
+    glMatrixArrayType([x, y, z, w]);
+});
+
+Define(Quaternion(c, w), function () {
+    glMatrixArrayType([c, c, c, w]);
+});
+
+Define(Quaternion(c), function () {
+    glMatrixArrayType([c, c, c, c]);
+});
+
 Define(Vector2(), function () {
     glMatrixArrayType(2);
 });
@@ -2413,12 +2431,21 @@ Mat4.row = function (mat, n) {
  * string representation of mat
  */
 Mat4.str = function (mat) {
-    return '[\n' + mat[0] + ', ' + mat[1] + ', ' + mat[2] + ', ' + mat[3] + '\n' +
-        ', ' + mat[4] + ', ' + mat[5] + ', ' + mat[6] + ', ' + mat[7] + '\n' +
-        ', ' + mat[8] + ', ' + mat[9] + ', ' + mat[10] + ', ' + mat[11] + '\n' +
-        ', ' + mat[12] + ', ' + mat[13] + ', ' + mat[14] + ', ' + mat[15] + '\n' +
+    return '[\n' + mat[0].toFixed(4) + ', ' + mat[1].toFixed(4) + ', ' + mat[2].toFixed(4) + ', ' + mat[3].toFixed(4) + 
+        ', ' + '\n' + mat[4].toFixed(4) + ', ' + mat[5].toFixed(4) + ', ' + mat[6].toFixed(4) + ', ' + mat[7].toFixed(4) + 
+        ', ' + '\n' + mat[8].toFixed(4) + ', ' + mat[9].toFixed(4) + ', ' + mat[10].toFixed(4) + ', ' + mat[11].toFixed(4) + 
+        ', ' + '\n' + mat[12].toFixed(4) + ', ' + mat[13].toFixed(4) + ', ' + mat[14].toFixed(4) + ', ' + mat[15].toFixed(4) + '\n' +
         ']';
 };
+
+Mat4.shaderStr = function (mat) {
+    return '[\n' + mat[0].toFixed(4) + ', ' + mat[4].toFixed(4) + ', ' + mat[8].toFixed(4) + ', ' + mat[12].toFixed(4) + 
+        ', ' + '\n' + mat[1].toFixed(4) + ', ' + mat[5].toFixed(4) + ', ' + mat[9].toFixed(4) + ', ' + mat[13].toFixed(4) + 
+        ', ' + '\n' + mat[2].toFixed(4) + ', ' + mat[6].toFixed(4) + ', ' + mat[10].toFixed(4) + ', ' + mat[14].toFixed(4) + 
+        ', ' + '\n' + mat[3].toFixed(4) + ', ' + mat[7].toFixed(4) + ', ' + mat[11].toFixed(4) + ', ' + mat[15].toFixed(4) + '\n' +
+        ']';
+};
+
 
 /*
  * Quat4 - Quaternions 

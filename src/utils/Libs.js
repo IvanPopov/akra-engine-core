@@ -44,8 +44,65 @@
 
     String.prototype.replaceAt = function (n, chr) {
         return this.substr(0, n) + chr + this.substr(n + chr.length);
-    }
+    };
 
+    Number.prototype.toHex = function (iLength) {
+        'use strict';
+        var sValue = this.toString(16);
+        for (var i = 0; i < iLength - sValue.length; ++ i) {
+            sValue = '0' + sValue;
+        }
+        return sValue;
+    };
+
+    Object.defineProperty(Array.prototype, 'last', {
+        enumerable: false,
+        configurable: true,
+        get: function() {
+            return this[this.length - 1];
+        },
+        set: undefined
+    });
+
+    Object.defineProperty(Array.prototype, 'el', {
+        enumerable: false,
+        configurable: true,
+        value: function (i) {i = i || 0; return this[i < 0? this.length + i: i];} 
+    });
+
+    Object.defineProperty(Array.prototype, 'clear', {
+        enumerable: false,
+        configurable: true,
+        value: function () {this.length = 0;} 
+    });
+
+    Object.defineProperty(Array.prototype, 'swap', {
+        enumerable: false,
+        configurable: true,
+        value: function (i, j) {
+            if (i < this.length && j < this.length) {
+                var t = this[i]; this[i] = this[j]; this[j] = t;
+            }
+        }    
+    });
+
+    Object.defineProperty(Array.prototype, 'insert', {
+        enumerable: false,
+        configurable: true,
+        value: function (pElement) {
+            if (typeof pElement.length === 'number') {
+                for (var i = 0, n = pElement.length; i < n; ++ i) {
+                    this.push(pElement[i]);
+                };
+            }
+            else {
+                this.push(pElement);
+            }
+        }    
+    });
+
+
+    Define(first, __[0]);
 
     //Include('libs/xml/xml2json.js');
 

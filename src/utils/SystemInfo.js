@@ -416,30 +416,12 @@ a.info = {
        },
 
         getExtention: function (pContext, eExtention) {
-            var pExtentions, sExtention, result = false, pExp;
-
+            var pExtentions, sExtention, result = false;
             pExtentions = pContext.getSupportedExtensions();
-
-            switch (eExtention) {
-                case a.EXTENTIONS.TEXTURE_FLOAT:
-                    pExp = 'texture_float';
-                    break;
-                case a.EXTENTIONS.TEXTURE_HALF_FLOAT:
-                    pExp = 'texture_half_float';
-                    break;
-                case a.EXTENTIONS.COMPRESSED_TEXTURES:
-                    pExp = 'compressed_texture';
-                    break;
-                case a.EXTENTIONS.STANDART_DERIVATIVES:
-                    pExp = 'standard_derivatives';
-                    break;
-                default:
-                    return null;
-            }
 
             for (var i in pExtentions) {
                 sExtention = pExtentions[i];
-                if (sExtention.search(pExp) != -1) {
+                if (sExtention.search(eExtention) != -1) {
                     result = pContext.getExtension(sExtention);
                     trace('extension successfuly loaded: ' + sExtention);
                 }

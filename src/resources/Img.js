@@ -1072,6 +1072,7 @@ Img.prototype.load=function(sFileName, fnCallBack)
         }
         else
         {
+            trace(sFileName);
             debug_error("Данный тип графического файла не поддерживается("+dwMagic+")");
             isOk=false;
         }
@@ -1118,20 +1119,20 @@ Img.prototype.load=function(sFileName, fnCallBack)
 		
 			for(k=0;k<nVolume;k++)
 			{		
-				console.log("Уровень",k);
+				//console.log("Уровень",k);
 				
 				for(l=0;l<6;l++)
 				{
 					if(TEST_BIT(me._iCubeFlags,a.Img.POSITIVEX+l))
 					{
-						console.log("Куб",l);
+						//console.log("Куб",l);
 						iX=me._iWidth;
 						iY=me._iHeight;
 						iSizeData=(Math.ceil(iX/me.getDivSize())*Math.ceil(iY/me.getDivSize()))*me.getBlockBytes();    
 					
 						for(var b=0;b<nMipMap;b++)
 						{
-							console.log("МипМап",b);
+							//console.log("МипМап",b);
 							me._pData[k][l][b]=new ArrayBuffer(iSizeData);
 							pDataTemp=new Uint8Array(me._pData[k][l][b]);
 							for(var a=0;a<iSizeData;a++)
@@ -1163,15 +1164,15 @@ Img.prototype.load=function(sFileName, fnCallBack)
 		
 			for(k=0;k<nVolume;k++)
 			{		
-				console.log("Уровень",k);				
-				console.log("Картинка",0);
+				//console.log("Уровень",k);				
+				//console.log("Картинка",0);
 				iX=me._iWidth;
 				iY=me._iHeight;
 				iSizeData=(Math.ceil(iX/me.getDivSize())*Math.ceil(iY/me.getDivSize()))*me.getBlockBytes();    
 			
 				for(var b=0;b<nMipMap;b++)
 				{
-					console.log("МипМап",b);
+					//console.log("МипМап",b);
 					me._pData[k][0][b]=new ArrayBuffer(iSizeData);
 					pDataTemp=new Uint8Array(me._pData[k][0][b]);
 					for(var a=0;a<iSizeData;a++)
@@ -1187,7 +1188,7 @@ Img.prototype.load=function(sFileName, fnCallBack)
 				}					
 			}
 		}
-		console.log("Результат: Общая длинна",iOffset,"iFlags", me._iFlags, "iCubeFlags",me._iCubeFlags);
+		//console.log("Результат: Общая длинна",iOffset,"iFlags", me._iFlags, "iCubeFlags",me._iCubeFlags);
        
 
         if(fnCallBack)
