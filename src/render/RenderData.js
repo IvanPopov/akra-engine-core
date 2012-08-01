@@ -751,7 +751,7 @@ RenderData.prototype.draw = function () {
 	{
 		if(this.isRenderable(i))
 		{
-			this._pFactory._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pIndicesArray[i].pMap);
+			this._pBuffer._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pIndicesArray[i].pMap);
 			bResult = this._pIndicesArray[i].pMap.draw();
 			isOK = isOK && bResult;
 		}

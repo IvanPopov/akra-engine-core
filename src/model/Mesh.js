@@ -33,7 +33,7 @@ function Mesh(pEngine, eOptions, sName, pDataBuffer) {
 	this._pBoundingBox = null;
 	this._pBoundingSphere = null;
 
-    this.setup(sName, eOptions, pDataFactory);
+    this.setup(sName, eOptions, pDataBuffer);
 };
 
 EXTENDS(Mesh, Array, a.ReferenceCounter);
