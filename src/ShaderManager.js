@@ -65,6 +65,7 @@ function ShaderManager (pEngine) {
 
     this.pEngine = pEngine;
     this._nEffectFile = 1;
+    this._pComponentManager = a.ComponentManager(pEngine);
 //    this._pActivatedPrograms = new Array(32);
 //    this._pActivatedPrograms[0] = 0;
 //    this._nLastActivatedProgram = 0;
@@ -100,7 +101,7 @@ ShaderManager.prototype.loadEffectFile = function (sFileName, sEffectName) {
     var i;
     var pTechniques = pEffect.pTechniques;
     for(i in pTechniques){
-        if(!this.initComponent(pTechniques[i], sEffectName)){
+        if(!this.initComponent(pTechniques[i])){
             warning("Can not initialize component from effect " + sFileName +
                     " with name " + pTechniques[i].sName + "!");
         }
@@ -112,10 +113,25 @@ ShaderManager.prototype.loadEffectFile = function (sFileName, sEffectName) {
  * @tparam pTechnique
  * @treturn Boolean True if all Ok, False if we already have this component.
  */
-ShaderManager.prototype.initComponent = function (pTechnique, sEffectName) {
+ShaderManager.prototype.initComponent = function (pTechnique) {
     //TODO: init component
-    warning("init component");
+    var sName;
+    if(pTechnique.hasComplexName()){
+        sName = pTechnique.sName;
+    }
+    else{
+        sName = pTechnique.pEffect._sProvideNameSpace || "";
+        sName += "." + pTechnique.sName;
+    }
+    if(this._pComponentManager.findResource(sName)){
+        return false;
+    }
+    var pComponent = this._pComponentManager.createResource(sName);
+    pComponent.init(sName, pTechnique);
     return true;
+};
+ShaderManager.prototype.getComponentByName = function (sName) {
+    return this._pComponentManager.findResource(sName);
 };
 
 
@@ -171,7 +187,7 @@ ShaderManager.prototype.findEffect = function () {
  * @tparam pEffectComponent pEffectComponent
  * @treturn Boolean
  */
-ShaderManager.prototype.registerComponent = function (pEffectComponent) {
+ShaderManager.prototype.registerComponent = function (pComponent) {
     return false;
 };
 

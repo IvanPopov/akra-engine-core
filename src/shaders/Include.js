@@ -5,6 +5,7 @@ Include('shader/ShaderBlend.js');
 Include('shader/ShaderPrecompiler.js');
 Include('effect/Effect.js');
 Include('Effect.js');
+Include('Component.js');
 
 Define(EFFECT_SYNTAX_COMPATIBILITY, 1);
 

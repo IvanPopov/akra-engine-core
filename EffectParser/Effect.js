@@ -1112,7 +1112,7 @@ function EffectFunction(sName, pGLSLExpr, pTypes) {
      * may use only in vertex shader
      * @type {Boolean}
      */
-    this.isOnlyVertex = false;
+    this.isVertexOnly = false;
     /**
      * may use only if in program there are buffer
      * @type {Boolean}
