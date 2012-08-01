@@ -258,7 +258,7 @@ AnimationTransformation.prototype.apply = function (iKeyFrame, fBlend) {
 
 	for (var i = 0; i < 16; i++) {
 		fValue = ((pEndFrame.pValue[i] * fBlend) + ((1. - fBlend) * pStartFrame.pValue[i]));
-		//m4fLocalMatrix[i] = i === 15? (fValue || 1) : fValue;
+		m4fLocalMatrix[i] = i === 15? (fValue || 1) : fValue;
 	};
 };
 
