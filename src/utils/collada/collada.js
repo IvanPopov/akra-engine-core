@@ -2285,7 +2285,7 @@ Ifdef (__DEBUG);
             var pSceneNode = pEngine.appendMesh(
                 pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
                 pJointNode);
-
+            pSceneNode.name = sJointName + '[joint]';
             pSceneNode.setScale(0.1);
     }
 Endif ();

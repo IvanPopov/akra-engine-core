@@ -19,18 +19,21 @@ PROPERTY(Joint, 'boneName',
 Joint.prototype.create = function () {
     'use strict';
 
-    this._m4fWorldMatrix = Mat4.identity(new Matrix4);
-    this._m4fLocalMatrix = Mat4.identity(new Matrix4);
-    this._m4fInverseWorldMatrix = Mat4.identity(new Matrix4);
+    this._m4fLocalMatrix = new Matrix4;
+    this._m4fWorldMatrix = new Matrix4;
     
-    this._v3fWorldPosition  = Vec3.create();
-    this._v3fWorldRight     = Vec3.create();
-    this._v3fWorldUp        = Vec3.create();
-    this._v3fWorldForward   = Vec3.create();
+    this._v3fWorldPosition  = new Vector3();
+    this._v3fTranslation    = new Vector3(0, 0, 0);
+    this._v3fScale          = new Vector3(1, 1, 1);
+    this._qRotation         = new Quaternion(0, 0, 0, 1);
+
 
     //maybe custom
     this.setInheritance(a.Scene.k_inheritAll);
 
+    Mat4.identity(this._m4fLocalMatrix);
+    Mat4.identity(this._m4fWorldMatrix);
+    
     return true;
 };
 

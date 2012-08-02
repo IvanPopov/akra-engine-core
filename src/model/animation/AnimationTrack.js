@@ -215,7 +215,7 @@ AnimationTranslation.prototype.apply = function (iKeyFrame, fBlend) {
 	var fY = ((pEndFrame.pValue.Y * fBlend) + ((1. - fBlend) * pStartFrame.pValue.Y));
 	var fZ = ((pEndFrame.pValue.Z * fBlend) + ((1. - fBlend) * pStartFrame.pValue.Z));
 	
-	//this._pTarget.setPosition(fX, fY, fZ);
+	this._pTarget.setPosition(fX, fY, fZ);
 	TODO('translation animation');
 };
 

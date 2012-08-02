@@ -141,7 +141,7 @@ function Camera () {
     this.pFrustum = new a.Frustum();
 }
 ;
-a.extend(Camera, SceneNode);
+a.extend(Camera, a.SceneNode);
 /**
  * Create camera
  * @treturn Boolean

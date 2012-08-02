@@ -43,13 +43,7 @@ if (typeof Float32Array != 'undefined') {
 else {
     glMatrixArrayType = Array;
 }
-/*
- Define(Math.min(x,y), function(){
- x>y?y:x;
- });
- Define(Math.max(x,y), function(){
- x>y?x:y;
- });*/
+
 
 Define(X, __[0])
 Define(Y, __[1])
@@ -217,6 +211,19 @@ Define(Mat3.set(mat, dest), function () {
     dest[8] = mat[8];
     dest[9] = mat[9];
 });
+
+Define(Mat4.setTranslation(mat, vec), function () {
+    mat._14 = vec.X;
+    mat._24 = vec.Y;
+    mat._34 = vec.Z;
+});
+
+Define(Mat4.addTranslation(mat, vec), function () {
+    mat._14 += vec.X;
+    mat._24 += vec.Y;
+    mat._34 += vec.Z;
+});
+
 /*
  * Vec2 - 2 Dimensional Vector
  */
@@ -546,7 +553,11 @@ Vec2.clear = function (vec) {
 /*
  * Vec3 - 3 Dimensional Vector
  */
-var Vec3 = {};
+var Vec3 = {
+    axisX: [1, 0, 0],
+    axisY: [0, 1, 0],
+    axisZ: [0, 0, 1]
+};
 
 /*
  * Vec3.create
@@ -1750,6 +1761,54 @@ Mat4.toMat3 = function (mat, dest) {
     return dest;
 };
 
+
+Mat4._pNxt = [1, 2, 0];
+Mat4.toQuat4 = function (m, quat) {
+    if (!quat) {
+        quat = Quat4.create();
+    }
+
+    var  tr, s, q = quat;
+    var    i, j, k;
+
+    var nxt = Mat4._pNxt;
+
+    tr = m._11 + m._22 + m._33;
+
+    /* check the diagonal */
+    if (tr > 0.0) {
+        s = Math.sqrt(tr + 1.0);
+        q.W = s / 2.0;
+        s = 0.5 / s;
+        
+        q.X = (m._23 - m._32) * s;
+        q.Y = (m._31 - m._13) * s;
+        q.Z = (m._12 - m._21) * s;
+    } 
+    else {                
+        /* diagonal is negative */
+        i = 0;
+        if (m._22 > m._11) i = 1;
+        if (m._33 > m[i * 4 + i]) i = 2;
+        j = nxt[i];
+        k = nxt[j];
+
+        s = Math.sqrt((m[i * 4 + i] - (m[j * 4 + j] + m[k * 4 + k])) + 1.0);
+                          
+        q[i] = s * 0.5;
+                                
+        if (s != 0.0) s = 0.5 / s;
+
+        q[3] = (m[k * 4 + j] - m[j * 4 + k]) * s;
+        q[j] = (m[j * 4 + i] + m[i * 4 + j]) * s;
+        q[k] = (m[k * 4 + i] + m[i * 4 + k]) * s;
+    }
+
+    return q;
+}
+
+Mat3.toQuat4 = Mat4.toQuat4;
+
 /*
  * Mat4.toInverseMat3
  * Calculates the inverse of the upper 3x3 elements of a Mat4 and copies the result into a Mat3
@@ -2622,6 +2681,8 @@ Quat4.multiply = function (quat, quat2, dest) {
     return dest;
 }
 
+Quat4.mult = Quat4.multiply;
+
 /*
  * Quat4.multiplyVec3
  * Transforms a Vec3 with the given quaternion
@@ -2652,6 +2713,98 @@ Quat4.multiplyVec3 = function (quat, vec, dest) {
     dest[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx;
 
     return dest;
+}
+
+Quat4._v3fTemp = Vec3.create();
+Quat4._m3fTemp = Mat3.create();
+
+Quat4.fromForwardUp = function (v3fForwardm, v3fUp, quat) {
+    if (!quat) {
+        quat = Quat4.create();
+    }
+
+    var v3fTemp = Quat4._v3fTemp;
+    var m3fTemp = Quat4._m3fTemp;
+
+    Vec3.cross(v3fUp, v3fForward, v3fTemp);
+
+    m3fTemp._11 = v3fTemp.X;
+    m3fTemp._21 = v3fTemp.Y;
+    m3fTemp._31 = v3fTemp.Z;
+    m3fTemp._12 = v3fUp.X;
+    m3fTemp._22 = v3fUp.Y;
+    m3fTemp._32 = v3fUp.Z;
+    m3fTemp._13 = v3fForward.X;
+    m3fTemp._23 = v3fForward.Y;
+    m3fTemp._33 = v3fForward.Z;
+
+    return Mat3.toQuat4(m3fTemp, quat);
+}
+
+Quat4.fromAxisAngle = function (axis, angle, quat) {
+    if (!quat) {
+        quat = Quat4.create();
+    }
+
+    quat.x = axis.X * Math.sin(angle / 2.)
+    quat.y = axis.Y * Math.sin(angle / 2.)
+    quat.z = axis.Z * Math.sin(angle / 2.)
+    quat.w = Math.cos(angle / 2.);
+
+    return quat;
+};
+
+
+Quat4.fromYPR = function (fYaw, fPitch, fRoll, quat) {
+    if (!quat) {
+        quat = Quat4.create();
+    }
+
+    var fPhi = fPitch,//fRoll,
+        fTheta = fRoll, //fPitch,
+        fPsi = fYaw;
+
+    with (Math) {
+        quat.X = sin(fPhi/2) * cos(fTheta/2) * cos(fPsi/2) - cos(fPhi/2) * sin(fTheta/2) * sin(fPsi/2);
+        quat.Y = cos(fPhi/2) * sin(fTheta/2) * cos(fPsi/2) + sin(fPhi/2) * cos(fTheta/2) * sin(fPsi/2);
+        quat.Z = cos(fPhi/2) * cos(fTheta/2) * sin(fPsi/2) - sin(fPhi/2) * sin(fTheta/2) * cos(fPsi/2);
+
+        quat.W = cos(fPhi/2) * cos(fTheta/2) * cos(fPsi/2) + sin(fPhi/2) * sin(fTheta/2) * sin(fPsi/2);
+    }
+
+    return quat;
+};
+
+Quat4.toAxis = function (q1, axis) {
+    if (!axis) {
+        axis = new Vector3;
+    }
+
+    if (q1.W > 1) 
+        Quat4.normalize(q1); 
+        // if w>1 acos and sqrt will produce errors, this cant happen if quaternion is normalised
+    
+    //angle = 2 * Math.acos(q1.W);
+    
+    var s = Math.sqrt(1 - q1.W * q1.W); 
+    // assuming quaternion normalised then w is less than 1, so term always positive.
+
+    if (s < 0.0005) { 
+
+        // test to avoid divide by zero, s is always positive due to sqrt
+        // if s close to zero then direction of axis not important
+        
+        axis.X = q1.X; // if it is important that axis is normalised then replace with x=1; y=z=0;
+        axis.Y = q1.Y;
+        axis.Z = q1.Z;
+    } 
+    else {
+        axis.X = q1.X / s; // normalise axis
+        axis.Y = q1.Y / s;
+        axis.Z = q1.Z / s;
+    }
+
+   return axis;
 }
 
 /*

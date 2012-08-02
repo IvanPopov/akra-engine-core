@@ -343,7 +343,7 @@ EXTENDS(SceneModel, a.SceneObject);
  * create resource.
  */
 SceneModel.prototype.create = function () {
-    parent.create(this);
+    SceneObject.prototype.create.call(this);
 };
 
 
@@ -363,17 +363,16 @@ SceneModel.prototype.destructor = function () {
 };
 
 SceneModel.prototype.prepareForRender = function () {
-    var pMesh = this.findMesh();
-    if (!pMesh) {
-        return;
-    }
-    var pSkin = pMesh[0].getSkin();
-    var pAnimations = this.pAnimations;
+    // var pMesh = this.findMesh();
+    // if (!pMesh) {
+    //     return;
+    // }
+    // var pSkin = pMesh[0].getSkin();
+    // var pAnimations = this.pAnimations;
     // if (pSkin && pAnimations) {
-    //     var pSkeleton = pSkin.skeleton;
 
     //     for (var i = 0; i < pAnimations.length; ++ i) {
-    //         pAnimations[i].play(a.now() / 10000.0);
+    //         pAnimations[i].play(a.now() / 1000.0);
     //     }  
     // }
 };
