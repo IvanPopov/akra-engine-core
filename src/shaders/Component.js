@@ -16,7 +16,8 @@ function Component(pEngine){
     this.sComponents = null;
     this.pExteranalsFragment = null;
     this.pExteranalsVertex = null;
-};
+    this.pComponentBlend = null;
+}
 a.extend(Component, a.ResourcePoolItem);
 /**
  * innitialize the resource (called once)

@@ -205,6 +205,9 @@ function DisplayManager (pEngine) {
     this._shaderProgramPool = new a.ShaderProgramManager(pEngine);
     this._shaderProgramPool.initialize(1);
 
+    this._componentPool = new a.ComponentManager(pEngine);
+    this._componentPool.initialize(10);
+
     // device-bound resources
     this._pFontTexture = null;
 
@@ -253,6 +256,11 @@ DisplayManager.prototype.effectPool = function () {
 DisplayManager.prototype.renderMethodPool = function () {
     INLINE();
     return this._renderMethodPool;
+};
+
+DisplayManager.prototype.componentPool = function () {
+    INLINE();
+    return this._componentPool;
 };
 
 DisplayManager.prototype.modelPool = function () {
@@ -447,6 +455,9 @@ DisplayManager.prototype.registerDeviceResources = function () {
     this._shaderProgramPool.registerResourcePool(
         new a.ResourceCode(a.ResourcePoolManager.VideoResource,
             a.ResourcePoolManager.ShaderProgramResource));
+    this._componentPool.registerResourcePool(
+        new a.ResourceCode(a.ResourcePoolManager.VideoResource,
+                           a.ResourcePoolManager.ComponentResource));
 };
 
 /**

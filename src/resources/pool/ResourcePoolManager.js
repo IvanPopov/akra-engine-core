@@ -25,7 +25,7 @@ Enum([VideoResource = 0, AudioResource, GameResource, TotalResourceFamilies],
 Enum([
          TextureResource = 0, VideoBufferResource, VertexBufferResource, IndexBufferResource,
          RenderResource, RenderSetResource, ModelResource,
-         ImageResource, SMaterialResource, ShaderProgramResource, TotalVideoResources
+         ImageResource, SMaterialResource, ShaderProgramResource, ComponentResource, TotalVideoResources
      ],
      VIDEO_RESOURCES, a.ResourcePoolManager)
 

@@ -2,8 +2,50 @@ Define(SM_INVALID_EFFECT, -1);
 Define(SM_INVALID_TECHNIQUE, -1);
 Define(SM_UNKNOWN_PASS, -1);
 
+function ComponentBlend() {
+    this.pPassBlends = [];
+    this.pUniformsBlend = [];
+    this.sHash = null;
+}
+ComponentBlend.prototype.addComponent = function (pComponent, nShift) {
+    //TODO: think about global uniform lists and about collisions of real names in them
+    var i, j;
+    var pPass;
+    var pUniforms;
+    var sName;
+    var pVar1, pVar2;
+    for (i = 0; i < pComponent.pPasses.length; i++) {
+        if (!this.pPassBlends[i + nShift]) {
+            this.pPassBlends[i + nShift] = [];
+            this.pUniformsBlend[i + nShift] = {
+                "pUniformsByName"     : {},
+                "pUniformsByRealName" : {},
+                "PUniformsValues"     : {},
+                "pUniformsDefault"    : {}
+            };
+        }
+        pPass = pComponent.pPasses[i];
+        this.pPassBlends[i + nShift].push(pPass);
+        pUniforms = this.pUniformsBlend[i + nShift];
+        for (j in pPass.pUniformsByName) {
+            sName = pPass.pUniformsByName[j];
+            pUniforms.pUniformsByName[j] = sName;
+            pVar1 = pUniforms.pUniformsByRealName[sName];
+            pVar2 = pPass.pUniformsByRealName[sName];
+            if(pVar1){
 
-function ShaderManager (pEngine) {
+                if(!pVar1.pType.isEqual(pVar2.pType)){
+                    warning("You used uniforms with the same semantics. Now we work not very well with that.");
+                }
+            }
+            pUniforms.pUniformsByRealName[sName] = pVar2;
+            pUniforms.pUniformsDefault[sName] = pPass.pUniformsDefault[sName];
+            pUniforms.PUniformsValues[sName] = null;
+        }
+    }
+};
+
+function ShaderManager(pEngine) {
     Enum([
              PARAMETER_FLAG_ALL = 1,
              PARAMETER_FLAG_NONSYSTEM,
@@ -16,13 +58,13 @@ function ShaderManager (pEngine) {
              VIEW_MATRIX,
              PROJ_MATRIX,
 
-             WORLD_VIEW_MATRIX,       //VIEW x WORLD
-             VIEW_PROJ_MATRIX,        //PROJ x VIEW
-             WORLD_VIEW_PROJ_MATRIX,  //PROJ x VIEW x WORLD
+             WORLD_VIEW_MATRIX, //VIEW x WORLD
+             VIEW_PROJ_MATRIX, //PROJ x VIEW
+             WORLD_VIEW_PROJ_MATRIX, //PROJ x VIEW x WORLD
 
              WORLD_MATRIX_ARRAY,
 
-             NORMAL_MATRIX,             //transpose(inverse(mat3(WORLD_MATRIX)))  see: SceneNode.normalMatrix()
+             NORMAL_MATRIX, //transpose(inverse(mat3(WORLD_MATRIX)))  see: SceneNode.normalMatrix()
 
              MAX_MATRIX_HANDLES
          ], MATRIX_HANDLES, a.ShaderManager);
@@ -65,7 +107,7 @@ function ShaderManager (pEngine) {
 
     this.pEngine = pEngine;
     this._nEffectFile = 1;
-    this._pComponentManager = a.ComponentManager(pEngine);
+    this._pComponentManager = pEngine.displayManager().componentPool();
 //    this._pActivatedPrograms = new Array(32);
 //    this._pActivatedPrograms[0] = 0;
 //    this._nLastActivatedProgram = 0;
@@ -90,18 +132,18 @@ ShaderManager.prototype.loadEffectFile = function (sFileName, sEffectName) {
     sEffectName = sEffectName || pRes[1];
     pEffect = new a.fx.Effect(this, this._nEffectFile);
     this._nEffectFile++;
-    sSource = a.ajax({url:sFileName, async: false}).data;
+    sSource = a.ajax({url : sFileName, async : false}).data;
     a.util.parser.parse(sSource);
     var isLoadOk = pEffect.analyze(a.util.parser.pSyntaxTree);
     trace(pEffect);
-    if(!isLoadOk){
+    if (!isLoadOk) {
         warning("Effect file:(\"" + sFileName + "\")can not be loaded");
         return false;
     }
     var i;
     var pTechniques = pEffect.pTechniques;
-    for(i in pTechniques){
-        if(!this.initComponent(pTechniques[i])){
+    for (i in pTechniques) {
+        if (!this.initComponent(pTechniques[i])) {
             warning("Can not initialize component from effect " + sFileName +
                     " with name " + pTechniques[i].sName + "!");
         }
@@ -116,14 +158,14 @@ ShaderManager.prototype.loadEffectFile = function (sFileName, sEffectName) {
 ShaderManager.prototype.initComponent = function (pTechnique) {
     //TODO: init component
     var sName;
-    if(pTechnique.hasComplexName()){
+    if (pTechnique.hasComplexName()) {
         sName = pTechnique.sName;
     }
-    else{
+    else {
         sName = pTechnique.pEffect._sProvideNameSpace || "";
         sName += "." + pTechnique.sName;
     }
-    if(this._pComponentManager.findResource(sName)){
+    if (this._pComponentManager.findResource(sName)) {
         return false;
     }
     var pComponent = this._pComponentManager.createResource(sName);
@@ -136,24 +178,24 @@ ShaderManager.prototype.getComponentByName = function (sName) {
 
 
 ShaderManager.prototype.activateProgram = function (pProgram) {
-   // if (this._pActivatedPrograms[this._nLastActivatedProgram] !== pProgram) {
-   //     trace('bind Program', pProgram.resourceHandle());
-   //     this._pActivatedPrograms[++this._nLastActivatedProgram] = pProgram;
-   this._pActiveProgram = pProgram;
-        pProgram.bind();
-   // }
+    // if (this._pActivatedPrograms[this._nLastActivatedProgram] !== pProgram) {
+    //     trace('bind Program', pProgram.resourceHandle());
+    //     this._pActivatedPrograms[++this._nLastActivatedProgram] = pProgram;
+    this._pActiveProgram = pProgram;
+    pProgram.bind();
+    // }
 };
 
 ShaderManager.prototype.deactivateProgram = function (pProgram) {
     //if (this._pActivatedPrograms[this._nLastActivatedProgram] === pProgram) {
     //    trace('unbind Program', pProgram.resourceHandle());
-     //   this._nLastActivatedProgram --;
-        //pProgram.unbind(this._pActivatedPrograms[this._nLastActivatedProgram]);
+    //   this._nLastActivatedProgram --;
+    //pProgram.unbind(this._pActivatedPrograms[this._nLastActivatedProgram]);
     //}
     this._pActiveProgram = null;
     pProgram.unbind();
 };
-ShaderManager.prototype.getActiveProgram = function() {
+ShaderManager.prototype.getActiveProgram = function () {
     return this._pActiveProgram;
 };
 ShaderManager.prototype.activeTextures = new Array(32);
@@ -285,7 +327,7 @@ ShaderManager.prototype.findTechnique = function (sTechnique) {
  * @tparam String/Binary pData Эффект файл.
  * @treturn Int Идентификатор эффекта или SM_INVALID_EFFECT
  */
-ShaderManager.prototype.addEffect  = function (pData) {
+ShaderManager.prototype.addEffect = function (pData) {
     return SM_INVALID_EFFECT;
 };
 
@@ -345,6 +387,7 @@ ShaderManager.prototype.disableDeviceResources = function () {
     return true;
 };
 
-ShaderManager.prototype.createBuffer = function () {};
+ShaderManager.prototype.createBuffer = function () {
+};
 
 a.ShaderManager = ShaderManager;

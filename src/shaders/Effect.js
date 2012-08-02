@@ -2127,6 +2127,7 @@ function EffectTechnique(pEffect) {
     this.sRealName = "";
     this._isComplexName = false;
     this.sComponents = null;
+
     this.pExteranalsFragment = null;
     this.pExteranalsVertex = null;
     this.pEffect = pEffect;
@@ -2185,7 +2186,7 @@ EffectTechnique.prototype.addComponent = function (pComponent, nShift) {
     if (!this.sComponents) {
         this.sComponents = "";
     }
-    this.sComponents += pComponent.hash() + ">>" + nShift + "&";
+    this.sComponents += pComponent.findResourceName() + ">>" + nShift + "&";
     var i;
     for (i in pComponent.pExteranalsVertex) {
         this.pEffect.addExternalVar(pComponent.pExteranalsVertex[i], a.fx.GLOBAL_VARS.EXTERNAL_V);
@@ -2234,6 +2235,10 @@ function EffectPass() {
     this.sJSCode = "";
     this.pJSStates = null;
     this.pGlobalVariables = null;
+    this.pGlobalsByName = null;
+    this.pGlobalsByRealName = null;
+    this.pGlobalsDefault = null;
+    this.pGlobalsStrict = null;
     this.isComplex = false;
     this.pGlobalValues = null;
     this.pFuncHash = null;
@@ -2375,6 +2380,24 @@ EffectPass.prototype.generateListOfExternals = function () {
     }
     this.pExteranalsVertex = pExV;
     this.pExteranalsFragment = pExF;
+};
+EffectPass.prototype.addGlobalsFromShader = function (pShader) {
+    if (!this.pGlobalsByName || !this.pGlobalsByRealName) {
+        this.pGlobalsByName = {};
+        this.pGlobalsByRealName = {};
+        this.pGlobalsDefault = {};
+    }
+    var i;
+    var sName;
+    for (i in pShader.pUniformsByName) {
+        if (this.pGlobalsByName[i]) {
+            continue;
+        }
+        sName = pShader.pUniformsByName[i];
+        this.pGlobalsByName[i] = sName;
+        this.pGlobalsByRealName[sName] = pShader.pUniformsByRealName[sName];
+        this.pGlobalsDefault[sName] = pShader.pUniformsDefault[sName];
+    }
 };
 
 /**
@@ -2879,7 +2902,7 @@ Effect.prototype.addComponent = function (pComponent, nShift) {
     if (!this.sComponents) {
         this.sComponents = "";
     }
-    this.sComponents += pComponent.hash() + ">>" + nShift + "&";
+    this.sComponents += pComponent.findResourceName() + ">>" + nShift + "&";
     var i;
     for (i in pComponent.pExteranalsVertex) {
         this.addExternalVar(pComponent.pExteranalsVertex[i], a.fx.GLOBAL_VARS.EXTERNAL_V);
@@ -3939,6 +3962,25 @@ Effect.prototype.postAnalyzeEffect = function () {
             pPass.generateListOfExternals();
             if (!pPass.isComplex) {
                 pPass.prepare();
+            }
+        }
+    }
+    //generate maximum large list of uniforms for passes
+    var sName;
+    for (i in this.pTechniques) {
+        for (j = 0; j < this.pTechniques[i].pPasses.length; j++) {
+            pPass = this.pTechniques[i].pPasses[j];
+            for (k in pPass.pFuncHash) {
+                pShader = this._pShaders[k];
+                pPass.addGlobalsFromShader(pShader);
+            }
+            for (k in pPass.pGlobalVariables) {
+                pVar = pPass.pGlobalVariables[k];
+                pVar.sRealName = pVar.sSemantic || pVar.sRealName;
+                sName = pVar.sRealName;
+                pPass.pGlobalsByName[k] = sName;
+                pPass.pGlobalsByRealName[sName] = pVar;
+                pPass.pGlobalsDefault[sName] = pVar.pDefaultValue;
             }
         }
     }
