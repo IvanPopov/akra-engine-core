@@ -8,8 +8,9 @@ function Node(){
     A_CLASS;
     Enum([
              k_setForDestruction = 0,
-             k_newLocalMatrix,
+             k_newOrientation,
              k_newWorldMatrix,
+             k_newLocalMatrix,
              k_rebuildInverseWorldMatrix,
              k_rebuildNormalMatrix
          ], eUpdateDataFlagBits, a.Scene);
@@ -73,7 +74,6 @@ function Node(){
     this._qRotation = null;
     this._v3fTranslation = null;
     this._v3fScale = null;
-
 
     /**
      * World Posistion
@@ -165,6 +165,7 @@ Node.prototype.sibling = function () {
     INLINE();
     return this._pSibling;
 };
+
 /**
  * Get child
  * @treturn SceneNode _pChild
@@ -173,6 +174,7 @@ Node.prototype.child = function () {
     INLINE();
     return this._pChild;
 };
+
 /**
  * Get worldMatrix
  * @treturn Float32Array _m4fWorldMatrix
@@ -181,6 +183,7 @@ Node.prototype.worldMatrix = function () {
     INLINE();
     return this._m4fWorldMatrix;
 };
+
 /**
  * Get normal matrix
  * @treturn Matrix3 _m4fWorldMatrix
@@ -209,6 +212,7 @@ Node.prototype.localMatrix = function () {
     INLINE();
     return this._m4fLocalMatrix;
 };
+
 /**
  * Get inverseWorldMatrix
  * @treturn Float32Array _m4fInverseWorldMatrix
@@ -222,6 +226,7 @@ Node.prototype.inverseWorldMatrix = function () {
     }
     return this._m4fInverseWorldMatrix;
 };
+
 /**
  * Get updateFlags
  * @treturn Int _iUpdateFlags
@@ -242,6 +247,7 @@ Node.prototype.hasParent = function () {
     }
     return false;
 };
+
 /**
 * Child is not undef
 * @treturn Boolean
@@ -253,6 +259,7 @@ Node.prototype.hasChild = function () {
     }
     return false;
 };
+
 /**
 * Sibling is not undef
 * @treturn Boolean
@@ -264,13 +271,15 @@ Node.prototype.hasSibling = function () {
     }
     return false;
 };
+
 /**
-* SET_BIT(_iUpdateFlags, k_newLocalMatrix);
+* SET_BIT(_iUpdateFlags, k_newOrientation);
 */
 Node.prototype.setUpdatedLocalMatrixFlag = function () {
     INLINE();
     SET_BIT(this._iUpdateFlags, a.Scene.k_newLocalMatrix);
 };
+
 /**
 * Get loclaMatrix with some set_bits
 * @treturn Float32Array _m4fLocalMatrix
@@ -294,6 +303,7 @@ Node.prototype.isWorldMatrixNew = function () {
 Node.prototype.create = function () {
     return true;
 };
+
 Node.prototype.destroy = function () {
     // destroy anything attached to this node
     //	destroySceneObject();
@@ -306,6 +316,7 @@ Node.prototype.destroy = function () {
     debug_assert(this._pSibling == null, "Failure Destroying Node");
     debug_assert(this._pChild == null, "Failure Destroying Node");
 };
+
 /**
  * Sets the internal pointer to the First sibling object
  * @tparam SceneNode pNode
@@ -316,6 +327,7 @@ Node.prototype.setSibling = function (pNode) {
     
     this._pSibling = pNode;
 };
+
 /**
  * Sets the internal pointer to the First child object
  * @tparam SceneNode pNode
@@ -326,6 +338,7 @@ Node.prototype.setChild = function (pNode) {
     
     this._pChild = pNode;
 };
+
 /**
  * Adds the provided ModelSpace object to the descendant list of this object. The provided
  * ModelSpace object is removed from any parent it may already belong to.
@@ -339,6 +352,7 @@ Node.prototype.addSibling = function (pSibling) {
         this.setSibling(pSibling);
     }
 };
+
 /**
  * Adds the provided ModelSpace object to the descendant list of this object. The provided
  * ModelSpace object is removed from any parent it may already belong to.
@@ -353,6 +367,7 @@ Node.prototype.addChild = function (pChild) {
         this._pChild = pChild;
     }
 };
+
 /**
  * Removes a specified child object from this parent object. If the child is not the
  * FirstChild of this object, all of the Children are searched to find the object to remove.
@@ -381,6 +396,7 @@ Node.prototype.removeChild = function (pChild) {
         }
     }
 };
+
 /**
  * Removes all Children from this parent object
  * @private
@@ -393,6 +409,7 @@ Node.prototype.removeAllChildren = function () {
         this._pChild = NextSibling;
     }
 };
+
 /**
  * Attaches this object ot a new parent. Same as calling the parent's addChild() routine.
  * @tparam SceneNode pParent
@@ -413,6 +430,7 @@ Node.prototype.attachToParent = function (pParent) {
         }
     }
 };
+
 /**
  * Setter for iInheritance
  * @tparam Int iSetting Value from eInheritance
@@ -420,6 +438,7 @@ Node.prototype.attachToParent = function (pParent) {
 Node.prototype.setInheritance = function (iSetting) {
     this._iInheritance = iSetting;
 };
+
 /**
  * Detach this object from his parent. Refresh local and world matrix
  */
@@ -438,6 +457,7 @@ Node.prototype.detachFromParent = function () {
         Mat4.identity(this._m4fWorldMatrix);
     }
 };
+
 /**
  * Attaches this object's children to it's parent, promoting them up the tree
  */
@@ -449,6 +469,7 @@ Node.prototype.promoteChildren = function () {
         this._pChild = NextSibling;
     }
 };
+
 /**
  * Set new parent for all children
  * @tparam SceneNode pParent
@@ -463,6 +484,7 @@ Node.prototype.relocateChildren = function (pParent) {
         }
     }
 };
+
 /**
  * Checks to see if the provided item is a sibling of this object
  * @tparam SceneNode pSibling
@@ -483,6 +505,7 @@ Node.prototype.isASibling = function (pSibling) {
     // it's not us, and we have no sibling to check. This is not a sibling of ours.
     return false;
 };
+
 /**
  * Checks to see if the provided item is a child of this object. (one branch depth only)
  * @tparam SceneNode pChild\
@@ -503,6 +526,7 @@ Node.prototype.isAChild = function (pChild) {
     // it's not us, and we have no child to check. This is not a sibling of ours.
     return (false);
 };
+
 /**
  * Checks to see if the provided item is a child or sibling of this object. If SearchEntireTree
  * is TRUE, the check is done recursivly through all siblings and children. SearchEntireTree
@@ -541,6 +565,7 @@ Node.prototype.isInFamily = function (pNode, SearchEntireTree) {
     return (false);
 }
 
+
 /**
  * Returns the current number of siblings of this object.
  * @treturn Int
@@ -558,6 +583,8 @@ Node.prototype.siblingCount = function () {
     }
     return count;
 };
+
+
 /**
  * Returns the current number of children of this object
  * @treturn Boolean
@@ -574,6 +601,8 @@ Node.prototype.childCount = function () {
     }
     return count;
 };
+
+
 /**
  * Update matrix
  */
@@ -583,10 +612,14 @@ Node.prototype.update = function () {
     // the update
     this.recalcWorldMatrix();
 };
+
+
 Node.prototype.prepareForUpdate = function () {
     // clear the temporary flags
-    a.BitFlags.clearFlags(this._iUpdateFlags, FLAG(a.Scene.k_newLocalMatrix) | FLAG(a.Scene.k_newWorldMatrix));
+    a.BitFlags.clearFlags(this._iUpdateFlags, FLAG(a.Scene.k_newLocalMatrix) | 
+        FLAG(a.Scene.k_newOrientation) | FLAG(a.Scene.k_newWorldMatrix));
 };
+
 
 Node.prototype.recursiveUpdate = function () {
     // update myself
@@ -609,10 +642,11 @@ Node.prototype.recalcWorldMatrix = function () {
     'use strict';
     
     var isParentMoved = this._pParent && this._pParent.isWorldMatrixNew();
-    var isWeMoved = TEST_BIT(this._iUpdateFlags, a.Scene.k_newLocalMatrix);
+    var isOrientModified = TEST_BIT(this._iUpdateFlags, a.Scene.k_newOrientation);
+    var isLocalModified = TEST_BIT(this._iUpdateFlags, a.Scene.k_newLocalMatrix);
 
-    if (isWeMoved || isParentMoved) {
-        // console.log("Before local matrix : " , this.name, Mat4.str(this._m4fLocalMatrix));
+    if (isOrientModified || isParentMoved || isLocalModified) {
+
         var m4fLocal = this._m4fLocalMatrix;
         var m4fWorld = this._m4fWorldMatrix;
         var m4fParent = this._pParent.worldMatrix();
@@ -620,12 +654,12 @@ Node.prototype.recalcWorldMatrix = function () {
         var v3fTemp = TEMPSCENEVECTOR3FORCALC0;
 
         Quat4.toMat4(this._qRotation, m4fOrient);
-        // Quat4.multiplyVec3(this._qRotation, this._v3fTranslation, v3fTemp);
         Mat4.setTranslation(m4fOrient, this._v3fTranslation);
-        //Mat4.translate(m4fOrient, this._v3fTranslation);
         Mat4.scale(m4fOrient, this._v3fScale);
-   
-        Mat4.multiply(m4fOrient, m4fLocal);
+
+        if (TEST_BIT(this._iUpdateFlags, a.Scene.k_newLocalMatrix)) {
+            Mat4.multiply(m4fOrient, m4fLocal); 
+        }
 
         if (this._pParent) {
             if (this._iInheritance === a.Scene.k_inheritAll) {
@@ -708,7 +742,7 @@ Node.prototype.setPosition = function () {
     v3fTranslation.Y = pPos.Y;
     v3fTranslation.Z = pPos.Z;
 
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
 /**
  * Set new relative position.
@@ -722,12 +756,12 @@ Node.prototype.setRelPosition = function () {
     var v3fTranslation = this._v3fTranslation;
 
     Quat4.multiplyVec3(this._qRotation, pPos);
-    
+
     v3fTranslation.X = pPos.X;
     v3fTranslation.Y = pPos.Y;
     v3fTranslation.Z = pPos.Z;
 
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
 /**
  * Add new position.
@@ -744,7 +778,7 @@ Node.prototype.addPosition = function () {
     v3fTranslation.Y += pPos.Y;
     v3fTranslation.Z += pPos.Z;
 
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
 /**
  * Add new relative position.
@@ -760,13 +794,13 @@ Node.prototype.addRelPosition = function () {
 
     Quat4.multiplyVec3(this._qRotation, pPos);
     
-    
     v3fTranslation.X += pPos.X;
     v3fTranslation.Y += pPos.Y;
     v3fTranslation.Z += pPos.Z;
 
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
+
 /**
  * @property void setRotation(Float32Array m4fRotation)
  * Setup rotation
@@ -790,6 +824,8 @@ Node.prototype.addRelPosition = function () {
  */
 Node.prototype.setRotation = function () {
     'use strict';
+
+    var qTemp = TEMPSCENEQUAT4FORCALC0;
 
     switch (arguments.length) {
         case 1:
@@ -820,8 +856,9 @@ Node.prototype.setRotation = function () {
             Quat4.fromAxisAngle(arguments, arguments[3], qTemp);
     }
 
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
+
 /**
  * @property void addRelRotation(Float32Array m4fRotation)
  * Add relative rotation
@@ -840,7 +877,7 @@ Node.prototype.setRotation = function () {
  */
 Node.prototype.addRelRotation = function () {
     'use strict';
-    
+
     var qTemp = TEMPSCENEQUAT4FORCALC0;
     
     switch (arguments.length) {
@@ -867,16 +904,12 @@ Node.prototype.addRelRotation = function () {
             Quat4.fromAxisAngle(arguments, arguments[3], qTemp);
     }
     
-    // var m4fTemp = TEMPSCENEMATRIX4FORCALC0;
-    // var m4fTemp2 = new Matrix4;
-    // Quat4.toMat4(this._qRotation, m4fTemp);
-    // Mat4.translate(m4fTemp, this._v3fTranslation);
-    // Quat4.toMat4(qTemp, m4fTemp2);
-    // Mat4.multiply(m4fTemp2, m4fTemp, m4fTemp);
-    // Mat4.toQuat4(m4fTemp, this._qRotation);
+
     Quat4.multiply(qTemp, this._qRotation, this._qRotation);
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
+
+
 /**
  * @property void addRotation(Float32Array m4fRotation)
  * Add rotation
@@ -898,7 +931,7 @@ Node.prototype.addRelRotation = function () {
  * roll->pitch->yaw = z -> x -> y
  * @memberof SceneNode
  */
-Node.prototype.addRotation = function () {
+/*Node.prototype.addRotation = function () {
     'use strict';
     
     var qTemp = TEMPSCENEQUAT4FORCALC0;
@@ -930,8 +963,10 @@ Node.prototype.addRotation = function () {
 
     Quat4.multiply(this._qRotation, qTemp);
 
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
+*/
+
 /**
  * @property void setScale(Float32Array v3fScale)
  * Set scale
@@ -954,7 +989,7 @@ Node.prototype.setScale = function (scale) {
         Vec3.set(pScale, v3fScale);
     }
 
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
 
 Node.prototype.addScale = function (scale) {
@@ -974,7 +1009,7 @@ Node.prototype.addScale = function (scale) {
         v3fScale.Z += pScale.Z;
     }
     
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
 
 

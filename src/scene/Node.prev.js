@@ -1032,7 +1032,7 @@ Node.prototype.addRotation = function () {
                 m4fRot._12 = ar2.X;
                 m4fRot._22 = ar2.Y;
                 m4fRot._32 = ar2.Z;
-                m4fRot._13 = ar1.X;
+                m4fRot._13 = ar1sw.X;
                 m4fRot._23 = ar1.Y;
                 m4fRot._33 = ar1.Z;
             }

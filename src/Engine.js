@@ -705,8 +705,9 @@ Engine.prototype.updateCamera = function (fLateralSpeed, fRotationSpeed, pTerrai
                 v3fOffset.Y = fMinCameraZ - v3fCameraWorldPos.Z;
             }
         }
-        Quat4.multiplyVec3(this.getActiveCamera()._qRotation, v3fOffset);
-        this._pDefaultCamera.addPosition(v3fOffset);
+        // Quat4.multiplyVec3(this.getActiveCamera()._qRotation, v3fOffset);
+        //Mat4.multiplyVec3(this.getActiveCamera()._m4fRotation, v3fOffset);
+        this._pDefaultCamera.addRelPosition(v3fOffset);
     }
 
 }

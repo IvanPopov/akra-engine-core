@@ -117,6 +117,13 @@ Define(Quaternion(x, y, z, w), function () {
     glMatrixArrayType([x, y, z, w]);
 });
 
+Define(Quaternion(out, w, x, y, z), function () {
+    out.X = x;
+    out.Y = y;
+    out.Z = z;
+    out.W = w;
+});
+
 Define(Quaternion(c, w), function () {
     glMatrixArrayType([c, c, c, w]);
 });
@@ -2555,6 +2562,7 @@ Quat4.set = function (quat, dest) {
     return dest;
 };
 
+
 /*
  * Quat4.calculateW
  * Calculates the W component of a Quat4 from the X, Y, and Z components.
@@ -2606,6 +2614,8 @@ Quat4.inverse = function (quat, dest) {
     dest[3] = quat[3];
     return dest;
 }
+
+
 
 /*
  * Quat4.length
@@ -2695,7 +2705,7 @@ Quat4.mult = Quat4.multiply;
  * Returns:
  * dest if specified, vec otherwise
  */
-Quat4.multiplyVec3 = function (quat, vec, dest) {
+/*Quat4.multiplyVec3 = function (quat, vec, dest) {
     if (!dest) {dest = vec;}
 
     var x = vec[0], y = vec[1], z = vec[2];
@@ -2713,7 +2723,33 @@ Quat4.multiplyVec3 = function (quat, vec, dest) {
     dest[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx;
 
     return dest;
-}
+}*/
+
+Quat4._qTemp1 = new Quaternion();
+Quat4._qTemp2 = new Quaternion();
+Quat4._qTemp3 = new Quaternion();
+
+Quat4.multiplyVec3 = function (quaternion, vector) {
+    var vectorQuaternion = Quat4._qTemp1, 
+        inverseQuaternion = Quat4._qTemp2, 
+        resultQuaternion = Quat4._qTemp3;
+  
+    vectorQuaternion.X = vector.X;
+    vectorQuaternion.Y = vector.Y;
+    vectorQuaternion.Z = vector.Z;
+    vectorQuaternion.W = 0.0;
+
+    Quat4.inverse(quaternion, inverseQuaternion);
+    
+    Quat4.multiply(inverseQuaternion, vectorQuaternion, resultQuaternion);
+    Quat4.multiply(resultQuaternion, quaternion, resultQuaternion);
+
+    vector.X = resultQuaternion.X;
+    vector.Y = resultQuaternion.Y;
+    vector.Z = resultQuaternion.Z;
+
+    return vector;
+};
 
 Quat4._v3fTemp = Vec3.create();
 Quat4._m3fTemp = Mat3.create();
@@ -2754,37 +2790,55 @@ Quat4.fromAxisAngle = function (axis, angle, quat) {
     return quat;
 };
 
+Quat4._qX= new Quaternion();
+Quat4._qY = new Quaternion();
+Quat4._qZ = new Quaternion();
 
 Quat4.fromYPR = function (fYaw, fPitch, fRoll, quat) {
     if (!quat) {
         quat = Quat4.create();
     }
 
-    var fPhi = fPitch,//fRoll,
-        fTheta = fRoll, //fPitch,
-        fPsi = fYaw;
+    var fX = fPitch;
+    var fY = fYaw;
+    var fZ = fRoll;
 
-    with (Math) {
-        quat.X = sin(fPhi/2) * cos(fTheta/2) * cos(fPsi/2) - cos(fPhi/2) * sin(fTheta/2) * sin(fPsi/2);
-        quat.Y = cos(fPhi/2) * sin(fTheta/2) * cos(fPsi/2) + sin(fPhi/2) * cos(fTheta/2) * sin(fPsi/2);
-        quat.Z = cos(fPhi/2) * cos(fTheta/2) * sin(fPsi/2) - sin(fPhi/2) * sin(fTheta/2) * cos(fPsi/2);
+    var Qx = Quat4._qX, 
+        Qy = Quat4._qY, 
+        Qz = Quat4._qZ;
 
-        quat.W = cos(fPhi/2) * cos(fTheta/2) * cos(fPsi/2) + sin(fPhi/2) * sin(fTheta/2) * sin(fPsi/2);
-    }
+    Quaternion(Qx, Math.cos(fX/2), Math.sin(fX/2), 0, 0);
+    Quaternion(Qy, Math.cos(fY/2), 0, Math.sin(fY/2), 0);
+    Quaternion(Qz, Math.cos(fZ/2), 0, 0, Math.sin(fZ/2));
 
-    return quat;
+    return Quat4.multiply(Qx, Quat4.multiply(Qy, Qz), quat);
+
+
+    // var fPhi = -fPitch,//fRoll,
+    //     fTheta = -fYaw, //fPitch,
+    //     fPsi = -fRoll;
+
+    // with (Math) {
+    //     quat.X = sin(fPhi/2) * cos(fTheta/2) * cos(fPsi/2) - cos(fPhi/2) * sin(fTheta/2) * sin(fPsi/2);
+    //     quat.Y = cos(fPhi/2) * sin(fTheta/2) * cos(fPsi/2) + sin(fPhi/2) * cos(fTheta/2) * sin(fPsi/2);
+    //     quat.Z = cos(fPhi/2) * cos(fTheta/2) * sin(fPsi/2) - sin(fPhi/2) * sin(fTheta/2) * cos(fPsi/2);
+
+    //     quat.W = cos(fPhi/2) * cos(fTheta/2) * cos(fPsi/2) + sin(fPhi/2) * sin(fTheta/2) * sin(fPsi/2);
+    // }
+
+    // return quat;
 };
 
-Quat4.toAxis = function (q1, axis) {
-    if (!axis) {
-        axis = new Vector3;
+Quat4.toAxisAngle = function (q1, axisAngle) {
+    if (!axisAngle) {
+        axisAngle = new Vector4;
     }
 
     if (q1.W > 1) 
         Quat4.normalize(q1); 
         // if w>1 acos and sqrt will produce errors, this cant happen if quaternion is normalised
     
-    //angle = 2 * Math.acos(q1.W);
+    axisAngle.W = 2 * Math.acos(q1.W);
     
     var s = Math.sqrt(1 - q1.W * q1.W); 
     // assuming quaternion normalised then w is less than 1, so term always positive.
@@ -2794,17 +2848,17 @@ Quat4.toAxis = function (q1, axis) {
         // test to avoid divide by zero, s is always positive due to sqrt
         // if s close to zero then direction of axis not important
         
-        axis.X = q1.X; // if it is important that axis is normalised then replace with x=1; y=z=0;
-        axis.Y = q1.Y;
-        axis.Z = q1.Z;
+        axisAngle.X = q1.X; // if it is important that axis is normalised then replace with x=1; y=z=0;
+        axisAngle.Y = q1.Y;
+        axisAngle.Z = q1.Z;
     } 
     else {
-        axis.X = q1.X / s; // normalise axis
-        axis.Y = q1.Y / s;
-        axis.Z = q1.Z / s;
+        axisAngle.X = q1.X / s; // normalise axis
+        axisAngle.Y = q1.Y / s;
+        axisAngle.Z = q1.Z / s;
     }
 
-   return axis;
+   return axisAngle;
 }
 
 /*
