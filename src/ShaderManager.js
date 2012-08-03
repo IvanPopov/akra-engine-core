@@ -9,6 +9,7 @@ function ComponentBlend() {
 }
 ComponentBlend.prototype.addComponent = function (pComponent, nShift) {
     //TODO: think about global uniform lists and about collisions of real names in them
+    nShift = nShift || 0;
     var i, j;
     var pPass;
     var pUniforms;
@@ -44,6 +45,44 @@ ComponentBlend.prototype.addComponent = function (pComponent, nShift) {
         }
     }
 };
+ComponentBlend.prototype.addComponentBlend = function (pComponentBlend, nShift) {
+    //TODO: add components from component blend to this blend
+//    var i, j;
+//    var pPass;
+//    var pUniforms;
+//    var sName;
+//    var pVar1, pVar2;
+//    for (i = 0; i < pComponentBlend.pPasses.length; i++) {
+//        if (!this.pPassBlends[i + nShift]) {
+//            this.pPassBlends[i + nShift] = [];
+//            this.pUniformsBlend[i + nShift] = {
+//                "pUniformsByName"     : {},
+//                "pUniformsByRealName" : {},
+//                "PUniformsValues"     : {},
+//                "pUniformsDefault"    : {}
+//            };
+//        }
+//        pPass = pComponentBlend.pPasses[i];
+//        this.pPassBlends[i + nShift].push(pPass);
+//        pUniforms = this.pUniformsBlend[i + nShift];
+//        for (j in pPass.pUniformsByName) {
+//            sName = pPass.pUniformsByName[j];
+//            pUniforms.pUniformsByName[j] = sName;
+//            pVar1 = pUniforms.pUniformsByRealName[sName];
+//            pVar2 = pPass.pUniformsByRealName[sName];
+//            if(pVar1){
+//
+//                if(!pVar1.pType.isEqual(pVar2.pType)){
+//                    warning("You used uniforms with the same semantics. Now we work not very well with that.");
+//                }
+//            }
+//            pUniforms.pUniformsByRealName[sName] = pVar2;
+//            pUniforms.pUniformsDefault[sName] = pPass.pUniformsDefault[sName];
+//            pUniforms.PUniformsValues[sName] = null;
+//        }
+//    }
+};
+
 
 function ShaderManager(pEngine) {
     Enum([
@@ -168,6 +207,7 @@ ShaderManager.prototype.initComponent = function (pTechnique) {
     if (this._pComponentManager.findResource(sName)) {
         return false;
     }
+
     var pComponent = this._pComponentManager.createResource(sName);
     pComponent.init(sName, pTechnique);
     return true;

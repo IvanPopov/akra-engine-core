@@ -2120,11 +2120,6 @@ function EffectTechnique(pEffect) {
      * @type {String}
      */
     this.sName = "";
-    /**
-     *
-     * @type {String}
-     */
-    this.sRealName = "";
     this._isComplexName = false;
     this.sComponents = null;
 
@@ -2193,6 +2188,15 @@ EffectTechnique.prototype.addComponent = function (pComponent, nShift) {
     }
     for (i in pComponent.pExteranalsFragment) {
         this.pEffect.addExternalVar(pComponent.pExteranalsVertex[i], a.fx.GLOBAL_VARS.EXTERNAL_F);
+    }
+};
+EffectTechnique.prototype.finalize = function () {
+    if (!this._isComplexName && this.pEffect._sProvideNameSpace) {
+        this.sName = this.pEffect._sProvideNameSpace + this.sName;
+    }
+    if(this.pEffect.sComponents){
+        this.sComponents = this.pEffect.sComponents +
+                           (this.sComponents !== null ? this.sComponents : "");
     }
 };
 
@@ -3987,6 +3991,10 @@ Effect.prototype.postAnalyzeEffect = function () {
     //generate for technique general list of external variables
     for (i in this.pTechniques) {
         this.pTechniques[i].generateListOfExternals();
+    }
+    //generate all additional info for techniques
+    for (i in this.pTechniques) {
+        this.pTechniques[i].finalize();
     }
 };
 /**
