@@ -992,21 +992,21 @@ Node.prototype.setScale = function (scale) {
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
 
-Node.prototype.addScale = function (scale) {
+Node.prototype.multScale = function (scale) {
     'use strict';
     
     var pScale = arguments.length === 1? arguments[0]: arguments;
     var v3fScale = this._v3fScale;
 
     if (typeof pScale === 'number') {
-        v3fScale.X += pScale;
-        v3fScale.Y += pScale;
-        v3fScale.Z += pScale;
+        v3fScale.X *= pScale;
+        v3fScale.Y *= pScale;
+        v3fScale.Z *= pScale;
     }
     else {
-        v3fScale.X += pScale.X;
-        v3fScale.Y += pScale.Y;
-        v3fScale.Z += pScale.Z;
+        v3fScale.X *= pScale.X;
+        v3fScale.Y *= pScale.Y;
+        v3fScale.Z *= pScale.Z;
     }
     
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);

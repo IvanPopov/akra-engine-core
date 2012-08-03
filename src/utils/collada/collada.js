@@ -1919,16 +1919,22 @@ function COLLADA (pEngine, pSettings) {
         return pAnimationsList;
     }
 
-    function buildAssetMatrix (pAsset) {
-        var fUnit = pAsset.pUnit.fMeter;
-        var sUPaxis = pAsset.sUPaxis;
-        var m4fAsset = Mat4.diagonal(new Matrix4, [fUnit, fUnit, fUnit, 1.0]);
+    function buildAssetTransform (pNode, pAsset) {
+        'use strict';
+        
+        if (pAsset) {
+            var fUnit = pAsset.pUnit.fMeter;
+            var sUPaxis = pAsset.sUPaxis;
+            
+            pNode.setScale(fUnit);
 
-        if (sUPaxis.toUpperCase() == 'Z_UP') {
-            Mat4.rotate(m4fAsset, -.5 * Math.PI, [1, 0, 0]);
+            if (sUPaxis.toUpperCase() == 'Z_UP') {
+                //pNode.addRelRotation([1, 0, 0], -.5 * Math.PI);
+                pNode.addRelRotation(0, -.5 * Math.PI, 0);
+            }
         }
 
-        return m4fAsset;
+        return pNode;
     }
 
     function buildMaterials (pMesh, pMeshNode) {
@@ -2340,17 +2346,18 @@ Endif ();
         return pHierarchyNode;
     }
 
-    function buildScene (pSceneRoot, m4fRootTransform) {
-        m4fRootTransform = m4fRootTransform || Mat4.identity(new Matrix4);
-
+    function buildScene (pSceneRoot, pAsset) {
         var pNodes = [];
         var pNode = null;
 
         for (var i = 0; i < pSceneRoot.pNodes.length; i++) {
             pNode = pSceneRoot.pNodes[i];
-            Mat4.mult(pNode.m4fTransform, m4fRootTransform);
             pNodes.push(buildNodes([pNode], null));
         }
+
+        for (var i = 0; i < pNodes.length; i++) {
+            pNodes[i] = buildAssetTransform(pNodes[i], pAsset);
+        };
 
         return pNodes;
     };
@@ -2378,18 +2385,16 @@ Endif ();
         var pAnimationOutput = null;
         var pMeshOutput = null;
         
-        if (useScene) {
-            readLibraries(pXMLCollada, pSceneTemplate);
+        readLibraries(pXMLCollada, pSceneTemplate);
 
-            pAsset      = COLLADAAsset(firstChild(pXMLCollada, 'asset'));
-            pSceneRoot  = COLLADAScene(firstChild(pXMLCollada, 'scene'));
+        pAsset      = COLLADAAsset(firstChild(pXMLCollada, 'asset'));
+        pSceneRoot  = COLLADAScene(firstChild(pXMLCollada, 'scene'));
 
-            if (pSceneRoot) {
-                m4fRootTransform    = buildAssetMatrix(pAsset);
-                pSceneOutput        = buildScene(pSceneRoot, m4fRootTransform);
-                pMeshOutput         = buildMeshes(pSceneRoot);
-            }
+        if (pSceneRoot && useScene) {
+            pSceneOutput        = buildScene(pSceneRoot, pAsset);
+            pMeshOutput         = buildMeshes(pSceneRoot);
         }
+        
 
         if (useAnimation) {
             readLibraries(pXMLCollada, pAnimationTemplate);

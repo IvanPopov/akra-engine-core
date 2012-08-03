@@ -2782,10 +2782,10 @@ Quat4.fromAxisAngle = function (axis, angle, quat) {
         quat = Quat4.create();
     }
 
-    quat.x = axis.X * Math.sin(angle / 2.)
-    quat.y = axis.Y * Math.sin(angle / 2.)
-    quat.z = axis.Z * Math.sin(angle / 2.)
-    quat.w = Math.cos(angle / 2.);
+    quat.X = axis.X * Math.sin(angle / 2.)
+    quat.Y = axis.Y * Math.sin(angle / 2.)
+    quat.Z = axis.Z * Math.sin(angle / 2.)
+    quat.W = Math.cos(angle / 2.);
 
     return quat;
 };
