@@ -33,20 +33,17 @@ function Terrain (pEngine) {
     this._iSectorCountY;  //количество секций по игрику
     this._pSectorArray = null; //массив подчиненный секций
 
+    this._pVertexGrid = null;//вершинный буфер с обобщенными координатами( положение по оси X и Y относительно игла секции, положение в текстуре относительно ее угла)
 
-	this._pDataFactory = new a.RenderDataFactory(this._pEngine);
-	this._pDataFactory.dataType = a.RenderData;
-	this._pDataFactory.setup(a.RenderDataFactory.VB_READABLE);
+    this._pTriangles = null; //индексный буфер для отображения сетки TerrainSection
+    this._pRenderMethod = null; //Рендер метод с помощью которого рендериться местность
 
-	//this._pVertexGrid = null;//вершинный буфер с обобщенными координатами( положение по оси X и Y относительно угла секции, положение в текстуре относительно ее угла)
-    //this._pTriangles = null; //индексный буфер для отображения сетки TerrainSection
-
-	this._v2fSectorSize = Vec2.create();
+    this._v2fSectorSize = Vec2.create();
 
     this._pActiveCamera = null;
 
     this._iSectorShift;
-    this._iSectorUnits; //Количество секторов по осям
+    this._iSectorUnits;
     this._iSectorVerts;
 
     this._iTableWidth; //размер карты высот
@@ -63,6 +60,11 @@ function Terrain (pEngine) {
     //this._useBumping = false;
 }
 ;
+
+Terrain.prototype.pVertexDescription = new Array(2);
+Terrain.prototype.pVertexDescription[0] = new a.VertexDeclaration(2, "POSITION0", a.DTYPE.FLOAT, a.DECLUSAGE.POSITION);
+Terrain.prototype.pVertexDescription[1] = new a.VertexDeclaration(2, "TEXCOORD0", a.DTYPE.FLOAT, a.DECLUSAGE.TEXCOORD);
+
 
 Terrain.prototype.tableWidth = function () {
     return this._iTableWidth;
@@ -105,22 +107,6 @@ Terrain.prototype.sample_data = function () {
     this.iColor;
     this.fScale;
 };
-
-Terrain.prototype.getDataFactory=function()
-{
-	return this._pDataFactory;
-}
-
-Terrain.prototype.getSectorCountX=function()
-{
-	return this._iSectorCountX;
-}
-
-Terrain.prototype.getSectorCountY=function()
-{
-	return this._iSectorCountY;
-}
-
 /**
  * @property create(SceneNode pRootNode, Texture pHeightMap, const cRect3d worldExtents, int iShift, Function fnCallBack)
  * @memberof Terrain
@@ -130,15 +116,15 @@ Terrain.prototype.getSectorCountY=function()
  **/
 Terrain.prototype.create = function (pRootNode, pHeightMap, worldExtents, iShift)
 {
+    var bResult = false;
+
     this._iSectorShift = iShift;
     this._iSectorUnits = 1 << iShift;
     this._iSectorVerts = this._iSectorUnits + 1;
 
     this._pRootNode = pRootNode;
-
-
-	this._pWorldExtents=new a.Rect3d(worldExtents.fX0, worldExtents.fX1,worldExtents.fY0, worldExtents.fY1, worldExtents.fZ0, worldExtents.fZ1)
-    this._v3fWorldSize = this._pWorldExtents.size();
+    this._pWorldExtents = worldExtents;
+    this._v3fWorldSize = worldExtents.size();
 
     this._iTableWidth = pHeightMap.getWidth();
     this._iTableHeight = pHeightMap.getHeight();
@@ -157,8 +143,19 @@ Terrain.prototype.create = function (pRootNode, pHeightMap, worldExtents, iShift
     Vec2.set(this._v3fWorldSize.X / this._iSectorCountX, this._v3fWorldSize.Y / this._iSectorCountY,
              this._v2fSectorSize);
 
+    // create the vertex and index buffer
+    // objects which are shared by the sectors
+    if (this.buildVertexBuffer()) {
 
-    return this.allocateSectors();;
+        if (this.buildIndexBuffer()) {
+            // now go build each sector of the terrain
+            bResult = this.allocateSectors();
+            this.setVertexDescription();
+
+        }
+
+    }
+    return bResult;
 }
 
 /**
@@ -280,7 +277,7 @@ Terrain.prototype.buildHeightAndNormalTables = function (pImage) {
 	var pColorData=new Uint8Array(4*iMaxY*iMaxX);
 	
 	temp.getPixelRGBA(0, 0,iMaxX,iMaxY, pColorData);
-	//console.log(pColorData);
+	
 	var i=0;
     for (y = 0; y < iMaxY; y++) 
 	{
@@ -289,11 +286,8 @@ Terrain.prototype.buildHeightAndNormalTables = function (pImage) {
 			i++;
             this._pv3fNormalTable[(y * iMaxX) + x].X = pColorData[((y * iMaxX) + x)*4+0] - 127.5;
             this._pv3fNormalTable[(y * iMaxX) + x].Y = pColorData[((y * iMaxX) + x)*4+1] - 127.5;
-            this._pv3fNormalTable[(y * iMaxX) + x].Z = pColorData[((y * iMaxX) + x)*4+2] - 127.5;
+            this._pv3fNormalTable[(y * iMaxX) + x].Z = pColorData[((y * iMaxX) + x)*4+2] - 127.5;			
             Vec3.normalize(this._pv3fNormalTable[(y * iMaxX) + x]);
-			//console.log("norm->",this._pv3fNormalTable[(y * iMaxX) + x].X = pColorData[((y * iMaxX) + x)*4+0],
-			//	this._pv3fNormalTable[(y * iMaxX) + x].X = pColorData[((y * iMaxX) + x)*4+1],
-			//	this._pv3fNormalTable[(y * iMaxX) + x].X = pColorData[((y * iMaxX) + x)*4+2]);
         }
     }
 
@@ -731,6 +725,151 @@ Terrain.prototype.generateBlendImage = function (pBlendImage, pElevationData, iE
 }
 
 
+Terrain.prototype.pCodeTimerTerrainSystemRenderSection = new a.CodeTimer("cTerrainSystem_renderSection");
+
+/**
+ * @property renderSection(cTerrainSection pSection, int iActivationFlags, const cRenderEntry pEntry)
+ * @memberof Terrain
+ * @param pSection
+ * @param iActivationFlags
+ * @param pEntry
+ **/
+Terrain.prototype.renderSection = function (pSection, iActivationFlags, pEntry) {
+
+
+    var pEffectFile = this._pRenderMethod.getActiveEffect();
+    var pSurfaceMaterial = this._pRenderMethod.getActiveMaterial();
+
+    if (pEffectFile) {
+        var pFunctionTimer = new a.FunctionTimer(this.pCodeTimerTerrainSystemRenderSection);
+
+
+        // do we need to activate the render pass?
+        if (TEST_BIT(iActivationFlags, a.RenderQueue.activateRenderMethodPass)) {
+            pEffectFile.activatePass(pEntry.renderPass);
+        }
+
+        // do we need to activate the render method?
+        if (TEST_BIT(iActivationFlags, a.RenderQueue.activateRenderMethod)) {
+            pEffectFile.begin();
+        }
+
+
+        // do we need to activate the primary vertex buffer
+        if (TEST_BIT(iActivationFlags, a.RenderQueue.activateModel)) {
+            pEffectFile.applyVertexBuffer(this._pVertexGrid);
+        }
+
+        // do we need to activate the secondary vertex buffer
+        if (TEST_BIT(iActivationFlags, a.RenderQueue.activateModelParamA)) {
+            pEffectFile.applyVertexBuffer(pSection.sectorVertices());
+        }
+
+        // do we need to activate the index buffer
+        if (TEST_BIT(iActivationFlags, a.RenderQueue.activateModelParamB)) {
+            this._pTriangles.activate();
+        }
+
+        // do we need to activate the surface material
+        if (TEST_BIT(iActivationFlags, a.RenderQueue.activateSurfaceMaterial)) {
+            pEffectFile.applySurfaceMaterial(pSurfaceMaterial);
+        }
+
+
+        // apply our render settings to the method
+        var iSectorX = pSection.sectorX();
+        var iSectorY = pSection.sectorY();
+
+        var v4fSectorOffset = Vec4.create();
+        Vec4.set(
+            1.0,
+            1.0,
+            this._pWorldExtents.fX0 + (this._v2fSectorSize.X * iSectorX),
+            this._pWorldExtents.fY0 + (this._v2fSectorSize.Y * iSectorY),
+            v4fSectorOffset
+        );
+
+        var v4fUvScaleOffset = Vec4.create();
+        Vec4.set(
+            1.0 / (this._iSectorCountX),
+            1.0 / (this._iSectorCountY),
+            iSectorX,
+            iSectorY,
+            v4fUvScaleOffset
+        );
+
+        pEffectFile.setParameter(a.EffectResource.posScaleOffset, v4fSectorOffset);
+
+        pEffectFile.setParameter(a.EffectResource.uvScaleOffset, v4fUvScaleOffset);
+
+        //var f4vBumpVec = Vec4.create([(this._useBumping? 1: 0), 0, 0, 0]);
+        //pEffectFile.setParameter('use_bump', f4vBumpVec);
+        // render!!!
+
+        //вписаля ваня.
+        if (TEST_BIT(iActivationFlags, a.RenderQueue.activateRenderMethodPass)) {
+            pEffectFile.deactivatePass();
+        }
+
+        this._pDevice.drawElements(this._pTriangles.getPrimitiveType(), this._pTriangles.getCount(),
+                                   this._pTriangles.getElementType(), 0);
+
+        /*this._pDevice.DrawIndexedPrimitive(
+         this._pTriangles.primitiveType(),
+         0,
+         0,
+         this._iSectorVerts * this._iSectorVerts,
+         0,
+         this._pTriangles.primitiveCount());*/
+        pFunctionTimer.destructor();
+    }
+}
+
+Terrain.prototype.pCodeTimerTerrainSystemSubmitSection = new a.CodeTimer("cTerrainSystem_submitSection");
+
+/**
+ * @property submitSection(cTerrainSection pSection)
+ * @memberof Terrain
+ * @param pSection
+ **/
+Terrain.prototype.submitSection = function (pSection) {
+    if (!this._pRenderMethod.isResourceLoaded()) {
+        return;
+    }
+
+
+    var pRenderEntry;
+    var pEffectFile = this._pRenderMethod.getActiveEffect();
+    var pSurfaceMaterial = this._pRenderMethod.getActiveMaterial();
+
+    if (pEffectFile) {
+        var pFunctionTimer = new a.FunctionTimer(this.pCodeTimerTerrainSystemSubmitSection);
+
+        var iTotalPasses = pEffectFile.totalPasses();
+
+        // check the neighbor sectors for connection needs
+        var iSX = pSection.sectorX();
+        var iSY = pSection.sectorY();
+
+        var index = (iSY * this._iSectorCountX) + iSX;
+        for (var iPass = 0; iPass < iTotalPasses; ++iPass) {
+            pRenderEntry = this._pEngine.pDisplayManager.openRenderQueue();
+            pRenderEntry.hEffectFile = pEffectFile.resourceHandle();
+            pRenderEntry.hSurfaceMaterial = pSurfaceMaterial.resourceHandle();
+            pRenderEntry.modelType = a.RenderEntry.bufferEntry;
+            pRenderEntry.hModel = this._pVertexGrid.resourceHandle();
+            pRenderEntry.modelParamA = pSection.sectorVertices().resourceHandle();
+            pRenderEntry.modelParamB = this._pTriangles.resourceHandle();
+            pRenderEntry.renderPass = iPass;
+            pRenderEntry.pSceneNode = pSection;
+            pRenderEntry.userData = 0;
+
+            this._pEngine.pDisplayManager.closeRenderQueue(pRenderEntry);
+        }
+        pFunctionTimer.destructor();
+    }
+}
+
 /**
  * @property setTessellationParameters(float fVScale, float fVLimit)
  * @memberof Terrain
@@ -825,12 +964,108 @@ Terrain.prototype.computeErrorMetricOfGrid = function (iXVerts, iYVerts, iXStep,
     return fResult;
 }
 
+
+/**
+ * @property buildVertexBuffer()
+ * @memberof Terrain
+ * @return bool
+ **/
+
+Terrain.prototype.buildVertexBuffer = function () {
+    var sTempName;
+    sTempName = "terrain_system_" + a.sid();
+
+    // create the vertex buffer
+    // shared by the sectors
+    this._pVertexGrid = this._pEngine.pDisplayManager.vertexBufferPool().createResource(sTempName);
+
+    v2fCellSize = Vec2.create();
+    Vec2.set(this._v2fSectorSize.X / this._iSectorUnits, this._v2fSectorSize.Y / this._iSectorUnits, v2fCellSize);
+
+    v2fVert = Vec2.create();
+    Vec2.set(0.0, 0.0, v2fVert);
+
+
+    var pVerts = new Array(this._iSectorVerts * this._iSectorVerts * 4);
+    // fill the vertex stream with x,y positions and
+    // uv coordinates. All other data (height and
+    // surface normals) are stored in the vertex
+    // buffers of each terrain section
+    for (var y = 0; y < this._iSectorVerts; ++y) {
+        Vec2.set(0.0, y * v2fCellSize.Y, v2fVert);
+
+        for (var x = 0; x < this._iSectorVerts; ++x) {
+            pVerts[((y * this._iSectorVerts) + x) * 4 + 0] = v2fVert.X;
+            pVerts[((y * this._iSectorVerts) + x) * 4 + 1] = v2fVert.Y;
+            pVerts[((y * this._iSectorVerts) + x) * 4 + 2] = x / (this._iSectorVerts - 1);
+            pVerts[((y * this._iSectorVerts) + x) * 4 + 3] = y / (this._iSectorVerts - 1);
+
+            v2fVert.X += v2fCellSize.X;
+        }
+    }
+
+    // now that we have built the data,
+    // create one of our vertex buffer
+    // resource objects with it
+
+    bResult = this._pVertexGrid.create(this._iSectorVerts * this._iSectorVerts, 16, 0, new Float32Array(pVerts));
+
+    return bResult;
+}
+
+/**
+ * @property setVertexDescription()
+ * @memberof Terrain
+ * @return bool
+ **/
+Terrain.prototype.setVertexDescription = function () {
+    // create the vertex declaration
+    // and add it to the vertex
+    // buffer containing our basic grid
+
+    bSuccess = this._pVertexGrid.setVertexDescription(a.Terrain.prototype.pVertexDescription,
+                                                      a.Terrain.prototype.pVertexDescription.length);
+
+    debug_assert(bSuccess == true, "Terrain.setVertexDescription _pVertexGrid.setVertexDescription is false");
+    if (bSuccess == false) {
+        return bSuccess;
+    }
+
+    for (var iIndex = 0; iIndex < this._iSectorCountX * this._iSectorCountY; iIndex++) {
+        bSuccess = this._pSectorArray[iIndex].setVertexDescription();
+        debug_assert(bSuccess == true, "Terrain.setVertexDescription pSectorArray[iIndex].setRenderMethod is false");
+    }
+    return bSuccess;
+}
+
+/**
+ * @property buildIndexBuffer()
+ * @memberof Terrain
+ * @return bool
+ **/
+Terrain.prototype.buildIndexBuffer = function () {
+    var sTempName;
+    sTempName = "terrain_system_" + a.sid();
+
+    this._pTriangles = this._pEngine.pDisplayManager.indexBufferPool().createResource(sTempName);
+
+    // create the index buffer which
+    // all terrain sections can share
+    return this._pTriangles.createSingleStripGrid(
+        this._iSectorVerts, // width of grid
+        this._iSectorVerts, // height of grid
+        1, // horz vertex count per cell
+        1, // vert vertex count per cell
+        this._iSectorVerts, // horz vertex count in vbuffer
+        0);
+}
+
+
 /**
  * @property readUserInput()
  * @memberof Terrain
  **/
-Terrain.prototype.readUserInput = function ()
-{
+Terrain.prototype.readUserInput = function () {
     //
     // allow the user to adjust tesselation params
     //
@@ -876,4 +1111,6 @@ Terrain.prototype.readUserInput = function ()
     this.setTessellationParameters(
         this.fVErrorScale, this.fVRatioLimit);
 }
+
+
 a.Terrain = Terrain;

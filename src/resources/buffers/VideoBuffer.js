@@ -364,6 +364,9 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
             if (iHeight > 2) {
                 fnWriteRect(0, iYmin + 1, iWidth, iHeight - 2);
             }
+			//for(var k=0;k< iHeight - 2;k++){
+			//	fnWriteRect(0, iYmin + 1 + k, iWidth, 1);
+			//}
             fnWriteRect(0, iYmax - 1, iXend, 1);
         }
     }

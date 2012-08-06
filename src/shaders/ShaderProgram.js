@@ -397,8 +397,8 @@ GLSLProgram.prototype.autoSetup = function () {
     }
 
     pVertexDeclaration = new a.VertexDeclaration(pVertexDeclaration);
-    // trace(pUniformList);
-    // trace(pVertexDeclaration);
+    //trace(pUniformList);
+    //trace(pVertexDeclaration);
     return this.setup(pVertexDeclaration, pUniformList);
 };
 
@@ -525,6 +525,8 @@ GLSLProgram.prototype.applyBufferMap = function (pBufferMap) {
  * Apply vertex buffer.
  * @tparam VertexData pVertexData Data for apply.
  */
+var k=0;
+
 GLSLProgram.prototype.applyBuffer = function (pVertexData) {
     var pDevice = this._pDevice;
     var iOffset = 0;
@@ -536,7 +538,8 @@ GLSLProgram.prototype.applyBuffer = function (pVertexData) {
     var isActive = this._pManager._pActiveProgram? 
         this._pManager._pActiveProgram.latestBuffer !== pVertexBuffer: false;
 
-    for (i = 0; i < pVertexData.getVertexElementCount(); i++) {
+    for (i = 0; i < pVertexData.getVertexElementCount(); i++)
+	{
         pVertexElement = pVertexData._pVertexDeclaration[i];
         pAttr = pAttrs[pVertexElement.eUsage];
         if (!pAttr) {
@@ -549,13 +552,6 @@ GLSLProgram.prototype.applyBuffer = function (pVertexData) {
                 pVertexBuffer.activate();
                 this._pManager.latestBuffer = pVertexBuffer;
             }
-
-            // trace('pDevice.vertexAttribPointer', pAttr.iLocation,
-            //     pVertexElement.nCount,
-            //     pVertexElement.eType,
-            //     false,
-            //     iStride,
-            //     pVertexElement.iOffset);
 
             pAttr.pCurrentData = pVertexData;
             pDevice.vertexAttribPointer(pAttr.iLocation,

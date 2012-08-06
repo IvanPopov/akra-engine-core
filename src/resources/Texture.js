@@ -277,7 +277,8 @@ Texture.prototype.setPixelRGBA = function (iX, iY, iWidth, iHeight, pPixel, iMip
     eCubeFlag = eCubeFlag || 0;
 
     var pDevice = this._pEngine.pDevice;
-
+	
+	
     debug_assert(!((!TEST_BIT(this._iFlags, a.Texture.MipMaps)) && iMipMap),
         "Запрашивается уровень мип мапа, хотя текстура их не содрежит");
 
@@ -373,8 +374,9 @@ Texture.prototype.generateNormalMap = function (pHeightMap, iChannel, fAmplitude
         pNormalTable[i] = Vec3.create();
     }
 
-    a.computeNormalMap(pDevice, pHeightMap, pNormalTable, iChannel, fAmplitude, 4);
+    a.computeNormalMapGPU(this._pEngine, pHeightMap, pNormalTable, iChannel, fAmplitude);
 
+	//console.log("Tex",new Uint8Array(pHeightMap._pData[0][0][0]),pNormalTable);
     var iIndex;
     var iOffset;
     for (var y = 0; y < this.height; y++) {
@@ -904,7 +906,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
 
     this.releaseTexture();
     this._pTexture = pDevice.createTexture();
-    this._pFrameBuffer = pDevice.createFramebuffer();
+	this._pFrameBuffer = pDevice.createFramebuffer();
     this._iFlags = eFlags;
     this._eFormat = eFormat || this._eFormat;
     this._eType = eType || this._eType;
@@ -914,8 +916,10 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
     }
 
     this.bind();
+	
     pDevice.pixelStorei(pDevice.UNPACK_ALIGNMENT, 1);
-    //this.flipY()
+	this.flipY(false);
+  
 
     if (TEST_BIT(eFlags, a.Texture.MipMaps)) {
         nMipMaps = Math.ceil(Math.max(Math.log(this._iWidth) / Math.LN2, Math.log(this._iHeight) / Math.LN2)) + 1;

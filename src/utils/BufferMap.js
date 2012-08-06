@@ -531,6 +531,8 @@ BufferMap.prototype.draw = function () {};
 BufferMap.prototype.drawElements = function () {};
 BufferMap.prototype.drawArrays = function () {
     this._pDevice.drawArrays(this._ePrimitiveType, this._nStartIndex, this._nLength);
+	//this._pDevice.drawArrays(0, this._nStartIndex, this._nLength);
+	//this._pDevice.drawArrays(3, this._nStartIndex, this._nLength);
 };
 
 BufferMap.prototype.clone = function(bWithMapping) {

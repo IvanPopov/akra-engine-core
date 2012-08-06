@@ -8,12 +8,12 @@
  * @ctor
  * @param {Engine} pEngine Engine instance.
  */
-function RenderableObject() {
+function RenderableObject(pEngine) {
     /**
      * @private
      * @type {ShaderManager}
      */
-	this._pEngine = null;
+	this._pEngine = pEngine;
 
     /**
      * @private
