@@ -314,7 +314,6 @@ MeshSubset.prototype.setFlexMaterial = function (iMaterial) {
 
 MeshSubset.prototype.draw = function () {
     'use strict';
-    
     this._pRenderData.draw();
 };
 
