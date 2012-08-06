@@ -2122,6 +2122,8 @@ function EffectTechnique(pEffect) {
     this.sName = "";
     this._isComplexName = false;
     this.sComponents = null;
+    this.pComponents = null;
+    this.pComponentsProp = null;
 
     this.pExteranalsFragment = null;
     this.pExteranalsVertex = null;
@@ -2175,13 +2177,18 @@ EffectTechnique.prototype.generateListOfExternals = function () {
         }
     }
 };
-EffectTechnique.prototype.addComponent = function (pComponent, nShift) {
+EffectTechnique.prototype.addComponent = function (pComponent, pProp) {
     //TODO: something in this method are so wrong
     warning("EffectTechnique.addComponent: you should do it better");
-    if (!this.sComponents) {
+    pProp = pProp || {"nShift" : 0};
+    if (!this.sComponents || !this.pComponents) {
         this.sComponents = "";
+        this.pComponents = [];
+        this.pComponentsProp = [];
     }
-    this.sComponents += pComponent.findResourceName() + ">>" + nShift + "&";
+    this.sComponents += pComponent.findResourceName() + ">>" + pProp.nShift + "&";
+    this.pComponents.push(pComponent);
+    this.pComponentsProp.push(pProp);
     var i;
     for (i in pComponent.pExteranalsVertex) {
         this.pEffect.addExternalVar(pComponent.pExteranalsVertex[i], a.fx.GLOBAL_VARS.EXTERNAL_V);
@@ -2192,11 +2199,17 @@ EffectTechnique.prototype.addComponent = function (pComponent, nShift) {
 };
 EffectTechnique.prototype.finalize = function () {
     if (!this._isComplexName && this.pEffect._sProvideNameSpace) {
-        this.sName = this.pEffect._sProvideNameSpace + this.sName;
+        this.sName = this.pEffect._sProvideNameSpace + "." + this.sName;
     }
-    if(this.pEffect.sComponents){
+    if (this.pEffect.sComponents || this.pEffect.pComponents) {
         this.sComponents = this.pEffect.sComponents +
                            (this.sComponents !== null ? this.sComponents : "");
+        if (this.pComponents) {
+            this.pComponents = this.pEffect.pComponents.concat(this.pComponents);
+        }
+        else {
+            this.pComponents = this.pEffect.pComponents.concat();
+        }
     }
 };
 
@@ -2612,6 +2625,9 @@ function Effect(pManager, id) {
     this._pCurrentTechnique = null;
 
     this.sComponents = null;
+    this.pComponents = null;
+    this.pComponentsProp = null;
+
     STATIC(sTempStructName, "TEMPSTRUCTNAME_")
     STATIC(pBaseFunctionsHash, {});
     STATIC(pBaseFunctionsName, {});
@@ -2902,11 +2918,16 @@ Effect.prototype.evalHLSL = function (pCode, pVar) {
     trace("Need to eval this code: ", pCode, pVar, this._pExprType);
 };
 
-Effect.prototype.addComponent = function (pComponent, nShift) {
-    if (!this.sComponents) {
+Effect.prototype.addComponent = function (pComponent, pProp) {
+    pProp = pProp || {"nShift" : 0};
+    if (!this.sComponents || !this.pComponents) {
         this.sComponents = "";
+        this.pComponents = [];
+        this.pComponentsProp = [];
     }
-    this.sComponents += pComponent.findResourceName() + ">>" + nShift + "&";
+    this.sComponents += pComponent.findResourceName() + ">>" + pProp.nShift + "&";
+    this.pComponents.push(pComponent);
+    this.pComponentsProp.push(pProp);
     var i;
     for (i in pComponent.pExteranalsVertex) {
         this.addExternalVar(pComponent.pExteranalsVertex[i], a.fx.GLOBAL_VARS.EXTERNAL_V);
@@ -6393,11 +6414,12 @@ Effect.prototype.analyzeImportDecl = function (pNode) {
         error("You try import not existing component");
         return;
     }
+    var pProp = {"nShift" : nShift};
     if (pTech) {
-        pTech.addComponent(pComponent, nShift);
+        pTech.addComponent(pComponent, pProp);
     }
     else {
-        this.addComponent(pComponent, nShift);
+        this.addComponent(pComponent, pProp);
     }
 };
 Effect.prototype.analyzeProvideDecl = function (pNode) {

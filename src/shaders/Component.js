@@ -2,10 +2,10 @@
  * Created with IntelliJ IDEA.
  * User: sss
  */
-function Component(pEngine){
+function Component(pEngine) {
     A_CLASS;
     this._pEngine = pEngine;
-    this._pManager = pEngine.pShaderManager;
+    this._pManager = pEngine.pShaderManager || null;
     this.sName = null;
     this.pTechnique = null;
     this.pPasses = [];
@@ -14,9 +14,10 @@ function Component(pEngine){
     this.pAnnotation = null;
     this.sName = "";
     this.sComponents = null;
+    this.pComponents = null;
+    this.pComponentsProp = null;
     this.pExteranalsFragment = null;
     this.pExteranalsVertex = null;
-    this.pComponentBlend = null;
 }
 a.extend(Component, a.ResourcePoolItem);
 /**
@@ -98,21 +99,30 @@ Component.prototype.loadResource = function (sFileName) {
     //TODO notifyLoaded
     return true;
 };
-
-Component.prototype.init = function (sName, pTechnique) {
-    this.sName = sName;
+Component.prototype.hash = function (pProp) {
+    return this.sName + ">>>" + (pProp.nShift || 0);
+};
+Component.prototype.init = function (pTechnique) {
+//    var pManager = this._pEngine.shaderManager();
+//    if (!pManager) {
+//        warning("For init component you must create shader manager");
+//        return false;
+//    }
+    this.sName = pTechnique.sName;
     this.pTechnique = pTechnique;
     this.pPasses = pTechnique.pPasses;
     this.pPassesNames = pTechnique.pPassesNames;
     this.isPostEffect = pTechnique.isPostEffect;
     this.pAnnotation = pTechnique.pAnnotation;
     this.sComponents = pTechnique.sComponents;
+    this.pComponents = pTechnique.pComponents;
+    this.pComponentsProp = pTechnique.pComponentsProp;
     this.pExteranalsFragment = pTechnique.pExteranalsFragment;
     this.pExteranalsVertex = pTechnique.pExteranalsVertex;
-
+    return true;
 };
-a.Component = Component;
+A_NAMESPACE(Component, fx);
 
 Define(a.ComponentManager(pEngine), function () {
-    a.ResourcePool(pEngine, a.Component)
+    a.ResourcePool(pEngine, a.fx.Component)
 });
