@@ -12,7 +12,7 @@ function Node(){
              k_newWorldMatrix,
              k_newLocalMatrix,
              k_rebuildInverseWorldMatrix,
-             k_rebuildNormalMatrix
+             k_rebuildNormalMatrix,
          ], eUpdateDataFlagBits, a.Scene);
     Enum([
              k_inheritPositionOnly = 0,
@@ -298,6 +298,12 @@ Node.prototype.accessLocalMatrix = function () {
 Node.prototype.isWorldMatrixNew = function () {
     INLINE();
     return TEST_BIT(this._iUpdateFlags, a.Scene.k_newWorldMatrix);
+};
+
+Node.prototype.isLocalMatrixNew = function () {
+    'use strict';
+    
+    return TEST_BIT(this._iUpdateFlags, a.Scene.k_newLocalMatrix);
 };
 
 Node.prototype.create = function () {
@@ -632,9 +638,26 @@ Node.prototype.recursiveUpdate = function () {
     if (this._pChild) {
         this._pChild.recursiveUpdate();
     }
+
+    //this.prepareForUpdate();
+};
+
+Node.prototype.recursivePreUpdate = function () {
+    'use strict';
+    
     // clear the flags from the previous update
     this.prepareForUpdate();
+
+    // update my sibling
+    if (this._pSibling) {
+        this._pSibling.recursivePreUpdate();
+    }
+    // update my child
+    if (this._pChild) {
+        this._pChild.recursivePreUpdate();
+    }
 };
+
 /**
  * Recalculate world Matrix
  */

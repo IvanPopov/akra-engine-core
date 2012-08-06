@@ -267,6 +267,12 @@ Engine.prototype.notifyUpdateScene = function () {
     return true;
 };
 
+Engine.prototype.notifyPreUpdateScene = function () {
+    'use strict';
+    
+    this._pRootNode.recursivePreUpdate();
+};
+
 Engine.prototype.getRootNode = function () {
     return this._pRootNode;
 };
@@ -502,7 +508,9 @@ Engine.prototype.render3DEnvironment = function () {
     if (!this.render()) {
         return false;
     }
-
+    if (this._isFrameReady) {
+        this.notifyPreUpdateScene();
+    }
     if (this._isShowStats) {
         this.updateStats();
     }
@@ -527,6 +535,7 @@ Engine.prototype.frameMove = function () {
         if (!this.updateScene()) {
             return false;
         }
+
         // subtract the time interval
         // emulated with each tick
         this.fUpdateTimeCount -= a.fMillisecondsPerTick;

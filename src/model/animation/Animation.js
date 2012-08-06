@@ -1,21 +1,10 @@
 function Animation (sName, eOptions) {
     'use strict';
-	
-    Enum([
-    	REPEAT = FLAG(0)
-    	], ANIMATION_OPTIONS, a.Animation);
 
 	this._pTracks = [];
-	this._sName = sName || null;
+	this._sName = sName || ('animation' + a.sid());
 
-	this._fStartTime = 0;
 	this._fDuration = 0;
-
-	this._eOptions = 0;
-
-	if (eOptions) {
-		this.setOptions(eOptions);
-	}
 }
 
 PROPERTY(Animation, 'name',
@@ -23,17 +12,10 @@ PROPERTY(Animation, 'name',
 		return this._sName;
 	});
 
-Animation.prototype.setOptions = function (eOptions) {
-    'use strict';
-    
-	this._eOptions |= eOptions;
-};
-
-Animation.prototype.getOptions = function () {
-    'use strict';
-    
-	return this._eOptions;
-};
+PROPERTY(Animation, 'duration',
+	function () {
+		return this._fDuration;
+	});
 
 Animation.prototype.addTrack = function (pTrack) {
     'use strict';
@@ -44,11 +26,6 @@ Animation.prototype.addTrack = function (pTrack) {
 };
 
 
-Animation.prototype.attachToTimeline = function (fStartTime) {
-    'use strict';
-    
-	this._fStartTime = fStartTime;
-};
 
 Animation.prototype.bind = function (pTarget) {
     'use strict';
@@ -66,26 +43,22 @@ Animation.prototype.bind = function (pTarget) {
 	return bResult;
 };
 
-Animation.prototype.play = function (fTime) {
+Animation.prototype.time = function (fTime, fWeight) {
     'use strict';
-    
-	var fCurTime = fTime - this._fStartTime;
+
+    fWeight = fWeight || 1.0;
+
+	var fCurTime = fTime;
     var pTracks = this._pTracks;
 
-    if (this._eOptions & a.Animation.REPEAT) {
-    	fCurTime = fCurTime - Math.floor(fCurTime / this._fDuration) * this._fDuration;
-    }
-    else if (fCurTime < 0 || fCurTime >= this._fDuration) {
+    if (fCurTime < 0 || fCurTime >= this._fDuration) {
 	    return;
 	}
 
 	for (var i = pTracks.length - 1, pTrack; i >= 0; i--) {
 		pTrack = pTracks[i];
-		if (pTrack.fStartTime <= fCurTime && pTrack.fEndTime > fCurTime) { //Math.abs(pTrack.fTime - fCurTime) > 0.01
-			// if (pTrack.fTime > fCurTime) {
-			// 	pTrack.reset();
-			// }
-			pTrack.play(fCurTime);
+		if (pTrack.fStartTime <= fCurTime && pTrack.fEndTime > fCurTime) {
+			pTrack.time(fCurTime, fWeight);
 		}
 	};
 };

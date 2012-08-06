@@ -41,7 +41,7 @@ function COLLADA (pEngine, pSettings) {
     var sContent            = pSettings.content || null;
     var fnCallback          = pSettings.success || null;
     var useSharedBuffer     = ifndef(pSettings.sharedBuffer, false);
-    var iAnimationOptions   = ifndef(pSettings.animationOptions, a.Animation.REPEAT);
+    //var iAnimationOptions   = ifndef(pSettings.animationOptions, a.Animation.REPEAT);
     var useAnimation        = ifndef(pSettings.animation, true);
     var useScene            = ifndef(pSettings.scene, true);
     var useWireframe        = ifndef(pSettings.wireframe, false);
@@ -1807,28 +1807,30 @@ function COLLADA (pEngine, pSettings) {
 
         switch (sTransform) {
             case 'translate':
-                pTrack = new a.AnimationTranslation(sJoint);
+                // pTrack = new a.AnimationTranslation(sJoint);
                 
-                for (var i = 0, v3f = new Array(3), n; i < pTimeMarks.length; ++ i) {
-                    n = i * 3;
-                    v3f.X = pOutputValues[i * 3];
-                    v3f.Y = pOutputValues[i * 3 + 1];
-                    v3f.Z = pOutputValues[i * 3 + 2];
-                    pTrack.addKeyFrame(pTimeMarks[i], [v3f.X, v3f.Y, v3f.Z]);
-                };
-
+                // for (var i = 0, v3f = new Array(3), n; i < pTimeMarks.length; ++ i) {
+                //     n = i * 3;
+                //     v3f.X = pOutputValues[i * 3];
+                //     v3f.Y = pOutputValues[i * 3 + 1];
+                //     v3f.Z = pOutputValues[i * 3 + 2];
+                //     pTrack.addKeyFrame(pTimeMarks[i], [v3f.X, v3f.Y, v3f.Z]);
+                // };
+                TODO('implement animation translation');
+                //TODO: implement animation translation
                 break;
             case 'rotate':
-                v4f = pTransform.pValue;
-                pTrack = new a.AnimationRotation(sJoint, [v4f[1], v4f[2], v4f[3]]);
+                // v4f = pTransform.pValue;
+                // pTrack = new a.AnimationRotation(sJoint, [v4f[1], v4f[2], v4f[3]]);
                 
-                debug_assert(pOutput.pAccessor.iStride === 1, 
-                    'matrix modification supported only for one parameter modification');
+                // debug_assert(pOutput.pAccessor.iStride === 1, 
+                //     'matrix modification supported only for one parameter modification');
                 
-                for (var i = 0; i < pTimeMarks.length; ++ i) {
-                    pTrack.addKeyFrame(pTimeMarks[i], pOutputValues[i] / 180.0 * Math.PI);
-                };
-
+                // for (var i = 0; i < pTimeMarks.length; ++ i) {
+                //     pTrack.addKeyFrame(pTimeMarks[i], pOutputValues[i] / 180.0 * Math.PI);
+                // };
+                TODO('implement animation rotation');
+                //TODO: implement animation rotation
                 break;
             case 'matrix':
                 pValue = pChannel.pTarget.pValue;
@@ -1893,7 +1895,7 @@ function COLLADA (pEngine, pSettings) {
 
         var pTracks = buildAnimationTrackList(pAnimationData);
         var sAnimation = pAnimationData.length? pAnimationData[0].name:  null;
-        var pAnimation = new a.Animation(sAnimation || 'unknown', iAnimationOptions);
+        var pAnimation = new a.Animation(sAnimation || 'unknown');
 
         for (var i = 0; i < pTracks.length; i++) {
             pAnimation.addTrack(pTracks[i]);

@@ -17,9 +17,9 @@ function Skin (pRenderDataBuffer) {
 
     this._pBoneTransformMatrices = null;
     this._pBoneOffsetMatrixBuffer = null;
-    this._pJointNames = null;
+    this._pNodeNames = null;
     this._pBoneOffsetMatrices = null;
-    this._pJointMatrices = null;
+    this._pAffectingNodes = null;
 
 
     this._pInfMetaData = null;
@@ -52,7 +52,7 @@ PROPERTY(Skin, 'skeleton',
 
 PROPERTY(Skin, 'totalBones',
     function () {
-        return this._pJointNames.length;
+        return this._pNodeNames.length;
     });
 
 Skin.prototype.setBindMatrix = function (m4fMatrix) {
@@ -83,13 +83,9 @@ Skin.prototype.setSkeleton = function(pSkeleton) {
         return false;
     }
 
-    var nMatrices = this.totalBones;
-
-    this._pJointMatrices = new Array(nMatrices);
-
-    for (var i = 0; i < nMatrices; i++) {
-        this._pJointMatrices[i] = pSkeleton.findJoint(this._pJointNames[i]).worldMatrix();
-        debug_assert(this._pJointMatrices[i], 'joint<' + this._pJointNames[i] + '> must exists...');
+    for (var i = 0, nMatrices = this.totalBones; i < nMatrices; i++) {
+        this._pAffectingNodes[i] = pSkeleton.findJoint(this._pNodeNames[i]);
+        debug_assert(this._pAffectingNodes[i], 'joint<' + this._pNodeNames[i] + '> must exists...');
     };
 
     this._pSkeleton = pSkeleton;
@@ -97,16 +93,40 @@ Skin.prototype.setSkeleton = function(pSkeleton) {
     return true;
 };
 
+Skin.prototype.attachToSceneTree = function (pRootNode) {
+    'use strict';
+    
+    for (var i = 0, nMatrices = this.totalBones; i < nMatrices; i++) {
+        this._pAffectingNodes[i] = pRootNode.findNode(this._pNodeNames[i]);
+        debug_assert(this._pAffectingNodes[i], 'node<' + this._pNodeNames[i] + '> must exists...');
+    };
+
+    return true;
+};
+
+Skin.prototype.bind = function () {
+    'use strict';
+    
+    if (arguments[0] instanceof a.Skeleton) {
+        return this.setSkeleton(arguments[0]);
+    }
+    
+    return this.attachToSceneTree(arguments[0]);
+};
+
 Skin.prototype.setBoneNames = function (pNames) {
     'use strict';
     
-    this._pJointNames = pNames;
+    this._pNodeNames = pNames;
+    this._pAffectingNodes = new Array(this._pNodeNames.length);
+
+    return true;
 };
 
 Skin.prototype.setBoneOffsetMatrices = function (pMatrices) {
     'use strict';
     
-    var pMatrixNames = this._pJointNames;
+    var pMatrixNames = this._pNodeNames;
 
     debug_assert(pMatrices && pMatrixNames && pMatrixNames.length === pMatrices.length, 
         'number of matrix names must equal matrices data length:\n' + pMatrixNames.length + ' / ' + pMatrices.length);
@@ -227,27 +247,29 @@ Skin.prototype.setVertexWeights = function(pInfluencesCount, pInfluences, pWeigh
     return this.setIfluences(pInfluencesCount, pInfluences);
 };
 
-Skin.prototype.applyBoneMatrices = function() {
+Skin.prototype.applyBoneMatrices = function(bForce) {
     'use strict';
-    
-    //debug_assert(this._pSkeleton, 'mesh does not have any skeleton data');
 
     var pData;
     var bResult;     
-    var nMatrices;
+    var pNode;
+    var isUpdated = false;
 
-    //if (this._pSkeleton.isUpdated()) {
-        nMatrices = this.totalBones; 
+    for (var i = 0, nMatrices = this.totalBones; i < nMatrices; ++ i) {
+        pNode = this._pAffectingNodes[i];
 
-        for (var i = 0; i < nMatrices; i++) {
-            Mat4.mult(this._pJointMatrices[i], this._pBoneOffsetMatrices[i], this._pBoneTransformMatrices[i]);
-        };
+        if (pNode.isWorldMatrixNew() || bForce) {
+            Mat4.mult(pNode._m4fWorldMatrix, this._pBoneOffsetMatrices[i], this._pBoneTransformMatrices[i]);
+            isUpdated = true;
+        }
+    };
 
+    if (isUpdated) {
         pData = this._pBoneOffsetMatrixBuffer;
-        bResult = this._pBoneTransformMatrixData.setData(pData, 0, pData.byteLength);
-    //}
+        return this._pBoneTransformMatrixData.setData(pData, 0, pData.byteLength);
+    }
 
-    return bResult;
+    return false;
 };
 
 Skin.prototype.apply = Skin.prototype.applyBoneMatrices;
@@ -258,7 +280,7 @@ Skin.prototype.isReady = function () {
     return 
     this._pInfMetaData && this._pInfData && this._pWeightData && 
     this._pBoneOffsetMatrixBuffer && this._pBoneOffsetMatrices && 
-    this._pJointNames &&
+    this._pNodeNames &&
     this._m4fBindMatrix;
 };
 

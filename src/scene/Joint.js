@@ -37,12 +37,6 @@ Joint.prototype.create = function () {
     return true;
 };
 
-Joint.prototype.recalcWorldMatrix = function () {
-    'use strict';
-    
-    return Node.prototype.recalcWorldMatrix.call(this) && (this._iUpdated ++);
-};
-
 Ifdef (__DEBUG);
 
 Joint.prototype.toString = function (isRecursive, iDepth) {

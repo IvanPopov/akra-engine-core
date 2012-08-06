@@ -138,35 +138,24 @@ AnimationTrack.prototype.bind = function () {
 	return true;
 };
 
-AnimationTrack.prototype.play = function (fTime) {
+AnimationTrack.prototype.time = function (fTime, fWeight) {
     'use strict';
 
 	var iFrame;
 	var fBlend;
 
+	//TODO: реализовать существенно более эффективный поиск кадра.
 	for (iFrame = 0; this._pKeyFrames[iFrame + 1].fTime < fTime; ++ iFrame);
 
-	//trace(this._pKeyFrames[iFrame].fTime, '<', fTime, '<', this._pKeyFrames[iFrame + 1].fTime);
-	//if (iFrame === 34)
-	//	trace(iFrame, '-->', iFrame + 1, '/', this._pKeyFrames.length);
 	fBlend = (fTime - this._pKeyFrames[iFrame].fTime) / (this._pKeyFrames[iFrame + 1].fTime - this._pKeyFrames[iFrame].fTime);
 	debug_assert(fBlend >= 0. && fBlend <= 1., 'incorrect blende weight: ' + fBlend);
-	//trace(iFrame, fBlend);
+
 	this.fTime = fTime;
-	this.apply(iFrame, fBlend);
+	this.interpolate(this._pKeyFrames[iFrame], this._pKeyFrames[iFrame + 1], fBlend, fWeight);
 };
 
-AnimationTrack.prototype.apply = function (iKeyFrame, fBlend) {
-    'use strict';
-    
-	debug_error('you must overwrite ::apply() method before used...');
-};
-
-AnimationTrack.prototype.rewind = function (fTime) {
-    'use strict';
-    
-};
-
+AnimationTrack.prototype.interpolate = null;
+AnimationTrack.prototype.apply = null;
 AnimationTrack.prototype.reset = function () {
     'use strict';
 	this.fTime = 0;
@@ -177,49 +166,55 @@ AnimationTrack.prototype.reset = function () {
 A_NAMESPACE(AnimationTrack);
 
 
-function AnimationRotation (sTarget, v3fAxis) {
-    A_CLASS;
+// function AnimationRotation (sTarget, v3fAxis) {
+//     A_CLASS;
 
-    this._v3fAxis = v3fAxis;
-}
+//     this._v3fAxis = v3fAxis;
+// }
 
-EXTENDS(AnimationRotation, a.AnimationTrack);
+// EXTENDS(AnimationRotation, a.AnimationTrack);
 
-AnimationRotation.prototype.apply = function (iKeyFrame, fBlend) {
-    'use strict';
+// AnimationRotation.prototype.interpolate = function (iKeyFrame, fBlend) {
+//     'use strict';
     
-	var pStartFrame = this._pKeyFrames[iKeyFrame];
-	var pEndFrame = this._pKeyFrames[iKeyFrame + 1];
-	var fValue = ((pEndFrame.pValue * (1. - fBlend)) + (fBlend * pStartFrame.pValue));
+// 	var pStartFrame = this._pKeyFrames[iKeyFrame];
+// 	var pEndFrame = this._pKeyFrames[iKeyFrame + 1];
+// 	var fValue = ((pEndFrame.pValue * (1. - fBlend)) + (fBlend * pStartFrame.pValue));
 
-	//trace('add rel rotation to ', this._pTarget, fValue);
-	this._pTarget.setRotation(this._v3fAxis, fValue);
-	TODO('rotation animation');
-};
+// 	//trace('add rel rotation to ', this._pTarget, fValue);
+// 	this._pTarget.setRotation(this._v3fAxis, fValue);
+// 	TODO('rotation animation');
+// };
 
-A_NAMESPACE(AnimationRotation);
+// A_NAMESPACE(AnimationRotation);
 
-function AnimationTranslation (sTarget) {
-    A_CLASS;
-
-}
-
-EXTENDS(AnimationTranslation, a.AnimationTrack);
-
-AnimationTranslation.prototype.apply = function (iKeyFrame, fBlend) {
-    'use strict';
+// function AnimationTranslation (sTarget) {
     
-	var pStartFrame = this._pKeyFrames[iKeyFrame];
-	var pEndFrame = this._pKeyFrames[iKeyFrame + 1];
-	var fX = ((pEndFrame.pValue.X * fBlend) + ((1. - fBlend) * pStartFrame.pValue.X));
-	var fY = ((pEndFrame.pValue.Y * fBlend) + ((1. - fBlend) * pStartFrame.pValue.Y));
-	var fZ = ((pEndFrame.pValue.Z * fBlend) + ((1. - fBlend) * pStartFrame.pValue.Z));
+//     A_CLASS;
+// }
+
+// EXTENDS(AnimationTranslation, a.AnimationTrack);
+
+// AnimationTranslation.prototype.interpolate = function (iKeyFrame, fBlend) {
+//     'use strict';
+    
+// 	var pStartFrame = this._pKeyFrames[iKeyFrame];
+// 	var pEndFrame = this._pKeyFrames[iKeyFrame + 1];
+// 	var fX = ((pEndFrame.pValue.X * fBlend) + ((1. - fBlend) * pStartFrame.pValue.X));
+// 	var fY = ((pEndFrame.pValue.Y * fBlend) + ((1. - fBlend) * pStartFrame.pValue.Y));
+// 	var fZ = ((pEndFrame.pValue.Z * fBlend) + ((1. - fBlend) * pStartFrame.pValue.Z));
 	
-	this._pTarget.setPosition(fX, fY, fZ);
-	TODO('translation animation');
-};
+// 	this._pTarget.setPosition(fX, fY, fZ);
+// 	TODO('translation animation');
+// };
 
-A_NAMESPACE(AnimationTranslation);
+// A_NAMESPACE(AnimationTranslation);
+
+/**
+ * Animatin matrix modififcation
+ * =========================================================================
+ */
+
 
 function AnimationMatrixModification (sTarget, iElement) {
     A_CLASS;
@@ -228,38 +223,51 @@ function AnimationMatrixModification (sTarget, iElement) {
 }
 
 EXTENDS(AnimationMatrixModification, a.AnimationTrack);
+A_NAMESPACE(AnimationMatrixModification);
 
-AnimationMatrixModification.prototype.apply = function (iKeyFrame, fBlend) {
+AnimationMatrixModification.prototype.interpolate = function (pStartFrame, pEndFrame, fBlend, fWeight) {
     'use strict';
 
-	var pStartFrame = this._pKeyFrames[iKeyFrame];
-	var pEndFrame = this._pKeyFrames[iKeyFrame + 1];
+    var bAdd = this._pTarget.isLocalMatrixNew();
+    var pLocalMatrix = this._pTarget.accessLocalMatrix();
 	var fValue = ((pEndFrame.pValue * fBlend) + ((1. - fBlend) * pStartFrame.pValue));
-	var m4fLocalMatrix = this._pTarget.accessLocalMatrix();
 
-	m4fLocalMatrix[this._iElement] = this._iElement === 15? (fValue || 1) : fValue;
+	fValue = (this._iElement === 15? (fValue || 1) : fValue) * fWeight;
+
+	if (bAdd) {
+		pLocalMatrix[this._iElement] += fValue;
+	}
+	else {
+		pLocalMatrix[this._iElement] = fValue;
+	}
 };
 
-A_NAMESPACE(AnimationMatrixModification);
+
+
+/**
+ * Animatin transformation
+ * =========================================================================
+ */
 
 function AnimationTransformation (sTarget) {
     A_CLASS;
 }
 
 EXTENDS(AnimationTransformation, a.AnimationTrack);
+A_NAMESPACE(AnimationTransformation);
 
-AnimationTransformation.prototype.apply = function (iKeyFrame, fBlend) {
+AnimationTransformation.prototype.interpolate = function (pStartFrame, pEndFrame, fBlend, fWeight) {
     'use strict';
 
-	var pStartFrame = this._pKeyFrames[iKeyFrame];
-	var pEndFrame = this._pKeyFrames[iKeyFrame + 1];
-	var m4fLocalMatrix = this._pTarget.accessLocalMatrix();
+    var bAdd = this._pTarget.isLocalMatrixNew();
+    var pLocalMatrix = this._pTarget.accessLocalMatrix();
 	var fValue;
-
+	
 	for (var i = 0; i < 16; i++) {
 		fValue = ((pEndFrame.pValue[i] * fBlend) + ((1. - fBlend) * pStartFrame.pValue[i]));
-		m4fLocalMatrix[i] = i === 15? (fValue || 1) : fValue;
+		fValue = fValue * fWeight;
+
+		pLocalMatrix[i] = bAdd? pLocalMatrix[i] + fValue: fValue;
 	};
 };
 
-A_NAMESPACE(AnimationTransformation);
