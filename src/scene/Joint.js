@@ -1,8 +1,8 @@
-function Joint (pSkeleton) {
+function Joint (pEngine, pSkeleton) {
 	A_CLASS;
-
+	debug_assert(pEngine, 'engine must be');
     debug_assert(pSkeleton, 'joint must managed by any skeleton');
-
+	this._pEngine = pEngine;
 	this._sBone = null;
     this._pSkeleton = pSkeleton;
     this._m4fBoneMatrix = null;

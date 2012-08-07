@@ -19,7 +19,7 @@ function Skeleton (pEngine, sName) {
 	this._pRootJoints = null;
 	this._pJointsByName = null;
 	this._sName = sName || null;
-
+    this._pEngine = pEngine;
 	//если положения joint'ов были изменены, то переменная выставляется в true.
 	this._iFlags = false;
 }
@@ -33,6 +33,10 @@ PROPERTY(Skeleton, 'name',
 	function () {
 		return this._sName;
 	});
+
+Skeleton.prototype.getEngine = function () {
+    return this._pEngine;
+}
 
 /**
  * The maximum number of bones that can be placed in the current skeleton.
@@ -124,7 +128,7 @@ Skeleton.prototype.setup = function(nBones) {
 Skeleton.prototype.createBone = function(sName, iBoneIndex) {
 	debug_assert(this._nBones < this.getMaxBoneCount(), 'limit of bones reached for given skeleton');
 
-	var pJoint = new a.Joint(this);
+	var pJoint = new a.Joint(this.getEngine(), this);
 	var iBoneSlot = ifndef(iBoneIndex, this._nBones);
 	var m4fBoneTransform = this._pBoneTransforms[iBoneSlot];
 	var sBoneName = sName || ('bone' + iBoneSlot);

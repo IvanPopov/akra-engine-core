@@ -1,7 +1,7 @@
 var TEMPSCENEVECTOR3FORCALC0 = Vec3.create();
 var TEMPSCENEMATRIX4FORCALC0 = Mat4.create();
 
-function Node(){
+function Node(pEngine){
     A_CLASS;
     Enum([
              k_setForDestruction = 0,
@@ -93,9 +93,11 @@ function Node(){
     this._v3fWorldForward = null;
 
     this._sName = null;
+
 }
 
 EXTENDS(Node, a.ReferenceCounter);
+
 
 PROPERTY(Node, 'name',
     function () {
@@ -110,6 +112,13 @@ PROPERTY(Node, 'depth',
         var iDepth = -1;
         for (var pNode = this; pNode; pNode = pNode.parent(), ++ iDepth);
         return iDepth;
+    });
+
+PROPERTY(Node, 'root',
+    function () {
+        var iDepth = -1;
+        for (var pNode = this; pNode.parent(); pNode = pNode.parent(), ++ iDepth);
+        return pNode;
     });
 
 Node.prototype.setName = function (sName) {
@@ -373,6 +382,7 @@ Node.prototype.attachToParent = function (pParent) {
         }
     }
 };
+
 /**
  * Setter for iInheritance
  * @tparam Int iSetting Value from eInheritance
@@ -1057,37 +1067,7 @@ Node.prototype.setScale = function (scale) {
 
 Ifdef (__DEBUG);
 
-Node.prototype.dumpHierarchy = function (iDepth, pParent) {
-    'use strict';
 
-    iDepth = iDepth || 0;
-    pParent = pParent || null;
-
-    var sName = this.getName();
-    var pNode = {
-        name: sName || 'unknown',
-        id: iDepth,
-        data: {},
-        children: []
-    };
-
-    var pSibling = this.sibling();
-    var pChild = this.child();
-
-    if (pSibling) {
-        pSibling.dumpHierarchy(iDepth + 0.01, pParent);
-    }
-
-    if (pChild) {
-        pChild.dumpHierarchy(Math.floor(iDepth) + 1, pNode);
-    }
-
-    if (pParent) {
-        pParent.children.push(pNode);
-    }
-
-    return pNode;
-};
 
 
 Node.prototype.toString = function (isRecursive, iDepth) {

@@ -74,6 +74,8 @@ function Engine () {
     //Размеры при создании
     this.iCreationWidth = 0;
     this.iCreationHeight = 0;
+
+    this.renderList = null;
 }
 
 /**
@@ -89,10 +91,12 @@ Engine.prototype.create = function (sCanvasId) {
     this.pCanvas = document.getElementById(sCanvasId);
     this._pRootNode = new a.SceneNode(this); //Корень дерева сцены
     this._pDefaultCamera = new a.Camera(this);      //Камера по умолчанию
+	this._pDefaultCamera.setName("Default camera");
     this._pActiveCamera = this._pDefaultCamera; //Активная камера
     this._pSceneTree = new a.OcTree();      //Объект отвечающий за дерево сцены
     this.iCreationWidth = this.pCanvas.width;
     this.iCreationHeight = this.pCanvas.height;
+	this.iCreationHeight = this.pCanvas.height;
 
     //Получение 3D девайса
     this.pDevice = a.createDevice(this.pCanvas);
@@ -338,8 +342,12 @@ Engine.prototype.renderScene = function () {
                 this._pActiveCamera.searchRect().fY0, this._pActiveCamera.searchRect().fY1,
                 this._pActiveCamera.searchRect().fZ0, this._pActiveCamera.searchRect().fZ1)
     */
-    var pRenderList = pFirstMember;
 
+
+
+    var pRenderList = pFirstMember;
+    //Добавлено для отслеживания видимости узлов. aldore
+    this.renderList = pRenderList;
     //Подготовка всех объектов к рендерингу
     while (pFirstMember) {
         pFirstMember.prepareForRender();
@@ -362,6 +370,8 @@ Endif ();
 
     return true;
 }
+//Добавлено для отслеживания видимости узлов. aldore
+Engine.prototype.renderScene.renderList = null;
 
 Engine.prototype.run = function () {
     var me = this;
