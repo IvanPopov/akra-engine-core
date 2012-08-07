@@ -393,6 +393,12 @@ VariableType.prototype.checkMe = function () {
     }
     return true;
 };
+VariableType.prototype.isStrictEqual = function (pType) {
+    if (pType instanceof VariableType) {
+        return this.pEffectType.isStrictEqual(pType.pEffectType);
+    }
+    return this.pEffectType.isStrictEqual(pType);
+};
 VariableType.prototype.isEqual = function (pType) {
     if (pType instanceof VariableType) {
         return this.pEffectType.isEqual(pType.pEffectType);
@@ -455,6 +461,12 @@ VariableType.prototype.hasIndexData = function () {
 };
 VariableType.prototype.canMixible = function () {
     return this.pEffectType.canMixible();
+};
+VariableType.prototype.canBlend = function (pType) {
+    if (this.isBase() || pType.isBase() || !this.canMixible() || !pType.canMixible()) {
+        return 0;
+    }
+    return this.pEffectType.canBlend(pType.pEffectType);
 };
 
 function EffectType(sName, sRealName, isBase, iSize) {
@@ -677,6 +689,9 @@ EffectType.prototype.globalUsedTypes = function () {
 EffectType.prototype.canMixible = function () {
     return this._canMixible;
 };
+EffectType.prototype.canBlend = function (pType) {
+    return this.pDesc.canBlend(pType.pDesc);
+};
 
 function EffectStruct() {
     /**
@@ -898,6 +913,23 @@ EffectStruct.prototype.globalUsedTypes = function () {
 };
 EffectStruct.prototype.canMixible = function () {
     return this._canMixible;
+};
+EffectStruct.prototype.canBlend = function (pStruct) {
+    var pSemantics1 = this._pSemantics;
+    var pSemantics2 = pStruct._pSemantics;
+    var i;
+    var pVar1, pVar2;
+    for (i in pSemantics1) {
+        pVar1 = pSemantics1[i];
+        pVar2 = pSemantics2[i];
+        if (pVar2) {
+            if(!pVar1.pType.isStrictEqual(pVar2.pType) &&
+               !(pVar1.canBlend(pVar2))){
+                return false;
+            }
+        }
+    }
+    return true;
 };
 
 function EffectPointer(pVar, nDim, pFirst, sPrevReal, isAttr) {
@@ -2232,12 +2264,12 @@ function EffectPass() {
     /**
      * @type {EffectVertex}
      */
-    this.pVertexFunc = null;
+    this.pVertexShader = null;
     /**
      *
      * @type {EffectFragment}
      */
-    this.pFragmentFunc = null;
+    this.pFragmentShader = null;
     /**
      *
      * @type {String}
@@ -2270,7 +2302,7 @@ EffectPass.prototype.setVertexShader = function (pParam) {
         this.sVertexName = pParam;
     }
     else {
-        this.pVertexFunc = pParam;
+        this.pVertexShader = pParam;
     }
 };
 EffectPass.prototype.setFragmentShader = function (pParam) {
@@ -2278,7 +2310,7 @@ EffectPass.prototype.setFragmentShader = function (pParam) {
         this.sFragmentName = pParam;
     }
     else {
-        this.pFragmentFunc = pParam;
+        this.pFragmentShader = pParam;
     }
 };
 EffectPass.prototype.setJSVertexShader = function (pFunc) {
@@ -2324,16 +2356,16 @@ EffectPass.prototype.prepare = function () {
     }
     eval(this.sJSCode);
     if (this.sVertex !== null) {
-        this.pVertexFunc = this.pFuncHash[this.sVertex];
+        this.pVertexShader = this.pFuncHash[this.sVertex];
     }
     else {
-        this.pVertexFunc = null;
+        this.pVertexShader = null;
     }
     if (this.sFragment !== null) {
-        this.pFragmentFunc = this.pFuncHash[this.sFragment];
+        this.pFragmentShader = this.pFuncHash[this.sFragment];
     }
     else {
-        this.pFragmentFunc = null;
+        this.pFragmentShader = null;
     }
 
 };
@@ -2414,6 +2446,13 @@ EffectPass.prototype.addGlobalsFromShader = function (pShader) {
         this.pGlobalsByName[i] = sName;
         this.pGlobalsByRealName[sName] = pShader.pUniformsByRealName[sName];
         this.pGlobalsDefault[sName] = pShader.pUniformsDefault[sName];
+    }
+};
+EffectPass.prototype.clear = function () {
+    if (this.isComplex) {
+        this.pVertexShader = null;
+        this.pFragmentShader = null;
+        this.pStates = {};
     }
 };
 
