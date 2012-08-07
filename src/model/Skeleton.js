@@ -13,6 +13,7 @@ function Skeleton (pEngine, sName) {
 		], SKELETON_FLAGS, a.Skeleton);
 
 	this._sName = sName || null;
+
 	this._pEngine = pEngine;
 
 	//корневые joint'ы
@@ -40,6 +41,7 @@ PROPERTY(Skeleton, 'name',
 	function () {
 		return this._sName;
 	});
+
 
 PROPERTY(Skeleton, 'root',
 	function () {
@@ -148,6 +150,7 @@ Skeleton.prototype.findJointByName = function (sName) {
 
 	return null;
 };
+
 
 Skeleton.prototype.attachMesh = function (pMesh) {
     'use strict';

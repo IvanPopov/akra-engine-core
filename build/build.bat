@@ -7,3 +7,4 @@ set CORE_LOCATION="/akra-engine-core/src/"
 set OUTPUT_SCRIPT_NAME=%OUTPUT_FOLDER%/akra-engine.js
 
 cd C:\WebServers\home\akra\www\akra-engine-core\build\ && node pack.js -h %CORE_LOCATION% -e %ESPRIMA% -p %PREPROCESSOR% -i %SRC% -o %OUTPUT_SCRIPT_NAME%
+

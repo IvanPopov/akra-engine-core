@@ -56,6 +56,10 @@ var sDefine = '';
 (function () {
 	for (var i = 2; i < process.argv.length; ++ i) {
 		switch (process.argv[i]) {
+			case '-I':
+            case '--ide':
+                sDefine += 'Define(__IDE, true);';
+                break;
 			case '-h':
 			case '--home':
 				home = process.argv[++ i];
@@ -77,7 +81,7 @@ var sDefine = '';
 			case '-i':
 			case '--input':
 				sFilename = __dirname  + '/' + process.argv[++ i];
-				sDefine = (home? 'Define(A_CORE_HOME, "' + home + '");\n': '');
+				sDefine += (home? 'Define(A_CORE_HOME, "' + home + '");\n': '');
 				preprocessor.log = true;
 				console.log('build starting ...');
 				try {
