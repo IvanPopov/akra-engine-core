@@ -70,6 +70,10 @@ Define(a33, __[8])
 function Vec2(){
     'use strict';
     var pData = this.pData = new Float32Array(2);
+
+    //без аргументов инициализируется нулями, а
+    //массив уже заполнен нулями
+    
     if(arguments.length == 1){
         if(typeof(arguments[0]) == "number"){
             pData[0] = pData[1] = arguments[0];
@@ -85,7 +89,7 @@ function Vec2(){
             pData[1] = pElements[1];
         }
     }
-    else{
+    else if(arguments.length != 0){
         pData[0] = arguments[0];
         pData[1] = arguments[1];
     }
@@ -130,20 +134,20 @@ Vec2.prototype.set = function() {
  * Returns:
  * dest if specified, vec otherwise
  */
-Vec2.prototype.add = function (pVec2, pDestination) {
+Vec2.prototype.add = function (v2fVec, v2fDestination) {
     'use strict';
     
-    if (!pDestination) {
-        pDestination = this;
+    if (!v2fDestination) {
+        v2fDestination = this;
     }
 
     var pData1 = this.pData;
-    var pData2 = pVec2.pData;
-    var pDataDestination = pDestination.pData;
+    var pData2 = v2fVec.pData;
+    var pDataDestination = v2fDestination.pData;
 
     pDataDestination[0] = pData1[0] + pData2[0];
     pDataDestination[1] = pData1[1] + pData2[1];
-    return pDestination;
+    return v2fDestination;
 };
 
 /*
@@ -158,19 +162,19 @@ Vec2.prototype.add = function (pVec2, pDestination) {
  * Returns:
  * dest if specified, vec otherwise
  */
-Vec2.prototype.subtract = function (pVec2, pDestination) {
+Vec2.prototype.subtract = function (v2fVec, v2fDestination) {
     'use strict';
-    if (!pDestination) {
-        pDestination = this;
+    if (!v2fDestination) {
+        v2fDestination = this;
     }
 
     var pData1 = this.pData;
-    var pData2 = pVec2.pData;
-    var pDataDestination = pDestination.pData;
+    var pData2 = v2fVec.pData;
+    var pDataDestination = v2fDestination.pData;
 
     pDataDestination[0] = pData1[0] - pData2[0];
     pDataDestination[1] = pData1[1] - pData2[1];
-    return pDestination;
+    return v2fDestination;
 };
 
 /*
@@ -184,18 +188,18 @@ Vec2.prototype.subtract = function (pVec2, pDestination) {
  * Returns:
  * dest if specified, vec otherwise
  */
-Vec2.prototype.negate = function(pDestination) {
+Vec2.prototype.negate = function(v2fDestination) {
     'use strict';
-    if(!pDestination){
-        pDestination = this;
+    if(!v2fDestination){
+        v2fDestination = this;
     }
 
     var pData = this.pData;
-    var pDataDestination = pDestination.pData;
+    var pDataDestination = v2fDestination.pData;
 
     pDataDestination[0] = -pData[0];
     pDataDestination[1] = -pData[1];
-    return pDestination;
+    return v2fDestination;
 };
 
 /*
@@ -211,19 +215,18 @@ Vec2.prototype.negate = function(pDestination) {
  * dest if specified, vec otherwise
  */
 
-Vec2.prototype.scale = function(fScale,pDestination) {
+Vec2.prototype.scale = function(fScale,v2fDestination) {
     'use strict';
-
-    if(!pDestination){
-        pDestination = this;
+    if(!v2fDestination){
+        v2fDestination = this;
     }
 
     var pData = this.pData;
-    var pDataDestination = pDestination.pData;
+    var pDataDestination = v2fDestination.pData;
 
     pDataDestination[0] = pData[0] * fScale;
     pDataDestination[1] = pData[1] * fScale;
-    return pDestination;
+    return v2fDestination;
 };
 
 /*
@@ -239,9 +242,13 @@ Vec2.prototype.scale = function(fScale,pDestination) {
  * dest if specified, vec otherwise
  */
 
-Vec2.prototype.normalize = function(pDestination) {
+Vec2.prototype.normalize = function(v2fDestination) {
     'use strict';
+    if(!v2fDestination){
+        v2fDestination = this;
+    }
     var pData = this.pData;
+    var pDataDestination = v2fDestination.pData;
 
     var x,y;
     x = pData[0];
@@ -253,16 +260,10 @@ Vec2.prototype.normalize = function(pDestination) {
         y = y/fLength;
     }
 
-    if(!pDestination){
-        pDestination = this;
-    }
-
-    var pDataDestination = pDestination.pData;
-
     pDataDestination[0] = x;
     pDataDestination[1] = y;
 
-    return pDestination;
+    return v2fDestination;
 };
 
 /*
@@ -301,10 +302,10 @@ Vec2.prototype.lengthSquare = function() {
  * Dot product of vec and vec2_
  */
 
-Vec2.prototype.dot = function(pVec2) {
+Vec2.prototype.dot = function(v2fVec) {
     'use strict';
     var pData1 = this.pData;
-    var pData2 = pVec2.pData;
+    var pData2 = v2fVec.pData;
 
     return pData1[0]*pData2[0] + pData1[1]*pData2[1];
 };
@@ -322,10 +323,15 @@ Vec2.prototype.dot = function(pVec2) {
  * dest if specified, vec otherwise
  */
 
-Vec2.prototype.direction = function(pVec2,pDestination) {
+Vec2.prototype.direction = function(v2fVec,v2fDestination) {
     'use strict';
+    if(!v2fDestination){
+        v2fDestination = this;
+    }
+    
     var pData1 = this.pData;
-    var pData2 = pVec2.pData;
+    var pData2 = v2fVec.pData;
+    var pDataDestination = v2fDestination.pData;
 
     var x,y;
     x = pData2[0] - pData1[0];
@@ -338,15 +344,9 @@ Vec2.prototype.direction = function(pVec2,pDestination) {
         y = y/fLength;
     }
 
-    if(!pDestination){
-        pDestination = this;
-    }
-
-    var pDataDestination = pDestination.pData;
-
     pDataDestination[0] = x;
     pDataDestination[1] = y;
-    return pDestination;
+    return v2fDestination;
 };
 
 /*
@@ -363,29 +363,31 @@ Vec2.prototype.direction = function(pVec2,pDestination) {
  * dest if specified, vec otherwise
  */
 
-Vec2.prototype.mix = function(pVec2,fA,pDestination) {
+Vec2.prototype.mix = function(v2fVec,fA,v2fDestination) {
     'use strict';
-    var pData1 = this.pData;
-    var pData2 = pVec2.pData;
-
-    var x = pData1[0] + fA*(pData2[0] - pData1[0]);
-    var y = pData1[1] + fA*(pData2[1] - pData1[1]);
-
-    if(!pDestination){
-        pDestination = this;
+    if(!v2fDestination){
+        v2fDestination = this;
     }
 
-    var pDataDestination = pDestination.pData;
+    var pData1 = this.pData;
+    var pData2 = v2fVec.pData;
+    var pDataDestination = v2fDestination.pData;
 
-    pDataDestination[0] = x;
-    pDataDestination[1] = y;
-    return pDestination;
+    fA = Math.clamp(fA,0,1);
+
+    var fA1 = 1. - fA;
+    var fA2 = fA;
+
+    pDataDestination.X = fA1 * pData1.X + fA2 * pData2.X;
+    pDataDestination.Y = fA1 * pData1.Y + fA2 * pData2.Y;
+
+    return v2fDestination;
 };
 
-Vec2.prototype.isEqual = function(pVec2) {
+Vec2.prototype.isEqual = function(v2fVec) {
     'use strict';
     var pData1 = this.pData;
-    var pData2 = pVec2.pData;
+    var pData2 = v2fVec.pData;
 
     if(pData1[0] != pData2[0] || pData1[1] != pData2[1]){
         return false;
@@ -422,7 +424,7 @@ Vec2.prototype.clear = function() {
  * string representation of vec
  */
 
-Vec2.prototype.str = function() {
+Vec2.prototype.toString = function() {
     'use strict';
     var pData = this.pData;
     return '[' + pData[0] + ', ' + pData[1] + ']';
@@ -435,6 +437,10 @@ Vec2.prototype.str = function() {
 function Vec3(){
     'use strict';
     var pData = this.pData = new Float32Array(3);
+
+    //без аргументов инициализируется нулями, а
+    //массив уже заполнен нулями
+    
     if(arguments.length == 1){
         if(typeof(arguments[0]) == "number"){
             pData[0] = pData[1] = pData[2] = arguments[0];
@@ -452,7 +458,7 @@ function Vec3(){
             pData[2] = pElements[2];
         }
     }
-    else{
+    else if(arguments.length != 0){
         pData[0] = arguments[0];
         pData[1] = arguments[1];
         pData[2] = arguments[2];
@@ -502,20 +508,20 @@ Vec3.prototype.set = function() {
  * Returns:
  * dest if specified, vec otherwise
  */
-Vec3.prototype.add = function (pVec3, pDestination) {
+Vec3.prototype.add = function (v3fVec, v3fDestination) {
     'use strict';
-    if (!pDestination) {
-        pDestination = this;
+    if (!v3fDestination) {
+        v3fDestination = this;
     }
 
     var pData1 = this.pData;
-    var pData2 = pVec3.pData;
-    var pDataDestination = pDestination.pData;
+    var pData2 = v3fVec.pData;
+    var pDataDestination = v3fDestination.pData;
 
     pDataDestination[0] = pData1[0] + pData2[0];
     pDataDestination[1] = pData1[1] + pData2[1];
     pDataDestination[2] = pData1[2] + pData2[2];
-    return pDestination;
+    return v3fDestination;
 };
 
 /*
@@ -530,20 +536,20 @@ Vec3.prototype.add = function (pVec3, pDestination) {
  * Returns:
  * dest if specified, vec otherwise
  */
-Vec3.prototype.subtract = function (pVec3, pDestination) {
+Vec3.prototype.subtract = function (v3fVec, v3fDestination) {
     'use strict';
-    if (!pDestination) {
-        pDestination = this;
+    if (!v3fDestination) {
+        v3fDestination = this;
     }
 
     var pData1 = this.pData;
-    var pData2 = pVec3.pData;
-    var pDataDestination = pDestination.pData;
+    var pData2 = v3fVec.pData;
+    var pDataDestination = v3fDestination.pData;
 
     pDataDestination[0] = pData1[0] - pData2[0];
     pDataDestination[1] = pData1[1] - pData2[1];
     pDataDestination[2] = pData1[2] - pData2[2];
-    return pDestination;
+    return v3fDestination;
 };
 
 
@@ -560,19 +566,19 @@ Vec3.prototype.subtract = function (pVec3, pDestination) {
  * dest if specified, vec otherwise
  */
 
-Vec3.prototype.negate = function(pDestination) {
+Vec3.prototype.negate = function(v3fDestination) {
     'use strict';
-    if(!pDestination){
-        pDestination = this;
+    if(!v3fDestination){
+        v3fDestination = this;
     }
 
     var pData = this.pData;
-    var pDataDestination = pDestination.pData;
+    var pDataDestination = v3fDestination.pData;
 
     pDataDestination[0] = -pData[0];
     pDataDestination[1] = -pData[1];
     pDataDestination[2] = -pData[2];
-    return pDestination;
+    return v3fDestination;
 };
 
 /*
@@ -588,20 +594,20 @@ Vec3.prototype.negate = function(pDestination) {
  * dest if specified, vec otherwise
  */
 
-Vec3.prototype.scale = function(fScale,pDestination) {
+Vec3.prototype.scale = function(fScale,v3fDestination) {
     'use strict';
-    if(!pDestination){
-        pDestination = this;
+    if(!v3fDestination){
+        v3fDestination = this;
     }
 
     var pData = this.pData;
-    var pDataDestination = pDestination.pData;
+    var pDataDestination = v3fDestination.pData;
 
     pDataDestination[0] = pData[0] * fScale;
     pDataDestination[1] = pData[1] * fScale;
     pDataDestination[2] = pData[2] * fScale;
 
-    return pDestination;
+    return v3fDestination;
 };
 
 /*
@@ -617,9 +623,14 @@ Vec3.prototype.scale = function(fScale,pDestination) {
  * dest if specified, vec otherwise
  */
 
-Vec3.prototype.normalize = function(pDestination) {
+Vec3.prototype.normalize = function(v3fDestination) {
     'use strict';
+    if(!v3fDestination){
+        v3fDestination = this;
+    }
+
     var pData = this.pData;
+    var pDataDestination = v3fDestination.pData;
 
     var x,y,z;
     x = pData[0];
@@ -633,17 +644,11 @@ Vec3.prototype.normalize = function(pDestination) {
         z = z/fLength;
     }
 
-    if(!pDestination){
-        pDestination = this;
-    }
-
-    var pDataDestination = pDestination.pData;
-
     pDataDestination[0] = x;
     pDataDestination[1] = y;
     pDataDestination[2] = z;
 
-    return pDestination;
+    return v3fDestination;
 };
 
 /*
@@ -659,21 +664,24 @@ Vec3.prototype.normalize = function(pDestination) {
  * dest if specified, vec otherwise
  */
 
-Vec3.prototype.cross = function(pVec3,pDestination) {
+Vec3.prototype.cross = function(v3fVec,v3fDestination) {
     'use strict';
-    if(!pDestination){
-        pDestination = this;
+    if(!v3fDestination){
+        v3fDestination = this;
     }
 
     var pData1 = this.pData;
-    var pData2 = pVec3.pData;
-    var pDataDestination = pDestination.pData;
+    var pData2 = v3fVec.pData;
+    var pDataDestination = v3fDestination.pData;
 
-    pDataDestination.X = pData1.Y*pData2.Z - pData1.Z*pData2.Y;
-    pDataDestination.Y = pData1.Z*pData2.X - pData1.X*pData2.Z;
-    pDataDestination.Z = pData1.X*pData2.Y - pData1.Y*pData2.X;
+    var x1 = pData1.X, y1 = pData1.Y, z1 = pData1.Z;
+    var x2 = pData2.X, y2 = pData2.Y, z2 = pData2.Z;
 
-    return pDestination;
+    pDataDestination.X = y1*z2 - z1*y2;
+    pDataDestination.Y = z1*x2 - x1*z2;
+    pDataDestination.Z = x1*y2 - y1*x2;
+
+    return v3fDestination;
 };
 
 /*
@@ -689,13 +697,15 @@ Vec3.prototype.cross = function(pVec3,pDestination) {
 Vec3.prototype.length = function() {
     'use strict';
     var pData = this.pData;
-    return Math.sqrt(pData.X*pData.X + pData.Y*pData.Y + pData.Z * pData.Z);
+    var x = pData.X, y = pData.Y, z = pData.Z;
+    return Math.sqrt(x*x + y*y + z*z);
 };
 
 Vec3.prototype.lengthSquare = function() {
     'use strict';
     var pData = this.pData;
-    return pData.X*pData.X + pData.Y*pData.Y + pData.Z * pData.Z;
+    var x = pData.X, y = pData.Y, z = pData.Z;
+    return x*x + y*y + z*z;
 };
 /*
  * Vec3.dot
@@ -708,8 +718,12 @@ Vec3.prototype.lengthSquare = function() {
  * Returns:
  * Dot product of vec and Vec2
  */
-Vec3.dot = function (vec, vec2_) {
-    return vec[0] * vec2_[0] + vec[1] * vec2_[1] + vec[2] * vec2_[2];
+
+Vec3.prototype.dot = function(v3fVec) {
+    'use strict';
+    var pData1 = this.pData;
+    var pData2 = v3fVec.pData;
+    return pData1.X*pData2.X + pData1.Y*pData2.Y + pData1.Z*pData2.Z;
 };
 
 /*
@@ -724,26 +738,34 @@ Vec3.dot = function (vec, vec2_) {
  * Returns:
  * dest if specified, vec otherwise
  */
-Vec3.direction = function (vec, vec2_, dest) {
-    if (!dest) {dest = vec;}
 
-    var x = vec[0] - vec2_[0];
-    var y = vec[1] - vec2_[1];
-    var z = vec[2] - vec2_[2];
-
-    var len = Math.sqrt(x * x + y * y + z * z);
-    if (!len) {
-        dest[0] = 0;
-        dest[1] = 0;
-        dest[2] = 0;
-        return dest;
+Vec3.prototype.direction = function(v3fVec,v3fDestination) {
+    'use strict';
+    if(!v3fDestination){
+        v3fDestination = this;
     }
 
-    len = 1 / len;
-    dest[0] = x * len;
-    dest[1] = y * len;
-    dest[2] = z * len;
-    return dest;
+    var pData1 = this.pData;
+    var pData2 = v3fVec.pData;
+    var pDataDestination = v3fDestination.pData;
+
+    var x = pData2.X - pData1.X;
+    var y = pData2.Y - pData1.Y;
+    var z = pData2.Z - pData1.Z;
+
+    var fLength = Math.sqrt(x*x + y*y + z*z);
+
+    if(fLength){
+        x = x/fLength;
+        y = y/fLength;
+        z = z/fLength;
+    }
+
+    pDataDestination.X = x;
+    pDataDestination.Y = y;
+    pDataDestination.Z = z;
+
+    return v3fDestination;
 };
 
 /*
@@ -759,30 +781,46 @@ Vec3.direction = function (vec, vec2_, dest) {
  * Returns:
  * dest if specified, vec otherwise
  */
-Vec3.lerp = function (vec, vec2_, lerp, dest) {
-    if (!dest) {dest = vec;}
 
-    dest[0] = vec[0] + lerp * (vec2_[0] - vec[0]);
-    dest[1] = vec[1] + lerp * (vec2_[1] - vec[1]);
-    dest[2] = vec[2] + lerp * (vec2_[2] - vec[2]);
-
-    return dest;
-}
-
-Vec3.prototype.toTranslationMatrix = function(pDestination) {
+Vec3.prototype.mix = function(v3fVec,fA,v3fDestination) {
     'use strict';
-    if(!pDestination){
-        pDestination = new Matrix4();
+    if(!v3fDestination){
+        v3fDestination = this;
     }
 
-    pDestination.identity();
+    var pData1 = this.pData;
+    var pData2 = v3fVec.pData;
+    var pDataDestination = v3fDestination.pData;
+
+    fA = Math.clamp(fA,0,1);
+
+    var fA1 = 1. - fA;
+    var fA2 = fA;
+
+    pDataDestination.X = fA1 * pData1.X + fA2 * pData2.X;
+    pDataDestination.Y = fA1 * pData1.Y + fA2 * pData2.Y;
+    pDataDestination.Z = fA1 * pData1.Z + fA2 * pData2.Z;
+
+    return v3fDestination;
+};
+
+Vec3.prototype.toTranslationMatrix = function(m4fDestination) {
+    'use strict';
+    if(!m4fDestination){
+        m4fDestination = new Matrix4(1);
+    }
+    else{
+        m4fDestination.identity();
+    }
 
     var pData = this.pData;
-    var pDataDestination = pDestination.pData;
+    var pDataDestination = m4fDestination.pData;
 
     pDataDestination._14 = pData.X;
     pDataDestination._24 = pData.Y;
     pDataDestination._34 = pData.Z;
+
+    return m4fDestination;
 };
 
 /*
@@ -795,97 +833,119 @@ Vec3.prototype.toTranslationMatrix = function(pDestination) {
  * Returns:
  * string representation of vec
  */
-Vec3.str = function (vec) {
-    return '[' + vec[0] + ', ' + vec[1] + ', ' + vec[2] + ']';
+
+Vec3.prototype.toString = function() {
+    'use strict';
+    var pData = this.pData;
+    return '[' + pData.X + ', ' + pData.Y + ', ' + pData.Z + ']';
 };
 
-Vec3.isEqual = function (vec0, vec1) {
-    if (vec0[0] != vec1[0]) {
-        return false;
-    }
-    if (vec0[1] != vec1[1]) {
-        return false;
-    }
-    if (vec0[2] != vec1[2]) {
+Vec3.prototype.isEqual = function(v3fVec) {
+    'use strict';
+    var pData1 = this.pData;
+    var pData2 = v3fVec.pData;
+
+    if(    pData1.X != pData2.X 
+        || pData1.Y != pData2.Y
+        || pData1.Z != pData2.Z){
+
         return false;
     }
     return true;
-}
+};
 
-Vec3.isClear = function (vec) {
-    if (vec[0] != 0) {
-        return false;
-    }
-    if (vec[1] != 0) {
-        return false;
-    }
-    if (vec[2] != 0) {
+Vec3.prototype.isClear = function() {
+    'use strict';
+    var pData = this.pData;
+
+    if(    pData.X != 0 
+        || pData.Y != 0
+        || pData.Z != 0){
+
         return false;
     }
     return true;
-}
-
-Vec3.clear = function (vec) {
-    vec[0] = 0;
-    vec[1] = 0;
-    vec[2] = 0;
-}
-
-/*
- * Vec4 - 3 Dimensional Vector
- */
-var Vec4 = {};
-
-/*
- * Vec4.create
- * Creates a new instance of a Vec4 using the default array type
- * Any javascript array containing at least 3 numeric elements can serve as a Vec4
- *
- * Params:
- * vec - Optional, Vec4 containing values to initialize with
- *
- * Returns:
- * New Vec4
- */
-Vec4.create = function () {
-    var dest = new glMatrixArrayType(4);
-
-    switch (arguments.length) {
-        case 1:
-            dest[0] = arguments[0][0];
-            dest[1] = arguments[0][1];
-            dest[2] = arguments[0][2];
-            dest[3] = arguments[0][3];
-            break;
-        case 4:
-            dest[0] = arguments[0];
-            dest[1] = arguments[1];
-            dest[2] = arguments[2];
-            dest[3] = arguments[3];
-            break;
-    }
-
-    return dest;
 };
 
-/*
- * Vec4.set
- * Copies the values of one Vec4 to another
- *
- * Params:
- * vec - Vec4 containing values to copy
- * dest - Vec4 receiving copied values
- *
- * Returns:
- * dest
- */
-Vec4.set = function (vec, dest) {
-    dest[0] = vec[0];
-    dest[1] = vec[1];
-    dest[2] = vec[2];
-    dest[3] = vec[3];
+Vec3.prototype.clear = function() {
+    'use strict';
+    var pData = this.pData;
 
-    return dest;
+    pData.X = pData.Y = pData.Z = 0;
+};
+
+
+
+/////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////
+
+function Vec4(){
+    'use strict';
+    var pData = this.pData = new Float32Array(4);
+    
+    //без аргументов инициализируется нулями, а
+    //массив уже заполнен нулями
+
+    if(arguments.length == 1){
+        if(typeof(arguments[0]) == "number"){
+            pData.X = pData.Y = pData.Z = pData.W = arguments[0];
+        }
+        else if(arguments[0] instanceof Vec4){
+            var pData2 = arguments[0].pData;
+            pData.X = pData2.X;
+            pData.Y = pData2.Y;
+            pData.Z = pData2.Z;
+            pData.W = pData2.W;
+        }
+        else{
+            var pElements = arguments[0];
+            pData.X = pElements.X;
+            pData.Y = pElements.Y;
+            pData.Z = pElements.Z;
+            pData.W = pElements.W;
+        }
+    }
+    else if(arguments.length != 0){
+        pData.X = arguments.X;
+        pData.Y = arguments.Y;
+        pData.Z = arguments.Z;
+        pData.W = arguments.W;
+    }
+
+    return this;
+}
+
+Vec4.prototype.set = function() {
+    'use strict';
+    var pData = this.pData;
+    if(arguments.length == 1){
+        if(typeof(arguments[0]) == "number"){
+            pData.X = pData.Y = pData.Z = pData.W = arguments[0];
+        }
+        else if(arguments[0] instanceof Vec4){
+            var pData2 = arguments[0].pData;
+            pData.X = pData2.X;
+            pData.Y = pData2.Y;
+            pData.Z = pData2.Z;
+            pData.W = pData2.W;
+        }
+        else{
+            var pElements = arguments[0];
+            pData.X = pElements.X;
+            pData.Y = pElements.Y;
+            pData.Z = pElements.Z;
+            pData.W = pElements.W;
+        }
+    }
+    else if(arguments.length != 0){
+        pData.X = arguments.X;
+        pData.Y = arguments.Y;
+        pData.Z = arguments.Z;
+        pData.W = arguments.W;
+    }
+
+    return this;
 };
 
 /*
@@ -900,20 +960,23 @@ Vec4.set = function (vec, dest) {
  * Returns:
  * dest if specified, vec otherwise
  */
-Vec4.add = function (vec, vec2_, dest) {
-    if (!dest || vec == dest) {
-        vec[0] += vec2_[0];
-        vec[1] += vec2_[1];
-        vec[2] += vec2_[2];
-        vec[3] += vec2_[3];
-        return vec;
+
+Vec4.prototype.add = function(v4fVec,v4fDestination) {
+    'use strict';
+    if(!v4fDestination){
+        v4fDestination = this;
     }
 
-    dest[0] = vec[0] + vec2_[0];
-    dest[1] = vec[1] + vec2_[1];
-    dest[2] = vec[2] + vec2_[2];
-    dest[3] = vec[3] + vec2_[3];
-    return dest;
+    var pData1 = this.pData;
+    var pData2 = v4fVec.pData;
+    var pDataDestination = v4fDestination.pData;
+
+    pDataDestination.X = pData1.X + pData2.X;
+    pDataDestination.Y = pData1.Y + pData2.Y;
+    pDataDestination.Z = pData1.Z + pData2.Z;
+    pDataDestination.W = pData1.W + pData2.W;
+
+    return v4fDestination;
 };
 
 /*
@@ -928,20 +991,23 @@ Vec4.add = function (vec, vec2_, dest) {
  * Returns:
  * dest if specified, vec otherwise
  */
-Vec4.subtract = function (vec, vec2_, dest) {
-    if (!dest || vec == dest) {
-        vec[0] -= vec2_[0];
-        vec[1] -= vec2_[1];
-        vec[2] -= vec2_[2];
-        vec[3] -= vec2_[3];
-        return vec;
+
+Vec4.prototype.subtract = function(v4fVec,v4fDestination) {
+    'use strict';
+    if(!v4fDestination){
+        v4fDestination = this;
     }
 
-    dest[0] = vec[0] - vec2_[0];
-    dest[1] = vec[1] - vec2_[1];
-    dest[2] = vec[2] - vec2_[2];
-    dest[3] = vec[3] - vec2_[3];
-    return dest;
+    var pData1 = this.pData;
+    var pData2 = v4fVec.pData;
+    var pDataDestination = v4fDestination.pData;
+
+    pDataDestination.X = pData1.X - pData2.X;
+    pDataDestination.Y = pData1.Y - pData2.Y;
+    pDataDestination.Z = pData1.Z - pData2.Z;
+    pDataDestination.W = pData1.W - pData2.W;
+
+    return v4fDestination;
 };
 
 /*
@@ -955,14 +1021,22 @@ Vec4.subtract = function (vec, vec2_, dest) {
  * Returns:
  * dest if specified, vec otherwise
  */
-Vec4.negate = function (vec, dest) {
-    if (!dest) {dest = vec;}
 
-    dest[0] = -vec[0];
-    dest[1] = -vec[1];
-    dest[2] = -vec[2];
-    dest[3] = -vec[3];
-    return dest;
+Vec4.prototype.negate = function(v4fDestination) {
+    'use strict';
+    if(!v4fDestination){
+        v4fDestination = this;
+    }
+
+    pData = this.pData;
+    pDataDestination = v4fDestination.pData;
+
+    pDataDestination.X = -pData.X;
+    pDataDestination.Y = -pData.Y;
+    pDataDestination.Z = -pData.Z;
+    pDataDestination.W = -pData.W;
+
+    return v4fDestination;
 };
 
 /*
@@ -977,20 +1051,22 @@ Vec4.negate = function (vec, dest) {
  * Returns:
  * dest if specified, vec otherwise
  */
-Vec4.scale = function (vec, val, dest) {
-    if (!dest || vec == dest) {
-        vec[0] *= val;
-        vec[1] *= val;
-        vec[2] *= val;
-        vec[3] *= val;
-        return vec;
+
+Vec4.prototype.scale = function(fScale,v4fDestination) {
+    'use strict';
+    if(!v4fDestination){
+        v4fDestination = this;
     }
 
-    dest[0] = vec[0] * val;
-    dest[1] = vec[1] * val;
-    dest[2] = vec[2] * val;
-    dest[3] = vec[3] * val;
-    return dest;
+    pData = this.pData;
+    pDataDestination = v4fDestination.pData;
+
+    pDataDestination.X = pData.X * fScale;
+    pDataDestination.Y = pData.Y * fScale;
+    pDataDestination.Z = pData.Z * fScale;
+    pDataDestination.W = pData.W * fScale;
+
+    return v4fDestination;
 };
 
 /*
@@ -1005,60 +1081,37 @@ Vec4.scale = function (vec, val, dest) {
  * Returns:
  * dest if specified, vec otherwise
  */
-Vec4.normalize = function (vec, dest) {
-    if (!dest) {dest = vec;}
 
-    var x = vec[0], y = vec[1], z = vec[2], w = vec[3];
-    var len = Math.sqrt(x * x + y * y + z * z + w * w);
-
-    if (!len) {
-        dest[0] = 0;
-        dest[1] = 0;
-        dest[2] = 0;
-        dest[3] = 0;
-        return dest;
-    } else if (len == 1) {
-        dest[0] = x;
-        dest[1] = y;
-        dest[2] = z;
-        dest[3] = w;
-        return dest;
+Vec4.prototype.normalize = function(v4fDestination) {
+    'use strict';
+    if(!v4fDestination){
+        v4fDestination = this;
     }
 
-    len = 1 / len;
-    dest[0] = x * len;
-    dest[1] = y * len;
-    dest[2] = z * len;
-    dest[3] = w * len;
-    return dest;
+    var pData = this.pData;
+    var pDataDestination = v4fDestination.pData;
+
+    var x = pData.X;
+    var y = pData.Y;
+    var z = pData.Z;
+    var w = pData.W;
+
+    var fLength = Math.sqrt(x*x + y*y +z*z + w*w);
+
+    if(fLength){
+        x = x/fLength;
+        y = y/fLength;
+        z = z/fLength;
+        w = w/fLength;
+    }
+
+    pDataDestination.X = x;
+    pDataDestination.Y = y;
+    pDataDestination.Z = z;
+    pDataDestination.W = w;
+
+    return v4fDestination;
 };
-
-/*
- * Vec4.cross
- * Generates the cross product of two vec4s
- *
- * Params:
- * vec - Vec4, first operand
- * Vec2 - Vec4, second operand
- * dest - Optional, Vec4 receiving operation result. If not specified result is written to vec
- *
- * Returns:
- * dest if specified, vec otherwise
- */
-/*
- Vec4.cross = function(vec, Vec2, dest){
- if(!dest) { dest = vec; }
-
- var x = vec[0], y = vec[1], z = vec[2], w = vec[3];
- var x2 = Vec2[0], y2 = Vec2[1], z2 = Vec2[2], w2 = vec[3];
-
- dest[0] = y*z2 - z*y2;
- dest[1] = z*x2 - x*z2;
- dest[2] = x*y2 - y*x2;
- dest[3] = x*y2 - y*x2;
- return dest;
- };
- */
 
 /*
  * Vec4.length
@@ -1070,13 +1123,20 @@ Vec4.normalize = function (vec, dest) {
  * Returns:
  * Length of vec
  */
-Vec4.length = function (vec) {
-    var x = vec[0], y = vec[1], z = vec[2], w = vec[3];
-    return Math.sqrt(x * x + y * y + z * z + w * w);
+
+Vec4.prototype.length = function() {
+    'use strict';
+    var pData = this.pData;
+    var x = pData.X, y = pData.Y, z = pData.Z, w = pData.W;
+
+    return Math.sqrt(x*x + y*y + z*z + w*w);
 };
-Vec4.lengthSquare = function (vec) {
-    var x = vec[0], y = vec[1], z = vec[2], w = vec[3];
-    return x * x + y * y + z * z + w * w;
+Vec4.prototype.lengthSquare = function() {
+    'use strict';
+    var pData = this.pData;
+    var x = pData.X, y = pData.Y, z = pData.Z, w = pData.W;
+
+    return x*x + y*y + z*z + w*w;
 };
 /*
  * Vec4.dot
@@ -1089,8 +1149,13 @@ Vec4.lengthSquare = function (vec) {
  * Returns:
  * Dot product of vec and Vec2
  */
-Vec4.dot = function (vec, vec2_) {
-    return vec[0] * vec2_[0] + vec[1] * vec2_[1] + vec[2] * vec2_[2] + vec[3] * vec2_[3];
+
+Vec4.prototype.dot = function(v4fVec) {
+    'use strict';
+    var pData1 = this.pData;
+    var pData2 = v4fVec.pData;
+
+    return pData1.X*pData2.X + pData1.Y*pData2.Y + pData1.Z*pData2.Z + pData1.W*pData2.W;
 };
 
 /*
@@ -1105,29 +1170,37 @@ Vec4.dot = function (vec, vec2_) {
  * Returns:
  * dest if specified, vec otherwise
  */
-Vec4.direction = function (vec, vec2_, dest) {
-    if (!dest) {dest = vec;}
 
-    var x = vec[0] - vec2_[0];
-    var y = vec[1] - vec2_[1];
-    var z = vec[2] - vec2_[2];
-    var w = vec[3] - vec2_[3];
-
-    var len = Math.sqrt(x * x + y * y + z * z + w * w);
-    if (!len) {
-        dest[0] = 0;
-        dest[1] = 0;
-        dest[2] = 0;
-        dest[3] = 0;
-        return dest;
+Vec4.prototype.direction = function(v4fVec,v4fDestination) {
+    'use strict';
+    if(!v4fDestination){
+        v4fDestination = this;
     }
 
-    len = 1 / len;
-    dest[0] = x * len;
-    dest[1] = y * len;
-    dest[2] = z * len;
-    dest[3] = w * len;
-    return dest;
+    var pData1 = this.pData;
+    var pData2 = v4fVec.pData;
+    var pDataDestination = v4fDestination.pData;
+
+    var x = pData2.X - pData1.X;
+    var y = pData2.Y - pData1.Y;
+    var z = pData2.Z - pData1.Z;
+    var w = pData2.W - pData1.W;
+
+    var fLength = Math.sqrt(x*x + y*y + z*z + w*w);
+
+    if(fLength){
+        x = x/fLength;
+        y = y/fLength;
+        z = z/fLength;
+        w = w/fLength;
+    }
+
+    pDataDestination.X = x;
+    pDataDestination.Y = y;
+    pDataDestination.Z = z;
+    pDataDestination.W = w;
+
+    return v4fDestination;
 };
 
 /*
@@ -1143,16 +1216,27 @@ Vec4.direction = function (vec, vec2_, dest) {
  * Returns:
  * dest if specified, vec otherwise
  */
-Vec4.lerp = function (vec, vec2_, lerp, dest) {
-    if (!dest) {dest = vec;}
 
-    dest[0] = vec[0] + lerp * (vec2_[0] - vec[0]);
-    dest[1] = vec[1] + lerp * (vec2_[1] - vec[1]);
-    dest[2] = vec[2] + lerp * (vec2_[2] - vec[2]);
-    dest[3] = vec[3] + lerp * (vec2_[3] - vec[3]);
+Vec4.prototype.mix = function(v4fVec,fA,v4fDestination) {
+    'use strict';
+    if(!v4fDestination){
+        v4fDestination = this;
+    }
 
-    return dest;
-}
+    var pData1 = this.pData;
+    var pData2 = v4fVec.pData;
+    var pDataDestination = v4fDestination.pData;
+
+    var fA1 = 1 - fA;
+    var fA2 = fA;
+
+    pDataDestination.X = fA1 * pData1.X + fA2 * pData2.X;
+    pDataDestination.Y = fA1 * pData1.Y + fA2 * pData2.Y;
+    pDataDestination.Z = fA1 * pData1.Z + fA2 * pData2.Z;
+    pDataDestination.W = fA1 * pData1.W + fA2 * pData2.W;
+
+    return v4fDestination;
+};
 
 /*
  * Vec4.str
@@ -1164,82 +1248,58 @@ Vec4.lerp = function (vec, vec2_, lerp, dest) {
  * Returns:
  * string representation of vec
  */
-Vec4.str = function (vec) {
-    return '[' + vec[0] + ', ' + vec[1] + ', ' + vec[2] + ', ' + vec[3] + ']';
+
+Vec4.prototype.toString = function() {
+    'use strict';
+    var pData = this.pData;
+    return '[' + pData.X + ', ' + pData.Y + ', ' + pData.Z + ', ' + pData.W + ']';
 };
 
-Vec4.isEqual = function (vec0, vec1) {
-    if (vec0[0] != vec1[0]) {
-        return false;
-    }
-    if (vec0[1] != vec1[1]) {
-        return false;
-    }
-    if (vec0[2] != vec1[2]) {
-        return false;
-    }
-    if (vec0[3] != vec1[3]) {
+Vec4.prototype.isEqual = function(v4fVec) {
+    'use strict';
+    var pData1 = this.pData;
+    var pData2 = v4fVec.pData;
+
+    if(    pData1.X != pData2.X 
+        || pData1.Y != pData2.Y
+        || pData1.Z != pData2.Z
+        || pData1.W != pData2.W){
+
         return false;
     }
     return true;
-}
+};
 
-Vec4.isClear = function (vec) {
-    if (vec[0] != 0) {
-        return false;
-    }
-    if (vec[1] != 0) {
-        return false;
-    }
-    if (vec[2] != 0) {
-        return false;
-    }
-    if (vec[3] != 0) {
+Vec4.prototype.isClear = function() {
+    'use strict';
+    var pData = this.pData;
+
+    if(    pData.X != 0 
+        || pData.Y != 0
+        || pData.Z != 0
+        || pData.W != 0){
+
         return false;
     }
     return true;
-}
-
-Vec4.clear = function (vec) {
-    vec[0] = 0;
-    vec[1] = 0;
-    vec[2] = 0;
-    vec[3] = 0;
-}
-
-/*
- * Mat3 - 3x3 Matrix
- */
-var Mat3 = {};
-
-/*
- * Mat3.create
- * Creates a new instance of a Mat3 using the default array type
- * Any javascript array containing at least 9 numeric elements can serve as a Mat3
- *
- * Params:
- * mat - Optional, Mat3 containing values to initialize with
- *
- * Returns:
- * New Mat3
- */
-Mat3.create = function (mat) {
-    var dest = new glMatrixArrayType(9);
-
-    if (mat) {
-        dest[0] = mat[0];
-        dest[1] = mat[1];
-        dest[2] = mat[2];
-        dest[3] = mat[3];
-        dest[4] = mat[4];
-        dest[5] = mat[5];
-        dest[6] = mat[6];
-        dest[7] = mat[7];
-        dest[8] = mat[8];
-    }
-
-    return dest;
 };
+
+Vec4.prototype.clear = function() {
+    'use strict';
+    var pData = this.pData;
+
+    pData.X = pData.Y = pData.Z = pData.W = 0;
+};
+
+/////////////////////////////////////////////////////////////
+//
+////////////////////////////////////////////////////////////
+
+function Mat3(){
+    'use strict';
+    var pData = this.pData = new Float32Array(9);
+    return this.set(arguments);
+}
 
 /*
  * Mat3.set
@@ -1252,17 +1312,100 @@ Mat3.create = function (mat) {
  * Returns:
  * dest
  */
-Mat3.set = function (mat, dest) {
-    dest[0] = mat[0];
-    dest[1] = mat[1];
-    dest[2] = mat[2];
-    dest[3] = mat[3];
-    dest[4] = mat[4];
-    dest[5] = mat[5];
-    dest[6] = mat[6];
-    dest[7] = mat[7];
-    dest[8] = mat[8];
-    return dest;
+
+Mat3.prototype.set = function() {
+    'use strict';
+    var pData = this.pData;
+
+    //без аргументов инициализируется нулями, а
+    //массив уже заполнен нулями
+    
+    var nArgumentsLength = arguments.length;
+    if(nArgumentsLength == 1){
+        if(typeof(arguments[0]) == "number"){
+            pData.a11 = pData.a22 = pData.a33 = arguments[0];//диагональ    
+        }
+        else if(arguments[0] instanceof Mat3){
+            var pElements = arguments[0].pData;
+
+            pData.a11 = pElements.a11;
+            pData.a12 = pElements.a12;
+            pData.a13 = pElements.a13;
+
+            pData.a21 = pElements.a21;
+            pData.a22 = pElements.a22;
+            pData.a23 = pElements.a23;
+
+            pData.a31 = pElements.a31;
+            pData.a32 = pElements.a32;
+            pData.a33 = pElements.a33;
+        }
+        else if(arguments[0] instanceof Vec3){
+            var pElements = arguments[0].pData;
+
+            pData.a11 = pElements.X; //диагональ
+            pData.a22 = pElements.Y;
+            pData.a33 = pElements.Z;
+        }
+        else{
+            var pElements = arguments[0];            
+
+            pData.a11 = pElements.a11;
+            pData.a12 = pElements.a12;
+            pData.a13 = pElements.a13;
+
+            pData.a21 = pElements.a21;
+            pData.a22 = pElements.a22;
+            pData.a23 = pElements.a23;
+
+            pData.a31 = pElements.a31;
+            pData.a32 = pElements.a32;
+            pData.a33 = pElements.a33;
+        }
+    }
+    else if(nArgumentsLength == 3){
+        if(typeof(arguments[0]) == "number"){
+            pData.a11 = arguments.X; //диагональ
+            pData.a22 = arguments.Y;
+            pData.a33 = arguments.Z;
+        }
+        else{
+            //три Vec3
+            //ложим построкам
+
+            var pData1 = arguments[0].pData;
+            var pData2 = arguments[1].pData;
+            var pData3 = arguments[2].pData;
+
+            pData.a11 = pData1.X;
+            pData.a12 = pData1.Y;
+            pData.a13 = pData1.Z;
+
+            pData.a21 = pData2.X;
+            pData.a22 = pData2.Y;
+            pData.a23 = pData2.Z;
+
+            pData.a31 = pData3.X;
+            pData.a32 = pData3.Y;
+            pData.a33 = pData3.Z;
+        }
+    }
+    else if(nArgumentsLength == 9){
+        //просто числа
+        pData.a11 = arguments.a11;
+        pData.a12 = arguments.a12;
+        pData.a13 = arguments.a13;
+
+        pData.a21 = arguments.a21;
+        pData.a22 = arguments.a22;
+        pData.a23 = arguments.a23;
+
+        pData.a31 = arguments.a31;
+        pData.a32 = arguments.a32;
+        pData.a33 = arguments.a33;
+    }
+    
+    return this;
 };
 
 /*
@@ -1273,19 +1416,26 @@ Mat3.set = function (mat, dest) {
  * dest - Mat3 to set
  *
  * Returns:
- * dest
+ * yourself
  */
-Mat3.identity = function (dest) {
-    dest[0] = 1;
-    dest[1] = 0;
-    dest[2] = 0;
-    dest[3] = 0;
-    dest[4] = 1;
-    dest[5] = 0;
-    dest[6] = 0;
-    dest[7] = 0;
-    dest[8] = 1;
-    return dest;
+
+Mat3.prototype.identity = function() {
+    'use strict';
+    var pData = this.pData;
+
+    pData.a11 = 1;
+    pData.a12 = 0;
+    pData.a13 = 0;
+
+    pData.a21 = 0;
+    pData.a22 = 1;
+    pData.a23 = 0;
+
+    pData.a31 = 0;
+    pData.a32 = 0;
+    pData.a33 = 1;
+
+    return this;
 };
 
 /*
@@ -1299,31 +1449,42 @@ Mat3.identity = function (dest) {
  * Returns:
  * dest is specified, mat otherwise
  */
-Mat3.transpose = function (mat, dest) {
-    // If we are transposing ourselves we can skip a few steps but have to cache some values
-    if (!dest || mat == dest) {
-        var a01 = mat[1], a02 = mat[2];
-        var a12 = mat[5];
 
-        mat[1] = mat[3];
-        mat[2] = mat[6];
-        mat[3] = a01;
-        mat[5] = mat[7];
-        mat[6] = a02;
-        mat[7] = a12;
-        return mat;
+Mat3.prototype.transpose = function(m3fDestination) {
+    'use strict';
+
+    var pData = this.pData;
+    if(!m3fDestination){
+        //быстрее будет явно обработать оба случая
+        var a12 = pData.a12, a13 = pData.a13, a23 = pData.a23;
+
+        pData.a12 = pData.a21;    
+        pData.a13 = pData.a31;
+
+        pData.a21 = a12;
+        pData.a23 = pData.a32;
+
+        pData.a31 = a13;
+        pData.a32 = a23;
+
+        return this;
     }
 
-    dest[0] = mat[0];
-    dest[1] = mat[3];
-    dest[2] = mat[6];
-    dest[3] = mat[1];
-    dest[4] = mat[4];
-    dest[5] = mat[7];
-    dest[6] = mat[2];
-    dest[7] = mat[5];
-    dest[8] = mat[8];
-    return dest;
+    var pDataDestination = m3fDestination.pData;
+
+    pDataDestination.a11 = pData.a11;
+    pDataDestination.a12 = pData.a21;
+    pDataDestination.a13 = pData.a31;
+
+    pDataDestination.a21 = pData.a12;
+    pDataDestination.a22 = pData.a22;
+    pDataDestination.a23 = pData.a32;
+
+    pDataDestination.a31 = pData.a13;
+    pDataDestination.a32 = pData.a23;
+    pDataDestination.a33 = pData.a33;
+
+    return m3fDestination;
 };
 
 /*
@@ -1337,46 +1498,233 @@ Mat3.transpose = function (mat, dest) {
  * Returns:
  * dest if specified, a new Mat4 otherwise
  */
-Mat3.toMat4 = function (mat, dest) {
-    if (!dest) {dest = Mat4.create();}
 
-    dest[0] = mat[0];
-    dest[1] = mat[1];
-    dest[2] = mat[2];
-    dest[3] = 0;
+Mat3.prototype.toMat4 = function(m4fDestination) {
+    'use strict';
+    if(!m4fDestination){
+        m4fDestination = new Matrix4();
+    }
 
-    dest[4] = mat[3];
-    dest[5] = mat[4];
-    dest[6] = mat[5];
-    dest[7] = 0;
+    var pData = this.pData;
+    var pDataDestination = m4fDestination.pData;
 
-    dest[8] = mat[6];
-    dest[9] = mat[7];
-    dest[10] = mat[8];
-    dest[11] = 0;
+    pDataDestination._11 = pData.a11;
+    pDataDestination._12 = pData.a12;
+    pDataDestination._13 = pData.a13;
+    pDataDestination._14 = 0;
 
-    dest[12] = 0;
-    dest[13] = 0;
-    dest[14] = 0;
-    dest[15] = 1;
+    pDataDestination._21 = pData.a21;
+    pDataDestination._22 = pData.a22;
+    pDataDestination._23 = pData.a23;
+    pDataDestination._24 = 0;
 
-    return dest;
-}
+    pDataDestination._31 = pData.a31;
+    pDataDestination._32 = pData.a32;
+    pDataDestination._33 = pData.a33;
+    pDataDestination._34 = 0;
 
+    pDataDestination._41 = 0;
+    pDataDestination._42 = 0;
+    pDataDestination._43 = 0;
+    pDataDestination._44 = 1;
+
+    return m4fDestination;
+};
+
+/**
+ * @param Matrix 3x3 or Vec3
+ * Если pDestination не определено, то 
+ * в случае если подали матрицу результат будет сохранен в текущей матрице, 
+ * а если подали вектор, то будет создан новый вектор
+ */
+
+Mat3.prototype.multiply = function(pInput, pDestination) {
+    'use strict';
+    
+    var pData1 = this.pData;
+    var pData2 = pInput.pData;
+
+    if(pData2.length === 3){
+        if(!pDestination){
+            pDestination = new Vec3();
+        }
+
+        var pDataDestination = pDestination.pData;
+
+        var x = pData2.X, y = pData2.Y, z = pData2.Z;
+
+        pDataDestination.X = pData1.a11 * x + pData1.a12 * y + pData1.a13 * z;
+        pDataDestination.Y = pData1.a21 * x + pData1.a22 * y + pData1.a23 * z;
+        pDataDestination.Z = pData1.a31 * x + pData1.a32 * y + pData1.a33 * z;
+    }
+    else{
+        if(!pDestination){
+            pDestination = this;
+        }
+        var pDataDestination = pDestination.pData;
+
+        // Cache the matrix values (makes for huge speed increases!)
+        var a11 = pData1.a11, a12 = pData1.a12, a13 = pData1.a13;
+        var a21 = pData1.a21, a22 = pData1.a22, a23 = pData1.a23;
+        var a31 = pData1.a31, a32 = pData1.a32, a33 = pData1.a33;
+
+        var b11 = pData2.a11, b12 = pData2.a12, b13 = pData2.a13;
+        var b21 = pData2.a21, b22 = pData2.a22, b23 = pData2.a23;
+        var b31 = pData2.a31, b32 = pData2.a32, b33 = pData2.a33;
+
+        pDataDestination.a11 = a11*b11 + a12 * b21 + a13 * b31;
+        pDataDestination.a12 = a11*b12 + a12 * b22 + a13 * b32;
+        pDataDestination.a13 = a11*b13 + a12 * b23 + a13 * b33;
+
+        pDataDestination.a21 = a21*b11 + a22 * b21 + a23 * b31;
+        pDataDestination.a22 = a21*b12 + a22 * b22 + a23 * b32;
+        pDataDestination.a23 = a21*b13 + a22 * b23 + a23 * b33;
+
+        pDataDestination.a31 = a31*b11 + a32 * b21 + a33 * b31;
+        pDataDestination.a32 = a31*b12 + a32 * b22 + a33 * b32;
+        pDataDestination.a33 = a31*b13 + a32 * b23 + a33 * b33;
+    }
+
+    return pDestination;
+};
+
+/**
+ * складывает две матрицы
+ */
+
+Mat3.prototype.add = function(m3fMat, m3fDestination) {
+    'use strict';
+    if(!m3fDestination){
+        m3fDestination = this;
+    }
+
+    var pData1 = this.pData;
+    var pData2 = m3fMat.pData;
+    var pDataDestination = m3fDestination.pData;
+
+    pDataDestination.a11 = pData1.a11 + pData2.a11;
+    pDataDestination.a12 = pData1.a12 + pData2.a12;
+    pDataDestination.a13 = pData1.a13 + pData2.a13;
+
+    pDataDestination.a21 = pData1.a21 + pData2.a21;
+    pDataDestination.a22 = pData1.a22 + pData2.a22;
+    pDataDestination.a23 = pData1.a23 + pData2.a23;
+
+    pDataDestination.a31 = pData1.a31 + pData2.a31;
+    pDataDestination.a32 = pData1.a32 + pData2.a32;
+    pDataDestination.a33 = pData1.a33 + pData2.a33;
+
+    return m3fDestination;
+};
+
+/**
+ * вычитает две матрицы
+ */
+
+Mat3.prototype.subtract = function(m3fMat, m3fDestination) {
+    'use strict';
+    if(!m3fDestination){
+        m3fDestination = this;
+    }
+
+    var pData1 = this.pData;
+    var pData2 = m3fMat.pData;
+    var pDataDestination = m3fDestination.pData;
+
+    pDataDestination.a11 = pData1.a11 - pData2.a11;
+    pDataDestination.a12 = pData1.a12 - pData2.a12;
+    pDataDestination.a13 = pData1.a13 - pData2.a13;
+
+    pDataDestination.a21 = pData1.a21 - pData2.a21;
+    pDataDestination.a22 = pData1.a22 - pData2.a22;
+    pDataDestination.a23 = pData1.a23 - pData2.a23;
+
+    pDataDestination.a31 = pData1.a31 - pData2.a31;
+    pDataDestination.a32 = pData1.a32 - pData2.a32;
+    pDataDestination.a33 = pData1.a33 - pData2.a33;
+
+    return m3fDestination;
+};
+
+/**
+ * вычисляет детерминант матрицы
+ * @return {Float} значение детерминанта
+ */
+Mat3.prototype.determinant = function() {
+    'use strict';
+    var pData = this.pData;
+
+    var a11 = pData.a11, a12 = pData.a12, a13 = pData.a13;
+    var a21 = pData.a21, a22 = pData.a22, a23 = pData.a23;
+    var a31 = pData.a31, a32 = pData.a32, a33 = pData.a33;
+
+    return  a11 * (a22 * a33 - a23 * a32) 
+            - a12 * (a21 * a33 - a23 * a31) 
+            + a13 * (a21 * a32 - a22 * a31);
+};
+
+Mat3.prototype.inverse = function(m3fDestination) {
+    'use strict';
+    if(!m3fDestination){
+        m3fDestination = this;
+    }
+
+    var pData = this.pData;
+    var pDataDestination = m3fDestination.pData;
+
+    var a11 = pData.a11, a12 = pData.a12, a13 = pData.a13;
+    var a21 = pData.a21, a22 = pData.a22, a23 = pData.a23;
+    var a31 = pData.a31, a32 = pData.a32, a33 = pData.a33;
+
+    var A11 = a22 * a33 - a23 * a32;
+    var A12 = a21 * a33 - a23 * a31;
+    var A13 = a21 * a32 - a22 * a31;
+
+    var A21 = a12 * a33 - a13 * a32;
+    var A22 = a11 * a33 - a13 * a31;
+    var A23 = a11 * a32 - a12 * a31;
+
+    var A31 = a12 * a23 - a13 * a22;
+    var A32 = a11 * a23 - a13 * a21;
+    var A33 = a11 * a22 - a12 * a21;
+
+    var fDeterminant = a11*A11 - a12 * A12 + a13 * A13;
+
+    debug_assert(fDeterminant != 0,"обращение матрицы с нулевым детеминантом:\n" 
+                                + this.toString());
+
+    var fInverseDeterminant = 1./fDeterminant;
+
+    pDataDestination.a11 = A11 * fInverseDeterminant;
+    pDataDestination.a12 = -A21 * fInverseDeterminant;
+    pDataDestination.a13 = A31 * fInverseDeterminant;
+
+    pDataDestination.a21 = -A12 * fInverseDeterminant;
+    pDataDestination.a22 = A22 * fInverseDeterminant;
+    pDataDestination.a23 = -A32 * fInverseDeterminant;
+
+    pDataDestination.a31 = A13 * fInverseDeterminant;
+    pDataDestination.a32 = -A23 * fInverseDeterminant;
+    pDataDestination.a33 = A33 * fInverseDeterminant;
+
+    return m3fDestination;
+};
 /*
- * Mat3.str
+ * Mat3.toString
  * Returns a string representation of a Mat3
  *
- * Params:
- * mat - Mat3 to represent as a string
  *
  * Returns:
  * string representation of mat
  */
-Mat3.str = function (mat) {
-    return '[' + mat[0] + ', ' + mat[1] + ', ' + mat[2] +
-        ', ' + mat[3] + ', ' + mat[4] + ', ' + mat[5] +
-        ', ' + mat[6] + ', ' + mat[7] + ', ' + mat[8] + ']';
+
+Mat3.prototype.toString = function() {
+    'use strict';
+    var pData = this.pData;
+
+    return '[' + pData.a11 + ', ' + pData.a12 + ', ' + pData.a13 + ',\n' +
+               + pData.a21 + ', ' + pData.a22 + ', ' + pData.a23 + ',\n' +
+               + pData.a31 + ', ' + pData.a32 + ', ' + pData.a33 + ']';
 };
 
 /*
