@@ -409,7 +409,7 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
 
 Ifdef (TEXTURE_REDRAW)
         Ifdef (__IDE);
-        STATIC(_pCopyProgram, a.loadProgram(this._pEngine, 'http://idetmp/akra-engine-general/effects/copy_texture.glsl'));
+        STATIC(_pCopyProgram, a.loadProgram(this._pEngine, 'http://akra/akra-engine-general/effects/copy_texture.glsl'));
         Elseif();
         STATIC(_pCopyProgram, a.loadProgram(this._pEngine, '../effects/copy_texture.glsl'));
         Endif ();
@@ -446,7 +446,7 @@ Ifdef (TEXTURE_REDRAW)
 Endif ();
 
         Ifdef (__IDE)
-        STATIC(_pUpdateProgram, a.loadProgram(this._pEngine, 'http://idetmp/akra-engine-general/effects/update_video_buffer.glsl'));
+        STATIC(_pUpdateProgram, a.loadProgram(this._pEngine, 'http://akra/akra-engine-general/effects/update_video_buffer.glsl'));
         Elseif();
         STATIC(_pUpdateProgram, a.loadProgram(this._pEngine, '../effects/update_video_buffer.glsl'));
         Endif ();

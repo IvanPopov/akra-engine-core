@@ -1,8 +1,12 @@
-function Joint () {
+function Joint (pEngine) {
 	A_CLASS;
 
-	this._sBone = null;
+    debug_assert(pEngine, 'engine must be');
+	
+    this._sBone = null;
     this._iUpdated = 0;
+
+    this._pEngine = pEngine;
 }
 
 EXTENDS(Joint, a.Node);
@@ -15,6 +19,12 @@ PROPERTY(Joint, 'boneName',
 		this._sBone = sBone;
 	});
 
+
+Joint.prototype.getEngine = function () {
+    'use strict';
+    
+    return this._pEngine;
+};
 
 Joint.prototype.create = function () {
     'use strict';

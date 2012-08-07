@@ -89,16 +89,12 @@ function Engine () {
  **/
 Engine.prototype.create = function (sCanvasId) {
     //инициализация
-    this.pKeymap = new a.Keymap(window);
     this.pCanvas = document.getElementById(sCanvasId);
+    this.pKeymap = new a.Keymap();
     this._pRootNode = new a.SceneNode(this); //Корень дерева сцены
     this._pDefaultCamera = new a.Camera(this);      //Камера по умолчанию
-<<<<<<< HEAD
     this._pDefaultCamera.name = ".default-camera";
 
-=======
-	this._pDefaultCamera.setName("Default camera");
->>>>>>> origin/ide-implementation
     this._pActiveCamera = this._pDefaultCamera; //Активная камера
     this._pSceneTree = new a.OcTree();      //Объект отвечающий за дерево сцены
     this.iCreationWidth = this.pCanvas.width;
@@ -120,6 +116,7 @@ Engine.prototype.create = function (sCanvasId) {
     this.pSpriteManager = new a.SpriteManager(this);
     // this.pUniqManager = new a.UniqueManager(this);
 
+    
     //Запускаем таймер приложения
     a.UtilTimer(a.UtilTimer.TimerStart);
 
@@ -172,6 +169,7 @@ Engine.prototype.pause = function (isPause) {
         }
     }
 }
+
 Engine.prototype.pause.iAppPausedCount = 0;
 
 
@@ -182,12 +180,10 @@ Engine.prototype.pause.iAppPausedCount = 0;
  * @return Boolean Успешно ли все создаллось
  **/
 Engine.prototype.notifyOneTimeSceneInit = function () {
-    //Инициализируется дисплей менеджер
-    if (this.pDisplayManager.initialize()) {
-        return true;
-    }
 
-    if (this.pShaderManager.initialize()) {
+    //Инициализируется дисплей менеджер
+    if (this.pDisplayManager.initialize()/* && this.pShaderManager.initialize()*/) {
+        this.pKeymap.setTarget(this.pDisplayManager.getTextLayer());
         return true;
     }
 

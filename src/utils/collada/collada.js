@@ -2283,7 +2283,7 @@ function COLLADA (pEngine, pSettings) {
         var pSkeleton;
 
         if (!pJointNode) {
-            pJointNode = new a.Joint();
+            pJointNode = new a.Joint(pEngine);
             pJointNode.create();
             pJointNode.boneName = sJointSid;
             

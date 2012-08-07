@@ -604,6 +604,12 @@ SceneModel.prototype.findMesh = function (iMesh) {
     return this._pMeshes[iMesh] || null;
 };
 
+SceneModel.prototype.getMeshList = function () {
+    'use strict';
+    
+    return this._pMeshes.slice();
+};
+
 Ifdef (__DEBUG);
 
 SceneModel.prototype.toString = function (isRecursive, iDepth) {

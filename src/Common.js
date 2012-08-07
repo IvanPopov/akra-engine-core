@@ -534,11 +534,11 @@ Define(GEN_ARRAY(name, type, size), function () {
 Define(A_DEFINE_NAMESPACE(name), function () {
     if (!a.name) a.name = {};
 });
-Define(A_DEFINE_NAMESPACE(name, space), function () {
-    if (!a.space.name) a.space.name = {};
+Define(A_DEFINE_NAMESPACE(name, $$space), function () {
+    if (!a[space].name) a[space].name = {};
 });
-Define(A_NAMESPACE(object, space), function () {
-    a.space.object = object;
+Define(A_NAMESPACE(object, $$space), function () {
+    a[space].object = object;
 });
 
 Define(A_NAMESPACE(object), function () {

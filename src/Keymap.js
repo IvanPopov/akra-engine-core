@@ -45,10 +45,19 @@ function Keymap (pElement) {
              OPENBRACKET = 219, BACKSLASH, CLOSEBRACKET, SINGLEQUOTE
          ], KEY_CODES, a.KEY);
 
+    if (pElement) {
+        this.setTarget(pElement);
+    }
+}
+
+Keymap.prototype.setTarget = function (pElement) {
+    'use strict';
+
     var me = this;
     var fnCallback = function (e) {
         me.dispatch(e);
     };
+
     if (pElement.addEventListener) {
         pElement.addEventListener("keydown", fnCallback, false);
         pElement.addEventListener("keyup", fnCallback, false);
@@ -67,7 +76,7 @@ function Keymap (pElement) {
         pElement.onkeydown = pElement.onkeyup = fnCallback;
         pElement.onmousemove = pElement.onmouseup = pElement.onmousedown = fnCallback;
     }
-}
+};
 
 /**
  * Функция, вызываемая на измеение состояния клавиш.
