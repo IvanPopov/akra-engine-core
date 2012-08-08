@@ -1297,8 +1297,23 @@ Vec4.prototype.clear = function() {
 
 function Mat3(){
     'use strict';
-    var pData = this.pData = new Float32Array(9);
-    return this.set(arguments);
+    this.pData = new Float32Array(9);
+
+    var nArgumentsLength = arguments.length;
+    if(nArgumentsLength == 1){
+        return this.set(arguments[0]);    
+    }
+    else if(nArgumentsLength == 3){
+        return this.set(arguments[0],arguments[1],arguments[2]);    
+    }
+    else if(nArgumentsLength == 9){
+        return this.set(arguments[0],arguments[1],arguments[2],
+                        arguments[3],arguments[4],arguments[5],
+                        arguments[6],arguments[7],arguments[8]);    
+    }
+    else{
+        return this;
+    }
 }
 
 /*
@@ -1321,10 +1336,28 @@ Mat3.prototype.set = function() {
     //массив уже заполнен нулями
     
     var nArgumentsLength = arguments.length;
+    if(nArgumentsLength == 0){
+        pData.a11 = pData.a12 = pData.a13 = 0;
+        pData.a21 = pData.a22 = pData.a23 = 0;
+        pData.a31 = pData.a32 = pData.a33 = 0;
+    }
     if(nArgumentsLength == 1){
         if(typeof(arguments[0]) == "number"){
-            pData.a11 = pData.a22 = pData.a33 = arguments[0];//диагональ    
+            var nValue = arguments[0];
+
+            pData.a11 = nValue;
+            pData.a12 = 0;
+            pData.a13 = 0;
+
+            pData.a21 = 0;
+            pData.a22 = nValue;
+            pData.a23 = 0;
+
+            pData.a31 = 0;
+            pData.a32 = 0;
+            pData.a33 = nValue;
         }
+
         else if(arguments[0] instanceof Mat3){
             var pElements = arguments[0].pData;
 
@@ -1344,38 +1377,78 @@ Mat3.prototype.set = function() {
             var pElements = arguments[0].pData;
 
             pData.a11 = pElements.X; //диагональ
+            pData.a12 = 0;
+            pData.a13 = 0;
+
+            pData.a21 = 0;
             pData.a22 = pElements.Y;
+            pData.a23 = 0;
+
+            pData.a31 = 0;
+            pData.a32 = 0;
             pData.a33 = pElements.Z;
         }
         else{
             var pElements = arguments[0];            
 
-            pData.a11 = pElements.a11;
-            pData.a12 = pElements.a12;
-            pData.a13 = pElements.a13;
+            if(pElements.length == 3){
+                //ложим диагональ
+                pData.a11 = pElements.X;
+                pData.a12 = 0;
+                pData.a13 = 0;
 
-            pData.a21 = pElements.a21;
-            pData.a22 = pElements.a22;
-            pData.a23 = pElements.a23;
+                pData.a21 = 0;
+                pData.a22 = pElements.Y;
+                pData.a23 = 0;
 
-            pData.a31 = pElements.a31;
-            pData.a32 = pElements.a32;
-            pData.a33 = pElements.a33;
+                pData.a31 = 0;
+                pData.a32 = 0;
+                pData.a33 = pElements.Z;
+            }
+            else{
+                pData.a11 = pElements.a11;
+                pData.a12 = pElements.a12;
+                pData.a13 = pElements.a13;
+
+                pData.a21 = pElements.a21;
+                pData.a22 = pElements.a22;
+                pData.a23 = pElements.a23;
+
+                pData.a31 = pElements.a31;
+                pData.a32 = pElements.a32;
+                pData.a33 = pElements.a33;
+            }
         }
     }
     else if(nArgumentsLength == 3){
         if(typeof(arguments[0]) == "number"){
-            pData.a11 = arguments.X; //диагональ
+            //выставляем диагональ
+            pData.a11 = arguments.X; 
+            pData.a12 = 0;
+            pData.a13 = 0;
+
+            pData.a21 = 0; 
             pData.a22 = arguments.Y;
+            pData.a23 = 0;
+
+            pData.a31 = 0; 
+            pData.a32 = 0; 
             pData.a33 = arguments.Z;
         }
         else{
-            //три Vec3
-            //ложим построкам
+            var pData1,pData2,pData3;
+            if(arguments[0] instanceof Vec3){
+                pData1 = arguments[0].pData;
+                pData2 = arguments[1].pData;
+                pData3 = arguments[2].pData;
+            }
+            else{
+                pData1 = arguments[0];
+                pData2 = arguments[1];
+                pData3 = arguments[2];    
+            }
 
-            var pData1 = arguments[0].pData;
-            var pData2 = arguments[1].pData;
-            var pData3 = arguments[2].pData;
+            //ложим по строкам    
 
             pData.a11 = pData1.X;
             pData.a12 = pData1.Y;
@@ -1727,46 +1800,70 @@ Mat3.prototype.toString = function() {
                + pData.a31 + ', ' + pData.a32 + ', ' + pData.a33 + ']';
 };
 
+Mat3.prototype.isEqual = function(m3fMat,fEps) {
+    'use strict';
+    
+    fEps = ifndef(fEps,0);//позволяет сравнить матрицы с заданой точностью
+
+    var pData1 = this.pData;
+    var pData2 = m3fMat.pData;
+
+    if(fEps == 0){
+        if(    pData1.a11 != pData2.a11
+            || pData1.a12 != pData2.a12
+            || pData1.a13 != pData2.a13
+            || pData1.a21 != pData2.a21
+            || pData1.a22 != pData2.a22
+            || pData1.a23 != pData2.a23
+            || pData1.a31 != pData2.a31
+            || pData1.a32 != pData2.a32
+            || pData1.a33 != pData2.a33){
+
+            return false;
+        }
+    }
+    else{
+        if(    Math.abs(pData1.a11 - pData2.a11) > fEps
+            || Math.abs(pData1.a12 - pData2.a12) > fEps
+            || Math.abs(pData1.a13 - pData2.a13) > fEps
+            || Math.abs(pData1.a21 - pData2.a21) > fEps
+            || Math.abs(pData1.a22 - pData2.a22) > fEps
+            || Math.abs(pData1.a23 - pData2.a23) > fEps
+            || Math.abs(pData1.a31 - pData2.a31) > fEps
+            || Math.abs(pData1.a32 - pData2.a32) > fEps
+            || Math.abs(pData1.a33 - pData2.a33) > fEps){
+
+            return false;
+        }
+    }
+    return true;
+};
+
 /*
  * Mat4 - 4x4 Matrix
  */
-var Mat4 = {};
 
-/*
- * Mat4.create
- * Creates a new instance of a Mat4 using the default array type
- * Any javascript array containing at least 16 numeric elements can serve as a Mat4
- *
- * Params:
- * mat - Optional, Mat4 containing values to initialize with
- *
- * Returns:
- * New Mat4
- */
-Mat4.create = function (mat) {
-    var dest = new glMatrixArrayType(16);
+function Mat4(){
+    'use strict';
+    this.pData = new Float32Array(16);
 
-    if (mat) {
-        dest[0] = mat[0];
-        dest[1] = mat[1];
-        dest[2] = mat[2];
-        dest[3] = mat[3];
-        dest[4] = mat[4];
-        dest[5] = mat[5];
-        dest[6] = mat[6];
-        dest[7] = mat[7];
-        dest[8] = mat[8];
-        dest[9] = mat[9];
-        dest[10] = mat[10];
-        dest[11] = mat[11];
-        dest[12] = mat[12];
-        dest[13] = mat[13];
-        dest[14] = mat[14];
-        dest[15] = mat[15];
+    var nArgumentsLength = arguments.length;
+    if(nArgumentsLength == 1){
+        return this.set(arguments[0]);
     }
-
-    return dest;
-};
+    else if(nArgumentsLength == 4){
+        return this.set(arguments[0],arguments[1],arguments[2],arguments[3]);    
+    }
+    else if(nArgumentsLength == 16){
+        return this.set(arguments[0],arguments[1],arguments[2],arguments[3],
+                    arguments[4],arguments[5],arguments[6],arguments[7],
+                    arguments[8],arguments[9],arguments[10],arguments[11],
+                    arguments[12],arguments[13],arguments[14],arguments[15]);    
+    }
+    else{
+        return this;
+    }
+}
 
 /*
  * Mat4.set
@@ -1779,24 +1876,218 @@ Mat4.create = function (mat) {
  * Returns:
  * dest
  */
-Mat4.set = function (mat, dest) {
-    dest[0] = mat[0];
-    dest[1] = mat[1];
-    dest[2] = mat[2];
-    dest[3] = mat[3];
-    dest[4] = mat[4];
-    dest[5] = mat[5];
-    dest[6] = mat[6];
-    dest[7] = mat[7];
-    dest[8] = mat[8];
-    dest[9] = mat[9];
-    dest[10] = mat[10];
-    dest[11] = mat[11];
-    dest[12] = mat[12];
-    dest[13] = mat[13];
-    dest[14] = mat[14];
-    dest[15] = mat[15];
-    return dest;
+
+Mat4.prototype.set = function() {
+    //'use strict';//some bugs in chrome
+    var pData = this.pData;
+
+    var nArgumentsLength = arguments.length;
+    if(nArgumentsLength == 0){
+        pData._11 = pData._12 = pData._13 = pData._14 = 0;
+        pData._21 = pData._22 = pData._23 = pData._24 = 0;
+        pData._31 = pData._32 = pData._33 = pData._34 = 0;
+        pData._41 = pData._42 = pData._43 = pData._44 = 0;
+    }
+    if(nArgumentsLength == 1){
+        if(typeof(arguments[0]) == "number"){
+            var nValue = arguments[0];
+            pData._11 = nValue;
+            pData._12 = 0;
+            pData._13 = 0;
+            pData._14 = 0;
+
+            pData._21 = 0;
+            pData._22 = nValue;
+            pData._23 = 0;
+            pData._24 = 0;
+
+            pData._31 = 0;
+            pData._32 = 0;
+            pData._33 = nValue;
+            pData._34 = 0;
+
+            pData._41 = 0;
+            pData._42 = 0;
+            pData._43 = 0;
+            pData._44 = nValue
+        }
+        else if(arguments[0] instanceof Mat4){
+            var pElements = arguments[0].pData;
+
+            pData._11 = pElements._11;
+            pData._12 = pElements._12;
+            pData._13 = pElements._13;
+            pData._14 = pElements._14;
+
+            pData._21 = pElements._21;
+            pData._22 = pElements._22;
+            pData._23 = pElements._23;
+            pData._24 = pElements._24;
+
+            pData._31 = pElements._31;
+            pData._32 = pElements._32;
+            pData._33 = pElements._33;
+            pData._34 = pElements._34;
+
+            pData._41 = pElements._41;
+            pData._42 = pElements._42;
+            pData._43 = pElements._43;
+            pData._44 = pElements._44;
+        }
+        else if(arguments[0] instanceof Vec4){
+            var pElements = arguments[0].pData;
+            //ложим диагональ
+            pData._11 = pElements.X;
+            pData._12 = 0;
+            pData._13 = 0;
+            pData._14 = 0;
+
+            pData._21 = 0;
+            pData._22 = pElements.Y;
+            pData._23 = 0;
+            pData._24 = 0;
+
+            pData._31 = 0;
+            pData._32 = 0;
+            pData._33 = pElements.Z;
+            pData._34 = 0;
+
+            pData._41 = 0;
+            pData._42 = 0;
+            pData._43 = 0;
+            pData._44 = pElements.W;    
+        }
+        else{
+            var pElements = arguments[0];
+
+            if(pElements.length == 4){
+                //ложим диагональ
+                pData._11 = pElements.X;
+                pData._12 = 0;
+                pData._13 = 0;
+                pData._14 = 0;
+
+                pData._21 = 0;
+                pData._22 = pElements.Y;
+                pData._23 = 0;
+                pData._24 = 0;
+
+                pData._31 = 0;
+                pData._32 = 0;
+                pData._33 = pElements.Z;
+                pData._34 = 0;
+
+                pData._41 = 0;
+                pData._42 = 0;
+                pData._43 = 0;
+                pData._44 = pElements.W;
+            }
+            else{
+                pData._11 = pElements._11;
+                pData._12 = pElements._12;
+                pData._13 = pElements._13;
+                pData._14 = pElements._14;
+
+                pData._21 = pElements._21;
+                pData._22 = pElements._22;
+                pData._23 = pElements._23;
+                pData._24 = pElements._24;
+
+                pData._31 = pElements._31;
+                pData._32 = pElements._32;
+                pData._33 = pElements._33;
+                pData._34 = pElements._34;
+
+                pData._41 = pElements._41;
+                pData._42 = pElements._42;
+                pData._43 = pElements._43;
+                pData._44 = pElements._44;
+            }
+        }
+    }
+    else if(nArgumentsLength == 4){
+        if(typeof(arguments[0]) == "number"){
+            //ложим диагональ
+            pData._11 = arguments.X;
+            pData._12 = 0;
+            pData._13 = 0;
+            pData._14 = 0;
+
+            pData._21 = 0;
+            pData._22 = arguments.Y;
+            pData._23 = 0;
+            pData._24 = 0;
+
+            pData._31 = 0;
+            pData._32 = 0;
+            pData._33 = arguments.Z;
+            pData._34 = 0;
+
+            pData._41 = 0;
+            pData._42 = 0;
+            pData._43 = 0;
+            pData._44 = arguments.W;
+        }
+        else{
+            var pData1,pData2,pData3,pData4;
+
+            if(arguments[0] instanceof Vec4){
+                pData1 = arguments[0].pData;
+                pData2 = arguments[1].pData;
+                pData3 = arguments[2].pData;
+                pData4 = arguments[3].pData;
+            }
+            else{
+                pData1 = arguments[0];
+                pData2 = arguments[1];
+                pData3 = arguments[2];
+                pData4 = arguments[3];
+            }
+
+            pData._11 = pData1.X;
+            pData._12 = pData1.Y;
+            pData._13 = pData1.Z;
+            pData._14 = pData1.W;
+
+            pData._21 = pData2.X;
+            pData._22 = pData2.Y;
+            pData._23 = pData2.Z;
+            pData._24 = pData2.W;
+
+            pData._31 = pData3.X;
+            pData._32 = pData3.Y;
+            pData._33 = pData3.Z;
+            pData._34 = pData3.W;
+
+            pData._41 = pData4.X;
+            pData._42 = pData4.Y;
+            pData._43 = pData4.Z;
+            pData._44 = pData4.W;
+        }
+    }
+    else if(nArgumentsLength == 16){
+        pData._11 = arguments._11;
+        pData._12 = arguments._12;
+        pData._13 = arguments._13;
+        pData._14 = arguments._14;
+
+        pData._21 = arguments._21;
+        pData._22 = arguments._22;
+        pData._23 = arguments._23;
+        pData._24 = arguments._24;
+
+        pData._31 = arguments._31;
+        pData._32 = arguments._32;
+        pData._33 = arguments._33;
+        pData._34 = arguments._34;
+
+        pData._41 = arguments._41;
+        pData._42 = arguments._42;
+        pData._43 = arguments._43;
+        pData._44 = arguments._44;
+    }
+
+    return this;
 };
 
 /*
@@ -1809,24 +2100,32 @@ Mat4.set = function (mat, dest) {
  * Returns:
  * dest
  */
-Mat4.identity = function (dest) {
-    dest[0] = 1;
-    dest[1] = 0;
-    dest[2] = 0;
-    dest[3] = 0;
-    dest[4] = 0;
-    dest[5] = 1;
-    dest[6] = 0;
-    dest[7] = 0;
-    dest[8] = 0;
-    dest[9] = 0;
-    dest[10] = 1;
-    dest[11] = 0;
-    dest[12] = 0;
-    dest[13] = 0;
-    dest[14] = 0;
-    dest[15] = 1;
-    return dest;
+
+Mat4.prototype.identity = function() {
+    'use strict';
+    var pData = this.pData;
+
+    pData._11 = 1;
+    pData._12 = 0;
+    pData._13 = 0;
+    pData._14 = 0;
+
+    pData._21 = 0;
+    pData._22 = 1;
+    pData._23 = 0;
+    pData._24 = 0;
+
+    pData._21 = 0;
+    pData._22 = 0;
+    pData._23 = 1;
+    pData._24 = 0;
+
+    pData._21 = 0;
+    pData._22 = 0;
+    pData._23 = 0;
+    pData._24 = 1;
+
+    return this;
 };
 
 /*
@@ -1840,45 +2139,59 @@ Mat4.identity = function (dest) {
  * Returns:
  * dest is specified, mat otherwise
  */
-Mat4.transpose = function (mat, dest) {
-    // If we are transposing ourselves we can skip a few steps but have to cache some values
-    if (!dest || mat == dest) {
-        var a01 = mat[1], a02 = mat[2], a03 = mat[3];
-        var a12 = mat[6], a13 = mat[7];
-        var a23 = mat[11];
 
-        mat[1] = mat[4];
-        mat[2] = mat[8];
-        mat[3] = mat[12];
-        mat[4] = a01;
-        mat[6] = mat[9];
-        mat[7] = mat[13];
-        mat[8] = a02;
-        mat[9] = a12;
-        mat[11] = mat[14];
-        mat[12] = a03;
-        mat[13] = a13;
-        mat[14] = a23;
-        return mat;
+Mat4.prototype.transpose = function(m4fDestination) {
+    'use strict';
+    
+    var pData = this.pData;
+
+    if(!m4fDestination){
+        var a12 = pData._12, a13 = pData._13, a14 = pData._14;
+        var a23 = pData._23, a24 = pData._24;
+        var a34 = pData._34;
+
+        pData._12 = pData._21;
+        pData._13 = pData._31;
+        pData._14 = pData._41;
+
+        pData._21 = a12;
+        pData._23 = pData._32;
+        pData._24 = pData._42;
+
+        pData._31 = a13;
+        pData._32 = a23;
+        pData._34 = pData._43;
+
+        pData._41 = a14;
+        pData._42 = a24;
+        pData._43 = a34;
+
+        return this;
     }
 
-    dest[0] = mat[0];
-    dest[1] = mat[4];
-    dest[2] = mat[8];
-    dest[3] = mat[12];
-    dest[4] = mat[1];
-    dest[5] = mat[5];
-    dest[6] = mat[9];
-    dest[7] = mat[13];
-    dest[8] = mat[2];
-    dest[9] = mat[6];
-    dest[10] = mat[10];
-    dest[11] = mat[14];
-    dest[12] = mat[3];
-    dest[13] = mat[7];
-    dest[14] = mat[11];
-    dest[15] = mat[15];
-    return dest;
+    var pDataDestination = m4fDestination.pData;
+
+    pDataDestination._11 = pData._11;
+    pDataDestination._12 = pData._21;
+    pDataDestination._13 = pData._31;
+    pDataDestination._14 = pData._41;
+
+    pDataDestination._21 = pData._12;
+    pDataDestination._22 = pData._22;
+    pDataDestination._23 = pData._32;
+    pDataDestination._24 = pData._42;
+
+    pDataDestination._31 = pData._13;
+    pDataDestination._32 = pData._23;
+    pDataDestination._33 = pData._33;
+    pDataDestination._34 = pData._43;
+
+    pDataDestination._41 = pData._14;
+    pDataDestination._42 = pData._24;
+    pDataDestination._43 = pData._34;
+    pDataDestination._44 = pData._44;
+
+    return m4fDestination;
 };
 
 /*
@@ -1891,19 +2204,23 @@ Mat4.transpose = function (mat, dest) {
  * Returns:
  * determinant of mat
  */
-Mat4.determinant = function (mat) {
-    // Cache the matrix values (makes for huge speed increases!)
-    var a00 = mat[0], a01 = mat[1], a02 = mat[2], a03 = mat[3];
-    var a10 = mat[4], a11 = mat[5], a12 = mat[6], a13 = mat[7];
-    var a20 = mat[8], a21 = mat[9], a22 = mat[10], a23 = mat[11];
-    var a30 = mat[12], a31 = mat[13], a32 = mat[14], a33 = mat[15];
 
-    return  a30 * a21 * a12 * a03 - a20 * a31 * a12 * a03 - a30 * a11 * a22 * a03 + a10 * a31 * a22 * a03 +
-        a20 * a11 * a32 * a03 - a10 * a21 * a32 * a03 - a30 * a21 * a02 * a13 + a20 * a31 * a02 * a13 +
-        a30 * a01 * a22 * a13 - a00 * a31 * a22 * a13 - a20 * a01 * a32 * a13 + a00 * a21 * a32 * a13 +
-        a30 * a11 * a02 * a23 - a10 * a31 * a02 * a23 - a30 * a01 * a12 * a23 + a00 * a31 * a12 * a23 +
-        a10 * a01 * a32 * a23 - a00 * a11 * a32 * a23 - a20 * a11 * a02 * a33 + a10 * a21 * a02 * a33 +
-        a20 * a01 * a12 * a33 - a00 * a21 * a12 * a33 - a10 * a01 * a22 * a33 + a00 * a11 * a22 * a33;
+Mat4.prototype.determinant = function() {
+    'use strict';
+    // Cache the matrix values (makes for huge speed increases!)
+    // 
+    var pData = this.pData; 
+    var a11 = pData._11, a12 = pData._12, a13 = pData._13, a14 = pData._14;
+    var a21 = pData._21, a22 = pData._22, a23 = pData._23, a24 = pData._24;
+    var a31 = pData._31, a32 = pData._32, a33 = pData._33, a34 = pData._34;
+    var a41 = pData._41, a42 = pData._42, a43 = pData._43, a44 = pData._44;
+
+    return  a41 * a32 * a23 * a14 - a31 * a42 * a23 * a14 - a41 * a22 * a33 * a14 + a21 * a42 * a33 * a14 +
+        a31 * a22 * a43 * a14 - a21 * a32 * a43 * a14 - a41 * a32 * a13 * a24 + a31 * a42 * a13 * a24 +
+        a41 * a12 * a33 * a24 - a11 * a42 * a33 * a24 - a31 * a12 * a43 * a24 + a11 * a32 * a43 * a24 +
+        a41 * a22 * a13 * a34 - a21 * a42 * a13 * a34 - a41 * a12 * a23 * a34 + a11 * a42 * a23 * a34 +
+        a21 * a12 * a43 * a34 - a11 * a22 * a43 * a34 - a31 * a22 * a13 * a44 + a21 * a32 * a13 * a44 +
+        a31 * a12 * a23 * a44 - a11 * a32 * a23 * a44 - a21 * a12 * a33 * a44 + a11 * a22 * a33 * a44;
 };
 
 /*
@@ -1917,49 +2234,210 @@ Mat4.determinant = function (mat) {
  * Returns:
  * dest is specified, mat otherwise
  */
-Mat4.inverse = function (mat, dest) {
-    if (!dest) {dest = mat;}
+
+Mat4.prototype.inverse = function(m4fDestination) {
+    'use strict';
+    if(!m4fDestination){
+        m4fDestination = this;
+    }
+
+    var pData = this.pData;
+    var pDataDestination = m4fDestination.pData;
 
     // Cache the matrix values (makes for huge speed increases!)
-    var a00 = mat[0], a01 = mat[1], a02 = mat[2], a03 = mat[3];
-    var a10 = mat[4], a11 = mat[5], a12 = mat[6], a13 = mat[7];
-    var a20 = mat[8], a21 = mat[9], a22 = mat[10], a23 = mat[11];
-    var a30 = mat[12], a31 = mat[13], a32 = mat[14], a33 = mat[15];
+    var a11 = pData._11, a12 = pData._12, a13 = pData._13, a14 = pData._14;
+    var a21 = pData._21, a22 = pData._22, a23 = pData._23, a24 = pData._24;
+    var a31 = pData._31, a32 = pData._32, a33 = pData._33, a34 = pData._34;
+    var a41 = pData._41, a42 = pData._42, a43 = pData._43, a44 = pData._44;
 
-    var b00 = a00 * a11 - a01 * a10;
-    var b01 = a00 * a12 - a02 * a10;
-    var b02 = a00 * a13 - a03 * a10;
-    var b03 = a01 * a12 - a02 * a11;
-    var b04 = a01 * a13 - a03 * a11;
-    var b05 = a02 * a13 - a03 * a12;
-    var b06 = a20 * a31 - a21 * a30;
-    var b07 = a20 * a32 - a22 * a30;
-    var b08 = a20 * a33 - a23 * a30;
-    var b09 = a21 * a32 - a22 * a31;
-    var b10 = a21 * a33 - a23 * a31;
-    var b11 = a22 * a33 - a23 * a32;
+    var b00 = a11 * a22 - a12 * a21;
+    var b01 = a11 * a23 - a13 * a21;
+    var b02 = a11 * a24 - a14 * a21;
+    var b03 = a12 * a23 - a13 * a22;
+    var b04 = a12 * a24 - a14 * a22;
+    var b05 = a13 * a24 - a14 * a23;
+    var b06 = a31 * a42 - a32 * a41;
+    var b07 = a31 * a43 - a33 * a41;
+    var b08 = a31 * a44 - a34 * a41;
+    var b09 = a32 * a43 - a33 * a42;
+    var b10 = a32 * a44 - a34 * a42;
+    var b11 = a33 * a44 - a34 * a43;
 
-    // Calculate the determinant (inlined to avoid double-caching)
-    var invDet = 1 / (b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06);
+    var fDeterminant = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
 
-    dest[0] = (a11 * b11 - a12 * b10 + a13 * b09) * invDet;
-    dest[1] = (-a01 * b11 + a02 * b10 - a03 * b09) * invDet;
-    dest[2] = (a31 * b05 - a32 * b04 + a33 * b03) * invDet;
-    dest[3] = (-a21 * b05 + a22 * b04 - a23 * b03) * invDet;
-    dest[4] = (-a10 * b11 + a12 * b08 - a13 * b07) * invDet;
-    dest[5] = (a00 * b11 - a02 * b08 + a03 * b07) * invDet;
-    dest[6] = (-a30 * b05 + a32 * b02 - a33 * b01) * invDet;
-    dest[7] = (a20 * b05 - a22 * b02 + a23 * b01) * invDet;
-    dest[8] = (a10 * b10 - a11 * b08 + a13 * b06) * invDet;
-    dest[9] = (-a00 * b10 + a01 * b08 - a03 * b06) * invDet;
-    dest[10] = (a30 * b04 - a31 * b02 + a33 * b00) * invDet;
-    dest[11] = (-a20 * b04 + a21 * b02 - a23 * b00) * invDet;
-    dest[12] = (-a10 * b09 + a11 * b07 - a12 * b06) * invDet;
-    dest[13] = (a00 * b09 - a01 * b07 + a02 * b06) * invDet;
-    dest[14] = (-a30 * b03 + a31 * b01 - a32 * b00) * invDet;
-    dest[15] = (a20 * b03 - a21 * b01 + a22 * b00) * invDet;
+    debug_assert(fDeterminant != 0,"обращение матрицы с нулевым детеминантом:\n" 
+                                + this.toString());
 
-    return dest;
+    var fInverseDeterminant = 1/fDeterminant;
+
+    pDataDestination._11 = (a22 * b11 - a23 * b10 + a24 * b09) * fInverseDeterminant;
+    pDataDestination._12 = (-a12 * b11 + a13 * b10 - a14 * b09) * fInverseDeterminant;
+    pDataDestination._13 = (a42 * b05 - a43 * b04 + a44 * b03) * fInverseDeterminant;
+    pDataDestination._14 = (-a32 * b05 + a33 * b04 - a34 * b03) * fInverseDeterminant;
+
+    pDataDestination._21 = (-a21 * b11 + a23 * b08 - a24 * b07) * fInverseDeterminant;
+    pDataDestination._22 = (a11 * b11 - a13 * b08 + a14 * b07) * fInverseDeterminant;
+    pDataDestination._23 = (-a41 * b05 + a43 * b02 - a44 * b01) * fInverseDeterminant;
+    pDataDestination._24 = (a31 * b05 - a33 * b02 + a34 * b01) * fInverseDeterminant;
+
+    pDataDestination._31 = (a21 * b10 - a22 * b08 + a24 * b06) * fInverseDeterminant;
+    pDataDestination._32 = (-a11 * b10 + a12 * b08 - a14 * b06) * fInverseDeterminant;
+    pDataDestination._33 = (a41 * b04 - a42 * b02 + a44 * b00) * fInverseDeterminant;
+    pDataDestination._34 = (-a31 * b04 + a32 * b02 - a34 * b00) * fInverseDeterminant;
+
+    pDataDestination._41 = (-a21 * b09 + a22 * b07 - a23 * b06) * fInverseDeterminant;
+    pDataDestination._42 = (a11 * b09 - a12 * b07 + a13 * b06) * fInverseDeterminant;
+    pDataDestination._43 = (-a41 * b03 + a42 * b01 - a43 * b00) * fInverseDeterminant;
+    pDataDestination._44 = (a31 * b03 - a32 * b01 + a33 * b00) * fInverseDeterminant;
+
+    return m4fDestination;
+};
+
+/**
+ * pInput - Vec3, Vec4, Mat4
+ * pDestination - respectivetly
+ * если pDestination не подано, то 
+ * если происходит умножение на матрицу, то умножается сама матрица, а
+ * для векторов создаются новые
+ */
+
+Mat4.prototype.multiply = function(pInput,pDestination) {
+    'use strict';
+    
+    var pData1 = this.pData;
+    var pData2 = pInput.pData;
+
+    if(pData2.length == 3){
+        //матрица поворота умножается на вектор (блок 3x3)
+        if(!pDestination){
+            pDestination = new Vec3();
+        }
+        var pDataDestination = pDestination.pData;
+
+        var x = pData2.X, y = pData2.Y, z = pData2.Z;
+
+        pDataDestination.X = pData1._11 * x + pData1._12 *y + pData1._13 * z;
+        pDataDestination.Y = pData1._21 * x + pData1._22 *y + pData1._23 * z;
+        pDataDestination.Z = pData1._31 * x + pData1._32 *y + pData1._33 * z;
+    }
+    else if(pData2.length == 4){
+        //матрица умножается на вектор
+        if(!pDestination){
+            pDestination = new Vec4();
+        }
+        var pDataDestination = pDestination.pData;
+
+        var x = pData2.X, y = pData2.Y, z = pData2.Z, w = pData2.W;
+
+        pDataDestination.X = pData1._11 * x + pData1._12 * y + pData1._13 * z + pData1._14 * w;
+        pDataDestination.Y = pData1._21 * x + pData1._22 * y + pData1._23 * z + pData1._24 * w;
+        pDataDestination.Z = pData1._31 * x + pData1._32 * y + pData1._33 * z + pData1._34 * w;
+        pDataDestination.W = pData1._41 * x + pData1._42 * y + pData1._43 * z + pData1._44 * w;
+    }
+    else{
+        //перемножаем две матрицы
+        if(!pDestination){
+            pDestination = this;
+        }
+        var pDataDestination = pDestination.pData;
+
+        //кешируем значения матриц для ускорения
+        
+        var a11 = pData1._11, a12 = pData1._12, a13 = pData1._13, a14 = pData1._14;        
+        var a21 = pData1._21, a22 = pData1._22, a23 = pData1._23, a24 = pData1._24;
+        var a31 = pData1._31, a32 = pData1._32, a33 = pData1._33, a34 = pData1._34;
+        var a41 = pData1._41, a42 = pData1._42, a43 = pData1._43, a44 = pData1._44;
+
+        var b11 = pData2._11, b12 = pData2._12, b13 = pData2._13, b14 = pData2._14;        
+        var b21 = pData2._21, b22 = pData2._22, b23 = pData2._23, b24 = pData2._24;
+        var b31 = pData2._31, b32 = pData2._32, b33 = pData2._33, b34 = pData2._34;
+        var b41 = pData2._41, b42 = pData2._42, b43 = pData2._43, b44 = pData2._44;
+
+        pDataDestination._11 = a11 * b11 + a12 * b21 + a13 * b31 + a14 * b41;
+        pDataDestination._12 = a11 * b12 + a12 * b22 + a13 * b32 + a14 * b42;
+        pDataDestination._13 = a11 * b13 + a12 * b23 + a13 * b33 + a14 * b43;
+        pDataDestination._14 = a11 * b14 + a12 * b24 + a13 * b34 + a14 * b44;
+
+        pDataDestination._21 = a21 * b11 + a22 * b21 + a23 * b31 + a24 * b41;
+        pDataDestination._22 = a21 * b12 + a22 * b22 + a23 * b32 + a24 * b42;
+        pDataDestination._23 = a21 * b13 + a22 * b23 + a23 * b33 + a24 * b43;
+        pDataDestination._24 = a21 * b14 + a22 * b24 + a23 * b34 + a24 * b44;
+
+        pDataDestination._31 = a31 * b11 + a32 * b21 + a33 * b31 + a34 * b41;
+        pDataDestination._32 = a31 * b12 + a32 * b22 + a33 * b32 + a34 * b42;
+        pDataDestination._33 = a31 * b13 + a32 * b23 + a33 * b33 + a34 * b43;
+        pDataDestination._34 = a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44;
+
+        pDataDestination._41 = a41 * b11 + a42 * b21 + a43 * b31 + a44 * b41;
+        pDataDestination._42 = a41 * b12 + a42 * b22 + a43 * b32 + a44 * b42;
+        pDataDestination._43 = a41 * b13 + a42 * b23 + a43 * b33 + a44 * b43;
+        pDataDestination._44 = a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44;
+    }
+
+    return pDestination;
+};
+
+Mat4.prototype.toString = function() {
+    'use strict';
+    var pData = this.pData;
+
+    return '['  + pData._11 + ", " + pData._12 + ', ' + pData._13 + ', ' + pData._14 + ',\n' 
+                + pData._21 + ", " + pData._22 + ', ' + pData._23 + ', ' + pData._24 + ',\n'
+                + pData._31 + ", " + pData._32 + ', ' + pData._33 + ', ' + pData._34 + ',\n'
+                + pData._41 + ", " + pData._42 + ', ' + pData._43 + ', ' + pData._44 + ']';
+};
+
+Mat4.prototype.isEqual = function(m4fMat,fEps) {
+    'use strict';
+
+    fEps = ifndef(fEps,0);
+
+    var pData1 = this.pData;
+    var pData2 = m4fMat.pData;
+
+    if(fEps == 0){
+        if(    pData1._11 != pData2._11 
+            || pData1._12 != pData2._12
+            || pData1._13 != pData2._13
+            || pData1._14 != pData2._14
+            || pData1._21 != pData2._21 
+            || pData1._22 != pData2._22
+            || pData1._23 != pData2._23
+            || pData1._24 != pData2._24
+            || pData1._31 != pData2._31 
+            || pData1._32 != pData2._32
+            || pData1._33 != pData2._33
+            || pData1._34 != pData2._34
+            || pData1._41 != pData2._41 
+            || pData1._42 != pData2._42
+            || pData1._43 != pData2._43
+            || pData1._44 != pData2._44){
+
+            return false;
+        }
+    }
+    else{
+        if(    Math.abs(pData1._11 - pData2._11) > fEps
+            || Math.abs(pData1._12 - pData2._12) > fEps
+            || Math.abs(pData1._13 - pData2._13) > fEps
+            || Math.abs(pData1._14 - pData2._14) > fEps
+            || Math.abs(pData1._21 - pData2._21) > fEps
+            || Math.abs(pData1._22 - pData2._22) > fEps
+            || Math.abs(pData1._23 - pData2._23) > fEps
+            || Math.abs(pData1._24 - pData2._24) > fEps
+            || Math.abs(pData1._31 - pData2._31) > fEps
+            || Math.abs(pData1._32 - pData2._32) > fEps
+            || Math.abs(pData1._33 - pData2._33) > fEps
+            || Math.abs(pData1._34 - pData2._34) > fEps
+            || Math.abs(pData1._41 - pData2._41) > fEps
+            || Math.abs(pData1._42 - pData2._42) > fEps
+            || Math.abs(pData1._43 - pData2._43) > fEps
+            || Math.abs(pData1._44 - pData2._44) > fEps){
+
+            return false;
+        }
+    }
+    return true;
 };
 
 /*
@@ -1973,27 +2451,37 @@ Mat4.inverse = function (mat, dest) {
  * Returns:
  * dest is specified, a new Mat4 otherwise
  */
-Mat4.toRotationMat = function (mat, dest) {
-    if (!dest) {dest = Mat4.create();}
 
-    dest[0] = mat[0];
-    dest[1] = mat[1];
-    dest[2] = mat[2];
-    dest[3] = mat[3];
-    dest[4] = mat[4];
-    dest[5] = mat[5];
-    dest[6] = mat[6];
-    dest[7] = mat[7];
-    dest[8] = mat[8];
-    dest[9] = mat[9];
-    dest[10] = mat[10];
-    dest[11] = mat[11];
-    dest[12] = 0;
-    dest[13] = 0;
-    dest[14] = 0;
-    dest[15] = 1;
+Mat4.prototype.toRotationMatrix = function(m4fDestination) {
+    'use strict';
+    if(!m4fDestination){
+        m4fDestination = new Mat4();
+    }
 
-    return dest;
+    var pData = this.pData;
+    var pDataDestination = m4fDestination.pData;
+
+    pDataDestination._11 = pData._11;
+    pDataDestination._12 = pData._12;
+    pDataDestination._13 = pData._13;
+    pDataDestination._14 = 0;
+
+    pDataDestination._21 = pData._21;
+    pDataDestination._22 = pData._22;
+    pDataDestination._23 = pData._23;
+    pDataDestination._24 = 0;
+
+    pDataDestination._31 = pData._31;
+    pDataDestination._32 = pData._32;
+    pDataDestination._33 = pData._33;
+    pDataDestination._34 = 0;
+
+    pDataDestination._41 = 0;
+    pDataDestination._42 = 0;
+    pDataDestination._43 = 0;
+    pDataDestination._44 = 1;
+
+    return pDataDestination;
 };
 
 /*
@@ -2007,20 +2495,29 @@ Mat4.toRotationMat = function (mat, dest) {
  * Returns:
  * dest is specified, a new Mat3 otherwise
  */
-Mat4.toMat3 = function (mat, dest) {
-    if (!dest) {dest = Mat3.create();}
 
-    dest[0] = mat[0];
-    dest[1] = mat[1];
-    dest[2] = mat[2];
-    dest[3] = mat[4];
-    dest[4] = mat[5];
-    dest[5] = mat[6];
-    dest[6] = mat[8];
-    dest[7] = mat[9];
-    dest[8] = mat[10];
+Mat4.prototype.toMat3 = function(m3fDestination) {
+    'use strict';
+    if(!m3fDestination){
+        m3fDestination = new Mat3();
+    }
 
-    return dest;
+    var pData = this.pData;
+    var pDataDestination = m3fDestination.pData;
+
+    pDataDestination.a11 = pData._11;
+    pDataDestination.a12 = pData._12;
+    pDataDestination.a13 = pData._13;
+
+    pDataDestination.a21 = pData._21;
+    pDataDestination.a22 = pData._22;
+    pDataDestination.a23 = pData._23;
+
+    pDataDestination.a31 = pData._31;
+    pDataDestination.a32 = pData._32;
+    pDataDestination.a33 = pData._33;
+
+    return m3fDestination;
 };
 
 
@@ -2108,102 +2605,6 @@ Mat4.toInverseMat3 = function (mat, dest) {
     dest[6] = b21 * id;
     dest[7] = (-a21 * a00 + a01 * a20) * id;
     dest[8] = (a11 * a00 - a01 * a10) * id;
-
-    return dest;
-};
-
-/*
- * Mat4.multiply
- * Performs a matrix multiplication
- *
- * Params:
- * mat - Mat4, first operand
- * mat2 - Mat4, second operand
- * dest - Optional, Mat4 receiving operation result. If not specified result is written to mat
- *
- * Returns:
- * dest if specified, mat otherwise
- */
-Mat4.multiply = function (mat, mat2, dest) {
-    if (!dest) {dest = mat}
-
-    // Cache the matrix values (makes for huge speed increases!)
-    var a00 = mat[0], a01 = mat[1], a02 = mat[2], a03 = mat[3];
-    var a10 = mat[4], a11 = mat[5], a12 = mat[6], a13 = mat[7];
-    var a20 = mat[8], a21 = mat[9], a22 = mat[10], a23 = mat[11];
-    var a30 = mat[12], a31 = mat[13], a32 = mat[14], a33 = mat[15];
-
-    var b00 = mat2[0], b01 = mat2[1], b02 = mat2[2], b03 = mat2[3];
-    var b10 = mat2[4], b11 = mat2[5], b12 = mat2[6], b13 = mat2[7];
-    var b20 = mat2[8], b21 = mat2[9], b22 = mat2[10], b23 = mat2[11];
-    var b30 = mat2[12], b31 = mat2[13], b32 = mat2[14], b33 = mat2[15];
-
-    dest[0] = b00 * a00 + b01 * a10 + b02 * a20 + b03 * a30;
-    dest[1] = b00 * a01 + b01 * a11 + b02 * a21 + b03 * a31;
-    dest[2] = b00 * a02 + b01 * a12 + b02 * a22 + b03 * a32;
-    dest[3] = b00 * a03 + b01 * a13 + b02 * a23 + b03 * a33;
-    dest[4] = b10 * a00 + b11 * a10 + b12 * a20 + b13 * a30;
-    dest[5] = b10 * a01 + b11 * a11 + b12 * a21 + b13 * a31;
-    dest[6] = b10 * a02 + b11 * a12 + b12 * a22 + b13 * a32;
-    dest[7] = b10 * a03 + b11 * a13 + b12 * a23 + b13 * a33;
-    dest[8] = b20 * a00 + b21 * a10 + b22 * a20 + b23 * a30;
-    dest[9] = b20 * a01 + b21 * a11 + b22 * a21 + b23 * a31;
-    dest[10] = b20 * a02 + b21 * a12 + b22 * a22 + b23 * a32;
-    dest[11] = b20 * a03 + b21 * a13 + b22 * a23 + b23 * a33;
-    dest[12] = b30 * a00 + b31 * a10 + b32 * a20 + b33 * a30;
-    dest[13] = b30 * a01 + b31 * a11 + b32 * a21 + b33 * a31;
-    dest[14] = b30 * a02 + b31 * a12 + b32 * a22 + b33 * a32;
-    dest[15] = b30 * a03 + b31 * a13 + b32 * a23 + b33 * a33;
-
-    return dest;
-};
-Mat4.mult = Mat4.multiply;
-/*
- * Mat4.multiplyVec3
- * Transforms a vec with the given matrix
- * 4th vector component is implicitly '1'
- *
- * Params:
- * mat - Mat4 to transform the vector with
- * vec - Vec3 to transform
- * dest - Optional, Vec3 receiving operation result. If not specified result is written to vec
- *
- * Returns:
- * dest if specified, vec otherwise
- */
-Mat4.multiplyVec3 = function (mat, vec, dest) {
-    if (!dest) {dest = vec}
-
-    var x = vec[0], y = vec[1], z = vec[2];
-
-    dest[0] = mat[0] * x + mat[4] * y + mat[8] * z + mat[12];
-    dest[1] = mat[1] * x + mat[5] * y + mat[9] * z + mat[13];
-    dest[2] = mat[2] * x + mat[6] * y + mat[10] * z + mat[14];
-
-    return dest;
-};
-
-/*
- * Mat4.multiplyVec4
- * Transforms a Vec4 with the given matrix
- *
- * Params:
- * mat - Mat4 to transform the vector with
- * vec - Vec4 to transform
- * dest - Optional, Vec4 receiving operation result. If not specified result is written to vec
- *
- * Returns:
- * dest if specified, vec otherwise
- */
-Mat4.multiplyVec4 = function (mat, vec, dest) {
-    if (!dest) {dest = vec}
-
-    var x = vec[0], y = vec[1], z = vec[2], w = vec[3];
-
-    dest[0] = mat[0] * x + mat[4] * y + mat[8] * z + mat[12] * w;
-    dest[1] = mat[1] * x + mat[5] * y + mat[9] * z + mat[13] * w;
-    dest[2] = mat[2] * x + mat[6] * y + mat[10] * z + mat[14] * w;
-    dest[3] = mat[3] * x + mat[7] * y + mat[11] * z + mat[15] * w;
 
     return dest;
 };
