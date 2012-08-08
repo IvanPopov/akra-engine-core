@@ -48,10 +48,22 @@ function EffectResource(pEngine) {
     this._pPassStates = [];
 
     this._pModificationCallbacks = [];
+
+
 }
 
 
-EXTENDS(EffectResource, a.ResourcePoolItem, a.Unique);
+EXTENDS(EffectResource, a.ResourcePoolItem);
+
+EffectResource.prototype.isEqual = function (pEffect) {
+    'use strict';
+    
+    if (this._iMode === pEffect._iMode && this._nTotalPasses === pEffect._nTotalPasses) {
+        return this.magicMethod() === pEffect.magicMethod();
+    }
+    
+    return false;
+};
 
 EffectResource.prototype.getManager = function () {
     return this._pShaderManager;
@@ -345,11 +357,11 @@ Define(a.EffectResourceManager(pEngine), function () {
 
 //===============================================
 
-function EffectAccessor(pEngine) {
-    this._pShaderManager = pEngine.pShaderManager;
-    this._pEffectResource = null;
-}
+// function EffectAccessor (pEngine) {
+//     this._pShaderManager = pEngine.pShaderManager;
+//     this._pEffectResource = null;
+// }
 
-EffectAccessor.prototype.addComponent = function (sComponentName, nShift) {
-
-};
+// EffectAccessor.prototype.addComponent = function(sComponentName, nShift) {
+    
+// };

@@ -27,17 +27,12 @@ Include('utils/');
 /* Resource Pool */
 Include('resources/pool/');
 
-Include('Scene.js');
+Include('scene/');
 Include('objects/Camera.js');
 Include('Tree.js');
 
-/* Shaders */
 Include('shaders/');
-
-//Include('effects/');
-Ifdef(DEV_BUILD)
-Include('model/Material.js');
-Endif();
+Include('materials/');
 
 Include('resources/SurfaceMaterial.js');
 Include('resources/EffectResource.js');
@@ -51,24 +46,22 @@ Include('resources/buffers/');
 
 Include('resources/Img.js');
 Include('resources/Texture.js');
-
 Include('resources/RenderMethod.js');
 
-Ifdef(DEV_BUILD)
-Include('model/RenderDataFactory.js');
-Include('model/RenderDataSubset.js');
-Include('model/RenderSnapshot.js');
-Include('model/RenderableObjects.js');
-Include('model/MeshSubset.js');
-Include('model/Mesh2.0.js');
-Elseif();
-Include('model/');
-Endif();
 
+Include('render/');
+Include('model/');
 Include('resources/ModelResource.js');
 
-Include('objects/');
+/*particle system*/
+Include('particles/');
 
+/*sprites*/
+Include('sprites/');
+
+Include('objects/');
 Include('Engine.js');
 
 window['a'] = window['akra'] = a;
+
+//Include('../../akra-engine-general/analyzer/A_Analyzer.js');

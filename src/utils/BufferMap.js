@@ -248,9 +248,20 @@ BufferMap.prototype.getFlow = function (iFlow, bComplete) {
     bComplete = ifndef(bComplete, true);
 
     if (typeof arguments[0] === 'string') {
-        for (var i = 0, pFlows = (bComplete? 
-                this._pCompleteFlows: this._pFlows); i < this._nCompleteFlows; ++ i) {
-            if (!pFlows[i]) {
+        var nTotal; 
+        var pFlows;
+        
+        if (bComplete) {
+            pFlows = this._pCompleteFlows;
+            nTotal = this._nCompleteFlows;
+        }
+        else {
+            pFlows = this._pFlows;
+            nTotal = this._pFlows.length;
+        }
+
+        for (var i = 0; i < nTotal; ++ i) {
+            if (!pFlows[i].pData) {
                 continue;
             }
             if (pFlows[i].pData.hasSemantics(arguments[0])) {
@@ -331,7 +342,8 @@ BufferMap.prototype.flow = function (iFlow, pVertexData) {
         pVertexData = arguments[0];
         iFlow = (this._nUsedFlows ++);
     }
-  
+    // trace(iFlow, '<<==', pVertexData.getVertexDeclaration().toString());
+    // console.log((new Error).stack);
     pFlow = this._pFlows[iFlow];
 
     debug_assert(iFlow < this.limit,
@@ -380,14 +392,14 @@ BufferMap.prototype.checkData = function (pData) {
  * @treturn Object Mapping with this map and semantics or null.
  * @protected
  */
-BufferMap.prototype.findMapping = function (pMap, eSemantics) {
+BufferMap.prototype.findMapping = function (pMap, eSemantics, iAddition) {
     debug_assert(this.checkData(pMap), 'You can use several different maps from one buffer.');
     for (var i = 0, pMappers = this._pMappers, pExistsMap; i < pMappers.length; i++) {
         pExistsMap = pMappers[i].pData;
         if (pExistsMap === pMap) {
             //если уже заданные маппинг менял свой стартовый индекс(например при расширении)
             //то необходимо сменить стартовый индекс на новый
-            if (pMappers[i].eSemantics === eSemantics) {
+            if (pMappers[i].eSemantics === eSemantics && pMappers[i].iAddition == iAddition) {
                 return pMappers[i];
             }
         }
@@ -408,9 +420,10 @@ BufferMap.prototype.findMapping = function (pMap, eSemantics) {
  * @param eSemantics Semantics in given map.
  * @treturn Boolean Result of mapping.
  */
-BufferMap.prototype.mapping = function (iFlow, pMap, eSemantics) {
+BufferMap.prototype.mapping = function (iFlow, pMap, eSemantics, iAddition) {
+    iAddition = iAddition || 0;
 
-    var pMapper = this.findMapping(pMap, eSemantics);
+    var pMapper = this.findMapping(pMap, eSemantics, iAddition);
     var pFlow = this._pFlows[iFlow];
 
     debug_assert(pFlow.pData && pFlow.eType === a.BufferMap.FT_MAPPABLE,
@@ -427,11 +440,12 @@ BufferMap.prototype.mapping = function (iFlow, pMap, eSemantics) {
 
     if (pMapper) {
         if (pFlow.pMapper === pMapper) {
-            return pMapper.eSemantics === eSemantics? true: false;
+            return pMapper.eSemantics === eSemantics &&
+                pMapper.iAddition === iAddition? true: false;
         }
     }
     else {
-        pMapper = {pData: pMap, eSemantics: eSemantics};
+        pMapper = {pData: pMap, eSemantics: eSemantics, iAddition: iAddition};
 
         this._pMappers.push(pMapper);
         this.length = pMap.getCount();
@@ -541,7 +555,10 @@ BufferMap.prototype.clone = function(bWithMapping) {
         }
 
         if (pFlows[i].pMapper) {
-            pMap.mapping(pFlows[i].iFlow, pFlows[i].pMapper.pData, pFlows[i].pMapper.eSemantics);
+                pMap.mapping(pFlows[i].iFlow, 
+                pFlows[i].pMapper.pData, 
+                pFlows[i].pMapper.eSemantics, 
+                pFlows[i].pMapper.iAddition);
         }
     }
 
@@ -557,6 +574,7 @@ BufferMap.prototype.toString = function () {
     function _an(sValue, n, bBackward) {
         sValue = String(sValue);
         bBackward = bBackward || false;
+
         if (sValue.length < n) {
             for (var i = 0, l = sValue.length; i < n - l; ++ i) {
                 if (!bBackward) {
@@ -572,8 +590,8 @@ BufferMap.prototype.toString = function () {
     }
 
     var s = '\n\n', t;
-    s += '      Complete Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping     : OFFSET |    Additional    \n';
-    t  = '-------------------------:-----------------+---------------------:------------------:--------+------------------\n';
+    s += '      Complete Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping  / Shift    : OFFSET |    Additional    \n';
+    t  = '-------------------------:-----------------+---------------------:--------------------------:--------+------------------\n';
     // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
     // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
     s += t;
@@ -585,16 +603,20 @@ BufferMap.prototype.toString = function () {
         var pDecl = pVertexData.getVertexDeclaration();
         //trace(pMapper); window['pMapper'] = pMapper;
         s += '#' + _an(pFlow.iFlow, 2) + ' ' + 
-            _an('[ ' + pDecl[0].eUsage + ' ]', 20) + ' : ' + _an(pDecl[0].iOffset, 6, true) + ' / ' + _an(pDecl[0].iSize, 6) + ' | ' + 
-            _an(pVertexData.resourceHandle(), 8, true) + ' / ' + _an(pVertexData.getOffset(), 8) + ' : ' + 
-            (pMapper? _an(pMapper.eSemantics, 17) + ': ' + _an(pMapper.pData.getVertexDeclaration().element(pMapper.eSemantics).iOffset, 6) :
-            _an('-----', 17) + ': ' + _an('-----', 6)) + ' |                  \n';
+            _an('[ ' + (pDecl[0].eUsage !== a.DECLUSAGE.END? pDecl[0].eUsage: '<end>') + ' ]', 20) + 
+            ' : ' + _an(pDecl[0].iOffset, 6, true) + ' / ' + _an(pDecl[0].iSize, 6) + 
+            ' | ' + 
+            _an(pVertexData.resourceHandle(), 8, true) + ' / ' + _an(pVertexData.getOffset(), 8) + 
+            ' : ' + 
+            (pMapper? _an(pMapper.eSemantics, 15, true) + ' / ' + _an(pMapper.iAddition, 7) + ': ' + 
+                _an(pMapper.pData.getVertexDeclaration().element(pMapper.eSemantics).iOffset, 6) :
+            _an('-----', 25) + ': ' + _an('-----', 6)) + ' |                  \n';
         
 
         for (var j = 1; j < pDecl.length; ++ j) {
             s += '    ' + 
-            _an('[ ' + pDecl[j].eUsage + ' ]', 20) + ' : ' + _an(pDecl[j].iOffset, 6, true) + ' / ' + _an(pDecl[j].iSize, 6) +  
-                  ' |                     :                  :        |                  \n';
+            _an('[ ' + (pDecl[j].eUsage !== a.DECLUSAGE.END? pDecl[j].eUsage: '<end>') + ' ]', 20) + ' : ' + _an(pDecl[j].iOffset, 6, true) + ' / ' + _an(pDecl[j].iSize, 6) +  
+                  ' |                     :                          :        |                  \n';
         }
         s += t;
     };

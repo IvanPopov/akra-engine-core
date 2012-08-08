@@ -452,6 +452,7 @@ function ShaderManager(pEngine) {
     Enum([MAX_TEXTURE_HANDLES = a.SurfaceMaterial.maxTexturesPerSurface], eTextureHandles, a.ShaderManager);
 
     this.pEngine = pEngine;
+
     this._nEffectFile = 1;
     this._pComponentBlendsHash = {"EMPTY" : null};
     this._pComponentBlendsId = {0 : null};
@@ -463,9 +464,10 @@ function ShaderManager(pEngine) {
     this._pComponentBlendStack = [];
     this._pComponentShiftStack = [];
     this._pSnapshotStack = [];
-//    this._pActivatedPrograms = new Array(32);
-//    this._pActivatedPrograms[0] = 0;
-//    this._nLastActivatedProgram = 0;
+
+    this._pActiveProgram = null;
+    this._nAttrsUsed = 0;
+
 }
 /**
  * Load *.fx file or *.abf
@@ -712,12 +714,21 @@ ShaderManager.prototype._addBlendToBlend = function (pBlendA, pBlendB, nShift) {
     return pNewBlend;
 };
 ShaderManager.prototype.activateProgram = function (pProgram) {
-    // if (this._pActivatedPrograms[this._nLastActivatedProgram] !== pProgram) {
-    //     trace('bind Program', pProgram.resourceHandle());
-    //     this._pActivatedPrograms[++this._nLastActivatedProgram] = pProgram;
-    this._pActiveProgram = pProgram;
+    var pDevice = this.pEngine.pDevice;
+    
     pProgram.bind();
-    // }
+    
+
+    for (var i = pProgram.getAttribCount(); i < this._nAttrsUsed; i++) {
+        pDevice.disableVertexAttribArray(i);
+    };
+  
+    for (var i = 0; i < pProgram.getAttribCount(); i++) {
+        pDevice.enableVertexAttribArray(i);
+    };
+
+    this._pActiveProgram = pProgram;
+    this._nAttrsUsed = pProgram.getAttribCount();
 };
 
 ShaderManager.prototype.deactivateProgram = function (pProgram) {

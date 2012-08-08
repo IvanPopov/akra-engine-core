@@ -9,6 +9,7 @@ Enum([
     POSITION3,
     BLENDWEIGHT = "BLENDWEIGHT",
     BLENDINDICES = "BLENDINDICES",
+    BLENDMETA = "BLENDMETA",
     NORMAL = "NORMAL",
     NORMAL1,
     NORMAL2,
@@ -18,6 +19,8 @@ Enum([
     TEXCOORD1,
     TEXCOORD2,
     TEXCOORD3,
+    TEXCOORD4,
+    TEXCOORD5,
     TANGENT = "TANGENT",
     BINORMAL = "BINORMAL",
     TESSFACTOR = "TESSFACTOR",
@@ -26,9 +29,14 @@ Enum([
     DEPTH = "DEPTH",
     SAMPLE = "SAMPLE",
     INDEX = "INDEX",
+	INDEX0 = "INDEX0",
     INDEX1,
     INDEX2,
     INDEX3,
+    INDEX10 = "INDEX10", //system indices starts from 10
+    INDEX11,
+    INDEX12,
+    INDEX13,
     MATERIAL = "MATERIAL",
     MATERIAL1,
     MATERIAL2,
@@ -37,7 +45,8 @@ Enum([
     SPECULAR = "SPECULAR",
     EMISSIVE = "EMISSIVE",
     SHININESS = "SHININESS",
-    UNKNOWN = "UNKNOWN"
+    UNKNOWN = "UNKNOWN",
+    END = "\u000D"
 ], DECLARATION_USAGE, a.DECLUSAGE);
 
 
@@ -60,21 +69,26 @@ Define(VE_FLOAT(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 1, of
 Define(VE_FLOAT3(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 3, offset); });
 Define(VE_FLOAT2(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 2, offset); });
 Define(VE_FLOAT4(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 4, offset); });
+Define(VE_FLOAT4x4(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 16, offset); });
 Define(VE_VEC2(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 2, offset); });
 Define(VE_VEC3(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 3, offset); });
 Define(VE_VEC4(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 4, offset); });
+Define(VE_MAT4(name, offset), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 16, offset); });
 Define(VE_INT(name, offset), function () {VE_CUSTOM(name, a.DTYPE.INT, 1, offset);});
 
 Define(VE_FLOAT(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT); });
 Define(VE_FLOAT3(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 3); });
 Define(VE_FLOAT4(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 4); });
+Define(VE_FLOAT4x4(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 16); });
 Define(VE_FLOAT2(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 2); });
 Define(VE_VEC2(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 2); });
 Define(VE_VEC3(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 3); });
 Define(VE_VEC4(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 4); });
+Define(VE_MAT4(name), function () {VE_CUSTOM(name, a.DTYPE.FLOAT, 16); });
 Define(VE_INT(name), function () {VE_CUSTOM(name, a.DTYPE.INT)});
 
-
+Define(VE_END(offset), function () {VE_CUSTOM(a.DECLUSAGE.END, a.DTYPE.UNSIGNED_BYTE, 0, offset)});
+Define(VE_END(),     function () {VE_CUSTOM(a.DECLUSAGE.END, a.DTYPE.UNSIGNED_BYTE, 0)});
 
 /**
  * @property VertexDeclaration(Int count, String sAttrName)
@@ -89,7 +103,7 @@ Define(VE_INT(name), function () {VE_CUSTOM(name, a.DTYPE.INT)});
  * Constructor of VertexDeclaration class
  **/
 function VertexElement (nCount, eType, eUsage, iOffset) {
-    this.nCount = nCount || 1;
+    this.nCount = ifndef(nCount, 1);
     this.eType = eType || a.DTYPE.FLOAT;
     this.eUsage = eUsage || a.DECLUSAGE.POSITION;
     this.eUsage = this.eUsage.toString().toUpperCase();
@@ -111,6 +125,17 @@ PROPERTY(VertexElement, "size", function () {
  */
 VertexElement.prototype.update = function () {
     this.iSize = this.nCount * a.getTypeSize(this.eType);
+    this.iIndex = 0;
+    this.eSematics = null;
+
+    var pMatches = this.eUsage.match(/^(.*?\w)(\d+)$/i);
+    if (pMatches) {
+        this.eSematics = pMatches[1];
+        this.iIndex = Number(pMatches[2]);
+    }
+    else {
+        this.eSematics = this.eUsage;
+    }
 };
 
 /**
@@ -170,11 +195,22 @@ PROPERTY(VertexDeclaration, "stride", function () {
  */
 VertexDeclaration.prototype.update = function () {
     var iStride;
+    
     for (var i = 0; i < this.length; ++ i) {
+        if (this[i].eUsage === a.DECLUSAGE.END) {
+            this.swap(i, i + 1);
+        }
+
         iStride = this[i].iSize + this[i].iOffset;
         if (this.iStride < iStride) {
             this.iStride = iStride
         }
+    }
+
+    var pLast = this.last;
+    
+    if (pLast.eUsage === a.DECLUSAGE.END && pLast.iOffset < this.iStride) {
+        pLast.iOffset = this.iStride;
     }
 
     return true;
@@ -185,12 +221,21 @@ VertexDeclaration.prototype.update = function () {
  * Append array of vertex elements.
  * @param  {!Array.<VertexElement>} pArrayElements Elements to append.
  */
-VertexDeclaration.prototype.append = function (pArrayElements) {
-    debug_assert(pArrayElements instanceof Array, 
-        'only array of vertex elements can be appended to vertex declaration.');
+VertexDeclaration.prototype.append = function () {
+    'use strict';
+    var pArrayElements;
+    
+    if (!(arguments[0] instanceof Array)) {
+        pArrayElements = arguments;
+    }
+    else {
+        pArrayElements = arguments[0];
+    }
+
+    // debug_assert(pArrayElements instanceof Array, 
+    //     'only array of vertex elements can be appended to vertex declaration.');
 
     var iOffset;
-
     for (var i = 0; i < pArrayElements.length; i++) {
         iOffset = pArrayElements[i].iOffset;
         if (iOffset === undefined) {
@@ -238,15 +283,38 @@ VertexDeclaration.prototype.hasSemantics = function (eSemantics) {
     return this.element(eSemantics) !== null;
 };
 
-VertexDeclaration.prototype.element = function (eSemantics) {
-    eSemantics = eSemantics.toUpperCase();
-    for (var i = 0; i < this.length; ++i) {
-        if (this[i].eUsage === eSemantics) {
-            return this[i];
-        }
-    }
 
-    return null;
+
+
+/**
+ * Получение VertexElement из VertexDeclaration по признакам
+ * @property element(DECLARATION_USAGE eSemantics)
+ * @property element(DECLARATION_USAGE eSemantics, Int nCount)
+ * @param eSemantics семантика VertexElement
+ * @param nCount количество элементов в VertexElement
+ * @return VertexElement
+ */
+VertexDeclaration.prototype.element = function (eSemantics, nCount)
+{
+	if(arguments.length==1)
+	{
+		eSemantics = eSemantics.toUpperCase();
+		for (var i = 0; i < this.length; ++i) {
+			if (this[i].eUsage === eSemantics) {
+				return this[i];
+			}
+		}
+	}
+	else if(arguments.length==2)
+	{
+		eSemantics = eSemantics.toUpperCase();
+		for (var i = 0; i < this.length; ++i) {
+			if (this[i].eUsage === eSemantics && this[i].nCount == nCount) {
+				return this[i];
+			}
+		}
+	}
+	return null;
 };
 
 VertexDeclaration.prototype.clone = function () {
@@ -429,7 +497,7 @@ PROPERTY(VertexData, 'stride',
 
 VertexData.prototype.extend = function (pVertexDecl, pData) {
     pVertexDecl = a.normalizeVertexDecl(pVertexDecl);
-    pData = new Uint8Array(pData.buffer);
+    pData = pData? new Uint8Array(pData.buffer): new Uint8Array(this.getCount() * pVertexDecl.stride);
 
     debug_assert(this.length === pData.byteLength / pVertexDecl.stride,
         'invalid data size for extending');
@@ -461,7 +529,7 @@ VertexData.prototype.extend = function (pVertexDecl, pData) {
         return false;
     }
 
-    return this.setData(pDataNext, 0, nStrideNext);
+    return this.setData(pDataNext, 0, nStrideNext);;
 };
 
 VertexData.prototype.applyModifier = function(eSemantics, fnModifier) {
@@ -469,11 +537,12 @@ VertexData.prototype.applyModifier = function(eSemantics, fnModifier) {
 
     var pData = this.getTypedData(eSemantics);
     fnModifier(pData);
-    this.setData(eSemantics, pData);
+    return this.setData(pData, eSemantics);
 };
 
 VertexData.prototype.resize = function (nCount, pVertexDeclaration) {
     var iStride = 0;
+    var iOldOffset = this.getOffset();
 
     if (arguments.length == 2) {
         if (typeof(pVertexDeclaration) == "number") {
@@ -502,6 +571,11 @@ VertexData.prototype.resize = function (nCount, pVertexDeclaration) {
             if (pOldVertexBuffer.getEmptyVertexData(nCount, pVertexDeclaration, this) !== this) {
                 return false;
             }
+
+            if (this.getOffset() != iOldOffset) {
+                warning('vertex data moved from ' + iOldOffset + ' ---> ' + this.getOffset());
+            }
+
             return true;
         }
     }
@@ -522,6 +596,11 @@ VertexData.prototype.resize = function (nCount, pVertexDeclaration) {
             }
 
             this.setVertexDeclaration(pOldVertexDeclaration);
+
+            if (this.getOffset() != iOldOffset) {
+                warning('vertex data moved from ' + iOldOffset + ' ---> ' + this.getOffset());
+            }
+
             return true;
         }
     }
@@ -530,7 +609,7 @@ VertexData.prototype.resize = function (nCount, pVertexDeclaration) {
 }
 
 /**
- * @property setData(ArrayBuffer pData, String sSematic)
+ * @property setData(ArrayBuffer pData, String sSematic,Int nCountStart, Int nCoun)
  * @param pData данные одного типа
  * @param sSematic имя сематики, которую заполняем
  * Выставить определеные элементы в буфере
@@ -538,7 +617,7 @@ VertexData.prototype.resize = function (nCount, pVertexDeclaration) {
  **/
 
 /**
- * @property setData(ArrayBuffer pData,Int iOffset, Int iSize)
+ * @property setData(ArrayBuffer pData,Int iOffset, Int iSize, Int nCountStart, Int nCount)
  * @param pData данные одного типа
  * @param iOffset смещение данных относительно начала строки
  * @param iSize размер этих данных в одной строке
@@ -547,17 +626,49 @@ VertexData.prototype.resize = function (nCount, pVertexDeclaration) {
  * Выставить определеные элементы в буфере
  * @return
  **/
+
 VertexData.prototype.setData = function (pData, iOffset, iSize, nCountStart, nCount) {
 
     switch (arguments.length) {
         case 5:
             var iStride = this.getStride();
             if (iStride != iSize) {
-                for (var i = nCountStart; i < nCount + nCountStart; i++) {
-                    this._pVertexBuffer.setData(pData.buffer.slice(iSize * (i - nCountStart),
-                        iSize * (i - nCountStart) + iSize), iStride * i + iOffset + this.getOffset(),
-                        iSize);
-                }
+                //FIXME: очень тормознутое место, крайне медленно работает...
+				if(this._pVertexBuffer.isRAMBufferPresent()&&nCount>1)
+				{
+					//var time=a.now();
+					var pBackupBuf = new Uint8Array(this._pVertexBuffer.getData());
+					var pDataU8=new Uint8Array(pData.buffer);
+					var k;
+					var iOffsetBuffer=this.getOffset();
+					for (var i = nCountStart; i < nCount + nCountStart; i++)
+					{
+						for(k=0;k<iSize;k++)
+						{
+							pBackupBuf[iStride * i + iOffset + iOffsetBuffer+k]=pDataU8[iSize * (i - nCountStart)+k];
+						}
+						//pBufSwap=pData.buffer.slice(iSize * (i - nCountStart),iSize * (i - nCountStart) + iSize);
+						//pBackupBuf.set(new Uint8Array(pBufSwap),iStride * i + iOffset + this.getOffset());
+					}
+					this._pVertexBuffer.setData(pBackupBuf.buffer,0,this._pVertexBuffer.size);
+				}
+				else
+				{
+					//var time=a.now();
+					for (var i = nCountStart; i < nCount + nCountStart; i++)
+					{
+						this._pVertexBuffer.setData(
+								pData.buffer.slice(
+									iSize * (i - nCountStart),
+									iSize * (i - nCountStart) + iSize),
+								iStride * i + iOffset + this.getOffset(),
+								iSize);
+					}
+
+					//this.setData.count++;
+					//console.log("Stride",iStride,"Offset",iOffset, "Size", iSize,"Count",nCount);
+					//console.log("BUG",this.setData.count, a.now()-time);
+				}
             }
             else {
                 this._pVertexBuffer.setData(pData.buffer.slice(0, iStride * nCount), iOffset + this.getOffset(),
@@ -577,6 +688,7 @@ VertexData.prototype.setData = function (pData, iOffset, iSize, nCountStart, nCo
                         pElement.iSize,
                         arguments[2], arguments[3]);
                 }
+
                 return false;
             }
             else {
@@ -624,6 +736,7 @@ VertexData.prototype.setData = function (pData, iOffset, iSize, nCountStart, nCo
     return false;
 }
 
+//VertexData.prototype.setData.count=0;
 
 VertexData.prototype.getTypedData = function (eUsage, iFrom, iCount) {
     eUsage = eUsage || this._pVertexDeclaration[0].eUsage;
@@ -637,18 +750,17 @@ VertexData.prototype.getTypedData = function (eUsage, iFrom, iCount) {
     return null;
 };
 
-/**
- * @property getData(sSematic)
- * @param sSematic  имя сематики, которую получаем
- * Получить определенные элементы из буффера
- * @return
- **/
-
 
 /**
  * @property getData(Int iOffset, Int iSize)
+ * @property getData(Int iOffset, Int iSize, Int iFrom, Int iCount)
+ * @property getData(DECLARATION_USAGE eSematic)
+ * @property getData(DECLARATION_USAGE eSematic,Int iFrom, Int iCount)
+ * @param eSematic семантика данных
  * @param iOffset смещение данных относительно начала строки
  * @param iSize размер этих данных в одной строке
+ * @param iFrom начиная с какой строки нужны данные
+ * @param iCount сколько строк данных нужны
  * Получить определенные элементы из буффера
  * @return
  **/
@@ -656,8 +768,10 @@ VertexData.prototype.getData = function (iOffset, iSize, iFrom, iCount) {
     switch (arguments.length) {
         case 4:
         case 2:
-            if (typeof arguments[0] === 'string') {
-                return this.getData(arguments[0], arguments[1], 0, this._nMemberCount);
+            if (typeof arguments[0] === 'string')
+			{
+				return null;
+                //return this.getData(arguments[0], arguments[1], 0, this._nMemberCount); неправильно!!!
             }
 
             iFrom = iFrom || 0;

@@ -4,6 +4,51 @@
  * @email <vantuziast@odserve.org>
  */
 
+function loadGLSLSource(sPath, sFilename) {
+    var sShader = a.ajax({url: sPath + sFilename, async: false}).data;
+    var fnReplacer = function (sSource, sMatch) {
+        return a.ajax({url: sPath + sMatch, async: false}).data;
+    }
+
+    sShader = sShader.replace(/\#include\s+\"([\w\.]+)\"/ig, fnReplacer);
+    sShader = sShader.split('//<-- split -- >');
+    return {vertex: sShader[0], fragment: sShader[1]};
+}
+
+function loadProgram(pEngine, sPath, pFlags) {
+    var pPath = sPath.split('/'); 
+    var sProg = pPath.pop();
+    var sDefine = '';
+
+    sPath = pPath.join('/');
+    
+    if (sPath.length) {
+        sPath += '/';
+    }
+
+    if (pFlags) {
+        for (var sFlag in pFlags) {
+            if (pFlags[sFlag] === false) {
+                sDefine += '#undef ' + sFlag + '\n';
+            }
+            else {
+                sDefine += '#define ' + sFlag + ' ' + pFlags[sFlag] + '\n';    
+            }
+        }
+    }
+
+    pShaderSource = loadGLSLSource(sPath, sProg);
+    pProgram = pEngine.displayManager().shaderProgramPool().createResource(sProg + sDefine);
+
+    pShaderSource.vertex = sDefine + pShaderSource.vertex;
+    pShaderSource.fragment = sDefine + pShaderSource.fragment;
+
+    pProgram.create(pShaderSource.vertex, pShaderSource.fragment, true);
+    return pProgram;
+}
+
+A_NAMESPACE(loadProgram);
+A_NAMESPACE(loadGLSLSource);
 
 /**
  * Basic class(interface) for platform
@@ -114,7 +159,7 @@ function GLSLProgram(pEngine) {
      * @type HarwareProgram
      * @private
      */
-    this._pHarwareProgram = null;
+    this._pHardwareProgram = null;
 
     /**
      * Attributes of this shader program.
@@ -175,12 +220,31 @@ function GLSLProgram(pEngine) {
 
 a.extend(GLSLProgram, ShaderProgram);
 
+
+GLSLProgram.prototype.getDevice = function () {
+    'use strict';
+    
+    return this._pDevice;
+};
+
+GLSLProgram.prototype.getEngine = function () {
+    'use strict';
+    
+    return this._pEngine;
+};
+
+GLSLProgram.prototype.getAttribCount = function () {
+    'use strict';
+    
+    return this._nAttrsUsed;
+};
+
 /**
  * Is this program active now?
  * @treturn Boolean
  */
 GLSLProgram.prototype.isActive = function () {
-    return this._pDevice.getParameter(this._pDevice.CURRENT_PROGRAM) === this._pHarwareProgram;
+    return this._pDevice.getParameter(this._pDevice.CURRENT_PROGRAM) === this._pHardwareProgram;
 };
 
 /**
@@ -227,6 +291,7 @@ GLSLProgram.prototype._shaderInfoLog = function (pShader, eType) {
     }
 
     sLog = this._pDevice.getShaderInfoLog(pShader);
+
     return '<div style="background: #FCC">' +
         '<pre>' + sLog + '</pre>' +
         '</div>' +
@@ -238,8 +303,17 @@ GLSLProgram.prototype._shaderInfoLog = function (pShader, eType) {
  * @treturn String
  * @private
  */
-GLSLProgram.prototype._programInfoLog = function () {
-    return '<pre style="background-color: #FFCACA;">' + this._pDevice.getProgramInfoLog(this._pHarwareProgram) +
+GLSLProgram.prototype._programInfoLog = function (pHardwareProgram, pVertexShader, pPixelShader) {
+    var pShaderDebugger = this.getEngine().getDevice().getExtension("WEBGL_debug_shaders");
+
+    if (pShaderDebugger) {
+        trace('translated vertex shader =========>');
+        trace(pShaderDebugger.getTranslatedShaderSource(pVertexShader));
+        trace('translated pixel shader =========>');
+        trace(pShaderDebugger.getTranslatedShaderSource(pPixelShader));        
+    }
+   
+    return '<pre style="background-color: #FFCACA;">' + this._pDevice.getProgramInfoLog(this._pHardwareProgram) +
         '</pre>' + '<hr />' +
         '<pre>' + this.getSourceCode(a.SHADERTYPE.VERTEX) + '</pre><hr />' +
         '<pre>' + this.getSourceCode(a.SHADERTYPE.PIXEL) + '</pre>'
@@ -278,16 +352,18 @@ GLSLProgram.prototype.create = function (sVertexCode, sPixelCode, bSetup) {
     this._sVertexCode = sVertexCode = sVertexCode || this._sVertexCode;
     this._sPixelCode = sPixelCode = sPixelCode || this._sPixelCode;
 
-    pHardwareProgram = this._pHarwareProgram = pDevice.createProgram();
-    pDevice.attachShader(pHardwareProgram, this._buildShader(a.SHADERTYPE.VERTEX, sVertexCode));
-    pDevice.attachShader(pHardwareProgram, this._buildShader(a.SHADERTYPE.PIXEL, sPixelCode));
+    pHardwareProgram = this._pHardwareProgram = pDevice.createProgram();
+    var pVertexShader = this._buildShader(a.SHADERTYPE.VERTEX, sVertexCode);
+    var pPixelShader = this._buildShader(a.SHADERTYPE.PIXEL, sPixelCode);
+    pDevice.attachShader(pHardwareProgram, pVertexShader);
+    pDevice.attachShader(pHardwareProgram, pPixelShader);
     pDevice.linkProgram(pHardwareProgram);
     if (!pDevice.getProgramParameter(pHardwareProgram, pDevice.VALIDATE_STATUS)) {
-        trace('program not valid', this.findResourceName());
-        trace(pDevice.getProgramInfoLog(pHardwareProgram));
+        //trace('program not valid', this.findResourceName());
+        //trace(pDevice.getProgramInfoLog(pHardwareProgram));
     }
     debug_assert_win(pDevice.getProgramParameter(pHardwareProgram, pDevice.LINK_STATUS),
-        'cannot link program', this._programInfoLog());
+        'cannot link program', this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
     this._isValid = true;
 
     return (bSetup? this.setup(): true);
@@ -320,7 +396,7 @@ PROPERTY(GLSLProgram, 'declaration',
 GLSLProgram.prototype._setupUniforms = function (pUniformList) {
     var pUniforms = this._pUniformList;
     var pDevice = this._pDevice;
-    var pProgram = this._pHarwareProgram;
+    var pProgram = this._pHardwareProgram;
 
     for (var k = 0; k < pUniformList.length; k++) {
         pUniforms[pUniformList[k]] = pDevice.getUniformLocation(pProgram, pUniformList[k]);
@@ -336,7 +412,7 @@ GLSLProgram.prototype._setupUniforms = function (pUniformList) {
 GLSLProgram.prototype.autoSetup = function () {
     var pDevice = this._pDevice;
     var pUniformList = [];
-    var pProgram = this._pHarwareProgram;
+    var pProgram = this._pHardwareProgram;
     var pVertexDeclaration = [];
     var k, n;
 
@@ -380,7 +456,7 @@ GLSLProgram.prototype.setup = function (pVertexDeclaration, pUniformList) {
 
     for (var i = 0; i < pVertexDeclaration.length; i++) {
         sAttrName = pVertexDeclaration[i].eUsage;
-        iLocation = pDevice.getAttribLocation(this._pHarwareProgram, sAttrName);
+        iLocation = pDevice.getAttribLocation(this._pHardwareProgram, sAttrName);
 
         pAttr = pAttrs[iAttrUsed];
 
@@ -395,7 +471,7 @@ GLSLProgram.prototype.setup = function (pVertexDeclaration, pUniformList) {
         iAttrUsed++;
         pAttrsByName[sAttrName] = pAttr;
 
-        pDevice.enableVertexAttribArray(iLocation);
+        //pDevice.enableVertexAttribArray(iLocation);
     }
 
     this._nAttrsUsed = iAttrUsed;
@@ -417,11 +493,11 @@ GLSLProgram.prototype.detach = function () {
 };
 
 GLSLProgram.prototype.bind = function () {
-    this._pDevice.useProgram(this._pHarwareProgram);
+    this._pDevice.useProgram(this._pHardwareProgram);
 };
 
 GLSLProgram.prototype.unbind = function (pPrevProgram) {
-    this._pDevice.useProgram(pPrevProgram ? pPrevProgram._pHarwareProgram : null);
+    this._pDevice.useProgram(pPrevProgram ? pPrevProgram._pHardwareProgram : null);
 };
 
 /**
@@ -487,7 +563,8 @@ GLSLProgram.prototype.applyBuffer = function (pVertexData) {
         pAttr;
     var pVertexElement;
     var pVertexBuffer = pVertexData.buffer;
-    var isActive = this._pManager.latestBuffer !== pVertexBuffer;
+    var isActive = this._pManager._pActiveProgram? 
+        this._pManager._pActiveProgram.latestBuffer !== pVertexBuffer: false;
 
     for (i = 0; i < pVertexData.getVertexElementCount(); i++) {
         pVertexElement = pVertexData._pVertexDeclaration[i];
@@ -496,8 +573,7 @@ GLSLProgram.prototype.applyBuffer = function (pVertexData) {
             continue;
         }
         
-        if (pAttr.pCurrentData !== pVertexData) {
-
+        if (pAttr.pCurrentData !== pVertexData || 1) {
             if (isActive) {
                 isActive = true;
                 pVertexBuffer.activate();
@@ -522,6 +598,8 @@ GLSLProgram.prototype.applyBuffer = function (pVertexData) {
         pAttr.pCurrentData = pVertexData;
     }
 };
+
+
 
 GLSLProgram.prototype.applyVector2 = function (sName) {
     var pDevice = this._pDevice;
@@ -568,6 +646,13 @@ GLSLProgram.prototype.applyVector4 = function (sName) {
 GLSLProgram.prototype.applyInt = function (sName, iValue) {
     this._pDevice.uniform1i(this._pUniformList[sName], iValue);
 };
+
+GLSLProgram.prototype.applySampler2D = function (sName, iValue) {
+    'use strict';
+    
+    return this.applyInt(sName, iValue);
+};
+
 GLSLProgram.prototype.applyFloat = function (sName, fValue) {
     this._pDevice.uniform1f(this._pUniformList[sName], fValue);
 };

@@ -30,7 +30,8 @@ function Texture (pEngine) {
         CubeMap,
         MipMaps,
         RenderTarget,
-        Paletized
+        Paletized,
+		Dinamic
     ], eTextureFlags, a.Texture);
 
     /**
@@ -333,10 +334,10 @@ Texture.prototype.createResource = function () {
  */
 Texture.prototype.releaseTexture = function () {
     var pDevice = this._pEngine.pDevice;
-    if (pDevice.isTexture(this._pTexture)) {
+    if (this._pTexture) {
         pDevice.deleteTexture(this._pTexture);
     }
-    if (pDevice.isFramebuffer(this._pFrameBuffer)) {
+    if (this._pFrameBuffer) {
         pDevice.deleteFramebuffer(this._pFrameBuffer);
     }
     this._pTexture = null;
@@ -532,24 +533,45 @@ Texture.prototype._loadCubeTextureFromMemory = function (pMemory) {
  * @treturn Boolean Результат.
  */
 // Переписать, херь написана
-Texture.prototype.loadResource = function (sFileName) {
-    if (!sFileName) {
+Texture.prototype.loadResource = function (sFileName)
+{
+    if (!sFileName)
+	{
         var sResourceName = this.findResourceName();
         if (sResourceName) {
             sFileName = sResourceName;
         }
     }
+	var me = this;
 
-    var pImage = new a.Img(this._pEngine);
-    var me = this;
 
-    pImage.load(sFileName,
-        function () {
-            me.uploadImage(pImage);
-        }
-    );
-
-    return true;
+	if((sFileName.nodeName)&&
+		(sFileName.nodeName.toLowerCase()=="canvas"||sFileName.nodeName.toLowerCase()=="img"||sFileName.nodeName.toLowerCase()=="video"))
+	{
+		me.uploadHTMLElement(sFileName);
+		return true;
+	}
+	else if((sExt=(a.pathinfo(sFileName).ext))&&(sExt=="bmp"||sExt=="jpeg"||sExt=="gif"||sExt=="png"))
+	{
+		var pImage = new Image();
+		pImage.onload=function ()
+		{
+				me.uploadHTMLElement(pImage);
+		}
+		pImage.src = sFileName;
+		return true;
+	}
+	else
+	{
+		var pImage = new a.Img(this._pEngine);
+		pImage.load(sFileName,
+			function () {
+				me.uploadImage(pImage);
+			}
+		);
+		return true;
+	}
+    return false;
 };
 
 
@@ -592,6 +614,38 @@ Texture.prototype.uploadCubeFace = function (pImage, eFace, isCopyAll) {
     isCopyAll = isCopyAll || true;
     TODO('Texture::uploadCubeFace()');
 };
+
+Texture.prototype.uploadHTMLElement= function (pElement)
+{
+	var pDevice = this._pEngine.pDevice;
+	this.releaseTexture();
+	this._pTexture = pDevice.createTexture();
+	this._pFrameBuffer = pDevice.createFramebuffer();
+
+	this._iWidth = pElement.width;
+	this._iHeight = pElement.height;
+	this._eFormat = a.IFORMATSHORT.RGBA;
+	this._eType = a.ITYPE.UNSIGNED_BYTE;
+
+	if(pElement.nodeName.toLowerCase()=="video")
+	{
+		SET_BIT(this._iFlags, a.Texture.Dinamic);
+	}
+
+	this.bind();
+	this.flipY();
+	pDevice.texImage2D(a.TTYPE.TEXTURE_2D, 0, this._eFormat, this._eFormat,
+		this._eType, pElement);
+
+	this.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
+	this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
+	this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
+	this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
+	this.unbind();
+
+	this.notifyLoaded();
+	this.notifyRestored();
+}
 
 
 Texture.prototype.uploadImage = function (pImage) {
@@ -682,7 +736,7 @@ Texture.prototype.uploadImage = function (pImage) {
             Math.floor(this.minFilter - a.TFILTER.NEAREST_MIPMAP_NEAREST) / 2 + a.TFILTER.NEAREST);
         //pDevice.generateMipmap(a.TTYPE.TEXTURE_2D);
     }
-
+    //trace('uploaded image to texture: ', this._iWidth, 'x', this._iHeight);
     this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
     this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
     this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
@@ -802,7 +856,8 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
 
     pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pRenderIndexBuffer);
     pDevice.vertexAttribPointer(pProgram._pAttributesByName['SERIALNUMBER'].iLocation, 1, pDevice.FLOAT, false, 0, 0);
-
+    // pDevice.disableVertexAttribArray(1);
+    // pDevice.disableVertexAttribArray(2);
 
     pDevice.viewport(0, 0, iWidth, iHeight);
     pDevice.drawArrays(0, 0, pRenderIndexData.length);
@@ -860,7 +915,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
 
     this.bind();
     pDevice.pixelStorei(pDevice.UNPACK_ALIGNMENT, 1);
-    //this.flipY()
+    //this.flipY();
 
     if (TEST_BIT(eFlags, a.Texture.MipMaps)) {
         nMipMaps = Math.ceil(Math.max(Math.log(this._iWidth) / Math.LN2, Math.log(this._iHeight) / Math.LN2)) + 1;
@@ -883,7 +938,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
         }
         else {
             for (var i = 0; i < nMipMaps; i++) {
-                trace('Texture:: creating texture miplevel:', i);
+                //trace('Texture:: creating texture miplevel:', i);
                 pDevice.texImage2D(a.TTYPE.TEXTURE_2D, i, this._eFormat, this._iWidth,
                     this._iHeight, 0, this._eFormat, this._eType, pData[i] ? pData[i] : null);
             }
@@ -901,6 +956,8 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
 
     return true;
 };
+
+
 Texture.prototype.bind = function () {
     this._pEngine.pDevice.bindTexture(this.target, this._pTexture);
 };
@@ -911,11 +968,11 @@ Texture.prototype.unbind = function () {
 
 Texture.prototype.activate = function (iSlot) {
     var pManager = this._pEngine.pShaderManager;
-    if (pManager.activeTextures[iSlot] !== this) {
+    //if (pManager.activeTextures[iSlot] !== this) {
         this._pEngine.pDevice.activeTexture(a.TEXTUREUNIT.TEXTURE + (iSlot || 0));
         this.bind();
-        pManager.activeTextures[iSlot] = this;
-    }
+        //pManager.activeTextures[iSlot] = this;
+    //}
 };
 
 /**

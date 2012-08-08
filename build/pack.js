@@ -1,4 +1,6 @@
 var fs = require('fs');
+var exec = require('child_process').exec;
+
 function include(sPath) {
 	eval(fs.readFileSync(sPath, 'utf-8'));
 }

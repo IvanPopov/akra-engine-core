@@ -485,4 +485,21 @@ Camera.prototype.frustum = function () {
     INLINE();
     return this.pFrustum;
 };
+
+Ifdef (__DEBUG);
+
+Camera.prototype.toString = function (isRecursive, iDepth) {
+    'use strict';
+    
+    isRecursive = isRecursive || false;
+
+    if (!isRecursive) {
+        return '<camera' + (this._sName? ' ' + this._sName: '') + '>';
+    }
+
+    return SceneNode.prototype.toString.call(this, isRecursive, iDepth);
+}
+
+Endif ();
+
 a.Camera = Camera;

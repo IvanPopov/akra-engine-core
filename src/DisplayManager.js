@@ -76,6 +76,8 @@ function Font2D (iSize, sColor, sFontFamily, isBold, isItalic) {
 ;
 
 function String2D (iX, iY, pFont, sStr, pDiv) {
+    pFont = pFont || new a.Font2D();
+
     var pSpan = document.createElement('span');
 
     pSpan.style.position = 'absolute';
@@ -300,6 +302,10 @@ DisplayManager.prototype.draw2DText = function (iX, iY, pFont, sStr) {
     return (new a.String2D(iX, iY, pFont, sStr, this._pTextDiv));
 };
 
+DisplayManager.prototype.getTextLayer = function() {
+    return this._pTextDiv;
+};
+
 /**
  * initialize display manager
  * register device resources
@@ -321,7 +327,7 @@ DisplayManager.prototype.initText2Dlayer = function () {
     var y = findPosY(this._pCanvas);
 
     var pDiv = document.createElement('div');
-    pDiv.setAttribute('id', 'text-layer');
+    pDiv.setAttribute('id', 'akra-canvas-overlay');
 
     var pStyle = pDiv.style;
 

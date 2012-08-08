@@ -68,12 +68,17 @@ Enum([
      ], IFORMATSHORT, a.IFORMATSHORT);
 
 Enum([
-         TEXTURE_FLOAT,
-         TEXTURE_HALF_FLOAT,
-         COMPRESSED_TEXTURES,
-         STANDART_DERIVATIVES,
-         TOTAL
-     ], EXTENTIONS, a.EXTENTIONS)
+         TEXTURE_FLOAT              = 'texture_float',
+         TEXTURE_HALF_FLOAT         = 'texture_half_float',
+         COMPRESSED_TEXTURES        = 'compressed_texture',
+         STANDART_DERIVATIVES       = 'standard_derivatives',
+         DEBUG_SHADERS              = 'debug_shaders',
+         DEBUG_RENDER_INFO          = 'debug_renderer_info',
+         DEPTH_TEXTURE              = 'depth_texture',
+         LOSE_CONTEXT               = 'lose_context',
+         TEXTURE_FILTER_ANISOTROPIC = 'texture_filter_anisotropic'
+     ],
+     GRAPHICS_EXTENTIONS, a.EXTENTIONS);
 
 /**
  * Image type
@@ -194,6 +199,22 @@ Enum([
          UNSIGNED_INT = 0x1405,
          FLOAT = 0x1406
      ], DTYPE, a.DTYPE);
+
+Enum([
+    BYTES_PER_BYTE = 1,
+    BYTES_PER_UNSIGNED_BYTE = 1,
+    BYTES_PER_UBYTE = 1,
+
+    BYTES_PER_SHORT = 2,
+    BYTES_PER_UNSIGNED_SHORT = 2,
+    BYTES_PER_USHORT = 2,
+
+    BYTES_PER_INT = 4,
+    BYTES_PER_UNSIGNED_INT = 4,
+    BYTES_PER_UINT = 4,
+
+    BYTES_PER_FLOAT = 4
+    ], DTYPE_SIZE, a.DTYPE);
 
 
 Enum([

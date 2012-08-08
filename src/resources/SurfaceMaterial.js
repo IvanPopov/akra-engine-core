@@ -29,12 +29,35 @@ function SurfaceMaterial (pEngine) {
              textureFileVersion = 1
          ], SURFACEMATERIAL_CONSTANTS, a.SurfaceMaterial);
 
+    Enum([
+        TEXTURE0 = 0,
+        TEXTURE1,
+        TEXTURE2,
+        TEXTURE3,
+        TEXTURE4,
+        TEXTURE5,
+        TEXTURE6,
+        TEXTURE7,
+        TEXTURE8,
+        TEXTURE9,
+        TEXTURE10,
+        TEXTURE11,
+        TEXTURE12,
+        TEXTURE13,
+        TEXTURE14,
+        TEXTURE15,
+        DIFFUSE = a.SurfaceMaterial.TEXTURE0,
+        AMBIENT,
+        SPECULAR,
+        EMISSIVE,
+        EMISSION = a.SurfaceMaterial.EMISSIVE
+        ], SURFACEMATERIAL_TEXTURES, a.SurfaceMaterial);
 
    /**
     * @private
     * @type Material
     */
-   this._pMaterial = new a.Material;
+   this._pMaterial = new a.Material();
     /**
      * @private
      * @type Int
@@ -55,17 +78,28 @@ function SurfaceMaterial (pEngine) {
      * @type Texture[]
      */
     this._pTexture = new Array(a.SurfaceMaterial.maxTexturesPerSurface);
+
+    /**
+     * @private
+     * @type {Array.<Uint>}
+     */
+    this._pTexcoord = new Array(a.SurfaceMaterial.maxTexturesPerSurface);
+
+    for (var i = 0; i < a.SurfaceMaterial.maxTexturesPerSurface; i++) {
+         this._pTexcoord[i] = i;
+    };
+
     /**
      * @private
      * @type Mat4[]
      */
     this._pTextureMatrix = new Array(a.SurfaceMaterial.maxTexturesPerSurface);
 
-    this.setMaterial(0);
+    this.setMaterial();
 }
 
 
-EXTENDS(SurfaceMaterial, a.ResourcePoolItem, a.Unique);
+EXTENDS(SurfaceMaterial, a.ResourcePoolItem);
 
 
 
@@ -90,8 +124,6 @@ PROPERTY(SurfaceMaterial, 'material',
            this._pMaterial.pDiffuse = new a.ColorValue(.5, .5, .5, 1.);
            this._pMaterial.pSpecular = new a.ColorValue(.5, .5, .5, 1.);
         }
-
-        return true;
     });
 
 PROPERTY(SurfaceMaterial, 'totalTextures',
@@ -113,6 +145,50 @@ PROPERTY(SurfaceMaterial, 'textureFlags',
         return this._iTextureFlags;
     });
 
+PROPERTY(SurfaceMaterial, 'textureMatrixFlags',
+    /**
+     * Texture flags.
+     * @treturn Int
+     */
+    function () {
+        return this._iTextureMatrixFlags;
+    });
+
+SurfaceMaterial.prototype.setMaterial = function(pMaterial) {
+    this.material = pMaterial || null;
+};
+
+SurfaceMaterial.prototype.isEqual = function (pSurfaceMaterial) {
+    'use strict';
+
+    if (this._nTotalTextures === pSurfaceMaterial._nTotalTextures && 
+        this._iTextureFlags === pSurfaceMaterial._iTextureFlags && 
+        this._iTextureMatrixFlags === pSurfaceMaterial._iTextureMatrixFlags) {
+        
+        if ((this._pMaterial && this._pMaterial.isEqual(pSurfaceMaterial._pMaterial))
+            || (pSurfaceMaterial._pMaterial === null)) {
+            
+            for (var i = 0; i < this._pTexture.length; i++) {
+                if (this._pTexture[i] !== pSurfaceMaterial._pTexture[i]) {
+                    return false;
+                }
+            };
+
+            for (var i = 0; i< this._pTextureMatrix; ++ i) {
+                for (var j = 0; j < this._pTextureMatrix[i].length; j++) {
+                    if (this._pTextureMatrix[i][j] !== pSurfaceMaterial._pTextureMatrix[i][j]) {
+                        return false;
+                    }
+                };
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+};
+
 /**
  * Get texture.
  * @treturn Texture
@@ -123,6 +199,12 @@ SurfaceMaterial.prototype.texture = function (iSlot) {
     return this._pTexture[iSlot];
 };
 
+SurfaceMaterial.prototype.texcoord = function (iSlot) {
+    'use strict';
+    debug_assert((iSlot >= 0 && iSlot < a.SurfaceMaterial.maxTexturesPerSurface),
+                 "invalid texture slot");
+    return this._pTexcoord[iSlot];
+};
 
 /**
  * Получить матрицу текстуры.
@@ -134,13 +216,6 @@ SurfaceMaterial.prototype.textureMatrix = function (iSlot) {
     return this._pTextureMatrix[iSlot];
 };
 
-/**
- * Получить флаги матриц текстур.
- * @treturn Int
- */
-SurfaceMaterial.prototype.textureMatrixFlags = function () {
-    return this._iTextureMatrixFlags;
-};
 
 
 
@@ -293,13 +368,16 @@ SurfaceMaterial.prototype.saveResource = function (sFileName) {
 };
 
 
-SurfaceMaterial.prototype.setTexture = function (iIndex, pTexture) {
+SurfaceMaterial.prototype.setTexture = function (iIndex, pTexture, iTexcoord) {
+    iTexcoord = ifndef(iTexcoord, iIndex);
 
     debug_assert(iIndex < a.SurfaceMaterial.maxTexturesPerSurface,
                  "invalid texture slot");
 
     var pDisplayManager = this._pEngine.pDisplayManager;
-    //similar to [const tchar* texture]
+    
+    this._pTexcoord[iIndex] = iTexcoord;
+    
     if (typeof pTexture == 'string') {
         if (this._pTexture[iIndex]) {
             //realise first
@@ -337,6 +415,18 @@ SurfaceMaterial.prototype.setTexture = function (iIndex, pTexture) {
             SET_BIT(this._iTextureFlags, iIndex);
             ++this._nTotalTextures;
             this.connect(this._pTexture[iIndex], a.ResourcePoolItem.Loaded);
+
+            // var me = this;
+            // trace('me get texture :)');
+            // pTexture.setChangesNotifyRoutine(function() {
+            //                 if (pTexture.isResourceLoaded()) {
+            //                     trace(arguments);
+            //                     trace('Texture <', pTexture.findResourceName(), '> loaded');
+            //                     if (me.isResourceLoaded()) {
+            //                         trace('Surface material loaded too.')
+            //                     }
+            //                 }
+            //             });
         }
         return true;
     }
@@ -360,6 +450,9 @@ SurfaceMaterial.prototype.setTexture = function (iIndex, pTexture) {
         }
         return true;
     }
+
+    this._pTexcoord[iIndex] = iIndex;
+
     return false;
 };
 
