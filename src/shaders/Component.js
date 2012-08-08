@@ -15,7 +15,8 @@ function Component(pEngine) {
     this.sName = "";
     this.sComponents = null;
     this.pComponents = null;
-    this.pComponentsProp = null;
+    this.pComponentsShift = null;
+    this.pComponentsHash = null;
     this.pExteranalsFragment = null;
     this.pExteranalsVertex = null;
 }
@@ -89,7 +90,7 @@ Component.prototype.restoreResource = function () {
 /**
  * load the resource from a file
  * @tparam String sFileName - path to file with resource
- * @tparam String sTechnique - technique name
+ * @tparam String sTechnique - technique name                 S
  * @treturn Boolean true if succeeded, otherwise false
  */
 Component.prototype.loadResource = function (sFileName) {
@@ -116,10 +117,13 @@ Component.prototype.init = function (pTechnique) {
     this.pAnnotation = pTechnique.pAnnotation;
     this.sComponents = pTechnique.sComponents;
     this.pComponents = pTechnique.pComponents;
-    this.pComponentsProp = pTechnique.pComponentsProp;
+    this.pComponentsShift = pTechnique.pComponentsShift;
     this.pExteranalsFragment = pTechnique.pExteranalsFragment;
     this.pExteranalsVertex = pTechnique.pExteranalsVertex;
     return true;
+};
+Component.prototype.totalPasses = function () {
+    return this.pPasses.length;
 };
 A_NAMESPACE(Component, fx);
 

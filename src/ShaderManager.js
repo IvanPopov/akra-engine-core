@@ -3,61 +3,123 @@ Define(SM_INVALID_TECHNIQUE, -1);
 Define(SM_UNKNOWN_PASS, -1);
 
 function ComponentBlend() {
-    this.pPassBlends = [];
-    this.pUniformsBlend = [];
+    this.pPassBlends = null;
+    this.pUniformsBlend = null;
     this.sHash = "";
     this.pComponentsHash = {};
-    this.pComponentsProp = [];
+    this.pComponentsCount = {};
+    this.pComponentsShift = [];
     this.pComponents = [];
+    this._isReady = false;
     this._id = 0;
+    this._nShiftMin = 0;
+    this._nShiftMax = 0;
 }
-ComponentBlend.prototype.addComponent = function (pComponent, pProp) {
+ComponentBlend.prototype.addComponent = function (pComponent, nShift) {
     //TODO: think about global uniform lists and about collisions of real names in them
     var i, j;
-    var pPass;
-    var pUniforms;
     var sName;
-    var pVar1, pVar2;
-    sName = pComponent.hash(pProp);
+    sName = pComponent.hash(nShift);
     if (this.pComponentsHash[sName]) {
-        trace("You try to add already used component in blend");
+        this.pComponentsCount[sName]++;
+        warning("You try to add already used component in blend");
         return;
     }
-
+    if (nShift < this._nShiftMin) {
+        this._nShiftMin = nShift;
+    }
+    else if (nShift > this._nShiftMax) {
+        this._nShiftMax = nShift;
+    }
     this.sHash += sName + ":";
     this.pComponentsHash[sName] = pComponent;
+    this.pComponentsCount[sName] = 1;
     this.pComponents.push(pComponent);
-    this.pComponentsProp.push(pProp);
-    var nShift = pProp.nShift;
-//    if()
-    for (i = 0; i < pComponent.pPasses.length; i++) {
-        if (!this.pPassBlends[i + nShift]) {
-            this.pPassBlends[i + nShift] = [];
-            this.pUniformsBlend[i + nShift] = {
-                "pUniformsByName"     : {},
-                "pUniformsByRealName" : {},
-                "PUniformsValues"     : {},
-                "pUniformsDefault"    : {}
-            };
-        }
-        pPass = pComponent.pPasses[i];
-        this.pPassBlends[i + nShift].push(pPass);
-        pUniforms = this.pUniformsBlend[i + nShift];
-        for (j in pPass.pUniformsByName) {
-            sName = pPass.pUniformsByName[j];
-            pUniforms.pUniformsByName[j] = sName;
-            pVar1 = pUniforms.pUniformsByRealName[sName];
-            pVar2 = pPass.pUniformsByRealName[sName];
-            if (pVar1 && !pVar1.pType.isEqual(pVar2.pType)) {
-                warning("You used uniforms with the same semantics. Now we work not very well with that.");
+    this.pComponentsShift.push(nShift);
+    this._isReady = false;
+};
+ComponentBlend.prototype.addBlend = function (pBlend, nShift) {
+    //TODO: add smart blend of component`s blend when both of them are ready
+    var i;
+    var pNewBlend;
+    pNewBlend = this.cloneMe();
+    for (i = 0; i < pBlend.pComponents.length; i++) {
+        pNewBlend.addComponent(pBlend.pComponents[i], pBlend.pComponentsShift[i] + nShift);
+    }
+    return pNewBlend;
+};
+ComponentBlend.prototype.finalize = function () {
+    if (this._isReady) {
+        return true;
+    }
+    var i, j;
+    var pComponent;
+    var nShift;
+    var pPass;
+    var pUniforms;
+    var pVar1, pVar2;
+    var sName;
+    this.pPassBlends = [];
+    this.pUniformsBlend = [];
+    for (j = 0; j < this.pComponents.length; j++) {
+        pComponent = this.pComponents[j];
+        nShift = this.pComponentsShift[j] - this._nShiftMin;
+        for (i = 0; i < pComponent.pPasses.length; i++) {
+            if (!this.pPassBlends[i + nShift]) {
+                this.pPassBlends[i + nShift] = [];
+                this.pUniformsBlend[i + nShift] = {
+                    "pUniformsByName"     : {},
+                    "pUniformsByRealName" : {},
+                    "PUniformsValues"     : {},
+                    "pUniformsDefault"    : {}
+                };
             }
-            pUniforms.pUniformsByRealName[sName] = pVar2;
-            pUniforms.pUniformsDefault[sName] = pPass.pUniformsDefault[sName];
-            pUniforms.PUniformsValues[sName] = null;
+            pPass = pComponent.pPasses[i];
+            this.pPassBlends[i + nShift].push(pPass);
+            pUniforms = this.pUniformsBlend[i + nShift];
+            for (j in pPass.pUniformsByName) {
+                sName = pPass.pUniformsByName[j];
+                pUniforms.pUniformsByName[j] = sName;
+                pVar1 = pUniforms.pUniformsByRealName[sName];
+                pVar2 = pPass.pUniformsByRealName[sName];
+                if (pVar1 && !pVar1.pType.isEqual(pVar2.pType)) {
+                    warning("You used uniforms with the same semantics. Now we work not very well with that.");
+                }
+                pUniforms.pUniformsByRealName[sName] = pVar2;
+                pUniforms.pUniformsDefault[sName] = pPass.pUniformsDefault[sName];
+                pUniforms.PUniformsValues[sName] = null;
+            }
         }
     }
+    this._isReady = true;
+    return true;
+};
+ComponentBlend.prototype.cloneMe = function () {
+    var pClone = new a.fx.ComponentBlend();
+    var i;
+    for (i = 0; i < this.pComponents.length; i++) {
+        pClone.pComponents[i] = this.pComponents[i];
+        pClone.pComponentsShift[i] = this.pComponentsShift[i];
+    }
+    for (i in this.pComponentsHash) {
+        pClone.pComponentsHash[i] = this.pComponentsHash[i];
+        pClone.pComponentsCount[i] = this.pComponentsCount[i];
+    }
+    pClone._nShiftMin = this._nShiftMin;
+    pClone._nShiftMax = this._nShiftMax;
+    return pClone;
+};
+ComponentBlend.prototype.hasComponent = function (sComponent) {
+    return !!(this.pComponentsHash[sComponent]);
+};
+ComponentBlend.prototype.isReady = function () {
+    return this._isReady;
+};
+ComponentBlend.prototype.totalPasses = function () {
+    return this.pPassBlends ? this.pPassBlends.length : 0;
 };
 A_NAMESPACE(ComponentBlend, fx);
+a.fx.ComponentBlend = ComponentBlend;
 
 function PassBlend() {
     this.sHash = "";
@@ -342,8 +404,6 @@ function ShaderManager(pEngine) {
              PARAMETER_FLAG_NONSYSTEM,
              PARAMETER_FLAG_SYSTEM
          ], PARAMETER_FLAGS, a.ShaderManager);
-
-
     Enum([
              WORLD_MATRIX = 0,
              VIEW_MATRIX,
@@ -359,8 +419,6 @@ function ShaderManager(pEngine) {
 
              MAX_MATRIX_HANDLES
          ], MATRIX_HANDLES, a.ShaderManager);
-
-
     Enum([  //сам переименуешь
              boneInfluenceCount = 0,
 
@@ -391,23 +449,24 @@ function ShaderManager(pEngine) {
 
              max_param_handles
          ], PARAMETER_HANDLES, a.ShaderManager);
-
-
-    Enum([MAX_TEXTURE_HANDLES = a.SurfaceMaterial.maxTexturesPerSurface],
-         eTextureHandles, a.ShaderManager);
+    Enum([MAX_TEXTURE_HANDLES = a.SurfaceMaterial.maxTexturesPerSurface], eTextureHandles, a.ShaderManager);
 
     this.pEngine = pEngine;
     this._nEffectFile = 1;
-    this._pComponentManager = pEngine.displayManager().componentPool();
     this._pComponentBlendsHash = {"EMPTY" : null};
     this._pComponentBlendsId = {0 : null};
     this._nComponentBlends = 1;
+    this._pEffectResoureId = {};
+    this._pEffectResoureBlend = {};
+    this._pCurrentBlend = null;
+    this._pCurrentShift = 0;
+    this._pComponentBlendStack = [];
+    this._pComponentShiftStack = [];
+    this._pSnapshotStack = [];
 //    this._pActivatedPrograms = new Array(32);
 //    this._pActivatedPrograms[0] = 0;
 //    this._nLastActivatedProgram = 0;
-    STATIC(pDefaultProp, {"nShift" : 0});
 }
-
 /**
  * Load *.fx file or *.abf
  * @tparam String sFileName
@@ -453,13 +512,14 @@ ShaderManager.prototype.loadEffectFile = function (sFileName, sEffectName) {
 ShaderManager.prototype.initComponent = function (pTechnique) {
     //TODO: init component
     var sName = pTechnique.sName;
-    if (this._pComponentManager.findResource(sName)) {
+    var pComponentManager = this.pEngine.displayManager().componentPool();
+    if (pComponentManager.findResource(sName)) {
         return false;
     }
-    var pComponent = this._pComponentManager.createResource(sName);
+    var pComponent = pComponentManager.createResource(sName);
     pComponent.init(pTechnique);
     var pComponents = pComponent.pComponents;
-    var pProps = pComponent.pComponentsProp;
+    var pProps = pComponent.pComponentsShift;
     if (pComponents) {
         var pNewComponents = [];
         var pNewComponentsProp = [];
@@ -472,7 +532,7 @@ ShaderManager.prototype.initComponent = function (pTechnique) {
             if (!pComponentsHash[sName]) {
                 if (pComponents[i].pComponents) {
                     pCompComp = pComponents[i].pComponents;
-                    pCompProp = pComponents[i].pComponentsProp;
+                    pCompProp = pComponents[i].pComponentsShift;
                     for (j = 0; j < pCompComp.length; j++) {
                         sName = pCompComp[j].hash(pCompProp[j]);
                         if (!pComponentsHash[sName]) {
@@ -489,12 +549,13 @@ ShaderManager.prototype.initComponent = function (pTechnique) {
             }
         }
         pComponent.pComponents = pNewComponents;
-        pComponent.pComponentsProp = pNewComponents;
+        pComponent.pComponentsShift = pNewComponents;
+        pComponent.pComponentsHash = pComponentsHash;
     }
     return true;
 };
 ShaderManager.prototype.getComponentByName = function (sName) {
-    return this._pComponentManager.findResource(sName);
+    return this.pEngine.displayManager().componentPool().findResource(sName);
 };
 /**
  * Blend Components
@@ -508,55 +569,29 @@ ShaderManager.prototype._blendComponents = function () {
     }
     else {
         var i, j;
-        var pComponentsHash = {};
-        var pComponentsProp = [];
-        var pComponentsObj = [];
-        var sName, sHash = "";
+        var pBlend = new a.fx.ComponentBlend();
         var pComponent;
         for (i = 0; i < pComponents.length; i++) {
             pComponent = pComponents[i];
-            sName = pComponent.sName + ">>>" + 0;
-            if (!pComponentsHash[sName]) {
+            if (!pBlend.hasComponent(pComponent.hash(0))) {
                 if (pComponent.pComponents) {
                     for (j = 0; j < pComponent.pComponents.length; j++) {
-                        sName = pComponent.pComponents[j].hash(pComponent.pComponentsProp[j]);
-                        if (!pComponentsHash[sName]) {
-                            pComponentsHash[sName] = pComponent.pComponents[j];
-                            pComponentsObj.push(pComponent.pComponents[j]);
-                            pComponentsProp.push(pComponent.pComponentsProp[j]);
-                            sHash += sName + ":";
-                        }
+                        pBlend.addComponent(pComponent.pComponents[j], pComponent.pComponentsShift[j]);
                     }
                 }
-                sName = pComponent.hash(a.ShaderManager.pDefaultProp);
-                pComponentsHash[sName] = pComponent;
-                pComponentsObj.push(pComponent);
-                pComponentsProp.push(a.ShaderManager.pDefaultProp);
-                sHash += sName + ":";
+                pBlend.addComponent(pComponent, 0);
             }
         }
-        if (this._pComponentBlendsHash[sHash]) {
-            return this._pComponentBlendsHash[sHash];
+        if (this._pComponentBlendsHash[pBlend.sHash]) {
+            return this._pComponentBlendsHash[pBlend.sHash];
         }
         else {
-            this._generateBlendComponents(pComponentsObj, pComponentsProp);
+            if (!this._registerComponentBlend(pBlend)) {
+                return false;
+            }
+            return pBlend;
         }
     }
-};
-/**
- * Create new ComponentBlend and register it
- * @param {Component[]} pComponents
- * @param {Object[]} pComponentsProp Properties for each component
- * @return {Int}
- * @private
- */
-ShaderManager.prototype._generateBlendComponents = function (pComponents, pComponentsProp) {
-    var pBlend = new a.fx.ComponentBlend();
-    var i;
-    for (i = 0; i < pComponents.length; i++) {
-        pBlend.addComponent(pComponents[i], pComponentsProp[i]);
-    }
-    return this._registerComponentBlend(pBlend);
 };
 /**
  * Set id for componentBlend
@@ -576,79 +611,106 @@ ShaderManager.prototype._registerComponentBlend = function (pBlend) {
 };
 /**
  *
- * @param {String || Int} handle Hash or id for components blend
- * @param {String} sComponent Name of blending component
- * @param {Object} pProp Property of blending this component
+ * @param {ComponentBlend} pBlend Hash or id for components blend
+ * @param {Component} pComponent Name of blending component
+ * @param {Object} nShift Property of blending this component
  * @return {Boolean} True to add component
  */
-ShaderManager.prototype._addComponentToBlend = function (handle, sComponent, pProp) {
-    var pBlend;
-    if (typeof(handle) === "number") {
-        pBlend = this._pComponentBlendsId[handle];
-    }
-    else {
-        pBlend = this._pComponentBlendsHash[handle];
-    }
-    if (!pBlend) {
-        warning("We can`t find component with so handle: " + handle);
-        return false;
-    }
-    var pComponent = this._pComponentManager.findResource(sComponent);
-    var sName = pComponent.hash(pProp);
-    var sHash = pBlend.sHash;
+ShaderManager.prototype._addComponentToBlend = function (pBlend, pComponent, nShift) {
+    var pComponentManager = this.pEngine.displayManager().componentPool();
     var i;
-    if (!pBlend.pComponentsHash[sName]) {
-        var pComponentsHash = {};
-        var pComponentsProp = [];
-        var pComponentsObj = [];
+    var pNewBlend;
+    nShift = nShift || 0;
+    if (!pBlend) {
+        //Create blend from component
+        pNewBlend = new a.fx.ComponentBlend();
+    }
+    else if (!pBlend.pComponentsHash[pComponent.hash(nShift)]) {
+        pNewBlend = pBlend.cloneMe();
+    }
+    if (pNewBlend) {
         if (pComponent.pComponents) {
             for (i = 0; i < pComponent.pComponents.length; i++) {
-                sName = pComponent.pComponents[i].hash(pComponent.pComponentsProp[i]);
-                if (!pBlend.pComponentsHash[sName]) {
-                    pComponentsHash[sName] = pComponent.pComponents[i];
-                    pComponentsObj.push(pComponent.pComponents[i]);
-                    pComponentsProp.push(pComponent.pComponentsProp[i]);
-                    sHash += sName + ":";
-                }
+                pNewBlend.addComponent(pComponent.pComponents[i], pComponent.pComponentsShift[i] + nShift);
             }
         }
-        sName = pComponent.hash(pProp);
-        pComponentsHash[sName] = pComponent;
-        pComponentsObj.push(pComponent);
-        pComponentsProp.push(pProp);
-        sHash += sName + ":";
+        pNewBlend.addComponent(pComponent, nShift);
+        if (this._pComponentBlendsHash[pNewBlend.sHash]) {
+            return this._pComponentBlendsHash[pNewBlend.sHash];
+        }
+        else {
+            if (!this._registerComponentBlend(pNewBlend)) {
+                return false;
+            }
+            return pNewBlend;
+        }
+    }
+    return pBlend;
+};
+ShaderManager.prototype._removeComponentFromBlend = function (pBlend, pComponent, nShift) {
+    var pComponentManager = this.pEngine.displayManager().componentPool();
+    var i;
+    var pNewBlend;
+    var pComp;
+    nShift = nShift || 0;
+    if (!pBlend) {
+        //Create blend from component
+        warning("You try remove component from empty blend!");
+        return false;
+    }
+    if (!pBlend.pComponentsHash[pComponent.hash(nShift)]) {
+        warning("You try remove component from blend where it doesn`t exist!");
+        return false;
+    }
+    var sName = pComponent.hash(nShift);
+    if (pBlend.pComponentsCount[sName] > 1) {
+        pBlend.pComponentsCount[sName]--;
+        for (i = 0; i < pComponent.pComponents.length; i++) {
+            pBlend.pComponentsCount[pComponent.pComponents[i].hash(pComponent.pComponentsShift[i] + nShift)]--;
+        }
+        return pBlend;
+    }
+    pNewBlend = pBlend.cloneMe();
+
+    for (i = 0; i < pBlend.pComponents.length; i++) {
+        pComp = pBlend.pComponents[i];
+        sName = pComp.hash(pBlend.pComponentsShift[i]);
+        if (pComp !== pComponent &&
+            !(pComponent.pComponentsHash[sName] === pComp && pBlend.pComponentsCount[sName] === 1)) {
+            pNewBlend.addComponent(pComp, pBlend.pComponentsShift[i]);
+        }
     }
 
-    if (this._pComponentBlendsHash[sHash]) {
-        return this._pComponentBlendsHash[sHash];
+    if (this._pComponentBlendsHash[pNewBlend.sHash]) {
+        return this._pComponentBlendsHash[pNewBlend.sHash];
     }
     else {
-        var pNewBlend = this._newBlendFromBlend(pBlend, pComponentsObj, pComponentsProp);
         if (!this._registerComponentBlend(pNewBlend)) {
             return false;
         }
         return pNewBlend;
     }
 };
-/**
- * Create new component blend from pBlend and new components
- * @param {ComponentBlend} pBlend
- * @param {Component[]} pComponentsObj Components to add
- * @param {Object []} pComponentsProp Property of blending for corresponding component
- * @private
- */
-ShaderManager.prototype._newBlendFromBlend = function (pBaseBlend, pComponents, pComponentsProp) {
-    var pBlend = new a.fx.ComponentBlend();
+ShaderManager.prototype._addBlendToBlend = function (pBlendA, pBlendB, nShift) {
+    var sHash = pBlendA.sHash;
+    var sName;
     var i;
-    for (i = 0; i < pBaseBlend.pComponents.length; i++) {
-        pBlend.addComponent(pBaseBlend.pComponents[i], pBaseBlend.pComponentsProp[i]);
+    for (i = 0; i < pBlendB.pComponents.length; i++) {
+        sName = pBlendB.pComponents[i].hash(pBlendB.pComponentsShift[i] + nShift);
+        if (!pBlendA.pComponentsHash[sName]) {
+            sHash += sName + ":";
+        }
     }
-    for (i = 0; i < pComponents.length; i++) {
-        pBlend.addComponent(pComponents[i], pComponentsProp[i]);
+    if (this._pComponentBlendsHash[sHash]) {
+        return this._pComponentBlendsHash[sHash];
     }
-    return pBlend;
+    var pNewBlend;
+    pNewBlend = pBlendA.addBlend(pBlendB, nShift);
+    if (!this._registerComponentBlend(pNewBlend)) {
+        return false;
+    }
+    return pNewBlend;
 };
-
 ShaderManager.prototype.activateProgram = function (pProgram) {
     // if (this._pActivatedPrograms[this._nLastActivatedProgram] !== pProgram) {
     //     trace('bind Program', pProgram.resourceHandle());
@@ -689,7 +751,14 @@ ShaderManager.prototype.activeTextures = new Array(32);
  * @treturn Boolean
  */
 ShaderManager.prototype.registerEffect = function (pEffectResource) {
-    return false;
+    var id = pEffectResource.resourceHandle();
+    if (this._pEffectResoureId[id]) {
+        warning("This effect resource are already loaded");
+        return false;
+    }
+    this._pEffectResoureId[id] = pEffectResource;
+    this._pEffectResoureBlend[id] = null;
+    return true;
 };
 
 ShaderManager.prototype.findEffect = function () {
@@ -713,32 +782,93 @@ ShaderManager.prototype.registerComponent = function (pComponent) {
  * @treturn Boolean
  */
 ShaderManager.prototype.activateComponent = function (pEffectResource, iComponentHandle, nShift) {
-    return false;
+    var pComponentManager = this.pEngine.displayManager().componentPool();
+    var pEffectManager = this.pEngine.displayManager().effectPool();
+    var rId = pEffectResource;
+    var pBlend;
+    nShift = nShift || 0;
+    if (typeof(rId) === "object") {
+        rId = rId.resourceHandle();
+    }
+    pBlend = this._pEffectResoureBlend[rId];
+    var pComponent = pComponentManager.getResource(iComponentHandle);
+    if (!pComponent) {
+        warning("Can`t find component with id: " + iComponentHandle);
+        return false;
+    }
+    pBlend = this._addComponentToBlend(pBlend, pComponent, nShift);
+    if (!pBlend) {
+        return false;
+    }
+    this._pEffectResoureBlend[rId] = pBlend;
+    return true;
 };
-
-ShaderManager.prototype.begin = function (iEffectHandle) {
-    return false;
-};
-
-ShaderManager.prototype.end = function (iEffectHandle) {
-    return false;
-};
-
-ShaderManager.prototype.activatePass = function (iEffectHandle, iPass) {
-    return false;
-};
-
-ShaderManager.prototype.deactivatePass = function (iEffectHandle) {
-    return false;
-};
-
 /**
- * ДеАктивация компонента для эффект ресурса.
+ * Деактивация компонента для эффект ресурса.
  * @tparam EffectResource/ResourceHandle pEffectResource
  * @tparam iComponentHandle
  * @treturn Boolean
  */
 ShaderManager.prototype.deactivateComponent = function (pEffectResource, iComponentHandle, nShift) {
+    var pComponentManager = this.pEngine.displayManager().componentPool();
+    var pEffectManager = this.pEngine.displayManager().effectPool();
+    var rId = pEffectResource;
+    var pBlend;
+    nShift = nShift || 0;
+    if (typeof(rId) === "object") {
+        rId = rId.resourceHandle();
+    }
+    pBlend = this._pEffectResoureBlend[rId];
+    var pComponent = pComponentManager.getResource(iComponentHandle);
+    if (!pComponent) {
+        warning("Can`t find component with id: " + iComponentHandle);
+        return false;
+    }
+    pBlend = this._removeComponentFromBlend(pBlend, pComponent, nShift);
+    if (!pBlend) {
+        return false;
+    }
+    this._pEffectResoureBlend[rId] = pBlend;
+    return true;
+};
+
+ShaderManager.prototype.push = function(pSnapshot){
+
+};
+ShaderManager.prototype.pop = function(pSnapshot){
+
+};
+ShaderManager.prototype.begin = function (iEffectHandle) {
+    if (typeof(iEffectHandle) === "object") {
+        iEffectHandle = iEffectHandle.resourceHandle();
+    }
+    var pBlend = this._pEffectResoureBlend[iEffectHandle];
+    if (!pBlend) {
+        error("There are no any blend for this effect");
+        return false;
+    }
+    if (!pBlend.finalize()) {
+        return false;
+    }
+    if (!this.newEffectBegin(pBlend)) {
+        error("It`s impossible to mix this effects");
+        return false;
+    }
+    return true;
+};
+ShaderManager.prototype.end = function (iEffectHandle) {
+    return false;
+};
+ShaderManager.prototype.newEffectBegin = function (pBlend) {
+    if (!pBlend.isReady() || !this._pCurrentBlend.isReady()) {
+        warning("Boss of blends: current & add must be ready");
+        return false;
+    }
+};
+ShaderManager.prototype.activatePass = function (iEffectHandle, iPass) {
+    return false;
+};
+ShaderManager.prototype.deactivatePass = function (iEffectHandle) {
     return false;
 };
 

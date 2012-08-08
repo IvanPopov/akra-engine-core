@@ -11,7 +11,7 @@
  * constructor of EffectResource class
  *
  */
-function EffectResource (pEngine) {
+function EffectResource(pEngine) {
     EffectResource.superclass.constructor.apply(this, arguments);
 
     Enum([
@@ -62,27 +62,29 @@ EffectResource.prototype.getManager = function () {
  * @treturn Int
  */
 PROPERTY(EffectResource, 'totalPasses',
-    function () {
-        return this._nTotalPasses;
-    });
+         function () {
+             return this._nTotalPasses;
+         });
 
 EffectResource.prototype.setModificationRoutine = function (fn) {
     for (var i = 0; i < this._pModificationCallbacks.length; i++) {
         if (this._pModificationCallbacks[i] == fn) {
             return true;
         }
-    };
+    }
+    ;
 
     this._pModificationCallbacks.push(fn);
 };
 
-EffectResource.prototype.delModificationRoutine = function(fn) {
+EffectResource.prototype.delModificationRoutine = function (fn) {
     for (var i = 0; i < this._pModificationCallbacks.length; i++) {
         if (this._pModificationCallbacks[i] == fn) {
             this._pModificationCallbacks.splice(i, 1);
             return true;
         }
-    };
+    }
+    ;
     return false;
 };
 
@@ -113,7 +115,7 @@ EffectResource.prototype.isMixid = function () {
  * @treturn Boolean
  */
 EffectResource.prototype.isParameterUsed = function (pParameter, iPass) {
-    return (this.findParameter(pParameter, iPass)? true: false);
+    return (this.findParameter(pParameter, iPass) ? true : false);
 };
 
 EffectResource.prototype.totalComponents = function () {
@@ -134,14 +136,14 @@ EffectResource.prototype.findParameter = function (pParameter, iPass) {
 };
 
 
-
 /**
  * innitialize the resource (called once)
  * @treturn Boolean always true
  */
 EffectResource.prototype.createResource = function () {
-
-    this._pShaderManager.registerEffect(this);
+    if (!this._pShaderManager.registerEffect(this)) {
+        return false;
+    }
     this.miscible();
 
     this.notifyCreated();
@@ -149,7 +151,6 @@ EffectResource.prototype.createResource = function () {
     this.notifyLoaded();
     return true;
 };
-
 /**
  * destroy the resource
  * @treturn Boolean always true
@@ -170,7 +171,6 @@ EffectResource.prototype.destroyResource = function () {
 
     return (false);
 };
-
 /**
  * purge the resource from volatile memory
  * @treturn Boolean always true
@@ -185,7 +185,6 @@ EffectResource.prototype.disableResource = function () {
     this.notifyDisabled();
     return true;
 };
-
 /**
  * prepare the resource for use (create any volatile memory objects needed)
  * @treturn Boolean always true
@@ -226,19 +225,20 @@ EffectResource.prototype.use = function (iComponentHandle, nShift, isSet) {
     debug_assert(this._iCurrentPass === SM_UNKNOWN_PASS, 'нельзя добавить компонентов во время активированного пасса.')
 
     var pManager = this._pShaderManager;
+    var pProp = {"nShift" : nShift};
 
     if (typeof iComponentHandle === 'object') {
         iComponentHandle = iComponentHandle.resourceHandle();
     }
 
     if (isSet) {
-        if (!pManager.activateComponent(this, iComponentHandle, nShift)) {
+        if (!pManager.activateComponent(this, iComponentHandle, pProp)) {
             debug_error('Невозможно добавить ингридиент.');
             return false;
         }
     }
     else {
-        if (!pManager.deactivateComponent(this, iComponentHandle, nShift)) {
+        if (!pManager.deactivateComponent(this, iComponentHandle, pProp)) {
             debug_error('Невозможно убрать ингридиент.');
             return false;
         }
@@ -253,7 +253,6 @@ EffectResource.prototype.use = function (iComponentHandle, nShift, isSet) {
 
     return this._updateParameterList(iComponentHandle, isSet);
 };
-
 EffectResource.prototype.unUse = function (iComponentHandle, nShift) {
     return this.use(iComponentHandle, nShift, false);
 };
@@ -284,8 +283,8 @@ EffectResource.prototype._updateParameterList = function (iComponentHandle, isSe
 
             if (pReservedParameter === undefined && isSet) {
                 pReservedParameter = {
-                    nUses: 0,
-                    pValue: null  //значение по умолчанию
+                    nUses  : 0,
+                    pValue : null  //значение по умолчанию
                 }
 
                 if (pParameter.isArray()) {
@@ -296,7 +295,7 @@ EffectResource.prototype._updateParameterList = function (iComponentHandle, isSe
             }
 
 
-            pReservedParameter.nUses += (isSet? 1: -1);
+            pReservedParameter.nUses += (isSet ? 1 : -1);
 
             if (pReservedParameter.nUses === 0) {
                 delete pPassState[pParameter.name];
@@ -308,11 +307,11 @@ EffectResource.prototype._updateParameterList = function (iComponentHandle, isSe
         if (this._pModificationCallbacks[i] == fn) {
             this._pModificationCallbacks(this);
         }
-    };
+    }
+    ;
 
     return true;
 };
-
 
 
 /**
@@ -324,7 +323,18 @@ EffectResource.prototype.saveResource = function (sFileName) {
     return true;
 };
 
+EffectResource.prototype.begin = function () {
+    this.pEngine.shaderManager().begin(this);
+};
+EffectResource.prototype.end = function () {
+    this.pEngine.shaderManager().end(this);
+};
+EffectResource.prototype.beginPass = function () {
 
+};
+EffectResource.prototype.endPass = function () {
+
+};
 
 a.EffectResource = EffectResource;
 
@@ -335,11 +345,11 @@ Define(a.EffectResourceManager(pEngine), function () {
 
 //===============================================
 
-function EffectAccessor (pEngine) {
+function EffectAccessor(pEngine) {
     this._pShaderManager = pEngine.pShaderManager;
     this._pEffectResource = null;
 }
 
-EffectAccessor.prototype.addComponent = function(sComponentName, nShift) {
-    
+EffectAccessor.prototype.addComponent = function (sComponentName, nShift) {
+
 };

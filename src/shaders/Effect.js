@@ -2155,7 +2155,7 @@ function EffectTechnique(pEffect) {
     this._isComplexName = false;
     this.sComponents = null;
     this.pComponents = null;
-    this.pComponentsProp = null;
+    this.pComponentsShift = null;
 
     this.pExteranalsFragment = null;
     this.pExteranalsVertex = null;
@@ -2209,18 +2209,18 @@ EffectTechnique.prototype.generateListOfExternals = function () {
         }
     }
 };
-EffectTechnique.prototype.addComponent = function (pComponent, pProp) {
+EffectTechnique.prototype.addComponent = function (pComponent, nShift) {
     //TODO: something in this method are so wrong
     warning("EffectTechnique.addComponent: you should do it better");
-    pProp = pProp || {"nShift" : 0};
+    nShift = nShift || 0;
     if (!this.sComponents || !this.pComponents) {
         this.sComponents = "";
         this.pComponents = [];
-        this.pComponentsProp = [];
+        this.pComponentsShift = [];
     }
-    this.sComponents += pComponent.findResourceName() + ">>" + pProp.nShift + "&";
+    this.sComponents += pComponent.findResourceName() + ">>" + nShift + "&";
     this.pComponents.push(pComponent);
-    this.pComponentsProp.push(pProp);
+    this.pComponentsShift.push(nShift);
     var i;
     for (i in pComponent.pExteranalsVertex) {
         this.pEffect.addExternalVar(pComponent.pExteranalsVertex[i], a.fx.GLOBAL_VARS.EXTERNAL_V);
@@ -2665,7 +2665,7 @@ function Effect(pManager, id) {
 
     this.sComponents = null;
     this.pComponents = null;
-    this.pComponentsProp = null;
+    this.pComponentsShift = null;
 
     STATIC(sTempStructName, "TEMPSTRUCTNAME_")
     STATIC(pBaseFunctionsHash, {});
@@ -2957,16 +2957,16 @@ Effect.prototype.evalHLSL = function (pCode, pVar) {
     trace("Need to eval this code: ", pCode, pVar, this._pExprType);
 };
 
-Effect.prototype.addComponent = function (pComponent, pProp) {
-    pProp = pProp || {"nShift" : 0};
+Effect.prototype.addComponent = function (pComponent, nShift) {
+    nShift = nShift || 0;
     if (!this.sComponents || !this.pComponents) {
         this.sComponents = "";
         this.pComponents = [];
-        this.pComponentsProp = [];
+        this.pComponentsShift = [];
     }
-    this.sComponents += pComponent.findResourceName() + ">>" + pProp.nShift + "&";
+    this.sComponents += pComponent.findResourceName() + ">>" + nShift + "&";
     this.pComponents.push(pComponent);
-    this.pComponentsProp.push(pProp);
+    this.pComponentsShift.push(nShift);
     var i;
     for (i in pComponent.pExteranalsVertex) {
         this.addExternalVar(pComponent.pExteranalsVertex[i], a.fx.GLOBAL_VARS.EXTERNAL_V);
