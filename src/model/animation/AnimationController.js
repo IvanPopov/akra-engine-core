@@ -13,8 +13,6 @@ function AnimationContainer (pAnimation) {
 	this.fSpeed = 1.0;
 	this.fWeight = 1.0;
 	this.pAnimation = pAnimation;
-
-	this._fTotalWeight = 0;
 }
 
 PROPERTY(AnimationContainer, 'animationName',
@@ -34,6 +32,9 @@ function AnimationController (eOptions) {
 
 	this._pAnimations = [];
 	this._fPriorityBlend = 1.0;
+
+	this._fHighPriorityWeigth = 1.0;
+	this._fLowPriorityWeigth = 1.0;
 
 	this._eOptions = 0;
 	this._fDuration = 0;
@@ -58,6 +59,15 @@ AnimationController.prototype.setAnimationPriority = function (iAnimation, ePrio
     'use strict';
     
 	this._pAnimations[iAnimation].ePriority = ePriority;
+};
+
+AnimationController.prototype.setAnimationStartTime = function (iAnimation, fStartTime) {
+    'use strict';
+    
+	this._pAnimations[iAnimation].fStartTime = fStartTime;
+	this.update();
+
+	//FIXME расчитывать веса анимаций для лоу и хай приорити отдельно!
 };
 
 AnimationController.prototype.setOptions = function (eOptions) {
@@ -113,7 +123,6 @@ AnimationController.prototype.addAnimation = function (pAnimation) {
     var pAnimationContainer = new a.AnimationContainer(pAnimation);
 
 	this._pAnimations.push(pAnimationContainer);
-	this._fDuration = Math.max(this._fDuration, pAnimation.duration);
 
 	return this.update();
 };
@@ -124,14 +133,18 @@ AnimationController.prototype.update = function () {
     var pAnimations = this._pAnimations;
     var fTotalWeight = 0;
 
-	for (var i = 0, n = pAnimations.length; i < n; ++ i) {
-		fTotalWeight += this._pAnimations[i].fWeight;
-	}
+    this._fHighPriorityWeigth = 0.0;
+	this._fLowPriorityWeigth = 0.0;
 
 	for (var i = 0, n = pAnimations.length; i < n; ++ i) {
-		var pAnimationContainer = this._pAnimations[i];
+		if (pAnimations[i].ePriority === a.Animation.PRIORITY_HIGH) {
+			this._fHighPriorityWeigth += pAnimations[i].fWeight;
+		}
+		else {
+			this._fLowPriorityWeigth += pAnimations[i].fWeight;
+		}
 
-		pAnimationContainer._fTotalWeight = pAnimationContainer.fWeight / fTotalWeight;
+		this._fDuration = Math.max(this._fDuration, this._pAnimations[i].duration + this._pAnimations[i].fStartTime);
 	}
 
 	return true;
@@ -166,8 +179,15 @@ AnimationController.prototype.time = function (fTime) {
 		}
 
 		fAnimationTime *= pAnimationContainer.fSpeed;
-		fPriorityBlend = pAnimationContainer.ePriority === a.Animation.PRIORITY_HIGH? fHPR: fLPR;
-		fWeight = pAnimationContainer._fTotalWeight * fPriorityBlend;
+		
+		if (pAnimationContainer.ePriority === a.Animation.PRIORITY_HIGH) {
+			fWeight = pAnimationContainer.fWeight / this._fHighPriorityWeigth * fHPR;
+		}
+		else {
+			fWeight = pAnimationContainer.fWeight / this._fLowPriorityWeigth * fLPR;	
+		}
+
+		
 		pAnimationContainer.pAnimation.time(fAnimationTime, fWeight);	
 	}
 };
