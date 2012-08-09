@@ -2521,162 +2521,114 @@ Mat4.prototype.toMat3 = function(m3fDestination) {
 };
 
 
-Mat4._pNxt = [1, 2, 0];
-Mat4.toQuat4 = function (m, quat) {
-    if (!quat) {
-        quat = Quat4.create();
-    }
 
-    var  tr, s, q = quat;
-    var    i, j, k;
-
-    var nxt = Mat4._pNxt;
-
-    tr = m._11 + m._22 + m._33;
-
-    /* check the diagonal */
-    if (tr > 0.0) {
-        s = Math.sqrt(tr + 1.0);
-        q.W = s / 2.0;
-        s = 0.5 / s;
-        
-        q.X = (m._23 - m._32) * s;
-        q.Y = (m._31 - m._13) * s;
-        q.Z = (m._12 - m._21) * s;
-    } 
-    else {                
-        /* diagonal is negative */
-        i = 0;
-        if (m._22 > m._11) i = 1;
-        if (m._33 > m[i * 4 + i]) i = 2;
-        j = nxt[i];
-        k = nxt[j];
-
-        s = Math.sqrt((m[i * 4 + i] - (m[j * 4 + j] + m[k * 4 + k])) + 1.0);
-                          
-        q[i] = s * 0.5;
-                                
-        if (s != 0.0) s = 0.5 / s;
-
-        q[3] = (m[k * 4 + j] - m[j * 4 + k]) * s;
-        q[j] = (m[j * 4 + i] + m[i * 4 + j]) * s;
-        q[k] = (m[k * 4 + i] + m[i * 4 + k]) * s;
-    }
-
-    return q;
-}
-
-Mat3.toQuat4 = Mat4.toQuat4;
-
-/*
- * Mat4.toInverseMat3
- * Calculates the inverse of the upper 3x3 elements of a Mat4 and copies the result into a Mat3
- * The resulting matrix is useful for calculating transformed normals
- *
- * Params:
- * mat - Mat4 containing values to invert and copy
- * dest - Optional, Mat3 receiving values
- *
- * Returns:
- * dest is specified, a new Mat3 otherwise
- */
-Mat4.toInverseMat3 = function (mat, dest) {
-    // Cache the matrix values (makes for huge speed increases!)
-    var a00 = mat[0], a01 = mat[1], a02 = mat[2];
-    var a10 = mat[4], a11 = mat[5], a12 = mat[6];
-    var a20 = mat[8], a21 = mat[9], a22 = mat[10];
-
-    var b01 = a22 * a11 - a12 * a21;
-    var b11 = -a22 * a10 + a12 * a20;
-    var b21 = a21 * a10 - a11 * a20;
-
-    var d = a00 * b01 + a01 * b11 + a02 * b21;
-    if (!d) {return null;}
-    var id = 1 / d;
-
-    if (!dest) {dest = Mat3.create();}
-
-    dest[0] = b01 * id;
-    dest[1] = (-a22 * a01 + a02 * a21) * id;
-    dest[2] = (a12 * a01 - a02 * a11) * id;
-    dest[3] = b11 * id;
-    dest[4] = (a22 * a00 - a02 * a20) * id;
-    dest[5] = (-a12 * a00 + a02 * a10) * id;
-    dest[6] = b21 * id;
-    dest[7] = (-a21 * a00 + a01 * a20) * id;
-    dest[8] = (a11 * a00 - a01 * a10) * id;
-
-    return dest;
-};
 
 /*
  * Mat4.translate
  * Translates a matrix by the given vector
  *
  * Params:
- * mat - Mat4 to translate
  * vec - Vec3 specifying the translation
  * dest - Optional, Mat4 receiving operation result. If not specified result is written to mat
  *
  * Returns:
  * dest if specified, mat otherwise
+ *
+ * матрица сдвига умножается справа
  */
-Mat4.translate = function (mat, vec, dest) {
-    var x = vec[0], y = vec[1], z = vec[2];
 
-    if (!dest || mat == dest) {
-        mat[12] = mat[0] * x + mat[4] * y + mat[8] * z + mat[12];
-        mat[13] = mat[1] * x + mat[5] * y + mat[9] * z + mat[13];
-        mat[14] = mat[2] * x + mat[6] * y + mat[10] * z + mat[14];
-        mat[15] = mat[3] * x + mat[7] * y + mat[11] * z + mat[15];
-        return mat;
+Mat4.prototype.translateRight = function(v3fVec,m4fDestination) {
+    'use strict';
+
+    var pData1 = this.pData;
+    var pData2 = v3fVec.pData;
+
+    var x = pData2.X, y = pData2.Y, z = pData2.Z;
+
+    if(!m4fDestination){
+        pData1._14 = pData1._11 * x + pData1._12 * y + pData1._13 * z + pData1._14;
+        pData1._24 = pData1._21 * x + pData1._22 * y + pData1._23 * z + pData1._24;
+        pData1._34 = pData1._31 * x + pData1._32 * y + pData1._33 * z + pData1._34;
+        pData1._44 = pData1._41 * x + pData1._42 * y + pData1._43 * z + pData1._44;
+        //строго говоря последнюю строчку умножать не обязательно, так как она должна быть -> 0 0 0 1
+        return this;
     }
 
-    var a00 = mat[0], a01 = mat[1], a02 = mat[2], a03 = mat[3];
-    var a10 = mat[4], a11 = mat[5], a12 = mat[6], a13 = mat[7];
-    var a20 = mat[8], a21 = mat[9], a22 = mat[10], a23 = mat[11];
+    var pDataDestination = m4fDestination.pData;
 
-    dest[0] = a00;
-    dest[1] = a01;
-    dest[2] = a02;
-    dest[3] = a03;
-    dest[4] = a10;
-    dest[5] = a11;
-    dest[6] = a12;
-    dest[7] = a13;
-    dest[8] = a20;
-    dest[9] = a21;
-    dest[10] = a22;
-    dest[11] = a23;
+    //кешируем матрицу вращений
+    var a11 = pData1._11, a12 = pData1._12, a13 = pData1._13;
+    var a21 = pData1._11, a22 = pData1._22, a23 = pData1._23;
+    var a31 = pData1._11, a32 = pData1._32, a33 = pData1._33;
+    var a41 = pData1._11, a42 = pData1._42, a43 = pData1._43;
 
-    dest[12] = a00 * x + a10 * y + a20 * z + mat[12];
-    dest[13] = a01 * x + a11 * y + a21 * z + mat[13];
-    dest[14] = a02 * x + a12 * y + a22 * z + mat[14];
-    dest[15] = a03 * x + a13 * y + a23 * z + mat[15];
-    return dest;
+    pDataDestination._11 = a11;
+    pDataDestination._12 = a12;
+    pDataDestination._13 = a13;
+    pDataDestination._14 = a11 * x + a12 * y + a13 * z + pData1._14;
+
+    pDataDestination._21 = a21;
+    pDataDestination._22 = a22;
+    pDataDestination._23 = a23;
+    pDataDestination._24 = a21 * x + a22 * y + a23 * z + pData1._24;
+
+    pDataDestination._31 = a31;
+    pDataDestination._32 = a32;
+    pDataDestination._33 = a33;
+    pDataDestination._34 = a31 * x + a32 * y + a33 * z + pData1._34;
+
+    pDataDestination._41 = a41;
+    pDataDestination._42 = a42;
+    pDataDestination._43 = a43;
+    pDataDestination._44 = a41 * x + a42 * y + a43 * z + pData1._44;
+
+    return pDestination;
 };
 
-Mat4.diagonal = function (mat, vec, dest) {
-    if (!dest) {
-        dest = mat;
+/**
+ * матрица сдвига умножается слева
+ */
+
+Mat4.prototype.translateLeft = function(v3fVec,m4fDestination) {
+    'use strict';
+
+    var pData1 = this.pData;
+    var pData2 = v3fVec.pData;
+
+    var x = pData2.X, y = pData2.Y, z = pData2.Z;
+
+    if(!m4fDestination){
+        pData1._14 = x + pData1._14;
+        pData1._24 = y + pData1._24;
+        pData1._34 = z + pData1._34;
+        return this;
     }
 
-    dest._11 = vec.X;
-    dest._22 = vec.Y;
-    dest._33 = vec.Z;
-    dest._44 = vec.W;
+    var pDataDestination = m4fDestination.pData;
 
-    if (mat !== dest) {
-        dest._12 = mat._12; dest._13 = mat._13; dest._14 = mat._14;
-        dest._21 = mat._21; dest._23 = mat._23; dest._24 = mat._24;
-        dest._31 = mat._31; dest._32 = mat._32; dest._34 = mat._34;
-        dest._41 = mat._41; dest._42 = mat._42; dest._43 = mat._43;
-    }
 
-    return dest;
+    pDataDestination._11 = pData1._11;
+    pDataDestination._12 = pData1._12;
+    pDataDestination._13 = pData1._13;
+    pDataDestination._14 = x + pData1._14;
+
+    pDataDestination._21 = pData1._21;
+    pDataDestination._22 = pData1._22;
+    pDataDestination._23 = pData1._23;
+    pDataDestination._24 = y + pData1._24;
+
+    pDataDestination._31 = pData1._31;
+    pDataDestination._32 = pData1._32;
+    pDataDestination._33 = pData1._33;
+    pDataDestination._34 = z + pData1._34;
+
+    pDataDestination._41 = pData1._41;
+    pDataDestination._42 = pData1._42;
+    pDataDestination._43 = pData1._43;
+    pDataDestination._44 = pData1._44;
+
+    return pDestination;
 };
-
-
 
 /*
  * Mat4.scale
@@ -2689,43 +2641,118 @@ Mat4.diagonal = function (mat, vec, dest) {
  *
  * Returns:
  * dest if specified, mat otherwise
+ *
+ * матрица скейла умножается справа
  */
-Mat4.scale = function (mat, vec, dest) {
-    var x = vec[0], y = vec[1], z = vec[2];
 
-    if (!dest || mat == dest) {
-        mat[0] *= x;
-        mat[1] *= x;
-        mat[2] *= x;
-        mat[3] *= x;
-        mat[4] *= y;
-        mat[5] *= y;
-        mat[6] *= y;
-        mat[7] *= y;
-        mat[8] *= z;
-        mat[9] *= z;
-        mat[10] *= z;
-        mat[11] *= z;
-        return mat;
+Mat4.prototype.scaleRight = function(v3fVec,m4fDestination) {
+    'use strict';
+    
+    var pData1 = this.pData;
+    var pData2 = v3fVec.pData;
+
+    var x = pData2.X, y = pData2.Y, pData2.Z;
+
+    if(!m4fDestination){
+        pData1._11 *= x;
+        pData1._12 *= y;
+        pData1._13 *= z;
+
+        pData1._21 *= x;
+        pData1._22 *= y;
+        pData1._23 *= z;
+
+        pData1._31 *= x;
+        pData1._32 *= y;
+        pData1._33 *= z;
+
+        //скейлить эти компоненты необязательно, так как там должны лежать нули
+        pData1._41 *= x;
+        pData1._42 *= y;
+        pData1._43 *= z;
+
+        return this;
     }
 
-    dest[0] = mat[0] * x;
-    dest[1] = mat[1] * x;
-    dest[2] = mat[2] * x;
-    dest[3] = mat[3] * x;
-    dest[4] = mat[4] * y;
-    dest[5] = mat[5] * y;
-    dest[6] = mat[6] * y;
-    dest[7] = mat[7] * y;
-    dest[8] = mat[8] * z;
-    dest[9] = mat[9] * z;
-    dest[10] = mat[10] * z;
-    dest[11] = mat[11] * z;
-    dest[12] = mat[12];
-    dest[13] = mat[13];
-    dest[14] = mat[14];
-    dest[15] = mat[15];
-    return dest;
+    var pDataDestination = m4fDestination.pData;
+
+    pDataDestination._11 = pData1._11 * x;
+    pDataDestination._12 = pData1._12 * y;
+    pDataDestination._13 = pData1._13 * z;
+    pDataDestination._14 = pData1._14;
+
+    pDataDestination._21 = pData1._21 * x;
+    pDataDestination._22 = pData1._22 * y;
+    pDataDestination._23 = pData1._23 * z;
+    pDataDestination._24 = pData1._24;
+
+    pDataDestination._31 = pData1._31 * x;
+    pDataDestination._32 = pData1._32 * y;
+    pDataDestination._33 = pData1._33 * z;
+    pDataDestination._34 = pData1._34;
+
+    //скейлить эти компоненты необязательно, так как там должны лежать нули
+    pDataDestination._41 = pData1._41 * x;
+    pDataDestination._42 = pData1._42 * y;
+    pDataDestination._43 = pData1._43 * z;
+    pDataDestination._44 = pData1._44;
+
+    return pDestination;
+};
+
+/**
+ * матрица скейла умножается слева
+ */
+Mat4.prototype.scaleLeft = function(v3fVec,m4fDestination) {
+    'use strict';
+    
+    var pData1 = this.pData;
+    var pData2 = v3fVec.pData;
+
+    var x = pData1.X, y = pData1.Y, z = pData1.Z;
+
+    if(!m4fDestination){
+        pData1._11 *= x;
+        pData1._12 *= x;
+        pData1._13 *= x;
+        pData1._14 *= x;
+
+        pData1._21 *= y;
+        pData1._22 *= y;
+        pData1._23 *= y;
+        pData1._24 *= y;
+
+        pData1._31 *= z;
+        pData1._32 *= z;
+        pData1._33 *= z;
+        pData1._34 *= z;
+
+        return this;
+    }
+
+    var pDataDestination = m4fDestination.this;
+
+    pDataDestination._11 = pData1._11 * x;
+    pDataDestination._12 = pData1._12 * x;
+    pDataDestination._13 = pData1._13 * x;
+    pDataDestination._14 = pData1._14 * x;
+
+    pDataDestination._21 = pData1._21 * y;
+    pDataDestination._22 = pData1._22 * y;
+    pDataDestination._23 = pData1._23 * y;
+    pDataDestination._24 = pData1._24 * y;
+
+    pDataDestination._31 = pData1._31 * z;
+    pDataDestination._32 = pData1._32 * z;
+    pDataDestination._33 = pData1._33 * z;
+    pDataDestination._34 = pData1._34 * z;
+
+    pDataDestination._41 = pData1._41;
+    pDataDestination._42 = pData1._42;
+    pDataDestination._43 = pData1._43;
+    pDataDestination._44 = pData1._44;    
+
+    return pDestination;
 };
 
 /*
@@ -2741,57 +2768,161 @@ Mat4.scale = function (mat, vec, dest) {
  *
  * Returns:
  * dest if specified, mat otherwise
+ *
+ * матрица вращения умножается справа
  */
-Mat4.rotate = function (mat, angle, axis, dest) {
-    var x = axis[0], y = axis[1], z = axis[2];
-    var len = Math.sqrt(x * x + y * y + z * z);
-    if (!len) {return null;}
-    if (len != 1) {
-        len = 1 / len;
-        x *= len;
-        y *= len;
-        z *= len;
+
+Mat4.prototype.rotateRight = function(fAngle,v3fAxis,m4fDestination) {
+    'use strict';
+    
+    var pData1 = this.pData;
+    var pData2 = v3fAxis.pData;
+
+    var x = pData2.X, y = pData2.Y, z = pData2.Z;
+    var fLength = Math.sqrt(x*x + y*y + z*z);
+    if(fLength){
+        x = x/fLength;
+        y = y/fLength;
+        z = z/fLength;
+    }
+    else{
+        debug_assert(fLength,"попытка вращения вокруг оси нулевой длины. Угол " + fAngle + ". Ось " + v3fAxis.toString());
+        return this;
     }
 
-    var s = Math.sin(angle);
-    var c = Math.cos(angle);
-    var t = 1 - c;
+    var a11 = pData1._11, a12 = pData1._12, a13 = pData1._13;
+    var a21 = pData1._21, a22 = pData1._22, a23 = pData1._23;
+    var a31 = pData1._31, a32 = pData1._32, a33 = pData1._33;
 
-    // Cache the matrix values (makes for huge speed increases!)
-    var a00 = mat[0], a01 = mat[1], a02 = mat[2], a03 = mat[3];
-    var a10 = mat[4], a11 = mat[5], a12 = mat[6], a13 = mat[7];
-    var a20 = mat[8], a21 = mat[9], a22 = mat[10], a23 = mat[11];
+    var fSin = Math.sin(fAngle);
+    var fCos = Math.cos(fAngle);
+    var fTmp = 1 - fCos;
 
-    // Construct the elements of the rotation matrix
-    var b00 = x * x * t + c, b01 = y * x * t + z * s, b02 = z * x * t - y * s;
-    var b10 = x * y * t - z * s, b11 = y * y * t + c, b12 = z * y * t + x * s;
-    var b20 = x * z * t + y * s, b21 = y * z * t - x * s, b22 = z * z * t + c;
+    //build Rotation matrix
+    
+    var b11 = fCos + fTmp * x * x, b12 = fTmp * x * y - fSin * z, b13 = fTmp * x * z + fSin * y;
+    var b21 = fTmp * y * z + fSin * z, b22 = fCos + fTmp * y * y, b23 = fTmp * y * z - fSin * x;
+    var b31 = fTmp * z * x - fSin * y, b32 = fTmp * z * y + fSin * x, b33 = fCos + fTmp * z * z;
 
-    if (!dest) {
-        dest = mat
-    } else if (mat != dest) { // If the source and destination differ, copy the unchanged last row
-        dest[12] = mat[12];
-        dest[13] = mat[13];
-        dest[14] = mat[14];
-        dest[15] = mat[15];
+    if(!m4fDestination){
+        pData1._11 = a11 * b11 + a12 * b21 + a13 * b31;
+        pData1._12 = a11 * b12 + a12 * b22 + a13 * b32;
+        pData1._13 = a11 * b13 + a12 * b23 + a13 * b33;
+
+        pData1._21 = a21 * b11 + a22 * b21 + a23 * b31;
+        pData1._22 = a21 * b12 + a22 * b22 + a23 * b32;
+        pData1._23 = a21 * b13 + a22 * b23 + a23 * b33;
+
+        pData1._31 = a31 * b11 + a32 * b21 + a33 * b31;
+        pData1._32 = a31 * b12 + a32 * b22 + a33 * b32;
+        pData1._33 = a31 * b13 + a32 * b23 + a33 * b33;
+
+        return this;
     }
 
-    // Perform rotation-specific matrix multiplication
-    dest[0] = a00 * b00 + a10 * b01 + a20 * b02;
-    dest[1] = a01 * b00 + a11 * b01 + a21 * b02;
-    dest[2] = a02 * b00 + a12 * b01 + a22 * b02;
-    dest[3] = a03 * b00 + a13 * b01 + a23 * b02;
+    var pDataDestination = m4fDestination.pData;
 
-    dest[4] = a00 * b10 + a10 * b11 + a20 * b12;
-    dest[5] = a01 * b10 + a11 * b11 + a21 * b12;
-    dest[6] = a02 * b10 + a12 * b11 + a22 * b12;
-    dest[7] = a03 * b10 + a13 * b11 + a23 * b12;
+    pDataDestination._11 = a11 * b11 + a12 * b21 + a13 * b31;
+    pDataDestination._12 = a11 * b12 + a12 * b22 + a13 * b32;
+    pDataDestination._13 = a11 * b13 + a12 * b23 + a13 * b33;
+    pDataDestination._14 = pData1._14;
 
-    dest[8] = a00 * b20 + a10 * b21 + a20 * b22;
-    dest[9] = a01 * b20 + a11 * b21 + a21 * b22;
-    dest[10] = a02 * b20 + a12 * b21 + a22 * b22;
-    dest[11] = a03 * b20 + a13 * b21 + a23 * b22;
-    return dest;
+    pDataDestination._21 = a21 * b11 + a22 * b21 + a23 * b31;
+    pDataDestination._22 = a21 * b12 + a22 * b22 + a23 * b32;
+    pDataDestination._23 = a21 * b13 + a22 * b23 + a23 * b33;
+    pDataDestination._24 = pData1._24;
+
+    pDataDestination._31 = a31 * b11 + a32 * b21 + a33 * b31;
+    pDataDestination._32 = a31 * b12 + a32 * b22 + a33 * b32;
+    pDataDestination._33 = a31 * b13 + a32 * b23 + a33 * b33;
+    pDataDestination._34 = pData1._34;
+
+    pDataDestination._41 = pData1._41;
+    pDataDestination._42 = pData1._42;
+    pDataDestination._43 = pData1._43;
+    pDataDestination._44 = pData1._44;
+
+    return pDestination;
+};
+
+/**
+ * матрица поворота умножается слева
+ */
+
+Mat4.prototype.rotateLeft = function(fAngle,v3fAxis,m4fDestination) {
+    'use strict';
+    
+    var pData1 = this.pData;
+    var pData2 = v3fAxis.pData;
+
+    var x = pData2.X, y = pData2.Y, z = pData2.Z;
+    var fLength = Math.sqrt(x*x + y*y + z*z);
+    if(fLength){
+        x = x/fLength;
+        y = y/fLength;
+        z = z/fLength;
+    }
+    else{
+        debug_assert(fLength,"попытка вращения вокруг оси нулевой длины. Угол " + fAngle + ". Ось " + v3fAxis.toString());
+        return this;
+    }
+
+    var a11 = pData1._11, a12 = pData1._12, a13 = pData1._13, a14 = pData1._14;
+    var a21 = pData1._21, a22 = pData1._22, a23 = pData1._23, a24 = pData1._24;
+    var a31 = pData1._31, a32 = pData1._32, a33 = pData1._33, a34 = pData1._34;
+
+    var fSin = Math.sin(fAngle);
+    var fCos = Math.cos(fAngle);
+    var fTmp = 1 - fCos;
+
+    //build Rotation matrix
+    
+    var b11 = fCos + fTmp * x * x, b12 = fTmp * x * y - fSin * z, b13 = fTmp * x * z + fSin * y;
+    var b21 = fTmp * y * z + fSin * z, b22 = fCos + fTmp * y * y, b23 = fTmp * y * z - fSin * x;
+    var b31 = fTmp * z * x - fSin * y, b32 = fTmp * z * y + fSin * x, b33 = fCos + fTmp * z * z;
+
+    if(!m4fDestination){
+        pData1._11 = b11 * a11 + b12 * a21 + b13 * a31;
+        pData1._12 = b11 * a12 + b12 * a22 + b13 * a32;
+        pData1._13 = b11 * a13 + b12 * a23 + b13 * a33;
+        pData1._14 = b11 * a14 + b12 * a24 + b13 * a34;
+
+        pData1._21 = b21 * a11 + b22 * a21 + b23 * a31;
+        pData1._22 = b21 * a12 + b22 * a22 + b23 * a32;
+        pData1._23 = b21 * a13 + b22 * a23 + b23 * a33;
+        pData1._24 = b21 * a14 + b22 * a24 + b23 * a34;
+
+        pData1._31 = b31 * a11 + b32 * a21 + b33 * a31;
+        pData1._32 = b31 * a12 + b32 * a22 + b33 * a32;
+        pData1._33 = b31 * a13 + b32 * a23 + b33 * a33;
+        pData1._34 = b31 * a14 + b32 * a24 + b33 * a34;
+
+        return this;
+    }
+
+    var pDataDestination = m4fDestination.pData;
+
+    pDataDestination._11 = b11 * a11 + b12 * a21 + b13 * a31;
+    pDataDestination._12 = b11 * a12 + b12 * a22 + b13 * a32;
+    pDataDestination._13 = b11 * a13 + b12 * a23 + b13 * a33;
+    pDataDestination._14 = b11 * a14 + b12 * a24 + b13 * a34;
+
+    pDataDestination._21 = b21 * a11 + b22 * a21 + b23 * a31;
+    pDataDestination._22 = b21 * a12 + b22 * a22 + b23 * a32;
+    pDataDestination._23 = b21 * a13 + b22 * a23 + b23 * a33;
+    pDataDestination._24 = b21 * a14 + b22 * a24 + b23 * a34;
+
+    pDataDestination._31 = b31 * a11 + b32 * a21 + b33 * a31;
+    pDataDestination._32 = b31 * a12 + b32 * a22 + b33 * a32;
+    pDataDestination._33 = b31 * a13 + b32 * a23 + b33 * a33;
+    pDataDestination._34 = b31 * a14 + b32 * a24 + b33 * a34;
+
+    pDataDestination._41 = pData1._41;
+    pDataDestination._42 = pData1._42;
+    pDataDestination._43 = pData1._43;
+    pDataDestination._44 = pData1._44;
+
+    return pDestination;
 };
 
 /*
@@ -2805,40 +2936,113 @@ Mat4.rotate = function (mat, angle, axis, dest) {
  *
  * Returns:
  * dest if specified, mat otherwise
+ *
+ * матрица вращения умножается справа
  */
-Mat4.rotateX = function (mat, angle, dest) {
-    var s = Math.sin(angle);
-    var c = Math.cos(angle);
 
-    // Cache the matrix values (makes for huge speed increases!)
-    var a10 = mat[4], a11 = mat[5], a12 = mat[6], a13 = mat[7];
-    var a20 = mat[8], a21 = mat[9], a22 = mat[10], a23 = mat[11];
+Mat4.prototype.rotateXRight = function(fAngle,m4fDestination) {
+    'use strict';
+    
+    var pData = this.pData;
 
-    if (!dest) {
-        dest = mat
-    } else if (mat != dest) { // If the source and destination differ, copy the unchanged rows
-        dest[0] = mat[0];
-        dest[1] = mat[1];
-        dest[2] = mat[2];
-        dest[3] = mat[3];
+    var fSin = Math.sin(fAngle);
+    var fCos = Math.cos(fAngle);
 
-        dest[12] = mat[12];
-        dest[13] = mat[13];
-        dest[14] = mat[14];
-        dest[15] = mat[15];
+    var a12 = pData._12, a13 = pData._13;
+    var a22 = pData._22, a23 = pData._23;
+    var a32 = pData._32, a33 = pData._33;
+
+    if(!m4fDestination){
+        pData._12 =  a12 * fCos + a13 * fSin;
+        pData._13 = -a12 * fSin + a13 * fCos;
+
+        pData._22 =  a22 * fCos + a23 * fSin;
+        pData._23 = -a22 * fSin + a23 * fCos;
+
+        pData._32 =  a32 * fCos + a33 * fSin;
+        pData._33 = -a32 * fSin + a33 * fCos;
+
+        return this;
     }
 
-    // Perform axis-specific matrix multiplication
-    dest[4] = a10 * c + a20 * s;
-    dest[5] = a11 * c + a21 * s;
-    dest[6] = a12 * c + a22 * s;
-    dest[7] = a13 * c + a23 * s;
+    var pDataDestination = m4fDestination.pData;
 
-    dest[8] = a10 * -s + a20 * c;
-    dest[9] = a11 * -s + a21 * c;
-    dest[10] = a12 * -s + a22 * c;
-    dest[11] = a13 * -s + a23 * c;
-    return dest;
+    pDataDestination._11 = pData._11;
+    pDataDestination._12 =  a12 * fCos + a13 * fSin;
+    pDataDestination._13 = -a12 * fSin + a13 * fCos;
+    pDataDestination._14 = pData._14;
+
+    pDataDestination._21 = pData._21;
+    pDataDestination._22 =  a22 * fCos + a23 * fSin;
+    pDataDestination._23 = -a22 * fSin + a23 * fCos;
+    pDataDestination._24 = pData._24;
+
+    pDataDestination._31 = pData._21;
+    pDataDestination._32 =  a32 * fCos + a33 * fSin;
+    pDataDestination._33 = -a32 * fSin + a33 * fCos;
+    pDataDestination._34 = pData._34;
+
+    pDataDestination._41 = pData._41;
+    pDataDestination._42 = pData._42;
+    pDataDestination._43 = pData._43;
+    pDataDestination._44 = pData._44;
+
+    return pDestination;
+};
+
+/**
+ * матрица поворота умножается слева
+ */
+
+Mat4.prototype.rotateXLeft = function(fAngle,m4fDestination) {
+    'use strict';
+    
+    var pData = this.pData;
+
+    var fSin = Math.sin(fAngle);
+    var fCos = Math.cos(fAngle);
+
+    var a21 = pData._21, a22 = pData._22, a23 = pData._23, a24 = pData._24;
+    var a31 = pData._31, a32 = pData._32, a33 = pData._33, a34 = pData._34;
+
+    if(!m4fDestination){
+
+        pData._21 = fCos * a21 - fSin * a31;
+        pData._22 = fCos * a22 - fSin * a32;
+        pData._23 = fCos * a23 - fSin * a33;
+        pData._24 = fCos * a24 - fSin * a34;
+
+        pData._31 = fSin * a21 + fCos * a31;
+        pData._32 = fSin * a22 + fCos * a32;
+        pData._33 = fSin * a23 + fCos * a33;
+        pData._34 = fSin * a24 + fCos * a34;        
+
+        return this;
+    }
+
+    var pDataDestination = m4fDestination.pData;
+
+    pDataDestination._11 = pData._11;
+    pDataDestination._12 = pData._12;
+    pDataDestination._13 = pData._13;
+    pDataDestination._14 = pData._14;
+
+    pDataDestination._21 = fCos * a21 - fSin * a31;
+    pDataDestination._22 = fCos * a22 - fSin * a32;
+    pDataDestination._23 = fCos * a23 - fSin * a33;
+    pDataDestination._24 = fCos * a24 - fSin * a34;
+
+    pDataDestination._31 = fSin * a21 + fCos * a31;
+    pDataDestination._32 = fSin * a22 + fCos * a32;
+    pDataDestination._33 = fSin * a23 + fCos * a33;
+    pDataDestination._34 = fSin * a24 + fCos * a34;  
+
+    pDataDestination._41 = pData._41;
+    pDataDestination._42 = pData._42;
+    pDataDestination._43 = pData._43;
+    pDataDestination._44 = pData._44;
+
+    return pDestination;
 };
 
 /*
@@ -2852,40 +3056,114 @@ Mat4.rotateX = function (mat, angle, dest) {
  *
  * Returns:
  * dest if specified, mat otherwise
+ *
+ * матрица вращения умножается справа
  */
-Mat4.rotateY = function (mat, angle, dest) {
-    var s = Math.sin(angle);
-    var c = Math.cos(angle);
 
-    // Cache the matrix values (makes for huge speed increases!)
-    var a00 = mat[0], a01 = mat[1], a02 = mat[2], a03 = mat[3];
-    var a20 = mat[8], a21 = mat[9], a22 = mat[10], a23 = mat[11];
+Mat4.prototype.rotateYRight = function(fAngle,m4fDestination) {
+    'use strict';
+    
+    var pData = this.pData;
 
-    if (!dest) {
-        dest = mat
-    } else if (mat != dest) { // If the source and destination differ, copy the unchanged rows
-        dest[4] = mat[4];
-        dest[5] = mat[5];
-        dest[6] = mat[6];
-        dest[7] = mat[7];
+    var fSin = Math.sin(fAngle);
+    var fCos = Math.cos(fAngle);
 
-        dest[12] = mat[12];
-        dest[13] = mat[13];
-        dest[14] = mat[14];
-        dest[15] = mat[15];
+    var a11 = pData._11, a13 = pData._13;
+    var a21 = pData._21, a23 = pData._23;
+    var a31 = pData._31, a33 = pData._33;
+
+    if(!m4fDestination){
+
+        pData._11 = a11 * fCos - a13 * fSin;
+        pData._13 = a11 * fSin + a13 * fCos;
+
+        pData._21 = a21 * fCos - a23 * fSin;
+        pData._23 = a21 * fSin + a23 * fCos;
+
+        pData._31 = a31 * fCos - a33 * fSin;
+        pData._33 = a31 * fSin + a33 * fCos;
+
+        return this;
     }
 
-    // Perform axis-specific matrix multiplication
-    dest[0] = a00 * c + a20 * -s;
-    dest[1] = a01 * c + a21 * -s;
-    dest[2] = a02 * c + a22 * -s;
-    dest[3] = a03 * c + a23 * -s;
+    var pDataDestination = m4fDestination.pData;
 
-    dest[8] = a00 * s + a20 * c;
-    dest[9] = a01 * s + a21 * c;
-    dest[10] = a02 * s + a22 * c;
-    dest[11] = a03 * s + a23 * c;
-    return dest;
+    pDataDestination._11 = a11 * fCos - a13 * fSin;
+    pDataDestination._12 = pData._12;
+    pDataDestination._13 = a11 * fSin + a13 * fCos;
+    pDataDestination._14 = pData._14;
+
+    pDataDestination._21 = a21 * fCos - a23 * fSin;
+    pDataDestination._22 = pData._22;
+    pDataDestination._23 = a21 * fSin + a23 * fCos;
+    pDataDestination._24 = pData._24;
+
+    pDataDestination._31 = a31 * fCos - a33 * fSin;
+    pDataDestination._32 = pData._32;
+    pDataDestination._33 = a31 * fSin + a33 * fCos;
+    pDataDestination._34 = pData._34;
+
+    pDataDestination._41 = pData._41;
+    pDataDestination._42 = pData._42;
+    pDataDestination._43 = pData._43;
+    pDataDestination._44 = pData._44;
+
+    return pDestination;
+};
+
+/**
+ * матрица поворота умножается слева
+ */
+
+Mat4.prototype.rotateYLeft = function(fAngle,m4fDestination) {
+    'use strict';
+    
+    var pData = this.pData;
+
+    var fSin = Math.sin(fAngle);
+    var fCos = Math.cos(fAngle);
+
+    var a11 = pData._11, a12 = pData._12, a13 = pData._13, a14 = pData._14;    
+    var a31 = pData._31, a32 = pData._32, a33 = pData._33, a34 = pData._34;
+
+    if(!m4fDestination){
+
+        pData._11 = fCos * a11 + fSin * a31;
+        pData._12 = fCos * a12 + fSin * a32;
+        pData._13 = fCos * a13 + fSin * a33;
+        pData._13 = fCos * a14 + fSin * a34;
+
+        pData._31 = -fSin * a11 + fCos * a31;
+        pData._32 = -fSin * a12 + fCos * a32;
+        pData._33 = -fSin * a13 + fCos * a33;
+        pData._33 = -fSin * a14 + fCos * a34;
+
+        return this;
+    }
+
+    var pDataDestination = m4fDestination;
+
+    pDataDestination._11 = fCos * a11 + fSin * a31;
+    pDataDestination._12 = fCos * a12 + fSin * a32;
+    pDataDestination._13 = fCos * a13 + fSin * a33;
+    pDataDestination._13 = fCos * a14 + fSin * a34;
+
+    pDataDestination._21 = pData._21;
+    pDataDestination._22 = pData._22;
+    pDataDestination._23 = pData._23;
+    pDataDestination._24 = pData._24;
+
+    pDataDestination._31 = -fSin * a11 + fCos * a31;
+    pDataDestination._32 = -fSin * a12 + fCos * a32;
+    pDataDestination._33 = -fSin * a13 + fCos * a33;
+    pDataDestination._33 = -fSin * a14 + fCos * a34;
+
+    pDataDestination._41 = pData._41;
+    pDataDestination._42 = pData._42;
+    pDataDestination._43 = pData._43;
+    pDataDestination._44 = pData._44;
+
+    return pDestination;
 };
 
 /*
@@ -2899,41 +3177,114 @@ Mat4.rotateY = function (mat, angle, dest) {
  *
  * Returns:
  * dest if specified, mat otherwise
+ *
+ * матрица вращения умножается справа
  */
-Mat4.rotateZ = function (mat, angle, dest) {
-    var s = Math.sin(angle);
-    var c = Math.cos(angle);
 
-    // Cache the matrix values (makes for huge speed increases!)
-    var a00 = mat[0], a01 = mat[1], a02 = mat[2], a03 = mat[3];
-    var a10 = mat[4], a11 = mat[5], a12 = mat[6], a13 = mat[7];
+Mat4.prototype.rotateZRight = function(fAngle,m4fDestination) {
+    'use strict';
+    
+    var pData = this.pData;
 
-    if (!dest) {
-        dest = mat
-    } else if (mat != dest) { // If the source and destination differ, copy the unchanged last row
-        dest[8] = mat[8];
-        dest[9] = mat[9];
-        dest[10] = mat[10];
-        dest[11] = mat[11];
+    var fSin = Math.sin(fAngle);
+    var fCos = Math.cos(fAngle);
 
-        dest[12] = mat[12];
-        dest[13] = mat[13];
-        dest[14] = mat[14];
-        dest[15] = mat[15];
+    var a11 = pData._11, a12 = pData._12;
+    var a21 = pData._21, a22 = pData._22;
+    var a31 = pData._31, a32 = pData._32;
+
+    if(!m4fDestination){
+
+        pData._11 = a11 * fCos + a12 * fSin;
+        pData._12 = -a11 * fSin + a12 * fCos;
+
+        pData._21 = a21 * fCos + a22 * fSin;
+        pData._22 = -a21 * fSin + a22 * fCos;
+
+        pData._31 = a31 * fCos + a32 * fSin;
+        pData._32 = -a31 * fSin + a32 * fCos;
+
+        return this;
     }
 
-    // Perform axis-specific matrix multiplication
-    dest[0] = a00 * c + a10 * s;
-    dest[1] = a01 * c + a11 * s;
-    dest[2] = a02 * c + a12 * s;
-    dest[3] = a03 * c + a13 * s;
+    var pDataDestination = m4fDestination.pData;
 
-    dest[4] = a00 * -s + a10 * c;
-    dest[5] = a01 * -s + a11 * c;
-    dest[6] = a02 * -s + a12 * c;
-    dest[7] = a03 * -s + a13 * c;
+    pDataDestination._11 = a11 * fCos + a12 * fSin;
+    pDataDestination._12 = -a11 * fSin + a12 * fCos;    
+    pDataDestination._13 = pData._13;
+    pDataDestination._14 = pData._14;
 
-    return dest;
+    pDataDestination._21 = a21 * fCos + a22 * fSin;
+    pDataDestination._22 = -a21 * fSin + a22 * fCos;
+    pDataDestination._23 = pData._23;
+    pDataDestination._24 = pData._24;
+
+    pDataDestination._31 = a31 * fCos + a32 * fSin;
+    pDataDestination._32 = -a31 * fSin + a32 * fCos;
+    pDataDestination._33 = pData._33;
+    pDataDestination._34 = pData._34;
+
+    pDataDestination._41 = pData._41;
+    pDataDestination._42 = pData._42;
+    pDataDestination._43 = pData._43;
+    pDataDestination._44 = pData._44;
+
+    return pDestination;
+};
+
+/**
+ * матрица поворота умножается слева
+ */
+
+Mat4.prototype.rotateZLeft = function(fAngle,m4fDestination) {
+    'use strict';
+    
+    var pData = this.pData;
+
+    var fSin = Math.sin(fAngle);
+    var fCos = Math.cos(fAngle);
+
+    var a11 = pData._11, a12 = pData._12, a13 = pData._13, a14 = pData._14;
+    var a21 = pData._21, a22 = pData._22, a23 = pData._23, a24 = pData._24;
+
+    if(!m4fDestination){
+
+        pData._11 = fCos * a11 - fSin * a21;
+        pData._12 = fCos * a12 - fSin * a22;
+        pData._13 = fCos * a13 - fSin * a23;
+        pData._14 = fCos * a14 - fSin * a24;
+
+        pData._21 = fSin * a11 + fCos * a21;
+        pData._22 = fSin * a12 + fCos * a22;
+        pData._23 = fSin * a13 + fCos * a23;
+        pData._24 = fSin * a14 + fCos * a24;
+
+        return this;
+    }
+
+    var pDataDestination = m4fDestination.pData;
+
+    pDataDestination._11 = fCos * a11 - fSin * a21;
+    pDataDestination._12 = fCos * a12 - fSin * a22;
+    pDataDestination._13 = fCos * a13 - fSin * a23;
+    pDataDestination._14 = fCos * a14 - fSin * a24;
+
+    pDataDestination._21 = fSin * a11 + fCos * a21;
+    pDataDestination._22 = fSin * a12 + fCos * a22;
+    pDataDestination._23 = fSin * a13 + fCos * a23;
+    pDataDestination._24 = fSin * a14 + fCos * a24;
+
+    pDataDestination._31 = pData._31;
+    pDataDestination._32 = pData._32;
+    pDataDestination._33 = pData._33;
+    pDataDestination._34 = pData._34;
+
+    pDataDestination._41 = pData._41;
+    pDataDestination._42 = pData._42;
+    pDataDestination._43 = pData._43;
+    pDataDestination._44 = pData._44;
+
+    return pDestination;
 };
 
 /*
@@ -2949,28 +3300,39 @@ Mat4.rotateZ = function (mat, angle, dest) {
  * Returns:
  * dest if specified, a new Mat4 otherwise
  */
-Mat4.frustum = function (left, right, bottom, top, near, far, dest) {
-    if (!dest) {dest = Mat4.create();}
-    var rl = (right - left);
-    var tb = (top - bottom);
-    var fn = (far - near);
-    dest[0] = (near * 2) / rl;
-    dest[1] = 0;
-    dest[2] = 0;
-    dest[3] = 0;
-    dest[4] = 0;
-    dest[5] = (near * 2) / tb;
-    dest[6] = 0;
-    dest[7] = 0;
-    dest[8] = (right + left) / rl;
-    dest[9] = (top + bottom) / tb;
-    dest[10] = -(far + near) / fn;
-    dest[11] = -1;
-    dest[12] = 0;
-    dest[13] = 0;
-    dest[14] = -(far * near * 2) / fn;
-    dest[15] = 0;
-    return dest;
+Mat4.frustum = function (fLeft, fRight, fBottom, fTop, fNear,fFar, m4fDestination) {
+    'use strict';
+    if(!m4fDestination){
+        m4fDestination = new Mat4();
+    }
+
+    var pDataDestination = m4fDestination.pData;
+
+    var fRL = fRight - fLeft;
+    var fTB = fTop - fBottom;
+    var fFN = fFar - fNear;
+
+    pDataDestination._11 = 2*fNear/fRL;
+    pDataDestination._12 = 0;
+    pDataDestination._13 = (fRight + fLeft)/fRL;
+    pDataDestination._14 = 0;
+
+    pDataDestination._21 = 0;
+    pDataDestination._22 = 2*fNear/fTB;
+    pDataDestination._23 = (fTop + fBottom)/fTB;
+    pDataDestination._24 = 0;
+
+    pDataDestination._31 = 0;
+    pDataDestination._32 = 0;
+    pDataDestination._33 = -(fFar + fNear)/fFN;
+    pDataDestination._34 = -2*fFar*fNear/fFN;
+
+    pDataDestination._41 = 0;
+    pDataDestination._42 = 0;
+    pDataDestination._43 = -1;
+    pDataDestination._44 = 0;
+
+    return m4fDestination;
 };
 
 /*
@@ -2978,7 +3340,7 @@ Mat4.frustum = function (left, right, bottom, top, near, far, dest) {
  * Generates a perspective projection matrix with the given bounds
  *
  * Params:
- * fovy - scalar, vertical field of view
+ * fFOVy - scalar, vertical field of view in radians
  * aspect - scalar, aspect ratio. typically viewport width/height
  * near, far - scalar, near and far bounds of the frustum
  * dest - Optional, Mat4 frustum matrix will be written into
@@ -2986,10 +3348,11 @@ Mat4.frustum = function (left, right, bottom, top, near, far, dest) {
  * Returns:
  * dest if specified, a new Mat4 otherwise
  */
-Mat4.perspective = function (fovy, aspect, near, far, dest) {
-    var top = near * Math.tan(fovy * Math.PI / 360.0);
-    var right = top * aspect;
-    return Mat4.frustum(-right, right, -top, top, near, far, dest);
+Mat4.perspective = function (fFOVy, fAspect, fNear, fFar, m4fDestination) {
+    'use strict';
+    var fTop = fNear * Math.tan(fFOVy/2.);
+    var fRight = fTop * fAspect;
+    return Mat4.frustum(-fRight, fRight, -fTop, fTop, fNear, fFar, m4fDestination);
 };
 
 /*
@@ -3005,32 +3368,42 @@ Mat4.perspective = function (fovy, aspect, near, far, dest) {
  * Returns:
  * dest if specified, a new Mat4 otherwise
  */
-Mat4.ortho = function (left, right, bottom, top, near, far, dest) {
-    if (!dest) {dest = Mat4.create();}
-    var rl = (right - left);
-    var tb = (top - bottom);
-    var fn = (far - near);
-    dest[0] = 2 / rl;
-    dest[1] = 0;
-    dest[2] = 0;
-    dest[3] = 0;
-    dest[4] = 0;
-    dest[5] = 2 / tb;
-    dest[6] = 0;
-    dest[7] = 0;
-    dest[8] = 0;
-    dest[9] = 0;
-    dest[10] = -2 / fn;
-    dest[11] = 0;
-    dest[12] = -(left + right) / rl;
-    dest[13] = -(top + bottom) / tb;
-    dest[14] = -(far + near) / fn;
-    dest[15] = 1;
-    return dest;
+Mat4.orthogonalProjection = function (fLeft, fRight, fBottom, fTop, fNear, fFar, m4fDestination) {
+    'use strict';
+    if(!m4fDestination){
+        m4fDestination = new Mat4();
+    }
+
+    var pDataDestination = m4fDestination.pData;
+
+    var fRL = fRight - fLeft;
+    var fTB = fTop - fBottom;
+    var fFN = fFar - fNear;
+
+    pDataDestination._11 = 2./fRL;
+    pDataDestination._12 = 0;
+    pDataDestination._13 = 0;
+    pDataDestination._14 = -(fRight + fLeft)/fRL;
+
+    pDataDestination._21 = 0;
+    pDataDestination._22 = 2./fTB;
+    pDataDestination._23 = 0;
+    pDataDestination._24 = -(fTop + fBottom)/fTB;
+
+    pDataDestination._31 = 0;
+    pDataDestination._32 = 0;
+    pDataDestination._33 = -2/fFN;
+    pDataDestination._34 = -(fFar + fNear)/fFN;
+
+    pDataDestination._41 = 0;
+    pDataDestination._42 = 0;
+    pDataDestination._43 = 0;
+    pDataDestination._44 = 1;
+
+    return m4fDestination;
 };
 
-/*
- * Mat4.ortho
+/**
  * Generates a look-at matrix with the given eye position, focal point, and up axis
  *
  * Params:
@@ -3041,132 +3414,244 @@ Mat4.ortho = function (left, right, bottom, top, near, far, dest) {
  *
  * Returns:
  * dest if specified, a new Mat4 otherwise
+ *
  */
-Mat4.lookAt = function (eye, center, up, dest) {
-    if (!dest) {dest = Mat4.create();}
-
-    var eyex = eye[0],
-        eyey = eye[1],
-        eyez = eye[2],
-        upx = up[0],
-        upy = up[1],
-        upz = up[2],
-        centerx = center[0],
-        centery = center[1],
-        centerz = center[2];
-
-    if (eyex == centerx && eyey == centery && eyez == centerz) {
-        return Mat4.identity(dest);
+Mat4.lookAt = function (v3fEye, v3fCenter, v3fUp, m4fDestination) {
+    'use strict';
+    if(!m4fDestination){
+        m4fDestination = new Mat4(1);
     }
 
-    var z0, z1, z2, x0, x1, x2, y0, y1, y2, len;
+    var pData1 = v3fEye.pData;
+    var pData2 = v3fCenter.pData;
+    var pData3 = v3fUp.pData;
 
-    //Vec3.direction(eye, center, z);
-    z0 = eyex - center[0];
-    z1 = eyey - center[1];
-    z2 = eyez - center[2];
+    var fEyeX = pData1.X, fEyeY = pData1.Y, fEyeZ = pData1.Z;
+    var fCenterX = pData2.X, fCenterY = pData2.Y, fCenterZ = pData2.Z;
+    var fUpX = pData3.X, fUpY = pData3.Y, fUpZ = pData3.Z;
 
-    // normalize (no check needed for 0 because of early return)
-    len = 1 / Math.sqrt(z0 * z0 + z1 * z1 + z2 * z2);
-    z0 *= len;
-    z1 *= len;
-    z2 *= len;
-
-    //Vec3.normalize(Vec3.cross(up, z, x));
-    x0 = upy * z2 - upz * z1;
-    x1 = upz * z0 - upx * z2;
-    x2 = upx * z1 - upy * z0;
-    len = Math.sqrt(x0 * x0 + x1 * x1 + x2 * x2);
-    if (!len) {
-        x0 = 0;
-        x1 = 0;
-        x2 = 0;
-    }
-    else {
-        len = 1 / len;
-        x0 *= len;
-        x1 *= len;
-        x2 *= len;
-    }
-    ;
-
-    //Vec3.normalize(Vec3.cross(z, x, y));
-    y0 = z1 * x2 - z2 * x1;
-    y1 = z2 * x0 - z0 * x2;
-    y2 = z0 * x1 - z1 * x0;
-
-    len = Math.sqrt(y0 * y0 + y1 * y1 + y2 * y2);
-    if (!len) {
-        y0 = 0;
-        y1 = 0;
-        y2 = 0;
-    }
-    else {
-        len = 1 / len;
-        y0 *= len;
-        y1 *= len;
-        y2 *= len;
+    if(fEyeX == fCenterX && fEyeY == fCenterY && fEyeZ == fCenterZ){
+        return m4fDestination;
     }
 
-    dest[0] = x0;
-    dest[1] = y0;
-    dest[2] = z0;
-    dest[3] = 0;
-    dest[4] = x1;
-    dest[5] = y1;
-    dest[6] = z1;
-    dest[7] = 0;
-    dest[8] = x2;
-    dest[9] = y2;
-    dest[10] = z2;
-    dest[11] = 0;
-    dest[12] = -(x0 * eyex + x1 * eyey + x2 * eyez);
-    dest[13] = -(y0 * eyex + y1 * eyey + y2 * eyez);
-    dest[14] = -(z0 * eyex + z1 * eyey + z2 * eyez);
-    dest[15] = 1;
+    var fXNewX, fXNewY, fXNewZ, fYNewX, fYNewY, fYNewZ, fZNewX, fZNewY, fZNewZ;
 
-    return dest;
+    //ось Z направлена на наблюдателя
+    fZNewX = fEyeX - fCenterX;
+    fZNewY = fEyeY - fCenterY;
+    fZNewZ = fEyeZ - fCenterZ;
+
+    var fLength = Math.sqrt(fZNewX * fZNewX + fZNewY * fZNewY + fZNewZ * fZNewZ);
+    
+    //новая ось Z
+    fZNewX = fZNewX/fLength;
+    fZNewY = fZNewY/fLength;
+    fZNewZ = fZNewZ/fLength;
+
+    //новая ось X
+    fXNewX = fUpY * fZNewZ - fUpZ * fZNewY;
+    fXNewY = fUpZ * fZNewX - fUpX * fZNewZ;
+    fXNewZ = fUpX * fZNewY - fUpY * fZNewX;
+
+    fLength = Math.sqrt(fXNewX * fXNewX + fXNewY * fXNewY + fXNewZ * fXNewZ);
+    if(fLength){
+        fXNewX = fXNewX/fLength;
+        fXNewY = fXNewY/fLength;
+        fXNewZ = fXNewZ/fLength;
+    }
+    
+
+    //новая ось Y
+    
+    fYNewX = fZNewY * fXNewZ - fZNewZ * fXNewY;
+    fYNewY = fZNewZ * fXNewX - fZNewX * fXNewZ;
+    fYNewZ = fZNewX * fXNewY - fZNewY * fXNewX;
+
+    //нормировать ненужно, так как было векторное умножение двух ортонормированных векторов
+
+    //положение камеры в новых осях
+    var fEyeNewX = fEyeX * fXNewX + fEyeY * fXNewY + fEyeZ * fXNewZ;
+    var fEyeNewY = fEyeX * fYNewX + fEyeY * fYNewY + fEyeZ * fYNewZ;
+    var fEyeNewZ = fEyeX * fZNewX + fEyeY * fZNewY + fEyeZ * fZNewZ;
+
+    var pDataDestination = m4fDestination.pData;
+
+    pDataDestination._11 = fXNewX;
+    pDataDestination._12 = fYNewX;
+    pDataDestination._13 = fZNewX;
+    pDataDestination._14 = -fEyeNewX; //отъезжаем в позицию камеры
+
+    pDataDestination._21 = fXNewY;
+    pDataDestination._22 = fYNewY;
+    pDataDestination._23 = fZNewY;
+    pDataDestination._24 = -fEyeNewY; //отъезжаем в позицию камеры
+
+    pDataDestination._31 = fXNewZ;
+    pDataDestination._32 = fYNewZ;
+    pDataDestination._33 = fZNewZ;
+    pDataDestination._34 = -fEyeNewZ; //отъезжаем в позицию камеры
+
+    pDataDestination._41 = 0;
+    pDataDestination._42 = 0;
+    pDataDestination._43 = 0;
+    pDataDestination._44 = 1;
+
+    //wtf? вроде новый базис должен быть записан по столбцам
+    // dest[0] = x0;
+    // dest[1] = y0;
+    // dest[2] = z0;
+    // dest[3] = 0;
+    // dest[4] = x1;
+    // dest[5] = y1;
+    // dest[6] = z1;
+    // dest[7] = 0;
+    // dest[8] = x2;
+    // dest[9] = y2;
+    // dest[10] = z2;
+    // dest[11] = 0;
+    // dest[12] = -(x0 * eyex + x1 * eyey + x2 * eyez);
+    // dest[13] = -(y0 * eyex + y1 * eyey + y2 * eyez);
+    // dest[14] = -(z0 * eyex + z1 * eyey + z2 * eyez);
+    // dest[15] = 1;
+
+    return pDestination;
 };
 
-Mat4.row = function (mat, n) {
-    switch (n) {
-        case 1:
-            return Vec4.create([mat._11, mat._12, mat._13, mat._14]);
-        case 2:
-            return Vec4.create([mat._21, mat._22, mat._23, mat._24]);
-        case 3:
-            return Vec4.create([mat._31, mat._32, mat._33, mat._34]);
-        case 4:
-            return Vec4.create([mat._41, mat._42, mat._43, mat._44]);
+Mat4.prototype.row = function(iRow) {
+    'use strict';
+
+    var pData = this.pData;
+    switch(iRow){
+        case 1 : 
+            return new Vec4(pData._11,pData._12,pData._13,pData._14);
+        case 2 :
+            return new Vec4(pData._21,pData._22,pData._23,pData._24);
+        case 3 : 
+            return new Vec4(pData._31,pData._32,pData._33,pData._34);
+        case 4 :
+            return new Vec4(pData._41,pData._42,pData._43,pData._44);
     }
-    ;
-}
+};
+
+Mat4.prototype.column = function(iColumn) {
+    'use strict';
+    var pData = this.pData;
+    switch(iColumn){
+        case 1 : 
+            return new Vec4(pData._11,pData._21,pData._31,pData._41);
+        case 2 :
+            return new Vec4(pData._12,pData._22,pData._32,pData._42);
+        case 3 : 
+            return new Vec4(pData._13,pData._23,pData._33,pData._43);
+        case 4 :
+            return new Vec4(pData._14,pData._24,pData._34,pData._44);
+    }
+};
+
+Mat4.prototype.toQuat4 = function(q4fDestination) {
+    'use strict';
+    
+    if(!q4fDestination){
+        q4fDestination = new Quat4();
+    }
+
+    var pData = this.pData;
+    var pDataDestination = q4fDestination.pData;
+};
+
+// Mat4._pNxt = [1, 2, 0];
+// Mat4.toQuat4 = function (m, quat) {
+//     if (!quat) {
+//         quat = Quat4.create();
+//     }
+
+//     var  tr, s, q = quat;
+//     var    i, j, k;
+
+//     var nxt = Mat4._pNxt;
+
+//     tr = m._11 + m._22 + m._33;
+
+//     /* check the diagonal */
+//     if (tr > 0.0) {
+//         s = Math.sqrt(tr + 1.0);
+//         q.W = s / 2.0;
+//         s = 0.5 / s;
+        
+//         q.X = (m._23 - m._32) * s;
+//         q.Y = (m._31 - m._13) * s;
+//         q.Z = (m._12 - m._21) * s;
+//     } 
+//     else {                
+//         /* diagonal is negative */
+//         i = 0;
+//         if (m._22 > m._11) i = 1;
+//         if (m._33 > m[i * 4 + i]) i = 2;
+//         j = nxt[i];
+//         k = nxt[j];
+
+//         s = Math.sqrt((m[i * 4 + i] - (m[j * 4 + j] + m[k * 4 + k])) + 1.0);
+                          
+//         q[i] = s * 0.5;
+                                
+//         if (s != 0.0) s = 0.5 / s;
+
+//         q[3] = (m[k * 4 + j] - m[j * 4 + k]) * s;
+//         q[j] = (m[j * 4 + i] + m[i * 4 + j]) * s;
+//         q[k] = (m[k * 4 + i] + m[i * 4 + k]) * s;
+//     }
+
+//     return q;
+// }
+
+// Mat3.toQuat4 = Mat4.toQuat4;
 
 /*
- * Mat4.str
- * Returns a string representation of a Mat4
+ * Mat4.toInverseMat3
+ * Calculates the inverse of the upper 3x3 elements of a Mat4 and copies the result into a Mat3
+ * The resulting matrix is useful for calculating transformed normals
  *
  * Params:
- * mat - Mat4 to represent as a string
+ * mat - Mat4 containing values to invert and copy
+ * dest - Optional, Mat3 receiving values
  *
  * Returns:
- * string representation of mat
+ * dest is specified, a new Mat3 otherwise
  */
-Mat4.str = function (mat) {
-    return '[\n' + mat[0].toFixed(4) + ', ' + mat[1].toFixed(4) + ', ' + mat[2].toFixed(4) + ', ' + mat[3].toFixed(4) + 
-        ', ' + '\n' + mat[4].toFixed(4) + ', ' + mat[5].toFixed(4) + ', ' + mat[6].toFixed(4) + ', ' + mat[7].toFixed(4) + 
-        ', ' + '\n' + mat[8].toFixed(4) + ', ' + mat[9].toFixed(4) + ', ' + mat[10].toFixed(4) + ', ' + mat[11].toFixed(4) + 
-        ', ' + '\n' + mat[12].toFixed(4) + ', ' + mat[13].toFixed(4) + ', ' + mat[14].toFixed(4) + ', ' + mat[15].toFixed(4) + '\n' +
-        ']';
-};
+// Mat4.toInverseMat3 = function (mat, dest) {
+//     // Cache the matrix values (makes for huge speed increases!)
+//     var a00 = mat[0], a01 = mat[1], a02 = mat[2];
+//     var a10 = mat[4], a11 = mat[5], a12 = mat[6];
+//     var a20 = mat[8], a21 = mat[9], a22 = mat[10];
 
-Mat4.shaderStr = function (mat) {
-    return '[\n' + mat[0].toFixed(4) + ', ' + mat[4].toFixed(4) + ', ' + mat[8].toFixed(4) + ', ' + mat[12].toFixed(4) + 
-        ', ' + '\n' + mat[1].toFixed(4) + ', ' + mat[5].toFixed(4) + ', ' + mat[9].toFixed(4) + ', ' + mat[13].toFixed(4) + 
-        ', ' + '\n' + mat[2].toFixed(4) + ', ' + mat[6].toFixed(4) + ', ' + mat[10].toFixed(4) + ', ' + mat[14].toFixed(4) + 
-        ', ' + '\n' + mat[3].toFixed(4) + ', ' + mat[7].toFixed(4) + ', ' + mat[11].toFixed(4) + ', ' + mat[15].toFixed(4) + '\n' +
-        ']';
-};
+//     var b01 = a22 * a11 - a12 * a21;
+//     var b11 = -a22 * a10 + a12 * a20;
+//     var b21 = a21 * a10 - a11 * a20;
+
+//     var d = a00 * b01 + a01 * b11 + a02 * b21;
+//     if (!d) {return null;}
+//     var id = 1 / d;
+
+//     if (!dest) {dest = Mat3.create();}
+
+//     dest[0] = b01 * id;
+//     dest[1] = (-a22 * a01 + a02 * a21) * id;
+//     dest[2] = (a12 * a01 - a02 * a11) * id;
+//     dest[3] = b11 * id;
+//     dest[4] = (a22 * a00 - a02 * a20) * id;
+//     dest[5] = (-a12 * a00 + a02 * a10) * id;
+//     dest[6] = b21 * id;
+//     dest[7] = (-a21 * a00 + a01 * a20) * id;
+//     dest[8] = (a11 * a00 - a01 * a10) * id;
+
+//     return dest;
+// };
+
+
+
+
+
+
 
 
 /*
@@ -3410,7 +3895,7 @@ Quat4.multiplyVec3 = function (quaternion, vector) {
 Quat4._v3fTemp = Vec3.create();
 Quat4._m3fTemp = Mat3.create();
 
-Quat4.fromForwardUp = function (v3fForwardm, v3fUp, quat) {
+Quat4.fromForwardUp = function (v3fForward, v3fUp, quat) {
     if (!quat) {
         quat = Quat4.create();
     }
@@ -3751,117 +4236,4 @@ function vec3TransformCoord (v3fIn, m4fM, v3fOut) {
 }
 ;
 Vec3.vec3TransformCoord = vec3TransformCoord;
-/**
- * D3DXMatrixPerspectiveFovLH
- * @tparam Float fFovy Field of view in the y direction, in radians.
- * @tparam Float fAspect Aspect ratio, defined as view space width divided by height.
- * @tparam Float fZn Z-value of the near view-plane.
- * @tparam Float fZf Z-value of the far view-plane.
- * @tparam Float32Array m4fOut Out Matrix
- * @treturn Float32Array Out matrix
- */
-function matrixPerspectiveFovRH (fFovy, fAspect, fZn, fZf, m4fOut) {
-    if (!m4fOut) {
-        m4fOut = Mat4.create();
-    }
-
-    var fYScale = 1 / Math.tan(fFovy / 2);
-    var fXScale = fYScale / fAspect;
-
-    m4fOut._11 = fXScale;
-    m4fOut._12 = 0;
-    m4fOut._13 = 0;
-    m4fOut._14 = 0;
-    m4fOut._21 = 0;
-    m4fOut._22 = fYScale;
-    m4fOut._23 = 0;
-    m4fOut._24 = 0;
-    m4fOut._31 = 0;
-    m4fOut._32 = 0;
-    m4fOut._33 = (fZf + fZn) / (fZn - fZf);//(fZf+fZn)/(fZn-fZf);
-    m4fOut._34 = fZn * fZf * 2 / (fZn - fZf);//fZn*fZf*2/(fZn-fZf);
-    m4fOut._41 = 0;
-    m4fOut._42 = 0;
-    m4fOut._43 = -1.0;
-    m4fOut._44 = 0;
-
-    return m4fOut;
-}
-;
-Mat4.matrixPerspectiveFovRH = matrixPerspectiveFovRH;
-/**
- * D3DXMatrixOrthoLH
- * @tparam Float fW Width of the view volume.
- * @tparam Float fH Height of the view volume.
- * @tparam Float fZn Minimum z-value of the view volume which is referred to as z-near.
- * @tparam Float fZf Maximum z-value of the view volume which is referred to as z-far.
- * @tparam Float32Array m4fOut Out Matrix
- * @treturn Float32Array Out matrix
- */
-function matrixOrthoRH (fW, fH, fZn, fZf, m4fOut) {
-    if (!m4fOut) {
-        m4fOut = Mat4.create();
-    }
-
-    m4fOut._11 = 2 / fW;
-    m4fOut._12 = 0;
-    m4fOut._13 = 0;
-    m4fOut._14 = 0;
-    m4fOut._21 = 0;
-    m4fOut._22 = 2 / fH;
-    m4fOut._23 = 0;
-    m4fOut._24 = 0;
-    m4fOut._31 = 0;
-    m4fOut._32 = 0;
-    m4fOut._33 = 1 / (fZn - fZf);
-    m4fOut._34 = 0;
-    m4fOut._41 = 0;
-    m4fOut._42 = 0;
-    m4fOut._43 = fZn / (fZn - fZf);
-    m4fOut._44 = 1;
-
-    return m4fOut;
-}
-;
-Mat4.matrixOrthoRH = matrixOrthoRH;
-/**
- * D3DXMatrixOrthoOffCenterLH
- * @tparam Float Minimum x-value of view volume.
- * @tparam Float Maximum x-value of view volume.
- * @tparam Float fB Minimum y-value of view volume.
- * @tparam Float fT Maximum y-value of view volume.
- * @tparam Float fZn Minimum z-value of the view volume.
- * @tparam Float fZf Maximum z-value of the view volume.
- * @tparam Float32Array m4fOut Out Matrix
- * @treturn Float32Array Out matrix
- */
-function matrixOrthoOffCenterRH (fL, fR, fB, fT, fZn, fZf, m4fOut) {
-    if (!m4fOut) {
-        m4fOut = Mat4.create();
-    }
-    var fRL = fR - fL;
-    var fTB = fT - FB;
-    var fFN = fZf - fZn;
-    m4fOut._11 = 2 / fRL;
-    m4fOut._12 = 0;
-    m4fOut._13 = 0;
-    m4fOut._14 = -(fL + fR) / fRL;
-    m4fOut._21 = 0;
-    m4fOut._22 = 2 / fTB;
-    m4fOut._23 = 0;
-    m4fOut._24 = -(fT + fB) / FTB;
-    m4fOut._31 = 0;
-    m4fOut._32 = 0;
-    m4fOut._33 = -2 / fFN;
-    m4fOut._34 = -(fZf + fZn) / fFN;
-    m4fOut._41 = 0;
-    m4fOut._42 = 0;
-    m4fOut._43 = 0;
-    m4fOut._44 = 1;
-
-    return m4fOut;
-}
-;
-Mat4.matrixOrthoOffCenterRH = matrixOrthoOffCenterRH;
-
 
