@@ -455,7 +455,7 @@ Define(DISPROPERTY(obj, $$property), function () {
     PROPERTY(obj, property, undefined, undefined);
 });
 
-Define(A_CLASS(args), function () { var _pCtorValue = __FUNC__.ctor.apply(this, args); if (_pCtorValue) return _pCtorValue; });
+Define(A_CLASS(args), function () { var _pCtorValue = __FUNC__.ctor.apply(this, args); if (_pCtorValue) {warning('constructor return value'); trace(_pCtorValue); return _pCtorValue; } });
 Define(A_CLASS(), function () { A_CLASS(arguments) });
 Define(A_CLASS, A_CLASS());
 

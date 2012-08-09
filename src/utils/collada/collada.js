@@ -1895,7 +1895,7 @@ function COLLADA (pEngine, pSettings) {
 
         var pTracks = buildAnimationTrackList(pAnimationData);
         var sAnimation = pAnimationData.length? pAnimationData[0].name:  null;
-        var pAnimation = new a.Animation(sAnimation || 'unknown');
+        var pAnimation = new a.Animation(sAnimation || (sFilename? a.pathinfo(sFilename).filename : 'unknown'));
 
         for (var i = 0; i < pTracks.length; i++) {
             pAnimation.addTrack(pTracks[i]);
