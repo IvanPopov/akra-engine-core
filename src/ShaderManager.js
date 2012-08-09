@@ -14,6 +14,8 @@ function ComponentBlend() {
     this._id = 0;
     this._nShiftMin = 0;
     this._nShiftMax = 0;
+    this._nShiftCurrent = 0;
+    this._nTotalValidPasses = -1;
 }
 ComponentBlend.prototype.addComponent = function (pComponent, nShift) {
     //TODO: think about global uniform lists and about collisions of real names in them
@@ -39,10 +41,11 @@ ComponentBlend.prototype.addComponent = function (pComponent, nShift) {
     this._isReady = false;
 };
 ComponentBlend.prototype.addBlend = function (pBlend, nShift) {
-    //TODO: add smart blend of component`s blend when both of them are ready
     var i;
     var pNewBlend;
     pNewBlend = this.cloneMe();
+    pNewBlend._nShiftCurrent = nShift > 0 ? nShift : 0;
+    pNewBlend._nTotalValidPasses = pBlend.totalValidPasses();
     for (i = 0; i < pBlend.pComponents.length; i++) {
         pNewBlend.addComponent(pBlend.pComponents[i], pBlend.pComponentsShift[i] + nShift);
     }
@@ -70,7 +73,6 @@ ComponentBlend.prototype.finalize = function () {
                 this.pUniformsBlend[i + nShift] = {
                     "pUniformsByName"     : {},
                     "pUniformsByRealName" : {},
-                    "PUniformsValues"     : {},
                     "pUniformsDefault"    : {}
                 };
             }
@@ -87,7 +89,6 @@ ComponentBlend.prototype.finalize = function () {
                 }
                 pUniforms.pUniformsByRealName[sName] = pVar2;
                 pUniforms.pUniformsDefault[sName] = pPass.pUniformsDefault[sName];
-                pUniforms.PUniformsValues[sName] = null;
             }
         }
     }
@@ -107,6 +108,8 @@ ComponentBlend.prototype.cloneMe = function () {
     }
     pClone._nShiftMin = this._nShiftMin;
     pClone._nShiftMax = this._nShiftMax;
+    pClone._nShiftCurrent = this._nShiftCurrent;
+    pClone._nTotalValidPasses = this._nTotalValidPasses;
     return pClone;
 };
 ComponentBlend.prototype.hasComponent = function (sComponent) {
@@ -117,6 +120,9 @@ ComponentBlend.prototype.isReady = function () {
 };
 ComponentBlend.prototype.totalPasses = function () {
     return this.pPassBlends ? this.pPassBlends.length : 0;
+};
+ComponentBlend.prototype.totalValidPasses = function () {
+    return this._nTotalValidPasses > 0 ? this._nTotalValidPasses : this.totalPasses();
 };
 A_NAMESPACE(ComponentBlend, fx);
 a.fx.ComponentBlend = ComponentBlend;
@@ -460,13 +466,14 @@ function ShaderManager(pEngine) {
     this._pEffectResoureId = {};
     this._pEffectResoureBlend = {};
     this._pCurrentBlend = null;
-    this._pCurrentShift = 0;
-    this._pComponentBlendStack = [];
-    this._pComponentShiftStack = [];
+    this._nCurrentShift = 0;
     this._pSnapshotStack = [];
+    this._pBlendStack = [];
+    this._pShiftStack = [];
 
     this._pActiveProgram = null;
     this._nAttrsUsed = 0;
+
 
 }
 /**
@@ -715,17 +722,19 @@ ShaderManager.prototype._addBlendToBlend = function (pBlendA, pBlendB, nShift) {
 };
 ShaderManager.prototype.activateProgram = function (pProgram) {
     var pDevice = this.pEngine.pDevice;
-    
+
     pProgram.bind();
-    
+
 
     for (var i = pProgram.getAttribCount(); i < this._nAttrsUsed; i++) {
         pDevice.disableVertexAttribArray(i);
-    };
-  
+    }
+    ;
+
     for (var i = 0; i < pProgram.getAttribCount(); i++) {
         pDevice.enableVertexAttribArray(i);
-    };
+    }
+    ;
 
     this._pActiveProgram = pProgram;
     this._nAttrsUsed = pProgram.getAttribCount();
@@ -843,45 +852,111 @@ ShaderManager.prototype.deactivateComponent = function (pEffectResource, iCompon
     return true;
 };
 
-ShaderManager.prototype.push = function(pSnapshot){
-
-};
-ShaderManager.prototype.pop = function(pSnapshot){
-
-};
-ShaderManager.prototype.begin = function (iEffectHandle) {
-    if (typeof(iEffectHandle) === "object") {
-        iEffectHandle = iEffectHandle.resourceHandle();
-    }
-    var pBlend = this._pEffectResoureBlend[iEffectHandle];
+ShaderManager.prototype.push = function (pSnapshot) {
+    var rId = pSnapshot.method.effect.resourceHandle();
+    var pBlend = this._pEffectResoureBlend[rId];
+    var isUpdate = pSnapshot.isUpdated();
     if (!pBlend) {
         error("There are no any blend for this effect");
         return false;
     }
+    if (!pBlend.isReady()) {
+        isUpdate = true;
+    }
     if (!pBlend.finalize()) {
         return false;
     }
-    if (!this.newEffectBegin(pBlend)) {
-        error("It`s impossible to mix this effects");
-        return false;
+    var pUniforms;
+    var i, j;
+    if (isUpdate) {
+        pUniforms = [];
+        for (i = 0; i < pBlend.totalPasses(); i++) {
+            for (j in pBlend.pUniformsBlend[i].pUniformsByName) {
+                pUniforms[j] = null;
+            }
+        }
+        pSnapshot.setPassStates(pUniforms);
     }
+    this._pSnapshotStack.push(pSnapshot);
+    this._pShiftStack.push(this._nCurrentShift);
+    this._pBlendStack.push(pBlend);
+    this._pCurrentBlend = pBlend;
+
+    pSnapshot.isUpdated(false);
     return true;
 };
-ShaderManager.prototype.end = function (iEffectHandle) {
-    return false;
+ShaderManager.prototype.pop = function () {
+    this._pSnapshotStack.pop();
+    this._pShiftStack.pop();
+    this._pBlendStack.pop();
+    this._pCurrentBlend = this._pBlendStack[this._pBlendStack.length - 1];
+    this._nCurrentShift = this._pShiftStack[this._pShiftStack.length - 1];
+    return true;
 };
-ShaderManager.prototype.newEffectBegin = function (pBlend) {
-    if (!pBlend.isReady() || !this._pCurrentBlend.isReady()) {
-        warning("Boss of blends: current & add must be ready");
+
+ShaderManager.prototype.totalPasses = function (pEffect) {
+    var id = pEffect.resourceHandle();
+    if (this._pEffectResoureBlend[id]) {
+        return this._pEffectResoureBlend[id].totalValidPasses();
+    }
+    return 0;
+};
+
+ShaderManager.prototype.activatePass = function (pSnapshot, iPass) {
+    this._nCurrentShift += iPass;
+    return true;
+};
+ShaderManager.prototype.deactivatePass = function (pSnapshot) {
+    this._nCurrentShift -= pSnapshot._iCurrentPass;
+    return true;
+};
+
+/**
+ * Generate pass blend and shaderProgram
+ * @param iPass
+ */
+ShaderManager.prototype.finishPass = function (iPass) {
+    if (this._pCurrentBlend.totalValidPasses() <= iPass) {
+        warning("You try finish bad pass");
         return false;
     }
+    var pUniformValues,
+        pNotDefaultUniforms;
+    var i, j;
+    var pSnapshot,
+        pUniforms,
+        pValues,
+        pBlend;
+    var nShift;
+    var sRealName;
+    var nPass = this._pShiftStack[this._pShiftStack.length - 1] + iPass;
+    pUniformValues = {};
+    var index;
+    for (i = 0; i < this._pSnapshotStack.length; i++) {
+        nShift = this._pShiftStack[i];
+        pBlend = this._pBlendStack[i];
+        pSnapshot = this._pSnapshotStack[i];
+        index = nPass - nShift;
+        if (pBlend.totalValidPasses() <= index) {
+            continue;
+        }
+        pUniforms = pBlend.pUniformsBlend[index];
+        pValues = pSnapshot._pPassStates[index];
+        for (j in pUniforms.pUniformsByName) {
+            sRealName = pUniforms.pUniformsByName[j];
+            if (pValues[j]) {
+                pUniformValues[sRealName] = pValues[j];
+                pNotDefaultUniforms[sRealName] = true;
+                continue;
+            }
+            if (!pNotDefaultUniforms[sRealName]) {
+                pUniformValues[sRealName] = pUniforms.pUniformsDefault[sRealName];
+            }
+        }
+    }
+
 };
-ShaderManager.prototype.activatePass = function (iEffectHandle, iPass) {
-    return false;
-};
-ShaderManager.prototype.deactivatePass = function (iEffectHandle) {
-    return false;
-};
+
 
 /**
  * Получить список PARAMETER переменных компонента.

@@ -13,54 +13,54 @@ function RenderableObject() {
      * @private
      * @type {ShaderManager}
      */
-	this._pEngine = null;
+    this._pEngine = null;
 
     /**
      * @private
      * @type {RenderSnapshots[]}
      */
-	this._pSnapshots = [];
+    this._pSnapshots = [];
 
     /**
      * Active snapshot, i.e. snapshot with active render method.
      * @type {RenderSnapshot}
      */
-	this._pActiveSnapshot = null;
+    this._pActiveSnapshot = null;
 }
 
 PROPERTY(RenderableObject, 'renderMethod',
-    /**
-     * Get current render method.
-     * @return {RenderMethod} 
-     */
-    function () {
-        return this._pActiveSnapshot._pRenderMethod;
-    },
-    function (pRenderMethod) {
-        this.switchRenderMethod(
-            this.addRenderMethod(pRenderMethod));
-    });
+         /**
+          * Get current render method.
+          * @return {RenderMethod}
+          */
+             function () {
+             return this._pActiveSnapshot._pRenderMethod;
+         },
+         function (pRenderMethod) {
+             this.switchRenderMethod(
+                 this.addRenderMethod(pRenderMethod));
+         });
 
 PROPERTY(RenderableObject, 'effect',
-    function () {
-        return this._pActiveSnapshot._pRenderMethod._pEffect;
-    });
+         function () {
+             return this._pActiveSnapshot._pRenderMethod._pEffect;
+         });
 
 PROPERTY(RenderableObject, 'surfaceMaterial',
-    function () {
-        return this._pActiveSnapshot._pRenderMethod._pMaterial;
-    });
+         function () {
+             return this._pActiveSnapshot._pRenderMethod._pMaterial;
+         });
 
 PROPERTY(RenderableObject, 'material',
-    function () {
-        return this.surfaceMaterial.material;
-    });
+         function () {
+             return this.surfaceMaterial.material;
+         });
 
-RenderableObject.prototype.getEngine = function() {
+RenderableObject.prototype.getEngine = function () {
     return this._pEngine;
 };
 
-RenderableObject.prototype.setup = function(pEngine, sDefaulMethodName) {
+RenderableObject.prototype.setup = function (pEngine, sDefaulMethodName) {
     this._pEngine = pEngine;
 
     if (this.addRenderMethod(sDefaulMethodName) < 0 || this.switchRenderMethod(0) === false) {
@@ -71,7 +71,7 @@ RenderableObject.prototype.setup = function(pEngine, sDefaulMethodName) {
 /**
  * @destructor
  */
-RenderableObject.prototype.destructor = function() {
+RenderableObject.prototype.destructor = function () {
     this._pShaderManager = null;
     this._pActiveSnapshot = null;
     safe_delete_array(this._pSnapshots);
@@ -92,19 +92,20 @@ RenderableObject.prototype.destructor = function() {
  * @param {String} sName Method name, for easy handling.
  * @return {Uint} Number of added render method.
  */
-RenderableObject.prototype.addRenderMethod = function(pRenderMethod, sName) {
+RenderableObject.prototype.addRenderMethod = function (pRenderMethod, sName) {
     var pRenderSnapshot = new a.RenderSnapshot;
 
     if (arguments.length < 2) {
         sName = arguments[0];
-        pRenderMethod = this.getEngine().displayManager().renderMethodPool().createResource('render-method-' + (sName || '') + a.sid());
+        pRenderMethod = this.getEngine().displayManager().renderMethodPool().createResource('render-method-' +
+                                                                                            (sName || '') + a.sid());
         pRenderMethod.setMaterial();
         pRenderMethod.setEffect();
     }
 
 
     debug_assert(pRenderMethod.getEngine() === this._pEngine,
-        'Render method should belong to the same engine instance that the renderable object.');
+                 'Render method should belong to the same engine instance that the renderable object.');
 
     pRenderSnapshot.method = pRenderMethod;
     pRenderSnapshot.name = sName || pRenderMethod.findResourceName();
@@ -114,7 +115,8 @@ RenderableObject.prototype.addRenderMethod = function(pRenderMethod, sName) {
             this._pSnapshots[i] = pRenderSnapshot;
             return i;
         }
-    };
+    }
+    ;
 
     this._pSnapshots.push(pRenderSnapshot);
     return this._pSnapshots.length - 1;
@@ -127,21 +129,22 @@ RenderableObject.prototype.addRenderMethod = function(pRenderMethod, sName) {
  * @property findRenderMethod(String sMethodName)
  * @return {Int} Method number or -1 if method not exists.
  */
-RenderableObject.prototype.findRenderMethod = function() {
+RenderableObject.prototype.findRenderMethod = function () {
     var iMethod;
 
     if (typeof arguments[0] === 'string') {
-        for (var i = 0; i < this._pSnapshots.length; i ++) {
+        for (var i = 0; i < this._pSnapshots.length; i++) {
             if (this._pSnapshots[i].name === sMethodName) {
                 return i;
             }
-        };
+        }
+        ;
 
         return -1;
     }
 
-    iMethod = arguments[0];    
-    
+    iMethod = arguments[0];
+
     if (iMethod < 0) {
         iMethod = Math.abs(this._pSnapshots.length + iMethod);
     }
@@ -158,16 +161,16 @@ RenderableObject.prototype.findRenderMethod = function() {
  * @property switchRenderMethod(Uint iMethod)
  * @memberOf RenderableObject
  * @param {Uint} iMethod Method number.
- * @return {Boolean} 
+ * @return {Boolean}
  */
 /**
  * Set current render method as given.
  * @property switchRenderMethod(String sMethodName)
  * @memberOf RenderableObject
  * @param {String} sMethodName Method number.
- * @return {Boolean} 
+ * @return {Boolean}
  */
-RenderableObject.prototype.switchRenderMethod = function() {
+RenderableObject.prototype.switchRenderMethod = function () {
     var iSnapshot = this.findRenderMethod(arguments[0]);
 
     if (iSnapshot < 0) {
@@ -184,18 +187,18 @@ RenderableObject.prototype.switchRenderMethod = function() {
  * @property removeRenderMethod(Uint iMethod)
  * @memberOf RenderableObject
  * @param {Uint} iMethod Method number.
- * @return {Boolean} 
+ * @return {Boolean}
  */
 /**
  * Remove render method.
  * @property removeRenderMethod(String sMethodName)
  * @memberOf RenderableObject
  * @param {String} sMethodName Method number.
- * @return {Boolean} 
+ * @return {Boolean}
  */
-RenderableObject.prototype.removeRenderMethod = function() {
+RenderableObject.prototype.removeRenderMethod = function () {
     var iSnapshot = this.findRenderMethod(arguments[0]);
-    
+
     if (iSnapshot < 0) {
         return false;
     }
@@ -209,7 +212,7 @@ RenderableObject.prototype.removeRenderMethod = function() {
  * Is object ready for render?
  * @return {Boolean}
  */
-RenderableObject.prototype.isReadyForRender = function() {
+RenderableObject.prototype.isReadyForRender = function () {
     return this._pActiveSnapshot.isReady();
 };
 
@@ -217,13 +220,13 @@ RenderableObject.prototype.isReadyForRender = function() {
  * Check that all methods are loaded.
  * @return {Boolean}
  */
-RenderableObject.prototype.isAllMethodsLoaded = function() {
-    for (var i = 0; i < this._pSnapshots; ++ i) {
+RenderableObject.prototype.isAllMethodsLoaded = function () {
+    for (var i = 0; i < this._pSnapshots; ++i) {
         if (!this._pSnapshots[i].isMethodLoaded()) {
             return false;
         }
     }
-    
+
     return true;
 };
 
@@ -232,16 +235,16 @@ RenderableObject.prototype.isAllMethodsLoaded = function() {
  * @property getRenderMethod(Uint iMethod)
  * @memberOf RenderableObject
  * @param {Uint} iMethod Method number.
- * @return {RenderMethod} 
+ * @return {RenderMethod}
  */
 /**
  * Get render method.
  * @property getRenderMethod(String sMethodName)
  * @memberOf RenderableObject
  * @param {String} sMethodName Method number.
- * @return {RenderMethod} 
+ * @return {RenderMethod}
  */
-RenderableObject.prototype.getRenderMethod = function() {
+RenderableObject.prototype.getRenderMethod = function () {
     var iMethod = this.findRenderMethod(arguments[0]);
     return this._pSnapshots[iMethod]._pRenderMethod;
 };
@@ -252,6 +255,50 @@ RenderableObject.prototype.draw = function () {
     return false;
 };
 
+/**
+ * Start procees of adding data for rendering
+ */
+RenderableObject.prototype.startRender = function () {
+    if (!this._pActiveSnapshot) {
+        return false;
+    }
+    return this._pActiveSnapshot.begin();
+};
+/**
+ * Exclude object render method from stack of effects
+ */
+RenderableObject.prototype.finishRender = function () {
+    if (!this._pActiveSnapshot) {
+        return false;
+    }
+    return this._pActiveSnapshot.end();
+};
+
+RenderableObject.prototype.totalPasses = function () {
+    if (!this._pActiveSnapshot) {
+        return 0;
+    }
+    return this._pActiveSnapshot.totalPasses();
+};
+RenderableObject.prototype.activatePass = function (iPass) {
+    if (!this._pActiveSnapshot) {
+        return false;
+    }
+    return this._pActiveSnapshot.activatePass(iPass);
+};
+RenderableObject.prototype.deactivatePass = function () {
+    if (!this._pActiveSnapshot) {
+        return false;
+    }
+    return this._pActiveSnapshot.deactivatePass();
+};
+RenderableObject.prototype.renderPass = function (iPass) {
+    if (!this._pActiveSnapshot) {
+        return false;
+    }
+    var pProgram = this._pActiveSnapshot.renderPass(iPass);
+    //TODO: add program and object to renderQueue
+};
 // /**
 //  * By default, scene nodes do not render.
 //  * Derived classes must provide

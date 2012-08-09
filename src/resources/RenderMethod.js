@@ -423,6 +423,9 @@ PROPERTY(RenderMethod, 'effect',
 
         this._pEffect = pEffect;
         this.connect(this._pEffect, a.ResourcePoolItem.Loaded);
+        this.connect(this._pEffect, a.ResourcePoolItem.Altered);
+
+        this.notifyAltered();
 
         pEffect.addRef();
     });

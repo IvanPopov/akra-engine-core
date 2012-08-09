@@ -534,7 +534,14 @@ ResourcePoolItem.prototype.notifyRestored = function () {
 ResourcePoolItem.prototype.notifyDisabled = function () {
     this._setResourceFlag(a.ResourcePoolItem.Disabled, true);
 }
-
+/**
+ * @property notifyDisabled()
+ * Resource updated
+ * @memberof ResourcePoolItem
+ **/
+ResourcePoolItem.prototype.notifyAltered = function () {
+    this._setResourceFlag(a.ResourcePoolItem.Altered, true);
+}
 /**
  * @property notifySaved()
  * Установка в состояние сохраненый
@@ -612,6 +619,16 @@ ResourcePoolItem.prototype.isResourceLoaded = function () {
  **/
 ResourcePoolItem.prototype.isResourceDisabled = function () {
     return TEST_BIT(this._iResourceFlags, a.ResourcePoolItem.Disabled);
+}
+
+/**
+ * @property isResourceDisabled()
+ * Проверка обновлен ли ресурс
+ * @memberof ResourcePoolItem
+ * @return Boolean
+ **/
+ResourcePoolItem.prototype.isResourceAltered = function () {
+    return TEST_BIT(this._iResourceFlags, a.ResourcePoolItem.Altered);
 }
 
 /**

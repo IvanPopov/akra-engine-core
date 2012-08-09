@@ -20,7 +20,7 @@
  */
 function RenderSnapshot() {
     this._sName = null;
-	this._pRenderMethod = null;
+    this._pRenderMethod = null;
     this._pShaderManager = null;
     /**
      * Current render pass.
@@ -34,26 +34,35 @@ function RenderSnapshot() {
      * @type Array
      * @private
      */
-    this._pPassStates = [];
+    this._pPassStates = null;
+    this._isUpdated = false;
 
 
-    
     // this._fnModificationRoutine = null;
     // var me = this;
     // this._fnModificationRoutine = function(pEffectResource) {
     //     me._updatePassStates();
     // }
 
-    if 	(arguments.length) {
+    if (arguments.length) {
         this.method = arguments[0];
     }
+    var me = this;
+    this._fnModificationRoutine = function () {
+        if (this.isResourceAltered()) {
+            me._isUpdated = true;
+        }
+    };
 }
 
 /**
  * @dcrot
  */
-RenderSnapshot.prototype.destructor = function() {
+RenderSnapshot.prototype.destructor = function () {
     //this._pRenderMethod._pEffect.delModificationRoutine(this._fnModificationRoutine);
+    if (this._pRenderMethod) {
+        this._pRenderMethod.delChangesNotifyRoutine(this._fnModificationRoutine);
+    }
     safe_release(this._pRenderMethod);
     safe_delete_array(this._pPassStates);
 };
@@ -62,78 +71,78 @@ RenderSnapshot.prototype.destructor = function() {
  * Current render pass.
  */
 PROPERTY(RenderSnapshot, 'pass',
-    function () {
-        return this._iCurrentPass;
-    },
-    function (iPass) {
-        if (iPass > 0) {
-            this.activatePass(iPass);
-        }
-        else {
-            this.deactivatePass();
-        }
-    });
+         function () {
+             return this._iCurrentPass;
+         },
+         function (iPass) {
+             if (iPass > 0) {
+                 this.activatePass(iPass);
+             }
+             else {
+                 this.deactivatePass();
+             }
+         });
 
 /**
  * Number of render passes.
  */
 PROPERTY(RenderSnapshot, 'totalPasses',
-    function () {
-        return this._pRenderMethod._pEffect._nTotalPasses;
-    });
+         function () {
+             return this._pRenderMethod._pEffect._nTotalPasses;
+         });
 
 /**
  * Name of snapshot/method.
  */
 PROPERTY(RenderSnapshot, 'name',
-    function () {
-        return this._sName;
-    },
-    function (sName) {
-        if (sName) {
-            this._sName = sName;
-        }
-    });
+         function () {
+             return this._sName;
+         },
+         function (sName) {
+             if (sName) {
+                 this._sName = sName;
+             }
+         });
 
 /**
  * Render method.
  */
 PROPERTY(RenderSnapshot, 'method',
-    function () {
-        return this._pRenderMethod;
-    },
-    function (pValue) {
-        var pMethod = null;
+         function () {
+             return this._pRenderMethod;
+         },
+         function (pValue) {
+             var pMethod = null;
 
-        this.destructor();
-        
-        if (typeof pValue === 'string') {
-            pMethod = 
-                this._pEngine.pDisplayManager.renderMethodPool().loadResource(pValue);
-        }
-        else {
-            pMethod = pValue;
-        }
+             this.destructor();
 
-        this._pRenderMethod = pMethod;
-        this._sName = this._sName || pMethod.findResourceName();
-        this._pShaderManager= pMethod.getEngine().shaderManager();
+             if (typeof pValue === 'string') {
+                 pMethod =
+                 this._pEngine.pDisplayManager.renderMethodPool().loadResource(pValue);
+             }
+             else {
+                 pMethod = pValue;
+             }
 
-        //this._pRenderMethod._pEffect.setModificationRoutine(this._fnModificationRoutine);
-        //TODO: get info from effect (num of passes / list of uniforms)
-        
-        pMethod.addRef();
-    });
+             this._pRenderMethod = pMethod;
+             this._sName = this._sName || pMethod.findResourceName();
+             this._pShaderManager = pMethod.getEngine().shaderManager();
+
+             this._pRenderMethod.setChangesNotifyRoutine(this._fnModificationRoutine);
+             this._isUpdated = true;
+
+             pMethod.addRef();
+         });
 
 PROPERTY(RenderSnapshot, 'surfaceMaterial',
-    function () {
-        return this._pRenderMethod._pMaterial;
-    });
+         function () {
+             return this._pRenderMethod._pMaterial;
+         });
 
 /**
- * Callback, for updating effect.   
+ * Callback, for updating effect.
  */
-RenderSnapshot.prototype._updatePassStates = function() {
+RenderSnapshot.prototype._updatePassStates = function () {
     //TODO: update pass states.
 };
 
@@ -144,7 +153,7 @@ RenderSnapshot.prototype._updatePassStates = function() {
  */
 RenderSnapshot.prototype.setParameter = function (sName, pData) {
     var pPass = this._pPassStates[this._iCurrentPass];
-    if (pPass[sName]) {
+    if (pPass[sName] !== undefined) {
         pPass[sName] = pData;
         return true;
     }
@@ -159,7 +168,7 @@ RenderSnapshot.prototype.setParameter = function (sName, pData) {
  */
 RenderSnapshot.prototype.setParameterInArray = function (sName, pData, iElement) {
     var pPass = this._pPassStates[this._iCurrentPass];
-    if (pPass[sName]) {
+    if (pPass[sName] !== undefined) {
         pPass[sName][iElement] = pData;
         return true;
     }
@@ -186,7 +195,9 @@ RenderSnapshot.prototype.setParameterInArray = function (sName, pData, iElement)
 //    return this._pShaderManager.setTextureMatrix(iIndex, pData);
 //};
 
-
+RenderSnapshot.prototype.setPassStates = function (pPasses) {
+    this._pPassStates = pPasses;
+};
 /**
  * activate pass iPass
  * @tparam Int iPass - number of pass
@@ -211,35 +222,54 @@ RenderSnapshot.prototype.deactivatePass = function () {
     }
     return false;
 };
-
+RenderSnapshot.prototype.renderPass = function (iPass) {
+    iPass = (iPass !== undefined) ? iPass : this._iCurrentPass;
+    if (iPass === SM_UNKNOWN_PASS) {
+        return false;
+    }
+    this._pShaderManager.finishPass(iPass);
+};
+RenderSnapshot.prototype.isUpdated = function (isUpdate) {
+    if (isUpdate !== undefined) {
+        this._isUpdated = isUpdate;
+    }
+    return this._isUpdated;
+};
 
 /**
  * Add effect to composition.
  */
 RenderSnapshot.prototype.begin = function () {
-    this._pShaderManager.push(this);
+    return this._pShaderManager.push(this);
 };
 
 /**
  * Remove effect from composition.
  */
 RenderSnapshot.prototype.end = function () {
-    this._pShaderManager.pop(this);
+    return this._pShaderManager.pop(this);
+};
+
+RenderSnapshot.prototype.totalPasses = function () {
+    if (!this.method || !this.method.effect) {
+        return 0;
+    }
+    return this.method.effect.totalPasses();
 };
 
 /**
  * You must call these methods to prepare the engine for rendering scene.
  */
 RenderSnapshot.prototype.prepareForRender = function () {
-    var pPass = this._pPassStates[this._iCurrentPass];
+//    var pPass = this._pPassStates[this._iCurrentPass];
     var pManager = this._pShaderManager;
 
-    for (var sParam in pPass) {
-        var pParam = pPass[sParam];
-        if (pParam !== null) {
-            pManager.setParameter(sParam, pParam);
-        }
-    }
+//    for (var sParam in pPass) {
+//        var pParam = pPass[sParam];
+//        if (pParam !== null) {
+//            pManager.setParameter(sParam, pParam);
+//        }
+//    }
 
     pManager.prepareForRender();
 };
@@ -263,7 +293,7 @@ RenderSnapshot.prototype.applyCamera = function (pCamera) {
 
 /**
  * [applyBuffer description]
- * @param  {VertexData} pVertexData 
+ * @param  {VertexData} pVertexData
  */
 RenderSnapshot.prototype.applyBuffer = function (pVertexData) {
     this._pShaderManager.applyVertexData(pData);
@@ -271,7 +301,7 @@ RenderSnapshot.prototype.applyBuffer = function (pVertexData) {
 
 /**
  * [applyBufferMap description]
- * @param  {BufferMap} pBufferMap 
+ * @param  {BufferMap} pBufferMap
  */
 RenderSnapshot.prototype.applyBufferMap = function (pBufferMap) {
     this._pShaderManager.applyBufferMap(pBufferMap);
@@ -281,7 +311,7 @@ RenderSnapshot.prototype.applyBufferMap = function (pBufferMap) {
  * Is render method loaded?
  * @return {Boolean}
  */
-RenderSnapshot.prototype.isMethodLoaded = function() {
+RenderSnapshot.prototype.isMethodLoaded = function () {
     return this._pRenderMethod && this._pRenderMethod.isResourceLoaded();
 };
 
@@ -296,9 +326,9 @@ RenderSnapshot.prototype.hasRenderMethod = function () {
 
 /**
  * Return TRUE if render method loaded and enabled.
- * @return {Boolean} 
+ * @return {Boolean}
  */
-RenderSnapshot.prototype.isReady = function() {
+RenderSnapshot.prototype.isReady = function () {
     // if (!this._pRenderMethod.isResourceLoaded()) {
     //     trace(this._pRenderMethod.findResourceName(), 'not loaded');
     // }
@@ -306,8 +336,8 @@ RenderSnapshot.prototype.isReady = function() {
     //     trace(this._pRenderMethod.findResourceName(), 'loaded')
     //     trace('isResourceDisabled:',this._pRenderMethod.isResourceDisabled());
     // }
-    return this._pRenderMethod.isResourceLoaded() && 
-        !this._pRenderMethod.isResourceDisabled();
+    return this._pRenderMethod.isResourceLoaded() &&
+           !this._pRenderMethod.isResourceDisabled();
 };
 
 a.RenderSnapshot = RenderSnapshot;

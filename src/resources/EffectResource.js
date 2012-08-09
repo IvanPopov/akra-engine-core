@@ -78,28 +78,6 @@ PROPERTY(EffectResource, 'totalPasses',
              return this._nTotalPasses;
          });
 
-EffectResource.prototype.setModificationRoutine = function (fn) {
-    for (var i = 0; i < this._pModificationCallbacks.length; i++) {
-        if (this._pModificationCallbacks[i] == fn) {
-            return true;
-        }
-    }
-    ;
-
-    this._pModificationCallbacks.push(fn);
-};
-
-EffectResource.prototype.delModificationRoutine = function (fn) {
-    for (var i = 0; i < this._pModificationCallbacks.length; i++) {
-        if (this._pModificationCallbacks[i] == fn) {
-            this._pModificationCallbacks.splice(i, 1);
-            return true;
-        }
-    }
-    ;
-    return false;
-};
-
 /**
  * Определить, является ли эффект тиражируемым
  */
@@ -147,6 +125,9 @@ EffectResource.prototype.findParameter = function (pParameter, iPass) {
     return this._pShaderManager.findParameter(this, pParameter, iPass, a.ShaderManager.PARAMETER_FLAG_ALL);
 };
 
+EffectResource.prototype.totalPasses = function () {
+    return this._pShaderManager.totalPasses(this);
+};
 
 /**
  * innitialize the resource (called once)
@@ -255,11 +236,11 @@ EffectResource.prototype.use = function (iComponentHandle, nShift, isSet) {
             return false;
         }
     }
-
-    if (this.totalComponents() == 1 && isSet) {
+    this.notifyAltered();
+    if (this.totalComponents() === 1 && isSet) {
         this.notifyRestored();
     }
-    else if (this.totalComponents() == 0 && !isSet) {
+    else if (this.totalComponents() === 0 && !isSet) {
         this.notifyDisabled();
     }
 

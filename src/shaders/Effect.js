@@ -923,8 +923,8 @@ EffectStruct.prototype.canBlend = function (pStruct) {
         pVar1 = pSemantics1[i];
         pVar2 = pSemantics2[i];
         if (pVar2) {
-            if(!pVar1.pType.isStrictEqual(pVar2.pType) &&
-               !(pVar1.canBlend(pVar2))){
+            if (!pVar1.pType.isStrictEqual(pVar2.pType) &&
+                !(pVar1.canBlend(pVar2))) {
                 return false;
             }
         }
@@ -2296,6 +2296,7 @@ function EffectPass() {
     this.pVertexes = {};
     this.pExteranalsFragment = null;
     this.pExteranalsVertex = null;
+    this._fnEval = null;
 }
 EffectPass.prototype.setVertexShader = function (pParam) {
     if (typeof(pParam) === "string") {
@@ -2318,14 +2319,14 @@ EffectPass.prototype.setJSVertexShader = function (pFunc) {
         this.pFuncHash = {};
     }
     this.pFuncHash[pFunc.hash()] = pFunc;
-    this.pushCode("this.sVertex=\"" + pFunc.hash() + "\";");
+    this.pushCode("me.sVertex=\"" + pFunc.hash() + "\";");
 };
 EffectPass.prototype.setJSFragmentShader = function (pFunc) {
     if (!this.pFuncHash) {
         this.pFuncHash = {};
     }
     this.pFuncHash[pFunc.hash()] = pFunc;
-    this.pushCode("this.sFragment=\"" + pFunc.hash() + "\";");
+    this.pushCode("me.sFragment=\"" + pFunc.hash() + "\";");
 };
 EffectPass.prototype.addGlobalVariable = function (pVar) {
     if (!this.pGlobalVariables) {
@@ -2334,13 +2335,12 @@ EffectPass.prototype.addGlobalVariable = function (pVar) {
     this.pGlobalVariables[pVar.sName] = pVar;
 };
 EffectPass.prototype.finalize = function () {
-    if (this.sJSCode !== "") {
-        this.pCode.push(this.sJSCode);
-    }
-//    if (!this.isComplex) {
-//        this.prepare();
-//        return;
+//    if (this.sJSCode !== "") {
+//        this.pCode.push(this.sJSCode);
 //    }
+    console.log(this.sJSCode);
+    this._fnEval = new Function("me", "engine", "uniformValues", this.sJSCode);
+
     if (this.isComplex) {
         this.sJSCode = "";
     }
@@ -2354,7 +2354,7 @@ EffectPass.prototype.prepare = function () {
         //TODO: Place value of all variables
         error("Place value of all variables");
     }
-    eval(this.sJSCode);
+    this._fnEval(this, null, null);
     if (this.sVertex !== null) {
         this.pVertexShader = this.pFuncHash[this.sVertex];
     }
@@ -2373,7 +2373,7 @@ EffectPass.prototype.setState = function (eState, eValue) {
     this.pStates[eState] = eValue;
 };
 EffectPass.prototype.setJSState = function (eState, eValue) {
-    this.pushCode("this.pStates[" + eState + "]=" + eValue + ";");
+    this.pushCode("me.pStates[" + eState + "]=" + eValue + ";");
 };
 EffectPass.prototype.addAnnotation = function (pAnnotation) {
     this.pAnnotation = pAnnotation;
@@ -2399,11 +2399,12 @@ EffectPass.prototype.pushCode = function (pCodePart) {
         this.sJSCode += pCodePart;
         return;
     }
-    if (this.sJSCode !== "") {
-        this.pCode.push(this.sJSCode);
-        this.sJSCode = "";
-    }
-    this.pCode.push(pCodePart);
+    this.sJSCode += pCodePart.toCode();
+//    if (this.sJSCode !== "") {
+//        this.pCode.push(this.sJSCode);
+//        this.sJSCode = "";
+//    }
+//    this.pCode.push(pCodePart);
 };
 EffectPass.prototype.generateListOfExternals = function () {
     var pExV = null, pExF = null;
@@ -5204,7 +5205,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     }
                     if (this._pCurrentPass) {
                         this._pCurrentPass.addGlobalVariable(pRes);
-                        this.pushCode("this.pGlobalValues.");
+                        this.pushCode("uniformValues.");
                     }
                     if (this._eFuncProperty === a.Effect.Func.VERTEX && pRes.isVSInput) {
                         this._eVarProperty = a.Effect.Var.PARAMSTART;
@@ -5999,15 +6000,15 @@ Effect.prototype.analyzePassDecl = function (pNode, pPass) {
 Effect.prototype.analyzePassStateBlock = function (pNode, pPass) {
     var pChildren = pNode.pChildren;
     var i;
-    if (pPass.isComplex) {
-        pPass.pushCode("{");
-    }
+//    if (pPass.isComplex) {
+    pPass.pushCode("{");
+//    }
     for (i = pChildren.length - 2; i >= 1; i--) {
         this.analyzePassState(pChildren[i], pPass);
     }
-    if (pPass.isComplex) {
-        pPass.pushCode("}");
-    }
+//    if (pPass.isComplex) {
+    pPass.pushCode("}");
+//    }
 };
 Effect.prototype.analyzePassState = function (pNode, pPass) {
     var pChildren = pNode.pChildren;
