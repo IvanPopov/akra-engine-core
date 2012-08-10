@@ -280,14 +280,14 @@ Vec2.prototype.normalize = function(v2fDestination) {
 Vec2.prototype.length = function() {
     'use strict';
     var pData = this.pData;
-    var x = pData[0],y = pData[1];
+    var x = pData.X, y = pData.Y;
     return Math.sqrt(x*x + y*y);
 };
 
 Vec2.prototype.lengthSquare = function() {
     'use strict';
     var pData = this.pData;
-    var x = pData[0],y = pData[1];
+    var x = pData.X, y = pData.Y;
     return x*x + y*y;
 };
 /*
@@ -307,7 +307,7 @@ Vec2.prototype.dot = function(v2fVec) {
     var pData1 = this.pData;
     var pData2 = v2fVec.pData;
 
-    return pData1[0]*pData2[0] + pData1[1]*pData2[1];
+    return pData1.X*pData2.X + pData1.Y*pData2.Y;
 };
 
 /*
@@ -410,6 +410,7 @@ Vec2.prototype.clear = function() {
     var pData = this.pData;
 
     pData[0] = pData[1] = 0;
+
     return this;
 };
 
@@ -872,6 +873,8 @@ Vec3.prototype.clear = function() {
     var pData = this.pData;
 
     pData.X = pData.Y = pData.Z = 0;
+
+    return this;
 };
 
 
@@ -1155,7 +1158,7 @@ Vec4.prototype.dot = function(v4fVec) {
     var pData1 = this.pData;
     var pData2 = v4fVec.pData;
 
-    return pData1.X*pData2.X + pData1.Y*pData2.Y + pData1.Z*pData2.Z + pData1.W*pData2.W;
+    return pData1.X * pData2.X + pData1.Y * pData2.Y + pData1.Z * pData2.Z + pData1.W * pData2.W;
 };
 
 /*
@@ -1289,6 +1292,8 @@ Vec4.prototype.clear = function() {
     var pData = this.pData;
 
     pData.X = pData.Y = pData.Z = pData.W = 0;
+
+    return this;
 };
 
 /////////////////////////////////////////////////////////////
@@ -1782,6 +1787,135 @@ Mat3.prototype.inverse = function(m3fDestination) {
 
     return m3fDestination;
 };
+
+Mat3.prototype.toQuat4 = function(q4fDestination) {
+    'use strict';
+    
+    if(!q4fDestination){
+        q4fDestination = new Quat4();
+    }
+
+    var pData = this.pData;
+    var pDataDestination = q4fDestination.pData;
+
+    var a11 = pData.a11, a12 = pData.a12, a13 = pData.a13;
+    var a21 = pData.a21, a22 = pData.a22, a23 = pData.a23;
+    var a31 = pData.a31, a32 = pData.a32, a33 = pData.a33;
+
+    var x2 = ((a11 - a22 - a33) + 1)/4; //x^2
+    var y2 = ((a22 - a11 - a33) + 1)/4; //y^2
+    var z2 = ((a33 - a11 - a22) + 1)/4; //z^2
+    var w2 = ((a11 + a22 + a33) + 1)/4; //w^2
+
+    var fMax = Math.max(x2,Math.max(y2,Math.max(z2,w2)));
+
+    if(fMax == x2){
+        var x = Math.sqrt(x2); //максимальная компонента берется положительной
+
+        pDataDestination.X = x;
+        pDataDestination.Y = (a21 + a12)/4/x;
+        pDataDestination.Z = (a31 + a13)/4/x;
+        pDataDestination.W = (a32 - a23)/4/x;
+    }
+    else if(fMax == y2){
+        var y = Math.sqrt(y2); //максимальная компонента берется положительной
+
+        pDataDestination.X = (a21 + a12)/4/y;
+        pDataDestination.Y = y;
+        pDataDestination.Z = (a32 + a23)/4/y;
+        pDataDestination.W = (a13 - a31)/4/y;
+    }
+    else if(fMax == z2){
+        var z = Math.sqrt(z2); //максимальная компонента берется положительной
+
+        pDataDestination.X = (a31 + a13)/4/z;
+        pDataDestination.Y = (a32 + a23)/4/z;
+        pDataDestination.Z = z;
+        pDataDestination.W = (a21 - a12)/4/z;
+    }
+    else{
+        var w = Math.sqrt(w2); //максимальная компонента берется положительной
+
+        pDataDestination.X = (a32 - a23)/4/w;
+        pDataDestination.Y = (a13 - a31)/4/w;
+        pDataDestination.Z = (a21 - a12)/4/w;
+        pDataDestination.W = w;
+    }
+
+    return q4fDestination;
+};
+
+/**
+ * строит матрицу поворота через углы Эйлера
+ * матрица строится из последовательных вращений по осям и равносильна следующему
+ * resultMatrix = rotateZ(fAlpha) * rotateX(fBeta) * rotateZ(fGamma)
+ */
+
+Mat3.fromEulerAngles = function(fAlpha,fBeta,fGamma,m3fDestination) {
+    'use strict';
+    if(!m3fDestination){
+        m3fDestination = new Mat3();
+    }
+
+    var pDataDestination = m3fDestination.pData;
+
+    var fSinA = Math.sin(fAlpha);
+    var fSinB = Math.sin(fBeta);
+    var fSinG = Math.sin(fGamma);
+
+    var fCosA = Math.cos(fAlpha);
+    var fCosB = Math.cos(fBeta);
+    var fCosG = Math.cos(fGamma);
+
+    pDataDestination.a11 = fCosA * fCosG - fSinA * fCosB * fSinG;
+    pDataDestination.a12 = -fCosA * fSinG - fSinA * fCosB * fCosG;
+    pDataDestination.a13 = fSinA * fSinB;
+
+    pDataDestination.a21 = fSinA*fCosG + fCosA * fCosB * fSinG;
+    pDataDestination.a22 = -fSinA*fSinG + fCosA*fCosB*fCosG;
+    pDataDestination.a23 = -fCosA*fSinB;
+
+    pDataDestination.a31 = fSinB*fSinG;
+    pDataDestination.a32 = fSinB*fCosG;
+    pDataDestination.a33 = fCosB;
+
+    return m3fDestination;
+};
+
+/**
+ * строит матрицу поворота через углы поворота вокруг осей X Y Z
+ * resultMatrix = rotate(fX) * rotate(fY) * rotate(fZ);
+ */
+Mat3.fromXYZ = function(fX,fY,fZ,m3fDestination){
+    if(!m3fDestination){
+        m3fDestination = new Mat3();
+    }
+
+    var pDataDestination = m3fDestination.pData;
+
+    var fSinX = Math.sin(fX);
+    var fSinY = Math.sin(fY);
+    var fSinZ = Math.sin(fZ);
+
+    var fCosX = Math.cos(fX);
+    var fCosY = Math.cos(fY);
+    var fCosZ = Math.cos(fZ);
+
+    pDataDestination.a11 = fCosY * fCosZ;
+    pDataDestination.a12 = -fCosY * fSinZ;
+    pDataDestination.a13 = fSinY;
+
+    pDataDestination.a21 = fSinX * fSinY * fCosZ + fCosX * fSinZ;
+    pDataDestination.a22 = -fSinX * fSinY * fSinZ + fCosX * fCosZ;
+    pDataDestination.a23 = -fSinX * fCosY;
+
+    pDataDestination.a31 = -fCosX * fSinY * fCosZ + fSinX * fSinZ;
+    pDataDestination.a32 = fCosX * fSinY * fSinZ + fSinX * fCosZ;
+    pDataDestination.a33 = fCosX * fCosY;
+
+    return m3fDestination;
+};
+
 /*
  * Mat3.toString
  * Returns a string representation of a Mat3
@@ -1794,7 +1928,6 @@ Mat3.prototype.inverse = function(m3fDestination) {
 Mat3.prototype.toString = function() {
     'use strict';
     var pData = this.pData;
-
     return '[' + pData.a11 + ', ' + pData.a12 + ', ' + pData.a13 + ',\n' +
                + pData.a21 + ', ' + pData.a22 + ', ' + pData.a23 + ',\n' +
                + pData.a31 + ', ' + pData.a32 + ', ' + pData.a33 + ']';
@@ -2481,7 +2614,7 @@ Mat4.prototype.toRotationMatrix = function(m4fDestination) {
     pDataDestination._43 = 0;
     pDataDestination._44 = 1;
 
-    return pDataDestination;
+    return m4fDestination;
 };
 
 /*
@@ -2534,7 +2667,7 @@ Mat4.prototype.toMat3 = function(m3fDestination) {
  * Returns:
  * dest if specified, mat otherwise
  *
- * матрица сдвига умножается справа
+ * матрица сдвига умножается справа, то есть currentMatrix * translateMatrix
  */
 
 Mat4.prototype.translateRight = function(v3fVec,m4fDestination) {
@@ -2582,11 +2715,11 @@ Mat4.prototype.translateRight = function(v3fVec,m4fDestination) {
     pDataDestination._43 = a43;
     pDataDestination._44 = a41 * x + a42 * y + a43 * z + pData1._44;
 
-    return pDestination;
+    return m4fDestination;
 };
 
 /**
- * матрица сдвига умножается слева
+ * матрица сдвига умножается слева, то есть translateMatrix * currentMatrix
  */
 
 Mat4.prototype.translateLeft = function(v3fVec,m4fDestination) {
@@ -2627,7 +2760,7 @@ Mat4.prototype.translateLeft = function(v3fVec,m4fDestination) {
     pDataDestination._43 = pData1._43;
     pDataDestination._44 = pData1._44;
 
-    return pDestination;
+    return m4fDestination;
 };
 
 /*
@@ -2642,7 +2775,7 @@ Mat4.prototype.translateLeft = function(v3fVec,m4fDestination) {
  * Returns:
  * dest if specified, mat otherwise
  *
- * матрица скейла умножается справа
+ * матрица скейла умножается справа, то есть currentMatrix * scaleMatrix
  */
 
 Mat4.prototype.scaleRight = function(v3fVec,m4fDestination) {
@@ -2651,7 +2784,7 @@ Mat4.prototype.scaleRight = function(v3fVec,m4fDestination) {
     var pData1 = this.pData;
     var pData2 = v3fVec.pData;
 
-    var x = pData2.X, y = pData2.Y, pData2.Z;
+    var x = pData2.X, y = pData2.Y, z = pData2.Z;
 
     if(!m4fDestination){
         pData1._11 *= x;
@@ -2697,11 +2830,11 @@ Mat4.prototype.scaleRight = function(v3fVec,m4fDestination) {
     pDataDestination._43 = pData1._43 * z;
     pDataDestination._44 = pData1._44;
 
-    return pDestination;
+    return m4fDestination;
 };
 
 /**
- * матрица скейла умножается слева
+ * матрица скейла умножается слева, то есть scaleMatrix * currentMatrix
  */
 Mat4.prototype.scaleLeft = function(v3fVec,m4fDestination) {
     'use strict';
@@ -2730,7 +2863,7 @@ Mat4.prototype.scaleLeft = function(v3fVec,m4fDestination) {
         return this;
     }
 
-    var pDataDestination = m4fDestination.this;
+    var pDataDestination = m4fDestination.pData;
 
     pDataDestination._11 = pData1._11 * x;
     pDataDestination._12 = pData1._12 * x;
@@ -2752,7 +2885,7 @@ Mat4.prototype.scaleLeft = function(v3fVec,m4fDestination) {
     pDataDestination._43 = pData1._43;
     pDataDestination._44 = pData1._44;    
 
-    return pDestination;
+    return m4fDestination;
 };
 
 /*
@@ -2769,7 +2902,7 @@ Mat4.prototype.scaleLeft = function(v3fVec,m4fDestination) {
  * Returns:
  * dest if specified, mat otherwise
  *
- * матрица вращения умножается справа
+ * матрица вращения умножается справа, то есть currentMatrix * rotationMatrix
  */
 
 Mat4.prototype.rotateRight = function(fAngle,v3fAxis,m4fDestination) {
@@ -2842,11 +2975,11 @@ Mat4.prototype.rotateRight = function(fAngle,v3fAxis,m4fDestination) {
     pDataDestination._43 = pData1._43;
     pDataDestination._44 = pData1._44;
 
-    return pDestination;
+    return m4fDestination;
 };
 
 /**
- * матрица поворота умножается слева
+ * матрица поворота умножается слева, то есть rotationMatrix * currentMatrix
  */
 
 Mat4.prototype.rotateLeft = function(fAngle,v3fAxis,m4fDestination) {
@@ -2922,7 +3055,7 @@ Mat4.prototype.rotateLeft = function(fAngle,v3fAxis,m4fDestination) {
     pDataDestination._43 = pData1._43;
     pDataDestination._44 = pData1._44;
 
-    return pDestination;
+    return m4fDestination;
 };
 
 /*
@@ -2937,7 +3070,7 @@ Mat4.prototype.rotateLeft = function(fAngle,v3fAxis,m4fDestination) {
  * Returns:
  * dest if specified, mat otherwise
  *
- * матрица вращения умножается справа
+ * матрица вращения умножается справа, то есть currentMatrix * rotationMatrix
  */
 
 Mat4.prototype.rotateXRight = function(fAngle,m4fDestination) {
@@ -2987,11 +3120,11 @@ Mat4.prototype.rotateXRight = function(fAngle,m4fDestination) {
     pDataDestination._43 = pData._43;
     pDataDestination._44 = pData._44;
 
-    return pDestination;
+    return m4fDestination;
 };
 
 /**
- * матрица поворота умножается слева
+ * матрица поворота умножается слева, то есть rotationMatrix * currentMatrix
  */
 
 Mat4.prototype.rotateXLeft = function(fAngle,m4fDestination) {
@@ -3042,7 +3175,7 @@ Mat4.prototype.rotateXLeft = function(fAngle,m4fDestination) {
     pDataDestination._43 = pData._43;
     pDataDestination._44 = pData._44;
 
-    return pDestination;
+    return m4fDestination;
 };
 
 /*
@@ -3057,7 +3190,7 @@ Mat4.prototype.rotateXLeft = function(fAngle,m4fDestination) {
  * Returns:
  * dest if specified, mat otherwise
  *
- * матрица вращения умножается справа
+ * матрица вращения умножается справа, то есть currentMatrix * rotationMatrix
  */
 
 Mat4.prototype.rotateYRight = function(fAngle,m4fDestination) {
@@ -3108,16 +3241,15 @@ Mat4.prototype.rotateYRight = function(fAngle,m4fDestination) {
     pDataDestination._43 = pData._43;
     pDataDestination._44 = pData._44;
 
-    return pDestination;
+    return m4fDestination;
 };
 
 /**
- * матрица поворота умножается слева
+ * матрица поворота умножается слева, то есть rotationMatrix * currentMatrix
  */
 
 Mat4.prototype.rotateYLeft = function(fAngle,m4fDestination) {
     'use strict';
-    
     var pData = this.pData;
 
     var fSin = Math.sin(fAngle);
@@ -3131,13 +3263,12 @@ Mat4.prototype.rotateYLeft = function(fAngle,m4fDestination) {
         pData._11 = fCos * a11 + fSin * a31;
         pData._12 = fCos * a12 + fSin * a32;
         pData._13 = fCos * a13 + fSin * a33;
-        pData._13 = fCos * a14 + fSin * a34;
+        pData._14 = fCos * a14 + fSin * a34;
 
         pData._31 = -fSin * a11 + fCos * a31;
         pData._32 = -fSin * a12 + fCos * a32;
         pData._33 = -fSin * a13 + fCos * a33;
-        pData._33 = -fSin * a14 + fCos * a34;
-
+        pData._34 = -fSin * a14 + fCos * a34;
         return this;
     }
 
@@ -3163,7 +3294,7 @@ Mat4.prototype.rotateYLeft = function(fAngle,m4fDestination) {
     pDataDestination._43 = pData._43;
     pDataDestination._44 = pData._44;
 
-    return pDestination;
+    return m4fDestination;
 };
 
 /*
@@ -3178,7 +3309,7 @@ Mat4.prototype.rotateYLeft = function(fAngle,m4fDestination) {
  * Returns:
  * dest if specified, mat otherwise
  *
- * матрица вращения умножается справа
+ * матрица вращения умножается справа, то есть currentMatrix * rotationMatrix
  */
 
 Mat4.prototype.rotateZRight = function(fAngle,m4fDestination) {
@@ -3229,11 +3360,11 @@ Mat4.prototype.rotateZRight = function(fAngle,m4fDestination) {
     pDataDestination._43 = pData._43;
     pDataDestination._44 = pData._44;
 
-    return pDestination;
+    return m4fDestination;
 };
 
 /**
- * матрица поворота умножается слева
+ * матрица поворота умножается слева, то есть rotationMatrix * currentMatrix
  */
 
 Mat4.prototype.rotateZLeft = function(fAngle,m4fDestination) {
@@ -3284,7 +3415,7 @@ Mat4.prototype.rotateZLeft = function(fAngle,m4fDestination) {
     pDataDestination._43 = pData._43;
     pDataDestination._44 = pData._44;
 
-    return pDestination;
+    return m4fDestination;
 };
 
 /*
@@ -3514,7 +3645,7 @@ Mat4.lookAt = function (v3fEye, v3fCenter, v3fUp, m4fDestination) {
     // dest[14] = -(z0 * eyex + z1 * eyey + z2 * eyez);
     // dest[15] = 1;
 
-    return pDestination;
+    return m4fDestination;
 };
 
 Mat4.prototype.row = function(iRow) {
@@ -3557,54 +3688,53 @@ Mat4.prototype.toQuat4 = function(q4fDestination) {
 
     var pData = this.pData;
     var pDataDestination = q4fDestination.pData;
+
+    var a11 = pData._11, a12 = pData._12, a13 = pData._13;
+    var a21 = pData._21, a22 = pData._22, a23 = pData._23;
+    var a31 = pData._31, a32 = pData._32, a33 = pData._33;
+
+    var x2 = ((a11 - a22 - a33) + 1)/4; //x^2
+    var y2 = ((a22 - a11 - a33) + 1)/4; //y^2
+    var z2 = ((a33 - a11 - a22) + 1)/4; //z^2
+    var w2 = ((a11 + a22 + a33) + 1)/4; //w^2
+
+    var fMax = Math.max(x2,Math.max(y2,Math.max(z2,w2)));
+
+    if(fMax == x2){
+        var x = Math.sqrt(x2); //максимальная компонента берется положительной
+
+        pDataDestination.X = x;
+        pDataDestination.Y = (a21 + a12)/4/x;
+        pDataDestination.Z = (a31 + a13)/4/x;
+        pDataDestination.W = (a32 - a23)/4/x;
+    }
+    else if(fMax == y2){
+        var y = Math.sqrt(y2); //максимальная компонента берется положительной
+
+        pDataDestination.X = (a21 + a12)/4/y;
+        pDataDestination.Y = y;
+        pDataDestination.Z = (a32 + a23)/4/y;
+        pDataDestination.W = (a13 - a31)/4/y;
+    }
+    else if(fMax == z2){
+        var z = Math.sqrt(z2); //максимальная компонента берется положительной
+
+        pDataDestination.X = (a31 + a13)/4/z;
+        pDataDestination.Y = (a32 + a23)/4/z;
+        pDataDestination.Z = z;
+        pDataDestination.W = (a21 - a12)/4/z;
+    }
+    else{
+        var w = Math.sqrt(w2); //максимальная компонента берется положительной
+
+        pDataDestination.X = (a32 - a23)/4/w;
+        pDataDestination.Y = (a13 - a31)/4/w;
+        pDataDestination.Z = (a21 - a12)/4/w;
+        pDataDestination.W = w;
+    }
+
+    return q4fDestination;
 };
-
-// Mat4._pNxt = [1, 2, 0];
-// Mat4.toQuat4 = function (m, quat) {
-//     if (!quat) {
-//         quat = Quat4.create();
-//     }
-
-//     var  tr, s, q = quat;
-//     var    i, j, k;
-
-//     var nxt = Mat4._pNxt;
-
-//     tr = m._11 + m._22 + m._33;
-
-//     /* check the diagonal */
-//     if (tr > 0.0) {
-//         s = Math.sqrt(tr + 1.0);
-//         q.W = s / 2.0;
-//         s = 0.5 / s;
-        
-//         q.X = (m._23 - m._32) * s;
-//         q.Y = (m._31 - m._13) * s;
-//         q.Z = (m._12 - m._21) * s;
-//     } 
-//     else {                
-//         /* diagonal is negative */
-//         i = 0;
-//         if (m._22 > m._11) i = 1;
-//         if (m._33 > m[i * 4 + i]) i = 2;
-//         j = nxt[i];
-//         k = nxt[j];
-
-//         s = Math.sqrt((m[i * 4 + i] - (m[j * 4 + j] + m[k * 4 + k])) + 1.0);
-                          
-//         q[i] = s * 0.5;
-                                
-//         if (s != 0.0) s = 0.5 / s;
-
-//         q[3] = (m[k * 4 + j] - m[j * 4 + k]) * s;
-//         q[j] = (m[j * 4 + i] + m[i * 4 + j]) * s;
-//         q[k] = (m[k * 4 + i] + m[i * 4 + k]) * s;
-//     }
-
-//     return q;
-// }
-
-// Mat3.toQuat4 = Mat4.toQuat4;
 
 /*
  * Mat4.toInverseMat3
@@ -3650,38 +3780,33 @@ Mat4.prototype.toQuat4 = function(q4fDestination) {
 
 
 
-
+/////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////
 
 
 
 /*
  * Quat4 - Quaternions 
  */
-Quat4 = {};
 
-/*
- * Quat4.create
- * Creates a new instance of a Quat4 using the default array type
- * Any javascript array containing at least 4 numeric elements can serve as a Quat4
- *
- * Params:
- * quat - Optional, Quat4 containing values to initialize with
- *
- * Returns:
- * New Quat4
- */
-Quat4.create = function (quat) {
-    var dest = new glMatrixArrayType(4);
+function Quat4 () {
+    'use strict';
+    this.pData = new Float32Array(4);
 
-    if (quat) {
-        dest[0] = quat[0];
-        dest[1] = quat[1];
-        dest[2] = quat[2];
-        dest[3] = quat[3];
+    var nArgumentsLength = arguments.length;
+
+    if(nArgumentsLength == 1){
+        return this.set(arguments[0]);
     }
-
-    return dest;
-};
+    else if(nArgumentsLength == 4){
+        return this.set(arguments[0],arguments[1],arguments[2],arguments[3]);
+    }
+    else{
+        this.pData.W = 1;
+        return this;
+    }
+}
 
 /*
  * Quat4.set
@@ -3694,15 +3819,45 @@ Quat4.create = function (quat) {
  * Returns:
  * dest
  */
-Quat4.set = function (quat, dest) {
-    dest[0] = quat[0];
-    dest[1] = quat[1];
-    dest[2] = quat[2];
-    dest[3] = quat[3];
 
-    return dest;
+Quat4.prototype.set = function() {
+    'use strict';
+    var pData = this.pData;
+
+    var nArgumentsLength = arguments.length;
+
+    if(nArgumentsLength == 0){
+        pData.X = pData.Y = pData.Z = 0;
+        pData.W = 1;
+    }
+    if(nArgumentsLength == 1){
+        if(arguments[0] instanceof Quat4){
+            var pElements = arguments[0].pData;
+
+            pData.X = pElements.X;
+            pData.Y = pElements.Y;
+            pData.Z = pElements.Z;
+            pData.W = pElements.W;
+        }
+        else{
+            //Array
+            var pElements = arguments[0];
+
+            pData.X = pElements.X;
+            pData.Y = pElements.Y;
+            pData.Z = pElements.Z;
+            pData.W = pElements.W;
+        }
+    }
+    else if(nArgumentsLength == 4){
+        pData.X = arguments.X;
+        pData.Y = arguments.Y;
+        pData.Z = arguments.Z;
+        pData.W = arguments.W;
+    }
+
+    return this;
 };
-
 
 /*
  * Quat4.calculateW
@@ -3717,19 +3872,27 @@ Quat4.set = function (quat, dest) {
  * Returns:
  * dest if specified, quat otherwise
  */
-Quat4.calculateW = function (quat, dest) {
-    var x = quat[0], y = quat[1], z = quat[2];
 
-    if (!dest || quat == dest) {
-        quat[3] = -Math.sqrt(Math.abs(1.0 - x * x - y * y - z * z));
-        return quat;
+Quat4.prototype.calculateW = function(q4fDestination) {
+    'use strict';
+
+    var pData = this.pData;
+    var x = pData.X, y = pData.Y, z = pData.Z;
+
+    if(!q4fDestination){
+        q4fDestination.W = Math.sqrt(1. - x*x - y*y - z*z);
+        return this;
     }
-    dest[0] = x;
-    dest[1] = y;
-    dest[2] = z;
-    dest[3] = -Math.sqrt(Math.abs(1.0 - x * x - y * y - z * z));
-    return dest;
-}
+
+    var pDataDestination = q4fDestination.pData;
+
+    pDataDestination.X = x;
+    pDataDestination.Y = y;
+    pDataDestination.Z = z;
+    pDataDestination.W = Math.sqrt(1. - x*x - y*y - z*z);
+
+    return q4fDestination;
+};
 
 /*
  * Quat4.inverse
@@ -3742,21 +3905,28 @@ Quat4.calculateW = function (quat, dest) {
  * Returns:
  * dest if specified, quat otherwise
  */
-Quat4.inverse = function (quat, dest) {
-    if (!dest || quat == dest) {
-        quat[0] *= -1;
-        quat[1] *= -1;
-        quat[2] *= -1;
-        return quat;
+
+Quat4.prototype.inverse = function(q4fDestination) {
+    'use strict';
+    var pData = this.pData;
+
+    if(!q4fDestination){
+        pData.X = -pData.X;
+        pData.Y = -pData.Y;
+        pData.Z = -pData.Z;
+
+        return this;
     }
-    dest[0] = -quat[0];
-    dest[1] = -quat[1];
-    dest[2] = -quat[2];
-    dest[3] = quat[3];
-    return dest;
-}
 
+    var pDataDestination = q4fDestination.pData;
 
+    pDataDestination.X = -pData.X;
+    pDataDestination.Y = -pData.Y;
+    pDataDestination.Z = -pData.Z;
+    pDataDestination.W = pData.W;
+
+    return q4fDestination;
+};
 
 /*
  * Quat4.length
@@ -3768,10 +3938,14 @@ Quat4.inverse = function (quat, dest) {
  * Returns:
  * Length of quat
  */
-Quat4.length = function (quat) {
-    var x = quat[0], y = quat[1], z = quat[2], w = quat[3];
-    return Math.sqrt(x * x + y * y + z * z + w * w);
-}
+
+Quat4.prototype.length = function() {
+    'use strict';
+    var pData = this.pData;
+    var x = pData.X, y = pData.Y, z = pData.Z, w = pData.W;
+
+    return Math.sqrt(x*x + y*y + z*z + w*w);
+};
 
 /*
  * Quat4.normalize
@@ -3785,26 +3959,34 @@ Quat4.length = function (quat) {
  * Returns:
  * dest if specified, quat otherwise
  */
-Quat4.normalize = function (quat, dest) {
-    if (!dest) {dest = quat;}
 
-    var x = quat[0], y = quat[1], z = quat[2], w = quat[3];
-    var len = Math.sqrt(x * x + y * y + z * z + w * w);
-    if (len == 0) {
-        dest[0] = 0;
-        dest[1] = 0;
-        dest[2] = 0;
-        dest[3] = 0;
-        return dest;
+Quat4.prototype.normalize = function(q4fDestination) {
+    'use strict';
+    if(!q4fDestination){
+        q4fDestination = this;
     }
-    len = 1 / len;
-    dest[0] = x * len;
-    dest[1] = y * len;
-    dest[2] = z * len;
-    dest[3] = w * len;
 
-    return dest;
-}
+    var pData = this.pData;
+    var pDataDestination = q4fDestination.pData;
+
+    var x = pData.X, y = pData.Y, z = pData.Z, w = pData.W;
+
+    var fLength = Math.sqrt(x*x + y*y + z*z + w*w);
+
+    if(fLength){
+        x = x/fLength;
+        y = y/fLength;
+        z = z/fLength;
+        w = w/fLength;
+    }
+
+    pDataDestination.X = x;
+    pDataDestination.Y = y;
+    pDataDestination.Z = z;
+    pDataDestination.W = w;
+
+    return q4fDestination;
+};
 
 /*
  * Quat4.multiply
@@ -3818,21 +4000,28 @@ Quat4.normalize = function (quat, dest) {
  * Returns:
  * dest if specified, quat otherwise
  */
-Quat4.multiply = function (quat, quat2, dest) {
-    if (!dest) {dest = quat;}
 
-    var qax = quat[0], qay = quat[1], qaz = quat[2], qaw = quat[3];
-    var qbx = quat2[0], qby = quat2[1], qbz = quat2[2], qbw = quat2[3];
+Quat4.prototype.multiply = function(q4fQuat,q4fDestination) {
+    'use strict';
+    if(!q4fDestination){
+        q4fDestination = this;
+    }
 
-    dest[0] = qax * qbw + qaw * qbx + qay * qbz - qaz * qby;
-    dest[1] = qay * qbw + qaw * qby + qaz * qbx - qax * qbz;
-    dest[2] = qaz * qbw + qaw * qbz + qax * qby - qay * qbx;
-    dest[3] = qaw * qbw - qax * qbx - qay * qby - qaz * qbz;
+    var pData1 = this.pData;
+    var pData2 = q4fQuat.pData;
 
-    return dest;
-}
+    var x1 = pData1.X, y1 = pData1.Y, z1 = pData1.Z, w1 = pData1.W;
+    var x2 = pData2.X, y2 = pData2.Y, z2 = pData2.Z, w2 = pData2.W;
 
-Quat4.mult = Quat4.multiply;
+    var pDataDestination = q4fDestination.pData;
+
+    pDataDestination.X = x1*w2 + x2*w1 + y1*z2 - z1*y2;
+    pDataDestination.Y = y1*w2 + y2*w1 + z1*x2 - x1*z2;
+    pDataDestination.Z = z1*w2 + z2*w1 + x1*y2 - y1*x2;
+    pDataDestination.W = w1*w2 - x1*x2 - y1*y2 - z1*z2;
+
+    return q4fDestination;
+};
 
 /*
  * Quat4.multiplyVec3
@@ -3866,180 +4055,136 @@ Quat4.mult = Quat4.multiply;
     return dest;
 }*/
 
-Quat4._qTemp1 = new Quaternion();
-Quat4._qTemp2 = new Quaternion();
-Quat4._qTemp3 = new Quaternion();
+// Quat4._qTemp1 = new Quaternion();
+// Quat4._qTemp2 = new Quaternion();
+// Quat4._qTemp3 = new Quaternion();
 
-Quat4.multiplyVec3 = function (quaternion, vector) {
-    var vectorQuaternion = Quat4._qTemp1, 
-        inverseQuaternion = Quat4._qTemp2, 
-        resultQuaternion = Quat4._qTemp3;
+// Quat4.multiplyVec3 = function (quaternion, vector) {
+//     var vectorQuaternion = Quat4._qTemp1, 
+//         inverseQuaternion = Quat4._qTemp2, 
+//         resultQuaternion = Quat4._qTemp3;
   
-    vectorQuaternion.X = vector.X;
-    vectorQuaternion.Y = vector.Y;
-    vectorQuaternion.Z = vector.Z;
-    vectorQuaternion.W = 0.0;
+//     vectorQuaternion.X = vector.X;
+//     vectorQuaternion.Y = vector.Y;
+//     vectorQuaternion.Z = vector.Z;
+//     vectorQuaternion.W = 0.0;
 
-    Quat4.inverse(quaternion, inverseQuaternion);
+//     Quat4.inverse(quaternion, inverseQuaternion);
     
-    Quat4.multiply(inverseQuaternion, vectorQuaternion, resultQuaternion);
-    Quat4.multiply(resultQuaternion, quaternion, resultQuaternion);
+//     Quat4.multiply(inverseQuaternion, vectorQuaternion, resultQuaternion);
+//     Quat4.multiply(resultQuaternion, quaternion, resultQuaternion);
 
-    vector.X = resultQuaternion.X;
-    vector.Y = resultQuaternion.Y;
-    vector.Z = resultQuaternion.Z;
+//     vector.X = resultQuaternion.X;
+//     vector.Y = resultQuaternion.Y;
+//     vector.Z = resultQuaternion.Z;
 
-    return vector;
+//     return vector;
+// };
+
+// Quat4._v3fTemp = Vec3.create();
+// Quat4._m3fTemp = Mat3.create();
+
+Quat4.fromForwardUp = function(v3fForward,v3fUp,q4fDestination) {
+    'use strict';
+    if(!q4fDestination){
+        q4fDestination = new Quat4();
+    }
+
+    var pDataDestination = q4fDestination.pData;
+    var pDataForward = v3fForward.pData;
+    var pDataUp = v3fUp.pData;
+
+    var fForwardX = pDataForward.X, fForwardY = pDataForward.Y, fForwardZ = pDataForward.Z;
+    var fUpX = pDataUp.X, fUpY = pData.Y, fUpZ = pDataUp.Z;
+
+    var m3fTemp = new Mat3();
+    var pTempData = m3fTemp.pData;
+
+    pTempData.a11 = fUpY*fForwardZ - fUpZ*fForwardY;
+    pTempData.a12 = pDataUp.X;
+    pTempData.a13 = pDataForward.X;
+
+    pTempData.a21 = fUpZ*fForwardX - fUpX*fForwardZ;
+    pTempData.a22 = pDataUp.Y;
+    pTempData.a23 = pDataForward.Y;
+
+    pTempData.a31 = fUpX*fForwardY - fUpY*fForwardX;
+    pTempData.a32 = pDataUp.Z;
+    pTempData.a33 = pDataForward.Z;
+
+    return pTempData.toQuat4(q4fDestination);
 };
 
-Quat4._v3fTemp = Vec3.create();
-Quat4._m3fTemp = Mat3.create();
-
-Quat4.fromForwardUp = function (v3fForward, v3fUp, quat) {
-    if (!quat) {
-        quat = Quat4.create();
+Quat4.fromAxisAngle = function(v3fAxis,fAngle,q4fDestination){
+    'use strict';
+    if(!q4fDestination){
+        q4fDestination = new Quat4();
     }
 
-    var v3fTemp = Quat4._v3fTemp;
-    var m3fTemp = Quat4._m3fTemp;
+    var pDataDestination = q4fDestination.pData;
+    var pDataAxis = v3fAxis.pData;
+    var x = pDataAxis.X, y = pDataAxis.Y, z = pDataAxis.Z;
 
-    Vec3.cross(v3fUp, v3fForward, v3fTemp);
+    var fLength = Math.sqrt(x*x + y*y + z*z);
 
-    m3fTemp._11 = v3fTemp.X;
-    m3fTemp._21 = v3fTemp.Y;
-    m3fTemp._31 = v3fTemp.Z;
-    m3fTemp._12 = v3fUp.X;
-    m3fTemp._22 = v3fUp.Y;
-    m3fTemp._32 = v3fUp.Z;
-    m3fTemp._13 = v3fForward.X;
-    m3fTemp._23 = v3fForward.Y;
-    m3fTemp._33 = v3fForward.Z;
-
-    return Mat3.toQuat4(m3fTemp, quat);
-}
-
-Quat4.fromAxisAngle = function (axis, angle, quat) {
-    if (!quat) {
-        quat = Quat4.create();
+    if(!fLength){
+        pDataDestination.X = pDataDestination.Y = pDataDestination.Z = 0;
+        pDataDestination.W = 1;
+        return q4fDestination;
     }
 
-    quat.X = axis.X * Math.sin(angle / 2.);
-    quat.Y = axis.Y * Math.sin(angle / 2.);
-    quat.Z = axis.Z * Math.sin(angle / 2.);
-    quat.W = Math.cos(angle / 2.);
+    x = x/fLength;
+    y = y/fLength;
+    z = z/fLength;
 
-    return quat;
+    //fAngle - вращение по часовой стрелке
+    var fSin = Math.sin(fAngle/2);
+    var fCos = Math.cos(fAngle/2);
+
+    pDataDestination.X = x * fSin;
+    pDataDestination.Y = y * fSin;
+    pDataDestination.Z = z * fSin;
+    pDataDestination.W = fCos;
+
+    return q4fDestination;
+};
+/**
+ * строит кватернион поворота через углы Эйлера
+ * матрица на основе углов эйлера равна
+ * resultMatrix = rotateZ(fAlpha) * rotateX(fBeta) * rotateZ(fGamma)
+ */
+Quat4.fromEulerAngles = function(fAlpha,fBeta,fGamma,q4fDestination) {
+    'use strict';
+    if(!q4fDestination){
+        q4fDestination = new Quat4();
+    }
+
+    //var pDataDestination = q4fDestination.pData;
+
+    var qQuatA = new Quat4(0.,0.,Math.sin(fAlpha/2),Math.cos(fAlpha/2));
+    var qQuatB = new Quat4(Math.sin(fBeta/2),0.,0.,Math.cos(fBeta/2));
+    var qQuatG = new Quat4(0.,0.,Math.sin(fGamma/2),Math.cos(fGamma/2));
+
+    return qQuatA.multiply(qQuatB.multiply(qQuatG),q4fDestination)
 };
 
-Quat4._qX= new Quaternion();
-Quat4._qY = new Quaternion();
-Quat4._qZ = new Quaternion();
-
-Quat4.fromYPR = function (fYaw, fPitch, fRoll, quat) {
-    if (!quat) {
-        quat = Quat4.create();
+/**
+ * строит кватернион через углы поворота вокруг осей X Y Z
+ * аналогичная матрица строится как
+ * resultMatrix = rotate(fX) * rotate(fY) * rotate(fZ);
+ */
+Quat4.fromXYZ = function(fX,fY,fZ,q4fDestination) {
+    'use strict';
+    if(!q4fDestination){
+        q4fDestination = new Quat4();
     }
 
-    var fX = fPitch;
-    var fY = fYaw;
-    var fZ = fRoll;
+    var qQuatX = new Quat4(Math.sin(fX/2),0.,0.,Math.cos(fX/2));
+    var qQuatY = new Quat4(0.,Math.sin(fY/2),0.,Math.cos(fY/2));
+    var qQuatZ = new Quat4(0.,0.,Math.sin(fZ/2),Math.cos(fZ/2));
 
-    var Qx = Quat4._qX, 
-        Qy = Quat4._qY, 
-        Qz = Quat4._qZ;
-
-    Quaternion(Qx, Math.cos(fX/2), Math.sin(fX/2), 0, 0);
-    Quaternion(Qy, Math.cos(fY/2), 0, Math.sin(fY/2), 0);
-    Quaternion(Qz, Math.cos(fZ/2), 0, 0, Math.sin(fZ/2));
-
-    return Quat4.multiply(Qy, Quat4.multiply(Qx, Qz), quat);
-
-
-    // var fPhi = -fPitch,//fRoll,
-    //     fTheta = -fYaw, //fPitch,
-    //     fPsi = -fRoll;
-
-    // with (Math) {
-    //     quat.X = sin(fPhi/2) * cos(fTheta/2) * cos(fPsi/2) - cos(fPhi/2) * sin(fTheta/2) * sin(fPsi/2);
-    //     quat.Y = cos(fPhi/2) * sin(fTheta/2) * cos(fPsi/2) + sin(fPhi/2) * cos(fTheta/2) * sin(fPsi/2);
-    //     quat.Z = cos(fPhi/2) * cos(fTheta/2) * sin(fPsi/2) - sin(fPhi/2) * sin(fTheta/2) * cos(fPsi/2);
-
-    //     quat.W = cos(fPhi/2) * cos(fTheta/2) * cos(fPsi/2) + sin(fPhi/2) * sin(fTheta/2) * sin(fPsi/2);
-    // }
-
-    // return quat;
+    return qQuatX.multiply(qQuatY.multiply(qQuatZ),q4fDestination);
 };
-
-Quat4.fromXYZ = function (fX, fY, fZ, quat) {
-    if (!quat) {
-        quat = Quat4.create();
-    }
-
-//    var fX = fPitch;
-//    var fY = fYaw;
-//    var fZ = fRoll;
-
-    var Qx = Quat4._qX,
-        Qy = Quat4._qY,
-        Qz = Quat4._qZ;
-    Quaternion(quat, 1, 0, 0, 0);
-    Quaternion(Qx, Math.cos(fX/2), -Math.sin(fX/2), 0, 0);
-    Quaternion(Qy, Math.cos(fY/2), 0, -Math.sin(fY/2), 0);
-    Quaternion(Qz, Math.cos(fZ/2), 0, 0, -Math.sin(fZ/2));
-
-    Quat4.multiply(quat, Qx);
-    Quat4.multiply(quat, Qy);
-    Quat4.multiply(quat, Qz);
-
-    return quat;
-
-
-    // var fPhi = -fPitch,//fRoll,
-    //     fTheta = -fYaw, //fPitch,
-    //     fPsi = -fRoll;
-
-    // with (Math) {
-    //     quat.X = sin(fPhi/2) * cos(fTheta/2) * cos(fPsi/2) - cos(fPhi/2) * sin(fTheta/2) * sin(fPsi/2);
-    //     quat.Y = cos(fPhi/2) * sin(fTheta/2) * cos(fPsi/2) + sin(fPhi/2) * cos(fTheta/2) * sin(fPsi/2);
-    //     quat.Z = cos(fPhi/2) * cos(fTheta/2) * sin(fPsi/2) - sin(fPhi/2) * sin(fTheta/2) * cos(fPsi/2);
-
-    //     quat.W = cos(fPhi/2) * cos(fTheta/2) * cos(fPsi/2) + sin(fPhi/2) * sin(fTheta/2) * sin(fPsi/2);
-    // }
-
-    // return quat;
-};
-
-Quat4.toAxisAngle = function (q1, axisAngle) {
-    if (!axisAngle) {
-        axisAngle = new Vector4;
-    }
-
-    if (q1.W > 1) 
-        Quat4.normalize(q1); 
-        // if w>1 acos and sqrt will produce errors, this cant happen if quaternion is normalised
-    
-    axisAngle.W = 2 * Math.acos(q1.W);
-    
-    var s = Math.sqrt(1 - q1.W * q1.W); 
-    // assuming quaternion normalised then w is less than 1, so term always positive.
-
-    if (s < 0.0005) { 
-
-        // test to avoid divide by zero, s is always positive due to sqrt
-        // if s close to zero then direction of axis not important
-        
-        axisAngle.X = q1.X; // if it is important that axis is normalised then replace with x=1; y=z=0;
-        axisAngle.Y = q1.Y;
-        axisAngle.Z = q1.Z;
-    } 
-    else {
-        axisAngle.X = q1.X / s; // normalise axis
-        axisAngle.Y = q1.Y / s;
-        axisAngle.Z = q1.Z / s;
-    }
-
-   return axisAngle;
-}
 
 /*
  * Quat4.toMat3
@@ -4052,41 +4197,33 @@ Quat4.toAxisAngle = function (q1, axisAngle) {
  * Returns:
  * dest if specified, a new Mat3 otherwise
  */
-Quat4.toMat3 = function (quat, dest) {
-    if (!dest) {dest = Mat3.create();}
 
-    var x = quat[0], y = quat[1], z = quat[2], w = quat[3];
+Quat4.prototype.toMat3 = function(m3fDestination) {
+    'use strict';
+    if(!m3fDestination){
+        m3fDestination = new Mat3();
+    }
+    var pDataDestination = m3fDestination.pData;
+    var pData = this.pData;
 
-    var x2 = x + x;
-    var y2 = y + y;
-    var z2 = z + z;
+    var x = pData.X, y = pData.Y, z = pData.Z, w = pData.W;
 
-    var xx = x * x2;
-    var xy = x * y2;
-    var xz = x * z2;
+    //потом необходимо ускорить
+    
+    pDataDestination.a11 = 1 - 2*(y*y + z*z);
+    pDataDestination.a12 = 2*(x*y - z*w);
+    pDataDestination.a13 = 2*(x*z + y*w);
 
-    var yy = y * y2;
-    var yz = y * z2;
-    var zz = z * z2;
+    pDataDestination.a21 = 2*(x*y + z*w);
+    pDataDestination.a22 = 1 - 2*(x*x + z*z);
+    pDataDestination.a23 = 2*(y*z - x*w);
 
-    var wx = w * x2;
-    var wy = w * y2;
-    var wz = w * z2;
+    pDataDestination.a31 = 2*(x*z - y*w);
+    pDataDestination.a32 = 2*(y*z + x*w);
+    pDataDestination.a33 = 1 - 2*(x*x + y*y);
 
-    dest[0] = 1 - (yy + zz);
-    dest[1] = xy - wz;
-    dest[2] = xz + wy;
-
-    dest[3] = xy + wz;
-    dest[4] = 1 - (xx + zz);
-    dest[5] = yz - wx;
-
-    dest[6] = xz - wy;
-    dest[7] = yz + wx;
-    dest[8] = 1 - (xx + yy);
-
-    return dest;
-}
+    return m3fDestination;
+};
 
 /*
  * Quat4.toMat4
@@ -4099,100 +4236,41 @@ Quat4.toMat3 = function (quat, dest) {
  * Returns:
  * dest if specified, a new Mat4 otherwise
  */
-Quat4.toMat4 = function (quat, dest) {
-    if (!dest) {dest = Mat4.create();}
 
-    var x = quat[0], y = quat[1], z = quat[2], w = quat[3];
-
-    var x2 = x + x;
-    var y2 = y + y;
-    var z2 = z + z;
-
-    var xx = x * x2;
-    var xy = x * y2;
-    var xz = x * z2;
-
-    var yy = y * y2;
-    var yz = y * z2;
-    var zz = z * z2;
-
-    var wx = w * x2;
-    var wy = w * y2;
-    var wz = w * z2;
-
-    dest[0] = 1 - (yy + zz);
-    dest[1] = xy - wz;
-    dest[2] = xz + wy;
-    dest[3] = 0;
-
-    dest[4] = xy + wz;
-    dest[5] = 1 - (xx + zz);
-    dest[6] = yz - wx;
-    dest[7] = 0;
-
-    dest[8] = xz - wy;
-    dest[9] = yz + wx;
-    dest[10] = 1 - (xx + yy);
-    dest[11] = 0;
-
-    dest[12] = 0;
-    dest[13] = 0;
-    dest[14] = 0;
-    dest[15] = 1;
-
-    return dest;
-}
-
-/*
- * Quat4.slerp
- * Performs a spherical linear interpolation between two Quat4
- *
- * Params:
- * quat - Quat4, first quaternion
- * quat2 - Quat4, second quaternion
- * slerp - interpolation amount between the two inputs
- * dest - Optional, Quat4 receiving operation result. If not specified result is written to quat
- *
- * Returns:
- * dest if specified, quat otherwise
- */
-Quat4.slerp = function (quat, quat2, slerp, dest) {
-    if (!dest) {dest = quat;}
-
-    var cosHalfTheta = quat[0] * quat2[0] + quat[1] * quat2[1] + quat[2] * quat2[2] + quat[3] * quat2[3];
-
-    if (Math.abs(cosHalfTheta) >= 1.0) {
-        if (dest != quat) {
-            dest[0] = quat[0];
-            dest[1] = quat[1];
-            dest[2] = quat[2];
-            dest[3] = quat[3];
-        }
-        return dest;
+Quat4.prototype.toMat4 = function(m4fDestination) {
+    'use strict';
+    if(!m4fDestination){
+        m4fDestination = new Mat4();
     }
+    var pDataDestination = m4fDestination.pData;
+    var pData = this.pData;
 
-    var halfTheta = Math.acos(cosHalfTheta);
-    var sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta);
+    var x = pData.X, y = pData.Y, z = pData.Z, w = pData.W;
 
-    if (Math.abs(sinHalfTheta) < 0.001) {
-        dest[0] = (quat[0] * 0.5 + quat2[0] * 0.5);
-        dest[1] = (quat[1] * 0.5 + quat2[1] * 0.5);
-        dest[2] = (quat[2] * 0.5 + quat2[2] * 0.5);
-        dest[3] = (quat[3] * 0.5 + quat2[3] * 0.5);
-        return dest;
-    }
+    //потом необходимо ускорить
+    
+    pDataDestination._11 = 1 - 2*(y*y + z*z);
+    pDataDestination._12 = 2*(x*y - z*w);
+    pDataDestination._13 = 2*(x*z + y*w);
+    pDataDestination._14 = 0;
 
-    var ratioA = Math.sin((1 - slerp) * halfTheta) / sinHalfTheta;
-    var ratioB = Math.sin(slerp * halfTheta) / sinHalfTheta;
+    pDataDestination._21 = 2*(x*y + z*w);
+    pDataDestination._22 = 1 - 2*(x*x + z*z);
+    pDataDestination._23 = 2*(y*z - x*w);
+    pDataDestination._24 = 0;
 
-    dest[0] = (quat[0] * ratioA + quat2[0] * ratioB);
-    dest[1] = (quat[1] * ratioA + quat2[1] * ratioB);
-    dest[2] = (quat[2] * ratioA + quat2[2] * ratioB);
-    dest[3] = (quat[3] * ratioA + quat2[3] * ratioB);
+    pDataDestination._31 = 2*(x*z - y*w);
+    pDataDestination._32 = 2*(y*z + x*w);
+    pDataDestination._33 = 1 - 2*(x*x + y*y);
+    pDataDestination._34 = 0;
 
-    return dest;
-}
+    pDataDestination._41 = 0;
+    pDataDestination._42 = 0;
+    pDataDestination._43 = 0;
+    pDataDestination._44 = 1;
 
+    return m4fDestination;
+};
 
 /*
  * Quat4.str
@@ -4204,36 +4282,122 @@ Quat4.slerp = function (quat, quat2, slerp, dest) {
  * Returns:
  * string representation of quat
  */
-Quat4.str = function (quat) {
-    return '[' + quat[0] + ', ' + quat[1] + ', ' + quat[2] + ', ' + quat[3] + ']';
-}
 
-//D3D functions
+Quat4.prototype.toString = function() {
+    'use strict';
+    var pData = this.pData;
+    return '[' + pData.X + ', ' + pData.Y + ', ' + pData.Z + ', ' + pData.W + ']';
+};
 
-/**
- * D3DVec3TransformCoord
- * @tparam Float32Array v3fOut Out Vector
- * @tparam Float32Array v3fIn In Vector
- * @tparam Float32Array m4fM Matrix
- * @treturn Float32Array Out vector
- */
-function vec3TransformCoord (v3fIn, m4fM, v3fOut) {
-    if (!v3fOut) {
-        v3fOut = Vec3.create();
-    }
 
-    var x, y, z, w;
-    x = v3fIn.X * m4fM._11 + v3fIn.Y * m4fM._12 + v3fIn.Z * m4fM._13 + m4fM._14;
-    y = v3fIn.X * m4fM._21 + v3fIn.Y * m4fM._22 + v3fIn.Z * m4fM._23 + m4fM._24;
-    z = v3fIn.X * m4fM._31 + v3fIn.Y * m4fM._32 + v3fIn.Z * m4fM._33 + m4fM._34;
-    w = v3fIn.X * m4fM._41 + v3fIn.Y * m4fM._42 + v3fIn.Z * m4fM._43 + m4fM._44;
+// Quat4.toAxisAngle = function (q1, axisAngle) {
+//     if (!axisAngle) {
+//         axisAngle = new Vector4;
+//     }
 
-    v3fOut.X = x / w;
-    v3fOut.Y = y / w;
-    v3fOut.Z = z / w;
+//     if (q1.W > 1) 
+//         Quat4.normalize(q1); 
+//         // if w>1 acos and sqrt will produce errors, this cant happen if quaternion is normalised
+    
+//     axisAngle.W = 2 * Math.acos(q1.W);
+    
+//     var s = Math.sqrt(1 - q1.W * q1.W); 
+//     // assuming quaternion normalised then w is less than 1, so term always positive.
 
-    return v3fOut;
-}
-;
-Vec3.vec3TransformCoord = vec3TransformCoord;
+//     if (s < 0.0005) { 
+
+//         // test to avoid divide by zero, s is always positive due to sqrt
+//         // if s close to zero then direction of axis not important
+        
+//         axisAngle.X = q1.X; // if it is important that axis is normalised then replace with x=1; y=z=0;
+//         axisAngle.Y = q1.Y;
+//         axisAngle.Z = q1.Z;
+//     } 
+//     else {
+//         axisAngle.X = q1.X / s; // normalise axis
+//         axisAngle.Y = q1.Y / s;
+//         axisAngle.Z = q1.Z / s;
+//     }
+
+//    return axisAngle;
+// }
+
+// /*
+//  * Quat4.slerp
+//  * Performs a spherical linear interpolation between two Quat4
+//  *
+//  * Params:
+//  * quat - Quat4, first quaternion
+//  * quat2 - Quat4, second quaternion
+//  * slerp - interpolation amount between the two inputs
+//  * dest - Optional, Quat4 receiving operation result. If not specified result is written to quat
+//  *
+//  * Returns:
+//  * dest if specified, quat otherwise
+//  */
+// Quat4.slerp = function (quat, quat2, slerp, dest) {
+//     if (!dest) {dest = quat;}
+
+//     var cosHalfTheta = quat[0] * quat2[0] + quat[1] * quat2[1] + quat[2] * quat2[2] + quat[3] * quat2[3];
+
+//     if (Math.abs(cosHalfTheta) >= 1.0) {
+//         if (dest != quat) {
+//             dest[0] = quat[0];
+//             dest[1] = quat[1];
+//             dest[2] = quat[2];
+//             dest[3] = quat[3];
+//         }
+//         return dest;
+//     }
+
+//     var halfTheta = Math.acos(cosHalfTheta);
+//     var sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta);
+
+//     if (Math.abs(sinHalfTheta) < 0.001) {
+//         dest[0] = (quat[0] * 0.5 + quat2[0] * 0.5);
+//         dest[1] = (quat[1] * 0.5 + quat2[1] * 0.5);
+//         dest[2] = (quat[2] * 0.5 + quat2[2] * 0.5);
+//         dest[3] = (quat[3] * 0.5 + quat2[3] * 0.5);
+//         return dest;
+//     }
+
+//     var ratioA = Math.sin((1 - slerp) * halfTheta) / sinHalfTheta;
+//     var ratioB = Math.sin(slerp * halfTheta) / sinHalfTheta;
+
+//     dest[0] = (quat[0] * ratioA + quat2[0] * ratioB);
+//     dest[1] = (quat[1] * ratioA + quat2[1] * ratioB);
+//     dest[2] = (quat[2] * ratioA + quat2[2] * ratioB);
+//     dest[3] = (quat[3] * ratioA + quat2[3] * ratioB);
+
+//     return dest;
+// }
+
+// //D3D functions
+
+// /**
+//  * D3DVec3TransformCoord
+//  * @tparam Float32Array v3fOut Out Vector
+//  * @tparam Float32Array v3fIn In Vector
+//  * @tparam Float32Array m4fM Matrix
+//  * @treturn Float32Array Out vector
+//  */
+// function vec3TransformCoord (v3fIn, m4fM, v3fOut) {
+//     if (!v3fOut) {
+//         v3fOut = Vec3.create();
+//     }
+
+//     var x, y, z, w;
+//     x = v3fIn.X * m4fM._11 + v3fIn.Y * m4fM._12 + v3fIn.Z * m4fM._13 + m4fM._14;
+//     y = v3fIn.X * m4fM._21 + v3fIn.Y * m4fM._22 + v3fIn.Z * m4fM._23 + m4fM._24;
+//     z = v3fIn.X * m4fM._31 + v3fIn.Y * m4fM._32 + v3fIn.Z * m4fM._33 + m4fM._34;
+//     w = v3fIn.X * m4fM._41 + v3fIn.Y * m4fM._42 + v3fIn.Z * m4fM._43 + m4fM._44;
+
+//     v3fOut.X = x / w;
+//     v3fOut.Y = y / w;
+//     v3fOut.Z = z / w;
+
+//     return v3fOut;
+// }
+// ;
+// Vec3.vec3TransformCoord = vec3TransformCoord;
 
