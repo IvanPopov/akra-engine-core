@@ -227,7 +227,7 @@ RenderSnapshot.prototype.renderPass = function (iPass) {
     if (iPass === SM_UNKNOWN_PASS) {
         return false;
     }
-    this._pShaderManager.finishPass(iPass);
+    return this._pShaderManager.finishPass(iPass);
 };
 RenderSnapshot.prototype.isUpdated = function (isUpdate) {
     if (isUpdate !== undefined) {

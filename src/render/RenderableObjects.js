@@ -297,6 +297,10 @@ RenderableObject.prototype.renderPass = function (iPass) {
         return false;
     }
     var pProgram = this._pActiveSnapshot.renderPass(iPass);
+    if (!pProgram) {
+        warning("Pass don`t add to render queue");
+        return false;
+    }
     //TODO: add program and object to renderQueue
 };
 // /**

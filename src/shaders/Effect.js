@@ -2297,6 +2297,7 @@ function EffectPass() {
     this.pExteranalsFragment = null;
     this.pExteranalsVertex = null;
     this._fnEval = null;
+    this.isEval = false;
 }
 EffectPass.prototype.setVertexShader = function (pParam) {
     if (typeof(pParam) === "string") {
@@ -2345,16 +2346,16 @@ EffectPass.prototype.finalize = function () {
         this.sJSCode = "";
     }
 };
-EffectPass.prototype.prepare = function () {
+EffectPass.prototype.prepare = function (pEngineStates, pUniforms) {
     'use strict'
     this.pStates = {};
     this.sFragment = null;
     this.sVertex = null;
-    if (this.isComplex) {
-        //TODO: Place value of all variables
+    if (this.isComplex && (!pEngineStates || !pUniforms)) {
         error("Place value of all variables");
+        return;
     }
-    this._fnEval(this, null, null);
+    this._fnEval(this, pEngineStates, pUniforms);
     if (this.sVertex !== null) {
         this.pVertexShader = this.pFuncHash[this.sVertex];
     }
@@ -2367,7 +2368,6 @@ EffectPass.prototype.prepare = function () {
     else {
         this.pFragmentShader = null;
     }
-
 };
 EffectPass.prototype.setState = function (eState, eValue) {
     this.pStates[eState] = eValue;

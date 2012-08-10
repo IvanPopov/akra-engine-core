@@ -10,6 +10,7 @@ function ComponentBlend() {
     this.pComponentsCount = {};
     this.pComponentsShift = [];
     this.pComponents = [];
+    this._pMaps = null;
     this._isReady = false;
     this._id = 0;
     this._nShiftMin = 0;
@@ -79,20 +80,21 @@ ComponentBlend.prototype.finalize = function () {
             pPass = pComponent.pPasses[i];
             this.pPassBlends[i + nShift].push(pPass);
             pUniforms = this.pUniformsBlend[i + nShift];
-            for (j in pPass.pUniformsByName) {
-                sName = pPass.pUniformsByName[j];
+            for (j in pPass.pGlobalsByName) {
+                sName = pPass.pGlobalsByName [j];
                 pUniforms.pUniformsByName[j] = sName;
                 pVar1 = pUniforms.pUniformsByRealName[sName];
-                pVar2 = pPass.pUniformsByRealName[sName];
+                pVar2 = pPass.pGlobalsByRealName[sName];
                 if (pVar1 && !pVar1.pType.isEqual(pVar2.pType)) {
                     warning("You used uniforms with the same semantics. Now we work not very well with that.");
                 }
                 pUniforms.pUniformsByRealName[sName] = pVar2;
-                pUniforms.pUniformsDefault[sName] = pPass.pUniformsDefault[sName];
+                pUniforms.pUniformsDefault[sName] = pPass.pGlobalsDefault[sName];
             }
         }
     }
     this._isReady = true;
+    this._pMaps = new Array(this.pPassBlends[i]);
     return true;
 };
 ComponentBlend.prototype.cloneMe = function () {
@@ -171,6 +173,13 @@ function PassBlend() {
     this._pBlendTypesDecl = {};
     this._nBlendTypes = 1;
 }
+PassBlend.prototype.init = function (sHash, pBlend) {
+    this.sHash = sHash;
+    var i;
+    for (i = 0; i < pBlend.length; i++) {
+        this.addPass(pBlend[i]);
+    }
+};
 PassBlend.prototype.addPass = function (pPass) {
     //TODO: some work with samplers and buffers
     this.pPasses.push(pPass);
@@ -392,7 +401,7 @@ PassBlend.prototype.finalizeBlend = function () {
     for (i in this.pAttributes) {
         if (this.pAttributes[i] instanceof Array) {
             sType = fnBlendTypes(this.pAttributes[i], this);
-            this.pAttributes[i] = "uniform " + sType + " " + this.pAttributes[i][0].sRealName + ";";
+            this.pAttributes[i] = "attribute " + sType + " " + this.pAttributes[i][0].sRealName + ";";
         }
     }
     this.sVaryingsOut = "struct {";
@@ -458,21 +467,31 @@ function ShaderManager(pEngine) {
     Enum([MAX_TEXTURE_HANDLES = a.SurfaceMaterial.maxTexturesPerSurface], eTextureHandles, a.ShaderManager);
 
     this.pEngine = pEngine;
+    this._pEngineStates = pEngine.pSystemStates;
 
     this._nEffectFile = 1;
+
     this._pComponentBlendsHash = {"EMPTY" : null};
     this._pComponentBlendsId = {0 : null};
     this._nComponentBlends = 1;
+
+    this._pPassBlends = {};
     this._pEffectResoureId = {};
     this._pEffectResoureBlend = {};
+
     this._pCurrentBlend = null;
     this._nCurrentShift = 0;
+    this._pCurrentMaps = null;
+
     this._pSnapshotStack = [];
     this._pBlendStack = [];
     this._pShiftStack = [];
+    this._pBufferMapStack = [];
 
     this._pActiveProgram = null;
     this._nAttrsUsed = 0;
+
+    this._pPrograms = {};
 
 
 }
@@ -519,7 +538,6 @@ ShaderManager.prototype.loadEffectFile = function (sFileName, sEffectName) {
  * @treturn Boolean True if all Ok, False if we already have this component.
  */
 ShaderManager.prototype.initComponent = function (pTechnique) {
-    //TODO: init component
     var sName = pTechnique.sName;
     var pComponentManager = this.pEngine.displayManager().componentPool();
     if (pComponentManager.findResource(sName)) {
@@ -871,8 +889,9 @@ ShaderManager.prototype.push = function (pSnapshot) {
     if (isUpdate) {
         pUniforms = [];
         for (i = 0; i < pBlend.totalPasses(); i++) {
+            pUniforms[i] = {};
             for (j in pBlend.pUniformsBlend[i].pUniformsByName) {
-                pUniforms[j] = null;
+                pUniforms[i][j] = null;
             }
         }
         pSnapshot.setPassStates(pUniforms);
@@ -881,6 +900,8 @@ ShaderManager.prototype.push = function (pSnapshot) {
     this._pShiftStack.push(this._nCurrentShift);
     this._pBlendStack.push(pBlend);
     this._pCurrentBlend = pBlend;
+    this._pCurrentMaps = [];
+    this._pBufferMapStack.push(this._pCurrentMaps);
 
     pSnapshot.isUpdated(false);
     return true;
@@ -889,8 +910,10 @@ ShaderManager.prototype.pop = function () {
     this._pSnapshotStack.pop();
     this._pShiftStack.pop();
     this._pBlendStack.pop();
+    this._pBufferMapStack.pop();
     this._pCurrentBlend = this._pBlendStack[this._pBlendStack.length - 1];
     this._nCurrentShift = this._pShiftStack[this._pShiftStack.length - 1];
+    this._pCurrentMaps = this._pBufferMapStack[this._pBufferMapStack.length - 1];
     return true;
 };
 
@@ -921,17 +944,25 @@ ShaderManager.prototype.finishPass = function (iPass) {
         return false;
     }
     var pUniformValues,
-        pNotDefaultUniforms;
-    var i, j;
+        pNotDefaultUniforms,
+        pNewPassBlend,
+        pNewPassBlendHash;
+    var i, j, k;
     var pSnapshot,
         pUniforms,
+        pPasses,
+        pPass,
         pValues,
         pBlend;
     var nShift;
-    var sRealName;
+    var sRealName,
+        sHash;
     var nPass = this._pShiftStack[this._pShiftStack.length - 1] + iPass;
-    pUniformValues = {};
     var index;
+    var sPassBlendHash = "";
+    var pPassBlend;
+    pUniformValues = {};
+    pNotDefaultUniforms = {};
     for (i = 0; i < this._pSnapshotStack.length; i++) {
         nShift = this._pShiftStack[i];
         pBlend = this._pBlendStack[i];
@@ -954,9 +985,145 @@ ShaderManager.prototype.finishPass = function (iPass) {
             }
         }
     }
+    pNewPassBlend = [];
+    for (i = 0; i < this._pBlendStack.length; i++) {
+        pBlend = this._pBlendStack[i];
+        nShift = this._pShiftStack[i];
+        index = nPass - nShift;
+        if (pBlend.totalValidPasses() <= index) {
+            continue;
+        }
+        pPasses = pBlend.pPassBlends[index];
+        for (j = 0; j < pPasses.length; j++) {
+            pPass = pPasses[j];
+            if (!pPass.isEval) {
+                if (pPass.isComplex) {
+                    pPass.prepare(this._pEngineStates, pUniformValues);
+                }
+                sPassBlendHash += "V::" + (pPass.pVertexShader.sRealName ? pPass.pVertexShader.sRealName : "EMPTY");
+                sPassBlendHash += "F::" + (pPass.pFragmentShader.sRealName ? pPass.pFragmentShader.sRealName : "EMPTY");
+                pNewPassBlend.push(pPass);
+                pPass.isEval = true;
+            }
+        }
+    }
+    for (j = 0; j < pPasses.length; j++) {
+        pPasses[j].isEval = false;
+    }
+    if (this._pPassBlends[sPassBlendHash]) {
+        pPassBlend = this._pPassBlends[sPassBlendHash];
+    }
+    else {
+        pPassBlend = new PassBlend();
+        pPassBlend.init(sPassBlendHash, pNewPassBlend);
+        if (!this._registerPassBlend(pPassBlend)) {
+            return false;
+        }
+        pPassBlend.finalizeBlend();
+    }
+    var pAttrSemantics = {};
+    var pMaps,
+        pMap,
+        pFlow,
+        pData,
+        pDecl,
+        pVideoBuffer;
+    var iMapIndex,
+        iMapLength,
+        iMapOffset;
+    for (i in pPassBlend.pAttributes) {
+        pAttrSemantics[i] = null;
+    }
+    for (i = this._pBufferMapStack.length - 1; i >= 0; i--) {
+        nShift = this._pShiftStack[i];
+        index = nPass - nShift;
+        pMaps = this._pBufferMapStack[i];
+        if (pMaps.length <= index) {
+            continue;
+        }
+        pMap = pMaps[index];
+        if (iMapIndex === undefined) {
+            iMapIndex = pMap.index;
+            iMapLength = pMap.length;
+            iMapOffset = pMap.offset;
+        }
+        else if (iMapIndex !== pMap.index ||
+                 iMapLength !== pMap.length ||
+                 iMapOffset !== pMap.offset()) {
+            warning("BufferMaps are not mixible");
+            return false;
+        }
+        for (j = 0; j < pMap._nCompleteFlows; j++) {
+            pFlow = pMap._pCompleteFlows[j];
+            if (pFlow.eType === a.BufferMap.FT_MAPPABLE) {
+                pData = pFlow.pMapper.pData;
+                pVideoBuffer = pData.buffer;
+                pDecl = pData.getVertexDeclaration();
+                for (k = 0; k < pDecl.length; k++) {
+                    if (pAttrSemantics[pDecl[k].eUsage] === null) {
+                        pAttrSemantics[pDecl[k].eUsage] = pVideoBuffer;
+                    }
+                }
+            }
+            else {
+                pData = pFlow.pData;
+                pDecl = pData.getVertexDeclaration();
+                for (k = 0; k < pDecl.length; k++) {
+                    if (pAttrSemantics[pDecl[k].eUsage] === null) {
+                        pAttrSemantics[pDecl[k].eUsage] = true;
+                    }
+                }
+            }
+        }
+    }
+    sHash = sPassBlendHash + "|-|__|/|";
+    for (i in pAttrSemantics) {
+        sHash += i + "|";
+        if (pAttrSemantics[i] === null) {
+            sHash += "EMPTY";
+        }
+        else if (pAttrSemantics[i] === true) {
+            sHash += "REAL";
+        }
+        else {
+            sHash += "SAME:";
+            for (j in pAttrSemantics) {
+                if (i !== j && pAttrSemantics[j] === pAttrSemantics[i]) {
+                    sHash += j + ",";
+                }
+            }
+        }
+        sHash += "..";
+    }
+    console.log(sHash, pAttrSemantics);
+    /*
+    var pProgram;
+    pProgram = this._pPrograms[sHash];
+    if (pProgram) {
+        return pProgram;
+    }
+    else {
+        //GENERATE PROGRAM!!!!
 
+    }*/
 };
-
+ShaderManager.prototype._registerPassBlend = function (pBlend) {
+    if (this._pPassBlends[pBlend.sHash]) {
+        warning("Cannot register pass blend with this hash");
+        return false;
+    }
+    this._pPassBlends[pBlend.sHash] = pBlend;
+    return true;
+};
+ShaderManager.prototype.applyRenderData = function (pData) {
+    var pMap = pData._pMap;
+    if (!pMap) {
+        warning("Render data don`t have bufferMap");
+        return true;
+    }
+    var iPass = this._pSnapshotStack[this._pSnapshotStack.length - 1]._iCurrentPass;
+    this._pCurrentMaps[iPass] = pMap;
+};
 
 /**
  * Получить список PARAMETER переменных компонента.

@@ -566,7 +566,7 @@ GLSLProgram.prototype.applyBuffer = function (pVertexData) {
     var isActive = this._pManager._pActiveProgram? 
         this._pManager._pActiveProgram.latestBuffer !== pVertexBuffer: false;
 
-    for (i = 0; i < pVertexData.getVertexElementCount(); i++) {
+    for (var i = 0; i < pVertexData.getVertexElementCount(); i++) {
         pVertexElement = pVertexData._pVertexDeclaration[i];
         pAttr = pAttrs[pVertexElement.eUsage];
         if (!pAttr) {

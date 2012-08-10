@@ -215,23 +215,21 @@ EffectResource.prototype.use = function (iComponentHandle, nShift, isSet) {
     nShift = ifndef(nShift, 0);
     isSet = ifndef(isSet, true);
 
-    debug_assert(this._iCurrentPass === SM_UNKNOWN_PASS, 'нельзя добавить компонентов во время активированного пасса.')
-
     var pManager = this._pShaderManager;
-    var pProp = {"nShift" : nShift};
+    nShift = nShift || 0;
 
     if (typeof iComponentHandle === 'object') {
         iComponentHandle = iComponentHandle.resourceHandle();
     }
 
     if (isSet) {
-        if (!pManager.activateComponent(this, iComponentHandle, pProp)) {
+        if (!pManager.activateComponent(this, iComponentHandle, nShift)) {
             debug_error('Невозможно добавить ингридиент.');
             return false;
         }
     }
     else {
-        if (!pManager.deactivateComponent(this, iComponentHandle, pProp)) {
+        if (!pManager.deactivateComponent(this, iComponentHandle, nShift)) {
             debug_error('Невозможно убрать ингридиент.');
             return false;
         }
@@ -244,7 +242,7 @@ EffectResource.prototype.use = function (iComponentHandle, nShift, isSet) {
         this.notifyDisabled();
     }
 
-    return this._updateParameterList(iComponentHandle, isSet);
+    return true;
 };
 EffectResource.prototype.unUse = function (iComponentHandle, nShift) {
     return this.use(iComponentHandle, nShift, false);

@@ -38,7 +38,7 @@ function RenderData(pBuffer) {
     this._eOptions = 0;
 
     /**
-     * Buffer, that create this class. 
+     * Buffer, that create this class.
      * @private
      * @type {RenderDataBuffer}
      */
@@ -53,7 +53,7 @@ function RenderData(pBuffer) {
 
     /**
      * Buffer with indices.
-     * If the data is the simplest mesh, with no more 
+     * If the data is the simplest mesh, with no more
      * than one index, the type will be IndexBuffer,
      * otherwise VertexBuffer.
      * @type {VertexBuffer|IndexBuffer}
@@ -138,9 +138,9 @@ RenderData.prototype.setup = function(pBuffer, iId, ePrimType, eOptions) {
 
     //setup default index set
     this._pIndicesArray.push({
-        pMap: this._pMap, 
-        pIndexData: null, 
-        pAttribData: null, 
+        pMap: this._pMap,
+        pIndexData: null,
+        pAttribData: null,
         sName: '.main'
     });
 
@@ -176,7 +176,7 @@ RenderData.prototype._allocateData = function (pDataDecl, pData, eType) {
     var iOffset = pVertexData.getOffset();
 
     iFlow = this._addData(pVertexData, undefined, eType);
-    
+
     if (iFlow < 0) {
         trace('invalid data', pDataDecl, pData);
         debug_assert('cannot allocate data for submesh');
@@ -197,19 +197,19 @@ RenderData.prototype._allocateData = function (pDataDecl, pData, eType) {
 RenderData.prototype._addData = function (pVertexData, iFlow, eType) {
     'use strict';
 
-    if ((arguments.length < 3 && this.useAdvancedIndex()) || 
+    if ((arguments.length < 3 && this.useAdvancedIndex()) ||
         arguments[2] === a.RenderData.DT_I2I) {
         return this._registerData(pVertexData);
     }
 
-    return (iFlow === undefined? this._pMap.flow(pVertexData): 
+    return (iFlow === undefined? this._pMap.flow(pVertexData):
         this._pMap.flow(iFlow, pVertexData));
 };
 
 
 /**
  * Register data in this render.
- * Necessary for index to index mode, when data realy 
+ * Necessary for index to index mode, when data realy
  * not using in this render data for building final buffer map.
  * @param  {VertexData} pVertexData Data.
  * @return {Int} Always return 0.
@@ -237,9 +237,9 @@ RenderData.prototype._registerData = function (pVertexData) {
  */
 RenderData.prototype.allocateData = function(pDataDecl, pData, hasIndex) {
     'use strict';
-    
+
     var eType = a.RenderData.DT_INDEXED;
-    
+
     hasIndex = ifndef(hasIndex, true);
 
     if (!hasIndex || this.useSingleIndex()) {
@@ -248,14 +248,14 @@ RenderData.prototype.allocateData = function(pDataDecl, pData, hasIndex) {
     else if (this.useAdvancedIndex()) {
         eType = a.RenderData.DT_I2I;
     }
-    
+
     return this._allocateData(pDataDecl, pData, eType);
 };
 
 
 /**
  * Specifies uses advanced index.
- * @return {Boolean} True, if uses. 
+ * @return {Boolean} True, if uses.
  */
 RenderData.prototype.useAdvancedIndex = function () {
     'use strict';
@@ -265,13 +265,13 @@ RenderData.prototype.useAdvancedIndex = function () {
 
 RenderData.prototype.useSingleIndex = function () {
     'use strict';
-    
+
     return (this._eOptions & a.RenderData.SINGLE_INDEX) != 0;
 };
 
 RenderData.prototype.useMultiIndex = function () {
     'use strict';
-    
+
     return (this._eOptions & a.RenderData.SINGLE_INDEX) == 0;
 };
 
@@ -282,13 +282,13 @@ RenderData.prototype.useMultiIndex = function () {
  */
 RenderData.prototype.releaseData = function (iDataLocation) {
     'use strict';
-        
+
     //TODO: release data.
 };
 
 
 /**
- * Allocate attribute. 
+ * Allocate attribute.
  * Attribute - data without index.
  * @param  {VertexDeclaration} pAttrDecl Data declaration.
  * @param  {TypedArray|ArrayBuffer} pData     Data.
@@ -296,7 +296,7 @@ RenderData.prototype.releaseData = function (iDataLocation) {
  */
 RenderData.prototype.allocateAttribute = function (pAttrDecl, pData) {
     'use strict';
-    
+
     var pIndexData = this._pIndexData;
     var pAttribData = this._pAttribData;
     var pAttribBuffer = this._pAttribBuffer;
@@ -315,7 +315,7 @@ RenderData.prototype.allocateAttribute = function (pAttrDecl, pData) {
         this._pMap.flow(this._pAttribData);
         return this._pAttribData !== null;
     }
-    
+
     if (!pAttribData.extend(pAttrDecl, pData)) {
         trace('invalid data for allocation:', arguments);
         warning('cannot allocate attribute in data subset..');
@@ -327,7 +327,7 @@ RenderData.prototype.allocateAttribute = function (pAttrDecl, pData) {
 
 
 /**
- * Allocate advanced index. 
+ * Allocate advanced index.
  * @private
  * @param  {VertexDeclaration} pAttrDecl Data declaration.
  * @param  {TypedArray|ArrayBuffer} pData     Data.
@@ -335,7 +335,7 @@ RenderData.prototype.allocateAttribute = function (pAttrDecl, pData) {
  */
 RenderData.prototype._allocateAdvancedIndex = function (pAttrDecl, pData) {
     'use strict';
-    
+
     var pDecl = a.normalizeVertexDecl(pAttrDecl);
     var nCount = pData.byteLength / pDecl.iStride;
     //TODO: remove index dublicates
@@ -346,7 +346,7 @@ RenderData.prototype._allocateAdvancedIndex = function (pAttrDecl, pData) {
     for (var i = 0; i < pDecl.length; i++) {
         pI2IDecl.push(VE_FLOAT('INDEX_' + pDecl[i].eUsage, 0));
     };
-    
+
     for (var i = 0; i < pI2IData.length; i++) {
         pI2IData[i] = i;
     };
@@ -363,10 +363,10 @@ RenderData.prototype._allocateAdvancedIndex = function (pAttrDecl, pData) {
 };
 
 /**
- * Create IndexBuffer/IndexData for storage indices.    
+ * Create IndexBuffer/IndexData for storage indices.
  * @private
  * @param  {VertexDeclaration} pAttrDecl Data declaration.
- * @param  {TypedArray|ArrayBuffer} pData     Data with index, that will 
+ * @param  {TypedArray|ArrayBuffer} pData     Data with index, that will
  * be allocated in created buffer.
  * @return {Boolean}           Result.
  */
@@ -405,7 +405,7 @@ RenderData.prototype._allocateIndex = function (pAttrDecl, pData) {
     var pIndexBuffer = this._pIndexBuffer;
     var pBuffer = this._pBuffer;
     'use strict';
-    
+
 Ifdef (__DEBUG)
     for (var i = 0; i < pAttrDecl.length; i++) {
         if (pAttrDecl[i].eType !== a.DTYPE.FLOAT) {
@@ -472,9 +472,9 @@ RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType, sName
     this._pIndexData = null;
     this._iIndexSet = this._pIndicesArray.length;
     this._pIndicesArray.push({
-        pMap: this._pMap, 
-        pIndexData: this._pIndexData, 
-        pAttribData: this._pAttribData, 
+        pMap: this._pMap,
+        pIndexData: this._pIndexData,
+        pAttribData: this._pAttribData,
         sName: sName
     });
 
@@ -571,7 +571,7 @@ RenderData.prototype.getDataLocation = function (sSemantics) {
  */
 RenderData.prototype.getIndices = function () {
     'use strict';
-    
+
     return this._pIndexData;
 };
 
@@ -586,7 +586,7 @@ RenderData.prototype.getIndices = function () {
  */
 RenderData.prototype.getFlow = function () {
     'use strict';
-    
+
     if (typeof arguments[0] === 'string') {
         return this._pMap.getFlow(arguments[0], arguments[1]);
     }
@@ -611,14 +611,14 @@ RenderData.prototype.getFlow = function () {
  */
 RenderData.prototype.getData = function () {
     'use strict';
-    
+
     var pFlow;
 
     if (this.useAdvancedIndex() && arguments.length < 2) {
         if (typeof arguments[0] === 'string') {
-            return this.getData(this._pMap._pI2IDataCache[arguments[0]]);    
+            return this.getData(this._pMap._pI2IDataCache[arguments[0]]);
         }
-        
+
         return this._pBuffer.getData(arguments[0]);
     }
 
@@ -643,7 +643,7 @@ RenderData.prototype.getData = function () {
  */
 RenderData.prototype.getPrimitiveCount = function () {
     'use strict';
-    
+
     return this._pMap.primCount;
 };
 
@@ -653,9 +653,9 @@ RenderData.prototype.getPrimitiveCount = function () {
  * @param  {String} eSemantics Index semantics.
  * @param  {Boolean} useSame    Use same anywere?
  * @param  {Int} iBeginWith Begin index from...
- * @return {Boolean}          
+ * @return {Boolean}
  */
-RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) { 
+RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) {
     'use strict'
 
     iBeginWith = iBeginWith || 0;
@@ -682,7 +682,7 @@ RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) {
                 pTypedData[i] = (pTypedData[i] * iStride + iAddition) / iTypeSize;
             };
         });
-        
+
         iData = pData.getOffset();
         eSemantics = 'INDEX_' + eSemantics;
     }
@@ -707,7 +707,7 @@ RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) {
         return false;
     }
 
-    
+
     iStride = pFlow.pData.stride;
 
     if (pIndexData._iAdditionCache[iIndexOffset] !== iAddition) {
@@ -723,7 +723,7 @@ RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) {
             iRealAddition = iAddition;
             for (var i = 0; i < pData.length; i++) {
                 pData[i] = (iBeginWith + iRealAddition) / iTypeSize;
-            };   
+            };
         }
 
         //remeber addition, that we added to index.
@@ -759,12 +759,20 @@ RenderData.prototype.draw = function () {
 	return isOK;
 };
 
+RenderData.prototype.applyMe = function(){
+    var pManager = this._pBuffer._pEngine.shaderManager();
+    if(!pManager){
+        return false;
+    }
+    return pManager.applyRenderData(this);
+};
+
 Ifdef (__DEBUG);
 
 RenderData.prototype.toString = function () {
     'use strict';
-    
-    var s; 
+
+    var s;
     s  = 'RENDER DATA SUBSET: #' + this._iId + '\n';
     s += '        ATTRIBUTES: ' + (this._pAttribData? 'TRUE': 'FALSE') + '\n';
     s += '----------------------------------------------------------------\n';
