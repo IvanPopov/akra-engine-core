@@ -46,6 +46,8 @@ function COLLADA (pEngine, pSettings) {
     var useScene            = ifndef(pSettings.scene, true);
     var useWireframe        = ifndef(pSettings.wireframe, false);
     var bDrawJoints         = ifndef(pSettings.drawJoints, false);
+    var pModelResource      = ifndef(pSettings.modelResource, null);
+
 
     /* COMMON FUNCTIONS
      ------------------------------------------------------
@@ -1814,7 +1816,7 @@ function COLLADA (pEngine, pSettings) {
                 //     v3f.X = pOutputValues[i * 3];
                 //     v3f.Y = pOutputValues[i * 3 + 1];
                 //     v3f.Z = pOutputValues[i * 3 + 2];
-                //     pTrack.addKeyFrame(pTimeMarks[i], [v3f.X, v3f.Y, v3f.Z]);
+                //     pTrack.keyFrame(pTimeMarks[i], [v3f.X, v3f.Y, v3f.Z]);
                 // };
                 TODO('implement animation translation');
                 //TODO: implement animation translation
@@ -1827,7 +1829,7 @@ function COLLADA (pEngine, pSettings) {
                 //     'matrix modification supported only for one parameter modification');
                 
                 // for (var i = 0; i < pTimeMarks.length; ++ i) {
-                //     pTrack.addKeyFrame(pTimeMarks[i], pOutputValues[i] / 180.0 * Math.PI);
+                //     pTrack.keyFrame(pTimeMarks[i], pOutputValues[i] / 180.0 * Math.PI);
                 // };
                 TODO('implement animation rotation');
                 //TODO: implement animation rotation
@@ -1843,14 +1845,14 @@ function COLLADA (pEngine, pSettings) {
                         'incorrect output length of transformation data (' + pOutputValues.length + ')');
 
                     for (var i = 0; i < nMatrices; i ++) {
-                        pTrack.addKeyFrame(pTimeMarks[i], Mat4.transpose(pOutputValues.subarray(i * 16, i * 16 + 16))); 
+                        pTrack.keyFrame(pTimeMarks[i], Mat4.transpose(pOutputValues.subarray(i * 16, i * 16 + 16))); 
                     };
                 }
                 else {
                     pTrack = new a.AnimationMatrixModification(sJoint, pValue);
 
                     for (var i = 0; i < pTimeMarks.length; ++ i) {
-                        pTrack.addKeyFrame(pTimeMarks[i], pOutputValues[i]);
+                        pTrack.keyFrame(pTimeMarks[i], pOutputValues[i]);
                     }   
                 }
             break;
@@ -1898,7 +1900,7 @@ function COLLADA (pEngine, pSettings) {
         var pAnimation = new a.Animation(sAnimation || (sFilename? a.pathinfo(sFilename).filename : 'unknown'));
 
         for (var i = 0; i < pTracks.length; i++) {
-            pAnimation.addTrack(pTracks[i]);
+            pAnimation.push(pTracks[i]);
         };
         
         return pAnimation;
@@ -1915,7 +1917,13 @@ function COLLADA (pEngine, pSettings) {
         pAnimationsList = pAnimationsList || [];
 
         for (var i in pAnimations) {
-            pAnimationsList.push(buildAnimation(pAnimations[i]));
+            var pAnimation = buildAnimation(pAnimations[i]);
+
+            pAnimationsList.push(pAnimation);
+            
+            if (pModelResource) {
+                pModelResource.addAnimation(pAnimation);
+            }
         };
 
         return pAnimationsList;
@@ -2141,6 +2149,10 @@ function COLLADA (pEngine, pSettings) {
             pSkeleton.addRootJoint(source(pSkeletonsList[i]).pConstructedNode);
         }
 
+        if (pModelResource) {
+            pModelResource.addSkeleton(pSkeleton);
+        }
+
         return pSkeleton;
     }
 
@@ -2196,6 +2208,10 @@ function COLLADA (pEngine, pSettings) {
             pInstanceList.push(pInstance);
 
             debug_assert(pInstance, 'cannot find instance <' + pInstances[m].sUrl + '>\'s data');
+
+            if (pModelResource) {
+                pModelResource.addMesh(pInstance);
+            }
 
             if (bAttach) {
                 pSceneNode.addMesh(pInstance);  
@@ -2359,6 +2375,10 @@ Endif ();
 
         for (var i = 0; i < pNodes.length; i++) {
             pNodes[i] = buildAssetTransform(pNodes[i], pAsset);
+
+            if (pModelResource) {
+                pModelResource.addNode(pNodes[i]);
+            }
         };
 
         return pNodes;

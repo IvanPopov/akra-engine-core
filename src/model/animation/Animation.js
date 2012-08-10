@@ -1,65 +1,59 @@
-function Animation (sName, eOptions) {
+/**
+ * Complete animation with set of tracks.
+ * @param {String} sName Animation name.
+ */
+function Animation (sName) {
     'use strict';
 
-	this._pTracks = [];
+	/**
+	 * Animation name.
+	 * @private
+	 * @type {[type]}
+	 */
 	this._sName = sName || ('animation' + a.sid());
-
 	this._fDuration = 0;
 }
+
+EXTENDS(Animation, Array);
 
 PROPERTY(Animation, 'name',
 	function () {
 		return this._sName;
 	});
 
-PROPERTY(Animation, 'duration',
-	function () {
-		return this._fDuration;
-	});
 
-Animation.prototype.addTrack = function (pTrack) {
+Animation.prototype.push = function (pTrack) {
     'use strict';
     
-	this._pTracks.push(pTrack);
-
-	this._fDuration = Math.max(this._fDuration, pTrack.fEndTime);
+	Array.prototype.push.call(this, pTrack);
+	this._fDuration = Math.max(this._fDuration, pTrack.duration);
 };
-
-
 
 Animation.prototype.bind = function (pTarget) {
     'use strict';
    
-   	var pTracks = this._pTracks; 
-   	var bResult = true;
-
-	for (var i = pTracks.length - 1; i >= 0; i--) {
-		if (!pTracks[i].bind(pTarget)) {
+	for (var i = this.length - 1; i--;) {
+		if (!this[i].bind(pTarget)) {
 			trace('cannot bind animation track [', i, '] to joint <', pTracks[i]._sTarget, '>');
-			bResult = false;
 		}
 	};
-
-	return bResult;
 };
 
-Animation.prototype.time = function (fTime, fWeight) {
+Animation.prototype.update = function (fTime, bLoop) {
     'use strict';
 
-    fWeight = fWeight || 1.0;
+    if (fTime > this._fDuration) {
+    	fTime = bLoop === true? fTime % (this._fDuration + 1): this._fDuration;
+    }
 
-	var fCurTime = fTime;
-    var pTracks = this._pTracks;
-
-    if (fCurTime < 0 || fCurTime >= this._fDuration) {
-	    return;
-	}
-
-	for (var i = pTracks.length - 1, pTrack; i >= 0; i--) {
-		pTrack = pTracks[i];
-		if (pTrack.fStartTime <= fCurTime && pTrack.fEndTime > fCurTime) {
-			pTrack.time(fCurTime, fWeight);
+	for (var i = this.length - 1; i--;) {
+		var pTrack = this[i];
+		
+		if (pTrack.pTarget === null) {
+			continue;
 		}
+		
+		pTrack.update(fTime);
 	};
 };
 

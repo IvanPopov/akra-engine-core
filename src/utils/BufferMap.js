@@ -27,6 +27,7 @@
  * pMap.mapping(1, pIndices1, 'INDEX12');
  * pMap.mapping(2, pIndices2, 'INDEX21');
  *
+ * //optional, set classic index for rendering with glDrawElements() instead glDrawArrays().
  * pMap.index = pIndexData;
  */
 
@@ -169,9 +170,10 @@ PROPERTY(BufferMap, 'index',
  * @type Uint
  * Maximum number of accepted flow.
  */
-PROPERTY(BufferMap, 'limit', function () {
-    return this._pFlows.length;
-});
+PROPERTY(BufferMap, 'limit', 
+    function () {
+        return this._pFlows.length;
+    });
 
 /**
  * @type Uint
@@ -199,34 +201,38 @@ PROPERTY(BufferMap, 'startIndex',
  * @type uint
  * Number of data flows that ready for rendering.
  */
-PROPERTY(BufferMap, 'size', function () {
-    return this._nCompleteFlows;
-});
+PROPERTY(BufferMap, 'size', 
+    function () {
+        return this._nCompleteFlows;
+    });
 
 /**
  * @type Array
  * Data flows.
  */
-PROPERTY(BufferMap, 'flows', function () {
-    return this._pCompleteFlows;
-});
+PROPERTY(BufferMap, 'flows', 
+    function () {
+        return this._pCompleteFlows;
+    });
 
 /**
  * @type Array
  * Data mappers.
  */
-PROPERTY(BufferMap, 'mappers', function () {
-    return this._pMappers;
-});
+PROPERTY(BufferMap, 'mappers', 
+    function () {
+        return this._pMappers;
+    });
 
 /**
  * @type Uint
  * Offset(in bytes) of index(IndexData) used in BufferMap.
  * @sa BufferMap.index
  */
-PROPERTY(BufferMap, 'offset', function () {
-    return (this._pIndex? this._pIndex.getOffset(): 0);
-});
+PROPERTY(BufferMap, 'offset', 
+    function () {
+        return (this._pIndex? this._pIndex.getOffset(): 0);
+    });
 
 /**
  * Get flow.
@@ -459,6 +465,8 @@ BufferMap.prototype.mapping = function (iFlow, pMap, eSemantics, iAddition) {
 };
 
 BufferMap.prototype._pushEtalon = function (pData) {
+    'use strict';
+    
     this._pBuffersCompatibleMap[pData.resourceHandle()] = pData;
 };
 
@@ -466,7 +474,8 @@ BufferMap.prototype._pushEtalon = function (pData) {
  * Update the current BufferMap.
  */
 BufferMap.prototype.update = function () {
-
+    'use strict';
+    
     var pFlows = this._pFlows;
     var pFlow, pMapper;
     var isMappable = false;
