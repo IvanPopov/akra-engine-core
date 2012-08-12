@@ -21,6 +21,11 @@ PROPERTY(Animation, 'name',
 		return this._sName;
 	});
 
+PROPERTY(Animation, 'duration',
+	function () {
+		return this._fDuration;
+	});
+
 
 Animation.prototype.push = function (pTrack) {
     'use strict';
@@ -43,7 +48,7 @@ Animation.prototype.update = function (fTime, bLoop) {
     'use strict';
 
     if (fTime > this._fDuration) {
-    	fTime = bLoop === true? fTime % (this._fDuration + 1): this._fDuration;
+    	fTime = (bLoop === true? fTime % (this._fDuration): thissetRange._fDuration);
     }
 
 	for (var i = this.length - 1; i--;) {
@@ -55,6 +60,8 @@ Animation.prototype.update = function (fTime, bLoop) {
 		
 		pTrack.update(fTime);
 	};
+
+	return fTime;
 };
 
 A_NAMESPACE(Animation);
