@@ -81,7 +81,7 @@ function Vec2(){
     else{
         return v2fVec;
     }
-}
+};
 
 PROPERTY(Vec2, 'x',
     function () {
@@ -89,7 +89,8 @@ PROPERTY(Vec2, 'x',
     },
     function (fValue) {
         this.pData.X = fValue;
-    });
+    }
+);
 
 PROPERTY(Vec2, 'y',
     function () {
@@ -97,8 +98,8 @@ PROPERTY(Vec2, 'y',
     },
     function (fValue) {
         this.pData.Y = fValue;
-    });
-
+    }
+);
 
 Vec2.prototype.set = function() {
     'use strict';
@@ -106,22 +107,22 @@ Vec2.prototype.set = function() {
 
     if(arguments.length == 1){
         if(typeof(arguments[0]) == "number"){
-            this.pData[0] = this.pData[1] = arguments[0];
+            this.pData.X = this.pData.Y = arguments[0];
         }
         else if(arguments[0] instanceof Vec2){
             var pData2 = arguments[0].pData;
-            pData[0] = pData2[0];
-            pData[1] = pData2[1];
+            pData.X = pData2.X;
+            pData.Y = pData2.Y;
         }
         else{
             var pElements = arguments[0];
-            pData[0] = pElements[0];
-            pData[1] = pElements[1];
+            pData.X = pElements.X;
+            pData.Y = pElements.Y;
         }
     }
     else{
-        pData[0] = arguments[0];
-        pData[1] = arguments[1];
+        pData.X = arguments.X;
+        pData.Y = arguments.Y;
     }
     return this;
 };
@@ -148,8 +149,8 @@ Vec2.prototype.add = function (v2fVec, v2fDestination) {
     var pData2 = v2fVec.pData;
     var pDataDestination = v2fDestination.pData;
 
-    pDataDestination[0] = pData1[0] + pData2[0];
-    pDataDestination[1] = pData1[1] + pData2[1];
+    pDataDestination.X = pData1.X + pData2.X;
+    pDataDestination.Y = pData1.Y + pData2.Y;
     return v2fDestination;
 };
 
@@ -175,8 +176,8 @@ Vec2.prototype.subtract = function (v2fVec, v2fDestination) {
     var pData2 = v2fVec.pData;
     var pDataDestination = v2fDestination.pData;
 
-    pDataDestination[0] = pData1[0] - pData2[0];
-    pDataDestination[1] = pData1[1] - pData2[1];
+    pDataDestination.X = pData1.X - pData2.X;
+    pDataDestination.Y = pData1.Y - pData2.Y;
     return v2fDestination;
 };
 
@@ -200,8 +201,8 @@ Vec2.prototype.negate = function(v2fDestination) {
     var pData = this.pData;
     var pDataDestination = v2fDestination.pData;
 
-    pDataDestination[0] = -pData[0];
-    pDataDestination[1] = -pData[1];
+    pDataDestination.X = -pData.X;
+    pDataDestination.Y = -pData.Y;
     return v2fDestination;
 };
 
@@ -227,8 +228,8 @@ Vec2.prototype.scale = function(fScale,v2fDestination) {
     var pData = this.pData;
     var pDataDestination = v2fDestination.pData;
 
-    pDataDestination[0] = pData[0] * fScale;
-    pDataDestination[1] = pData[1] * fScale;
+    pDataDestination.X = pData.X * fScale;
+    pDataDestination.Y = pData.Y * fScale;
     return v2fDestination;
 };
 
@@ -254,8 +255,8 @@ Vec2.prototype.normalize = function(v2fDestination) {
     var pDataDestination = v2fDestination.pData;
 
     var x,y;
-    x = pData[0];
-    y = pData[1];
+    x = pData.X;
+    y = pData.Y;
     var fLength = Math.sqrt(x*x + y*y);
 
     if(fLength){
@@ -263,8 +264,8 @@ Vec2.prototype.normalize = function(v2fDestination) {
         y = y/fLength;
     }
 
-    pDataDestination[0] = x;
-    pDataDestination[1] = y;
+    pDataDestination.X = x;
+    pDataDestination.Y = y;
 
     return v2fDestination;
 };
@@ -337,8 +338,8 @@ Vec2.prototype.direction = function(v2fVec,v2fDestination) {
     var pDataDestination = v2fDestination.pData;
 
     var x,y;
-    x = pData2[0] - pData1[0];
-    y = pData2[1] - pData1[1];
+    x = pData2.X - pData1.X;
+    y = pData2.X - pData1.X;
 
     var flength = Math.sqrt(x*x + y*y);
 
@@ -347,8 +348,8 @@ Vec2.prototype.direction = function(v2fVec,v2fDestination) {
         y = y/fLength;
     }
 
-    pDataDestination[0] = x;
-    pDataDestination[1] = y;
+    pDataDestination.X = x;
+    pDataDestination.Y = y;
     return v2fDestination;
 };
 
@@ -387,13 +388,25 @@ Vec2.prototype.mix = function(v2fVec,fA,v2fDestination) {
     return v2fDestination;
 };
 
-Vec2.prototype.isEqual = function(v2fVec) {
+Vec2.prototype.isEqual = function(v2fVec, fEps) {
     'use strict';
     var pData1 = this.pData;
     var pData2 = v2fVec.pData;
 
-    if(pData1[0] != pData2[0] || pData1[1] != pData2[1]){
-        return false;
+    fEps = ifndef(fEps,0);
+
+    if(fEps == 0){
+        if(     pData1.X != pData2.X
+             || pData1.Y != pData2.Y){
+            return false;
+        }
+    }
+    else{
+        if(    Math.abs(pData1.X - pData2.X) > fEps
+            || Math.abs(pData1.Y - pData2.Y) > fEps){
+
+            return false;
+        }
     }
     return true;
 };
@@ -402,7 +415,7 @@ Vec2.prototype.isClear = function() {
     'use strict';
     var pData = this.pData;
 
-    if(pData[0] != 0 || pData[1] != 0){
+    if(pData.X != 0 || pData.Y != 0){
         return false;
     }
     return true;
@@ -412,7 +425,7 @@ Vec2.prototype.clear = function() {
     'use strict';
     var pData = this.pData;
 
-    pData[0] = pData[1] = 0;
+    pData.X = pData.Y = 0;
 
     return this;
 };
@@ -431,7 +444,7 @@ Vec2.prototype.clear = function() {
 Vec2.prototype.toString = function() {
     'use strict';
     var pData = this.pData;
-    return '[' + pData[0] + ', ' + pData[1] + ']';
+    return '[' + pData.X + ', ' + pData.Y + ']';
 };
 
 /////////////////////////////////////////////////////////////
@@ -465,6 +478,9 @@ function Vec3(){
     if(nArgumentsLength == 1){
         return v3fVec.set(arguments[0]);
     }
+    else if(nArgumentsLength == 2){
+        return v3fVec.set(arguments[0],arguments[1]);
+    }
     else if(nArgumentsLength == 3){
         return v3fVec.set(arguments[0],arguments[1],arguments[2]);
     }
@@ -479,7 +495,8 @@ PROPERTY(Vec3, 'x',
     },
     function (fValue) {
         this.pData.X = fValue;
-    });
+    }
+);
 
 PROPERTY(Vec3, 'y',
     function () {
@@ -487,40 +504,62 @@ PROPERTY(Vec3, 'y',
     },
     function (fValue) {
         this.pData.Y = fValue;
-    });
+    }
+);
 
-PROPERTY(Vec3, 'Z',
+PROPERTY(Vec3, 'z',
     function () {
         return this.pData.Z;
     },
     function (fValue) {
         this.pData.Z = fValue;
-    });
+    }
+);
 
 Vec3.prototype.set = function() {
     'use strict';
     var pData = this.pData;
-    if(arguments.length == 1){
+    var nArgumentsLength = arguments.length;
+    if(nArgumentsLength == 1){
         if(typeof(arguments[0]) == "number"){
-            pData[0] = pData[1] = pData[2] = arguments[0];
+            pData.X = pData.Y = pData.Z = arguments[0];
         }
         else if(arguments[0] instanceof Vec3){
             var pData2 = arguments[0].pData;
-            pData[0] = pData2[0];
-            pData[1] = pData2[1];
-            pData[2] = pData2[2];
+            pData.X = pData2.X;
+            pData.Y = pData2.Y;
+            pData.Z = pData2.Z;
         }
         else{
             var pElements = arguments[0];
-            pData[0] = pElements[0];
-            pData[1] = pElements[1];
-            pData[2] = pElements[2];
+            pData.X = pElements.X;
+            pData.Y = pElements.Y;
+            pData.Z = pElements.Z;
+        }
+    }
+    else if(nArgumentsLength == 2){
+        //Vec2 и float или float и Vec2
+        if(typeof(arguments[0]) == "number"){
+            //number and Vec2
+            var pData2 = arguments[1].pData;
+
+            pData.X = arguments[0];
+            pData.Y = pData2.X;
+            pData.Z = pData2.Y;
+        }
+        else{
+            //Vec2 and number
+            var pData2 = arguments[0].pData;
+
+            pData.X = pData2.X;
+            pData.Y = pData2.Y;
+            pData.Z = arguments[1];
         }
     }
     else{
-        pData[0] = arguments[0];
-        pData[1] = arguments[1];
-        pData[2] = arguments[2];
+        pData.X = arguments.X;
+        pData.Y = arguments.Y;
+        pData.Z = arguments.Z;
     }
 
     return this;
@@ -548,9 +587,9 @@ Vec3.prototype.add = function (v3fVec, v3fDestination) {
     var pData2 = v3fVec.pData;
     var pDataDestination = v3fDestination.pData;
 
-    pDataDestination[0] = pData1[0] + pData2[0];
-    pDataDestination[1] = pData1[1] + pData2[1];
-    pDataDestination[2] = pData1[2] + pData2[2];
+    pDataDestination.X = pData1.X + pData2.X;
+    pDataDestination.Y = pData1.Y + pData2.Y;
+    pDataDestination.Z = pData1.Z + pData2.Z;
     return v3fDestination;
 };
 
@@ -576,9 +615,9 @@ Vec3.prototype.subtract = function (v3fVec, v3fDestination) {
     var pData2 = v3fVec.pData;
     var pDataDestination = v3fDestination.pData;
 
-    pDataDestination[0] = pData1[0] - pData2[0];
-    pDataDestination[1] = pData1[1] - pData2[1];
-    pDataDestination[2] = pData1[2] - pData2[2];
+    pDataDestination.X = pData1.X - pData2.X;
+    pDataDestination.Y = pData1.Y - pData2.Y;
+    pDataDestination.Z = pData1.Z - pData2.Z;
     return v3fDestination;
 };
 
@@ -605,9 +644,9 @@ Vec3.prototype.negate = function(v3fDestination) {
     var pData = this.pData;
     var pDataDestination = v3fDestination.pData;
 
-    pDataDestination[0] = -pData[0];
-    pDataDestination[1] = -pData[1];
-    pDataDestination[2] = -pData[2];
+    pDataDestination.X = -pData.X;
+    pDataDestination.Y = -pData.Y;
+    pDataDestination.Z = -pData.Z;
     return v3fDestination;
 };
 
@@ -630,22 +669,12 @@ Vec3.prototype.scale = function(fScale,v3fDestination) {
         v3fDestination = this;
     }
 
-    var fScaleX, fScaleY, fScaleZ;
-    if (typeof arguments[0] === 'number') {
-        fScaleX = fScaleY = fScaleZ = fScale;
-    }
-    else {
-        fScaleX = arguments[0].pData.X;
-        fScaleY = arguments[0].pData.Y;
-        fScaleZ = arguments[0].pData.Z;
-    }
-
     var pData = this.pData;
     var pDataDestination = v3fDestination.pData;
 
-    pDataDestination[0] = pData[0] * fScaleX;
-    pDataDestination[1] = pData[1] * fScaleY;
-    pDataDestination[2] = pData[2] * fScaleZ;
+    pDataDestination.X = pData.X * fScale;
+    pDataDestination.Y = pData.Y * fScale;
+    pDataDestination.Z = pData.Z * fScale;
 
     return v3fDestination;
 };
@@ -673,9 +702,9 @@ Vec3.prototype.normalize = function(v3fDestination) {
     var pDataDestination = v3fDestination.pData;
 
     var x,y,z;
-    x = pData[0];
-    y = pData[1];
-    z = pData[2];
+    x = pData.X;
+    y = pData.Y;
+    z = pData.Z;
     var fLength = Math.sqrt(x*x + y*y + z*z);
 
     if(fLength){
@@ -684,9 +713,9 @@ Vec3.prototype.normalize = function(v3fDestination) {
         z = z/fLength;
     }
 
-    pDataDestination[0] = x;
-    pDataDestination[1] = y;
-    pDataDestination[2] = z;
+    pDataDestination.X = x;
+    pDataDestination.Y = y;
+    pDataDestination.Z = z;
 
     return v3fDestination;
 };
@@ -880,16 +909,28 @@ Vec3.prototype.toString = function() {
     return '[' + pData.X + ', ' + pData.Y + ', ' + pData.Z + ']';
 };
 
-Vec3.prototype.isEqual = function(v3fVec) {
+Vec3.prototype.isEqual = function(v3fVec, fEps) {
     'use strict';
     var pData1 = this.pData;
     var pData2 = v3fVec.pData;
 
-    if(    pData1.X != pData2.X 
-        || pData1.Y != pData2.Y
-        || pData1.Z != pData2.Z){
+    fEps = ifndef(fEps,0);
 
-        return false;
+    if(fEps == 0){
+        if(    pData1.X != pData2.X 
+            || pData1.Y != pData2.Y
+            || pData1.Z != pData2.Z){
+
+            return false;
+        }
+    }
+    else{
+        if(    Math.abs(pData1.X - pData2.X) > fEps
+            || Math.abs(pData1.Y - pData2.Y) > fEps
+            || Math.abs(pData1.Z - pData2.Z) > fEps){
+
+            return false;
+        }
     }
     return true;
 };
@@ -916,7 +957,29 @@ Vec3.prototype.clear = function() {
     return this;
 };
 
+Vec3.prototype.vec3TransformCoord = function(m4fTransformMatrix,v3fDestination){
+    'use strict';
+    if(!v3fDestination){
+        v3fDestination = new Vec3();
+    }
 
+    var pData1 = this.pData;
+    var pData2 = m4fTransformMatrix.pData;
+    var pDataDestination = v3fDestination.pData;
+
+    var x,y,z,w;
+
+    x = pData2._11 * pData1.X + pData2._12 * pData1.Y + pData2._13 * pData1.Z + pData2._14;
+    y = pData2._21 * pData1.X + pData2._22 * pData1.Y + pData2._23 * pData1.Z + pData2._24;
+    z = pData2._31 * pData1.X + pData2._32 * pData1.Y + pData2._33 * pData1.Z + pData2._34;
+    w = pData2._41 * pData1.X + pData2._42 * pData1.Y + pData2._43 * pData1.Z + pData2._44;
+
+    pDataDestination.X = x/w;
+    pDataDestination.Y = y/w;
+    pDataDestination.Z = z/w;
+
+    return v3fDestination;
+};
 
 /////////////////////////////////////////////////////////////
 //
@@ -948,6 +1011,12 @@ function Vec4(){
     if(nArgumentsLength == 1){
         return v4fVec.set(arguments[0]);
     }
+    else if(nArgumentsLength == 2){
+        return v4fVec.set(arguments[0],arguments[1]);    
+    }
+    else if(nArgumentsLength == 3){
+        return v4fVec.set(arguments[0],arguments[1],arguments[2]);
+    }
     else if(nArgumentsLength == 4){
         return v4fVec.set(arguments[0],arguments[1],arguments[2],arguments[3]);
     }
@@ -962,7 +1031,8 @@ PROPERTY(Vec4, 'x',
     },
     function (fValue) {
         this.pData.X = fValue;
-    });
+    }
+);
 
 PROPERTY(Vec4, 'y',
     function () {
@@ -970,15 +1040,17 @@ PROPERTY(Vec4, 'y',
     },
     function (fValue) {
         this.pData.Y = fValue;
-    });
+    }
+);
 
-PROPERTY(Vec4, 'Z',
+PROPERTY(Vec4, 'z',
     function () {
         return this.pData.Z;
     },
     function (fValue) {
         this.pData.Z = fValue;
-    });
+    }
+);
 
 PROPERTY(Vec4, 'w',
     function () {
@@ -986,12 +1058,16 @@ PROPERTY(Vec4, 'w',
     },
     function (fValue) {
         this.pData.W = fValue;
-    });
+    }
+);
 
 Vec4.prototype.set = function() {
     'use strict';
     var pData = this.pData;
-    if(arguments.length == 1){
+    if(arguments.length == 0){
+        pData.X = pData.Y = pData.Z = pData.W = 0;
+    }
+    else if(arguments.length == 1){
         if(typeof(arguments[0]) == "number"){
             pData.X = pData.Y = pData.Z = pData.W = arguments[0];
         }
@@ -1010,7 +1086,76 @@ Vec4.prototype.set = function() {
             pData.W = pElements.W;
         }
     }
-    else if(arguments.length != 0){
+    else if(arguments.length == 2){
+        //float vec3
+        //vec2 vec2
+        //vec3 float
+        if(typeof(arguments[0]) == "number"){
+            //float vec3
+            var pData2 = arguments[1].pData;
+
+            pData.X = arguments[0];
+            pData.Y = pData2.X;
+            pData.Z = pData2.Y;
+            pData.W = pData2.Z;
+        }
+        else{
+            if(arguments[0].pData.length == 2){
+                //vec2 vec2
+                var pData1 = arguments[0].pData;
+                var pData2 = arguments[1].pData;
+
+                pData.X = pData1.X;
+                pData.Y = pData1.Y;
+                pData.Z = pData2.X;
+                pData.W = pData2.Y;
+            }
+            else{
+                //vec3 float
+                var pData2 = arguments[0].pData;
+
+                pData.X = pData2.X;
+                pData.Y = pData2.Y;
+                pData.Z = pData2.Z;
+                pData.W = arguments[1];
+            }
+        }
+    }
+    else if(arguments.length == 3){
+        //float float vec2
+        //float vec2 float
+        //vec2 float float
+        if(typeof(arguments[0]) == "number"){
+            if(typeof(arguments[1]) == "number"){
+                //float float vec2
+                var pData2 = arguments[2].pData;
+
+                pData.X = arguments[0];
+                pData.Y = arguments[1];
+                pData.Z = pData2.X;
+                pData.W = pData2.Y;
+            }
+            else{
+                //float vec2 float
+                var pData2 = arguments[1].pData;
+
+                pData.X = arguments[0];
+                pData.Y = pData2.X;
+                pData.Z = pData2.Y;
+                pData.W = arguments[2];   
+            }
+        }
+        else{
+            //vec2 float float
+            var pData2 = arguments[0].pData;
+
+            pData.X = pData2.X;
+            pData.Y = pData2.Y;
+            pData.Z = arguments[1];
+            pData.W = arguments[2];   
+        }
+    }
+    else{
         pData.X = arguments.X;
         pData.Y = arguments.Y;
         pData.Z = arguments.Z;
@@ -1327,17 +1472,30 @@ Vec4.prototype.toString = function() {
     return '[' + pData.X + ', ' + pData.Y + ', ' + pData.Z + ', ' + pData.W + ']';
 };
 
-Vec4.prototype.isEqual = function(v4fVec) {
+Vec4.prototype.isEqual = function(v4fVec,fEps) {
     'use strict';
     var pData1 = this.pData;
     var pData2 = v4fVec.pData;
 
-    if(    pData1.X != pData2.X 
-        || pData1.Y != pData2.Y
-        || pData1.Z != pData2.Z
-        || pData1.W != pData2.W){
+    fEps = ifndef(fEps,0);
 
-        return false;
+    if(fEps == 0){
+        if(    pData1.X != pData2.X 
+            || pData1.Y != pData2.Y
+            || pData1.Z != pData2.Z
+            || pData1.W != pData2.W){
+
+            return false;
+        }
+    }
+    else{
+        if(    Math.abs(pData1.X - pData2.X) > fEps
+            || Math.abs(pData1.Y - pData2.Y) > fEps
+            || Math.abs(pData1.Z - pData2.Z) > fEps
+            || Math.abs(pData1.W - pData2.W) > fEps){
+
+            return false;
+        }
     }
     return true;
 };
@@ -2065,8 +2223,9 @@ function Mat4(){
         }
     }
     else if (arguments.length === 2 && arguments[1] === true) {
+        //использует существующий Float32Array вместо своего
         this.pData = arguments[0];
-        return;
+        return this;
     }
     else{
         this.pData = new Float32Array(16);
@@ -2090,23 +2249,6 @@ function Mat4(){
         return m4fMat;
     }
 }
-
-Mat4.prototype.set3x3 = function (m4f) {
-    var pData = this.pData;
-    var pDest = m4f.pData;
-    
-    pData._11 = pData._11;
-    pData._12 = pData._12;
-    pData._13 = pData._13;
-
-    pData._21 = pData._21;
-    pData._22 = pData._22;
-    pData._23 = pData._23;
-
-    pData._31 = pData._31;
-    pData._32 = pData._32;
-    pData._33 = pData._33;
-};
 
 /*
  * Mat4.set
@@ -2622,10 +2764,6 @@ Mat4.prototype.multiply = function(pInput,pDestination) {
     }
 
     return pDestination;
-};
-
-Mat4.prototype.multiplyLeft = function (pInput, pDestination) {
-    return pInput.multiply(this, pDestination || this);
 };
 
 Mat4.prototype.toString = function() {
@@ -3635,6 +3773,44 @@ Mat4.prototype.setTranslation = function(v3fVec) {
     return this;
 };
 
+Mat4.prototype.set3x3 = function(pMatrix) {
+    'use strict';
+
+    var pData = this.pData;
+    var pData2 = pMatrix.pData;
+
+    if(pData2.length == 9){
+        //input 3x3 matrix
+        pData._11 = pData2.a11;
+        pData._12 = pData2.a12;
+        pData._13 = pData2.a13;
+
+        pData._21 = pData2.a21;
+        pData._22 = pData2.a22;
+        pData._23 = pData2.a23;
+
+        pData._31 = pData2.a31;
+        pData._32 = pData2.a32;
+        pData._33 = pData2.a33;
+    }
+    else{
+        //input 4x4 matrix
+        pData._11 = pData2._11;
+        pData._12 = pData2._12;
+        pData._13 = pData2._13;
+
+        pData._21 = pData2._21;
+        pData._22 = pData2._22;
+        pData._23 = pData2._23;
+
+        pData._31 = pData2._31;
+        pData._32 = pData2._32;
+        pData._33 = pData2._33;
+    }
+
+    return this;
+};
+
 Mat4.prototype.toInverseMat3 = function(m3fDestination) {
     'use strict';
     if(!m3fDestination){
@@ -3684,6 +3860,15 @@ Mat4.prototype.toInverseMat3 = function(m3fDestination) {
     pDataDestination.a33 = A33 * fInverseDeterminant;
 
     return m3fDestination;
+};
+
+/**
+ * позволяет умножить матрицу (и только матрицу) слева, то есть
+ * resultMatrix = m4fMat * currentMatrix;
+ */
+Mat4.prototype.multiplyLeft = function(m4fMat,m4fDestination){
+    'use strict';
+    return m4fMat.multiply(this,m4fDestination || this);
 };
 
 /*
@@ -3767,7 +3952,7 @@ Mat4.perspective = function (fFOVy, fAspect, fNear, fFar, m4fDestination) {
  * Returns:
  * dest if specified, a new Mat4 otherwise
  */
-Mat4.orthogonalProjection = function (fLeft, fRight, fBottom, fTop, fNear, fFar, m4fDestination) {
+Mat4.orthogonalProjectionAsymmetric = function (fLeft, fRight, fBottom, fTop, fNear, fFar, m4fDestination) {
     'use strict';
     if(!m4fDestination){
         m4fDestination = new Mat4();
@@ -3801,6 +3986,12 @@ Mat4.orthogonalProjection = function (fLeft, fRight, fBottom, fTop, fNear, fFar,
 
     return m4fDestination;
 };
+
+Mat4.orthogonalProjection = function(fWidth, fHeight, fNear, fFar, m4fDestination){
+    var fRight = fWidth/2;
+    var fTop = fHeight/2;
+    return Mat4.orthogonalProjectionAsymmetric(-fRight,fRight,-fTop,fTop,fNear,fFar,m4fDestination);
+}
 
 /**
  * Generates a look-at matrix with the given eye position, focal point, and up axis
@@ -3980,6 +4171,9 @@ function Quat4 () {
     if(nArgumentsLength == 1){
         return qQuat.set(arguments[0]);
     }
+    else if(nArgumentsLength == 2){
+        return qQuat.set(arguments[0],arguments[1]);
+    }
     else if(nArgumentsLength == 4){
         return qQuat.set(arguments[0],arguments[1],arguments[2],arguments[3]);
     }
@@ -4028,6 +4222,28 @@ Quat4.prototype.set = function() {
             pData.Y = pElements.Y;
             pData.Z = pElements.Z;
             pData.W = pElements.W;
+        }
+    }
+    else if(nArgumentsLength == 2){
+        //float float
+        //vec3 float
+        if(typeof(arguments[0]) == "number"){
+            //float float
+            var fValue = arguments[0];
+
+            pData.X = fValue;
+            pData.Y = fValue;
+            pData.Z = fValue;
+            pData.W = arguments[1];
+        }
+        else{
+            //vec3 float
+            
+            var pElements = arguments[0].pData;
+            pData.X = pElements.X;
+            pData.Y = pElements.Y;
+            pData.Z = pElements.Z;
+            pData.W = arguments[1];
         }
     }
     else if(nArgumentsLength == 4){
@@ -4216,54 +4432,27 @@ Quat4.prototype.multiply = function(q4fQuat,q4fDestination) {
  * Returns:
  * dest if specified, vec otherwise
  */
-/*Quat4.multiplyVec3 = function (quat, vec, dest) {
-    if (!dest) {dest = vec;}
 
-    var x = vec[0], y = vec[1], z = vec[2];
-    var qx = quat[0], qy = quat[1], qz = quat[2], qw = quat[3];
+Quat4.prototype.multiplyVec3 = function(v3fVec,v3fDestination) {
+    'use strict';
+    if(!v3fDestination){
+        v3fDestination = v3fVec;
+    }
 
-    // calculate quat * vec
-    var ix = qw * x + qy * z - qz * y;
-    var iy = qw * y + qz * x - qx * z;
-    var iz = qw * z + qx * y - qy * x;
-    var iw = -qx * x - qy * y - qz * z;
+    var q4fVec = Quat4(v3fVec,0);
+    var qInverse = this.inverse(Quat4());
 
-    // calculate result * inverse quat
-    dest[0] = ix * qw + iw * -qx + iy * -qz - iz * -qy;
-    dest[1] = iy * qw + iw * -qy + iz * -qx - ix * -qz;
-    dest[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+    var qResult = this.multiply(q4fVec.multiply(qInverse),Quat4());
 
-    return dest;
-}*/
+    var pData = qResult.pData;
+    var pDataDestination = v3fDestination.pData;
 
-// Quat4._qTemp1 = new Quaternion();
-// Quat4._qTemp2 = new Quaternion();
-// Quat4._qTemp3 = new Quaternion();
+    pDataDestination.X = pData.X;
+    pDataDestination.Y = pData.Y;
+    pDataDestination.Z = pData.Z;
 
-// Quat4.multiplyVec3 = function (quaternion, vector) {
-//     var vectorQuaternion = Quat4._qTemp1, 
-//         inverseQuaternion = Quat4._qTemp2, 
-//         resultQuaternion = Quat4._qTemp3;
-  
-//     vectorQuaternion.X = vector.X;
-//     vectorQuaternion.Y = vector.Y;
-//     vectorQuaternion.Z = vector.Z;
-//     vectorQuaternion.W = 0.0;
-
-//     Quat4.inverse(quaternion, inverseQuaternion);
-    
-//     Quat4.multiply(inverseQuaternion, vectorQuaternion, resultQuaternion);
-//     Quat4.multiply(resultQuaternion, quaternion, resultQuaternion);
-
-//     vector.X = resultQuaternion.X;
-//     vector.Y = resultQuaternion.Y;
-//     vector.Z = resultQuaternion.Z;
-
-//     return vector;
-// };
-
-// Quat4._v3fTemp = Vec3.create();
-// Quat4._m3fTemp = Mat3.create();
+    return v3fDestination;
+};
 
 Quat4.fromForwardUp = function(v3fForward,v3fUp,q4fDestination) {
     'use strict';
@@ -4347,28 +4536,6 @@ Quat4.fromYawPitchRoll = function(fYaw,fPitch,fRoll,q4fDestination) {
     var qQuatR = Quat4(0.,0.,Math.sin(fRoll/2),Math.cos(fRoll/2));
 
     return qQuatY.multiply(qQuatP.multiply(qQuatR),q4fDestination)
-};
-
-Quat4.prototype.multiplyVec3 = function(v3fVec,v3fDestination) {
-    'use strict';
-
-    if(!v3fDestination){
-        v3fDestination = v3fVec;
-    }
-
-    var q4fVec = Quat4(v3fVec,0);
-    var qInverse = this.inverse(Quat4());
-
-    var qResult = this.multiply(q4fVec.multiply(qInverse),Quat4());
-
-    var pData = qResult.pData;
-    var pDataDestination = v3fDestination.pData;
-
-    pDataDestination.X = pData.X;
-    pDataDestination.Y = pData.Y;
-    pDataDestination.Z = pData.Z;
-
-    return v3fDestination;
 };
 
 /**
@@ -4485,88 +4652,54 @@ Quat4.prototype.toString = function() {
     return '[' + pData.X + ', ' + pData.Y + ', ' + pData.Z + ', ' + pData.W + ']';
 };
 
+/**
+ * делает сферическую линейную интерполяцию между кватернионами
+ * НЕ ТЕСТИРОВАНА
+ */
+Quat4.prototype.slerp = function(q4fQuat,fA,q4fDestination) {
+    'use strict';
+    if(!q4fDestination){
+        q4fDestination = this;
+    }
 
-// Quat4.toAxisAngle = function (q1, axisAngle) {
-//     if (!axisAngle) {
-//         axisAngle = new Vector4;
-//     }
+    fA = Math.clamp(fA,0,1);
 
-//     if (q1.W > 1) 
-//         Quat4.normalize(q1); 
-//         // if w>1 acos and sqrt will produce errors, this cant happen if quaternion is normalised
-    
-//     axisAngle.W = 2 * Math.acos(q1.W);
-    
-//     var s = Math.sqrt(1 - q1.W * q1.W); 
-//     // assuming quaternion normalised then w is less than 1, so term always positive.
+    var pData1 = this.pData;
+    var pData2 = q4fQuat.pData;
+    var pDataDestination = q4fDestination.pData;
 
-//     if (s < 0.0005) { 
+    var cosHalfTheta = pData1.X * pData2.X + pData1.Y * pData2.Y + pData1.Z * pData2.Z + pData1.W * pData2.W;
 
-//         // test to avoid divide by zero, s is always positive due to sqrt
-//         // if s close to zero then direction of axis not important
-        
-//         axisAngle.X = q1.X; // if it is important that axis is normalised then replace with x=1; y=z=0;
-//         axisAngle.Y = q1.Y;
-//         axisAngle.Z = q1.Z;
-//     } 
-//     else {
-//         axisAngle.X = q1.X / s; // normalise axis
-//         axisAngle.Y = q1.Y / s;
-//         axisAngle.Z = q1.Z / s;
-//     }
+    if(Math.abs(cosHalfTheta) >= 1.){
+        pDataDestination.X = pData1.X;
+        pDataDestination.Y = pData1.Y;
+        pDataDestination.Z = pData1.Z;
+        pDataDestination.W = pData1.W;
+        return q4fDestination;
+    }
 
-//    return axisAngle;
-// }
+    var halfTheta = Math.acos(cosHalfTheta);
+    var sinHalfTheta = Math.sqrt(1 - cosHalfTheta*cosHalfTheta);
 
-// /*
-//  * Quat4.slerp
-//  * Performs a spherical linear interpolation between two Quat4
-//  *
-//  * Params:
-//  * quat - Quat4, first quaternion
-//  * quat2 - Quat4, second quaternion
-//  * slerp - interpolation amount between the two inputs
-//  * dest - Optional, Quat4 receiving operation result. If not specified result is written to quat
-//  *
-//  * Returns:
-//  * dest if specified, quat otherwise
-//  */
-// Quat4.slerp = function (quat, quat2, slerp, dest) {
-//     if (!dest) {dest = quat;}
+    if(Math.abs(sinHalfTheta) < 0.001){
+        pDataDestination.X = (pData1.X * 0.5 + pData2.X * 0.5);
+        pDataDestination.Y = (pData1.Y * 0.5 + pData2.Y * 0.5);
+        pDataDestination.Z = (pData1.Z * 0.5 + pData2.Z * 0.5);
+        pDataDestination.W = (pData1.W * 0.5 + pData2.W * 0.5);
 
-//     var cosHalfTheta = quat[0] * quat2[0] + quat[1] * quat2[1] + quat[2] * quat2[2] + quat[3] * quat2[3];
+        return q4fDestination;
+    }
 
-//     if (Math.abs(cosHalfTheta) >= 1.0) {
-//         if (dest != quat) {
-//             dest[0] = quat[0];
-//             dest[1] = quat[1];
-//             dest[2] = quat[2];
-//             dest[3] = quat[3];
-//         }
-//         return dest;
-//     }
+    var k1 = Math.sin((1 - fA) * halfTheta)/sinHalfTheta;
+    var k2 = Math.sin(fA * halfTheta)/sinHalfTheta;
 
-//     var halfTheta = Math.acos(cosHalfTheta);
-//     var sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta);
+    pDataDestination.X = (pData1.X * k1 + pData2.X * k2);
+    pDataDestination.Y = (pData1.Y * k1 + pData2.Y * k2);
+    pDataDestination.Z = (pData1.Z * k1 + pData2.Z * k2);
+    pDataDestination.W = (pData1.W * k1 + pData2.W * k2);
 
-//     if (Math.abs(sinHalfTheta) < 0.001) {
-//         dest[0] = (quat[0] * 0.5 + quat2[0] * 0.5);
-//         dest[1] = (quat[1] * 0.5 + quat2[1] * 0.5);
-//         dest[2] = (quat[2] * 0.5 + quat2[2] * 0.5);
-//         dest[3] = (quat[3] * 0.5 + quat2[3] * 0.5);
-//         return dest;
-//     }
-
-//     var ratioA = Math.sin((1 - slerp) * halfTheta) / sinHalfTheta;
-//     var ratioB = Math.sin(slerp * halfTheta) / sinHalfTheta;
-
-//     dest[0] = (quat[0] * ratioA + quat2[0] * ratioB);
-//     dest[1] = (quat[1] * ratioA + quat2[1] * ratioB);
-//     dest[2] = (quat[2] * ratioA + quat2[2] * ratioB);
-//     dest[3] = (quat[3] * ratioA + quat2[3] * ratioB);
-
-//     return dest;
-// }
+    return q4fDestination;
+};
 
 (function(){
     var nStorageSize = 100;
@@ -4625,6 +4758,7 @@ Quat4.prototype.toString = function() {
         pStorage[i] = new Quat4();
     }
 })();
+
 
 Mat4.prototype.translate = Mat4.prototype.translateLeft;
 Mat4.prototype.scale = Mat4.prototype.scale;
