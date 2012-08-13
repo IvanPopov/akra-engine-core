@@ -10,7 +10,7 @@ function Skin (pRenderDataBuffer) {
 	debug_assert(pRenderDataBuffer, 'you must specify mesh for skin');
 
     //bind shape matrix from collada
-    this._m4fBindMatrix = new Matrix4;
+    this._m4fBindMatrix = new Mat4(1);
 	this._pRenderDataBuffer = pRenderDataBuffer;
 	this._pSkeleton = null; 
 	this._pBoneTransformMatrixData = null;
@@ -28,8 +28,6 @@ function Skin (pRenderDataBuffer) {
 
     //список всех VertexData, к которым подвязан данный скин
     this._pTiedData = [];
-
-    Mat4.identity(this._m4fBindMatrix);
 }
 
 PROPERTY(Skin, 'buffer',
@@ -58,7 +56,7 @@ PROPERTY(Skin, 'totalBones',
 Skin.prototype.setBindMatrix = function (m4fMatrix) {
     'use strict';
         
-    Mat4.set(m4fMatrix, this._m4fBindMatrix);
+    this._m4fBindMatrix.set(m4fMatrix);
 };
 
 Skin.prototype.getBindMatrix = function () {
@@ -259,7 +257,7 @@ Skin.prototype.applyBoneMatrices = function(bForce) {
         pNode = this._pAffectingNodes[i];
 
         if (pNode.isWorldMatrixNew() || bForce) {
-            Mat4.mult(pNode._m4fWorldMatrix, this._pBoneOffsetMatrices[i], this._pBoneTransformMatrices[i]);
+            pNode._m4fWorldMatrix.mult(this._pBoneOffsetMatrices[i], this._pBoneTransformMatrices[i]);
             isUpdated = true;
         }
     };
@@ -353,7 +351,7 @@ Skin.debugMeshSubset = function (pSubMesh) {
 
                 var pMatrixData = new Float32Array(pVideoBuffer.getData(4 * (pInfData.X), 4 * 16));
 
-                trace(Mat4.str(pMatrixData));
+                trace(pMatrixData.toString());
             }
         }
 

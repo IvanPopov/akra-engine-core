@@ -18,12 +18,12 @@ function Ray2d () {
      * Start point of ray
      * @type Float32Array
      */
-    this.v2fPoint = Vec2.create();
+    this.v2fPoint = new Vec2;
     /**
      * Direction of ray
      * @type Float32Array
      */
-    this.v2fNormal = Vec2.create();
+    this.v2fNormal = new Vec2;
 }
 ;
 
@@ -41,12 +41,12 @@ function Ray3d () {
      * Start point of ray
      * @type Float32Array
      */
-    this.v3fPoint = Vec3.create();
+    this.v3fPoint = new Vec3;
     /**
      * Direction of ray
      * @type Float32Array
      */
-    this.v3fNormal = Vec3.create();
+    this.v3fNormal = new Vec3;
 }
 ;
 
@@ -73,26 +73,26 @@ function Segment2d () {
 }
 ;
 
-Object.defineProperty(Segment2d.prototype, "point", {
-         /**
+PROPERTY(Segment2d, "point",
+        /**
+         * @property Float32Array point()
+         * Getter for point
+         * @memberof Segment2d
+         * @return Value of point
+         */
+        function () {
+            return this.pRay.v2fPoint;
+        },
+        /**
           * @property void point(Float32Array v2fPoint)
           * Setter for point
           * @memberof Segment2d
           * @param v2fPoint New point to set
           */
-         set: function (v2fPoint) {
-             Vec2.set(v2fPoint, this.pRay.v2fPoint);
-         },
-              /**
-               * @property Float32Array point()
-               * Getter for point
-               * @memberof Segment2d
-               * @return Value of point
-               */
-              get: function () {
-                  return this.pRay.v2fPoint;
-              }
-});
+        function (v2fPoint) {
+           this.pRay.v2fPoint.set(v2fPoint);
+        });
+
 Object.defineProperty(Segment2d.prototype, "normal", {
          /**
           * @property void normal(Float32Array v2fNormal)
@@ -101,7 +101,7 @@ Object.defineProperty(Segment2d.prototype, "normal", {
           * @param v2fNormal New normal to set
           */
          set: function (v2fNormal) {
-             Vec2.set(v2fNormal, this.pRray.v2fNormal);
+             this.pRray.v2fNormal.set(v2fNormal);
          },
               /**
                * @property Float32Array normal()
@@ -145,7 +145,7 @@ Object.defineProperty(Segment3d.prototype, "point", {
           * @param v3fPoint New point to set
           */
          set: function (v3fPoint) {
-             Vec3.set(v3fPoint, this.pRay.v3fPoint);
+             this.pRay.v3fPoint.set(v3fPoint);
          },
               /**
                * @property Float32Array point()
@@ -166,7 +166,7 @@ Object.defineProperty(Segment3d.prototype, "normal", {
           * @param v3fNormal New normal to set
           */
          set: function (v3fNormal) {
-             Vec3.set(v3fNormal, this.pRay.v3fNormal);
+             this.pRay.v3fNormal.set(v3fNormal);
          },
               /**
                * @property Float32Array normal()
@@ -223,20 +223,18 @@ function Circle () {
 
     switch (arguments.length) {
         case 0:
-            this.v2fCenter = Vec2.create();
+            this.v2fCenter = new Vec2;
             break;
         case 1:
-            this.v2fCenter = Vec2.create(arguments[0].v2fCenter);
+            this.v2fCenter = new Vec2(arguments[0].v2fCenter);
             this.fRadius = arguments[0].fRadius;
             break;
         case 2:
-            this.v2fCenter = Vec2.create(arguments[0]);
+            this.v2fCenter = new Vec2(arguments[0]);
             this.fRadius = arguments[1];
             break;
         case 3:
-            this.v2fCenter = Vec2.create();
-            this.v2fCenter.X = arguments[0];
-            this.v2fCenter.Y = arguments[1];
+            this.v2fCenter = new Vec2(arguments[0], arguments[1]);
             this.fRadius = arguments[2];
             break;
     }
@@ -251,7 +249,7 @@ function Circle () {
  */
 Circle.prototype.isEqual = function (pCircle) {
     INLINE();
-    return (Vec2.isEqual(this.v2fCenter, pCircle.v2fCenter) && this.fRadius == pCircle.fRadius);
+    return (this.v2fCenter.isEqual(pCircle.v2fCenter) && this.fRadius == pCircle.fRadius);
 };
 /**
  * Operator =
@@ -259,7 +257,7 @@ Circle.prototype.isEqual = function (pCircle) {
  */
 Circle.prototype.eq = function (pCircle) {
     INLINE();
-    Vec2.set(pCircle.v2fCenter, this.v2fCenter);
+    this.v2fCenter.set(pCircle.v2fCenter);
     this.fRadius = pCircle.fRadius;
 };
 /**
@@ -267,7 +265,7 @@ Circle.prototype.eq = function (pCircle) {
  */
 Circle.prototype.clear = function () {
     INLINE();
-    Vec2.clear(this.v2fCenter);
+    this.v2fCenter.clear();
     this.fRadius = 0.0;
 };
 /**
@@ -303,16 +301,15 @@ Circle.prototype.set = function () {
     INLINE();
     switch (arguments.length) {
         case 1:
-            Vec2.set(arguments[0].v2fCenter, this.v2fCenter);
+            this.v2fCenter.set(arguments[0].v2fCenter);
             this.fRadius = arguments[0].fRadius;
             break;
         case 2:
-            Vec2.set(arguments[0], this.v2fCenter);
+            this.v2fCenter.set(arguments[0]);
             this.fRadius = arguments[1];
             break;
         case 3:
-            this.v2fCenter.X = arguments[0];
-            this.v2fCenter.Y = arguments[1];
+            this.v2fCenter.set(arguments[0], arguments[1]);
             this.fRadius = arguments[2];
             break;
     }
@@ -338,7 +335,7 @@ Circle.prototype.assertValid = function () {
  */
 Circle.prototype.offset = function (v2fOffset) {
     INLINE();
-    Vec2.add(this.v2fCenter, v2fOffset);
+    this.v2fCenter.add(v2fOffset);
 };
 /**
  * Incrase radius of circle
@@ -401,21 +398,18 @@ function Sphere () {
 
     switch (arguments.length) {
         case 0:
-            this.v3fCenter = Vec3.create();
+            this.v3fCenter = new Vec3;
             break;
         case 1:
-            this.v3fCenter = Vec3.create(arguments[0].v3fCenter);
+            this.v3fCenter = new Vec3(arguments[0].v3fCenter);
             this.fRadius = arguments[0].fRadius;
             break;
         case 2:
-            this.v3fCenter = Vec3.create(arguments[0]);
+            this.v3fCenter = new Vec3(arguments[0]);
             this.fRadius = arguments[1];
             break;
         case 4:
-            this.v3fCenter = Vec3.create();
-            this.v3fCenter.X = arguments[0];
-            this.v3fCenter.Y = arguments[1];
-            this.v3fCenter.Z = arguments[2];
+            this.v3fCenter = new Vec3(arguments[0], arguments[1], arguments[2]);
             this.fRadius = arguments[3];
             break;
     }
@@ -431,8 +425,8 @@ Object.defineProperty(Sphere.prototype, "circle", {
           * @param pCircle Circle
           */
          set: function (pCircle) {
-             this.v3fCenter[0] = pCircle.v2fCenter[0];
-             this.v3fCenter[1] = pCircle.v2fCenter[1];
+             this.v3fCenter.pData.X = pCircle.v2fCenter.pData.X;
+             this.v3fCenter.pData.Y = pCircle.v2fCenter.pData.Y;
              this.fRadius = pCircle.fRadius;
          },
               /**
@@ -442,7 +436,7 @@ Object.defineProperty(Sphere.prototype, "circle", {
                * @return Circle
                */
               get: function () {
-                  return new Circle(this.v3fCenter[0], this.v3fCenter[1], this.fRadius);
+                  return new Circle(this.v3fCenter.pData.X, this.v3fCenter.pData.Y, this.fRadius);
               }
 });
 Object.defineProperty(Sphere.prototype, "z", {
@@ -453,7 +447,7 @@ Object.defineProperty(Sphere.prototype, "z", {
           * @param fZ New Z coord
           */
          set: function (fZ) {
-             this.v3fCenter[2] = fZ;
+             this.v3fCenter.pData.Z = fZ;
          },
               /**
                * @property Float z()
@@ -462,7 +456,7 @@ Object.defineProperty(Sphere.prototype, "z", {
                * @return Z coord
                */
               get: function () {
-                  return this.v3fCenter[2];
+                  return this.v3fCenter.pData.Z;
               }
 });
 /**
@@ -472,7 +466,7 @@ Object.defineProperty(Sphere.prototype, "z", {
  */
 Sphere.prototype.isEqual = function (pSphere) {
     INLINE();
-    return (Vec3.isEqual(pSphere.v3fCenter, this.v3fCenter) && this.fRadius == pSphere.fRadius);
+    return (pSphere.v3fCenter.isEqual(this.v3fCenter) && this.fRadius == pSphere.fRadius);
 };
 /**
  * Operator =
@@ -480,7 +474,7 @@ Sphere.prototype.isEqual = function (pSphere) {
  */
 Sphere.prototype.eq = function (pSphere) {
     INLINE();
-    Vec3.set(pSphere.v3fCenter, this.v3fCenter);
+    this.v3fCenter.set(pSphere.v3fCenter);
     this.fRadius = pSphere.fRadius;
 };
 /**
@@ -488,7 +482,7 @@ Sphere.prototype.eq = function (pSphere) {
  */
 Sphere.prototype.clear = function () {
     INLINE();
-    Vec3.clear(this.v3fCenter);
+    this.v3fCenter.clear();
     this.fRadius = 0.0;
 };
 /**
@@ -497,7 +491,7 @@ Sphere.prototype.clear = function () {
  */
 Sphere.prototype.isClear = function () {
     INLINE();
-    return (Vec3.isClear(this.v3fCenter) && (0.0 == this.fRadius));
+    return (this.v3fCenter.isClear() && (0.0 == this.fRadius));
 };
 /**
  * @property void set(Sphere pSphere)
@@ -525,17 +519,15 @@ Sphere.prototype.set = function () {
     INLINE();
     switch (arguments.length) {
         case 1:
-            Vec3.set(arguments[0].v3fCenter, this.v3fCenter);
+            this.v3fCenter.set(arguments[0].v3fCenter);
             this.fRadius = arguments[0].fRadius;
             break;
         case 2:
-            Vec3.set(arguments[0], this.v3fCenter);
+            this.v3fCenter.set(arguments[0]);
             this.fRadius = arguments[1];
             break;
         case 4:
-            this.v3fCenter[0] = arguments[0];
-            this.v3fCenter[1] = arguments[1];
-            this.v3fCenter[2] = arguments[2];
+            this.v3fCenter.set(arguments)
             this.fRadius = arguments[3];
             break;
     }
@@ -562,7 +554,7 @@ Sphere.prototype.assertValid = function () {
  */
 Sphere.prototype.offset = function (v3fOffset) {
     INLINE();
-    Vec3.add(this.v3fCenter, v3fOffset);
+    this.v3fCenter.add(v3fOffset);
 };
 /**
  * Incrase radius
@@ -623,25 +615,25 @@ function Plane2d () {
     this.v2fNormal = null;
     switch (arguments.length) {
         case 0:
-            this.v2fNormal = Vec2.create();
+            this.v2fNormal = new Vec2;
             break;
         case 1:
-            this.v2fNormal = Vec2.create(arguments[0].v2fNormal);
+            this.v2fNormal = new Vec2(arguments[0].v2fNormal);
             this.fDistance = (arguments[0].fDistance);
             break;
         case 2:
             if (typeof(arguments[1]) == "number") {
-                this.v2fNormal = Vec2.create(arguments[0]);
+                this.v2fNormal = new Vec2(arguments[0]);
                 this.fDistance = arguments[1];
             }
             else {
-                this.v2fNormal = Vec2.create();
-                var vec0 = Vec2.subtract(arguments[1], arguments[0], this.v2fNormal);
-                var x = vec0[0];
-                var y = vec0[1];
-                vec0[0] = -y;
-                vec0[1] = x;
-                this.fDistance = -Vec2.dot(vec0, arguments[0]);
+                this.v2fNormal = new Vec2;
+                var vec0 = Vec2(arguments[1]).subtract(Vec2(arguments[0]), this.v2fNormal);
+                var x = vec0.pData.X;
+                var y = vec0.pData.Y;
+                vec0.pData.X = -y;
+                vec0.pData.Y = x;
+                this.fDistance = -vec0.dot(Vec2(arguments[0]));
             }
             break;
     }
@@ -654,7 +646,7 @@ function Plane2d () {
  */
 Plane2d.prototype.eq = function (pPlane) {
     INLINE();
-    Vec2.set(pPlane, this.v2fNormal);
+    this.v2fNormal.set(pPlane);
     this.fDistance = pPlane.fDistance;
 };
 /**
@@ -664,7 +656,7 @@ Plane2d.prototype.eq = function (pPlane) {
  */
 Plane2d.prototype.isEqual = function (pPlane) {
     INLINE();
-    return (Vec2.isEqual(this.v2fNormal, pPlane.v2fNormal) && this.fDistance == pPlane.fDistance);
+    return (this.v2fNormal.isEqual(pPlane.v2fNormal) && this.fDistance == pPlane.fDistance);
 };
 /**
  * Given Z and Y, solve for X on the plane
@@ -676,8 +668,8 @@ Plane2d.prototype.solveForX = function (fY) {
     //Ax + By + Cz + D = 0
     // Ax = -(By + Cz + D)
     // x = -(By + Cz + D)/A
-    if (this.v2fNormal.X) {
-        return ( -(this.v2fNormal.Y * fY + this.fDistance) / this.v2fNormal.X );
+    if (this.v2fNormal.pData.X) {
+        return ( -(this.v2fNormal.pData.Y * fY + this.fDistance) / this.v2fNormal.pData.X);
     }
     return (0.0);
 };
@@ -691,8 +683,8 @@ Plane2d.prototype.solveForY = function (fX) {
     //Ax + By + Cz + D = 0
     // By = -(Ax + Cz + D)
     // y = -(Ax + Cz + D)/B
-    if (this.v2fNormal.Y) {
-        return ( -(this.v2fNormal.X * fX + this.fDistance) / this.v2fNormal.Y );
+    if (this.v2fNormal.pData.Y) {
+        return ( -(this.v2fNormal.pData.X * fX + this.fDistance) / this.v2fNormal.pData.Y );
     }
     return (0.0);
 };
@@ -703,10 +695,10 @@ Plane2d.prototype.solveForY = function (fX) {
  */
 Plane2d.prototype.projectPointToPlane = function (v2fPoint) {
     INLINE();
-    var distance = (Vec2.dot(this.v2fNormal, v2fPoint) + this.fDistance);
-    var v2fRes = Vec2.create();
-    v2fRes[0] = this.v2fNormal.X * (-distance) + v2fPoint.X;
-    v2fRes[1] = this.v2fNormal.Y * (-distance) + v2fPoint.Y;
+    var distance = (this.v2fNormal.dot(v2fPoint) + this.fDistance);
+    var v2fRes = new Vec2;
+    v2fRes.pData.X = this.v2fNormal.pData.X * (-distance) + v2fPoint.pData.X;
+    v2fRes.pData.Y = this.v2fNormal.pData.Y * (-distance) + v2fPoint.pData.Y;
     return v2fRes;
 };
 /**
@@ -726,16 +718,16 @@ Plane2d.prototype.projectPointToPlane = function (v2fPoint) {
 Plane2d.prototype.set = function (arg1, arg2) {
     INLINE();
     if (typeof(arg2) == "number") {
-        Vec2.set(arg1, this.v2fNormal);
+        this.v2fNormal.set(arg1);
         this.fDistance = arg2;
     }
     else {
-        var line = Vec2.subtract(arg2, arg1, this.v2fNormal);
-        var x = line[0];
-        var y = line[1];
-        line[0] = -y;
-        line[1] = x;
-        this.fDistance = -Vec2.dot(line, arg1);
+        var line = arg2.subtract(arg1, this.v2fNormal);
+        var x = line.pData.X;
+        var y = line.pData.Y;
+        line.pData.X = -y;
+        line.pData.Y = x;
+        this.fDistance = -line.dot(Vec2(arg1));
     }
 };
 /**
@@ -745,7 +737,7 @@ Plane2d.prototype.set = function (arg1, arg2) {
  * @treturn Float distance
  */
 Plane2d.prototype.signedDistance = function (v2fPoint) {
-    return (Vec2.dot(this.v2fNormal, v2fPoint) + this.fDistance);
+    return (this.v2fNormal.dot(v2fPoint) + this.fDistance);
 };
 
 //-------------------End Plane2D---------------------\\
@@ -802,32 +794,31 @@ function Plane3d () {
 
     switch (arguments.length) {
         case 0:
-            this.v3fNormal = Vec3.create();
+            this.v3fNormal = new Vec3;
             break;
         case 1:
-            Vec3.set(arguments[0].v3fNormal, this.v3fNormal);
+            this.v3fNormal.set(arguments[0].v3fNormal);
             this.fDistance = arguments[0].fDistance;
             break;
         case 2:
             if (typeof(arguments[1]) == "number") {
-                this.v3fNormal = Vec3.create();
-                Vec3.set(arguments[0], this.v3fNormal);
+                this.v3fNormal = new Vec3(arguments[0]);
                 this.fDistance = arguments[1];
             }
             else {
-                this.v3fNormal = Vec3.create(arguments[1]);
-                this.fDistance = -Vec3.dot(arguments[0], arguments[1]);
+                this.v3fNormal = new Vec3(arguments[1]);
+                this.fDistance = -arguments[0].dot(arguments[1]);
             }
             break;
         case 3:
-            var sideA = Vec3.create();
-            var sideB = Vec3.create();
-            Vec3.subtract(arguments[1], arguments[0], sideA);
-            Vec3.subtract(arguments[2], arguments[0], sideB);
-            Vec3.cross(sideB, sideA);
-            Vec3.normalize(sideB);
-            this.v3fNormal = Vec3.create(sideB);
-            this.fDistance = -Vec3.dot(this.v3fNormal, arguments[0]);
+            var sideA = new Vec3;
+            var sideB = new Vec3;
+            arguments[1].subtract(arguments[0], sideA);
+            arguments[2].subtract(arguments[0], sideB);
+            sideB.cross(sideA);
+            sideB.normalize();
+            this.v3fNormal = new Vec3(sideB);
+            this.fDistance = -this.v3fNormal.dot(Vec3(arguments[0]));
             break;
     }
     ;
@@ -839,7 +830,7 @@ function Plane3d () {
  */
 Plane3d.prototype.eq = function (pPlane) {
     INLINE();
-    Vec3.set(pPlane.v3fNormal, this.v3fNormal);
+    this.v3fNormal.set(pPlane.v3fNormal);
     this.fDistance = pPlane.fDistance;
 };
 /**
@@ -849,15 +840,15 @@ Plane3d.prototype.eq = function (pPlane) {
  */
 Plane3d.prototype.isEqual = function (pPlane) {
     INLINE();
-    return (Vec3.isEqual(this.v3fNormal, pPlane.v3fNormal) && this.fDistance == pPlane.fDistance);
+    return (this.v3fNormal.isEqual(pPlane.v3fNormal) && this.fDistance == pPlane.fDistance);
 };
 /**
  * Normalize Plane
  */
 Plane3d.prototype.normalize = function () {
     INLINE();
-    var len = 1 / Vec3.length(this.v3fNormal);
-    Vec3.scale(this.v3fNormal, len);
+    var len = 1 / this.v3fNormal.length();
+    this.v3fNormal.scale(len);
     this.fDistance *= len;
 };
 /**
@@ -871,8 +862,8 @@ Plane3d.prototype.solveForX = function (fY, fZ) {
     //Ax + By + Cz + D = 0
     // Ax = -(By + Cz + D)
     // x = -(By + Cz + D)/A
-    if (this.v3fNormal.X) {
-        return ( -(this.v3fNormal.Y * fY + this.v3fNormal.Z * fZ + this.fDistance) / this.v3fNormal.X );
+    if (this.v3fNormal.pData.X) {
+        return ( -(this.v3fNormal.pData.Y * fY + this.v3fNormal.pData.Z * fZ + this.fDistance) / this.v3fNormal.pData.X );
     }
     return (0.0);
 };
@@ -887,8 +878,8 @@ Plane3d.prototype.solveForY = function (fX, fZ) {
     //Ax + By + Cz + D = 0
     // By = -(Ax + Cz + D)
     // y = -(Ax + Cz + D)/B
-    if (this.v3fNormal.Y) {
-        return ( -(this.v3fNormal.X * fX + this.v3fNormal.Z * fZ + this.fDistance) / this.v3fNormal.Y );
+    if (this.v3fNormal.pData.Y) {
+        return ( -(this.v3fNormal.pData.X * fX + this.v3fNormal.pData.Z * fZ + this.fDistance) / this.v3fNormal.pData.Y );
     }
     return (0.0);
 };
@@ -903,8 +894,8 @@ Plane3d.prototype.solveForZ = function (fX, fY) {
     //Ax + By + Cz + D = 0
     // Cz = -(Ax + By + D)
     // z = -(Ax + By + D)/C
-    if (this.v3fNormal.Z) {
-        return ( -(this.v3fNormal.Y * fY + this.v3fNormal.X * fX + this.fDistance) / this.v3fNormal.Z );
+    if (this.v3fNormal.pData.Z) {
+        return ( -(this.v3fNormal.pData.Y * fY + this.v3fNormal.pData.X * fX + this.fDistance) / this.v3fNormal.pData.Z );
     }
     return (0.0);
 };
@@ -915,11 +906,11 @@ Plane3d.prototype.solveForZ = function (fX, fY) {
  */
 Plane3d.prototype.projectPointToPlane = function (v3fPoint) {
     INLINE();
-    var distance = (Vec3.dot(this.v3fNormal, v3fPoint) + this.fDistance);
-    var v3fRes = Vec3.create();
-    v3fRes[0] = this.v3fNormal.X * (-distance) + v3fPoint.X;
-    v3fRes[1] = this.v3fNormal.Y * (-distance) + v3fPoint.Y;
-    v3fRes[2] = this.v3fNormal.Z * (-distance) + v3fPoint.Z;
+    var distance = (this.v3fNormal.dot(v3fPoint) + this.fDistance);
+    var v3fRes = new Vec3;
+    v3fRes.pData.X = this.v3fNormal.pData.X * (-distance) + v3fPoint.pData.X;
+    v3fRes.pData.Y = this.v3fNormal.pData.Y * (-distance) + v3fPoint.pData.Y;
+    v3fRes.pData.Z = this.v3fNormal.pData.Z * (-distance) + v3fPoint.pData.Z;
     return v3fRes;
 };
 /**
@@ -949,22 +940,22 @@ Plane3d.prototype.set = function () {
     switch (arguments.length) {
         case 2:
             if (typeof(arguments[1]) == "number") {
-                Vec3.set(arguments[0], this.v3fNormal);
+                this.v3fNormal.set(arguments[0]);
                 this.fDistance = arguments[1];
             }
             else {
-                Vec3.set(arguments[1], this.v3fNormal);
-                this.fDistance = -Vec3.dot(this.v3fNormal, arguments[0]);
+                this.v3fNormal.set(arguments[1]);
+                this.fDistance = -this.v3fNormal.dot(Vec3(arguments[0]));
             }
             break;
         case 3:
-            var sideA = Vec3.create();
+            var sideA = new Vec3;
             var sideB = this.v3fNormal;
-            Vec3.subtract(arguments[1], arguments[0], sideA);
-            Vec3.subtract(arguments[2], arguments[0], sideB);
-            Vec3.cross(sideB, sideA);
-            Vec3.normalize(sideB);
-            this.fDistance = -Vec3.dot(this.v3fNormal, arguments[0]);
+            Vec3(arguments[1]).subtract(arguments[0], sideA);
+            Vec3(arguments[2]).subtract(arguments[0], sideB);
+            sideB.cross(sideA);
+            sideB.normalize();
+            this.fDistance = -this.v3fNormal.dot(arguments[0]);
             break;
     }
     ;
@@ -976,12 +967,12 @@ Plane3d.prototype.set = function () {
  */
 Plane3d.prototype.xForm = function (m4fMatrix) {
     INLINE();
-    Vec3.vec3TransformCoord(this.v3fNormal, m4fMatrix, this.v3fNormal);
-    Vec3.normalize(this.v3fNormal);
-    var point = Vec3.create();
-    Vec3.scale(this.v3fNormal, this.fDistance, point);
-    Vec3.vec3TransformCoord(point, m4fMatrix, point);
-    this.fDistance = -Vec3.dot(point, this.v3fNormal);
+    this.v3fNormal.vec3TransformCoord(m4fMatrix, this.v3fNormal);
+    this.v3fNormal.normalize();
+    var point = new Vec3;
+    this.v3fNormal.scale(this.fDistance, point);
+    point.vec3TransformCoord(m4fMatrix, point);
+    this.fDistance = -point.dot(this.v3fNormal);
 };
 /**    signedDistance
  * Returns the signed distance between
@@ -994,7 +985,7 @@ Plane3d.prototype.xForm = function (m4fMatrix) {
  */
 Plane3d.prototype.signedDistance = function (v3fPoint) {
     INLINE();
-    return (Vec3.dot(this.v3fNormal, v3fPoint) + this.fDistance);
+    return (v3fPoint.dot(this.v3fNormal) + this.fDistance);
 };
 
 //-------------------End Plane3D---------------------\\
@@ -1060,9 +1051,9 @@ function Rect2d () {
                 this.fX1 = arguments[0].fY1;
             }
             else {
-                this.fX1 = arguments[0].X * 0.5;
+                this.fX1 = arguments[0].pData.X * 0.5;
                 this.fX0 = -this.fX1;
-                this.fY1 = arguments[0].Y * 0.5;
+                this.fY1 = arguments[0].pData.Y * 0.5;
                 this.fY0 = -this.fY1;
             }
             break;
@@ -1118,10 +1109,10 @@ Rect2d.prototype.addSelf = function (value) {
         this.fY1 += value;
     }
     else {
-        this.fX0 += value.X;
-        this.fX1 += value.X;
-        this.fY0 += value.Y;
-        this.fY1 += value.Y;
+        this.fX0 += value.pData.X;
+        this.fX1 += value.pData.X;
+        this.fY0 += value.pData.Y;
+        this.fY1 += value.pData.Y;
     }
 };
 /**
@@ -1149,10 +1140,10 @@ Rect2d.prototype.subSelf = function (value) {
         this.fY1 -= value;
     }
     else {
-        this.fX0 -= value.X;
-        this.fX1 -= value.X;
-        this.fY0 -= value.Y;
-        this.fY1 -= value.Y;
+        this.fX0 -= value.pData.X;
+        this.fX1 -= value.pData.X;
+        this.fY0 -= value.pData.Y;
+        this.fY1 -= value.pData.Y;
     }
 };
 /**
@@ -1174,12 +1165,12 @@ Rect2d.prototype.divSelf = function (value) {
         this.fY1 /= value;
     }
     else {
-        debug_assert(value.X != 0.0, "divide by zero error");
-        debug_assert(value.Y != 0.0, "divide by zero error");
-        this.fX0 /= value.X;
-        this.fX1 /= value.X;
-        this.fY0 /= value.Y;
-        this.fY1 /= value.Y;
+        debug_assert(value.pData.X != 0.0, "divide by zero error");
+        debug_assert(value.pData.Y != 0.0, "divide by zero error");
+        this.fX0 /= value.pData.X;
+        this.fX1 /= value.pData.X;
+        this.fY0 /= value.pData.Y;
+        this.fY1 /= value.pData.Y;
     }
 };
 /**
@@ -1200,10 +1191,10 @@ Rect2d.prototype.multSelf = function (value) {
         this.fY1 *= value;
     }
     else {
-        this.fX0 *= value.X;
-        this.fX1 *= value.X;
-        this.fY0 *= value.Y;
-        this.fY1 *= value.Y;
+        this.fX0 *= value.pData.X;
+        this.fX1 *= value.pData.X;
+        this.fY0 *= value.pData.Y;
+        this.fY1 *= value.pData.Y;
     }
 };
 /**
@@ -1256,9 +1247,9 @@ Rect2d.prototype.set = function () {
                 this.fY1 = arguments[0].fY1;
             }
             else {
-                this.fX1 = arguments[0].X * 0.5;
+                this.fX1 = arguments[0].pData.X * 0.5;
                 this.fX0 = -this.fX1;
-                this.fY1 = arguments[0].Y * 0.5;
+                this.fY1 = arguments[0].pData.Y * 0.5;
                 this.fY0 = -this.fY1;
             }
             break;
@@ -1339,9 +1330,9 @@ Rect2d.prototype.resizeY = function (fSize) {
  */
 Rect2d.prototype.resize = function (v2fSize) {
     this.fX1 = (this.fX1 + this.fX0 + v2fSize.X) * 0.5;
-    this.fX0 = this.fX1 - v2fSize.X;
+    this.fX0 = this.fX1 - v2fSize.pData.X;
     this.fY1 = (this.fY1 + this.fY0 + v2fSize.Y) * 0.5;
-    this.fY0 = this.fY1 - v2fSize.Y;
+    this.fY0 = this.fY1 - v2fSize.pData.Y;
 };
 /**
  * Resize rect
@@ -1364,8 +1355,8 @@ Rect2d.prototype.resizeMaxY = function (fSpan) {
  * @tparam Float32Array v2fSize vec.x to resizeMaxX, vec.y to resizeMaxY
  */
 Rect2d.prototype.resizeMax = function (v2fSize) {
-    this.fX1 = this.fX0 + v2fSize.X;
-    this.fY1 = this.fY0 + v2fSize.Y;
+    this.fX1 = this.fX0 + v2fSize.pData.X;
+    this.fY1 = this.fY0 + v2fSize.pData.Y;
 };
 /**
  * Resize rect
@@ -1388,8 +1379,8 @@ Rect2d.prototype.resizeMinY = function (fSpan) {
  * @tparam Float32Array v2fSize vec.x to resizeMinX, vec.y to resizeMinY
  */
 Rect2d.prototype.resizeMin = function (v2fSize) {
-    this.fX0 = this.fX1 - v2fSize.X;
-    this.fY0 = this.fY1 - v2fSize.Y;
+    this.fX0 = this.fX1 - v2fSize.pData.X;
+    this.fY0 = this.fY1 - v2fSize.pData.Y;
 };
 /**
  * Mid between x0 and x1
@@ -1412,9 +1403,9 @@ Rect2d.prototype.midY = function () {
  * @treturn Float32Array point.X = midX; point.Y = midY
  */
 Rect2d.prototype.midpoint = function () {
-    var v2fPoint = Vec2.create();
-    v2fPoint.X = (this.fX0 + this.fX1) * 0.5;
-    v2fPoint.Y = (this.fY0 + this.fY1) * 0.5;
+    var v2fPoint = new Vec2;
+    v2fPoint.pData.X = (this.fX0 + this.fX1) * 0.5;
+    v2fPoint.pData.Y = (this.fY0 + this.fY1) * 0.5;
     return v2fPoint;
 };
 /**
@@ -1438,9 +1429,9 @@ Rect2d.prototype.sizeY = function () {
  * @treturn Float32Array size.X = sizeX; size.Y = sizeY
  */
 Rect2d.prototype.size = function () {
-    var v2fSize = Vec2.create();
-    v2fSize.X = (this.fX1 - this.fX0);
-    v2fSize.Y = (this.fY1 - this.fY0);
+    var v2fSize = new Vec2;
+    v2fSize.pData.X = (this.fX1 - this.fX0);
+    v2fSize.pData.Y = (this.fY1 - this.fY0);
     return v2fSize;
 };
 /**
@@ -1448,9 +1439,9 @@ Rect2d.prototype.size = function () {
  * @treturn Float32Array point.X = x0; point.Y = y0
  */
 Rect2d.prototype.minPoint = function () {
-    var v2fPoint = Vec2.create();
-    v2fPoint.X = this.fX0;
-    v2fPoint.Y = this.fY0;
+    var v2fPoint = new Vec2;
+    v2fPoint.pData.X = this.fX0;
+    v2fPoint.pData.Y = this.fY0;
     return v2fPoint;
 };
 /**
@@ -1458,9 +1449,9 @@ Rect2d.prototype.minPoint = function () {
  * @treturn Float32Array point.X = x1; point.Y = y1
  */
 Rect2d.prototype.maxPoint = function () {
-    var v2fPoint = Vec2.create();
-    v2fPoint.X = this.fX1;
-    v2fPoint.Y = this.fY1;
+    var v2fPoint = new Vec2;
+    v2fPoint.pData.X = this.fX1;
+    v2fPoint.pData.Y = this.fY1;
     return v2fPoint;
 };
 /**
@@ -1480,10 +1471,10 @@ Rect2d.prototype.area = function () {
  * @tparam Float32Array v2fPoint
  */
 Rect2d.prototype.unionPoint = function (v2fPoint) {
-    this.fX0 = Math.min(this.fX0, point.X);
-    this.fY0 = Math.min(this.fY0, point.Y);
-    this.fX1 = Math.max(this.fX1, point.X);
-    this.fY1 = Math.max(this.fY1, point.Y);
+    this.fX0 = Math.min(this.fX0, point.pData.X);
+    this.fY0 = Math.min(this.fY0, point.pData.Y);
+    this.fX1 = Math.max(this.fX1, point.pData.X);
+    this.fY1 = Math.max(this.fY1, point.pData.Y);
 };
 /**
  * Union rect with another rect2d
@@ -1508,10 +1499,10 @@ Rect2d.prototype.unionRect = function (pRect) {
  * @tparam Float32Array v2fOffset
  */
 Rect2d.prototype.offset = function (v2fOffset) {
-    this.fX0 += offset.X;
-    this.fX1 += offset.X;
-    this.fY0 += offset.Y;
-    this.fY1 += offset.Y;
+    this.fX0 += v2fOffset.pData.X;
+    this.fX1 += v2fOffset.pData.X;
+    this.fY0 += v2fOffset.pData.Y;
+    this.fY1 += v2fOffset.pData.Y;
 };
 /**
  * @property expand(Float32Array v2fSize)
@@ -1535,10 +1526,10 @@ Rect2d.prototype.expand = function (value) {
         this.fY1 += value;
     }
     else {
-        this.fX0 -= value.X;
-        this.fX1 += value.X;
-        this.fY0 -= value.Y;
-        this.fY1 += value.Y;
+        this.fX0 -= value.pData.X;
+        this.fX1 += value.pData.X;
+        this.fY0 -= value.pData.Y;
+        this.fY1 += value.pData.Y;
     }
 };
 /**
@@ -1590,9 +1581,9 @@ Rect2d.prototype.normalize = function () {
  */
 Rect2d.prototype.corner = function (index) {
     debug_assert(index >= 0 && index < 4, "invalid index");
-    var v2fPoint = Vec2.create();
-    v2fPoint.X = (index & 1) ? this.fX0 : this.fX1;
-    v2fPoint.Y = (index & 2) ? this.fY0 : this.fY1;
+    var v2fPoint = new Vec2;
+    v2fPoint.pData.X = (index & 1) ? this.fX0 : this.fX1;
+    v2fPoint.pData.Y = (index & 2) ? this.fY0 : this.fY1;
     return v2fPoint;
 };
 /**
@@ -1601,7 +1592,7 @@ Rect2d.prototype.corner = function (index) {
  * @treturn Boolean is point in rect
  */
 Rect2d.prototype.isPointInRect = function (v2fPoint) {
-    return (v2fPoint.X >= this.fX0 && v2fPoint.Y >= this.fY0 && v2fPoint.X <= Rect3d.fX1 && v2fPoint.Y <= this.fY1);
+    return (v2fPoint.pData.X >= this.fX0 && v2fPoint.pData.Y >= this.fY0 && v2fPoint.X <= Rect3d.fX1 && v2fPoint.Y <= this.fY1);
 };
 /**
  * Create bounding circle for rect
@@ -1688,11 +1679,11 @@ function Rect3d () {
                 this.fZ1 = arguments[0].fZ1;
             }
             else {
-                this.fX1 = arguments[0].X * 0.5;
+                this.fX1 = arguments[0].pData.X * 0.5;
                 this.fX0 = -this.fX1;
-                this.fY1 = arguments[0].Y * 0.5;
+                this.fY1 = arguments[0].pData.Y * 0.5;
                 this.fY0 = -this.fY1;
-                this.fZ1 = arguments[0].Z * 0.5;
+                this.fZ1 = arguments[0].pData.Z * 0.5;
                 this.fZ0 = -this.fZ1;
             }
             break;
@@ -1790,12 +1781,12 @@ Rect3d.prototype.addSelf = function (value) {
         this.fZ1 += value;
     }
     else {
-        this.fX0 += value.X;
-        this.fX1 += value.X;
-        this.fY0 += value.Y;
-        this.fY1 += value.Y;
-        this.fZ0 += value.Z;
-        this.fZ1 += value.Z;
+        this.fX0 += value.pData.X;
+        this.fX1 += value.pData.X;
+        this.fY0 += value.pData.Y;
+        this.fY1 += value.pData.Y;
+        this.fZ0 += value.pData.Z;
+        this.fZ1 += value.pData.Z;
     }
 };
 /**
@@ -1847,15 +1838,15 @@ Rect3d.prototype.divSelf = function (value) {
         this.fZ1 /= value;
     }
     else {
-        debug_assert(value.X != 0.0, "divide by zero error");
-        debug_assert(value.Y != 0.0, "divide by zero error");
-        debug_assert(value.Z != 0.0, "divide by zero error");
-        this.fX0 /= value.X;
-        this.fX1 /= value.X;
-        this.fY0 /= value.Y;
-        this.fY1 /= value.Y;
-        this.fZ0 /= value.Z;
-        this.fZ1 /= value.Z;
+        debug_assert(value.pData.X != 0.0, "divide by zero error");
+        debug_assert(value.pData.Y != 0.0, "divide by zero error");
+        debug_assert(value.pData.Z != 0.0, "divide by zero error");
+        this.fX0 /= value.pData.X;
+        this.fX1 /= value.pData.X;
+        this.fY0 /= value.pData.Y;
+        this.fY1 /= value.pData.Y;
+        this.fZ0 /= value.pData.Z;
+        this.fZ1 /= value.pData.Z;
     }
 };
 /**
@@ -1878,12 +1869,12 @@ Rect3d.prototype.multSelf = function (value) {
         this.fZ1 *= value;
     }
     else {
-        this.fX0 *= value.X;
-        this.fX1 *= value.X;
-        this.fY0 *= value.Y;
-        this.fY1 *= value.Y;
-        this.fZ0 *= value.Z;
-        this.fZ1 *= value.Z;
+        this.fX0 *= value.pData.X;
+        this.fX1 *= value.pData.X;
+        this.fY0 *= value.pData.Y;
+        this.fY1 *= value.pData.Y;
+        this.fZ0 *= value.pData.Z;
+        this.fZ1 *= value.pData.Z;
     }
 };
 /**
@@ -1947,11 +1938,11 @@ Rect3d.prototype.set = function () {
                 this.fZ1 = arguments[0].fZ1;
             }
             else {
-                this.fX1 = arguments[0].X * 0.5;
+                this.fX1 = arguments[0].pData.X * 0.5;
                 this.fX0 = -this.fX1;
-                this.fY1 = arguments[0].Y * 0.5;
+                this.fY1 = arguments[0].pData.Y * 0.5;
                 this.fY0 = -this.fY1;
-                this.fZ1 = arguments[0].Z * 0.5;
+                this.fZ1 = arguments[0].pData.Z * 0.5;
                 this.fZ0 = -this.fZ1;
             }
             break;
@@ -2051,11 +2042,11 @@ Rect3d.prototype.resizeZ = function (fSize) {
  * @tparam Float32Array v3fSize new size
  */
 Rect3d.prototype.resize = function (v3fSize) {
-    this.fX1 = (this.fX0 + this.fX1 + v3fSize.X) * 0.5;
+    this.fX1 = (this.fX0 + this.fX1 + v3fSize.pData.X) * 0.5;
     this.fX0 = this.fX1 - v2fSize.X;
-    this.fY1 = (this.fY0 + this.fY1 + v3fSize.Y) * 0.5;
+    this.fY1 = (this.fY0 + this.fY1 + v3fSize.pData.Y) * 0.5;
     this.fY0 = this.fY1 - v2fSize.Y;
-    this.fZ1 = (this.fZ0 + this.fZ1 + v3fSize.Z) * 0.5;
+    this.fZ1 = (this.fZ0 + this.fZ1 + v3fSize.pData.Z) * 0.5;
     this.fZ0 = this.fZ1 - fSize;
 };
 /**
@@ -2085,9 +2076,9 @@ Rect3d.prototype.resizeMaxZ = function (fSpan) {
  * @tparam Float32Array v3fSize new size
  */
 Rect3d.prototype.resizeMax = function (v3fSize) {
-    this.fX1 = this.fX0 + v3fSize.X;
-    this.fY1 = this.fY0 + v3fSize.Y;
-    this.fZ1 = this.fZ0 + v3fSize.Z;
+    this.fX1 = this.fX0 + v3fSize.pData.X;
+    this.fY1 = this.fY0 + v3fSize.pData.Y;
+    this.fZ1 = this.fZ0 + v3fSize.pData.Z;
 };
 /**
  * x0 = x1 - fSpan
@@ -2116,9 +2107,9 @@ Rect3d.prototype.resizeMinZ = function (fSpan) {
  * @tparam Float32Array v3fSize new size
  */
 Rect3d.prototype.resizeMin = function (v3fSize) {
-    this.fX0 = this.fX1 - v3fSize.X;
-    this.fY0 = this.fY1 - v3fSize.Y;
-    this.fZ0 = this.fZ1 - v3fSize.Z;
+    this.fX0 = this.fX1 - v3fSize.pData.X;
+    this.fY0 = this.fY1 - v3fSize.pData.Y;
+    this.fZ0 = this.fZ1 - v3fSize.pData.Z;
 };
 /**
  * Return middle point
@@ -2149,9 +2140,7 @@ Rect3d.prototype.midZ = function () {
  * @treturn Float32Array Return 3d vector
  */
 Rect3d.prototype.midPoint = function () {
-    var vec = Vec3.create();
-    Vec3.set((this.fX0 + this.fX1) * 0.5, (this.fY0 + this.fY1) * 0.5, (this.fZ0 + this.fZ1) * 0.5, vec);
-    return vec;
+    return new Vec3((this.fX0 + this.fX1) * 0.5, (this.fY0 + this.fY1) * 0.5, (this.fZ0 + this.fZ1) * 0.5);
 };
 /**
  * Return size
@@ -2182,9 +2171,7 @@ Rect3d.prototype.sizeZ = function () {
  * @treturn Float32Array Return 3d vector
  */
 Rect3d.prototype.size = function () {
-    var vec = Vec3.create();
-    Vec3.set(this.fX1 - this.fX0, this.fY1 - this.fY0, this.fZ1 - this.fZ0, vec);
-    return vec;
+    return new Vec3(this.fX1 - this.fX0, this.fY1 - this.fY0, this.fZ1 - this.fZ0);
 };
 /**
  * Return minpoint
@@ -2192,9 +2179,7 @@ Rect3d.prototype.size = function () {
  * @treturn Float32Array Return 3d vector
  */
 Rect3d.prototype.minPoint = function () {
-    var vec = Vec3.create();
-    Vec3.set(this.fX0, this.fY0, this.fZ0, vec);
-    return vec;
+    return new Vec3(this.fX0, this.fY0, this.fZ0);
 };
 /**
  * Return maxpoint
@@ -2202,9 +2187,7 @@ Rect3d.prototype.minPoint = function () {
  * @treturn Float32Array Return 3d vector
  */
 Rect3d.prototype.maxPoint = function () {
-    var vec = Vec3.create();
-    Vec3.set(this.fX1, this.fY1, this.fZ1, vec);
-    return vec;
+    return new Vec3(this.fX1, this.fY1, this.fZ1);
 };
 /**
  * Return area(volume) of rect3d
@@ -2225,12 +2208,12 @@ Rect3d.prototype.area = function () {
  * @tparam Float32Array v3fPoint point
  */
 Rect3d.prototype.unionPoint = function (v3fPoint) {
-    this.fX0 = Math.min(this.fX0, v3fPoint.X);
-    this.fY0 = Math.min(this.fY0, v3fPoint.Y);
-    this.fZ0 = Math.min(this.fZ0, v3fPoint.Z);
-    this.fX1 = Math.max(this.fX1, v3fPoint.X);
-    this.fY1 = Math.max(this.fY1, v3fPoint.Y);
-    this.fZ1 = Math.max(this.fZ1, v3fPoint.Z);
+    this.fX0 = Math.min(this.fX0, v3fPoint.pData.X);
+    this.fY0 = Math.min(this.fY0, v3fPoint.pData.Y);
+    this.fZ0 = Math.min(this.fZ0, v3fPoint.pData.Z);
+    this.fX1 = Math.max(this.fX1, v3fPoint.pData.X);
+    this.fY1 = Math.max(this.fY1, v3fPoint.pData.Y);
+    this.fZ1 = Math.max(this.fZ1, v3fPoint.pData.Z);
 };
 /**
  * Union with rect
@@ -2260,12 +2243,12 @@ Rect3d.prototype.unionRect = function (pRect) {
  * @tparam Float32Array v3fOffset offset vector
  */
 Rect3d.prototype.offset = function (v3fOffset) {
-    this.fX0 += offset.X;
-    this.fX1 += offset.X;
-    this.fY0 += offset.Y;
-    this.fY1 += offset.Y;
-    this.fZ0 += offset.Z;
-    this.fZ1 += offset.Z;
+    this.fX0 += v3fOffset.pData.X;
+    this.fX1 += v3fOffset.pData.X;
+    this.fY0 += v3fOffset.pData.Y;
+    this.fY1 += v3fOffset.pData.Y;
+    this.fZ0 += v3fOffset.pData.Z;
+    this.fZ1 += v3fOffset.pData.Z;
 };
 /**
  * @property expand(Float32Array v3fSize)
@@ -2292,12 +2275,12 @@ Rect3d.prototype.expand = function (value) {
         this.fZ1 += value;
     }
     else {
-        this.fX0 -= value.X;
-        this.fX1 += value.X;
-        this.fY0 -= value.Y;
-        this.fY1 += value.Y;
-        this.fZ0 -= value.Z;
-        this.fZ1 += value.Z;
+        this.fX0 -= value.pData.X;
+        this.fX1 += value.pData.X;
+        this.fY0 -= value.pData.Y;
+        this.fY1 += value.pData.Y;
+        this.fZ0 -= value.pData.Z;
+        this.fZ1 += value.pData.Z;
     }
 };
 /**
@@ -2369,11 +2352,11 @@ Rect3d.prototype.normalize = function () {
  */
 Rect3d.prototype.corner = function (index) {
     debug_assert(index >= 0 && index < 8, "invalid index");
-    return Vector.create([
+    return new Vec3(
                              (index & 1) ? this.fX0 : this.fX1,
                              (index & 2) ? this.fY0 : this.fY1,
                              (index & 4) ? this.fZ0 : this.fZ1
-                         ]);
+                         );
 };
 /**
  * Union point
@@ -2413,9 +2396,10 @@ Rect3d.prototype.transform = function (m4fMatrix) {
     var fX0 = this.fX0, fX1 = this.fX1,
         fY0 = this.fX0, fY1 = this.fY1,
         fZ0 = this.fZ0, fZ1 = this.fZ1;
-    var m11 = m4fMatrix._11, m12 = m4fMatrix._12, m13 = m4fMatrix._13, m14 = m4fMatrix._14;
-    var m21 = m4fMatrix._21, m22 = m4fMatrix._22, m23 = m4fMatrix._23, m24 = m4fMatrix._24;
-    var m31 = m4fMatrix._31, m32 = m4fMatrix._32, m33 = m4fMatrix._33, m34 = m4fMatrix._34;
+    var pData = m4fMatrix.pData;
+    var m11 = pData._11, m12 = pData._12, m13 = pData._13, m14 = pData._14;
+    var m21 = pData._21, m22 = pData._22, m23 = pData._23, m24 = pData._24;
+    var m31 = pData._31, m32 = pData._32, m33 = pData._33, m34 = pData._34;
 
     //Transform basepoint
     x0 = m11 * fX0 + m12 * fY0 + m13 * fZ0 + m14;
@@ -2622,41 +2606,49 @@ Frustum.prototype.isEqual = function (pSrc) {
  * @tparam Boolean isNormalizePlanes Do normalize operation for planes or not
  */
 Frustum.prototype.extractFromMatrix = function (m4fMatrix, isNormalizePlanes) {
+    var pNormData;
+    var pMatData = m4fMatrix.pData;
     // Left clipping plane 
-    this.leftPlane.v3fNormal.X = m4fMatrix._41 + m4fMatrix._11;
-    this.leftPlane.v3fNormal.Y = m4fMatrix._42 + m4fMatrix._12;
-    this.leftPlane.v3fNormal.Z = m4fMatrix._43 + m4fMatrix._13;
-    this.leftPlane.fDistance = m4fMatrix._44 + m4fMatrix._14;
+    pNormData = this.leftPlane.v3fNormal.pData;
+    pNormData.X = pMatData._41 + pMatData._11;
+    pNormData.Y = pMatData._42 + pMatData._12;
+    pNormData.Z = pMatData._43 + pMatData._13;
+    this.leftPlane.fDistance = pMatData._44 + pMatData._14;
 
     // Right clipping plane 
-    this.rightPlane.v3fNormal.X = m4fMatrix._41 - m4fMatrix._11;
-    this.rightPlane.v3fNormal.Y = m4fMatrix._42 - m4fMatrix._12;
-    this.rightPlane.v3fNormal.Z = m4fMatrix._43 - m4fMatrix._13;
-    this.rightPlane.fDistance = m4fMatrix._44 - m4fMatrix._14;
+    pNormData = this.rightPlane.v3fNormal.pData;
+    pNormData.X = pMatData._41 - pMatData._11;
+    pNormData.Y = pMatData._42 - pMatData._12;
+    pNormData.Z = pMatData._43 - pMatData._13;
+    this.rightPlane.fDistance = pMatData._44 - pMatData._14;
 
-    // Top clipping plane 
-    this.topPlane.v3fNormal.X = m4fMatrix._41 - m4fMatrix._21;
-    this.topPlane.v3fNormal.Y = m4fMatrix._42 - m4fMatrix._22;
-    this.topPlane.v3fNormal.Z = m4fMatrix._43 - m4fMatrix._23;
-    this.topPlane.fDistance = m4fMatrix._44 - m4fMatrix._24;
+    // Top clipping plane
+    pNormData = this.topPlane.v3fNormal.pData; 
+    pNormData.X = pMatData._41 - pMatData._21;
+    pNormData.Y = pMatData._42 - pMatData._22;
+    pNormData.Z = pMatData._43 - pMatData._23;
+    this.topPlane.fDistance = pMatData._44 - pMatData._24;
 
     // Bottom clipping plane 
-    this.bottomPlane.v3fNormal.X = m4fMatrix._41 + m4fMatrix._21;
-    this.bottomPlane.v3fNormal.Y = m4fMatrix._42 + m4fMatrix._22;
-    this.bottomPlane.v3fNormal.Z = m4fMatrix._43 + m4fMatrix._23;
-    this.bottomPlane.fDistance = m4fMatrix._44 + m4fMatrix._24;
+    pNormData = this.bottomPlane.v3fNormal.pData; 
+    pNormData.X = pMatData._41 + pMatData._21;
+    pNormData.Y = pMatData._42 + pMatData._22;
+    pNormData.Z = pMatData._43 + pMatData._23;
+    this.bottomPlane.fDistance = pMatData._44 + pMatData._24;
 
     // Near clipping plane
-    this.nearPlane.v3fNormal.X = m4fMatrix._31;
-    this.nearPlane.v3fNormal.Y = m4fMatrix._32;
-    this.nearPlane.v3fNormal.Z = m4fMatrix._33;
-    this.nearPlane.fDistance = m4fMatrix._34;
+    pNormData = this.nearPlane.v3fNormal.pData; 
+    pNormData.X = pMatData._31;
+    pNormData.Y = pMatData._32;
+    pNormData.Z = pMatData._33;
+    this.nearPlane.fDistance = pMatData._34;
 
     // Far clipping plane
-    this.farPlane.v3fNormal.X = m4fMatrix._41 - m4fMatrix._31;
-    this.farPlane.v3fNormal.Y = m4fMatrix._42 - m4fMatrix._32;
-    this.farPlane.v3fNormal.Z = m4fMatrix._43 - m4fMatrix._33;
-    this.farPlane.fDistance = m4fMatrix._44 - m4fMatrix._34;
+    pNormData = this.farPlane.v3fNormal.pData;
+    pNormData.X = pMatData._41 - pMatData._31;
+    pNormData.Y = pMatData._42 - pMatData._32;
+    pNormData.Z = pMatData._43 - pMatData._33;
+    this.farPlane.fDistance = pMatData._44 - pMatData._34;
 
 
     // it is not always nessesary to normalize
@@ -2672,21 +2664,21 @@ Frustum.prototype.extractFromMatrix = function (m4fMatrix, isNormalizePlanes) {
         this.farPlane.normalize();
     }
 };
+
+//TODO: Test this method(Frustrum.extractPlane())
 Frustum.prototype.extractPlane = function(pPlane, m4fMat, iRow){
     var iScale = (iRow < 0) ? -1 : 1;
     iRow = Math.abs(iRow) - 1;
 
-    pPlane.v3fNormal.X = m4fMat[3] + iScale * m4fMat[iRow];
-    pPlane.v3fNormal.Y = m4fMat[7] + iScale * m4fMat[iRow + 4];
-    pPlane.v3fNormal.Z = m4fMat[11] + iScale * m4fMat[iRow + 8];
-    pPlane.fDistance = m4fMat[15] + iScale * m4fMat[iRow + 12];
+    var pNormData = pPlane.v3fNormal.pData;
+    pNormData.X = m4fMat.pData._41 + iScale * m4fMat[iRow * 4];
+    pNormData.Y = m4fMat.pData._42 + iScale * m4fMat[iRow * 4 + 1];
+    pNormData.Z = m4fMat.pData._43 + iScale * m4fMat[iRow * 4 + 2];
+    pPlane.fDistance = m4fMat._44 + iScale * m4fMat[iRow * 4 + 3];
 
-    var fLength = Math.sqrt(pPlane.v3fNormal.X * pPlane.v3fNormal.X + pPlane.v3fNormal.Y * pPlane.v3fNormal.Y +
-                                pPlane.v3fNormal.Z * pPlane.v3fNormal.Z);
+    var fLength = pPlane.v3fNormal.length();
 
-    pPlane.v3fNormal.X /= fLength;
-    pPlane.v3fNormal.Y /= fLength;
-    pPlane.v3fNormal.Z /= fLength;
+    pPlane.v3fNormal.scale(1.0 / fLength);
     pPlane.fDistance /= fLength;
 };
 /**
@@ -2784,9 +2776,9 @@ Frustum.prototype.testSphere = function (pSphere) {
  */
 function intersect_Plane3d_Ray3d (pPlane, pRay) {
     var fResult;
-    var NdotV = Vec3.dot(pPlane.v3fnormal, ray.v3fNormal);
+    var NdotV = pPlane.v3fnormal.dot(ray.v3fNormal);
     if (NdotV != 0.0) {
-        fResult = Vec3.dot(pPlane.v3fnormal, ray.v3fPoint) + pPlane.fDistance;
+        fResult = pPlane.v3fnormal.dot(ray.v3fPoint) + pPlane.fDistance;
         fResult /= NdotV;
         if (fResult >= 0.0) {
             return fResult;
@@ -2804,9 +2796,9 @@ function intersect_Plane3d_Ray3d (pPlane, pRay) {
  */
 function intersect_Plane2d_Ray2d (pPlane, pRay) {
     var fResult;
-    var NdotV = Vec2.dot(pPlane.v2fnormal, ray.v2fNormal);
+    var NdotV = pPlane.v2fnormal.dot(ray.v2fNormal);
     if (NdotV != 0.0) {
-        fResult = Vec2.dot(pPlane.v2fnormal, ray.v2fPoint) + pPlane.fDistance;
+        fResult = pPlane.v2fnormal.dot(ray.v2fPoint) + pPlane.fDistance;
         fResult /= NdotV;
         if (fResult >= 0.0) {
             return fResult;
@@ -2823,15 +2815,15 @@ function intersect_Plane2d_Ray2d (pPlane, pRay) {
  * @treturn Float -1.0 - false
  */
 function intersect_Sphere_Ray3d (pSphere, pRay) {
-    var vecQ = Vec3.create();
-    vecQ.X = pRay.v3fPoint.X - pSphere.v3fCenter.X;
-    vecQ.Y = pRay.v3fPoint.Y - pSphere.v3fCenter.Y;
-    vecQ.Z = pRay.v3fPoint.Z - pSphere.v3fCenter.Z;
-    var c = Vec3.lengthSquare(vecQ) - pSphere.fRadius * pSphere.fRadius;
+    var vecQ = new Vec3;
+    vecQ.pData.X = pRay.v3fPoint.pData.X - pSphere.v3fCenter.pData.X;
+    vecQ.pData.Y = pRay.v3fPoint.pData.Y - pSphere.v3fCenter.pData.Y;
+    vecQ.pData.Z = pRay.v3fPoint.pData.Z - pSphere.v3fCenter.pData.Z;
+    var c = vecQ.lengthSquare() - pSphere.fRadius * pSphere.fRadius;
     if (c < 0.0) {
         return 0.0;
     }
-    var b = Vec3.dot(vecQ.dot, pRay.v3fNormal);
+    var b = vecQ.dot(pRay.v3fNormal);
     if (b > 0.0) {
         return -1.0;
     }
@@ -2857,14 +2849,14 @@ function intersect_Sphere_Ray3d (pSphere, pRay) {
  * @treturn Float -1.0 - false
  */
 function intersect_Circle_Ray2d (pCircle, pRay) {
-    var vecQ = Vec2.create();
-    vecQ.X = pRay.v2fPoint.X - pCircle.v2fCenter.X;
-    vecQ.Y = pRay.v2fPoint.Y - pCircle.v2fCenter.Y;
-    var c = Vec2.lengthSquare(vecQ) - pCircle.fRadius * pCircle.fRadius;
+    var vecQ = new Vec2;
+    vecQ.pData.X = pRay.v2fPoint.pData.X - pCircle.v2fCenter.pData.X;
+    vecQ.pData.Y = pRay.v2fPoint.pData.Y - pCircle.v2fCenter.pData.Y;
+    var c = vecQ.lengthSquare() - pCircle.fRadius * pCircle.fRadius;
     if (c < 0.0) {
         return 0.0;
     }
-    var b = Vec2.dot(vecQ.dot, pRay.v2fNormal);
+    var b = vecQ.dot(pRay.v2fNormal);
     if (b > 0.0) {
         return -1.0;
     }
@@ -2891,39 +2883,39 @@ function intersect_Circle_Ray2d (pCircle, pRay) {
  */
 function intersect_Rect3d_Ray3d (pRect, pRay) {
     // determine if the pRay begins in the box
-    if (pRay.v3fpoint.X >= pRect.fX0 &&
-        pRay.v3fpoint.X <= pRect.fX1 &&
-        pRay.v3fpoint.Y >= pRect.fY0 &&
-        pRay.v3fpoint.Y <= pRect.fY1 &&
-        pRay.v3fpoint.Z >= pRect.fZ0 &&
-        pRay.v3fpoint.Z <= pRect.fZ1) {
+    if (pRay.v3fpoint.pData.X >= pRect.fX0 &&
+        pRay.v3fpoint.pData.X <= pRect.fX1 &&
+        pRay.v3fpoint.pData.Y >= pRect.fY0 &&
+        pRay.v3fpoint.pData.Y <= pRect.fY1 &&
+        pRay.v3fpoint.pData.Z >= pRect.fZ0 &&
+        pRay.v3fpoint.pData.Z <= pRect.fZ1) {
         return 0.0;
     }
     // test the proper sides of the rectangle
     var maxT = Number.NEGATIVE_INFINITY;
     var t = 0;
-    if (pRay.v3fnormal.X > 0.0) {
-        t = (pRect.fX0 - pRay.v3fpoint.X) / pRay.v3fnormal.X;
+    if (pRay.v3fnormal.pData.X > 0.0) {
+        t = (pRect.fX0 - pRay.v3fpoint.pData.X) / pRay.v3fnormal.pData.X;
         maxT = Math.max(maxT, t);
     }
-    else if (pRay.v3fnormal.X < 0.0) {
-        t = (pRect.fX1 - pRay.v3fpoint.X) / pRay.v3fnormal.X;
+    else if (pRay.v3fnormal.pData.X < 0.0) {
+        t = (pRect.fX1 - pRay.v3fpoint.pData.X) / pRay.v3fnormal.pData.X;
         maxT = Math.max(maxT, t);
     }
-    if (pRay.v3fnormal.Y > 0.0) {
-        t = (pRect.fY0 - pRay.v3fpoint.Y) / pRay.v3fnormal.Y;
+    if (pRay.v3fnormal.pData.Y > 0.0) {
+        t = (pRect.fY0 - pRay.v3fpoint.pData.Y) / pRay.v3fnormal.pData.Y;
         maxT = Math.max(maxT, t);
     }
-    else if (pRay.v3fnormal.Y < 0.0) {
-        t = (pRect.fY1 - pRay.v3fpoint.Y) / pRay.v3fnormal.Y;
+    else if (pRay.v3fnormal.pData.Y < 0.0) {
+        t = (pRect.fY1 - pRay.v3fpoint.pData.Y) / pRay.v3fnormal.pData.Y;
         maxT = Math.max(maxT, t);
     }
-    if (pRay.v3fnormal.Z > 0.0) {
-        t = (pRect.fZ0 - pRay.v3fpoint.Z) / pRay.v3fnormal.Z;
+    if (pRay.v3fnormal.pData.Z > 0.0) {
+        t = (pRect.fZ0 - pRay.v3fpoint.pData.Z) / pRay.v3fnormal.pData.Z;
         maxT = Math.max(maxT, t);
     }
-    else if (pRay.v3fnormal.Z < 0.0) {
-        t = (pRect.fZ1 - pRay.v3fpoint.Z) / pRay.v3fnormal.Z;
+    else if (pRay.v3fnormal.pData.Z < 0.0) {
+        t = (pRect.fZ1 - pRay.v3fpoint.pData.Z) / pRay.v3fnormal.pData.Z;
         maxT = Math.max(maxT, t);
     }
 
@@ -2942,29 +2934,29 @@ function intersect_Rect3d_Ray3d (pRect, pRay) {
  */
 function intersect_Rect2d_Ray2d (pRect, pRay) {
     // determine if the pRay begins in the box
-    if (pRay.v3fpoint.X >= pRect.fX0 &&
-        pRay.v3fpoint.X <= pRect.fX1 &&
-        pRay.v3fpoint.Y >= pRect.fY0 &&
-        pRay.v3fpoint.Y <= pRect.fY1) {
+    if (pRay.v3fpoint.pData.X >= pRect.fX0 &&
+        pRay.v3fpoint.pData.X <= pRect.fX1 &&
+        pRay.v3fpoint.pData.Y >= pRect.fY0 &&
+        pRay.v3fpoint.pData.Y <= pRect.fY1) {
         return 0.0;
     }
     // test the proper sides of the rectangle
     var maxT = Number.NEGATIVE_INFINITY;
     var t = 0;
-    if (pRay.v3fnormal.X > 0.0) {
-        t = (pRect.fX0 - pRay.v3fpoint.X) / pRay.v3fnormal.X;
+    if (pRay.v3fnormal.pData.X > 0.0) {
+        t = (pRect.fX0 - pRay.v3fpoint.pData.X) / pRay.v3fnormal.pData.X;
         maxT = Math.max(maxT, t);
     }
-    else if (pRay.v3fnormal.X < 0.0) {
-        t = (pRect.fX1 - pRay.v3fpoint.X) / pRay.v3fnormal.X;
+    else if (pRay.v3fnormal.pData.X < 0.0) {
+        t = (pRect.fX1 - pRay.v3fpoint.pData.X) / pRay.v3fnormal.pData.X;
         maxT = Math.max(maxT, t);
     }
-    if (pRay.v3fnormal.Y > 0.0) {
-        t = (pRect.fY0 - pRay.v3fpoint.Y) / pRay.v3fnormal.Y;
+    if (pRay.v3fnormal.pData.Y > 0.0) {
+        t = (pRect.fY0 - pRay.v3fpoint.pData.Y) / pRay.v3fnormal.pData.Y;
         maxT = Math.max(maxT, t);
     }
-    else if (pRay.v3fnormal.Y < 0.0) {
-        t = (pRect.fY1 - pRay.v3fpoint.Y) / pRay.v3fnormal.Y;
+    else if (pRay.v3fnormal.pData.Y < 0.0) {
+        t = (pRect.fY1 - pRay.v3fpoint.pDataY) / pRay.v3fnormal.pData.Y;
         maxT = Math.max(maxT, t);
     }
 
@@ -2982,8 +2974,8 @@ function intersect_Rect2d_Ray2d (pRect, pRay) {
  * @treturn Boolean
  */
 function intersect_Circle_Circle (pSphereA, pSphereB) {
-    var rx = pSphereA.v2fCenter.X - pSphereB.v2fCenter.X;
-    var ry = pSphereA.v2fCenter.Y - pSphereB.v2fCenter.Y;
+    var rx = pSphereA.v2fCenter.pData.X - pSphereB.v2fCenter.pData.X;
+    var ry = pSphereA.v2fCenter.pData.Y - pSphereB.v2fCente.pDatar.Y;
     return (rx * rx + ry * ry) < (pSphereA.fRadius + pSphereB.fRadius);
 }
 ;
@@ -2995,9 +2987,9 @@ function intersect_Circle_Circle (pSphereA, pSphereB) {
  * @treturn Boolean
  */
 function intersect_Sphere_Sphere (pSphereA, pSphereB) {
-    var rx = pSphereA.v3fCenter.X - pSphereB.v3fCenter.X;
-    var ry = pSphereA.v3fCenter.Y - pSphereB.v3fCenter.Y;
-    var rz = pSphereA.v3fCenter.Z - pSphereB.v3fCenter.Z;
+    var rx = pSphereA.v3fCenter.pData.X - pSphereB.v3fCenter.pData.X;
+    var ry = pSphereA.v3fCenter.pData.Y - pSphereB.v3fCenter.pData.Y;
+    var rz = pSphereA.v3fCenter.pData.Z - pSphereB.v3fCenter.pData.Z;
     return (rx * rx + ry * ry + rz * rz) < (pSphereA.fRadius + pSphereB.fRadius);
 }
 ;
@@ -3009,22 +3001,22 @@ function intersect_Sphere_Sphere (pSphereA, pSphereB) {
  * @treturn Boolean
  */
 function intersect_Rect2d_Circle (pRect, pSphere) {
-    var offset = Vec2.create();
+    var offset = new Vec2;
     var interior_count = 0;
     if (pSphere.v2fCenter.X < pRect.fX0) {
-        offset.X = pRect.fX0 - pSphere.v2fCenter.X;
+        offset.pData.X = pRect.fX0 - pSphere.v2fCenter.pData.X;
     }
-    else if (pSphere.v2fCenter.X >= pRect.fX1) {
-        offset.X = pSphere.v2fCenter.X - pRect.fX1;
+    else if (pSphere.v2fCenter.pData.X >= pRect.fX1) {
+        offset.pData.X = pSphere.v2fCenter.pData.X - pRect.fX1;
     }
     else {
         ++interior_count;
     }
-    if (pSphere.v2fCenter.Y < pRect.fY0) {
-        offset.Y = pRect.fY0 - pSphere.v2fCenter.Y;
+    if (pSphere.v2fCenter.pData.Y < pRect.fY0) {
+        offset.pData.Y = pRect.fY0 - pSphere.v2fCenter.pData.Y;
     }
-    else if (pSphere.v2fCenter.Y >= pRect.fY1) {
-        offset.Y = pSphere.v2fCenter.Y - pRect.fY1;
+    else if (pSphere.v2fCenter.pData.Y >= pRect.fY1) {
+        offset.pData.Y = pSphere.v2fCenter.pData.Y - pRect.fY1;
     }
     else {
         ++interior_count;
@@ -3034,7 +3026,7 @@ function intersect_Rect2d_Circle (pRect, pSphere) {
     if (interior_count == 2) {
         return true;
     }
-    var distance_squared = Vec2.lengthSquare(offset);
+    var distance_squared = offset.lengthSquare();
     var radius_squared = pSphere.radius * pSphere.radius;
     return (distance_squared < radius_squared);
 }
@@ -3047,31 +3039,31 @@ function intersect_Rect2d_Circle (pRect, pSphere) {
  * @treturn Boolean
  */
 function intersect_Rect3d_Sphere (pRect, pSphere) {
-    var offset = Vec3.create();
+    var offset = new Vec3;
     var interior_count = 0;
     if (pSphere.v3fCenter.X < pRect.fX0) {
-        offset.X = pRect.fX0 - pSphere.v3fCenter.X;
+        offset.pData.X = pRect.fX0 - pSphere.v3fCenter.pData.X;
     }
     else if (pSphere.v3fCenter.X >= pRect.fX1) {
-        offset.X = pSphere.v3fCenter.X - pRect.fX1;
+        offset.pData.X = pSphere.v3fCenter.pData.X - pRect.fX1;
     }
     else {
         ++interior_count;
     }
-    if (pSphere.v3fCenter.Y < pRect.fY0) {
-        offset.Y = pRect.fY0 - pSphere.v3fCenter.Y;
+    if (pSphere.v3fCenter.pData.Y < pRect.fY0) {
+        offset.pData.Y = pRect.fY0 - pSphere.v3fCenter.pData.Y;
     }
-    else if (pSphere.v3fCenter.Y >= pRect.fY1) {
-        offset.Y = pSphere.v3fCenter.Y - pRect.fY1;
+    else if (pSphere.v3fCenter.pData.Y >= pRect.fY1) {
+        offset.pData.Y = pSphere.v3fCenter.pData.Y - pRect.fY1;
     }
     else {
         ++interior_count;
     }
-    if (pSphere.v3fCenter.Z < pRect.fZ0) {
-        offset.Z = pRect.fZ0 - pSphere.v3fCenter.Z;
+    if (pSphere.v3fCenter.pData.Z < pRect.fZ0) {
+        offset.pData.Z = pRect.fZ0 - pSphere.v3fCenter.pData.Z;
     }
-    else if (pSphere.v3fCenter.Z >= pRect.fZ1) {
-        offset.Z = pSphere.v3fCenter.Z - pRect.fZ1;
+    else if (pSphere.v3fCenter.pData.Z >= pRect.fZ1) {
+        offset.pData.Z = pSphere.v3fCenter.pData.Z - pRect.fZ1;
     }
     else {
         ++interior_count;
@@ -3081,7 +3073,7 @@ function intersect_Rect3d_Sphere (pRect, pSphere) {
     if (interior_count == 3) {
         return true;
     }
-    var distance_squared = Vec3.lengthSquare(offset);
+    var distance_squared = offset.lengthSquare();
     var radius_squared = pSphere.radius * pSphere.radius;
     return (distance_squared < radius_squared);
 }
@@ -3255,28 +3247,28 @@ function planeClassify_Sphere_Plane (pSphere, pPlane) {
  * @treturn Int From enum ePlaneClassifications
  */
 function planeClassify_Rect2d_Plane (pRect, pPlane) {
-    var minPoint = Vec2.create();
-    var maxPoint = Vec2.create();
+    var minPoint = new Vec2;
+    var maxPoint = new Vec2;
     // build two points based on the direction
     // of the plane vector. minPoint 
     // and maxPoint are the two points
     // on the rectangle furthest away from
     // each other along the pPlane v2fNormal
-    if (pPlane.v2fNormal.X > 0.0) {
-        minPoint.X = pRect.fX0;
-        maxPoint.X = pRect.fX1;
+    if (pPlane.v2fNormal.pData.X > 0.0) {
+        minPoint.pData.X = pRect.fX0;
+        maxPoint.pData.X = pRect.fX1;
     }
     else {
-        minPoint.X = pRect.fX1;
-        maxPoint.X = pRect.fX0;
+        minPoint.pData.X = pRect.fX1;
+        maxPoint.pData.X = pRect.fX0;
     }
-    if (pPlane.v2fNormal.Y > 0.0) {
-        minPoint.Y = pRect.fY0;
-        maxPoint.Y = pRect.fY1;
+    if (pPlane.v2fNormal.pData.Y > 0.0) {
+        minPoint.pData.Y = pRect.fY0;
+        maxPoint.pData.Y = pRect.fY1;
     }
     else {
-        minPoint.Y = pRect.fY1;
-        maxPoint.Y = pRect.fY0;
+        minPoint.pData.Y = pRect.fY1;
+        maxPoint.pData.Y = pRect.fY0;
     }
     // compute the signed distance from 
     // the pPlane to both points
@@ -3301,36 +3293,36 @@ function planeClassify_Rect2d_Plane (pRect, pPlane) {
  * @treturn Int From enum ePlaneClassifications
  */
 function planeClassify_Rect3d_Plane (pRect, pPlane) {
-    var minPoint = Vec3.create();
-    var maxPoint = Vec3.create();
+    var minPoint = new Vec3;
+    var maxPoint = new Vec3;
     // build two points based on the direction
     // of the plane vector. minPoint 
     // and maxPoint are the two points
     // on the rectangle furthest away from
     // each other along the pPlane v3fNormal
-    if (pPlane.v3fNormal.X > 0.0) {
-        minPoint.X = pRect.fX0;
-        maxPoint.X = pRect.fX1;
+    if (pPlane.v3fNormal.pData.X > 0.0) {
+        minPoint.pData.X = pRect.fX0;
+        maxPoint.pData.X = pRect.fX1;
     }
     else {
-        minPoint.X = pRect.fX1;
-        maxPoint.X = pRect.fX0;
+        minPoint.pData.X = pRect.fX1;
+        maxPoint.pData.X = pRect.fX0;
     }
-    if (pPlane.v3fNormal.Y > 0.0) {
-        minPoint.Y = pRect.fY0;
-        maxPoint.Y = pRect.fY1;
-    }
-    else {
-        minPoint.Y = pRect.fY1;
-        maxPoint.Y = pRect.fY0;
-    }
-    if (pPlane.v3fNormal.Z > 0.0) {
-        minPoint.Z = pRect.fZ0;
-        maxPoint.Z = pRect.fZ1;
+    if (pPlane.v3fNormal.pData.Y > 0.0) {
+        minPoint.pData.Y = pRect.fY0;
+        maxPoint.pData.Y = pRect.fY1;
     }
     else {
-        minPoint.Z = pRect.fZ1;
-        maxPoint.Z = pRect.fZ0;
+        minPoint.pData.Y = pRect.fY1;
+        maxPoint.pData.Y = pRect.fY0;
+    }
+    if (pPlane.v3fNormal.pData.Z > 0.0) {
+        minPoint.pData.Z = pRect.fZ0;
+        maxPoint.pData.Z = pRect.fZ1;
+    }
+    else {
+        minPoint.pData.Z = pRect.fZ1;
+        maxPoint.pData.Z = pRect.fZ0;
     }
     // compute the signed distance from 
     // the pPlane to both points

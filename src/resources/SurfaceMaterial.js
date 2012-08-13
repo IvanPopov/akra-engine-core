@@ -369,7 +369,7 @@ SurfaceMaterial.prototype.saveResource = function (sFileName) {
 
 
 SurfaceMaterial.prototype.setTexture = function (iIndex, pTexture, iTexcoord) {
-    iTexcoord = ifndef(iTexcoord, iIndex);
+    iTexcoord = ifndef(iTexcoord, 0);//iIndex
 
     debug_assert(iIndex < a.SurfaceMaterial.maxTexturesPerSurface,
                  "invalid texture slot");
@@ -461,10 +461,10 @@ SurfaceMaterial.prototype.setTextureMatrix = function (index, matrix) {
                  "invalid texture slot");
 
     if (!matrix) {
-        this._pTextureMatrix[index] = new Matrix4();
+        this._pTextureMatrix[index] = new Mat4();
     }
     else {
-        this._pTextureMatrix[index] = Mat4.create(matrix);
+        this._pTextureMatrix[index] = new Mat4(matrix);
     }
 
     this._textureMatrixFlags.setBit(index);

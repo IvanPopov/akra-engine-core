@@ -490,18 +490,18 @@ function COLLADA (pEngine, pSettings) {
         switch (pTransform.sName) {
             case 'rotate':
                 v4f = new Vector4();
-                string2FloatArray(stringData(pXML),  v4f);
-                pTransform.pValue = new Vector4(v4f.W * Math.PI / 180.0, v4f.X, v4f.Y, v4f.Z);
+                string2FloatArray(stringData(pXML),  v4f.pData);
+                v4f.w *= Math.PI / 180.0;
+                pTransform.pValue = v4f;
                 break;
             case 'translate':
             case 'scale':
                 pTransform.pValue = new Vector3;
-                string2FloatArray(stringData(pXML),  pTransform.pValue);
+                string2FloatArray(stringData(pXML),  pTransform.pValue.pData);
                 break;
             case 'matrix':
-                pTransform.pValue = new Matrix4;
-                string2FloatArray(stringData(pXML),  pTransform.pValue);
-                Mat4.transpose(pTransform.pValue);
+                pTransform.pValue = new Mat4;
+                string2FloatArray(stringData(pXML),  pTransform.pValue.pData);
                 break;
             default:
                 debug_error('unsupported transform detected: ' + sName);
@@ -514,22 +514,23 @@ function COLLADA (pEngine, pSettings) {
 
     function COLLADAScaleMatrix (pXML) {
         var v3fScale = new Vector3;
-        string2FloatArray(stringData(pXML), v3fScale);
+        string2FloatArray(stringData(pXML), v3fScale.pData);
 
-        return Mat4.diagonal(new Matrix4, [v3fScale.X, v3fScale.Y, v3fScale.Z, 1.0]);
+        return new Mat4(v3fScale.x, v3fScale.y, v3fScale.z, 1.0);
     }
 
     function COLLADATranslateMatrix (pXML) {
         var v3fTranslate = new Vector3;
-        string2FloatArray(stringData(pXML), v3fTranslate);
+        string2FloatArray(stringData(pXML), v3fTranslate.pData);
 
-        return Vec3.toTranslationMatrix(v3fTranslate);
+        return v3fTranslate.toTranslationMatrix();
     }
 
     function COLLADARotateMatrix (pXML) {
         var v4f = new Vector4;
-        string2FloatArray(stringData(pXML), v4f);
-        return Mat4.rotate(Mat4.identity(new Matrix4), v4f.W * Math.PI / 180.0, [v4f.X, v4f.Y, v4f.Z]);
+        var m4f = new Matrix4(1);
+        string2FloatArray(stringData(pXML), v4f.pData);
+        return m4f.rotate(v4f.w * Math.PI / 180.0, v4f);
     }
 
     function COLLADASampler2D (pXML) {
@@ -588,7 +589,7 @@ function COLLADA (pEngine, pSettings) {
                 return COLLADAScaleMatrix(pXML);
             case 'bind_shape_matrix':
             case 'matrix':
-                return Mat4.transpose(fnData(16, 'float'));
+                return new Mat4(fnData(16, 'float'), true);
             case 'float_array':
                 return fnData(parseInt(attr(pXML, 'count')), 'float', true);
             case 'int_array':
@@ -751,8 +752,8 @@ function COLLADA (pEngine, pSettings) {
                 pMatrixArray = new Array(iCount);
 
                 for (var j = 0, n = 0; j < pInvMatrixArray.length; j += 16) {
-                    pMatrixArray[n ++] = Mat4.transpose
-                        (new Float32Array(pInvMatrixArray.buffer, j * Float32Array.BYTES_PER_ELEMENT, 16));
+                    pMatrixArray[n ++] = new Mat4
+                        (new Float32Array(pInvMatrixArray.buffer, j * Float32Array.BYTES_PER_ELEMENT, 16), true);
                     //trace(Mat4.str(pMatrixArray[n-1]));
                 }
 
@@ -1465,7 +1466,7 @@ function COLLADA (pEngine, pSettings) {
             sName:        attr(pXML, 'name') || 'unknown',
             sType:        attr(pXML, 'type'),
             sLayer:       attr(pXML, 'layer'),
-            m4fTransform: Mat4.identity(new Matrix4),
+            m4fTransform: new Mat4(1),
             pGeometry:   [],
             pController: [],
             pChildNodes: [],
@@ -1474,7 +1475,7 @@ function COLLADA (pEngine, pSettings) {
             pConstructedNode: null //<! узел, в котором будет хранится ссылка на реальный игровой нод, построенный по нему
         };
 
-        var m4fTransform = Mat4.identity(new Matrix4), m4fMatrix;
+        var m4fTransform = new Mat4(1), m4fMatrix;
         var sType, id, sid;
 
         link(pNode);
@@ -1488,7 +1489,7 @@ function COLLADA (pEngine, pSettings) {
                     pNode.pTransforms.push(COLLADATransform(pXMLData, pNode.id));
 
                     m4fMatrix = COLLADAData(pXMLData);
-                    Mat4.mult(pNode.m4fTransform, m4fMatrix);
+                    pNode.m4fTransform.mult(m4fMatrix);
                     break;
                 case 'instance_geometry':
                     pNode.pGeometry.push(COLLADAInstanceGeometry(pXMLData));
@@ -1845,7 +1846,7 @@ function COLLADA (pEngine, pSettings) {
                         'incorrect output length of transformation data (' + pOutputValues.length + ')');
 
                     for (var i = 0; i < nMatrices; i ++) {
-                        pTrack.keyFrame(pTimeMarks[i], Mat4.transpose(pOutputValues.subarray(i * 16, i * 16 + 16))); 
+                        pTrack.keyFrame(pTimeMarks[i], new Mat4(pOutputValues.subarray(i * 16, i * 16 + 16), true)); 
                     };
                 }
                 else {
@@ -2356,7 +2357,7 @@ Endif ();
             pNode.pConstructedNode = pHierarchyNode;
 
             m4fLocalMatrix = pHierarchyNode.accessLocalMatrix();
-            Mat4.set(pNode.m4fTransform, m4fLocalMatrix);
+            m4fLocalMatrix.set(pNode.m4fTransform);
 
             buildNodes(pNode.pChildNodes, pHierarchyNode);
         }

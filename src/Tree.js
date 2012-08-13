@@ -36,19 +36,19 @@ function OcTree () {
      * @type Float32Array
      * @private
      */
-    this._v3fWorldExtents = Vec3.create();
+    this._v3fWorldExtents = new Vec3;
     /**
      * Negate min point of bounding box
      * @type Float32Array
      * @private
      */
-    this._v3fWorldScale = Vec3.create();
+    this._v3fWorldScale = new Vec3;
     /**
      * Value of relation between (1024,1024,1024) and bounding box size
      * @type Float32Array
      * @private
      */
-    this._v3fWorldOffset = Vec3.create();
+    this._v3fWorldOffset = new Vec3;
     /**
      * Maximum depth of tree. Value set when you call OcTree::create()
      * @type Float32Array
@@ -149,9 +149,9 @@ OcTree.prototype.create = function (pWorldBoundingBox, iDepth, nNode) {
     this._iDepth = iDepth;
     var v3fTemp;
     v3fTemp = pWorldBoundingBox.size();
-    Vec3.set(v3fTemp, this._v3fWorldExtents);
-    v3fTemp = Vec3.negate(pWorldBoundingBox.minPoint());
-    Vec3.set(v3fTemp, this._v3fWorldOffset);
+    this._v3fWorldExtents.set(v3fTemp);
+    v3fTemp = pWorldBoundingBox.minPoint().negate();
+    this._v3fWorldOffset.set(v3fTemp);
 
     this._v3fWorldScale.X = 1024.0 / this._v3fWorldExtents.X;
     this._v3fWorldScale.Y = 1024.0 / this._v3fWorldExtents.Y;

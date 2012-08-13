@@ -30,42 +30,42 @@ function Camera () {
      * View matrix
      * @type Float32Array
      */
-    this.m4fView = Mat4.create();
+    this.m4fView = new Mat4;
     /**
      * internal, un-biased projection matrix
      * @type Float32Array
      */
-    this.m4fProj = Mat4.create();
+    this.m4fProj = new Mat4;
     /**
      * Matrix
      * @type Float32Array
      */
-    this.m4fUnitProj = Mat4.create();
+    this.m4fUnitProj = new Mat4;
     /**
      * internal, un-biased view+projection matrix
      * @type Float32Array
      */
-    this.m4fViewProj = Mat4.create();
+    this.m4fViewProj = new Mat4;
     /**
      * Special matrix for billboarding effects
      * @type Float32Array
      */
-    this.m4fBillboard = Mat4.create();
+    this.m4fBillboard = new Mat4;
     /**
      * Special matrix for sky box effects
      * @type Float32Array
      */
-    this.m4fSkyBox = Mat4.create();
+    this.m4fSkyBox = new Mat4;
     /**
      * Biased for use during current render stage
      * @type Float32Array
      */
-    this.m4fRenderStageProj = Mat4.create();
+    this.m4fRenderStageProj = new Mat4;
     /**
      * Biased for use during current render stage
      * @type Float32Array
      */
-    this.m4fRenderStageViewProj = Mat4.create();
+    this.m4fRenderStageViewProj = new Mat4;
     /**
      * Search rect for scene culling
      * @type Rect3d
@@ -75,7 +75,7 @@ function Camera () {
      * Position
      * @type Float32Array
      */
-    this.v3fTargetPos = Vec3.create();
+    this.v3fTargetPos = new Vec3;
     /**
      * Attributes for projection matrix
      * @type Float
@@ -132,7 +132,7 @@ function Camera () {
      */
     this.pv3fFarPlanePoints = new Array(8);
     for (var i = 0; i < 8; ++i) {
-        this.pv3fFarPlanePoints[i] = Vec3.create();
+        this.pv3fFarPlanePoints[i] = new Vec3;
     }
     /**
      * Frustum
@@ -141,7 +141,8 @@ function Camera () {
     this.pFrustum = new a.Frustum();
 }
 ;
-a.extend(Camera, a.SceneNode);
+
+EXTENDS(Camera, a.SceneNode);
 /**
  * Create camera
  * @treturn Boolean
@@ -150,9 +151,9 @@ Camera.prototype.create = function () {
     var result = Camera.superclass.create.apply(this, arguments);
 
     if (result) {
-        Vec3.set(this._m4fLocalMatrix._13, this._m4fLocalMatrix._23,
-                 this._m4fLocalMatrix._33, this.v3fTargetPos);
-        Vec3.negate(this.v3fTargetPos);
+        this.v3fTargetPos.set(this._m4fLocalMatrix._13, this._m4fLocalMatrix._23,
+                 this._m4fLocalMatrix._33);
+        this.v3fTargetPos.negate();
 
         this.setProjParams(this.fFOV, this.fAspect,
                            this.fNearPlane, this.fFarPlane);
@@ -229,7 +230,7 @@ Camera.prototype.setOffsetOrthoParams = function (fMinX, fMaxX, fMinY, fMaxY, fN
     this.iType = a.Camera.k_OFFSET_ORTHO;
 
     // create the regular projection matrix
-    Mat4.matrixOrthoOffCenterRH(fMinX, fMaxX, fMinY, fMaxY,
+    Mat4.orthogonalProjection(fMinX, fMaxX, fMinY, fMaxY,
                                 fNearPlane, fFarPlane, this.m4fProj);
 
     // create a unit-space matrix 
@@ -237,7 +238,7 @@ Camera.prototype.setOffsetOrthoParams = function (fMinX, fMaxX, fMinY, fMaxY, fN
     // this ensures that the 
     // near and far plane enclose 
     // the unit space around the camera
-    Mat4.matrixOrthoOffCenterRH(fMinX, fMaxX, fMinY, fMaxY,
+    Mat4.orthogonalProjection(fMinX, fMaxX, fMinY, fMaxY,
                                 0.01, 2.0, this.m4fUnitProj);
 };
 /**
@@ -245,72 +246,76 @@ Camera.prototype.setOffsetOrthoParams = function (fMinX, fMaxX, fMinY, fMaxY, fN
  */
 Camera.prototype.recalcMatrices = function () {
 
-    Vec3.set(this._m4fLocalMatrix._13, this._m4fLocalMatrix._23,
-             this._m4fLocalMatrix._33, this.v3fTargetPos);
-    Vec3.negate(this.v3fTargetPos);
+    this.v3fTargetPos.set(
+        this._m4fLocalMatrix.pData._13, 
+        this._m4fLocalMatrix.pData._23,
+        this._m4fLocalMatrix.pData._33);
+
+    this.v3fTargetPos.negate();
 
     // the camera view matrix is the
     // inverse of the world matrix
-    Mat4.set(this.inverseWorldMatrix(), this.m4fView);
+    this.m4fView.set(this.inverseWorldMatrix());
 
     // sky boxes use the inverse 
     // world matrix of the camera (the
     // camera view matrix) without 
     // any translation information.
-    Mat4.set(this.m4fView, this.m4fSkyBox);
-    this.m4fSkyBox._14 = 0.0;
-    this.m4fSkyBox._24 = 0.0;
-    this.m4fSkyBox._34 = 0.0;
+    this.m4fSkyBox.set(this.m4fView);
+    this.m4fSkyBox.pData._14 = 0.0;
+    this.m4fSkyBox.pData._24 = 0.0;
+    this.m4fSkyBox.pData._34 = 0.0;
 
     // this is combined with the unit
     // space projection matrix to form
     // the sky box viewing matrix
-    Mat4.multiply(this.m4fSkyBox, this.m4fUnitProj, this.m4fSkyBox);
+    this.m4fUnitProj.multiply(this.m4fSkyBox, this.m4fSkyBox);
 
     // billboard objects use our world matrix
     // without translation
-    Mat4.set(this.worldMatrix(), this.m4fBillboard);
-    this.m4fBillboard._14 = 0.0;
-    this.m4fBillboard._24 = 0.0;
-    this.m4fBillboard._34 = 0.0;
+    this.m4fBillboard.set(this.worldMatrix());
+    this.m4fBillboard.pData._14 = 0.0;
+    this.m4fBillboard.pData._24 = 0.0;
+    this.m4fBillboard.pData._34 = 0.0;
 
     // our view proj matrix is the inverse of our world matrix
     // multiplied by the projection matrix
-    Mat4.multiply(this.m4fProj, this.m4fView, this.m4fViewProj);
+    this.m4fProj.multiply(this.m4fView, this.m4fViewProj);
 
-    var m4fInvProj = Mat4.create();
-    var m4fInvCamera = Mat4.create();
-    Mat4.inverse(this.m4fProj, m4fInvProj);
-    Mat4.multiply(this.worldMatrix(), m4fInvProj, m4fInvCamera);
+    var m4fInvProj = Mat4();
+    var m4fInvCamera = Mat4();
+    
+    this.m4fProj.inverse(m4fInvProj);
+    this.worldMatrix().multiply(m4fInvProj, m4fInvCamera);
 
-    var v3fWorldPos = Vec3.create(this.worldPosition());
+    var v3fWorldPos = Vec3(this.worldPosition());
 
-    var p0 = new Vector3;
-    var p1 = new Vector3;
-    var p2 = new Vector3;
-    var p3 = new Vector3;
-    var p4 = new Vector3;
-    var p5 = new Vector3;
-    var p6 = new Vector3;
-    var p7 = new Vector3;
+    var p0 = Vec3();
+    var p1 = Vec3();
+    var p2 = Vec3();
+    var p3 = Vec3();
+    var p4 = Vec3();
+    var p5 = Vec3();
+    var p6 = Vec3();
+    var p7 = Vec3();
 
-    Vec3.set(-1.0, 1.0, 1.0, p0);
-    Vec3.set(-1.0, -1.0, 1.0, p1);
-    Vec3.set(1.0, -1.0, 1.0, p2);
-    Vec3.set(1.0, 1.0, 1.0, p3);
-    Vec3.set(-1.0, 1.0, 0.0, p4);
-    Vec3.set(-1.0, -1.0, 0.0, p5);
-    Vec3.set(1.0, -1.0, 0.0, p6);
-    Vec3.set(1.0, 1.0, 0.0, p7);
+    p0.set(-1.0, 1.0, 1.0);
+    p1.set(-1.0, -1.0, 1.0);
+    p2.set(1.0, -1.0, 1.0);
+    p3.set(1.0, 1.0, 1.0);
+    p4.set(-1.0, 1.0, 0.0);
+    p5.set(-1.0, -1.0, 0.0);
+    p6.set(1.0, -1.0, 0.0);
+    p7.set(1.0, 1.0, 0.0);
 
-    Vec3.vec3TransformCoord(p0, m4fInvCamera, this.pv3fFarPlanePoints[0]);
-    Vec3.vec3TransformCoord(p1, m4fInvCamera, this.pv3fFarPlanePoints[1]);
-    Vec3.vec3TransformCoord(p2, m4fInvCamera, this.pv3fFarPlanePoints[2]);
-    Vec3.vec3TransformCoord(p3, m4fInvCamera, this.pv3fFarPlanePoints[3]);
-    Vec3.vec3TransformCoord(p4, m4fInvCamera, this.pv3fFarPlanePoints[4]);
-    Vec3.vec3TransformCoord(p5, m4fInvCamera, this.pv3fFarPlanePoints[5]);
-    Vec3.vec3TransformCoord(p6, m4fInvCamera, this.pv3fFarPlanePoints[6]);
-    Vec3.vec3TransformCoord(p7, m4fInvCamera, this.pv3fFarPlanePoints[7]);
+    p0.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[0]);
+    p1.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[1]);
+    p2.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[2]);
+    p3.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[3]);
+    p4.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[4]);
+    p5.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[5]);
+    p6.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[6]);
+    p7.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[7]);
 
     // build a box around our frustum
     this.pSearchRect.set(v3fWorldPos.X, v3fWorldPos.X,
@@ -331,8 +336,8 @@ Camera.prototype.recalcMatrices = function () {
 //    this.pFrustum.extractFromMatrix(this.m4fViewProj);
     this.pFrustum.extractFromMatrixGL(this.m4fViewProj);
 
-    Mat4.set(this.m4fProj, this.m4fRenderStageProj);
-    Mat4.set(this.m4fViewProj, this.m4fRenderStageViewProj);
+    this.m4fRenderStageProj.set(this.m4fProj);
+    this.m4fRenderStageViewProj.set(this.m4fViewProj);
 };
 /**
  * Update
@@ -351,8 +356,8 @@ Camera.prototype.update = function () {
 Camera.prototype.applyRenderStageBias = function (iStage) {
     var fZ_bias = iStage > 1 ? 0.001 : 0.0;
 
-    Mat4.set(this.m4fProj, this.m4fRenderStageProj);
-    Mat4.set(this.m4fViewProj, this.m4fRenderStageViewProj);
+    this.m4fRenderStageProj.set(this.m4fProj);
+    this.m4fRenderStageViewProj.set(this.m4fViewProj);
 
     this.m4fRenderStageProj._34 -= fZ_bias;
     this.m4fRenderStageViewProj._34 -= fZ_bias;

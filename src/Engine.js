@@ -681,7 +681,7 @@ Engine.prototype.updateCamera = function (fLateralSpeed, fRotationSpeed, pTerrai
         this._pDefaultCamera.addRelRotation(0, -fRotationSpeed, 0);
 
     }
-    var v3fOffset = Vec3.create([0, 0, 0]);
+    var v3fOffset = Vec3(0, 0, 0);
     var isCameraMoved = false;
 
     if (this.pKeymap.isKeyPress(a.KEY.D)) {

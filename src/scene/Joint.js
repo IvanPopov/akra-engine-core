@@ -29,21 +29,17 @@ Joint.prototype.getEngine = function () {
 Joint.prototype.create = function () {
     'use strict';
 
-    this._m4fLocalMatrix = new Matrix4;
-    this._m4fWorldMatrix = new Matrix4;
+    this._m4fLocalMatrix = new Mat4(1);
+    this._m4fWorldMatrix = new Mat4(1);
     
-    this._v3fWorldPosition  = new Vector3();
-    this._v3fTranslation    = new Vector3(0, 0, 0);
-    this._v3fScale          = new Vector3(1, 1, 1);
+    this._v3fWorldPosition  = new Vec3();
+    this._v3fTranslation    = new Vec3(0, 0, 0);
+    this._v3fScale          = new Vec3(1, 1, 1);
     this._qRotation         = new Quaternion(0, 0, 0, 1);
 
 
     //maybe custom
     this.setInheritance(a.Scene.k_inheritAll);
-
-    Mat4.identity(this._m4fLocalMatrix);
-    Mat4.identity(this._m4fWorldMatrix);
-    
     return true;
 };
 

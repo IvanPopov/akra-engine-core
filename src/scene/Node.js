@@ -1,8 +1,8 @@
-var TEMPSCENEVECTOR3FORCALC0 = Vec3.create();
-var TEMPSCENEMATRIX4FORCALC0 = Mat4.create();
-var TEMPSCENEVECTOR4FORCALC0 = Vec4.create();
-var TEMPSCENEMATRIX3FORCALC0 = Mat3.create();
-var TEMPSCENEQUAT4FORCALC0   = Quat4.create();
+var TEMPSCENEVECTOR3FORCALC0 = Vec3();
+var TEMPSCENEMATRIX4FORCALC0 = Mat4();
+var TEMPSCENEVECTOR4FORCALC0 = Vec4();
+var TEMPSCENEMATRIX3FORCALC0 = Mat3();
+var TEMPSCENEQUAT4FORCALC0 = Quat4();
 
 function Node(pEngine){
     A_CLASS;
@@ -200,7 +200,7 @@ Node.prototype.worldMatrix = function () {
  */
 Node.prototype.normalMatrix = function () {
     if (TEST_BIT(this._iUpdateFlags, a.Scene.k_rebuildNormalMatrix)) {
-        Mat3.transpose(Mat4.toInverseMat3(this._m4fWorldMatrix, this._m3fNormalMatrix));
+        this._m4fWorldMatrix.toInverseMat3(this._m3fNormalMatrix).transpose();
         CLEAR_BIT(this._iUpdateFlags, a.Scene.k_rebuildNormalMatrix);
     }
     return this._m3fNormalMatrix;
@@ -231,7 +231,7 @@ Node.prototype.inverseWorldMatrix = function () {
     INLINE();
     // if the inverse matrix is out of date, compute it now
     if (TEST_BIT(this._iUpdateFlags, a.Scene.k_rebuildInverseWorldMatrix)) {
-        Mat4.inverse(this._m4fWorldMatrix, this._m4fInverseWorldMatrix);
+        this._m4fWorldMatrix.inverse(this._m4fInverseWorldMatrix);
         CLEAR_BIT(this._iUpdateFlags, a.Scene.k_rebuildInverseWorldMatrix);
     }
     return this._m4fInverseWorldMatrix;
@@ -438,11 +438,12 @@ Node.prototype.attachToParent = function (pParent) {
             this._pParent.addChild(this);
             //this._pParent.addRef();
             // adjust my local matrix to be relative to this new parent
-            var invertedParentMatrix = Mat4.inverse(this._pParent._m4fWorldMatrix);
+            var invertedParentMatrix = TEMPSCENEMATRIX4FORCALC0;
+            this._pParent._m4fWorldMatrix.inverse(invertedParentMatrix);
             // console.log("attachToParent-->", this.name, " Parent: ",Mat4.str(this._pParent._m4fWorldMatrix), 
             //             "inverse :", Mat4.str(invertedParentMatrix),
             //             "Local :", Mat4.str(this._m4fLocalMatrix));
-			Mat4.multiply(this._m4fLocalMatrix, invertedParentMatrix);
+			this._m4fLocalMatrix.multiply(invertedParentMatrix);
         }
     }
 };
@@ -469,8 +470,7 @@ Node.prototype.detachFromParent = function () {
         // my world matrix is now my local matrix
         this._m4fLocalMatrix = this._m4fWorldMatrix;
         // and the world matrix is the identity
-        this._m4fWorldMatrix = Mat4.create();
-        Mat4.identity(this._m4fWorldMatrix);
+        this._m4fWorldMatrix = new Mat4(1);
     }
 };
 
@@ -685,68 +685,69 @@ Node.prototype.recalcWorldMatrix = function () {
         var m4fParent = this._pParent.worldMatrix();
         var m4fOrient = TEMPSCENEMATRIX4FORCALC0;
         var v3fTemp = TEMPSCENEVECTOR3FORCALC0;
+        
+        var pWorldData = m4fWorld.pData;
+        var pParentData = m4fParent.pData;
+        var pOrientData = m4fOrient.pData;
 
-        Quat4.toMat4(this._qRotation, m4fOrient);
-        Mat4.setTranslation(m4fOrient, this._v3fTranslation);
-        Mat4.scale(m4fOrient, this._v3fScale);
+        this._qRotation.toMat4(m4fOrient);
+        m4fOrient.setTranslation(this._v3fTranslation);
+        m4fOrient.scale(this._v3fScale);
 
         if (TEST_BIT(this._iUpdateFlags, a.Scene.k_newLocalMatrix)) {
-            Mat4.multiply(m4fOrient, m4fLocal); 
+            m4fOrient.multiply(m4fLocal); 
         }
 
         if (this._pParent) {
             if (this._iInheritance === a.Scene.k_inheritAll) {
-                Mat4.multiply(m4fParent, m4fOrient, m4fWorld);
+                m4fParent.multiply(m4fOrient, m4fWorld);
             }
             else if (this._iInheritance === a.Scene.k_inheritPositionOnly) {
-                Mat4.set3x3(m4fOrient, m4fWorld);
-                m4fWorld._41 = m4fOrient._41;
-                m4fWorld._42 = m4fOrient._42;
-                m4fWorld._43 = m4fOrient._43;
-                m4fWorld._14 = m4fParent._14 + m4fOrient._14;
-                m4fWorld._24 = m4fParent._24 + m4fOrient._24;
-                m4fWorld._34 = m4fParent._34 + m4fOrient._34;
-                m4fWorld._44 = m4fOrient._44;
+                m4fWorld.set(m4fOrient);
+
+                pWorldData._14 = pParentData._14 + pOrientData._14;
+                pWorldData._24 = pParentData._24 + pOrientData._24;
+                pWorldData._34 = pParentData._34 + pOrientData._34;
             }
             else if (this._iInheritance === a.Scene.k_inheritRotScaleOnly) {
-                var p11 = m4fParent._11, p12 = m4fParent._12,
-                    p13 = m4fParent._13;
-                var p21 = m4fParent._21, p22 = m4fParent._22,
-                    p23 = m4fParent._23;
-                var p31 = m4fParent._31, p32 = m4fParent._32,
-                    p33 = m4fParent._33;
-                var l11 = m4fOrient._11, l12 = m4fOrient._12,
-                    l13 = m4fOrient._13;
-                var l21 = m4fOrient._21, l22 = m4fOrient._22,
-                    l23 = m4fOrient._23;
-                var l31 = m4fOrient._31, l32 = m4fOrient._32,
-                    l33 = m4fOrient._33;
-                m4fWorld._11 = p11 * l11 + p12 * l21 + p13 * l31;
-                m4fWorld._12 = p11 * l12 + p12 * l22 + p13 * l32;
-                m4fWorld._13 = p11 * l13 + p12 * l23 + p13 * l33;
-                m4fWorld._14 = m4fOrient._14;
-                m4fWorld._21 = p21 * l11 + p22 * l21 + p23 * l31;
-                m4fWorld._22 = p21 * l12 + p22 * l22 + p23 * l32;
-                m4fWorld._23 = p21 * l13 + p22 * l23 + p23 * l33;
-                m4fWorld._24 = m4fOrient._24;
-                m4fWorld._31 = p31 * l11 + p32 * l21 + p33 * l31;
-                m4fWorld._32 = p31 * l12 + p32 * l22 + p33 * l32;
-                m4fWorld._33 = p31 * l13 + p32 * l23 + p33 * l33;
-                m4fWorld._34 = m4fOrient._34;
+                var p11 = pParentData._11, p12 = pParentData._12,
+                    p13 = pParentData._13;
+                var p21 = pParentData._21, p22 = pParentData._22,
+                    p23 = pParentData._23;
+                var p31 = pParentData._31, p32 = pParentData._32,
+                    p33 = pParentData._33;
+                var l11 = pOrientData._11, l12 = pOrientData._12,
+                    l13 = pOrientData._13;
+                var l21 = pOrientData._21, l22 = pOrientData._22,
+                    l23 = pOrientData._23;
+                var l31 = pOrientData._31, l32 = pOrientData._32,
+                    l33 = pOrientData._33;
+                pWorldData._11 = p11 * l11 + p12 * l21 + p13 * l31;
+                pWorldData._12 = p11 * l12 + p12 * l22 + p13 * l32;
+                pWorldData._13 = p11 * l13 + p12 * l23 + p13 * l33;
+                pWorldData._14 = pOrientData._14;
+                pWorldData._21 = p21 * l11 + p22 * l21 + p23 * l31;
+                pWorldData._22 = p21 * l12 + p22 * l22 + p23 * l32;
+                pWorldData._23 = p21 * l13 + p22 * l23 + p23 * l33;
+                pWorldData._24 = pOrientData._24;
+                pWorldData._31 = p31 * l11 + p32 * l21 + p33 * l31;
+                pWorldData._32 = p31 * l12 + p32 * l22 + p33 * l32;
+                pWorldData._33 = p31 * l13 + p32 * l23 + p33 * l33;
+                pWorldData._34 = pOrientData._34;
 
-                m4fWorld._41 = m4fOrient._41;
-                m4fWorld._42 = m4fOrient._42;
-                m4fWorld._43 = m4fOrient._43;
-                m4fWorld._44 = m4fOrient._44;
+                pWorldData._41 = pOrientData._41;
+                pWorldData._42 = pOrientData._42;
+                pWorldData._43 = pOrientData._43;
+                pWorldData._44 = pOrientData._44;
             }
         }
         else {
-            Mat4.set(m4fOrient, m4fWorld);
+            m4fWorld.set(m4fOrient);
         }
 
-        this._v3fWorldPosition.X = m4fWorld._14;
-        this._v3fWorldPosition.Y = m4fWorld._24;
-        this._v3fWorldPosition.Z = m4fWorld._34;
+        this._v3fWorldPosition.pData.X = pWorldData._14;
+        this._v3fWorldPosition.pData.Y = pWorldData._24;
+        this._v3fWorldPosition.pData.Z = pWorldData._34;
 
         // set the flag that our world matrix has changed
         a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newWorldMatrix, true);
@@ -769,11 +770,9 @@ Node.prototype.setPosition = function () {
     'use strict';
     
     var pPos = arguments.length === 1? arguments[0]: arguments;
-    var v3fTranslation = this._v3fTranslation;
+    var v3fTranslation = this._v3fTranslation.pData;
 
-    v3fTranslation.X = pPos.X;
-    v3fTranslation.Y = pPos.Y;
-    v3fTranslation.Z = pPos.Z;
+    v3fTranslation.set(pPos);
 
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
@@ -788,11 +787,9 @@ Node.prototype.setRelPosition = function () {
     var pPos = arguments.length === 1? arguments[0]: arguments;
     var v3fTranslation = this._v3fTranslation;
 
-    Quat4.multiplyVec3(this._qRotation, pPos);
+    this._qRotation.multiplyVec3(pPos);
 
-    v3fTranslation.X = pPos.X;
-    v3fTranslation.Y = pPos.Y;
-    v3fTranslation.Z = pPos.Z;
+    v3fTranslation.set(pPos);
 
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
@@ -807,9 +804,9 @@ Node.prototype.addPosition = function () {
     var pPos = arguments.length === 1? arguments[0]: arguments;
     var v3fTranslation = this._v3fTranslation;
     
-    v3fTranslation.X += pPos.X;
-    v3fTranslation.Y += pPos.Y;
-    v3fTranslation.Z += pPos.Z;
+    v3fTranslation.pData.X += pPos.X;
+    v3fTranslation.pData.Y += pPos.Y;
+    v3fTranslation.pData.Z += pPos.Z;
 
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
@@ -825,11 +822,11 @@ Node.prototype.addRelPosition = function () {
     var v3fTranslation = this._v3fTranslation;
 
 
-    Quat4.multiplyVec3(this._qRotation, pPos);
+    this._qRotation.multiplyVec3(pPos);
     
-    v3fTranslation.X += pPos.X;
-    v3fTranslation.Y += pPos.Y;
-    v3fTranslation.Z += pPos.Z;
+    v3fTranslation.pData.X += pPos.X;
+    v3fTranslation.pData.Y += pPos.Y;
+    v3fTranslation.pData.Z += pPos.Z;
 
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
@@ -863,7 +860,7 @@ Node.prototype.setRotation = function () {
     switch (arguments.length) {
         case 1:
             //from matrix3 or matrix4
-            Mat4.toQuat4(arguments[0], this._qRotation);
+            arguments[0].toQuat4(this._qRotation);
             break;
         case 2:
 
@@ -915,7 +912,7 @@ Node.prototype.addRelRotation = function () {
     
     switch (arguments.length) {
         case 1:
-            Mat4.toQuat4(arguments[0], qTemp);
+            arguments[0].toQuat4(qTemp);
             break;
         case 2:
              if (typeof arguments[1] == "number") {
@@ -938,7 +935,7 @@ Node.prototype.addRelRotation = function () {
     }
     
 
-    Quat4.multiply(qTemp, this._qRotation, this._qRotation);
+    this._qRotation.multiply(qTemp);
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
 
@@ -1016,10 +1013,10 @@ Node.prototype.setScale = function (scale) {
     var v3fScale = this._v3fScale;
 
     if (typeof pScale === 'number') {
-        Vec3.set(pScale, pScale, pScale, v3fScale);
+        v3fScale.set(pScale, pScale, pScale);
     }
     else {
-        Vec3.set(pScale, v3fScale);
+        v3fScale.set(pScale);
     }
 
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
@@ -1031,20 +1028,11 @@ Node.prototype.multScale = function (scale) {
     var pScale = arguments.length === 1? arguments[0]: arguments;
     var v3fScale = this._v3fScale;
 
-    if (typeof pScale === 'number') {
-        v3fScale.X *= pScale;
-        v3fScale.Y *= pScale;
-        v3fScale.Z *= pScale;
-    }
-    else {
-        v3fScale.X *= pScale.X;
-        v3fScale.Y *= pScale.Y;
-        v3fScale.Z *= pScale.Z;
-    }
+    v3fScale.scale(pScale);
     
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
-
+Node.prototype.scale = Node.prototype.multScale;
 
 Ifdef (__DEBUG);
 
