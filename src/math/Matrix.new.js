@@ -388,13 +388,25 @@ Vec2.prototype.mix = function(v2fVec,fA,v2fDestination) {
     return v2fDestination;
 };
 
-Vec2.prototype.isEqual = function(v2fVec) {
+Vec2.prototype.isEqual = function(v2fVec, fEps) {
     'use strict';
     var pData1 = this.pData;
     var pData2 = v2fVec.pData;
 
-    if(pData1.X != pData2.X || pData1.Y != pData2.Y){
-        return false;
+    fEps = ifndef(fEps,0);
+
+    if(fEps == 0){
+        if(     pData1.X != pData2.X
+             || pData1.Y != pData2.Y){
+            return false;
+        }
+    }
+    else{
+        if(    Math.abs(pData1.X - pData2.X) > fEps
+            || Math.abs(pData1.Y - pData2.Y) > fEps){
+
+            return false;
+        }
     }
     return true;
 };
@@ -897,16 +909,28 @@ Vec3.prototype.toString = function() {
     return '[' + pData.X + ', ' + pData.Y + ', ' + pData.Z + ']';
 };
 
-Vec3.prototype.isEqual = function(v3fVec) {
+Vec3.prototype.isEqual = function(v3fVec, fEps) {
     'use strict';
     var pData1 = this.pData;
     var pData2 = v3fVec.pData;
 
-    if(    pData1.X != pData2.X 
-        || pData1.Y != pData2.Y
-        || pData1.Z != pData2.Z){
+    fEps = ifndef(fEps,0);
 
-        return false;
+    if(fEps == 0){
+        if(    pData1.X != pData2.X 
+            || pData1.Y != pData2.Y
+            || pData1.Z != pData2.Z){
+
+            return false;
+        }
+    }
+    else{
+        if(    Math.abs(pData1.X - pData2.X) > fEps
+            || Math.abs(pData1.Y - pData2.Y) > fEps
+            || Math.abs(pData1.Z - pData2.Z) > fEps){
+
+            return false;
+        }
     }
     return true;
 };
@@ -1448,17 +1472,30 @@ Vec4.prototype.toString = function() {
     return '[' + pData.X + ', ' + pData.Y + ', ' + pData.Z + ', ' + pData.W + ']';
 };
 
-Vec4.prototype.isEqual = function(v4fVec) {
+Vec4.prototype.isEqual = function(v4fVec,fEps) {
     'use strict';
     var pData1 = this.pData;
     var pData2 = v4fVec.pData;
 
-    if(    pData1.X != pData2.X 
-        || pData1.Y != pData2.Y
-        || pData1.Z != pData2.Z
-        || pData1.W != pData2.W){
+    fEps = ifndef(fEps,0);
 
-        return false;
+    if(fEps == 0){
+        if(    pData1.X != pData2.X 
+            || pData1.Y != pData2.Y
+            || pData1.Z != pData2.Z
+            || pData1.W != pData2.W){
+
+            return false;
+        }
+    }
+    else{
+        if(    Math.abs(pData1.X - pData2.X) > fEps
+            || Math.abs(pData1.Y - pData2.Y) > fEps
+            || Math.abs(pData1.Z - pData2.Z) > fEps
+            || Math.abs(pData1.W - pData2.W) > fEps){
+
+            return false;
+        }
     }
     return true;
 };
@@ -4203,11 +4240,10 @@ Quat4.prototype.set = function() {
             //vec3 float
             
             var pElements = arguments[0].pData;
-
             pData.X = pElements.X;
             pData.Y = pElements.Y;
             pData.Z = pElements.Z;
-            pData.W = pElements.W;
+            pData.W = arguments[1];
         }
     }
     else if(nArgumentsLength == 4){
