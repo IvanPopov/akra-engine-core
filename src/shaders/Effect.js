@@ -212,6 +212,8 @@ var GLOBAL_VARS = {
     VERTEXPREFIX   : "vertex_main_",
     FRAGMENTPREFIX : "fragment_main_",
 
+    PREFIX : 10,
+
     EXTERNAL_V : 1,
     EXTERNAL_F : 2
 };
@@ -489,7 +491,7 @@ function EffectType(sName, sRealName, isBase, iSize) {
     /**
      * @type {Boolean}
      */
-    this.isAnalyzed = false;
+    this.isAnalyzed = isBase || false;
     /**
      * @type {Boolean}
      */
@@ -624,6 +626,9 @@ EffectType.prototype.hasComplexType = function () {
     return this.pDesc.hasComplexType();
 };
 EffectType.prototype.checkMe = function () {
+    if (this._isBase) {
+        return true;
+    }
     var i, j;
     if (!this.isAnalyzed) {
         this.pDesc.analyzeSemantics();
@@ -932,14 +937,13 @@ EffectStruct.prototype.canBlend = function (pStruct) {
     return true;
 };
 
-function EffectPointer(pVar, nDim, pFirst, sPrevReal, isAttr) {
+function EffectPointer(pVar, nDim, pFirst, sPrev, isAttr) {
     this.pVar = pVar || null;
     this.sRealName = null;
     this.nDim = nDim || 0;
-    this.pFirst = pFirst;
     this.isAttr = isAttr;
-    this.sPrevReal = sPrevReal;
-    this.sRealNameShader = null;
+    this.sPrevReal = sPrev;
+    this.pFirst = pFirst;
 }
 EffectPointer.prototype.toCode = function () {
     var i;
@@ -947,8 +951,8 @@ EffectPointer.prototype.toCode = function () {
         return this.sRealName;
     }
     this.sRealName = (this.isAttr && this.pFirst.isVSInput) ? "" : (this.pFirst.sRealName + "_");
-    this.sRealName += this.sPrevReal;
-    this.sRealName += this.pVar.sRealName;
+    this.sRealName += (this.sPrevReal !== "") ? (this.sPrevReal + "_") : "";
+    this.sRealName += this.pVar.toCode(a.fx.GLOBAL_VARS.PREFIX);
     for (i = 0; i <= this.nDim; i++) {
         this.sRealName += "_index";
     }
@@ -1177,17 +1181,20 @@ EffectVariable.prototype.toCodeDecl = function (isInit) {
     sCode += ";";
     return sCode;
 };
+EffectVariable.prototype.toOffsetStr = function () {
+    return this.sRealName + "_offset";
+};
 
-function EffectVariableBase(pVar, pFirst, sRealPrevName, iScope, isPointer, pPointers, pBuffer) {
+function EffectVariableBase(pVar, pFirst, sRealPrevName, iScope) {
     this.pVar = pVar;
     this.pFirst = pFirst;
     this.sRealPrevName = sRealPrevName;
 
     this.iScope = iScope;
 
-    this.isPointer = isPointer;
-    this.pPointers = pPointers;
-    this.pBuffer = pBuffer;
+    this.isPointer = false;
+    this.pPointers = null;
+    this.pBuffer = null;
 
     this.pType = pVar.pType;
     this.isArray = pVar.isArray;
@@ -1197,13 +1204,17 @@ function EffectVariableBase(pVar, pFirst, sRealPrevName, iScope, isPointer, pPoi
     this.sRealName = null;
 }
 EffectVariableBase.prototype.toCode = function (isShader) {
+    if (isShader === a.fx.GLOBAL_VARS.PREFIX) {
+        return this.sName;
+    }
+    var sName;
     if (isShader && this.sRealNameShader) {
         return this.sRealNameShader;
     }
     if (!isShader && this.sRealName) {
         return this.sRealName;
     }
-    var sName = "";
+    sName = "";
     if (!(isShader && this.pFirst.isVSInput)) {
         sName = this.pFirst.toCode() + ".";
     }
@@ -1257,6 +1268,7 @@ function EffectBaseFunction() {
     this._sDefinition = null;
     this._pCodeAll = null;
     this._sCodeAll = null;
+    this._pLocalPointers = {};
 }
 EffectBaseFunction.prototype.addGlobalVariable = function (pVar) {
     if (pVar.isGlobal) {
@@ -1427,6 +1439,14 @@ EffectBaseFunction.prototype.addGlobalBuffer = function (pBuf) {
         return true;
     }
     return false;
+};
+EffectBaseFunction.prototype.addPointers = function (pVar) {
+    if (pVar.iScope !== this.iScope && pVar.iScope !== a.fx.GLOBAL_VARS.GLOBAL) {
+        var i;
+        for (i = 0; i < pVar.pPointers.length; i++) {
+            this._pLocalPointers[pVar.pPointers[i].toCode()] = pVar.pPointers[i];
+        }
+    }
 };
 
 function EffectFunction(sName, pGLSLExpr, pTypes) {
@@ -1654,7 +1674,9 @@ EffectFunction.prototype.generateExtractedCode = function () {
         }
     }
     sCode += "){";
-
+    for (i in this._pLocalPointers) {
+        sCode += "float " + i + "=0.0;"
+    }
     function fnExtractCode(pElement) {
         var pToCode;
         if (typeof(pElement) === "string") {
@@ -1781,6 +1803,7 @@ function EffectShader(pFunction) {
     this.pTypesByName = null;
     this.pFuncByDef = null;
     this.pFuncBlock = null;
+    this.pGlobalPointers = [];
     this._isReady = false;
 }
 EXTENDS(EffectShader, EffectBaseFunction);
@@ -1806,6 +1829,9 @@ EffectShader.prototype.generateExtractedCode = function () {
     }
     sCode = this._sDefinition;
     sCode += "{";
+    for (i in this._pLocalPointers) {
+        sCode += "float " + i + "=0.0;"
+    }
     if (this.pTwin) {
         if (!pCode) {
             pCode = [];
@@ -1944,12 +1970,6 @@ EffectShader.prototype.toCodeAll = function (id) {
         pVar.sRealName = pVar.sSemantic || pVar.sRealName;
         this.pBuffersByName[pVar.sName] = pVar.sRealName;
         this.pBuffersByRealName[pVar.sRealName] = pBuf;
-        this.pTypesBlock["A_TextureHeader"] = "struct A_TextureHeader{float width;float height;float stepX;float stepY;};";
-        this.pFuncBlock["void A_extractTextureHeader(const sampler2D, out A_TextureHeader)"] =
-        "void A_extractTextureHeader(const sampler2D src, out A_TextureHeader texture) {\
-            vec4 v = texture2D(src, vec2(0.));\
-            texture = A_TextureHeader(v.r, v.g, v.b, v.a);\
-        }";
     }
     if (this instanceof EffectVertex) {
         this.pAttrBuffers = {};
@@ -2016,6 +2036,17 @@ EffectShader.prototype.toCodeAll = function (id) {
     }
     this._isReady = true;
 };
+EffectShader.prototype.generateGlobalPointers = function () {
+    var i, j;
+    var pPointers;
+    for (i in this.pGlobalsByRealName) {
+        pPointers = this.pGlobalsByRealName[i].pPointers;
+        for (j = 0; j < pPointers.length; j++) {
+            pPointers[j].sRealName = null;
+            this.pGlobalPointers[pPointers[j].toCode()] = pPointers[j];
+        }
+    }
+};
 
 function EffectVertex(pFunction) {
     A_CLASS;
@@ -2037,6 +2068,7 @@ function EffectVertex(pFunction) {
      */
     this._pAttributes = [];
     this._pAttrSemantics = {};
+    this.pAttributePointers = {};
 }
 EXTENDS(EffectVertex, EffectShader);
 EffectVertex.prototype.addVarying = function (pVar) {
@@ -2073,6 +2105,15 @@ EffectVertex.prototype.addAttribute = function (pVar) {
 EffectVertex.prototype.generateDefinitionCode = function (id, iEffectId) {
     this.sRealName = a.fx.GLOBAL_VARS.VERTEXPREFIX + id + "_" + iEffectId;
     this._sDefinition = "void " + this.sRealName + "()";
+};
+EffectVertex.prototype.addAttributeIndex = function (pVar) {
+    var i = 0;
+    var pPointer;
+    for (i = 0; i < pVar.pPointers.length; i++) {
+        pPointer = pVar.pPointers[i];
+        pPointer.sRealName = null;
+        this.pAttributePointers[pPointer.toCode()] = pPointer;
+    }
 };
 
 function EffectFragment(pFunction) {
@@ -3163,42 +3204,53 @@ Effect.prototype.addBaseVarMemCode = function (pFunction, pBlock, pVar) {
     else if (pVar.pType.isEqual(this.hasType("float2"))) {
         pBlock._pCodeData.push("A_extractVec2(");
         pFunction._pExtractFunctions["vec2"] = null;
+        pFunction._pExtractFunctions["float"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("float3"))) {
         pBlock._pCodeData.push("A_extractVec3(");
         pFunction._pExtractFunctions["vec3"] = null;
+        pFunction._pExtractFunctions["float"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("float4"))) {
         pBlock._pCodeData.push("A_extractVec4(");
         pFunction._pExtractFunctions["vec4"] = null;
+        pFunction._pExtractFunctions["float"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("int2"))) {
         pBlock._pCodeData.push("ivec2(A_extractVec2(");
         pFunction._pExtractFunctions["vec2"] = null;
+        pFunction._pExtractFunctions["float"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("int3"))) {
         pBlock._pCodeData.push("ivec3(A_extractVec3(");
         pFunction._pExtractFunctions["vec3"] = null;
+        pFunction._pExtractFunctions["float"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("int4"))) {
         pBlock._pCodeData.push("ivec4(A_extractVec4(");
         pFunction._pExtractFunctions["vec4"] = null;
+        pFunction._pExtractFunctions["float"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("bool2"))) {
         pBlock._pCodeData.push("bvec2(A_extractVec2(");
         pFunction._pExtractFunctions["vec2"] = null;
+        pFunction._pExtractFunctions["float"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("bool3"))) {
         pBlock._pCodeData.push("bvec3(A_extractVec3(");
         pFunction._pExtractFunctions["vec3"] = null;
+        pFunction._pExtractFunctions["float"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("bool4"))) {
         pBlock._pCodeData.push("bvec4(A_extractVec4(");
         pFunction._pExtractFunctions["vec4"] = null;
+        pFunction._pExtractFunctions["float"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("float4x4"))) {
         pBlock._pCodeData.push("A_extractMat4(");
         pFunction._pExtractFunctions["Mat4"] = null;
+        pFunction._pExtractFunctions["vec4"] = null;
+        pFunction._pExtractFunctions["float"] = null;
     }
     else {
         error("We don`t support another simple type");
@@ -3231,6 +3283,7 @@ Effect.prototype.addVariable = function (pVar, isParams) {
         var sPrev;
         var sPrevRealSaveP = sPrevRealP;
         var sPrevRealSaveV = sPrevRealV;
+        var pNewVar;
 
         for (var i = 0; i < pOrders.length; i++) {
             sPrevRealP = sPrevRealSaveP;
@@ -3240,10 +3293,16 @@ Effect.prototype.addVariable = function (pVar, isParams) {
             pBuffer = null;
             pPointers = null;
             isPointer = false;
+            pNewVar = new EffectVariableBase(pOrders[i], pFirst, sPrevRealV, me._iScope);
+            if (!pNewVar) {
+                error("good bad and ugly)");
+                return;
+            }
+            pTable[sNewName] = pNewVar;
             if (pOrders[i].isPointer) {
                 pPointers = [];
                 for (var j = 0; j < pOrders[i].nDim; j++) {
-                    pPointers.push(new EffectPointer(pOrders[i], j, pFirst, sPrevRealP, isParams));
+                    pPointers.push(new EffectPointer(pNewVar, j, pFirst, sPrevRealSaveP, isParams));
                 }
                 if (isParams) {
                     pBuffer = pBufferMap || new EffectBuffer();
@@ -3254,17 +3313,14 @@ Effect.prototype.addVariable = function (pVar, isParams) {
                 if (!me._isStrictMode && isParams && iDepth === 0) {
                     isPointer = undefined;
                     pPointers = [];
-                    pPointers.push(new EffectPointer(pOrders[i], j, pFirst, sPrevRealP, isParams));
+                    pPointers.push(new EffectPointer(pNewVar, j, pFirst, sPrevRealSaveP, isParams));
                     pBuffer = pBufferMap || new EffectBuffer();
                 }
             }
+            pNewVar.isPointer = isPointer;
+            pNewVar.pPointers = pPointers;
+            pNewVar.pBuffer = pBuffer;
 
-            if (pTable[sNewName]) {
-                error("good bad and ugly)");
-                return;
-            }
-            pTable[sNewName] = new EffectVariableBase(pOrders[i], pFirst, sPrevRealV, me._iScope,
-                                                      isPointer, pPointers, pBuffer);
             if (!pOrders[i].pType.isBase()) {
                 iDepth++;
                 sPrevRealP = (sPrevRealP !== "" ) ? (sPrevRealP + "_" + pOrders[i].sRealName) : pOrders[i].sRealName;
@@ -3697,7 +3753,7 @@ Effect.prototype.analyze = function (pTree) {
     this.postAnalyzeEffect();
     this.checkEffect();
     this.endScope();
-    console.log(a.now() - time);
+    console.log("Time of analyzing effect file(without parseing) ", a.now() - time);
     return true;
 //    }
 //    catch (e) {
@@ -3966,12 +4022,19 @@ Effect.prototype.postAnalyzeEffect = function () {
             }
         }
     }
+    for (i in this._pShaders) {
+        if (!this._pShaders[i]) {
+            continue;
+        }
+        this._nShaders++;
+    }
     //Generate defenitions for shaders
     for (i in this._pShaders) {
         if (!this._pShaders[i]) {
             continue;
         }
         this._pShaders[i].generateDefinitionCode(this._nShaders, this._id);
+        this._pShaders[i].generateGlobalPointers();
         this._nShaders++;
     }
     //generate effectBlock`s code
@@ -5148,6 +5211,11 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         this._eFuncProperty !== a.Effect.Func.DEFAULT) {
                         pFunction.addGlobalBuffer(pRes);
                     }
+                    if (pRes.isPointer !== false) {
+                        if (this._eFuncProperty === a.Effect.Func.VERTEX && pRes.iScope === pFunction.iScope) {
+                            pFunction.addAttributeIndex(pRes);
+                        }
+                    }
                     if (pRes.isVertexOnly) {
                         if (this._eFuncProperty === a.Effect.Func.FRAGMENT) {
                             error("You try use global variable for vertex shader in pixel shader");
@@ -5296,6 +5364,11 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     if (!pRes) {
                         error("Not this variable " + this._sVarName);
                         return;
+                    }
+                    if (pRes.isPointer !== false) {
+                        if (this._eFuncProperty === a.Effect.Func.VERTEX && pRes.iScope === pFunction.iScope) {
+                            pFunction.addAttributeIndex(pRes);
+                        }
                     }
                     this._pLastVar = pRes;
                     pRes.isUsed = true;
@@ -5845,9 +5918,14 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
         this.pushCode(";");
     }
     if (isMemRead) {
+        var pMemBlock;
         for (i = 0; i < this._pMemReadVars.length; i++) {
-            this.pushCode(this._pMemReadVars[i]);
-            this.pushCode(";")
+            pMemBlock = this._pMemReadVars[i];
+            this.pushCode(pMemBlock);
+            if (this._eFuncProperty !== a.Effect.Func.DEFAULT) {
+                this._pCurrentFunction.addPointers(pMemBlock._pVar);
+            }
+            this.pushCode(";");
         }
         this.endMemRead();
     }
