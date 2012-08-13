@@ -2782,9 +2782,11 @@ Quat4.fromAxisAngle = function (axis, angle, quat) {
         quat = Quat4.create();
     }
 
-    quat.X = axis.X * Math.sin(angle / 2.)
-    quat.Y = axis.Y * Math.sin(angle / 2.)
-    quat.Z = axis.Z * Math.sin(angle / 2.)
+
+    quat.X = axis.X * Math.sin(angle / 2.);
+    quat.Y = axis.Y * Math.sin(angle / 2.);
+    quat.Z = axis.Z * Math.sin(angle / 2.);
+    
     quat.W = Math.cos(angle / 2.);
 
     return quat;
@@ -2811,7 +2813,46 @@ Quat4.fromYPR = function (fYaw, fPitch, fRoll, quat) {
     Quaternion(Qy, Math.cos(fY/2), 0, Math.sin(fY/2), 0);
     Quaternion(Qz, Math.cos(fZ/2), 0, 0, Math.sin(fZ/2));
 
-    return Quat4.multiply(Qx, Quat4.multiply(Qy, Qz), quat);
+    return Quat4.multiply(Qy, Quat4.multiply(Qx, Qz), quat);
+
+
+    // var fPhi = -fPitch,//fRoll,
+    //     fTheta = -fYaw, //fPitch,
+    //     fPsi = -fRoll;
+
+    // with (Math) {
+    //     quat.X = sin(fPhi/2) * cos(fTheta/2) * cos(fPsi/2) - cos(fPhi/2) * sin(fTheta/2) * sin(fPsi/2);
+    //     quat.Y = cos(fPhi/2) * sin(fTheta/2) * cos(fPsi/2) + sin(fPhi/2) * cos(fTheta/2) * sin(fPsi/2);
+    //     quat.Z = cos(fPhi/2) * cos(fTheta/2) * sin(fPsi/2) - sin(fPhi/2) * sin(fTheta/2) * cos(fPsi/2);
+
+    //     quat.W = cos(fPhi/2) * cos(fTheta/2) * cos(fPsi/2) + sin(fPhi/2) * sin(fTheta/2) * sin(fPsi/2);
+    // }
+
+    // return quat;
+};
+
+Quat4.fromXYZ = function (fX, fY, fZ, quat) {
+    if (!quat) {
+        quat = Quat4.create();
+    }
+
+//    var fX = fPitch;
+//    var fY = fYaw;
+//    var fZ = fRoll;
+
+    var Qx = Quat4._qX,
+        Qy = Quat4._qY,
+        Qz = Quat4._qZ;
+    Quaternion(quat, 1, 0, 0, 0);
+    Quaternion(Qx, Math.cos(fX/2), -Math.sin(fX/2), 0, 0);
+    Quaternion(Qy, Math.cos(fY/2), 0, -Math.sin(fY/2), 0);
+    Quaternion(Qz, Math.cos(fZ/2), 0, 0, -Math.sin(fZ/2));
+
+    Quat4.multiply(quat, Qx);
+    Quat4.multiply(quat, Qy);
+    Quat4.multiply(quat, Qz);
+
+    return quat;
 
 
     // var fPhi = -fPitch,//fRoll,

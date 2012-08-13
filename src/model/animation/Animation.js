@@ -48,7 +48,7 @@ Animation.prototype.update = function (fTime, bLoop) {
     'use strict';
 
     if (fTime > this._fDuration) {
-    	fTime = (bLoop === true? fTime % (this._fDuration): thissetRange._fDuration);
+    	fTime = (bLoop === true? fTime % (this._fDuration): this._fDuration);
     }
 
 	for (var i = this.length - 1; i--;) {

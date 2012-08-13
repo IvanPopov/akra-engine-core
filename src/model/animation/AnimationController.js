@@ -1,28 +1,3 @@
-function AnimationContainer (pAnimation) {
-	debug_assert(pAnimation, 'you must specify animation');
-
-	Enum([
-		PRIORITY_LOW = 0,
-		PRIORITY_HIGH = 1
-		], ANIMATION_PRIORITY, a.Animation);
-
-
-	this.bEnable = true;
-	this.fStartTime = 0;
-	this.ePriority = a.Animation.PRIORITY_HIGH;
-	this.fSpeed = 1.0;
-	this.fWeight = 1.0;
-	this.pAnimation = pAnimation;
-}
-
-PROPERTY(AnimationContainer, 'animationName',
-	function () {
-		return this.pAnimation.name;
-	});
-
-
-A_NAMESPACE(AnimationContainer);
-
 function AnimationController (eOptions) {
     'use strict';
 	

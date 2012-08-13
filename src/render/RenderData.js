@@ -753,6 +753,7 @@ RenderData.prototype.draw = function () {
 		{
 			this._pBuffer._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pIndicesArray[i].pMap);
 			bResult = this._pIndicesArray[i].pMap.draw();
+            //trace(this._pIndicesArray[i].pMap.toString());
 			isOK = isOK && bResult;
 		}
 	}

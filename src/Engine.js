@@ -55,6 +55,7 @@ function Engine () {
     this.pShaderManager = null;
     this.pParticleManager = null;
     this.pSpriteManager = null;
+
     // this.pUniqManager = null;
 
     this._pRootNode = null; //Корень дерева сцены
@@ -94,7 +95,6 @@ Engine.prototype.create = function (sCanvasId) {
     this._pRootNode = new a.SceneNode(this); //Корень дерева сцены
     this._pDefaultCamera = new a.Camera(this);      //Камера по умолчанию
     this._pDefaultCamera.name = ".default-camera";
-
     this._pActiveCamera = this._pDefaultCamera; //Активная камера
     this._pSceneTree = new a.OcTree();      //Объект отвечающий за дерево сцены
     this.iCreationWidth = this.pCanvas.width;
@@ -114,6 +114,7 @@ Engine.prototype.create = function (sCanvasId) {
     this.pShaderManager = new a.ShaderManager(this);
     this.pParticleManager = new a.ParticleManager(this);
     this.pSpriteManager = new a.SpriteManager(this);
+
     // this.pUniqManager = new a.UniqueManager(this);
 
     
@@ -290,17 +291,16 @@ Engine.prototype.getDefaultCamera = function () {
 Engine.prototype.getActiveCamera = function () {
     return this._pActiveCamera;
 };
-
-Engine.prototype.displayManager = function () {
-    return this.pDisplayManager;
-};
-
 Engine.prototype.particleManager = function(){
     return this.pParticleManager;
 };
 
 Engine.prototype.spriteManager = function(){
     return this.pSpriteManager;
+};
+
+Engine.prototype.displayManager = function () {
+    return this.pDisplayManager;
 };
 
 // Engine.prototype.uniqManager = function() {
@@ -344,7 +344,6 @@ Engine.prototype.notifyInitDeviceObjects = function () {
 
     return true;
 }
-
 
 /**
  * @property renderScene()
@@ -662,51 +661,51 @@ Engine.prototype.updateCamera = function (fLateralSpeed, fRotationSpeed, pTerrai
     // This function reads the keyboard
     // and moves the default camera
     //
-    //var v3fCameraUp = this._pDefaultCamera.getUp();
+//    var v3fCameraUp = this._pDefaultCamera.getUp();
 
 
     if (this.pKeymap.isKeyPress(a.KEY.RIGHT)) {
-        this._pDefaultCamera.addRelRotation(0.0, 0.0, fRotationSpeed);//zxy
+        this._pDefaultCamera.addRelRotation(0.0, 0.0, -fRotationSpeed);
         //v3fCameraUp.Z >0.0 ? fRotationSpeed: -fRotationSpeed);
     }
     else if (this.pKeymap.isKeyPress(a.KEY.LEFT)) {
-        this._pDefaultCamera.addRelRotation(0.0, 0.0, -fRotationSpeed);
+        this._pDefaultCamera.addRelRotation(0.0, 0.0, fRotationSpeed);
         //v3fCameraUp.Z >0.0 ? -fRotationSpeed: fRotationSpeed);
     }
 
     if (this.pKeymap.isKeyPress(a.KEY.UP)) {
 
-        this._pDefaultCamera.addRelRotation(0, -fRotationSpeed, 0);
+        this._pDefaultCamera.addRelRotation(0, fRotationSpeed, 0);
     }
     else if (this.pKeymap.isKeyPress(a.KEY.DOWN)) {
-        this._pDefaultCamera.addRelRotation(0, fRotationSpeed, 0);
+        this._pDefaultCamera.addRelRotation(0, -fRotationSpeed, 0);
 
     }
     var v3fOffset = Vec3.create([0, 0, 0]);
     var isCameraMoved = false;
 
     if (this.pKeymap.isKeyPress(a.KEY.D)) {
-        v3fOffset.X = fLateralSpeed;
+        v3fOffset[0] = fLateralSpeed;
         isCameraMoved = true;
     }
     else if (this.pKeymap.isKeyPress(a.KEY.A)) {
-        v3fOffset.X = -fLateralSpeed;
+        v3fOffset[0] = -fLateralSpeed;
         isCameraMoved = true;
     }
     if (this.pKeymap.isKeyPress(a.KEY.R)) {
-        v3fOffset.Y = fLateralSpeed;
+        v3fOffset[1] = fLateralSpeed;
         isCameraMoved = true;
     }
     else if (this.pKeymap.isKeyPress(a.KEY.F)) {
-        v3fOffset.Y = -fLateralSpeed;
+        v3fOffset[1] = -fLateralSpeed;
         isCameraMoved = true;
     }
     if (this.pKeymap.isKeyPress(a.KEY.W)) {
-        v3fOffset.Z = -fLateralSpeed;
+        v3fOffset[2] = -fLateralSpeed;
         isCameraMoved = true;
     }
     else if (this.pKeymap.isKeyPress(a.KEY.S)) {
-        v3fOffset.Z = fLateralSpeed;
+        v3fOffset[2] = fLateralSpeed;
         isCameraMoved = true;
     }
     if (isCameraMoved || isForceUpdate) {
@@ -723,8 +722,7 @@ Engine.prototype.updateCamera = function (fLateralSpeed, fRotationSpeed, pTerrai
                 v3fOffset.Y = fMinCameraZ - v3fCameraWorldPos.Z;
             }
         }
-        // Quat4.multiplyVec3(this.getActiveCamera()._qRotation, v3fOffset);
-        //Mat4.multiplyVec3(this.getActiveCamera()._m4fRotation, v3fOffset);
+
         this._pDefaultCamera.addRelPosition(v3fOffset);
     }
 
