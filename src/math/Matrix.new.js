@@ -7,34 +7,6 @@
  * Матричные и векторные операции.
  */
 
-/* 
- * glMatrix.js - High performance matrix and vector operations for WebGL
- * version 0.9.6
- */
-
-/*
- * Copyright (c) 2011 Brandon Jones
- *
- * This software is provided 'as-is', without any express or implied
- * warranty. In no event will the authors be held liable for any damages
- * arising from the use of this software.
- *
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- *
- *    1. The origin of this software must not be misrepresented; you must not
- *    claim that you wrote the original software. If you use this software
- *    in a product, an acknowledgment in the product documentation would be
- *    appreciated but is not required.
- *
- *    2. Altered source versions must be plainly marked as such, and must not
- *    be misrepresented as being the original software.
- *
- *    3. This notice may not be removed or altered from any source
- *    distribution.
- */
-
 
 Define(X, __[0])
 Define(Y, __[1])
@@ -67,34 +39,48 @@ Define(a31, __[6])
 Define(a32, __[7])
 Define(a33, __[8])
 
+//aliases
+
+Define(Vector2, Vec2);
+Define(Vector3, Vec3);
+Define(Vector4, Vec4);
+Define(Matrix3, Mat3);
+Define(Matrix4, Mat4);
+Define(Quaternion, Quat4);
+
+///////////////////////////////
+
 function Vec2(){
-    'use strict';
-    var pData = this.pData = new Float32Array(2);
+    //'use strict';
 
-    //без аргументов инициализируется нулями, а
-    //массив уже заполнен нулями
-    
-    if(arguments.length == 1){
-        if(typeof(arguments[0]) == "number"){
-            pData[0] = pData[1] = arguments[0];
+    var v2fVec;
+    if(this === window){
+        v2fVec = Vec2._pStorage[Vec2._iIndex++];
+        if(Vec2._iIndex == Vec2._nStorageSize){
+            Vec2._iIndex = 0;
         }
-        else if(arguments[0] instanceof Vec2){
-            var pData2 = arguments[0].pData;
-            pData[0] = pData2[0];
-            pData[1] = pData2[1];
-        }
-        else{
-            var pElements = arguments[0];
-            pData[0] = pElements[0];
-            pData[1] = pElements[1];
+        //clear
+        if(arguments.length == 0){
+            var pData = v2fVec.pData;
+            pData.X = pData.Y = 0;
         }
     }
-    else if(arguments.length != 0){
-        pData[0] = arguments[0];
-        pData[1] = arguments[1];
+    else{
+        this.pData = new Float32Array(2);
+        v2fVec = this;
     }
 
-    return this;
+    var nArgumentsLength = arguments.length;
+
+    if(nArgumentsLength == 1){
+        return v2fVec.set(arguments[0]);
+    }
+    else if(nArgumentsLength == 2){
+        return v2fVec.set(arguments[0],arguments[1]);
+    }
+    else{
+        return v2fVec;
+    }
 }
 
 Vec2.prototype.set = function() {
@@ -436,36 +422,38 @@ Vec2.prototype.toString = function() {
 ////////////////////////////////////////////////////////////
 
 function Vec3(){
-    'use strict';
-    var pData = this.pData = new Float32Array(3);
+    //'use strict';
 
-    //без аргументов инициализируется нулями, а
-    //массив уже заполнен нулями
+    var v3fVec;
+
+    if(this === window){
+        v3fVec = Vec3._pStorage[Vec3._iIndex++];
+        if(Vec3._iIndex == Vec3._nStorageSize){
+            Vec3._iIndex = 0;
+        }
+
+        //clear
+        if(arguments.length == 0){
+            var pData = v3fVec.pData;
+            pData.X = pData.Y = pData.Z = 0;
+        }
+    }
+    else{
+        this.pData = new Float32Array(3);
+        v3fVec = this;
+    }
     
-    if(arguments.length == 1){
-        if(typeof(arguments[0]) == "number"){
-            pData[0] = pData[1] = pData[2] = arguments[0];
-        }
-        else if(arguments[0] instanceof Vec3){
-            var pData2 = arguments[0].pData;
-            pData[0] = pData2[0];
-            pData[1] = pData2[1];
-            pData[2] = pData2[2];
-        }
-        else{
-            var pElements = arguments[0];
-            pData[0] = pElements[0];
-            pData[1] = pElements[1];
-            pData[2] = pElements[2];
-        }
-    }
-    else if(arguments.length != 0){
-        pData[0] = arguments[0];
-        pData[1] = arguments[1];
-        pData[2] = arguments[2];
-    }
+    var nArgumentsLength = arguments.length;
 
-    return this;
+    if(nArgumentsLength == 1){
+        return v3fVec.set(arguments[0]);
+    }
+    else if(nArgumentsLength == 3){
+        return v3fVec.set(arguments[0],arguments[1],arguments[2]);
+    }
+    else{
+        return v3fVec;
+    }
 }
 
 Vec3.prototype.set = function() {
@@ -884,39 +872,37 @@ Vec3.prototype.clear = function() {
 ////////////////////////////////////////////////////////////
 
 function Vec4(){
-    'use strict';
-    var pData = this.pData = new Float32Array(4);
-    
-    //без аргументов инициализируется нулями, а
-    //массив уже заполнен нулями
+    //'use strict';
 
-    if(arguments.length == 1){
-        if(typeof(arguments[0]) == "number"){
-            pData.X = pData.Y = pData.Z = pData.W = arguments[0];
+    var v4fVec;
+
+    if(this === window){
+        v4fVec = Vec4._pStorage[Vec4._iIndex++];
+        if(Vec4._iIndex == Vec4._nStorageSize){
+            Vec4._iIndex = 0;
         }
-        else if(arguments[0] instanceof Vec4){
-            var pData2 = arguments[0].pData;
-            pData.X = pData2.X;
-            pData.Y = pData2.Y;
-            pData.Z = pData2.Z;
-            pData.W = pData2.W;
-        }
-        else{
-            var pElements = arguments[0];
-            pData.X = pElements.X;
-            pData.Y = pElements.Y;
-            pData.Z = pElements.Z;
-            pData.W = pElements.W;
+        //clear
+        if(arguments.length == 0){
+            var pData = v4fVec.pData;
+            pData.X = pData.Y = pData.Z = pData.W = 0;
         }
     }
-    else if(arguments.length != 0){
-        pData.X = arguments.X;
-        pData.Y = arguments.Y;
-        pData.Z = arguments.Z;
-        pData.W = arguments.W;
+    else{
+        this.pData = new Float32Array(4);
+        v4fVec = this;
     }
 
-    return this;
+    var nArgumentsLength = arguments.length;
+
+    if(nArgumentsLength == 1){
+        return v4fVec.set(arguments[0]);
+    }
+    else if(nArgumentsLength == 4){
+        return v4fVec.set(arguments[0],arguments[1],arguments[2],arguments[3]);
+    }
+    else{
+        return v4fVec;
+    }
 }
 
 Vec4.prototype.set = function() {
@@ -1301,23 +1287,43 @@ Vec4.prototype.clear = function() {
 ////////////////////////////////////////////////////////////
 
 function Mat3(){
-    'use strict';
-    this.pData = new Float32Array(9);
+    //'use strict';
+
+    var m3fMat;
+
+    if(this === window){
+        m3fMat = Mat3._pStorage[Mat3._iIndex++];
+        if(Mat3._iIndex == Mat3._nStorageSize){
+            Mat3._iIndex = 0;
+        }        
+
+        //clear
+        if(arguments.length == 0){
+            var pData = m3fMat.pData;
+            pData.a11 = pData.a12 = pData.a13 = 
+            pData.a21 = pData.a22 = pData.a23 = 
+            pData.a31 = pData.a32 = pData.a33 = 0;
+        }
+    }
+    else{
+        this.pData = new Float32Array(9);
+        m3fMat = this;
+    }
 
     var nArgumentsLength = arguments.length;
     if(nArgumentsLength == 1){
-        return this.set(arguments[0]);    
+        return m3fMat.set(arguments[0]);    
     }
     else if(nArgumentsLength == 3){
-        return this.set(arguments[0],arguments[1],arguments[2]);    
+        return m3fMat.set(arguments[0],arguments[1],arguments[2]);    
     }
     else if(nArgumentsLength == 9){
-        return this.set(arguments[0],arguments[1],arguments[2],
+        return m3fMat.set(arguments[0],arguments[1],arguments[2],
                         arguments[3],arguments[4],arguments[5],
                         arguments[6],arguments[7],arguments[8]);    
     }
     else{
-        return this;
+        return m3fMat;
     }
 }
 
@@ -1768,8 +1774,12 @@ Mat3.prototype.inverse = function(m3fDestination) {
 
     var fDeterminant = a11*A11 - a12 * A12 + a13 * A13;
 
-    debug_assert(fDeterminant != 0,"обращение матрицы с нулевым детеминантом:\n" 
-                                + this.toString());
+    if(fDeterminant == 0){
+        debug_assert(0,"обращение матрицы с нулевым детеминантом:\n" 
+                    + this.toString());
+
+        return m3fDestination.set(1);//чтоб все не навернулось
+    }
 
     var fInverseDeterminant = 1./fDeterminant;
 
@@ -1848,10 +1858,10 @@ Mat3.prototype.toQuat4 = function(q4fDestination) {
 /**
  * строит матрицу поворота через углы Эйлера
  * матрица строится из последовательных вращений по осям и равносильна следующему
- * resultMatrix = rotateZ(fAlpha) * rotateX(fBeta) * rotateZ(fGamma)
+ * resultMatrix = rotateY(fYaw) * rotateX(fPitch) * rotateZ(fRoll)
  */
 
-Mat3.fromEulerAngles = function(fAlpha,fBeta,fGamma,m3fDestination) {
+Mat3.fromYawPitchRoll = function(fYaw,fPitch,fRoll,m3fDestination) {
     'use strict';
     if(!m3fDestination){
         m3fDestination = new Mat3();
@@ -1859,62 +1869,37 @@ Mat3.fromEulerAngles = function(fAlpha,fBeta,fGamma,m3fDestination) {
 
     var pDataDestination = m3fDestination.pData;
 
-    var fSinA = Math.sin(fAlpha);
-    var fSinB = Math.sin(fBeta);
-    var fSinG = Math.sin(fGamma);
+    var fSin1 = Math.sin(fYaw);
+    var fSin2 = Math.sin(fPitch);
+    var fSin3 = Math.sin(fRoll);
 
-    var fCosA = Math.cos(fAlpha);
-    var fCosB = Math.cos(fBeta);
-    var fCosG = Math.cos(fGamma);
+    var fCos1 = Math.cos(fYaw);
+    var fCos2 = Math.cos(fPitch);
+    var fCos3 = Math.cos(fRoll);
 
-    pDataDestination.a11 = fCosA * fCosG - fSinA * fCosB * fSinG;
-    pDataDestination.a12 = -fCosA * fSinG - fSinA * fCosB * fCosG;
-    pDataDestination.a13 = fSinA * fSinB;
+    pDataDestination.a11 = fCos1 * fCos3 + fSin1 * fSin2 * fSin3;
+    pDataDestination.a12 = fCos3 * fSin1 * fSin2 - fCos1 * fSin3;
+    pDataDestination.a13 = fCos2 * fSin1;
 
-    pDataDestination.a21 = fSinA*fCosG + fCosA * fCosB * fSinG;
-    pDataDestination.a22 = -fSinA*fSinG + fCosA*fCosB*fCosG;
-    pDataDestination.a23 = -fCosA*fSinB;
+    pDataDestination.a21 = fCos2 * fSin3;
+    pDataDestination.a22 = fCos2 * fCos3;
+    pDataDestination.a23 = -fSin2;
 
-    pDataDestination.a31 = fSinB*fSinG;
-    pDataDestination.a32 = fSinB*fCosG;
-    pDataDestination.a33 = fCosB;
+    pDataDestination.a31 = fCos1 * fSin2 * fSin3 - fCos3 * fSin1;
+    pDataDestination.a32 = fSin1 * fSin3 + fCos1 * fCos3 * fSin2;
+    pDataDestination.a33 = fCos1 * fCos2;
 
     return m3fDestination;
 };
 
 /**
  * строит матрицу поворота через углы поворота вокруг осей X Y Z
- * resultMatrix = rotate(fX) * rotate(fY) * rotate(fZ);
+ * resultMatrix = rotateY(fY) * rotateX(fX) * rotateZ(fZ);
+ * порядок именно такой для согласования с yaw pitch roll
  */
-Mat3.fromXYZ = function(fX,fY,fZ,m3fDestination){
-    if(!m3fDestination){
-        m3fDestination = new Mat3();
-    }
-
-    var pDataDestination = m3fDestination.pData;
-
-    var fSinX = Math.sin(fX);
-    var fSinY = Math.sin(fY);
-    var fSinZ = Math.sin(fZ);
-
-    var fCosX = Math.cos(fX);
-    var fCosY = Math.cos(fY);
-    var fCosZ = Math.cos(fZ);
-
-    pDataDestination.a11 = fCosY * fCosZ;
-    pDataDestination.a12 = -fCosY * fSinZ;
-    pDataDestination.a13 = fSinY;
-
-    pDataDestination.a21 = fSinX * fSinY * fCosZ + fCosX * fSinZ;
-    pDataDestination.a22 = -fSinX * fSinY * fSinZ + fCosX * fCosZ;
-    pDataDestination.a23 = -fSinX * fCosY;
-
-    pDataDestination.a31 = -fCosX * fSinY * fCosZ + fSinX * fSinZ;
-    pDataDestination.a32 = fCosX * fSinY * fSinZ + fSinX * fCosZ;
-    pDataDestination.a33 = fCosX * fCosY;
-
-    return m3fDestination;
-};
+Define(Mat3.fromXYZ(fX,fY,fZ), function () {
+    Mat3.fromYawPitchRoll(fY,fX,fZ);
+})
 
 /*
  * Mat3.toString
@@ -1977,24 +1962,45 @@ Mat3.prototype.isEqual = function(m3fMat,fEps) {
  */
 
 function Mat4(){
-    'use strict';
-    this.pData = new Float32Array(16);
+    //'use strict';
+
+    var m4fMat;
+
+    if(this === window){
+        m4fMat = Mat4._pStorage[Mat4._iIndex++];
+        if(Mat4._iIndex == Mat4._nStorageSize){
+            Mat4._iIndex = 0;
+        }
+
+        //clear
+        if(arguments.length == 0){
+            var pData = m4fMat.pData;
+            pData._11 = pData._12 = pData._13 = pData._14 = 
+            pData._21 = pData._22 = pData._23 = pData._24 = 
+            pData._31 = pData._32 = pData._33 = pData._34 = 
+            pData._41 = pData._42 = pData._43 = pData._44 = 0;
+        }
+    }
+    else{
+        this.pData = new Float32Array(16);
+        m4fMat = this;
+    }
 
     var nArgumentsLength = arguments.length;
     if(nArgumentsLength == 1){
-        return this.set(arguments[0]);
+        return m4fMat.set(arguments[0]);
     }
     else if(nArgumentsLength == 4){
-        return this.set(arguments[0],arguments[1],arguments[2],arguments[3]);    
+        return m4fMat.set(arguments[0],arguments[1],arguments[2],arguments[3]);    
     }
     else if(nArgumentsLength == 16){
-        return this.set(arguments[0],arguments[1],arguments[2],arguments[3],
+        return m4fMat.set(arguments[0],arguments[1],arguments[2],arguments[3],
                     arguments[4],arguments[5],arguments[6],arguments[7],
                     arguments[8],arguments[9],arguments[10],arguments[11],
                     arguments[12],arguments[13],arguments[14],arguments[15]);    
     }
     else{
-        return this;
+        return m4fMat;
     }
 }
 
@@ -2398,8 +2404,12 @@ Mat4.prototype.inverse = function(m4fDestination) {
 
     var fDeterminant = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
 
-    debug_assert(fDeterminant != 0,"обращение матрицы с нулевым детеминантом:\n" 
-                                + this.toString());
+    if(fDeterminant == 0){
+        debug_assert(0,"обращение матрицы с нулевым детеминантом:\n" 
+                        + this.toString());
+
+        return m4fDestination.set(1); //чтоб все не навернулось
+    }
 
     var fInverseDeterminant = 1/fDeterminant;
 
@@ -3418,6 +3428,156 @@ Mat4.prototype.rotateZLeft = function(fAngle,m4fDestination) {
     return m4fDestination;
 };
 
+Mat4.prototype.row = function(iRow) {
+    'use strict';
+
+    var pData = this.pData;
+    switch(iRow){
+        case 1 : 
+            return new Vec4(pData._11,pData._12,pData._13,pData._14);
+        case 2 :
+            return new Vec4(pData._21,pData._22,pData._23,pData._24);
+        case 3 : 
+            return new Vec4(pData._31,pData._32,pData._33,pData._34);
+        case 4 :
+            return new Vec4(pData._41,pData._42,pData._43,pData._44);
+    }
+};
+
+Mat4.prototype.column = function(iColumn) {
+    'use strict';
+    var pData = this.pData;
+    switch(iColumn){
+        case 1 : 
+            return new Vec4(pData._11,pData._21,pData._31,pData._41);
+        case 2 :
+            return new Vec4(pData._12,pData._22,pData._32,pData._42);
+        case 3 : 
+            return new Vec4(pData._13,pData._23,pData._33,pData._43);
+        case 4 :
+            return new Vec4(pData._14,pData._24,pData._34,pData._44);
+    }
+};
+
+Mat4.prototype.toQuat4 = function(q4fDestination) {
+    'use strict';
+    
+    if(!q4fDestination){
+        q4fDestination = new Quat4();
+    }
+
+    var pData = this.pData;
+    var pDataDestination = q4fDestination.pData;
+
+    var a11 = pData._11, a12 = pData._12, a13 = pData._13;
+    var a21 = pData._21, a22 = pData._22, a23 = pData._23;
+    var a31 = pData._31, a32 = pData._32, a33 = pData._33;
+
+    var x2 = ((a11 - a22 - a33) + 1)/4; //x^2
+    var y2 = ((a22 - a11 - a33) + 1)/4; //y^2
+    var z2 = ((a33 - a11 - a22) + 1)/4; //z^2
+    var w2 = ((a11 + a22 + a33) + 1)/4; //w^2
+
+    var fMax = Math.max(x2,Math.max(y2,Math.max(z2,w2)));
+
+    if(fMax == x2){
+        var x = Math.sqrt(x2); //максимальная компонента берется положительной
+
+        pDataDestination.X = x;
+        pDataDestination.Y = (a21 + a12)/4/x;
+        pDataDestination.Z = (a31 + a13)/4/x;
+        pDataDestination.W = (a32 - a23)/4/x;
+    }
+    else if(fMax == y2){
+        var y = Math.sqrt(y2); //максимальная компонента берется положительной
+
+        pDataDestination.X = (a21 + a12)/4/y;
+        pDataDestination.Y = y;
+        pDataDestination.Z = (a32 + a23)/4/y;
+        pDataDestination.W = (a13 - a31)/4/y;
+    }
+    else if(fMax == z2){
+        var z = Math.sqrt(z2); //максимальная компонента берется положительной
+
+        pDataDestination.X = (a31 + a13)/4/z;
+        pDataDestination.Y = (a32 + a23)/4/z;
+        pDataDestination.Z = z;
+        pDataDestination.W = (a21 - a12)/4/z;
+    }
+    else{
+        var w = Math.sqrt(w2); //максимальная компонента берется положительной
+
+        pDataDestination.X = (a32 - a23)/4/w;
+        pDataDestination.Y = (a13 - a31)/4/w;
+        pDataDestination.Z = (a21 - a12)/4/w;
+        pDataDestination.W = w;
+    }
+
+    return q4fDestination;
+};
+
+Mat4.prototype.setTranslation = function(v3fVec) {
+    var pData1 = this.pData;
+    var pData2 = v3fVec.pData;
+
+    pData1._14 = pData2.X;
+    pData1._24 = pData2.Y;
+    pData1._34 = pData2.Z;
+
+    return this;
+};
+
+Mat4.prototype.toInverseMat3 = function(m3fDestination) {
+    'use strict';
+    if(!m3fDestination){
+        m3fDestination = new Mat3();
+    }
+
+    var pData = this.pData;
+    var pDataDestination = m3fDestination.pData;
+
+    var a11 = pData._11, a12 = pData._12, a13 = pData._13;
+    var a21 = pData._21, a22 = pData._22, a23 = pData._23;
+    var a31 = pData._31, a32 = pData._32, a33 = pData._33;
+
+    var A11 = a22 * a33 - a23 * a32;
+    var A12 = a21 * a33 - a23 * a31;
+    var A13 = a21 * a32 - a22 * a31;
+
+    var A21 = a12 * a33 - a13 * a32;
+    var A22 = a11 * a33 - a13 * a31;
+    var A23 = a11 * a32 - a12 * a31;
+
+    var A31 = a12 * a23 - a13 * a22;
+    var A32 = a11 * a23 - a13 * a21;
+    var A33 = a11 * a22 - a12 * a21;
+
+    var fDeterminant = a11*A11 - a12 * A12 + a13 * A13;
+
+    if(fDeterminant == 0){
+        debug_assert(0,"обращение матрицы с нулевым детеминантом:\n" 
+                        + this.toString());
+
+        return m3fDestination.set(1); //чтобы все не навернулось
+    }
+
+    var fInverseDeterminant = 1./fDeterminant;
+
+    pDataDestination.a11 = A11 * fInverseDeterminant;
+    pDataDestination.a12 = -A21 * fInverseDeterminant;
+    pDataDestination.a13 = A31 * fInverseDeterminant;
+
+    pDataDestination.a21 = -A12 * fInverseDeterminant;
+    pDataDestination.a22 = A22 * fInverseDeterminant;
+    pDataDestination.a23 = -A32 * fInverseDeterminant;
+
+    pDataDestination.a31 = A13 * fInverseDeterminant;
+    pDataDestination.a32 = -A23 * fInverseDeterminant;
+    pDataDestination.a33 = A33 * fInverseDeterminant;
+
+    return m3fDestination;
+};
+
 /*
  * Mat4.frustum
  * Generates a frustum matrix with the given bounds
@@ -3648,136 +3808,31 @@ Mat4.lookAt = function (v3fEye, v3fCenter, v3fUp, m4fDestination) {
     return m4fDestination;
 };
 
-Mat4.prototype.row = function(iRow) {
-    'use strict';
+// /**
+//  * D3DVec3TransformCoord
+//  * @tparam Float32Array v3fOut Out Vector
+//  * @tparam Float32Array v3fIn In Vector
+//  * @tparam Float32Array m4fM Matrix
+//  * @treturn Float32Array Out vector
+//  */
+// function vec3TransformCoord (v3fIn, m4fM, v3fOut) {
+//     if (!v3fOut) {
+//         v3fOut = Vec3.create();
+//     }
 
-    var pData = this.pData;
-    switch(iRow){
-        case 1 : 
-            return new Vec4(pData._11,pData._12,pData._13,pData._14);
-        case 2 :
-            return new Vec4(pData._21,pData._22,pData._23,pData._24);
-        case 3 : 
-            return new Vec4(pData._31,pData._32,pData._33,pData._34);
-        case 4 :
-            return new Vec4(pData._41,pData._42,pData._43,pData._44);
-    }
-};
+//     var x, y, z, w;
+//     x = v3fIn.X * m4fM._11 + v3fIn.Y * m4fM._12 + v3fIn.Z * m4fM._13 + m4fM._14;
+//     y = v3fIn.X * m4fM._21 + v3fIn.Y * m4fM._22 + v3fIn.Z * m4fM._23 + m4fM._24;
+//     z = v3fIn.X * m4fM._31 + v3fIn.Y * m4fM._32 + v3fIn.Z * m4fM._33 + m4fM._34;
+//     w = v3fIn.X * m4fM._41 + v3fIn.Y * m4fM._42 + v3fIn.Z * m4fM._43 + m4fM._44;
 
-Mat4.prototype.column = function(iColumn) {
-    'use strict';
-    var pData = this.pData;
-    switch(iColumn){
-        case 1 : 
-            return new Vec4(pData._11,pData._21,pData._31,pData._41);
-        case 2 :
-            return new Vec4(pData._12,pData._22,pData._32,pData._42);
-        case 3 : 
-            return new Vec4(pData._13,pData._23,pData._33,pData._43);
-        case 4 :
-            return new Vec4(pData._14,pData._24,pData._34,pData._44);
-    }
-};
+//     v3fOut.X = x / w;
+//     v3fOut.Y = y / w;
+//     v3fOut.Z = z / w;
 
-Mat4.prototype.toQuat4 = function(q4fDestination) {
-    'use strict';
-    
-    if(!q4fDestination){
-        q4fDestination = new Quat4();
-    }
-
-    var pData = this.pData;
-    var pDataDestination = q4fDestination.pData;
-
-    var a11 = pData._11, a12 = pData._12, a13 = pData._13;
-    var a21 = pData._21, a22 = pData._22, a23 = pData._23;
-    var a31 = pData._31, a32 = pData._32, a33 = pData._33;
-
-    var x2 = ((a11 - a22 - a33) + 1)/4; //x^2
-    var y2 = ((a22 - a11 - a33) + 1)/4; //y^2
-    var z2 = ((a33 - a11 - a22) + 1)/4; //z^2
-    var w2 = ((a11 + a22 + a33) + 1)/4; //w^2
-
-    var fMax = Math.max(x2,Math.max(y2,Math.max(z2,w2)));
-
-    if(fMax == x2){
-        var x = Math.sqrt(x2); //максимальная компонента берется положительной
-
-        pDataDestination.X = x;
-        pDataDestination.Y = (a21 + a12)/4/x;
-        pDataDestination.Z = (a31 + a13)/4/x;
-        pDataDestination.W = (a32 - a23)/4/x;
-    }
-    else if(fMax == y2){
-        var y = Math.sqrt(y2); //максимальная компонента берется положительной
-
-        pDataDestination.X = (a21 + a12)/4/y;
-        pDataDestination.Y = y;
-        pDataDestination.Z = (a32 + a23)/4/y;
-        pDataDestination.W = (a13 - a31)/4/y;
-    }
-    else if(fMax == z2){
-        var z = Math.sqrt(z2); //максимальная компонента берется положительной
-
-        pDataDestination.X = (a31 + a13)/4/z;
-        pDataDestination.Y = (a32 + a23)/4/z;
-        pDataDestination.Z = z;
-        pDataDestination.W = (a21 - a12)/4/z;
-    }
-    else{
-        var w = Math.sqrt(w2); //максимальная компонента берется положительной
-
-        pDataDestination.X = (a32 - a23)/4/w;
-        pDataDestination.Y = (a13 - a31)/4/w;
-        pDataDestination.Z = (a21 - a12)/4/w;
-        pDataDestination.W = w;
-    }
-
-    return q4fDestination;
-};
-
-/*
- * Mat4.toInverseMat3
- * Calculates the inverse of the upper 3x3 elements of a Mat4 and copies the result into a Mat3
- * The resulting matrix is useful for calculating transformed normals
- *
- * Params:
- * mat - Mat4 containing values to invert and copy
- * dest - Optional, Mat3 receiving values
- *
- * Returns:
- * dest is specified, a new Mat3 otherwise
- */
-// Mat4.toInverseMat3 = function (mat, dest) {
-//     // Cache the matrix values (makes for huge speed increases!)
-//     var a00 = mat[0], a01 = mat[1], a02 = mat[2];
-//     var a10 = mat[4], a11 = mat[5], a12 = mat[6];
-//     var a20 = mat[8], a21 = mat[9], a22 = mat[10];
-
-//     var b01 = a22 * a11 - a12 * a21;
-//     var b11 = -a22 * a10 + a12 * a20;
-//     var b21 = a21 * a10 - a11 * a20;
-
-//     var d = a00 * b01 + a01 * b11 + a02 * b21;
-//     if (!d) {return null;}
-//     var id = 1 / d;
-
-//     if (!dest) {dest = Mat3.create();}
-
-//     dest[0] = b01 * id;
-//     dest[1] = (-a22 * a01 + a02 * a21) * id;
-//     dest[2] = (a12 * a01 - a02 * a11) * id;
-//     dest[3] = b11 * id;
-//     dest[4] = (a22 * a00 - a02 * a20) * id;
-//     dest[5] = (-a12 * a00 + a02 * a10) * id;
-//     dest[6] = b21 * id;
-//     dest[7] = (-a21 * a00 + a01 * a20) * id;
-//     dest[8] = (a11 * a00 - a01 * a10) * id;
-
-//     return dest;
-// };
-
-
+//     return v3fOut;
+// }
+// ;
 
 
 /////////////////////////////////////////////////////////
@@ -3791,20 +3846,38 @@ Mat4.prototype.toQuat4 = function(q4fDestination) {
  */
 
 function Quat4 () {
-    'use strict';
-    this.pData = new Float32Array(4);
+    //'use strict';
+
+    var qQuat;
+    if(this === window){
+        qQuat = Quat4._pStorage[Quat4._iIndex++];
+        if(Quat4._iIndex == Quat4._nStorageSize){
+            Quat4._iIndex = 0;
+        }
+
+        //clear
+        if(arguments.length == 0){
+            var pData = qQuat.pData;
+            pData.X = pData.Y = pData.Z = 0;
+            pData.W = 1;
+        }
+    }
+    else{
+        this.pData = new Float32Array(4);
+        qQuat = this;
+    }
 
     var nArgumentsLength = arguments.length;
 
     if(nArgumentsLength == 1){
-        return this.set(arguments[0]);
+        return qQuat.set(arguments[0]);
     }
     else if(nArgumentsLength == 4){
-        return this.set(arguments[0],arguments[1],arguments[2],arguments[3]);
+        return qQuat.set(arguments[0],arguments[1],arguments[2],arguments[3]);
     }
     else{
-        this.pData.W = 1;
-        return this;
+        qQuat.pData.W = 1;
+        return qQuat;
     }
 }
 
@@ -4151,9 +4224,9 @@ Quat4.fromAxisAngle = function(v3fAxis,fAngle,q4fDestination){
 /**
  * строит кватернион поворота через углы Эйлера
  * матрица на основе углов эйлера равна
- * resultMatrix = rotateZ(fAlpha) * rotateX(fBeta) * rotateZ(fGamma)
+ * resultMatrix = rotateY(fYaw) * rotateX(fPitch) * rotateZ(fRoll)
  */
-Quat4.fromEulerAngles = function(fAlpha,fBeta,fGamma,q4fDestination) {
+Quat4.fromYawPitchRoll = function(fYaw,fPitch,fRoll,q4fDestination) {
     'use strict';
     if(!q4fDestination){
         q4fDestination = new Quat4();
@@ -4161,11 +4234,11 @@ Quat4.fromEulerAngles = function(fAlpha,fBeta,fGamma,q4fDestination) {
 
     //var pDataDestination = q4fDestination.pData;
 
-    var qQuatA = new Quat4(0.,0.,Math.sin(fAlpha/2),Math.cos(fAlpha/2));
-    var qQuatB = new Quat4(Math.sin(fBeta/2),0.,0.,Math.cos(fBeta/2));
-    var qQuatG = new Quat4(0.,0.,Math.sin(fGamma/2),Math.cos(fGamma/2));
+    var qQuatY = Quat4(0.,Math.sin(fYaw/2),0.,Math.cos(fYaw/2));
+    var qQuatP = Quat4(Math.sin(fPitch/2),0.,0.,Math.cos(fPitch/2));
+    var qQuatR = Quat4(0.,0.,Math.sin(fRoll/2),Math.cos(fRoll/2));
 
-    return qQuatA.multiply(qQuatB.multiply(qQuatG),q4fDestination)
+    return qQuatY.multiply(qQuatP.multiply(qQuatR),q4fDestination)
 };
 
 /**
@@ -4173,18 +4246,11 @@ Quat4.fromEulerAngles = function(fAlpha,fBeta,fGamma,q4fDestination) {
  * аналогичная матрица строится как
  * resultMatrix = rotate(fX) * rotate(fY) * rotate(fZ);
  */
-Quat4.fromXYZ = function(fX,fY,fZ,q4fDestination) {
-    'use strict';
-    if(!q4fDestination){
-        q4fDestination = new Quat4();
-    }
 
-    var qQuatX = new Quat4(Math.sin(fX/2),0.,0.,Math.cos(fX/2));
-    var qQuatY = new Quat4(0.,Math.sin(fY/2),0.,Math.cos(fY/2));
-    var qQuatZ = new Quat4(0.,0.,Math.sin(fZ/2),Math.cos(fZ/2));
-
-    return qQuatX.multiply(qQuatY.multiply(qQuatZ),q4fDestination);
-};
+Define(Quat4.fromXYZ(fX,fY,fZ),
+    function(){
+        Quat4.fromYawPitchRoll(fY,fX,fZ);
+    })
 
 /*
  * Quat4.toMat3
@@ -4372,32 +4438,67 @@ Quat4.prototype.toString = function() {
 //     return dest;
 // }
 
-// //D3D functions
+(function(){
+    var nStorageSize = 100;
 
-// /**
-//  * D3DVec3TransformCoord
-//  * @tparam Float32Array v3fOut Out Vector
-//  * @tparam Float32Array v3fIn In Vector
-//  * @tparam Float32Array m4fM Matrix
-//  * @treturn Float32Array Out vector
-//  */
-// function vec3TransformCoord (v3fIn, m4fM, v3fOut) {
-//     if (!v3fOut) {
-//         v3fOut = Vec3.create();
-//     }
+    Vec2._nStorageSize = nStorageSize;
+    Vec2._pStorage = new Array(Vec2._nStorageSize);
+    Vec2._iIndex = 0;
 
-//     var x, y, z, w;
-//     x = v3fIn.X * m4fM._11 + v3fIn.Y * m4fM._12 + v3fIn.Z * m4fM._13 + m4fM._14;
-//     y = v3fIn.X * m4fM._21 + v3fIn.Y * m4fM._22 + v3fIn.Z * m4fM._23 + m4fM._24;
-//     z = v3fIn.X * m4fM._31 + v3fIn.Y * m4fM._32 + v3fIn.Z * m4fM._33 + m4fM._34;
-//     w = v3fIn.X * m4fM._41 + v3fIn.Y * m4fM._42 + v3fIn.Z * m4fM._43 + m4fM._44;
+    var pStorage = Vec2._pStorage;
+    for(var i=0;i<Vec2._nStorageSize;i++){
+        pStorage[i] = new Vec2();
+    }
 
-//     v3fOut.X = x / w;
-//     v3fOut.Y = y / w;
-//     v3fOut.Z = z / w;
+    Vec3._nStorageSize = nStorageSize;
+    Vec3._pStorage = new Array(Vec3._nStorageSize);
+    Vec3._iIndex = 0;
 
-//     return v3fOut;
-// }
-// ;
-// Vec3.vec3TransformCoord = vec3TransformCoord;
+    var pStorage = Vec3._pStorage;
+    for(var i=0;i<Vec3._nStorageSize;i++){
+        pStorage[i] = new Vec3();
+    }
 
+    Vec4._nStorageSize = nStorageSize;
+    Vec4._pStorage = new Array(Vec4._nStorageSize);
+    Vec4._iIndex = 0;
+
+    var pStorage = Vec4._pStorage;
+    for(var i=0;i<Vec4._nStorageSize;i++){
+        pStorage[i] = new Vec4();
+    }    
+
+    Mat3._nStorageSize = nStorageSize;
+    Mat3._pStorage = new Array(Mat3._nStorageSize);
+    Mat3._iIndex = 0;
+
+    var pStorage = Mat3._pStorage;
+    for(var i=0;i<Mat3._nStorageSize;i++){
+        pStorage[i] = new Mat3();
+    }
+
+    Mat4._nStorageSize = nStorageSize;
+    Mat4._pStorage = new Array(Mat4._nStorageSize);
+    Mat4._iIndex = 0;
+
+    var pStorage = Mat4._pStorage;
+    for(var i=0;i<Mat4._nStorageSize;i++){
+        pStorage[i] = new Mat4();
+    }
+
+    Quat4._nStorageSize = nStorageSize;
+    Quat4._pStorage = new Array(Quat4._nStorageSize);
+    Quat4._iIndex = 0;
+
+    var pStorage = Quat4._pStorage;
+    for(var i=0;i<Quat4._nStorageSize;i++){
+        pStorage[i] = new Quat4();
+    }
+})();
+
+Mat4.prototype.translate = Mat4.prototype.translateLeft;
+Mat4.prototype.scale = Mat4.prototype.scale;
+Mat4.prototype.rotate = Mat4.prototype.rotateLeft;
+Mat4.prototype.rotateX = Mat4.prototype.rotateXLeft;
+Mat4.prototype.rotateY = Mat4.prototype.rotateYLeft;
+Mat4.prototype.rotateZ = Mat4.prototype.rotateZLeft;
