@@ -14,7 +14,7 @@ function Animation (sName) {
 	this._fDuration = 0;
 }
 
-EXTENDS(Animation, Array);
+EXTENDS(Animation, Array, a.AnimationBase);
 
 PROPERTY(Animation, 'name',
 	function () {

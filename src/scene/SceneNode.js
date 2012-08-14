@@ -39,9 +39,9 @@ SceneNode.prototype.create = function () {
     this._m3fNormalMatrix       = new Mat3;
     
     this._v3fWorldPosition  = new Vec3();
-    this._v3fTranslation    = new Vec3(0, 0, 0);
-    this._v3fScale          = new Vec3(1, 1, 1);
-    this._qRotation         = new Quaternion(0, 0, 0, 1);
+    this._v3fTranslation    = new Vec3(0);
+    this._v3fScale          = new Vec3(1);
+    this._qRotation         = new Quat4(0, 1);
 
     return true;
 };

@@ -240,11 +240,11 @@ AnimationTransformation.prototype.interpolate = function (pStartFrame, pEndFrame
 	var fValue;
 	
 	for (var i = 0; i < 16; i++) {
-		fValue = ((pEndFrame.pValue[i] * fBlend) + ((1. - fBlend) * pStartFrame.pValue[i]));
+		fValue = ((pEndFrame.pValue.pData[i] * fBlend) + ((1. - fBlend) * pStartFrame.pValue.pData[i]));
 		//fValue = fValue * fWeight;
 
 		//pLocalMatrix[i] = bAdd? pLocalMatrix[i] + fValue: fValue;
-		pLocalMatrix[i] = fValue;
+		pLocalMatrix.pData[i] = fValue;
 	};
 };
 

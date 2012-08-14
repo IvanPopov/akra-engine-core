@@ -115,7 +115,7 @@ ModelResource.prototype.loadResource = function (sFilename, pOptions) {
         
         me._nFilesToBeLoaded ++;
 
-        pOptions = pOptions || {};
+        pOptions = pOptions || {drawJoints: true, wireframe: true};
         pOptions.file = sFilename;
         pOptions.modelResource = this;
 

@@ -153,9 +153,9 @@ OcTree.prototype.create = function (pWorldBoundingBox, iDepth, nNode) {
     v3fTemp = pWorldBoundingBox.minPoint().negate();
     this._v3fWorldOffset.set(v3fTemp);
 
-    this._v3fWorldScale.X = 1024.0 / this._v3fWorldExtents.X;
-    this._v3fWorldScale.Y = 1024.0 / this._v3fWorldExtents.Y;
-    this._v3fWorldScale.Z = 1024.0 / this._v3fWorldExtents.Z;
+    this._v3fWorldScale.x = 1024.0 / this._v3fWorldExtents.x;
+    this._v3fWorldScale.y = 1024.0 / this._v3fWorldExtents.y;
+    this._v3fWorldScale.z = 1024.0 / this._v3fWorldExtents.z;
 
     // allocate the nodes
     this._ppLevelNodes = new Array(iDepth);
@@ -245,19 +245,22 @@ OcTree.prototype.addOrUpdateSceneObject = function (pNewNode) {
         iY0 = pRect.fY0, iY1 = pRect.fY1,
         iZ0 = pRect.fZ0, iZ1 = pRect.fZ1;
 
-    iX0 += this._v3fWorldOffset.X;
-    iX1 += this._v3fWorldOffset.X;
-    iY0 += this._v3fWorldOffset.Y;
-    iY1 += this._v3fWorldOffset.Y;
-    iZ0 += this._v3fWorldOffset.Z;
-    iZ1 += this._v3fWorldOffset.Z;
+    var pWorldOffsetData = this._v3fWorldOffset.pData;
+    var pWorldScaleData = this._v3fWorldScale.pData;
 
-    iX0 *= this._v3fWorldScale.X;
-    iX1 *= this._v3fWorldScale.X;
-    iY0 *= this._v3fWorldScale.Y;
-    iY1 *= this._v3fWorldScale.Y;
-    iZ0 *= this._v3fWorldScale.Z;
-    iZ1 *= this._v3fWorldScale.Z;
+    iX0 += pWorldOffsetData.X;
+    iX1 += pWorldOffsetData.X;
+    iY0 += pWorldOffsetData.Y;
+    iY1 += pWorldOffsetData.Y;
+    iZ0 += pWorldOffsetData.Z;
+    iZ1 += pWorldOffsetData.Z;
+
+    iX0 *= pWorldScaleData.X;
+    iX1 *= pWorldScaleData.X;
+    iY0 *= pWorldScaleData.Y;
+    iY1 *= pWorldScaleData.Y;
+    iZ0 *= pWorldScaleData.Z;
+    iZ1 *= pWorldScaleData.Z;
 
     iX0 = iX0 << 0;
     iX1 = iX1 << 0;
@@ -311,7 +314,7 @@ OcTree.prototype.deleteNodeFromTree = function (pNode) {
 OcTree.prototype.buildSearchResults = function (pWorldRect, pOptionalFrustum) {
     var pResultListStart = null; //SceneObject
     var pResultListEnd = null; //SceneObject
-    var pByteRect = new OcTreeRect();
+    var pByteRect = OcTreeRect();
     this.buildByteRect(pWorldRect, pByteRect);
 
     var iLevel = 0;
@@ -319,8 +322,7 @@ OcTree.prototype.buildSearchResults = function (pWorldRect, pOptionalFrustum) {
     var pLocalRect;
 
     var pObject = null;
-    var pResult = new a.Rect3d();
-
+    var pResult = a.Rect3d();
     var pNode = null;
     var i;
     //Fill testlocalRect
@@ -372,6 +374,7 @@ OcTree.prototype.buildSearchResults = function (pWorldRect, pOptionalFrustum) {
                 }
                 continue;
             }
+
             //Real node rect not in frustum -> there are no members to add
             if (pNode.pNodeTrueRect.isClear()) {
                 //pNode.pNodeTrueRect = pNode.nodeCoords();
@@ -380,6 +383,7 @@ OcTree.prototype.buildSearchResults = function (pWorldRect, pOptionalFrustum) {
             if (!pOptionalFrustum.testRect(pNode.pNodeTrueRect)) {
                 continue;
             }
+
             //All ok -> test each member to rect and frustum
             for (pObject = pNode.pFirstMember; pObject; pObject = pObject._pForwardTreeLink) {
                 if (a.intersectRect3d(pWorldRect, pObject.worldBounds(), pResult)) {
@@ -460,6 +464,7 @@ OcTree.prototype.buildSearchResults = function (pWorldRect, pOptionalFrustum) {
  * Constructor
  */
 function OcTreeRect () {
+    A_CHECK_STORAGE();
     /**
      * x0
      * @type Int
@@ -510,7 +515,10 @@ function OcTreeRect () {
     }
     ;
 }
-;
+
+
+a.allocateStorage(OcTreeRect, 8);
+
 /**
  * Convert Rect3d to byte rect
  * @tparam Rect3d pWorldRect

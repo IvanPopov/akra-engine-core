@@ -12,31 +12,58 @@ Define(X, __[0])
 Define(Y, __[1])
 Define(Z, __[2])
 Define(W, __[3])
+// Define(_11, __[0])
+// Define(_12, __[1])
+// Define(_13, __[2])
+// Define(_14, __[3])
+// Define(_21, __[4])
+// Define(_22, __[5])
+// Define(_23, __[6])
+// Define(_24, __[7])
+// Define(_31, __[8])
+// Define(_32, __[9])
+// Define(_33, __[10])
+// Define(_34, __[11])
+// Define(_41, __[12])
+// Define(_42, __[13])
+// Define(_43, __[14])
+// Define(_44, __[15])
+// 
 Define(_11, __[0])
-Define(_12, __[1])
-Define(_13, __[2])
-Define(_14, __[3])
-Define(_21, __[4])
+Define(_12, __[4])
+Define(_13, __[8])
+Define(_14, __[12])
+Define(_21, __[1])
 Define(_22, __[5])
-Define(_23, __[6])
-Define(_24, __[7])
-Define(_31, __[8])
-Define(_32, __[9])
+Define(_23, __[9])
+Define(_24, __[13])
+Define(_31, __[2])
+Define(_32, __[6])
 Define(_33, __[10])
-Define(_34, __[11])
-Define(_41, __[12])
-Define(_42, __[13])
-Define(_43, __[14])
+Define(_34, __[14])
+Define(_41, __[3])
+Define(_42, __[7])
+Define(_43, __[11])
 Define(_44, __[15])
 
+// Define(a11, __[0])
+// Define(a12, __[1])
+// Define(a13, __[2])
+// Define(a21, __[3])
+// Define(a22, __[4])
+// Define(a23, __[5])
+// Define(a31, __[6])
+// Define(a32, __[7])
+// Define(a33, __[8])
+
 Define(a11, __[0])
-Define(a12, __[1])
-Define(a13, __[2])
-Define(a21, __[3])
+Define(a12, __[3])
+Define(a13, __[6])
+Define(a21, __[1])
 Define(a22, __[4])
-Define(a23, __[5])
-Define(a31, __[6])
-Define(a32, __[7])
+Define(a23, __[7])
+Define(a31, __[2])
+Define(a32, __[5])
 Define(a33, __[8])
 
 //aliases
@@ -61,8 +88,9 @@ function Vec2(){
         }
         //clear
         if(arguments.length == 0){
-            var pData = v2fVec.pData;
-            pData.X = pData.Y = 0;
+            // var pData = v2fVec.pData;
+            // pData.X = pData.Y = 0;
+            return v2fVec;
         }
     }
     else{
@@ -464,8 +492,9 @@ function Vec3(){
 
         //clear
         if(arguments.length == 0){
-            var pData = v3fVec.pData;
-            pData.X = pData.Y = pData.Z = 0;
+            // var pData = v3fVec.pData;
+            // pData.X = pData.Y = pData.Z = 0;
+            return v3fVec;
         }
     }
     else{
@@ -997,8 +1026,9 @@ function Vec4(){
         }
         //clear
         if(arguments.length == 0){
-            var pData = v4fVec.pData;
-            pData.X = pData.Y = pData.Z = pData.W = 0;
+            // var pData = v4fVec.pData;
+            // pData.X = pData.Y = pData.Z = pData.W = 0;
+            return v4fVec;
         }
     }
     else{
@@ -1540,10 +1570,11 @@ function Mat3(){
 
         //clear
         if(arguments.length == 0){
-            var pData = m3fMat.pData;
-            pData.a11 = pData.a12 = pData.a13 = 
-            pData.a21 = pData.a22 = pData.a23 = 
-            pData.a31 = pData.a32 = pData.a33 = 0;
+            // var pData = m3fMat.pData;
+            // pData.a11 = pData.a12 = pData.a13 = 
+            // pData.a21 = pData.a22 = pData.a23 = 
+            // pData.a31 = pData.a32 = pData.a33 = 0;
+            return m3fMat;
         }
     }
     else{
@@ -2215,11 +2246,12 @@ function Mat4(){
 
         //clear
         if(arguments.length == 0){
-            var pData = m4fMat.pData;
-            pData._11 = pData._12 = pData._13 = pData._14 = 
-            pData._21 = pData._22 = pData._23 = pData._24 = 
-            pData._31 = pData._32 = pData._33 = pData._34 = 
-            pData._41 = pData._42 = pData._43 = pData._44 = 0;
+            // var pData = m4fMat.pData;
+            // pData._11 = pData._12 = pData._13 = pData._14 = 
+            // pData._21 = pData._22 = pData._23 = pData._24 = 
+            // pData._31 = pData._32 = pData._33 = pData._34 = 
+            // pData._41 = pData._42 = pData._43 = pData._44 = 0;
+            return m4fMat;
         }
     }
     else if (arguments.length === 2 && arguments[1] === true) {
@@ -2776,6 +2808,7 @@ Mat4.prototype.toString = function() {
                 + pData._41 + ", " + pData._42 + ', ' + pData._43 + ', ' + pData._44 + ']';
 };
 
+
 Mat4.prototype.isEqual = function(m4fMat,fEps) {
     'use strict';
 
@@ -3098,7 +3131,7 @@ Mat4.prototype.scaleLeft = function(v3fVec,m4fDestination) {
     var pData1 = this.pData;
     var pData2 = v3fVec.pData;
 
-    var x = pData1.X, y = pData1.Y, z = pData1.Z;
+    var x = pData2.X, y = pData2.Y, z = pData2.Z;
 
     if(!m4fDestination){
         pData1._11 *= x;
@@ -4156,9 +4189,10 @@ function Quat4 () {
 
         //clear
         if(arguments.length == 0){
-            var pData = qQuat.pData;
-            pData.X = pData.Y = pData.Z = 0;
-            pData.W = 1;
+            // var pData = qQuat.pData;
+            // pData.X = pData.Y = pData.Z = 0;
+            // pData.W = 1;
+            return qQuat;
         }
     }
     else{
@@ -4238,7 +4272,6 @@ Quat4.prototype.set = function() {
         }
         else{
             //vec3 float
-            
             var pElements = arguments[0].pData;
             pData.X = pElements.X;
             pData.Y = pElements.Y;
@@ -4761,7 +4794,7 @@ Quat4.prototype.slerp = function(q4fQuat,fA,q4fDestination) {
 
 
 Mat4.prototype.translate = Mat4.prototype.translateLeft;
-Mat4.prototype.scale = Mat4.prototype.scale;
+Mat4.prototype.scale = Mat4.prototype.scaleLeft;
 Mat4.prototype.rotate = Mat4.prototype.rotateLeft;
 Mat4.prototype.rotateX = Mat4.prototype.rotateXLeft;
 Mat4.prototype.rotateY = Mat4.prototype.rotateYLeft;
@@ -4775,3 +4808,4 @@ Vec4.prototype.mult = Vec4.prototype.multiply;
 Vec2.prototype.mult = Vec2.prototype.multiply;
 Quat4.prototype.mult = Quat4.prototype.multiply;
 Mat4.matrixPerspectiveFovRH = Mat4.perspective;
+Mat4.prototype.toSource = Mat4.prototype.toString;

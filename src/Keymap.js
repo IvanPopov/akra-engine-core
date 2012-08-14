@@ -12,7 +12,11 @@
  * @tparam Object Объект для прослушивания.
  * @note Как правило в качестве объекта прослушивания применяется document.
  */
-function Keymap (pElement) {
+function Keymap (pMouseTarget, pKeyboardTarget) {
+    'use strict';
+    
+    pKeyboardTarget = pKeyboardTarget || pMouseTarget;
+
     this.pMap = new Array(256);
     this.isAlt = false;
     this.isCtrl = false;
@@ -20,6 +24,10 @@ function Keymap (pElement) {
     this.isMouseDown = false;
     this.v2iMousePos = new Int16Array(2);
     this.v2iMouseLastPos = new Int16Array(2);
+
+    for (var i = 255; i--;) {
+        this.pMap[i] = false;
+    };
 
     Enum([
              BACKSPACE = 8,
@@ -45,36 +53,38 @@ function Keymap (pElement) {
              OPENBRACKET = 219, BACKSLASH, CLOSEBRACKET, SINGLEQUOTE
          ], KEY_CODES, a.KEY);
 
-    if (pElement) {
-        this.setTarget(pElement);
+    if (pMouseTarget) {
+        this.setTarget(pMouseTarget, pKeyboardTarget);
     }
 }
 
-Keymap.prototype.setTarget = function (pElement) {
+Keymap.prototype.setTarget = function (pMouseTarget, pKeyboardTarget) {
     'use strict';
+    
+    pKeyboardTarget = pKeyboardTarget || pMouseTarget;
 
     var me = this;
     var fnCallback = function (e) {
         me.dispatch(e);
     };
 
-    if (pElement.addEventListener) {
-        pElement.addEventListener("keydown", fnCallback, false);
-        pElement.addEventListener("keyup", fnCallback, false);
-        pElement.addEventListener("mousemove", fnCallback, true);
-        pElement.addEventListener("mouseup", fnCallback, true);
-        pElement.addEventListener("mousedown", fnCallback, true);
+    if (pMouseTarget.addEventListener) {
+        pKeyboardTarget.addEventListener("keydown", fnCallback, false);
+        pKeyboardTarget.addEventListener("keyup", fnCallback, false);
+        pMouseTarget.addEventListener("mousemove", fnCallback, true);
+        pMouseTarget.addEventListener("mouseup", fnCallback, true);
+        pMouseTarget.addEventListener("mousedown", fnCallback, true);
     }
-    else if (pElement.attachEvent) {
-        pElement.attachEvent("onkeydown", fnCallback);
-        pElement.attachEvent("onkeyup", fnCallback);
-        pElement.attachEvent("onmousemove", fnCallback);
-        pElement.attachEvent("onmouseup", fnCallback);
-        pElement.attachEvent("onmousedown", fnCallback);
+    else if (pMouseTarget.attachEvent) {
+        pKeyboardTarget.attachEvent("onkeydown", fnCallback);
+        pKeyboardTarget.attachEvent("onkeyup", fnCallback);
+        pMouseTarget.attachEvent("onmousemove", fnCallback);
+        pMouseTarget.attachEvent("onmouseup", fnCallback);
+        pMouseTarget.attachEvent("onmousedown", fnCallback);
     }
     else {
-        pElement.onkeydown = pElement.onkeyup = fnCallback;
-        pElement.onmousemove = pElement.onmouseup = pElement.onmousedown = fnCallback;
+        pKeyboardTarget.onkeydown = pKeyboardTarget.onkeyup = fnCallback;
+        pMouseTarget.onmousemove = pMouseTarget.onmouseup = pMouseTarget.onmousedown = fnCallback;
     }
 };
 
@@ -92,6 +102,7 @@ Keymap.prototype.dispatch = function (pEvent) {
     if (e.type == "keydown") {
         //console.log("keydown",code);
         this.pMap[code] = true;
+
         if (e.altKey) {
             this.isAlt = true;
         }

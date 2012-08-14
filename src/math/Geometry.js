@@ -1638,6 +1638,7 @@ Rect2d.prototype.createBoundingCircle = function () {
  * Constructor of Rect3d class
  */
 function Rect3d () {
+    A_CHECK_STORAGE();
     /**
      * x0
      * @type Float
@@ -1706,7 +1707,9 @@ function Rect3d () {
     }
     ;
 }
-;
+
+A_ALLOCATE_STORAGE(Rect3d);
+
 Object.defineProperty(Rect3d.prototype, "pRect2d", {
          /**
           * @property void pRect2d(Rect2d pRect2d)
@@ -1809,6 +1812,7 @@ Rect3d.prototype.subSelf = function (value) {
         this.fZ1 -= value;
     }
     else {
+        value = value.pData;
         this.fX0 -= value.X;
         this.fX1 -= value.X;
         this.fY0 -= value.Y;
@@ -2521,6 +2525,14 @@ Rect3d.prototype.createBoundingSphere = function () {
                       (this.fX1 - this.fX0 + this.fY1 - this.fY0 + this.fZ1 - this.fZ0) * 0.5);
 };
 
+
+Rect3d.prototype.toString = function () {
+    'use strict';
+    
+  return '(' + this.fX0.toFixed(3) + ', ' + this.fY0.toFixed(3) + ', ' + this.fZ0.toFixed(3) + ') --> ' +
+    '(' + this.fX1.toFixed(3) + ', ' + this.fY1.toFixed(3) + ', ' + this.fZ1.toFixed(3) + ')';
+};
+
 //-------------------End Rect3D---------------------\\
 
 //-------------------Start Frustrum---------------------\\
@@ -2558,20 +2570,20 @@ Enum([
 function Frustum () {
     switch (arguments.length) {
         case 1:
-            this.leftPlane = new Plane3d(arguments[0].leftPlane);
-            this.rightPlane = new Plane3d(arguments[0].rightPlane);
-            this.topPlane = new Plane3d(arguments[0].topPlane);
-            this.bottomPlane = new Plane3d(arguments[0].bottomPlane);
-            this.nearPlane = new Plane3d(arguments[0].nearPlane);
-            this.farPlane = new Plane3d(arguments[0].farPlane);
+            this.leftPlane = new a.Plane3d(arguments[0].leftPlane);
+            this.rightPlane = new a.Plane3d(arguments[0].rightPlane);
+            this.topPlane = new a.Plane3d(arguments[0].topPlane);
+            this.bottomPlane = new a.Plane3d(arguments[0].bottomPlane);
+            this.nearPlane = new a.Plane3d(arguments[0].nearPlane);
+            this.farPlane = new a.Plane3d(arguments[0].farPlane);
             break;
         default:
-            this.leftPlane = new Plane3d();
-            this.rightPlane = new Plane3d();
-            this.topPlane = new Plane3d();
-            this.bottomPlane = new Plane3d();
-            this.nearPlane = new Plane3d();
-            this.farPlane = new Plane3d();
+            this.leftPlane = new a.Plane3d();
+            this.rightPlane = new a.Plane3d();
+            this.topPlane = new a.Plane3d();
+            this.bottomPlane = new a.Plane3d();
+            this.nearPlane = new a.Plane3d();
+            this.farPlane = new a.Plane3d();
     }
 }
 ;
@@ -2671,10 +2683,10 @@ Frustum.prototype.extractPlane = function(pPlane, m4fMat, iRow){
     iRow = Math.abs(iRow) - 1;
 
     var pNormData = pPlane.v3fNormal.pData;
-    pNormData.X = m4fMat.pData._41 + iScale * m4fMat[iRow * 4];
-    pNormData.Y = m4fMat.pData._42 + iScale * m4fMat[iRow * 4 + 1];
-    pNormData.Z = m4fMat.pData._43 + iScale * m4fMat[iRow * 4 + 2];
-    pPlane.fDistance = m4fMat._44 + iScale * m4fMat[iRow * 4 + 3];
+    pNormData.X = m4fMat.pData._41 + iScale * m4fMat.pData[iRow];
+    pNormData.Y = m4fMat.pData._42 + iScale * m4fMat.pData[iRow + 4];
+    pNormData.Z = m4fMat.pData._43 + iScale * m4fMat.pData[iRow + 8];
+    pPlane.fDistance = m4fMat.pData._44 + iScale * m4fMat.pData[iRow + 12];
 
     var fLength = pPlane.v3fNormal.length();
 
@@ -2738,6 +2750,7 @@ Frustum.prototype.testRect = function (pRect) {
         || (planeClassify_Rect3d_Plane(pRect, this.farPlane) == a.Geometry.k_plane_back)) {
         return false;
     }
+
     return true;
 };
 /**
@@ -3293,14 +3306,16 @@ function planeClassify_Rect2d_Plane (pRect, pPlane) {
  * @treturn Int From enum ePlaneClassifications
  */
 function planeClassify_Rect3d_Plane (pRect, pPlane) {
-    var minPoint = new Vec3;
-    var maxPoint = new Vec3;
+    var minPoint = Vec3();
+    var maxPoint = Vec3();
+    var pNormData = pPlane.v3fNormal.pData;
+
     // build two points based on the direction
     // of the plane vector. minPoint 
     // and maxPoint are the two points
     // on the rectangle furthest away from
     // each other along the pPlane v3fNormal
-    if (pPlane.v3fNormal.pData.X > 0.0) {
+    if (pNormData.X > 0.0) {
         minPoint.pData.X = pRect.fX0;
         maxPoint.pData.X = pRect.fX1;
     }
@@ -3308,7 +3323,7 @@ function planeClassify_Rect3d_Plane (pRect, pPlane) {
         minPoint.pData.X = pRect.fX1;
         maxPoint.pData.X = pRect.fX0;
     }
-    if (pPlane.v3fNormal.pData.Y > 0.0) {
+    if (pNormData.Y > 0.0) {
         minPoint.pData.Y = pRect.fY0;
         maxPoint.pData.Y = pRect.fY1;
     }
@@ -3316,7 +3331,7 @@ function planeClassify_Rect3d_Plane (pRect, pPlane) {
         minPoint.pData.Y = pRect.fY1;
         maxPoint.pData.Y = pRect.fY0;
     }
-    if (pPlane.v3fNormal.pData.Z > 0.0) {
+    if (pNormData.Z > 0.0) {
         minPoint.pData.Z = pRect.fZ0;
         maxPoint.pData.Z = pRect.fZ1;
     }
@@ -3330,12 +3345,14 @@ function planeClassify_Rect3d_Plane (pRect, pPlane) {
     var dmax = pPlane.signedDistance(maxPoint);
     // the rectangle intersects the pPlane if
     // one value is positive and the other is negative
+
     if (dmin * dmax < 0.0) {
         return a.Geometry.k_plane_intersect;
     }
     else if (dmin) {
         return a.Geometry.k_plane_front;
     }
+
     return a.Geometry.k_plane_back;
 }
 ;

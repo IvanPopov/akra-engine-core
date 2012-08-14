@@ -184,7 +184,7 @@ Engine.prototype.notifyOneTimeSceneInit = function () {
 
     //Инициализируется дисплей менеджер
     if (this.pDisplayManager.initialize()/* && this.pShaderManager.initialize()*/) {
-        this.pKeymap.setTarget(this.pDisplayManager.getTextLayer());
+        this.pKeymap.setTarget(this.pDisplayManager.getTextLayer(), document);
         return true;
     }
 
@@ -331,7 +331,7 @@ Engine.prototype.notifyInitDeviceObjects = function () {
 
     // setup the default scene camera
     this._pDefaultCamera.setPosition(
-        Vec3.create(0.0, 0.0, 0.0));
+        Vec3(0.0, 0.0, 0.0));
     //this._pDefaultCamera.setRotation(Vec3.create(1, 0, 0), Vec3.create(0, 0, 1));
     //a._pDefaultCamera.setRotation([1,1,1],Math.PI/2);
     //	Vec3.create(1.0,0.0,0.0),
@@ -354,7 +354,9 @@ Engine.prototype.notifyInitDeviceObjects = function () {
 Engine.prototype.renderScene = function () {
 
     //Получение всех объектов сцены, которые видны активной камере
-    var pFirstMember = this._pSceneTree.buildSearchResults(this.getActiveCamera().searchRect(), this.getActiveCamera().frustum());
+    var pCamera = this._pActiveCamera;
+    var pFirstMember = this._pSceneTree.buildSearchResults(pCamera.searchRect(), pCamera.frustum());
+
     //console.log(pFirstMember, this._pActiveCamera);
     /*console.log(pFirstMember, this._pActiveCamera.searchRect().fX0, this._pActiveCamera.searchRect().fX1,
                 this._pActiveCamera.searchRect().fY0, this._pActiveCamera.searchRect().fY1,
@@ -682,38 +684,38 @@ Engine.prototype.updateCamera = function (fLateralSpeed, fRotationSpeed, pTerrai
 
     }
     var v3fOffset = Vec3(0, 0, 0);
+    var pOffsetData = v3fOffset.pData;
     var isCameraMoved = false;
 
     if (this.pKeymap.isKeyPress(a.KEY.D)) {
-        v3fOffset[0] = fLateralSpeed;
+        pOffsetData.X = fLateralSpeed;
         isCameraMoved = true;
     }
     else if (this.pKeymap.isKeyPress(a.KEY.A)) {
-        v3fOffset[0] = -fLateralSpeed;
+        pOffsetData.X = -fLateralSpeed;
         isCameraMoved = true;
     }
     if (this.pKeymap.isKeyPress(a.KEY.R)) {
-        v3fOffset[1] = fLateralSpeed;
+        pOffsetData.Y = fLateralSpeed;
         isCameraMoved = true;
     }
     else if (this.pKeymap.isKeyPress(a.KEY.F)) {
-        v3fOffset[1] = -fLateralSpeed;
+        pOffsetData.Y = -fLateralSpeed;
         isCameraMoved = true;
     }
     if (this.pKeymap.isKeyPress(a.KEY.W)) {
-        v3fOffset[2] = -fLateralSpeed;
+        pOffsetData.Z = -fLateralSpeed;
         isCameraMoved = true;
     }
     else if (this.pKeymap.isKeyPress(a.KEY.S)) {
-        v3fOffset[2] = fLateralSpeed;
+        pOffsetData.Z = fLateralSpeed;
         isCameraMoved = true;
     }
     if (isCameraMoved || isForceUpdate) {
 
         // if a terrain was provided, make sure we are above it
         if (pTerrain) {
-            var v3fCameraWorldPos = Vec3.create();
-            Vec3.set(this._pDefaultCamera.worldPosition(), v3fCameraWorldPos);//TODO right?
+            var v3fCameraWorldPos = Vec3(this._pDefaultCamera.worldPosition());
 
             var fGroundLevel = pTerrain.calcWorldHeight(v3fCameraWorldPos.X, v3fCameraWorldPos.Y);
             var fMinCameraZ = fGroundLevel + fGroundOffset;

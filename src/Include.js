@@ -62,6 +62,6 @@ Include('sprites/');
 Include('objects/');
 Include('Engine.js');
 
-window['a'] = window['akra'] = a;
+window['a'] = window['akra'] = window['AKRA'] = a;
 
 //Include('../../akra-engine-general/analyzer/A_Analyzer.js');

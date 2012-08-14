@@ -140,7 +140,7 @@ Skin.prototype.setBoneOffsetMatrices = function (pMatrices) {
     this._pBoneTransformMatrices = new Array(nMatrices);
 
     for (var i = 0; i < nMatrices; i++) {
-        this._pBoneTransformMatrices[i] = pMatrixData.subarray(i * 16, (i + 1) * 16);
+        this._pBoneTransformMatrices[i] = new Mat4(pMatrixData.subarray(i * 16, (i + 1) * 16), true);
     };
 
     this._pBoneOffsetMatrixBuffer = pMatrixData;

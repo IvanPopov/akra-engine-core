@@ -256,7 +256,6 @@ Camera.prototype.recalcMatrices = function () {
     // the camera view matrix is the
     // inverse of the world matrix
     this.m4fView.set(this.inverseWorldMatrix());
-
     // sky boxes use the inverse 
     // world matrix of the camera (the
     // camera view matrix) without 
@@ -290,23 +289,14 @@ Camera.prototype.recalcMatrices = function () {
 
     var v3fWorldPos = Vec3(this.worldPosition());
 
-    var p0 = Vec3();
-    var p1 = Vec3();
-    var p2 = Vec3();
-    var p3 = Vec3();
-    var p4 = Vec3();
-    var p5 = Vec3();
-    var p6 = Vec3();
-    var p7 = Vec3();
-
-    p0.set(-1.0, 1.0, 1.0);
-    p1.set(-1.0, -1.0, 1.0);
-    p2.set(1.0, -1.0, 1.0);
-    p3.set(1.0, 1.0, 1.0);
-    p4.set(-1.0, 1.0, 0.0);
-    p5.set(-1.0, -1.0, 0.0);
-    p6.set(1.0, -1.0, 0.0);
-    p7.set(1.0, 1.0, 0.0);
+    var p0 = Vec3(-1.0, 1.0, 1.0);
+    var p1 = Vec3(-1.0, -1.0, 1.0);
+    var p2 = Vec3(1.0, -1.0, 1.0);
+    var p3 = Vec3(1.0, 1.0, 1.0);
+    var p4 = Vec3(-1.0, 1.0, 0.0);
+    var p5 = Vec3(-1.0, -1.0, 0.0);
+    var p6 = Vec3(1.0, -1.0, 0.0);
+    var p7 = Vec3(1.0, 1.0, 0.0);
 
     p0.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[0]);
     p1.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[1]);
@@ -318,9 +308,9 @@ Camera.prototype.recalcMatrices = function () {
     p7.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[7]);
 
     // build a box around our frustum
-    this.pSearchRect.set(v3fWorldPos.X, v3fWorldPos.X,
-                         v3fWorldPos.Y, v3fWorldPos.Y,
-                         v3fWorldPos.Z, v3fWorldPos.Z);
+    this.pSearchRect.set(v3fWorldPos.pData.X, v3fWorldPos.pData.X,
+                         v3fWorldPos.pData.Y, v3fWorldPos.pData.Y,
+                         v3fWorldPos.pData.Z, v3fWorldPos.pData.Z);
 
     this.pSearchRect.unionPoint(this.pv3fFarPlanePoints[0]);
     this.pSearchRect.unionPoint(this.pv3fFarPlanePoints[1]);

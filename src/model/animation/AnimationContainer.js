@@ -62,3 +62,4 @@ AnimationContainer.prototype.update = function (fTime, bLoop) {
 };
 
 A_NAMESPACE(AnimationContainer);
+

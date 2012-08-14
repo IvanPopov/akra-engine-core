@@ -366,6 +366,9 @@ GLSLProgram.prototype.create = function (sVertexCode, sPixelCode, bSetup) {
         'cannot link program', this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
     this._isValid = true;
 
+    this.notifyLoaded();
+    this.notifyRestored();
+
     return (bSetup? this.setup(): true);
 };
 
@@ -518,11 +521,11 @@ GLSLProgram.prototype.deactivate = function () {
  * @tparam Matrix4 pValue Matrix.
  */
 GLSLProgram.prototype.applyMatrix4 = function (sName, pValue) {
-    this._pDevice.uniformMatrix4fv(this._pUniformList[sName], false, pValue);
+    this._pDevice.uniformMatrix4fv(this._pUniformList[sName], false, pValue.pData);
 };
 
 GLSLProgram.prototype.applyMatrix3 = function (sName, pValue) {
-    this._pDevice.uniformMatrix3fv(this._pUniformList[sName], false, pValue);
+    this._pDevice.uniformMatrix3fv(this._pUniformList[sName], false, pValue.pData);
 };
 
 /**
@@ -605,7 +608,7 @@ GLSLProgram.prototype.applyVector2 = function (sName) {
     var pDevice = this._pDevice;
     switch (arguments.length) {
         case 2:
-            pDevice.uniform2fv(this._pUniformList[sName], arguments[1]);
+            pDevice.uniform2fv(this._pUniformList[sName], arguments[1].pData);
             break;
         case 3:
             pDevice.uniform2f(this._pUniformList[sName], arguments[1], arguments[2]);
@@ -619,7 +622,7 @@ GLSLProgram.prototype.applyVector3 = function (sName) {
     var pDevice = this._pDevice;
     switch (arguments.length) {
         case 2:
-            pDevice.uniform3fv(this._pUniformList[sName], arguments[1]);
+            pDevice.uniform3fv(this._pUniformList[sName], arguments[1].pData);
             break;
         case 4:
             pDevice.uniform3f(this._pUniformList[sName], arguments[1], arguments[2], arguments[3]);
@@ -633,7 +636,7 @@ GLSLProgram.prototype.applyVector4 = function (sName) {
     var pDevice = this._pDevice;
     switch (arguments.length) {
         case 2:
-            pDevice.uniform4fv(this._pUniformList[sName], arguments[1]);
+            pDevice.uniform4fv(this._pUniformList[sName], arguments[1].pData);
             break;
         case 5:
             pDevice.uniform4f(this._pUniformList[sName], arguments[1], arguments[2], arguments[3], arguments[4]);

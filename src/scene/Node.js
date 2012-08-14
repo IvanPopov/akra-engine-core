@@ -438,7 +438,7 @@ Node.prototype.attachToParent = function (pParent) {
             this._pParent.addChild(this);
             //this._pParent.addRef();
             // adjust my local matrix to be relative to this new parent
-            var invertedParentMatrix = TEMPSCENEMATRIX4FORCALC0;
+            var invertedParentMatrix = Mat4();
             this._pParent._m4fWorldMatrix.inverse(invertedParentMatrix);
             // console.log("attachToParent-->", this.name, " Parent: ",Mat4.str(this._pParent._m4fWorldMatrix), 
             //             "inverse :", Mat4.str(invertedParentMatrix),
@@ -716,12 +716,14 @@ Node.prototype.recalcWorldMatrix = function () {
                     p23 = pParentData._23;
                 var p31 = pParentData._31, p32 = pParentData._32,
                     p33 = pParentData._33;
+
                 var l11 = pOrientData._11, l12 = pOrientData._12,
                     l13 = pOrientData._13;
                 var l21 = pOrientData._21, l22 = pOrientData._22,
                     l23 = pOrientData._23;
                 var l31 = pOrientData._31, l32 = pOrientData._32,
                     l33 = pOrientData._33;
+                
                 pWorldData._11 = p11 * l11 + p12 * l21 + p13 * l31;
                 pWorldData._12 = p11 * l12 + p12 * l22 + p13 * l32;
                 pWorldData._13 = p11 * l13 + p12 * l23 + p13 * l33;
@@ -801,12 +803,10 @@ Node.prototype.setRelPosition = function () {
 Node.prototype.addPosition = function () {
     'use strict';
     
-    var pPos = arguments.length === 1? arguments[0]: arguments;
+    var pPos = arguments.length === 1? arguments[0]: Vec3(arguments);
     var v3fTranslation = this._v3fTranslation;
     
-    v3fTranslation.pData.X += pPos.X;
-    v3fTranslation.pData.Y += pPos.Y;
-    v3fTranslation.pData.Z += pPos.Z;
+    v3fTranslation.add(pPos);
 
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
@@ -818,15 +818,13 @@ Node.prototype.addPosition = function () {
 Node.prototype.addRelPosition = function () {
     'use strict';
     
-    var pPos = arguments.length === 1? arguments[0]: arguments;
+    var pPos = arguments.length === 1? arguments[0]: Vec3(arguments);
     var v3fTranslation = this._v3fTranslation;
 
 
     this._qRotation.multiplyVec3(pPos);
     
-    v3fTranslation.pData.X += pPos.X;
-    v3fTranslation.pData.Y += pPos.Y;
-    v3fTranslation.pData.Z += pPos.Z;
+    v3fTranslation.add(pPos);
 
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };

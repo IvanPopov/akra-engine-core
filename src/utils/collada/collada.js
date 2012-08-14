@@ -48,7 +48,6 @@ function COLLADA (pEngine, pSettings) {
     var bDrawJoints         = ifndef(pSettings.drawJoints, false);
     var pModelResource      = ifndef(pSettings.modelResource, null);
 
-
     /* COMMON FUNCTIONS
      ------------------------------------------------------
      */
@@ -143,8 +142,6 @@ function COLLADA (pEngine, pSettings) {
     var pAnimationTemplate = [
         {sLib: 'library_animations',    sElement: 'animation',      fn: COLLADAAnimation}
     ];
-
-
 
     function getSupportedFormat(sSemantic) {
         switch (sSemantic) {
@@ -486,7 +483,7 @@ function COLLADA (pEngine, pSettings) {
             link(id + '/' + pTransform.sName, pTransform);
         }
 
-        var v4f;
+        var v4f, m4f;
         switch (pTransform.sName) {
             case 'rotate':
                 v4f = new Vector4();
@@ -500,8 +497,11 @@ function COLLADA (pEngine, pSettings) {
                 string2FloatArray(stringData(pXML),  pTransform.pValue.pData);
                 break;
             case 'matrix':
-                pTransform.pValue = new Mat4;
-                string2FloatArray(stringData(pXML),  pTransform.pValue.pData);
+                m4f = new Mat4;
+                string2FloatArray(stringData(pXML),  m4f.pData);
+                m4f.transpose();
+
+                pTransform.pValue = m4f;
                 break;
             default:
                 debug_error('unsupported transform detected: ' + sName);
@@ -513,21 +513,21 @@ function COLLADA (pEngine, pSettings) {
     }
 
     function COLLADAScaleMatrix (pXML) {
-        var v3fScale = new Vector3;
+        var v3fScale = new Vec3;
         string2FloatArray(stringData(pXML), v3fScale.pData);
 
         return new Mat4(v3fScale.x, v3fScale.y, v3fScale.z, 1.0);
     }
 
     function COLLADATranslateMatrix (pXML) {
-        var v3fTranslate = new Vector3;
+        var v3fTranslate = new Vec3;
         string2FloatArray(stringData(pXML), v3fTranslate.pData);
 
         return v3fTranslate.toTranslationMatrix();
     }
 
     function COLLADARotateMatrix (pXML) {
-        var v4f = new Vector4;
+        var v4f = new Vec4;
         var m4f = new Matrix4(1);
         string2FloatArray(stringData(pXML), v4f.pData);
         return m4f.rotate(v4f.w * Math.PI / 180.0, v4f);
@@ -589,7 +589,7 @@ function COLLADA (pEngine, pSettings) {
                 return COLLADAScaleMatrix(pXML);
             case 'bind_shape_matrix':
             case 'matrix':
-                return new Mat4(fnData(16, 'float'), true);
+                return (new Mat4(fnData(16, 'float'), true)).transpose();
             case 'float_array':
                 return fnData(parseInt(attr(pXML, 'count')), 'float', true);
             case 'int_array':
@@ -752,9 +752,9 @@ function COLLADA (pEngine, pSettings) {
                 pMatrixArray = new Array(iCount);
 
                 for (var j = 0, n = 0; j < pInvMatrixArray.length; j += 16) {
-                    pMatrixArray[n ++] = new Mat4
-                        (new Float32Array(pInvMatrixArray.buffer, j * Float32Array.BYTES_PER_ELEMENT, 16), true);
-                    //trace(Mat4.str(pMatrixArray[n-1]));
+                    pMatrixArray[n ++] = (new Mat4
+                        (new Float32Array(pInvMatrixArray.buffer, j * Float32Array.BYTES_PER_ELEMENT, 16), true))
+                        .transpose();
                 }
 
                 pJoints.pInput[i].pArray = pMatrixArray;
@@ -1475,7 +1475,7 @@ function COLLADA (pEngine, pSettings) {
             pConstructedNode: null //<! узел, в котором будет хранится ссылка на реальный игровой нод, построенный по нему
         };
 
-        var m4fTransform = new Mat4(1), m4fMatrix;
+        var m4fMatrix;
         var sType, id, sid;
 
         link(pNode);
@@ -1846,8 +1846,13 @@ function COLLADA (pEngine, pSettings) {
                         'incorrect output length of transformation data (' + pOutputValues.length + ')');
 
                     for (var i = 0; i < nMatrices; i ++) {
-                        pTrack.keyFrame(pTimeMarks[i], new Mat4(pOutputValues.subarray(i * 16, i * 16 + 16), true)); 
+                        pTrack.keyFrame(pTimeMarks[i], 
+                            (new Mat4(pOutputValues.subarray(i * 16, i * 16 + 16), true)).transpose()); 
                     };
+
+                    // i=0;
+                    // var m = (new Mat4(pOutputValues.subarray(i * 16, i * 16 + 16), true));
+                    // trace(sFilename,sNodeId,m.toString());
                 }
                 else {
                     pTrack = new a.AnimationMatrixModification(sJoint, pValue);
@@ -2349,7 +2354,7 @@ Endif ();
                 pHierarchyNode = buildSceneNode(pNode);
             }
             
-            pHierarchyNode.setName(pNode.id);//pNode.sName
+            pHierarchyNode.setName(pNode.id || pNode.sName);
             pHierarchyNode.setInheritance(a.Scene.k_inheritAll);
             pHierarchyNode.attachToParent(pParentNode)
 
@@ -2358,7 +2363,6 @@ Endif ();
 
             m4fLocalMatrix = pHierarchyNode.accessLocalMatrix();
             m4fLocalMatrix.set(pNode.m4fTransform);
-
             buildNodes(pNode.pChildNodes, pHierarchyNode);
         }
 
