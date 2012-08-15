@@ -316,6 +316,12 @@ function Img(pEngine)
 			NEGATIVEZ
          ], eImgCubeFlags, a.Img);
 	this._iCubeFlags=0;
+
+	//Системные штуки
+	this._pPixel00=new Uint8Array(4);
+	this._pPixel10=new Uint8Array(4);
+	this._pPixel01=new Uint8Array(4);
+	this._pPixel11=new Uint8Array(4);
 };
 
 a.extend(Img, a.ResourcePoolItem);
@@ -1308,6 +1314,68 @@ Img.prototype.load=function(sFileName, fnCallBack)
 		fnCallBack(false);
 	}
 };
+
+
+Img.prototype.tex2D=function(fX,fY,pPixel,iMipLevel,eCubeFlag,iVolumeLevel)
+{
+	var i=0;
+	var fXbetween=this.getWidth(iMipLevel)*fX;
+	var fYbetween=this.getHeight(iMipLevel)*fY;
+	var iX0=Math.max(Math.floor(fXbetween),0);
+	var iX1=Math.min(Math.ceil(fXbetween),this.getWidth(iMipLevel)-1);
+	var iY0=Math.max(Math.floor(fYbetween),0);
+	var iY1=Math.min(Math.ceil(fYbetween),this.getHeight(iMipLevel)-1);
+
+	if(iX0!=iX1&&iY0!=iY1)
+	{
+
+		this.getPixelRGBA(iX0,iY0,this._pPixel00,iMipLevel,eCubeFlag,iVolumeLevel);
+		this.getPixelRGBA(iX1,iY0,this._pPixel10,iMipLevel,eCubeFlag,iVolumeLevel);
+		this.getPixelRGBA(iX0,iY1,this._pPixel01,iMipLevel,eCubeFlag,iVolumeLevel);
+		this.getPixelRGBA(iX1,iY1,this._pPixel11,iMipLevel,eCubeFlag,iVolumeLevel);
+
+		for(i=0;i<4;i++)
+		{
+			pPixel[i]=(
+				this._pPixel00[i]*(iX1-fXbetween)*(iY1-fYbetween)+
+				this._pPixel10[i]*(fXbetween-iX0)*(iY1-fYbetween)+
+				this._pPixel01[i]*(iX1-fXbetween)*(fYbetween-iY0)+
+				this._pPixel11[i]*(fXbetween-iX0)*(fYbetween-iY0))
+				/((iX1-iX0)*(iY1-iY0));
+		}
+	}
+	else if(iX0==iX1&&iY0!=iY1)
+	{
+		this.getPixelRGBA(iX0,iY0,this._pPixel00,iMipLevel,eCubeFlag,iVolumeLevel);
+		this.getPixelRGBA(iX0,iY1,this._pPixel01,iMipLevel,eCubeFlag,iVolumeLevel);
+
+		for(i=0;i<4;i++)
+		{
+			pPixel[i]=(
+			this._pPixel00[i]*(iY1-fYbetween)+
+			this._pPixel01[i]*(fYbetween-iY0))
+			/(iY1-iY0);
+		}
+	}
+	else if(iX0!=iX1&&iY0==iY1)
+	{
+		this.getPixelRGBA(iX0,iY0,this._pPixel00,iMipLevel,eCubeFlag,iVolumeLevel);
+		this.getPixelRGBA(iX1,iY0,this._pPixel10,iMipLevel,eCubeFlag,iVolumeLevel);
+
+		for(i=0;i<4;i++)
+		{
+			pPixel[i]=(
+				this._pPixel00[i]*(iX1-fXbetween)+
+				this._pPixel10[i]*(fXbetween-iX0))
+				/(iX1-iX0);
+		}
+	}
+	else
+	{
+		return this.getPixelRGBA(iX0,iY0,pPixel,iMipLevel,eCubeFlag,iVolumeLevel);
+	}
+}
+
 
 
 Img.prototype.getPixelRGBA=function(iX,iY,pPixel,iMipLevel,eCubeFlag,iVolumeLevel)

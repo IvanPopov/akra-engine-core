@@ -38,12 +38,10 @@ function Terrain (pEngine) {
 	this._pDataFactory.dataType = a.RenderData;
 	this._pDataFactory.setup(a.RenderDataFactory.VB_READABLE);
 
-	//this._pVertexGrid = null;//вершинный буфер с обобщенными координатами( положение по оси X и Y относительно угла секции, положение в текстуре относительно ее угла)
-    //this._pTriangles = null; //индексный буфер для отображения сетки TerrainSection
+
+	
 
 	this._v2fSectorSize = Vec2.create();
-
-    this._pActiveCamera = null;
 
     this._iSectorShift;
     this._iSectorUnits; //Количество секторов по осям
@@ -54,15 +52,23 @@ function Terrain (pEngine) {
     this._pHeightTable = null;  //Таблица(карта высот)
     this._pv3fNormalTable = null; //Таблица нормалей
 
-    this._fVScale = 1.0;
-    this._fVLimit = 1.0;
 
-    this.fVRatioLimit = 0.03;
-    this.fVErrorScale = 1.33;
+	//Мега-текстура
+	this._sSurfaceTextures = null; //накладываемые текстуры
+	this._pMegaTexures = null; //отоброжаемые куски текстуры
+	this._iMegaTextureHeight; //размер мегатекстуры
+	this._iMegaTextureWidth;
 
-    //this._useBumping = false;
-}
-;
+	this._v2fCameraCoord = Vec2.create(0.5,0.5); //Координаты камеры на терраине
+	this.pDataForMega = null; //Буфер для манипуляции с данными используемыми в мега текструе
+	
+	//Лод
+    this._fScale = 0.03;
+    this._fLimit = 1.33;
+
+    this.fRatioLimit = 0.03;
+    this.fErrorScale = 1.33;
+};
 
 Terrain.prototype.tableWidth = function () {
     return this._iTableWidth;
@@ -76,11 +82,17 @@ Terrain.prototype.mapScale = function () {
 Terrain.prototype.worldExtents = function () {
     return this._pWorldExtents;
 };
+
+Terrain.prototype.worldSize = function()
+{
+	return this._v3fWorldSize;
+}
+
 Terrain.prototype.lodErrorScale = function () {
-    return this._fVScale;
+    return this._fScale;
 };
 Terrain.prototype.lodRatioLimit = function () {
-    return this._fVLimit;
+    return this._fLimit;
 };
 Terrain.prototype.sectorShift = function () {
     return this._iSectorShift;
@@ -128,37 +140,93 @@ Terrain.prototype.getSectorCountY=function()
  * @param fnCallBack функция которую нужно вызвать после создания
  * @return bool
  **/
-Terrain.prototype.create = function (pRootNode, pHeightMap, worldExtents, iShift)
+//iShiftX - количество сектионов по иксу
+//iShiftY - количесвто сектионов по Y
+//iShift - количество вершин в сектионе
+
+Terrain.prototype.create = function (pRootNode, pHeightMap,worldExtents, iShift, iShiftX,iShiftY,sSurfaceTextures)
 {
+	//Основные параметры
     this._iSectorShift = iShift;
     this._iSectorUnits = 1 << iShift;
     this._iSectorVerts = this._iSectorUnits + 1;
 
     this._pRootNode = pRootNode;
 
-
 	this._pWorldExtents=new a.Rect3d(worldExtents.fX0, worldExtents.fX1,worldExtents.fY0, worldExtents.fY1, worldExtents.fZ0, worldExtents.fZ1)
-    this._v3fWorldSize = this._pWorldExtents.size();
+	this._pWorldExtents.normalize();
+	this._v3fWorldSize = this._pWorldExtents.size();
 
-    this._iTableWidth = pHeightMap.getWidth();
-    this._iTableHeight = pHeightMap.getHeight();
+    this._iSectorCountX = 1<<iShiftX;//this._iTableWidth >> this._iSectorShift;
+	this._iSectorCountY = 1<<iShiftY;//this._iTableHeight >> this._iSectorShift;
 
-    this._v3fMapScale.X = this._v3fWorldSize.X / this._iTableWidth;
-    this._v3fMapScale.Y = this._v3fWorldSize.Y / this._iTableHeight;
-    this._v3fMapScale.Z = this._v3fWorldSize.Z / 255.0;
+	this._iTableWidth  = this._iSectorCountX*this._iSectorUnits;
+	this._iTableHeight = this._iSectorCountY*this._iSectorUnits;
+
+
+	Vec2.set(this._v3fWorldSize.X / this._iSectorCountX, this._v3fWorldSize.Y / this._iSectorCountY,
+		this._v2fSectorSize);
+
+	this._v3fMapScale.X = this._v3fWorldSize.X / this._iTableWidth;
+	this._v3fMapScale.Y = this._v3fWorldSize.Y / this._iTableHeight;
+	this._v3fMapScale.Z = this._v3fWorldSize.Z / 255.0;
+
+
+	//Мегатекстурные параметры
+	pPathInfoMega=new a.Pathinfo(sSurfaceTextures);
+	this._sSurfaceTextures =(pPathInfoMega.dirname)+"/"+(pPathInfoMega.filename)+"/";
+	this._pMegaTexures = new Array(6); //1024-32768
+	this._pMegaBuffer =new Array(6);
+
+
+	this._iBlockSize=32;
+	this._iMegaTextureHeight = 1024;
+	this._iMegaTextureWidth  = 1024;
+	this._iMegaBufferHeight  = this._iMegaTextureHeight*2;
+	this._iMegaBufferWidth   = this._iMegaTextureWidth*2;
+
+	this._pTempDataForMegaBlock=new Uint8Array(this._iBlockSize*this._iBlockSize*4);
+	//Создаем куски мегатекстуры
+	for(var i=0;i<this._pMegaTexures.length;i++)
+	{
+		this._pMegaTexures[i]=new a.Texture(this._pEngine);
+		this._pMegaTexures[i].createTexture(this._iMegaTextureWidth,this._iMegaTextureHeight,undefined,a.IFORMATSHORT.RGBA);
+		if(i==0)
+		{
+			this._pMegaBuffer[i]=new Uint8Array(this._iMegaTextureHeight*this._iMegaTextureWidth*4);
+			//Худшего качества статична поэтому размер у буфера такойже как у текстуры, возможно даже вообще не нужна
+		}
+		else
+		{
+			this._pMegaBuffer[i]=new Uint8Array(this._iMegaBufferHeight*this._iMegaBufferWidth*4);
+		}
+	}
+	//буфер для копирования кусков
+	this._pDataForMega=new Uint8Array(this._iMegaTextureWidth*this._iMegaTextureHeight*4);
+
+	var sPiecePath;
+	//Заливаем текстуру самого плохого разрешения
+	for(var i=0;i<this._iMegaTextureHeight;i+=this._iBlockSize)
+	{
+		for(var j=0;j<this._iMegaBufferWidth;j+=this._iBlockSize)
+		{
+			sPiecePath=this._sSurfaceTextures+"RGB_"+this._iMegaTextureWidth+"x"+this._iMegaTextureWidth+"_"+j+"x"+i+"_"+this._iBlockSize+"x"+this._iBlockSize;
+			a.fopen(sPiecePath, 'rb').onread = function(pData)
+			{
+
+			}
+		}
+	}
+
+
+	this._pMegaTexures[0].setPixelRGBA(0,0,this._iMegaTextureWidth,this._iMegaTextureHeight,this._pDataForMega);
+
 
     // convert the height map to
     // data stored in local tables
     this.buildHeightAndNormalTables(pHeightMap);
 
-    this._iSectorCountX = this._iTableWidth >> this._iSectorShift;
-    this._iSectorCountY = this._iTableHeight >> this._iSectorShift;
-
-    Vec2.set(this._v3fWorldSize.X / this._iSectorCountX, this._v3fWorldSize.Y / this._iSectorCountY,
-             this._v2fSectorSize);
-
-
-    return this.allocateSectors();;
+    return this.allocateSectors();
 }
 
 /**
@@ -254,32 +322,32 @@ Terrain.prototype.buildHeightAndNormalTables = function (pImage) {
     if (pImage.isResourceLoaded()) 
 	{
         var fHeight;
-        var iHeight
-        for (y = 0; y < iMaxY; y++) 
+        for (y = 0; y < iMaxY; y++)
 		{
             for (x = 0; x < iMaxX; x++) 
 			{
-                pImage.getPixelRGBA(x, y, pColor);
-                iHeight = pColor[0]; // Red value
-                fHeight = (iHeight * this._v3fMapScale.Z) + this._pWorldExtents.fZ0;
+                pImage.tex2D(x/iMaxX, y/iMaxY, pColor);
+                fHeight = pColor[0]; // Red value
+                fHeight = (fHeight * this._v3fMapScale.Z) + this._pWorldExtents.fZ0;
                 this._pHeightTable[(y * iMaxX) + x] = fHeight;
             }
         }
     }
 
     // create a normal map texture
-    temp = new a.Texture(this._pEngine);   
+    var temp = new a.Texture(this._pEngine);
 
     // how much to scale the normals?
-    fScale = (this._iTableWidth * this._pWorldExtents.sizeZ()) / this._pWorldExtents.sizeX();
+    var fScale = (this._iTableWidth * this._pWorldExtents.sizeZ()) / this._pWorldExtents.sizeX();
 
     // convert our height map into a
     // texture of surface normals
-    temp.generateNormalMap(pImage, 0, fScale);
 
+    temp.generateNormalMap(pImage, 0, fScale);
+	temp.resize(iMaxX,iMaxY);
 	var pColorData=new Uint8Array(4*iMaxY*iMaxX);
-	
 	temp.getPixelRGBA(0, 0,iMaxX,iMaxY, pColorData);
+
 	//console.log(pColorData);
 	var i=0;
     for (y = 0; y < iMaxY; y++) 
@@ -287,10 +355,14 @@ Terrain.prototype.buildHeightAndNormalTables = function (pImage) {
         for (x = 0; x < iMaxX; x++) 
 		{       
 			i++;
+
             this._pv3fNormalTable[(y * iMaxX) + x].X = pColorData[((y * iMaxX) + x)*4+0] - 127.5;
             this._pv3fNormalTable[(y * iMaxX) + x].Y = pColorData[((y * iMaxX) + x)*4+1] - 127.5;
             this._pv3fNormalTable[(y * iMaxX) + x].Z = pColorData[((y * iMaxX) + x)*4+2] - 127.5;
             Vec3.normalize(this._pv3fNormalTable[(y * iMaxX) + x]);
+			//console.log(this._pv3fNormalTable[(y * iMaxX) + x].X,
+			//	this._pv3fNormalTable[(y * iMaxX) + x].Y,
+			//	this._pv3fNormalTable[(y * iMaxX) + x].Z)
 			//console.log("norm->",this._pv3fNormalTable[(y * iMaxX) + x].X = pColorData[((y * iMaxX) + x)*4+0],
 			//	this._pv3fNormalTable[(y * iMaxX) + x].X = pColorData[((y * iMaxX) + x)*4+1],
 			//	this._pv3fNormalTable[(y * iMaxX) + x].X = pColorData[((y * iMaxX) + x)*4+2]);
@@ -737,9 +809,10 @@ Terrain.prototype.generateBlendImage = function (pBlendImage, pElevationData, iE
  * @param fVScale
  * @param fVLimit
  **/
-Terrain.prototype.setTessellationParameters = function (fVScale, fVLimit) {
-    this._fVScale = fVScale;
-    this._fVLimit = fVLimit;
+Terrain.prototype.setTessellationParameters = function (fVScale, fVLimit)
+{
+    this._fScale = fScale;
+    this._fLimit = fLimit;
 }
 
 
@@ -754,7 +827,8 @@ Terrain.prototype.setTessellationParameters = function (fVScale, fVLimit) {
  * @param iYOffset
  * @return float
  **/
-Terrain.prototype.computeErrorMetricOfGrid = function (iXVerts, iYVerts, iXStep, iYStep, iXOffset, iYOffset) {
+
+/*Terrain.prototype.computeErrorMetricOfGrid = function (iXVerts, iYVerts, iXStep, iYStep, iXOffset, iYOffset) {
     var fResult = 0.0;
     var iTotalRows = iYVerts - 1;
     var iTotalCells = iXVerts - 1;
@@ -825,6 +899,64 @@ Terrain.prototype.computeErrorMetricOfGrid = function (iXVerts, iYVerts, iXStep,
     return fResult;
 }
 
+*/
+
+//Подготовка терраина к рендерингу, а имменно, выичсление координат камеры над терраином, закладка новых частей текстру в мегатекстуру
+Terrain.prototype.prepareForRender= function()
+{
+	var pCamera = this._pEngine._pDefaultCamera;
+	var v3fCameraPosition=pCamera.worldPosition();
+
+	//Вычисление текстурных координат над которыми находиться камера
+	var fTexcourdX=(v3fCameraPosition.X-this._pWorldExtents.fX0)/Math.abs(this._pWorldExtents.fX1-this._pWorldExtents.fX0);
+	var fTexcourdY=(v3fCameraPosition.Y-this._pWorldExtents.fY0)/Math.abs(this._pWorldExtents.fY1-this._pWorldExtents.fY0);
+
+	Vec2.set(fTexcourdX,fTexcourdY,this._v2fCameraCoord);
+
+	var iX,iX1,iX2;
+	var iY,iY1,iY2;
+	var iWidth,iHeight;
+	for(var i=1;i<this._pMegaTexures.length;i++)
+	{
+		iX=Math.round(fTexcourdX*this._pSurfaceTextures[i].width-this._iMegaTextureWidth/2);
+		iY=Math.round(fTexcourdY*this._pSurfaceTextures[i].height-this._iMegaTextureHeight/2);
+
+		//console.log("Размеры текстуры",this._pSurfaceTextures[i].width,this._pSurfaceTextures[i].height);
+		iX1=Math.max(iX,0)
+		iY1=Math.max(iY,0)
+		if(iY1>=this._pSurfaceTextures[i].height||iX1>=this._pSurfaceTextures[i].width)
+		{
+			continue;
+		}
+		//console.log("откуда",iX,iY,"откуда порезанные",iX1,iY1);
+		iX2=Math.min(iX+this._iMegaTextureWidth,this._pSurfaceTextures[i].width);
+		iY2=Math.min(iY+this._iMegaTextureHeight,this._pSurfaceTextures[i].height);
+		if(iX2<=0||iY2<=0)
+		{
+			continue;
+		}
+
+		iWidth=iX2-iX1;
+		iHeight=iY2-iY1;
+
+		//console.log("Размеры",iWidth,iHeight,this.pDataForMega.length);
+		this._pSurfaceTextures[i].getPixelRGBA(iX1,iY1,iWidth,iHeight,this._pDataForMega);
+		//console.log(iX1-iX,iY1-iY);
+		this._pMegaTexures[i].setPixelRGBA(iX1-iX,iY1-iY,iWidth,iHeight,this._pDataForMega);
+	}
+}
+
+//Применение параметров для рендеринга, коготрые зависят от самого терраина
+Terrain.prototype.applyForRender= function()
+{
+	this._pEngine.pDrawTerrainProgram.applyVector2('cameraCoordTerrain', this._v2fCameraCoord);
+	for(var i=0;i<this._pMegaTexures.length;i++)
+	{
+		this._pMegaTexures[i].activate(2+i);
+		this._pEngine.pDrawTerrainProgram.applyInt('textureTerrain'+(i+1),2+i);
+	}
+}
+
 /**
  * @property readUserInput()
  * @memberof Terrain
@@ -834,46 +966,37 @@ Terrain.prototype.readUserInput = function ()
     //
     // allow the user to adjust tesselation params
     //
-    //static float fVRatioLimit = 0.03f;
-    //static float fVErrorScale = 1.33f;
-
     if (this._pEngine.pKeymap.isKeyPress(a.KEY.ADD)) //+
     {
-        this.fVRatioLimit += 0.001;
-        debug_print("vRatioLimit: " + this.fVRatioLimit + "\n");
+        this.fRatioLimit += 0.001;
+        console.log("vRatioLimit: " +this.fRatioLimit);
     }
     else if (this._pEngine.pKeymap.isKeyPress(a.KEY.SUBTRACT)) //-
     {
-        this.fVRatioLimit -= 0.001;
-        debug_print("vRatioLimit: " + this.fVRatioLimit + "\n");
+		this.fRatioLimit -= 0.001;
+		console.log("vRatioLimit: " + this.fRatioLimit);
     }
 
     if (this._pEngine.pKeymap.isKeyPress(a.KEY.MULTIPLY)) //*
     {
-        this.fVErrorScale += 0.001;
-        debug_print("vErrorScale: " + this.fVErrorScale + "\n");
+		this.fErrorScale += 0.001;
+		console.log("vErrorScale: " + this.fErrorScale);
     }
     else if (this._pEngine.pKeymap.isKeyPress(a.KEY.DIVIDE))  // /
     {
-        this.fVErrorScale -= 0.001;
-        debug_print("vErrorScale: " + this.fVErrorScale + "\n");
-    }
-    /*
-     if (this._pEngine.pKeymap.isKeyPress(a.KEY.B)) {
-     this._useBumping = true;
-     }
-     else {
-     this._useBumping = false;
-     }    */
-
-    if (this.fVRatioLimit < 0.001) {
-        this.fVRatioLimit = 0.001;
-    }
-    if (this.fVErrorScale < 0.001) {
-        this.fVErrorScale = 0.001;
+		this.fErrorScale -= 0.001;
+		console.log("vErrorScale: " +this.fErrorScale);
     }
 
-    this.setTessellationParameters(
-        this.fVErrorScale, this.fVRatioLimit);
+    if (this.fRatioLimit < 0.001)
+	{
+		this.fRatioLimit = 0.001;
+    }
+    if (this.fErrorScale < 0.001)
+	{
+		this.fErrorScale = 0.001;
+    }
+
+    this.setTessellationParameters(this.fErrorScale, this.fRatioLimit);
 }
 a.Terrain = Terrain;

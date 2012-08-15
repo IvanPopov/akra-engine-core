@@ -7,6 +7,11 @@
  * TerrainSection класс.
  */
 
+Enum([
+	TOTAL_DETAIL_LEVELS = 9,
+	TOTAL_VARIANCES = 1<<9
+], TERRAIN_CONSTANTS, a.TerrainSection);
+
 function TerrainSection (pEngine)
 {
 	A_CLASS;
@@ -32,7 +37,7 @@ TerrainSection.prototype.sectorX = function () {
 TerrainSection.prototype.sectorY = function () {
     return this._iSectorY;
 };
-TerrainSection.prototype.terrainSystem = function () {
+TerrainSection.prototype.getTerrainSystem = function () {
     return this._pTerrainSystem;
 };
 
@@ -85,6 +90,13 @@ function (pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY
 			this.attachToParent(pRootNode);
 	}
 
+	//Организация ЛОД
+	this._pVarianceTreeA = new Array( a.TerrainSection.TOTAL_VARIANCES);
+	this._pVarianceTreeB = new Array( a.TerrainSection.TOTAL_VARIANCES);
+	this.computeVariance();
+
+	this._fLODLevel=0;
+
 	return bResult;
  };
 
@@ -92,7 +104,7 @@ function (pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY
 TerrainSection.prototype._buildVertexAndIndexBuffer=function()
 {
 	debug_assert(this._pRenderData == null, "У терраин сектиона уже созданы данные");
-	this._pRenderData = this._pTerrainSystem.getDataFactory().getEmptyRenderData(a.PRIMTYPE.TRIANGLESTRIP,0);
+	this._pRenderData = this.getTerrainSystem().getDataFactory().getEmptyRenderData(a.PRIMTYPE.TRIANGLESTRIP,0);
 
 	if(!this._pRenderData)
 	{
@@ -101,6 +113,8 @@ TerrainSection.prototype._buildVertexAndIndexBuffer=function()
 
 	this._pWorldRect.fZ0 = MAX_REAL32;
 	this._pWorldRect.fZ1 = MIN_REAL32;
+
+	var pCamera = this._pEngine._pDefaultCamera;
 
 	var pVerts = new Array(this._iXVerts * this._iYVerts * (3/*кординаты вершин*/+3/*координаты нормалей*/+2/*текстурные координаты*/));
 	var v3fNormal = null;
@@ -122,24 +136,28 @@ TerrainSection.prototype._buildVertexAndIndexBuffer=function()
 		for (var x = 0; x < this._iXVerts; ++x)
 		{
 
-			var fHeight = this._pTerrainSystem.readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
+			var fHeight = this.getTerrainSystem().readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
 
 			pVerts[((y * this._iXVerts) + x) * 8 + 0] = v2fVert.X;
 			pVerts[((y * this._iXVerts) + x) * 8 + 1] = v2fVert.Y;
 			pVerts[((y * this._iXVerts) + x) * 8 + 2] = fHeight;
+			//console.log(v2fVert.X,v2fVert.Y)
 			//console.log(y*this._iXVerts + x,x,y,v2fVert.X,v2fVert.Y,fHeight);
 			//console.log( fHeight);
 			//	pVerts[((y * this._iXVerts) + x) * 10 + 2],pVerts[((y * this._iXVerts) + x) * 10 + 1]);
 
 
-			v3fNormal = this._pTerrainSystem.readWorldNormal(this._iHeightMapX + x, this._iHeightMapY + y);
+			v3fNormal = this.getTerrainSystem().readWorldNormal(this._iHeightMapX + x, this._iHeightMapY + y);
 			pVerts[((y * this._iXVerts) + x) * 8 + 3] = v3fNormal.X;
 			pVerts[((y * this._iXVerts) + x) * 8 + 4] = v3fNormal.Y;
 			pVerts[((y * this._iXVerts) + x) * 8 + 5] = v3fNormal.Z;
 
-			pVerts[((y * this._iXVerts) + x) * 8 + 6] = this._iSectorX/this._pTerrainSystem.getSectorCountX() + x / (this._iXVerts - 1);
-			pVerts[((y * this._iXVerts) + x) * 8 + 7] = this._iSectorY/this._pTerrainSystem.getSectorCountY() + y / (this._iYVerts - 1);
+			pVerts[((y * this._iXVerts) + x) * 8 + 6] = (this._iSectorX + x / (this._iXVerts - 1))/this.getTerrainSystem().getSectorCountX();
+			pVerts[((y * this._iXVerts) + x) * 8 + 7] = (this._iSectorY+ y / (this._iYVerts - 1))/this.getTerrainSystem().getSectorCountY() ;
 
+
+			//console.log(this._iSectorX,this.getTerrainSystem().getSectorCountX(), x,this._iXVerts);
+			//console.log(this._iSectorX/this.getTerrainSystem().getSectorCountX() + x / (this._iXVerts - 1));
 
 			this._pWorldRect.fZ0 = Math.min(this._pWorldRect.fZ0, fHeight);
 			this._pWorldRect.fZ1 = Math.max(this._pWorldRect.fZ1, fHeight);
@@ -158,6 +176,7 @@ TerrainSection.prototype._buildVertexAndIndexBuffer=function()
 		this._iYVerts, // horz vertex count in vbuffer
 		0);
 
+	//console.log(pIndexes);
 	this._pRenderData.allocateIndex([VE_FLOAT(a.DECLUSAGE.INDEX0)],new Float32Array(pIndexes));
 	this._pRenderData.index(iData,a.DECLUSAGE.INDEX0);
 
@@ -172,16 +191,35 @@ TerrainSection.prototype.render = function ()
 	this.renderCallback();
 }
 
+TerrainSection.prototype.prepareForRender = function()
+{
+
+	//Вычисление необходимого уровня лода
+	var pCamera = this._pEngine._pDefaultCamera;
+	var fHeightCenter=this.getTerrainSystem().readWorldHeight(Math.ceil(this._iHeightMapX + this._iXVerts/2), Math.ceil(this._iHeightMapY + this._iYVerts/2));
+
+	var v3fCameraPosition=pCamera.worldPosition();
+	var fMidDist = Math.sqrt(
+		(v3fCameraPosition.X-(this._pWorldRect.fX0+this.getHeightX()/2))*(v3fCameraPosition.X-(this._pWorldRect.fX0+this.getHeightX()/2))+
+		(v3fCameraPosition.Y-(this._pWorldRect.fY0+this.getHeightY()/2))*(v3fCameraPosition.Y-(this._pWorldRect.fY0+this.getHeightY()/2))+
+		(v3fCameraPosition.Z-fHeightCenter)*(v3fCameraPosition.Z-fHeightCenter));
+
+	this._fLODLevel = fMidDist;
+		//(Math.max(this._pVarianceTreeA[1],this._pVarianceTreeB[1])*this.terrainSystem().lodErrorScale())/(fMidDist+0.0001);
+
+}
+
 TerrainSection.prototype.renderCallback = function (entry, activationFlags)
 {
     //this._pTerrainSystem.renderSection(this, activationFlags, entry);
 
 	var pCamera = this._pEngine._pDefaultCamera;
 	this._pEngine.pDrawTerrainProgram.activate();
-
+	this.getTerrainSystem().applyForRender();
 	this._pEngine.pDrawTerrainProgram.applyMatrix4('model_mat', this.worldMatrix());
 	this._pEngine.pDrawTerrainProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
 	this._pEngine.pDrawTerrainProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
+	this._pEngine.pDrawTerrainProgram.applyFloat('LOD', this._fLODLevel);
 
 	this._pRenderData.draw();
 }
@@ -196,6 +234,68 @@ PROPERTY(TerrainSection,'visible',
 		this._isVisible = isVisible;
 	}
 );
+
+
+TerrainSection.prototype.computeVariance = function()
+{
+	var iTableWidth = this.getTerrainSystem().tableWidth();
+	var iTableHeight = this.getTerrainSystem().tableHeight();
+
+	var iIndex0 =  this.getTerrainSystem().tableIndex(this._iHeightMapX,					this._iHeightMapY);
+	var iIndex1 =  this.getTerrainSystem().tableIndex(this._iHeightMapX,					this._iHeightMapY+this._iYVerts-1);
+	var iIndex2 =  this.getTerrainSystem().tableIndex(this._iHeightMapX+this._iXVerts-1,	this._iHeightMapY+this._iYVerts-1);
+	var iIndex3 =  this.getTerrainSystem().tableIndex(this._iHeightMapX+this._iXVerts-1,	this._iHeightMapY);
+
+	var fHeight0 = this.getTerrainSystem().readWorldHeight(iIndex0);
+	var fHeight1 = this.getTerrainSystem().readWorldHeight(iIndex1);
+	var fHeight2 = this.getTerrainSystem().readWorldHeight(iIndex2);
+	var fHeight3 = this.getTerrainSystem().readWorldHeight(iIndex3);
+
+	this.recursiveComputeVariance(
+		iIndex1, iIndex2, iIndex0,
+		fHeight1, fHeight2, fHeight0,
+		this._pVarianceTreeA, 1);
+
+	this.recursiveComputeVariance(
+		iIndex3, iIndex0, iIndex2,
+		fHeight3, fHeight0, fHeight2,
+		this._pVarianceTreeB, 1);
+}
+
+TerrainSection.prototype.recursiveComputeVariance= function(iCornerA, iCornerB, iCornerC,
+													fHeightA, fHeightB, fHeightC,pVTree, iIndex)
+{
+	if (iIndex < a.TerrainSection.TOTAL_VARIANCES)
+	{
+		var iMidpoint = (iCornerB+iCornerC)>>1;
+		var fMidHeight = this.getTerrainSystem().readWorldHeight(iMidpoint);
+		var fInterpolatedHeight = (fHeightB+fHeightC)*0.5;
+		var fVariance = Math.abs(fMidHeight - fInterpolatedHeight);
+
+		// find the variance of our children
+		var fLeft = this.recursiveComputeVariance(
+		iMidpoint, iCornerA, iCornerB,
+		fMidHeight, fHeightA, fHeightB,
+		pVTree, iIndex<<1);
+
+		var fRight = this.recursiveComputeVariance(
+		iMidpoint, iCornerC, iCornerA,
+		fMidHeight, fHeightC, fHeightA,
+		pVTree, 1+(iIndex<<1));
+
+		// local variance is the minimum of all three
+		fVariance = Math.max(fVariance, fLeft);
+		fVariance = Math.max(fVariance, fRight);
+
+		// store the variance as 1/(variance+1)
+		pVTree[iIndex] = fVariance;
+
+		return fVariance;
+	}
+	// return a value which will be ignored by the parent
+	// (because the minimum function is used with this result)
+	return 0;
+}
 
 
 a.TerrainSection = TerrainSection;

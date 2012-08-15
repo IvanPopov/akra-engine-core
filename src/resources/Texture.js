@@ -186,7 +186,8 @@ PROPERTY(Texture, 'target', function () {
     return TEST_BIT(this._iFlags, a.Texture.CubeMap) ? a.TTYPE.TEXTURE_CUBE_MAP : a.TTYPE.TEXTURE_2D;
 });
 
-Texture.prototype.flipY = function (bValue) {
+Texture.prototype.flipY = function (bValue)
+{
     this._pDevice.pixelStorei(a.WEBGLS.UNPACK_FLIP_Y_WEBGL, bValue === undefined ? true : bValue);
 };
 
@@ -277,8 +278,7 @@ Texture.prototype.setPixelRGBA = function (iX, iY, iWidth, iHeight, pPixel, iMip
     eCubeFlag = eCubeFlag || 0;
 
     var pDevice = this._pEngine.pDevice;
-	
-	
+
     debug_assert(!((!TEST_BIT(this._iFlags, a.Texture.MipMaps)) && iMipMap),
         "Запрашивается уровень мип мапа, хотя текстура их не содрежит");
 
@@ -361,6 +361,7 @@ Texture.prototype.generateNormalMap = function (pHeightMap, iChannel, fAmplitude
 
     this._iWidth = pHeightMap.getWidth();
     this._iHeight = pHeightMap.getHeight();
+
     pDevice.bindTexture(a.TTYPE.TEXTURE_2D, this._pTexture);
     pDevice.texImage2D(a.TTYPE.TEXTURE_2D, 0, a.IFORMATSHORT.RGBA, this._iWidth,
         this._iHeight, 0, a.IFORMATSHORT.RGBA,
@@ -392,6 +393,8 @@ Texture.prototype.generateNormalMap = function (pHeightMap, iChannel, fAmplitude
     }
     this.setPixelRGBA(0, 0, this._iWidth, this._iHeight, pColor);
 
+	this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
+	this.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
     delete pNormalTable;
 
 };
@@ -635,14 +638,14 @@ Texture.prototype.uploadHTMLElement= function (pElement)
 	}
 
 	this.bind();
-	this.flipY();
+	this.flipY(false);
 	pDevice.texImage2D(a.TTYPE.TEXTURE_2D, 0, this._eFormat, this._eFormat,
 		this._eType, pElement);
 
 	this.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
 	this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
-	this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
-	this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
+	this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+	this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
 	this.unbind();
 
 	this.notifyLoaded();
@@ -688,7 +691,7 @@ Texture.prototype.uploadImage = function (pImage) {
         CLEAR_BIT(this._iFlags, a.Texture.CubeMap);
 
         this.bind();
-        this.flipY();
+        this.flipY(false);
 
         for (var i = 0; i < nMipMaps; i++) {
             if (!pImage.isCompressed()) {
@@ -707,7 +710,7 @@ Texture.prototype.uploadImage = function (pImage) {
         SET_BIT(this._iFlags, a.Texture.CubeMap);
 
         this.bind();
-        this.flipY();
+        this.flipY(false);
 
         for (var k = 0; k < 6; k++) {
             for (var i = 0; i < nMipMaps; i++) {
@@ -740,8 +743,8 @@ Texture.prototype.uploadImage = function (pImage) {
     }
     //trace('uploaded image to texture: ', this._iWidth, 'x', this._iHeight);
     this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
-    this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
-    this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
+    this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+    this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
     this.unbind();
 
     this.notifyLoaded();
@@ -749,14 +752,75 @@ Texture.prototype.uploadImage = function (pImage) {
 };
 
 /**
- * Изменить размеры текстуры и переложить данные в ней.
+ * Растянуть или ужать картинку
  * @param iWidth
  * @param iHeight
  * @return Boolean
  */
-Texture.prototype.resize = function (iWidth, iHeight) {
-    TODO('Texture:: resize with scale');
-    return false;
+Texture.prototype.resize = function (iWidth, iHeight)
+{
+	debug_assert(this._pTexture, 'Cannot resize, because texture not created.');
+
+	var eFormat = this._eFormat;
+	var eType = this._eType;
+
+	var pDevice = this._pEngine.pDevice;
+
+	if (!statics._pResizeProgram)
+	{
+		statics._pResizeProgram = a.loadProgram(this._pEngine,'../effects/resize_texture.glsl')
+	}
+
+	var pProgram = statics._pResizeProgram;
+	pProgram.activate();
+
+	var pDestinationTexture = pDevice.createTexture();
+	pDevice.activeTexture(pDevice.TEXTURE1);
+	// pDevice.pixelStorei(a.WEBGLS.UNPACK_FLIP_Y_WEBGL, true);
+	pDevice.bindTexture(pDevice.TEXTURE_2D, pDestinationTexture);
+	pDevice.texImage2D(pDevice.TEXTURE_2D, 0, eFormat, iWidth, iHeight, 0, eFormat, eType, null);
+	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MAG_FILTER, pDevice.LINEAR);
+	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MIN_FILTER, pDevice.LINEAR);
+	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_WRAP_S, pDevice.CLAMP_TO_EDGE);
+	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_WRAP_T, pDevice.CLAMP_TO_EDGE);
+
+
+	var pDestinationFrameBuffer = pDevice.createFramebuffer();
+	pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pDestinationFrameBuffer);
+	pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
+		pDevice.TEXTURE_2D, pDestinationTexture, 0);
+
+	var pRenderIndexData = new Float32Array([-1,-1,-1,1,1,-1,1,1]);
+	var pRenderIndexBuffer = pDevice.createBuffer();
+
+	pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pRenderIndexBuffer);
+	pDevice.bufferData(pDevice.ARRAY_BUFFER, pRenderIndexData, pDevice.STREAM_DRAW);
+
+	pDevice.bindTexture(pDevice.TEXTURE_2D, this._pTexture);
+	pDevice.activeTexture(pDevice.TEXTURE0);
+	pDevice.bindTexture(pDevice.TEXTURE_2D, this._pTexture);
+	pProgram.applyInt("texture", 0);
+
+	pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pRenderIndexBuffer);
+	pDevice.vertexAttribPointer(pProgram._pAttributesByName['POSITION'].iLocation, 2, pDevice.FLOAT, false, 0, 0);
+	// pDevice.disableVertexAttribArray(1);
+	// pDevice.disableVertexAttribArray(2);
+
+	pDevice.viewport(0, 0, iWidth, iHeight);
+	pDevice.drawArrays(pDevice.TRIANGLE_STRIP, 0, 4);
+	pDevice.flush();
+
+	pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, null);
+	pDevice.deleteBuffer(pRenderIndexBuffer);
+	pDevice.deleteTexture(this._pTexture);
+	pDevice.deleteFramebuffer(pDestinationFrameBuffer);
+
+	pProgram.deactivate();
+
+	this._pTexture = pDestinationTexture;
+	this._iWidth = iWidth;
+	this._iHeight = iHeight;
+	return true;
 };
 
 /**
@@ -906,7 +970,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
 
     this.releaseTexture();
     this._pTexture = pDevice.createTexture();
-	this._pFrameBuffer = pDevice.createFramebuffer();
+    this._pFrameBuffer = pDevice.createFramebuffer();
     this._iFlags = eFlags;
     this._eFormat = eFormat || this._eFormat;
     this._eType = eType || this._eType;
@@ -916,10 +980,8 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
     }
 
     this.bind();
-	
     pDevice.pixelStorei(pDevice.UNPACK_ALIGNMENT, 1);
-	this.flipY(false);
-  
+    this.flipY(false)
 
     if (TEST_BIT(eFlags, a.Texture.MipMaps)) {
         nMipMaps = Math.ceil(Math.max(Math.log(this._iWidth) / Math.LN2, Math.log(this._iHeight) / Math.LN2)) + 1;
@@ -949,8 +1011,8 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
         }
     }
 
-    this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
-    this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
+    this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+    this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
     this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
     this.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
     this.unbind();
