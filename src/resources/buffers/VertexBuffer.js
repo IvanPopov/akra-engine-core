@@ -290,11 +290,10 @@ VertexBuffer.prototype.resize=function(iSize) {
  * Активировать буфер
  * @memberof VertexBuffer
  **/
-VertexBuffer.prototype.activate = function () 
-{
-    debug_assert(this.isValid(), "Attempting to activate  an invalid buffer");    
-    this._pDevice.bindBuffer(a.BTYPE.ARRAY_BUFFER, this._pBuffer);            
-}
+VertexBuffer.prototype.activate = function (){
+    debug_assert(this.isValid(), "Attempting to activate  an invalid buffer");
+    this._pEngine.shaderManager().activateBuffer(this);
+};
 
 VertexBuffer.prototype.bind = function () {
     this._pDevice.bindBuffer(a.BTYPE.ARRAY_BUFFER, this._pBuffer);

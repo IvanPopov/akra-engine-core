@@ -2,12 +2,331 @@ Define(SM_INVALID_EFFECT, -1);
 Define(SM_INVALID_TECHNIQUE, -1);
 Define(SM_UNKNOWN_PASS, -1);
 
-function ShaderProgram2(sHash) {
-    this.sFragmentCode = "";
-    this.sVertexCode = "";
-    this.pHardwareProgram = null;
-    this.sHash = sHash;
+function ShaderProgram2(pEngine) {
+    this.pEngine = pEngine;
+    //console.log(pEngine);
+    this._pDevice = pEngine.pDevice;
+    this._pShaderManager = pEngine.shaderManager();
+    this._sFragmentCode = "#ifdef GL_ES\nprecision lowp float;\n#endif\n" +
+                          "void main(void){gl_FragColor = vec4(vec3(0.), 1.);}";
+    this._sVertexCode = "void main(void){gl_Position = vec4(vec3(0.), 1.);}";
+    this._pAttrToReal = null;
+    this._pATRKeys = null;
+    this._pAttrToBuffer = null;
+    this._pATBKeys = null;
+    this._pRealAttr = null;
+    this._pRealBuffer = null;
+    this._pRealUniformList = {};
+    this._pUniformKeys = null;
+    this._pHardwareProgram = null;
+    this._pUniformVars = null;
+    this._pOffsets = null;
+    this._pBuffers = null;
+    this._pStreams = null;
+    this._pTextureSlots = null;
+    this._nActiveTimes = 0;
 }
+ShaderProgram2.prototype._buildShader = function (eType, sCode) {
+    var pDevice = this._pDevice;
+    var pShader = pDevice.createShader(eType);
+
+    pDevice.shaderSource(pShader, sCode);
+    pDevice.compileShader(pShader);
+
+    debug_assert_win(pDevice.getShaderParameter(pShader, pDevice.COMPILE_STATUS),
+                     'cannot compile shader', this._shaderInfoLog(pShader, eType));
+
+    return pShader;
+};
+/**
+ * Build shader program.
+ * @tparam String sVertexCode Source code of vertex shader.
+ * @tparam String sPixelCode Source code of pixel shader.
+ * @treturn Boolean
+ */
+ShaderProgram2.prototype.create = function (sVertexCode, sFragmentCode, bSetup) {
+    var pHardwareProgram, pDevice = this._pDevice;
+
+    this._sVertexCode = sVertexCode = sVertexCode || this._sVertexCode;
+    this._sFragmentCode = sFragmentCode = sFragmentCode || this._sFragmentCode;
+
+    pHardwareProgram = this._pHardwareProgram = pDevice.createProgram();
+    var pVertexShader = this._buildShader(a.SHADERTYPE.VERTEX, sVertexCode);
+    var pPixelShader = this._buildShader(a.SHADERTYPE.PIXEL, sFragmentCode);
+    pDevice.attachShader(pHardwareProgram, pVertexShader);
+    pDevice.attachShader(pHardwareProgram, pPixelShader);
+    pDevice.linkProgram(pHardwareProgram);
+    if (!pDevice.getProgramParameter(pHardwareProgram, pDevice.VALIDATE_STATUS)) {
+        //trace('program not valid', this.findResourceName());
+        //trace(pDevice.getProgramInfoLog(pHardwareProgram));
+    }
+    debug_assert_win(pDevice.getProgramParameter(pHardwareProgram, pDevice.LINK_STATUS),
+                     'cannot link program', this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
+    this._isValid = true;
+
+    return true;
+};
+ShaderProgram2.prototype._shaderInfoLog = function (pShader, eType) {
+    var sCode = this.getSourceCode(eType), sLog;
+    var tmp = sCode.split('\n');
+
+    sCode = '';
+    for (var i = 0; i < tmp.length; i++) {
+        sCode += (i + 1) + '| ' + tmp[i] + '\n';
+
+    }
+
+    sLog = this._pDevice.getShaderInfoLog(pShader);
+
+    return '<div style="background: #FCC">' +
+           '<pre>' + sLog + '</pre>' +
+           '</div>' +
+           '<pre style="background-color: #EEE;">' + sCode + '</pre>';
+};
+ShaderProgram2.prototype.getSourceCode = function (eType) {
+    return (eType === a.SHADERTYPE.VERTEX ? this._sVertexCode : this._sFragmentCode);
+};
+ShaderProgram2.prototype.setAttrParams = function (pAttrToReal, pAttrToBuffer, nAttr, nBuffer) {
+    this._pAttrToReal = pAttrToReal;
+    this._pAttrToBuffer = pAttrToBuffer;
+    this._pATRKeys = Object.keys(pAttrToReal);
+    this._pATBKeys = Object.keys(pAttrToBuffer);
+    this._pRealAttr = new Array(nAttr);
+    this._pRealBuffer = new Array(nBuffer);
+};
+ShaderProgram2.prototype.setUniformVars = function (pUniforms) {
+    this._pUniformVars = pUniforms;
+};
+ShaderProgram2.prototype.generateInputData = function (pAttrData, pUniformData) {
+    //TODO: pool object from cache not create
+    //TODO: In pAttrs push only unique VertexData
+    var pAttrs = new Array(this._pRealAttr.length);
+    var pBuffers = this._pBuffers,
+        pOffsets = this._pOffsets;
+    var i;
+    var pKeys = this._pATRKeys,
+        pAttrReal = this._pAttrToReal;
+    var sKey,
+        sType,
+        sOffset,
+        sBuf;
+    var pData,
+        pType;
+    for (i = 0; i < pKeys.length; i++) {
+        sKey = pKeys[i];
+        sKey = pKeys[i];
+        pData = pAttrData[sKey];
+        if (pData !== null) {
+            if (pData.eType === a.BufferMap.FT_MAPPABLE) {
+                pAttrs[pAttrReal[sKey]] = pData.pMapper.pData;
+            }
+            else {
+                pAttrs[pAttrReal[sKey]] = pData.pData;
+            }
+            sOffset = sKey + "_offset";
+            if (pUniformData[sOffset] || pOffsets[sOffset] !== null) {
+                warning("something wrong with offset");
+                continue;
+            }
+            pUniformData[sOffset] = pData.pData.getVertexDeclaration().element(sKey).iOffset;
+            sBuf = "A_b_" + this._pAttrToBuffer[sKey];
+            pUniformData[sBuf] = pData.pData.buffer;
+        }
+    }
+    return pAttrs;
+};
+ShaderProgram2.prototype.setup = function (pAttrData, pUniformData) {
+    var pDevice = this._pDevice;
+    var pProgram = this._pHardwareProgram;
+    var pUniforms = this._pRealUniformList;
+    var pOffsets = {},
+        pBuffers = {};
+    var i = 0;
+    var pKeys;
+    var sKey1,
+        sOffset,
+        sBuf;
+    var pData;
+    var pRealAttr = this._pRealAttr,
+        pAttrReal = this._pAttrToReal,
+        pRealBuf = this._pRealBuffer,
+        pBufReal = this._pAttrToBuffer;
+
+    for (i = 0; i < pRealAttr.length; i++) {
+        pRealAttr[i] = pDevice.getAttribLocation(pProgram, "a_" + i);
+    }
+    for (i = 0; i < pRealBuf.length; i++) {
+        sBuf = "A_b_" + i;
+        pUniforms[sBuf] = pRealBuf[i] = pDevice.getUniformLocation(pProgram, sBuf);
+        pBuffers[sBuf] = null;
+    }
+    pKeys = this._pATRKeys;
+    for (i = 0; i < pKeys.length; i++) {
+        sKey1 = pKeys[i];
+        pData = pAttrData[sKey1];
+        if (pAttrReal[sKey1] !== undefined) {
+            pAttrReal[sKey1] = pRealAttr[pAttrReal[sKey1]];
+            if (pData.eType === a.BufferMap.FT_MAPPABLE) {
+                sOffset = sKey1 + "_offset";
+                pOffsets[sOffset] = null;
+                pUniforms[sOffset] = pDevice.getUniformLocation(pProgram, sOffset);
+            }
+        }
+    }
+    pKeys = Object.keys(pUniformData);
+    for (i = 0; i < pKeys.length; i++) {
+        sKey1 = pKeys[i];
+        if (pUniforms[sKey1]) {
+            warning("Something going wrong! very wrong!");
+            return false;
+        }
+        pUniforms[sKey1] = pDevice.getUniformLocation(pProgram, sKey1);
+    }
+    this._pUniformKeys = Object.keys(pUniforms);
+    this._pOffsets = pOffsets;
+    this._pBuffers = pBuffers;
+    this._pStreams = new Array(pRealAttr.length);
+    this._pTextureSlots = new Array(a.info.graphics.maxTextureImageUnits(this._pDevice));
+    return true;
+};
+ShaderProgram2.prototype.applyUniform = function (sName, pData) {
+    var pType, sType;
+    if (this._pUniformVars[sName]) {
+        pType = this._pUniformVars[sName].pType.pEffectType;
+        if (!pType.isBase()) {
+            warning("!!!!We don`t support complex type of uniforms yet! But it coming soon!");
+            return;
+        }
+        sType = pType.toCode();
+        switch (sType) {
+            case "float":
+                this.applyFloat(sName, pData);
+                break;
+            case "int":
+                this.applyInt(sName, pData);
+                break;
+            case "vec2":
+                this.applyVec2(sName, pData);
+                break;
+            case "vec3":
+                this.applyVec3(sName, pData);
+                break;
+            case "vec4":
+                this.applyVec4(sName, pData);
+                break;
+            case "mat4":
+                this.applyMat4(sName, pData);
+                break;
+            default:
+                warning("Another base types are not support yet");
+        }
+        return;
+    }
+    else if (this._pOffsets[sName]) {
+        this.applyFloat(sName, pData);
+    }
+    else if (this._pBuffers[sName]) {
+        this.applyVideoBuffer(sName, pData);
+    }
+    else {
+        warning("You should not be here. Something bad have been happened with uniforms.");
+    }
+};
+ShaderProgram2.prototype.applyFloat = function (sName, pData) {
+    var pDevice = this._pDevice;
+    pDevice.uniform1f(this._pRealUniformList[sName], pData);
+};
+ShaderProgram2.prototype.applyInt = function (sName, pData) {
+    var pDevice = this._pDevice;
+    pDevice.uniform1i(this._pRealUniformList[sName], pData);
+};
+ShaderProgram2.prototype.applyVec2 = function (sName, pData) {
+    var pDevice = this._pDevice;
+    pDevice.uniform2fv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram2.prototype.applyVec3 = function (sName, pData) {
+    var pDevice = this._pDevice;
+    pDevice.uniform3fv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram2.prototype.applyVec4 = function (sName, pData) {
+    var pDevice = this._pDevice;
+    pDevice.uniform4fv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram2.prototype.applyMat4 = function (sName, pData) {
+    var pDevice = this._pDevice;
+    pDevice.uniformMatrix4fv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram2.prototype.applyVideoBuffer = function (sName, pData) {
+    var iSlot = this._pShaderManager.activateTexture(pData);
+    this.applySampler2D(sName, iSlot);
+//    var pDevice = this._pDevice;
+//    pDevice.uniformMatrix4fv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram2.prototype.getEmptyTextureSlot = function () {
+    var i;
+    var pSlots = this._pTextureSlots;
+    for (i = 0; i < pSlots.length; i++) {
+        if (pSlots[i] !== this._nActiveTimes) {
+            return i;
+        }
+    }
+};
+ShaderProgram2.prototype.setTextureSlot = function (iSlot, pTexture) {
+    this._pTextureSlots[iSlot] = this._nActiveTimes;
+};
+ShaderProgram2.prototype.applySampler2D = function (sName, iValue) {
+    return this.applyInt(sName, iValue);
+};
+/**
+ * @param {Int} iStream
+ * @param {VertexData} pData
+ * @return {*}
+ */
+ShaderProgram2.prototype.applyData = function (pVertexData) {
+    var pDevice = this._pDevice;
+    var iOffset = 0;
+    var iStride = pVertexData.getStride();
+    var pManager = this._pShaderManager;
+    var pAttrs = this._pAttrToReal,
+        iStream,
+        pDecl;
+    var pVertexElement;
+    var pVertexBuffer = pVertexData.buffer;
+    pDecl = pVertexData.getVertexDeclaration();
+    pManager.activateBuffer(pVertexBuffer);
+    for (var i = 0; i < pDecl.length; i++) {
+        pVertexElement = pDecl[i];
+        iStream = pAttrs[pVertexElement.eUsage];
+        if (iStream === undefined) {
+            continue;
+        }
+        if (this._pStreams[iStream] === pVertexData) {
+            continue;
+        }
+        this._pStreams[iStream] = pVertexData;
+        pDevice.vertexAttribPointer(iStream,
+                                    pVertexElement.nCount,
+                                    pVertexElement.eType,
+                                    false,
+                                    iStride,
+                                    pVertexElement.iOffset);
+    }
+    return true;
+};
+ShaderProgram2.prototype.getStreamData = function (iStream) {
+    return this._pStreams[iStream];
+};
+ShaderProgram2.prototype.getStreamNumber = function () {
+    return this._pRealAttr.length;
+};
+ShaderProgram2.prototype.activate = function () {
+    this._nActiveTimes++;
+    this._pDevice.useProgram(this._pHardwareProgram);
+};
+ShaderProgram2.prototype.isActive = function () {
+    return this._pDevice.getParameter(this._pDevice.CURRENT_PROGRAM) === this._pHardwareProgram;
+};
+
 function ComponentBlend() {
     this.pPassBlends = null;
     this.pUniformsBlend = null;
@@ -133,9 +452,9 @@ ComponentBlend.prototype.totalValidPasses = function () {
     return this._nTotalValidPasses > 0 ? this._nTotalValidPasses : this.totalPasses();
 };
 A_NAMESPACE(ComponentBlend, fx);
-a.fx.ComponentBlend = ComponentBlend;
 
-function PassBlend() {
+function PassBlend(pEngine) {
+    this.pEngine = pEngine;
     this.sHash = "";
     this._id = null;
     this.pPasses = [];
@@ -180,11 +499,128 @@ function PassBlend() {
     this.pGlobalBuffersF = {};
     this.pAttrBuffers = {};
 
-    this.pExtrectedFunctions = {};
+    this.pExtrectedFunctionsV = {};
+    this.pExtrectedFunctionsF = {};
+
+    this.pUniforms = {};
 
     this._pBlendTypes = {};
     this._pBlendTypesDecl = {};
     this._nBlendTypes = 1;
+    STATIC(pExtractedFunctions, {
+        "header" : "void A_extractTextureHeader(const sampler2D src, out A_TextureHeader texture) {" +
+                   "vec4 v = texture2D(src, vec2(0.)); " +
+                   "texture = A_TextureHeader(v.r, v.g, v.b, v.a);}\n",
+        "float"  : "float A_extractFloat(const sampler2D sampler, const A_TextureHeader header, const float offset) {" +
+                   "float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
+                   "float y = floor(pixelNumber / header.width) + .5; " +
+                   "float x = mod(pixelNumber, header.width) + .5; " +
+                   "int shift = int(mod(offset, A_VB_ELEMENT_SIZE)); " +
+                   "\n#ifdef A_VB_COMPONENT4\n" +
+                   "if(shift == 0) return A_tex2D(sampler, header, x, y).r; " +
+                   "else if(shift == 1) return A_tex2D(sampler, header, x, y).g; " +
+                   "else if(shift == 2) return A_tex2D(sampler, header, x, y).b; " +
+                   "else if(shift == 3) return A_tex2D(sampler, header, x, y).a; " +
+                   "\n#endif\n" +
+                   "return 0.;}\n",
+        "vec2"   : "vec2 A_extractVec2(const sampler2D sampler, const A_TextureHeader header, const float offset){" +
+                   "float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
+                   "float y = floor(pixelNumber / header.width) + .5; " +
+                   "float x = mod(pixelNumber, header.width) + .5; " +
+                   "int shift = int(mod(offset, A_VB_ELEMENT_SIZE)); " +
+                   "\n#ifdef A_VB_COMPONENT4\n" +
+                   "if(shift == 0) return A_tex2D(sampler, header, x, y).rg; " +
+                   "else if(shift == 1) return A_tex2D(sampler, header, x, y).gb; " +
+                   "else if(shift == 2) return A_tex2D(sampler, header, x, y).ba; " +
+                   "else if(shift == 3) { " +
+                   "if(int(x) == int(header.width - 1.)) " +
+                   "return vec2(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0., (y + 1.)).r); " +
+                   "else " +
+                   "return vec2(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).r); " +
+                   "} " +
+                   "\n#endif\n" +
+                   "return vec2(0.); }\n",
+        "vec3"   : "vec3 A_extractVec3(const sampler2D sampler, const A_TextureHeader header, const float offset){" +
+                   "float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
+                   "float y = floor(pixelNumber / header.width) + .5; " +
+                   "float x = mod(pixelNumber, header.width) + .5; " +
+                   "int shift = int(mod(offset, A_VB_ELEMENT_SIZE)); " +
+                   "\n#ifdef A_VB_COMPONENT4\n" +
+                   "if(shift == 0) return A_tex2D(sampler, header, x, y).rgb; " +
+                   "else if(shift == 1) return A_tex2D(sampler, header, x, y).gba; " +
+                   "else if(shift == 2){ " +
+                   "if(int(x) == int(header.width - 1.))  return vec3(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, 0., (y + 1.)).r); " +
+                   "else return vec3(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, (x + 1.), y).r);} " +
+                   "else if(shift == 3){ " +
+                   "if(int(x) == int(header.width - 1.))  return vec3(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0., (y + 1.)).rg); " +
+                   "else return vec3(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).rg);} " +
+                   "\n#endif\n" +
+                   "\n#ifdef A_VB_COMPONENT3\n" +
+                   "if(shift == 0) return A_tex2D(sampler, header,vec2(x,header.stepY*y)).rgb; " +
+                   "else if(shift == 1){ " +
+                   "if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).gb, A_tex2D(sampler, header, 0., (y + 1.)).r); " +
+                   "else return vec3(A_tex2D(sampler, header, x, y).gb, A_tex2D(sampler, header, (x + 1.), y).r);} " +
+                   "else if(shift == 3){ " +
+                   "if(x == header.width - 1.) return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, 0., (y + 1.)).rg); " +
+                   "else return vec3(A_tex2D(sampler, header, x, y).b, A_tex2D(sampler, header, (x + 1)., y).rg);} " +
+                   "\n#endif\n" +
+                   "return vec3(0);}\n",
+        "vec4"   : "vec4 A_extractVec4(const sampler2D sampler, const A_TextureHeader header, const float offset){ " +
+                   "float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
+                   "float y = floor(pixelNumber / header.width) + .5; " +
+                   "float x = mod(pixelNumber, header.width) + .5; " +
+                   "int shift = int(mod(offset, A_VB_ELEMENT_SIZE)); " +
+                   "\n#ifdef A_VB_COMPONENT4\n" +
+                   "if(shift == 0) return A_tex2D(sampler, header, x, y); " +
+                   "else if(shift == 1){ " +
+                   "if(int(x) == int(header.width - 1.)) " +
+                   "return vec4(A_tex2D(sampler, header, x, y).gba, A_tex2D(sampler, header, 0., (y + 1.)).r); " +
+                   "else " +
+                   "return vec4(A_tex2D(sampler, header, x, y).gba, A_tex2D(sampler, header, (x + 1.), y).r);} " +
+                   "else if(shift == 2){ " +
+                   "if(int(x) == int(header.width - 1.)) " +
+                   "return vec4(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, 0., (y + 1.)).rg); " +
+                   "else " +
+                   "return vec4(A_tex2D(sampler, header, x, y).ba, A_tex2D(sampler, header, (x + 1.), y).rg);} " +
+                   "else if(shift == 3){ " +
+                   "if(int(x) == int(header.width - 1.)) " +
+                   "return vec4(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, 0., (y + 1.)).rgb); " +
+                   "else return vec4(A_tex2D(sampler, header, x, y).a, A_tex2D(sampler, header, (x + 1.), y).rgb);} " +
+                   "\n#endif\n" +
+                   "\n#ifdef A_VB_COMPONENT3\n" +
+                   "\n#endif\n" +
+                   "return vec4(0);}\n",
+        "mat4"   : "vec2 A_findPixel(const A_TextureHeader header, const float offset) {" +
+                   "float pixelNumber = floor(offset / A_VB_ELEMENT_SIZE); " +
+                   "return vec2(header.stepX * (mod(pixelNumber, header.width) + .5), header.stepY * (floor(pixelNumber / header.width) + .5));}\n" +
+                   "mat4 A_extractMat4(const sampler2D sampler, const A_TextureHeader header, const float offset) {" +
+                   "return mat4(A_tex2Dv(sampler, header, A_findPixel(header, offset))," +
+                   "A_tex2Dv(sampler, header, A_findPixel(header, offset + 4.))," +
+                   "A_tex2Dv(sampler, header, A_findPixel(header, offset + 8.))," +
+                   "A_tex2Dv(sampler, header, A_findPixel(header, offset + 12.)));}\n",
+        "init"   : "\n#ifdef GL_FRAGMENT_PRECISION_HIGH\n" +
+                   "//#define texture2D(sampler, ) texture2D\n" +
+                   "#else\n" +
+                   "#define texture2D(A, B) texture2DLod(A, B, 0.)\n" +
+                   "#endif\n" +
+                   "#ifndef A_VB_COMPONENT3\n" +
+                   "#define A_VB_COMPONENT4\n" +
+                   "#endif\n" +
+                   "#ifdef A_VB_COMPONENT4\n" +
+                   "#define A_VB_ELEMENT_SIZE 4.\n" +
+                   "#endif\n" +
+                   "#ifdef A_VB_COMPONENT3\n" +
+                   "#define A_VB_ELEMENT_SIZE 3.\n" +
+                   "#endif\n" +
+                   "#define A_tex2D(S, H, X, Y) texture2D(S, vec2(H.stepX * X , H.stepY * Y))\n" +
+                   "#define A_tex2Dv(S, H, V) texture2D(S, V)\n" +
+                   "struct A_TextureHeader {\n" +
+                   "float width; " +
+                   "float height; " +
+                   "float stepX; " +
+                   "float stepY; " +
+                   "};\n"
+    });
 }
 PassBlend.prototype.init = function (sHash, pBlend) {
     this.sHash = sHash;
@@ -263,11 +699,11 @@ PassBlend.prototype.addPass = function (pPass) {
             }
             this.pAttrBuffers[i].push(pVertex.pAttrBuffers[i]);
         }
+        for (i in pVertex._pExtractFunctions) {
+            this.pExtrectedFunctionsV[i] = null;
+        }
         for (i in pVertex._pAttrSemantics) {
             pVar1 = pVertex._pAttrSemantics[i];
-            for (j in pVar1._pExtractFunctions) {
-                this.pExtrectedFunctions[j] = null;
-            }
             pVar2 = this.pAttributes[i];
             if (pVar2) {
                 if (pVar2 instanceof Array) {
@@ -371,6 +807,9 @@ PassBlend.prototype.addPass = function (pPass) {
         }
         this.pGlobalBuffersF[i].push(pVertex.pGlobalBuffers[i]);
     }
+    for (i in pFragment._pExtractFunctions) {
+        this.pExtrectedFunctionsF[i] = null;
+    }
     pPass.clear();
 };
 PassBlend.prototype.finalizeBlend = function () {
@@ -429,12 +868,14 @@ PassBlend.prototype.finalizeBlend = function () {
             sType = fnBlendTypes(this.pUniformsV[i], this);
             this.pUniformsBlockV[i] = "uniform " + sType + " " + this.pUniformsV[i][0].sRealName + ";";
         }
+        this.pUniforms[i] = this.pUniformsV[i];
     }
     for (i in this.pUniformsBlockF) {
         if (this.pUniformsBlockF[i] === null) {
             sType = fnBlendTypes(this.pUniformsF[i], this);
             this.pUniformsBlockF[i] = "uniform " + sType + " " + this.pUniformsF[i][0].sRealName + ";";
         }
+        this.pUniforms[i] = this.pUniformsF[i];
     }
     for (i in this.pAttributes) {
         pAttr = this.pAttributes[i];
@@ -446,16 +887,19 @@ PassBlend.prototype.finalizeBlend = function () {
             this.pAttributes[i] = "attribute " + sType + " " + pAttr[0].sRealName + ";";
         }
     }
-    this.sVaryingsOut = "struct {";
+    this.sVaryingsOut = "struct { vec4 POSITION;";
+
     for (i in this.pVaryings) {
         this.sVaryingsOut += this.pVaryings[i].toCodeDecl();
-        this.pVaryingsBlock[i] = a.fx.GLOBAL_VARS.SHADEROUT + "." + i;
+        this.pVaryingsBlock[i] = a.fx.GLOBAL_VARS.SHADEROUT + "." + i + ";";
     }
+    this.pVaryingsBlock["POSITION"] = "gl_Position=" + a.fx.GLOBAL_VARS.SHADEROUT + ".POSITION;";
     this.sVaryingsOut += "} " + a.fx.GLOBAL_VARS.SHADEROUT + ";"
 
 };
-PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys) {
-    var pProgram = new ShaderProgram2(sHash);
+PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUniformData) {
+    //console.log(this);
+    var pProgram;
     var pAttrBuf = {};
     var i, j;
     var pAttrToReal = {},
@@ -485,18 +929,19 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys) {
         }
         pAttrToReal[sKey1] = nAttr;
         isNewBuffer = false;
-        if (pData1 === true) {
-            if (pAttr.isPointer || !pAttr.pType.isBase()) {
-                warning("Bad data in buffers 001");
-                return false;
-            }
-            pAttrInit[nAttr] = sKey1;
-            nAttr++;
-            if (pAttrToBuffer[sKey1] !== undefined) {
-                pAttrToBuffer[sKey1] = nBuffer;
-                isNewBuffer = true;
-            }
-            continue;
+//        if (pData1.eType === a.BufferMap.FT_UNMAPPABLE) {
+//            if (pAttr.isPointer || !pAttr.pType.isBase()) {
+//                warning("Bad data in buffers 001");
+//                return false;
+//            }
+//            pAttrInit[nAttr] = sKey1;
+//            nAttr++;
+//            continue;
+//        }
+        if (pData1.eType === a.BufferMap.FT_MAPPABLE &&
+            pAttrToBuffer[sKey1] === undefined) {
+            pAttrToBuffer[sKey1] = nBuffer;
+            isNewBuffer = true;
         }
         for (j = i; j < pKeys.length; j++) {
             sKey2 = pKeys[j];
@@ -505,7 +950,8 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys) {
                 pAttrToReal[sKey2] = nAttr;
                 pAttrToBuffer[sKey2] = nBuffer;
             }
-            if (pData1._pVertexBuffer === pData2._pVertexBuffer) {
+            if (pData1.eType === a.BufferMap.FT_MAPPABLE &&
+                pData1.pData._pVertexBuffer === pData2.pData._pVertexBuffer) {
                 pAttrToBuffer[sKey2] = nBuffer;
             }
         }
@@ -516,10 +962,12 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys) {
     }
     pRealAttrs = new Array(nAttr);
     pRealBuffers = new Array(nBuffer);
+
     for (i = 0; i < pRealBuffers.length; i++) {
         pRealBuffers[i] = "uniform sampler2D " + "A_b_" + i +
                           "; A_TextureHeader A_b_h_" + i + ";";
     }
+
     for (i = 0; i < pKeys.length; i++) {
         sKey1 = pKeys[i];
         if (pAttrToBuffer[sKey1] !== undefined) {
@@ -534,6 +982,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys) {
             }
         }
     }
+
     for (i = 0; i < pRealAttrs.length; i++) {
         sKey1 = pAttrInit[i];
         if (sKey1 !== undefined) {
@@ -545,6 +994,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys) {
         }
         pRealAttrs[i] = "attribute float a_" + i + ";";
     }
+
     for (i = 0; i < pKeys.length; i++) {
         sKey1 = pKeys[i];
         if (pAttrInit[sKey1]) {
@@ -566,7 +1016,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys) {
             }
         }
         else {
-            this.pExtrectedFunctions["header"] = null;
+            this.pExtrectedFunctionsV["header"] = null;
             sUniformOffset += "uniform float " + pAttr.toOffsetStr() + ";";
             for (j = pAttr.pPointers.length - 1; j >= 0; j--) {
                 pPointer = pAttr.pPointers[j];
@@ -577,7 +1027,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys) {
                 else {
                     sInit += pPointer.toCode() + "=A_extractFloat(A_b_" + iBuffer + ",A_b_h_" +
                              iBuffer + "," + pAttr.pPointers[j + 1].toCode() + ");";
-                    this.pExtrectedFunctions["float"] = null;
+                    this.pExtrectedFunctionsV["float"] = null;
                 }
             }
             sDecl += pAttr.pType.pEffectType.toCode() + " " + pAttr.toCode() + ";";
@@ -592,34 +1042,159 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys) {
                     break;
                 case "vec2":
                     sInit += "A_extractVec2(";
-                    this.pExtrectedFunctions["float"] = null;
+                    this.pExtrectedFunctionsV["float"] = null;
                     break;
                 case "vec3":
                     sInit += "A_extractVec3(";
-                    this.pExtrectedFunctions["float"] = null;
+                    this.pExtrectedFunctionsV["float"] = null;
                     break;
                 case "vec4":
                     sInit += "A_extractVec4(";
-                    this.pExtrectedFunctions["float"] = null;
+                    this.pExtrectedFunctionsV["float"] = null;
                     break;
                 case "mat4":
                     sInit += "A_extractMat4(";
-                    this.pExtrectedFunctions["float"] = null;
-                    this.pExtrectedFunctions["vec4"] = null;
+                    this.pExtrectedFunctionsV["float"] = null;
+                    this.pExtrectedFunctionsV["vec4"] = null;
                     break;
                 default:
                     warning("another type are not implemented yet");
                     return false;
             }
             sInit += "A_b_" + iBuffer + ",A_b_h_" + iBuffer + "," + pAttr.pPointers[0].toCode() + ");";
-            this.pExtrectedFunctions[pAttr.pType.pEffectType.toCode()] = null;
+            this.pExtrectedFunctionsV[pAttr.pType.pEffectType.toCode()] = null;
         }
         pAttrDecl[sKey1] = sDecl;
         pAttrInit[sKey1] = sInit;
     }
-    //TODO: All data ready for finalize.
-    return {};
+
+    function fnToFinalCode(pCode) {
+        if (typeof(pCode) === "string") {
+            return pCode;
+        }
+        var sCode = "";
+        for (var i = 0; i < pCode.length; i++) {
+            if (typeof(pCode[i]) === "string") {
+                sCode += pCode[i];
+            }
+            else {
+                sCode += pCode[i].pData;
+            }
+        }
+        return sCode;
+    }
+
+    var sVertexCode = "";
+    var sFragmentCode = "";
+    var isExtract;
+    //VERTEX SHADER
+    isExtract = false;
+    for (i in this.pExtrectedFunctionsV) {
+        if (!isExtract) {
+            sVertexCode += PassBlend.pExtractedFunctions["init"];
+            isExtract = true;
+        }
+        sVertexCode += PassBlend.pExtractedFunctions[i];
+    }
+    for (i in this.pTypesBlockV) {
+        sVertexCode += this.pTypesBlockV[i] + ";";
+    }
+    for (i in this.pFuncDefBlockV) {
+        sVertexCode += i + ";";
+    }
+    for (i in this.pUniformsBlockV) {
+        sVertexCode += this.pUniformsBlockV[i];
+    }
+    for (i in this.pGlobalVarBlockV) {
+        sVertexCode += this.pGlobalVarBlockV[i];
+    }
+    for (i in this.pVaryingsDef) {
+        sVertexCode += this.pVaryingsDef[i];
+    }
+    for (i = 0; i < pRealAttrs.length; i++) {
+        sVertexCode += pRealAttrs[i];
+    }
+    for (i = 0; i < pRealBuffers.length; i++) {
+        sVertexCode += pRealBuffers[i];
+    }
+    sVertexCode += sUniformOffset;
+    for (i = 0; i < pKeys.length; i++) {
+        sKey1 = pKeys[i];
+        sVertexCode += pAttrDecl[sKey1];
+    }
+    sVertexCode += this.sVaryingsOut;
+    for (i in this.pFuncDeclBlockV) {
+        sVertexCode += fnToFinalCode(this.pFuncDeclBlockV[i]) + "\n";
+    }
+    for (i = 0; i < this.pVertexShaders.length; i++) {
+        sVertexCode += this.pVertexShaders[i].toFinal() + "\n";
+    }
+    sVertexCode += "void main(){";
+    for (i = 0; i < pRealBuffers.length; i++) {
+        sVertexCode += "A_extractTextureHeader(A_b_" + i + ",A_b_h_" + i + ");";
+    }
+    for (i = 0; i < pKeys.length; i++) {
+        sKey1 = pKeys[i];
+        sVertexCode += pAttrInit[sKey1];
+    }
+    for (i = 0; i < i < this.pVertexShaders.length; i++) {
+        sVertexCode += this.pVertexShaders[i].sRealName + "();"
+    }
+    for (i in this.pVaryingsBlock) {
+        sVertexCode += this.pVaryingsBlock[i];
+    }
+    sVertexCode += "}";
+    //PIXEL SHADER
+    isExtract = false;
+    for (i in this.pExtrectedFunctionsF) {
+        if (!isExtract) {
+            sFragmentCode += PassBlend.pExtractedFunctions["init"];
+            isExtract = true;
+        }
+        sFragmentCode += PassBlend.pExtractedFunctions[i];
+    }
+    for (i in this.pTypesBlockF) {
+        sFragmentCode += this.pTypesBlockF[i] + ";";
+    }
+    for (i in this.pFuncDefBlockF) {
+        sFragmentCode += i + ";";
+    }
+    for (i in this.pUniformsBlockF) {
+        sFragmentCode += this.pUniformsBlockF[i];
+    }
+    for (i in this.pGlobalVarBlockF) {
+        sFragmentCode += this.pGlobalVarBlockF[i];
+    }
+    for (i in this.pVaryingsDef) {
+        sFragmentCode += this.pVaryingsDef[i];
+    }
+    for (i in this.pFuncDeclBlockF) {
+        sFragmentCode += fnToFinalCode(this.pFuncDeclBlockF[i]) + "\n";
+    }
+    for (i = 0; i < this.pFragmentShaders.length; i++) {
+        sFragmentCode += this.pFragmentShaders[i].toFinal() + "\n";
+    }
+    sFragmentCode += "void main(){";
+    for (i = 0; i < i < this.pFragmentShaders.length; i++) {
+        sFragmentCode += this.pFragmentShaders[i].sRealName + "();"
+    }
+    sFragmentCode += "}";
+    if (sFragmentCode !== "") {
+        sFragmentCode = "#ifdef GL_ES\nprecision lowp float;\n#endif\n" + sFragmentCode;
+    }
+    pProgram = new ShaderProgram2(this.pEngine);
+    pProgram.setUniformVars(this.pUniforms);
+    pProgram.setAttrParams(pAttrToReal, pAttrToBuffer, pRealAttrs.length, pRealBuffers.length);
+    if (!pProgram.create(sVertexCode, sFragmentCode)) {
+        return false;
+    }
+    if (!pProgram.setup(pAttrData, pUniformData)) {
+        return false;
+    }
+    //console.log(pProgram);
+    return pProgram;
 };
+A_NAMESPACE(PassBlend, fx);
 
 function ShaderManager(pEngine) {
     Enum([
@@ -675,6 +1250,7 @@ function ShaderManager(pEngine) {
     Enum([MAX_TEXTURE_HANDLES = a.SurfaceMaterial.maxTexturesPerSurface], eTextureHandles, a.ShaderManager);
 
     this.pEngine = pEngine;
+    this.pDevice = pEngine.pDevice;
     this._pEngineStates = pEngine.pSystemStates;
 
     this._nEffectFile = 1;
@@ -701,7 +1277,8 @@ function ShaderManager(pEngine) {
 
     this._pPrograms = {};
 
-
+    this._pActiveBuffer = null;
+    this._pTextureSlots = new Array(a.info.graphics.maxTextureImageUnits(this.pDevice));
 }
 
 /**
@@ -956,12 +1533,10 @@ ShaderManager.prototype.activateProgram = function (pProgram) {
     for (var i = pProgram.getAttribCount(); i < this._nAttrsUsed; i++) {
         pDevice.disableVertexAttribArray(i);
     }
-    ;
 
     for (var i = 0; i < pProgram.getAttribCount(); i++) {
         pDevice.enableVertexAttribArray(i);
     }
-    ;
 
     this._pActiveProgram = pProgram;
     this._nAttrsUsed = pProgram.getAttribCount();
@@ -1224,7 +1799,7 @@ ShaderManager.prototype.finishPass = function (iPass) {
         pPassBlend = this._pPassBlends[sPassBlendHash];
     }
     else {
-        pPassBlend = new PassBlend();
+        pPassBlend = new a.fx.PassBlend(this.pEngine);
         pPassBlend.init(sPassBlendHash, pNewPassBlend);
         if (!this._registerPassBlend(pPassBlend)) {
             return false;
@@ -1266,18 +1841,14 @@ ShaderManager.prototype.finishPass = function (iPass) {
             warning("BufferMaps are not mixible");
             return false;
         }
-        for (j in pAttrSemantics) {
-            if (pAttrSemantics[j] === null) {
+        for (j = 0; j < pAttrKeys.length; j++) {
+            sKey2 = pAttrKeys[j];
+            if (pAttrSemantics[sKey2] === null) {
                 for (k = 0; k < pMap._nCompleteFlows; k++) {
                     pFlow = pMap._pCompleteFlows[k];
-                    pVertexElement = pFlow.pData.getVertexDeclaration().element(j);
+                    pVertexElement = pFlow.pData.getVertexDeclaration().element(sKey2);
                     if (pVertexElement) {
-                        if (pFlow.eType === a.BufferMap.FT_MAPPABLE) {
-                            pAttrSemantics[pVertexElement.eUsage] = pFlow.pData;
-                        }
-                        else {
-                            pAttrSemantics[pVertexElement.eUsage] = true;
-                        }
+                        pAttrSemantics[sKey2] = pFlow;
                         break;
                     }
                 }
@@ -1293,9 +1864,10 @@ ShaderManager.prototype.finishPass = function (iPass) {
         if (pAttrSemantics[sKey1] === null) {
             sHash += "EMPTY";
         }
-        else if (pAttrSemantics[sKey1] === true) {
-            sHash += "REAL";
-        }
+//        else if (pAttrSemantics[sKey1] === a.BufferMap.FT_UNMAPPABLE) {
+//            sHash += "REAL";
+//        }
+        //TODO: VIDEO_BUFFER !== VERTEX_BUFFER
         else {
             sHash += "SAME:";
             sSame1 = "";
@@ -1305,7 +1877,8 @@ ShaderManager.prototype.finishPass = function (iPass) {
                 if (i !== j && pAttrSemantics[sKey2] === pAttrSemantics[sKey1]) {
                     sSame1 += sKey2 + ",";
                 }
-                else if (i !== j && pAttrSemantics[sKey2]._pVertexBuffer === pAttrSemantics[sKey1]._pVertexBuffer) {
+                else if (i !== j &&
+                         pAttrSemantics[sKey2].pData._pVertexBuffer === pAttrSemantics[sKey1].pData._pVertexBuffer) {
                     sSame1 += sKey2 + ",";
                 }
             }
@@ -1317,8 +1890,18 @@ ShaderManager.prototype.finishPass = function (iPass) {
     var pProgram;
     pProgram = this._pPrograms[sHash];
     if (!pProgram) {
-        pPassBlend.generateProgram(sHash, pAttrSemantics, pAttrKeys);
+        pProgram = pPassBlend.generateProgram(sHash, pAttrSemantics, pAttrKeys, pUniformValues);
+        if (!pProgram) {
+            warning("It`s impossible to generate shader program");
+            return false;
+        }
     }
+    var pAttrs = pProgram.generateInputData(pAttrSemantics, pUniformValues);
+    return {
+        "pProgram"    : pProgram,
+        "pAttributes" : pAttrs,
+        "pUniforms"   : pUniformValues
+    };
 };
 ShaderManager.prototype._registerPassBlend = function (pBlend) {
     if (this._pPassBlends[pBlend.sHash]) {
@@ -1338,6 +1921,95 @@ ShaderManager.prototype.applyRenderData = function (pData) {
     this._pCurrentMaps[iPass] = pMap;
 };
 
+ShaderManager.prototype.activateBuffer = function (pBuffer) {
+    if (this._pActiveBuffer === pBuffer) {
+        return true;
+    }
+    this._pActiveBuffer = pBuffer;
+    pBuffer.bind();
+    return true;
+};
+ShaderManager.prototype.activateTexture = function (pTexture) {
+    var i;
+    var iEmpty = -1;
+    var pSlots = this._pTextureSlots;
+    var iOldSlot;
+    var iSlot = pTexture.getSlot();
+    if (iSlot >= 0) {
+        if (this._pActiveProgram) {
+            this._pActiveProgram.setTextureSlot(iSlot, pTexture);
+        }
+        return iSlot;
+    }
+    iSlot = this.getEmptyTextureSlot();
+    this.pDevice.activeTexture(a.TEXTUREUNIT.TEXTURE + (iSlot || 0));
+    if (pSlots[iSlot]) {
+        pSlots[iSlot].setSlot(-1);
+    }
+    pSlots[iSlot] = pTexture;
+    if (this._pActiveProgram) {
+        this._pActiveProgram.setTextureSlot(iSlot, pTexture);
+    }
+    pTexture.bind();
+    pTexture.setSlot(iSlot);
+    return iSlot;
+};
+ShaderManager.prototype.getActiveTexture = function (iSlot) {
+    return this._pTextureSlots[iSlot];
+};
+ShaderManager.prototype.getTextureSlot = function (pTexture) {
+    debug_assert(pTexture, "Texture must be");
+    var i;
+    for (i = 0; i < this._pTextureSlots.length; i++) {
+        if (pTexture === this._pTextureSlots[i]) {
+            return i;
+        }
+    }
+    return -1;
+};
+
+ShaderManager.prototype.getEmptyTextureSlot = function (pTexture) {
+    pTexture = pTexture || null;
+    var i;
+    for (i = 0; i < this._pTextureSlots.length; i++) {
+        if (!this._pTextureSlots[i] || pTexture === this._pTextureSlots[i]) {
+            return i;
+        }
+    }
+    return this._pActiveProgram.getEmptyTextureSlot();
+};
+
+ShaderManager.prototype.activate = function (pEntry) {
+    var pProgram = pEntry.pProgram;
+    var pAttrs = pEntry.pAttributes;
+    var pUniforms = pEntry.pUniforms;
+    var pDevice = this.pDevice;
+    var i;
+    var nStreams = pProgram.getStreamNumber();
+
+    if (this._pActiveProgram !== pProgram) {
+        pProgram.activate();
+    }
+
+    for (i = nStreams; i < this._nAttrsUsed; i++) {
+        pDevice.disableVertexAttribArray(i);
+    }
+
+    for (i = 0; i < nStreams; i++) {
+        pDevice.enableVertexAttribArray(i);
+    }
+
+    this._nAttrsUsed = nStreams;
+
+    for (i = 0; i < pAttrs.length; i++) {
+        pProgram.applyData(pAttrs[i]);
+    }
+
+    var pUniformKeys = pProgram._pUniformVars;
+    for(i = 0; i < pUniformKeys.length; i++){
+        pProgram.applyUniform(pUniformKeys[i], pUniforms[pUniformKeys[i]]);
+    }
+};
 /**
  * Получить список PARAMETER переменных компонента.
  * @tparam Uint iComponentHandle Хендл компонена.

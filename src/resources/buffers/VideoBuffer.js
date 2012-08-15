@@ -408,6 +408,7 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
         pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pFramebuffer);
 
 Ifdef (TEXTURE_REDRAW)
+
         STATIC(_pCopyProgram, a.loadProgram(this._pEngine, '../effects/copy_texture.glsl'));
 
         var pCopyProgram = statics._pCopyProgram;
@@ -440,7 +441,7 @@ Ifdef (TEXTURE_REDRAW)
 
         pDevice.drawArrays(a.PRIMTYPE.TRIANGLESTRIP, 0, 4);
 Endif ();
-
+        trace('before error >> ');
         STATIC(_pUpdateProgram, a.loadProgram(this._pEngine, '../effects/update_video_buffer.glsl'));
 
         pProgram = statics._pUpdateProgram;

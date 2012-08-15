@@ -1914,7 +1914,7 @@ EffectShader.prototype.toCodeAll = function (id) {
     var i, j;
     var pVar;
     if (this.pReturnVariable) {
-        this.pReturnVariable.sRealName = "OUT";
+        this.pReturnVariable.sRealName = a.fx.GLOBAL_VARS.SHADEROUT;
     }
     if (this.pTwin) {
         this.pTwin.sRealName += "_twin";
@@ -2045,6 +2045,29 @@ EffectShader.prototype.generateGlobalPointers = function () {
             pPointers[j].sRealName = null;
             this.pGlobalPointers[pPointers[j].toCode()] = pPointers[j];
         }
+    }
+};
+EffectShader.prototype.toFinal = function () {
+    if (!this._isReady) {
+        warning("You must use postAnalyzeEffect before");
+        return false;
+    }
+    if (this._sCodeAll) {
+        return this._sCodeAll;
+    }
+    else {
+        var sCode = "";
+        var pCode = this._pCodeAll;
+        var i;
+        for (i = 0; i < pCode.length; i++) {
+            if (typeof(pCode[i]) === "string") {
+                sCode += pCode[i];
+            }
+            else {
+                sCode += pCode[i].pData;
+            }
+        }
+        return sCode;
     }
 };
 
@@ -3203,54 +3226,54 @@ Effect.prototype.addBaseVarMemCode = function (pFunction, pBlock, pVar) {
     }
     else if (pVar.pType.isEqual(this.hasType("float2"))) {
         pBlock._pCodeData.push("A_extractVec2(");
-        pFunction._pExtractFunctions["vec2"] = null;
         pFunction._pExtractFunctions["float"] = null;
+        pFunction._pExtractFunctions["vec2"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("float3"))) {
         pBlock._pCodeData.push("A_extractVec3(");
-        pFunction._pExtractFunctions["vec3"] = null;
         pFunction._pExtractFunctions["float"] = null;
+        pFunction._pExtractFunctions["vec3"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("float4"))) {
         pBlock._pCodeData.push("A_extractVec4(");
-        pFunction._pExtractFunctions["vec4"] = null;
         pFunction._pExtractFunctions["float"] = null;
+        pFunction._pExtractFunctions["vec4"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("int2"))) {
         pBlock._pCodeData.push("ivec2(A_extractVec2(");
-        pFunction._pExtractFunctions["vec2"] = null;
         pFunction._pExtractFunctions["float"] = null;
+        pFunction._pExtractFunctions["vec2"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("int3"))) {
         pBlock._pCodeData.push("ivec3(A_extractVec3(");
-        pFunction._pExtractFunctions["vec3"] = null;
         pFunction._pExtractFunctions["float"] = null;
+        pFunction._pExtractFunctions["vec3"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("int4"))) {
         pBlock._pCodeData.push("ivec4(A_extractVec4(");
-        pFunction._pExtractFunctions["vec4"] = null;
         pFunction._pExtractFunctions["float"] = null;
+        pFunction._pExtractFunctions["vec4"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("bool2"))) {
         pBlock._pCodeData.push("bvec2(A_extractVec2(");
-        pFunction._pExtractFunctions["vec2"] = null;
         pFunction._pExtractFunctions["float"] = null;
+        pFunction._pExtractFunctions["vec2"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("bool3"))) {
         pBlock._pCodeData.push("bvec3(A_extractVec3(");
-        pFunction._pExtractFunctions["vec3"] = null;
         pFunction._pExtractFunctions["float"] = null;
+        pFunction._pExtractFunctions["vec3"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("bool4"))) {
         pBlock._pCodeData.push("bvec4(A_extractVec4(");
-        pFunction._pExtractFunctions["vec4"] = null;
         pFunction._pExtractFunctions["float"] = null;
+        pFunction._pExtractFunctions["vec4"] = null;
     }
     else if (pVar.pType.isEqual(this.hasType("float4x4"))) {
         pBlock._pCodeData.push("A_extractMat4(");
-        pFunction._pExtractFunctions["Mat4"] = null;
-        pFunction._pExtractFunctions["vec4"] = null;
         pFunction._pExtractFunctions["float"] = null;
+        pFunction._pExtractFunctions["vec4"] = null;
+        pFunction._pExtractFunctions["Mat4"] = null;
     }
     else {
         error("We don`t support another simple type");
@@ -4066,7 +4089,7 @@ Effect.prototype.postAnalyzeEffect = function () {
             continue;
         }
         pShader.toCodeAll(this._id);
-        console.log(pShader._sCodeAll ? pShader._sCodeAll : pShader._pCodeAll);
+        //console.log(pShader._sCodeAll ? pShader._sCodeAll : pShader._pCodeAll);
     }
     //check passes for used valid shaders
     var pPass;

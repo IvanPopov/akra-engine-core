@@ -65,6 +65,8 @@ function Texture (pEngine) {
 
     this._eFormat = a.IFORMATSHORT.RGBA;
     this._eType = a.ITYPE.UNSIGNED_BYTE;
+
+    this._iSlot = -1;
 }
 
 a.extend(Texture, a.ResourcePoolItem);
@@ -966,13 +968,17 @@ Texture.prototype.unbind = function () {
     this._pEngine.pDevice.bindTexture(this.target, null);
 };
 
-Texture.prototype.activate = function (iSlot) {
+Texture.prototype.activate = function () {
     var pManager = this._pEngine.pShaderManager;
-    //if (pManager.activeTextures[iSlot] !== this) {
-        this._pEngine.pDevice.activeTexture(a.TEXTUREUNIT.TEXTURE + (iSlot || 0));
-        this.bind();
-        //pManager.activeTextures[iSlot] = this;
-    //}
+    pManager.activateTexture(this);
+};
+
+Texture.prototype.setSlot = function (iSlot) {
+    this._iSlot = iSlot;
+};
+
+Texture.prototype.getSlot = function () {
+    return this._iSlot;
 };
 
 /**

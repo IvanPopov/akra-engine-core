@@ -180,7 +180,7 @@ function GLSLProgram(pEngine) {
      * @type String
      * @private
      */
-    this._sPixelCode = '#ifdef GL_ES\nprecision lowp float;\n#endif\n' +
+    this._sFragmentCode = '#ifdef GL_ES\nprecision lowp float;\n#endif\n' +
         'void main(void){gl_FragColor = vec4(vec3(0.), 1.);}';
 
     /**
@@ -253,7 +253,7 @@ GLSLProgram.prototype.isActive = function () {
  * @treturn String
  */
 GLSLProgram.prototype.getSourceCode = function (eType) {
-    return (eType === a.SHADERTYPE.VERTEX ? this._sVertexCode : this._sPixelCode);
+    return (eType === a.SHADERTYPE.VERTEX ? this._sVertexCode : this._sFragmentCode);
 };
 
 /**
@@ -268,7 +268,7 @@ GLSLProgram.prototype.setSourceCode = function (eType, sCode) {
             this._sVertexCode = sCode;
             return true;
         case a.SHADERTYPE.PIXEL:
-            this._sPixelCode = sCode;
+            this._sFragmentCode = sCode;
             return true;
     }
     return false;
@@ -350,7 +350,7 @@ GLSLProgram.prototype.create = function (sVertexCode, sPixelCode, bSetup) {
     var pHardwareProgram, pDevice = this._pDevice;
 
     this._sVertexCode = sVertexCode = sVertexCode || this._sVertexCode;
-    this._sPixelCode = sPixelCode = sPixelCode || this._sPixelCode;
+    this._sFragmentCode = sPixelCode = sPixelCode || this._sFragmentCode;
 
     pHardwareProgram = this._pHardwareProgram = pDevice.createProgram();
     var pVertexShader = this._buildShader(a.SHADERTYPE.VERTEX, sVertexCode);
