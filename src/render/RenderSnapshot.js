@@ -35,6 +35,7 @@ function RenderSnapshot() {
      * @private
      */
     this._pPassStates = null;
+    this._pTextures = null;
     this._isUpdated = false;
 
 
@@ -151,10 +152,21 @@ RenderSnapshot.prototype._updatePassStates = function () {
  * @tparam String sName Parameter name.
  * @treturn Boolean True if succeed, otherwise False
  */
-RenderSnapshot.prototype.setParameter = function (sName, pData) {
+RenderSnapshot.prototype.setParameter = function (sName, pData, isSemantic) {
+    if (isSemantic) {
+        return this.setParameterBySemantic(sName, pData);
+    }
+    var sRealName = this._pShaderManager.getUniformRealName(sName);
+    if (!sRealName) {
+        return false;
+    }
+    return this.setParameterBySemantic(sRealName, pData);
+};
+
+RenderSnapshot.prototype.setParameterBySemantic = function (sRealName, pData) {
     var pPass = this._pPassStates[this._iCurrentPass];
-    if (pPass[sName] !== undefined) {
-        pPass[sName] = pData;
+    if (pPass[sRealName] !== undefined) {
+        pPass[sRealName] = pData;
         return true;
     }
     return false;
@@ -195,8 +207,9 @@ RenderSnapshot.prototype.setParameterInArray = function (sName, pData, iElement)
 //    return this._pShaderManager.setTextureMatrix(iIndex, pData);
 //};
 
-RenderSnapshot.prototype.setPassStates = function (pPasses) {
+RenderSnapshot.prototype.setPassStates = function (pPasses, pTextures) {
     this._pPassStates = pPasses;
+    this._pTextures = pTextures;
 };
 /**
  * activate pass iPass
@@ -289,6 +302,72 @@ RenderSnapshot.prototype.applySurfaceMaterial = function (pSurfaceMaterial) {
  */
 RenderSnapshot.prototype.applyCamera = function (pCamera) {
     this._pShaderManager.applyCamera(pCamera);
+};
+
+RenderSnapshot.prototype.setVideoBuffer = function (sName, pVideoBuffer, isSemantic) {
+    return this.setParameter(sName, pVideoBuffer, isSemantic);
+};
+
+RenderSnapshot.prototype.setVideoBufferBySemantic = function (sRealName, pVideoBuffer) {
+    return this.setParameterBySemantic(sRealName, pVideoBuffer);
+};
+
+RenderSnapshot.prototype.setSamplerStates = function () {
+    if (arguments.length === 4) {
+        return this.setSamplerStatesBySemantic(arguments[0], arguments[1], arguments[2]);
+    }
+    if (arguments.length === 3 && typeof(arguments[1]) === "object") {
+        return this.setSamplerStatesBySemantic(arguments[0], arguments[1]);
+    }
+    var sRealName = this._pShaderManager.getUniformRealName(arguments[0]);
+    if (!sRealName) {
+        return false;
+    }
+    if (arguments.length === 3) {
+        return this.setSamplerStatesBySemantic(sRealName, arguments[1], arguments[2]);
+    }
+    return this.setSamplerStatesBySemantic(arguments[0], arguments[1]);
+};
+
+RenderSnapshot.prototype.setSamplerStatesBySemantic = function () {
+    var sRealName = arguments[0];
+    var pPass = this._pPassStates[this._iCurrentPass];
+    var pData;
+    if (pPass[sRealName] === undefined) {
+        return false;
+    }
+    if (arguments.length === 3) {
+        if (pPass[sRealName] === null) {
+            pPass[sRealName] = {};
+        }
+        pPass[sRealName][arguments[1]] = arguments[2];
+    }
+    else {
+        pPass[sRealName] = arguments[1];
+    }
+    return true;
+};
+
+RenderSnapshot.prototype.applyTexture = function(sName, pTexture, isSemantic){
+    if(isSemantic){
+        this.applyTextureBySemantic(sName, pTexture);
+    }
+    var sRealName =  this._pShaderManager.getTextureRealName(sName);
+    if(!sRealName){
+        return false;
+    }
+    return this.applyTextureBySemantic(sRealName, pTexture);
+};
+RenderSnapshot.prototype.applyTextureBySemantic = function(sRealName, pTexture){
+    if(!this._pTextures){
+        return false;
+    }
+    var pTextures = this._pTextures[this._iCurrentPass];
+    if (pTextures[sRealName] !== undefined) {
+        pTextures[sRealName] = pTexture;
+        return true;
+    }
+    return false;
 };
 
 /**

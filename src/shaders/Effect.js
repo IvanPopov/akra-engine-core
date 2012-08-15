@@ -212,6 +212,8 @@ var GLOBAL_VARS = {
     VERTEXPREFIX   : "vertex_main_",
     FRAGMENTPREFIX : "fragment_main_",
 
+    TEXTURE : "TEXTURE",
+
     PREFIX : 10,
 
     EXTERNAL_V : 1,
@@ -505,8 +507,8 @@ function EffectType(sName, sRealName, isBase, iSize) {
     this.isVSInput = false;
     this.isFSInput = false;
     this._sCode = null;
-    this._sHash = isBase ? sRealName : null;
-    this._sStrongHash = isBase ? sRealName : null;
+    this._sHash = isBase ? sName : null;
+    this._sStrongHash = isBase ? sName : null;
     this._canMixible = isBase ? true : false;
     this.iScope = -1;
 }
@@ -965,15 +967,18 @@ function EffectBuffer(pVar) {
      * Pointer for real code
      * @type {Object}
      */
-    this.pSampler = {pData : null};
+    this.pSampler = {pData : null, toDataCode : EffectBuffer.fnToCode};
     /**
      * Pointer for real code
      * @type {Object}
      */
-    this.pHeader = {pData : null};
+    this.pHeader = {pData : null, toDataCode : EffectBuffer.fnToCode};
     this.isUniform = false;
     this.id = EffectBuffer.nCount++;
     this.pVar = pVar || null;
+    STATIC(fnToCode, function () {
+        return this.pData;
+    });
 }
 EffectBuffer.nCount = 0;
 
@@ -1050,7 +1055,8 @@ function EffectVariable() {
     this._isConstInit = null;
     this.pTexture = null;
     this.pStates = null;
-    this.isSampler = null;
+    this._isSampler = false;
+    this._pSamplerData = null;
     this.isParametr = false;
     this.isUniform = false;
     this.isGlobal = false;
@@ -1100,6 +1106,7 @@ EffectVariable.prototype.setType = function (pType) {
     if (pType.pUsagesName) {
         this.isUniform = (pType.pUsagesName["uniform"] === null) ? true : false;
         this.isGlobal = (pType.pUsagesName["global"] === null) ? true : false;
+        this.isUniform = this.isUniform || this.isSampler;
     }
 };
 EffectVariable.prototype.addAnnotation = function (pAnnotation) {
@@ -1132,12 +1139,16 @@ EffectVariable.prototype.cloneMe = function () {
 };
 EffectVariable.prototype.setTexture = function (pTex) {
     this.pTexture = pTex;
-    this.isSampler = true;
+    this._isSampler = true;
+    if (!this.pStates) {
+        this.pStates = {};
+    }
+    this.pStates[a.fx.GLOBAL_VARS.TEXTURE] = pTex.sRealName;
 };
 EffectVariable.prototype.setState = function (eState, eValue) {
     if (!this.pStates) {
         this.pStates = {};
-        this.isSampler = true;
+        this._isSampler = true;
     }
     if (this.pStates[eState]) {
         error("Bad 197");
@@ -1168,21 +1179,39 @@ EffectVariable.prototype.setFSInput = function () {
 EffectVariable.prototype.toCodeDecl = function (isInit) {
     var sCode;
     sCode = this.pType.toCode() + " " + this.sRealName;
-    if (isInit) {
-        sCode += " ";
-        for (var i = 0; this.pInitializer && i < this.pInitializer.length; i++) {
+    if (isInit && this.pInitializer) {
+        sCode += "=";
+        var i;
+        sCode += this.pType.pEffectType.toCode() + "(";
+        for (i = 0; i < this.pInitializer.length; i++) {
             if (typeof(this.pInitializer[i]) !== "string") {
                 error("May be yo use in init expr of varibale some bad constructions");
                 return;
             }
             sCode += this.pInitializer[i];
+            if (i < this.pInitializer.length - 1) {
+                sCode += ",";
+            }
         }
+        sCode += ")"
     }
     sCode += ";";
     return sCode;
 };
 EffectVariable.prototype.toOffsetStr = function () {
     return this.sRealName + "_offset";
+};
+EffectVariable.prototype.toDataCode = function () {
+    if (!this.isSampler) {
+        warning("Only for samplers");
+    }
+    return this._pSamplerData;
+};
+EffectVariable.prototype.isSampler = function () {
+    return this._isSampler;
+};
+EffectVariable.prototype.isBuffer = function () {
+    return (this.pBuffer && this.iScope === a.fx.GLOBAL_VARS.GLOBAL);
 };
 
 function EffectVariableBase(pVar, pFirst, sRealPrevName, iScope) {
@@ -1428,9 +1457,11 @@ EffectBaseFunction.prototype.generateExtractedCode = function () {
 };
 EffectBaseFunction.prototype.addGlobalBuffer = function (pBuf) {
     if (!pBuf.isUniform) {
+        trace(pBuf);
         error("something going wrong with add global buffer");
         return;
     }
+    this.addUniform(pBuf.pVar);
     if (!this.pGlobalBuffers) {
         this.pGlobalBuffers = {}
     }
@@ -1803,6 +1834,8 @@ function EffectShader(pFunction) {
     this.pTypesByName = null;
     this.pFuncByDef = null;
     this.pFuncBlock = null;
+    this.pTexturesByName = null;
+    this.pTexturesByRealName = null;
     this.pGlobalPointers = [];
     this._isReady = false;
 }
@@ -1933,11 +1966,21 @@ EffectShader.prototype.toCodeAll = function (id) {
     this.pUniformsByRealName = {};
     this.pUniformsDefault = {};
     this.pUniformsBlock = {};
+    this.pTexturesByName = {};
+    this.pTexturesByRealName = {};
+
     for (i in this.pUniforms) {
         pVar = this.pUniforms[i];
         pVar.sRealName = pVar.sSemantic || pVar.sRealName;
         this.pUniformsByName[i] = pVar.sRealName;
-        this.pUniformsDefault[pVar.sRealName] = pVar.pDefaultValue;
+        if (pVar.isSampler()) {
+            this.pUniformsDefault[pVar.sRealName] = pVar.pStates;
+            this.pTexturesByName[pVar.pTexture.sName] = pVar.pTexture.sRealName;
+            this.pTexturesByRealName[pVar.pTexture.sRealName] = null;
+        }
+        else {
+            this.pUniformsDefault[pVar.sRealName] = pVar.pDefaultValue;
+        }
         this.pUniformsByRealName[pVar.sRealName] = pVar;
         this.pUniformsBlock[pVar.sRealName] = pVar.isUniform ? pVar.toCodeDecl() : ("uniform " + pVar.toCodeDecl());
     }
@@ -1998,7 +2041,7 @@ EffectShader.prototype.toCodeAll = function (id) {
             sCode += pElement;
         }
         else {
-            if (!(pElement.isSampler && pElement.iScope === a.fx.GLOBAL_VARS.GLOBAL) && pElement.pData === undefined) {
+            if (!(pElement.isSampler() && pElement.iScope === a.fx.GLOBAL_VARS.GLOBAL) && pElement.pData === undefined) {
                 pToCode = (pElement instanceof EffectBaseFunction) ? pElement.toCode() : pElement.toCode(true);
                 if (typeof(pToCode) === "string") {
                     sCode += pToCode;
@@ -2064,7 +2107,7 @@ EffectShader.prototype.toFinal = function () {
                 sCode += pCode[i];
             }
             else {
-                sCode += pCode[i].pData;
+                sCode += pCode[i].toDataCode();
             }
         }
         return sCode;
@@ -2351,6 +2394,8 @@ function EffectPass() {
     this.pGlobalsByName = null;
     this.pGlobalsByRealName = null;
     this.pGlobalsDefault = null;
+    this.pTexturesByName = null;
+    this.pTexturesByRealName = null;
     this.pGlobalsStrict = null;
     this.isComplex = false;
     this.pGlobalValues = null;
@@ -2500,9 +2545,15 @@ EffectPass.prototype.addGlobalsFromShader = function (pShader) {
         this.pGlobalsByName = {};
         this.pGlobalsByRealName = {};
         this.pGlobalsDefault = {};
+        this.pTexturesByName = {};
+        this.pTexturesByRealName = {};
     }
     var i;
-    var sName;
+    var sName, pVar;
+    for (i in pShader.pTexturesByName) {
+        sName = this.pTexturesByName[i] = pShader.pTexturesByName[i];
+        this.pTexturesByRealName[sName] = null;
+    }
     for (i in pShader.pUniformsByName) {
         if (this.pGlobalsByName[i]) {
             continue;
@@ -2748,9 +2799,9 @@ function Effect(pManager, id) {
         "float4x4"     : new EffectType("float4x4", "mat4", true, 16),
         "string"       : new EffectType("string", "string", true, 1),
         "texture"      : new EffectType("texture", "texture", true, 1),
-        "sampler"      : new EffectType("sampler", "sampler", true, 1),
+        "sampler"      : new EffectType("sampler", "sampler2D", true, 1),
         "ptr"          : new EffectType("ptr", "float", true, 1),
-        "video_buffer" : new EffectType("video_buffer", "video_buffer", true, 1)
+        "video_buffer" : new EffectType("video_buffer", "sampler2D", true, 1)
     });
     STATIC(pVectorSuffix, {
         "x"    : null,
@@ -5227,7 +5278,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 else {
                     pRes = this.hasVariable(this._sVarName);
                     if (!pRes) {
-                        error("not good for you");
+                        error("not good for you " + this._sVarName);
                         return;
                     }
                     if (pRes.pType.isEqual(this.hasType("video_buffer")) && pRes.iScope === a.fx.GLOBAL_VARS.GLOBAL &&
@@ -6506,6 +6557,7 @@ Effect.prototype.analyzeState = function (pNode, pPass) {
             return;
         }
         pTexture = this.hasVariable(pStateExpr.pChildren[1].sValue);
+        pTexture.sRealName = pTexture.sSemantic || pTexture.sRealName;
         if (!pTexture) {
             console.log(pStateExpr);
             error("bad with texture name");

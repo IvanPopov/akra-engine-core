@@ -962,6 +962,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
 
 Texture.prototype.bind = function () {
     this._pEngine.pDevice.bindTexture(this.target, this._pTexture);
+    return true;
 };
 
 Texture.prototype.unbind = function () {
