@@ -1,17 +1,15 @@
-function Joint (pSkeleton) {
+function Joint (pEngine) {
 	A_CLASS;
 
-    debug_assert(pSkeleton, 'joint must managed by any skeleton');
+    debug_assert(pEngine, 'engine must be');
+	
+    this._sBone = null;
+    this._iUpdated = 0;
 
-	this._sBone = null;
-    this._pSkeleton = pSkeleton;
-    this._m4fBoneMatrix = null;
-    this._m4fBoneOffsetMatrix = null;
+    this._pEngine = pEngine;
 }
 
 EXTENDS(Joint, a.Node);
-
-
 
 PROPERTY(Joint, 'boneName',
 	function () {
@@ -21,70 +19,29 @@ PROPERTY(Joint, 'boneName',
 		this._sBone = sBone;
 	});
 
-Joint.prototype.getBoneOffsetMatrix = function () {
+
+Joint.prototype.getEngine = function () {
     'use strict';
     
-    return this._m4fBoneOffsetMatrix;
+    return this._pEngine;
 };
 
-Joint.prototype.setBoneOffsetMatrix = function (m4fBoneOffsetMatrix) {
+Joint.prototype.create = function () {
     'use strict';
-    //Mat4.transpose(m4fBoneOffsetMatrix);
-    //debug_assert(m4fBoneOffsetMatrix, 'you must specify bone offset matrix');
-    //trace(Mat4.str(m4fBoneOffsetMatrix), 'bone >> ', this.boneName);
-    Mat4.set(m4fBoneOffsetMatrix, this._m4fBoneOffsetMatrix);
-};
 
-Joint.prototype.boneMatrix = function () {
-    'use strict';
+    this._m4fLocalMatrix = new Mat4(1);
+    this._m4fWorldMatrix = new Mat4(1);
     
-    return this._m4fBoneMatrix;
-};
-
-Joint.prototype.skeleton = function() {
-    return this._pSkeleton;
-};
-
-/**
- * Create joint.
- * Предпологается, что joint может быть как самостоятельным нодом со
- * своими матрицами, так и пересчитывать матрицы поданные извне.
- */
-Joint.prototype.create = function (ppBoneMatrix, pBoneOffsetMatrix) {
-    'use strict';
-
-    pBoneOffsetMatrix = pBoneOffsetMatrix || Mat4.identity(new Matrix4);
-    ppBoneMatrix = ppBoneMatrix || Mat4.identity(new Matrix4);
-
-
-
-    this._m4fWorldMatrix = Mat4.identity(new Matrix4);
-    this._m4fLocalMatrix = Mat4.identity(new Matrix4);
-    this._m4fInverseWorldMatrix = Mat4.identity(new Matrix4);
-    
-    this._m4fBoneOffsetMatrix = pBoneOffsetMatrix;
-    this._m4fBoneMatrix = ppBoneMatrix;
-
-    this._v3fWorldPosition = Vec3.create();
-    this._v3fWorldRight = Vec3.create();
-    this._v3fWorldUp = Vec3.create();
-    this._v3fWorldForward = Vec3.create();
+    this._v3fWorldPosition  = new Vec3();
+    this._v3fTranslation    = new Vec3(0, 0, 0);
+    this._v3fScale          = new Vec3(1);
+    this._qRotation         = new Quat4(0, 1);
 
 
     //maybe custom
     this.setInheritance(a.Scene.k_inheritAll);
-
     return true;
 };
-
-
-Joint.prototype.recalcWorldMatrix = function() {
-    if (Node.prototype.recalcWorldMatrix.call(this)) {
-        Mat4.mult(this._m4fWorldMatrix, this._m4fBoneOffsetMatrix, this._m4fBoneMatrix);
-        this._pSkeleton._iFlags |= a.Skeleton.JOINTS_MOVED;
-    }
-};
-
 
 Ifdef (__DEBUG);
 
@@ -94,7 +51,7 @@ Joint.prototype.toString = function (isRecursive, iDepth) {
     isRecursive = isRecursive || false;
 
     if (!isRecursive) {
-        return '<joint' + (this._sName? ' ' + this._sName: '') + '> [bone: ' + this._sBone + ']';
+        return '<joint' + (this._sName? ' ' + this._sName: '') + '>';
     }
 
     return Node.prototype.toString.call(this, isRecursive, iDepth);

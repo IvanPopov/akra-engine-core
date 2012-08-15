@@ -1,4 +1,4 @@
 Include('RenderData.js');
-Include('RenderDataFactory.js');
+Include('RenderDataBuffer.js');
 Include('RenderSnapshot.js');
 Include('RenderableObjects.js');

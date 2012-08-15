@@ -86,6 +86,21 @@
         }    
     });
 
+    Object.defineProperty(Array.prototype, 'insert', {
+        enumerable: false,
+        configurable: true,
+        value: function (pElement) {
+            if (typeof pElement.length === 'number') {
+                for (var i = 0, n = pElement.length; i < n; ++ i) {
+                    this.push(pElement[i]);
+                };
+            }
+            else {
+                this.push(pElement);
+            }
+        }    
+    });
+
 
     Define(first, __[0]);
 

@@ -218,6 +218,9 @@ VideoBuffer.prototype.create = function (iByteSize, iFlags, pData) {
     this._pHeader = this.allocateData([VE_VEC2(a.DECLUSAGE.TEXTURE_HEADER)], 
         this._header(pSize.X, pSize.Y));    
 
+    this.notifyLoaded();
+    this.notifyRestored();
+
     return true;
 };
 
@@ -411,7 +414,11 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
         pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pFramebuffer);
 
 Ifdef (TEXTURE_REDRAW)
+        Ifdef (__IDE);
+        STATIC(_pCopyProgram, a.loadProgram(this._pEngine, 'http://akra/akra-engine-general/effects/copy_texture.glsl'));
+        Elseif();
         STATIC(_pCopyProgram, a.loadProgram(this._pEngine, '../effects/copy_texture.glsl'));
+        Endif ();
 
         var pCopyProgram = statics._pCopyProgram;
         pCopyProgram.activate();
@@ -444,7 +451,12 @@ Ifdef (TEXTURE_REDRAW)
         pDevice.drawArrays(a.PRIMTYPE.TRIANGLESTRIP, 0, 4);
 Endif ();
 
+        Ifdef (__IDE)
+        STATIC(_pUpdateProgram, a.loadProgram(this._pEngine, 'http://akra/akra-engine-general/effects/update_video_buffer.glsl'));
+        Elseif();
         STATIC(_pUpdateProgram, a.loadProgram(this._pEngine, '../effects/update_video_buffer.glsl'));
+        Endif ();
+
 
         pProgram = statics._pUpdateProgram;
         pProgram.activate();

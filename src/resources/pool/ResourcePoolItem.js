@@ -621,8 +621,8 @@ ResourcePoolItem.prototype.isResourceDisabled = function () {
  * @param isOn
  **/
 ResourcePoolItem.prototype.setAlteredFlag = function (isOn) {
+    isOn = ifndef(isOn, true);
     this._setResourceFlag(a.ResourcePoolItem.Altered, isOn);
-    ;
 }
 
 /**

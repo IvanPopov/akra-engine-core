@@ -1,18 +1,17 @@
-var TEMPSCENEVECTOR3FORCALC0 = Vec3();
-var TEMPSCENEMATRIX4FORCALC0 = Mat4();
-var TEMPSCENEVECTOR4FORCALC0 = Vec4();
-var TEMPSCENEMATRIX3FORCALC0 = Mat3();
-var TEMPSCENEQUAT4FORCALC0 = Quat4();
+var TEMPSCENEVECTOR3FORCALC0 = Vec3.create();
+var TEMPSCENEMATRIX4FORCALC0 = Mat4.create();
+var TEMPSCENEVECTOR4FORCALC0 = Mat4.create();
 
-function Node(pEngine){
+function Node(){
     A_CLASS;
     Enum([
              k_setForDestruction = 0,
-             k_newOrientation,
-             k_newWorldMatrix,
              k_newLocalMatrix,
+             k_newWorldMatrix,
              k_rebuildInverseWorldMatrix,
+             k_rebuildWorldVectors,
              k_rebuildNormalMatrix,
+             k_ignoreOrientation
          ], eUpdateDataFlagBits, a.Scene);
     Enum([
              k_inheritPositionOnly = 0,
@@ -69,29 +68,35 @@ function Node(pEngine){
      * @type Int
      */
     this._iInheritance = 0;
-
-    //orientation matrix
-    this._qRotation = null;
-    this._v3fTranslation = null;
-    this._v3fScale = null;
-
     /**
      * World Posistion
      * @private
      * @type Float32Array
      */
     this._v3fWorldPosition = null;
-
     /**
-     * Node name. Optional.
-     * @type {String}
+     * World Right
+     * @private
+     * @type Float32Array
      */
-    this._sName = null;
+    this._v3fWorldRight = null;
+    /**
+     * World up
+     * @private
+     * @type Float32Array
+     */
+    this._v3fWorldUp = null;
+    /**
+     * World forward
+     * @private
+     * @type Float32Array
+     */
+    this._v3fWorldForward = null;
 
+    this._sName = null;
 }
 
 EXTENDS(Node, a.ReferenceCounter);
-
 
 PROPERTY(Node, 'name',
     function () {
@@ -107,7 +112,6 @@ PROPERTY(Node, 'depth',
         for (var pNode = this; pNode; pNode = pNode.parent(), ++ iDepth);
         return iDepth;
     });
-
 
 Node.prototype.findNode = function (sNodeName) {
     'use strict';
@@ -141,13 +145,6 @@ Node.prototype.childOf = function (pParent) {
     return false;
 };
 
-PROPERTY(Node, 'root',
-    function () {
-        var iDepth = -1;
-        for (var pNode = this; pNode.parent(); pNode = pNode.parent(), ++ iDepth);
-        return pNode;
-    });
-
 Node.prototype.setName = function (sName) {
     'use strict';
     
@@ -175,7 +172,6 @@ Node.prototype.sibling = function () {
     INLINE();
     return this._pSibling;
 };
-
 /**
  * Get child
  * @treturn SceneNode _pChild
@@ -184,7 +180,6 @@ Node.prototype.child = function () {
     INLINE();
     return this._pChild;
 };
-
 /**
  * Get worldMatrix
  * @treturn Float32Array _m4fWorldMatrix
@@ -193,25 +188,16 @@ Node.prototype.worldMatrix = function () {
     INLINE();
     return this._m4fWorldMatrix;
 };
-
 /**
  * Get normal matrix
  * @treturn Matrix3 _m4fWorldMatrix
  */
 Node.prototype.normalMatrix = function () {
     if (TEST_BIT(this._iUpdateFlags, a.Scene.k_rebuildNormalMatrix)) {
-        this._m4fWorldMatrix.toInverseMat3(this._m3fNormalMatrix).transpose();
+        Mat3.transpose(Mat4.toInverseMat3(this._m4fWorldMatrix, this._m3fNormalMatrix));
         CLEAR_BIT(this._iUpdateFlags, a.Scene.k_rebuildNormalMatrix);
     }
     return this._m3fNormalMatrix;
-};
-
-/**
- * Getter for worldPosistion vector
- * @treturn Float32Array _v3fWorldPostion
- */
-Node.prototype.worldPosition = function () {
-    return this._v3fWorldPosition;
 };
 
 /**
@@ -222,7 +208,6 @@ Node.prototype.localMatrix = function () {
     INLINE();
     return this._m4fLocalMatrix;
 };
-
 /**
  * Get inverseWorldMatrix
  * @treturn Float32Array _m4fInverseWorldMatrix
@@ -231,12 +216,11 @@ Node.prototype.inverseWorldMatrix = function () {
     INLINE();
     // if the inverse matrix is out of date, compute it now
     if (TEST_BIT(this._iUpdateFlags, a.Scene.k_rebuildInverseWorldMatrix)) {
-        this._m4fWorldMatrix.inverse(this._m4fInverseWorldMatrix);
+        Mat4.inverse(this._m4fWorldMatrix, this._m4fInverseWorldMatrix);
         CLEAR_BIT(this._iUpdateFlags, a.Scene.k_rebuildInverseWorldMatrix);
     }
     return this._m4fInverseWorldMatrix;
 };
-
 /**
  * Get updateFlags
  * @treturn Int _iUpdateFlags
@@ -257,7 +241,6 @@ Node.prototype.hasParent = function () {
     }
     return false;
 };
-
 /**
 * Child is not undef
 * @treturn Boolean
@@ -269,7 +252,6 @@ Node.prototype.hasChild = function () {
     }
     return false;
 };
-
 /**
 * Sibling is not undef
 * @treturn Boolean
@@ -281,15 +263,13 @@ Node.prototype.hasSibling = function () {
     }
     return false;
 };
-
 /**
-* SET_BIT(_iUpdateFlags, k_newOrientation);
+* SET_BIT(_iUpdateFlags, k_newLocalMatrix);
 */
 Node.prototype.setUpdatedLocalMatrixFlag = function () {
     INLINE();
     SET_BIT(this._iUpdateFlags, a.Scene.k_newLocalMatrix);
 };
-
 /**
 * Get loclaMatrix with some set_bits
 * @treturn Float32Array _m4fLocalMatrix
@@ -297,6 +277,7 @@ Node.prototype.setUpdatedLocalMatrixFlag = function () {
 Node.prototype.accessLocalMatrix = function () {
     INLINE();
     this.setUpdatedLocalMatrixFlag();
+    SET_BIT(this._iUpdateFlags, a.Scene.k_ignoreOrientation);
     return this._m4fLocalMatrix;
 };
 
@@ -310,16 +291,9 @@ Node.prototype.isWorldMatrixNew = function () {
     return TEST_BIT(this._iUpdateFlags, a.Scene.k_newWorldMatrix);
 };
 
-Node.prototype.isLocalMatrixNew = function () {
-    'use strict';
-    
-    return TEST_BIT(this._iUpdateFlags, a.Scene.k_newLocalMatrix);
-};
-
 Node.prototype.create = function () {
     return true;
 };
-
 Node.prototype.destroy = function () {
     // destroy anything attached to this node
     //	destroySceneObject();
@@ -332,29 +306,22 @@ Node.prototype.destroy = function () {
     debug_assert(this._pSibling == null, "Failure Destroying Node");
     debug_assert(this._pChild == null, "Failure Destroying Node");
 };
-
 /**
  * Sets the internal pointer to the First sibling object
  * @tparam SceneNode pNode
  * @private
  */
 Node.prototype.setSibling = function (pNode) {
-    'use strict';
-    
     this._pSibling = pNode;
 };
-
 /**
  * Sets the internal pointer to the First child object
  * @tparam SceneNode pNode
  * @private
  */
 Node.prototype.setChild = function (pNode) {
-    'use strict';
-    
     this._pChild = pNode;
 };
-
 /**
  * Adds the provided ModelSpace object to the descendant list of this object. The provided
  * ModelSpace object is removed from any parent it may already belong to.
@@ -368,7 +335,6 @@ Node.prototype.addSibling = function (pSibling) {
         this.setSibling(pSibling);
     }
 };
-
 /**
  * Adds the provided ModelSpace object to the descendant list of this object. The provided
  * ModelSpace object is removed from any parent it may already belong to.
@@ -383,7 +349,6 @@ Node.prototype.addChild = function (pChild) {
         this._pChild = pChild;
     }
 };
-
 /**
  * Removes a specified child object from this parent object. If the child is not the
  * FirstChild of this object, all of the Children are searched to find the object to remove.
@@ -412,7 +377,6 @@ Node.prototype.removeChild = function (pChild) {
         }
     }
 };
-
 /**
  * Removes all Children from this parent object
  * @private
@@ -425,7 +389,6 @@ Node.prototype.removeAllChildren = function () {
         this._pChild = NextSibling;
     }
 };
-
 /**
  * Attaches this object ot a new parent. Same as calling the parent's addChild() routine.
  * @tparam SceneNode pParent
@@ -438,16 +401,11 @@ Node.prototype.attachToParent = function (pParent) {
             this._pParent.addChild(this);
             //this._pParent.addRef();
             // adjust my local matrix to be relative to this new parent
-            var invertedParentMatrix = Mat4();
-            this._pParent._m4fWorldMatrix.inverse(invertedParentMatrix);
-            // console.log("attachToParent-->", this.name, " Parent: ",Mat4.str(this._pParent._m4fWorldMatrix), 
-            //             "inverse :", Mat4.str(invertedParentMatrix),
-            //             "Local :", Mat4.str(this._m4fLocalMatrix));
-			this._m4fLocalMatrix.multiply(invertedParentMatrix);
+            var invertedParentMatrix = Mat4.inverse(this._pParent._m4fWorldMatrix);
+			Mat4.multiply(this._m4fLocalMatrix, invertedParentMatrix);
         }
     }
 };
-
 /**
  * Setter for iInheritance
  * @tparam Int iSetting Value from eInheritance
@@ -455,7 +413,6 @@ Node.prototype.attachToParent = function (pParent) {
 Node.prototype.setInheritance = function (iSetting) {
     this._iInheritance = iSetting;
 };
-
 /**
  * Detach this object from his parent. Refresh local and world matrix
  */
@@ -470,10 +427,10 @@ Node.prototype.detachFromParent = function () {
         // my world matrix is now my local matrix
         this._m4fLocalMatrix = this._m4fWorldMatrix;
         // and the world matrix is the identity
-        this._m4fWorldMatrix = new Mat4(1);
+        this._m4fWorldMatrix = Mat4.create();
+        Mat4.identity(this._m4fWorldMatrix);
     }
 };
-
 /**
  * Attaches this object's children to it's parent, promoting them up the tree
  */
@@ -485,7 +442,6 @@ Node.prototype.promoteChildren = function () {
         this._pChild = NextSibling;
     }
 };
-
 /**
  * Set new parent for all children
  * @tparam SceneNode pParent
@@ -500,7 +456,6 @@ Node.prototype.relocateChildren = function (pParent) {
         }
     }
 };
-
 /**
  * Checks to see if the provided item is a sibling of this object
  * @tparam SceneNode pSibling
@@ -521,7 +476,6 @@ Node.prototype.isASibling = function (pSibling) {
     // it's not us, and we have no sibling to check. This is not a sibling of ours.
     return false;
 };
-
 /**
  * Checks to see if the provided item is a child of this object. (one branch depth only)
  * @tparam SceneNode pChild\
@@ -542,7 +496,6 @@ Node.prototype.isAChild = function (pChild) {
     // it's not us, and we have no child to check. This is not a sibling of ours.
     return (false);
 };
-
 /**
  * Checks to see if the provided item is a child or sibling of this object. If SearchEntireTree
  * is TRUE, the check is done recursivly through all siblings and children. SearchEntireTree
@@ -581,7 +534,6 @@ Node.prototype.isInFamily = function (pNode, SearchEntireTree) {
     return (false);
 }
 
-
 /**
  * Returns the current number of siblings of this object.
  * @treturn Int
@@ -599,8 +551,6 @@ Node.prototype.siblingCount = function () {
     }
     return count;
 };
-
-
 /**
  * Returns the current number of children of this object
  * @treturn Boolean
@@ -617,8 +567,6 @@ Node.prototype.childCount = function () {
     }
     return count;
 };
-
-
 /**
  * Update matrix
  */
@@ -628,14 +576,10 @@ Node.prototype.update = function () {
     // the update
     this.recalcWorldMatrix();
 };
-
-
 Node.prototype.prepareForUpdate = function () {
     // clear the temporary flags
-    a.BitFlags.clearFlags(this._iUpdateFlags, FLAG(a.Scene.k_newLocalMatrix) | 
-        FLAG(a.Scene.k_newOrientation) | FLAG(a.Scene.k_newWorldMatrix));
+    a.BitFlags.clearFlags(this._iUpdateFlags, FLAG(a.Scene.k_newLocalMatrix) | FLAG(a.Scene.k_newWorldMatrix));
 };
-
 
 Node.prototype.recursiveUpdate = function () {
     // update myself
@@ -648,119 +592,175 @@ Node.prototype.recursiveUpdate = function () {
     if (this._pChild) {
         this._pChild.recursiveUpdate();
     }
-
-    //this.prepareForUpdate();
-};
-
-Node.prototype.recursivePreUpdate = function () {
-    'use strict';
-    
     // clear the flags from the previous update
     this.prepareForUpdate();
-
-    // update my sibling
-    if (this._pSibling) {
-        this._pSibling.recursivePreUpdate();
-    }
-    // update my child
-    if (this._pChild) {
-        this._pChild.recursivePreUpdate();
-    }
 };
-
 /**
  * Recalculate world Matrix
  */
 Node.prototype.recalcWorldMatrix = function () {
-    'use strict';
-    
     var isParentMoved = this._pParent && this._pParent.isWorldMatrixNew();
-    var isOrientModified = TEST_BIT(this._iUpdateFlags, a.Scene.k_newOrientation);
-    var isLocalModified = TEST_BIT(this._iUpdateFlags, a.Scene.k_newLocalMatrix);
-
-    if (isOrientModified || isParentMoved || isLocalModified) {
-
+    var isWeMoved = TEST_BIT(this._iUpdateFlags, a.Scene.k_newLocalMatrix);
+    if (isWeMoved || isParentMoved) {
         var m4fLocal = this._m4fLocalMatrix;
         var m4fWorld = this._m4fWorldMatrix;
         var m4fParent = this._pParent.worldMatrix();
-        var m4fOrient = TEMPSCENEMATRIX4FORCALC0;
-        var v3fTemp = TEMPSCENEVECTOR3FORCALC0;
-        
-        var pWorldData = m4fWorld.pData;
-        var pParentData = m4fParent.pData;
-        var pOrientData = m4fOrient.pData;
-
-        this._qRotation.toMat4(m4fOrient);
-        m4fOrient.setTranslation(this._v3fTranslation);
-        m4fOrient.scale(this._v3fScale);
-
-        if (TEST_BIT(this._iUpdateFlags, a.Scene.k_newLocalMatrix)) {
-            m4fOrient.multiply(m4fLocal); 
-        }
-
+        // multiply our local matrix by our parent
         if (this._pParent) {
             if (this._iInheritance === a.Scene.k_inheritAll) {
-                m4fParent.multiply(m4fOrient, m4fWorld);
+                Mat4.multiply(m4fParent, m4fLocal, m4fWorld);
             }
             else if (this._iInheritance === a.Scene.k_inheritPositionOnly) {
-                m4fWorld.set(m4fOrient);
-
-                pWorldData._14 = pParentData._14 + pOrientData._14;
-                pWorldData._24 = pParentData._24 + pOrientData._24;
-                pWorldData._34 = pParentData._34 + pOrientData._34;
+                Mat4.set3x3(m4fLocal, m4fWorld);
+                m4fWorld._41 = m4fLocal._41;
+                m4fWorld._42 = m4fLocal._42;
+                m4fWorld._43 = m4fLocal._43;
+                m4fWorld._14 = m4fParent._14 + m4fLocal._14;
+                m4fWorld._24 = m4fParent._24 + m4fLocal._24;
+                m4fWorld._34 = m4fParent._34 + m4fLocal._34;
+                m4fWorld._44 = m4fLocal._44;
             }
             else if (this._iInheritance === a.Scene.k_inheritRotScaleOnly) {
-                var p11 = pParentData._11, p12 = pParentData._12,
-                    p13 = pParentData._13;
-                var p21 = pParentData._21, p22 = pParentData._22,
-                    p23 = pParentData._23;
-                var p31 = pParentData._31, p32 = pParentData._32,
-                    p33 = pParentData._33;
+                var p11 = m4fParent._11, p12 = m4fParent._12,
+                    p13 = m4fParent._13;
+                var p21 = m4fParent._21, p22 = m4fParent._22,
+                    p23 = m4fParent._23;
+                var p31 = m4fParent._31, p32 = m4fParent._32,
+                    p33 = m4fParent._33;
+                var l11 = m4fLocal._11, l12 = m4fLocal._12,
+                    l13 = m4fLocal._13;
+                var l21 = m4fLocal._21, l22 = m4fLocal._22,
+                    l23 = m4fLocal._23;
+                var l31 = m4fLocal._31, l32 = m4fLocal._32,
+                    l33 = m4fLocal._33;
+                m4fWorld._11 = p11 * l11 + p12 * l21 + p13 * l31;
+                m4fWorld._12 = p11 * l12 + p12 * l22 + p13 * l32;
+                m4fWorld._13 = p11 * l13 + p12 * l23 + p13 * l33;
+                m4fWorld._14 = m4fLocal._14;
+                m4fWorld._21 = p21 * l11 + p22 * l21 + p23 * l31;
+                m4fWorld._22 = p21 * l12 + p22 * l22 + p23 * l32;
+                m4fWorld._23 = p21 * l13 + p22 * l23 + p23 * l33;
+                m4fWorld._24 = m4fLocal._24;
+                m4fWorld._31 = p31 * l11 + p32 * l21 + p33 * l31;
+                m4fWorld._32 = p31 * l12 + p32 * l22 + p33 * l32;
+                m4fWorld._33 = p31 * l13 + p32 * l23 + p33 * l33;
+                m4fWorld._34 = m4fLocal._34;
 
-                var l11 = pOrientData._11, l12 = pOrientData._12,
-                    l13 = pOrientData._13;
-                var l21 = pOrientData._21, l22 = pOrientData._22,
-                    l23 = pOrientData._23;
-                var l31 = pOrientData._31, l32 = pOrientData._32,
-                    l33 = pOrientData._33;
-                
-                pWorldData._11 = p11 * l11 + p12 * l21 + p13 * l31;
-                pWorldData._12 = p11 * l12 + p12 * l22 + p13 * l32;
-                pWorldData._13 = p11 * l13 + p12 * l23 + p13 * l33;
-                pWorldData._14 = pOrientData._14;
-                pWorldData._21 = p21 * l11 + p22 * l21 + p23 * l31;
-                pWorldData._22 = p21 * l12 + p22 * l22 + p23 * l32;
-                pWorldData._23 = p21 * l13 + p22 * l23 + p23 * l33;
-                pWorldData._24 = pOrientData._24;
-                pWorldData._31 = p31 * l11 + p32 * l21 + p33 * l31;
-                pWorldData._32 = p31 * l12 + p32 * l22 + p33 * l32;
-                pWorldData._33 = p31 * l13 + p32 * l23 + p33 * l33;
-                pWorldData._34 = pOrientData._34;
-
-                pWorldData._41 = pOrientData._41;
-                pWorldData._42 = pOrientData._42;
-                pWorldData._43 = pOrientData._43;
-                pWorldData._44 = pOrientData._44;
+                m4fWorld._41 = m4fLocal._41;
+                m4fWorld._42 = m4fLocal._42;
+                m4fWorld._43 = m4fLocal._43;
+                m4fWorld._44 = m4fLocal._44;
             }
         }
         else {
-            m4fWorld.set(m4fOrient);
+            Mat4.set(this._m4fLocalMatrix, this._m4fWorldMatrix);
         }
-
-        this._v3fWorldPosition.pData.X = pWorldData._14;
-        this._v3fWorldPosition.pData.Y = pWorldData._24;
-        this._v3fWorldPosition.pData.Z = pWorldData._34;
-
         // set the flag that our world matrix has changed
         a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newWorldMatrix, true);
         // and it's inverse & vectors are out of date
         a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_rebuildInverseWorldMatrix, true);
+        a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_rebuildWorldVectors, true);
         a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_rebuildNormalMatrix, true);
         return true;
     }
 
     return false;
 };
+/**
+ * Update world vectors(up, right, up, forward, position) from worldMatrix
+ */
+Node.prototype.updateWorldVectors = function () {
+    // we only do this when nessesary
+    if (TEST_BIT(this._iUpdateFlags, a.Scene.k_rebuildWorldVectors)) {
+        var fX, fY, fZ, fW;
+
+        fX = this._m4fWorldMatrix._11;
+        fY = this._m4fWorldMatrix._21;
+        fZ = this._m4fWorldMatrix._31;
+        fW = this._m4fWorldMatrix._41;
+        if (fW != 0.0) {
+            fX /= fW;
+            fY /= fW;
+            fZ /= fW;
+        }
+        Vec3.set(fX, fY, fZ, this._v3fWorldRight);
+        Vec3.normalize(this._v3fWorldRight);
+
+        fX = this._m4fWorldMatrix._12;
+        fY = this._m4fWorldMatrix._22;
+        fZ = this._m4fWorldMatrix._32;
+        fW = this._m4fWorldMatrix._42;
+        if (fW != 0.0) {
+            fX /= fW;
+            fY /= fW;
+            fZ /= fW;
+        }
+        Vec3.set(fX, fY, fZ, this._v3fWorldUp);
+        Vec3.normalize(this._v3fWorldUp);
+
+        fX = this._m4fWorldMatrix._13;
+        fY = this._m4fWorldMatrix._23;
+        fZ = this._m4fWorldMatrix._33;
+        fW = this._m4fWorldMatrix._43;
+        if (fW != 0.0) {
+            fX /= fW;
+            fY /= fW;
+            fZ /= fW;
+        }
+        Vec3.set(fX, fY, fZ, this._v3fWorldForward);
+        Vec3.normalize(this._v3fWorldForward);
+
+        fX = this._m4fWorldMatrix._14;
+        fY = this._m4fWorldMatrix._24;
+        fZ = this._m4fWorldMatrix._34;
+        fW = this._m4fWorldMatrix._44;
+        if (fW != 0.0) {
+            fX /= fW;
+            fY /= fW;
+            fZ /= fW;
+        }
+        Vec3.set(fX, fY, fZ, this._v3fWorldPosition);
+
+        a.BitFlags.clearBit(this._iUpdateFlags, a.Scene.k_rebuildWorldVectors);
+    }
+};
+
+/**
+ * Getter for worldPosistion vector
+ * @treturn Float32Array _v3fWorldPostion
+ */
+Node.prototype.worldPosition = function () {
+    this.updateWorldVectors();
+    return this._v3fWorldPosition;
+};
+/**
+ * Getter for worldRight vector
+ * @treturn Float32Array _v3fWorldRight
+ */
+Node.prototype.worldRight = function () {
+    this.updateWorldVectors();
+    return this._v3fWorldRight;
+};
+/**
+ * Getter for worldUp vecror
+ * @treturn Float32Array _v3fWorldUp
+ */
+Node.prototype.worldUp = function () {
+    this.updateWorldVectors();
+    return this._v3fWorldUp;
+};
+/**
+ * Getter for worldForward vecror
+ * @treturn Float32Array _v3fWorldForward
+ */
+Node.prototype.worldForward = function () {
+    this.updateWorldVectors();
+    return this._v3fWorldForward;
+};
+Node.prototype.getUp = Node.prototype.worldUp;
+Node.prototype.getRight = Node.prototype.worldRight;
+Node.prototype.getForward = Node.prototype.worldForward;
+Node.prototype.getPosition = Node.prototype.worldPosition;
 
 
 /**
@@ -769,14 +769,15 @@ Node.prototype.recalcWorldMatrix = function () {
  * @tparam Float32Array pPos 3d vector
  */
 Node.prototype.setPosition = function () {
-    'use strict';
-    
     var pPos = arguments.length === 1? arguments[0]: arguments;
-    var v3fTranslation = this._v3fTranslation.pData;
 
-    v3fTranslation.set(pPos);
+    var m4fLocal = this._m4fLocalMatrix;
+    m4fLocal._14 = pPos.X;
+    m4fLocal._24 = pPos.Y;
+    m4fLocal._34 = pPos.Z;
+    m4fLocal._44 = 1.0;
 
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
 };
 /**
  * Set new relative position.
@@ -784,51 +785,53 @@ Node.prototype.setPosition = function () {
  * @tparam Float32Array pPos 3d vector
  */
 Node.prototype.setRelPosition = function () {
-    'use strict';
-    
     var pPos = arguments.length === 1? arguments[0]: arguments;
-    var v3fTranslation = this._v3fTranslation;
+    var m4fLocal = this._m4fLocalMatrix;
+    var fX = pPos.X, fY = pPos.Y, fZ = pPos.Z;
+    m4fLocal._14 = m4fLocal._11 * fX + m4fLocal._12 * fY + m4fLocal._13 * fZ;
+    m4fLocal._24 = m4fLocal._21 * fX + m4fLocal._22 * fY + m4fLocal._23 * fZ;
+    m4fLocal._34 = m4fLocal._31 * fX + m4fLocal._32 * fY + m4fLocal._33 * fZ;
+    m4fLocal._44 = 1.0;
 
-    this._qRotation.multiplyVec3(pPos);
-
-    v3fTranslation.set(pPos);
-
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
 };
 /**
  * Add new position.
  * _v3fPostion += pPos
  * @tparam Float32Array pPos 3d vector
  */
-Node.prototype.addPosition = function () {
-    'use strict';
-    
-    var pPos = arguments.length === 1? arguments[0]: Vec3(arguments);
-    var v3fTranslation = this._v3fTranslation;
-    
-    v3fTranslation.add(pPos);
+Node.prototype.addPosition = function (pPos) {
+    var m4fLocal = this._m4fLocalMatrix;
+    m4fLocal._14 += pPos.X;
+    m4fLocal._24 += pPos.Y;
+    m4fLocal._34 += pPos.Z;
+    m4fLocal._44 = 1.0;
 
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
 };
 /**
  * Add new relative position.
  * _v3fPostion += _v3fRight*pPos.X + _v3fUp*pos.Y + _v3fForward*pos.Z
  * @tparam Float32Array pPos 3d vector
  */
-Node.prototype.addRelPosition = function () {
-    'use strict';
-    
-    var pPos = arguments.length === 1? arguments[0]: Vec3(arguments);
-    var v3fTranslation = this._v3fTranslation;
+Node.prototype.addRelPosition = function (pPos) {
+    var m4fLocal = this._m4fLocalMatrix;
+    var fX, fY, fZ;
+    if (arguments.length < 3) {
+        fX = pPos.X, fY = pPos.Y, fZ = pPos.Z;
+    }
+    else {
+        fX = arguments.X;
+        fY = arguments.Y;
+        fZ = arguments.Z;
+    }
+    m4fLocal._14 += m4fLocal._11 * fX + m4fLocal._12 * fY + m4fLocal._13 * fZ;
+    m4fLocal._24 += m4fLocal._21 * fX + m4fLocal._22 * fY + m4fLocal._23 * fZ;
+    m4fLocal._34 += m4fLocal._31 * fX + m4fLocal._32 * fY + m4fLocal._33 * fZ;
+    m4fLocal._44 = 1.0;
 
-
-    this._qRotation.multiplyVec3(pPos);
-    
-    v3fTranslation.add(pPos);
-
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
 };
-
 /**
  * @property void setRotation(Float32Array m4fRotation)
  * Setup rotation
@@ -851,42 +854,72 @@ Node.prototype.addRelPosition = function () {
  * @memberof SceneNode
  */
 Node.prototype.setRotation = function () {
-    'use strict';
-
-    var qTemp = TEMPSCENEQUAT4FORCALC0;
-
+    var m4fRot;
+    var m4fLocal = this._m4fLocalMatrix;
     switch (arguments.length) {
         case 1:
-            //from matrix3 or matrix4
-            arguments[0].toQuat4(this._qRotation);
+            m4fRot = arguments[0];
+            m4fLocal._11 = m4fRot._11;
+            m4fLocal._21 = m4fRot._21;
+            m4fLocal._31 = m4fRot._31;
+            m4fLocal._12 = m4fRot._12;
+            m4fLocal._22 = m4fRot._22;
+            m4fLocal._32 = m4fRot._32;
+            m4fLocal._13 = m4fRot._13;
+            m4fLocal._23 = m4fRot._23;
+            m4fLocal._33 = m4fRot._33;
             break;
         case 2:
-
-            if (typeof arguments[1] == "number") {
-                //from axis and angle
-                Quat4.fromAxisAngle(arguments[0], arguments[1], this._qRotation);
-            }
-            else if (typeof arguments[0] == "number") {
-                //from angle & axis
-                Quat4.fromAxisAngle(arguments[1], arguments[0], this._qRotation);
+            var ar1 = arguments[0];
+            var ar2 = arguments[1];
+            if (typeof ar2 == "number") {
+                m4fRot = TEMPSCENEMATRIX4FORCALC0;
+                Mat4.identity(m4fRot);
+                Mat4.rotate(m4fRot, ar2, ar1);
+                m4fLocal._11 = m4fRot._11;
+                m4fLocal._21 = m4fRot._21;
+                m4fLocal._31 = m4fRot._31;
+                m4fLocal._12 = m4fRot._12;
+                m4fLocal._22 = m4fRot._22;
+                m4fLocal._32 = m4fRot._32;
+                m4fLocal._13 = m4fRot._13;
+                m4fLocal._23 = m4fRot._23;
+                m4fLocal._33 = m4fRot._33;
             }
             else {
-                //from forward & up
-                Quat4.fromForwardUp(arguments[0], arguments[1], this._qRotation);
+                Vec3.cross(ar2, ar1, TEMPSCENEVECTOR3FORCALC0);
+                m4fLocal._11 = TEMPSCENEVECTOR3FORCALC0.X;
+                m4fLocal._21 = TEMPSCENEVECTOR3FORCALC0.Y;
+                m4fLocal._31 = TEMPSCENEVECTOR3FORCALC0.Z;
+                m4fLocal._12 = ar2.X;
+                m4fLocal._22 = ar2.Y;
+                m4fLocal._32 = ar2.Z;
+                m4fLocal._13 = ar1.X;
+                m4fLocal._23 = ar1.Y;
+                m4fLocal._33 = ar1.Z;
             }
             break;
         case 3:
-            //from euler angles
-            Quat4.fromYPR(arguments[0], arguments[1], arguments[2], this._qRotation);
+            var yaw = arguments[0], pitch = arguments[1], roll = arguments[2];
+            m4fRot = TEMPSCENEMATRIX4FORCALC0;
+            Mat4.identity(m4fRot);
+            Mat4.rotateY(m4fRot, yaw);
+            Mat4.rotateX(m4fRot, pitch);
+            Mat4.rotateZ(m4fRot, roll);
+            m4fLocal._11 = m4fRot._11;
+            m4fLocal._21 = m4fRot._21;
+            m4fLocal._31 = m4fRot._31;
+            m4fLocal._12 = m4fRot._12;
+            m4fLocal._22 = m4fRot._22;
+            m4fLocal._32 = m4fRot._32;
+            m4fLocal._13 = m4fRot._13;
+            m4fLocal._23 = m4fRot._23;
+            m4fLocal._33 = m4fRot._33;
             break;
-        case 4:
-            //from (x, y, z, angle)
-            Quat4.fromAxisAngle(arguments, arguments[3], qTemp);
     }
-
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
+    ;
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
 };
-
 /**
  * @property void addRelRotation(Float32Array m4fRotation)
  * Add relative rotation
@@ -904,39 +937,54 @@ Node.prototype.setRotation = function () {
  * @memberof SceneNode
  */
 Node.prototype.addRelRotation = function () {
-    'use strict';
-
-    var qTemp = TEMPSCENEQUAT4FORCALC0;
+    var m4fRot;
+    var m4fLocal = this._m4fLocalMatrix;
     
     switch (arguments.length) {
         case 1:
-            arguments[0].toQuat4(qTemp);
+            m4fRot = arguments[0];
             break;
         case 2:
-             if (typeof arguments[1] == "number") {
-                //from axis and angle
-                Quat4.fromAxisAngle(arguments[0], arguments[1], qTemp);
-            }
-            else if (typeof arguments[0] == "number") {
-                //from angle & axis
-                Quat4.fromAxisAngle(arguments[1], arguments[0], qTemp);
-            }
-            else {
-                Quat4.fromForwardUp(arguments[0], arguments[1], qTemp);
-            }
+            Mat4.rotate(m4fLocal, arguments[1], arguments[0]);
+            a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
+            return;
         case 3:
-            Quat4.fromYPR(arguments[0], arguments[1], arguments[2], qTemp);
+            var yaw = arguments[0], pitch = arguments[1], roll = arguments[2];
+            m4fRot = TEMPSCENEMATRIX4FORCALC0;
+            Mat4.identity(m4fRot);
+            Mat4.rotateY(m4fRot, yaw);
+            Mat4.rotateX(m4fRot, pitch);
+            Mat4.rotateZ(m4fRot, roll);
             break;
         case 4:
-            //from (x, y, z, angle)
-            Quat4.fromAxisAngle(arguments, arguments[3], qTemp);
+            Mat4.rotate(m4fLocal, arguments[3], arguments);
+            a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
+            return;
     }
     
 
-    this._qRotation.multiply(qTemp);
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
-};
+    var a11 = m4fLocal._11, a21 = m4fLocal._21, a31 = m4fLocal._31;
+    var a12 = m4fLocal._12, a22 = m4fLocal._22, a32 = m4fLocal._32;
+    var a13 = m4fLocal._13, a23 = m4fLocal._23, a33 = m4fLocal._33;
 
+    var b11 = m4fRot._11, b21 = m4fRot._21, b31 = m4fRot._31;
+    var b12 = m4fRot._12, b22 = m4fRot._22, b32 = m4fRot._32;
+    var b13 = m4fRot._13, b23 = m4fRot._23, b33 = m4fRot._33;
+
+    m4fLocal._11 = a11 * b11 + a12 * b21 + a13 * b31;
+    m4fLocal._21 = a21 * b11 + a22 * b21 + a23 * b31;
+    m4fLocal._31 = a31 * b11 + a32 * b21 + a33 * b31;
+
+    m4fLocal._12 = a11 * b12 + a12 * b22 + a13 * b32;
+    m4fLocal._22 = a21 * b12 + a22 * b22 + a23 * b32;
+    m4fLocal._32 = a31 * b12 + a32 * b22 + a33 * b32;
+
+    m4fLocal._13 = a11 * b13 + a12 * b23 + a13 * b33;
+    m4fLocal._23 = a21 * b13 + a22 * b23 + a23 * b33;
+    m4fLocal._33 = a31 * b13 + a32 * b23 + a33 * b33;
+
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
+};
 
 /**
  * @property void addRotation(Float32Array m4fRotation)
@@ -959,42 +1007,69 @@ Node.prototype.addRelRotation = function () {
  * roll->pitch->yaw = z -> x -> y
  * @memberof SceneNode
  */
-/*Node.prototype.addRotation = function () {
-    'use strict';
-    
-    var qTemp = TEMPSCENEQUAT4FORCALC0;
-    
+Node.prototype.addRotation = function () {
+    var m4fRot;
+    var m4fLocal = this._m4fLocalMatrix;
+
     switch (arguments.length) {
         case 1:
-            Mat4.toQuat4(arguments[0], qTemp);
+            m4fRot = arguments[0];
             break;
         case 2:
-             if (typeof arguments[1] == "number") {
-                //from axis and angle
-                Quat4.fromAxisAngle(arguments[0], arguments[1], qTemp);
-            }
-            else if (typeof arguments[0] == "number") {
-                //from angle & axis
-                Quat4.fromAxisAngle(arguments[1], arguments[0], qTemp);
+            var ar1 = arguments[0];
+            var ar2 = arguments[1];
+            if (typeof ar2 == "number") {
+                m4fRot = TEMPSCENEMATRIX4FORCALC0;
+                Mat4.identity(m4fRot);
+                Mat4.rotate(m4fRot, ar2, ar1);
             }
             else {
-                Quat4.fromForwardUp(arguments[0], arguments[1], qTemp);
+                m4fRot = TEMPSCENEMATRIX4FORCALC0;
+                Vec3.cross(ar2, ar1, TEMPSCENEVECTOR3FORCALC0);
+                m4fRot._11 = TEMPSCENEVECTOR3FORCALC0.X;
+                m4fRot._21 = TEMPSCENEVECTOR3FORCALC0.Y;
+                m4fRot._31 = TEMPSCENEVECTOR3FORCALC0.Z;
+                m4fRot._12 = ar2.X;
+                m4fRot._22 = ar2.Y;
+                m4fRot._32 = ar2.Z;
+                m4fRot._13 = ar1sw.X;
+                m4fRot._23 = ar1.Y;
+                m4fRot._33 = ar1.Z;
             }
-        case 3:
-            Quat4.fromYPR(arguments[0], arguments[1], arguments[2], qTemp);
             break;
-        case 4:
-            //from (x, y, z, angle)
-            Quat4.fromAxisAngle(arguments, arguments[3], qTemp);
+        case 3:
+            var yaw = arguments[0], pitch = arguments[1], roll = arguments[2];
+            m4fRot = TEMPSCENEMATRIX4FORCALC0;
+            Mat4.identity(m4fRot);
+            Mat4.rotateY(m4fRot, yaw);
+            Mat4.rotateX(m4fRot, pitch);
+            Mat4.rotateZ(m4fRot, roll);
+            break;
     }
-    
+    ;
 
-    Quat4.multiply(this._qRotation, qTemp);
+    var a11 = m4fRot._11, a21 = m4fRot._21, a31 = m4fRot._31;
+    var a12 = m4fRot._12, a22 = m4fRot._22, a32 = m4fRot._32;
+    var a13 = m4fRot._13, a23 = m4fRot._23, a33 = m4fRot._33;
 
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
+    var b11 = m4fLocal._11, b21 = m4fLocal._21, b31 = m4fLocal._31;
+    var b12 = m4fLocal._12, b22 = m4fLocal._22, b32 = m4fLocal._32;
+    var b13 = m4fLocal._13, b23 = m4fLocal._23, b33 = m4fLocal._33;
+
+    m4fLocal._11 = a11 * b11 + a12 * b21 + a13 * b31;
+    m4fLocal._21 = a21 * b11 + a22 * b21 + a23 * b31;
+    m4fLocal._31 = a31 * b11 + a32 * b21 + a33 * b31;
+
+    m4fLocal._12 = a11 * b12 + a12 * b22 + a13 * b32;
+    m4fLocal._22 = a21 * b12 + a22 * b22 + a23 * b32;
+    m4fLocal._32 = a31 * b12 + a32 * b22 + a33 * b32;
+
+    m4fLocal._13 = a11 * b13 + a12 * b23 + a13 * b33;
+    m4fLocal._23 = a21 * b13 + a22 * b23 + a23 * b33;
+    m4fLocal._33 = a31 * b13 + a32 * b23 + a33 * b33;
+
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
 };
-*/
-
 /**
  * @property void setScale(Float32Array v3fScale)
  * Set scale
@@ -1005,36 +1080,70 @@ Node.prototype.addRelRotation = function () {
  * @tparam Float scale
  */
 Node.prototype.setScale = function (scale) {
-    'use strict';
-    
-    var pScale = arguments.length === 1? arguments[0]: arguments;
-    var v3fScale = this._v3fScale;
+    var m4fLocal = this._m4fLocalMatrix;
+    if (typeof(scale) == "number") {
+        m4fLocal._11 *= scale;
+        m4fLocal._21 *= scale;
+        m4fLocal._31 *= scale;
+        
+        m4fLocal._12 *= scale;
+        m4fLocal._22 *= scale;
+        m4fLocal._32 *= scale;
 
-    if (typeof pScale === 'number') {
-        v3fScale.set(pScale, pScale, pScale);
+        m4fLocal._13 *= scale;
+        m4fLocal._23 *= scale;
+        m4fLocal._33 *= scale;
     }
     else {
-        v3fScale.set(pScale);
+        m4fLocal._11 *= scale.X;
+        m4fLocal._21 *= scale.X;
+        m4fLocal._31 *= scale.X;
+        
+        m4fLocal._12 *= scale.Y;
+        m4fLocal._22 *= scale.Y;
+        m4fLocal._32 *= scale.Y;
+
+        m4fLocal._13 *= scale.Z;
+        m4fLocal._23 *= scale.Z;
+        m4fLocal._33 *= scale.Z;
     }
-
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newLocalMatrix, true);
 };
 
-Node.prototype.multScale = function (scale) {
-    'use strict';
-    
-    var pScale = arguments.length === 1? arguments[0]: arguments;
-    var v3fScale = this._v3fScale;
-
-    v3fScale.scale(pScale);
-    
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
-};
-Node.prototype.scale = Node.prototype.multScale;
 
 Ifdef (__DEBUG);
 
+Node.prototype.dumpHierarchy = function (iDepth, pParent) {
+    'use strict';
 
+    iDepth = iDepth || 0;
+    pParent = pParent || null;
+
+    var sName = this.getName();
+    var pNode = {
+        name: sName || 'unknown',
+        id: iDepth,
+        data: {},
+        children: []
+    };
+
+    var pSibling = this.sibling();
+    var pChild = this.child();
+
+    if (pSibling) {
+        pSibling.dumpHierarchy(iDepth + 0.01, pParent);
+    }
+
+    if (pChild) {
+        pChild.dumpHierarchy(Math.floor(iDepth) + 1, pNode);
+    }
+
+    if (pParent) {
+        pParent.children.push(pNode);
+    }
+
+    return pNode;
+};
 
 
 Node.prototype.toString = function (isRecursive, iDepth) {

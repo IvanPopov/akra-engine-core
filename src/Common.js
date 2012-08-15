@@ -68,6 +68,37 @@ a.extend = function (pChild) {
     };
 };
 
+Define(TO_STRING($$object), function () {
+    object;
+});
+Define(A_CHECK_STORAGE(), function () {
+    if (this === window || this === window.AKRA) {
+        __FUNC__._iIndex = __FUNC__._iIndex === __FUNC__._nStorageSize - 1? 0: __FUNC__._iIndex;
+        return __FUNC__._pStorage[__FUNC__._iIndex ++];
+    }
+});
+    
+function allocateStorage(pObject, nSize) {
+    var nStorageSize = nSize || 100;
+
+    pObject._nStorageSize = nStorageSize;
+    pObject._pStorage = new Array(pObject._nStorageSize);
+    pObject._iIndex = 0;
+
+    var pStorage = pObject._pStorage;
+    for(var i=0;i<pObject._nStorageSize;i++){
+        pStorage[i] = new pObject();
+    }
+}
+
+A_NAMESPACE(allocateStorage);
+
+Define(A_ALLOCATE_STORAGE(object, n), function () {
+    a.allocateStorage(object, n);
+});
+Define(A_ALLOCATE_STORAGE(object), function () {
+    a.allocateStorage(object, 16);
+});
 
 function now () {
     'use strict';
@@ -455,7 +486,7 @@ Define(DISPROPERTY(obj, $$property), function () {
     PROPERTY(obj, property, undefined, undefined);
 });
 
-Define(A_CLASS(args), function () { var _pCtorValue = __FUNC__.ctor.apply(this, args); if (_pCtorValue) return _pCtorValue; });
+Define(A_CLASS(args), function () { var _pCtorValue = __FUNC__.ctor.apply(this, args); if (_pCtorValue) {warning('constructor return value'); trace(_pCtorValue); return _pCtorValue; } });
 Define(A_CLASS(), function () { A_CLASS(arguments) });
 Define(A_CLASS, A_CLASS());
 
@@ -534,11 +565,11 @@ Define(GEN_ARRAY(name, type, size), function () {
 Define(A_DEFINE_NAMESPACE(name), function () {
     if (!a.name) a.name = {};
 });
-Define(A_DEFINE_NAMESPACE(name, space), function () {
-    if (!a.space.name) a.space.name = {};
+Define(A_DEFINE_NAMESPACE(name, $$space), function () {
+    if (!a[space].name) a[space].name = {};
 });
-Define(A_NAMESPACE(object, space), function () {
-    a.space.object = object;
+Define(A_NAMESPACE(object, $$space), function () {
+    a[space].object = object;
 });
 
 Define(A_NAMESPACE(object), function () {

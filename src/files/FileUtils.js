@@ -118,7 +118,7 @@ URI.prototype.set = function (sData) {
         if (!pUri) {
             throw new Error('Invalid URI format used.\nused uri: ' + sData);
         }
-
+    
         this.sScheme = pUri[1] || null;
         this.sUserinfo = pUri[2] || null;
         this.sHost = pUri[3] || null;
@@ -126,7 +126,6 @@ URI.prototype.set = function (sData) {
         this.sPath = pUri[5] || pUri[6] || null;
         this.sQuery = pUri[7] || null;
         this.sFragment = pUri[8] || null;
-
     }
     else if (sData instanceof URI) {
         this.set(sData.toString());
@@ -408,7 +407,7 @@ function ThreadManager (sScript, pWorker) {
     //TRACE('thread manager used: ' + sScript + ' worker(' + (pWorker? 'not standart': 'standart') + ')');
 
     Enum([WORKER_BUSY, WORKER_FREE], WORKER_STATUS, a.ThreadManager);
-    Define(a.ThreadManager.MAX_THREAD_NUM, 32);
+    Define(a.ThreadManager.MAX_THREAD_NUM, 512);
     Define(a.ThreadManager.INIT_THREAD_NUM, 4);
 
 
@@ -735,7 +734,8 @@ FileThread.prototype.write = function (pData, fnSuccess, fnError, sContentType) 
     pThread.onmessage = function (e) {
         me._pFile = e;
         me._nSeek += (typeof pData == 'string' ? pData.length : pData.byteLength);
-        fnSuccess.apply(me, arguments);
+        if (fnSuccess)
+            fnSuccess.apply(me, arguments);
     };
 
     sContentType = sContentType || (a.io.isBinary(iMode) ?

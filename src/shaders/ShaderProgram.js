@@ -28,7 +28,12 @@ function loadProgram(pEngine, sPath, pFlags) {
 
     if (pFlags) {
         for (var sFlag in pFlags) {
-            sDefine += '#define ' + sFlag + ' ' + pFlags[sFlag] + '\n';
+            if (pFlags[sFlag] === false) {
+                sDefine += '#undef ' + sFlag + '\n';
+            }
+            else {
+                sDefine += '#define ' + sFlag + ' ' + pFlags[sFlag] + '\n';    
+            }
         }
     }
 
@@ -154,7 +159,7 @@ function GLSLProgram(pEngine) {
      * @type HarwareProgram
      * @private
      */
-    this._pHarwareProgram = null;
+    this._pHardwareProgram = null;
 
     /**
      * Attributes of this shader program.
@@ -215,6 +220,19 @@ function GLSLProgram(pEngine) {
 
 a.extend(GLSLProgram, ShaderProgram);
 
+
+GLSLProgram.prototype.getDevice = function () {
+    'use strict';
+    
+    return this._pDevice;
+};
+
+GLSLProgram.prototype.getEngine = function () {
+    'use strict';
+    
+    return this._pEngine;
+};
+
 GLSLProgram.prototype.getAttribCount = function () {
     'use strict';
     
@@ -226,7 +244,7 @@ GLSLProgram.prototype.getAttribCount = function () {
  * @treturn Boolean
  */
 GLSLProgram.prototype.isActive = function () {
-    return this._pDevice.getParameter(this._pDevice.CURRENT_PROGRAM) === this._pHarwareProgram;
+    return this._pDevice.getParameter(this._pDevice.CURRENT_PROGRAM) === this._pHardwareProgram;
 };
 
 /**
@@ -273,6 +291,7 @@ GLSLProgram.prototype._shaderInfoLog = function (pShader, eType) {
     }
 
     sLog = this._pDevice.getShaderInfoLog(pShader);
+
     return '<div style="background: #FCC">' +
         '<pre>' + sLog + '</pre>' +
         '</div>' +
@@ -284,8 +303,17 @@ GLSLProgram.prototype._shaderInfoLog = function (pShader, eType) {
  * @treturn String
  * @private
  */
-GLSLProgram.prototype._programInfoLog = function () {
-    return '<pre style="background-color: #FFCACA;">' + this._pDevice.getProgramInfoLog(this._pHarwareProgram) +
+GLSLProgram.prototype._programInfoLog = function (pHardwareProgram, pVertexShader, pPixelShader) {
+    var pShaderDebugger = this.getEngine().getDevice().getExtension("WEBGL_debug_shaders");
+
+    if (pShaderDebugger) {
+        trace('translated vertex shader =========>');
+        trace(pShaderDebugger.getTranslatedShaderSource(pVertexShader));
+        trace('translated pixel shader =========>');
+        trace(pShaderDebugger.getTranslatedShaderSource(pPixelShader));        
+    }
+   
+    return '<pre style="background-color: #FFCACA;">' + this._pDevice.getProgramInfoLog(this._pHardwareProgram) +
         '</pre>' + '<hr />' +
         '<pre>' + this.getSourceCode(a.SHADERTYPE.VERTEX) + '</pre><hr />' +
         '<pre>' + this.getSourceCode(a.SHADERTYPE.PIXEL) + '</pre>'
@@ -324,17 +352,22 @@ GLSLProgram.prototype.create = function (sVertexCode, sPixelCode, bSetup) {
     this._sVertexCode = sVertexCode = sVertexCode || this._sVertexCode;
     this._sPixelCode = sPixelCode = sPixelCode || this._sPixelCode;
 
-    pHardwareProgram = this._pHarwareProgram = pDevice.createProgram();
-    pDevice.attachShader(pHardwareProgram, this._buildShader(a.SHADERTYPE.VERTEX, sVertexCode));
-    pDevice.attachShader(pHardwareProgram, this._buildShader(a.SHADERTYPE.PIXEL, sPixelCode));
+    pHardwareProgram = this._pHardwareProgram = pDevice.createProgram();
+    var pVertexShader = this._buildShader(a.SHADERTYPE.VERTEX, sVertexCode);
+    var pPixelShader = this._buildShader(a.SHADERTYPE.PIXEL, sPixelCode);
+    pDevice.attachShader(pHardwareProgram, pVertexShader);
+    pDevice.attachShader(pHardwareProgram, pPixelShader);
     pDevice.linkProgram(pHardwareProgram);
     if (!pDevice.getProgramParameter(pHardwareProgram, pDevice.VALIDATE_STATUS)) {
         //trace('program not valid', this.findResourceName());
         //trace(pDevice.getProgramInfoLog(pHardwareProgram));
     }
     debug_assert_win(pDevice.getProgramParameter(pHardwareProgram, pDevice.LINK_STATUS),
-        'cannot link program', this._programInfoLog());
+        'cannot link program', this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
     this._isValid = true;
+
+    this.notifyLoaded();
+    this.notifyRestored();
 
     return (bSetup? this.setup(): true);
 };
@@ -366,7 +399,7 @@ PROPERTY(GLSLProgram, 'declaration',
 GLSLProgram.prototype._setupUniforms = function (pUniformList) {
     var pUniforms = this._pUniformList;
     var pDevice = this._pDevice;
-    var pProgram = this._pHarwareProgram;
+    var pProgram = this._pHardwareProgram;
 
     for (var k = 0; k < pUniformList.length; k++) {
         pUniforms[pUniformList[k]] = pDevice.getUniformLocation(pProgram, pUniformList[k]);
@@ -382,7 +415,7 @@ GLSLProgram.prototype._setupUniforms = function (pUniformList) {
 GLSLProgram.prototype.autoSetup = function () {
     var pDevice = this._pDevice;
     var pUniformList = [];
-    var pProgram = this._pHarwareProgram;
+    var pProgram = this._pHardwareProgram;
     var pVertexDeclaration = [];
     var k, n;
 
@@ -426,7 +459,7 @@ GLSLProgram.prototype.setup = function (pVertexDeclaration, pUniformList) {
 
     for (var i = 0; i < pVertexDeclaration.length; i++) {
         sAttrName = pVertexDeclaration[i].eUsage;
-        iLocation = pDevice.getAttribLocation(this._pHarwareProgram, sAttrName);
+        iLocation = pDevice.getAttribLocation(this._pHardwareProgram, sAttrName);
 
         pAttr = pAttrs[iAttrUsed];
 
@@ -463,11 +496,11 @@ GLSLProgram.prototype.detach = function () {
 };
 
 GLSLProgram.prototype.bind = function () {
-    this._pDevice.useProgram(this._pHarwareProgram);
+    this._pDevice.useProgram(this._pHardwareProgram);
 };
 
 GLSLProgram.prototype.unbind = function (pPrevProgram) {
-    this._pDevice.useProgram(pPrevProgram ? pPrevProgram._pHarwareProgram : null);
+    this._pDevice.useProgram(pPrevProgram ? pPrevProgram._pHardwareProgram : null);
 };
 
 /**
@@ -488,11 +521,11 @@ GLSLProgram.prototype.deactivate = function () {
  * @tparam Matrix4 pValue Matrix.
  */
 GLSLProgram.prototype.applyMatrix4 = function (sName, pValue) {
-    this._pDevice.uniformMatrix4fv(this._pUniformList[sName], false, pValue);
+    this._pDevice.uniformMatrix4fv(this._pUniformList[sName], false, pValue.pData);
 };
 
 GLSLProgram.prototype.applyMatrix3 = function (sName, pValue) {
-    this._pDevice.uniformMatrix3fv(this._pUniformList[sName], false, pValue);
+    this._pDevice.uniformMatrix3fv(this._pUniformList[sName], false, pValue.pData);
 };
 
 /**
@@ -571,7 +604,7 @@ GLSLProgram.prototype.applyVector2 = function (sName) {
     var pDevice = this._pDevice;
     switch (arguments.length) {
         case 2:
-            pDevice.uniform2fv(this._pUniformList[sName], arguments[1]);
+            pDevice.uniform2fv(this._pUniformList[sName], arguments[1].pData);
             break;
         case 3:
             pDevice.uniform2f(this._pUniformList[sName], arguments[1], arguments[2]);
@@ -585,7 +618,7 @@ GLSLProgram.prototype.applyVector3 = function (sName) {
     var pDevice = this._pDevice;
     switch (arguments.length) {
         case 2:
-            pDevice.uniform3fv(this._pUniformList[sName], arguments[1]);
+            pDevice.uniform3fv(this._pUniformList[sName], arguments[1].pData);
             break;
         case 4:
             pDevice.uniform3f(this._pUniformList[sName], arguments[1], arguments[2], arguments[3]);
@@ -599,7 +632,7 @@ GLSLProgram.prototype.applyVector4 = function (sName) {
     var pDevice = this._pDevice;
     switch (arguments.length) {
         case 2:
-            pDevice.uniform4fv(this._pUniformList[sName], arguments[1]);
+            pDevice.uniform4fv(this._pUniformList[sName], arguments[1].pData);
             break;
         case 5:
             pDevice.uniform4f(this._pUniformList[sName], arguments[1], arguments[2], arguments[3], arguments[4]);

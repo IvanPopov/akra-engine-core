@@ -24,9 +24,9 @@ function ParticleManager(pEngine){
 	//this._isRendered = false;
 	this._pEngine = pEngine;
 
-	this._pDataFactory = new a.RenderDataFactory(pEngine);
+	this._pDataFactory = new a.RenderDataBuffer(pEngine);
 	this._pDataFactory.dataType = a.RenderData;
-	this._pDataFactory.setup(a.RenderDataFactory.VB_READABLE);
+	this._pDataFactory.setup(a.RenderDataBuffer.VB_READABLE);
 
 	this._pFramebuffer = null;
 

@@ -1,10 +1,13 @@
 
-function RenderDataFactory (pEngine) {
+function RenderDataBuffer (pEngine) {
+    A_CLASS;
+
     Enum([
         VB_READABLE = FLAG(a.VBufferBase.RamBackupBit),
         RD_ADVANCED_INDEX = a.RenderData.ADVANCED_INDEX,
-        RD_SINGLE_INDEX = a.RenderData.SINGLE_INDEX
-    ], RENDERDATAFACTORY_OPTIONS, a.RenderDataFactory);
+        RD_SINGLE_INDEX = a.RenderData.SINGLE_INDEX,
+        RD_RENDERABLE = a.RenderData.RENDERABLE
+    ], RenderDataBuffer_OPTIONS, a.RenderDataBuffer);
 
     //video buffer with all mesh data
     this._pDataBuffer = null;
@@ -14,12 +17,17 @@ function RenderDataFactory (pEngine) {
     this._pDataArray = [];
 }
 
-PROPERTY(RenderDataFactory, 'buffer',
+EXTENDS(RenderDataBuffer, a.ReferenceCounter);
+
+PROPERTY(RenderDataBuffer, 'buffer',
     function () {
         return this._pDataBuffer;
     });
 
-PROPERTY(RenderDataFactory, 'dataType',
+/**
+ * @deprecated
+ */
+PROPERTY(RenderDataBuffer, 'dataType',
     function () {
         return this._pSubsetType;
     },
@@ -28,11 +36,11 @@ PROPERTY(RenderDataFactory, 'dataType',
         this._pSubsetType = pSubsetType;
     });
 
-RenderDataFactory.prototype.getEngine = function() {
+RenderDataBuffer.prototype.getEngine = function() {
     return this._pEngine;
 };
 
-RenderDataFactory.prototype.getDataOptions = function() {
+RenderDataBuffer.prototype.getOptions = function() {
     return this._eDataOptions;
 };
 
@@ -48,7 +56,9 @@ RenderDataFactory.prototype.getDataOptions = function() {
  * Find VertexData with given semantics/usage.
  * @return {VertexData} Data with given semantics or null.
  */
-RenderDataFactory.prototype.getData = function () {
+RenderDataBuffer.prototype.getData = function () {
+    'use strict';
+
     var pData;
 
     if (this._pDataBuffer) {
@@ -76,7 +86,7 @@ RenderDataFactory.prototype.getData = function () {
  * Положить данные в буфер.
  * @private
  */
-RenderDataFactory.prototype._allocateData = function(pVertexDecl, pData) {
+RenderDataBuffer.prototype._allocateData = function(pVertexDecl, pData) {
     'use strict';
     
     if (!this._pDataBuffer) {
@@ -101,7 +111,9 @@ RenderDataFactory.prototype._allocateData = function(pVertexDecl, pData) {
 /**
  * @property allocateData(pDataDecl, iSize)
  */
-RenderDataFactory.prototype.allocateData = function (pDataDecl, pData) {     
+RenderDataBuffer.prototype.allocateData = function (pDataDecl, pData, isCommon) {     
+    isCommon = ifndef(isCommon, true);
+
     var pVertexData;
 
     pDataDecl = normalizeVertexDecl(pDataDecl);
@@ -109,22 +121,26 @@ RenderDataFactory.prototype.allocateData = function (pDataDecl, pData) {
 Ifdef (__DEBUG);
     
     for (var i = 0; i < pDataDecl.length; i++) {
-        assert(this.getData(pDataDecl[i].eUsage) === null || pDataDecl[i].nCount === 0, 
-            "data factory already contains data with similar vertex decloration.");
+        if (this.getData(pDataDecl[i].eUsage) !== null && pDataDecl[i].nCount !== 0) { 
+            warning("data buffer already contains data with similar vertex decloration <" + 
+                pDataDecl[i].eUsage + ">.");
+        }
     };
 
 Endif ();
 
     pVertexData = this._allocateData(pDataDecl, pData);
 
-    for (var i = 0; i < this._pDataArray.length; ++ i) {
-        this._pDataArray[i]._addData(pVertexData);
+    if (isCommon) {
+        for (var i = 0; i < this._pDataArray.length; ++ i) {
+            this._pDataArray[i]._addData(pVertexData);
+        }
     }
 
     return pVertexData.getOffset();
 };
 
-RenderDataFactory.prototype.getDataLocation = function (sSemantics) {
+RenderDataBuffer.prototype.getDataLocation = function (sSemantics) {
     'use strict';
 
     if (this._pDataBuffer) {
@@ -140,24 +156,24 @@ RenderDataFactory.prototype.getDataLocation = function (sSemantics) {
     return -1;
 };
 
-RenderDataFactory.prototype._createDataBuffer = function () {
+RenderDataBuffer.prototype._createDataBuffer = function () {
     'use strict';
     //TODO: add support for eOptions
     var iVbOption = 0;
     var iOptions = this._eDataOptions;
 
-    if (iOptions & a.RenderDataFactory.VB_READABLE) {
+    if (iOptions & a.RenderDataBuffer.VB_READABLE) {
         SET_BIT(iVbOption, FLAG(a.VBufferBase.ReadableBit));
     }
-    
-    this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource('data_factory_buffer' + '_' + a.sid());
+    //trace('creating new video buffer for render data buffer ...');
+    this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource('render_data_buffer' + '_' + a.sid());
     this._pDataBuffer.create(0, iVbOption);
     this._pDataBuffer.addRef();
     return this._pDataBuffer !== null;
 };
 
 
-RenderDataFactory.prototype.getRenderData = function (iSubset) {
+RenderDataBuffer.prototype.getRenderData = function (iSubset) {
     'use strict';
     
     return this._pDataArray[iSubset];
@@ -168,7 +184,7 @@ RenderDataFactory.prototype.getRenderData = function (iSubset) {
  * @param {Int} ePrimType Type of primitives.
  * @param {Int} eOptions Опции. Определяют можно ли объединять в группы датасеты.
  */
-RenderDataFactory.prototype.getEmptyRenderData = function (ePrimType, eOptions) {
+RenderDataBuffer.prototype.getEmptyRenderData = function (ePrimType, eOptions) {
     debug_assert(this._pSubsetType !== null, 'subset type not specified.');
 
     var iSubsetId = this._pDataArray.length;
@@ -188,7 +204,7 @@ RenderDataFactory.prototype.getEmptyRenderData = function (ePrimType, eOptions) 
 
 Ifdef (__DEBUG);
 
-RenderDataFactory.prototype.draw = function(iSubset) {
+RenderDataBuffer.prototype.draw = function(iSubset) {
     'use strict';
     
 
@@ -208,14 +224,14 @@ Endif ();
 /**
  * @protected
  */
-RenderDataFactory.prototype.setup = function (eOptions) {
+RenderDataBuffer.prototype.setup = function (eOptions) {
     this._eDataOptions = eOptions;
     if (!this._pSubsetType) {
         this._pSubsetType = a.RenderData;
     }
 };
 
-RenderDataFactory.prototype.destroy = function () {
+RenderDataBuffer.prototype.destroy = function () {
     'use strict';
     
     safe_delete_array(this._pDataArray);
@@ -231,10 +247,10 @@ RenderDataFactory.prototype.destroy = function () {
     this._pSubsetType = null;
 };
 
-RenderDataFactory.prototype.destructor = function () {
+RenderDataBuffer.prototype.destructor = function () {
     'use strict';
     
     this.destroy();
 };
 
-A_NAMESPACE(RenderDataFactory);
+A_NAMESPACE(RenderDataBuffer);

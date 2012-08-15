@@ -981,6 +981,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
 
     this.bind();
     pDevice.pixelStorei(pDevice.UNPACK_ALIGNMENT, 1);
+
     this.flipY(false)
 
     if (TEST_BIT(eFlags, a.Texture.MipMaps)) {

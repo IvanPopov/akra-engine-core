@@ -41,7 +41,7 @@ LocalFileSimplified.prototype._update = function (fnSuccess) {
     fnSuccess.apply(this);
 };
 
-LocalFileSimplified.prototype.read = function (fnSuccess) {
+LocalFileSimplified.prototype.read = function (fnSuccess, fnError) {
     FileThread.check(this.read, arguments);
     assert(a.io.canRead(this._eFileMode), "The file is not readable.");
 

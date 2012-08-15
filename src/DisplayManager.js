@@ -76,6 +76,8 @@ function Font2D (iSize, sColor, sFontFamily, isBold, isItalic) {
 ;
 
 function String2D (iX, iY, pFont, sStr, pDiv) {
+    pFont = pFont || new a.Font2D();
+
     var pSpan = document.createElement('span');
 
     pSpan.style.position = 'absolute';
@@ -327,13 +329,15 @@ DisplayManager.prototype.initText2Dlayer = function () {
 
     var iBorder = 0;
     if (this._pCanvas.style.border != "none") {
+		//надо правильно распарсить ширину границы и не border а border-size
         iBorder = parseInt(this._pCanvas.style.border);
     }
 
     pStyle.position = 'absolute';
-
-    pStyle.left = String(x + iBorder) + 'px';
-    pStyle.top = String(y + iBorder) + 'px';
+	//x += iBorder;
+	//y += iBorder;
+    pStyle.left = String(x) + 'px';
+    pStyle.top = String(y) + 'px';
 
     pStyle.overflow = 'hidden';
     pStyle.whiteSpace = 'nowrap';

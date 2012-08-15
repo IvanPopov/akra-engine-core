@@ -81,7 +81,7 @@ PROPERTY(Text3D,'fixedSize',
 Text3D.prototype.setText = function(sString){
 	'use strict';
 	var pFont = this._pFont;
-	trace('is Monospace',pFont.isMonospace);
+	//trace('is Monospace',pFont.isMonospace);
 	var pLetterMap = pFont.letterMap;
 	var pFontMetrics = pFont.fontMetrics;
 	var pMeasureContext = pFont.context;
@@ -97,13 +97,12 @@ Text3D.prototype.setText = function(sString){
 	for(var i=0;i<sString.length;i++){
 		var sChar = sString[i];
 		if(sChar == '\n'){
-			if(nLineLength > nMaxLineLength){
-				nMaxLineLength = nLineLength;
-			}
-			if(nPixelLength > nMaxPixelLength){
-				nMaxPixelLength = nPixelLength;
-			}
+
+			nMaxLineLength = (nLineLength > nMaxLineLength) ? nLineLength : nMaxLineLength;
+			nMaxPixelLength = (nPixelLength > nMaxPixelLength) ? nPixelLength : nMaxPixelLength;
 			pLinesInfo.push({'nLetters' : nLineLength, 'nPixelLength' : nPixelLength});
+
+
 			nLineLength = 0;
 			nPixelLength = 0;
 			nLineQuantity++;
@@ -113,14 +112,18 @@ Text3D.prototype.setText = function(sString){
 			//длина в пикселях
 			nPixelLength += pFontMetrics.lettersMetrics[sChar].typographicalWidth;
 		}
-	};
+	}
+
+	nMaxLineLength = (nLineLength > nMaxLineLength) ? nLineLength : nMaxLineLength;
+	nMaxPixelLength = (nPixelLength > nMaxPixelLength) ? nPixelLength : nMaxPixelLength;
 	pLinesInfo.push({'nLetters' : nLineLength, 'nPixelLength' : nPixelLength});
-	trace(nMaxLineLength,nMaxPixelLength,pLinesInfo);
+
 	this._nLineQuantity = nLineQuantity;
 	this._nLineLength = nMaxLineLength;
 	this._nPixelLineLingth = nMaxPixelLength;
 
-	var fAveragePixelWidthPerLetter = nMaxPixelLength/nLineQuantity;
+
+	var fAveragePixelsWidthPerLetter = nMaxPixelLength/nMaxLineLength;
 
 
 	//веделяем память под все данные,
@@ -139,90 +142,121 @@ Text3D.prototype.setText = function(sString){
 	// var nStartDataOffset = nLineQuantity;//номер откуда начинаются данные первой линии
 
 	// var sChar;
-	
-	var nStartIndex = 0;//указывает на 
+
+
 	var nCurrentIndex = 0;//указывает на текущую букву
 	var nStringDataOffset = nLineQuantity;
-	var nLetterInfoOffset = 0;
-	var nLetterGeometryOffset = 0;
+	var nLetterInfoOffset = nLineQuantity + nMaxLineLength*nLineQuantity;
+
 	for(var i=0;i<pLinesInfo.length;i++){
 		var pLine = pLinesInfo[i];
 		var nCurrentPixelLength = 0;
 		pStringData[4*i    ] = nStringDataOffset;
 		pStringData[4*i + 1] = nLetterInfoOffset;
-		pStringData[4*i + 2] = nLetterGeometryOffset;
+		pStringData[4*i + 2] = pLine.nPixelLength;
+
 
 		for(var j=0;j<nMaxLineLength;j++){
-			if(j<pLine[i].nLetters){
-				nCurrentIndex++;
+			if(j<pLine.nLetters){
 				var sChar = sString[nCurrentIndex];	
 				var pLetterMetrics = pFontMetrics.lettersMetrics[sChar];
+				//trace(sChar,pLetterMetrics,nMaxLineLength);
 				var nTypographicalWidth = pLetterMetrics.typographicalWidth;
 
-				var nStartPosition = Math.floor(nCurrentPixelLength/fAveragePixelWidthPerLetter);
+				var nStartPosition = Math.floor(nCurrentPixelLength/fAveragePixelsWidthPerLetter);
 				var nEndPosition = Math.floor((nCurrentPixelLength 
-											+ nTypographicalWidth - 1)/fAveragePixelWidthPerLetter);
+											+ nTypographicalWidth - 1)/fAveragePixelsWidthPerLetter);
 
-				var fPixelStartPosition = nCurrentPixelLength%fAveragePixelWidthPerLetter;
-				var fPixelEndtPosition = (nCurrentPixelLength + nTypographicalWidth - 1)
-											%fAveragePixelWidthPerLetter;
+				var fPixelStartPosition = nCurrentPixelLength%fAveragePixelsWidthPerLetter;
+				var fPixelEndPosition = (nCurrentPixelLength + nTypographicalWidth - 1)
+											%fAveragePixelsWidthPerLetter;
+
+				//trace(sChar,fPixelStartPosition,fPixelEndPosition,nTypographicalWidth,nCurrentPixelLength);
 
 				var nCurrentPosition = nStartPosition;
 
-				do{
-					var nCurrentDataPosition = nLineQuantity + i*nMaxPixelLength + nStartPosition;
-					
-					
-						
-					nCurrentPosition++;
-				}while(nCurrentPosition != nEndPosition)
+				var nPositions = nEndPosition - nStartPosition + 1;
+				//trace('positions',nPositions,'start',nStartPosition,'end',nEndPosition);
+				var nLetterStartPosition = 0;
+				var nLetterEndPosition = 0;
+				var nStartIndex = 0;
+				if(fPixelStartPosition != 0){
+					var nCurrentDataPosition = nLineQuantity 
+						+ i*nMaxLineLength + nStartPosition;
+					if(pStringData[4*nCurrentDataPosition + 1] != 0){
+						nStartIndex = 1;
+						nLetterStartPosition = fAveragePixelsWidthPerLetter - fPixelStartPosition;
+					}
+				}
+				nLetterEndPosition = 
+					(nLetterStartPosition + fAveragePixelsWidthPerLetter < nTypographicalWidth) ?
+						nLetterStartPosition + fAveragePixelsWidthPerLetter : nTypographicalWidth;
 
-				
+				for(var k=nStartIndex;k < nPositions;k++){
+					var nCurrentDataPosition = nLineQuantity 
+						+ i*nMaxLineLength + nStartPosition + k;
 
-				if(nPixelStartPosition == 0){
+					//trace(nLetterStartPosition,nLetterEndPosition,nCurrentDataPosition);
+
 					pStringData[4*nCurrentDataPosition    ] = j;
 					pStringData[4*nCurrentDataPosition + 1] = nTypographicalWidth;
-					pStringData[4*nCurrentDataPosition + 2] = fPixelStartPosition;
-					pStringData[4*nCurrentDataPosition + 3] = fPixelEndtPosition;
+					pStringData[4*nCurrentDataPosition + 2] = nLetterStartPosition;
+					pStringData[4*nCurrentDataPosition + 3] = nLetterEndPosition;
+					
+					nLetterStartPosition += fAveragePixelsWidthPerLetter;
+					nLetterEndPosition = 
+					(nLetterStartPosition + fAveragePixelsWidthPerLetter < nTypographicalWidth) ?
+						nLetterStartPosition + fAveragePixelsWidthPerLetter : nTypographicalWidth;
+
 				}
 
+				//заполняем данные о букве
+
+				var pLetterMetrics = pFontMetrics.lettersMetrics[sChar];
+				var pLetterData = pLetterMap[sChar];
+				nCurrentDataPosition = nLetterInfoOffset + 2*j;
+
+				for(var k=0;k<4;k++){
+					pStringData[4*nCurrentDataPosition + k] = pLetterData[k];
+				}
+
+				nCurrentDataPosition++;
+				pStringData[4*nCurrentDataPosition    ] = pLetterMetrics.typographicalWidth;
+				pStringData[4*nCurrentDataPosition + 1] = pLetterMetrics.left;
+				pStringData[4*nCurrentDataPosition + 2] = pLetterMetrics.right;
+
+
 				nCurrentPixelLength += nTypographicalWidth;
+
+				nCurrentIndex++;
 			}
-			
-			
+			else{
+
+
+
+				var nStartPosition = Math.ceil(nCurrentPixelLength/fAveragePixelsWidthPerLetter);
+				var fPixelStartPosition = nCurrentPixelLength%fAveragePixelsWidthPerLetter;
+				// if(fPixelStartPosition != 0){
+				// 	nStartPosition++;
+				// 	nCurrentPixelLength = nStartPosition*fAveragePixelsWidthPerLetter;
+				// }
+
+				var nCurrentDataPosition = nLineQuantity + 
+						i*nMaxLineLength + nStartPosition;
+
+				pStringData[4*nCurrentDataPosition] = -1;
+
+				//trace('else',i,j,nCurrentDataPosition);
+
+				nCurrentPixelLength += fAveragePixelsWidthPerLetter;//так данные о буквах идут по 2 vec4
+			}
 		}
 
-		for(var j=0;j<pLine.letters;j++){
-			 nCurrentIndex++; 
-			 var sChar = sString[nCurrentIndex];
-			 var pLetterMetrics = pFontMetrics.lettersMetrics[sChar].typographicalWidth;
-		}
-		 //пропускаем \n
+		nStringDataOffset += nMaxLineLength;
+		nLetterInfoOffset += pLine.nLetters*2;
+		nCurrentIndex++;//пропускаем \n
 	}
 
-	//когда i=sString.length заведомо попадаем в if как и нужно
-	for(var i=0;i<=sString.length;i++){
-		sChar = sString[i];
-		//trace(sChar,nLineLength);
-		if(sChar == '\n' || i == sString.length){
-
-			pStringData[4*nLine    ] = nLineLength;
-			pStringData[4*nLine + 1] = nStartDataOffset;
-
-			nStartDataOffset += nLineLength;
-
-			nLine++;
-		}
-		else{
-			var pTextureData = pLetterMap[sChar];
-			pStringData[nOffset + 4*(i-nLine)    ] = pTextureData.X;//текстурные координаты начала буквы
-			pStringData[nOffset + 4*(i-nLine) + 1] = pTextureData.Y;//
-			pStringData[nOffset + 4*(i-nLine) + 2] = pTextureData.Z;//шаг по текстуре необходимый для того, чтобы 
-			pStringData[nOffset + 4*(i-nLine) + 3] = pTextureData.W;//получить конец буквы
-		}
-	}
-	trace('nMaxPixelLength',nMaxPixelLength);
-	//trace(pStringData);
 
 	var pIndex = new Float32Array(4);
 	for(var i=0;i<4;i++){
@@ -232,8 +266,7 @@ Text3D.prototype.setText = function(sString){
 	this._pRenderData.allocateData(VE_VEC4('STRING_DATA'),pStringData);
 	this._pRenderData.allocateIndex(VE_FLOAT('INDEX1'),pIndex);
 	this._pRenderData.index(this._pRenderData.getDataLocation('STRING_DATA'),'INDEX1');
-	// trace(nLineQuantity);
-	// trace(pStringData);
+	//trace(pStringData);
 };
 
 Text3D.prototype.setDistanceMultiplier = function(fMultiplier) {
@@ -256,7 +289,7 @@ function DrawRoutineText3D(pProgram){
 	pProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
 
 	//text unifoms
-	//trace(this._nLineLength,this._nLineQuantity);
+
 	pProgram.applyFloat('nLineLength',this._nLineLength);
 	pProgram.applyFloat('nLineQuantity',this._nLineQuantity);
 	pProgram.applyFloat('startIndex',this._pRenderData.getDataLocation('STRING_DATA')/4.);

@@ -33,20 +33,16 @@ EXTENDS(SceneNode, Node);
  * @treturn Boolean
  */
 SceneNode.prototype.create = function () {
-    this._m4fLocalMatrix = Mat4.create();
-    this._m4fWorldMatrix = Mat4.create();
-    this._m4fInverseWorldMatrix = Mat4.create();
-    this._m3fNormalMatrix = Mat3.create();
-    this._v3fWorldPosition = Vec3.create();
-    this._v3fWorldRight = Vec3.create();
-    this._v3fWorldUp = Vec3.create();
-    this._v3fWorldForward = Vec3.create();
+    this._m4fLocalMatrix        = new Mat4(1);
+    this._m4fWorldMatrix        = new Mat4(1);
+    this._m4fInverseWorldMatrix = new Mat4(1);
+    this._m3fNormalMatrix       = new Mat3;
+    
+    this._v3fWorldPosition  = new Vec3();
+    this._v3fTranslation    = new Vec3(0);
+    this._v3fScale          = new Vec3(1);
+    this._qRotation         = new Quat4(0, 1);
 
-    //this._m4fLocalMatrix = Mat4.create();
-    Mat4.identity(this._m4fLocalMatrix);
-    //this._m4fWorldMatrix = Mat4.create();
-    Mat4.identity(this._m4fWorldMatrix);
-    //Mat4.identity(this._m4fInverseWorldMatrix);
     return true;
 };
 /**
