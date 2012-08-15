@@ -84,21 +84,21 @@ a.fopen = function (sUri) {
     var pUri = a.uri(sUri);
 
     if (pUri.protocol == 'filesystem') {
-        pUri = a.uri(pUri.path);
+        pUriLocal = a.uri(pUri.path);
 
-        assert(!(pUri.protocol && pUri.host != a.info.uri.host),
+        assert(!(pUriLocal.protocol && pUriLocal.host != a.info.uri.host),
                'Поддерживаются только локальные файлы в пределах текущего домена.');
 
-        var pFolders = pUri.path.split('/');
+        var pFolders = pUriLocal.path.split('/');
 
         if (pFolders[0] == '' || pFolders[0] == '.') {
             pFolders = pFolders.slice(1);
         }
-
-        assert(pFolders[0] == 'temporary',
+ 
+        assert(pUri.host == 'temporary',
                'Поддерживаются только файловые системы типа "temporary".');
 
-        return new a.LocalFile(pFolders.slice(1).join('/'), pMode);
+        return new a.LocalFile(pFolders.join('/'), pMode);
     }
     else {
         return new a.RemoteFile(sUri, pMode);

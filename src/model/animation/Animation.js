@@ -5,6 +5,8 @@
 function Animation (sName) {
     'use strict';
 
+    a.AnimationBase.call(this);
+
 	/**
 	 * Animation name.
 	 * @private
@@ -32,6 +34,7 @@ Animation.prototype.push = function (pTrack) {
     
 	Array.prototype.push.call(this, pTrack);
 	this._fDuration = Math.max(this._fDuration, pTrack.duration);
+	this.addTarget(pTrack.targetName);
 };
 
 Animation.prototype.bind = function (pTarget) {
@@ -40,6 +43,9 @@ Animation.prototype.bind = function (pTarget) {
 	for (var i = this.length - 1; i--;) {
 		if (!this[i].bind(pTarget)) {
 			trace('cannot bind animation track [', i, '] to joint <', pTracks[i]._sTarget, '>');
+		}
+		else {
+			this.setTarget(this[i].targetName, this[i].target);
 		}
 	};
 };

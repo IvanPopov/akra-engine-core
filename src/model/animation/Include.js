@@ -1,3 +1,4 @@
+Include('AnimationBase.js');
 Include('AnimationTrack.js');
 Include('Animation.js');
 Include('AnimationContainer.js');

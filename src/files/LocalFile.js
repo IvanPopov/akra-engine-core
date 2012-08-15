@@ -511,7 +511,7 @@ LocalFile.prototype.write = function (pData, fnSuccess, fnError, sContentType) {
             };
         }
 
-        var bb = new BlobBuilder();
+        var bb = new Blob();
 
         bb.append(pData);
         pWriter.write(bb.getBlob(sContentType));

@@ -1,7 +1,12 @@
-function AnimationFrame (fTime, pValue) {
+function AnimationFrame (fTime, pMatrix) {
+	A_CHECK_STORAGE();
+
 	this.fTime = fTime;
-	this.pValue = pValue;
+	this.pMatrix = pMatrix;
+	this.pWeight = 1.0;
 }
+
+A_ALLOCATE_STORAGE(AnimationFrame, 2);
 
 A_NAMESPACE(AnimationFrame);
 
@@ -23,7 +28,19 @@ function AnimationTrack (sTarget) {
 	 * @type {AnimationFrame}
 	 */
 	this._pKeyFrames = [];
+
+
 }
+
+PROPERTY(AnimationTrack, 'targetName',
+	function () {
+		return this.nodeName;
+	});
+
+PROPERTY(AnimationTrack, 'target',
+	function () {
+		return this.pTarget;
+	});
 
 /**
  * Target name of animation track.
@@ -52,7 +69,7 @@ PROPERTY(AnimationTrack, 'duration',
 /**
  * Add key frame in {fTime}.
  */
-AnimationTrack.prototype.keyFrame = function (fTime, pValue) {
+AnimationTrack.prototype.keyFrame = function (fTime, pMatrix) {
     'use strict';
     
     var pFrame;
@@ -62,7 +79,7 @@ AnimationTrack.prototype.keyFrame = function (fTime, pValue) {
   	var nTotalFrames = pKeyFrames.length;
 
   	if (arguments.length > 1) {
-  		pFrame = new a.AnimationFrame(fTime, pValue);
+  		pFrame = new a.AnimationFrame(fTime, pMatrix);
   	}
     else {
     	pFrame = arguments[0];
@@ -179,59 +196,7 @@ AnimationTrack.prototype.update = function (fTime) {
 	this.interpolate(this._pKeyFrames[iKey1], this._pKeyFrames[iKey2], fScalar);
 };
 
-AnimationTrack.prototype.interpolate = null;
-
-
-A_NAMESPACE(AnimationTrack);
-
-
-/**
- * Animatin matrix modififcation
- * =========================================================================
- */
-
-
-function AnimationMatrixModification (sTarget, iElement) {
-    A_CLASS;
-
-    this._iElement = iElement;
-}
-
-EXTENDS(AnimationMatrixModification, a.AnimationTrack);
-A_NAMESPACE(AnimationMatrixModification);
-
-AnimationMatrixModification.prototype.interpolate = function (pStartFrame, pEndFrame, fBlend, fWeight) {
-    'use strict';
-    TODO('AnimationMatrixModification');
- //    var bAdd = this.pTarget.isLocalMatrixNew();
- //    var pLocalMatrix = this.pTarget.accessLocalMatrix();
-	// var fValue = ((pEndFrame.pValue * fBlend) + ((1. - fBlend) * pStartFrame.pValue));
-
-	// fValue = (this._iElement === 15? (fValue || 1) : fValue) * fWeight;
-
-	// if (bAdd) {
-	// 	pLocalMatrix[this._iElement] += fValue;
-	// }
-	// else {
-	// 	pLocalMatrix[this._iElement] = fValue;
-	// }
-};
-
-
-
-/**
- * Animatin transformation
- * =========================================================================
- */
-
-function AnimationTransformation (sTarget) {
-    A_CLASS;
-}
-
-EXTENDS(AnimationTransformation, a.AnimationTrack);
-A_NAMESPACE(AnimationTransformation);
-
-AnimationTransformation.prototype.interpolate = function (pStartFrame, pEndFrame, fBlend
+AnimationTrack.prototype.interpolate = function (pStartFrame, pEndFrame, fBlend
 	/*, fWeight*/) {
     'use strict';
 
@@ -240,11 +205,17 @@ AnimationTransformation.prototype.interpolate = function (pStartFrame, pEndFrame
 	var fValue;
 	
 	for (var i = 0; i < 16; i++) {
-		fValue = ((pEndFrame.pValue.pData[i] * fBlend) + ((1. - fBlend) * pStartFrame.pValue.pData[i]));
+		fValue = ((pEndFrame.pMatrix.pData[i] * fBlend) + ((1. - fBlend) * pStartFrame.pMatrix.pData[i]));
 		//fValue = fValue * fWeight;
 
 		//pLocalMatrix[i] = bAdd? pLocalMatrix[i] + fValue: fValue;
 		pLocalMatrix.pData[i] = fValue;
 	};
 };
+
+AnimationTransformation = AnimationTrack;
+
+A_NAMESPACE(AnimationTrack);
+A_NAMESPACE(AnimationTransformation);
+
 
