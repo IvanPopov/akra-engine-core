@@ -72,7 +72,7 @@ Define(TO_STRING($$object), function () {
     object;
 });
 Define(A_CHECK_STORAGE(), function () {
-    if (this === window || this === window.AKRA) {
+    if (!this || this === window || this === window.AKRA) {
         __FUNC__._iIndex = __FUNC__._iIndex === __FUNC__._nStorageSize - 1? 0: __FUNC__._iIndex;
         return __FUNC__._pStorage[__FUNC__._iIndex ++];
     }

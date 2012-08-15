@@ -1,13 +1,18 @@
-function AnimationFrame (fTime, pMatrix) {
+function AnimationFrame (fTime, pMatrix, fWeight) {
 	A_CHECK_STORAGE();
 
-	this.fTime = fTime;
-	this.pMatrix = pMatrix;
-	this.pWeight = 1.0;
+	this.fTime = fTime || 0;
+	this.pMatrix = pMatrix || (new Mat4());
+	this.fWeight = fWeight || 1.0;
 }
 
-A_ALLOCATE_STORAGE(AnimationFrame, 2);
+AnimationFrame.prototype.toMatrix = function () {
+    'use strict';
+    
+	return this.pMatrix;
+};
 
+A_ALLOCATE_STORAGE(AnimationFrame, 2);
 A_NAMESPACE(AnimationFrame);
 
 function AnimationTrack (sTarget) {
@@ -29,7 +34,7 @@ function AnimationTrack (sTarget) {
 	 */
 	this._pKeyFrames = [];
 
-
+	this._pResultFrame = new a.AnimationFrame();
 }
 
 PROPERTY(AnimationTrack, 'targetName',
@@ -85,7 +90,7 @@ AnimationTrack.prototype.keyFrame = function (fTime, pMatrix) {
     	pFrame = arguments[0];
     }
 
-    if (nTotalFrames && (iFrame = this.findFrame(pFrame.fTime)) >= 0) {
+    if (nTotalFrames && (iFrame = this.findKeyFrame(pFrame.fTime)) >= 0) {
 		pKeyFrames.splice(iFrame, 0, pFrame);
 	}
 	else {
@@ -95,7 +100,7 @@ AnimationTrack.prototype.keyFrame = function (fTime, pMatrix) {
 	return true;
 };
 
-AnimationTrack.prototype.getFrame = function (iFrame) {
+AnimationTrack.prototype.getKeyFrame = function (iFrame) {
     'use strict';
     
     debug_assert(iFrame < this._pKeyFrames.length, 'iFrame must be less then number of total jey frames.');
@@ -103,7 +108,7 @@ AnimationTrack.prototype.getFrame = function (iFrame) {
 	return this._pKeyFrames[iFrame];
 };
 
-AnimationTrack.prototype.findFrame = function (fTime) {
+AnimationTrack.prototype.findKeyFrame = function (fTime) {
     'use strict';
     
     var pKeyFrames	= this._pKeyFrames;
@@ -168,7 +173,7 @@ AnimationTrack.prototype.bind = function () {
 	return pNode? true: false;
 };
 
-AnimationTrack.prototype.update = function (fTime) {
+AnimationTrack.prototype.frame = function (fTime) {
     'use strict';
 
 	var iKey1, iKey2;
@@ -176,6 +181,7 @@ AnimationTrack.prototype.update = function (fTime) {
 	var fTimeDiff;
 	var pKeys = this._pKeyFrames
 	var nKeys = pKeys.length;
+	var pFrame = this._pResultFrame;
 
 	//TODO: реализовать существенно более эффективный поиск кадра.
 	for (var i = 0; i < nKeys; i ++) {
@@ -185,7 +191,6 @@ AnimationTrack.prototype.update = function (fTime) {
     }
 
     iKey2 = (iKey1 >= (nKeys - 1))? iKey1 : iKey1 + 1;
-
     fTimeDiff = pKeys[iKey2].fTime - pKeys[iKey1].fTime;
     
     if (!fTimeDiff)
@@ -193,23 +198,22 @@ AnimationTrack.prototype.update = function (fTime) {
 	
 	fScalar = (fTime - pKeys[iKey1].fTime) / fTimeDiff;
 	
-	this.interpolate(this._pKeyFrames[iKey1], this._pKeyFrames[iKey2], fScalar);
+	AnimationTrack.interpolate(
+		this._pKeyFrames[iKey1], 
+		this._pKeyFrames[iKey2], 
+		pFrame, 
+		fScalar);
+
+	pFrame.fTime = fTime;
+
+	return pFrame;
 };
 
-AnimationTrack.prototype.interpolate = function (pStartFrame, pEndFrame, fBlend
-	/*, fWeight*/) {
+AnimationTrack.interpolate = function (pStartFrame, pEndFrame, pResultFrame, fBlend) {
     'use strict';
 
-    //var bAdd = this.pTarget.isLocalMatrixNew();
-    var pLocalMatrix = this.pTarget.accessLocalMatrix();
-	var fValue;
-	
 	for (var i = 0; i < 16; i++) {
-		fValue = ((pEndFrame.pMatrix.pData[i] * fBlend) + ((1. - fBlend) * pStartFrame.pMatrix.pData[i]));
-		//fValue = fValue * fWeight;
-
-		//pLocalMatrix[i] = bAdd? pLocalMatrix[i] + fValue: fValue;
-		pLocalMatrix.pData[i] = fValue;
+		pResultFrame.pMatrix.pData[i] = ((pEndFrame.pMatrix.pData[i] * fBlend) + ((1. - fBlend) * pStartFrame.pMatrix.pData[i]));
 	};
 };
 

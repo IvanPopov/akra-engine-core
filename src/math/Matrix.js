@@ -5,6 +5,8 @@
  * @email iakarateev@gmail.com
  *
  * Матричные и векторные операции.
+ *
+ * Матрицы хранятся по столбцам, как в openGL
  */
 
 
@@ -81,7 +83,7 @@ function Vec2(){
     //'use strict';
 
     var v2fVec;
-    if(this === window){
+    if(this === window || this === window.AKRA){
         v2fVec = Vec2._pStorage[Vec2._iIndex++];
         if(Vec2._iIndex == Vec2._nStorageSize){
             Vec2._iIndex = 0;
@@ -484,7 +486,7 @@ function Vec3(){
 
     var v3fVec;
 
-    if(this === window){
+    if(this === window || this === window.AKRA){
         v3fVec = Vec3._pStorage[Vec3._iIndex++];
         if(Vec3._iIndex == Vec3._nStorageSize){
             Vec3._iIndex = 0;
@@ -1019,7 +1021,7 @@ function Vec4(){
 
     var v4fVec;
 
-    if(this === window){
+    if(this === window || this === window.AKRA){
         v4fVec = Vec4._pStorage[Vec4._iIndex++];
         if(Vec4._iIndex == Vec4._nStorageSize){
             Vec4._iIndex = 0;
@@ -1562,7 +1564,7 @@ function Mat3(){
 
     var m3fMat;
 
-    if(this === window){
+    if(this === window  || this === window.AKRA){
         m3fMat = Mat3._pStorage[Mat3._iIndex++];
         if(Mat3._iIndex == Mat3._nStorageSize){
             Mat3._iIndex = 0;
@@ -1731,18 +1733,18 @@ Mat3.prototype.set = function() {
                 pData3 = arguments[2];    
             }
 
-            //ложим по строкам    
+            //ложим по столбцам
 
             pData.a11 = pData1.X;
-            pData.a12 = pData1.Y;
-            pData.a13 = pData1.Z;
+            pData.a12 = pData2.X;
+            pData.a13 = pData3.X;
 
-            pData.a21 = pData2.X;
+            pData.a21 = pData1.Y;
             pData.a22 = pData2.Y;
-            pData.a23 = pData2.Z;
+            pData.a23 = pData3.Y;
 
-            pData.a31 = pData3.X;
-            pData.a32 = pData3.Y;
+            pData.a31 = pData1.Z;
+            pData.a32 = pData2.Z;
             pData.a33 = pData3.Z;
         }
     }
@@ -2229,6 +2231,34 @@ Mat3.prototype.isEqual = function(m3fMat,fEps) {
     return true;
 };
 
+/**
+ * проверяет диагональная ли матрица с определенной точностью
+ */
+Mat3.prototype.isDiagonal = function(fEps) {
+    'use strict';   
+    fEps = ifndef(fEps,0);
+    var pData = this.pData;
+
+    if(fEps == 0){
+        if(    pData.a12 != 0 || pData.a13 != 0
+            || pData.a21 != 0 || pData.a23 != 0
+            || pData.a31 != 0 || pData.a32 != 0){
+
+            return false;
+        }
+    }
+    else{
+        if(    Math.abs(pData.a12) > fEps || Math.abs(pData.a13) > fEps
+            || Math.abs(pData.a21) > fEps || Math.abs(pData.a23) > fEps
+            || Math.abs(pData.a31) > fEps || Math.abs(pData.a32) > fEps){
+
+            return false;
+        }
+    }
+
+    return true;
+};
+
 /*
  * Mat4 - 4x4 Matrix
  */
@@ -2238,7 +2268,7 @@ function Mat4(){
 
     var m4fMat;
 
-    if(this === window){
+    if(this === window || this === window.AKRA){
         m4fMat = Mat4._pStorage[Mat4._iIndex++];
         if(Mat4._iIndex == Mat4._nStorageSize){
             Mat4._iIndex = 0;
@@ -2462,23 +2492,23 @@ Mat4.prototype.set = function() {
             }
 
             pData._11 = pData1.X;
-            pData._12 = pData1.Y;
-            pData._13 = pData1.Z;
-            pData._14 = pData1.W;
+            pData._12 = pData2.X;
+            pData._13 = pData3.X;
+            pData._14 = pData4.X;
 
-            pData._21 = pData2.X;
+            pData._21 = pData1.Y;
             pData._22 = pData2.Y;
-            pData._23 = pData2.Z;
-            pData._24 = pData2.W;
+            pData._23 = pData3.Y;
+            pData._24 = pData4.Y;
 
-            pData._31 = pData3.X;
-            pData._32 = pData3.Y;
+            pData._31 = pData1.Z;
+            pData._32 = pData2.Z;
             pData._33 = pData3.Z;
-            pData._34 = pData3.W;
+            pData._34 = pData4.Z;
 
-            pData._41 = pData4.X;
-            pData._42 = pData4.Y;
-            pData._43 = pData4.Z;
+            pData._41 = pData1.W;
+            pData._42 = pData2.W;
+            pData._43 = pData3.W;
             pData._44 = pData4.W;
         }
     }
@@ -3904,6 +3934,95 @@ Mat4.prototype.multiplyLeft = function(m4fMat,m4fDestination){
     return m4fMat.multiply(this,m4fDestination || this);
 };
 
+Mat4.prototype.decompose = function(q4fRotation,v3fScale,v3fTranslation) {
+    'use strict';
+    
+    var pData = this.pData;
+
+    //изначально предполагаем, что порядок умножения был rot * scale
+    var m3fRotScale = this.toMat3(Mat3());
+    var m3fRotScaleTransposed = m3fRotScale.transpose(Mat3());
+    var isRotScale = true; 
+
+    //понадобятся если порядок умножения был другим
+    var m3fScaleRot, m3fScaleRotTransposed;
+
+    //было отражение или нет
+    var scaleSign = (m3fRotScale.determinant() >= 0) ? 1 : -1;
+
+    //first variant rot * scale
+    // (rot * scale)T * (rot * scale) = 
+    // scaleT * rotT * rot * scale = scaleT *rot^-1 * rot * scale = 
+    // scaleT * scale
+    var m3fResult = m3fRotScaleTransposed.multiply(m3fRotScale);
+    if(!m3fResult.isDiagonal(1e-6)){
+        //предположение было неверным
+
+        //просто переобозначения чтобы не было путаницы
+        m3fScaleRot = m3fRotScale;
+        m3fScaleRotTransposed = m3fRotScaleTransposed;
+
+        //second variant scale * rot
+        // (scale * rot) * (scale * rot)T = 
+        // scale * rot * rotT * scaleT = scale *rot * rot^-1 * scaleT = 
+        // scale * scaleT
+
+        m3fResult = m3fScaleRot.multiply(m3fScaleRotTransposed);
+    }
+
+    var pResultData = m3fResult.pData;
+    var x = pResultData.a11;
+    var y = pResultData.a22 * scaleSign; //если было отражение, считается что оно было по y
+    var z = pResultData.a33;
+
+    v3fScale.set(x,y,z);
+    var m3fInverseScale = Mat3(1/x,1/y,1/z);
+    var m3fRot;
+
+
+    if(isRotScale){
+        m3fRot = m3fRotScale.multiply(m3fInverseScale);
+        v3fTranslation.set(pData._14,pData._24,pData._34);
+    }
+    else{
+        m3fRot = m3fInverseScale.multiply(m3fScaleRot);
+        v3fTranslation.set(pData._14/x,pData._24/y,pData._34/z);
+    }
+
+    debug_assert(isRotScale,"порядок умножения scale rot в данный момент не поддерживается");
+
+    m3fRot.toQuat4(q4fRotation);
+};
+
+/**
+ * проверяет диагональная ли матрица с определенной точностью
+ */
+Mat4.prototype.isDiagonal = function(fEps) {
+    'use strict'; 
+    fEps = ifndef(fEps,0);
+    var pData = this.pData;
+
+    if(fEps == 0){
+        if(    pData._12 != 0 || pData._13 != 0 || pData._14 != 0 
+            || pData._21 != 0 || pData._23 != 0 || pData._24 != 0
+            || pData._31 != 0 || pData._32 != 0 || pData._34 != 0
+            || pData._41 != 0 || pData._42 != 0 || pData._43 != 0){
+
+            return false;
+        }
+    }
+    else{
+        if(    Math.abs(pData._12) > fEps || Math.abs(pData._13) > fEps || Math.abs(pData._14) > fEps
+            || Math.abs(pData._21) > fEps || Math.abs(pData._23) > fEps || Math.abs(pData._24) > fEps
+            || Math.abs(pData._31) > fEps || Math.abs(pData._32) > fEps || Math.abs(pData._34) > fEps
+            || Math.abs(pData._41) > fEps || Math.abs(pData._42) > fEps || Math.abs(pData._43) > fEps){
+
+            return false;
+        }
+    }
+    return true;
+};
+
 /*
  * Mat4.frustum
  * Generates a frustum matrix with the given bounds
@@ -4140,32 +4259,6 @@ Mat4.lookAt = function (v3fEye, v3fCenter, v3fUp, m4fDestination) {
     return m4fDestination;
 };
 
-// /**
-//  * D3DVec3TransformCoord
-//  * @tparam Float32Array v3fOut Out Vector
-//  * @tparam Float32Array v3fIn In Vector
-//  * @tparam Float32Array m4fM Matrix
-//  * @treturn Float32Array Out vector
-//  */
-// function vec3TransformCoord (v3fIn, m4fM, v3fOut) {
-//     if (!v3fOut) {
-//         v3fOut = Vec3.create();
-//     }
-
-//     var x, y, z, w;
-//     x = v3fIn.X * m4fM._11 + v3fIn.Y * m4fM._12 + v3fIn.Z * m4fM._13 + m4fM._14;
-//     y = v3fIn.X * m4fM._21 + v3fIn.Y * m4fM._22 + v3fIn.Z * m4fM._23 + m4fM._24;
-//     z = v3fIn.X * m4fM._31 + v3fIn.Y * m4fM._32 + v3fIn.Z * m4fM._33 + m4fM._34;
-//     w = v3fIn.X * m4fM._41 + v3fIn.Y * m4fM._42 + v3fIn.Z * m4fM._43 + m4fM._44;
-
-//     v3fOut.X = x / w;
-//     v3fOut.Y = y / w;
-//     v3fOut.Z = z / w;
-
-//     return v3fOut;
-// }
-// ;
-
 
 /////////////////////////////////////////////////////////
 //
@@ -4181,7 +4274,7 @@ function Quat4 () {
     //'use strict';
 
     var qQuat;
-    if(this === window){
+    if(this === window || this === window.AKRA){
         qQuat = Quat4._pStorage[Quat4._iIndex++];
         if(Quat4._iIndex == Quat4._nStorageSize){
             Quat4._iIndex = 0;
@@ -4734,64 +4827,12 @@ Quat4.prototype.slerp = function(q4fQuat,fA,q4fDestination) {
     return q4fDestination;
 };
 
-(function(){
-    var nStorageSize = 100;
-
-    Vec2._nStorageSize = nStorageSize;
-    Vec2._pStorage = new Array(Vec2._nStorageSize);
-    Vec2._iIndex = 0;
-
-    var pStorage = Vec2._pStorage;
-    for(var i=0;i<Vec2._nStorageSize;i++){
-        pStorage[i] = new Vec2();
-    }
-
-    Vec3._nStorageSize = nStorageSize;
-    Vec3._pStorage = new Array(Vec3._nStorageSize);
-    Vec3._iIndex = 0;
-
-    var pStorage = Vec3._pStorage;
-    for(var i=0;i<Vec3._nStorageSize;i++){
-        pStorage[i] = new Vec3();
-    }
-
-    Vec4._nStorageSize = nStorageSize;
-    Vec4._pStorage = new Array(Vec4._nStorageSize);
-    Vec4._iIndex = 0;
-
-    var pStorage = Vec4._pStorage;
-    for(var i=0;i<Vec4._nStorageSize;i++){
-        pStorage[i] = new Vec4();
-    }    
-
-    Mat3._nStorageSize = nStorageSize;
-    Mat3._pStorage = new Array(Mat3._nStorageSize);
-    Mat3._iIndex = 0;
-
-    var pStorage = Mat3._pStorage;
-    for(var i=0;i<Mat3._nStorageSize;i++){
-        pStorage[i] = new Mat3();
-    }
-
-    Mat4._nStorageSize = nStorageSize;
-    Mat4._pStorage = new Array(Mat4._nStorageSize);
-    Mat4._iIndex = 0;
-
-    var pStorage = Mat4._pStorage;
-    for(var i=0;i<Mat4._nStorageSize;i++){
-        pStorage[i] = new Mat4();
-    }
-
-    Quat4._nStorageSize = nStorageSize;
-    Quat4._pStorage = new Array(Quat4._nStorageSize);
-    Quat4._iIndex = 0;
-
-    var pStorage = Quat4._pStorage;
-    for(var i=0;i<Quat4._nStorageSize;i++){
-        pStorage[i] = new Quat4();
-    }
-})();
-
+a.allocateStorage(Vec2,100);
+a.allocateStorage(Vec3,100);
+a.allocateStorage(Vec4,100);
+a.allocateStorage(Mat3,100);
+a.allocateStorage(Mat4,100);
+a.allocateStorage(Quat4,100);
 
 Mat4.prototype.translate = Mat4.prototype.translateLeft;
 Mat4.prototype.scale = Mat4.prototype.scaleLeft;
