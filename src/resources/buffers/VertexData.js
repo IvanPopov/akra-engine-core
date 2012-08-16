@@ -494,6 +494,11 @@ PROPERTY(VertexData, 'stride',
         return this._iStride;
     });
 
+PROPERTY(VertexData, 'offset',
+         function () {
+             return this._iOffset;
+         });
+
 
 VertexData.prototype.extend = function (pVertexDecl, pData) {
     pVertexDecl = a.normalizeVertexDecl(pVertexDecl);

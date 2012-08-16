@@ -221,6 +221,24 @@ var GLOBAL_VARS = {
 };
 A_NAMESPACE(GLOBAL_VARS, fx);
 
+var SEMANTIC_BLACKLIST = {
+    "A_b_0"  : null, "A_b_1" : null, "A_b_2" : null, "A_b_3" : null,
+    "A_b_4"  : null, "A_b_5" : null, "A_b_6" : null, "A_b_7" : null,
+    "A_b_8"  : null, "A_b_9" : null, "A_b_10" : null, "A_b_11" : null,
+    "A_b_12" : null, "A_b_13" : null, "A_b_14" : null, "A_b_15" : null,
+    "A_b_16" : null,
+    "A_h_0"  : null, "A_h_1" : null, "A_h_2" : null, "A_h_3" : null,
+    "A_h_4"  : null, "A_h_5" : null, "A_h_6" : null, "A_h_7" : null,
+    "A_h_8"  : null, "A_h_9" : null, "A_h_10" : null, "A_h_11" : null,
+    "A_h_12" : null, "A_h_13" : null, "A_h_14" : null, "A_h_15" : null,
+    "A_h_16" : null
+};
+A_NAMESPACE(SEMANTIC_BLACKLIST, fx);
+var NAME_BLACKLIST = {
+    "A_b_" : null,
+    "A_h_" : null
+};
+A_NAMESPACE(NAME_BLACKLIST, fx);
 function GLSLExpr(sTemplate) {
     this.pArgs = {};
     this.pExpr = [];
@@ -1270,7 +1288,7 @@ function EffectBaseFunction() {
     this.sName = null;
     this.sRealName = null;
     this.pFunction = pFunction || null;
-    this.sSementic = pFunction ? pFunction.sSemantic : null;
+    this.sSemantic = pFunction ? pFunction.sSemantic : null;
     this.pReturnType = pFunction ? pFunction.pReturnType : null;
     this.pMainInputVar = pFunction ? pFunction.pMainInputVar : null;
     this.pGlobalUsedTypes = (pFunction && pFunction.pImplement) ? pFunction.pGlobalUsedTypes : {};
@@ -1407,7 +1425,7 @@ EffectBaseFunction.prototype.setName = function (sName) {
     this.sName = sName;
 };
 EffectBaseFunction.prototype.addSemantic = function (sSemantic) {
-    this.sSementic = sSemantic;
+    this.sSemantic = sSemantic;
     this.pReturnType.sSemantic = sSemantic;
 };
 EffectBaseFunction.prototype.setImplement = function (pImplement) {
@@ -1677,7 +1695,7 @@ EffectFunction.prototype.generateDefinitionCode = function () {
     this._sDefinition = this.pReturnType.toCode() + " " + this.sRealName + "(";
     var i, j;
     var pType;
-    for (i = 0; i < this.pParamOrders.length; i++) {
+    for (i = 0; this.pParamOrders && i < this.pParamOrders.length; i++) {
         pType = this.pParamOrders[i].pType;
         if (!(pType.pUsagesName && pType.pUsagesName["uniform"] === null)) {
             this._sDefinition += pType.toCode();
@@ -1686,7 +1704,7 @@ EffectFunction.prototype.generateDefinitionCode = function () {
             }
         }
     }
-    this._sDefinition += ")"
+    this._sDefinition += ")";
 };
 EffectFunction.prototype.generateExtractedCode = function () {
     var i, j;
@@ -2041,7 +2059,8 @@ EffectShader.prototype.toCodeAll = function (id) {
             sCode += pElement;
         }
         else {
-            if (!(pElement.isSampler() && pElement.iScope === a.fx.GLOBAL_VARS.GLOBAL) && pElement.pData === undefined) {
+            if (!(pElement.isSampler() && pElement.iScope === a.fx.GLOBAL_VARS.GLOBAL) &&
+                pElement.pData === undefined) {
                 pToCode = (pElement instanceof EffectBaseFunction) ? pElement.toCode() : pElement.toCode(true);
                 if (typeof(pToCode) === "string") {
                     sCode += pToCode;
@@ -2154,7 +2173,9 @@ EffectVertex.prototype.addAttribute = function (pVar) {
     var pAttr;
     if (!pVar.isVSInput) {
         pAttr = pVar.cloneMe();
+        pVar.sRealName = pVar.sSemantic;
         pAttr.sName = pAttr.sSemantic;
+        pAttr.sRealName = pAttr.sSemantic;
         this._pAttributes.push(pAttr);
         this._pAttrSemantics[pAttr.sSemantic] = pAttr;
         return;
@@ -2215,7 +2236,9 @@ EffectFragment.prototype.addVarying = function (pVar) {
     var pVary;
     if (!pVar.isFSInput) {
         pVary = pVar.cloneMe();
+        pVar.sRealName = pVar.sSemantic;
         pVary.sName = pVary.sSemantic;
+        pVary.sRealName = pVary.sSemantic;
         this._pVaryings.push(pVary);
         this._pVaryingsSemantics[pVary.sSemantic] = pVary;
         return;
@@ -2448,7 +2471,7 @@ EffectPass.prototype.finalize = function () {
 //    if (this.sJSCode !== "") {
 //        this.pCode.push(this.sJSCode);
 //    }
-    console.log(this.sJSCode);
+//    console.log(this.sJSCode);
     this._fnEval = new Function("me", "engine", "uniformValues", this.sJSCode);
 
     if (this.isComplex) {
@@ -2778,6 +2801,7 @@ function Effect(pManager, id) {
 
     this._sProvideNameSpace = null;
     this._pCurrentTechnique = null;
+    this._pUsedSeamntics = {};
 
     this.sComponents = null;
     this.pComponents = null;
@@ -2944,6 +2968,8 @@ function Effect(pManager, id) {
     this._addSystemFunction("dot", "float", [null, null], ["float", "float2", "float3", "float4"], "dot($1,$2)");
     this._addSystemFunction("mul", null, [null, null], ["float", "int", "float2", "float3", "float4"], "$1*$2");
     this._addSystemFunction("tex2D", "float4", ["sampler", "float2"], null, "texture2D($1,$2)");
+    this._addSystemFunction("mod", "float", ["float", "float"], null, "mod($1,$2)");
+    this._addSystemFunction("floor", "float", ["float"], null, "floor($1)");
 }
 /**
  * Add system function
@@ -3405,6 +3431,10 @@ Effect.prototype.addVariable = function (pVar, isParams) {
         }
     }
 
+    if (!this._hasValidName(pVar)) {
+        error("Bad variable name!");
+        return;
+    }
     if (this._hasVariableDecl(pVar.sName)) {
         error("Ohhh! You try to redeclarate varibale!");
         return;
@@ -3433,6 +3463,15 @@ Effect.prototype.addVariable = function (pVar, isParams) {
         pVar.sRealName = pVar.sName;
     }
     pVar.iScope = this._iScope;
+    if (this._iScope === a.fx.GLOBAL_VARS.GLOBAL) {
+        if (pVar.sSemantic) {
+            if (!this._isValidSemantic(pVar.sSemantic)) {
+                error("BAD semantic " + pVar.sSemantic);
+                return;
+            }
+            this._lockSemantic(pVar.sSemantic);
+        }
+    }
     if (isParams) {
         pVar.isParametr = true;
     }
@@ -3461,6 +3500,13 @@ Effect.prototype.addVariable = function (pVar, isParams) {
         fnExtractStruct("", pVar, "", "", pVar.pType.pEffectType.pDesc, this._pCurrentScope.pStructTable, 0,
                         this);
     }
+};
+Effect.prototype._hasValidName = function (pVar) {
+    var sName = pVar.sName;
+    if (a.fx.NAME_BLACKLIST[sName] === null) {
+        return false;
+    }
+    return true;
 };
 Effect.prototype.addBuffer = function (pVar) {
     //TODO: may be
@@ -3756,6 +3802,21 @@ Effect.prototype.convertType = function (pNode) {
     }
     return pType;
 };
+Effect.prototype._isValidSemantic = function (sSemantic) {
+    if (a.fx.SEMANTIC_BLACKLIST[sSemantic] === null) {
+        return false;
+    }
+    if (this._pUsedSeamntics[sSemantic] === null) {
+        return false;
+    }
+    return true;
+};
+Effect.prototype._lockSemantic = function (sSemantic) {
+    if (this._iScope === a.fx.GLOBAL_VARS.GLOBAL) {
+        this._pUsedSeamntics[sSemantic] = null;
+    }
+};
+
 Effect.prototype.addConstant = function (pVar) {
     if (!this._pConstants) {
         this._pConstants = {};
@@ -3815,6 +3876,7 @@ Effect.prototype.analyze = function (pTree) {
 //    try {
     var pRoot = pTree.pRoot;
     var time = a.now();
+//    console.log(this);
     this._pParseTree = pTree;
     this.newScope();
     this.firstStep();
@@ -4519,7 +4581,8 @@ Effect.prototype.analyzeAnnotation = function (pNode, pObj) {
     return pObj;
 };
 Effect.prototype.analyzeSemantic = function (pNode, pObj) {
-    pObj.addSemantic(pNode.pChildren[0].sValue);
+    var sSemantic = pNode.pChildren[0].sValue;
+    pObj.addSemantic(sSemantic);
     return pObj;
 };
 Effect.prototype.analyzeInitializer = function (pNode, pVar) {
@@ -4604,13 +4667,13 @@ Effect.prototype.analyzeExpr = function (pNode) {
             }
             if (pChildren[pChildren.length - 1].sValue === a.fx.GLOBAL_VARS.T_KW_COMPILE) {
                 //ObjectExpr : T_KW_COMPILE Target NonTypeId '(' ArgumentsOpt ')'
-                pFunc = this.findFunction(pChildren[pChildren.length - 3].sValue, null);
+                pFunc = this.findFunction(pChildren[pChildren.length - 2].sValue, null);
                 if (!pFunc) {
                     error("yo, error");
                     return;
                 }
                 //this.pushCode(pChildren[2].sValue);
-                if (pChildren.length > 5) {
+                if (pChildren.length > 4) {
                     //TODO: add support for these constructions
                     error("Sorry but we now don`t support this constructions");
                     return;
@@ -5655,7 +5718,7 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
             pFunction.pShader.pScopeStack = [this._iScope];
             this._pCurrentFunction = pFunction.pShader;
             var sName, pAttr, pVar, pOrders;
-            for (i = 0; i < pFunction.pParamOrders.length; i++) {
+            for (i = 0; pFunction.pParamOrders && i < pFunction.pParamOrders.length; i++) {
                 if (pFunction.pParamOrders[i].isUniform === false) {
                     pFunction.pShader.addAttribute(pFunction.pParamOrders[i]);
                     if (pFunction.pParamOrders[i].isVSInput) {
@@ -5701,7 +5764,7 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
             pFunction.pShader.iScope = this._iScope;
             pFunction.pShader.pScopeStack = [this._iScope];
             this._pCurrentFunction = pFunction.pShader;
-            for (i = 0; i < pFunction.pParamOrders.length; i++) {
+            for (i = 0; pFunction.pParamOrders && i < pFunction.pParamOrders.length; i++) {
                 if (pFunction.pParamOrders[i].isUniform === false) {
                     pFunction.pShader.addVarying(pFunction.pParamOrders[i]);
                 }
@@ -5895,9 +5958,9 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
         }
         else if (this._eFuncProperty === a.Effect.Func.VERTEX) {
             if (pFunction.pReturnType.isBase()) {
-                this.pushCode(pFunction.pReturnVariable);
+                this.pushCode(a.fx.GLOBAL_VARS.SHADEROUT);
                 this.pushCode(".");
-                this.pushCode(pFunction.sSementic);
+                this.pushCode(pFunction.sSemantic);
                 this.pushCode("=");
                 this.analyzeExpr(pChildren[1]);
                 this.pushCode(";");
@@ -6235,7 +6298,7 @@ Effect.prototype.analyzePassState = function (pNode, pPass) {
         if (isVertex) {
             pPass.setJSVertexShader(pFunc);
             pFunc.isVertexShader = true;
-            for (i = 0; i < pFunc.pParamOrders.length; i++) {
+            for (i = 0; pFunc.pParamOrders && i < pFunc.pParamOrders.length; i++) {
                 pParam = pFunc.pParamOrders[i];
                 if (!pParam.sSemantic && pParam.isUniform === false) {
                     if (isInput === false) {
@@ -6264,17 +6327,35 @@ Effect.prototype.analyzePassState = function (pNode, pPass) {
         else {
             pPass.setJSFragmentShader(pFunc);
             pFunc.isFragmentShader = true;
-            for (i = 0; i < pFunc.pParamOrders.length; i++) {
+            isInput = null;
+            for (i = 0; pFunc.pParamOrders && i < pFunc.pParamOrders.length; i++) {
                 pParam = pFunc.pParamOrders[i];
                 if (pParam.isUniform === false) {
                     if (isInput === true) {
                         error("You should put all varyings in one struct");
                         return;
                     }
-                    isInput = true;
-                    pParam.setFSInput();
-                    pParam.setMixible();
-                    pFunc.pMainInputVar = pParam;
+                    else if (!pParam.sSemantic) {
+                        if (isInput === false) {
+                            error("If you use varyings as params do it honest");
+                            return;
+                        }
+                        isInput = true;
+                        pParam.setFSInput();
+                        pParam.setMixible();
+                        pFunc.pMainInputVar = pParam;
+                    }
+                    else {
+                        if (isInput === true) {
+                            error("If you use varyings as struct do it honest");
+                            return;
+                        }
+                        if (!pParam.pType.isBase()) {
+                            error("For varyings only base types are availeable");
+                            return;
+                        }
+                        isInput = false;
+                    }
                 }
             }
         }

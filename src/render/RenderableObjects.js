@@ -95,7 +95,7 @@ RenderableObject.prototype.destructor = function () {
 RenderableObject.prototype.addRenderMethod = function (pRenderMethod, sName) {
     var pRenderSnapshot = new a.RenderSnapshot;
 
-    if (arguments.length < 2) {
+    if (arguments.length < 2 && typeof(arguments[0]) === "string") {
         sName = arguments[0];
         pRenderMethod = this.getEngine().displayManager().renderMethodPool().createResource('render-method-' +
                                                                                             (sName || '') + a.sid());
@@ -296,12 +296,31 @@ RenderableObject.prototype.renderPass = function (iPass) {
     if (!this._pActiveSnapshot) {
         return false;
     }
-    var pProgram = this._pActiveSnapshot.renderPass(iPass);
-    if (!pProgram) {
+    var pEntry = this._pActiveSnapshot.renderPass(iPass);
+    if (!pEntry) {
         warning("Pass don`t add to render queue");
         return false;
     }
     //TODO: add program and object to renderQueue
+    return pEntry;
+};
+RenderableObject.prototype.applyBufferMap = function (pData) {
+    if (!this._pActiveSnapshot) {
+        return false;
+    }
+    return this._pActiveSnapshot.applyBufferMap(pData);
+};
+RenderableObject.prototype.applyRenderData = function (pData) {
+    if (!this._pActiveSnapshot) {
+        return false;
+    }
+    return this._pActiveSnapshot.applyRenderData(pData);
+};
+RenderableObject.prototype.applyVertexData = function (pData) {
+    if (!this._pActiveSnapshot) {
+        return false;
+    }
+    return this._pActiveSnapshot.applyVertexData(pData);
 };
 // /**
 //  * By default, scene nodes do not render.

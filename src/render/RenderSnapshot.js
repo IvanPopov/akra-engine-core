@@ -85,14 +85,6 @@ PROPERTY(RenderSnapshot, 'pass',
          });
 
 /**
- * Number of render passes.
- */
-PROPERTY(RenderSnapshot, 'totalPasses',
-         function () {
-             return this._pRenderMethod._pEffect._nTotalPasses;
-         });
-
-/**
  * Name of snapshot/method.
  */
 PROPERTY(RenderSnapshot, 'name',
@@ -384,6 +376,12 @@ RenderSnapshot.prototype.applyBuffer = function (pVertexData) {
  */
 RenderSnapshot.prototype.applyBufferMap = function (pBufferMap) {
     this._pShaderManager.applyBufferMap(pBufferMap);
+};
+RenderSnapshot.prototype.applyRenderData = function (pData) {
+    this._pShaderManager.applyBufferMap(pData._pMap);
+};
+RenderSnapshot.prototype.applyVertexData = function (pData) {
+    this._pShaderManager.applyVertexData(pData);
 };
 
 /**

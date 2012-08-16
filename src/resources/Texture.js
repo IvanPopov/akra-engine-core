@@ -69,7 +69,7 @@ function Texture (pEngine) {
     this._iSlot = -1;
 }
 
-a.extend(Texture, a.ResourcePoolItem);
+a.extend(Texture, a.ResourcePoolItem, a.RenderableObject);
 
 
 PROPERTY(Texture, 'texture',

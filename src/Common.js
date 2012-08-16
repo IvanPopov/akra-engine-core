@@ -25,7 +25,7 @@ a.extend = function (pChild) {
     pChild.prototype.constructor = pChild;
     pChild.superclass = pParent.prototype;
 
-
+//    console.log(argv);
     //multiple inheritance
     for (i = 2; i < argv.length; ++i) {
         for (sKey in argv[i].prototype) {

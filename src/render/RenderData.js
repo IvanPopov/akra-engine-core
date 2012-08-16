@@ -764,7 +764,7 @@ RenderData.prototype.applyMe = function(){
     if(!pManager){
         return false;
     }
-    return pManager.applyRenderData(this);
+    return pManager.applyBufferMap(this._pMap);
 };
 
 Ifdef (__DEBUG);

@@ -43,13 +43,13 @@ Include('ShaderManager.js');
 
 /* Buffers */
 Include('resources/buffers/');
-
-Include('resources/Img.js');
 Include('resources/Texture.js');
+Include('resources/Img.js');
 Include('resources/RenderMethod.js');
 
 
 Include('render/');
+
 Include('model/');
 Include('resources/ModelResource.js');
 

@@ -1,3 +1,5 @@
+Include("../../render/RenderableObjects.js");
+
 Include("../Img.js")
 Include("../Texture.js")
 

@@ -70,15 +70,6 @@ EffectResource.prototype.getManager = function () {
 };
 
 /**
- * return number of passes for the effect
- * @treturn Int
- */
-PROPERTY(EffectResource, 'totalPasses',
-         function () {
-             return this._nTotalPasses;
-         });
-
-/**
  * Определить, является ли эффект тиражируемым
  */
 EffectResource.prototype.replicable = function (bValue) {
@@ -129,19 +120,24 @@ EffectResource.prototype.totalPasses = function () {
     return this._pShaderManager.totalPasses(this);
 };
 
+EffectResource.prototype.create = function () {
+    if (!this._pShaderManager.registerEffect(this)) {
+        return false;
+    }
+    return true;
+};
+
 /**
  * innitialize the resource (called once)
  * @treturn Boolean always true
  */
 EffectResource.prototype.createResource = function () {
-    if (!this._pShaderManager.registerEffect(this)) {
-        return false;
-    }
     this.miscible();
 
     this.notifyCreated();
     this.notifyDisabled();
     this.notifyLoaded();
+
     return true;
 };
 /**

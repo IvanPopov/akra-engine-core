@@ -29,7 +29,7 @@ function ShaderProgram2(pEngine) {
     this._nActiveTimes = 0;
     this._pPassBlend = null;
     this._pTextures = null;
-    this._isZeroSampler
+    this._isZeroSampler = false;
 }
 ShaderProgram2.prototype._buildShader = function (eType, sCode) {
     var pDevice = this._pDevice;
@@ -123,12 +123,11 @@ ShaderProgram2.prototype.generateInputData = function (pAttrData, pUniformData) 
         sKey = pKeys[i];
         pData = pAttrData[sKey];
         if (pData !== null) {
-            if (pData.eType === a.BufferMap.FT_MAPPABLE) {
-                pAttrs[pAttrReal[sKey]] = pData.pMapper.pData;
+            if (pData.eType !== a.BufferMap.FT_MAPPABLE) {
+                pAttrs[pAttrReal[sKey]] = pData;
+                continue;
             }
-            else {
-                pAttrs[pAttrReal[sKey]] = pData.pData;
-            }
+            pAttrs[pAttrReal[sKey]] = pData.pMapper.pData;
             sOffset = sKey + "_offset";
             if (pUniformData[sOffset] || pOffsets[sOffset] !== null) {
                 warning("something wrong with offset");
@@ -1095,6 +1094,10 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     var isExtractInitV = false;
     var isExtractInitF = false;
     var pUniformKeys = Object.keys(pUniformData);
+    var nSamplers = 0;
+
+    //Samplers and Globals Buffers generated here
+
     for (i = 0; i < pUniformKeys.length; i++) {
         sKey1 = pUniformKeys[i];
         pData1 = pUniformData[sKey1];
@@ -1144,10 +1147,10 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                 pTexture = pTextures[sTexture];
             }
             if (!pTexture) {
-                if (this.pGlobalBuffersV[sKey1] === null) {
+                if (this.pSamplersV[sKey1] === null) {
                     isZeroSamplerV = true;
                 }
-                if (this.pGlobalBuffersF[sKey1] === null) {
+                if (this.pSamplersF[sKey1] === null) {
                     isZeroSamplerF = true;
                 }
                 sData1 = PassBlend.sZeroSampler;
@@ -1165,6 +1168,8 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         }
     }
 
+    //Attributes analyzed here. Are the from real buffer or video buffer.
+    //Generated lists of real attributes by slots and video buffers they used
 
     for (i = 0; i < pKeys.length; i++) {
         sKey1 = pKeys[i];
@@ -1178,17 +1183,17 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         }
         pAttrToReal[sKey1] = nAttr;
         isNewBuffer = false;
-//        if (pData1.eType === a.BufferMap.FT_UNMAPPABLE) {
-//            if (pAttr.isPointer || !pAttr.pType.isBase()) {
-//                warning("Bad data in buffers 001");
-//                return false;
-//            }
-//            pAttrInit[nAttr] = sKey1;
-//            nAttr++;
-//            continue;
-//        }
-        if (pData1.eType === a.BufferMap.FT_MAPPABLE &&
-            pAttrToBuffer[sKey1] === undefined) {
+        if (pData1.eType !== a.BufferMap.FT_MAPPABLE) {
+            if (pAttr.isPointer || !pAttr.pType.isBase()) {
+                warning("Bad data in buffers 001");
+                return false;
+            }
+            pAttrInit[nAttr] = sKey1;
+//            console.log(sKey1, nAttr);
+            nAttr++;
+            continue;
+        }
+        else if (pAttrToBuffer[sKey1] === undefined) {
             pAttrToBuffer[sKey1] = nBuffer;
             isNewBuffer = true;
         }
@@ -1197,11 +1202,10 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
             pData2 = pAttrData[sKey2];
             if (pData1 === pData2) {
                 pAttrToReal[sKey2] = nAttr;
-                pAttrToBuffer[sKey2] = nBuffer;
             }
-            if (pData1.eType === a.BufferMap.FT_MAPPABLE &&
+            if (pData1.eType === a.BufferMap.FT_MAPPABLE && pData2.eType === a.BufferMap.FT_MAPPABLE &&
                 pData1.pData._pVertexBuffer === pData2.pData._pVertexBuffer) {
-                pAttrToBuffer[sKey2] = nBuffer;
+                pAttrToBuffer[sKey2] = pAttrToBuffer[sKey1];
             }
         }
         nAttr++;
@@ -1209,14 +1213,19 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
             nBuffer++;
         }
     }
+
     pRealAttrs = new Array(nAttr);
     pRealBuffers = new Array(nBuffer);
+
+    //Samplers and headers for video_buffer used in attributes
 
     for (i = 0; i < pRealBuffers.length; i++) {
         isExtractInitV = true;
         pRealBuffers[i] = "uniform sampler2D " + "A_b_" + i +
                           "; A_TextureHeader A_b_h_" + i + ";";
     }
+
+    //Set samplers and headers of video_buffer`s of attributes in code
 
     for (i = 0; i < pKeys.length; i++) {
         sKey1 = pKeys[i];
@@ -1233,6 +1242,8 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         }
     }
 
+    //Generate code for real attributes
+
     for (i = 0; i < pRealAttrs.length; i++) {
         sKey1 = pAttrInit[i];
         if (sKey1 !== undefined) {
@@ -1244,6 +1255,8 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         }
         pRealAttrs[i] = "attribute float a_" + i + ";";
     }
+
+    //Generate declarations and initial expression for variables that used as input data for vertex shader in hlsl
 
     for (i = 0; i < pKeys.length; i++) {
         sKey1 = pKeys[i];
@@ -1328,6 +1341,9 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         pAttrInit[sKey1] = sInit;
     }
 
+    //Generate final code
+
+    //Translate all objects that was in code(Samplers and Headers) to code
     function fnToFinalCode(pCode) {
         if (typeof(pCode) === "string") {
             return pCode;
@@ -1347,12 +1363,18 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     var sVertexCode = "";
     var sFragmentCode = "";
     var isExtract;
+
     //VERTEX SHADER
+
+    nSamplers = a.info.graphics.maxVertexTextureImageUnits(this.pEngine.pDevice);
+
+    //Initial for extract functions
     isExtract = false;
     if (isExtractInitV) {
         sVertexCode += PassBlend.pExtractedFunctions["init"];
         isExtract = true;
     }
+    //Extract functions
     for (i in this.pExtrectedFunctionsV) {
         if (!isExtract) {
             sVertexCode += PassBlend.pExtractedFunctions["init"];
@@ -1360,81 +1382,117 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         }
         sVertexCode += PassBlend.pExtractedFunctions[i];
     }
+    //Types
     for (i in this.pTypesBlockV) {
         sVertexCode += this.pTypesBlockV[i] + ";";
     }
+    //Function`s definitions
     for (i in this.pFuncDefBlockV) {
         sVertexCode += i + ";";
     }
+    //Uniform samplers
     if (isZeroSamplerV) {
+        nSamplers--;
         sVertexCode += PassBlend.sZeroSamplerDecl;
     }
     for (i in this.pSamplersDecl) {
         if (this.pSamplersDecl[i] && this.pSamplersV[i] === null) {
+            nSamplers--;
             sVertexCode += this.pSamplersDecl[i];
         }
     }
+    //Global buffer`s samplers
     for (i in this.pGlobalBuffersDecl) {
         if (this.pGlobalBuffersDecl[i] && this.pGlobalBuffersV[i] === null) {
+            nSamplers--;
             sVertexCode += this.pGlobalBuffersDecl[i];
         }
     }
+    //Uniforms
     for (i in this.pUniformsBlockV) {
         sVertexCode += this.pUniformsBlockV[i];
     }
+    //Global variables
     if (isZeroHeaderV) {
         sVertexCode += PassBlend.sZeroHeaderDecl;
     }
     for (i in this.pGlobalVarBlockV) {
         sVertexCode += this.pGlobalVarBlockV[i];
     }
+    //Varyings declaration
     for (i in this.pVaryingsDef) {
         sVertexCode += this.pVaryingsDef[i];
     }
+    //Real attributtes
     for (i = 0; i < pRealAttrs.length; i++) {
         sVertexCode += pRealAttrs[i];
     }
+    //Buffer`s samplers for attributes
     for (i = 0; i < pRealBuffers.length; i++) {
+        nSamplers--;
         sVertexCode += pRealBuffers[i];
     }
+    //Check number of samplers
+    if (nSamplers < 0) {
+        warning("More samplers used than vertex shader can provide");
+        return false;
+    }
+    //Offsets
     sVertexCode += sUniformOffset;
+    //Input data for shader
     for (i = 0; i < pKeys.length; i++) {
         sKey1 = pKeys[i];
         sVertexCode += pAttrDecl[sKey1];
     }
+    //System 'Out' variable declaration
     sVertexCode += this.sVaryingsOut;
+    //Function`s body
     for (i in this.pFuncDeclBlockV) {
         sVertexCode += fnToFinalCode(this.pFuncDeclBlockV[i]) + "\n";
     }
+    //Shader`s functions body
     for (i = 0; i < this.pVertexShaders.length; i++) {
         sVertexCode += this.pVertexShaders[i].toFinal() + "\n";
     }
+    //void main()
     sVertexCode += "void main(){";
+    //Extract headers for attr`s buffers
     for (i = 0; i < pRealBuffers.length; i++) {
         sVertexCode += "A_extractTextureHeader(A_b_" + i + ",A_b_h_" + i + ");";
     }
+    //Extract headers for global buffers
     for (i in this.pGlobalBuffersInit) {
         if (this.pGlobalBuffersInit[i] && this.pGlobalBuffersV[i] === null) {
             sVertexCode += this.pGlobalBuffersInit[i];
         }
     }
+    //Initialize input data for shader`s functions from real attributess
     for (i = 0; i < pKeys.length; i++) {
         sKey1 = pKeys[i];
         sVertexCode += pAttrInit[sKey1];
     }
+    //Calls shader`s functions
     for (i = 0; i < i < this.pVertexShaders.length; i++) {
         sVertexCode += this.pVertexShaders[i].sRealName + "();"
     }
+    //Set varyings
     for (i in this.pVaryingsBlock) {
         sVertexCode += this.pVaryingsBlock[i];
     }
+    //finish
     sVertexCode += "}";
+
     //PIXEL SHADER
+
+    nSamplers = a.info.graphics.maxCombinedTextureImageUnits(this.pEngine.pDevice);
+
+    //Initial for extract functions
     isExtract = false;
     if (isExtractInitF) {
         sFragmentCode += PassBlend.pExtractedFunctions["init"];
         isExtract = true;
     }
+    //Extract functions
     for (i in this.pExtrectedFunctionsF) {
         if (!isExtract) {
             sFragmentCode += PassBlend.pExtractedFunctions["init"];
@@ -1442,56 +1500,81 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         }
         sFragmentCode += PassBlend.pExtractedFunctions[i];
     }
+    //Types
     for (i in this.pTypesBlockF) {
         sFragmentCode += this.pTypesBlockF[i] + ";";
     }
+    //Function`s definitions
     for (i in this.pFuncDefBlockF) {
         sFragmentCode += i + ";";
     }
+    //Uniform samplers
     if (isZeroSamplerF) {
+        nSamplers--;
         sFragmentCode += PassBlend.sZeroSamplerDecl;
     }
     for (i in this.pSamplersDecl) {
         if (this.pSamplersDecl[i] && this.pSamplersF[i] === null) {
+            nSamplers--;
             sFragmentCode += this.pSamplersDecl[i];
         }
     }
+    //Global buffer`s samplers
     for (i in this.pGlobalBuffersDecl) {
         if (this.pGlobalBuffersDecl[i] && this.pGlobalBuffersF[i] === null) {
+            nSamplers--;
             sFragmentCode += this.pGlobalBuffersDecl[i];
         }
     }
+    //Check number of samplers
+    if (nSamplers < 0) {
+        warning("More samplers used than fragment shader can provide");
+        return false;
+    }
+    //Uniforms
     for (i in this.pUniformsBlockF) {
         sFragmentCode += this.pUniformsBlockF[i];
     }
+    //Global variables
     if (isZeroHeaderF) {
         sFragmentCode += PassBlend.sZeroHeaderDecl;
     }
     for (i in this.pGlobalVarBlockF) {
         sFragmentCode += this.pGlobalVarBlockF[i];
     }
+    //Varyings declaration
     for (i in this.pVaryingsDef) {
         sFragmentCode += this.pVaryingsDef[i];
     }
+    //Function`s body
     for (i in this.pFuncDeclBlockF) {
         sFragmentCode += fnToFinalCode(this.pFuncDeclBlockF[i]) + "\n";
     }
+    //Shader`s functions body
     for (i = 0; i < this.pFragmentShaders.length; i++) {
         sFragmentCode += this.pFragmentShaders[i].toFinal() + "\n";
     }
+    //void main()
     sFragmentCode += "void main(){";
+    //Extract headers for global buffers
     for (i in this.pGlobalBuffersInit) {
         if (this.pGlobalBuffersInit[i] && this.pGlobalBuffersF[i] === null) {
             sVertexCode += this.pGlobalBuffersInit[i];
         }
     }
+    //Calls shader`s functions
     for (i = 0; i < i < this.pFragmentShaders.length; i++) {
         sFragmentCode += this.pFragmentShaders[i].sRealName + "();"
     }
+    //finish
     sFragmentCode += "}";
+    //add precision
     if (sFragmentCode !== "") {
         sFragmentCode = "#ifdef GL_ES\nprecision lowp float;\n#endif\n" + sFragmentCode;
     }
+
+    //Generate program
+
     pProgram = new ShaderProgram2(this.pEngine);
     pProgram._pPassBlend = this;
     pProgram.setUniformVars(this.pUniforms, isZeroSamplerV || isZeroSamplerF);
@@ -1576,13 +1659,21 @@ function ShaderManager(pEngine) {
 
     this._pCurrentBlend = null;
     this._nCurrentShift = 0;
-    this._pCurrentMaps = null;
+    this._pCurrentAttributeData = null;
     this._pCurrentSnapshot = null;
+
+    this._pCurrentIndex = undefined;
+    this._iCurrentLength = null;
+    this._iCurrentOffset = null;
+
+    this._pIndexStack = [];
+    this._pLengthStack = [];
+    this._pOffsetStack = [];
 
     this._pSnapshotStack = [];
     this._pBlendStack = [];
     this._pShiftStack = [];
-    this._pBufferMapStack = [];
+    this._pAttributesDataStack = [];
 
     this._pActiveProgram = null;
     this._nAttrsUsed = 0;
@@ -1592,6 +1683,10 @@ function ShaderManager(pEngine) {
     this._pActiveBuffer = null;
     this._pBindTexture = null;
     this._pTextureSlots = new Array(a.info.graphics.maxTextureImageUnits(this.pDevice));
+    this._iActiveFrameBuffer = null;
+    this._pFramebufferPool = new Array(10);
+    this._pEmptyFrameBuffers = new Array(10);
+    this._pFrameBufferCounters = new Array(10);
 }
 
 /**
@@ -1602,7 +1697,7 @@ function ShaderManager(pEngine) {
  *         Example: "baseEffect:GEOMETRY", "lightEffect:POINT"
  */
 ShaderManager.prototype.loadEffectFile = function (sFileName, sEffectName) {
-    var reExt = /^(.+)(\.fx|\.abf)$/;
+    var reExt = /^(.+)(\.afx|\.abf|\.fx)$/;
     var pRes = reExt.exec(sFileName);
     var pEffect;
     var sSource;
@@ -1616,7 +1711,7 @@ ShaderManager.prototype.loadEffectFile = function (sFileName, sEffectName) {
     sSource = a.ajax({url : sFileName, async : false}).data;
     a.util.parser.parse(sSource);
     var isLoadOk = pEffect.analyze(a.util.parser.pSyntaxTree);
-    trace(pEffect);
+//    trace(pEffect);
     if (!isLoadOk) {
         warning("Effect file:(\"" + sFileName + "\")can not be loaded");
         return false;
@@ -1853,6 +1948,75 @@ ShaderManager.prototype.activateProgram = function (pProgram) {
     this._nAttrsUsed = pProgram.getAttribCount();
 };
 
+ShaderManager.prototype.activateFrameBuffer = function (iId) {
+    iId = (iId === undefined) ? this._getEmptyFrameBuffer() : iId;
+    var pFrameBuffer = this._pFramebufferPool[iId];
+    this._iActiveFrameBuffer = iId;
+    return iId;
+};
+ShaderManager.prototype._getEmptyFrameBuffer = function () {
+    var pDevice = this.pEngine.pDevice;
+    var pEmptyBuffers = this._pEmptyFrameBuffers;
+    var pFrameBuffer = null;
+    var i = 0;
+    for (i = 0; i < pEmptyBuffers.length; i++) {
+        if (pEmptyBuffers[i] === null) {
+            pEmptyBuffers[i] = this._pFramebufferPool[i];
+            this._pFrameBufferCounters[i] = 0;
+            return i;
+        }
+    }
+    pFrameBuffer = pDevice.createFramebuffer();
+    this._pFramebufferPool.push(pFrameBuffer);
+    this._pFrameBufferCounters.push(0);
+    pEmptyBuffers.push(0);
+    return pEmptyBuffers.length - 1;
+};
+ShaderManager.prototype.frameBufferTexture = function (pTexture, eAttachment, eTexTarget, iLevel) {
+    if (this._iActiveFrameBuffer === null) {
+        return false;
+    }
+    var pDevice = this.pEngine.pDevice;
+    eAttachment = (eAttachment === undefined) ? pDevice.COLOR_ATTACHMENT0 : eAttachment;
+    eTexTarget = (eTexTarget === undefined) ? pDevice.TEXTURE_2D : eTexTarget;
+    iLevel = (iLevel === undefined) ? 0 : iLevel;
+    pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, eAttachment, eTexTarget, pTexture, iLevel);
+};
+ShaderManager.prototype.releaseFrameBuffer = function (id) {
+    var nCount = this._pFrameBufferCounters[id];
+    if (nCount > 0) {
+        nCount--;
+        this._pFrameBufferCounters[id] = nCount;
+    }
+    if (nCount === 0) {
+        this._releaseFrameBuffer(id);
+    }
+};
+ShaderManager.prototype._releaseFrameBuffer = function (id) {
+    var pDevice = this.pEngine.pDevice;
+    this._pFrameBufferCounters[id] = 0;
+    this._pEmptyFrameBuffers[id] = null;
+    pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0, pDevice.TEXTURE_2D, null, 0);
+};
+ShaderManager.prototype.deactivateFrameBuffer = function (iId) {
+    if (iId !== undefined) {
+        this._pEmptyFrameBuffers[iId] = null;
+        this._pFrameBufferCounters[iId] = 0;
+        return true;
+    }
+    iId = this._iActiveFrameBuffer;
+    if (iId !== null) {
+        if (this._pFrameBufferCounters[iId] === 0) {
+            this._pEmptyFrameBuffers[iId] = null;
+        }
+        else {
+            this._pFrameBufferCounters[iId] *= -1;
+        }
+    }
+    this._iActiveFrameBuffer = null;
+    return true;
+};
+
 ShaderManager.prototype.deactivateProgram = function (pProgram) {
     //if (this._pActivatedPrograms[this._nLastActivatedProgram] === pProgram) {
     //    trace('unbind Program', pProgram.resourceHandle());
@@ -2002,13 +2166,22 @@ ShaderManager.prototype.push = function (pSnapshot) {
         }
         pSnapshot.setPassStates(pUniforms, pTextures);
     }
+    var iStackLength = this._pSnapshotStack.length;
     this._pSnapshotStack.push(pSnapshot);
     this._pShiftStack.push(this._nCurrentShift);
     this._pBlendStack.push(pBlend);
     this._pCurrentSnapshot = pSnapshot;
     this._pCurrentBlend = pBlend;
-    this._pCurrentMaps = [];
-    this._pBufferMapStack.push(this._pCurrentMaps);
+    this._pCurrentAttributeData = new Array(pBlend.totalValidPasses());
+    this._pAttributesDataStack.push(this._pCurrentAttributeData);
+
+    this._pIndexStack[iStackLength - 1] = this._pCurrentIndex;
+    this._pOffsetStack[iStackLength - 1] = this._iCurrentOffset;
+    this._pLengthStack[iStackLength - 1] = this._iCurrentLength;
+
+    this._pCurrentIndex = undefined;
+    this._iCurrentOffset = null;
+    this._iCurrentLength = null;
 
     pSnapshot.isUpdated(false);
     return true;
@@ -2017,11 +2190,11 @@ ShaderManager.prototype.pop = function () {
     this._pSnapshotStack.pop();
     this._pShiftStack.pop();
     this._pBlendStack.pop();
-    this._pBufferMapStack.pop();
+    this._pAttributesDataStack.pop();
     this._pCurrentBlend = this._pBlendStack[this._pBlendStack.length - 1] || null;
     this._pCurrentSnapshot = this._pSnapshotStack[this._pSnapshotStack.length - 1] || null;
     this._nCurrentShift = this._pShiftStack[this._pShiftStack.length - 1] || 0;
-    this._pCurrentMaps = this._pBufferMapStack[this._pBufferMapStack.length - 1] || null;
+    this._pCurrentAttributeData = this._pAttributesDataStack[this._pAttributesDataStack.length - 1] || null;
     return true;
 };
 
@@ -2150,8 +2323,8 @@ ShaderManager.prototype.finishPass = function (iPass) {
     }
     //TODO: There are must be place for texture info into hash
     var pAttrSemantics = {};
-    var pMaps,
-        pMap,
+    var pDataStackByPass,
+        pDataStack,
         pFlow,
         pData,
         pDecl,
@@ -2165,33 +2338,27 @@ ShaderManager.prototype.finishPass = function (iPass) {
     for (i = 0; i < pAttrKeys.length; i++) {
         pAttrSemantics[pAttrKeys[i]] = null;
     }
-    for (i = this._pBufferMapStack.length - 1; i >= 0; i--) {
+    for (i = this._pAttributesDataStack.length - 1; i >= 0; i--) {
         nShift = this._pShiftStack[i];
         index = nPass - nShift;
-        pMaps = this._pBufferMapStack[i];
-        if (pMaps.length <= index) {
+        pDataStackByPass = this._pAttributesDataStack[i];
+        if (pDataStackByPass.length <= index) {
             continue;
         }
-        pMap = pMaps[index];
-        if (iMapIndex === undefined) {
-            iMapIndex = pMap.index;
-            iMapLength = pMap.length;
-            iMapOffset = pMap.offset;
-        }
-        else if (iMapIndex !== pMap.index ||
-                 iMapLength !== pMap.length ||
-                 iMapOffset !== pMap.offset()) {
-            warning("BufferMaps are not mixible");
-            return false;
-        }
+        pDataStack = pDataStackByPass[index];
         for (j = 0; j < pAttrKeys.length; j++) {
             sKey2 = pAttrKeys[j];
             if (pAttrSemantics[sKey2] === null) {
-                for (k = 0; k < pMap._nCompleteFlows; k++) {
-                    pFlow = pMap._pCompleteFlows[k];
-                    pVertexElement = pFlow.pData.getVertexDeclaration().element(sKey2);
+                for (k = 0; k < pDataStack.length; k++) {
+                    pData = pDataStack[k];
+                    if (pData.eType === a.BufferMap.FT_MAPPABLE) {
+                        pVertexElement = pData.pData.getVertexDeclaration().element(sKey2);
+                    }
+                    else {
+                        pVertexElement = pData.getVertexDeclaration().element(sKey2);
+                    }
                     if (pVertexElement) {
-                        pAttrSemantics[sKey2] = pFlow;
+                        pAttrSemantics[sKey2] = pData;
                         break;
                     }
                 }
@@ -2220,10 +2387,10 @@ ShaderManager.prototype.finishPass = function (iPass) {
                 if (i !== j && pAttrSemantics[sKey2] === pAttrSemantics[sKey1]) {
                     sSame1 += sKey2 + ",";
                 }
-                else if (i !== j &&
-                         pAttrSemantics[sKey2].pData._pVertexBuffer === pAttrSemantics[sKey1].pData._pVertexBuffer) {
-                    sSame1 += sKey2 + ",";
-                }
+//                else if (i !== j &&
+//                         pAttrSemantics[sKey2].pData._pVertexBuffer === pAttrSemantics[sKey1].pData._pVertexBuffer) {
+//                    sSame2 += sKey2 + ",";
+//                }
             }
             sHash += sSame1 + "!";
             sHash += "SAME_VIDEO_BUFFER:" + sSame2;
@@ -2240,11 +2407,18 @@ ShaderManager.prototype.finishPass = function (iPass) {
         }
     }
     var pAttrs = pProgram.generateInputData(pAttrSemantics, pUniformValues);
+    if (this._iActiveFrameBuffer !== null) {
+        this._pFrameBufferCounters[this._iActiveFrameBuffer]--;
+    }
     return {
-        "pProgram"    : pProgram,
-        "pAttributes" : pAttrs,
-        "pUniforms"   : pUniformValues,
-        "pTextures"   : pTextures
+        "pProgram"     : pProgram,
+        "pAttributes"  : pAttrs,
+        "pUniforms"    : pUniformValues,
+        "pTextures"    : pTextures,
+        "pIndexData"   : this._pCurrentIndex,
+        "iOffset"      : this._iCurrentOffset,
+        "iLength"      : this._iCurrentLength,
+        "iFrameBuffer" : this._iActiveFrameBuffer
     };
 };
 ShaderManager.prototype._registerPassBlend = function (pBlend) {
@@ -2255,17 +2429,66 @@ ShaderManager.prototype._registerPassBlend = function (pBlend) {
     this._pPassBlends[pBlend.sHash] = pBlend;
     return true;
 };
-ShaderManager.prototype.applyRenderData = function (pData) {
-    var pMap = pData._pMap;
+ShaderManager.prototype.applyBufferMap = function (pMap) {
     if (!pMap) {
-        warning("Render data don`t have bufferMap");
+        warning("Don`t have bufferMap");
         return true;
     }
+    if (this._iCurrentOffset === null || this._iCurrentLength === null) {
+        this._iCurrentLength = pMap.length;
+        this._iCurrentOffset = pMap.offset;
+        this._pCurrentIndex = pMap.index;
+    }
+    else if (this._iCurrentLength !== pMap.length ||
+             this._iCurrentOffset !== pMap.offset) {
+        warning("Can not blend buffer maps 1");
+        return false;
+    }
+    else if (this._pCurrentIndex !== undefined && this._pCurrentIndex !== pMap.index) {
+        warning("Can not blend buffer maps 2");
+        return false;
+    }
+
     var iPass = this._pSnapshotStack[this._pSnapshotStack.length - 1]._iCurrentPass;
-    this._pCurrentMaps[iPass] = pMap;
+    if (!this._pCurrentAttributeData[iPass]) {
+        this._pCurrentAttributeData[iPass] = [];
+    }
+    var pData = this._pCurrentAttributeData[iPass];
+    var i, pFlow;
+    for (i = 0; i < pMap._nCompleteFlows; i++) {
+        pFlow = pMap._pCompleteFlows[i];
+        if (pFlow.eType === a.BufferMap.FT_MAPPABLE) {
+            pData.push(pFlow);
+        }
+        else {
+            pData.push(pFlow.pData);
+        }
+    }
+};
+ShaderManager.prototype.applyVertexData = function (pData) {
+    if (!pData) {
+        warning("Don`t have vertex data");
+        return true;
+    }
+    if (this._iCurrentOffset === null || this._iCurrentLength === null) {
+        this._iCurrentLength = pData.length;
+        this._iCurrentOffset = pData.offset;
+    }
+    else if (this._iCurrentLength !== pData.length ||
+             this._iCurrentOffset !== pData.offset) {
+        warning("Can not blend buffer maps 1");
+        return false;
+    }
+    var iPass = this._pSnapshotStack[this._pSnapshotStack.length - 1]._iCurrentPass;
+    if (!this._pCurrentAttributeData[iPass]) {
+        this._pCurrentAttributeData[iPass] = [pData];
+        return;
+    }
+    this._pCurrentAttributeData[iPass].push(pData);
 };
 
 ShaderManager.prototype.activateBuffer = function (pBuffer) {
+    console.log(pBuffer);
     if (this._pActiveBuffer === pBuffer) {
         return true;
     }
@@ -2338,9 +2561,12 @@ ShaderManager.prototype.activate = function (pEntry) {
     var pUniforms = pEntry.pUniforms;
     var pTextures = pEntry.pTextures;
     var pDevice = this.pDevice;
+    var pFrameBuffer = pEntry.iFrameBuffer !== null ? this._pFramebufferPool[pEntry.iFrameBuffer] : null;
     var i;
     var nStreams = pProgram.getStreamNumber();
-    this.setCurrentTextureSet(pTextures);
+    pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pFrameBuffer);
+
+    pProgram.setCurrentTextureSet(pTextures);
 
     if (this._pActiveProgram !== pProgram) {
         pProgram.activate();
@@ -2364,7 +2590,10 @@ ShaderManager.prototype.activate = function (pEntry) {
     for (i = 0; i < pUniformKeys.length; i++) {
         pProgram.applyUniform(pUniformKeys[i], pUniforms[pUniformKeys[i]]);
     }
-    this.setCurrentTextureSet(null);
+    pProgram.setCurrentTextureSet(null);
+    if (pEntry.iFrameBuffer !== null) {
+        this.releaseFrameBuffer(pEntry.iFrameBuffer);
+    }
 };
 /**
  * Получить список PARAMETER переменных компонента.
