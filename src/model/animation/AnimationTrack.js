@@ -12,7 +12,76 @@ AnimationFrame.prototype.toMatrix = function () {
 	return this.pMatrix;
 };
 
-A_ALLOCATE_STORAGE(AnimationFrame, 2);
+AnimationFrame.prototype.reset = function () {
+    'use strict';
+    
+	this.fWeight = 0.0;
+	this.fTime = 0.0;
+
+	var pData = this.pMatrix.pData;
+	pData._11 = pData._12 = pData._13 = pData._14 = 
+	pData._21 = pData._22 = pData._23 = pData._24 = 
+	pData._31 = pData._32 = pData._33 = pData._34 = 
+	pData._41 = pData._42 = pData._43 = pData._44 = 0;
+	return this;
+};
+
+/**
+ * Добавить данные к фрейму с их весом.
+ * После данного метода фрейму потребуется нормализация!!!!
+ */
+AnimationFrame.prototype.add = function (pFrame) {
+    'use strict';
+    
+	var pMatData = pFrame.pMatrix.pData;
+	var fWeight = pFrame.fWeight;
+	var pResData = this.pMatrix.pData;
+
+	for (var i = 0; i < 16; ++ i) {
+		pResData[i] += pMatData[i] * fWeight;
+	}
+
+	this.fWeight += fWeight;
+	return this;
+};
+
+AnimationFrame.prototype.mult = function (fScalar) {
+    'use strict';
+    
+	this.fWeight *= fScalar;
+	return this;
+};
+
+AnimationFrame.prototype.normilize = function () {
+    'use strict';
+    
+    var fScalar = 1.0 / this.fWeight;
+    var pData = this.pMatrix.pData;
+
+    pData._11 *= fScalar;
+    pData._12 *= fScalar; 
+    pData._13 *= fScalar;
+    pData._14 *= fScalar;
+	
+	pData._21 *= fScalar;
+    pData._22 *= fScalar; 
+    pData._23 *= fScalar;
+    pData._24 *= fScalar;
+	
+	pData._31 *= fScalar;
+    pData._32 *= fScalar; 
+    pData._33 *= fScalar;
+    pData._34 *= fScalar;
+	
+	pData._41 *= fScalar;
+    pData._42 *= fScalar; 
+    pData._43 *= fScalar;
+    pData._44 *= fScalar;
+		
+	return this;
+};
+
+A_ALLOCATE_STORAGE(AnimationFrame, 16384);
 A_NAMESPACE(AnimationFrame);
 
 function AnimationTrack (sTarget) {
@@ -33,8 +102,6 @@ function AnimationTrack (sTarget) {
 	 * @type {AnimationFrame}
 	 */
 	this._pKeyFrames = [];
-
-	this._pResultFrame = new a.AnimationFrame();
 }
 
 PROPERTY(AnimationTrack, 'targetName',
@@ -181,7 +248,7 @@ AnimationTrack.prototype.frame = function (fTime) {
 	var fTimeDiff;
 	var pKeys = this._pKeyFrames
 	var nKeys = pKeys.length;
-	var pFrame = this._pResultFrame;
+	var pFrame = a.AnimationFrame();
 
 	//TODO: реализовать существенно более эффективный поиск кадра.
 	for (var i = 0; i < nKeys; i ++) {
@@ -205,6 +272,7 @@ AnimationTrack.prototype.frame = function (fTime) {
 		fScalar);
 
 	pFrame.fTime = fTime;
+	pFrame.fWeight = 1.0;
 
 	return pFrame;
 };

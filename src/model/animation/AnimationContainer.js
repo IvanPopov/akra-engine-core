@@ -14,7 +14,9 @@ function AnimationContainer (pAnimation) {
 	this._bLoop = false;
 	this._pAnimation = pAnimation;
 	this._fDuration = pAnimation._fDuration;
-	
+
+	this.name = 'player[' + pAnimation.name + ']';
+
 	this.grab(pAnimation);
 }
 
@@ -74,21 +76,26 @@ AnimationContainer.prototype.inLoop = function () {
 	return this._bLoop;
 };
 
-AnimationContainer.prototype.frame = function (sName, fTime) {
+AnimationContainer.prototype.time = function (fTime) {
     'use strict';
-
-    if (!this._bEnable) {
+   
+	if (!this._bEnable) {
     	return null;
     }
 
-    fTime = fTime * this._fSpeed - this._fStartTime;
-    fTime = fTime < 0? 0: fTime;
+    fTime = (fTime - this._fStartTime) * this._fSpeed;
 
     if (this._bLoop) {
-    	fTime = fTime % (this._pAnimation._fDuration);
+    	fTime = Math.mod(fTime, (this._pAnimation._fDuration));
     }
 
-	return this._pAnimation.frame(sName, fTime);
+    return fTime;
+};
+
+AnimationContainer.prototype.frame = function (sName, fTime) {
+    'use strict';
+
+	return this._pAnimation.frame(sName, this.time(fTime));
 };
 
 A_NAMESPACE(AnimationContainer);

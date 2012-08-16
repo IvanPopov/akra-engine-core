@@ -1,7 +1,9 @@
 function AnimationBase () {
 	this._pTargetMap = {};
-	this._pTargetList = [];
+    this._pTargetList = [];
+	
 	this._fDuration = 0;
+	this._sName = ('animation' + a.sid());
 }
 
 A_NAMESPACE(AnimationBase);
@@ -9,6 +11,14 @@ A_NAMESPACE(AnimationBase);
 PROPERTY(AnimationBase, 'duration',
 	function () {
 		return this._fDuration;
+	});
+
+PROPERTY(AnimationBase, 'name',
+	function () {
+		return this._sName;
+	},
+	function (sName) {
+		this._sName = sName;
 	});
 
 AnimationBase.prototype.frame = function (sName, fTime) {
@@ -44,9 +54,14 @@ AnimationBase.prototype.addTarget = function (sName, pTarget) {
     
     pTarget = pTarget || null;
 
-    debug_assert(this._pTargetMap[sName] === undefined, 'target already exists');
+    var pPointer = this._pTargetMap[sName];
 
-    var pPointer = {
+    if (pPointer) {
+    	pPointer.target = pTarget || pPointer.target || null;
+    	return pPointer;
+    }
+
+    pPointer = {
 		target: pTarget,
 		index: this._pTargetList.length,
 		name: sName

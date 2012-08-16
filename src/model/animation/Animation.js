@@ -5,22 +5,12 @@
 function Animation (sName) {
     A_CLASS;
 
-	/**
-	 * Animation name.
-	 * @private
-	 * @type {[type]}
-	 */
-	this._sName = sName || ('animation' + a.sid());
+
 	this._pTracks = [];
+	this.name = sName;
 }
 
 EXTENDS(Animation, a.AnimationBase);
-
-PROPERTY(Animation, 'name',
-	function () {
-		return this._sName;
-	});
-
 
 Animation.prototype.push = function (pTrack) {
     'use strict';
@@ -56,11 +46,7 @@ Animation.prototype.frame = function (sName, fTime) {
     	return null;
     }
 
-    if (fTime > this._fDuration) {
-    	fTime = this._fDuration;
-    }
-
-	return pPointer.track.frame(fTime);
+	return pPointer.track.frame(Math.clamp(fTime, 0, this._fDuration));
 };
 
 A_NAMESPACE(Animation);
