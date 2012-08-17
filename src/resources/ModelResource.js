@@ -106,6 +106,12 @@ ModelResource.prototype.addToScene = function () {
     }
 };
 
+ModelResource.prototype.getRootNodes = function () {
+    'use strict';
+    
+    return this._pRootNodeList;
+};
+
 
 ModelResource.prototype.loadResource = function (sFilename, pOptions) {
     'use strict';

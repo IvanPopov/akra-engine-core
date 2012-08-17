@@ -154,22 +154,21 @@ BrowserInfo.prototype._searchVersion = function (sData) {
     }
 };
 
-Object.defineProperty(BrowserInfo.prototype, "name", {
-    get: function () {
-        return this.sBrowser;
-    }
-});
-Object.defineProperty(BrowserInfo.prototype, "version", {
-    get: function () {
-        return this.sVersion;
-    }
-});
+PROPERTY(BrowserInfo, 'name',
+    function () {
+       return this.sBrowser;
+    });
 
-Object.defineProperty(BrowserInfo.prototype, "os", {
-    get: function () {
-        return this.sOS;
-    }
-});
+PROPERTY(BrowserInfo, 'version',
+    function () {
+       return this.sVersion;
+    });
+
+PROPERTY(BrowserInfo, 'os',
+    function () {
+       return this.sOS;
+    });
+
 
 
 window.URL = window.URL ? window.URL : window.webkitURL ? window.webkitURL : null;
@@ -177,27 +176,7 @@ window.BlobBuilder = window.WebKitBlobBuilder || window.MozBlobBuilder || window
 window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame ||
     window.mozRequestAnimationFrame;
-
-
-/*function checkFileSystem() {
- if (window.requestFileSystem) {
- // Attempt to create a folder to test if we can.
- window.requestFileSystem(TEMPORARY, 512, function(fs) {
- fs.root.getDirectory('slidestestquotaforfsfolder', {
- create: true
- }, function(dirEntry) {
- dirEntry.remove(); // If successfully created, just delete it.
- //('feature-filesystem');
- }, function(e) {
- if (e.code == FileError.QUOTA_EXCEEDED_ERR) {
- //('feature-filesystem-quota');
- }
- });
- });
- } else {
- //('feature-no-filesystem');
- }
- };*/
+window.WebSocket = window.WebSocket || window.MozWebSocket;
 
 
 function ApiInfo () {
@@ -208,6 +187,7 @@ function ApiInfo () {
     this.webWorker = (typeof(Worker) !== "undefined");
     this.transferableObjects = (this.webWorker && this.chechTransferableObjects() ? true : false);
     this.localStorage = (typeof(localStorage) !== 'undefined');
+    this.webSocket = (typeof(window.WebSocket) !== 'undefined');
 }
 
 
@@ -248,38 +228,38 @@ ApiInfo.prototype.chechTransferableObjects = function () {
 
 a.browser = new BrowserInfo();
 a.info = {
-
-
-                     /**
-                      * Canvas info.
-                      * @tparam String/CanvasElement id Canvas identifier.
-                      * @treturn Object Canvas parameters.
-                      */
-                     canvas: function (id) {
-                         var pCanvas = (typeof id == 'string' ? document.getElementById(id) : id);
-                         return {
-                             width:  (pCanvas.width ? pCanvas.width : pCanvas.style.width),
-                             height: (pCanvas.height ? pCanvas.height : pCanvas.style.height),
-                             id:     pCanvas.id
-                         };
-                     },
-    browser:         a.browser,
-                             /**
-                              * Screen info.
-                              */
-                             screen: {
-                                 width:  function () {
-                                     return screen.width
-                                 },
-                                 height: function () {
-                                     return screen.height;
-                                 }
-                             },
+    /**
+    * Canvas info.
+    * @tparam String/CanvasElement id Canvas identifier.
+    * @treturn Object Canvas parameters.
+    */
+    canvas: function (id) {
+    var pCanvas = (typeof id == 'string' ? document.getElementById(id) : id);
+        return {
+            width:  (pCanvas.width ? pCanvas.width : pCanvas.style.width),
+            height: (pCanvas.height ? pCanvas.height : pCanvas.style.height),
+            id:     pCanvas.id
+        };
+    },
+    browser: a.browser,
+    /**
+    * Screen info.
+    */
+    screen: {
+        width:  function () {
+            return screen.width
+        },
+        height: function () {
+            return screen.height;
+        }
+    },
 
     uri:  a.uri(document.location.href),
+
     path: {
         modules: A_CORE_HOME
     },
+
     is:   {
 
                 /**
@@ -344,9 +324,9 @@ a.info = {
         */
         colorBits: function (pContext) {
         return [
-           pContext.getParameter(pContext.RED_BITS),
-           pContext.getParameter(pContext.GREEN_BITS),
-           pContext.getParameter(pContext.BLUE_BITS)
+            pContext.getParameter(pContext.RED_BITS),
+            pContext.getParameter(pContext.GREEN_BITS),
+            pContext.getParameter(pContext.BLUE_BITS)
         ];
         },
 
@@ -470,6 +450,12 @@ Object.defineProperty(a.info.is, "online", {
 Object.defineProperty(a.info.support, "webgl", {
     get: function () {
         return a.info.support.api.webgl;
+    }
+});
+
+Object.defineProperty(a.info.support, "webSocket", {
+    get: function () {
+        return a.info.support.api.webSocket;
     }
 });
 

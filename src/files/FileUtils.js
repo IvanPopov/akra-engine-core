@@ -184,11 +184,15 @@ Object.defineProperty(URI.prototype, "host", {
         return this.sHost;
     }
 });
-Object.defineProperty(URI.prototype, "port", {
-    get: function () {
+
+PROPERTY(URI, 'port',
+    function () {
         return this.nPort;
-    }
-});
+    },
+    function (iPort) {
+        this.nPort = parseInt(iPort);
+    });
+
 Object.defineProperty(URI.prototype, "path", {
     get: function () {
         return this.sPath;
