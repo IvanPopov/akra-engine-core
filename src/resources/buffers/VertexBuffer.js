@@ -292,14 +292,16 @@ VertexBuffer.prototype.resize=function(iSize) {
  **/
 VertexBuffer.prototype.activate = function (){
     debug_assert(this.isValid(), "Attempting to activate  an invalid buffer");
-    this._pEngine.shaderManager().activateBuffer(this);
+    this._pEngine.shaderManager().activateVertexBuffer(this);
 };
 
 VertexBuffer.prototype.bind = function () {
+    trace("VertexBuffer.prototype.bind #" + this.resourceHandle());
     this._pDevice.bindBuffer(a.BTYPE.ARRAY_BUFFER, this._pBuffer);
 }
 
 VertexBuffer.prototype.unbind = function () {
+    trace("!!!!! VertexBuffer.prototype.unbind #" + this.resourceHandle());
     this._pDevice.bindBuffer(a.BTYPE.ARRAY_BUFFER, null);
 }
 

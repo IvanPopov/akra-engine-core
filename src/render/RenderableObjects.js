@@ -11,7 +11,7 @@
 function RenderableObject() {
     /**
      * @private
-     * @type {ShaderManager}
+     * @type {Renderer}
      */
     this._pEngine = null;
 

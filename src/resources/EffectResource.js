@@ -21,7 +21,7 @@ function EffectResource(pEngine) {
 
     /**
      * Менеджер данного эффекта.
-     * @type ShaderManager
+     * @type Renderer
      * @private
      */
     this._pShaderManager = pEngine.pShaderManager;
@@ -113,7 +113,7 @@ EffectResource.prototype.getComponent = function (i) {
  */
 EffectResource.prototype.findParameter = function (pParameter, iPass) {
     iPass = ifndef(iPass, SM_UNKNOWN_PASS);
-    return this._pShaderManager.findParameter(this, pParameter, iPass, a.ShaderManager.PARAMETER_FLAG_ALL);
+    return this._pShaderManager.findParameter(this, pParameter, iPass, a.Renderer.PARAMETER_FLAG_ALL);
 };
 
 EffectResource.prototype.totalPasses = function () {
@@ -255,7 +255,7 @@ EffectResource.prototype._updateParameterList = function (iComponentHandle, isSe
     this._nTotalPasses = Math.max(this._nTotalPasses, nTotalPasses);
 
     for (i = 0; i < nTotalPasses; i++) {
-        pParameterList = pManager.getParameterList(iComponentHandle, i, a.ShaderManager.PARAMETER_FLAG_NONSYTEM);
+        pParameterList = pManager.getParameterList(iComponentHandle, i, a.Renderer.PARAMETER_FLAG_NONSYTEM);
         if (!pParameterList) {
             continue;
         }
@@ -308,19 +308,6 @@ EffectResource.prototype._updateParameterList = function (iComponentHandle, isSe
  */
 EffectResource.prototype.saveResource = function (sFileName) {
     return true;
-};
-
-EffectResource.prototype.begin = function () {
-    this.pEngine.shaderManager().begin(this);
-};
-EffectResource.prototype.end = function () {
-    this.pEngine.shaderManager().end(this);
-};
-EffectResource.prototype.beginPass = function () {
-
-};
-EffectResource.prototype.endPass = function () {
-
 };
 
 a.EffectResource = EffectResource;

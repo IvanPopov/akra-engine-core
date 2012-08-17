@@ -149,7 +149,7 @@ function GLSLProgram(pEngine) {
 
     /**
      * Manager instance.
-     * @type ShaderManager
+     * @type Renderer
      * @private
      */
     this._pManager = pEngine.pShaderManager;

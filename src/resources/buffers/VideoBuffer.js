@@ -426,47 +426,48 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
 
         var pDevice = this._pEngine.pDevice;
         var pShaderSource;
-        var pFramebuffer = pDevice.createFramebuffer();
         var pProgram;
-        pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pFramebuffer);
 
-        Ifdef(TEXTURE_REDRAW)
-
-        STATIC(_pCopyProgram, a.loadProgram(this._pEngine, '../effects/copy_texture.glsl'));
-
-        var pCopyProgram = statics._pCopyProgram;
-        pCopyProgram.activate();
-
-        // pDevice.disableVertexAttribArray(1);
-        // pDevice.disableVertexAttribArray(2);
-
-        var pCopyData = new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]);
-
-        var pCopyBuffer = pDevice.createBuffer();
-        pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pCopyBuffer);
-        pDevice.bufferData(pDevice.ARRAY_BUFFER, pCopyData, pDevice.STREAM_DRAW);
-        pDevice.vertexAttribPointer(pCopyProgram._pAttributesByName['POSITION'].iLocation, 2, pDevice.FLOAT, false, 0,
-                                    0);
-
-        var pCopyTexture = pDevice.createTexture();
-        pDevice.activeTexture(0x84C0 + 1);
-        pDevice.bindTexture(pDevice.TEXTURE_2D, pCopyTexture);
-        pDevice.texImage2D(pDevice.TEXTURE_2D, 0, this._eFormat, this._iWidth, this._iHeight, 0, this._eFormat,
-                           this._eType, null);
-        pDevice.texParameteri(pDevice.TEXTURE_2D, a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
-        pDevice.texParameteri(pDevice.TEXTURE_2D, a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
-        pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MAG_FILTER, pDevice.NEAREST);
-        pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MIN_FILTER, pDevice.NEAREST);
-
-        pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
-                                     pDevice.TEXTURE_2D, pCopyTexture, 0);
-
-        this.activate(0);
-        pCopyProgram.applyInt('src', 0);
-
-        pDevice.drawArrays(a.PRIMTYPE.TRIANGLESTRIP, 0, 4);
-        Endif();
+//        Ifdef(TEXTURE_REDRAW)
+//
+//        STATIC(_pCopyProgram, a.loadProgram(this._pEngine, '../effects/copy_texture.glsl'));
+//
+//        var pCopyProgram = statics._pCopyProgram;
+//        pCopyProgram.activate();
+//
+//        // pDevice.disableVertexAttribArray(1);
+//        // pDevice.disableVertexAttribArray(2);
+//
+//        var pCopyData = new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]);
+//
+//        var pCopyBuffer = pDevice.createBuffer();
+//        pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pCopyBuffer);
+//        pDevice.bufferData(pDevice.ARRAY_BUFFER, pCopyData, pDevice.STREAM_DRAW);
+//        pDevice.vertexAttribPointer(pCopyProgram._pAttributesByName['POSITION'].iLocation, 2, pDevice.FLOAT, false, 0,
+//                                    0);
+//
+//        var pCopyTexture = pDevice.createTexture();
+//        pDevice.activeTexture(0x84C0 + 1);
+//        pDevice.bindTexture(pDevice.TEXTURE_2D, pCopyTexture);
+//        pDevice.texImage2D(pDevice.TEXTURE_2D, 0, this._eFormat, this._iWidth, this._iHeight, 0, this._eFormat,
+//                           this._eType, null);
+//        pDevice.texParameteri(pDevice.TEXTURE_2D, a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
+//        pDevice.texParameteri(pDevice.TEXTURE_2D, a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
+//        pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MAG_FILTER, pDevice.NEAREST);
+//        pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MIN_FILTER, pDevice.NEAREST);
+//
+//        pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
+//                                     pDevice.TEXTURE_2D, pCopyTexture, 0);
+//
+//        this.activate(0);
+//        pCopyProgram.applyInt('src', 0);
+//
+//        pDevice.drawArrays(a.PRIMTYPE.TRIANGLESTRIP, 0, 4);
+//        Endif();
         //STATIC(_pUpdateProgram, a.loadProgram(this._pEngine, '../effects/update_video_buffer.glsl'));
+
+        window['A_TRACER.trace']('begin readraw in videobuffer');
+
         var pVertexData = this._pSystemVertexData;
         pVertexData.resize(nElements);
 
@@ -474,13 +475,17 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
         pVertexData.setData(pMarkupDataIndex, 'INDEX');
         pVertexData.setData(pMarkupDataShift, 'SHIFT');
 
+        window['A_TRACER.trace']('after set data');
+
         var pManager = this._pEngine.shaderManager();
         var pSnapshot = this._pActiveSnapshot;
         var pEntry = null;
         console.log(pSnapshot, pManager);
-        pManager.activateFrameBuffer();
+        pManager.activateFrameBuffer(0);
+        pManager.applyFrameBufferTexture(this);
         this.startRender();
         for (var i = 0; i < this.totalPasses(); i++) {
+            console.log("Pass #"+i);
             this.activatePass(i);
             pSnapshot.applyTextureBySemantic("TEXTURE0", this);
             pSnapshot.applyVertexData(pVertexData);
@@ -489,13 +494,15 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
             this.deactivatePass();
         }
         this.finishRender();
-        pManager.deactivateFrameBuffer();
+//        pManager.deactivateFrameBuffer();
         console.log(pEntry);
         pManager.activate(pEntry);
         pDevice.viewport(0, 0, this._iWidth, this._iHeight);
+        console.log("Try draw");
+
         pDevice.drawArrays(0, pEntry.iOffset, pEntry.iLength);
         pDevice.flush();
-
+        window['A_TRACER.trace']('end readraw in videobuffer');
 //        pProgram = statics._pUpdateProgram;
 //        pProgram.activate();
 //
@@ -544,9 +551,9 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
 //        pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, null);
 //        pDevice.deleteFramebuffer(pFramebuffer);
 
-        Ifdef(TEXTURE_REDRAW)
-        pDevice.deleteTexture(pCopyTexture);
-        Endif();
+//        Ifdef(TEXTURE_REDRAW)
+//        pDevice.deleteTexture(pCopyTexture);
+//        Endif();
 
         //pProgram.deactivate();
     }

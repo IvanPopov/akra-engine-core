@@ -50,7 +50,7 @@ Enum([INVALID_CODE = 0xFFFFFFFF], RESOURCE_CODE, a.ResourceCode);
  * @ctor
  * Constructor of ResourceCode class
  **/
-function ResourceCode () {
+function ResourceCode() {
     switch (arguments.length) {
         case 0:
             this.iValue = a.ResourceCode.INVALID_CODE;
@@ -71,48 +71,47 @@ function ResourceCode () {
     ;
 }
 
-PROPERTY(ResourceCode, 'iFamily', 
-/**
- * @property Int iFamily()
- * Getter for iFamily
- * @memberof ResourceCode
- * @return Value of famaly
- */
-  function () {
-      return this.iValue >> 16;    
-  },
-  /**
-    * @property void iFamily(Int iFamily)
-    * Setter for iFamily
-    * @memberof ResourceCode
-    * @param iFamily New famaly to set
-    */
-  function (iNewFamily) {
-      this.iValue &= 0x0000FFFF;
-      this.iValue |= iNewFamily << 16;
-  });
+PROPERTY(ResourceCode, 'iFamily',
+         /**
+          * @property Int iFamily()
+          * Getter for iFamily
+          * @memberof ResourceCode
+          * @return Value of famaly
+          */
+             function () {
+             return this.iValue >> 16;
+         },
+         /**
+          * @property void iFamily(Int iFamily)
+          * Setter for iFamily
+          * @memberof ResourceCode
+          * @param iFamily New famaly to set
+          */
+             function (iNewFamily) {
+             this.iValue &= 0x0000FFFF;
+             this.iValue |= iNewFamily << 16;
+         });
 
 PROPERTY(ResourceCode, 'iType',
-  /**
-   * @property Int iType()
-   * Getter for iType
-   * @memberof ResourceCode
-   * @return Value of type
-   */
-  function () {
-      return this.iValue & 0x0000FFFF;
-  },
- /**
-  * @property void iType(Int iType)
-  * Setter for iType
-  * @memberof ResourceCode
-  * @param iType New type to set
-  */
-  function (iNewType) {
-      this.iValue &= 0xFFFF0000;
-      this.iValue |= iNewType & 0x0000FFFF;
-  });
-
+         /**
+          * @property Int iType()
+          * Getter for iType
+          * @memberof ResourceCode
+          * @return Value of type
+          */
+             function () {
+             return this.iValue & 0x0000FFFF;
+         },
+         /**
+          * @property void iType(Int iType)
+          * Setter for iType
+          * @memberof ResourceCode
+          * @param iType New type to set
+          */
+             function (iNewType) {
+             this.iValue &= 0xFFFF0000;
+             this.iValue |= iNewType & 0x0000FFFF;
+         });
 
 
 /**
@@ -169,7 +168,7 @@ a.ResourceCode = ResourceCode;
  * @ctor
  * Constructor of ResourcePoolItem class
  **/
-function ResourcePoolItem (pEngine) {
+function ResourcePoolItem(pEngine) {
 
     /**
      * @enum noname
@@ -191,6 +190,7 @@ function ResourcePoolItem (pEngine) {
     this._pResourcePool = null;
     this._iResourceHandle = 0;
     this._iResourceFlags = 0;
+    this._iSystemId = a.sid();
     this._pEngine = pEngine;
     this._pCallbackFunctions = [];
     this._fnStateWatcher = [];
@@ -211,20 +211,21 @@ a.extend(ResourcePoolItem, a.ReferenceCounter);
 
 /**
  * Get WebGLRenderingContext.
- * @treturn WebGLRenderingContext 
+ * @treturn WebGLRenderingContext
  */
-ResourcePoolItem.prototype.getDevice= function()
-{
-	return this._pEngine.pDevice;
+ResourcePoolItem.prototype.getDevice = function () {
+    return this._pEngine.pDevice;
 }
 
+ResourcePoolItem.prototype.toNumber = function () {
+    return this._iSystemId;
+}
 /**
  * Get current Engine.
- * @treturn Engine Current Engine. 
+ * @treturn Engine Current Engine.
  */
-ResourcePoolItem.prototype.getEngine= function()
-{
-	return this._pEngine;
+ResourcePoolItem.prototype.getEngine = function () {
+    return this._pEngine;
 }
 
 /**
@@ -377,14 +378,14 @@ ResourcePoolItem.prototype._notifyStateChange = function (eSlot, pTarget) {
     var nTotal = pSignSlots.length, nLoaded = 0;
     for (var i = 0; i < nTotal; ++i) {
         if (pSignSlots[i].bState) {
-            ++ nLoaded;
+            ++nLoaded;
         }
     }
 
     this._fnStateWatcher[eSlot](nLoaded, nTotal, pTarget);
 }
 
-ResourcePoolItem.prototype.disconnect = function(pResourceItem, eSignal, eSlot) {
+ResourcePoolItem.prototype.disconnect = function (pResourceItem, eSignal, eSlot) {
     eSlot = ifndef(eSlot, eSignal);
     eSlot = ResourcePoolItem.parseEvent(eSlot);
     eSignal = ResourcePoolItem.parseEvent(eSignal);
@@ -392,23 +393,23 @@ ResourcePoolItem.prototype.disconnect = function(pResourceItem, eSignal, eSlot) 
     debug_assert(0 <= eSlot && eSlot < a.ResourcePoolItem.TotalResourceFlags,
                  'Invalid slot used(' + eSlot + ').');
 
-    var pSlots = this._pCallbackSlots, 
+    var pSlots = this._pCallbackSlots,
         pSignSlots;
     var me = this;
     var isRem = false;
-    
+
     pSignSlots = pSlots[eSlot];
 
 
-    for (var i = 0, n = pSignSlots.length; i < n; ++ i) {
-      if (pSignSlots[i].pResourceItem === pResourceItem) {
-        pSignSlots[i].pResourceItem.delChangesNotifyRoutine(
-            pSignSlots[i].fn);
-        pSignSlots.splice(i, 1);
-        -- n;
-        -- i;
-        isRem = true;
-      }   
+    for (var i = 0, n = pSignSlots.length; i < n; ++i) {
+        if (pSignSlots[i].pResourceItem === pResourceItem) {
+            pSignSlots[i].pResourceItem.delChangesNotifyRoutine(
+                pSignSlots[i].fn);
+            pSignSlots.splice(i, 1);
+            --n;
+            --i;
+            isRem = true;
+        }
     }
 
     return isRem;
@@ -423,7 +424,7 @@ ResourcePoolItem.prototype.connect = function (pResourceItem, eSignal, eSlot) {
     debug_assert(0 <= eSlot && eSlot < a.ResourcePoolItem.TotalResourceFlags,
                  'Invalid slot used(' + eSlot + ').');
 
-    var pSlots = this._pCallbackSlots, 
+    var pSlots = this._pCallbackSlots,
         pSignSlots;
 
     var me = this, n, fn, bState;
@@ -453,7 +454,7 @@ ResourcePoolItem.prototype.connect = function (pResourceItem, eSignal, eSlot) {
         }
     };
 
-    pSignSlots.push({bState: bState, fn: fn, pResourceItem: pResourceItem});
+    pSignSlots.push({bState : bState, fn : fn, pResourceItem : pResourceItem});
 
     fn.call(pResourceItem, eSignal, pResourceItem._iResourceFlags, bState);
     pResourceItem.setChangesNotifyRoutine(fn);

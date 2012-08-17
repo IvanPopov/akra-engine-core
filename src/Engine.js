@@ -106,7 +106,7 @@ Engine.prototype.create = function (sCanvasId) {
 
     this.pResourceManager = new a.ResourcePoolManager();
     this.pDisplayManager = new a.DisplayManager(this);
-    this.pShaderManager = new a.ShaderManager(this);
+    this.pShaderManager = new a.Renderer(this);
     this.pParticleManager = new a.ParticleManager(this);
     this.pSpriteManager = new a.SpriteManager(this);
     // this.pUniqManager = new a.UniqueManager(this);

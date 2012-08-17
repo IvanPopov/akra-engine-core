@@ -39,7 +39,7 @@ Include('resources/EffectResource.js');
 
 Include('RenderQueue.js');
 Include('DisplayManager.js');
-Include('ShaderManager.js');
+Include('Renderer.js');
 
 /* Buffers */
 Include('resources/buffers/');
