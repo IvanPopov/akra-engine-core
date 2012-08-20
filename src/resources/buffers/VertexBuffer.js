@@ -73,6 +73,8 @@ VertexBuffer.prototype.create = function (iByteSize, iFlags, pData)
 	this._iByteSize = iByteSize;
     this._iTypeFlags = iFlags;
 
+    var pRenderer = this._pEngine.shaderManager();
+
     //Софтварного рендеринга буфера у нас нет
     debug_assert(!TEST_BIT(this._iTypeFlags, a.VBufferBase.SoftwareBit), "no sftware rendering");
 
@@ -127,17 +129,15 @@ VertexBuffer.prototype.create = function (iByteSize, iFlags, pData)
         debug_error("Не удалось создать буфер");
         this.destroy();
         return false;
-    } 
+    }
 
-	
-	this._pDevice.bindBuffer(a.BTYPE.ARRAY_BUFFER, this._pBuffer);
-	this._pDevice.bufferData(a.BTYPE.ARRAY_BUFFER, this._iByteSize, eUsage);
-	if (pData) 
+    pRenderer.activateVertexBuffer(this);
+    pRenderer.vertexBufferChanged(this);
+    this._pDevice.bufferData(a.BTYPE.ARRAY_BUFFER, this._iByteSize, eUsage);
+    if (pData)
 	{
-		this._pDevice.bufferSubData(a.BTYPE.ARRAY_BUFFER, 0, (pData.buffer));
-	}
-	
-	this._pDevice.bindBuffer(a.BTYPE.ARRAY_BUFFER, null);
+        this._pDevice.bufferSubData(a.BTYPE.ARRAY_BUFFER, 0, (pData.buffer));
+    }
 
     this.notifyRestored();
     this.notifyLoaded();
@@ -164,7 +164,8 @@ VertexBuffer.prototype.destroy = function ()
 	
 	this.freeVertexData();	
 	
-    this._iTypeFlags = undefined;    
+    this._iTypeFlags = undefined;
+    this._pEngine.shaderManager().releaseRenderResource(this);
     this.notifyUnloaded();
 }
 
@@ -196,18 +197,15 @@ VertexBuffer.prototype.getData = function (iOffset,iSize)
 VertexBuffer.prototype.setData = function (pData, iOffset, iSize) 
 {
     debug_assert(this._pBuffer, "Буффер еще не создан");
-    this._pDevice.bindBuffer(a.BTYPE.ARRAY_BUFFER, this._pBuffer);
-
+    var pRenderer = this._pEngine.shaderManager();
+    pRenderer.activateVertexBuffer(this);
 	
 	debug_assert(pData.byteLength<=iSize, "Размер переданного массива больше переданного размера");
 	debug_assert(this.size>=iOffset+iSize, "Данные выйдут за предел буфера");
-	
-	
-	
+
+    pRenderer.vertexBufferChanged(this);
 	this._pDevice.bufferSubData(a.BTYPE.ARRAY_BUFFER, iOffset,
                                     new Uint8Array(pData.slice(0,iSize)));
-  
-    this._pDevice.bindBuffer(a.BTYPE.ARRAY_BUFFER, null);
 	
 	if (TEST_BIT(this._iTypeFlags, a.VBufferBase.RamBackupBit)) 
 	{
@@ -222,6 +220,7 @@ VertexBuffer.prototype.resize=function(iSize) {
 	var pData;
 	var iMax=0;
 	var pVertexData;
+    var pRenderer = this._pEngine.shaderManager();
 	
 	if(TEST_BIT(this._iTypeFlags, a.VBufferBase.RamBackupBit) != true)
 	{
@@ -260,6 +259,7 @@ VertexBuffer.prototype.resize=function(iSize) {
     }
 
     this._pBuffer = this._pDevice.createBuffer();
+    pRenderer.vertexBufferChanged(this);
 
     if (!this._pBuffer) 
 	{
@@ -267,19 +267,17 @@ VertexBuffer.prototype.resize=function(iSize) {
         debug_error("Не удалось создать буфер");
         this.destroy();
         return false;
-    } 
+    }
 
-	
-	this._pDevice.bindBuffer(a.BTYPE.ARRAY_BUFFER, this._pBuffer);
+
+    pRenderer.activateVertexBuffer(this);
 	this._pDevice.bufferData(a.BTYPE.ARRAY_BUFFER, iSize, eUsage);
 	
 	pData=this.getData(0,this._iByteSize);
 	this._pDevice.bufferSubData(a.BTYPE.ARRAY_BUFFER, 0,pData);	
 	this._pBackupCopy=new Uint8Array(iSize);	
 	this.setData(pData,0,this._iByteSize);
-	
-	
-	this._pDevice.bindBuffer(a.BTYPE.ARRAY_BUFFER, null);	
+
 	this._iByteSize=iSize;	
 	
 	return true;

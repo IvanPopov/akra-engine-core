@@ -20,7 +20,7 @@ function ShaderProgram2(sHash, pEngine) {
     this._pSamplersToReal = null;
     this._pBuffersToReal = null;
     this._pRealAttr = null;
-    this._pRealBuffer = null;
+    this._pRealSamplers = null;
     this._pRealUniformList = {};
     this._pUniformKeys = null;
     this._pHardwareProgram = null;
@@ -80,27 +80,26 @@ ShaderProgram2.prototype.setup = function (pAttrData, pUniformData, pTextures) {
     var pUniforms = this._pRealUniformList;
     var pOffsets = {},
         pBuffers = {};
+    var pUniformsKeys = [];
     var pSamplers = this._pPassBlend.pSamplers,
         pGlobalBuffers = this._pPassBlend.pGlobalBuffers;
     var i = 0;
     var pKeys;
     var sKey1,
         sOffset,
-        sBuf,
+        sSampler,
         sTexture;
     var pData, pTexture;
     var pRealAttr = this._pRealAttr,
         pAttrReal = this._pAttrToReal,
-        pRealBuf = this._pRealBuffer,
+        pRealSamplers = this._pRealSamplers,
         pBufReal = this._pAttrToBuffer;
-
     for (i = 0; i < pRealAttr.length; i++) {
-        pRealAttr[i] = pDevice.getAttribLocation(pProgram, "a_" + i);
+        pRealAttr[i] = pDevice.getAttribLocation(pProgram, a.fx.SHADER_PREFIX.ATTRIBUTE + i);
     }
-    for (i = 0; i < pRealBuf.length; i++) {
-        sBuf = "A_b_" + i;
-        pUniforms[sBuf] = pRealBuf[i] = pDevice.getUniformLocation(pProgram, sBuf);
-        pBuffers[sBuf] = null;
+    for (i = 0; i < pRealSamplers.length; i++) {
+        sSampler = a.fx.SHADER_PREFIX.SAMPLER + i;
+        pUniforms[sSampler] = pRealSamplers[i] = pDevice.getUniformLocation(pProgram, sSampler);
     }
     pKeys = this._pATRKeys;
     for (i = 0; i < pKeys.length; i++) {
@@ -109,9 +108,12 @@ ShaderProgram2.prototype.setup = function (pAttrData, pUniformData, pTextures) {
         if (pAttrReal[sKey1] !== undefined) {
             pAttrReal[sKey1] = pRealAttr[pAttrReal[sKey1]];
             if (pData.eType === a.BufferMap.FT_MAPPABLE) {
-                sOffset = sKey1 + "_offset";
-                pOffsets[sOffset] = null;
+                sOffset = a.fx.SHADER_PREFIX.OFFSET + sKey1;
                 pUniforms[sOffset] = pDevice.getUniformLocation(pProgram, sOffset);
+                pOffsets[sOffset] = null;
+                pBuffers[a.fx.SHADER_PREFIX.SAMPLER + this._pAttrToBuffer[sKey1]] = null;
+                pUniformsKeys.push(sOffset);
+                pUniformsKeys.push(a.fx.SHADER_PREFIX.SAMPLER + this._pAttrToBuffer[sKey1]);
             }
         }
     }
@@ -126,46 +128,37 @@ ShaderProgram2.prototype.setup = function (pAttrData, pUniformData, pTextures) {
             warning("Something going wrong! very wrong!");
             return false;
         }
-        if (pSamplers[sKey1]) {
-            sTexture = pData[a.fx.GLOBAL_VARS.TEXTURE];
-            if (typeof(sTexture) === "object") {
-                pTexture = sTexture;
-            }
-            else {
-                pTexture = pTextures[sTexture];
-            }
-            if (!pTexture) {
-                pUniforms[sKey1] = null;//pUniforms[PassBlend.sZeroSampler];
-            }
-            else {
-                pUniforms[sKey1] = pDevice.getUniformLocation(pProgram, sKey1);
-            }
-            continue;
+        if (this._pSamplersToReal[sKey1] === undefined && this._pBuffersToReal[sKey1] === undefined) {
+            pUniforms[sKey1] = pDevice.getUniformLocation(pProgram, sKey1);
         }
-        if (pGlobalBuffers[sKey1]) {
-            if (!pData) {
-                pUniforms[sKey1] = null;//pUniforms[PassBlend.sZeroSampler];
-            }
-            else {
-                pUniforms[sKey1] = pDevice.getUniformLocation(pProgram, sKey1 + "_b");
-            }
-            continue;
-        }
-        pUniforms[sKey1] = pDevice.getUniformLocation(pProgram, sKey1);
+        pUniformsKeys.push(sKey1);
     }
-    this._pUniformKeys = Object.keys(pUniforms);
+    this._pUniformKeys = pUniformsKeys;
+    this._pStreams = new Array(pRealAttr.length);
     this._pOffsets = pOffsets;
     this._pBuffers = pBuffers;
-    this._pStreams = new Array(pRealAttr.length);
     this._pTextureSlots = new Array(a.info.graphics.maxTextureImageUnits(this._pDevice));
+    this._pTextureParams = new Array(a.info.graphics.maxTextureImageUnits(this._pDevice));
+
+    function fnDefaultTexParametr() {
+        var obj = {};
+        obj[a.TPARAM.MAG_FILTER] = null;
+        obj[a.TPARAM.MIN_FILTER] = null;
+        obj[a.TPARAM.WRAP_S] = null;
+        obj[a.TPARAM.WRAP_T] = null;
+        return obj;
+    }
+
+    for (i = 0; i < this._pTextureParams.length; i++) {
+        this._pTextureParams[i] = fnDefaultTexParametr();
+    }
+
     return true;
 };
 ShaderProgram2.prototype.generateInputData = function (pAttrData, pUniformData) {
     //TODO: pool object from cache not create
     //TODO: In pAttrs push only unique VertexData
     var pAttrs = new Array(this._pRealAttr.length);
-    var pBuffers = this._pBuffers,
-        pOffsets = this._pOffsets;
     var i;
     var pKeys = this._pATRKeys,
         pAttrReal = this._pAttrToReal;
@@ -177,7 +170,6 @@ ShaderProgram2.prototype.generateInputData = function (pAttrData, pUniformData) 
         pType;
     for (i = 0; i < pKeys.length; i++) {
         sKey = pKeys[i];
-        sKey = pKeys[i];
         pData = pAttrData[sKey];
         if (pData !== null) {
             if (pData.eType !== a.BufferMap.FT_MAPPABLE) {
@@ -185,13 +177,13 @@ ShaderProgram2.prototype.generateInputData = function (pAttrData, pUniformData) 
                 continue;
             }
             pAttrs[pAttrReal[sKey]] = pData.pMapper.pData;
-            sOffset = sKey + "_offset";
-            if (pUniformData[sOffset] || pOffsets[sOffset] !== null) {
+            sOffset = a.fx.SHADER_PREFIX.OFFSET + sKey;
+            if (pUniformData[sOffset] !== undefined) {
                 warning("something wrong with offset");
                 continue;
             }
             pUniformData[sOffset] = pData.pData.getVertexDeclaration().element(sKey).iOffset;
-            sBuf = "A_b_" + this._pAttrToBuffer[sKey];
+            sBuf = a.fx.SHADER_PREFIX.SAMPLER + this._pAttrToBuffer[sKey];
             pUniformData[sBuf] = pData.pData.buffer;
         }
     }
@@ -239,13 +231,14 @@ ShaderProgram2.prototype.applyUniform = function (sName, pData) {
         }
         return;
     }
-    else if (this._pOffsets[sName]) {
+    else if (this._pOffsets[sName] === null) {
         this.applyFloat(sName, pData);
     }
-    else if (this._pBuffers[sName]) {
+    else if (this._pBuffers[sName] === null) {
         this.applyVideoBuffer(sName, pData);
     }
     else {
+        trace("applyUniform----->", sName, pData);
         warning("You should not be here. Something bad have been happened with uniforms.");
     }
 };
@@ -271,14 +264,31 @@ ShaderProgram2.prototype.applyVec4 = function (sName, pData) {
 };
 ShaderProgram2.prototype.applyMat4 = function (sName, pData) {
     var pDevice = this._pDevice;
-    pDevice.uniformMatrix4fv(this._pRealUniformList[sName], pData);
+    pDevice.uniformMatrix4fv(this._pRealUniformList[sName], false, pData);
 };
 ShaderProgram2.prototype.applyVideoBuffer = function (sName, pData) {
     if (pData === null) {
         return true;
     }
+    var sRealName;
+    console.log("Video_buffer::::::::::: ", sName, this);
+    if (this._pBuffersToReal[sName]) {
+        sRealName = a.fx.SHADER_PREFIX.SAMPLER + this._pBuffersToReal[sName];
+    }
+    else {
+        sRealName = sName;
+    }
     var iSlot = this._pShaderManager.activateTexture(pData);
-    return this.applyInt(sName + "_b", iSlot);
+    var pTextureParam = this._pTextureParams[iSlot];
+    pTextureParam[a.TPARAM.MAG_FILTER] = pData._getParameter(a.TPARAM.MAG_FILTER) ||
+                                         a.TFILTER.LINEAR;
+    pTextureParam[a.TPARAM.MIN_FILTER] = pData._getParameter(a.TPARAM.MIN_FILTER) ||
+                                         a.TFILTER.LINEAR;
+    pTextureParam[a.TPARAM.WRAP_S] = pData._getParameter(a.TPARAM.WRAP_S) ||
+                                     a.TWRAPMODE.REPEAT;
+    pTextureParam[a.TPARAM.WRAP_T] = pData._getParameter(a.TPARAM.WRAP_T) ||
+                                     a.TWRAPMODE.REPEAT;
+    return this.applyInt(sRealName, iSlot);
 };
 ShaderProgram2.prototype.applySampler2D = function (sName, pData) {
     var sTexture, pTexture;
@@ -295,9 +305,22 @@ ShaderProgram2.prototype.applySampler2D = function (sName, pData) {
     if (!pTexture) {
         return true;
     }
+    var sRealName = a.fx.SHADER_PREFIX.SAMPLER + this._pSamplersToReal[sName];
     var iSlot = this._pShaderManager.activateTexture(pTexture);
-    //TODO:set texture params
-    return this.applyInt(sName, iSlot);
+    var pTextureParam = this._pTextureParams[iSlot];
+    pTextureParam[a.TPARAM.MAG_FILTER] = pData[a.TPARAM.MAG_FILTER] ||
+                                         pTexture._getParameter(a.TPARAM.MAG_FILTER) ||
+                                         a.TFILTER.LINEAR;
+    pTextureParam[a.TPARAM.MIN_FILTER] = pData[a.TPARAM.MIN_FILTER] ||
+                                         pTexture._getParameter(a.TPARAM.MIN_FILTER) ||
+                                         a.TFILTER.LINEAR;
+    pTextureParam[a.TPARAM.WRAP_S] = pData[a.TPARAM.WRAP_S] ||
+                                     pTexture._getParameter(a.TPARAM.WRAP_S) ||
+                                     a.TWRAPMODE.REPEAT;
+    pTextureParam[a.TPARAM.WRAP_T] = pData[a.TPARAM.WRAP_T] ||
+                                     pTexture._getParameter(a.TPARAM.WRAP_T) ||
+                                     a.TWRAPMODE.REPEAT;
+    return this.applyInt(sRealName, iSlot);
 };
 ShaderProgram2.prototype.applyData = function (pVertexData) {
     var pDevice = this._pDevice;
@@ -309,6 +332,7 @@ ShaderProgram2.prototype.applyData = function (pVertexData) {
         pDecl;
     var pVertexElement;
     var pVertexBuffer = pVertexData.buffer;
+    var iState = pManager.getRenderResourceState(pVertexBuffer);
     pDecl = pVertexData.getVertexDeclaration();
     pManager.activateVertexBuffer(pVertexBuffer);
     for (var i = 0; i < pDecl.length; i++) {
@@ -317,10 +341,10 @@ ShaderProgram2.prototype.applyData = function (pVertexData) {
         if (iStream === undefined) {
             continue;
         }
-        if (this._pStreams[iStream] === pVertexData) {
+        if (this._pStreams[iStream] === iState) {
             continue;
         }
-        this._pStreams[iStream] = pVertexData;
+        this._pStreams[iStream] = iState;
         trace(pVertexElement.eUsage, '-->', 'pDevice.vertexAttribPointer(', iStream,
               pVertexElement.nCount,
               pVertexElement.eType,
@@ -340,8 +364,8 @@ ShaderProgram2.prototype.applyData = function (pVertexData) {
 ShaderProgram2.prototype.setCurrentTextureSet = function (pTextures) {
     this._pTextures = pTextures;
 };
-ShaderProgram2.prototype.setAttrParams = function (pAttrToReal, pAttrToBuffer,
-                                                   pSamplersToReal, pBuffersToReal, nAttr, nBuffer) {
+ShaderProgram2.prototype.setAttrParams = function (pAttrToReal, pAttrToBuffer, pSamplersToReal, pBuffersToReal, nAttr,
+                                                   nRealSamplers) {
     this._pAttrToReal = pAttrToReal;
     this._pAttrToBuffer = pAttrToBuffer;
     this._pBuffersToReal = pBuffersToReal;
@@ -349,7 +373,7 @@ ShaderProgram2.prototype.setAttrParams = function (pAttrToReal, pAttrToBuffer,
     this._pATRKeys = Object.keys(pAttrToReal);
     this._pATBKeys = Object.keys(pAttrToBuffer);
     this._pRealAttr = new Array(nAttr);
-    this._pRealBuffer = new Array(nBuffer);
+    this._pRealSamplers = new Array(nRealSamplers);
 };
 ShaderProgram2.prototype.setUniformVars = function (pUniforms, isZeroSampler) {
     this._pUniformVars = pUniforms;
@@ -390,6 +414,16 @@ ShaderProgram2.prototype.deactivate = function () {
 };
 ShaderProgram2.prototype.isActive = function () {
     return this._pDevice.getParameter(this._pDevice.CURRENT_PROGRAM) === this._pHardwareProgram;
+};
+ShaderProgram2.prototype.activateTextures = function () {
+    var i = 0;
+    var iCheck = this._nActiveTimes;
+    for (i = 0; i < this._pTextureSlots.length; i++) {
+        if (this._pTextureSlots[i] === iCheck) {
+            console.log("Activate slot #" + i);
+            this._pShaderManager._activateTextureSlot(i, this._pTextureParams[i]);
+        }
+    }
 };
 
 ShaderProgram2.prototype._programInfoLog = function (pHardwareProgram, pVertexShader, pPixelShader) {
@@ -585,7 +619,8 @@ A_NAMESPACE(ComponentBlend, fx);
 var SHADER_PREFIX = {
     SAMPLER   : "A_s_",
     HEADER    : "A_h_",
-    ATTRIBUTE : "A_a_"
+    ATTRIBUTE : "A_a_",
+    OFFSET    : "A_o_"
 };
 A_NAMESPACE(SHADER_PREFIX, fx);
 
@@ -1138,8 +1173,8 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         pAttrToBuffer = {}; //AttrName ---> Sampler number
     var pRealSamplers = {}; //ResourceID ---> Sampler number
     var pSamplersUsage = this._pRealSamplersUsage;
-    var pSamplersToReal = {},
-        pBuffersToReal = {};
+    var pSamplersToReal = {}, //SamplerName ---> Sampler number
+        pBuffersToReal = {};  //BufferName ---> Sampler number
     var iRealSampler,
         nRealSamplers = 0;
     var pAttrDecl = {};
@@ -1368,6 +1403,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                 }
                 isZeroSamplerV = true;
                 isZeroHeaderV = true;
+                isExtractInitV = true;
                 for (j = 0; j < this.pAttrBuffers[sKey1].length; j++) {
                     pBuffer = this.pAttrBuffers[sKey1][j];
                     pBuffer.pSampler.pData = PassBlend.sZeroSampler;
@@ -1663,7 +1699,6 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     }
 
     //Generate program
-    console.log(sVertexCode, sFragmentCode);
     pProgram = new ShaderProgram2(sHash, this.pEngine);
     pProgram._pPassBlend = this;
     pProgram.setUniformVars(this.pUniforms, isZeroSamplerV || isZeroSamplerF);
@@ -1764,15 +1799,32 @@ function Renderer(pEngine) {
     this._pShiftStack = [];
     this._pAttributesDataStack = [];
 
+
+    this._pPrograms = {};
+    this._pRenderResources = {};
+    this._pRenderResourceCounter = {};
+    this._pRenderResourceCounterKeys = [];
+
+    //Current render resource states
+    this._pActiveVertexBuffer = null;
+    this._iActiveVertexBufferState = -1;
+
+    this._pActiveIndexBuffer = null;
+    this._iActiveIndexBufferState = -1;
+
+    this._iActiveFrameBuffer = null;
     this._pActiveProgram = null;
     this._nAttrsUsed = 0;
 
-    this._pPrograms = {};
-
-    this._pActiveVertexBuffer = null;
-    this._pBindTexture = null;
+    this._pActiveTexture = null;
+    this._iActiveSlot = -1;
+    this._pTextureSlotStates = new Array(a.info.graphics.maxTextureImageUnits(this.pDevice));
     this._pTextureSlots = new Array(a.info.graphics.maxTextureImageUnits(this.pDevice));
-    this._iActiveFrameBuffer = null;
+    for (var i = 0; i < this._pTextureSlots.length; i++) {
+        this._pTextureSlotStates[i] = false;
+        this._pTextureSlots[i] = null;
+    }
+
     this._pFramebufferPool = new Array(10);
     this._pEmptyFrameBuffers = new Array(10);
     this._pFrameBufferCounters = new Array(10);
@@ -2427,6 +2479,7 @@ Renderer.prototype._registerPassBlend = function (pBlend) {
 
 //----PreRender applying methods----//
 Renderer.prototype.applyBufferMap = function (pMap) {
+    trace(pMap);
     if (!pMap) {
         warning("Don`t have bufferMap");
         return true;
@@ -2537,11 +2590,10 @@ Renderer.prototype.getTextureSlot = function (pTexture) {
 };
 
 //----Allocators----//
-Renderer.prototype._getEmptyTextureSlot = function (pTexture) {
-    pTexture = pTexture || null;
+Renderer.prototype._getEmptyTextureSlot = function () {
     var i;
     for (i = 0; i < this._pTextureSlots.length; i++) {
-        if (!this._pTextureSlots[i] || pTexture === this._pTextureSlots[i]) {
+        if (!this._pTextureSlots[i]) {
             return i;
         }
     }
@@ -2582,23 +2634,41 @@ Renderer.prototype._tryReleaseFrameBuffer = function (id) {
         this._releaseFrameBuffer(id);
     }
 };
-
+Renderer.prototype._getTextureSlot = function (pTexture) {
+    var i;
+    for (i = 0; i < this._pTextureSlots.length; i++) {
+        if (pTexture === this._pTextureSlots[i]) {
+            return i;
+        }
+    }
+    return -1;
+};
 
 //Public methods to activate data for render
 Renderer.prototype.activateVertexBuffer = function (pBuffer) {
-    if (this._pActiveVertexBuffer === pBuffer) {
+    if (!this._isRegisterResource(pBuffer)) {
+        this.registerRenderResource(pBuffer);
+    }
+    if (this._pActiveVertexBuffer === pBuffer &&
+        this._iActiveVertexBufferState === this._pRenderResourceCounter[pBuffer.toNumber()]) {
         return true;
     }
     this._pActiveVertexBuffer = pBuffer;
+    this._iActiveVertexBufferState = this._pRenderResourceCounter[pBuffer.toNumber()];
     trace("Real bind vertex buffer #" + pBuffer.resourceHandle());
     pBuffer.bind();
     return true;
 };
 Renderer.prototype.activateIndexBuffer = function (pBuffer) {
-    if (this._pActiveIndexBuffer === pBuffer) {
+    if (!this._isRegisterResource(pBuffer)) {
+        this.registerRenderResource(pBuffer);
+    }
+    if (this._pActiveIndexBuffer === pBuffer &&
+        this._iActiveIndexBufferState === this._pRenderResourceCounter[pBuffer.toNumber()]) {
         return true;
     }
     this._pActiveIndexBuffer = pBuffer;
+    this._iActiveIndexBufferState = this._pRenderResourceCounter[pBuffer.toNumber()];
     trace("Real bind index buffer #" + pBuffer.resourceHandle());
     pBuffer.bind();
     return true;
@@ -2633,20 +2703,6 @@ Renderer.prototype.activateFrameBuffer = function (iId) {
     trace("activateFrameBuffer #" + iId);
     return iId;
 };
-Renderer.prototype.activateTexture = function (pTexture) {
-    var i;
-    var pSlots = this._pTextureSlots;
-    var iSlot;
-    iSlot = this._getEmptyTextureSlot();
-    this.pDevice.activeTexture(a.TEXTUREUNIT.TEXTURE + (iSlot || 0));
-    pTexture.bind();
-    pSlots[iSlot] = pTexture;
-    if (this._pActiveProgram) {
-        this._pActiveProgram.setTextureSlot(iSlot, pTexture);
-    }
-    return iSlot;
-};
-
 Renderer.prototype.deactivateFrameBuffer = function (iId) {
     if (iId !== undefined) {
         this._pEmptyFrameBuffers[iId] = null;
@@ -2666,6 +2722,68 @@ Renderer.prototype.deactivateFrameBuffer = function (iId) {
     return true;
 };
 
+Renderer.prototype.bindTexture = function (pTexture) {
+    if (this._pActiveTexture === pTexture) {
+        return true;
+    }
+    trace("Real bind texture #" + pTexture.toNumber());
+    this._pActiveTexture = pTexture;
+    if (this._iActiveSlot >= -1) {
+        this._pTextureSlotStates[this._iActiveSlot] = true;
+    }
+    pTexture.bind();
+    return true;
+};
+Renderer.prototype.activateTexture = function (pTexture) {
+    var i;
+    var pSlots = this._pTextureSlots;
+    var iSlot;
+    iSlot = this._getTextureSlot(pTexture);
+    if (iSlot >= 0) {
+        if (this._pActiveProgram) {
+            this._pActiveProgram.setTextureSlot(iSlot, pTexture);
+        }
+        return iSlot;
+    }
+    iSlot = this._getEmptyTextureSlot();
+    pSlots[iSlot] = pTexture;
+    this._pTextureSlotStates[iSlot] = true;
+    if (this._pActiveProgram) {
+        this._pActiveProgram.setTextureSlot(iSlot, pTexture);
+    }
+    return iSlot;
+};
+Renderer.prototype._activateTextureSlot = function (iSlot, pParams) {
+    var pTexture = this._pTextureSlots[iSlot];
+    var isBind = false;
+    var isParamsEqual = pTexture._hasParams(pParams);
+    var pDevice = this.pDevice;
+    if (this._pTextureSlotStates[iSlot]) {
+        this._iActiveSlot = iSlot;
+        this._pTextureSlotStates[iSlot] = false;
+        this.pDevice.activeTexture(a.TEXTUREUNIT.TEXTURE + (iSlot || 0));
+        this._forceBindTexture(pTexture);
+        isBind = true;
+    }
+    if (!isParamsEqual) {
+        if (!isBind) {
+            this.pDevice.activeTexture(a.TEXTUREUNIT.TEXTURE + (iSlot || 0));
+            this._forceBindTexture(pTexture);
+        }
+        var eTarget = pTexture.target;
+        pDevice.texParameteri(eTarget, a.TPARAM.MAG_FILTER, pParams[a.TPARAM.MAG_FILTER]);
+        pDevice.texParameteri(eTarget, a.TPARAM.MIN_FILTER, pParams[a.TPARAM.MIN_FILTER]);
+        pDevice.texParameteri(eTarget, a.TPARAM.WRAP_S, pParams[a.TPARAM.WRAP_S]);
+        pDevice.texParameteri(eTarget, a.TPARAM.WRAP_T, pParams[a.TPARAM.WRAP_T]);
+    }
+    return true;
+};
+Renderer.prototype._forceBindTexture = function (pTexture) {
+    trace("Real bind texture(FORCE) #" + pTexture.toNumber());
+    this._pActiveTexture = pTexture;
+    pTexture.bind();
+    return true;
+};
 
 //----Real render methods----//
 Renderer.prototype.render = function (pEntry) {
@@ -2677,6 +2795,7 @@ Renderer.prototype.render = function (pEntry) {
     var pFrameBuffer = pEntry.iFrameBuffer !== null ? this._pFramebufferPool[pEntry.iFrameBuffer] : null;
     var i;
     var nStreams = pProgram.getStreamNumber();
+    trace("-------START REAL RENDER---------");
     console.log("bind frame buffer #" + pEntry.iFrameBuffer);
     //pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pFrameBuffer);
 
@@ -2690,34 +2809,107 @@ Renderer.prototype.render = function (pEntry) {
         console.log("Program already active");
     }
 
-    for (i = nStreams; i < this._nAttrsUsed; i++) {
-        pDevice.disableVertexAttribArray(i);
-    }
-
-    for (i = 0; i < nStreams; i++) {
-        pDevice.enableVertexAttribArray(i);
-    }
-
     this._nAttrsUsed = nStreams;
 
     for (i = 0; i < pAttrs.length; i++) {
         pProgram.applyData(pAttrs[i]);
     }
 
-    var pUniformKeys = pProgram._pUniformKeys;
+    var pUniformKeys = Object.keys(pUniforms);
     for (i = 0; i < pUniformKeys.length; i++) {
         pProgram.applyUniform(pUniformKeys[i], pUniforms[pUniformKeys[i]]);
     }
+    pProgram.activateTextures();
     pProgram.setCurrentTextureSet(null);
 
     if (pEntry.pIndexData) {
-
-        pDevice.drawElements()
+        this.activateIndexBuffer(pEntry.pIndexData);
+        pDevice.drawElements(pEntry.pIndexData.getPrimitiveType(), pEntry.pIndexData.getCount(),
+                             pEntry.pIndexData.getType(), pEntry.pIndexData.getOffset());
+    }
+    else {
+        console.log(pEntry.pAttributes);
+        pDevice.drawArrays(0, pEntry.iOffset, pEntry.iLength);
     }
     if (pEntry.iFrameBuffer !== null) {
         this._tryReleaseFrameBuffer(pEntry.iFrameBuffer);
     }
-    pProgram.clear();
+//    pProgram.clear();
+    trace("-------STOP REAL RENDER---------");
+};
+
+//----Render resources----//
+Renderer.prototype.vertexBufferChanged = function (pBuffer) {
+    pBuffer = pBuffer || this._pActiveVertexBuffer;
+    if (!pBuffer) {
+        return false;
+    }
+    trace("Vertex buffer changed #" + pBuffer.resourceHandle());
+    this._renderResourceChanged(pBuffer);
+};
+Renderer.prototype.indexBufferChanged = function (pBuffer) {
+    pBuffer = pBuffer || this._pActiveIndexBuffer;
+    if (!pBuffer) {
+        return false;
+    }
+    this._renderResourceChanged(pBuffer);
+};
+Renderer.prototype.getRenderResourceState = function (pResource) {
+    if (!this._pRenderResources[pResource.toNumber()]) {
+        return false;
+    }
+    return this._pRenderResourceCounter[pResource.toNumber()]
+};
+Renderer.prototype.registerRenderResource = function (pResource) {
+    var id = pResource.toNumber();
+    if (this._pRenderResources[id]) {
+        this._pRenderResources[id] = pResource;
+        this._pRenderResourceCounter[id]++;
+    }
+    else {
+        this._pRenderResources[id] = pResource;
+        this._pRenderResourceCounter[id] = 0;
+        this._pRenderResourceCounterKeys.push(id);
+    }
+};
+Renderer.prototype.releaseRenderResource = function (pResource) {
+    var id = pResource.toNumber();
+    var pCounters = this._pRenderResourceCounter;
+    var pResources = this._pRenderResources;
+    if (pResources[id]) {
+        pCounters[id]++;
+        pResources[id] = null;
+    }
+};
+Renderer.prototype._renderResourceChanged = function (pResource) {
+    var id = pResource.toNumber();
+    var pCounters = this._pRenderResourceCounter;
+    if (!pCounters[id]) {
+        this.registerRenderResource(pResource);
+    }
+    pCounters[id]++;
+};
+Renderer.prototype._clearRenderResources = function () {
+    var i;
+    var pCounters = this._pRenderResourceCounter;
+    var pResources = this._pRenderResources;
+    var pKeys = this._pRenderResourceCounterKeys;
+    var id;
+    for (i = 0; i < pKeys.length; i++) {
+        id = pKeys[i];
+        if (pResources[id] !== null) {
+            pCounters[id] = 0;
+        }
+        else {
+            delete pCounters[id];
+            delete pResources[id];
+            pKeys.splice(i, 1);
+            i--;
+        }
+    }
+};
+Renderer.prototype._isRegisterResource = function (pResource) {
+    return !!(this._pRenderResources[pResource.toNumber()]);
 };
 
 

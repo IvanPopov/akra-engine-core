@@ -480,8 +480,7 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
         var pManager = this._pEngine.shaderManager();
         var pSnapshot = this._pActiveSnapshot;
         var pEntry = null;
-        console.log(pSnapshot, pManager);
-        pManager.activateFrameBuffer(0);
+        pManager.activateFrameBuffer();
         pManager.applyFrameBufferTexture(this);
         this.startRender();
         for (var i = 0; i < this.totalPasses(); i++) {
@@ -494,13 +493,9 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
             this.deactivatePass();
         }
         this.finishRender();
-//        pManager.deactivateFrameBuffer();
-        console.log(pEntry);
-        pManager.activate(pEntry);
+        pManager.deactivateFrameBuffer();
         pDevice.viewport(0, 0, this._iWidth, this._iHeight);
-        console.log("Try draw");
-
-        pDevice.drawArrays(0, pEntry.iOffset, pEntry.iLength);
+        pManager.render(pEntry);
         pDevice.flush();
         window['A_TRACER.trace']('end readraw in videobuffer');
 //        pProgram = statics._pUpdateProgram;

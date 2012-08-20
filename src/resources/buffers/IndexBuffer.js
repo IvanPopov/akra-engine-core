@@ -263,14 +263,14 @@ IndexBuffer.prototype.create = function (iByteSize, iFlags, pData)
         return false;
     }
 
-
-    this._pDevice.bindBuffer(a.BTYPE.ELEMENT_ARRAY_BUFFER, this._pBuffer);
+    var pRenderer = this._pEngine.shaderManager();
+    pRenderer.activateIndexBuffer(this);
+    pRenderer.indexBufferChanged(this);
     this._pDevice.bufferData(a.BTYPE.ELEMENT_ARRAY_BUFFER, this._iByteSize, eUsage);
 	if(pData)
 	{
 		this._pDevice.bufferSubData(a.BTYPE.ELEMENT_ARRAY_BUFFER, 0, new Uint16Array(pData.buffer));
 	}
-    this._pDevice.bindBuffer(a.BTYPE.ELEMENT_ARRAY_BUFFER, null);   
     
     return true;
 }
@@ -300,6 +300,7 @@ IndexBuffer.prototype.destroy = function ()
 	this._pIndexDataArray = null;
 	
     this._iTypeFlags = 0;
+    this._pEngine.shaderManager().releaseRenderResource(this);
     this.notifyUnloaded();
 }
 
@@ -343,15 +344,15 @@ IndexBuffer.prototype.getData = function (iOffset,iSize)
 IndexBuffer.prototype.setData = function (pData, iOffset, iSize) 
 {
     debug_assert(this._pBuffer, "Буффер еще не создан");
+    var pRenderer = this._pEngine.shaderManager();
+    pRenderer.activateIndexBuffer(this);
     this._pDevice.bindBuffer(a.BTYPE.ELEMENT_ARRAY_BUFFER, this._pBuffer);
 
 	
 	debug_assert(pData.byteLength<=iSize, "Размер переданного массива больше переданного размера");
-	
+    pRenderer.indexBufferChanged(this);
 	this._pDevice.bufferSubData(a.BTYPE.ELEMENT_ARRAY_BUFFER, iOffset,
                                     pData.slice(0,iSize));
-  
-    this._pDevice.bindBuffer(a.BTYPE.ELEMENT_ARRAY_BUFFER, null);
 	
 	if (TEST_BIT(this._iTypeFlags, a.VertexBuffer.RamBackupBit)) 
 	{

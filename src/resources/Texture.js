@@ -7,11 +7,11 @@
 
 
 Enum([
-    NEAREST_MIPMAP_NEAREST = 0x2700,
-    LINEAR_MIPMAP_NEAREST,
-    NEAREST_MIPMAP_LINEAR,
-    LINEAR_MIPMAP_LINEAR
-], TEXTURE_MIN_FILTER, a.Texture.MinFilter);
+         NEAREST_MIPMAP_NEAREST = 0x2700,
+         LINEAR_MIPMAP_NEAREST,
+         NEAREST_MIPMAP_LINEAR,
+         LINEAR_MIPMAP_LINEAR
+     ], TEXTURE_MIN_FILTER, a.Texture.MinFilter);
 
 /**
  * Texture class.
@@ -19,30 +19,30 @@ Enum([
  * @ctor
  * Constructor.
  */
-function Texture (pEngine) {
+function Texture(pEngine) {
     A_CLASS;
     /**
      * @enum eTextureFlags
      * @memberOf Texture
      */
     Enum([
-        DynamicTexture = 0,
-        CubeMap,
-        MipMaps,
-        RenderTarget,
-        Paletized,
-		Dinamic
-    ], eTextureFlags, a.Texture);
+             DynamicTexture = 0,
+             CubeMap,
+             MipMaps,
+             RenderTarget,
+             Paletized,
+             Dinamic
+         ], eTextureFlags, a.Texture);
 
     /**
      * @enum eForcedFormatFlags
      * @memberOf Texture
      */
     Enum([
-        ForceMipLevels = 0,
-        ForceFormat,
-        ForceSize
-    ], eForcedFormatFlags, a.Texture);
+             ForceMipLevels = 0,
+             ForceFormat,
+             ForceSize
+         ], eForcedFormatFlags, a.Texture);
 
     this._pDevice = pEngine.pDevice;
 
@@ -59,6 +59,8 @@ function Texture (pEngine) {
     this._pTexture = null;
     this._pFrameBuffer = null;
 
+    this._pTextureParams = {};
+
     this._iWidth = 0;
     this._iHeight = 0;
 
@@ -73,45 +75,45 @@ a.extend(Texture, a.ResourcePoolItem, a.RenderableObject);
 
 
 PROPERTY(Texture, 'texture',
-    /**
-     * Получить текущую, используемую текстуру.
-     * @treturn WebGLTexture Оригинальная текстура.
-     */
-        function () {
-        return this._pTexture;
-    });
+         /**
+          * Получить текущую, используемую текстуру.
+          * @treturn WebGLTexture Оригинальная текстура.
+          */
+             function () {
+             return this._pTexture;
+         });
 
 
 PROPERTY(Texture, 'height',
-    /**
-     * Высота текстуры.
-     * @treturn Int Width.
-     */
-        function () {
-        if (this._pTexture) {
-            return this._iHeight;
-        }
-        return 0;
-    },
-    function (iValue) {
-        this.resize(this._iWidth, iValue);
-    });
+         /**
+          * Высота текстуры.
+          * @treturn Int Width.
+          */
+             function () {
+             if (this._pTexture) {
+                 return this._iHeight;
+             }
+             return 0;
+         },
+         function (iValue) {
+             this.resize(this._iWidth, iValue);
+         });
 
 
 PROPERTY(Texture, 'width',
-    /**
-     * Ширина текстуры.
-     * @treturn Int Width.
-     */
-        function () {
-        if (this._pTexture) {
-            return this._iWidth;
-        }
-        return 0;
-    },
-    function (iValue) {
-        this.resize(iValue, this.height);
-    });
+         /**
+          * Ширина текстуры.
+          * @treturn Int Width.
+          */
+             function () {
+             if (this._pTexture) {
+                 return this._iWidth;
+             }
+             return 0;
+         },
+         function (iValue) {
+             this.resize(iValue, this.height);
+         });
 
 PROPERTY(Texture, 'typeSize', function () {
     return a.getTypeSize(this._eType);
@@ -125,64 +127,64 @@ PROPERTY(Texture, 'numElementsPerPixel', function () {
  * тип текстуры.
  */
 PROPERTY(Texture, 'type',
-    function () {
-        return this._eType;
-    },
-    function (eValue) {
-        if (this._pTexture) {
-            this.repack(this._iWidth, this._iHeight, this.format, eValue);
-        }
-        this._eType = eValue;
-    });
+         function () {
+             return this._eType;
+         },
+         function (eValue) {
+             if (this._pTexture) {
+                 this.repack(this._iWidth, this._iHeight, this.format, eValue);
+             }
+             this._eType = eValue;
+         });
 
 /**
  * формат текстуры.
  */
 PROPERTY(Texture, 'format',
-    function () {
-        return this._eFormat;
-    },
-    function (eValue) {
-        if (this._pTexture) {
-            this.repack(this._iWidth, this._iHeight, eValue, this.type);
-        }
-        this._eFormat = eValue;
-    });
+         function () {
+             return this._eFormat;
+         },
+         function (eValue) {
+             if (this._pTexture) {
+                 this.repack(this._iWidth, this._iHeight, eValue, this.type);
+             }
+             this._eFormat = eValue;
+         });
 
 
 PROPERTY(Texture, 'magFilter',
-    function () {
-        return this._getParameter(a.TPARAM.MAG_FILTER);
-    },
-    function (eValue) {
-        this.applyParameter(a.TPARAM.MAG_FILTER, eValue);
-    });
+         function () {
+             return this._getParameter(a.TPARAM.MAG_FILTER);
+         },
+         function (eValue) {
+             this.applyParameter(a.TPARAM.MAG_FILTER, eValue);
+         });
 
 
 PROPERTY(Texture, 'minFilter',
-    function () {
-        return this._getParameter(a.TPARAM.MIN_FILTER);
-    },
-    function (eValue) {
-        this.applyParameter(a.TPARAM.MIN_FILTER, eValue);
-    });
+         function () {
+             return this._getParameter(a.TPARAM.MIN_FILTER);
+         },
+         function (eValue) {
+             this.applyParameter(a.TPARAM.MIN_FILTER, eValue);
+         });
 
 PROPERTY(Texture, 'wraps',
-    function () {
-        return this._getParameter(a.TPARAM.WRAP_S);
-    },
-    function (eValue) {
-        this.applyParameter(a.TPARAM.WRAP_S, eValue);
-    });
+         function () {
+             return this._getParameter(a.TPARAM.WRAP_S);
+         },
+         function (eValue) {
+             this.applyParameter(a.TPARAM.WRAP_S, eValue);
+         });
 
 
 PROPERTY(Texture, 'wrapt',
-    function () {
-        return this._getTexParameter(a.TPARAM.WRAP_T);
-    },
-    function (eValue) {
-        this.applyParameter(a.TPARAM.WRAP_T, eValue);
-    });
+         function () {
+             return this._getTexParameter(a.TPARAM.WRAP_T);
+         },
+         function (eValue) {
+             this.applyParameter(a.TPARAM.WRAP_T, eValue);
+         });
 
 PROPERTY(Texture, 'target', function () {
     return TEST_BIT(this._iFlags, a.Texture.CubeMap) ? a.TTYPE.TEXTURE_CUBE_MAP : a.TTYPE.TEXTURE_2D;
@@ -194,17 +196,27 @@ Texture.prototype.flipY = function (bValue) {
 
 
 Texture.prototype._getParameter = function (eName) {
-    return this._pDevice.getTexParameter(this.target, eName);
+//    return this._pDevice.getTexParameter(this.target, eName);
+    return this._pTextureParams[eName];
 };
 
 Texture.prototype.applyParameter = function (eParam, eValue) {
     var pDevice = this._pDevice;
     if (this._pTexture) {
         var eTarget = this.target;
-        pDevice.bindTexture(eTarget, this._pTexture);
+        this._pEngine.shaderManager().bindTexture(this);
         pDevice.texParameteri(eTarget, eParam, eValue);
-        pDevice.bindTexture(eTarget, null);
+        this._pTextureParams[eParam] = eValue;
     }
+};
+
+Texture.prototype._hasParams = function (pParams) {
+    return (
+        this._getParameter(a.TPARAM.MAG_FILTER) === pParams[a.TPARAM.MAG_FILTER] &&
+        this._getParameter(a.TPARAM.MIN_FILTER) === pParams[a.TPARAM.MIN_FILTER] &&
+        this._getParameter(a.TPARAM.WRAP_S) === pParams[a.TPARAM.WRAP_S] &&
+        this._getParameter(a.TPARAM.WRAP_T) === pParams[a.TPARAM.WRAP_T]
+        );
 };
 
 Texture.prototype.isCubeTexture = function () {
@@ -247,7 +259,7 @@ Texture.prototype.getPixelRGBA = function (iX, iY, iWidth, iHeight, pPixel, iMip
     }
     if (TEST_BIT(this._iFlags, a.Texture.MipMaps)) {
         debug_assert(iMipMap < Math.ceil(Math.max(Math.log(this._iWidth) / Math.LN2, Math.log(this._iHeight) / Math.LN2)
-            + 1), "Запрашивается уровень мип мапа, которого нет");
+                                             + 1), "Запрашивается уровень мип мапа, которого нет");
     }
 
 
@@ -257,12 +269,12 @@ Texture.prototype.getPixelRGBA = function (iX, iY, iWidth, iHeight, pPixel, iMip
         if (this.isCubeTexture()) {
             debug_assert(eCubeFlag != undefined, "тип текстуры кубическая,а eCubeFlag - undefined")
             pDevice.framebufferTexture2D(a.BTYPE.FRAME_BUFFER, a.ATYPE.COLOR_ATTACHMENT0, eCubeFlag, this._pTexture,
-                iMipMap);
+                                         iMipMap);
         }
         else {
             debug_assert(eCubeFlag == undefined, "тип текстуры 2D,а eCubeFlag выставлен");
             pDevice.framebufferTexture2D(a.BTYPE.FRAME_BUFFER, a.ATYPE.COLOR_ATTACHMENT0, a.TTYPE.TEXTURE_2D,
-                this._pTexture, iMipMap);
+                                         this._pTexture, iMipMap);
         }
 
         pDevice.readPixels(iX, iY, iWidth, iHeight, a.IFORMATSHORT.RGBA, a.ITYPE.UNSIGNED_BYTE, pPixel);
@@ -279,13 +291,13 @@ Texture.prototype.setPixelRGBA = function (iX, iY, iWidth, iHeight, pPixel, iMip
     eCubeFlag = eCubeFlag || 0;
 
     var pDevice = this._pEngine.pDevice;
-
+    var pRenderer = this._pEngine.shaderManager();
     debug_assert(!((!TEST_BIT(this._iFlags, a.Texture.MipMaps)) && iMipMap),
-        "Запрашивается уровень мип мапа, хотя текстура их не содрежит");
+                 "Запрашивается уровень мип мапа, хотя текстура их не содрежит");
 
     if (TEST_BIT(this._iFlags, a.Texture.MipMaps)) {
         debug_assert(iMipMap < Math.ceil(Math.max(Math.log(this._iWidth) / Math.LN2, Math.log(this._iHeight) / Math.LN2)
-            + 1), "Запрашивается уровень мип мапа, которого нет");
+                                             + 1), "Запрашивается уровень мип мапа, которого нет");
     }
 
     if (this._pTexture === null) {
@@ -295,19 +307,20 @@ Texture.prototype.setPixelRGBA = function (iX, iY, iWidth, iHeight, pPixel, iMip
     if (this.isCubeTexture()) {
         debug_assert(eCubeFlag != undefined, "тип текстуры кубическая,а eCubeFlag - undefined");
 
-        pDevice.bindTexture(a.TTYPE.TEXTURE_CUBE_MAP, this._pTexture);
+        pRenderer.bindTexture(this);
         pDevice.texSubImage2D(eCubeFlag, iMipMap, iX, iY, iWidth, iHeight, this._eFormat, this._eType, pPixel);
-        pDevice.bindTexture(a.TTYPE.TEXTURE_CUBE_MAP, null);
     }
     else {
-        pDevice.bindTexture(a.TTYPE.TEXTURE_2D, this._pTexture);
-        if(this.isCompressed()) {
-            pDevice.compressedTexSubImage2D(a.TTYPE.TEXTURE_2D, iMipMap, iX, iY, iWidth, iHeight, this._eFormat, pPixel);
+//        pDevice.bindTexture(a.TTYPE.TEXTURE_2D, this._pTexture);
+        pRenderer.bindTexture(this);
+        if (this.isCompressed()) {
+            pDevice.compressedTexSubImage2D(a.TTYPE.TEXTURE_2D, iMipMap, iX, iY, iWidth, iHeight, this._eFormat,
+                                            pPixel);
         }
         else {
-            pDevice.texSubImage2D(a.TTYPE.TEXTURE_2D, iMipMap, iX, iY, iWidth, iHeight, this._eFormat, this._eType, pPixel);
+            pDevice.texSubImage2D(a.TTYPE.TEXTURE_2D, iMipMap, iX, iY, iWidth, iHeight, this._eFormat, this._eType,
+                                  pPixel);
         }
-        pDevice.bindTexture(a.TTYPE.TEXTURE_2D, null);
     }
     return true;
 };
@@ -320,7 +333,7 @@ Texture.prototype.setPixelRGBA = function (iX, iY, iWidth, iHeight, pPixel, iMip
 Texture.prototype.createResource = function () {
     // innitialize the resource (called once)
     debug_assert(!this.isResourceCreated(),
-        "The resource has already been created.");
+                 "The resource has already been created.");
 
     // signal that the resource is now created,
     // but has not been enabled
@@ -355,6 +368,7 @@ Texture.prototype.releaseTexture = function () {
 Texture.prototype.generateNormalMap = function (pHeightMap, iChannel, fAmplitude) {
 
     var pDevice = this._pEngine.pDevice;
+    var pRenderer = this._pEngine.shaderManager();
 
     this.releaseTexture();
     this._pTexture = pDevice.createTexture();
@@ -362,11 +376,10 @@ Texture.prototype.generateNormalMap = function (pHeightMap, iChannel, fAmplitude
 
     this._iWidth = pHeightMap.getWidth();
     this._iHeight = pHeightMap.getHeight();
-    pDevice.bindTexture(a.TTYPE.TEXTURE_2D, this._pTexture);
+    pRenderer.bindTexture(this);
     pDevice.texImage2D(a.TTYPE.TEXTURE_2D, 0, a.IFORMATSHORT.RGBA, this._iWidth,
-        this._iHeight, 0, a.IFORMATSHORT.RGBA,
-        a.ITYPE.UNSIGNED_BYTE, null);
-    pDevice.bindTexture(a.TTYPE.TEXTURE_2D, null);
+                       this._iHeight, 0, a.IFORMATSHORT.RGBA,
+                       a.ITYPE.UNSIGNED_BYTE, null);
 
     var pColor = new Uint8Array(this._iWidth * this._iHeight * 4);
 
@@ -474,7 +487,7 @@ Texture.prototype.destroyResource = function () {
  */
 Texture.prototype.restoreResource = function () {
     debug_assert(this.isResourceCreated(),
-        "The resource has not been created.");
+                 "The resource has not been created.");
 
     this.notifyRestored();
     return (true);
@@ -487,7 +500,7 @@ Texture.prototype.restoreResource = function () {
  */
 Texture.prototype.disableResource = function () {
     debug_assert(this.isResourceCreated(),
-        "The resource has not been created.");
+                 "The resource has not been created.");
 
     this.notifyDisabled();
     return(true);
@@ -535,44 +548,40 @@ Texture.prototype._loadCubeTextureFromMemory = function (pMemory) {
  * @treturn Boolean Результат.
  */
 // Переписать, херь написана
-Texture.prototype.loadResource = function (sFileName)
-{
-    if (!sFileName)
-	{
+Texture.prototype.loadResource = function (sFileName) {
+    if (!sFileName) {
         var sResourceName = this.findResourceName();
         if (sResourceName) {
             sFileName = sResourceName;
         }
     }
-	var me = this;
+    var me = this;
 
 
-	if((sFileName.nodeName)&&
-		(sFileName.nodeName.toLowerCase()=="canvas"||sFileName.nodeName.toLowerCase()=="img"||sFileName.nodeName.toLowerCase()=="video"))
-	{
-		me.uploadHTMLElement(sFileName);
-		return true;
-	}
-	else if((sExt=(a.pathinfo(sFileName).ext))&&(sExt=="bmp"||sExt=="jpeg"||sExt=="gif"||sExt=="png"))
-	{
-		var pImage = new Image();
-		pImage.onload=function ()
-		{
-				me.uploadHTMLElement(pImage);
-		}
-		pImage.src = sFileName;
-		return true;
-	}
-	else
-	{
-		var pImage = new a.Img(this._pEngine);
-		pImage.load(sFileName,
-			function () {
-				me.uploadImage(pImage);
-			}
-		);
-		return true;
-	}
+    if ((sFileName.nodeName) &&
+        (sFileName.nodeName.toLowerCase() == "canvas" || sFileName.nodeName.toLowerCase() == "img" ||
+         sFileName.nodeName.toLowerCase() == "video")) {
+        me.uploadHTMLElement(sFileName);
+        return true;
+    }
+    else if ((sExt = (a.pathinfo(sFileName).ext)) &&
+             (sExt == "bmp" || sExt == "jpeg" || sExt == "gif" || sExt == "png")) {
+        var pImage = new Image();
+        pImage.onload = function () {
+            me.uploadHTMLElement(pImage);
+        }
+        pImage.src = sFileName;
+        return true;
+    }
+    else {
+        var pImage = new a.Img(this._pEngine);
+        pImage.load(sFileName,
+                    function () {
+                        me.uploadImage(pImage);
+                    }
+        );
+        return true;
+    }
     return false;
 };
 
@@ -617,36 +626,34 @@ Texture.prototype.uploadCubeFace = function (pImage, eFace, isCopyAll) {
     TODO('Texture::uploadCubeFace()');
 };
 
-Texture.prototype.uploadHTMLElement= function (pElement)
-{
-	var pDevice = this._pEngine.pDevice;
-	this.releaseTexture();
-	this._pTexture = pDevice.createTexture();
-	this._pFrameBuffer = pDevice.createFramebuffer();
+Texture.prototype.uploadHTMLElement = function (pElement) {
+    var pDevice = this._pEngine.pDevice;
+    this.releaseTexture();
+    this._pTexture = pDevice.createTexture();
+    this._pFrameBuffer = pDevice.createFramebuffer();
 
-	this._iWidth = pElement.width;
-	this._iHeight = pElement.height;
-	this._eFormat = a.IFORMATSHORT.RGBA;
-	this._eType = a.ITYPE.UNSIGNED_BYTE;
+    this._iWidth = pElement.width;
+    this._iHeight = pElement.height;
+    this._eFormat = a.IFORMATSHORT.RGBA;
+    this._eType = a.ITYPE.UNSIGNED_BYTE;
 
-	if(pElement.nodeName.toLowerCase()=="video")
-	{
-		SET_BIT(this._iFlags, a.Texture.Dinamic);
-	}
+    if (pElement.nodeName.toLowerCase() == "video") {
+        SET_BIT(this._iFlags, a.Texture.Dinamic);
+    }
 
-	this.bind();
-	this.flipY();
-	pDevice.texImage2D(a.TTYPE.TEXTURE_2D, 0, this._eFormat, this._eFormat,
-		this._eType, pElement);
+    this.bind();
+    this.flipY();
+    pDevice.texImage2D(a.TTYPE.TEXTURE_2D, 0, this._eFormat, this._eFormat,
+                       this._eType, pElement);
 
-	this.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
-	this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
-	this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
-	this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
-	this.unbind();
+    this.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
+    this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
+    this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
+    this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
+    this.unbind();
 
-	this.notifyLoaded();
-	this.notifyRestored();
+    this.notifyLoaded();
+    this.notifyRestored();
 }
 
 
@@ -673,7 +680,7 @@ Texture.prototype.uploadImage = function (pImage) {
     nMipMaps = pImage.getMipLevels();
 
     if (nMipMaps == undefined || nMipMaps != (Math.ceil(Math.max(Math.log(this._iWidth) / Math.LN2,
-        Math.log(this._iHeight) / Math.LN2)) + 1)) {
+                                                                 Math.log(this._iHeight) / Math.LN2)) + 1)) {
         CLEAR_BIT(this._iFlags, a.Texture.MipMaps);
         nMipMaps = 1;
     }
@@ -684,7 +691,8 @@ Texture.prototype.uploadImage = function (pImage) {
     iCubeFlags = pImage.getCubeFlags();
 
     if (iCubeFlags == undefined || iCubeFlags != (FLAG(a.Img.POSITIVEX) | FLAG(a.Img.NEGATIVEX) |
-        FLAG(a.Img.POSITIVEY) | FLAG(a.Img.NEGATIVEY) | FLAG(a.Img.POSITIVEZ) | FLAG(a.Img.NEGATIVEZ))) {
+                                                  FLAG(a.Img.POSITIVEY) | FLAG(a.Img.NEGATIVEY) |
+                                                  FLAG(a.Img.POSITIVEZ) | FLAG(a.Img.NEGATIVEZ))) {
         CLEAR_BIT(this._iFlags, a.Texture.CubeMap);
 
         this.bind();
@@ -693,13 +701,13 @@ Texture.prototype.uploadImage = function (pImage) {
         for (var i = 0; i < nMipMaps; i++) {
             if (!pImage.isCompressed()) {
                 pDevice.texImage2D(a.TTYPE.TEXTURE_2D, i, this._eFormat, pImage.getWidth(i),
-                    pImage.getHeight(i), 0, this._eFormat,
-                    this._eType, new Uint8Array(pImage.getData(i)));
+                                   pImage.getHeight(i), 0, this._eFormat,
+                                   this._eType, new Uint8Array(pImage.getData(i)));
             }
             else {
                 pDevice.compressedTexImage2D(a.TTYPE.TEXTURE_2D, i,
-                    this._eFormat, pImage.getWidth(i),
-                    pImage.getHeight(i), 0, new Uint8Array(pImage.getData(i)));
+                                             this._eFormat, pImage.getWidth(i),
+                                             pImage.getHeight(i), 0, new Uint8Array(pImage.getData(i)));
             }
         }
     }
@@ -713,14 +721,14 @@ Texture.prototype.uploadImage = function (pImage) {
             for (var i = 0; i < nMipMaps; i++) {
                 if (!pImage.isCompressed()) {
                     pDevice.texImage2D(a.TTYPE.TEXTURE_CUBE_MAP_POSITIVE_X + k, i, this._eFormat,
-                        pImage.getWidth(i),
-                        pImage.getHeight(i), 0, this._eFormat,
-                        this._eType, new Uint8Array(pImage.getData(i, k)));
+                                       pImage.getWidth(i),
+                                       pImage.getHeight(i), 0, this._eFormat,
+                                       this._eType, new Uint8Array(pImage.getData(i, k)));
                 }
                 else {
                     pDevice.compressedTexImage2D(a.TTYPE.TEXTURE_CUBE_MAP_POSITIVE_X + k, i,
-                        this._eFormat, pImage.getWidth(i),
-                        pImage.getHeight(i), 0, new Uint8Array(pImage.getData(i, k)));
+                                                 this._eFormat, pImage.getWidth(i),
+                                                 pImage.getHeight(i), 0, new Uint8Array(pImage.getData(i, k)));
                 }
 
             }
@@ -735,7 +743,7 @@ Texture.prototype.uploadImage = function (pImage) {
     else if (!TEST_BIT(this._iFlags, a.Texture.MipMaps) && this.minFilter != a.TFILTER.LINEAR && this.minFilter
         != a.TFILTER.NEAREST) {
         this.applyParameter(a.TPARAM.MIN_FILTER,
-            Math.floor(this.minFilter - a.TFILTER.NEAREST_MIPMAP_NEAREST) / 2 + a.TFILTER.NEAREST);
+                            Math.floor(this.minFilter - a.TFILTER.NEAREST_MIPMAP_NEAREST) / 2 + a.TFILTER.NEAREST);
         //pDevice.generateMipmap(a.TTYPE.TEXTURE_2D);
     }
     //trace('uploaded image to texture: ', this._iWidth, 'x', this._iHeight);
@@ -778,12 +786,12 @@ Texture.prototype.extend = function (iWidth, iHeight) {
  */
 Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
     debug_assert(this._pTexture, 'Cannot repack, because texture not created.');
-
+    trace("REPACK");
     eFormat = eFormat || this._eFormat;
     eType = eType || this._eType;
 
     var pDevice = this._pEngine.pDevice;
-
+    var pRenderer = this._pEngine.shaderManager();
     if (!statics._pRepackProgram) {
         statics._pRepackProgram = this._pEngine.displayManager().shaderProgramPool().createResource('A_repackTexture');
         statics._pRepackProgram.create(
@@ -824,8 +832,8 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
 
     var pDestinationTexture = pDevice.createTexture();
     pDevice.activeTexture(pDevice.TEXTURE1);
-   // pDevice.pixelStorei(a.WEBGLS.UNPACK_FLIP_Y_WEBGL, true);
-    pDevice.bindTexture(pDevice.TEXTURE_2D, pDestinationTexture);
+    // pDevice.pixelStorei(a.WEBGLS.UNPACK_FLIP_Y_WEBGL, true);
+    pRenderer.bindTexture(this);
     pDevice.texImage2D(pDevice.TEXTURE_2D, 0, eFormat, iWidth, iHeight, 0, eFormat, eType, null);
     pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MAG_FILTER, pDevice.NEAREST);
     pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MIN_FILTER, pDevice.NEAREST);
@@ -836,7 +844,7 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
     var pDestinationFrameBuffer = pDevice.createFramebuffer();
     pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pDestinationFrameBuffer);
     pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
-        pDevice.TEXTURE_2D, pDestinationTexture, 0);
+                                 pDevice.TEXTURE_2D, pDestinationTexture, 0);
 
     var pRenderIndexData = new Float32Array(this._iWidth * this._iHeight);
 
@@ -895,6 +903,7 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
  */
 Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eType, pData) {
     var pDevice = this._pEngine.pDevice;
+    var pRenderer = this._pEngine.shaderManager();
     var nMipMaps = 1;
 
     this._iWidth = iWidth;
@@ -906,7 +915,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
 
     this.releaseTexture();
     this._pTexture = pDevice.createTexture();
-    this._pFrameBuffer = pDevice.createFramebuffer();
+//    this._pFrameBuffer = pDevice.createFramebuffer();
     this._iFlags = eFlags;
     this._eFormat = eFormat || this._eFormat;
     this._eType = eType || this._eType;
@@ -915,7 +924,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
         pData = [pData];
     }
 
-    this.bind();
+    pRenderer.bindTexture(this);
     pDevice.pixelStorei(pDevice.UNPACK_ALIGNMENT, 1);
     //this.flipY();
 
@@ -927,7 +936,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
         for (var k = 0; k < 6; k++) {
             for (var i = 0; i < nMipMaps; i++) {
                 pDevice.texImage2D(a.TTYPE.TEXTURE_CUBE_MAP_POSITIVE_X + k, i, this._eFormat, this._iWidth,
-                    this._iHeight, 0, this._eFormat, this._eType, pData[i] ? pData[i] : null);
+                                   this._iHeight, 0, this._eFormat, this._eType, pData[i] ? pData[i] : null);
             }
         }
     }
@@ -935,14 +944,14 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
         if (this.isCompressed()) {
             for (var i = 0; i < nMipMaps; i++) {
                 pDevice.compressedTexImage2D(a.TTYPE.TEXTURE_2D, i, this._eFormat, this._iWidth,
-                    this._iHeight, 0, pData[i] ? pData[i] : null);
+                                             this._iHeight, 0, pData[i] ? pData[i] : null);
             }
         }
         else {
             for (var i = 0; i < nMipMaps; i++) {
                 //trace('Texture:: creating texture miplevel:', i);
                 pDevice.texImage2D(a.TTYPE.TEXTURE_2D, i, this._eFormat, this._iWidth,
-                    this._iHeight, 0, this._eFormat, this._eType, pData[i] ? pData[i] : null);
+                                   this._iHeight, 0, this._eFormat, this._eType, pData[i] ? pData[i] : null);
             }
         }
     }
@@ -951,7 +960,6 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
     this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
     this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
     this.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
-    this.unbind();
 
     this.notifyLoaded();
     this.notifyRestored();

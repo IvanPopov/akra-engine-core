@@ -970,7 +970,12 @@ EffectPointer.prototype.toCode = function () {
     if (this.sRealName) {
         return this.sRealName;
     }
-    this.sRealName = (this.isAttr && this.pFirst.isVSInput) ? "" : (this.pFirst.sRealName + "_");
+    if (!this.pFirst || (this.isAttr && this.pFirst.isVSInput)) {
+        this.sRealName = "";
+    }
+    else {
+        this.sRealName = (this.pFirst.sRealName + "_");
+    }
     this.sRealName += (this.sPrevReal !== "") ? (this.sPrevReal + "_") : "";
     this.sRealName += this.pVar.toCode(a.fx.GLOBAL_VARS.PREFIX);
     for (i = 0; i <= this.nDim; i++) {
@@ -1152,6 +1157,8 @@ EffectVariable.prototype.cloneMe = function () {
     pVar.isArray = this.isArray;
     pVar.iLength = this.iLength;
     pVar.isPointer = this.isPointer;
+    pVar.pPointers = this.pPointers;
+    pVar.pBuffer = this.pBuffer;
     pVar.nDim = this.nDim;
     return pVar;
 };
@@ -1217,7 +1224,7 @@ EffectVariable.prototype.toCodeDecl = function (isInit) {
     return sCode;
 };
 EffectVariable.prototype.toOffsetStr = function () {
-    return this.sRealName + "_offset";
+    return a.fx.SHADER_PREFIX.OFFSET + this.sRealName;
 };
 EffectVariable.prototype.toDataCode = function () {
     if (!this.isSampler) {
@@ -2037,6 +2044,7 @@ EffectShader.prototype.toCodeAll = function (id) {
         for (i in this._pAttrSemantics) {
             pVar = this._pAttrSemantics[i];
             if (pVar.isPointer !== false) {
+                console.log("I`m here too!!!!!!!!!!!!!!!!!!!!", pVar);
                 this.pAttrBuffers[i] = pVar.pBuffer;
             }
         }
@@ -2965,12 +2973,22 @@ function Effect(pManager, id) {
         "abrg" : null,
         "abgr" : null
     });
+    this._initSystemData();
+
+}
+Effect.prototype._initSystemData = function () {
+    if (Effect._isInit) {
+        return true;
+    }
     this._addSystemFunction("dot", "float", [null, null], ["float", "float2", "float3", "float4"], "dot($1,$2)");
     this._addSystemFunction("mul", null, [null, null], ["float", "int", "float2", "float3", "float4"], "$1*$2");
     this._addSystemFunction("tex2D", "float4", ["sampler", "float2"], null, "texture2D($1,$2)");
     this._addSystemFunction("mod", "float", ["float", "float"], null, "mod($1,$2)");
     this._addSystemFunction("floor", "float", ["float"], null, "floor($1)");
-}
+    this._addSystemFunction("fract", "float", ["float"], null, "fract($1)");
+    this._addSystemFunction("abs", "float", ["float"], null, "abs($1)");
+    Effect._isInit = true;
+};
 /**
  * Add system function
  * @tparam {String} sName
@@ -3484,13 +3502,15 @@ Effect.prototype.addVariable = function (pVar, isParams) {
         pVar.pBuffer.isUniform = true;
         this.addBuffer(pVar);
     }
-    if (pVar.isPointer) {
+    if (pVar.isPointer === true || (isParams && pVar.isUniform === false && pVar.sSemantic)) {
         pVar.pPointers = [];
-        for (var i = 0; i < pVar.nDim; i++) {
-            pVar.pPointers.push(new EffectPointer(pVar, i));
+        for (var i = 0; i < (pVar.nDim || 1); i++) {
+            pVar.pPointers.push(new EffectPointer(pVar, i, null, "", true));
         }
         if (isParams) {
             pVar.pBuffer = new EffectBuffer();
+            pVar.isPointer = undefined;
+            pVar.nDim = 1;
         }
     }
     if (!pVar.pType.isBase()) {
@@ -5820,7 +5840,7 @@ Effect.prototype.analyzeStmt = function (pNode) {
     if (pChildren.length === 1) {
         this.analyzeSimpleStmt(pChildren[0]);
     }
-    else if (pChildren[pChildren.length - 1].sName === a.fx.GLOBAL_VARS.T_KW_WHILE) {
+    else if (pChildren[pChildren.length - 1].sValue === a.fx.GLOBAL_VARS.T_KW_WHILE) {
         //Stmt : T_KW_WHILE '(' Expr ')' Stmt
         this.pushCode("while");
         this.pushCode("(");
@@ -5828,7 +5848,7 @@ Effect.prototype.analyzeStmt = function (pNode) {
         this.pushCode(")");
         this.analyzeStmt(pChildren[0]);
     }
-    else if (pChildren[pChildren.length - 1].sName === a.fx.GLOBAL_VARS.T_KW_FOR) {
+    else if (pChildren[pChildren.length - 1].sValue === a.fx.GLOBAL_VARS.T_KW_FOR) {
         //Stmt : For '(' ForInit ForCond ForStep ')' Stmt
         this.pushCode("for");
         this.pushCode("(");
@@ -5840,13 +5860,14 @@ Effect.prototype.analyzeStmt = function (pNode) {
         this.analyzeStmt(pChildren[0]);
         this.endScope();
     }
-    else if (pChildren[pChildren.length - 1].sName === a.fx.GLOBAL_VARS.T_KW_IF && pChildren.length === 5) {
+    else if (pChildren[pChildren.length - 1].sValue === a.fx.GLOBAL_VARS.T_KW_IF && pChildren.length === 5) {
         //Stmt : T_KW_IF '(' Expr ')' Stmt
         this.pushCode("if");
         this.pushCode("(");
         this.analyzeExpr(pChildren[2]);
         this.pushCode(")");
         this.analyzeStmt(pChildren[0]);
+
     }
     else {
         //Stmt : T_KW_IF '(' Expr ')' NonIfStmt T_KW_ELSE Stmt
@@ -5896,7 +5917,7 @@ Effect.prototype.analyzeNonIfStmt = function (pNode) {
     if (pChildren.length === 1) {
         this.analyzeSimpleStmt(pChildren[0]);
     }
-    else if (pChildren[pChildren.length - 1].sName === a.fx.GLOBAL_VARS.T_KW_WHILE) {
+    else if (pChildren[pChildren.length - 1].sValue === a.fx.GLOBAL_VARS.T_KW_WHILE) {
         //Stmt : T_KW_WHILE '(' Expr ')' Stmt
         this.pushCode("while");
         this.pushCode("(");
@@ -5904,7 +5925,7 @@ Effect.prototype.analyzeNonIfStmt = function (pNode) {
         this.pushCode(")");
         this.analyzeNonIfStmt(pChildren[0]);
     }
-    else if (pChildren[pChildren.length - 1].sName === a.fx.GLOBAL_VARS.T_KW_FOR) {
+    else if (pChildren[pChildren.length - 1].sValue === a.fx.GLOBAL_VARS.T_KW_FOR) {
         //Stmt : For '(' ForInit ForCond ForStep ')' Stmt
         this.pushCode("for");
         this.pushCode("(");
@@ -6009,7 +6030,7 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
             return;
         }
     }
-    else if (pChildren[pChildren.length - 1].sName === a.fx.GLOBAL_VARS.T_KW_DO) {
+    else if (pChildren[pChildren.length - 1].sValue === a.fx.GLOBAL_VARS.T_KW_DO) {
         //SimpleStmt : T_KW_DO Stmt T_KW_WHILE '(' Expr ')' ';'
         this.pushCode("do");
         this.analyzeStmt(pChildren[5]);
@@ -6023,7 +6044,7 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
         //SimpleStmt : StmtBlock
         this.analyzeStmtBlock(pChildren[pChildren.length - 1]);
     }
-    else if (pChildren[pChildren.length - 1].sName === a.fx.GLOBAL_VARS.T_KW_DISCARD) {
+    else if (pChildren[pChildren.length - 1].sValue === a.fx.GLOBAL_VARS.T_KW_DISCARD) {
         //SimpleStmt : T_KW_DISCARD ';'
         if (this._eFuncProperty === a.Effect.Func.VERTEX) {
             error("Discard only for fragment shaders");
@@ -6580,7 +6601,7 @@ Effect.prototype.analyzeStateBlock = function (pNode, pVar) {
         this.analyzeState(pChildren[i], pVar);
     }
 };
-Effect.prototype.analyzeState = function (pNode, pPass) {
+Effect.prototype.analyzeState = function (pNode) {
     var pChildren = pNode.pChildren;
     var i;
     var eState = null;
