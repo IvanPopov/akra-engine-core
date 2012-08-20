@@ -1,7 +1,7 @@
 A_DEFINE_NAMESPACE(NET);
 
-Insert('Pipe.js');
-
+Include('Pipe.js');
+Include('RPC.js');
 
 A_NAMESPACE(Pipe, NET);
 

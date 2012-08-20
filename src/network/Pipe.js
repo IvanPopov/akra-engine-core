@@ -28,11 +28,22 @@ function Pipe (sAddr, fnCallback) {
 Pipe.prototype.open = function (sAddr, fnCallback) {
     'use strict';
     
-    fnCallback = fnCallback || null;
+	fnCallback = fnCallback || null;
 
-    var pAddr = new URI(sAddr);
-	var pConnect = null;
-	var me = this;
+    var pAddr, pConnect, me = this;
+
+    if (arguments.length > 0) {
+	    pAddr = new URI(sAddr);
+		pConnect = null;
+	}
+	else {
+		if (this._pConnect) {
+			this._pConnect.close();
+		}
+
+		pAddr = this._pAddr;
+		pConnect = null;
+	}
 
 	if (pAddr.protocol !== 'ws') {
 		error('Pipe supported only websockets.');
@@ -59,6 +70,8 @@ Pipe.prototype.open = function (sAddr, fnCallback) {
 		trace(pErr);
 	};
 
+	pConnect.binaryType = "arraybuffer";
+
 	this._pConnect = pConnect;
 	this._pAddr = pAddr;
 
@@ -82,7 +95,14 @@ Pipe.prototype.on = function (eState, fnCallback) {
 			return true;
 		case 'msg':
 		case 'message':
-			this._pConnect.onmessage = fnCallback;
+			this._pConnect.onmessage = function (pMessage) {
+				if (pMessage.data instanceof ArrayBuffer) {
+					fnCallback(pMessage.data, 'binary');
+				}
+				else {
+					fnCallback(pMessage.data, 'string');
+				}
+			}
 			return true;
 	}
 
@@ -96,16 +116,25 @@ Pipe.prototype.isOpened = function () {
 	return this._pConnect.readyState === 1;
 };
 
-Pipe.prototype.isCreated = function (first_argument) {
+Pipe.prototype.isCreated = function () {
     'use strict';
     
 	return this._pConnect !== null;
+};
+
+Pipe.prototype.isClosed = function () {
+    'use strict';
+    
+	return this._pConnect.readyState === 3;
 };
 
 Pipe.prototype.close = function () {
     'use strict';
     
     if (this.isOpened()) {
+    	this._pConnect.onmessage = null;
+    	this._pConnect.onerror = null;
+    	this._pConnect.onopen = null;
 		this._pConnect.close();
 	}
 };
@@ -115,7 +144,12 @@ Pipe.prototype.send = function (pValue) {
     
 	if (this.isOpened()) {
 		this._nMesg ++;
-		return this._pConnect.send(JSON.stringify(pValue));
+		
+		if (typeof pValue === 'object') {
+			pValue = JSON.stringify(pValue);
+		}
+
+		return this._pConnect.send(pValue);
 	}
 
 	return false;
