@@ -489,7 +489,6 @@ Math.nok=nok;
 Define(Math.logn(a,b), function () {
 	(Math.log(a)/Math.log(b));
 })
-Math.logn=logn;
 
 /**
  * @property logn(Integer n)

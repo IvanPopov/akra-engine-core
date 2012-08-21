@@ -1,4 +1,4 @@
-function Texture (pEngine,pObject,sSurfaceTextures)
+function MegaTexture (pEngine,pObject,sSurfaceTextures)
 {
 	this._pEngine = pEngine;
 	this._pDevice = pEngine.pDevice;
@@ -52,79 +52,25 @@ function Texture (pEngine,pObject,sSurfaceTextures)
 		this._pBuffer[i].isUpdated=true;//Произошло ли обноление буфера
 	}
 
-
-
-
 	//Всякие темповые буферы
 	this._pDataFor=new Uint8Array(this._iBufferWidth*this._iBufferHeight*a.getIFormatNumElements(this._eTextureType));
 	this._pMapDataFor=new Array(this._iBufferHeight*this._iBufferWidth/(this._iBlockSize*this._iBlockSize));
 	this._pMapDataFor.set(0);
 
-	var sPiecePath;
-	var me=this;
-
-
-	//Заливаем текстуру самого плохого разрешения
-	for(var i=0;i<this._iTextureHeight;i+=this._iBlockSize)
-	{
-		for(var j=0;j<this._iTextureWidth;j+=this._iBlockSize)
-		{
-			sPiecePath=this._sSurfaceTextures+"RGB_"+this._iTextureWidth+"x"+this._iTextureWidth+"_"+j+"x"+i+"_"+this._iBlockSize+"x"+this._iBlockSize;
-
-
-			(function(iX,iY,sPath)
-			{
-				a.fopen('filesystem://temporary/'+sPath, 'rb').read(
-					function(pData) {
-						//trace('file exists in local storage:');
-						//console.log(sPath);
-						var pData8=new Uint8Array(pData);
-						for(var k=0;k<me._iBlockSize;k++)
-						{
-							for(var l=0;l<me._iBlockSize;l++)
-							{
-								for(var t=0;t<a.getIFormatNumElements(this._eTextureType);t++)
-								{
-									me._pBuffer[0][(me._iTextureWidth*(iY+k)+0+iX+l)*a.getIFormatNumElements(this._eTextureType)+t]=pData8[(k*me._iBlockSize+l)*a.getIFormatNumElements(this._eTextureType)+t];
-									this._pBuffer[i].isUpdated=true;
-								}
-							}
-						}
-					},
-					function ()
-					{
-						//trace('file not found... Load from server');
-						a.fopen(sPath, 'rb').onread = function(pData)
-						{
-							//console.log(iX,iY);
-							var pData8=new Uint8Array(pData);
-							for(var k=0;k<me._iBlockSize;k++)
-							{
-								for(var l=0;l<me._iBlockSize;l++)
-								{
-
-									for(var t=0;t<a.getIFormatNumElements(this._eTextureType);t++)
-									{
-										me._pBuffer[0][(me._iTextureWidth*(iY+k)+0+iX+l)*a.getIFormatNumElements(this._eTextureType)+t]=pData8[(k*me._iBlockSize+l)*a.getIFormatNumElements(this._eTextureType)+t];
-										this._pBuffer[i].isUpdated=true;
-									}
-								}
-							}
-							a.fopen('filesystem://temporary/'+sPath, 'wb').write(pData8);
-						}
-					}
-				);
-			})(j,i,sPiecePath);
-
-		}
-	}
+	this.getDataFromServer(0,0,0,this._iTextureWidth,this._iTextureHeight);
 }
 
 //Подготовка к рендерингу, а имменно,
 // выичсление координат камеры над объектом
 // заполнения буфера под мегатекстурой и его передвижение
 // закладка новых частей текстру в мегатекстуру
-Texture.prototype.prepareForRender= function()
+
+
+
+STATIC(MegaTexture,fTexCourdXOld,undefined);
+STATIC(MegaTexture,fTexCourdYOld,undefined);
+STATIC(MegaTexture,nCountRender,0);
+MegaTexture.prototype.prepareForRender= function()
 {
 	var pCamera = this._pEngine._pDefaultCamera;
 	var v3fCameraPosition=pCamera.worldPosition();
@@ -144,8 +90,8 @@ Texture.prototype.prepareForRender= function()
 	//Нужно ли перекладвывать, отсавим на запас 8 блоков
 
 	//Опираемся на текстуру самого хорошего разрешения
-	iX=Math.round(fTexcourdX*(this._iTextureWidth <<(this._pTexures.length-1))-this._iTextureWidth /2);
-	iY=Math.round(fTexcourdY*(this._iTextureHeight<<(this._pTexures.length-1))-this._iTextureHeight/2);
+	iX=Math.round(fTexcourdX*(this.getWidthOrig(this._pTexures.length-1))-this._iTextureWidth /2);
+	iY=Math.round(fTexcourdY*(this.getHeightOrig(this._pTexures.length-1))-this._iTextureHeight/2);
 	iWidth =this._iTextureWidth;
 	iHeight=this._iTextureHeight;
 
@@ -158,8 +104,8 @@ Texture.prototype.prepareForRender= function()
 		for(i=1;i<this._pTexures.length;i++)
 		{
 			//Вычисляем новые координаты буфера в текстуре
-			var iXnew=Math.round(fTexcourdX*(this._iTextureWidth <<i)-this._iTextureWidth /2);
-			var iYnew=Math.round(fTexcourdY*(this._iTextureHeight<<i)-this._iTextureHeight/2);
+			var iXnew=Math.round(fTexcourdX*this.getWidthOrig(i)-this._iTextureWidth /2);
+			var iYnew=Math.round(fTexcourdY*this.getHeightOrig(i)-this._iTextureHeight/2);
 			//Округлили на размер блока
 			iXnew=Math.round((iXnew/this._iBlockSize))*this._iBlockSize;
 			iYnew=Math.round((iYnew/this._iBlockSize))*this._iBlockSize;
@@ -184,32 +130,20 @@ Texture.prototype.prepareForRender= function()
 				this._pMapDataFor.set(0);
 
 				//копируем данные
-				for(var c=iYOverlappingBlockInOldBuf/this._iBlockSize, cn=iYOverlappingBlockInNewBuf/this._iBlockSize;c<iOverlappingBlockHeight/this._iBlockSize;c++,cn++)
-				{
-					for (var d=iXOverlappingBlockInOldBuf/this._iBlockSize, dn=iXOverlappingBlockInNewBuf/this._iBlockSize;d<iOverlappingBlockWidth/this._iBlockSize;d++,dn++)
-					{
-						this._pMapDataFor[cn*this._iBufferWidth/this._iBlockSize+dn]=this._pBufferMap[i][c*this._iBufferWidth/this._iBlockSize+d];
-						for(var l=c*this._iBlockSize, ln=cn*this._iBlockSize;l<c*(this._iBlockSize+1);l++,ln++)
-						{
-							for(var j=d*this._iBlockSize, jn=dn*this._iBlockSize;j<d*(this._iBlockSize+1);j++,jn++)
-							{
-								for(var k=0;k<a.getIFormatNumElements(this._eTextureType);k++)
-								{
-									this._pDataFor[
-										(ln*this._iTextureWidth+jn)*a.getIFormatNumElements(this._eTextureType)+k]=
-										this._pBuffer[i][
-											(l*this._iTextureWidth+j)*a.getIFormatNumElements(this._eTextureType)+k];
-								}
-							}
-						}
-					}
-				}
+				this._setDataBetweenBuffer(this._pDataFor,iXOverlappingBlockInNewBuf,iYOverlappingBlockInNewBuf,
+											this._pBuffer[i],iXOverlappingBlockInOldBuf,iYOverlappingBlockInOldBuf,
+											iOverlappingBlockWidth,iOverlappingBlockHeight);
+				this._setDataBetweenBufferMap(this._pMapDataFor,iXOverlappingBlockInNewBuf/this._iBlockSize,iYOverlappingBlockInNewBuf/this._iBlockSize,
+					this._pBufferMap[i],iXOverlappingBlockInOldBuf/this._iBlockSize,iYOverlappingBlockInOldBuf/this._iBlockSize,
+					iOverlappingBlockWidth/this._iBlockSize,iOverlappingBlockHeight/this._iBlockSize);
+
 				var t=this._pBuffer[i];
 				this._pBuffer[i]=this._pDataFor;
+				this._pDataFor=t;
+
 				this._pBuffer[i].iX=iXnew;
 				this._pBuffer[i].iY=iYnew;
 				this._pBuffer[i].isUpdated=true;
-				this._pDataFor=t;
 
 				var t=this._pBufferMap[i];
 				this._pBufferMap[i]=this._pMapDataFor;
@@ -223,8 +157,8 @@ Texture.prototype.prepareForRender= function()
 	//Нулевая статична, поэтому ее не меняем
 	for(var i=1;i<this._pTexures.length;i++)
 	{
-		iX=Math.round(fTexcourdX*(this._iTextureWidth <<i)-this._iTextureWidth/2);
-		iY=Math.round(fTexcourdY*(this._iTextureHeight<<i)-this._iTextureHeight/2);
+		iX=Math.round(fTexcourdX*this.getWidthOrig(i)-this._iTextureWidth/2);
+		iY=Math.round(fTexcourdY*this.getHeightOrig(i)-this._iTextureHeight/2);
 		iWidth =this._iTextureWidth;
 		iHeight=this._iTextureHeight;
 		//На данный момент нужен кусок текстуры таких размеров iX1,iY1,iWidth,iHeight,
@@ -233,8 +167,8 @@ Texture.prototype.prepareForRender= function()
 		iX1=Math.max(iX,0)
 		iY1=Math.max(iY,0)
 
-		iX2=Math.min(iX+this._iTextureWidth,(this._iTextureWidth <<i));
-		iY2=Math.min(iY+this._iTextureHeight,(this._iTextureHeight<<i));
+		iX2=Math.min(iX+this._iTextureWidth,this.getWidthOrig(i));
+		iY2=Math.min(iY+this._iTextureHeight,this.getHeightOrig(i));
 
 		//Смотрим попадаем ли мы в текущий буфер
 		if(iX1>=this._pBuffer[i].iX
@@ -244,22 +178,8 @@ Texture.prototype.prepareForRender= function()
 		{
 			//Типа попали
 			//Значит нужно загрузить необходимые куски
-			for(var l=Math.max(0,Math.floor((iY1-this._pBuffer[i].iY)/this._iBlockSize)-8);
-				l<=Math.min(Math.floor((iY2-this._pBuffer[i].iY)/this._iBlockSize)+8,this._iBufferHeight/this._iBlockSize);
-				l+=1)
-			{
-				for(var j=Math.max(0,Math.floor((iX1-this._pBuffer[i].iX)/this._iBlockSize)-8);
-					j<=Math.min(Math.floor((iX2-this._pBuffer[i].iX)/this._iBlockSize)+8,this._iBufferWidth/this._iBlockSize);
-					j+=1)
-				{
-					if(this._pBufferMap[i][l*(this._iTextureHeight/this._iBlockSize)+j]==0)
-					{
-						//Загрузить кусок с кординатами [l*this._iBlockSize+this._pBufferMap[i].iX][j*this._iBlockSize+this._pBufferMap[i].iY]
-						//Размером в this._iBlockSize на this._iBlockSize
-						this._pBufferMap[i][l*(this._iTextureHeight/this._iBlockSize)+j]=1;
-					}
-				}
-			}
+			this.getDataFromServer(i,iX1,iY1,iX2-iX1,iY2-iY1);
+
 		}
 		else
 		{
@@ -273,10 +193,6 @@ Texture.prototype.prepareForRender= function()
 	{
 		var iTexInBufX=0;
 		var iTexInBufY=0;
-		var iXdeltaStart=0;
-		var iYdeltaStart=0;
-		var iXdeltaEnd=0;
-		var iYdeltaEnd=0;
 
 		i=(Math.round(nCountRender/10))%this._pBuffer.length;
 
@@ -291,30 +207,16 @@ Texture.prototype.prepareForRender= function()
 		{
 			if(this._pBuffer[i].isUpdated==true||static.fTexCourdXOld!=fTexCourdX||static.fTexCourdYOld!=fTexCourdY)
 			{
-				iTexInBufX=Math.round(fTexcourdX*(this._iTextureWidth <<i)-this._iTextureWidth /2);
-				iTexInBufY=Math.round(fTexcourdY*(this._iTextureHeight<<i)-this._iTextureHeight/2);
+				iTexInBufX=Math.round(fTexcourdX*this.getWidthOrig(i)-this._iTextureWidth /2);
+				iTexInBufY=Math.round(fTexcourdY*this.getHeightOrig(i)-this._iTextureHeight/2);
 				iTexInBufX-=this._pBuffer[i].iX;
 				iTexInBufY-=this._pBuffer[i].iY;
 
-				iXdeltaStart=Math.max(iTexInBufX,0)-iTexInBufX;
-				iYdeltaStart=Math.max(iTexInBufY,0)-iTexInBufY;
-				iXdeltaEnd=(iTexInBufX+this._iTextureWidth)-Math.min(iTexInBufX+this._iTexturerWidth,this._iBufferWidth);
-				iYdeltaEnd=(iTexInBufX+this._iTextureHeight)-Math.min(iTexInBufX+this._iTexturerHeight,this._iBufferHeight);
 
-				if(iXdeltaStart+iXdeltaEnd<this._iTextureWidth&&iYdeltaStart+iYdeltaEnd<this._iTextureHeight)
-				{
-					for(var l=iXdeltaStart;l<this._iTextureHeight-iXdeltaEnd;l++)
-					{
-						for(var j=iYdeltaStart;j<this._iTextureWidth-iYdeltaEnd;j++)
-						{
-							for(var k=0;k<a.getIFormatNumElements(this._eTextureType);k++)
-							{
-								this._pDataFor[(l*this._iTextureWidth+j)*a.getIFormatNumElements(this._eTextureType)+k]=this._pBuffer[((l+iTexInBufY)*this._iBufferWidth+j+iTexInBufX)*a.getIFormatNumElements(this._eTextureType)+k];
-							}
-						}
-					}
-					this._pTexures[i].setPixelRGBA(0,0,this._iTextureWidth,this._iTextureHeight,this._pDataFor);
-				}
+				this.setData(this._pDataFor,0,0,this._iTextureWidth,this._iTextureHeight,
+							this._pBuffer[i],iTexInBufX,iTexInBufY,this._iBufferWidth,this._iBufferHeight,
+							this._iTextureWidth,this._iTextureHeight,a.getIFormatNumElements(this._eTextureType));
+				this._pTexures[i].setPixelRGBA(0,0,this._iTextureWidth,this._iTextureHeight,this._pDataFor);
 			}
 		}
 		this._pBuffer[i].isUpdated=false;
@@ -327,7 +229,7 @@ Texture.prototype.prepareForRender= function()
 
 
 //Применение параметров для рендеринга, коготрые зависят от самого терраина
-Terrain.prototype.applyForRender= function()
+MegaTexture.prototype.applyForRender= function()
 {
 	this._pEngine.pDrawTerrainProgram.applyVector2('cameraCoordTerrain', this._v2fCameraCoord);
 	for(var i=0;i<this._pTexures.length;i++)
@@ -336,5 +238,144 @@ Terrain.prototype.applyForRender= function()
 		this._pEngine.pDrawTerrainProgram.applyInt('textureTerrain'+i,2+i);
 	}
 }
+
+MegaTexture.prototype.setData=function (pBuffer,iX,iY,iWidth,iHeight,pBufferIn,iInX,iInY,iInWidth,iInHeight,iBlockWidth,iBlockHeight,iComponents)
+{
+	iBlockHeight=Math.max(0,iBlockHeight);
+	iBlockWidth=Math.max(0,iBlockWidth);
+	iBlockHeight=Math.min(iBlockHeight,iHeight-iX,iInHeight-iInX);
+	iBlockWidth=Math.min(iBlockWidth,iWidth-iY,iInWidth-iInY);
+
+	if(pBuffer.length<((iY+iBlockHeight)*iWidth+iX+iBlockWidth+1)*iComponents)
+	{
+		console.log("Выход за предел массива 1");
+	}
+	if(pBufferIn.length<((iInY+iBlockHeight)*iInWidth+iInX+iBlockWidth+1)*iComponents)
+	{
+		console.log("Выход за предел массива 2");
+	}
+
+
+	for(var i=0;i<iBlockHeight;i++)
+	{
+		for(var j=0;j<iBlockWidth;j++)
+		{
+			for(var k=0;k<iComponents;k++)
+			{
+				pBuffer[((iY+i)*iWidth+iX+j)*iComponents+k]=pBufferIn[((iInY+i)*iInWidth+iInX+j)*iComponents+k];
+			}
+		}
+	}
+};
+
+MegaTexture.prototype._setDataBetweenBuffer=function (pBuffer,iX,iY,pBufferIn,iInX,iInY,iBlockWidth,iBlockHeight)
+{
+	var iInWidth=this._iBufferWidth;
+	var iInHeight=this._iBufferHeight;
+	var iComponents =a.getIFormatNumElements(this._eTextureType);
+	var iWidth=this._iBufferWidth;
+	var iHeight=this._iBufferHeight;
+	this.setData(pBuffer,iX,iY,iWidth,iHeight,pBufferIn,iInX,iInY,iInWidth,iInHeight,iBlockWidth,iBlockHeight,iComponents);
+}
+
+MegaTexture.prototype._setDataBetweenBufferMap=function (pBuffer,iX,iY,pBufferIn,iInX,iInY,iBlockWidth,iBlockHeight)
+{
+	var iInWidth=this._iBufferWidth/this._iBlockSize;
+	var iInHeight=this._iBufferHeight/this._iBlockSize;
+	var iComponents = 1;
+	var iWidth=this._iBufferWidth/this._iBlockSize;
+	var iHeight=this._iBufferHeight/this._iBlockSize;
+	this.setData(pBuffer,iX,iY,iWidth,iHeight,pBufferIn,iInX,iInY,iInWidth,iInHeight,iBlockWidth,iBlockHeight,iComponents);
+}
+
+MegaTexture.prototype._setDataFromBlock=function (pBuffer,iX,iY,pBufferIn)
+{
+	var iInX=0;
+	var iInY=0;
+	var iInWidth=this._iBlockSize;
+	var iInHeight=this._iBlockSize;
+	var iBlockWidth =this._iBlockSize;
+	var iBlockHeight=this._iBlockSize;
+	var iComponents =a.getIFormatNumElements(this._eTextureType);
+	var iWidth=this._iBufferWidth;
+	var iHeight=this._iBufferHeight;
+	this.setData (pBuffer,iX,iY,iWidth,iHeight,pBufferIn,iInX,iInY,iInWidth,iInHeight,iBlockWidth,iBlockHeight,iComponents);
+}
+
+MegaTexture.prototype.getWidthOrig=function(iLevel)
+{
+	return this._iTextureWidth <<iLevel;
+}
+
+MegaTexture.prototype.getHeightOrig=function(iLevel)
+{
+	return this._iTextureHeight <<iLevel;
+}
+
+
+MegaTexture.prototype.getDataFromServer=function(iLevelTex,iOrigTexX,iOrigTexY,iWidth,iHeight)
+{
+	iOrigTexX=Math.max(0,iOrigTexX);
+	iOrigTexY=Math.max(0,iOrigTexY);
+	iOrigTexX=Math.floor(iOrigTexX/this._iBlockSize)*this._iBlockSize;
+	iOrigTexY=Math.floor(iOrigTexY/this._iBlockSize)*this._iBlockSize;
+
+
+	var iOrigTexEndX=Math.floor((iOrigTexX+iWidth)/this._iBlockSize)*this._iBlockSize;
+	var iOrigTexEndY=Math.floor((iOrigTexY+iHeight)/this._iBlockSize)*this._iBlockSize;
+	iOrigTexEndX=Math.min(iOrigTexEndX,this.getWidthOrig(iLevelTex));
+	iOrigTexEndY=Math.min(iOrigTexEndY,this.getHeightOrig(iLevelTex));
+
+
+	me=this;
+	for(var i=iOrigTexY;i<this.iOrigTexEndY;i+=this._iBlockSize)
+	{
+		for(var j=iOrigTexX;j<this.iOrigTexEndX;j+=this._iBlockSize)
+		{
+			if(iLevelTex==0)
+			{
+
+			}
+			else
+			{
+				if(me._pBufferMap[(i-me._pBuffer[iLevelTex].iY)/me._iBlockSize*(me._iBufferHeight/me._iBlockSize)+(j-me._pBuffer[iLevelTex].iX)/me._iBlockSize]==1)
+				{
+					break;
+				}
+				me._pBufferMap[(i-me._pBuffer[iLevelTex].iY)/me._iBlockSize*(me._iBufferHeight/me._iBlockSize)+(j-me._pBuffer[iLevelTex].iX)/me._iBlockSize]=1;
+			}
+			(function(iX,iY,sPath)
+			{
+				var sPiecePath=me._sSurfaceTextures+ a.IFormatShortToString(me._eTextureType)+me.getWidthOrig(iLevelTex)+"x"+me.getHeightOrig(iLevelTex)+"_"+iX+"x"+iY+"_"+me._iBlockSize+"x"+me._iBlockSize;
+				a.fopen('filesystem://temporary/'+sPiecePath, 'rb').read(
+					function(pData) {
+						//trace('file exists in local storage:');
+						//console.log(sPath);
+						var pData8=new Uint8Array(pData);
+						me._setDataFromBlock(me._pBuffer[iLevelTex],iX-me._pBuffer[iLevelTex].iX,iY-me._pBuffer[iLevelTex].iY,pData8);
+						me._pBuffer[iLevelTex].isUpdated=true;
+					},
+					function ()
+					{
+						//trace('file not found... Load from server');
+						rpc.proc('getMegaTexture', me._sSurfaceTextures,me.getWidthOrig(iLevelTex),me.getHeightOrig(iLevelTex),iX,iY,me._iBlockSize,me._iBlockSize,me._eTextureType,
+							function (pData)
+							{
+								//console.log(iX,iY);
+								var pData8=new Uint8Array(pData);
+								me._setDataFromBlock(me._pBuffer[iLevelTex],iX-me._pBuffer[iLevelTex].iX,iY-me._pBuffer[iLevelTex].iY,pData8);
+								me._pBuffer[iLevelTex].isUpdated=true;
+								a.fopen('filesystem://temporary/'+sPiecePath, 'wb').write(pData8);
+							});
+					}
+				);
+			})(j,i,sPiecePath);
+
+		}
+	}
+}
+
+
+
 
 

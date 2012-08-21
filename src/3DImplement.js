@@ -67,6 +67,27 @@ Enum([
          RGBA = 0x1908
      ], IFORMATSHORT, a.IFORMATSHORT);
 
+function IFormatShortToString(eIFormatShort)
+{
+	if(eIFormatShort==a.IFORMATSHORT.RGB)
+	{
+		return "RGB";
+
+	}
+	else if(eIFormatShort==a.IFORMATSHORT.RGBA)
+	{
+		return "RGBA";
+
+	}
+	else
+	{
+		return "XZ che za format";
+	}
+}
+
+a.IFormatShortToString=IFormatShortToString;
+
+
 Enum([
          TEXTURE_FLOAT              = 'texture_float',
          TEXTURE_HALF_FLOAT         = 'texture_half_float',
