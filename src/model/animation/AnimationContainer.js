@@ -1,4 +1,6 @@
 function AnimationContainer (pAnimation) {
+	A_CLASS;
+
 	debug_assert(pAnimation, 'you must specify animation');
 
 	// Enum([
@@ -6,23 +8,23 @@ function AnimationContainer (pAnimation) {
 	// 	PRIORITY_HIGH = 1
 	// 	], ANIMATION_PRIORITY, a.Animation);
 
-
 	this._bEnable = true;
 	this._fStartTime = 0;
-	//this._ePriority = a.Animation.PRIORITY_HIGH;
 	this._fSpeed = 1.0;
-	//this._fWeight = 1.0;
+	this._bLoop = false;
 	this._pAnimation = pAnimation;
+	this._fDuration = pAnimation._fDuration;
+
+	this.name = 'player[' + pAnimation.name + ']';
+
+	this.grab(pAnimation);
 }
+
+EXTENDS(AnimationContainer, a.AnimationBase);
 
 PROPERTY(AnimationContainer, 'animationName',
 	function () {
 		return this._pAnimation.name;
-	});
-
-PROPERTY(AnimationContainer, 'duration',
-	function () {
-		return this._pAnimation.duration;//(this._pAnimation.duration + this._fStartTime) * fSpeed;
 	});
 
 AnimationContainer.prototype.enable = function () {
@@ -45,20 +47,55 @@ AnimationContainer.prototype.isEnabled = function () {
 
 AnimationContainer.prototype.setStartTime = function (fTime) {
     'use strict';
-    trace('set start time:', fTime);
+
 	this._fStartTime = fTime;
+};
+
+AnimationContainer.prototype.getStartTime = function () {
+    'use strict';
+    
+	return this._fStartTime;
 };
 
 AnimationContainer.prototype.setSpeed = function (fSpeed) {
     'use strict';
-    trace('set speed:', fSpeed);
+
 	this._fSpeed = fSpeed;
+	this._fDuration = this._pAnimation._fDuration / fSpeed;
 };
 
-AnimationContainer.prototype.update = function (fTime, bLoop) {
+AnimationContainer.prototype.useLoop = function (bValue) {
     'use strict';
+    
+	this._bLoop = bValue;
+};
+
+AnimationContainer.prototype.inLoop = function () {
+    'use strict';
+    
+	return this._bLoop;
+};
+
+AnimationContainer.prototype.time = function (fTime) {
+    'use strict';
+   
+	if (!this._bEnable) {
+    	return null;
+    }
+
     fTime = (fTime - this._fStartTime) * this._fSpeed;
-	return this._bEnable? this._pAnimation.update(fTime < 0? 0: fTime, bLoop): 0;
+
+    if (this._bLoop) {
+    	fTime = Math.mod(fTime, (this._pAnimation._fDuration));
+    }
+
+    return fTime;
+};
+
+AnimationContainer.prototype.frame = function (sName, fTime) {
+    'use strict';
+
+	return this._pAnimation.frame(sName, this.time(fTime));
 };
 
 A_NAMESPACE(AnimationContainer);

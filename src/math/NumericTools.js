@@ -327,9 +327,13 @@ Define(Math.raiseToPower(value, power), function () {
  * @param b
  * @return Int
  **/
-Define(Math.modulus(a, b), function () {
-    (a % b)
+Define(Math.modulus(e, divisor), function () {
+   (e - Math.floor(e / divisor) * divisor);
 })
+
+Define(Math.mod(a, b), function () {
+    Math.modulus (a, b);
+});
 
 /**
  * @property alignUp(Int value,Int alignment)

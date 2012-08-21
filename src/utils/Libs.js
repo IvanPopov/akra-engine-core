@@ -113,6 +113,8 @@
             else {
                 this.push(pElement);
             }
+
+            return this;
         }    
     });
 

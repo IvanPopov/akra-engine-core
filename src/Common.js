@@ -6,8 +6,8 @@
  */
 
 Define(__AKRA_ENGINE__, true);
-Define(trace(__ARGS__), function () { console.log(__ARGS__); });
-
+//Define(trace(__ARGS__), function () { console.log(__ARGS__); });
+window.trace = console.log.bind(console);
 
 
 /**
@@ -72,7 +72,7 @@ Define(TO_STRING($$object), function () {
     object;
 });
 Define(A_CHECK_STORAGE(), function () {
-    if (this === window || this === window.AKRA) {
+    if (!this || this === window || this === window.AKRA) {
         __FUNC__._iIndex = __FUNC__._iIndex === __FUNC__._nStorageSize - 1? 0: __FUNC__._iIndex;
         return __FUNC__._pStorage[__FUNC__._iIndex ++];
     }
@@ -486,7 +486,7 @@ Define(DISPROPERTY(obj, $$property), function () {
     PROPERTY(obj, property, undefined, undefined);
 });
 
-Define(A_CLASS(args), function () { var _pCtorValue = __FUNC__.ctor.apply(this, args); if (_pCtorValue) {warning('constructor return value'); trace(_pCtorValue); return _pCtorValue; } });
+Define(A_CLASS(args), function () { var _pCtorValue = __FUNC__.ctor.apply(this, args); if (_pCtorValue) {return _pCtorValue; } });
 Define(A_CLASS(), function () { A_CLASS(arguments) });
 Define(A_CLASS, A_CLASS());
 
@@ -581,6 +581,16 @@ Define(A_NAMESPACE(object), function () {
  TRACER API
  */
 
-Define(A_TRACER.MESG(message), function () {});
-Define(A_TRACER.BEGIN(), function() {});
-Define(A_TRACER.END(), function() {});
+Ifdef (__ANALYZER);
+
+Define (A_TRACER.MESG(message), function() { window['A_TRACER.trace'](message);});
+Define(A_TRACER.BEGIN(),        function() { window['A_TRACER.beginTracing']();});
+Define(A_TRACER.END(),          function() { window['A_TRACER.endTracing']();});
+
+Elseif ();
+
+Define(A_TRACER.MESG(message),  function() {});
+Define(A_TRACER.BEGIN(),        function() {});
+Define(A_TRACER.END(),          function() {});
+
+Endif ();

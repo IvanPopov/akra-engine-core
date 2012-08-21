@@ -46,6 +46,7 @@ LocalFileSimplified.prototype.read = function (fnSuccess, fnError) {
     FileThread.check(this.read, arguments);
     assert(a.io.canRead(this._eFileMode), "The file is not readable.");
 
+
 	if(localStorage.getItem(this.path) == null)
 	{
 		fnError.apply(this);
@@ -53,6 +54,7 @@ LocalFileSimplified.prototype.read = function (fnSuccess, fnError) {
 	}
 
     var pData = this._read();
+
     var nPos = this._nSeek;
     if (nPos) {
         if (a.io.isBinary(this._eFileMode)) {
@@ -82,6 +84,7 @@ LocalFileSimplified.prototype.write = function (pData, fnSuccess, fnError, sCont
     if (typeof sData == 'object') {
         sData = a.buf2str(sData);
     }
+
     var nSeek = (typeof pData == 'string' ? pData.length : pData.byteLength);
 
     if (typeof pData == 'object') {
@@ -103,6 +106,7 @@ LocalFileSimplified.prototype.write = function (pData, fnSuccess, fnError, sCont
 
     this._pFile.size = pData.length;
     this._nSeek += nSeek;
+
     if (fnSuccess) {
         fnSuccess.apply(this);
     }

@@ -694,9 +694,9 @@ Node.prototype.recalcWorldMatrix = function () {
         m4fOrient.setTranslation(this._v3fTranslation);
         m4fOrient.scale(this._v3fScale);
 
-        if (TEST_BIT(this._iUpdateFlags, a.Scene.k_newLocalMatrix)) {
-            m4fOrient.multiply(m4fLocal); 
-        }
+        //if (TEST_BIT(this._iUpdateFlags, a.Scene.k_newLocalMatrix)) {
+        m4fOrient.multiply(m4fLocal); 
+        //}
 
         if (this._pParent) {
             if (this._iInheritance === a.Scene.k_inheritAll) {

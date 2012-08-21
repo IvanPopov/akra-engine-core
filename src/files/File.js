@@ -34,7 +34,7 @@ if (a.info.support.api.webWorker) {
         a.LocalFile = LocalFileThread;
     }
     else if (a.info.support.api.localStorage) {
-
+        warning('used simplified realisation for local files, based on local storage');
         If(FILE_MODULES_IMPLEMENTATION);
         a.require(BUILD_PATH('LocalFileSimplified.plug.js', 'files/plugins/'));
         Elseif();
