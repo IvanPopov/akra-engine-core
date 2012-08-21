@@ -29,3 +29,6 @@ compiled/*.js
 build/build.bat
 build.bat
 server.js
+
+#node
+node_modules/
