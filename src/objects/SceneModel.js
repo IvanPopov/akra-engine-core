@@ -59,7 +59,7 @@ SceneModel.prototype.prepareForRender = function () {
     //     }  
     // }
 };
-
+var drawShadow = true;
 SceneModel.prototype.render = function () {
     parent.render(this);
 
@@ -68,7 +68,6 @@ SceneModel.prototype.render = function () {
     if (this.bNoRender) {
         return;
     }
-
     var pEngine = this._pEngine;
     var pCamera = pEngine._pDefaultCamera;
     var pMesh = this.findMesh();
@@ -76,10 +75,13 @@ SceneModel.prototype.render = function () {
     var pDevice = pEngine.pDevice;
     var pModel = this;
 
+    var pShadowTexture = pEngine.pShadowTexture;
+
+    pDevice.disable(pDevice.BLEND);
+
     if (!pMesh || !pMesh.isReadyForRender()) {
         return;
     }
-
     for (var i = 0; i < pMesh.length; ++ i) {
         var pSubMesh = pMesh[i];
         var pSurface = pSubMesh.surfaceMaterial;
@@ -102,7 +104,37 @@ SceneModel.prototype.render = function () {
             pProgram = pEngine.pDrawMeshProg;
         }
 
+        if(drawShadow){
+            //draw shadow
+            if(pSubMesh.isSkinned()){
+                pProgram = pEngine.pDrawMeshAnimShadowProg;
+            }
+            else{
+                pProgram = pEngine.pDrawMeshShadowProg;    
+            }
+            pCamera = pEngine.pLightPoint;
+            pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,pShadowTexture._pFrameBuffer);
+        }
+        else{
+            pCamera = pEngine._pDefaultCamera; 
+        }
+
         pProgram.activate();
+        //trace(this,pProgram)
+
+        if(!drawShadow){
+            var pLightPoint = pEngine.pLightPoint;
+            pEngine.pTempTexture.activate(11);
+
+            pProgram.applyMatrix4('inverseView',pCamera.worldMatrix());
+            pProgram.applyMatrix4('lightView',pLightPoint.viewMatrix());
+            pProgram.applyMatrix4('lightProjection',pLightPoint.projectionMatrix());
+            pProgram.applyVector2('shadowTextureSizeRatio',1,1);
+
+            pProgram.applyVector3('lightPosition',pLightPoint.worldPosition());
+
+            pProgram.applySampler2D('shadowTexture',11);
+        }
 
         if (pSubMesh.data.useAdvancedIndex()) {
             pProgram.applyFloat('INDEX_INDEX_POSITION_OFFSET', 0);
@@ -141,8 +173,17 @@ SceneModel.prototype.render = function () {
             }
         }
 
+        if(drawShadow){
+            pDevice.viewport(0,0,2048,2048);
+        }
+        else{
+            pDevice.viewport(0,0,pEngine.pCanvas.width,pEngine.pCanvas.height);    
+        }
+
         pSubMesh.draw();
     }
+    pDevice.flush();
+    pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,null);
     
 
     //------------------------------------------------

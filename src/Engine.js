@@ -364,6 +364,13 @@ Engine.prototype.renderScene = function () {
     */
 
 
+    var pDevice = this.pDevice;
+
+    pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,this.pShadowTexture._pFrameBuffer);
+    pDevice.clearColor(0,0,0,0);
+    pDevice.clear(pDevice.COLOR_BUFFER_BIT | pDevice.DEPTH_BUFFER_BIT);
+    pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,null);
+
 
     var pRenderList = pFirstMember;
     //Добавлено для отслеживания видимости узлов. aldore
@@ -373,6 +380,17 @@ Engine.prototype.renderScene = function () {
         pFirstMember.prepareForRender();
         pFirstMember = pFirstMember.nextSearchLink();
     }
+
+    drawShadow = true;
+
+    //рендеринг всех объектов
+    pFirstMember = pRenderList;
+    while (pFirstMember) {
+        pFirstMember.render();
+        pFirstMember = pFirstMember.nextSearchLink();
+    }
+
+    drawShadow = false;
 
     //рендеринг всех объектов
     pFirstMember = pRenderList;

@@ -37,7 +37,7 @@ function Sprite(pEngine){
 
 	this._isVisible = false; //отображать спрайт на экране или нет?
 	this._pProgram = null;//временно здесь хранятся программы
-	this._v3fCenterPosition = Vec3.create(0,0,0);
+	this._v3fCenterPosition = new Vec3(0,0,0);
 }
 
 EXTENDS(Sprite, a.SceneObject, a.RenderableObject);
