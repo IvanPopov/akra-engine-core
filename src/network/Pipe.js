@@ -1,12 +1,25 @@
 var WEBSOCKET_PORT = 1337;
 
 if (!a) {
-	var a = {NET: {}};
+	var a = {};
+}
+
+if (!a.NET) {
+	a.NET = {};
 }
 
 if (!error) {
-	var error = console.error.bind(console);
+	var error = function (e) { throw new Error(e); };
 }
+
+if (!trace) {
+	var trace = function () {};
+}
+
+var PIPE_TYPE_WEBSOCKET = 0;
+var PIPE_TYPE_WEBWORKER = 1;
+
+WebSocket = WebSocket || MozWebSocket;
 
 /**
  * Pipe, просто интерфейс для создания соединений между клиентом и сервером
@@ -17,8 +30,7 @@ function Pipe (sAddr, fnCallback) {
 	this._fnMessage = null;
 
 	this._nMesg = 0;
-	this._pCallbackStack = null;
-	this._eMode = 0;
+	this._eType = 0;
 
 	if (arguments.length) {
 		this.open(sAddr, fnCallback);
@@ -30,55 +42,70 @@ Pipe.prototype.open = function (sAddr, fnCallback) {
     
 	fnCallback = fnCallback || null;
 
-    var pAddr, pConnect, me = this;
+    var pAddr, pConnect, me = this, eType;
 
     if (arguments.length > 0) {
 	    pAddr = new URI(sAddr);
 		pConnect = null;
 	}
 	else {
-		if (this._pConnect) {
-			this._pConnect.close();
+		if (this.isCreated()) {
+			this.close();
 		}
 
 		pAddr = this._pAddr;
 		pConnect = null;
 	}
 
-	if (pAddr.protocol !== 'ws') {
-		error('Pipe supported only websockets.');
+	if (pAddr.protocol === 'ws') { 		//create pipe to websocket.
+		if (!pAddr.port) {
+			pAddr.port = WEBSOCKET_PORT;
+		}
+
+		if (!WebSocket) {
+			error('You browser does not support webSocket api.');
+			return false;
+		}
+
+		pConnect = new WebSocket(pAddr.toString());
+		
+		pConnect.onopen = fnCallback || function () {
+			trace('created pipe to: ' + pAddr.toString());
+		};
+		
+		pConnect.onerror = function (pErr) {
+			warning('pipe error...');
+			trace(pErr);
+		};
+
+		pConnect.binaryType = "arraybuffer";
+		eType = PIPE_TYPE_WEBSOCKET;
+
+	}
+	else if (a.pathinfo(pAddr.path).ext === 'js') { //create pipe to worker
+		if (!Worker) {
+			error('You browser does not support webWorker api.');
+			return false;
+		}
+
+		pConnect = new Worker(pAddr.toString());
+		eType = PIPE_TYPE_WEBWORKER;
+	}
+	else {
+		error('Pipe supported only websockets/webworkers.');
 		return false;
 	}
-
-	if (!pAddr.port) {
-		pAddr.port = WEBSOCKET_PORT;
-	}
-
-	if (!WebSocket) {
-		error('You browser does not support webSocket api.');
-		return false;
-	}
-
-	pConnect = new WebSocket(pAddr.toString());
-	
-	pConnect.onopen = fnCallback || function () {
-		trace('created pipe to: ' + pAddr.toString());
-	};
-	
-	pConnect.onerror = function (pErr) {
-		warning('pipe error...');
-		trace(pErr);
-	};
-
-	pConnect.binaryType = "arraybuffer";
 
 	this._pConnect = pConnect;
 	this._pAddr = pAddr;
+	this._eType = eType;
 
-	window.onunload = function () {
-		pConnect.close();
-	};	
-
+	if (!self) {
+		window.onunload = function () {
+			me.close();
+		};	
+	}
+	
     return this;
 };
 
@@ -113,7 +140,14 @@ Pipe.prototype.on = function (eState, fnCallback) {
 Pipe.prototype.isOpened = function () {
     'use strict';
     
-	return this._pConnect.readyState === 1;
+    switch (this._eType) {
+    	case PIPE_TYPE_WEBSOCKET:
+			return this._pConnect.readyState === 1;
+		case PIPE_TYPE_WEBWORKER:
+			return this._pConnect !== null;
+	}
+
+	return false;
 };
 
 Pipe.prototype.isCreated = function () {
@@ -125,17 +159,31 @@ Pipe.prototype.isCreated = function () {
 Pipe.prototype.isClosed = function () {
     'use strict';
     
-	return this._pConnect.readyState === 3;
+	switch (this._eType) {
+    	case PIPE_TYPE_WEBSOCKET:
+			return this._pConnect.readyState === 3;
+		case PIPE_TYPE_WEBWORKER:
+			return this._pConnect == null;
+	}
+
+	return false;
 };
 
 Pipe.prototype.close = function () {
     'use strict';
     
     if (this.isOpened()) {
-    	this._pConnect.onmessage = null;
-    	this._pConnect.onerror = null;
-    	this._pConnect.onopen = null;
-		this._pConnect.close();
+    	switch (this._eType) {
+	    	case PIPE_TYPE_WEBSOCKET:
+				this._pConnect.onmessage = null;
+		    	this._pConnect.onerror = null;
+		    	this._pConnect.onopen = null;
+				this._pConnect.close();
+				break;
+			case PIPE_TYPE_WEBWORKER:
+				this._pConnect.terminate();
+				this._pConnect = null;
+		}
 	}
 };
 
@@ -145,11 +193,22 @@ Pipe.prototype.send = function (pValue) {
 	if (this.isOpened()) {
 		this._nMesg ++;
 		
-		if (typeof pValue === 'object') {
-			pValue = JSON.stringify(pValue);
-		}
+		switch (this._eType) {
+	    	case PIPE_TYPE_WEBSOCKET:
+				if (typeof pValue === 'object') {
+					pValue = JSON.stringify(pValue);
+				}
 
-		return this._pConnect.send(pValue);
+				return this._pConnect.send(pValue);
+			case PIPE_TYPE_WEBWORKER:
+				if (pValue.byteLength) {
+					this._pConnect.postMessage(pValue, [pValue]);
+				}
+				else {
+					this._pConnect.postMessage(pValue);	
+				}
+				return true;
+		}
 	}
 
 	return false;

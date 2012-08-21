@@ -12,7 +12,7 @@ var RPC_TYPE_RESPONSE = 2;
 
 function RPC(pUri, pContext, fnCallback) {
     this.pPipe = null;
-    this.pContext = pContext || window;
+    this.pContext = pContext || self || window;
 
     this.pOptions = {
         defferedCallsLimit: 1024,
@@ -67,7 +67,10 @@ RPC.prototype.connect = function(pUri, fnCallback) {
                 for (var i = 0; i < pList.length; ++ i) {
                     (function (sMethod) {
                         me[sMethod] = function () {
-                            var argv = [sMethod].insert(arguments);
+                            var argv = [sMethod];
+                            for (var j = 0; j < arguments.length; ++ j) {
+                                argv.push(arguments[j]);  
+                            }
                             return me.proc.apply(me, argv);
                         };
                     })(String(pList[i]));   

@@ -1,3 +1,7 @@
+if (!a) {
+    var a = {};
+}
+
 /**
  * @property URI(String sURI)
  * @memberof URI
@@ -194,3 +198,8 @@ Object.defineProperty(URI.prototype, "fragment", {
         return this.sFragment;
     }
 });
+
+a.URI = URI;
+a.uri = function (sUri) {
+    return new a.URI(sUri);
+}
