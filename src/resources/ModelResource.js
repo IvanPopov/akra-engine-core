@@ -106,6 +106,12 @@ ModelResource.prototype.addToScene = function () {
     }
 };
 
+ModelResource.prototype.getRootNodes = function () {
+    'use strict';
+    
+    return this._pRootNodeList;
+};
+
 
 ModelResource.prototype.loadResource = function (sFilename, pOptions) {
     'use strict';
@@ -115,7 +121,7 @@ ModelResource.prototype.loadResource = function (sFilename, pOptions) {
         
         me._nFilesToBeLoaded ++;
 
-        pOptions = pOptions || {drawJoints: true, wireframe: true};
+        pOptions = pOptions || {drawJoints: false, wireframe: false};
         pOptions.file = sFilename;
         pOptions.modelResource = this;
 

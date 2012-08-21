@@ -18,6 +18,9 @@ Include('timer/');
 /* Math */
 Include('math/');
 
+/*Network*/
+Include('network/');
+
 /* Files */
 Include('files/');
 

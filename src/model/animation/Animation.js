@@ -15,9 +15,18 @@ EXTENDS(Animation, a.AnimationBase);
 Animation.prototype.push = function (pTrack) {
     'use strict';
     
+    var pPointer = this.getTarget(pTrack.targetName);
+
+    if (pPointer) {
+    	error('track with target: ' + pTrack.targetName + ' already exists in this animation.');
+    	return this;
+    } 
+
 	this._pTracks.push(pTrack);
 	this._fDuration = Math.max(this._fDuration, pTrack.duration);
-	this.addTarget(pTrack.targetName);
+	this.addTarget(pTrack.targetName).track = pTrack;
+
+	return this;
 };
 
 Animation.prototype.bind = function (pTarget) {
@@ -31,7 +40,6 @@ Animation.prototype.bind = function (pTarget) {
 		}
 		else {
 			pPointer = this.setTarget(pTracks[i].targetName, pTracks[i].target);
-			pPointer.track = pTracks[i];
 		}
 	};
 };
@@ -48,5 +56,13 @@ Animation.prototype.frame = function (sName, fTime) {
 
 	return pPointer.track.frame(Math.clamp(fTime, 0, this._fDuration));
 };
+
+Animation.prototype.findTrack= function (sTarget) {
+    'use strict';
+
+    var pPointer = this.getTarget(sTarget);
+	return pPointer? pPointer.track: null;
+};
+
 
 A_NAMESPACE(Animation);

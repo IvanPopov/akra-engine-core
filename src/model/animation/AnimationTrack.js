@@ -1,89 +1,3 @@
-function AnimationFrame (fTime, pMatrix, fWeight) {
-	A_CHECK_STORAGE();
-
-	this.fTime = fTime || 0;
-	this.pMatrix = pMatrix || (new Mat4());
-	this.fWeight = fWeight || 1.0;
-}
-
-AnimationFrame.prototype.toMatrix = function () {
-    'use strict';
-    
-	return this.pMatrix;
-};
-
-AnimationFrame.prototype.reset = function () {
-    'use strict';
-    
-	this.fWeight = 0.0;
-	this.fTime = 0.0;
-
-	var pData = this.pMatrix.pData;
-	pData._11 = pData._12 = pData._13 = pData._14 = 
-	pData._21 = pData._22 = pData._23 = pData._24 = 
-	pData._31 = pData._32 = pData._33 = pData._34 = 
-	pData._41 = pData._42 = pData._43 = pData._44 = 0;
-	return this;
-};
-
-/**
- * Добавить данные к фрейму с их весом.
- * После данного метода фрейму потребуется нормализация!!!!
- */
-AnimationFrame.prototype.add = function (pFrame) {
-    'use strict';
-    
-	var pMatData = pFrame.pMatrix.pData;
-	var fWeight = pFrame.fWeight;
-	var pResData = this.pMatrix.pData;
-
-	for (var i = 0; i < 16; ++ i) {
-		pResData[i] += pMatData[i] * fWeight;
-	}
-
-	this.fWeight += fWeight;
-	return this;
-};
-
-AnimationFrame.prototype.mult = function (fScalar) {
-    'use strict';
-    
-	this.fWeight *= fScalar;
-	return this;
-};
-
-AnimationFrame.prototype.normilize = function () {
-    'use strict';
-    
-    var fScalar = 1.0 / this.fWeight;
-    var pData = this.pMatrix.pData;
-
-    pData._11 *= fScalar;
-    pData._12 *= fScalar; 
-    pData._13 *= fScalar;
-    pData._14 *= fScalar;
-	
-	pData._21 *= fScalar;
-    pData._22 *= fScalar; 
-    pData._23 *= fScalar;
-    pData._24 *= fScalar;
-	
-	pData._31 *= fScalar;
-    pData._32 *= fScalar; 
-    pData._33 *= fScalar;
-    pData._34 *= fScalar;
-	
-	pData._41 *= fScalar;
-    pData._42 *= fScalar; 
-    pData._43 *= fScalar;
-    pData._44 *= fScalar;
-		
-	return this;
-};
-
-A_ALLOCATE_STORAGE(AnimationFrame, 16384);
-A_NAMESPACE(AnimationFrame);
-
 function AnimationTrack (sTarget) {
 	/**
 	 * Bone name or Node name
@@ -150,7 +64,7 @@ AnimationTrack.prototype.keyFrame = function (fTime, pMatrix) {
     var pKeyFrames = this._pKeyFrames;
   	var nTotalFrames = pKeyFrames.length;
 
-  	if (arguments.length > 1) {
+  	if (arguments.length == 2) {
   		pFrame = new a.AnimationFrame(fTime, pMatrix);
   	}
     else {
@@ -195,6 +109,23 @@ AnimationTrack.prototype.findKeyFrame = function (fTime) {
 	return -1;
 };
 
+AnimationTrack.prototype.addTranslation = function () {
+    'use strict';
+    
+	if (arguments.length == 2) {
+		var fTime = arguments[0];
+		var pTranslation = arguments[1];
+		var pFrame = new a.AnimationFrame(fTime);
+
+
+	}
+
+	if (arguments.length == 1) {
+		var pTranslation = arguments[0];
+
+	}
+};
+
 /**
  * Bind track to target.
  * @return {Boolean}
@@ -231,7 +162,7 @@ AnimationTrack.prototype.bind = function () {
 			//bind by <Node node>
 			else if (arguments[0] instanceof a.Node) {
 				pRootNode = arguments[0];
-				pNode = pRootNode.findNode(this.nodeName);
+				pNode = pRootNode.findNode(this._sTarget);
 			}
 	}
 	
@@ -279,15 +210,48 @@ AnimationTrack.prototype.frame = function (fTime) {
 
 AnimationTrack.interpolate = function (pStartFrame, pEndFrame, pResultFrame, fBlend) {
     'use strict';
+    
+    var pStartData, pEndData, pData;
+    var fBlendInv = 1. - fBlend;
 
-	for (var i = 0; i < 16; i++) {
-		pResultFrame.pMatrix.pData[i] = ((pEndFrame.pMatrix.pData[i] * fBlend) + ((1. - fBlend) * pStartFrame.pMatrix.pData[i]));
-	};
+    if (pStartFrame.pMatrix) {
+    	
+    	pStartData = pStartFrame.pMatrix.pData;
+    	pEndData = pEndFrame.pMatrix.pData;
+    	pData = pResultFrame.pMatrix.pData;
+
+		for (var i = 0; i < 16; i++) {
+			pData[i] = fBlend * pEndData[i] + fBlendInv * pStartData;
+		};
+
+		return;
+	}
+	
+	if (pStartFrame.v3fTranslation) {
+		pStartData = pStartFrame.v3fTranslation.pData;
+		pEndData = pEndFrame.v3fTranslation.pData;
+		pData = pResultFrame.v3fTranslation.pData;
+
+		pData.X = fBlend * pEndData.X + fBlendInv * pStartData.X;
+		pData.Y = fBlend * pEndData.Y + fBlendInv * pStartData.Y;
+		pData.Z = fBlend * pEndData.Z + fBlendInv * pStartData.Z;
+	}
+
+	if (pStartFrame.v3fScale) {
+		pStartData = pStartFrame.v3fScale.pData;
+		pEndData = pEndFrame.v3fScale.pData;
+		pData = pResultFrame.v3fScale.pData;
+
+		pData.X = fBlend * pEndData.X + fBlendInv * pStartData.X;
+		pData.Y = fBlend * pEndData.Y + fBlendInv * pStartData.Y;
+		pData.Z = fBlend * pEndData.Z + fBlendInv * pStartData.Z;
+	}
+	
+	if (pStartFrame.qRotation) {
+		pStartFrame.qRotation.slerp(pEndFrame.qRotation, fBlend, pResultFrame.qRotation);
+	}
 };
 
-AnimationTransformation = AnimationTrack;
-
 A_NAMESPACE(AnimationTrack);
-A_NAMESPACE(AnimationTransformation);
 
 

@@ -276,7 +276,7 @@ function COLLADA (pEngine, pSettings) {
                 pObject.pValue = pSource.pValue.W;
                 break;
             case 'ANGLE':
-                pObject.pValue = pSource.pValue[0];
+                pObject.pValue = pSource.pValue.pData[0];
                 break;
         }
 
@@ -1781,7 +1781,7 @@ function COLLADA (pEngine, pSettings) {
     // BUILD ENGINE OBJECTS
     //================================================================
     
-    function buildAnimationTrack (pChannel) {
+    function buildAnimationTrack (pChannel, pAnimation) {
         'use strict';
     
         var sNodeId = pChannel.pTarget.pSource.id;
@@ -1799,18 +1799,80 @@ function COLLADA (pEngine, pSettings) {
         var pOutputValues   = pOutput.pArray;
 
         var pTransform = pChannel.pTarget.pObject
+        var sTransformSid = pTransform.sid;
         var sTransform = pTransform.sName;
+        var pOriginalTransforms = pChannel.pTarget.pSource.pTransforms;
+
         var v4f;
         var pValue;
         var nMatrices;
+        var qRotation;
+        var bPrevTransformUsed = false;
 
         // if (sJoint == null) {
         //     warning('node\'s <' + pChannel.pTarget.pSource.id + '> "sid" attribute is null');
         // }
 
+        var sTarget = sNodeId || sJoint;
+
+        pTrack = pAnimation.findTrack(sTarget);
+
+        var fnApplyAllTransforms = function () {
+            
+            if (bPrevTransformUsed) {
+                return;
+            }
+            
+            bPrevTransformUsed = true;
+
+            switch (sTransform) {
+                case 'translate':
+                case 'rotate':
+                case 'scale':
+                    for (var i = 0; i < pOriginalTransforms.length; ++ i) {
+                        if (pOriginalTransforms[i].usedInAnimation) {
+                            continue;
+                        }
+
+                        pOriginalTransforms[i].usedInAnimation = true;
+
+                        if (sTransformSid && pOriginalTransforms[i].sid === sTransformSid) {
+                            break;
+                        }
+
+                        var pOriginValue = pOriginalTransforms[i].pValue;
+                        
+                        switch (pOriginalTransforms[i].sName) {
+                            case 'rotate':
+                                pTrack.addRotation(Quat4.fromAxisAngle(pOriginValue, pOriginValue.w));
+                                break;
+                            case 'translate':
+                                pTrack.addTranslation(pOriginValue);
+                                break;
+                            case 'scale':
+                                // pTrack.addScale(pOriginValue);
+                                // break;
+                            default:
+                                error('unsupported transform founded: ' + pOriginalTransforms[i].sName);
+                        }
+                    }
+            }
+        };
+
+        if (!pTrack) {
+            pTrack = new a.AnimationTrack(sTarget);
+        }
+        else{
+            if (pTrack.getKeyFrame(0).pMatrix) {
+                error('track with matrix cannot be blended');
+            }
+            
+            fnApplyAllTransforms();
+        }
+
         switch (sTransform) {
             case 'translate':
-                // pTrack = new a.AnimationTranslation(sJoint);
+                // pTrack = new a.AnimationTrack(sJoint);
                 
                 // for (var i = 0, v3f = new Array(3), n; i < pTimeMarks.length; ++ i) {
                 //     n = i * 3;
@@ -1823,22 +1885,18 @@ function COLLADA (pEngine, pSettings) {
                 //TODO: implement animation translation
                 break;
             case 'rotate':
-                // v4f = pTransform.pValue;
-                // pTrack = new a.AnimationRotation(sJoint, [v4f[1], v4f[2], v4f[3]]);
-                
-                // debug_assert(pOutput.pAccessor.iStride === 1, 
-                //     'matrix modification supported only for one parameter modification');
-                
-                // for (var i = 0; i < pTimeMarks.length; ++ i) {
-                //     pTrack.keyFrame(pTimeMarks[i], pOutputValues[i] / 180.0 * Math.PI);
-                // };
-                TODO('implement animation rotation');
-                //TODO: implement animation rotation
+                v4f = pTransform.pValue;
+
+                for (var i = 0; i < pTimeMarks.length; ++ i) {
+                    pTrack.addRotation(pTimeMarks[i], Quat4.fromAxisAngle(v4f, pOutputValues[i] / 180.0 * Math.PI));                                                         //scale
+                };
+
+                fnApplyAllTransforms();
                 break;
             case 'matrix':
                 pValue = pChannel.pTarget.pValue;
                 if (pValue === null) {
-                    pTrack = new a.AnimationTransformation(sJoint);
+                    
                     nMatrices = pOutputValues.length / 16;
                     pOutputValues = new Float32Array(pOutputValues);
 
@@ -1846,68 +1904,55 @@ function COLLADA (pEngine, pSettings) {
                         'incorrect output length of transformation data (' + pOutputValues.length + ')');
 
                     for (var i = 0; i < nMatrices; i ++) {
-                        pTrack.keyFrame(pTimeMarks[i], 
-                            (new Mat4(pOutputValues.subarray(i * 16, i * 16 + 16), true)).transpose()); 
+                        pTrack.keyFrame(new a.AnimationFrame(
+                            pTimeMarks[i], 
+                            (new Mat4(pOutputValues.subarray(i * 16, i * 16 + 16), true)).transpose()));
                     };
-
-                    // i=0;
-                    // var m = (new Mat4(pOutputValues.subarray(i * 16, i * 16 + 16), true));
-                    // trace(sFilename,sNodeId,m.toString());
                 }
                 else {
-                    pTrack = new a.AnimationMatrixModification(sJoint, pValue);
+                    // pTrack = new a.AnimationMatrixModification(sJoint, pValue);
 
-                    for (var i = 0; i < pTimeMarks.length; ++ i) {
-                        pTrack.keyFrame(pTimeMarks[i], pOutputValues[i]);
-                    }   
+                    // for (var i = 0; i < pTimeMarks.length; ++ i) {
+                    //     pTrack.keyFrame(pTimeMarks[i], pOutputValues[i]);
+                    // }   
+                    TODO('AnimationMatrixModification');
                 }
             break;
             default:
                 debug_error('unsupported animation typed founeed: ' + sTransform);
         }
 
-        if (pTrack) {
-            pTrack.nodeName = sNodeId;
-        }
-
         return pTrack;
     }
 
-    function buildAnimationTrackList (pAnimationData) {
+    function buildAnimationTrackList (pAnimationData, pAnimation) {
         'use strict';
   
         var pSubAnimations = pAnimationData.pAnimations;
-        var pSubTracks;
-        var pTrackList = [];
-        var pTrack;
         var pChannels = pAnimationData.pChannel;
-
-        for (var i = 0; i < pChannels.length; ++ i) {
-             pTrack = buildAnimationTrack(pChannels[i]);
-             pTrackList.push(pTrack);
-        }
+        var pTrack;
         
+        for (var i = 0; i < pChannels.length; ++ i) {
+             pTrack = buildAnimationTrack(pChannels[i], pAnimation);
+             pAnimation.push(pTrack);
+        }
 
         if (pSubAnimations) {
             for (var i = 0; i < pSubAnimations.length; ++ i) {
-                pSubTracks = buildAnimationTrackList(pSubAnimations[i]);
-                pTrackList = pTrackList.concat(pSubTracks);
+                buildAnimationTrackList(pSubAnimations[i], pAnimation);
             }
         }
 
-        return pTrackList;
+        return pAnimation;
     }
 
     function buildAnimation (pAnimationData) {
         'use strict';
 
-        var pTracks = buildAnimationTrackList(pAnimationData);
         var sAnimation = pAnimationData.length? pAnimationData[0].name:  null;
         var pAnimation = new a.Animation(sAnimation || (sFilename? a.pathinfo(sFilename).filename : 'unknown'));
-
-        for (var i = 0; i < pTracks.length; i++) {
-            pAnimation.push(pTracks[i]);
-        };
+        
+        buildAnimationTrackList(pAnimationData, pAnimation);
         
         return pAnimation;
     }
