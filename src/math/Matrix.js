@@ -1300,7 +1300,7 @@ Vec4.prototype.negate = function(v4fDestination) {
  */
 
 Vec4.prototype.scale = function(fScale,v4fDestination) {
-    'use strict';
+    //'use strict';
     if(!v4fDestination){
         v4fDestination = this;
     }

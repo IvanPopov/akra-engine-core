@@ -407,8 +407,8 @@ function ThreadManager (sScript, pWorker) {
     //TRACE('thread manager used: ' + sScript + ' worker(' + (pWorker? 'not standart': 'standart') + ')');
 
     Enum([WORKER_BUSY, WORKER_FREE], WORKER_STATUS, a.ThreadManager);
-    Define(a.ThreadManager.MAX_THREAD_NUM, 512);
-    Define(a.ThreadManager.INIT_THREAD_NUM, 4);
+    Define(a.ThreadManager.MAX_THREAD_NUM, 5);
+    Define(a.ThreadManager.INIT_THREAD_NUM, 5);
 
 
     this._sScript = sScript || null;
@@ -422,32 +422,54 @@ function ThreadManager (sScript, pWorker) {
 ThreadManager.prototype.createThread = function (sScript, pWorker) {
     sScript = sScript || this._sScript;
 
-    if (this._pWorkers.length == a.ThreadManager.MAX_THREAD_NUM) {
-        error('Reached limit the number of threads.');
+    if (this._pWorkers.length == a.ThreadManager.MAX_THREAD_NUM)
+	{
+		error("Достигнуто максимальное число потоков");
     }
-
-    var pWorker;
-    pWorker = new (pWorker || Worker)(sScript);
-    pWorker.postMessage = pWorker.webkitPostMessage || pWorker.postMessage;
-    this._pWorkers.push(pWorker);
-    this._pWorkerStatus.push(a.ThreadManager.WORKER_FREE);
+	else
+	{
+		var pWorker1;
+		pWorker1 = new (pWorker || Worker)(sScript);
+		pWorker1.postMessage = pWorker1.webkitPostMessage || pWorker1.postMessage;
+		this._pWorkers.push(pWorker1);
+		this._pWorkerStatus.push(a.ThreadManager.WORKER_FREE);
+	}
     //TRACE('thread created: ' + this._pWorkerStatus.length);
 }
 
-ThreadManager.prototype.occupyThread = function () {
-    for (var i = 0, n = this._pWorkers.length; i < n; ++i) {
+var lajksdfklasjd=0;
+ThreadManager.prototype.occupyThread = function (fnCallback) {
+
+	var me=this;
+	for (var i = 0, n = this._pWorkers.length; i < n; ++i) {
         if (this._pWorkerStatus[i] == a.ThreadManager.WORKER_FREE) {
             this._pWorkerStatus[i] = a.ThreadManager.WORKER_BUSY;
-            return i;
+			//console.log("new",i,lajksdfklasjd++);
+			fnCallback(i);
+			return;
         }
     }
 
-    this.createThread();
-    return this.occupyThread();
+	if(this._pWorkers.length == a.ThreadManager.MAX_THREAD_NUM)
+	{
+		window.setTimeout(
+			function()
+			{
+				//console.log("wait");
+				me.occupyThread(fnCallback);
+			},
+			200);
+	}
+	else
+	{
+		this.createThread();
+		this.occupyThread(fnCallback)
+	}
 };
 
-ThreadManager.prototype.releaseThread = function (i) {
-    this._pWorkerStatus[i] = a.ThreadManager.WORKER_FREE;
+ThreadManager.prototype.releaseThread = function (i)
+{
+	this._pWorkerStatus[i] = a.ThreadManager.WORKER_FREE;
     return;
 };
 
@@ -492,52 +514,54 @@ function FileThread () {
     }
 }
 
-FileThread.prototype._thread = function (fnSuccess, fnError) {
+
+FileThread.prototype._thread = function (fnSuccess, fnError, fnCallback) {
 
     var pFile = this;
     var pManager = pFile._manager();
-    var iThread = pManager.occupyThread();
+	pManager.occupyThread(
+		function(iThread)
+		{
+			pFile._iThread = iThread;
 
+			function release () {
+				//console.log("release",pFile._iThread);
+				pManager.releaseThread(pFile._iThread);
+				pFile._iThread = -1;
+			}
 
-    pFile._iThread = iThread;
+			function setup (pThread) {
+				var me = {};
 
-    function release () {
-        pManager.releaseThread(pFile._iThread);
-        pFile._iThread = -1;
-    }
+				me.onmessage = fnSuccess || null;
+				me.onerror = fnError || null;
 
-    function setup (pThread) {
-        var me = {};
+				pThread.onmessage = function (e) {
+					release();
+					if (me.onmessage) {
+						me.onmessage.call(pFile, e.data);
+					}
+				}
 
-        me.onmessage = fnSuccess || null;
-        me.onerror = fnError || null;
+				pThread.onerror = function (e) {
+					console.log('release thread(err)', e);
+					release();
 
-        pThread.onmessage = function (e) {
-            release();
+					if (me.onerror) {
+						me.onerror.call(pFile, e.data);
+					}
+				}
 
-            if (me.onmessage) {
-                me.onmessage.call(pFile, e.data);
-            }
-        }
+				me.send = function (data) {
+					pThread.postMessage(data);
+				}
 
-        pThread.onerror = function (e) {
-            console.log('release thread(err)', e);
-            release();
+				return me;
+			}
 
-            if (me.onerror) {
-                me.onerror.call(pFile, e.data);
-            }
-        }
-
-        me.send = function (data) {
-            pThread.postMessage(data);
-        }
-
-        return me;
-    }
-
-
-    return setup(pManager.thread(this._iThread));
+			fnCallback(setup(pManager.thread(pFile._iThread)));
+		}
+	);
 };
 
 FileThread.prototype._manager = function () {
@@ -629,11 +653,14 @@ FileThread.prototype.close = function () {
 FileThread.prototype.clear = function (fnSuccess, fnError) {
     FileThread.check(this.clear, arguments);
 
-    this._thread(fnSuccess, fnError).send({
-                                              act:  a.FileThread.CLEAR,
-                                              name: this._pFileName.toString(),
-                                              mode: this._eFileMode
-                                          });
+    this._thread(fnSuccess, fnError,function(pObj)
+	{
+		pObj.send({
+			act:  a.FileThread.CLEAR,
+			name: this._pFileName.toString(),
+			mode: this._eFileMode
+		});
+	});
 };
 
 
@@ -678,78 +705,86 @@ Object.defineProperty(FileThread.prototype, 'onopen', {
 });
 
 FileThread.prototype._update = function (fnSuccess, fnError) {
-    var pThread = this._thread();
     var me = this;
 
-    pThread.onmessage = function (e) {
-        me._pFile = e;
-        fnSuccess.call(me);
-    };
+	this._thread(undefined,undefined,function(pThread)
+	{
+		pThread.onmessage = function (e) {
+			me._pFile = e;
+			fnSuccess.call(me);
+		};
 
-    pThread.onerror = fnError;
+		pThread.onerror = fnError;
 
-    pThread.send({
-                     act:  a.FileThread.OPEN,
-                     name: this._pFileName.toString(),
-                     mode: this._eFileMode
-                 });
+		pThread.send({
+			act:  a.FileThread.OPEN,
+			name: me._pFileName.toString(),
+			mode: me._eFileMode
+		});
+	});
 };
 
 FileThread.prototype.read = function (fnSuccess, fnError) {
     FileThread.check(this.read, arguments);
-    var pThread = this._thread();
     var me = this;
 
-    assert(a.io.canRead(this._eFileMode), "The file is not readable.");
+	this._thread(undefined,undefined,function(pThread)
+	{
+		assert(a.io.canRead(me._eFileMode), "The file is not readable.");
 
-    pThread.onerror = fnError;
+		pThread.onerror = fnError;
 
-    pThread.onmessage = function (e) {
-        if (me._eTransferMode == a.FileThread.TRANSFER.SLOW && a.io.isBinary(this._eFileMode)) {
-            e = (new Uint8Array(e)).buffer;
-        }
-        me.atEnd();
-        fnSuccess.call(me, e);
-    };
+		pThread.onmessage = function (e) {
+			if (me._eTransferMode == a.FileThread.TRANSFER.SLOW && a.io.isBinary(this._eFileMode)) {
+				e = (new Uint8Array(e)).buffer;
+			}
+			me.atEnd();
+			fnSuccess.call(me, e);
+		};
 
-    pThread.send({
-                     act:      a.FileThread.READ,
-                     name:     this._pFileName.toString(),
-                     mode:     this._eFileMode,
-                     pos:      this._nSeek,
-                     transfer: this._eTransferMode
-                 });
+		pThread.send({
+			act:      a.FileThread.READ,
+			name:     me._pFileName.toString(),
+			mode:     me._eFileMode,
+			pos:      me._nSeek,
+			transfer: me._eTransferMode
+		});
+	});
+
+
 };
 
 FileThread.prototype.write = function (pData, fnSuccess, fnError, sContentType) {
     FileThread.check(this.write, arguments);
-    var pThread = this._thread();
     var me = this;
-    var iMode = this._eFileMode;
 
-    assert(a.io.canWrite(iMode), "The file is not writable.");
+	this._thread(undefined,undefined,function(pThread)
+	{
+		var iMode = me._eFileMode;
 
-    pThread.onerror = fnError;
+		assert(a.io.canWrite(iMode), "The file is not writable.");
 
-    pThread.onmessage = function (e) {
-        me._pFile = e;
-        me._nSeek += (typeof pData == 'string' ? pData.length : pData.byteLength);
-        if (fnSuccess)
-            fnSuccess.apply(me, arguments);
-    };
+		pThread.onerror = fnError;
 
-    sContentType = sContentType || (a.io.isBinary(iMode) ?
-        'application/octet-stream' : 'text/plain');
+		pThread.onmessage = function (e) {
+			me._pFile = e;
+			me._nSeek += (typeof pData == 'string' ? pData.length : pData.byteLength);
+			if (fnSuccess)
+				fnSuccess.apply(me, arguments);
+		};
 
-    pThread.send({
-                     act:         a.FileThread.WRITE,
-                     name:        this._pFileName.toString(),
-                     mode:        this._eFileMode,
-                     data:        pData,
-                     contentType: sContentType,
-                     pos:         this._nSeek
-                 });
+		sContentType = sContentType || (a.io.isBinary(iMode) ?
+			'application/octet-stream' : 'text/plain');
 
+		pThread.send({
+			act:         a.FileThread.WRITE,
+			name:        me._pFileName.toString(),
+			mode:        me._eFileMode,
+			data:        pData,
+			contentType: sContentType,
+			pos:         me._nSeek
+		});
+	});
 };
 
 FileThread.prototype.atEnd = function () {
@@ -790,11 +825,14 @@ FileThread.prototype.seek = function (iOffset) {
 };
 
 FileThread.prototype.isExists = function (fnSuccess, fnError) {
-    this._thread(fnSuccess, fnError).send({
-                                              act:  a.FileThread.EXISTS,
-                                              name: this._pFileName.toString(),
-                                              mode: this._eFileMode
-                                          });
+    this._thread(fnSuccess, fnError,function(pObj)
+	{
+		pObj.send({
+						  act:  a.FileThread.EXISTS,
+						  name: this._pFileName.toString(),
+						  mode: this._eFileMode
+				});
+	});
 };
 
 FileThread.prototype.move = function (pFileName, fnSuccess, fnError) {
@@ -838,23 +876,24 @@ FileThread.prototype.getMetadata = function (fnSuccess, fnError) {
 FileThread.prototype.remove = function (fnSuccess, fnError) {
     FileThread.check(this.remove, arguments);
 
-    var pThread = this._thread();
-    var me = this;
+	var me = this;
+    this._thread(undefined,undefined,function(pThread)
+	{
+		pThread.onerror = fnError;
 
-    pThread.onerror = fnError;
+		pThread.onmessage = function (e) {
+			me.close();
+			if (fnSuccess) {
+				fnSuccess.call(me, e);
+			}
+		};
 
-    pThread.onmessage = function (e) {
-        me.close();
-        if (fnSuccess) {
-            fnSuccess.call(me, e);
-        }
-    };
-
-    pThread.send({
-                     act:  a.FileThread.REMOVE,
-                     name: this._pFileName.toString(),
-                     mode: this._eFileMode
-                 });
+		pThread.send({
+			act:  a.FileThread.REMOVE,
+			name: me._pFileName.toString(),
+			mode: me._eFileMode
+		});
+	});
 };
 
 

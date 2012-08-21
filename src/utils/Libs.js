@@ -75,6 +75,21 @@
         configurable: true,
         value: function () {this.length = 0;} 
     });
+	
+	Object.defineProperty(Array.prototype, 'set', {
+        enumerable: false,
+        configurable: true,
+        value: function (iValue,iStart,iCount) 
+			{
+				var iS=iStart|0;
+				var iC=iCount|(this.length-iStart);
+				for(var i=iS;i<iS+iC;i++)
+				{
+					this[i]=iValue;
+				}
+			} 
+    });
+	
 
     Object.defineProperty(Array.prototype, 'swap', {
         enumerable: false,

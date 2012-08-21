@@ -372,7 +372,7 @@ Texture.prototype.generateNormalMap = function (pHeightMap, iChannel, fAmplitude
 
     var pNormalTable = new Array(this._iWidth * this._iHeight);
     for (var i = 0; i < this._iWidth * this._iHeight; i++) {
-        pNormalTable[i] = Vec3.create();
+        pNormalTable[i] = new Vec3();
     }
 
     a.computeNormalMapGPU(this._pEngine, pHeightMap, pNormalTable, iChannel, fAmplitude);

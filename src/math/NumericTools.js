@@ -475,3 +475,30 @@ function nok(n,m)
 	return Math.abs(n*m)/Math.nod(n,m);
 }
 Math.nok=nok;
+
+
+
+/**
+ * @property logn(Integer n, Integer m)
+ * логарифм по основанию
+ */
+Define(Math.logn(a,b), function () {
+	(Math.log(a)/Math.log(b));
+})
+Math.logn=logn;
+
+/**
+ * @property logn(Integer n)
+ * логарифм по основанию 10
+ */
+Define(Math.lg(a), function () {
+	(Math.log(n)/Math.LN10);
+})
+
+/**
+ * @property log2(Integer n)
+ * логарифм по основанию 2
+ */
+Define(Math.log2(a), function () {
+	(Math.log(n)/Math.LN2);
+})

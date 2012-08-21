@@ -119,38 +119,36 @@ TerrainSection.prototype._buildVertexAndIndexBuffer=function()
 	var pVerts = new Array(this._iXVerts * this._iYVerts * (3/*кординаты вершин*/+3/*координаты нормалей*/+2/*текстурные координаты*/));
 	var v3fNormal = null;
 
-	var v2fCellSize = Vec2.create(); //размер ячейки сектора
-	Vec2.set(this.getHeightX() / (this._iXVerts-1),
-		this.getHeightY() / (this._iYVerts-1),
-		v2fCellSize); //размер сектора/количество ячеек в секторе
+	var v2fCellSize = new Vec2(); //размер ячейки сектора
+	v2fCellSize.set(this.getHeightX() / (this._iXVerts-1),
+		this.getHeightY() / (this._iYVerts-1)); //размер сектора/количество ячеек в секторе
 
-	var v2fVert = Vec2.create(); //Координаты вершина в секторе
-	Vec2.set(0.0, 0.0, v2fVert);
+	var v2fVert = new Vec2(); //Координаты вершина в секторе
+	v2fVert.set(0.0, 0.0);
 
 	//console.log("-->",this._iSectorX,this._iSectorY,"--",this._pWorldRect.fX0,this._pWorldRect.fY0,"--",this._iXVerts,this._iYVerts)
 	//console.log("--",v2fCellSize.X,v2fCellSize.Y,this.getHeightX(),this.getHeightY() )
 
 	for (var y = 0; y < this._iYVerts; ++y)
 	{
-		Vec2.set(this._pWorldRect.fX0, y * v2fCellSize.Y+this._pWorldRect.fY0, v2fVert);
+		v2fVert.set(this._pWorldRect.fX0, y * v2fCellSize.y+this._pWorldRect.fY0);
 		for (var x = 0; x < this._iXVerts; ++x)
 		{
 
 			var fHeight = this.getTerrainSystem().readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
 
-			pVerts[((y * this._iXVerts) + x) * 8 + 0] = v2fVert.X;
-			pVerts[((y * this._iXVerts) + x) * 8 + 1] = v2fVert.Y;
+			pVerts[((y * this._iXVerts) + x) * 8 + 0] = v2fVert.x;
+			pVerts[((y * this._iXVerts) + x) * 8 + 1] = v2fVert.y;
 			pVerts[((y * this._iXVerts) + x) * 8 + 2] = fHeight;
-			//console.log(v2fVert.X,v2fVert.Y)
+
 			//console.log(y*this._iXVerts + x,x,y,v2fVert.X,v2fVert.Y,fHeight);
-			//console.log( fHeight);
 			//	pVerts[((y * this._iXVerts) + x) * 10 + 2],pVerts[((y * this._iXVerts) + x) * 10 + 1]);
 
 
 			v3fNormal = this.getTerrainSystem().readWorldNormal(this._iHeightMapX + x, this._iHeightMapY + y);
-			pVerts[((y * this._iXVerts) + x) * 8 + 3] = v3fNormal.X;
-			pVerts[((y * this._iXVerts) + x) * 8 + 4] = v3fNormal.Y;
-			pVerts[((y * this._iXVerts) + x) * 8 + 5] = v3fNormal.Z;
+			pVerts[((y * this._iXVerts) + x) * 8 + 3] = v3fNormal.x;
+			pVerts[((y * this._iXVerts) + x) * 8 + 4] = v3fNormal.y;
+			pVerts[((y * this._iXVerts) + x) * 8 + 5] = v3fNormal.z;
 
 			pVerts[((y * this._iXVerts) + x) * 8 + 6] = (this._iSectorX + x / (this._iXVerts - 1))/this.getTerrainSystem().getSectorCountX();
 			pVerts[((y * this._iXVerts) + x) * 8 + 7] = (this._iSectorY+ y / (this._iYVerts - 1))/this.getTerrainSystem().getSectorCountY() ;
@@ -162,7 +160,7 @@ TerrainSection.prototype._buildVertexAndIndexBuffer=function()
 			this._pWorldRect.fZ0 = Math.min(this._pWorldRect.fZ0, fHeight);
 			this._pWorldRect.fZ1 = Math.max(this._pWorldRect.fZ1, fHeight);
 
-			v2fVert.X += v2fCellSize.X;
+			v2fVert.x += v2fCellSize.x;
 		}
 	}
 
@@ -200,9 +198,9 @@ TerrainSection.prototype.prepareForRender = function()
 
 	var v3fCameraPosition=pCamera.worldPosition();
 	var fMidDist = Math.sqrt(
-		(v3fCameraPosition.X-(this._pWorldRect.fX0+this.getHeightX()/2))*(v3fCameraPosition.X-(this._pWorldRect.fX0+this.getHeightX()/2))+
-		(v3fCameraPosition.Y-(this._pWorldRect.fY0+this.getHeightY()/2))*(v3fCameraPosition.Y-(this._pWorldRect.fY0+this.getHeightY()/2))+
-		(v3fCameraPosition.Z-fHeightCenter)*(v3fCameraPosition.Z-fHeightCenter));
+		(v3fCameraPosition.x-(this._pWorldRect.fX0+this.getHeightX()/2))*(v3fCameraPosition.x-(this._pWorldRect.fX0+this.getHeightX()/2))+
+		(v3fCameraPosition.y-(this._pWorldRect.fY0+this.getHeightY()/2))*(v3fCameraPosition.y-(this._pWorldRect.fY0+this.getHeightY()/2))+
+		(v3fCameraPosition.z-fHeightCenter)*(v3fCameraPosition.z-fHeightCenter));
 
 	this._fLODLevel = fMidDist;
 		//(Math.max(this._pVarianceTreeA[1],this._pVarianceTreeB[1])*this.terrainSystem().lodErrorScale())/(fMidDist+0.0001);

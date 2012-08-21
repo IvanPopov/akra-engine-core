@@ -1180,7 +1180,9 @@ Img.prototype.load=function(sFileName, fnCallBack)
 				(dwMagic8_1 == PNG_MAGIC1 && dwMagic8_2 ==PNG_MAGIC2)||
 				dwMagic2==JPEG_MAGIC||GIF_MAGIC)
 		{
-				debug_error("Должны были прогрузиться через canvas");
+				console.log(a,window,this);
+				console.log("===>",sFileName)
+				debug_error("Должны были прогрузиться через canvas"+sFileName/*+a.pathinfo(sFileName).ext*/);
 		}
 		else
         {
@@ -1208,6 +1210,7 @@ Img.prototype.load=function(sFileName, fnCallBack)
 
 		if(iSizeData!=header.dwPitchOrLinearSize)
 		{
+			console.log("Несовпадают размеры картинки вычисленный и в файле",sFileName);
 			warning("Несовпадают размеры картинки вычисленный и в файле("+iSizeData+","+header.dwPitchOrLinearSize+")");
 		}
 		if(!header.dwFlags&DDS_HEADER_FLAGS_LINEARSIZE)
