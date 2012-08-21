@@ -2044,7 +2044,6 @@ EffectShader.prototype.toCodeAll = function (id) {
         for (i in this._pAttrSemantics) {
             pVar = this._pAttrSemantics[i];
             if (pVar.isPointer !== false) {
-                console.log("I`m here too!!!!!!!!!!!!!!!!!!!!", pVar);
                 this.pAttrBuffers[i] = pVar.pBuffer;
             }
         }
@@ -2712,7 +2711,7 @@ function Effect(pManager, id) {
         error("You must set ShaderManager for Effect correct work");
         return;
     }
-    this._pShaderManager = pManager;
+    this._pRenderer = pManager;
     this._id = id;
     this.pParams = {};
     this.pTechniques = {};
@@ -6704,7 +6703,7 @@ Effect.prototype.analyzeImportDecl = function (pNode) {
     if (pChildren.length !== 2) {
         nShift = this.analyzeShiftOpt(pChildren[0]);
     }
-    var pComponent = this._pShaderManager.getComponentByName(sName);
+    var pComponent = this._pRenderer.getComponentByName(sName);
     if (!pComponent) {
         error("You try import not existing component");
         return;

@@ -203,7 +203,7 @@ VertexBuffer.prototype.setData = function (pData, iOffset, iSize)
 	debug_assert(pData.byteLength<=iSize, "Размер переданного массива больше переданного размера");
 	debug_assert(this.size>=iOffset+iSize, "Данные выйдут за предел буфера");
 
-    pRenderer.vertexBufferChanged(this);
+//    pRenderer.vertexBufferChanged(this);
 	this._pDevice.bufferSubData(a.BTYPE.ARRAY_BUFFER, iOffset,
                                     new Uint8Array(pData.slice(0,iSize)));
 	
@@ -216,6 +216,7 @@ VertexBuffer.prototype.setData = function (pData, iOffset, iSize)
 
 
 VertexBuffer.prototype.resize=function(iSize) {
+    window['A_TRACER.trace']('resize vertex buffer from ' + this.size + '  to ' + iSize + ' bytes');
 	var eUsage;
 	var pData;
 	var iMax=0;
@@ -274,8 +275,8 @@ VertexBuffer.prototype.resize=function(iSize) {
 	this._pDevice.bufferData(a.BTYPE.ARRAY_BUFFER, iSize, eUsage);
 	
 	pData=this.getData(0,this._iByteSize);
-	this._pDevice.bufferSubData(a.BTYPE.ARRAY_BUFFER, 0,pData);	
-	this._pBackupCopy=new Uint8Array(iSize);	
+//	this._pDevice.bufferSubData(a.BTYPE.ARRAY_BUFFER, 0,pData);
+	this._pBackupCopy=new Uint8Array(iSize);
 	this.setData(pData,0,this._iByteSize);
 
 	this._iByteSize=iSize;	
@@ -294,7 +295,6 @@ VertexBuffer.prototype.activate = function (){
 };
 
 VertexBuffer.prototype.bind = function () {
-    trace("VertexBuffer.prototype.bind #" + this.resourceHandle());
     this._pDevice.bindBuffer(a.BTYPE.ARRAY_BUFFER, this._pBuffer);
 }
 

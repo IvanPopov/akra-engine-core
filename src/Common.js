@@ -553,3 +553,5 @@ Define(A_NAMESPACE(object), function () {
 Define(A_TRACER.MESG(message), function () {});
 Define(A_TRACER.BEGIN(), function() {});
 Define(A_TRACER.END(), function() {});
+
+window['A_TRACER.trace'] = function () {};

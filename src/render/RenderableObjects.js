@@ -316,11 +316,11 @@ RenderableObject.prototype.applyRenderData = function (pData) {
     }
     return this._pActiveSnapshot.applyRenderData(pData);
 };
-RenderableObject.prototype.applyVertexData = function (pData) {
+RenderableObject.prototype.applyVertexData = function (pData, ePrimType) {
     if (!this._pActiveSnapshot) {
         return false;
     }
-    return this._pActiveSnapshot.applyVertexData(pData);
+    return this._pActiveSnapshot.applyVertexData(pData, ePrimType);
 };
 // /**
 //  * By default, scene nodes do not render.

@@ -1,86 +1,54 @@
 /**
  * @file
- * @author Ivan Popov
- * @email <vantuziast@odserve.org>
+ * @author sss
+ * @email <sss@odserve.org>
  */
-
-function loadGLSLSource(sPath, sFilename) {
-    var sShader = a.ajax({url: sPath + sFilename, async: false}).data;
-    var fnReplacer = function (sSource, sMatch) {
-        return a.ajax({url: sPath + sMatch, async: false}).data;
-    }
-
-    sShader = sShader.replace(/\#include\s+\"([\w\.]+)\"/ig, fnReplacer);
-    sShader = sShader.split('//<-- split -- >');
-    return {vertex: sShader[0], fragment: sShader[1]};
-}
-
-function loadProgram(pEngine, sPath, pFlags) {
-    var pPath = sPath.split('/'); 
-    var sProg = pPath.pop();
-    var sDefine = '';
-
-    sPath = pPath.join('/');
-    
-    if (sPath.length) {
-        sPath += '/';
-    }
-
-    if (pFlags) {
-        for (var sFlag in pFlags) {
-            if (pFlags[sFlag] === false) {
-                sDefine += '#undef ' + sFlag + '\n';
-            }
-            else {
-                sDefine += '#define ' + sFlag + ' ' + pFlags[sFlag] + '\n';    
-            }
-        }
-    }
-
-    pShaderSource = loadGLSLSource(sPath, sProg);
-    pProgram = pEngine.displayManager().shaderProgramPool().createResource(sProg + sDefine);
-
-    pShaderSource.vertex = sDefine + pShaderSource.vertex;
-    pShaderSource.fragment = sDefine + pShaderSource.fragment;
-
-    pProgram.create(pShaderSource.vertex, pShaderSource.fragment, true);
-    return pProgram;
-}
-
-A_NAMESPACE(loadProgram);
-A_NAMESPACE(loadGLSLSource);
-
-/**
- * Basic class(interface) for platform
- * independent shader program.
- * @ctor
- */
-function ShaderProgram() {
+function ShaderProgram(pEngine) {
     A_CLASS;
+    this._pEngine = pEngine;
+    this._sHash = null;
+    //console.log(pEngine);
+    this._pDevice = pEngine.pDevice;
+    this._pRenderer = pEngine.shaderManager();
+    this._sFragmentCode = "#ifdef GL_ES\nprecision lowp float;\n#endif\n" +
+                          "void main(void){gl_FragColor = vec4(0., 0., 0., 1.);}";
+    this._sVertexCode = "void main(void){gl_Position = vec4(0., 0., 0., 1.);}";
+    this._pAttrToReal = null;
+    this._pATRKeys = null;
+    this._pAttrToBuffer = null;
+    this._pATBKeys = null;
+    this._pSamplersToReal = null;
+    this._pBuffersToReal = null;
+    this._pRealAttr = null;
+    this._pRealSamplers = null;
+    this._pRealUniformList = {};
+    this._pUniformKeys = null;
+    this._pHardwareProgram = null;
+    this._pUniformVars = null;
+    this._pOffsets = null;
+    this._pBuffers = null;
+    this._pStreams = null;
+    this._pTextureSlots = null;
+    this._nActiveTimes = 0;
+    this._pPassBlend = null;
+    this._pTextures = null;
+    this._isZeroSampler = false;
+    this._eActiveStream = true;
+    this._pActiveStreams = null;
 }
-ShaderProgram.prototype.activate = null;
-ShaderProgram.prototype.isActive = null;
-ShaderProgram.prototype.isValid = null;
-ShaderProgram.prototype.build = null;
-ShaderProgram.prototype.setup = null;
-ShaderProgram.prototype.getSourceCode = null;
-ShaderProgram.prototype.setSourceCode = null;
-ShaderProgram.prototype.applyBuffer = null;
-ShaderProgram.prototype.applyBufferMap = null;
-ShaderProgram.prototype.applyMatrix4 = null;
+a.extend(ShaderProgram, a.ResourcePoolItem);
 
 ShaderProgram.prototype.createResource = function () {
     debug_assert(!this.isResourceCreated(),
-        "The resource has already been created.");
+                 "The resource has already been created.");
 
     this.notifyCreated();
     this.notifyDisabled();
     return (true);
 };
-
 ShaderProgram.prototype.destroyResource = function () {
     if (this.isResourceCreated()) {
-        // disable the resource
+        this._pRenderer._disableShaderProgram(this);
         this.disableResource();
         this.notifyUnloaded();
         this.notifyDestroyed();
@@ -88,199 +56,469 @@ ShaderProgram.prototype.destroyResource = function () {
     }
     return false;
 };
-
 ShaderProgram.prototype.disableResource = function () {
     debug_assert(this.isResourceCreated(),
-        "The resource has not been created.");
+                 "The resource has not been created.");
 
     this.notifyDisabled();
     return(true);
 };
-
 ShaderProgram.prototype.restoreResource = function () {
     debug_assert(this.isResourceCreated(),
-        "The resource has not been created.");
+                 "The resource has not been created.");
 
     this.notifyRestored();
     return (true);
 };
-
 ShaderProgram.prototype.loadResource = function () {
     return true;
 };
-
 ShaderProgram.prototype.saveResource = function () {
     return true;
 };
 
-a.extend(ShaderProgram, a.ResourcePoolItem);
+ShaderProgram.prototype.create = function (sHash, sVertexCode, sFragmentCode) {
+    var pHardwareProgram, pDevice = this._pDevice;
+    this._sHash = sHash;
 
-/**
- * @property GLSLProgram(Engine pEngine, String sVertexCode = null, String sPixelCode = null)
- * @param pEngine Engine instance.
- * @param sVertexCode Source code for vertex shader.
- * @param sPixelCode  Source code for pixel shader.
- * @ctor
- * Constructor.
- */
-function GLSLProgram(pEngine) {
-    A_CLASS;
-    /**
-     * @enum
-     * Statuses of program.
-     */
-    Enum([
-        INVALID_VERTEX_ELEMENT = -1
-    ], SHADER_PROGRAM_STATUS, a.ShaderProgram);
+    this._sVertexCode = sVertexCode = sVertexCode || this._sVertexCode;
+    this._sFragmentCode = sFragmentCode = sFragmentCode || this._sFragmentCode;
 
-    /**
-     * Engine instance.
-     * @type Engine.
-     * @private
-     */
-    this._pEngine = pEngine;
-
-    /**
-     * Device instance.
-     * @type HardwareDevice.
-     * @private
-     */
-    this._pDevice = pEngine.pDevice;
-
-    /**
-     * Manager instance.
-     * @type Renderer
-     * @private
-     */
-    this._pManager = pEngine.pShaderManager;
-
-    /**
-     * HarwareProgram.
-     * @type HarwareProgram
-     * @private
-     */
-    this._pHardwareProgram = null;
-
-    /**
-     * Attributes of this shader program.
-     * @type Object
-     * @private
-     */
-    this._pAttributesByName = {};
-
-    /**
-     * Source code of vertex shader.
-     * @type String
-     * @private
-     */
-    this._sVertexCode = 'void main(void){gl_Position = vec4(vec3(0.), 1.);}';
-
-    /**
-     * Source code of pixel shader.
-     * @type String
-     * @private
-     */
-    this._sFragmentCode = '#ifdef GL_ES\nprecision lowp float;\n#endif\n' +
-        'void main(void){gl_FragColor = vec4(vec3(0.), 1.);}';
-
-    /**
-     * Vertex declaration of this sahder.
-     * @type VertexDeclaration
-     * @private
-     */
-    this._pDeclaration = null;
-
-    /**
-     * Attributes of shader.
-     * @type Array
-     * @private
-     */
-    this._pAttributes = new Array(16);
-
-    this._nAttrsUsed = 0;
-
-    /**
-     * Is this shader program valid?
-     * @type Boolean
-     * @private
-     */
-    this._isValid = false;
-
-    /**
-     * Shader uniforms.
-     * @type Object
-     * @private
-     */
-    this._pUniformList = {};
-
-    for (var i = 0; i < 16; ++i) {
-        this._pAttributes[i] = {iLocation:-1, sName:null, pCurrentData:null};
+    pHardwareProgram = this._pHardwareProgram = pDevice.createProgram();
+    var pVertexShader = this._buildShader(a.SHADERTYPE.VERTEX, sVertexCode);
+    var pPixelShader = this._buildShader(a.SHADERTYPE.PIXEL, sFragmentCode);
+    pDevice.attachShader(pHardwareProgram, pVertexShader);
+    pDevice.attachShader(pHardwareProgram, pPixelShader);
+    pDevice.linkProgram(pHardwareProgram);
+    if (!pDevice.getProgramParameter(pHardwareProgram, pDevice.VALIDATE_STATUS)) {
+        //trace('program not valid', this.findResourceName());
+        //trace(pDevice.getProgramInfoLog(pHardwareProgram));
     }
-}
-
-a.extend(GLSLProgram, ShaderProgram);
-
-
-GLSLProgram.prototype.getDevice = function () {
-    'use strict';
-    
-    return this._pDevice;
+    debug_assert_win(pDevice.getProgramParameter(pHardwareProgram, pDevice.LINK_STATUS),
+                     'cannot link program', this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
+    this._isValid = true;
+    this._pEngine.shaderManager()._registerProgram(this._sHash, this);
+    return true;
 };
+ShaderProgram.prototype.setup = function (pAttrData, pUniformData, pTextures) {
+    var pDevice = this._pDevice;
+    var pProgram = this._pHardwareProgram;
+    var pUniforms = this._pRealUniformList;
+    var pOffsets = {},
+        pBuffers = {};
+    var pUniformsKeys = [];
+    var pSamplers = this._pPassBlend.pSamplers,
+        pGlobalBuffers = this._pPassBlend.pGlobalBuffers;
+    var i = 0;
+    var pKeys;
+    var sKey1,
+        sOffset,
+        sSampler,
+        sTexture;
+    var pData, pTexture;
+    var pRealAttr = this._pRealAttr,
+        pAttrReal = this._pAttrToReal,
+        pRealSamplers = this._pRealSamplers,
+        pBufReal = this._pAttrToBuffer;
+    for (i = 0; i < pRealAttr.length; i++) {
+        pRealAttr[i] = pDevice.getAttribLocation(pProgram, a.fx.SHADER_PREFIX.ATTRIBUTE + i);
+    }
+    for (i = 0; i < pRealSamplers.length; i++) {
+        sSampler = a.fx.SHADER_PREFIX.SAMPLER + i;
+        pUniforms[sSampler] = pRealSamplers[i] = pDevice.getUniformLocation(pProgram, sSampler);
+    }
+    pKeys = this._pATRKeys;
+    for (i = 0; i < pKeys.length; i++) {
+        sKey1 = pKeys[i];
+        pData = pAttrData[sKey1];
+        if (pAttrReal[sKey1] !== undefined) {
+            pAttrReal[sKey1] = pRealAttr[pAttrReal[sKey1]];
+            if (pData.eType === a.BufferMap.FT_MAPPABLE) {
+                sOffset = a.fx.SHADER_PREFIX.OFFSET + sKey1;
+                pUniforms[sOffset] = pDevice.getUniformLocation(pProgram, sOffset);
+                pOffsets[sOffset] = null;
+                pBuffers[a.fx.SHADER_PREFIX.SAMPLER + this._pAttrToBuffer[sKey1]] = null;
+                pUniformsKeys.push(sOffset);
+                pUniformsKeys.push(a.fx.SHADER_PREFIX.SAMPLER + this._pAttrToBuffer[sKey1]);
+            }
+        }
+    }
+    if (this._isZeroSampler) {
+        pUniforms[PassBlend.sZeroSampler] = pDevice.getUniformLocation(pProgram, PassBlend.sZeroSampler);
+    }
+    pKeys = Object.keys(pUniformData);
+    for (i = 0; i < pKeys.length; i++) {
+        sKey1 = pKeys[i];
+        pData = pUniformData[sKey1];
+        if (pUniforms[sKey1]) {
+            warning("Something going wrong! very wrong!");
+            return false;
+        }
+        if (this._pSamplersToReal[sKey1] === undefined && this._pBuffersToReal[sKey1] === undefined) {
+            pUniforms[sKey1] = pDevice.getUniformLocation(pProgram, sKey1);
+        }
+        pUniformsKeys.push(sKey1);
+    }
+    this._pUniformKeys = pUniformsKeys;
+    this._pStreams = new Array(pRealAttr.length);
+    this._pActiveStreams = new Array(pRealAttr.length);
+    for (i = 0; i < this._pActiveStreams.length; i++) {
+        this._pActiveStreams[i] = this._eActiveStream;
+    }
+    this._pOffsets = pOffsets;
+    this._pBuffers = pBuffers;
+    this._pTextureSlots = new Array(a.info.graphics.maxTextureImageUnits(this._pDevice));
+    this._pTextureParams = new Array(a.info.graphics.maxTextureImageUnits(this._pDevice));
 
-GLSLProgram.prototype.getEngine = function () {
-    'use strict';
-    
-    return this._pEngine;
+    function fnDefaultTexParametr() {
+        var obj = {};
+        obj[a.TPARAM.MAG_FILTER] = null;
+        obj[a.TPARAM.MIN_FILTER] = null;
+        obj[a.TPARAM.WRAP_S] = null;
+        obj[a.TPARAM.WRAP_T] = null;
+        return obj;
+    }
+
+    for (i = 0; i < this._pTextureParams.length; i++) {
+        this._pTextureParams[i] = fnDefaultTexParametr();
+    }
+
+    return true;
 };
-
-GLSLProgram.prototype.getAttribCount = function () {
-    'use strict';
-    
-    return this._nAttrsUsed;
+ShaderProgram.prototype.generateInputData = function (pAttrData, pUniformData) {
+    //TODO: pool object from cache not create
+    //TODO: In pAttrs push only unique VertexData
+    var pAttrs = new Array(this._pRealAttr.length);
+    var i;
+    var pKeys = this._pATRKeys,
+        pAttrReal = this._pAttrToReal;
+    var sKey,
+        sType,
+        sOffset,
+        sBuf;
+    var pData,
+        pType;
+    for (i = 0; i < pKeys.length; i++) {
+        sKey = pKeys[i];
+        pData = pAttrData[sKey];
+        if (pData !== null) {
+            if (pData.eType !== a.BufferMap.FT_MAPPABLE) {
+                pAttrs[pAttrReal[sKey]] = pData;
+                continue;
+            }
+            pAttrs[pAttrReal[sKey]] = pData.pMapper;
+            sOffset = a.fx.SHADER_PREFIX.OFFSET + sKey;
+            if (pUniformData[sOffset] !== undefined) {
+                warning("something wrong with offset");
+                continue;
+            }
+            pUniformData[sOffset] = pData.pData.getVertexDeclaration().element(sKey).iOffset;
+            sBuf = a.fx.SHADER_PREFIX.SAMPLER + this._pAttrToBuffer[sKey];
+            pUniformData[sBuf] = pData.pData.buffer;
+        }
+    }
+    return pAttrs;
 };
+ShaderProgram.prototype._buildShader = function (eType, sCode) {
+    var pDevice = this._pDevice;
+    var pShader = pDevice.createShader(eType);
 
+    pDevice.shaderSource(pShader, sCode);
+    pDevice.compileShader(pShader);
+
+    debug_assert_win(pDevice.getShaderParameter(pShader, pDevice.COMPILE_STATUS),
+                     'cannot compile shader', this._shaderInfoLog(pShader, eType));
+
+    return pShader;
+};
 /**
- * Is this program active now?
+ * Build shader program.
+ * @tparam String sVertexCode Source code of vertex shader.
+ * @tparam String sPixelCode Source code of pixel shader.
  * @treturn Boolean
  */
-GLSLProgram.prototype.isActive = function () {
-    return this._pDevice.getParameter(this._pDevice.CURRENT_PROGRAM) === this._pHardwareProgram;
+
+ShaderProgram.prototype.applyUniform = function (sName, pData) {
+    var pType, sType;
+    if (this._pUniformVars[sName]) {
+        pType = this._pUniformVars[sName].pType.pEffectType;
+        if (!pType.isBase()) {
+            warning("!!!!We don`t support complex type of uniforms yet! But it coming soon!");
+            return;
+        }
+        sType = pType.toCode();
+        switch (sType) {
+            case "float":
+                this.applyFloat(sName, pData);
+                break;
+            case "int":
+                this.applyInt(sName, pData);
+                break;
+            case "vec2":
+                this.applyVec2(sName, pData);
+                break;
+            case "vec3":
+                this.applyVec3(sName, pData);
+                break;
+            case "vec4":
+                this.applyVec4(sName, pData);
+                break;
+            case "mat4":
+                this.applyMat4(sName, pData);
+                break;
+            case "sampler2D":
+                if (this._pPassBlend.pSamplers[sName]) {
+                    this.applySampler2D(sName, pData);
+                }
+                else {
+                    this.applyVideoBuffer(sName, pData);
+                }
+                break;
+            default:
+                warning("Another base types are not support yet");
+        }
+        return;
+    }
+    else if (this._pOffsets[sName] === null) {
+        this.applyFloat(sName, pData);
+    }
+    else if (this._pBuffers[sName] === null) {
+        this.applyVideoBuffer(sName, pData);
+    }
+    else {
+        trace("applyUniform----->", sName, pData);
+        warning("You should not be here. Something bad have been happened with uniforms.");
+    }
+};
+ShaderProgram.prototype.applyFloat = function (sName, pData) {
+    var pDevice = this._pDevice;
+    pDevice.uniform1f(this._pRealUniformList[sName], pData);
+};
+ShaderProgram.prototype.applyInt = function (sName, pData) {
+    var pDevice = this._pDevice;
+    pDevice.uniform1i(this._pRealUniformList[sName], pData);
+};
+ShaderProgram.prototype.applyVec2 = function (sName, pData) {
+    var pDevice = this._pDevice;
+    pDevice.uniform2fv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram.prototype.applyVec3 = function (sName, pData) {
+    var pDevice = this._pDevice;
+    pDevice.uniform3fv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram.prototype.applyVec4 = function (sName, pData) {
+    var pDevice = this._pDevice;
+    pDevice.uniform4fv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram.prototype.applyMat4 = function (sName, pData) {
+    var pDevice = this._pDevice;
+    pDevice.uniformMatrix4fv(this._pRealUniformList[sName], false, pData);
+};
+ShaderProgram.prototype.applyVideoBuffer = function (sName, pData) {
+    if (pData === null) {
+        return true;
+    }
+    var sRealName;
+    if (this._pBuffersToReal[sName]) {
+        sRealName = a.fx.SHADER_PREFIX.SAMPLER + this._pBuffersToReal[sName];
+    }
+    else {
+        sRealName = sName;
+    }
+    var iSlot = this._pRenderer.activateTexture(pData);
+    var pTextureParam = this._pTextureParams[iSlot];
+    pTextureParam[a.TPARAM.MAG_FILTER] = pData._getParameter(a.TPARAM.MAG_FILTER) ||
+                                         a.TFILTER.LINEAR;
+    pTextureParam[a.TPARAM.MIN_FILTER] = pData._getParameter(a.TPARAM.MIN_FILTER) ||
+                                         a.TFILTER.LINEAR;
+    pTextureParam[a.TPARAM.WRAP_S] = pData._getParameter(a.TPARAM.WRAP_S) ||
+                                     a.TWRAPMODE.REPEAT;
+    pTextureParam[a.TPARAM.WRAP_T] = pData._getParameter(a.TPARAM.WRAP_T) ||
+                                     a.TWRAPMODE.REPEAT;
+    return this.applyInt(sRealName, iSlot);
+};
+ShaderProgram.prototype.applySampler2D = function (sName, pData) {
+    var sTexture, pTexture;
+    if (!pData) {
+        return true;
+    }
+    sTexture = pData[a.fx.GLOBAL_VARS.TEXTURE];
+    if (typeof(sTexture) === "object") {
+        pTexture = sTexture;
+    }
+    else {
+        pTexture = this._pTextures ? (this._pTextures[sTexture]) : null;
+    }
+    if (!pTexture) {
+        return true;
+    }
+    var sRealName = a.fx.SHADER_PREFIX.SAMPLER + this._pSamplersToReal[sName];
+    var iSlot = this._pRenderer.activateTexture(pTexture);
+    var pTextureParam = this._pTextureParams[iSlot];
+    pTextureParam[a.TPARAM.MAG_FILTER] = pData[a.TPARAM.MAG_FILTER] ||
+                                         pTexture._getParameter(a.TPARAM.MAG_FILTER) ||
+                                         a.TFILTER.LINEAR;
+    pTextureParam[a.TPARAM.MIN_FILTER] = pData[a.TPARAM.MIN_FILTER] ||
+                                         pTexture._getParameter(a.TPARAM.MIN_FILTER) ||
+                                         a.TFILTER.LINEAR;
+    pTextureParam[a.TPARAM.WRAP_S] = pData[a.TPARAM.WRAP_S] ||
+                                     pTexture._getParameter(a.TPARAM.WRAP_S) ||
+                                     a.TWRAPMODE.REPEAT;
+    pTextureParam[a.TPARAM.WRAP_T] = pData[a.TPARAM.WRAP_T] ||
+                                     pTexture._getParameter(a.TPARAM.WRAP_T) ||
+                                     a.TWRAPMODE.REPEAT;
+    return this.applyInt(sRealName, iSlot);
+};
+ShaderProgram.prototype.applyData = function (pData, iSlot) {
+    if (this._eActiveStream[iSlot] === this._eActiveStream) {
+        return true;
+    }
+    var pVertexData;
+    var isMapper = false;
+    if (pData.pData) {
+        pVertexData = pData.pData;
+        isMapper = true;
+    }
+    else {
+        pVertexData = pData;
+    }
+    var pDevice = this._pDevice;
+    var iOffset = 0;
+    var iStride = pVertexData.getStride();
+    var pManager = this._pRenderer;
+    var pAttrs = this._pAttrToReal,
+        iStream,
+        pDecl;
+    var pVertexElement;
+    var pVertexBuffer = pVertexData.buffer;
+    var iState = pManager.getRenderResourceState(pVertexBuffer);
+    var isActivate = false;
+    pDecl = pVertexData.getVertexDeclaration();
+    if (isMapper) {
+        if (this._pStreams[iSlot] === iState) {
+            return true;
+        }
+        this._pStreams[iSlot] = iState;
+        pManager.activateVertexBuffer(pVertexBuffer, true);
+        pVertexElement = pDecl.element(pData.eSemantics);
+        pDevice.vertexAttribPointer(iSlot,
+                                    pVertexElement.nCount,
+                                    pVertexElement.eType,
+                                    false,
+                                    iStride,
+                                    pVertexElement.iOffset);
+        this._pActiveStreams[iSlot] = this._eActiveStream;
+        return true;
+    }
+    for (var i = 0; i < pDecl.length; i++) {
+        pVertexElement = pDecl[i];
+        iStream = pAttrs[pVertexElement.eUsage];
+        if (iStream === undefined) {
+            continue;
+        }
+        if (this._pStreams[iStream] === iState) {
+            continue;
+        }
+        this._pStreams[iStream] = iState;
+        if (!isActivate) {
+            pManager.activateVertexBuffer(pVertexBuffer, true);
+            isActivate = true;
+        }
+        pDevice.vertexAttribPointer(iStream,
+                                    pVertexElement.nCount,
+                                    pVertexElement.eType,
+                                    false,
+                                    iStride,
+                                    pVertexElement.iOffset);
+        this._pActiveStreams[iStream] = this._eActiveStream;
+    }
+    return true;
 };
 
-/**
- * Get source code of shaders.
- * @param SHADER_TYPE eType Type of shader.
- * @treturn String
- */
-GLSLProgram.prototype.getSourceCode = function (eType) {
+ShaderProgram.prototype.setCurrentTextureSet = function (pTextures) {
+    this._pTextures = pTextures;
+};
+ShaderProgram.prototype.setAttrParams = function (pAttrToReal, pAttrToBuffer, pSamplersToReal, pBuffersToReal, nAttr,
+                                                  nRealSamplers) {
+    this._pAttrToReal = pAttrToReal;
+    this._pAttrToBuffer = pAttrToBuffer;
+    this._pBuffersToReal = pBuffersToReal;
+    this._pSamplersToReal = pSamplersToReal;
+    this._pATRKeys = Object.keys(pAttrToReal);
+    this._pATBKeys = Object.keys(pAttrToBuffer);
+    this._pRealAttr = new Array(nAttr);
+    this._pRealSamplers = new Array(nRealSamplers);
+};
+ShaderProgram.prototype.setUniformVars = function (pUniforms, isZeroSampler) {
+    this._pUniformVars = pUniforms;
+    this._isZeroSampler = isZeroSampler || false;
+};
+ShaderProgram.prototype.setTextureSlot = function (iSlot, pTexture) {
+    this._pTextureSlots[iSlot] = this._nActiveTimes;
+};
+
+ShaderProgram.prototype.getSourceCode = function (eType) {
     return (eType === a.SHADERTYPE.VERTEX ? this._sVertexCode : this._sFragmentCode);
 };
-
-/**
- * Set source code of shader with type eType.
- * @tparam SHADER_TYPE eType
- * @tparam String sCode
- * @treturn Boolean
- */
-GLSLProgram.prototype.setSourceCode = function (eType, sCode) {
-    switch (eType) {
-        case a.SHADERTYPE.VERTEX:
-            this._sVertexCode = sCode;
-            return true;
-        case a.SHADERTYPE.PIXEL:
-            this._sFragmentCode = sCode;
-            return true;
+ShaderProgram.prototype.getEmptyTextureSlot = function () {
+    var i;
+    var pSlots = this._pTextureSlots;
+    for (i = 0; i < pSlots.length; i++) {
+        if (pSlots[i] !== this._nActiveTimes) {
+            return i;
+        }
     }
-    return false;
+};
+ShaderProgram.prototype.getStreamData = function (iStream) {
+    return this._pStreams[iStream];
+};
+ShaderProgram.prototype.getStreamNumber = function () {
+    return this._pRealAttr.length;
 };
 
-/**
- * Get a log compiled shader.
- * @tparam SHADER_TYPE eType
- * @treturn String
- * @private
- */
-GLSLProgram.prototype._shaderInfoLog = function (pShader, eType) {
+ShaderProgram.prototype.activate = function () {
+    this._nActiveTimes++;
+    this._pDevice.useProgram(this._pHardwareProgram);
+    if (this._isZeroSampler) {
+        this.applyInt(PassBlend.sZeroSampler, a.fx.ZEROSAMPLER);
+    }
+};
+ShaderProgram.prototype.deactivate = function () {
+    this._pDevice.useProgram(null);
+};
+ShaderProgram.prototype.isActive = function () {
+    return this._pDevice.getParameter(this._pDevice.CURRENT_PROGRAM) === this._pHardwareProgram;
+};
+ShaderProgram.prototype.activateTextures = function () {
+    var i = 0;
+    var iCheck = this._nActiveTimes;
+    for (i = 0; i < this._pTextureSlots.length; i++) {
+        if (this._pTextureSlots[i] === iCheck) {
+            console.log("Activate slot #" + i);
+            this._pRenderer._activateTextureSlot(i, this._pTextureParams[i]);
+        }
+    }
+};
+
+ShaderProgram.prototype.resetActivationStreams = function () {
+    this._eActiveStream = !(this._eActiveStream);
+};
+ShaderProgram.prototype._programInfoLog = function (pHardwareProgram, pVertexShader, pPixelShader) {
+    var pShaderDebugger = this._pEngine.getDevice().getExtension("WEBGL_debug_shaders");
+
+    if (pShaderDebugger) {
+        trace('translated vertex shader =========>');
+        trace(pShaderDebugger.getTranslatedShaderSource(pVertexShader));
+        trace('translated pixel shader =========>');
+        trace(pShaderDebugger.getTranslatedShaderSource(pPixelShader));
+    }
+
+    return '<pre style="background-color: #FFCACA;">' + this._pDevice.getProgramInfoLog(this._pHardwareProgram) +
+           '</pre>' + '<hr />' +
+           '<pre>' + this.getSourceCode(a.SHADERTYPE.VERTEX) + '</pre><hr />' +
+           '<pre>' + this.getSourceCode(a.SHADERTYPE.PIXEL) + '</pre>'
+};
+ShaderProgram.prototype._shaderInfoLog = function (pShader, eType) {
     var sCode = this.getSourceCode(eType), sLog;
     var tmp = sCode.split('\n');
 
@@ -293,372 +531,12 @@ GLSLProgram.prototype._shaderInfoLog = function (pShader, eType) {
     sLog = this._pDevice.getShaderInfoLog(pShader);
 
     return '<div style="background: #FCC">' +
-        '<pre>' + sLog + '</pre>' +
-        '</div>' +
-        '<pre style="background-color: #EEE;">' + sCode + '</pre>';
+           '<pre>' + sLog + '</pre>' +
+           '</div>' +
+           '<pre style="background-color: #EEE;">' + sCode + '</pre>';
 };
 
-/**
- * Get a log compiled program.
- * @treturn String
- * @private
- */
-GLSLProgram.prototype._programInfoLog = function (pHardwareProgram, pVertexShader, pPixelShader) {
-    var pShaderDebugger = this.getEngine().getDevice().getExtension("WEBGL_debug_shaders");
-
-    if (pShaderDebugger) {
-        trace('translated vertex shader =========>');
-        trace(pShaderDebugger.getTranslatedShaderSource(pVertexShader));
-        trace('translated pixel shader =========>');
-        trace(pShaderDebugger.getTranslatedShaderSource(pPixelShader));        
-    }
-   
-    return '<pre style="background-color: #FFCACA;">' + this._pDevice.getProgramInfoLog(this._pHardwareProgram) +
-        '</pre>' + '<hr />' +
-        '<pre>' + this.getSourceCode(a.SHADERTYPE.VERTEX) + '</pre><hr />' +
-        '<pre>' + this.getSourceCode(a.SHADERTYPE.PIXEL) + '</pre>'
-};
-
-/**
- * Build shader.
- * @tparam SHADER_TYPE eType
- * @tparam String sCode
- * @return HardwareShader
- * @const
- * @private
- */
-GLSLProgram.prototype._buildShader = function (eType, sCode) {
-    var pDevice = this._pDevice;
-    var pShader = pDevice.createShader(eType);
-
-    pDevice.shaderSource(pShader, sCode);
-    pDevice.compileShader(pShader);
-
-    debug_assert_win(pDevice.getShaderParameter(pShader, pDevice.COMPILE_STATUS),
-        'cannot compile shader', this._shaderInfoLog(pShader, eType));
-
-    return pShader;
-};
-
-/**
- * Build shader program.
- * @tparam String sVertexCode Source code of vertex shader.
- * @tparam String sPixelCode Source code of pixel shader.
- * @treturn Boolean
- */
-GLSLProgram.prototype.create = function (sVertexCode, sPixelCode, bSetup) {
-    var pHardwareProgram, pDevice = this._pDevice;
-
-    this._sVertexCode = sVertexCode = sVertexCode || this._sVertexCode;
-    this._sFragmentCode = sPixelCode = sPixelCode || this._sFragmentCode;
-
-    pHardwareProgram = this._pHardwareProgram = pDevice.createProgram();
-    var pVertexShader = this._buildShader(a.SHADERTYPE.VERTEX, sVertexCode);
-    var pPixelShader = this._buildShader(a.SHADERTYPE.PIXEL, sPixelCode);
-    pDevice.attachShader(pHardwareProgram, pVertexShader);
-    pDevice.attachShader(pHardwareProgram, pPixelShader);
-    pDevice.linkProgram(pHardwareProgram);
-    if (!pDevice.getProgramParameter(pHardwareProgram, pDevice.VALIDATE_STATUS)) {
-        //trace('program not valid', this.findResourceName());
-        //trace(pDevice.getProgramInfoLog(pHardwareProgram));
-    }
-    debug_assert_win(pDevice.getProgramParameter(pHardwareProgram, pDevice.LINK_STATUS),
-        'cannot link program', this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
-    this._isValid = true;
-
-    return (bSetup? this.setup(): true);
-};
-
-/**
- * Is program valid(ready for activation) ?
- * @treturn Boolean
- */
-GLSLProgram.prototype.isValid = function () {
-    return this._isValid;
-};
-
-
-PROPERTY(GLSLProgram, 'declaration',
-    function () {
-        return this._pDeclaration;
-    },
-    function (pDeclaration) {
-        this._pVertexDeclaration = pDeclaration;
-    });
-
-//TODO изменить установку юниформов на более подходящую.
-
-/**
- * Setup uniforms from list.
- * @tparam Array pUniformList
- * @private
- */
-GLSLProgram.prototype._setupUniforms = function (pUniformList) {
-    var pUniforms = this._pUniformList;
-    var pDevice = this._pDevice;
-    var pProgram = this._pHardwareProgram;
-
-    for (var k = 0; k < pUniformList.length; k++) {
-        pUniforms[pUniformList[k]] = pDevice.getUniformLocation(pProgram, pUniformList[k]);
-        //trace(pUniformList[k], pUniforms[pUniformList[k]]);
-    }
-    //for fun...
-//    for (k = 0; k < pDevice.getProgramParameter(pProgram, pDevice.ACTIVE_UNIFORMS); ++k) {
-//        var pUniformInfo = pDevice.getActiveUniform(pProgram, k);
-//        trace(pUniformInfo);
-//    }
-};
-
-GLSLProgram.prototype.autoSetup = function () {
-    var pDevice = this._pDevice;
-    var pUniformList = [];
-    var pProgram = this._pHardwareProgram;
-    var pVertexDeclaration = [];
-    var k, n;
-
-    for (k = 0, n = pDevice.getProgramParameter(pProgram, pDevice.ACTIVE_UNIFORMS); k < n; ++k) {
-        var pUniformInfo = pDevice.getActiveUniform(pProgram, k);
-        pUniformList.push(pUniformInfo.name);
-    }
-
-    for (k = 0, n = pDevice.getProgramParameter(pProgram, pDevice.ACTIVE_ATTRIBUTES); k < n; ++k) {
-        var pAttrInfo = pDevice.getActiveAttrib(pProgram, k);
-        pVertexDeclaration.push({eUsage: pAttrInfo.name, nCount: pAttrInfo.size, eType: pAttrInfo.type});
-    }
-
-    pVertexDeclaration = new a.VertexDeclaration(pVertexDeclaration);
-    // trace(pUniformList);
-    // trace(pVertexDeclaration);
-    return this.setup(pVertexDeclaration, pUniformList);
-};
-
-/**
- * Setup program.
- * @tparam VertexDeclaration pVertexDeclaration
- * @tparam Array pUniformList
- * @treturn Boolean
- */
-GLSLProgram.prototype.setup = function (pVertexDeclaration, pUniformList) {
-    debug_assert(this.isValid(), 'Cannot setup invalid program.');
-
-    if (!arguments.length) {
-        return this.autoSetup();
-    }
-
-    pVertexDeclaration = this._pDeclaration = pVertexDeclaration || this._pDeclaration;
-
-    var isOk = this._setupUniforms(pUniformList);
-    var pDevice = this._pDevice;
-    var sAttrName, pAttr, iLocation;
-    var pAttrs = this._pAttributes,
-        pAttrsByName = this._pAttributesByName;
-    var iAttrUsed = 0;
-
-    for (var i = 0; i < pVertexDeclaration.length; i++) {
-        sAttrName = pVertexDeclaration[i].eUsage;
-        iLocation = pDevice.getAttribLocation(this._pHardwareProgram, sAttrName);
-
-        pAttr = pAttrs[iAttrUsed];
-
-        if (iLocation == a.ShaderProgram.INVALID_VERTEX_ELEMENT) {
-            warning('Unable to obtain the shader attribute ' + pVertexDeclaration[i].eUsage);
-            isOk = false;
-            continue;
-        }
-
-        pAttr.iLocation = iLocation;
-        pAttr.sName = sAttrName;
-        iAttrUsed++;
-        pAttrsByName[sAttrName] = pAttr;
-
-        //pDevice.enableVertexAttribArray(iLocation);
-    }
-
-    this._nAttrsUsed = iAttrUsed;
-
-
-    return isOk;
-};
-
-GLSLProgram.prototype.detach = function () {
-  //        if (this.findResourceName() == 'A_updateVideoBuffer') return;
-    var pAttrs = this._pAttributes;
-    var pDevice = this._pDevice;
-
-    this.activate();
-    for (var i = 0; i < this._nAttrsUsed; i++) {
-        //trace('detach attr', pAttrs[i].sName);
-        pDevice.disableVertexAttribArray(pAttrs[i].iLocation);
-    }
-};
-
-GLSLProgram.prototype.bind = function () {
-    this._pDevice.useProgram(this._pHardwareProgram);
-};
-
-GLSLProgram.prototype.unbind = function (pPrevProgram) {
-    this._pDevice.useProgram(pPrevProgram ? pPrevProgram._pHardwareProgram : null);
-};
-
-/**
- * Activation of the program.
- * @note Similar to useProgram in OpenGL/WebGL.
- */
-GLSLProgram.prototype.activate = function () {
-    this._pManager.activateProgram(this);
-};
-
-GLSLProgram.prototype.deactivate = function () {
-    this._pManager.deactivateProgram(this);
-};
-
-/**
- * Apply matrix to uniform with name sName.
- * @tparam String sName Name of the uniform.
- * @tparam Matrix4 pValue Matrix.
- */
-GLSLProgram.prototype.applyMatrix4 = function (sName, pValue) {
-    this._pDevice.uniformMatrix4fv(this._pUniformList[sName], false, pValue);
-};
-
-GLSLProgram.prototype.applyMatrix3 = function (sName, pValue) {
-    this._pDevice.uniformMatrix3fv(this._pUniformList[sName], false, pValue);
-};
-
-/**
- * Apply buffer map.
- * @tparam BufferMap pBufferMap
- */
-GLSLProgram.prototype.applyBufferMap = function (pBufferMap) {
-    var i = 0;
-    var pFlow;
-
-    for (i = 0; i < pBufferMap._nCompleteFlows; i++) {
-        pFlow = pBufferMap._pCompleteFlows[i];
-        if (pFlow.eType === a.BufferMap.FT_MAPPABLE) {
-            this.applyBuffer(pFlow.pMapper.pData);
-        }
-        else {
-            this.applyBuffer(pFlow.pData);
-        }
-    }
-
-    //TODO: Правильно выбрать слот активации!!
-    for (i = 0; i < pBufferMap._nCompleteVideoBuffers; i++) {
-        //trace('activate buffer', i,'/',pBufferMap._nCompleteVideoBuffers);
-        pBufferMap._pCompleteVideoBuffers[i].activate(i);
-        this._pDevice.uniform1i(this._pUniformList['A_buffer_' + i], i);
-    }
-};
-
-/**
- * Apply vertex buffer.
- * @tparam VertexData pVertexData Data for apply.
- */
-GLSLProgram.prototype.applyBuffer = function (pVertexData) {
-    var pDevice = this._pDevice;
-    var iOffset = 0;
-    var iStride = pVertexData.getStride();
-    var pAttrs = this._pAttributesByName,
-        pAttr;
-    var pVertexElement;
-    var pVertexBuffer = pVertexData.buffer;
-    var isActive = this._pManager._pActiveProgram? 
-        this._pManager._pActiveProgram.latestBuffer !== pVertexBuffer: false;
-
-    for (var i = 0; i < pVertexData.getVertexElementCount(); i++) {
-        pVertexElement = pVertexData._pVertexDeclaration[i];
-        pAttr = pAttrs[pVertexElement.eUsage];
-        if (!pAttr) {
-            continue;
-        }
-        
-        if (pAttr.pCurrentData !== pVertexData || 1) {
-            if (isActive) {
-                isActive = true;
-                pVertexBuffer.activate();
-                this._pManager.latestBuffer = pVertexBuffer;
-            }
-
-            // trace('pDevice.vertexAttribPointer', pAttr.iLocation,
-            //     pVertexElement.nCount,
-            //     pVertexElement.eType,
-            //     false,
-            //     iStride,
-            //     pVertexElement.iOffset);
-
-            pAttr.pCurrentData = pVertexData;
-            pDevice.vertexAttribPointer(pAttr.iLocation,
-                pVertexElement.nCount,
-                pVertexElement.eType,
-                false,
-                iStride,
-                pVertexElement.iOffset);
-        }
-        pAttr.pCurrentData = pVertexData;
-    }
-};
-
-
-
-GLSLProgram.prototype.applyVector2 = function (sName) {
-    var pDevice = this._pDevice;
-    switch (arguments.length) {
-        case 2:
-            pDevice.uniform2fv(this._pUniformList[sName], arguments[1]);
-            break;
-        case 3:
-            pDevice.uniform2f(this._pUniformList[sName], arguments[1], arguments[2]);
-            break;
-        default:
-            error('Invalid number of arguments.');
-    }
-};
-
-GLSLProgram.prototype.applyVector3 = function (sName) {
-    var pDevice = this._pDevice;
-    switch (arguments.length) {
-        case 2:
-            pDevice.uniform3fv(this._pUniformList[sName], arguments[1]);
-            break;
-        case 4:
-            pDevice.uniform3f(this._pUniformList[sName], arguments[1], arguments[2], arguments[3]);
-            break;
-        default:
-            error('Invalid number of arguments.');
-    }
-};
-
-GLSLProgram.prototype.applyVector4 = function (sName) {
-    var pDevice = this._pDevice;
-    switch (arguments.length) {
-        case 2:
-            pDevice.uniform4fv(this._pUniformList[sName], arguments[1]);
-            break;
-        case 5:
-            pDevice.uniform4f(this._pUniformList[sName], arguments[1], arguments[2], arguments[3], arguments[4]);
-            break;
-        default:
-            error('Invalid number of arguments.');
-    }
-};
-
-GLSLProgram.prototype.applyInt = function (sName, iValue) {
-    this._pDevice.uniform1i(this._pUniformList[sName], iValue);
-};
-
-GLSLProgram.prototype.applySampler2D = function (sName, iValue) {
-    'use strict';
-    
-    return this.applyInt(sName, iValue);
-};
-
-GLSLProgram.prototype.applyFloat = function (sName, fValue) {
-    this._pDevice.uniform1f(this._pUniformList[sName], fValue);
-};
-
+A_NAMESPACE(ShaderProgram);
 Define(a.ShaderProgramManager(pEngine), function () {
-    a.ResourcePool(pEngine, a.GLSLProgram);
+    a.ResourcePool(pEngine, a.ShaderProgram);
 });
-
-a.GLSLProgram = GLSLProgram;

@@ -380,8 +380,8 @@ RenderSnapshot.prototype.applyBufferMap = function (pBufferMap) {
 RenderSnapshot.prototype.applyRenderData = function (pData) {
     this._pShaderManager.applyBufferMap(pData._pMap);
 };
-RenderSnapshot.prototype.applyVertexData = function (pData) {
-    this._pShaderManager.applyVertexData(pData);
+RenderSnapshot.prototype.applyVertexData = function (pData, ePrimType) {
+    this._pShaderManager.applyVertexData(pData, ePrimType);
 };
 
 /**

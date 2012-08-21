@@ -272,6 +272,7 @@ VideoBuffer.prototype.resize = function (iByteSize) {
     parent(Texture).repack.call(this, pSize.X, pSize.Y);
 
 
+    window['A_TRACER.trace']('before set buffer header in ::resize()');
     //parent(Texture).setPixelRGBA.call(this, 0, 0, 2, 1, this._header(), 0);
     this._pHeader.setData(this._header());
 
@@ -406,8 +407,9 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
 
         pMarkupDataIndex[0] = iBeginPix;
         pMarkupDataShift[0] = iLeftShift;
-        pMarkupDataShift[nPixels - 1] = -iRightShift;
+
         pMarkupDataIndex[nPixels - 1] = iBeginPix + nPixels - 1;
+        pMarkupDataShift[nPixels - 1] = -iRightShift;
 
         for (var i = 1; i < nPixels - 1; ++i) {
             pMarkupDataIndex[i] = iBeginPix + i;
@@ -466,20 +468,26 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
 //        Endif();
         //STATIC(_pUpdateProgram, a.loadProgram(this._pEngine, '../effects/update_video_buffer.glsl'));
 
-        window['A_TRACER.trace']('begin readraw in videobuffer');
+//        window['A_TRACER.trace']('begin readraw in videobuffer');
 
         var pVertexData = this._pSystemVertexData;
-        pVertexData.resize(nElements);
+//        window['A_TRACER.trace']('before resize');
+        pVertexData.resize(nPixels);
+//        window['A_TRACER.trace']('System vertex data size: ' + pVertexData.length + '/' + nPixels);
 
+//        window['A_TRACER.trace']('before set value');
         pVertexData.setData(pRealData, 'VALUE');
+//        window['A_TRACER.trace']('after set index');
         pVertexData.setData(pMarkupDataIndex, 'INDEX');
+//        window['A_TRACER.trace']('after set shift');
         pVertexData.setData(pMarkupDataShift, 'SHIFT');
 
-        window['A_TRACER.trace']('after set data');
+//        window['A_TRACER.trace']('after set data');
 
         var pManager = this._pEngine.shaderManager();
         var pSnapshot = this._pActiveSnapshot;
         var pEntry = null;
+        pManager.setViewport(0, 0, this._iWidth, this._iHeight);
         pManager.activateFrameBuffer();
         pManager.applyFrameBufferTexture(this);
         this.startRender();
@@ -487,17 +495,18 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
             console.log("Pass #"+i);
             this.activatePass(i);
             pSnapshot.applyTextureBySemantic("TEXTURE0", this);
-            pSnapshot.applyVertexData(pVertexData);
+            pSnapshot.applyVertexData(pVertexData, a.PRIMTYPE.POINTLIST);
             pSnapshot.setParameter("size", [this._iWidth, this._iHeight]);
             pEntry = this.renderPass();
             this.deactivatePass();
         }
         this.finishRender();
         pManager.deactivateFrameBuffer();
-        pDevice.viewport(0, 0, this._iWidth, this._iHeight);
+
+//        window['A_TRACER.trace']('expected rendering from 0 to ' + nPixels + '/' + pVertexData.length);
         pManager.render(pEntry);
         pDevice.flush();
-        window['A_TRACER.trace']('end readraw in videobuffer');
+//        window['A_TRACER.trace']('end readraw in videobuffer');
 //        pProgram = statics._pUpdateProgram;
 //        pProgram.activate();
 //

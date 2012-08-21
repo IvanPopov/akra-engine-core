@@ -4,7 +4,7 @@
  * @author reinor
  */
 
-function findPosX (pObj) {
+function findPosX(pObj) {
     var curleft = 0;
     if (pObj.offsetParent) {
         while (1) {
@@ -21,7 +21,7 @@ function findPosX (pObj) {
 }
 ;
 
-function findPosY (pObj) {
+function findPosY(pObj) {
     var curtop = 0;
     if (pObj.offsetParent) {
         while (1) {
@@ -38,7 +38,7 @@ function findPosY (pObj) {
 }
 ;
 
-function Font2D (iSize, sColor, sFontFamily, isBold, isItalic) {
+function Font2D(iSize, sColor, sFontFamily, isBold, isItalic) {
 
     iSize = iSize || 12;
     sColor = sColor || '#000000';
@@ -75,7 +75,7 @@ function Font2D (iSize, sColor, sFontFamily, isBold, isItalic) {
 }
 ;
 
-function String2D (iX, iY, pFont, sStr, pDiv) {
+function String2D(iX, iY, pFont, sStr, pDiv) {
     pFont = pFont || new a.Font2D();
 
     var pSpan = document.createElement('span');
@@ -165,7 +165,7 @@ String2D.prototype.edit = function (sStr) {
  * DisplayMangar class
  * @ctor
  */
-function DisplayManager (pEngine) {
+function DisplayManager(pEngine) {
 
 
     this._pEngine = pEngine;
@@ -197,7 +197,7 @@ function DisplayManager (pEngine) {
 
     this._modelPool = new a.ModelManager(pEngine);
     this._modelPool.initialize(16);
-        
+
     this._imagePool = new a.ImageManager(pEngine);
     this._imagePool.initialize(16);
 
@@ -302,7 +302,7 @@ DisplayManager.prototype.draw2DText = function (iX, iY, pFont, sStr) {
     return (new a.String2D(iX, iY, pFont, sStr, this._pTextDiv));
 };
 
-DisplayManager.prototype.getTextLayer = function() {
+DisplayManager.prototype.getTextLayer = function () {
     return this._pTextDiv;
 };
 
@@ -450,8 +450,8 @@ DisplayManager.prototype.registerDeviceResources = function () {
         new a.ResourceCode(a.ResourcePoolManager.VideoResource,
                            a.ResourcePoolManager.ModelResource));
     this._imagePool.registerResourcePool(
-            new a.ResourceCode(a.ResourcePoolManager.VideoResource,
-            a.ResourcePoolManager.ImageResource));
+        new a.ResourceCode(a.ResourcePoolManager.VideoResource,
+                           a.ResourcePoolManager.ImageResource));
     this._surfaceMaterialPool.registerResourcePool(
         new a.ResourceCode(a.ResourcePoolManager.VideoResource,
                            a.ResourcePoolManager.SMaterialResource));
@@ -460,7 +460,7 @@ DisplayManager.prototype.registerDeviceResources = function () {
                            a.ResourcePoolManager.VideoBufferResource));
     this._shaderProgramPool.registerResourcePool(
         new a.ResourceCode(a.ResourcePoolManager.VideoResource,
-            a.ResourcePoolManager.ShaderProgramResource));
+                           a.ResourcePoolManager.ShaderProgramResource));
     this._componentPool.registerResourcePool(
         new a.ResourceCode(a.ResourcePoolManager.VideoResource,
                            a.ResourcePoolManager.ComponentResource));
@@ -537,7 +537,7 @@ DisplayManager.prototype.disableDeviceResources = function () {
  */
 DisplayManager.prototype.beginRenderSession = function () {
 
-    this.setViewPort(0, 0, this._pEngine.pCanvas.width, this._pEngine.pCanvas.height);
+    //this._pEngine.shaderManager().setViewPort(0, 0, this._pEngine.pCanvas.width, this._pEngine.pCanvas.height);
 
     // clear screen if requested
     if (this._bClearEachFrame) {
@@ -611,7 +611,7 @@ DisplayManager.prototype.setDefaultRenderStates = function () {
  * v4fSpecular,v4fColor = a.Color4f(0,0,0,1)
  * @ctor
  */
-function TLVertex () {
+function TLVertex() {
     this.fX = 0.;
     this.fY = 0.;
     this.fZ = 0.;
@@ -625,23 +625,23 @@ function TLVertex () {
 }
 
 Object.defineProperty(TLVertex.prototype, "v4fSpecular", {
-    set: function (value) {
+    set : function (value) {
         this.v4fSpecular[0] = value[0],
             this.v4fSpecular[1] = value[1], this.v4fSpecular[2] = value[2],
             this.v4fSpecular[3] = value[3];
     },
-    get: function () {
+    get : function () {
         return this.v4fSpecular;
     }
 });
 
 Object.defineProperty(TLVertex.prototype, "v4fColor", {
-    set: function (value) {
+    set : function (value) {
         this.v4fColor[0] = value[0],
             this.v4fColor[1] = value[1], this.v[2] = value[2],
             this.v4fColor[3] = value[3];
     },
-    get: function () {
+    get : function () {
         return this.v4fColor;
     }
 });
@@ -784,31 +784,31 @@ DisplayManager.prototype.processRenderQueue = function () {
  * TODO: checkResourceFormatSupport
  */
 DisplayManager.prototype.checkResourceFormatSupport =
-    function (fmt, resType, dwUsage) {
+function (fmt, resType, dwUsage) {
 
-        //not implemented yet
-        //function(D3DFORMAT fmt, D3DRESOURCETYPE resType, DWORD dwUsage){
+    //not implemented yet
+    //function(D3DFORMAT fmt, D3DRESOURCETYPE resType, DWORD dwUsage){
 
-        /*bool result = true;
-         LPDIRECT3D9 pD3D = TheGameHost.d3dInterface();
-         const D3DCAPS9& devCaps = TheGameHost.d3dCaps();
-         const D3DSURFACE_DESC& displayDesc = TheGameHost.d3dsdBackBuffer();
+    /*bool result = true;
+     LPDIRECT3D9 pD3D = TheGameHost.d3dInterface();
+     const D3DCAPS9& devCaps = TheGameHost.d3dCaps();
+     const D3DSURFACE_DESC& displayDesc = TheGameHost.d3dsdBackBuffer();
 
-         if (FAILED(
-         pD3D->CheckDeviceFormat(
-         devCaps.AdapterOrdinal,
-         devCaps.DeviceType,
-         displayDesc.Format,
-         dwUsage,
-         resType,
-         fmt)))
-         {
-         result=false;
-         }
+     if (FAILED(
+     pD3D->CheckDeviceFormat(
+     devCaps.AdapterOrdinal,
+     devCaps.DeviceType,
+     displayDesc.Format,
+     dwUsage,
+     resType,
+     fmt)))
+     {
+     result=false;
+     }
 
-         return result;*/
-        return true;
-    }
+     return result;*/
+    return true;
+}
 
 a.DisplayManager = DisplayManager;
 a.String2D = String2D;

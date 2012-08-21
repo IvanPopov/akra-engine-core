@@ -8,7 +8,7 @@
 
 Define(a.fMillisecondsPerTick, 0.0333);
 
-function Engine () {
+function Engine() {
     //Переменные отвечающие за состояния приложения
 
     //Оконный режим или полноэкранный
@@ -216,7 +216,6 @@ Engine.prototype.showStats = function (isShow) {
 };
 
 
-
 /**
  * @property notifyRestoreDeviceObjectsDefault()
  * Перенос объектов в энергозависимую память
@@ -284,14 +283,22 @@ Engine.prototype.displayManager = function () {
     return this.pDisplayManager;
 };
 
-Engine.prototype.particleManager = function(){
+Engine.prototype.particleManager = function () {
     return this.pParticleManager;
 };
 
-Engine.prototype.spriteManager = function(){
+Engine.prototype.spriteManager = function () {
     return this.pSpriteManager;
 };
 
+Engine.prototype.getActiveViewport = function () {
+    return {
+        x      : 0,
+        y      : 0,
+        width  : this.pCanvas.width,
+        height : this.pCanvas.height
+    };
+};
 // Engine.prototype.uniqManager = function() {
 //     return this.pUniqManager;
 // };
@@ -344,12 +351,13 @@ Engine.prototype.notifyInitDeviceObjects = function () {
 Engine.prototype.renderScene = function () {
 
     //Получение всех объектов сцены, которые видны активной камере
-    var pFirstMember = this._pSceneTree.buildSearchResults(this.getActiveCamera().searchRect(), this.getActiveCamera().frustum());
+    var pFirstMember = this._pSceneTree.buildSearchResults(this.getActiveCamera().searchRect(),
+                                                           this.getActiveCamera().frustum());
     //console.log(pFirstMember, this._pActiveCamera);
     /*console.log(pFirstMember, this._pActiveCamera.searchRect().fX0, this._pActiveCamera.searchRect().fX1,
-                this._pActiveCamera.searchRect().fY0, this._pActiveCamera.searchRect().fY1,
-                this._pActiveCamera.searchRect().fZ0, this._pActiveCamera.searchRect().fZ1)
-    */
+     this._pActiveCamera.searchRect().fY0, this._pActiveCamera.searchRect().fY1,
+     this._pActiveCamera.searchRect().fZ0, this._pActiveCamera.searchRect().fZ1)
+     */
     var pRenderList = pFirstMember;
 
     //Подготовка всех объектов к рендерингу
@@ -365,12 +373,12 @@ Engine.prototype.renderScene = function () {
         pFirstMember = pFirstMember.nextSearchLink();
     }
 
-Ifdef (__DEBUG);
+    Ifdef(__DEBUG);
     //FIXME: remove direct render
     if (this.directRender) {
         this.directRender();
     }
-Endif ();
+    Endif();
 
     return true;
 }
@@ -563,7 +571,7 @@ Engine.prototype.beginRenderStage = function (iStage) {
         this.pDevice.colorMask(false, false, false, true);
     }
     else if (this._iActiveRenderStage ===
-        a.RenderMethod.lightingStage) {
+             a.RenderMethod.lightingStage) {
         // during the lighting stage,
         // we write only to the color
         // channel of the destination
