@@ -1,4 +1,3 @@
-Include('AnimationFrame.js');
 Include('AnimationBase.js');
 Include('AnimationTrack.js');
 Include('Animation.js');
