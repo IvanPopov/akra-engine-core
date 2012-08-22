@@ -130,6 +130,7 @@ SceneModel.prototype.render = function () {
             pProgram.applyMatrix4('lightView',pLightPoint.viewMatrix());
             pProgram.applyMatrix4('lightProjection',pLightPoint.projectionMatrix());
             pProgram.applyVector2('shadowTextureSizeRatio',1,1);
+            pProgram.applyVector2('shadowTextureSize',2048,2048);
 
             pProgram.applyVector3('lightPosition',pLightPoint.worldPosition());
 
