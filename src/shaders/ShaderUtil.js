@@ -130,7 +130,14 @@ function PreRenderState(pEngine) {
     this._pEngine = pEngine;
     this.pBlend = null;
     this.nShift = 0;
-    this.pAttributeData = [];
+    this.pAttributeData = [
+        [],
+        [],
+        [],
+        [],
+        []
+    ];
+    this.pSurfaceMaterial = null;
     this.pSnapshot = null;
 
     this.pIndex = undefined;
@@ -155,9 +162,13 @@ PreRenderState.prototype.setViewport = function () {
     }
 };
 PreRenderState.prototype.release = function () {
+    var i;
     this.pBlend = null;
     this.nShift = 0;
-    this.pAttributeData.length = 0;
+    for (i = 0; i < this.pAttributeData.length; i++) {
+        this.pAttributeData[i].length = 0;
+    }
+    this.pSurfaceMaterial = null;
     this.pSnapshot = null;
 
     this.pIndex = undefined;

@@ -383,6 +383,10 @@ RenderSnapshot.prototype.applyRenderData = function (pData) {
 RenderSnapshot.prototype.applyVertexData = function (pData, ePrimType) {
     this._pShaderManager.applyVertexData(pData, ePrimType);
 };
+RenderSnapshot.prototype.applySurfaceMaterial = function (pMaterial) {
+    pMaterial = pMaterial || this.surfaceMaterial;
+    return this._pShaderManager.applySurfaceMaterial(pMaterial);
+};
 
 /**
  * Is render method loaded?

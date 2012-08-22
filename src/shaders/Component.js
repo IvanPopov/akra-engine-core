@@ -822,7 +822,7 @@ PassBlend.prototype.finalizeBlend = function () {
     this.sVaryingsOut += "} " + a.fx.GLOBAL_VARS.SHADEROUT + ";"
 
 };
-PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUniformData, pTextures) {
+PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUniformData, pTextures, pTexcoords) {
     //console.log(this);
     var pProgram;
     var pAttrBuf = {};
@@ -840,7 +840,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     var pGlobalBufDecl;
     var pRealAttrs,
         pRealBuffers,
-        pAttr,
+        pAttr, pAttr1,
         pPointer,
         pBuffers,
         pBuffer,
@@ -848,7 +848,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         pTexture,
         sTexture;
     var sKey1, sKey2,
-        sInit, sDecl, sAttr;
+        sInit, sDecl, sAttr, sName1, sName2;
     var sUniformOffset = "";
     var nAttr = 0, nBuffer = 0, iAttr, iBuffer;
     var pData1, pData2, sData1, sData2;
@@ -861,6 +861,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     var isExtractInitF = false;
     var pUniformKeys = Object.keys(pUniformData);
     var nSamplers = 0;
+    var pTempVarsDecl = {};
 
     //Samplers and Globals Buffers generated here
 
@@ -917,12 +918,12 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
 
         if (this.pSamplers[sKey1] !== undefined) {
             sTexture = pData1[a.fx.GLOBAL_VARS.TEXTURE];
-            if (typeof(sTexture) === "object") {
-                pTexture = sTexture;
-            }
-            else {
-                pTexture = pTextures[sTexture];
-            }
+//            if (typeof(sTexture) === "object") {
+//                pTexture = sTexture;
+//            }
+//            else {
+            pTexture = pTextures[sTexture];
+//            }
             if (!pTexture) {
                 if (this.pSamplersV[sKey1] === null) {
                     isZeroSamplerV = true;
@@ -1133,6 +1134,17 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         pAttrInit[sKey1] = sInit;
     }
 
+    for (i = 0; i < pTexcoords.length; i++) {
+        if (pTexcoords[i] !== undefined && pTexcoords[i] !== null) {
+            sName1 = a.fx.SHADER_PREFIX.TEXCOORD + i;
+            pAttr = this.pAttributes[sName1];
+            if (pAttr) {
+                pTempVarsDecl[sName1] = pAttr.pType.pEffectType.toCode() + " " +
+                                        a.fx.SHADER_PREFIX.TEMP + i + "=" + sName1 + ";";
+            }
+        }
+    }
+
     //Generate final code
 
     //Translate all objects that was in code(Samplers and Headers) to code
@@ -1254,6 +1266,23 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         sKey1 = pKeys[i];
         sVertexCode += pAttrInit[sKey1];
     }
+    //Texcoords closure
+    for (i in pTempVarsDecl) {
+        sVertexCode += pTempVarsDecl[i];
+    }
+    for (i = 0; i < pTexcoords.length; i++) {
+        if (pTexcoords[i] !== undefined && pTexcoords[i] !== null) {
+            sName1 = a.fx.SHADER_PREFIX.TEXCOORD + i;
+            sName2 = a.fx.SHADER_PREFIX.TEXCOORD + pTexcoords[i];
+            pAttr = this.pAttributes[sName1];
+            pAttr1 = this.pAttributes[sName2];
+            if (pAttr && pAttr1) {
+                sVertexCode += sName1 + "=" + pAttr.pType.pEffectType.toCode() + "(" +
+                               (pTempVarsDecl[sName2] ? pTempVarsDecl[sName2] : sName2) + ");";
+            }
+        }
+    }
+
     //Calls shader`s functions
     for (i = 0; i < i < this.pVertexShaders.length; i++) {
         sVertexCode += this.pVertexShaders[i].sRealName + "();"
@@ -1369,5 +1398,6 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     }
     trace(pProgram);
     return pProgram;
-};
+}
+;
 A_NAMESPACE(PassBlend, fx);

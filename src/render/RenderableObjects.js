@@ -262,6 +262,7 @@ RenderableObject.prototype.startRender = function () {
     if (!this._pActiveSnapshot) {
         return false;
     }
+    this._pEngine.shaderManager().activateRenderObject(this);
     return this._pActiveSnapshot.begin();
 };
 /**
@@ -271,6 +272,7 @@ RenderableObject.prototype.finishRender = function () {
     if (!this._pActiveSnapshot) {
         return false;
     }
+    this._pEngine.shaderManager().deactivateRenderObject();
     return this._pActiveSnapshot.end();
 };
 
@@ -321,6 +323,12 @@ RenderableObject.prototype.applyVertexData = function (pData, ePrimType) {
         return false;
     }
     return this._pActiveSnapshot.applyVertexData(pData, ePrimType);
+};
+RenderableObject.prototype.applySurfaceMaterial = function (pMaterial) {
+    if (!this._pActiveSnapshot) {
+        return false;
+    }
+    return this._pActiveSnapshot.applySurfaceMaterial(pMaterial);
 };
 // /**
 //  * By default, scene nodes do not render.

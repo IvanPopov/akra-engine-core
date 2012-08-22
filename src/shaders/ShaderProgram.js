@@ -299,18 +299,23 @@ ShaderProgram.prototype.applyInt = function (sName, pData) {
     pDevice.uniform1i(this._pRealUniformList[sName], pData);
 };
 ShaderProgram.prototype.applyVec2 = function (sName, pData) {
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
     var pDevice = this._pDevice;
     pDevice.uniform2fv(this._pRealUniformList[sName], pData);
 };
 ShaderProgram.prototype.applyVec3 = function (sName, pData) {
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
     var pDevice = this._pDevice;
     pDevice.uniform3fv(this._pRealUniformList[sName], pData);
 };
 ShaderProgram.prototype.applyVec4 = function (sName, pData) {
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
     var pDevice = this._pDevice;
     pDevice.uniform4fv(this._pRealUniformList[sName], pData);
 };
 ShaderProgram.prototype.applyMat4 = function (sName, pData) {
+    trace(sName);
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
     var pDevice = this._pDevice;
     pDevice.uniformMatrix4fv(this._pRealUniformList[sName], false, pData);
 };
@@ -343,12 +348,12 @@ ShaderProgram.prototype.applySampler2D = function (sName, pData) {
         return true;
     }
     sTexture = pData[a.fx.GLOBAL_VARS.TEXTURE];
-    if (typeof(sTexture) === "object") {
-        pTexture = sTexture;
-    }
-    else {
-        pTexture = this._pTextures ? (this._pTextures[sTexture]) : null;
-    }
+//    if (typeof(sTexture) === "object") {
+//        pTexture = sTexture;
+//    }
+//    else {
+    pTexture = this._pTextures ? (this._pTextures[sTexture]) : null;
+//    }
     if (!pTexture) {
         return true;
     }
@@ -494,7 +499,7 @@ ShaderProgram.prototype.activateTextures = function () {
     var iCheck = this._nActiveTimes;
     for (i = 0; i < this._pTextureSlots.length; i++) {
         if (this._pTextureSlots[i] === iCheck) {
-            console.log("Activate slot #" + i);
+            console.log("Activate texture slot #" + i);
             this._pRenderer._activateTextureSlot(i, this._pTextureParams[i]);
         }
     }

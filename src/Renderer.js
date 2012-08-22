@@ -6,7 +6,10 @@ var SHADER_PREFIX = {
     SAMPLER   : "A_s_",
     HEADER    : "A_h_",
     ATTRIBUTE : "A_a_",
-    OFFSET    : "A_o_"
+    OFFSET    : "A_o_",
+    TEXTURE   : "TEXTURE",
+    TEXCOORD  : "TEXCOORD",
+    TEMP      : "TEMP_"
 };
 A_NAMESPACE(SHADER_PREFIX, fx);
 a.fx.ZEROSAMPLER = 19;
@@ -19,6 +22,7 @@ function Renderer(pEngine) {
          ], PARAMETER_FLAGS, a.Renderer);
     Enum([
              WORLD_MATRIX = 0,
+             MODEL_MATRIX,
              VIEW_MATRIX,
              PROJ_MATRIX,
 
@@ -64,6 +68,12 @@ function Renderer(pEngine) {
          ], PARAMETER_HANDLES, a.Renderer);
     Enum([MAX_TEXTURE_HANDLES = a.SurfaceMaterial.maxTexturesPerSurface], eTextureHandles, a.Renderer);
 
+    Enum([
+             MODEL_MATRIX = "MODEL_MATRIX",
+             VIEW_MATRIX = "VIEW_MATRIX",
+             PROJ_MATRIX = "PROJ_MATRIX"
+         ], SYSTEM_SEMANTICS, a.Renderer);
+
     this.pEngine = pEngine;
     this.pDevice = pEngine.pDevice;
     this._pEngineStates = pEngine.pSystemStates;
@@ -77,6 +87,9 @@ function Renderer(pEngine) {
     this._pPassBlends = {};
     this._pEffectResoureId = {};
     this._pEffectResoureBlend = {};
+
+    this._pActiveRenderObject = null;
+    this._pRenderObjectStack = [];
 
     this._pPreRenderStateStack = [];
     this._pPreRenderState = null;
@@ -108,8 +121,21 @@ function Renderer(pEngine) {
         this._pEmptyFrameBuffers[i] = null;
         this._pFrameBufferCounters[i] = 0;
     }
+    this._pSystemUniforms = null;
+    this._initSystemUniforms();
 }
 
+Renderer.prototype._initSystemUniforms = function () {
+    if (Renderer._pSystemUniforms) {
+        this._pSystemUniforms = Renderer._pSystemUniforms;
+    }
+    var pUniforms = {};
+    pUniforms[a.Renderer.MODEL_MATRIX] = null;
+    pUniforms[a.Renderer.VIEW_MATRIX] = null;
+    pUniforms[a.Renderer.PROJ_MATRIX] = null;
+    this._pSystemUniforms = Renderer._pSystemUniforms = pUniforms;
+    return true;
+};
 //----Load and init components and effects----//
 /**
  * Load *.fx file or *.abf
@@ -509,6 +535,13 @@ Renderer.prototype.deactivatePass = function (pSnapshot) {
     this._pPreRenderState.nShift -= pSnapshot._iCurrentPass;
     return true;
 };
+Renderer.prototype.activateRenderObject = function (pRenderObject) {
+    this._pRenderObjectStack.push(this._pActiveRenderObject);
+    this._pActiveRenderObject = pRenderObject;
+};
+Renderer.prototype.deactivateRenderObject = function () {
+    this._pActiveRenderObject = this._pRenderObjectStack.pop() || null;
+};
 /**
  * Generate pass blend and shaderProgram
  * @param iPass
@@ -542,6 +575,7 @@ Renderer.prototype.finishPass = function (iPass) {
     var index;
     var sPassBlendHash = "";
     var pPassBlend;
+    var pMaterialTexcoords = new Array(a.SurfaceMaterial.maxTexturesPerSurface);
     pUniformValues = {};
     pNotDefaultUniforms = {};
     pTextures = {};
@@ -581,7 +615,12 @@ Renderer.prototype.finishPass = function (iPass) {
                 continue;
             }
             if (!pNotDefaultUniforms[sKey]) {
-                pUniformValues[sKey] = pUniforms.pUniformsDefault[sKey];
+                if (this._pSystemUniforms[sKey] === null) {
+                    pUniformValues[sKey] = this._getSystemUniformValue(sKey);
+                }
+                else {
+                    pUniformValues[sKey] = pUniforms.pUniformsDefault[sKey];
+                }
             }
         }
     }
@@ -631,6 +670,9 @@ Renderer.prototype.finishPass = function (iPass) {
     var pAttrSemantics = {};
     var pDataStackByPass,
         pDataStack,
+        pMaterialStackByPass,
+        pMaterialStack,
+        pMaterial,
         pFlow,
         pData,
         pDecl,
@@ -648,12 +690,22 @@ Renderer.prototype.finishPass = function (iPass) {
 
         nShift = pStateStack[i].nShift;
         pDataStackByPass = pStateStack[i].pAttributeData;
+        pMaterial = pStateStack[i].pSurfaceMaterial;
         index = nPass - nShift;
 
         if (pDataStackByPass.length <= index) {
             continue;
         }
         pDataStack = pDataStackByPass[index];
+
+        for (j = 0; pMaterial && j < a.SurfaceMaterial.maxTexturesPerSurface; j++) {
+            if ((pMaterialTexcoords[j] !== undefined && pMaterialTexcoords[j] !== null) || !pMaterial._pTexture[j]) {
+                continue;
+            }
+            pMaterialTexcoords[j] = pMaterial._pTexcoord[j];
+            pTextures[a.fx.SHADER_PREFIX.TEXTURE + j] = pMaterial._pTexture[j];
+        }
+
         for (j = 0; j < pAttrKeys.length; j++) {
             sKey2 = pAttrKeys[j];
             if (pAttrSemantics[sKey2] === null) {
@@ -708,7 +760,8 @@ Renderer.prototype.finishPass = function (iPass) {
     var pProgram;
     pProgram = this._pPrograms[sHash];
     if (!pProgram) {
-        pProgram = pPassBlend.generateProgram(sHash, pAttrSemantics, pAttrKeys, pUniformValues, pTextures);
+        pProgram = pPassBlend.generateProgram(sHash, pAttrSemantics, pAttrKeys, pUniformValues,
+                                              pTextures, pMaterialTexcoords);
         if (!pProgram) {
             warning("It`s impossible to generate shader program");
             return false;
@@ -766,6 +819,25 @@ Renderer.prototype._releasePreRenderState = function (pState) {
     pState.release();
     this._pPreRenderStatePool.push(pState);
     return true;
+};
+Renderer.prototype._getSystemUniformValue = function (sName) {
+    var pRenderObject = this._pActiveRenderObject;
+    var pData;
+    var pCamera = this.pEngine.getActiveCamera();
+    switch (sName) {
+        case a.Renderer.MODEL_MATRIX:
+            if (pRenderObject) {
+                return pRenderObject._m4fWorldMatrix || null;
+            }
+            return null;
+        case a.Renderer.VIEW_MATRIX:
+            return pCamera.viewMatrix();
+        case a.Renderer.PROJ_MATRIX:
+            return pCamera.projectionMatrix();
+        default:
+            warning("Unsupported system semantic");
+            return null;
+    }
 };
 
 //----PreRender applying methods----//
@@ -843,6 +915,15 @@ Renderer.prototype.applyFrameBufferTexture = function (pTexture, eAttachment, eT
     eTexTarget = (eTexTarget === undefined) ? pDevice.TEXTURE_2D : eTexTarget;
     trace("Attach texture to farme buffer #" + this._pRenderState.iFrameBuffer);
     this._pRenderState.pFrameBuffer.frameBufferTexture2D(eAttachment, eTexTarget, pTexture._pTexture);
+};
+Renderer.prototype.applySurfaceMaterial = function (pMaterial) {
+    this._pPreRenderState.pSurfaceMaterial = pMaterial;
+    var pSnapshot = this._pPreRenderState.pSnapshot;
+//    for (var i = 0; i < a.SurfaceMaterial.maxTexturesPerSurface; i++) {
+//        if (pMaterial._pTexture[i]) {
+//            pSnapshot.applyTextureBySemantic(a.fx.SHADER_PREFIX.TEXTURE + i, pMaterial._pTexture[i]);
+//        }
+//    }
 };
 Renderer.prototype.setViewport = function (x, y, width, height) {
     if (this._pPreRenderState) {
@@ -1088,6 +1169,7 @@ Renderer.prototype._activateTextureSlot = function (iSlot, pParams) {
     }
     if (!isParamsEqual) {
         if (!isBind) {
+            trace("Real activate slot");
             this.pDevice.activeTexture(a.TEXTUREUNIT.TEXTURE + (iSlot || 0));
             this._forceBindTexture(pTexture);
         }
