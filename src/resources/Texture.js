@@ -534,7 +534,7 @@ Texture.prototype._loadCubeTextureFromMemory = function (pMemory) {
  */
 // Переписать, херь написана
 Texture.prototype.loadResource = function (sFileName)
-{
+{   
     if (!sFileName)
 	{
         var sResourceName = this.findResourceName();
@@ -543,7 +543,6 @@ Texture.prototype.loadResource = function (sFileName)
         }
     }
 	var me = this;
-
 
 	if((sFileName.nodeName)&&
 		(sFileName.nodeName.toLowerCase()=="canvas"||sFileName.nodeName.toLowerCase()=="img"||sFileName.nodeName.toLowerCase()=="video"))

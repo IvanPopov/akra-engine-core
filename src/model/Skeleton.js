@@ -24,7 +24,7 @@ function Skeleton (pEngine, sName) {
 
 	//все joint'ы у которых нет потомков и братьев
 	//нужны чтобы отслеживать изменения в скелете
-	this._pNotificationJoints = null
+	//this._pNotificationJoints = null
 
 	this._pMeshNode = null;
 
@@ -99,7 +99,7 @@ Skeleton.prototype.update = function () {
     
     var pRootJoints = this._pRootJoints;
     var pJointList = this._pJointList = {};
-    var pNotificationJoints = this._pNotificationJoints = [];
+    //var pNotificationJoints = this._pNotificationJoints = [];
 
     function findJoints (pNode) {
     	var sJoint;
@@ -122,13 +122,13 @@ Skeleton.prototype.update = function () {
     	findJoints(pRootJoints[i]);
     };
 
-	for (var sJoint in pJointList) {
-		var pJoint = pJointList[sJoint];
+	// for (var sJoint in pJointList) {
+	// 	var pJoint = pJointList[sJoint];
 
-    	if (pJoint.sibling() == null && pJoint.child() == null) {
-    		pNotificationJoints.push(pJoint);
-    	}
-    };    
+ //    	if (pJoint.sibling() == null && pJoint.child() == null) {
+ //    		pNotificationJoints.push(pJoint);
+ //    	}
+ //    };    
 
 	return true;
 };

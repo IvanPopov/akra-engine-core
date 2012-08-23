@@ -243,21 +243,25 @@ AnimationTrack.prototype.bind = function () {
 AnimationTrack.prototype.frame = function (fTime) {
     'use strict';
 
-	var iKey1, iKey2;
+	var iKey1 = 0, iKey2 = 0;
 	var fScalar;
 	var fTimeDiff;
+	
 	var pKeys = this._pKeyFrames
 	var nKeys = pKeys.length;
 	var pFrame = a.AnimationFrame();
 
-	//TODO: реализовать существенно более эффективный поиск кадра.
-	for (var i = 0; i < nKeys; i ++) {
-    	if (fTime >= this._pKeyFrames[i].fTime) {
-            iKey1 = i;
-        }
-    }
+	if (nKeys > 1) {
+		//TODO: реализовать существенно более эффективный поиск кадра.
+		for (var i = 0; i < nKeys; i ++) {
+	    	if (fTime >= this._pKeyFrames[i].fTime) {
+	            iKey1 = i;
+	        }
+	    }
 
-    iKey2 = (iKey1 >= (nKeys - 1))? iKey1 : iKey1 + 1;
+	    iKey2 = (iKey1 >= (nKeys - 1))? iKey1 : iKey1 + 1;
+	}
+    
     fTimeDiff = pKeys[iKey2].fTime - pKeys[iKey1].fTime;
     
     if (!fTimeDiff)

@@ -276,7 +276,7 @@ function COLLADA (pEngine, pSettings) {
                 pObject.pValue = pSource.pValue.W;
                 break;
             case 'ANGLE':
-                pObject.pValue = pSource.pValue[0];
+                pObject.pValue = pSource.pValue.pData[0];
                 break;
         }
 
@@ -1970,14 +1970,13 @@ function COLLADA (pEngine, pSettings) {
             var pEffect = pEffects.effect[pMaterials[sMaterial].sUrl.substr(1)];
             var pMaterial = pEffect.pProfileCommon.pTechnique.pValue;
 
-
             for (var j = 0; j < pMesh.length; ++ j) {
                 var pSubMesh = pMesh[j];
-
+                
+                //if (pSubMesh.surfaceMaterial.findResourceName() === sMaterial) {
                 if (pSubMesh.material.name === sMaterial) {
                     //setup materials
                     pSubMesh.material.value = pMaterial;
-
                     //FIXME: remove flex material setup(needs only demo with flexmats..)
                     pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
 
@@ -1993,7 +1992,8 @@ function COLLADA (pEngine, pSettings) {
                         var sInputSemantics     = pInputs[pTextureObject.sParam].sInputSemantic;
                         var pColladaImage       = pTextureObject.pTexture;
                         var pSurfaceMaterial    = pSubMesh.surfaceMaterial;
-                        var pTexture            = pEngine.displayManager().texturePool().loadResource(
+
+                        var pTexture = pEngine.displayManager().texturePool().loadResource(
                                                     pColladaImage.pImage.sImagePath);
                         
                         var pMatches    = sInputSemantics.match(/^(.*?\w)(\d+)$/i);
@@ -2115,6 +2115,8 @@ function COLLADA (pEngine, pSettings) {
             var pSubMeshData = pSubMesh.data;
             var pDecl = new Array(pPolygons.pInput.length);
             var iIndex = 0;
+            var pSurfaceMaterial = null;
+            var pSurfacePool = null;
 
             for (var j = 0; j < pPolygons.pInput.length; ++ j) {
                 pDecl[j] = VE_FLOAT(a.DECLUSAGE.INDEX + (iIndex ++));
@@ -2128,6 +2130,16 @@ function COLLADA (pEngine, pSettings) {
                 pSubMeshData.index(sSemantic, pDecl[j].eUsage);
             }
 
+            // if (!pSubMesh.material) {
+            //     pSurfacePool = pEngine.displayManager().surfaceMaterialPool();
+            //     pSurfaceMaterial = pSurfacePool.findResource(pPolygons.sMaterial);
+
+            //     if (!pSurfaceMaterial) {
+            //         pSurfaceMaterial = pSurfacePool.createResource(pPolygons.sMaterial);
+            //     }
+
+            //     pSubMesh.surfaceMaterial = pSurfaceMaterial;
+            // }
             pSubMesh.material.name = pPolygons.sMaterial;
         }
 
