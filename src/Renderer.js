@@ -9,6 +9,7 @@ var SHADER_PREFIX = {
     OFFSET    : "A_o_",
     TEXTURE   : "TEXTURE",
     TEXCOORD  : "TEXCOORD",
+    TEXMATRIX : "TEXMATRIX",
     TEMP      : "TEMP_"
 };
 A_NAMESPACE(SHADER_PREFIX, fx);
@@ -71,7 +72,9 @@ function Renderer(pEngine) {
     Enum([
              MODEL_MATRIX = "MODEL_MATRIX",
              VIEW_MATRIX = "VIEW_MATRIX",
-             PROJ_MATRIX = "PROJ_MATRIX"
+             PROJ_MATRIX = "PROJ_MATRIX",
+             NORMAL_MATRIX = "NORMAL_MATRIX",
+             EYE_POS = "EYE_POSITION"
          ], SYSTEM_SEMANTICS, a.Renderer);
 
     this.pEngine = pEngine;
@@ -112,6 +115,7 @@ function Renderer(pEngine) {
 
     //Current render resource states
     this._pRenderState = new a.fx.RenderState(this.pEngine);
+    this._pStreamState = new Array(a.info.graphics.maxVertexAttributes(this.pDevice));
 
     this._pFramebufferPool = new Array(10);
     this._pEmptyFrameBuffers = new Array(10);
@@ -129,10 +133,11 @@ Renderer.prototype._initSystemUniforms = function () {
     if (Renderer._pSystemUniforms) {
         this._pSystemUniforms = Renderer._pSystemUniforms;
     }
+    var pEnum = __ENUM__(SYSTEM_SEMANTICS);
     var pUniforms = {};
-    pUniforms[a.Renderer.MODEL_MATRIX] = null;
-    pUniforms[a.Renderer.VIEW_MATRIX] = null;
-    pUniforms[a.Renderer.PROJ_MATRIX] = null;
+    for (var i in pEnum) {
+        pUniforms[pEnum[i]] = null;
+    }
     this._pSystemUniforms = Renderer._pSystemUniforms = pUniforms;
     return true;
 };
@@ -690,6 +695,7 @@ Renderer.prototype.finishPass = function (iPass) {
 
         nShift = pStateStack[i].nShift;
         pDataStackByPass = pStateStack[i].pAttributeData;
+
         pMaterial = pStateStack[i].pSurfaceMaterial;
         index = nPass - nShift;
 
@@ -697,13 +703,45 @@ Renderer.prototype.finishPass = function (iPass) {
             continue;
         }
         pDataStack = pDataStackByPass[index];
-
-        for (j = 0; pMaterial && j < a.SurfaceMaterial.maxTexturesPerSurface; j++) {
-            if ((pMaterialTexcoords[j] !== undefined && pMaterialTexcoords[j] !== null) || !pMaterial._pTexture[j]) {
-                continue;
+        if (pMaterial) {
+            pBlend = pStateStack[i].pBlend;
+            pUniforms = pBlend.pUniformsBlend[index];
+            for (j = 0; j < a.SurfaceMaterial.maxTexturesPerSurface; j++) {
+                if ((pMaterialTexcoords[j] !== undefined && pMaterialTexcoords[j] !== null) ||
+                    !pMaterial._pTexture[j]) {
+                    continue;
+                }
+                pMaterialTexcoords[j] = pMaterial._pTexcoord[j];
+                sKey = a.fx.SHADER_PREFIX.TEXTURE + j;
+                if (pUniforms.pTexturesByRealName[sKey] === null) {
+                    pTextures[sKey] = pMaterial._pTexture[j];
+                    sKey = a.fx.SHADER_PREFIX.TEXMATRIX + j;
+                    if (pUniforms.pUniformsByRealName[sKey] &&
+                        pMaterial._pTextureMatrix[j]) {
+                        pUniformValues[sKey] = pMaterial._pTextureMatrix[j];
+                    }
+                }
             }
-            pMaterialTexcoords[j] = pMaterial._pTexcoord[j];
-            pTextures[a.fx.SHADER_PREFIX.TEXTURE + j] = pMaterial._pTexture[j];
+            if (pUniforms.pUniformsByRealName[a.Material.DIFFUSE] &&
+                !pUniformValues[a.Material.DIFFUSE]) {
+                pUniformValues[a.Material.DIFFUSE] = pMaterial.material.pDiffuse;
+            }
+            if (pUniforms.pUniformsByRealName[a.Material.AMBIENT] &&
+                !pUniformValues[a.Material.AMBIENT]) {
+                pUniformValues[a.Material.AMBIENT] = pMaterial.material.pAmbient;
+            }
+            if (pUniforms.pUniformsByRealName[a.Material.SPECULAR] &&
+                !pUniformValues[a.Material.SPECULAR]) {
+                pUniformValues[a.Material.SPECULAR] = pMaterial.material.pSpecular;
+            }
+            if (pUniforms.pUniformsByRealName[a.Material.EMISSIVE] &&
+                !pUniformValues[a.Material.EMISSIVE]) {
+                pUniformValues[a.Material.EMISSIVE] = pMaterial.material.pEmissive;
+            }
+            if (pUniforms.pUniformsByRealName[a.Material.SHININESS] &&
+                !pUniformValues[a.Material.SHININESS]) {
+                pUniformValues[a.Material.SHININESS] = pMaterial.material.pShininess;
+            }
         }
 
         for (j = 0; j < pAttrKeys.length; j++) {
@@ -824,16 +862,25 @@ Renderer.prototype._getSystemUniformValue = function (sName) {
     var pRenderObject = this._pActiveRenderObject;
     var pData;
     var pCamera = this.pEngine.getActiveCamera();
+    trace("SYSTEM SEMANTICS :" + sName);
     switch (sName) {
         case a.Renderer.MODEL_MATRIX:
-            if (pRenderObject) {
-                return pRenderObject._m4fWorldMatrix || null;
+            if (pRenderObject && pRenderObject._m4fWorldMatrix) {
+                return pRenderObject.worldMatrix() || null;
+            }
+            return null;
+        case a.Renderer.NORMAL_MATRIX:
+            if (pRenderObject && pRenderObject._m4fWorldMatrix) {
+                return pRenderObject.normalMatrix() || null;
             }
             return null;
         case a.Renderer.VIEW_MATRIX:
             return pCamera.viewMatrix();
         case a.Renderer.PROJ_MATRIX:
             return pCamera.projectionMatrix();
+        case a.Renderer.EYE_POS:
+            console.log("EYE_POSITION", pCamera, pCamera.worldPosition());
+            return pCamera.worldPosition();
         default:
             warning("Unsupported system semantic");
             return null;
@@ -1013,6 +1060,7 @@ Renderer.prototype._releaseFrameBuffer = function (id) {
     this._pFrameBufferCounters[id] = 0;
     this._pEmptyFrameBuffers[id] = null;
     this._pFramebufferPool[id].release();
+    this._activateFrameBuffer();
 };
 Renderer.prototype._tryReleaseFrameBuffer = function (id) {
     var nCount = this._pFrameBufferCounters[id];
@@ -1168,6 +1216,7 @@ Renderer.prototype._activateTextureSlot = function (iSlot, pParams) {
         isBind = true;
     }
     if (!isParamsEqual) {
+        trace("TEXTURE PARAMS NOT EQUAL", pTexture);
         if (!isBind) {
             trace("Real activate slot");
             this.pDevice.activeTexture(a.TEXTUREUNIT.TEXTURE + (iSlot || 0));
@@ -1314,6 +1363,12 @@ Renderer.prototype._isRegisterResource = function (pResource) {
 };
 Renderer.prototype._disableShaderProgram = function (pProgram) {
     this._pPrograms[pProgram._sHash] = null;
+};
+Renderer.prototype._getStreamState = function (iStream) {
+    return this._pStreamState[iStream];
+};
+Renderer.prototype._occupyStream = function (iStream, pProgram) {
+    this._pStreamState[iStream] = pProgram.toNumber();
 };
 
 

@@ -604,6 +604,8 @@ EffectType.prototype.fromStruct = function (pStruct) {
     this.pDesc = pStruct;
     this.isStruct = true;
     this._canMixible = pStruct.canMixible();
+    pStruct.setPadding();
+    this.iSize = pStruct.iSize;
 };
 EffectType.prototype.toStr = function () {
     return this.sName;
@@ -772,6 +774,7 @@ function EffectStruct() {
     this._hasIndexData = null;
     this._sCode = null;
     this.pGlobalUsedTypes = null;
+    this.iSize = 0;
 }
 EffectStruct.prototype.toCode = function () {
     if (this._sCode) {
@@ -956,6 +959,17 @@ EffectStruct.prototype.canBlend = function (pStruct) {
     }
     return true;
 };
+EffectStruct.prototype.setPadding = function () {
+    var i;
+    var iPadding = 0;
+    var pVar;
+    for (i = 0; i < this.pOrders.length; i++) {
+        pVar = this.pOrders[i];
+        pVar.iPadding = iPadding;
+        iPadding += pVar.iSize;
+    }
+    this.iSize = iPadding;
+};
 
 function EffectPointer(pVar, nDim, pFirst, sPrev, isAttr) {
     this.pVar = pVar || null;
@@ -1088,6 +1102,8 @@ function EffectVariable() {
     this.isFSInput = false;
     this.isVertexOnly = false;
     this.isFragmentOnly = false;
+    this.iPadding = -1;
+    this.iSize = 0;
 }
 EffectVariable.prototype.isInput = function () {
     if (this.pType.pUsagesName &&
@@ -1131,6 +1147,7 @@ EffectVariable.prototype.setType = function (pType) {
         this.isGlobal = (pType.pUsagesName["global"] === null) ? true : false;
         this.isUniform = this.isUniform || this.isSampler;
     }
+    this.iSize = this.pType.pEffectType * this.iLength;
 };
 EffectVariable.prototype.addAnnotation = function (pAnnotation) {
     this.pAnnotation = pAnnotation;
@@ -1160,6 +1177,8 @@ EffectVariable.prototype.cloneMe = function () {
     pVar.pPointers = this.pPointers;
     pVar.pBuffer = this.pBuffer;
     pVar.nDim = this.nDim;
+    pVar.iSize = this.iSize;
+    pVar.iPadding = this.iPadding;
     return pVar;
 };
 EffectVariable.prototype.setTexture = function (pTex) {
@@ -1245,6 +1264,7 @@ function EffectVariableBase(pVar, pFirst, sRealPrevName, iScope) {
     this.sRealPrevName = sRealPrevName;
 
     this.iScope = iScope;
+    this.iPadding = pVar.iPadding;
 
     this.isPointer = false;
     this.pPointers = null;
@@ -1252,6 +1272,8 @@ function EffectVariableBase(pVar, pFirst, sRealPrevName, iScope) {
 
     this.pType = pVar.pType;
     this.isArray = pVar.isArray;
+    this.iSize = pVar.iSize;
+    this.iLength = pVar.iLength;
 
     this.sName = pVar.sRealName;
     this.sRealNameShader = null;
@@ -2168,6 +2190,7 @@ EffectVertex.prototype.addVarying = function (pVar) {
         error("don`t do so bad things");
     }
     var pNewVar = pVar.cloneMe();
+    pNewVar.sRealName = pNewVar.sSemantic + "_VAR";
     this._pVaryingsSemantics[pNewVar.sSemantic] = pNewVar;
     this._pVaryings.push(pNewVar);
 };
@@ -2245,7 +2268,7 @@ EffectFragment.prototype.addVarying = function (pVar) {
         pVary = pVar.cloneMe();
         pVar.sRealName = pVar.sSemantic;
         pVary.sName = pVary.sSemantic;
-        pVary.sRealName = pVary.sSemantic;
+        pVary.sRealName = pVary.sSemantic + "_VAR";
         this._pVaryings.push(pVary);
         this._pVaryingsSemantics[pVary.sSemantic] = pVary;
         return;
@@ -2255,6 +2278,7 @@ EffectFragment.prototype.addVarying = function (pVar) {
     for (i = 0; i < pVars.length; i++) {
         pVary = pVars[i].cloneMe();
         pVary.sName = pVary.sSemantic;
+        pVary.sRealName = pVary.sSemantic + "_VAR";
         this._pVaryings.push(pVary);
         this._pVaryingsSemantics[pVary.sSemantic] = pVary;
     }
@@ -2972,6 +2996,13 @@ function Effect(pManager, id) {
         "abrg" : null,
         "abgr" : null
     });
+//    STATIC(fnExtractFunction, function (pVar, pSampler, pHeader, pCode, me) {
+//        pCode = pCode || [];
+//        }
+//    });
+    STATIC(fnExtractFunctionToString, function (sVarName, pType, sSampler, sHeader) {
+
+    });
     this._initSystemData();
 
 }
@@ -2986,6 +3017,11 @@ Effect.prototype._initSystemData = function () {
     this._addSystemFunction("floor", "float", ["float"], null, "floor($1)");
     this._addSystemFunction("fract", "float", ["float"], null, "fract($1)");
     this._addSystemFunction("abs", "float", ["float"], null, "abs($1)");
+    this._addSystemFunction("normalize", "float", [null], ["float", "float2", "float3", "float4"], "normalize($1)");
+    this._addSystemFunction("length", null, [null], ["float3", "float4"], "length($1)");
+    this._addSystemFunction("reflect", null, [null, null], ["float", "float2", "float3", "float4"], "reflect($1,$2)");
+    this._addSystemFunction("max", null, [null, null], ["float", "float2", "float3", "float4"], "max($1,$2)");
+    this._addSystemFunction("pow", null, [null, null], ["float", "float2", "float3", "float4"], "pow($1,$2)");
     Effect._isInit = true;
 };
 /**
@@ -3298,95 +3334,147 @@ Effect.prototype.addMemBlock = function (pVar, iPointer) {
 };
 Effect.prototype.addBaseVarMemCode = function (pFunction, pBlock, pVar) {
     pVar = pVar || pBlock._pVar;
-    if (!pVar.pType.isBase()) {
-        error("Only base type");
-        return;
-    }
     if (!pVar.isUsed) {
         return;
     }
     if (!pBlock._pCodeData) {
         pBlock._pCodeData = [];
     }
-    pBlock._pCodeData.push(pVar);
-    pBlock._pCodeData.push("=(");
-    if (pVar.pType.isEqual(this.hasType("float")) || pVar.pType.isEqual(this.hasType("bool"))) {
-        pBlock._pCodeData.push("A_extractFloat(");
-        pFunction._pExtractFunctions["float"] = null;
+    function fnExtract(pVar, pCode, pFunction, me, sPreviousName) {
+        if (!pVar.isUsed) {
+            return;
+        }
+        var isArray = false;
+        var iOffset = 0;
+        if (pVar.pType.isBase()) {
+            if (pVar.iLength > 1) {
+                isArray = true;
+                iOffset = 0;
+                pCode.push("for(int i = 0; i <", pVar.iLength, ";i++){");
+            }
+            for (var i = 0; i < pVar.iLength; i++) {
+                pCode.push(pVar);
+                if (isArray) {
+                    pCode.push("[i]");
+                    iOffset += pVar.pType.pEffectType.iSize;
+                }
+                pCode.push("=(");
+                if (pVar.pType.isEqual(me.hasType("float")) || pVar.pType.isEqual(me.hasType("bool"))) {
+                    pCode.push("A_extractFloat(");
+                    pFunction._pExtractFunctions["float"] = null;
+                }
+                else if (pVar.pType.isEqual(me.hasType("int"))) {
+                    pCode.push("int(A_extractFloat(");
+                    pFunction._pExtractFunctions["float"] = null;
+                }
+                else if (pVar.pType.isEqual(me.hasType("float2"))) {
+                    pCode.push("A_extractVec2(");
+                    pFunction._pExtractFunctions["float"] = null;
+                    pFunction._pExtractFunctions["vec2"] = null;
+                }
+                else if (pVar.pType.isEqual(me.hasType("float3"))) {
+                    pCode.push("A_extractVec3(");
+                    pFunction._pExtractFunctions["float"] = null;
+                    pFunction._pExtractFunctions["vec3"] = null;
+                }
+                else if (pVar.pType.isEqual(me.hasType("float4"))) {
+                    pCode.push("A_extractVec4(");
+                    pFunction._pExtractFunctions["float"] = null;
+                    pFunction._pExtractFunctions["vec4"] = null;
+                }
+                else if (pVar.pType.isEqual(me.hasType("int2"))) {
+                    pCode.push("ivec2(A_extractVec2(");
+                    pFunction._pExtractFunctions["float"] = null;
+                    pFunction._pExtractFunctions["vec2"] = null;
+                }
+                else if (pVar.pType.isEqual(me.hasType("int3"))) {
+                    pCode.push("ivec3(A_extractVec3(");
+                    pFunction._pExtractFunctions["float"] = null;
+                    pFunction._pExtractFunctions["vec3"] = null;
+                }
+                else if (pVar.pType.isEqual(me.hasType("int4"))) {
+                    pCode.push("ivec4(A_extractVec4(");
+                    pFunction._pExtractFunctions["float"] = null;
+                    pFunction._pExtractFunctions["vec4"] = null;
+                }
+                else if (pVar.pType.isEqual(me.hasType("bool2"))) {
+                    pCode.push("bvec2(A_extractVec2(");
+                    pFunction._pExtractFunctions["float"] = null;
+                    pFunction._pExtractFunctions["vec2"] = null;
+                }
+                else if (pVar.pType.isEqual(me.hasType("bool3"))) {
+                    pCode.push("bvec3(A_extractVec3(");
+                    pFunction._pExtractFunctions["float"] = null;
+                    pFunction._pExtractFunctions["vec3"] = null;
+                }
+                else if (pVar.pType.isEqual(me.hasType("bool4"))) {
+                    pCode.push("bvec4(A_extractVec4(");
+                    pFunction._pExtractFunctions["float"] = null;
+                    pFunction._pExtractFunctions["vec4"] = null;
+                }
+                else if (pVar.pType.isEqual(me.hasType("float4x4"))) {
+                    pCode.push("A_extractMat4(");
+                    pFunction._pExtractFunctions["float"] = null;
+                    pFunction._pExtractFunctions["vec4"] = null;
+                    pFunction._pExtractFunctions["Mat4"] = null;
+                }
+                else {
+                    error("We don`t support another simple type");
+                    return;
+                }
+                pCode.push(pBlock._pBuffer.pSampler, ",", pBlock._pBuffer.pHeader, ",", pVar.pPointers[0]);
+                if (sPreviousName && pVar.iPadding > 0) {
+                    pCode.push("+", pVar.iPadding);
+                }
+                if (isArray) {
+                    pCode.push("+", iOffset);
+                }
+                pCode.push(")");
+                if (pVar.pType.isEqual(this.hasType("float")) ||
+                    pVar.pType.isEqual(this.hasType("float4x4")) ||
+                    pVar.pType.isEqual(this.hasType("float2")) ||
+                    pVar.pType.isEqual(this.hasType("float3")) ||
+                    pVar.pType.isEqual(this.hasType("float4"))) {
+                    pCode.push(");");
+                }
+                else if (pVar.pType.isEqual(me.hasType("bool"))) {
+                    pCode.push("!=0.0);");
+                }
+                else {
+                    pCode.push("));");
+                }
+            }
+            if (isArray) {
+                pCode.push(";");
+            }
+        }
+        else {
+            error("Don`t suppot non primitivies types");
+            return false;
+        }
+//            var iScope = pVar.iScope;
+//            var pOrders = pVar.pType.pEffectType.pDesc.pOrders;
+//            var i;
+//            var sName;
+//            var pScope = me._ppScopes[iScope].pStructTable;
+//            if (!pScope) {
+//                error("Impossible to etract variable");
+//            }
+//            if (sPreviousName) {
+//                sPreviousName += pVar.pVar.sName;
+//            }
+//            else {
+//                sPreviousName = pVar.sName;
+//            }
+//            for (i = 0; i < pOrders.length; i++) {
+//                sName = sPreviousName + pOrders[i].sName;
+//
+//            }
+//        }
     }
-    else if (pVar.pType.isEqual(this.hasType("int"))) {
-        pBlock._pCodeData.push("int(A_extractFloat(");
-        pFunction._pExtractFunctions["float"] = null;
-    }
-    else if (pVar.pType.isEqual(this.hasType("float2"))) {
-        pBlock._pCodeData.push("A_extractVec2(");
-        pFunction._pExtractFunctions["float"] = null;
-        pFunction._pExtractFunctions["vec2"] = null;
-    }
-    else if (pVar.pType.isEqual(this.hasType("float3"))) {
-        pBlock._pCodeData.push("A_extractVec3(");
-        pFunction._pExtractFunctions["float"] = null;
-        pFunction._pExtractFunctions["vec3"] = null;
-    }
-    else if (pVar.pType.isEqual(this.hasType("float4"))) {
-        pBlock._pCodeData.push("A_extractVec4(");
-        pFunction._pExtractFunctions["float"] = null;
-        pFunction._pExtractFunctions["vec4"] = null;
-    }
-    else if (pVar.pType.isEqual(this.hasType("int2"))) {
-        pBlock._pCodeData.push("ivec2(A_extractVec2(");
-        pFunction._pExtractFunctions["float"] = null;
-        pFunction._pExtractFunctions["vec2"] = null;
-    }
-    else if (pVar.pType.isEqual(this.hasType("int3"))) {
-        pBlock._pCodeData.push("ivec3(A_extractVec3(");
-        pFunction._pExtractFunctions["float"] = null;
-        pFunction._pExtractFunctions["vec3"] = null;
-    }
-    else if (pVar.pType.isEqual(this.hasType("int4"))) {
-        pBlock._pCodeData.push("ivec4(A_extractVec4(");
-        pFunction._pExtractFunctions["float"] = null;
-        pFunction._pExtractFunctions["vec4"] = null;
-    }
-    else if (pVar.pType.isEqual(this.hasType("bool2"))) {
-        pBlock._pCodeData.push("bvec2(A_extractVec2(");
-        pFunction._pExtractFunctions["float"] = null;
-        pFunction._pExtractFunctions["vec2"] = null;
-    }
-    else if (pVar.pType.isEqual(this.hasType("bool3"))) {
-        pBlock._pCodeData.push("bvec3(A_extractVec3(");
-        pFunction._pExtractFunctions["float"] = null;
-        pFunction._pExtractFunctions["vec3"] = null;
-    }
-    else if (pVar.pType.isEqual(this.hasType("bool4"))) {
-        pBlock._pCodeData.push("bvec4(A_extractVec4(");
-        pFunction._pExtractFunctions["float"] = null;
-        pFunction._pExtractFunctions["vec4"] = null;
-    }
-    else if (pVar.pType.isEqual(this.hasType("float4x4"))) {
-        pBlock._pCodeData.push("A_extractMat4(");
-        pFunction._pExtractFunctions["float"] = null;
-        pFunction._pExtractFunctions["vec4"] = null;
-        pFunction._pExtractFunctions["Mat4"] = null;
-    }
-    else {
-        error("We don`t support another simple type");
-        return;
-    }
-    pBlock._pCodeData.push(pBlock._pBuffer.pSampler, ",", pBlock._pBuffer.pHeader, ",", pVar.pPointers[0], ")");
-    if (pVar.pType.isEqual(this.hasType("float")) ||
-        pVar.pType.isEqual(this.hasType("float4x4")) ||
-        pVar.pType.isEqual(this.hasType("float2")) ||
-        pVar.pType.isEqual(this.hasType("float3")) ||
-        pVar.pType.isEqual(this.hasType("float4"))) {
-        pBlock._pCodeData.push(");");
-    }
-    else if (pVar.pType.isEqual(this.hasType("bool"))) {
-        pBlock._pCodeData.push("!=0.0);");
-    }
-    else {
-        pBlock._pCodeData.push("));")
-    }
+
+    fnExtract(pVar, pBlock._pCodeData, pFunction, this);
+
 };
 
 Effect.prototype.addVariable = function (pVar, isParams) {
@@ -3908,7 +3996,7 @@ Effect.prototype.analyze = function (pTree) {
     this.postAnalyzeEffect();
     this.checkEffect();
     this.endScope();
-    console.log("Time of analyzing effect file(without parseing) ", a.now() - time);
+    trace("Time of analyzing effect file(without parseing) ", a.now() - time, "Result effect: ", this);
     return true;
 //    }
 //    catch (e) {
@@ -4765,7 +4853,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 }
                 pFunc = this.findFunction(pChildren[pChildren.length - 1].sValue, pTypes);
                 if (!pFunc) {
-                    error("bad 108");
+                    error("can not find function: " + pChildren[pChildren.length - 1].sValue);
                     return;
                 }
                 pType1 = pFunc.pReturnType;

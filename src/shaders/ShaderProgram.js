@@ -101,6 +101,7 @@ ShaderProgram.prototype.create = function (sHash, sVertexCode, sFragmentCode) {
     return true;
 };
 ShaderProgram.prototype.setup = function (pAttrData, pUniformData, pTextures) {
+    trace(this);
     var pDevice = this._pDevice;
     var pProgram = this._pHardwareProgram;
     var pUniforms = this._pRealUniformList;
@@ -135,6 +136,7 @@ ShaderProgram.prototype.setup = function (pAttrData, pUniformData, pTextures) {
             pAttrReal[sKey1] = pRealAttr[pAttrReal[sKey1]];
             if (pData.eType === a.BufferMap.FT_MAPPABLE) {
                 sOffset = a.fx.SHADER_PREFIX.OFFSET + sKey1;
+//                trace(sOffset);
                 pUniforms[sOffset] = pDevice.getUniformLocation(pProgram, sOffset);
                 pOffsets[sOffset] = null;
                 pBuffers[a.fx.SHADER_PREFIX.SAMPLER + this._pAttrToBuffer[sKey1]] = null;
@@ -239,6 +241,9 @@ ShaderProgram.prototype._buildShader = function (eType, sCode) {
  */
 
 ShaderProgram.prototype.applyUniform = function (sName, pData) {
+    if (pData === null) {
+        return false;
+    }
     var pType, sType;
     if (this._pUniformVars[sName]) {
         pType = this._pUniformVars[sName].pType.pEffectType;
@@ -262,6 +267,9 @@ ShaderProgram.prototype.applyUniform = function (sName, pData) {
                 break;
             case "vec4":
                 this.applyVec4(sName, pData);
+                break;
+            case "mat3":
+                this.applyMat3(sName, pData);
                 break;
             case "mat4":
                 this.applyMat4(sName, pData);
@@ -291,30 +299,55 @@ ShaderProgram.prototype.applyUniform = function (sName, pData) {
     }
 };
 ShaderProgram.prototype.applyFloat = function (sName, pData) {
+    if (pData === null) {
+        return false;
+    }
     var pDevice = this._pDevice;
     pDevice.uniform1f(this._pRealUniformList[sName], pData);
 };
 ShaderProgram.prototype.applyInt = function (sName, pData) {
+    if (pData === null) {
+        return false;
+    }
     var pDevice = this._pDevice;
     pDevice.uniform1i(this._pRealUniformList[sName], pData);
 };
 ShaderProgram.prototype.applyVec2 = function (sName, pData) {
+    if (pData === null) {
+        return false;
+    }
     pData = (pData.pData !== undefined) ? pData.pData : pData;
     var pDevice = this._pDevice;
     pDevice.uniform2fv(this._pRealUniformList[sName], pData);
 };
 ShaderProgram.prototype.applyVec3 = function (sName, pData) {
+    if (pData === null) {
+        return false;
+    }
     pData = (pData.pData !== undefined) ? pData.pData : pData;
     var pDevice = this._pDevice;
     pDevice.uniform3fv(this._pRealUniformList[sName], pData);
 };
 ShaderProgram.prototype.applyVec4 = function (sName, pData) {
+    if (pData === null) {
+        return false;
+    }
     pData = (pData.pData !== undefined) ? pData.pData : pData;
     var pDevice = this._pDevice;
     pDevice.uniform4fv(this._pRealUniformList[sName], pData);
 };
+ShaderProgram.prototype.applyMat3 = function (sName, pData) {
+    if (pData === null) {
+        return false;
+    }
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pDevice = this._pDevice;
+    pDevice.uniformMatrix3fv(this._pRealUniformList[sName], false, pData);
+};
 ShaderProgram.prototype.applyMat4 = function (sName, pData) {
-    trace(sName);
+    if (pData === null) {
+        return false;
+    }
     pData = (pData.pData !== undefined) ? pData.pData : pData;
     var pDevice = this._pDevice;
     pDevice.uniformMatrix4fv(this._pRealUniformList[sName], false, pData);
@@ -375,6 +408,9 @@ ShaderProgram.prototype.applySampler2D = function (sName, pData) {
     return this.applyInt(sRealName, iSlot);
 };
 ShaderProgram.prototype.applyData = function (pData, iSlot) {
+    if (!pData) {
+        return false;
+    }
     if (this._eActiveStream[iSlot] === this._eActiveStream) {
         return true;
     }
@@ -388,7 +424,6 @@ ShaderProgram.prototype.applyData = function (pData, iSlot) {
         pVertexData = pData;
     }
     var pDevice = this._pDevice;
-    var iOffset = 0;
     var iStride = pVertexData.getStride();
     var pManager = this._pRenderer;
     var pAttrs = this._pAttrToReal,
@@ -397,13 +432,22 @@ ShaderProgram.prototype.applyData = function (pData, iSlot) {
     var pVertexElement;
     var pVertexBuffer = pVertexData.buffer;
     var iState = pManager.getRenderResourceState(pVertexBuffer);
+    var iStreamState = this.toNumber();
     var isActivate = false;
+    var isChange = false;
     pDecl = pVertexData.getVertexDeclaration();
     if (isMapper) {
-        if (this._pStreams[iSlot] === iState) {
+        if (iStreamState !== pManager._getStreamState(iSlot)) {
+            isChange = true;
+        }
+        else if(this._pStreams[iSlot] !== iState) {
+            isChange = true;
+        }
+        if(!isChange){
             return true;
         }
         this._pStreams[iSlot] = iState;
+        pManager._occupyStream(iSlot, this);
         pManager.activateVertexBuffer(pVertexBuffer, true);
         pVertexElement = pDecl.element(pData.eSemantics);
         pDevice.vertexAttribPointer(iSlot,
@@ -418,13 +462,17 @@ ShaderProgram.prototype.applyData = function (pData, iSlot) {
     for (var i = 0; i < pDecl.length; i++) {
         pVertexElement = pDecl[i];
         iStream = pAttrs[pVertexElement.eUsage];
-        if (iStream === undefined) {
-            continue;
+        if (iStreamState !== pManager._getStreamState(iSlot)) {
+            isChange = true;
         }
-        if (this._pStreams[iStream] === iState) {
-            continue;
+        else if(this._pStreams[iStream] !== iState) {
+            isChange = true;
+        }
+        if(!isChange){
+            return true;
         }
         this._pStreams[iStream] = iState;
+        pManager._occupyStream(iStream, this);
         if (!isActivate) {
             pManager.activateVertexBuffer(pVertexBuffer, true);
             isActivate = true;

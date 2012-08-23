@@ -603,6 +603,7 @@ PassBlend.prototype.addPass = function (pPass) {
             pVar1 = pVertex._pAttrSemantics[i];
             pVar2 = this.pAttributes[i];
             if (pVar2) {
+                trace(pVar2, pVar1);
                 if (pVar2 instanceof Array) {
                     isEqual = false;
                     for (j = 0; j < pVar2.length; j++) {
@@ -672,8 +673,7 @@ PassBlend.prototype.addPass = function (pPass) {
                     this.pGlobalBuffers[sName] = [];
                 }
                 this.pGlobalBuffers[sName].push(pVar1.pBuffer);
-                this.pGlobalBuffersDecl[sName] = null;
-                this.pGlobalBuffersInit[sName] = null;
+                this._pBuffersToReal[sName] = null;
                 this.pGlobalBuffersF[sName] = null;
                 continue;
             }
@@ -683,7 +683,7 @@ PassBlend.prototype.addPass = function (pPass) {
                     this.pSamplers[sName] = [];
                 }
                 this.pSamplers[sName].push(pVar1);
-                this.pSamplersDecl[sName] = null;
+                this._pSamplersToReal[sName] = null;
                 this.pSamplersF[sName] = null;
                 continue;
             }
@@ -815,8 +815,8 @@ PassBlend.prototype.finalizeBlend = function () {
     this.sVaryingsOut = "struct { vec4 POSITION;";
 
     for (i in this.pVaryings) {
-        this.sVaryingsOut += this.pVaryings[i].toCodeDecl();
-        this.pVaryingsBlock[i] = i + "=" + a.fx.GLOBAL_VARS.SHADEROUT + "." + i + ";";
+        this.sVaryingsOut += this.pVaryings[i].pType.pEffectType.toCode() + " " + this.pVaryings[i].sSemantic + ";";
+        this.pVaryingsBlock[i] = this.pVaryings[i].sRealName + "=" + a.fx.GLOBAL_VARS.SHADEROUT + "." + i + ";";
     }
     this.pVaryingsBlock["POSITION"] = "gl_Position=" + a.fx.GLOBAL_VARS.SHADEROUT + ".POSITION;";
     this.sVaryingsOut += "} " + a.fx.GLOBAL_VARS.SHADEROUT + ";"
@@ -996,6 +996,9 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         for (j = i; j < pKeys.length; j++) {
             sKey2 = pKeys[j];
             pData2 = pAttrData[sKey2];
+            if (pData2 === null) {
+                continue;
+            }
             if (pData1 === pData2) {
                 pAttrToReal[sKey2] = nAttr;
             }
@@ -1135,7 +1138,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     }
 
     for (i = 0; i < pTexcoords.length; i++) {
-        if (pTexcoords[i] !== undefined && pTexcoords[i] !== null) {
+        if (pTexcoords[i] !== undefined && pTexcoords[i] !== null && i !== pTexcoords[i]) {
             sName1 = a.fx.SHADER_PREFIX.TEXCOORD + i;
             pAttr = this.pAttributes[sName1];
             if (pAttr) {
@@ -1271,14 +1274,14 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         sVertexCode += pTempVarsDecl[i];
     }
     for (i = 0; i < pTexcoords.length; i++) {
-        if (pTexcoords[i] !== undefined && pTexcoords[i] !== null) {
+        if (pTexcoords[i] !== undefined && pTexcoords[i] !== null && i !== pTexcoords[i]) {
             sName1 = a.fx.SHADER_PREFIX.TEXCOORD + i;
             sName2 = a.fx.SHADER_PREFIX.TEXCOORD + pTexcoords[i];
             pAttr = this.pAttributes[sName1];
             pAttr1 = this.pAttributes[sName2];
             if (pAttr && pAttr1) {
                 sVertexCode += sName1 + "=" + pAttr.pType.pEffectType.toCode() + "(" +
-                               (pTempVarsDecl[sName2] ? pTempVarsDecl[sName2] : sName2) + ");";
+                               (pTempVarsDecl[sName2] ? (a.fx.SHADER_PREFIX.TEMP + pTexcoords[i]) : sName2) + ");";
             }
         }
     }
@@ -1328,7 +1331,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     for (i = 0; i < nRealSamplers; i++) {
         if (TEST_BIT(pSamplersUsage[i], 2)) {
             nSamplers--;
-            sVertexCode += this._pRealSamplersDecl[i];
+            sFragmentCode += this._pRealSamplersDecl[i];
         }
     }
     //Check number of samplers
@@ -1347,7 +1350,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     for (i = 0; i < nRealSamplers; i++) {
         if (TEST_BIT(pSamplersUsage[i], 3)) {
             nSamplers--;
-            sVertexCode += this._pRealBuffesDecl[i];
+            sFragmentCode += this._pRealBuffesDecl[i];
         }
     }
     for (i in this.pGlobalVarBlockF) {
@@ -1371,7 +1374,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     for (i = 0; i < nRealSamplers; i++) {
         if (TEST_BIT(pSamplersUsage[i], 3)) {
             nSamplers--;
-            sVertexCode += this._pRealBuffesDecl[i];
+            sFragmentCode += this._pRealBuffesDecl[i];
         }
     }
     //Calls shader`s functions
@@ -1398,6 +1401,5 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     }
     trace(pProgram);
     return pProgram;
-}
-;
+};
 A_NAMESPACE(PassBlend, fx);

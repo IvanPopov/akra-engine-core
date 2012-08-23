@@ -284,6 +284,7 @@ RenderSnapshot.prototype.prepareForRender = function () {
  * @tparam SurfaceMaterial
  */
 RenderSnapshot.prototype.applySurfaceMaterial = function (pSurfaceMaterial) {
+    pSurfaceMaterial = pSurfaceMaterial || this._pRenderMethod._pMaterial;
     this._pShaderManager.applySurfaceMaterial(pSurfaceMaterial);
 };
 

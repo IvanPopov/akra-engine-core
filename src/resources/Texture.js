@@ -21,6 +21,7 @@ Enum([
  */
 function Texture(pEngine) {
     A_CLASS;
+
     /**
      * @enum eTextureFlags
      * @memberOf Texture
@@ -69,6 +70,7 @@ function Texture(pEngine) {
     this._eType = a.ITYPE.UNSIGNED_BYTE;
 
     this._iSlot = -1;
+    this._pEngine = pEngine;
 }
 
 a.extend(Texture, a.ResourcePoolItem, a.RenderableObject);
@@ -567,6 +569,7 @@ Texture.prototype.loadResource = function (sFileName) {
     else if ((sExt = (a.pathinfo(sFileName).ext)) &&
              (sExt == "bmp" || sExt == "jpeg" || sExt == "gif" || sExt == "png")) {
         var pImage = new Image();
+        trace("TEXTURE LOAD",this._pEngine);
         pImage.onload = function () {
             me.uploadHTMLElement(pImage);
         }
@@ -641,7 +644,7 @@ Texture.prototype.uploadHTMLElement = function (pElement) {
         SET_BIT(this._iFlags, a.Texture.Dinamic);
     }
 
-    this.bind();
+    this._pEngine.shaderManager().bindTexture(this);
     this.flipY();
     pDevice.texImage2D(a.TTYPE.TEXTURE_2D, 0, this._eFormat, this._eFormat,
                        this._eType, pElement);
@@ -650,7 +653,7 @@ Texture.prototype.uploadHTMLElement = function (pElement) {
     this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
     this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
     this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
-    this.unbind();
+//    this.unbind();
 
     this.notifyLoaded();
     this.notifyRestored();

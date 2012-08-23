@@ -313,7 +313,7 @@ DisplayManager.prototype.getTextLayer = function () {
  */
 DisplayManager.prototype.initialize = function () {
 
-    this._pDevice.clearColor(0.5, 0.5, 0.5, 1.0);
+    this._pDevice.clearColor(0, 0, 0.5, 1.0);
     this._pDevice.clearStencil(0.);
     this._pDevice.clearDepth(1.0);
 
