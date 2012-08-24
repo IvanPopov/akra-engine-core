@@ -552,6 +552,7 @@ Renderer.prototype.deactivateRenderObject = function () {
  * @param iPass
  */
 Renderer.prototype.finishPass = function (iPass) {
+    trace("Render Pass #" + iPass + " start!");
     if (this._pPreRenderState.pBlend.totalValidPasses() <= iPass) {
         warning("You try finish bad pass");
         return false;
@@ -633,7 +634,6 @@ Renderer.prototype.finishPass = function (iPass) {
     pNewPassBlend = [];
 
     for (i = 0; i < iStackLength; i++) {
-
         nShift = pStateStack[i].nShift;
         pBlend = pStateStack[i].pBlend;
         index = nPass - nShift;
@@ -649,9 +649,11 @@ Renderer.prototype.finishPass = function (iPass) {
                 if (pPass.isComplex) {
                     pPass.prepare(this._pEngineStates, pUniformValues);
                 }
-                sPassBlendHash += "V::" + (pPass.pVertexShader.sRealName ? pPass.pVertexShader.sRealName : "EMPTY");
+                sPassBlendHash += "V::" + ((pPass.pVertexShader &&
+                                            pPass.pVertexShader.sRealName) ? pPass.pVertexShader.sRealName : "EMPTY");
                 sPassBlendHash += "F::" +
-                                  (pPass.pFragmentShader.sRealName ? pPass.pFragmentShader.sRealName : "EMPTY");
+                                  ((pPass.pFragmentShader &&
+                                    pPass.pFragmentShader.sRealName) ? pPass.pFragmentShader.sRealName : "EMPTY");
                 pNewPassBlend.push(pPass);
                 pPass.isEval = true;
             }
@@ -809,6 +811,7 @@ Renderer.prototype.finishPass = function (iPass) {
     if (this._pRenderState.iFrameBuffer !== null) {
         this._pFrameBufferCounters[this._pRenderState.iFrameBuffer]--;
     }
+    trace("Render Pass #" + iPass + " finish!");
     return {
         "pProgram"        : pProgram,
         "pAttributes"     : pAttrs,
@@ -860,9 +863,7 @@ Renderer.prototype._releasePreRenderState = function (pState) {
 };
 Renderer.prototype._getSystemUniformValue = function (sName) {
     var pRenderObject = this._pActiveRenderObject;
-    var pData;
     var pCamera = this.pEngine.getActiveCamera();
-    trace("SYSTEM SEMANTICS :" + sName);
     switch (sName) {
         case a.Renderer.MODEL_MATRIX:
             if (pRenderObject && pRenderObject._m4fWorldMatrix) {
@@ -879,7 +880,6 @@ Renderer.prototype._getSystemUniformValue = function (sName) {
         case a.Renderer.PROJ_MATRIX:
             return pCamera.projectionMatrix();
         case a.Renderer.EYE_POS:
-            console.log("EYE_POSITION", pCamera, pCamera.worldPosition());
             return pCamera.worldPosition();
         default:
             warning("Unsupported system semantic");
@@ -991,6 +991,15 @@ Renderer.prototype.getUniformRealName = function (sName) {
     }
     return pBlend.pUniformsBlend[pSnapshot._iCurrentPass].pUniformsByName[sName];
 };
+Renderer.prototype.isUniformTypeBase = function (sRealName) {
+    var pSnapshot = this._pPreRenderState.pSnapshot;
+    var pBlend = this._pPreRenderState.pBlend;
+    if (!pBlend || !pSnapshot) {
+        return false;
+    }
+    return pBlend.pUniformsBlend[pSnapshot._iCurrentPass].pUniformsByRealName[sRealName].pType.isBase();
+};
+
 Renderer.prototype.getTextureRealName = function (sName) {
     var pSnapshot = this._pPreRenderState.pSnapshot;
     var pBlend = this._pPreRenderState.pBlend;

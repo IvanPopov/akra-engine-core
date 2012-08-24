@@ -529,6 +529,7 @@ function EffectType(sName, sRealName, isBase, iSize) {
     this._sStrongHash = isBase ? sName : null;
     this._canMixible = isBase ? true : false;
     this.iScope = -1;
+    this.nOrder = 0;
 }
 EffectType.prototype.hash = function () {
     if (!this._sHash) {
@@ -1147,7 +1148,7 @@ EffectVariable.prototype.setType = function (pType) {
         this.isGlobal = (pType.pUsagesName["global"] === null) ? true : false;
         this.isUniform = this.isUniform || this.isSampler;
     }
-    this.iSize = this.pType.pEffectType * this.iLength;
+    this.iSize = this.pType.pEffectType.iSize * this.iLength;
 };
 EffectVariable.prototype.addAnnotation = function (pAnnotation) {
     this.pAnnotation = pAnnotation;
@@ -3666,6 +3667,7 @@ Effect.prototype.addType = function (pType) {
     pType.sRealName = pType.sName + "_" + this._iScope + "_" + this._id;
     pType.iScope = this._iScope;
     pType.calcHash();
+    pType.nOrder = this.nCurrentDecl;
 };
 Effect.prototype.hasType = function (sTypeName) {
     var pType = this.isBaseType(sTypeName);

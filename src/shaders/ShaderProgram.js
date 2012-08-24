@@ -7,7 +7,7 @@ function ShaderProgram(pEngine) {
     A_CLASS;
     this._pEngine = pEngine;
     this._sHash = null;
-    //console.log(pEngine);
+    //trace(pEngine);
     this._pDevice = pEngine.pDevice;
     this._pRenderer = pEngine.shaderManager();
     this._sFragmentCode = "#ifdef GL_ES\nprecision lowp float;\n#endif\n" +
@@ -101,7 +101,6 @@ ShaderProgram.prototype.create = function (sHash, sVertexCode, sFragmentCode) {
     return true;
 };
 ShaderProgram.prototype.setup = function (pAttrData, pUniformData, pTextures) {
-    trace(this);
     var pDevice = this._pDevice;
     var pProgram = this._pHardwareProgram;
     var pUniforms = this._pRealUniformList;
@@ -110,13 +109,13 @@ ShaderProgram.prototype.setup = function (pAttrData, pUniformData, pTextures) {
     var pUniformsKeys = [];
     var pSamplers = this._pPassBlend.pSamplers,
         pGlobalBuffers = this._pPassBlend.pGlobalBuffers;
-    var i = 0;
+    var i = 0, n;
     var pKeys;
     var sKey1,
         sOffset,
         sSampler,
         sTexture;
-    var pData, pTexture;
+    var pData, pTexture, pUniformInfo;
     var pRealAttr = this._pRealAttr,
         pAttrReal = this._pAttrToReal,
         pRealSamplers = this._pRealSamplers,
@@ -124,9 +123,16 @@ ShaderProgram.prototype.setup = function (pAttrData, pUniformData, pTextures) {
     for (i = 0; i < pRealAttr.length; i++) {
         pRealAttr[i] = pDevice.getAttribLocation(pProgram, a.fx.SHADER_PREFIX.ATTRIBUTE + i);
     }
+    for (i = 0, n = pDevice.getProgramParameter(pProgram, pDevice.ACTIVE_UNIFORMS); i < n; i++) {
+        pUniformInfo = pDevice.getActiveUniform(pProgram, i);
+        pUniformsKeys.push(pUniformInfo.name);
+    }
+    for (i = 0; i < pUniformsKeys.length; i++) {
+        pUniforms[pUniformsKeys[i]] = pDevice.getUniformLocation(pProgram, pUniformsKeys[i]);
+    }
     for (i = 0; i < pRealSamplers.length; i++) {
         sSampler = a.fx.SHADER_PREFIX.SAMPLER + i;
-        pUniforms[sSampler] = pRealSamplers[i] = pDevice.getUniformLocation(pProgram, sSampler);
+        pRealSamplers[i] = pUniforms[sSampler];
     }
     pKeys = this._pATRKeys;
     for (i = 0; i < pKeys.length; i++) {
@@ -136,31 +142,14 @@ ShaderProgram.prototype.setup = function (pAttrData, pUniformData, pTextures) {
             pAttrReal[sKey1] = pRealAttr[pAttrReal[sKey1]];
             if (pData.eType === a.BufferMap.FT_MAPPABLE) {
                 sOffset = a.fx.SHADER_PREFIX.OFFSET + sKey1;
-//                trace(sOffset);
-                pUniforms[sOffset] = pDevice.getUniformLocation(pProgram, sOffset);
-                pOffsets[sOffset] = null;
-                pBuffers[a.fx.SHADER_PREFIX.SAMPLER + this._pAttrToBuffer[sKey1]] = null;
-                pUniformsKeys.push(sOffset);
-                pUniformsKeys.push(a.fx.SHADER_PREFIX.SAMPLER + this._pAttrToBuffer[sKey1]);
+                if (pUniforms[sOffset]) {
+                    pOffsets[sOffset] = null;
+                    pBuffers[a.fx.SHADER_PREFIX.SAMPLER + this._pAttrToBuffer[sKey1]] = null;
+                }
             }
         }
     }
-    if (this._isZeroSampler) {
-        pUniforms[PassBlend.sZeroSampler] = pDevice.getUniformLocation(pProgram, PassBlend.sZeroSampler);
-    }
-    pKeys = Object.keys(pUniformData);
-    for (i = 0; i < pKeys.length; i++) {
-        sKey1 = pKeys[i];
-        pData = pUniformData[sKey1];
-        if (pUniforms[sKey1]) {
-            warning("Something going wrong! very wrong!");
-            return false;
-        }
-        if (this._pSamplersToReal[sKey1] === undefined && this._pBuffersToReal[sKey1] === undefined) {
-            pUniforms[sKey1] = pDevice.getUniformLocation(pProgram, sKey1);
-        }
-        pUniformsKeys.push(sKey1);
-    }
+
     this._pUniformKeys = pUniformsKeys;
     this._pStreams = new Array(pRealAttr.length);
     this._pActiveStreams = new Array(pRealAttr.length);
@@ -211,12 +200,14 @@ ShaderProgram.prototype.generateInputData = function (pAttrData, pUniformData) {
             pAttrs[pAttrReal[sKey]] = pData.pMapper;
             sOffset = a.fx.SHADER_PREFIX.OFFSET + sKey;
             if (pUniformData[sOffset] !== undefined) {
-                warning("something wrong with offset");
+                warning("Something bad with offsets");
                 continue;
             }
-            pUniformData[sOffset] = pData.pData.getVertexDeclaration().element(sKey).iOffset;
-            sBuf = a.fx.SHADER_PREFIX.SAMPLER + this._pAttrToBuffer[sKey];
-            pUniformData[sBuf] = pData.pData.buffer;
+            if (this._pOffsets[sOffset] === null) {
+                pUniformData[sOffset] = pData.pData.getVertexDeclaration().element(sKey).iOffset;
+                sBuf = a.fx.SHADER_PREFIX.SAMPLER + this._pAttrToBuffer[sKey];
+                pUniformData[sBuf] = pData.pData.buffer;
+            }
         }
     }
     return pAttrs;
@@ -440,10 +431,10 @@ ShaderProgram.prototype.applyData = function (pData, iSlot) {
         if (iStreamState !== pManager._getStreamState(iSlot)) {
             isChange = true;
         }
-        else if(this._pStreams[iSlot] !== iState) {
+        else if (this._pStreams[iSlot] !== iState) {
             isChange = true;
         }
-        if(!isChange){
+        if (!isChange) {
             return true;
         }
         this._pStreams[iSlot] = iState;
@@ -465,10 +456,10 @@ ShaderProgram.prototype.applyData = function (pData, iSlot) {
         if (iStreamState !== pManager._getStreamState(iSlot)) {
             isChange = true;
         }
-        else if(this._pStreams[iStream] !== iState) {
+        else if (this._pStreams[iStream] !== iState) {
             isChange = true;
         }
-        if(!isChange){
+        if (!isChange) {
             return true;
         }
         this._pStreams[iStream] = iState;
@@ -547,7 +538,7 @@ ShaderProgram.prototype.activateTextures = function () {
     var iCheck = this._nActiveTimes;
     for (i = 0; i < this._pTextureSlots.length; i++) {
         if (this._pTextureSlots[i] === iCheck) {
-            console.log("Activate texture slot #" + i);
+            trace("Activate texture slot #" + i);
             this._pRenderer._activateTextureSlot(i, this._pTextureParams[i]);
         }
     }

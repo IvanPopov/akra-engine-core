@@ -152,14 +152,34 @@ RenderSnapshot.prototype.setParameter = function (sName, pData, isSemantic) {
     if (!sRealName) {
         return false;
     }
-    return this.setParameterBySemantic(sRealName, pData);
+    var isBaseType = this._pShaderManager.isUniformTypeBase(sRealName);
+    if (isBaseType) {
+        return this.setParameterBySemantic(sRealName, pData);
+    }
+    else {
+        var sParamName;
+        var bReturn = true;
+        for (var i in pData) {
+            sParamName = sName + "." + i;
+            bReturn &= this.setParameter(sParamName, pData[i]);
+        }
+        return bReturn;
+    }
 };
 
 RenderSnapshot.prototype.setParameterBySemantic = function (sRealName, pData) {
+    var isBaseType = this._pShaderManager.isUniformTypeBase(sRealName);
     var pPass = this._pPassStates[this._iCurrentPass];
-    if (pPass[sRealName] !== undefined) {
+    if (isBaseType && pPass[sRealName] !== undefined) {
         pPass[sRealName] = pData;
         return true;
+    }
+    else if (!isBaseType) {
+        var sName;
+        for (var i in pData) {
+            sName = sRealName + "." + i;
+            this.setParameterBySemantic(sName, pData[i]);
+        }
     }
     return false;
 };
@@ -341,18 +361,18 @@ RenderSnapshot.prototype.setSamplerStatesBySemantic = function () {
     return true;
 };
 
-RenderSnapshot.prototype.applyTexture = function(sName, pTexture, isSemantic){
-    if(isSemantic){
+RenderSnapshot.prototype.applyTexture = function (sName, pTexture, isSemantic) {
+    if (isSemantic) {
         this.applyTextureBySemantic(sName, pTexture);
     }
-    var sRealName =  this._pShaderManager.getTextureRealName(sName);
-    if(!sRealName){
+    var sRealName = this._pShaderManager.getTextureRealName(sName);
+    if (!sRealName) {
         return false;
     }
     return this.applyTextureBySemantic(sRealName, pTexture);
 };
-RenderSnapshot.prototype.applyTextureBySemantic = function(sRealName, pTexture){
-    if(!this._pTextures){
+RenderSnapshot.prototype.applyTextureBySemantic = function (sRealName, pTexture) {
+    if (!this._pTextures) {
         return false;
     }
     var pTextures = this._pTextures[this._iCurrentPass];
