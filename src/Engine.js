@@ -351,6 +351,10 @@ Engine.prototype.notifyInitDeviceObjects = function () {
  * @memberof Engine
  * @return Boolean
  **/
+
+var totalTime1 = 0.;
+var totalTime2 = 0.;
+
 Engine.prototype.renderScene = function () {
 
     //Получение всех объектов сцены, которые видны активной камере
@@ -367,8 +371,7 @@ Engine.prototype.renderScene = function () {
     var pDevice = this.pDevice;
 
     pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,this.pShadowTexture._pFrameBuffer);
-    pDevice.clearColor(0,0,0,0);
-    pDevice.clear(pDevice.COLOR_BUFFER_BIT | pDevice.DEPTH_BUFFER_BIT);
+    pDevice.clear(pDevice.DEPTH_BUFFER_BIT);
     pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,null);
 
 
@@ -382,7 +385,6 @@ Engine.prototype.renderScene = function () {
     }
 
     drawShadow = true;
-
     //рендеринг всех объектов
     pFirstMember = pRenderList;
     while (pFirstMember) {
@@ -391,7 +393,6 @@ Engine.prototype.renderScene = function () {
     }
 
     drawShadow = false;
-
     //рендеринг всех объектов
     pFirstMember = pRenderList;
     while (pFirstMember) {

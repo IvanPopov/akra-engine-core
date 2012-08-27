@@ -77,8 +77,6 @@ SceneModel.prototype.render = function () {
 
     var pShadowTexture = pEngine.pShadowTexture;
 
-    pDevice.disable(pDevice.BLEND);
-
     if (!pMesh || !pMesh.isReadyForRender()) {
         return;
     }
@@ -86,23 +84,6 @@ SceneModel.prototype.render = function () {
         var pSubMesh = pMesh[i];
         var pSurface = pSubMesh.surfaceMaterial;
 
-        if (pSubMesh.isSkinned()) {
-            if (pSubMesh.surfaceMaterial.totalTextures) {
-                pProgram = pEngine.pDrawMeshAnimProgTex;
-            }
-            else {
-                pProgram = pEngine.pDrawMeshAnimProg;
-            }
-        }
-        else if (pSubMesh.data.useAdvancedIndex()) {
-            pProgram = pEngine.pDrawMeshI2IProg;
-        }
-        else if (pSubMesh.surfaceMaterial.totalTextures) {
-            pProgram = pEngine.pDrawMeshTexProg;
-        }
-        else {
-            pProgram = pEngine.pDrawMeshProg;
-        }
 
         if(drawShadow){
             //draw shadow
@@ -116,6 +97,23 @@ SceneModel.prototype.render = function () {
             pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,pShadowTexture._pFrameBuffer);
         }
         else{
+            if (pSubMesh.isSkinned()) {
+                if (pSubMesh.surfaceMaterial.totalTextures) {
+                    pProgram = pEngine.pDrawMeshAnimProgTex;
+                }
+                else {
+                    pProgram = pEngine.pDrawMeshAnimProg;
+                }
+            }
+            else if (pSubMesh.data.useAdvancedIndex()) {
+                pProgram = pEngine.pDrawMeshI2IProg;
+            }
+            else if (pSubMesh.surfaceMaterial.totalTextures) {
+                pProgram = pEngine.pDrawMeshTexProg;
+            }
+            else {
+                pProgram = pEngine.pDrawMeshProg;
+            }
             pCamera = pEngine._pDefaultCamera; 
         }
 
@@ -124,17 +122,18 @@ SceneModel.prototype.render = function () {
 
         if(!drawShadow){
             var pLightPoint = pEngine.pLightPoint;
-            pEngine.pTempTexture.activate(11);
+            //pEngine.pTempTexture.activate(4);
+            pEngine.pShadowTexture.activate(4);
 
             pProgram.applyMatrix4('inverseView',pCamera.worldMatrix());
             pProgram.applyMatrix4('lightView',pLightPoint.viewMatrix());
             pProgram.applyMatrix4('lightProjection',pLightPoint.projectionMatrix());
             pProgram.applyVector2('shadowTextureSizeRatio',1,1);
-            pProgram.applyVector2('shadowTextureSize',2048,2048);
+            pProgram.applyVector2('shadowTextureSize',pShadowTexture.width,pShadowTexture.height);
 
             pProgram.applyVector3('lightPosition',pLightPoint.worldPosition());
 
-            pProgram.applySampler2D('shadowTexture',11);
+            pProgram.applySampler2D('shadowTexture',4);
         }
 
         if (pSubMesh.data.useAdvancedIndex()) {
@@ -155,27 +154,27 @@ SceneModel.prototype.render = function () {
             pSubMesh.skin.applyBoneMatrices();
             //trace(pSubMesh.skin.skeleton._pJoints);
         }
-        
-        if (pSurface.totalTextures) {
-            var iTextureFlags = pSurface.textureFlags;
-            var iTexActivator = 1;
-            
-            for (var j = 0; j < a.SurfaceMaterial.maxTexturesPerSurface; ++ j) {
-                if (!TEST_BIT(iTextureFlags, j)) {
-                    if (j < 4) {
-                        pProgram.applySampler2D('TEXTURE' + j, 15);
+        if(!drawShadow){
+            if (pSurface.totalTextures) {
+                var iTextureFlags = pSurface.textureFlags;
+                var iTexActivator = 1;
+                
+                for (var j = 0; j < a.SurfaceMaterial.maxTexturesPerSurface; ++ j) {
+                    if (!TEST_BIT(iTextureFlags, j)) {
+                        if (j < 4) {
+                            pProgram.applySampler2D('TEXTURE' + j, 15);
+                        }
+                        continue;
                     }
-                    continue;
-                }
 
-                pSurface.texture(j).activate(iTexActivator);
-                pProgram.applySampler2D('TEXTURE' + j, iTexActivator);
-                iTexActivator ++;
+                    pSurface.texture(j).activate(iTexActivator);
+                    pProgram.applySampler2D('TEXTURE' + j, iTexActivator);
+                    iTexActivator ++;
+                }
             }
         }
-
         if(drawShadow){
-            pDevice.viewport(0,0,2048,2048);
+            pDevice.viewport(0,0,pShadowTexture.width,pShadowTexture.height);
         }
         else{
             pDevice.viewport(0,0,pEngine.pCanvas.width,pEngine.pCanvas.height);    
@@ -183,7 +182,7 @@ SceneModel.prototype.render = function () {
 
         pSubMesh.draw();
     }
-    pDevice.flush();
+    pDevice.viewport(0,0,pEngine.pCanvas.width,pEngine.pCanvas.height);    
     pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,null);
     
 
