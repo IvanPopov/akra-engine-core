@@ -96,10 +96,11 @@ function Vec2(){
         }
     }
     else{
+        //trace('CREATE VECTOR2 >> ');
         this.pData = new Float32Array(2);
         v2fVec = this;
     }
-
+    
     var nArgumentsLength = arguments.length;
 
     if(nArgumentsLength == 1){
@@ -500,10 +501,11 @@ function Vec3(){
         }
     }
     else{
+        //trace('CREATE VECTOR3 >> ');
         this.pData = new Float32Array(3);
         v3fVec = this;
     }
-    
+
     var nArgumentsLength = arguments.length;
 
     if(nArgumentsLength == 1){
@@ -1037,7 +1039,7 @@ function Vec4(){
         this.pData = new Float32Array(4);
         v4fVec = this;
     }
-
+    //trace('CREATE VECTOR4 >> ');
     var nArgumentsLength = arguments.length;
 
     if(nArgumentsLength == 1){
@@ -2290,6 +2292,7 @@ function Mat4(){
         return this;
     }
     else{
+        //trace('CREATE MATRIX4 >> ');
         this.pData = new Float32Array(16);
         m4fMat = this;
     }

@@ -14,6 +14,7 @@ function AnimationContainer (pAnimation) {
 	this._bLoop = false;
 	this._pAnimation = pAnimation;
 	this._fDuration = pAnimation._fDuration;
+	this._bReverse = false;
 
 	this.name = 'player[' + pAnimation.name + ']';
 
@@ -76,6 +77,14 @@ AnimationContainer.prototype.inLoop = function () {
 	return this._bLoop;
 };
 
+AnimationContainer.prototype.reverse = function(bValue) {
+	this._bReverse = bValue;
+};
+
+AnimationContainer.prototype.isReversed = function() {
+	return this._bReverse;
+};
+
 AnimationContainer.prototype.time = function (fTime) {
     'use strict';
    
@@ -87,7 +96,11 @@ AnimationContainer.prototype.time = function (fTime) {
 
     if (this._bLoop) {
     	fTime = Math.mod(fTime, (this._pAnimation._fDuration));
+    	if (this._bReverse) {
+    		fTime = (this._pAnimation._fDuration) - fTime; 
+    	}
     }
+
 
     return fTime;
 };

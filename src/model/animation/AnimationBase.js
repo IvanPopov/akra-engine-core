@@ -89,9 +89,22 @@ AnimationBase.prototype.getTarget = function (sTarget) {
 	return this._pTargetMap[sTarget];
 };
 
-AnimationBase.prototype.grab = function (pAnimationBase) {
+// AnimationBase.prototype.buildTargetList = function() {
+// 	var pTargets = this._pTargetList;
+// 	var pTargetList = [];
+
+// 	for (var i = 0; i < pTargets.length; ++ i) { 
+// 		pTargetList.push(pTargets[i].name);
+// 	}
+
+// 	return pTargetList;
+// };
+
+AnimationBase.prototype.grab = function (pAnimationBase, bRewrite) {
     'use strict';
     
+    bRewrite = ifndef(bRewrite, true);
+
     var pAdoptTargets = pAnimationBase._pTargetList;
 
 	for (var i = 0; i < pAdoptTargets.length; ++ i) {
@@ -101,6 +114,8 @@ AnimationBase.prototype.grab = function (pAnimationBase) {
 			continue;
 		}
 
-		this.addTarget(pAdoptTargets[i].name, pAdoptTargets[i].target);
+		if (bRewrite || !this.getTarget(pAdoptTargets[i].name)) {
+			this.addTarget(pAdoptTargets[i].name, pAdoptTargets[i].target);
+		}
 	};
 };

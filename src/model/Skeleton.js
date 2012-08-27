@@ -67,10 +67,9 @@ Skeleton.prototype.getRootJoints = function () {
 	return this._pRootJoints;
 };
 
-Skeleton.prototype.isUpdated = function () {
-    'use strict';
-    
-	return true;
+
+Skeleton.prototype.getJointList = function() {
+	return this._pJointList;
 };
 
 Skeleton.prototype.addRootJoint = function (pJoint) {

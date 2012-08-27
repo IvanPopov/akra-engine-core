@@ -108,5 +108,5 @@ AnimationFrame.prototype.normilize = function () {
 	return this;
 };
 
-A_ALLOCATE_STORAGE(AnimationFrame, 16384);
+A_ALLOCATE_STORAGE(AnimationFrame, 4096/*16384*/);
 A_NAMESPACE(AnimationFrame);

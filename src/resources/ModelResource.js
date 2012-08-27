@@ -120,7 +120,7 @@ ModelResource.prototype.loadResource = function (sFilename, pOptions) {
     if (a.pathinfo(sFilename).ext.toLowerCase() === 'dae') {
         
         me._nFilesToBeLoaded ++;
-
+ 
         pOptions = pOptions || {drawJoints: false, wireframe: false};
         pOptions.file = sFilename;
         pOptions.modelResource = this;
@@ -146,7 +146,14 @@ ModelResource.prototype.loadResource = function (sFilename, pOptions) {
 ModelResource.prototype.loadAnimation = function (sFilename) {
     'use strict';
     
-    return this.loadResource(sFilename, {scene: false});
+    return this.loadResource(sFilename, 
+        {
+            scene: false, 
+            animation: true,
+            extractPoses: false, 
+            skeletons: this._pSkeletonList,
+            animationWithPose: true
+        });
 };
 
 A_NAMESPACE(ModelResource);

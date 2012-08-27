@@ -88,9 +88,15 @@ function Engine () {
  *
  * @return Boolean Успешно ли все создаллось
  **/
-Engine.prototype.create = function (sCanvasId) {
+Engine.prototype.create = function () {
     //инициализация
-    this.pCanvas = document.getElementById(sCanvasId);
+    if (typeof arguments[0] === 'string') {
+        this.pCanvas = document.getElementById(arguments[0]);
+    }
+    else {
+        this.pCanvas = arguments[0];
+    }
+
     this.pKeymap = new a.Keymap();
     this._pRootNode = new a.SceneNode(this); //Корень дерева сцены
     this._pDefaultCamera = new a.Camera(this);      //Камера по умолчанию
@@ -396,20 +402,22 @@ Engine.prototype.renderScene.renderList = null;
 Engine.prototype.run = function () {
     var me = this;
     var fnRender = function () {
-        window.requestAnimationFrame(fnRender, me.pCanvas);
         if (me._isDeviceLost) {
             //у нас пока он не теряется
             //но написать неплохо былобы
             debug_error("Девайс потерян");
         }
+        
         if (me._isActive) {
             if (!me.render3DEnvironment()) {
                 debug_error("a.render3DEnvironmen error");
             }
         }
 
+        requestAnimationFrame(fnRender, me.pCanvas);
     }
-    fnRender();
+    //fnRender();
+    requestAnimationFrame(fnRender, me.pCanvas);
     return true;
 };
 

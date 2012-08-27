@@ -12,6 +12,11 @@ function Animation (sName) {
 
 EXTENDS(Animation, a.AnimationBase);
 
+PROPERTY(Animation, 'totalTracks',
+	function () {
+		return this._pTracks.length;
+	});
+
 Animation.prototype.push = function (pTrack) {
     'use strict';
     
@@ -42,11 +47,21 @@ Animation.prototype.frame = function (sName, fTime) {
 
     var pPointer = this._pTargetMap[sName];
     
-    if (!pPointer) {
+    if (!pPointer || !pPointer.track) {
     	return null;
     }
 
 	return pPointer.track.frame(Math.clamp(fTime, 0, this._fDuration));
+};
+
+AnimationBase.prototype.extend = function(pAnimation) {
+	var pTracks = pAnimation._pTracks;
+
+	for (var i = 0; i < pTracks.length; ++ i) {
+		if (!this.getTarget(pTracks[i].targetName)) {
+			this.push(pTracks[i]);
+		}
+	}
 };
 
 A_NAMESPACE(Animation);

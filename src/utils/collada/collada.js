@@ -37,20 +37,26 @@ function COLLADA (pEngine, pSettings) {
     /* COMMON SETTINGS
      ------------------------------------------------------
      */
-    var sFilename           = pSettings.file || null;
-    var sContent            = pSettings.content || null;
-    var fnCallback          = pSettings.success || null;
-    var useSharedBuffer     = ifndef(pSettings.sharedBuffer, false);
+    var sFilename               = pSettings.file || null;
+    var sContent                = pSettings.content || null;
+    var fnCallback              = pSettings.success || null;
+    var useSharedBuffer         = ifndef(pSettings.sharedBuffer, false);
     //var iAnimationOptions   = ifndef(pSettings.animationOptions, a.Animation.REPEAT);
-    var useAnimation        = ifndef(pSettings.animation, true);
-    var useScene            = ifndef(pSettings.scene, true);
-    var useWireframe        = ifndef(pSettings.wireframe, false);
-    var bDrawJoints         = ifndef(pSettings.drawJoints, false);
-    var pModelResource      = ifndef(pSettings.modelResource, null);
+    var useAnimation            = ifndef(pSettings.animation, true);
+    var useScene                = ifndef(pSettings.scene, true);
+    var useWireframe            = ifndef(pSettings.wireframe, false);
+    var bDrawJoints             = ifndef(pSettings.drawJoints, false);
+    var pModelResource          = ifndef(pSettings.modelResource, null);
+    var bAnimationWithPose      = ifndef(pSettings.animationWithPose, false);
+    //извлекаем позу модели, в которой она находилась изначально.
+    var bExtractInitialPoses    = ifndef(pSettings.extractPoses, false);
+    var pPoseSkeletons          = ifndef(pSettings.skeletons, null);
 
     /* COMMON FUNCTIONS
      ------------------------------------------------------
      */
+
+    var sBasename = (sFilename? a.pathinfo(sFilename).filename : 'unknown');
 
     var pSupportedVertexFormat = [
         {sName: 'X', sType: 'float'},
@@ -1909,7 +1915,7 @@ function COLLADA (pEngine, pSettings) {
 
         var pTracks = buildAnimationTrackList(pAnimationData);
         var sAnimation = pAnimationData.length? pAnimationData[0].name:  null;
-        var pAnimation = new a.Animation(sAnimation || (sFilename? a.pathinfo(sFilename).filename : 'unknown'));
+        var pAnimation = new a.Animation(sAnimation || sBasename);
 
         for (var i = 0; i < pTracks.length; i++) {
             pAnimation.push(pTracks[i]);
@@ -1933,7 +1939,7 @@ function COLLADA (pEngine, pSettings) {
 
             pAnimationsList.push(pAnimation);
             
-            if (pModelResource) {
+            if (pModelResource && useAnimation) {
                 pModelResource.addAnimation(pAnimation);
             }
         };
@@ -2163,9 +2169,8 @@ function COLLADA (pEngine, pSettings) {
         return buildMaterials(pMesh, pMeshNode);
     };
 
-    function buildSkeleton (pSkinMeshNode) {
-        var pSkeletonsList      = pSkinMeshNode.pSkeleton;
-        var pSkeleton           = null;
+    function buildSkeleton (pSkeletonsList) {
+        var pSkeleton = null;
 
         pSkeleton = new a.Skeleton(pEngine, pSkeletonsList[0]); 
 
@@ -2173,7 +2178,7 @@ function COLLADA (pEngine, pSettings) {
             pSkeleton.addRootJoint(source(pSkeletonsList[i]).pConstructedNode);
         }
 
-        if (pModelResource) {
+        if (pModelResource && useScene) {
             pModelResource.addSkeleton(pSkeleton);
         }
 
@@ -2199,7 +2204,7 @@ function COLLADA (pEngine, pSettings) {
         var pSkeleton;
         var pSkin;
     
-        pSkeleton = buildSkeleton(pSkinMeshNode);
+        pSkeleton = buildSkeleton(pSkinMeshNode.pSkeleton);
         pMesh     = buildMesh({pGeometry: pGeometry, pMaterials: pMaterials});
 
         pSkin = new a.Skin(pMesh);
@@ -2216,6 +2221,8 @@ function COLLADA (pEngine, pSettings) {
         }
 
         pMesh.setSkin(pSkin);
+        pMesh.setSkeleton(pSkeleton);
+
         pSkeleton.attachMesh(pMesh);
 
         return pMesh;
@@ -2233,7 +2240,7 @@ function COLLADA (pEngine, pSettings) {
 
             debug_assert(pInstance, 'cannot find instance <' + pInstances[m].sUrl + '>\'s data');
 
-            if (pModelResource) {
+            if (pModelResource && useScene) {
                 pModelResource.addMesh(pInstance);
             }
 
@@ -2387,6 +2394,46 @@ Endif ();
         return pHierarchyNode;
     }
 
+    function buildInititalPose (pNodes, pSkeleton) {
+        var sPose = 'Pose-' + sBasename + '-' + pSkeleton.name;
+        var pPose = new a.Animation(sPose);
+        var pJointList = pSkeleton.getJointList();
+        var pTrack;
+       
+        findNode(pNodes, null, function (pNode) {
+            var sJoint = pNode.sid;
+            var sNodeId = pNode.id;
+
+            if (!pJointList[sJoint]) {
+                return;
+            }
+
+            pTrack = new a.AnimationTrack(sJoint);
+            pTrack.nodeName = sNodeId;
+            pTrack.keyFrame(0.0, pNode.m4fTransform);
+
+            pPose.push(pTrack);
+        });
+
+        if (pModelResource && bExtractInitialPoses) {
+            pModelResource.addAnimation(pPose);
+        }
+
+        return pPose;
+    }
+
+    function buildInitialPoses (pSceneRoot, pPoseSkeletons) {
+        var pSkeleton;
+        var pPoses = [];
+
+        for (var i = 0; i < pPoseSkeletons.length; ++ i) {
+            pSkeleton = pPoseSkeletons[i];
+            pPoses.push(buildInititalPose(pSceneRoot.pNodes, pSkeleton));
+        }
+
+        return pPoses;
+    }
+
     function buildScene (pSceneRoot, pAsset) {
         var pNodes = [];
         var pNode = null;
@@ -2399,7 +2446,7 @@ Endif ();
         for (var i = 0; i < pNodes.length; i++) {
             pNodes[i] = buildAssetTransform(pNodes[i], pAsset);
 
-            if (pModelResource) {
+            if (pModelResource && useScene) {
                 pModelResource.addNode(pNodes[i]);
             }
         };
@@ -2425,10 +2472,14 @@ Endif ();
         var pAsset;
         var m4fRootTransform;
         var pSceneRoot;
+        var pSkeletons;
+        var pPoses;
 
         var pSceneOutput = null;
         var pAnimationOutput = null;
         var pMeshOutput = null;
+        var pInitialPosesOutput = null;
+
         
         readLibraries(pXMLCollada, pSceneTemplate);
 
@@ -2448,10 +2499,41 @@ Endif ();
                 pAnimationOutput = buildAnimations(pLib['library_animations'].animation);
             }
         }
+
+        if (bExtractInitialPoses) {
+            pInitialPosesOutput = buildInitialPoses(pSceneRoot, pPoseSkeletons); 
+        }
         
+        //дополним анимации начальными позициями костей
+        if (useAnimation && bAnimationWithPose) {
+            pSkeletons = [];
+
+            if (pMeshOutput) {
+                for (var i = 0; i < pMeshOutput.length; ++ i) {
+                    pSkeletons.push(pMeshOutput[i].skeleton);
+                }
+            }
+            else {
+                if (!pSceneOutput) {
+                    buildScene(pSceneRoot, pAsset);
+                }
+
+                eachByTag(pXMLCollada, 'skeleton', function (pXML) {
+                    pSkeletons.push(buildSkeleton([stringData(pXML)]));
+                });
+            }
+
+            pPoses = buildInitialPoses(pSceneRoot, pSkeletons);
+
+            for (var i = 0; i < pAnimationOutput.length; ++ i) {
+                for (var j = 0; j < pPoses.length; ++ j) {
+                    pAnimationOutput[i].extend(pPoses[j]);
+                }
+            }
+        }
 
         if (fnCallback) {
-            fnCallback.call(pEngine, pSceneOutput, pMeshOutput, pAnimationOutput);
+            fnCallback.call(pEngine, pSceneOutput, pMeshOutput, pAnimationOutput, pInitialPosesOutput);
         }
     }
 

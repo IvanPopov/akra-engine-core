@@ -72,7 +72,9 @@ Define(TO_STRING($$object), function () {
     object;
 });
 Define(A_CHECK_STORAGE(), function () {
-    if (!this || this === window || this === window.AKRA) {
+    if (this === window || !this || this === window.AKRA) {
+        //FIXME: remove debug info
+        //if (__FUNC__._iIndex === __FUNC__._nStorageSize - 1) {trace('REACHED LIMIT OF ', GET_FUNC_NAME(__FUNC__));}
         __FUNC__._iIndex = __FUNC__._iIndex === __FUNC__._nStorageSize - 1? 0: __FUNC__._iIndex;
         return __FUNC__._pStorage[__FUNC__._iIndex ++];
     }
