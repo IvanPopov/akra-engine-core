@@ -132,7 +132,6 @@ Define(a.ComponentManager(pEngine), function () {
     a.ResourcePool(pEngine, a.fx.Component)
 });
 
-
 function ComponentBlend() {
     this.pPassBlends = null;
     this.pUniformsBlend = null;

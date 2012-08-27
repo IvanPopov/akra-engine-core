@@ -76,6 +76,9 @@ function Renderer(pEngine) {
              NORMAL_MATRIX = "NORMAL_MATRIX",
              EYE_POS = "EYE_POSITION"
          ], SYSTEM_SEMANTICS, a.Renderer);
+    Enum([
+             MATERIAL = "MATERIAL"
+         ], BASE_SEMANTICS, a.Renderer);
 
     this.pEngine = pEngine;
     this.pDevice = pEngine.pDevice;
@@ -560,8 +563,7 @@ Renderer.prototype.finishPass = function (iPass) {
     var pUniformValues,
         pNotDefaultUniforms,
         pTextures,
-        pNewPassBlend,
-        pNewPassBlendHash;
+        pNewPassBlend;
     var i, j, k;
     var pSnapshot,
         pUniforms,
@@ -570,7 +572,7 @@ Renderer.prototype.finishPass = function (iPass) {
         pValues,
         pBlend;
     var nShift;
-    var sRealName,
+    var sName,
         sHash,
         sKey;
     var pCurrentState = this._pPreRenderState,
@@ -677,18 +679,9 @@ Renderer.prototype.finishPass = function (iPass) {
     var pAttrSemantics = {};
     var pDataStackByPass,
         pDataStack,
-        pMaterialStackByPass,
-        pMaterialStack,
         pMaterial,
-        pFlow,
         pData,
-        pDecl,
-        pVideoBuffer,
         pVertexElement;
-    var iMapIndex,
-        iMapLength,
-        iMapOffset;
-    var isBuffer = false;
     var pAttrKeys = Object.keys(pPassBlend.pAttributes);
     for (i = 0; i < pAttrKeys.length; i++) {
         pAttrSemantics[pAttrKeys[i]] = null;
@@ -743,6 +736,26 @@ Renderer.prototype.finishPass = function (iPass) {
             if (pUniforms.pUniformsByRealName[a.Material.SHININESS] &&
                 !pUniformValues[a.Material.SHININESS]) {
                 pUniformValues[a.Material.SHININESS] = pMaterial.material.pShininess;
+            }
+            sName = a.Renderer.MATERIAL + "." + a.Material.DIFFUSE;
+            if (pUniforms.pUniformsByRealName[sName] && !pUniformValues[sName]) {
+                pUniformValues[sName] = pMaterial.material.pDiffuse;
+            }
+            sName = a.Renderer.MATERIAL + "." + a.Material.AMBIENT;
+            if (pUniforms.pUniformsByRealName[sName] && !pUniformValues[sName]) {
+                pUniformValues[sName] = pMaterial.material.pAmbient;
+            }
+            sName = a.Renderer.MATERIAL + "." + a.Material.SPECULAR;
+            if (pUniforms.pUniformsByRealName[sName] && !pUniformValues[sName]) {
+                pUniformValues[sName] = pMaterial.material.pSpecular;
+            }
+            sName = a.Renderer.MATERIAL + "." + a.Material.EMISSIVE;
+            if (pUniforms.pUniformsByRealName[sName] && !pUniformValues[sName]) {
+                pUniformValues[sName] = pMaterial.material.pEmissive;
+            }
+            sName = a.Renderer.MATERIAL + "." + a.Material.SHININESS;
+            if (pUniforms.pUniformsByRealName[sName] && !pUniformValues[sName]) {
+                pUniformValues[sName] = pMaterial.material.pShininess;
             }
         }
 
