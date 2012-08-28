@@ -214,6 +214,8 @@ Node.prototype.worldPosition = function () {
     return this._v3fWorldPosition;
 };
 
+
+
 /**
  * Get localMatrix
  * @treturn Float32Array _m4fLocalMatrix
@@ -857,8 +859,13 @@ Node.prototype.setRotation = function () {
 
     switch (arguments.length) {
         case 1:
-            //from matrix3 or matrix4
-            arguments[0].toQuat4(this._qRotation);
+            if (arguments[0].toQuat4) {
+                //from matrix3 or matrix4
+                arguments[0].toQuat4(this._qRotation);
+            }
+            else {
+                this._qRotation.set(arguments[0]);
+            }
             break;
         case 2:
 
@@ -877,7 +884,8 @@ Node.prototype.setRotation = function () {
             break;
         case 3:
             //from euler angles
-            Quat4.fromYPR(arguments[0], arguments[1], arguments[2], this._qRotation);
+            
+            Quat4.fromYawPitchRoll(arguments[1], arguments[0], arguments[2], this._qRotation);
             break;
         case 4:
             //from (x, y, z, angle)

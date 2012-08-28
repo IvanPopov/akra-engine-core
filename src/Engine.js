@@ -672,23 +672,23 @@ Engine.prototype.updateCamera = function (fLateralSpeed, fRotationSpeed, pTerrai
     // and moves the default camera
     //
 //    var v3fCameraUp = this._pDefaultCamera.getUp();
-
+    var pCamera = this.getActiveCamera();
 
     if (this.pKeymap.isKeyPress(a.KEY.RIGHT)) {
-        this._pDefaultCamera.addRelRotation(0.0, 0.0, -fRotationSpeed);
+        pCamera.addRelRotation(0.0, 0.0, -fRotationSpeed);
         //v3fCameraUp.Z >0.0 ? fRotationSpeed: -fRotationSpeed);
     }
     else if (this.pKeymap.isKeyPress(a.KEY.LEFT)) {
-        this._pDefaultCamera.addRelRotation(0.0, 0.0, fRotationSpeed);
+        pCamera.addRelRotation(0.0, 0.0, fRotationSpeed);
         //v3fCameraUp.Z >0.0 ? -fRotationSpeed: fRotationSpeed);
     }
 
     if (this.pKeymap.isKeyPress(a.KEY.UP)) {
 
-        this._pDefaultCamera.addRelRotation(0, fRotationSpeed, 0);
+        pCamera.addRelRotation(0, fRotationSpeed, 0);
     }
     else if (this.pKeymap.isKeyPress(a.KEY.DOWN)) {
-        this._pDefaultCamera.addRelRotation(0, -fRotationSpeed, 0);
+        pCamera.addRelRotation(0, -fRotationSpeed, 0);
 
     }
     var v3fOffset = Vec3(0, 0, 0);
@@ -723,7 +723,7 @@ Engine.prototype.updateCamera = function (fLateralSpeed, fRotationSpeed, pTerrai
 
         // if a terrain was provided, make sure we are above it
         if (pTerrain) {
-            var v3fCameraWorldPos = Vec3(this._pDefaultCamera.worldPosition());
+            var v3fCameraWorldPos = Vec3(pCamera.worldPosition());
 
             var fGroundLevel = pTerrain.calcWorldHeight(v3fCameraWorldPos.X, v3fCameraWorldPos.Y);
             var fMinCameraZ = fGroundLevel + fGroundOffset;
@@ -733,7 +733,7 @@ Engine.prototype.updateCamera = function (fLateralSpeed, fRotationSpeed, pTerrai
             }
         }
 
-        this._pDefaultCamera.addRelPosition(v3fOffset);
+        pCamera.addRelPosition(v3fOffset);
     }
 
 }

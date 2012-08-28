@@ -4205,7 +4205,6 @@ Mat4.lookAt = function (v3fEye, v3fCenter, v3fUp, m4fDestination) {
         fXNewZ = fXNewZ/fLength;
     }
     
-
     //новая ось Y
     
     fYNewX = fZNewY * fXNewZ - fZNewZ * fXNewY;
@@ -4221,18 +4220,24 @@ Mat4.lookAt = function (v3fEye, v3fCenter, v3fUp, m4fDestination) {
 
     var pDataDestination = m4fDestination.pData;
 
+    //почему новый базис записывается по строкам?
+    //это сзязано с тем, что это получающаяся матрица - 
+    //это viewMatrix камеры, а на эту матрицу умножается при рендеринге, то есть
+    //модель должна испытать преобразования противоположные тем, которые испытывает камера
+    //то есть вращение в другую сторону(базис по строкам) и сдвиг в противоположную сторону
+
     pDataDestination._11 = fXNewX;
-    pDataDestination._12 = fYNewX;
-    pDataDestination._13 = fZNewX;
+    pDataDestination._12 = fXNewY;
+    pDataDestination._13 = fXNewZ;
     pDataDestination._14 = -fEyeNewX; //отъезжаем в позицию камеры
 
-    pDataDestination._21 = fXNewY;
+    pDataDestination._21 = fYNewX;
     pDataDestination._22 = fYNewY;
-    pDataDestination._23 = fZNewY;
+    pDataDestination._23 = fYNewZ;
     pDataDestination._24 = -fEyeNewY; //отъезжаем в позицию камеры
 
-    pDataDestination._31 = fXNewZ;
-    pDataDestination._32 = fYNewZ;
+    pDataDestination._31 = fZNewX;
+    pDataDestination._32 = fZNewY;
     pDataDestination._33 = fZNewZ;
     pDataDestination._34 = -fEyeNewZ; //отъезжаем в позицию камеры
 
@@ -4240,24 +4245,6 @@ Mat4.lookAt = function (v3fEye, v3fCenter, v3fUp, m4fDestination) {
     pDataDestination._42 = 0;
     pDataDestination._43 = 0;
     pDataDestination._44 = 1;
-
-    //wtf? вроде новый базис должен быть записан по столбцам
-    // dest[0] = x0;
-    // dest[1] = y0;
-    // dest[2] = z0;
-    // dest[3] = 0;
-    // dest[4] = x1;
-    // dest[5] = y1;
-    // dest[6] = z1;
-    // dest[7] = 0;
-    // dest[8] = x2;
-    // dest[9] = y2;
-    // dest[10] = z2;
-    // dest[11] = 0;
-    // dest[12] = -(x0 * eyex + x1 * eyey + x2 * eyez);
-    // dest[13] = -(y0 * eyex + y1 * eyey + y2 * eyez);
-    // dest[14] = -(z0 * eyex + z1 * eyey + z2 * eyez);
-    // dest[15] = 1;
 
     return m4fDestination;
 };

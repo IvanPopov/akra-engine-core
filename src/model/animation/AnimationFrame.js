@@ -33,6 +33,7 @@ function AnimationFrame (fTime, pMatrix, fWeight) {
 	
 }
 
+
 AnimationFrame.prototype.toMatrix = function () {
     'use strict';
     

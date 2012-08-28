@@ -179,7 +179,8 @@ a.getClass = function (pObj) {
         }
     }
 
-    return false;
+    var sType = typeof pObj;
+    return sType[0].toUpperCase() + sType.substr(1);
 };
 
 

@@ -4,6 +4,8 @@ function AnimationBase () {
 	
 	this._fDuration = 0;
 	this._sName = ('animation' + a.sid());
+
+	this._pCallbacks = {};
 }
 
 A_NAMESPACE(AnimationBase);
@@ -20,6 +22,11 @@ PROPERTY(AnimationBase, 'name',
 	function (sName) {
 		this._sName = sName;
 	});
+
+
+AnimationBase.prototype.on = function(eEvent, fnCallback) {
+	this._pCallbacks[eEvent] = fnCallback;
+};
 
 AnimationBase.prototype.frame = function (sName, fTime) {
     'use strict';
@@ -89,16 +96,51 @@ AnimationBase.prototype.getTarget = function (sTarget) {
 	return this._pTargetMap[sTarget];
 };
 
-// AnimationBase.prototype.buildTargetList = function() {
-// 	var pTargets = this._pTargetList;
-// 	var pTargetList = [];
+AnimationBase.prototype.targetNames = function() {
+	var pTargets = this._pTargetList;
+	var pTargetNames = [];
 
-// 	for (var i = 0; i < pTargets.length; ++ i) { 
-// 		pTargetList.push(pTargets[i].name);
-// 	}
+	for (var i = 0; i < pTargets.length; ++ i) { 
+		pTargetNames.push(pTargets[i].name);
+	}
 
-// 	return pTargetList;
-// };
+	return pTargetNames;
+};
+
+AnimationBase.prototype.targetList = function() {
+	var pTargets = this._pTargetList;
+	var pTargetList = [];
+
+	for (var i = 0; i < pTargets.length; ++ i) { 
+		pTargetList.push(pTargets[i].target);
+	}
+
+	return pTargetList;
+};
+
+AnimationBase.prototype.jointList = function() {
+	var pTargets = this._pTargetList;
+	var pJointList = [];
+
+	for (var i = 0; i < pTargets.length; ++ i) { 
+		if (pTargets[i].target instanceof a.Joint) {
+			pJointList.push(pTargets[i].target);
+		}
+	}
+
+	return pJointList;
+};
+
+AnimationBase.prototype.createAnimationMask = function() {
+	var pTargets = this.targetNames();
+    var pMask = {};
+
+    for (var i = 0; i < pTargets.length; ++ i) {
+    	pMask[pTargets[i]] = 1.0;
+    }
+
+    return pMask;
+};
 
 AnimationBase.prototype.grab = function (pAnimationBase, bRewrite) {
     'use strict';

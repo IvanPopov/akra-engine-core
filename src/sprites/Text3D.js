@@ -282,7 +282,7 @@ A_NAMESPACE(Text3D);
 
 function DrawRoutineText3D(pProgram){
 	'use strict';
-	var pCamera = this._pEngine._pDefaultCamera;
+	var pCamera = this._pEngine.getActiveCamera();
 
 	pProgram.applyMatrix4('model_mat', this.worldMatrix());
 	pProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());

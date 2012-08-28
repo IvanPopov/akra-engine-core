@@ -793,6 +793,10 @@ BinWriter.prototype.dataAsUint8Array = function () {
     return arrUint8;
 }
 
+BinWriter.prototype.write = function(pObject, bWriteType) {
+    return a.BinWriter.write(pObject, this, bWriteType);
+};
+
 /**
  * @property rawStringToBuffer()
  * Берет строку и преобразует ее в массив Uint8Array.
@@ -810,5 +814,54 @@ BinWriter.rawStringToBuffer = function (str) {
     }
     return new Uint8Array(arr);
 }
+
+BinWriter.templates = {};
+BinWriter.template = function(pTemplate) {
+    for (var i in pTemplate) {
+        BinWriter.templates[i] = pTemplate[i];
+    }
+};
+
+BinWriter.write = function(pObject, pWriter, bWriteType) {
+    pWriter = pWriter || new a.BinWriter();
+    
+    var sType = a.getClass(pObject);
+    var pTemplates = a.BinWriter.templates;
+    var pProperties = pTemplates[sType];
+
+    if (bWriteType) {
+        pWriter.string(sType);
+    }
+
+    if (typeof pProperties === 'function') {
+        if (pProperties.call(pWriter, pObject) === false) {
+            error('cannot write type: ' + sType);
+        }
+
+        return pWriter;
+    }
+
+    debug_assert(pProperties, 'unknown object <' + sType + '> type cannot be writed');
+
+    for (var i in pProperties) {
+
+        if (typeof pProperties[i] === 'string') {
+            a.BinWriter.write(pObject[i], pWriter);
+            continue;
+        }
+
+        if (pProperties[i].call(pWriter, pObject[i]) === false) {
+            error('cannot write property: ' + i);
+        }
+    }
+
+    return pWriter;
+};
+
+function dump (pObject, bWriteWithType) {
+    return a.BinWriter.write(pObject, null, bWriteWithType).data();
+}
+
+a.dump = dump;
 
 a.BinWriter = BinWriter;

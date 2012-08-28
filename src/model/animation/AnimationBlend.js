@@ -20,6 +20,11 @@ AnimationBlend.prototype.setAnimation = function (iAnimation, pAnimation, fWeigh
     
     var pPointer = this._pAnimationList[iAnimation];
 
+    if (!pAnimation) {
+    	this._pAnimationList[iAnimation] = null;
+    	return iAnimation;
+    }
+
     if (!pPointer) {
     	pPointer = {
 			animation: pAnimation,
@@ -86,7 +91,7 @@ AnimationBlend.prototype.setAnimationWeight = function (iAnimation, fWeight) {
 	    	iAnimation = this.getAnimationIndex(arguments[0]);
 	    }
 
-	    trace('set weight for animation: ', iAnimation, 'to ', fWeight);
+	    //trace('set weight for animation: ', iAnimation, 'to ', fWeight);
 
 		pAnimationList[iAnimation].weight = fWeight;
 	}
@@ -104,6 +109,28 @@ AnimationBlend.prototype.setAnimationMask = function (iAnimation, pMask) {
 	this._pAnimationList[iAnimation].mask = pMask;
 
 	return true;
+};
+
+AnimationBlend.prototype.getAnimationMask = function(iAnimation) {
+	if (typeof arguments[0] === 'string') {
+    	iAnimation = this.getAnimationIndex(arguments[0]);
+    }
+
+	return this._pAnimationList[iAnimation].mask;
+};
+
+AnimationBlend.prototype.createAnimationMask = function(iAnimation) {
+	
+	if (arguments.length === 0) {
+		return a.AnimationBase.prototype.createAnimationMask.call(this);
+	}
+
+	if (typeof arguments[0] === 'string') {
+    	iAnimation = this.getAnimationIndex(arguments[0]);
+    }
+
+    var pAnimation = this._pAnimationList[iAnimation].animation;
+	return pAnimation.createAnimationMask();
 };
 
 AnimationBlend.prototype.frame = function (sName, fTime) {

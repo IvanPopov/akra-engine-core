@@ -70,7 +70,7 @@ SceneModel.prototype.render = function () {
     }
 
     var pEngine = this._pEngine;
-    var pCamera = pEngine._pDefaultCamera;
+    var pCamera = pEngine.getActiveCamera();
     var pMesh = this.findMesh();
     var pProgram = null;
     var pDevice = pEngine.pDevice;

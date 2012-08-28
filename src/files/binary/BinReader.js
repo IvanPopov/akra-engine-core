@@ -419,4 +419,60 @@ BinReader.prototype.rawStringToBuffer = function (str) {
     return new Uint8Array(arr);
 }
 
+BinReader.prototype.read = function(pObject, pData) {
+    return a.undump.call(pObject, pData || null, this);
+};
+
+BinReader.templates = {};
+BinReader.template = function(pTemplate) {
+    for (var i in pTemplate) {
+        BinReader.templates[i] = pTemplate[i];
+    }
+};
+
+BinReader.read = function(sType, pData, pReader) {
+    pReader = pReader || new a.BinReader(pData);
+    
+    var pObject = null;
+
+    if (typeof arguments[0] !== 'string') {
+        pObject = arguments[0];
+        sType = a.getClass(pObject);
+    }
+
+    var pTemplates = a.BinReader.templates;
+    var pProperties = pTemplates[sType];
+
+    debug_assert(pProperties, 'unknown object <' + sType + '> type cannot be readed');
+
+    if (typeof pProperties === 'function') {
+        return pProperties.call(pReader);
+    }
+
+    if (!pObject) {
+        eval('pObject = new ' + sType + ';');
+    }
+
+    for (var i in pProperties) {
+
+        if (typeof pProperties[i] === 'string') {
+            pObject[i] = a.BinReader.read(pProperties[i], pData, pReader);
+            continue;
+        }
+
+        pObject[i] = pProperties[i].call(pReader);
+    }
+
+    return pObject;
+
+};
+
+function undump () {
+    if (!arguments[1]) {
+        return null;
+    }
+
+    return a.BinReader.read(arguments[0], arguments[1], arguments[2]);
+}
+a.undump = undump;
 a.BinReader = BinReader;
