@@ -494,6 +494,31 @@ Camera.prototype.toString = function (isRecursive, iDepth) {
 
     return SceneNode.prototype.toString.call(this, isRecursive, iDepth);
 }
+ 
+Camera.prototype.lookAt = function() {
+    var v3fFrom, v3fCenter, v3fUp;
+
+    if (arguments.length < 3) {
+        v3fFrom = this.worldPosition();
+        v3fCenter = arguments[0];
+        v3fUp = arguments[1];
+    }
+    else {
+        v3fFrom = arguments[0];
+        v3fCenter = arguments[1];
+        v3fUp = arguments[2];
+    }
+    v3fUp = v3fUp || Vec3(0, 1, 0);
+
+    var m4fTemp = Mat4.lookAt(v3fFrom, v3fCenter, v3fUp,Mat4()).inverse();
+    
+    m4fTemp.toQuat4(this._qRotation);
+
+    var pData = m4fTemp.pData;
+
+    this._v3fTranslation.set(pData._14,pData._24,pData._34);
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
+};
 
 Endif ();
 

@@ -744,7 +744,6 @@ Node.prototype.recalcWorldMatrix = function () {
         else {
             m4fWorld.set(m4fOrient);
         }
-
         this._v3fWorldPosition.pData.X = pWorldData._14;
         this._v3fWorldPosition.pData.Y = pWorldData._24;
         this._v3fWorldPosition.pData.Z = pWorldData._34;
@@ -770,7 +769,7 @@ Node.prototype.setPosition = function () {
     'use strict';
     
     var pPos = arguments.length === 1? arguments[0]: arguments;
-    var v3fTranslation = this._v3fTranslation.pData;
+    var v3fTranslation = this._v3fTranslation;
 
     v3fTranslation.set(pPos);
 
@@ -821,7 +820,6 @@ Node.prototype.addRelPosition = function () {
 
 
     this._qRotation.multiplyVec3(pPos);
-    
     v3fTranslation.add(pPos);
 
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);

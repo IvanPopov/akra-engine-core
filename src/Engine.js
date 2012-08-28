@@ -352,9 +352,6 @@ Engine.prototype.notifyInitDeviceObjects = function () {
  * @return Boolean
  **/
 
-var totalTime1 = 0.;
-var totalTime2 = 0.;
-
 Engine.prototype.renderScene = function () {
 
     //Получение всех объектов сцены, которые видны активной камере
