@@ -47,6 +47,21 @@ Define(ARRAY_LIMIT(POSITION, LIMIT), function () {
     debug_assert(POSITION < LIMIT, "Выход за пределы массива");
 });
 
+Define(A_FORMAT_IN(format), function () {
+    a.BinReader.template(format);
+});
+
+Define(A_FORMAT_OUT(format), function () {
+    a.BinWriter.template(format);
+});
+
+Define(A_FORMAT(format), function () {
+    (function (f) {
+        a.BinReader.template(f);
+        a.BinWriter.template(f);
+    })(format);
+});
+
 function BinReader (arrayBuffer) {
     this.arrayBuffer = arrayBuffer;
     this.arrayUint8Buffer = new Uint8Array(arrayBuffer);
@@ -71,13 +86,20 @@ BinReader.prototype.string = function (str) {
     var arrayStringUTF8 = new Uint8Array(this.arrayBuffer, this.iPosition, iStringLength);
 
     this.iPosition += iStringLength;
-    var sString = "";
+    var sString = "", charCode, code;
     for (var n = 0; n < arrayStringUTF8.length; ++n) {
-        var charCode = String.fromCharCode(arrayStringUTF8[n]);
+        code = arrayStringUTF8[n];
+        
+        if (code == 0) {
+            break;
+        }
+
+        charCode = String.fromCharCode(code);
         sString = sString + charCode;
     }
 
-    return sString.fromUTF8();
+    sString = sString.fromUTF8();
+    return sString.substr(0, iStringLength);//sString;//
 }
 
 /******************************************************************************/
@@ -420,7 +442,7 @@ BinReader.prototype.rawStringToBuffer = function (str) {
 }
 
 BinReader.prototype.read = function(pObject, pData) {
-    return a.undump.call(pObject, pData || null, this);
+    return a.BinReader.read(pObject, pData || null, this);
 };
 
 BinReader.templates = {};
@@ -434,7 +456,9 @@ BinReader.read = function(sType, pData, pReader) {
     pReader = pReader || new a.BinReader(pData);
     
     var pObject = null;
+    var isNull = pReader.bool();
 
+    //determ type if needed
     if (typeof arguments[0] !== 'string') {
         pObject = arguments[0];
         sType = a.getClass(pObject);
@@ -443,8 +467,23 @@ BinReader.read = function(sType, pData, pReader) {
     var pTemplates = a.BinReader.templates;
     var pProperties = pTemplates[sType];
 
+    //getting real type of object
+    while (typeof pProperties === 'string') {
+        sType = pProperties;
+        pProperties = pTemplates[sType];
+    }
+
+    //trace('read object', pObject, 'with type', sType, ', is null: ', isNull);
+
+    //check if null
+    if (isNull) {
+        return null;
+    }
+
+
     debug_assert(pProperties, 'unknown object <' + sType + '> type cannot be readed');
 
+    //read primal type
     if (typeof pProperties === 'function') {
         return pProperties.call(pReader);
     }
@@ -454,9 +493,15 @@ BinReader.read = function(sType, pData, pReader) {
     }
 
     for (var i in pProperties) {
-
         if (typeof pProperties[i] === 'string') {
             pObject[i] = a.BinReader.read(pProperties[i], pData, pReader);
+            continue;
+        }
+
+        var isNull = pReader.bool();
+        
+        if (isNull) {
+            pObject[i] = null;                
             continue;
         }
 

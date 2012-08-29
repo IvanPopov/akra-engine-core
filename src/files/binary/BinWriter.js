@@ -823,16 +823,39 @@ BinWriter.template = function(pTemplate) {
 };
 
 BinWriter.write = function(pObject, pWriter, bWriteType) {
+    bWriteType = bWriteType || false;
     pWriter = pWriter || new a.BinWriter();
     
-    var sType = a.getClass(pObject);
     var pTemplates = a.BinWriter.templates;
-    var pProperties = pTemplates[sType];
+    var sType;
+    var pProperties;
 
+
+    sType = a.getClass(pObject);
+    pProperties = pTemplates[sType];
+
+    //getting real type of object
+    while (typeof pProperties === 'string') {
+        sType = pProperties;
+        pProperties = pTemplates[sType];
+    }
+
+    //write object type if needed
     if (bWriteType) {
         pWriter.string(sType);
     }
 
+    //trace('write object', pObject, 'with type', sType, ', is null: ', pObject === null || pObject === undefined);
+
+    if (pObject === null || pObject === undefined) {
+        pWriter.bool(true);
+        return pWriter;
+    }
+    else {
+        pWriter.bool(false);
+    }
+
+    //direct writing primal object
     if (typeof pProperties === 'function') {
         if (pProperties.call(pWriter, pObject) === false) {
             error('cannot write type: ' + sType);
@@ -843,15 +866,24 @@ BinWriter.write = function(pObject, pWriter, bWriteType) {
 
     debug_assert(pProperties, 'unknown object <' + sType + '> type cannot be writed');
 
+    //writing structire
     for (var i in pProperties) {
 
+        //writing complex type of structure member
         if (typeof pProperties[i] === 'string') {
             a.BinWriter.write(pObject[i], pWriter);
             continue;
         }
-
-        if (pProperties[i].call(pWriter, pObject[i]) === false) {
-            error('cannot write property: ' + i);
+        
+        //writing primal type of structure member
+        if (pObject[i] === null || pObject[i] === undefined) {
+            pWriter.bool(true); //is null object
+        }
+        else {
+            pWriter.bool(false);
+            if (pProperties[i].call(pWriter, pObject[i]) === false) {
+                error('cannot write property: ' + i);
+            }
         }
     }
 

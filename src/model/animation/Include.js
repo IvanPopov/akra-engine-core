@@ -4,3 +4,5 @@ Include('Animation.js');
 Include('AnimationContainer.js');
 Include('AnimationController.js');
 Include('AnimationBlend.js');
+
+Include('format.js');
