@@ -67,7 +67,28 @@ function BinReader (arrayBuffer) {
     this.arrayUint8Buffer = new Uint8Array(arrayBuffer);
     this.arrayBufferLength = (new Uint8Array(arrayBuffer)).length;
     this.iPosition = 0;
+    this._pHashTable = null;
 }
+
+BinReader.prototype.setupHashTable = function () {
+    'use strict';
+    
+    if (!this._pHashTable) {
+        this._pHashTable = {};
+    }
+};
+
+BinReader.prototype.memof = function (pObject, iAddr) {
+    'use strict';
+    
+    this._pHashTable[iAddr] = pObject;
+};
+
+BinReader.prototype.memread = function (iAddr) {
+    'use strict';
+    
+    return this._pHashTable[iAddr] || null;
+};
 
 /******************************************************************************/
 /*                                 string                                     */
@@ -441,8 +462,8 @@ BinReader.prototype.rawStringToBuffer = function (str) {
     return new Uint8Array(arr);
 }
 
-BinReader.prototype.read = function(pObject, pData) {
-    return a.BinReader.read(pObject, pData || null, this);
+BinReader.prototype.read = function(pData) {
+    return a.BinReader.read(pData || null, this);
 };
 
 BinReader.templates = {};
@@ -452,17 +473,39 @@ BinReader.template = function(pTemplate) {
     }
 };
 
-BinReader.read = function(sType, pData, pReader) {
-    pReader = pReader || new a.BinReader(pData);
+BinReader.readPtr = function (iAddr, sType, pReader, pObject) {
+    'use strict';
     
-    var pObject = null;
-    var isNull = pReader.bool();
+    pObject = pObject || null;
+
+    if (iAddr === MAX_UINT32) {
+        return null;
+    }
+
+    var pTmp = pReader.memread(iAddr);
+    var isReadNext = false;
+    var iType = -1;
+
+    if (pTmp) {
+        //trace('object with addr(', iAddr,') already readed:', pTmp);
+        return pTmp;
+    }
+
+    if (iAddr === pReader.iPosition) {
+        //trace('read next >> ');
+        isReadNext = true;
+    }
+
+    var iPosition = pReader.iPosition;
+    //set new position
+    pReader.iPosition = iAddr;
 
     //determ type if needed
-    if (typeof arguments[0] !== 'string') {
-        pObject = arguments[0];
+    if (typeof arguments[1] !== 'string') {
+        pObject = arguments[1];
         sType = a.getClass(pObject);
     }
+
 
     var pTemplates = a.BinReader.templates;
     var pProperties = pTemplates[sType];
@@ -473,51 +516,94 @@ BinReader.read = function(sType, pData, pReader) {
         pProperties = pTemplates[sType];
     }
 
-    //trace('read object', pObject, 'with type', sType, ', is null: ', isNull);
-
-    //check if null
-    if (isNull) {
-        return null;
-    }
-
+    //trace('read ptr > ', iAddr, sType, pObject);
 
     debug_assert(pProperties, 'unknown object <' + sType + '> type cannot be readed');
 
     //read primal type
     if (typeof pProperties === 'function') {
-        return pProperties.call(pReader);
+        pTmp = pProperties.call(pReader, pObject);
+        pReader.memof(pTmp, iAddr);
+        //restore prev. position
+        if (!isReadNext) {
+            pReader.iPosition = iPosition;
+        }
+        //trace('readed from ptr(', iAddr, '):', pTmp);
+        return pTmp;
+    }
+    
+    if (!pObject) {
+        var pCtor = a.BinReader.templates[sType]['@constructor'];
+        if (pCtor) {
+            pObject = pCtor();
+        }
+        else {
+            eval('pObject = new ' + sType + ';');    
+        }
     }
 
-    if (!pObject) {
-        eval('pObject = new ' + sType + ';');
+    var pBaseClasses = pProperties['@extends'];
+
+    if (pBaseClasses) {
+        for (var i = 0; i < pBaseClasses.length; ++ i) {
+            iAddr = pReader.iPosition;
+            //trace('read base class > ', pBaseClasses[i]);
+            a.BinReader.readPtr(iAddr, pBaseClasses[i], pReader, pObject);
+        }
     }
+
+    pReader.memof(pObject, iAddr);
 
     for (var i in pProperties) {
         if (typeof pProperties[i] === 'string') {
-            pObject[i] = a.BinReader.read(pProperties[i], pData, pReader);
+             //system property
+            if (pProperties[i][0] === '@') {
+                continue;
+            }
+            //trace('read property > ', i);
+            pObject[i] = a.BinReader.read(null, pReader);
             continue;
         }
+    }
+    
+    //restore prev. position
+    if (!isReadNext) {
+        pReader.iPosition = iPosition;
+    }
+    //trace('readed from ptr(', iAddr, '):', pObject);
+    return pObject;
+}
 
-        var isNull = pReader.bool();
-        
-        if (isNull) {
-            pObject[i] = null;                
-            continue;
-        }
-
-        pObject[i] = pProperties[i].call(pReader);
+BinReader.read = function(pData, pReader) {
+    'use strict';
+    if (!pData && !pReader) {
+        trace('ooops...');
+        throw new Error();
     }
 
-    return pObject;
-
-};
-
-function undump () {
-    if (!arguments[1]) {
+    pReader = pReader || new a.BinReader(pData);
+    pReader.setupHashTable();
+    
+    var iAddr = pReader.uint32();
+    
+    if (iAddr === MAX_UINT32) {
         return null;
     }
 
-    return a.BinReader.read(arguments[0], arguments[1], arguments[2]);
+    var iType = pReader.uint32();
+    var sType = a.BinWriter.int2templates[iType];
+    
+    //trace('read ptr: ', iAddr, sType);
+    
+    return a.BinReader.readPtr(iAddr, sType, pReader);
+};
+
+function undump (pBuffer) {
+    if (!pBuffer) {
+        return null;
+    }
+
+    return a.BinReader.read(arguments[0]);
 }
 a.undump = undump;
 a.BinReader = BinReader;

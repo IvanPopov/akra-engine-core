@@ -74,7 +74,47 @@ function BinWriter () {
      * @type int
      */
     this._iCountData = 0;
+
+    this._pHashTable = null;
 }
+
+PROPERTY(BinWriter, 'bytesLength',
+    function () {
+        return this._iCountData;
+    });
+
+BinWriter.prototype.setupHashTable = function () {
+    'use strict';
+    
+    if (!this._pHashTable) {
+        this._pHashTable = [];
+    }
+};
+
+BinWriter.prototype.memof = function (pObject, iAddr) {
+    'use strict';
+    
+    this._pHashTable.push({pointer: pObject, addr: iAddr});
+};
+
+BinWriter.prototype.addr = function (pObject) {
+    'use strict';
+
+    var pTable = this._pHashTable;
+    for (var i = 0, n = pTable.length; i < n; ++ i) {
+        if (pTable[i].pointer === pObject) {
+            return pTable[i].addr;
+        }
+    }
+
+    return -1;
+};
+
+BinWriter.prototype.nullPtr = function () {
+    'use strict';
+    
+    return this.uint32(MAX_UINT32);
+};
 
 /******************************************************************************/
 /*                                 string                                     */
@@ -104,6 +144,7 @@ BinWriter.prototype.string = function (str) {
     var iBitesToAdd = (( 4 - (iStrLen % 4) == 4)) ? 0 : ( 4 - (iStrLen % 4));
     this._pArrData[this._pArrData.length] = arrUTF8string;
     this._iCountData += (iStrLen + iBitesToAdd);
+    //trace('string', str);
 }
 
 /******************************************************************************/
@@ -142,7 +183,7 @@ BinWriter.prototype._uintX = function (iValue, iX) {
             error("Передано недопустимое значение длинны. Допустимые значения 8, 16, 32.");
             break;
     }
-
+    //trace('uint' + iX, iValue);
     //if(iX == 8)
     //  this._pArrData[this._pArrData.length] = arrTmpBuf;
     //else
@@ -286,6 +327,7 @@ BinWriter.prototype._intX = function (iValue, iX) {
             error("Передано недопустимое значение длинны. Допустимые значения 8, 16, 32.");
             break;
     }
+    //trace('int' + iX, iValue);
     this._pArrData[this._pArrData.length] = new Uint8Array(arrTmpBuf.buffer);
     this._iCountData += 4;
 }
@@ -404,6 +446,7 @@ BinWriter.prototype._floatX = function (fValue, iX) {
             error("Передано недопустимое значение длинны. Допустимые значения 32, 64.");
             break;
     }
+    //trace('float' + iX, fValue);
     this._pArrData[this._pArrData.length] = new Uint8Array(arrTmpBuf.buffer);
     this._iCountData += (iX / 8);
 }
@@ -793,8 +836,8 @@ BinWriter.prototype.dataAsUint8Array = function () {
     return arrUint8;
 }
 
-BinWriter.prototype.write = function(pObject, bWriteType) {
-    return a.BinWriter.write(pObject, this, bWriteType);
+BinWriter.prototype.write = function(pObject) {
+    return a.BinWriter.writePtr(pObject, this);
 };
 
 /**
@@ -813,47 +856,30 @@ BinWriter.rawStringToBuffer = function (str) {
         arr[ idx ] = str.charCodeAt(idx);// & 0xFF;
     }
     return new Uint8Array(arr);
-}
+};
+
+
 
 BinWriter.templates = {};
+BinWriter.templates2int = {};
+BinWriter.int2templates = {};
+BinWriter.totalTemplates = 0;
+
 BinWriter.template = function(pTemplate) {
+    var iType;
     for (var i in pTemplate) {
+        iType = BinWriter.totalTemplates ++;
+
         BinWriter.templates[i] = pTemplate[i];
+        BinWriter.int2templates[iType] = i;
+        BinWriter.templates2int[i] = iType;
+        //trace(iType, i);
     }
 };
 
-BinWriter.write = function(pObject, pWriter, bWriteType) {
-    bWriteType = bWriteType || false;
-    pWriter = pWriter || new a.BinWriter();
-    
+BinWriter.write = function(pObject, pWriter, sType) {
     var pTemplates = a.BinWriter.templates;
-    var sType;
-    var pProperties;
-
-
-    sType = a.getClass(pObject);
-    pProperties = pTemplates[sType];
-
-    //getting real type of object
-    while (typeof pProperties === 'string') {
-        sType = pProperties;
-        pProperties = pTemplates[sType];
-    }
-
-    //write object type if needed
-    if (bWriteType) {
-        pWriter.string(sType);
-    }
-
-    //trace('write object', pObject, 'with type', sType, ', is null: ', pObject === null || pObject === undefined);
-
-    if (pObject === null || pObject === undefined) {
-        pWriter.bool(true);
-        return pWriter;
-    }
-    else {
-        pWriter.bool(false);
-    }
+    var pProperties = pTemplates[sType];
 
     //direct writing primal object
     if (typeof pProperties === 'function') {
@@ -866,32 +892,88 @@ BinWriter.write = function(pObject, pWriter, bWriteType) {
 
     debug_assert(pProperties, 'unknown object <' + sType + '> type cannot be writed');
 
+    var pBaseClasses = pProperties['@extends'];
+
+    if (pBaseClasses) {
+        for (var i = 0; i < pBaseClasses.length; ++ i) {
+            //trace('write base class > ', pBaseClasses[i]);
+            a.BinWriter.write(pObject, pWriter, pBaseClasses[i]);
+            //trace(pBaseClasses[i], '<< base class');
+        }
+    }
+
     //writing structire
     for (var i in pProperties) {
 
         //writing complex type of structure member
         if (typeof pProperties[i] === 'string') {
-            a.BinWriter.write(pObject[i], pWriter);
-            continue;
-        }
-        
-        //writing primal type of structure member
-        if (pObject[i] === null || pObject[i] === undefined) {
-            pWriter.bool(true); //is null object
-        }
-        else {
-            pWriter.bool(false);
-            if (pProperties[i].call(pWriter, pObject[i]) === false) {
-                error('cannot write property: ' + i);
+            //system property
+            if (pProperties[i][0] === '@') {
+                continue;
             }
+            //trace('write property > ', i);
+            a.BinWriter.writePtr(pObject[i], pWriter);
+            continue;
         }
     }
 
     return pWriter;
+}
+
+BinWriter.writePtr = function(pObject, pWriter, sType) {
+    'use strict';
+    
+    pWriter = pWriter || new a.BinWriter();
+    pWriter.setupHashTable();
+
+    var pTemplates = a.BinWriter.templates;
+    var pProperties;
+    var iAddr, iType;
+
+    if (!sType) {
+        sType = a.getClass(pObject);
+        pProperties = pTemplates[sType];
+    }
+
+    //getting real type of object
+    while (typeof pProperties === 'string') {
+        sType = pProperties;
+        pProperties = pTemplates[sType];
+    }
+
+    iType = a.BinWriter.templates2int[sType];
+
+    if (iType === undefined) {
+        trace('unknown type founded: ', sType);
+    }
+
+    if (pObject === null || pObject === undefined || iType === undefined) {
+        pWriter.nullPtr();
+        return pWriter;
+    }
+    else {
+        iAddr = pWriter.addr(pObject);
+
+        if (iAddr < 0) {
+            iAddr = pWriter.bytesLength + 4 + 4;
+
+            pWriter.uint32(iAddr); 
+            pWriter.uint32(iType);
+            pWriter.memof(pObject, iAddr);
+        }
+        else {
+
+            pWriter.uint32(iAddr);
+            pWriter.uint32(iType);
+            return pWriter;
+        }
+    }
+    
+    return a.BinWriter.write(pObject, pWriter, sType);
 };
 
 function dump (pObject, bWriteWithType) {
-    return a.BinWriter.write(pObject, null, bWriteWithType).data();
+    return a.BinWriter.writePtr(pObject, null, bWriteWithType).data();
 }
 
 a.dump = dump;

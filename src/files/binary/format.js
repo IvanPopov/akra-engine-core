@@ -1,6 +1,10 @@
 A_FORMAT({
 	'Mat4': {
-		'pData': 'Float32Array'
+		'pData': 'Float32Array',
+
+		'@constructor': function () {
+			return new Mat4;
+		}
 	},
 	'Vec4': {
 		'pData': 'Float32Array'	
@@ -17,7 +21,8 @@ A_FORMAT({
 	'Number': 'Float32',
 	'Float'	: 'Float32',
 	'Int'	: 'Int32',
-	'Uint'	: 'Uint32'
+	'Uint'	: 'Uint32',
+	'Array'	: 'Object'
 });
 
 A_FORMAT_OUT({
@@ -57,7 +62,7 @@ A_FORMAT_OUT({
 			this.uint32(object.length);
 
 			for (var i = 0; i < object.length; ++ i) {
-				this.write(object[i], true);
+				this.write(object[i]);
 			}
 		}
 		else {
@@ -65,7 +70,7 @@ A_FORMAT_OUT({
 			this.stringArray(Object.keys(object));
 
 			for (var key in object) {
-				this.write(object[key], true);	
+				this.write(object[key]);	
 			}
 		}
 	},
@@ -102,30 +107,25 @@ A_FORMAT_IN({
 
 	'Boolean': function () { return this.bool(); },
 
-	'Object': function () {
+	'Object': function (object) {
 		var is_array = this.bool();
-		var object;
 		var keys;
-		var type;
 		var n;
 
 		if (is_array) {
 			n = this.uint32();
-			object = new Array(n);
+			object = object || new Array(n);
 
 			for (var i = 0; i < n; ++ i) {
-				type = this.string();
-				object[i] = this.read(type);	
+				object[i] = this.read();	
 			}
 		}
 		else {
-			object = {};
+			object = object || {};
 			keys = this.stringArray();
-			type;
 
 			for (var i = 0; i < keys.length; ++ i) {
-				type = this.string();
-				object[keys[i]] = this.read(type);	
+				object[keys[i]] = this.read();
 			}
 		}
 

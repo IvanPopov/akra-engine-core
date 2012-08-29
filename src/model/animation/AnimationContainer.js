@@ -1,7 +1,7 @@
 function AnimationContainer (pAnimation) {
 	A_CLASS;
 
-	debug_assert(pAnimation, 'you must specify animation');
+	//
 
 	// Enum([
 	// 	PRIORITY_LOW = 0,
@@ -12,13 +12,13 @@ function AnimationContainer (pAnimation) {
 	this._fStartTime = 0;
 	this._fSpeed = 1.0;
 	this._bLoop = false;
-	this._pAnimation = pAnimation;
-	this._fDuration = pAnimation._fDuration;
+	this._pAnimation = null;
+	this._fDuration = 0;
 	this._bReverse = false;
 
-	this.name = 'player[' + pAnimation.name + ']';
-
-	this.grab(pAnimation);
+	if (pAnimation) {
+		this.setAnimation(pAnimation);
+	}
 }
 
 EXTENDS(AnimationContainer, a.AnimationBase);
@@ -27,6 +27,18 @@ PROPERTY(AnimationContainer, 'animationName',
 	function () {
 		return this._pAnimation.name;
 	});
+
+AnimationContainer.prototype.setAnimation = function (pAnimation) {
+    'use strict';
+
+	debug_assert(!this._pAnimation, 'anim. already exists');
+
+	this._pAnimation = pAnimation;
+	this._fDuration = pAnimation._fDuration;
+	this.name = 'player[' + pAnimation.name + ']';
+
+	this.grab(pAnimation);
+};
 
 AnimationContainer.prototype.enable = function () {
     'use strict';

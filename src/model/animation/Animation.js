@@ -7,7 +7,10 @@ function Animation (sName) {
 
 
 	this._pTracks = [];
-	this.name = sName;
+	
+	if (sName) {
+		this.name = sName;
+	}
 }
 
 EXTENDS(Animation, a.AnimationBase);

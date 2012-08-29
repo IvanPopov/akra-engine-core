@@ -177,6 +177,7 @@ AnimationBlend.prototype.frame = function (sName, fTime) {
 A_NAMESPACE(AnimationBlend);
 
 function AnimationSwitch () {
+	this._sClass = 'AnimationSwitch';
 	A_CLASS;
 }
 

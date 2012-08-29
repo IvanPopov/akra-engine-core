@@ -61,6 +61,13 @@ ModelResource.prototype.getAnimation = function (iAnim) {
 };
 
 
+ModelResource.prototype.setAnimation = function (iAnim, pAnimation) {
+    'use strict';
+    
+    debug_assert(iAnim < this._pAnimList.length, 'invalid animation slot');
+    this._pAnimList[iAnim] = pAnimation;
+};
+
 ModelResource.prototype.addAnimation = function (pAnimation) {
     'use strict';
     //TODO: this method    
