@@ -318,7 +318,7 @@ function PassBlend(pEngine) {
     this.pFuncDefBlockV = {};
     this.pGlobalVarBlockV = {};
     this.pFuncDeclBlockV = {};
-    this.pAttributes = {};
+
     /**
      * Block of:
      * varying TYPE some_variable;
@@ -334,7 +334,12 @@ function PassBlend(pEngine) {
     this.pVaryings = {};
     this.sVaryingsOut = "";
 
-    this.pAttributePointers = {};
+    this.pAttributes = {};
+    this._pAttrDataDecl = {};
+    this._pAttrIndexDecl = {};
+    this._pAttrDataInit = {};
+    this._pAttrIndexInit = {};
+//    this.pAttributePointers = {};
 
     this.pTypesBlockF = {};
     this.pTypesOrderF = [];
@@ -688,9 +693,17 @@ PassBlend.prototype.addPass = function (pPass) {
             }
             this.pAttributes[i] = pVar1;
         }
-        for (i in pVertex.pAttributePointers) {
-            this.pAttributePointers[i] = pVertex.pAttributePointers[i];
+        for (i in pVertex._pAttrDataDecl) {
+            this._pAttrDataDecl[i] = pVertex._pAttrDataDecl[i];
         }
+        for(i in pVertex._pAttrDataInit){
+            this._pAttrDataInit[i] = pVertex._pAttrDataInit[i];
+            this._pAttrIndexInit[i] = pVertex._pAttrIndexInit[i];
+            this._pAttrIndexDecl[i] = pVertex._pAttrIndexDecl[i];
+        }
+//        for (i in pVertex.pAttributePointers) {
+//            this.pAttributePointers[i] = pVertex.pAttributePointers[i];
+//        }
         for (i in pVertex._pVaryingsSemantics) {
             pVar1 = pVertex._pVaryingsSemantics[i];
             pVar2 = this.pVaryings[i];
@@ -849,10 +862,10 @@ PassBlend.prototype.finalizeBlend = function () {
     }
     for (i in this.pAttributes) {
         pAttr = this.pAttributes[i];
-        if (pAttr instanceof Array) {
-            sType = fnBlendTypes(pAttr, this);
-            this.pAttributes[i] = "attribute " + sType + " " + pAttr[0].sRealName + ";";
-        }
+//        if (pAttr instanceof Array) {
+//            sType = fnBlendTypes(pAttr, this);
+//            this.pAttributes[i] = "attribute " + sType + " " + pAttr[0].sRealName + ";";
+//        }
     }
     this.sVaryingsOut = "struct { vec4 POSITION;";
 
@@ -863,6 +876,22 @@ PassBlend.prototype.finalizeBlend = function () {
     this.pVaryingsBlock["POSITION"] = "gl_Position=" + a.fx.GLOBAL_VARS.SHADEROUT + ".POSITION;";
     this.sVaryingsOut += "} " + a.fx.GLOBAL_VARS.SHADEROUT + ";"
 
+};
+//Translate all objects that was in code(Samplers and Headers) to code
+PassBlend.prototype._toFinalCode = function (pCode) {
+    if (typeof(pCode) === "string") {
+        return pCode;
+    }
+    var sCode = "";
+    for (var i = 0; i < pCode.length; i++) {
+        if (typeof(pCode[i]) === "string" || typeof(pCode[i]) === "number") {
+            sCode += pCode[i];
+        }
+        else {
+            sCode += pCode[i].toDataCode();
+        }
+    }
+    return sCode;
 };
 PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUniformData, pTextures, pTexcoords) {
     //console.log(this);
@@ -1095,16 +1124,16 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         iAttr = pAttrToReal[sKey1];
         iBuffer = pAttrToBuffer[sKey1];
         sInit = "";
-        sDecl = "";
+        sDecl = this._pAttrDataDecl[sKey1];
         if (!pData1) {
-            sDecl += pAttr.pType.pEffectType.toCode() + " " + pAttr.toCode() + ";";
 //            sInit += pAttr.toCode() + "=0.0;";
             if (pAttr.isPointer === true) {
-                for (j = 0; pAttr.pPointers && j < pAttr.pPointers.length; j++) {
-                    pPointer = pAttr.pPointers[j];
-                    sDecl += "float " + pPointer.toCode() + ";";
-//                sInit += pPointer.toCode() + "=0.0;";
-                }
+                sDecl += this._pAttrIndexDecl[sKey1];
+//                for (j = 0; pAttr.pPointers && j < pAttr.pPointers.length; j++) {
+//                    pPointer = pAttr.pPointers[j];
+//                    sDecl += "float " + pPointer.toCode() + ";";
+////                sInit += pPointer.toCode() + "=0.0;";
+//                }
                 isZeroSamplerV = true;
                 isZeroHeaderV = true;
                 isExtractInitV = true;
@@ -1118,65 +1147,67 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         else {
             sAttr = a.fx.SHADER_PREFIX.ATTRIBUTE + iAttr;
             if (pData1.eType !== a.BufferMap.FT_MAPPABLE) {
-                sDecl = pAttr.pType.pEffectType.toCode() + " " + pAttr.toCode() + ";";
                 sInit = pAttr.toCode() + "=" + sAttr + ";";
             }
             else {
+                sDecl += this._pAttrIndexDecl[sKey1];
                 isExtractInitV = true;
                 this.pExtrectedFunctionsV["header"] = null;
                 sUniformOffset += "uniform float " + pAttr.toOffsetStr() + ";";
-                sData1 = a.fx.SHADER_PREFIX.SAMPLER + iBuffer;
-                sData2 = a.fx.SHADER_PREFIX.HEADER + iBuffer;
-
-                for (j = pAttr.pPointers.length - 1; j >= 0; j--) {
-                    pPointer = pAttr.pPointers[j];
-                    sDecl += "float " + pPointer.toCode() + ";";
-                    if (j === pAttr.pPointers.length - 1) {
-                        sInit += pPointer.toCode() + "=" + sAttr + "+" + pAttr.toOffsetStr() + ";";
-                    }
-                    else {
-                        sInit += pPointer.toCode() + "=A_extractFloat(" + sData1 + "," +
-                                 sData2 + "," + pAttr.pPointers[j + 1].toCode() + ");";
-                        this.pExtrectedFunctionsV["float"] = null;
-                    }
-                }
-                sDecl += pAttr.pType.pEffectType.toCode() + " " + pAttr.toCode() + ";";
-                if (!pAttr.pType.isBase()) {
-                    warning("Extracting complex type are no implemented yet");
-                    return false;
-                }
-                sInit += pAttr.toCode() + "=";
-                switch (pAttr.pType.pEffectType.toCode()) {
-                    case "float":
-                        sInit += "A_extractFloat(";
-                        break;
-                    case "vec2":
-                        sInit += "A_extractVec2(";
-                        this.pExtrectedFunctionsV["float"] = null;
-                        break;
-                    case "vec3":
-                        sInit += "A_extractVec3(";
-                        this.pExtrectedFunctionsV["float"] = null;
-                        break;
-                    case "vec4":
-                        sInit += "A_extractVec4(";
-                        this.pExtrectedFunctionsV["float"] = null;
-                        break;
-                    case "mat4":
-                        sInit += "A_extractMat4(";
-                        this.pExtrectedFunctionsV["float"] = null;
-                        this.pExtrectedFunctionsV["vec4"] = null;
-                        break;
-                    default:
-                        warning("another type are not implemented yet");
-                        return false;
-                }
-                sInit += sData1 + "," + sData2 + "," + pAttr.pPointers[0].toCode() + ");";
-                this.pExtrectedFunctionsV[pAttr.pType.pEffectType.toCode()] = null;
+//                sData1 = a.fx.SHADER_PREFIX.SAMPLER + iBuffer;
+//                sData2 = a.fx.SHADER_PREFIX.HEADER + iBuffer;
+                sInit += pAttr.pPointers[pAttr.pPointers.length - 1].toCode() + "=" + sAttr + "+" +
+                         pAttr.toOffsetStr() + ";";
+                sInit += this._toFinalCode(this._pAttrIndexInit[sKey1]);
+//                for (j = pAttr.pPointers.length - 1; j >= 0; j--) {
+//                    pPointer = pAttr.pPointers[j];
+//                    sDecl += "float " + pPointer.toCode() + ";";
+//                    if (j === pAttr.pPointers.length - 1) {
+//                        sInit += pPointer.toCode() + "=" + sAttr + "+" + pAttr.toOffsetStr() + ";";
+//                    }
+//                    else {
+//                        sInit += pPointer.toCode() + "=A_extractFloat(" + sData1 + "," +
+//                                 sData2 + "," + pAttr.pPointers[j + 1].toCode() + ");";
+//                        this.pExtrectedFunctionsV["float"] = null;
+//                    }
+//                }
+                //sDecl += pAttr.pType.pEffectType.toCode() + " " + pAttr.toCode() + ";";
+//                trace(sKey1, this._pAttrDataInit[sKey1], this);
+                sInit += this._toFinalCode(this._pAttrDataInit[sKey1]);
+//                sInit += pAttr.toCode() + "=";
+//                switch (pAttr.pType.pEffectType.toCode()) {
+//                    case "float":
+//                        sInit += "A_extractFloat(";
+//                        break;
+//                    case "vec2":
+//                        sInit += "A_extractVec2(";
+//                        this.pExtrectedFunctionsV["float"] = null;
+//                        break;
+//                    case "vec3":
+//                        sInit += "A_extractVec3(";
+//                        this.pExtrectedFunctionsV["float"] = null;
+//                        break;
+//                    case "vec4":
+//                        sInit += "A_extractVec4(";
+//                        this.pExtrectedFunctionsV["float"] = null;
+//                        break;
+//                    case "mat4":
+//                        sInit += "A_extractMat4(";
+//                        this.pExtrectedFunctionsV["float"] = null;
+//                        this.pExtrectedFunctionsV["vec4"] = null;
+//                        break;
+//                    default:
+//                        warning("another type are not implemented yet");
+//                        return false;
+//                }
+//                sInit += sData1 + "," + sData2 + "," + pAttr.pPointers[0].toCode() + ");";
+//                this.pExtrectedFunctionsV[pAttr.pType.pEffectType.toCode()] = null;
             }
         }
-        pAttrDecl[sKey1] = sDecl;
-        pAttrInit[sKey1] = sInit;
+        if (sDecl) {
+            pAttrDecl[sKey1] = sDecl;
+            pAttrInit[sKey1] = sInit;
+        }
     }
 
     for (i = 0; i < pTexcoords.length; i++) {
@@ -1197,23 +1228,6 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     }
 
     //Generate final code
-
-    //Translate all objects that was in code(Samplers and Headers) to code
-    function fnToFinalCode(pCode) {
-        if (typeof(pCode) === "string") {
-            return pCode;
-        }
-        var sCode = "";
-        for (var i = 0; i < pCode.length; i++) {
-            if (typeof(pCode[i]) === "string") {
-                sCode += pCode[i];
-            }
-            else {
-                sCode += pCode[i].toDataCode();
-            }
-        }
-        return sCode;
-    }
 
     var sVertexCode = "";
     var sFragmentCode = "";
@@ -1291,13 +1305,15 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     //Input data for shader
     for (i = 0; i < pKeys.length; i++) {
         sKey1 = pKeys[i];
-        sVertexCode += pAttrDecl[sKey1];
+        if (pAttrDecl[sKey1]) {
+            sVertexCode += pAttrDecl[sKey1];
+        }
     }
     //System 'Out' variable declaration
     sVertexCode += this.sVaryingsOut;
     //Function`s body
     for (i in this.pFuncDeclBlockV) {
-        sVertexCode += fnToFinalCode(this.pFuncDeclBlockV[i]) + "\n";
+        sVertexCode += this._toFinalCode(this.pFuncDeclBlockV[i]) + "\n";
     }
     //Shader`s functions body
     for (i = 0; i < this.pVertexShaders.length; i++) {
@@ -1315,7 +1331,9 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     //Initialize input data for shader`s functions from real attributess
     for (i = 0; i < pKeys.length; i++) {
         sKey1 = pKeys[i];
-        sVertexCode += pAttrInit[sKey1];
+        if (pAttrInit[sKey1]) {
+            sVertexCode += pAttrInit[sKey1];
+        }
     }
     //Texcoords closure
     for (i in pTempVarsDecl) {
@@ -1410,7 +1428,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     }
     //Function`s body
     for (i in this.pFuncDeclBlockF) {
-        sFragmentCode += fnToFinalCode(this.pFuncDeclBlockF[i]) + "\n";
+        sFragmentCode += this._toFinalCode(this.pFuncDeclBlockF[i]) + "\n";
     }
     //Shader`s functions body
     for (i = 0; i < this.pFragmentShaders.length; i++) {

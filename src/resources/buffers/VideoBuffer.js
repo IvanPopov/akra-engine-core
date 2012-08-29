@@ -492,7 +492,7 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
         pManager.applyFrameBufferTexture(this);
         this.startRender();
         for (var i = 0; i < this.totalPasses(); i++) {
-            console.log("Pass #"+i);
+            trace("Pass #"+i);
             this.activatePass(i);
             pSnapshot.applyTextureBySemantic("TEXTURE0", this);
             pSnapshot.applyVertexData(pVertexData, a.PRIMTYPE.POINTLIST);

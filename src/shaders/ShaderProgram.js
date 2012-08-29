@@ -384,6 +384,7 @@ ShaderProgram.prototype.applySampler2D = function (sName, pData) {
     var sRealName = a.fx.SHADER_PREFIX.SAMPLER + this._pSamplersToReal[sName];
     var iSlot = this._pRenderer.activateTexture(pTexture);
     var pTextureParam = this._pTextureParams[iSlot];
+    trace("Slot #" + iSlot);
     pTextureParam[a.TPARAM.MAG_FILTER] = pData[a.TPARAM.MAG_FILTER] ||
                                          pTexture._getParameter(a.TPARAM.MAG_FILTER) ||
                                          a.TFILTER.LINEAR;

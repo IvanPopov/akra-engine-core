@@ -216,6 +216,9 @@ var GLOBAL_VARS = {
 
     PREFIX : 10,
 
+    INARRAY  : 1,
+    INOBJECT : 2,
+
     EXTERNAL_V : 1,
     EXTERNAL_F : 2
 };
@@ -1025,6 +1028,9 @@ EffectPointer.prototype.toCode = function () {
 };
 
 function EffectBuffer(pVar) {
+    STATIC(fnToCode, function () {
+        return this.pData;
+    });
     this.pRealBuffer = null;
     /**
      * Pointer for real code
@@ -1039,9 +1045,6 @@ function EffectBuffer(pVar) {
     this.isUniform = false;
     this.id = EffectBuffer.nCount++;
     this.pVar = pVar || null;
-    STATIC(fnToCode, function () {
-        return this.pData;
-    });
 }
 EffectBuffer.nCount = 0;
 
@@ -1061,6 +1064,7 @@ function EffectVariable() {
      * @type {String}
      */
     this.sRealName = null;
+    this.sFullName = null;
     /**
      *
      * @type {String}
@@ -1137,6 +1141,7 @@ function EffectVariable() {
      * @private
      */
     this._pAllPointers = null;
+    this._pIndexFields = null;
 }
 EffectVariable.prototype.isInput = function () {
     if (this.pType.pUsagesName &&
@@ -1217,6 +1222,9 @@ EffectVariable.prototype.cloneMe = function () {
     pVar.nDim = this.nDim;
     pVar.iSize = this.iSize;
     pVar.iPadding = this.iPadding;
+    pVar._pAllPointers = this._pAllPointers;
+    pVar._pIndexFields = this._pIndexFields;
+    pVar.sFullName = this.pFullName;
     return pVar;
 };
 EffectVariable.prototype.setTexture = function (pTex) {
@@ -1324,6 +1332,7 @@ function EffectVariableBase(pVar, pFirst, sRealPrevName, iScope, sFullName, iPad
     this.sRealNameShader = null;
     this.sRealName = null;
     this.isUsed = false;
+    this._pIndexFields = null;
 }
 EffectVariableBase.prototype.toCode = function (isShader) {
     if (isShader === a.fx.GLOBAL_VARS.PREFIX) {
@@ -1349,6 +1358,24 @@ EffectVariableBase.prototype.toCode = function (isShader) {
         this.sRealName = sName;
     }
     return sName;
+};
+EffectVariableBase.prototype.cloneMe = function () {
+    var pVar = this.pVar.cloneMe();
+    pVar.sName = this.pVar.sName;
+    pVar.sFullName = this.sFullName;
+    pVar.sRealName = this.pVar.sRealName;
+    pVar.sSemantic = this.pVar.sSemantic;
+    pVar.isArray = this.isArray;
+    pVar.iLength = this.iLength;
+    pVar.isPointer = this.isPointer;
+    pVar.pPointers = this.pPointers;
+    pVar.pBuffer = this.pBuffer;
+    pVar.nDim = this.pVar.nDim;
+    pVar.iSize = this.iSize;
+    pVar.iPadding = this.iPadding;
+    pVar._pAllPointers = this._pAllPointers;
+    pVar._pIndexFields = this._pIndexFields;
+    return pVar;
 };
 
 function EffectBaseFunction() {
@@ -2026,6 +2053,37 @@ EffectShader.prototype.generateExtractedCode = function () {
     for (i = 0; i < this.pImplement.length; i++) {
         fnExtractCode(this.pImplement[i]);
     }
+    if (this._pAttributes) {
+        var pData;
+        for (i in this._pAttrDataInit) {
+            pData = this._pAttrDataInit[i];
+            if (pData.isComplex !== true) {
+                for (j = 0; j < pData.length; j++) {
+                    if (typeof(pData[j]) === "string" || pData[j].pData !== undefined ||
+                        typeof(pData[j]) === "number") {
+                        continue;
+                    }
+                    pData[j] = pData[j].toCode(true);
+                }
+            }
+            pData = this._pAttrIndexInit[i];
+            if (pData) {
+                for (j = 0; j < pData.length; j++) {
+                    if (typeof(pData[j]) === "string" || pData[j].pData !== undefined ||
+                        typeof(pData[j]) === "number") {
+                        continue;
+                    }
+                    pData[j] = pData[j].toCode(true);
+                }
+            }
+        }
+        for (i = 0; i < this._pAttributes.length; i++) {
+            pData = this._pAttrDataInit[this._pAttributes[i].sSemantic];
+            if (pData && pData.isComplex === true) {
+                this._extractAttrSubData(pData);
+            }
+        }
+    }
     sCode += "}";
     if (pCode) {
         pCode.push(sCode);
@@ -2211,6 +2269,19 @@ EffectShader.prototype.toFinal = function () {
         return sCode;
     }
 };
+EffectShader.prototype._extractAttrSubData = function (pData) {
+    var i, j;
+    var nLength = pData.length;
+    var pSubData;
+    for (i = 0; i < nLength; i++) {
+        pSubData = this._pAttrDataInit[pData[i]];
+        if (pSubData.isComplex) {
+            this._extractAttrSubData(pSubData);
+            pData = pData.concat(pSubData);
+            pData.isComplex = true;
+        }
+    }
+};
 
 function EffectVertex(pFunction) {
     A_CLASS;
@@ -2233,6 +2304,10 @@ function EffectVertex(pFunction) {
     this._pAttributes = [];
     this._pAttrSemantics = {};
     this.pAttributePointers = {};
+    this._pAttrDataDecl = {};
+    this._pAttrIndexDecl = {};
+    this._pAttrDataInit = {};
+    this._pAttrIndexInit = {};
 }
 EXTENDS(EffectVertex, EffectShader);
 EffectVertex.prototype.addVarying = function (pVar) {
@@ -2249,25 +2324,63 @@ EffectVertex.prototype.createReturnVar = function (pType) {
     this.pReturnVariable.sName = a.fx.GLOBAL_VARS.SHADEROUT;
     this.pReturnVariable.pType = pType.cloneMe();
 };
-EffectVertex.prototype.addAttribute = function (pVar) {
+EffectVertex.prototype.addAttribute = function (pVar, pEffect) {
     var pAttr;
     if (!pVar.isVSInput) {
         pAttr = pVar.cloneMe();
         pVar.sRealName = pVar.sSemantic;
-        pAttr.sName = pAttr.sSemantic;
+        pAttr.isUsed = pVar.isUsed;
+        pAttr.iScope = pVar.iScope;
+//        pAttr.sName = pAttr.sSemantic;
         pAttr.sRealName = pAttr.sSemantic;
         this._pAttributes.push(pAttr);
         this._pAttrSemantics[pAttr.sSemantic] = pAttr;
+//        this.addAttributeDecl(pAttr, pEffect);
         return;
     }
     var i;
     var pVars = pVar.pType.pEffectType.pDesc.pOrders;
+    var pScope = pEffect._ppScopes[pVar.iScope].pStructTable;
+    var sName;
     for (i = 0; i < pVars.length; i++) {
-        pAttr = pVars[i].cloneMe();
-        pAttr.sName = pAttr.sSemantic;
-        this._pAttributes.push(pAttr);
-        this._pAttrSemantics[pAttr.sSemantic] = pAttr;
+        sName = pVar.sName + "." + pVars[i].sName;
+        this.addAttribute(pScope[sName], pEffect);
     }
+};
+EffectVertex.prototype.addAttributeDecl = function (pAttr, pEffect) {
+    var sRealName = pAttr.toCode();
+    if (!pAttr.isUsed) {
+        return false;
+    }
+    this._pAttrDataDecl[sRealName] = pAttr.toCodeDecl();
+    if (pAttr.isPointer === false) {
+        return true;
+    }
+    var i;
+    var pPointer;
+    this._pAttrIndexDecl[sRealName] = "";
+    for (i = 0; i < pAttr.pPointers.length; i++) {
+        pPointer = pAttr.pPointers[i];
+        pPointer.sRealName = null;
+        this._pAttrIndexDecl[sRealName] += "float " + pPointer.toCode() + ";";
+    }
+    if (pAttr._pAllPointers) {
+        for (i = pAttr.pPointers.length; i < pAttr._pAllPointers.length; i++) {
+            pPointer = pAttr._pAllPointers[i];
+            sRealName = pPointer.pVar.toCode(true);
+            if (this._pAttrIndexDecl[sRealName] === undefined) {
+                this._pAttrIndexDecl[sRealName] = "";
+            }
+            pPointer.sRealName = null;
+            this._pAttrIndexDecl[sRealName] += "float " + pPointer.toCode() + ";";
+        }
+    }
+    if (this._pExtractFunctions === null) {
+        this._pExtractFunctions = {};
+    }
+    pEffect._extractVariableData(pAttr, this._pAttrDataInit, pAttr.pBuffer, this, a.fx.GLOBAL_VARS.INOBJECT);
+    pEffect._extractVariableIndex(pAttr, this._pAttrIndexInit, pAttr.pBuffer, a.fx.GLOBAL_VARS.INOBJECT, true);
+
 };
 EffectVertex.prototype.generateDefinitionCode = function (id, iEffectId) {
     this.sRealName = a.fx.GLOBAL_VARS.VERTEXPREFIX + id + "_" + iEffectId;
@@ -2280,6 +2393,27 @@ EffectVertex.prototype.addAttributeIndex = function (pVar) {
         pPointer = pVar.pPointers[i];
         pPointer.sRealName = null;
         this.pAttributePointers[pPointer.toCode()] = pPointer;
+    }
+};
+EffectVertex.prototype.setAttributeUsed = function (pVar, pEffect) {
+    var pAttr;
+    var sSemantic;
+    if (!pVar.isVSInput) {
+        sSemantic = pVar.pVar ? pVar.pVar.sSemantic : pVar.sSemantic;
+        pAttr = this._pAttrSemantics[sSemantic];
+        pAttr.isUsed = pVar.isUsed;
+        pAttr.iScope = pVar.iScope;
+        pEffect._getAllPointers(pAttr);
+        this.addAttributeDecl(pAttr, pEffect);
+        return;
+    }
+    var i;
+    var pVars = pVar.pType.pEffectType.pDesc.pOrders;
+    var pScope = pEffect._ppScopes[pVar.iScope].pStructTable;
+    var sName;
+    for (i = 0; i < pVars.length; i++) {
+        sName = pVar.sName + "." + pVars[i].sName;
+        this.setAttributeUsed(pScope[sName], pEffect);
     }
 };
 
@@ -2723,6 +2857,23 @@ MemBlock.prototype.toCode = function () {
             }
         }
     }
+    if (pCodeIndex.length > this._pVar.pPointers.length - 1) {
+        for (i = this._pVar.pPointers.length - 1; i < pCodeIndex.length; i++) {
+            pCodeFr = pCodeIndex[i];
+            for (j = 0; j < pCodeFr.length; j++) {
+                if (typeof(pCodeFr[j]) === "string") {
+                    sCode += pCodeFr[j];
+                }
+                else {
+                    if (sCode !== "") {
+                        pCode.push(sCode);
+                    }
+                    pCode.push(pCodeFr[j]);
+                    sCode = "";
+                }
+            }
+        }
+    }
     if (sCode !== "") {
         pCode.push(sCode);
     }
@@ -2745,26 +2896,15 @@ MemBlock.prototype.toCode = function () {
     this._pCode = pCode;
     return this._pCode;
 };
-MemBlock.prototype.addIndexData = function () {
+MemBlock.prototype.addIndexData = function (pEffect) {
     if (this._pCodeIndex) {
         return;
     }
     var pVar = this._pVar;
-    var pCode;
-    var i;
+
     if (!this._pBaseBlock) {
         this._pCodeIndex = [];
-        if (pVar.isBase()) {
-            for (i = pVar.pPointers.length - 2; i >= 0; i--) {
-                pCode = [];
-                pCode.push(pVar.pPointers[i], "=A_extractFloat(", this._pBuffer.pSampler,
-                           ",", this._pBuffer.pHeader, ",", pVar.pPointers[i + 1], ");");
-                this._pCodeIndex.push(pCode);
-            }
-        }
-        else {
-
-        }
+        pEffect._extractVariableIndex(pVar, this._pCodeIndex, this._pBuffer, a.fx.GLOBAL_VARS.INARRAY, false);
     }
     else {
         error("Index data adds only for base memory blocks");
@@ -3395,139 +3535,200 @@ Effect.prototype.addBaseVarMemCode = function (pFunction, pBlock, pVar) {
     if (!pBlock._pCodeData) {
         pBlock._pCodeData = [];
     }
-    function fnExtract(pVar, pCode, pFunction, me, pPointer, iPadding) {
-        if (!pVar.isUsed) {
-            return;
+    this._extractVariableData(pVar, pBlock._pCodeData, pBlock._pBuffer, pFunction, a.fx.GLOBAL_VARS.INARRAY);
+};
+Effect.prototype._extractVariableData = function (pVar, pData, pBuffer, pFunction, eMode, pPointer, iPadding) {
+    if (!pVar.isUsed) {
+        return;
+    }
+    var isArray = false;
+    var iOffset = 0;
+    var pCode;
+    var isShader = (pFunction instanceof EffectVertex);
+    if (eMode === a.fx.GLOBAL_VARS.INARRAY) {
+        pCode = pData;
+    }
+    else if (eMode === a.fx.GLOBAL_VARS.INOBJECT) {
+        pCode = [];
+        pData[pVar.toCode(isShader)] = pCode;
+    }
+    pPointer = pPointer || pVar.pPointers[0];
+    if (pVar.pType.isBase()) {
+        if (pVar.iLength > 1) {
+            isArray = true;
+            iOffset = 0;
+            pCode.push("for(int i = 0; i <", pVar.iLength, ";i++){");
         }
-        var isArray = false;
-        var iOffset = 0;
-        pPointer = pPointer || pVar.pPointers[0];
-        if (pVar.pType.isBase()) {
-            if (pVar.iLength > 1) {
-                isArray = true;
-                iOffset = 0;
-                pCode.push("for(int i = 0; i <", pVar.iLength, ";i++){");
-            }
-            for (var i = 0; i < pVar.iLength; i++) {
-                pCode.push(pVar);
-                if (isArray) {
-                    pCode.push("[i]");
-                    iOffset += pVar.pType.pEffectType.iSize;
-                }
-                pCode.push("=(");
-                if (pVar.pType.isEqual(me.hasType("float")) || pVar.pType.isEqual(me.hasType("bool"))) {
-                    pCode.push("A_extractFloat(");
-                    pFunction._pExtractFunctions["float"] = null;
-                }
-                else if (pVar.pType.isEqual(me.hasType("int"))) {
-                    pCode.push("int(A_extractFloat(");
-                    pFunction._pExtractFunctions["float"] = null;
-                }
-                else if (pVar.pType.isEqual(me.hasType("float2"))) {
-                    pCode.push("A_extractVec2(");
-                    pFunction._pExtractFunctions["float"] = null;
-                    pFunction._pExtractFunctions["vec2"] = null;
-                }
-                else if (pVar.pType.isEqual(me.hasType("float3"))) {
-                    pCode.push("A_extractVec3(");
-                    pFunction._pExtractFunctions["float"] = null;
-                    pFunction._pExtractFunctions["vec3"] = null;
-                }
-                else if (pVar.pType.isEqual(me.hasType("float4"))) {
-                    pCode.push("A_extractVec4(");
-                    pFunction._pExtractFunctions["float"] = null;
-                    pFunction._pExtractFunctions["vec4"] = null;
-                }
-                else if (pVar.pType.isEqual(me.hasType("int2"))) {
-                    pCode.push("ivec2(A_extractVec2(");
-                    pFunction._pExtractFunctions["float"] = null;
-                    pFunction._pExtractFunctions["vec2"] = null;
-                }
-                else if (pVar.pType.isEqual(me.hasType("int3"))) {
-                    pCode.push("ivec3(A_extractVec3(");
-                    pFunction._pExtractFunctions["float"] = null;
-                    pFunction._pExtractFunctions["vec3"] = null;
-                }
-                else if (pVar.pType.isEqual(me.hasType("int4"))) {
-                    pCode.push("ivec4(A_extractVec4(");
-                    pFunction._pExtractFunctions["float"] = null;
-                    pFunction._pExtractFunctions["vec4"] = null;
-                }
-                else if (pVar.pType.isEqual(me.hasType("bool2"))) {
-                    pCode.push("bvec2(A_extractVec2(");
-                    pFunction._pExtractFunctions["float"] = null;
-                    pFunction._pExtractFunctions["vec2"] = null;
-                }
-                else if (pVar.pType.isEqual(me.hasType("bool3"))) {
-                    pCode.push("bvec3(A_extractVec3(");
-                    pFunction._pExtractFunctions["float"] = null;
-                    pFunction._pExtractFunctions["vec3"] = null;
-                }
-                else if (pVar.pType.isEqual(me.hasType("bool4"))) {
-                    pCode.push("bvec4(A_extractVec4(");
-                    pFunction._pExtractFunctions["float"] = null;
-                    pFunction._pExtractFunctions["vec4"] = null;
-                }
-                else if (pVar.pType.isEqual(me.hasType("float4x4"))) {
-                    pCode.push("A_extractMat4(");
-                    pFunction._pExtractFunctions["float"] = null;
-                    pFunction._pExtractFunctions["vec4"] = null;
-                    pFunction._pExtractFunctions["Mat4"] = null;
-                }
-                else {
-                    error("We don`t support another simple type");
-                    return;
-                }
-                pCode.push(pBlock._pBuffer.pSampler, ",", pBlock._pBuffer.pHeader, ",", pPointer);
-                if (iPadding) {
-                    pCode.push("+float(", pVar.iPadding, ")");
-                }
-                if (isArray) {
-                    pCode.push("+float(", iOffset, ")");
-                }
-                pCode.push(")");
-                if (pVar.pType.isEqual(me.hasType("float")) ||
-                    pVar.pType.isEqual(me.hasType("float4x4")) ||
-                    pVar.pType.isEqual(me.hasType("float2")) ||
-                    pVar.pType.isEqual(me.hasType("float3")) ||
-                    pVar.pType.isEqual(me.hasType("float4"))) {
-                    pCode.push(");");
-                }
-                else if (pVar.pType.isEqual(me.hasType("bool"))) {
-                    pCode.push("!=0.0);");
-                }
-                else {
-                    pCode.push("));");
-                }
-            }
+        for (var i = 0; i < pVar.iLength; i++) {
+            pCode.push(pVar);
             if (isArray) {
-                pCode.push(";");
+                pCode.push("[i]");
+                iOffset += pVar.pType.pEffectType.iSize;
             }
-        }
-        else {
-            var iScope = pVar.iScope;
-            var pOrders = pVar.pType.pEffectType.pDesc.pOrders;
-            var i;
-            var sName;
-            var pScope = me._ppScopes[iScope].pStructTable;
-            var pNewVar;
-            if (!pScope) {
-                error("Impossible to etract variable");
+            pCode.push("=(");
+            if (pVar.pType.isEqual(this.hasType("float")) || pVar.pType.isEqual(this.hasType("bool"))) {
+                pCode.push("A_extractFloat(");
+                pFunction._pExtractFunctions["float"] = null;
+            }
+            else if (pVar.pType.isEqual(this.hasType("int"))) {
+                pCode.push("int(A_extractFloat(");
+                pFunction._pExtractFunctions["float"] = null;
+            }
+            else if (pVar.pType.isEqual(this.hasType("float2"))) {
+                pCode.push("A_extractVec2(");
+                pFunction._pExtractFunctions["float"] = null;
+                pFunction._pExtractFunctions["vec2"] = null;
+            }
+            else if (pVar.pType.isEqual(this.hasType("float3"))) {
+                pCode.push("A_extractVec3(");
+                pFunction._pExtractFunctions["float"] = null;
+                pFunction._pExtractFunctions["vec3"] = null;
+            }
+            else if (pVar.pType.isEqual(this.hasType("float4"))) {
+                pCode.push("A_extractVec4(");
+                pFunction._pExtractFunctions["float"] = null;
+                pFunction._pExtractFunctions["vec4"] = null;
+            }
+            else if (pVar.pType.isEqual(this.hasType("int2"))) {
+                pCode.push("ivec2(A_extractVec2(");
+                pFunction._pExtractFunctions["float"] = null;
+                pFunction._pExtractFunctions["vec2"] = null;
+            }
+            else if (pVar.pType.isEqual(this.hasType("int3"))) {
+                pCode.push("ivec3(A_extractVec3(");
+                pFunction._pExtractFunctions["float"] = null;
+                pFunction._pExtractFunctions["vec3"] = null;
+            }
+            else if (pVar.pType.isEqual(this.hasType("int4"))) {
+                pCode.push("ivec4(A_extractVec4(");
+                pFunction._pExtractFunctions["float"] = null;
+                pFunction._pExtractFunctions["vec4"] = null;
+            }
+            else if (pVar.pType.isEqual(this.hasType("bool2"))) {
+                pCode.push("bvec2(A_extractVec2(");
+                pFunction._pExtractFunctions["float"] = null;
+                pFunction._pExtractFunctions["vec2"] = null;
+            }
+            else if (pVar.pType.isEqual(this.hasType("bool3"))) {
+                pCode.push("bvec3(A_extractVec3(");
+                pFunction._pExtractFunctions["float"] = null;
+                pFunction._pExtractFunctions["vec3"] = null;
+            }
+            else if (pVar.pType.isEqual(this.hasType("bool4"))) {
+                pCode.push("bvec4(A_extractVec4(");
+                pFunction._pExtractFunctions["float"] = null;
+                pFunction._pExtractFunctions["vec4"] = null;
+            }
+            else if (pVar.pType.isEqual(this.hasType("float4x4"))) {
+                pCode.push("A_extractMat4(");
+                pFunction._pExtractFunctions["float"] = null;
+                pFunction._pExtractFunctions["vec4"] = null;
+                pFunction._pExtractFunctions["Mat4"] = null;
+            }
+            else {
+                error("We don`t support another simple type");
                 return;
             }
-            var sPrevName = pVar.sFullName || pVar.sName;
-            for (i = 0; i < pOrders.length; i++) {
-                sName = sPrevName + pOrders[i].sName;
-                pNewVar = pScope[sName];
-                if (pNewVar.isPointer) {
-                    fnExtract(pVar, pBlock._pCodeData, pFunction, me);
-                }
-                else {
-                    fnExtract(pVar, pBlock._pCodeData, pFunction, me, pPointer, pNewVar.iPadding);
-                }
+            pCode.push(pBuffer.pSampler, ",", pBuffer.pHeader, ",", pPointer);
+            if (iPadding > 0) {
+                pCode.push("+float(", pVar.iPadding, ")");
+            }
+            if (isArray) {
+                pCode.push("+float(", iOffset, ")");
+            }
+            pCode.push(")");
+            if (pVar.pType.isEqual(this.hasType("float")) ||
+                pVar.pType.isEqual(this.hasType("float4x4")) ||
+                pVar.pType.isEqual(this.hasType("float2")) ||
+                pVar.pType.isEqual(this.hasType("float3")) ||
+                pVar.pType.isEqual(this.hasType("float4"))) {
+                pCode.push(");");
+            }
+            else if (pVar.pType.isEqual(this.hasType("bool"))) {
+                pCode.push("!=0.0);");
+            }
+            else {
+                pCode.push("));");
             }
         }
-        fnExtract(pVar, pBlock._pCodeData, pFunction, this);
+        if (isArray) {
+            pCode.push(";");
+        }
+    }
+    else {
+        var iScope = pVar.iScope;
+        var pOrders = pVar.pType.pEffectType.pDesc.pOrders;
+        var i;
+        var sName;
+        var pScope = this._ppScopes[iScope].pStructTable;
+        var pNewVar;
+        if (!pScope) {
+            error("Impossible to etract variable");
+            return;
+        }
+        var sPrevName = pVar.sFullName || pVar.sName;
+        if (eMode === a.fx.GLOBAL_VARS.INOBJECT) {
+            pData[pVar.toCode(isShader)] = [];
+            pData[pVar.toCode(isShader)].isComplex = true;
+        }
+        for (i = 0; i < pOrders.length; i++) {
+            sName = sPrevName + "." + pOrders[i].sName;
+            pNewVar = pScope[sName];
+            if (pNewVar.isPointer) {
+                this._extractVariableData(pNewVar, pData, pBuffer, pFunction, eMode);
+            }
+            else {
+                this._extractVariableData(pNewVar, pData, pBuffer, pFunction, eMode, pPointer, pNewVar.iPadding);
+            }
+            if (eMode === a.fx.GLOBAL_VARS.INOBJECT) {
+                pData[pVar.toCode(isShader)].push(pNewVar.toCode(isShader));
+            }
+        }
+    }
+};
+Effect.prototype._extractVariableIndex = function (pVar, pData, pBuffer, eMode, isShader, pPointer) {
+    if (!pVar.isUsed) {
+        return false;
+    }
+    var pCodeIndex;
+    var i;
+    if (eMode === a.fx.GLOBAL_VARS.INARRAY) {
+        pCodeIndex = pData;
+    }
+    else if (eMode === a.fx.GLOBAL_VARS.INOBJECT) {
+        pCodeIndex = [];
+        pData[pVar.toCode(isShader)] = pCodeIndex;
+    }
+    if (pVar.isPointer) {
+        if (pPointer) {
+            var iPadding = pVar.iPadding > 0 ? pVar.iPadding : 0;
+            if (eMode === a.fx.GLOBAL_VARS.INARRAY) {
+                pCodeIndex.push([pVar.pPointers[pVar.pPointers.length - 1], "=A_extractFloat(", pBuffer.pSampler,
+                                 ",", pBuffer.pHeader, ",", pPointer, "+", iPadding, ");"]);
+            }
+            else if (eMode === a.fx.GLOBAL_VARS.INOBJECT) {
+                pCodeIndex.push(pVar.pPointers[pVar.pPointers.length - 1], "=A_extractFloat(", pBuffer.pSampler,
+                                ",", pBuffer.pHeader, ",", pPointer, "+", iPadding, ");");
+            }
+        }
+        for (i = pVar.pPointers.length - 2; i >= 0; i--) {
+            if (eMode === a.fx.GLOBAL_VARS.INARRAY) {
+                pCodeIndex.push([pVar.pPointers[i], "=A_extractFloat(", pBuffer.pSampler,
+                                 ",", pBuffer.pHeader, ",", pVar.pPointers[i + 1], ");"]);
+            }
+            else if (eMode === a.fx.GLOBAL_VARS.INOBJECT) {
+                pCodeIndex.push(pVar.pPointers[i], "=A_extractFloat(", pBuffer.pSampler,
+                                ",", pBuffer.pHeader, ",", pVar.pPointers[i + 1], ");");
+            }
+        }
+    }
+    if (!pVar.pType.isBase()) {
+        pPointer = (pVar.isPointer ? pVar.pPointers[0] : pPointer);
+        if (pVar._pIndexFields) {
+            for (i = 0; i < pVar._pIndexFields.length; i++) {
+                this._extractVariableIndex(pVar._pIndexFields[i], pData, pBuffer, eMode, isShader, pPointer);
+            }
+        }
     }
 };
 
@@ -3572,7 +3773,7 @@ Effect.prototype.addVariable = function (pVar, isParams) {
                 if (!me._isStrictMode && isParams && iDepth === 0) {
                     isPointer = undefined;
                     pPointers = [];
-                    pPointers.push(new EffectPointer(pNewVar, j, pFirst, sPrevRealSaveP, isParams));
+                    pPointers.push(new EffectPointer(pNewVar, 0, pFirst, sPrevRealSaveP, isParams));
                     pBuffer = pBufferMap || new EffectBuffer();
                 }
             }
@@ -3581,14 +3782,13 @@ Effect.prototype.addVariable = function (pVar, isParams) {
             pNewVar.pBuffer = pBuffer;
 
             if (!pOrders[i].pType.isBase()) {
-                iDepth++;
                 sPrevRealP = (sPrevRealP !== "" ) ? (sPrevRealP + "_" +
                                                      pOrders[i].sRealName) : pOrders[i].sRealName;
                 sPrevRealV = (sPrevRealV !== "" ) ? (sPrevRealV + "." +
                                                      pOrders[i].sRealName) : pOrders[i].sRealName;
                 fnExtractStruct(sPrev, pFirst, pOrders.isPointer ? 0 : pVar.iPadding,
                                 sPrevRealV, sPrevRealP, pOrders[i].pType.pEffectType.pDesc,
-                                pTable, iDepth, me, pBuffer);
+                                pTable, iDepth + 1, me, pBuffer);
             }
         }
     }
@@ -3989,7 +4189,7 @@ Effect.prototype._getAllPointers = function (pVar) {
         return null;
     }
     var pPointers;
-    if (pVar.isPointer) {
+    if (pVar.isPointer !== false) {
         pPointers = pVar.pPointers.concat();
     }
     else {
@@ -4005,14 +4205,17 @@ Effect.prototype._getAllPointers = function (pVar) {
     var i;
     var pStructScope = this._ppScopes[pVar.iScope].pStructTable;
     var pNewVar;
+    var pIndexes = [];
     for (i = 0; i < pOrders.length; i++) {
         sName = sVarName + "." + pOrders[i].sName;
         pNewVar = pStructScope[sName];
         if (pNewVar.isPointer || (!pVar.pType.isBase() && pVar.pType.pEffectType.pDesc.hasIndexData())) {
             pPointers = pPointers.concat(this._getAllPointers(pNewVar));
+            pIndexes.push(pNewVar);
         }
     }
     pVar._pAllPointers = pPointers;
+    pVar._pIndexFields = pIndexes;
     return pPointers;
 };
 
@@ -4274,13 +4477,13 @@ Effect.prototype.postAnalyzeEffect = function () {
         if (!pFunction) {
             continue;
         }
-        if (pFunction._pBaseMemBlocks) {
+        if (pFunction._pBaseMemBlocks && pFunction._pExtractFunctions === null) {
             pFunction._pExtractFunctions = {};
         }
         for (j in pFunction._pBaseMemBlocks) {
             pBlock = pFunction._pBaseMemBlocks[j];
             pVar = pBlock._pVar;
-            pBlock.addIndexData();
+            pBlock.addIndexData(this);
             if (!pVar.pType.isBase()) {
                 error("We haven`t support non base type yet");
                 return;
@@ -4378,13 +4581,13 @@ Effect.prototype.postAnalyzeEffect = function () {
         if (!pShader) {
             continue;
         }
-        if (pShader._pBaseMemBlocks) {
+        if (pShader._pBaseMemBlocks && pShader._pExtractFunctions === null) {
             pShader._pExtractFunctions = {};
         }
         for (j in pShader._pBaseMemBlocks) {
             pBlock = pShader._pBaseMemBlocks[j];
             pVar = pBlock._pVar;
-            pBlock.addIndexData();
+            pBlock.addIndexData(this);
             if (!pVar.pType.isBase()) {
                 error("We haven`t support non base type yet");
                 return;
@@ -4667,7 +4870,7 @@ Effect.prototype.analyzeVariableDim = function (pNode, pVar) {
         return pVar;
     }
     if (pChildren.length === 3) {
-        if (!this._isStruct && !this._isParam) {
+        if (!this._isStruct && !this._isParam && this._eFuncProperty === a.Effect.Func.DEFAULT) {
             error("For variables this are not good");
             return;
         }
@@ -5921,18 +6124,7 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
             var sName, pAttr, pVar, pOrders;
             for (i = 0; pFunction.pParamOrders && i < pFunction.pParamOrders.length; i++) {
                 if (pFunction.pParamOrders[i].isUniform === false) {
-                    pFunction.pShader.addAttribute(pFunction.pParamOrders[i]);
-                    if (pFunction.pParamOrders[i].isVSInput) {
-                        sName = pFunction.pParamOrders[i].sName;
-                        pOrders = pFunction.pParamOrders[i].pType.pEffectType.pDesc.pOrders;
-                        for (j = 0; j < pOrders.length; j++) {
-                            pAttr = pFunction.pShader._pAttrSemantics[pOrders[j].sRealName];
-                            pVar = this.hasComplexVariable(sName + "." + pOrders[j].sName);
-                            pAttr.isPointer = pVar.isPointer;
-                            pAttr.pPointers = pVar.pPointers;
-                            pAttr.pBuffer = pVar.pBuffer;
-                        }
-                    }
+                    pFunction.pShader.addAttribute(pFunction.pParamOrders[i], this);
                 }
             }
             //Add Varyings
@@ -5954,6 +6146,11 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
                 return;
             }
             this._pShaders[pFunction.hash()] = pFunction.pShader;
+            for (i = 0; pFunction.pParamOrders && i < pFunction.pParamOrders.length; i++) {
+                if (pFunction.pParamOrders[i].isUniform === false) {
+                    pFunction.pShader.setAttributeUsed(pFunction.pParamOrders[i], this);
+                }
+            }
         }
         else if (pFunction.isFragmentShader) {
             if (!pFunction.checkMe(a.fx.GLOBAL_VARS.FRAGMENTUSAGE)) {

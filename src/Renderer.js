@@ -1136,6 +1136,7 @@ Renderer.prototype.activateIndexBuffer = function (pBuffer) {
 Renderer.prototype.activateProgram = function (pProgram) {
     if (this._pRenderState.pActiveProgram === pProgram) {
         trace("Program already active");
+        pProgram._nActiveTimes++;
         return true;
     }
     var pDevice = this.pEngine.pDevice;
