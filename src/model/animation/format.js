@@ -6,7 +6,7 @@ A_FORMAT({
 			'pMatrix'		: 'Mat4',
 		},
 
-		constructor : function () {
+		ctor : function () {
 			return new a.AnimationFrame();
 		}
 	},
@@ -16,7 +16,7 @@ A_FORMAT({
 			'_pKeyFrames'	: 'Array',
 		},
 
-		constructor	: 'a.AnimationTrack'
+		ctor	: 'a.AnimationTrack'
 	},
 	'AnimationBase': {
 		members: {
@@ -41,7 +41,7 @@ A_FORMAT({
 		},
 
 		base		: ['AnimationBase'],
-		constructor	: 'a.Animation'
+		ctor	: 'a.Animation'
 	},
 	'AnimationContainer': {
 		members : {
@@ -55,7 +55,7 @@ A_FORMAT({
 		},
 
 		base		: ['AnimationBase'],
-		constructor	: 'a.AnimationContainer'
+		ctor	: 'a.AnimationContainer'
 	},
 	'AnimationBlend': {
 		members: {
@@ -63,10 +63,10 @@ A_FORMAT({
 		},
 
 		base		: ['AnimationBase'],
-		constructor	: 'a.AnimationBlend'
+		ctor	: 'a.AnimationBlend'
 	},
 	'AnimationSwitch': {
 		base		: ['AnimationBase'],
-		constructor	: 'a.AnimationSwitch'
+		ctor	: 'a.AnimationSwitch'
 	}
 });
