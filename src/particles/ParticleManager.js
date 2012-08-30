@@ -546,7 +546,7 @@ Emitter.prototype._update = function(){
 
 	//velocity update
 
-	pProgram = this._pPrograms[0];
+	var pProgram = this._pPrograms[0];
 	pProgram.activate();
 
 	pUniformList = pProgram._pUniformList; 
@@ -610,7 +610,7 @@ Emitter.prototype.renderCallback = function() {
 	else{
 		this._pDataSubset.selectIndexSet(this._iDrawMapIndex);
 	}
-	pProgram = this._pPrograms[this._pPrograms.length - 1];
+	var pProgram = this._pPrograms[this._pPrograms.length - 1];
 	pProgram.activate();
 
 	var pUniformList; //список в котором хранятся юниформы программы

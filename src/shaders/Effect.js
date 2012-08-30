@@ -493,11 +493,17 @@ VariableType.prototype.hasIndexData = function () {
 VariableType.prototype.canMixible = function () {
     return this.pEffectType.canMixible();
 };
-VariableType.prototype.canBlend = function (pType) {
-    if (this.isBase() || pType.isBase() || !this.canMixible() || !pType.canMixible()) {
+VariableType.prototype.canBlend = function (pType, isStrict) {
+    if (!this.canMixible() || !pType.canMixible()) {
         return 0;
     }
-    return this.pEffectType.canBlend(pType.pEffectType);
+    if (this.isBase() !== pType.isBase()) {
+        return 0;
+    }
+    if (this.isBase() && this.isEqual(pType)) {
+        return 1;
+    }
+    return this.pEffectType.canBlend(pType.pEffectType, isStrict);
 };
 
 function EffectType(sName, sRealName, isBase, iSize) {
@@ -726,8 +732,8 @@ EffectType.prototype.globalUsedTypes = function () {
 EffectType.prototype.canMixible = function () {
     return this._canMixible;
 };
-EffectType.prototype.canBlend = function (pType) {
-    return this.pDesc.canBlend(pType.pDesc);
+EffectType.prototype.canBlend = function (pType, isStrict) {
+    return this.pDesc.canBlend(pType.pDesc, isStrict);
 };
 
 function EffectStruct() {
@@ -952,22 +958,38 @@ EffectStruct.prototype.globalUsedTypes = function () {
 EffectStruct.prototype.canMixible = function () {
     return this._canMixible;
 };
-EffectStruct.prototype.canBlend = function (pStruct) {
+EffectStruct.prototype.canBlend = function (pStruct, isStrict) {
+    this.analyzeSemantics();
+    pStruct.analyzeSemantics();
     var pSemantics1 = this._pSemantics;
     var pSemantics2 = pStruct._pSemantics;
     var i;
     var pVar1, pVar2;
+    var iStatus = 1, iBlend;
     for (i in pSemantics1) {
         pVar1 = pSemantics1[i];
         pVar2 = pSemantics2[i];
         if (pVar2) {
-            if (!pVar1.pType.isStrictEqual(pVar2.pType) &&
-                !(pVar1.canBlend(pVar2))) {
-                return false;
+            iBlend = pVar1.canBlend(pVar2, isStrict);
+            if (iBlend === 0) {
+                return 0;
+            }
+            if (iBlend === 2) {
+                iStatus = iBlend;
+                continue;
+            }
+            if(isStrict && pVar2.iPadding !== pVar1.iPadding){
+                iStatus = 2;
             }
         }
+        else {
+            iStatus = 2;
+        }
     }
-    return true;
+    if (this.pOrders.length !== pStruct.pOrders.length) {
+        iStatus = 2;
+    }
+    return iStatus;
 };
 EffectStruct.prototype.setPadding = function () {
     var i;
@@ -1183,7 +1205,7 @@ EffectVariable.prototype.setType = function (pType) {
     if (pType.pUsagesName) {
         this.isUniform = (pType.pUsagesName["uniform"] === null) ? true : false;
         this.isGlobal = (pType.pUsagesName["global"] === null) ? true : false;
-        this.isUniform = this.isUniform || this.isSampler;
+        this.isUniform = this.isUniform || this.isSampler();
     }
     if (this.isPointer) {
         this.iSize = 1;
@@ -1302,6 +1324,13 @@ EffectVariable.prototype.isSampler = function () {
 };
 EffectVariable.prototype.isBuffer = function () {
     return (this.pBuffer && this.iScope === a.fx.GLOBAL_VARS.GLOBAL);
+};
+EffectVariable.prototype.canBlend = function (pVar, isStrict) {
+    if ((isStrict && (pVar.isPointer !== this.isPointer || pVar.nDim !== this.nDim)) ||
+        pVar.iLength !== this.iLength || pVar.isArray !== this.isArray) {
+        return 0;
+    }
+    return this.pType.canBlend(pVar.pType, isStrict);
 };
 
 function EffectVariableBase(pVar, pFirst, sRealPrevName, iScope, sFullName, iPadding) {
@@ -2303,7 +2332,6 @@ function EffectVertex(pFunction) {
      */
     this._pAttributes = [];
     this._pAttrSemantics = {};
-    this.pAttributePointers = {};
     this._pAttrDataDecl = {};
     this._pAttrIndexDecl = {};
     this._pAttrDataInit = {};
@@ -2385,15 +2413,6 @@ EffectVertex.prototype.addAttributeDecl = function (pAttr, pEffect) {
 EffectVertex.prototype.generateDefinitionCode = function (id, iEffectId) {
     this.sRealName = a.fx.GLOBAL_VARS.VERTEXPREFIX + id + "_" + iEffectId;
     this._sDefinition = "void " + this.sRealName + "()";
-};
-EffectVertex.prototype.addAttributeIndex = function (pVar) {
-    var i = 0;
-    var pPointer;
-    for (i = 0; i < pVar.pPointers.length; i++) {
-        pPointer = pVar.pPointers[i];
-        pPointer.sRealName = null;
-        this.pAttributePointers[pPointer.toCode()] = pPointer;
-    }
 };
 EffectVertex.prototype.setAttributeUsed = function (pVar, pEffect) {
     var pAttr;
@@ -3539,7 +3558,7 @@ Effect.prototype.addBaseVarMemCode = function (pFunction, pBlock, pVar) {
 };
 Effect.prototype._extractVariableData = function (pVar, pData, pBuffer, pFunction, eMode, pPointer, iPadding) {
     if (!pVar.isUsed) {
-        return;
+        return false;
     }
     var isArray = false;
     var iOffset = 0;
@@ -3627,7 +3646,7 @@ Effect.prototype._extractVariableData = function (pVar, pData, pBuffer, pFunctio
             }
             else {
                 error("We don`t support another simple type");
-                return;
+                return false;
             }
             pCode.push(pBuffer.pSampler, ",", pBuffer.pHeader, ",", pPointer);
             if (iPadding > 0) {
@@ -3662,6 +3681,7 @@ Effect.prototype._extractVariableData = function (pVar, pData, pBuffer, pFunctio
         var sName;
         var pScope = this._ppScopes[iScope].pStructTable;
         var pNewVar;
+        var isExtract;
         if (!pScope) {
             error("Impossible to etract variable");
             return;
@@ -3674,17 +3694,20 @@ Effect.prototype._extractVariableData = function (pVar, pData, pBuffer, pFunctio
         for (i = 0; i < pOrders.length; i++) {
             sName = sPrevName + "." + pOrders[i].sName;
             pNewVar = pScope[sName];
+            isExtract = false;
             if (pNewVar.isPointer) {
-                this._extractVariableData(pNewVar, pData, pBuffer, pFunction, eMode);
+                isExtract = this._extractVariableData(pNewVar, pData, pBuffer, pFunction, eMode);
             }
             else {
-                this._extractVariableData(pNewVar, pData, pBuffer, pFunction, eMode, pPointer, pNewVar.iPadding);
+                isExtract = this._extractVariableData(pNewVar, pData, pBuffer, pFunction, eMode, pPointer,
+                                                      pNewVar.iPadding);
             }
-            if (eMode === a.fx.GLOBAL_VARS.INOBJECT) {
+            if (eMode === a.fx.GLOBAL_VARS.INOBJECT && isExtract) {
                 pData[pVar.toCode(isShader)].push(pNewVar.toCode(isShader));
             }
         }
     }
+    return true;
 };
 Effect.prototype._extractVariableIndex = function (pVar, pData, pBuffer, eMode, isShader, pPointer) {
     if (!pVar.isUsed) {
@@ -3704,11 +3727,11 @@ Effect.prototype._extractVariableIndex = function (pVar, pData, pBuffer, eMode, 
             var iPadding = pVar.iPadding > 0 ? pVar.iPadding : 0;
             if (eMode === a.fx.GLOBAL_VARS.INARRAY) {
                 pCodeIndex.push([pVar.pPointers[pVar.pPointers.length - 1], "=A_extractFloat(", pBuffer.pSampler,
-                                 ",", pBuffer.pHeader, ",", pPointer, "+", iPadding, ");"]);
+                                 ",", pBuffer.pHeader, ",", pPointer, "+", iPadding, ".0);"]);
             }
             else if (eMode === a.fx.GLOBAL_VARS.INOBJECT) {
                 pCodeIndex.push(pVar.pPointers[pVar.pPointers.length - 1], "=A_extractFloat(", pBuffer.pSampler,
-                                ",", pBuffer.pHeader, ",", pPointer, "+", iPadding, ");");
+                                ",", pBuffer.pHeader, ",", pPointer, "+", iPadding, ".0);");
             }
         }
         for (i = pVar.pPointers.length - 2; i >= 0; i--) {
@@ -3786,7 +3809,7 @@ Effect.prototype.addVariable = function (pVar, isParams) {
                                                      pOrders[i].sRealName) : pOrders[i].sRealName;
                 sPrevRealV = (sPrevRealV !== "" ) ? (sPrevRealV + "." +
                                                      pOrders[i].sRealName) : pOrders[i].sRealName;
-                fnExtractStruct(sPrev, pFirst, pOrders.isPointer ? 0 : pVar.iPadding,
+                fnExtractStruct(sPrev, pFirst, pOrders[i].isPointer ? 0 : pOrders[i].iPadding,
                                 sPrevRealV, sPrevRealP, pOrders[i].pType.pEffectType.pDesc,
                                 pTable, iDepth + 1, me, pBuffer);
             }
@@ -4209,7 +4232,7 @@ Effect.prototype._getAllPointers = function (pVar) {
     for (i = 0; i < pOrders.length; i++) {
         sName = sVarName + "." + pOrders[i].sName;
         pNewVar = pStructScope[sName];
-        if (pNewVar.isPointer || (!pVar.pType.isBase() && pVar.pType.pEffectType.pDesc.hasIndexData())) {
+        if (pNewVar.isPointer || (!pNewVar.pType.isBase() && pNewVar.pType.pEffectType.pDesc.hasIndexData())) {
             pPointers = pPointers.concat(this._getAllPointers(pNewVar));
             pIndexes.push(pNewVar);
         }
@@ -5752,11 +5775,11 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         this._eFuncProperty !== a.Effect.Func.DEFAULT) {
                         pFunction.addGlobalBuffer(pRes);
                     }
-                    if (pRes.isPointer !== false) {
-                        if (this._eFuncProperty === a.Effect.Func.VERTEX && pRes.iScope === pFunction.iScope) {
-                            pFunction.addAttributeIndex(pRes);
-                        }
-                    }
+//                    if (pRes.isPointer !== false) {
+//                        if (this._eFuncProperty === a.Effect.Func.VERTEX && pRes.iScope === pFunction.iScope) {
+//                            pFunction.addAttributeIndex(pRes);
+//                        }
+//                    }
                     if (pRes.isVertexOnly) {
                         if (this._eFuncProperty === a.Effect.Func.FRAGMENT) {
                             error("You try use global variable for vertex shader in pixel shader");
@@ -5785,6 +5808,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     }
                     if (this._isWriteVar === true) {
                         if (pRes.isUniform) {
+                            trace(pRes);
                             error("don`t even try to do this, bitch.1");
                             return;
                         }
@@ -5906,11 +5930,11 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         error("Not this variable " + this._sVarName);
                         return;
                     }
-                    if (pRes.isPointer !== false) {
-                        if (this._eFuncProperty === a.Effect.Func.VERTEX && pRes.iScope === pFunction.iScope) {
-                            pFunction.addAttributeIndex(pRes);
-                        }
-                    }
+//                    if (pRes.isPointer !== false) {
+//                        if (this._eFuncProperty === a.Effect.Func.VERTEX && pRes.iScope === pFunction.iScope) {
+//                            pFunction.addAttributeIndex(pRes);
+//                        }
+//                    }
                     this._pLastVar = pRes;
                     pRes.isUsed = true;
                     this._pExprType = pRes.pType;
@@ -6126,6 +6150,9 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
                 if (pFunction.pParamOrders[i].isUniform === false) {
                     pFunction.pShader.addAttribute(pFunction.pParamOrders[i], this);
                 }
+                else {
+                    pFunction.pShader.addUniform(pFunction.pParamOrders[i]);
+                }
             }
             //Add Varyings
             if (pType.isStruct()) {
@@ -6165,6 +6192,9 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
             for (i = 0; pFunction.pParamOrders && i < pFunction.pParamOrders.length; i++) {
                 if (pFunction.pParamOrders[i].isUniform === false) {
                     pFunction.pShader.addVarying(pFunction.pParamOrders[i]);
+                }
+                else {
+                    pFunction.pShader.addUniform(pFunction.pParamOrders[i]);
                 }
             }
             this.newCode();

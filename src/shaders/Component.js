@@ -318,6 +318,7 @@ function PassBlend(pEngine) {
     this.pFuncDefBlockV = {};
     this.pGlobalVarBlockV = {};
     this.pFuncDeclBlockV = {};
+    this.pExternalsV = {};
 
     /**
      * Block of:
@@ -349,6 +350,7 @@ function PassBlend(pEngine) {
     this.pFuncDefBlockF = {};
     this.pGlobalVarBlockF = {};
     this.pFuncDeclBlockF = {};
+    this.pExternalsF = {};
 
     this.pGlobalBuffers = {};
     this.pGlobalBuffersV = {};
@@ -499,9 +501,9 @@ function PassBlend(pEngine) {
     STATIC(fnAddUniform, function (pVar, me, pShader, isVertex, sPrevRealName) {
         var pVar1;
         var sRealName = (sPrevRealName ? (sPrevRealName + "." + pVar.sRealName) : pVar.sRealName);
-        var isEqual;
         var i;
         var pUniforms, pUniformsBlock;
+        var iBlendStatus;
         if (isVertex) {
             pUniforms = me.pUniformsV;
             pUniformsBlock = me.pUniformsBlockV;
@@ -513,26 +515,27 @@ function PassBlend(pEngine) {
         pVar1 = pUniforms[sRealName];
         if (pVar1) {
             if (pVar1 instanceof Array) {
-                isEqual = false;
                 for (i = 0; i < pVar1.length; i++) {
-                    if (pVar1[i].pType.isEqual(pVar.pType)) {
-                        isEqual = true;
+                    iBlendStatus = pVar1[i].canBlend(pVar, false);
+                    if (iBlendStatus === 1) {
                         break;
                     }
-                    if (!pVar1[i].pType.canBlend(pVar.pType)) {
+                    if (iBlendStatus === 0) {
                         warning("Types for blending uniforms must be mixible");
                         return false;
                     }
                 }
-                if (!isEqual) {
+                if (iBlendStatus === 2) {
                     pVar1.push(pVar);
                 }
+                return;
             }
-            if (!pVar1.pType.isEqual(pVar.pType)) {
-                if (!pVar1.pType.canBlend(pVar.pType)) {
-                    warning("Types for blending uniforms must be mixible");
-                    return false;
-                }
+            iBlendStatus = pVar1.canBlend(pVar, false);
+            if (iBlendStatus === 0) {
+                warning("Types for blending uniforms must be mixible 1");
+                return false;
+            }
+            else if (iBlendStatus === 2) {
                 pUniforms[sRealName] = [pVar, pVar1];
                 pUniformsBlock[sRealName] = null;
             }
@@ -588,10 +591,11 @@ PassBlend.prototype.addPass = function (pPass) {
     this.pPasses.push(pPass);
     var pVertex = pPass.pVertexShader;
     var pFragment = pPass.pFragmentShader;
-    var i, j;
-    var pVar1, pVar2, pType1, pType2;
+    var i, j, k;
+    var pVar1, pVar2, pType1, pType2, pData1, pData2;
     var isEqual = false;
     var sName;
+    var iBlendStatus;
     if (pVertex) {
         this.pVertexShaders.push(pVertex);
         for (i in pVertex.pTypesBlock) {
@@ -651,6 +655,9 @@ PassBlend.prototype.addPass = function (pPass) {
             }
             PassBlend.fnAddUniform(pVar1, this, pVertex, true);
         }
+        for(i in pVertex.pExternals){
+            this._addExternal(pVertex.pExternals[i], true);
+        }
         for (i in pVertex.pAttrBuffers) {
             if (!this.pAttrBuffers[i]) {
                 this.pAttrBuffers[i] = [];
@@ -664,29 +671,28 @@ PassBlend.prototype.addPass = function (pPass) {
             pVar1 = pVertex._pAttrSemantics[i];
             pVar2 = this.pAttributes[i];
             if (pVar2) {
-//                trace(pVar2, pVar1);
                 if (pVar2 instanceof Array) {
-                    isEqual = false;
                     for (j = 0; j < pVar2.length; j++) {
-                        if (pVar2[j].pType.isStrictEqual(pVar1.pType)) {
-                            isEqual = true;
+                        iBlendStatus = pVar2[j].canBlend(pVar1, true);
+                        if (iBlendStatus === 1) {
                             break;
                         }
-                        if (!pVar2[j].pType.canBlend(pVar1.pType)) {
+                        if (iBlendStatus === 0) {
                             error("Types for blending attributes must be mixible 1");
                             return;
                         }
                     }
-                    if (!isEqual) {
+                    if (iBlendStatus === 2) {
                         pVar2.push(pVar1);
                     }
                     continue;
                 }
-                if (!pVar2.pType.isStrictEqual(pVar1.pType)) {
-                    if (!pVar2.pType.canBlend(pVar1.pType)) {
-                        error("Types for blending attributes must be mixible 2");
-                        return;
-                    }
+                iBlendStatus = pVar2.canBlend(pVar1, true);
+                if (iBlendStatus === 0) {
+                    error("Types for blending attributes must be mixible 2");
+                    return;
+                }
+                else if (iBlendStatus === 2) {
                     this.pAttributes[i] = [pVar1, pVar2];
                 }
                 continue;
@@ -696,14 +702,31 @@ PassBlend.prototype.addPass = function (pPass) {
         for (i in pVertex._pAttrDataDecl) {
             this._pAttrDataDecl[i] = pVertex._pAttrDataDecl[i];
         }
-        for(i in pVertex._pAttrDataInit){
-            this._pAttrDataInit[i] = pVertex._pAttrDataInit[i];
+        for (i in pVertex._pAttrDataInit) {
+            pData1 = this._pAttrDataInit[i];
+            pData2 = pVertex._pAttrDataInit[i];
+            if ((this.pAttributes[i] instanceof Array) && pData1) {
+                for (j = 0; j < pData2.length; j++) {
+                    isEqual = false;
+                    for (k = 0; k < pData1.length; k++) {
+                        if (pData1[k] === pData2[j]) {
+                            isEqual = true;
+                            break;
+                        }
+                    }
+                    if (!isEqual) {
+                        pData1.push(pData2[j]);
+                    }
+                }
+            }
+            else {
+                this._pAttrDataInit[i] = pData2;
+            }
+        }
+        for (i in pVertex._pAttrIndexDecl) {
             this._pAttrIndexInit[i] = pVertex._pAttrIndexInit[i];
             this._pAttrIndexDecl[i] = pVertex._pAttrIndexDecl[i];
         }
-//        for (i in pVertex.pAttributePointers) {
-//            this.pAttributePointers[i] = pVertex.pAttributePointers[i];
-//        }
         for (i in pVertex._pVaryingsSemantics) {
             pVar1 = pVertex._pVaryingsSemantics[i];
             pVar2 = this.pVaryings[i];
@@ -786,86 +809,45 @@ PassBlend.prototype.addPass = function (pPass) {
     pPass.clear();
 };
 PassBlend.prototype.finalizeBlend = function () {
-    function fnBlendTypes(pVars, me) {
-        var sNewType = "";
-        var k, l, m;
-        var pType, pVar;
-        for (k = 0; k < pVars.length; k++) {
-            pType = pVars[i].pType.pEffectType;
-            sNewType = pType.sRealName + "|";
-        }
-        if (me._pBlendTypes[sNewType]) {
-            return me._pBlendTypes[sNewType];
-        }
-        var pFields = {};
-        var sFields = "";
-        var pTypes = [];
-        var pOrders;
-        var sTypeName;
-        for (k = 0; k < pVars.length; k++) {
-            pType = pVars[k].pType.pEffectType.pDesc;
-            pOrders = pType.pDesc.pOrders;
-            for (l = 0; l < pOrders.length; l++) {
-                if (pFields[pOrders[l].sRealName]) {
-                    continue;
-                }
-                if (pOrders[i].isBase()) {
-                    pFields[pOrders[l].sRealName] = pOrders[l].toCodeDecl();
-                    continue;
-                }
-                pTypes.length = 0;
-                pTypes.push(pOrders[l]);
-                for (m = k + 1; m < pVars.length; m++) {
-                    pVar = pVars[m].pType.pEffectType.pDesc._pSemantics(pOrders[l].sSemantic);
-                    pTypes.push(pVar);
-                }
-                sTypeName = fnBlendTypes(pTypes, me);
-                pFields[pOrders[l].sRealName] = sTypeName + " " + pOrders[l].sRealName + ";";
-            }
-        }
-        sTypeName = "AUTO_BLEND_TYPE_" + me._nBlendTypes;
-        me._nBlendTypes++;
-        me._pBlendTypes[sNewType] = sTypeName;
-        for (k in pFields) {
-            sFields += pFields[k];
-        }
-        me._pBlendTypesDecl[sNewType] = "struct " + sTypeName + "{" + sFields + "};";
-        return sTypeName;
-    }
-
     var i;
     var sType;
     var pAttr;
     for (i in this.pUniformsV) {
         if (this.pUniformsBlockV[i] === null) {
-            sType = fnBlendTypes(this.pUniformsV[i], this);
+            sType = this._blendTypes(this.pUniformsV[i]);
+            this.pMixedTypesV[sType] = null;
             this.pUniformsBlockV[i] = "uniform " + sType + " " + this.pUniformsV[i][0].sRealName + ";";
+            this.pUniformsV[i] = this.pUniformsV[i][0];
         }
         if (this.pUniformsV[i].pType.isBase()) {
-            this.pUniforms[i] = this.pUniformsV[i];
+            this.pUniforms[i] = this.pUniformsV[i].pType.pEffectType.toCode();
         }
     }
     for (i in this.pSamplers) {
-        this.pUniforms[i] = this.pSamplers[i][0];
+        this.pUniforms[i] = this.pSamplers[i][0].pType.pEffectType.toCode();
     }
     for (i in this.pGlobalBuffers) {
-        this.pUniforms[i] = this.pGlobalBuffers[i][0];
+        this.pUniforms[i] = this.pGlobalBuffers[i][0].pType.pEffectType.toCode();
     }
     for (i in this.pUniformsF) {
         if (this.pUniformsBlockF[i] === null) {
-            sType = fnBlendTypes(this.pUniformsF[i], this);
+            sType = this._blendTypes(this.pUniformsF[i]);
+            this.pMixedTypesF[sType] = null;
             this.pUniformsBlockF[i] = "uniform " + sType + " " + this.pUniformsF[i][0].sRealName + ";";
+            this.pUniformsF[i] = this.pUniformsF[i][0];
         }
         if (this.pUniformsF[i].pType.isBase()) {
-            this.pUniforms[i] = this.pUniformsF[i];
+            this.pUniforms[i] = this.pUniformsF[i].pType.pEffectType.toCode();
         }
     }
     for (i in this.pAttributes) {
         pAttr = this.pAttributes[i];
-//        if (pAttr instanceof Array) {
-//            sType = fnBlendTypes(pAttr, this);
-//            this.pAttributes[i] = "attribute " + sType + " " + pAttr[0].sRealName + ";";
-//        }
+        if (pAttr instanceof Array) {
+            sType = this._blendTypes(pAttr);
+            this.pMixedTypesV[sType] = null;
+            this.pAttributes[i] = pAttr[0];
+            this._pAttrDataDecl[i] = sType + " " + i + ";";
+        }
     }
     this.sVaryingsOut = "struct { vec4 POSITION;";
 
@@ -876,22 +858,6 @@ PassBlend.prototype.finalizeBlend = function () {
     this.pVaryingsBlock["POSITION"] = "gl_Position=" + a.fx.GLOBAL_VARS.SHADEROUT + ".POSITION;";
     this.sVaryingsOut += "} " + a.fx.GLOBAL_VARS.SHADEROUT + ";"
 
-};
-//Translate all objects that was in code(Samplers and Headers) to code
-PassBlend.prototype._toFinalCode = function (pCode) {
-    if (typeof(pCode) === "string") {
-        return pCode;
-    }
-    var sCode = "";
-    for (var i = 0; i < pCode.length; i++) {
-        if (typeof(pCode[i]) === "string" || typeof(pCode[i]) === "number") {
-            sCode += pCode[i];
-        }
-        else {
-            sCode += pCode[i].toDataCode();
-        }
-    }
-    return sCode;
 };
 PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUniformData, pTextures, pTexcoords) {
     //console.log(this);
@@ -1154,54 +1120,22 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                 isExtractInitV = true;
                 this.pExtrectedFunctionsV["header"] = null;
                 sUniformOffset += "uniform float " + pAttr.toOffsetStr() + ";";
-//                sData1 = a.fx.SHADER_PREFIX.SAMPLER + iBuffer;
-//                sData2 = a.fx.SHADER_PREFIX.HEADER + iBuffer;
                 sInit += pAttr.pPointers[pAttr.pPointers.length - 1].toCode() + "=" + sAttr + "+" +
                          pAttr.toOffsetStr() + ";";
                 sInit += this._toFinalCode(this._pAttrIndexInit[sKey1]);
-//                for (j = pAttr.pPointers.length - 1; j >= 0; j--) {
-//                    pPointer = pAttr.pPointers[j];
-//                    sDecl += "float " + pPointer.toCode() + ";";
-//                    if (j === pAttr.pPointers.length - 1) {
-//                        sInit += pPointer.toCode() + "=" + sAttr + "+" + pAttr.toOffsetStr() + ";";
-//                    }
-//                    else {
-//                        sInit += pPointer.toCode() + "=A_extractFloat(" + sData1 + "," +
-//                                 sData2 + "," + pAttr.pPointers[j + 1].toCode() + ");";
-//                        this.pExtrectedFunctionsV["float"] = null;
-//                    }
-//                }
-                //sDecl += pAttr.pType.pEffectType.toCode() + " " + pAttr.toCode() + ";";
-//                trace(sKey1, this._pAttrDataInit[sKey1], this);
-                sInit += this._toFinalCode(this._pAttrDataInit[sKey1]);
-//                sInit += pAttr.toCode() + "=";
-//                switch (pAttr.pType.pEffectType.toCode()) {
-//                    case "float":
-//                        sInit += "A_extractFloat(";
-//                        break;
-//                    case "vec2":
-//                        sInit += "A_extractVec2(";
-//                        this.pExtrectedFunctionsV["float"] = null;
-//                        break;
-//                    case "vec3":
-//                        sInit += "A_extractVec3(";
-//                        this.pExtrectedFunctionsV["float"] = null;
-//                        break;
-//                    case "vec4":
-//                        sInit += "A_extractVec4(";
-//                        this.pExtrectedFunctionsV["float"] = null;
-//                        break;
-//                    case "mat4":
-//                        sInit += "A_extractMat4(";
-//                        this.pExtrectedFunctionsV["float"] = null;
-//                        this.pExtrectedFunctionsV["vec4"] = null;
-//                        break;
-//                    default:
-//                        warning("another type are not implemented yet");
-//                        return false;
-//                }
-//                sInit += sData1 + "," + sData2 + "," + pAttr.pPointers[0].toCode() + ");";
-//                this.pExtrectedFunctionsV[pAttr.pType.pEffectType.toCode()] = null;
+                if (this._pAttrDataInit[sKey1].isComplex) {
+                    pData2 = this._pAttrDataInit[sKey1];
+                    for (j = 0; j < pData2.length; j++) {
+                        if (this._pAttrIndexDecl[pData2[j]]) {
+                            sDecl += this._pAttrIndexDecl[pData2[j]];
+                            sInit += this._toFinalCode(this._pAttrIndexInit[pData2[j]]);
+                        }
+                        sInit += this._toFinalCode(this._pAttrDataInit[pData2[j]]);
+                    }
+                }
+                else {
+                    sInit += this._toFinalCode(this._pAttrDataInit[sKey1]);
+                }
             }
         }
         if (sDecl) {
@@ -1254,6 +1188,9 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     //Types
     for (i = 0; i < this.pTypesOrderV.length; i++) {
         sVertexCode += this.pTypesBlockV[this.pTypesOrderV[i].sRealName] + ";";
+    }
+    for (i in this.pMixedTypesV) {
+        sVertexCode += this._pBlendTypesDecl[i];
     }
     //Function`s definitions
     for (i in this.pFuncDefBlockV) {
@@ -1385,6 +1322,9 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     for (i = 0; i < this.pTypesOrderF.length; i++) {
         sFragmentCode += this.pTypesBlockF[this.pTypesOrderF[i].sRealName] + ";";
     }
+    for (i in this.pMixedTypesF) {
+        sFragmentCode += this._pBlendTypesDecl[i];
+    }
     //Function`s definitions
     for (i in this.pFuncDefBlockF) {
         sFragmentCode += i + ";";
@@ -1467,5 +1407,69 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     }
     trace("Pass blend ---->", pProgram);
     return pProgram;
+};
+//Translate all objects that was in code(Samplers and Headers) to code
+PassBlend.prototype._toFinalCode = function (pCode) {
+    if (typeof(pCode) === "string") {
+        return pCode;
+    }
+    var sCode = "";
+    for (var i = 0; i < pCode.length; i++) {
+        if (typeof(pCode[i]) === "string" || typeof(pCode[i]) === "number") {
+            sCode += pCode[i];
+        }
+        else {
+            sCode += pCode[i].toDataCode();
+        }
+    }
+    return sCode;
+};
+PassBlend.prototype._blendTypes = function (pVars) {
+    var sNewType = "";
+    var k, l, m;
+    var pType, pVar;
+    for (k = 0; k < pVars.length; k++) {
+        pType = pVars[k].pType.pEffectType;
+        sNewType += pType.sRealName + "|";
+    }
+    if (this._pBlendTypes[sNewType]) {
+        return this._pBlendTypes[sNewType];
+    }
+    var pFields = {};
+    var sFields = "";
+    var pTypes = [];
+    var pOrders;
+    var sTypeName;
+    for (k = 0; k < pVars.length; k++) {
+        pType = pVars[k].pType.pEffectType.pDesc;
+        pOrders = pType.pOrders;
+        for (l = 0; l < pOrders.length; l++) {
+            if (pFields[pOrders[l].sRealName]) {
+                continue;
+            }
+            if (pOrders[l].pType.isBase()) {
+                pFields[pOrders[l].sRealName] = pOrders[l].toCodeDecl();
+                continue;
+            }
+            pTypes.length = 0;
+            pTypes.push(pOrders[l]);
+            for (m = k + 1; m < pVars.length; m++) {
+                pVar = pVars[m].pType.pEffectType.pDesc._pSemantics[pOrders[l].sSemantic];
+                pTypes.push(pVar);
+            }
+            sTypeName = this._blendTypes(pTypes);
+            pFields[pOrders[l].sRealName] = sTypeName + " " + pOrders[l].sRealName + ";";
+        }
+    }
+    sTypeName = "AUTO_BLEND_TYPE_" + this._nBlendTypes;
+    this._nBlendTypes++;
+    this._pBlendTypes[sNewType] = sTypeName;
+    for (k in pFields) {
+        sFields += pFields[k];
+    }
+    this._pBlendTypesDecl[sTypeName] = "struct " + sTypeName + "{" + sFields + "};";
+    return sTypeName;
+};
+PassBlend.prototype._addExternal = function (pVar, isShader) {
 };
 A_NAMESPACE(PassBlend, fx);

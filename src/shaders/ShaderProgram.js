@@ -235,14 +235,9 @@ ShaderProgram.prototype.applyUniform = function (sName, pData) {
     if (pData === null) {
         return false;
     }
-    var pType, sType;
+    var sType;
     if (this._pUniformVars[sName]) {
-        pType = this._pUniformVars[sName].pType.pEffectType;
-        if (!pType.isBase()) {
-            warning("!!!!We don`t support complex type of uniforms yet! But it coming soon!");
-            return;
-        }
-        sType = pType.toCode();
+        sType = this._pUniformVars[sName];
         switch (sType) {
             case "float":
                 this.applyFloat(sName, pData);
