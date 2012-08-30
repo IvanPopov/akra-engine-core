@@ -1,63 +1,72 @@
 A_FORMAT({
 	'AnimationFrame': {
-		'fTime'			: 'Float',
-		'fWeight'		: 'Float',
-		'pMatrix'		: 'Mat4',
+		members: {
+			'fTime'			: 'Float',
+			'fWeight'		: 'Float',
+			'pMatrix'		: 'Mat4',
+		},
 
-		'@constructor'	: function () {
+		constructor : function () {
 			return new a.AnimationFrame();
 		}
 	},
 	'AnimationTrack': {
-		'_sTarget'		: 'String',
-		'_pKeyFrames'	: 'Array',
+		members : {
+			'_sTarget'		: 'String',
+			'_pKeyFrames'	: 'Array',
+		},
 
-		'@constructor'	: function () {
-			return new a.AnimationTrack();
-		}
+		constructor	: 'a.AnimationTrack'
 	},
 	'AnimationBase': {
-		'_pTargetMap'	: 'Object',
-		'_pTargetList'	: 'Array',
-		'_fDuration'	: 'Float',
-		'_sName'		: 'String'
+		members: {
+			'_pTargetMap'	: 'Object',
+			'_pTargetList'	: 'Array',
+			'_fDuration'	: 'Float',
+			'_sName'		: 'String',
+		},
+		//если в пределах этого класс, среди членов будут найдены
+		//указатели на запрещенные типы, то вместо сохранения, они 
+		//будут занулены.
+		blacklist: {
+			'Joint'			: null, 
+			'Node'			: null, 
+			'SceneModel'	: null, 
+			'SceneObject'	: null
+		}
 	},
 	'Animation': {
-		'_pTracks'		: 'Array',
+		members: {
+			'_pTracks'		: 'Array'
+		},
 
-		'@extends'		: ['AnimationBase'],
-		'@constructor'	: function () {
-			return new a.Animation();
-		}
+		base		: ['AnimationBase'],
+		constructor	: 'a.Animation'
 	},
 	'AnimationContainer': {
-		'_bEnable'		: 'Boolean',
-		'_fStartTime'	: 'Float',
-		'_fSpeed'		: 'Float',
-		'_bLoop'		: 'Boolean',
-		'_pAnimation'	: '',
-		'_fDuration'	: 'Float',
-		'_bReverse'		: 'Boolean',
+		members : {
+			'_bEnable'		: 'Boolean',
+			'_fStartTime'	: 'Float',
+			'_fSpeed'		: 'Float',
+			'_bLoop'		: 'Boolean',
+			'_pAnimation'	: '*',
+			'_fDuration'	: 'Float',
+			'_bReverse'		: 'Boolean',
+		},
 
-		'@extends'		: ['AnimationBase'],
-		'@constructor'	: function () {
-			return new a.AnimationContainer();
-		}
+		base		: ['AnimationBase'],
+		constructor	: 'a.AnimationContainer'
 	},
 	'AnimationBlend': {
-		'_pAnimationList': 'Array',
+		members: {
+			'_pAnimationList': 'Array',
+		},
 
-		'@extends'		: ['AnimationBase'],
-		'@constructor'	: function () {
-			return new a.AnimationBlend();
-		}
+		base		: ['AnimationBase'],
+		constructor	: 'a.AnimationBlend'
 	},
 	'AnimationSwitch': {
-		'_sClass': 'String',
-
-		'@extends'		: ['AnimationBase'],
-		'@constructor'	: function () {
-			return new a.AnimationSwitch();
-		}
+		base		: ['AnimationBase'],
+		constructor	: 'a.AnimationSwitch'
 	}
 });

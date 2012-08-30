@@ -47,17 +47,9 @@ Define(ARRAY_LIMIT(POSITION, LIMIT), function () {
     debug_assert(POSITION < LIMIT, "Выход за пределы массива");
 });
 
-Define(A_FORMAT_IN(format), function () {
-    a.BinReader.template(format);
-});
-
-Define(A_FORMAT_OUT(format), function () {
-    a.BinWriter.template(format);
-});
 
 Define(A_FORMAT(format), function () {
     (function (f) {
-        a.BinReader.template(f);
         a.BinWriter.template(f);
     })(format);
 });
@@ -67,6 +59,8 @@ function BinReader (arrayBuffer) {
     this.arrayUint8Buffer = new Uint8Array(arrayBuffer);
     this.arrayBufferLength = (new Uint8Array(arrayBuffer)).length;
     this.iPosition = 0;
+
+    
     this._pHashTable = null;
 }
 
@@ -462,18 +456,8 @@ BinReader.prototype.rawStringToBuffer = function (str) {
     return new Uint8Array(arr);
 }
 
-BinReader.prototype.read = function(pData) {
-    return a.BinReader.read(pData || null, this);
-};
 
-BinReader.templates = {};
-BinReader.template = function(pTemplate) {
-    for (var i in pTemplate) {
-        BinReader.templates[i] = pTemplate[i];
-    }
-};
-
-BinReader.readPtr = function (iAddr, sType, pReader, pObject) {
+BinReader.prototype.readPtr = function (iAddr, sType, pObject) {
     'use strict';
     
     pObject = pObject || null;
@@ -482,23 +466,28 @@ BinReader.readPtr = function (iAddr, sType, pReader, pObject) {
         return null;
     }
 
-    var pTmp = pReader.memread(iAddr);
+    var pTmp = this.memread(iAddr);
     var isReadNext = false;
     var iType = -1;
+    var fnReader = null;
+    var iPosition;
+    var pTemplates;
+    var pProperties;
+    var pBaseClasses = null;
+    var pMembers = null;
 
     if (pTmp) {
-        //trace('object with addr(', iAddr,') already readed:', pTmp);
         return pTmp;
     }
 
-    if (iAddr === pReader.iPosition) {
-        //trace('read next >> ');
+    if (iAddr === this.iPosition) {
         isReadNext = true;
     }
 
-    var iPosition = pReader.iPosition;
+    iPosition = this.iPosition;
+
     //set new position
-    pReader.iPosition = iAddr;
+    this.iPosition = iAddr;
 
     //determ type if needed
     if (typeof arguments[1] !== 'string') {
@@ -506,9 +495,8 @@ BinReader.readPtr = function (iAddr, sType, pReader, pObject) {
         sType = a.getClass(pObject);
     }
 
-
-    var pTemplates = a.BinReader.templates;
-    var pProperties = pTemplates[sType];
+    pTemplates = a.BinWriter.templates;
+    pProperties = pTemplates[sType];
 
     //getting real type of object
     while (typeof pProperties === 'string') {
@@ -516,94 +504,90 @@ BinReader.readPtr = function (iAddr, sType, pReader, pObject) {
         pProperties = pTemplates[sType];
     }
 
-    //trace('read ptr > ', iAddr, sType, pObject);
-
     debug_assert(pProperties, 'unknown object <' + sType + '> type cannot be readed');
 
+    fnReader = pProperties.read;
+
     //read primal type
-    if (typeof pProperties === 'function') {
-        pTmp = pProperties.call(pReader, pObject);
-        pReader.memof(pTmp, iAddr);
+    if (fnReader) {
+        pTmp = fnReader.call(this, pObject);
+        this.memof(pTmp, iAddr);
+        
         //restore prev. position
         if (!isReadNext) {
-            pReader.iPosition = iPosition;
+            this.iPosition = iPosition;
         }
-        //trace('readed from ptr(', iAddr, '):', pTmp);
+
         return pTmp;
     }
     
     if (!pObject) {
-        var pCtor = a.BinReader.templates[sType]['@constructor'];
-        if (pCtor) {
-            pObject = pCtor();
+        var pCtor = pProperties.constructor;
+        
+        if (typeof pCtor === 'string' || !pCtor) {
+            eval('pObject = new ' + (pCtor || sType) + ';');   
         }
         else {
-            eval('pObject = new ' + sType + ';');    
+            pObject = pCtor();
         }
     }
 
-    var pBaseClasses = pProperties['@extends'];
+    pBaseClasses = pProperties.base;
 
     if (pBaseClasses) {
         for (var i = 0; i < pBaseClasses.length; ++ i) {
-            iAddr = pReader.iPosition;
-            //trace('read base class > ', pBaseClasses[i]);
-            a.BinReader.readPtr(iAddr, pBaseClasses[i], pReader, pObject);
+            iAddr = this.iPosition;
+            this.readPtr(iAddr, pBaseClasses[i], pObject);
         }
     }
 
-    pReader.memof(pObject, iAddr);
+    this.memof(pObject, iAddr);
 
-    for (var i in pProperties) {
-        if (typeof pProperties[i] === 'string') {
-             //system property
-            if (pProperties[i][0] === '@') {
+    pMembers = pProperties.members
+
+    if (pMembers) {
+         for (var sName in pMembers) {
+            if (typeof pMembers[sName] === 'string') {
+
+                pObject[sName] = this.read();
                 continue;
             }
-            //trace('read property > ', i);
-            pObject[i] = a.BinReader.read(null, pReader);
-            continue;
         }
     }
-    
+
     //restore prev. position
     if (!isReadNext) {
-        pReader.iPosition = iPosition;
+        this.iPosition = iPosition;
     }
-    //trace('readed from ptr(', iAddr, '):', pObject);
+
     return pObject;
 }
 
-BinReader.read = function(pData, pReader) {
+BinReader.prototype.read = function() {
     'use strict';
-    if (!pData && !pReader) {
-        trace('ooops...');
-        throw new Error();
-    }
 
-    pReader = pReader || new a.BinReader(pData);
-    pReader.setupHashTable();
+    this.setupHashTable();
     
-    var iAddr = pReader.uint32();
+    var iAddr = this.uint32();
     
     if (iAddr === MAX_UINT32) {
         return null;
     }
 
-    var iType = pReader.uint32();
+    var iType = this.uint32();
     var sType = a.BinWriter.int2templates[iType];
     
-    //trace('read ptr: ', iAddr, sType);
-    
-    return a.BinReader.readPtr(iAddr, sType, pReader);
+    return this.readPtr(iAddr, sType);
 };
 
 function undump (pBuffer) {
     if (!pBuffer) {
         return null;
     }
+    var pReader = new a.BinReader(pBuffer);
 
-    return a.BinReader.read(arguments[0]);
+    return pReader.read();
 }
+
 a.undump = undump;
 a.BinReader = BinReader;

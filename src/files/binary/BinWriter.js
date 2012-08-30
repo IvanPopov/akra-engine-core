@@ -53,7 +53,7 @@
  */
 
 Define(IS_NUMBER(VALUE), function () {
-    debug_assert(typeof VALUE == 'number', "Не является числом");
+    debug_assert(typeof VALUE == 'number', "Не является числом: " + VALUE);
 });
 
 /**
@@ -75,10 +75,13 @@ function BinWriter () {
      */
     this._iCountData = 0;
 
+    //для удобства записи данных через свой упаковщик.
     this._pHashTable = null;
+    this._pBlackList = {};
+    this._pBlackListStack = [];
 }
 
-PROPERTY(BinWriter, 'bytesLength',
+PROPERTY(BinWriter, 'byteLength',
     function () {
         return this._iCountData;
     });
@@ -87,33 +90,66 @@ BinWriter.prototype.setupHashTable = function () {
     'use strict';
     
     if (!this._pHashTable) {
-        this._pHashTable = [];
+        this._pHashTable = {'string': {}, 'number': {}, 'object': []};
     }
 };
 
 BinWriter.prototype.memof = function (pObject, iAddr) {
     'use strict';
-    
-    this._pHashTable.push({pointer: pObject, addr: iAddr});
+ 
+    var pTable = this._pHashTable;
+
+    if (typeof pObject === 'string') {
+        pTable.string[pObject] = iAddr;
+    }
+    else if (typeof pObject === 'number') {
+        pTable.number[pObject] = iAddr;
+    }
+    else {
+        pTable.object.push({pointer: pObject, addr: iAddr});
+    }
 };
 
 BinWriter.prototype.addr = function (pObject) {
     'use strict';
 
     var pTable = this._pHashTable;
+
+    if (typeof pObject === 'string') {
+        return pTable.string[pObject];
+    }
+
+    if (typeof pObject === 'number') {
+        return pTable.number[pObject];
+    }
+
+    pTable = pTable.object;
+
     for (var i = 0, n = pTable.length; i < n; ++ i) {
         if (pTable[i].pointer === pObject) {
             return pTable[i].addr;
         }
     }
 
-    return -1;
+    return undefined;
 };
 
 BinWriter.prototype.nullPtr = function () {
     'use strict';
     
     return this.uint32(MAX_UINT32);
+};
+
+BinWriter.prototype.rollback = function (n) {
+    n = n || 1;
+
+    var pRollback = new Array(n);
+    for (var i = 0; i < n; ++ i) {
+        pRollback[i] = this._pArrData.pop();
+        this._iCountData -= pRollback[i].byteLength;
+    }
+
+    return pRollback;
 };
 
 /******************************************************************************/
@@ -836,9 +872,6 @@ BinWriter.prototype.dataAsUint8Array = function () {
     return arrUint8;
 }
 
-BinWriter.prototype.write = function(pObject) {
-    return a.BinWriter.writePtr(pObject, this);
-};
 
 /**
  * @property rawStringToBuffer()
@@ -861,9 +894,24 @@ BinWriter.rawStringToBuffer = function (str) {
 
 
 BinWriter.templates = {};
-BinWriter.templates2int = {};
+BinWriter.templates2int = {}; 
 BinWriter.int2templates = {};
 BinWriter.totalTemplates = 0;
+
+BinWriter.assembleTemplate = function () {
+    var iType;
+    var pTemplate = BinWriter.templates;
+    var nTotalTemplates = 0;
+    var pTemplate = {data: {}, i2t: {}, t2i: {}};
+
+    for (var i in pTemplate) {
+        iType = nTotalTemplates ++;
+
+        //pTemplate
+        //BinWriter.int2templates[iType] = i;
+        //BinWriter.templates2int[i] = iType;
+    }
+}
 
 BinWriter.template = function(pTemplate) {
     var iType;
@@ -873,63 +921,116 @@ BinWriter.template = function(pTemplate) {
         BinWriter.templates[i] = pTemplate[i];
         BinWriter.int2templates[iType] = i;
         BinWriter.templates2int[i] = iType;
-        //trace(iType, i);
     }
 };
 
-BinWriter.write = function(pObject, pWriter, sType) {
+BinWriter.prototype.pushBlackList = function (pList) {
+    'use strict';
+    //trace('bl:: ', this._pBlackListStack.length);
+    this._pBlackListStack.push(this._pBlackList);
+    
+    var pBlackList = {};
+
+    if (pList) {
+        for (var i in pList) {
+            pBlackList[i] = pList[i];
+        }
+    }
+
+    for (var i in this._pBlackList) {
+        pBlackList[i] = this._pBlackList[i];
+    }
+
+    this._pBlackList = pBlackList;
+    return this;
+};
+
+BinWriter.prototype.popBlackList = function () {
+    'use strict';
+
+    this._pBlackList = this._pBlackListStack.pop();
+    //trace('bl:: ', this._pBlackListStack.length);
+    return this;
+};
+
+
+BinWriter.prototype.blackList = function () {
+    'use strict';
+    
+    return this._pBlackList;
+};
+
+BinWriter.prototype.writeData = function(pObject, sType) {
+
     var pTemplates = a.BinWriter.templates;
     var pProperties = pTemplates[sType];
+    var fnWriter = null;
+    var pBaseClasses;
+    var pBlackList;
 
-    //direct writing primal object
-    if (typeof pProperties === 'function') {
-        if (pProperties.call(pWriter, pObject) === false) {
+    this.pushBlackList(pProperties.blacklist);
+
+    pBlackList = this.blackList();
+
+    if (pBlackList && pBlackList[sType] !== undefined) {
+        if (pBlackList[sType] === null) {
+            return false;
+        }
+        else if (typeof pBlackList[sType] === 'function') {
+            pObject = pBlackList[sType].call(this, pObject);
+        }
+    } 
+
+    
+    fnWriter = pProperties.write;
+    
+    if (fnWriter) {
+         if (fnWriter.call(this, pObject) === false) {
             error('cannot write type: ' + sType);
         }
 
-        return pWriter;
+        this.popBlackList();
+        return true;
     }
 
     debug_assert(pProperties, 'unknown object <' + sType + '> type cannot be writed');
 
-    var pBaseClasses = pProperties['@extends'];
+    pBaseClasses = pProperties.base;
 
     if (pBaseClasses) {
         for (var i = 0; i < pBaseClasses.length; ++ i) {
-            //trace('write base class > ', pBaseClasses[i]);
-            a.BinWriter.write(pObject, pWriter, pBaseClasses[i]);
-            //trace(pBaseClasses[i], '<< base class');
+            debug_assert(pBlackList[pBaseClasses[i]] === undefined, 
+                'you cannot add to black list your parent classes');
+            this.writeData(pObject, pBaseClasses[i]);
         }
     }
 
-    //writing structire
-    for (var i in pProperties) {
+    pMembers = pProperties.members;
 
-        //writing complex type of structure member
-        if (typeof pProperties[i] === 'string') {
-            //system property
-            if (pProperties[i][0] === '@') {
+    if (pMembers) {
+        //writing structure
+        for (var sName in pMembers) {
+            //writing complex type of structure member
+            if (typeof pMembers[sName] === 'string') {
+                this.write(pObject[sName]);
                 continue;
             }
-            //trace('write property > ', i);
-            a.BinWriter.writePtr(pObject[i], pWriter);
-            continue;
         }
     }
-
-    return pWriter;
+    
+    this.popBlackList();
+    return true;
 }
 
-BinWriter.writePtr = function(pObject, pWriter, sType) {
+BinWriter.prototype.write = function(pObject, sType) {
     'use strict';
     
-    pWriter = pWriter || new a.BinWriter();
-    pWriter.setupHashTable();
-
     var pTemplates = a.BinWriter.templates;
     var pProperties;
     var iAddr, iType;
 
+    this.setupHashTable();
+    
     if (!sType) {
         sType = a.getClass(pObject);
         pProperties = pTemplates[sType];
@@ -943,37 +1044,40 @@ BinWriter.writePtr = function(pObject, pWriter, sType) {
 
     iType = a.BinWriter.templates2int[sType];
 
-    if (iType === undefined) {
-        trace('unknown type founded: ', sType);
-    }
-
     if (pObject === null || pObject === undefined || iType === undefined) {
-        pWriter.nullPtr();
-        return pWriter;
+        this.nullPtr();
+        return false;
     }
-    else {
-        iAddr = pWriter.addr(pObject);
+   
+    iAddr = this.addr(pObject);
 
-        if (iAddr < 0) {
-            iAddr = pWriter.bytesLength + 4 + 4;
+    if (iAddr === undefined) {
+        iAddr = this.byteLength + 4 + 4;
 
-            pWriter.uint32(iAddr); 
-            pWriter.uint32(iType);
-            pWriter.memof(pObject, iAddr);
+        this.uint32(iAddr); 
+        this.uint32(iType);
+        
+
+        if (this.writeData(pObject, sType)) {
+            this.memof(pObject, iAddr);
         }
         else {
-
-            pWriter.uint32(iAddr);
-            pWriter.uint32(iType);
-            return pWriter;
+            this.rollback(2);
+            this.nullPtr();
         }
     }
+    else {
+        this.uint32(iAddr);
+        this.uint32(iType);
+    }
     
-    return a.BinWriter.write(pObject, pWriter, sType);
+    return true;
 };
 
-function dump (pObject, bWriteWithType) {
-    return a.BinWriter.writePtr(pObject, null, bWriteWithType).data();
+function dump (pObject) {
+    var pWriter = new a.BinWriter();
+    pWriter.write(pObject);
+    return pWriter.data();
 }
 
 a.dump = dump;
