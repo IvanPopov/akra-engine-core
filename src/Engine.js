@@ -364,14 +364,6 @@ Engine.prototype.renderScene = function () {
                 this._pActiveCamera.searchRect().fZ0, this._pActiveCamera.searchRect().fZ1)
     */
 
-
-    var pDevice = this.pDevice;
-
-    pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,this.pShadowTexture._pFrameBuffer);
-    pDevice.clear(pDevice.DEPTH_BUFFER_BIT);
-    pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,null);
-
-
     var pRenderList = pFirstMember;
     //Добавлено для отслеживания видимости узлов. aldore
     this.renderList = pRenderList;
@@ -381,13 +373,60 @@ Engine.prototype.renderScene = function () {
         pFirstMember = pFirstMember.nextSearchLink();
     }
 
+    //////////////////////////////////////
+    
+    var pDevice = this.pDevice;
+    var pLightPoint = this.pLightPoint;
+    var pFrameBuffer = this.pFrameBuffer;
     drawShadow = true;
-    //рендеринг всех объектов
-    pFirstMember = pRenderList;
-    while (pFirstMember) {
-        pFirstMember.render();
-        pFirstMember = pFirstMember.nextSearchLink();
+
+    if(pLightPoint.isOmnidirectional){
+
+        for(var i=0;i<6;i++){
+            pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,pFrameBuffer);
+            pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER,pDevice.DEPTH_ATTACHMENT,
+                pDevice.TEXTURE_2D,pLightPoint.depthTextureCube()[i].texture,0);
+            pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER,pDevice.COLOR_ATTACHMENT0,
+                pDevice.TEXTURE_2D,pLightPoint.colorTexture().texture,0);
+
+            pDevice.clear(pDevice.DEPTH_BUFFER_BIT);
+            pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,null);
+
+            this.pCurrentShadowCamera = pLightPoint.cameraCube()[i];
+
+            //рендеринг всех объектов
+            pFirstMember = pRenderList;
+            while (pFirstMember) {
+                if(!(pFirstMember instanceof Sprite)){
+                    pFirstMember.render();
+                }
+                pFirstMember = pFirstMember.nextSearchLink();
+            }
+        }
     }
+    else{
+        pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,pFrameBuffer);
+        pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER,pDevice.DEPTH_ATTACHMENT,
+            pDevice.TEXTURE_2D,pLightPoint.depthTexture().texture,0);
+        pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER,pDevice.COLOR_ATTACHMENT0,
+            pDevice.TEXTURE_2D,pLightPoint.colorTexture().texture,0);
+
+        pDevice.clear(pDevice.DEPTH_BUFFER_BIT);
+        pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,null);
+
+        this.pCurrentShadowCamera = pLightPoint.camera();
+
+        //рендеринг всех объектов
+        pFirstMember = pRenderList;
+        while (pFirstMember) {
+            if(!(pFirstMember instanceof Sprite)){
+                pFirstMember.render();
+            }
+            pFirstMember = pFirstMember.nextSearchLink();
+        }
+    }
+    //this.pCurrentShadowCamera = pLightPoint.cameraCube()[5];
+    //////////////////////////////////////
 
     drawShadow = false;
     //рендеринг всех объектов

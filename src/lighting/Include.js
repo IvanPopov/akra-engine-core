@@ -1,1 +1,1 @@
-Include('Lighting.js')
+Include('LightPoint.js')

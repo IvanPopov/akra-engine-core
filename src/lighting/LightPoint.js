@@ -1,0 +1,221 @@
+/**
+ * @file
+ * @author Igor Karateev
+ * @email iakarateev@gmail.com
+ * @brief файл содержит класс источника света
+ */
+
+function LightPoint(pEngine,isOmnidirectional, haveShadows, iMaxShadowResolution){
+	'use strict';
+	A_CLASS;
+
+	isOmnidirectional = ifndef(isOmnidirectional,true);
+	haveShadows = ifndef(haveShadows,false);
+	if(haveShadows){
+		iMaxShadowResolution = ifndef(iMaxShadowResolution,256);
+	}
+
+	//мкасимальный размер shadow текстуры
+	this._iMaxShadowResolution = Math.ceilingPowerOfTwo(iMaxShadowResolution); 
+
+	//всенаправленный источник или нет
+	this._isOmnidirectional = isOmnidirectional;
+
+	//depth textures for shadow maps
+	//текстуры глубин для рендеринга теневых карт
+	
+	//depth текстура для направленного источника
+	this._pDepthTexture = null;
+
+	//depth cube map implementation
+	//для всенаправленных источников
+	var pDepthTextureCube = this._pDepthTextureCube = new Array(6);
+	for(var i=0;i<6;i++){
+		pDepthTextureCube[i] = null;
+	}
+
+	//текстура исключительно для colorAttachment-а 
+	//пока без него рендерить во фреймбуффер нельзя
+	this._pColorTexture = null;
+
+	//камера для направленного источника
+	this._pCamera = null;
+
+	//камеры для всенаправленного источника
+	var pCameraCube = this._pCameraCube = new Array(6);
+	for(var i=0;i<6;i++){
+		pCameraCube[i] = null;
+	}
+	////////////////////////////////
+	
+	//проекционная матрица для направленного источника
+	this._m4fDefaultProj = null;
+	
+	this._initializeTextures();
+};
+
+EXTENDS(LightPoint,a.SceneNode);
+
+PROPERTY(LightPoint,'isOmnidirectional',
+	function(){
+		return this._isOmnidirectional;
+	}
+);
+
+LightPoint.prototype._initializeTextures = function() {
+	'use strict';
+	
+	var pEngine = this._pEngine;
+	var iShadowResolution = this._iMaxShadowResolution;
+
+	if(this._isOmnidirectional){
+		var pDepthTextureCube = this._pDepthTextureCube;
+		for(var i=0;i<6;i++){
+			var pDepthTexture = pDepthTextureCube[i] = pEngine.displayManager().
+										texturePool().createResource('depth_texture_' + a.sid());
+			pDepthTexture.createTexture(iShadowResolution,iShadowResolution,
+				0,a.IFORMAT.DEPTH_COMPONENT,a.DTYPE.UNSIGNED_INT,null);
+
+			pDepthTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+		    pDepthTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+		    pDepthTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
+		    pDepthTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
+		}
+	}
+	else{
+		var pDepthTexture = this._pDepthTexture = pEngine.displayManager().
+										texturePool().createResource('depth_texture_' + a.sid());
+
+		//create texture
+		pDepthTexture.createTexture(iShadowResolution,iShadowResolution,
+			0,a.IFORMAT.DEPTH_COMPONENT,a.DTYPE.UNSIGNED_INT,null);
+
+		pDepthTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+	    pDepthTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+	    pDepthTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
+	    pDepthTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
+	}
+
+	this._pColorTexture = pEngine.displayManager().texturePool().createResource();
+	var pColor = this._pColorTexture;
+
+	pColor.createTexture(iShadowResolution,iShadowResolution,
+			0,a.IFORMAT.RGBA,a.DTYPE.UNSIGNED_BYTE,null);
+};
+
+
+LightPoint.prototype.create = function() {
+	'use strict';
+	
+	SceneNode.prototype.create.call(this);
+
+	var pEngine = this._pEngine;
+
+	if(this._isOmnidirectional){
+		//create cameras
+		
+		var pCameraCube = this._pCameraCube;
+
+		for(var i=0;i<6;i++){
+			var pCamera = pCameraCube[i] = new a.Camera(pEngine);
+			pCamera.create();
+			pCamera.setInheritance(a.Scene.k_inheritAll);
+			pCamera.attachToParent(this);
+			pCamera.setProjParams(Math.PI/2,1,0.01,1000)
+		}
+
+		//POSITIVE_X
+		pCameraCube[0].accessLocalMatrix().set(
+			[ 0, 0, 1, 0, //first column, not row!
+			  0, 1, 0, 0,
+			  -1, 0, 0, 0,
+			  0, 0, 0, 1
+			]);
+
+		//NEGATIVE_X
+		pCameraCube[1].accessLocalMatrix().set(
+			[ 0, 0, -1, 0, //first column, not row!
+			  0, 1, 0, 0,
+			  1, 0, 0, 0,
+			  0, 0, 0, 1
+			]);
+
+		//POSITIVE_Y
+		pCameraCube[2].accessLocalMatrix().set(
+			[ 1, 0, 0, 0, //first column, not row!
+			  0, 0, 1, 0,
+			  0, -1, 0, 0,
+			  0, 0, 0, 1
+			]);
+
+		//NEGATIVE_Y
+		pCameraCube[3].accessLocalMatrix().set(
+			[ 1, 0, 0, 0, //first column, not row!
+			  0, 0, -1, 0,
+			  0, 1, 0, 0,
+			  0, 0, 0, 1
+			]);
+
+		//POSITIVE_Z
+		pCameraCube[4].accessLocalMatrix().set(
+			[ -1, 0, 0, 0, //first column, not row!
+			  0, 1, 0, 0,
+			  0, 0, -1, 0,
+			  0, 0, 0, 1
+			]);
+
+		//NEGATIVE_Z
+		pCameraCube[5].accessLocalMatrix().set(
+			[ 1, 0, 0, 0, //first column, not row!
+			  0, 1, 0, 0,
+			  0, 0, 1, 0,
+			  0, 0, 0, 1
+			]);
+	}
+	else{
+
+		var pCamera = this._pCamera = new a.Camera(pEngine);
+
+		pCamera.create();
+		pCamera.setInheritance(a.Scene.k_inheritAll);
+		pCamera.attachToParent(this);
+		pCamera.accessLocalMatrix().set(
+			[ 1, 0, 0, 0, //first column, not row!
+			  0, 1, 0, 0,
+			  0, 0, 1, 0,
+			  0, 0, 0, 1
+			]);
+	}
+};
+
+LightPoint.prototype.depthTexture = function() {
+	'use strict';
+	return this._pDepthTexture;
+};
+
+LightPoint.prototype.camera = function() {
+	'use strict';
+	return this._pCamera;
+};
+
+LightPoint.prototype.depthTextureCube = function() {
+	'use strict';
+	return this._pDepthTextureCube;
+};
+
+LightPoint.prototype.cameraCube = function() {
+	'use strict';
+	return this._pCameraCube;
+};
+
+
+//метод возвращающий текстуру для color attachment надеюсь временный
+LightPoint.prototype.colorTexture = function() {
+	'use strict';
+	return this._pColorTexture;
+};
+
+A_NAMESPACE(LightPoint);
+
+
+

@@ -75,7 +75,7 @@ SceneModel.prototype.render = function () {
     var pDevice = pEngine.pDevice;
     var pModel = this;
 
-    var pShadowTexture = pEngine.pShadowTexture;
+    var pLightPoint = pEngine.pLightPoint;
 
     if (!pMesh || !pMesh.isReadyForRender()) {
         return;
@@ -93,8 +93,8 @@ SceneModel.prototype.render = function () {
             else{
                 pProgram = pEngine.pDrawMeshShadowProg;    
             }
-            pCamera = pEngine.pLightPoint;
-            pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,pShadowTexture._pFrameBuffer);
+            pCamera = pEngine.pCurrentShadowCamera;
+            pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,pEngine.pFrameBuffer);
         }
         else{
             if (pSubMesh.isSkinned()) {
@@ -121,19 +121,47 @@ SceneModel.prototype.render = function () {
         //trace(this,pProgram)
 
         if(!drawShadow){
-            var pLightPoint = pEngine.pLightPoint;
-            //pEngine.pTempTexture.activate(4);
-            pEngine.pShadowTexture.activate(4);
+            if(pLightPoint.isOmnidirectional){
 
-            pProgram.applyMatrix4('inverseView',pCamera.worldMatrix());
-            pProgram.applyMatrix4('lightView',pLightPoint.viewMatrix());
-            pProgram.applyMatrix4('lightProjection',pLightPoint.projectionMatrix());
-            pProgram.applyVector2('shadowTextureSizeRatio',1,1);
-            pProgram.applyVector2('shadowTextureSize',pShadowTexture.width,pShadowTexture.height);
+                var pTmpMat = new Float32Array(96/*16*6*/);
+
+                pProgram.applyInt('shadowTextureNumber',6);
+
+                var pCameraCube = pLightPoint.cameraCube();
+                for(var j=0;j<6;j++){
+                    pLightPoint.depthTextureCube()[j].activate(2 + j);
+
+                    var m4fTemp = pCameraCube[j].projectionMatrix().
+                        mult(pCameraCube[j].viewMatrix(),Mat4()).mult(pCamera.worldMatrix());
+
+                    pTmpMat.set(m4fTemp.pData,16*j);
+                }
+
+                var pHWProg = pProgram._pHardwareProgram;
+
+                pDevice.uniformMatrix4fv(
+                    pDevice.getUniformLocation(pHWProg,'lightShadowMatrixCube'),false,pTmpMat);
+
+                pDevice.uniform1iv(
+                    pDevice.getUniformLocation(pHWProg,'depthTextureCube'),new Int32Array([2,3,4,5,6,7]));
+            }
+            else{
+                var pLightCamera = pEngine.pCurrentShadowCamera;
+                pLightPoint.depthTexture().activate(2);
+
+                var m4fTemp = pLightCamera.projectionMatrix().
+                    mult(pLightCamera.viewMatrix(),Mat4()).mult(pCamera.worldMatrix());
+
+                pProgram.applyMatrix4('lightShadowMatrix',m4fTemp);
+                pProgram.applyInt('shadowTextureNumber',1);
+                pProgram.applySampler2D('depthTexture',2);
+            }
+            pProgram.applyVector2('depthTextureSize',
+                pLightPoint._iMaxShadowResolution,pLightPoint._iMaxShadowResolution);
 
             pProgram.applyVector3('lightPosition',pLightPoint.worldPosition());
 
-            pProgram.applySampler2D('shadowTexture',4);
+            
         }
 
         if (pSubMesh.data.useAdvancedIndex()) {
@@ -174,7 +202,7 @@ SceneModel.prototype.render = function () {
             }
         }
         if(drawShadow){
-            pDevice.viewport(0,0,pShadowTexture.width,pShadowTexture.height);
+            pDevice.viewport(0,0,pLightPoint._iMaxShadowResolution,pLightPoint._iMaxShadowResolution);
         }
         else{
             pDevice.viewport(0,0,pEngine.pCanvas.width,pEngine.pCanvas.height);    
