@@ -9,6 +9,8 @@ function LightPoint(pEngine,isOmnidirectional, haveShadows, iMaxShadowResolution
 	'use strict';
 	A_CLASS;
 
+	this.id = pEngine.lightManager().registerLightPoint(this);
+
 	isOmnidirectional = ifndef(isOmnidirectional,true);
 	haveShadows = ifndef(haveShadows,false);
 	if(haveShadows){
@@ -20,6 +22,9 @@ function LightPoint(pEngine,isOmnidirectional, haveShadows, iMaxShadowResolution
 
 	//всенаправленный источник или нет
 	this._isOmnidirectional = isOmnidirectional;
+
+	//есть тени от источника или нет
+	this._haveShadows = haveShadows;
 
 	//depth textures for shadow maps
 	//текстуры глубин для рендеринга теневых карт
@@ -50,8 +55,15 @@ function LightPoint(pEngine,isOmnidirectional, haveShadows, iMaxShadowResolution
 	
 	//проекционная матрица для направленного источника
 	this._m4fDefaultProj = null;
+
+	this._pLightParameters = new LightParameters();
+
+	//активен ли источник
+	this._isActive = true;
 	
-	this._initializeTextures();
+	if(haveShadows){
+		this._initializeTextures();
+	}
 };
 
 EXTENDS(LightPoint,a.SceneNode);
@@ -59,6 +71,61 @@ EXTENDS(LightPoint,a.SceneNode);
 PROPERTY(LightPoint,'isOmnidirectional',
 	function(){
 		return this._isOmnidirectional;
+	}
+);
+
+PROPERTY(LightPoint, 'haveShadows',
+	function(){
+		return this._haveShadows;
+	}
+);
+
+PROPERTY(LightPoint,'depthTexture',
+	function(){
+		return this._pDepthTexture;
+	}
+);
+
+PROPERTY(LightPoint,'camera',
+	function(){
+		return this._pCamera;
+	}
+);
+
+PROPERTY(LightPoint,'depthTextureCube',
+	function(){
+		return this._pDepthTextureCube;
+	}
+);
+
+PROPERTY(LightPoint,'cameraCube',
+	function(){
+		return this._pCameraCube;
+	}
+);
+
+//геттер возвращающий текстуру для color attachment надеюсь временный
+PROPERTY(LightPoint,'colorTexture',
+	function(){
+		return this._pColorTexture;
+	}
+);
+
+PROPERTY(LightPoint,'isActive',
+	function(){
+		return this._isActive;
+	},
+	function(isActive){
+		this._isActive = isActive;
+	}
+);
+
+PROPERTY(LightPoint,'lightParameters',
+	function(){
+		return this._pLightParameters;
+	},
+	function(pLightParameters){
+		this._pLightParameters = pLightParameters;
 	}
 );
 
@@ -111,7 +178,9 @@ LightPoint.prototype.create = function() {
 
 	var pEngine = this._pEngine;
 
-	if(this._isOmnidirectional){
+	//камеры для всенаправленного источника света нужны только в случае, когда от него есть тени
+	//камера же от направленного источника света нужна всегда
+	if(this._isOmnidirectional && this._haveShadows){
 		//create cameras
 		
 		var pCameraCube = this._pCameraCube;
@@ -188,34 +257,14 @@ LightPoint.prototype.create = function() {
 	}
 };
 
-LightPoint.prototype.depthTexture = function() {
-	'use strict';
-	return this._pDepthTexture;
-};
-
-LightPoint.prototype.camera = function() {
-	'use strict';
-	return this._pCamera;
-};
-
-LightPoint.prototype.depthTextureCube = function() {
-	'use strict';
-	return this._pDepthTextureCube;
-};
-
-LightPoint.prototype.cameraCube = function() {
-	'use strict';
-	return this._pCameraCube;
-};
-
-
-//метод возвращающий текстуру для color attachment надеюсь временный
-LightPoint.prototype.colorTexture = function() {
-	'use strict';
-	return this._pColorTexture;
-};
-
 A_NAMESPACE(LightPoint);
 
-
+//класс содержит параметры источника света
+function LightParameters(){
+	//default parameters
+	this.ambient = new Vec4(1., 1., 1., 1.);
+	this.diffuse = new Vec4(1., 1., 1., 1.);
+	this.specular = new Vec4(1., 1., 1., 1.);
+	this.attenuation = new Vec3(0.9, 0.00, .000);
+};
 

@@ -84,6 +84,7 @@ SceneModel.prototype.render = function () {
         var pSubMesh = pMesh[i];
         var pSurface = pSubMesh.surfaceMaterial;
 
+        pCamera = pEngine.getActiveCamera(); 
 
         if(drawShadow){
             //draw shadow
@@ -93,7 +94,6 @@ SceneModel.prototype.render = function () {
             else{
                 pProgram = pEngine.pDrawMeshShadowProg;    
             }
-            pCamera = pEngine.pCurrentShadowCamera;
             pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,pEngine.pFrameBuffer);
         }
         else{
@@ -114,7 +114,6 @@ SceneModel.prototype.render = function () {
             else {
                 pProgram = pEngine.pDrawMeshProg;
             }
-            pCamera = pEngine._pDefaultCamera; 
         }
 
         pProgram.activate();
@@ -127,9 +126,9 @@ SceneModel.prototype.render = function () {
 
                 pProgram.applyInt('shadowTextureNumber',6);
 
-                var pCameraCube = pLightPoint.cameraCube();
+                var pCameraCube = pLightPoint.cameraCube;
                 for(var j=0;j<6;j++){
-                    pLightPoint.depthTextureCube()[j].activate(2 + j);
+                    pLightPoint.depthTextureCube[j].activate(2 + j);
 
                     var m4fTemp = pCameraCube[j].projectionMatrix().
                         mult(pCameraCube[j].viewMatrix(),Mat4()).mult(pCamera.worldMatrix());
@@ -146,8 +145,8 @@ SceneModel.prototype.render = function () {
                     pDevice.getUniformLocation(pHWProg,'depthTextureCube'),new Int32Array([2,3,4,5,6,7]));
             }
             else{
-                var pLightCamera = pEngine.pCurrentShadowCamera;
-                pLightPoint.depthTexture().activate(2);
+                var pLightCamera = pLightPoint.camera;
+                pLightPoint.depthTexture.activate(2);
 
                 var m4fTemp = pLightCamera.projectionMatrix().
                     mult(pLightCamera.viewMatrix(),Mat4()).mult(pCamera.worldMatrix());
@@ -159,8 +158,13 @@ SceneModel.prototype.render = function () {
             pProgram.applyVector2('depthTextureSize',
                 pLightPoint._iMaxShadowResolution,pLightPoint._iMaxShadowResolution);
 
-            pProgram.applyVector3('lightPosition',pLightPoint.worldPosition());
+            var pLightParameters = pLightPoint.lightParameters;
 
+            pProgram.applyVector3('lightPoint.lightPosition',pLightPoint.worldPosition());
+            pProgram.applyVector4('lightPoint.ambient',pLightParameters.ambient);
+            pProgram.applyVector4('lightPoint.diffuse',pLightParameters.diffuse);
+            pProgram.applyVector4('lightPoint.specular',pLightParameters.specular);
+            pProgram.applyVector3('lightPoint.attenuation',pLightParameters.attenuation);
             
         }
 
