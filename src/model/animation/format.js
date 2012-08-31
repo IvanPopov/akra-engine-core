@@ -49,7 +49,7 @@ A_FORMAT({
 			'_fStartTime'	: 'Float',
 			'_fSpeed'		: 'Float',
 			'_bLoop'		: 'Boolean',
-			'_pAnimation'	: '*',
+			'_pAnimation'	: null,
 			'_fDuration'	: 'Float',
 			'_bReverse'		: 'Boolean',
 		},

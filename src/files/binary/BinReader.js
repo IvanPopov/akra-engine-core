@@ -63,6 +63,9 @@ function BinReader (arrayBuffer) {
 PROPERTY(BinReader, 'template',
     function () {
         return this._pTemplate;
+    },
+    function (pTemplate) {
+        this._pTemplate = pTemplate;
     });
 
 BinReader.prototype.pushPosition = function (iPosition) {
@@ -569,16 +572,12 @@ BinReader.prototype.read = function() {
     this.setupHashTable();
     
     var iAddr = this.uint32();
-    
+
     if (iAddr === MAX_UINT32) {
         return null;
     }
 
-    if (this.iPosition === 4) {
-        if (iAddr !== 8) {
-            this._readHeader();
-        }
-    }
+    this.extractHeader(iAddr);
 
     var iType = this.uint32();
     var sType = this.template.getType(iType);
@@ -586,14 +585,27 @@ BinReader.prototype.read = function() {
     return this.readPtr(iAddr, sType);
 };
 
-BinReader.prototype._readHeader = function () {
+BinReader.prototype.extractHeader = function (iAddr) {
     'use strict';
     
-    this.pushPosition(8);
-    trace('=== HEADER BEGIN ===');
-    trace(this.read());
-    trace('===  HEADER END  ===');
-    this.popPosition();
+    if (this.iPosition === 4) {
+        if (iAddr !== 8) {
+            this.pushPosition(8);
+            this.header(this.read());
+            this.popPosition();
+        }
+    }
+};
+
+BinReader.prototype.header = function (pData) {
+    'use strict';
+
+    if (typeof pData === 'string') {
+        warning('загрузка шаблонов извне не поддержвиаетя');
+        return;
+    }
+
+    this.template = new a.BinTemplate(pData);
 };
 
 function undump (pBuffer) {

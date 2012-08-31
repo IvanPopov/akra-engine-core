@@ -4,22 +4,26 @@ Define(A_FORMAT(format), function () {
     })(format);
 });
 
-function BinTemplate () {
+function BinTemplate (pData) {
 	this._pData = {};
 	this._nTypes = 0;
 	this._pNum2Tpl = {};
 	this._pTpl2Num = {};
+
+    if (pData) {
+        this.set(pData);
+    }
 }
 
 BinTemplate.prototype.getType = function (iType) {
     'use strict';
-    debug_assert(this._pNum2Tpl[iType] !== undefined, 'unknown type detected');
+    debug_assert(this._pNum2Tpl[iType] !== undefined, 'unknown type detected: ' + iType);
 	return this._pNum2Tpl[iType];
 };
 
 BinTemplate.prototype.getTypeId = function (sType) {
     'use strict';
-    debug_assert(this._pTpl2Num[sType] !== undefined, 'unknown type detected');
+    debug_assert(this._pTpl2Num[sType] !== undefined, 'unknown type detected: ' + sType);
 	return this._pTpl2Num[sType];
 };
 
@@ -33,6 +37,7 @@ BinTemplate.prototype.set = function(pTemplate) {
 
         this._pNum2Tpl[iType] = i;
         this._pTpl2Num[i] = iType;
+        //trace(i, iType)
     }
 };
 
@@ -68,6 +73,12 @@ BinTemplate.prototype.resolveType = function (sType) {
 	debug_assert(typeof pProperties !== 'string', 'cannot resolve type: ' + sType);
 
     return sType;
+};
+
+BinTemplate.prototype.data = function () {
+    'use strict';
+    
+    return this._pData;
 };
 
 A_NAMESPACE(BinTemplate);

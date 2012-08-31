@@ -102,7 +102,17 @@ PROPERTY(BinWriter, 'initialAddress',
 BinWriter.prototype.setOptions = function (pOptions) {
     'use strict';
     
-    this._pOptions = pObject;
+    this._pOptions = pOptions;
+};
+
+BinWriter.prototype.getOption = function (sOpt) {
+    'use strict';
+    
+    if (!this._pOptions) {
+        return null;
+    }
+
+    return this._pOptions[sOpt];
 };
 
 BinWriter.prototype.setupHashTable = function () {
@@ -188,9 +198,18 @@ BinWriter.prototype.rollback = function (n) {
 BinWriter.prototype.append = function (pData) {
     'use strict';
     
-    for (var i = 0; i < pData.length; ++ i) {
-        this._pArrData.push(pData[i]);
-        this._iCountData += pData[i].byteLength;
+    if (pData instanceof Array) {
+        for (var i = 0; i < pData.length; ++ i) {
+            this._pArrData.push(pData[i]);
+            this._iCountData += pData[i].byteLength;
+        }
+    }
+    else{
+        if (pData instanceof ArrayBuffer) {
+            pData = new Uint8Array(pData);
+        }
+        this._pArrData.push(pData);
+        this._iCountData += pData.byteLength;
     }
 };
 
@@ -1023,7 +1042,7 @@ BinWriter.prototype.writeData = function(pObject, sType) {
         for (var sName in pMembers) {
             //writing complex type of structure member
             if (typeof pMembers[sName] === 'string') {
-                this.write(pObject[sName]);
+                this.write(pObject[sName], pMembers[sName]);
                 continue;
             }
         }
@@ -1033,15 +1052,12 @@ BinWriter.prototype.writeData = function(pObject, sType) {
     return true;
 }
 
-BinWriter.prototype.write = function(pObject, sType) {
+BinWriter.prototype.write = function(pObject, sType, pHeader) {
     'use strict';
-    
+
     var pProperties;
     var iAddr, iType;
     var pTemplate = this.template;
-
-    var iHeaderLength = 0;
-    var pHeader = null;
 
     this.setupHashTable();
     
@@ -1061,15 +1077,13 @@ BinWriter.prototype.write = function(pObject, sType) {
     iAddr = this.addr(pObject);
 
     if (iAddr === undefined) {
-        if (!this.byteLength) {
-            if (this._writeHeader()) {
-                pHeader = this.rollback(-1);
+        iAddr = 0;
 
-                this.jump(pHeader.byteLength);
-            }
+        if (pHeader) {
+            iAddr += pHeader.byteLength;
         }
 
-        iAddr = this.byteLength + 4 + 4 + this.initialAddress;
+        iAddr += this.byteLength + 4 + 4 + this.initialAddress;
 
         this.uint32(iAddr); 
         this.uint32(iType);
@@ -1077,7 +1091,7 @@ BinWriter.prototype.write = function(pObject, sType) {
         if (pHeader) {
             this.append(pHeader);
         }
-        
+
         if (this.writeData(pObject, sType)) {
             this.memof(pObject, iAddr);
         }
@@ -1090,28 +1104,39 @@ BinWriter.prototype.write = function(pObject, sType) {
         this.uint32(iAddr);
         this.uint32(iType);
     }
-    
+
     return true;
 };
 
-BinWriter.prototype._writeHeader = function () {
+BinWriter.prototype.header = function () {
     'use strict';
+
+    var pHeader = this.getOption('header');
+
+    if (!pHeader) {
+        return null;
+    }
+
+    var pWriter = new a.BinWriter();
+
+    if (pHeader === true) {
+        //пишем данные шаблона
+        pHeader = this.template.data();
+    }
     
-    // if (!this._pOptions || !this._pOptions.header) {
-    //     return;
-    // }
-    this.jump(8);
-    this.write("secret message");
-    this.jump(0);
-    return true;
+    pWriter.jump(8);
+    pWriter.write(pHeader);
+
+    return pWriter.data();
 };
 
 function dump (pObject, pOptions) {
     var pWriter = new a.BinWriter();
-    pWriter.write(pObject);
-    if (pOptions) {
-        pWriter.setOptions(pOptions);
-    }
+    
+
+    pWriter.setOptions(pOptions);
+    pWriter.write(pObject, null, pWriter.header());
+
     return pWriter.data();
 }
 
