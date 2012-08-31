@@ -347,8 +347,12 @@ VariableType.prototype.toCode = function () {
     }
     var i;
     this._sCode = "";
-    for (i = 0; this.pUsages && i < this.pUsages.length; i++) {
-        this._sCode += this.pUsages[i] + " ";
+    if (this.pUsages) {
+        for (i = 0; i < this.pUsages.length; i++) {
+            if (this.pUsages[i] !== "global") {
+                this._sCode += this.pUsages[i] + " ";
+            }
+        }
     }
     this._sCode += this.pEffectType.toCodeString();
     return this._sCode;
@@ -978,7 +982,7 @@ EffectStruct.prototype.canBlend = function (pStruct, isStrict) {
                 iStatus = iBlend;
                 continue;
             }
-            if(isStrict && pVar2.iPadding !== pVar1.iPadding){
+            if (isStrict && pVar2.iPadding !== pVar1.iPadding) {
                 iStatus = 2;
             }
         }

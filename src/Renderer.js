@@ -3,14 +3,15 @@ Define(SM_INVALID_TECHNIQUE, -1);
 Define(SM_UNKNOWN_PASS, -1);
 
 var SHADER_PREFIX = {
-    SAMPLER   : "A_s_",
-    HEADER    : "A_h_",
-    ATTRIBUTE : "A_a_",
-    OFFSET    : "A_o_",
-    TEXTURE   : "TEXTURE",
-    TEXCOORD  : "TEXCOORD",
-    TEXMATRIX : "TEXMATRIX",
-    TEMP      : "TEMP_"
+    SAMPLER    : "A_s_",
+    HEADER     : "A_h_",
+    ATTRIBUTE  : "A_a_",
+    OFFSET     : "A_o_",
+    TEXTURE    : "TEXTURE",
+    TEXCOORD   : "TEXCOORD",
+    TEXMATRIX  : "TEXMATRIX",
+    TEMP       : "TEMP_",
+    BLEND_TYPE : "AUTO_BLEND_TYPE_"
 };
 A_NAMESPACE(SHADER_PREFIX, fx);
 a.fx.ZEROSAMPLER = 19;

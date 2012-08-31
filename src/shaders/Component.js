@@ -319,6 +319,7 @@ function PassBlend(pEngine) {
     this.pGlobalVarBlockV = {};
     this.pFuncDeclBlockV = {};
     this.pExternalsV = {};
+    this.pExternalsBlockV = {};
 
     /**
      * Block of:
@@ -351,6 +352,7 @@ function PassBlend(pEngine) {
     this.pGlobalVarBlockF = {};
     this.pFuncDeclBlockF = {};
     this.pExternalsF = {};
+    this.pExternalsBlockF = {};
 
     this.pGlobalBuffers = {};
     this.pGlobalBuffersV = {};
@@ -655,7 +657,7 @@ PassBlend.prototype.addPass = function (pPass) {
             }
             PassBlend.fnAddUniform(pVar1, this, pVertex, true);
         }
-        for(i in pVertex.pExternals){
+        for (i in pVertex.pExternals) {
             this._addExternal(pVertex.pExternals[i], true);
         }
         for (i in pVertex.pAttrBuffers) {
@@ -804,6 +806,9 @@ PassBlend.prototype.addPass = function (pPass) {
         for (i in pFragment._pExtractFunctions) {
             this.pExtrectedFunctionsF[i] = null;
         }
+        for (i in pFragment.pExternals) {
+            this._addExternal(pVertex.pExternals[i], false);
+        }
     }
 
     pPass.clear();
@@ -812,34 +817,41 @@ PassBlend.prototype.finalizeBlend = function () {
     var i;
     var sType;
     var pAttr;
+    var pExternal;
+    var pUsedTypes;
+
     for (i in this.pUniformsV) {
         if (this.pUniformsBlockV[i] === null) {
             sType = this._blendTypes(this.pUniformsV[i]);
             this.pMixedTypesV[sType] = null;
-            this.pUniformsBlockV[i] = "uniform " + sType + " " + this.pUniformsV[i][0].sRealName + ";";
+            this.pUniformsBlockV[i] = "uniform " + sType + " " + i + ";";
             this.pUniformsV[i] = this.pUniformsV[i][0];
         }
         if (this.pUniformsV[i].pType.isBase()) {
             this.pUniforms[i] = this.pUniformsV[i].pType.pEffectType.toCode();
         }
     }
+
     for (i in this.pSamplers) {
         this.pUniforms[i] = this.pSamplers[i][0].pType.pEffectType.toCode();
     }
+
     for (i in this.pGlobalBuffers) {
         this.pUniforms[i] = this.pGlobalBuffers[i][0].pType.pEffectType.toCode();
     }
+
     for (i in this.pUniformsF) {
         if (this.pUniformsBlockF[i] === null) {
             sType = this._blendTypes(this.pUniformsF[i]);
             this.pMixedTypesF[sType] = null;
-            this.pUniformsBlockF[i] = "uniform " + sType + " " + this.pUniformsF[i][0].sRealName + ";";
+            this.pUniformsBlockF[i] = "uniform " + sType + " " + i + ";";
             this.pUniformsF[i] = this.pUniformsF[i][0];
         }
         if (this.pUniformsF[i].pType.isBase()) {
             this.pUniforms[i] = this.pUniformsF[i].pType.pEffectType.toCode();
         }
     }
+
     for (i in this.pAttributes) {
         pAttr = this.pAttributes[i];
         if (pAttr instanceof Array) {
@@ -849,12 +861,44 @@ PassBlend.prototype.finalizeBlend = function () {
             this._pAttrDataDecl[i] = sType + " " + i + ";";
         }
     }
+
+    for (i in this.pExternalsV) {
+        pExternal = this.pExternalsV[i];
+        pUsedTypes = [];
+        if (pExternal instanceof Array) {
+            sType = this._blendTypes(pExternal, pUsedTypes);
+            this._addTypes(pUsedTypes, true);
+            this.pExternalsBlockV[i] = sType + " " + i + ";";
+        }
+        else {
+            pUsedTypes = this._getUsedTypes(pExternal, pUsedTypes);
+            this._addTypes(pUsedTypes, true);
+            this.pExternalsBlockV[i] = pExternal.toCodeDecl();
+        }
+    }
+
+    for (i in this.pExternalsF) {
+        pExternal = this.pExternalsF[i];
+        pUsedTypes = [];
+        if (pExternal instanceof Array) {
+            sType = this._blendTypes(pExternal, pUsedTypes);
+            this._addTypes(pUsedTypes, false);
+            this.pExternalsBlockF[i] = sType + " " + i + ";";
+        }
+        else {
+            pUsedTypes = this._getUsedTypes(pExternal, pUsedTypes);
+            this._addTypes(pUsedTypes, false);
+            this.pExternalsBlockF[i] = pExternal.toCodeDecl();
+        }
+    }
+
     this.sVaryingsOut = "struct { vec4 POSITION;";
 
     for (i in this.pVaryings) {
         this.sVaryingsOut += this.pVaryings[i].pType.pEffectType.toCode() + " " + this.pVaryings[i].sSemantic + ";";
         this.pVaryingsBlock[i] = this.pVaryings[i].sRealName + "=" + a.fx.GLOBAL_VARS.SHADEROUT + "." + i + ";";
     }
+
     this.pVaryingsBlock["POSITION"] = "gl_Position=" + a.fx.GLOBAL_VARS.SHADEROUT + ".POSITION;";
     this.sVaryingsOut += "} " + a.fx.GLOBAL_VARS.SHADEROUT + ";"
 
@@ -1189,8 +1233,15 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     for (i = 0; i < this.pTypesOrderV.length; i++) {
         sVertexCode += this.pTypesBlockV[this.pTypesOrderV[i].sRealName] + ";";
     }
-    for (i in this.pMixedTypesV) {
-        sVertexCode += this._pBlendTypesDecl[i];
+    for (i = 1; i < this._nBlendTypes; i++) {
+        sName1 = a.fx.SHADER_PREFIX.BLEND_TYPE + i;
+        if (this.pMixedTypesV[sName1] === null) {
+            sVertexCode += this._pBlendTypesDecl[sName1];
+        }
+    }
+    //External variables
+    for (i in this.pExternalsBlockV) {
+        sVertexCode += this.pExternalsBlockV[i];
     }
     //Function`s definitions
     for (i in this.pFuncDefBlockV) {
@@ -1322,8 +1373,15 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     for (i = 0; i < this.pTypesOrderF.length; i++) {
         sFragmentCode += this.pTypesBlockF[this.pTypesOrderF[i].sRealName] + ";";
     }
-    for (i in this.pMixedTypesF) {
-        sFragmentCode += this._pBlendTypesDecl[i];
+    for (i = 1; i < this._nBlendTypes; i++) {
+        sName1 = a.fx.SHADER_PREFIX.BLEND_TYPE + i;
+        if (this.pMixedTypesF[sName1] === null) {
+            sFragmentCode += this._pBlendTypesDecl[sName1];
+        }
+    }
+    //External variables
+    for (i in this.pExternalsBlockF) {
+        sFragmentCode += this.pExternalsBlockF[i];
     }
     //Function`s definitions
     for (i in this.pFuncDefBlockF) {
@@ -1424,9 +1482,9 @@ PassBlend.prototype._toFinalCode = function (pCode) {
     }
     return sCode;
 };
-PassBlend.prototype._blendTypes = function (pVars) {
+PassBlend.prototype._blendTypes = function (pVars, pUsedTypes) {
     var sNewType = "";
-    var k, l, m;
+    var k, l, m, j;
     var pType, pVar;
     for (k = 0; k < pVars.length; k++) {
         pType = pVars[k].pType.pEffectType;
@@ -1440,6 +1498,9 @@ PassBlend.prototype._blendTypes = function (pVars) {
     var pTypes = [];
     var pOrders;
     var sTypeName;
+    var iBlendStatus;
+    var pUsedType;
+    var isUsed;
     for (k = 0; k < pVars.length; k++) {
         pType = pVars[k].pType.pEffectType.pDesc;
         pOrders = pType.pOrders;
@@ -1455,13 +1516,41 @@ PassBlend.prototype._blendTypes = function (pVars) {
             pTypes.push(pOrders[l]);
             for (m = k + 1; m < pVars.length; m++) {
                 pVar = pVars[m].pType.pEffectType.pDesc._pSemantics[pOrders[l].sSemantic];
-                pTypes.push(pVar);
+                if (pVar) {
+                    for (j = 0; j < pTypes.length; j++) {
+                        iBlendStatus = pTypes[j].canBlend(pVar);
+                        if (iBlendStatus === 1) {
+                            break;
+                        }
+                    }
+                    if (iBlendStatus === 2) {
+                        pTypes.push(pVar);
+                    }
+                }
             }
-            sTypeName = this._blendTypes(pTypes);
-            pFields[pOrders[l].sRealName] = sTypeName + " " + pOrders[l].sRealName + ";";
+            if (pTypes.length === 1) {
+                pFields[pOrders[l].sRealName] = pOrders[l].toCodeDecl();
+                if (pUsedTypes) {
+                    pUsedType = pOrders[l].pType.pEffectType;
+                    isUsed = false;
+                    for (m = 0; m < pUsedTypes.length; m++) {
+                        if (pUsedTypes[m] === pUsedType) {
+                            isUsed = true;
+                            break;
+                        }
+                    }
+                    if (!isUsed) {
+                        pUsedTypes.push(pUsedType);
+                    }
+                }
+            }
+            else {
+                sTypeName = this._blendTypes(pTypes, pUsedTypes);
+                pFields[pOrders[l].sRealName] = sTypeName + " " + pOrders[l].sRealName + ";";
+            }
         }
     }
-    sTypeName = "AUTO_BLEND_TYPE_" + this._nBlendTypes;
+    sTypeName = a.fx.SHADER_PREFIX.BLEND_TYPE + this._nBlendTypes;
     this._nBlendTypes++;
     this._pBlendTypes[sNewType] = sTypeName;
     for (k in pFields) {
@@ -1470,6 +1559,105 @@ PassBlend.prototype._blendTypes = function (pVars) {
     this._pBlendTypesDecl[sTypeName] = "struct " + sTypeName + "{" + sFields + "};";
     return sTypeName;
 };
-PassBlend.prototype._addExternal = function (pVar, isShader) {
+PassBlend.prototype._addExternal = function (pVar, isVertex) {
+    var pExternals;
+    var sName = pVar.toCode();
+    var pPrevVar;
+    var i;
+    var iBlendStatus;
+    if (isVertex) {
+        pExternals = this.pExternalsV;
+    }
+    else {
+        pExternals = this.pExternalsF;
+    }
+    if (!pExternals[sName]) {
+        pExternals[sName] = pVar;
+        return true;
+    }
+    if (pExternals[sName] instanceof Array) {
+        pPrevVar = pExternals[sName];
+        for (i = 0; i < pPrevVar.length; i++) {
+            iBlendStatus = pPrevVar[i].canBlend(pVar);
+            if (iBlendStatus === 0) {
+                error("Types for blending external must be mixible 1");
+                return false;
+            }
+            if (iBlendStatus === 1) {
+                break;
+            }
+        }
+        if (iBlendStatus === 2) {
+            pExternals[sName].push(pVar);
+        }
+    }
+    else {
+        pPrevVar = pExternals[sName];
+        iBlendStatus = pPrevVar.canBlend(pVar);
+        if (iBlendStatus === 0) {
+            error("Types for blending external must be mixible 1");
+            return false;
+        }
+        if (iBlendStatus === 2) {
+            pExternals[sName] = [pPrevVar, pVar];
+        }
+    }
+    return true;
+
+
+};
+PassBlend.prototype._getUsedTypes = function (pVar, pUsedTypes) {
+    pUsedTypes = pUsedTypes || [];
+    if (pVar.pType.isBase()) {
+        return true;
+    }
+    var pType = pVar.pType.pEffectType;
+    var pOrders = pType.pDesc.pOrders;
+    var i;
+    var isUsed;
+    for (i = 0; i < pOrders.length; i++) {
+        this._getUsedTypes(pOrders[i], pUsedTypes);
+    }
+    isUsed = false;
+    for (i = 0; i < pUsedTypes.length; i++) {
+        if (pUsedTypes[i] === pType) {
+            isUsed = true;
+            break;
+        }
+    }
+    if (!isUsed) {
+        pUsedTypes.push(pType);
+    }
+    return pUsedTypes;
+};
+PassBlend.prototype._addTypes = function (pUsedTypes, isVertex) {
+    var i;
+    var pType;
+    var pBlock, pOrder;
+    var sName;
+    if (isVertex) {
+        pBlock = this.pTypesBlockV || {};
+        pOrder = this.pTypesOrderV || [];
+    }
+    else {
+        pBlock = this.pTypesBlockF || {};
+        pOrder = this.pTypesOrderF || [];
+    }
+    for (i = 0; i < pUsedTypes.length; i++) {
+        pType = pUsedTypes[i];
+        sName = pType.toCodeString();
+        if (!pBlock[sName]) {
+            pBlock[sName] = pType.toCode();
+            pOrder.push(pType);
+        }
+    }
+    if (isVertex) {
+        this.pTypesBlockV = pBlock;
+        this.pTypesOrderV = pOrder;
+    }
+    else {
+        this.pTypesBlockF = pBlock;
+        this.pTypesOrderF = pOrder;
+    }
 };
 A_NAMESPACE(PassBlend, fx);
