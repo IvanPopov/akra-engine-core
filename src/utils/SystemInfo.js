@@ -172,7 +172,7 @@ PROPERTY(BrowserInfo, 'os',
 
 
 window.URL = window.URL ? window.URL : window.webkitURL ? window.webkitURL : null;
-window.BlobBuilder = window.WebKitBlobBuilder || window.MozBlobBuilder || window.BlobBuilder;
+window.Blob = window.WebKitBlob || window.MozBlob || window.Blob;
 window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame ||
     window.mozRequestAnimationFrame;

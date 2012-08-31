@@ -163,7 +163,7 @@ Terrain.prototype.create = function (pRootNode, pHeightMap,worldExtents, iShift,
 	//Мегатекстурные параметры
 	pPathInfoMega=new a.Pathinfo(sSurfaceTextures);
 
-	this._pMegaTexures = a.MegaTexture(this._pEngine,this,sSurfaceTextures);
+	this._pMegaTexures = new a.MegaTexture(this._pEngine,this,sSurfaceTextures);
 
     // convert the height map to
     // data stored in local tables

@@ -81,8 +81,8 @@
         configurable: true,
         value: function (iValue,iStart,iCount) 
 			{
-				var iS=iStart|0;
-				var iC=iCount|(this.length-iStart);
+				var iS=iStart||0;
+				var iC=iCount||(this.length-iS);
 				for(var i=iS;i<iS+iC;i++)
 				{
 					this[i]=iValue;

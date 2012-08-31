@@ -877,11 +877,11 @@ Img.prototype.load=function(sFileName, fnCallBack)
 			}
 
 			pTempContext.drawImage(pImg, 0, 0);
-			var pImageData = pTempContext.getImageData(0, 0,pTempCanvas.heigh, pTempCanvas.heigh);
+			var pImageData = pTempContext.getImageData(0, 0,pTempCanvas.width, pTempCanvas.height);
 			me._pData=new Array(nVolume);
 			me._pData[0]=new Array(nCubeMap);
 			me._pData[0][0]=new Array(nMipMap);
-			me._pData[0][0][0]=new ArrayBuffer(pImageData.data.buffer.slice(0,pImageData.data.buffer.byteLength));
+			me._pData[0][0][0]=pImageData.data.buffer.slice(0,pImageData.data.buffer.byteLength);
 			me._eFormat=a.IFORMAT.RGBA8;
 			me._iCubeFlags=0;
 			if(fnCallBack)
@@ -1449,6 +1449,7 @@ Img.prototype._getPixelRGBA=function(iX,iY,pPixel,iMipLevel,eCubeFlag,iVolumeLev
     else if(this._eFormat==a.IFORMAT.RGBA8)
     {
         iOffset=(iY*this.getWidth(iMipLevel)+iX)*this.getBlockBytes();
+
         pColor=(new Uint32Array(this._pData[iVolumeLevel][eCubeFlag][iMipLevel],iOffset,1))[0];
 
         pPixel[0]=(pColor&0x000000FF);

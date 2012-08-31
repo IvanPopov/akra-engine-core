@@ -495,7 +495,7 @@ Define(Math.logn(a,b), function () {
  * логарифм по основанию 10
  */
 Define(Math.lg(a), function () {
-	(Math.log(n)/Math.LN10);
+	(Math.log(a)/Math.LN10);
 })
 
 /**
@@ -503,5 +503,5 @@ Define(Math.lg(a), function () {
  * логарифм по основанию 2
  */
 Define(Math.log2(a), function () {
-	(Math.log(n)/Math.LN2);
+	(Math.log(a)/Math.LN2);
 })
