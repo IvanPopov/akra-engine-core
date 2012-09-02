@@ -3,7 +3,7 @@ function AnimationBase () {
     this._pTargetList = [];
 	
 	this._fDuration = 0;
-	this._sName = ('animation' + a.sid());
+	this._sName = ('animation-' + a.now() + '-' + a.sid());
 
 	this._pCallbacks = {};
 }

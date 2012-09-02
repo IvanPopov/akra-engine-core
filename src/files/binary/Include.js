@@ -1,4 +1,5 @@
+Include('BinTemplate.js');
 Include('BinReader.js');
 Include('BinWriter.js');
 
-Include('templates.js');
+Include('format.js');

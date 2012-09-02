@@ -489,15 +489,17 @@ Camera.prototype.lookAt = function() {
 
     v3fUp = v3fUp || Vec3(0, 1, 0);
 
-    var m4fTemp = Mat4.lookAt(v3fFrom, v3fCenter, v3fUp,Mat4()).inverse();
-    
-    m4fTemp.toQuat4(this._qRotation);
-
+    var v3fParentPos = this.parent().worldPosition().pData;
+    var m4fTemp = Mat4.lookAt(v3fFrom, v3fCenter, v3fUp, Mat4()).inverse();
+   // var m4fMult = m4fParentWorldInv.mult(m4fTemp, Mat4());
+    //trace(m4fMult)
     var pData = m4fTemp.pData;
 
-    this._v3fTranslation.set(pData._14,pData._24,pData._34);
-    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
+    m4fTemp.toQuat4(this._qRotation);
+    this.setPosition(pData._14 - v3fParentPos.X, pData._24 - v3fParentPos.Y, pData._34 - v3fParentPos.Z);
 };
+
+
 /**
  * Getter
  * @treturn Frustum

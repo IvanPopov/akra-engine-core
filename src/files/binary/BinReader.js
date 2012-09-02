@@ -47,12 +47,59 @@ Define(ARRAY_LIMIT(POSITION, LIMIT), function () {
     debug_assert(POSITION < LIMIT, "Выход за пределы массива");
 });
 
+
 function BinReader (arrayBuffer) {
     this.arrayBuffer = arrayBuffer;
     this.arrayUint8Buffer = new Uint8Array(arrayBuffer);
     this.arrayBufferLength = (new Uint8Array(arrayBuffer)).length;
     this.iPosition = 0;
+
+
+    this._pHashTable = null;
+    this._pTemplate = a.binaryTemplate;
+    this._pPositions = [];
 }
+
+PROPERTY(BinReader, 'template',
+    function () {
+        return this._pTemplate;
+    },
+    function (pTemplate) {
+        this._pTemplate = pTemplate;
+    });
+
+BinReader.prototype.pushPosition = function (iPosition) {
+    'use strict';
+    
+    this._pPositions.push(this.iPosition);
+    this.iPosition = iPosition;
+};
+
+BinReader.prototype.popPosition = function () {
+    'use strict';
+    
+    this.iPosition = this._pPositions.pop();
+};
+
+BinReader.prototype.setupHashTable = function () {
+    'use strict';
+    
+    if (!this._pHashTable) {
+        this._pHashTable = {};
+    }
+};
+
+BinReader.prototype.memof = function (pObject, iAddr) {
+    'use strict';
+    
+    this._pHashTable[iAddr] = pObject;
+};
+
+BinReader.prototype.memread = function (iAddr) {
+    'use strict';
+    
+    return this._pHashTable[iAddr] || null;
+};
 
 /******************************************************************************/
 /*                                 string                                     */
@@ -71,13 +118,20 @@ BinReader.prototype.string = function (str) {
     var arrayStringUTF8 = new Uint8Array(this.arrayBuffer, this.iPosition, iStringLength);
 
     this.iPosition += iStringLength;
-    var sString = "";
+    var sString = "", charCode, code;
     for (var n = 0; n < arrayStringUTF8.length; ++n) {
-        var charCode = String.fromCharCode(arrayStringUTF8[n]);
+        code = arrayStringUTF8[n];
+        
+        if (code == 0) {
+            break;
+        }
+
+        charCode = String.fromCharCode(code);
         sString = sString + charCode;
     }
 
-    return sString.fromUTF8();
+    sString = sString.fromUTF8();
+    return sString.substr(0, iStringLength);//sString;//
 }
 
 /******************************************************************************/
@@ -419,60 +473,149 @@ BinReader.prototype.rawStringToBuffer = function (str) {
     return new Uint8Array(arr);
 }
 
-BinReader.prototype.read = function(pObject, pData) {
-    return a.undump.call(pObject, pData || null, this);
-};
 
-BinReader.templates = {};
-BinReader.template = function(pTemplate) {
-    for (var i in pTemplate) {
-        BinReader.templates[i] = pTemplate[i];
-    }
-};
-
-BinReader.read = function(sType, pData, pReader) {
-    pReader = pReader || new a.BinReader(pData);
+BinReader.prototype.readPtr = function (iAddr, sType, pObject) {
+    'use strict';
     
-    var pObject = null;
+    pObject = pObject || null;
 
-    if (typeof arguments[0] !== 'string') {
-        pObject = arguments[0];
-        sType = a.getClass(pObject);
-    }
-
-    var pTemplates = a.BinReader.templates;
-    var pProperties = pTemplates[sType];
-
-    debug_assert(pProperties, 'unknown object <' + sType + '> type cannot be readed');
-
-    if (typeof pProperties === 'function') {
-        return pProperties.call(pReader);
-    }
-
-    if (!pObject) {
-        eval('pObject = new ' + sType + ';');
-    }
-
-    for (var i in pProperties) {
-
-        if (typeof pProperties[i] === 'string') {
-            pObject[i] = a.BinReader.read(pProperties[i], pData, pReader);
-            continue;
-        }
-
-        pObject[i] = pProperties[i].call(pReader);
-    }
-
-    return pObject;
-
-};
-
-function undump () {
-    if (!arguments[1]) {
+    if (iAddr === MAX_UINT32) {
         return null;
     }
 
-    return a.BinReader.read(arguments[0], arguments[1], arguments[2]);
+    var pTmp = this.memread(iAddr);
+    var isReadNext = false;
+    var iType = -1;
+    var fnReader = null;
+    var iPosition;
+    var pTemplate = this.template;
+    var pProperties;
+    var pBaseClasses = null;
+    var pMembers = null;
+
+    if (pTmp) {
+        return pTmp;
+    }
+
+    if (iAddr === this.iPosition) {
+        isReadNext = true;
+    }
+    else {
+        //set new position
+        this.pushPosition(iAddr);
+    }
+
+    pProperties = pTemplate.properties(sType);
+
+    debug_assert(pProperties, 'unknown object <' + sType + '> type cannot be readed');
+
+    fnReader = pProperties.read;
+
+    //read primal type
+    if (fnReader) {
+        pTmp = fnReader.call(this, pObject);
+        this.memof(pTmp, iAddr);
+        
+        //restore prev. position
+        if (!isReadNext) {
+            this.popPosition();
+        }
+
+        return pTmp;
+    }
+    
+    if (!pObject) {
+        var pCtor = pProperties.ctor;
+
+        if (typeof pCtor === 'string' || !pCtor) {
+            eval('pObject = new ' + (pCtor || sType) + ';');   
+        }
+        else {
+            pObject = pCtor();
+        }
+    }
+
+    pBaseClasses = pProperties.base;
+
+    if (pBaseClasses) {
+        for (var i = 0; i < pBaseClasses.length; ++ i) {
+            iAddr = this.iPosition;
+            this.readPtr(iAddr, pBaseClasses[i], pObject);
+        }
+    }
+
+    this.memof(pObject, iAddr);
+
+    pMembers = pProperties.members
+
+    if (pMembers) {
+         for (var sName in pMembers) {
+            if (typeof pMembers[sName] === 'string') {
+
+                pObject[sName] = this.read();
+                continue;
+            }
+        }
+    }
+
+    //restore prev. position
+    if (!isReadNext) {
+        this.popPosition();
+    }
+
+    return pObject;
 }
+
+BinReader.prototype.read = function() {
+    'use strict';
+
+    this.setupHashTable();
+    
+    var iAddr = this.uint32();
+
+    if (iAddr === MAX_UINT32) {
+        return null;
+    }
+
+    this.extractHeader(iAddr);
+
+    var iType = this.uint32();
+    var sType = this.template.getType(iType);
+    
+    return this.readPtr(iAddr, sType);
+};
+
+BinReader.prototype.extractHeader = function (iAddr) {
+    'use strict';
+    
+    if (this.iPosition === 4) {
+        if (iAddr !== 8) {
+            this.pushPosition(8);
+            this.header(this.read());
+            this.popPosition();
+        }
+    }
+};
+
+BinReader.prototype.header = function (pData) {
+    'use strict';
+
+    if (typeof pData === 'string') {
+        warning('загрузка шаблонов извне не поддержвиаетя');
+        return;
+    }
+
+    this.template = new a.BinTemplate(pData);
+};
+
+function undump (pBuffer) {
+    if (!pBuffer) {
+        return null;
+    }
+    var pReader = new a.BinReader(pBuffer);
+
+    return pReader.read();
+}
+
 a.undump = undump;
 a.BinReader = BinReader;
