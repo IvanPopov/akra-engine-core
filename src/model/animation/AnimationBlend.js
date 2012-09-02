@@ -7,6 +7,16 @@ function AnimationBlend () {
 
 EXTENDS(AnimationBlend, a.AnimationBase);
 
+AnimationBlend.prototype.bind = function(pTarget) {
+	var pAnimationList = this._pAnimationList;
+
+	for (var i = 0; i < pAnimationList.length; ++ i) {
+		var pAnim = pAnimationList[i].animation;
+		pAnim.bind(pTarget);	
+		this.grab(pAnim, true);
+	}
+};
+
 AnimationBlend.prototype.addAnimation = function (pAnimation, fWeight, pMask) {
     'use strict';
     debug_assert(pAnimation, 'animation must be setted.');
@@ -175,6 +185,10 @@ AnimationBlend.prototype.frame = function (sName, fTime) {
 };
 
 A_NAMESPACE(AnimationBlend);
+
+/************************************************************************************************
+ * Animation switch. 
+ ************************************************************************************************/
 
 function AnimationSwitch () {
 	A_CLASS;

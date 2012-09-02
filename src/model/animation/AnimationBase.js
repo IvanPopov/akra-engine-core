@@ -28,6 +28,10 @@ AnimationBase.prototype.on = function(eEvent, fnCallback) {
 	this._pCallbacks[eEvent] = fnCallback;
 };
 
+AnimationBase.prototype.bind = function(pTarget) {
+	debug_error('method AnimationBase::bind() must be overwritten.');
+};
+
 AnimationBase.prototype.frame = function (sName, fTime) {
     'use strict';
    		
@@ -153,7 +157,7 @@ AnimationBase.prototype.grab = function (pAnimationBase, bRewrite) {
 		
 		if (!pAdoptTargets[i].target) {
 			warning('cannot grab target <' + pAdoptTargets[i].name + '>, becaus "target" is null');
-			continue;
+			//continue;
 		}
 
 		if (bRewrite || !this.getTarget(pAdoptTargets[i].name)) {

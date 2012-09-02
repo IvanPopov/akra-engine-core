@@ -15,6 +15,12 @@ function AnimationContainer (pAnimation) {
 	this._pAnimation = null;
 	this._fDuration = 0;
 	this._bReverse = false;
+	//время, определяющее кадр анимации, в случае, если она находится в паузе.
+	this._fTime = 0;
+
+	//определена ли анимация до первого и после последнего кадров
+	this._bLeftInfinity = true;
+	this._bRightInfinity = true;
 
 	if (pAnimation) {
 		this.setAnimation(pAnimation);
@@ -28,6 +34,11 @@ PROPERTY(AnimationContainer, 'animationName',
 		return this._pAnimation.name;
 	});
 
+AnimationContainer.prototype.bind = function(pTarget) {
+	this._pAnimation.bind(pTarget);
+	this.grab(this._pAnimation, true);
+};
+
 AnimationContainer.prototype.setAnimation = function (pAnimation) {
     'use strict';
 
@@ -35,7 +46,7 @@ AnimationContainer.prototype.setAnimation = function (pAnimation) {
 
 	this._pAnimation = pAnimation;
 	this._fDuration = pAnimation._fDuration;
-	this.name = 'player[' + pAnimation.name + ']';
+	this.name = 'container-' + pAnimation.name;
 
 	this.grab(pAnimation);
 };
@@ -56,6 +67,14 @@ AnimationContainer.prototype.isEnabled = function () {
     'use strict';
     
 	return this._bEnable;
+};
+
+AnimationContainer.prototype.leftInfinity = function(bValue) {
+	this._bLeftInfinity = bValue;
+};
+
+AnimationContainer.prototype.rightInfinity = function(bValue) {
+	this._bRightInfinity = bValue;
 };
 
 AnimationContainer.prototype.setStartTime = function (fTime) {
@@ -120,7 +139,17 @@ AnimationContainer.prototype.time = function (fTime) {
 AnimationContainer.prototype.frame = function (sName, fTime) {
     'use strict';
 
-	return this._pAnimation.frame(sName, this.time(fTime));
+    fTime = this.time(fTime);
+
+    if (!this._bLeftInfinity && fTime < this._fStartTime) {
+    	return null;
+    }
+
+	if (!this._bRightInfinity && fTime > this._fDuration) {
+    	return null;
+    }    
+
+	return this._pAnimation.frame(sName, fTime);
 };
 
 A_NAMESPACE(AnimationContainer);
