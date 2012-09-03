@@ -28,6 +28,7 @@ Animation.prototype.push = function (pTrack) {
 	this.addTarget(pTrack.targetName);
 };
 
+
 Animation.prototype.bind = function (pTarget) {
     'use strict';
     
@@ -56,6 +57,8 @@ Animation.prototype.frame = function (sName, fTime) {
 
 	return pPointer.track.frame(Math.clamp(fTime, 0, this._fDuration));
 };
+
+//extend animation > used in collada loader for extending with bind poses.
 
 AnimationBase.prototype.extend = function(pAnimation) {
 	var pTracks = pAnimation._pTracks;

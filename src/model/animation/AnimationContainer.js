@@ -13,7 +13,6 @@ function AnimationContainer (pAnimation) {
 	this._fSpeed = 1.0;
 	this._bLoop = false;
 	this._pAnimation = null;
-	this._fDuration = 0;
 	this._bReverse = false;
 	//время, определяющее кадр анимации, в случае, если она находится в паузе.
 	this._fTime = 0;
@@ -117,11 +116,16 @@ AnimationContainer.prototype.isReversed = function() {
 	return this._bReverse;
 };
 
-AnimationContainer.prototype.pause = function (bValue, fTime) {
+AnimationContainer.prototype.pause = function (bValue) {
     'use strict';
     
-	this.time(fTime);
 	this._bPause = bValue;
+};
+
+AnimationContainer.prototype.rewind = function (fTime) {
+    'use strict';
+    
+	this._fTime = fTime;
 };
 
 AnimationContainer.prototype.isPaused = function () {

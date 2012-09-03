@@ -30,9 +30,29 @@ AnimationController.prototype.addAnimation = function(pAnimation) {
 		warning('Animation with name <' + pAnimation.name + '> already exists in this controller');
 		return false;
 	}
+
+	trace('animation controller :: add animation >> ', pAnimation.name);
 	
 	this._pAnimations.push(pAnimation);
 	this._pActiveAnimation = pAnimation;
+};
+
+
+AnimationController.prototype.removeAnimation = function () {
+    'use strict';
+   
+    var pAnimation = this.findAnimation(arguments[0]);
+    var pAnimations = this._pAnimations;
+
+	for (var i = 0; i < pAnimations.length; ++ i) { 
+		if (pAnimations[i] === pAnimation) {
+			pAnimations.splice(i, 1);
+			trace('animation controller :: remove animation >> ', pAnimation.name);
+			return true;
+		}
+	}
+
+	return false;
 };
 
 AnimationController.prototype.findAnimation = function () {
@@ -54,8 +74,12 @@ AnimationController.prototype.findAnimation = function () {
 		return null;
 	}
 
-	iAnimation = arguments[0];
-	return pAnimations[iAnimation] || null;
+	if (typeof arguments[0] === 'number') {
+		iAnimation = arguments[0];
+		return pAnimations[iAnimation] || null;
+	}
+
+	return arguments[0];
 };
 
 AnimationController.prototype.setAnimation = function (iAnimation, pAnimation) {
@@ -76,8 +100,15 @@ AnimationController.prototype.bind = function (pTarget) {
     }
 };
 
-AnimationController.prototype.play = function(iAnimation) {
-	this._pActiveAnimation = this.findAnimation(iAnimation);
+AnimationController.prototype.play = function() {
+	var pAnimation = this.findAnimation(arguments[0]);
+
+	if (pAnimation) {
+		this._pActiveAnimation = pAnimation;
+		return true;
+	}
+
+	return false;
 };
 
 AnimationController.prototype.apply = function (fTime) {

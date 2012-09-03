@@ -1,4 +1,10 @@
 function AnimationBase () {
+	Enum([
+		EVT_ENTER_FRAME = 'enterFrame',
+		EVT_START = 'start',
+		EVT_END = 'end'
+		], ANIMATION_EVENTS, a.Animation);
+
 	this._pTargetMap = {};
     this._pTargetList = [];
 	
@@ -6,6 +12,10 @@ function AnimationBase () {
 	this._sName = ('animation-' + a.now() + '-' + a.sid());
 
 	this._pCallbacks = {};
+
+	this.on(a.Animation.EVT_ENTER_FRAME, null);
+	// this.on(a.Animation.EVT_START, null);
+	// this.on(a.Animation.EVT_END, null);
 }
 
 A_NAMESPACE(AnimationBase);
@@ -26,6 +36,7 @@ PROPERTY(AnimationBase, 'name',
 
 AnimationBase.prototype.on = function(eEvent, fnCallback) {
 	this._pCallbacks[eEvent] = fnCallback;
+	//trace(eEvent, '-->', fnCallback)
 };
 
 AnimationBase.prototype.bind = function(pTarget) {
@@ -58,6 +69,11 @@ AnimationBase.prototype.apply = function (fTime) {
 		pTransform = pFrame.toMatrix();
 		pTarget.accessLocalMatrix().set(pTransform);
 	};
+
+	var fnEnterFrame = this._pCallbacks[a.Animation.EVT_ENTER_FRAME];
+	if (fnEnterFrame) {
+		fnEnterFrame(fTime);
+	}
 };
 
 AnimationBase.prototype.addTarget = function (sName, pTarget) {

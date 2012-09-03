@@ -7,6 +7,11 @@ function AnimationBlend () {
 
 EXTENDS(AnimationBlend, a.AnimationBase);
 
+PROPERTY(AnimationBlend, 'totalAnimations',
+	function () {
+		return this._pAnimationList.length;
+	});
+
 AnimationBlend.prototype.bind = function(pTarget) {
 	var pAnimationList = this._pAnimationList;
 
