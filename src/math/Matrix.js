@@ -1277,8 +1277,8 @@ Vec4.prototype.negate = function(v4fDestination) {
         v4fDestination = this;
     }
 
-    pData = this.pData;
-    pDataDestination = v4fDestination.pData;
+    var pData = this.pData;
+    var pDataDestination = v4fDestination.pData;
 
     pDataDestination.X = -pData.X;
     pDataDestination.Y = -pData.Y;
@@ -1307,8 +1307,8 @@ Vec4.prototype.scale = function(fScale,v4fDestination) {
         v4fDestination = this;
     }
 
-    pData = this.pData;
-    pDataDestination = v4fDestination.pData;
+    var pData = this.pData;
+    var pDataDestination = v4fDestination.pData;
 
     pDataDestination.X = pData.X * fScale;
     pDataDestination.Y = pData.Y * fScale;
