@@ -332,6 +332,9 @@ function SceneModel(pEngine, pMesh) {
     this._hModelHandle = 0;
     this._pMeshes = [];
 
+    this._fnRenderCallback = null;
+    this._isStandAlone = false;
+
     if (pMesh) {
         this.addMesh(pMesh);
     }
@@ -358,10 +361,14 @@ SceneModel.prototype.destroy = function () {
 };
 
 SceneModel.prototype.destructor = function () {
-    'use strict';   
+    'use strict';
     this.destroy();
 };
 
+SceneModel.prototype.setRenderCallback = function (fnCallback, isStandAlone) {
+    this._fnRenderCallback = fnCallback;
+    this._isStandAlone = (isStandAlone === undefined) ? false : true;
+};
 SceneModel.prototype.prepareForRender = function () {
     var pMesh = this.findMesh();
     if (!pMesh) {
@@ -381,192 +388,41 @@ SceneModel.prototype.prepareForRender = function () {
 SceneModel.prototype.render = function () {
     parent.render(this);
 
-    //------------------------------------------------
-    //Temprary render..
-    if (this.bNoRender) {
-        return;
+    if (this._fnRenderCallback) {
+        this._fnRenderCallback.call(this);
+        if (this._isStandAlone) {
+            return;
+        }
     }
 
-    var pEngine = this._pEngine;
-    var pCamera = pEngine._pDefaultCamera;
-    var pMesh = this.findMesh();
-    var pProgram = null;
-    var pDevice = pEngine.pDevice;
-    var pModel = this;
-
-    if (!pMesh || !pMesh.isReadyForRender()) {
-        return;
+    var pMeshes = this._pMeshes,
+        pRenderer = this._pEngine.shaderManager(),
+        pMesh, pSubMesh;
+    var i, j, k;
+    if (!pMeshes || pMeshes.length === 0) {
+        return false;
     }
-
-    for (var i = 0; i < pMesh.length; ++ i) {
-        var pSubMesh = pMesh[i];
-        var pSurface = pSubMesh.surfaceMaterial;
-
-        if (pSubMesh.isSkinned()) {
-            if (pSubMesh.surfaceMaterial.totalTextures) {
-                pProgram = pEngine.pDrawMeshAnimProgTex;
+    pRenderer.activateSceneObject(this);
+    for (i = 0; i < pMeshes.length; i++) {
+        pMesh = pMeshes[i];
+        if (!pMesh || !pMesh.isReadyForRender()) {
+            return;
+        }
+        for (j = 0; j < pMesh.length; j++) {
+            pSubMesh = pMesh[j];
+            pSubMesh.startRender();
+            for (k = 0; k < this.totalPasses(); k++) {
+                pSubMesh.activatePass(i);
+                pSubMesh.applySurfaceMaterial();
+                pSubMesh.applyRenderData(pSubMesh.data);
+                pSubMesh.renderPass();
+                pSubMesh.deactivatePass();
             }
-            else {
-                pProgram = pEngine.pDrawMeshAnimProg;
-            }
+            pSubMesh.finishRender();
         }
-        else if (pSubMesh.data.useAdvancedIndex()) {
-            pProgram = pEngine.pDrawMeshI2IProg;
-        }
-        else if (pSubMesh.surfaceMaterial.totalTextures) {
-            pProgram = pEngine.pDrawMeshTexProg;
-        }
-        else {
-            pProgram = pEngine.pDrawMeshProg;
-        }
-
-        pProgram.activate();
-
-        if (pSubMesh.data.useAdvancedIndex()) {
-            pProgram.applyFloat('INDEX_INDEX_POSITION_OFFSET', 0);
-            pProgram.applyFloat('INDEX_INDEX_NORMAL_OFFSET', 1);
-            pProgram.applyFloat('INDEX_INDEX_FLEXMAT_OFFSET', 2);
-        }
-        
-        pProgram.applyMatrix4('model_mat', pModel.worldMatrix());
-        pProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
-        pProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
-        pProgram.applyMatrix3('normal_mat', pModel.normalMatrix());
-        pProgram.applyVector3('eye_pos', pCamera.worldPosition());
-
-
-        if (pSubMesh.isSkinned()) {
-            pProgram.applyMatrix4('bind_matrix', pSubMesh.skin.getBindMatrix());
-            pSubMesh.skin.applyBoneMatrices();
-            //trace(pSubMesh.skin.skeleton._pJoints);
-            //trace(Mat4.str(pSubMesh.skin.skeleton.getRootBone().getBoneOffsetMatrix()));
-        }
-        
-        if (pSurface.totalTextures) {
-            var iTextureFlags = pSurface.textureFlags;
-            var iTexActivator = 1;
-            
-            for (var j = 0; j < a.SurfaceMaterial.maxTexturesPerSurface; ++ j) {
-                if (!TEST_BIT(iTextureFlags, j)) {
-                    if (j < 4) {
-                        pProgram.applySampler2D('TEXTURE' + j, 15);
-                    }
-                    continue;
-                }
-
-                pSurface.texture(j).activate(iTexActivator);
-                pProgram.applySampler2D('TEXTURE' + j, iTexActivator);
-                iTexActivator ++;
-            }
-        }
-
-        pSubMesh.draw();
     }
-    
-
-    //------------------------------------------------
-
-    // var pDisplayManager = this._pEngine.pDisplayManager;
-    // var pMeshSubset = null;
-
-    // for (var i = 0, nSubsets = this._pMesh._pSubsets.length; i < nSubsets; i ++) {
-    //     pMeshSubset = this._pMesh._pSubsets[i];
-
-    //     if (!pMeshSubset.isRenderable()) {
-    //         continue;
-    //     }
-
-    //     var pEffect = pMeshSubset.effect;
-    //     var pMaterial = pMeshSubset.surfaceMaterial;
-    //     var nPasses = pEffect.totalPasses();
-
-    //     for (var iPass = 0; iPass < nPasses; iPass++) {
-    //         var pRenderEntry = pDisplayManager.openRenderQueue();
-    //         //TODO: использовать правильные параметры для занесения объекта в очередь.
-    //         pRenderEntry.pRendarableObject = pMeshSubset;
-    //         pRenderEntry.boneCount = 0;
-    //         pRenderEntry.detailLevel = 0;
-    //         pRenderEntry.modelType = a.RenderEntry.modelEntry;
-    //         pRenderEntry.hModel = this._hModelHandle
-    //         pRenderEntry.modelParamA = this._iModelFrameIndex;
-    //         pRenderEntry.modelParamB = pMaterial.resourceHandle();
-    //         pRenderEntry.renderPass = iPass;
-    //         pRenderEntry.pSceneNode = this;
-    //         pRenderEntry.userData = 0;
-
-    //         pDisplayManager.closeRenderQueue(pRenderEntry);
-    //     }
-    // } 
-};
-
-SceneModel.prototype.renderCallback = function (pEntry, iActivationFlags) {
-    return;
-    // if we queued ourselved for rendering with the
-    // display manager, we will get this function
-    // called when it is our turn to render
-
-    // activationFlags contains a set of bit flags
-    // held in the eActivationFlagBits enum (render_queue.h)
-    // which tell us what resources we need to activate
-    // in order to render ourselves.
-    //profile_scope(cTerrainSystem_renderSection);
-    var pMeshContainer = this.meshContainer();
-    var hasSkinModel = pMeshContainer.pSkinInfo != null;
-
-    var iMaterial = pEntry.userData;
-    var pMethod = pMeshContainer.ppRenderMethodList[iMaterial];
-    var pEffect = pMethod.getEffect(this._pEngine.getCurrentRenderStage());
-    var pMaterial = pMethod.getMaterial(this._pEngine.getCurrentRenderStage());
-
-    var bDeactivatePass = false;
-
-    if (pEffect && pMaterial) {
-        // do we need to activate the render pass?
-        if (TEST_BIT(iActivationFlags, a.RenderQueue.activateRenderMethodPass)
-            || TEST_BIT(iActivationFlags, a.RenderQueue.activateRenderMethodParam)
-            || TEST_BIT(iActivationFlags, a.RenderQueue.activateRenderMethodLOD)) {
-            this._pModelResource.setLOD(this._iLod);
-            if (hasSkinModel) {
-                nBoneInfluences = pMeshContainer.nBoneInfluences - 1;
-                pEffect.setParameter(a.EffectResource.boneInfluenceCount, nBoneInfluences);
-            }
-            pEffect.activatePass(pEntry.renderPass);
-            bDeactivatePass = true;
-        }
-
-        // do we need to activate the render method?
-        if (TEST_BIT(iActivationFlags, a.RenderQueue.activateRenderMethod)) {
-            pEffect.begin();
-        }
-
-        // do we need to activate the surface material
-        if (TEST_BIT(iActivationFlags, a.RenderQueue.activateSurfaceMaterial)) {
-            pEffect.applySurfaceMaterial(pMaterial);
-        }
-
-        
-        var pCamera = this._pEngine.getActiveCamera();
-        var m3fWorldViewProj = this._m3fWorldViewProj;
-        Mat4.mult(pCamera.viewProjMatrix(), this.worldMatrix(), m3fWorldViewProj);
-        // set the view matrix
-        //console.log(this.worldMatrix());
-        pEffect.setMatrix(a.EffectResource.worldViewProjMatrix, m3fWorldViewProj);
-        pEffect.applyCameraMatrices(pCamera);
-        
-        pEffect.setMatrix(a.EffectResource.worldMatrix, this.worldMatrix());
-        pEffect.setMatrix(a.EffectResource.normalMatrix, this.normalMatrix());
-
-        var pMesh = pMeshContainer.pMeshData.pMesh;
-        pEffect.applyVertexBuffer(pMesh.getVertexBuffer());
-        pMesh.getIndexBuffer().activate();
-
-        if (bDeactivatePass) {
-            pEffect.deactivatePass();
-        }
-
-        // draw the mesh subset
-        this._pModelResource.renderModelSubset(pEntry.modelParamA, pEntry.modelParamB);
-    }
+    pRenderer.deactivateSceneObject();
+    return true;
 };
 
 
@@ -605,26 +461,27 @@ SceneModel.prototype.findMesh = function (iMesh) {
     return this._pMeshes[iMesh] || null;
 };
 
-Ifdef (__DEBUG);
+Ifdef(__DEBUG);
 
 SceneModel.prototype.toString = function (isRecursive, iDepth) {
     'use strict';
-    
+
     isRecursive = isRecursive || false;
 
     if (!isRecursive) {
-        var sData = '<model' + (this._sName? ' ' + this._sName: '') + '(' + this._pMeshes.length + ')' +  '>';
-        
+        var sData = '<model' + (this._sName ? ' ' + this._sName : '') + '(' + this._pMeshes.length + ')' + '>';
+
         if (this._pMeshes.length) {
 
             sData += '( ';
 
             for (var i = 0; i < this._pMeshes.length; i++) {
-                sData += (i > 0? ',': '') + this._pMeshes[i].name;
-            };
+                sData += (i > 0 ? ',' : '') + this._pMeshes[i].name;
+            }
+            ;
 
             sData += ' )';
-        
+
         }
 
         return sData;
@@ -633,7 +490,7 @@ SceneModel.prototype.toString = function (isRecursive, iDepth) {
     return SceneObject.prototype.toString.call(this, isRecursive, iDepth);
 }
 
-Endif ();
+Endif();
 
 A_NAMESPACE(SceneModel);
 

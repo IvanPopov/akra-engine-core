@@ -95,8 +95,8 @@ function Renderer(pEngine) {
     this._pEffectResoureId = {};
     this._pEffectResoureBlend = {};
 
-    this._pActiveRenderObject = null;
-    this._pRenderObjectStack = [];
+    this._pActiveSceneObject = null;
+    this._pSceneObjectStack = [];
 
     this._pPreRenderStateStack = [];
     this._pPreRenderState = null;
@@ -227,7 +227,7 @@ Renderer.prototype._initComponent = function (pTechnique) {
             }
         }
         pComponent.pComponents = pNewComponents;
-        pComponent.pComponentsShift = pNewComponents;
+        pComponent.pComponentsShift = pNewComponentsProp;
         pComponent.pComponentsHash = pComponentsHash;
     }
     return true;
@@ -544,12 +544,12 @@ Renderer.prototype.deactivatePass = function (pSnapshot) {
     this._pPreRenderState.nShift -= pSnapshot._iCurrentPass;
     return true;
 };
-Renderer.prototype.activateRenderObject = function (pRenderObject) {
-    this._pRenderObjectStack.push(this._pActiveRenderObject);
-    this._pActiveRenderObject = pRenderObject;
+Renderer.prototype.activateSceneObject = function (pSceneObject) {
+    this._pSceneObjectStack.push(this._pActiveSceneObject);
+    this._pActiveSceneObject = pSceneObject;
 };
-Renderer.prototype.deactivateRenderObject = function () {
-    this._pActiveRenderObject = this._pRenderObjectStack.pop() || null;
+Renderer.prototype.deactivateSceneObject = function () {
+    this._pActiveSceneObject = this._pSceneObjectStack.pop() || null;
 };
 /**
  * Generate pass blend and shaderProgram
@@ -876,7 +876,7 @@ Renderer.prototype._releasePreRenderState = function (pState) {
     return true;
 };
 Renderer.prototype._getSystemUniformValue = function (sName) {
-    var pRenderObject = this._pActiveRenderObject;
+    var pRenderObject = this._pActiveSceneObject;
     var pCamera = this.pEngine.getActiveCamera();
     switch (sName) {
         case a.Renderer.MODEL_MATRIX:

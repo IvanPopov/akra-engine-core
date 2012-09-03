@@ -2579,7 +2579,7 @@ EffectTechnique.prototype.generateListOfExternals = function () {
 };
 EffectTechnique.prototype.addComponent = function (pComponent, nShift) {
     //TODO: something in this method are so wrong
-    warning("EffectTechnique.addComponent: you should do it better");
+//    warning("EffectTechnique.addComponent: you should do it better");
     nShift = nShift || 0;
     if (!this.sComponents || !this.pComponents) {
         this.sComponents = "";
@@ -7126,12 +7126,11 @@ Effect.prototype.analyzeImportDecl = function (pNode) {
         error("You try import not existing component");
         return;
     }
-    var pProp = {"nShift" : nShift};
     if (pTech) {
-        pTech.addComponent(pComponent, pProp);
+        pTech.addComponent(pComponent, nShift);
     }
     else {
-        this.addComponent(pComponent, pProp);
+        this.addComponent(pComponent, nShift);
     }
 };
 Effect.prototype.analyzeProvideDecl = function (pNode) {

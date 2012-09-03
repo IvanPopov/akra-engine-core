@@ -262,7 +262,6 @@ RenderableObject.prototype.startRender = function () {
     if (!this._pActiveSnapshot) {
         return false;
     }
-    this._pEngine.shaderManager().activateRenderObject(this);
     return this._pActiveSnapshot.begin();
 };
 /**
@@ -272,7 +271,6 @@ RenderableObject.prototype.finishRender = function () {
     if (!this._pActiveSnapshot) {
         return false;
     }
-    this._pEngine.shaderManager().deactivateRenderObject();
     return this._pActiveSnapshot.end();
 };
 
