@@ -17,6 +17,7 @@ function AnimationContainer (pAnimation) {
 	this._bReverse = false;
 	//время, определяющее кадр анимации, в случае, если она находится в паузе.
 	this._fTime = 0;
+	this._bPause = false;
 
 	//определена ли анимация до первого и после последнего кадров
 	this._bLeftInfinity = true;
@@ -116,11 +117,28 @@ AnimationContainer.prototype.isReversed = function() {
 	return this._bReverse;
 };
 
+AnimationContainer.prototype.pause = function (bValue, fTime) {
+    'use strict';
+    
+	this.time(fTime);
+	this._bPause = bValue;
+};
+
+AnimationContainer.prototype.isPaused = function () {
+    'use strict';
+    
+	return this._bPause;
+};
+
 AnimationContainer.prototype.time = function (fTime) {
     'use strict';
    
 	if (!this._bEnable) {
     	return null;
+    }
+
+    if (this._bPause) {
+    	return this._fTime;
     }
 
     fTime = (fTime - this._fStartTime) * this._fSpeed;
@@ -132,7 +150,7 @@ AnimationContainer.prototype.time = function (fTime) {
     	}
     }
 
-
+    this._fTime = fTime;
     return fTime;
 };
 

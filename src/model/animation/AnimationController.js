@@ -30,12 +30,60 @@ AnimationController.prototype.addAnimation = function(pAnimation) {
 		warning('Animation with name <' + pAnimation.name + '> already exists in this controller');
 		return false;
 	}
-
+	
 	this._pAnimations.push(pAnimation);
+	this._pActiveAnimation = pAnimation;
+};
+
+AnimationController.prototype.findAnimation = function () {
+    'use strict';
+    
+    var pAnimations = this._pAnimations;
+    var iAnimation;
+    var sAnimation;
+
+	if (typeof arguments[0] === 'string') {
+		sAnimation = arguments[0];
+
+		for (var i = 0; i < pAnimations.length; ++ i) { 
+			if (pAnimations[i].name === sAnimation) {
+				return pAnimations[i];
+			}
+		}
+
+		return null;
+	}
+
+	iAnimation = arguments[0];
+	return pAnimations[iAnimation] || null;
+};
+
+AnimationController.prototype.setAnimation = function (iAnimation, pAnimation) {
+    'use strict';
+    
+    debug_assert(iAnimation < this._pAnimations.length, 'invalid animation slot');
+
+	this._pAnimations[iAnimation] = pAnimation;
+};
+
+AnimationController.prototype.bind = function (pTarget) {
+    'use strict';
+    
+	var pAnimations = this._pAnimations;
+
+    for (var i = 0; i < pAnimations.length; ++ i) {
+        pAnimations[i].bind(pTarget);
+    }
 };
 
 AnimationController.prototype.play = function(iAnimation) {
 	this._pActiveAnimation = this.findAnimation(iAnimation);
+};
+
+AnimationController.prototype.apply = function (fTime) {
+    'use strict';
+    
+	this._pActiveAnimation.apply(fTime);
 };
 
 A_NAMESPACE(AnimationController);

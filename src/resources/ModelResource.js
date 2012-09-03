@@ -13,7 +13,7 @@ function ModelResource (pEngine) {
 
     
     this._pRootNodeList = [];
-    this._pAnimList = [];
+    this._pAnimController = new a.AnimationController(pEngine);
     this._pMeshList = [];
     this._pSkeletonList = [];
 
@@ -24,7 +24,7 @@ EXTENDS(ModelResource, a.ResourcePoolItem);
 
 PROPERTY(ModelResource, 'totalAnimations',
     function () {
-        return this._pAnimList.length;
+        return this._pAnimController.totalAnimations;
     });
 
 ModelResource.prototype.createResource = function () {
@@ -64,15 +64,20 @@ ModelResource.prototype.getAnimation = function (iAnim) {
 ModelResource.prototype.setAnimation = function (iAnim, pAnimation) {
     'use strict';
     
-    debug_assert(iAnim < this._pAnimList.length, 'invalid animation slot');
-    this._pAnimList[iAnim] = pAnimation;
+    this._pAnimController.setAnimation(iAnim, pAnimation);
 };
 
 ModelResource.prototype.addAnimation = function (pAnimation) {
     'use strict';
     //TODO: this method    
-    this._pAnimList.push(pAnimation);
+    this._pAnimController.addAnimation(pAnimation);
     this.setAlteredFlag(true);
+};
+
+ModelResource.prototype.getAnimationController = function () {
+    'use strict';
+    
+    return this._pAnimController;
 };
 
 ModelResource.prototype.addMesh = function (pMesh) {
@@ -102,15 +107,12 @@ ModelResource.prototype.addToScene = function () {
 
     var pNodes = this._pRootNodeList;
     var pRoot = this._pEngine.getRootNode();
-    var pAnimations = this._pAnimList;
 
     for (var i = 0; i < pNodes.length; ++ i) {
         pNodes[i].attachToParent(pRoot);
     }
 
-    for (var i = 0; i < pAnimations.length; ++ i) {
-        pAnimations[i].bind(pRoot);
-    }
+    this._pAnimController.bind(pRoot);
 };
 
 ModelResource.prototype.getRootNodes = function () {
@@ -161,6 +163,12 @@ ModelResource.prototype.loadAnimation = function (sFilename) {
             skeletons: this._pSkeletonList,
             animationWithPose: true
         });
+};
+
+ModelResource.prototype.update = function () {
+    'use strict';
+    
+    this._pAnimController.apply(this._pEngine.fTime);
 };
 
 A_NAMESPACE(ModelResource);
