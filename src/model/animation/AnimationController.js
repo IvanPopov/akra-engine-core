@@ -1,9 +1,10 @@
 function AnimationController (pEngine, eOptions) {
     'use strict';
 	
+    debug_assert(pEngine, 'engine must be.');
+
 	this._pEngine = pEngine;
     this._pAnimations = [];
-    this._pAnimationMap
     this._eOptions = 0;
     this._pActiveAnimation = null;
 

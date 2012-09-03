@@ -48,7 +48,7 @@ Define(ARRAY_LIMIT(POSITION, LIMIT), function () {
 });
 
 
-function BinReader (arrayBuffer) {
+function BinReader (arrayBuffer, pOptions) {
     this.arrayBuffer = arrayBuffer;
     this.arrayUint8Buffer = new Uint8Array(arrayBuffer);
     this.arrayBufferLength = (new Uint8Array(arrayBuffer)).length;
@@ -58,6 +58,11 @@ function BinReader (arrayBuffer) {
     this._pHashTable = null;
     this._pTemplate = a.binaryTemplate;
     this._pPositions = [];
+    this._pOptions = null;
+
+    if (pOptions) {
+        this.setOptions(pOptions);
+    }
 }
 
 PROPERTY(BinReader, 'template',
@@ -67,6 +72,18 @@ PROPERTY(BinReader, 'template',
     function (pTemplate) {
         this._pTemplate = pTemplate;
     });
+
+PROPERTY(BinReader, 'options',
+    function () {
+        return this._pOptions;
+    });
+
+BinReader.prototype.setOptions = function (pOptions) {
+    'use strict';
+    
+    this._pOptions = pOptions;
+};
+
 
 BinReader.prototype.pushPosition = function (iPosition) {
     'use strict';
@@ -492,6 +509,7 @@ BinReader.prototype.readPtr = function (iAddr, sType, pObject) {
     var pProperties;
     var pBaseClasses = null;
     var pMembers = null;
+    var pType;
 
     if (pTmp) {
         return pTmp;
@@ -531,7 +549,7 @@ BinReader.prototype.readPtr = function (iAddr, sType, pObject) {
             eval('pObject = new ' + (pCtor || sType) + ';');   
         }
         else {
-            pObject = pCtor();
+            pObject = pCtor.call(this);
         }
     }
 
@@ -550,11 +568,15 @@ BinReader.prototype.readPtr = function (iAddr, sType, pObject) {
 
     if (pMembers) {
          for (var sName in pMembers) {
-            if (typeof pMembers[sName] === 'string') {
-
+            if (pMembers[sName] === null || 
+                typeof pMembers[sName] === 'string' ||
+                typeof pMembers[sName].read === 'string') {
                 pObject[sName] = this.read();
                 continue;
             }
+
+
+            pObject[sName] = pMembers[sName].read.call(this);
         }
     }
 
@@ -608,11 +630,11 @@ BinReader.prototype.header = function (pData) {
     this.template = new a.BinTemplate(pData);
 };
 
-function undump (pBuffer) {
+function undump (pBuffer, pOptions) {
     if (!pBuffer) {
         return null;
     }
-    var pReader = new a.BinReader(pBuffer);
+    var pReader = new a.BinReader(pBuffer, pOptions);
 
     return pReader.read();
 }

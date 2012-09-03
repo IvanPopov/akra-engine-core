@@ -32,7 +32,8 @@ A_FORMAT({
 			'Joint'			: null, 
 			'Node'			: null, 
 			'SceneModel'	: null, 
-			'SceneObject'	: null
+			'SceneObject'	: null,
+			'SceneNode'		: null
 		}
 	},
 	'Animation': {
@@ -52,6 +53,8 @@ A_FORMAT({
 			'_pAnimation'	: null,
 			'_fDuration'	: 'Float',
 			'_bReverse'		: 'Boolean',
+			'_bPause'		: 'Boolean',
+
 		},
 
 		base		: ['AnimationBase'],
@@ -60,13 +63,29 @@ A_FORMAT({
 	'AnimationBlend': {
 		members: {
 			'_pAnimationList': 'Array',
-		},
-
+		}
+,
 		base		: ['AnimationBase'],
 		ctor	: 'a.AnimationBlend'
 	},
 	'AnimationSwitch': {
 		base		: ['AnimationBase'],
 		ctor	: 'a.AnimationSwitch'
+	},
+	'AnimationController': {
+		ctor: function () {
+			return new a.AnimationController(this.options['engine']);
+		},
+
+		members: {
+			'_pAnimations': {
+				read: function () {
+					return this.read();
+				},
+				write: 'Array'
+			},
+			'_eOptions': 'Int',
+			'_pActiveAnimation': null
+		}
 	}
 });

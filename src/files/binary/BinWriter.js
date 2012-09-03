@@ -99,6 +99,11 @@ PROPERTY(BinWriter, 'initialAddress',
         return this._iInitialAddr;
     });
 
+PROPERTY(BinWriter, 'options',
+    function () {
+        return this._pOptions;
+    });
+
 BinWriter.prototype.setOptions = function (pOptions) {
     'use strict';
     
@@ -989,14 +994,22 @@ BinWriter.prototype.blackList = function () {
     return this._pBlackList;
 };
 
-BinWriter.prototype.writeData = function(pObject, sType) {
+BinWriter.prototype.isInBlacklist = function (sType) {
+    'use strict';
+    
+    return this._pBlackList[sType] !== undefined;
+};
 
+BinWriter.prototype.writeData = function(pObject, sType) {
+    'use strict';
+    
     var pTemplate = this.template;
     var pProperties = pTemplate.properties(sType);
 
     var fnWriter = null;
     var pBaseClasses;
     var pBlackList;
+    var pMembers;
 
     this.pushBlackList(pProperties.blacklist);
 
@@ -1041,10 +1054,18 @@ BinWriter.prototype.writeData = function(pObject, sType) {
         //writing structure
         for (var sName in pMembers) {
             //writing complex type of structure member
-            if (typeof pMembers[sName] === 'string') {
+            if (pMembers[sName] === null || 
+                typeof pMembers[sName] === 'string') {
                 this.write(pObject[sName], pMembers[sName]);
                 continue;
             }
+            //trace(sType, pObject, pMembers, sName, pProperties);
+            if (typeof pMembers[sName].write === 'string') {
+                this.write(pObject[sName], pMembers[sName].write);
+                continue;
+            }
+
+            pMembers[sName].write.call(pObject[sName]);
         }
     }
     
@@ -1065,9 +1086,13 @@ BinWriter.prototype.write = function(pObject, sType, pHeader) {
         sType = pTemplate.detectType(pObject);
     }
 
-   
-    pProperties = pTemplate.properties(sType);
-    iType = pTemplate.getTypeId(sType);
+    if (!this.isInBlacklist(sType)) {    
+        pProperties = pTemplate.properties(sType);
+        iType = pTemplate.getTypeId(sType);
+    }
+    else {
+        pObject = null;
+    }
 
     if (pObject === null || pObject === undefined || iType === undefined) {
         this.nullPtr();
