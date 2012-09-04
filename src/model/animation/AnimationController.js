@@ -7,6 +7,7 @@ function AnimationController (pEngine, eOptions) {
     this._pAnimations = [];
     this._eOptions = 0;
     this._pActiveAnimation = null;
+    this._fnPlayAnimation = null;
 
 	if (eOptions) {
 		this.setOptions(eOptions);
@@ -17,6 +18,19 @@ PROPERTY(AnimationController, 'totalAnimations',
 	function () {
 		return this._pAnimations.length;
 	});
+
+PROPERTY(AnimationController, 'active',
+	function () {
+		return this._pActiveAnimation;
+	});
+
+AnimationController.prototype.on = function (eEvent, fn) {
+    'use strict';
+    
+	if (eEvent === 'play') {
+		this._fnPlayAnimation = fn;
+	}
+};
 
 AnimationController.prototype.getEngine = function() {
 	return this._pEngine;
@@ -104,8 +118,13 @@ AnimationController.prototype.bind = function (pTarget) {
 AnimationController.prototype.play = function() {
 	var pAnimation = this.findAnimation(arguments[0]);
 
-	if (pAnimation) {
+	if (pAnimation && pAnimation !== this._pActiveAnimation) {
+		if (this._fnPlayAnimation) {
+			this._fnPlayAnimation(pAnimation);
+		}
+
 		this._pActiveAnimation = pAnimation;
+		
 		return true;
 	}
 

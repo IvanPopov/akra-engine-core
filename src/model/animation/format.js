@@ -24,6 +24,8 @@ A_FORMAT({
 			'_pTargetList'	: 'Array',
 			'_fDuration'	: 'Float',
 			'_sName'		: 'String',
+			//extra data in animation
+			'extra'			: 'Object'
 		},
 		//если в пределах этого класс, среди членов будут найдены
 		//указатели на запрещенные типы, то вместо сохранения, они 

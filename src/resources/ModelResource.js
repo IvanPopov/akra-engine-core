@@ -126,29 +126,44 @@ ModelResource.prototype.loadResource = function (sFilename, pOptions) {
     'use strict';
 
     var me = this;
+    var fnSuccess = function () {
+        me._nFilesToBeLoaded --;
+
+        if (me._nFilesToBeLoaded == 0) {
+            me.notifyLoaded();
+            me.notifyRestored();
+        }
+    };
+
+    me._nFilesToBeLoaded ++;
+    me.notifyDisabled();
+    trace('>> load animation >> ', sFilename);
     if (a.pathinfo(sFilename).ext.toLowerCase() === 'dae') {
-        
-        me._nFilesToBeLoaded ++;
- 
+    
         pOptions = pOptions || {drawJoints: false, wireframe: false};
         pOptions.file = sFilename;
         pOptions.modelResource = this;
 
-        pOptions.success = function () {
-            me._nFilesToBeLoaded --;
-
-            if (me._nFilesToBeLoaded == 0) {
-                me.notifyLoaded();
-                me.notifyRestored();
-            }
-        }
+        pOptions.success = fnSuccess;
         
-        me.notifyDisabled();
         a.COLLADA(this._pEngine, pOptions);
 
         return true;
     }
 
+    if (a.pathinfo(sFilename).ext.toLowerCase() === 'aac') {
+
+        a.fopen(sFilename, "rb").read(function(pData) {
+            trace('controller loaded >> ');
+            me._pAnimController = a.undump(pData, {engine: me.getEngine()});
+            fnSuccess();
+        });
+
+        return true;
+    }
+
+
+    fnSuccess();
     return false;
 }
 

@@ -1158,6 +1158,12 @@ BinWriter.prototype.header = function () {
 function dump (pObject, pOptions) {
     var pWriter = new a.BinWriter();
     
+    //FIXME: remove auto headering
+    pOptions = pOptions || {};
+    
+    if (pOptions) {
+        pOptions['header'] = true;
+    }   
 
     pWriter.setOptions(pOptions);
     pWriter.write(pObject, null, pWriter.header());

@@ -12,10 +12,6 @@ function AnimationBase () {
 	this._sName = ('animation-' + a.now() + '-' + a.sid());
 
 	this._pCallbacks = {};
-
-	this.on(a.Animation.EVT_ENTER_FRAME, null);
-	// this.on(a.Animation.EVT_START, null);
-	// this.on(a.Animation.EVT_END, null);
 }
 
 A_NAMESPACE(AnimationBase);
@@ -35,8 +31,31 @@ PROPERTY(AnimationBase, 'name',
 
 
 AnimationBase.prototype.on = function(eEvent, fnCallback) {
-	this._pCallbacks[eEvent] = fnCallback;
-	//trace(eEvent, '-->', fnCallback)
+	'use strict';
+	
+	if (!this._pCallbacks[eEvent]) {
+		this._pCallbacks[eEvent] = [];
+	}
+
+	this._pCallbacks[eEvent].push(fnCallback);
+};
+
+AnimationBase.prototype.fire = function (eEvent, fTime) {
+    'use strict';
+    
+	var pCallbacks = this._pCallbacks[eEvent];
+	if (pCallbacks) {
+		for (var i = 0, n = pCallbacks.length; i < n; i++) {
+			trace(pCallbacks[i]);
+			pCallbacks[i](fTime);
+		};
+	}
+};
+
+AnimationBase.prototype.delChangesNotifyRoutine = function (eEvent, fnCallback) {
+    'use strict';
+    //TODO:
+	TODO('delChangesNotifyRoutine');
 };
 
 AnimationBase.prototype.bind = function(pTarget) {
@@ -70,10 +89,7 @@ AnimationBase.prototype.apply = function (fTime) {
 		pTarget.accessLocalMatrix().set(pTransform);
 	};
 
-	var fnEnterFrame = this._pCallbacks[a.Animation.EVT_ENTER_FRAME];
-	if (fnEnterFrame) {
-		fnEnterFrame(fTime);
-	}
+	this.fire(a.Animation.EVT_ENTER_FRAME, fTime);
 };
 
 AnimationBase.prototype.addTarget = function (sName, pTarget) {

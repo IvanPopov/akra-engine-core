@@ -51,6 +51,12 @@ AnimationContainer.prototype.setAnimation = function (pAnimation) {
 	this.grab(pAnimation);
 };
 
+AnimationContainer.prototype.getAnimation = function () {
+    'use strict';
+    
+	return this._pAnimation;
+};
+
 AnimationContainer.prototype.enable = function () {
     'use strict';
     
