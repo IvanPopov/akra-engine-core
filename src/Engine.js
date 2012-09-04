@@ -363,16 +363,13 @@ Engine.prototype.renderScene = function () {
     //Получение всех объектов сцены, которые видны активной камере
     var pCamera = this._pActiveCamera;
     var pFirstMember = this._pSceneTree.buildSearchResults(pCamera.searchRect(), pCamera.frustum());
-
     //console.log(pFirstMember, this._pActiveCamera);
     /*console.log(pFirstMember, this._pActiveCamera.searchRect().fX0, this._pActiveCamera.searchRect().fX1,
                 this._pActiveCamera.searchRect().fY0, this._pActiveCamera.searchRect().fY1,
                 this._pActiveCamera.searchRect().fZ0, this._pActiveCamera.searchRect().fZ1)
     */
-
-    var pRealCameraList = pFirstMember;
     //Добавлено для отслеживания видимости узлов. aldore
-    this.renderList = pRealCameraList;
+    this.renderList = pFirstMember;
     //Подготовка всех объектов к рендерингу
     while (pFirstMember) {
         pFirstMember.prepareForRender();
@@ -448,7 +445,7 @@ Engine.prototype.renderScene = function () {
     drawShadow = false;
     this.setActiveCamera(this._pDefaultCamera);
     //рендеринг всех объектов
-    pFirstMember = pRealCameraList;
+    pFirstMember = this._pSceneTree.buildSearchResults(pCamera.searchRect(), pCamera.frustum());
     while (pFirstMember) {
         pFirstMember.render();
         pFirstMember = pFirstMember.nextSearchLink();

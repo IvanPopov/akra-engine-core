@@ -35,9 +35,8 @@ function Sprite(pEngine){
 	this._bGeometrySetted = false;
 	this._fnDraw = null; //пользовательская функция для отрисовки спрайта
 
-	this._isVisible = false; //отображать спрайт на экране или нет?
+	this._isVisible = true; //отображать спрайт на экране или нет?
 	this._pProgram = null;//временно здесь хранятся программы
-	this._v3fCenterPosition = new Vec3(0,0,0);
 }
 
 EXTENDS(Sprite, a.SceneObject, a.RenderableObject);
@@ -109,17 +108,6 @@ PROPERTY(Sprite,'visible',
 	}
 );
 
-PROPERTY(Sprite,'centerPosition',
-	function(){
-		'use strict';
-		return this._v3fCenterPosition;
-	},
-	function(v3fCenterPosition){
-		'use strict';
-		this._v3fCenterPosition = v3fCenterPosition;
-	}
-);
-
 Sprite.prototype.setProgram = function(pProgram) {
 	'use strict';
 	this._pProgram = pProgram;
@@ -137,10 +125,9 @@ Sprite.prototype.renderCallback = function() {
 	var pProgram = this._pProgram;
 	pProgram.activate();
 
-	pProgram.applyVector3('CENTER_POSITION',this._v3fCenterPosition);
-
 	this._fnDraw(pProgram);
 	this._pRenderData.draw();
+
 };
 
 A_NAMESPACE(Sprite);
