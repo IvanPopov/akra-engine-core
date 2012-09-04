@@ -36,8 +36,8 @@ function MegaTexture (pEngine,pObject,sSurfaceTextures)
 
 	//Всякие темповые буферы
 	this._pDataFor=new Uint8Array(this._iBufferWidth*this._iBufferHeight*a.getIFormatNumElements(this._eTextureType));
-	this._pMapDataFor=new Uint8Array(this._iBufferHeight*this._iBufferWidth/(this._iBlockSize*this._iBlockSize));
-	this._pMapDataNULL=new Uint8Array(this._iBufferHeight*this._iBufferWidth/(this._iBlockSize*this._iBlockSize));
+	this._pMapDataFor=new Uint32Array(this._iBufferHeight*this._iBufferWidth/(this._iBlockSize*this._iBlockSize));
+	this._pMapDataNULL=new Uint32Array(this._iBufferHeight*this._iBufferWidth/(this._iBlockSize*this._iBlockSize));
 	for(var i=0;i<this._pMapDataNULL.length;i++)
 	{
 		this._pMapDataNULL[i]=0;
@@ -57,10 +57,10 @@ function MegaTexture (pEngine,pObject,sSurfaceTextures)
 		else
 		{
 			this._pBuffer[i]=new Uint8Array(this._iBufferHeight*this._iBufferWidth*a.getIFormatNumElements(this._eTextureType));
-			this._pBufferMap[i]=new Uint8Array(this._iBufferHeight*this._iBufferWidth/(this._iBlockSize*this._iBlockSize));
+			this._pBufferMap[i]=new Uint32Array(this._iBufferHeight*this._iBufferWidth/(this._iBlockSize*this._iBlockSize));
 			this.setBufferMapNULL(this._pBufferMap[i]);
 		}
-		this._pXY[i]={iX:0,iY:0,isUpdated:true};//Координты буфера в основной текстуре, для простыты должны быть кратну размеру блока
+		this._pXY[i]={iX:0,iY:0,isUpdated:true,isLoaded:false};//Координты буфера в основной текстуре, для простыты должны быть кратну размеру блока
 	}
 
 	this._pRPC = new a.NET.RPC('ws://localhost');
@@ -201,6 +201,11 @@ MegaTexture.prototype.prepareForRender= function()
 		iHeight=this._iTextureHeight;
 		//На данный момент нужен кусок текстуры таких размеров iX1,iY1,iWidth,iHeight,
 
+		var iAreaX1=iX;
+		var iAreaY1=iY;
+		var iAreaX2=iX+iWidth;
+		var iAreaY2=iY+iHeight;
+
 		//console.log("Запрос частей текстур на скачивание");
 		//console.log(iX1,this._pXY[i].iX);
 		//console.log(iY1,this._pXY[i].iY);
@@ -215,20 +220,22 @@ MegaTexture.prototype.prepareForRender= function()
 			//Типа попали
 			//Значит нужно загрузить необходимые куски
 			//Обрезаемся чтобы не вылезти за пределы
+
 			iX-=this._iBlockSize*8;
 			iY-=this._iBlockSize*8;
 			iWidth +=this._iBlockSize*16;
 			iHeight+=this._iBlockSize*16;
 			iX1=Math.clamp(iX,0,this.getWidthOrig(i));
-			iY1=Math.clamp(iY,0,this.getWidthOrig(i));
+			iY1=Math.clamp(iY,0,this.getHeightOrig(i));
 			iX2=Math.clamp(iX+iWidth,0,this.getWidthOrig(i));
 			iY2=Math.clamp(iY+iHeight,0,this.getHeightOrig(i));
 
-			if(i==2)
-			{
-				//console.log("Запрсо на загрузку",i,iX1,iY1,iX2,iY2);
-			}
-			this.getDataFromServer(i,iX1,iY1,iX2-iX1,iY2-iY1);
+			var iAreaX1=Math.clamp(iAreaX1,0,this.getWidthOrig(i));
+			var iAreaY1=Math.clamp(iAreaY1,0,this.getHeightOrig(i));
+			var iAreaX2=Math.clamp(iAreaX2,0,this.getWidthOrig(i));
+			var iAreaY2=Math.clamp(iAreaY2,0,this.getHeightOrig(i));
+
+			this.getDataFromServer(i,iX1,iY1,iX2-iX1,iY2-iY1,/*Остальные область проверки*/iAreaX1,iAreaY1,iAreaX2-iAreaX1,iAreaY2-iAreaY1);
 		}
 		else
 		{
@@ -257,7 +264,7 @@ MegaTexture.prototype.prepareForRender= function()
 		}
 		else
 		{
-			if(this._pXY[i].isUpdated==true||statics.fTexCourdXOld!=fTexCourdX||statics.fTexCourdYOld!=fTexCourdY)
+			if(this._pXY[i].isLoaded==true&&(this._pXY[i].isUpdated==true||statics.fTexCourdXOld!=fTexCourdX||statics.fTexCourdYOld!=fTexCourdY))
 			{
 				iTexInBufX=Math.round(fTexCourdX*this.getWidthOrig(i)-this._iTextureWidth /2);
 				iTexInBufY=Math.round(fTexCourdY*this.getHeightOrig(i)-this._iTextureHeight/2);
@@ -270,10 +277,10 @@ MegaTexture.prototype.prepareForRender= function()
 							this._iTextureWidth,this._iTextureHeight,a.getIFormatNumElements(this._eTextureType));
 				this._pTexures[i].setPixelRGBA(0,0,this._iTextureWidth,this._iTextureHeight,this._pDataFor);
 
-				/*var c2d=document.getElementById('canvas1_'+i).getContext("2d");
+				var c2d=document.getElementById('canvas1_'+i).getContext("2d");
 				var pData=c2d.getImageData(0,0,128,128);
-				console.log("!!!");
-				console.log(pData);
+				//console.log("!!!");
+				//console.log(pData);
 				//console.log(pData.data.length,this._pBuffer[i][0],this._pBuffer[i][1],this._pBuffer[i][2]);
 				for(var p=0,p1=0;p<pData.data.length;p+=4,p1+=3*8)
 				{
@@ -285,13 +292,13 @@ MegaTexture.prototype.prepareForRender= function()
 						p1+=3*(1024*(8-1))
 
 				}
-				c2d.putImageData(pData, 0, 0);*/
+				c2d.putImageData(pData, 0, 0);
 			}
 		}
 		this._pXY[i].isUpdated=false;
 	}
 
-	/*
+
 	if(((statics.nCountRender++)%11)==0)
 	{
 		for(var i=1;i<this._pTexures.length;i++)
@@ -324,9 +331,9 @@ MegaTexture.prototype.prepareForRender= function()
 			//console.log(pData.data.length,this._pBuffer[i][0],this._pBuffer[i][1],this._pBuffer[i][2]);
 			for(var p=0,p1=0;p<pData.data.length;p+=4,p1+=3*16)
 			{
-				pData.data[p+0]=this._pBuffer2[i][p1+0];
-				pData.data[p+1]=this._pBuffer2[i][p1+1];
-				pData.data[p+2]=this._pBuffer2[i][p1+2];
+				pData.data[p+0]=this._pDataFor[p1+0];
+				pData.data[p+1]=this._pDataFor[p1+1];
+				pData.data[p+2]=this._pDataFor[p1+2];
 				pData.data[p+3]=255;
 				if(p1%(2048*3)==0&&p1!=0)
 					p1+=3*(2048*(16-1))
@@ -347,9 +354,9 @@ MegaTexture.prototype.prepareForRender= function()
 			//console.log(pData.data.length,this._pBuffer[i][0],this._pBuffer[i][1],this._pBuffer[i][2]);
 			for(var p=0,p1=0;p<pData.data.length;p+=4,p1+=1)
 			{
-				pData.data[p+0]=this._pBufferMap[i][p1]*255;
-				pData.data[p+1]=this._pBufferMap[i][p1]*255;
-				pData.data[p+2]=this._pBufferMap[i][p1]*255;
+				pData.data[p+0]=(this._pBufferMap[i][p1]/0xFFFFFFFF)*255;
+				pData.data[p+1]=(this._pBufferMap[i][p1]/0xFFFFFFFF)*255;
+				pData.data[p+2]=(this._pBufferMap[i][p1]/0xFFFFFFFF)*255;
 				pData.data[p+3]=255;
 			}
 			c2d.putImageData(pData, 0, 0);
@@ -363,8 +370,7 @@ MegaTexture.prototype.prepareForRender= function()
 
 
 		}
-	}*/
-
+	}
 	statics.fTexCourdXOld=fTexCourdX;
 	statics.fTexCourdYOld=fTexCourdY;
 }
@@ -378,6 +384,7 @@ MegaTexture.prototype.applyForRender= function()
 	{
 		this._pTexures[i].activate(2+i);
 		this._pEngine.pDrawTerrainProgram.applyInt('textureTerrain'+i,2+i);
+		this._pEngine.pDrawTerrainProgram.applyInt('textureTerrainIsLoaded'+i,this._pXY[i].isLoaded);
 	}
 }
 
@@ -445,7 +452,24 @@ MegaTexture.prototype.setDataT=function (pBuffer,iX,iY,iWidth,iHeight,pBufferIn,
 	{
 		iStartIn=((iInY+i)*iInWidth+iInX)*iComponents;
 		iStartOut=((iY+i)*iWidth+iX)*iComponents;
-		pBuffer.set(new Uint8Array(pBufferIn.buffer.slice(iStartIn,iStartIn+iLenStr)),iStartOut);
+
+		if(pBufferIn.BYTES_PER_ELEMENT==8)
+		{
+			pBuffer.set(new Float64Array(pBufferIn.buffer.slice(iStartIn*8,(iStartIn+iLenStr)*8)),iStartOut);
+		}
+		else if(pBufferIn.BYTES_PER_ELEMENT==4)
+		{
+			pBuffer.set(new Uint32Array(pBufferIn.buffer.slice(iStartIn*4,(iStartIn+iLenStr)*4)),iStartOut);
+		}
+		else if(pBufferIn.BYTES_PER_ELEMENT==2)
+		{
+			pBuffer.set(new Uint16Array(pBufferIn.buffer.slice(iStartIn*2,(iStartIn+iLenStr)*2)),iStartOut);
+		}
+		else
+		{
+			pBuffer.set(new Uint8Array(pBufferIn.buffer.slice(iStartIn,iStartIn+iLenStr)),iStartOut);
+		}
+
 	}
 };
 
@@ -580,7 +604,7 @@ MegaTexture.prototype.getHeightOrig=function(iLevel)
 }
 
 
-MegaTexture.prototype.getDataFromServer=function(iLevelTex,iOrigTexX,iOrigTexY,iWidth,iHeight)
+MegaTexture.prototype.getDataFromServer=function(iLevelTex,iOrigTexX,iOrigTexY,iWidth,iHeight,iAreaX,iAreaY,iAreaWidth,iAreaHeight)
 {
 	//trace("getDataFromServer");
 
@@ -593,13 +617,22 @@ MegaTexture.prototype.getDataFromServer=function(iLevelTex,iOrigTexX,iOrigTexY,i
 	iOrigTexEndX=Math.min(iOrigTexEndX,this.getWidthOrig(iLevelTex));
 	iOrigTexEndY=Math.min(iOrigTexEndY,this.getHeightOrig(iLevelTex));
 
+	var iAreaEndX=iAreaX+iAreaWidth;
+	var iAreaEndY=iAreaY+iAreaHeight;
+	iAreaX=Math.max(0,iAreaX);
+	iAreaY=Math.max(0,iAreaY);
+	iAreaEndX=Math.min(iAreaEndX,this.getWidthOrig(iLevelTex));
+	iAreaEndY=Math.min(iAreaEndY,this.getHeightOrig(iLevelTex));
+	var isLoaded=true;
 
 	//trace("Кординаты внутри оригинальной текстуре",iOrigTexX,iOrigTexY,iOrigTexEndX,iOrigTexEndY,iLevelTex);
 	var me=this;
-	if(iLevelTex==2)
-	{
-		//trace(iOrigTexX,iOrigTexY,iOrigTexEndX,iOrigTexEndY,"(",me._pXY[iLevelTex].iX,me._pXY[iLevelTex].iY,")");
-	}
+	var tCurrentTime=(me._pEngine.fTime*1000)>>>0;
+//	if(iLevelTex==2)
+//	{
+//		trace(iOrigTexX,iOrigTexY,iOrigTexEndX,iOrigTexEndY,"(",me._pXY[iLevelTex].iX,me._pXY[iLevelTex].iY,")");
+//	}
+
 
 	for(var i=iOrigTexY;i<iOrigTexEndY;i+=this._iBlockSize)
 	{
@@ -614,16 +647,29 @@ MegaTexture.prototype.getDataFromServer=function(iLevelTex,iOrigTexX,iOrigTexY,i
 			{
 
 
-				if(me._pBufferMap[iLevelTex][(i-me._pXY[iLevelTex].iY)/me._iBlockSize*(me._iBufferWidth/me._iBlockSize)+(j-me._pXY[iLevelTex].iX)/me._iBlockSize]==1)
+/*				if(me._pBufferMap[iLevelTex][(i-me._pXY[iLevelTex].iY)/me._iBlockSize*(me._iBufferWidth/me._iBlockSize)+(j-me._pXY[iLevelTex].iX)/me._iBlockSize]==0xFFFFFFFF)
 				{
 					if(iLevelTex==2&&i==0)
 					{
 						//console.log("!!");
 					}
-					break;
+					continue;
 				}
-				//trace("Кусок еще не загружен",iLevelTex,j,i,32,32);
-				me._pBufferMap[iLevelTex]   [(i-me._pXY[iLevelTex].iY)/me._iBlockSize*(me._iBufferWidth/me._iBlockSize)+(j-me._pXY[iLevelTex].iX)/me._iBlockSize]=1;
+
+				//trace("Кусок еще не загружен",iLevelTex,j,i,32,32);*/
+
+				//Проверка на выставление флага о полной загруженности вилимой области
+				if(j>=iAreaX&&j<iAreaEndX&&i>=iAreaY&&i<iAreaEndY&&me._pBufferMap[iLevelTex][(i-me._pXY[iLevelTex].iY)/me._iBlockSize*(me._iBufferWidth/me._iBlockSize)+(j-me._pXY[iLevelTex].iX)/me._iBlockSize]!=0xFFFFFFFF)
+				{
+					isLoaded=false;
+					continue;
+				}
+				if(tCurrentTime-me._pBufferMap[iLevelTex][(i-me._pXY[iLevelTex].iY)/me._iBlockSize*(me._iBufferWidth/me._iBlockSize)+(j-me._pXY[iLevelTex].iX)/me._iBlockSize]<5000)
+				{
+					continue;
+				}
+
+				me._pBufferMap[iLevelTex][(i-me._pXY[iLevelTex].iY)/me._iBlockSize*(me._iBufferWidth/me._iBlockSize)+(j-me._pXY[iLevelTex].iX)/me._iBlockSize]=tCurrentTime;
 			}
 
 			(function(iLev,iX,iY)
@@ -649,7 +695,7 @@ MegaTexture.prototype.getDataFromServer=function(iLevelTex,iOrigTexX,iOrigTexY,i
 								//console.log(me._pBuffer[iLevelTex].length,iX-me._pXY[iLevelTex].iX,iY-me._pXY[iLevelTex].iY);
 								var iXBuf;
 								var iYBuf;
-								if(iLevelTex==0)
+								if(iLev==0)
 								{
 									//console.log("Подгрузился кусок для текстуры уровня 0. С координатами",iX,iY);
 
@@ -677,8 +723,8 @@ MegaTexture.prototype.getDataFromServer=function(iLevelTex,iOrigTexX,iOrigTexY,i
 									{
 										return;
 									}
+									me._pBufferMap[iLev][iYBuf/me._iBlockSize*(me._iBufferWidth/me._iBlockSize)+iXBuf/me._iBlockSize]=0xFFFFFFFF;
 								}
-
 
 								me._setDataFromBlock(me._pBuffer[iLev],iXBuf,iYBuf,pData8);
 
@@ -691,6 +737,7 @@ MegaTexture.prototype.getDataFromServer=function(iLevelTex,iOrigTexX,iOrigTexY,i
 
 		}
 	}
+	me._pXY[iLevelTex].isLoaded=isLoaded;
 }
 
 a.MegaTexture=MegaTexture;
