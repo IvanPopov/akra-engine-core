@@ -213,7 +213,7 @@ function DisplayManager(pEngine) {
     // device-bound resources
     this._pFontTexture = null;
 
-    this._renderQueue = new a.RenderQueue(pEngine);
+//    this._renderQueue = new a.RenderQueue(pEngine);
 
     this._pTextDiv = null;
 
@@ -317,6 +317,7 @@ DisplayManager.prototype.initialize = function () {
     this._pDevice.clearStencil(0.);
     this._pDevice.clearDepth(1.0);
 
+//    this._renderQueue.init();
     this.registerDeviceResources();
     this.initText2Dlayer();
     return true;
@@ -545,7 +546,6 @@ DisplayManager.prototype.beginRenderSession = function () {
     }
 
     this.setDefaultRenderStates();
-    this._renderQueue.reset();
 
     return true;
 };
@@ -757,28 +757,28 @@ a.TLVertex = TLVertex;
  }
  };*/
 
-/**
- * get free element from render queue
- * @treturn RenderEntry
- */
-DisplayManager.prototype.openRenderQueue = function () {
-    return this._renderQueue.lockRenderEntry();
-};
-
-/**
- * put pEntry in render queue
- * @tparam RenderEntry pEntry
- */
-DisplayManager.prototype.closeRenderQueue = function (pEntry) {
-    this._renderQueue.unlockRenderEntry(pEntry);
-};
-
-/**
- * process render queue
- */
-DisplayManager.prototype.processRenderQueue = function () {
-    this._renderQueue.execute();
-};
+///**
+// * get free element from render queue
+// * @treturn RenderEntry
+// */
+//DisplayManager.prototype.openRenderQueue = function () {
+//    return this._renderQueue.lockRenderEntry();
+//};
+//
+///**
+// * put pEntry in render queue
+// * @tparam RenderEntry pEntry
+// */
+//DisplayManager.prototype.closeRenderQueue = function (pEntry) {
+//    this._renderQueue.unlockRenderEntry(pEntry);
+//};
+//
+///**
+// * process render queue
+// */
+//DisplayManager.prototype.processRenderQueue = function () {
+//    this._renderQueue.execute();
+//};
 
 /**
  * TODO: checkResourceFormatSupport

@@ -130,6 +130,7 @@ function Renderer(pEngine) {
         this._pFrameBufferCounters[i] = 0;
     }
     this._pSystemUniforms = null;
+    this._pRenderQueue = new a.RenderQueue(pEngine);
     this._initSystemUniforms();
 }
 
@@ -825,22 +826,24 @@ Renderer.prototype.finishPass = function (iPass) {
     if (this._pRenderState.iFrameBuffer !== null) {
         this._pFrameBufferCounters[this._pRenderState.iFrameBuffer]--;
     }
+
+    var pEntry = this._pRenderQueue.getEmptyEntry();
+    pEntry.set(pProgram,
+               pAttrs,
+               pUniformValues,
+               pTextures,
+               pCurrentState.pIndex,
+               pCurrentState.iOffset,
+               pCurrentState.iLength,
+               pCurrentState.eDrawPrimitive,
+               pCurrentState.pViewport.x,
+               pCurrentState.pViewport.y,
+               pCurrentState.pViewport.width,
+               pCurrentState.pViewport.height,
+               this._pRenderState.iFrameBuffer);
+    this._pRenderQueue.addSortEntry(pEntry);
     trace("Render Pass #" + iPass + " finish!");
-    return {
-        "pProgram"        : pProgram,
-        "pAttributes"     : pAttrs,
-        "pUniforms"       : pUniformValues,
-        "pTextures"       : pTextures,
-        "pIndexData"      : pCurrentState.pIndex,
-        "iOffset"         : pCurrentState.iOffset,
-        "iLength"         : pCurrentState.iLength,
-        "eDrawPrim"       : pCurrentState.eDrawPrimitive,
-        "iViewportX"      : pCurrentState.pViewport.x,
-        "iViewportY"      : pCurrentState.pViewport.y,
-        "iViewportWidth"  : pCurrentState.pViewport.width,
-        "iViewportHeight" : pCurrentState.pViewport.height,
-        "iFrameBuffer"    : this._pRenderState.iFrameBuffer
-    };
+    return pEntry;
 };
 Renderer.prototype._registerProgram = function (sHash, pProgram) {
     if (this._pPrograms[sHash]) {
@@ -1306,10 +1309,14 @@ Renderer.prototype.render = function (pEntry) {
         this._tryReleaseFrameBuffer(pEntry.iFrameBuffer);
     }
 //    pProgram.clear();
+    this._pRenderQueue._releaseEntry(pEntry);
     trace("-------STOP REAL RENDER---------");
 };
 Renderer.prototype._setViewport = function (x, y, width, height) {
     this.pDevice.viewport(x, y, width, height);
+};
+Renderer.prototype.processRenderQueue = function(){
+    this._pRenderQueue.execute();
 };
 
 //----Render resources----//
@@ -1401,6 +1408,7 @@ Renderer.prototype._occupyStream = function (iStream, pProgram) {
  * @treturn Boolean
  */
 Renderer.prototype.initialize = function () {
+    this._pRenderQueue.init();
     return true;
 };
 

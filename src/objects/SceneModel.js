@@ -403,6 +403,7 @@ SceneModel.prototype.render = function () {
         return false;
     }
     pRenderer.activateSceneObject(this);
+    pRenderer.setViewport(0, 0, this._pEngine.pCanvas.width, this._pEngine.pCanvas.height);
     for (i = 0; i < pMeshes.length; i++) {
         pMesh = pMeshes[i];
         if (!pMesh || !pMesh.isReadyForRender()) {
@@ -411,11 +412,11 @@ SceneModel.prototype.render = function () {
         for (j = 0; j < pMesh.length; j++) {
             pSubMesh = pMesh[j];
             pSubMesh.startRender();
-            for (k = 0; k < this.totalPasses(); k++) {
+            for (k = 0; k < pSubMesh.totalPasses(); k++) {
                 pSubMesh.activatePass(i);
                 pSubMesh.applySurfaceMaterial();
                 pSubMesh.applyRenderData(pSubMesh.data);
-                pSubMesh.renderPass();
+                trace("SceneModel.prototype.render",pSubMesh.renderPass().pUniforms);
                 pSubMesh.deactivatePass();
             }
             pSubMesh.finishRender();

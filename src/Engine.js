@@ -174,11 +174,7 @@ Engine.prototype.pause.iAppPausedCount = 0;
  **/
 Engine.prototype.notifyOneTimeSceneInit = function () {
     //Инициализируется дисплей менеджер
-    if (this.pDisplayManager.initialize()) {
-        return true;
-    }
-
-    if (this.pShaderManager.initialize()) {
+    if (this.pDisplayManager.initialize() && this.pShaderManager.initialize()) {
         return true;
     }
 
@@ -550,7 +546,7 @@ Engine.prototype.render = function () {
         // render the scene
         this.renderScene();
         // process the contents of the render queue
-        this.pDisplayManager.processRenderQueue();
+        this.pShaderManager.processRenderQueue();
         this.pDisplayManager.endRenderSession();
     }
     return true;

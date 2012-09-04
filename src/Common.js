@@ -106,7 +106,7 @@ Define(EXTENDS(__ARGS__), function () {a.extend(__ARGS__)});
  * @treturn Object Копия объекта.
  */
 a.clone = function (pObject) {
-    if (pObject == null || typeof(obj) != 'object') {
+    if (pObject == null || typeof(pObj) != 'object') {
         return pObject;
     }
 
@@ -427,11 +427,11 @@ Define(safe_release(p), function () {
 //return(0);
 });
 
-Define(PROPERTY(obj, property, getter, setter), function () { a.defineProperty(obj, property, getter, setter); });
-Define(PROPERTY(obj, property, getter), function () { a.defineProperty(obj, property, getter); });
-Define(PROPERTY(obj, property), function () {});
-Define(GETTER(obj, property, getter), function () {PROPERTY(obj, property, getter);});
-Define(SETTER(obj, property, setter), function () {PROPERTY(obj, property, undefined, setter);});
+Define(PROPERTY(pObj, property, getter, setter), function () { a.defineProperty(pObj, property, getter, setter); });
+Define(PROPERTY(pObj, property, getter), function () { a.defineProperty(pObj, property, getter); });
+Define(PROPERTY(pObj, property), function () {});
+Define(GETTER(pObj, property, getter), function () {PROPERTY(pObj, property, getter);});
+Define(SETTER(pObj, property, setter), function () {PROPERTY(pObj, property, undefined, setter);});
 
 a.defineProperty = function (pObj, sProperty, fnGetter, fnSetter) {
     if (!fnGetter && !fnSetter) return;
@@ -447,12 +447,12 @@ a.defineProperty = function (pObj, sProperty, fnGetter, fnSetter) {
     });
 };
 
-Define(DISMETHOD(obj, method), function () {
-    obj.prototype.method = undefined;
+Define(DISMETHOD(pObj, method), function () {
+    pObj.prototype.method = undefined;
 });
 
-Define(DISPROPERTY(obj, $$property), function () {
-    PROPERTY(obj, property, undefined, undefined);
+Define(DISPROPERTY(pObj, $$property), function () {
+    PROPERTY(pObj, property, undefined, undefined);
 });
 
 Define(A_CLASS(args), function () { var _pCtorValue = __FUNC__.ctor.apply(this, args); if (_pCtorValue) return _pCtorValue; });
@@ -464,12 +464,12 @@ Define(parent(), function () { this.constructor.superclass; }, true);
 Define(parent.__(__ARGS__), function () { parent.__.call(this, __ARGS__); }, true);
 Define(parent.get.__, LOOKUPGETTER(parent, __), true);
 Define(parent.set.__, LOOKUPSETTER(parent, __), true);
-Define(parent($$obj), function () {this.constructor.superclasses[obj]}, true);
+Define(parent($$obj), function () {this.constructor.superclasses[pObj]}, true);
 
 
 
-Define(LOOKUPGETTER(obj, $$getter), function () { obj.__lookupGetter__(getter).apply(this) });
-Define(LOOKUPSETTER(obj, $$setter), function () { obj.__lookupSetter__(setter).apply(this) });
+Define(LOOKUPGETTER(pObj, $$getter), function () { pObj.__lookupGetter__(getter).apply(this) });
+Define(LOOKUPSETTER(pObj, $$setter), function () { pObj.__lookupSetter__(setter).apply(this) });
 
 Define(statics.__, this.constructor.__);
 Define(STATIC(name, value), function () {

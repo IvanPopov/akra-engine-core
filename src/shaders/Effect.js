@@ -3073,6 +3073,7 @@ function Effect(pManager, id) {
         "string"       : new EffectType("string", "string", true, 1),
         "texture"      : new EffectType("texture", "texture", true, 1),
         "sampler"      : new EffectType("sampler", "sampler2D", true, 1),
+        "sampler2D"    : new EffectType("sampler2D", "sampler2D", true, 1),
         "ptr"          : new EffectType("ptr", "float", true, 1),
         "video_buffer" : new EffectType("video_buffer", "sampler2D", true, 1)
     });

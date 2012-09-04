@@ -126,7 +126,7 @@ ModelResource.prototype.loadResource = function (sFilename) {
                 me._setup();
             });
             break;
-        case 'obj':
+        case 'pObj':
             a.loadMeshFromOBJ(pEngine, sFilename, a.MESH.MANAGED, function (pMesh) {
                 if (!pMesh) {
                     debug_error('mesh: ' + sFilename + ' not loaded.');

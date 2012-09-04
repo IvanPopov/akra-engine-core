@@ -37,6 +37,23 @@ RenderEntry.prototype.clear = function () {
     this.iFrameBuffer = null;
 };
 
+RenderEntry.prototype.set = function (pProgram, pAttrs, pUniformValues, pTextures, pIndex, iOffset, iLength,
+                                      eDrawPrimitive, iVeiwportX, iViewportY, iViewportWidth, iViewportHeight,
+                                      iFrameBuffer) {
+    this.pProgram = pProgram;
+    this.pAttributes = pAttrs;
+    this.pUniforms = pUniformValues;
+    this.pTextures = pTextures;
+    this.pIndexData = pIndex;
+    this.iOffset = iOffset;
+    this.iLength = iLength;
+    this.eDrawPrim = eDrawPrimitive;
+    this.iViewportX = iVeiwportX;
+    this.iViewportY = iViewportY;
+    this.iViewportWidth = iViewportWidth;
+    this.iViewportHeight = iViewportHeight;
+    this.iFrameBuffer = iFrameBuffer;
+};
 
 function RenderQueue(pEngine) {
     Enum([
@@ -78,9 +95,10 @@ RenderQueue.prototype.getEmptyEntry = function () {
     return pEntry;
 };
 
-RenderQueue.prototype.releaseEntry = function (pEntry) {
+RenderQueue.prototype._releaseEntry = function (pEntry) {
     pEntry.clear();
     this._pFreeEntrys[this._nCount - 1] = pEntry;
+    this._nSortCount--;
 };
 
 RenderQueue.prototype._addNewEntrys = function () {
@@ -97,19 +115,25 @@ RenderQueue.prototype._addNewEntrys = function () {
 RenderQueue.prototype.addSortEntry = function (pEntry) {
     var iIndex = this._nSortCount;
     var iLength = this._pSortEntrys.length;
-    if(iLength === iIndex){
+    if (iLength === iIndex) {
         this._addNewEntrys();
     }
     this._pSortEntrys[iIndex] = pEntry;
     this._nSortCount++;
 };
 
-RenderQueue.prototype.render = function () {
+RenderQueue.prototype.execute = function () {
     var i;
     var iLength = this._nSortCount;
     var pRenderer = this._pEngine.shaderManager();
     for (i = 0; i < iLength; i++) {
+        //trace(this._pSortEntrys[i], this._pSortEntrys, i)
         pRenderer.render(this._pSortEntrys[i]);
+//        this._releaseEntry(this._pSortEntrys[i]);
     }
+    this._nSortCount = 0;
+};
+
+RenderQueue.prototype.reset = function () {
     this._nSortCount = 0;
 };
