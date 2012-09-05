@@ -46,7 +46,7 @@ AnimationController.prototype.addAnimation = function(pAnimation) {
 		return false;
 	}
 
-	trace('animation controller :: add animation >> ', pAnimation.name);
+	//trace('animation controller :: add animation >> ', pAnimation.name);
 	
 	this._pAnimations.push(pAnimation);
 	this._pActiveAnimation = pAnimation;
@@ -133,8 +133,9 @@ AnimationController.prototype.play = function() {
 
 AnimationController.prototype.apply = function (fTime) {
     'use strict';
-    
-	this._pActiveAnimation.apply(fTime);
+    if (this._pActiveAnimation) {
+		this._pActiveAnimation.apply(fTime);
+	}
 };
 
 A_NAMESPACE(AnimationController);

@@ -664,6 +664,47 @@ Engine.prototype.finalCleanup = function () {
     return true;
 }
 
+Engine.prototype.bFullscreenLock = false;
+Engine.prototype.fullscreen = function () {
+    'use strict';
+
+    if (this.bFullscreenLock) {
+        return false;
+    }
+
+    try {
+        var pEngine = this;
+        var pCanvas = this.pCanvas;
+
+        Engine.prototype.bFullscreenLock = true;
+
+        (pCanvas.requestFullscreen || pCanvas.mozRequestFullScreen || pCanvas.webkitRequestFullscreen)();
+        
+        pCanvas.onfullscreenchange = pCanvas.onmozfullscreenchange = pCanvas.onwebkitfullscreenchange = 
+        function (e) {
+            if (pEngine.inFullscreenMode()) {
+                pCanvas.width = 1280;
+                pCanvas.height = 960;
+            }
+            else {
+                pCanvas.width = pEngine.iCreationWidth;
+                pCanvas.height = pEngine.iCreationHeight;
+            }
+
+            Engine.prototype.bFullscreenLock = false;
+        }
+    }
+    catch (e) {
+        warning('Fullscreen API not supported');
+        trace(e.message);
+    }
+};
+
+Engine.prototype.inFullscreenMode = function () {
+    'use strict';
+    
+    return !!(document.webkitFullscreenElement || document.mozFullScreenElement || document.fullscreenElement);
+};
 
 Engine.prototype.updateCamera = function (fLateralSpeed, fRotationSpeed, pTerrain, fGroundOffset, isForceUpdate) {
 

@@ -18,6 +18,7 @@ function ModelResource (pEngine) {
     this._pSkeletonList = [];
 
     this._nFilesToBeLoaded = 0;
+    this._pNode = null;
 }
 
 EXTENDS(ModelResource, a.ResourcePoolItem);
@@ -25,6 +26,11 @@ EXTENDS(ModelResource, a.ResourcePoolItem);
 PROPERTY(ModelResource, 'totalAnimations',
     function () {
         return this._pAnimController.totalAnimations;
+    });
+
+PROPERTY(ModelResource, 'node',
+    function () {
+        return this._pNode;
     });
 
 ModelResource.prototype.createResource = function () {
@@ -106,13 +112,17 @@ ModelResource.prototype.addToScene = function () {
     'use strict';
 
     var pNodes = this._pRootNodeList;
-    var pRoot = this._pEngine.getRootNode();
+    var pRoot = new a.SceneNode(this._pEngine);
+    pRoot.create();
+    pRoot.setInheritance(a.Scene.k_inheritAll);
+    pRoot.attachToParent(this._pEngine.getRootNode());
 
     for (var i = 0; i < pNodes.length; ++ i) {
         pNodes[i].attachToParent(pRoot);
     }
 
     this._pAnimController.bind(pRoot);
+    this._pNode = pRoot;
 };
 
 ModelResource.prototype.getRootNodes = function () {
@@ -137,7 +147,7 @@ ModelResource.prototype.loadResource = function (sFilename, pOptions) {
 
     me._nFilesToBeLoaded ++;
     me.notifyDisabled();
-    trace('>> load animation >> ', sFilename);
+    //trace('>> load animation >> ', sFilename);
     if (a.pathinfo(sFilename).ext.toLowerCase() === 'dae') {
     
         pOptions = pOptions || {drawJoints: false, wireframe: false};
@@ -154,7 +164,6 @@ ModelResource.prototype.loadResource = function (sFilename, pOptions) {
     if (a.pathinfo(sFilename).ext.toLowerCase() === 'aac') {
 
         a.fopen(sFilename, "rb").read(function(pData) {
-            trace('controller loaded >> ');
             me._pAnimController = a.undump(pData, {engine: me.getEngine()});
             fnSuccess();
         });

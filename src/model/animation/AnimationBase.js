@@ -46,7 +46,7 @@ AnimationBase.prototype.fire = function (eEvent, fTime) {
 	var pCallbacks = this._pCallbacks[eEvent];
 	if (pCallbacks) {
 		for (var i = 0, n = pCallbacks.length; i < n; i++) {
-			trace(pCallbacks[i]);
+			//trace(pCallbacks[i]);
 			pCallbacks[i](fTime);
 		};
 	}

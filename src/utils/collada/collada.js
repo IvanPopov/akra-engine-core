@@ -2341,7 +2341,7 @@ Ifdef (__DEBUG);
                 pEngine.pCubeMesh.clone(a.Mesh.GEOMETRY_ONLY|a.Mesh.SHARED_GEOMETRY),
                 pJointNode);
             pSceneNode.name = sJointName + '[joint]';
-            pSceneNode.setScale(0.1);
+            pSceneNode.setScale(0.02);
     }
 Endif ();
 

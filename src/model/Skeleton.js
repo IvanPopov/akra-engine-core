@@ -159,6 +159,7 @@ Skeleton.prototype.attachMesh = function (pMesh) {
     if (this._pMeshNode == null) {
     	this._pMeshNode = new a.SceneModel(this.getEngine());
     	this._pMeshNode.create();
+    	this._pMeshNode.setInheritance(a.Scene.k_inheritAll);
     	this._pMeshNode.attachToParent(this.root);
     }
 
