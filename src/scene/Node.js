@@ -129,6 +129,22 @@ Node.prototype.findNode = function (sNodeName) {
     return pNode;
 };
 
+Node.prototype.explore = function (fn) {
+    'use strict';
+    
+    if (fn.call(this) === false) {
+        return;
+    }
+
+    if (this._pSibling) {
+        this._pSibling.explore(fn);
+    }
+
+    if (this._pChild) {
+        this._pChild.explore(fn);
+    }
+};
+
 Node.prototype.childOf = function (pParent) {
     'use strict';
     

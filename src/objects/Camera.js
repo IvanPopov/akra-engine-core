@@ -21,6 +21,11 @@ function Camera () {
              k_ORTHO,
              k_OFFSET_ORTHO
          ], e_Type, a.Camera);
+
+    Enum([
+            CONST_ASPECT = 1
+        ], CAMERA_OPTIONS, a.Camera);
+
     /**
      * Type. Form enum e_Type
      * @type Int
@@ -139,6 +144,8 @@ function Camera () {
      * @type Frustum
      */
     this.pFrustum = new a.Frustum();
+
+    this.iCameraOptions = 0;
 }
 ;
 
@@ -162,6 +169,19 @@ Camera.prototype.create = function () {
     }
     return result;
 };
+
+Camera.prototype.setParameter = function (eOption, bValue) {
+    'use strict';
+    
+    SET_ALL(this.iCameraOptions, eOption, bValue); 
+};
+
+Camera.prototype.isConstantAspect = function () {
+    'use strict';
+    
+    return TEST_ANY(this.iCameraOptions, a.Camera.CONST_ASPECT);
+};
+
 /**
  * Set params
  * @tparam Float fFOV

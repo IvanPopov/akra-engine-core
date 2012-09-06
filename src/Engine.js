@@ -682,14 +682,27 @@ Engine.prototype.fullscreen = function () {
         
         pCanvas.onfullscreenchange = pCanvas.onmozfullscreenchange = pCanvas.onwebkitfullscreenchange = 
         function (e) {
+            var pScreen = a.info.screen;
             if (pEngine.inFullscreenMode()) {
-                pCanvas.width = 1280;
-                pCanvas.height = 960;
+                pCanvas.width = pScreen.width;
+                pCanvas.height = pScreen.height;
             }
             else {
                 pCanvas.width = pEngine.iCreationWidth;
                 pCanvas.height = pEngine.iCreationHeight;
             }
+
+            var pRoot = pEngine.getRootNode();
+            pRoot.explore(function () {
+                if (this instanceof a.Camera) {
+                    if (!this.isConstantAspect()) {
+                        this.setProjParams(
+                            this.fov(), pCanvas.width / pCanvas.height, 
+                            this.nearPlane(), this.farPlane());
+                        this.setUpdatedLocalMatrixFlag();
+                    }
+                }
+            })
 
             Engine.prototype.bFullscreenLock = false;
         }

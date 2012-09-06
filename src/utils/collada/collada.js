@@ -2397,14 +2397,19 @@ Endif ();
     function buildInititalPose (pNodes, pSkeleton) {
         var sPose = 'Pose-' + sBasename + '-' + pSkeleton.name;
         var pPose = new a.Animation(sPose);
-        var pJointList = pSkeleton.getJointList();
+        var pNodeList = pSkeleton.getNodeList();
+        var pNodeMap = {};
         var pTrack;
-       
+
+        for (var i = 0; i < pNodeList.length; ++ i) {
+            pNodeMap[pNodeList[i].name] = pNodeList[i];
+        }
+
         findNode(pNodes, null, function (pNode) {
             var sJoint = pNode.sid;
             var sNodeId = pNode.id;
 
-            if (!pJointList[sJoint]) {
+            if (!pNodeMap[sNodeId]) {
                 return;
             }
 
@@ -2472,7 +2477,7 @@ Endif ();
         var pAsset;
         var m4fRootTransform;
         var pSceneRoot;
-        var pSkeletons;
+        var pSkeletons, pSkeleton;
         var pPoses;
 
         var pSceneOutput = null;
@@ -2506,11 +2511,12 @@ Endif ();
         
         //дополним анимации начальными позициями костей
         if (useAnimation && bAnimationWithPose) {
-            pSkeletons = [];
+            pSkeletons = pPoseSkeletons || [];
 
             if (pMeshOutput) {
                 for (var i = 0; i < pMeshOutput.length; ++ i) {
-                    pSkeletons.push(pMeshOutput[i].skeleton);
+                    pSkeleton = pMeshOutput[i].skeleton;
+                    pSkeletons.push(pSkeleton);
                 }
             }
             else {
@@ -2519,7 +2525,8 @@ Endif ();
                 }
 
                 eachByTag(pXMLCollada, 'skeleton', function (pXML) {
-                    pSkeletons.push(buildSkeleton([stringData(pXML)]));
+                    pSkeleton = buildSkeleton([stringData(pXML)]);
+                    pSkeletons.push(pSkeleton);
                 });
             }
 

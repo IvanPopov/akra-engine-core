@@ -21,6 +21,7 @@ function Skeleton (pEngine, sName) {
 	
 	//перечень joint'ов по именам
 	this._pJointList = null;
+	this._pNodeList = null;
 
 	//все joint'ы у которых нет потомков и братьев
 	//нужны чтобы отслеживать изменения в скелете
@@ -35,6 +36,11 @@ function Skeleton (pEngine, sName) {
 PROPERTY(Skeleton, 'totalBones',
 	function () {
 		return Object.keys(this._pJointList).length;
+	});
+
+PROPERTY(Skeleton, 'totalNodes',
+	function () {
+		return this._pNodeList.length;
 	});
 
 PROPERTY(Skeleton, 'name',
@@ -68,8 +74,14 @@ Skeleton.prototype.getRootJoints = function () {
 };
 
 
-Skeleton.prototype.getJointList = function() {
+Skeleton.prototype.getJointMap = function() {
 	return this._pJointList;
+};
+
+Skeleton.prototype.getNodeList = function () {
+    'use strict';
+    
+	return this._pNodeList;
 };
 
 Skeleton.prototype.addRootJoint = function (pJoint) {
@@ -98,9 +110,10 @@ Skeleton.prototype.update = function () {
     
     var pRootJoints = this._pRootJoints;
     var pJointList = this._pJointList = {};
+    var pNodeList = this._pNodeList = [];
     //var pNotificationJoints = this._pNotificationJoints = [];
 
-    function findJoints (pNode) {
+    function findNodes (pNode) {
     	var sJoint;
 
     	if (pNode) {
@@ -112,13 +125,15 @@ Skeleton.prototype.update = function () {
 	    		pJointList[sJoint] = pNode;
 	    	}
 
-	    	findJoints(pNode.sibling());
-	    	findJoints(pNode.child());
+	    	pNodeList.push(pNode);
+
+	    	findNodes(pNode.sibling());
+	    	findNodes(pNode.child());
     	}
     }
 
     for (var i = 0; i < pRootJoints.length; i++) {
-    	findJoints(pRootJoints[i]);
+    	findNodes(pRootJoints[i]);
     };
 
 	// for (var sJoint in pJointList) {

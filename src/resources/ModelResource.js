@@ -136,17 +136,36 @@ ModelResource.prototype.loadResource = function (sFilename, pOptions) {
     'use strict';
 
     var me = this;
+    var fnCustomCallback = pOptions.success || null;
+    
+    var fnCallback = function () {
+        if (me.isResourceLoaded()) {
+            me.setAlteredFlag();
+        }
+        
+        fnSuccess();
+        
+        if (fnCustomCallback) {
+            fnCustomCallback.call(me);
+        }
+    };
+
     var fnSuccess = function () {
         me._nFilesToBeLoaded --;
 
         if (me._nFilesToBeLoaded == 0) {
-            me.notifyLoaded();
-            me.notifyRestored();
+            if (fnCustomCallback == null) {
+                me.notifyLoaded(); 
+            }
+
+            me.notifyRestored(); 
         }
     };
 
+    
     me._nFilesToBeLoaded ++;
     me.notifyDisabled();
+    
     //trace('>> load animation >> ', sFilename);
     if (a.pathinfo(sFilename).ext.toLowerCase() === 'dae') {
     
@@ -154,7 +173,7 @@ ModelResource.prototype.loadResource = function (sFilename, pOptions) {
         pOptions.file = sFilename;
         pOptions.modelResource = this;
 
-        pOptions.success = fnSuccess;
+        pOptions.success = fnCallback;
         
         a.COLLADA(this._pEngine, pOptions);
 
@@ -165,20 +184,20 @@ ModelResource.prototype.loadResource = function (sFilename, pOptions) {
 
         a.fopen(sFilename, "rb").read(function(pData) {
             me._pAnimController = a.undump(pData, {engine: me.getEngine()});
-            fnSuccess();
+            fnCallback();
         });
 
         return true;
     }
 
-
     fnSuccess();
+    
     return false;
 }
 
 ModelResource.prototype.loadAnimation = function (sFilename) {
     'use strict';
-    
+
     return this.loadResource(sFilename, 
         {
             scene: false, 
