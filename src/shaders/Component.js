@@ -568,7 +568,6 @@ PassBlend.prototype._initSystemData = function () {
     var pSamplersDecl = new Array(30);
     var pBufferDecl = new Array(30);
     var pBufferInit = new Array(30);
-    var pAttrsDecl = new Array(30);
     var sSampler, sHeader, sAttr;
     for (var i = 0; i < pSamplersDecl.length; i++) {
         sSampler = a.fx.SHADER_PREFIX.SAMPLER + i;
@@ -907,15 +906,18 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     //console.log(this);
     var pProgram;
     var pAttrBuf = {};
-    var i, j;
+    var i, j, k;
     var pAttrToReal = {}, //AttrName ---> Stream number
         pAttrToBuffer = {}; //AttrName ---> Sampler number
-    var pRealSamplers = {}; //ResourceID ---> Sampler number
+    var pRealSamplers = {}; //ResourceID ---> Sampler real name
+    var pPreviousSamplers = {}; //ResourceID ---> Previous sampler names
     var pSamplersUsage = this._pRealSamplersUsage;
     var pSamplersToReal = {}, //SamplerName ---> Sampler number
-        pBuffersToReal = {};  //BufferName ---> Sampler number
+        pBuffersToReal = {}, //BufferName ---> Sampler number
+        pSamplers; //local variable
     var iRealSampler,
-        nRealSamplers = 0;
+        nRealSamplers = 0,
+        sRealSampler;
     var pAttrDecl = {};
     var pAttrInit = {};
     var pGlobalBufDecl;
@@ -971,74 +973,190 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                 pBuffersToReal[sKey1] = null;
             }
             else {
-                iRealSampler = pRealSamplers[pData1.toNumber()];
-                if (iRealSampler === undefined) {
-                    iRealSampler = nRealSamplers;
+                sRealSampler = pRealSamplers[pData1.toNumber()];
+                if (sRealSampler === undefined) {
+                    sRealSampler = a.fx.SHADER_PREFIX.SAMPLER + nRealSamplers;
                     nRealSamplers++;
-                    pSamplersUsage[iRealSampler] = 0;
+                    pSamplersUsage[sRealSampler] = 0;
+                    pRealSamplers[pData1.toNumber()] = sRealSampler;
+                    pPreviousSamplers[pTexture.toNumber()] = [];
                 }
                 if (isExtractInitV) {
-                    SET_BIT(pSamplersUsage[iRealSampler], 0);
-                    SET_BIT(pSamplersUsage[iRealSampler], 1);
+                    SET_BIT(pSamplersUsage[sRealSampler], 0);
+                    SET_BIT(pSamplersUsage[sRealSampler], 1);
                 }
                 if (isExtractInitF) {
-                    SET_BIT(pSamplersUsage[iRealSampler], 2);
-                    SET_BIT(pSamplersUsage[iRealSampler], 3);
+                    SET_BIT(pSamplersUsage[sRealSampler], 2);
+                    SET_BIT(pSamplersUsage[sRealSampler], 3);
                 }
-                sData1 = a.fx.SHADER_PREFIX.SAMPLER + iRealSampler;
-                sData2 = a.fx.SHADER_PREFIX.HEADER + iRealSampler;
-                pBuffersToReal[sKey1] = iRealSampler;
+                if (pPreviousSamplers) {
+                    pPreviousSamplers.push(sKey1);
+                }
+                sData1 = sRealSampler;
+                sData2 = a.fx.SHADER_PREFIX.HEADER + (nRealSamplers - 1);
+                pBuffersToReal[sKey1] = sRealSampler;
             }
             for (j = 0; j < this.pGlobalBuffers[sKey1].length; j++) {
                 pBuffer = this.pGlobalBuffers[sKey1][j];
-                pBuffer.pSampler.pData = sData1;
+//                pBuffer.pSampler.pData = sData1;
                 pBuffer.pHeader.pData = sData2;
             }
             continue;
         }
 
         if (this.pSamplers[sKey1] !== undefined) {
-            sTexture = pData1[a.fx.GLOBAL_VARS.TEXTURE];
+            pSampler = this.pSamplers[sKey1][0];
+            if (pSampler.isArray) {
+                if (!pData1 || pData1.length === 0) {
+                    if (this.pSamplersV[sKey1] === null) {
+                        isZeroSamplerV = true;
+                    }
+                    if (this.pSamplersF[sKey1] === null) {
+                        isZeroSamplerF = true;
+                    }
+                    pSampler._pSamplerData = PassBlend.sZeroSampler;
+                    pSampler.isValid = false;
+                    pSamplersToReal[sKey1] = null;
+                    continue;
+                }
+
+                var isCollapse = true;
+                sTexture = pData1[0][a.fx.GLOBAL_VARS.TEXTURE];
+                pTexture = pTextures[sTexture];
+
+                for (j = 1; j < pData1.length; j++) {
+                    sTexture = pData1[j][a.fx.GLOBAL_VARS.TEXTURE];
+                    if (pTexture !== pTextures[sTexture]) {
+                        isCollapse = false;
+                        break;
+                    }
+                }
+
+                if (isCollapse) {
+                    pSampler.isValid = false;
+
+                    if (!pTexture) {
+                        if (this.pSamplersV[sKey1] === null) {
+                            isZeroSamplerV = true;
+                        }
+                        if (this.pSamplersF[sKey1] === null) {
+                            isZeroSamplerF = true;
+                        }
+                        pSampler._pSamplerData = PassBlend.sZeroSampler;
+                        pSamplersToReal[sKey1] = null;
+                        continue;
+                    }
+
+                    sRealSampler = pRealSamplers[pTexture.toNumber()];
+
+                    if (sRealSampler === undefined) {
+                        sRealSampler = a.fx.SHADER_PREFIX.SAMPLER + nRealSamplers;
+                        nRealSamplers++;
+                        pSamplersUsage[sRealSampler] = 0;
+                        pRealSamplers[pTexture.toNumber()] = sRealSampler;
+                        pPreviousSamplers[pTexture.toNumber()] = [];
+                    }
+                    if (this.pSamplersV[sKey1] === null) {
+                        SET_BIT(pSamplersUsage[sRealSampler], 0);
+                    }
+                    if (this.pSamplersF[sKey1] === null) {
+                        SET_BIT(pSamplersUsage[sRealSampler], 2);
+                    }
+                    if (pPreviousSamplers) {
+                        pPreviousSamplers.push(sKey1);
+                    }
+                    pSamplersToReal[sKey1] = sRealSampler;
+                    pSampler._pSamplerData = sRealSampler;
+                    continue;
+                }
+
+                for (j = 0; j < pData1.length; j++) {
+                    sTexture = pData1[j][a.fx.GLOBAL_VARS.TEXTURE];
+                    pTexture = pTextures[sTexture];
+                    nRealSamplers++;
+                    if (pTexture) {
+                        sRealSampler = pSampler.sRealName() + "[" + j + "]";
+                        pRealSamplers[pTexture.toNumber()] = sRealSampler;
+                        pSamplers = pPreviousSamplers[pTexture.toNumber()];
+                        if (pSamplers && pSamplers !== null) {
+                            for (k = 0; k < pSamplers.length; k++) {
+                                if (this.pSamplers[pSamplers] !== undefined) {
+                                    pSamplersToReal[pSamplers[k]] = sRealSampler;
+                                }
+                                else if (this.pGlobalBuffers[pSamplers[k]] !== undefined) {
+                                    pBuffersToReal[pSamplers[k]] = sRealSampler;
+                                }
+                            }
+                        }
+                        pPreviousSamplers[pTexture.toNumber()] = null;
+                    }
+                }
+                if (this.pSamplersV[sKey1] === null) {
+                    SET_BIT(pSamplersUsage[sKey1], 0);
+                }
+                if (this.pSamplersF[sKey1] === null) {
+                    SET_BIT(pSamplersUsage[sKey1], 2);
+                }
+                pSampler._pSamplerData = pSampler.sRealName;
+                pSampler.isValid = true;
+            }
+            else {
+                sTexture = pData1[a.fx.GLOBAL_VARS.TEXTURE];
 //            if (typeof(sTexture) === "object") {
 //                pTexture = sTexture;
 //            }
 //            else {
-            pTexture = pTextures[sTexture];
+                pTexture = pTextures[sTexture];
 //            }
-            if (!pTexture) {
-                if (this.pSamplersV[sKey1] === null) {
-                    isZeroSamplerV = true;
+                if (!pTexture) {
+                    if (this.pSamplersV[sKey1] === null) {
+                        isZeroSamplerV = true;
+                    }
+                    if (this.pSamplersF[sKey1] === null) {
+                        isZeroSamplerF = true;
+                    }
+                    sData1 = PassBlend.sZeroSampler;
+                    pSamplersToReal[sKey1] = null;
                 }
-                if (this.pSamplersF[sKey1] === null) {
-                    isZeroSamplerF = true;
+                else {
+                    sRealSampler = pRealSamplers[pTexture.toNumber()];
+                    if (sRealSampler === undefined) {
+                        sRealSampler = a.fx.SHADER_PREFIX.SAMPLER + nRealSamplers;
+                        nRealSamplers++;
+                        pSamplersUsage[sRealSampler] = 0;
+                        pRealSamplers[pTexture.toNumber()] = sRealSampler;
+                        pPreviousSamplers[pTexture.toNumber()] = [];
+                    }
+                    if (this.pSamplersV[sKey1] === null) {
+                        SET_BIT(pSamplersUsage[sRealSampler], 0);
+                    }
+                    if (this.pSamplersF[sKey1] === null) {
+                        SET_BIT(pSamplersUsage[sRealSampler], 2);
+                    }
+                    if (pPreviousSamplers) {
+                        pPreviousSamplers.push(sKey1);
+                    }
+                    sData1 = sRealSampler;
+                    pSamplersToReal[sKey1] = sRealSampler;
                 }
-                sData1 = PassBlend.sZeroSampler;
-                pSamplersToReal[sKey1] = null;
+//                for (j = 0; j < this.pSamplers[sKey1].length; j++) {
+//                    pSampler = this.pSamplers[sKey1][j];
+//                    pSampler._pSamplerData = sData1;
+//                }
+                continue;
             }
-            else {
-                iRealSampler = pRealSamplers[pTexture.toNumber()];
-                if (iRealSampler === undefined) {
-                    iRealSampler = nRealSamplers;
-                    nRealSamplers++;
-                    pSamplersUsage[iRealSampler] = 0;
-                }
-                if (this.pSamplersV[sKey1] === null) {
-                    SET_BIT(pSamplersUsage[iRealSampler], 0);
-                }
-                if (this.pSamplersF[sKey1] === null) {
-                    SET_BIT(pSamplersUsage[iRealSampler], 2);
-                }
-                sData1 = a.fx.SHADER_PREFIX.SAMPLER + iRealSampler;
-                pSamplersToReal[sKey1] = iRealSampler;
-            }
-            for (j = 0; j < this.pSamplers[sKey1].length; j++) {
-                pSampler = this.pSamplers[sKey1][j];
-                pSampler._pSamplerData = sData1;
-            }
-            continue;
         }
     }
-
+    for (i in this.pSamplers) {
+        for (j = 0; j < this.pSamplers[i].length; j++) {
+            this.pSamplers[i][j]._pSamplerData = pSamplersToReal[i] || PassBlend.sZeroSampler;
+        }
+    }
+    for (i in this.pGlobalBuffers) {
+        for (j = 0; j < this.pGlobalBuffers[i].length; j++) {
+            this.pGlobalBuffers[i][j].pSampler.pData = pBuffersToReal[i] || PassBlend.sZeroSampler;
+        }
+    }
     //Attributes analyzed here. Are the from real buffer or video buffer.
     //Generated lists of real attributes by slots and video buffers they used
 
@@ -1069,6 +1187,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                 iRealSampler = nRealSamplers;
                 nRealSamplers++;
                 pSamplersUsage[iRealSampler] = 0;
+                pRealSamplers[pData1.pData.buffer.toNumber()] = iRealSampler;
             }
             pAttrToBuffer[sKey1] = iRealSampler;
             SET_BIT(pSamplersUsage[iRealSampler], 0);

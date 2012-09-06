@@ -242,6 +242,28 @@ var NAME_BLACKLIST = {
     "A_h_" : null
 };
 A_NAMESPACE(NAME_BLACKLIST, fx);
+
+function fnSimpleExtractCode(pCode, sCode, eMode) {
+    var i;
+    var pSubCode;
+    for (i = 0; i < pCode.length; i++) {
+        if (typeof(pCode[i]) === "string") {
+            sCode += pCode[i];
+        }
+        else {
+            pSubCode = pCode[i].toCode(eMode);
+            if (typeof(pSubCode) === "string") {
+                sCode += pSubCode;
+            }
+            else {
+                sCode += a.fx.fnSimpleExtractCode(pSubCode, sCode, eMode);
+            }
+        }
+    }
+    return sCode;
+}
+A_NAMESPACE(fnSimpleExtractCode, fx);
+
 function GLSLExpr(sTemplate) {
     this.pArgs = {};
     this.pExpr = [];
@@ -1146,8 +1168,11 @@ function EffectVariable() {
      */
     this.iScope = 0;
     this._isConstInit = null;
-    this.pTexture = null;
+    this.pTextures = null;
     this.pStates = null;
+    this._pCurrentState = null;
+    this._pCurrentTexture = null;
+
     this._isSampler = false;
     this._pSamplerData = null;
     this.isParametr = false;
@@ -1168,6 +1193,8 @@ function EffectVariable() {
      */
     this._pAllPointers = null;
     this._pIndexFields = null;
+
+    this.isValid = false;
 }
 EffectVariable.prototype.isInput = function () {
     if (this.pType.pUsagesName &&
@@ -1254,23 +1281,23 @@ EffectVariable.prototype.cloneMe = function () {
     return pVar;
 };
 EffectVariable.prototype.setTexture = function (pTex) {
-    this.pTexture = pTex;
+    this._pCurrentTexture = pTex;
     this._isSampler = true;
-    if (!this.pStates) {
-        this.pStates = {};
+    if (!this._pCurrentState) {
+        this._pCurrentState = {};
     }
-    this.pStates[a.fx.GLOBAL_VARS.TEXTURE] = pTex.sRealName;
+    this._pCurrentState[a.fx.GLOBAL_VARS.TEXTURE] = pTex.sRealName;
 };
 EffectVariable.prototype.setState = function (eState, eValue) {
-    if (!this.pStates) {
-        this.pStates = {};
+    if (!this._pCurrentState) {
+        this._pCurrentState = {};
         this._isSampler = true;
     }
-    if (this.pStates[eState]) {
+    if (this._pCurrentState[eState]) {
         error("Bad 197");
         return;
     }
-    this.pStates[eState] = eValue;
+    this._pCurrentState[eState] = eValue;
 };
 EffectVariable.prototype.setMixible = function () {
     if (this.isUniform || this.isMixible) {
@@ -1335,6 +1362,33 @@ EffectVariable.prototype.canBlend = function (pVar, isStrict) {
         return 0;
     }
     return this.pType.canBlend(pVar.pType, isStrict);
+};
+EffectVariable.prototype.addSamplerState = function () {
+    if (!this.pStates) {
+        this.pStates = this._pCurrentState;
+        this.pTextures = this._pCurrentTexture;
+    }
+    else if (this.pStates instanceof Array) {
+        this.pStates.push(this._pCurrentState);
+        this.pTextures.push(this._pCurrentTexture);
+    }
+    else {
+        this.pStates = [this.pStates, this._pCurrentState];
+        this.pTextures = [this.pTextures, this._pCurrentTexture];
+    }
+    this._pCurrentState = null;
+    this._pCurrentTexture = null;
+};
+
+function SamplerIndex(pCode, pSampler) {
+    this.pData = pCode;
+    this.pSampler = pSampler;
+}
+SamplerIndex.prototype.toDataCode = function () {
+    return this.pSampler.isValid ? this._pData : "";
+};
+SamplerIndex.prototype.extract = function (eMode) {
+    this.pData = a.fx.fnSimpleExtractCode(this.pData, "", eMode);
 };
 
 function EffectVariableBase(pVar, pFirst, sRealPrevName, iScope, sFullName, iPadding) {
@@ -1868,7 +1922,8 @@ EffectFunction.prototype.generateExtractedCode = function () {
         if (typeof(pElement) === "string") {
             sCode += pElement;
         }
-        else if (pElement.pData === undefined) {
+        else if (pElement.pData === undefined ||
+                 (pElement.pData !== undefined && pElement.isParametr === true && pElement.isUniform === false)) {
             pToCode = pElement.toCode(false);
             if (typeof(pToCode) === "string") {
                 if (!pCode) {
@@ -1892,6 +1947,9 @@ EffectFunction.prototype.generateExtractedCode = function () {
             }
             if (sCode !== "") {
                 pCode.push(sCode);
+            }
+            if (pElement instanceof SamplerIndex) {
+                pElement.extract(false);
             }
             pCode.push(pElement);
             sCode = "";
@@ -2053,7 +2111,8 @@ EffectShader.prototype.generateExtractedCode = function () {
         if (typeof(pElement) === "string") {
             sCode += pElement;
         }
-        else if (pElement.pData === undefined) {
+        else if (pElement.pData === undefined ||
+                 (pElement.pData !== undefined && pElement.isParametr === true && pElement.isUniform === false)) {
             pToCode = (pElement instanceof EffectBaseFunction) ? pElement.toCode() : pElement.toCode(true);
             if (typeof(pToCode) === "string") {
                 if (!pCode) {
@@ -2077,6 +2136,9 @@ EffectShader.prototype.generateExtractedCode = function () {
             }
             if (sCode !== "") {
                 pCode.push(sCode);
+            }
+            if (pElement instanceof SamplerIndex) {
+                pElement.extract(true);
             }
             pCode.push(pElement);
             sCode = "";
@@ -2162,9 +2224,22 @@ EffectShader.prototype.toCodeAll = function (id) {
         pVar.sRealName = pVar.sSemantic || pVar.sRealName;
         this.pUniformsByName[i] = pVar.sRealName;
         if (pVar.isSampler()) {
-            this.pUniformsDefault[pVar.sRealName] = pVar.pStates;
-            this.pTexturesByName[pVar.pTexture.sName] = pVar.pTexture.sRealName;
-            this.pTexturesByRealName[pVar.pTexture.sRealName] = null;
+            if (pVar.pStates instanceof Array) {
+                this.pUniformsDefault[pVar.sRealName] = pVar.pStates;
+                for (j = 0; j < pVar.pTextures.length; j++) {
+                    if (pVar.pTextures[j]) {
+                        this.pTexturesByName[pVar.pTextures[j].sName] = pVar.pTextures[j].sRealName;
+                        this.pTexturesByRealName[pVar.pTextures[j].sRealName] = null;
+                    }
+                }
+            }
+            else {
+                this.pUniformsDefault[pVar.sRealName] = pVar.pStates;
+                if (pVar.pTextures) {
+                    this.pTexturesByName[pVar.pTextures.sName] = pVar.pTextures.sRealName;
+                    this.pTexturesByRealName[pVar.pTextures.sRealName] = null;
+                }
+            }
         }
         else {
             this.pUniformsDefault[pVar.sRealName] = pVar.pDefaultValue;
@@ -3070,6 +3145,12 @@ function Effect(pManager, id) {
         "float2x2"     : new EffectType("float2x2", "mat2", true, 4),
         "float3x3"     : new EffectType("float3x3", "mat3", true, 9),
         "float4x4"     : new EffectType("float4x4", "mat4", true, 16),
+        "int2"         : new EffectType("int2", "ivec2", true, 2),
+        "int3"         : new EffectType("int3", "ivec3", true, 3),
+        "int4"         : new EffectType("int4", "ivec4", true, 4),
+        "bool2"        : new EffectType("bool2", "bvec2", true, 2),
+        "bool3"        : new EffectType("bool3", "bvec3", true, 3),
+        "bool4"        : new EffectType("bool4", "bvec4", true, 4),
         "string"       : new EffectType("string", "string", true, 1),
         "texture"      : new EffectType("texture", "texture", true, 1),
         "sampler"      : new EffectType("sampler", "sampler2D", true, 1),
@@ -3884,6 +3965,10 @@ Effect.prototype.addVariable = function (pVar, isParams) {
             pVar.isPointer = undefined;
             pVar.nDim = 1;
         }
+    }
+    if (pVar.isSampler() && pVar.isArray) {
+        pVar.sRealName = pVar.sName + "_" + this._iScope + "_" + this._id;
+        pVar.sSemantic = null;
     }
     if (!pVar.pType.isBase()) {
         if (!this._pCurrentScope.pStructTable) {
@@ -5079,7 +5164,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
     var pCodeFragment;
     var isWriteMode = false;
     var isCodeWrite;
-    var pCode, pCodeShader;
+    var pCode, pCodeShader, pIndex;
     var isFlag = false; //temp flag
     var pTemp = null; //some temp obj for anything
 
@@ -5437,6 +5522,15 @@ Effect.prototype.analyzeExpr = function (pNode) {
             else if (pChildren[0].sValue === "]") {
                 pVar = this._pLastVar;
                 this.newVarName();
+                if (pVar.isSampler()) {
+                    if (!pVar.isArray) {
+                        error("Here must be array of samplers");
+                        return false;
+                    }
+                    if (pVar.isParametr === false || pVar.isUniform === true) {
+                        this.newCode();
+                    }
+                }
                 this.pushCode("[");
                 this.analyzeExpr(pChildren[1]);
                 if (!this._pExprType.isEqual(this.hasType("int"))) {
@@ -5445,7 +5539,12 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 }
                 this.pushCode("]");
                 this.endVarName();
-                if (pType1 !== a.fx.GLOBAL_VARS.UNDEFINEDTYPE && pType1.isBase()) {
+                if (pVar.isSampler() && (pVar.isParametr === false || pVar.isUniform === true)) {
+                    pIndex = new SamplerIndex(this._pCode, pVar);
+                    this.endCode();
+                    this.pushCode(pIndex);
+                }
+                else if (pType1 !== a.fx.GLOBAL_VARS.UNDEFINEDTYPE && pType1.isBase()) {
                     if (pType1.isEqual(this.hasType("float4x4"))) {
                         pType1 = this.hasType("float4");
                     }
@@ -5460,28 +5559,10 @@ Effect.prototype.analyzeExpr = function (pNode) {
                              pType1.isEqual(this.hasType("float2"))) {
                         pType1 = this.hasType("float");
                     }
-                    else if (pType1.isEqual(this.hasType("int4x4"))) {
-                        pType1 = this.hasType("int4");
-                    }
-                    else if (pType1.isEqual(this.hasType("int3x3"))) {
-                        pType1 = this.hasType("int3");
-                    }
-                    else if (pType1.isEqual(this.hasType("int2x2"))) {
-                        pType1 = this.hasType("int2");
-                    }
                     else if (pType1.isEqual(this.hasType("int4")) ||
                              pType1.isEqual(this.hasType("int3")) ||
                              pType1.isEqual(this.hasType("int2"))) {
                         pType1 = this.hasType("int");
-                    }
-                    else if (pType1.isEqual(this.hasType("bool4x4"))) {
-                        pType1 = this.hasType("bool4");
-                    }
-                    else if (pType1.isEqual(this.hasType("bool3x3"))) {
-                        pType1 = this.hasType("bool3");
-                    }
-                    else if (pType1.isEqual(this.hasType("bool2x2"))) {
-                        pType1 = this.hasType("bool2");
                     }
                     else if (pType1.isEqual(this.hasType("bool4")) ||
                              pType1.isEqual(this.hasType("bool3")) ||
@@ -7016,8 +7097,9 @@ Effect.prototype.analyzeStateBlock = function (pNode, pVar) {
     var pChildren = pNode.pChildren;
     var i;
     for (i = pChildren.length - 2; i >= 1; i--) {
-        this.analyzeState(pChildren[i], pVar);
+        this.analyzeState(pChildren[i]);
     }
+    this._pCurrentVar.addSamplerState();
 };
 Effect.prototype.analyzeState = function (pNode) {
     var pChildren = pNode.pChildren;

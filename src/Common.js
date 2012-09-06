@@ -464,7 +464,7 @@ Define(parent(), function () { this.constructor.superclass; }, true);
 Define(parent.__(__ARGS__), function () { parent.__.call(this, __ARGS__); }, true);
 Define(parent.get.__, LOOKUPGETTER(parent, __), true);
 Define(parent.set.__, LOOKUPSETTER(parent, __), true);
-Define(parent($$obj), function () {this.constructor.superclasses[pObj]}, true);
+Define(parent($$obj), function () {this.constructor.superclasses[obj]}, true);
 
 
 
