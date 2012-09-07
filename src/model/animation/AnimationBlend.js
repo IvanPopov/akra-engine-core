@@ -2,7 +2,7 @@ function AnimationBlend () {
     A_CLASS;
 
 	this._pAnimationList = [];	
-	this.duration = MAX_UINT32;
+	this.duration = 0;
 }
 
 EXTENDS(AnimationBlend, a.AnimationBase);
@@ -11,6 +11,29 @@ PROPERTY(AnimationBlend, 'totalAnimations',
 	function () {
 		return this._pAnimationList.length;
 	});
+
+AnimationBlend.prototype.play = function (fRealTime) {
+    'use strict';
+    
+	var pAnimationList = this._pAnimationList;
+	var n = pAnimationList.length;
+	//trace('AnimationBlend::play(', this.name, fRealTime, ')');
+	for (var i = 0; i < n; ++ i) {
+
+		pAnimationList[i].realTime = fRealTime;
+		pAnimationList[i].time = fRealTime * pAnimationList[i].acceleration;
+		//trace(pAnimationList[i]);
+	}
+
+	this.fire('play');
+};
+
+AnimationBlend.prototype.stop = function () {
+    'use strict';
+    
+	this.fire('stop', this._fTime);
+};
+
 
 AnimationBlend.prototype.bind = function(pTarget) {
 	var pAnimationList = this._pAnimationList;
@@ -34,6 +57,7 @@ AnimationBlend.prototype.setAnimation = function (iAnimation, pAnimation, fWeigh
     'use strict';
     
     var pPointer = this._pAnimationList[iAnimation];
+    var me = this;
 
     if (!pAnimation) {
     	this._pAnimationList[iAnimation] = null;
@@ -44,15 +68,46 @@ AnimationBlend.prototype.setAnimation = function (iAnimation, pAnimation, fWeigh
     	pPointer = {
 			animation: pAnimation,
 			weight: fWeight || 1.0,
-			mask: pMask || null
+			mask: pMask || null,
+			acceleration: 1.0,
+			time: 0.0,
+			realTime: 0.0
 		};
+
+		pAnimation.on('updateDuration', function () {
+			me.updateDuration();
+			trace('duration of inner animation updated.');
+		})
 
 		this._pAnimationList[iAnimation] = pPointer;
 	}
 
-	
-	this.grab(pAnimation);
+	///this.duration = Math.min(this.duration, pAnimation.duration);
+	//
+	//this.grab(pAnimation);
+	this.updateDuration();
 	return iAnimation;
+};
+
+AnimationBlend.prototype.updateDuration = function () {
+    'use strict';
+    
+	var fWeight = 0;
+	var fSumm = 0;
+	var pAnimationList = this._pAnimationList;
+	var n = pAnimationList.length;
+
+	for (var i = 0; i < n; ++ i) {
+		fSumm += pAnimationList[i].weight * pAnimationList[i].animation._fDuration;
+		fWeight += pAnimationList[i].weight;
+	}
+
+	this._fDuration = fSumm / fWeight;
+
+	for (var i = 0; i < n; ++ i) {
+		pAnimationList[i].acceleration = pAnimationList[i].animation._fDuration / this._fDuration;
+		//trace(pAnimationList[i].animation.name, '> acceleration > ', pAnimationList[i].acceleration);
+	}
 };
 
 AnimationBlend.prototype.getAnimationIndex = function (sName) {
@@ -111,6 +166,8 @@ AnimationBlend.prototype.setAnimationWeight = function (iAnimation, fWeight) {
 		pAnimationList[iAnimation].weight = fWeight;
 	}
 
+	this.updateDuration();
+
 	return true;
 };
 
@@ -148,7 +205,7 @@ AnimationBlend.prototype.createAnimationMask = function(iAnimation) {
 	return pAnimation.createAnimationMask();
 };
 
-AnimationBlend.prototype.frame = function (sName, fTime) {
+AnimationBlend.prototype.frame = function (sName, fRealTime) {
     'use strict';
 
 	var pAnimationList = this._pAnimationList;
@@ -156,6 +213,7 @@ AnimationBlend.prototype.frame = function (sName, fTime) {
 	var pFrame;
 	var pMask;
 	var pPointer;
+	var fAcceleration;
 
 	var fBoneWeight;
 	var fWeight;
@@ -167,9 +225,15 @@ AnimationBlend.prototype.frame = function (sName, fTime) {
 			continue;
 		}
 
+		fAcceleration = pPointer.acceleration;
 		pMask = pPointer.mask;
-		pFrame = pPointer.animation.frame(sName, fTime);
 		fBoneWeight = 1.0;
+
+		pPointer.time = pPointer.time + (fRealTime - pPointer.realTime) * fAcceleration;
+    	pPointer.realTime = fRealTime;
+
+		pFrame = pPointer.animation.frame(sName, pPointer.time);
+		
 
 		if (pMask) {
 			fBoneWeight = ifndef(pMask[sName], 1.0);

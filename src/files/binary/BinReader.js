@@ -510,6 +510,7 @@ BinReader.prototype.readPtr = function (iAddr, sType, pObject) {
     var pBaseClasses = null;
     var pMembers = null;
     var pType;
+    var pValue;
 
     if (pTmp) {
         return pTmp;
@@ -575,8 +576,10 @@ BinReader.prototype.readPtr = function (iAddr, sType, pObject) {
                 continue;
             }
 
-
-            pObject[sName] = pMembers[sName].read.call(this);
+            pValue = pMembers[sName].read.call(this, pObject);
+            if (pValue !== undefined) {
+                pObject[sName] = pValue;
+            }
         }
     }
 
@@ -599,7 +602,7 @@ BinReader.prototype.read = function() {
         return null;
     }
 
-    this.extractHeader(iAddr);
+    //this.extractHeader(iAddr);
 
     var iType = this.uint32();
     var sType = this.template.getType(iType);

@@ -39,6 +39,10 @@ Define(Math.fpSign(f), function () {
     (f >> 31)
 });
 
+Define(Math.sign(f), function () {
+    (f < 0? -1: 1);
+});
+
 Define(Math.fpOneBits, 0x3F800000);
 
 /**

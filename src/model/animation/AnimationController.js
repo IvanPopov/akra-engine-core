@@ -115,15 +115,22 @@ AnimationController.prototype.bind = function (pTarget) {
     }
 };
 
-AnimationController.prototype.play = function() {
-	var pAnimation = this.findAnimation(arguments[0]);
+AnimationController.prototype.play = function(pAnimation, fRealTime) {
+	var pAnimationNext = this.findAnimation(arguments[0]);
+	var pAnimationPrev = this._pActiveAnimation;
 
-	if (pAnimation && pAnimation !== this._pActiveAnimation) {
+	if (pAnimationNext && pAnimationNext !== pAnimationPrev) {
 		if (this._fnPlayAnimation) {
-			this._fnPlayAnimation(pAnimation);
+			this._fnPlayAnimation(pAnimationNext);
+		}
+		//trace('controller::play(', pAnimationNext.name, ')', pAnimationNext);
+		if (pAnimationPrev) {
+			pAnimationPrev.stop(fRealTime);
 		}
 
-		this._pActiveAnimation = pAnimation;
+		pAnimationNext.play(fRealTime);
+
+		this._pActiveAnimation = pAnimationNext;
 		
 		return true;
 	}
@@ -131,7 +138,7 @@ AnimationController.prototype.play = function() {
 	return false;
 };
 
-AnimationController.prototype.apply = function (fTime) {
+AnimationController.prototype.update = function (fTime) {
     'use strict';
     if (this._pActiveAnimation) {
 		this._pActiveAnimation.apply(fTime);

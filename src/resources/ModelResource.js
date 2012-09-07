@@ -208,11 +208,6 @@ ModelResource.prototype.loadAnimation = function (sFilename) {
         });
 };
 
-ModelResource.prototype.update = function () {
-    'use strict';
-    
-    this._pAnimController.apply(this._pEngine.fTime);
-};
 
 A_NAMESPACE(ModelResource);
 

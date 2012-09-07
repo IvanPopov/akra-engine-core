@@ -7,7 +7,7 @@ function AnimationBase () {
 
 	this._pTargetMap = {};
     this._pTargetList = [];
-	
+
 	this._fDuration = 0;
 	this._sName = ('animation-' + a.now() + '-' + a.sid());
 
@@ -19,6 +19,9 @@ A_NAMESPACE(AnimationBase);
 PROPERTY(AnimationBase, 'duration',
 	function () {
 		return this._fDuration;
+	},
+	function (fValue) {
+		this._fDuration = fValue;
 	});
 
 PROPERTY(AnimationBase, 'name',
@@ -52,6 +55,18 @@ AnimationBase.prototype.fire = function (eEvent, fTime) {
 	}
 };
 
+AnimationBase.prototype.play = function (fRealTime) {
+    'use strict';
+
+    this.fire('play', fRealTime);
+};
+
+AnimationBase.prototype.stop = function (fRealTime) {
+    'use strict';
+
+    this.fire('stop', fRealTime);
+};
+
 AnimationBase.prototype.delChangesNotifyRoutine = function (eEvent, fnCallback) {
     'use strict';
     //TODO:
@@ -62,14 +77,14 @@ AnimationBase.prototype.bind = function(pTarget) {
 	debug_error('method AnimationBase::bind() must be overwritten.');
 };
 
-AnimationBase.prototype.frame = function (sName, fTime) {
+AnimationBase.prototype.frame = function (sName, fRealTime) {
     'use strict';
    		
  	return null;
 };
 
 
-AnimationBase.prototype.apply = function (fTime) {
+AnimationBase.prototype.apply = function (fRealTime) {
     'use strict';
     
     var pTargetList = this._pTargetList;
@@ -78,7 +93,7 @@ AnimationBase.prototype.apply = function (fTime) {
     var pTransform;
 
 	for (var i = 0; i < pTargetList.length; ++ i) {
-		pFrame = this.frame(pTargetList[i].name, fTime);
+		pFrame = this.frame(pTargetList[i].name, fRealTime);
 		pTarget = pTargetList[i].target;
 
 		if (!pFrame || !pTarget) {
@@ -89,7 +104,7 @@ AnimationBase.prototype.apply = function (fTime) {
 		pTarget.accessLocalMatrix().set(pTransform);
 	};
 
-	this.fire(a.Animation.EVT_ENTER_FRAME, fTime);
+	this.fire(a.Animation.EVT_ENTER_FRAME, fRealTime);
 };
 
 AnimationBase.prototype.addTarget = function (sName, pTarget) {

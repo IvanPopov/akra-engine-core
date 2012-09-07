@@ -1,12 +1,6 @@
 function AnimationContainer (pAnimation) {
 	A_CLASS;
 
-	//
-
-	// Enum([
-	// 	PRIORITY_LOW = 0,
-	// 	PRIORITY_HIGH = 1
-	// 	], ANIMATION_PRIORITY, a.Animation);
 
 	this._bEnable = true;
 	this._fStartTime = 0;
@@ -14,8 +8,10 @@ function AnimationContainer (pAnimation) {
 	this._bLoop = false;
 	this._pAnimation = null;
 	this._bReverse = false;
-	//время, определяющее кадр анимации, в случае, если она находится в паузе.
-	this._fTime = 0;
+	
+	this._fTrueTime = 0;	//Время учитывающее циклы и прочее.
+	this._fRealTime = 0;	//реальное время на сцене
+	this._fTime = 0;		//время с учетом ускорений
 	this._bPause = false;
 
 	//определена ли анимация до первого и после последнего кадров
@@ -34,6 +30,26 @@ PROPERTY(AnimationContainer, 'animationName',
 		return this._pAnimation.name;
 	});
 
+PROPERTY(AnimationContainer, 'speed',
+	function () {
+		return this._fSpeed;
+	});
+
+AnimationContainer.prototype.play = function (fRealTime) {
+    'use strict';
+
+    this._fRealTime = fRealTime;
+    this._fTime = fRealTime * this._fSpeed;
+    //trace('AnimationContainer::play(', this.name, ')', this);
+    this.fire('play', this._fTime);
+};
+
+AnimationContainer.prototype.stop = function () {
+    'use strict';
+    
+	this.fire('stop', this._fTime);
+};
+
 AnimationContainer.prototype.bind = function(pTarget) {
 	this._pAnimation.bind(pTarget);
 	this.grab(this._pAnimation, true);
@@ -45,7 +61,7 @@ AnimationContainer.prototype.setAnimation = function (pAnimation) {
 	debug_assert(!this._pAnimation, 'anim. already exists');
 
 	this._pAnimation = pAnimation;
-	this._fDuration = pAnimation._fDuration;
+	this.setSpeed(this.speed);
 	this.name = 'container-' + pAnimation.name;
 
 	this.grab(pAnimation);
@@ -86,7 +102,7 @@ AnimationContainer.prototype.rightInfinity = function(bValue) {
 AnimationContainer.prototype.setStartTime = function (fTime) {
     'use strict';
 
-	this._fStartTime = fTime;
+	this._fStartTime = fTime * (this._fTime / this._fRealTime);
 };
 
 AnimationContainer.prototype.getStartTime = function () {
@@ -100,6 +116,14 @@ AnimationContainer.prototype.setSpeed = function (fSpeed) {
 
 	this._fSpeed = fSpeed;
 	this._fDuration = this._pAnimation._fDuration / fSpeed;
+	
+	this.fire('updateDuration');
+};
+
+AnimationContainer.prototype.getSpeed = function () {
+    'use strict';
+    
+	return this._fSpeed;
 };
 
 AnimationContainer.prototype.useLoop = function (bValue) {
@@ -128,10 +152,10 @@ AnimationContainer.prototype.pause = function (bValue) {
 	this._bPause = bValue;
 };
 
-AnimationContainer.prototype.rewind = function (fTime) {
+AnimationContainer.prototype.rewind = function (fTrueTime) {
     'use strict';
     
-	this._fTime = fTime;
+	this._fTrueTime = fTrueTime;
 };
 
 AnimationContainer.prototype.isPaused = function () {
@@ -140,44 +164,50 @@ AnimationContainer.prototype.isPaused = function () {
 	return this._bPause;
 };
 
-AnimationContainer.prototype.time = function (fTime) {
+AnimationContainer.prototype.time = function (fRealTime) {
     'use strict';
-   
-	if (!this._bEnable) {
-    	return null;
-    }
 
     if (this._bPause) {
-    	return this._fTime;
+    	return;
     }
 
-    fTime = (fTime - this._fStartTime) * this._fSpeed;
+
+    this._fTime = this._fTime + (fRealTime - this._fRealTime) * this._fSpeed;
+    this._fRealTime = fRealTime;
+
+    var fTime = this._fTime;
 
     if (this._bLoop) {
     	fTime = Math.mod(fTime, (this._pAnimation._fDuration));
     	if (this._bReverse) {
-    		fTime = (this._pAnimation._fDuration) - fTime; 
+    		fTime = this._pAnimation._fDuration - fTime; 
     	}
     }
 
-    this._fTime = fTime;
-    return fTime;
+    this._fTrueTime = fTime;
+    
 };
 
-AnimationContainer.prototype.frame = function (sName, fTime) {
+AnimationContainer.prototype.frame = function (sName, fRealTime) {
     'use strict';
 
-    fTime = this.time(fTime);
-
-    if (!this._bLeftInfinity && fTime < this._fStartTime) {
+    if (!this._bEnable) {
     	return null;
     }
 
-	if (!this._bRightInfinity && fTime > this._fDuration) {
+    if (this._fRealTime !== fRealTime) {
+    	this.time(fRealTime);
+    }
+
+    if (!this._bLeftInfinity && this._fTrueTime < this._fStartTime) {
+    	return null;
+    }
+
+	if (!this._bRightInfinity && this._fTrueTime > this._fDuration) {
     	return null;
     }    
 
-	return this._pAnimation.frame(sName, fTime);
+	return this._pAnimation.frame(sName, this._fTrueTime);
 };
 
 A_NAMESPACE(AnimationContainer);
