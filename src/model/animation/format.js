@@ -3,7 +3,23 @@ A_FORMAT({
 		members: {
 			'fTime'			: 'Float',
 			'fWeight'		: 'Float',
-			'pMatrix'		: 'Mat4',
+			'pMatrix'		: {
+				write: 'Mat4',
+				read: function (pFrame) {
+					var m4f = this.read();
+
+					m4f.decompose(
+						pFrame.qRotation,
+						pFrame.v3fScale,
+						pFrame.v3fTranslation);
+
+					return m4f;
+				}
+			},
+
+			// 'qRotation'		: 'Quat4',
+			// 'v3fScale'		: 'Vec3',
+			// 'v3fTranslation': 'Vec3'
 		},
 
 		ctor : function () {

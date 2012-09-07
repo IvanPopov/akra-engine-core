@@ -1,90 +1,9 @@
-function AnimationFrame (fTime, pMatrix, fWeight) {
-	A_CHECK_STORAGE();
-
-	this.fTime = fTime || 0;
-	this.pMatrix = pMatrix || (new Mat4());
-	this.fWeight = fWeight || 1.0;
-}
-
-AnimationFrame.prototype.toMatrix = function () {
-    'use strict';
-    
-	return this.pMatrix;
-};
-
-AnimationFrame.prototype.reset = function () {
-    'use strict';
-    
-	this.fWeight = 0.0;
-	this.fTime = 0.0;
-
-	var pData = this.pMatrix.pData;
-	pData._11 = pData._12 = pData._13 = pData._14 = 
-	pData._21 = pData._22 = pData._23 = pData._24 = 
-	pData._31 = pData._32 = pData._33 = pData._34 = 
-	pData._41 = pData._42 = pData._43 = pData._44 = 0;
-	return this;
-};
-
-/**
- * Добавить данные к фрейму с их весом.
- * После данного метода фрейму потребуется нормализация!!!!
- */
-AnimationFrame.prototype.add = function (pFrame) {
-    'use strict';
-    
-	var pMatData = pFrame.pMatrix.pData;
-	var fWeight = pFrame.fWeight;
-	var pResData = this.pMatrix.pData;
-
-	for (var i = 0; i < 16; ++ i) {
-		pResData[i] += pMatData[i] * fWeight;
-	}
-
-	this.fWeight += fWeight;
-	return this;
-};
-
-AnimationFrame.prototype.mult = function (fScalar) {
-    'use strict';
-    
-	this.fWeight *= fScalar;
-	return this;
-};
-
-AnimationFrame.prototype.normilize = function () {
-    'use strict';
-    
-    var fScalar = 1.0 / this.fWeight;
-    var pData = this.pMatrix.pData;
-
-    pData._11 *= fScalar;
-    pData._12 *= fScalar; 
-    pData._13 *= fScalar;
-    pData._14 *= fScalar;
-	
-	pData._21 *= fScalar;
-    pData._22 *= fScalar; 
-    pData._23 *= fScalar;
-    pData._24 *= fScalar;
-	
-	pData._31 *= fScalar;
-    pData._32 *= fScalar; 
-    pData._33 *= fScalar;
-    pData._34 *= fScalar;
-	
-	pData._41 *= fScalar;
-    pData._42 *= fScalar; 
-    pData._43 *= fScalar;
-    pData._44 *= fScalar;
-		
-	return this;
-};
-
-A_ALLOCATE_STORAGE(AnimationFrame, 16384);
-A_NAMESPACE(AnimationFrame);
-
 function AnimationTrack (sTarget) {
+	Enum([
+		INTERPOLATION_METHOD1, //матрицы
+		INTERPOLATION_METHOD2 //не матрицы
+		], ANIMATION_TRACK, a.AnimationTrack);
+
 	/**
 	 * Bone name or Node name
 	 * @type {String}
@@ -102,6 +21,8 @@ function AnimationTrack (sTarget) {
 	 * @type {AnimationFrame}
 	 */
 	this._pKeyFrames = [];
+
+	this._eInterpolationMethod = a.AnimationTrack.INTERPOLATION_METHOD1;
 }
 
 PROPERTY(AnimationTrack, 'targetName',
@@ -251,7 +172,12 @@ AnimationTrack.prototype.frame = function (fTime) {
 	var nKeys = pKeys.length;
 	var pFrame = a.AnimationFrame();
 
-	if (nKeys > 1) {
+	debug_assert(nKeys, 'no frames :(');
+
+	if (nKeys === 1) {
+		pFrame.set(pKeys[0]);
+	}
+	else {
 		//TODO: реализовать существенно более эффективный поиск кадра.
 		for (var i = 0; i < nKeys; i ++) {
 	    	if (fTime >= this._pKeyFrames[i].fTime) {
@@ -260,20 +186,20 @@ AnimationTrack.prototype.frame = function (fTime) {
 	    }
 
 	    iKey2 = (iKey1 >= (nKeys - 1))? iKey1 : iKey1 + 1;
+	
+	    fTimeDiff = pKeys[iKey2].fTime - pKeys[iKey1].fTime;
+	    
+	    if (!fTimeDiff)
+	        fTimeDiff = 1;
+		
+		fScalar = (fTime - pKeys[iKey1].fTime) / fTimeDiff;
+		
+		AnimationTrack.interpolate(
+			this._pKeyFrames[iKey1], 
+			this._pKeyFrames[iKey2], 
+			pFrame, 
+			fScalar);
 	}
-    
-    fTimeDiff = pKeys[iKey2].fTime - pKeys[iKey1].fTime;
-    
-    if (!fTimeDiff)
-        fTimeDiff = 1;
-	
-	fScalar = (fTime - pKeys[iKey1].fTime) / fTimeDiff;
-	
-	AnimationTrack.interpolate(
-		this._pKeyFrames[iKey1], 
-		this._pKeyFrames[iKey2], 
-		pFrame, 
-		fScalar);
 
 	pFrame.fTime = fTime;
 	pFrame.fWeight = 1.0;
@@ -284,9 +210,22 @@ AnimationTrack.prototype.frame = function (fTime) {
 AnimationTrack.interpolate = function (pStartFrame, pEndFrame, pResultFrame, fBlend) {
     'use strict';
 
-	for (var i = 0; i < 16; i++) {
-		pResultFrame.pMatrix.pData[i] = ((pEndFrame.pMatrix.pData[i] * fBlend) + ((1. - fBlend) * pStartFrame.pMatrix.pData[i]));
-	};
+    if (this._eInterpolationMethod === a.AnimationTrack.INTERPOLATION_METHOD1) {
+
+		var pResultData = pResultFrame.pMatrix.pData;
+		var pStartData = pStartFrame.pMatrix.pData;
+		var pEndData = pEndFrame.pMatrix.pData;
+		var fBlendInv = 1. - fBlend;
+
+		for (var i = 0; i < 16; i++) {
+			pResultData[i] = pEndData[i] * fBlend + pStartData[i] * fBlendInv;
+		};
+	}
+	else {
+		pStartFrame.v3fTranslation.mix(pEndFrame.v3fTranslation, fBlend, pResultFrame.v3fTranslation);
+		pStartFrame.v3fScale.mix(pEndFrame.v3fScale, fBlend, pResultFrame.v3fScale);
+		pStartFrame.qRotation.slerp(pEndFrame.qRotation, fBlend, pResultFrame.qRotation);
+	}
 };
 
 AnimationTransformation = AnimationTrack;

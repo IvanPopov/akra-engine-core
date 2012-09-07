@@ -217,41 +217,82 @@ AnimationBlend.prototype.frame = function (sName, fRealTime) {
 
 	var fBoneWeight;
 	var fWeight;
+	var iAnim = 0;
 
-	for (var i = 0; i < pAnimationList.length; i++) {
-		pPointer = pAnimationList[i];
+	if (1) {
+		for (var i = 0; i < pAnimationList.length; i++) {
+			pPointer = pAnimationList[i];
 
-		if (!pPointer) {
-			continue;
+			if (!pPointer) {
+				continue;
+			}
+
+			fAcceleration = pPointer.acceleration;
+			pMask = pPointer.mask;
+			fBoneWeight = 1.0;
+
+			pPointer.time = pPointer.time + (fRealTime - pPointer.realTime) * fAcceleration;
+	    	pPointer.realTime = fRealTime;
+
+			pFrame = pPointer.animation.frame(sName, pPointer.time);
+			
+
+			if (pMask) {
+				fBoneWeight = ifndef(pMask[sName], 1.0);
+			}
+
+			fWeight = fBoneWeight * pPointer.weight;
+
+			if (pFrame && fWeight > 0.0) {
+				pResultFrame.add(pFrame.mult(fWeight));
+			}
 		}
 
-		fAcceleration = pPointer.acceleration;
-		pMask = pPointer.mask;
-		fBoneWeight = 1.0;
-
-		pPointer.time = pPointer.time + (fRealTime - pPointer.realTime) * fAcceleration;
-    	pPointer.realTime = fRealTime;
-
-		pFrame = pPointer.animation.frame(sName, pPointer.time);
-		
-
-		if (pMask) {
-			fBoneWeight = ifndef(pMask[sName], 1.0);
+		if (pResultFrame.fWeight === 0.0) {
+			return null;
 		}
 
-		fWeight = fBoneWeight * pPointer.weight;
-
-		if (pFrame && fWeight > 0.0) {
-			pResultFrame.add(pFrame.mult(fWeight));
-		}
-	};
-
-	if (pResultFrame.fWeight === 0.0) {
-		return null;
+		return pResultFrame.normilize();
 	}
+	else {
 
-	return pResultFrame.normilize();
+		for (var i = 0; i < pAnimationList.length; i++) {
+			pPointer = pAnimationList[i];
+
+			if (!pPointer) {
+				continue;
+			}
+
+			fAcceleration = pPointer.acceleration;
+			pMask = pPointer.mask;
+			fBoneWeight = 1.0;
+
+			pPointer.time = pPointer.time + (fRealTime - pPointer.realTime) * fAcceleration;
+	    	pPointer.realTime = fRealTime;
+
+			pFrame = pPointer.animation.frame(sName, pPointer.time);
+
+			if (pMask) {
+				fBoneWeight = ifndef(pMask[sName], 1.0);
+			}
+
+			fWeight = fBoneWeight * pPointer.weight;
+			
+			if (pFrame && fWeight > 0.0) {
+				iAnim ++;
+				pResultFrame.add2(pFrame.mult(fWeight), iAnim === 1);//first, if 1
+			}
+		}
+
+		if (pResultFrame.fWeight === 0.0) {
+			return null;
+		}
+
+		return pResultFrame.normilize2();
+	}
 };
+
+//
 
 A_NAMESPACE(AnimationBlend);
 
