@@ -827,16 +827,16 @@ PassBlend.prototype.finalizeBlend = function () {
             this.pUniformsV[i] = this.pUniformsV[i][0];
         }
         if (this.pUniformsV[i].pType.isBase()) {
-            this.pUniforms[i] = this.pUniformsV[i].pType.pEffectType.toCode();
+            this.pUniforms[i] = this.pUniformsV[i];//this.pUniformsV[i].pType.pEffectType.toCode();
         }
     }
 
     for (i in this.pSamplers) {
-        this.pUniforms[i] = this.pSamplers[i][0].pType.pEffectType.toCode();
+        this.pUniforms[i] = this.pSamplers[i][0];//this.pSamplers[i][0].pType.pEffectType.toCode();
     }
 
     for (i in this.pGlobalBuffers) {
-        this.pUniforms[i] = this.pGlobalBuffers[i][0].pType.pEffectType.toCode();
+        this.pUniforms[i] = this.pGlobalBuffers[i][0];//this.pGlobalBuffers[i][0].pType.pEffectType.toCode();
     }
 
     for (i in this.pUniformsF) {
@@ -847,7 +847,7 @@ PassBlend.prototype.finalizeBlend = function () {
             this.pUniformsF[i] = this.pUniformsF[i][0];
         }
         if (this.pUniformsF[i].pType.isBase()) {
-            this.pUniforms[i] = this.pUniformsF[i].pType.pEffectType.toCode();
+            this.pUniforms[i] = this.pUniformsF[i];//this.pUniformsF[i].pType.pEffectType.toCode();
         }
     }
 
@@ -910,8 +910,9 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     var pAttrToReal = {}, //AttrName ---> Stream number
         pAttrToBuffer = {}; //AttrName ---> Sampler number
     var pRealSamplers = {}; //ResourceID ---> Sampler real name
-    var pPreviousSamplers = {}; //ResourceID ---> Previous sampler names
-    var pSamplersUsage = this._pRealSamplersUsage;
+    var pSamplersUsage = this._pRealSamplersUsage,
+        pSamplersArrayV = [],
+        pSamplersArrayF = [];
     var pSamplersToReal = {}, //SamplerName ---> Sampler number
         pBuffersToReal = {}, //BufferName ---> Sampler number
         pSamplers; //local variable
@@ -973,32 +974,28 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                 pBuffersToReal[sKey1] = null;
             }
             else {
-                sRealSampler = pRealSamplers[pData1.toNumber()];
-                if (sRealSampler === undefined) {
-                    sRealSampler = a.fx.SHADER_PREFIX.SAMPLER + nRealSamplers;
+                iRealSampler = pRealSamplers[pData1.toNumber()];
+                if (iRealSampler === undefined) {
+                    iRealSampler = nRealSamplers;
                     nRealSamplers++;
-                    pSamplersUsage[sRealSampler] = 0;
-                    pRealSamplers[pData1.toNumber()] = sRealSampler;
-                    pPreviousSamplers[pTexture.toNumber()] = [];
+                    pSamplersUsage[iRealSampler] = 0;
+                    pRealSamplers[pData1.toNumber()] = iRealSampler;
                 }
                 if (isExtractInitV) {
-                    SET_BIT(pSamplersUsage[sRealSampler], 0);
-                    SET_BIT(pSamplersUsage[sRealSampler], 1);
+                    SET_BIT(pSamplersUsage[iRealSampler], 0);
+                    SET_BIT(pSamplersUsage[iRealSampler], 1);
                 }
                 if (isExtractInitF) {
-                    SET_BIT(pSamplersUsage[sRealSampler], 2);
-                    SET_BIT(pSamplersUsage[sRealSampler], 3);
+                    SET_BIT(pSamplersUsage[iRealSampler], 2);
+                    SET_BIT(pSamplersUsage[iRealSampler], 3);
                 }
-                if (pPreviousSamplers) {
-                    pPreviousSamplers.push(sKey1);
-                }
-                sData1 = sRealSampler;
-                sData2 = a.fx.SHADER_PREFIX.HEADER + (nRealSamplers - 1);
-                pBuffersToReal[sKey1] = sRealSampler;
+                sData1 = a.fx.SHADER_PREFIX.SAMPLER + iRealSampler;
+                sData2 = a.fx.SHADER_PREFIX.HEADER + iRealSampler;
+                pBuffersToReal[sKey1] = sData1;
             }
             for (j = 0; j < this.pGlobalBuffers[sKey1].length; j++) {
                 pBuffer = this.pGlobalBuffers[sKey1][j];
-//                pBuffer.pSampler.pData = sData1;
+                pBuffer.pSampler.pData = sData1;
                 pBuffer.pHeader.pData = sData2;
             }
             continue;
@@ -1047,58 +1044,35 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                         continue;
                     }
 
-                    sRealSampler = pRealSamplers[pTexture.toNumber()];
+                    iRealSampler = pRealSamplers[pTexture.toNumber()];
 
-                    if (sRealSampler === undefined) {
-                        sRealSampler = a.fx.SHADER_PREFIX.SAMPLER + nRealSamplers;
+                    if (iRealSampler === undefined) {
+                        iRealSampler = nRealSamplers;
                         nRealSamplers++;
-                        pSamplersUsage[sRealSampler] = 0;
-                        pRealSamplers[pTexture.toNumber()] = sRealSampler;
-                        pPreviousSamplers[pTexture.toNumber()] = [];
+                        pSamplersUsage[iRealSampler] = 0;
+                        pRealSamplers[pTexture.toNumber()] = iRealSampler;
                     }
                     if (this.pSamplersV[sKey1] === null) {
-                        SET_BIT(pSamplersUsage[sRealSampler], 0);
+                        SET_BIT(pSamplersUsage[iRealSampler], 0);
                     }
                     if (this.pSamplersF[sKey1] === null) {
-                        SET_BIT(pSamplersUsage[sRealSampler], 2);
+                        SET_BIT(pSamplersUsage[iRealSampler], 2);
                     }
-                    if (pPreviousSamplers) {
-                        pPreviousSamplers.push(sKey1);
-                    }
-                    pSamplersToReal[sKey1] = sRealSampler;
-                    pSampler._pSamplerData = sRealSampler;
+
+                    pSamplersToReal[sKey1] = pSampler._pSamplerData = a.fx.SHADER_PREFIX.SAMPLER + iRealSampler;
                     continue;
                 }
-
-                for (j = 0; j < pData1.length; j++) {
-                    sTexture = pData1[j][a.fx.GLOBAL_VARS.TEXTURE];
-                    pTexture = pTextures[sTexture];
-                    nRealSamplers++;
-                    if (pTexture) {
-                        sRealSampler = pSampler.sRealName() + "[" + j + "]";
-                        pRealSamplers[pTexture.toNumber()] = sRealSampler;
-                        pSamplers = pPreviousSamplers[pTexture.toNumber()];
-                        if (pSamplers && pSamplers !== null) {
-                            for (k = 0; k < pSamplers.length; k++) {
-                                if (this.pSamplers[pSamplers] !== undefined) {
-                                    pSamplersToReal[pSamplers[k]] = sRealSampler;
-                                }
-                                else if (this.pGlobalBuffers[pSamplers[k]] !== undefined) {
-                                    pBuffersToReal[pSamplers[k]] = sRealSampler;
-                                }
-                            }
-                        }
-                        pPreviousSamplers[pTexture.toNumber()] = null;
-                    }
-                }
                 if (this.pSamplersV[sKey1] === null) {
-                    SET_BIT(pSamplersUsage[sKey1], 0);
+                    pSamplersArrayV.push(pSampler);
                 }
                 if (this.pSamplersF[sKey1] === null) {
-                    SET_BIT(pSamplersUsage[sKey1], 2);
+                    pSamplersArrayF.push(pSampler);
                 }
+                //nRealSamplers += pSampler.iLength;
+
                 pSampler._pSamplerData = pSampler.sRealName;
                 pSampler.isValid = true;
+                pSamplersToReal[sKey1] = new Array(pSampler.iLength * 1);
             }
             else {
                 sTexture = pData1[a.fx.GLOBAL_VARS.TEXTURE];
@@ -1119,44 +1093,30 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                     pSamplersToReal[sKey1] = null;
                 }
                 else {
-                    sRealSampler = pRealSamplers[pTexture.toNumber()];
-                    if (sRealSampler === undefined) {
-                        sRealSampler = a.fx.SHADER_PREFIX.SAMPLER + nRealSamplers;
+                    iRealSampler = pRealSamplers[pTexture.toNumber()];
+                    if (iRealSampler === undefined) {
+                        iRealSampler = nRealSamplers;
                         nRealSamplers++;
-                        pSamplersUsage[sRealSampler] = 0;
-                        pRealSamplers[pTexture.toNumber()] = sRealSampler;
-                        pPreviousSamplers[pTexture.toNumber()] = [];
+                        pSamplersUsage[iRealSampler] = 0;
+                        pRealSamplers[pTexture.toNumber()] = iRealSampler;
                     }
                     if (this.pSamplersV[sKey1] === null) {
-                        SET_BIT(pSamplersUsage[sRealSampler], 0);
+                        SET_BIT(pSamplersUsage[iRealSampler], 0);
                     }
                     if (this.pSamplersF[sKey1] === null) {
-                        SET_BIT(pSamplersUsage[sRealSampler], 2);
+                        SET_BIT(pSamplersUsage[iRealSampler], 2);
                     }
-                    if (pPreviousSamplers) {
-                        pPreviousSamplers.push(sKey1);
-                    }
-                    sData1 = sRealSampler;
-                    pSamplersToReal[sKey1] = sRealSampler;
+                    sData1 = a.fx.SHADER_PREFIX.SAMPLER + iRealSampler;
+                    pSamplersToReal[sKey1] = sData1;
                 }
-//                for (j = 0; j < this.pSamplers[sKey1].length; j++) {
-//                    pSampler = this.pSamplers[sKey1][j];
-//                    pSampler._pSamplerData = sData1;
-//                }
+                for (j = 0; j < this.pSamplers[sKey1].length; j++) {
+                    this.pSamplers[sKey1][j]._pSamplerData = sData1;
+                }
                 continue;
             }
         }
     }
-    for (i in this.pSamplers) {
-        for (j = 0; j < this.pSamplers[i].length; j++) {
-            this.pSamplers[i][j]._pSamplerData = pSamplersToReal[i] || PassBlend.sZeroSampler;
-        }
-    }
-    for (i in this.pGlobalBuffers) {
-        for (j = 0; j < this.pGlobalBuffers[i].length; j++) {
-            this.pGlobalBuffers[i][j].pSampler.pData = pBuffersToReal[i] || PassBlend.sZeroSampler;
-        }
-    }
+
     //Attributes analyzed here. Are the from real buffer or video buffer.
     //Generated lists of real attributes by slots and video buffers they used
 
@@ -1377,6 +1337,13 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
             sVertexCode += this._pRealSamplersDecl[i];
         }
     }
+    //Sampler arrays
+    for(i = 0; i < pSamplersArrayV.length; i++){
+        pSampler = pSamplersArrayV[i];
+        nSamplers -= pSampler.iLength;
+        sVertexCode += "uniform " + pSampler.toCodeDecl();
+    }
+
     //Uniforms
     for (i in this.pUniformsBlockV) {
         sVertexCode += this.pUniformsBlockV[i];
@@ -1517,6 +1484,13 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
             sFragmentCode += this._pRealSamplersDecl[i];
         }
     }
+    //Uniform sampler`s arrays
+    for(i = 0; i < pSamplersArrayF.length; i++){
+        pSampler = pSamplersArrayF[i];
+        nSamplers -= pSampler.iLength;
+        sVertexCode += pSampler.toCodeDecl();
+    }
+
     //Check number of samplers
     if (nSamplers < 0) {
         warning("More samplers used than fragment shader can provide");

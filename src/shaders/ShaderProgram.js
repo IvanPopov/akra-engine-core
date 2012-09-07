@@ -35,6 +35,9 @@ function ShaderProgram(pEngine) {
     this._isZeroSampler = false;
     this._eActiveStream = true;
     this._pActiveStreams = null;
+
+    this._pUniformApplyFunctions = {};
+    this._pUniformPreparedData = {};
 }
 a.extend(ShaderProgram, a.ResourcePoolItem);
 
@@ -120,6 +123,9 @@ ShaderProgram.prototype.setup = function (pAttrData, pUniformData, pTextures) {
         pAttrReal = this._pAttrToReal,
         pRealSamplers = this._pRealSamplers,
         pBufReal = this._pAttrToBuffer;
+    var pFunctions = this._pUniformApplyFunctions,
+        pPreparedData = this._pUniformPreparedData;
+    ;
     for (i = 0; i < pRealAttr.length; i++) {
         pRealAttr[i] = pDevice.getAttribLocation(pProgram, a.fx.SHADER_PREFIX.ATTRIBUTE + i);
     }
@@ -133,6 +139,8 @@ ShaderProgram.prototype.setup = function (pAttrData, pUniformData, pTextures) {
     for (i = 0; i < pRealSamplers.length; i++) {
         sSampler = a.fx.SHADER_PREFIX.SAMPLER + i;
         pRealSamplers[i] = pUniforms[sSampler];
+        pPreparedData[sSampler] = null;
+        pFunctions[sSampler] = this.applySampler2D;
     }
     pKeys = this._pATRKeys;
     for (i = 0; i < pKeys.length; i++) {
@@ -145,6 +153,8 @@ ShaderProgram.prototype.setup = function (pAttrData, pUniformData, pTextures) {
                 if (pUniforms[sOffset]) {
                     pOffsets[sOffset] = null;
                     pBuffers[a.fx.SHADER_PREFIX.SAMPLER + this._pAttrToBuffer[sKey1]] = null;
+                    pFunctions[sOffset] = this.applyFloat;
+                    pPreparedData[sOffset] = null;
                 }
             }
         }
@@ -207,6 +217,7 @@ ShaderProgram.prototype.generateInputData = function (pAttrData, pUniformData) {
                 pUniformData[sOffset] = pData.pData.getVertexDeclaration().element(sKey).iOffset;
                 sBuf = a.fx.SHADER_PREFIX.SAMPLER + this._pAttrToBuffer[sKey];
                 pUniformData[sBuf] = pData.pData.buffer;
+                this._pBuffersToReal[sBuf] = sBuf;
             }
         }
     }
@@ -235,95 +246,85 @@ ShaderProgram.prototype.applyUniform = function (sName, pData) {
     if (pData === null) {
         return false;
     }
-    var sType;
-    if (this._pUniformVars[sName]) {
-        sType = this._pUniformVars[sName];
-        switch (sType) {
-            case "float":
-                this.applyFloat(sName, pData);
-                break;
-            case "int":
-                this.applyInt(sName, pData);
-                break;
-            case "vec2":
-                this.applyVec2(sName, pData);
-                break;
-            case "vec3":
-                this.applyVec3(sName, pData);
-                break;
-            case "vec4":
-                this.applyVec4(sName, pData);
-                break;
-            case "mat3":
-                this.applyMat3(sName, pData);
-                break;
-            case "mat4":
-                this.applyMat4(sName, pData);
-                break;
-            case "sampler2D":
-                if (this._pPassBlend.pSamplers[sName]) {
-                    this.applySampler2D(sName, pData);
-                }
-                else {
-                    this.applyVideoBuffer(sName, pData);
-                }
-                break;
-            default:
-                warning("Another base types are not support yet");
-        }
-        return;
+    if (this._pUniformApplyFunctions[sName]) {
+        return this._pUniformApplyFunctions[sName].call(this, sName, pData);
     }
-    else if (this._pOffsets[sName] === null) {
-        this.applyFloat(sName, pData);
-    }
-    else if (this._pBuffers[sName] === null) {
-        this.applyVideoBuffer(sName, pData);
-    }
-    else {
-        trace("applyUniform----->", sName, pData);
-        warning("You should not be here. Something bad have been happened with uniforms.");
-    }
+    trace("Something going wrong:", sName, pData);
+    return false;
 };
+
 ShaderProgram.prototype.applyFloat = function (sName, pData) {
-    if (pData === null) {
+    if (!this._pRealUniformList[sName]) {
         return false;
     }
     var pDevice = this._pDevice;
     pDevice.uniform1f(this._pRealUniformList[sName], pData);
 };
 ShaderProgram.prototype.applyInt = function (sName, pData) {
-    if (pData === null) {
+    if (!this._pRealUniformList[sName]) {
         return false;
     }
     var pDevice = this._pDevice;
     pDevice.uniform1i(this._pRealUniformList[sName], pData);
 };
-ShaderProgram.prototype.applyVec2 = function (sName, pData) {
-    if (pData === null) {
+ShaderProgram.prototype.applyVec2I = function (sName, pData) {
+    if (!this._pRealUniformList[sName]) {
+        return false;
+    }
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pDevice = this._pDevice;
+    pDevice.uniform2iv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram.prototype.applyVec3I = function (sName, pData) {
+    if (!this._pRealUniformList[sName]) {
+        return false;
+    }
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pDevice = this._pDevice;
+    pDevice.uniform3iv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram.prototype.applyVec4I = function (sName, pData) {
+    if (!this._pRealUniformList[sName]) {
+        return false;
+    }
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pDevice = this._pDevice;
+    pDevice.uniform4iv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram.prototype.applyVec2F = function (sName, pData) {
+    if (!this._pRealUniformList[sName]) {
         return false;
     }
     pData = (pData.pData !== undefined) ? pData.pData : pData;
     var pDevice = this._pDevice;
     pDevice.uniform2fv(this._pRealUniformList[sName], pData);
 };
-ShaderProgram.prototype.applyVec3 = function (sName, pData) {
-    if (pData === null) {
+ShaderProgram.prototype.applyVec3F = function (sName, pData) {
+    if (!this._pRealUniformList[sName]) {
         return false;
     }
     pData = (pData.pData !== undefined) ? pData.pData : pData;
     var pDevice = this._pDevice;
     pDevice.uniform3fv(this._pRealUniformList[sName], pData);
 };
-ShaderProgram.prototype.applyVec4 = function (sName, pData) {
-    if (pData === null) {
+ShaderProgram.prototype.applyVec4F = function (sName, pData) {
+    if (!this._pRealUniformList[sName]) {
         return false;
     }
     pData = (pData.pData !== undefined) ? pData.pData : pData;
     var pDevice = this._pDevice;
     pDevice.uniform4fv(this._pRealUniformList[sName], pData);
 };
+ShaderProgram.prototype.applyMat2 = function (sName, pData) {
+    if (!this._pRealUniformList[sName]) {
+        return false;
+    }
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pDevice = this._pDevice;
+    pDevice.uniformMatrix2fv(this._pRealUniformList[sName], false, pData);
+};
 ShaderProgram.prototype.applyMat3 = function (sName, pData) {
-    if (pData === null) {
+    if (!this._pRealUniformList[sName]) {
         return false;
     }
     pData = (pData.pData !== undefined) ? pData.pData : pData;
@@ -331,54 +332,129 @@ ShaderProgram.prototype.applyMat3 = function (sName, pData) {
     pDevice.uniformMatrix3fv(this._pRealUniformList[sName], false, pData);
 };
 ShaderProgram.prototype.applyMat4 = function (sName, pData) {
-    if (pData === null) {
+    if (!this._pRealUniformList[sName]) {
         return false;
     }
     pData = (pData.pData !== undefined) ? pData.pData : pData;
     var pDevice = this._pDevice;
     pDevice.uniformMatrix4fv(this._pRealUniformList[sName], false, pData);
 };
-ShaderProgram.prototype.applyVideoBuffer = function (sName, pData) {
-    if (pData === null) {
-        return true;
+ShaderProgram.prototype.applyFloatArray = function (sName, pData) {
+    if (!this._pRealUniformList[sName]) {
+        return false;
     }
-    var sRealName;
-    if (this._pBuffersToReal[sName]) {
-        sRealName = a.fx.SHADER_PREFIX.SAMPLER + this._pBuffersToReal[sName];
-    }
-    else {
-        sRealName = sName;
-    }
-    var iSlot = this._pRenderer.activateTexture(pData);
-    var pTextureParam = this._pTextureParams[iSlot];
-    pTextureParam[a.TPARAM.MAG_FILTER] = pData._getParameter(a.TPARAM.MAG_FILTER) ||
-                                         a.TFILTER.LINEAR;
-    pTextureParam[a.TPARAM.MIN_FILTER] = pData._getParameter(a.TPARAM.MIN_FILTER) ||
-                                         a.TFILTER.LINEAR;
-    pTextureParam[a.TPARAM.WRAP_S] = pData._getParameter(a.TPARAM.WRAP_S) ||
-                                     a.TWRAPMODE.REPEAT;
-    pTextureParam[a.TPARAM.WRAP_T] = pData._getParameter(a.TPARAM.WRAP_T) ||
-                                     a.TWRAPMODE.REPEAT;
-    return this.applyInt(sRealName, iSlot);
+    var pDevice = this._pDevice;
+    pDevice.uniform1iv(this._pRealUniformList[sName], pData);
 };
+ShaderProgram.prototype.applyIntArray = function (sName, pData) {
+    if (!this._pRealUniformList[sName]) {
+        return false;
+    }
+    var pDevice = this._pDevice;
+    pDevice.uniform1iv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram.prototype.applyVec2IArray = function (sName, pData) {
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pDevice = this._pDevice;
+    pDevice.uniform2iv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram.prototype.applyVec3IArray = function (sName, pData) {
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pDevice = this._pDevice;
+    pDevice.uniform3iv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram.prototype.applyVec4IArray = function (sName, pData) {
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pDevice = this._pDevice;
+    pDevice.uniform4iv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram.prototype.applyVec2FArray = function (sName, pData) {
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pDevice = this._pDevice;
+    pDevice.uniform2fv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram.prototype.applyVec3FArray = function (sName, pData) {
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pDevice = this._pDevice;
+    pDevice.uniform3fv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram.prototype.applyVec4FArray = function (sName, pData) {
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pDevice = this._pDevice;
+    pDevice.uniform4fv(this._pRealUniformList[sName], pData);
+};
+ShaderProgram.prototype.applyMat2Array = function (sName, pData) {
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pDevice = this._pDevice;
+    pDevice.uniformMatrix2fv(this._pRealUniformList[sName], false, pData);
+};
+ShaderProgram.prototype.applyMat3Array = function (sName, pData) {
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pDevice = this._pDevice;
+    pDevice.uniformMatrix3fv(this._pRealUniformList[sName], false, pData);
+};
+ShaderProgram.prototype.applyMat4Array = function (sName, pData) {
+    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pDevice = this._pDevice;
+    pDevice.uniformMatrix4fv(this._pRealUniformList[sName], false, pData);
+};
+
 ShaderProgram.prototype.applySampler2D = function (sName, pData) {
     var sTexture, pTexture;
     if (!pData) {
         return true;
     }
-    sTexture = pData[a.fx.GLOBAL_VARS.TEXTURE];
-//    if (typeof(sTexture) === "object") {
-//        pTexture = sTexture;
-//    }
-//    else {
+    var sRealName = this._pSamplersToReal[sName];
+    var pSlots;
+    var i;
+    var pTextureParam;
+    if (sRealName === null) {
+        //Zero sampler
+        return true;
+    }
+    if (typeof(sRealName) === "object") {
+        pSlots = sRealName;
+        sRealName = sName + "[0]";
+
+        for (i = 0; i < pSlots.length; i++) {
+            sTexture = pData[i][a.fx.GLOBAL_VARS.TEXTURE];
+            pTexture = this._pTextures ? (this._pTextures[sTexture]) : null;
+            if (!pTexture) {
+                pSlots[i] = a.fx.ZEROSAMPLER;
+            }
+            else {
+                pSlots[i] = this._pRenderer.activateTexture(pTexture);
+                pTextureParam = this._pTextureParams[pSlots[i]];
+                trace("Slot #" + pSlots[i]);
+                pTextureParam[a.TPARAM.MAG_FILTER] = pData[i][a.TPARAM.MAG_FILTER] ||
+                                                     pTexture._getParameter(a.TPARAM.MAG_FILTER) ||
+                                                     a.TFILTER.LINEAR;
+                pTextureParam[a.TPARAM.MIN_FILTER] = pData[i][a.TPARAM.MIN_FILTER] ||
+                                                     pTexture._getParameter(a.TPARAM.MIN_FILTER) ||
+                                                     a.TFILTER.LINEAR;
+                pTextureParam[a.TPARAM.WRAP_S] = pData[i][a.TPARAM.WRAP_S] ||
+                                                 pTexture._getParameter(a.TPARAM.WRAP_S) ||
+                                                 a.TWRAPMODE.REPEAT;
+                pTextureParam[a.TPARAM.WRAP_T] = pData[i][a.TPARAM.WRAP_T] ||
+                                                 pTexture._getParameter(a.TPARAM.WRAP_T) ||
+                                                 a.TWRAPMODE.REPEAT;
+            }
+        }
+        return this.applyIntArray(sRealName, pSlots);
+    }
+    if (pData.length >= 0) {
+        sTexture = pData[0][a.fx.GLOBAL_VARS.TEXTURE];
+    }
+    else {
+        sTexture = pData[a.fx.GLOBAL_VARS.TEXTURE];
+    }
     pTexture = this._pTextures ? (this._pTextures[sTexture]) : null;
-//    }
+
     if (!pTexture) {
         return true;
     }
-    var sRealName = a.fx.SHADER_PREFIX.SAMPLER + this._pSamplersToReal[sName];
     var iSlot = this._pRenderer.activateTexture(pTexture);
-    var pTextureParam = this._pTextureParams[iSlot];
+    pTextureParam = this._pTextureParams[iSlot];
     trace("Slot #" + iSlot);
     pTextureParam[a.TPARAM.MAG_FILTER] = pData[a.TPARAM.MAG_FILTER] ||
                                          pTexture._getParameter(a.TPARAM.MAG_FILTER) ||
@@ -394,6 +470,28 @@ ShaderProgram.prototype.applySampler2D = function (sName, pData) {
                                      a.TWRAPMODE.REPEAT;
     return this.applyInt(sRealName, iSlot);
 };
+ShaderProgram.prototype.applyVideoBuffer = function (sName, pData) {
+    if (pData === null) {
+        return true;
+    }
+    var sRealName = this._pBuffersToReal[sName];
+    if (sRealName === null) {
+        //Zero sampler
+        return true;
+    }
+    var iSlot = this._pRenderer.activateTexture(pData);
+    var pTextureParam = this._pTextureParams[iSlot];
+    pTextureParam[a.TPARAM.MAG_FILTER] = pData._getParameter(a.TPARAM.MAG_FILTER) ||
+                                         a.TFILTER.LINEAR;
+    pTextureParam[a.TPARAM.MIN_FILTER] = pData._getParameter(a.TPARAM.MIN_FILTER) ||
+                                         a.TFILTER.LINEAR;
+    pTextureParam[a.TPARAM.WRAP_S] = pData._getParameter(a.TPARAM.WRAP_S) ||
+                                     a.TWRAPMODE.REPEAT;
+    pTextureParam[a.TPARAM.WRAP_T] = pData._getParameter(a.TPARAM.WRAP_T) ||
+                                     a.TWRAPMODE.REPEAT;
+    return this.applyInt(sRealName, iSlot);
+};
+
 ShaderProgram.prototype.applyData = function (pData, iSlot) {
     if (!pData) {
         return false;
@@ -475,6 +573,7 @@ ShaderProgram.prototype.applyData = function (pData, iSlot) {
     return true;
 };
 
+
 ShaderProgram.prototype.setCurrentTextureSet = function (pTextures) {
     this._pTextures = pTextures;
 };
@@ -492,9 +591,148 @@ ShaderProgram.prototype.setAttrParams = function (pAttrToReal, pAttrToBuffer, pS
 ShaderProgram.prototype.setUniformVars = function (pUniforms, isZeroSampler) {
     this._pUniformVars = pUniforms;
     this._isZeroSampler = isZeroSampler || false;
+    var i;
+    var sType;
+    var isArray;
+    var pVar;
+    var pPreparedData = this._pUniformPreparedData;
+    var pFunctions = this._pUniformApplyFunctions;
+    for (i in pUniforms) {
+        pVar = pUniforms[i];
+        if (!pVar) {
+            continue;
+        }
+        sType = pVar.pType.pEffectType.toCode();
+        isArray = pVar.isArray;
+        pPreparedData[i] = this._preparedUniformData(pVar);
+        switch (sType) {
+            case "float":
+                if (isArray) {
+                    pFunctions[i] = this.applyFloatArray;
+                }
+                else {
+                    pFunctions[i] = this.applyFloat;
+                }
+                break;
+            case "int":
+                if (isArray) {
+                    pFunctions[i] = this.applyIntArray;
+                }
+                else {
+                    pFunctions[i] = this.applyInt;
+                }
+                break;
+            case "vec2":
+                if (isArray) {
+                    pFunctions[i] = this.applyVec2FArray;
+                }
+                else {
+                    pFunctions[i] = this.applyVec2F;
+                }
+                break;
+            case "vec3":
+                if (isArray) {
+                    pFunctions[i] = this.applyVec3FArray;
+                }
+                else {
+                    pFunctions[i] = this.applyVec3F;
+                }
+                break;
+            case "vec4":
+                if (isArray) {
+                    pFunctions[i] = this.applyVec4FArray;
+                }
+                else {
+                    pFunctions[i] = this.applyVec4F;
+                }
+                break;
+            case "ivec2":
+                if (isArray) {
+                    pFunctions[i] = this.applyVec2IArray;
+                }
+                else {
+                    pFunctions[i] = this.applyVec2I;
+                }
+                break;
+            case "ivec3":
+                if (isArray) {
+                    pFunctions[i] = this.applyVec3IArray;
+                }
+                else {
+                    pFunctions[i] = this.applyVec3I;
+                }
+                break;
+            case "ivec4":
+                if (isArray) {
+                    pFunctions[i] = this.applyVec4IArray;
+                }
+                else {
+                    pFunctions[i] = this.applyVec4I;
+                }
+                break;
+            case "mat2":
+                if (isArray) {
+                    pFunctions[i] = this.applyMat2Array;
+                }
+                else {
+                    pFunctions[i] = this.applyMat2;
+                }
+                break;
+            case "mat3":
+                if (isArray) {
+                    pFunctions[i] = this.applyMat3Array;
+                }
+                else {
+                    pFunctions[i] = this.applyMat3;
+                }
+                break;
+            case "mat4":
+                if (isArray) {
+                    pFunctions[i] = this.applyMat4Array;
+                }
+                else {
+                    pFunctions[i] = this.applyMat4;
+                }
+                break;
+            case "sampler2D":
+            case "samplerCube":
+                if (this._pPassBlend.pSamplers[i]) {
+                    pFunctions[i] = this.applySampler2D;
+                }
+                else {
+                    pFunctions[i] = this.applyVideoBuffer;
+                }
+                break;
+            default:
+                warning("Another base types are not support yet");
+        }
+    }
 };
 ShaderProgram.prototype.setTextureSlot = function (iSlot, pTexture) {
     this._pTextureSlots[iSlot] = this._nActiveTimes;
+};
+ShaderProgram.prototype._preparedUniformData = function (pVar) {
+    var pData;
+    var sType;
+    if (!pVar.isArray && pVar.iSize === 1) {
+        return null;
+    }
+    sType = pVar.pType.pEffectType.toCode();
+    var isFloat = true;
+    if (sType === "float" || sType === "vec2" || sType === "vec3" || sType === "vec4" ||
+        sType === "mat2" || sType === "mat3" || sType === "mat4") {
+        isFloat = true;
+    }
+    else {
+        isFloat = false;
+    }
+    if (isFloat) {
+        pData = new Float32Array(pVar.iSize);
+    }
+    else {
+        pData = new Int32Array(pVar.iSize);
+    }
+    return pData;
 };
 
 ShaderProgram.prototype.getSourceCode = function (eType) {

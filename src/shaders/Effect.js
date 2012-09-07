@@ -1322,6 +1322,9 @@ EffectVariable.prototype.setFSInput = function () {
 EffectVariable.prototype.toCodeDecl = function (isInit) {
     var sCode;
     sCode = this.pType.toCode() + " " + this.sRealName;
+    if (this.isArray) {
+        sCode += "[" + this.iLength + "]";
+    }
     if (isInit && this.pInitializer) {
         sCode += "=";
         var i;
@@ -1385,7 +1388,7 @@ function SamplerIndex(pCode, pSampler) {
     this.pSampler = pSampler;
 }
 SamplerIndex.prototype.toDataCode = function () {
-    return this.pSampler.isValid ? this._pData : "";
+    return this.pSampler.isValid ? this.pData : "";
 };
 SamplerIndex.prototype.extract = function (eMode) {
     this.pData = a.fx.fnSimpleExtractCode(this.pData, "", eMode);
