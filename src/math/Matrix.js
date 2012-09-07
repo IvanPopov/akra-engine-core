@@ -4786,6 +4786,11 @@ Quat4.prototype.slerp = function(q4fQuat,fA,q4fDestination) {
 
     var cosHalfTheta = pData1.X * pData2.X + pData1.Y * pData2.Y + pData1.Z * pData2.Z + pData1.W * pData2.W;
 
+    if (cosHalfTheta < 0) {
+        cosHalfTheta *= -1;
+        pData1 = q4fQuat.inverse(Quat4()).pData;
+    }
+
     if(Math.abs(cosHalfTheta) >= 1.){
         pDataDestination.X = pData1.X;
         pDataDestination.Y = pData1.Y;

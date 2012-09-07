@@ -22,7 +22,7 @@ function AnimationTrack (sTarget) {
 	 */
 	this._pKeyFrames = [];
 
-	this._eInterpolationMethod = a.AnimationTrack.INTERPOLATION_METHOD1;
+	this._eInterpolationMethod = a.AnimationTrack.INTERPOLATION_METHOD2;
 }
 
 PROPERTY(AnimationTrack, 'targetName',
@@ -193,12 +193,13 @@ AnimationTrack.prototype.frame = function (fTime) {
 	        fTimeDiff = 1;
 		
 		fScalar = (fTime - pKeys[iKey1].fTime) / fTimeDiff;
-		
+
 		AnimationTrack.interpolate(
 			this._pKeyFrames[iKey1], 
 			this._pKeyFrames[iKey2], 
 			pFrame, 
-			fScalar);
+			fScalar,
+			this._eInterpolationMethod);
 	}
 
 	pFrame.fTime = fTime;
@@ -207,10 +208,10 @@ AnimationTrack.prototype.frame = function (fTime) {
 	return pFrame;
 };
 
-AnimationTrack.interpolate = function (pStartFrame, pEndFrame, pResultFrame, fBlend) {
+AnimationTrack.interpolate = function (pStartFrame, pEndFrame, pResultFrame, fBlend, eMethod) {
     'use strict';
 
-    if (this._eInterpolationMethod === a.AnimationTrack.INTERPOLATION_METHOD1) {
+    if (eMethod === a.AnimationTrack.INTERPOLATION_METHOD1) {
 
 		var pResultData = pResultFrame.pMatrix.pData;
 		var pStartData = pStartFrame.pMatrix.pData;

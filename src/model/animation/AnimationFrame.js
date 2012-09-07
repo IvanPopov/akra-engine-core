@@ -29,7 +29,7 @@ function AnimationFrame (fTime, pMatrix, fWeight) {
 AnimationFrame.prototype.toMatrix = function () {
     'use strict';
     
-	return this.pMatrix;
+	//return this.pMatrix;
 	return this.qRotation.toMat4(this.pMatrix)
 			.setTranslation(this.v3fTranslation).scaleRight(this.v3fScale);
 };

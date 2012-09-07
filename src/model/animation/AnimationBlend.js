@@ -219,7 +219,7 @@ AnimationBlend.prototype.frame = function (sName, fRealTime) {
 	var fWeight;
 	var iAnim = 0;
 
-	if (1) {
+	if (0) {
 		for (var i = 0; i < pAnimationList.length; i++) {
 			pPointer = pAnimationList[i];
 
