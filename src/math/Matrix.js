@@ -4297,6 +4297,42 @@ function Quat4 () {
     }
 }
 
+PROPERTY(Quat4, 'x',
+    function () {
+        return this.pData.X;
+    },
+    function (fValue) {
+        this.pData.X = fValue;
+    }
+);
+
+PROPERTY(Quat4, 'y',
+    function () {
+        return this.pData.Y;
+    },
+    function (fValue) {
+        this.pData.Y = fValue;
+    }
+);
+
+PROPERTY(Quat4, 'z',
+    function () {
+        return this.pData.Z;
+    },
+    function (fValue) {
+        this.pData.Z = fValue;
+    }
+);
+
+PROPERTY(Quat4, 'w',
+    function () {
+        return this.pData.W;
+    },
+    function (fValue) {
+        this.pData.W = fValue;
+    }
+);
+
 /*
  * Quat4.set
  * Copies the values of one Quat4 to another
@@ -4567,6 +4603,107 @@ Quat4.prototype.multiplyVec3 = function(v3fVec,v3fDestination) {
     return v3fDestination;
 };
 
+/**
+ * сравнивает два кватениона
+ * q4fQuat - кватернион, с которым происходит сравнение
+ * fEps - точность сравнения, опционально, по умолцанию false
+ * asMatrix - показывает, сравнивать ли кватернионы или сравнивать матрицу, которую они задают, опционально, по умолцанию false
+ */
+Quat4.prototype.isEqual = function(q4fQuat,fEps,asMatrix) {
+    
+    fEps = ifndef(fEps,0);
+    asMatrix = ifndef(asMatrix,false);
+
+    var pData1 = this.pData;
+    var pData2 = q4fQuat.pData;
+
+    var x1 = pData1.X, y1 = pData1.Y, z1 = pData1.Z, w1 = pData1.W;
+    var x2 = pData2.X, y2 = pData2.Y, z2 = pData2.Z, w2 = pData2.W;
+
+    var length1 = Math.sqrt(x1*x1 + y1*y1 + z1*z1 + w1*w1);
+    var length2 = Math.sqrt(x2*x2 + y2*y2 + z2*z2 + w2*w2);
+
+    if(Math.abs(length1 - length2) > fEps){
+        return false;
+    }
+
+    var cosHalfTheta = (x1*x2 + y1*y2 + z1*z2 + w1*w2)/length1/length2;
+
+    if(asMatrix){
+        cosHalfTheta = Math.abs(cosHalfTheta);
+    }
+
+    if(1 - cosHalfTheta > fEps){
+        return false;
+    }
+
+    return true;
+};
+
+Quat4.prototype.toYawPitchRoll = function(v3fDestination) {
+    'use strict';
+
+    if(!v3fDestination){
+        v3fDestination = new Vec3();
+    }
+
+    var pData = this.pData;
+    var pDataDestination = v3fDestination.pData;
+
+    var fYaw, fPitch, fRoll;
+
+    var x = pData.X, y = pData.Y, z = pData.Z, w = pData.W;
+
+    var fx2 = x * 2;
+    var fy2 = y * 2;
+    var fz2 = z * 2;
+    var fw2 = w * 2;
+
+    var fSinPitch = Math.clamp(fx2*w - fy2*z,-1,1);//в очень редких случаях из-за ошибок округления получается результат > 1
+    fPitch = Math.asin(fSinPitch);  
+    //не известен знак косинуса, как следствие это потребует дополнительной проверки.
+    //как показала практика - это не на что не влияет, просто один и тот же кватернион можно получить двумя разными вращениями
+
+    if(Math.abs(x) == Math.abs(w)){
+        //вырожденный случай обрабатывается отдельно
+        //
+        var wTemp = w*Math.sqrt(2);
+        //cos(Yaw/2)*cos(Roll/2) + sin(Yaw/2)*sin(Roll/2) = cos((Yaw-Roll)/2); Roll = 0;
+        //x==-w
+        //cos(Yaw/2)*cos(Roll/2) - sin(Yaw/2)*sin(Roll/2) = cos((Yaw+Roll)/2); Roll = 0;
+        var yTemp = y*Math.sqrt(2);
+        //sin(Yaw/2)*cos(Roll/2) - cos(Yaw/2)*sin(Roll/2) = sin((Yaw-Roll)/2); Roll = 0;
+        //x==-w
+        //sin(Yaw/2)*cos(Roll/2) + cos(Yaw/2)*sin(Roll/2) = sin((Yaw+Roll)/2); Roll = 0;
+        
+        fYaw = Math.atan2(yTemp,wTemp)*2;
+        fRoll = 0;
+
+        //убираем дополнительный оборот
+        var pi = Math.PI;
+        if(fYaw > pi){
+            fYaw -= pi;
+            fRoll = (x == w) ? -pi : pi;
+        }
+        else if(fYaw < -pi){
+            fYaw += pi;
+            fRoll = (x == w) ? pi : -pi;
+        }
+    }
+    else{
+        //Math.atan2(sin(Yaw)*cos(Pitch),cos(Yaw)*cos(Pitch));
+        fYaw = Math.atan2(fx2*z + fy2*w, 1 - (fx2*x + fy2*y));
+        //Math.atan2(cos(Pitch) * sin(Roll),cos(Pitch)*cos(Roll));
+        fRoll = Math.atan2(fx2*y + fz2*w, 1 - (fx2*x + fz2*z));
+    }
+
+    pDataDestination.X = fYaw;
+    pDataDestination.Y = fPitch;
+    pDataDestination.Z = fRoll;
+
+    return v3fDestination;
+};
+
 Quat4.fromForwardUp = function(v3fForward,v3fUp,q4fDestination) {
     'use strict';
     if(!q4fDestination){
@@ -4636,25 +4773,36 @@ Quat4.fromAxisAngle = function(v3fAxis,fAngle,q4fDestination){
  * матрица на основе углов эйлера равна
  * resultMatrix = rotateY(fYaw) * rotateX(fPitch) * rotateZ(fRoll)
  */
+
 Quat4.fromYawPitchRoll = function(fYaw,fPitch,fRoll,q4fDestination) {
     'use strict';
+
     if(!q4fDestination){
         q4fDestination = new Quat4();
     }
 
-    //var pDataDestination = q4fDestination.pData;
+    var pDataDestination = q4fDestination.pData;
 
-    var qQuatY = Quat4(0.,Math.sin(fYaw/2),0.,Math.cos(fYaw/2));
-    var qQuatP = Quat4(Math.sin(fPitch/2),0.,0.,Math.cos(fPitch/2));
-    var qQuatR = Quat4(0.,0.,Math.sin(fRoll/2),Math.cos(fRoll/2));
+    var fHalfYaw = fYaw * 0.5;
+    var fHalfPitch = fPitch * 0.5;
+    var fHalfRoll = fRoll * 0.5;
 
-    return qQuatY.multiply(qQuatP.multiply(qQuatR),q4fDestination)
-};
+    var fCos1 = Math.cos(fHalfYaw), fSin1 = Math.sin(fHalfYaw);
+    var fCos2 = Math.cos(fHalfPitch), fSin2 = Math.sin(fHalfPitch);
+    var fCos3 = Math.cos(fHalfRoll), fSin3 = Math.sin(fHalfRoll);
+
+    pDataDestination.X = fCos1 * fSin2 * fCos3 + fSin1 * fCos2 * fSin3;
+    pDataDestination.Y = fSin1 * fCos2 * fCos3 - fCos1 * fSin2 * fSin3;
+    pDataDestination.Z = fCos1 * fCos2 * fSin3 - fSin1 * fSin2 * fCos3;
+    pDataDestination.W = fCos1 * fCos2 * fCos3 + fSin1 * fSin2 * fSin3;
+
+    return q4fDestination;
+}
 
 /**
  * строит кватернион через углы поворота вокруг осей X Y Z
- * аналогичная матрица строится как
- * resultMatrix = rotate(fX) * rotate(fY) * rotate(fZ);
+ * аналогичная матрица строится как, для согласования с Yaw Pitch Roll
+ * resultMatrix = rotate(fY) * rotate(fX) * rotate(fZ);
  */
 
 Define(Quat4.fromXYZ(fX,fY,fZ),
