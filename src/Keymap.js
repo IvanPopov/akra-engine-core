@@ -317,9 +317,9 @@ var Gamepad = {
                     Gamepad.collection.push(rawGamepads[i]);
                 }
             }
-            if (gamepadsChanged) {
+            //if (gamepadsChanged) {
                 //todo: collection changed...
-            }
+            //}
         }
     }
 };

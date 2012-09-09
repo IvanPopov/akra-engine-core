@@ -197,7 +197,7 @@ ApiInfo.prototype.checkWebGL = function () {
         var pContext = pCanvas.getContext('webgl') ||
             pCanvas.getContext('experimental-webgl');
         if (pContext) {
-            delete pContext;
+            //delete pContext;
             return true
         }
     }

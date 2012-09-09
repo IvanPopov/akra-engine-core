@@ -275,8 +275,7 @@ Skin.prototype.apply = Skin.prototype.applyBoneMatrices;
 Skin.prototype.isReady = function () {
     'use strict';
     
-    return 
-    this._pInfMetaData && this._pInfData && this._pWeightData && 
+    return this._pInfMetaData && this._pInfData && this._pWeightData && 
     this._pBoneOffsetMatrixBuffer && this._pBoneOffsetMatrices && 
     this._pNodeNames &&
     this._m4fBindMatrix;

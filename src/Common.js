@@ -9,13 +9,36 @@ Define(__AKRA_ENGINE__, true);
 //Define(trace(__ARGS__), function () { console.log(__ARGS__); });
 window.trace = console.log.bind(console);
 
+// ========== NAMEPSPACEs ========
+
+Define(PROPERTY_GUARD(object, $$property, value), function () {
+    object[property] = value;
+});
+
+Define(A_DEFINE_NAMESPACE($$name), function () {
+    if (!a[name]) a[name] = {};
+});
+Define(A_DEFINE_NAMESPACE($$name, $$space), function () {
+    if (!a[space][name]) a[space][name] = {};
+});
+Define(A_NAMESPACE(object, $$space), function () {
+    PROPERTY_GUARD(a[space], object, object)
+});
+
+Define(A_NAMESPACE(object), function () {
+    PROPERTY_GUARD(a, object, object);
+});
+
+A_DEFINE_NAMESPACE(fx);
+A_DEFINE_NAMESPACE(util);
+
 
 /**
  * Implementation inheritance in Javascript.
  * @tparam pChild Child object.
  * @tparam pParent Parent object.
  */
-a.extend = function (pChild) {
+function extend(pChild) {
     var fnGet, fnSet, i, sKey;
     var pParent = arguments[1];
     var argv = arguments;
@@ -68,9 +91,12 @@ a.extend = function (pChild) {
     };
 };
 
+A_NAMESPACE(extend);
+
 Define(TO_STRING($$object), function () {
     object;
 });
+
 Define(A_CHECK_STORAGE(), function () {
     if (this === window || !this || this === window.AKRA) {
         //FIXME: remove debug info
@@ -138,7 +164,7 @@ Define(EXTENDS(__ARGS__), function () {a.extend(__ARGS__)});
  * @tparam Object pObject Исходный объект.
  * @treturn Object Копия объекта.
  */
-a.clone = function (pObject) {
+function clone(pObject) {
     if (pObject == null || typeof(obj) != 'object') {
         return pObject;
     }
@@ -150,6 +176,8 @@ a.clone = function (pObject) {
     }
     return tmp;
 };
+
+A_NAMESPACE(clone);
 
 Define(GET_FUNC_NAME(fn), function () {
     fn.toString().match(/function\s*(\w+)/)[1]
@@ -170,7 +198,7 @@ Define(tr(str), function () {
  * @tparam Object pObj Исходный объект
  * @tretrurn String
  */
-a.getClass = function (pObj) {
+function getClass(pObj) {
     if (pObj && typeof pObj === 'object' &&
         Object.prototype.toString.call(pObj) !== '[object Array]' && pObj.constructor && pObj != this.window) {
         var arr = pObj.constructor.toString().match(/function\s*(\w+)/);
@@ -183,7 +211,7 @@ a.getClass = function (pObj) {
     return sType[0].toUpperCase() + sType.substr(1);
 };
 
-
+A_NAMESPACE(getClass);
 
 /**
  * Преобразование json-сформированного текста
@@ -204,7 +232,8 @@ function parseJSON(sJSON) {
      return value;
      });*/
 };
-a.parseJSON = parseJSON;
+
+A_NAMESPACE(parseJSON);
 
 /**
  * Преобразование html-сформированного текста
@@ -270,27 +299,6 @@ function str2buf(s) {
 
 A_NAMESPACE(str2buf);
 
-ArrayBuffer.prototype.toTypedArray = function (eType) {
-    switch (eType) {
-        case a.DTYPE.FLOAT:
-            return new Float32Array(this);
-        case a.DTYPE.SHORT:
-            return new Int16Array(this);
-        case a.DTYPE.UNSIGNED_SHORT:
-            return new Uint16Array(this);
-        case a.DTYPE.INT:
-            return new Int32Array(this);
-        case a.DTYPE.UNSIGNED_INT:
-            return new Uint32Array(this);
-        case a.DTYPE.BYTE:
-            return new Int8Array(this);
-        default:
-        case a.DTYPE.UNSIGNED_BYTE:
-            return new Uint8Array(this);
-    }
-    return null;
-}
-
 Ifdef(__RELEASE)
 Elseif()
     Define(__DEBUG, 1)
@@ -305,17 +313,6 @@ Endif();
 Ifdef(__DEBUG)
 
 Define(a.isDebug, true)
-
-Number.prototype.printBinary = function (isPretty) {
-    var res = '';
-    for (i = 0; i < 32; ++i) {
-        if (i && (i % 4) == 0 && isPretty) {
-            res = ' ' + res;
-        }
-        (this >> i & 0x1 ? res = '1' + res : res = '0' + res);
-    }
-    return res;
-};
 
 Define(debug_assert(cond, comment), function () {
     if (!cond) {
@@ -563,20 +560,6 @@ Define(GEN_ARRAY(name, type, size), function () {
     for (var _i = 0; _i < size; ++_i) {
         name[_i] = (type ? (new type) : null);
     }
-});
-
-Define(A_DEFINE_NAMESPACE(name), function () {
-    if (!a.name) a.name = {};
-});
-Define(A_DEFINE_NAMESPACE(name, $$space), function () {
-    if (!a[space].name) a[space].name = {};
-});
-Define(A_NAMESPACE(object, $$space), function () {
-    a[space].object = object;
-});
-
-Define(A_NAMESPACE(object), function () {
-    a.object = object;
 });
 
 

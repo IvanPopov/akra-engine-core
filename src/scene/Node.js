@@ -104,7 +104,7 @@ PROPERTY(Node, 'name',
 PROPERTY(Node, 'depth',
     function () {
         var iDepth = -1;
-        for (var pNode = this; pNode; pNode = pNode.parent(), ++ iDepth);
+        for (var pNode = this; pNode; pNode = pNode.parent(), ++ iDepth){};
         return iDepth;
     });
 
@@ -160,7 +160,7 @@ Node.prototype.childOf = function (pParent) {
 PROPERTY(Node, 'root',
     function () {
         var iDepth = -1;
-        for (var pNode = this; pNode.parent(); pNode = pNode.parent(), ++ iDepth);
+        for (var pNode = this; pNode.parent(); pNode = pNode.parent(), ++ iDepth){};
         return pNode;
     });
 

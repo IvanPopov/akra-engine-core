@@ -1,7 +1,14 @@
-var a = {
-    fx: {},
-    util: {}
-};
+function defineNotWritableProperty(pObject, pPropList, pValue) {
+	for (var sProp in pPropList) {
+		Object.defineProperty(pObject, sProp, {
+			value: pValue,
+			writable: false,
+			configurable: false
+		});
+	}
+}
+
+defineNotWritableProperty(window, ['a', 'akra', 'AKRA'], {});
 
 Define(DEV_BUILD, 1);
 
@@ -65,6 +72,5 @@ Include('sprites/');
 Include('objects/');
 Include('Engine.js');
 
-window['a'] = window['akra'] = window['AKRA'] = a;
-
 //Include('../../akra-engine-general/analyzer/A_Analyzer.js');
+

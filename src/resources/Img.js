@@ -1304,11 +1304,11 @@ Img.prototype.load=function(sFileName, fnCallBack)
     	};
 		return;
 	}
-
-	if(fnCallBack)
-	{
-		fnCallBack(false);
-	}
+    // unreachable code
+	// if(fnCallBack)
+	// {
+	// 	fnCallBack(false);
+	// }
 };
 
 

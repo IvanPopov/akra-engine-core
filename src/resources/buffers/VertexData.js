@@ -691,14 +691,16 @@ VertexData.prototype.setData = function (pData, iOffset, iSize, nCountStart, nCo
 
                 return false;
             }
-            else {
-                nCountStart = nCountStart || 0;
-                if (!nCount) {
-                    nCount = pData.buffer.byteLength / iSize;
-                }
-                return this.setData(pData, iOffset, iSize, nCountStart, nCount);
+       
+            nCountStart = nCountStart || 0;
+            
+            if (!nCount) {
+                nCount = pData.buffer.byteLength / iSize;
             }
-            return false;
+
+            return this.setData(pData, iOffset, iSize, nCountStart, nCount);
+            
+
         case 2:
         case 3:
             var pDeclaration = this._pVertexDeclaration,
@@ -733,7 +735,6 @@ VertexData.prototype.setData = function (pData, iOffset, iSize, nCountStart, nCo
         default:
             return false;
     }
-    return false;
 }
 
 //VertexData.prototype.setData.count=0;
@@ -811,7 +812,6 @@ VertexData.prototype.getData = function (iOffset, iSize, iFrom, iCount) {
         default:
             return null;
     }
-    return null;
 }
 
 

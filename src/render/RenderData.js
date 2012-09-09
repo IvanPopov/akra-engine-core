@@ -404,7 +404,6 @@ RenderData.prototype._allocateIndex = function (pAttrDecl, pData) {
     var pIndexData = this._pIndexData;
     var pIndexBuffer = this._pIndexBuffer;
     var pBuffer = this._pBuffer;
-    'use strict';
     
 Ifdef (__DEBUG)
     for (var i = 0; i < pAttrDecl.length; i++) {

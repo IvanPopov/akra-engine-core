@@ -461,21 +461,21 @@ function DataPool (pEngine, fnTemplate) {
      * @type Int
      * @memberof DataPool
      **/
-    this._iGroupCount;
+    this._iGroupCount = 0;
     /**
      * Номер элемента состоит из номер группы сдвинутого на _iIndexShift
      * и номера элемента в этой группе, который можно вырезать маской _iIndexMask
      * @type Int
      * @memberof DataPool
      **/
-    this._iIndexMask;
+    this._iIndexMask = 0;
     /**
      * Номер элемента состоит из номер группы сдвинутого на _iIndexShift
      * и номера элемента в этой группе, который можно вырезать маской _iIndexMask
      * @type Int
      * @memberof DataPool
      **/
-    this._iIndexShift;
+    this._iIndexShift = 0;
 
     DataPool.superclass.constructor.apply(this, arguments);
 }

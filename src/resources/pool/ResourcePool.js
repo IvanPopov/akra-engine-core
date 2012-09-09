@@ -34,7 +34,7 @@ function ResourcePoolInterface (pEngine, fnTemplate) {
      * @type String
      * @memberof ResourcePoolInterface
      **/
-    this.sExt;
+    this.sExt = null;
     /**
      * __DESCRIPTION__
      * @type Int
@@ -244,7 +244,6 @@ ResourcePoolInterface.prototype.createResource = function (sResourceName) {
     if (VALID_HANDLE(iHandle)) {
         //alert("createResource:3");
         var pResource = this.getResource(iHandle);
-        //console.log('res handle', iHandle, sResourceName, a.getClass(pResource));
         //alert("createResource:4");
         pResource._setResourcePool(this);
         //alert("createResource:5");

@@ -390,8 +390,7 @@ Texture.prototype.generateNormalMap = function (pHeightMap, iChannel, fAmplitude
     }
     this.setPixelRGBA(0, 0, this._iWidth, this._iHeight, pColor);
 
-    delete pNormalTable;
-
+    //delete pNormalTable;
 };
 
 /**
@@ -570,7 +569,8 @@ Texture.prototype.loadResource = function (sFileName)
 		);
 		return true;
 	}
-    return false;
+    //unreachable code
+    //return false;
 };
 
 

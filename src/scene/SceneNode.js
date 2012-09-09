@@ -194,7 +194,7 @@ SceneNode.prototype.createSubNode = function () {
 SceneNode.prototype.destroySubNode = function (pSubNode) {
     pSubNode.destroy();
     pSubNode._pSubNodeGroupOwner = null;
-    delete pSubNode;
+    //delete pSubNode;
     pSubNode = null;
 };
 Ifdef (__DEBUG);

@@ -181,7 +181,7 @@ SceneModel.prototype.render = function () {
 };
 
 SceneModel.prototype.renderCallback = function (pEntry, iActivationFlags) {
-    return;
+/*    return;
     // if we queued ourselved for rendering with the
     // display manager, we will get this function
     // called when it is our turn to render
@@ -247,7 +247,7 @@ SceneModel.prototype.renderCallback = function (pEntry, iActivationFlags) {
 
         // draw the mesh subset
         this._pModelResource.renderModelSubset(pEntry.modelParamA, pEntry.modelParamB);
-    }
+    }*/
 };
 
 

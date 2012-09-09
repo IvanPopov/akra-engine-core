@@ -100,12 +100,7 @@ a.fopen = function (sUri) {
 
         return new a.LocalFile(pFolders.join('/'), pMode);
     }
-    else {
-        return new a.RemoteFile(sUri, pMode);
-    }
 
-    return (pUri);
-
-//return new a.File(a.uri(sUri))
+    return new a.RemoteFile(sUri, pMode);
 }
 
