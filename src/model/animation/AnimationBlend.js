@@ -219,77 +219,41 @@ AnimationBlend.prototype.frame = function (sName, fRealTime) {
 	var fWeight;
 	var iAnim = 0;
 
-	if (0) {
-		for (var i = 0; i < pAnimationList.length; i++) {
-			pPointer = pAnimationList[i];
 
-			if (!pPointer) {
-				continue;
-			}
+	for (var i = 0; i < pAnimationList.length; i++) {
+		pPointer = pAnimationList[i];
 
-			fAcceleration = pPointer.acceleration;
-			pMask = pPointer.mask;
-			fBoneWeight = 1.0;
-
-			pPointer.time = pPointer.time + (fRealTime - pPointer.realTime) * fAcceleration;
-	    	pPointer.realTime = fRealTime;
-
-			pFrame = pPointer.animation.frame(sName, pPointer.time);
-			
-
-			if (pMask) {
-				fBoneWeight = ifndef(pMask[sName], 1.0);
-			}
-
-			fWeight = fBoneWeight * pPointer.weight;
-
-			if (pFrame && fWeight > 0.0) {
-				pResultFrame.add(pFrame.mult(fWeight));
-			}
+		if (!pPointer) {
+			continue;
 		}
 
-		if (pResultFrame.fWeight === 0.0) {
-			return null;
+		fAcceleration = pPointer.acceleration;
+		pMask = pPointer.mask;
+		fBoneWeight = 1.0;
+
+		pPointer.time = pPointer.time + (fRealTime - pPointer.realTime) * fAcceleration;
+    	pPointer.realTime = fRealTime;
+
+		pFrame = pPointer.animation.frame(sName, pPointer.time);
+		
+
+		if (pMask) {
+			fBoneWeight = ifndef(pMask[sName], 1.0);
 		}
 
-		return pResultFrame.normilize();
+		fWeight = fBoneWeight * pPointer.weight;
+
+		if (pFrame && fWeight > 0.0) {
+			iAnim ++;
+			pResultFrame.add(pFrame.mult(fWeight), iAnim === 1);//first, if 1
+		}
 	}
-	else {
 
-		for (var i = 0; i < pAnimationList.length; i++) {
-			pPointer = pAnimationList[i];
-
-			if (!pPointer) {
-				continue;
-			}
-
-			fAcceleration = pPointer.acceleration;
-			pMask = pPointer.mask;
-			fBoneWeight = 1.0;
-
-			pPointer.time = pPointer.time + (fRealTime - pPointer.realTime) * fAcceleration;
-	    	pPointer.realTime = fRealTime;
-
-			pFrame = pPointer.animation.frame(sName, pPointer.time);
-
-			if (pMask) {
-				fBoneWeight = ifndef(pMask[sName], 1.0);
-			}
-
-			fWeight = fBoneWeight * pPointer.weight;
-			
-			if (pFrame && fWeight > 0.0) {
-				iAnim ++;
-				pResultFrame.add2(pFrame.mult(fWeight), iAnim === 1);//first, if 1
-			}
-		}
-
-		if (pResultFrame.fWeight === 0.0) {
-			return null;
-		}
-
-		return pResultFrame.normilize2();
+	if (pResultFrame.fWeight === 0.0) {
+		return null;
 	}
+
+	return pResultFrame.normilize();
 };
 
 //

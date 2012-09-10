@@ -183,7 +183,9 @@ ModelResource.prototype.loadResource = function (sFilename, pOptions) {
     if (a.pathinfo(sFilename).ext.toLowerCase() === 'aac') {
 
         a.fopen(sFilename, "rb").read(function(pData) {
+            var iBegin = a.now();
             me._pAnimController = a.undump(pData, {engine: me.getEngine()});
+            trace(a.now() - iBegin, 'ms < 6000');
             fnCallback();
         });
 

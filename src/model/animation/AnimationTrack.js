@@ -1,8 +1,4 @@
 function AnimationTrack (sTarget) {
-	Enum([
-		INTERPOLATION_METHOD1, //матрицы
-		INTERPOLATION_METHOD2 //не матрицы
-		], ANIMATION_TRACK, a.AnimationTrack);
 
 	/**
 	 * Bone name or Node name
@@ -22,7 +18,7 @@ function AnimationTrack (sTarget) {
 	 */
 	this._pKeyFrames = [];
 
-	this._eInterpolationMethod = a.AnimationTrack.INTERPOLATION_METHOD2;
+	this._eInterpolationType = a.Animation.INTERPOLATION_MATRIX_LINEAR;
 }
 
 PROPERTY(AnimationTrack, 'targetName',
@@ -194,12 +190,10 @@ AnimationTrack.prototype.frame = function (fTime) {
 		
 		fScalar = (fTime - pKeys[iKey1].fTime) / fTimeDiff;
 
-		AnimationTrack.interpolate(
+		pFrame.interpolate(
 			this._pKeyFrames[iKey1], 
 			this._pKeyFrames[iKey2], 
-			pFrame, 
-			fScalar,
-			this._eInterpolationMethod);
+			fScalar);
 	}
 
 	pFrame.fTime = fTime;
@@ -208,26 +202,6 @@ AnimationTrack.prototype.frame = function (fTime) {
 	return pFrame;
 };
 
-AnimationTrack.interpolate = function (pStartFrame, pEndFrame, pResultFrame, fBlend, eMethod) {
-    'use strict';
-
-    if (eMethod === a.AnimationTrack.INTERPOLATION_METHOD1) {
-
-		var pResultData = pResultFrame.pMatrix.pData;
-		var pStartData = pStartFrame.pMatrix.pData;
-		var pEndData = pEndFrame.pMatrix.pData;
-		var fBlendInv = 1. - fBlend;
-
-		for (var i = 0; i < 16; i++) {
-			pResultData[i] = pEndData[i] * fBlend + pStartData[i] * fBlendInv;
-		};
-	}
-	else {
-		pStartFrame.v3fTranslation.mix(pEndFrame.v3fTranslation, fBlend, pResultFrame.v3fTranslation);
-		pStartFrame.v3fScale.mix(pEndFrame.v3fScale, fBlend, pResultFrame.v3fScale);
-		pStartFrame.qRotation.slerp(pEndFrame.qRotation, fBlend, pResultFrame.qRotation);
-	}
-};
 
 AnimationTransformation = AnimationTrack;
 

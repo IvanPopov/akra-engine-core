@@ -1161,7 +1161,7 @@ function dump (pObject, pOptions) {
     //FIXME: remove auto headering
     pOptions = pOptions || {};
     
-    if (pOptions) {
+    if (pOptions && pOptions.header === undefined) {
         pOptions['header'] = true;
     }   
 

@@ -4,7 +4,10 @@ A_FORMAT({
 			'fTime'			: 'Float',
 			'fWeight'		: 'Float',
 			'pMatrix'		: {
-				write: 'Mat4',
+				write: function (pFrame) {
+					var m4f = pFrame.toMatrix();
+					this.write(m4f);
+				},
 				read: function (pFrame) {
 					var m4f = this.read();
 
