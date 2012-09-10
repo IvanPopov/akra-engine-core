@@ -4441,18 +4441,18 @@ Quat4.prototype.calculateW = function(q4fDestination) {
 };
 
 /*
- * Quat4.inverse
- * Calculates the inverse of a Quat4
+ * Quat4.conjugate 
+ * Calculates the conjugate of a Quat4
  *
  * Params:
- * quat - Quat4 to calculate inverse of
- * dest - Optional, Quat4 receiving inverse values. If not specified result is written to quat
+ * quat - Quat4 to calculate conjugate of
+ * dest - Optional, Quat4 receiving conjugate values. If not specified result is written to quat
  *
  * Returns:
  * dest if specified, quat otherwise
  */
 
-Quat4.prototype.inverse = function(q4fDestination) {
+Quat4.prototype.conjugate  = function(q4fDestination) {
     'use strict';
     var pData = this.pData;
 
@@ -4470,6 +4470,36 @@ Quat4.prototype.inverse = function(q4fDestination) {
     pDataDestination.Y = -pData.Y;
     pDataDestination.Z = -pData.Z;
     pDataDestination.W = pData.W;
+
+    return q4fDestination;
+};
+
+Quat4.prototype.inverse = function(q4fDestination) {
+    'use strict';
+
+    if(!q4fDestination){
+        q4fDestination = this;
+    }
+
+    var pData = this.pData;
+    var pDataDestination = q4fDestination.pData;
+
+    var x = pData.X, y = pData.Y, z = pData.Z, w = pData.W;
+    var fSqLength = x*x + y*y + z*z + w*w;
+
+    if(fSqLength == 0){
+        pDataDestination.X = 0;
+        pDataDestination.Y = 0;
+        pDataDestination.Z = 0;
+        pDataDestination.W = 0;
+    }
+    else{
+        var fInv = 1/fSqLength;
+        pDataDestination.X = -x*fInv;
+        pDataDestination.Y = -y*fInv;
+        pDataDestination.Z = -z*fInv;
+        pDataDestination.W =  w*fInv;
+    }
 
     return q4fDestination;
 };
@@ -4915,13 +4945,13 @@ Quat4.prototype.toString = function() {
 
 /**
  * делает сферическую линейную интерполяцию между кватернионами
- * НЕ ТЕСТИРОВАНА
  */
-Quat4.prototype.slerp = function(q4fQuat,fA,q4fDestination) {
+Quat4.prototype.slerp = function(q4fQuat,fA,q4fDestination,bShortestPath) {
     'use strict';
     if(!q4fDestination){
         q4fDestination = this;
     }
+    bShortestPath = ifndef(bShortestPath,true);
 
     fA = Math.clamp(fA,0,1);
 
@@ -4929,35 +4959,51 @@ Quat4.prototype.slerp = function(q4fQuat,fA,q4fDestination) {
     var pData2 = q4fQuat.pData;
     var pDataDestination = q4fDestination.pData;
 
-    var cosHalfTheta = pData1.X * pData2.X + pData1.Y * pData2.Y + pData1.Z * pData2.Z + pData1.W * pData2.W;
+    var fCos = pData1.X * pData2.X + pData1.Y * pData2.Y + pData1.Z * pData2.Z + pData1.W * pData2.W;
 
-    if(Math.abs(cosHalfTheta) >= 1.){
-        pDataDestination.X = pData1.X;
-        pDataDestination.Y = pData1.Y;
-        pDataDestination.Z = pData1.Z;
-        pDataDestination.W = pData1.W;
-        return q4fDestination;
+    if(fCos < 0 && bShortestPath){
+        fCos = -fCos;
+        pData2 = Quat4(-pData2.X, -pData2.Y, -pData2.Z, -pData2.W).pData;
     }
 
-    var halfTheta = Math.acos(cosHalfTheta);
-    var sinHalfTheta = Math.sqrt(1 - cosHalfTheta*cosHalfTheta);
+    var fEps = 1e-3;
+    if(Math.abs(fCos) < 1. - fEps){
+        var fSin = Math.sqrt(1 - fCos*fCos);
+        var fInvSin = 1/fSin;
 
-    if(Math.abs(sinHalfTheta) < 0.001){
-        pDataDestination.X = (pData1.X * 0.5 + pData2.X * 0.5);
-        pDataDestination.Y = (pData1.Y * 0.5 + pData2.Y * 0.5);
-        pDataDestination.Z = (pData1.Z * 0.5 + pData2.Z * 0.5);
-        pDataDestination.W = (pData1.W * 0.5 + pData2.W * 0.5);
+        var fAngle = Math.atan2(fSin,fCos);
 
-        return q4fDestination;
+        var k1 = Math.sin((1 - fA) * fAngle)*fInvSin;
+        var k2 = Math.sin(fA * fAngle)*fInvSin;
+
+        pDataDestination.X = pData1.X * k1 + pData2.X * k2;
+        pDataDestination.Y = pData1.Y * k1 + pData2.Y * k2;
+        pDataDestination.Z = pData1.Z * k1 + pData2.Z * k2;
+        pDataDestination.W = pData1.W * k1 + pData2.W * k2;
     }
+    else{
+        //два кватерниона или очень близки (тогда можно делать линейную интерполяцию) 
+        //или два кватениона диаметрально противоположны, тогда можно интерполировать любым способом
+        //позже надо будет реализовать какой-нибудь, а пока тоже линейная интерполяция
+        
+        var k1 = 1 - fA;
+        var k2 = fA;
 
-    var k1 = Math.sin((1 - fA) * halfTheta)/sinHalfTheta;
-    var k2 = Math.sin(fA * halfTheta)/sinHalfTheta;
+        var x = pData1.X * k1 + pData2.X * k2;
+        var y = pData1.Y * k1 + pData2.Y * k2;
+        var z = pData1.Z * k1 + pData2.Z * k2;
+        var w = pData1.W * k1 + pData2.W * k2;
 
-    pDataDestination.X = (pData1.X * k1 + pData2.X * k2);
-    pDataDestination.Y = (pData1.Y * k1 + pData2.Y * k2);
-    pDataDestination.Z = (pData1.Z * k1 + pData2.Z * k2);
-    pDataDestination.W = (pData1.W * k1 + pData2.W * k2);
+        // и нормализуем так-как мы сошли со сферы
+        
+        var fLength = Math.sqrt(x*x + y*y + z*z + w*w);
+        var fInvLen = 1/fLength;
+
+        pDataDestination.X = x * fInvLen;
+        pDataDestination.Y = y * fInvLen;
+        pDataDestination.Z = z * fInvLen;
+        pDataDestination.W = w * fInvLen;
+    }
 
     return q4fDestination;
 };
