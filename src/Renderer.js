@@ -80,12 +80,21 @@ function Renderer(pEngine) {
     Enum([
              MATERIAL = "MATERIAL"
          ], BASE_SEMANTICS, a.Renderer);
+    Enum([
+             WAIT = 0,
+             LOAD = 1,
+             ANALYZED = 2
+         ], EFFECTFILELOADSTATES, a.Renderer.EffectFile);
 
     this.pEngine = pEngine;
     this.pDevice = pEngine.pDevice;
     this._pEngineStates = pEngine.pSystemStates;
 
     this._nEffectFile = 1;
+    this._pEffectFileStack = [];
+
+    this._pEffectFileDataPool = new a.EffectFileDataManager(pEngine);
+    this._pEffectFileDataPool.initialize(16);
 
     this._pComponentBlendsHash = {"EMPTY" : null};
     this._pComponentBlendsId = {0 : null};
@@ -154,34 +163,15 @@ Renderer.prototype._initSystemUniforms = function () {
  *         So name of components from file will be: "sName" + ":" + "sTechniqueName"\n
  *         Example: "baseEffect:GEOMETRY", "lightEffect:POINT"
  */
-Renderer.prototype.loadEffectFile = function (sFileName, sEffectName) {
+Renderer.prototype.loadEffectFile = function (sFileName) {
     var reExt = /^(.+)(\.afx|\.abf|\.fx)$/;
     var pRes = reExt.exec(sFileName);
-    var pEffect;
-    var sSource;
+
     if (!pRes) {
         warning("File has wrong extension! It must be .fx!");
         return false;
     }
-    sEffectName = sEffectName || pRes[1];
-    pEffect = new a.fx.Effect(this, this._nEffectFile);
-    this._nEffectFile++;
-    sSource = a.ajax({url : sFileName, async : false}).data;
-    a.util.parser.parse(sSource);
-    var isLoadOk = pEffect.analyze(a.util.parser.pSyntaxTree);
-//    trace(pEffect);
-    if (!isLoadOk) {
-        warning("Effect file:(\"" + sFileName + "\")can not be loaded");
-        return false;
-    }
-    var i;
-    var pTechniques = pEffect.pTechniques;
-    for (i in pTechniques) {
-        if (!this._initComponent(pTechniques[i])) {
-            warning("Can not initialize component from effect " + sFileName +
-                    " with name " + pTechniques[i].sName + "!");
-        }
-    }
+    this._pEffectFileDataPool.loadResource(sFileName);
 };
 /**
  * Initialization component from technique. Name of component will be 'sEffectName' + ':' + 'pTechnique.sName'
@@ -233,6 +223,76 @@ Renderer.prototype._initComponent = function (pTechnique) {
     }
     return true;
 };
+Renderer.prototype._loadEffectFile = function (sFileName, pEffectResource) {
+    var me = this;
+    this._pEffectFileStack.push(pEffectResource);
+    a.fopen(sFileName, "r").read(
+        function (pData) {
+            var sSource = pData;
+            var pFirst = me._pEffectFileStack[0];
+            pEffectResource.eStatus = 1;
+            pEffectResource._sSource = sSource;
+            if (pEffectResource === pFirst) {
+                a.util.parser.parse(sSource, me._analyzeEffect, me);
+            }
+        },
+        function () {
+            warning("It is impossible to load effect file");
+            var pFirst = me._pEffectFileStack[0];
+            me._deleteElementFromLoadQueue(pEffectResource);
+            if (pEffectResource === pFirst) {
+                me._nextEffect();
+            }
+        }
+    );
+};
+Renderer.prototype._analyzeEffect = function (eCode) {
+    if (eCode === a.Parser.OK) {
+
+        var pEffect = new a.fx.Effect(this, this._nEffectFile);
+        this._nEffectFile++;
+
+        if (pEffect.analyze(a.util.parser.pSyntaxTree)) {
+            var i;
+            var pTechniques = pEffect.pTechniques;
+
+            for (i in pTechniques) {
+                if (!this._initComponent(pTechniques[i])) {
+                    warning("Can not initialize component from effect " +
+                            " with name " + pTechniques[i].sName + "!");
+                }
+            }
+
+        }
+        else {
+            warning("Some semantic error was found during analyze of effect file");
+        }
+    }
+    else {
+        warning("Some error was occur during syntax analyze of effect file. Code: " + eCode);
+    }
+    this._pEffectFileStack.shift().notifyLoaded();
+    this._nextEffect();
+    return true;
+};
+Renderer.prototype._deleteElementFromLoadQueue = function (pElement) {
+    var i, pStack = this._pEffectFileStack;
+    for (i = pStack.length; i >= 0; i++) {
+        if (pStack[i] === pElement) {
+            pStack.splice(i, 1);
+            return true;
+        }
+    }
+    return false;
+};
+Renderer.prototype._nextEffect = function () {
+    var pElement = this._pEffectFileStack[0];
+    if (pElement && pElement.eStatus === 1) {
+        a.util.parser.parse(pElement._sSource, this._analyzeEffect, this);
+    }
+    return true;
+};
+
 
 //----Methods for blending components and effect resources----//
 Renderer.prototype.getComponentByName = function (sName) {
@@ -1315,7 +1375,7 @@ Renderer.prototype.render = function (pEntry) {
 Renderer.prototype._setViewport = function (x, y, width, height) {
     this.pDevice.viewport(x, y, width, height);
 };
-Renderer.prototype.processRenderQueue = function(){
+Renderer.prototype.processRenderQueue = function () {
     this._pRenderQueue.execute();
 };
 
@@ -1409,6 +1469,9 @@ Renderer.prototype._occupyStream = function (iStream, pProgram) {
  */
 Renderer.prototype.initialize = function () {
     this._pRenderQueue.init();
+    this._pEffectFileDataPool.registerResourcePool(
+        new a.ResourceCode(a.ResourcePoolManager.VideoResource,
+                           a.ResourcePoolManager.EffectFileData));
     return true;
 };
 

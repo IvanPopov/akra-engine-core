@@ -7232,3 +7232,91 @@ Effect.prototype.analyzeProvideDecl = function (pNode) {
 };
 
 A_NAMESPACE(Effect, fx);
+
+function EffectFileData(pEngine){
+    A_CLASS;
+    this._pEngine = pEngine;
+    this._pRenderer = pEngine.shaderManager();
+    this._sSource = "";
+    this.eStatus = 0;
+}
+a.extend(EffectFileData, a.ResourcePoolItem);
+
+EffectFileData.prototype.createResource = function () {
+    this.notifyCreated();
+    this.notifyDisabled();
+    this.notifyLoaded();
+    return true;
+};
+
+/**
+ * destroy the resource
+ * @treturn Boolean always true
+ */
+EffectFileData.prototype.destroyResource = function () {
+    //safe_release(this._pEffect);
+    if (this.isResourceCreated()) {
+        // disable the resource
+        this.disableResource();
+        //remove all data
+        this.notifyUnloaded();
+        this.notifyDestroyed();
+        return (true);
+    }
+    return (false);
+};
+
+/**
+ * purge the resource from volatile memory
+ * @treturn Boolean always true
+ */
+EffectFileData.prototype.disableResource = function () {
+//    if (this._pEffect != null) {
+//        this._pEffect.onLostDevice();
+//    }
+    debug_assert(this.isResourceCreated(),
+                 "The resource has not been created.");
+
+    this.notifyDisabled();
+    return true;
+};
+/**
+ *
+ * @param sFileName
+ * @return {Boolean}
+ */
+EffectFileData.prototype.saveResource = function (sFileName) {
+    return true;
+};
+
+/**
+ * prepare the resource for use (create any volatile memory objects needed)
+ * @treturn Boolean always true
+ */
+EffectFileData.prototype.restoreResource = function () {
+    //if (this._pEffect != null)
+    //    this._pEffect.onResetDevice();
+    debug_assert(this.isResourceCreated(),
+                 "The resource has not been created.");
+
+    this.notifyRestored();
+    return true;
+};
+
+/**
+ * load the resource from a file
+ * @tparam String sFileName - path to file with resource
+ * @tparam String sTechnique - technique name                 S
+ * @treturn Boolean true if succeeded, otherwise false
+ */
+EffectFileData.prototype.loadResource = function (sFileName) {
+    this.notifyUnloaded();
+    this._pRenderer._loadEffectFile(sFileName, this);
+    return true;
+};
+
+A_NAMESPACE(EffectFileData, fx);
+
+Define(a.EffectFileDataManager(pEngine), function () {
+    a.ResourcePool(pEngine, a.fx.EffectFileData)
+});

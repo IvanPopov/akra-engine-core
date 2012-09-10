@@ -140,7 +140,12 @@ ShaderProgram.prototype.setup = function (pAttrData, pUniformData, pTextures) {
         sSampler = a.fx.SHADER_PREFIX.SAMPLER + i;
         pRealSamplers[i] = pUniforms[sSampler];
         pPreparedData[sSampler] = null;
-        pFunctions[sSampler] = this.applySampler2D;
+        if (this._pPassBlend.pSamplers[sSampler]) {
+            pFunctions[sSampler] = this.applySampler2D;
+        }
+        else {
+            pFunctions[sSampler] = this.applyVideoBuffer;
+        }
     }
     pKeys = this._pATRKeys;
     for (i = 0; i < pKeys.length; i++) {
@@ -340,6 +345,7 @@ ShaderProgram.prototype.applyMat4 = function (sName, pData) {
     pDevice.uniformMatrix4fv(this._pRealUniformList[sName], false, pData);
 };
 ShaderProgram.prototype.applyFloatArray = function (sName, pData) {
+    sName += "[0]";
     if (!this._pRealUniformList[sName]) {
         return false;
     }
@@ -347,6 +353,7 @@ ShaderProgram.prototype.applyFloatArray = function (sName, pData) {
     pDevice.uniform1iv(this._pRealUniformList[sName], pData);
 };
 ShaderProgram.prototype.applyIntArray = function (sName, pData) {
+    sName += "[0]";
     if (!this._pRealUniformList[sName]) {
         return false;
     }
@@ -354,49 +361,220 @@ ShaderProgram.prototype.applyIntArray = function (sName, pData) {
     pDevice.uniform1iv(this._pRealUniformList[sName], pData);
 };
 ShaderProgram.prototype.applyVec2IArray = function (sName, pData) {
-    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pPreparedData = this._pUniformPreparedData[sName];
+    sName += "[0]";
+    if (!this._pRealUniformList[sName]) {
+        return false;
+    }
+    if (pData.length !== pPreparedData.length) {
+        var iSize = 2;
+        var iLength = pPreparedData.length / iSize;
+        if (pData.length !== iLength || !pData[0].pData || pData[0].pData.length !== iSize) {
+            return false;
+        }
+        for (var i = 0; i < iLength; i++) {
+            for (var j = 0; j < iSize; j++) {
+                pPreparedData[i * iSize + j] = pData[i].pData[j];
+            }
+        }
+    }
+    else {
+        pPreparedData = pData;
+    }
     var pDevice = this._pDevice;
-    pDevice.uniform2iv(this._pRealUniformList[sName], pData);
+    pDevice.uniform2iv(this._pRealUniformList[sName], pPreparedData);
 };
 ShaderProgram.prototype.applyVec3IArray = function (sName, pData) {
-    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pPreparedData = this._pUniformPreparedData[sName];
+    sName += "[0]";
+    if (!this._pRealUniformList[sName]) {
+        return false;
+    }
+    if (pData.length !== pPreparedData.length) {
+        var iSize = 3;
+        var iLength = pPreparedData.length / iSize;
+        if (pData.length !== iLength || !pData[0].pData || pData[0].pData.length !== iSize) {
+            return false;
+        }
+        for (var i = 0; i < iLength; i++) {
+            for (var j = 0; j < iSize; j++) {
+                pPreparedData[i * iSize + j] = pData[i].pData[j];
+            }
+        }
+    }
+    else {
+        pPreparedData = pData;
+    }
     var pDevice = this._pDevice;
-    pDevice.uniform3iv(this._pRealUniformList[sName], pData);
+    pDevice.uniform3iv(this._pRealUniformList[sName], pPreparedData);
 };
 ShaderProgram.prototype.applyVec4IArray = function (sName, pData) {
-    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pPreparedData = this._pUniformPreparedData[sName];
+    sName += "[0]";
+    if (!this._pRealUniformList[sName]) {
+        return false;
+    }
+    if (pData.length !== pPreparedData.length) {
+        var iSize = 4;
+        var iLength = pPreparedData.length / iSize;
+        if (pData.length !== iLength || !pData[0].pData || pData[0].pData.length !== iSize) {
+            return false;
+        }
+        for (var i = 0; i < iLength; i++) {
+            for (var j = 0; j < iSize; j++) {
+                pPreparedData[i * iSize + j] = pData[i].pData[j];
+            }
+        }
+    }
+    else {
+        pPreparedData = pData;
+    }
     var pDevice = this._pDevice;
-    pDevice.uniform4iv(this._pRealUniformList[sName], pData);
+    pDevice.uniform4iv(this._pRealUniformList[sName], pPreparedData);
 };
 ShaderProgram.prototype.applyVec2FArray = function (sName, pData) {
-    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pPreparedData = this._pUniformPreparedData[sName];
+    sName += "[0]";
+    if (!this._pRealUniformList[sName]) {
+        return false;
+    }
+    if (pData.length !== pPreparedData.length) {
+        var iSize = 2;
+        var iLength = pPreparedData.length / iSize;
+        if (pData.length !== iLength || !pData[0].pData || pData[0].pData.length !== iSize) {
+            return false;
+        }
+        for (var i = 0; i < iLength; i++) {
+            for (var j = 0; j < iSize; j++) {
+                pPreparedData[i * iSize + j] = pData[i].pData[j];
+            }
+        }
+    }
+    else {
+        pPreparedData = pData;
+    }
     var pDevice = this._pDevice;
-    pDevice.uniform2fv(this._pRealUniformList[sName], pData);
+    pDevice.uniform2fv(this._pRealUniformList[sName], pPreparedData);
 };
 ShaderProgram.prototype.applyVec3FArray = function (sName, pData) {
-    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pPreparedData = this._pUniformPreparedData[sName];
+    sName += "[0]";
+    if (!this._pRealUniformList[sName]) {
+        return false;
+    }
+    if (pData.length !== pPreparedData.length) {
+        var iSize = 3;
+        var iLength = pPreparedData.length / iSize;
+        if (pData.length !== iLength || !pData[0].pData || pData[0].pData.length !== iSize) {
+            return false;
+        }
+        for (var i = 0; i < iLength; i++) {
+            for (var j = 0; j < iSize; j++) {
+                pPreparedData[i * iSize + j] = pData[i].pData[j];
+            }
+        }
+    }
+    else {
+        pPreparedData = pData;
+    }
     var pDevice = this._pDevice;
-    pDevice.uniform3fv(this._pRealUniformList[sName], pData);
+    pDevice.uniform3fv(this._pRealUniformList[sName], pPreparedData);
 };
 ShaderProgram.prototype.applyVec4FArray = function (sName, pData) {
-    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pPreparedData = this._pUniformPreparedData[sName];
+    sName += "[0]";
+    if (!this._pRealUniformList[sName]) {
+        return false;
+    }
+    if (pData.length !== pPreparedData.length) {
+        var iSize = 4;
+        var iLength = pPreparedData.length / iSize;
+        if (pData.length !== iLength || !pData[0].pData || pData[0].pData.length !== iSize) {
+            return false;
+        }
+        for (var i = 0; i < iLength; i++) {
+            for (var j = 0; j < iSize; j++) {
+                pPreparedData[i * iSize + j] = pData[i].pData[j];
+            }
+        }
+    }
+    else {
+        pPreparedData = pData;
+    }
     var pDevice = this._pDevice;
-    pDevice.uniform4fv(this._pRealUniformList[sName], pData);
+    pDevice.uniform4fv(this._pRealUniformList[sName], pPreparedData);
 };
 ShaderProgram.prototype.applyMat2Array = function (sName, pData) {
-    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pPreparedData = this._pUniformPreparedData[sName];
+    sName += "[0]";
+    if (!this._pRealUniformList[sName]) {
+        return false;
+    }
+    if (pData.length !== pPreparedData.length) {
+        var iSize = 4;
+        var iLength = pPreparedData.length / iSize;
+        if (pData.length !== iLength || !pData[0].pData || pData[0].pData.length !== iSize) {
+            return false;
+        }
+        for (var i = 0; i < iLength; i++) {
+            for (var j = 0; j < iSize; j++) {
+                pPreparedData[i * iSize + j] = pData[i].pData[j];
+            }
+        }
+    }
+    else {
+        pPreparedData = pData;
+    }
     var pDevice = this._pDevice;
-    pDevice.uniformMatrix2fv(this._pRealUniformList[sName], false, pData);
+    pDevice.uniformMatrix2fv(this._pRealUniformList[sName], false, pPreparedData);
 };
 ShaderProgram.prototype.applyMat3Array = function (sName, pData) {
-    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pPreparedData = this._pUniformPreparedData[sName];
+    sName += "[0]";
+    if (!this._pRealUniformList[sName]) {
+        return false;
+    }
+    if (pData.length !== pPreparedData.length) {
+        var iSize = 9;
+        var iLength = pPreparedData.length / iSize;
+        if (pData.length !== iLength || !pData[0].pData || pData[0].pData.length !== iSize) {
+            return false;
+        }
+        for (var i = 0; i < iLength; i++) {
+            for (var j = 0; j < iSize; j++) {
+                pPreparedData[i * iSize + j] = pData[i].pData[j];
+            }
+        }
+    }
+    else {
+        pPreparedData = pData;
+    }
     var pDevice = this._pDevice;
-    pDevice.uniformMatrix3fv(this._pRealUniformList[sName], false, pData);
+    pDevice.uniformMatrix3fv(this._pRealUniformList[sName], false, pPreparedData);
 };
 ShaderProgram.prototype.applyMat4Array = function (sName, pData) {
-    pData = (pData.pData !== undefined) ? pData.pData : pData;
+    var pPreparedData = this._pUniformPreparedData[sName];
+    sName += "[0]";
+    if (!this._pRealUniformList[sName]) {
+        return false;
+    }
+    if (pData.length !== pPreparedData.length) {
+        var iSize = 16;
+        var iLength = pPreparedData.length / iSize;
+        if (pData.length !== iLength || !pData[0].pData || pData[0].pData.length !== iSize) {
+            return false;
+        }
+        for (var i = 0; i < iLength; i++) {
+            for (var j = 0; j < iSize; j++) {
+                pPreparedData[i * iSize + j] = pData[i].pData[j];
+            }
+        }
+    }
+    else {
+        pPreparedData = pData;
+    }
     var pDevice = this._pDevice;
-    pDevice.uniformMatrix4fv(this._pRealUniformList[sName], false, pData);
+    pDevice.uniformMatrix4fv(this._pRealUniformList[sName], false, pPreparedData);
 };
 
 ShaderProgram.prototype.applySampler2D = function (sName, pData) {
@@ -414,7 +592,7 @@ ShaderProgram.prototype.applySampler2D = function (sName, pData) {
     }
     if (typeof(sRealName) === "object") {
         pSlots = sRealName;
-        sRealName = sName + "[0]";
+        sRealName = sName;
 
         for (i = 0; i < pSlots.length; i++) {
             sTexture = pData[i][a.fx.GLOBAL_VARS.TEXTURE];
@@ -471,9 +649,6 @@ ShaderProgram.prototype.applySampler2D = function (sName, pData) {
     return this.applyInt(sRealName, iSlot);
 };
 ShaderProgram.prototype.applyVideoBuffer = function (sName, pData) {
-    if (pData === null) {
-        return true;
-    }
     var sRealName = this._pBuffersToReal[sName];
     if (sRealName === null) {
         //Zero sampler

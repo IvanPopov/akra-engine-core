@@ -16,6 +16,11 @@ Enum([
          UNKNOWN,
          END
      ], TOKENTYPE, a.Parser.TokenType);
+Enum([
+         OK = 200,
+         INCLUDE_ERROR = 400,
+         SYNTAX_ERROR = 401
+     ], PARSERERROR, a.Parser);
 
 Define(LEXER_RULES, "--LEXER--");
 Define(T_EMPTY, "EMPTY");
@@ -32,6 +37,7 @@ Define(ERROR_OPERATION, 100);
 Define(SHIFT_OPERATION, 101);
 Define(REDUCE_OPERATION, 102);
 Define(SUCCESS_OPERATION, 103);
+Define(PAUSE_OPERATION, 104);
 
 Define(FLAG_RULE_CREATE_NODE, "--AN");
 Define(FLAG_RULE_NOT_CREATE_NODE, "--NN");
@@ -425,6 +431,11 @@ function ParserBase() {
     //Process params
     this._pLex = null;
     this._pStack = null;
+    this._pToken = null;
+
+    //For async loading of files work fine
+    this._pFinishCallback = null;
+    this._pCaller = null;
 
     //Grammar Info
     this._pSymbols = {
@@ -1119,14 +1130,78 @@ ParserBase.prototype._ruleAction = function (pRule) {
     this.pSyntaxTree.reduceByRule(pRule, this._pSymbolsWithNodes[pRule.sLeft], this._isOptimizeMode);
     var pActionName = this._pRuleFunction[pRule.iIndex];
     if (pActionName) {
-        (this._pAdditionalFunctions[pActionName]).call(this, pRule);
+        return (this._pAdditionalFunctions[pActionName]).call(this, pRule);
     }
+    return true;
 };
-ParserBase.prototype._defaultInit = function(){
+ParserBase.prototype._defaultInit = function () {
     this.iIndex = 0;
     this._pStack = [0];
     this.pSyntaxTree = new Tree();
     this.pSymbolTable = {};
+};
+ParserBase.prototype._resumeParse = function () {
+    try {
+        var pTree = this.pSyntaxTree;
+        var pStack = this._pStack;
+        var ppSyntaxTable = this._ppSynatxTable;
+
+        var isStop = false;
+        var isError = false;
+        var isPause = false;
+        var pToken = this._pToken;
+
+        var pOperation;
+        var iRuleLength;
+
+        while (!isStop) {
+            pOperation = ppSyntaxTable[pStack[pStack.length - 1]][pToken.sName];
+            if (pOperation) {
+                switch (pOperation.eType) {
+                    case SUCCESS_OPERATION:
+                        isStop = true;
+                        break;
+                    case SHIFT_OPERATION:
+                        pStack.push(pOperation.iIndex);
+                        pTree.addNode(pToken);
+                        pToken = this._readToken();
+                        break;
+                    case REDUCE_OPERATION:
+                        iRuleLength = pOperation.pRule.pRight.length;
+                        pStack.length -= iRuleLength;
+                        pStack.push(ppSyntaxTable[pStack[pStack.length - 1]][pOperation.pRule.sLeft].iIndex);
+                        if (this._ruleAction(pOperation.pRule) === PAUSE_OPERATION) {
+                            this._pToken = pToken;
+                            isStop = true;
+                            isPause = true;
+                        }
+                        break;
+                }
+            }
+            else {
+                isError = true;
+                isStop = true;
+            }
+        }
+        if (isPause) {
+            trace("Pause syntax parse of file");
+            return PAUSE_OPERATION;
+        }
+        if (!isError) {
+            pTree.setRoot();
+            trace("Syntax analyze of source file is good");
+            return this._pFinishCallback ? this._pFinishCallback.call(this._pCaller, a.Parser.OK) : true;
+        }
+        else {
+            trace("Error!!!", pToken);
+            return this._pFinishCallback ?
+                   this._pFinishCallback.call(this._pCaller, a.Parser.SYNTAX_ERROR) :
+                   a.Parser.SYNTAX_ERROR;
+        }
+    }
+    catch (e) {
+        console.error(e.stack);
+    }
 };
 ParserBase.prototype.isTypeId = function (sValue) {
     return !!(this.pSymbolTable[sValue] && this.pSymbolTable[sValue].isType);
@@ -1167,11 +1242,14 @@ ParserBase.prototype.init = function (sGrammar, eType, pFlags) {
         return false;
     }
 };
-ParserBase.prototype.parse = function (sSource) {
+ParserBase.prototype.parse = function (sSource, fnFinish, pCaller) {
     try {
         this._defaultInit();
         this.sSource = sSource;
         this._pLex.init(sSource);
+
+        this._pFinishCallback = fnFinish || null;
+        this._pCaller = pCaller || null;
 
         var pTree = this.pSyntaxTree;
         var pStack = this._pStack;
@@ -1179,6 +1257,7 @@ ParserBase.prototype.parse = function (sSource) {
 
         var isStop = false;
         var isError = false;
+        var isPause = false;
         var pToken = this._readToken();
 
         var pOperation;
@@ -1200,7 +1279,11 @@ ParserBase.prototype.parse = function (sSource) {
                         iRuleLength = pOperation.pRule.pRight.length;
                         pStack.length -= iRuleLength;
                         pStack.push(ppSyntaxTable[pStack[pStack.length - 1]][pOperation.pRule.sLeft].iIndex);
-                        this._ruleAction(pOperation.pRule);
+                        if (this._ruleAction(pOperation.pRule) === PAUSE_OPERATION) {
+                            this._pToken = pToken;
+                            isStop = true;
+                            isPause = true;
+                        }
                         break;
                 }
             }
@@ -1209,19 +1292,36 @@ ParserBase.prototype.parse = function (sSource) {
                 isStop = true;
             }
         }
+        if (isPause) {
+            trace("Pause syntax parse of file");
+            return PAUSE_OPERATION;
+        }
         if (!isError) {
             pTree.setRoot();
             trace("Syntax analyze of source file is good");
-            return true;
+            return this._pFinishCallback ?
+                   this._pFinishCallback.call(this._pCaller, a.Parser.OK) :
+                   a.Parser.OK;
         }
         else {
             trace("Error!!!", pToken);
-            return pToken;
+            return this._pFinishCallback ?
+                   this._pFinishCallback.call(this._pCaller, a.Parser.SYNTAX_ERROR) :
+                   a.Parser.SYNTAX_ERROR;
         }
     }
     catch (e) {
         console.error(e.stack);
     }
+};
+ParserBase.prototype.pause = function () {
+    return PAUSE_OPERATION;
+};
+ParserBase.prototype.resume = function () {
+    this._resumeParse();
+};
+ParserBase.prototype.error = function (eCode) {
+    return this._pFinishCallback ? this._pFinishCallback.call(this._pCaller, eCode) : eCode;
 };
 
 function Lexer(pParser) {
@@ -1688,11 +1788,13 @@ Lexer.prototype._scanIdentifier = function () {
 function EffectParser() {
     A_CLASS;
     this._pAdditionalFunctions = {
-        addType : this.addType
+        addType     : this._addType,
+        includeCode : this._includeCode
     };
+    this._pIncludeTable = {};
 }
 EXTENDS(EffectParser, ParserBase);
-EffectParser.prototype.addType = function (pRule) {
+EffectParser.prototype._addType = function (pRule) {
     var pTree = this.pSyntaxTree;
     var pNode = pTree._pNodes[pTree._pNodes.length - 1];
     pNode = pNode.pChildren[pNode.pChildren.length - 1];
@@ -1708,8 +1810,35 @@ EffectParser.prototype.addType = function (pRule) {
 //    console.log(pNode)
 //    var sName = pNode.sValue;
 //    this.pSymbolTable[sName] = {isType : 1};
+    return true;
 };
-EffectParser.prototype._defaultInit = function(){
+EffectParser.prototype._includeCode = function (pRule) {
+    var pTree = this.pSyntaxTree;
+    var pNode = pTree._pNodes[pTree._pNodes.length - 1];
+    var sFile = pNode.pChildren[0].sValue;
+    sFile = sFile.substr(1, sFile.length - 2);
+    if (this._pIncludeTable[sFile]) {
+        return this._pIncludeTable[sFile];
+    }
+    else {
+        var me = this;
+        a.fopen(sFile, "r").read(
+            function (pData) {
+                var sSource = pData;
+                var index = me._pLex.iIndex;
+                sSource = me.sSource.substr(0, index) + pData + me.sSource.substr(index);
+                me.sSource = sSource;
+                me._pLex.sSource = sSource;
+                me._pIncludeTable[sFile] = pData;
+                me.resume();
+            },
+            function () {
+                me.error(a.Parser.INCLUDE_ERROR);
+            });
+        return this.pause();
+    }
+};
+EffectParser.prototype._defaultInit = function () {
     this.iIndex = 0;
     this._pStack = [0];
     this.pSyntaxTree = new Tree();
@@ -1730,4 +1859,4 @@ EffectParser.prototype._defaultInit = function(){
 };
 
 a.util.parser = new EffectParser();
-a.util.parser.init(a.ajax({url: 'http://akra/akra-engine-general/media/grammars/HLSL_grammar.gr', async: false}).data);
+a.util.parser.init(a.ajax({url : 'http://akra/akra-engine-general/media/grammars/HLSL_grammar.gr', async : false}).data);

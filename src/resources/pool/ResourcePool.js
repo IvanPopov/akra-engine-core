@@ -276,7 +276,7 @@ ResourcePoolInterface.prototype.loadResource = function (sResourceName) {
 
         if (pResource != null) {
             // attempt to load the desired data
-            if (pResource.loadResource()) {
+            if (pResource.loadResource(sResourceName)) {
                 // ok!
                 return pResource;
             }
