@@ -35,6 +35,12 @@ PROPERTY(AnimationContainer, 'speed',
 		return this._fSpeed;
 	});
 
+AnimationContainer.prototype.getTime = function () {
+    'use strict';
+    
+	return this._fTime;
+};
+
 AnimationContainer.prototype.play = function (fRealTime) {
     'use strict';
 
@@ -102,7 +108,12 @@ AnimationContainer.prototype.rightInfinity = function(bValue) {
 AnimationContainer.prototype.setStartTime = function (fTime) {
     'use strict';
 
-	this._fStartTime = fTime * (this._fTime / this._fRealTime);
+    // var fAcceleration = this._fRealTime ? this._fTime / this._fRealTime:1.;
+   	// var fStartTime = fTime * fAcceleration;
+   	// this._fTime  = fStartTime;//+= this._fStartTime - fStartTime;
+   	//this._fRealTime = fTime;
+ //    trace('start time: ', fTime, '/', this._fTime, '-->', this._fStartTime, '/', fStartTime);
+	 this._fStartTime = fTime;
 };
 
 AnimationContainer.prototype.getStartTime = function () {
@@ -152,10 +163,12 @@ AnimationContainer.prototype.pause = function (bValue) {
 	this._bPause = bValue;
 };
 
-AnimationContainer.prototype.rewind = function (fTrueTime) {
+AnimationContainer.prototype.rewind = function (fRealTime) {
     'use strict';
-    
-	this._fTrueTime = fTrueTime;
+    //FIXME: нормально реализовать методы rewind & setStartTime();
+	//this._fTrueTime = fTrueTime;
+	this._fTime = 0;
+	this._fRealTime = fRealTime;
 };
 
 AnimationContainer.prototype.isPaused = function () {
@@ -170,6 +183,8 @@ AnimationContainer.prototype.time = function (fRealTime) {
     if (this._bPause) {
     	return;
     }
+
+    fRealTime -= this._fStartTime;
 
 
     this._fTime = this._fTime + (fRealTime - this._fRealTime) * this._fSpeed;

@@ -217,15 +217,15 @@ AnimationFrame.prototype.interpolateTransformations = function (pStartFrame, pEn
 	pStartFrame.qRotation.slerp(pEndFrame.qRotation, fBlend, this.qRotation);
 };
 
-// AnimationFrame.prototype.add = AnimationFrame.prototype.addTransforms;
-// AnimationFrame.prototype.normilize = AnimationFrame.prototype.normilizeTransforms;
-// AnimationFrame.prototype.interpolate = AnimationFrame.prototype.interpolateTransformations;
-// AnimationFrame.prototype.toMatrix = AnimationFrame.prototype.toMatrixFromTransforms;
+AnimationFrame.prototype.add = AnimationFrame.prototype.addTransforms;
+AnimationFrame.prototype.normilize = AnimationFrame.prototype.normilizeTransforms;
+AnimationFrame.prototype.interpolate = AnimationFrame.prototype.interpolateTransformations;
+AnimationFrame.prototype.toMatrix = AnimationFrame.prototype.toMatrixFromTransforms;
 
-AnimationFrame.prototype.add = AnimationFrame.prototype.addMatrix;
-AnimationFrame.prototype.normilize = AnimationFrame.prototype.normilizeMatrix;
-AnimationFrame.prototype.interpolate = AnimationFrame.prototype.interpolateMatrix;
-AnimationFrame.prototype.toMatrix = AnimationFrame.prototype.toMatrixFromMatrix;
+// AnimationFrame.prototype.add = AnimationFrame.prototype.addMatrix;
+// AnimationFrame.prototype.normilize = AnimationFrame.prototype.normilizeMatrix;
+// AnimationFrame.prototype.interpolate = AnimationFrame.prototype.interpolateMatrix;
+// AnimationFrame.prototype.toMatrix = AnimationFrame.prototype.toMatrixFromMatrix;
 
 A_ALLOCATE_STORAGE(AnimationFrame, 4096);
 A_NAMESPACE(AnimationFrame);

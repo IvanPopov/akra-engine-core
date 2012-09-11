@@ -1065,7 +1065,7 @@ BinWriter.prototype.writeData = function(pObject, sType) {
                 continue;
             }
 
-            pMembers[sName].write.call(pObject[sName]);
+            pMembers[sName].write.call(this, pObject);
         }
     }
     
