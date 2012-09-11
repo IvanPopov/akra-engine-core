@@ -354,7 +354,7 @@ Texture.prototype.releaseTexture = function () {
 Texture.prototype.generateNormalMap = function (pHeightMap, iChannel, fAmplitude) {
 
     var pDevice = this._pEngine.pDevice;
-
+	console.log("generateNormalMap0");
     this.releaseTexture();
     this._pTexture = pDevice.createTexture();
     this._pFrameBuffer = pDevice.createFramebuffer();
@@ -362,40 +362,29 @@ Texture.prototype.generateNormalMap = function (pHeightMap, iChannel, fAmplitude
     this._iWidth = pHeightMap.getWidth();
     this._iHeight = pHeightMap.getHeight();
 
+	console.log("generateNormalMap1");
     pDevice.bindTexture(a.TTYPE.TEXTURE_2D, this._pTexture);
     pDevice.texImage2D(a.TTYPE.TEXTURE_2D, 0, a.IFORMATSHORT.RGBA, this._iWidth,
         this._iHeight, 0, a.IFORMATSHORT.RGBA,
         a.ITYPE.UNSIGNED_BYTE, null);
     pDevice.bindTexture(a.TTYPE.TEXTURE_2D, null);
 
+	console.log("generateNormalMap2");
     var pColor = new Uint8Array(this._iWidth * this._iHeight * 4);
 
-    var pNormalTable = new Array(this._iWidth * this._iHeight);
-    for (var i = 0; i < this._iWidth * this._iHeight; i++) {
-        pNormalTable[i] = new Vec3();
-    }
+	console.log("generateNormalMap3");
+    a.computeNormalMapGPU(this._pEngine, pHeightMap, pColor/*normal table*/, iChannel, fAmplitude);
 
-    a.computeNormalMapGPU(this._pEngine, pHeightMap, pNormalTable, iChannel, fAmplitude);
 
-	//console.log("Tex",new Uint8Array(pHeightMap._pData[0][0][0]),pNormalTable);
-    var iIndex;
-    var iOffset;
-    for (var y = 0; y < this.height; y++) {
-        for (var x = 0; x < this._iWidth; x++) {
-            iIndex = (y * this._iWidth) + x;
-            iOffset = iIndex * 4;
-            pColor[iOffset + 0] = pNormalTable[iIndex][0]// Red value
-            pColor[iOffset + 1] = pNormalTable[iIndex][1]; // Green value
-            pColor[iOffset + 2] = pNormalTable[iIndex][2]; // Blue value
-            pColor[iOffset + 3] = 255; // Alpha value
-
-        }
-    }
+	console.log("generateNormalMap5");
     this.setPixelRGBA(0, 0, this._iWidth, this._iHeight, pColor);
 
+	console.log("generateNormalMap6");
 	this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
 	this.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
-    delete pNormalTable;
+
+	delete pColor;
+	console.log("generateNormalMap7");
 
 };
 

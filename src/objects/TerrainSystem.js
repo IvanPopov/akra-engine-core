@@ -19,6 +19,10 @@
  * Constructor of Terrain class
  * @param pDevice указатель на девайс который будет использует этот объект
  **/
+
+
+
+
 function Terrain (pEngine) {
 
     this._pEngine = pEngine;
@@ -51,12 +55,10 @@ function Terrain (pEngine) {
 
 	this._pMegaTexures = null; //отоброжаемые куски текстуры
 
-	//Лод
-    this._fScale = 0.03;
-    this._fLimit = 1.33;
+	this._fScale = 1.33;
+	this._fLimit = 0.03;
 
-    this.fRatioLimit = 0.03;
-    this.fErrorScale = 1.33;
+
 };
 
 Terrain.prototype.tableWidth = function () {
@@ -87,8 +89,7 @@ Terrain.prototype.sectorShift = function () {
     return this._iSectorShift;
 };
 Terrain.sSectorVertex = function () {
-    this.fHeight;
-    this.v3fNormal = new Vec3();
+  ///&???
 };
 Terrain.prototype.elevationData = function () {
     this.fMinElevation;
@@ -163,15 +164,39 @@ Terrain.prototype.create = function (pRootNode, pHeightMap,worldExtents, iShift,
 	//Мегатекстурные параметры
 	pPathInfoMega=new a.Pathinfo(sSurfaceTextures);
 
+	console.log("Мега текстура")
 	this._pMegaTexures = new a.MegaTexture(this._pEngine,this,sSurfaceTextures);
-
+	console.log("Мега текстура созадна")
     // convert the height map to
     // data stored in local tables
+	console.log("Высоты и нормали")
     this.buildHeightAndNormalTables(pHeightMap);
+	console.log("Высоты и нормали созданы")
 
+	console.log("Сектора")
     return this.allocateSectors();
+	console.log("Сектора созданы")
 }
 
+
+
+Terrain.prototype.findSection = function(iX,iY)
+{
+	var pSection = null;
+
+	if (iX >=0 && iX<this._iSectorCountX
+		&& iY >=0 && iY<this._iSectorCountY)
+	{
+		pSection =this._pSectorArray[(iY*this._iSectorCountX)+iX];
+	}
+	else
+	{
+		// if we had additional cRoamTerrain objects,
+		// we could reach out here to link with neighbors
+	}
+
+	return pSection;
+}
 /**
  * @property allocateSectors()
  * @memberof Terrain
@@ -255,12 +280,15 @@ Terrain.prototype.buildHeightAndNormalTables = function (pImage) {
     var iMaxX = this._iTableWidth;
     var x, y;
 
+	console.log("buildHeightAndNormalTables0");
+
     this._pHeightTable = new Array(iMaxX * iMaxY); //float
     this._pv3fNormalTable = new Array(iMaxX * iMaxY);
     for (var i = 0; i < iMaxX * iMaxY; i++) {
         this._pv3fNormalTable[i] = new Vec3();
     }
 
+	console.log("buildHeightAndNormalTables1");
     // first, build a table of heights
     if (pImage.isResourceLoaded()) 
 	{
@@ -277,6 +305,8 @@ Terrain.prototype.buildHeightAndNormalTables = function (pImage) {
         }
     }
 
+	console.log("buildHeightAndNormalTables2");
+
     // create a normal map texture
     var temp = new a.Texture(this._pEngine);
 
@@ -286,11 +316,15 @@ Terrain.prototype.buildHeightAndNormalTables = function (pImage) {
     // convert our height map into a
     // texture of surface normals
 
+	console.log("buildHeightAndNormalTables3")
+
     temp.generateNormalMap(pImage, 0, fScale);
+	console.log("buildHeightAndNormalTables4")
 	temp.resize(iMaxX,iMaxY);
+	console.log("buildHeightAndNormalTables5")
 	var pColorData=new Uint8Array(4*iMaxY*iMaxX);
 	temp.getPixelRGBA(0, 0,iMaxX,iMaxY, pColorData);
-
+	console.log("buildHeightAndNormalTables6")
 	//console.log(pColorData);
 	var i=0;
     for (y = 0; y < iMaxY; y++) 
@@ -311,8 +345,9 @@ Terrain.prototype.buildHeightAndNormalTables = function (pImage) {
 			//	this._pv3fNormalTable[(y * iMaxX) + x].x = pColorData[((y * iMaxX) + x)*4+2]);
         }
     }
-
+	console.log("buildHeightAndNormalTables7")
     temp.releaseTexture();
+	console.log("buildHeightAndNormalTables8")
 
 };
 
@@ -760,7 +795,7 @@ Terrain.prototype.generateBlendImage = function (pBlendImage, pElevationData, iE
  * @param fVScale
  * @param fVLimit
  **/
-Terrain.prototype.setTessellationParameters = function (fVScale, fVLimit)
+Terrain.prototype.setTessellationParameters = function (fScale, fLimit)
 {
     this._fScale = fScale;
     this._fLimit = fLimit;
@@ -866,6 +901,11 @@ Terrain.prototype.applyForRender= function()
 	this._pMegaTexures.applyForRender();
 }
 
+Terrain.prototype.reset=function()
+{
+
+}
+
 /**
  * @property readUserInput()
  * @memberof Terrain
@@ -877,35 +917,36 @@ Terrain.prototype.readUserInput = function ()
     //
     if (this._pEngine.pKeymap.isKeyPress(a.KEY.ADD)) //+
     {
-        this.fRatioLimit += 0.001;
-        console.log("vRatioLimit: " +this.fRatioLimit);
+		this._fLimit += 0.0001;
     }
     else if (this._pEngine.pKeymap.isKeyPress(a.KEY.SUBTRACT)) //-
     {
-		this.fRatioLimit -= 0.001;
-		console.log("vRatioLimit: " + this.fRatioLimit);
+		this._fLimit -= 0.0001;
     }
 
     if (this._pEngine.pKeymap.isKeyPress(a.KEY.MULTIPLY)) //*
     {
-		this.fErrorScale += 0.001;
-		console.log("vErrorScale: " + this.fErrorScale);
+		this._fScale += 0.0001;
     }
     else if (this._pEngine.pKeymap.isKeyPress(a.KEY.DIVIDE))  // /
     {
-		this.fErrorScale -= 0.001;
-		console.log("vErrorScale: " +this.fErrorScale);
+		this._fScale -= 0.0001;
     }
 
-    if (this.fRatioLimit < 0.001)
+
+
+
+    if (this._fLimit < 0.001)
 	{
-		this.fRatioLimit = 0.001;
+		this._fLimit = 0.001;
     }
-    if (this.fErrorScale < 0.001)
+    if (this._fScale < 0.001)
 	{
-		this.fErrorScale = 0.001;
+		this._fScale = 0.001;
     }
 
-    this.setTessellationParameters(this.fErrorScale, this.fRatioLimit);
+	document.getElementById('setinfo4').innerHTML="fScale1 "+this._fScale;
+	document.getElementById('setinfo5').innerHTML="fLimit1 "+this._fLimit;
+
 }
 a.Terrain = Terrain;

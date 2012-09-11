@@ -7,17 +7,20 @@
  * TerrainSection класс.
  */
 
-Enum([
-	TOTAL_DETAIL_LEVELS = 9,
-	TOTAL_VARIANCES = 1<<9
-], TERRAIN_CONSTANTS, a.TerrainSection);
-
 function TerrainSection (pEngine)
 {
-	A_CLASS;
 
+
+	A_CLASS;
 	this._pTerrainSystem = null; //Терреин которому принадлежит секуция
-    this._pSectorVerts = null;
+
+	this._pRenderData=null;
+	this._iMaxIndices=0;
+	this._iTotalIndices=0;
+	this._iTotalIndicesOld=undefined;
+	this._pIndexList = null;
+	this._iVertexID = 0;
+
     this._iHeightMapX; //Ее коорлинаты на карте высот
     this._iHeightMapY;
     this._iSectorX;   //номер сектора по иксу и по игрику
@@ -41,8 +44,8 @@ TerrainSection.prototype.getTerrainSystem = function () {
     return this._pTerrainSystem;
 };
 
-TerrainSection.prototype.sectorVertices = function () {
-    return this._pSectorVerts;
+TerrainSection.prototype.getIndex = function () {
+	return this._pIndexList;
 };
 
 TerrainSection.prototype.getHeightX = function () {
@@ -77,7 +80,9 @@ function (pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY
 		this._iHeightMapX = iHeightMapX;
 		this._iHeightMapY = iHeightMapY;
 
-		pResult = this._buildVertexAndIndexBuffer();
+		bResult = this._createRenderDataForVertexAndIndex();
+		bResult = bResult&&this._buildVertexBuffer();
+		bResult = bResult&&this._buildIndexBuffer();
 
 		// set the scene object bounds data
 		this.accessLocalBounds().set(this._pWorldRect.fX0,
@@ -90,18 +95,10 @@ function (pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY
 			this.attachToParent(pRootNode);
 	}
 
-	//Организация ЛОД
-	this._pVarianceTreeA = new Array( a.TerrainSection.TOTAL_VARIANCES);
-	this._pVarianceTreeB = new Array( a.TerrainSection.TOTAL_VARIANCES);
-	this.computeVariance();
-
-	this._fLODLevel=0;
-
 	return bResult;
  };
 
-
-TerrainSection.prototype._buildVertexAndIndexBuffer=function()
+TerrainSection.prototype._createRenderDataForVertexAndIndex=function()
 {
 	debug_assert(this._pRenderData == null, "У терраин сектиона уже созданы данные");
 	this._pRenderData = this.getTerrainSystem().getDataFactory().getEmptyRenderData(a.PRIMTYPE.TRIANGLESTRIP,0);
@@ -110,6 +107,12 @@ TerrainSection.prototype._buildVertexAndIndexBuffer=function()
 	{
 		return false;
 	}
+	return true;
+}
+
+TerrainSection.prototype._buildVertexBuffer=function()
+{
+
 
 	this._pWorldRect.fZ0 = MAX_REAL32;
 	this._pWorldRect.fZ1 = MIN_REAL32;
@@ -164,9 +167,20 @@ TerrainSection.prototype._buildVertexAndIndexBuffer=function()
 		}
 	}
 
-	var iData=this._pRenderData.allocateData(this.pVertexDescription,new Float32Array(pVerts));
+	this._iVertexID=this._pRenderData.allocateData(this.pVertexDescription,new Float32Array(pVerts));
 
-	var pIndexes = a.createSingleStripGrid(
+	this.pVertsDebug=pVerts;
+
+	return true;
+}
+
+TerrainSection.prototype._buildIndexBuffer=function()
+{
+	this._iMaxIndices = a.getCountIndexForStripGrid(this._iXVerts, this._iYVerts);
+	this._iTotalIndices = a.getCountIndexForStripGrid(this._iXVerts, this._iYVerts);
+	this._pIndexList=new Float32Array(this._iMaxIndices);
+
+	a.createSingleStripGrid(this._pIndexList,
 		this._iXVerts, // width of grid
 		this._iYVerts, // height of grid
 		1, // horz vertex count per cell
@@ -174,11 +188,10 @@ TerrainSection.prototype._buildVertexAndIndexBuffer=function()
 		this._iYVerts, // horz vertex count in vbuffer
 		0);
 
-	//console.log(pIndexes);
-	this._pRenderData.allocateIndex([VE_FLOAT(a.DECLUSAGE.INDEX0)],new Float32Array(pIndexes));
-	this._pRenderData.index(iData,a.DECLUSAGE.INDEX0);
+	//
 
-	pVerts = null;
+	this._pRenderData.allocateIndex([VE_FLOAT(a.DECLUSAGE.INDEX0)],this._pIndexList);
+	this._pRenderData.index(this._iVertexID,a.DECLUSAGE.INDEX0);
 
 	return true;
 }
@@ -191,20 +204,7 @@ TerrainSection.prototype.render = function ()
 
 TerrainSection.prototype.prepareForRender = function()
 {
-
-	//Вычисление необходимого уровня лода
-	var pCamera = this._pEngine._pDefaultCamera;
-	var fHeightCenter=this.getTerrainSystem().readWorldHeight(Math.ceil(this._iHeightMapX + this._iXVerts/2), Math.ceil(this._iHeightMapY + this._iYVerts/2));
-
-	var v3fCameraPosition=pCamera.worldPosition();
-	var fMidDist = Math.sqrt(
-		(v3fCameraPosition.x-(this._pWorldRect.fX0+this.getHeightX()/2))*(v3fCameraPosition.x-(this._pWorldRect.fX0+this.getHeightX()/2))+
-		(v3fCameraPosition.y-(this._pWorldRect.fY0+this.getHeightY()/2))*(v3fCameraPosition.y-(this._pWorldRect.fY0+this.getHeightY()/2))+
-		(v3fCameraPosition.z-fHeightCenter)*(v3fCameraPosition.z-fHeightCenter));
-
-	this._fLODLevel = fMidDist;
-		//(Math.max(this._pVarianceTreeA[1],this._pVarianceTreeB[1])*this.terrainSystem().lodErrorScale())/(fMidDist+0.0001);
-
+	return;
 }
 
 TerrainSection.prototype.renderCallback = function (entry, activationFlags)
@@ -217,8 +217,8 @@ TerrainSection.prototype.renderCallback = function (entry, activationFlags)
 	this._pEngine.pDrawTerrainProgram.applyMatrix4('model_mat', this.worldMatrix());
 	this._pEngine.pDrawTerrainProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
 	this._pEngine.pDrawTerrainProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
-	this._pEngine.pDrawTerrainProgram.applyFloat('LOD', this._fLODLevel);
 
+	//console.log("Render!!!",this._pRenderData.toString());
 	this._pRenderData.draw();
 }
 
@@ -233,67 +233,6 @@ PROPERTY(TerrainSection,'visible',
 	}
 );
 
-
-TerrainSection.prototype.computeVariance = function()
-{
-	var iTableWidth = this.getTerrainSystem().tableWidth();
-	var iTableHeight = this.getTerrainSystem().tableHeight();
-
-	var iIndex0 =  this.getTerrainSystem().tableIndex(this._iHeightMapX,					this._iHeightMapY);
-	var iIndex1 =  this.getTerrainSystem().tableIndex(this._iHeightMapX,					this._iHeightMapY+this._iYVerts-1);
-	var iIndex2 =  this.getTerrainSystem().tableIndex(this._iHeightMapX+this._iXVerts-1,	this._iHeightMapY+this._iYVerts-1);
-	var iIndex3 =  this.getTerrainSystem().tableIndex(this._iHeightMapX+this._iXVerts-1,	this._iHeightMapY);
-
-	var fHeight0 = this.getTerrainSystem().readWorldHeight(iIndex0);
-	var fHeight1 = this.getTerrainSystem().readWorldHeight(iIndex1);
-	var fHeight2 = this.getTerrainSystem().readWorldHeight(iIndex2);
-	var fHeight3 = this.getTerrainSystem().readWorldHeight(iIndex3);
-
-	this.recursiveComputeVariance(
-		iIndex1, iIndex2, iIndex0,
-		fHeight1, fHeight2, fHeight0,
-		this._pVarianceTreeA, 1);
-
-	this.recursiveComputeVariance(
-		iIndex3, iIndex0, iIndex2,
-		fHeight3, fHeight0, fHeight2,
-		this._pVarianceTreeB, 1);
-}
-
-TerrainSection.prototype.recursiveComputeVariance= function(iCornerA, iCornerB, iCornerC,
-													fHeightA, fHeightB, fHeightC,pVTree, iIndex)
-{
-	if (iIndex < a.TerrainSection.TOTAL_VARIANCES)
-	{
-		var iMidpoint = (iCornerB+iCornerC)>>1;
-		var fMidHeight = this.getTerrainSystem().readWorldHeight(iMidpoint);
-		var fInterpolatedHeight = (fHeightB+fHeightC)*0.5;
-		var fVariance = Math.abs(fMidHeight - fInterpolatedHeight);
-
-		// find the variance of our children
-		var fLeft = this.recursiveComputeVariance(
-		iMidpoint, iCornerA, iCornerB,
-		fMidHeight, fHeightA, fHeightB,
-		pVTree, iIndex<<1);
-
-		var fRight = this.recursiveComputeVariance(
-		iMidpoint, iCornerC, iCornerA,
-		fMidHeight, fHeightC, fHeightA,
-		pVTree, 1+(iIndex<<1));
-
-		// local variance is the minimum of all three
-		fVariance = Math.max(fVariance, fLeft);
-		fVariance = Math.max(fVariance, fRight);
-
-		// store the variance as 1/(variance+1)
-		pVTree[iIndex] = fVariance;
-
-		return fVariance;
-	}
-	// return a value which will be ignored by the parent
-	// (because the minimum function is used with this result)
-	return 0;
-}
 
 
 a.TerrainSection = TerrainSection;

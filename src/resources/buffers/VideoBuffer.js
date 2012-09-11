@@ -352,7 +352,6 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
         var me = this;
         //hack: if iEndPixel is first pixel from next row
         iXend = (iXend === 0? iWidth: iXend);
-
         var fnWriteRect = function (iX, iY, iW, iH) {
             iBeginElement = iEndElement;
             iEndElement = iW * iH * nElementsPerPix + iEndElement;

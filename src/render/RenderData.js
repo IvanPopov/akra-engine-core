@@ -404,7 +404,7 @@ RenderData.prototype._allocateIndex = function (pAttrDecl, pData) {
     var pIndexData = this._pIndexData;
     var pIndexBuffer = this._pIndexBuffer;
     var pBuffer = this._pBuffer;
-    'use strict';
+
     
 Ifdef (__DEBUG)
     for (var i = 0; i < pAttrDecl.length; i++) {
@@ -427,6 +427,20 @@ Endif ();
     return true;
 };
 
+RenderData.prototype.setIndexLength=function(iLength)
+{
+	var bResult=this._pIndexData.resize(iLength);
+	if(bResult)
+	{
+		this._pMap._nLength = iLength;
+	}
+	return bResult;
+};
+
+RenderData.prototype.getAdvancedIndexData=function(eSemantics)
+{
+	return this.getData(eSemantics, true);
+}
 
 /**
  * Allocate index.

@@ -12,8 +12,8 @@ function MegaTexture (pEngine,pObject,sSurfaceTextures)
 	this._sSurfaceTextures =(pPathInfo.dirname)+"/"+(pPathInfo.filename)+"/";
 
 	//Маскимальный размер стороны текстуры
-	//this._iOriginalTextureMaxSize=4096;
-	this._iOriginalTextureMaxSize=32768;
+	this._iOriginalTextureMaxSize=4096;
+	//this._iOriginalTextureMaxSize=32768;
 
 	//Размер блока текстуры(минимальный размер выгружаемого куска текстуры)
 	this._iBlockSize=32;
@@ -79,7 +79,7 @@ STATIC(MegaTexture,fTexCourdYOld,undefined);
 STATIC(MegaTexture,nCountRender,0);
 MegaTexture.prototype.prepareForRender= function()
 {
-	var pCamera = this._pEngine._pDefaultCamera;
+	var pCamera = this._pEngine.getActiveCamera();
 	var v3fCameraPosition=pCamera.worldPosition();
 
 
@@ -277,7 +277,7 @@ MegaTexture.prototype.prepareForRender= function()
 							this._iTextureWidth,this._iTextureHeight,a.getIFormatNumElements(this._eTextureType));
 				this._pTexures[i].setPixelRGBA(0,0,this._iTextureWidth,this._iTextureHeight,this._pDataFor);
 
-				var c2d=document.getElementById('canvas1_'+i).getContext("2d");
+				/*var c2d=document.getElementById('canvas1_'+i).getContext("2d");
 				var pData=c2d.getImageData(0,0,128,128);
 				//console.log("!!!");
 				//console.log(pData);
@@ -292,14 +292,14 @@ MegaTexture.prototype.prepareForRender= function()
 						p1+=3*(1024*(8-1))
 
 				}
-				c2d.putImageData(pData, 0, 0);
+				c2d.putImageData(pData, 0, 0);*/
 			}
 		}
 		this._pXY[i].isUpdated=false;
 	}
 
 
-	if(((statics.nCountRender++)%11)==0)
+	/*if(((statics.nCountRender++)%11)==0)
 	{
 		for(var i=1;i<this._pTexures.length;i++)
 		{
@@ -370,7 +370,7 @@ MegaTexture.prototype.prepareForRender= function()
 
 
 		}
-	}
+	}*/
 	statics.fTexCourdXOld=fTexCourdX;
 	statics.fTexCourdYOld=fTexCourdY;
 }

@@ -366,13 +366,25 @@ Engine.prototype.renderScene = function () {
 
 
     var pRenderList = pFirstMember;
+
     //Добавлено для отслеживания видимости узлов. aldore
     this.renderList = pRenderList;
+
     //Подготовка всех объектов к рендерингу
+	if(this.pTerrainSystem)
+	{
+		this.pTerrainSystem.reset();
+	}
+
     while (pFirstMember) {
         pFirstMember.prepareForRender();
         pFirstMember = pFirstMember.nextSearchLink();
     }
+
+	if(this.pTerrainSystem)
+	{
+		this.pTerrainSystem.prepareForRender();
+	}
 
     //рендеринг всех объектов
     pFirstMember = pRenderList;

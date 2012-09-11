@@ -711,17 +711,8 @@ function computeNormalMapGPU(pEngine,pHeightImage,pNormalTable,iChannel,fScale){
 
 	pBufferMap.draw();
 
-
-	var pTemp = new Uint8Array(4 * pHeightImage.getWidth() * pHeightImage.getHeight());
-
 	pDevice.readPixels(0, 0, pHeightImage.getWidth(), pHeightImage.getHeight(),
-		pDevice.RGBA, pDevice.UNSIGNED_BYTE, pTemp);
-
-	for (var i = 0; i < pHeightImage.getWidth() * pHeightImage.getHeight(); i++) {
-		pNormalTable[i][0] = pTemp[4 * i];
-		pNormalTable[i][1] = pTemp[4 * i + 1];
-		pNormalTable[i][2] = pTemp[4 * i + 2];
-	}
+		pDevice.RGBA, pDevice.UNSIGNED_BYTE, pNormalTable);
 
 	pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, null);
 	return pNormalTable;
@@ -747,7 +738,7 @@ Define(a.EXTENDED_TEXTURE_COUNT, 16);
  * @return iFlags __DESCRIPTION__
  **/
 
-function createSingleStripGrid (iXVerts, iYVerts, iXStep, iYStep, iSride, iFlags)
+function createSingleStripGrid (pIndexValues,iXVerts, iYVerts, iXStep, iYStep, iSride, iFlags)
 {
 	//TRIANGLESTRIP
     var iTotalStrips = iYVerts - 1;
@@ -762,7 +753,10 @@ function createSingleStripGrid (iXVerts, iYVerts, iXStep, iYStep, iSride, iFlags
 
     var iTotalIndexes = (iTotalStrips * iTotalIndexesPerStrip) + (iTotalStrips << 1) - 2;
 
-    var pIndexValues = new Array(iTotalIndexes);
+    if(pIndexValues.length<iTotalIndexes)
+	{
+		return 0;
+	}
 
     var iIndex = 0;
     var iStartVert = 0;
@@ -788,7 +782,7 @@ function createSingleStripGrid (iXVerts, iYVerts, iXStep, iYStep, iSride, iFlags
     }
 
     // return
-    return pIndexValues;
+    return iTotalIndexes;
 }
 a.createSingleStripGrid = createSingleStripGrid;
 
