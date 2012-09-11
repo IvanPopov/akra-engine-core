@@ -76,6 +76,8 @@ function Engine() {
     //Размеры при создании
     this.iCreationWidth = 0;
     this.iCreationHeight = 0;
+
+    this.pEngineStates = null;
 }
 
 /**
@@ -104,12 +106,16 @@ Engine.prototype.create = function (sCanvasId) {
         return false;
     }
 
+    this.initDefaultStates();
+
     this.pResourceManager = new a.ResourcePoolManager();
     this.pDisplayManager = new a.DisplayManager(this);
     this.pShaderManager = new a.Renderer(this);
     this.pParticleManager = new a.ParticleManager(this);
     this.pSpriteManager = new a.SpriteManager(this);
     // this.pUniqManager = new a.UniqueManager(this);
+
+
 
     //Запускаем таймер приложения
     a.UtilTimer(a.UtilTimer.TimerStart);
@@ -233,6 +239,18 @@ Engine.prototype.notifyRestoreDeviceObjects = function () {
 Engine.prototype.setupWorldOcTree = function (pWorldExtents) {
     this._pWorldExtents = pWorldExtents;
     this._pSceneTree.create(this._pWorldExtents, 10);
+};
+
+/**
+ *
+ * @return {Boolean}
+ */
+Engine.prototype.initDefaultStates = function () {
+    this.pEngineStates = {
+        mesh : {
+            isSkinning : false
+        }
+    }
 };
 
 /**

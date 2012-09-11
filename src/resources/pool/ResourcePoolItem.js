@@ -190,8 +190,8 @@ function ResourcePoolItem(pEngine) {
     this._pResourcePool = null;
     this._iResourceHandle = 0;
     this._iResourceFlags = 0;
-    this._iSystemId = a.sid();
     this._pEngine = pEngine;
+    this._iSystemId = a.sid();
     this._pCallbackFunctions = [];
     this._fnStateWatcher = [];
     /**
@@ -220,6 +220,8 @@ ResourcePoolItem.prototype.getDevice = function () {
 ResourcePoolItem.prototype.toNumber = function () {
     return this._iSystemId;
 }
+
+
 /**
  * Get current Engine.
  * @treturn Engine Current Engine.
@@ -339,7 +341,7 @@ ResourcePoolItem.prototype.delChangesNotifyRoutine = function (fn) {
     debug_assert(typeof(fn) == "function", "Передана не функция");
     for (var i = 0; i < this._pCallbackFunctions.length; i++) {
         if (this._pCallbackFunctions[i] == fn) {
-            this._pCallbackFunctions.splice(i - 1, 1);
+            this._pCallbackFunctions[i] = null;
         }
     }
 }
@@ -475,7 +477,9 @@ ResourcePoolItem.prototype._setResourceFlag = function (iFlagBit, isSetting) {
     SET_BIT(this._iResourceFlags, iFlagBit, isSetting);
     if (iTempFlags != this._iResourceFlags) {
         for (var i = 0; i < this._pCallbackFunctions.length; i++) {
-            this._pCallbackFunctions[i].call(this, iFlagBit, this._iResourceFlags, isSetting);
+            if (this._pCallbackFunctions[i]) {
+                this._pCallbackFunctions[i].call(this, iFlagBit, this._iResourceFlags, isSetting);
+            }
         }
     }
 }
@@ -535,14 +539,16 @@ ResourcePoolItem.prototype.notifyRestored = function () {
 ResourcePoolItem.prototype.notifyDisabled = function () {
     this._setResourceFlag(a.ResourcePoolItem.Disabled, true);
 }
+
 /**
  * @property notifyDisabled()
- * Resource updated
+ * Установка в состояние не используемый
  * @memberof ResourcePoolItem
  **/
 ResourcePoolItem.prototype.notifyAltered = function () {
     this._setResourceFlag(a.ResourcePoolItem.Altered, true);
 }
+
 /**
  * @property notifySaved()
  * Установка в состояние сохраненый
@@ -639,8 +645,8 @@ ResourcePoolItem.prototype.isResourceAltered = function () {
  * @param isOn
  **/
 ResourcePoolItem.prototype.setAlteredFlag = function (isOn) {
+    isOn = ifndef(isOn, true);
     this._setResourceFlag(a.ResourcePoolItem.Altered, isOn);
-    ;
 }
 
 /**
@@ -699,4 +705,3 @@ ResourcePoolItem.prototype.release = function () {
 }
 
 a.ResourcePoolItem = ResourcePoolItem;
-

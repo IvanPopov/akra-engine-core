@@ -177,8 +177,6 @@ function DisplayManager(pEngine) {
     this._bClearEachFrame = true;
 
     // device-bound resource pools
-    this._texturePool = new a.TextureManager(pEngine);
-    this._texturePool.initialize(16);
 
     this._surfaceMaterialPool = new a.SurfaceMaterialManager(pEngine);
     this._surfaceMaterialPool.initialize(16);
@@ -200,6 +198,9 @@ function DisplayManager(pEngine) {
 
     this._imagePool = new a.ImageManager(pEngine);
     this._imagePool.initialize(16);
+
+    this._texturePool = new a.TextureManager(pEngine);
+    this._texturePool.initialize(16);
 
     this._videoBufferPool = new a.VideoBufferManager(pEngine);
     this._videoBufferPool.initialize(16);

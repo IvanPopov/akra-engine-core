@@ -178,6 +178,7 @@ var GLOBAL_VARS = {
     T_KW_WHILE            : "while",
     T_KW_IF               : "if",
     T_KW_ELSE             : "else",
+    T_KW_BREAK            : "break",
 
     FROMEXPR     : "FromExpr",
     MEMEXPR      : "MemExpr",
@@ -2799,7 +2800,7 @@ EffectPass.prototype.prepare = function (pEngineStates, pUniforms) {
     this.pStates = {};
     this.sFragment = null;
     this.sVertex = null;
-    if (this.isComplex && (!pEngineStates || !pUniforms)) {
+    if (this.isComplex && (!pEngineStates && !pUniforms)) {
         error("Place value of all variables");
         return;
     }
@@ -3133,6 +3134,9 @@ function Effect(pManager, id) {
     this.sComponents = null;
     this.pComponents = null;
     this.pComponentsShift = null;
+
+    //Are we in loop (For, while or do)
+    this._isInLoop = false;
 
     STATIC(sTempStructName, "TEMPSTRUCTNAME_")
     STATIC(pBaseFunctionsHash, {});
@@ -6334,6 +6338,7 @@ Effect.prototype.analyzeStmtBlock = function (pNode) {
 };
 Effect.prototype.analyzeStmt = function (pNode) {
     var pChildren = pNode.pChildren;
+    var isInLoop;
     if (pChildren.length === 1) {
         this.analyzeSimpleStmt(pChildren[0]);
     }
@@ -6343,7 +6348,10 @@ Effect.prototype.analyzeStmt = function (pNode) {
         this.pushCode("(");
         this.analyzeExpr(pChildren[2]);
         this.pushCode(")");
+        isInLoop = this._isInLoop;
+        this._isInLoop = true;
         this.analyzeStmt(pChildren[0]);
+        this._isInLoop = isInLoop;
     }
     else if (pChildren[pChildren.length - 1].sValue === a.fx.GLOBAL_VARS.T_KW_FOR) {
         //Stmt : For '(' ForInit ForCond ForStep ')' Stmt
@@ -6354,7 +6362,10 @@ Effect.prototype.analyzeStmt = function (pNode) {
         this.analyzeForCond(pChildren[3]);
         this.analyzeForStep(pChildren[2]);
         this.pushCode(")");
+        isInLoop = this._isInLoop;
+        this._isInLoop = true;
         this.analyzeStmt(pChildren[0]);
+        this._isInLoop = isInLoop;
         this.endScope();
     }
     else if (pChildren[pChildren.length - 1].sValue === a.fx.GLOBAL_VARS.T_KW_IF && pChildren.length === 5) {
@@ -6392,7 +6403,7 @@ Effect.prototype.analyzeForInit = function (pNode) {
 };
 Effect.prototype.analyzeForCond = function (pNode) {
     pNode = pNode.pChildren[pNode.pChildren.length - 1];
-    if (pNode.sName !== a.fx.GLOBAL_VARS.RELATIONALEXPR || pNode.sName !== a.fx.GLOBAL_VARS.EQUALITYEXPR) {
+    if (pNode.sName !== a.fx.GLOBAL_VARS.RELATIONALEXPR && pNode.sName !== a.fx.GLOBAL_VARS.EQUALITYEXPR) {
         error("Something going wrong...in for cond");
         return;
     }
@@ -6402,7 +6413,7 @@ Effect.prototype.analyzeForStep = function (pNode) {
     if (pNode.pChildren) {
         pNode = pNode.pChildren[pNode.pChildren.length - 1];
     }
-    if (pNode.sName !== a.fx.GLOBAL_VARS.POSTFIXEXPR || pNode.sName !== a.fx.GLOBAL_VARS.ASSIGNMENTEXPR) {
+    if (pNode.sName !== a.fx.GLOBAL_VARS.POSTFIXEXPR && pNode.sName !== a.fx.GLOBAL_VARS.ASSIGNMENTEXPR) {
         error("Something going wrong... in for step");
         return;
     }
@@ -6411,6 +6422,7 @@ Effect.prototype.analyzeForStep = function (pNode) {
 Effect.prototype.analyzeNonIfStmt = function (pNode) {
     var pChildren = pNode.pChildren;
     var i;
+    var isInLoop;
     if (pChildren.length === 1) {
         this.analyzeSimpleStmt(pChildren[0]);
     }
@@ -6420,7 +6432,10 @@ Effect.prototype.analyzeNonIfStmt = function (pNode) {
         this.pushCode("(");
         this.analyzeExpr(pChildren[2]);
         this.pushCode(")");
+        isInLoop = this._isInLoop;
+        this._isInLoop = true;
         this.analyzeNonIfStmt(pChildren[0]);
+        this._isInLoop = isInLoop;
     }
     else if (pChildren[pChildren.length - 1].sValue === a.fx.GLOBAL_VARS.T_KW_FOR) {
         //Stmt : For '(' ForInit ForCond ForStep ')' Stmt
@@ -6431,7 +6446,10 @@ Effect.prototype.analyzeNonIfStmt = function (pNode) {
         this.analyzeForCond(pChildren[3]);
         this.analyzeForStep(pChildren[2]);
         this.pushCode(")");
+        isInLoop = this._isInLoop;
+        this._isInLoop = true;
         this.analyzeNonIfStmt(pChildren[0]);
+        this._isInLoop = isInLoop;
         this.endScope();
     }
 };
@@ -6441,6 +6459,7 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
     var pCode;
     var i;
     var isMemRead = false;
+    var isInLoop;
     if (pChildren[pChildren.length - 1].sValue === ";") {
         //SimpleStmt : ';' --AN
         return;
@@ -6533,8 +6552,11 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
     }
     else if (pChildren[pChildren.length - 1].sValue === a.fx.GLOBAL_VARS.T_KW_DO) {
         //SimpleStmt : T_KW_DO Stmt T_KW_WHILE '(' Expr ')' ';'
+        isInLoop = this._isInLoop;
         this.pushCode("do");
+        this._isInLoop = true;
         this.analyzeStmt(pChildren[5]);
+        this._isInLoop = isInLoop;
         this.pushCode("while");
         this.pushCode("(");
         this.analyzeExpr(pChildren[2]);
@@ -6553,6 +6575,15 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
         }
         this._pCurrentFunction.isFragmentOnly = true;
         this.pushCode("discard");
+        this.pushCode(";");
+    }
+    else if (pChildren[pChildren.length - 1].sValue === a.fx.GLOBAL_VARS.T_KW_BREAK) {
+        //SimpleStmt : T_KW_BREAK ';'
+        if(this._isInLoop === false){
+            error("Break statement can be used only in loop(or in switch in pass)");
+            return;
+        }
+        this.pushCode("break");
         this.pushCode(";");
     }
     else if (pChildren[pChildren.length - 1].sName === a.fx.GLOBAL_VARS.TYPEDECL) {

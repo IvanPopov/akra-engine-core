@@ -412,6 +412,7 @@ SceneModel.prototype.render = function () {
         for (j = 0; j < pMesh.length; j++) {
             pSubMesh = pMesh[j];
             pSubMesh.startRender();
+            this._pEngine.pEngineStates.mesh.isSkinning = pSubMesh.isSkinned();
             for (k = 0; k < pSubMesh.totalPasses(); k++) {
                 pSubMesh.activatePass(i);
                 pSubMesh.applySurfaceMaterial();

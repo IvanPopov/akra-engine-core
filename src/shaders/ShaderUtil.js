@@ -137,6 +137,7 @@ function PreRenderState(pEngine) {
         [],
         []
     ];
+    this.pRenderObject = null;
     this.pSurfaceMaterial = null;
     this.pSnapshot = null;
 
@@ -168,6 +169,7 @@ PreRenderState.prototype.release = function () {
     for (i = 0; i < this.pAttributeData.length; i++) {
         this.pAttributeData[i].length = 0;
     }
+    this.pRenderObject = null;
     this.pSurfaceMaterial = null;
     this.pSnapshot = null;
 

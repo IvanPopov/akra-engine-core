@@ -75,7 +75,8 @@ function Renderer(pEngine) {
              VIEW_MATRIX = "VIEW_MATRIX",
              PROJ_MATRIX = "PROJ_MATRIX",
              NORMAL_MATRIX = "NORMAL_MATRIX",
-             EYE_POS = "EYE_POSITION"
+             EYE_POS = "EYE_POSITION",
+             BIND_MATRIX = "BIND_SHAPE_MATRIX"
          ], SYSTEM_SEMANTICS, a.Renderer);
     Enum([
              MATERIAL = "MATERIAL"
@@ -88,7 +89,7 @@ function Renderer(pEngine) {
 
     this.pEngine = pEngine;
     this.pDevice = pEngine.pDevice;
-    this._pEngineStates = pEngine.pSystemStates;
+    this._pEngineStates = pEngine.pEngineStates;
 
     this._nEffectFile = 1;
     this._pEffectFileStack = [];
@@ -105,6 +106,7 @@ function Renderer(pEngine) {
     this._pEffectResoureBlend = {};
 
     this._pActiveSceneObject = null;
+    this._pActiveRenderObject = null;
     this._pSceneObjectStack = [];
 
     this._pPreRenderStateStack = [];
@@ -171,7 +173,7 @@ Renderer.prototype.loadEffectFile = function (sFileName) {
         warning("File has wrong extension! It must be .fx!");
         return false;
     }
-    this._pEffectFileDataPool.loadResource(sFileName);
+    return this._pEffectFileDataPool.loadResource(sFileName);
 };
 /**
  * Initialization component from technique. Name of component will be 'sEffectName' + ':' + 'pTechnique.sName'
@@ -542,7 +544,7 @@ Renderer.prototype.findEffect = function (sName) {
 };
 
 //----PreReander Methods----//
-Renderer.prototype.push = function (pSnapshot) {
+Renderer.prototype.push = function (pSnapshot, pRenderObject) {
     var rId = pSnapshot.method.effect.resourceHandle();
     var pBlend = this._pEffectResoureBlend[rId];
     var isUpdate = pSnapshot.isUpdated();
@@ -586,6 +588,7 @@ Renderer.prototype.push = function (pSnapshot) {
     pState.nShift = (this._pPreRenderState === null) ? 0 : this._pPreRenderState.nShift;
     pState.pBlend = pBlend;
     pState.pAttributeData.length = (pBlend.totalValidPasses());
+    pState.pRenderObject = pRenderObject;
     this._pPreRenderStateStack.push(pState);
     this._pPreRenderState = pState;
     pSnapshot.isUpdated(false);
@@ -939,17 +942,18 @@ Renderer.prototype._releasePreRenderState = function (pState) {
     return true;
 };
 Renderer.prototype._getSystemUniformValue = function (sName) {
-    var pRenderObject = this._pActiveSceneObject;
+    var pSceneObject = this._pActiveSceneObject;
+    var pRenderObject = this._pPreRenderState.pRenderObject;
     var pCamera = this.pEngine.getActiveCamera();
     switch (sName) {
         case a.Renderer.MODEL_MATRIX:
-            if (pRenderObject && pRenderObject._m4fWorldMatrix) {
-                return pRenderObject.worldMatrix() || null;
+            if (pSceneObject && pSceneObject._m4fWorldMatrix) {
+                return pSceneObject.worldMatrix() || null;
             }
             return null;
         case a.Renderer.NORMAL_MATRIX:
-            if (pRenderObject && pRenderObject._m4fWorldMatrix) {
-                return pRenderObject.normalMatrix() || null;
+            if (pSceneObject && pSceneObject._m4fWorldMatrix) {
+                return pSceneObject.normalMatrix() || null;
             }
             return null;
         case a.Renderer.VIEW_MATRIX:
@@ -958,6 +962,8 @@ Renderer.prototype._getSystemUniformValue = function (sName) {
             return pCamera.projectionMatrix();
         case a.Renderer.EYE_POS:
             return pCamera.worldPosition();
+        case a.Renderer.BIND_MATRIX:
+            return (pRenderObject && pRenderObject.skin) ? pRenderObject.skin.getBindMatrix() : null;
         default:
             warning("Unsupported system semantic");
             return null;

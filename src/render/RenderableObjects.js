@@ -262,7 +262,7 @@ RenderableObject.prototype.startRender = function () {
     if (!this._pActiveSnapshot) {
         return false;
     }
-    return this._pActiveSnapshot.begin();
+    return this._pActiveSnapshot.begin(this);
 };
 /**
  * Exclude object render method from stack of effects

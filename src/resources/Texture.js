@@ -71,6 +71,10 @@ function Texture(pEngine) {
 
     this._iSlot = -1;
     this._pEngine = pEngine;
+
+    this._pRepackTexture = null;
+    this._pSystemVertexDataTexture = null;
+    this._initSystemStorageTexture(pEngine);
 }
 
 a.extend(Texture, a.ResourcePoolItem, a.RenderableObject);
@@ -191,6 +195,40 @@ PROPERTY(Texture, 'wrapt',
 PROPERTY(Texture, 'target', function () {
     return TEST_BIT(this._iFlags, a.Texture.CubeMap) ? a.TTYPE.TEXTURE_CUBE_MAP : a.TTYPE.TEXTURE_2D;
 });
+
+Texture.prototype._initSystemStorageTexture = function (pEngine) {
+    this._pEngine = pEngine;
+    var pBuffer, pData, pMethod;
+    if (pEngine._pSystemVertexDataTexture) {
+        this._pSystemVertexDataTexture = pEngine._pSystemVertexDataTexture;
+        this.renderMethod = pEngine.pDisplayManager.renderMethodPool().findResource(".repack_texture");
+        return true;
+    }
+
+    pBuffer = pEngine.pDisplayManager.vertexBufferPool().createResource(".VERTEXBUFFER_TEX");
+    debug_assert(pBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit)),
+                 "Cannot create system vertex buffer");
+    pData = pBuffer.getEmptyVertexData(0, [VE_FLOAT('SERIALNUMBER')]);
+    pEngine._pSystemVertexDataTexture = this._pSystemVertexDataTexture = pData;
+    pMethod = pEngine.pDisplayManager.renderMethodPool().createResource(".repack_texture");
+    this.renderMethod = pMethod;
+    this._setSystemEffect();
+
+    return true;
+};
+
+Texture.prototype._setSystemEffect = function(){
+    var pEngine = this._pEngine;
+    var pEffect;
+    if (pEngine.displayManager().componentPool().findResource("akra.system.texture_repack")) {
+        pEffect = pEngine.pDisplayManager.effectPool().createResource(".repack_texture");
+        pEffect.create();
+        pEffect.use("akra.system.texture_repack");
+        this.renderMethod.effect = pEffect;
+        return true;
+    }
+    return false;
+};
 
 Texture.prototype.flipY = function (bValue) {
     this._pDevice.pixelStorei(a.WEBGLS.UNPACK_FLIP_Y_WEBGL, bValue === undefined ? true : bValue);
@@ -569,7 +607,7 @@ Texture.prototype.loadResource = function (sFileName) {
     else if ((sExt = (a.pathinfo(sFileName).ext)) &&
              (sExt == "bmp" || sExt == "jpeg" || sExt == "gif" || sExt == "png")) {
         var pImage = new Image();
-        trace("TEXTURE LOAD",this._pEngine);
+        trace("TEXTURE LOAD", this._pEngine);
         pImage.onload = function () {
             me.uploadHTMLElement(pImage);
         }
@@ -795,95 +833,54 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
 
     var pDevice = this._pEngine.pDevice;
     var pRenderer = this._pEngine.shaderManager();
-    if (!statics._pRepackProgram) {
-        statics._pRepackProgram = this._pEngine.displayManager().shaderProgramPool().createResource('A_repackTexture');
-        statics._pRepackProgram.create(
-            "                                   \n\
-            attribute float SERIALNUMBER;       \n\
-            uniform vec2 sourceTextureSize;     \n\
-            uniform vec2 destinationTextureSize;\n\
-            uniform sampler2D sourceTexture;    \n\
-                                                \n\
-            varying vec4 vData;                 \n\
-                                                \n\
-            void main(void){                    \n\
-                vData = texture2D(sourceTexture,\
-                vec2((mod(SERIALNUMBER,sourceTextureSize.x) + .5)/sourceTextureSize.x,\
-                (floor(SERIALNUMBER/sourceTextureSize.x) + .5)/sourceTextureSize.y));\n\
-                                                \n\
-                gl_Position = vec4(2.*\
-                (mod(SERIALNUMBER,destinationTextureSize.x) + .5)/destinationTextureSize.x - 1.,\n\
-                2. * (floor(SERIALNUMBER/destinationTextureSize.x) + .5)/destinationTextureSize.y \
-                - 1.,0.,1.);\n\
-            }                                   \n\
-            ",
-            "                                   \n\
-            #ifdef GL_ES                        \n\
-                precision highp float;          \n\
-            #endif                              \n\
-                                                \n\
-            varying vec4 vData;                 \n\
-                                                \n\
-            void main(void){                    \n\
-                gl_FragColor = vData;           \n\
-            }                                   \n\
-    ", true);
+
+    if (!this._pRepackTexture) {
+        this._pRepackTexture = this._pEngine.displayManager().texturePool().createResource(".DuplicateTexture" + a.sid());
     }
 
-    var pProgram = statics._pRepackProgram;
-    pProgram.activate();
+    var pDestinationTexture = this._pRepackTexture;
+    pDestinationTexture.createTexture(iWidth, iHeight, 0, eFormat, eType);
 
-    var pDestinationTexture = pDevice.createTexture();
-    pDevice.activeTexture(pDevice.TEXTURE1);
-    // pDevice.pixelStorei(a.WEBGLS.UNPACK_FLIP_Y_WEBGL, true);
-    pRenderer.bindTexture(this);
-    pDevice.texImage2D(pDevice.TEXTURE_2D, 0, eFormat, iWidth, iHeight, 0, eFormat, eType, null);
-    pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MAG_FILTER, pDevice.NEAREST);
-    pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MIN_FILTER, pDevice.NEAREST);
-    pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_WRAP_S, pDevice.CLAMP_TO_EDGE);
-    pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_WRAP_T, pDevice.CLAMP_TO_EDGE);
+    pDestinationTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+    pDestinationTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+    pDestinationTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
+    pDestinationTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
 
-
-    var pDestinationFrameBuffer = pDevice.createFramebuffer();
-    pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pDestinationFrameBuffer);
-    pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
-                                 pDevice.TEXTURE_2D, pDestinationTexture, 0);
-
+    var pVertexData = this._pSystemVertexDataTexture;
     var pRenderIndexData = new Float32Array(this._iWidth * this._iHeight);
-
     for (var i = 0; i < pRenderIndexData.length; i++) {
         pRenderIndexData[i] = i;
     }
+    pVertexData.resize(pRenderIndexData.length);
+    pVertexData.setData(pRenderIndexData, 'VALUE');
 
-    var pRenderIndexBuffer = pDevice.createBuffer();
-    pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pRenderIndexBuffer);
-    pDevice.bufferData(pDevice.ARRAY_BUFFER, pRenderIndexData, pDevice.STREAM_DRAW);
+    var pSnapshot = this._pActiveSnapshot;
+    var pEntry = null;
+    pRenderer.setViewport(0, 0, iWidth, iHeight);
+    pRenderer.activateFrameBuffer();
+    pRenderer.applyFrameBufferTexture(pDestinationTexture);
+    trace("START PREPRENDE REPACK TEXTURE");
+    this.startRender();
+    for (var i = 0; i < this.totalPasses(); i++) {
+        trace("Pass #" + i);
+        this.activatePass(i);
+        pSnapshot.applyTextureBySemantic("TEXTURE0", this);
+        pSnapshot.applyVertexData(pVertexData, a.PRIMTYPE.POINTLIST);
+        pSnapshot.setParameter("sourceTextureSize", [this._iWidth, this._iHeight]);
+        pSnapshot.setParameter("destinationTextureSize", [iWidth, iHeight]);
+        pEntry = this.renderPass();
+        this.deactivatePass();
+    }
+    this.finishRender();
+    trace("FINISH PREPRENDE REPACK TEXTURE");
 
-    pDevice.activeTexture(pDevice.TEXTURE0);
-    pDevice.bindTexture(pDevice.TEXTURE_2D, this._pTexture);
+    pRenderer.deactivateFrameBuffer();
 
-
-    pProgram.applyVector2("sourceTextureSize", this._iWidth, this._iHeight);
-    pProgram.applyVector2("destinationTextureSize", iWidth, iHeight);
-    pProgram.applyInt("sourceTexture", 0);
-
-    pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pRenderIndexBuffer);
-    pDevice.vertexAttribPointer(pProgram._pAttributesByName['SERIALNUMBER'].iLocation, 1, pDevice.FLOAT, false, 0, 0);
-    // pDevice.disableVertexAttribArray(1);
-    // pDevice.disableVertexAttribArray(2);
-
-    pDevice.viewport(0, 0, iWidth, iHeight);
-    pDevice.drawArrays(0, 0, pRenderIndexData.length);
+    pRenderer.render(pEntry);
     pDevice.flush();
-
-    pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, null);
-    pDevice.deleteBuffer(pRenderIndexBuffer);
-    pDevice.deleteTexture(this._pTexture);
-    pDevice.deleteFramebuffer(pDestinationFrameBuffer);
-
-    pProgram.deactivate();
-
-    this._pTexture = pDestinationTexture;
+    var pTexture = this._pTexture;
+    this._pTexture = pDestinationTexture._pTexture;
+    pDestinationTexture._pTexture = pTexture;
     this._eFormat = eFormat;
     this._eType = eType;
     this._iWidth = iWidth;

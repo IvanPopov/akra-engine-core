@@ -891,7 +891,7 @@ PassBlend.prototype.finalizeBlend = function () {
         }
     }
 
-    this.sVaryingsOut = "struct { vec4 POSITION;";
+    this.sVaryingsOut = "struct { vec4 POSITION; float PSIZE;";
 
     for (i in this.pVaryings) {
         this.sVaryingsOut += this.pVaryings[i].pType.pEffectType.toCode() + " " + this.pVaryings[i].sSemantic + ";";
@@ -899,6 +899,7 @@ PassBlend.prototype.finalizeBlend = function () {
     }
 
     this.pVaryingsBlock["POSITION"] = "gl_Position=" + a.fx.GLOBAL_VARS.SHADEROUT + ".POSITION;";
+    this.pVaryingsBlock["PSIZE"] = "gl_PointSize=" + a.fx.GLOBAL_VARS.SHADEROUT + ".PSIZE;";
     this.sVaryingsOut += "} " + a.fx.GLOBAL_VARS.SHADEROUT + ";"
 
 };

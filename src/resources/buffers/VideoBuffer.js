@@ -66,8 +66,8 @@ function VideoBuffer(pEngine) {
      * @type {VertexData}
      */
     this._pHeader = null;
-    this._pSystemVertexData = null;
-    this._initSystemStorage(pEngine);
+    this._pSystemVertexDataVB = null;
+    this._initSystemStorageVB(pEngine);
 //    debug_assert(a.info.graphics.getExtention(pEngine.pDevice, a.EXTENTIONS.TEXTURE_FLOAT),
 //        'для работы видеобуфера необходимо расширение a.EXTENTIONS.TEXTURE_FLOAT');
 }
@@ -128,11 +128,11 @@ DISPROPERTY(VideoBuffer, format);
 DISPROPERTY(VideoBuffer, magFilter);
 DISPROPERTY(VideoBuffer, minFilter);
 
-VideoBuffer.prototype._initSystemStorage = function (pEngine) {
+VideoBuffer.prototype._initSystemStorageVB = function (pEngine) {
     this._pEngine = pEngine;
     var pBuffer, pData, pMethod, pEffect;
-    if (pEngine._pSystemVertexData) {
-        this._pSystemVertexData = pEngine._pSystemVertexData;
+    if (pEngine._pSystemVertexDataVB) {
+        this._pSystemVertexDataVB = pEngine._pSystemVertexDataVB;
         this.renderMethod = pEngine.pDisplayManager.renderMethodPool().findResource(".update_video_buffer");
         return true;
     }
@@ -141,10 +141,9 @@ VideoBuffer.prototype._initSystemStorage = function (pEngine) {
     debug_assert(pBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit)),
                  "Cannot create system vertex buffer");
     pData = pBuffer.getEmptyVertexData(0, [VE_FLOAT('INDEX'), VE_FLOAT('SHIFT'), VE_FLOAT4('VALUE')]);
-    pEngine._pSystemVertexData = this._pSystemVertexData = pData;
+    pEngine._pSystemVertexDataVB = this._pSystemVertexDataVB = pData;
     pMethod = pEngine.pDisplayManager.renderMethodPool().createResource(".update_video_buffer");
     pEffect = pEngine.pDisplayManager.effectPool().createResource(".update_video_buffer");
-    console.log(pEffect);
     pEffect.create();
     pEffect.use("akra.system.update_video_buffer");
     pMethod.effect = pEffect;
@@ -419,70 +418,15 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
             pRealData[iLeftShift + i] = pBufferData[i];
         }
 
-        // trace('>>>>>>>>>>>>>>>>>>> offset:', iOffset, ' >>> left shift: ', iLeftShift, ' >>> right shift: ', iRightShift)
-        // trace(' >>> begin pixel: ', iBeginPix, ' >>> end pixel: ', iEndPix);
-        // trace('writing', iCount, 'elements from', iFrom, 'with data', pBufferData);
-        // trace('markup  data:', pMarkupData, pMarkupData.length, 'first element:', pMarkupData.subarray(0, 2), 'end element:', pMarkupData.subarray(pMarkupData.length - 2, pMarkupData.length));
-        // trace('buffer data:', pRealData, pRealData.length);
-        //console.warn('rendering to vb.:: ', 'writing', iCount, 'elements from', iFrom, 'with data', pBufferData);
-
         var pDevice = this._pEngine.pDevice;
-        var pShaderSource;
-        var pProgram;
 
-//        Ifdef(TEXTURE_REDRAW)
-//
-//        STATIC(_pCopyProgram, a.loadProgram(this._pEngine, '../effects/copy_texture.glsl'));
-//
-//        var pCopyProgram = statics._pCopyProgram;
-//        pCopyProgram.activate();
-//
-//        // pDevice.disableVertexAttribArray(1);
-//        // pDevice.disableVertexAttribArray(2);
-//
-//        var pCopyData = new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]);
-//
-//        var pCopyBuffer = pDevice.createBuffer();
-//        pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pCopyBuffer);
-//        pDevice.bufferData(pDevice.ARRAY_BUFFER, pCopyData, pDevice.STREAM_DRAW);
-//        pDevice.vertexAttribPointer(pCopyProgram._pAttributesByName['POSITION'].iLocation, 2, pDevice.FLOAT, false, 0,
-//                                    0);
-//
-//        var pCopyTexture = pDevice.createTexture();
-//        pDevice.activeTexture(0x84C0 + 1);
-//        pDevice.bindTexture(pDevice.TEXTURE_2D, pCopyTexture);
-//        pDevice.texImage2D(pDevice.TEXTURE_2D, 0, this._eFormat, this._iWidth, this._iHeight, 0, this._eFormat,
-//                           this._eType, null);
-//        pDevice.texParameteri(pDevice.TEXTURE_2D, a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
-//        pDevice.texParameteri(pDevice.TEXTURE_2D, a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
-//        pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MAG_FILTER, pDevice.NEAREST);
-//        pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MIN_FILTER, pDevice.NEAREST);
-//
-//        pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
-//                                     pDevice.TEXTURE_2D, pCopyTexture, 0);
-//
-//        this.activate(0);
-//        pCopyProgram.applyInt('src', 0);
-//
-//        pDevice.drawArrays(a.PRIMTYPE.TRIANGLESTRIP, 0, 4);
-//        Endif();
-        //STATIC(_pUpdateProgram, a.loadProgram(this._pEngine, '../effects/update_video_buffer.glsl'));
+        var pVertexData = this._pSystemVertexDataVB;
 
-//        window['A_TRACER.trace']('begin readraw in videobuffer');
-
-        var pVertexData = this._pSystemVertexData;
-//        window['A_TRACER.trace']('before resize');
         pVertexData.resize(nPixels);
-//        window['A_TRACER.trace']('System vertex data size: ' + pVertexData.length + '/' + nPixels);
-
-//        window['A_TRACER.trace']('before set value');
         pVertexData.setData(pRealData, 'VALUE');
-//        window['A_TRACER.trace']('after set index');
         pVertexData.setData(pMarkupDataIndex, 'INDEX');
-//        window['A_TRACER.trace']('after set shift');
         pVertexData.setData(pMarkupDataShift, 'SHIFT');
 
-//        window['A_TRACER.trace']('after set data');
 
         var pManager = this._pEngine.shaderManager();
         var pSnapshot = this._pActiveSnapshot;
@@ -503,63 +447,8 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
         this.finishRender();
         pManager.deactivateFrameBuffer();
 
-//        window['A_TRACER.trace']('expected rendering from 0 to ' + nPixels + '/' + pVertexData.length);
         pManager.render(pEntry);
         pDevice.flush();
-//        window['A_TRACER.trace']('end readraw in videobuffer');
-//        pProgram = statics._pUpdateProgram;
-//        pProgram.activate();
-//
-//        // pDevice.enableVertexAttribArray(0);
-//        // pDevice.enableVertexAttribArray(1);
-//        // pDevice.enableVertexAttribArray(2);
-//
-//        pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
-//                                     pDevice.TEXTURE_2D, this._pTexture, 0);
-//
-//        var pValueBuffer = pDevice.createBuffer();
-//        pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pValueBuffer);
-//        pDevice.bufferData(pDevice.ARRAY_BUFFER, pRealData, pDevice.STREAM_DRAW);
-//
-//        var pMarkupBuffer = pDevice.createBuffer();
-//        pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pMarkupBuffer);
-//        pDevice.bufferData(pDevice.ARRAY_BUFFER, pMarkupData, pDevice.STREAM_DRAW);
-//
-//        this.activate(0);
-//        //pDevice.activeTexture(0x84C0);
-//        //pDevice.bindTexture(pDevice.TEXTURE_2D, this._pTexture);
-//
-//        pProgram.applyVector2('size', this._iWidth, this._iHeight);
-//        Ifdef(TEXTURE_REDRAW)
-//        pProgram.applyInt('sourceTexture', 1);
-//        Elseif();
-//        pProgram.applyInt('sourceTexture', 0);
-//        Endif();
-//        pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pValueBuffer);
-//        pDevice.vertexAttribPointer(pProgram._pAttributesByName['VALUE'].iLocation, 4, pDevice.FLOAT, false, 0, 0);
-//
-//        pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pMarkupBuffer);
-//        pDevice.vertexAttribPointer(pProgram._pAttributesByName['INDEX'].iLocation, 1, pDevice.FLOAT, false, 8, 0);
-//        pDevice.vertexAttribPointer(pProgram._pAttributesByName['SHIFT'].iLocation, 1, pDevice.FLOAT, false, 8, 4);
-//
-//        pDevice.viewport(0, 0, this._iWidth, this._iHeight);
-//
-//        pDevice.drawArrays(0, 0, nPixels);
-//
-//        pDevice.flush();
-//
-//        pDevice.bindBuffer(pDevice.ARRAY_BUFFER, null);
-//        pDevice.deleteBuffer(pValueBuffer);
-//        pDevice.deleteBuffer(pMarkupBuffer);
-//
-//        pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, null);
-//        pDevice.deleteFramebuffer(pFramebuffer);
-
-//        Ifdef(TEXTURE_REDRAW)
-//        pDevice.deleteTexture(pCopyTexture);
-//        Endif();
-
-        //pProgram.deactivate();
     }
 
     return true;

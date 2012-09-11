@@ -264,8 +264,8 @@ RenderSnapshot.prototype.isUpdated = function (isUpdate) {
 /**
  * Add effect to composition.
  */
-RenderSnapshot.prototype.begin = function () {
-    return this._pShaderManager.push(this);
+RenderSnapshot.prototype.begin = function (pRenderObject) {
+    return this._pShaderManager.push(this, pRenderObject);
 };
 
 /**
