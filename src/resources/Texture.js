@@ -74,6 +74,7 @@ function Texture(pEngine) {
 
     this._pRepackTexture = null;
     this._pSystemVertexDataTexture = null;
+    this._isTextureChanged = false;
     this._initSystemStorageTexture(pEngine);
 }
 
@@ -201,7 +202,8 @@ Texture.prototype._initSystemStorageTexture = function (pEngine) {
     var pBuffer, pData, pMethod;
     if (pEngine._pSystemVertexDataTexture) {
         this._pSystemVertexDataTexture = pEngine._pSystemVertexDataTexture;
-        this.renderMethod = pEngine.pDisplayManager.renderMethodPool().findResource(".repack_texture");
+        pMethod = pEngine.pDisplayManager.renderMethodPool().findResource(".repack_texture");
+        this.addRenderMethod(pMethod, ".repack_texture");
         return true;
     }
 
@@ -211,7 +213,7 @@ Texture.prototype._initSystemStorageTexture = function (pEngine) {
     pData = pBuffer.getEmptyVertexData(0, [VE_FLOAT('SERIALNUMBER')]);
     pEngine._pSystemVertexDataTexture = this._pSystemVertexDataTexture = pData;
     pMethod = pEngine.pDisplayManager.renderMethodPool().createResource(".repack_texture");
-    this.renderMethod = pMethod;
+    this.addRenderMethod(pMethod, ".repack_texture");
     this._setSystemEffect();
 
     return true;
@@ -224,7 +226,8 @@ Texture.prototype._setSystemEffect = function(){
         pEffect = pEngine.pDisplayManager.effectPool().createResource(".repack_texture");
         pEffect.create();
         pEffect.use("akra.system.texture_repack");
-        this.renderMethod.effect = pEffect;
+        this.switchRenderMethod(".repack_texture");
+        this._pActiveSnapshot.method.effect = pEffect;
         return true;
     }
     return false;
@@ -827,7 +830,7 @@ Texture.prototype.extend = function (iWidth, iHeight) {
  */
 Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
     debug_assert(this._pTexture, 'Cannot repack, because texture not created.');
-    trace("REPACK");
+    trace("REPACK TEXTURE #"+this.toNumber());
     eFormat = eFormat || this._eFormat;
     eType = eType || this._eType;
 
@@ -839,27 +842,30 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
     }
 
     var pDestinationTexture = this._pRepackTexture;
-    pDestinationTexture.createTexture(iWidth, iHeight, 0, eFormat, eType);
+    pDestinationTexture.createTexture(iWidth, iHeight, 0, eFormat, eType, [null]);
 
     pDestinationTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
     pDestinationTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
     pDestinationTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
     pDestinationTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
 
+    this.switchRenderMethod(".repack_texture");
+
     var pVertexData = this._pSystemVertexDataTexture;
-    var pRenderIndexData = new Float32Array(this._iWidth * this._iHeight);
-    for (var i = 0; i < pRenderIndexData.length; i++) {
+    var nCount = this._iWidth * this._iHeight;
+    var pRenderIndexData = new Float32Array(nCount);
+    for (var i = 0; i < nCount; i++) {
         pRenderIndexData[i] = i;
     }
-    pVertexData.resize(pRenderIndexData.length);
-    pVertexData.setData(pRenderIndexData, 'VALUE');
+    pVertexData.resize(nCount);
+    pVertexData.setData(pRenderIndexData, 'SERIALNUMBER');
 
     var pSnapshot = this._pActiveSnapshot;
     var pEntry = null;
+    trace("<<<<<<<<<<<<<TEXTURE REPACK RENDER>>>>>>>>>>>>>>>>");
     pRenderer.setViewport(0, 0, iWidth, iHeight);
     pRenderer.activateFrameBuffer();
     pRenderer.applyFrameBufferTexture(pDestinationTexture);
-    trace("START PREPRENDE REPACK TEXTURE");
     this.startRender();
     for (var i = 0; i < this.totalPasses(); i++) {
         trace("Pass #" + i);
@@ -872,15 +878,18 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
         this.deactivatePass();
     }
     this.finishRender();
-    trace("FINISH PREPRENDE REPACK TEXTURE");
 
     pRenderer.deactivateFrameBuffer();
 
     pRenderer.render(pEntry);
     pDevice.flush();
+    trace("<<<<<<<<<<<<<END TEXTURE REPACK RENDER>>>>>>>>>>>>>>>>");
+
     var pTexture = this._pTexture;
     this._pTexture = pDestinationTexture._pTexture;
     pDestinationTexture._pTexture = pTexture;
+    this._isTextureChanged = true;
+    pDestinationTexture._isTextureChanged = true;
     this._eFormat = eFormat;
     this._eType = eType;
     this._iWidth = iWidth;
@@ -966,7 +975,6 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
 
     return true;
 };
-
 
 Texture.prototype.bind = function () {
     this._pEngine.pDevice.bindTexture(this.target, this._pTexture);

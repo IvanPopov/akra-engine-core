@@ -217,6 +217,9 @@ EffectResource.prototype.use = function (iComponentHandle, nShift, isSet) {
     if (typeof iComponentHandle === 'object') {
         iComponentHandle = iComponentHandle.resourceHandle();
     }
+    else if(typeof iComponentHandle === 'string'){
+        iComponentHandle = pManager.getComponentByName(iComponentHandle).resourceHandle();
+    }
 
     if (isSet) {
         if (!pManager.activateComponent(this, iComponentHandle, nShift)) {

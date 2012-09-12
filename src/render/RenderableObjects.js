@@ -131,8 +131,10 @@ RenderableObject.prototype.addRenderMethod = function (pRenderMethod, sName) {
  */
 RenderableObject.prototype.findRenderMethod = function () {
     var iMethod;
+    var sMethodName;
 
     if (typeof arguments[0] === 'string') {
+        sMethodName = arguments[0];
         for (var i = 0; i < this._pSnapshots.length; i++) {
             if (this._pSnapshots[i].name === sMethodName) {
                 return i;

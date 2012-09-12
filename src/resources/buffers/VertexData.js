@@ -585,7 +585,7 @@ VertexData.prototype.resize = function (nCount, pVertexDeclaration) {
         }
     }
     else if (arguments.length == 1) {
-        if (nCount <= this.size) {
+        if (nCount <= this.length) {
             this._nMemberCount = nCount;
             return true;
         }

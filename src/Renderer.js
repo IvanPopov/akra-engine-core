@@ -1256,21 +1256,23 @@ Renderer.prototype._activateFrameBuffer = function (iId) {
         return true;
     }
     this._pRenderState.pFrameBuffer = pFrameBuffer;
-    trace("activateFrameBuffer #" + iId);
     if (pFrameBuffer) {
+        trace("activateFrameBuffer #" + iId);
         pFrameBuffer.bind();
     }
     else {
+        trace("activateFrameBuffer DefaultRender");
         this.pDevice.bindFramebuffer(this.pDevice.FRAMEBUFFER, null);
     }
 };
 
 Renderer.prototype.bindTexture = function (pTexture) {
-    if (this._pRenderState.pTexture === pTexture) {
+    if (this._pRenderState.pTexture === pTexture && this._pRenderState.pTexture._isTextureChanged === false) {
         return true;
     }
     trace("Real bind texture #" + pTexture.toNumber());
     this._pRenderState.pTexture = pTexture;
+    pTexture._isTextureChanged = false;
     if (this._pRenderState.iTextureSlot >= -1) {
         this._pRenderState.pTextureSlotStates[this._pRenderState.iTextureSlot] = true;
     }
@@ -1436,6 +1438,7 @@ Renderer.prototype._renderResourceChanged = function (pResource) {
     }
     pCounters[id]++;
 };
+
 Renderer.prototype._clearRenderResources = function () {
     var i;
     var pCounters = this._pRenderResourceCounter;

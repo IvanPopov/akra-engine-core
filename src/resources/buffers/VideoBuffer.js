@@ -133,7 +133,8 @@ VideoBuffer.prototype._initSystemStorageVB = function (pEngine) {
     var pBuffer, pData, pMethod, pEffect;
     if (pEngine._pSystemVertexDataVB) {
         this._pSystemVertexDataVB = pEngine._pSystemVertexDataVB;
-        this.renderMethod = pEngine.pDisplayManager.renderMethodPool().findResource(".update_video_buffer");
+        pMethod = pEngine.pDisplayManager.renderMethodPool().findResource(".update_video_buffer");
+        this.addRenderMethod(pMethod, ".update_video_buffer");
         return true;
     }
 
@@ -147,7 +148,7 @@ VideoBuffer.prototype._initSystemStorageVB = function (pEngine) {
     pEffect.create();
     pEffect.use("akra.system.update_video_buffer");
     pMethod.effect = pEffect;
-    this.renderMethod = pMethod;
+    this.addRenderMethod(pMethod, ".update_video_buffer");
     return true;
 };
 /**
@@ -427,10 +428,12 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
         pVertexData.setData(pMarkupDataIndex, 'INDEX');
         pVertexData.setData(pMarkupDataShift, 'SHIFT');
 
+        this.switchRenderMethod(".update_video_buffer");
 
         var pManager = this._pEngine.shaderManager();
         var pSnapshot = this._pActiveSnapshot;
         var pEntry = null;
+        trace("<<<<<<<<<<<<<VIDEO BUFFER SET DATA RENDER>>>>>>>>>>>>>>>>");
         pManager.setViewport(0, 0, this._iWidth, this._iHeight);
         pManager.activateFrameBuffer();
         pManager.applyFrameBufferTexture(this);
@@ -449,6 +452,7 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
 
         pManager.render(pEntry);
         pDevice.flush();
+        trace("<<<<<<<<<<<<<END VIDEO BUFFER SET DATA RENDER>>>>>>>>>>>>>>>>");
     }
 
     return true;
