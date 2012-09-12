@@ -154,51 +154,27 @@ BrowserInfo.prototype._searchVersion = function (sData) {
     }
 };
 
-Object.defineProperty(BrowserInfo.prototype, "name", {
-    get : function () {
-        return this.sBrowser;
-    }
-});
-Object.defineProperty(BrowserInfo.prototype, "version", {
-    get : function () {
-        return this.sVersion;
-    }
-});
+PROPERTY(BrowserInfo, 'name',
+    function () {
+       return this.sBrowser;
+    });
 
-Object.defineProperty(BrowserInfo.prototype, "os", {
-    get : function () {
-        return this.sOS;
-    }
-});
+PROPERTY(BrowserInfo, 'version',
+    function () {
+       return this.sVersion;
+    });
 
+PROPERTY(BrowserInfo, 'os',
+    function () {
+       return this.sOS;
+    });
 
 window.URL = window.URL ? window.URL : window.webkitURL ? window.webkitURL : null;
 window.BlobBuilder = window.WebKitBlobBuilder || window.MozBlobBuilder || window.BlobBuilder;
 window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame ||
-                               window.mozRequestAnimationFrame;
-
-
-/*function checkFileSystem() {
- if (window.requestFileSystem) {
- // Attempt to create a folder to test if we can.
- window.requestFileSystem(TEMPORARY, 512, function(fs) {
- fs.root.getDirectory('slidestestquotaforfsfolder', {
- create: true
- }, function(dirEntry) {
- dirEntry.remove(); // If successfully created, just delete it.
- //('feature-filesystem');
- }, function(e) {
- if (e.code == FileError.QUOTA_EXCEEDED_ERR) {
- //('feature-filesystem-quota');
- }
- });
- });
- } else {
- //('feature-no-filesystem');
- }
- };*/
-
+    window.mozRequestAnimationFrame;
+window.WebSocket = window.WebSocket || window.MozWebSocket;
 
 function ApiInfo() {
     this.webgl = (window.WebGLRenderingContext || this.checkWebGL() ? true : false);
@@ -208,6 +184,7 @@ function ApiInfo() {
     this.webWorker = (typeof(Worker) !== "undefined");
     this.transferableObjects = (this.webWorker && this.chechTransferableObjects() ? true : false);
     this.localStorage = (typeof(localStorage) !== 'undefined');
+    this.webSocket = (typeof(window.WebSocket) !== 'undefined');
 }
 
 
@@ -217,7 +194,7 @@ ApiInfo.prototype.checkWebGL = function () {
         var pContext = pCanvas.getContext('webgl') ||
                        pCanvas.getContext('experimental-webgl');
         if (pContext) {
-            delete pContext;
+            //delete pContext;
             return true
         }
     }
@@ -249,32 +226,57 @@ ApiInfo.prototype.chechTransferableObjects = function () {
 
 a.browser = new BrowserInfo();
 a.info = {
-
-
     /**
-     * Canvas info.
-     * @tparam String/CanvasElement id Canvas identifier.
-     * @treturn Object Canvas parameters.
-     */
-    canvas  : function (id) {
-        var pCanvas = (typeof id == 'string' ? document.getElementById(id) : id);
+    * Canvas info.
+    * @tparam String/CanvasElement id Canvas identifier.
+    * @treturn Object Canvas parameters.
+    */
+    canvas: function (id) {
+    var pCanvas = (typeof id == 'string' ? document.getElementById(id) : id);
         return {
-            width  : (pCanvas.width ? pCanvas.width : pCanvas.style.width),
-            height : (pCanvas.height ? pCanvas.height : pCanvas.style.height),
-            id     : pCanvas.id
+            width:  (pCanvas.width ? pCanvas.width : pCanvas.style.width),
+            height: (pCanvas.height ? pCanvas.height : pCanvas.style.height),
+            id:     pCanvas.id
         };
     },
-    browser : a.browser,
+    browser: a.browser,
     /**
-     * Screen info.
-     */
-    screen  : {
-        width  : function () {
+    * Screen info.
+    */
+    screen: {
+        width:  function () {
             return screen.width
         },
-        height : function () {
+        height: function () {
             return screen.height;
         }
+    },
+
+    uri:  a.uri(document.location.href),
+
+    path: {
+        modules: A_CORE_HOME
+    },
+
+    is:   {
+
+                /**
+                 * show status - online or offline
+                 * @treturn Boolean true if online otherwise flase
+                 */
+                online: function () {
+                    return navigator.onLine;
+                },
+                        /**
+                         * perform test on mobile device
+                         * @treturn Boolean true if mobile otherwise flase
+                         */
+                        mobile: (/mobile|iphone|ipad|ipod|android|blackberry|mini|windows\sce|palm/i)
+                            .test(navigator.userAgent.toLowerCase()),
+        linux:          a.browser.os == 'Linux',
+        windows:        a.browser.os == 'Windows',
+        mac:            a.browser.os == 'Mac',
+        iPhone:         a.browser.os == 'iPhone'
     },
 
     uri  : a.uri(document.location.href),
@@ -360,11 +362,15 @@ a.info = {
         },
 
         /**
-         * Returns number of bits for depth buffer.
-         * @treturn Integer
-         */
-        depthBits : function (pContext) {
-            return pContext.getParameter(pContext.DEPTH_BITS);
+        * returns array contains bits depth of each color [r,g,b]
+        * @treturn Array
+        */
+        colorBits: function (pContext) {
+			return [
+				pContext.getParameter(pContext.RED_BITS),
+				pContext.getParameter(pContext.GREEN_BITS),
+				pContext.getParameter(pContext.BLUE_BITS)
+			];
         },
 
         /**
@@ -471,6 +477,12 @@ Object.defineProperty(a.info.is, "online", {
 Object.defineProperty(a.info.support, "webgl", {
     get : function () {
         return a.info.support.api.webgl;
+    }
+});
+
+Object.defineProperty(a.info.support, "webSocket", {
+    get: function () {
+        return a.info.support.api.webSocket;
     }
 });
 

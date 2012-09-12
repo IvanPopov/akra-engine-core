@@ -13,6 +13,7 @@ function Skeleton (pEngine, sName) {
 		], SKELETON_FLAGS, a.Skeleton);
 
 	this._sName = sName || null;
+
 	this._pEngine = pEngine;
 
 	//корневые joint'ы
@@ -20,10 +21,11 @@ function Skeleton (pEngine, sName) {
 	
 	//перечень joint'ов по именам
 	this._pJointList = null;
+	this._pNodeList = null;
 
 	//все joint'ы у которых нет потомков и братьев
 	//нужны чтобы отслеживать изменения в скелете
-	this._pNotificationJoints = null
+	//this._pNotificationJoints = null
 
 	this._pMeshNode = null;
 
@@ -36,10 +38,16 @@ PROPERTY(Skeleton, 'totalBones',
 		return Object.keys(this._pJointList).length;
 	});
 
+PROPERTY(Skeleton, 'totalNodes',
+	function () {
+		return this._pNodeList.length;
+	});
+
 PROPERTY(Skeleton, 'name',
 	function () {
 		return this._sName;
 	});
+
 
 PROPERTY(Skeleton, 'root',
 	function () {
@@ -65,10 +73,15 @@ Skeleton.prototype.getRootJoints = function () {
 	return this._pRootJoints;
 };
 
-Skeleton.prototype.isUpdated = function () {
+
+Skeleton.prototype.getJointMap = function() {
+	return this._pJointList;
+};
+
+Skeleton.prototype.getNodeList = function () {
     'use strict';
     
-	return true;
+	return this._pNodeList;
 };
 
 Skeleton.prototype.addRootJoint = function (pJoint) {
@@ -97,9 +110,10 @@ Skeleton.prototype.update = function () {
     
     var pRootJoints = this._pRootJoints;
     var pJointList = this._pJointList = {};
-    var pNotificationJoints = this._pNotificationJoints = [];
+    var pNodeList = this._pNodeList = [];
+    //var pNotificationJoints = this._pNotificationJoints = [];
 
-    function findJoints (pNode) {
+    function findNodes (pNode) {
     	var sJoint;
 
     	if (pNode) {
@@ -111,22 +125,24 @@ Skeleton.prototype.update = function () {
 	    		pJointList[sJoint] = pNode;
 	    	}
 
-	    	findJoints(pNode.sibling());
-	    	findJoints(pNode.child());
+	    	pNodeList.push(pNode);
+
+	    	findNodes(pNode.sibling());
+	    	findNodes(pNode.child());
     	}
     }
 
     for (var i = 0; i < pRootJoints.length; i++) {
-    	findJoints(pRootJoints[i]);
+    	findNodes(pRootJoints[i]);
     };
 
-	for (var sJoint in pJointList) {
-		var pJoint = pJointList[sJoint];
+	// for (var sJoint in pJointList) {
+	// 	var pJoint = pJointList[sJoint];
 
-    	if (pJoint.sibling() == null && pJoint.child() == null) {
-    		pNotificationJoints.push(pJoint);
-    	}
-    };    
+ //    	if (pJoint.sibling() == null && pJoint.child() == null) {
+ //    		pNotificationJoints.push(pJoint);
+ //    	}
+ //    };    
 
 	return true;
 };
@@ -149,6 +165,7 @@ Skeleton.prototype.findJointByName = function (sName) {
 	return null;
 };
 
+
 Skeleton.prototype.attachMesh = function (pMesh) {
     'use strict';
 	
@@ -157,6 +174,7 @@ Skeleton.prototype.attachMesh = function (pMesh) {
     if (this._pMeshNode == null) {
     	this._pMeshNode = new a.SceneModel(this.getEngine());
     	this._pMeshNode.create();
+    	this._pMeshNode.setInheritance(a.Scene.k_inheritAll);
     	this._pMeshNode.attachToParent(this.root);
     }
 

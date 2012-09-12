@@ -34,7 +34,7 @@ if (a.info.support.api.webWorker) {
         a.LocalFile = LocalFileThread;
     }
     else if (a.info.support.api.localStorage) {
-
+        warning('used simplified realisation for local files, based on local storage');
         If(FILE_MODULES_IMPLEMENTATION);
         a.require(BUILD_PATH('LocalFileSimplified.plug.js', 'files/plugins/'));
         Elseif();
@@ -84,28 +84,23 @@ a.fopen = function (sUri) {
     var pUri = a.uri(sUri);
 
     if (pUri.protocol == 'filesystem') {
-        pUri = a.uri(pUri.path);
+        pUriLocal = a.uri(pUri.path);
 
-        assert(!(pUri.protocol && pUri.host != a.info.uri.host),
+        assert(!(pUriLocal.protocol && pUriLocal.host != a.info.uri.host),
                'Поддерживаются только локальные файлы в пределах текущего домена.');
 
-        var pFolders = pUri.path.split('/');
+        var pFolders = pUriLocal.path.split('/');
 
         if (pFolders[0] == '' || pFolders[0] == '.') {
             pFolders = pFolders.slice(1);
         }
-
-        assert(pFolders[0] == 'temporary',
+ 
+        assert(pUri.host == 'temporary',
                'Поддерживаются только файловые системы типа "temporary".');
 
-        return new a.LocalFile(pFolders.slice(1).join('/'), pMode);
-    }
-    else {
-        return new a.RemoteFile(sUri, pMode);
+        return new a.LocalFile(pFolders.join('/'), pMode);
     }
 
-    return (pUri);
-
-//return new a.File(a.uri(sUri))
+    return new a.RemoteFile(sUri, pMode);
 }
 

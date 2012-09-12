@@ -142,7 +142,7 @@ SubNodeGroup.prototype.create = function (pRootNode, iModelResource) {
             }
             // set the local matrix of the sub node
             var pLocalMatrix = this._pSubNodePtrList[i].accessLocalMatrix();
-            Mat4.set(this._pModelResource.frame(i).TransformationMatrix, pLocalMatrix);
+            pLocalMatrix.set(this._pModelResource.frame(i).TransformationMatrix);
 
             // if the source was a named node, register with the animation controller
             if (this._pModelResource.frame(i).Name) {

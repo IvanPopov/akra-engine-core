@@ -207,7 +207,7 @@ SceneObject.prototype.nextSearchLink = function () {
  * @treturn Boolean
  */
 SceneObject.prototype.create = function () {
-    var result = SceneObject.superclass.create.apply(this, arguments);
+    var result = SceneNode.prototype.create.call(this);
     if (result) {
         this.attachToOcTree(this._pEngine.getSceneTree());
     }

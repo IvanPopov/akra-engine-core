@@ -213,7 +213,6 @@ a.createDevice = function (pCanvas) {
  **/
 a.deleteDevice = function (pDevice) {
     //Надо сделать аккуратно
-    delete pDevice;
 }
 
 

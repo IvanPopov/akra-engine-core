@@ -55,6 +55,7 @@ function Engine() {
     this.pShaderManager = null;
     this.pParticleManager = null;
     this.pSpriteManager = null;
+
     // this.pUniqManager = null;
 
     this._pRootNode = null; //Корень дерева сцены
@@ -78,6 +79,7 @@ function Engine() {
     this.iCreationHeight = 0;
 
     this.pEngineStates = null;
+    this.renderList = null;
 }
 
 /**
@@ -87,16 +89,24 @@ function Engine() {
  *
  * @return Boolean Успешно ли все создаллось
  **/
-Engine.prototype.create = function (sCanvasId) {
+Engine.prototype.create = function () {
     //инициализация
-    this.pKeymap = new a.Keymap(window);
-    this.pCanvas = document.getElementById(sCanvasId);
+    if (typeof arguments[0] === 'string') {
+        this.pCanvas = document.getElementById(arguments[0]);
+    }
+    else {
+        this.pCanvas = arguments[0];
+    }
+
+    this.pKeymap = new a.Keymap();
     this._pRootNode = new a.SceneNode(this); //Корень дерева сцены
     this._pDefaultCamera = new a.Camera(this);      //Камера по умолчанию
+    this._pDefaultCamera.name = ".default-camera";
     this._pActiveCamera = this._pDefaultCamera; //Активная камера
     this._pSceneTree = new a.OcTree();      //Объект отвечающий за дерево сцены
     this.iCreationWidth = this.pCanvas.width;
     this.iCreationHeight = this.pCanvas.height;
+	this.iCreationHeight = this.pCanvas.height;
 
     //Получение 3D девайса
     this.pDevice = a.createDevice(this.pCanvas);
@@ -113,9 +123,8 @@ Engine.prototype.create = function (sCanvasId) {
     this.pShaderManager = new a.Renderer(this);
     this.pParticleManager = new a.ParticleManager(this);
     this.pSpriteManager = new a.SpriteManager(this);
+
     // this.pUniqManager = new a.UniqueManager(this);
-
-
 
     //Запускаем таймер приложения
     a.UtilTimer(a.UtilTimer.TimerStart);
@@ -169,6 +178,7 @@ Engine.prototype.pause = function (isPause) {
         }
     }
 }
+
 Engine.prototype.pause.iAppPausedCount = 0;
 
 
@@ -179,8 +189,9 @@ Engine.prototype.pause.iAppPausedCount = 0;
  * @return Boolean Успешно ли все создаллось
  **/
 Engine.prototype.notifyOneTimeSceneInit = function () {
-    //Инициализируется дисплей менеджер
+    //Инициализируется дисплей менеджер и рендерер
     if (this.pDisplayManager.initialize() && this.pShaderManager.initialize()) {
+        this.pKeymap.setTarget(this.pDisplayManager.getTextLayer(), document);
         return true;
     }
 
@@ -278,6 +289,12 @@ Engine.prototype.notifyUpdateScene = function () {
     return true;
 };
 
+Engine.prototype.notifyPreUpdateScene = function () {
+    'use strict';
+    
+    this._pRootNode.recursivePreUpdate();
+};
+
 Engine.prototype.getRootNode = function () {
     return this._pRootNode;
 };
@@ -341,7 +358,7 @@ Engine.prototype.notifyInitDeviceObjects = function () {
 
     // setup the default scene camera
     this._pDefaultCamera.setPosition(
-        Vec3.create(0.0, 0.0, 0.0));
+        Vec3(0.0, 0.0, 0.0));
     //this._pDefaultCamera.setRotation(Vec3.create(1, 0, 0), Vec3.create(0, 0, 1));
     //a._pDefaultCamera.setRotation([1,1,1],Math.PI/2);
     //	Vec3.create(1.0,0.0,0.0),
@@ -355,7 +372,6 @@ Engine.prototype.notifyInitDeviceObjects = function () {
     return true;
 }
 
-
 /**
  * @property renderScene()
  * действия при рендеринге сценны
@@ -363,17 +379,20 @@ Engine.prototype.notifyInitDeviceObjects = function () {
  * @return Boolean
  **/
 Engine.prototype.renderScene = function () {
+    var pCamera = this._pActiveCamera;
+    var pFirstMember = this._pSceneTree.buildSearchResults(pCamera.searchRect(), pCamera.frustum());
 
-    //Получение всех объектов сцены, которые видны активной камере
-    var pFirstMember = this._pSceneTree.buildSearchResults(this.getActiveCamera().searchRect(),
-                                                           this.getActiveCamera().frustum());
     //console.log(pFirstMember, this._pActiveCamera);
     /*console.log(pFirstMember, this._pActiveCamera.searchRect().fX0, this._pActiveCamera.searchRect().fX1,
-     this._pActiveCamera.searchRect().fY0, this._pActiveCamera.searchRect().fY1,
-     this._pActiveCamera.searchRect().fZ0, this._pActiveCamera.searchRect().fZ1)
-     */
-    var pRenderList = pFirstMember;
+                this._pActiveCamera.searchRect().fY0, this._pActiveCamera.searchRect().fY1,
+                this._pActiveCamera.searchRect().fZ0, this._pActiveCamera.searchRect().fZ1)
+    */
 
+
+
+    var pRenderList = pFirstMember;
+    //Добавлено для отслеживания видимости узлов. aldore
+    this.renderList = pRenderList;
     //Подготовка всех объектов к рендерингу
     while (pFirstMember) {
         pFirstMember.prepareForRender();
@@ -396,24 +415,28 @@ Engine.prototype.renderScene = function () {
 
     return true;
 }
+//Добавлено для отслеживания видимости узлов. aldore
+Engine.prototype.renderScene.renderList = null;
 
 Engine.prototype.run = function () {
     var me = this;
     var fnRender = function () {
-        window.requestAnimationFrame(fnRender, me.pCanvas);
         if (me._isDeviceLost) {
             //у нас пока он не теряется
             //но написать неплохо былобы
             debug_error("Девайс потерян");
         }
+        
         if (me._isActive) {
             if (!me.render3DEnvironment()) {
                 debug_error("a.render3DEnvironmen error");
             }
         }
 
+        requestAnimationFrame(fnRender, me.pCanvas);
     }
-    fnRender();
+    //fnRender();
+    requestAnimationFrame(fnRender, me.pCanvas);
     return true;
 };
 
@@ -522,7 +545,9 @@ Engine.prototype.render3DEnvironment = function () {
     if (!this.render()) {
         return false;
     }
-
+    if (this._isFrameReady) {
+        this.notifyPreUpdateScene();
+    }
     if (this._isShowStats) {
         this.updateStats();
     }
@@ -547,6 +572,7 @@ Engine.prototype.frameMove = function () {
         if (!this.updateScene()) {
             return false;
         }
+
         // subtract the time interval
         // emulated with each tick
         this.fUpdateTimeCount -= a.fMillisecondsPerTick;
@@ -657,6 +683,60 @@ Engine.prototype.finalCleanup = function () {
     return true;
 }
 
+Engine.prototype.bFullscreenLock = false;
+Engine.prototype.fullscreen = function () {
+    'use strict';
+
+    if (this.bFullscreenLock) {
+        return false;
+    }
+
+    try {
+        var pEngine = this;
+        var pCanvas = this.pCanvas;
+
+        Engine.prototype.bFullscreenLock = true;
+
+        (pCanvas.requestFullscreen || pCanvas.mozRequestFullScreen || pCanvas.webkitRequestFullscreen)();
+        
+        pCanvas.onfullscreenchange = pCanvas.onmozfullscreenchange = pCanvas.onwebkitfullscreenchange = 
+        function (e) {
+            var pScreen = a.info.screen;
+            if (pEngine.inFullscreenMode()) {
+                pCanvas.width = pScreen.width;
+                pCanvas.height = pScreen.height;
+            }
+            else {
+                pCanvas.width = pEngine.iCreationWidth;
+                pCanvas.height = pEngine.iCreationHeight;
+            }
+
+            var pRoot = pEngine.getRootNode();
+            pRoot.explore(function () {
+                if (this instanceof a.Camera) {
+                    if (!this.isConstantAspect()) {
+                        this.setProjParams(
+                            this.fov(), pCanvas.width / pCanvas.height, 
+                            this.nearPlane(), this.farPlane());
+                        this.setUpdatedLocalMatrixFlag();
+                    }
+                }
+            })
+
+            Engine.prototype.bFullscreenLock = false;
+        }
+    }
+    catch (e) {
+        warning('Fullscreen API not supported');
+        trace(e.message);
+    }
+};
+
+Engine.prototype.inFullscreenMode = function () {
+    'use strict';
+    
+    return !!(document.webkitFullscreenElement || document.mozFullScreenElement || document.fullscreenElement);
+};
 
 Engine.prototype.updateCamera = function (fLateralSpeed, fRotationSpeed, pTerrain, fGroundOffset, isForceUpdate) {
 
@@ -664,59 +744,59 @@ Engine.prototype.updateCamera = function (fLateralSpeed, fRotationSpeed, pTerrai
     // This function reads the keyboard
     // and moves the default camera
     //
-    var v3fCameraUp = this._pDefaultCamera.getUp();
-
+//    var v3fCameraUp = this._pDefaultCamera.getUp();
+    var pCamera = this.getActiveCamera();
 
     if (this.pKeymap.isKeyPress(a.KEY.RIGHT)) {
-        this._pDefaultCamera.addRelRotation(0.0, 0.0, -fRotationSpeed);
+        pCamera.addRelRotation(0.0, 0.0, -fRotationSpeed);
         //v3fCameraUp.Z >0.0 ? fRotationSpeed: -fRotationSpeed);
     }
     else if (this.pKeymap.isKeyPress(a.KEY.LEFT)) {
-        this._pDefaultCamera.addRelRotation(0.0, 0.0, fRotationSpeed);
+        pCamera.addRelRotation(0.0, 0.0, fRotationSpeed);
         //v3fCameraUp.Z >0.0 ? -fRotationSpeed: fRotationSpeed);
     }
 
     if (this.pKeymap.isKeyPress(a.KEY.UP)) {
 
-        this._pDefaultCamera.addRelRotation(0, fRotationSpeed, 0);
+        pCamera.addRelRotation(0, fRotationSpeed, 0);
     }
     else if (this.pKeymap.isKeyPress(a.KEY.DOWN)) {
-        this._pDefaultCamera.addRelRotation(0, -fRotationSpeed, 0);
+        pCamera.addRelRotation(0, -fRotationSpeed, 0);
 
     }
-    var v3fOffset = Vec3.create([0, 0, 0]);
+    var v3fOffset = Vec3(0, 0, 0);
+    var pOffsetData = v3fOffset.pData;
     var isCameraMoved = false;
 
     if (this.pKeymap.isKeyPress(a.KEY.D)) {
-        v3fOffset[0] = fLateralSpeed;
+        pOffsetData.X = fLateralSpeed;
         isCameraMoved = true;
     }
     else if (this.pKeymap.isKeyPress(a.KEY.A)) {
-        v3fOffset[0] = -fLateralSpeed;
+        pOffsetData.X = -fLateralSpeed;
         isCameraMoved = true;
     }
     if (this.pKeymap.isKeyPress(a.KEY.R)) {
-        v3fOffset[1] = fLateralSpeed;
+        pOffsetData.Y = fLateralSpeed;
         isCameraMoved = true;
     }
     else if (this.pKeymap.isKeyPress(a.KEY.F)) {
-        v3fOffset[1] = -fLateralSpeed;
+        pOffsetData.Y = -fLateralSpeed;
         isCameraMoved = true;
     }
     if (this.pKeymap.isKeyPress(a.KEY.W)) {
-        v3fOffset[2] = -fLateralSpeed;
+        pOffsetData.Z = -fLateralSpeed;
         isCameraMoved = true;
     }
     else if (this.pKeymap.isKeyPress(a.KEY.S)) {
-        v3fOffset[2] = fLateralSpeed;
+        pOffsetData.Z = fLateralSpeed;
         isCameraMoved = true;
     }
     if (isCameraMoved || isForceUpdate) {
 
         // if a terrain was provided, make sure we are above it
         if (pTerrain) {
-            var v3fCameraWorldPos = Vec3.create();
-            Vec3.set(this._pDefaultCamera.worldPosition(), v3fCameraWorldPos);//TODO right?
+            var v3fCameraWorldPos = Vec3(pCamera.worldPosition());
 
             var fGroundLevel = pTerrain.calcWorldHeight(v3fCameraWorldPos.X, v3fCameraWorldPos.Y);
             var fMinCameraZ = fGroundLevel + fGroundOffset;
@@ -726,7 +806,7 @@ Engine.prototype.updateCamera = function (fLateralSpeed, fRotationSpeed, pTerrai
             }
         }
 
-        this._pDefaultCamera.addRelPosition(v3fOffset);
+        pCamera.addRelPosition(v3fOffset);
     }
 
 }

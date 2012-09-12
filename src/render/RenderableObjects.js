@@ -47,14 +47,20 @@ PROPERTY(RenderableObject, 'effect',
          });
 
 PROPERTY(RenderableObject, 'surfaceMaterial',
-         function () {
-             return this._pActiveSnapshot._pRenderMethod._pMaterial;
-         });
+    function () {
+        return this._pActiveSnapshot._pRenderMethod._pMaterial;
+    },
+    function (pSurfaceMaterial) {
+        'use strict';
+        
+        this._pActiveSnapshot._pRenderMethod._pMaterial = pSurfaceMaterial;
+    });
 
 PROPERTY(RenderableObject, 'material',
-         function () {
-             return this.surfaceMaterial.material;
-         });
+    function () {
+        var pSurfaceMaterial = this.surfaceMaterial;
+        return pSurfaceMaterial? pSurfaceMaterial.material: null;
+    });
 
 RenderableObject.prototype.getEngine = function () {
     return this._pEngine;

@@ -28,6 +28,7 @@ function Mesh(pEngine, eOptions, sName, pDataBuffer) {
     this._pBuffer = null;
     this._pEngine = pEngine;
     this._eOptions = 0;
+    this._pSkeleton = null;
 
 
 	this._pBoundingBox = null;
@@ -61,6 +62,17 @@ PROPERTY(Mesh, 'buffer',
         return this._pBuffer;
     });
 
+PROPERTY(Mesh, 'skeleton',
+    function () {
+        return this._pSkeleton;
+    },
+    function (pSkeleton) {
+        this._pSkeleton = pSkeleton;
+    });
+
+Mesh.prototype.setSkeleton = function(pSkeleton) {
+    this.skeleton = pSkeleton;
+};
 
 Mesh.prototype.getOptions = function () {
     'use strict';

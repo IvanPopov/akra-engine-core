@@ -12,7 +12,11 @@
  * @tparam Object Объект для прослушивания.
  * @note Как правило в качестве объекта прослушивания применяется document.
  */
-function Keymap (pElement) {
+function Keymap (pMouseTarget, pKeyboardTarget) {
+    'use strict';
+    
+    pKeyboardTarget = pKeyboardTarget || pMouseTarget;
+
     this.pMap = new Array(256);
     this.isAlt = false;
     this.isCtrl = false;
@@ -20,6 +24,10 @@ function Keymap (pElement) {
     this.isMouseDown = false;
     this.v2iMousePos = new Int16Array(2);
     this.v2iMouseLastPos = new Int16Array(2);
+
+    for (var i = 255; i--;) {
+        this.pMap[i] = false;
+    };
 
     Enum([
              BACKSPACE = 8,
@@ -45,29 +53,40 @@ function Keymap (pElement) {
              OPENBRACKET = 219, BACKSLASH, CLOSEBRACKET, SINGLEQUOTE
          ], KEY_CODES, a.KEY);
 
+    if (pMouseTarget) {
+        this.setTarget(pMouseTarget, pKeyboardTarget);
+    }
+}
+
+Keymap.prototype.setTarget = function (pMouseTarget, pKeyboardTarget) {
+    'use strict';
+    
+    pKeyboardTarget = pKeyboardTarget || pMouseTarget;
+
     var me = this;
     var fnCallback = function (e) {
         me.dispatch(e);
     };
-    if (pElement.addEventListener) {
-        pElement.addEventListener("keydown", fnCallback, false);
-        pElement.addEventListener("keyup", fnCallback, false);
-        pElement.addEventListener("mousemove", fnCallback, true);
-        pElement.addEventListener("mouseup", fnCallback, true);
-        pElement.addEventListener("mousedown", fnCallback, true);
+
+    if (pMouseTarget.addEventListener) {
+        pKeyboardTarget.addEventListener("keydown", fnCallback, false);
+        pKeyboardTarget.addEventListener("keyup", fnCallback, false);
+        pMouseTarget.addEventListener("mousemove", fnCallback, true);
+        pMouseTarget.addEventListener("mouseup", fnCallback, true);
+        pMouseTarget.addEventListener("mousedown", fnCallback, true);
     }
-    else if (pElement.attachEvent) {
-        pElement.attachEvent("onkeydown", fnCallback);
-        pElement.attachEvent("onkeyup", fnCallback);
-        pElement.attachEvent("onmousemove", fnCallback);
-        pElement.attachEvent("onmouseup", fnCallback);
-        pElement.attachEvent("onmousedown", fnCallback);
+    else if (pMouseTarget.attachEvent) {
+        pKeyboardTarget.attachEvent("onkeydown", fnCallback);
+        pKeyboardTarget.attachEvent("onkeyup", fnCallback);
+        pMouseTarget.attachEvent("onmousemove", fnCallback);
+        pMouseTarget.attachEvent("onmouseup", fnCallback);
+        pMouseTarget.attachEvent("onmousedown", fnCallback);
     }
     else {
-        pElement.onkeydown = pElement.onkeyup = fnCallback;
-        pElement.onmousemove = pElement.onmouseup = pElement.onmousedown = fnCallback;
+        pKeyboardTarget.onkeydown = pKeyboardTarget.onkeyup = fnCallback;
+        pMouseTarget.onmousemove = pMouseTarget.onmouseup = pMouseTarget.onmousedown = fnCallback;
     }
-}
+};
 
 /**
  * Функция, вызываемая на измеение состояния клавиш.
@@ -83,6 +102,7 @@ Keymap.prototype.dispatch = function (pEvent) {
     if (e.type == "keydown") {
         //console.log("keydown",code);
         this.pMap[code] = true;
+
         if (e.altKey) {
             this.isAlt = true;
         }
@@ -159,3 +179,149 @@ Keymap.prototype.isMousePress = function () {
 };
 
 a.Keymap = Keymap;
+
+
+Enum([
+    FACE_1 = 0, // Face (main) buttons
+    FACE_2 = 1,
+    FACE_3 = 2,
+    FACE_4 = 3,
+    LEFT_SHOULDER = 4, // Top shoulder buttons
+    RIGHT_SHOULDER = 5,
+    LEFT_SHOULDER_BOTTOM = 6, // Bottom shoulder buttons
+    RIGHT_SHOULDER_BOTTOM = 7,
+    SELECT = 8,
+    START = 9,
+    LEFT_ANALOGUE_STICK = 10, // Analogue sticks (if depressible)
+    RIGHT_ANALOGUE_STICK = 11,
+    PAD_TOP = 12, // Directional (discrete) pad
+    PAD_BOTTOM = 13,
+    PAD_LEFT = 14,
+    PAD_RIGHT = 15
+ ], GAMEPAD_CODES, a.KEY);
+
+Enum([
+    LEFT_ANALOGUE_HOR = 0,
+    LEFT_ANALOGUE_VERT = 1,
+    RIGHT_ANALOGUE_HOR = 2,
+    RIGHT_ANALOGUE_VERT = 3
+    ], GAMEPAD_AXIS, a.AXIS);
+
+var Gamepad = {
+    TYPICAL_BUTTON_COUNT: 16,
+    TYPICAL_AXIS_COUNT: 4,
+    ticking: false,
+    collection: [],
+    prevRawGamepadTypes: [],
+    prevTimestamps: [],
+    callbacks: {
+        connect: function (gamepad) {
+            console.log('connected gamepad: ', gamepad);
+        },
+        disconnect: function (gamepad) {
+            console.log('disconnected gamepad: ', gamepad);   
+        },
+        update: function (gamepad) {
+            console.log('gamepad updated: ', gamepad);
+        }
+    },
+
+    on: function (event, callback) {
+        Gamepad.callbacks[event] = callback;
+    },
+
+    init: function () {
+        var gamepadSupportAvailable = !! navigator.webkitGetGamepads || !! navigator.webkitGamepads || (navigator.userAgent.indexOf('Firefox/') != -1);
+        
+        if (!gamepadSupportAvailable) {
+            //todo: not supported...
+        } else {
+            window.addEventListener('MozGamepadConnected', Gamepad.onGamepadConnect, false);
+            window.addEventListener('MozGamepadDisconnected', Gamepad.onGamepadDisconnect, false);
+            
+            if ( !! navigator.webkitGamepads || !! navigator.webkitGetGamepads) {
+                Gamepad.startPolling();
+                return true;
+            }
+        }
+
+        return false;
+    },
+    onGamepadConnect: function (event) {
+        Gamepad.collection.push(event.gamepad);
+        Gamepad.callbacks.connect(event.gamepad);
+        Gamepad.startPolling();
+    },
+    onGamepadDisconnect: function (event) {
+        var gamepad;
+        for (var i in Gamepad.collection) {
+            if (Gamepad.collection[i].index == event.gamepad.index) {
+                gamepad = Gamepad.collection.splice(i, 1)[0];
+                Gamepad.callbacks.disconnect(gamepad);
+                break;
+            }
+        }
+
+        if (Gamepad.collection.length == 0) {
+            Gamepad.stopPolling();
+        }
+    },
+    startPolling: function () {
+        if (!Gamepad.ticking) {
+            Gamepad.ticking = true;
+            Gamepad.tick();
+        }
+    },
+    stopPolling: function () {
+        Gamepad.ticking = false;
+    },
+    tick: function () {
+        Gamepad.pollStatus();
+        Gamepad.scheduleNextTick();
+    },
+    scheduleNextTick: function () {
+        if (Gamepad.ticking) {
+            if (window.requestAnimationFrame) {
+                window.requestAnimationFrame(Gamepad.tick);
+            } else if (window.mozRequestAnimationFrame) {
+                window.mozRequestAnimationFrame(Gamepad.tick);
+            } else if (window.webkitRequestAnimationFrame) {
+                window.webkitRequestAnimationFrame(Gamepad.tick);
+            }
+        }
+    },
+    pollStatus: function () {
+        Gamepad.pollGamepads();
+        for (var i in Gamepad.collection) {
+            var gamepad = Gamepad.collection[i];
+            if (gamepad.timestamp && (gamepad.timestamp == Gamepad.prevTimestamps[i])) {
+                continue;
+            }
+            Gamepad.prevTimestamps[i] = gamepad.timestamp;
+        }
+    },
+    pollGamepads: function () {
+        var rawGamepads = (navigator.webkitGetGamepads && navigator.webkitGetGamepads()) || navigator.webkitGamepads;
+        if (rawGamepads) {
+            Gamepad.collection = [];
+            var gamepadsChanged = false;
+            for (var i = 0; i < rawGamepads.length; i++) {
+                if (typeof rawGamepads[i] != Gamepad.prevRawGamepadTypes[i]) {
+                    gamepadsChanged = true;
+                    Gamepad.prevRawGamepadTypes[i] = typeof rawGamepads[i];
+                    if (rawGamepads[i]) {
+                        Gamepad.callbacks.update(rawGamepads[i]);
+                    }
+                }
+                if (rawGamepads[i]) {
+                    Gamepad.collection.push(rawGamepads[i]);
+                }
+            }
+            //if (gamepadsChanged) {
+                //todo: collection changed...
+            //}
+        }
+    }
+};
+
+a.Gamepad = Gamepad;

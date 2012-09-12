@@ -34,11 +34,13 @@ function outputFileCode(sFile) {
 
 function usage() {
 	console.log( 'usage: ' + 
-		'\n\t--home		[-h] < path/to/home > ' + 
-		'\n\t--esprima	[-e] < path/to/esprima.js > ' + 
+		'\n\t--analyzer		[-n] Use analyzer. ' + 
+		'\n\t--ide			[-I] Use IDE build. ' + 
+		'\n\t--home			[-h] < path/to/home > ' + 
+		'\n\t--esprima		[-e] < path/to/esprima.js > ' + 
 		'\n\t--preprocessor	[-p] < path/to/preprocessor.js > ' + 
 		'\n\t--input		[-i] < path/to/target.js > ' + 
-		'\n\t--output	[-o] < path/to/output.js >'
+		'\n\t--output		[-o] < path/to/output.js >'
 	);
 	process.exit(1);
 }
@@ -56,6 +58,14 @@ var sDefine = '';
 (function () {
 	for (var i = 2; i < process.argv.length; ++ i) {
 		switch (process.argv[i]) {
+			case '--analyzer':
+			case '-n':
+				sDefine += 'Define(__ANALYZER, true);';
+				break;
+			case '-I':
+            case '--ide':
+                sDefine += 'Define(__IDE, true);';
+                break;
 			case '-h':
 			case '--home':
 				home = process.argv[++ i];
@@ -77,7 +87,7 @@ var sDefine = '';
 			case '-i':
 			case '--input':
 				sFilename = __dirname  + '/' + process.argv[++ i];
-				sDefine = (home? 'Define(A_CORE_HOME, "' + home + '");\n': '');
+				sDefine += (home? 'Define(A_CORE_HOME, "' + home + '");\n': '');
 				preprocessor.log = true;
 				console.log('build starting ...');
 				try {

@@ -1,7 +1,16 @@
-var a = {
-    fx: {},
-    util: {}
-};
+// function defineNotWritableProperty(pObject, pPropList, pValue) {
+// 	for (var i = 0; i < pPropList.length; ++ i) {
+// 		Object.defineProperty(pObject, pPropList[i], {
+// 			value: pValue,
+// 			writable: false,
+// 			configurable: false
+// 		});
+// 	}
+// }
+
+// defineNotWritableProperty(window, ['a', 'akra', 'AKRA'], {});
+
+var a = window.akra = window.AKRA = {};
 
 Define(DEV_BUILD, 1);
 
@@ -17,6 +26,9 @@ Include('timer/');
 
 /* Math */
 Include('math/');
+
+/*Network*/
+Include('network/');
 
 /* Files */
 Include('files/');
@@ -62,6 +74,5 @@ Include('sprites/');
 Include('objects/');
 Include('Engine.js');
 
-window['a'] = window['akra'] = a;
-
 //Include('../../akra-engine-general/analyzer/A_Analyzer.js');
+

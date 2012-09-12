@@ -98,15 +98,44 @@
             else {
                 this.push(pElement);
             }
+
+            return this;
         }    
     });
 
 
     Define(first, __[0]);
 
-    //Include('libs/xml/xml2json.js');
+    Number.prototype.printBinary = function (isPretty) {
+        var res = '';
+        for (i = 0; i < 32; ++i) {
+            if (i && (i % 4) == 0 && isPretty) {
+                res = ' ' + res;
+            }
+            (this >> i & 0x1 ? res = '1' + res : res = '0' + res);
+        }
+        return res;
+    };
 
-    //a.xml2json = xml2json;
+    ArrayBuffer.prototype.toTypedArray = function (eType) {
+        switch (eType) {
+            case a.DTYPE.FLOAT:
+                return new Float32Array(this);
+            case a.DTYPE.SHORT:
+                return new Int16Array(this);
+            case a.DTYPE.UNSIGNED_SHORT:
+                return new Uint16Array(this);
+            case a.DTYPE.INT:
+                return new Int32Array(this);
+            case a.DTYPE.UNSIGNED_INT:
+                return new Uint32Array(this);
+            case a.DTYPE.BYTE:
+                return new Int8Array(this);
+            default:
+            case a.DTYPE.UNSIGNED_BYTE:
+                return new Uint8Array(this);
+        }
+    }
 
 })();
  

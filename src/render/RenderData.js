@@ -404,8 +404,7 @@ RenderData.prototype._allocateIndex = function (pAttrDecl, pData) {
     var pIndexData = this._pIndexData;
     var pIndexBuffer = this._pIndexBuffer;
     var pBuffer = this._pBuffer;
-    'use strict';
-
+	
 Ifdef (__DEBUG)
     for (var i = 0; i < pAttrDecl.length; i++) {
         if (pAttrDecl[i].eType !== a.DTYPE.FLOAT) {
@@ -753,6 +752,7 @@ RenderData.prototype.draw = function () {
 		{
 			this._pBuffer._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pIndicesArray[i].pMap);
 			bResult = this._pIndicesArray[i].pMap.draw();
+            //trace(this._pIndicesArray[i].pMap.toString());
 			isOK = isOK && bResult;
 		}
 	}

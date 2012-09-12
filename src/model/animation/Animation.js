@@ -1,93 +1,73 @@
-function Animation (sName, eOptions) {
-    'use strict';
-	
-    Enum([
-    	REPEAT = FLAG(0)
-    	], ANIMATION_OPTIONS, a.Animation);
+/**
+ * Complete animation with set of tracks.
+ * @param {String} sName Animation name.
+ */
+function Animation (sName) {
+    A_CLASS;
+
 
 	this._pTracks = [];
-	this._sName = sName || null;
-
-	this._fStartTime = 0;
-	this._fDuration = 0;
-
-	this._eOptions = 0;
-
-	if (eOptions) {
-		this.setOptions(eOptions);
+	
+	if (sName) {
+		this.name = sName;
 	}
 }
 
-PROPERTY(Animation, 'name',
+EXTENDS(Animation, a.AnimationBase);
+
+PROPERTY(Animation, 'totalTracks',
 	function () {
-		return this._sName;
+		return this._pTracks.length;
 	});
 
-Animation.prototype.setOptions = function (eOptions) {
-    'use strict';
-    
-	this._eOptions |= eOptions;
-};
-
-Animation.prototype.getOptions = function () {
-    'use strict';
-    
-	return this._eOptions;
-};
-
-Animation.prototype.addTrack = function (pTrack) {
+Animation.prototype.push = function (pTrack) {
     'use strict';
     
 	this._pTracks.push(pTrack);
-
-	this._fDuration = Math.max(this._fDuration, pTrack.fEndTime);
+	this._fDuration = Math.max(this._fDuration, pTrack.duration);
+	this.addTarget(pTrack.targetName);
 };
 
-
-Animation.prototype.attachToTimeline = function (fStartTime) {
-    'use strict';
-    
-	this._fStartTime = fStartTime;
-};
 
 Animation.prototype.bind = function (pTarget) {
     'use strict';
-   
-   	var pTracks = this._pTracks; 
-   	var bResult = true;
-
-	for (var i = pTracks.length - 1; i >= 0; i--) {
+    
+    var pPointer;
+    var pTracks = this._pTracks;
+	for (var i = 0; i < pTracks.length; ++ i) {
 		if (!pTracks[i].bind(pTarget)) {
 			trace('cannot bind animation track [', i, '] to joint <', pTracks[i]._sTarget, '>');
-			bResult = false;
+		}
+		else {
+			pPointer = this.setTarget(pTracks[i].targetName, pTracks[i].target);
+			pPointer.track = pTracks[i];
 		}
 	};
-
-	return bResult;
 };
 
-Animation.prototype.play = function (fTime) {
+
+Animation.prototype.frame = function (sName, fTime) {
     'use strict';
+
+    var pPointer = this._pTargetMap[sName];
     
-	var fCurTime = fTime - this._fStartTime;
-    var pTracks = this._pTracks;
-
-    if (this._eOptions & a.Animation.REPEAT) {
-    	fCurTime = fCurTime - Math.floor(fCurTime / this._fDuration) * this._fDuration;
+    if (!pPointer || !pPointer.track) {
+    	return null;
     }
-    else if (fCurTime < 0 || fCurTime >= this._fDuration) {
-	    return;
-	}
 
-	for (var i = pTracks.length - 1, pTrack; i >= 0; i--) {
-		pTrack = pTracks[i];
-		if (pTrack.fStartTime <= fCurTime && pTrack.fEndTime > fCurTime) { //Math.abs(pTrack.fTime - fCurTime) > 0.01
-			// if (pTrack.fTime > fCurTime) {
-			// 	pTrack.reset();
-			// }
-			pTrack.play(fCurTime);
+	return pPointer.track.frame(Math.clamp(fTime, 0, this._fDuration));
+};
+
+//extend animation > used in collada loader for extending with bind poses.
+
+AnimationBase.prototype.extend = function(pAnimation) {
+	var pTracks = pAnimation._pTracks;
+
+	for (var i = 0; i < pTracks.length; ++ i) {
+		if (!this.getTarget(pTracks[i].targetName)) {
+			this.push(pTracks[i]);
 		}
-	};
+	}
 };
 
 A_NAMESPACE(Animation);

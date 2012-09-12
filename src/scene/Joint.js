@@ -1,8 +1,12 @@
-function Joint () {
+function Joint (pEngine) {
 	A_CLASS;
 
-	this._sBone = null;
+    debug_assert(pEngine, 'engine must be');
+	
+    this._sBone = null;
     this._iUpdated = 0;
+
+    this._pEngine = pEngine;
 }
 
 EXTENDS(Joint, a.Node);
@@ -16,28 +20,27 @@ PROPERTY(Joint, 'boneName',
 	});
 
 
+Joint.prototype.getEngine = function () {
+    'use strict';
+    
+    return this._pEngine;
+};
+
 Joint.prototype.create = function () {
     'use strict';
 
-    this._m4fWorldMatrix = Mat4.identity(new Matrix4);
-    this._m4fLocalMatrix = Mat4.identity(new Matrix4);
-    this._m4fInverseWorldMatrix = Mat4.identity(new Matrix4);
+    this._m4fLocalMatrix = new Mat4(1);
+    this._m4fWorldMatrix = new Mat4(1);
     
-    this._v3fWorldPosition  = Vec3.create();
-    this._v3fWorldRight     = Vec3.create();
-    this._v3fWorldUp        = Vec3.create();
-    this._v3fWorldForward   = Vec3.create();
+    this._v3fWorldPosition  = new Vec3();
+    this._v3fTranslation    = new Vec3(0, 0, 0);
+    this._v3fScale          = new Vec3(1);
+    this._qRotation         = new Quat4(0, 1);
+
 
     //maybe custom
     this.setInheritance(a.Scene.k_inheritAll);
-
     return true;
-};
-
-Joint.prototype.recalcWorldMatrix = function () {
-    'use strict';
-    
-    return Node.prototype.recalcWorldMatrix.call(this) && (this._iUpdated ++);
 };
 
 Ifdef (__DEBUG);

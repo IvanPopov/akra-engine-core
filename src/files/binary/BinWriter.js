@@ -53,7 +53,7 @@
  */
 
 Define(IS_NUMBER(VALUE), function () {
-    debug_assert(typeof VALUE == 'number', "Не является числом");
+    debug_assert(typeof VALUE == 'number', "Не является числом: " + VALUE);
 });
 
 /**
@@ -74,7 +74,149 @@ function BinWriter () {
      * @type int
      */
     this._iCountData = 0;
+
+    //для удобства записи данных через свой упаковщик.
+    this._pHashTable = null;
+    this._pBlackList = {};
+    this._pBlackListStack = [];
+    this._pTemplate = a.binaryTemplate;
+    this._pOptions = null;
+    this._iInitialAddr = 0;
 }
+
+PROPERTY(BinWriter, 'byteLength',
+    function () {
+        return this._iCountData;
+    });
+
+PROPERTY(BinWriter, 'template',
+    function () {
+        return this._pTemplate;
+    });
+
+PROPERTY(BinWriter, 'initialAddress',
+    function () {
+        return this._iInitialAddr;
+    });
+
+PROPERTY(BinWriter, 'options',
+    function () {
+        return this._pOptions;
+    });
+
+BinWriter.prototype.setOptions = function (pOptions) {
+    'use strict';
+    
+    this._pOptions = pOptions;
+};
+
+BinWriter.prototype.getOption = function (sOpt) {
+    'use strict';
+    
+    if (!this._pOptions) {
+        return null;
+    }
+
+    return this._pOptions[sOpt];
+};
+
+BinWriter.prototype.setupHashTable = function () {
+    'use strict';
+    
+    if (!this._pHashTable) {
+        this._pHashTable = {'string': {}, 'number': {}, 'object': []};
+    }
+};
+
+BinWriter.prototype.memof = function (pObject, iAddr) {
+    'use strict';
+ 
+    var pTable = this._pHashTable;
+
+    if (typeof pObject === 'string') {
+        pTable.string[pObject] = iAddr;
+    }
+    else if (typeof pObject === 'number') {
+        pTable.number[pObject] = iAddr;
+    }
+    else {
+        pTable.object.push({pointer: pObject, addr: iAddr});
+    }
+};
+
+BinWriter.prototype.addr = function (pObject) {
+    'use strict';
+
+    var pTable = this._pHashTable;
+
+    if (typeof pObject === 'string') {
+        return pTable.string[pObject];
+    }
+
+    if (typeof pObject === 'number') {
+        return pTable.number[pObject];
+    }
+
+    pTable = pTable.object;
+
+    for (var i = 0, n = pTable.length; i < n; ++ i) {
+        if (pTable[i].pointer === pObject) {
+            return pTable[i].addr;
+        }
+    }
+
+    return undefined;
+};
+
+BinWriter.prototype.nullPtr = function () {
+    'use strict';
+    
+    return this.uint32(MAX_UINT32);
+};
+
+BinWriter.prototype.jump = function (iAddr) {
+    'use strict';
+    
+    this._iInitialAddr = iAddr;
+};
+
+BinWriter.prototype.rollback = function (n) {
+    n = n || 1;
+
+    if (n === -1) {
+        n = this._pArrData.length;
+    }
+
+    var pRollback = new Array(n);
+    var iRollbackLength = 0;
+
+    for (var i = 0; i < n; ++ i) {
+        pRollback[i] = this._pArrData.pop();
+        iRollbackLength += pRollback[i].byteLength;
+    }
+
+    this._iCountData -= iRollbackLength;
+    pRollback.byteLength = iRollbackLength;
+    return pRollback;
+};
+
+BinWriter.prototype.append = function (pData) {
+    'use strict';
+    
+    if (pData instanceof Array) {
+        for (var i = 0; i < pData.length; ++ i) {
+            this._pArrData.push(pData[i]);
+            this._iCountData += pData[i].byteLength;
+        }
+    }
+    else{
+        if (pData instanceof ArrayBuffer) {
+            pData = new Uint8Array(pData);
+        }
+        this._pArrData.push(pData);
+        this._iCountData += pData.byteLength;
+    }
+};
 
 /******************************************************************************/
 /*                                 string                                     */
@@ -104,6 +246,7 @@ BinWriter.prototype.string = function (str) {
     var iBitesToAdd = (( 4 - (iStrLen % 4) == 4)) ? 0 : ( 4 - (iStrLen % 4));
     this._pArrData[this._pArrData.length] = arrUTF8string;
     this._iCountData += (iStrLen + iBitesToAdd);
+    //trace('string', str);
 }
 
 /******************************************************************************/
@@ -142,7 +285,7 @@ BinWriter.prototype._uintX = function (iValue, iX) {
             error("Передано недопустимое значение длинны. Допустимые значения 8, 16, 32.");
             break;
     }
-
+    //trace('uint' + iX, iValue);
     //if(iX == 8)
     //  this._pArrData[this._pArrData.length] = arrTmpBuf;
     //else
@@ -286,6 +429,7 @@ BinWriter.prototype._intX = function (iValue, iX) {
             error("Передано недопустимое значение длинны. Допустимые значения 8, 16, 32.");
             break;
     }
+    //trace('int' + iX, iValue);
     this._pArrData[this._pArrData.length] = new Uint8Array(arrTmpBuf.buffer);
     this._iCountData += 4;
 }
@@ -404,6 +548,7 @@ BinWriter.prototype._floatX = function (fValue, iX) {
             error("Передано недопустимое значение длинны. Допустимые значения 32, 64.");
             break;
     }
+    //trace('float' + iX, fValue);
     this._pArrData[this._pArrData.length] = new Uint8Array(arrTmpBuf.buffer);
     this._iCountData += (iX / 8);
 }
@@ -793,6 +938,7 @@ BinWriter.prototype.dataAsUint8Array = function () {
     return arrUint8;
 }
 
+
 /**
  * @property rawStringToBuffer()
  * Берет строку и преобразует ее в массив Uint8Array.
@@ -809,6 +955,222 @@ BinWriter.rawStringToBuffer = function (str) {
         arr[ idx ] = str.charCodeAt(idx);// & 0xFF;
     }
     return new Uint8Array(arr);
+};
+
+
+BinWriter.prototype.pushBlackList = function (pList) {
+    'use strict';
+    //trace('bl:: ', this._pBlackListStack.length);
+    this._pBlackListStack.push(this._pBlackList);
+    
+    var pBlackList = {};
+
+    if (pList) {
+        for (var i in pList) {
+            pBlackList[i] = pList[i];
+        }
+    }
+
+    for (var i in this._pBlackList) {
+        pBlackList[i] = this._pBlackList[i];
+    }
+
+    this._pBlackList = pBlackList;
+    return this;
+};
+
+BinWriter.prototype.popBlackList = function () {
+    'use strict';
+
+    this._pBlackList = this._pBlackListStack.pop();
+    //trace('bl:: ', this._pBlackListStack.length);
+    return this;
+};
+
+
+BinWriter.prototype.blackList = function () {
+    'use strict';
+    
+    return this._pBlackList;
+};
+
+BinWriter.prototype.isInBlacklist = function (sType) {
+    'use strict';
+    
+    return this._pBlackList[sType] !== undefined;
+};
+
+BinWriter.prototype.writeData = function(pObject, sType) {
+    'use strict';
+    
+    var pTemplate = this.template;
+    var pProperties = pTemplate.properties(sType);
+
+    var fnWriter = null;
+    var pBaseClasses;
+    var pBlackList;
+    var pMembers;
+
+    this.pushBlackList(pProperties.blacklist);
+
+    pBlackList = this.blackList();
+
+    if (pBlackList && pBlackList[sType] !== undefined) {
+        if (pBlackList[sType] === null) {
+            return false;
+        }
+        else if (typeof pBlackList[sType] === 'function') {
+            pObject = pBlackList[sType].call(this, pObject);
+        }
+    } 
+
+    
+    fnWriter = pProperties.write;
+    
+    if (fnWriter) {
+         if (fnWriter.call(this, pObject) === false) {
+            error('cannot write type: ' + sType);
+        }
+
+        this.popBlackList();
+        return true;
+    }
+
+    debug_assert(pProperties, 'unknown object <' + sType + '> type cannot be writed');
+
+    pBaseClasses = pProperties.base;
+
+    if (pBaseClasses) {
+        for (var i = 0; i < pBaseClasses.length; ++ i) {
+            debug_assert(pBlackList[pBaseClasses[i]] === undefined, 
+                'you cannot add to black list your parent classes');
+            this.writeData(pObject, pBaseClasses[i]);
+        }
+    }
+
+    pMembers = pProperties.members;
+
+    if (pMembers) {
+        //writing structure
+        for (var sName in pMembers) {
+            //writing complex type of structure member
+            if (pMembers[sName] === null || 
+                typeof pMembers[sName] === 'string') {
+                this.write(pObject[sName], pMembers[sName]);
+                continue;
+            }
+            //trace(sType, pObject, pMembers, sName, pProperties);
+            if (typeof pMembers[sName].write === 'string') {
+                this.write(pObject[sName], pMembers[sName].write);
+                continue;
+            }
+
+            pMembers[sName].write.call(this, pObject);
+        }
+    }
+    
+    this.popBlackList();
+    return true;
 }
+
+BinWriter.prototype.write = function(pObject, sType, pHeader) {
+    'use strict';
+
+    var pProperties;
+    var iAddr, iType;
+    var pTemplate = this.template;
+
+    this.setupHashTable();
+    
+    if (!sType) {
+        sType = pTemplate.detectType(pObject);
+    }
+
+    if (!this.isInBlacklist(sType)) {    
+        pProperties = pTemplate.properties(sType);
+        iType = pTemplate.getTypeId(sType);
+    }
+    else {
+        pObject = null;
+    }
+
+    if (pObject === null || pObject === undefined || iType === undefined) {
+        this.nullPtr();
+        return false;
+    }
+   
+    iAddr = this.addr(pObject);
+
+    if (iAddr === undefined) {
+        iAddr = 0;
+
+        if (pHeader) {
+            iAddr += pHeader.byteLength;
+        }
+
+        iAddr += this.byteLength + 4 + 4 + this.initialAddress;
+
+        this.uint32(iAddr); 
+        this.uint32(iType);
+
+        if (pHeader) {
+            this.append(pHeader);
+        }
+
+        if (this.writeData(pObject, sType)) {
+            this.memof(pObject, iAddr);
+        }
+        else {
+            this.rollback(2);
+            this.nullPtr();
+        }
+    }
+    else {
+        this.uint32(iAddr);
+        this.uint32(iType);
+    }
+
+    return true;
+};
+
+BinWriter.prototype.header = function () {
+    'use strict';
+
+    var pHeader = this.getOption('header');
+
+    if (!pHeader) {
+        return null;
+    }
+
+    var pWriter = new a.BinWriter();
+
+    if (pHeader === true) {
+        //пишем данные шаблона
+        pHeader = this.template.data();
+    }
+    
+    pWriter.jump(8);
+    pWriter.write(pHeader);
+
+    return pWriter.data();
+};
+
+function dump (pObject, pOptions) {
+    var pWriter = new a.BinWriter();
+    
+    //FIXME: remove auto headering
+    pOptions = pOptions || {};
+    
+    if (pOptions && pOptions.header === undefined) {
+        pOptions['header'] = true;
+    }   
+
+    pWriter.setOptions(pOptions);
+    pWriter.write(pObject, null, pWriter.header());
+
+    return pWriter.data();
+}
+
+a.dump = dump;
 
 a.BinWriter = BinWriter;

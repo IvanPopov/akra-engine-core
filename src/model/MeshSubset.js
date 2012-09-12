@@ -294,27 +294,24 @@ MeshSubset.prototype.setFlexMaterial = function (iMaterial) {
         pRenderData._addData(pMaterial._pData, iMatFlow);
         return pRenderData.index(iMat, eSemantics, true);
     }
-    else {
-        pIndexDecl = new a.VertexDeclaration([VE_FLOAT(eSemantics)]);
-        pIndexData = new Float32Array(pIndexData.getCount());    
-        iMatFlow = pRenderData._addData(pMaterial._pData);
+  
+    pIndexDecl = new a.VertexDeclaration([VE_FLOAT(eSemantics)]);
+    pIndexData = new Float32Array(pIndexData.getCount());    
+    iMatFlow = pRenderData._addData(pMaterial._pData);
 
-        debug_assert(iMatFlow >= 0, 'cannot add data flow with material for mesh subsset');
+    debug_assert(iMatFlow >= 0, 'cannot add data flow with material for mesh subsset');
 
-        if (!pRenderData.allocateIndex(pIndexDecl, pIndexData)) {
-            trace('cannot allocate index for material!!!');
-            return false;
-        }
-
-        return pRenderData.index(iMat, eSemantics, true);
+    if (!pRenderData.allocateIndex(pIndexDecl, pIndexData)) {
+        trace('cannot allocate index for material!!!');
+        return false;
     }
+
+    return pRenderData.index(iMat, eSemantics, true);
     
-    return true;
 };
 
 MeshSubset.prototype.draw = function () {
     'use strict';
-    
     this._pRenderData.draw();
 };
 

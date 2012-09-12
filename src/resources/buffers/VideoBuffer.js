@@ -240,6 +240,9 @@ VideoBuffer.prototype.create = function (iByteSize, iFlags, pData) {
     this._pHeader = this.allocateData([VE_VEC2(a.DECLUSAGE.TEXTURE_HEADER)],
                                       this._header(pSize.X, pSize.Y));
 
+    this.notifyLoaded();
+    this.notifyRestored();
+
     return true;
 };
 

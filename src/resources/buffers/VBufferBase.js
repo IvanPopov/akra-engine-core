@@ -97,8 +97,8 @@ VBufferBase.prototype.isValid = function () {
  * @return Boolean
  **/
 VBufferBase.prototype.isDynamic = function () {
-    return TEST_BIT((this._iTypeFlags, a.VBufferBase.ManyUpdateBit) && TEST_BIT(this._iTypeFlags,
-                                                                                 a.VBufferBase.ManyDrawBit));
+    return (TEST_BIT(this._iTypeFlags, a.VBufferBase.ManyUpdateBit) && 
+    	   TEST_BIT(this._iTypeFlags, a.VBufferBase.ManyDrawBit));
 }
 
 

@@ -448,8 +448,7 @@ Texture.prototype.generateNormalMap = function (pHeightMap, iChannel, fAmplitude
     }
     this.setPixelRGBA(0, 0, this._iWidth, this._iHeight, pColor);
 
-    delete pNormalTable;
-
+    //delete pNormalTable;
 };
 
 /**
@@ -598,35 +597,37 @@ Texture.prototype.loadResource = function (sFileName) {
             sFileName = sResourceName;
         }
     }
-    var me = this;
 
+	var me = this;
 
-    if ((sFileName.nodeName) &&
-        (sFileName.nodeName.toLowerCase() == "canvas" || sFileName.nodeName.toLowerCase() == "img" ||
-         sFileName.nodeName.toLowerCase() == "video")) {
-        me.uploadHTMLElement(sFileName);
-        return true;
-    }
-    else if ((sExt = (a.pathinfo(sFileName).ext)) &&
-             (sExt == "bmp" || sExt == "jpeg" || sExt == "gif" || sExt == "png")) {
-        var pImage = new Image();
-        trace("TEXTURE LOAD", this._pEngine);
-        pImage.onload = function () {
-            me.uploadHTMLElement(pImage);
-        }
-        pImage.src = sFileName;
-        return true;
-    }
-    else {
-        var pImage = new a.Img(this._pEngine);
-        pImage.load(sFileName,
-                    function () {
-                        me.uploadImage(pImage);
-                    }
-        );
-        return true;
-    }
-    return false;
+	if((sFileName.nodeName)&&
+		(sFileName.nodeName.toLowerCase()=="canvas"||sFileName.nodeName.toLowerCase()=="img"||sFileName.nodeName.toLowerCase()=="video"))
+	{
+		me.uploadHTMLElement(sFileName);
+		return true;
+	}
+	else if((sExt=(a.pathinfo(sFileName).ext))&&(sExt=="bmp"||sExt=="jpeg"||sExt=="gif"||sExt=="png"))
+	{
+		var pImage = new Image();
+		pImage.onload=function ()
+		{
+				me.uploadHTMLElement(pImage);
+		}
+		pImage.src = sFileName;
+		return true;
+	}
+	else
+	{
+		var pImage = new a.Img(this._pEngine);
+		pImage.load(sFileName,
+			function () {
+				me.uploadImage(pImage);
+			}
+		);
+		return true;
+	}
+    //unreachable code
+    //return false;
 };
 
 

@@ -6,8 +6,31 @@
  */
 
 Define(__AKRA_ENGINE__, true);
-Define(trace(__ARGS__), function () { console.log(__ARGS__); });
+//Define(trace(__ARGS__), function () { console.log(__ARGS__); });
+window.trace = console.log.bind(console);
 
+// ========== NAMEPSPACEs ========
+
+Define(PROPERTY_GUARD(object, $$property, value), function () {
+    object[property] = value;
+});
+
+Define(A_DEFINE_NAMESPACE($$name), function () {
+    if (!a[name]) a[name] = {};
+});
+Define(A_DEFINE_NAMESPACE($$name, $$space), function () {
+    if (!a[space][name]) a[space][name] = {};
+});
+Define(A_NAMESPACE(object, $$space), function () {
+    PROPERTY_GUARD(a[space], object, object)
+});
+
+Define(A_NAMESPACE(object), function () {
+    PROPERTY_GUARD(a, object, object);
+});
+
+A_DEFINE_NAMESPACE(fx);
+A_DEFINE_NAMESPACE(util);
 
 
 /**
@@ -15,7 +38,7 @@ Define(trace(__ARGS__), function () { console.log(__ARGS__); });
  * @tparam pChild Child object.
  * @tparam pParent Parent object.
  */
-a.extend = function (pChild) {
+function extend(pChild) {
     var fnGet, fnSet, i, sKey;
     var pParent = arguments[1];
     var argv = arguments;
@@ -68,6 +91,42 @@ a.extend = function (pChild) {
     };
 };
 
+A_NAMESPACE(extend);
+
+Define(TO_STRING($$object), function () {
+    object;
+});
+
+Define(A_CHECK_STORAGE(), function () {
+    if (this === window || !this || this === window.AKRA) {
+        //FIXME: remove debug info
+        //if (__FUNC__._iIndex === __FUNC__._nStorageSize - 1) {trace('REACHED LIMIT OF ', GET_FUNC_NAME(__FUNC__));}
+        __FUNC__._iIndex = __FUNC__._iIndex === __FUNC__._nStorageSize - 1? 0: __FUNC__._iIndex;
+        return __FUNC__._pStorage[__FUNC__._iIndex ++];
+    }
+});
+    
+function allocateStorage(pObject, nSize) {
+    var nStorageSize = nSize || 100;
+
+    pObject._nStorageSize = nStorageSize;
+    pObject._pStorage = new Array(pObject._nStorageSize);
+    pObject._iIndex = 0;
+
+    var pStorage = pObject._pStorage;
+    for(var i=0;i<pObject._nStorageSize;i++){
+        pStorage[i] = new pObject();
+    }
+}
+
+A_NAMESPACE(allocateStorage);
+
+Define(A_ALLOCATE_STORAGE(object, n), function () {
+    a.allocateStorage(object, n);
+});
+Define(A_ALLOCATE_STORAGE(object), function () {
+    a.allocateStorage(object, 16);
+});
 
 function now () {
     'use strict';
@@ -105,8 +164,9 @@ Define(EXTENDS(__ARGS__), function () {a.extend(__ARGS__)});
  * @tparam Object pObject Исходный объект.
  * @treturn Object Копия объекта.
  */
+
 a.clone = function (pObject) {
-    if (pObject == null || typeof(pObj) != 'object') {
+    if (pObject === null || typeof(pObject) !== 'object') {
         return pObject;
     }
 
@@ -117,6 +177,8 @@ a.clone = function (pObject) {
     }
     return tmp;
 };
+
+A_NAMESPACE(clone);
 
 Define(GET_FUNC_NAME(fn), function () {
     fn.toString().match(/function\s*(\w+)/)[1]
@@ -137,7 +199,7 @@ Define(tr(str), function () {
  * @tparam Object pObj Исходный объект
  * @tretrurn String
  */
-a.getClass = function (pObj) {
+function getClass(pObj) {
     if (pObj && typeof pObj === 'object' &&
         Object.prototype.toString.call(pObj) !== '[object Array]' && pObj.constructor && pObj != this.window) {
         var arr = pObj.constructor.toString().match(/function\s*(\w+)/);
@@ -146,10 +208,11 @@ a.getClass = function (pObj) {
         }
     }
 
-    return false;
+    var sType = typeof pObj;
+    return sType[0].toUpperCase() + sType.substr(1);
 };
 
-
+A_NAMESPACE(getClass);
 
 /**
  * Преобразование json-сформированного текста
@@ -170,7 +233,8 @@ function parseJSON(sJSON) {
      return value;
      });*/
 };
-a.parseJSON = parseJSON;
+
+A_NAMESPACE(parseJSON);
 
 /**
  * Преобразование html-сформированного текста
@@ -236,27 +300,6 @@ function str2buf(s) {
 
 A_NAMESPACE(str2buf);
 
-ArrayBuffer.prototype.toTypedArray = function (eType) {
-    switch (eType) {
-        case a.DTYPE.FLOAT:
-            return new Float32Array(this);
-        case a.DTYPE.SHORT:
-            return new Int16Array(this);
-        case a.DTYPE.UNSIGNED_SHORT:
-            return new Uint16Array(this);
-        case a.DTYPE.INT:
-            return new Int32Array(this);
-        case a.DTYPE.UNSIGNED_INT:
-            return new Uint32Array(this);
-        case a.DTYPE.BYTE:
-            return new Int8Array(this);
-        default:
-        case a.DTYPE.UNSIGNED_BYTE:
-            return new Uint8Array(this);
-    }
-    return null;
-}
-
 Ifdef(__RELEASE)
 Elseif()
     Define(__DEBUG, 1)
@@ -271,17 +314,6 @@ Endif();
 Ifdef(__DEBUG)
 
 Define(a.isDebug, true)
-
-Number.prototype.printBinary = function (isPretty) {
-    var res = '';
-    for (i = 0; i < 32; ++i) {
-        if (i && (i % 4) == 0 && isPretty) {
-            res = ' ' + res;
-        }
-        (this >> i & 0x1 ? res = '1' + res : res = '0' + res);
-    }
-    return res;
-};
 
 Define(debug_assert(cond, comment), function () {
     if (!cond) {
@@ -455,7 +487,7 @@ Define(DISPROPERTY(pObj, $$property), function () {
     PROPERTY(pObj, property, undefined, undefined);
 });
 
-Define(A_CLASS(args), function () { var _pCtorValue = __FUNC__.ctor.apply(this, args); if (_pCtorValue) return _pCtorValue; });
+Define(A_CLASS(args), function () { var _pCtorValue = __FUNC__.ctor.apply(this, args); if (_pCtorValue) {return _pCtorValue; } });
 Define(A_CLASS(), function () { A_CLASS(arguments) });
 Define(A_CLASS, A_CLASS());
 
@@ -531,27 +563,21 @@ Define(GEN_ARRAY(name, type, size), function () {
     }
 });
 
-Define(A_DEFINE_NAMESPACE(name), function () {
-    if (!a.name) a.name = {};
-});
-Define(A_DEFINE_NAMESPACE(name, space), function () {
-    if (!a.space.name) a.space.name = {};
-});
-Define(A_NAMESPACE(object, space), function () {
-    a.space.object = object;
-});
-
-Define(A_NAMESPACE(object), function () {
-    a.object = object;
-});
-
 
 /**
  TRACER API
  */
 
-Define(A_TRACER.MESG(message), function () {});
-Define(A_TRACER.BEGIN(), function() {});
-Define(A_TRACER.END(), function() {});
+Ifdef (__ANALYZER);
 
-window['A_TRACER.trace'] = function () {};
+Define (A_TRACER.MESG(message), function() { window['A_TRACER.trace'](message);});
+Define(A_TRACER.BEGIN(),        function() { window['A_TRACER.beginTracing']();});
+Define(A_TRACER.END(),          function() { window['A_TRACER.endTracing']();});
+
+Elseif ();
+
+Define(A_TRACER.MESG(message),  function() {});
+Define(A_TRACER.BEGIN(),        function() {});
+Define(A_TRACER.END(),          function() {});
+
+Endif ();

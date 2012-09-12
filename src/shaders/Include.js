@@ -1,6 +1,7 @@
 Include('ShaderProgram.js')
 
-Include('shader/Shader3.0.js');
+//DEPRECATED
+/*Include('shader/Shader3.0.js');
 Include('shader/ShaderBlend.js');
 Include('shader/ShaderPrecompiler.js');
 Include('effect/Effect.js');
@@ -15,4 +16,4 @@ If(EFFECT_SYNTAX_COMPATIBILITY)
 //temporary
 //Include('effect/EffectSyntaxCompatibility.js');
 
-Endif();
+Endif();*/
