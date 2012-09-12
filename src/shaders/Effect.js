@@ -3735,7 +3735,7 @@ Effect.prototype._extractVariableData = function (pVar, pData, pBuffer, pFunctio
                 pCode.push("A_extractMat4(");
                 pFunction._pExtractFunctions["float"] = null;
                 pFunction._pExtractFunctions["vec4"] = null;
-                pFunction._pExtractFunctions["Mat4"] = null;
+                pFunction._pExtractFunctions["mat4"] = null;
             }
             else {
                 error("We don`t support another simple type");
@@ -6360,6 +6360,7 @@ Effect.prototype.analyzeStmt = function (pNode) {
         this.newScope();
         this.analyzeForInit(pChildren[4]);
         this.analyzeForCond(pChildren[3]);
+        this.pushCode(";");
         this.analyzeForStep(pChildren[2]);
         this.pushCode(")");
         isInLoop = this._isInLoop;
@@ -6444,6 +6445,7 @@ Effect.prototype.analyzeNonIfStmt = function (pNode) {
         this.newScope();
         this.analyzeForInit(pChildren[4]);
         this.analyzeForCond(pChildren[3]);
+        this.pushCode(";");
         this.analyzeForStep(pChildren[2]);
         this.pushCode(")");
         isInLoop = this._isInLoop;
@@ -7344,6 +7346,12 @@ EffectFileData.prototype.loadResource = function (sFileName) {
     this.notifyUnloaded();
     this._pRenderer._loadEffectFile(sFileName, this);
     return true;
+};
+
+EffectFileData.prototype.create = function (sSource) {
+    this._sSource = sSource;
+    this.eStatus = 1;
+    this.notifyLoaded();
 };
 
 A_NAMESPACE(EffectFileData, fx);

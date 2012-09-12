@@ -469,6 +469,8 @@ function ParserBase() {
     this._isNegateMode = true;
     this._isAddMode = true;
     this._isOptimizeMode = true;
+
+    this._isSync = false;
 }
 ParserBase.prototype._error = function () {
     var pErr = new Error();
@@ -1242,11 +1244,13 @@ ParserBase.prototype.init = function (sGrammar, eType, pFlags) {
         return false;
     }
 };
-ParserBase.prototype.parse = function (sSource, fnFinish, pCaller) {
+ParserBase.prototype.parse = function (sSource, isSync, fnFinish, pCaller) {
     try {
         this._defaultInit();
         this.sSource = sSource;
         this._pLex.init(sSource);
+
+        this._isSync = isSync;
 
         this._pFinishCallback = fnFinish || null;
         this._pCaller = pCaller || null;
@@ -1819,6 +1823,20 @@ EffectParser.prototype._includeCode = function (pRule) {
     sFile = sFile.substr(1, sFile.length - 2);
     if (this._pIncludeTable[sFile]) {
         return this._pIncludeTable[sFile];
+    }
+    if (this._isSync) {
+        var pRequest = a.ajax({url:sFile, async:false});
+        if(pRequest.xhr.status === a.HTTP_STATUS_CODE.OK){
+            var sSource = pRequest.data;
+            var index = this._pLex.iIndex;
+            this.sSource = this.sSource.substr(0, index) + sSource + this.sSource.substr(index);
+            this._pIncludeTable[sFile] = sSource;
+            return true;
+        }
+        else {
+            error("Could not load file in 'inlude'", sFile);
+            return false;
+        }
     }
     else {
         var me = this;

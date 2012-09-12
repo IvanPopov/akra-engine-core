@@ -1,5 +1,9 @@
 Include('ShaderProgram.js')
 
+Include('Effect.js');
+Include('Component.js');
+Include('ShaderUtil.js');
+
 //DEPRECATED
 /*Include('shader/Shader3.0.js');
 Include('shader/ShaderBlend.js');

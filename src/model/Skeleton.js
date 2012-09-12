@@ -168,7 +168,7 @@ Skeleton.prototype.findJointByName = function (sName) {
 
 Skeleton.prototype.attachMesh = function (pMesh) {
     'use strict';
-	
+
     debug_assert(this.getEngine() === pMesh.getEngine(), 'mesh must be from same engine instance');
 
     if (this._pMeshNode == null) {

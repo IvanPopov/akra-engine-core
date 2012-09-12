@@ -165,15 +165,33 @@ Renderer.prototype._initSystemUniforms = function () {
  *         So name of components from file will be: "sName" + ":" + "sTechniqueName"\n
  *         Example: "baseEffect:GEOMETRY", "lightEffect:POINT"
  */
-Renderer.prototype.loadEffectFile = function (sFileName) {
+Renderer.prototype.loadEffectFile = function (sFileName, isSync) {
     var reExt = /^(.+)(\.afx|\.abf|\.fx)$/;
     var pRes = reExt.exec(sFileName);
+
+    isSync = isSync || false;
 
     if (!pRes) {
         warning("File has wrong extension! It must be .fx!");
         return false;
     }
-    return this._pEffectFileDataPool.loadResource(sFileName);
+    if (isSync) {
+        var pRequest = a.ajax({url : sFileName, async : false});
+        if(pRequest.xhr.status === a.HTTP_STATUS_CODE.OK){
+            var sSource = pRequest.data;
+            var pResource = this._pEffectFileDataPool.createResource(sFileName);
+            pResource.create(sSource);
+            a.util.parser.parse(sSource, true, this._analyzeEffect, this);
+            return true;
+        }
+        else {
+            error("Could not load file in ", sFileName);
+            return false;
+        }
+    }
+    else {
+        return this._pEffectFileDataPool.loadResource(sFileName);
+    }
 };
 /**
  * Initialization component from technique. Name of component will be 'sEffectName' + ':' + 'pTechnique.sName'
@@ -235,7 +253,7 @@ Renderer.prototype._loadEffectFile = function (sFileName, pEffectResource) {
             pEffectResource.eStatus = 1;
             pEffectResource._sSource = sSource;
             if (pEffectResource === pFirst) {
-                a.util.parser.parse(sSource, me._analyzeEffect, me);
+                a.util.parser.parse(sSource, false, me._loadedEffect, me);
             }
         },
         function () {
@@ -273,6 +291,10 @@ Renderer.prototype._analyzeEffect = function (eCode) {
     else {
         warning("Some error was occur during syntax analyze of effect file. Code: " + eCode);
     }
+    return true;
+};
+Renderer.prototype._loadedEffect = function (eCode) {
+    this._analyzeEffect(eCode);
     this._pEffectFileStack.shift().notifyLoaded();
     this._nextEffect();
     return true;
@@ -290,7 +312,7 @@ Renderer.prototype._deleteElementFromLoadQueue = function (pElement) {
 Renderer.prototype._nextEffect = function () {
     var pElement = this._pEffectFileStack[0];
     if (pElement && pElement.eStatus === 1) {
-        a.util.parser.parse(pElement._sSource, this._analyzeEffect, this);
+        a.util.parser.parse(pElement._sSource, false, this._analyzeEffect, this);
     }
     return true;
 };
@@ -961,6 +983,7 @@ Renderer.prototype._getSystemUniformValue = function (sName) {
         case a.Renderer.PROJ_MATRIX:
             return pCamera.projectionMatrix();
         case a.Renderer.EYE_POS:
+            trace(pCamera.worldPosition().x,pCamera.worldPosition().y,pCamera.worldPosition().z);
             return pCamera.worldPosition();
         case a.Renderer.BIND_MATRIX:
             return (pRenderObject && pRenderObject.skin) ? pRenderObject.skin.getBindMatrix() : null;

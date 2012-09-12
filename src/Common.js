@@ -178,8 +178,6 @@ a.clone = function (pObject) {
     return tmp;
 };
 
-A_NAMESPACE(clone);
-
 Define(GET_FUNC_NAME(fn), function () {
     fn.toString().match(/function\s*(\w+)/)[1]
 });

@@ -690,6 +690,7 @@ Node.prototype.recursivePreUpdate = function () {
  * Recalculate world Matrix
  */
 Node.prototype.recalcWorldMatrix = function () {
+    trace(this);
     'use strict';
     
     var isParentMoved = this._pParent && this._pParent.isWorldMatrixNew();
@@ -790,7 +791,7 @@ Node.prototype.setPosition = function () {
     'use strict';
     
     var pPos = arguments.length === 1? arguments[0]: arguments;
-    var v3fTranslation = this._v3fTranslation.pData;
+    var v3fTranslation = this._v3fTranslation;
 
     v3fTranslation.set(pPos);
 

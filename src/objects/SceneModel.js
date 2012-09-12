@@ -69,6 +69,8 @@ SceneModel.prototype.prepareForRender = function () {
 
 SceneModel.prototype.render = function () {
     parent.render(this);
+//    A_TRACER.BEGIN();
+
 
     if (this._fnRenderCallback) {
         this._fnRenderCallback.call(this);
@@ -77,37 +79,45 @@ SceneModel.prototype.render = function () {
         }
     }
 
+    trace("<<<<<<<<<<<<<SCENE MODEL RENDER>>>>>>>>>>", this.findMesh());
+
     var pMeshes = this._pMeshes,
         pRenderer = this._pEngine.shaderManager(),
         pMesh, pSubMesh;
     var i, j, k;
     if (!pMeshes || pMeshes.length === 0) {
+        trace('OOOOOH SHEEEEET');
         return false;
     }
 	
     pRenderer.activateSceneObject(this);
     pRenderer.setViewport(0, 0, this._pEngine.pCanvas.width, this._pEngine.pCanvas.height);
-    
+
 	for (i = 0; i < pMeshes.length; i++) {
         pMesh = pMeshes[i];
         if (!pMesh || !pMesh.isReadyForRender()) {
+            trace(pMesh, '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@');
             return;
         }
+
         for (j = 0; j < pMesh.length; j++) {
             pSubMesh = pMesh[j];
             pSubMesh.startRender();
             this._pEngine.pEngineStates.mesh.isSkinning = pSubMesh.isSkinned();
             for (k = 0; k < pSubMesh.totalPasses(); k++) {
-                pSubMesh.activatePass(i);
+                pSubMesh.activatePass(k);
                 pSubMesh.applySurfaceMaterial();
+//                trace("SCENE MODEL NAME: ", this.name + ":" + pSubMesh.name, pSubMesh.data.toString());
                 pSubMesh.applyRenderData(pSubMesh.data);
-                trace("SceneModel.prototype.render", pSubMesh.renderPass().pUniforms);
+                trace("SceneModel.prototype.render", this, pSubMesh.renderPass().pUniforms);
                 pSubMesh.deactivatePass();
             }
             pSubMesh.finishRender();
         }
     }
     pRenderer.deactivateSceneObject();
+//    A_TRACER.END();
+    trace("<<<<<<<<<<<<<END SCENE MODEL RENDER>>>>>>>>>>");
     return true;
 };
 

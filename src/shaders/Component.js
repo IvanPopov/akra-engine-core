@@ -1307,6 +1307,9 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
             sVertexCode += PassBlend.pExtractedFunctions["init"];
             isExtract = true;
         }
+        if (!PassBlend.pExtractedFunctions[i]) {
+            trace("ERRRRRRRRRRRRRRRRRRRRRRROR",i, PassBlend.pExtractedFunctions[i]);
+        }
         sVertexCode += PassBlend.pExtractedFunctions[i];
     }
     //Types
@@ -1339,7 +1342,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         }
     }
     //Sampler arrays
-    for(i = 0; i < pSamplersArrayV.length; i++){
+    for (i = 0; i < pSamplersArrayV.length; i++) {
         pSampler = pSamplersArrayV[i];
         nSamplers -= pSampler.iLength;
         sVertexCode += "uniform " + pSampler.toCodeDecl();
@@ -1486,7 +1489,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         }
     }
     //Uniform sampler`s arrays
-    for(i = 0; i < pSamplersArrayF.length; i++){
+    for (i = 0; i < pSamplersArrayF.length; i++) {
         pSampler = pSamplersArrayF[i];
         nSamplers -= pSampler.iLength;
         sVertexCode += pSampler.toCodeDecl();

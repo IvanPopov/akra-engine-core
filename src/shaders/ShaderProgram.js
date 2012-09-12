@@ -38,6 +38,8 @@ function ShaderProgram(pEngine) {
 
     this._pUniformApplyFunctions = {};
     this._pUniformPreparedData = {};
+
+    this._pStreamToBufferHandle = null;
 }
 a.extend(ShaderProgram, a.ResourcePoolItem);
 
@@ -167,6 +169,8 @@ ShaderProgram.prototype.setup = function (pAttrData, pUniformData, pTextures) {
 
     this._pUniformKeys = pUniformsKeys;
     this._pStreams = new Array(pRealAttr.length);
+    this._pStreamToBufferHandle = new Array(pRealAttr.length);
+
     this._pActiveStreams = new Array(pRealAttr.length);
     for (i = 0; i < this._pActiveStreams.length; i++) {
         this._pActiveStreams[i] = this._eActiveStream;
@@ -692,12 +696,18 @@ ShaderProgram.prototype.applyData = function (pData, iSlot) {
     var pVertexElement;
     var pVertexBuffer = pVertexData.buffer;
     var iState = pManager.getRenderResourceState(pVertexBuffer);
+    var iBufferHandle = this._pStreamToBufferHandle[iSlot];
     var iStreamState = this.toNumber();
     var isActivate = false;
     var isChange = false;
     pDecl = pVertexData.getVertexDeclaration();
     if (isMapper) {
-        if (iStreamState !== pManager._getStreamState(iSlot)) {
+//        A_TRACER.MESG("apply data: " + iState + " : " + this._pStreams[iSlot]);
+        //Switch between shader programs
+        if(iBufferHandle !== pVertexBuffer.toNumber()) {
+            isChange = true;
+        }
+        else if (iStreamState !== pManager._getStreamState(iSlot)) {
             isChange = true;
         }
         else if (this._pStreams[iSlot] !== iState) {
@@ -707,6 +717,7 @@ ShaderProgram.prototype.applyData = function (pData, iSlot) {
             return true;
         }
         this._pStreams[iSlot] = iState;
+        this._pStreamToBufferHandle[iSlot] = pVertexBuffer.toNumber();
         pManager._occupyStream(iSlot, this);
         pManager.activateVertexBuffer(pVertexBuffer, true);
         pVertexElement = pDecl.element(pData.eSemantics);

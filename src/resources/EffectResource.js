@@ -124,6 +124,8 @@ EffectResource.prototype.create = function () {
     if (!this._pShaderManager.registerEffect(this)) {
         return false;
     }
+    this.notifyLoaded();
+    this.notifyRestored();
     return true;
 };
 

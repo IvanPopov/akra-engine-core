@@ -98,30 +98,30 @@ a.checkCubeTextureRequirements = function (pContext, iWidth, iHeigth, iMipLevels
  * @treturn Texture Созданная текстура или null.
  */
 
-a.createTextureFromFile = function (pContext, sFilename, iWidth, iHeight, fnCallBack)
-    //iMipLevels,eUsage,eFormat,ePool,iFilter,iMipFilter, pColorKey, ppImageInfo, ppPalette)
-{
-
-    var c = pContext;
-    var tex = c.createTexture();
-    //tex.eType=c.TEXTURE_2D;
-    tex.image = new Image();
-    tex.image.onload = function () {
-        c.bindTexture(c.TEXTURE_2D, tex);
-        c.pixelStorei(c.UNPACK_FLIP_Y_WEBGL, true);
-        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, tex.image);
-        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST);
-        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST);
-        c.bindTexture(c.TEXTURE_2D, null);
-        if (fnCallBack) {
-            fnCallBack();
-        }
-
-    }
-
-    tex.image.src = sFilename;
-    return tex;
-}
+//a.createTextureFromFile = function (pContext, sFilename, iWidth, iHeight, fnCallBack)
+//    //iMipLevels,eUsage,eFormat,ePool,iFilter,iMipFilter, pColorKey, ppImageInfo, ppPalette)
+//{
+//
+//    var c = pContext;
+//    var tex = c.createTexture();
+//    //tex.eType=c.TEXTURE_2D;
+//    tex.image = new Image();
+//    tex.image.onload = function () {
+//        c.bindTexture(c.TEXTURE_2D, tex);
+//        c.pixelStorei(c.UNPACK_FLIP_Y_WEBGL, true);
+//        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, tex.image);
+//        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST);
+//        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST);
+//        c.bindTexture(c.TEXTURE_2D, null);
+//        if (fnCallBack) {
+//            fnCallBack();
+//        }
+//
+//    }
+//
+//    tex.image.src = sFilename;
+//    return tex;
+//}
 
 
 /**
@@ -143,30 +143,30 @@ a.createTextureFromFile = function (pContext, sFilename, iWidth, iHeight, fnCall
  * @tparam ppPalette Палитра.
  * @treturn Texture Созданная текстура или null.
  */
-a.createTexture = function (pContext, iWidth, iHeight, fCallBack, pTexture)
-    //iMipLevels, eUsage, eFormat, ePool,  iFilter, iMipFilter,pColorKey, ppImageInfo, ppPalette)
-{
-
-    var c = pContext;
-    pTexture._pTexture = c.createTexture();
-    tex = pTexture._pTexture;
-    //tex.eType=c.TEXTURE_2D;
-
-    tex.image = new Image(iWidth, iHeight);
-    tex.image.onload = function () {
-        c.bindTexture(c.TEXTURE_2D, tex);
-        c.pixelStorei(c.UNPACK_FLIP_Y_WEBGL, true);
-        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, tex.image);
-        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST);
-        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST);
-        c.bindTexture(c.TEXTURE_2D, null);
-
-    }
-    if (fCallBack) {
-        fCallBack();
-    }
-    return tex;
-}
+//a.createTexture = function (pContext, iWidth, iHeight, fCallBack, pTexture)
+//    //iMipLevels, eUsage, eFormat, ePool,  iFilter, iMipFilter,pColorKey, ppImageInfo, ppPalette)
+//{
+//
+//    var c = pContext;
+//    pTexture._pTexture = c.createTexture();
+//    tex = pTexture._pTexture;
+//    //tex.eType=c.TEXTURE_2D;
+//
+//    tex.image = new Image(iWidth, iHeight);
+//    tex.image.onload = function () {
+//        c.bindTexture(c.TEXTURE_2D, tex);
+//        c.pixelStorei(c.UNPACK_FLIP_Y_WEBGL, true);
+//        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, tex.image);
+//        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST);
+//        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST);
+//        c.bindTexture(c.TEXTURE_2D, null);
+//
+//    }
+//    if (fCallBack) {
+//        fCallBack();
+//    }
+//    return tex;
+//}
 
 
 /**

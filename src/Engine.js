@@ -406,13 +406,6 @@ Engine.prototype.renderScene = function () {
         pFirstMember = pFirstMember.nextSearchLink();
     }
 
-    Ifdef(__DEBUG);
-    //FIXME: remove direct render
-    if (this.directRender) {
-        this.directRender();
-    }
-    Endif();
-
     return true;
 }
 //Добавлено для отслеживания видимости узлов. aldore
@@ -588,10 +581,13 @@ Engine.prototype.render = function () {
 
     if (this.pDisplayManager.beginRenderSession()) {
         // render the scene
+//        A_TRACER.BEGIN();
         this.renderScene();
         // process the contents of the render queue
         this.pShaderManager.processRenderQueue();
         this.pDisplayManager.endRenderSession();
+//        A_TRACER.END();
+//        this.pause(true);
     }
     return true;
 };

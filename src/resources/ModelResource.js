@@ -136,7 +136,7 @@ ModelResource.prototype.loadResource = function (sFilename, pOptions) {
     'use strict';
 
     var me = this;
-    var fnCustomCallback = pOptions.success || null;
+    var fnCustomCallback = (pOptions && pOptions.success) ? pOptions.success : null;
     
     var fnCallback = function () {
         if (me.isResourceLoaded()) {

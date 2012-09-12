@@ -884,11 +884,12 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
 
     pRenderer.render(pEntry);
     pDevice.flush();
-    trace("<<<<<<<<<<<<<END TEXTURE REPACK RENDER>>>>>>>>>>>>>>>>");
+    trace("<<<<<<<<<<<<<END_TEXTURE REPACK RENDER>>>>>>>>>>>>>>>>");
 
-    var pTexture = this._pTexture;
+//    var pTexture = this._pTexture;
+    this.releaseTexture();
     this._pTexture = pDestinationTexture._pTexture;
-    pDestinationTexture._pTexture = pTexture;
+//    pDestinationTexture._pTexture = pTexture;
     this._isTextureChanged = true;
     pDestinationTexture._isTextureChanged = true;
     this._eFormat = eFormat;
