@@ -56,6 +56,8 @@ AnimationBlend.prototype.addAnimation = function (pAnimation, fWeight, pMask) {
 AnimationBlend.prototype.setAnimation = function (iAnimation, pAnimation, fWeight, pMask) {
     'use strict';
     
+    debug_assert(iAnimation <= this._pAnimationList.length, 'invalid animation slot: ' + iAnimation + '/' + this._pAnimationList.length);
+
     var pPointer = this._pAnimationList[iAnimation];
     var me = this;
 
@@ -76,15 +78,20 @@ AnimationBlend.prototype.setAnimation = function (iAnimation, pAnimation, fWeigh
 
 		pAnimation.on('updateDuration', function () {
 			me.updateDuration();
-			trace('duration of inner animation updated.');
+			//trace('duration of inner animation updated.');
 		})
 
-		this._pAnimationList[iAnimation] = pPointer;
+		if (iAnimation == this._pAnimationList.length) {
+			this._pAnimationList.push(pPointer);
+		}
+		else {
+			this._pAnimationList[iAnimation] = pPointer;
+		}
 	}
 
 	///this.duration = Math.min(this.duration, pAnimation.duration);
-	//
-	//this.grab(pAnimation);
+	trace('animation added to blend >> ', this._pAnimationList);
+	this.grab(pAnimation);
 	this.updateDuration();
 	return iAnimation;
 };
@@ -98,6 +105,10 @@ AnimationBlend.prototype.updateDuration = function () {
 	var n = pAnimationList.length;
 
 	for (var i = 0; i < n; ++ i) {
+		if (pAnimationList[i] === null) {
+			continue;
+		}
+
 		fSumm += pAnimationList[i].weight * pAnimationList[i].animation._fDuration;
 		fWeight += pAnimationList[i].weight;
 	}
@@ -105,9 +116,15 @@ AnimationBlend.prototype.updateDuration = function () {
 	this._fDuration = fSumm / fWeight;
 
 	for (var i = 0; i < n; ++ i) {
+		if (pAnimationList[i] === null) {
+			continue;
+		}
+
 		pAnimationList[i].acceleration = pAnimationList[i].animation._fDuration / this._fDuration;
 		//trace(pAnimationList[i].animation.name, '> acceleration > ', pAnimationList[i].acceleration);
 	}
+
+	this.fire('updateDuration');
 };
 
 AnimationBlend.prototype.getAnimationIndex = function (sName) {
@@ -264,32 +281,32 @@ A_NAMESPACE(AnimationBlend);
  * Animation switch. 
  ************************************************************************************************/
 
-function AnimationSwitch () {
-	A_CLASS;
-}
+// function AnimationSwitch () {
+// 	A_CLASS;
+// }
 
-EXTENDS(AnimationSwitch, a.AnimationBlend);
+// EXTENDS(AnimationSwitch, a.AnimationBlend);
 
-DISMETHOD(AnimationSwitch, addAnimation);
+// DISMETHOD(AnimationSwitch, addAnimation);
 
-AnimationSwitch.prototype.setAnimationIn = function (pAnimation, pMask) {
-    'use strict';
-    return this.setAnimation(0, pAnimation, 1.0, pMask);
-};
+// AnimationSwitch.prototype.setAnimationIn = function (pAnimation, pMask) {
+//     'use strict';
+//     return this.setAnimation(0, pAnimation, 1.0, pMask);
+// };
 
-AnimationSwitch.prototype.setAnimationOut = function (pAnimation, pMask) {
-    'use strict';
-	return this.setAnimation(1, pAnimation, 1.0, pMask);
-};
+// AnimationSwitch.prototype.setAnimationOut = function (pAnimation, pMask) {
+//     'use strict';
+// 	return this.setAnimation(1, pAnimation, 1.0, pMask);
+// };
 
-AnimationSwitch.prototype.setStartTime = function (fTime) {
+// AnimationSwitch.prototype.setStartTime = function (fTime) {
 
-}
+// }
 
-AnimationSwitch.prototype.setDuration = function (fTime) {
-    'use strict';
+// AnimationSwitch.prototype.setDuration = function (fTime) {
+//     'use strict';
     
 	
-};
+// };
 
-A_NAMESPACE(AnimationSwitch);
+// A_NAMESPACE(AnimationSwitch);

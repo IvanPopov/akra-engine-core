@@ -71,7 +71,11 @@ A_FORMAT({
 			'_fStartTime'	: 'Float',
 			'_fSpeed'		: 'Float',
 			'_bLoop'		: 'Boolean',
-			'_pAnimation'	: null,
+			'_pAnimation'	: {
+				read: function (pContainer) {
+					pContainer.setAnimation(this.read());
+				}
+			},
 			'_fDuration'	: 'Float',
 			'_bReverse'		: 'Boolean',
 			'_bPause'		: 'Boolean',
@@ -91,9 +95,7 @@ A_FORMAT({
 							pAnimations[i].animation, 
 							pAnimations[i].weight,
 							pAnimations[i].mask);
-						trace('blend >> ', pAnimationBlend.name, 'duration > ', pAnimationBlend.duration);
 					}
-					trace(pAnimationBlend);
 				},
 				write: 'Array'
 			}

@@ -67,10 +67,19 @@ AnimationBase.prototype.stop = function (fRealTime) {
     this.fire('stop', fRealTime);
 };
 
-AnimationBase.prototype.delChangesNotifyRoutine = function (eEvent, fnCallback) {
+AnimationBase.prototype.removeEventListener = function (eEvent, fnCallback) {
     'use strict';
-    //TODO:
-	TODO('delChangesNotifyRoutine');
+    
+    var pCallbacks = this._pCallbacks[eEvent];
+
+    for (var i = 0; i < pCallbacks.length; i++) {
+    	if (pCallbacks[i] === fnCallback) {
+    		pCallbacks.splice(i, 1);
+    		return true;
+    	}
+    };
+    
+    return false;
 };
 
 AnimationBase.prototype.bind = function(pTarget) {
@@ -203,8 +212,8 @@ AnimationBase.prototype.grab = function (pAnimationBase, bRewrite) {
 	for (var i = 0; i < pAdoptTargets.length; ++ i) {
 		
 		if (!pAdoptTargets[i].target) {
-			warning('cannot grab target <' + pAdoptTargets[i].name + '>, becaus "target" is null');
-			//continue;
+			//warning('cannot grab target <' + pAdoptTargets[i].name + '>, becaus "target" is null');
+			continue;
 		}
 
 		if (bRewrite || !this.getTarget(pAdoptTargets[i].name)) {

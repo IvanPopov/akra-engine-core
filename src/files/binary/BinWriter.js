@@ -1064,8 +1064,12 @@ BinWriter.prototype.writeData = function(pObject, sType) {
                 this.write(pObject[sName], pMembers[sName].write);
                 continue;
             }
-
-            pMembers[sName].write.call(this, pObject);
+            else if (!pMembers[sName].write) {
+                this.write(pObject[sName], null);
+            }
+            else {
+                pMembers[sName].write.call(this, pObject);
+            }
         }
     }
     

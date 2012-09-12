@@ -70,6 +70,11 @@ AnimationContainer.prototype.setAnimation = function (pAnimation) {
 	this.setSpeed(this.speed);
 	this.name = 'container-' + pAnimation.name;
 
+	var me = this;
+	pAnimation.on('updateDuration', function () {
+		me.setSpeed(me.speed);
+	});
+
 	this.grab(pAnimation);
 };
 
@@ -180,14 +185,11 @@ AnimationContainer.prototype.isPaused = function () {
 AnimationContainer.prototype.time = function (fRealTime) {
     'use strict';
 
-    if (this._bPause) {
-    	return;
+    if (!this._bPause) {
+    	fRealTime -= this._fStartTime;
+    	this._fTime = this._fTime + (fRealTime - this._fRealTime) * this._fSpeed;
     }
 
-    fRealTime -= this._fStartTime;
-
-
-    this._fTime = this._fTime + (fRealTime - this._fRealTime) * this._fSpeed;
     this._fRealTime = fRealTime;
 
     var fTime = this._fTime;
