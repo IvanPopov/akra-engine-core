@@ -1985,7 +1985,6 @@ function COLLADA (pEngine, pSettings) {
                     pSubMesh.material.value = pMaterial;
                     //FIXME: remove flex material setup(needs only demo with flexmats..)
                     pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
-                                             trace('<<@@@@@@@@@@@@@@@@@@@@@@@@@@@');
                     if (pSubMesh.renderMethod.effect.isResourceLoaded() === false) {
                         pSubMesh.renderMethod.effect.create();
                     }

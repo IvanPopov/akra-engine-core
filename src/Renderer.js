@@ -132,12 +132,15 @@ function Renderer(pEngine) {
     this._pRenderState = new a.fx.RenderState(this.pEngine);
     this._pStreamState = new Array(a.info.graphics.maxVertexAttributes(this.pDevice));
 
-    this._pFramebufferPool = new Array(10);
-    this._pEmptyFrameBuffers = new Array(10);
-    this._pFrameBufferCounters = new Array(10);
+    this._pFramebufferPool = new Array(10); //Used frame buffers
+    this._pEmptyFrameBuffers = new Array(10); //Empty indexes in frame buffer pool
+    this._pFrameBufferCounters = new Array(10); //Frame buffer counters
+
     for (var i = 0; i < this._pFramebufferPool.length; i++) {
-        this._pFramebufferPool[i] = new a.fx.FrameBuffer(this.pEngine);
-        this._pEmptyFrameBuffers[i] = null;
+        var pFrameBuffer = this.pDevice.createFramebuffer();
+        pFrameBuffer._iId = a.sid();
+        this._pFramebufferPool[i] = pFrameBuffer;
+        this._pEmptyFrameBuffers[i] = i;
         this._pFrameBufferCounters[i] = 0;
     }
     this._pSystemUniforms = null;
@@ -177,7 +180,7 @@ Renderer.prototype.loadEffectFile = function (sFileName, isSync) {
     }
     if (isSync) {
         var pRequest = a.ajax({url : sFileName, async : false});
-        if(pRequest.xhr.status === a.HTTP_STATUS_CODE.OK){
+        if (pRequest.xhr.status === a.HTTP_STATUS_CODE.OK) {
             var sSource = pRequest.data;
             var pResource = this._pEffectFileDataPool.createResource(sFileName);
             pResource.create(sSource);
@@ -983,7 +986,7 @@ Renderer.prototype._getSystemUniformValue = function (sName) {
         case a.Renderer.PROJ_MATRIX:
             return pCamera.projectionMatrix();
         case a.Renderer.EYE_POS:
-            trace(pCamera.worldPosition().x,pCamera.worldPosition().y,pCamera.worldPosition().z);
+            trace(pCamera.worldPosition().x, pCamera.worldPosition().y, pCamera.worldPosition().z);
             return pCamera.worldPosition();
         case a.Renderer.BIND_MATRIX:
             return (pRenderObject && pRenderObject.skin) ? pRenderObject.skin.getBindMatrix() : null;
@@ -1067,7 +1070,7 @@ Renderer.prototype.applyFrameBufferTexture = function (pTexture, eAttachment, eT
     eAttachment = (eAttachment === undefined) ? pDevice.COLOR_ATTACHMENT0 : eAttachment;
     eTexTarget = (eTexTarget === undefined) ? pDevice.TEXTURE_2D : eTexTarget;
     trace("Attach texture to farme buffer #" + this._pRenderState.iFrameBuffer);
-    this._pRenderState.pFrameBuffer.frameBufferTexture2D(eAttachment, eTexTarget, pTexture._pTexture);
+    pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, eAttachment, eTexTarget, pTexture._pTexture, 0);
 };
 Renderer.prototype.applySurfaceMaterial = function (pMaterial) {
     this._pPreRenderState.pSurfaceMaterial = pMaterial;
@@ -1155,36 +1158,53 @@ Renderer.prototype._getEmptyFrameBuffer = function () {
     var pDevice = this.pEngine.pDevice;
     var pEmptyBuffers = this._pEmptyFrameBuffers;
     var pFrameBuffer = null;
-    var i = 0;
-    for (i = 0; i < pEmptyBuffers.length; i++) {
-        if (pEmptyBuffers[i] === null) {
-            pEmptyBuffers[i] = this._pFramebufferPool[i];
-            this._pFrameBufferCounters[i] = 0;
-            return i;
-        }
+    if(pEmptyBuffers.length > 0){
+        return pEmptyBuffers.pop();
     }
-    pFrameBuffer = new a.fx.FrameBuffer(this.pEngine);
-    this._pFramebufferPool.push(pFrameBuffer);
-    this._pFrameBufferCounters.push(0);
-    pEmptyBuffers.push(0);
-    return pEmptyBuffers.length - 1;
+    else{
+        pFrameBuffer = pDevice.createFramebuffer();
+        pFrameBuffer._iId = a.sid();
+        this._pFramebufferPool.push(pFrameBuffer);
+        this._pFrameBufferCounters.push(0);
+        return this._pFramebufferPool.length - 1;
+    }
+//    var i = 0;
+//    for (i = 0; i < pEmptyBuffers.length; i++) {
+//        if (pEmptyBuffers[i] === null) {
+//            pEmptyBuffers[i] = this._pFramebufferPool[i];
+//            this._pFrameBufferCounters[i] = 0;
+//            return i;
+//        }
+//    }
+//    pFrameBuffer = new a.fx.FrameBuffer(this.pEngine);
+//    this._pFramebufferPool.push(pFrameBuffer);
+//    this._pFrameBufferCounters.push(0);
+//    pEmptyBuffers.push(0);
+//    return pEmptyBuffers.length - 1;
 };
 Renderer.prototype._releaseFrameBuffer = function (id) {
     trace("Release frame buffer");
     var pDevice = this.pEngine.pDevice;
     this._pFrameBufferCounters[id] = 0;
-    this._pEmptyFrameBuffers[id] = null;
-    this._pFramebufferPool[id].release();
-    this._activateFrameBuffer();
+    this._pEmptyFrameBuffers.push(id);
+    A_TRACER.MESG("Delete frame buffer #" + this._pFramebufferPool[id]._iId)
+    pDevice.deleteFramebuffer(this._pFramebufferPool[id]);
+    var pFrameBuffer = pDevice.createFramebuffer();
+    pFrameBuffer._iId = a.sid();
+    this._pFramebufferPool[id] = pFrameBuffer;
+//    this._activateFrameBuffer();
 };
 Renderer.prototype._tryReleaseFrameBuffer = function (id) {
-    var nCount = this._pFrameBufferCounters[id];
-    if (nCount > 0) {
-        nCount--;
-        this._pFrameBufferCounters[id] = nCount;
-    }
-    if (nCount === 0) {
-        this._releaseFrameBuffer(id);
+    this._activateFrameBuffer();
+    if (id >= 0) {
+        var nCount = this._pFrameBufferCounters[id];
+        if (nCount > 0) {
+            nCount--;
+            this._pFrameBufferCounters[id] = nCount;
+        }
+        if (nCount === 0) {
+            this._releaseFrameBuffer(id);
+        }
     }
 };
 Renderer.prototype._getTextureSlot = function (pTexture) {
@@ -1257,14 +1277,13 @@ Renderer.prototype.activateFrameBuffer = function (iId) {
 };
 Renderer.prototype.deactivateFrameBuffer = function (iId) {
     if (iId !== undefined) {
-        this._pEmptyFrameBuffers[iId] = null;
-        this._pFrameBufferCounters[iId] = 0;
+        this._releaseFrameBuffer(iId);
         return true;
     }
     iId = this._pRenderState.iFrameBuffer;
     if (iId !== null) {
         if (this._pFrameBufferCounters[iId] === 0) {
-            this._pEmptyFrameBuffers[iId] = null;
+            this._releaseFrameBuffer(iId);
         }
         else {
             this._pFrameBufferCounters[iId] *= -1;
@@ -1279,12 +1298,13 @@ Renderer.prototype._activateFrameBuffer = function (iId) {
         return true;
     }
     this._pRenderState.pFrameBuffer = pFrameBuffer;
+    //this._pRenderState.iFrameBuffer = iId === undefined ? null : iId;
     if (pFrameBuffer) {
-        trace("activateFrameBuffer #" + iId);
-        pFrameBuffer.bind();
+        A_TRACER.MESG("activate FrameBuffer #" + pFrameBuffer._iId);
+        this.pDevice.bindFramebuffer(this.pDevice.FRAMEBUFFER, pFrameBuffer);
     }
     else {
-        trace("activateFrameBuffer DefaultRender");
+        trace("activate FrameBuffer DefaultRender");
         this.pDevice.bindFramebuffer(this.pDevice.FRAMEBUFFER, null);
     }
 };
@@ -1395,11 +1415,16 @@ Renderer.prototype.render = function (pEntry) {
     }
     else {
         pDevice.drawArrays(pEntry.eDrawPrim, pEntry.iOffset, pEntry.iLength);
+//        if (pEntry.eDrawPrim === a.PRIMTYPE.LINELIST) {
+//            pDevice.drawArrays(pEntry.eDrawPrim, pEntry.iOffset, pEntry.iLength);
+//        }
+//        else {
+//            pDevice.drawArrays(a.PRIMTYPE.POINTLIST, pEntry.iOffset, pEntry.iLength);
+//        }
     }
-    if (pEntry.iFrameBuffer !== null) {
-        this._tryReleaseFrameBuffer(pEntry.iFrameBuffer);
-    }
-//    pProgram.clear();
+    pDevice.flush();
+    this._tryReleaseFrameBuffer(pEntry.iFrameBuffer);
+
     this._pRenderQueue._releaseEntry(pEntry);
     trace("-------STOP REAL RENDER---------");
 };

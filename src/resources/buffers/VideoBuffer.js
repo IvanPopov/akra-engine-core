@@ -321,7 +321,7 @@ VideoBuffer.prototype._header = function (iWidth, iHeight) {
  */
 VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy) {
     'use strict';
-
+    A_TRACER.MESG("START VIDEO BUFFER SET DATA #"  + this.toNumber());
     var iTypeSize = this.typeSize, //размер элемента(обычно это float - 4 байта)
         nElementsPerPix = this.numElementsPerPixel, //число float'ов в пикселе
         iFrom, //номер float'a с которого начинается обновление
@@ -437,6 +437,7 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
         var pSnapshot = this._pActiveSnapshot;
         var pEntry = null;
         trace("<<<<<<<<<<<<<VIDEO BUFFER SET DATA RENDER>>>>>>>>>>>>>>>>");
+        A_TRACER.MESG("START VIDEO BUFFER SET ||RENDER||");
         pManager.setViewport(0, 0, this._iWidth, this._iHeight);
         pManager.activateFrameBuffer();
         pManager.applyFrameBufferTexture(this);
@@ -455,9 +456,10 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
 
         pManager.render(pEntry);
         pDevice.flush();
+        A_TRACER.MESG("END VIDEO BUFFER SET ||RENDER||");
         trace("<<<<<<<<<<<<<END VIDEO BUFFER SET DATA RENDER>>>>>>>>>>>>>>>>");
     }
-
+    A_TRACER.MESG("END VIDEO BUFFER SET DATA #" + this.toNumber());
     return true;
 };
 

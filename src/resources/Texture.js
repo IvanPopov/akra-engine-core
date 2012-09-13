@@ -219,7 +219,7 @@ Texture.prototype._initSystemStorageTexture = function (pEngine) {
     return true;
 };
 
-Texture.prototype._setSystemEffect = function(){
+Texture.prototype._setSystemEffect = function () {
     var pEngine = this._pEngine;
     var pEffect;
     if (pEngine.displayManager().componentPool().findResource("akra.system.texture_repack")) {
@@ -598,34 +598,32 @@ Texture.prototype.loadResource = function (sFileName) {
         }
     }
 
-	var me = this;
+    var me = this;
 
-	if((sFileName.nodeName)&&
-		(sFileName.nodeName.toLowerCase()=="canvas"||sFileName.nodeName.toLowerCase()=="img"||sFileName.nodeName.toLowerCase()=="video"))
-	{
-		me.uploadHTMLElement(sFileName);
-		return true;
-	}
-	else if((sExt=(a.pathinfo(sFileName).ext))&&(sExt=="bmp"||sExt=="jpeg"||sExt=="gif"||sExt=="png"))
-	{
-		var pImage = new Image();
-		pImage.onload=function ()
-		{
-				me.uploadHTMLElement(pImage);
-		}
-		pImage.src = sFileName;
-		return true;
-	}
-	else
-	{
-		var pImage = new a.Img(this._pEngine);
-		pImage.load(sFileName,
-			function () {
-				me.uploadImage(pImage);
-			}
-		);
-		return true;
-	}
+    if ((sFileName.nodeName) &&
+        (sFileName.nodeName.toLowerCase() == "canvas" || sFileName.nodeName.toLowerCase() == "img" ||
+         sFileName.nodeName.toLowerCase() == "video")) {
+        me.uploadHTMLElement(sFileName);
+        return true;
+    }
+    else if ((sExt = (a.pathinfo(sFileName).ext)) &&
+             (sExt == "bmp" || sExt == "jpeg" || sExt == "gif" || sExt == "png")) {
+        var pImage = new Image();
+        pImage.onload = function () {
+            me.uploadHTMLElement(pImage);
+        }
+        pImage.src = sFileName;
+        return true;
+    }
+    else {
+        var pImage = new a.Img(this._pEngine);
+        pImage.load(sFileName,
+                    function () {
+                        me.uploadImage(pImage);
+                    }
+        );
+        return true;
+    }
     //unreachable code
     //return false;
 };
@@ -830,8 +828,9 @@ Texture.prototype.extend = function (iWidth, iHeight) {
  * @tparam Enumeration(IMAGE_TYPE) eType Новый тип текстуры.
  */
 Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
+    A_TRACER.MESG("START REPACK TEXTURE #" + this.toNumber())
     debug_assert(this._pTexture, 'Cannot repack, because texture not created.');
-    trace("REPACK TEXTURE #"+this.toNumber());
+    trace("REPACK TEXTURE #" + this.toNumber());
     eFormat = eFormat || this._eFormat;
     eType = eType || this._eType;
 
@@ -839,7 +838,8 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
     var pRenderer = this._pEngine.shaderManager();
 
     if (!this._pRepackTexture) {
-        this._pRepackTexture = this._pEngine.displayManager().texturePool().createResource(".DuplicateTexture" + a.sid());
+        this._pRepackTexture = this._pEngine.displayManager().texturePool().createResource(".DuplicateTexture" +
+                                                                                           a.sid());
     }
 
     var pDestinationTexture = this._pRepackTexture;
@@ -864,8 +864,10 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
     var pSnapshot = this._pActiveSnapshot;
     var pEntry = null;
     trace("<<<<<<<<<<<<<TEXTURE REPACK RENDER>>>>>>>>>>>>>>>>");
+    A_TRACER.MESG("START REPACK TEXTURE ||RENDER||")
     pRenderer.setViewport(0, 0, iWidth, iHeight);
     pRenderer.activateFrameBuffer();
+    A_TRACER.MESG("frameBufferTexture2D #" + pDestinationTexture.toNumber());
     pRenderer.applyFrameBufferTexture(pDestinationTexture);
     this.startRender();
     for (var i = 0; i < this.totalPasses(); i++) {
@@ -884,6 +886,7 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
 
     pRenderer.render(pEntry);
     pDevice.flush();
+    A_TRACER.MESG("END REPACK TEXTURE ||RENDER||")
     trace("<<<<<<<<<<<<<END_TEXTURE REPACK RENDER>>>>>>>>>>>>>>>>");
 
 //    var pTexture = this._pTexture;
@@ -897,7 +900,9 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
     this._iWidth = iWidth;
     this._iHeight = iHeight;
 
-    return false;
+    A_TRACER.MESG("END REPACK TEXTURE #" + this.toNumber())
+
+    return true;
 };
 
 /**
@@ -979,6 +984,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
 };
 
 Texture.prototype.bind = function () {
+    A_TRACER.MESG("Bind texture with #" + this.toNumber());
     this._pEngine.pDevice.bindTexture(this.target, this._pTexture);
     return true;
 };
