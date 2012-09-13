@@ -113,15 +113,21 @@ AnimationBlend.prototype.updateDuration = function () {
 		fWeight += pAnimationList[i].weight;
 	}
 
-	this._fDuration = fSumm / fWeight;
+	if (fWeight === 0) {
+		this._fDuration = 0;
+	}
+	else {
 
-	for (var i = 0; i < n; ++ i) {
-		if (pAnimationList[i] === null) {
-			continue;
+		this._fDuration = fSumm / fWeight;
+
+		for (var i = 0; i < n; ++ i) {
+			if (pAnimationList[i] === null) {
+				continue;
+			}
+
+			pAnimationList[i].acceleration = pAnimationList[i].animation._fDuration / this._fDuration;
+			//trace(pAnimationList[i].animation.name, '> acceleration > ', pAnimationList[i].acceleration);
 		}
-
-		pAnimationList[i].acceleration = pAnimationList[i].animation._fDuration / this._fDuration;
-		//trace(pAnimationList[i].animation.name, '> acceleration > ', pAnimationList[i].acceleration);
 	}
 
 	this.fire('updateDuration');
@@ -149,8 +155,8 @@ AnimationBlend.prototype.getAnimation = function (iAnimation) {
     }
 
 	return this._pAnimationList[iAnimation].animation;
-};
-
+}
+;
 AnimationBlend.prototype.getAnimationWeight = function (iAnimation) {
     'use strict';
     
@@ -165,13 +171,15 @@ AnimationBlend.prototype.setAnimationWeight = function (iAnimation, fWeight) {
     'use strict';
     
     var pAnimationList = this._pAnimationList;
-
+    var isModified = false;
     if (arguments.length === 1) {
     	fWeight = arguments[0];
     	
     	for (var i = 0; i < pAnimationList.length; i++) {
     		pAnimationList[i].weight = fWeight;
     	};
+
+    	isModified = true;
     }
     else {
 	    if (typeof arguments[0] === 'string') {
@@ -179,11 +187,13 @@ AnimationBlend.prototype.setAnimationWeight = function (iAnimation, fWeight) {
 	    }
 
 	    //trace('set weight for animation: ', iAnimation, 'to ', fWeight);
-
-		pAnimationList[iAnimation].weight = fWeight;
+	    if (pAnimationList[iAnimation].weight !== fWeight) {
+			pAnimationList[iAnimation].weight = fWeight;
+			isModified = true;
+		}
 	}
 
-	this.updateDuration();
+	if (isModified) { this.updateDuration(); }
 
 	return true;
 };
