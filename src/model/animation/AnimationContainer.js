@@ -18,6 +18,8 @@ function AnimationContainer (pAnimation) {
 	this._bLeftInfinity = true;
 	this._bRightInfinity = true;
 
+	this.name = "container-" + a.sid();
+
 	if (pAnimation) {
 		this.setAnimation(pAnimation);
 	}
@@ -68,7 +70,6 @@ AnimationContainer.prototype.setAnimation = function (pAnimation) {
 
 	this._pAnimation = pAnimation;
 	this.setSpeed(this.speed);
-	this.name = 'container-' + pAnimation.name;
 
 	var me = this;
 	pAnimation.on('updateDuration', function () {

@@ -60,16 +60,17 @@ AnimationBlend.prototype.setAnimation = function (iAnimation, pAnimation, fWeigh
 
     var pPointer = this._pAnimationList[iAnimation];
     var me = this;
+    var pAnimationList = this._pAnimationList;
 
     if (!pAnimation) {
-    	this._pAnimationList[iAnimation] = null;
+    	pAnimationList[iAnimation] = null;
     	return iAnimation;
     }
 
     if (!pPointer) {
     	pPointer = {
 			animation: pAnimation,
-			weight: fWeight || 1.0,
+			weight: ifndef(fWeight, 1.0),
 			mask: pMask || null,
 			acceleration: 1.0,
 			time: 0.0,
@@ -78,21 +79,19 @@ AnimationBlend.prototype.setAnimation = function (iAnimation, pAnimation, fWeigh
 
 		pAnimation.on('updateDuration', function () {
 			me.updateDuration();
-			//trace('duration of inner animation updated.');
 		})
 
 		if (iAnimation == this._pAnimationList.length) {
-			this._pAnimationList.push(pPointer);
+			pAnimationList.push(pPointer);
 		}
 		else {
-			this._pAnimationList[iAnimation] = pPointer;
+			pAnimationList[iAnimation] = pPointer;
 		}
 	}
 
-	///this.duration = Math.min(this.duration, pAnimation.duration);
-	trace('animation added to blend >> ', this._pAnimationList);
 	this.grab(pAnimation);
 	this.updateDuration();
+	
 	return iAnimation;
 };
 
@@ -156,7 +155,7 @@ AnimationBlend.prototype.getAnimation = function (iAnimation) {
 
 	return this._pAnimationList[iAnimation].animation;
 }
-;
+
 AnimationBlend.prototype.getAnimationWeight = function (iAnimation) {
     'use strict';
     
@@ -165,6 +164,62 @@ AnimationBlend.prototype.getAnimationWeight = function (iAnimation) {
 	}
 
 	return this._pAnimationList[iAnimation].weight;
+};
+
+AnimationBlend.prototype.setWeights = function () {
+    'use strict';
+    
+    var fWeight;
+    var isModified = false;
+    var pAnimationList = this._pAnimationList;
+
+	for (var i = 0; i < arguments.length; ++ i) {
+		fWeight = arguments[i];
+		
+		if (fWeight < 0 || fWeight === null || !pAnimationList[i]) {
+			continue;
+		}
+
+		if (pAnimationList[i].weight !== fWeight) {
+			pAnimationList[i].weight = fWeight;
+			isModified = true;
+		}
+	}
+
+	if (isModified) { 
+		this.updateDuration(); 
+	}
+
+	return true;
+};
+
+
+AnimationBlend.prototype.setWeightSwitching = function (fWeight, iAnimationFrom, iAnimationTo) {
+    'use strict';
+    
+	var pAnimationList = this._pAnimationList;
+    var isModified = false;
+    var fWeightInv = 1. - fWeight;
+
+    if (!pAnimationList[iAnimationFrom] || !pAnimationList[iAnimationTo]) {
+    	return false;
+    }
+
+    if (pAnimationList[iAnimationFrom].weight !== fWeightInv) {
+		pAnimationList[iAnimationFrom].weight = fWeightInv;
+		isModified = true;
+	}
+
+	if (pAnimationList[iAnimationTo].weight !== fWeight) {
+		pAnimationList[iAnimationTo].weight = fWeight;
+		isModified = true;
+	}
+
+	if (isModified) { 
+		this.updateDuration(); 
+	}
+
+	return true;
 };
 
 AnimationBlend.prototype.setAnimationWeight = function (iAnimation, fWeight) {
@@ -286,37 +341,3 @@ AnimationBlend.prototype.frame = function (sName, fRealTime) {
 //
 
 A_NAMESPACE(AnimationBlend);
-
-/************************************************************************************************
- * Animation switch. 
- ************************************************************************************************/
-
-// function AnimationSwitch () {
-// 	A_CLASS;
-// }
-
-// EXTENDS(AnimationSwitch, a.AnimationBlend);
-
-// DISMETHOD(AnimationSwitch, addAnimation);
-
-// AnimationSwitch.prototype.setAnimationIn = function (pAnimation, pMask) {
-//     'use strict';
-//     return this.setAnimation(0, pAnimation, 1.0, pMask);
-// };
-
-// AnimationSwitch.prototype.setAnimationOut = function (pAnimation, pMask) {
-//     'use strict';
-// 	return this.setAnimation(1, pAnimation, 1.0, pMask);
-// };
-
-// AnimationSwitch.prototype.setStartTime = function (fTime) {
-
-// }
-
-// AnimationSwitch.prototype.setDuration = function (fTime) {
-//     'use strict';
-    
-	
-// };
-
-// A_NAMESPACE(AnimationSwitch);
