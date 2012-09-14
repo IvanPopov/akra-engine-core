@@ -85,8 +85,8 @@ SceneModel.prototype.render = function () {
         pRenderer = this._pEngine.shaderManager(),
         pMesh, pSubMesh;
     var i, j, k;
+    var isSkinning;
     if (!pMeshes || pMeshes.length === 0) {
-        trace('OOOOOH SHEEEEET');
         return false;
     }
 	
@@ -96,20 +96,23 @@ SceneModel.prototype.render = function () {
 	for (i = 0; i < pMeshes.length; i++) {
         pMesh = pMeshes[i];
         if (!pMesh || !pMesh.isReadyForRender()) {
-            trace(pMesh, '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@');
             return;
         }
 
         for (j = 0; j < pMesh.length; j++) {
             pSubMesh = pMesh[j];
             pSubMesh.startRender();
-            this._pEngine.pEngineStates.mesh.isSkinning = pSubMesh.isSkinned();
+            isSkinning = this._pEngine.pEngineStates.mesh.isSkinning = pSubMesh.isSkinned();
+            if(isSkinning){
+                pSubMesh.skin.applyBoneMatrices();
+            }
             for (k = 0; k < pSubMesh.totalPasses(); k++) {
                 pSubMesh.activatePass(k);
                 pSubMesh.applySurfaceMaterial();
 //                trace("SCENE MODEL NAME: ", this.name + ":" + pSubMesh.name, pSubMesh.data.toString());
                 pSubMesh.applyRenderData(pSubMesh.data);
-                trace("SceneModel.prototype.render", this, pSubMesh.renderPass().pUniforms);
+                var pEntry = pSubMesh.renderPass();
+                trace("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
                 pSubMesh.deactivatePass();
             }
             pSubMesh.finishRender();

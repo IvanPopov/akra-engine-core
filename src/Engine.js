@@ -582,6 +582,7 @@ Engine.prototype.render = function () {
     if (this.pDisplayManager.beginRenderSession()) {
         // render the scene
 //        A_TRACER.BEGIN();
+        A_TRACER.MESG("=====START RENDER SCENE OBJECTS==========");
         this.renderScene();
         // process the contents of the render queue
         this.pShaderManager.processRenderQueue();

@@ -44,43 +44,41 @@ FrameBuffer.prototype.bind = function () {
     this._pDevice.bindFramebuffer(this._pDevice.FRAMEBUFFER, this._pData);
 };
 FrameBuffer.prototype.release = function () {
-//    var i;
-//    var eTarget;
-//    var pDevice = this._pDevice;
-//    for (i = 0; i < this._pColorAttachments.length; i++) {
-//        eTarget = this._pColorAttachments[i];
-//        if (eTarget) {
-//            if (eTarget === pDevice.RENDERBUFFER) {
-//                pDevice.framebufferRenderbuffer(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0 + i, eTarget, null);
-//            }
-//            else {
-//                pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0 + i, eTarget, null, 0);
-//            }
-//        }
-//        this._pColorAttachments[i] = null;
-//    }
-//    eTarget = this._eDepthAttachment;
-//    if (eTarget) {
-//        if (eTarget === pDevice.RENDERBUFFER) {
-//            pDevice.framebufferRenderbuffer(pDevice.FRAMEBUFFER, pDevice.DEPTH_ATTACHMENT, eTarget, null);
-//        }
-//        else {
-//            pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.DEPTH_ATTACHMENT, eTarget, null, 0);
-//        }
-//    }
-//    this._eDepthAttachment = null;
-//    eTarget = this._eStencilAttachment;
-//    if (eTarget) {
-//        if (eTarget === pDevice.RENDERBUFFER) {
-//            pDevice.framebufferRenderbuffer(pDevice.FRAMEBUFFER, pDevice.STENCIL_ATTACHMENT, eTarget, null);
-//        }
-//        else {
-//            pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.STENCIL_ATTACHMENT, eTarget, null, 0);
-//        }
-//    }
-//    this._eStencilAttachment = null;
+    var i;
+    var eTarget;
     var pDevice = this._pDevice;
-    this._pData
+    for (i = 0; i < this._pColorAttachments.length; i++) {
+        eTarget = this._pColorAttachments[i];
+        if (eTarget) {
+            if (eTarget === pDevice.RENDERBUFFER) {
+                pDevice.framebufferRenderbuffer(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0 + i, eTarget, null);
+            }
+            else {
+                pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0 + i, eTarget, null, 0);
+            }
+        }
+        this._pColorAttachments[i] = null;
+    }
+    eTarget = this._eDepthAttachment;
+    if (eTarget) {
+        if (eTarget === pDevice.RENDERBUFFER) {
+            pDevice.framebufferRenderbuffer(pDevice.FRAMEBUFFER, pDevice.DEPTH_ATTACHMENT, eTarget, null);
+        }
+        else {
+            pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.DEPTH_ATTACHMENT, eTarget, null, 0);
+        }
+    }
+    this._eDepthAttachment = null;
+    eTarget = this._eStencilAttachment;
+    if (eTarget) {
+        if (eTarget === pDevice.RENDERBUFFER) {
+            pDevice.framebufferRenderbuffer(pDevice.FRAMEBUFFER, pDevice.STENCIL_ATTACHMENT, eTarget, null);
+        }
+        else {
+            pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.STENCIL_ATTACHMENT, eTarget, null, 0);
+        }
+    }
+    this._eStencilAttachment = null;
 };
 FrameBuffer.prototype.frameBufferTexture2D = function (eAttachment, eTexTarget, pTexture) {
     var pDevice = this._pDevice;

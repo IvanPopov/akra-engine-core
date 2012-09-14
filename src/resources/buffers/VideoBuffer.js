@@ -275,7 +275,7 @@ VideoBuffer.prototype.resize = function (iByteSize) {
     parent(Texture).repack.call(this, pSize.X, pSize.Y);
 
 
-    window['A_TRACER.trace']('before set buffer header in ::resize()');
+//    window['A_TRACER.trace']('before set buffer header in ::resize()');
     //parent(Texture).setPixelRGBA.call(this, 0, 0, 2, 1, this._header(), 0);
     this._pHeader.setData(this._header());
 

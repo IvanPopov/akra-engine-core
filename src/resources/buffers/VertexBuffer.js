@@ -216,7 +216,7 @@ VertexBuffer.prototype.setData = function (pData, iOffset, iSize)
 
 
 VertexBuffer.prototype.resize=function(iSize) {
-    window['A_TRACER.trace']('resize vertex buffer from ' + this.size + '  to ' + iSize + ' bytes');
+//    window['A_TRACER.trace']('resize vertex buffer from ' + this.size + '  to ' + iSize + ' bytes');
 	var eUsage;
 	var pData;
 	var iMax=0;

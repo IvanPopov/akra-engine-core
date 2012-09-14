@@ -693,6 +693,8 @@ Texture.prototype.uploadHTMLElement = function (pElement) {
     this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
     this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
     this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
+
+    this.flipY(false);
 //    this.unbind();
 
     this.notifyLoaded();
@@ -704,6 +706,7 @@ Texture.prototype.uploadImage = function (pImage) {
     var pDevice = this._pEngine.pDevice;
     var nMipMaps;
     var iCubeFlags;
+    var pRenderer = this._pEngine.shaderManager();
 
     this.releaseTexture();
 
@@ -738,7 +741,7 @@ Texture.prototype.uploadImage = function (pImage) {
                                                   FLAG(a.Img.POSITIVEZ) | FLAG(a.Img.NEGATIVEZ))) {
         CLEAR_BIT(this._iFlags, a.Texture.CubeMap);
 
-        this.bind();
+        pRenderer.bindTexture(this);
         this.flipY();
 
         for (var i = 0; i < nMipMaps; i++) {
@@ -757,7 +760,7 @@ Texture.prototype.uploadImage = function (pImage) {
     else {
         SET_BIT(this._iFlags, a.Texture.CubeMap);
 
-        this.bind();
+        pRenderer.bindTexture(this);
         this.flipY();
 
         for (var k = 0; k < 6; k++) {
@@ -793,7 +796,8 @@ Texture.prototype.uploadImage = function (pImage) {
     this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
     this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
     this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
-    this.unbind();
+//    this.unbind();
+    this.flipY(false);
 
     this.notifyLoaded();
     this.notifyRestored();
@@ -889,10 +893,9 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
     A_TRACER.MESG("END REPACK TEXTURE ||RENDER||")
     trace("<<<<<<<<<<<<<END_TEXTURE REPACK RENDER>>>>>>>>>>>>>>>>");
 
-//    var pTexture = this._pTexture;
     this.releaseTexture();
     this._pTexture = pDestinationTexture._pTexture;
-//    pDestinationTexture._pTexture = pTexture;
+    pDestinationTexture._pTexture = null;
     this._isTextureChanged = true;
     pDestinationTexture._isTextureChanged = true;
     this._eFormat = eFormat;

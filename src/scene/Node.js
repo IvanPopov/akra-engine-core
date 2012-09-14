@@ -690,7 +690,6 @@ Node.prototype.recursivePreUpdate = function () {
  * Recalculate world Matrix
  */
 Node.prototype.recalcWorldMatrix = function () {
-    trace(this);
     'use strict';
     
     var isParentMoved = this._pParent && this._pParent.isWorldMatrixNew();
@@ -701,7 +700,7 @@ Node.prototype.recalcWorldMatrix = function () {
 
         var m4fLocal = this._m4fLocalMatrix;
         var m4fWorld = this._m4fWorldMatrix;
-        var m4fParent = this._pParent.worldMatrix();
+        var m4fParent = this._pParent ? this._pParent.worldMatrix() : Mat4(1);
         var m4fOrient = TEMPSCENEMATRIX4FORCALC0;
         var v3fTemp = TEMPSCENEVECTOR3FORCALC0;
         

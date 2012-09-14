@@ -18,17 +18,18 @@ function RenderData(pBuffer) {
      * Type of data, that can be allocated with render data.
      */
     Enum([
-        DT_ISOLATED = 0,   //<! положить данные в текстуру, и больше ничего не делать.
-        DT_INDEXED,        //<! обычные даннае из текстуры, доступные по индексу.
-        DT_I2I,            //<! данные по 2йному индексу.
-        DT_DIRECT          //<! непосредственно данные для атрибута.
-    ], RENDERDATA_DATA_TYPES, a.RenderData);
+             DT_ISOLATED = 0, //<! положить данные в текстуру, и больше ничего не делать.
+             DT_INDEXED, //<! обычные даннае из текстуры, доступные по индексу.
+             DT_I2I, //<! данные по 2йному индексу.
+             DT_DIRECT          //<! непосредственно данные для атрибута.
+         ], RENDERDATA_DATA_TYPES, a.RenderData);
 
     Enum([
-        ADVANCED_INDEX = FLAG(0x10),    //<! использовать индекс на индекс упаковку данных
-        SINGLE_INDEX = FLAG(0x11),      //<! создать RenderData как классические данные, с данными только в аттрибутах, без использования видео буфферов.
-        RENDERABLE = FLAG(0x12)         //<! определяет, будет ли объект редерится
-        ], RENDERDATA_OPTIONS, a.RenderData);
+             ADVANCED_INDEX = FLAG(0x10), //<! использовать индекс на индекс упаковку данных
+             SINGLE_INDEX = FLAG(0x11),
+             //<! создать RenderData как классические данные, с данными только в аттрибутах, без использования видео буфферов.
+             RENDERABLE = FLAG(0x12)         //<! определяет, будет ли объект редерится
+         ], RENDERDATA_OPTIONS, a.RenderData);
 
     /**
      * Options.
@@ -99,16 +100,16 @@ function RenderData(pBuffer) {
     this._iIndexSet = 0;
 
 
-	this._iRenderable = 1;
+    this._iRenderable = 1;
 }
 
 EXTENDS(RenderData, a.ReferenceCounter);
 
 
 PROPERTY(RenderData, 'buffer',
-    function () {
-        return this._pBuffer;
-    });
+         function () {
+             return this._pBuffer;
+         });
 
 
 /**
@@ -120,9 +121,9 @@ PROPERTY(RenderData, 'buffer',
  * @param  {RENDERDATA_OPTIONS}                eOptions  Options.
  * @return {Boolean} Result.
  */
-RenderData.prototype.setup = function(pBuffer, iId, ePrimType, eOptions) {
+RenderData.prototype.setup = function (pBuffer, iId, ePrimType, eOptions) {
     if (this._pBuffer === null && arguments.length < 2) {
-       return false;
+        return false;
     }
 
     this.renderable(true);
@@ -138,23 +139,23 @@ RenderData.prototype.setup = function(pBuffer, iId, ePrimType, eOptions) {
 
     //setup default index set
     this._pIndicesArray.push({
-        pMap: this._pMap,
-        pIndexData: null,
-        pAttribData: null,
-        sName: '.main'
-    });
+                                 pMap        : this._pMap,
+                                 pIndexData  : null,
+                                 pAttribData : null,
+                                 sName       : '.main'
+                             });
 
     debug_assert(this.useSingleIndex() === false, 'single indexed data not implimented');
 
     return true;
 };
 
-RenderData.prototype.renderable = function(bValue) {
+RenderData.prototype.renderable = function (bValue) {
     SET_ALL(this._eOptions, a.RenderData.RENDERABLE, bValue);
 };
 
-RenderData.prototype.isRenderable = function() {
-    return this._eOptions & a.RenderData.RENDERABLE? true: false;
+RenderData.prototype.isRenderable = function () {
+    return this._eOptions & a.RenderData.RENDERABLE ? true : false;
 };
 
 /**
@@ -202,8 +203,8 @@ RenderData.prototype._addData = function (pVertexData, iFlow, eType) {
         return this._registerData(pVertexData);
     }
 
-    return (iFlow === undefined? this._pMap.flow(pVertexData):
-        this._pMap.flow(iFlow, pVertexData));
+    return (iFlow === undefined ? this._pMap.flow(pVertexData) :
+            this._pMap.flow(iFlow, pVertexData));
 };
 
 
@@ -223,7 +224,8 @@ RenderData.prototype._registerData = function (pVertexData) {
     //т.к. иначе их потом нельзя будет найти среди других данных
     for (var i = 0; i < pDataDecl.length; i++) {
         this._pMap._pI2IDataCache[pDataDecl[i].eUsage] = iOffset;
-    };
+    }
+    ;
 
     return 0;
 };
@@ -235,7 +237,7 @@ RenderData.prototype._registerData = function (pVertexData) {
  * @param  {Boolean=true} hasIndex Specifies whether the data is indexed.
  * @return {Int} Data location.
  */
-RenderData.prototype.allocateData = function(pDataDecl, pData, hasIndex) {
+RenderData.prototype.allocateData = function (pDataDecl, pData, hasIndex) {
     'use strict';
 
     var eType = a.RenderData.DT_INDEXED;
@@ -345,11 +347,13 @@ RenderData.prototype._allocateAdvancedIndex = function (pAttrDecl, pData) {
 
     for (var i = 0; i < pDecl.length; i++) {
         pI2IDecl.push(VE_FLOAT('INDEX_' + pDecl[i].eUsage, 0));
-    };
+    }
+    ;
 
     for (var i = 0; i < pI2IData.length; i++) {
         pI2IData[i] = i;
-    };
+    }
+    ;
 
     if (!this._allocateIndex(pI2IDecl, pI2IData)) {
         this.releaseData(iIndLoc);
@@ -404,14 +408,15 @@ RenderData.prototype._allocateIndex = function (pAttrDecl, pData) {
     var pIndexData = this._pIndexData;
     var pIndexBuffer = this._pIndexBuffer;
     var pBuffer = this._pBuffer;
-	
-Ifdef (__DEBUG)
+
+    Ifdef(__DEBUG)
     for (var i = 0; i < pAttrDecl.length; i++) {
         if (pAttrDecl[i].eType !== a.DTYPE.FLOAT) {
             return false;
         }
-    };
-Endif ();
+    }
+    ;
+    Endif();
 
     if (!this._pIndexData) {
         return this._createIndex(pAttrDecl, pData);
@@ -446,7 +451,7 @@ RenderData.prototype.allocateIndex = function (pAttrDecl, pData) {
  * all data, that was be added previously.
  * @param {PRIMITIVE_TYPE} ePrimType    Type of primitives.
  */
-RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType, sName) {
+RenderData.prototype.addIndexSet = function (usePreviousDataSet, ePrimType, sName) {
     'use strict';
     usePreviousDataSet = ifndef(usePreviousDataSet, true);
 
@@ -471,22 +476,22 @@ RenderData.prototype.addIndexSet = function(usePreviousDataSet, ePrimType, sName
     this._pIndexData = null;
     this._iIndexSet = this._pIndicesArray.length;
     this._pIndicesArray.push({
-        pMap: this._pMap,
-        pIndexData: this._pIndexData,
-        pAttribData: this._pAttribData,
-        sName: sName
-    });
+                                 pMap        : this._pMap,
+                                 pIndexData  : this._pIndexData,
+                                 pAttribData : this._pAttribData,
+                                 sName       : sName
+                             });
 
     return  this._iIndexSet;
 };
 
 RenderData.prototype.getNumIndexSet = function () {
-	return this._pIndicesArray.length;
+    return this._pIndicesArray.length;
 };
 
 RenderData.prototype.getIndexSetName = function (iSet) {
-	iSet = ifndef(iSet, this._iIndexSet);
-	return this._pIndicesArray[iSet].sName;
+    iSet = ifndef(iSet, this._iIndexSet);
+    return this._pIndicesArray[iSet].sName;
 };
 
 /**
@@ -494,7 +499,7 @@ RenderData.prototype.getIndexSetName = function (iSet) {
  * @param  {Int} iSet Set number.
  * @return {Boolean}      Result.
  */
-RenderData.prototype.selectIndexSet = function(iSet) {
+RenderData.prototype.selectIndexSet = function (iSet) {
 
     var pIndexSet = this._pIndicesArray[iSet];
 
@@ -514,7 +519,7 @@ RenderData.prototype.selectIndexSet = function(iSet) {
  * Get number of current index set.
  * @return {Int} Number of inde set or -1.
  */
-RenderData.prototype.getIndexSet = function() {
+RenderData.prototype.getIndexSet = function () {
     'use strict';
 
     return this._iIndexSet;
@@ -523,18 +528,18 @@ RenderData.prototype.getIndexSet = function() {
 
 /**
  */
-RenderData.prototype.setRenderable = function(iIndexSet, bValue) {
-	'use strict';
-	iIndexSet=ifndef(iIndexSet, this.getIndexSet());
-	bValue=ifndef(bValue, true);
-	SET_BIT(this._iRenderable,iIndexSet, bValue);
-	return true;
+RenderData.prototype.setRenderable = function (iIndexSet, bValue) {
+    'use strict';
+    iIndexSet = ifndef(iIndexSet, this.getIndexSet());
+    bValue = ifndef(bValue, true);
+    SET_BIT(this._iRenderable, iIndexSet, bValue);
+    return true;
 };
 
-RenderData.prototype.isRenderable = function(iIndexSet) {
-	'use strict';
-	iIndexSet=ifndef(iIndexSet, this.getIndexSet());
-	return TEST_BIT(this._iRenderable,iIndexSet);
+RenderData.prototype.isRenderable = function (iIndexSet) {
+    'use strict';
+    iIndexSet = ifndef(iIndexSet, this.getIndexSet());
+    return TEST_BIT(this._iRenderable, iIndexSet);
 };
 
 
@@ -560,7 +565,7 @@ RenderData.prototype.getDataLocation = function (sSemantics) {
     'use strict';
     var pData = this.getData(sSemantics);
 
-    return pData? pData.getOffset(): -1;
+    return pData ? pData.getOffset() : -1;
 };
 
 
@@ -590,7 +595,7 @@ RenderData.prototype.getFlow = function () {
         return this._pMap.getFlow(arguments[0], arguments[1]);
     }
 
-    for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++ i) {
+    for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++i) {
         var pFlow = pFlows[i];
 
         if (pFlow.pData && pFlow.pData.getOffset() === arguments[0]) {
@@ -622,7 +627,7 @@ RenderData.prototype.getData = function () {
     }
 
     if (typeof arguments[0] === 'string') {
-        for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++ i) {
+        for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++i) {
             pFlow = pFlows[i];
             if (pFlow.pData != null && pFlow.pData.hasSemantics(arguments[0])) {
                 return pFlow.pData;
@@ -633,7 +638,7 @@ RenderData.prototype.getData = function () {
     }
 
     pFlow = this.getFlow(arguments[0]);
-    return pFlow === null ? null: pFlow.pData;
+    return pFlow === null ? null : pFlow.pData;
 };
 
 /**
@@ -679,16 +684,20 @@ RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) {
         pData.applyModifier(eSemantics, function (pTypedData) {
             for (var i = 0; i < pTypedData.length; i++) {
                 pTypedData[i] = (pTypedData[i] * iStride + iAddition) / iTypeSize;
-            };
+            }
+            ;
         });
 
         iData = pData.getOffset();
         eSemantics = 'INDEX_' + eSemantics;
     }
     else if (typeof arguments[0] === 'string') {
+        if (arguments[0] === 'TEXCOORD') {
+            iData = 'TEXCOORD0';
+        }
         iData = this.getDataLocation(iData);
 
-        debug_assert (iData >= 0, 'cannot find data with semantics: ' + arguments[0]);
+        debug_assert(iData >= 0, 'cannot find data with semantics: ' + arguments[0]);
     }
 
     pFlow = this.getFlow(iData);
@@ -716,13 +725,15 @@ RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) {
 
             for (var i = 0; i < pData.length; i++) {
                 pData[i] = (pData[i] * iStride + iRealAddition) / iTypeSize;
-            };
+            }
+            ;
         }
         else {
             iRealAddition = iAddition;
             for (var i = 0; i < pData.length; i++) {
                 pData[i] = (iBeginWith + iRealAddition) / iTypeSize;
-            };
+            }
+            ;
         }
 
         //remeber addition, that we added to index.
@@ -743,44 +754,42 @@ RenderData.prototype.index = function (iData, eSemantics, useSame, iBeginWith) {
 RenderData.prototype.draw = function () {
     'use strict';
 
-	var isOK=true;
-	var bResult;
-	var i;
-	for(i=0; i < this._pIndicesArray.length; i++)
-	{
-		if(this.isRenderable(i))
-		{
-			this._pBuffer._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pIndicesArray[i].pMap);
-			bResult = this._pIndicesArray[i].pMap.draw();
+    var isOK = true;
+    var bResult;
+    var i;
+    for (i = 0; i < this._pIndicesArray.length; i++) {
+        if (this.isRenderable(i)) {
+            this._pBuffer._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pIndicesArray[i].pMap);
+            bResult = this._pIndicesArray[i].pMap.draw();
             //trace(this._pIndicesArray[i].pMap.toString());
-			isOK = isOK && bResult;
-		}
-	}
-	return isOK;
+            isOK = isOK && bResult;
+        }
+    }
+    return isOK;
 };
 
-RenderData.prototype.applyMe = function(){
+RenderData.prototype.applyMe = function () {
     var pManager = this._pBuffer._pEngine.shaderManager();
-    if(!pManager){
+    if (!pManager) {
         return false;
     }
     return pManager.applyBufferMap(this._pMap);
 };
 
-Ifdef (__DEBUG);
+Ifdef(__DEBUG);
 
 RenderData.prototype.toString = function () {
     'use strict';
 
     var s;
-    s  = 'RENDER DATA SUBSET: #' + this._iId + '\n';
-    s += '        ATTRIBUTES: ' + (this._pAttribData? 'TRUE': 'FALSE') + '\n';
+    s = 'RENDER DATA SUBSET: #' + this._iId + '\n';
+    s += '        ATTRIBUTES: ' + (this._pAttribData ? 'TRUE' : 'FALSE') + '\n';
     s += '----------------------------------------------------------------\n';
     s += this._pMap.toString();
 
     return s;
 };
 
-Endif ();
+Endif();
 
 A_NAMESPACE(RenderData);
