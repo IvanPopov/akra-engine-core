@@ -96,7 +96,10 @@ A_FORMAT({
 			'_bLoop'		: 'Boolean',
 			'_pAnimation'	: {
 				read: function (pContainer) {
-					pContainer.setAnimation(this.read());
+					var pAnimation = this.read();
+					if (pAnimation) {
+						pContainer.setAnimation(pAnimation);
+					}
 				}
 			},
 			'_fDuration'	: 'Float',
@@ -114,7 +117,7 @@ A_FORMAT({
 				read: function (pAnimationBlend) {
 					var pAnimations = this.read();
 					for (var i = 0; i < pAnimations.length; ++ i) {
-						trace(pAnimations[i].animation.name, pAnimations[i].weight)
+						trace(pAnimations[i].animation.name, pAnimations[i].weight);
 						pAnimationBlend.setAnimation(i, 
 							pAnimations[i].animation, 
 							pAnimations[i].weight,

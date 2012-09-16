@@ -124,48 +124,74 @@ BinWriter.prototype.setupHashTable = function () {
     'use strict';
     
     if (!this._pHashTable) {
-        this._pHashTable = {'string': {}, 'number': {}, 'object': []};
+        this._pHashTable = {};//{'string': {}, 'number': {}, 'object': []};
     }
 };
 
-BinWriter.prototype.memof = function (pObject, iAddr) {
+BinWriter.prototype.memof = function (pObject, iAddr, sType) {
     'use strict';
  
     var pTable = this._pHashTable;
 
-    if (typeof pObject === 'string') {
-        pTable.string[pObject] = iAddr;
+    // if (typeof pObject === 'string') {
+    //     pTable.string[pObject] = iAddr;
+    // }
+    // else if (typeof pObject === 'number') {
+    //     pTable.number[pObject] = iAddr;
+    // }
+    // else {
+    //     //pTable.object[iAddr] = pObject;
+    //     pTable.object.push({pointer: pObject, addr: iAddr});
+    // }
+    
+    var pCell = pTable[sType];
+
+    if (!pCell) {
+        pCell = pTable[sType] = [];
     }
-    else if (typeof pObject === 'number') {
-        pTable.number[pObject] = iAddr;
-    }
-    else {
-        pTable.object.push({pointer: pObject, addr: iAddr});
-    }
+
+    pCell.push(pObject, iAddr);
 };
 
-BinWriter.prototype.addr = function (pObject) {
+BinWriter.prototype.addr = function (pObject, sType) {
     'use strict';
 
     var pTable = this._pHashTable;
+    var iAddr;
+    // if (typeof pObject === 'string') {
+    //     iAddr = pTable.string[pObject];
+    //     return ifndef(iAddr, -1);
+    // }
 
-    if (typeof pObject === 'string') {
-        return pTable.string[pObject];
-    }
+    // if (typeof pObject === 'number') {
+    //     iAddr = pTable.number[pObject];
+    //     return ifndef(iAddr, -1);
+    // }
 
-    if (typeof pObject === 'number') {
-        return pTable.number[pObject];
-    }
+    // //return pTable.object.indexOf(pObject);
+    // pTable = pTable.object;
 
-    pTable = pTable.object;
+    // for (var i = 0, n = pTable.length; i < n; ++ i) {
+    //     if (pTable[i].pointer === pObject) {
+    //         return pTable[i].addr;
+    //     }
+    // }
 
-    for (var i = 0, n = pTable.length; i < n; ++ i) {
-        if (pTable[i].pointer === pObject) {
-            return pTable[i].addr;
+    // return -1;
+    // 
+    var pCell = pTable[sType];
+
+    if (pCell) {
+
+        for (var i = 0, n = pCell.length / 2; i < n; ++ i) {
+            var j = 2 * i;
+            if (pCell[j] === pObject) {
+                return pCell[j + 1];
+            }
         }
     }
 
-    return undefined;
+    return -1;
 };
 
 BinWriter.prototype.nullPtr = function () {
@@ -1103,9 +1129,9 @@ BinWriter.prototype.write = function(pObject, sType, pHeader) {
         return false;
     }
    
-    iAddr = this.addr(pObject);
+    iAddr = this.addr(pObject, sType);
 
-    if (iAddr === undefined) {
+    if (iAddr < 0) {
         iAddr = 0;
 
         if (pHeader) {
@@ -1122,7 +1148,7 @@ BinWriter.prototype.write = function(pObject, sType, pHeader) {
         }
 
         if (this.writeData(pObject, sType)) {
-            this.memof(pObject, iAddr);
+            this.memof(pObject, iAddr, sType);
         }
         else {
             this.rollback(2);
