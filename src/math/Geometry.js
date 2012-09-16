@@ -1761,8 +1761,8 @@ Rect3d.prototype.eq = function (pRect) {
  * Negate
  * @treturn Rect3d Negate this rect2d
  */
-Rect2d.prototype.neg = function () {
-    return new Rect2d(-this.fX0, -this.fX1, -this.fY0, -this.fY1, -this.fZ0, -this.fZ1);
+Rect3d.prototype.neg = function () {
+    return new Rect3d(-this.fX0, -this.fX1, -this.fY0, -this.fY1, -this.fZ0, -this.fZ1);
 };
 /**
  * @property void Rect2d::addSelf(Float32Array v3fVec)
@@ -2748,9 +2748,9 @@ Frustum.prototype.testRect = function (pRect) {
         || (planeClassify_Rect3d_Plane(pRect, this.bottomPlane) == a.Geometry.k_plane_back)
         || (planeClassify_Rect3d_Plane(pRect, this.nearPlane) == a.Geometry.k_plane_back)
         || (planeClassify_Rect3d_Plane(pRect, this.farPlane) == a.Geometry.k_plane_back)) {
+
         return false;
     }
-
     return true;
 };
 /**
@@ -3349,8 +3349,8 @@ function planeClassify_Rect3d_Plane (pRect, pPlane) {
     if (dmin * dmax < 0.0) {
         return a.Geometry.k_plane_intersect;
     }
-    else if (dmin) {
-        return a.Geometry.k_plane_front;
+    else if (dmin < 0) {
+      return a.Geometry.k_plane_front;
     }
 
     return a.Geometry.k_plane_back;
