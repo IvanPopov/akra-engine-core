@@ -1761,8 +1761,8 @@ Rect3d.prototype.eq = function (pRect) {
  * Negate
  * @treturn Rect3d Negate this rect2d
  */
-Rect2d.prototype.neg = function () {
-    return new Rect2d(-this.fX0, -this.fX1, -this.fY0, -this.fY1, -this.fZ0, -this.fZ1);
+Rect3d.prototype.neg = function () {
+    return new Rect3d(-this.fX0, -this.fX1, -this.fY0, -this.fY1, -this.fZ0, -this.fZ1);
 };
 /**
  * @property void Rect2d::addSelf(Float32Array v3fVec)
@@ -2384,123 +2384,61 @@ Define(Rect3d.unionPointCoord(fX, fY, fZ, rect), function () {
     rect.fY1 = Math.max(this.fY1, fY);
     rect.fZ1 = Math.max(this.fZ1, fZ);
 });
+
 /**
  * Transform rect - coords by matrix
  * @tparam Float32Array m4fMatrix
  */
 Rect3d.prototype.transform = function (m4fMatrix) {
-    var x0, y0, z0; //basepoint
-    var x1, y1, z1; //xLeg
-    var x2, y2, z2; //yLeg
-    var x3, y3, z3; //zLeg
-//   var _x1, _y1, _z1; //xLeg
-//   var _x2, _y2, _z2; //yLeg
-//    var _x3, _y3, _z3; //zLeg
+	var pData = m4fMatrix.pData;
+	var a11 = pData._11, a12 = pData._12, a13 = pData._13, a14 = pData._14;
+	var a21 = pData._21, a22 = pData._22, a23 = pData._23, a24 = pData._24;
+	var a31 = pData._31, a32 = pData._32, a33 = pData._33, a34 = pData._34;
 
-    var fX0 = this.fX0, fX1 = this.fX1,
-        fY0 = this.fX0, fY1 = this.fY1,
-        fZ0 = this.fZ0, fZ1 = this.fZ1;
-    var pData = m4fMatrix.pData;
-    var m11 = pData._11, m12 = pData._12, m13 = pData._13, m14 = pData._14;
-    var m21 = pData._21, m22 = pData._22, m23 = pData._23, m24 = pData._24;
-    var m31 = pData._31, m32 = pData._32, m33 = pData._33, m34 = pData._34;
+	var fX0 = this.fX0, fX1 = this.fX1;
+	var fY0 = this.fY0, fY1 = this.fY1;
+	var fZ0 = this.fZ0, fZ1 = this.fZ1;
 
-    //Transform basepoint
-    x0 = m11 * fX0 + m12 * fY0 + m13 * fZ0 + m14;
-    y0 = m21 * fX0 + m22 * fY0 + m23 * fZ0 + m24;
-    z0 = m31 * fX0 + m32 * fY0 + m33 * fZ0 + m34;
-    //Transform xLeg
-    x1 = m11 * fX1 + m12 * fY0 + m13 * fZ0 + m14;
-    y1 = m21 * fX1 + m22 * fY0 + m23 * fZ0 + m24;
-    z1 = m31 * fX1 + m32 * fY0 + m33 * fZ0 + m34;
-    //Transform yLeg
-    x2 = m11 * fX0 + m12 * fY1 + m13 * fZ0 + m14;
-    y2 = m21 * fX0 + m22 * fY1 + m23 * fZ0 + m24;
-    z2 = m31 * fX0 + m32 * fY1 + m33 * fZ0 + m34;
-    //Transform zLeg
-    x3 = m11 * fX0 + m12 * fY0 + m13 * fZ1 + m14;
-    y3 = m21 * fX0 + m22 * fY0 + m23 * fZ1 + m24;
-    z3 = m31 * fX0 + m32 * fY0 + m33 * fZ1 + m34;
+	//base point
 
-    //Sub base point from xLeg,yLeg,zLeg
-    x1 -= x0;
-    y1 -= y0;
-    z1 -= z0;
-    x2 -= x0;
-    y2 -= y0;
-    z2 -= z0;
-    x3 -= x0;
-    y3 -= y0;
-    z3 -= z0;
+	var fBaseX = a11 * fX0 + a12 * fY0 + a13 * fZ0 + a14;
+	var fBaseY = a21 * fX0 + a22 * fY0 + a23 * fZ0 + a24;
+	var fBaseZ = a31 * fX0 + a32 * fY0 + a33 * fZ0 + a34;
 
-    var maxX = 0, minX = 0, maxY = 0, minY = 0, maxZ = 0, minZ = 0;
-    var tX, tY, tZ;
-    Math.maxminTest(x1, maxX, minX);
-    Math.maxminTest(y1, maxY, minY);
-    Math.maxminTest(z1, maxZ, minZ);
-    Math.maxminTest(x2, maxX, minX);
-    Math.maxminTest(y2, maxY, minY);
-    Math.maxminTest(z2, maxZ, minZ);
-    Math.maxminTest(x3, maxX, minX);
-    Math.maxminTest(y3, maxY, minY);
-    Math.maxminTest(z3, maxZ, minZ);
-    tX = x1 + x2, tY = y1 + y2, tZ = z1 + z2;
-    Math.maxminTest(tX, maxX, minX);
-    Math.maxminTest(tY, maxY, minY);
-    Math.maxminTest(tZ, maxZ, minZ);
-    tX = x1 + x3, tY = y1 + y3, tZ = z1 + z3;
-    Math.maxminTest(tX, maxX, minX);
-    Math.maxminTest(tY, maxY, minY);
-    Math.maxminTest(tZ, maxZ, minZ);
-    tX = x3 + x2, tY = y3 + y2, tZ = z3 + z2;
-    Math.maxminTest(tX, maxX, minX);
-    Math.maxminTest(tY, maxY, minY);
-    Math.maxminTest(tZ, maxZ, minZ);
-    tX = x1 + x2 + y3, tY = y1 + y2 + y3, tZ = z1 + z2 + z3;
-    Math.maxminTest(tX, maxX, minX);
-    Math.maxminTest(tY, maxY, minY);
-    Math.maxminTest(tZ, maxZ, minZ);
+	var fXNewX = a11 * (fX1 - fX0);
+	var fXNewY = a21 * (fX1 - fX0);
+	var fXNewZ = a31 * (fX1 - fX0);
 
-    this.fX0 = x0 + minX;
-    this.fX1 = x0 + maxX;
-    this.fY0 = y0 + minY;
-    this.fY1 = y0 + maxY;
-    this.fZ0 = z0 + minZ;
-    this.fZ1 = z0 + maxZ;
+	var fYNewX = a12 * (fY1 - fY0);
+	var fYNewY = a22 * (fY1 - fY0);
+	var fYNewZ = a32 * (fY1 - fY0);
 
-    /*
-     tX = x0 + x1, tY = y0 + y1, tZ = z0 + z1;
-     Rect3d.unionPointCoord(tX, tY, tZ, this);
+	var fZNewX = a13 * (fZ1 - fZ0);
+	var fZNewY = a23 * (fZ1 - fZ0);
+	var fZNewZ = a33 * (fZ1 - fZ0);
 
-     tX = x0 + x2, tY = y0 + y2, tZ = z0 + z2;
-     Rect3d.unionPointCoord(tX, tY, tZ, this);
+	var fXMultX = (fXNewX > 0) ? 1 : 0;
+	var fYMultX = (fYNewX > 0) ? 1 : 0;
+	var fZMultX = (fZNewX > 0) ? 1 : 0;
 
-     tX = x0 + x3, tY = y0 + y3, tZ = z0 + z3;
-     Rect3d.unionPointCoord(tX, tY, tZ, this);
+	var fXMultY = (fXNewY > 0) ? 1 : 0;
+	var fYMultY = (fYNewY > 0) ? 1 : 0;
+	var fZMultY = (fZNewY > 0) ? 1 : 0;
 
-     tX = x0 + x1 + x2, tY = y0 + y1 + y2, tZ = z0 + z1 + z2;
-     Rect3d.unionPointCoord(tX, tY, tZ, this);
+	var fXMultZ = (fXNewZ > 0) ? 1 : 0;
+	var fYMultZ = (fYNewZ > 0) ? 1 : 0;
+	var fZMultZ = (fZNewZ > 0) ? 1 : 0;
 
-     tX = x0 + x1 + x3, tY = y0 + y1 + y3, tZ = z0 + z1 + z3;
-     Rect3d.unionPointCoord(tX, tY, tZ, this);
+	this.fX1 = fBaseX + fXMultX * fXNewX + fYMultX * fYNewX + fZMultX * fZNewX;
+	this.fY1 = fBaseY + fXMultY * fXNewY + fYMultY * fYNewY + fZMultY * fZNewY;
+	this.fZ1 = fBaseZ + fXMultZ * fXNewZ + fYMultZ * fYNewZ + fZMultZ * fZNewZ;
 
-     tX = x0 + x3 + x2, tY = y0 + y3 + y2, tZ = z0 + z3 + z2;
-     Rect3d.unionPointCoord(tX, tY, tZ, this);
-     */
-    /*
-     Rect3d.unionPointCoord(_x1, _y1, _z1, this);
-     Rect3d.unionPointCoord(_x2, _y2, _z2, this);
-     Rect3d.unionPointCoord(_x3, _y3, _z3, this);
-     tX = _x1 + x2, tY = _y1 + y2, tZ = _z1 + z2;
-     Rect3d.unionPointCoord(tX, tY, tZ, this);
+	// !0 = true преобразуется в 1, !1 = false преобразуется в 0
+	this.fX0 = fBaseX + (!fXMultX) * fXNewX + (!fYMultX) * fYNewX + (!fZMultX) * fZNewX;
+	this.fY0 = fBaseY + (!fXMultY) * fXNewY + (!fYMultY) * fYNewY + (!fZMultY) * fZNewY;
+	this.fZ0 = fBaseZ + (!fXMultZ) * fXNewZ + (!fYMultZ) * fYNewZ + (!fZMultZ) * fZNewZ;
+}
 
-     tX = _x1 + x3, tY = _x1 + y3, tZ = _z1 + z3;
-     Rect3d.unionPointCoord(tX, tY, tZ, this);
-
-     tX = _x3 + x2, tY = _y3 + y2, tZ = _z3 + z2;
-     Rect3d.unionPointCoord(tX, tY, tZ, this);
-     */
-};
 /**
  * Test is point in our rect
  * @tparam Float32Array v3fPoint Test point
@@ -2741,6 +2679,7 @@ Frustum.prototype.testPoint = function (v3fPoint) {
  * @tparam Rect3d pRect Test rect
  * @treturn Boolean
  */
+
 Frustum.prototype.testRect = function (pRect) {
     if ((planeClassify_Rect3d_Plane(pRect, this.leftPlane) == a.Geometry.k_plane_back)
         || (planeClassify_Rect3d_Plane(pRect, this.rightPlane) == a.Geometry.k_plane_back)
@@ -2748,9 +2687,9 @@ Frustum.prototype.testRect = function (pRect) {
         || (planeClassify_Rect3d_Plane(pRect, this.bottomPlane) == a.Geometry.k_plane_back)
         || (planeClassify_Rect3d_Plane(pRect, this.nearPlane) == a.Geometry.k_plane_back)
         || (planeClassify_Rect3d_Plane(pRect, this.farPlane) == a.Geometry.k_plane_back)) {
+		
         return false;
     }
-
     return true;
 };
 /**
@@ -3349,8 +3288,8 @@ function planeClassify_Rect3d_Plane (pRect, pPlane) {
     if (dmin * dmax < 0.0) {
         return a.Geometry.k_plane_intersect;
     }
-    else if (dmin) {
-        return a.Geometry.k_plane_front;
+    else if (dmin < 0) {
+      return a.Geometry.k_plane_front;
     }
 
     return a.Geometry.k_plane_back;

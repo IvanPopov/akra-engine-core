@@ -55,7 +55,12 @@ Enum([
          RGBA_DXT2 = 0x83F4,
          RGBA_DXT3 = 0x83F2,
          RGBA_DXT4 = 0x83F5,
-         RGBA_DXT5 = 0x83F3
+         RGBA_DXT5 = 0x83F3,
+         
+         DEPTH_COMPONENT = 0x1902,
+         ALPHA = 0x1906,
+         LUMINANCE = 0x1909,
+         LUMINANCE_ALPHA = 0x190A
      ], IMAGE_FORMAT, a.IFORMAT);
 
 /**

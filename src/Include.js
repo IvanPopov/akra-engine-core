@@ -71,6 +71,9 @@ Include('particles/');
 /*sprites*/
 Include('sprites/');
 
+/*lighting*/
+Include('lighting/');
+
 Include('objects/');
 Include('Engine.js');
 
