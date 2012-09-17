@@ -511,12 +511,25 @@ Camera.prototype.lookAt = function() {
 
     var v3fParentPos = this.parent().worldPosition().pData;
     var m4fTemp = Mat4.lookAt(v3fFrom, v3fCenter, v3fUp, Mat4()).inverse();
-   // var m4fMult = m4fParentWorldInv.mult(m4fTemp, Mat4());
-    //trace(m4fMult)
     var pData = m4fTemp.pData;
 
-    m4fTemp.toQuat4(this._qRotation);
-    this.setPosition(pData._14 - v3fParentPos.X, pData._24 - v3fParentPos.Y, pData._34 - v3fParentPos.Z);
+    switch(this._iInheritance){
+        case a.Scene.k_inheritAll : 
+            this._pParent.inverseWorldMatrix().mult(m4fTemp,m4fTemp);
+            m4fTemp.toQuat4(this._qRotation);
+            this.setPosition(pData._14, pData._24, pData._34);    
+            break;
+        case a.Scene.k_inheritRotScaleOnly : 
+            var m3fTemp = m4fTemp.toMat3();
+            m3fTemp = this._pParent.inverseWorldMatrix().toMat3().mult(m3fTemp,Mat3());
+            m3fTemp.toQuat4(this._qRotation);
+            this.setPosition(pData._14, pData._24, pData._34);
+            break;
+        default :
+            m4fTemp.toQuat4(this._qRotation);
+            this.setPosition(pData._14 - v3fParentPos.X, pData._24 - v3fParentPos.Y,
+                                pData._34 - v3fParentPos.Z);
+    }
 };
 
 
