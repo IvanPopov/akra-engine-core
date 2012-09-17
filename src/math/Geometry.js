@@ -2401,9 +2401,9 @@ Rect3d.prototype.transform = function (m4fMatrix) {
 
 	//base point
 
-	var fBaseX = a11 * fX0 + a12 * fY0 + a13 * fZ0;
-	var fBaseY = a21 * fX0 + a22 * fY0 + a23 * fZ0;
-	var fBaseZ = a31 * fX0 + a32 * fY0 + a33 * fZ0;
+	var fBaseX = a11 * fX0 + a12 * fY0 + a13 * fZ0 + a14;
+	var fBaseY = a21 * fX0 + a22 * fY0 + a23 * fZ0 + a24;
+	var fBaseZ = a31 * fX0 + a32 * fY0 + a33 * fZ0 + a34;
 
 	var fXNewX = a11 * (fX1 - fX0);
 	var fXNewY = a21 * (fX1 - fX0);
