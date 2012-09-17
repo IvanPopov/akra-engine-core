@@ -22,16 +22,16 @@ function Engine () {
     //Потерян ли девайс
     this._isDeviceLost = false;
 
-    this._isObjectsInited = false; 		//Проинициализированы ли объекты
-    this._isObjectsRestored = false;	//Перевесены ли объекты в энергозависимую память
+    this._isObjectsInited = false;      //Проинициализированы ли объекты
+    this._isObjectsRestored = false;    //Перевесены ли объекты в энергозависимую память
 
     //Переменные используемые для синхронизации
     this._isFrameMoving = true;
     this._isSingleStep = false;
 
     //Переменные времени
-    this.fTime = 0.0;	//Текущее время в секундах
-    this.fElapsedTime = 0.0;	//Время прошедшее с последнего кадра
+    this.fTime = 0.0;   //Текущее время в секундах
+    this.fElapsedTime = 0.0;    //Время прошедшее с последнего кадра
     this.fFPS = 0.0; //Значение FPS
     this.fUpdateTimeCount = 0;  //Время прошедшее с последнего отрендеренного кадра
 
@@ -55,12 +55,11 @@ function Engine () {
     this.pShaderManager = null;
     this.pParticleManager = null;
     this.pSpriteManager = null;
-    this.pLightManager = null;
 
     // this.pUniqManager = null;
 
     this._pRootNode = null; //Корень дерева сцены
-    this._pDefaultCamera = null;		//Камера по умолчанию
+    this._pDefaultCamera = null;        //Камера по умолчанию
     this._pActiveCamera = null; //Активная камера
     this._pSceneTree = null;      //Объект отвечающий за дерево сцены
     this._pWorldExtents = null;//Сцена
@@ -106,6 +105,7 @@ Engine.prototype.create = function () {
     this._pSceneTree = new a.OcTree();      //Объект отвечающий за дерево сцены
     this.iCreationWidth = this.pCanvas.width;
     this.iCreationHeight = this.pCanvas.height;
+    this.iCreationHeight = this.pCanvas.height;
 
     //Получение 3D девайса
     this.pDevice = a.createDevice(this.pCanvas);
@@ -120,7 +120,6 @@ Engine.prototype.create = function () {
     this.pShaderManager = new a.ShaderManager(this);
     this.pParticleManager = new a.ParticleManager(this);
     this.pSpriteManager = new a.SpriteManager(this);
-    this.pLightManager = new a.LightManager(this);
 
     // this.pUniqManager = new a.UniqueManager(this);
 
@@ -310,11 +309,6 @@ Engine.prototype.displayManager = function () {
     return this.pDisplayManager;
 };
 
-Engine.prototype.lightManager = function() {
-    'use strict';
-    return this.pLightManager;
-};
-
 // Engine.prototype.uniqManager = function() {
 //     return this.pUniqManager;
 // };
@@ -346,8 +340,8 @@ Engine.prototype.notifyInitDeviceObjects = function () {
         Vec3(0.0, 0.0, 0.0));
     //this._pDefaultCamera.setRotation(Vec3.create(1, 0, 0), Vec3.create(0, 0, 1));
     //a._pDefaultCamera.setRotation([1,1,1],Math.PI/2);
-    //	Vec3.create(1.0,0.0,0.0),
-    //	Vec3.create(0.0,0.0,1.0));
+    //  Vec3.create(1.0,0.0,0.0),
+    //  Vec3.create(0.0,0.0,1.0));
 
     this._pDefaultCamera.setProjParams(
         Math.PI / 3.0,
@@ -363,92 +357,31 @@ Engine.prototype.notifyInitDeviceObjects = function () {
  * @memberof Engine
  * @return Boolean
  **/
-
 Engine.prototype.renderScene = function () {
 
     //Получение всех объектов сцены, которые видны активной камере
     var pCamera = this._pActiveCamera;
     var pFirstMember = this._pSceneTree.buildSearchResults(pCamera.searchRect(), pCamera.frustum());
+
+    //console.log(pFirstMember, this._pActiveCamera);
+    /*console.log(pFirstMember, this._pActiveCamera.searchRect().fX0, this._pActiveCamera.searchRect().fX1,
+                this._pActiveCamera.searchRect().fY0, this._pActiveCamera.searchRect().fY1,
+                this._pActiveCamera.searchRect().fZ0, this._pActiveCamera.searchRect().fZ1)
+    */
+
+
+
+    var pRenderList = pFirstMember;
     //Добавлено для отслеживания видимости узлов. aldore
-    this.renderList = pFirstMember;
+    this.renderList = pRenderList;
     //Подготовка всех объектов к рендерингу
     while (pFirstMember) {
         pFirstMember.prepareForRender();
         pFirstMember = pFirstMember.nextSearchLink();
     }
 
-    //////////////////////////////////////
-    
-    var pDevice = this.pDevice;
-    var pLightPoint = this.pLightPoint;
-    var pFrameBuffer = this.pFrameBuffer;
-    drawShadow = true;
-    
-    if(pLightPoint.isOmnidirectional){
-
-        for(var i=0;i<6;i++){
-            pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,pFrameBuffer);
-            pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER,pDevice.DEPTH_ATTACHMENT,
-                pDevice.TEXTURE_2D,pLightPoint.depthTextureCube[i].texture,0);
-            pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER,pDevice.COLOR_ATTACHMENT0,
-                pDevice.TEXTURE_2D,pLightPoint.colorTexture.texture,0);
-
-            pDevice.clear(pDevice.DEPTH_BUFFER_BIT);
-            pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,null);
-
-            this.setActiveCamera(pLightPoint.cameraCube[i]);
-
-            //рендеринг всех объектов
-            pFirstMember = this._pSceneTree.buildSearchResults(this._pActiveCamera.searchRect(),
-                                                         this._pActiveCamera.frustum());
-
-            while (pFirstMember) {
-                if(!(pFirstMember instanceof Sprite)){
-                    var pMesh = pFirstMember.findMesh();
-                    if(pMesh!=null){
-                        if(pMesh._sName !== 'quad'){
-                            pFirstMember.render();
-                        }
-                    }
-                }
-                pFirstMember = pFirstMember.nextSearchLink();
-            }
-        }
-    }
-    else{
-        pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,pFrameBuffer);
-        pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER,pDevice.DEPTH_ATTACHMENT,
-            pDevice.TEXTURE_2D,pLightPoint.depthTexture.texture,0);
-        pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER,pDevice.COLOR_ATTACHMENT0,
-            pDevice.TEXTURE_2D,pLightPoint.colorTexture.texture,0);
-
-        pDevice.clear(pDevice.DEPTH_BUFFER_BIT);
-        pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,null);
-
-        this.setActiveCamera(pLightPoint.camera);
-
-        //рендеринг всех объектов
-        pFirstMember = this._pSceneTree.buildSearchResults(this._pActiveCamera.searchRect(),
-                                                         this._pActiveCamera.frustum());
-        while (pFirstMember) {
-            if(!(pFirstMember instanceof Sprite)){
-                var pMesh = pFirstMember.findMesh();
-                if(pMesh!=null){
-                    if(pMesh._sName !== 'quad'){
-                        pFirstMember.render();
-                    }
-                }
-            }
-            pFirstMember = pFirstMember.nextSearchLink();
-        }
-    }
-
-    //////////////////////////////////////
-    drawShadow = false;
-    this.setActiveCamera(this._pDefaultCamera);
     //рендеринг всех объектов
-    pFirstMember = this._pSceneTree.buildSearchResults(this._pActiveCamera.searchRect(),
-                                                         this._pActiveCamera.frustum());
+    pFirstMember = pRenderList;
     while (pFirstMember) {
         pFirstMember.render();
         pFirstMember = pFirstMember.nextSearchLink();

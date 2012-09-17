@@ -59,7 +59,7 @@ SceneModel.prototype.prepareForRender = function () {
     //     }  
     // }
 };
-var drawShadow = true;
+
 SceneModel.prototype.render = function () {
     parent.render(this);
 
@@ -68,6 +68,7 @@ SceneModel.prototype.render = function () {
     if (this.bNoRender) {
         return;
     }
+
     var pEngine = this._pEngine;
     var pCamera = pEngine.getActiveCamera();
     var pMesh = this.findMesh();
@@ -75,98 +76,33 @@ SceneModel.prototype.render = function () {
     var pDevice = pEngine.pDevice;
     var pModel = this;
 
-    var pLightPoint = pEngine.pLightPoint;
-
     if (!pMesh || !pMesh.isReadyForRender()) {
         return;
     }
+
     for (var i = 0; i < pMesh.length; ++ i) {
         var pSubMesh = pMesh[i];
         var pSurface = pSubMesh.surfaceMaterial;
 
-        pCamera = pEngine.getActiveCamera(); 
-
-        if(drawShadow){
-            //draw shadow
-            if(pSubMesh.isSkinned()){
-                pProgram = pEngine.pDrawMeshAnimShadowProg;
-            }
-            else{
-                pProgram = pEngine.pDrawMeshShadowProg;    
-            }
-            pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,pEngine.pFrameBuffer);
-        }
-        else{
-            if (pSubMesh.isSkinned()) {
-                if (pSubMesh.surfaceMaterial.totalTextures) {
-                    pProgram = pEngine.pDrawMeshAnimProgTex;
-                }
-                else {
-                    pProgram = pEngine.pDrawMeshAnimProg;
-                }
-            }
-            else if (pSubMesh.data.useAdvancedIndex()) {
-                pProgram = pEngine.pDrawMeshI2IProg;
-            }
-            else if (pSubMesh.surfaceMaterial.totalTextures) {
-                pProgram = pEngine.pDrawMeshTexProg;
+        if (pSubMesh.isSkinned()) {
+            if (pSubMesh.surfaceMaterial.totalTextures) {
+                pProgram = pEngine.pDrawMeshAnimProgTex;
             }
             else {
-                pProgram = pEngine.pDrawMeshProg;
+                pProgram = pEngine.pDrawMeshAnimProg;
             }
+        }
+        else if (pSubMesh.data.useAdvancedIndex()) {
+            pProgram = pEngine.pDrawMeshI2IProg;
+        }
+        else if (pSubMesh.surfaceMaterial.totalTextures) {
+            pProgram = pEngine.pDrawMeshTexProg;
+        }
+        else {
+            pProgram = pEngine.pDrawMeshProg;
         }
 
         pProgram.activate();
-        //trace(this,pProgram)
-
-        if(!drawShadow){
-            if(pLightPoint.isOmnidirectional){
-
-                var pTmpMat = new Float32Array(96/*16*6*/);
-
-                pProgram.applyInt('shadowTextureNumber',6);
-
-                var pCameraCube = pLightPoint.cameraCube;
-                for(var j=0;j<6;j++){
-                    pLightPoint.depthTextureCube[j].activate(2 + j);
-
-                    var m4fTemp = pCameraCube[j].projectionMatrix().
-                        mult(pCameraCube[j].viewMatrix(),Mat4()).mult(pCamera.worldMatrix());
-
-                    pTmpMat.set(m4fTemp.pData,16*j);
-                }
-
-                var pHWProg = pProgram._pHardwareProgram;
-
-                pDevice.uniformMatrix4fv(
-                    pDevice.getUniformLocation(pHWProg,'lightShadowMatrixCube'),false,pTmpMat);
-
-                pDevice.uniform1iv(
-                    pDevice.getUniformLocation(pHWProg,'depthTextureCube'),new Int32Array([2,3,4,5,6,7]));
-            }
-            else{
-                var pLightCamera = pLightPoint.camera;
-                pLightPoint.depthTexture.activate(2);
-
-                var m4fTemp = pLightCamera.projectionMatrix().
-                    mult(pLightCamera.viewMatrix(),Mat4()).mult(pCamera.worldMatrix());
-
-                pProgram.applyMatrix4('lightShadowMatrix',m4fTemp);
-                pProgram.applyInt('shadowTextureNumber',1);
-                pProgram.applySampler2D('depthTexture',2);
-            }
-            pProgram.applyVector2('depthTextureSize',
-                pLightPoint._iMaxShadowResolution,pLightPoint._iMaxShadowResolution);
-
-            var pLightParameters = pLightPoint.lightParameters;
-
-            pProgram.applyVector3('lightPoint.lightPosition',pLightPoint.worldPosition());
-            pProgram.applyVector4('lightPoint.ambient',pLightParameters.ambient);
-            pProgram.applyVector4('lightPoint.diffuse',pLightParameters.diffuse);
-            pProgram.applyVector4('lightPoint.specular',pLightParameters.specular);
-            pProgram.applyVector3('lightPoint.attenuation',pLightParameters.attenuation);
-            
-        }
 
         if (pSubMesh.data.useAdvancedIndex()) {
             pProgram.applyFloat('INDEX_INDEX_POSITION_OFFSET', 0);
@@ -186,36 +122,27 @@ SceneModel.prototype.render = function () {
             pSubMesh.skin.applyBoneMatrices();
             //trace(pSubMesh.skin.skeleton._pJoints);
         }
-        if(!drawShadow){
-            if (pSurface.totalTextures) {
-                var iTextureFlags = pSurface.textureFlags;
-                var iTexActivator = 1;
-                
-                for (var j = 0; j < a.SurfaceMaterial.maxTexturesPerSurface; ++ j) {
-                    if (!TEST_BIT(iTextureFlags, j)) {
-                        if (j < 4) {
-                            pProgram.applySampler2D('TEXTURE' + j, 15);
-                        }
-                        continue;
+        
+        if (pSurface.totalTextures) {
+            var iTextureFlags = pSurface.textureFlags;
+            var iTexActivator = 1;
+            
+            for (var j = 0; j < a.SurfaceMaterial.maxTexturesPerSurface; ++ j) {
+                if (!TEST_BIT(iTextureFlags, j)) {
+                    if (j < 4) {
+                        pProgram.applySampler2D('TEXTURE' + j, 15);
                     }
-
-                    pSurface.texture(j).activate(iTexActivator);
-                    pProgram.applySampler2D('TEXTURE' + j, iTexActivator);
-                    iTexActivator ++;
+                    continue;
                 }
+
+                pSurface.texture(j).activate(iTexActivator);
+                pProgram.applySampler2D('TEXTURE' + j, iTexActivator);
+                iTexActivator ++;
             }
-        }
-        if(drawShadow){
-            pDevice.viewport(0,0,pLightPoint._iMaxShadowResolution,pLightPoint._iMaxShadowResolution);
-        }
-        else{
-            pDevice.viewport(0,0,pEngine.pCanvas.width,pEngine.pCanvas.height);    
         }
 
         pSubMesh.draw();
     }
-    pDevice.viewport(0,0,pEngine.pCanvas.width,pEngine.pCanvas.height);    
-    pDevice.bindFramebuffer(pDevice.FRAMEBUFFER,null);
     
 
     //------------------------------------------------
@@ -396,4 +323,3 @@ SceneModel.prototype.toString = function (isRecursive, iDepth) {
 Endif ();
 
 A_NAMESPACE(SceneModel);
-
