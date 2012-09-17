@@ -388,6 +388,10 @@ Define(Math.inverse(a), function () {
     (1.0 / a)
 })
 
+Define(Math.log2(fValue), function(){
+	Math.log(fValue)/Math.log(2)
+});
+
 
 /**
  * @property trimFloat(Float a, Int precision)
