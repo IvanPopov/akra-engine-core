@@ -203,8 +203,8 @@ ModelResource.prototype.loadAnimation = function (sFilename) {
             scene: false, 
             animation: true,
             extractPoses: false, 
-            skeletons: this._pSkeletonList,
-            animationWithPose: true
+            skeletons: null,//this._pSkeletonList,
+            animationWithPose: false,//true
         });
 };
 
