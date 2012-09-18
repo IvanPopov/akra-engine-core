@@ -2267,8 +2267,16 @@ function COLLADA(pEngine, pSettings) {
         var pMeshes = [];
 
         findNode(pSceneRoot.pNodes, null, function (pNode) {
-            pMeshes.insert(buildInstance(pNode.pController, buildSkinMesh, pNode.pConstructedNode, false));
-            pMeshes.insert(buildInstance(pNode.pGeometry, buildMesh, pNode.pConstructedNode, true));
+            var pModelNode = pNode.pConstructedNode;
+            
+            if (!(pModelNode instanceof a.SceneModel)) {
+                pModelNode = new a.SceneModel(pEngine);
+                pModelNode.create();
+                pModelNode.attachToParent(pNode.pConstructedNode);
+            }
+
+            pMeshes.insert(buildInstance(pNode.pController, buildSkinMesh, pModelNode, false));
+            pMeshes.insert(buildInstance(pNode.pGeometry, buildMesh, pModelNode, true));
         });
 
         return pMeshes;

@@ -5,7 +5,13 @@ A_FORMAT({
 			'fWeight'		: 'Float',
 			'pMatrix'		: {
 				write: function (pFrame) {
-					var m4f = pFrame.toMatrix();
+					var m4f = pFrame.pMatrix;
+					if (Math.abs(pFrame.v3fScale.x - 1.0) > 0.01 || 
+						Math.abs(pFrame.v3fScale.y - 1.0) > 0.01 || 
+						Math.abs(pFrame.v3fScale.z - 1.0) > 0.01) {
+						trace('writing > wrong pFrame detected > ', pFrame);
+						trace(m4f.toString());
+					}
 					this.write(m4f);
 				},
 				read: function (pFrame) {
@@ -15,6 +21,13 @@ A_FORMAT({
 						pFrame.qRotation,
 						pFrame.v3fScale,
 						pFrame.v3fTranslation);
+
+					if (Math.abs(pFrame.v3fScale.x - 1.0) > 0.01 || 
+						Math.abs(pFrame.v3fScale.y - 1.0) > 0.01 || 
+						Math.abs(pFrame.v3fScale.z - 1.0) > 0.01) {
+						trace('loading > wrong pFrame detected > ', pFrame);
+						trace(m4f.toString());
+					}
 
 					return m4f;
 				}
@@ -42,7 +55,17 @@ A_FORMAT({
 			'_pTargetMap'	: 'Object',
 			'_pTargetList'	: 'Array',
 			'_fDuration'	: 'Float',
-			'_sName'		: 'String',
+			'_sName'		: {
+				read: function () {
+					var str = this.read();
+					trace('loading animation: ', str);
+					return str;
+				},
+				write: function (pAnimation) {
+					trace('writing animation: ', pAnimation.name);
+					this.write(pAnimation.name);
+				}
+			},
 			//extra data in animation
 			'extra'			: 'Object'
 		},
@@ -71,7 +94,14 @@ A_FORMAT({
 			'_fStartTime'	: 'Float',
 			'_fSpeed'		: 'Float',
 			'_bLoop'		: 'Boolean',
-			'_pAnimation'	: null,
+			'_pAnimation'	: {
+				read: function (pContainer) {
+					var pAnimation = this.read();
+					if (pAnimation) {
+						pContainer.setAnimation(pAnimation);
+					}
+				}
+			},
 			'_fDuration'	: 'Float',
 			'_bReverse'		: 'Boolean',
 			'_bPause'		: 'Boolean',
@@ -87,20 +117,30 @@ A_FORMAT({
 				read: function (pAnimationBlend) {
 					var pAnimations = this.read();
 					for (var i = 0; i < pAnimations.length; ++ i) {
+						trace(pAnimations[i].animation.name, pAnimations[i].weight);
 						pAnimationBlend.setAnimation(i, 
 							pAnimations[i].animation, 
 							pAnimations[i].weight,
 							pAnimations[i].mask);
-						trace('blend >> ', pAnimationBlend.name, 'duration > ', pAnimationBlend.duration);
 					}
-					trace(pAnimationBlend);
 				},
-				write: 'Array'
+				write: function (pBlend) {
+					var pAnimations = pBlend._pAnimationList;
+					for (var i = 0; i < pAnimations.length; ++ i) {
+						trace('write animation from list: ', 
+							pAnimations[i].animation.name,
+							pAnimations[i].weight);
+					}
+					this.write(pAnimations);
+				}
 			}
 		}
 ,
 		base		: ['AnimationBase'],
-		ctor	: 'a.AnimationBlend'
+		ctor	: 'a.AnimationBlend',
+		blacklist: {
+			'Function': null
+		}
 	},
 	'AnimationSwitch': {
 		base		: ['AnimationBase'],

@@ -22,16 +22,16 @@ function Engine() {
     //Потерян ли девайс
     this._isDeviceLost = false;
 
-    this._isObjectsInited = false; 		//Проинициализированы ли объекты
-    this._isObjectsRestored = false;	//Перевесены ли объекты в энергозависимую память
+    this._isObjectsInited = false;      //Проинициализированы ли объекты
+    this._isObjectsRestored = false;    //Перевесены ли объекты в энергозависимую память
 
     //Переменные используемые для синхронизации
     this._isFrameMoving = true;
     this._isSingleStep = false;
 
     //Переменные времени
-    this.fTime = 0.0;	//Текущее время в секундах
-    this.fElapsedTime = 0.0;	//Время прошедшее с последнего кадра
+    this.fTime = 0.0;   //Текущее время в секундах
+    this.fElapsedTime = 0.0;    //Время прошедшее с последнего кадра
     this.fFPS = 0.0; //Значение FPS
     this.fUpdateTimeCount = 0;  //Время прошедшее с последнего отрендеренного кадра
 
@@ -59,7 +59,7 @@ function Engine() {
     // this.pUniqManager = null;
 
     this._pRootNode = null; //Корень дерева сцены
-    this._pDefaultCamera = null;		//Камера по умолчанию
+    this._pDefaultCamera = null;        //Камера по умолчанию
     this._pActiveCamera = null; //Активная камера
     this._pSceneTree = null;      //Объект отвечающий за дерево сцены
     this._pWorldExtents = null;//Сцена
@@ -106,7 +106,7 @@ Engine.prototype.create = function () {
     this._pSceneTree = new a.OcTree();      //Объект отвечающий за дерево сцены
     this.iCreationWidth = this.pCanvas.width;
     this.iCreationHeight = this.pCanvas.height;
-	this.iCreationHeight = this.pCanvas.height;
+    this.iCreationHeight = this.pCanvas.height;
 
     //Получение 3D девайса
     this.pDevice = a.createDevice(this.pCanvas);
@@ -361,8 +361,8 @@ Engine.prototype.notifyInitDeviceObjects = function () {
         Vec3(0.0, 0.0, 0.0));
     //this._pDefaultCamera.setRotation(Vec3.create(1, 0, 0), Vec3.create(0, 0, 1));
     //a._pDefaultCamera.setRotation([1,1,1],Math.PI/2);
-    //	Vec3.create(1.0,0.0,0.0),
-    //	Vec3.create(0.0,0.0,1.0));
+    //  Vec3.create(1.0,0.0,0.0),
+    //  Vec3.create(0.0,0.0,1.0));
 
     this._pDefaultCamera.setProjParams(
         Math.PI / 3.0,

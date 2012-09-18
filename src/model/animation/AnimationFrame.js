@@ -227,6 +227,6 @@ AnimationFrame.prototype.toMatrix = AnimationFrame.prototype.toMatrixFromTransfo
 // AnimationFrame.prototype.interpolate = AnimationFrame.prototype.interpolateMatrix;
 // AnimationFrame.prototype.toMatrix = AnimationFrame.prototype.toMatrixFromMatrix;
 
-A_ALLOCATE_STORAGE(AnimationFrame, 4096);
+A_ALLOCATE_STORAGE(AnimationFrame, 4 * 4096);
 A_NAMESPACE(AnimationFrame);
 

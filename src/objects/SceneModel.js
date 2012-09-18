@@ -197,4 +197,3 @@ SceneModel.prototype.toString = function (isRecursive, iDepth) {
 Endif();
 
 A_NAMESPACE(SceneModel);
-

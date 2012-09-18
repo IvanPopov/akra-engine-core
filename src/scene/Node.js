@@ -711,10 +711,8 @@ Node.prototype.recalcWorldMatrix = function () {
         this._qRotation.toMat4(m4fOrient);
         m4fOrient.setTranslation(this._v3fTranslation);
         m4fOrient.scale(this._v3fScale);
-
-        //if (TEST_BIT(this._iUpdateFlags, a.Scene.k_newLocalMatrix)) {
         m4fOrient.multiply(m4fLocal); 
-        //}
+
 
         if (this._pParent) {
             if (this._iInheritance === a.Scene.k_inheritAll) {
@@ -764,7 +762,6 @@ Node.prototype.recalcWorldMatrix = function () {
         else {
             m4fWorld.set(m4fOrient);
         }
-
         this._v3fWorldPosition.pData.X = pWorldData._14;
         this._v3fWorldPosition.pData.Y = pWorldData._24;
         this._v3fWorldPosition.pData.Z = pWorldData._34;
@@ -841,7 +838,6 @@ Node.prototype.addRelPosition = function () {
 
 
     this._qRotation.multiplyVec3(pPos);
-    
     v3fTranslation.add(pPos);
 
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
