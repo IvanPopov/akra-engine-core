@@ -55,6 +55,7 @@ function Engine() {
     this.pShaderManager = null;
     this.pParticleManager = null;
     this.pSpriteManager = null;
+    this.pLightManager = null;
 
     // this.pUniqManager = null;
 
@@ -124,6 +125,7 @@ Engine.prototype.create = function () {
     this.pParticleManager = new a.ParticleManager(this);
     this.pSpriteManager = new a.SpriteManager(this);
 
+    this.pLightManager = new a.LightManager(this);
     // this.pUniqManager = new a.UniqueManager(this);
 
     //Запускаем таймер приложения
@@ -258,9 +260,10 @@ Engine.prototype.setupWorldOcTree = function (pWorldExtents) {
  */
 Engine.prototype.initDefaultStates = function () {
     this.pEngineStates = {
-        mesh : {
+        mesh            : {
             isSkinning : false
-        }
+        },
+        isAdvancedIndex : false
     }
 };
 
@@ -291,7 +294,7 @@ Engine.prototype.notifyUpdateScene = function () {
 
 Engine.prototype.notifyPreUpdateScene = function () {
     'use strict';
-    
+
     this._pRootNode.recursivePreUpdate();
 };
 
@@ -322,6 +325,10 @@ Engine.prototype.spriteManager = function () {
     return this.pSpriteManager;
 };
 
+Engine.prototype.lightManager = function () {
+    return this.pLightManager;
+};
+
 Engine.prototype.getActiveViewport = function () {
     return {
         x      : 0,
@@ -348,6 +355,7 @@ Engine.prototype.notifyInitDeviceObjects = function () {
 
     this.pDisplayManager.createDeviceResources();
     this.pShaderManager.createDeviceResources();
+    this.pLightManager.createDeviceResources();
     //this.pUniqManager.createDeviceResources();
 
     // create the root node
@@ -384,16 +392,16 @@ Engine.prototype.renderScene = function () {
 
     //console.log(pFirstMember, this._pActiveCamera);
     /*console.log(pFirstMember, this._pActiveCamera.searchRect().fX0, this._pActiveCamera.searchRect().fX1,
-                this._pActiveCamera.searchRect().fY0, this._pActiveCamera.searchRect().fY1,
-                this._pActiveCamera.searchRect().fZ0, this._pActiveCamera.searchRect().fZ1)
-    */
-
+     this._pActiveCamera.searchRect().fY0, this._pActiveCamera.searchRect().fY1,
+     this._pActiveCamera.searchRect().fZ0, this._pActiveCamera.searchRect().fZ1)
+     */
 
 
     var pRenderList = pFirstMember;
     //Добавлено для отслеживания видимости узлов. aldore
     this.renderList = pRenderList;
     //Подготовка всех объектов к рендерингу
+//    trace("Engine.prototype.renderScene", pFirstMember);
     while (pFirstMember) {
         pFirstMember.prepareForRender();
         pFirstMember = pFirstMember.nextSearchLink();
@@ -411,6 +419,15 @@ Engine.prototype.renderScene = function () {
 //Добавлено для отслеживания видимости узлов. aldore
 Engine.prototype.renderScene.renderList = null;
 
+Engine.prototype.renderShadows = function () {
+    var pLightManager = this.pLightManager;
+    var pLights = pLightManager.lightPoints;
+    var i;
+    for (i = 0; i < pLights.length; i++) {
+        pLights[i].calculateShadows();
+    }
+};
+
 Engine.prototype.run = function () {
     var me = this;
     var fnRender = function () {
@@ -419,7 +436,7 @@ Engine.prototype.run = function () {
             //но написать неплохо былобы
             debug_error("Девайс потерян");
         }
-        
+
         if (me._isActive) {
             if (!me.render3DEnvironment()) {
                 debug_error("a.render3DEnvironmen error");
@@ -582,10 +599,17 @@ Engine.prototype.render = function () {
     if (this.pDisplayManager.beginRenderSession()) {
         // render the scene
 //        A_TRACER.BEGIN();
-        A_TRACER.MESG("=====START RENDER SCENE OBJECTS==========");
+//        A_TRACER.MESG("=====START RENDER SCENE OBJECTS==========");
+        trace("==============Rendre Shadow===========");
+        this.renderShadows();
+        this.pShaderManager.processRenderQueue();
+        this.pDevice.flush();
+        trace("==============Stop Render Shadow===========");
+        trace("==============Render Scene===========");
         this.renderScene();
         // process the contents of the render queue
         this.pShaderManager.processRenderQueue();
+        trace("==============Stop Render Scene===========");
         this.pDisplayManager.endRenderSession();
 //        A_TRACER.END();
 //        this.pause(true);
@@ -695,33 +719,35 @@ Engine.prototype.fullscreen = function () {
         Engine.prototype.bFullscreenLock = true;
 
         (pCanvas.requestFullscreen || pCanvas.mozRequestFullScreen || pCanvas.webkitRequestFullscreen)();
-        
-        pCanvas.onfullscreenchange = pCanvas.onmozfullscreenchange = pCanvas.onwebkitfullscreenchange = 
-        function (e) {
-            var pScreen = a.info.screen;
-            if (pEngine.inFullscreenMode()) {
-                pCanvas.width = pScreen.width;
-                pCanvas.height = pScreen.height;
-            }
-            else {
-                pCanvas.width = pEngine.iCreationWidth;
-                pCanvas.height = pEngine.iCreationHeight;
-            }
 
-            var pRoot = pEngine.getRootNode();
-            pRoot.explore(function () {
-                if (this instanceof a.Camera) {
-                    if (!this.isConstantAspect()) {
-                        this.setProjParams(
-                            this.fov(), pCanvas.width / pCanvas.height, 
-                            this.nearPlane(), this.farPlane());
-                        this.setUpdatedLocalMatrixFlag();
-                    }
-                }
-            })
+        pCanvas.onfullscreenchange = pCanvas.onmozfullscreenchange = pCanvas.onwebkitfullscreenchange =
+                                                                     function (e) {
+                                                                         var pScreen = a.info.screen;
+                                                                         if (pEngine.inFullscreenMode()) {
+                                                                             pCanvas.width = pScreen.width;
+                                                                             pCanvas.height = pScreen.height;
+                                                                         }
+                                                                         else {
+                                                                             pCanvas.width = pEngine.iCreationWidth;
+                                                                             pCanvas.height = pEngine.iCreationHeight;
+                                                                         }
 
-            Engine.prototype.bFullscreenLock = false;
-        }
+                                                                         var pRoot = pEngine.getRootNode();
+                                                                         pRoot.explore(function () {
+                                                                             if (this instanceof a.Camera) {
+                                                                                 if (!this.isConstantAspect()) {
+                                                                                     this.setProjParams(
+                                                                                         this.fov(),
+                                                                                         pCanvas.width / pCanvas.height,
+                                                                                         this.nearPlane(),
+                                                                                         this.farPlane());
+                                                                                     this.setUpdatedLocalMatrixFlag();
+                                                                                 }
+                                                                             }
+                                                                         })
+
+                                                                         Engine.prototype.bFullscreenLock = false;
+                                                                     }
     }
     catch (e) {
         warning('Fullscreen API not supported');
@@ -731,7 +757,7 @@ Engine.prototype.fullscreen = function () {
 
 Engine.prototype.inFullscreenMode = function () {
     'use strict';
-    
+
     return !!(document.webkitFullscreenElement || document.mozFullScreenElement || document.fullscreenElement);
 };
 

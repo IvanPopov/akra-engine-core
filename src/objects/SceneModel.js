@@ -30,6 +30,7 @@ EXTENDS(SceneModel, a.SceneObject);
  */
 SceneModel.prototype.create = function () {
     SceneObject.prototype.create.call(this);
+    this._hasShadow = null;
 };
 
 
@@ -89,11 +90,11 @@ SceneModel.prototype.render = function () {
     if (!pMeshes || pMeshes.length === 0) {
         return false;
     }
-	
+
     pRenderer.activateSceneObject(this);
     pRenderer.setViewport(0, 0, this._pEngine.pCanvas.width, this._pEngine.pCanvas.height);
 
-	for (i = 0; i < pMeshes.length; i++) {
+    for (i = 0; i < pMeshes.length; i++) {
         pMesh = pMeshes[i];
         if (!pMesh || !pMesh.isReadyForRender()) {
             return;
@@ -101,9 +102,10 @@ SceneModel.prototype.render = function () {
 
         for (j = 0; j < pMesh.length; j++) {
             pSubMesh = pMesh[j];
+            pSubMesh.switchRenderMethod(pSubMesh.name);
             pSubMesh.startRender();
             isSkinning = this._pEngine.pEngineStates.mesh.isSkinning = pSubMesh.isSkinned();
-            if(isSkinning){
+            if (isSkinning) {
                 pSubMesh.skin.applyBoneMatrices();
             }
             for (k = 0; k < pSubMesh.totalPasses(); k++) {
@@ -124,6 +126,100 @@ SceneModel.prototype.render = function () {
     return true;
 };
 
+SceneModel.prototype.renderShadow = function () {
+    if (!this.hasShadow()) {
+        return false;
+    }
+    trace("<<<<<<<<<<<<<START SCENE MODEL SHADOW RENDER>>>>>>>>>>");
+    var pMeshes = this._pMeshes,
+        pRenderer = this._pEngine.shaderManager(),
+        pMesh, pSubMesh;
+    var i, j, k;
+    var isSkinning;
+
+    if (!pMeshes || pMeshes.length === 0) {
+        return false;
+    }
+
+    pRenderer.activateSceneObject(this);
+    pRenderer.setViewport(0, 0, this._pEngine.pCanvas.width, this._pEngine.pCanvas.height);
+
+    for (i = 0; i < pMeshes.length; i++) {
+        pMesh = pMeshes[i];
+        if (!pMesh || !pMesh.isReadyForRender()) {
+            return;
+        }
+
+        for (j = 0; j < pMesh.length; j++) {
+            pSubMesh = pMesh[j];
+            if (!pSubMesh.hasShadow()) {
+                continue;
+            }
+            pSubMesh.switchRenderMethod('.prepare_shadows');
+            pSubMesh.startRender();
+            isSkinning = this._pEngine.pEngineStates.mesh.isSkinning = pSubMesh.isSkinned();
+            if (isSkinning) {
+                pSubMesh.skin.applyBoneMatrices();
+            }
+            this._pEngine.pEngineStates.isAdvancedIndex = false;
+            for (k = 0; k < pSubMesh.totalPasses(); k++) {
+                pSubMesh.activatePass(k);
+                pSubMesh.applyRenderData(pSubMesh.data);
+                trace("SceneModel.prototype.renderShadow", pSubMesh.renderPass());
+                pSubMesh.deactivatePass();
+            }
+            pSubMesh.finishRender();
+        }
+    }
+    pRenderer.deactivateSceneObject();
+    trace("<<<<<<<<<<<<<END SCENE MODEL SHADOW RENDER>>>>>>>>>>");
+    return true;
+};
+
+SceneModel.prototype.setShadow = function () {
+    var pMeshes = this._pMeshes, pMesh;
+    var i, j
+    if (!pMeshes || pMeshes.length === 0) {
+        return false;
+    }
+    for (i = 0; i < pMeshes.length; i++) {
+        pMesh = pMeshes[i];
+        for (j = 0; j < pMesh.length; j++) {
+            pMesh[j].hasShadow(true);
+        }
+    }
+    this._hasShadow = true;
+    return true;
+};
+
+SceneModel.prototype.hasShadow = function () {
+    if (this._hasShadow === null) {
+        var pMeshes = this._pMeshes, pMesh;
+        var i, j
+        if (!pMeshes || pMeshes.length === 0) {
+            this._hasShadow = false;
+            return false;
+        }
+        for (i = 0; i < pMeshes.length; i++) {
+            pMesh = pMeshes[i];
+            for (j = 0; j < pMesh.length; j++) {
+                if (pMesh[j].hasShadow()) {
+                    this._hasShadow = true;
+                    return true;
+                }
+            }
+        }
+        this._hasShadow = false;
+        return false;
+    }
+    else {
+        return this._hasShadow;
+    }
+};
+
+SceneModel.prototype.resetShadow = function () {
+    this._hasShadow = null;
+};
 // /**
 //  *
 //  * @tparam ModelResource pModel
@@ -161,11 +257,11 @@ SceneModel.prototype.findMesh = function (iMesh) {
 
 SceneModel.prototype.getMeshList = function () {
     'use strict';
-    
+
     return this._pMeshes.slice();
 };
 
-Ifdef (__DEBUG);
+Ifdef(__DEBUG);
 
 SceneModel.prototype.toString = function (isRecursive, iDepth) {
     'use strict';

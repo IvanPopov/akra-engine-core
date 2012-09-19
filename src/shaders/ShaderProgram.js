@@ -10,8 +10,7 @@ function ShaderProgram(pEngine) {
     //trace(pEngine);
     this._pDevice = pEngine.pDevice;
     this._pRenderer = pEngine.shaderManager();
-    this._sFragmentCode = "#ifdef GL_ES\nprecision lowp float;\n#endif\n" +
-                          "void main(void){gl_FragColor = vec4(0., 0., 0., 1.);}";
+    this._sFragmentCode = " void main(void){}";
     this._sVertexCode = "void main(void){gl_Position = vec4(0., 0., 0., 1.);}";
     this._pAttrToReal = null;
     this._pATRKeys = null;

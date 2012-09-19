@@ -7,11 +7,11 @@
 
 /**
  * Класс LightManager отвечает за хранение информации о источниках света,
- * а также хранит в себе текстуры для deferred shading-а 
+ * а также хранит в себе текстуры для deferred shading-а
  * и общию depth текстуры сцены
  *
- * nMaxDeferredTextureCount - количество текстур используемых для 
- * deferred shading-а, по умолчанию создается две текстуры, для рендеринга базовых вещей, 
+ * nMaxDeferredTextureCount - количество текстур используемых для
+ * deferred shading-а, по умолчанию создается две текстуры, для рендеринга базовых вещей,
  * а именно
  * normals, shininess
  * emissive
@@ -19,73 +19,74 @@
  * specular
  * ambient
  */
-function LightManager (pEngine,nMaxDeferredTextureCount) {
-	'use strict';
-	
-	nMaxDeferredTextureCount = ifndef(nMaxDeferredTextureCount,2);
+function LightManager(pEngine, nMaxDeferredTextureCount) {
+    'use strict';
 
-	this._pEngine = pEngine;
+    nMaxDeferredTextureCount = ifndef(nMaxDeferredTextureCount, 2);
 
-	this._pLightPoints = [];
+    this._pEngine = pEngine;
 
-	//depth текстура сцены
-	this._pDepthTexture = null;
+    this._pLightPoints = [];
 
-	this._nMaxDeferredTextureCount = nMaxDeferredTextureCount;
+    //depth текстура сцены
+    this._pDepthTexture = null;
 
-	//float текстуры для deferred shading-а
-	this._pDeferredTextures = new Array(nMaxDeferredTextureCount);
+    this._nMaxDeferredTextureCount = nMaxDeferredTextureCount;
 
-	//ширина и высота текстур, основывается на размере канваса
-	this._iWidth = Math.ceilingPowerOfTwo(pEngine.pCanvas.width);
-	this._iHeight = Math.ceilingPowerOfTwo(pEngine.pCanvas.height);
+    //float текстуры для deferred shading-а
+    this._pDeferredTextures = new Array(nMaxDeferredTextureCount);
 
-	this._initializeTextures();
+    //ширина и высота текстур, основывается на размере канваса
+    this._iWidth = Math.ceilingPowerOfTwo(pEngine.pCanvas.width);
+    this._iHeight = Math.ceilingPowerOfTwo(pEngine.pCanvas.height);
+
+//    this._initializeTextures();
+}
+;
+
+
+PROPERTY(LightManager, 'depthTexture',
+         function () {
+             return this._pDepthTexture;
+         }
+);
+
+PROPERTY(LightManager, 'deferredTextures',
+         function () {
+             return this._pDeferredTextures;
+         }
+);
+
+PROPERTY(LightManager, 'lightPoints',
+         function () {
+             return this._pLightPoints;
+         }
+);
+
+LightManager.prototype.registerLightPoint = function (pLightPoint) {
+    'use strict';
+
+    var id = this._pLightPoints.length;
+    this._pLightPoints.push(pLightPoint);
+    return id;
 };
 
+LightManager.prototype._initializeTextures = function () {
+    'use strict';
 
-PROPERTY(LightManager,'depthTexture',
-	function(){
-		return this._pDepthTexture;
-	}
-);
+    var pEngine = this._pEngine;
+    var pCanvas = pEngine.pCanvas;
+    var iWidth = this._iWidth;
+    var iHeight = this._iHeight;
 
-PROPERTY(LightManager,'deferredTextures',
-	function(){
-		return this._pDeferredTextures;
-	}
-);
+    //depth texture
 
-PROPERTY(LightManager,'lightPoints',
-	function(){
-		return this._pLightPoints;
-	}
-);
+    var pDepthTexture = this._pDepthTexture = pEngine.displayManager().
+        texturePool().createResource('depth_texture_' + a.sid());
+    pDepthTexture.createTexture(iWidth, iHeight,
+                                0, a.IFORMAT.DEPTH_COMPONENT, a.DTYPE.UNSIGNED_INT, null);
 
-LightManager.prototype.registerLightPoint = function(pLightPoint) {
-	'use strict';
-	
-	var id = this._pLightPoints.length;
-	this._pLightPoints.push(pLightPoint);
-	return id;
-};
-
-LightManager.prototype._initializeTextures = function() {
-	'use strict';
-	
-	var pEngine = this._pEngine;
-	var pCanvas = pEngine.pCanvas;
-	var iWidth = this._iWidth;
-	var iHeight = this._iHeight;
-
-	//depth texture
-
-	var pDepthTexture = this._pDepthTexture = pEngine.displayManager().
-										texturePool().createResource('depth_texture_' + a.sid());
-	pDepthTexture.createTexture(iWidth,iHeight,
-		0,a.IFORMAT.DEPTH_COMPONENT,a.DTYPE.UNSIGNED_INT,null);
-
-	pDepthTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+    pDepthTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
     pDepthTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
     pDepthTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
     pDepthTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
@@ -94,61 +95,64 @@ LightManager.prototype._initializeTextures = function() {
 
     var pDeferredTextures = this._pDeferredTextures;
 
-    for(var i=0;i<this._nMaxDeferredTextureCount;i++){
-    	var pDeferredTexture = pDeferredTextures[i] = pEngine.displayManager().
-									texturePool().createResource('deferred_texture_' + a.sid());
+    for (var i = 0; i < this._nMaxDeferredTextureCount; i++) {
+        var pDeferredTexture = pDeferredTextures[i] = pEngine.displayManager().
+            texturePool().createResource('deferred_texture_' + a.sid());
 
-		pDeferredTexture.createTexture(iWidth,iHeight,
-			0,a.IFORMAT.RGBA,a.DTYPE.FLOAT,null);
+        pDeferredTexture.createTexture(iWidth, iHeight,
+                                       0, a.IFORMAT.RGBA, a.DTYPE.FLOAT, null);
 
-		pDeferredTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
-		pDeferredTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
-		pDeferredTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
-		pDeferredTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
+        pDeferredTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+        pDeferredTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+        pDeferredTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
+        pDeferredTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
     }
 };
 
+LightManager.prototype.createDeviceResources = function () {
+    this._initializeTextures();
+};
 //этот метод нужно вызывать в случае изменения размеров канваса
-LightManager.prototype.updateTexture = function() {
-	'use strict';
-	
-	var pCanvas = this._pEngine.pCanvas;
+LightManager.prototype.updateTexture = function () {
+    'use strict';
 
-	var iWidth = Math.ceilingPowerOfTwo(pCanvas.width);
-	var iHeight = Math.ceilingPowerOfTwo(pCanvas.height);
+    var pCanvas = this._pEngine.pCanvas;
 
-	if(iWidth != this._iWidth || iHeight != this._iHeight){
-		//canvas sizes changes
-		this._iWidth = iWidth;
-		this._iHeight = iHeight;
+    var iWidth = Math.ceilingPowerOfTwo(pCanvas.width);
+    var iHeight = Math.ceilingPowerOfTwo(pCanvas.height);
 
-		//depth texture
-		var pDepthTexture = this._pDepthTexture;
+    if (iWidth != this._iWidth || iHeight != this._iHeight) {
+        //canvas sizes changes
+        this._iWidth = iWidth;
+        this._iHeight = iHeight;
 
-		pDepthTexture.createTexture(iWidth,iHeight,
-		0,a.IFORMAT.DEPTH_COMPONENT,a.DTYPE.UNSIGNED_INT,null);
+        //depth texture
+        var pDepthTexture = this._pDepthTexture;
 
-		pDepthTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
-	    pDepthTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
-	    pDepthTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
-	    pDepthTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
+        pDepthTexture.createTexture(iWidth, iHeight,
+                                    0, a.IFORMAT.DEPTH_COMPONENT, a.DTYPE.UNSIGNED_INT, null);
 
-	    //deferred textures
+        pDepthTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+        pDepthTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+        pDepthTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
+        pDepthTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
 
-	    var pDeferredTextures = this._pDeferredTextures;
+        //deferred textures
 
-	    for(var i=0;i<this._nMaxDeferredTextureCount;i++){
-	    	var pDeferredTexture = pDeferredTextures[i];
+        var pDeferredTextures = this._pDeferredTextures;
 
-			pDeferredTexture.createTexture(iWidth,iHeight,
-				0,a.IFORMAT.RGBA,a.DTYPE.FLOAT,null);
+        for (var i = 0; i < this._nMaxDeferredTextureCount; i++) {
+            var pDeferredTexture = pDeferredTextures[i];
 
-			pDeferredTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
-			pDeferredTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
-			pDeferredTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
-			pDeferredTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
-	    }
-	}
+            pDeferredTexture.createTexture(iWidth, iHeight,
+                                           0, a.IFORMAT.RGBA, a.DTYPE.FLOAT, null);
+
+            pDeferredTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+            pDeferredTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+            pDeferredTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
+            pDeferredTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
+        }
+    }
 
 };
 

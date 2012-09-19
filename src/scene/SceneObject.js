@@ -1,4 +1,3 @@
-
 /**
  * Scene object Class
  * @extends SceneNode
@@ -6,7 +5,7 @@
  * Constructor.
  * The constructor initializes all papams for SceneObject
  */
-function SceneObject (pEngine) {
+function SceneObject(pEngine) {
 
     A_CLASS;
 
@@ -74,6 +73,8 @@ function SceneObject (pEngine) {
      * @private
      */
     this._pRearSearchLink = null;
+
+    this._hasShadow = false;
 }
 ;
 
@@ -355,20 +356,31 @@ SceneObject.prototype.render = function () {
 SceneObject.prototype.renderCallback = function (entry, activationFlags) {
 };
 
-Ifdef (__DEBUG);
+SceneObject.prototype.renderShadow = function () {
+
+};
+
+SceneObject.prototype.hasShadow = function (hasShadow) {
+    if (hasShadow !== undefined) {
+        this._hasShadow = hasShadow;
+    }
+    return this._hasShadow;
+};
+
+Ifdef(__DEBUG);
 
 SceneObject.prototype.toString = function (isRecursive, iDepth) {
     'use strict';
-    
+
     isRecursive = isRecursive || false;
 
     if (!isRecursive) {
-        return '<scene_object' + (this._sName? ' ' + this._sName: '') + '>';
+        return '<scene_object' + (this._sName ? ' ' + this._sName : '') + '>';
     }
 
     return SceneNode.prototype.toString.call(this, isRecursive, iDepth);
 }
 
-Endif ();
+Endif();
 
 A_NAMESPACE(SceneObject);

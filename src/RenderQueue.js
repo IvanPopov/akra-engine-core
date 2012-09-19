@@ -126,6 +126,7 @@ RenderQueue.prototype.execute = function () {
     var i;
     var iLength = this._nSortCount;
     var pRenderer = this._pEngine.shaderManager();
+//    trace("RenderQueue.prototype.execute. Number of Entry = ", iLength);
     for (i = 0; i < iLength; i++) {
         //trace(this._pSortEntrys[i], this._pSortEntrys, i)
         pRenderer.render(this._pSortEntrys[i]);

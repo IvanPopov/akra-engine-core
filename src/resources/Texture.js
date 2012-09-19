@@ -223,6 +223,7 @@ Texture.prototype._setSystemEffect = function () {
     var pEngine = this._pEngine;
     var pEffect;
     if (pEngine.displayManager().componentPool().findResource("akra.system.texture_repack")) {
+        trace("Texture.prototype._setSystemEffect----------------->>>>");
         pEffect = pEngine.pDisplayManager.effectPool().createResource(".repack_texture");
         pEffect.create();
         pEffect.use("akra.system.texture_repack");

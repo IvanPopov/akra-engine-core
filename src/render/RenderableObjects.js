@@ -26,6 +26,8 @@ function RenderableObject() {
      * @type {RenderSnapshot}
      */
     this._pActiveSnapshot = null;
+
+    this._hasShadow = false;
 }
 
 PROPERTY(RenderableObject, 'renderMethod',
@@ -47,20 +49,20 @@ PROPERTY(RenderableObject, 'effect',
          });
 
 PROPERTY(RenderableObject, 'surfaceMaterial',
-    function () {
-        return this._pActiveSnapshot._pRenderMethod._pMaterial;
-    },
-    function (pSurfaceMaterial) {
-        'use strict';
-        
-        this._pActiveSnapshot._pRenderMethod._pMaterial = pSurfaceMaterial;
-    });
+         function () {
+             return this._pActiveSnapshot._pRenderMethod._pMaterial;
+         },
+         function (pSurfaceMaterial) {
+             'use strict';
+
+             this._pActiveSnapshot._pRenderMethod._pMaterial = pSurfaceMaterial;
+         });
 
 PROPERTY(RenderableObject, 'material',
-    function () {
-        var pSurfaceMaterial = this.surfaceMaterial;
-        return pSurfaceMaterial? pSurfaceMaterial.material: null;
-    });
+         function () {
+             var pSurfaceMaterial = this.surfaceMaterial;
+             return pSurfaceMaterial ? pSurfaceMaterial.material : null;
+         });
 
 RenderableObject.prototype.getEngine = function () {
     return this._pEngine;
@@ -114,7 +116,7 @@ RenderableObject.prototype.addRenderMethod = function (pRenderMethod, sName) {
                  'Render method should belong to the same engine instance that the renderable object.');
 
     pRenderSnapshot.method = pRenderMethod;
-    pRenderSnapshot.name = sName || pRenderMethod.findResourceName();
+    pRenderSnapshot.name = sName || ".default";//pRenderMethod.findResourceName();
 
     for (var i = 0; i < this._pSnapshots.length; i++) {
         if (this._pSnapshots[i] === null) {
@@ -335,6 +337,13 @@ RenderableObject.prototype.applySurfaceMaterial = function (pMaterial) {
         return false;
     }
     return this._pActiveSnapshot.applySurfaceMaterial(pMaterial);
+};
+
+RenderableObject.prototype.hasShadow = function (hasShadow) {
+    if (hasShadow !== undefined) {
+        this._hasShadow = hasShadow;
+    }
+    return this._hasShadow;
 };
 // /**
 //  * By default, scene nodes do not render.

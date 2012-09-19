@@ -1066,6 +1066,7 @@ Renderer.prototype.applyFrameBufferTexture = function (pTexture, eAttachment, eT
     var pDevice = this.pEngine.pDevice;
     eAttachment = (eAttachment === undefined) ? pDevice.COLOR_ATTACHMENT0 : eAttachment;
     eTexTarget = (eTexTarget === undefined) ? pDevice.TEXTURE_2D : eTexTarget;
+    iLevel = 0;
     trace("Attach texture to farme buffer #" + this._pRenderState.iFrameBuffer);
     this._pRenderState.pFrameBuffer.frameBufferTexture2D(eAttachment, eTexTarget, pTexture._pTexture);
 };
@@ -1171,7 +1172,7 @@ Renderer.prototype._getEmptyFrameBuffer = function () {
 };
 Renderer.prototype._releaseFrameBuffer = function (id) {
     trace("Release frame buffer");
-    var pDevice = this.pEngine.pDevice;
+//    var pDevice = this.pEngine.pDevice;
     this._pFrameBufferCounters[id] = 0;
     this._pEmptyFrameBuffers[id] = null;
     this._pFramebufferPool[id].release();
@@ -1257,14 +1258,15 @@ Renderer.prototype.activateFrameBuffer = function (iId) {
 };
 Renderer.prototype.deactivateFrameBuffer = function (iId) {
     if (iId !== undefined) {
-        this._pEmptyFrameBuffers[iId] = null;
-        this._pFrameBufferCounters[iId] = 0;
+        this._releaseFrameBuffer(iId);
+//        this._pEmptyFrameBuffers[iId] = null;
+//        this._pFrameBufferCounters[iId] = 0;
         return true;
     }
     iId = this._pRenderState.iFrameBuffer;
     if (iId !== null) {
         if (this._pFrameBufferCounters[iId] === 0) {
-            this._pEmptyFrameBuffers[iId] = null;
+            this._releaseFrameBuffer(iId);
         }
         else {
             this._pFrameBufferCounters[iId] *= -1;

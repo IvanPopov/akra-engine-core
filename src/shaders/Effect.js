@@ -4242,8 +4242,8 @@ Effect.prototype.convertType = function (pNode) {
         pType = this.analyzeStruct(pNode);
         return pType;
     }
-    if (pNode.sName === a.fx.GLOBAL_VARS.T_KW_VOID) {
-        pType = this.hasType(pNode.sValue);
+    if (pNode.sValue === a.fx.GLOBAL_VARS.T_KW_VOID) {
+        pType = this.hasType("void");
         return pType;
     }
     if (pNode.sName === a.fx.GLOBAL_VARS.SCALARTYPE || pNode.sName === a.fx.GLOBAL_VARS.OBJECTTYPE) {
@@ -4411,7 +4411,7 @@ Effect.prototype.analyze = function (pTree) {
     this.postAnalyzeEffect();
     this.checkEffect();
     this.endScope();
-    trace("Time of analyzing effect file(without parseing) ", a.now() - time, "Result effect: ", this);
+    trace("Time of analyzing effect file(without parseing) ", a.now() - time);//, "Result effect: ", this);
     return true;
 //    }
 //    catch (e) {
@@ -7056,7 +7056,7 @@ Effect.prototype.analyzeStateIf = function (pNode, pPass) {
     }
     pPass.pushCode(")");
     this.analyzePassStateBlock(pChildren[2], pPass);
-    pPass.pushCode("else");
+    pPass.pushCode("else ");
     if (pChildren[0].sName === a.fx.GLOBAL_VARS.STATEIF) {
         this.analyzeStateIf(pChildren[0], pPass);
     }
