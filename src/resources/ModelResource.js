@@ -93,6 +93,12 @@ ModelResource.prototype.addMesh = function (pMesh) {
     this.setAlteredFlag(true);
 };
 
+ModelResource.prototype.getMesh = function (iMesh) {
+    'use strict';
+    
+    return this._pMeshList[iMesh];
+};
+
 ModelResource.prototype.addNode = function (pNode) {
     'use strict';
 
@@ -123,6 +129,17 @@ ModelResource.prototype.addToScene = function () {
 
     this._pAnimController.bind(pRoot);
     this._pNode = pRoot;
+
+    //--------------
+    // var pMeshNode;
+
+    // for (var i = 0; i < this._pMeshList.length; ++ i) {
+    //     pMeshNode = new a.SceneModel(this.getEngine());
+    //     pMeshNode.create();
+    //     pMeshNode.setInheritance(a.Scene.k_inheritAll);
+    //     pMeshNode.attachToParent(this._pNode);
+    //     pMeshNode.addMesh(this._pMeshList[i]);
+    // }
 };
 
 ModelResource.prototype.getRootNodes = function () {
@@ -203,8 +220,8 @@ ModelResource.prototype.loadAnimation = function (sFilename) {
             scene: false, 
             animation: true,
             extractPoses: false, 
-            skeletons: null,//this._pSkeletonList,
-            animationWithPose: false,//true
+            skeletons: this._pSkeletonList,
+            animationWithPose: true
         });
 };
 

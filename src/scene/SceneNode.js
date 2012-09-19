@@ -28,6 +28,12 @@ function SceneNode (pEngine) {
 
 EXTENDS(SceneNode, Node);
 
+SceneNode.prototype.getEngine = function () {
+    'use strict';
+    
+    return this._pEngine;
+};
+
 /**
  * Set Local and World Natrix identify
  * @treturn Boolean
@@ -45,30 +51,30 @@ SceneNode.prototype.create = function () {
 
     return true;
 };
-/**
- * Get SubNodeGroupData
- * @treturn SubNodeGroup _pSubNodeGroupData
- */
-SceneNode.prototype.subNodeGroupData = function () {
-    INLINE();
-    return this._pSubNodeGroupData;
-};
-/**
- * Get subNodeGroupOwner
- * @treturn SceneNode _pSubNodeGroupOwner
- */
-SceneNode.prototype.subNodeGroupOwner = function () {
-    INLINE();
-    return this._pSubNodeGroupOwner;
-};
-/**
- * Set subNodeGroupOwner
- * @tparam SceneNode pOwner
- */
-SceneNode.prototype.setSubNodeGroupOwner = function (pOwner) {
-    INLINE();
-    this._pSubNodeGroupOwner = pOwner;
-};
+// /**
+//  * Get SubNodeGroupData
+//  * @treturn SubNodeGroup _pSubNodeGroupData
+//  */
+// SceneNode.prototype.subNodeGroupData = function () {
+//     INLINE();
+//     return this._pSubNodeGroupData;
+// };
+// /**
+//  * Get subNodeGroupOwner
+//  * @treturn SceneNode _pSubNodeGroupOwner
+//  */
+// SceneNode.prototype.subNodeGroupOwner = function () {
+//     INLINE();
+//     return this._pSubNodeGroupOwner;
+// };
+// /**
+//  * Set subNodeGroupOwner
+//  * @tparam SceneNode pOwner
+//  */
+// SceneNode.prototype.setSubNodeGroupOwner = function (pOwner) {
+//     INLINE();
+//     this._pSubNodeGroupOwner = pOwner;
+// };
 /**
  * Create from resource
  * @tparam Int iModelResource
@@ -87,16 +93,16 @@ SceneNode.prototype.createFromResource = function (iModelResource) {
     }
     return false;
 };
-/**
- * Safe delete pSubNodeGroupData
- * @private
- */
-SceneNode.prototype.releaseGroupData = function () {
-    if (this._pSubNodeGroupData) {
-        this._pSubNodeGroupData.destroy();
-        delete this._pSubNodeGroupData;
-    }
-};
+// /**
+//  * Safe delete pSubNodeGroupData
+//  * @private
+//  */
+// SceneNode.prototype.releaseGroupData = function () {
+//     if (this._pSubNodeGroupData) {
+//         this._pSubNodeGroupData.destroy();
+//         delete this._pSubNodeGroupData;
+//     }
+// };
 /**
  * Destroys the object. The object is removed from it's parent (if any) and all Children
  * Objects are orphaned (parent set to NULL).

@@ -108,6 +108,12 @@ PROPERTY(Node, 'depth',
         return iDepth;
     });
 
+PROPERTY(Node, 'root',
+    function () {
+        var iDepth = -1;
+        for (var pNode = this; pNode.parent(); pNode = pNode.parent(), ++ iDepth){};
+        return pNode;
+    });
 
 Node.prototype.findNode = function (sNodeName) {
     'use strict';
@@ -157,12 +163,6 @@ Node.prototype.childOf = function (pParent) {
     return false;
 };
 
-PROPERTY(Node, 'root',
-    function () {
-        var iDepth = -1;
-        for (var pNode = this; pNode.parent(); pNode = pNode.parent(), ++ iDepth){};
-        return pNode;
-    });
 
 Node.prototype.setName = function (sName) {
     'use strict';
@@ -462,8 +462,11 @@ Node.prototype.attachToParent = function (pParent) {
             //             "inverse :", Mat4.str(invertedParentMatrix),
             //             "Local :", Mat4.str(this._m4fLocalMatrix));
 			this._m4fLocalMatrix.multiply(invertedParentMatrix);
+            return true;
         }
     }
+
+    return false;
 };
 
 /**
@@ -489,7 +492,11 @@ Node.prototype.detachFromParent = function () {
         this._m4fLocalMatrix = this._m4fWorldMatrix;
         // and the world matrix is the identity
         this._m4fWorldMatrix = new Mat4(1);
+
+        return true;
     }
+
+    return false;
 };
 
 /**

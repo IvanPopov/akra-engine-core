@@ -2521,22 +2521,22 @@ Endif ();
         if (useAnimation && bAnimationWithPose) {
             pSkeletons = pPoseSkeletons || [];
 
-            if (pMeshOutput) {
-                for (var i = 0; i < pMeshOutput.length; ++ i) {
-                    pSkeleton = pMeshOutput[i].skeleton;
-                    pSkeletons.push(pSkeleton);
-                }
-            }
-            else {
-                if (!pSceneOutput) {
-                    buildScene(pSceneRoot, pAsset);
-                }
+            // if (pMeshOutput) {
+            //     for (var i = 0; i < pMeshOutput.length; ++ i) {
+            //         pSkeleton = pMeshOutput[i].skeleton;
+            //         pSkeletons.push(pSkeleton);
+            //     }
+            // }
+            // else {
+            //     if (!pSceneOutput) {
+            //         buildScene(pSceneRoot, pAsset);
+            //     }
 
-                eachByTag(pXMLCollada, 'skeleton', function (pXML) {
-                    pSkeleton = buildSkeleton([stringData(pXML)]);
-                    pSkeletons.push(pSkeleton);
-                });
-            }
+            //     eachByTag(pXMLCollada, 'skeleton', function (pXML) {
+            //         pSkeleton = buildSkeleton([stringData(pXML)]);
+            //         pSkeletons.push(pSkeleton);
+            //     });
+            // }
 
             pPoses = buildInitialPoses(pSceneRoot, pSkeletons);
 

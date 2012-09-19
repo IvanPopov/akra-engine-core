@@ -410,7 +410,7 @@ Mesh.prototype.showBoundingBox = function()
 
 	pPoints = new Array();
 	pIndexes = new Array();
-	a.computeDataForCascadeBoundingBox(this._pBoundingBox,pPoints,pIndexes,400.0);
+	a.computeDataForCascadeBoundingBox(this._pBoundingBox,pPoints,pIndexes,0.1);
 
 	pSubMesh=this.getSubset(".BoundingBox");
 	if(!pSubMesh)
@@ -429,10 +429,10 @@ Mesh.prototype.showBoundingBox = function()
 
 		pSubMesh.applyFlexMaterial(".MaterialBoundingBox");
 		pMaterial = pSubMesh.getFlexMaterial(".MaterialBoundingBox");
-		pMaterial.emissive = new a.Color4f(1.0, 0.0, 0.0, 1.0);
-		pMaterial.diffuse = new a.Color4f(1.0, 0.0, 0.0, 1.0);
-		pMaterial.ambient = new a.Color4f(1.0, 0.0, 0.0, 1.0);
-		pMaterial.specular = new a.Color4f(1.0, 0.0, 0.0, 1.0);
+		pMaterial.emissive = new a.Color4f(1.0, 1.0, 1.0, 1.0);
+		pMaterial.diffuse = new a.Color4f(1.0, 1.0, 1.0, 1.0);
+		pMaterial.ambient = new a.Color4f(1.0, 1.0, 1.0, 1.0);
+		pMaterial.specular = new a.Color4f(1.0, 1.0, 1.0, 1.0);
 	}
 	else
 	{
