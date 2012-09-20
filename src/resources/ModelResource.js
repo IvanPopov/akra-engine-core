@@ -28,6 +28,11 @@ PROPERTY(ModelResource, 'totalAnimations',
         return this._pAnimController.totalAnimations;
     });
 
+PROPERTY(ModelResource, 'totalMeshes',
+    function () {
+        return this._pMeshList.length;
+    });
+
 PROPERTY(ModelResource, 'node',
     function () {
         return this._pNode;

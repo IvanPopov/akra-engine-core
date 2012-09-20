@@ -229,12 +229,23 @@ Vec3.prototype.scale = function(fScale,v3fDestination) {
         v3fDestination = this;
     }
 
+    var fScaleX, fScaleY, fScaleZ;
+    
+    if (typeof arguments[0] === 'number') {
+        fScaleX = fScaleY = fScaleZ = fScale;
+    }
+    else {
+        fScaleX = arguments[0].pData.X;
+        fScaleY = arguments[0].pData.Y;
+        fScaleZ = arguments[0].pData.Z;
+    }
+    
     var pData = this.pData;
     var pDataDestination = v3fDestination.pData;
 
-    pDataDestination.X = pData.X * fScale;
-    pDataDestination.Y = pData.Y * fScale;
-    pDataDestination.Z = pData.Z * fScale;
+    pDataDestination.X = pData.X * fScaleX;
+    pDataDestination.Y = pData.Y * fScaleY;
+    pDataDestination.Z = pData.Z * fScaleZ;
 
     return v3fDestination;
 };

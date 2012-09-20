@@ -471,6 +471,7 @@ function computeBoundingBox (pVertexData, pBoundingBox)
 		fZ0 = fZ0 > fTemp ? fTemp : fZ0; //Min
 		fZ1 = fZ1 > fTemp ? fZ1 : fTemp; //Max
 	}
+
 	pBoundingBox.set(fX0,fX1,fY0,fY1,fZ0,fZ1);
 
     return true;

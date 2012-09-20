@@ -1050,7 +1050,7 @@ Node.prototype.setScale = function (scale) {
 Node.prototype.multScale = function (scale) {
     'use strict';
     
-    var pScale = arguments.length === 1? arguments[0]: arguments;
+    var pScale = arguments.length === 1? arguments[0]: Vec3(arguments);
     var v3fScale = this._v3fScale;
 
     v3fScale.scale(pScale);

@@ -277,6 +277,8 @@ SceneModel.prototype.addMesh = function (pMesh) {
         return false;
     }
     this._pMeshes.push(pMesh);
+    if (pMesh.name !== "scene-surface")
+        this.accessLocalBounds().eq(pMesh.getBoundingBox());
     return true;
 };
 
