@@ -190,6 +190,12 @@ Enum([
          BROWSER_DEFAULT_WEBGL = 0x9244
      ], WEBGLS, a.WEBGLS);
 
+Enum([
+        DEPTH_BUFFER_BIT               = 0x00000100,
+        STENCIL_BUFFER_BIT             = 0x00000400,
+        COLOR_BUFFER_BIT               = 0x00004000
+     ], CLEAR_BUFFER_MASK, a.CLEAR);
+
 
 /**
  * DataType

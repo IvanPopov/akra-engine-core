@@ -576,7 +576,7 @@ ShaderFragment.prototype.addConstant = function (pConst) {
     this._pConstants.push(pConst);
 };
 
-ShaderFragment.prototype.addUniform = function (pUniform) {
+ShaderFragment.prototype.addUniformVariable = function (pUniform) {
     this._pUniforms.push(pUniform);
 };
 

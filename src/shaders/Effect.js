@@ -27,6 +27,7 @@ var GLOBAL_VARS = {
     T_KW_UNIFORM          : "uniform",
     T_KW_EXTERN           : "extern",
     T_KW_VOLATILE         : "volatile",
+    T_KW_FOREIGN          : "foreign",
     T_KW_INLINE           : "inline",
     T_KW_SHARED           : "shared",
     T_KW_CONST            : "const",
@@ -827,7 +828,7 @@ EffectStruct.prototype.toCode = function () {
     this._sCode = "{";
     var i;
     for (i = 0; i < this.pOrders.length; i++) {
-        this._sCode += this.pOrders[i].pType.toCode() + " " + this.pOrders[i].toCode() + ";";
+        this._sCode += this.pOrders[i].toCodeDecl();
     }
     this._sCode += "}";
     return this._sCode;
@@ -1175,10 +1176,10 @@ function EffectVariable() {
     this._pCurrentTexture = null;
 
     this._isSampler = false;
-    this._pSamplerData = null;
+    this._pData = null;
     this.isParametr = false;
     this.isUniform = false;
-    this.isGlobal = false;
+    this.isShared = false;
     this.isMixible = false;
     this.isVSInput = false;
     this.isFSInput = false;
@@ -1195,7 +1196,9 @@ function EffectVariable() {
     this._pAllPointers = null;
     this._pIndexFields = null;
 
+    this.isForeign = false;
     this.isValid = false;
+    this.pDependences = null;
 }
 EffectVariable.prototype.isInput = function () {
     if (this.pType.pUsagesName &&
@@ -1236,8 +1239,9 @@ EffectVariable.prototype.setType = function (pType) {
     this.pType = pType;
     if (pType.pUsagesName) {
         this.isUniform = (pType.pUsagesName["uniform"] === null) ? true : false;
-        this.isGlobal = (pType.pUsagesName["global"] === null) ? true : false;
+        this.isShared = (pType.pUsagesName["global"] === null) ? true : false;
         this.isUniform = this.isUniform || this.isSampler();
+        this.isForeign = (pType.pUsagesName["foreign"] === null) ? true : false
     }
     if (this.isPointer) {
         this.iSize = 1;
@@ -1321,9 +1325,19 @@ EffectVariable.prototype.setFSInput = function () {
     this.pType.setFSInput();
 };
 EffectVariable.prototype.toCodeDecl = function (isInit) {
+    if (this.isForeign) {
+        return "";
+    }
     var sCode;
     sCode = this.pType.toCode() + " " + this.sRealName;
     if (this.isArray) {
+        if (typeof(this.iLength) === "object") {
+            if (!this.iLength.isValid) {
+                error("You must set value of foreign varibale before use it");
+                return;
+            }
+            this.iLength = this.iLength.toDataCode() * 1;
+        }
         sCode += "[" + this.iLength + "]";
     }
     if (isInit && this.pInitializer) {
@@ -1349,10 +1363,10 @@ EffectVariable.prototype.toOffsetStr = function () {
     return a.fx.SHADER_PREFIX.OFFSET + this.sRealName;
 };
 EffectVariable.prototype.toDataCode = function () {
-    if (!this.isSampler) {
-        warning("Only for samplers");
+    if (!this.isSampler || this.isForeign) {
+        warning("Only for samplers amd foreigns");
     }
-    return this._pSamplerData;
+    return this._pData;
 };
 EffectVariable.prototype.isSampler = function () {
     return this._isSampler;
@@ -1382,6 +1396,24 @@ EffectVariable.prototype.addSamplerState = function () {
     }
     this._pCurrentState = null;
     this._pCurrentTexture = null;
+};
+EffectVariable.prototype.setData = function (pData) {
+    this._pData = pData;
+};
+EffectVariable.prototype.addDependence = function (pVar) {
+    if (!this.pDependences) {
+        this.pDependences = [];
+    }
+    this.pDependences.push(pVar);
+};
+EffectVariable.prototype.setLength = function (pValue) {
+    if (typeof(pValue) === "string" || typeof(pValue) === "number") {
+        this.iLength = pValue * 1;
+    }
+    else {
+        this.iLength = pValue;
+        this.addDependence(pValue);
+    }
 };
 
 function SamplerIndex(pCode, pSampler) {
@@ -1488,7 +1520,7 @@ function EffectBaseFunction() {
     this._isGlobalTypesAnalyzed = (pFunction && pFunction.pImplement) ? pFunction._isGlobalTypesAnalyzed : false;
     this.pGlobalVariables = (pFunction && pFunction.pImplement) ? pFunction.pGlobalVariables : null;
     this.pUniforms = (pFunction && pFunction.pImplement) ? pFunction.pUniforms : null;
-    this.pExternals = (pFunction && pFunction.pImplement) ? pFunction.pExternals : null;
+    this.pSharedVariables = (pFunction && pFunction.pImplement) ? pFunction.pSharedVariables : null;
     /**
      * Code of function
      * @type {Object[]}
@@ -1509,9 +1541,10 @@ function EffectBaseFunction() {
     this._pCodeAll = null;
     this._sCodeAll = null;
     this._pLocalPointers = {};
+    this.pForeignVariables = null;
 }
 EffectBaseFunction.prototype.addGlobalVariable = function (pVar) {
-    if (pVar.isGlobal) {
+    if (pVar.isShared || pVar.isForeign) {
         return false;
     }
     if (!this.pGlobalVariables) {
@@ -1524,10 +1557,17 @@ EffectBaseFunction.prototype.addGlobalVariable = function (pVar) {
         return false;
     }
     this.pGlobalVariables[pVar.sName] = pVar;
+    if (pVar.pDependences) {
+        for (var i = 0; i < pVar.pDependences.length; i++) {
+            if (pVar.pDependences[i].isForeign) {
+                this.addForeignVariable(pVar.pDependences[i]);
+            }
+        }
+    }
     return true;
 };
-EffectBaseFunction.prototype.addUniform = function (pVar) {
-    if (pVar.isGlobal) {
+EffectBaseFunction.prototype.addUniformVariable = function (pVar) {
+    if (pVar.isShared || pVar.isForeign) {
         return false;
     }
     if (!this.pUniforms) {
@@ -1540,7 +1580,37 @@ EffectBaseFunction.prototype.addUniform = function (pVar) {
         return false;
     }
     this.pUniforms[pVar.sName] = pVar;
+    if (pVar.pDependences) {
+        for (var i = 0; i < pVar.pDependences.length; i++) {
+            if (pVar.pDependences[i].isForeign) {
+                this.addForeignVariable(pVar.pDependences[i]);
+            }
+        }
+    }
     return true;
+};
+EffectBaseFunction.prototype.addSharedVariable = function (pVar) {
+    if (!this.pSharedVariables) {
+        this.pSharedVariables = {};
+    }
+    if (!this.pSharedVariables[pVar.sName]) {
+        this.pSharedVariables[pVar.sName] = pVar;
+        return true;
+    }
+    return false;
+};
+EffectBaseFunction.prototype.addForeignVariable = function (pVar) {
+    if (!this.pForeignVariables) {
+        this.pForeignVariables = [pVar];
+        return;
+    }
+    var pVars = this.pForeignVariables;
+    for (var i = 0; i < pVars.length; i++) {
+        if (pVars[i] === pVar) {
+            return;
+        }
+    }
+    pVars.push(pVar);
 };
 EffectBaseFunction.prototype.addFunction = function (pFunc) {
     if (pFunc === this) {
@@ -1580,16 +1650,6 @@ EffectBaseFunction.prototype.addType = function (pType) {
         }
     }
     return isNewType;
-};
-EffectBaseFunction.prototype.addExternal = function (pVar) {
-    if (!this.pExternals) {
-        this.pExternals = {};
-    }
-    if (!this.pExternals[pVar.sName]) {
-        this.pExternals[pVar.sName] = pVar;
-        return true;
-    }
-    return false;
 };
 EffectBaseFunction.prototype.globalUsedTypes = function () {
     if (this._isGlobalTypesAnalyzed) {
@@ -1672,7 +1732,7 @@ EffectBaseFunction.prototype.addGlobalBuffer = function (pBuf) {
         error("something going wrong with add global buffer");
         return;
     }
-    this.addUniform(pBuf.pVar);
+    this.addUniformVariable(pBuf.pVar);
     if (!this.pGlobalBuffers) {
         this.pGlobalBuffers = {}
     }
@@ -1813,7 +1873,7 @@ EffectFunction.prototype.addParameter = function (pVar) {
     pVar.isParametr = true;
     if (pVar.isUniform) {
         pVar.isUniform = true;
-        this.addUniform(pVar);
+        this.addUniformVariable(pVar);
     }
     if (!pVar.pInitializer) {
         this.nParamsNeeded = this.pParamOrders.length;
@@ -1926,8 +1986,9 @@ EffectFunction.prototype.generateExtractedCode = function () {
         if (typeof(pElement) === "string") {
             sCode += pElement;
         }
-        else if (pElement.pData === undefined ||
-                 (pElement.pData !== undefined && pElement.isParametr === true && pElement.isUniform === false)) {
+        else if ((pElement.pData === undefined ||
+                  (pElement.pData !== undefined && pElement.isParametr === true && pElement.isUniform === false)) &&
+                 !pElement.isForeign) {
             pToCode = pElement.toCode(false);
             if (typeof(pToCode) === "string") {
                 if (!pCode) {
@@ -2115,8 +2176,9 @@ EffectShader.prototype.generateExtractedCode = function () {
         if (typeof(pElement) === "string") {
             sCode += pElement;
         }
-        else if (pElement.pData === undefined ||
-                 (pElement.pData !== undefined && pElement.isParametr === true && pElement.isUniform === false)) {
+        else if ((pElement.pData === undefined ||
+                  (pElement.pData !== undefined && pElement.isParametr === true && pElement.isUniform === false)) &&
+                 !pElement.isForeign) {
             pToCode = (pElement instanceof EffectBaseFunction) ? pElement.toCode() : pElement.toCode(true);
             if (typeof(pToCode) === "string") {
                 if (!pCode) {
@@ -2861,20 +2923,20 @@ EffectPass.prototype.generateListOfExternals = function () {
     var pShader;
     for (i in this.pVertexes) {
         pShader = this.pVertexes[i];
-        for (j in pShader.pExternals) {
+        for (j in pShader.pSharedVariables) {
             if (!pExV) {
                 pExV = {};
             }
-            pExV[j] = pShader.pExternals[j];
+            pExV[j] = pShader.pSharedVariables[j];
         }
     }
     for (i in this.pFragments) {
         pShader = this.pFragments[i];
-        for (j in pShader.pExternals) {
+        for (j in pShader.pSharedVariables) {
             if (!pExF) {
                 pExF = {};
             }
-            pExF[j] = pShader.pExternals[j];
+            pExF[j] = pShader.pSharedVariables[j];
         }
     }
     this.pExteranalsVertex = pExV;
@@ -2887,12 +2949,19 @@ EffectPass.prototype.addGlobalsFromShader = function (pShader) {
         this.pGlobalsDefault = {};
         this.pTexturesByName = {};
         this.pTexturesByRealName = {};
+        this.pForeignsByName = {};
     }
     var i;
     var sName, pVar;
     for (i in pShader.pTexturesByName) {
         sName = this.pTexturesByName[i] = pShader.pTexturesByName[i];
         this.pTexturesByRealName[sName] = null;
+    }
+    if (pShader.pForeignVariables) {
+        for (i = 0; i < pShader.pForeignVariables.length; i++) {
+            pVar = pShader.pForeignVariables[i];
+            this.pForeignsByName[pVar.sName] = pVar;
+        }
     }
     for (i in pShader.pUniformsByName) {
         if (this.pGlobalsByName[i]) {
@@ -3406,6 +3475,9 @@ Effect.prototype.evalHLSL = function (pCode, pVar) {
     }
     if (pCode.length === 1) {
         if (typeof(pCode[0]) === "string") {
+            return pCode[0];
+        }
+        if (pCode[0].isForeign) {
             return pCode[0];
         }
     }
@@ -3930,7 +4002,7 @@ Effect.prototype.addVariable = function (pVar, isParams) {
         this._pCurrentScope.pVariableTable = {};
     }
     this._pCurrentScope.pVariableTable[pVar.sName] = pVar;
-    if (!pVar.isGlobal) {
+    if (!pVar.isShared) {
         pVar.sRealName = pVar.sName + "_" + this._iScope + "_" + this._id;
     }
     else {
@@ -4550,7 +4622,7 @@ Effect.prototype.postAnalyzeEffect = function () {
     }
     //generate list of global and uniform variables, used global types and externals vars for functions
     var isNew = true;
-    var pGlobals, pUniforms, pExternals, pBuffers;
+    var pGlobals, pUniforms, pExternals, pBuffers, pForeigns;
     while (isNew) {
         isNew = false;
         for (i in this._pFunctionTableByHash) {
@@ -4561,18 +4633,19 @@ Effect.prototype.postAnalyzeEffect = function () {
             for (j in pFunction.pFunctions) {
                 pGlobals = pFunction.pFunctions[j].pGlobalVariables;
                 pUniforms = pFunction.pFunctions[j].pUniforms;
-                pExternals = pFunction.pFunctions[j].pExternals;
+                pExternals = pFunction.pFunctions[j].pSharedVariables;
                 pBuffers = pFunction.pFunctions[j].pGlobalBuffers;
+                pForeigns = pFunction.pFunctions[j].pForeignVariables;
                 if (pFunction.addType(pFunction.pFunctions[j].globalUsedTypes())) {
                     isNew = true;
                 }
                 for (k in pExternals) {
-                    if (pFunction.addExternal(pExternals[k])) {
+                    if (pFunction.addSharedVariable(pExternals[k])) {
                         isNew = true;
                     }
                 }
                 for (k in pUniforms) {
-                    if (pFunction.addUniform(pUniforms[k])) {
+                    if (pFunction.addUniformVariable(pUniforms[k])) {
                         isNew = true;
                     }
                 }
@@ -4584,6 +4657,13 @@ Effect.prototype.postAnalyzeEffect = function () {
                 for (k in pBuffers) {
                     if (pFunction.addGlobalBuffer(pBuffers[k])) {
                         isNew = true;
+                    }
+                }
+                if (pForeigns) {
+                    for (k = 0; k < pForeigns.length; k++) {
+                        if (pFunction.addForeignVariable(pForeigns[k])) {
+                            isNew = true;
+                        }
                     }
                 }
             }
@@ -4652,18 +4732,19 @@ Effect.prototype.postAnalyzeEffect = function () {
             for (j in pShader.pFunctions) {
                 pGlobals = pShader.pFunctions[j].pGlobalVariables;
                 pUniforms = pShader.pFunctions[j].pUniforms;
-                pExternals = pShader.pFunctions[j].pExternals;
+                pExternals = pShader.pFunctions[j].pSharedVariables;
                 pBuffers = pShader.pFunctions[j].pGlobalBuffers;
+                pForeigns = pShader.pFunctions[j].pForeignVariables;
                 if (pShader.addType(pShader.pFunctions[j].globalUsedTypes())) {
                     isNew = true;
                 }
                 for (k in pExternals) {
-                    if (pShader.addExternal(pExternals[k])) {
+                    if (pShader.addSharedVariable(pExternals[k])) {
                         isNew = true;
                     }
                 }
                 for (k in pUniforms) {
-                    if (pShader.addUniform(pUniforms[k])) {
+                    if (pShader.addUniformVariable(pUniforms[k])) {
                         isNew = true;
                     }
                 }
@@ -4673,8 +4754,15 @@ Effect.prototype.postAnalyzeEffect = function () {
                     }
                 }
                 for (k in pBuffers) {
-                    if (pFunction.addGlobalBuffer(pBuffers[k])) {
+                    if (pShader.addGlobalBuffer(pBuffers[k])) {
                         isNew = true;
+                    }
+                }
+                if (pForeigns) {
+                    for (k = 0; k < pForeigns.length; k++) {
+                        if (pShader.addForeignVariable(pForeigns[k])) {
+                            isNew = true;
+                        }
                     }
                 }
             }
@@ -5014,7 +5102,7 @@ Effect.prototype.analyzeVariableDim = function (pNode, pVar) {
         this.analyzeExpr(pChildren[pChildren.length - 3]);
         pCode = this._pCode;
         this.endCode();
-        pVar.iLength = this.evalHLSL(pCode);
+        pVar.setLength(this.evalHLSL(pCode));
     }
     this.analyzeVariableDim(pChildren[pChildren.length - 1], pVar);
     return pVar;
@@ -5893,34 +5981,43 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     }
                     this._pLastVar = pRes;
                     pRes.isUsed = true;
-                    if (pRes.isGlobal && (this._eFuncProperty === a.Effect.Func.FUNCTION ||
+                    if (pRes.isShared && (this._eFuncProperty === a.Effect.Func.FUNCTION ||
                                           ((this._eFuncProperty === a.Effect.Func.VERTEX ||
                                             this._eFuncProperty === a.Effect.Func.FRAGMENT) &&
                                            pFunction.pFunction.pImplement === null))) {
-                        pFunction.addExternal(pRes);
+                        pFunction.addSharedVariable(pRes);
+                    }
+                    if (pRes.isForeign && (this._eFuncProperty === a.Effect.Func.FUNCTION ||
+                                           ((this._eFuncProperty === a.Effect.Func.VERTEX ||
+                                             this._eFuncProperty === a.Effect.Func.FRAGMENT) &&
+                                            pFunction.pFunction.pImplement === null))) {
+                        pFunction.addForeignVariable(pRes);
                     }
                     if (this._isWriteVar === true) {
+                        if (pRes.isForeign) {
+                            error("don`t even try to do this, bad boy(girl).0");
+                            return;
+                        }
                         if (pRes.isUniform) {
-                            trace(pRes);
-                            error("don`t even try to do this, bitch.1");
+                            error("don`t even try to do this, bad boy(girl).1");
                             return;
                         }
                         if (pRes.isConst()) {
-                            error("don`t even try to do this, bitch.2");
+                            error("don`t even try to do this, bad boy(girl).2");
                             return;
                         }
                         if (pRes.isParametr && pFunction &&
                             (pFunction.isVertexShader || pFunction.isFragmentShader) && this._nAddr === 0) {
-                            error("don`t even try to do this, bitch.3");
+                            error("don`t even try to do this, bad boy(girl).3");
                             return;
                         }
                         if (pFunction && pFunction.iScope === pRes.iScope && (pRes.isInput() && !pRes.isOutput())) {
-                            error("don`t even try to do this, bitch.3");
+                            error("don`t even try to do this, bad boy(girl).4");
                         }
                     }
                     else if (this._isWriteVar === false) {
                         if (pFunction && pFunction.iScope === pRes.iScope && (pRes.isOutput() && !pRes.isInput())) {
-                            error("don`t even try to do this, bitch.4");
+                            error("don`t even try to do this, bad boy(girl).5");
                             return;
                         }
 
@@ -5972,7 +6069,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                                 pFunction.addGlobalVariable(pRes);
                             }
                             else {
-                                pFunction.addUniform(pRes);
+                                pFunction.addUniformVariable(pRes);
                             }
                         }
                         pFunction.isConstant = false;
@@ -6244,7 +6341,7 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
                     pFunction.pShader.addAttribute(pFunction.pParamOrders[i], this);
                 }
                 else {
-                    pFunction.pShader.addUniform(pFunction.pParamOrders[i]);
+                    pFunction.pShader.addUniformVariable(pFunction.pParamOrders[i]);
                 }
             }
             //Add Varyings
@@ -6287,7 +6384,7 @@ Effect.prototype.analyzeFunctionDecl = function (pNode) {
                     pFunction.pShader.addVarying(pFunction.pParamOrders[i]);
                 }
                 else {
-                    pFunction.pShader.addUniform(pFunction.pParamOrders[i]);
+                    pFunction.pShader.addUniformVariable(pFunction.pParamOrders[i]);
                 }
             }
             this.newCode();
@@ -6581,7 +6678,7 @@ Effect.prototype.analyzeSimpleStmt = function (pNode) {
     }
     else if (pChildren[pChildren.length - 1].sValue === a.fx.GLOBAL_VARS.T_KW_BREAK) {
         //SimpleStmt : T_KW_BREAK ';'
-        if(this._isInLoop === false){
+        if (this._isInLoop === false) {
             error("Break statement can be used only in loop(or in switch in pass)");
             return;
         }
@@ -7266,7 +7363,7 @@ Effect.prototype.analyzeProvideDecl = function (pNode) {
 
 A_NAMESPACE(Effect, fx);
 
-function EffectFileData(pEngine){
+function EffectFileData(pEngine) {
     A_CLASS;
     this._pEngine = pEngine;
     this._pRenderer = pEngine.shaderManager();

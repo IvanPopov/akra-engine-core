@@ -268,16 +268,18 @@ LightPoint.prototype.calculateShadows = function () {
         var i;
         for (i = 0; i < 6; i++) {
             pRenderer.activateFrameBuffer();
-            pRenderer.applyFrameBufferTexture(this._pDepthTextureCube[i], pDevice.DEPTH_ATTACHMENT, pDevice.TEXTURE_2D, 0);
-            pRenderer.applyFrameBufferTexture(this._pColorTexture, pDevice.COLOR_ATTACHMENT0, pDevice.TEXTURE_2D, 0);
+            pRenderer.applyFrameBufferTexture(this._pDepthTextureCube[i], a.ATYPE.DEPTH_ATTACHMENT, a.TTYPE.TEXTURE_2D, 0);
+            pRenderer.applyFrameBufferTexture(this._pColorTexture, a.ATYPE.COLOR_ATTACHMENT0, a.TTYPE.TEXTURE_2D, 0);
+            pRenderer.clearScreen(a.CLEAR.DEPTH_BUFFER_BIT | a.CLEAR.COLOR_BUFFER_BIT);
             this._renderShadowsFromCamera(this._pCameraCube[i]);
             pRenderer.deactivateFrameBuffer();
         }
     }
     else {
         pRenderer.activateFrameBuffer();
-        pRenderer.applyFrameBufferTexture(this._pDepthTexture, pDevice.DEPTH_ATTACHMENT, pDevice.TEXTURE_2D, 0);
-        pRenderer.applyFrameBufferTexture(this._pColorTexture, pDevice.COLOR_ATTACHMENT0, pDevice.TEXTURE_2D, 0);
+        pRenderer.applyFrameBufferTexture(this._pDepthTexture, a.ATYPE.DEPTH_ATTACHMENT, a.TTYPE.TEXTURE_2D, 0);
+        pRenderer.applyFrameBufferTexture(this._pColorTexture, a.ATYPE.COLOR_ATTACHMENT0, a.TTYPE.TEXTURE_2D, 0);
+        pRenderer.clearScreen(a.CLEAR.DEPTH_BUFFER_BIT | a.CLEAR.COLOR_BUFFER_BIT);
         this._renderShadowsFromCamera(this._pCamera);
         pRenderer.deactivateFrameBuffer();
     }

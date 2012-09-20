@@ -656,8 +656,8 @@ PassBlend.prototype.addPass = function (pPass) {
             }
             PassBlend.fnAddUniform(pVar1, this, pVertex, true);
         }
-        for (i in pVertex.pExternals) {
-            this._addExternal(pVertex.pExternals[i], true);
+        for (i in pVertex.pSharedVariables) {
+            this._addExternal(pVertex.pSharedVariables[i], true);
         }
         for (i in pVertex.pAttrBuffers) {
             if (!this.pAttrBuffers[i]) {
@@ -805,8 +805,8 @@ PassBlend.prototype.addPass = function (pPass) {
         for (i in pFragment._pExtractFunctions) {
             this.pExtrectedFunctionsF[i] = null;
         }
-        for (i in pFragment.pExternals) {
-            this._addExternal(pVertex.pExternals[i], false);
+        for (i in pFragment.pSharedVariables) {
+            this._addExternal(pVertex.pSharedVariables[i], false);
         }
     }
 
@@ -1012,7 +1012,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                     if (this.pSamplersF[sKey1] === null) {
                         isZeroSamplerF = true;
                     }
-                    pSampler._pSamplerData = PassBlend.sZeroSampler;
+                    pSampler._pData = PassBlend.sZeroSampler;
                     pSampler.isValid = false;
                     pSamplersToReal[sKey1] = null;
                     continue;
@@ -1040,7 +1040,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                         if (this.pSamplersF[sKey1] === null) {
                             isZeroSamplerF = true;
                         }
-                        pSampler._pSamplerData = PassBlend.sZeroSampler;
+                        pSampler._pData = PassBlend.sZeroSampler;
                         pSamplersToReal[sKey1] = null;
                         continue;
                     }
@@ -1060,7 +1060,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                         SET_BIT(pSamplersUsage[iRealSampler], 2);
                     }
 
-                    pSamplersToReal[sKey1] = pSampler._pSamplerData = a.fx.SHADER_PREFIX.SAMPLER + iRealSampler;
+                    pSamplersToReal[sKey1] = pSampler._pData = a.fx.SHADER_PREFIX.SAMPLER + iRealSampler;
                     continue;
                 }
                 if (this.pSamplersV[sKey1] === null) {
@@ -1071,7 +1071,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                 }
                 //nRealSamplers += pSampler.iLength;
 
-                pSampler._pSamplerData = pSampler.sRealName;
+                pSampler._pData = pSampler.sRealName;
                 pSampler.isValid = true;
                 pSamplersToReal[sKey1] = new Array(pSampler.iLength * 1);
             }
@@ -1111,7 +1111,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                     pSamplersToReal[sKey1] = sData1;
                 }
                 for (j = 0; j < this.pSamplers[sKey1].length; j++) {
-                    this.pSamplers[sKey1][j]._pSamplerData = sData1;
+                    this.pSamplers[sKey1][j]._pData = sData1;
                 }
                 continue;
             }

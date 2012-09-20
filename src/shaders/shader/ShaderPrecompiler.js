@@ -369,7 +369,7 @@ ShaderPrecompiler.extract = function (pShader, sSource, eType) {
 
                 pUniform.name = sSemantics.match(pSyntax.semanticsDataExp)[1];
 
-                pFrag.addUniform(pUniform);
+                pFrag.addUniformVariable(pUniform);
             }
 
             if (!isEmpty(pRules[i].match(pSyntax.uniformDeclExp))) {
@@ -401,7 +401,7 @@ ShaderPrecompiler.extract = function (pShader, sSource, eType) {
                 pUniform.name = sSemantics.match(pSyntax.semanticsDataExp)[1];
 
 
-                pFrag.addUniform(pUniform);
+                pFrag.addUniformVariable(pUniform);
             }
 
             if (!isEmpty(pRules[i].match(pSyntax.attrDeclExp))) {

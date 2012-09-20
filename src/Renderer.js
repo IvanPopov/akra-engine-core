@@ -1411,6 +1411,9 @@ Renderer.prototype._setViewport = function (x, y, width, height) {
 Renderer.prototype.processRenderQueue = function () {
     this._pRenderQueue.execute();
 };
+Renderer.prototype.clearScreen = function (eValue) {
+    this.pDevice.clear(eValue);
+};
 
 //----Render resources----//
 Renderer.prototype.vertexBufferChanged = function (pBuffer) {
