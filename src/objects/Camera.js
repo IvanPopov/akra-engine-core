@@ -518,6 +518,49 @@ Camera.prototype.toString = function (isRecursive, iDepth) {
  
 Endif ();
 
+// Camera.prototype.addOrbitRotation = function () {
+//     'use strict';
+    
+//     var qTemp = Quat4();
+    
+//     switch (arguments.length) {
+//         case 1:
+//             Mat4.toQuat4(arguments[0], qTemp);
+//             break;
+//         case 2:
+//              if (typeof arguments[1] == "number") {
+//                 //from axis and angle
+//                 Quat4.fromAxisAngle(arguments[0], arguments[1], qTemp);
+//             }
+//             else if (typeof arguments[0] == "number") {
+//                 //from angle & axis
+//                 Quat4.fromAxisAngle(arguments[1], arguments[0], qTemp);
+//             }
+//             else {
+//                 Quat4.fromForwardUp(arguments[0], arguments[1], qTemp);
+//             }
+//         case 3:
+//             Quat4.fromYPR(arguments[0], arguments[1], arguments[2], qTemp);
+//             break;
+//         case 4:
+//             //from (x, y, z, angle)
+//             Quat4.fromAxisAngle(arguments, arguments[3], qTemp);
+//     }
+    
+    
+//     var v3fYPRPrev = this._qRotation.toYawPitchRoll(Vec3());
+    
+//     this._qRotation.multiply(qTemp);
+    
+//     var v3fYPRnext = this._qRotation.toYawPitchRoll(Vec3());
+
+//     var v3fYPR = v3fYPRnext.subtract(v3fYPRPrev);
+
+//     Quat4.fromYawPitchRoll(v3fYPR.x, v3fYPR.y, v3fYPR.z).multiplyVec3(this._v3fTranslation);
+
+//     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
+// };
+
 Camera.prototype.lookAt = function() {
     var v3fFrom, v3fCenter, v3fUp;
 

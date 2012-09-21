@@ -914,6 +914,12 @@ Node.prototype.setRotation = function () {
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
 
+Node.prototype.accessRotation = function () {
+    'use strict';
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
+    return this._qRotation;
+};
+
 /**
  * @property void addRelRotation(Float32Array m4fRotation)
  * Add relative rotation
@@ -951,6 +957,7 @@ Node.prototype.addRelRotation = function () {
             else {
                 Quat4.fromForwardUp(arguments[0], arguments[1], qTemp);
             }
+            break;
         case 3:
             Quat4.fromYPR(arguments[0], arguments[1], arguments[2], qTemp);
             break;
@@ -959,7 +966,6 @@ Node.prototype.addRelRotation = function () {
             Quat4.fromAxisAngle(arguments, arguments[3], qTemp);
     }
     
-
     this._qRotation.multiply(qTemp);
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
@@ -986,10 +992,10 @@ Node.prototype.addRelRotation = function () {
  * roll->pitch->yaw = z -> x -> y
  * @memberof SceneNode
  */
-/*Node.prototype.addRotation = function () {
+Node.prototype.addRotation = function () {
     'use strict';
     
-    var qTemp = TEMPSCENEQUAT4FORCALC0;
+    var qTemp = Quat4();
     
     switch (arguments.length) {
         case 1:
@@ -1015,12 +1021,13 @@ Node.prototype.addRelRotation = function () {
             Quat4.fromAxisAngle(arguments, arguments[3], qTemp);
     }
     
-
-    Quat4.multiply(this._qRotation, qTemp);
+    
+    qTemp.multiplyVec3(this._v3fTranslation);
+    qTemp.multiply(this._qRotation,this._qRotation);
 
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
-*/
+
 
 /**
  * @property void setScale(Float32Array v3fScale)

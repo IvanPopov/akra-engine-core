@@ -552,6 +552,6 @@ Vec3.prototype.vec3TransformCoord = function(m4fTransformMatrix,v3fDestination){
     return v3fDestination;
 };
 
-Vec3.prototype.mult = Vec3.prototype.multiply;
+Vec3.prototype.mult = Vec3.prototype.multiply = Vec3.prototype.cross;
 
 a.allocateStorage(Vec3,100);
