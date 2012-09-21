@@ -374,7 +374,6 @@ OcTree.prototype.buildSearchResults = function (pWorldRect, pOptionalFrustum) {
                 }
                 continue;
             }
-
             //Real node rect not in frustum -> there are no members to add
             if (pNode.pNodeTrueRect.isClear()) {
                 //pNode.pNodeTrueRect = pNode.nodeCoords();
@@ -383,7 +382,6 @@ OcTree.prototype.buildSearchResults = function (pWorldRect, pOptionalFrustum) {
             if (!pOptionalFrustum.testRect(pNode.pNodeTrueRect)) {
                 continue;
             }
-
             //All ok -> test each member to rect and frustum
             for (pObject = pNode.pFirstMember; pObject; pObject = pObject._pForwardTreeLink) {
                 if (a.intersectRect3d(pWorldRect, pObject.worldBounds(), pResult)) {
@@ -687,6 +685,8 @@ OcTreeNode.prototype.addOrUpdateMember = function (pMember) {
         }
         pMember._pOcTreeNode = this;
     }
+    //обновляем границы нода, критично, в том случае если объект выходит за границы нода, так как иначе отсекаться будет неправильно
+    this.nodeCoords();
 };
 /**
  * Remove member object from node and release node if there are not members in it
@@ -713,20 +713,64 @@ OcTreeNode.prototype.removeMember = function (pMember) {
     if (!this.pFirstMember) {
         pMember._pOcTree.deleteNodeFromTree(this);
     }
+    else{
+        //обновляем границы нода, критично, в том случае если объект выходит за границы нода, так как иначе отсекаться будет неправильно
+        this.nodeCoords();
+    }
 };
 /**
  * Calculate real rect(in world coords) of node
  */
 OcTreeNode.prototype.nodeCoords = function () {
     var w = 1 << (10 - this.iLevel);
-    this.pNodeTrueRect.fX0 = this.iX * w;
-    this.pNodeTrueRect.fX1 = (this.iX + 1) * w;
-    this.pNodeTrueRect.fY0 = this.iY * w;
-    this.pNodeTrueRect.fY1 = (this.iY + 1) * w;
-    this.pNodeTrueRect.fZ0 = this.iZ * w;
-    this.pNodeTrueRect.fZ1 = (this.iZ + 1) * w;
-    this.pNodeTrueRect.divSelf(this.pTree._v3fWorldScale);
-    this.pNodeTrueRect.subSelf(this.pTree._v3fWorldOffset);
+
+    var pNodeTrueRect = this.pNodeTrueRect;
+
+    pNodeTrueRect.fX0 = this.iX * w;
+    pNodeTrueRect.fX1 = (this.iX + 1) * w;
+    pNodeTrueRect.fY0 = this.iY * w;
+    pNodeTrueRect.fY1 = (this.iY + 1) * w;
+    pNodeTrueRect.fZ0 = this.iZ * w;
+    pNodeTrueRect.fZ1 = (this.iZ + 1) * w;
+    pNodeTrueRect.divSelf(this.pTree._v3fWorldScale);
+    pNodeTrueRect.subSelf(this.pTree._v3fWorldOffset);
+
+    var iLimit = (1 << this.iLevel) - 1;
+
+    var iX = this.iX;
+    var iY = this.iY;
+    var iZ = this.iZ;
+
+    if(iX == 0 || iX == iLimit 
+        || iY == 0 || iY == iLimit
+        || iZ == 0 || iZ == iLimit){
+
+        //if iLevel = 0 than iLimit = 0;
+        var pObject = null;
+        for(pObject = this.pFirstMember; pObject; pObject = pObject._pForwardTreeLink){
+            var pWorldRect = pObject.worldBounds();
+            if(iX == 0){
+                pNodeTrueRect.fX0 = Math.min(pNodeTrueRect.fX0,pWorldRect.fX0)
+            }
+            if(iX == iLimit){
+                pNodeTrueRect.fX1 = Math.max(pNodeTrueRect.fX1,pWorldRect.fX1)    
+            }
+
+            if(iY == 0){
+                pNodeTrueRect.fY0 = Math.min(pNodeTrueRect.fY0,pWorldRect.fY0)
+            }
+            if(iY == iLimit){
+                pNodeTrueRect.fY1 = Math.max(pNodeTrueRect.fY1,pWorldRect.fY1)    
+            }
+
+            if(iZ == 0){
+                pNodeTrueRect.fZ0 = Math.min(pNodeTrueRect.fZ0,pWorldRect.fZ0)
+            }
+            if(iZ == iLimit){
+                pNodeTrueRect.fZ1 = Math.max(pNodeTrueRect.fZ1,pWorldRect.fZ1)    
+            }
+        }
+    }
     /*
      this.pNodeTrueRect.fX0 = (this.pNodeTrueRect.fX0 + 1)<<0;
      this.pNodeTrueRect.fX1 = (this.pNodeTrueRect.fX1 + 1)<<0;

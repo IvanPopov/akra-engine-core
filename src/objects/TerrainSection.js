@@ -117,10 +117,8 @@ TerrainSection.prototype._buildVertexBuffer=function()
 	this._pWorldRect.fZ0 = MAX_REAL32;
 	this._pWorldRect.fZ1 = MIN_REAL32;
 
-	var pCamera = this._pEngine._pDefaultCamera;
-
 	var pVerts = new Array(this._iXVerts * this._iYVerts * (3/*кординаты вершин*/+3/*координаты нормалей*/+2/*текстурные координаты*/));
-	var v3fNormal = null;
+	var v3fNormal = new Vec3();
 
 	var v2fCellSize = new Vec2(); //размер ячейки сектора
 	v2fCellSize.set(this.getHeightX() / (this._iXVerts-1),
@@ -148,7 +146,9 @@ TerrainSection.prototype._buildVertexBuffer=function()
 			//	pVerts[((y * this._iXVerts) + x) * 10 + 2],pVerts[((y * this._iXVerts) + x) * 10 + 1]);
 
 
-			v3fNormal = this.getTerrainSystem().readWorldNormal(this._iHeightMapX + x, this._iHeightMapY + y);
+
+
+			this.getTerrainSystem().readWorldNormal(v3fNormal,this._iHeightMapX + x, this._iHeightMapY + y);
 			pVerts[((y * this._iXVerts) + x) * 8 + 3] = v3fNormal.x;
 			pVerts[((y * this._iXVerts) + x) * 8 + 4] = v3fNormal.y;
 			pVerts[((y * this._iXVerts) + x) * 8 + 5] = v3fNormal.z;

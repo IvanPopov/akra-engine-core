@@ -324,7 +324,10 @@ Camera.prototype.recalcMatrices = function () {
     //this.pSearchRect.expand(25);
 
 //    this.pFrustum.extractFromMatrix(this.m4fViewProj);
-    this.pFrustum.extractFromMatrixGL(this.m4fViewProj);
+    //this.pFrustum.extractFromMatrixGL(this.m4fViewProj);
+    
+    this._extractFrustumVertices();
+    this._calculateFrustumPlanes();
 
     this.m4fRenderStageProj.set(this.m4fProj);
     this.m4fRenderStageViewProj.set(this.m4fViewProj);
@@ -494,7 +497,323 @@ Camera.prototype.toString = function (isRecursive, iDepth) {
 
     return SceneNode.prototype.toString.call(this, isRecursive, iDepth);
 }
+ 
+Camera.prototype.lookAt = function() {
+    var v3fFrom, v3fCenter, v3fUp;
+
+    if (arguments.length < 3) {
+        v3fFrom = this.worldPosition();
+        v3fCenter = arguments[0];
+        v3fUp = arguments[1];
+    }
+    else {
+        v3fFrom = arguments[0];
+        v3fCenter = arguments[1];
+        v3fUp = arguments[2];
+    }
+    v3fUp = v3fUp || Vec3(0, 1, 0);
+
+    var m4fTemp = Mat4.lookAt(v3fFrom, v3fCenter, v3fUp,Mat4()).inverse();
+    
+    m4fTemp.toQuat4(this._qRotation);
+
+    var pData = m4fTemp.pData;
+
+    this._v3fTranslation.set(pData._14,pData._24,pData._34);
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
+};
 
 Endif ();
+
+function unproj(m4fProj,v4fScreen,v4fDestination){
+    if(!v4fDestination){
+        v4fDestination = new Vec4();
+    }
+
+    var pData1 = m4fProj.pData;
+    var pData2 = v4fScreen.pData;
+    var pDataDestination = v4fDestination.pData;
+  
+    var z = -pData1._34/(pData1._33 + pData2.Z);
+    var y = (-pData2.Y * z - pData1._23*z)/pData1._22;
+    var x = (-pData2.X * z - pData1._13*z)/pData1._11;
+  
+    pDataDestination.X = x;
+    pDataDestination.Y = y;
+    pDataDestination.Z = z;
+    pDataDestination.W = 1;
+
+    return v4fDestination;
+};
+
+Camera.prototype._extractFrustumVertices = function() {
+    'use strict';
+
+    var m4fProj = this.m4fProj;
+
+    this._v4fLeftBottomNear = new Vec4();
+    unproj(m4fProj,Vec4(-1,-1,-1,1),this._v4fLeftBottomNear);
+
+    this._v4fRightBottomNear = new Vec4();
+    unproj(m4fProj,Vec4(1,-1,-1,1),this._v4fRightBottomNear);
+
+    this._v4fLeftTopNear = new Vec4();
+    unproj(m4fProj,Vec4(-1,1,-1,1),this._v4fLeftTopNear);
+
+    this._v4fRightTopNear = new Vec4();
+    unproj(m4fProj,Vec4(1,1,-1,1),this._v4fRightTopNear);
+
+    this._v4fLeftBottomFar = new Vec4();
+    unproj(m4fProj,Vec4(-1,-1,1,1),this._v4fLeftBottomFar);
+
+    this._v4fRightBottomFar = new Vec4();
+    unproj(m4fProj,Vec4(1,-1,1,1),this._v4fRightBottomFar);
+
+    this._v4fLeftTopFar = new Vec4();
+    unproj(m4fProj,Vec4(-1,1,1,1),this._v4fLeftTopFar);
+
+    this._v4fRightTopFar = new Vec4();
+    unproj(m4fProj,Vec4(1,1,1,1),this._v4fRightTopFar);
+};
+
+Camera.prototype._calculateFrustumPlanes = function() {
+    'use strict';
+
+    //нормали всех плоскостей frustum-а смотрят наружу
+
+    var m4fCameraWorld = this._m4fWorldMatrix;
+    var pFrustum = this.pFrustum;
+
+    var v4fLeftBottomNearData = m4fCameraWorld.multiply(this._v4fLeftBottomNear,Vec4()).pData;
+    var v4fRightBottomNearData = m4fCameraWorld.multiply(this._v4fRightBottomNear,Vec4()).pData;
+    var v4fLeftTopNearData = m4fCameraWorld.multiply(this._v4fLeftTopNear,Vec4()).pData;
+    var v4fRightTopNearData = m4fCameraWorld.multiply(this._v4fRightTopNear,Vec4()).pData;
+
+    var v4fLeftBottomFarData = m4fCameraWorld.multiply(this._v4fLeftBottomFar,Vec4()).pData;
+    var v4fRightBottomFarData = m4fCameraWorld.multiply(this._v4fRightBottomFar,Vec4()).pData;
+    var v4fLeftTopFarData = m4fCameraWorld.multiply(this._v4fLeftTopFar,Vec4()).pData;
+    var v4fRightTopFarData = m4fCameraWorld.multiply(this._v4fRightTopFar,Vec4()).pData;
+
+    var x1,y1,z1; //первый вектор
+    var x2,y2,z2; //второй вектор
+    var x3,y3,z3; //векторное произведение
+    var fLength,fInvLength; //длина скалярного произведения
+
+    var pDirectionLTNLBN = Vec3().pData;//LTNLBN - left top near - left bottom near; //from - to
+    var pDirectionLTNRTN = Vec3().pData;//LTNRTN - left top near - right top near;
+    var pDirectionLTNLTF = Vec3().pData;//LTNLTF - left top near - left top far;
+    var pDirectionRBFRTF = Vec3().pData;//RBFRTF - right bottom far - right top far;
+    var pDirectionRBFRBN = Vec3().pData;//RBFRBN - right bottom far - right bottom near;
+    var pDirectionRBFLBF = Vec3().pData;//RBFLBF - right bottom far - left bottom far;
+
+    pDirectionLTNLBN.X = v4fLeftBottomNearData.X - v4fLeftTopNearData.X;
+    pDirectionLTNLBN.Y = v4fLeftBottomNearData.Y - v4fLeftTopNearData.Y;
+    pDirectionLTNLBN.Z = v4fLeftBottomNearData.Z - v4fLeftTopNearData.Z;
+
+    pDirectionLTNRTN.X = v4fRightTopNearData.X - v4fLeftTopNearData.X;
+    pDirectionLTNRTN.Y = v4fRightTopNearData.Y - v4fLeftTopNearData.Y;
+    pDirectionLTNRTN.Z = v4fRightTopNearData.Z - v4fLeftTopNearData.Z;
+
+    pDirectionLTNLTF.X = v4fLeftTopFarData.X - v4fLeftTopNearData.X;
+    pDirectionLTNLTF.Y = v4fLeftTopFarData.Y - v4fLeftTopNearData.Y;
+    pDirectionLTNLTF.Z = v4fLeftTopFarData.Z - v4fLeftTopNearData.Z;
+
+    pDirectionRBFRTF.X = v4fRightTopFarData.X - v4fRightBottomFarData.X;
+    pDirectionRBFRTF.Y = v4fRightTopFarData.Y - v4fRightBottomFarData.Y;
+    pDirectionRBFRTF.Z = v4fRightTopFarData.Z - v4fRightBottomFarData.Z;
+
+    pDirectionRBFRBN.X = v4fRightBottomNearData.X - v4fRightBottomFarData.X;
+    pDirectionRBFRBN.Y = v4fRightBottomNearData.Y - v4fRightBottomFarData.Y;
+    pDirectionRBFRBN.Z = v4fRightBottomNearData.Z - v4fRightBottomFarData.Z;
+
+    pDirectionRBFLBF.X = v4fLeftBottomFarData.X - v4fRightBottomFarData.X;
+    pDirectionRBFLBF.Y = v4fLeftBottomFarData.Y - v4fRightBottomFarData.Y;
+    pDirectionRBFLBF.Z = v4fLeftBottomFarData.Z - v4fRightBottomFarData.Z;
+
+    /////////////////////////////////////////
+
+    var testPoint1 = v4fLeftTopNearData;
+    var testPoint2 = v4fRightBottomFarData;
+
+    /////////////////////////////////////////
+
+    //near plane
+    x1 = pDirectionLTNLBN.X;
+    y1 = pDirectionLTNLBN.Y;
+    z1 = pDirectionLTNLBN.Z;
+
+    x2 = pDirectionLTNRTN.X;
+    y2 = pDirectionLTNRTN.Y;
+    z2 = pDirectionLTNRTN.Z;
+
+    //normal
+    x3 = y1*z2 - z1*y2;
+    y3 = z1*x2 - x1*z2;
+    z3 = x1*y2 - y1*x2;
+
+    fLength = Math.sqrt(x3*x3 + y3*y3 + z3*z3);
+    fInvLength = 1/fLength;
+
+    x3 *= fInvLength;
+    y3 *= fInvLength;
+    z3 *= fInvLength;
+
+    var v3fNormalNearData = pFrustum.nearPlane.v3fNormal.pData;
+    v3fNormalNearData.X = x3;
+    v3fNormalNearData.Y = y3;
+    v3fNormalNearData.Z = z3;
+    //constant
+    pFrustum.nearPlane.fDistance = -(testPoint1.X*x3 + testPoint1.Y*y3 + testPoint1.Z*z3);
+
+    /////////////////////////////////////////
+
+    //left plane
+    x1 = pDirectionLTNLTF.X;
+    y1 = pDirectionLTNLTF.Y;
+    z1 = pDirectionLTNLTF.Z;
+
+    x2 = pDirectionLTNLBN.X;
+    y2 = pDirectionLTNLBN.Y;
+    z2 = pDirectionLTNLBN.Z;
+
+    //normal
+    x3 = y1*z2 - z1*y2;
+    y3 = z1*x2 - x1*z2;
+    z3 = x1*y2 - y1*x2;
+
+    fLength = Math.sqrt(x3*x3 + y3*y3 + z3*z3);
+    fInvLength = 1/fLength;
+
+    x3 *= fInvLength;
+    y3 *= fInvLength;
+    z3 *= fInvLength;
+
+    var v3fNormalLeftData = pFrustum.leftPlane.v3fNormal.pData;
+    v3fNormalLeftData.X = x3;
+    v3fNormalLeftData.Y = y3;
+    v3fNormalLeftData.Z = z3;
+    //constant
+    pFrustum.leftPlane.fDistance = -(testPoint1.X*x3 + testPoint1.Y*y3 + testPoint1.Z*z3);
+
+    /////////////////////////////////////////
+
+    //top plane
+    x1 = pDirectionLTNRTN.X;
+    y1 = pDirectionLTNRTN.Y;
+    z1 = pDirectionLTNRTN.Z;
+
+    x2 = pDirectionLTNLTF.X;
+    y2 = pDirectionLTNLTF.Y;
+    z2 = pDirectionLTNLTF.Z;
+
+    //normal
+    x3 = y1*z2 - z1*y2;
+    y3 = z1*x2 - x1*z2;
+    z3 = x1*y2 - y1*x2;
+
+    fLength = Math.sqrt(x3*x3 + y3*y3 + z3*z3);
+    fInvLength = 1/fLength;
+
+    x3 *= fInvLength;
+    y3 *= fInvLength;
+    z3 *= fInvLength;
+
+    var v3fNormalTopData = pFrustum.topPlane.v3fNormal.pData;
+    v3fNormalTopData.X = x3;
+    v3fNormalTopData.Y = y3;
+    v3fNormalTopData.Z = z3;
+    //constant
+    pFrustum.topPlane.fDistance = -(testPoint1.X*x3 + testPoint1.Y*y3 + testPoint1.Z*z3);
+
+    /////////////////////////////////////////
+    
+    //right plane
+    x1 = pDirectionRBFRTF.X;
+    y1 = pDirectionRBFRTF.Y;
+    z1 = pDirectionRBFRTF.Z;
+
+    x2 = pDirectionRBFRBN.X;
+    y2 = pDirectionRBFRBN.Y;
+    z2 = pDirectionRBFRBN.Z;
+
+    //normal
+    x3 = y1*z2 - z1*y2;
+    y3 = z1*x2 - x1*z2;
+    z3 = x1*y2 - y1*x2;
+
+    fLength = Math.sqrt(x3*x3 + y3*y3 + z3*z3);
+    fInvLength = 1/fLength;
+
+    x3 *= fInvLength;
+    y3 *= fInvLength;
+    z3 *= fInvLength;
+
+    var v3fNormalRightData = pFrustum.rightPlane.v3fNormal.pData;
+    v3fNormalRightData.X = x3;
+    v3fNormalRightData.Y = y3;
+    v3fNormalRightData.Z = z3;
+    //constant
+    pFrustum.rightPlane.fDistance = -(testPoint2.X*x3 + testPoint2.Y*y3 + testPoint2.Z*z3);
+
+    /////////////////////////////////////////
+    
+    //bottom plane
+    x1 = pDirectionRBFRBN.X;
+    y1 = pDirectionRBFRBN.Y;
+    z1 = pDirectionRBFRBN.Z;
+
+    x2 = pDirectionRBFLBF.X;
+    y2 = pDirectionRBFLBF.Y;
+    z2 = pDirectionRBFLBF.Z;
+
+    //normal
+    x3 = y1*z2 - z1*y2;
+    y3 = z1*x2 - x1*z2;
+    z3 = x1*y2 - y1*x2;
+
+    fLength = Math.sqrt(x3*x3 + y3*y3 + z3*z3);
+    fInvLength = 1/fLength;
+
+    x3 *= fInvLength;
+    y3 *= fInvLength;
+    z3 *= fInvLength;
+
+    var v3fNormalBottomData = pFrustum.bottomPlane.v3fNormal.pData;
+    v3fNormalBottomData.X = x3;
+    v3fNormalBottomData.Y = y3;
+    v3fNormalBottomData.Z = z3;
+    //constant
+    pFrustum.bottomPlane.fDistance = -(testPoint2.X*x3 + testPoint2.Y*y3 + testPoint2.Z*z3);
+
+    /////////////////////////////////////////
+    
+    //far plane
+    x1 = pDirectionRBFLBF.X;
+    y1 = pDirectionRBFLBF.Y;
+    z1 = pDirectionRBFLBF.Z;
+
+    x2 = pDirectionRBFRTF.X;
+    y2 = pDirectionRBFRTF.Y;
+    z2 = pDirectionRBFRTF.Z;
+
+    //normal
+    x3 = y1*z2 - z1*y2;
+    y3 = z1*x2 - x1*z2;
+    z3 = x1*y2 - y1*x2;
+
+    fLength = Math.sqrt(x3*x3 + y3*y3 + z3*z3);
+    fInvLength = 1/fLength;
+
+    x3 *= fInvLength;
+    y3 *= fInvLength;
+    z3 *= fInvLength;
+
+    var v3fNormalFarData = pFrustum.farPlane.v3fNormal.pData;
+    v3fNormalFarData.X = x3;
+    v3fNormalFarData.Y = y3;
+    v3fNormalFarData.Z = z3;
+    //constant
+    pFrustum.farPlane.fDistance = -(testPoint2.X*x3 + testPoint2.Y*y3 + testPoint2.Z*z3);
+};
 
 a.Camera = Camera;

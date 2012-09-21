@@ -51,7 +51,7 @@ function Terrain (pEngine) {
     this._iTableWidth; //размер карты высот
     this._iTableHeight; //размер карты высот
     this._pHeightTable = null;  //Таблица(карта высот)
-    this._pv3fNormalTable = null; //Таблица нормалей
+    this._pNormalTable = null; //Таблица нормалей
 
 	this._pMegaTexures = null; //отоброжаемые куски текстуры
 
@@ -124,7 +124,7 @@ Terrain.prototype.getSectorCountY=function()
 }
 
 /**
- * @property create(SceneNode pRootNode, Texture pHeightMap, const cRect3d worldExtents, int iShift, Function fnCallBack)
+ * @property create(SceneNode pRootNode, Array pMap, const cRect3d worldExtents, int iShift, Function fnCallBack)
  * @memberof Terrain
  * @param pRootNode
  * @param fnCallBack функция которую нужно вызвать после создания
@@ -134,7 +134,7 @@ Terrain.prototype.getSectorCountY=function()
 //iShiftY - количесвто сектионов по Y
 //iShift - количество вершин в сектионе
 
-Terrain.prototype.create = function (pRootNode, pHeightMap,worldExtents, iShift, iShiftX,iShiftY,sSurfaceTextures)
+Terrain.prototype.create = function (pRootNode, pMap,worldExtents, iShift, iShiftX,iShiftY,sSurfaceTextures)
 {
 	//Основные параметры
     this._iSectorShift = iShift;
@@ -170,9 +170,16 @@ Terrain.prototype.create = function (pRootNode, pHeightMap,worldExtents, iShift,
     // convert the height map to
     // data stored in local tables
 	console.log("Высоты и нормали")
-    this.buildHeightAndNormalTables(pHeightMap);
-	console.log("Высоты и нормали созданы")
+    this.buildHeightAndNormalTables(pMap["height"],pMap["normal"]);
+	for(var sMap in pMap)
+	{
+		if(sMap.destroyResource)
+		{
+			sMap.destroyResource();
+		}
+	}
 
+	console.log("Высоты и нормали созданы")
 	console.log("Сектора")
     return this.allocateSectors();
 	console.log("Сектора созданы")
@@ -269,82 +276,95 @@ Terrain.prototype.setRenderMethod = function (pRenderMethod) {
  * @memberof Terrain
  * @param pTexture
  **/
-Terrain.prototype.buildHeightAndNormalTables = function (pImage) {
-    var pColor = new Uint8Array(4);
-
+Terrain.prototype.buildHeightAndNormalTables = function (pImageHightMap,pImageNormalMap)
+{
+	var fHeight=0;
+	var iComponents=4;
     this._pHeightTable = null;
-    this._pv3fNormalTable = null;
+    this._pNormalTable = null;
 
 
     var iMaxY = this._iTableHeight;
     var iMaxX = this._iTableWidth;
-    var x, y;
 
 	console.log("buildHeightAndNormalTables0");
 
+	var pColorData=new Uint8Array(4*iMaxY*iMaxX);
     this._pHeightTable = new Array(iMaxX * iMaxY); //float
-    this._pv3fNormalTable = new Array(iMaxX * iMaxY);
-    for (var i = 0; i < iMaxX * iMaxY; i++) {
-        this._pv3fNormalTable[i] = new Vec3();
-    }
+    this._pNormalTable = new Array(iMaxX * iMaxY*4);
+
+	var temp = new a.Texture(this._pEngine);
 
 	console.log("buildHeightAndNormalTables1");
     // first, build a table of heights
-    if (pImage.isResourceLoaded()) 
+    if (pImageHightMap.isResourceLoaded())
 	{
-        var fHeight;
-        for (y = 0; y < iMaxY; y++)
+		temp.uploadImage(pImageHightMap);
+		temp.resize(iMaxX,iMaxY);
+		temp.getPixelRGBA(0, 0,iMaxX,iMaxY, pColorData);
+
+		iComponents=temp.numElementsPerPixel;
+		for (i = 0; i < iMaxY*iMaxX; i++)
 		{
-            for (x = 0; x < iMaxX; x++) 
-			{
-                pImage.tex2D(x/iMaxX, y/iMaxY, pColor);
-                fHeight = pColor[0]; // Red value
-                fHeight = (fHeight * this._v3fMapScale.z) + this._pWorldExtents.fZ0;
-                this._pHeightTable[(y * iMaxX) + x] = fHeight;
-            }
-        }
+			fHeight=pColorData[i*iComponents+0];
+			fHeight = (fHeight * this._v3fMapScale.z) + this._pWorldExtents.fZ0;
+			this._pHeightTable[i] = fHeight;
+		}
     }
+	else
+	{
+		warning("Карта высот не загружена")
+	}
 
-	console.log("buildHeightAndNormalTables2");
+	if(pImageNormalMap)
+	{
+		if (pImageNormalMap.isResourceLoaded())
+		{
+			temp.uploadImage(pImageNormalMap);
+		}
+		else
+		{
+			warning("Карта нормалей не загружена")
+		}
+	}
+	else
+	{
 
-    // create a normal map texture
-    var temp = new a.Texture(this._pEngine);
+		// how much to scale the normals?
+		var fScale = (this._iTableWidth * this._pWorldExtents.sizeZ()) / this._pWorldExtents.sizeX();
+		// convert our height map into a
+		// texture of surface normals
+		console.log("buildHeightAndNormalTables3")
+		temp.generateNormalMap(pImage, 0, fScale);
+	}
 
-    // how much to scale the normals?
-    var fScale = (this._iTableWidth * this._pWorldExtents.sizeZ()) / this._pWorldExtents.sizeX();
-
-    // convert our height map into a
-    // texture of surface normals
-
-	console.log("buildHeightAndNormalTables3")
-
-    temp.generateNormalMap(pImage, 0, fScale);
 	console.log("buildHeightAndNormalTables4")
 	temp.resize(iMaxX,iMaxY);
 	console.log("buildHeightAndNormalTables5")
-	var pColorData=new Uint8Array(4*iMaxY*iMaxX);
 	temp.getPixelRGBA(0, 0,iMaxX,iMaxY, pColorData);
 	console.log("buildHeightAndNormalTables6")
 	//console.log(pColorData);
-	var i=0;
-    for (y = 0; y < iMaxY; y++) 
-	{
-        for (x = 0; x < iMaxX; x++) 
-		{       
-			i++;
 
-            this._pv3fNormalTable[(y * iMaxX) + x].x = pColorData[((y * iMaxX) + x)*4+0] - 127.5;
-            this._pv3fNormalTable[(y * iMaxX) + x].y = pColorData[((y * iMaxX) + x)*4+1] - 127.5;
-            this._pv3fNormalTable[(y * iMaxX) + x].z = pColorData[((y * iMaxX) + x)*4+2] - 127.5;
-            this._pv3fNormalTable[(y * iMaxX) + x].normalize();
-			//console.log(this._pv3fNormalTable[(y * iMaxX) + x].x,
-			//	this._pv3fNormalTable[(y * iMaxX) + x].y,
-			//	this._pv3fNormalTable[(y * iMaxX) + x].Z)
-			//console.log("norm->",this._pv3fNormalTable[(y * iMaxX) + x].x = pColorData[((y * iMaxX) + x)*4+0],
-			//	this._pv3fNormalTable[(y * iMaxX) + x].x = pColorData[((y * iMaxX) + x)*4+1],
-			//	this._pv3fNormalTable[(y * iMaxX) + x].x = pColorData[((y * iMaxX) + x)*4+2]);
-        }
-    }
+	iComponents=temp.numElementsPerPixel;
+	var i=0;
+	var fX=0;
+	var fY=0;
+	var fZ=0;
+	var fLength=0;
+	for (i = 0; i < iMaxY*iMaxX*iComponents; i+=iComponents)
+	{
+			fX=pColorData[i+0] - 127.5;
+			fY=pColorData[i+1] - 127.5;
+			fZ=pColorData[i+2] - 127.5;
+			fLength=Math.sqrt(fX*fX+fY*fY+fZ*fZ);
+			if(fLength!=0)
+			{
+				this._pNormalTable[i+0] = fX/fLength;
+				this._pNormalTable[i+1] = fY/fLength;
+				this._pNormalTable[i+2] = fZ/fLength;
+			}
+	}
+
 	console.log("buildHeightAndNormalTables7")
     temp.releaseTexture();
 	console.log("buildHeightAndNormalTables8")
@@ -359,7 +379,6 @@ Terrain.prototype.buildHeightAndNormalTables = function (pImage) {
  * @return float
  **/
 
-var kdjfkdjf=0;
 Terrain.prototype.readWorldHeight = function () {
     if (arguments.length == 2) {
         var iMapX = arguments[0];
@@ -406,7 +425,7 @@ Terrain.prototype.tableIndex = function (iMapX, iMapY) {
  * @param iMapY
  * @return vec3f
  **/
-Terrain.prototype.readWorldNormal = function (iMapX, iMapY) {
+Terrain.prototype.readWorldNormal = function (v3fNormal,iMapX, iMapY) {
     if (iMapX >= this._iTableWidth) {
         iMapX = this._iTableWidth - 1;
     }
@@ -414,7 +433,11 @@ Terrain.prototype.readWorldNormal = function (iMapX, iMapY) {
         iMapY = this._iTableHeight - 1;
     }
 
-    return this._pv3fNormalTable[(iMapY * this._iTableWidth) + iMapX];
+	var iOffset=((iMapY * this._iTableWidth) + iMapX)*4;
+	v3fNormal.set(this._pNormalTable[iOffset+0],
+		this._pNormalTable[iOffset+1],
+		this._pNormalTable[iOffset+2])
+    return v3fNormal;
 };
 
 /**
@@ -487,15 +510,19 @@ Terrain.prototype.calcMapHeight = function (fMapX, fMapY) {
  * @param fTempMapX
  * @param fTempMapY
  **/
-Terrain.prototype.calcMapNormal = function (v3fNormal, fTempMapX, fTempMapY) {
-    var fMapX = fTempMapX * (this._iTableWidth - 1);
-    var fMapY = fTempMapY * (this._iTableHeight - 1);
 
-    var iMapX0 = Math.floor(fMapX);
-    var iMapY0 = Math.floor(fMapY);
 
-    fMapX -= iMapX0;
-    fMapY -= iMapY0;
+Terrain.prototype.calcMapNormal = function (v3fNormal, fMapX, fMapY) {
+    var fTempMapX = fMapX * (this._iTableWidth - 1);
+    var fTempMapY = fMapY * (this._iTableHeight - 1);
+	//console.log(fTempMapX,fTempMapY)
+
+
+    var iMapX0 = Math.floor(fTempMapX);
+    var iMapY0 = Math.floor(fTempMapY);
+
+	fTempMapX -= iMapX0;
+	fTempMapY -= iMapY0;
 
     iMapX0 = Math.clamp(iMapX0, 0, this._iTableWidth - 1);
     iMapY0 = Math.clamp(iMapY0, 0, this._iTableHeight - 1);
@@ -504,29 +531,31 @@ Terrain.prototype.calcMapNormal = function (v3fNormal, fTempMapX, fTempMapY) {
     var iMapY1 = Math.clamp(iMapY0 + 1, 0, this._iTableHeight - 1);
 
     // read 4 map values
-    v3fH0 = new Vec3();
-	v3fH0.set(this.readWorldNormal(iMapX0, iMapY0));
+    var v3fH0 = Vec3();
+	this.readWorldNormal(v3fH0,iMapX0, iMapY0);
 
-    v3fH1 = new Vec3();
-	v3fH1.set(this.readWorldNormal(iMapX1, iMapY0));
+    var v3fH1 = Vec3();
+	this.readWorldNormal(v3fH1,iMapX1, iMapY0);
 
-    v3fH2 = new Vec3();
-	v3fH2.set(this.readWorldNormal(iMapX0, iMapY1));
+	var v3fH2 = Vec3();
+	this.readWorldNormal(v3fH2,iMapX0, iMapY1);
 
-    v3fH3 = new Vec3();
-	v3fH3.set(this.readWorldNormal(iMapX1, iMapY1));
+	var v3fH3 = Vec3();
+	this.readWorldNormal(v3fH3,iMapX1, iMapY1);
 
-    v3fAvgLo = new Vec3();
-	v3fAvgLo.add(v3fH1.scale(fMapX));
-	v3fAvgLo.add(v3fH0.scale(1.0 - fMapX));
+    v3fAvgLo = Vec3();
+	v3fAvgLo.set(v3fH1.scale(fTempMapX));
+	v3fAvgLo.add(v3fH0.scale(1.0 - fTempMapX));
 
-    v3fAvgHi = new Vec3();
-	v3fAvgHi.add(v3fH3.scale(fMapX))
-	v3fAvgHi.add(v3fH2.scale(1.0 - fMapX));
+    v3fAvgHi = Vec3();
+	v3fAvgHi.set(v3fH3.scale(fTempMapX))
+	v3fAvgHi.add(v3fH2.scale(1.0 - fTempMapX));
 
-	v3fNormal.add(v3fAvgHi.scale(fMapY));
-	v3fNormal.add(v3fAvgLo.scale(1.0 - fMapY));
+	v3fNormal.set(v3fAvgHi.scale(fTempMapY));
+	v3fNormal.add(v3fAvgLo.scale(1.0 - fTempMapY));
 	v3fNormal.normalize();
+
+	return v3fNormal;
 };
 
 

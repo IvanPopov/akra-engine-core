@@ -1,7 +1,3 @@
-Enum([
-	TOTAL_DETAIL_LEVELS = 4,
-	TOTAL_VARIANCES = 1<<4
-], TERRAIN_CONSTANTS, a.TerrainSectionROAM);
 
 function TerrainSectionROAM (pEngine)
 {
@@ -13,10 +9,8 @@ function TerrainSectionROAM (pEngine)
 	this._pRootTriangleB=new a.TriTreeNode();
 
 	//Урове5нь погрещности для двух деревьев
-	this._pVarianceTreeA = new Array( a.TerrainSectionROAM.TOTAL_VARIANCES);
-	this._pVarianceTreeA.set(0);
-	this._pVarianceTreeB = new Array( a.TerrainSectionROAM.TOTAL_VARIANCES);
-	this._pVarianceTreeB.set(0);
+	this._pVarianceTreeA = null
+	this._pVarianceTreeB = null
 
 	//расстояние от камеры до углов секции
 	this._v3fDistance0=new Vec3();
@@ -65,8 +59,15 @@ TerrainSectionROAM.prototype.getTotalIndices= function()
 
 TerrainSectionROAM.prototype.create=function(pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY, iXVerts, iYVerts, pWorldRect)
 {
-	var bResult=TerrainSection.prototype.create.call(this, pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY, iXVerts, iYVerts, pWorldRect);
+	iVerts=Math.max(iXVerts,iYVerts)
+	var bResult=TerrainSection.prototype.create.call(this, pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY, iVerts, iVerts, pWorldRect);
 
+	this._iTotalDetailLevels=Math.ceil(Math.log(iVerts)/Math.LN2)*2-1;
+	this._iTotalVariances=1<<this._iTotalDetailLevels;
+	this._pVarianceTreeA = new Array( this._iTotalVariances);
+	this._pVarianceTreeA.set(0);
+	this._pVarianceTreeB = new Array(this._iTotalVariances);
+	this._pVarianceTreeB.set(0);
 
 	var pRoamTerrain = this.getTerrainSystem();
 	var pNorthSection =
@@ -184,7 +185,7 @@ TerrainSectionROAM.prototype.recursiveTessellate=function(pTri, //вершина
 											   pVTree, iIndex, //массив погрешности по высоте
 											   fScale, fLimit)
 {
-	if ((iIndex<<1)+1 < a.TerrainSectionROAM.TOTAL_VARIANCES)
+	if ((iIndex<<1)+1 < this._iTotalVariances)
 	{
 		//console.log("vIndex",vIndex,"totalVariances",this._totalVariances)
 		var fMidDist = (distB+distC)* 0.5;
@@ -242,7 +243,8 @@ TerrainSectionROAM.prototype.split = function(pTri)
 	// Если не удалось выделить треугольник, то не разбиваем
 	if ( (!pTri.pLeftChild) || (!pTri.pRightChild))
 	{
-		//wconsole.log("не удалось выделить треугольник!");
+		//console.log("не удалось выделить треугольник!");
+		document.getElementById('setinfo0').innerHTML="не удалось выделить треугольник! ";
 		pTri.pLeftChild  = null;
 		pTri.pRightChild = null;
 		return;
@@ -351,11 +353,6 @@ TerrainSectionROAM.prototype.buildTriangleList=function()
 		this._pRootTriangleB,
 		(this._iYVerts*this._iXVerts)-1, (this._iYVerts-1)*this._iXVerts, this._iXVerts-1);
 
-	if(this._iTotalIndicesOld==this._iTotalIndices)
-	{
-		return;
-	}
-	//###########################################################################
 
 	var pCanvas=document.getElementById('canvasLOD');
 	var p2D=pCanvas.getContext("2d");
@@ -391,7 +388,20 @@ TerrainSectionROAM.prototype.buildTriangleList=function()
 	}
 	p2D.stroke();
 
-	//###########################################################################
+	p2D.strokeStyle = "#00f"; //цвет линий
+	p2D.lineWidth = 1;
+	p2D.beginPath();
+	p2D.lineTo(((this._pWorldRect.fX0-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY0-rect.fY0)/size.y)*pCanvas.height);
+	p2D.lineTo(((this._pWorldRect.fX1-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY0-rect.fY0)/size.y)*pCanvas.height);
+	p2D.lineTo(((this._pWorldRect.fX1-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY1-rect.fY0)/size.y)*pCanvas.height);
+	p2D.lineTo(((this._pWorldRect.fX0-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY1-rect.fY0)/size.y)*pCanvas.height);
+	p2D.lineTo(((this._pWorldRect.fX0-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY0-rect.fY0)/size.y)*pCanvas.height);
+	p2D.stroke();
+
+	if(this._iTotalIndicesOld==this._iTotalIndices)
+	{
+		return;
+	}
 
 	this._pRenderData.setIndexLength(this._iTotalIndices);
 	this._pDataIndex.setData(this._pIndexList, 0,  a.getTypeSize(a.DTYPE.FLOAT), 0, this._iTotalIndices);

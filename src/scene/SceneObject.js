@@ -262,7 +262,9 @@ SceneObject.prototype.recalcWorldBounds = function () {
             this._pWorldBounds.fY1 = Math.max(this._pWorldBounds.fY1, this._pWorldBounds.fY0 + 0.01);
             this._pWorldBounds.fZ1 = Math.max(this._pWorldBounds.fZ1, this._pWorldBounds.fZ0 + 0.01);
         }
+
         this._pWorldBounds.transform(this.worldMatrix());
+
         // set the flag that our bounding box has changed
         a.BitFlags.setBit(this._iObjectFlags, a.Scene.k_newWorldBounds, true);
     }

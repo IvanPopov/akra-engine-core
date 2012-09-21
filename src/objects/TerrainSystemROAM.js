@@ -1,9 +1,7 @@
 //Лод
 
 Enum([
-	TotalDetailLevels = 9,
-	MaxTriTreeNodes = (1024*64), //64k triangle nodes
-	TessellationQueueSize = 1024
+	MaxTriTreeNodes = (1024*64) //64k triangle nodes
 ], CONST, a.TerrainROAM);
 
 
@@ -14,7 +12,6 @@ function TerrainROAM (pEngine)
 	this._pNodePool=null;
 	this._pThistessellationQueue=null;
 	this._iTessellationQueueCount = 0;
-
 	this._isCreate=false;
 }
 
@@ -28,8 +25,9 @@ TerrainROAM.prototype.create = function (pRootNode, pHeightMap,worldExtents, iSh
 	var bResult = Terrain.prototype.create.call(this, pRootNode, pHeightMap,worldExtents, iShift, iShiftX,iShiftY,sSurfaceTextures);
 	if (bResult)
 	{
+		this._iTessellationQueueSize=this.getSectorCountX()*this.getSectorCountY();
 		this._pNodePool=new a.TriangleNodePool(a.TerrainROAM.MaxTriTreeNodes);
-		this._pThistessellationQueue = new Array(a.TerrainROAM.TessellationQueueSize);
+		this._pThistessellationQueue = new Array(this._iTessellationQueueSize);
 		this._iTessellationQueueCount = 0;
 		this._isCreate=true;
 	}
@@ -106,7 +104,7 @@ TerrainROAM.prototype.reset=function()
 		Terrain.prototype.reset.call(this);
 		// reset internal counters
 		this._iTessellationQueueCount = 0;
-		this._pThistessellationQueue.length=a.TerrainROAM.TessellationQueueSize;
+		this._pThistessellationQueue.length=this._iTessellationQueueSize;
 
 		this._pNodePool.reset();
 
@@ -130,7 +128,7 @@ TerrainROAM.prototype.requestTriNode=function()
 //
 TerrainROAM.prototype.addToTessellationQueue=function(pSection)
 {
-	if (this._iTessellationQueueCount < a.TerrainROAM.TessellationQueueSize)
+	if (this._iTessellationQueueCount < this._iTessellationQueueSize)
 	{
 		this._pThistessellationQueue[this._iTessellationQueueCount] =
 			pSection;
@@ -157,18 +155,74 @@ TerrainROAM.prototype.prepareForRender = function()
 	if(this._isCreate)
 	{
 		Terrain.prototype.prepareForRender.call(this);
+
 		if(((statics.nCountRender++)%10)==0)
 		{
+			//#####################################################################################
+			var pCanvas=document.getElementById('canvasLOD');
+			var p2D=pCanvas.getContext("2d");
+			p2D.fillStyle = "#fff"; // цвет фона
+			p2D.fillRect(0, 0, pCanvas.width, pCanvas.height);
+
+			//console.log("Total ",pSec._iTotalIndices);
+
+
+			var pVerts=this.pVertsDebug;
+
+			//#####################################################################################
+
+
 			var pCamera = this._pEngine.getActiveCamera();
 			var v3fCameraPosition=pCamera.worldPosition();
 			var fX=(v3fCameraPosition.x-this.worldExtents().fX0)/Math.abs(this.worldExtents().fX1-this.worldExtents().fX0);
 			var fY=(v3fCameraPosition.y-this.worldExtents().fY0)/Math.abs(this.worldExtents().fY1-this.worldExtents().fY0);
-			if(fX!=statics.fXOld||fY!=statics.fYOld)
-			{
+
+			//if(fX!=statics.fXOld||fY!=statics.fYOld)
+			//{
 				this.processTessellationQueue();
 				statics.fXOld=fX;
 				statics.fYOld=fY;
-			}
+			//}
+
+
+			//#####################################################################################
+			var pCamera = this._pEngine.getActiveCamera();
+			var v3fCameraPosition=pCamera.worldPosition();
+			var pData = pCamera.worldMatrix().pData;
+			var pDir = new Vec2(-pData._13,-pData._23);
+			var fRad = pCamera.fov();
+			//var fNear = pCamera.nearPlane();
+			var fFar = pCamera.farPlane();
+			pDir.normalize();
+			pDir.scale(fFar/Math.abs(this.worldExtents().fX1-this.worldExtents().fX0));
+			var pDir1= new Vec2(pDir.x*Math.cos( fRad/2)-pDir.y*Math.sin( fRad/2),pDir.x*Math.sin( fRad/2)+pDir.y*Math.cos( fRad/2));
+			var pDir2= new Vec2(pDir.x*Math.cos(-fRad/2)-pDir.y*Math.sin(-fRad/2),pDir.x*Math.sin(-fRad/2)+pDir.y*Math.cos(-fRad/2));
+
+			//document.getElementById('setinfo0').innerHTML="fNear " + fNear;
+			document.getElementById('setinfo1').innerHTML="fFar "  + fFar;
+			//Вычисление текстурных координат над которыми находиться камера
+			var fX=(v3fCameraPosition.x-this.worldExtents().fX0)/Math.abs(this.worldExtents().fX1-this.worldExtents().fX0);
+			var fY=(v3fCameraPosition.y-this.worldExtents().fY0)/Math.abs(this.worldExtents().fY1-this.worldExtents().fY0);
+
+			//камера
+			p2D.beginPath();
+			p2D.strokeStyle = "#000"; //цвет линий
+			p2D.lineWidth = 3;
+			p2D.moveTo(fX*pCanvas.width,fY*pCanvas.height);
+			p2D.lineTo((fX+pDir1.x)*pCanvas.width,(fY+pDir1.y)*pCanvas.height);
+			p2D.lineTo((fX+pDir2.x)*pCanvas.width,(fY+pDir2.y)*pCanvas.height);
+			p2D.lineTo(fX*pCanvas.width,fY*pCanvas.height);
+			p2D.stroke();
+			p2D.beginPath();
+			p2D.arc(fX*pCanvas.width,fY*pCanvas.height, 5, 0, 2*Math.PI, false);
+			p2D.fillStyle = "#00f";
+			p2D.fill();
+			p2D.lineWidth = 1;
+			p2D.strokeStyle = "#00f";
+			p2D.stroke();
+			//секции
+
+//#####################################################################################
 		}
 	}
 
@@ -200,45 +254,11 @@ TerrainROAM.prototype.processTessellationQueue=function()
 	// gather up all the triangles into
 	// a final index buffer per section
 
-	//#####################################################################################
-	var pCanvas=document.getElementById('canvasLOD');
-	var p2D=pCanvas.getContext("2d");
-	p2D.fillStyle = "#fff"; // цвет фона
-	p2D.fillRect(0, 0, pCanvas.width, pCanvas.height);
-
-	//console.log("Total ",pSec._iTotalIndices);
-
-
-	var pVerts=this.pVertsDebug;
-
-	//#####################################################################################
-	for (var i=0; i<this._iTessellationQueueCount; ++i)
+for (var i=0; i<this._iTessellationQueueCount; ++i)
 	{
 		this._pThistessellationQueue[i].buildTriangleList();
 	}
 
-	//#####################################################################################
-	var pCamera = this._pEngine.getActiveCamera();
-	var v3fCameraPosition=pCamera.worldPosition();
-
-
-	//Вычисление текстурных координат над которыми находиться камера
-	var fX=(v3fCameraPosition.x-this.worldExtents().fX0)/Math.abs(this.worldExtents().fX1-this.worldExtents().fX0);
-	var fY=(v3fCameraPosition.y-this.worldExtents().fY0)/Math.abs(this.worldExtents().fY1-this.worldExtents().fY0);
-
-	if(fX>=0&&fX<1&&fY>=0&&fY<1)
-	{
-		p2D.beginPath();
-		p2D.arc(fX*pCanvas.width,fY*pCanvas.height, 5, 0, 2*Math.PI, false);
-		p2D.fillStyle = 'blue';
-		p2D.fill();
-		p2D.lineWidth = 1;
-		p2D.strokeStyle = 'blue';
-		p2D.stroke();
-	}
-
-
-	//#####################################################################################
 }
 
 a.TerrainROAM=TerrainROAM;
