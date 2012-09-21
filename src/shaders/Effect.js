@@ -533,6 +533,9 @@ VariableType.prototype.canBlend = function (pType, isStrict) {
     }
     return this.pEffectType.canBlend(pType.pEffectType, isStrict);
 };
+VariableType.prototype.isComplicate = function () {
+    return this.pEffectType.isComplicate();
+};
 
 function EffectType(sName, sRealName, isBase, iSize) {
     /**
@@ -763,6 +766,12 @@ EffectType.prototype.canMixible = function () {
 EffectType.prototype.canBlend = function (pType, isStrict) {
     return this.pDesc.canBlend(pType.pDesc, isStrict);
 };
+EffectType.prototype.isComplicate = function () {
+    if (this._isBase) {
+        return false;
+    }
+    return this.pDesc.isComplicate();
+};
 
 function EffectStruct() {
     /**
@@ -820,6 +829,7 @@ function EffectStruct() {
     this.pGlobalUsedTypes = null;
     this.iSize = 0;
     this._pPointers = null;
+    this._isComplicate = null;
 }
 EffectStruct.prototype.toCode = function () {
     if (this._sCode) {
@@ -1049,6 +1059,24 @@ EffectStruct.prototype.getPointers = function () {
         }
     }
 };
+EffectStruct.prototype.isComplicate = function () {
+    if (this._isComplicate !== null) {
+        return this._isComplicate;
+    }
+    var i;
+    var pOrders = this.pOrders;
+    var pVar, pType;
+    for (i = 0; i < pOrders.length; i++) {
+        pVar = pOrders[i];
+        pType = pVar.pType.pEffectType;
+        if (pType.isComplicate() || (!pType.isBase() && pVar.isArray)) {
+            this._isComplicate = true;
+            return true;
+        }
+    }
+    this._isComplicate = false;
+    return false;
+};
 
 function EffectPointer(pVar, nDim, pFirst, sPrev, isAttr) {
     this.pVar = pVar || null;
@@ -1195,6 +1223,7 @@ function EffectVariable() {
      */
     this._pAllPointers = null;
     this._pIndexFields = null;
+    this._isComplicate = null;
 
     this.isForeign = false;
     this.isValid = false;
@@ -1235,7 +1264,11 @@ EffectVariable.prototype.isConstInit = function () {
     this._isConstInit = true;
     return true;
 };
-EffectVariable.prototype.setType = function (pType) {
+EffectVariable.prototype.setType = function (pType, isInComplex) {
+    if (isInComplex === true && this.isArray && !pType.canMixible()) {
+        error("Only base types or types with semantics can use for array");
+        return;
+    }
     this.pType = pType;
     if (pType.pUsagesName) {
         this.isUniform = (pType.pUsagesName["uniform"] === null) ? true : false;
@@ -1336,9 +1369,11 @@ EffectVariable.prototype.toCodeDecl = function (isInit) {
                 error("You must set value of foreign varibale before use it");
                 return;
             }
-            this.iLength = this.iLength.toDataCode() * 1;
+            sCode += "[" + this.iLength.toDataCode() + "]";
         }
-        sCode += "[" + this.iLength + "]";
+        else {
+            sCode += "[" + this.iLength + "]";
+        }
     }
     if (isInit && this.pInitializer) {
         sCode += "=";
@@ -1415,6 +1450,26 @@ EffectVariable.prototype.setLength = function (pValue) {
         this.addDependence(pValue);
     }
 };
+EffectVariable.prototype.isComplicate = function () {
+    if (this._isComplicate !== null) {
+        return this._isComplicate;
+    }
+    this._isComplicate = (this.pType.isComplicate() || (!this.pType.isBase() && this.isArray));
+    return this._isComplicate;
+};
+EffectVariable.prototype.getLength = function () {
+    var iLength = this.iLength;
+    if (typeof(iLength) === "object") {
+        iLength = iLength.toDataCode();
+    }
+    return iLength * 1;
+};
+EffectVariable.prototype.getSemantic = function () {
+    return this.sSemantic;
+};
+EffectVariable.prototype.getRealName = function () {
+    return this.sRealName;
+};
 
 function SamplerIndex(pCode, pSampler) {
     this.pData = pCode;
@@ -1449,6 +1504,7 @@ function EffectVariableBase(pVar, pFirst, sRealPrevName, iScope, sFullName, iPad
     this.isArray = pVar.isArray;
     this.iSize = pVar.iSize;
     this.iLength = pVar.iLength;
+    this._isSampler = pVar.isSampler();
 
     this.sName = pVar.sRealName;
     this.sFullName = sFullName;
@@ -1499,6 +1555,9 @@ EffectVariableBase.prototype.cloneMe = function () {
     pVar._pAllPointers = this._pAllPointers;
     pVar._pIndexFields = this._pIndexFields;
     return pVar;
+};
+EffectVariableBase.prototype.isSampler = function () {
+    return this._isSampler;
 };
 
 function EffectBaseFunction() {
@@ -1890,6 +1949,9 @@ EffectFunction.prototype.checkMe = function () {
             case a.fx.GLOBAL_VARS.VERTEXUSAGE:
                 if (!this.pReturnType.checkMe(a.fx.GLOBAL_VARS.VERTEXUSAGE)) {
                     return false;
+                }
+                if (!this.pParamOrders) {
+                    return true;
                 }
                 pSemantics = {};
                 for (j = 0; j < this.pParamOrders.length; j++) {
@@ -2796,6 +2858,7 @@ function EffectPass() {
     this.pGlobalsByName = null;
     this.pGlobalsByRealName = null;
     this.pGlobalsDefault = null;
+    this.pForeignsByName = null;
     this.pTexturesByName = null;
     this.pTexturesByRealName = null;
     this.pGlobalsStrict = null;
@@ -4483,7 +4546,7 @@ Effect.prototype.analyze = function (pTree) {
     this.postAnalyzeEffect();
     this.checkEffect();
     this.endScope();
-    trace("Time of analyzing effect file(without parseing) ", a.now() - time);//, "Result effect: ", this);
+    trace("Time of analyzing effect file(without parseing) ", a.now() - time, "Result effect: ", this);
     return true;
 //    }
 //    catch (e) {
@@ -4948,7 +5011,7 @@ Effect.prototype.analyzeVariableDecl = function (pNode) {
     for (i = pChildren.length - 2; i >= 1; i--) {
         if (pChildren[i].sName === a.fx.GLOBAL_VARS.VARIABLE) {
             pVar = this.analyzeVariable(pChildren[i]);
-            pVar.setType(pType);
+            pVar.setType(pType, (this._isStruct && (this._iScope === a.fx.GLOBAL_VARS.GLOBAL)));
             this.addVariableDecl(pVar);
         }
     }
@@ -5567,6 +5630,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 }
                 this.pushCode(".");
                 this.analyzeExpr(pChildren[pChildren.length - 3]);
+                this._isTypeAnalayzed = false;
                 pType1 = this._pExprType;
                 if (pChildren.length === 4) {
                     if (!isNewVar) {
@@ -5664,7 +5728,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                              pType1.isEqual(this.hasType("bool2"))) {
                         pType1 = this.hasType("bool");
                     }
-                    else {
+                    else if (!pType1.isEqual(this.hasType("sampler"))) {
                         error("it`s not an array");
                         return;
                     }
@@ -5674,6 +5738,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         error("[] - only for arrays");
                         return;
                     }
+                    this._isTypeAnalayzed = true;
                 }
             }
             if (isNewVar) {
@@ -5920,7 +5985,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                         }
                     }
                     else {
-                        pRes = pNode.sValue;
+                        pRes = pVar.sRealName;
                     }
                 }
             }
@@ -5948,6 +6013,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 else {
                     pRes = this.hasVariable(this._sVarName);
                     if (!pRes) {
+                        trace(this._pParseTree);
                         error("not good for you " + this._sVarName);
                         return;
                     }

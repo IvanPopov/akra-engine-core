@@ -580,6 +580,53 @@ ShaderProgram.prototype.applyMat4Array = function (sName, pData) {
     pDevice.uniformMatrix4fv(this._pRealUniformList[sName], false, pPreparedData);
 };
 
+ShaderProgram.prototype.applyComplicateUniform = function (sName, pData) {
+    var pVar = this._pUniformVars[sName];
+    var iLength;
+    var i, j;
+    var sPrevName = sName;
+    var pOrders = pVar.pType.pEffectType.pDesc.pOrders;
+    if (pVar.isArray) {
+        iLength = pVar.getLength();
+        for (i = 0; i < iLength; i++) {
+            for (j = 0; j < pOrders.length; j++) {
+                this._applySubVariable(pOrders[j], sPrevName + "[" + i + "].", pData[i][pOrders[j].getRealName()]);
+            }
+        }
+    }
+    else {
+        for (j = 0; j < pOrders.length; j++) {
+            this._applySubVariable(pOrders[j], sPrevName + ".", pData[pOrders[j].getRealName()]);
+        }
+    }
+    return true;
+};
+ShaderProgram.prototype._applySubVariable = function (pVar, sPreviousName, pData) {
+    var sName = sPreviousName + pVar.getRealName();
+    if (pVar.pType.isBase()) {
+        this.applyUniform(sName, pData);
+    }
+    else {
+        var i, j;
+        var iLength;
+        var pOrders = pVar.pType.pEffectType.pDesc.pOrders;
+        if (pVar.isArray) {
+            iLength = pVar.getLength();
+            for (i = 0; i < iLength; i++) {
+                for (j = 0; j < pOrders.length; j++) {
+                    this._applySubVariable(pOrders[j], sName + "[" + i + "].", pData[i][pOrders[j].getRealName()]);
+                }
+            }
+        }
+        else {
+            for (j = 0; j < pOrders.length; j++) {
+                this._applySubVariable(pOrders[j], sName + ".", pData[pOrders[j].getRealName()]);
+            }
+        }
+    }
+    return true;
+};
+
 ShaderProgram.prototype.applySampler2D = function (sName, pData) {
     var sTexture, pTexture;
     if (!pData) {
@@ -630,25 +677,27 @@ ShaderProgram.prototype.applySampler2D = function (sName, pData) {
         sTexture = pData[a.fx.GLOBAL_VARS.TEXTURE];
     }
     pTexture = this._pTextures ? (this._pTextures[sTexture]) : null;
-
+    var iSlot;
     if (!pTexture) {
-        return true;
+        iSlot = a.fx.ZEROSAMPLER;
     }
-    var iSlot = this._pRenderer.activateTexture(pTexture);
-    pTextureParam = this._pTextureParams[iSlot];
-    trace("Slot #" + iSlot);
-    pTextureParam[a.TPARAM.MAG_FILTER] = pData[a.TPARAM.MAG_FILTER] ||
-                                         pTexture._getParameter(a.TPARAM.MAG_FILTER) ||
-                                         a.TFILTER.LINEAR;
-    pTextureParam[a.TPARAM.MIN_FILTER] = pData[a.TPARAM.MIN_FILTER] ||
-                                         pTexture._getParameter(a.TPARAM.MIN_FILTER) ||
-                                         a.TFILTER.LINEAR;
-    pTextureParam[a.TPARAM.WRAP_S] = pData[a.TPARAM.WRAP_S] ||
-                                     pTexture._getParameter(a.TPARAM.WRAP_S) ||
-                                     a.TWRAPMODE.REPEAT;
-    pTextureParam[a.TPARAM.WRAP_T] = pData[a.TPARAM.WRAP_T] ||
-                                     pTexture._getParameter(a.TPARAM.WRAP_T) ||
-                                     a.TWRAPMODE.REPEAT;
+    else {
+        iSlot = this._pRenderer.activateTexture(pTexture);
+        pTextureParam = this._pTextureParams[iSlot];
+        trace("Slot #" + iSlot);
+        pTextureParam[a.TPARAM.MAG_FILTER] = pData[a.TPARAM.MAG_FILTER] ||
+                                             pTexture._getParameter(a.TPARAM.MAG_FILTER) ||
+                                             a.TFILTER.LINEAR;
+        pTextureParam[a.TPARAM.MIN_FILTER] = pData[a.TPARAM.MIN_FILTER] ||
+                                             pTexture._getParameter(a.TPARAM.MIN_FILTER) ||
+                                             a.TFILTER.LINEAR;
+        pTextureParam[a.TPARAM.WRAP_S] = pData[a.TPARAM.WRAP_S] ||
+                                         pTexture._getParameter(a.TPARAM.WRAP_S) ||
+                                         a.TWRAPMODE.REPEAT;
+        pTextureParam[a.TPARAM.WRAP_T] = pData[a.TPARAM.WRAP_T] ||
+                                         pTexture._getParameter(a.TPARAM.WRAP_T) ||
+                                         a.TWRAPMODE.REPEAT;
+    }
     return this.applyInt(sRealName, iSlot);
 };
 ShaderProgram.prototype.applyVideoBuffer = function (sName, pData) {
@@ -703,7 +752,7 @@ ShaderProgram.prototype.applyData = function (pData, iSlot) {
     if (isMapper) {
 //        A_TRACER.MESG("apply data: " + iState + " : " + this._pStreams[iSlot]);
         //Switch between shader programs
-        if(iBufferHandle !== pVertexBuffer.toNumber()) {
+        if (iBufferHandle !== pVertexBuffer.toNumber()) {
             isChange = true;
         }
         else if (iStreamState !== pManager._getStreamState(iSlot)) {
@@ -758,7 +807,6 @@ ShaderProgram.prototype.applyData = function (pData, iSlot) {
     return true;
 };
 
-
 ShaderProgram.prototype.setCurrentTextureSet = function (pTextures) {
     this._pTextures = pTextures;
 };
@@ -777,120 +825,13 @@ ShaderProgram.prototype.setUniformVars = function (pUniforms, isZeroSampler) {
     this._pUniformVars = pUniforms;
     this._isZeroSampler = isZeroSampler || false;
     var i;
-    var sType;
-    var isArray;
     var pVar;
-    var pPreparedData = this._pUniformPreparedData;
-    var pFunctions = this._pUniformApplyFunctions;
     for (i in pUniforms) {
         pVar = pUniforms[i];
         if (!pVar) {
             continue;
         }
-        sType = pVar.pType.pEffectType.toCode();
-        isArray = pVar.isArray;
-        pPreparedData[i] = this._preparedUniformData(pVar);
-        switch (sType) {
-            case "float":
-                if (isArray) {
-                    pFunctions[i] = this.applyFloatArray;
-                }
-                else {
-                    pFunctions[i] = this.applyFloat;
-                }
-                break;
-            case "int":
-                if (isArray) {
-                    pFunctions[i] = this.applyIntArray;
-                }
-                else {
-                    pFunctions[i] = this.applyInt;
-                }
-                break;
-            case "vec2":
-                if (isArray) {
-                    pFunctions[i] = this.applyVec2FArray;
-                }
-                else {
-                    pFunctions[i] = this.applyVec2F;
-                }
-                break;
-            case "vec3":
-                if (isArray) {
-                    pFunctions[i] = this.applyVec3FArray;
-                }
-                else {
-                    pFunctions[i] = this.applyVec3F;
-                }
-                break;
-            case "vec4":
-                if (isArray) {
-                    pFunctions[i] = this.applyVec4FArray;
-                }
-                else {
-                    pFunctions[i] = this.applyVec4F;
-                }
-                break;
-            case "ivec2":
-                if (isArray) {
-                    pFunctions[i] = this.applyVec2IArray;
-                }
-                else {
-                    pFunctions[i] = this.applyVec2I;
-                }
-                break;
-            case "ivec3":
-                if (isArray) {
-                    pFunctions[i] = this.applyVec3IArray;
-                }
-                else {
-                    pFunctions[i] = this.applyVec3I;
-                }
-                break;
-            case "ivec4":
-                if (isArray) {
-                    pFunctions[i] = this.applyVec4IArray;
-                }
-                else {
-                    pFunctions[i] = this.applyVec4I;
-                }
-                break;
-            case "mat2":
-                if (isArray) {
-                    pFunctions[i] = this.applyMat2Array;
-                }
-                else {
-                    pFunctions[i] = this.applyMat2;
-                }
-                break;
-            case "mat3":
-                if (isArray) {
-                    pFunctions[i] = this.applyMat3Array;
-                }
-                else {
-                    pFunctions[i] = this.applyMat3;
-                }
-                break;
-            case "mat4":
-                if (isArray) {
-                    pFunctions[i] = this.applyMat4Array;
-                }
-                else {
-                    pFunctions[i] = this.applyMat4;
-                }
-                break;
-            case "sampler2D":
-            case "samplerCube":
-                if (this._pPassBlend.pSamplers[i]) {
-                    pFunctions[i] = this.applySampler2D;
-                }
-                else {
-                    pFunctions[i] = this.applyVideoBuffer;
-                }
-                break;
-            default:
-                warning("Another base types are not support yet");
-        }
+        this._chooseApplyUniformFunction(pVar, i);
     }
 };
 ShaderProgram.prototype.setTextureSlot = function (iSlot, pTexture) {
@@ -918,6 +859,136 @@ ShaderProgram.prototype._preparedUniformData = function (pVar) {
         pData = new Int32Array(pVar.iSize);
     }
     return pData;
+};
+ShaderProgram.prototype._chooseApplyUniformFunction = function (pVar, sVarName, sPreviousName) {
+    sPreviousName = sPreviousName || "";
+    var pPreparedData = this._pUniformPreparedData;
+    var pFunctions = this._pUniformApplyFunctions;
+    var sName = sPreviousName + sVarName;
+    var isArray = pVar.isArray;
+    if (pVar.pType.isBase()) {
+        var sType = pVar.pType.pEffectType.toCode();
+        pPreparedData[sName] = this._preparedUniformData(pVar);
+        switch (sType) {
+            case "float":
+                if (isArray) {
+                    pFunctions[sName] = this.applyFloatArray;
+                }
+                else {
+                    pFunctions[sName] = this.applyFloat;
+                }
+                break;
+            case "int":
+                if (isArray) {
+                    pFunctions[sName] = this.applyIntArray;
+                }
+                else {
+                    pFunctions[sName] = this.applyInt;
+                }
+                break;
+            case "vec2":
+                if (isArray) {
+                    pFunctions[sName] = this.applyVec2FArray;
+                }
+                else {
+                    pFunctions[sName] = this.applyVec2F;
+                }
+                break;
+            case "vec3":
+                if (isArray) {
+                    pFunctions[sName] = this.applyVec3FArray;
+                }
+                else {
+                    pFunctions[sName] = this.applyVec3F;
+                }
+                break;
+            case "vec4":
+                if (isArray) {
+                    pFunctions[sName] = this.applyVec4FArray;
+                }
+                else {
+                    pFunctions[sName] = this.applyVec4F;
+                }
+                break;
+            case "ivec2":
+                if (isArray) {
+                    pFunctions[sName] = this.applyVec2IArray;
+                }
+                else {
+                    pFunctions[sName] = this.applyVec2I;
+                }
+                break;
+            case "ivec3":
+                if (isArray) {
+                    pFunctions[sName] = this.applyVec3IArray;
+                }
+                else {
+                    pFunctions[sName] = this.applyVec3I;
+                }
+                break;
+            case "ivec4":
+                if (isArray) {
+                    pFunctions[sName] = this.applyVec4IArray;
+                }
+                else {
+                    pFunctions[sName] = this.applyVec4I;
+                }
+                break;
+            case "mat2":
+                if (isArray) {
+                    pFunctions[sName] = this.applyMat2Array;
+                }
+                else {
+                    pFunctions[sName] = this.applyMat2;
+                }
+                break;
+            case "mat3":
+                if (isArray) {
+                    pFunctions[sName] = this.applyMat3Array;
+                }
+                else {
+                    pFunctions[sName] = this.applyMat3;
+                }
+                break;
+            case "mat4":
+                if (isArray) {
+                    pFunctions[sName] = this.applyMat4Array;
+                }
+                else {
+                    pFunctions[sName] = this.applyMat4;
+                }
+                break;
+            case "sampler2D":
+            case "samplerCube":
+                if (this._pPassBlend.pSamplers[sName]) {
+                    pFunctions[sName] = this.applySampler2D;
+                }
+                else {
+                    pFunctions[sName] = this.applyVideoBuffer;
+                }
+                break;
+            default:
+                warning("Another base types are not support yet");
+        }
+    }
+    else {
+        var i, j;
+        var iLength;
+        var pOrders = pVar.pType.pEffectType.pDesc.pOrders;
+        if (pVar.isArray) {
+            iLength = pVar.getLength();
+            for (i = 0; i < iLength; i++) {
+                for (j = 0; j < pOrders.length; j++) {
+                    this._chooseApplyUniformFunction(pOrders[j], pOrders[j].getRealName(), sName + "[" + i + "].");
+                }
+            }
+        }
+        else {
+            for (j = 0; j < pOrders.length; j++) {
+                this._chooseApplyUniformFunction(pOrders[j], pOrders[j].getRealName(), sName + ".");
+            }
+        }
+    }
 };
 
 ShaderProgram.prototype.getSourceCode = function (eType) {

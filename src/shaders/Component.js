@@ -148,6 +148,7 @@ function ComponentBlend() {
     this._nShiftCurrent = 0;
     this._nTotalValidPasses = -1;
     this._hasTextures = false;
+    this._hasForeigns = false;
     STATIC(fnAddUniform, function (pVar, pUniforms, pPass, sPrevName, sPrevRealName) {
         var sName, pVar1, sRealName;
         sName = (sPrevName ? (sPrevName + "." + pVar.sName) : pVar.sName);
@@ -157,7 +158,7 @@ function ComponentBlend() {
             warning("You used uniforms with the same semantics. Now we work not very well with that.");
             return false;
         }
-        if (pVar.pType.isBase()) {
+        if (pVar.pType.isBase() || pVar.isComplicate()) {
             pUniforms.pUniformsByName[sName] = sRealName;
             pUniforms.pUniformsByRealName[sRealName] = pVar;
             pUniforms.pUniformsDefault[sRealName] = pPass.pGlobalsDefault[sRealName] || null;
@@ -176,6 +177,9 @@ function ComponentBlend() {
 }
 ComponentBlend.prototype.hasTextures = function () {
     return this._hasTextures;
+};
+ComponentBlend.prototype.hasForeigns = function () {
+    return this._hasForeigns;
 };
 ComponentBlend.prototype.addComponent = function (pComponent, nShift) {
     //TODO: think about global uniform lists and about collisions of real names in them
@@ -237,7 +241,8 @@ ComponentBlend.prototype.finalize = function () {
                     "pUniformsByRealName" : {},
                     "pUniformsDefault"    : {},
                     "pTexturesByName"     : {},
-                    "pTexturesByRealName" : {}
+                    "pTexturesByRealName" : {},
+                    "pForeignsByName"     : {}
                 };
             }
             pPass = pComponent.pPasses[i];
@@ -247,6 +252,10 @@ ComponentBlend.prototype.finalize = function () {
                 sName = pUniforms.pTexturesByName[k] = pPass.pTexturesByName[k];
                 pUniforms.pTexturesByRealName[sName] = null;
                 this._hasTextures = true;
+            }
+            for (k in pPass.pForeignsByName) {
+                pUniforms.pForeignsByName[k] = pPass.pForeignsByName[k];
+                this._hasForeigns = true;
             }
 
             for (k in pPass.pGlobalsByName) {
@@ -262,6 +271,7 @@ ComponentBlend.prototype.finalize = function () {
             pUniforms._pTextureByNameKeys = Object.keys(pUniforms.pTexturesByName);
             pUniforms._pTextureByRealNameKeys = Object.keys(pUniforms.pTexturesByRealName);
             pUniforms._pUniformByRealNameKeys = Object.keys(pUniforms.pUniformsByRealName);
+            pUniforms._pForeignByNameKeys = Object.keys(pUniforms.pForeignsByName);
         }
     }
     this._isReady = true;
@@ -378,6 +388,7 @@ function PassBlend(pEngine) {
     this.pExtrectedFunctionsF = {};
 
     this.pUniforms = {};
+    this.pForeignVariables = {};
 
     this._pBlendTypes = {};
     this._pBlendTypesDecl = {};
@@ -596,6 +607,17 @@ PassBlend.prototype.addPass = function (pPass) {
     var pVar1, pVar2, pType1, pType2, pData1, pData2;
     var isEqual = false;
     var sName;
+    var pForeigns = pPass.pForeignVariables;
+    var pForeignVar;
+    for (i in pForeigns) {
+        pForeignVar = this.pForeignVariables[i];
+        if (!pForeignVar) {
+            this.pForeignVariables[i] = [pForeigns[i]];
+        }
+        else {
+            this.pForeignVariables[i].push(pForeigns[i]);
+        }
+    }
     var iBlendStatus;
     if (pVertex) {
         this.pVertexShaders.push(pVertex);
@@ -826,7 +848,7 @@ PassBlend.prototype.finalizeBlend = function () {
             this.pUniformsBlockV[i] = "uniform " + sType + " " + i + ";";
             this.pUniformsV[i] = this.pUniformsV[i][0];
         }
-        if (this.pUniformsV[i].pType.isBase()) {
+        if (this.pUniformsV[i].pType.isBase() || this.pUniformsV[i].isComplicate()) {
             this.pUniforms[i] = this.pUniformsV[i];//this.pUniformsV[i].pType.pEffectType.toCode();
         }
     }
@@ -846,7 +868,7 @@ PassBlend.prototype.finalizeBlend = function () {
             this.pUniformsBlockF[i] = "uniform " + sType + " " + i + ";";
             this.pUniformsF[i] = this.pUniformsF[i][0];
         }
-        if (this.pUniformsF[i].pType.isBase()) {
+        if (this.pUniformsF[i].pType.isBase() || this.pUniformsF[i].isComplicate()) {
             this.pUniforms[i] = this.pUniformsF[i];//this.pUniformsF[i].pType.pEffectType.toCode();
         }
     }
@@ -903,7 +925,8 @@ PassBlend.prototype.finalizeBlend = function () {
     this.sVaryingsOut += "} " + a.fx.GLOBAL_VARS.SHADEROUT + ";"
 
 };
-PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUniformData, pTextures, pTexcoords) {
+PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUniformData, pTextures, pForeigns,
+                                                pTexcoords) {
     //console.log(this);
     var pProgram;
     var pAttrBuf = {};
@@ -947,6 +970,15 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     var pUniformKeys = Object.keys(pUniformData);
     var nSamplers = 0;
     var pTempVarsDecl = {};
+
+    //Set foreigns values
+    for (i in pForeigns) {
+        if (this.pForeignVariables[i]) {
+            for (j = 0; j < this.pForeignVariables[i].length; j++) {
+                this.pForeignVariables[i][j]._pData = pForeigns[i];
+            }
+        }
+    }
 
     //Samplers and Globals Buffers generated here
 
@@ -1308,7 +1340,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
             isExtract = true;
         }
         if (!PassBlend.pExtractedFunctions[i]) {
-            trace("ERRRRRRRRRRRRRRRRRRRRRRROR",i, PassBlend.pExtractedFunctions[i]);
+            trace("ERRRRRRRRRRRRRRRRRRRRRRROR", i, PassBlend.pExtractedFunctions[i]);
         }
         sVertexCode += PassBlend.pExtractedFunctions[i];
     }

@@ -177,7 +177,7 @@ Renderer.prototype.loadEffectFile = function (sFileName, isSync) {
     }
     if (isSync) {
         var pRequest = a.ajax({url : sFileName, async : false});
-        if(pRequest.xhr.status === a.HTTP_STATUS_CODE.OK){
+        if (pRequest.xhr.status === a.HTTP_STATUS_CODE.OK) {
             var sSource = pRequest.data;
             var pResource = this._pEffectFileDataPool.createResource(sFileName);
             pResource.create(sSource);
@@ -580,8 +580,8 @@ Renderer.prototype.push = function (pSnapshot, pRenderObject) {
     if (!pBlend.finalize()) {
         return false;
     }
-    var pUniforms, pTextures;
-    var pUniformKeys, pTextureKeys;
+    var pUniforms, pTextures, pForeigns;
+    var pUniformKeys, pTextureKeys, pForeignKeys;
     var i, j;
     if (isUpdate) {
         pUniforms = [];
@@ -595,6 +595,16 @@ Renderer.prototype.push = function (pSnapshot, pRenderObject) {
                 }
             }
         }
+        if (pBlend.hasForeigns()) {
+            pForeigns = [];
+            for (i = 0; i < pBlend.totalValidPasses(); i++) {
+                pForeigns[i] = {};
+                pForeignKeys = pBlend.pUniformsBlend[i]._pForeignByNameKeys;
+                for (j = 0; j < pForeignKeys.length; j++) {
+                    pForeigns[i][pForeignKeys[j]] = null;
+                }
+            }
+        }
         for (i = 0; i < pBlend.totalValidPasses(); i++) {
             pUniforms[i] = {};
             pUniformKeys = pBlend.pUniformsBlend[i]._pUniformByRealNameKeys;
@@ -602,7 +612,7 @@ Renderer.prototype.push = function (pSnapshot, pRenderObject) {
                 pUniforms[i][pUniformKeys[j]] = null;
             }
         }
-        pSnapshot.setPassStates(pUniforms, pTextures);
+        pSnapshot.setPassStates(pUniforms, pTextures, pForeigns);
     }
 
     var pState = this._getPreRenderState();
@@ -650,6 +660,7 @@ Renderer.prototype.finishPass = function (iPass) {
     var pUniformValues,
         pNotDefaultUniforms,
         pTextures,
+        pForeigns,
         pNewPassBlend;
     var i, j, k;
     var pSnapshot,
@@ -674,6 +685,7 @@ Renderer.prototype.finishPass = function (iPass) {
     pUniformValues = {};
     pNotDefaultUniforms = {};
     pTextures = {};
+    pForeigns = {};
 
     for (i = 0; i < iStackLength; i++) {
 
@@ -696,6 +708,18 @@ Renderer.prototype.finishPass = function (iPass) {
                 }
                 if (pTextures[sKey] === undefined) {
                     pTextures[sKey] = null;
+                }
+            }
+        }
+        if (pSnapshot._pForeigns) {
+            pValues = pSnapshot._pForeigns[index];
+            for (j = 0; j < pUniforms._pForeignByNameKeys.length; j++) {
+                sKey = pUniforms._pForeignByNameKeys[j];
+                if (pValues[sKey] !== undefined) {
+                    pForeigns[sKey] = pValues[sKey];
+                }
+                if (pForeigns[sKey] === undefined) {
+                    pForeigns[sKey] = null;
                 }
             }
         }
@@ -748,6 +772,7 @@ Renderer.prototype.finishPass = function (iPass) {
             }
         }
     }
+
     for (j = 0; j < pPasses.length; j++) {
         pPasses[j].isEval = false;
     }
@@ -897,11 +922,14 @@ Renderer.prototype.finishPass = function (iPass) {
         }
         sHash += "..";
     }
+    for (i in pForeigns) {
+        sHash += "FOREIGN::" + i + "=" + (pForeigns[i]);
+    }
     var pProgram;
     pProgram = this._pPrograms[sHash];
     if (!pProgram) {
         pProgram = pPassBlend.generateProgram(sHash, pAttrSemantics, pAttrKeys, pUniformValues,
-                                              pTextures, pMaterialTexcoords);
+                                              pTextures, pForeigns, pMaterialTexcoords);
         if (!pProgram) {
             warning("It`s impossible to generate shader program");
             return false;
@@ -983,7 +1011,7 @@ Renderer.prototype._getSystemUniformValue = function (sName) {
         case a.Renderer.PROJ_MATRIX:
             return pCamera.projectionMatrix();
         case a.Renderer.EYE_POS:
-            trace(pCamera.worldPosition().x,pCamera.worldPosition().y,pCamera.worldPosition().z);
+            trace(pCamera.worldPosition().x, pCamera.worldPosition().y, pCamera.worldPosition().z);
             return pCamera.worldPosition();
         case a.Renderer.BIND_MATRIX:
             return (pRenderObject && pRenderObject.skin) ? pRenderObject.skin.getBindMatrix() : null;

@@ -600,7 +600,7 @@ Engine.prototype.render = function () {
         // render the scene
 //        A_TRACER.BEGIN();
 //        A_TRACER.MESG("=====START RENDER SCENE OBJECTS==========");
-        trace("==============Rendre Shadow===========");
+        trace("==============Render Shadow===========");
         this.renderShadows();
         this.pShaderManager.processRenderQueue();
         this.pDevice.flush();

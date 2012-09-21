@@ -36,6 +36,7 @@ function RenderSnapshot() {
      */
     this._pPassStates = null;
     this._pTextures = null;
+    this._pForeigns = null;
     this._isUpdated = false;
 
 
@@ -184,6 +185,21 @@ RenderSnapshot.prototype.setParameterBySemantic = function (sRealName, pData) {
     return false;
 };
 
+RenderSnapshot.prototype.setComplexParameter = function (sName, pData, isSemantic) {
+    if (!isSemantic) {
+        sName = this._pShaderManager.getUniformRealName(sName);
+    }
+    this.setComplexParameterBySemantic(sName, pData);
+};
+
+RenderSnapshot.prototype.setComplexParameterBySemantic = function (sRealName, pData) {
+    var pPass = this._pPassStates[this._iCurrentPass];
+    if (pPass[sRealName] !== undefined) {
+        pPass[sRealName] = pData;
+        return true;
+    }
+};
+
 /**
  * Set custom parameter in array.
  * @param {String} sName    Parameter name.
@@ -219,9 +235,10 @@ RenderSnapshot.prototype.setParameterInArray = function (sName, pData, iElement)
 //    return this._pShaderManager.setTextureMatrix(iIndex, pData);
 //};
 
-RenderSnapshot.prototype.setPassStates = function (pPasses, pTextures) {
+RenderSnapshot.prototype.setPassStates = function (pPasses, pTextures, pForeigns) {
     this._pPassStates = pPasses;
     this._pTextures = pTextures;
+    this._pForeigns = pForeigns;
 };
 /**
  * activate pass iPass
@@ -378,6 +395,18 @@ RenderSnapshot.prototype.applyTextureBySemantic = function (sRealName, pTexture)
     var pTextures = this._pTextures[this._iCurrentPass];
     if (pTextures[sRealName] !== undefined) {
         pTextures[sRealName] = pTexture;
+        return true;
+    }
+    return false;
+};
+
+RenderSnapshot.prototype.applyForeignVariable = function (sName, pData) {
+    if (!this._pForeigns) {
+        return false;
+    }
+    var pForeigns = this._pForeigns[this._iCurrentPass];
+    if (pForeigns[sName] !== undefined) {
+        pForeigns[sName] = pData;
         return true;
     }
     return false;
