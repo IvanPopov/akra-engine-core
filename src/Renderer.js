@@ -713,6 +713,7 @@ Renderer.prototype.finishPass = function (iPass) {
         }
         if (pSnapshot._pForeigns) {
             pValues = pSnapshot._pForeigns[index];
+//            trace("Foreigns ---------- ", pSnapshot._pForeigns, pForeigns);
             for (j = 0; j < pUniforms._pForeignByNameKeys.length; j++) {
                 sKey = pUniforms._pForeignByNameKeys[j];
                 if (pValues[sKey] !== undefined) {

@@ -33,7 +33,6 @@ SceneModel.prototype.create = function () {
     this._hasShadow = null;
 };
 
-
 /**
  * destroy resource.
  */
@@ -53,6 +52,7 @@ SceneModel.prototype.setRenderCallback = function (fnCallback, isStandAlone) {
     this._fnRenderCallback = fnCallback;
     this._isStandAlone = (isStandAlone === undefined) ? false : true;
 };
+
 SceneModel.prototype.prepareForRender = function () {
     // var pMesh = this.findMesh();
     // if (!pMesh) {
@@ -112,6 +112,79 @@ SceneModel.prototype.render = function () {
                 pSubMesh.activatePass(k);
                 pSubMesh.applySurfaceMaterial();
 //                trace("SCENE MODEL NAME: ", this.name + ":" + pSubMesh.name, pSubMesh.data.toString());
+                var pSnapshot = pSubMesh._pActiveSnapshot;
+                pSnapshot.applyForeignVariable("test_foreign", 0.8);
+                pSnapshot.applyForeignVariable("test_length", 2);
+                pSnapshot.setComplexParameterBySemantic("COMPLEX_UNIFORM", [
+                    {
+                        "FLOAT_VAR1" : 0.2,
+                        "SAMPLER"    : [
+                            {
+                                "TEXTURE" : "TEXTURE0"
+                            },
+                            {
+                                "TEXTURE" : "TEXTURE2"
+                            }
+                        ],
+                        "SUB_STRUCT" : [
+                            {
+                                "FLOAT_VAR" : [0.1, 0.2, 0.3],
+                                "SAMPLER"   : [
+                                    {
+                                        "TEXTURE" : "TEXTURE0"
+                                    }
+                                ]
+                            },
+                            {
+                                "FLOAT_VAR" : [0.1, 0.2, 0.3],
+                                "SAMPLER"   : [
+                                    {
+                                        "TEXTURE" : "TEXTURE0"
+                                    }
+                                ]
+                            }
+                        ]},
+                    {
+                        "FLOAT_VAR1" : 0.2,
+                        "SAMPLER"    : [
+                            {
+                                "TEXTURE" : "TEXTURE0"
+                            },
+                            {
+                                "TEXTURE" : "TEXTURE2"
+                            }
+                        ],
+                        "SUB_STRUCT" : [
+                            {
+                                "FLOAT_VAR" : [0.1, 0.2, 0.3],
+                                "SAMPLER"   : [
+                                    {
+                                        "TEXTURE" : "TEXTURE1"
+                                    }
+                                ]
+                            },
+                            {
+                                "FLOAT_VAR" : [0.1, 0.2, 0.3],
+                                "SAMPLER"   : [
+                                    {
+                                        "TEXTURE" : "TEXTURE1"
+                                    }
+                                ]
+                            }
+                        ]}
+                ]);
+//                pSnapshot.setParameterBySemantic("COMPLEX_UNIFORM", {
+//                    "FLOAT_VAR1" : 0.2, "SAMPLER" : [
+//                        {
+//                            "TEXTURE" : "TEXTURE0"
+//                        },
+//                        {
+//                            "TEXTURE" : "TEXTURE2"
+//                        },
+//                        {
+//                            "TEXTURE" : "TEXTURE1"
+//                        }
+//                    ]});
                 pSubMesh.applyRenderData(pSubMesh.data);
                 var pEntry = pSubMesh.renderPass();
                 trace("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
@@ -124,7 +197,8 @@ SceneModel.prototype.render = function () {
 //    A_TRACER.END();
     trace("<<<<<<<<<<<<<END SCENE MODEL RENDER>>>>>>>>>>");
     return true;
-};
+}
+;
 
 SceneModel.prototype.renderShadow = function () {
     if (!this.hasShadow()) {

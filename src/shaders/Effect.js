@@ -1270,6 +1270,7 @@ EffectVariable.prototype.setType = function (pType, isInComplex) {
         return;
     }
     this.pType = pType;
+    this._isSampler = pType.isSampler();
     if (pType.pUsagesName) {
         this.isUniform = (pType.pUsagesName["uniform"] === null) ? true : false;
         this.isShared = (pType.pUsagesName["global"] === null) ? true : false;
@@ -1361,15 +1362,19 @@ EffectVariable.prototype.toCodeDecl = function (isInit) {
     if (this.isForeign) {
         return "";
     }
-    var sCode;
+    var sCode, pCode;
     sCode = this.pType.toCode() + " " + this.sRealName;
     if (this.isArray) {
         if (typeof(this.iLength) === "object") {
-            if (!this.iLength.isValid) {
-                error("You must set value of foreign varibale before use it");
-                return;
+            if (this.iLength._pData === null || this.iLength._pData === undefined) {
+                pCode = [sCode, "[", this.iLength, "]"];
+                sCode = "";
+//                error("You must set value of foreign varibale before use it");
+//                return null;
             }
-            sCode += "[" + this.iLength.toDataCode() + "]";
+            else {
+                sCode += "[" + this.iLength.toDataCode() + "]";
+            }
         }
         else {
             sCode += "[" + this.iLength + "]";
@@ -1392,14 +1397,20 @@ EffectVariable.prototype.toCodeDecl = function (isInit) {
         sCode += ")"
     }
     sCode += ";";
-    return sCode;
+    if (pCode) {
+        pCode.push(sCode);
+        return pCode;
+    }
+    else {
+        return sCode;
+    }
 };
 EffectVariable.prototype.toOffsetStr = function () {
     return a.fx.SHADER_PREFIX.OFFSET + this.sRealName;
 };
 EffectVariable.prototype.toDataCode = function () {
-    if (!this.isSampler || this.isForeign) {
-        warning("Only for samplers amd foreigns");
+    if (!this.isSampler() && !this.isForeign) {
+        warning("Only for samplers amd foreigns, name: " + this.sName);
     }
     return this._pData;
 };
@@ -1580,6 +1591,7 @@ function EffectBaseFunction() {
     this.pGlobalVariables = (pFunction && pFunction.pImplement) ? pFunction.pGlobalVariables : null;
     this.pUniforms = (pFunction && pFunction.pImplement) ? pFunction.pUniforms : null;
     this.pSharedVariables = (pFunction && pFunction.pImplement) ? pFunction.pSharedVariables : null;
+    this.pForeignVariables = (pFunction && pFunction.pImplement) ? pFunction.pForeignVariables : null;
     /**
      * Code of function
      * @type {Object[]}
@@ -1600,7 +1612,6 @@ function EffectBaseFunction() {
     this._pCodeAll = null;
     this._sCodeAll = null;
     this._pLocalPointers = {};
-    this.pForeignVariables = null;
 }
 EffectBaseFunction.prototype.addGlobalVariable = function (pVar) {
     if (pVar.isShared || pVar.isForeign) {
@@ -2117,7 +2128,8 @@ EffectFunction.prototype.toCodeAll = function () {
             sCode += pElement;
         }
         else {
-            if (!(pElement.isSampler && pElement.iScope === a.fx.GLOBAL_VARS.GLOBAL) && pElement.pData === undefined) {
+            if (!(pElement.isSampler && pElement.iScope === a.fx.GLOBAL_VARS.GLOBAL) && pElement.pData === undefined &&
+                !pElement.isForeign) {
                 pToCode = pElement.toCode(false);
                 if (typeof(pToCode) === "string") {
                     sCode += pToCode;
@@ -2324,6 +2336,7 @@ EffectShader.prototype.toCodeAll = function (id) {
     }
     var i, j;
     var pVar;
+    var pCodeBlock;
     if (this.pReturnVariable) {
         this.pReturnVariable.sRealName = a.fx.GLOBAL_VARS.SHADEROUT;
     }
@@ -2373,7 +2386,19 @@ EffectShader.prototype.toCodeAll = function (id) {
             this.pUniformsDefault[pVar.sRealName] = pVar.pDefaultValue;
         }
         this.pUniformsByRealName[pVar.sRealName] = pVar;
-        this.pUniformsBlock[pVar.sRealName] = pVar.isUniform ? pVar.toCodeDecl() : ("uniform " + pVar.toCodeDecl());
+        pCodeBlock = pVar.toCodeDecl();
+        if (pVar.isUniform) {
+            this.pUniformsBlock[pVar.sRealName] = pCodeBlock;
+        }
+        else {
+            if (typeof(pCodeBlock) === "string") {
+                this.pUniformsBlock[pVar.sRealName] = "uniform " + pCodeBlock;
+            }
+            else {
+                pCodeBlock.unshift("uniform ");
+                this.pUniformsBlock[pVar.sRealName] = pCodeBlock;
+            }
+        }
     }
     //Generate type block
     this.pTypesBlock = {};
@@ -2433,7 +2458,7 @@ EffectShader.prototype.toCodeAll = function (id) {
         }
         else {
             if (!(pElement._isSampler && pElement.iScope === a.fx.GLOBAL_VARS.GLOBAL) &&
-                pElement.pData === undefined) {
+                pElement.pData === undefined && !pElement.isForeign) {
                 pToCode = (pElement instanceof EffectBaseFunction) ? pElement.toCode() : pElement.toCode(true);
                 if (typeof(pToCode) === "string") {
                     sCode += pToCode;
@@ -5088,6 +5113,9 @@ Effect.prototype.addVariableDecl = function (pVar) {
     if (this._isStruct) {
         this._pCurrentStructFields[pVar.sName] = pVar;
         this._pCurrentStructOrders.push(pVar);
+        if (pVar.isSampler()) {
+            pVar.isValid = true;
+        }
         pVar.sRealName = pVar.sSemantic || (pVar.sName + "_" + this._id);
         if (!pVar.sSemantic) {
             this._isCurrentStructMixible = false;
@@ -5120,6 +5148,11 @@ Effect.prototype.addVariableDecl = function (pVar) {
             this.pushCode(pVar.pType);
             this.pushCode(" ");
             this.pushCode(pVar);
+            if (pVar.isArray) {
+                this.pushCode("[");
+                this.pushCode(pVar.iLength);
+                this.pushCode("]");
+            }
             if (pVar.pInitializer) {
                 this.pushCode("=");
                 var i;
@@ -5703,7 +5736,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     this.endCode();
                     this.pushCode(pIndex);
                 }
-                else if (pType1 !== a.fx.GLOBAL_VARS.UNDEFINEDTYPE && pType1.isBase()) {
+                else if (pType1 !== a.fx.GLOBAL_VARS.UNDEFINEDTYPE && pType1.isBase() && !pVar.isArray) {
                     if (pType1.isEqual(this.hasType("float4x4"))) {
                         pType1 = this.hasType("float4");
                     }
@@ -5728,17 +5761,24 @@ Effect.prototype.analyzeExpr = function (pNode) {
                              pType1.isEqual(this.hasType("bool2"))) {
                         pType1 = this.hasType("bool");
                     }
-                    else if (!pType1.isEqual(this.hasType("sampler"))) {
-                        error("it`s not an array");
-                        return;
+//                    else if (!(pType1.isEqual(this.hasType("sampler")) &&
+//                               (pVar.isArray && (
+//                                   pType.isEqual(this.hasType("float") ||
+//                                                 pType.isEqual(this.hasType("int") ||
+//                                                               pType.isEqual(this.hasType("bool"))
+//                                   )))) {
+//                        error("it`s not an array");
+//                        return;
+//                    }
+                }
+                else if (pVar.isArray) {
+                    if (pType1 !== a.fx.GLOBAL_VARS.UNDEFINEDTYPE && !pType1.isBase()) {
+                        this._isTypeAnalayzed = true;
                     }
                 }
-                else if (pType1 !== a.fx.GLOBAL_VARS.UNDEFINEDTYPE) {
-                    if (!pVar || !pVar.isArray) {
-                        error("[] - only for arrays");
-                        return;
-                    }
-                    this._isTypeAnalayzed = true;
+                else {
+                    error("[] - only for arrays");
+                    return;
                 }
             }
             if (isNewVar) {

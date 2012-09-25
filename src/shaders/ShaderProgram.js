@@ -353,7 +353,7 @@ ShaderProgram.prototype.applyFloatArray = function (sName, pData) {
         return false;
     }
     var pDevice = this._pDevice;
-    pDevice.uniform1iv(this._pRealUniformList[sName], pData);
+    pDevice.uniform1fv(this._pRealUniformList[sName], pData);
 };
 ShaderProgram.prototype.applyIntArray = function (sName, pData) {
     sName += "[0]";
@@ -700,6 +700,69 @@ ShaderProgram.prototype.applySampler2D = function (sName, pData) {
     }
     return this.applyInt(sRealName, iSlot);
 };
+ShaderProgram.prototype.applySampler2DInStruct = function (sName, pData) {
+    if (!pData) {
+        return true;
+    }
+    var sTexture, pTexture;
+    var pPreparedData = this._pUniformPreparedData[sName];
+    var iSlot;
+    var pTextureParam;
+
+    if (pPreparedData === null) {
+        sTexture = pData[a.fx.GLOBAL_VARS.TEXTURE];
+        pTexture = this._pTextures ? (this._pTextures[sTexture]) : null;
+        if (!pTexture) {
+            iSlot = a.fx.ZEROSAMPLER;
+        }
+        else {
+            iSlot = this._pRenderer.activateTexture(pTexture);
+            pTextureParam = this._pTextureParams[iSlot];
+            trace("Slot #" + iSlot);
+            pTextureParam[a.TPARAM.MAG_FILTER] = pData[a.TPARAM.MAG_FILTER] ||
+                                                 pTexture._getParameter(a.TPARAM.MAG_FILTER) ||
+                                                 a.TFILTER.LINEAR;
+            pTextureParam[a.TPARAM.MIN_FILTER] = pData[a.TPARAM.MIN_FILTER] ||
+                                                 pTexture._getParameter(a.TPARAM.MIN_FILTER) ||
+                                                 a.TFILTER.LINEAR;
+            pTextureParam[a.TPARAM.WRAP_S] = pData[a.TPARAM.WRAP_S] ||
+                                             pTexture._getParameter(a.TPARAM.WRAP_S) ||
+                                             a.TWRAPMODE.REPEAT;
+            pTextureParam[a.TPARAM.WRAP_T] = pData[a.TPARAM.WRAP_T] ||
+                                             pTexture._getParameter(a.TPARAM.WRAP_T) ||
+                                             a.TWRAPMODE.REPEAT;
+        }
+        return this.applyInt(sName, iSlot);
+    }
+    else {
+        for (var i = 0; i < pPreparedData.length; i++) {
+            sTexture = pData[i][a.fx.GLOBAL_VARS.TEXTURE];
+            pTexture = this._pTextures ? (this._pTextures[sTexture]) : null;
+            if (!pTexture) {
+                pPreparedData[i] = a.fx.ZEROSAMPLER;
+            }
+            else {
+                pPreparedData[i] = this._pRenderer.activateTexture(pTexture);
+                pTextureParam = this._pTextureParams[pPreparedData[i]];
+                trace("Slot #" + pPreparedData[i]);
+                pTextureParam[a.TPARAM.MAG_FILTER] = pData[i][a.TPARAM.MAG_FILTER] ||
+                                                     pTexture._getParameter(a.TPARAM.MAG_FILTER) ||
+                                                     a.TFILTER.LINEAR;
+                pTextureParam[a.TPARAM.MIN_FILTER] = pData[i][a.TPARAM.MIN_FILTER] ||
+                                                     pTexture._getParameter(a.TPARAM.MIN_FILTER) ||
+                                                     a.TFILTER.LINEAR;
+                pTextureParam[a.TPARAM.WRAP_S] = pData[i][a.TPARAM.WRAP_S] ||
+                                                 pTexture._getParameter(a.TPARAM.WRAP_S) ||
+                                                 a.TWRAPMODE.REPEAT;
+                pTextureParam[a.TPARAM.WRAP_T] = pData[i][a.TPARAM.WRAP_T] ||
+                                                 pTexture._getParameter(a.TPARAM.WRAP_T) ||
+                                                 a.TWRAPMODE.REPEAT;
+            }
+        }
+        return this.applyIntArray(sName, pPreparedData);
+    }
+};
+
 ShaderProgram.prototype.applyVideoBuffer = function (sName, pData) {
     var sRealName = this._pBuffersToReal[sName];
     if (sRealName === null) {
@@ -960,10 +1023,16 @@ ShaderProgram.prototype._chooseApplyUniformFunction = function (pVar, sVarName, 
                 break;
             case "sampler2D":
             case "samplerCube":
-                if (this._pPassBlend.pSamplers[sName]) {
-                    pFunctions[sName] = this.applySampler2D;
+                if (pVar.isSampler()) {
+                    if (sName.indexOf(".") === -1) {
+                        pFunctions[sName] = this.applySampler2D;
+                    }
+                    else {
+                        pFunctions[sName] = this.applySampler2DInStruct;
+                    }
                 }
                 else {
+                    trace("######### apply video buffer -------", pVar);
                     pFunctions[sName] = this.applyVideoBuffer;
                 }
                 break;
@@ -975,6 +1044,9 @@ ShaderProgram.prototype._chooseApplyUniformFunction = function (pVar, sVarName, 
         var i, j;
         var iLength;
         var pOrders = pVar.pType.pEffectType.pDesc.pOrders;
+        if (!sPreviousName) {
+            pFunctions[sName] = this.applyComplicateUniform;
+        }
         if (pVar.isArray) {
             iLength = pVar.getLength();
             for (i = 0; i < iLength; i++) {

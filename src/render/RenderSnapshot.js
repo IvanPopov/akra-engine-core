@@ -169,9 +169,12 @@ RenderSnapshot.prototype.setParameter = function (sName, pData, isSemantic) {
 };
 
 RenderSnapshot.prototype.setParameterBySemantic = function (sRealName, pData) {
-    var isBaseType = this._pShaderManager.isUniformTypeBase(sRealName);
     var pPass = this._pPassStates[this._iCurrentPass];
-    if (isBaseType && pPass[sRealName] !== undefined) {
+    if(pPass[sRealName] === undefined){
+        return false;
+    }
+    var isBaseType = this._pShaderManager.isUniformTypeBase(sRealName);
+    if (isBaseType) {
         pPass[sRealName] = pData;
         return true;
     }

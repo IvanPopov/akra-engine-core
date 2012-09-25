@@ -327,6 +327,7 @@ function PassBlend(pEngine) {
     this.pMixedTypesV = {};
     this.pFuncDefBlockV = {};
     this.pGlobalVarBlockV = {};
+    this.pGlobalVarV = {};
     this.pFuncDeclBlockV = {};
     this.pExternalsV = {};
     this.pExternalsBlockV = {};
@@ -360,6 +361,7 @@ function PassBlend(pEngine) {
     this.pMixedTypesF = {};
     this.pFuncDefBlockF = {};
     this.pGlobalVarBlockF = {};
+    this.pGlobalVarF = {};
     this.pFuncDeclBlockF = {};
     this.pExternalsF = {};
     this.pExternalsBlockF = {};
@@ -553,7 +555,7 @@ function PassBlend(pEngine) {
                 pUniformsBlock[sRealName] = null;
             }
         }
-        if (!pVar.pType.isBase()) {
+        if (!pVar.pType.isBase() && !pVar.isComplicate()) {
             var pOrders = pVar.pType.pEffectType.pDesc.pOrders;
             for (i = 0; i < pOrders.length; i++) {
                 PassBlend.fnAddUniform(pOrders[i], me, pShader, isVertex, sRealName);
@@ -607,7 +609,7 @@ PassBlend.prototype.addPass = function (pPass) {
     var pVar1, pVar2, pType1, pType2, pData1, pData2;
     var isEqual = false;
     var sName;
-    var pForeigns = pPass.pForeignVariables;
+    var pForeigns = pPass.pForeignsByName;
     var pForeignVar;
     for (i in pForeigns) {
         pForeignVar = this.pForeignVariables[i];
@@ -890,6 +892,7 @@ PassBlend.prototype.finalizeBlend = function () {
             sType = this._blendTypes(pExternal, pUsedTypes);
             this._addTypes(pUsedTypes, true);
             this.pExternalsBlockV[i] = sType + " " + i + ";";
+            this.pExternalsV[i] = this.pExternalsV[i][0];
         }
         else {
             pUsedTypes = this._getUsedTypes(pExternal, pUsedTypes);
@@ -905,6 +908,7 @@ PassBlend.prototype.finalizeBlend = function () {
             sType = this._blendTypes(pExternal, pUsedTypes);
             this._addTypes(pUsedTypes, false);
             this.pExternalsBlockF[i] = sType + " " + i + ";";
+            this.pExternalsF[i] = this.pExternalsF[i][0];
         }
         else {
             pUsedTypes = this._getUsedTypes(pExternal, pUsedTypes);
@@ -1322,6 +1326,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     var sVertexCode = "";
     var sFragmentCode = "";
     var isExtract;
+    var pCodeBlock;
 
     //VERTEX SHADER
 
@@ -1356,7 +1361,13 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     }
     //External variables
     for (i in this.pExternalsBlockV) {
-        sVertexCode += this.pExternalsBlockV[i];
+        pCodeBlock = this.pExternalsBlockV[i];
+        if (typeof(pCodeBlock) === "string") {
+            sVertexCode += pCodeBlock;
+        }
+        else {
+            sVertexCode += this._toFinalCode(pCodeBlock);
+        }
     }
     //Function`s definitions
     for (i in this.pFuncDefBlockV) {
@@ -1382,7 +1393,13 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
 
     //Uniforms
     for (i in this.pUniformsBlockV) {
-        sVertexCode += this.pUniformsBlockV[i];
+        pCodeBlock = this.pUniformsBlockV[i];
+        if (typeof(pCodeBlock) === "string") {
+            sVertexCode += pCodeBlock;
+        }
+        else {
+            sVertexCode += this._toFinalCode(pCodeBlock);
+        }
     }
     //Global variables
     if (isZeroHeaderV) {
@@ -1395,7 +1412,13 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         }
     }
     for (i in this.pGlobalVarBlockV) {
-        sVertexCode += this.pGlobalVarBlockV[i];
+        pCodeBlock = this.pGlobalVarBlockV[i];
+        if (typeof(pCodeBlock) === "string") {
+            sVertexCode += pCodeBlock;
+        }
+        else {
+            sVertexCode += this._toFinalCode(pCodeBlock);
+        }
     }
     //Varyings declaration
     for (i in this.pVaryingsDef) {
@@ -1503,7 +1526,13 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     }
     //External variables
     for (i in this.pExternalsBlockF) {
-        sFragmentCode += this.pExternalsBlockF[i];
+        pCodeBlock = this.pExternalsBlockF[i];
+        if (typeof(pCodeBlock) === "string") {
+            sFragmentCode += pCodeBlock;
+        }
+        else {
+            sFragmentCode += this._toFinalCode(pCodeBlock);
+        }
     }
     //Function`s definitions
     for (i in this.pFuncDefBlockF) {
@@ -1534,7 +1563,13 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     }
     //Uniforms
     for (i in this.pUniformsBlockF) {
-        sFragmentCode += this.pUniformsBlockF[i];
+        pCodeBlock = this.pUniformsBlockF[i];
+        if (typeof(pCodeBlock) === "string") {
+            sFragmentCode += pCodeBlock;
+        }
+        else {
+            sFragmentCode += this._toFinalCode(pCodeBlock);
+        }
     }
     //Global variables
     if (isZeroHeaderF) {
@@ -1547,7 +1582,13 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         }
     }
     for (i in this.pGlobalVarBlockF) {
-        sFragmentCode += this.pGlobalVarBlockF[i];
+        pCodeBlock = this.pGlobalVarBlockF[i];
+        if (typeof(pCodeBlock) === "string") {
+            sFragmentCode += pCodeBlock;
+        }
+        else {
+            sFragmentCode += this._toFinalCode(pCodeBlock);
+        }
     }
     //Varyings declaration
     for (i in this.pVaryingsDef) {

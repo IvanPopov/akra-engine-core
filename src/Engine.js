@@ -598,7 +598,7 @@ Engine.prototype.render = function () {
 
     if (this.pDisplayManager.beginRenderSession()) {
         // render the scene
-//        A_TRACER.BEGIN();
+        A_TRACER.BEGIN();
 //        A_TRACER.MESG("=====START RENDER SCENE OBJECTS==========");
         trace("==============Render Shadow===========");
         this.renderShadows();
@@ -611,7 +611,7 @@ Engine.prototype.render = function () {
         this.pShaderManager.processRenderQueue();
         trace("==============Stop Render Scene===========");
         this.pDisplayManager.endRenderSession();
-//        A_TRACER.END();
+        A_TRACER.END();
 //        this.pause(true);
     }
     return true;
