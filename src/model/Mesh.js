@@ -375,7 +375,7 @@ Mesh.prototype.createBoundingBox = function()
 
 		pSubMesh = this.getSubset(i);
 		pVertexData = pSubMesh.data.getData(a.DECLUSAGE.POSITION);
-        trace(pSubMesh.name);
+        //trace(pSubMesh.name);
 		
         if(!pVertexData) {
 			return false;
@@ -385,13 +385,13 @@ Mesh.prototype.createBoundingBox = function()
 			return false;
         }
 
-        trace('>>> before box >>');
+        //trace('>>> before box >>');
         if (pSubMesh.isSkinned()) {
-            trace('calc skinned box');
+            //trace('calc skinned box');
             pTempBoundingBox.transform(pSubMesh.skin.getBindMatrix());     
             pTempBoundingBox.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.boneName)); 
         }
-    trace('<<< after box <<');
+   // trace('<<< after box <<');
 
 		pNewBoundingBox.fX0 = Math.min(pNewBoundingBox.fX0, pTempBoundingBox.fX0);
 		pNewBoundingBox.fY0 = Math.min(pNewBoundingBox.fY0, pTempBoundingBox.fY0);

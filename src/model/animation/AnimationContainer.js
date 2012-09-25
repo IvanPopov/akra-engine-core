@@ -37,6 +37,11 @@ PROPERTY(AnimationContainer, 'speed',
 		return this._fSpeed;
 	});
 
+PROPERTY(AnimationContainer, 'animationTime',
+	function () {
+		return this._fTrueTime;
+	});
+
 AnimationContainer.prototype.getTime = function () {
     'use strict';
     
@@ -114,6 +119,7 @@ AnimationContainer.prototype.rightInfinity = function(bValue) {
 AnimationContainer.prototype.setStartTime = function (fRealTime) {
     'use strict';
 
+    //this._fRealTime = fRealTime;
 	this._fStartTime = fRealTime;
 };
 
@@ -160,7 +166,7 @@ AnimationContainer.prototype.isReversed = function() {
 
 AnimationContainer.prototype.pause = function (bValue) {
     'use strict';
-    
+    this._fRealTime = -1;
 	this._bPause = bValue;
 };
 
@@ -182,6 +188,10 @@ AnimationContainer.prototype.time = function (fRealTime) {
 
     if (this._bPause) {
     	return;
+    }
+
+    if (this._fRealTime < 0) {
+    	this._fRealTime = fRealTime;
     }
 
     this._fTime = this._fTime + (fRealTime - this._fRealTime) * this._fSpeed;

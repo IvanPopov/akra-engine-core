@@ -231,6 +231,13 @@ Node.prototype.worldPosition = function () {
 };
 
 
+Node.prototype.localOrientation = function() {
+    return this._qRotation;
+};
+
+Node.prototype.localPosition = function() {
+    return this._v3fTranslation;
+};
 
 /**
  * Get localMatrix
@@ -454,14 +461,14 @@ Node.prototype.attachToParent = function (pParent) {
         if (pParent) {
             this._pParent = pParent;
             this._pParent.addChild(this);
-            //this._pParent.addRef();
+            this._pParent.addRef();
             // adjust my local matrix to be relative to this new parent
             var invertedParentMatrix = Mat4();
             this._pParent._m4fWorldMatrix.inverse(invertedParentMatrix);
             // console.log("attachToParent-->", this.name, " Parent: ",Mat4.str(this._pParent._m4fWorldMatrix), 
             //             "inverse :", Mat4.str(invertedParentMatrix),
             //             "Local :", Mat4.str(this._m4fLocalMatrix));
-			this._m4fLocalMatrix.multiply(invertedParentMatrix);
+			//this._m4fLocalMatrix.multiply(invertedParentMatrix);
             return true;
         }
     }
@@ -484,12 +491,13 @@ Node.prototype.detachFromParent = function () {
     // tell our current parent to release us
     if (this._pParent) {
         this._pParent.removeChild(this);
-        if (this._pParent) {
+        if (this._pParent) {//TODO: разобраться что за херня!!!!
             this._pParent.release();
         }
         this._pParent = null;
         // my world matrix is now my local matrix
-        this._m4fLocalMatrix = this._m4fWorldMatrix;
+        //this._m4fLocalMatrix = this._m4fWorldMatrix;
+        
         // and the world matrix is the identity
         this._m4fWorldMatrix = new Mat4(1);
 
@@ -914,7 +922,7 @@ Node.prototype.setRotation = function () {
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
 
-Node.prototype.accessRotation = function () {
+Node.prototype.accessLocalOrientation = function () {
     'use strict';
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
     return this._qRotation;
@@ -969,6 +977,8 @@ Node.prototype.addRelRotation = function () {
     this._qRotation.multiply(qTemp);
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
+
+
 
 
 /**
