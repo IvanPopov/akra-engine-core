@@ -156,4 +156,32 @@ LightManager.prototype.updateTexture = function () {
 
 };
 
+LightManager.prototype.applyLight = function () {
+    var pRenderer = this._pEngine.shaderManager();
+    var pTarget = pRenderer.getPostEffectTarget();
+
+    var pSubMesh, pSnapshot;
+    var k;
+    var pDeferredTextures = this._pDeferredTextures;
+    var pDepthTexture = this._pDepthTexture;
+    var pCanvas = this._pEngine.pCanvas;
+
+    pRenderer.setViewport(0, 0, pCanvas.width, pCanvas.height);
+    pSubMesh = pTarget[0];
+    pSubMesh.startRender();
+    pSnapshot = pSubMesh._pActiveSnapshot;
+    for (k = 0; k < pSubMesh.totalPasses(); k++) {
+        pSubMesh.activatePass(k);
+        pSubMesh.applyRenderData(pSubMesh.data);
+        pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_RATIO", [pCanvas.width/pDepthTexture.width,pCanvas.height/pDepthTexture.height]);
+        pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE0", pDeferredTextures[0]);
+        pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE1", pDeferredTextures[1]);
+        pSnapshot.applyTextureBySemantic("SCENE_DEPTH_TEXTURE", pDepthTexture);
+        var pEntry = pSubMesh.renderPass();
+        trace("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
+        pSubMesh.deactivatePass();
+    }
+    pSubMesh.finishRender();
+};
+
 A_NAMESPACE(LightManager);

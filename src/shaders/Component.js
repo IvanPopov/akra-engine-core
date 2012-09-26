@@ -107,7 +107,7 @@ Component.prototype.create = function (pTechnique) {
         return false;
     }
     this.sName = pTechnique.sName;
-//    this.pTechnique = pTechnique;
+    this.pTechnique = pTechnique;
     this.pPasses = pTechnique.pPasses;
     this.pPassesNames = pTechnique.pPassesNames;
     this.isPostEffect = pTechnique.isPostEffect;
@@ -120,8 +120,8 @@ Component.prototype.create = function (pTechnique) {
     return true;
 };
 
-Component.prototype.hash = function (pProp) {
-    return this.sName + ">>>" + (pProp.nShift || 0);
+Component.prototype.hash = function (nShift) {
+    return this.sName + ">>>" + (nShift || 0);
 };
 Component.prototype.totalPasses = function () {
     return this.pPasses.length;
@@ -830,7 +830,7 @@ PassBlend.prototype.addPass = function (pPass) {
             this.pExtrectedFunctionsF[i] = null;
         }
         for (i in pFragment.pSharedVariables) {
-            this._addExternal(pVertex.pSharedVariables[i], false);
+            this._addExternal(pFragment.pSharedVariables[i], false);
         }
     }
 

@@ -1228,6 +1228,8 @@ function EffectVariable() {
     this.isForeign = false;
     this.isValid = false;
     this.pDependences = null;
+
+    this._iEffectId = null;
 }
 EffectVariable.prototype.isInput = function () {
     if (this.pType.pUsagesName &&
@@ -1316,7 +1318,9 @@ EffectVariable.prototype.cloneMe = function () {
     pVar.iPadding = this.iPadding;
     pVar._pAllPointers = this._pAllPointers;
     pVar._pIndexFields = this._pIndexFields;
-    pVar.sFullName = this.pFullName;
+    pVar.sFullName = this.sFullName;
+    pVar._iEffectId = this._iEffectId;
+
     return pVar;
 };
 EffectVariable.prototype.setTexture = function (pTex) {
@@ -1481,6 +1485,9 @@ EffectVariable.prototype.getSemantic = function () {
 EffectVariable.prototype.getRealName = function () {
     return this.sRealName;
 };
+EffectVariable.prototype.setEffectId = function (iId) {
+    this._iEffectId = iId;
+};
 
 function SamplerIndex(pCode, pSampler) {
     this.pData = pCode;
@@ -1593,18 +1600,18 @@ function EffectBaseFunction() {
     this.pSharedVariables = (pFunction && pFunction.pImplement) ? pFunction.pSharedVariables : null;
     this.pForeignVariables = (pFunction && pFunction.pImplement) ? pFunction.pForeignVariables : null;
     /**
+     * Global variables used in function
+     * Pairs: FunctionHash -> EffectFunction
+     * @type {Object}
+     */
+    this.pFunctions = (pFunction && pFunction.pImplement) ? pFunction.pFunctions : null;
+    /**
      * Code of function
      * @type {Object[]}
      */
     this.pImplement = null;
     this.iScope = 0;
     this.pScopeStack = null;
-    /**
-     * Global variables used in function
-     * Pairs: FunctionHash -> EffectFunction
-     * @type {Object}
-     */
-    this.pFunctions = null;
     this._pBaseMemBlocks = {};
     this.pMemBlocks = {};
     this._pExtractFunctions = null;
@@ -3478,14 +3485,34 @@ Effect.prototype._initSystemData = function () {
     this._addSystemFunction("mul", null, [null, null], ["float", "int", "float2", "float3", "float4"], "$1*$2");
     this._addSystemFunction("tex2D", "float4", ["sampler", "float2"], null, "texture2D($1,$2)");
     this._addSystemFunction("mod", "float", ["float", "float"], null, "mod($1,$2)");
-    this._addSystemFunction("floor", "float", ["float"], null, "floor($1)");
-    this._addSystemFunction("fract", "float", ["float"], null, "fract($1)");
-    this._addSystemFunction("abs", "float", ["float"], null, "abs($1)");
+    this._addSystemFunction("floor", null, [null], ["float", "float2", "float3", "float4"], "floor($1)");
+    this._addSystemFunction("ceil", null, [null], ["float", "float2", "float3", "float4"], "ceil($1)");
+    this._addSystemFunction("fract", null, [null], ["float", "float2", "float3", "float4"], "fract($1)");
+    this._addSystemFunction("abs", null, [null], ["float", "float2", "float3", "float4"], "abs($1)");
     this._addSystemFunction("normalize", "float", [null], ["float", "float2", "float3", "float4"], "normalize($1)");
     this._addSystemFunction("length", null, [null], ["float3", "float4"], "length($1)");
     this._addSystemFunction("reflect", null, [null, null], ["float", "float2", "float3", "float4"], "reflect($1,$2)");
     this._addSystemFunction("max", null, [null, null], ["float", "float2", "float3", "float4"], "max($1,$2)");
+    this._addSystemFunction("max", null, [null, "float"], ["float2", "float3", "float4"], "max($1,$2)");
+
+    this._addSystemFunction("min", null, [null, null], ["float", "float2", "float3", "float4"], "min($1,$2)");
+    this._addSystemFunction("min", null, [null, "float"], ["float2", "float3", "float4"], "min($1,$2)");
+
+    this._addSystemFunction("clamp", null, [null, null, null], ["float", "float2", "float3", "float4"],
+                            "clamp($1,$2,$3)");
+    this._addSystemFunction("clamp", null, [null, "float", "float"], ["float2", "float3", "float4"], "clamp($1,$2,$3)");
+
     this._addSystemFunction("pow", null, [null, null], ["float", "float2", "float3", "float4"], "pow($1,$2)");
+    this._addSystemFunction("exp", null, [null], ["float", "float2", "float3", "float4"], "exp($1)");
+    this._addSystemFunction("exp2", null, [null], ["float", "float2", "float3", "float4"], "exp2($1)");
+    this._addSystemFunction("log", null, [null], ["float", "float2", "float3", "float4"], "log($1)");
+    this._addSystemFunction("log2", null, [null], ["float", "float2", "float3", "float4"], "log2($1)");
+    this._addSystemFunction("inversesqrt", null, [null], ["float", "float2", "float3", "float4"], "inversesqrt($1)");
+    this._addSystemFunction("sqrt", null, [null], ["float", "float2", "float3", "float4"], "sqrt($1)");
+    this._addSystemFunction("all", null, [null], ["bool2", "bool3", "bool4"], "all($1)");
+    this._addSystemFunction("lessThanEqual", "bool2", [null, null], ["float2", "int2"], "lessThanEqual($1,$2)");
+    this._addSystemFunction("lessThanEqual", "bool3", [null, null], ["float3", "int3"], "lessThanEqual($1,$2)");
+    this._addSystemFunction("lessThanEqual", "bool4", [null, null], ["float4", "int4"], "lessThanEqual($1,$2)");
     Effect._isInit = true;
 };
 /**
@@ -4073,10 +4100,17 @@ Effect.prototype.addVariable = function (pVar, isParams) {
         error("Bad variable name!");
         return;
     }
-    if (this._hasVariableDecl(pVar.sName)) {
+    var pFindVar = this._hasVariableDecl(pVar.sName);
+    if (pFindVar &&
+        ((pVar._iEffectId !== null && pVar._iEffectId !== pFindVar._iEffectId) || pVar._iEffectId === null)) {
         error("Ohhh! You try to redeclarate varibale!");
         return;
     }
+
+    if (pVar._iEffectId === null) {
+        pVar._iEffectId = this._id;
+    }
+
     if (this._iScope === a.fx.GLOBAL_VARS.GLOBAL &&
         !pVar.pType.isBase() && pVar.pType.pEffectType.pDesc.hasIndexData()) {
         error("Index data support only for attributes");
@@ -4302,6 +4336,7 @@ Effect.prototype.findFunction = function (sName, pParams) {
     var pFunctions = this._pFunctionTableByName[sName];
     var pFunc = null;
     var i, j;
+    var isEqual;
     if (pFunctions) {
         if (pParams === null) {
             //Find function for pass
@@ -4318,23 +4353,25 @@ Effect.prototype.findFunction = function (sName, pParams) {
                         pFunc = pFunctions[i];
                     }
                     else {
-                        error("I can`t choose function");
+                        error("I can`t choose function 1");
                         return;
                     }
                     continue;
                 }
+                isEqual = true;
                 for (j = 0; j < pParams.length; j++) {
-                    if (pFunctions[i].pParamOrders[j].pType.isEqual(pParams[j])) {
-                        if (!pFunc) {
-                            pFunc = pFunctions[i];
-                        }
-                        else {
-                            error("I can`t choose function");
-                            return;
-                        }
+                    if (!pFunctions[i].pParamOrders[j].pType.isEqual(pParams[j])) {
+                        isEqual = false;
+                        break;
+                    }
+                }
+                if (isEqual) {
+                    if (!pFunc) {
+                        pFunc = pFunctions[i];
                     }
                     else {
-                        break;
+                        error("I can`t choose function 2");
+                        return;
                     }
                 }
             }
@@ -5452,6 +5489,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 }
                 pFunc = this.findFunction(pChildren[pChildren.length - 1].sValue, pTypes);
                 if (!pFunc) {
+                    trace(pTypes, this);
                     error("can not find function: " + pChildren[pChildren.length - 1].sValue);
                     return;
                 }
@@ -5998,6 +6036,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 else {
                     pVar = pType.pDesc.hasField(pNode.sValue);
                     if (!pVar) {
+                        trace(pType, pNode);
                         error("Return type is not enough cool for you.");
                         return;
                     }
@@ -7251,20 +7290,22 @@ Effect.prototype.analyzeStateIf = function (pNode, pPass) {
     pPass.isComplex = true;
     pPass.pushCode("if(");
     this.newCode();
-    this.analyzeExpr(pChildren[4]);
+    this.analyzeExpr(pChildren[pChildren.length - 3]);
     pCode = this._pCode;
     this.endCode();
     for (i = 0; i < pCode.length; i++) {
         pPass.pushCode(pCode[i]);
     }
     pPass.pushCode(")");
-    this.analyzePassStateBlock(pChildren[2], pPass);
-    pPass.pushCode("else ");
-    if (pChildren[0].sName === a.fx.GLOBAL_VARS.STATEIF) {
-        this.analyzeStateIf(pChildren[0], pPass);
-    }
-    else {
-        this.analyzePassStateBlock(pChildren[0], pPass);
+    this.analyzePassStateBlock(pChildren[pChildren.length - 5], pPass);
+    if (pChildren.length > 5) {
+        pPass.pushCode("else ");
+        if (pChildren[0].sName === a.fx.GLOBAL_VARS.STATEIF) {
+            this.analyzeStateIf(pChildren[0], pPass);
+        }
+        else {
+            this.analyzePassStateBlock(pChildren[0], pPass);
+        }
     }
 };
 Effect.prototype.analyzeStateSwitch = function (pNode, pPass) {
@@ -7426,7 +7467,7 @@ Effect.prototype.analyzeComplexName = function (pNode) {
 };
 Effect.prototype.analyzeShiftOpt = function (pNode) {
     var pChildren = pNode.pChildren;
-    var nShift = pChildren[0];
+    var nShift = pChildren[0].sValue;
     if (pChildren.length === 2) {
         nShift *= 1;
     }

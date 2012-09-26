@@ -1822,7 +1822,12 @@ EffectParser.prototype._includeCode = function (pRule) {
     var sFile = pNode.pChildren[0].sValue;
     sFile = sFile.substr(1, sFile.length - 2);
     if (this._pIncludeTable[sFile]) {
-        return this._pIncludeTable[sFile];
+        var sSource = this._pIncludeTable[sFile];
+        var index = this._pLex.iIndex;
+        this.sSource = this.sSource.substr(0, index) + sSource + this.sSource.substr(index);
+        this._pLex.sSource = this.sSource;
+        this._pIncludeTable[sFile] = sSource;
+        return true;
     }
     if (this._isSync) {
         var pRequest = a.ajax({url:sFile, async:false});
@@ -1830,6 +1835,7 @@ EffectParser.prototype._includeCode = function (pRule) {
             var sSource = pRequest.data;
             var index = this._pLex.iIndex;
             this.sSource = this.sSource.substr(0, index) + sSource + this.sSource.substr(index);
+            this._pLex.sSource = this.sSource;
             this._pIncludeTable[sFile] = sSource;
             return true;
         }

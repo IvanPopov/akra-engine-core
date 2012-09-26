@@ -378,7 +378,7 @@ Engine.prototype.notifyInitDeviceObjects = function () {
         0.1, 3000.0);
 
     return true;
-}
+};
 
 /**
  * @property renderScene()
@@ -601,6 +601,9 @@ Engine.prototype.render = function () {
         A_TRACER.BEGIN();
 //        A_TRACER.MESG("=====START RENDER SCENE OBJECTS==========");
         trace("==============Render Shadow===========");
+//        this.pDevice.enable(this.pDevice.BLEND);
+//        this.pDevice.blendFunc(this.pDevice.SRC_ALPHA,this.pDevice.ONE_MINUS_SRC_ALPHA)
+//        this.pDevice.disable(this.pDevice.DEPTH_TEST);
         this.renderShadows();
         this.pShaderManager.processRenderQueue();
         this.pDevice.flush();
@@ -610,6 +613,12 @@ Engine.prototype.render = function () {
         // process the contents of the render queue
         this.pShaderManager.processRenderQueue();
         trace("==============Stop Render Scene===========");
+
+        trace("==============Apply lights===========");
+        this.lightManager().applyLight();
+        this.pShaderManager.processRenderQueue();
+        trace("==============Stop Apply lights===========");
+
         this.pDisplayManager.endRenderSession();
         A_TRACER.END();
 //        this.pause(true);

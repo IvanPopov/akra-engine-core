@@ -1990,6 +1990,7 @@ function COLLADA(pEngine, pSettings) {
                         pSubMesh.renderMethod.effect.create();
                     }
                     pSubMesh.renderMethod.effect.use("akra.system.mesh_texture");
+                    pSubMesh.renderMethod.effect.use("akra.system.prepareForDeferredShading");
 
                     //setup textures
                     for (var c in pMaterial.pTextures) {
@@ -2178,8 +2179,6 @@ function COLLADA(pEngine, pSettings) {
         return buildMaterials(pMesh, pMeshNode);
     }
 
-    ;
-
     function buildSkeleton(pSkeletonsList) {
         var pSkeleton = null;
 
@@ -2282,7 +2281,6 @@ function COLLADA(pEngine, pSettings) {
         return pMeshes;
     }
 
-
     function findNode(pNodes, sNode, fnNodeCallback) {
         sNode = sNode || null;
         fnNodeCallback = fnNodeCallback || null;
@@ -2317,11 +2315,9 @@ function COLLADA(pEngine, pSettings) {
         return null;
     }
 
-
     /**
      * Build SceneNode (Node with visual objects)
      */
-
 
     function buildSceneNode(pNode) {
         var pSceneNode = pNode.pConstructedNode;
@@ -2480,8 +2476,6 @@ function COLLADA(pEngine, pSettings) {
 
         return pNodes;
     }
-
-    ;
 
     function readLibraries(pXMLCollada, pTemplate, ppLibraries) {
         ppLibraries = ppLibraries || pLib;

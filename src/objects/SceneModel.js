@@ -84,6 +84,9 @@ SceneModel.prototype.render = function () {
 
     var pMeshes = this._pMeshes,
         pRenderer = this._pEngine.shaderManager(),
+        pLightManager = this._pEngine.lightManager(),
+        pDepthTexture = pLightManager.depthTexture,
+        pDeferredTextures = pLightManager.deferredTextures,
         pMesh, pSubMesh;
     var i, j, k;
     var isSkinning;
@@ -110,69 +113,73 @@ SceneModel.prototype.render = function () {
             }
             for (k = 0; k < pSubMesh.totalPasses(); k++) {
                 pSubMesh.activatePass(k);
+                pRenderer.activateFrameBuffer();
+                pRenderer.applyFrameBufferTexture(pDepthTexture, a.ATYPE.DEPTH_ATTACHMENT, a.TTYPE.TEXTURE_2D, 0);
+                pRenderer.applyFrameBufferTexture(pDeferredTextures[k], a.ATYPE.COLOR_ATTACHMENT0, a.TTYPE.TEXTURE_2D, 0);
                 pSubMesh.applySurfaceMaterial();
+//                pRenderer
 //                trace("SCENE MODEL NAME: ", this.name + ":" + pSubMesh.name, pSubMesh.data.toString());
-                var pSnapshot = pSubMesh._pActiveSnapshot;
-                pSnapshot.applyForeignVariable("test_foreign", 0.8);
-                pSnapshot.applyForeignVariable("test_length", 2);
-                pSnapshot.setComplexParameterBySemantic("COMPLEX_UNIFORM", [
-                    {
-                        "FLOAT_VAR1" : 0.2,
-                        "SAMPLER"    : [
-                            {
-                                "TEXTURE" : "TEXTURE0"
-                            },
-                            {
-                                "TEXTURE" : "TEXTURE2"
-                            }
-                        ],
-                        "SUB_STRUCT" : [
-                            {
-                                "FLOAT_VAR" : [0.1, 0.2, 0.3],
-                                "SAMPLER"   : [
-                                    {
-                                        "TEXTURE" : "TEXTURE0"
-                                    }
-                                ]
-                            },
-                            {
-                                "FLOAT_VAR" : [0.1, 0.2, 0.3],
-                                "SAMPLER"   : [
-                                    {
-                                        "TEXTURE" : "TEXTURE0"
-                                    }
-                                ]
-                            }
-                        ]},
-                    {
-                        "FLOAT_VAR1" : 0.2,
-                        "SAMPLER"    : [
-                            {
-                                "TEXTURE" : "TEXTURE0"
-                            },
-                            {
-                                "TEXTURE" : "TEXTURE2"
-                            }
-                        ],
-                        "SUB_STRUCT" : [
-                            {
-                                "FLOAT_VAR" : [0.1, 0.2, 0.3],
-                                "SAMPLER"   : [
-                                    {
-                                        "TEXTURE" : "TEXTURE1"
-                                    }
-                                ]
-                            },
-                            {
-                                "FLOAT_VAR" : [0.1, 0.2, 0.3],
-                                "SAMPLER"   : [
-                                    {
-                                        "TEXTURE" : "TEXTURE1"
-                                    }
-                                ]
-                            }
-                        ]}
-                ]);
+//                var pSnapshot = pSubMesh._pActiveSnapshot;
+//                pSnapshot.applyForeignVariable("test_foreign", 0.8);
+//                pSnapshot.applyForeignVariable("test_length", 2);
+//                pSnapshot.setComplexParameterBySemantic("COMPLEX_UNIFORM", [
+//                    {
+//                        "FLOAT_VAR1" : 0.2,
+//                        "SAMPLER"    : [
+//                            {
+//                                "TEXTURE" : "TEXTURE0"
+//                            },
+//                            {
+//                                "TEXTURE" : "TEXTURE2"
+//                            }
+//                        ],
+//                        "SUB_STRUCT" : [
+//                            {
+//                                "FLOAT_VAR" : [0.1, 0.2, 0.3],
+//                                "SAMPLER"   : [
+//                                    {
+//                                        "TEXTURE" : "TEXTURE0"
+//                                    }
+//                                ]
+//                            },
+//                            {
+//                                "FLOAT_VAR" : [0.1, 0.2, 0.3],
+//                                "SAMPLER"   : [
+//                                    {
+//                                        "TEXTURE" : "TEXTURE0"
+//                                    }
+//                                ]
+//                            }
+//                        ]},
+//                    {
+//                        "FLOAT_VAR1" : 0.2,
+//                        "SAMPLER"    : [
+//                            {
+//                                "TEXTURE" : "TEXTURE0"
+//                            },
+//                            {
+//                                "TEXTURE" : "TEXTURE2"
+//                            }
+//                        ],
+//                        "SUB_STRUCT" : [
+//                            {
+//                                "FLOAT_VAR" : [0.1, 0.2, 0.3],
+//                                "SAMPLER"   : [
+//                                    {
+//                                        "TEXTURE" : "TEXTURE1"
+//                                    }
+//                                ]
+//                            },
+//                            {
+//                                "FLOAT_VAR" : [0.1, 0.2, 0.3],
+//                                "SAMPLER"   : [
+//                                    {
+//                                        "TEXTURE" : "TEXTURE1"
+//                                    }
+//                                ]
+//                            }
+//                        ]}
+//                ]);
 //                pSnapshot.setParameterBySemantic("COMPLEX_UNIFORM", {
 //                    "FLOAT_VAR1" : 0.2, "SAMPLER" : [
 //                        {
@@ -189,6 +196,7 @@ SceneModel.prototype.render = function () {
                 var pEntry = pSubMesh.renderPass();
                 trace("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
                 pSubMesh.deactivatePass();
+                pRenderer.deactivateFrameBuffer();
             }
             pSubMesh.finishRender();
         }
@@ -197,8 +205,7 @@ SceneModel.prototype.render = function () {
 //    A_TRACER.END();
     trace("<<<<<<<<<<<<<END SCENE MODEL RENDER>>>>>>>>>>");
     return true;
-}
-;
+};
 
 SceneModel.prototype.renderShadow = function () {
     if (!this.hasShadow()) {
@@ -216,7 +223,7 @@ SceneModel.prototype.renderShadow = function () {
     }
 
     pRenderer.activateSceneObject(this);
-    pRenderer.setViewport(0, 0, this._pEngine.pCanvas.width, this._pEngine.pCanvas.height);
+//    pRenderer.setViewport(0, 0, this._pEngine.pCanvas.width, this._pEngine.pCanvas.height);
 
     for (i = 0; i < pMeshes.length; i++) {
         pMesh = pMeshes[i];

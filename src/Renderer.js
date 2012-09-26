@@ -128,6 +128,8 @@ function Renderer(pEngine) {
     this._pRenderResourceCounter = {};
     this._pRenderResourceCounterKeys = [];
 
+    this._pPostEffectTarget = null;
+
     //Current render resource states
     this._pRenderState = new a.fx.RenderState(this.pEngine);
     this._pStreamState = new Array(a.info.graphics.maxVertexAttributes(this.pDevice));
@@ -1171,6 +1173,10 @@ Renderer.prototype.getViewport = function () {
     return this._pCurrentViewport;
 };
 
+Renderer.prototype.getPostEffectTarget = function (){
+    return this._pPostEffectTarget;
+};
+
 //----Allocators----//
 Renderer.prototype._getEmptyTextureSlot = function () {
     var i;
@@ -1559,6 +1565,14 @@ Renderer.prototype.destroyDeviceResources = function () {
 };
 
 Renderer.prototype.createDeviceResources = function () {
+    this._pPostEffectTarget = new a.Mesh(this.pEngine, 0, 'screen-sprite');//a.RenderDataBuffer.VB_READABLE
+    var pSubMesh = this._pPostEffectTarget.createSubset('screen-sprite :: main', a.PRIMTYPE.TRIANGLESTRIP);
+    pSubMesh.data.allocateAttribute([VE_VEC2('POSITION')], new Float32Array([-1,-1,-1,1,1,-1,1,1]));
+    pSubMesh.effect.create();
+    pSubMesh.effect.use("akra.system.deferredShading");
+
+    trace("*********", this._pPostEffectTarget, pSubMesh.effect);
+
     return true;
 };
 
