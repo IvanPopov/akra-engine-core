@@ -9,10 +9,20 @@ function TerrainROAM (pEngine)
 {
 	A_CLASS;
 
+	this._pRenderData = this.getDataFactory().getEmptyRenderData(a.PRIMTYPE.TRIANGLELIST,a.RenderData.ADVANCED_INDEX);
+	this._pDataIndex;
+	this._iTotalIndices;
+	this._iTotalIndicesOld;
+	this._iTotalIndicesMax;
+	this._pIndexList;
+	this._pVerts;
+	this._iVertexID;
+
 	this._pNodePool=null;
 	this._pThistessellationQueue=null;
 	this._iTessellationQueueCount = 0;
 	this._isCreate=false;
+	this._isRenderInThisFrame=false;
 }
 
 
@@ -30,8 +40,32 @@ TerrainROAM.prototype.create = function (pRootNode, pHeightMap,worldExtents, iSh
 		this._pThistessellationQueue = new Array(this._iTessellationQueueSize);
 		this._iTessellationQueueCount = 0;
 		this._isCreate=true;
+		this._iTotalIndicesMax=0;
 	}
 	return bResult;
+}
+
+TerrainROAM.prototype.getVerts=function()
+{
+	return this._pVerts;
+}
+
+TerrainROAM.prototype.getIndex=function()
+{
+	return this._pIndexList;
+}
+TerrainROAM.prototype.setTotalIndex=function(iTotalIndices)
+{
+	this._iTotalIndices=iTotalIndices;
+}
+TerrainROAM.prototype.getTotalIndex=function()
+{
+	return this._iTotalIndices;
+}
+
+TerrainROAM.prototype.getVertexID=function()
+{
+	return this._iVertexID;
 }
 
 TerrainROAM.prototype.destroy=function()
@@ -51,6 +85,11 @@ TerrainROAM.prototype.allocateSectors = function () {
 	 new cTerrainSection[
 	 this._iSectorCountX*this._iSectorCountY];*/
 	this._pSectorArray = new Array(this._iSectorCountX * this._iSectorCountY);
+
+
+	//Вершинный буфер для всех
+	this._pVerts=new Array((this._iSectorCountX*this._iSectorCountY/*количество секции*/)*(this._iSectorVerts * this._iSectorVerts/*размер секции в вершинах*/) * (3/*кординаты вершин*/+3/*координаты нормалей*/+2/*текстурные координаты*/));
+
 	for(var i=0;i<this._pSectorArray.length;i++)
 	{
 		this._pSectorArray[i] = new a.TerrainSectionROAM(this._pEngine);
@@ -74,18 +113,32 @@ TerrainROAM.prototype.allocateSectors = function () {
 			iXPixel = x << this._iSectorShift;
 			iYPixel = y << this._iSectorShift;
 			iIndex = (y * this._iSectorCountX) + x;
+
 			if (!this._pSectorArray[iIndex].create(
-				this._pRootNode,
-				this,
-				x, y,
-				iXPixel, iYPixel,
+				this._pRootNode,  //Родительские нод
+				this,				// Терраин
+				x, y,				// Номер секции оп иксу и игрику
+				iXPixel, iYPixel,   // Координаты секции в картах нормалей и врешин
+				this._iSectorVerts, // Количесвто вершин в секции по иску и игрику
 				this._iSectorVerts,
-				this._iSectorVerts,
-				r2fSectorRect)) {
+				r2fSectorRect,
+				iIndex*(this._iSectorVerts * this._iSectorVerts/*размер секции в вершинах*/))){
 				return false;
 			}
 		}
 	}
+
+
+	var pVertexDescription =[VE_FLOAT3(a.DECLUSAGE.POSITION),VE_FLOAT3(a.DECLUSAGE.NORMAL),VE_FLOAT2(a.DECLUSAGE.TEXCOORD)]
+	this._iVertexID=this._pRenderData.allocateData(pVertexDescription,new Float32Array(this._pVerts));
+
+
+	//Индексны буфер для всех
+	this._iTotalIndices=0;
+	this._pIndexList = new Float32Array(a.TerrainROAM.MaxTriTreeNodes*3); //Максимальное количество треугольников помноженное на 3 вершины на каждый треугольник
+	this._pRenderData.allocateIndex([VE_FLOAT(a.DECLUSAGE.INDEX0)],this._pIndexList);
+	this._pRenderData.index(this._iVertexID,a.DECLUSAGE.INDEX0);
+	this._pDataIndex=this._pRenderData.getAdvancedIndexData(a.DECLUSAGE.INDEX0);
 
 	return true;
 }
@@ -98,7 +151,7 @@ TerrainROAM.prototype.allocateSectors = function () {
 //
 TerrainROAM.prototype.reset=function()
 {
-
+	this._isRenderInThisFrame=false;
 	if(this._isCreate)
 	{
 		Terrain.prototype.reset.call(this);
@@ -145,8 +198,7 @@ TerrainROAM.prototype.addToTessellationQueue=function(pSection)
 }
 
 
-STATIC(TerrainROAM,fXOld,undefined);
-STATIC(TerrainROAM,fYOld,undefined);
+STATIC(TerrainROAM,_iTessellationQueueCountOld,undefined);
 STATIC(TerrainROAM,nCountRender,0);
 
 TerrainROAM.prototype.prepareForRender = function()
@@ -156,36 +208,31 @@ TerrainROAM.prototype.prepareForRender = function()
 	{
 		Terrain.prototype.prepareForRender.call(this);
 
-		if(((statics.nCountRender++)%10)==0)
+		if(((statics.nCountRender++)%30)==0)
 		{
+			/*
 			//#####################################################################################
 			var pCanvas=document.getElementById('canvasLOD');
 			var p2D=pCanvas.getContext("2d");
 			p2D.fillStyle = "#fff"; // цвет фона
 			p2D.fillRect(0, 0, pCanvas.width, pCanvas.height);
 
-			//console.log("Total ",pSec._iTotalIndices);
 
-
-			var pVerts=this.pVertsDebug;
-
-			//#####################################################################################
-
+			//#####################################################################################*/
 
 			var pCamera = this._pEngine.getActiveCamera();
 			var v3fCameraPosition=pCamera.worldPosition();
 			var fX=(v3fCameraPosition.x-this.worldExtents().fX0)/Math.abs(this.worldExtents().fX1-this.worldExtents().fX0);
 			var fY=(v3fCameraPosition.y-this.worldExtents().fY0)/Math.abs(this.worldExtents().fY1-this.worldExtents().fY0);
 
-			//if(fX!=statics.fXOld||fY!=statics.fYOld)
-			//{
+			if(this._iTessellationQueueCount!=statics._iTessellationQueueCountOld)
+			{
 				this.processTessellationQueue();
-				statics.fXOld=fX;
-				statics.fYOld=fY;
-			//}
+				statics._iTessellationQueueCountOld=this._iTessellationQueueCount;
+			}
 
 
-			//#####################################################################################
+			/*//#####################################################################################
 			var pCamera = this._pEngine.getActiveCamera();
 			var v3fCameraPosition=pCamera.worldPosition();
 			var pData = pCamera.worldMatrix().pData;
@@ -222,19 +269,42 @@ TerrainROAM.prototype.prepareForRender = function()
 			p2D.stroke();
 			//секции
 
-//#####################################################################################
+//#####################################################################################*/
 		}
 	}
 
 	return;
 }
 
+//Применение параметров для рендеринга, коготрые зависят от самого терраина
+TerrainROAM.prototype.applyForRender= function(pWorldMatrix)
+{
+	if(this._isRenderInThisFrame==false)
+	{
+		this._isRenderInThisFrame=true;
+
+		var pCamera = this._pEngine.getActiveCamera();
+		this._pEngine.pDrawTerrainProgram.activate();
+		Terrain.prototype.applyForRender.call(this);
+		this._pEngine.pDrawTerrainProgram.applyMatrix4('model_mat', pWorldMatrix);
+		this._pEngine.pDrawTerrainProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
+		this._pEngine.pDrawTerrainProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
+		this._pRenderData.draw();
+	}
+}
+
 //
 // This function is called to sort the queue and
 // allow each section to tessellate in order
 //
+STATIC(TerrainROAM,fXOld,undefined);
+STATIC(TerrainROAM,fYOld,undefined);
+STATIC(TerrainROAM,nCountRender,0);
+
 TerrainROAM.prototype.processTessellationQueue=function()
 {
+
+
 	this._pThistessellationQueue.length=this._iTessellationQueueCount;
 
 	function fnSortSection(a, b)
@@ -242,6 +312,9 @@ TerrainROAM.prototype.processTessellationQueue=function()
 		return a.getQueueSortValue()- b.getQueueSortValue();
 	}
 	this._pThistessellationQueue.sort(fnSortSection);
+
+
+
 
 	for (var i=0; i<this._iTessellationQueueCount; ++i)
 	{
@@ -251,14 +324,27 @@ TerrainROAM.prototype.processTessellationQueue=function()
 			this._fScale, this._fLimit);
 	}
 
+	this._iTotalIndices = 0;
+
 	// gather up all the triangles into
 	// a final index buffer per section
 
-for (var i=0; i<this._iTessellationQueueCount; ++i)
+	for (var i=0; i<this._iTessellationQueueCount; ++i)
 	{
 		this._pThistessellationQueue[i].buildTriangleList();
 	}
 
+	if(this._iTotalIndicesOld==this._iTotalIndices && this._iTotalIndices!= this._iTotalIndicesMax)
+	{
+		//console.log("!!!!_iTotalIndices",this._iTotalIndices);
+		return;
+	}
+
+
+	this._pRenderData.setIndexLength(this._iTotalIndices);
+	this._pDataIndex.setData(this._pIndexList, 0,  a.getTypeSize(a.DTYPE.FLOAT), 0, this._iTotalIndices);
+	this._iTotalIndicesOld=this._iTotalIndices;
+	this._iTotalIndicesMax=Math.max(this._iTotalIndicesMax,this._iTotalIndices);
 }
 
 a.TerrainROAM=TerrainROAM;

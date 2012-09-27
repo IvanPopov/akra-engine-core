@@ -1,5 +1,5 @@
 
-var jc=-1;
+
 function TriTreeNode()
 {
 	this.pBaseNeighbor=null;
@@ -7,7 +7,6 @@ function TriTreeNode()
 	this.pRightNeighbor=null;
 	this.pLeftChild=null;
 	this.pRightChild=null;
-	this.k=jc--;
 }
 a.TriTreeNode=TriTreeNode;
 
@@ -37,13 +36,9 @@ TriangleNodePool.prototype.request=function ()
 		pNode.pRightNeighbor=null;
 		pNode.pLeftChild=null;
 		pNode.pRightChild=null;
-		pNode.k=this.iNextTriNode;
 		this.iNextTriNode++;
 	}
-	else
-	{
-		document.getElementById('setinfo3').innerHTML="кончились "+(jc++);
-	}
+
 	return pNode;
 }
 

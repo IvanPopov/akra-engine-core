@@ -180,8 +180,8 @@ Terrain.prototype.create = function (pRootNode, pMap,worldExtents, iShift, iShif
 	}
 
 	console.log("Высоты и нормали созданы")
-	console.log("Сектора")
-    return this.allocateSectors();
+
+	return this.allocateSectors();
 	console.log("Сектора созданы")
 }
 

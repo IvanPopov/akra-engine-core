@@ -9,17 +9,10 @@
 
 function TerrainSection (pEngine)
 {
-
-
 	A_CLASS;
 	this._pTerrainSystem = null; //Терреин которому принадлежит секуция
-
 	this._pRenderData=null;
-	this._iMaxIndices=0;
-	this._iTotalIndices=0;
-	this._iTotalIndicesOld=undefined;
-	this._pIndexList = null;
-	this._iVertexID = 0;
+	this._iVertexID;
 
     this._iHeightMapX; //Ее коорлинаты на карте высот
     this._iHeightMapY;
@@ -46,6 +39,10 @@ TerrainSection.prototype.getTerrainSystem = function () {
 
 TerrainSection.prototype.getIndex = function () {
 	return this._pIndexList;
+};
+
+TerrainSection.prototype.getSectionIndex = function () {
+	return (this._iSectorY * this._pTerrainSystem().getSectorCountX()) +  this._iSectorX;
 };
 
 TerrainSection.prototype.getHeightX = function () {
@@ -169,16 +166,12 @@ TerrainSection.prototype._buildVertexBuffer=function()
 
 	this._iVertexID=this._pRenderData.allocateData(this.pVertexDescription,new Float32Array(pVerts));
 
-	this.pVertsDebug=pVerts;
-
 	return true;
 }
 
 TerrainSection.prototype._buildIndexBuffer=function()
 {
-	this._iMaxIndices = a.getCountIndexForStripGrid(this._iXVerts, this._iYVerts);
-	this._iTotalIndices = a.getCountIndexForStripGrid(this._iXVerts, this._iYVerts);
-	this._pIndexList=new Float32Array(this._iMaxIndices);
+	var pIndexList=new Float32Array(a.getCountIndexForStripGrid(this._iXVerts, this._iYVerts));
 
 	a.createSingleStripGrid(this._pIndexList,
 		this._iXVerts, // width of grid
@@ -190,7 +183,7 @@ TerrainSection.prototype._buildIndexBuffer=function()
 
 	//
 
-	this._pRenderData.allocateIndex([VE_FLOAT(a.DECLUSAGE.INDEX0)],this._pIndexList);
+	this._pRenderData.allocateIndex([VE_FLOAT(a.DECLUSAGE.INDEX0)],pIndexList);
 	this._pRenderData.index(this._iVertexID,a.DECLUSAGE.INDEX0);
 
 	return true;
