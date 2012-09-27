@@ -2258,8 +2258,13 @@ function COLLADA (pEngine, pSettings) {
         findNode(pSceneRoot.pNodes, null, function (pNode) {
             var pModelNode = pNode.pConstructedNode;
             
+            if (pNode.pController.length == 0 && pNode.pGeometry.length == 0) {
+                return;
+            }
+
             if (!(pModelNode instanceof a.SceneModel)) {
                 pModelNode = new a.SceneModel(pEngine);
+                pModelNode.name = ".joint-to-model-link-" + a.sid();
                 pModelNode.create();
                 pModelNode.attachToParent(pNode.pConstructedNode);
             }
@@ -2396,6 +2401,11 @@ Endif ();
 
             m4fLocalMatrix = pHierarchyNode.accessLocalMatrix();
             m4fLocalMatrix.set(pNode.m4fTransform);
+
+            if (pHierarchyNode.name === "node-Bip001_Pelvis" || pHierarchyNode.name === "node-Bip001") {
+                trace(pHierarchyNode.localMatrix().toQuat4().toYawPitchRoll(Vec3()).toString(), '[' + pHierarchyNode.name + ' / ' + sBasename + ']');
+            }
+
             buildNodes(pNode.pChildNodes, pHierarchyNode);
         }
 
@@ -2441,6 +2451,13 @@ Endif ();
 
         for (var i = 0; i < pPoseSkeletons.length; ++ i) {
             pSkeleton = pPoseSkeletons[i];
+            if (pSkeleton.name === "node-Bip001_Pelvis" || pSkeleton.name === "node-Bip001") {
+                trace('skipping <node-Bip001_Pelvis> skeletom ...', '[' + sBasename + ']');
+
+                trace(pSkeleton.getNodeList()[0].localMatrix().toQuat4().toYawPitchRoll(Vec3()).toString());
+
+                continue;
+            }
             pPoses.push(buildInititalPose(pSceneRoot.pNodes, pSkeleton));
         }
 

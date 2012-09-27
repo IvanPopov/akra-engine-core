@@ -226,7 +226,7 @@ ModelResource.prototype.loadAnimation = function (sFilename) {
             animation: true,
             extractPoses: false, 
             skeletons: this._pSkeletonList,
-            animationWithPose: true
+            animationWithPose: false//true
         });
 };
 

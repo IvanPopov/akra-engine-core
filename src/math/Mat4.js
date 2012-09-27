@@ -347,15 +347,15 @@ Mat4.prototype.identity = function() {
     pData._23 = 0;
     pData._24 = 0;
 
-    pData._21 = 0;
-    pData._22 = 0;
-    pData._23 = 1;
-    pData._24 = 0;
+    pData._31 = 0;
+    pData._32 = 0;
+    pData._33 = 1;
+    pData._34 = 0;
 
-    pData._21 = 0;
-    pData._22 = 0;
-    pData._23 = 0;
-    pData._24 = 1;
+    pData._41 = 0;
+    pData._42 = 0;
+    pData._43 = 0;
+    pData._44 = 1;
 
     return this;
 };
