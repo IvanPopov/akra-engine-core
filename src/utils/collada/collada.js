@@ -2402,9 +2402,9 @@ Endif ();
             m4fLocalMatrix = pHierarchyNode.accessLocalMatrix();
             m4fLocalMatrix.set(pNode.m4fTransform);
 
-            if (pHierarchyNode.name === "node-Bip001_Pelvis" || pHierarchyNode.name === "node-Bip001") {
-                trace(pHierarchyNode.localMatrix().toQuat4().toYawPitchRoll(Vec3()).toString(), '[' + pHierarchyNode.name + ' / ' + sBasename + ']');
-            }
+            // if (pHierarchyNode.name === "node-Bip001_Pelvis" || pHierarchyNode.name === "node-Bip001") {
+            //     trace(pHierarchyNode.localMatrix().toQuat4().toYawPitchRoll(Vec3()).toString(), '[' + pHierarchyNode.name + ' / ' + sBasename + ']');
+            // }
 
             buildNodes(pNode.pChildNodes, pHierarchyNode);
         }
@@ -2451,13 +2451,13 @@ Endif ();
 
         for (var i = 0; i < pPoseSkeletons.length; ++ i) {
             pSkeleton = pPoseSkeletons[i];
-            if (pSkeleton.name === "node-Bip001_Pelvis" || pSkeleton.name === "node-Bip001") {
-                trace('skipping <node-Bip001_Pelvis> skeletom ...', '[' + sBasename + ']');
+            // if (pSkeleton.name === "node-Bip001_Pelvis" || pSkeleton.name === "node-Bip001") {
+            //     trace('skipping <node-Bip001_Pelvis> skeletom ...', '[' + sBasename + ']');
 
-                trace(pSkeleton.getNodeList()[0].localMatrix().toQuat4().toYawPitchRoll(Vec3()).toString());
+            //     trace(pSkeleton.getNodeList()[0].localMatrix().toQuat4().toYawPitchRoll(Vec3()).toString());
 
-                continue;
-            }
+            //     continue;
+            // }
             pPoses.push(buildInititalPose(pSceneRoot.pNodes, pSkeleton));
         }
 

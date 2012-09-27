@@ -278,15 +278,17 @@ Camera.prototype.recalcMatrices = function () {
     // world matrix of the camera (the
     // camera view matrix) without 
     // any translation information.
+
     this.m4fSkyBox.set(this.m4fView);
-    this.m4fSkyBox.pData._14 = 0.0;
-    this.m4fSkyBox.pData._24 = 0.0;
-    this.m4fSkyBox.pData._34 = 0.0;
+    // this.m4fSkyBox.pData._14 = 0.0;
+    // this.m4fSkyBox.pData._24 = 0.0;
+    // this.m4fSkyBox.pData._34 = 0.0;
+
 
     // this is combined with the unit
     // space projection matrix to form
     // the sky box viewing matrix
-    this.m4fUnitProj.multiply(this.m4fSkyBox, this.m4fSkyBox);
+    this.m4fSkyBox.multiply(this.m4fUnitProj, this.m4fSkyBox);
 
     // billboard objects use our world matrix
     // without translation

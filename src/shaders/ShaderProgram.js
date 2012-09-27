@@ -656,6 +656,10 @@ GLSLProgram.prototype.applySampler2D = function (sName, iValue) {
     return this.applyInt(sName, iValue);
 };
 
+GLSLProgram.prototype.applySamplerCube = function(sName, iValue) {
+    return this.applyInt(sName, iValue);
+};
+
 GLSLProgram.prototype.applyFloat = function (sName, fValue) {
     this._pDevice.uniform1f(this._pUniformList[sName], fValue);
 };
