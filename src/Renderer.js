@@ -16,6 +16,13 @@ var SHADER_PREFIX = {
 A_NAMESPACE(SHADER_PREFIX, fx);
 a.fx.ZEROSAMPLER = 19;
 
+Enum([
+         SHADOWS = 2,
+         LIGHTINGS,
+         GLOBALPOSTEFFECTS,
+         DEFAULT
+     ], RENDERSTAGE, a.RenderStage);
+
 function Renderer(pEngine) {
     Enum([
              PARAMETER_FLAG_ALL = 1,
@@ -143,7 +150,18 @@ function Renderer(pEngine) {
         this._pFrameBufferCounters[i] = 0;
     }
     this._pSystemUniforms = null;
-    this._pRenderQueue = new a.RenderQueue(pEngine);
+
+    this._pDefaultRenderQueue = new a.RenderQueue(pEngine, a.RenderStage.DEFAULT);
+    this._pShadowRenderQueue = new a.RenderQueue(pEngine, a.RenderStage.SHADOWS);
+    this._pLightingRenderQueues = new Array(4);
+    for (var i = 0; i < this._pLightingRenderQueues.length; i++) {
+        this._pLightingRenderQueues[i] = new a.RenderQueue(pEngine, a.RenderStage.LIGHTINGS);
+    }
+    this._pGlobalPostEffectRenderQueue = new a.RenderQueue(pEngine, a.RenderStage.GLOBALPOSTEFFECTS);
+
+    this._eCurrentRenderStage = null;
+    this._pCurrentRenderQueue = null;
+
     this._initSystemUniforms();
 }
 
@@ -318,7 +336,6 @@ Renderer.prototype._nextEffect = function () {
     }
     return true;
 };
-
 
 //----Methods for blending components and effect resources----//
 Renderer.prototype.getComponentByName = function (sName) {
@@ -636,6 +653,20 @@ Renderer.prototype.pop = function () {
 };
 Renderer.prototype.activatePass = function (pSnapshot, iPass) {
     this._pPreRenderState.nShift += iPass;
+    switch (this._eCurrentRenderStage) {
+        case a.RenderStage.SHADOWS:
+            this._pCurrentRenderQueue = this._pShadowRenderQueue;
+            break;
+        case a.RenderStage.LIGHTINGS:
+            this._pCurrentRenderQueue = this._pLightingRenderQueues[iPass];
+            break;
+        case a.RenderStage.GLOBALPOSTEFFECTS:
+            this._pCurrentRenderQueue = this._pGlobalPostEffectRenderQueue;
+            break;
+        default:
+            this._pCurrentRenderQueue = this._pDefaultRenderQueue;
+            break;
+    }
     return true;
 };
 Renderer.prototype.deactivatePass = function (pSnapshot) {
@@ -943,7 +974,7 @@ Renderer.prototype.finishPass = function (iPass) {
         this._pFrameBufferCounters[this._pRenderState.iFrameBuffer]--;
     }
 
-    var pEntry = this._pRenderQueue.getEmptyEntry();
+    var pEntry = this._pCurrentRenderQueue.getEmptyEntry();
     pEntry.set(pProgram,
                pAttrs,
                pUniformValues,
@@ -957,7 +988,8 @@ Renderer.prototype.finishPass = function (iPass) {
                pCurrentState.pViewport.width,
                pCurrentState.pViewport.height,
                this._pRenderState.iFrameBuffer);
-    this._pRenderQueue.addSortEntry(pEntry);
+    this.pushRenderEntry(pEntry);
+
     trace("Render Pass #" + iPass + " finish!");
     return pEntry;
 };
@@ -1014,8 +1046,7 @@ Renderer.prototype._getSystemUniformValue = function (sName) {
         case a.Renderer.PROJ_MATRIX:
             return pCamera.projectionMatrix();
         case a.Renderer.EYE_POS:
-            trace(pCamera.worldPosition().x, pCamera.worldPosition().y, pCamera.worldPosition().z);
-            return pCamera.worldPosition();
+            return pCamera.eyePosition();
         case a.Renderer.BIND_MATRIX:
             return (pRenderObject && pRenderObject.skin) ? pRenderObject.skin.getBindMatrix() : null;
         default:
@@ -1173,7 +1204,7 @@ Renderer.prototype.getViewport = function () {
     return this._pCurrentViewport;
 };
 
-Renderer.prototype.getPostEffectTarget = function (){
+Renderer.prototype.getPostEffectTarget = function () {
     return this._pPostEffectTarget;
 };
 
@@ -1437,14 +1468,11 @@ Renderer.prototype.render = function (pEntry) {
         this._tryReleaseFrameBuffer(pEntry.iFrameBuffer);
     }
 //    pProgram.clear();
-    this._pRenderQueue._releaseEntry(pEntry);
+    this._pCurrentRenderQueue._releaseEntry(pEntry);
     trace("-------STOP REAL RENDER---------");
 };
 Renderer.prototype._setViewport = function (x, y, width, height) {
     this.pDevice.viewport(x, y, width, height);
-};
-Renderer.prototype.processRenderQueue = function () {
-    this._pRenderQueue.execute();
 };
 Renderer.prototype.clearScreen = function (eValue) {
     this.pDevice.clear(eValue);
@@ -1534,13 +1562,64 @@ Renderer.prototype._occupyStream = function (iStream, pProgram) {
     this._pStreamState[iStream] = pProgram.toNumber();
 };
 
+//Render stage control
+Renderer.prototype.switchRenderStage = function (eType) {
+    this._eCurrentRenderStage = eType;
+};
+Renderer.prototype.pushRenderEntry = function (pEntry) {
+    if (this._pCurrentRenderQueue) {
+        this._pCurrentRenderQueue.addSortEntry(pEntry);
+        return true;
+    }
+    else {
+        warning("No render queue");
+        return false;
+    }
+};
+Renderer.prototype.processRenderStage = function () {
+    var eType = this._eCurrentRenderStage;
+    if (eType === a.RenderStage.SHADOWS){
+        this._pCurrentRenderQueue = this._pShadowRenderQueue;
+        this._pCurrentRenderQueue.execute();
+    }
+    else if(eType === a.RenderStage.GLOBALPOSTEFFECTS){
+        this._pCurrentRenderQueue = this._pGlobalPostEffectRenderQueue;
+        this._pCurrentRenderQueue.execute();
+    }
+    else if(eType === a.RenderStage.DEFAULT) {
+        this._pCurrentRenderQueue = this._pDefaultRenderQueue;
+        this._pCurrentRenderQueue.execute();
+    }
+    else if (eType === a.RenderStage.LIGHTINGS) {
+        var pQueues = this._pLightingRenderQueues;
+        var i;
+        var pLightManager = this.pEngine.lightManager();
+        var iLength = pLightManager.getDeferredTextureCount();
+        for (i = 0; i < iLength; i++) {
+            this.activateFrameBuffer(pLightManager.deferredFrameBuffers[i]);
+            this.clearScreen(a.CLEAR.DEPTH_BUFFER_BIT | a.CLEAR.COLOR_BUFFER_BIT);
+            this._pCurrentRenderQueue = pQueues[i];
+            pQueues[i].execute();
+//            this.pDevice.flush();
+            this.activateFrameBuffer(null);
+        }
+    }
+    this._pCurrentRenderQueue = null;
+    this._eCurrentRenderStage = null;
+};
+
 
 /**
  * Функция инициализации, вызываемая в инициализации менеджеров.
  * @treturn Boolean
  */
 Renderer.prototype.initialize = function () {
-    this._pRenderQueue.init();
+    this._pDefaultRenderQueue.init();
+    this._pShadowRenderQueue.init();
+    this._pGlobalPostEffectRenderQueue.init();
+    for (var i = 0; i < this._pLightingRenderQueues.length; i++) {
+        this._pLightingRenderQueues[i].init();
+    }
     this._pEffectFileDataPool.registerResourcePool(
         new a.ResourceCode(a.ResourcePoolManager.VideoResource,
                            a.ResourcePoolManager.EffectFileData));
@@ -1567,11 +1646,16 @@ Renderer.prototype.destroyDeviceResources = function () {
 Renderer.prototype.createDeviceResources = function () {
     this._pPostEffectTarget = new a.Mesh(this.pEngine, 0, 'screen-sprite');//a.RenderDataBuffer.VB_READABLE
     var pSubMesh = this._pPostEffectTarget.createSubset('screen-sprite :: main', a.PRIMTYPE.TRIANGLESTRIP);
-    pSubMesh.data.allocateAttribute([VE_VEC2('POSITION')], new Float32Array([-1,-1,-1,1,1,-1,1,1]));
+    pSubMesh.data.allocateAttribute([VE_VEC2('POSITION')], new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]));
     pSubMesh.effect.create();
     pSubMesh.effect.use("akra.system.deferredShading");
+    pSubMesh.effect.use("akra.system.omniLighting");
+    pSubMesh.effect.use("akra.system.projectLighting");
+    pSubMesh.effect.use("akra.system.omniShadowsLighting");
+    pSubMesh.effect.use("akra.system.projectShadowsLighting");
 
     trace("*********", this._pPostEffectTarget, pSubMesh.effect);
+
 
     return true;
 };

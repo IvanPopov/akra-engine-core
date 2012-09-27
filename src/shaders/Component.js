@@ -637,7 +637,11 @@ PassBlend.prototype.addPass = function (pPass) {
                     isEqual = true;
                     break;
                 }
-                if (pType2.nOrder > pType1.nOrder) {
+                if(pType2.isSharedType() && pType1.isSharedType()){
+                    isEqual = true;
+                    break;
+                }
+                if (pType2.nOrder > pType1.nOrder && pType2._iEffectId === pType1._iEffectId) {
                     break;
                 }
             }
@@ -783,7 +787,11 @@ PassBlend.prototype.addPass = function (pPass) {
                     isEqual = true;
                     break;
                 }
-                if (pType2.nOrder > pType1.nOrder) {
+                if(pType2.isSharedType() && pType1.isSharedType()){
+                    isEqual = true;
+                    break;
+                }
+                if (pType2.nOrder > pType1.nOrder && pType2._iEffectId === pType1._iEffectId) {
                     break;
                 }
             }
@@ -1515,6 +1523,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         sFragmentCode += PassBlend.pExtractedFunctions[i];
     }
     //Types
+    trace("???????????????????????", this, this.pTypesOrderF);
     for (i = 0; i < this.pTypesOrderF.length; i++) {
         sFragmentCode += this.pTypesBlockF[this.pTypesOrderF[i].sRealName] + ";";
     }
@@ -1619,7 +1628,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     sFragmentCode += "}";
     //add precision
     if (sFragmentCode !== "") {
-        sFragmentCode = "#ifdef GL_ES\nprecision lowp float;\n#endif\n" + sFragmentCode;
+        sFragmentCode = "#ifdef GL_ES\nprecision highp float;\n#endif\n" + sFragmentCode;
     }
 
     //Generate program

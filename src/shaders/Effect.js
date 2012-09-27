@@ -536,6 +536,9 @@ VariableType.prototype.canBlend = function (pType, isStrict) {
 VariableType.prototype.isComplicate = function () {
     return this.pEffectType.isComplicate();
 };
+VariableType.prototype.isSharedType = function () {
+    return this.pEffectType.isSharedType();
+};
 
 function EffectType(sName, sRealName, isBase, iSize) {
     /**
@@ -576,6 +579,8 @@ function EffectType(sName, sRealName, isBase, iSize) {
     this._canMixible = isBase ? true : false;
     this.iScope = -1;
     this.nOrder = 0;
+    this._isSharedType = false;
+    this._iEffectId = null;
 }
 EffectType.prototype.hash = function () {
     if (!this._sHash) {
@@ -771,6 +776,26 @@ EffectType.prototype.isComplicate = function () {
         return false;
     }
     return this.pDesc.isComplicate();
+};
+EffectType.prototype.useAsGlobal = function () {
+    if (this._isBase) {
+        return true;
+    }
+    if (this._isSharedType) {
+        return true;
+    }
+    this._isSharedType = true;
+    for (var i = 0; i < this.pDesc.pOrders.length; i++) {
+        this.pDesc.pOrders[i].pType.pEffectType.useAsGlobal();
+    }
+    this.sRealName = this.sName;
+    return true;
+};
+EffectType.prototype.isSharedType = function () {
+    return this._isSharedType;
+};
+EffectType.prototype.setEffectId = function (iId) {
+    this._iEffectId = iId;
 };
 
 function EffectStruct() {
@@ -1277,7 +1302,10 @@ EffectVariable.prototype.setType = function (pType, isInComplex) {
         this.isUniform = (pType.pUsagesName["uniform"] === null) ? true : false;
         this.isShared = (pType.pUsagesName["global"] === null) ? true : false;
         this.isUniform = this.isUniform || this.isSampler();
-        this.isForeign = (pType.pUsagesName["foreign"] === null) ? true : false
+        this.isForeign = (pType.pUsagesName["foreign"] === null) ? true : false;
+        if (this.isShared) {
+            pType.pEffectType.useAsGlobal();
+        }
     }
     if (this.isPointer) {
         this.iSize = 1;
@@ -2422,6 +2450,7 @@ EffectShader.prototype.toCodeAll = function (id) {
     var pFunc;
     for (i in this.pFunctions) {
         pFunc = this.pFunctions[i];
+        pFunc.generateDefinitionCode();
         this.pFuncByDef[pFunc._sDefinition] = pFunc;
         this.pFuncBlock[pFunc._sDefinition] = pFunc.toCode(true);
     }
@@ -4238,6 +4267,7 @@ Effect.prototype.addType = function (pType) {
     pType.iScope = this._iScope;
     pType.calcHash();
     pType.nOrder = this.nCurrentDecl;
+    pType.setEffectId(this._id);
 };
 Effect.prototype.hasType = function (sTypeName) {
     var pType = this.isBaseType(sTypeName);
@@ -4293,7 +4323,7 @@ Effect.prototype.addFunction = function (pFunction) {
     }
     this._pFunctionTableByName[pFunction.sName].push(pFunction);
     pFunction.sRealName = pFunction.sName + "_" + this._id;
-    pFunction.generateDefinitionCode();
+//    pFunction.generateDefinitionCode();
 
 };
 Effect.prototype.hasFunction = function (sFuncName) {

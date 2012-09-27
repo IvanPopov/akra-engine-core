@@ -263,7 +263,13 @@ Engine.prototype.initDefaultStates = function () {
         mesh            : {
             isSkinning : false
         },
-        isAdvancedIndex : false
+        isAdvancedIndex : false,
+        lights          : {
+            omni : 0,
+            project : 0,
+            omniShadows : 0,
+            projectShadows : 0
+        }
     }
 };
 
@@ -386,9 +392,10 @@ Engine.prototype.notifyInitDeviceObjects = function () {
  * @memberof Engine
  * @return Boolean
  **/
-Engine.prototype.renderScene = function () {
+Engine.prototype.renderLightings = function () {
     var pCamera = this._pActiveCamera;
     var pFirstMember = this._pSceneTree.buildSearchResults(pCamera.searchRect(), pCamera.frustum());
+    this.shaderManager().switchRenderStage(a.RenderStage.LIGHTINGS);
 
     //console.log(pFirstMember, this._pActiveCamera);
     /*console.log(pFirstMember, this._pActiveCamera.searchRect().fX0, this._pActiveCamera.searchRect().fX1,
@@ -417,17 +424,22 @@ Engine.prototype.renderScene = function () {
     return true;
 }
 //Добавлено для отслеживания видимости узлов. aldore
-Engine.prototype.renderScene.renderList = null;
+Engine.prototype.renderLightings.renderList = null;
 
 Engine.prototype.renderShadows = function () {
     var pLightManager = this.pLightManager;
     var pLights = pLightManager.lightPoints;
     var i;
+    this.shaderManager().switchRenderStage(a.RenderStage.SHADOWS);
     for (i = 0; i < pLights.length; i++) {
         pLights[i].calculateShadows();
     }
 };
 
+Engine.prototype.renderScene = function () {
+    this.shaderManager().switchRenderStage(a.RenderStage.GLOBALPOSTEFFECTS);
+    this.lightManager().applyLight();
+};
 Engine.prototype.run = function () {
     var me = this;
     var fnRender = function () {
@@ -590,7 +602,7 @@ Engine.prototype.frameMove = function () {
     return true;
 }
 
-
+//var zzz = 5;
 Engine.prototype.render = function () {
     if (!this._isFrameReady) {
         return true;
@@ -605,23 +617,26 @@ Engine.prototype.render = function () {
 //        this.pDevice.blendFunc(this.pDevice.SRC_ALPHA,this.pDevice.ONE_MINUS_SRC_ALPHA)
 //        this.pDevice.disable(this.pDevice.DEPTH_TEST);
         this.renderShadows();
-        this.pShaderManager.processRenderQueue();
+        this.pShaderManager.processRenderStage();
         this.pDevice.flush();
         trace("==============Stop Render Shadow===========");
         trace("==============Render Scene===========");
-        this.renderScene();
+        this.renderLightings();
         // process the contents of the render queue
-        this.pShaderManager.processRenderQueue();
+        this.pShaderManager.processRenderStage();
         trace("==============Stop Render Scene===========");
 
         trace("==============Apply lights===========");
-        this.lightManager().applyLight();
-        this.pShaderManager.processRenderQueue();
+        this.renderScene();
+        this.pShaderManager.processRenderStage();
+
         trace("==============Stop Apply lights===========");
 
         this.pDisplayManager.endRenderSession();
         A_TRACER.END();
-//        this.pause(true);
+//        if(zzz-- == 0){
+//            this.pause(true);
+//        }
     }
     return true;
 };

@@ -259,30 +259,29 @@ LightPoint.prototype.create = function () {
 };
 
 LightPoint.prototype.calculateShadows = function () {
-    if (!this._haveShadows) {
-        return true;
-    }
-    var pRenderer = this._pEngine.shaderManager();
-    var pDevice = this._pEngine.pDevice;
-    if (this._isOmnidirectional) {
-        var i;
-        for (i = 0; i < 6; i++) {
+    if(this._isActive && this._haveShadows){
+        var pRenderer = this._pEngine.shaderManager();
+        var pDevice = this._pEngine.pDevice;
+        if (this._isOmnidirectional) {
+            var i;
+            for (i = 0; i < 6; i++) {
+                pRenderer.activateFrameBuffer();
+                pRenderer.applyFrameBufferTexture(this._pDepthTextureCube[i], a.ATYPE.DEPTH_ATTACHMENT, a.TTYPE.TEXTURE_2D,
+                                                  0);
+                pRenderer.applyFrameBufferTexture(this._pColorTexture, a.ATYPE.COLOR_ATTACHMENT0, a.TTYPE.TEXTURE_2D, 0);
+                pRenderer.clearScreen(a.CLEAR.DEPTH_BUFFER_BIT | a.CLEAR.COLOR_BUFFER_BIT);
+                this._renderShadowsFromCamera(this._pCameraCube[i], this._pDepthTextureCube[i]);
+                pRenderer.deactivateFrameBuffer();
+            }
+        }
+        else {
             pRenderer.activateFrameBuffer();
-            pRenderer.applyFrameBufferTexture(this._pDepthTextureCube[i], a.ATYPE.DEPTH_ATTACHMENT, a.TTYPE.TEXTURE_2D,
-                                              0);
+            pRenderer.applyFrameBufferTexture(this._pDepthTexture, a.ATYPE.DEPTH_ATTACHMENT, a.TTYPE.TEXTURE_2D, 0);
             pRenderer.applyFrameBufferTexture(this._pColorTexture, a.ATYPE.COLOR_ATTACHMENT0, a.TTYPE.TEXTURE_2D, 0);
             pRenderer.clearScreen(a.CLEAR.DEPTH_BUFFER_BIT | a.CLEAR.COLOR_BUFFER_BIT);
-            this._renderShadowsFromCamera(this._pCameraCube[i], this._pDepthTextureCube[i]);
+            this._renderShadowsFromCamera(this._pCamera, this._pDepthTexture);
             pRenderer.deactivateFrameBuffer();
         }
-    }
-    else {
-        pRenderer.activateFrameBuffer();
-        pRenderer.applyFrameBufferTexture(this._pDepthTexture, a.ATYPE.DEPTH_ATTACHMENT, a.TTYPE.TEXTURE_2D, 0);
-        pRenderer.applyFrameBufferTexture(this._pColorTexture, a.ATYPE.COLOR_ATTACHMENT0, a.TTYPE.TEXTURE_2D, 0);
-        pRenderer.clearScreen(a.CLEAR.DEPTH_BUFFER_BIT | a.CLEAR.COLOR_BUFFER_BIT);
-        this._renderShadowsFromCamera(this._pCamera, this._pDepthTexture);
-        pRenderer.deactivateFrameBuffer();
     }
 };
 LightPoint.prototype._renderShadowsFromCamera = function (pCamera, pTexture) {
@@ -318,10 +317,11 @@ A_NAMESPACE(LightPoint);
 //класс содержит параметры источника света
 function LightParameters() {
     //default parameters
-    this.ambient = new Vec4(1., 1., 1., 1.);
+    this.ambient = new Vec4(0.1, 0.1, 0.1, 1.);
     this.diffuse = new Vec4(1., 1., 1., 1.);
     this.specular = new Vec4(1., 1., 1., 1.);
-    this.attenuation = new Vec3(0.9, 0.00, .000);
+    //this.emissive =
+    this.attenuation = new Vec3(1.0, 0.00, .000);
 }
 ;
 

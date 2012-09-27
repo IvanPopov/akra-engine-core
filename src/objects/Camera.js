@@ -139,6 +139,8 @@ function Camera () {
      * @type Frustum
      */
     this.pFrustum = new a.Frustum();
+
+    this._v3fEyePosition = new Vec3();
 }
 ;
 
@@ -331,6 +333,11 @@ Camera.prototype.recalcMatrices = function () {
 
     this.m4fRenderStageProj.set(this.m4fProj);
     this.m4fRenderStageViewProj.set(this.m4fViewProj);
+
+    //update eye position
+
+    var v4fTemp = Vec4(this._v3fWorldPosition,1.);
+    this._v3fEyePosition.set(this.m4fView.multiply(v4fTemp,Vec4()));
 };
 /**
  * Update
@@ -483,7 +490,9 @@ Camera.prototype.frustum = function () {
     INLINE();
     return this.pFrustum;
 };
-
+Camera.prototype.eyePosition = function () {
+    return this._v3fEyePosition;
+}
 Ifdef (__DEBUG);
 
 Camera.prototype.toString = function (isRecursive, iDepth) {

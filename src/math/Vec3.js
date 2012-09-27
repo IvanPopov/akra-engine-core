@@ -84,7 +84,7 @@ Vec3.prototype.set = function() {
         if(typeof(arguments[0]) == "number"){
             pData.X = pData.Y = pData.Z = arguments[0];
         }
-        else if(arguments[0] instanceof Vec3){
+        else if(arguments[0].pData){
             var pData2 = arguments[0].pData;
             pData.X = pData2.X;
             pData.Y = pData2.Y;

@@ -433,14 +433,15 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
 
         this.switchRenderMethod(".update_video_buffer");
 
-        var pManager = this._pEngine.shaderManager();
+        var pRenderer = this._pEngine.shaderManager();
         var pSnapshot = this._pActiveSnapshot;
         var pEntry = null;
         trace("<<<<<<<<<<<<<VIDEO BUFFER SET DATA RENDER>>>>>>>>>>>>>>>>");
         A_TRACER.MESG("START VIDEO BUFFER SET ||RENDER||");
-        pManager.setViewport(0, 0, this._iWidth, this._iHeight);
-        pManager.activateFrameBuffer();
-        pManager.applyFrameBufferTexture(this);
+        pRenderer.switchRenderStage(a.RenderStage.DEFAULT);
+        pRenderer.setViewport(0, 0, this._iWidth, this._iHeight);
+        pRenderer.activateFrameBuffer();
+        pRenderer.applyFrameBufferTexture(this);
         this.startRender();
         for (var i = 0; i < this.totalPasses(); i++) {
             trace("Pass #"+i);
@@ -452,9 +453,9 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
             this.deactivatePass();
         }
         this.finishRender();
-        pManager.deactivateFrameBuffer();
+        pRenderer.deactivateFrameBuffer();
 
-        pManager.render(pEntry);
+        pRenderer.processRenderStage();
         pDevice.flush();
         A_TRACER.MESG("END VIDEO BUFFER SET ||RENDER||");
         trace("<<<<<<<<<<<<<END VIDEO BUFFER SET DATA RENDER>>>>>>>>>>>>>>>>");

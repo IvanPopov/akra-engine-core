@@ -40,7 +40,14 @@ function LightManager(pEngine, nMaxDeferredTextureCount) {
     this._iWidth = Math.ceilingPowerOfTwo(pEngine.pCanvas.width);
     this._iHeight = Math.ceilingPowerOfTwo(pEngine.pCanvas.height);
 
+    this._pDeferredFrameBuffers = new Array(nMaxDeferredTextureCount);
 //    this._initializeTextures();
+    this._pLightingUnifoms = {
+        omni           : [],
+        project        : [],
+        omniShadows    : [],
+        projectShadows : []
+    };
 }
 ;
 
@@ -60,6 +67,12 @@ PROPERTY(LightManager, 'deferredTextures',
 PROPERTY(LightManager, 'lightPoints',
          function () {
              return this._pLightPoints;
+         }
+);
+
+PROPERTY(LightManager, 'deferredFrameBuffers',
+         function () {
+             return this._pDeferredFrameBuffers;
          }
 );
 
@@ -107,10 +120,24 @@ LightManager.prototype._initializeTextures = function () {
         pDeferredTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
         pDeferredTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
     }
+
+    var pFrameBuffers = this._pDeferredFrameBuffers;
+    var pRenderer = this._pEngine.shaderManager();
+    for (var i = 0; i < this._nMaxDeferredTextureCount; i++) {
+        pFrameBuffers[i] = pRenderer.activateFrameBuffer();
+        pRenderer.applyFrameBufferTexture(pDepthTexture, a.ATYPE.DEPTH_ATTACHMENT, a.TTYPE.TEXTURE_2D,
+                                          0);
+        pRenderer.applyFrameBufferTexture(pDeferredTextures[i], a.ATYPE.COLOR_ATTACHMENT0,
+                                          a.TTYPE.TEXTURE_2D, 0);
+        pRenderer.activateFrameBuffer(null);
+    }
 };
 
 LightManager.prototype.createDeviceResources = function () {
     this._initializeTextures();
+};
+LightManager.prototype.getDeferredTextureCount = function () {
+    return this._nMaxDeferredTextureCount;
 };
 //этот метод нужно вызывать в случае изменения размеров канваса
 LightManager.prototype.updateTexture = function () {
@@ -157,31 +184,247 @@ LightManager.prototype.updateTexture = function () {
 };
 
 LightManager.prototype.applyLight = function () {
-    var pRenderer = this._pEngine.shaderManager();
+    var pEngine = this._pEngine;
+    var pRenderer = pEngine.shaderManager();
     var pTarget = pRenderer.getPostEffectTarget();
-
     var pSubMesh, pSnapshot;
-    var k;
     var pDeferredTextures = this._pDeferredTextures;
     var pDepthTexture = this._pDepthTexture;
-    var pCanvas = this._pEngine.pCanvas;
+    var pCanvas = pEngine.pCanvas;
+    var pLightUniforms = this._pLightingUnifoms;
+
+    this._createLightingUniforms();
 
     pRenderer.setViewport(0, 0, pCanvas.width, pCanvas.height);
     pSubMesh = pTarget[0];
     pSubMesh.startRender();
     pSnapshot = pSubMesh._pActiveSnapshot;
-    for (k = 0; k < pSubMesh.totalPasses(); k++) {
-        pSubMesh.activatePass(k);
-        pSubMesh.applyRenderData(pSubMesh.data);
-        pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_RATIO", [pCanvas.width/pDepthTexture.width,pCanvas.height/pDepthTexture.height]);
-        pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE0", pDeferredTextures[0]);
-        pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE1", pDeferredTextures[1]);
-        pSnapshot.applyTextureBySemantic("SCENE_DEPTH_TEXTURE", pDepthTexture);
-        var pEntry = pSubMesh.renderPass();
-        trace("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
-        pSubMesh.deactivatePass();
-    }
+    pSubMesh.activatePass(0);
+
+    pEngine.pEngineStates.lights.omni = pLightUniforms.omni.length;
+    pEngine.pEngineStates.lights.project = pLightUniforms.project.length;
+    pEngine.pEngineStates.lights.omniShadows = pLightUniforms.omniShadows.length;
+    pEngine.pEngineStates.lights.projectShadows = pLightUniforms.projectShadows.length;
+
+    pSnapshot.applyForeignVariable("nOmni", pLightUniforms.omni.length);
+    pSnapshot.applyForeignVariable("nProject", pLightUniforms.project.length);
+    pSnapshot.applyForeignVariable("nOmniShadows", pLightUniforms.omniShadows.length);
+    pSnapshot.applyForeignVariable("nProjectShadows", pLightUniforms.projectShadows.length);
+
+    pSnapshot.setComplexParameter("points_omni", pLightUniforms.omni);
+    pSnapshot.setComplexParameter("points_project", pLightUniforms.project);
+    pSnapshot.setComplexParameter("points_omni_shadows", pLightUniforms.omniShadows);
+    pSnapshot.setComplexParameter("points_project_shadows", pLightUniforms.projectShadows);
+
+    pSubMesh.applyRenderData(pSubMesh.data);
+    pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_RATIO",
+                                     [pCanvas.width / pDepthTexture.width, pCanvas.height / pDepthTexture.height]);
+    pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE0", pDeferredTextures[0]);
+    pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE1", pDeferredTextures[1]);
+    pSnapshot.applyTextureBySemantic("SCENE_DEPTH_TEXTURE", pDepthTexture);
+    var pEntry = pSubMesh.renderPass();
+    trace("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
+    pSubMesh.deactivatePass();
     pSubMesh.finishRender();
 };
 
+LightManager.prototype._createLightingUniforms = function () {
+    var pLightPoints = this._pLightPoints,
+        pLight;
+    var nOmni, nProject, nOmniShadows, nProjectShadows;
+    var i;
+    var pUniforms = this._pLightingUnifoms;
+    var pUniformData;
+
+    var pCamera = this._pEngine.getActiveCamera();
+    var pCameraView = pCamera.worldMatrix();
+
+    var v4fLightPosition = Vec4();
+    var v3fLightTransformPosition = Vec3();
+    var v4fTemp = Vec4();
+
+    pUniforms.omni.length = 0;
+    pUniforms.project.length = 0;
+    pUniforms.omniShadows.length = 0;
+    pUniforms.projectShadows.length = 0;
+
+    for (i = 0; i < pLightPoints.length; i++) {
+        pLight = pLightPoints[i];
+        if (!pLight.isActive) {
+            continue;
+        }
+        if (pLight.isOmnidirectional) {
+            if (pLight._haveShadows) {
+
+            }
+            else {
+                pUniformData = a.UniformOmni();
+                v4fLightPosition.set(pLight.worldPosition(),1.);
+                v3fLightTransformPosition.set(pCameraView.multiply(v4fLightPosition,v4fTemp));
+                pUniformData.setLightData(pLight.lightParameters,v3fLightTransformPosition);
+                pUniforms.omni.push(pUniformData);
+            }
+        }
+        else {
+            if (pLight._haveShadows) {
+
+            }
+            else {
+
+            }
+        }
+    }
+};
+
 A_NAMESPACE(LightManager);
+
+
+//----LIGHT DATA
+
+function LightData() {
+    this.DIFFUSE = new Vec4();
+    this.AMBIENT = new Vec4();
+    this.SPECULAR = new Vec4();
+    this.ATTENUATION = new Vec3();
+    this.POSITION = new Vec3();
+}
+
+LightData.prototype.set = function (pLightParam, v3fPosition) {
+    'use strict';
+
+    this.DIFFUSE.set(pLightParam.diffuse);
+    this.AMBIENT.set(pLightParam.ambient);
+    this.SPECULAR.set(pLightParam.specular);
+    this.ATTENUATION.set(pLightParam.attenuation);
+    this.POSITION.set(v3fPosition);
+
+    return this;
+};
+
+A_NAMESPACE(LightData);
+
+
+//-----UNIFORM OMNI DATA
+
+function UniformOmni() {
+    A_CHECK_STORAGE();
+    this.LIGHT_DATA = new a.LightData();
+}
+A_ALLOCATE_STORAGE(UniformOmni, 200);
+
+UniformOmni.prototype.setLightData = function (pLightParam, v3fPosition) {
+    'use strict';
+    this.LIGHT_DATA.set(pLightParam, v3fPosition);
+    return this;
+};
+
+A_NAMESPACE(UniformOmni);
+
+
+//-----UNIFORM PROJECT DATA
+
+function UniformProject() {
+    A_CHECK_STORAGE();
+    this.LIGHT_DATA = new a.LightData();
+    this.SHADOW_MATRIX = new Mat4();
+}
+A_ALLOCATE_STORAGE(UniformProject, 200);
+
+UniformProject.prototype.setLightData = function (pLightParam, v3fPosition) {
+    'use strict';
+    this.LIGHT_DATA.set(pLightParam, v3fPosition);
+    return this;
+};
+
+UniformProject.prototype.setMatrix = function (m4fMatrix) {
+    'use strict';
+    this.SHADOW_MATRIX.set(m4fMatrix);
+    return this;
+};
+
+A_NAMESPACE(UniformProject);
+
+
+//-----UNIFORM PROJECT SHADOWS DATA
+
+function UniformProjectShadow() {
+    A_CHECK_STORAGE();
+    this.LIGHT_DATA = new a.LightData();
+    this.SHADOW_MATRIX = new Mat4();
+    this.SHADOW_SAMPLER = {"TEXTURE" : null};
+}
+A_ALLOCATE_STORAGE(UniformProjectShadow, 20);
+
+UniformProjectShadow.prototype.setLightData = function (pLightParam, v3fPosition) {
+    'use strict';
+    this.LIGHT_DATA.set(pLightParam, v3fPosition);
+    return this;
+};
+
+UniformProjectShadow.prototype.setMatrix = function (m4fMatrix) {
+    'use strict';
+    this.SHADOW_MATRIX.set(m4fMatrix);
+    return this;
+};
+
+UniformProjectShadow.prototype.setSampler = function (sTexture) {
+    'use strict';
+    this.SHADOW_SAMPLER.TEXTURE = sTexture;
+    return this;
+};
+
+A_NAMESPACE(UniformProjectShadow);
+
+
+//-----UNIFORM OMNI SHADOWS DATA
+
+function UniformOmniShadow() {
+    A_CHECK_STORAGE();
+    this.LIGHT_DATA = new a.LightData();
+    this.SHADOW_MATRIX = [new Mat4(), new Mat4(),
+                          new Mat4(), new Mat4(),
+                          new Mat4(), new Mat4()];
+    this.SHADOW_SAMPLER = [{"TEXTURE" : null},
+                           {"TEXTURE" : null},
+                           {"TEXTURE" : null},
+                           {"TEXTURE" : null},
+                           {"TEXTURE" : null},
+                           {"TEXTURE" : null}];
+}
+A_ALLOCATE_STORAGE(UniformOmniShadow, 20);
+
+UniformOmniShadow.prototype.setLightData = function (pLightParam, v3fPosition) {
+    'use strict';
+    this.LIGHT_DATA.set(pLightParam, v3fPosition);
+    return this;
+};
+
+UniformOmniShadow.prototype.setAllMatrix = function (pMatrices) {
+    'use strict';
+    for(var i = 0; i < 6; i++){
+        this.SHADOW_MATRIX[i].set(pMatrices[i]);
+    }
+    return this;
+};
+
+UniformOmniShadow.prototype.setMatrix = function (m4fMatrix, index) {
+    'use strict';
+    this.SHADOW_MATRIX[index].set(m4fMatrix);
+    return this;
+};
+
+UniformOmniShadow.prototype.setAllSamplers = function (sTextures) {
+    'use strict';
+    for(var i = 0; i < 6; i++){
+        this.SHADOW_SAMPLER[i].TEXTURE = (sTextures[i]);
+    }
+    return this;
+};
+
+UniformOmniShadow.prototype.setSampler = function (sTexture, index) {
+    'use strict';
+    this.SHADOW_SAMPLER[index].TEXTURE = sTexture;
+    return this;
+};
+
+A_NAMESPACE(UniformOmniShadow);

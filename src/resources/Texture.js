@@ -870,6 +870,7 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
     var pEntry = null;
     trace("<<<<<<<<<<<<<TEXTURE REPACK RENDER>>>>>>>>>>>>>>>>");
     A_TRACER.MESG("START REPACK TEXTURE ||RENDER||")
+    pRenderer.switchRenderStage(a.RenderStage.DEFAULT);
     pRenderer.setViewport(0, 0, iWidth, iHeight);
     pRenderer.activateFrameBuffer();
     A_TRACER.MESG("frameBufferTexture2D #" + pDestinationTexture.toNumber());
@@ -882,14 +883,15 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
         pSnapshot.applyVertexData(pVertexData, a.PRIMTYPE.POINTLIST);
         pSnapshot.setParameter("sourceTextureSize", [this._iWidth, this._iHeight]);
         pSnapshot.setParameter("destinationTextureSize", [iWidth, iHeight]);
-        pEntry = this.renderPass();
+        this.renderPass();
         this.deactivatePass();
     }
     this.finishRender();
 
     pRenderer.deactivateFrameBuffer();
 
-    pRenderer.render(pEntry);
+    pRenderer.processRenderStage();
+
     pDevice.flush();
     A_TRACER.MESG("END REPACK TEXTURE ||RENDER||")
     trace("<<<<<<<<<<<<<END_TEXTURE REPACK RENDER>>>>>>>>>>>>>>>>");

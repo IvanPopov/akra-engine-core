@@ -339,7 +339,7 @@ DisplayManager.prototype.initText2Dlayer = function () {
 
     var iBorder = 0;
     if (this._pCanvas.style.border != "none") {
-		//надо правильно распарсить ширину границы и не border а border-size
+		//пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ border пїЅ border-size
         iBorder = parseInt(this._pCanvas.style.border);
     }
 
@@ -377,7 +377,7 @@ DisplayManager.prototype.clearRenderSurface = function () {
     if (this._pDevice) {
         //this._pDevice.clearStencil(0.);
         //this._pDevice.clearDepth(1.0);
-        this._pDevice.clear(this._pDevice.COLOR_BUFFER_BIT
+        this._pEngine.shaderManager().clearScreen(this._pDevice.COLOR_BUFFER_BIT
                                 | this._pDevice.DEPTH_BUFFER_BIT | this._pDevice.STENCIL_BUFFER_BIT);
         //DWORD flags = D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER;
 

@@ -55,7 +55,7 @@ RenderEntry.prototype.set = function (pProgram, pAttrs, pUniformValues, pTexture
     this.iFrameBuffer = iFrameBuffer;
 };
 
-function RenderQueue(pEngine) {
+function RenderQueue(pEngine, eType) {
     Enum([
              ENTRYINITCOUNT = 200,
              ENRTYINCREMENT = 20
@@ -66,6 +66,7 @@ function RenderQueue(pEngine) {
     this._pFreeEntrys = null;
     this._nSortCount = 0;
     this._pSortEntrys = null;
+    this._eType = eType;
 }
 A_NAMESPACE(RenderQueue);
 
@@ -132,6 +133,7 @@ RenderQueue.prototype.execute = function () {
         pRenderer.render(this._pSortEntrys[i]);
 //        this._releaseEntry(this._pSortEntrys[i]);
     }
+    pRenderer.activateFrameBuffer(null);
     this._nSortCount = 0;
 };
 
