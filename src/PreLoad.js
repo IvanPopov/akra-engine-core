@@ -177,7 +177,7 @@ a.createTexture = function (pContext, iWidth, iHeight, fCallBack, pTexture)
  *
  * @return 3D Context
  **/
-a.createDevice = function (pCanvas) {
+a.createDevice = function (pCanvas, bAntialias) {
     var pContext;
 
     //pCanvas.width = screen.width;
@@ -185,7 +185,8 @@ a.createDevice = function (pCanvas) {
 
     try {
 
-        pContext = pCanvas.getContext("webgl") || pCanvas.getContext("experimental-webgl");
+        pContext = pCanvas.getContext("webgl", { antialias: bAntialias || true}) || 
+            pCanvas.getContext("experimental-webgl", { antialias: bAntialias || true});
         if (WebGLDebugUtils) {
             pContext = WebGLDebugUtils.makeDebugContext(pContext);
         }

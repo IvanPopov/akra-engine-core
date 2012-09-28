@@ -316,18 +316,19 @@ AnimationBlend.prototype.frame = function (sName, fRealTime) {
 		pPointer.time = pPointer.time + (fRealTime - pPointer.realTime) * fAcceleration;
     	pPointer.realTime = fRealTime;
 
-		pFrame = pPointer.animation.frame(sName, pPointer.time);
-		
-
-		if (pMask) {
+    	if (pMask) {
 			fBoneWeight = ifndef(pMask[sName], 1.0);
 		}
 
 		fWeight = fBoneWeight * pPointer.weight;
+		
+		if (fWeight > 0.0) {
+			pFrame = pPointer.animation.frame(sName, pPointer.time);
 
-		if (pFrame && fWeight > 0.0) {
-			iAnim ++;
-			pResultFrame.add(pFrame.mult(fWeight), iAnim === 1);//first, if 1
+			if (pFrame) {
+				iAnim ++;
+				pResultFrame.add(pFrame.mult(fWeight), iAnim === 1);//first, if 1
+			}
 		}
 	}
 

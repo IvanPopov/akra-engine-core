@@ -572,19 +572,6 @@ Sphere.prototype.normalize = function () {
     this.fRadius = Math.abs(this.fRadius);
 };
 
-Sphere.prototype.transform = function (m4fTransform) {
-    'use strict';
-    var fScale = Math.pow(m4fTransform.determinant(), 1./3.);
-    //trace('fRadius before: ', this.fRadius);
-    this.fRadius *= fScale;
-    //trace('!!!!!!!!! SCALE >>> ', fScale, 'rad after', this.fRadius);
-    //this.v3fCenter.vec3TransformCoord(m4fTransform);
-    this.v3fCenter.add(m4fTransform.column(4));
-    this.v3fCenter.scale(fScale);
-
-    //m4fTransform.toMat3().mult(this.v3fCenter);
-};
-
 //-------------------End Sphere---------------------\\
 
 //-------------------Start Plane2D---------------------\\

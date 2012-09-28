@@ -407,6 +407,4 @@ Vec2.prototype.toString = function() {
     return '[' + pData.X + ', ' + pData.Y + ']';
 };
 
-Vec2.prototype.mult = Vec2.prototype.multiply;
-
 a.allocateStorage(Vec2,100);

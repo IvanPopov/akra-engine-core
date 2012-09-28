@@ -111,7 +111,7 @@ Engine.prototype.create = function () {
     this.iCreationHeight = this.pCanvas.height;
 
     //Получение 3D девайса
-    this.pDevice = a.createDevice(this.pCanvas);
+    this.pDevice = a.createDevice(this.pCanvas, false);
     if (!this.pDevice) {
         debug_error("Объект устроства не создан, создание завершилось");
         a.deleteDevice(this.pDevice);
@@ -680,7 +680,7 @@ Engine.prototype.fullscreen = function () {
         var pCanvas = this.pCanvas;
 
         Engine.prototype.bFullscreenLock = true;
-
+ 
         (pCanvas.requestFullscreen || pCanvas.mozRequestFullScreen || pCanvas.webkitRequestFullscreen)();
         
         pCanvas.onfullscreenchange = pCanvas.onmozfullscreenchange = pCanvas.onwebkitfullscreenchange = 

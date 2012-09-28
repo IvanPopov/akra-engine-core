@@ -612,6 +612,17 @@ Mat3.prototype.toQuat4 = function(q4fDestination) {
 
 Mat3.fromYawPitchRoll = function(fYaw,fPitch,fRoll,m3fDestination) {
     'use strict';
+    if(arguments.length <= 2){
+        //Vec3 + m3fDestination
+        var pData = arguments[0].pData;
+
+        fYaw   = pData.X;
+        fPitch = pData.Y;
+        fRoll  = pData.Z;
+
+        m3fDestination = arguments[1];
+    }
+
     if(!m3fDestination){
         m3fDestination = new Mat3();
     }

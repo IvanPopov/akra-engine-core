@@ -488,112 +488,118 @@ Quat4.prototype.toYawPitchRoll = function(v3fDestination) {
     return v3fDestination;
 };
 
-Quat4.fromForwardUp = function(v3fForward,v3fUp,q4fDestination) {
-    'use strict';
-    if(!q4fDestination){
-        q4fDestination = new Quat4();
-    }
-
-    var pDataDestination = q4fDestination.pData;
-    var pDataForward = v3fForward.pData;
-    var pDataUp = v3fUp.pData;
-
-    var fForwardX = pDataForward.X, fForwardY = pDataForward.Y, fForwardZ = pDataForward.Z;
-    var fUpX = pDataUp.X, fUpY = pData.Y, fUpZ = pDataUp.Z;
-
-    var m3fTemp = new Mat3();
-    var pTempData = m3fTemp.pData;
-
-    pTempData.a11 = fUpY*fForwardZ - fUpZ*fForwardY;
-    pTempData.a12 = pDataUp.X;
-    pTempData.a13 = pDataForward.X;
-
-    pTempData.a21 = fUpZ*fForwardX - fUpX*fForwardZ;
-    pTempData.a22 = pDataUp.Y;
-    pTempData.a23 = pDataForward.Y;
-
-    pTempData.a31 = fUpX*fForwardY - fUpY*fForwardX;
-    pTempData.a32 = pDataUp.Z;
-    pTempData.a33 = pDataForward.Z;
-
-    return pTempData.toQuat4(q4fDestination);
-};
-
-Quat4.fromAxisAngle = function(v3fAxis,fAngle,q4fDestination){
-    'use strict';
-    if(!q4fDestination){
-        q4fDestination = new Quat4();
-    }
-
-    var pDataDestination = q4fDestination.pData;
-    var pDataAxis = v3fAxis.pData;
-    var x = pDataAxis.X, y = pDataAxis.Y, z = pDataAxis.Z;
-
-    var fLength = Math.sqrt(x*x + y*y + z*z);
-
-    if(!fLength){
-        pDataDestination.X = pDataDestination.Y = pDataDestination.Z = 0;
-        pDataDestination.W = 1;
-        return q4fDestination;
-    }
-
-    x = x/fLength;
-    y = y/fLength;
-    z = z/fLength;
-
-    //fAngle - вращение по часовой стрелке
-    var fSin = Math.sin(fAngle/2);
-    var fCos = Math.cos(fAngle/2);
-
-    pDataDestination.X = x * fSin;
-    pDataDestination.Y = y * fSin;
-    pDataDestination.Z = z * fSin;
-    pDataDestination.W = fCos;
-
-    return q4fDestination;
-};
 /**
- * строит кватернион поворота через углы Эйлера
- * матрица на основе углов эйлера равна
- * resultMatrix = rotateY(fYaw) * rotateX(fPitch) * rotateZ(fRoll)
+ * return value of yaw angle
  */
-
-Quat4.fromYawPitchRoll = function(fYaw,fPitch,fRoll,q4fDestination) {
+Quat4.prototype.getYaw = function() {
     'use strict';
 
-    if(!q4fDestination){
-        q4fDestination = new Quat4();
+    var pData = this.pData;
+    var fYaw;
+
+    var x = pData.X, y = pData.Y, z = pData.Z, w = pData.W;
+
+    var fx2 = x * 2;
+    var fy2 = y * 2;
+
+    if(Math.abs(x) == Math.abs(w)){
+        //вырожденный случай обрабатывается отдельно
+        //
+        var wTemp = w*Math.sqrt(2);
+        //cos(Yaw/2)*cos(Roll/2) + sin(Yaw/2)*sin(Roll/2) = cos((Yaw-Roll)/2); Roll = 0;
+        //x==-w
+        //cos(Yaw/2)*cos(Roll/2) - sin(Yaw/2)*sin(Roll/2) = cos((Yaw+Roll)/2); Roll = 0;
+        var yTemp = y*Math.sqrt(2);
+        //sin(Yaw/2)*cos(Roll/2) - cos(Yaw/2)*sin(Roll/2) = sin((Yaw-Roll)/2); Roll = 0;
+        //x==-w
+        //sin(Yaw/2)*cos(Roll/2) + cos(Yaw/2)*sin(Roll/2) = sin((Yaw+Roll)/2); Roll = 0;
+        
+        fYaw = Math.atan2(yTemp,wTemp)*2;
+        //fRoll = 0;
+
+        //убираем дополнительный оборот
+        var pi = Math.PI;
+        if(fYaw > pi){
+            fYaw -= pi;
+            //fRoll = (x == w) ? -pi : pi;
+        }
+        else if(fYaw < -pi){
+            fYaw += pi;
+            //fRoll = (x == w) ? pi : -pi;
+        }
+    }
+    else{
+        //Math.atan2(sin(Yaw)*cos(Pitch),cos(Yaw)*cos(Pitch));
+        fYaw = Math.atan2(fx2*z + fy2*w, 1 - (fx2*x + fy2*y));
     }
 
-    var pDataDestination = q4fDestination.pData;
-
-    var fHalfYaw = fYaw * 0.5;
-    var fHalfPitch = fPitch * 0.5;
-    var fHalfRoll = fRoll * 0.5;
-
-    var fCos1 = Math.cos(fHalfYaw), fSin1 = Math.sin(fHalfYaw);
-    var fCos2 = Math.cos(fHalfPitch), fSin2 = Math.sin(fHalfPitch);
-    var fCos3 = Math.cos(fHalfRoll), fSin3 = Math.sin(fHalfRoll);
-
-    pDataDestination.X = fCos1 * fSin2 * fCos3 + fSin1 * fCos2 * fSin3;
-    pDataDestination.Y = fSin1 * fCos2 * fCos3 - fCos1 * fSin2 * fSin3;
-    pDataDestination.Z = fCos1 * fCos2 * fSin3 - fSin1 * fSin2 * fCos3;
-    pDataDestination.W = fCos1 * fCos2 * fCos3 + fSin1 * fSin2 * fSin3;
-
-    return q4fDestination;
+    return fYaw;
 };
 
 /**
- * строит кватернион через углы поворота вокруг осей X Y Z
- * аналогичная матрица строится как, для согласования с Yaw Pitch Roll
- * resultMatrix = rotate(fY) * rotate(fX) * rotate(fZ);
+ * return value of pitch angle
  */
+Quat4.prototype.getPitch = function() {
+    'use strict';
 
-Define(Quat4.fromXYZ(fX,fY,fZ),
-    function(){
-        Quat4.fromYawPitchRoll(fY,fX,fZ);
+    var pData = this.pData;
+    var fPitch;
+
+    var x = pData.X, y = pData.Y, z = pData.Z, w = pData.W;
+
+    var fx2 = x * 2;
+    var fy2 = y * 2;
+
+    var fSinPitch = Math.clamp(fx2*w - fy2*z,-1,1);//в очень редких случаях из-за ошибок округления получается результат > 1
+    fPitch = Math.asin(fSinPitch);
+
+    return fPitch;
+};
+
+Quat4.prototype.getRoll = function() {
+    'use strict';
+
+    var pData = this.pData;
+    var fRoll;
+
+    var x = pData.X, y = pData.Y, z = pData.Z, w = pData.W;
+
+    var fx2 = x * 2;
+    var fz2 = z * 2;
+
+    if(Math.abs(x) == Math.abs(w)){
+        //вырожденный случай обрабатывается отдельно
+        //
+        var wTemp = w*Math.sqrt(2);
+        //cos(Yaw/2)*cos(Roll/2) + sin(Yaw/2)*sin(Roll/2) = cos((Yaw-Roll)/2); Roll = 0;
+        //x==-w
+        //cos(Yaw/2)*cos(Roll/2) - sin(Yaw/2)*sin(Roll/2) = cos((Yaw+Roll)/2); Roll = 0;
+        var yTemp = y*Math.sqrt(2);
+        //sin(Yaw/2)*cos(Roll/2) - cos(Yaw/2)*sin(Roll/2) = sin((Yaw-Roll)/2); Roll = 0;
+        //x==-w
+        //sin(Yaw/2)*cos(Roll/2) + cos(Yaw/2)*sin(Roll/2) = sin((Yaw+Roll)/2); Roll = 0;
+        
+        var fYaw = Math.atan2(yTemp,wTemp)*2;
+        fRoll = 0;
+
+        //убираем дополнительный оборот
+        var pi = Math.PI;
+        if(fYaw > pi){
+            //fYaw -= pi;
+            fRoll = (x == w) ? -pi : pi;
+        }
+        else if(fYaw < -pi){
+            //fYaw += pi;
+            fRoll = (x == w) ? pi : -pi;
+        }
     }
-);
+    else{
+        //Math.atan2(cos(Pitch) * sin(Roll),cos(Pitch)*cos(Roll));
+        fRoll = Math.atan2(fx2*y + fz2*w, 1 - (fx2*x + fz2*z));
+    }
+
+    return fRoll;
+};
 
 /*
  * Quat4.toMat3
@@ -682,14 +688,7 @@ Quat4.prototype.toMat4 = function(m4fDestination) {
 };
 
 /*
- * Quat4.str
  * Returns a string representation of a quaternion
- *
- * Params:
- * quat - Quat4 to represent as a string
- *
- * Returns:
- * string representation of quat
  */
 
 Quat4.prototype.toString = function() {
@@ -701,7 +700,7 @@ Quat4.prototype.toString = function() {
 /**
  * делает сферическую линейную интерполяцию между кватернионами
  */
-Quat4.prototype.slerp = function(q4fQuat,fA,q4fDestination,bShortestPath) {
+Quat4.prototype.smix = function(q4fQuat,fA,q4fDestination,bShortestPath) {
     'use strict';
     if(!q4fDestination){
         q4fDestination = this;
@@ -714,11 +713,17 @@ Quat4.prototype.slerp = function(q4fQuat,fA,q4fDestination,bShortestPath) {
     var pData2 = q4fQuat.pData;
     var pDataDestination = q4fDestination.pData;
 
-    var fCos = pData1.X * pData2.X + pData1.Y * pData2.Y + pData1.Z * pData2.Z + pData1.W * pData2.W;
+    var x1 = pData1.X, y1 = pData1.Y, z1 = pData1.Z, w1 = pData1.W;
+    var x2 = pData2.X, y2 = pData2.Y, z2 = pData2.Z, w2 = pData2.W;
+
+    var fCos = x1*x2 + y1*y2 + z1*z2 + w1*w2;
 
     if(fCos < 0 && bShortestPath){
         fCos = -fCos;
-        pData2 = Quat4(-pData2.X, -pData2.Y, -pData2.Z, -pData2.W).pData;
+        x2 = -x2;
+        y2 = -y2;
+        z2 = -z2;
+        w2 = -w2;
     }
 
     var fEps = 1e-3;
@@ -731,10 +736,10 @@ Quat4.prototype.slerp = function(q4fQuat,fA,q4fDestination,bShortestPath) {
         var k1 = Math.sin((1 - fA) * fAngle)*fInvSin;
         var k2 = Math.sin(fA * fAngle)*fInvSin;
 
-        pDataDestination.X = pData1.X * k1 + pData2.X * k2;
-        pDataDestination.Y = pData1.Y * k1 + pData2.Y * k2;
-        pDataDestination.Z = pData1.Z * k1 + pData2.Z * k2;
-        pDataDestination.W = pData1.W * k1 + pData2.W * k2;
+        pDataDestination.X = x1*k1 + x2*k2;
+        pDataDestination.Y = y1*k1 + y2*k2;
+        pDataDestination.Z = z1*k1 + z2*k2;
+        pDataDestination.W = w1*k1 + w2*k2;
     }
     else{
         //два кватерниона или очень близки (тогда можно делать линейную интерполяцию) 
@@ -744,15 +749,15 @@ Quat4.prototype.slerp = function(q4fQuat,fA,q4fDestination,bShortestPath) {
         var k1 = 1 - fA;
         var k2 = fA;
 
-        var x = pData1.X * k1 + pData2.X * k2;
-        var y = pData1.Y * k1 + pData2.Y * k2;
-        var z = pData1.Z * k1 + pData2.Z * k2;
-        var w = pData1.W * k1 + pData2.W * k2;
+        var x = x1*k1 + x2*k2;
+        var y = y1*k1 + y2*k2;
+        var z = z1*k1 + z2*k2;
+        var w = w1*k1 + w2*k2;
 
         // и нормализуем так-как мы сошли со сферы
         
         var fLength = Math.sqrt(x*x + y*y + z*z + w*w);
-        var fInvLen = 1/fLength;
+        var fInvLen = fLength ? 1/fLength : 0;
 
         pDataDestination.X = x * fInvLen;
         pDataDestination.Y = y * fInvLen;
@@ -763,7 +768,162 @@ Quat4.prototype.slerp = function(q4fQuat,fA,q4fDestination,bShortestPath) {
     return q4fDestination;
 };
 
+Quat4.prototype.mix = function(q4fQuat,fA,q4fDestination,bShortestPath) {
+    'use strict';
+    if(!q4fDestination){
+        q4fDestination = this;
+    }
+    bShortestPath = ifndef(bShortestPath,true);
+
+    fA = Math.clamp(fA,0,1);
+
+    var pData1 = this.pData;
+    var pData2 = q4fQuat.pData;
+    var pDataDestination = q4fDestination.pData;
+
+    var x1 = pData1.X, y1 = pData1.Y, z1 = pData1.Z, w1 = pData1.W;
+    var x2 = pData2.X, y2 = pData2.Y, z2 = pData2.Z, w2 = pData2.W;
+
+    var fCos = x1*x2 + y1*y2 + z1*z2 + w1*w2;
+
+    if(fCos < 0 && bShortestPath){
+        x2 = -x2;
+        y2 = -y2;
+        z2 = -z2;
+        w2 = -w2;
+    }
+
+    var k1 = 1 - fA;
+    var k2 = fA;
+
+    pDataDestination.X = x1*k1 + x2*k2;
+    pDataDestination.Y = y1*k1 + y2*k2;
+    pDataDestination.Z = z1*k1 + z2*k2;
+    pDataDestination.W = w1*k1 + w2*k2;
+
+    return q4fDestination;
+};
+
+Quat4.fromForwardUp = function(v3fForward,v3fUp,q4fDestination) {
+    'use strict';
+    if(!q4fDestination){
+        q4fDestination = new Quat4();
+    }
+
+    var pDataDestination = q4fDestination.pData;
+    var pDataForward = v3fForward.pData;
+    var pDataUp = v3fUp.pData;
+
+    var fForwardX = pDataForward.X, fForwardY = pDataForward.Y, fForwardZ = pDataForward.Z;
+    var fUpX = pDataUp.X, fUpY = pData.Y, fUpZ = pDataUp.Z;
+
+    var m3fTemp = new Mat3();
+    var pTempData = m3fTemp.pData;
+
+    pTempData.a11 = fUpY*fForwardZ - fUpZ*fForwardY;
+    pTempData.a12 = pDataUp.X;
+    pTempData.a13 = pDataForward.X;
+
+    pTempData.a21 = fUpZ*fForwardX - fUpX*fForwardZ;
+    pTempData.a22 = pDataUp.Y;
+    pTempData.a23 = pDataForward.Y;
+
+    pTempData.a31 = fUpX*fForwardY - fUpY*fForwardX;
+    pTempData.a32 = pDataUp.Z;
+    pTempData.a33 = pDataForward.Z;
+
+    return pTempData.toQuat4(q4fDestination);
+};
+
+Quat4.fromAxisAngle = function(v3fAxis,fAngle,q4fDestination){
+    'use strict';
+    if(!q4fDestination){
+        q4fDestination = new Quat4();
+    }
+
+    var pDataDestination = q4fDestination.pData;
+    var pDataAxis = v3fAxis.pData;
+    var x = pDataAxis.X, y = pDataAxis.Y, z = pDataAxis.Z;
+
+    var fLength = Math.sqrt(x*x + y*y + z*z);
+
+    if(!fLength){
+        pDataDestination.X = pDataDestination.Y = pDataDestination.Z = 0;
+        pDataDestination.W = 1;
+        return q4fDestination;
+    }
+
+    x = x/fLength;
+    y = y/fLength;
+    z = z/fLength;
+
+    //fAngle - вращение по часовой стрелке
+    var fSin = Math.sin(fAngle/2);
+    var fCos = Math.cos(fAngle/2);
+
+    pDataDestination.X = x * fSin;
+    pDataDestination.Y = y * fSin;
+    pDataDestination.Z = z * fSin;
+    pDataDestination.W = fCos;
+
+    return q4fDestination;
+};
+/**
+ * строит кватернион поворота через углы Эйлера
+ * матрица на основе углов эйлера равна
+ * resultMatrix = rotateY(fYaw) * rotateX(fPitch) * rotateZ(fRoll)
+ */
+
+Quat4.fromYawPitchRoll = function(fYaw,fPitch,fRoll,q4fDestination) {
+    'use strict';
+    if(arguments.length <= 2){
+        //Vec3 + q4fDestination
+        var pData = arguments[0].pData;
+
+        fYaw   = pData.X;
+        fPitch = pData.Y;
+        fRoll  = pData.Z;
+
+        q4fDestination = arguments[1];
+    }
+
+    if(!q4fDestination){
+        q4fDestination = new Quat4();
+    }
+
+    var pDataDestination = q4fDestination.pData;
+
+    var fHalfYaw = fYaw * 0.5;
+    var fHalfPitch = fPitch * 0.5;
+    var fHalfRoll = fRoll * 0.5;
+
+    var fCos1 = Math.cos(fHalfYaw), fSin1 = Math.sin(fHalfYaw);
+    var fCos2 = Math.cos(fHalfPitch), fSin2 = Math.sin(fHalfPitch);
+    var fCos3 = Math.cos(fHalfRoll), fSin3 = Math.sin(fHalfRoll);
+
+    pDataDestination.X = fCos1 * fSin2 * fCos3 + fSin1 * fCos2 * fSin3;
+    pDataDestination.Y = fSin1 * fCos2 * fCos3 - fCos1 * fSin2 * fSin3;
+    pDataDestination.Z = fCos1 * fCos2 * fSin3 - fSin1 * fSin2 * fCos3;
+    pDataDestination.W = fCos1 * fCos2 * fCos3 + fSin1 * fSin2 * fSin3;
+
+    return q4fDestination;
+};
+
+/**
+ * строит кватернион через углы поворота вокруг осей X Y Z
+ * аналогичная матрица строится как, для согласования с Yaw Pitch Roll
+ * resultMatrix = rotate(fY) * rotate(fX) * rotate(fZ);
+ */
+
+Define(Quat4.fromXYZ(fX,fY,fZ),
+    function(){
+        Quat4.fromYawPitchRoll(fY,fX,fZ);
+    }
+);
+
 Quat4.prototype.mult = Quat4.prototype.multiply;
+Quat4.prototype.slerp = Quat4.prototype.smix;
+Quat4.prototype.nlerp = Quat4.prototype.mix;
 
 Quat4.fromYPR = Quat4.fromYawPitchRoll;
 

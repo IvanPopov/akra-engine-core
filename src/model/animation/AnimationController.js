@@ -97,6 +97,10 @@ AnimationController.prototype.findAnimation = function () {
 	return arguments[0];
 };
 
+AnimationController.prototype.getAnimation = function(iAnim) {
+	return this._pAnimations[iAnim];
+};
+
 AnimationController.prototype.setAnimation = function (iAnimation, pAnimation) {
     'use strict';
     

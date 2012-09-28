@@ -113,7 +113,7 @@ AnimationBase.prototype.apply = function (fRealTime) {
 		pTarget.accessLocalMatrix().set(pTransform);
 	};
 
-	this.fire(a.Animation.EVT_ENTER_FRAME, fRealTime);
+	// this.fire(a.Animation.EVT_ENTER_FRAME, fRealTime);
 };
 
 AnimationBase.prototype.addTarget = function (sName, pTarget) {

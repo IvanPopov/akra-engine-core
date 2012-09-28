@@ -550,6 +550,4 @@ Vec4.prototype.clear = function() {
     return this;
 };
 
-Vec4.prototype.mult = Vec4.prototype.multiply;
-
 a.allocateStorage(Vec4,100);

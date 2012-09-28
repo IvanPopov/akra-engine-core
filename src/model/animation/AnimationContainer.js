@@ -219,6 +219,8 @@ AnimationContainer.prototype.frame = function (sName, fRealTime) {
 
     if (this._fRealTime !== fRealTime) {
     	this.time(fRealTime);
+    	this.fire(a.Animation.EVT_ENTER_FRAME, fRealTime);
+    	//trace('--->', this.name);
     }
 
     if (!this._bLeftInfinity && this._fRealTime < this._fStartTime) {
