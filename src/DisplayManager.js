@@ -219,7 +219,6 @@ function DisplayManager(pEngine) {
     this._pTextDiv = null;
 
 }
-;
 
 DisplayManager.prototype.texturePool = function () {
     INLINE();
@@ -313,12 +312,7 @@ DisplayManager.prototype.getTextLayer = function () {
  * @treturn Boolean always return true
  */
 DisplayManager.prototype.initialize = function () {
-
-    this._pDevice.clearColor(0, 0, 0.5, 1.0);
-    this._pDevice.clearStencil(0.);
-    this._pDevice.clearDepth(1.0);
-
-//    this._renderQueue.init();
+    //    this._renderQueue.init();
     this.registerDeviceResources();
     this.initText2Dlayer();
     return true;

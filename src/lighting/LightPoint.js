@@ -164,7 +164,7 @@ LightPoint.prototype._initializeTextures = function () {
         pDepthTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
     }
 
-    this._pColorTexture = pEngine.displayManager().texturePool().createResource();
+    this._pColorTexture = pEngine.displayManager().texturePool().createResource('light_color_texture_' + a.sid());
     var pColor = this._pColorTexture;
 
     pColor.createTexture(iShadowResolution, iShadowResolution,
@@ -322,6 +322,5 @@ function LightParameters() {
     this.specular = new Vec4(1., 1., 1., 1.);
     //this.emissive =
     this.attenuation = new Vec3(1.0, 0.00, .000);
-}
-;
+};
 

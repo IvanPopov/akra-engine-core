@@ -28,6 +28,8 @@ function RenderableObject() {
     this._pActiveSnapshot = null;
 
     this._hasShadow = false;
+
+    this._iSystemId = a.sid();
 }
 
 PROPERTY(RenderableObject, 'renderMethod',
@@ -62,6 +64,11 @@ PROPERTY(RenderableObject, 'material',
          function () {
              var pSurfaceMaterial = this.surfaceMaterial;
              return pSurfaceMaterial ? pSurfaceMaterial.material : null;
+         });
+
+PROPERTY(RenderableObject, 'renderObjectId',
+         function () {
+             return this._iSystemId;
          });
 
 RenderableObject.prototype.getEngine = function () {

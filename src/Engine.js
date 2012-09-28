@@ -839,6 +839,10 @@ Engine.prototype.updateCamera = function (fLateralSpeed, fRotationSpeed, pTerrai
         pOffsetData.Z = fLateralSpeed;
         isCameraMoved = true;
     }
+    else if (this.pKeymap.isKeyPress(a.KEY.SPACE)) {
+
+        this.pause(true);
+    }
     if (isCameraMoved || isForceUpdate) {
 
         // if a terrain was provided, make sure we are above it

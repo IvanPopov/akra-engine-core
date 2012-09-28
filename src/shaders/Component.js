@@ -241,7 +241,24 @@ ComponentBlend.prototype.finalize = function () {
                     "pUniformsByRealName" : {},
                     "pUniformsDefault"    : {},
                     "pTexturesByName"     : {},
-                    "pTexturesByRealName" : {},
+                    "pTexturesByRealName" : {
+                        TEXTURE0  : null,
+                        TEXTURE1  : null,
+                        TEXTURE2  : null,
+                        TEXTURE3  : null,
+                        TEXTURE4  : null,
+                        TEXTURE5  : null,
+                        TEXTURE6  : null,
+                        TEXTURE7  : null,
+                        TEXTURE8  : null,
+                        TEXTURE9  : null,
+                        TEXTURE10 : null,
+                        TEXTURE11 : null,
+                        TEXTURE12 : null,
+                        TEXTURE13 : null,
+                        TEXTURE14 : null,
+                        TEXTURE15 : null
+                    },
                     "pForeignsByName"     : {}
                 };
             }
@@ -637,7 +654,7 @@ PassBlend.prototype.addPass = function (pPass) {
                     isEqual = true;
                     break;
                 }
-                if(pType2.isSharedType() && pType1.isSharedType()){
+                if (pType2.isSharedType() && pType1.isSharedType()) {
                     isEqual = true;
                     break;
                 }
@@ -787,7 +804,7 @@ PassBlend.prototype.addPass = function (pPass) {
                     isEqual = true;
                     break;
                 }
-                if(pType2.isSharedType() && pType1.isSharedType()){
+                if (pType2.isSharedType() && pType1.isSharedType()) {
                     isEqual = true;
                     break;
                 }

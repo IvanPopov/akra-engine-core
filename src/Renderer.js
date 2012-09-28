@@ -83,7 +83,8 @@ function Renderer(pEngine) {
              PROJ_MATRIX = "PROJ_MATRIX",
              NORMAL_MATRIX = "NORMAL_MATRIX",
              EYE_POS = "EYE_POSITION",
-             BIND_MATRIX = "BIND_SHAPE_MATRIX"
+             BIND_MATRIX = "BIND_SHAPE_MATRIX",
+             RENDER_OBJECT_ID = "RENDER_OBJECT_ID"
          ], SYSTEM_SEMANTICS, a.Renderer);
     Enum([
              MATERIAL = "MATERIAL"
@@ -161,6 +162,8 @@ function Renderer(pEngine) {
 
     this._eCurrentRenderStage = null;
     this._pCurrentRenderQueue = null;
+
+    this._pDefaultColor = new Vec4(0.0, 0.0, 0.5, 1.);
 
     this._initSystemUniforms();
 }
@@ -1049,6 +1052,8 @@ Renderer.prototype._getSystemUniformValue = function (sName) {
             return pCamera.eyePosition();
         case a.Renderer.BIND_MATRIX:
             return (pRenderObject && pRenderObject.skin) ? pRenderObject.skin.getBindMatrix() : null;
+        case a.Renderer.RENDER_OBJECT_ID:
+            return pRenderObject.renderObjectId;
         default:
             warning("Unsupported system semantic");
             return null;
@@ -1474,7 +1479,10 @@ Renderer.prototype.render = function (pEntry) {
 Renderer.prototype._setViewport = function (x, y, width, height) {
     this.pDevice.viewport(x, y, width, height);
 };
-Renderer.prototype.clearScreen = function (eValue) {
+Renderer.prototype.clearScreen = function (eValue, v4fColor) {
+    v4fColor = v4fColor || this._pDefaultColor;
+    var pData = v4fColor.pData;
+    this.pDevice.clearColor(pData.X, pData.Y, pData.Z, pData.W);
     this.pDevice.clear(eValue);
 };
 
@@ -1578,15 +1586,15 @@ Renderer.prototype.pushRenderEntry = function (pEntry) {
 };
 Renderer.prototype.processRenderStage = function () {
     var eType = this._eCurrentRenderStage;
-    if (eType === a.RenderStage.SHADOWS){
+    if (eType === a.RenderStage.SHADOWS) {
         this._pCurrentRenderQueue = this._pShadowRenderQueue;
         this._pCurrentRenderQueue.execute();
     }
-    else if(eType === a.RenderStage.GLOBALPOSTEFFECTS){
+    else if (eType === a.RenderStage.GLOBALPOSTEFFECTS) {
         this._pCurrentRenderQueue = this._pGlobalPostEffectRenderQueue;
         this._pCurrentRenderQueue.execute();
     }
-    else if(eType === a.RenderStage.DEFAULT) {
+    else if (eType === a.RenderStage.DEFAULT) {
         this._pCurrentRenderQueue = this._pDefaultRenderQueue;
         this._pCurrentRenderQueue.execute();
     }
@@ -1597,7 +1605,7 @@ Renderer.prototype.processRenderStage = function () {
         var iLength = pLightManager.getDeferredTextureCount();
         for (i = 0; i < iLength; i++) {
             this.activateFrameBuffer(pLightManager.deferredFrameBuffers[i]);
-            this.clearScreen(a.CLEAR.DEPTH_BUFFER_BIT | a.CLEAR.COLOR_BUFFER_BIT);
+            this.clearScreen(a.CLEAR.DEPTH_BUFFER_BIT | a.CLEAR.COLOR_BUFFER_BIT, Vec4(0));
             this._pCurrentRenderQueue = pQueues[i];
             pQueues[i].execute();
 //            this.pDevice.flush();
@@ -1614,6 +1622,9 @@ Renderer.prototype.processRenderStage = function () {
  * @treturn Boolean
  */
 Renderer.prototype.initialize = function () {
+    this.pDevice.clearStencil(0.);
+    this.pDevice.clearDepth(1.0);
+
     this._pDefaultRenderQueue.init();
     this._pShadowRenderQueue.init();
     this._pGlobalPostEffectRenderQueue.init();

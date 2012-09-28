@@ -45,7 +45,7 @@ function Camera () {
      * internal, un-biased view+projection matrix
      * @type Float32Array
      */
-    this.m4fViewProj = new Mat4;
+    this.m4fProjView = new Mat4;
     /**
      * Special matrix for billboarding effects
      * @type Float32Array
@@ -65,7 +65,7 @@ function Camera () {
      * Biased for use during current render stage
      * @type Float32Array
      */
-    this.m4fRenderStageViewProj = new Mat4;
+    this.m4fRenderStageProjView = new Mat4;
     /**
      * Search rect for scene culling
      * @type Rect3d
@@ -281,7 +281,7 @@ Camera.prototype.recalcMatrices = function () {
 
     // our view proj matrix is the inverse of our world matrix
     // multiplied by the projection matrix
-    this.m4fProj.multiply(this.m4fView, this.m4fViewProj);
+    this.m4fProj.multiply(this.m4fView, this.m4fProjView);
 
     var m4fInvProj = Mat4();
     var m4fInvCamera = Mat4();
@@ -332,7 +332,7 @@ Camera.prototype.recalcMatrices = function () {
     this._calculateFrustumPlanes();
 
     this.m4fRenderStageProj.set(this.m4fProj);
-    this.m4fRenderStageViewProj.set(this.m4fViewProj);
+    this.m4fRenderStageProjView.set(this.m4fProjView);
 
     //update eye position
 
@@ -357,10 +357,10 @@ Camera.prototype.applyRenderStageBias = function (iStage) {
     var fZ_bias = iStage > 1 ? 0.001 : 0.0;
 
     this.m4fRenderStageProj.set(this.m4fProj);
-    this.m4fRenderStageViewProj.set(this.m4fViewProj);
+    this.m4fRenderStageProjView.set(this.m4fProjView);
 
     this.m4fRenderStageProj._34 -= fZ_bias;
-    this.m4fRenderStageViewProj._34 -= fZ_bias;
+    this.m4fRenderStageProjView._34 -= fZ_bias;
 };
 /**
  * Getter
@@ -382,10 +382,11 @@ Camera.prototype.projectionMatrix = function () {
  * Getter
  * @treturn Float32Array Matrix
  */
-Camera.prototype.viewProjMatrix = function () {
+Camera.prototype.projViewMatrix = function () {
     INLINE();
-    return this.m4fRenderStageViewProj;
+    return this.m4fRenderStageProjView;
 };
+
 /**
  * Getter
  * @treturn Float32Array Matrix
@@ -416,7 +417,7 @@ Camera.prototype.internalProjectionMatrix = function () {
  */
 Camera.prototype.internalViewProjMatrix = function () {
     INLINE();
-    return this.m4fViewProj;
+    return this.m4fProjView;
 };
 /**
  * Getter

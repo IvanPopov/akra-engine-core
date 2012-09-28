@@ -294,7 +294,7 @@ GLSLExpr.prototype.toGLSL = function (pArguments) {
                 return;
             }
             if (!pArguments[pArgs[i]]) {
-                console.log(this, pArguments, pArguments[pArgs[i]], pArguments[1], pArgs[i], i);
+                trace(this, pArguments, pArguments[pArgs[i]], pArguments[1], pArgs[i], i);
                 error("bad translation pArguments");
                 return;
             }
@@ -2163,8 +2163,8 @@ EffectFunction.prototype.toCodeAll = function () {
             sCode += pElement;
         }
         else {
-            if (!(pElement.isSampler && pElement.iScope === a.fx.GLOBAL_VARS.GLOBAL) && pElement.pData === undefined &&
-                !pElement.isForeign) {
+            if (!(pElement._isSampler && pElement.iScope === a.fx.GLOBAL_VARS.GLOBAL) &&
+                pElement.pData === undefined && !pElement.isForeign) {
                 pToCode = pElement.toCode(false);
                 if (typeof(pToCode) === "string") {
                     sCode += pToCode;
@@ -2974,7 +2974,6 @@ EffectPass.prototype.finalize = function () {
 //    if (this.sJSCode !== "") {
 //        this.pCode.push(this.sJSCode);
 //    }
-//    console.log(this.sJSCode);
     this._fnEval = new Function("me", "engine", "uniformValues", this.sJSCode);
 
     if (this.isComplex) {
@@ -3542,6 +3541,8 @@ Effect.prototype._initSystemData = function () {
     this._addSystemFunction("lessThanEqual", "bool2", [null, null], ["float2", "int2"], "lessThanEqual($1,$2)");
     this._addSystemFunction("lessThanEqual", "bool3", [null, null], ["float3", "int3"], "lessThanEqual($1,$2)");
     this._addSystemFunction("lessThanEqual", "bool4", [null, null], ["float4", "int4"], "lessThanEqual($1,$2)");
+
+    this._addSystemFunction("fragCoord", "float4", [], null, "gl_FragCoord");
     Effect._isInit = true;
 };
 /**
@@ -4417,6 +4418,12 @@ Effect.prototype.findFunction = function (sName, pParams) {
     }
     for (i = 0; i < pFunctions.length; i++) {
         if (pFunctions[i].pTypes.length === pParams.length) {
+            if (pParams.length === 0) {
+                if (!pFunc) {
+                    pFunc = pFunctions[i];
+                    return pFunc;
+                }
+            }
             for (j = 0; j < pParams.length; j++) {
                 if (pFunctions[i].pTypes[j].isEqual(pParams[j])) {
                     if (!pFunc) {
@@ -4625,7 +4632,6 @@ Effect.prototype.analyze = function (pTree) {
 //    try {
     var pRoot = pTree.pRoot;
     var time = a.now();
-//    console.log(this);
     this._pParseTree = pTree;
     this.newScope();
     this.firstStep();
@@ -4967,7 +4973,6 @@ Effect.prototype.postAnalyzeEffect = function () {
             continue;
         }
         pShader.toCodeAll(this._id);
-        //console.log(pShader._sCodeAll ? pShader._sCodeAll : pShader._pCodeAll);
     }
     //check passes for used valid shaders
     var pPass;
@@ -5425,6 +5430,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
     var pCode, pCodeShader, pIndex;
     var isFlag = false; //temp flag
     var pTemp = null; //some temp obj for anything
+    var bSavedNewName = false;
 
     switch (sName) {
         case a.fx.GLOBAL_VARS.OBJECTEXPR:
@@ -5781,6 +5787,8 @@ Effect.prototype.analyzeExpr = function (pNode) {
             }
             else if (pChildren[0].sValue === "]") {
                 pVar = this._pLastVar;
+                pType1 = pVar.pType;
+                bSavedNewName = this._isNewName;
                 this.newVarName();
                 if (pVar.isSampler()) {
                     if (!pVar.isArray) {
@@ -5799,6 +5807,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 }
                 this.pushCode("]");
                 this.endVarName();
+                this._isNewName = bSavedNewName;
                 if (pVar.isSampler() && (pVar.isParametr === false || pVar.isUniform === true)) {
                     pIndex = new SamplerIndex(this._pCode, pVar);
                     this.endCode();
@@ -6021,7 +6030,6 @@ Effect.prototype.analyzeExpr = function (pNode) {
             pType2 = this._pExprType;
             if (sName === a.fx.GLOBAL_VARS.ASSIGNMENTEXPR && pChildren.length === 3) {
 //                if (!pType1.isEqual(pType2)) {
-//                    console.log(pNode);
 //                    error("Bad 191");
 //                    return;
 //                }
@@ -6096,6 +6104,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     else {
                         pRes = pVar.sRealName;
                     }
+                    this._sVarName += pVar.sName;
                 }
             }
             else if ((this._sVarName === "" && this._isNewName) || !this._isNewName) {
@@ -7471,7 +7480,7 @@ Effect.prototype.analyzeState = function (pNode) {
         pTexture = this.hasVariable(pStateExpr.pChildren[1].sValue);
         pTexture.sRealName = pTexture.sSemantic || pTexture.sRealName;
         if (!pTexture) {
-            console.log(pStateExpr);
+            trace(pStateExpr);
             error("bad with texture name");
             return;
         }

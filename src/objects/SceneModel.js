@@ -167,7 +167,7 @@ SceneModel.prototype.renderShadow = function () {
             for (k = 0; k < pSubMesh.totalPasses(); k++) {
                 pSubMesh.activatePass(k);
                 pSubMesh.applyRenderData(pSubMesh.data);
-                trace("SceneModel.prototype.renderShadow", pSubMesh.renderPass());
+                pSubMesh.renderPass();
                 pSubMesh.deactivatePass();
             }
             pSubMesh.finishRender();
