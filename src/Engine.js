@@ -579,7 +579,9 @@ Engine.prototype.render3DEnvironment = function () {
     //Проверка что евайс потерян и выставление сооответсвующего флага
     //не раелизовано
     this._isDeviceLost = false;
-
+    if (iFrame > 5 && iFrame % 100 == 0) {
+        trace2('elapsed time > ', this.fElapsedTime);
+    }
     return true;
 }
 
@@ -602,12 +604,12 @@ Engine.prototype.frameMove = function () {
     return true;
 }
 
-//var zzz = 5;
+var iFrame = 0;
 Engine.prototype.render = function () {
     if (!this._isFrameReady) {
         return true;
     }
-
+    var iRenderBegin = a.now();
     if (this.pDisplayManager.beginRenderSession()) {
         // render the scene
         A_TRACER.BEGIN();
@@ -616,28 +618,66 @@ Engine.prototype.render = function () {
 //        this.pDevice.enable(this.pDevice.BLEND);
 //        this.pDevice.blendFunc(this.pDevice.SRC_ALPHA,this.pDevice.ONE_MINUS_SRC_ALPHA)
 //        this.pDevice.disable(this.pDevice.DEPTH_TEST);
+        var iTime = [a.now()];
+
         this.renderShadows();
+        iTime.push(a.now());
+        
         this.pShaderManager.processRenderStage();
-        this.pDevice.flush();
+        iTime.push(a.now());
+
+        // this.pDevice.flush();
         trace("==============Stop Render Shadow===========");
         trace("==============Render Scene===========");
+        
+        
         this.renderLightings();
+        iTime.push(a.now());
         // process the contents of the render queue
+        
         this.pShaderManager.processRenderStage();
+        iTime.push(a.now());
+        
+        this.pDevice.finish();
+        iTime.push(a.now());
+        
         trace("==============Stop Render Scene===========");
-
         trace("==============Apply lights===========");
+
         this.renderScene();
+        iTime.push(a.now());
+
         this.pShaderManager.processRenderStage();
+        iTime.push(a.now());
 
         trace("==============Stop Apply lights===========");
-
         this.pDisplayManager.endRenderSession();
+        iTime.push(a.now());
+
         A_TRACER.END();
+
+        if (iFrame > 5 && iFrame%100 === 0) {
+            trace2('\n\n\=================== FRAME ' + iFrame + ' STATISTICS ================');
+            trace2('renderShadows > ', iTime[1] - iTime[0], 'ms');
+            trace2('processRenderStage(shadow) > ', iTime[2] - iTime[1], 'ms');
+            trace2('renderLightings > ', iTime[3] - iTime[2], 'ms');
+            trace2('processRenderStage(lights) > ', iTime[4] - iTime[3], 'ms');
+            trace2('finish > ', iTime[5] - iTime[4], 'ms');
+            trace2('renderScene > ', iTime[6] - iTime[5], 'ms');
+            trace2('processRenderStage > ', iTime[7] - iTime[6], 'ms');
+            trace2('endRenderSession > ', iTime[8] - iTime[7], 'ms');
+            trace2('\t TOTAL TIME > ', iTime[8] - iTime[0], 'ms');
+            trace2('\n\n');
+        }
+       
 //        if(zzz-- == 0){
-           this.pause(true);
+           // this.pause(true);
 //        }
     }
+    if (iFrame > 5 && iFrame%100 === 0) {
+        trace2('Engine.prototype.render:: ', a.now() - iRenderBegin, 'ms');
+    }
+     iFrame ++;
     return true;
 };
 

@@ -6,9 +6,10 @@
  */
 
 Define(__AKRA_ENGINE__, true);
-// Define(trace(__ARGS__), function () { /*console.log(__ARGS__);*/ });
+Define(trace(__ARGS__), function () { /*console.log(__ARGS__);*/ });
+Define(console.log(__ARGS__), function () { /*console.log(__ARGS__);*/ });
 window.trace = console.log.bind(console);
-
+window.trace2 = console.log.bind(console);
 // ========== NAMEPSPACEs ========
 
 Define(PROPERTY_GUARD(object, $$property, value), function () {
