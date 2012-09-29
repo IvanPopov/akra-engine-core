@@ -4644,7 +4644,7 @@ Effect.prototype.analyze = function (pTree) {
     this.postAnalyzeEffect();
     this.checkEffect();
     this.endScope();
-    trace("Time of analyzing effect file(without parseing) ", a.now() - time, "Result effect: ", this);
+    trace("Time of analyzing effect file(without parseing) ", a.now() - time);//, "Result effect: ", this);
     return true;
 //    }
 //    catch (e) {

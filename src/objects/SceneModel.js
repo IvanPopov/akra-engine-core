@@ -115,7 +115,7 @@ SceneModel.prototype.render = function () {
                 pSubMesh.applySurfaceMaterial();
                 pSubMesh.applyRenderData(pSubMesh.data);
                 var pEntry = pSubMesh.renderPass();
-                trace("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
+                // trace("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
                 pSubMesh.deactivatePass();
                 pRenderer.activateFrameBuffer(null);
             }

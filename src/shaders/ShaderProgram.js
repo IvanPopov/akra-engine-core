@@ -718,6 +718,9 @@ ShaderProgram.prototype.applySampler2DInStruct = function (sName, pData) {
         else {
             iSlot = this._pRenderer.activateTexture(pTexture);
             pTextureParam = this._pTextureParams[iSlot];
+            console.log(this._pTextureParams, iSlot);    
+            console.log(pTextureParam[a.TPARAM.MAG_FILTER], pData[a.TPARAM.MAG_FILTER], pTexture._getParameter(a.TPARAM.MAG_FILTER));
+
             trace("Slot #" + iSlot);
             pTextureParam[a.TPARAM.MAG_FILTER] = pData[a.TPARAM.MAG_FILTER] ||
                                                  pTexture._getParameter(a.TPARAM.MAG_FILTER) ||

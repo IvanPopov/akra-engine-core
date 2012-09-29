@@ -957,6 +957,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
     if (TEST_BIT(eFlags, a.Texture.CubeMap)) {
         for (var k = 0; k < 6; k++) {
             for (var i = 0; i < nMipMaps; i++) {
+                // console.log("texture size: ", this._iWidth, this._iHeight);
                 pDevice.texImage2D(a.TTYPE.TEXTURE_CUBE_MAP_POSITIVE_X + k, i, this._eFormat, this._iWidth,
                                    this._iHeight, 0, this._eFormat, this._eType, pData[i] ? pData[i] : null);
             }
@@ -965,6 +966,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
     else {
         if (this.isCompressed()) {
             for (var i = 0; i < nMipMaps; i++) {
+                // console.log("texture size: ", this._iWidth, this._iHeight);
                 pDevice.compressedTexImage2D(a.TTYPE.TEXTURE_2D, i, this._eFormat, this._iWidth,
                                              this._iHeight, 0, pData[i] ? pData[i] : null);
             }
@@ -972,6 +974,8 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
         else {
             for (var i = 0; i < nMipMaps; i++) {
                 //trace('Texture:: creating texture miplevel:', i);
+                // console.log("texture size: ", this._iWidth, this._iHeight);
+                //console.log((new Error).stack)
                 pDevice.texImage2D(a.TTYPE.TEXTURE_2D, i, this._eFormat, this._iWidth,
                                    this._iHeight, 0, this._eFormat, this._eType, pData[i] ? pData[i] : null);
             }

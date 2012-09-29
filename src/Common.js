@@ -6,8 +6,8 @@
  */
 
 Define(__AKRA_ENGINE__, true);
-Define(trace(__ARGS__), function () { /*console.log(__ARGS__);*/ });
-//window.trace = console.log.bind(console);
+// Define(trace(__ARGS__), function () { /*console.log(__ARGS__);*/ });
+window.trace = console.log.bind(console);
 
 // ========== NAMEPSPACEs ========
 

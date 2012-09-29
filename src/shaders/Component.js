@@ -1454,10 +1454,10 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         sVertexCode += pRealAttrs[i];
     }
     //Check number of samplers
-    if (nSamplers < 0) {
-        warning("More samplers used than vertex shader can provide");
-        return false;
-    }
+    // if (nSamplers < 0) {
+    //     warning("More samplers used than vertex shader can provide");
+    //     return false;
+    // }
     //Offsets
     sVertexCode += sUniformOffset;
     //Input data for shader
@@ -1540,7 +1540,6 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         sFragmentCode += PassBlend.pExtractedFunctions[i];
     }
     //Types
-    trace("???????????????????????", this, this.pTypesOrderF);
     for (i = 0; i < this.pTypesOrderF.length; i++) {
         sFragmentCode += this.pTypesBlockF[this.pTypesOrderF[i].sRealName] + ";";
     }
@@ -1583,10 +1582,10 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     }
 
     //Check number of samplers
-    if (nSamplers < 0) {
-        warning("More samplers used than fragment shader can provide");
-        return false;
-    }
+    // if (nSamplers < 0) {
+    //     warning("More samplers used than fragment shader can provide");
+    //     return false;
+    // }
     //Uniforms
     for (i in this.pUniformsBlockF) {
         pCodeBlock = this.pUniformsBlockF[i];
@@ -1659,7 +1658,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     if (!pProgram.setup(pAttrData, pUniformData, pTextures)) {
         return false;
     }
-    trace("Pass blend ---->", pProgram);
+    // trace("Pass blend ---->", pProgram);
     return pProgram;
 };
 //Translate all objects that was in code(Samplers and Headers) to code

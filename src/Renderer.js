@@ -1221,7 +1221,10 @@ Renderer.prototype._getEmptyTextureSlot = function () {
             return i;
         }
     }
-    return this._pRenderState.pActiveProgram.getEmptyTextureSlot();
+    i = this._pRenderState.pActiveProgram.getEmptyTextureSlot();
+    debug_assert(i !== undefined, "bad slot i");
+    return i;
+    // return this._pRenderState.pActiveProgram.getEmptyTextureSlot();
 };
 Renderer.prototype._getEmptyFrameBuffer = function () {
     var pDevice = this.pEngine.pDevice;
@@ -1386,7 +1389,9 @@ Renderer.prototype.activateTexture = function (pTexture) {
         }
         return iSlot;
     }
+
     iSlot = this._getEmptyTextureSlot();
+    debug_assert(iSlot !== undefined, "bad slot");
     pSlots[iSlot] = pTexture;
     this._pRenderState.pTextureSlotStates[iSlot] = true;
     if (this._pRenderState.pActiveProgram) {
@@ -1664,9 +1669,6 @@ Renderer.prototype.createDeviceResources = function () {
     pSubMesh.effect.use("akra.system.projectLighting");
     pSubMesh.effect.use("akra.system.omniShadowsLighting");
     pSubMesh.effect.use("akra.system.projectShadowsLighting");
-
-    trace("*********", this._pPostEffectTarget, pSubMesh.effect);
-
 
     return true;
 };

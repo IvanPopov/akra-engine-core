@@ -635,7 +635,7 @@ Engine.prototype.render = function () {
         this.pDisplayManager.endRenderSession();
         A_TRACER.END();
 //        if(zzz-- == 0){
-//            this.pause(true);
+           this.pause(true);
 //        }
     }
     return true;

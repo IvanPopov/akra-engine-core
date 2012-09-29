@@ -40,6 +40,13 @@ function LightManager(pEngine, nMaxDeferredTextureCount) {
     this._iWidth = Math.ceilingPowerOfTwo(pEngine.pCanvas.width);
     this._iHeight = Math.ceilingPowerOfTwo(pEngine.pCanvas.height);
 
+    //TODO: completly check all browsers tha can not support large(2048+) textures.
+    if(a.browser.name === 'Firefox') {
+        this._iWidth = Math.min(this._iWidth, 1024);
+        this._iHeight = Math.min(this._iHeight, 1024);
+        
+    }
+
     this._pDeferredFrameBuffers = new Array(nMaxDeferredTextureCount);
 //    this._initializeTextures();
     this._pLightingUnifoms = {
@@ -229,7 +236,7 @@ LightManager.prototype.applyLight = function () {
     pSnapshot.applyTextureBySemantic("SCENE_DEPTH_TEXTURE", pDepthTexture);
     var pEntry = pSubMesh.renderPass();
 //    console.log("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
-    trace("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
+    // trace("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
     pSubMesh.deactivatePass();
     pSubMesh.finishRender();
 };
