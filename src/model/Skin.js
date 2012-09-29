@@ -65,7 +65,26 @@ Skin.prototype.getBindMatrix = function () {
     return this._m4fBindMatrix;
 };
 
-Skin.prototype.hasSkeleton = function () {
+Skin.prototype.getBoneOffsetMatrices = function () {
+    'use strict';
+    
+    return this._pBoneOffsetMatrices;
+};
+
+Skin.prototype.getBoneOffsetMatrix = function (sBoneName) {
+    'use strict';
+    
+    var pBoneNames = this._pNodeNames;
+    for (var i = 0; i < pBoneNames.length; i++) {
+        if (pBoneNames[i] === sBoneName) {
+            return this._pBoneOffsetMatrices[i];
+        }
+    };
+
+    return null;
+};
+
+Skin.prototype.hasSkeleton = function() {
     return this._pSkeleton !== null;
 };
 

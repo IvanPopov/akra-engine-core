@@ -1134,7 +1134,6 @@ ShaderProgram.prototype._shaderInfoLog = function (pShader, eType) {
     sCode = '';
     for (var i = 0; i < tmp.length; i++) {
         sCode += (i + 1) + '| ' + tmp[i] + '\n';
-
     }
 
     sLog = this._pDevice.getShaderInfoLog(pShader);

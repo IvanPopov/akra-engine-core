@@ -108,6 +108,12 @@ PROPERTY(Node, 'depth',
         return iDepth;
     });
 
+PROPERTY(Node, 'root',
+    function () {
+        var iDepth = -1;
+        for (var pNode = this; pNode.parent(); pNode = pNode.parent(), ++ iDepth){};
+        return pNode;
+    });
 
 Node.prototype.findNode = function (sNodeName) {
     'use strict';
@@ -157,12 +163,6 @@ Node.prototype.childOf = function (pParent) {
     return false;
 };
 
-PROPERTY(Node, 'root',
-    function () {
-        var iDepth = -1;
-        for (var pNode = this; pNode.parent(); pNode = pNode.parent(), ++ iDepth){};
-        return pNode;
-    });
 
 Node.prototype.setName = function (sName) {
     'use strict';
@@ -231,6 +231,13 @@ Node.prototype.worldPosition = function () {
 };
 
 
+Node.prototype.localOrientation = function() {
+    return this._qRotation;
+};
+
+Node.prototype.localPosition = function() {
+    return this._v3fTranslation;
+};
 
 /**
  * Get localMatrix
@@ -454,16 +461,19 @@ Node.prototype.attachToParent = function (pParent) {
         if (pParent) {
             this._pParent = pParent;
             this._pParent.addChild(this);
-            //this._pParent.addRef();
+            this._pParent.addRef();
             // adjust my local matrix to be relative to this new parent
             var invertedParentMatrix = Mat4();
             this._pParent._m4fWorldMatrix.inverse(invertedParentMatrix);
             // console.log("attachToParent-->", this.name, " Parent: ",Mat4.str(this._pParent._m4fWorldMatrix), 
             //             "inverse :", Mat4.str(invertedParentMatrix),
             //             "Local :", Mat4.str(this._m4fLocalMatrix));
-			this._m4fLocalMatrix.multiply(invertedParentMatrix);
+			//this._m4fLocalMatrix.multiply(invertedParentMatrix);
+            return true;
         }
     }
+
+    return false;
 };
 
 /**
@@ -481,15 +491,20 @@ Node.prototype.detachFromParent = function () {
     // tell our current parent to release us
     if (this._pParent) {
         this._pParent.removeChild(this);
-        if (this._pParent) {
+        if (this._pParent) {//TODO: разобраться что за херня!!!!
             this._pParent.release();
         }
         this._pParent = null;
         // my world matrix is now my local matrix
-        this._m4fLocalMatrix = this._m4fWorldMatrix;
+        //this._m4fLocalMatrix = this._m4fWorldMatrix;
+        
         // and the world matrix is the identity
         this._m4fWorldMatrix = new Mat4(1);
+
+        return true;
     }
+
+    return false;
 };
 
 /**
@@ -700,7 +715,7 @@ Node.prototype.recalcWorldMatrix = function () {
 
         var m4fLocal = this._m4fLocalMatrix;
         var m4fWorld = this._m4fWorldMatrix;
-        var m4fParent = this._pParent ? this._pParent.worldMatrix() : Mat4(1);
+        var m4fParent = this._pParent.worldMatrix();
         var m4fOrient = TEMPSCENEMATRIX4FORCALC0;
         var v3fTemp = TEMPSCENEVECTOR3FORCALC0;
         
@@ -907,6 +922,12 @@ Node.prototype.setRotation = function () {
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
 
+Node.prototype.accessLocalOrientation = function () {
+    'use strict';
+    a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
+    return this._qRotation;
+};
+
 /**
  * @property void addRelRotation(Float32Array m4fRotation)
  * Add relative rotation
@@ -944,6 +965,7 @@ Node.prototype.addRelRotation = function () {
             else {
                 Quat4.fromForwardUp(arguments[0], arguments[1], qTemp);
             }
+            break;
         case 3:
             Quat4.fromYPR(arguments[0], arguments[1], arguments[2], qTemp);
             break;
@@ -952,10 +974,11 @@ Node.prototype.addRelRotation = function () {
             Quat4.fromAxisAngle(arguments, arguments[3], qTemp);
     }
     
-
     this._qRotation.multiply(qTemp);
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
+
+
 
 
 /**
@@ -979,10 +1002,10 @@ Node.prototype.addRelRotation = function () {
  * roll->pitch->yaw = z -> x -> y
  * @memberof SceneNode
  */
-/*Node.prototype.addRotation = function () {
+Node.prototype.addRotation = function () {
     'use strict';
     
-    var qTemp = TEMPSCENEQUAT4FORCALC0;
+    var qTemp = Quat4();
     
     switch (arguments.length) {
         case 1:
@@ -1008,12 +1031,13 @@ Node.prototype.addRelRotation = function () {
             Quat4.fromAxisAngle(arguments, arguments[3], qTemp);
     }
     
-
-    Quat4.multiply(this._qRotation, qTemp);
+    
+    qTemp.multiplyVec3(this._v3fTranslation);
+    qTemp.multiply(this._qRotation,this._qRotation);
 
     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
 };
-*/
+
 
 /**
  * @property void setScale(Float32Array v3fScale)
@@ -1043,7 +1067,7 @@ Node.prototype.setScale = function (scale) {
 Node.prototype.multScale = function (scale) {
     'use strict';
     
-    var pScale = arguments.length === 1? arguments[0]: arguments;
+    var pScale = arguments.length === 1? arguments[0]: Vec3(arguments);
     var v3fScale = this._v3fScale;
 
     v3fScale.scale(pScale);

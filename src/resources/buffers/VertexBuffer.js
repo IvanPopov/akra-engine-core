@@ -470,6 +470,7 @@ function computeBoundingBox (pVertexData, pBoundingBox)
 		fZ0 = fZ0 > fTemp ? fTemp : fZ0; //Min
 		fZ1 = fZ1 > fTemp ? fZ1 : fTemp; //Max
 	}
+
 	pBoundingBox.set(fX0,fX1,fY0,fY1,fZ0,fZ1);
 
     return true;
@@ -498,29 +499,29 @@ function computeDataForCascadeBoundingBox(pBoundingBox,pVertexes,pIndexes, fMinS
 	{
 		pPoints[i]=new Array(4);
 		for(j=0;j<4;j++)
-			pPoints[i][j]=Vec3.create(0,0,0);
+			pPoints[i][j]=new Vec3(0);
 	}
 
 	//Выставление точек Rect3d
-	Vec3.set([pBoundingBox.fX0,pBoundingBox.fY0,pBoundingBox.fZ0],pPoints[0][0]);
-	Vec3.set([pBoundingBox.fX0,pBoundingBox.fY1,pBoundingBox.fZ0],pPoints[1][0]);
-	Vec3.set([pBoundingBox.fX0,pBoundingBox.fY0,pBoundingBox.fZ1],pPoints[2][0]);
-	Vec3.set([pBoundingBox.fX0,pBoundingBox.fY1,pBoundingBox.fZ1],pPoints[3][0]);
-	Vec3.set([pBoundingBox.fX1,pBoundingBox.fY0,pBoundingBox.fZ0],pPoints[4][0]);
-	Vec3.set([pBoundingBox.fX1,pBoundingBox.fY1,pBoundingBox.fZ0],pPoints[5][0]);
-	Vec3.set([pBoundingBox.fX1,pBoundingBox.fY0,pBoundingBox.fZ1],pPoints[6][0]);
-	Vec3.set([pBoundingBox.fX1,pBoundingBox.fY1,pBoundingBox.fZ1],pPoints[7][0]);
+	pPoints[0][0].set([pBoundingBox.fX0,pBoundingBox.fY0,pBoundingBox.fZ0]);
+	pPoints[1][0].set([pBoundingBox.fX0,pBoundingBox.fY1,pBoundingBox.fZ0]);
+	pPoints[2][0].set([pBoundingBox.fX0,pBoundingBox.fY0,pBoundingBox.fZ1]);
+	pPoints[3][0].set([pBoundingBox.fX0,pBoundingBox.fY1,pBoundingBox.fZ1]);
+	pPoints[4][0].set([pBoundingBox.fX1,pBoundingBox.fY0,pBoundingBox.fZ0]);
+	pPoints[5][0].set([pBoundingBox.fX1,pBoundingBox.fY1,pBoundingBox.fZ0]);
+	pPoints[6][0].set([pBoundingBox.fX1,pBoundingBox.fY0,pBoundingBox.fZ1]);
+	pPoints[7][0].set([pBoundingBox.fX1,pBoundingBox.fY1,pBoundingBox.fZ1]);
 
 	var fTempFunc=function(pPoints,iPoint,iToPoint1,iToPoint2,iToPoint3)
 	{
 		for(var i=0;i<3;i++)
 		{
-			Vec3.subtract(pPoints[arguments[i+2]][0],pPoints[iPoint][0],pPoints[iPoint][i+1]);
-			if(Vec3.length(pPoints[iPoint][i+1])>fMinSize)
+			pPoints[arguments[i+2]][0].subtract(pPoints[iPoint][0],pPoints[iPoint][i+1]);
+			if(pPoints[iPoint][i+1].length()>fMinSize)
 			{
-				Vec3.scale(pPoints[iPoint][i+1],0.1);
+				pPoints[iPoint][i+1].scale(0.1);
 			}
-			Vec3.add(pPoints[iPoint][i+1],pPoints[iPoint][0]);
+			pPoints[iPoint][i+1].add(pPoints[iPoint][0]);
 		}
 	}
 
@@ -539,7 +540,7 @@ function computeDataForCascadeBoundingBox(pBoundingBox,pVertexes,pIndexes, fMinS
 		{
 			for(k=0;k<3;k++)
 			{
-				pVertexes[i*12+j*3+k]=pPoints[i][j][k];
+				pVertexes[i*12+j*3+k]=pPoints[i][j].pData[k];
 			}
 		}
 	}
@@ -763,9 +764,9 @@ function computeBoundingSphereMinimal (pVertexData, pSphere)
         fY += points[i + 1];
         fZ += points[i + 2];
     }
-    var x = pSphere.v3fCenter.X = fX / points.length * 3;
-    var y = pSphere.v3fCenter.Y = fY / points.length * 3;
-    var z = pSphere.v3fCenter.Z = fZ / points.length * 3;
+    var x = pSphere.v3fCenter.pData.X = fX / points.length * 3;
+    var y = pSphere.v3fCenter.pData.Y = fY / points.length * 3;
+    var z = pSphere.v3fCenter.pData.Z = fZ / points.length * 3;
     pSphere.fRadius = Math.sqrt((points[0] - x) * (points[0] - x) +
                                     (points[1] - y) * (points[1] - y) +
                                     (points[2] - z) * (points[2] - z));
@@ -787,10 +788,10 @@ function computeGeneralizingSphere (pSphereA, pSphereB, pSphereDest)
     var v3fC1 = pSphereA.v3fCenter;
     var v3fC2 = pSphereB.v3fCenter;
 
-    var v3fD = new Vector3;
-    Vec3.subtract(v3fC1, v3fC2, v3fD);
+    var v3fD = new Vec3;
+    v3fC1.subtract(v3fC2, v3fD);
 
-    var fD = Vec3.length(v3fD);
+    var fD = v3fD.length();
 
     if (fD < fR1 && fR1 > fR2) {
         pSphereDest.set(pSphereA);
@@ -802,14 +803,14 @@ function computeGeneralizingSphere (pSphereA, pSphereB, pSphereDest)
         return;
     }
 
-    var v3fN = new Vector3;
-    Vec3.normalize(v3fD, v3fN);
+    var v3fN = new Vec3;
+    v3fD.normalize(v3fN);
 
-    pSphereDest.fRadius = Vec3.length(Vec3.add(v3fD, Vec3.scale(v3fN, fR1 + fR2))) / 2.0;
+    pSphereDest.fRadius = v3fD.add(v3fN.scale(fR1 + fR2)).length() / 2.0;
 
     var v3fTemp = v3fD;
     pSphereDest.v3fCenter =
-        Vec3.scale(Vec3.add(Vec3.add(v3fC1, v3fC2, v3fTemp), Vec3.scale(v3fN, (fR1 - fR2) / (fR1 + fR2))), .5);
+        v3fC1.add(v3fC2, v3fTemp).add(v3fN.scale((fR1 - fR2) / (fR1 + fR2))).scale(.5);
 }
 
 A_NAMESPACE(computeGeneralizingSphere);
@@ -836,9 +837,9 @@ function computeDataForCascadeBoundingSphere(pBoundingSphere,pVertexes,pIndexes,
 		for(j=0;j<=nCount;j++)
 		{
 			fAlpha=j*fDelta;
-			pVertexes[(i*(nCount+1)+j)*3+0]=pBoundingSphere.v3fCenter.X+pBoundingSphere.fRadius*Math.sin(fTheta)*Math.cos(fAlpha);
-			pVertexes[(i*(nCount+1)+j)*3+1]=pBoundingSphere.v3fCenter.Y+pBoundingSphere.fRadius*Math.sin(fTheta)*Math.sin(fAlpha);
-			pVertexes[(i*(nCount+1)+j)*3+2]=pBoundingSphere.v3fCenter.Z+pBoundingSphere.fRadius*Math.cos(fTheta);
+			pVertexes[(i*(nCount+1)+j)*3+0]=pBoundingSphere.v3fCenter.pData.X+pBoundingSphere.fRadius*Math.sin(fTheta)*Math.cos(fAlpha);
+			pVertexes[(i*(nCount+1)+j)*3+1]=pBoundingSphere.v3fCenter.pData.Y+pBoundingSphere.fRadius*Math.sin(fTheta)*Math.sin(fAlpha);
+			pVertexes[(i*(nCount+1)+j)*3+2]=pBoundingSphere.v3fCenter.pData.Z+pBoundingSphere.fRadius*Math.cos(fTheta);
 		}
 	}
 

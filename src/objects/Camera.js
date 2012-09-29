@@ -21,6 +21,10 @@ function Camera () {
              k_ORTHO,
              k_OFFSET_ORTHO
          ], e_Type, a.Camera);
+
+    Enum([
+            CONST_ASPECT = 1
+        ], CAMERA_OPTIONS, a.Camera);
     /**
      * Type. Form enum e_Type
      * @type Int
@@ -141,8 +145,9 @@ function Camera () {
     this.pFrustum = new a.Frustum();
 
     this._v3fEyePosition = new Vec3();
+
+    this.iCameraOptions = 0;
 }
-;
 
 EXTENDS(Camera, a.SceneNode);
 /**
@@ -164,6 +169,19 @@ Camera.prototype.create = function () {
     }
     return result;
 };
+
+Camera.prototype.setParameter = function (eOption, bValue) {
+    'use strict';
+    
+    SET_ALL(this.iCameraOptions, eOption, bValue); 
+};
+
+Camera.prototype.isConstantAspect = function () {
+    'use strict';
+    
+    return TEST_ANY(this.iCameraOptions, a.Camera.CONST_ASPECT);
+};
+
 /**
  * Set params
  * @tparam Float fFOV
@@ -262,15 +280,17 @@ Camera.prototype.recalcMatrices = function () {
     // world matrix of the camera (the
     // camera view matrix) without 
     // any translation information.
+
     this.m4fSkyBox.set(this.m4fView);
-    this.m4fSkyBox.pData._14 = 0.0;
-    this.m4fSkyBox.pData._24 = 0.0;
-    this.m4fSkyBox.pData._34 = 0.0;
+    // this.m4fSkyBox.pData._14 = 0.0;
+    // this.m4fSkyBox.pData._24 = 0.0;
+    // this.m4fSkyBox.pData._34 = 0.0;
+
 
     // this is combined with the unit
     // space projection matrix to form
     // the sky box viewing matrix
-    this.m4fUnitProj.multiply(this.m4fSkyBox, this.m4fSkyBox);
+    this.m4fSkyBox.multiply(this.m4fUnitProj, this.m4fSkyBox);
 
     // billboard objects use our world matrix
     // without translation
@@ -325,8 +345,8 @@ Camera.prototype.recalcMatrices = function () {
     //TODO: FIX THIS
     //this.pSearchRect.expand(25);
 
-//    this.pFrustum.extractFromMatrix(this.m4fViewProj);
-    //this.pFrustum.extractFromMatrixGL(this.m4fViewProj);
+//    this.pFrustum.extractFromMatrix(this.m4fProjView);
+    //this.pFrustum.extractFromMatrixGL(this.m4fProjView);
     
     this._extractFrustumVertices();
     this._calculateFrustumPlanes();
@@ -386,7 +406,6 @@ Camera.prototype.projViewMatrix = function () {
     INLINE();
     return this.m4fRenderStageProjView;
 };
-
 /**
  * Getter
  * @treturn Float32Array Matrix
@@ -491,9 +510,11 @@ Camera.prototype.frustum = function () {
     INLINE();
     return this.pFrustum;
 };
+
 Camera.prototype.eyePosition = function () {
     return this._v3fEyePosition;
 }
+
 Ifdef (__DEBUG);
 
 Camera.prototype.toString = function (isRecursive, iDepth) {
@@ -509,6 +530,49 @@ Camera.prototype.toString = function (isRecursive, iDepth) {
 }
  
 Endif ();
+
+// Camera.prototype.addOrbitRotation = function () {
+//     'use strict';
+    
+//     var qTemp = Quat4();
+    
+//     switch (arguments.length) {
+//         case 1:
+//             Mat4.toQuat4(arguments[0], qTemp);
+//             break;
+//         case 2:
+//              if (typeof arguments[1] == "number") {
+//                 //from axis and angle
+//                 Quat4.fromAxisAngle(arguments[0], arguments[1], qTemp);
+//             }
+//             else if (typeof arguments[0] == "number") {
+//                 //from angle & axis
+//                 Quat4.fromAxisAngle(arguments[1], arguments[0], qTemp);
+//             }
+//             else {
+//                 Quat4.fromForwardUp(arguments[0], arguments[1], qTemp);
+//             }
+//         case 3:
+//             Quat4.fromYPR(arguments[0], arguments[1], arguments[2], qTemp);
+//             break;
+//         case 4:
+//             //from (x, y, z, angle)
+//             Quat4.fromAxisAngle(arguments, arguments[3], qTemp);
+//     }
+    
+    
+//     var v3fYPRPrev = this._qRotation.toYawPitchRoll(Vec3());
+    
+//     this._qRotation.multiply(qTemp);
+    
+//     var v3fYPRnext = this._qRotation.toYawPitchRoll(Vec3());
+
+//     var v3fYPR = v3fYPRnext.subtract(v3fYPRPrev);
+
+//     Quat4.fromYawPitchRoll(v3fYPR.x, v3fYPR.y, v3fYPR.z).multiplyVec3(this._v3fTranslation);
+
+//     a.BitFlags.setBit(this._iUpdateFlags, a.Scene.k_newOrientation, true);
+// };
 
 Camera.prototype.lookAt = function() {
     var v3fFrom, v3fCenter, v3fUp;

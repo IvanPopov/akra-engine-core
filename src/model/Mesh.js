@@ -359,27 +359,47 @@ Mesh.prototype.createBoundingBox = function()
 
 	pSubMesh=this.getSubset(0);
 	pVertexData=pSubMesh.data.getData(a.DECLUSAGE.POSITION);
-	if(!pVertexData)
+	
+    if(!pVertexData)
 		return false;
-	if(a.computeBoundingBox(pVertexData,pNewBoundingBox)== false)
+
+	if(a.computeBoundingBox(pVertexData, pNewBoundingBox)== false)
 		return false;
 
-	for(i=1;i<this.length;i++)
-	{
-		pSubMesh=this.getSubset(i);
-		pVertexData=pSubMesh.data.getData(a.DECLUSAGE.POSITION);
-		if(!pVertexData)
-			return false;
-		if(a.computeBoundingBox(pVertexData,pTempBoundingBox)== false)
-			return false;
+    if (pSubMesh.isSkinned()) {
+        pNewBoundingBox.transform(pSubMesh.skin.getBindMatrix());    
+        pNewBoundingBox.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.boneName));    
+    }
 
-		pNewBoundingBox.fX0=Math.min(pNewBoundingBox.fX0,pTempBoundingBox.fX0);
-		pNewBoundingBox.fY0=Math.min(pNewBoundingBox.fY0,pTempBoundingBox.fY0);
-		pNewBoundingBox.fZ0=Math.min(pNewBoundingBox.fZ0,pTempBoundingBox.fZ0);
+	for(i = 1; i < this.length; i++) {
 
-		pNewBoundingBox.fX1=Math.max(pNewBoundingBox.fX1,pTempBoundingBox.fX1);
-		pNewBoundingBox.fY1=Math.max(pNewBoundingBox.fY1,pTempBoundingBox.fY1);
-		pNewBoundingBox.fZ1=Math.max(pNewBoundingBox.fZ1,pTempBoundingBox.fZ1);
+		pSubMesh = this.getSubset(i);
+		pVertexData = pSubMesh.data.getData(a.DECLUSAGE.POSITION);
+        //trace(pSubMesh.name);
+		
+        if(!pVertexData) {
+			return false;
+        }
+		
+        if(a.computeBoundingBox(pVertexData, pTempBoundingBox) == false) {
+			return false;
+        }
+
+        //trace('>>> before box >>');
+        if (pSubMesh.isSkinned()) {
+            //trace('calc skinned box');
+            pTempBoundingBox.transform(pSubMesh.skin.getBindMatrix());     
+            pTempBoundingBox.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.boneName)); 
+        }
+   // trace('<<< after box <<');
+
+		pNewBoundingBox.fX0 = Math.min(pNewBoundingBox.fX0, pTempBoundingBox.fX0);
+		pNewBoundingBox.fY0 = Math.min(pNewBoundingBox.fY0, pTempBoundingBox.fY0);
+		pNewBoundingBox.fZ0 = Math.min(pNewBoundingBox.fZ0, pTempBoundingBox.fZ0);
+
+		pNewBoundingBox.fX1 = Math.max(pNewBoundingBox.fX1, pTempBoundingBox.fX1);
+		pNewBoundingBox.fY1 = Math.max(pNewBoundingBox.fY1, pTempBoundingBox.fY1);
+		pNewBoundingBox.fZ1 = Math.max(pNewBoundingBox.fZ1, pTempBoundingBox.fZ1);
 	}
 
 	this._pBoundingBox = pNewBoundingBox;
@@ -394,6 +414,10 @@ Mesh.prototype.deleteBoundingBox = function()
 
 Mesh.prototype.getBoundingBox = function ()
 {
+    if (!this._pBoundingBox) {
+        this.createBoundingBox();
+    }
+
 	return this._pBoundingBox;
 }
 
@@ -410,7 +434,7 @@ Mesh.prototype.showBoundingBox = function()
 
 	pPoints = new Array();
 	pIndexes = new Array();
-	a.computeDataForCascadeBoundingBox(this._pBoundingBox,pPoints,pIndexes,400.0);
+	a.computeDataForCascadeBoundingBox(this._pBoundingBox,pPoints,pIndexes,0.1);
 
 	pSubMesh=this.getSubset(".BoundingBox");
 	if(!pSubMesh)
@@ -429,10 +453,10 @@ Mesh.prototype.showBoundingBox = function()
 
 		pSubMesh.applyFlexMaterial(".MaterialBoundingBox");
 		pMaterial = pSubMesh.getFlexMaterial(".MaterialBoundingBox");
-		pMaterial.emissive = new a.Color4f(1.0, 0.0, 0.0, 1.0);
-		pMaterial.diffuse = new a.Color4f(1.0, 0.0, 0.0, 1.0);
-		pMaterial.ambient = new a.Color4f(1.0, 0.0, 0.0, 1.0);
-		pMaterial.specular = new a.Color4f(1.0, 0.0, 0.0, 1.0);
+		pMaterial.emissive = new a.Color4f(1.0, 1.0, 1.0, 1.0);
+		pMaterial.diffuse = new a.Color4f(1.0, 1.0, 1.0, 1.0);
+		pMaterial.ambient = new a.Color4f(1.0, 1.0, 1.0, 1.0);
+		pMaterial.specular = new a.Color4f(1.0, 1.0, 1.0, 1.0);
 	}
 	else
 	{
@@ -480,19 +504,35 @@ Mesh.prototype.createBoundingSphere = function()
 		return false;
 	}
 
+    if (pSubMesh.isSkinned()) {
+        pNewBoundingSphere.transform(pSubMesh.skin.getBindMatrix());    
+        pNewBoundingSphere.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.boneName));    
+    }
+
 	for(i=1;i<this.length;i++)
 	{
 
 		pSubMesh=this.getSubset(i);
 		pVertexData=pSubMesh.data.getData(a.DECLUSAGE.POSITION);
-		if(!pVertexData)
+		
+        if(!pVertexData)
 			return false;
+
 		if(a.computeBoundingSphere(pVertexData,pTempBoundingSphere)== false)
 			return false;
 
+        trace('here >>');
+        if (pSubMesh.isSkinned()) {
+            pTempBoundingSphere.transform(pSubMesh.skin.getBindMatrix());    
+            pTempBoundingSphere.transform(pSubMesh.skin.getBoneOffsetMatrix(pSubMesh.skin.skeleton.root.boneName));    
+            trace(pTempBoundingSphere.fRadius, '<<<');
+        }
+        trace('here <<< ');
+
+
 		a.computeGeneralizingSphere(pNewBoundingSphere,pTempBoundingSphere)
 	}
-
+    trace(pNewBoundingSphere, '<<<<<<<<<<<<<<<<<<<<<<<<<')
 	this._pBoundingSphere = pNewBoundingSphere;
 	return true;
 }

@@ -209,11 +209,40 @@ SceneObject.prototype.nextSearchLink = function () {
  */
 SceneObject.prototype.create = function () {
     var result = SceneNode.prototype.create.call(this);
-    if (result) {
-        this.attachToOcTree(this._pEngine.getSceneTree());
-    }
+    // if (result) {
+    //     this.attachToOcTree(this._pEngine.getSceneTree());
+    // }
     return result;
 };
+
+SceneObject.prototype.attachToParent = function (pParent) {
+    'use strict';
+
+    if (a.Node.prototype.attachToParent.call(this, pParent)) {
+        if (this.root === this._pEngine.getRootNode()) {
+            this.attachToOcTree();
+            this.explore(function () {
+                if (this instanceof a.SceneObject) {
+                    this.attachToOcTree()
+                }
+            });
+        }
+    }
+};
+
+SceneObject.prototype.detachFromParent = function () {
+    'use strict';
+    
+    if (a.Node.prototype.detachFromParent.call(this)) {
+        this.detachFromOcTree();
+        this.explore(function () {
+            if (this instanceof a.SceneObject) {
+                this.detachFromOcTree();
+            }
+        });
+    }
+};
+
 /**
  * Destroys the object. The object is removed from it's parent (if any) and all Children
  * Objects are orphaned (parent set to NULL).
@@ -283,7 +312,7 @@ SceneObject.prototype.refreshOcTreeMembership = function () {
  */
 SceneObject.prototype.attachToOcTree = function (pParentTree) {
     this.detachFromOcTree();
-    this._pOcTree = pParentTree;
+    this._pOcTree = pParentTree || this._pEngine.getSceneTree();
     this._pOcTree.addOrUpdateSceneObject(this);
 };
 /**
@@ -298,6 +327,13 @@ SceneObject.prototype.detachFromOcTree = function () {
     this._pForwardTreeLink = null;
     this._pRearTreeLink = null;
 };
+
+SceneObject.prototype.isAttachedToOcTree = function () {
+    'use strict';
+    
+    return this._pOcTree !== null;
+};
+
 /**
  * Make object availeable for search
  * @tparam SceneObject pRearLink

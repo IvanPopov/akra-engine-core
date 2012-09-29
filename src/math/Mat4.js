@@ -1522,35 +1522,84 @@ Mat4.prototype.rotateZLeft = function(fAngle,m4fDestination) {
     return m4fDestination;
 };
 
-Mat4.prototype.row = function(iRow) {
+Mat4.prototype.row = function(iRow,v4fDestination) {
     'use strict';
-
+    if(!v4fDestination){
+        v4fDestination = new Vec4();
+    }
     var pData = this.pData;
+    var pDataDestination = v4fDestination.pData;
     switch(iRow){
         case 1 : 
-            return new Vec4(pData._11,pData._12,pData._13,pData._14);
+            pDataDestination.X = pData._11;
+            pDataDestination.Y = pData._12;
+            pDataDestination.Z = pData._13;
+            pDataDestination.W = pData._14;
+            break;
         case 2 :
-            return new Vec4(pData._21,pData._22,pData._23,pData._24);
+            pDataDestination.X = pData._21;
+            pDataDestination.Y = pData._22;
+            pDataDestination.Z = pData._23;
+            pDataDestination.W = pData._24;
+            break;
         case 3 : 
-            return new Vec4(pData._31,pData._32,pData._33,pData._34);
+            pDataDestination.X = pData._31;
+            pDataDestination.Y = pData._32;
+            pDataDestination.Z = pData._33;
+            pDataDestination.W = pData._34;
+            break;
         case 4 :
-            return new Vec4(pData._41,pData._42,pData._43,pData._44);
+            pDataDestination.X = pData._41;
+            pDataDestination.Y = pData._42;
+            pDataDestination.Z = pData._43;
+            pDataDestination.W = pData._44;
+            break;
     }
+
+    return v4fDestination;
 };
 
-Mat4.prototype.column = function(iColumn) {
+Mat4.prototype.column = function(iColumn,v4fDestination) {
     'use strict';
+    if(!v4fDestination){
+        v4fDestination = new Vec4();
+    }
     var pData = this.pData;
+    var pDataDestination = v4fDestination.pData;
     switch(iColumn){
         case 1 : 
-            return new Vec4(pData._11,pData._21,pData._31,pData._41);
+            pDataDestination.X = pData._11;
+            pDataDestination.Y = pData._21;
+            pDataDestination.Z = pData._31;
+            pDataDestination.W = pData._41;
+            break;
         case 2 :
-            return new Vec4(pData._12,pData._22,pData._32,pData._42);
+            pDataDestination.X = pData._12;
+            pDataDestination.Y = pData._22;
+            pDataDestination.Z = pData._32;
+            pDataDestination.W = pData._42;
+            break;
         case 3 : 
-            return new Vec4(pData._13,pData._23,pData._33,pData._43);
+            pDataDestination.X = pData._13;
+            pDataDestination.Y = pData._23;
+            pDataDestination.Z = pData._33;
+            pDataDestination.W = pData._43;
+            break;
         case 4 :
-            return new Vec4(pData._14,pData._24,pData._34,pData._44);
+            pDataDestination.X = pData._14;
+            pDataDestination.Y = pData._24;
+            pDataDestination.Z = pData._34;
+            pDataDestination.W = pData._44;
+            break;
     }
+
+    return v4fDestination;
+};
+
+Mat4.prototype.trace = function() {
+    'use strict';
+    var pData = this.pData;
+    return pData._11 + pData._22 + pData._33 + pData._44;
 };
 
 Mat4.prototype.toQuat4 = function(q4fDestination) {
@@ -2040,6 +2089,9 @@ Mat4.prototype.rotateZ = Mat4.prototype.rotateZLeft;
 Mat4.prototype.mult = Mat4.prototype.multiply;
 Mat4.prototype.multLeft = Mat4.prototype.multiplyLeft;
 Mat4.prototype.toSource = Mat4.prototype.toString;
+Mat4.prototype.spur = Mat4.prototype.trace; //в угоду любителям немецкого
+Mat4.prototype.tr = Mat4.prototype.trace;
+Mat4.prototype.sp = Mat4.prototype.trace;
 
 Mat4.matrixPerspectiveFovRH = Mat4.perspective;
 

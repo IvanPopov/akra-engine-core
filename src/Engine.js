@@ -81,6 +81,9 @@ function Engine() {
 
     this.pEngineStates = null;
     this.renderList = null;
+
+    //debug gamepad support
+    this.pGamepad = null;
 }
 
 /**
@@ -110,7 +113,7 @@ Engine.prototype.create = function () {
     this.iCreationHeight = this.pCanvas.height;
 
     //Получение 3D девайса
-    this.pDevice = a.createDevice(this.pCanvas);
+    this.pDevice = a.createDevice(this.pCanvas, false);
     if (!this.pDevice) {
         debug_error("Объект устроства не создан, создание завершилось");
         a.deleteDevice(this.pDevice);
@@ -778,7 +781,7 @@ Engine.prototype.fullscreen = function () {
         var pCanvas = this.pCanvas;
 
         Engine.prototype.bFullscreenLock = true;
-
+ 
         (pCanvas.requestFullscreen || pCanvas.mozRequestFullScreen || pCanvas.webkitRequestFullscreen)();
 
         pCanvas.onfullscreenchange = pCanvas.onmozfullscreenchange = pCanvas.onwebkitfullscreenchange =
@@ -852,11 +855,11 @@ Engine.prototype.updateCamera = function (fLateralSpeed, fRotationSpeed, pTerrai
     var pOffsetData = v3fOffset.pData;
     var isCameraMoved = false;
 
-    if (this.pKeymap.isKeyPress(a.KEY.D)) {
+    if (this.pKeymap.isKeyPress(a.KEY.D) || (this.pGamepad && this.pGamepad.buttons[a.KEY.PAD_RIGHT])) {
         pOffsetData.X = fLateralSpeed;
         isCameraMoved = true;
     }
-    else if (this.pKeymap.isKeyPress(a.KEY.A)) {
+    else if (this.pKeymap.isKeyPress(a.KEY.A) || (this.pGamepad && this.pGamepad.buttons[a.KEY.PAD_LEFT])) {
         pOffsetData.X = -fLateralSpeed;
         isCameraMoved = true;
     }
@@ -868,11 +871,11 @@ Engine.prototype.updateCamera = function (fLateralSpeed, fRotationSpeed, pTerrai
         pOffsetData.Y = -fLateralSpeed;
         isCameraMoved = true;
     }
-    if (this.pKeymap.isKeyPress(a.KEY.W)) {
+    if (this.pKeymap.isKeyPress(a.KEY.W) || (this.pGamepad && this.pGamepad.buttons[a.KEY.PAD_TOP])) {
         pOffsetData.Z = -fLateralSpeed;
         isCameraMoved = true;
     }
-    else if (this.pKeymap.isKeyPress(a.KEY.S)) {
+    else if (this.pKeymap.isKeyPress(a.KEY.S) || (this.pGamepad && this.pGamepad.buttons[a.KEY.PAD_BOTTOM])) {
         pOffsetData.Z = fLateralSpeed;
         isCameraMoved = true;
     }
@@ -880,6 +883,7 @@ Engine.prototype.updateCamera = function (fLateralSpeed, fRotationSpeed, pTerrai
 
         this.pause(true);
     }
+
     if (isCameraMoved || isForceUpdate) {
 
         // if a terrain was provided, make sure we are above it

@@ -28,6 +28,11 @@ PROPERTY(ModelResource, 'totalAnimations',
              return this._pAnimController.totalAnimations;
          });
 
+PROPERTY(ModelResource, 'totalMeshes',
+    function () {
+        return this._pMeshList.length;
+    });
+
 PROPERTY(ModelResource, 'node',
          function () {
              return this._pNode;
@@ -93,6 +98,12 @@ ModelResource.prototype.addMesh = function (pMesh) {
     this.setAlteredFlag(true);
 };
 
+ModelResource.prototype.getMesh = function (iMesh) {
+    'use strict';
+    
+    return this._pMeshList[iMesh];
+};
+
 ModelResource.prototype.addNode = function (pNode) {
     'use strict';
 
@@ -123,6 +134,17 @@ ModelResource.prototype.addToScene = function () {
 
     this._pAnimController.bind(pRoot);
     this._pNode = pRoot;
+
+    //--------------
+    // var pMeshNode;
+
+    // for (var i = 0; i < this._pMeshList.length; ++ i) {
+    //     pMeshNode = new a.SceneModel(this.getEngine());
+    //     pMeshNode.create();
+    //     pMeshNode.setInheritance(a.Scene.k_inheritAll);
+    //     pMeshNode.attachToParent(this._pNode);
+    //     pMeshNode.addMesh(this._pMeshList[i]);
+    // }
 };
 
 ModelResource.prototype.getRootNodes = function () {

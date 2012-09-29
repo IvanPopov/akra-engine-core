@@ -222,25 +222,6 @@ SceneModel.prototype.hasShadow = function () {
 SceneModel.prototype.resetShadow = function () {
     this._hasShadow = null;
 };
-// /**
-//  *
-//  * @tparam ModelResource pModel
-//  * @tparam Uint iFrameIndex
-//  */
-// SceneModel.prototype.setModelResource = function (pModel, iFrameIndex) {
-//     safe_release(this._pModelResource);
-//     iFrameIndex = iFrameIndex || 0;
-
-//     this._nTotalBoneMatrices = 0;
-//     this._iModelFrameIndex = iFrameIndex;
-//     this._pModelResource = pModel;
-
-//     if (this._pModelResource) {
-//         this._pModelResource.addRef();
-
-//         this.accessLocalBounds().eq(this.boundingBox());
-//     }
-// };
 
 SceneModel.prototype.addMesh = function (pMesh) {
     'use strict';
@@ -248,6 +229,8 @@ SceneModel.prototype.addMesh = function (pMesh) {
         return false;
     }
     this._pMeshes.push(pMesh);
+    if (pMesh.name !== "scene-surface")
+        this.accessLocalBounds().eq(pMesh.getBoundingBox());
     return true;
 };
 
@@ -259,38 +242,37 @@ SceneModel.prototype.findMesh = function (iMesh) {
 
 SceneModel.prototype.getMeshList = function () {
     'use strict';
-
+    
     return this._pMeshes.slice();
 };
 
-Ifdef(__DEBUG);
+Ifdef (__DEBUG);
 
 SceneModel.prototype.toString = function (isRecursive, iDepth) {
     'use strict';
-
+    
     isRecursive = isRecursive || false;
 
     if (!isRecursive) {
-        var sData = '<model' + (this._sName ? ' ' + this._sName : '') + '(' + this._pMeshes.length + ')' + '>';
-
+        var sData = '<model' + (this._sName? ' ' + this._sName: '') + '(' + this._pMeshes.length + ')' +  '>';
+        
         if (this._pMeshes.length) {
 
             sData += '( ';
 
             for (var i = 0; i < this._pMeshes.length; i++) {
-                sData += (i > 0 ? ',' : '') + this._pMeshes[i].name;
-            }
-            ;
+                sData += (i > 0? ',': '') + this._pMeshes[i].name;
+            };
 
             sData += ' )';
-
+        
         }
 
         return sData;
     }
 
     return SceneObject.prototype.toString.call(this, isRecursive, iDepth);
-}
+};
 
 Endif();
 

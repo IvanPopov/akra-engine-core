@@ -50,7 +50,7 @@ AnimationBase.prototype.fire = function (eEvent, fTime) {
 	if (pCallbacks) {
 		for (var i = 0, n = pCallbacks.length; i < n; i++) {
 			//trace(pCallbacks[i]);
-			pCallbacks[i](fTime);
+			pCallbacks[i].call(this, fTime);
 		};
 	}
 };
@@ -113,7 +113,7 @@ AnimationBase.prototype.apply = function (fRealTime) {
 		pTarget.accessLocalMatrix().set(pTransform);
 	};
 
-	this.fire(a.Animation.EVT_ENTER_FRAME, fRealTime);
+	// this.fire(a.Animation.EVT_ENTER_FRAME, fRealTime);
 };
 
 AnimationBase.prototype.addTarget = function (sName, pTarget) {
