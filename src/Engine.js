@@ -379,7 +379,7 @@ Engine.prototype.notifyInitDeviceObjects = function () {
     //  Vec3.create(0.0,0.0,1.0));
 
     this._pDefaultCamera.setProjParams(
-        Math.PI / 3.0,
+        Math.PI / 4.0,
         this.pCanvas.width / this.pCanvas.height,
         0.1, 3000.0);
 
@@ -579,9 +579,6 @@ Engine.prototype.render3DEnvironment = function () {
     //Проверка что евайс потерян и выставление сооответсвующего флага
     //не раелизовано
     this._isDeviceLost = false;
-    if (iFrame > 5 && iFrame % 100 == 0) {
-        trace2('elapsed time > ', this.fElapsedTime);
-    }
     return true;
 }
 
@@ -618,13 +615,13 @@ Engine.prototype.render = function () {
 //        this.pDevice.enable(this.pDevice.BLEND);
 //        this.pDevice.blendFunc(this.pDevice.SRC_ALPHA,this.pDevice.ONE_MINUS_SRC_ALPHA)
 //        this.pDevice.disable(this.pDevice.DEPTH_TEST);
-        var iTime = [a.now()];
+        // var iTime = [a.now()];
 
         this.renderShadows();
-        iTime.push(a.now());
+        // iTime.push(a.now());
         
         this.pShaderManager.processRenderStage();
-        iTime.push(a.now());
+        // iTime.push(a.now());
 
         // this.pDevice.flush();
         trace("==============Stop Render Shadow===========");
@@ -632,31 +629,31 @@ Engine.prototype.render = function () {
         
         
         this.renderLightings();
-        iTime.push(a.now());
+        // iTime.push(a.now());
         // process the contents of the render queue
         
         this.pShaderManager.processRenderStage();
-        iTime.push(a.now());
+        // iTime.push(a.now());
         
         this.pDevice.finish();
-        iTime.push(a.now());
+        // iTime.push(a.now());
         
         trace("==============Stop Render Scene===========");
         trace("==============Apply lights===========");
 
         this.renderScene();
-        iTime.push(a.now());
+        // iTime.push(a.now());
 
         this.pShaderManager.processRenderStage();
-        iTime.push(a.now());
+        // iTime.push(a.now());
 
         trace("==============Stop Apply lights===========");
         this.pDisplayManager.endRenderSession();
-        iTime.push(a.now());
+        // iTime.push(a.now());
 
         A_TRACER.END();
 
-        if (iFrame > 5 && iFrame%100 === 0) {
+/*        if (iFrame > 5 && iFrame%100 === 0) {
             trace2('\n\n\=================== FRAME ' + iFrame + ' STATISTICS ================');
             trace2('renderShadows > ', iTime[1] - iTime[0], 'ms');
             trace2('processRenderStage(shadow) > ', iTime[2] - iTime[1], 'ms');
@@ -668,15 +665,15 @@ Engine.prototype.render = function () {
             trace2('endRenderSession > ', iTime[8] - iTime[7], 'ms');
             trace2('\t TOTAL TIME > ', iTime[8] - iTime[0], 'ms');
             trace2('\n\n');
-        }
+        }*/
        
 //        if(zzz-- == 0){
            // this.pause(true);
 //        }
     }
-    if (iFrame > 5 && iFrame%100 === 0) {
+/*    if (iFrame > 5 && iFrame%100 === 0) {
         trace2('Engine.prototype.render:: ', a.now() - iRenderBegin, 'ms');
-    }
+    }*/
      iFrame ++;
     return true;
 };
