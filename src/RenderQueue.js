@@ -131,7 +131,12 @@ RenderQueue.prototype.execute = function () {
     for (i = 0; i < iLength; i++) {
         //trace(this._pSortEntrys[i], this._pSortEntrys, i)
         pRenderer.render(this._pSortEntrys[i]);
-//        this._releaseEntry(this._pSortEntrys[i]);
+//        this._releaseEntry(this._pSortEntrys[i]s);
+        // if(this._eType === a.RenderStage.GLOBALPOSTEFFECTS){
+        //     var pixels = new Uint8Array(4);
+        //     pRenderer.pDevice.readPixels(100, 100, 1, 1, 0x1908, 0x1401, pixels);
+        //     console.log(pixels);
+        // }
     }
     pRenderer.activateFrameBuffer(null);
     this._nSortCount = 0;

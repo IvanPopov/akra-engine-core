@@ -209,6 +209,10 @@ LightManager.prototype.applyLight = function () {
     pSubMesh.startRender();
     pSnapshot = pSubMesh._pActiveSnapshot;
     pSubMesh.activatePass(0);
+    // pRenderer.activateFrameBuffer(null);
+    pRenderer.activateFrameBuffer(pRenderer._pGlobalPostEffectFrameBuffer);
+    pRenderer.clearScreen(a.CLEAR.DEPTH_BUFFER_BIT | a.CLEAR.COLOR_BUFFER_BIT);
+    // pRenderer.applyFrameBufferTexture(pRenderer._pGlobalPostEffectTexture);
 
     pEngine.pEngineStates.lights.omni = pLightUniforms.omni.length;
     pEngine.pEngineStates.lights.project = pLightUniforms.project.length;
@@ -237,8 +241,32 @@ LightManager.prototype.applyLight = function () {
     var pEntry = pSubMesh.renderPass();
 //    console.log("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
     // trace("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
+    // pRenderer.deactivateFrameBuffer();
     pSubMesh.deactivatePass();
+
+    //Tempory fxaa
+    
+    pSubMesh.activatePass(1);
+    pRenderer.activateFrameBuffer(null);
+    pSnapshot.applyTextureBySemantic("SCREEN_TEXTURE", pRenderer._pGlobalPostEffectTexture);
+    pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_RATIO",
+                                     [pCanvas.width / pDepthTexture.width, pCanvas.height / pDepthTexture.height]);
+    pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_SIZE", [pCanvas.width, pCanvas.height]);
+    pSubMesh.applyRenderData(pSubMesh.data);
+
+    var pEntry = pSubMesh.renderPass();
+    pSubMesh.deactivatePass();
+
     pSubMesh.finishRender();
+    // A_TRACER.BEGIN();
+    // pRenderer.render(pEntry);
+
+    //     // var pixels = new Uint8Array(4*2000);
+    //     // pRenderer.pDevice.readPixels(100, 100, 200, 10, 0x1908, 0x1401, pixels);
+    //     // console.log(pixels);
+
+    // pRenderer.render(pEntry1);
+    // A_TRACER.END();
 };
 
 LightManager.prototype._createLightingUniforms = function () {

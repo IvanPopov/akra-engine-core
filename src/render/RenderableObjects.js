@@ -30,6 +30,12 @@ function RenderableObject() {
     this._hasShadow = false;
 
     this._iSystemId = a.sid();
+
+    // this._pPostEffectFrameBuffers = null;
+
+    // this._v2iPostEffectFrameBufferSize = null;
+
+    // this._pPostEffectTextures = null;
 }
 
 PROPERTY(RenderableObject, 'renderMethod',
@@ -82,6 +88,35 @@ RenderableObject.prototype.setup = function (pEngine, sDefaulMethodName) {
         error('cannot add & switch render method to default');
     }
 };
+
+// RenderableObject.prototype._setPostEffectFrameBufferSize = function(v2iSize) {
+//     var pRenderer = this._pEngine.shaderManager();
+//     var pTexture;
+//     var id;
+//     if(!this._v2iPostEffectFrameBufferSize){
+//         this._v2iPostEffectFrameBufferSize = new Vec2(v2iSize);
+//         this._pPostEffectFrameBuffers = [];
+//         this._pPostEffectTextures = [];
+//         var pTexturePool = this._pEngine.displayManager().texturePool();
+        
+//         for(var i = 0; i < 2; i++){
+//             id = pRenderer.activateFrameBuffer();
+//             pTexture = pTexturePool.createResource(".post-effect-texture-" + a.sid());
+//             pTexture.createTexture(v2fSize.x, v2fSize.y); 
+//             pRenderer.frameBufferTexture2D(pTexture);
+//             this._pPostEffectTextures.push(pTexture);
+//             this._pPostEffectFrameBuffers.push(id);
+//         }
+//     }
+//     else if(!v2iSize.isEqual(this._v2iPostEffectFrameBufferSize)){
+//         this._pPostEffectTextures[0].resize(v2fSize.x, v2fSize.y);
+//         this._pPostEffectTextures[1].resize(v2fSize.x, v2fSize.y);
+//     }    
+// };
+
+// RenderableObject.prototype._getPostEffectFrameBuffers = function() {
+//     return this._pPostEffectFrameBuffers;    
+// };
 
 /**
  * @destructor

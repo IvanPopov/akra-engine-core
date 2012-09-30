@@ -165,6 +165,9 @@ function Renderer(pEngine) {
 
     this._pDefaultColor = new Vec4(0.0, 0.0, 0.5, 1.);
 
+    this._pGlobalPostEffectTexture = null;
+    this._pGlobalPostEffectFrameBuffer = null;
+
     this._initSystemUniforms();
 }
 
@@ -725,30 +728,31 @@ Renderer.prototype.finishPass = function (iPass) {
     //Very-very bad
     // alert(123);
     // console.log("%%%%%%%", pStateStack, pStateStack[0].pSnapshot.pTemporaryStates);
-    if(iStackLength === 1 && pStateStack[0].pSnapshot.pTemporaryStates[iPass].pProgram) {
-        index = iPass;
-        pSnapshot = pStateStack[0].pSnapshot;
-        var pPassStates = pSnapshot.pTemporaryStates[index];
-        pAttrs = pPassStates.pAttrs;
-        pUniformValues = pPassStates.pUniformValues;
-        pTextures = pPassStates.pTextures;
-        pProgram = pPassStates.pProgram;
+    // if(iStackLength === 1 && pStateStack[0].pSnapshot.pTemporaryStates[iPass].pProgram) {
+    //     index = iPass;
+    //     pSnapshot = pStateStack[0].pSnapshot;
+    //     var pPassStates = pSnapshot.pTemporaryStates[index];
+    //     pAttrs = pPassStates.pAttrs;
+    //     pUniformValues = pPassStates.pUniformValues;
+    //     pTextures = pPassStates.pTextures;
+    //     pProgram = pPassStates.pProgram;
 
-        pValues = pSnapshot._pPassStates[index];
-        pUniforms = pStateStack[0].pBlend.pUniformsBlend[index];
+    //     pValues = pSnapshot._pPassStates[index];
+    //     pUniforms = pStateStack[0].pBlend.pUniformsBlend[index];
 
-        for (j = 0; j < pUniforms._pUniformByRealNameKeys.length; j++) {
-            sKey = pUniforms._pUniformByRealNameKeys[j];
-            if (pValues[sKey] !== undefined && pValues[sKey] !== null) {
-                pUniformValues[sKey] = pValues[sKey];
-                continue;
-            }
-            if (this._pSystemUniforms[sKey] === null) {
-                pUniformValues[sKey] = this._getSystemUniformValue(sKey);
-            }
-        }
-    }
-    else {
+    //     for (j = 0; j < pUniforms._pUniformByRealNameKeys.length; j++) {
+    //         sKey = pUniforms._pUniformByRealNameKeys[j];
+    //         if (pValues[sKey] !== undefined && pValues[sKey] !== null) {
+    //             pUniformValues[sKey] = pValues[sKey];
+    //             continue;
+    //         }
+    //         if (this._pSystemUniforms[sKey] === null) {
+    //             pUniformValues[sKey] = this._getSystemUniformValue(sKey);
+    //         }
+    //     }
+    // }
+    // else 
+    {
         pUniformValues = {};
         pNotDefaultUniforms = {};
         pTextures = {};
@@ -1171,6 +1175,7 @@ Renderer.prototype.applyFrameBufferTexture = function (pTexture, eAttachment, eT
     iLevel = 0;
     // // trace("Attach texture to farme buffer #" + this._pRenderState.iFrameBuffer);
     this._pRenderState.pFrameBuffer.frameBufferTexture2D(eAttachment, eTexTarget, pTexture._pTexture);
+    this._pRenderState.pFrameBuffer.texture = pTexture;
 };
 Renderer.prototype.applySurfaceMaterial = function (pMaterial) {
     this._pPreRenderState.pSurfaceMaterial = pMaterial;
@@ -1698,12 +1703,25 @@ Renderer.prototype.createDeviceResources = function () {
     this._pPostEffectTarget = new a.Mesh(this.pEngine, 0, 'screen-sprite');//a.RenderDataBuffer.VB_READABLE
     var pSubMesh = this._pPostEffectTarget.createSubset('screen-sprite :: main', a.PRIMTYPE.TRIANGLESTRIP);
     pSubMesh.data.allocateAttribute([VE_VEC2('POSITION')], new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]));
+    
+    
     pSubMesh.effect.create();
     pSubMesh.effect.use("akra.system.deferredShading");
     pSubMesh.effect.use("akra.system.omniLighting");
     pSubMesh.effect.use("akra.system.projectLighting");
     pSubMesh.effect.use("akra.system.omniShadowsLighting");
     pSubMesh.effect.use("akra.system.projectShadowsLighting");
+
+    pSubMesh.effect.use("akra.system.fxaa", 1);
+
+    var pTexturePool = this.pEngine.displayManager().texturePool();
+
+    this._pGlobalPostEffectTexture = pTexturePool.createResource(".texture-" + a.sid());
+
+    this._pGlobalPostEffectTexture.createTexture(Math.ceilingPowerOfTwo(this.pEngine.pCanvas.width), Math.ceilingPowerOfTwo(this.pEngine.pCanvas.height));
+
+    this._pGlobalPostEffectFrameBuffer = this.activateFrameBuffer();
+    this.applyFrameBufferTexture(this._pGlobalPostEffectTexture);
 
     return true;
 };

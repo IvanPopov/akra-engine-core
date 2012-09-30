@@ -612,7 +612,7 @@ Engine.prototype.render = function () {
     var iRenderBegin = a.now();
     if (this.pDisplayManager.beginRenderSession()) {
         // render the scene
-        A_TRACER.BEGIN();
+        // A_TRACER.BEGIN();
 //        A_TRACER.MESG("=====START RENDER SCENE OBJECTS==========");
         //trace("==============Render Shadow===========");
 //        this.pDevice.enable(this.pDevice.BLEND);
@@ -651,10 +651,11 @@ Engine.prototype.render = function () {
         // iTime.push(a.now());
 
         //trace("==============Stop Apply lights===========");
+        this.pDevice.finish();
         this.pDisplayManager.endRenderSession();
         // iTime.push(a.now());
 
-        A_TRACER.END();
+        // A_TRACER.END();
 
 /*        if (iFrame > 5 && iFrame%100 === 0) {
             trace2('\n\n\=================== FRAME ' + iFrame + ' STATISTICS ================');
