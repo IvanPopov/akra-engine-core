@@ -164,6 +164,9 @@ function Renderer(pEngine) {
 
     this._pDefaultColor = new Vec4(0.0, 0.0, 0.5, 1.);
 
+    this._pGlobalPostEffectTexture = null;
+    this._pGlobalPostEffectFrameBuffer = null;
+
     this._initSystemUniforms();
 }
 
@@ -724,7 +727,7 @@ Renderer.prototype.finishPass = function (iPass) {
     //Very-very bad
     // alert(123);
     // console.log("%%%%%%%", pStateStack, pStateStack[0].pSnapshot.pTemporaryStates);
-    if(iStackLength === 1 && pStateStack[0].pSnapshot.pTemporaryStates[iPass].pProgram) {
+    /*if(iStackLength === 1 && pStateStack[0].pSnapshot.pTemporaryStates[iPass].pProgram) {
         index = iPass;
         pSnapshot = pStateStack[0].pSnapshot;
         var pPassStates = pSnapshot.pTemporaryStates[index];
@@ -747,7 +750,7 @@ Renderer.prototype.finishPass = function (iPass) {
             }
         }
     }
-    else {
+    else */{
         pUniformValues = {};
         pNotDefaultUniforms = {};
         pTextures = {};
