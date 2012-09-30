@@ -614,7 +614,7 @@ Engine.prototype.render = function () {
         // render the scene
         A_TRACER.BEGIN();
 //        A_TRACER.MESG("=====START RENDER SCENE OBJECTS==========");
-        trace("==============Render Shadow===========");
+        //trace("==============Render Shadow===========");
 //        this.pDevice.enable(this.pDevice.BLEND);
 //        this.pDevice.blendFunc(this.pDevice.SRC_ALPHA,this.pDevice.ONE_MINUS_SRC_ALPHA)
 //        this.pDevice.disable(this.pDevice.DEPTH_TEST);
@@ -627,8 +627,8 @@ Engine.prototype.render = function () {
         // iTime.push(a.now());
 
         // this.pDevice.flush();
-        trace("==============Stop Render Shadow===========");
-        trace("==============Render Scene===========");
+        //trace("==============Stop Render Shadow===========");
+        //trace("==============Render Scene===========");
         
         
         this.renderLightings();
@@ -641,8 +641,8 @@ Engine.prototype.render = function () {
         this.pDevice.finish();
         // iTime.push(a.now());
         
-        trace("==============Stop Render Scene===========");
-        trace("==============Apply lights===========");
+        //trace("==============Stop Render Scene===========");
+        //trace("==============Apply lights===========");
 
         this.renderScene();
         // iTime.push(a.now());
@@ -650,7 +650,7 @@ Engine.prototype.render = function () {
         this.pShaderManager.processRenderStage();
         // iTime.push(a.now());
 
-        trace("==============Stop Apply lights===========");
+        //trace("==============Stop Apply lights===========");
         this.pDisplayManager.endRenderSession();
         // iTime.push(a.now());
 

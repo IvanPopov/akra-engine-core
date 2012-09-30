@@ -82,8 +82,8 @@ function cube (pEngine, eOptions, sName, fSize) {
     pSubMesh.data.index(iNorm, 'INDEX1');
     pSubMesh.data.index(iMap,  'INDEX2');
 
-    pSubMesh.applyFlexMaterial('default');
-    var pMat = pSubMesh.getFlexMaterial('default');
+    // pSubMesh.applyFlexMaterial('default');
+    var pMat = pSubMesh.material;
     pMat.diffuse = new a.Color4f(0.5, 0., 0., 1.);
     pMat.ambient = new a.Color4f(0.7, 0., 0., 1.);
     pMat.specular = new a.Color4f(1., 0.7, 0. ,1);

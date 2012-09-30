@@ -257,7 +257,7 @@ ShaderProgram.prototype.applyUniform = function (sName, pData) {
     if (this._pUniformApplyFunctions[sName]) {
         return this._pUniformApplyFunctions[sName].call(this, sName, pData);
     }
-    trace("Something going wrong:", sName, pData);
+    // trace("Something going wrong:", sName, pData);
     return false;
 };
 
@@ -653,7 +653,7 @@ ShaderProgram.prototype.applySampler2D = function (sName, pData) {
             else {
                 pSlots[i] = this._pRenderer.activateTexture(pTexture);
                 pTextureParam = this._pTextureParams[pSlots[i]];
-                trace("Slot #" + pSlots[i]);
+                // trace("Slot #" + pSlots[i]);
                 pTextureParam[a.TPARAM.MAG_FILTER] = pData[i][a.TPARAM.MAG_FILTER] ||
                                                      pTexture._getParameter(a.TPARAM.MAG_FILTER) ||
                                                      a.TFILTER.LINEAR;
@@ -684,7 +684,7 @@ ShaderProgram.prototype.applySampler2D = function (sName, pData) {
     else {
         iSlot = this._pRenderer.activateTexture(pTexture);
         pTextureParam = this._pTextureParams[iSlot];
-        trace("Slot #" + iSlot);
+        // trace("Slot #" + iSlot);
         pTextureParam[a.TPARAM.MAG_FILTER] = pData[a.TPARAM.MAG_FILTER] ||
                                              pTexture._getParameter(a.TPARAM.MAG_FILTER) ||
                                              a.TFILTER.LINEAR;
@@ -718,10 +718,8 @@ ShaderProgram.prototype.applySampler2DInStruct = function (sName, pData) {
         else {
             iSlot = this._pRenderer.activateTexture(pTexture);
             pTextureParam = this._pTextureParams[iSlot];
-            console.log(this._pTextureParams, iSlot);    
-            console.log(pTextureParam[a.TPARAM.MAG_FILTER], pData[a.TPARAM.MAG_FILTER], pTexture._getParameter(a.TPARAM.MAG_FILTER));
 
-            trace("Slot #" + iSlot);
+            // trace("Slot #" + iSlot);
             pTextureParam[a.TPARAM.MAG_FILTER] = pData[a.TPARAM.MAG_FILTER] ||
                                                  pTexture._getParameter(a.TPARAM.MAG_FILTER) ||
                                                  a.TFILTER.LINEAR;
@@ -747,7 +745,7 @@ ShaderProgram.prototype.applySampler2DInStruct = function (sName, pData) {
             else {
                 pPreparedData[i] = this._pRenderer.activateTexture(pTexture);
                 pTextureParam = this._pTextureParams[pPreparedData[i]];
-                trace("Slot #" + pPreparedData[i]);
+                // trace("Slot #" + pPreparedData[i]);
                 pTextureParam[a.TPARAM.MAG_FILTER] = pData[i][a.TPARAM.MAG_FILTER] ||
                                                      pTexture._getParameter(a.TPARAM.MAG_FILTER) ||
                                                      a.TFILTER.LINEAR;
@@ -1035,7 +1033,7 @@ ShaderProgram.prototype._chooseApplyUniformFunction = function (pVar, sVarName, 
                     }
                 }
                 else {
-                    trace("######### apply video buffer -------", pVar);
+                    // trace("######### apply video buffer -------", pVar);
                     pFunctions[sName] = this.applyVideoBuffer;
                 }
                 break;
@@ -1103,7 +1101,7 @@ ShaderProgram.prototype.activateTextures = function () {
     var iCheck = this._nActiveTimes;
     for (i = 0; i < this._pTextureSlots.length; i++) {
         if (this._pTextureSlots[i] === iCheck) {
-            trace("Activate texture slot #" + i);
+            // trace("Activate texture slot #" + i);
             this._pRenderer._activateTextureSlot(i, this._pTextureParams[i]);
         }
     }

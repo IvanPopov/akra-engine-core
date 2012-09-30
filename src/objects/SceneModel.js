@@ -80,8 +80,7 @@ SceneModel.prototype.render = function () {
         }
     }
 
-    trace("<<<<<<<<<<<<<SCENE MODEL RENDER>>>>>>>>>>", this.findMesh());
-
+    // trace("<<<<<<<<<<<<<SCENE MODEL RENDER>>>>>>>>>>");
     var pMeshes = this._pMeshes,
         pRenderer = this._pEngine.shaderManager(),
         pLightManager = this._pEngine.lightManager(),
@@ -115,6 +114,7 @@ SceneModel.prototype.render = function () {
                 pSubMesh.applySurfaceMaterial();
                 pSubMesh.applyRenderData(pSubMesh.data);
                 var pEntry = pSubMesh.renderPass();
+                // trace(pSubMesh.name,'-->', pMesh.name);
                 // trace("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
                 pSubMesh.deactivatePass();
                 pRenderer.activateFrameBuffer(null);
@@ -124,7 +124,7 @@ SceneModel.prototype.render = function () {
     }
     pRenderer.deactivateSceneObject();
 //    A_TRACER.END();
-    trace("<<<<<<<<<<<<<END SCENE MODEL RENDER>>>>>>>>>>");
+    // trace("<<<<<<<<<<<<<END SCENE MODEL RENDER>>>>>>>>>>");
     return true;
 };
 
@@ -132,7 +132,7 @@ SceneModel.prototype.renderShadow = function () {
     if (!this.hasShadow()) {
         return false;
     }
-    trace("<<<<<<<<<<<<<START SCENE MODEL SHADOW RENDER>>>>>>>>>>");
+    // trace("<<<<<<<<<<<<<START SCENE MODEL SHADOW RENDER>>>>>>>>>>");
     var pMeshes = this._pMeshes,
         pRenderer = this._pEngine.shaderManager(),
         pMesh, pSubMesh;
@@ -174,7 +174,7 @@ SceneModel.prototype.renderShadow = function () {
         }
     }
     pRenderer.deactivateSceneObject();
-    trace("<<<<<<<<<<<<<END SCENE MODEL SHADOW RENDER>>>>>>>>>>");
+    // trace("<<<<<<<<<<<<<END SCENE MODEL SHADOW RENDER>>>>>>>>>>");
     return true;
 };
 
@@ -229,8 +229,8 @@ SceneModel.prototype.addMesh = function (pMesh) {
         return false;
     }
     this._pMeshes.push(pMesh);
-    if (pMesh.name !== "scene-surface")
-        this.accessLocalBounds().eq(pMesh.getBoundingBox());
+    this.accessLocalBounds().eq(pMesh.getBoundingBox());
+
     return true;
 };
 

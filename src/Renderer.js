@@ -627,12 +627,14 @@ Renderer.prototype.push = function (pSnapshot, pRenderObject) {
                 }
             }
         }
+        pSnapshot.pTemporaryStates = [];
         for (i = 0; i < pBlend.totalValidPasses(); i++) {
             pUniforms[i] = {};
             pUniformKeys = pBlend.pUniformsBlend[i]._pUniformByRealNameKeys;
             for (j = 0; j < pUniformKeys.length; j++) {
                 pUniforms[i][pUniformKeys[j]] = null;
             }
+            pSnapshot.pTemporaryStates[i] = {};
         }
         pSnapshot.setPassStates(pUniforms, pTextures, pForeigns);
     }
@@ -688,7 +690,7 @@ Renderer.prototype.deactivateSceneObject = function () {
  * @param iPass
  */
 Renderer.prototype.finishPass = function (iPass) {
-    trace("Render Pass #" + iPass + " start!");
+    // // trace("Render Pass #" + iPass + " start!");
     if (this._pPreRenderState.pBlend.totalValidPasses() <= iPass) {
         warning("You try finish bad pass");
         return false;
@@ -718,265 +720,298 @@ Renderer.prototype.finishPass = function (iPass) {
     var sPassBlendHash = "";
     var pPassBlend;
     var pMaterialTexcoords = new Array(a.SurfaceMaterial.maxTexturesPerSurface);
-    pUniformValues = {};
-    pNotDefaultUniforms = {};
-    pTextures = {};
-    pForeigns = {};
+    var pProgram;
 
-    for (i = 0; i < iStackLength; i++) {
-
-        nShift = pStateStack[i].nShift;
-        pBlend = pStateStack[i].pBlend;
-        pSnapshot = pStateStack[i].pSnapshot;
-        index = nPass - nShift;
-
-        if (pBlend.totalValidPasses() <= index) {
-            continue;
-        }
-        pUniforms = pBlend.pUniformsBlend[index];
-
-        if (pSnapshot._pTextures) {
-            pValues = pSnapshot._pTextures[index];
-            for (j = 0; j < pUniforms._pTextureByRealNameKeys.length; j++) {
-                sKey = pUniforms._pTextureByRealNameKeys[j];
-                if (pValues[sKey] !== undefined) {
-                    pTextures[sKey] = pValues[sKey];
-                }
-                if (pTextures[sKey] === undefined) {
-                    pTextures[sKey] = null;
-                }
-            }
-        }
-        if (pSnapshot._pForeigns) {
-            pValues = pSnapshot._pForeigns[index];
-//            trace("Foreigns ---------- ", pSnapshot._pForeigns, pForeigns);
-            for (j = 0; j < pUniforms._pForeignByNameKeys.length; j++) {
-                sKey = pUniforms._pForeignByNameKeys[j];
-                if (pValues[sKey] !== undefined) {
-                    pForeigns[sKey] = pValues[sKey];
-                }
-                if (pForeigns[sKey] === undefined) {
-                    pForeigns[sKey] = null;
-                }
-            }
-        }
+    //Very-very bad
+    // alert(123);
+    // console.log("%%%%%%%", pStateStack, pStateStack[0].pSnapshot.pTemporaryStates);
+    if(iStackLength === 1 && pStateStack[0].pSnapshot.pTemporaryStates[iPass].pProgram) {
+        index = iPass;
+        pSnapshot = pStateStack[0].pSnapshot;
+        var pPassStates = pSnapshot.pTemporaryStates[index];
+        pAttrs = pPassStates.pAttrs;
+        pUniformValues = pPassStates.pUniformValues;
+        pTextures = pPassStates.pTextures;
+        pProgram = pPassStates.pProgram;
 
         pValues = pSnapshot._pPassStates[index];
+        pUniforms = pStateStack[0].pBlend.pUniformsBlend[index];
 
         for (j = 0; j < pUniforms._pUniformByRealNameKeys.length; j++) {
             sKey = pUniforms._pUniformByRealNameKeys[j];
             if (pValues[sKey] !== undefined && pValues[sKey] !== null) {
                 pUniformValues[sKey] = pValues[sKey];
-                pNotDefaultUniforms[sKey] = true;
                 continue;
             }
-            if (!pNotDefaultUniforms[sKey]) {
-                if (this._pSystemUniforms[sKey] === null) {
-                    pUniformValues[sKey] = this._getSystemUniformValue(sKey);
-                }
-                else {
-                    pUniformValues[sKey] = pUniforms.pUniformsDefault[sKey];
-                }
+            if (this._pSystemUniforms[sKey] === null) {
+                pUniformValues[sKey] = this._getSystemUniformValue(sKey);
             }
         }
-    }
-
-    pNewPassBlend = [];
-
-    for (i = 0; i < iStackLength; i++) {
-        nShift = pStateStack[i].nShift;
-        pBlend = pStateStack[i].pBlend;
-        index = nPass - nShift;
-
-        if (pBlend.totalValidPasses() <= index) {
-            continue;
-        }
-
-        pPasses = pBlend.pPassBlends[index];
-        for (j = 0; j < pPasses.length; j++) {
-            pPass = pPasses[j];
-            if (!pPass.isEval) {
-                if (pPass.isComplex) {
-                    pPass.prepare(this._pEngineStates, pUniformValues);
-                }
-                sPassBlendHash += "V::" + ((pPass.pVertexShader &&
-                                            pPass.pVertexShader.sRealName) ? pPass.pVertexShader.sRealName : "EMPTY");
-                sPassBlendHash += "F::" +
-                                  ((pPass.pFragmentShader &&
-                                    pPass.pFragmentShader.sRealName) ? pPass.pFragmentShader.sRealName : "EMPTY");
-                pNewPassBlend.push(pPass);
-                pPass.isEval = true;
-            }
-        }
-    }
-
-    for (j = 0; j < pPasses.length; j++) {
-        pPasses[j].isEval = false;
-    }
-    if (this._pPassBlends[sPassBlendHash]) {
-        pPassBlend = this._pPassBlends[sPassBlendHash];
     }
     else {
-        pPassBlend = new a.fx.PassBlend(this.pEngine);
-        pPassBlend.init(sPassBlendHash, pNewPassBlend);
-        if (!this._registerPassBlend(pPassBlend)) {
-            return false;
-        }
-        pPassBlend.finalizeBlend();
-    }
-    //TODO: There are must be place for texture info into hash
-    var pAttrSemantics = {};
-    var pDataStackByPass,
-        pDataStack,
-        pMaterial,
-        pData,
-        pVertexElement;
-    var pAttrKeys = Object.keys(pPassBlend.pAttributes);
-    for (i = 0; i < pAttrKeys.length; i++) {
-        pAttrSemantics[pAttrKeys[i]] = null;
-    }
-    for (i = iStackLength - 1; i >= 0; i--) {
+        pUniformValues = {};
+        pNotDefaultUniforms = {};
+        pTextures = {};
+        pForeigns = {};
+        for (i = 0; i < iStackLength; i++) {
 
-        nShift = pStateStack[i].nShift;
-        pDataStackByPass = pStateStack[i].pAttributeData;
-
-        pMaterial = pStateStack[i].pSurfaceMaterial;
-        index = nPass - nShift;
-
-        if (pDataStackByPass.length <= index) {
-            continue;
-        }
-        pDataStack = pDataStackByPass[index];
-        if (pMaterial) {
+            nShift = pStateStack[i].nShift;
             pBlend = pStateStack[i].pBlend;
+            pSnapshot = pStateStack[i].pSnapshot;
+            index = nPass - nShift;
+
+            if (pBlend.totalValidPasses() <= index) {
+                continue;
+            }
             pUniforms = pBlend.pUniformsBlend[index];
-            for (j = 0; j < a.SurfaceMaterial.maxTexturesPerSurface; j++) {
-                if ((pMaterialTexcoords[j] !== undefined && pMaterialTexcoords[j] !== null) ||
-                    !pMaterial._pTexture[j]) {
+
+            if (pSnapshot._pTextures) {
+                pValues = pSnapshot._pTextures[index];
+                for (j = 0; j < pUniforms._pTextureByRealNameKeys.length; j++) {
+                    sKey = pUniforms._pTextureByRealNameKeys[j];
+                    if (pValues[sKey] !== undefined) {
+                        pTextures[sKey] = pValues[sKey];
+                    }
+                    if (pTextures[sKey] === undefined) {
+                        pTextures[sKey] = null;
+                    }
+                }
+            }
+            if (pSnapshot._pForeigns) {
+                pValues = pSnapshot._pForeigns[index];
+    //            // trace("Foreigns ---------- ", pSnapshot._pForeigns, pForeigns);
+                for (j = 0; j < pUniforms._pForeignByNameKeys.length; j++) {
+                    sKey = pUniforms._pForeignByNameKeys[j];
+                    if (pValues[sKey] !== undefined) {
+                        pForeigns[sKey] = pValues[sKey];
+                    }
+                    if (pForeigns[sKey] === undefined) {
+                        pForeigns[sKey] = null;
+                    }
+                }
+            }
+
+            pValues = pSnapshot._pPassStates[index];
+
+            for (j = 0; j < pUniforms._pUniformByRealNameKeys.length; j++) {
+                sKey = pUniforms._pUniformByRealNameKeys[j];
+                if (pValues[sKey] !== undefined && pValues[sKey] !== null) {
+                    pUniformValues[sKey] = pValues[sKey];
+                    pNotDefaultUniforms[sKey] = true;
                     continue;
                 }
-                pMaterialTexcoords[j] = pMaterial._pTexcoord[j];
-                sKey = a.fx.SHADER_PREFIX.TEXTURE + j;
-                if (pUniforms.pTexturesByRealName[sKey] === null) {
-                    pTextures[sKey] = pMaterial._pTexture[j];
-                    sKey = a.fx.SHADER_PREFIX.TEXMATRIX + j;
-                    if (pUniforms.pUniformsByRealName[sKey] &&
-                        pMaterial._pTextureMatrix[j]) {
-                        pUniformValues[sKey] = pMaterial._pTextureMatrix[j];
+                if (!pNotDefaultUniforms[sKey]) {
+                    if (this._pSystemUniforms[sKey] === null) {
+                        pUniformValues[sKey] = this._getSystemUniformValue(sKey);
+                    }
+                    else {
+                        pUniformValues[sKey] = pUniforms.pUniformsDefault[sKey];
                     }
                 }
-            }
-            if (pUniforms.pUniformsByRealName[a.Material.DIFFUSE] &&
-                !pUniformValues[a.Material.DIFFUSE]) {
-                pUniformValues[a.Material.DIFFUSE] = pMaterial.material.pDiffuse;
-            }
-            if (pUniforms.pUniformsByRealName[a.Material.AMBIENT] &&
-                !pUniformValues[a.Material.AMBIENT]) {
-                pUniformValues[a.Material.AMBIENT] = pMaterial.material.pAmbient;
-            }
-            if (pUniforms.pUniformsByRealName[a.Material.SPECULAR] &&
-                !pUniformValues[a.Material.SPECULAR]) {
-                pUniformValues[a.Material.SPECULAR] = pMaterial.material.pSpecular;
-            }
-            if (pUniforms.pUniformsByRealName[a.Material.EMISSIVE] &&
-                !pUniformValues[a.Material.EMISSIVE]) {
-                pUniformValues[a.Material.EMISSIVE] = pMaterial.material.pEmissive;
-            }
-            if (pUniforms.pUniformsByRealName[a.Material.SHININESS] &&
-                !pUniformValues[a.Material.SHININESS]) {
-                pUniformValues[a.Material.SHININESS] = pMaterial.material.pShininess;
-            }
-            sName = a.Renderer.MATERIAL + "." + a.Material.DIFFUSE;
-            if (pUniforms.pUniformsByRealName[sName] && !pUniformValues[sName]) {
-                pUniformValues[sName] = pMaterial.material.pDiffuse;
-            }
-            sName = a.Renderer.MATERIAL + "." + a.Material.AMBIENT;
-            if (pUniforms.pUniformsByRealName[sName] && !pUniformValues[sName]) {
-                pUniformValues[sName] = pMaterial.material.pAmbient;
-            }
-            sName = a.Renderer.MATERIAL + "." + a.Material.SPECULAR;
-            if (pUniforms.pUniformsByRealName[sName] && !pUniformValues[sName]) {
-                pUniformValues[sName] = pMaterial.material.pSpecular;
-            }
-            sName = a.Renderer.MATERIAL + "." + a.Material.EMISSIVE;
-            if (pUniforms.pUniformsByRealName[sName] && !pUniformValues[sName]) {
-                pUniformValues[sName] = pMaterial.material.pEmissive;
-            }
-            sName = a.Renderer.MATERIAL + "." + a.Material.SHININESS;
-            if (pUniforms.pUniformsByRealName[sName] && !pUniformValues[sName]) {
-                pUniformValues[sName] = pMaterial.material.pShininess;
             }
         }
 
-        for (j = 0; j < pAttrKeys.length; j++) {
-            sKey2 = pAttrKeys[j];
-            if (pAttrSemantics[sKey2] === null) {
-                for (k = 0; k < pDataStack.length; k++) {
-                    pData = pDataStack[k];
-                    if (pData.eType === a.BufferMap.FT_MAPPABLE) {
-                        pVertexElement = pData.pData.getVertexDeclaration().element(sKey2);
+        pNewPassBlend = [];
+
+        for (i = 0; i < iStackLength; i++) {
+            nShift = pStateStack[i].nShift;
+            pBlend = pStateStack[i].pBlend;
+            index = nPass - nShift;
+
+            if (pBlend.totalValidPasses() <= index) {
+                continue;
+            }
+
+            pPasses = pBlend.pPassBlends[index];
+            for (j = 0; j < pPasses.length; j++) {
+                pPass = pPasses[j];
+                if (!pPass.isEval) {
+                    if (pPass.isComplex) {
+                        pPass.prepare(this._pEngineStates, pUniformValues);
                     }
-                    else {
-                        pVertexElement = pData.getVertexDeclaration().element(sKey2);
-                    }
-                    if (pVertexElement) {
-                        pAttrSemantics[sKey2] = pData;
-                        break;
-                    }
+                    sPassBlendHash += "V::" + ((pPass.pVertexShader &&
+                                                pPass.pVertexShader.sRealName) ? pPass.pVertexShader.sRealName : "EMPTY");
+                    sPassBlendHash += "F::" +
+                                      ((pPass.pFragmentShader &&
+                                        pPass.pFragmentShader.sRealName) ? pPass.pFragmentShader.sRealName : "EMPTY");
+                    pNewPassBlend.push(pPass);
+                    pPass.isEval = true;
                 }
             }
         }
-    }
-    sHash = sPassBlendHash + "|-|__|/|";
-    var sKey1, sKey2;
-    var sSame1, sSame2;
-    for (i = 0; i < pAttrKeys.length; i++) {
-        sKey1 = pAttrKeys[i];
-        sHash += sKey1 + "|";
-        if (pAttrSemantics[sKey1] === null) {
-            sHash += "EMPTY";
+
+        for (j = 0; j < pPasses.length; j++) {
+            pPasses[j].isEval = false;
         }
-//        else if (pAttrSemantics[sKey1] === a.BufferMap.FT_UNMAPPABLE) {
-//            sHash += "REAL";
-//        }
-        //TODO: VIDEO_BUFFER !== VERTEX_BUFFER
+        if (this._pPassBlends[sPassBlendHash]) {
+            pPassBlend = this._pPassBlends[sPassBlendHash];
+        }
         else {
-            sHash += "SAME:";
-            sSame1 = "";
-            sSame2 = "";
+            pPassBlend = new a.fx.PassBlend(this.pEngine);
+            pPassBlend.init(sPassBlendHash, pNewPassBlend);
+            if (!this._registerPassBlend(pPassBlend)) {
+                return false;
+            }
+            pPassBlend.finalizeBlend();
+        }
+        //TODO: There are must be place for texture info into hash
+        var pAttrSemantics = {};
+        var pDataStackByPass,
+            pDataStack,
+            pMaterial,
+            pData,
+            pVertexElement;
+        var pAttrKeys = Object.keys(pPassBlend.pAttributes);
+        for (i = 0; i < pAttrKeys.length; i++) {
+            pAttrSemantics[pAttrKeys[i]] = null;
+        }
+        for (i = iStackLength - 1; i >= 0; i--) {
+
+            nShift = pStateStack[i].nShift;
+            pDataStackByPass = pStateStack[i].pAttributeData;
+
+            pMaterial = pStateStack[i].pSurfaceMaterial;
+            index = nPass - nShift;
+
+            if (pDataStackByPass.length <= index) {
+                continue;
+            }
+            pDataStack = pDataStackByPass[index];
+            if (pMaterial) {
+                pBlend = pStateStack[i].pBlend;
+                pUniforms = pBlend.pUniformsBlend[index];
+                for (j = 0; j < a.SurfaceMaterial.maxTexturesPerSurface; j++) {
+                    if ((pMaterialTexcoords[j] !== undefined && pMaterialTexcoords[j] !== null) ||
+                        !pMaterial._pTexture[j]) {
+                        continue;
+                    }
+                    pMaterialTexcoords[j] = pMaterial._pTexcoord[j];
+                    sKey = a.fx.SHADER_PREFIX.TEXTURE + j;
+                    if (pUniforms.pTexturesByRealName[sKey] === null) {
+                        pTextures[sKey] = pMaterial._pTexture[j];
+                        sKey = a.fx.SHADER_PREFIX.TEXMATRIX + j;
+                        if (pUniforms.pUniformsByRealName[sKey] &&
+                            pMaterial._pTextureMatrix[j]) {
+                            pUniformValues[sKey] = pMaterial._pTextureMatrix[j];
+                        }
+                    }
+                }
+                if (pUniforms.pUniformsByRealName[a.Material.DIFFUSE] &&
+                    !pUniformValues[a.Material.DIFFUSE]) {
+                    pUniformValues[a.Material.DIFFUSE] = pMaterial.material.pDiffuse;
+                }
+                if (pUniforms.pUniformsByRealName[a.Material.AMBIENT] &&
+                    !pUniformValues[a.Material.AMBIENT]) {
+                    pUniformValues[a.Material.AMBIENT] = pMaterial.material.pAmbient;
+                }
+                if (pUniforms.pUniformsByRealName[a.Material.SPECULAR] &&
+                    !pUniformValues[a.Material.SPECULAR]) {
+                    pUniformValues[a.Material.SPECULAR] = pMaterial.material.pSpecular;
+                }
+                if (pUniforms.pUniformsByRealName[a.Material.EMISSIVE] &&
+                    !pUniformValues[a.Material.EMISSIVE]) {
+                    pUniformValues[a.Material.EMISSIVE] = pMaterial.material.pEmissive;
+                }
+                if (pUniforms.pUniformsByRealName[a.Material.SHININESS] &&
+                    !pUniformValues[a.Material.SHININESS]) {
+                    pUniformValues[a.Material.SHININESS] = pMaterial.material.pShininess;
+                }
+                sName = a.Renderer.MATERIAL + "." + a.Material.DIFFUSE;
+                if (pUniforms.pUniformsByRealName[sName] && !pUniformValues[sName]) {
+                    pUniformValues[sName] = pMaterial.material.pDiffuse;
+                }
+                sName = a.Renderer.MATERIAL + "." + a.Material.AMBIENT;
+                if (pUniforms.pUniformsByRealName[sName] && !pUniformValues[sName]) {
+                    pUniformValues[sName] = pMaterial.material.pAmbient;
+                }
+                sName = a.Renderer.MATERIAL + "." + a.Material.SPECULAR;
+                if (pUniforms.pUniformsByRealName[sName] && !pUniformValues[sName]) {
+                    pUniformValues[sName] = pMaterial.material.pSpecular;
+                }
+                sName = a.Renderer.MATERIAL + "." + a.Material.EMISSIVE;
+                if (pUniforms.pUniformsByRealName[sName] && !pUniformValues[sName]) {
+                    pUniformValues[sName] = pMaterial.material.pEmissive;
+                }
+                sName = a.Renderer.MATERIAL + "." + a.Material.SHININESS;
+                if (pUniforms.pUniformsByRealName[sName] && !pUniformValues[sName]) {
+                    pUniformValues[sName] = pMaterial.material.pShininess;
+                }
+            }
+
             for (j = 0; j < pAttrKeys.length; j++) {
                 sKey2 = pAttrKeys[j];
-                if (i !== j && pAttrSemantics[sKey2] === pAttrSemantics[sKey1]) {
-                    sSame1 += sKey2 + ",";
+                if (pAttrSemantics[sKey2] === null) {
+                    for (k = 0; k < pDataStack.length; k++) {
+                        pData = pDataStack[k];
+                        if (pData.eType === a.BufferMap.FT_MAPPABLE) {
+                            pVertexElement = pData.pData.getVertexDeclaration().element(sKey2);
+                        }
+                        else {
+                            pVertexElement = pData.getVertexDeclaration().element(sKey2);
+                        }
+                        if (pVertexElement) {
+                            pAttrSemantics[sKey2] = pData;
+                            break;
+                        }
+                    }
                 }
-//                else if (i !== j &&
-//                         pAttrSemantics[sKey2].pData._pVertexBuffer === pAttrSemantics[sKey1].pData._pVertexBuffer) {
-//                    sSame2 += sKey2 + ",";
-//                }
             }
-            sHash += sSame1 + "!";
-            sHash += "SAME_VIDEO_BUFFER:" + sSame2;
         }
-        sHash += "..";
-    }
-    for (i in pForeigns) {
-        sHash += "FOREIGN::" + i + "=" + (pForeigns[i]);
-    }
-    var pProgram;
-    pProgram = this._pPrograms[sHash];
-    if (!pProgram) {
-        pProgram = pPassBlend.generateProgram(sHash, pAttrSemantics, pAttrKeys, pUniformValues,
-                                              pTextures, pForeigns, pMaterialTexcoords);
+        sHash = sPassBlendHash + "|-|__|/|";
+        var sKey1, sKey2;
+        var sSame1, sSame2;
+        for (i = 0; i < pAttrKeys.length; i++) {
+            sKey1 = pAttrKeys[i];
+            sHash += sKey1 + "|";
+            if (pAttrSemantics[sKey1] === null) {
+                sHash += "EMPTY";
+            }
+    //        else if (pAttrSemantics[sKey1] === a.BufferMap.FT_UNMAPPABLE) {
+    //            sHash += "REAL";
+    //        }
+            //TODO: VIDEO_BUFFER !== VERTEX_BUFFER
+            else {
+                sHash += "SAME:";
+                sSame1 = "";
+                sSame2 = "";
+                for (j = 0; j < pAttrKeys.length; j++) {
+                    sKey2 = pAttrKeys[j];
+                    if (i !== j && pAttrSemantics[sKey2] === pAttrSemantics[sKey1]) {
+                        sSame1 += sKey2 + ",";
+                    }
+    //                else if (i !== j &&
+    //                         pAttrSemantics[sKey2].pData._pVertexBuffer === pAttrSemantics[sKey1].pData._pVertexBuffer) {
+    //                    sSame2 += sKey2 + ",";
+    //                }
+                }
+                sHash += sSame1 + "!";
+                sHash += "SAME_VIDEO_BUFFER:" + sSame2;
+            }
+            sHash += "..";
+        }
+        for (i in pForeigns) {
+            sHash += "FOREIGN::" + i + "=" + (pForeigns[i]);
+        }
+        
+        pProgram = this._pPrograms[sHash];
         if (!pProgram) {
-            warning("It`s impossible to generate shader program");
-            return false;
+            pProgram = pPassBlend.generateProgram(sHash, pAttrSemantics, pAttrKeys, pUniformValues,
+                                                  pTextures, pForeigns, pMaterialTexcoords);
+            if (!pProgram) {
+                warning("It`s impossible to generate shader program");
+                return false;
+            }
         }
+        var pAttrs = pProgram.generateInputData(pAttrSemantics, pUniformValues);
+        
+        pStateStack[0].pSnapshot.pTemporaryStates[index].pProgram = pProgram;
+        pStateStack[0].pSnapshot.pTemporaryStates[index].pAttrs = pAttrs;
+        pStateStack[0].pSnapshot.pTemporaryStates[index].pUniformValues = pUniformValues;
+        pStateStack[0].pSnapshot.pTemporaryStates[index].pTextures = pTextures;
     }
-    var pAttrs = pProgram.generateInputData(pAttrSemantics, pUniformValues);
     if (this._pRenderState.iFrameBuffer !== null) {
         this._pFrameBufferCounters[this._pRenderState.iFrameBuffer]--;
     }
-
     var pEntry = this._pCurrentRenderQueue.getEmptyEntry();
     pEntry.set(pProgram,
                pAttrs,
@@ -993,7 +1028,7 @@ Renderer.prototype.finishPass = function (iPass) {
                this._pRenderState.iFrameBuffer);
     this.pushRenderEntry(pEntry);
 
-    trace("Render Pass #" + iPass + " finish!");
+    // // trace("Render Pass #" + iPass + " finish!");
     return pEntry;
 };
 Renderer.prototype._registerProgram = function (sHash, pProgram) {
@@ -1134,7 +1169,7 @@ Renderer.prototype.applyFrameBufferTexture = function (pTexture, eAttachment, eT
     eAttachment = (eAttachment === undefined) ? pDevice.COLOR_ATTACHMENT0 : eAttachment;
     eTexTarget = (eTexTarget === undefined) ? pDevice.TEXTURE_2D : eTexTarget;
     iLevel = 0;
-    trace("Attach texture to farme buffer #" + this._pRenderState.iFrameBuffer);
+    // // trace("Attach texture to farme buffer #" + this._pRenderState.iFrameBuffer);
     this._pRenderState.pFrameBuffer.frameBufferTexture2D(eAttachment, eTexTarget, pTexture._pTexture);
 };
 Renderer.prototype.applySurfaceMaterial = function (pMaterial) {
@@ -1245,7 +1280,7 @@ Renderer.prototype._getEmptyFrameBuffer = function () {
     return pEmptyBuffers.length - 1;
 };
 Renderer.prototype._releaseFrameBuffer = function (id) {
-    trace("Release frame buffer");
+    // // trace("Release frame buffer");
 //    var pDevice = this.pEngine.pDevice;
     this._pFrameBufferCounters[id] = 0;
     this._pEmptyFrameBuffers[id] = null;
@@ -1283,7 +1318,7 @@ Renderer.prototype.activateVertexBuffer = function (pBuffer, isAttribute) {
     }
     this._pRenderState.pVertexBuffer = pBuffer;
     this._pRenderState.iVertexBufferState = this._pRenderResourceCounter[pBuffer.toNumber()];
-    trace("Real bind buffer #" + pBuffer.toNumber());
+    // trace("Real bind buffer #" + pBuffer.toNumber());
     pBuffer.bind();
     return true;
 };
@@ -1297,13 +1332,13 @@ Renderer.prototype.activateIndexBuffer = function (pBuffer) {
     }
     this._pRenderState.pIndexBuffer = pBuffer;
     this._pRenderState.iIndexBufferState = this._pRenderResourceCounter[pBuffer.toNumber()];
-    trace("Real bind index buffer #" + pBuffer.resourceHandle());
+    // trace("Real bind index buffer #" + pBuffer.resourceHandle());
     pBuffer.bind();
     return true;
 };
 Renderer.prototype.activateProgram = function (pProgram) {
     if (this._pRenderState.pActiveProgram === pProgram) {
-        trace("Program already active");
+        // trace("Program already active");
         pProgram._nActiveTimes++;
         return true;
     }
@@ -1312,12 +1347,12 @@ Renderer.prototype.activateProgram = function (pProgram) {
     pProgram.activate();
 
     for (i = pProgram.getStreamNumber(); i < this._pRenderState.nAttrsUsed; i++) {
-        trace("Disable attrib #" + i);
+        // trace("Disable attrib #" + i);
         pDevice.disableVertexAttribArray(i);
     }
 
     for (i = this._pRenderState.nAttrsUsed; i < pProgram.getStreamNumber(); i++) {
-        trace("Enable attrib #" + i);
+        // trace("Enable attrib #" + i);
         pDevice.enableVertexAttribArray(i);
     }
 
@@ -1356,11 +1391,11 @@ Renderer.prototype._activateFrameBuffer = function (iId) {
     }
     this._pRenderState.pFrameBuffer = pFrameBuffer;
     if (pFrameBuffer) {
-        trace("activateFrameBuffer #" + iId);
+        // trace("activateFrameBuffer #" + iId);
         pFrameBuffer.bind();
     }
     else {
-        trace("activateFrameBuffer DefaultRender");
+        // trace("activateFrameBuffer DefaultRender");
         this.pDevice.bindFramebuffer(this.pDevice.FRAMEBUFFER, null);
     }
 };
@@ -1369,7 +1404,7 @@ Renderer.prototype.bindTexture = function (pTexture) {
     if (this._pRenderState.pTexture === pTexture && this._pRenderState.pTexture._isTextureChanged === false) {
         return true;
     }
-    trace("Real bind texture #" + pTexture.toNumber());
+    // trace("Real bind texture #" + pTexture.toNumber());
     this._pRenderState.pTexture = pTexture;
     pTexture._isTextureChanged = false;
     if (this._pRenderState.iTextureSlot >= -1) {
@@ -1412,9 +1447,9 @@ Renderer.prototype._activateTextureSlot = function (iSlot, pParams) {
         isBind = true;
     }
     if (!isParamsEqual) {
-        trace("TEXTURE PARAMS NOT EQUAL", pTexture);
+        // trace("TEXTURE PARAMS NOT EQUAL", pTexture);
         if (!isBind) {
-            trace("Real activate slot");
+            // trace("Real activate slot");
             this.pDevice.activeTexture(a.TEXTUREUNIT.TEXTURE + (iSlot || 0));
             this._forceBindTexture(pTexture);
         }
@@ -1427,7 +1462,7 @@ Renderer.prototype._activateTextureSlot = function (iSlot, pParams) {
     return true;
 };
 Renderer.prototype._forceBindTexture = function (pTexture) {
-    trace("Real bind texture(FORCE) #" + pTexture.toNumber());
+    // trace("Real bind texture(FORCE) #" + pTexture.toNumber());
     this._pRenderState.pTexture = pTexture;
     pTexture.bind();
     return true;
@@ -1441,7 +1476,7 @@ Renderer.prototype.render = function (pEntry) {
     var pTextures = pEntry.pTextures;
     var pDevice = this.pDevice;
     var i;
-    trace("-------START REAL RENDER---------");
+    // trace("-------START REAL RENDER---------");
     this._activateFrameBuffer(pEntry.iFrameBuffer);
 
     this.activateProgram(pProgram);
@@ -1479,7 +1514,7 @@ Renderer.prototype.render = function (pEntry) {
     }
 //    pProgram.clear();
     this._pCurrentRenderQueue._releaseEntry(pEntry);
-    trace("-------STOP REAL RENDER---------");
+    // trace("-------STOP REAL RENDER---------");
 };
 Renderer.prototype._setViewport = function (x, y, width, height) {
     this.pDevice.viewport(x, y, width, height);
@@ -1497,7 +1532,7 @@ Renderer.prototype.vertexBufferChanged = function (pBuffer) {
     if (!pBuffer) {
         return false;
     }
-    trace("Vertex buffer changed #" + pBuffer.resourceHandle());
+    // trace("Vertex buffer changed #" + pBuffer.resourceHandle());
     this._renderResourceChanged(pBuffer);
 };
 Renderer.prototype.indexBufferChanged = function (pBuffer) {

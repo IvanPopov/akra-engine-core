@@ -84,9 +84,9 @@ function torus (pEngine, eOptions, sName, rings, sides) {
     //pSubMesh.data.index(iPosNorm, 'INDEX_POSITION');
     pSubMesh.data.index(iPos, 'INDEX_POSITION');
     pSubMesh.data.index(iNorm, 'INDEX_NORMAL');
-    pSubMesh.applyFlexMaterial('blue');
+    // pSubMesh.applyFlexMaterial('blue');
 
-    pMaterial = pSubMesh.getFlexMaterial('blue');
+    pMaterial = pSubMesh.material;//getFlexMaterial('blue');
     pMaterial.diffuse = new a.Color4f(0.3, 0.3, 1.0, 1.0);
     pMaterial.specular = new a.Color4f(1, 1, 1, 1.);
     pMaterial.shininess = 30;

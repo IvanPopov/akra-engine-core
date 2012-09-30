@@ -14,12 +14,16 @@ function basis(pEngine, eOptions) {
         pSubMesh.data.index(iPos, 'INDEX0');
         pSubMesh.data.index(iNorm, 'INDEX1');
 
-        pSubMesh.applyFlexMaterial(sName + '-color');
-        pMaterial = pSubMesh.getFlexMaterial(sName + '-color');
+        //pSubMesh.applyFlexMaterial(sName + '-color');
+        pMaterial = pSubMesh.material;//pSubMesh.getFlexMaterial(sName + '-color');
         pMaterial.emissive = pColor;
         pMaterial.ambient = pColor;
         pMaterial.diffuse = pColor;
         pMaterial.shininess = 100.;
+
+        pSubMesh.effect.create();
+        pSubMesh.effect.use("akra.system.mesh_texture");
+        pSubMesh.effect.use("akra.system.prepareForDeferredShading");
     }
 
     createAxis('basis::X-axis', new Float32Array([0,0,0, 1,0,0]), new a.Color4f(1, 0, 0, 1.));

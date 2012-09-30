@@ -50,12 +50,12 @@ function sceneSurface(pEngine, n) {
         pVertexIndicesData[n ++]   = nCellH * 2 + x * 2 + 1; 
     };
 
-    pMesh = new a.Mesh(pEngine, 0, 'scene-surface');
+    pMesh = new a.Mesh(pEngine, a.Mesh.VB_READABLE, 'scene-surface');
     pSubMesh = pMesh.createSubset('plane::main', a.PRIMTYPE.LINELIST);
     pSubMesh.data.allocateData([VE_VEC3('POSITION')], pVerticesData);
     pSubMesh.data.allocateIndex([VE_FLOAT('INDEX_POSITION')], pVertexIndicesData);
     pSubMesh.data.index('POSITION', 'INDEX_POSITION');
-    pSubMesh.applyFlexMaterial('default');
+    // pSubMesh.applyFlexMaterial('default');
 
     return pMesh;
 }

@@ -223,7 +223,7 @@ Texture.prototype._setSystemEffect = function () {
     var pEngine = this._pEngine;
     var pEffect;
     if (pEngine.displayManager().componentPool().findResource("akra.system.texture_repack")) {
-        trace("Texture.prototype._setSystemEffect----------------->>>>");
+        // trace("Texture.prototype._setSystemEffect----------------->>>>");
         pEffect = pEngine.pDisplayManager.effectPool().createResource(".repack_texture");
         pEffect.create();
         pEffect.use("akra.system.texture_repack");
@@ -835,7 +835,7 @@ Texture.prototype.extend = function (iWidth, iHeight) {
 Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
     A_TRACER.MESG("START REPACK TEXTURE #" + this.toNumber())
     debug_assert(this._pTexture, 'Cannot repack, because texture not created.');
-    trace("REPACK TEXTURE #" + this.toNumber());
+    // trace("REPACK TEXTURE #" + this.toNumber());
     eFormat = eFormat || this._eFormat;
     eType = eType || this._eType;
 
@@ -868,7 +868,7 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
 
     var pSnapshot = this._pActiveSnapshot;
     var pEntry = null;
-    trace("<<<<<<<<<<<<<TEXTURE REPACK RENDER>>>>>>>>>>>>>>>>");
+    // trace("<<<<<<<<<<<<<TEXTURE REPACK RENDER>>>>>>>>>>>>>>>>");
     A_TRACER.MESG("START REPACK TEXTURE ||RENDER||")
     pRenderer.switchRenderStage(a.RenderStage.DEFAULT);
     pRenderer.setViewport(0, 0, iWidth, iHeight);
@@ -877,7 +877,7 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
     pRenderer.applyFrameBufferTexture(pDestinationTexture);
     this.startRender();
     for (var i = 0; i < this.totalPasses(); i++) {
-        trace("Pass #" + i);
+        // trace("Pass #" + i);
         this.activatePass(i);
         pSnapshot.applyTextureBySemantic("TEXTURE0", this);
         pSnapshot.applyVertexData(pVertexData, a.PRIMTYPE.POINTLIST);
@@ -894,7 +894,7 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
 
     pDevice.flush();
     A_TRACER.MESG("END REPACK TEXTURE ||RENDER||")
-    trace("<<<<<<<<<<<<<END_TEXTURE REPACK RENDER>>>>>>>>>>>>>>>>");
+    // trace("<<<<<<<<<<<<<END_TEXTURE REPACK RENDER>>>>>>>>>>>>>>>>");
 
     this.releaseTexture();
     this._pTexture = pDestinationTexture._pTexture;

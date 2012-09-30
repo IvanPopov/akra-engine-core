@@ -105,7 +105,7 @@ var sDefine = '';
 			case '--output':
 				sOutputFile = process.argv[++ i];
 				fs.writeFileSync(sOutputFile.substr(0, sOutputFile.lastIndexOf('/')) + '/Include.js', outputFileCode(sOutputFile), 'utf-8');
-				fs.writeFileSync(sOutputPath + sOutputFileCode, sCode, 'utf-8');
+				fs.writeFileSync(sOutputPath + sOutputFileCode, '(function () {\n' + sCode + '\n})();//added automaticly. do not edit.', 'utf-8');
 				fs.writeFileSync(sOutputPath + sOutputFileMacro, sDefine + sMacro, 'utf-8');
 				console.log('Preprocessing is completed within ' + (now() - begin) + ' msek.')
 				console.log('Home dir set into: "' + (home? home: '') + '".');

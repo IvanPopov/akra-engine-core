@@ -436,7 +436,7 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
         var pRenderer = this._pEngine.shaderManager();
         var pSnapshot = this._pActiveSnapshot;
         var pEntry = null;
-        trace("<<<<<<<<<<<<<VIDEO BUFFER SET DATA RENDER>>>>>>>>>>>>>>>>");
+        // trace("<<<<<<<<<<<<<VIDEO BUFFER SET DATA RENDER>>>>>>>>>>>>>>>>");
         A_TRACER.MESG("START VIDEO BUFFER SET ||RENDER||");
         pRenderer.switchRenderStage(a.RenderStage.DEFAULT);
         pRenderer.setViewport(0, 0, this._iWidth, this._iHeight);
@@ -444,7 +444,7 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
         pRenderer.applyFrameBufferTexture(this);
         this.startRender();
         for (var i = 0; i < this.totalPasses(); i++) {
-            trace("Pass #"+i);
+            // trace("Pass #"+i);
             this.activatePass(i);
             pSnapshot.applyTextureBySemantic("TEXTURE0", this);
             pSnapshot.applyVertexData(pVertexData, a.PRIMTYPE.POINTLIST);
@@ -458,7 +458,7 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
         pRenderer.processRenderStage();
         pDevice.flush();
         A_TRACER.MESG("END VIDEO BUFFER SET ||RENDER||");
-        trace("<<<<<<<<<<<<<END VIDEO BUFFER SET DATA RENDER>>>>>>>>>>>>>>>>");
+        // trace("<<<<<<<<<<<<<END VIDEO BUFFER SET DATA RENDER>>>>>>>>>>>>>>>>");
     }
     A_TRACER.MESG("END VIDEO BUFFER SET DATA #" + this.toNumber());
     return true;

@@ -127,11 +127,10 @@ ModelResource.prototype.addToScene = function () {
     pRoot.create();
     pRoot.setInheritance(a.Scene.k_inheritAll);
     pRoot.attachToParent(this._pEngine.getRootNode());
-
+    
     for (var i = 0; i < pNodes.length; ++i) {
         pNodes[i].attachToParent(pRoot);
     }
-
     this._pAnimController.bind(pRoot);
     this._pNode = pRoot;
 

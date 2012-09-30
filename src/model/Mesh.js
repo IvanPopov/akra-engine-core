@@ -451,12 +451,16 @@ Mesh.prototype.showBoundingBox = function()
 
 		pSubMesh.data.index(iData,a.DECLUSAGE.INDEX0);
 
-		pSubMesh.applyFlexMaterial(".MaterialBoundingBox");
-		pMaterial = pSubMesh.getFlexMaterial(".MaterialBoundingBox");
+		// pSubMesh.applyFlexMaterial(".MaterialBoundingBox");
+		pMaterial = pSubMesh.material;/*getFlexMaterial(".MaterialBoundingBox");*/
 		pMaterial.emissive = new a.Color4f(1.0, 1.0, 1.0, 1.0);
 		pMaterial.diffuse = new a.Color4f(1.0, 1.0, 1.0, 1.0);
 		pMaterial.ambient = new a.Color4f(1.0, 1.0, 1.0, 1.0);
 		pMaterial.specular = new a.Color4f(1.0, 1.0, 1.0, 1.0);
+
+        pSubMesh.effect.create();
+        pSubMesh.effect.use('akra.system.mesh_texture');
+        pSubMesh.effect.use('akra.system.prepareForDeferredShading');
 	}
 	else
 	{
@@ -578,8 +582,8 @@ Mesh.prototype.showBoundingSphere = function()
 
 		pSubMesh.data.index(iData,a.DECLUSAGE.INDEX0);
 
-		pSubMesh.applyFlexMaterial(".MaterialBoundingSphere");
-		pMaterial = pSubMesh.getFlexMaterial(".MaterialBoundingSphere");
+		// pSubMesh.applyFlexMaterial(".MaterialBoundingSphere");
+		pMaterial = pSubMesh.material;//pSubMesh.getFlexMaterial(".MaterialBoundingSphere");
 		pMaterial.emissive = new a.Color4f(1.0, 0.0, 0.0, 1.0);
 		pMaterial.diffuse  = new a.Color4f(1.0, 0.0, 0.0, 1.0);
 		pMaterial.ambient  = new a.Color4f(1.0, 0.0, 0.0, 1.0);

@@ -1,16 +1,17 @@
-// function defineNotWritableProperty(pObject, pPropList, pValue) {
-// 	for (var i = 0; i < pPropList.length; ++ i) {
-// 		Object.defineProperty(pObject, pPropList[i], {
-// 			value: pValue,
-// 			writable: false,
-// 			configurable: false
-// 		});
-// 	}
-// }
 
-// defineNotWritableProperty(window, ['a', 'akra', 'AKRA'], {});
+function defineNotWritableProperty(pObject, pPropList, pValue) {
+	for (var i = 0; i < pPropList.length; ++ i) {
+		Object.defineProperty(pObject, pPropList[i], {
+			value: pValue,
+			writable: false,
+			configurable: false
+		});
+	}
+}
 
-var a = window.akra = window.AKRA = {};
+defineNotWritableProperty(window, ['a', 'akra', 'AKRA'], {});
+var a = window.a;
+// var a = window.akra = window.AKRA = {};
 
 Define(DEV_BUILD, 1);
 

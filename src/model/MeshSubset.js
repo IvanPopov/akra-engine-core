@@ -106,6 +106,7 @@ MeshSubset.prototype.showBoundingBox = function()
 		this.data.index(iData,a.DECLUSAGE.INDEX0);
 
 		this.applyFlexMaterial(".MaterialBoundingBox");
+        //TODO: некорректно задавать так boundingBox, т.к. надо рендерится со своим рендер методом, а его никто не выбирает. 
 		pMaterial = this.getFlexMaterial(".MaterialBoundingBox");
 		pMaterial.emissive = new a.Color4f(0.0, 0.0, 1.0, 1.0);
 		pMaterial.diffuse  = new a.Color4f(0.0, 0.0, 1.0, 1.0);
