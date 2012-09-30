@@ -192,7 +192,8 @@ LightPoint.prototype.create = function () {
             pCamera.setParameter(a.Camera.CONST_ASPECT, true);
             pCamera.setInheritance(a.Scene.k_inheritAll);
             pCamera.attachToParent(this);
-            pCamera.setProjParams(Math.PI / 2, 1, 0.01, 1000)
+            pCamera.setProjParams(Math.PI / 2, 1, 0.01, 1000);
+            pCamera.setParameter(a.Camera.CONST_ASPECT, true);
         }
 
         //POSITIVE_X
@@ -251,6 +252,7 @@ LightPoint.prototype.create = function () {
         pCamera.setParameter(a.Camera.CONST_ASPECT, true);
         pCamera.setInheritance(a.Scene.k_inheritAll);
         pCamera.attachToParent(this);
+        pCamera.setParameter(a.Camera.CONST_ASPECT, true);
         pCamera.accessLocalMatrix().set(
             [ 1, 0, 0, 0, //first column, not row!
               0, 1, 0, 0,

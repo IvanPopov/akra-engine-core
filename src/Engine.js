@@ -638,7 +638,8 @@ Engine.prototype.render = function () {
         this.pShaderManager.processRenderStage();
         // iTime.push(a.now());
         
-        //this.pDevice.finish();
+        //this.pDevice.flush();
+        this.pDevice.finish();
         // iTime.push(a.now());
         
         //trace("==============Stop Render Scene===========");

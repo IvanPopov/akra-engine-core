@@ -290,7 +290,7 @@ LightManager.prototype._createLightingUniforms = function () {
     var pUniformData;
 
     var pCamera = this._pEngine.getActiveCamera();
-    var pCameraView = pCamera.worldMatrix();
+    var pCameraView = pCamera.viewMatrix();
 
     var v4fLightPosition = Vec4();
     var v3fLightTransformPosition = Vec3();

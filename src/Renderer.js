@@ -36,7 +36,7 @@ function Renderer(pEngine) {
              PROJ_MATRIX,
 
              WORLD_VIEW_MATRIX, //VIEW x WORLD
-             VIEW_PROJ_MATRIX, //PROJ x VIEW
+             PROJ_VIEW_MATRIX,
              WORLD_VIEW_PROJ_MATRIX, //PROJ x VIEW x WORLD
 
              WORLD_MATRIX_ARRAY,
@@ -82,7 +82,6 @@ function Renderer(pEngine) {
              VIEW_MATRIX = "VIEW_MATRIX",
              PROJ_MATRIX = "PROJ_MATRIX",
              NORMAL_MATRIX = "NORMAL_MATRIX",
-             EYE_POS = "EYE_POSITION",
              BIND_MATRIX = "BIND_SHAPE_MATRIX",
              RENDER_OBJECT_ID = "RENDER_OBJECT_ID"
          ], SYSTEM_SEMANTICS, a.Renderer);
@@ -164,9 +163,6 @@ function Renderer(pEngine) {
     this._pCurrentRenderQueue = null;
 
     this._pDefaultColor = new Vec4(0.0, 0.0, 0.5, 1.);
-
-    this._pGlobalPostEffectTexture = null;
-    this._pGlobalPostEffectFrameBuffer = null;
 
     this._initSystemUniforms();
 }
@@ -728,31 +724,30 @@ Renderer.prototype.finishPass = function (iPass) {
     //Very-very bad
     // alert(123);
     // console.log("%%%%%%%", pStateStack, pStateStack[0].pSnapshot.pTemporaryStates);
-    // if(iStackLength === 1 && pStateStack[0].pSnapshot.pTemporaryStates[iPass].pProgram) {
-    //     index = iPass;
-    //     pSnapshot = pStateStack[0].pSnapshot;
-    //     var pPassStates = pSnapshot.pTemporaryStates[index];
-    //     pAttrs = pPassStates.pAttrs;
-    //     pUniformValues = pPassStates.pUniformValues;
-    //     pTextures = pPassStates.pTextures;
-    //     pProgram = pPassStates.pProgram;
+    if(iStackLength === 1 && pStateStack[0].pSnapshot.pTemporaryStates[iPass].pProgram) {
+        index = iPass;
+        pSnapshot = pStateStack[0].pSnapshot;
+        var pPassStates = pSnapshot.pTemporaryStates[index];
+        pAttrs = pPassStates.pAttrs;
+        pUniformValues = pPassStates.pUniformValues;
+        pTextures = pPassStates.pTextures;
+        pProgram = pPassStates.pProgram;
 
-    //     pValues = pSnapshot._pPassStates[index];
-    //     pUniforms = pStateStack[0].pBlend.pUniformsBlend[index];
+        pValues = pSnapshot._pPassStates[index];
+        pUniforms = pStateStack[0].pBlend.pUniformsBlend[index];
 
-    //     for (j = 0; j < pUniforms._pUniformByRealNameKeys.length; j++) {
-    //         sKey = pUniforms._pUniformByRealNameKeys[j];
-    //         if (pValues[sKey] !== undefined && pValues[sKey] !== null) {
-    //             pUniformValues[sKey] = pValues[sKey];
-    //             continue;
-    //         }
-    //         if (this._pSystemUniforms[sKey] === null) {
-    //             pUniformValues[sKey] = this._getSystemUniformValue(sKey);
-    //         }
-    //     }
-    // }
-    // else 
-    {
+        for (j = 0; j < pUniforms._pUniformByRealNameKeys.length; j++) {
+            sKey = pUniforms._pUniformByRealNameKeys[j];
+            if (pValues[sKey] !== undefined && pValues[sKey] !== null) {
+                pUniformValues[sKey] = pValues[sKey];
+                continue;
+            }
+            if (this._pSystemUniforms[sKey] === null) {
+                pUniformValues[sKey] = this._getSystemUniformValue(sKey);
+            }
+        }
+    }
+    else {
         pUniformValues = {};
         pNotDefaultUniforms = {};
         pTextures = {};
@@ -1087,8 +1082,6 @@ Renderer.prototype._getSystemUniformValue = function (sName) {
             return pCamera.viewMatrix();
         case a.Renderer.PROJ_MATRIX:
             return pCamera.projectionMatrix();
-        case a.Renderer.EYE_POS:
-            return pCamera.eyePosition();
         case a.Renderer.BIND_MATRIX:
             return (pRenderObject && pRenderObject.skin) ? pRenderObject.skin.getBindMatrix() : null;
         case a.Renderer.RENDER_OBJECT_ID:
