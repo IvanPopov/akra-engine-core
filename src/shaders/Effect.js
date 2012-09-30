@@ -3518,7 +3518,7 @@ Effect.prototype._initSystemData = function () {
     this._addSystemFunction("fract", null, [null], ["float", "float2", "float3", "float4"], "fract($1)");
     this._addSystemFunction("abs", null, [null], ["float", "float2", "float3", "float4"], "abs($1)");
     this._addSystemFunction("normalize", "float", [null], ["float", "float2", "float3", "float4"], "normalize($1)");
-    this._addSystemFunction("length", null, [null], ["float3", "float4"], "length($1)");
+    this._addSystemFunction("length", "float", [null], ["float", "float2", "float3", "float4"], "length($1)");
     this._addSystemFunction("reflect", null, [null, null], ["float", "float2", "float3", "float4"], "reflect($1,$2)");
     this._addSystemFunction("max", null, [null, null], ["float", "float2", "float3", "float4"], "max($1,$2)");
     this._addSystemFunction("max", null, [null, "float"], ["float2", "float3", "float4"], "max($1,$2)");
@@ -6001,6 +6001,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             else if (sName === a.fx.GLOBAL_VARS.EQUALITYEXPR || sName === a.fx.GLOBAL_VARS.RELATIONALEXPR) {
                 if (pType1 !== a.fx.GLOBAL_VARS.UNDEFINEDTYPE && pType2 !== a.fx.GLOBAL_VARS.UNDEFINEDTYPE &&
                     !pType1.isEqual(pType2)) {
+                    trace(pType1,pType2)
                     error("bad 102");
                     return;
                 }

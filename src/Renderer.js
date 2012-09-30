@@ -36,7 +36,7 @@ function Renderer(pEngine) {
              PROJ_MATRIX,
 
              WORLD_VIEW_MATRIX, //VIEW x WORLD
-             VIEW_PROJ_MATRIX, //PROJ x VIEW
+             PROJ_VIEW_MATRIX,
              WORLD_VIEW_PROJ_MATRIX, //PROJ x VIEW x WORLD
 
              WORLD_MATRIX_ARRAY,
@@ -82,7 +82,6 @@ function Renderer(pEngine) {
              VIEW_MATRIX = "VIEW_MATRIX",
              PROJ_MATRIX = "PROJ_MATRIX",
              NORMAL_MATRIX = "NORMAL_MATRIX",
-             EYE_POS = "EYE_POSITION",
              BIND_MATRIX = "BIND_SHAPE_MATRIX",
              RENDER_OBJECT_ID = "RENDER_OBJECT_ID"
          ], SYSTEM_SEMANTICS, a.Renderer);
@@ -1083,8 +1082,6 @@ Renderer.prototype._getSystemUniformValue = function (sName) {
             return pCamera.viewMatrix();
         case a.Renderer.PROJ_MATRIX:
             return pCamera.projectionMatrix();
-        case a.Renderer.EYE_POS:
-            return pCamera.eyePosition();
         case a.Renderer.BIND_MATRIX:
             return (pRenderObject && pRenderObject.skin) ? pRenderObject.skin.getBindMatrix() : null;
         case a.Renderer.RENDER_OBJECT_ID:

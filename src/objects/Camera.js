@@ -25,11 +25,24 @@ function Camera () {
     Enum([
             CONST_ASPECT = 1
         ], CAMERA_OPTIONS, a.Camera);
+
+    Enum([
+             k_newProjectionMatrix = 0
+         ], eProjectionMatrix, a.Camera);
+
     /**
      * Type. Form enum e_Type
      * @type Int
      */
     this.iType = a.Camera.k_FOV;
+
+    /**
+     * update projection bit flag
+     * @private
+     * @type Int
+     */
+    this._iUpdateProjectionFlags = 0;
+
     /**
      * View matrix
      * @type Float32Array
@@ -144,8 +157,6 @@ function Camera () {
      */
     this.pFrustum = new a.Frustum();
 
-    this._v3fEyePosition = new Vec3();
-
     this.iCameraOptions = 0;
 }
 
@@ -206,6 +217,8 @@ Camera.prototype.setProjParams = function (fFOV, fAspect, fNearPlane, fFarPlane)
     // near and far plane enclose 
     // the unit space around the camera
     Mat4.matrixPerspectiveFovRH(fFOV, fAspect, 0.01, 2.0, this.m4fUnitProj);
+
+    SET_BIT(this._iUpdateProjectionFlags, a.Camera.k_newProjectionMatrix);
 };
 /**
  * Set params
@@ -230,6 +243,8 @@ Camera.prototype.setOrthoParams = function (fWidth, fHeight, fNearPlane, fFarPla
     // near and far plane enclose 
     // the unit space around the camera
     Mat4.matrixOrthoRH(fWidth, fHeight, 0.01, 2.0, this.m4fUnitProj);
+
+    SET_BIT(this._iUpdateProjectionFlags, a.Camera.k_newProjectionMatrix);
 };
 /**
  * Set params
@@ -260,6 +275,8 @@ Camera.prototype.setOffsetOrthoParams = function (fMinX, fMaxX, fMinY, fMaxY, fN
     // the unit space around the camera
     Mat4.orthogonalProjection(fMinX, fMaxX, fMinY, fMaxY,
                                 0.01, 2.0, this.m4fUnitProj);
+
+    SET_BIT(this._iUpdateProjectionFlags, a.Camera.k_newProjectionMatrix);
 };
 /**
  * Recalc matrices
@@ -348,16 +365,6 @@ Camera.prototype.recalcMatrices = function () {
 //    this.pFrustum.extractFromMatrix(this.m4fProjView);
     //this.pFrustum.extractFromMatrixGL(this.m4fProjView);
     
-    this._extractFrustumVertices();
-    this._calculateFrustumPlanes();
-
-    this.m4fRenderStageProj.set(this.m4fProj);
-    this.m4fRenderStageProjView.set(this.m4fProjView);
-
-    //update eye position
-
-    var v4fTemp = Vec4(this._v3fWorldPosition,1.);
-    this._v3fEyePosition.set(this.m4fView.multiply(v4fTemp,Vec4()));
 };
 /**
  * Update
@@ -365,9 +372,23 @@ Camera.prototype.recalcMatrices = function () {
 Camera.prototype.update = function () {
     Camera.superclass.update.apply(this, arguments);
 
+    if(TEST_BIT(this._iUpdateProjectionFlags, a.Camera.k_newProjectionMatrix)){
+        this._extractFrustumVertices();
+    }
+
     if (this.isWorldMatrixNew()) {
         this.recalcMatrices();
     }
+
+    if(TEST_BIT(this._iUpdateProjectionFlags, a.Camera.k_newProjectionMatrix) 
+        || this.isWorldMatrixNew()){
+
+        this._calculateFrustumPlanes();
+
+        this.m4fRenderStageProj.set(this.m4fProj);
+        this.m4fRenderStageProjView.set(this.m4fProjView);
+    }
+
 };
 /**
  * Apply???
@@ -510,10 +531,6 @@ Camera.prototype.frustum = function () {
     INLINE();
     return this.pFrustum;
 };
-
-Camera.prototype.eyePosition = function () {
-    return this._v3fEyePosition;
-}
 
 Ifdef (__DEBUG);
 
