@@ -250,7 +250,7 @@ LightManager.prototype._createLightingUniforms = function () {
     var pUniformData;
 
     var pCamera = this._pEngine.getActiveCamera();
-    var pCameraView = pCamera.worldMatrix();
+    var pCameraView = pCamera.viewMatrix();
 
     var v4fLightPosition = Vec4();
     var v3fLightTransformPosition = Vec3();
@@ -275,6 +275,7 @@ LightManager.prototype._createLightingUniforms = function () {
         }
         v4fLightPosition.set(pLight.worldPosition(), 1.);
         v3fLightTransformPosition.set(pCameraView.multiply(v4fLightPosition, v4fTemp));
+        trace(pLight.worldPosition().toString(),v3fLightTransformPosition.toString());
         if (pLight.isOmnidirectional) {
             if (pLight._haveShadows) {
                 pUniformData = a.UniformOmniShadow();
