@@ -638,7 +638,7 @@ Engine.prototype.render = function () {
         this.pShaderManager.processRenderStage();
         // iTime.push(a.now());
         
-        this.pDevice.finish();
+        //this.pDevice.finish();
         // iTime.push(a.now());
         
         //trace("==============Stop Render Scene===========");
@@ -786,33 +786,40 @@ Engine.prototype.fullscreen = function () {
         (pCanvas.requestFullscreen || pCanvas.mozRequestFullScreen || pCanvas.webkitRequestFullscreen)();
 
         pCanvas.onfullscreenchange = pCanvas.onmozfullscreenchange = pCanvas.onwebkitfullscreenchange =
-                                                                     function (e) {
-                                                                         var pScreen = a.info.screen;
-                                                                         if (pEngine.inFullscreenMode()) {
-                                                                             pCanvas.width = pScreen.width;
-                                                                             pCanvas.height = pScreen.height;
-                                                                         }
-                                                                         else {
-                                                                             pCanvas.width = pEngine.iCreationWidth;
-                                                                             pCanvas.height = pEngine.iCreationHeight;
-                                                                         }
+         function (e) {
+             var pScreen = a.info.screen;
 
-                                                                         var pRoot = pEngine.getRootNode();
-                                                                         pRoot.explore(function () {
-                                                                             if (this instanceof a.Camera) {
-                                                                                 if (!this.isConstantAspect()) {
-                                                                                     this.setProjParams(
-                                                                                         this.fov(),
-                                                                                         pCanvas.width / pCanvas.height,
-                                                                                         this.nearPlane(),
-                                                                                         this.farPlane());
-                                                                                     this.setUpdatedLocalMatrixFlag();
-                                                                                 }
-                                                                             }
-                                                                         })
+             if (pEngine.inFullscreenMode()) {
+                 pCanvas.width = pScreen.width;
+                 pCanvas.height = pScreen.height;
+             }
+             else {
+                 pCanvas.width = pEngine.iCreationWidth;
+                 pCanvas.height = pEngine.iCreationHeight;
+             }
 
-                                                                         Engine.prototype.bFullscreenLock = false;
-                                                                     }
+             var pRoot = pEngine.getRootNode();
+
+             pEngine.lightManager().updateTextures();
+
+             //FIXME: убрать это отсюда
+             pEngine.shaderManager().updateGlobalPostEffectTexture();
+
+             pRoot.explore(function () {
+                 if (this instanceof a.Camera) {
+                     if (!this.isConstantAspect()) {
+                         this.setProjParams(
+                             this.fov(),
+                             pCanvas.width / pCanvas.height,
+                             this.nearPlane(),
+                             this.farPlane());
+                         this.setUpdatedLocalMatrixFlag();
+                     }
+                 }
+             })
+
+             Engine.prototype.bFullscreenLock = false;
+         }
     }
     catch (e) {
         warning('Fullscreen API not supported');

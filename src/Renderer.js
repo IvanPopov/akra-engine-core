@@ -1174,7 +1174,7 @@ Renderer.prototype.applyFrameBufferTexture = function (pTexture, eAttachment, eT
     eTexTarget = (eTexTarget === undefined) ? pDevice.TEXTURE_2D : eTexTarget;
     iLevel = 0;
     // // trace("Attach texture to farme buffer #" + this._pRenderState.iFrameBuffer);
-    this._pRenderState.pFrameBuffer.frameBufferTexture2D(eAttachment, eTexTarget, pTexture._pTexture);
+    this._pRenderState.pFrameBuffer.frameBufferTexture2D(eAttachment, eTexTarget, pTexture? pTexture._pTexture: null);
     this._pRenderState.pFrameBuffer.texture = pTexture;
 };
 Renderer.prototype.applySurfaceMaterial = function (pMaterial) {
@@ -1718,12 +1718,35 @@ Renderer.prototype.createDeviceResources = function () {
 
     this._pGlobalPostEffectTexture = pTexturePool.createResource(".texture-" + a.sid());
 
-    this._pGlobalPostEffectTexture.createTexture(Math.ceilingPowerOfTwo(this.pEngine.pCanvas.width), Math.ceilingPowerOfTwo(this.pEngine.pCanvas.height));
+    this._pGlobalPostEffectTexture.createTexture(this.pEngine.pCanvas.width, this.pEngine.pCanvas.height);
+    this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+    this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+    this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
+    this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
 
     this._pGlobalPostEffectFrameBuffer = this.activateFrameBuffer();
     this.applyFrameBufferTexture(this._pGlobalPostEffectTexture);
 
     return true;
+};
+
+Renderer.prototype.updateGlobalPostEffectTexture = function() {
+
+    // var pTexturePool = this.pEngine.displayManager().texturePool();
+
+    // this._pGlobalPostEffectTexture = pTexturePool.createResource(".texture-" + a.sid());
+
+    this.activateFrameBuffer(this._pGlobalPostEffectFrameBuffer);
+
+    this._pGlobalPostEffectTexture.createTexture(this.pEngine.pCanvas.width, this.pEngine.pCanvas.height);
+    this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+    this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+    this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
+    this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
+
+    
+    this.applyFrameBufferTexture(this._pGlobalPostEffectTexture);
+    this.activateFrameBuffer(null);
 };
 
 Renderer.prototype.disableDeviceResources = function () {

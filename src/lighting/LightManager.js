@@ -148,7 +148,7 @@ LightManager.prototype.getDeferredTextureCount = function () {
     return this._nMaxDeferredTextureCount;
 };
 //этот метод нужно вызывать в случае изменения размеров канваса
-LightManager.prototype.updateTexture = function () {
+LightManager.prototype.updateTextures = function () {
     'use strict';
 
     var pCanvas = this._pEngine.pCanvas;
@@ -164,8 +164,8 @@ LightManager.prototype.updateTexture = function () {
         //depth texture
         var pDepthTexture = this._pDepthTexture;
 
-        pDepthTexture.createTexture(iWidth, iHeight,
-                                    0, a.IFORMAT.DEPTH_COMPONENT, a.DTYPE.UNSIGNED_INT, null);
+        pDepthTexture.createTexture(iWidth, iHeight/*,
+                                    0, a.IFORMAT.DEPTH_COMPONENT, a.DTYPE.UNSIGNED_INT, null*/);
 
         pDepthTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
         pDepthTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
@@ -179,13 +179,25 @@ LightManager.prototype.updateTexture = function () {
         for (var i = 0; i < this._nMaxDeferredTextureCount; i++) {
             var pDeferredTexture = pDeferredTextures[i];
 
-            pDeferredTexture.createTexture(iWidth, iHeight,
-                                           0, a.IFORMAT.RGBA, a.DTYPE.FLOAT, null);
+            pDeferredTexture.createTexture(iWidth, iHeight/*,
+                                           0, a.IFORMAT.RGBA, a.DTYPE.FLOAT, null*/);
 
             pDeferredTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
             pDeferredTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
             pDeferredTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
             pDeferredTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
+        }
+
+        //FIXME: сделать правильно, без дублирования фреймбуферов
+        var pFrameBuffers = this._pDeferredFrameBuffers;
+        var pRenderer = this._pEngine.shaderManager();
+        for (var i = 0; i < this._nMaxDeferredTextureCount; i++) {
+            pRenderer.activateFrameBuffer(pFrameBuffers[i]);
+            pRenderer.applyFrameBufferTexture(pDepthTexture, a.ATYPE.DEPTH_ATTACHMENT, a.TTYPE.TEXTURE_2D,
+                                              0);
+            pRenderer.applyFrameBufferTexture(pDeferredTextures[i], a.ATYPE.COLOR_ATTACHMENT0,
+                                              a.TTYPE.TEXTURE_2D, 0);
+            pRenderer.activateFrameBuffer(null);
         }
     }
 
@@ -249,8 +261,8 @@ LightManager.prototype.applyLight = function () {
     pSubMesh.activatePass(1);
     pRenderer.activateFrameBuffer(null);
     pSnapshot.applyTextureBySemantic("SCREEN_TEXTURE", pRenderer._pGlobalPostEffectTexture);
-    pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_RATIO",
-                                     [pCanvas.width / pDepthTexture.width, pCanvas.height / pDepthTexture.height]);
+    // pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_RATIO",
+    //                                  [pCanvas.width / pDepthTexture.width, pCanvas.height / pDepthTexture.height]);
     pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_SIZE", [pCanvas.width, pCanvas.height]);
     pSubMesh.applyRenderData(pSubMesh.data);
 

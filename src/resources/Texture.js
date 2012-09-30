@@ -70,7 +70,6 @@ function Texture(pEngine) {
     this._eType = a.ITYPE.UNSIGNED_BYTE;
 
     this._iSlot = -1;
-    this._pEngine = pEngine;
 
     this._pRepackTexture = null;
     this._pSystemVertexDataTexture = null;
@@ -395,6 +394,7 @@ Texture.prototype.releaseTexture = function () {
     var pDevice = this._pEngine.pDevice;
     if (this._pTexture) {
         pDevice.deleteTexture(this._pTexture);
+        this._isTextureChanged = true;
     }
     if (this._pFrameBuffer) {
         pDevice.deleteFramebuffer(this._pFrameBuffer);
@@ -941,6 +941,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
     this._iFlags = eFlags;
     this._eFormat = eFormat || this._eFormat;
     this._eType = eType || this._eType;
+    this._iSlot = -1;
 
     if (!(pData instanceof Array)) {
         pData = [pData];
