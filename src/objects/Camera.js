@@ -143,14 +143,7 @@ function Camera () {
      * @type Float
      */
     this.fMaxY = 0.0;
-    /**
-     * List of points
-     * @type Array<Float32Array>(8)
-     */
-    this.pv3fFarPlanePoints = new Array(8);
-    for (var i = 0; i < 8; ++i) {
-        this.pv3fFarPlanePoints[i] = new Vec3;
-    }
+
     /**
      * Frustum
      * @type Frustum
@@ -158,6 +151,17 @@ function Camera () {
     this.pFrustum = new a.Frustum();
 
     this.iCameraOptions = 0;
+
+    //вершины frustum-а
+    this._v4fLeftBottomNear = new Vec4();
+    this._v4fRightBottomNear = new Vec4();
+    this._v4fLeftTopNear = new Vec4();
+    this._v4fRightTopNear = new Vec4();
+
+    this._v4fLeftBottomFar = new Vec4();
+    this._v4fRightBottomFar = new Vec4();
+    this._v4fLeftTopFar = new Vec4();
+    this._v4fRightTopFar = new Vec4();
 }
 
 EXTENDS(Camera, a.SceneNode);
@@ -316,55 +320,6 @@ Camera.prototype.recalcMatrices = function () {
     this.m4fBillboard.pData._24 = 0.0;
     this.m4fBillboard.pData._34 = 0.0;
 
-    // our view proj matrix is the inverse of our world matrix
-    // multiplied by the projection matrix
-    this.m4fProj.multiply(this.m4fView, this.m4fProjView);
-
-    var m4fInvProj = Mat4();
-    var m4fInvCamera = Mat4();
-    
-    this.m4fProj.inverse(m4fInvProj);
-    this.worldMatrix().multiply(m4fInvProj, m4fInvCamera);
-
-    var v3fWorldPos = Vec3(this.worldPosition());
-
-    var p0 = Vec3(-1.0, 1.0, 1.0);
-    var p1 = Vec3(-1.0, -1.0, 1.0);
-    var p2 = Vec3(1.0, -1.0, 1.0);
-    var p3 = Vec3(1.0, 1.0, 1.0);
-    var p4 = Vec3(-1.0, 1.0, 0.0);
-    var p5 = Vec3(-1.0, -1.0, 0.0);
-    var p6 = Vec3(1.0, -1.0, 0.0);
-    var p7 = Vec3(1.0, 1.0, 0.0);
-
-    p0.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[0]);
-    p1.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[1]);
-    p2.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[2]);
-    p3.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[3]);
-    p4.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[4]);
-    p5.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[5]);
-    p6.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[6]);
-    p7.vec3TransformCoord(m4fInvCamera, this.pv3fFarPlanePoints[7]);
-
-    // build a box around our frustum
-    this.pSearchRect.set(v3fWorldPos.pData.X, v3fWorldPos.pData.X,
-                         v3fWorldPos.pData.Y, v3fWorldPos.pData.Y,
-                         v3fWorldPos.pData.Z, v3fWorldPos.pData.Z);
-
-    this.pSearchRect.unionPoint(this.pv3fFarPlanePoints[0]);
-    this.pSearchRect.unionPoint(this.pv3fFarPlanePoints[1]);
-    this.pSearchRect.unionPoint(this.pv3fFarPlanePoints[2]);
-    this.pSearchRect.unionPoint(this.pv3fFarPlanePoints[3]);
-    this.pSearchRect.unionPoint(this.pv3fFarPlanePoints[4]);
-    this.pSearchRect.unionPoint(this.pv3fFarPlanePoints[5]);
-    this.pSearchRect.unionPoint(this.pv3fFarPlanePoints[6]);
-    this.pSearchRect.unionPoint(this.pv3fFarPlanePoints[7]);
-    //TODO: FIX THIS
-    //this.pSearchRect.expand(25);
-
-//    this.pFrustum.extractFromMatrix(this.m4fProjView);
-    //this.pFrustum.extractFromMatrixGL(this.m4fProjView);
-    
 };
 /**
  * Update
@@ -374,21 +329,27 @@ Camera.prototype.update = function () {
 
     if(TEST_BIT(this._iUpdateProjectionFlags, a.Camera.k_newProjectionMatrix)){
         this._extractFrustumVertices();
+
+        this.m4fRenderStageProj.set(this.m4fProj);
+
+        if(!this.isWorldMatrixNew()){
+            this._rebuildSearchRectAndFrustum();
+
+            // our view proj matrix is the inverse of our world matrix
+            // multiplied by the projection matrix
+            this.m4fProj.multiply(this.m4fView, this.m4fRenderStageProjView);            
+        }
     }
 
     if (this.isWorldMatrixNew()) {
         this.recalcMatrices();
+
+        this._rebuildSearchRectAndFrustum();
+
+        // our view proj matrix is the inverse of our world matrix
+        // multiplied by the projection matrix
+        this.m4fProj.multiply(this.m4fView, this.m4fRenderStageProjView);
     }
-
-    if(TEST_BIT(this._iUpdateProjectionFlags, a.Camera.k_newProjectionMatrix) 
-        || this.isWorldMatrixNew()){
-
-        this._calculateFrustumPlanes();
-
-        this.m4fRenderStageProj.set(this.m4fProj);
-        this.m4fRenderStageProjView.set(this.m4fProjView);
-    }
-
 };
 /**
  * Apply???
@@ -657,32 +618,20 @@ Camera.prototype._extractFrustumVertices = function() {
 
     var m4fProj = this.m4fProj;
 
-    this._v4fLeftBottomNear = new Vec4();
     unproj(m4fProj,Vec4(-1,-1,-1,1),this._v4fLeftBottomNear);
-
-    this._v4fRightBottomNear = new Vec4();
     unproj(m4fProj,Vec4(1,-1,-1,1),this._v4fRightBottomNear);
-
-    this._v4fLeftTopNear = new Vec4();
     unproj(m4fProj,Vec4(-1,1,-1,1),this._v4fLeftTopNear);
-
-    this._v4fRightTopNear = new Vec4();
     unproj(m4fProj,Vec4(1,1,-1,1),this._v4fRightTopNear);
 
-    this._v4fLeftBottomFar = new Vec4();
     unproj(m4fProj,Vec4(-1,-1,1,1),this._v4fLeftBottomFar);
-
-    this._v4fRightBottomFar = new Vec4();
     unproj(m4fProj,Vec4(1,-1,1,1),this._v4fRightBottomFar);
-
-    this._v4fLeftTopFar = new Vec4();
     unproj(m4fProj,Vec4(-1,1,1,1),this._v4fLeftTopFar);
-
-    this._v4fRightTopFar = new Vec4();
     unproj(m4fProj,Vec4(1,1,1,1),this._v4fRightTopFar);
+
+    CLEAR_BIT(this._iUpdateProjectionFlags, a.Camera.k_newProjectionMatrix);
 };
 
-Camera.prototype._calculateFrustumPlanes = function() {
+Camera.prototype._rebuildSearchRectAndFrustum = function() {
     'use strict';
 
     //нормали всех плоскостей frustum-а смотрят наружу
@@ -690,15 +639,25 @@ Camera.prototype._calculateFrustumPlanes = function() {
     var m4fCameraWorld = this._m4fWorldMatrix;
     var pFrustum = this.pFrustum;
 
-    var v4fLeftBottomNearData = m4fCameraWorld.multiply(this._v4fLeftBottomNear,Vec4()).pData;
-    var v4fRightBottomNearData = m4fCameraWorld.multiply(this._v4fRightBottomNear,Vec4()).pData;
-    var v4fLeftTopNearData = m4fCameraWorld.multiply(this._v4fLeftTopNear,Vec4()).pData;
-    var v4fRightTopNearData = m4fCameraWorld.multiply(this._v4fRightTopNear,Vec4()).pData;
+    var v4fLeftBottomNear = m4fCameraWorld.multiply(this._v4fLeftBottomNear,Vec4());
+    var v4fRightBottomNear = m4fCameraWorld.multiply(this._v4fRightBottomNear,Vec4());
+    var v4fLeftTopNear = m4fCameraWorld.multiply(this._v4fLeftTopNear,Vec4());
+    var v4fRightTopNear = m4fCameraWorld.multiply(this._v4fRightTopNear,Vec4());
 
-    var v4fLeftBottomFarData = m4fCameraWorld.multiply(this._v4fLeftBottomFar,Vec4()).pData;
-    var v4fRightBottomFarData = m4fCameraWorld.multiply(this._v4fRightBottomFar,Vec4()).pData;
-    var v4fLeftTopFarData = m4fCameraWorld.multiply(this._v4fLeftTopFar,Vec4()).pData;
-    var v4fRightTopFarData = m4fCameraWorld.multiply(this._v4fRightTopFar,Vec4()).pData;
+    var v4fLeftBottomFar = m4fCameraWorld.multiply(this._v4fLeftBottomFar,Vec4());
+    var v4fRightBottomFar = m4fCameraWorld.multiply(this._v4fRightBottomFar,Vec4());
+    var v4fLeftTopFar = m4fCameraWorld.multiply(this._v4fLeftTopFar,Vec4());
+    var v4fRightTopFar = m4fCameraWorld.multiply(this._v4fRightTopFar,Vec4());
+
+    var v4fLeftBottomNearData = v4fLeftBottomNear.pData;
+    var v4fRightBottomNearData = v4fRightBottomNear.pData;
+    var v4fLeftTopNearData = v4fLeftTopNear.pData;
+    var v4fRightTopNearData = v4fRightTopNear.pData;
+
+    var v4fLeftBottomFarData = v4fLeftBottomFar.pData;
+    var v4fRightBottomFarData = v4fRightBottomFar.pData;
+    var v4fLeftTopFarData = v4fLeftTopFar.pData;
+    var v4fRightTopFarData = v4fRightTopFar.pData;
 
     var x1,y1,z1; //первый вектор
     var x2,y2,z2; //второй вектор
@@ -920,6 +879,25 @@ Camera.prototype._calculateFrustumPlanes = function() {
     v3fNormalFarData.Z = z3;
     //constant
     pFrustum.farPlane.fDistance = -(testPoint2.X*x3 + testPoint2.Y*y3 + testPoint2.Z*z3);
+
+    /////////////////////////////////////////////////////////////////
+
+    // build a box around our frustum
+    var pWorldData = this.worldPosition().pData;
+
+    var pSearchRect = this.pSearchRect;
+    pSearchRect.set(pWorldData.X, pWorldData.X,
+                        pWorldData.Y, pWorldData.Y,
+                        pWorldData.Z, pWorldData.Z);
+
+    pSearchRect.unionPoint(v4fLeftBottomNear);
+    pSearchRect.unionPoint(v4fRightBottomNear);
+    pSearchRect.unionPoint(v4fLeftTopNear);
+    pSearchRect.unionPoint(v4fRightTopNear);
+    pSearchRect.unionPoint(v4fLeftBottomFar);
+    pSearchRect.unionPoint(v4fRightBottomFar);
+    pSearchRect.unionPoint(v4fLeftTopFar);
+    pSearchRect.unionPoint(v4fRightTopFar);
 };
 
 a.Camera = Camera;
