@@ -89,6 +89,9 @@ function cube (pEngine, eOptions, sName, fSize) {
     pMat.specular = new a.Color4f(1., 0.7, 0. ,1);
     pMat.shininess = 30.;
 
+    pSubMesh.effect.create();
+    pSubMesh.effect.use("akra.system.mesh_texture");
+    pSubMesh.effect.use("akra.system.prepareForDeferredShading");
     //trace(pSubMesh._pMap.toString());
 
     return pMesh;
