@@ -58,7 +58,7 @@ function Texture(pEngine) {
      * @type WebGLTexture
      */
     this._pTexture = null;
-    this._pFrameBuffer = null;
+    // this._pFrameBuffer = null;
 
     this._pTextureParams = { };
     this._pTextureParams[a.TPARAM.MAG_FILTER] = a.TFILTER.LINEAR;
@@ -398,11 +398,11 @@ Texture.prototype.releaseTexture = function () {
         pDevice.deleteTexture(this._pTexture);
         // this._isTextureChanged = true;
     }
-    if (this._pFrameBuffer) {
-        pDevice.deleteFramebuffer(this._pFrameBuffer);
-    }
+    // if (this._pFrameBuffer) {
+    //     pDevice.deleteFramebuffer(this._pFrameBuffer);
+    // }
     this._pTexture = null;
-    this._pFrameBuffer = null;
+    // this._pFrameBuffer = null;
 }
 
 /**
@@ -714,7 +714,7 @@ Texture.prototype.uploadImage = function (pImage) {
     this.releaseTexture();
 
     this._pTexture = pDevice.createTexture();
-    this._pFrameBuffer = pDevice.createFramebuffer();
+    //this._pFrameBuffer = pDevice.createFramebuffer();
 
     if (!a.info.graphics.checkFormat(pDevice, pImage.getFormat())) {
         debug_print("Формат не поддерживается, происходит переконвертация");
@@ -937,9 +937,6 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
     if (eFlags == undefined) {
         eFlags = 0;
     }
-    if (pDevice.getError()) {
-        throw new Error();
-    }
 
     this.releaseTexture();
     this._pTexture = pDevice.createTexture();
@@ -954,7 +951,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
     }
  
     pRenderer.bindTexture(this);
-    pDevice.pixelStorei(pDevice.UNPACK_ALIGNMENT, 1);
+    //pDevice.pixelStorei(pDevice.UNPACK_ALIGNMENT, 1);
     //this.flipY();
 
     if (TEST_BIT(eFlags, a.Texture.MipMaps)) {
@@ -1005,11 +1002,12 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
     this.notifyLoaded();
     this.notifyRestored();
     
+    // pRenderer.unbindTexture();
+
     return true;
 };
 
 Texture.prototype.bind = function () {
-    A_TRACER.MESG("Bind texture with #" + this.toNumber());
     this._pEngine.pDevice.bindTexture(this.target, this._pTexture);
     return true;
 };

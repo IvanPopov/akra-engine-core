@@ -191,11 +191,11 @@ a.createDevice = function (pCanvas, bAntialias) {
             pContext = WebGLDebugUtils.makeDebugContext(pContext, 
                 function throwOnGLError(err, funcName, args) {
                     throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
-                }/*,
+                },
                 function logGLCall(functionName, args) {   
                    console.log("gl." + functionName + "(" + 
                       WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");   
-                }*/);
+                });
         }
     }
     catch (e) {

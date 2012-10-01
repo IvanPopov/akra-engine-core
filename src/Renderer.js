@@ -1419,13 +1419,25 @@ Renderer.prototype.bindTexture = function (pTexture) {
     }
     // trace("Real bind texture #" + pTexture.toNumber());
     this._pRenderState.pTexture = pTexture;
+
     pTexture._isTextureChanged = false;
+
     if (this._pRenderState.iTextureSlot >= -1) {
         this._pRenderState.pTextureSlotStates[this._pRenderState.iTextureSlot] = true;
     }
+    
     pTexture.bind();
+
     return true;
 };
+
+Renderer.prototype.unbindTexture = function() {
+    this._pRenderState.pTexture.unbind();
+    this._pRenderState.pTexture = null;
+
+    return true;
+};
+
 Renderer.prototype.activateTexture = function (pTexture) {
     var i;
     var pSlots = this._pRenderState.pTextureSlots;
