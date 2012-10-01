@@ -68,6 +68,8 @@ PopArray.prototype.element = function (index) {
     return this._pData[index];
 };
 
+A_NAMESPACE(PopArray);
+
 
 function Map() {
     this.pKeys = new a.PopArray();
@@ -151,13 +153,4 @@ Allocator.prototype._releaseElement = function (pElement) {
     this._pElements[--this._nCount] = pElement;
 };
 
-a._pMapAllocator = new Allocator(a.Map, 1000, 100);
-a._pArrayAllocator = new Allocator(a.PopArray, 1000, 100);
-
-function PopArrayStorage() {
-    return a._pArrayAllocator.getElement();
-}
-
-function MapStorage() {
-    return a._pMapAllocator.getElement();
-}
+A_NAMESPACE(Allocator);

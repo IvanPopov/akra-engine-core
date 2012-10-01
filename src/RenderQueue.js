@@ -77,10 +77,15 @@ RenderQueue.prototype.init = function (nCount, iIncrement) {
     this._nCount = nCount;
     this._pFreeEntrys = new Array(nCount);
     this._pSortEntrys = new Array(nCount);
-    var i;
-    for (i = 0; i < nCount; i++) {
+    for(var i = 0; i < nCount; i++){
         this._pFreeEntrys[i] = new a.RenderEntry();
     }
+    this._nSortCount = 0;
+//    this._pSortEntrys = new a.PopArray(nCount, iIncrement);
+//    this._pFreeEntrys = new a.Allocator(a.RenderEntry, nCount, iIncrement);
+//    this._pSortEntrys = new a.PopArray(nCount, iIncrement);
+    console.log(this);
+
 };
 
 RenderQueue.prototype.getEmptyEntry = function () {
@@ -98,7 +103,8 @@ RenderQueue.prototype.getEmptyEntry = function () {
 
 RenderQueue.prototype._releaseEntry = function (pEntry) {
     pEntry.clear();
-    this._pFreeEntrys[this._nCount - 1] = pEntry;
+    this._pFreeEntrys[this._nCount] = (pEntry);
+    this._nCount++;
     this._nSortCount--;
 };
 
@@ -116,9 +122,9 @@ RenderQueue.prototype._addNewEntrys = function () {
 RenderQueue.prototype.addSortEntry = function (pEntry) {
     var iIndex = this._nSortCount;
     var iLength = this._pSortEntrys.length;
-    if (iLength === iIndex) {
-        this._addNewEntrys();
-    }
+//    if (iLength === iIndex) {
+//        this._addNewEntrys();
+//    }
     this._pSortEntrys[iIndex] = pEntry;
     this._nSortCount++;
 };
@@ -127,16 +133,9 @@ RenderQueue.prototype.execute = function () {
     var i;
     var iLength = this._nSortCount;
     var pRenderer = this._pEngine.shaderManager();
-//    trace("RenderQueue.prototype.execute. Number of Entry = ", iLength);
     for (i = 0; i < iLength; i++) {
-        //trace(this._pSortEntrys[i], this._pSortEntrys, i)
         pRenderer.render(this._pSortEntrys[i]);
-//        this._releaseEntry(this._pSortEntrys[i]s);
-        // if(this._eType === a.RenderStage.GLOBALPOSTEFFECTS){
-        //     var pixels = new Uint8Array(4);
-        //     pRenderer.pDevice.readPixels(100, 100, 1, 1, 0x1908, 0x1401, pixels);
-        //     console.log(pixels);
-        // }
+        this._releaseEntry(this._pSortEntrys[i]);
     }
     pRenderer.activateFrameBuffer(null);
     this._nSortCount = 0;

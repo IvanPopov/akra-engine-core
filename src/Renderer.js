@@ -724,30 +724,30 @@ Renderer.prototype.finishPass = function (iPass) {
     //Very-very bad
     // alert(123);
     // console.log("%%%%%%%", pStateStack, pStateStack[0].pSnapshot.pTemporaryStates);
-    // if(iStackLength === 1 && pStateStack[0].pSnapshot.pTemporaryStates[iPass].pProgram) {
-    //     index = iPass;
-    //     pSnapshot = pStateStack[0].pSnapshot;
-    //     var pPassStates = pSnapshot.pTemporaryStates[index];
-    //     pAttrs = pPassStates.pAttrs;
-    //     pUniformValues = pPassStates.pUniformValues;
-    //     pTextures = pPassStates.pTextures;
-    //     pProgram = pPassStates.pProgram;
-
-    //     pValues = pSnapshot._pPassStates[index];
-    //     pUniforms = pStateStack[0].pBlend.pUniformsBlend[index];
-
-    //     for (j = 0; j < pUniforms._pUniformByRealNameKeys.length; j++) {
-    //         sKey = pUniforms._pUniformByRealNameKeys[j];
-    //         if (pValues[sKey] !== undefined && pValues[sKey] !== null) {
-    //             pUniformValues[sKey] = pValues[sKey];
-    //             continue;
-    //         }
-    //         if (this._pSystemUniforms[sKey] === null) {
-    //             pUniformValues[sKey] = this._getSystemUniformValue(sKey);
-    //         }
-    //     }
-    // }
-    // else 
+//    if(iStackLength === 1 && pStateStack[0].pSnapshot.pTemporaryStates[iPass].pProgram) {
+//         index = iPass;
+//         pSnapshot = pStateStack[0].pSnapshot;
+//         var pPassStates = pSnapshot.pTemporaryStates[index];
+//         pAttrs = pPassStates.pAttrs;
+//         pUniformValues = pPassStates.pUniformValues;
+//         pTextures = pPassStates.pTextures;
+//         pProgram = pPassStates.pProgram;
+//
+//         pValues = pSnapshot._pPassStates[index];
+//         pUniforms = pStateStack[0].pBlend.pUniformsBlend[index];
+//
+//         for (j = 0; j < pUniforms._pUniformByRealNameKeys.length; j++) {
+//             sKey = pUniforms._pUniformByRealNameKeys[j];
+//             if (pValues[sKey] !== undefined && pValues[sKey] !== null) {
+//                 pUniformValues[sKey] = pValues[sKey];
+//                 continue;
+//             }
+//             if (this._pSystemUniforms[sKey] === null) {
+//                 pUniformValues[sKey] = this._getSystemUniformValue(sKey);
+//             }
+//         }
+//    }
+//    else
     {
         pUniformValues = {};
         pNotDefaultUniforms = {};
@@ -1512,7 +1512,7 @@ Renderer.prototype.render = function (pEntry) {
         this._tryReleaseFrameBuffer(pEntry.iFrameBuffer);
     }
 //    pProgram.clear();
-    this._pCurrentRenderQueue._releaseEntry(pEntry);
+//    this._pCurrentRenderQueue._releaseEntry(pEntry);
     // trace("-------STOP REAL RENDER---------");
 };
 Renderer.prototype._setViewport = function (x, y, width, height) {

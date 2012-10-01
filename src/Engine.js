@@ -639,7 +639,7 @@ Engine.prototype.render = function () {
         // iTime.push(a.now());
         
         //this.pDevice.flush();
-        this.pDevice.finish();
+//        this.pDevice.finish();
         // iTime.push(a.now());
         
         //trace("==============Stop Render Scene===========");
@@ -652,7 +652,7 @@ Engine.prototype.render = function () {
         // iTime.push(a.now());
 
         //trace("==============Stop Apply lights===========");
-        this.pDevice.finish();
+//        this.pDevice.finish();
         this.pDisplayManager.endRenderSession();
         // iTime.push(a.now());
 

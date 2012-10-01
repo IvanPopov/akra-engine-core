@@ -284,7 +284,6 @@ LightManager.prototype.applyLight = function () {
 LightManager.prototype._createLightingUniforms = function () {
     var pLightPoints = this._pLightPoints,
         pLight;
-    var nOmni, nProject, nOmniShadows, nProjectShadows;
     var i, j;
     var pUniforms = this._pLightingUnifoms;
     var pUniformData;
