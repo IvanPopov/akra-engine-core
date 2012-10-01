@@ -215,6 +215,7 @@ VideoBuffer.prototype.create = function (iByteSize, iFlags, pData) {
 
     //trace('creating texture: ', pSize.X, 'x', pSize.Y);
 
+
     if (!parent(Texture).createTexture.call(this, pSize.X, pSize.Y, 0, a.IFORMAT.RGBA, a.ITYPE.FLOAT, pTextureData)) {
         debug_error('Cannot create video buffer.');
         this.destroy();

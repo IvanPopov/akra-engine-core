@@ -53,7 +53,7 @@ var GLOBAL_VARS = {
     T_KW_SAMPLER1D        : "sampler1D",
     T_KW_SAMPLER2D        : "sampler2D",
     T_KW_SAMPLER3D        : "sampler3D",
-    T_KW_SAMPLERCUBE      : "samplercube",
+    T_KW_SAMPLERCUBE      : "samplerCUBE",
     T_KW_PIXELSHADER      : "pixelshader",
     T_KW_VERTEXSHADER     : "vertexshader",
     T_KW_PIXELFRAGMENT    : "pixelfragment",
@@ -646,7 +646,7 @@ EffectType.prototype.isConst = function () {
 };
 EffectType.prototype.isSampler = function () {
     if (this.sName === "sampler" || this.sName === "sampler1D" || this.sName === "sampler2D" ||
-        this.sName === "sampler3D" || this.sName === "samplercube") {
+        this.sName === "sampler3D" || this.sName === "samplerCUBE") {
         return true;
     }
     return false;
@@ -3354,6 +3354,7 @@ function Effect(pManager, id) {
         "texture"      : new EffectType("texture", "texture", true, 1),
         "sampler"      : new EffectType("sampler", "sampler2D", true, 1),
         "sampler2D"    : new EffectType("sampler2D", "sampler2D", true, 1),
+        "samplerCUBE"  : new EffectType("samplerCUBE", "samplerCube", true, 1),
         "ptr"          : new EffectType("ptr", "float", true, 1),
         "video_buffer" : new EffectType("video_buffer", "sampler2D", true, 1)
     });
@@ -3512,6 +3513,8 @@ Effect.prototype._initSystemData = function () {
     this._addSystemFunction("dot", "float", [null, null], ["float", "float2", "float3", "float4"], "dot($1,$2)");
     this._addSystemFunction("mul", null, [null, null], ["float", "int", "float2", "float3", "float4"], "$1*$2");
     this._addSystemFunction("tex2D", "float4", ["sampler", "float2"], null, "texture2D($1,$2)");
+    this._addSystemFunction("texCUBE", "float4", ["sampler", "float3"], null, "textureCube($1,$2)");
+    this._addSystemFunction("texCUBE", "float4", ["samplerCUBE", "float3"], null, "textureCube($1,$2)");
     this._addSystemFunction("mod", "float", ["float", "float"], null, "mod($1,$2)");
     this._addSystemFunction("floor", null, [null], ["float", "float2", "float3", "float4"], "floor($1)");
     this._addSystemFunction("ceil", null, [null], ["float", "float2", "float3", "float4"], "ceil($1)");

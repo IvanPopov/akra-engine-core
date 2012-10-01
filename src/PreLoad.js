@@ -188,7 +188,14 @@ a.createDevice = function (pCanvas, bAntialias) {
         pContext = pCanvas.getContext("webgl", { antialias: bAntialias || true}) || 
             pCanvas.getContext("experimental-webgl", { antialias: bAntialias || true});
         if (WebGLDebugUtils) {
-            pContext = WebGLDebugUtils.makeDebugContext(pContext);
+            pContext = WebGLDebugUtils.makeDebugContext(pContext, 
+                function throwOnGLError(err, funcName, args) {
+                    throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
+                }/*,
+                function logGLCall(functionName, args) {   
+                   console.log("gl." + functionName + "(" + 
+                      WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");   
+                }*/);
         }
     }
     catch (e) {

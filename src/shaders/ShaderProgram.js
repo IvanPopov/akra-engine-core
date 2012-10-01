@@ -698,6 +698,7 @@ ShaderProgram.prototype.applySampler2D = function (sName, pData) {
                                          pTexture._getParameter(a.TPARAM.WRAP_T) ||
                                          a.TWRAPMODE.REPEAT;
     }
+
     return this.applyInt(sRealName, iSlot);
 };
 ShaderProgram.prototype.applySampler2DInStruct = function (sName, pData) {
@@ -780,6 +781,7 @@ ShaderProgram.prototype.applyVideoBuffer = function (sName, pData) {
                                      a.TWRAPMODE.REPEAT;
     pTextureParam[a.TPARAM.WRAP_T] = pData._getParameter(a.TPARAM.WRAP_T) ||
                                      a.TWRAPMODE.REPEAT;
+
     return this.applyInt(sRealName, iSlot);
 };
 

@@ -60,7 +60,9 @@ function Texture(pEngine) {
     this._pTexture = null;
     this._pFrameBuffer = null;
 
-    this._pTextureParams = {};
+    this._pTextureParams = { };
+    this._pTextureParams[a.TPARAM.MAG_FILTER] = a.TFILTER.LINEAR;
+    this._pTextureParams[a.TPARAM.MIN_FILTER] = a.TFILTER.LINEAR;
 
     this._iWidth = 0;
     this._iHeight = 0;
@@ -394,7 +396,7 @@ Texture.prototype.releaseTexture = function () {
     var pDevice = this._pEngine.pDevice;
     if (this._pTexture) {
         pDevice.deleteTexture(this._pTexture);
-        this._isTextureChanged = true;
+        // this._isTextureChanged = true;
     }
     if (this._pFrameBuffer) {
         pDevice.deleteFramebuffer(this._pFrameBuffer);
@@ -789,6 +791,7 @@ Texture.prototype.uploadImage = function (pImage) {
     }
     else if (!TEST_BIT(this._iFlags, a.Texture.MipMaps) && this.minFilter != a.TFILTER.LINEAR && this.minFilter
         != a.TFILTER.NEAREST) {
+        console.log(this.minFilter, Math.floor(this.minFilter - a.TFILTER.NEAREST_MIPMAP_NEAREST) / 2 + a.TFILTER.NEAREST);
         this.applyParameter(a.TPARAM.MIN_FILTER,
                             Math.floor(this.minFilter - a.TFILTER.NEAREST_MIPMAP_NEAREST) / 2 + a.TFILTER.NEAREST);
         //pDevice.generateMipmap(a.TTYPE.TEXTURE_2D);
@@ -833,9 +836,8 @@ Texture.prototype.extend = function (iWidth, iHeight) {
  * @tparam Enumeration(IMAGE_TYPE) eType Новый тип текстуры.
  */
 Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
-    A_TRACER.MESG("START REPACK TEXTURE #" + this.toNumber())
     debug_assert(this._pTexture, 'Cannot repack, because texture not created.');
-    // trace("REPACK TEXTURE #" + this.toNumber());
+
     eFormat = eFormat || this._eFormat;
     eType = eType || this._eType;
 
@@ -850,32 +852,34 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
     var pDestinationTexture = this._pRepackTexture;
     pDestinationTexture.createTexture(iWidth, iHeight, 0, eFormat, eType, [null]);
 
-    pDestinationTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
-    pDestinationTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
-    pDestinationTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
-    pDestinationTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
+    // pDestinationTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+    // pDestinationTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+    // pDestinationTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
+    // pDestinationTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
 
     this.switchRenderMethod(".repack_texture");
 
     var pVertexData = this._pSystemVertexDataTexture;
     var nCount = this._iWidth * this._iHeight;
     var pRenderIndexData = new Float32Array(nCount);
+    
     for (var i = 0; i < nCount; i++) {
         pRenderIndexData[i] = i;
     }
+
     pVertexData.resize(nCount);
     pVertexData.setData(pRenderIndexData, 'SERIALNUMBER');
 
     var pSnapshot = this._pActiveSnapshot;
     var pEntry = null;
-    // trace("<<<<<<<<<<<<<TEXTURE REPACK RENDER>>>>>>>>>>>>>>>>");
-    A_TRACER.MESG("START REPACK TEXTURE ||RENDER||")
+
     pRenderer.switchRenderStage(a.RenderStage.DEFAULT);
     pRenderer.setViewport(0, 0, iWidth, iHeight);
     pRenderer.activateFrameBuffer();
-    A_TRACER.MESG("frameBufferTexture2D #" + pDestinationTexture.toNumber());
+
     pRenderer.applyFrameBufferTexture(pDestinationTexture);
     this.startRender();
+
     for (var i = 0; i < this.totalPasses(); i++) {
         // trace("Pass #" + i);
         this.activatePass(i);
@@ -886,15 +890,13 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
         this.renderPass();
         this.deactivatePass();
     }
+
     this.finishRender();
-
+    // console.log(this.findResourceName());
     pRenderer.deactivateFrameBuffer();
-
     pRenderer.processRenderStage();
 
     pDevice.flush();
-    A_TRACER.MESG("END REPACK TEXTURE ||RENDER||")
-    // trace("<<<<<<<<<<<<<END_TEXTURE REPACK RENDER>>>>>>>>>>>>>>>>");
 
     this.releaseTexture();
     this._pTexture = pDestinationTexture._pTexture;
@@ -924,6 +926,7 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
  * @treturn Boolean
  */
 Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eType, pData) {
+
     var pDevice = this._pEngine.pDevice;
     var pRenderer = this._pEngine.shaderManager();
     var nMipMaps = 1;
@@ -934,6 +937,9 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
     if (eFlags == undefined) {
         eFlags = 0;
     }
+    if (pDevice.getError()) {
+        throw new Error();
+    }
 
     this.releaseTexture();
     this._pTexture = pDevice.createTexture();
@@ -941,12 +947,12 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
     this._iFlags = eFlags;
     this._eFormat = eFormat || this._eFormat;
     this._eType = eType || this._eType;
-    this._iSlot = -1;
+    // this._iSlot = -1;
 
     if (!(pData instanceof Array)) {
         pData = [pData];
     }
-
+ 
     pRenderer.bindTexture(this);
     pDevice.pixelStorei(pDevice.UNPACK_ALIGNMENT, 1);
     //this.flipY();
@@ -983,14 +989,22 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
         }
     }
 
-    this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
-    this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
-    this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
-    this.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
+    if (this._eType !== a.ITYPE.FLOAT) {
+        this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
+        this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
+        this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
+        this.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
+    }
+    else {
+        this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+        this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+        this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
+        this.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
+    }
 
     this.notifyLoaded();
     this.notifyRestored();
-
+    
     return true;
 };
 

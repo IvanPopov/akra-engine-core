@@ -749,10 +749,12 @@ Renderer.prototype.finishPass = function (iPass) {
     // }
     // else 
     {
+      
         pUniformValues = {};
         pNotDefaultUniforms = {};
         pTextures = {};
         pForeigns = {};
+
         for (i = 0; i < iStackLength; i++) {
 
             nShift = pStateStack[i].nShift;
@@ -776,6 +778,7 @@ Renderer.prototype.finishPass = function (iPass) {
                         pTextures[sKey] = null;
                     }
                 }
+                
             }
             if (pSnapshot._pForeigns) {
                 pValues = pSnapshot._pForeigns[index];
@@ -992,9 +995,19 @@ Renderer.prototype.finishPass = function (iPass) {
         for (i in pForeigns) {
             sHash += "FOREIGN::" + i + "=" + (pForeigns[i]);
         }
-        
+        var pRenderObject = this._pPreRenderState.pRenderObject;
+        if(pRenderObject.surfaceMaterial && pRenderObject.surfaceMaterial.textureFlags) {
+            sHash += ".." + "TEXTURES";
+        }
         pProgram = this._pPrograms[sHash];
+        // if(this._pActiveSceneObject && this._pActiveSceneObject.name === "node-wpn_gun" && this._pPreRenderState.pRenderObject.name === "submesh-0"){
+        //     console.log(this._pPreRenderState.pRenderObject.name,sHash, pAttrSemantics, pAttrKeys, pUniformValues,
+        //                        pTextures, pForeigns, pMaterialTexcoords);
+        // }
         if (!pProgram) {
+            if(this._pActiveSceneObject && this._pActiveSceneObject.name === "node-wpn_gun" && this._pPreRenderState.pRenderObject.name === "submesh-0"){
+                console.log("!!!!!!!");
+            }
             pProgram = pPassBlend.generateProgram(sHash, pAttrSemantics, pAttrKeys, pUniformValues,
                                                   pTextures, pForeigns, pMaterialTexcoords);
             if (!pProgram) {
@@ -1357,6 +1370,7 @@ Renderer.prototype.activateProgram = function (pProgram) {
 
     this._pRenderState.pActiveProgram = pProgram;
     this._pRenderState.nAttrsUsed = pProgram.getStreamNumber();
+    return true;
 };
 Renderer.prototype.activateFrameBuffer = function (iId) {
     iId = (iId === undefined) ? this._getEmptyFrameBuffer() : iId;
@@ -1512,7 +1526,7 @@ Renderer.prototype.render = function (pEntry) {
         this._tryReleaseFrameBuffer(pEntry.iFrameBuffer);
     }
 //    pProgram.clear();
-    this._pCurrentRenderQueue._releaseEntry(pEntry);
+    // this._pCurrentRenderQueue._releaseEntry(pEntry);
     // trace("-------STOP REAL RENDER---------");
 };
 Renderer.prototype._setViewport = function (x, y, width, height) {
@@ -1705,7 +1719,7 @@ Renderer.prototype.createDeviceResources = function () {
     pSubMesh.effect.use("akra.system.projectLighting");
     pSubMesh.effect.use("akra.system.omniShadowsLighting");
     pSubMesh.effect.use("akra.system.projectShadowsLighting");
-
+    // pSubMesh.effect.use("akra.system.skybox", 1);
     pSubMesh.effect.use("akra.system.fxaa", 1);
 
     var pTexturePool = this.pEngine.displayManager().texturePool();
