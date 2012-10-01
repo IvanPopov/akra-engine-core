@@ -258,24 +258,31 @@ LightManager.prototype.applyLight = function () {
 
     //Tempory skybox
     
- /*   pSubMesh.activatePass(1);
+    pSubMesh.activatePass(1);
     pRenderer.activateFrameBuffer(null);
     pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_RATIO",
                                      [pCanvas.width / pDepthTexture.width, pCanvas.height / pDepthTexture.height]);
-    pSnapshot.applyTextureBySemantic("SCREEN_TEXTURE", pRenderer._pGlobalPostEffectTexture);
+    pSnapshot.applyTextureBySemantic("TEXTURE0", pRenderer._pGlobalPostEffectTexture);
     pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE1", pDeferredTextures[1]);
-    pSnapshot.applyTextureBySemantic("SKYBOX_TEXTURE", pEngine.pSkyMap);
-    pSubMesh.applyRenderData(pSubMesh.data);*/
+    pSnapshot.applyTextureBySemantic("TEXTURE1", pEngine.pSkyMap);
+    pSnapshot.setParameter("sky_container.skyboxSampler", {TEXTURE: "TEXTURE1"});
+    pSubMesh.applyRenderData(pSubMesh.data);
     
     //Tempory fxaa
 
-    pSubMesh.activatePass(1);
+   /* pSubMesh.activatePass(1);
     pRenderer.activateFrameBuffer(null);
     pSnapshot.applyTextureBySemantic("SCREEN_TEXTURE", pRenderer._pGlobalPostEffectTexture);
     pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_SIZE", [pCanvas.width, pCanvas.height]);
-    pSubMesh.applyRenderData(pSubMesh.data);
+    pSubMesh.applyRenderData(pSubMesh.data);*/
 
     var pEntry = pSubMesh.renderPass();
+
+    // pEngine.pause(true);
+    // console.log(pEntry.pProgram._sVertexCode)
+    // console.log(pEntry.pProgram._sFragmentCode);
+
+    console.log(pEntry.pUniforms, pEntry.pTextures, pEntry.pProgram);
     pSubMesh.deactivatePass();
 
     pSubMesh.finishRender();
