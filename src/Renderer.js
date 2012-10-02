@@ -1732,7 +1732,7 @@ Renderer.prototype.createDeviceResources = function () {
     pSubMesh.effect.use("akra.system.omniShadowsLighting");
     pSubMesh.effect.use("akra.system.projectShadowsLighting");
     pSubMesh.effect.use("akra.system.skybox", 1);
-    // pSubMesh.effect.use("akra.system.fxaa", 1);
+    //pSubMesh.effect.use("akra.system.fxaa", 2);
 
     var pTexturePool = this.pEngine.displayManager().texturePool();
 

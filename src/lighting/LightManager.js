@@ -262,6 +262,8 @@ LightManager.prototype.applyLight = function () {
     pRenderer.activateFrameBuffer(null);
     pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_RATIO",
                                      [pCanvas.width / pDepthTexture.width, pCanvas.height / pDepthTexture.height]);
+    pSnapshot.setParameterBySemantic("INV_VIEW_CAMERA_MAT",pEngine.getActiveCamera().worldMatrix());
+    pSnapshot.setParameterBySemantic("CAMERA_POSITION",pEngine.getActiveCamera().worldPosition());
     pSnapshot.applyTextureBySemantic("TEXTURE0", pRenderer._pGlobalPostEffectTexture);
     pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE1", pDeferredTextures[1]);
     pSnapshot.applyTextureBySemantic("TEXTURE1", pEngine.pSkyMap);
@@ -270,11 +272,11 @@ LightManager.prototype.applyLight = function () {
     
     //Tempory fxaa
 
-   /* pSubMesh.activatePass(1);
-    pRenderer.activateFrameBuffer(null);
-    pSnapshot.applyTextureBySemantic("SCREEN_TEXTURE", pRenderer._pGlobalPostEffectTexture);
-    pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_SIZE", [pCanvas.width, pCanvas.height]);
-    pSubMesh.applyRenderData(pSubMesh.data);*/
+    // pSubMesh.activatePass(2);
+    // pRenderer.activateFrameBuffer(null);
+    // pSnapshot.applyTextureBySemantic("SCREEN_TEXTURE", pRenderer._pGlobalPostEffectTexture);
+    // pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_SIZE", [pCanvas.width, pCanvas.height]);
+    // pSubMesh.applyRenderData(pSubMesh.data);
 
     var pEntry = pSubMesh.renderPass();
 
