@@ -284,7 +284,7 @@ LightManager.prototype.applyLight = function () {
     // console.log(pEntry.pProgram._sVertexCode)
     // console.log(pEntry.pProgram._sFragmentCode);
 
-    console.log(pEntry.pUniforms, pEntry.pTextures, pEntry.pProgram);
+    //console.log(pEntry.pUniforms, pEntry.pTextures, pEntry.pProgram);
     pSubMesh.deactivatePass();
 
     pSubMesh.finishRender();
