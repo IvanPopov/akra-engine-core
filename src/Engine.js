@@ -18,6 +18,7 @@ function Engine() {
     //Активен ли джижок
     //пауза как раз выстявляется изменением этого параметра
     this._isActive = false;
+    this.useHarwareAntialiasing = false;
 
     //Потерян ли девайс
     this._isDeviceLost = false;
@@ -86,6 +87,38 @@ function Engine() {
     this.pGamepad = null;
 }
 
+Engine.prototype.debug = function(bValue, bTraceCalls) {
+    bValue = ifndef(bValue, true);
+    
+    if (bValue) {
+        bTraceCalls = ifndef(bTraceCalls, false);
+
+        if (WebGLDebugUtils && this.pDevice) {
+            var pRealContext = this.pDevice;
+            this.pDevice = WebGLDebugUtils.makeDebugContext(pRealContext, 
+                function throwOnGLError(err, funcName, args) {
+                    throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
+                },
+                bTraceCalls? function logGLCall(functionName, args) {   
+                   console.log("gl." + functionName + "(" + 
+                      WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");   
+                }: undefined);
+            this.pDevice.pRealContext = pRealContext;
+            return true;
+        }
+
+        return false;
+    }
+    else {
+        if (this.pDevice && this.pDevice.pRealContext) {
+            this.pDevice = this.pDevice.pRealContext;
+            return true;
+        }
+    }
+    return false;
+};
+
+
 /**
  * @property Create()
  * Создание и инициализация всего подряд
@@ -113,7 +146,7 @@ Engine.prototype.create = function () {
     this.iCreationHeight = this.pCanvas.height;
 
     //Получение 3D девайса
-    this.pDevice = a.createDevice(this.pCanvas, false);
+    this.pDevice = a.createDevice(this.pCanvas, this.useHarwareAntialiasing);
     if (!this.pDevice) {
         debug_error("Объект устроства не создан, создание завершилось");
         a.deleteDevice(this.pDevice);

@@ -40,134 +40,6 @@ a.cancelRequestAnimFrame = (function () {
         window.clearTimeout;
 })();
 
-/**
- * Проверить, возможно ли создать текстуру с
- * такими параметрами.
- *
- * @tparam pContext Графический контекст.
- * @tparam iWidth Ширина текстуры.
- * @tparam iHeight Высота текстуры.
- * @tparam iMipLevels Мипмап уровни.
- * @tparam eUsage Usage.
- * @tparam eFormat Формат.
- * @tparam ePool Pool.
- * @treturn Boolean Результат.
- */
-a.checkTextureRequirements = function (pContext, iWidth, iHeigth, iMipLevels, eUsage, eFormat, ePool) {
-
-    return true;
-};
-
-/**
- * Проверить, возможно ли создать кубическую
- * текстуру с такими параметрами.
- *
- * @tparam pContext Графический контекст.
- * @tparam iWidth Ширина текстуры.
- * @tparam iHeight Высота текстуры.
- * @tparam iMipLevels Мипмап уровни.
- * @tparam eUsage Usage.
- * @tparam eFormat Формат.
- * @tparam ePool Pool.
- * @treturn Boolean Результат.
- */
-
-
-a.checkCubeTextureRequirements = function (pContext, iWidth, iHeigth, iMipLevels, eUsage, eFormat, ePool) {
-
-    return true;
-}
-
-/**
- * Загрузить текстуру из файла.
- *
- * @tparam pContext Графический контекст.
- * @tparam sFilename Файл с текстурой.
- * @tparam iWidth Ширина текстуры.
- * @tparam iHeight Высота текстуры.
- // @tparam iMipLevels Мипмап уровни.
- // @tparam eUsage Usage.
- // @tparam eFormat Формат.
- // @tparam ePool Pool.
- // @tparam iFilter Фильтр каналов текстуры.
- // @tparam iMipFilter Фильтр текстуры.
- // @tparam pColorKey Фоновый цвет.
- // @tparam ppImageInfo Описание оригинального изображения.
- // @tparam ppPalette Палитра.
- * @tparam Function fnCallback Функция, вызываемая при завершении загрузки тектуры.
- * @treturn Texture Созданная текстура или null.
- */
-
-//a.createTextureFromFile = function (pContext, sFilename, iWidth, iHeight, fnCallBack)
-//    //iMipLevels,eUsage,eFormat,ePool,iFilter,iMipFilter, pColorKey, ppImageInfo, ppPalette)
-//{
-//
-//    var c = pContext;
-//    var tex = c.createTexture();
-//    //tex.eType=c.TEXTURE_2D;
-//    tex.image = new Image();
-//    tex.image.onload = function () {
-//        c.bindTexture(c.TEXTURE_2D, tex);
-//        c.pixelStorei(c.UNPACK_FLIP_Y_WEBGL, true);
-//        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, tex.image);
-//        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST);
-//        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST);
-//        c.bindTexture(c.TEXTURE_2D, null);
-//        if (fnCallBack) {
-//            fnCallBack();
-//        }
-//
-//    }
-//
-//    tex.image.src = sFilename;
-//    return tex;
-//}
-
-
-/**
- * Создать объект тектсура
- *
- * @tparam pContext Графический контекст.
- * @tparam iWidth Ширина текстуры.
- * @tparam iHeight Высота текстуры.
- * @tparam fCallBack Функция которая вызовется после загрузки
-
- * @tparam iMipLevels Мипмап уровни.
- * @tparam eUsage Usage.
- * @tparam eFormat Формат.
- * @tparam ePool Pool.
- * @tparam iFilter Фильтр каналов текстуры.
- * @tparam iMipFilter Фильтр текстуры.
- * @tparam pColorKey Фоновый цвет.
- * @tparam ppImageInfo Описание оригинального изображения.
- * @tparam ppPalette Палитра.
- * @treturn Texture Созданная текстура или null.
- */
-//a.createTexture = function (pContext, iWidth, iHeight, fCallBack, pTexture)
-//    //iMipLevels, eUsage, eFormat, ePool,  iFilter, iMipFilter,pColorKey, ppImageInfo, ppPalette)
-//{
-//
-//    var c = pContext;
-//    pTexture._pTexture = c.createTexture();
-//    tex = pTexture._pTexture;
-//    //tex.eType=c.TEXTURE_2D;
-//
-//    tex.image = new Image(iWidth, iHeight);
-//    tex.image.onload = function () {
-//        c.bindTexture(c.TEXTURE_2D, tex);
-//        c.pixelStorei(c.UNPACK_FLIP_Y_WEBGL, true);
-//        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, tex.image);
-//        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST);
-//        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST);
-//        c.bindTexture(c.TEXTURE_2D, null);
-//
-//    }
-//    if (fCallBack) {
-//        fCallBack();
-//    }
-//    return tex;
-//}
-
 
 /**
  * @property createDevice(pCanvas)
@@ -180,23 +52,11 @@ a.checkCubeTextureRequirements = function (pContext, iWidth, iHeigth, iMipLevels
 a.createDevice = function (pCanvas, bAntialias) {
     var pContext;
 
-    //pCanvas.width = screen.width;
-    //pCanvas.height = screen.height;
-
     try {
 
         pContext = pCanvas.getContext("webgl", { antialias: bAntialias || true}) || 
             pCanvas.getContext("experimental-webgl", { antialias: bAntialias || true});
-        if (WebGLDebugUtils) {
-            pContext = WebGLDebugUtils.makeDebugContext(pContext, 
-                function throwOnGLError(err, funcName, args) {
-                    throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
-                },
-                function logGLCall(functionName, args) {   
-                   console.log("gl." + functionName + "(" + 
-                      WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");   
-                });
-        }
+        //NOTE: context debugger moved to Engine.js
     }
     catch (e) {
     }

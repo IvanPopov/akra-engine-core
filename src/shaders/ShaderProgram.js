@@ -89,19 +89,26 @@ ShaderProgram.prototype.create = function (sHash, sVertexCode, sFragmentCode) {
     this._sFragmentCode = sFragmentCode = sFragmentCode || this._sFragmentCode;
 
     pHardwareProgram = this._pHardwareProgram = pDevice.createProgram();
+    
     var pVertexShader = this._buildShader(a.SHADERTYPE.VERTEX, sVertexCode);
     var pPixelShader = this._buildShader(a.SHADERTYPE.PIXEL, sFragmentCode);
+
     pDevice.attachShader(pHardwareProgram, pVertexShader);
     pDevice.attachShader(pHardwareProgram, pPixelShader);
+
     pDevice.linkProgram(pHardwareProgram);
+    pDevice.validateProgram(pHardwareProgram);
+
     if (!pDevice.getProgramParameter(pHardwareProgram, pDevice.VALIDATE_STATUS)) {
-        //trace('program not valid', this.findResourceName());
-        //trace(pDevice.getProgramInfoLog(pHardwareProgram));
+        console.warn('program not valid', this.findResourceName());
+        console.warn(pDevice.getProgramInfoLog(pHardwareProgram));
     }
     debug_assert_win(pDevice.getProgramParameter(pHardwareProgram, pDevice.LINK_STATUS),
                      'cannot link program', this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
+    
     this._isValid = true;
     this._pEngine.shaderManager()._registerProgram(this._sHash, this);
+    
     return true;
 };
 ShaderProgram.prototype.setup = function (pAttrData, pUniformData, pTextures) {
@@ -1114,12 +1121,13 @@ ShaderProgram.prototype.resetActivationStreams = function () {
 };
 ShaderProgram.prototype._programInfoLog = function (pHardwareProgram, pVertexShader, pPixelShader) {
     var pShaderDebugger = this._pEngine.getDevice().getExtension("WEBGL_debug_shaders");
-
+    console.log("===>>", pShaderDebugger);
     if (pShaderDebugger) {
-        trace('translated vertex shader =========>');
-        trace(pShaderDebugger.getTranslatedShaderSource(pVertexShader));
-        trace('translated pixel shader =========>');
-        trace(pShaderDebugger.getTranslatedShaderSource(pPixelShader));
+        alert(1);
+        console.warn('translated vertex shader =========>');
+        console.warn(pShaderDebugger.getTranslatedShaderSource(pVertexShader));
+        console.warn('translated pixel shader =========>');
+        console.warn(pShaderDebugger.getTranslatedShaderSource(pPixelShader));
     }
 
     return '<pre style="background-color: #FFCACA;">' + this._pDevice.getProgramInfoLog(this._pHardwareProgram) +

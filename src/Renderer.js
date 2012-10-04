@@ -1732,7 +1732,7 @@ Renderer.prototype.createDeviceResources = function () {
     pSubMesh.effect.use("akra.system.omniShadowsLighting");
     pSubMesh.effect.use("akra.system.projectShadowsLighting");
     pSubMesh.effect.use("akra.system.skybox", 1);
-    //pSubMesh.effect.use("akra.system.fxaa", 2);
+    pSubMesh.effect.use("akra.system.fxaa", 2);
 
     var pTexturePool = this.pEngine.displayManager().texturePool();
 
@@ -1744,8 +1744,19 @@ Renderer.prototype.createDeviceResources = function () {
     this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
     this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
 
+    this._pGlobalPostEffectTexture2 = pTexturePool.createResource(".texture-" + a.sid());
+
+    this._pGlobalPostEffectTexture2.createTexture(this.pEngine.pCanvas.width, this.pEngine.pCanvas.height);
+    this._pGlobalPostEffectTexture2.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+    this._pGlobalPostEffectTexture2.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+    this._pGlobalPostEffectTexture2.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
+    this._pGlobalPostEffectTexture2.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
+
     this._pGlobalPostEffectFrameBuffer = this.activateFrameBuffer();
     this.applyFrameBufferTexture(this._pGlobalPostEffectTexture);
+
+    this._pGlobalPostEffectFrameBuffer2 = this.activateFrameBuffer();
+    this.applyFrameBufferTexture(this._pGlobalPostEffectTexture2);
 
     return true;
 };
@@ -1756,17 +1767,19 @@ Renderer.prototype.updateGlobalPostEffectTexture = function() {
 
     // this._pGlobalPostEffectTexture = pTexturePool.createResource(".texture-" + a.sid());
 
-    this.activateFrameBuffer(this._pGlobalPostEffectFrameBuffer);
+    // this.activateFrameBuffer(this._pGlobalPostEffectFrameBuffer);
 
-    this._pGlobalPostEffectTexture.createTexture(this.pEngine.pCanvas.width, this.pEngine.pCanvas.height);
-    this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
-    this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
-    this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
-    this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
+    // this._pGlobalPostEffectTexture.createTexture(this.pEngine.pCanvas.width, this.pEngine.pCanvas.height);
+    // this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+    // this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+    // this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
+    // this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
 
     
-    this.applyFrameBufferTexture(this._pGlobalPostEffectTexture);
-    this.activateFrameBuffer(null);
+    // this.applyFrameBufferTexture(this._pGlobalPostEffectTexture);
+    // this.activateFrameBuffer(null);
+     
+    TODO('Renderer::updateGlobalPostEffectTexture()');
 };
 
 Renderer.prototype.disableDeviceResources = function () {
