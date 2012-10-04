@@ -255,7 +255,7 @@ LightManager.prototype.applyLight = function () {
     pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE1", pDeferredTextures[1]);
     pSnapshot.applyTextureBySemantic("SCENE_DEPTH_TEXTURE", pDepthTexture);
     var pEntry = pSubMesh.renderPass();
-    console.log(pEntry.pUniforms, pEntry.pTextures);
+    //console.log(pEntry.pUniforms, pEntry.pTextures);
     pSubMesh.deactivatePass();
 
     //Tempory skybox
