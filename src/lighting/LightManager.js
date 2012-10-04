@@ -277,6 +277,7 @@ LightManager.prototype.applyLight = function () {
     pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_SIZE", [pCanvas.width, pCanvas.height]);
     pSubMesh.applyRenderData(pSubMesh.data);
     pSubMesh.renderPass();
+
     pSubMesh.deactivatePass();
 
     

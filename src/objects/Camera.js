@@ -337,13 +337,12 @@ Camera.prototype.update = function () {
 
             // our view proj matrix is the inverse of our world matrix
             // multiplied by the projection matrix
-            this.m4fProj.multiply(this.m4fView, this.m4fRenderStageProjView);            
+            this.m4fProj.multiply(this.m4fView, this.m4fRenderStageProjView);
         }
     }
 
     if (this.isWorldMatrixNew()) {
         this.recalcMatrices();
-
         this._rebuildSearchRectAndFrustum();
 
         // our view proj matrix is the inverse of our world matrix
@@ -591,42 +590,20 @@ Camera.prototype.lookAt = function() {
     }
 };
 
-
-function unproj(m4fProj,v4fScreen,v4fDestination){
-    if(!v4fDestination){
-        v4fDestination = new Vec4();
-    }
-
-    var pData1 = m4fProj.pData;
-    var pData2 = v4fScreen.pData;
-    var pDataDestination = v4fDestination.pData;
-  
-    var z = -pData1._34/(pData1._33 + pData2.Z);
-    var y = (-pData2.Y * z - pData1._23*z)/pData1._22;
-    var x = (-pData2.X * z - pData1._13*z)/pData1._11;
-  
-    pDataDestination.X = x;
-    pDataDestination.Y = y;
-    pDataDestination.Z = z;
-    pDataDestination.W = 1;
-
-    return v4fDestination;
-};
-
 Camera.prototype._extractFrustumVertices = function() {
     'use strict';
 
     var m4fProj = this.m4fProj;
 
-    unproj(m4fProj,Vec4(-1,-1,-1,1),this._v4fLeftBottomNear);
-    unproj(m4fProj,Vec4(1,-1,-1,1),this._v4fRightBottomNear);
-    unproj(m4fProj,Vec4(-1,1,-1,1),this._v4fLeftTopNear);
-    unproj(m4fProj,Vec4(1,1,-1,1),this._v4fRightTopNear);
+    m4fProj.unproj(Vec4(-1,-1,-1,1),this._v4fLeftBottomNear);
+    m4fProj.unproj(Vec4(1,-1,-1,1),this._v4fRightBottomNear);
+    m4fProj.unproj(Vec4(-1,1,-1,1),this._v4fLeftTopNear);
+    m4fProj.unproj(Vec4(1,1,-1,1),this._v4fRightTopNear);
 
-    unproj(m4fProj,Vec4(-1,-1,1,1),this._v4fLeftBottomFar);
-    unproj(m4fProj,Vec4(1,-1,1,1),this._v4fRightBottomFar);
-    unproj(m4fProj,Vec4(-1,1,1,1),this._v4fLeftTopFar);
-    unproj(m4fProj,Vec4(1,1,1,1),this._v4fRightTopFar);
+    m4fProj.unproj(Vec4(-1,-1,1,1),this._v4fLeftBottomFar);
+    m4fProj.unproj(Vec4(1,-1,1,1),this._v4fRightBottomFar);
+    m4fProj.unproj(Vec4(-1,1,1,1),this._v4fLeftTopFar);
+    m4fProj.unproj(Vec4(1,1,1,1),this._v4fRightTopFar);
 
     CLEAR_BIT(this._iUpdateProjectionFlags, a.Camera.k_newProjectionMatrix);
 };
