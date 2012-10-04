@@ -1308,7 +1308,7 @@ ParserBase.prototype.parse = function (sSource, isSync, fnFinish, pCaller) {
                    a.Parser.OK;
         }
         else {
-            trace("Error!!!", pToken);
+            console.log("Error!!!", pToken);
             return this._pFinishCallback ?
                    this._pFinishCallback.call(this._pCaller, a.Parser.SYNTAX_ERROR) :
                    a.Parser.SYNTAX_ERROR;

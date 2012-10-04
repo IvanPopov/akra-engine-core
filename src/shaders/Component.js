@@ -1134,7 +1134,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
 
                 pSampler._pData = pSampler.sRealName;
                 pSampler.isValid = true;
-                pSamplersToReal[sKey1] = new Array(pSampler.iLength * 1);
+                pSamplersToReal[sKey1] = new Array(pSampler.getLength() * 1);
             }
             else {
                 sTexture = pData1[a.fx.GLOBAL_VARS.TEXTURE];
@@ -1412,8 +1412,11 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     //Sampler arrays
     for (i = 0; i < pSamplersArrayV.length; i++) {
         pSampler = pSamplersArrayV[i];
-        nSamplers -= pSampler.iLength;
-        sVertexCode += "uniform " + pSampler.toCodeDecl();
+        nSamplers -= pSampler.getLength();
+        if(!(pSampler.pType.pUsages && pSampler.pType.pUsagesName["uniform"])){
+            sVertexCode += "uniform ";
+        }
+        sVertexCode += pSampler.toCodeDecl();
     }
 
     //Uniforms
@@ -1577,7 +1580,10 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     //Uniform sampler`s arrays
     for (i = 0; i < pSamplersArrayF.length; i++) {
         pSampler = pSamplersArrayF[i];
-        nSamplers -= pSampler.iLength;
+        nSamplers -= pSampler.getLength();
+        if(!(pSampler.pType.pUsages && pSampler.pType.pUsagesName["uniform"])){
+            sFragmentCode += "uniform ";
+        }
         sFragmentCode += pSampler.toCodeDecl();
     }
 

@@ -54,7 +54,9 @@ function LightManager(pEngine, nMaxDeferredTextureCount) {
         project        : [],
         omniShadows    : [],
         projectShadows : [],
-        textures       : []
+        textures       : [],
+        samplers_omni  : [],
+        samplers_project : []
     };
 }
 ;
@@ -243,6 +245,8 @@ LightManager.prototype.applyLight = function () {
     for (i = 0; i < pLightUniforms.textures.length; i++) {
         pSnapshot.applyTextureBySemantic("TEXTURE" + i, pLightUniforms.textures[i]);
     }
+    pSnapshot.setParameter("project_shadow_sampler", pLightUniforms.samplers_project);
+    pSnapshot.setParameter("omni_shadow_sampler", pLightUniforms.samplers_omni);
 
     pSubMesh.applyRenderData(pSubMesh.data);
     pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_RATIO",
@@ -250,7 +254,8 @@ LightManager.prototype.applyLight = function () {
     pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE0", pDeferredTextures[0]);
     pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE1", pDeferredTextures[1]);
     pSnapshot.applyTextureBySemantic("SCENE_DEPTH_TEXTURE", pDepthTexture);
-    pSubMesh.renderPass();
+    var pEntry = pSubMesh.renderPass();
+    console.log(pEntry.pUniforms, pEntry.pTextures);
     pSubMesh.deactivatePass();
 
     //Tempory skybox
@@ -319,6 +324,8 @@ LightManager.prototype._createLightingUniforms = function () {
     pUniforms.omniShadows.length = 0;
     pUniforms.projectShadows.length = 0;
     pUniforms.textures.length = 0;
+    pUniforms.samplers_project.length = 0;
+    pUniforms.samplers_omni.length = 0;
 
     for (i = 0; i < pLightPoints.length; i++) {
         pLight = pLightPoints[i];
@@ -333,13 +340,15 @@ LightManager.prototype._createLightingUniforms = function () {
                 pUniformData.setLightData(pLight.lightParameters, v3fLightTransformPosition);
                 var pDepthCube = pLight.depthTextureCube;
                 var pCameraCube = pLight.cameraCube;
+                var pOptimizedProjCube = pLight.optimizedProjectionCube;
                 for (j = 0; j < 6; j++) {
                     pLightCamera = pCameraCube[j];
-                    m4fShadow = pLightCamera.projViewMatrix().multiply(pCamera.worldMatrix(), Mat4());
+                    m4fToLightSpace = pLightCamera.viewMatrix().multiply(pCamera.worldMatrix(), Mat4());
                     pUniforms.textures.push(pDepthCube[j]);
                     sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
                     pUniformData.setSampler(sTexture, j);
-                    pUniformData.setMatrix(m4fShadow, j);
+                    pUniforms.samplers_omni.push(pUniformData.SHADOW_SAMPLER[j]);
+                    pUniformData.setMatrix(m4fToLightSpace,pOptimizedProjCube[j], j);
                 }
                 pUniforms.omniShadows.push(pUniformData);
             }
@@ -358,6 +367,7 @@ LightManager.prototype._createLightingUniforms = function () {
                 pUniforms.textures.push(pLight.depthTexture);
                 sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
                 pUniformData.setSampler(sTexture);
+                pUniforms.samplers_project.push(pUniformData.SHADOW_SAMPLER);
                 pUniformData.setMatrix(m4fToLightSpace, pLightCamera.projectionMatrix(), pLight.optimizedProjection);
                 pUniforms.projectShadows.push(pUniformData);
             }
@@ -460,11 +470,11 @@ UniformProjectShadow.prototype.setLightData = function (pLightParam, v3fPosition
     return this;
 };
 
-UniformProjectShadow.prototype.setMatrix = function (m4fToLightSpace, m4fRealProj, m4fOptimizeProj) {
+UniformProjectShadow.prototype.setMatrix = function (m4fToLightSpace, m4fRealProj, m4fOptimizedProj) {
     'use strict';
     this.TO_LIGHT_SPACE.set(m4fToLightSpace);
     this.REAL_PROJECTION_MATRIX.set(m4fRealProj);
-    this.OPTIMIZED_PROJECTION_MATRIX.set(m4fOptimizeProj);
+    this.OPTIMIZED_PROJECTION_MATRIX.set(m4fOptimizedProj);
     return this;
 };
 
@@ -482,9 +492,13 @@ A_NAMESPACE(UniformProjectShadow);
 function UniformOmniShadow() {
     A_CHECK_STORAGE();
     this.LIGHT_DATA = new a.LightData();
-    this.SHADOW_MATRIX = [new Mat4(), new Mat4(),
+    this.TO_LIGHT_SPACE = [new Mat4(), new Mat4(),
                           new Mat4(), new Mat4(),
                           new Mat4(), new Mat4()];
+
+    this.OPTIMIZED_PROJECTION_MATRIX = [new Mat4(), new Mat4(),
+                                      new Mat4(), new Mat4(),
+                                      new Mat4(), new Mat4()];
     this.SHADOW_SAMPLER = [
         {"TEXTURE" : null},
         {"TEXTURE" : null},
@@ -502,25 +516,10 @@ UniformOmniShadow.prototype.setLightData = function (pLightParam, v3fPosition) {
     return this;
 };
 
-UniformOmniShadow.prototype.setAllMatrix = function (pMatrices) {
+UniformOmniShadow.prototype.setMatrix = function (m4fToLightSpace, m4fOptimizedProj, index) {
     'use strict';
-    for (var i = 0; i < 6; i++) {
-        this.SHADOW_MATRIX[i].set(pMatrices[i]);
-    }
-    return this;
-};
-
-UniformOmniShadow.prototype.setMatrix = function (m4fMatrix, index) {
-    'use strict';
-    this.SHADOW_MATRIX[index].set(m4fMatrix);
-    return this;
-};
-
-UniformOmniShadow.prototype.setAllSamplers = function (sTextures) {
-    'use strict';
-    for (var i = 0; i < 6; i++) {
-        this.SHADOW_SAMPLER[i].TEXTURE = (sTextures[i]);
-    }
+    this.TO_LIGHT_SPACE[index].set(m4fToLightSpace);
+    this.OPTIMIZED_PROJECTION_MATRIX[index].set(m4fOptimizedProj);
     return this;
 };
 

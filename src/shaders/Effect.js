@@ -1398,7 +1398,32 @@ EffectVariable.prototype.toCodeDecl = function (isInit) {
     sCode = this.pType.toCode() + " " + this.sRealName;
     if (this.isArray) {
         if (typeof(this.iLength) === "object") {
-            if (this.iLength._pData === null || this.iLength._pData === undefined) {
+            if(this.iLength instanceof Array){
+                sCode += "[";
+                var pElement;
+                for(var i = 0; i < this.iLength.length; i++){
+                    pElement = this.iLength[i];
+                    if(typeof(pElement) === "string") {
+                        sCode += pElement;
+                    }
+                    else {
+                        if (pElement._pData === null || pElement._pData === undefined) {
+                            if(!pCode){
+                                pCode = [sCode, pElement];
+                            }
+                            else{
+                                pCode.push(pElement);
+                            }
+                            sCode = "";
+                        }
+                        else{
+                            sCode += pElement.toDataCode();
+                        }
+                    }
+                }   
+                sCode += "]";
+            }
+            else if (this.iLength._pData === null || this.iLength._pData === undefined) {
                 pCode = [sCode, "[", this.iLength, "]"];
                 sCode = "";
 //                error("You must set value of foreign varibale before use it");
@@ -1490,7 +1515,9 @@ EffectVariable.prototype.setLength = function (pValue) {
     }
     else {
         this.iLength = pValue;
-        this.addDependence(pValue);
+        if(pValue instanceof EffectVariable){
+            this.addDependence(pValue);
+        }   
     }
 };
 EffectVariable.prototype.isComplicate = function () {
@@ -1503,7 +1530,21 @@ EffectVariable.prototype.isComplicate = function () {
 EffectVariable.prototype.getLength = function () {
     var iLength = this.iLength;
     if (typeof(iLength) === "object") {
-        iLength = iLength.toDataCode();
+        if(iLength instanceof Array){
+            var sEval = "";
+            for(var i = 0; i < iLength.length; i++){
+                if(typeof iLength[i] === "object"){
+                    sEval += iLength[i].toDataCode();
+                }
+                else{
+                    sEval += iLength[i];
+                }
+            }
+            return eval(sEval) * 1;
+        }
+        else {
+            iLength = iLength.toDataCode();
+        }
     }
     return iLength * 1;
 };
@@ -1725,7 +1766,11 @@ EffectBaseFunction.prototype.addFunction = function (pFunc) {
     if (!this.pFunctions) {
         this.pFunctions = {};
     }
+    if (this.pFunctions[pFunc.sHash]) {
+        return false;
+    }
     this.pFunctions[pFunc.sHash] = pFunc;
+    return true;
 };
 EffectBaseFunction.prototype.addType = function (pType) {
     if (!pType) {
@@ -3629,6 +3674,9 @@ Effect.prototype.evalHLSL = function (pCode, pVar) {
             return pCode[0];
         }
     }
+    else if (pVar === undefined) {
+        return pCode;
+    }
     else {
         if (!pVar.pType.isBase()) {
             error("default values only for base types");
@@ -4648,6 +4696,7 @@ Effect.prototype.analyze = function (pTree) {
     this.checkEffect();
     this.endScope();
     trace("Time of analyzing effect file(without parseing) ", a.now() - time);//, "Result effect: ", this);
+    console.log("Result effect: ", this);
     return true;
 //    }
 //    catch (e) {
@@ -4749,6 +4798,24 @@ Effect.prototype.postAnalyzeEffect = function () {
                 }
             }
         }
+    }
+    //check all functions for used another functions
+    var isNewFunction = true;
+    while(isNewFunction){
+        isNewFunction = false;
+        for (i in this._pFunctionTableByHash) {
+            pFunction = this._pFunctionTableByHash[i];
+            if (!pFunction) {
+                continue;
+            }
+            for (j in pFunction.pFunctions) {
+                for (k in pFunction.pFunctions[j].pFunctions) {
+                    if (pFunction.addFunction(pFunction.pFunctions[j].pFunctions[k])) {
+                        isNewFunction = true;
+                    }
+                }
+            }
+        }     
     }
     //Check all functions for used in vertexOnly or in FragmentOnly
     var isNewConstraint = true;
@@ -4879,6 +4946,24 @@ Effect.prototype.postAnalyzeEffect = function () {
                 }
             }
         }
+    }
+    //Add function in functions
+    var isNewFunction = true;
+    while(isNewFunction){
+        isNewFunction = false;
+        for (i in this._pShaders) {
+            pShader = this._pShaders[i];
+            if (!pShader) {
+                continue;
+            }
+            for (j in pShader.pFunctions) {
+                for (k in pShader.pFunctions[j].pFunctions) {
+                    if (pShader.addFunction(pShader.pFunctions[j].pFunctions[k])) {
+                        isNewFunction = true;
+                    }
+                }
+            }
+        }     
     }
     //global vars and uniforms, used types and externals for shaders
     isNew = true;
@@ -5792,7 +5877,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 pVar = this._pLastVar;
                 pType1 = pVar.pType;
                 bSavedNewName = this._isNewName;
-                this.newVarName();
+                this._isNewName = false;
                 if (pVar.isSampler()) {
                     if (!pVar.isArray) {
                         error("Here must be array of samplers");
@@ -5809,7 +5894,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     return;
                 }
                 this.pushCode("]");
-                this.endVarName();
+                // this.endVarName();
                 this._isNewName = bSavedNewName;
                 if (pVar.isSampler() && (pVar.isParametr === false || pVar.isUniform === true)) {
                     pIndex = new SamplerIndex(this._pCode, pVar);

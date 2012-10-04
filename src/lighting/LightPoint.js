@@ -54,13 +54,13 @@ function LightPoint(pEngine, isOmnidirectional, haveShadows, iMaxShadowResolutio
     ////////////////////////////////
 
     //оптимизированная проекционная матрица для рендеринга теней
-    this._m4fOptimizeProj = null;
+    this._m4fOptimizdeProj = null;
 
     //оптимизированная проекционная матрица для рендеринга теней
     //для всеноправленного источника
-    var pOptimizeProjCube = this._pOptimizeProjCube = new Array(6);
+    var pOptimizedProjCube = this._pOptimizedProjCube = new Array(6);
     for (var i = 0; i < 6; i++) {
-        pOptimizeProjCube[i] = null;
+        pOptimizedProjCube[i] = null;
     }
 
     ////////////////////////////////
@@ -108,7 +108,7 @@ PROPERTY(LightPoint, 'camera',
 
 PROPERTY(LightPoint, 'optimizedProjection',
          function () {
-             return this._m4fOptimizeProj;
+             return this._m4fOptimizedProj;
          }
 );
 
@@ -126,7 +126,7 @@ PROPERTY(LightPoint, 'cameraCube',
 
 PROPERTY(LightPoint, 'optimizedProjectionCube',
          function () {
-             return this._pOptimizeProjCube;
+             return this._pOptimizedProjCube;
          }
 );
 
@@ -156,7 +156,7 @@ PROPERTY(LightPoint, 'lightParameters',
 );
 
 //геттер возвращающий текещую оптимальную проекционную матрицу
-PROPERTY(LightPoint, 'currentOptimizeProjection',
+PROPERTY(LightPoint, 'currentOptimizedProjection',
          function () {
              return this._m4fCurrentOptimizedProj;
          }
@@ -278,7 +278,7 @@ LightPoint.prototype.create = function () {
         //create optimized projection matrix
 
         for (var i = 0; i < 6; i++) {
-            this._pOptimizeProjCube[i] = new Mat4();
+            this._pOptimizedProjCube[i] = new Mat4();
         }
     }
     else if (!this._isOmnidirectional) {
@@ -299,7 +299,7 @@ LightPoint.prototype.create = function () {
 
         if (this._haveShadows) {
             //create optimized projection matrix
-            this._m4fOptimizeProj = new Mat4();
+            this._m4fOptimizedProj = new Mat4();
         }
     }
 };
@@ -342,12 +342,12 @@ LightPoint.prototype._renderShadowsFromCamera = function (iIndex) {
     if (typeof iIndex === 'number') {
         pCamera = this._pCameraCube[iIndex];
         pDepthTexture = this._pDepthTextureCube[iIndex];
-        m4fOptimizedProj = this._pOptimizeProjCube[iIndex];
+        m4fOptimizedProj = this._pOptimizedProjCube[iIndex];
     }
     else {
         pCamera = this._pCamera;
         pDepthTexture = this._pDepthTexture;
-        m4fOptimizedProj = this._m4fOptimizeProj;
+        m4fOptimizedProj = this._m4fOptimizedProj;
     }
 
     var pEngine = this._pEngine;

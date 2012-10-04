@@ -913,6 +913,9 @@ ShaderProgram.prototype.setTextureSlot = function (iSlot, pTexture) {
 ShaderProgram.prototype._preparedUniformData = function (pVar) {
     var pData;
     var sType;
+    if(!pVar.iSize){
+        return null;
+    }
     if (!pVar.isArray && pVar.iSize === 1) {
         return null;
     }

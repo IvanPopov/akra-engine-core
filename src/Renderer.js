@@ -1106,7 +1106,7 @@ Renderer.prototype._getSystemUniformValue = function (sName) {
         case a.Renderer.PROJ_MATRIX:
             if (this._eCurrentRenderStage === a.RenderStage.SHADOWS &&
                 pLightPoint !== null) {
-                return pLightPoint.currentOptimizeProjection;
+                return pLightPoint.currentOptimizedProjection;
             }
             return pCamera.projectionMatrix();
         case a.Renderer.BIND_MATRIX:
