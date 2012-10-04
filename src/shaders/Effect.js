@@ -3540,7 +3540,7 @@ Effect.prototype._initSystemData = function () {
     this._addSystemFunction("log2", null, [null], ["float", "float2", "float3", "float4"], "log2($1)");
     this._addSystemFunction("inversesqrt", null, [null], ["float", "float2", "float3", "float4"], "inversesqrt($1)");
     this._addSystemFunction("sqrt", null, [null], ["float", "float2", "float3", "float4"], "sqrt($1)");
-    this._addSystemFunction("all", null, [null], ["bool2", "bool3", "bool4"], "all($1)");
+    this._addSystemFunction("all", "bool", [null], ["bool2", "bool3", "bool4"], "all($1)");
     this._addSystemFunction("lessThanEqual", "bool2", [null, null], ["float2", "int2"], "lessThanEqual($1,$2)");
     this._addSystemFunction("lessThanEqual", "bool3", [null, null], ["float3", "int3"], "lessThanEqual($1,$2)");
     this._addSystemFunction("lessThanEqual", "bool4", [null, null], ["float4", "int4"], "lessThanEqual($1,$2)");
@@ -6078,7 +6078,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 else {
                     pVar = pType.pDesc.hasField(pNode.sValue);
                     if (!pVar) {
-                        trace(pType, pNode);
+                        console.log(pType, pNode);
                         error("Return type is not enough cool for you.");
                         return;
                     }

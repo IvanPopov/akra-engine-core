@@ -114,6 +114,7 @@ function Renderer(pEngine) {
 
     this._pActiveSceneObject = null;
     this._pActiveRenderObject = null;
+    this._pActivateLightPoint = null;
     this._pSceneObjectStack = [];
 
     this._pPreRenderStateStack = [];
@@ -684,6 +685,12 @@ Renderer.prototype.activateSceneObject = function (pSceneObject) {
 Renderer.prototype.deactivateSceneObject = function () {
     this._pActiveSceneObject = this._pSceneObjectStack.pop() || null;
 };
+Renderer.prototype.activateLightPoint = function (pLightPoint) {
+    this._pActivateLightPoint = pLightPoint;
+};
+Renderer.prototype.deactivateLightPoint = function () {
+    this._pActivateLightPoint = null;
+};
 /**
  * Generate pass blend and shaderProgram
  * @param iPass
@@ -749,7 +756,7 @@ Renderer.prototype.finishPass = function (iPass) {
 //    }
 //    else
     {
-      
+
         pUniformValues = {};
         pNotDefaultUniforms = {};
         pTextures = {};
@@ -778,11 +785,11 @@ Renderer.prototype.finishPass = function (iPass) {
                         pTextures[sKey] = null;
                     }
                 }
-                
+
             }
             if (pSnapshot._pForeigns) {
                 pValues = pSnapshot._pForeigns[index];
-    //            // trace("Foreigns ---------- ", pSnapshot._pForeigns, pForeigns);
+                //            // trace("Foreigns ---------- ", pSnapshot._pForeigns, pForeigns);
                 for (j = 0; j < pUniforms._pForeignByNameKeys.length; j++) {
                     sKey = pUniforms._pForeignByNameKeys[j];
                     if (pValues[sKey] !== undefined) {
@@ -969,9 +976,9 @@ Renderer.prototype.finishPass = function (iPass) {
             if (pAttrSemantics[sKey1] === null) {
                 sHash += "EMPTY";
             }
-    //        else if (pAttrSemantics[sKey1] === a.BufferMap.FT_UNMAPPABLE) {
-    //            sHash += "REAL";
-    //        }
+            //        else if (pAttrSemantics[sKey1] === a.BufferMap.FT_UNMAPPABLE) {
+            //            sHash += "REAL";
+            //        }
             //TODO: VIDEO_BUFFER !== VERTEX_BUFFER
             else {
                 sHash += "SAME:";
@@ -982,10 +989,10 @@ Renderer.prototype.finishPass = function (iPass) {
                     if (i !== j && pAttrSemantics[sKey2] === pAttrSemantics[sKey1]) {
                         sSame1 += sKey2 + ",";
                     }
-    //                else if (i !== j &&
-    //                         pAttrSemantics[sKey2].pData._pVertexBuffer === pAttrSemantics[sKey1].pData._pVertexBuffer) {
-    //                    sSame2 += sKey2 + ",";
-    //                }
+                    //                else if (i !== j &&
+                    //                         pAttrSemantics[sKey2].pData._pVertexBuffer === pAttrSemantics[sKey1].pData._pVertexBuffer) {
+                    //                    sSame2 += sKey2 + ",";
+                    //                }
                 }
                 sHash += sSame1 + "!";
                 sHash += "SAME_VIDEO_BUFFER:" + sSame2;
@@ -996,7 +1003,7 @@ Renderer.prototype.finishPass = function (iPass) {
             sHash += "FOREIGN::" + i + "=" + (pForeigns[i]);
         }
         var pRenderObject = this._pPreRenderState.pRenderObject;
-        if(pRenderObject.surfaceMaterial && pRenderObject.surfaceMaterial.textureFlags) {
+        if (pRenderObject.surfaceMaterial && pRenderObject.surfaceMaterial.textureFlags) {
             sHash += ".." + "TEXTURES";
         }
         pProgram = this._pPrograms[sHash];
@@ -1005,7 +1012,8 @@ Renderer.prototype.finishPass = function (iPass) {
         //                        pTextures, pForeigns, pMaterialTexcoords);
         // }
         if (!pProgram) {
-            if(this._pActiveSceneObject && this._pActiveSceneObject.name === "node-wpn_gun" && this._pPreRenderState.pRenderObject.name === "submesh-0"){
+            if (this._pActiveSceneObject && this._pActiveSceneObject.name === "node-wpn_gun" &&
+                this._pPreRenderState.pRenderObject.name === "submesh-0") {
                 console.log("!!!!!!!");
             }
             pProgram = pPassBlend.generateProgram(sHash, pAttrSemantics, pAttrKeys, pUniformValues,
@@ -1016,7 +1024,7 @@ Renderer.prototype.finishPass = function (iPass) {
             }
         }
         var pAttrs = pProgram.generateInputData(pAttrSemantics, pUniformValues);
-        
+
         pStateStack[0].pSnapshot.pTemporaryStates[index].pProgram = pProgram;
         pStateStack[0].pSnapshot.pTemporaryStates[index].pAttrs = pAttrs;
         pStateStack[0].pSnapshot.pTemporaryStates[index].pUniformValues = pUniformValues;
@@ -1081,6 +1089,7 @@ Renderer.prototype._getSystemUniformValue = function (sName) {
     var pSceneObject = this._pActiveSceneObject;
     var pRenderObject = this._pPreRenderState.pRenderObject;
     var pCamera = this.pEngine.getActiveCamera();
+    var pLightPoint = this._pActivateLightPoint;
     switch (sName) {
         case a.Renderer.MODEL_MATRIX:
             if (pSceneObject && pSceneObject._m4fWorldMatrix) {
@@ -1095,6 +1104,10 @@ Renderer.prototype._getSystemUniformValue = function (sName) {
         case a.Renderer.VIEW_MATRIX:
             return pCamera.viewMatrix();
         case a.Renderer.PROJ_MATRIX:
+            if (this._eCurrentRenderStage === a.RenderStage.SHADOWS &&
+                pLightPoint !== null) {
+                return pLightPoint.currentOptimizeProjection;
+            }
             return pCamera.projectionMatrix();
         case a.Renderer.BIND_MATRIX:
             return (pRenderObject && pRenderObject.skin) ? pRenderObject.skin.getBindMatrix() : null;
@@ -1181,7 +1194,7 @@ Renderer.prototype.applyFrameBufferTexture = function (pTexture, eAttachment, eT
     eTexTarget = (eTexTarget === undefined) ? pDevice.TEXTURE_2D : eTexTarget;
     iLevel = 0;
     // // trace("Attach texture to farme buffer #" + this._pRenderState.iFrameBuffer);
-    this._pRenderState.pFrameBuffer.frameBufferTexture2D(eAttachment, eTexTarget, pTexture? pTexture._pTexture: null);
+    this._pRenderState.pFrameBuffer.frameBufferTexture2D(eAttachment, eTexTarget, pTexture ? pTexture._pTexture : null);
     this._pRenderState.pFrameBuffer.texture = pTexture;
 };
 Renderer.prototype.applySurfaceMaterial = function (pMaterial) {
@@ -1425,13 +1438,13 @@ Renderer.prototype.bindTexture = function (pTexture) {
     if (this._pRenderState.iTextureSlot >= -1) {
         this._pRenderState.pTextureSlotStates[this._pRenderState.iTextureSlot] = true;
     }
-    
+
     pTexture.bind();
 
     return true;
 };
 
-Renderer.prototype.unbindTexture = function() {
+Renderer.prototype.unbindTexture = function () {
     this._pRenderState.pTexture.unbind();
     this._pRenderState.pTexture = null;
 
@@ -1723,8 +1736,8 @@ Renderer.prototype.createDeviceResources = function () {
     this._pPostEffectTarget = new a.Mesh(this.pEngine, 0, 'screen-sprite');//a.RenderDataBuffer.VB_READABLE
     var pSubMesh = this._pPostEffectTarget.createSubset('screen-sprite :: main', a.PRIMTYPE.TRIANGLESTRIP);
     pSubMesh.data.allocateAttribute([VE_VEC2('POSITION')], new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]));
-    
-    
+
+
     pSubMesh.effect.create();
     pSubMesh.effect.use("akra.system.deferredShading");
     pSubMesh.effect.use("akra.system.omniLighting");
@@ -1761,7 +1774,7 @@ Renderer.prototype.createDeviceResources = function () {
     return true;
 };
 
-Renderer.prototype.updateGlobalPostEffectTexture = function() {
+Renderer.prototype.updateGlobalPostEffectTexture = function () {
 
     // var pTexturePool = this.pEngine.displayManager().texturePool();
 
@@ -1775,10 +1788,10 @@ Renderer.prototype.updateGlobalPostEffectTexture = function() {
     // this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
     // this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
 
-    
+
     // this.applyFrameBufferTexture(this._pGlobalPostEffectTexture);
     // this.activateFrameBuffer(null);
-     
+
     TODO('Renderer::updateGlobalPostEffectTexture()');
 };
 

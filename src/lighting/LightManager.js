@@ -41,10 +41,10 @@ function LightManager(pEngine, nMaxDeferredTextureCount) {
     this._iHeight = Math.ceilingPowerOfTwo(pEngine.pCanvas.height);
 
     //TODO: completly check all browsers tha can not support large(2048+) textures.
-    if(a.browser.name === 'Firefox') {
+    if (a.browser.name === 'Firefox') {
         this._iWidth = Math.min(this._iWidth, 1024);
         this._iHeight = Math.min(this._iHeight, 1024);
-        
+
     }
 
     this._pDeferredFrameBuffers = new Array(nMaxDeferredTextureCount);
@@ -165,7 +165,7 @@ LightManager.prototype.updateTextures = function () {
         var pDepthTexture = this._pDepthTexture;
 
         pDepthTexture.createTexture(iWidth, iHeight/*,
-                                    0, a.IFORMAT.DEPTH_COMPONENT, a.DTYPE.UNSIGNED_INT, null*/);
+         0, a.IFORMAT.DEPTH_COMPONENT, a.DTYPE.UNSIGNED_INT, null*/);
 
         pDepthTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
         pDepthTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
@@ -180,7 +180,7 @@ LightManager.prototype.updateTextures = function () {
             var pDeferredTexture = pDeferredTextures[i];
 
             pDeferredTexture.createTexture(iWidth, iHeight/*,
-                                           0, a.IFORMAT.RGBA, a.DTYPE.FLOAT, null*/);
+             0, a.IFORMAT.RGBA, a.DTYPE.FLOAT, null*/);
 
             // pDeferredTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
             // pDeferredTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
@@ -254,17 +254,17 @@ LightManager.prototype.applyLight = function () {
     pSubMesh.deactivatePass();
 
     //Tempory skybox
-    
+
     pSubMesh.activatePass(1);
     pRenderer.activateFrameBuffer(pRenderer._pGlobalPostEffectFrameBuffer2);
     pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_RATIO",
                                      [pCanvas.width / pDepthTexture.width, pCanvas.height / pDepthTexture.height]);
-    pSnapshot.setParameterBySemantic("INV_VIEW_CAMERA_MAT",pEngine.getActiveCamera().worldMatrix());
-    pSnapshot.setParameterBySemantic("CAMERA_POSITION",pEngine.getActiveCamera().worldPosition());
+    pSnapshot.setParameterBySemantic("INV_VIEW_CAMERA_MAT", pEngine.getActiveCamera().worldMatrix());
+    pSnapshot.setParameterBySemantic("CAMERA_POSITION", pEngine.getActiveCamera().worldPosition());
     pSnapshot.applyTextureBySemantic("TEXTURE0", pRenderer._pGlobalPostEffectTexture);
     pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE1", pDeferredTextures[1]);
     pSnapshot.applyTextureBySemantic("TEXTURE1", pEngine.pSkyMap);
-    pSnapshot.setParameter("sky_container.skyboxSampler", {TEXTURE: "TEXTURE1"});
+    pSnapshot.setParameter("sky_container.skyboxSampler", {TEXTURE : "TEXTURE1"});
     pSubMesh.applyRenderData(pSubMesh.data);
     pSubMesh.renderPass();
     pSubMesh.deactivatePass();
@@ -280,9 +280,9 @@ LightManager.prototype.applyLight = function () {
 
     pSubMesh.deactivatePass();
 
-    
+
     pSubMesh.finishRender();
-    
+
     // A_TRACER.BEGIN();
     // pRenderer.render(pEntry);
 
@@ -309,7 +309,7 @@ LightManager.prototype._createLightingUniforms = function () {
     var v4fTemp = Vec4();
 
     var pLightCamera;
-    var m4fShadow;
+    var m4fShadow, m4fToLightSpace;
 
     var iLastTextureIndex = 0;
     var sTexture = "TEXTURE";
@@ -354,11 +354,11 @@ LightManager.prototype._createLightingUniforms = function () {
                 pUniformData = a.UniformProjectShadow();
                 pUniformData.setLightData(pLight.lightParameters, v3fLightTransformPosition);
                 pLightCamera = pLight.camera;
-                m4fShadow = pLightCamera.projViewMatrix().multiply(pCamera.worldMatrix(), Mat4());
+                m4fToLightSpace = pLightCamera.viewMatrix().multiply(pCamera.worldMatrix(), Mat4());
                 pUniforms.textures.push(pLight.depthTexture);
                 sTexture = "TEXTURE" + (pUniforms.textures.length - 1);
                 pUniformData.setSampler(sTexture);
-                pUniformData.setMatrix(m4fShadow);
+                pUniformData.setMatrix(m4fToLightSpace, pLightCamera.projectionMatrix(), pLight.optimizedProjection);
                 pUniforms.projectShadows.push(pUniformData);
             }
             else {
@@ -447,7 +447,9 @@ A_NAMESPACE(UniformProject);
 function UniformProjectShadow() {
     A_CHECK_STORAGE();
     this.LIGHT_DATA = new a.LightData();
-    this.SHADOW_MATRIX = new Mat4();
+    this.TO_LIGHT_SPACE = new Mat4();
+    this.REAL_PROJECTION_MATRIX = new Mat4();
+    this.OPTIMIZED_PROJECTION_MATRIX = new Mat4();
     this.SHADOW_SAMPLER = {"TEXTURE" : null};
 }
 A_ALLOCATE_STORAGE(UniformProjectShadow, 20);
@@ -458,9 +460,11 @@ UniformProjectShadow.prototype.setLightData = function (pLightParam, v3fPosition
     return this;
 };
 
-UniformProjectShadow.prototype.setMatrix = function (m4fMatrix) {
+UniformProjectShadow.prototype.setMatrix = function (m4fToLightSpace, m4fRealProj, m4fOptimizeProj) {
     'use strict';
-    this.SHADOW_MATRIX.set(m4fMatrix);
+    this.TO_LIGHT_SPACE.set(m4fToLightSpace);
+    this.REAL_PROJECTION_MATRIX.set(m4fRealProj);
+    this.OPTIMIZED_PROJECTION_MATRIX.set(m4fOptimizeProj);
     return this;
 };
 
