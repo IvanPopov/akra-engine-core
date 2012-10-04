@@ -1578,7 +1578,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     for (i = 0; i < pSamplersArrayF.length; i++) {
         pSampler = pSamplersArrayF[i];
         nSamplers -= pSampler.iLength;
-        sVertexCode += pSampler.toCodeDecl();
+        sFragmentCode += pSampler.toCodeDecl();
     }
 
     //Check number of samplers

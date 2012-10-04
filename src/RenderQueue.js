@@ -84,8 +84,7 @@ RenderQueue.prototype.init = function (nCount, iIncrement) {
 //    this._pSortEntrys = new a.PopArray(nCount, iIncrement);
 //    this._pFreeEntrys = new a.Allocator(a.RenderEntry, nCount, iIncrement);
 //    this._pSortEntrys = new a.PopArray(nCount, iIncrement);
-    console.log(this);
-
+    // console.log(this);
 };
 
 RenderQueue.prototype.getEmptyEntry = function () {
@@ -144,3 +143,5 @@ RenderQueue.prototype.execute = function () {
 RenderQueue.prototype.reset = function () {
     this._nSortCount = 0;
 };
+
+A_NAMESPACE(RenderQueue);

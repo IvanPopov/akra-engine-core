@@ -123,10 +123,10 @@ LightManager.prototype._initializeTextures = function () {
         pDeferredTexture.createTexture(iWidth, iHeight,
                                        0, a.IFORMAT.RGBA, a.DTYPE.FLOAT, null);
 
-        pDeferredTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
-        pDeferredTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
-        pDeferredTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
-        pDeferredTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
+        // pDeferredTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+        // pDeferredTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+        // pDeferredTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
+        // pDeferredTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
     }
 
     var pFrameBuffers = this._pDeferredFrameBuffers;
@@ -182,10 +182,10 @@ LightManager.prototype.updateTextures = function () {
             pDeferredTexture.createTexture(iWidth, iHeight/*,
                                            0, a.IFORMAT.RGBA, a.DTYPE.FLOAT, null*/);
 
-            pDeferredTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
-            pDeferredTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
-            pDeferredTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
-            pDeferredTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
+            // pDeferredTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+            // pDeferredTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+            // pDeferredTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
+            // pDeferredTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
         }
 
         //FIXME: сделать правильно, без дублирования фреймбуферов
@@ -250,26 +250,38 @@ LightManager.prototype.applyLight = function () {
     pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE0", pDeferredTextures[0]);
     pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE1", pDeferredTextures[1]);
     pSnapshot.applyTextureBySemantic("SCENE_DEPTH_TEXTURE", pDepthTexture);
-    var pEntry = pSubMesh.renderPass();
-//    console.log("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
-    // trace("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
-    // pRenderer.deactivateFrameBuffer();
+    pSubMesh.renderPass();
+    pSubMesh.deactivatePass();
+
+    //Tempory skybox
+    
+    pSubMesh.activatePass(1);
+    pRenderer.activateFrameBuffer(pRenderer._pGlobalPostEffectFrameBuffer2);
+    pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_RATIO",
+                                     [pCanvas.width / pDepthTexture.width, pCanvas.height / pDepthTexture.height]);
+    pSnapshot.setParameterBySemantic("INV_VIEW_CAMERA_MAT",pEngine.getActiveCamera().worldMatrix());
+    pSnapshot.setParameterBySemantic("CAMERA_POSITION",pEngine.getActiveCamera().worldPosition());
+    pSnapshot.applyTextureBySemantic("TEXTURE0", pRenderer._pGlobalPostEffectTexture);
+    pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE1", pDeferredTextures[1]);
+    pSnapshot.applyTextureBySemantic("TEXTURE1", pEngine.pSkyMap);
+    pSnapshot.setParameter("sky_container.skyboxSampler", {TEXTURE: "TEXTURE1"});
+    pSubMesh.applyRenderData(pSubMesh.data);
+    pSubMesh.renderPass();
     pSubMesh.deactivatePass();
 
     //Tempory fxaa
-    
-    pSubMesh.activatePass(1);
+
+    pSubMesh.activatePass(2);
     pRenderer.activateFrameBuffer(null);
-    pSnapshot.applyTextureBySemantic("SCREEN_TEXTURE", pRenderer._pGlobalPostEffectTexture);
-    // pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_RATIO",
-    //                                  [pCanvas.width / pDepthTexture.width, pCanvas.height / pDepthTexture.height]);
+    pSnapshot.applyTextureBySemantic("SCREEN_TEXTURE", pRenderer._pGlobalPostEffectTexture2);
     pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_SIZE", [pCanvas.width, pCanvas.height]);
     pSubMesh.applyRenderData(pSubMesh.data);
-
-    var pEntry = pSubMesh.renderPass();
+    pSubMesh.renderPass();
     pSubMesh.deactivatePass();
 
+    
     pSubMesh.finishRender();
+    
     // A_TRACER.BEGIN();
     // pRenderer.render(pEntry);
 

@@ -749,10 +749,12 @@ Renderer.prototype.finishPass = function (iPass) {
 //    }
 //    else
     {
+      
         pUniformValues = {};
         pNotDefaultUniforms = {};
         pTextures = {};
         pForeigns = {};
+
         for (i = 0; i < iStackLength; i++) {
 
             nShift = pStateStack[i].nShift;
@@ -776,6 +778,7 @@ Renderer.prototype.finishPass = function (iPass) {
                         pTextures[sKey] = null;
                     }
                 }
+                
             }
             if (pSnapshot._pForeigns) {
                 pValues = pSnapshot._pForeigns[index];
@@ -992,9 +995,19 @@ Renderer.prototype.finishPass = function (iPass) {
         for (i in pForeigns) {
             sHash += "FOREIGN::" + i + "=" + (pForeigns[i]);
         }
-        
+        var pRenderObject = this._pPreRenderState.pRenderObject;
+        if(pRenderObject.surfaceMaterial && pRenderObject.surfaceMaterial.textureFlags) {
+            sHash += ".." + "TEXTURES";
+        }
         pProgram = this._pPrograms[sHash];
+        // if(this._pActiveSceneObject && this._pActiveSceneObject.name === "node-wpn_gun" && this._pPreRenderState.pRenderObject.name === "submesh-0"){
+        //     console.log(this._pPreRenderState.pRenderObject.name,sHash, pAttrSemantics, pAttrKeys, pUniformValues,
+        //                        pTextures, pForeigns, pMaterialTexcoords);
+        // }
         if (!pProgram) {
+            if(this._pActiveSceneObject && this._pActiveSceneObject.name === "node-wpn_gun" && this._pPreRenderState.pRenderObject.name === "submesh-0"){
+                console.log("!!!!!!!");
+            }
             pProgram = pPassBlend.generateProgram(sHash, pAttrSemantics, pAttrKeys, pUniformValues,
                                                   pTextures, pForeigns, pMaterialTexcoords);
             if (!pProgram) {
@@ -1357,6 +1370,7 @@ Renderer.prototype.activateProgram = function (pProgram) {
 
     this._pRenderState.pActiveProgram = pProgram;
     this._pRenderState.nAttrsUsed = pProgram.getStreamNumber();
+    return true;
 };
 Renderer.prototype.activateFrameBuffer = function (iId) {
     iId = (iId === undefined) ? this._getEmptyFrameBuffer() : iId;
@@ -1405,13 +1419,25 @@ Renderer.prototype.bindTexture = function (pTexture) {
     }
     // trace("Real bind texture #" + pTexture.toNumber());
     this._pRenderState.pTexture = pTexture;
+
     pTexture._isTextureChanged = false;
+
     if (this._pRenderState.iTextureSlot >= -1) {
         this._pRenderState.pTextureSlotStates[this._pRenderState.iTextureSlot] = true;
     }
+    
     pTexture.bind();
+
     return true;
 };
+
+Renderer.prototype.unbindTexture = function() {
+    this._pRenderState.pTexture.unbind();
+    this._pRenderState.pTexture = null;
+
+    return true;
+};
+
 Renderer.prototype.activateTexture = function (pTexture) {
     var i;
     var pSlots = this._pRenderState.pTextureSlots;
@@ -1512,7 +1538,7 @@ Renderer.prototype.render = function (pEntry) {
         this._tryReleaseFrameBuffer(pEntry.iFrameBuffer);
     }
 //    pProgram.clear();
-//    this._pCurrentRenderQueue._releaseEntry(pEntry);
+    // this._pCurrentRenderQueue._releaseEntry(pEntry);
     // trace("-------STOP REAL RENDER---------");
 };
 Renderer.prototype._setViewport = function (x, y, width, height) {
@@ -1705,8 +1731,8 @@ Renderer.prototype.createDeviceResources = function () {
     pSubMesh.effect.use("akra.system.projectLighting");
     pSubMesh.effect.use("akra.system.omniShadowsLighting");
     pSubMesh.effect.use("akra.system.projectShadowsLighting");
-
-    pSubMesh.effect.use("akra.system.fxaa", 1);
+    pSubMesh.effect.use("akra.system.skybox", 1);
+    pSubMesh.effect.use("akra.system.fxaa", 2);
 
     var pTexturePool = this.pEngine.displayManager().texturePool();
 
@@ -1718,8 +1744,19 @@ Renderer.prototype.createDeviceResources = function () {
     this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
     this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
 
+    this._pGlobalPostEffectTexture2 = pTexturePool.createResource(".texture-" + a.sid());
+
+    this._pGlobalPostEffectTexture2.createTexture(this.pEngine.pCanvas.width, this.pEngine.pCanvas.height);
+    this._pGlobalPostEffectTexture2.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+    this._pGlobalPostEffectTexture2.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+    this._pGlobalPostEffectTexture2.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
+    this._pGlobalPostEffectTexture2.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
+
     this._pGlobalPostEffectFrameBuffer = this.activateFrameBuffer();
     this.applyFrameBufferTexture(this._pGlobalPostEffectTexture);
+
+    this._pGlobalPostEffectFrameBuffer2 = this.activateFrameBuffer();
+    this.applyFrameBufferTexture(this._pGlobalPostEffectTexture2);
 
     return true;
 };
@@ -1730,17 +1767,19 @@ Renderer.prototype.updateGlobalPostEffectTexture = function() {
 
     // this._pGlobalPostEffectTexture = pTexturePool.createResource(".texture-" + a.sid());
 
-    this.activateFrameBuffer(this._pGlobalPostEffectFrameBuffer);
+    // this.activateFrameBuffer(this._pGlobalPostEffectFrameBuffer);
 
-    this._pGlobalPostEffectTexture.createTexture(this.pEngine.pCanvas.width, this.pEngine.pCanvas.height);
-    this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
-    this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
-    this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
-    this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
+    // this._pGlobalPostEffectTexture.createTexture(this.pEngine.pCanvas.width, this.pEngine.pCanvas.height);
+    // this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+    // this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+    // this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
+    // this._pGlobalPostEffectTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
 
     
-    this.applyFrameBufferTexture(this._pGlobalPostEffectTexture);
-    this.activateFrameBuffer(null);
+    // this.applyFrameBufferTexture(this._pGlobalPostEffectTexture);
+    // this.activateFrameBuffer(null);
+     
+    TODO('Renderer::updateGlobalPostEffectTexture()');
 };
 
 Renderer.prototype.disableDeviceResources = function () {

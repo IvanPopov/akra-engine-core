@@ -115,7 +115,12 @@ SceneModel.prototype.render = function () {
                 pSubMesh.applyRenderData(pSubMesh.data);
                 var pEntry = pSubMesh.renderPass();
                 // trace(pSubMesh.name,'-->', pMesh.name);
-                // trace("SceneModel.prototype.render", this, pEntry.pUniforms, pEntry.pTextures);
+                // if(this.name){
+                //     console.log("SceneModel.prototype.render. Name", this.name + "-->" + pSubMesh.name + "-->" + k, "Shaderprogram", pEntry.pProgram.toNumber(), pEntry.pProgram);// pEntry.pUniforms, pEntry.pTextures, pEntry.pProgram);
+                // }
+                // if(this.name === "node-wpn_gun"){
+                //     console.log("SceneModel.prototype.render. Name", this.name + "-->" + pSubMesh.name + "-->" + k, "Shaderprogram", pEntry.pProgram.toNumber(), pEntry.pProgram, pEntry.pTextures);
+                // }
                 pSubMesh.deactivatePass();
                 pRenderer.activateFrameBuffer(null);
             }
