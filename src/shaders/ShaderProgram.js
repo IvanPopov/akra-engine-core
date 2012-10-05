@@ -97,14 +97,17 @@ ShaderProgram.prototype.create = function (sHash, sVertexCode, sFragmentCode) {
     pDevice.attachShader(pHardwareProgram, pPixelShader);
 
     pDevice.linkProgram(pHardwareProgram);
+
+    debug_assert_win(pDevice.getProgramParameter(pHardwareProgram, pDevice.LINK_STATUS),
+                 'cannot link program', this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
+
     pDevice.validateProgram(pHardwareProgram);
 
     if (!pDevice.getProgramParameter(pHardwareProgram, pDevice.VALIDATE_STATUS)) {
         console.warn('program not valid', this.findResourceName());
         console.warn(pDevice.getProgramInfoLog(pHardwareProgram));
     }
-    debug_assert_win(pDevice.getProgramParameter(pHardwareProgram, pDevice.LINK_STATUS),
-                     'cannot link program', this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
+  
     
     this._isValid = true;
     this._pEngine.shaderManager()._registerProgram(this._sHash, this);
@@ -1121,9 +1124,13 @@ ShaderProgram.prototype.resetActivationStreams = function () {
 };
 ShaderProgram.prototype._programInfoLog = function (pHardwareProgram, pVertexShader, pPixelShader) {
     var pShaderDebugger = this._pEngine.getDevice().getExtension("WEBGL_debug_shaders");
-    console.log("===>>", pShaderDebugger);
+    var pGPUInfoLog = this._pEngine.getDevice().getExtension("WEBGL_debug_renderer_info");
+
+    if (pGPUInfoLog) {
+        //TODO:
+    }
+
     if (pShaderDebugger) {
-        alert(1);
         console.warn('translated vertex shader =========>');
         console.warn(pShaderDebugger.getTranslatedShaderSource(pVertexShader));
         console.warn('translated pixel shader =========>');
