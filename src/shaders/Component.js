@@ -1506,12 +1506,21 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
             sName2 = a.fx.SHADER_PREFIX.TEXCOORD + pTexcoords[i];
             pAttr = this.pAttributes[sName1];
             pAttr1 = this.pAttributes[sName2];
-            if (pAttr && pAttr1) {
+            if (pAttr) {
                 sVertexCode += sName1 + "=" + pAttr.pType.pEffectType.toCode() + "(" +
                                (pTempVarsDecl[sName2] ? (a.fx.SHADER_PREFIX.TEMP + pTexcoords[i]) : sName2) + ");";
             }
         }
     }
+//    for (i = 0; i < pTexcoords.length; i++) {
+//        if (pTextures[a.fx.SHADER_PREFIX.TEXTURE + i] === null) {
+//            sName1 = a.fx.SHADER_PREFIX.TEXCOORD + i;
+//            pAttr = pAttrData[sName1];
+//            if (pAttr) {
+//                sVertexCode += sName1 + "=vec3(0.,0.,0.);";
+//            }
+//        }
+//    }
 
     //Calls shader`s functions
     for (i = 0; i < this.pVertexShaders.length; i++) {

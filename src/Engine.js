@@ -706,7 +706,7 @@ Engine.prototype.render = function () {
         }*/
        
 //        if(zzz-- == 0){
-           // this.pause(true);
+//           this.pause(true);
 //        }
     }
 /*    if (iFrame > 5 && iFrame%100 === 0) {

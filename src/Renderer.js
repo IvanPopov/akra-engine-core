@@ -1004,7 +1004,14 @@ Renderer.prototype.finishPass = function (iPass) {
         }
         var pRenderObject = this._pPreRenderState.pRenderObject;
         if (pRenderObject.surfaceMaterial && pRenderObject.surfaceMaterial.textureFlags) {
-            sHash += ".." + "TEXTURES";
+            var pSurfaceTextures = pRenderObject.surfaceMaterial._pTexture;
+            for(var i in pSurfaceTextures){
+                sHash += ".." + "TEXTURES" + i;
+                if(pSurfaceTextures[i]!== null){
+                    sHash += "?TEX";
+                }
+            }
+
         }
         pProgram = this._pPrograms[sHash];
         // if(this._pActiveSceneObject && this._pActiveSceneObject.name === "node-wpn_gun" && this._pPreRenderState.pRenderObject.name === "submesh-0"){
@@ -1012,16 +1019,16 @@ Renderer.prototype.finishPass = function (iPass) {
         //                        pTextures, pForeigns, pMaterialTexcoords);
         // }
         if (!pProgram) {
-            if (this._pActiveSceneObject && this._pActiveSceneObject.name === "node-wpn_gun" &&
-                this._pPreRenderState.pRenderObject.name === "submesh-0") {
-                console.log("!!!!!!!");
-            }
             pProgram = pPassBlend.generateProgram(sHash, pAttrSemantics, pAttrKeys, pUniformValues,
                                                   pTextures, pForeigns, pMaterialTexcoords);
             if (!pProgram) {
                 warning("It`s impossible to generate shader program");
                 return false;
             }
+//            if (this._pActiveSceneObject && this._pActiveSceneObject.name) {
+//                console.log(this._pActiveSceneObject.name, pProgram, pAttrSemantics, pAttrKeys, pUniformValues,
+//                            pTextures, pForeigns, pMaterialTexcoords);
+//            }
         }
         var pAttrs = pProgram.generateInputData(pAttrSemantics, pUniformValues);
 

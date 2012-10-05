@@ -258,10 +258,12 @@ LightManager.prototype.applyLight = function () {
     //console.log(pEntry.pUniforms, pEntry.pTextures);
     pSubMesh.deactivatePass();
 
+
+    var isFXAA = this._pEngine.isFXAA;
     //Tempory skybox
 
     pSubMesh.activatePass(1);
-    pRenderer.activateFrameBuffer(pRenderer._pGlobalPostEffectFrameBuffer2);
+    pRenderer.activateFrameBuffer(isFXAA ? pRenderer._pGlobalPostEffectFrameBuffer2 : null);//;
     pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_RATIO",
                                      [pCanvas.width / pDepthTexture.width, pCanvas.height / pDepthTexture.height]);
     pSnapshot.setParameterBySemantic("INV_VIEW_CAMERA_MAT", pEngine.getActiveCamera().worldMatrix());
@@ -275,17 +277,16 @@ LightManager.prototype.applyLight = function () {
     pSubMesh.deactivatePass();
 
     //Tempory fxaa
+    if(isFXAA){
+        pSubMesh.activatePass(2);
+        pRenderer.activateFrameBuffer(null);
+        pSnapshot.applyTextureBySemantic("SCREEN_TEXTURE", pRenderer._pGlobalPostEffectTexture2);
+        pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_SIZE", [pCanvas.width, pCanvas.height]);
+        pSubMesh.applyRenderData(pSubMesh.data);
+        pSubMesh.renderPass();
 
-    pSubMesh.activatePass(2);
-    pRenderer.activateFrameBuffer(null);
-    pSnapshot.applyTextureBySemantic("SCREEN_TEXTURE", pRenderer._pGlobalPostEffectTexture2);
-    pSnapshot.setParameterBySemantic("SCREEN_TEXTURE_SIZE", [pCanvas.width, pCanvas.height]);
-    pSubMesh.applyRenderData(pSubMesh.data);
-    pSubMesh.renderPass();
-
-    pSubMesh.deactivatePass();
-
-
+        pSubMesh.deactivatePass();
+    }
     pSubMesh.finishRender();
 
     // A_TRACER.BEGIN();
