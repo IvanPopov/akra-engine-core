@@ -14,7 +14,12 @@ A_NAMESPACE(PopArray);
 
 PROPERTY(PopArray, "length",
          function () {
-             return this._nCount
+             return this._nCount;
+         });
+
+PROPERTY(PopArray, "data",
+         function () {
+             return this._pData;
          });
 
 PopArray.prototype.release = function (isStrong) {
@@ -72,47 +77,52 @@ A_NAMESPACE(PopArray);
 
 
 function Map() {
-    this.pKeys = new a.PopArray();
-    this.pValues = new a.PopArray();
+    this._pKeys = new a.PopArray();
     this._pMap = {};
     this._pAllocator = null;
 }
 A_NAMESPACE(Map);
 
+PROPERTY(Map, "length", function(){
+    return this._pKeys._nCount;
+});
+
+PROPERTY(Map, "keys", function(){
+    return this._pKeys._pData;
+});
+
 Map.prototype.release = function (isStrong) {
-    this.pKeys.release(isStrong);
-    this.pValues.release(isStrong);
+    var pKeys = this._pKeys;
+    var iLength = pKeys._nCount;
+    var pMap = this._pMap;
+    for (var i = 0; i < iLength; i++) {
+        pMap[pKeys[i]] = undefined;
+    }
+    pKeys.release(isStrong);
     if (this._pAllocator !== null) {
         this._pAllocator._releaseElement(this);
     }
 };
 
 Map.prototype.addElement = function (sKey, pValue) {
-    var pKeys = this.pKeys;
-    var pValues = this.pValues;
+    var pKeys = this._pKeys;
     var pMap = this._pMap;
-    var index = pMap[sKey];
-    var iSize = pKeys._nCount;
-    var sOldKey;
-    sOldKey = pKeys.element(index);
-    if (!sOldKey || sOldKey !== sKey) {
+    if (pMap[sKey] === undefined) {
         pKeys.push(sKey);
-        pValues.push(pValue);
-        pMap[sKey] = iSize;
     }
-//    else if (sOldKey === sKey) {
-    pValues.setElement(index, pValue);
-//    }
+    pMap[sKey] = pValue;
 };
 
 Map.prototype.hasElement = function (sKey) {
-    var index = this._pMap[sKey];
-    return (index !== undefined && this.pKeys.element(index) === sKey);
+    return !(this._pMap[sKey] === undefined);
 };
 
 Map.prototype.element = function (sKey) {
-    var index = this._pMap[sKey];
-    return (index !== undefined && this.pKeys.element(index) === sKey) ? this.pValues[index] : null;
+    return this._pMap[sKey];
+};
+
+Map.prototype.key = function (index) {
+    return this._pKeys.element(index);
 };
 
 
@@ -154,3 +164,6 @@ Allocator.prototype._releaseElement = function (pElement) {
 };
 
 A_NAMESPACE(Allocator);
+
+a._pMapAllocator = new a.Allocator(a.Map, 1000, 100);
+a._pArrayAllocator = new a.Allocator(a.PopArray, 1000, 100);
