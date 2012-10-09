@@ -31,3 +31,19 @@ build.bat
 
 node_modules/
 
+
+#visual
+*.config
+*.suo
+*.sln
+*.csproj
+*.user
+*.css
+
+src/*.htm
+src2/*.htm
+
+obj/
+bin/
+properties/
+
