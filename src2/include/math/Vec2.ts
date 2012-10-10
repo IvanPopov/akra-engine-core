@@ -2,12 +2,12 @@
 
 module akra {
     export class Vec2 {
-        x: number;
-        y: number;
+        x: float;
+        y: float;
 
         constructor ();
         constructor (v2f: Vec2);
-        constructor (x: number, y: number);
+        constructor (x: float, y: float);
         constructor (x?, y?) {
             switch (arguments.length) {
                 case 0:
@@ -25,14 +25,14 @@ module akra {
 
         set(): Vec2;
         set (v2f: Vec2): Vec2;
-        set (x: number, y: number): Vec2;
+        set (x: float, y: float): Vec2;
         set (x?, y?): Vec2 {
             switch(arguments.length) {
                 case 0:
                     this.x = this.y = 0.;
                     break;
                 case 1:
-                    if (typeof x === "number") {
+                    if (isFloat(x)) {
                         this.x = x;
                         this.y = x;
                     }

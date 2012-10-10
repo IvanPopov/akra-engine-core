@@ -1,17 +1,14 @@
 ///<reference path="include/akra.ts" />
 
+class DemoApp extends akra.Engine {
+    oneTimeSceneInit(): bool {
+        this.notifyOneTimeSceneInit();
 
-var v2: akra.Vec3 = new akra.Vec3(1, 2, 3);
-var v: akra.Vec3 = new akra.Vec3(10);
+        akra.debug_assert(false, "do not use this!", "do not use this!", "do not use this!");
 
+        //this.setupWorldOcTree();
+        return true;
+    }
+} 
 
-
-console.log((new akra.Vec3).set(v.z, v2.z, v2.y).toString());
-
-//class DemoApp extends akra.Engine {
-//    oneTimeSceneInit(): bool {
-//        this.notifyOneTimeSceneInit();
-//        //this.setupWorldOcTree();
-//        return true;
-//    }
-//} 
+(new DemoApp).oneTimeSceneInit();
