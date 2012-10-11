@@ -34,8 +34,7 @@ function TerrainSectionROAM (pEngine)
 	this._pLeftNeighborOfB = null;
 	this._pRightNeighborOfB = null;
 
-
-
+    this._pEngine = pEngine;
 }
 
 EXTENDS(TerrainSectionROAM, a.TerrainSection);
@@ -453,7 +452,7 @@ TerrainSectionROAM.prototype.buildTriangleList=function()
 }
 
 
-TerrainSectionROAM.prototype.renderCallback = function (entry, activationFlags)
+TerrainSectionROAM.prototype.render = function (entry, activationFlags)
 {
 	this.getTerrainSystem().applyForRender(this.worldMatrix());
 }

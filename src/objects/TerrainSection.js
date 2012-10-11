@@ -21,6 +21,7 @@ function TerrainSection (pEngine)
     this._iXVerts = 0; //Ращмеры сетки вершин
     this._iYVerts = 0;
     this._pWorldRect = new a.Rect3d(); //Положение сетора в мире
+    this._pEngine = pEngine;
 };
 
 EXTENDS(TerrainSection, a.SceneObject, a.RenderableObject);
@@ -185,9 +186,58 @@ TerrainSection.prototype._buildIndexBuffer=function()
 
 TerrainSection.prototype.render = function ()
 {
-//	this.renderCallback();
-	this.getTerrainSystem().applyForRender();
+//	this.getTerrainSystem().applyForRender();
+    var pRenderer = this._pEngine.shaderManager(),
+        pLightManager = this._pEngine.lightManager(),
+        pTerrain = this.getTerrainSystem(),
+        pMegaTexture = pTerrain._pMegaTexures;
+    var i;
+    var pSnapshot;
 
+    pRenderer.activateSceneObject(this);
+    pRenderer.setViewport(0, 0, this._pEngine.pCanvas.width, this._pEngine.pCanvas.height);
+    this.switchRenderMethod(".default");
+    this.startRender();
+
+    pSnapshot = pRenderer._pActiveSnapshot;
+
+    for (i = 0; i < this.totalPasses(); i++) {
+        this.activatePass(i);
+
+        pRenderer.activateFrameBuffer(pLightManager.deferredFrameBuffers[i]);
+
+        pSnapshot.setParameterBySemantic('CAMERA_COORD', pMegaTexture._v2fCameraCoord);
+        pSnapshot.setParameter('textureTerrainIsLoaded0', pMegaTexture);
+        pSnapshot.setParameter('textureTerrainIsLoaded1', pMegaTexture);
+        pSnapshot.setParameter('textureTerrainIsLoaded2', pMegaTexture);
+        pSnapshot.setParameter('textureTerrainIsLoaded3', pMegaTexture);
+        pSnapshot.setParameter('textureTerrainIsLoaded4', pMegaTexture);
+        pSnapshot.setParameter('textureTerrainIsLoaded5', pMegaTexture);
+
+        this.applyTextureBySemantic("TEXTURE0", pMegaTexture._pTexures[0]);
+        this.applyTextureBySemantic("TEXTURE1", pMegaTexture._pTexures[1]);
+        this.applyTextureBySemantic("TEXTURE2", pMegaTexture._pTexures[2]);
+        this.applyTextureBySemantic("TEXTURE3", pMegaTexture._pTexures[3]);
+        this.applyTextureBySemantic("TEXTURE4", pMegaTexture._pTexures[4]);
+        this.applyTextureBySemantic("TEXTURE5", pMegaTexture._pTexures[5]);
+        this.applyTextureBySemantic("TEXTURE6", pTerrain._pNormalMap);
+
+        this.applyRenderData(this.data);
+
+        console.log(this.renderPass());
+        // trace(pSubMesh.name,'-->', pMesh.name);
+        // if(this.name){
+        //     console.log("SceneModel.prototype.render. Name", this.name + "-->" + pSubMesh.name + "-->" + k, "Shaderprogram", pEntry.pProgram.toNumber(), pEntry.pProgram);// pEntry.pUniforms, pEntry.pTextures, pEntry.pProgram);
+        // }
+        // if(this.name === "node-wpn_gun"){
+        //     console.log("SceneModel.prototype.render. Name", this.name + "-->" + pSubMesh.name + "-->" + k, "Shaderprogram", pEntry.pProgram.toNumber(), pEntry.pProgram, pEntry.pTextures);
+        // }
+        this.deactivatePass();
+        pRenderer.activateFrameBuffer(null);
+    }
+    this.finishRender();
+    pRenderer.deactivateSceneObject();
+    return true;
 }
 
 TerrainSection.prototype.prepareForRender = function()

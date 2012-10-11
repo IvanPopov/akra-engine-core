@@ -74,7 +74,10 @@ function Texture(pEngine) {
     this._iSlot = -1;
 
     this._pRepackTexture = null;
-    this._pSystemVertexDataTexture = null;
+
+    this._pSystemVertexDataForRepack = null;
+    this._pSystemVertexDataForResize = null;
+
     this._isTextureChanged = false;
     this._initSystemStorageTexture(pEngine);
 }
@@ -202,20 +205,34 @@ PROPERTY(Texture, 'target', function () {
 Texture.prototype._initSystemStorageTexture = function (pEngine) {
     this._pEngine = pEngine;
     var pBuffer, pData, pMethod;
-    if (pEngine._pSystemVertexDataTexture) {
-        this._pSystemVertexDataTexture = pEngine._pSystemVertexDataTexture;
+    if (pEngine._pSystemVertexDataForRepack && pEngine._pSystemVertexDataForResize) {
+
+        this._pSystemVertexDataForRepack = pEngine._pSystemVertexDataForRepack;
         pMethod = pEngine.pDisplayManager.renderMethodPool().findResource(".repack_texture");
         this.addRenderMethod(pMethod, ".repack_texture");
+
+        this._pSystemVertexDataForResize = pEngine._pSystemVertexDataForResize;
+        pMethod = pEngine.pDisplayManager.renderMethodPool().findResource(".resize_texture");
+        this.addRenderMethod(pMethod, ".resize_texture");
+
         return true;
     }
 
     pBuffer = pEngine.pDisplayManager.vertexBufferPool().createResource(".VERTEXBUFFER_TEX");
     debug_assert(pBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit)),
                  "Cannot create system vertex buffer");
+
     pData = pBuffer.getEmptyVertexData(0, [VE_FLOAT('SERIALNUMBER')]);
-    pEngine._pSystemVertexDataTexture = this._pSystemVertexDataTexture = pData;
+    pEngine._pSystemVertexDataForRepack = this._pSystemVertexDataForRepack = pData;
     pMethod = pEngine.pDisplayManager.renderMethodPool().createResource(".repack_texture");
     this.addRenderMethod(pMethod, ".repack_texture");
+
+    pData = pBuffer.getEmptyVertexData(4, [VE_FLOAT2('POSITION')]);
+    pData.setData((new Float32Array([-1,-1,-1,1,1,-1,1,1])), 'POSITION');
+    pEngine._pSystemVertexDataForResize = this._pSystemVertexDataForResize = pData;
+    pMethod = pEngine.pDisplayManager.renderMethodPool().createResource(".resize_texture");
+    this.addRenderMethod(pMethod, ".resize_texture");
+
     this._setSystemEffect();
 
     return true;
@@ -224,16 +241,26 @@ Texture.prototype._initSystemStorageTexture = function (pEngine) {
 Texture.prototype._setSystemEffect = function () {
     var pEngine = this._pEngine;
     var pEffect;
-    if (pEngine.displayManager().componentPool().findResource("akra.system.texture_repack")) {
+    var isAdd = false;
+    if (pEngine.displayManager().componentPool().findResource("akra.system.repack_texture")) {
         // trace("Texture.prototype._setSystemEffect----------------->>>>");
         pEffect = pEngine.pDisplayManager.effectPool().createResource(".repack_texture");
         pEffect.create();
-        pEffect.use("akra.system.texture_repack");
+        pEffect.use("akra.system.repack_texture");
         this.switchRenderMethod(".repack_texture");
         this._pActiveSnapshot.method.effect = pEffect;
-        return true;
+        isAdd = true;
     }
-    return false;
+    if (pEngine.displayManager().componentPool().findResource("akra.system.resize_texture")) {
+        // trace("Texture.prototype._setSystemEffect----------------->>>>");
+        pEffect = pEngine.pDisplayManager.effectPool().createResource(".resize_texture");
+        pEffect.create();
+        pEffect.use("akra.system.resize_texture");
+        this.switchRenderMethod(".resize_texture");
+        this._pActiveSnapshot.method.effect = pEffect;
+        isAdd = true;
+    }
+    return isAdd;
 };
 
 Texture.prototype.flipY = function (bValue) {
@@ -814,70 +841,124 @@ Texture.prototype.uploadImage = function (pImage) {
  * @param iHeight
  * @return Boolean
  */
-Texture.prototype.resize = function (iWidth, iHeight)
-{
+Texture.prototype.resize = function (iWidth, iHeight){
 	debug_assert(this._pTexture, 'Cannot resize, because texture not created.');
 
 	var eFormat = this._eFormat;
 	var eType = this._eType;
 
-	var pDevice = this._pEngine.pDevice;
+    var pDevice = this._pEngine.pDevice;
+    var pRenderer = this._pEngine.shaderManager();
 
-	if (!statics._pResizeProgram)
-	{
-		statics._pResizeProgram = a.loadProgram(this._pEngine,'../effects/resize_texture.glsl')
-	}
+    if (!this._pRepackTexture) {
+        this._pRepackTexture = this._pEngine.displayManager().texturePool().createResource(".DuplicateTexture" +
+                                                                                           a.sid());
+    }
 
-	var pProgram = statics._pResizeProgram;
-	pProgram.activate();
+    var pDestinationTexture = this._pRepackTexture;
+    pDestinationTexture.createTexture(iWidth, iHeight, 0, eFormat, eType, [null]);
 
-	var pDestinationTexture = pDevice.createTexture();
-	pDevice.activeTexture(pDevice.TEXTURE1);
-	// pDevice.pixelStorei(a.WEBGLS.UNPACK_FLIP_Y_WEBGL, true);
-	pDevice.bindTexture(pDevice.TEXTURE_2D, pDestinationTexture);
-	pDevice.texImage2D(pDevice.TEXTURE_2D, 0, eFormat, iWidth, iHeight, 0, eFormat, eType, null);
-	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MAG_FILTER, pDevice.LINEAR);
-	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MIN_FILTER, pDevice.LINEAR);
-	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_WRAP_S, pDevice.CLAMP_TO_EDGE);
-	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_WRAP_T, pDevice.CLAMP_TO_EDGE);
+    pDestinationTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+    pDestinationTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+    pDestinationTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
+    pDestinationTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
 
+    this.switchRenderMethod(".resize_texture");
 
-	var pDestinationFrameBuffer = pDevice.createFramebuffer();
-	pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pDestinationFrameBuffer);
-	pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
-		pDevice.TEXTURE_2D, pDestinationTexture, 0);
+    var pVertexData = this._pSystemVertexDataForResize;
 
-	var pRenderIndexData = new Float32Array([-1,-1,-1,1,1,-1,1,1]);
-	var pRenderIndexBuffer = pDevice.createBuffer();
+    var pSnapshot = this._pActiveSnapshot;
 
-	pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pRenderIndexBuffer);
-	pDevice.bufferData(pDevice.ARRAY_BUFFER, pRenderIndexData, pDevice.STREAM_DRAW);
+    pRenderer.switchRenderStage(a.RenderStage.DEFAULT);
+    pRenderer.setViewport(0, 0, iWidth, iHeight);
+    pRenderer.activateFrameBuffer();
 
-	pDevice.bindTexture(pDevice.TEXTURE_2D, this._pTexture);
-	pDevice.activeTexture(pDevice.TEXTURE0);
-	pDevice.bindTexture(pDevice.TEXTURE_2D, this._pTexture);
-	pProgram.applyInt("texture", 0);
+    pRenderer.applyFrameBufferTexture(pDestinationTexture);
+    console.log(this);
+    this.startRender();
 
-	pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pRenderIndexBuffer);
-	pDevice.vertexAttribPointer(pProgram._pAttributesByName['POSITION'].iLocation, 2, pDevice.FLOAT, false, 0, 0);
-	// pDevice.disableVertexAttribArray(1);
-	// pDevice.disableVertexAttribArray(2);
+    for (var i = 0; i < this.totalPasses(); i++) {
+        // trace("Pass #" + i);
+        this.activatePass(i);
+        pSnapshot.applyTextureBySemantic("TEXTURE0", this);
+        pSnapshot.applyVertexData(pVertexData, a.PRIMTYPE.TRIANGLESTRIP);
+        this.renderPass();
+        this.deactivatePass();
+    }
 
-	pDevice.viewport(0, 0, iWidth, iHeight);
-	pDevice.drawArrays(pDevice.TRIANGLE_STRIP, 0, 4);
-	pDevice.flush();
+    this.finishRender();
+    pRenderer.deactivateFrameBuffer();
+    pRenderer.processRenderStage();
 
-	pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, null);
-	pDevice.deleteBuffer(pRenderIndexBuffer);
-	pDevice.deleteTexture(this._pTexture);
-	pDevice.deleteFramebuffer(pDestinationFrameBuffer);
+    pDevice.flush();
 
-	pProgram.deactivate();
+    this.releaseTexture();
+    this._pTexture = pDestinationTexture._pTexture;
+    pDestinationTexture._pTexture = null;
+    this._isTextureChanged = true;
+    pDestinationTexture._isTextureChanged = true;
+    this._eFormat = eFormat;
+    this._eType = eType;
+    this._iWidth = iWidth;
+    this._iHeight = iHeight;
+    return true;
 
-	this._pTexture = pDestinationTexture;
-	this._iWidth = iWidth;
-	this._iHeight = iHeight;
-	return true;
+//
+//	if (!statics._pResizeProgram)
+//	{
+//		statics._pResizeProgram = a.loadProgram(this._pEngine,'../effects/resize_texture.glsl')
+//	}
+//
+//	var pProgram = statics._pResizeProgram;
+//	pProgram.activate();
+//
+//	var pDestinationTexture = pDevice.createTexture();
+//	pDevice.activeTexture(pDevice.TEXTURE1);
+//	// pDevice.pixelStorei(a.WEBGLS.UNPACK_FLIP_Y_WEBGL, true);
+//	pDevice.bindTexture(pDevice.TEXTURE_2D, pDestinationTexture);
+//	pDevice.texImage2D(pDevice.TEXTURE_2D, 0, eFormat, iWidth, iHeight, 0, eFormat, eType, null);
+//	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MAG_FILTER, pDevice.LINEAR);
+//	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MIN_FILTER, pDevice.LINEAR);
+//	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_WRAP_S, pDevice.CLAMP_TO_EDGE);
+//	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_WRAP_T, pDevice.CLAMP_TO_EDGE);
+//
+//
+//	var pDestinationFrameBuffer = pDevice.createFramebuffer();
+//	pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pDestinationFrameBuffer);
+//	pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
+//		pDevice.TEXTURE_2D, pDestinationTexture, 0);
+//
+//	var pRenderIndexData = new Float32Array([-1,-1,-1,1,1,-1,1,1]);
+//	var pRenderIndexBuffer = pDevice.createBuffer();
+//
+//	pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pRenderIndexBuffer);
+//	pDevice.bufferData(pDevice.ARRAY_BUFFER, pRenderIndexData, pDevice.STREAM_DRAW);
+//
+//	pDevice.bindTexture(pDevice.TEXTURE_2D, this._pTexture);
+//	pDevice.activeTexture(pDevice.TEXTURE0);
+//	pDevice.bindTexture(pDevice.TEXTURE_2D, this._pTexture);
+//	pProgram.applyInt("texture", 0);
+//
+//	pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pRenderIndexBuffer);
+//	pDevice.vertexAttribPointer(pProgram._pAttributesByName['POSITION'].iLocation, 2, pDevice.FLOAT, false, 0, 0);
+//	// pDevice.disableVertexAttribArray(1);
+//	// pDevice.disableVertexAttribArray(2);
+//
+//	pDevice.viewport(0, 0, iWidth, iHeight);
+//	pDevice.drawArrays(pDevice.TRIANGLE_STRIP, 0, 4);
+//	pDevice.flush();
+//
+//	pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, null);
+//	pDevice.deleteBuffer(pRenderIndexBuffer);
+//	pDevice.deleteTexture(this._pTexture);
+//	pDevice.deleteFramebuffer(pDestinationFrameBuffer);
+//
+//	pProgram.deactivate();
+//
+//	this._pTexture = pDestinationTexture;
+//	this._iWidth = iWidth;
+//	this._iHeight = iHeight;
+//	return true;
 };
 
 /**
@@ -921,7 +1002,7 @@ Texture.prototype.repack = function (iWidth, iHeight, eFormat, eType) {
 
     this.switchRenderMethod(".repack_texture");
 
-    var pVertexData = this._pSystemVertexDataTexture;
+    var pVertexData = this._pSystemVertexDataForRepack;
     var nCount = this._iWidth * this._iHeight;
     var pRenderIndexData = new Float32Array(nCount);
     

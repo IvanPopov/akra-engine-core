@@ -441,13 +441,13 @@ MegaTexture.prototype.prepareForRender= function()
 //Применение параметров для рендеринга, коготрые зависят от самого терраина
 MegaTexture.prototype.applyForRender= function()
 {
-	this._pEngine.pDrawTerrainProgram.applyVector2('cameraCoordTerrain', this._v2fCameraCoord);
-	for(var i=0;i<this._pTexures.length;i++)
-	{
-		this._pTexures[i].activate(2+i);
-		this._pEngine.pDrawTerrainProgram.applyInt('textureTerrain'+i,2+i);
-		this._pEngine.pDrawTerrainProgram.applyInt('textureTerrainIsLoaded'+i,this._pXY[i].isLoaded);
-	}
+//	this._pEngine.pDrawTerrainProgram.applyVector2('cameraCoordTerrain', this._v2fCameraCoord);
+//	for(var i=0;i<this._pTexures.length;i++)
+//	{
+//		this._pTexures[i].activate(2+i);
+//		this._pEngine.pDrawTerrainProgram.applyInt('textureTerrain'+i,2+i);
+//		this._pEngine.pDrawTerrainProgram.applyInt('textureTerrainIsLoaded'+i,this._pXY[i].isLoaded);
+//	}
 }
 
 MegaTexture.prototype.setBufferMapNULL=function(pBuffer)

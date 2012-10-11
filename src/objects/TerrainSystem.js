@@ -234,6 +234,7 @@ Terrain.prototype.allocateSectors = function () {
             iYPixel = y << this._iSectorShift;
 
             iIndex = (y * this._iSectorCountX) + x;
+
             this._pSectorArray[iIndex] = new a.TerrainSection(this._pEngine);
 			var pEffectResource = this._pSectorArray[iIndex].effect;
 			pEffectResource.create();
@@ -896,9 +897,9 @@ Terrain.prototype.prepareForRender= function()
 //Применение параметров для рендеринга, коготрые зависят от самого терраина
 Terrain.prototype.applyForRender= function()
 {
-	this._pMegaTexures.applyForRender();
-	this._pNormalMap.activate(14);
-	this._pEngine.pDrawTerrainProgram.applyInt('ptNormal',14);
+//	this._pMegaTexures.applyForRender();
+//	this._pNormalMap.activate(14);
+//	this._pEngine.pDrawTerrainProgram.applyInt('ptNormal',14);
 }
 
 Terrain.prototype.reset=function()

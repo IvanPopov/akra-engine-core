@@ -94,7 +94,6 @@ TerrainROAM.prototype.allocateSectors = function () {
 	{
 		this._pSectorArray[i] = new a.TerrainSectionROAM(this._pEngine);
 	}
-
 	// create the sector objects themselves
 	for (var y = 0; y < this._iSectorCountY; ++y) {
 		for (var x = 0; x < this._iSectorCountX; ++x) {
@@ -278,17 +277,19 @@ TerrainROAM.prototype.prepareForRender = function()
 //Применение параметров для рендеринга, коготрые зависят от самого терраина
 TerrainROAM.prototype.applyForRender= function(pWorldMatrix)
 {
+//    TerrainSection.prototype.render.call(this._pSectorArray[0]);
 	if(this._isRenderInThisFrame==false)
 	{
 		this._isRenderInThisFrame=true;
 
 		var pCamera = this._pEngine.getActiveCamera();
-		this._pEngine.pDrawTerrainProgram.activate();
-		Terrain.prototype.applyForRender.call(this);
-		this._pEngine.pDrawTerrainProgram.applyMatrix4('model_mat', pWorldMatrix);
-		this._pEngine.pDrawTerrainProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
-		this._pEngine.pDrawTerrainProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
-		this._pRenderData.draw();
+//		this._pEngine.pDrawTerrainProgram.activate();
+        TerrainSection.prototype.render.call(this._pSectorArray[0]);
+//		Terrain.prototype.applyForRender.call(this);
+//		this._pEngine.pDrawTerrainProgram.applyMatrix4('model_mat', pWorldMatrix);
+//		this._pEngine.pDrawTerrainProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
+//		this._pEngine.pDrawTerrainProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
+//		this._pRenderData.draw();
 	}
 }
 
