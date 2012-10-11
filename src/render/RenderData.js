@@ -642,9 +642,9 @@ RenderData.prototype.getData = function () {
     }
 
     if (typeof arguments[0] === 'string') {
-        for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++i) {
+		for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++ i) {
             pFlow = pFlows[i];
-            if (pFlow.pData != null && pFlow.pData.hasSemantics(arguments[0])) {
+			if (pFlow.pData != null && pFlow.pData.hasSemantics(arguments[0])) {
                 return pFlow.pData;
             }
         }

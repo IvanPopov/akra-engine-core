@@ -294,6 +294,7 @@ Define(D3DFMT_DXT5,0x35545844);
  * Constructor of Img class
  **/
 
+
 function Img(pEngine)
 {
 	Img.superclass.constructor.apply(this, arguments);
@@ -322,6 +323,9 @@ function Img(pEngine)
 	this._pPixel10=new Uint8Array(4);
 	this._pPixel01=new Uint8Array(4);
 	this._pPixel11=new Uint8Array(4);
+	//Временные штуки
+	this._pPixelUint8_4=new Uint8Array(4)
+	this._pPixelUint16_4=new Uint16Array(4)
 };
 
 a.extend(Img, a.ResourcePoolItem);
@@ -482,14 +486,26 @@ Img.prototype.getBlockBytes=function()
     }
     else if(this._eFormat==a.IFORMAT.RGBA4||this._eFormat==a.IFORMAT.BGRA4
         ||this._eFormat==a.IFORMAT.RGB5_A1||this._eFormat==a.IFORMAT.BGR5_A1
-        ||this._eFormat==a.IFORMAT.RGB565||this._eFormat==a.IFORMAT.BGR565)
+        ||this._eFormat==a.IFORMAT.RGB565||this._eFormat==a.IFORMAT.BGR565
+		||this._eFormat==a.IFORMAT.L16)
         {
         return 2;
     }
+	else if(this._eFormat==a.IFORMAT.L8)
+	{
+		return 1;
+	}
     else
     {
+		debug_error("getBlockBytes неизвестный формат");
         return 0;
     }
+}
+
+Img.prototype.getBitPerComponents=function()
+{
+	//TODO
+	return 0;
 }
 
 Img.prototype.getWidth=function(iMipLevel)
@@ -630,6 +646,18 @@ Img.prototype.isAlpha=function()
     }
 }
 
+Img.prototype.isLumiance=function()
+{
+	if(this._eFormat==a.IFORMAT.L8||this._eFormat==a.IFORMAT.L16)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 Img.prototype.getFormat=function()
 {
     return this._eFormat;
@@ -655,6 +683,10 @@ Img.prototype.getFormatShort=function()
         {
         return a.IFORMATSHORT.RGB;
     }
+	else if(this._eFormat==a.IFORMAT.L16||this._eFormat==a.IFORMAT.L8)
+	{
+		return a.IFORMATSHORT.L;
+	}
     else
     {
         return null;
@@ -671,7 +703,8 @@ Img.prototype.getType=function()
         return null;
     }
     else if(this._eFormat==a.IFORMAT.BGR8||this._eFormat==a.IFORMAT.RGB8
-        ||this._eFormat==a.IFORMAT.RGBA8||this._eFormat==a.IFORMAT.BGRA8)
+        ||this._eFormat==a.IFORMAT.RGBA8||this._eFormat==a.IFORMAT.BGRA8
+		||this._eFormat==a.IFORMAT.L16||this._eFormat==a.IFORMAT.L8)
         {
         return a.ITYPE.UNSIGNED_BYTE;
     }
@@ -890,6 +923,11 @@ Img.prototype.load=function(sFileName, fnCallBack)
 			}
 		}
 		pImg.src = sFileName;
+		return;
+	}
+	else if((sExt=a.pathinfo(sFileName).ext)&&(sExt=="tiff"))
+	{
+
 		return;
 	}
 	else
@@ -1128,6 +1166,29 @@ Img.prototype.load=function(sFileName, fnCallBack)
                     }
                 }
             }
+			else if(header.ddspf.dwFlags&DDPF_LUMINANCE)
+			{
+				if(header.ddspf.dwRGBBitCount==16&&header.ddspf.dwRBitMask==0x0000ffff&&
+					header.ddspf.dwGBitMask==0x00000000&&header.ddspf.dwBBitMask==0x00000000&&
+					header.ddspf.dwABitMask==0x00000000) //DDSPF_R8G8B8
+				{
+					me._eFormat=a.IFORMAT.L16;
+				}
+				if(header.ddspf.dwRGBBitCount==8&&header.ddspf.dwRBitMask==0x000000ff&&
+					header.ddspf.dwGBitMask==0x00000000&&header.ddspf.dwBBitMask==0x00000000&&
+					header.ddspf.dwABitMask==0x00000000) //DDSPF_R8G8B8
+				{
+					me._eFormat=a.IFORMAT.L8;
+				}
+				else
+				{
+					debug_error("Флаг DDPF_LUMINANCE стоит, а подходящего формата не найдено");
+				}
+			}
+			else
+			{
+				debug_error("Флаг не DDS_RGB и не DDPF_LUMINANCE");
+			}
 			
 			if((!header.ddspf.dwFlags&DDPF_RGB)&&(!header.ddspf.dwFlags&DDPF_FOURCC))
             {
@@ -1381,7 +1442,41 @@ Img.prototype.tex2D=function(fX,fY,pPixel,iMipLevel,eCubeFlag,iVolumeLevel)
 	}
 }
 
+Img.prototype.getPixelLA=function(iX,iY,pPixel,iMipLevel,eCubeFlag,iVolumeLevel)
+{
+	if(iMipLevel==undefined)
+	{
+		iMipLevel=0;
+	}
+	else
+	{
+		debug_assert(TEST_BIT(this._iFlags,a.Img.MipMaps),"Запрашиваются мипмапы, а их нет");
+		debug_assert(iMipLevel<this.getMipMapLevels(),"Запрашивается мипмап, которого нет");
+	}
 
+	if(eCubeFlag==undefined)
+	{
+		debug_assert(!TEST_BIT(this._iFlags,a.Img.CubeMap),"Не выставлена часть кубической картинки");
+		eCubeFlag=0;
+	}
+	else
+	{
+		debug_assert(TEST_BIT(this._iFlags,a.Img.CubeMap),"Выставлена часть кубической куртинки, хотя картинка не является кубической");
+		debug_assert(TEST_BIT(this._iCubeFlags,eCubeFlag),"Запрашивается часть кубической текстуры которой нет, которого нет");
+	}
+
+	if(iVolumeLevel==undefined)
+	{
+		iVolumeLevel=0;
+	}
+	else
+	{
+		debug_assert(TEST_BIT(this._iFlags,a.Img.Volume),"Запрашивается часть объемной картинки, а картинка не объемная");
+		debug_assert(iVolumeLevel<this.getVolumeLevels(),"Запрашивается часть объемной картинки, которой нет");
+	}
+
+	return this._getPixelLA(iX,iY,pPixel,iMipLevel,eCubeFlag,iVolumeLevel);
+}
 
 Img.prototype.getPixelRGBA=function(iX,iY,pPixel,iMipLevel,eCubeFlag,iVolumeLevel)
 {
@@ -1420,7 +1515,37 @@ Img.prototype.getPixelRGBA=function(iX,iY,pPixel,iMipLevel,eCubeFlag,iVolumeLeve
 }
 
 /**
- * @property getPixelRGBA(Int iX,Int iY,Uint8Array(4) pPixel)
+* @property getPixelRGBA(Int iX,Int iY,Uint8Array(4), pPixel)
+* @property getPixelRGBA(Int iX,Int iY,Uint16Array(4), pPixel)
+*/
+Img.prototype._getPixelLA=function(iX,iY,pPixel,iMipLevel,eCubeFlag,iVolumeLevel)
+{
+	if(this._eFormat==a.IFORMAT.L16)
+	{
+		iOffset=(iY*this.getWidth(iMipLevel)+iX)*this.getBlockBytes();
+		pColor=(new Uint16Array(this._pData[iVolumeLevel][eCubeFlag][iMipLevel],iOffset,1))[0];
+		pPixel[0]=pColor;
+	}
+	else if(this._eFormat==a.IFORMAT.L8)
+	{
+		iOffset=(iY*this.getWidth(iMipLevel)+iX)*this.getBlockBytes();
+		pColor=(new Uint8Array(this._pData[iVolumeLevel][eCubeFlag][iMipLevel],iOffset,1))[0];
+		pPixel[0]=pColor;
+	}
+	else
+	{
+		if(this.isAlpha())
+		{
+			this._getPixelRGBA(iX,iY,this._pPixelUint8_4,iMipLevel,eCubeFlag,iVolumeLevel);
+			pPixel[1]=this._pPixelUint8_4[0]
+		}
+	}
+}
+
+
+/**
+ * @property getPixelRGBA(Int iX,Int iY,Uint8Array(4), pPixel)
+ * @property getPixelRGBA(Int iX,Int iY,Uint16Array(4), pPixel)
  * Получить пиксель в формате RGBA
  * @memberof Img
  * @param iX иксовая коорлината пикселя
@@ -1541,6 +1666,14 @@ Img.prototype._getPixelRGBA=function(iX,iY,pPixel,iMipLevel,eCubeFlag,iVolumeLev
         pPixel[2]=((pColor&0xf800)>>>11)*7;
         pPixel[3]=255;
     }
+	else if(this._eFormat==a.IFORMAT.L16)
+	{
+
+	}
+	else if(this._eFormat==a.IFORMAT.L8)
+	{
+
+	}
     else if(this._eFormat==a.IFORMAT.RGBA_DXT1)
     {
         iOffset=(Math.ceil(this.getWidth(iMipLevel)/this.getDivSize())*Math.floor(iY/this.getDivSize())+Math.floor(iX/this.getDivSize()))*this.getBlockBytes();

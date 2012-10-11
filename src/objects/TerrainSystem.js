@@ -51,7 +51,9 @@ function Terrain (pEngine) {
     this._iTableWidth; //размер карты высот
     this._iTableHeight; //размер карты высот
     this._pHeightTable = null;  //Таблица(карта высот)
-    this._pNormalTable = null; //Таблица нормалей
+
+	this._pNormalMap=null
+	this._pTempNormalColor=new Uint8Array(4)
 
 	this._pMegaTexures = null; //отоброжаемые куски текстуры
 
@@ -162,8 +164,6 @@ Terrain.prototype.create = function (pRootNode, pMap,worldExtents, iShift, iShif
 
 
 	//Мегатекстурные параметры
-	pPathInfoMega=new a.Pathinfo(sSurfaceTextures);
-
 	console.log("Мега текстура")
 	this._pMegaTexures = new a.MegaTexture(this._pEngine,this,sSurfaceTextures);
 	console.log("Мега текстура созадна")
@@ -180,8 +180,8 @@ Terrain.prototype.create = function (pRootNode, pMap,worldExtents, iShift, iShif
 	}
 
 	console.log("Высоты и нормали созданы")
-	console.log("Сектора")
-    return this.allocateSectors();
+
+	return this.allocateSectors();
 	console.log("Сектора созданы")
 }
 
@@ -281,21 +281,21 @@ Terrain.prototype.buildHeightAndNormalTables = function (pImageHightMap,pImageNo
 	var fHeight=0;
 	var iComponents=4;
     this._pHeightTable = null;
-    this._pNormalTable = null;
+
 
 
     var iMaxY = this._iTableHeight;
     var iMaxX = this._iTableWidth;
 
-	console.log("buildHeightAndNormalTables0");
+	trace("Terraim Map Size ",iMaxX,iMaxY);
 
 	var pColorData=new Uint8Array(4*iMaxY*iMaxX);
     this._pHeightTable = new Array(iMaxX * iMaxY); //float
-    this._pNormalTable = new Array(iMaxX * iMaxY*4);
+
 
 	var temp = new a.Texture(this._pEngine);
 
-	console.log("buildHeightAndNormalTables1");
+
     // first, build a table of heights
     if (pImageHightMap.isResourceLoaded())
 	{
@@ -316,58 +316,16 @@ Terrain.prototype.buildHeightAndNormalTables = function (pImageHightMap,pImageNo
 		warning("Карта высот не загружена")
 	}
 
-	if(pImageNormalMap)
+	if (pImageNormalMap.isResourceLoaded())
 	{
-		if (pImageNormalMap.isResourceLoaded())
-		{
-			temp.uploadImage(pImageNormalMap);
-		}
-		else
-		{
-			warning("Карта нормалей не загружена")
-		}
+		temp.uploadImage(pImageNormalMap);
 	}
 	else
 	{
-
-		// how much to scale the normals?
-		var fScale = (this._iTableWidth * this._pWorldExtents.sizeZ()) / this._pWorldExtents.sizeX();
-		// convert our height map into a
-		// texture of surface normals
-		console.log("buildHeightAndNormalTables3")
-		temp.generateNormalMap(pImage, 0, fScale);
+		warning("Карта высот не загружена")
 	}
 
-	console.log("buildHeightAndNormalTables4")
-	temp.resize(iMaxX,iMaxY);
-	console.log("buildHeightAndNormalTables5")
-	temp.getPixelRGBA(0, 0,iMaxX,iMaxY, pColorData);
-	console.log("buildHeightAndNormalTables6")
-	//console.log(pColorData);
-
-	iComponents=temp.numElementsPerPixel;
-	var i=0;
-	var fX=0;
-	var fY=0;
-	var fZ=0;
-	var fLength=0;
-	for (i = 0; i < iMaxY*iMaxX*iComponents; i+=iComponents)
-	{
-			fX=pColorData[i+0] - 127.5;
-			fY=pColorData[i+1] - 127.5;
-			fZ=pColorData[i+2] - 127.5;
-			fLength=Math.sqrt(fX*fX+fY*fY+fZ*fZ);
-			if(fLength!=0)
-			{
-				this._pNormalTable[i+0] = fX/fLength;
-				this._pNormalTable[i+1] = fY/fLength;
-				this._pNormalTable[i+2] = fZ/fLength;
-			}
-	}
-
-	console.log("buildHeightAndNormalTables7")
-    temp.releaseTexture();
-	console.log("buildHeightAndNormalTables8")
+	this._pNormalMap=temp
 
 };
 
@@ -425,18 +383,22 @@ Terrain.prototype.tableIndex = function (iMapX, iMapY) {
  * @param iMapY
  * @return vec3f
  **/
-Terrain.prototype.readWorldNormal = function (v3fNormal,iMapX, iMapY) {
-    if (iMapX >= this._iTableWidth) {
-        iMapX = this._iTableWidth - 1;
+Terrain.prototype.readWorldNormal = function (v3fNormal,iMapX, iMapY)
+{
+	if (iMapX >= this._pNormalMap.width)
+	{
+        iMapX = this._pNormalMap.width - 1;
     }
-    if (iMapY >= this._iTableHeight) {
-        iMapY = this._iTableHeight - 1;
+    if (iMapY >= this._pNormalMap.height)
+	{
+        iMapY = this._pNormalMap.height - 1;
     }
 
-	var iOffset=((iMapY * this._iTableWidth) + iMapX)*4;
-	v3fNormal.set(this._pNormalTable[iOffset+0],
-		this._pNormalTable[iOffset+1],
-		this._pNormalTable[iOffset+2])
+
+	var iOffset=this._pNormalMap.getPixelRGBA(iMapX,iMapY,1,1,this._pTempNormalColor)
+	v3fNormal.set(this._pTempNormalColor[0],
+		this._pTempNormalColor[1],
+		this._pTempNormalColor[2])
     return v3fNormal;
 };
 
@@ -513,8 +475,8 @@ Terrain.prototype.calcMapHeight = function (fMapX, fMapY) {
 
 
 Terrain.prototype.calcMapNormal = function (v3fNormal, fMapX, fMapY) {
-    var fTempMapX = fMapX * (this._iTableWidth - 1);
-    var fTempMapY = fMapY * (this._iTableHeight - 1);
+    var fTempMapX = fMapX * (this._pNormalMap.width - 1);
+    var fTempMapY = fMapY * (this._pNormalMap.height - 1);
 	//console.log(fTempMapX,fTempMapY)
 
 
@@ -524,11 +486,11 @@ Terrain.prototype.calcMapNormal = function (v3fNormal, fMapX, fMapY) {
 	fTempMapX -= iMapX0;
 	fTempMapY -= iMapY0;
 
-    iMapX0 = Math.clamp(iMapX0, 0, this._iTableWidth - 1);
-    iMapY0 = Math.clamp(iMapY0, 0, this._iTableHeight - 1);
+    iMapX0 = Math.clamp(iMapX0, 0, this._pNormalMap.width - 1);
+    iMapY0 = Math.clamp(iMapY0, 0, this._pNormalMap.height - 1);
 
-    var iMapX1 = Math.clamp(iMapX0 + 1, 0, this._iTableWidth - 1);
-    var iMapY1 = Math.clamp(iMapY0 + 1, 0, this._iTableHeight - 1);
+    var iMapX1 = Math.clamp(iMapX0 + 1, 0, this._pNormalMap.width - 1);
+    var iMapY1 = Math.clamp(iMapY0 + 1, 0, this._pNormalMap.height - 1);
 
     // read 4 map values
     var v3fH0 = Vec3();
@@ -928,6 +890,8 @@ Terrain.prototype.prepareForRender= function()
 Terrain.prototype.applyForRender= function()
 {
 	this._pMegaTexures.applyForRender();
+	this._pNormalMap.activate(14);
+	this._pEngine.pDrawTerrainProgram.applyInt('ptNormal',14);
 }
 
 Terrain.prototype.reset=function()

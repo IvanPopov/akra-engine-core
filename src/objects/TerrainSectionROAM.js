@@ -2,7 +2,9 @@
 function TerrainSectionROAM (pEngine)
 {
 	A_CLASS;
-	this._pDataIndex=null;
+	this._iTotalDetailLevels;
+	this._iTotalVariances;
+	this._iOffsetInVertexBuffer;
 
 	//два дерева треугольников
 	this._pRootTriangleA=new a.TriTreeNode();
@@ -52,20 +54,21 @@ TerrainSectionROAM.prototype.getQueueSortValue= function()
 	return this._fQueueSortValue;
 }
 
-TerrainSectionROAM.prototype.getTotalIndices= function()
-{
-	return this._iTotalIndices;
-}
 
-TerrainSectionROAM.prototype.create=function(pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY, iXVerts, iYVerts, pWorldRect)
+TerrainSectionROAM.prototype.create=function(pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY, iXVerts, iYVerts, pWorldRect, iStartIndex)
 {
 	iVerts=Math.max(iXVerts,iYVerts)
+	this._iStartIndex=iStartIndex;
+
 	var bResult=TerrainSection.prototype.create.call(this, pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY, iVerts, iVerts, pWorldRect);
 
 	this._iTotalDetailLevels=Math.ceil(Math.log(iVerts)/Math.LN2)*2-1;
 	this._iTotalVariances=1<<this._iTotalDetailLevels;
+
+
 	this._pVarianceTreeA = new Array( this._iTotalVariances);
 	this._pVarianceTreeA.set(0);
+
 	this._pVarianceTreeB = new Array(this._iTotalVariances);
 	this._pVarianceTreeB.set(0);
 
@@ -148,7 +151,7 @@ TerrainSectionROAM.prototype.prepareForRender = function()
 
 TerrainSectionROAM.prototype.reset=function()
 {
-	this._iTotalIndices=0;
+
 	this._pRootTriangleA.pLeftChild = null;
 	this._pRootTriangleA.pRightChild = null;
 	this._pRootTriangleB.pLeftChild = null;
@@ -243,8 +246,6 @@ TerrainSectionROAM.prototype.split = function(pTri)
 	// Если не удалось выделить треугольник, то не разбиваем
 	if ( (!pTri.pLeftChild) || (!pTri.pRightChild))
 	{
-		//console.log("не удалось выделить треугольник!");
-		document.getElementById('setinfo0').innerHTML="не удалось выделить треугольник! ";
 		pTri.pLeftChild  = null;
 		pTri.pRightChild = null;
 		return;
@@ -315,34 +316,80 @@ TerrainSectionROAM.prototype.split = function(pTri)
 
 TerrainSectionROAM.prototype._createRenderDataForVertexAndIndex=function()
 {
-	debug_assert(this._pRenderData == null, "У терраин сектиона уже созданы данные");
-	this._pRenderData = this.getTerrainSystem().getDataFactory().getEmptyRenderData(a.PRIMTYPE.TRIANGLELIST, a.RenderData.ADVANCED_INDEX);
-
-	if(!this._pRenderData)
-	{
-		return false;
-	}
 	return true;
 }
 
 TerrainSectionROAM.prototype._buildIndexBuffer=function()
 {
-	this._iMaxIndices = this._iXVerts*this._iYVerts*2*3;
-	this._iTotalIndices = 0;
-	this._pIndexList = new Float32Array(this._iMaxIndices);
+	this._iMaxIndices=a.TerrainROAM.MaxTriTreeNodes*3;
+	return true;
+}
 
-	this._pRenderData.allocateIndex([VE_FLOAT(a.DECLUSAGE.INDEX0)],this._pIndexList);
-	this._pRenderData.index(this._iVertexID,a.DECLUSAGE.INDEX0);
-	this._pDataIndex=this._pRenderData.getAdvancedIndexData(a.DECLUSAGE.INDEX0);
+TerrainSectionROAM.prototype._buildVertexBuffer=function()
+{
+
+
+	this._pWorldRect.fZ0 = MAX_REAL32;
+	this._pWorldRect.fZ1 = MIN_REAL32;
+
+	var pVerts = this.getTerrainSystem().getVerts();
+
+	var v3fNormal = new Vec3();
+
+	var v2fCellSize = new Vec2(); //размер ячейки сектора
+	v2fCellSize.set(this.getHeightX() / (this._iXVerts-1),
+		this.getHeightY() / (this._iYVerts-1)); //размер сектора/количество ячеек в секторе
+
+	var v2fVert = new Vec2(); //Координаты вершина в секторе
+	v2fVert.set(0.0, 0.0);
+
+	//console.log("-->",this._iSectorX,this._iSectorY,"--",this._pWorldRect.fX0,this._pWorldRect.fY0,"--",this._iXVerts,this._iYVerts)
+	//console.log("--",v2fCellSize.X,v2fCellSize.Y,this.getHeightX(),this.getHeightY() )
+
+
+	for (var y = 0; y < this._iYVerts; ++y)
+	{
+		v2fVert.set(this._pWorldRect.fX0, y * v2fCellSize.y+this._pWorldRect.fY0);
+		for (var x = 0; x < this._iXVerts; ++x)
+		{
+
+			var fHeight = this.getTerrainSystem().readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
+
+			pVerts[((y * this._iXVerts) + x) * 5 + 0+this._iStartIndex*5] = v2fVert.x;
+			pVerts[((y * this._iXVerts) + x) * 5 + 1+this._iStartIndex*5] = v2fVert.y;
+			pVerts[((y * this._iXVerts) + x) * 5 + 2+this._iStartIndex*5] = fHeight;
+
+			//console.log(y*this._iXVerts + x,x,y,v2fVert.X,v2fVert.Y,fHeight);
+			//	pVerts[((y * this._iXVerts) + x) * 10 + 2],pVerts[((y * this._iXVerts) + x) * 10 + 1]);
+
+			pVerts[((y * this._iXVerts) + x) * 5 + 3+this._iStartIndex*5] = (this._iSectorX + x / (this._iXVerts - 1))/this.getTerrainSystem().getSectorCountX();
+			pVerts[((y * this._iXVerts) + x) * 5 + 4+this._iStartIndex*5] = (this._iSectorY+ y / (this._iYVerts - 1))/this.getTerrainSystem().getSectorCountY() ;
+
+
+			//console.log(this._iSectorX,this.getTerrainSystem().getSectorCountX(), x,this._iXVerts);
+			//console.log(this._iSectorX/this.getTerrainSystem().getSectorCountX() + x / (this._iXVerts - 1));
+
+			this._pWorldRect.fZ0 = Math.min(this._pWorldRect.fZ0, fHeight);
+			this._pWorldRect.fZ1 = Math.max(this._pWorldRect.fZ1, fHeight);
+
+			v2fVert.x += v2fCellSize.x;
+		}
+	}
 
 	return true;
 }
 
 TerrainSectionROAM.prototype.buildTriangleList=function()
 {
-	this._iTotalIndices = 0;
+
+	this._iTempTotalIndices=this.getTerrainSystem().getTotalIndex();
+
+	this._pTempIndexList=this.getTerrainSystem().getIndex();
+	this._iVertexID=this.getTerrainSystem().getVertexID();
 	// add all the triangles to the roamTerrain
 	// in root triangle A
+
+
 	this.recursiveBuildTriangleList(
 		this._pRootTriangleA,
 		0,this._iXVerts-1,(this._iYVerts-1)*this._iXVerts);
@@ -353,8 +400,12 @@ TerrainSectionROAM.prototype.buildTriangleList=function()
 		this._pRootTriangleB,
 		(this._iYVerts*this._iXVerts)-1, (this._iYVerts-1)*this._iXVerts, this._iXVerts-1);
 
+	this.getTerrainSystem().setTotalIndex(this._iTempTotalIndices);
+	this._iTempTotalIndices=undefined;
+	this._iVertexID=undefined;
+	this._pTempIndexList=null;
 
-	var pCanvas=document.getElementById('canvasLOD');
+	/*var pCanvas=document.getElementById('canvasLOD');
 	var p2D=pCanvas.getContext("2d");
 	p2D.strokeStyle = "#f00"; //цвет линий
 	p2D.lineWidth = 1;
@@ -397,22 +448,23 @@ TerrainSectionROAM.prototype.buildTriangleList=function()
 	p2D.lineTo(((this._pWorldRect.fX0-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY1-rect.fY0)/size.y)*pCanvas.height);
 	p2D.lineTo(((this._pWorldRect.fX0-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY0-rect.fY0)/size.y)*pCanvas.height);
 	p2D.stroke();
+*/
 
-	if(this._iTotalIndicesOld==this._iTotalIndices)
-	{
-		return;
-	}
-
-	this._pRenderData.setIndexLength(this._iTotalIndices);
-	this._pDataIndex.setData(this._pIndexList, 0,  a.getTypeSize(a.DTYPE.FLOAT), 0, this._iTotalIndices);
-	this._iTotalIndicesOld=this._iTotalIndices;
 }
+
+
+TerrainSectionROAM.prototype.renderCallback = function (entry, activationFlags)
+{
+	this.getTerrainSystem().applyForRender(this.worldMatrix());
+}
+
 
 TerrainSectionROAM.prototype.recursiveBuildTriangleList=function(pTri,iPointBase,iPointLeft,iPointRight)
 {
 	//console.log("recursiveBuildTriangleList",pTri.leftChild)
 	if (pTri.pLeftChild)
 	{
+
 		if(!pTri.pRightChild)
 			warning("invalid triangle node");
 
@@ -425,12 +477,16 @@ TerrainSectionROAM.prototype.recursiveBuildTriangleList=function(pTri,iPointBase
 			iPointMid, iPointRight, iPointBase);
 
 	}
-	else if (this._iTotalIndices + 3 < this._iMaxIndices)
+	else if (this._iTempTotalIndices + 3 < this._iMaxIndices)
 	{
 		// add the local triangle to the index list
-		this._pIndexList[this._iTotalIndices++]=(iPointRight*32 + this._iVertexID)/4;
-		this._pIndexList[this._iTotalIndices++]=(iPointLeft*32 + this._iVertexID)/4;
-		this._pIndexList[this._iTotalIndices++]=(iPointBase*32 + this._iVertexID)/4;
+		this._pTempIndexList[this._iTempTotalIndices++]=((iPointRight+this._iStartIndex)*20+ this._iVertexID)/4;
+		this._pTempIndexList[this._iTempTotalIndices++]=((iPointLeft+this._iStartIndex)*20 + this._iVertexID)/4;
+		this._pTempIndexList[this._iTempTotalIndices++]=((iPointBase+this._iStartIndex)*20 + this._iVertexID)/4;
+	}
+	else
+	{
+		console.log("else",this._iTempTotalIndices, this._iMaxIndices)
 	}
 
 }

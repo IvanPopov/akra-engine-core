@@ -9,17 +9,10 @@
 
 function TerrainSection (pEngine)
 {
-
-
 	A_CLASS;
 	this._pTerrainSystem = null; //Терреин которому принадлежит секуция
-
 	this._pRenderData=null;
-	this._iMaxIndices=0;
-	this._iTotalIndices=0;
-	this._iTotalIndicesOld=undefined;
-	this._pIndexList = null;
-	this._iVertexID = 0;
+	this._iVertexID;
 
     this._iHeightMapX; //Ее коорлинаты на карте высот
     this._iHeightMapY;
@@ -32,7 +25,7 @@ function TerrainSection (pEngine)
 
 EXTENDS(TerrainSection, a.SceneObject, a.RenderableObject);
 
-TerrainSection.prototype.pVertexDescription =[VE_FLOAT3(a.DECLUSAGE.POSITION),VE_FLOAT3(a.DECLUSAGE.NORMAL),VE_FLOAT2(a.DECLUSAGE.TEXCOORD)]
+TerrainSection.prototype.pVertexDescription =[VE_FLOAT3(a.DECLUSAGE.POSITION),VE_FLOAT2(a.DECLUSAGE.TEXCOORD)]
 
 TerrainSection.prototype.sectorX = function () {
     return this._iSectorX;
@@ -46,6 +39,10 @@ TerrainSection.prototype.getTerrainSystem = function () {
 
 TerrainSection.prototype.getIndex = function () {
 	return this._pIndexList;
+};
+
+TerrainSection.prototype.getSectionIndex = function () {
+	return (this._iSectorY * this._pTerrainSystem().getSectorCountX()) +  this._iSectorX;
 };
 
 TerrainSection.prototype.getHeightX = function () {
@@ -138,23 +135,16 @@ TerrainSection.prototype._buildVertexBuffer=function()
 
 			var fHeight = this.getTerrainSystem().readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
 
-			pVerts[((y * this._iXVerts) + x) * 8 + 0] = v2fVert.x;
-			pVerts[((y * this._iXVerts) + x) * 8 + 1] = v2fVert.y;
-			pVerts[((y * this._iXVerts) + x) * 8 + 2] = fHeight;
+			pVerts[((y * this._iXVerts) + x) * 5 + 0] = v2fVert.x;
+			pVerts[((y * this._iXVerts) + x) * 5 + 1] = v2fVert.y;
+			pVerts[((y * this._iXVerts) + x) * 5 + 2] = fHeight;
 
 			//console.log(y*this._iXVerts + x,x,y,v2fVert.X,v2fVert.Y,fHeight);
 			//	pVerts[((y * this._iXVerts) + x) * 10 + 2],pVerts[((y * this._iXVerts) + x) * 10 + 1]);
 
 
-
-
-			this.getTerrainSystem().readWorldNormal(v3fNormal,this._iHeightMapX + x, this._iHeightMapY + y);
-			pVerts[((y * this._iXVerts) + x) * 8 + 3] = v3fNormal.x;
-			pVerts[((y * this._iXVerts) + x) * 8 + 4] = v3fNormal.y;
-			pVerts[((y * this._iXVerts) + x) * 8 + 5] = v3fNormal.z;
-
-			pVerts[((y * this._iXVerts) + x) * 8 + 6] = (this._iSectorX + x / (this._iXVerts - 1))/this.getTerrainSystem().getSectorCountX();
-			pVerts[((y * this._iXVerts) + x) * 8 + 7] = (this._iSectorY+ y / (this._iYVerts - 1))/this.getTerrainSystem().getSectorCountY() ;
+			pVerts[((y * this._iXVerts) + x) * 5 + 3] = (this._iSectorX + x / (this._iXVerts - 1))/this.getTerrainSystem().getSectorCountX();
+			pVerts[((y * this._iXVerts) + x) * 5 + 4] = (this._iSectorY+ y / (this._iYVerts - 1))/this.getTerrainSystem().getSectorCountY() ;
 
 
 			//console.log(this._iSectorX,this.getTerrainSystem().getSectorCountX(), x,this._iXVerts);
@@ -169,16 +159,12 @@ TerrainSection.prototype._buildVertexBuffer=function()
 
 	this._iVertexID=this._pRenderData.allocateData(this.pVertexDescription,new Float32Array(pVerts));
 
-	this.pVertsDebug=pVerts;
-
 	return true;
 }
 
 TerrainSection.prototype._buildIndexBuffer=function()
 {
-	this._iMaxIndices = a.getCountIndexForStripGrid(this._iXVerts, this._iYVerts);
-	this._iTotalIndices = a.getCountIndexForStripGrid(this._iXVerts, this._iYVerts);
-	this._pIndexList=new Float32Array(this._iMaxIndices);
+	var pIndexList=new Float32Array(a.getCountIndexForStripGrid(this._iXVerts, this._iYVerts));
 
 	a.createSingleStripGrid(this._pIndexList,
 		this._iXVerts, // width of grid
@@ -190,7 +176,7 @@ TerrainSection.prototype._buildIndexBuffer=function()
 
 	//
 
-	this._pRenderData.allocateIndex([VE_FLOAT(a.DECLUSAGE.INDEX0)],this._pIndexList);
+	this._pRenderData.allocateIndex([VE_FLOAT(a.DECLUSAGE.INDEX0)],pIndexList);
 	this._pRenderData.index(this._iVertexID,a.DECLUSAGE.INDEX0);
 
 	return true;
@@ -209,16 +195,12 @@ TerrainSection.prototype.prepareForRender = function()
 
 TerrainSection.prototype.renderCallback = function (entry, activationFlags)
 {
-    //this._pTerrainSystem.renderSection(this, activationFlags, entry);
-
 	var pCamera = this._pEngine._pDefaultCamera;
 	this._pEngine.pDrawTerrainProgram.activate();
 	this.getTerrainSystem().applyForRender();
 	this._pEngine.pDrawTerrainProgram.applyMatrix4('model_mat', this.worldMatrix());
 	this._pEngine.pDrawTerrainProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
 	this._pEngine.pDrawTerrainProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
-
-	//console.log("Render!!!",this._pRenderData.toString());
 	this._pRenderData.draw();
 }
 
