@@ -2,13 +2,31 @@
 
 module akra {
     export interface IEngine {
-        setupWorldOcTree(): void;
+        displayManager: IDisplayManager;
+        particleManager: IParticleManager;
+        spriteManager: ISpriteManager;
+        lightManager: ILightManager;
+        /*
+        rootNode: number;
+        sceneTree: number;
+        defaultCamera: number;
+        activeViewport: Viewport;
+        worldExtents: WorldExtents;
+        device: WebGLRenderingContext;
+        windowTitle: string;
+        currentRenderStage: number;
+        activeCamera: number;
+*/
+        setupWorldOcTree(pWorldExtents: geometry.Rect3d): void;
 
         create(): bool;
         pause(isPause: bool): void;
         run(): bool;
+        
         showStats(isShow: bool): void;
+        
         fullscreen(): bool;
+        inFullscreenMode(): bool;
 
         notifyOneTimeSceneInit(): bool;
         notifyRestoreDeviceObjects(): bool;
@@ -18,25 +36,6 @@ module akra {
         notifyInitDeviceObjects(): bool;
 
         updateCamera(): void;
-
-        getRootNode(): void;
-        getSceneTree(): void;
-        getDefaultCamera(): void;
-        getActiveViewport(): Viewport;
-        getWorldExtents(): WorldExtents;
-        getDevice(): WebGLRenderingContext;
-        getWindowTitle(): string;
-        getCurrentRenderStage(): number;
-
-        getActiveCamera(): void;
-        setActiveCamera(pCamera: ICamera): bool;
-
-        inFullscreenMode(): bool;
-
-        displayManager(): IDisplayManager;
-        particleManager(): IParticleManager;
-        spriteManager(): ISpriteManager;
-        lightManager(): ILightManager;
     };
 
 }

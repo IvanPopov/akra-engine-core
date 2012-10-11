@@ -1,146 +1,286 @@
 ///<reference path="akra.ts" />
 
 module akra {
-    export class Engine implements IEngine {
-        private pRenderer: IRenderer = null;
-        
-        private pResourceManager: IResourceManager = null;
-        private pDisplayManager: IDisplayManager = null;
-        private pParticleManager: IParticleManager = null;
-        private pSpriteManager: ISpriteManager = null;
-        private pLightManager: ILightManager = null;
+	export class Engine implements IEngine {
+		/** use hardware antialiasing */
+		private useHWAA: bool = false;
+		/** hide cursor in fullscreen? */
+		private isShowCursorWhenFullscreen: bool = false;
 
-        constructor () {
+		/** creation width */
+		private iCreationWidth: int = 0;
+		/** creation heigth */
+		private iCreationHeight: int = 0;
 
-        }
+		/**
+		 * Frame sync.
+		 */
 
-        create(): bool {
-            return false;
-        }
+		/** is paused? */
+		private isActive: bool = false;
+		/** check, device lost? */
+		private isDeviceLost: bool = false;
+		/** frame rendering sync / render next frame? */
+		private isFrameMoving: bool = true;
+		/** render only one frame */
+		private isSingleStep: bool = true;
+		/** can we update scene? */
+		private isFrameReady: bool = false;
 
-        run(): bool {
-            return false;
-        }
+		/**
+		 * Time statistics
+		 */
 
-        setupWorldOcTree(): void {
+		/** current time */
+		private fTime: float = 0.;
+		/** time elapsed since the last frame */
+		private fElapsedTime: float = 0.;
+		/** time elapsed since the last rendered frame */
+		private fUpdateTimeCount: float = 0.;
+		/** frame per second */
+		private fFPS: float = 0.;
 
-        }
+		/**
+		 * Stats
+		 */
 
-        pause(isPause: bool): void {
-
-        }
-
-        showStats(isShow: bool): void {
-
-        }
-
-        fullscreen(): bool {
-            return false;
-        }
-
-        notifyOneTimeSceneInit(): bool {
-            return false;
-        }
-
-        notifyRestoreDeviceObjects(): bool {
-            return false;
-        }
-
-        notifyDeleteDeviceObjects(): bool {
-            return false;
-        }
-
-        notifyUpdateScene(): bool {
-            return false;
-        }
-
-        notifyPreUpdateScene(): bool {
-            return false;
-        }
-
-        notifyInitDeviceObjects(): bool {
-            return false;
-        }
+		/** string describing device stats */
+		private sDeviceStats: string = "";
+		/** string describing frame stats */
+		private sFrameStats: string = "";
+		/** default font for statistics */
+		private pFonts: IFont2d = null;
+		/** show stats? */
+		private isShowStats: bool = false;
 
 
-        //initialize3DEnvironment(): bool;
-        //render3DEnvironment(): bool;
-        //cleanup3DEnvironment(): bool;
-        //invalidateDeviceObjects(): bool;
+		private pCanvas: HTMLCanvasElement = null;
+		private pDevice: WebGLRenderingContext = null;
 
-        //frameMove(): bool;
-        //render(): bool;
-        //updateStats(): void;
-        //finalCleanup(): bool;
-        //updateCamera(): void;
+		private pRenderer: IRenderer = null;
 
-        updateCamera(): void {
+		private pResourceManager: IResourceManager = null;
+		private pDisplayManager: IDisplayManager = null;
+		private pParticleManager: IParticleManager = null;
+		private pSpriteManager: ISpriteManager = null;
+		private pLightManager: ILightManager = null;
 
-        }
+		/** root node */
+		private pRootNode: ISceneNode = null;
+		/** default camera */
+		private pDefaultCamera: ICamera = null;
+		/** active camera */
+		private pActiveCamera: ICamera = null;
 
-        getRootNode(): void {
+		/** Scene tree */
+		private pSceneTree: ISceneTree = null;
+		/** world size */
+		private pWorldExtents: IWorldExtents = null;
 
-        }
+		/** List of scene nodes, that will be rendered in current frame */
+		private pRenderList: ISceneObject = null;
+		/** Current render state, that will be accessed in shaders */
+		private pRenderState: IRenderState = null;
 
-        getSceneTree(): void {
+		/**
+		 * Controllers
+		 */
 
-        }
+		/** Keymap bindings */
+		static private pKeymap: IKeyMap = new util.KeyMap;
+		/** Gamepad access */
+		static private pGamepad: IGamepadMap = new util.GamepadMap;
 
-        getDefaultCamera(): void {
+		get displayManager(): IDisplayManager {
+			return null;
+		}
 
-        }
+		get particleManager(): IParticleManager {
+			return null;
+		}
 
-        getActiveViewport(): Viewport {
-            return { width: 0, height: 0, x: 0, y: 0 };
-        }
+		get spriteManager(): ISpriteManager {
+			return null;
+		}
 
-        getWorldExtents(): WorldExtents {
-            return {};
-        }
+		get lightManager(): ILightManager {
+			return null;
+		}
 
-        getDevice(): WebGLRenderingContext {
-            return null;
-        }
+		get rootNode(): INode {
+			return null;
+		}
 
-        getWindowTitle(): string {
-            return "";
-        }
+		get sceneTree(): ISceneTree {
+			return null;
+		}
 
-        getCurrentRenderStage(): number {
-            return 0;
-        }
+		get defaultCamera(): ICamera {
+			return null;
+		}
+
+		get activeViewport(): IViewport {
+			return { width: 0, height: 0, x: 0, y: 0 };
+		}
+
+		get worldExtents(): IWorldExtents {
+			return {};
+		}
+
+		get device(): WebGLRenderingContext {
+			return null;
+		}
+
+		get activeCamera(): ICamera {
+			return null;
+		}
+
+		set activeCamera(pCamera: ICamera) {
+			return;
+		}
 
 
-        getActiveCamera(): void {
+		get time(): float {
+			return this.fTime;
+		}
 
-        }
+		get elapsedTime(): float {
+			return this.fElapsedTime;
+		}
 
-        setActiveCamera(pCamera: ICamera): bool {
-            return null;
-        }
+		get fps(): float {
+			return this.fFPS;
+		}
+
+		constructor (sCanvasId: string = null) {
+			//set pause, before we will be ready for rendering
+			this.pause(true);
+
+			if (sCanvasId) {
+				this.create(sCanvasId);
+			}
+		}
+
+		create(pCanvas: HTMLCanvasElement): bool;
+		create(sCanvasId: string): bool;
+		create(pCanvas? ): bool {
+			//initializing
+
+			if (isString(pCanvas)) {
+				this.pCanvas = <HTMLCanvasElement>document.getElementById(pCanvas);
+			}
+			else {
+				this.pCanvas = pCanvas;
+			}
+
+			//creating root node
+			this.pRootNode = new scene.SceneNode(this);
+			this.pRootNode.name = ".root";
+
+			//creating default camera
+			this.pDefaultCamera = new scene.objects.Camera(this);
+			this.pDefaultCamera.name = ".default";
+
+			this.pSceneTree = new scene.OcTree;
+
+			//setup active camera
+			this.pActiveCamera = this.pDefaultCamera;
+
+			//creation size
+			this.iCreationWidth = this.pCanvas.width;
+			this.iCreationHeight = this.pCanvas.height;
+			
+			//getting device
+			this.pDevice = null;
+
+			return false;
+		}
+
+		run(): bool {
+			return false;
+		}
+
+		setupWorldOcTree(pWorldExtents: IRect3d): void {
+
+		}
+
+		pause(isPause: bool): void {
+
+		}
+
+		showStats(isShow: bool): void {
+
+		}
+
+		fullscreen(): bool {
+			return false;
+		}
+
+		inFullscreenMode(): bool {
+			return false;
+		}
+
+		notifyOneTimeSceneInit(): bool {
+			return false;
+		}
+
+		notifyRestoreDeviceObjects(): bool {
+			return false;
+		}
+
+		notifyDeleteDeviceObjects(): bool {
+			return false;
+		}
+
+		notifyUpdateScene(): bool {
+			return false;
+		}
+
+		notifyPreUpdateScene(): bool {
+			return false;
+		}
+
+		notifyInitDeviceObjects(): bool {
+			return false;
+		}
+
+		updateCamera(): void {
+
+		}
+
+		updateStats(): void {
+
+		}
+
+		private initialize3DEnvironment(): bool {
+			return false;
+		}
+
+		private render3DEnvironment(): bool {
+			return false;
+		}
+
+		private cleanup3DEnvironment(): bool {
+			return false;
+		}
+
+		private invalidateDeviceObjects(): bool {
+			return false;
+		}
+
+		private frameMove(): bool {
+			return false;
+		}
+
+		private render(): bool {
+			return false;
+		}
 
 
-        inFullscreenMode(): bool {
-            return false;
-        }
+		private finalCleanup(): bool {
+			return null
+		}
 
-
-        displayManager(): IDisplayManager {
-            return null;
-        }
-
-        particleManager(): IParticleManager {
-            return null;
-        }
-
-        spriteManager(): ISpriteManager {
-            return null;
-        }
-
-        lightManager(): ILightManager {
-            return null;
-        }
-
-    }
+	}
 
 }

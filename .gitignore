@@ -33,15 +33,15 @@ node_modules/
 
 
 #visual
-*.config
+#*.config
 *.suo
-*.sln
-*.csproj
+#*.sln
+#*.csproj
 *.user
-*.css
+#*.css
 
 src/*.htm
-src2/*.htm
+#src2/*.htm
 
 obj/
 bin/

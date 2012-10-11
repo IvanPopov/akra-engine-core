@@ -306,6 +306,40 @@ var akra;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
+    (function (geometry) {
+        var Rect3d = (function () {
+            function Rect3d(x0, y0, z0, x1, y1, z1) {
+            }
+            return Rect3d;
+        })();
+        geometry.Rect3d = Rect3d;        
+    })(akra.geometry || (akra.geometry = {}));
+    var geometry = akra.geometry;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (util) {
+        var KeyMap = (function () {
+            function KeyMap() { }
+            return KeyMap;
+        })();
+        util.KeyMap = KeyMap;        
+    })(akra.util || (akra.util = {}));
+    var util = akra.util;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (util) {
+        var GamepadMap = (function () {
+            function GamepadMap() { }
+            return GamepadMap;
+        })();
+        util.GamepadMap = GamepadMap;        
+    })(akra.util || (akra.util = {}));
+    var util = akra.util;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
     var ResourcePool = (function () {
         function ResourcePool() { }
         ResourcePool.prototype.initialize = function () {
@@ -342,28 +376,239 @@ var akra;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
+    (function (scene) {
+        var Node = (function () {
+            function Node() {
+            }
+            return Node;
+        })();
+        scene.Node = Node;        
+    })(akra.scene || (akra.scene = {}));
+    var scene = akra.scene;
+})(akra || (akra = {}));
+var __extends = this.__extends || function (d, b) {
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var akra;
+(function (akra) {
+    (function (scene) {
+        scene.pEngine = null;
+        var SceneNode = (function (_super) {
+            __extends(SceneNode, _super);
+            function SceneNode(pEngine) {
+                        _super.call(this);
+                this.pEngine = pEngine;
+            }
+            return SceneNode;
+        })(scene.Node);
+        scene.SceneNode = SceneNode;        
+    })(akra.scene || (akra.scene = {}));
+    var scene = akra.scene;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (scene) {
+        var SceneObject = (function (_super) {
+            __extends(SceneObject, _super);
+            function SceneObject(pEngine) {
+                        _super.call(this, pEngine);
+            }
+            return SceneObject;
+        })(scene.SceneNode);
+        scene.SceneObject = SceneObject;        
+    })(akra.scene || (akra.scene = {}));
+    var scene = akra.scene;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (scene) {
+        (function (objects) {
+            var Camera = (function (_super) {
+                __extends(Camera, _super);
+                function Camera(pEngine) {
+                                _super.call(this, pEngine);
+                }
+                return Camera;
+            })(scene.SceneObject);
+            objects.Camera = Camera;            
+        })(scene.objects || (scene.objects = {}));
+        var objects = scene.objects;
+    })(akra.scene || (akra.scene = {}));
+    var scene = akra.scene;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
     var Engine = (function () {
-        function Engine() {
+        function Engine(sCanvasId) {
+            if (typeof sCanvasId === "undefined") { sCanvasId = null; }
+            this.useHWAA = false;
+            this.isShowCursorWhenFullscreen = false;
+            this.iCreationWidth = 0;
+            this.iCreationHeight = 0;
+            this.isActive = false;
+            this.isDeviceLost = false;
+            this.isFrameMoving = true;
+            this.isSingleStep = true;
+            this.isFrameReady = false;
+            this.fTime = 0;
+            this.fElapsedTime = 0;
+            this.fUpdateTimeCount = 0;
+            this.fFPS = 0;
+            this.sDeviceStats = "";
+            this.sFrameStats = "";
+            this.pFonts = null;
+            this.isShowStats = false;
+            this.pCanvas = null;
+            this.pDevice = null;
             this.pRenderer = null;
             this.pResourceManager = null;
             this.pDisplayManager = null;
             this.pParticleManager = null;
             this.pSpriteManager = null;
             this.pLightManager = null;
+            this.pRootNode = null;
+            this.pDefaultCamera = null;
+            this.pRenderList = null;
+            this.pRenderState = null;
+            this.pause(true);
+            if(sCanvasId) {
+                this.create(sCanvasId);
+            }
         }
-        Engine.prototype.create = function () {
+        Engine.pKeymap = new akra.util.KeyMap();
+        Engine.pGamepad = new akra.util.GamepadMap();
+        Object.defineProperty(Engine.prototype, "displayManager", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "particleManager", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "spriteManager", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "lightManager", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "rootNode", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "sceneTree", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "defaultCamera", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "activeViewport", {
+            get: function () {
+                return {
+                    width: 0,
+                    height: 0,
+                    x: 0,
+                    y: 0
+                };
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "worldExtents", {
+            get: function () {
+                return {
+                };
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "device", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "activeCamera", {
+            get: function () {
+                return null;
+            },
+            set: function (pCamera) {
+                return;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "time", {
+            get: function () {
+                return this.fTime;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "elapsedTime", {
+            get: function () {
+                return this.fElapsedTime;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Engine.prototype, "fps", {
+            get: function () {
+                return this.fFPS;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Engine.prototype.create = function (pCanvas) {
+            if(akra.isString(pCanvas)) {
+                this.pCanvas = document.getElementById(pCanvas);
+            } else {
+                this.pCanvas = pCanvas;
+            }
+            this.pRootNode = new akra.scene.SceneNode(this);
+            this.pDefaultCamera = new akra.scene.objects.Camera(this);
             return false;
         };
         Engine.prototype.run = function () {
             return false;
         };
-        Engine.prototype.setupWorldOcTree = function () {
+        Engine.prototype.setupWorldOcTree = function (pWorldExtents) {
         };
         Engine.prototype.pause = function (isPause) {
         };
         Engine.prototype.showStats = function (isShow) {
         };
         Engine.prototype.fullscreen = function () {
+            return false;
+        };
+        Engine.prototype.inFullscreenMode = function () {
             return false;
         };
         Engine.prototype.notifyOneTimeSceneInit = function () {
@@ -386,51 +631,27 @@ var akra;
         };
         Engine.prototype.updateCamera = function () {
         };
-        Engine.prototype.getRootNode = function () {
+        Engine.prototype.updateStats = function () {
         };
-        Engine.prototype.getSceneTree = function () {
-        };
-        Engine.prototype.getDefaultCamera = function () {
-        };
-        Engine.prototype.getActiveViewport = function () {
-            return {
-                width: 0,
-                height: 0,
-                x: 0,
-                y: 0
-            };
-        };
-        Engine.prototype.getWorldExtents = function () {
-            return {
-            };
-        };
-        Engine.prototype.getDevice = function () {
-            return null;
-        };
-        Engine.prototype.getWindowTitle = function () {
-            return "";
-        };
-        Engine.prototype.getCurrentRenderStage = function () {
-            return 0;
-        };
-        Engine.prototype.getActiveCamera = function () {
-        };
-        Engine.prototype.setActiveCamera = function (pCamera) {
-            return null;
-        };
-        Engine.prototype.inFullscreenMode = function () {
+        Engine.prototype.initialize3DEnvironment = function () {
             return false;
         };
-        Engine.prototype.displayManager = function () {
-            return null;
+        Engine.prototype.render3DEnvironment = function () {
+            return false;
         };
-        Engine.prototype.particleManager = function () {
-            return null;
+        Engine.prototype.cleanup3DEnvironment = function () {
+            return false;
         };
-        Engine.prototype.spriteManager = function () {
-            return null;
+        Engine.prototype.invalidateDeviceObjects = function () {
+            return false;
         };
-        Engine.prototype.lightManager = function () {
+        Engine.prototype.frameMove = function () {
+            return false;
+        };
+        Engine.prototype.render = function () {
+            return false;
+        };
+        Engine.prototype.finalCleanup = function () {
             return null;
         };
         return Engine;
@@ -482,6 +703,9 @@ var akra;
     akra.isBoolean = function (x) {
         return typeof x === "boolean";
     };
+    akra.isString = function (x) {
+        return typeof x === "string";
+    };
     akra.isNumber = function (x) {
         return typeof x === "number";
     };
@@ -510,6 +734,7 @@ var akra;
     akra.trace = console.log.bind(console);
     akra.assert = console.assert.bind(console);
     akra.warning = console.warn.bind(console);
+    akra.error = console.error.bind(console);
     akra.debug_assert = function (isOK) {
         var pParams = [];
         for (var _i = 0; _i < (arguments.length - 1); _i++) {
@@ -530,11 +755,6 @@ var akra;
     };
 })(akra || (akra = {}));
 ; ;
-var __extends = this.__extends || function (d, b) {
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
 var DemoApp = (function (_super) {
     __extends(DemoApp, _super);
     function DemoApp() {
@@ -543,9 +763,12 @@ var DemoApp = (function (_super) {
     }
     DemoApp.prototype.oneTimeSceneInit = function () {
         this.notifyOneTimeSceneInit();
-        akra.debug_assert(false, "do not use this!", "do not use this!", "do not use this!");
+        this.setupWorldOcTree(new akra.geometry.Rect3d(-500, 500, -500, 500, 0, 500));
         return true;
     };
     return DemoApp;
 })(akra.Engine);
-(new DemoApp()).oneTimeSceneInit();
+var pApp = new DemoApp();
+if(!pApp.create('canvas') || !pApp.run()) {
+    akra.error('cannot create and run application.');
+}

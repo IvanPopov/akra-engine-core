@@ -3,12 +3,14 @@
 class DemoApp extends akra.Engine {
     oneTimeSceneInit(): bool {
         this.notifyOneTimeSceneInit();
+        this.setupWorldOcTree(new akra.geometry.Rect3d(-500.0, 500.0, -500.0, 500.0, 0.0, 500.0));
 
-        akra.debug_assert(false, "do not use this!", "do not use this!", "do not use this!");
-
-        //this.setupWorldOcTree();
         return true;
     }
 } 
 
-(new DemoApp).oneTimeSceneInit();
+var pApp = new DemoApp();
+
+if (!pApp.create('canvas') || !pApp.run()) {
+    akra.error('cannot create and run application.');
+}

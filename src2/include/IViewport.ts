@@ -1,5 +1,5 @@
 module akra {
-    export interface Viewport {
+    export interface IViewport {
         x: number;
         y: number;
         width: number;
