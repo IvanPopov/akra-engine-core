@@ -1,7 +1,9 @@
+
+//Для совместимости с Node
 if (!a) {
     var a = {NET: {}};
 }
-
+//Для совместимости с Node
 if (!error) {
     var error = console.error.bind(console);
 }

@@ -152,6 +152,12 @@ ModelResource.prototype.getRootNodes = function () {
     return this._pRootNodeList;
 };
 
+ModelResource.prototype.getRootNodes = function () {
+    'use strict';
+    
+    return this._pRootNodeList;
+};
+
 
 ModelResource.prototype.loadResource = function (sFilename, pOptions) {
     'use strict';

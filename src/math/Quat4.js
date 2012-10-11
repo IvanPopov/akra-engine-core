@@ -488,6 +488,7 @@ Quat4.prototype.toYawPitchRoll = function(v3fDestination) {
     return v3fDestination;
 };
 
+
 /**
  * return value of yaw angle
  */
@@ -601,6 +602,7 @@ Quat4.prototype.getRoll = function() {
     return fRoll;
 };
 
+
 /*
  * Quat4.toMat3
  * Calculates a 3x3 matrix from the given Quat4
@@ -700,7 +702,9 @@ Quat4.prototype.toString = function() {
 /**
  * делает сферическую линейную интерполяцию между кватернионами
  */
+
 Quat4.prototype.smix = function(q4fQuat,fA,q4fDestination,bShortestPath) {
+
     'use strict';
     if(!q4fDestination){
         q4fDestination = this;
@@ -713,6 +717,7 @@ Quat4.prototype.smix = function(q4fQuat,fA,q4fDestination,bShortestPath) {
     var pData2 = q4fQuat.pData;
     var pDataDestination = q4fDestination.pData;
 
+
     var x1 = pData1.X, y1 = pData1.Y, z1 = pData1.Z, w1 = pData1.W;
     var x2 = pData2.X, y2 = pData2.Y, z2 = pData2.Z, w2 = pData2.W;
 
@@ -724,6 +729,7 @@ Quat4.prototype.smix = function(q4fQuat,fA,q4fDestination,bShortestPath) {
         y2 = -y2;
         z2 = -z2;
         w2 = -w2;
+
     }
 
     var fEps = 1e-3;
@@ -736,10 +742,12 @@ Quat4.prototype.smix = function(q4fQuat,fA,q4fDestination,bShortestPath) {
         var k1 = Math.sin((1 - fA) * fAngle)*fInvSin;
         var k2 = Math.sin(fA * fAngle)*fInvSin;
 
+
         pDataDestination.X = x1*k1 + x2*k2;
         pDataDestination.Y = y1*k1 + y2*k2;
         pDataDestination.Z = z1*k1 + z2*k2;
         pDataDestination.W = w1*k1 + w2*k2;
+
     }
     else{
         //два кватерниона или очень близки (тогда можно делать линейную интерполяцию) 
@@ -749,15 +757,19 @@ Quat4.prototype.smix = function(q4fQuat,fA,q4fDestination,bShortestPath) {
         var k1 = 1 - fA;
         var k2 = fA;
 
+
         var x = x1*k1 + x2*k2;
         var y = y1*k1 + y2*k2;
         var z = z1*k1 + z2*k2;
         var w = w1*k1 + w2*k2;
 
+
         // и нормализуем так-как мы сошли со сферы
         
         var fLength = Math.sqrt(x*x + y*y + z*z + w*w);
+
         var fInvLen = fLength ? 1/fLength : 0;
+
 
         pDataDestination.X = x * fInvLen;
         pDataDestination.Y = y * fInvLen;
@@ -767,6 +779,7 @@ Quat4.prototype.smix = function(q4fQuat,fA,q4fDestination,bShortestPath) {
 
     return q4fDestination;
 };
+
 
 Quat4.prototype.mix = function(q4fQuat,fA,q4fDestination,bShortestPath) {
     'use strict';

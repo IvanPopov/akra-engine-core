@@ -556,14 +556,4 @@ IndexBuffer.prototype.getEmptyIndexData = function(iCount,ePrimitiveType,eElemen
 }
 
 
-IndexBuffer.prototype.getCountIndexForStripGrid = function (iXVerts, iYVerts)
-{
-	var iTotalStrips = iYVerts - 1;
-    var iTotalIndexesPerStrip = iXVerts << 1;
-	var iTotalIndexes = (iTotalStrips * iTotalIndexesPerStrip) + (iTotalStrips << 1) - 2;
-	return iTotalIndexes;
-}
-
-
-
 a.IndexBuffer = IndexBuffer;

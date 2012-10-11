@@ -409,14 +409,15 @@ RenderData.prototype._allocateIndex = function (pAttrDecl, pData) {
     var pIndexBuffer = this._pIndexBuffer;
     var pBuffer = this._pBuffer;
 
-    Ifdef(__DEBUG)
+
+    
+Ifdef (__DEBUG)
     for (var i = 0; i < pAttrDecl.length; i++) {
         if (pAttrDecl[i].eType !== a.DTYPE.FLOAT) {
             return false;
         }
     }
-    ;
-    Endif();
+Endif();
 
     if (!this._pIndexData) {
         return this._createIndex(pAttrDecl, pData);
@@ -431,6 +432,20 @@ RenderData.prototype._allocateIndex = function (pAttrDecl, pData) {
     return true;
 };
 
+RenderData.prototype.setIndexLength=function(iLength)
+{
+	var bResult=this._pIndexData.resize(iLength);
+	if(bResult)
+	{
+		this._pMap._nLength = iLength;
+	}
+	return bResult;
+};
+
+RenderData.prototype.getAdvancedIndexData=function(eSemantics)
+{
+	return this.getData(eSemantics, true);
+}
 
 /**
  * Allocate index.

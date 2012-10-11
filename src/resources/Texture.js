@@ -198,6 +198,7 @@ PROPERTY(Texture, 'target', function () {
     return TEST_BIT(this._iFlags, a.Texture.CubeMap) ? a.TTYPE.TEXTURE_CUBE_MAP : a.TTYPE.TEXTURE_2D;
 });
 
+
 Texture.prototype._initSystemStorageTexture = function (pEngine) {
     this._pEngine = pEngine;
     var pBuffer, pData, pMethod;
@@ -414,7 +415,9 @@ Texture.prototype.releaseTexture = function () {
 Texture.prototype.generateNormalMap = function (pHeightMap, iChannel, fAmplitude) {
 
     var pDevice = this._pEngine.pDevice;
+
     var pRenderer = this._pEngine.shaderManager();
+
 
     this.releaseTexture();
     this._pTexture = pDevice.createTexture();
@@ -422,36 +425,30 @@ Texture.prototype.generateNormalMap = function (pHeightMap, iChannel, fAmplitude
 
     this._iWidth = pHeightMap.getWidth();
     this._iHeight = pHeightMap.getHeight();
+
     pRenderer.bindTexture(this);
+
+
     pDevice.texImage2D(a.TTYPE.TEXTURE_2D, 0, a.IFORMATSHORT.RGBA, this._iWidth,
                        this._iHeight, 0, a.IFORMATSHORT.RGBA,
                        a.ITYPE.UNSIGNED_BYTE, null);
 
+	
     var pColor = new Uint8Array(this._iWidth * this._iHeight * 4);
 
-    var pNormalTable = new Array(this._iWidth * this._iHeight);
-    for (var i = 0; i < this._iWidth * this._iHeight; i++) {
-        pNormalTable[i] = Vec3.create();
-    }
+	
+    a.computeNormalMapGPU(this._pEngine, pHeightMap, pColor/*normal table*/, iChannel, fAmplitude);
 
-    a.computeNormalMap(pDevice, pHeightMap, pNormalTable, iChannel, fAmplitude, 4);
 
-    var iIndex;
-    var iOffset;
-    for (var y = 0; y < this.height; y++) {
-        for (var x = 0; x < this._iWidth; x++) {
-            iIndex = (y * this._iWidth) + x;
-            iOffset = iIndex * 4;
-            pColor[iOffset + 0] = pNormalTable[iIndex][0]// Red value
-            pColor[iOffset + 1] = pNormalTable[iIndex][1]; // Green value
-            pColor[iOffset + 2] = pNormalTable[iIndex][2]; // Blue value
-            pColor[iOffset + 3] = 255; // Alpha value
-
-        }
-    }
+	
     this.setPixelRGBA(0, 0, this._iWidth, this._iHeight, pColor);
 
-    //delete pNormalTable;
+
+	
+	this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
+	this.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
+
+	delete pColor;
 };
 
 /**
@@ -672,6 +669,7 @@ Texture.prototype.uploadCubeFace = function (pImage, eFace, isCopyAll) {
     TODO('Texture::uploadCubeFace()');
 };
 
+
 Texture.prototype.uploadHTMLElement = function (pElement) {
     var pDevice = this._pEngine.pDevice;
     this.releaseTexture();
@@ -744,6 +742,7 @@ Texture.prototype.uploadImage = function (pImage) {
                                                   FLAG(a.Img.POSITIVEZ) | FLAG(a.Img.NEGATIVEZ))) {
         CLEAR_BIT(this._iFlags, a.Texture.CubeMap);
 
+
         pRenderer.bindTexture(this);
         this.flipY();
 
@@ -762,6 +761,7 @@ Texture.prototype.uploadImage = function (pImage) {
     }
     else {
         SET_BIT(this._iFlags, a.Texture.CubeMap);
+
 
         pRenderer.bindTexture(this);
         this.flipY();
@@ -798,6 +798,7 @@ Texture.prototype.uploadImage = function (pImage) {
     }
     //trace('uploaded image to texture: ', this._iWidth, 'x', this._iHeight);
     this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
+
     this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
     this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
 //    this.unbind();
@@ -808,14 +809,75 @@ Texture.prototype.uploadImage = function (pImage) {
 };
 
 /**
- * Изменить размеры текстуры и переложить данные в ней.
+ * Растянуть или ужать картинку
  * @param iWidth
  * @param iHeight
  * @return Boolean
  */
-Texture.prototype.resize = function (iWidth, iHeight) {
-    TODO('Texture:: resize with scale');
-    return false;
+Texture.prototype.resize = function (iWidth, iHeight)
+{
+	debug_assert(this._pTexture, 'Cannot resize, because texture not created.');
+
+	var eFormat = this._eFormat;
+	var eType = this._eType;
+
+	var pDevice = this._pEngine.pDevice;
+
+	if (!statics._pResizeProgram)
+	{
+		statics._pResizeProgram = a.loadProgram(this._pEngine,'../effects/resize_texture.glsl')
+	}
+
+	var pProgram = statics._pResizeProgram;
+	pProgram.activate();
+
+	var pDestinationTexture = pDevice.createTexture();
+	pDevice.activeTexture(pDevice.TEXTURE1);
+	// pDevice.pixelStorei(a.WEBGLS.UNPACK_FLIP_Y_WEBGL, true);
+	pDevice.bindTexture(pDevice.TEXTURE_2D, pDestinationTexture);
+	pDevice.texImage2D(pDevice.TEXTURE_2D, 0, eFormat, iWidth, iHeight, 0, eFormat, eType, null);
+	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MAG_FILTER, pDevice.LINEAR);
+	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MIN_FILTER, pDevice.LINEAR);
+	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_WRAP_S, pDevice.CLAMP_TO_EDGE);
+	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_WRAP_T, pDevice.CLAMP_TO_EDGE);
+
+
+	var pDestinationFrameBuffer = pDevice.createFramebuffer();
+	pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pDestinationFrameBuffer);
+	pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
+		pDevice.TEXTURE_2D, pDestinationTexture, 0);
+
+	var pRenderIndexData = new Float32Array([-1,-1,-1,1,1,-1,1,1]);
+	var pRenderIndexBuffer = pDevice.createBuffer();
+
+	pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pRenderIndexBuffer);
+	pDevice.bufferData(pDevice.ARRAY_BUFFER, pRenderIndexData, pDevice.STREAM_DRAW);
+
+	pDevice.bindTexture(pDevice.TEXTURE_2D, this._pTexture);
+	pDevice.activeTexture(pDevice.TEXTURE0);
+	pDevice.bindTexture(pDevice.TEXTURE_2D, this._pTexture);
+	pProgram.applyInt("texture", 0);
+
+	pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pRenderIndexBuffer);
+	pDevice.vertexAttribPointer(pProgram._pAttributesByName['POSITION'].iLocation, 2, pDevice.FLOAT, false, 0, 0);
+	// pDevice.disableVertexAttribArray(1);
+	// pDevice.disableVertexAttribArray(2);
+
+	pDevice.viewport(0, 0, iWidth, iHeight);
+	pDevice.drawArrays(pDevice.TRIANGLE_STRIP, 0, 4);
+	pDevice.flush();
+
+	pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, null);
+	pDevice.deleteBuffer(pRenderIndexBuffer);
+	pDevice.deleteTexture(this._pTexture);
+	pDevice.deleteFramebuffer(pDestinationFrameBuffer);
+
+	pProgram.deactivate();
+
+	this._pTexture = pDestinationTexture;
+	this._iWidth = iWidth;
+	this._iHeight = iHeight;
+	return true;
 };
 
 /**
@@ -949,10 +1011,12 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
     if (!(pData instanceof Array)) {
         pData = [pData];
     }
+
  
     pRenderer.bindTexture(this);
-    //pDevice.pixelStorei(pDevice.UNPACK_ALIGNMENT, 1);
-    //this.flipY();
+    pDevice.pixelStorei(pDevice.UNPACK_ALIGNMENT, 1);
+    this.flipY(false)
+
 
     if (TEST_BIT(eFlags, a.Texture.MipMaps)) {
         nMipMaps = Math.ceil(Math.max(Math.log(this._iWidth) / Math.LN2, Math.log(this._iHeight) / Math.LN2)) + 1;
@@ -986,6 +1050,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
         }
     }
 
+
     if (this._eType !== a.ITYPE.FLOAT) {
         this.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.REPEAT);
         this.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.REPEAT);
@@ -998,6 +1063,7 @@ Texture.prototype.createTexture = function (iWidth, iHeight, eFlags, eFormat, eT
         this.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
         this.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
     }
+
 
     this.notifyLoaded();
     this.notifyRestored();

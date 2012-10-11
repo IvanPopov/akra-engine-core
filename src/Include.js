@@ -1,4 +1,3 @@
-
 function defineNotWritableProperty(pObject, pPropList, pValue) {
 	for (var i = 0; i < pPropList.length; ++ i) {
 		Object.defineProperty(pObject, pPropList[i], {
@@ -79,4 +78,5 @@ Include('objects/');
 Include('Engine.js');
 
 //Include('../../akra-engine-general/analyzer/A_Analyzer.js');
+
 

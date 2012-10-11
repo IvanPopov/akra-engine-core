@@ -316,6 +316,12 @@ function Img(pEngine)
 			NEGATIVEZ
          ], eImgCubeFlags, a.Img);
 	this._iCubeFlags=0;
+
+	//Системные штуки
+	this._pPixel00=new Uint8Array(4);
+	this._pPixel10=new Uint8Array(4);
+	this._pPixel01=new Uint8Array(4);
+	this._pPixel11=new Uint8Array(4);
 };
 
 a.extend(Img, a.ResourcePoolItem);
@@ -871,11 +877,11 @@ Img.prototype.load=function(sFileName, fnCallBack)
 			}
 
 			pTempContext.drawImage(pImg, 0, 0);
-			var pImageData = pTempContext.getImageData(0, 0,pTempCanvas.heigh, pTempCanvas.heigh);
+			var pImageData = pTempContext.getImageData(0, 0,pTempCanvas.width, pTempCanvas.height);
 			me._pData=new Array(nVolume);
 			me._pData[0]=new Array(nCubeMap);
 			me._pData[0][0]=new Array(nMipMap);
-			me._pData[0][0][0]=new ArrayBuffer(pImageData.data.buffer.slice(0,pImageData.data.buffer.byteLength));
+			me._pData[0][0][0]=pImageData.data.buffer.slice(0,pImageData.data.buffer.byteLength);
 			me._eFormat=a.IFORMAT.RGBA8;
 			me._iCubeFlags=0;
 			if(fnCallBack)
@@ -1174,7 +1180,9 @@ Img.prototype.load=function(sFileName, fnCallBack)
 				(dwMagic8_1 == PNG_MAGIC1 && dwMagic8_2 ==PNG_MAGIC2)||
 				dwMagic2==JPEG_MAGIC||GIF_MAGIC)
 		{
-				debug_error("Должны были прогрузиться через canvas");
+				console.log(a,window,this);
+				console.log("===>",sFileName)
+				debug_error("Должны были прогрузиться через canvas"+sFileName/*+a.pathinfo(sFileName).ext*/);
 		}
 		else
         {
@@ -1202,6 +1210,7 @@ Img.prototype.load=function(sFileName, fnCallBack)
 
 		if(iSizeData!=header.dwPitchOrLinearSize)
 		{
+			console.log("Несовпадают размеры картинки вычисленный и в файле",sFileName);
 			warning("Несовпадают размеры картинки вычисленный и в файле("+iSizeData+","+header.dwPitchOrLinearSize+")");
 		}
 		if(!header.dwFlags&DDS_HEADER_FLAGS_LINEARSIZE)
@@ -1312,6 +1321,68 @@ Img.prototype.load=function(sFileName, fnCallBack)
 };
 
 
+Img.prototype.tex2D=function(fX,fY,pPixel,iMipLevel,eCubeFlag,iVolumeLevel)
+{
+	var i=0;
+	var fXbetween=this.getWidth(iMipLevel)*fX;
+	var fYbetween=this.getHeight(iMipLevel)*fY;
+	var iX0=Math.max(Math.floor(fXbetween),0);
+	var iX1=Math.min(Math.ceil(fXbetween),this.getWidth(iMipLevel)-1);
+	var iY0=Math.max(Math.floor(fYbetween),0);
+	var iY1=Math.min(Math.ceil(fYbetween),this.getHeight(iMipLevel)-1);
+
+	if(iX0!=iX1&&iY0!=iY1)
+	{
+
+		this.getPixelRGBA(iX0,iY0,this._pPixel00,iMipLevel,eCubeFlag,iVolumeLevel);
+		this.getPixelRGBA(iX1,iY0,this._pPixel10,iMipLevel,eCubeFlag,iVolumeLevel);
+		this.getPixelRGBA(iX0,iY1,this._pPixel01,iMipLevel,eCubeFlag,iVolumeLevel);
+		this.getPixelRGBA(iX1,iY1,this._pPixel11,iMipLevel,eCubeFlag,iVolumeLevel);
+
+		for(i=0;i<4;i++)
+		{
+			pPixel[i]=(
+				this._pPixel00[i]*(iX1-fXbetween)*(iY1-fYbetween)+
+				this._pPixel10[i]*(fXbetween-iX0)*(iY1-fYbetween)+
+				this._pPixel01[i]*(iX1-fXbetween)*(fYbetween-iY0)+
+				this._pPixel11[i]*(fXbetween-iX0)*(fYbetween-iY0))
+				/((iX1-iX0)*(iY1-iY0));
+		}
+	}
+	else if(iX0==iX1&&iY0!=iY1)
+	{
+		this.getPixelRGBA(iX0,iY0,this._pPixel00,iMipLevel,eCubeFlag,iVolumeLevel);
+		this.getPixelRGBA(iX0,iY1,this._pPixel01,iMipLevel,eCubeFlag,iVolumeLevel);
+
+		for(i=0;i<4;i++)
+		{
+			pPixel[i]=(
+			this._pPixel00[i]*(iY1-fYbetween)+
+			this._pPixel01[i]*(fYbetween-iY0))
+			/(iY1-iY0);
+		}
+	}
+	else if(iX0!=iX1&&iY0==iY1)
+	{
+		this.getPixelRGBA(iX0,iY0,this._pPixel00,iMipLevel,eCubeFlag,iVolumeLevel);
+		this.getPixelRGBA(iX1,iY0,this._pPixel10,iMipLevel,eCubeFlag,iVolumeLevel);
+
+		for(i=0;i<4;i++)
+		{
+			pPixel[i]=(
+				this._pPixel00[i]*(iX1-fXbetween)+
+				this._pPixel10[i]*(fXbetween-iX0))
+				/(iX1-iX0);
+		}
+	}
+	else
+	{
+		return this.getPixelRGBA(iX0,iY0,pPixel,iMipLevel,eCubeFlag,iVolumeLevel);
+	}
+}
+
+
+
 Img.prototype.getPixelRGBA=function(iX,iY,pPixel,iMipLevel,eCubeFlag,iVolumeLevel)
 {
 	if(iMipLevel==undefined)
@@ -1378,6 +1449,7 @@ Img.prototype._getPixelRGBA=function(iX,iY,pPixel,iMipLevel,eCubeFlag,iVolumeLev
     else if(this._eFormat==a.IFORMAT.RGBA8)
     {
         iOffset=(iY*this.getWidth(iMipLevel)+iX)*this.getBlockBytes();
+
         pColor=(new Uint32Array(this._pData[iVolumeLevel][eCubeFlag][iMipLevel],iOffset,1))[0];
 
         pPixel[0]=(pColor&0x000000FF);

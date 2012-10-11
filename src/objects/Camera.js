@@ -63,6 +63,7 @@ function Camera () {
      * @type Float32Array
      */
     this.m4fProjView = new Mat4;
+	
     /**
      * Special matrix for billboarding effects
      * @type Float32Array
@@ -83,6 +84,7 @@ function Camera () {
      * @type Float32Array
      */
     this.m4fRenderStageProjView = new Mat4;
+
     /**
      * Search rect for scene culling
      * @type Rect3d
@@ -143,7 +145,6 @@ function Camera () {
      * @type Float
      */
     this.fMaxY = 0.0;
-
     /**
      * Frustum
      * @type Frustum
@@ -307,11 +308,11 @@ Camera.prototype.recalcMatrices = function () {
     // this.m4fSkyBox.pData._24 = 0.0;
     // this.m4fSkyBox.pData._34 = 0.0;
 
-
     // this is combined with the unit
     // space projection matrix to form
     // the sky box viewing matrix
     this.m4fSkyBox.multiply(this.m4fUnitProj, this.m4fSkyBox);
+
 
     // billboard objects use our world matrix
     // without translation
@@ -319,7 +320,6 @@ Camera.prototype.recalcMatrices = function () {
     this.m4fBillboard.pData._14 = 0.0;
     this.m4fBillboard.pData._24 = 0.0;
     this.m4fBillboard.pData._34 = 0.0;
-
 };
 /**
  * Update
@@ -635,6 +635,7 @@ Camera.prototype._rebuildSearchRectAndFrustum = function() {
     var v4fRightBottomFarData = v4fRightBottomFar.pData;
     var v4fLeftTopFarData = v4fLeftTopFar.pData;
     var v4fRightTopFarData = v4fRightTopFar.pData;
+
 
     var x1,y1,z1; //первый вектор
     var x2,y2,z2; //второй вектор

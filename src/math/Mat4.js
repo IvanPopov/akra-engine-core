@@ -357,6 +357,7 @@ Mat4.prototype.identity = function() {
     pData._43 = 0;
     pData._44 = 1;
 
+
     return this;
 };
 
@@ -2080,6 +2081,7 @@ Mat4.lookAt = function (v3fEye, v3fCenter, v3fUp, m4fDestination) {
     return m4fDestination;
 };
 
+
 /**
  * метод выполняет обратную проекцию
  * можно использовать только с матрицами перспективы
@@ -2118,6 +2120,7 @@ Mat4.prototype.unprojZ = function(zScreen){
 };
 
 
+
 Mat4.prototype.translate = Mat4.prototype.translateLeft;
 Mat4.prototype.scale = Mat4.prototype.scaleLeft;
 Mat4.prototype.rotate = Mat4.prototype.rotateLeft;
@@ -2127,9 +2130,11 @@ Mat4.prototype.rotateZ = Mat4.prototype.rotateZLeft;
 Mat4.prototype.mult = Mat4.prototype.multiply;
 Mat4.prototype.multLeft = Mat4.prototype.multiplyLeft;
 Mat4.prototype.toSource = Mat4.prototype.toString;
+
 Mat4.prototype.spur = Mat4.prototype.trace; //в угоду любителям немецкого
 Mat4.prototype.tr = Mat4.prototype.trace;
 Mat4.prototype.sp = Mat4.prototype.trace;
+
 
 Mat4.matrixPerspectiveFovRH = Mat4.perspective;
 

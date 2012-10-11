@@ -72,6 +72,27 @@ Enum([
          RGBA = 0x1908
      ], IFORMATSHORT, a.IFORMATSHORT);
 
+function IFormatShortToString(eIFormatShort)
+{
+	if(eIFormatShort==a.IFORMATSHORT.RGB)
+	{
+		return "RGB";
+
+	}
+	else if(eIFormatShort==a.IFORMATSHORT.RGBA)
+	{
+		return "RGBA";
+
+	}
+	else
+	{
+		return "XZ che za format";
+	}
+}
+
+a.IFormatShortToString=IFormatShortToString;
+
+
 Enum([
          TEXTURE_FLOAT              = 'texture_float',
          TEXTURE_HALF_FLOAT         = 'texture_half_float',
@@ -545,142 +566,6 @@ a.calcPOTtextureSize = calcPOTtextureSize;
 
 function computeNormalMap (pDevice, pImage, pNormalTable, iChannel, fAmplitude) {
 
-    var vertexShaderSrc = "" +
-
-        "/*vertex shader*/" +
-
-        "attribute vec2 position;" +
-        "varying vec2 texturePosition;" +
-
-        "void main(void){" +
-        "texturePosition = (position + vec2(1.,1.))/2.;" +
-        "gl_Position = vec4(position,0.,1.);" +
-        "}";
-
-
-    var fragmentShaderSrc = "" +
-
-        "/*fragment shader*/\n" +
-        "#ifdef GL_ES\n" +
-        "precision highp float;\n" +
-        "#endif\n" +
-
-        "uniform vec2 steps; /*iverse texture size*/" +
-        "uniform float booster; /*height boost*/" +
-        "uniform sampler2D texture;" +
-        "uniform float fChannel;" +
-
-        "varying vec2 texturePosition;" +
-
-        "void main(void){" +
-
-        "/*generation normals;*/" +
-
-        "float fHeight0,fHeight1,fHeight2,fHeight3,fHeight4,fHeight5,fHeight6," +
-        "fHeight7,fHeight8;" +
-
-        "if(fChannel == 0.){" +
-        "fHeight0 = (texture2D(texture,texturePosition)).r;" +
-        "fHeight1 = (texture2D(texture,texturePosition + vec2(steps.x,0.))).r;" +
-        "fHeight2 = (texture2D(texture,texturePosition + vec2(steps.x,steps.y))).r;" +
-        "fHeight3 = (texture2D(texture,texturePosition + vec2(0.,steps.x))).r;" +
-        "fHeight4 = (texture2D(texture,texturePosition + vec2(-steps.x,steps.y))).r;" +
-        "fHeight5 = (texture2D(texture,texturePosition + vec2(-steps.x,0.))).r;" +
-        "fHeight6 = (texture2D(texture,texturePosition + vec2(-steps.x,-steps.y))).r;" +
-        "fHeight7 = (texture2D(texture,texturePosition + vec2(0.,-steps.y))).r;" +
-        "fHeight8 = (texture2D(texture,texturePosition + vec2(steps.x,-steps.y))).r;" +
-        "}" +
-        "else if(fChannel == 1.){" +
-        "fHeight0 = (texture2D(texture,texturePosition)).g;" +
-        "fHeight1 = (texture2D(texture,texturePosition + vec2(steps.x,0.))).g;" +
-        "fHeight2 = (texture2D(texture,texturePosition + vec2(steps.x,steps.y))).g;" +
-        "fHeight3 = (texture2D(texture,texturePosition + vec2(0.,steps.x))).g;" +
-        "fHeight4 = (texture2D(texture,texturePosition + vec2(-steps.x,steps.y))).g;" +
-        "fHeight5 = (texture2D(texture,texturePosition + vec2(-steps.x,0.))).g;" +
-        "fHeight6 = (texture2D(texture,texturePosition + vec2(-steps.x,-steps.y))).g;" +
-        "fHeight7 = (texture2D(texture,texturePosition + vec2(0.,-steps.y))).g;" +
-        "fHeight8 = (texture2D(texture,texturePosition + vec2(steps.x,-steps.y))).g;" +
-        "}" +
-        "else if(fChannel == 2.){" +
-        "fHeight0 = (texture2D(texture,texturePosition)).b;" +
-        "fHeight1 = (texture2D(texture,texturePosition + vec2(steps.x,0.))).b;" +
-        "fHeight2 = (texture2D(texture,texturePosition + vec2(steps.x,steps.y))).b;" +
-        "fHeight3 = (texture2D(texture,texturePosition + vec2(0.,steps.x))).b;" +
-        "fHeight4 = (texture2D(texture,texturePosition + vec2(-steps.x,steps.y))).b;" +
-        "fHeight5 = (texture2D(texture,texturePosition + vec2(-steps.x,0.))).b;" +
-        "fHeight6 = (texture2D(texture,texturePosition + vec2(-steps.x,-steps.y))).b;" +
-        "fHeight7 = (texture2D(texture,texturePosition + vec2(0.,-steps.y))).b;" +
-        "fHeight8 = (texture2D(texture,texturePosition + vec2(steps.x,-steps.y))).b;" +
-        "}" +
-        "else{" +
-        "fHeight0 = (texture2D(texture,texturePosition)).a;" +
-        "fHeight1 = (texture2D(texture,texturePosition + vec2(steps.x,0.))).a;" +
-        "fHeight2 = (texture2D(texture,texturePosition + vec2(steps.x,steps.y))).a;" +
-        "fHeight3 = (texture2D(texture,texturePosition + vec2(0.,steps.x))).a;" +
-        "fHeight4 = (texture2D(texture,texturePosition + vec2(-steps.x,steps.y))).a;" +
-        "fHeight5 = (texture2D(texture,texturePosition + vec2(-steps.x,0.))).a;" +
-        "fHeight6 = (texture2D(texture,texturePosition + vec2(-steps.x,-steps.y))).a;" +
-        "fHeight7 = (texture2D(texture,texturePosition + vec2(0.,-steps.y))).a;" +
-        "fHeight8 = (texture2D(texture,texturePosition + vec2(steps.x,-steps.y))).a;" +
-        "}" +
-
-        "vec3 dir1 = vec3(steps.x, 0., (fHeight1 - fHeight0)*booster);" +
-        "vec3 dir2 = vec3(steps.x, steps.y, (fHeight2 - fHeight0)*booster);" +
-        "vec3 dir3 = vec3(0., steps.y, (fHeight3 - fHeight0)*booster);" +
-        "vec3 dir4 = vec3(-steps.x, steps.y, (fHeight4 - fHeight0)*booster);" +
-        "vec3 dir5 = vec3(-steps.x, 0., (fHeight5 - fHeight0)*booster);" +
-        "vec3 dir6 = vec3(-steps.x, -steps.y, (fHeight6 - fHeight0)*booster);" +
-        "vec3 dir7 = vec3(0., -steps.y, (fHeight7 - fHeight0)*booster);" +
-        "vec3 dir8 = vec3(steps.x, -steps.y, (fHeight8 - fHeight0)*booster);" +
-
-        "vec3 normal1 = cross(dir1,dir2);" +
-        "vec3 normal2 = cross(dir2,dir3);" +
-        "vec3 normal3 = cross(dir3,dir4);" +
-        "vec3 normal4 = cross(dir4,dir5);" +
-        "vec3 normal5 = cross(dir5,dir6);" +
-        "vec3 normal6 = cross(dir6,dir7);" +
-        "vec3 normal7 = cross(dir7,dir8);" +
-        "vec3 normal8 = cross(dir8,dir1);" +
-
-        "vec3 normal = normalize(normal1 + normal2 + normal3 + normal4" +
-        "+ normal5 + normal6 + normal7 + normal8);" +
-
-        "gl_FragColor = vec4(normal/2. + vec3(0.5),1.);" +
-        "}";
-
-    var progCalculateNormalMap = null;
-
-    if (!pDevice.computeNormalMapFromHeightMap) {
-
-        var vertexShader = pDevice.createShader(pDevice.VERTEX_SHADER);
-        pDevice.shaderSource(vertexShader, vertexShaderSrc);
-        pDevice.compileShader(vertexShader);
-
-        //    if (!pDevice.getShaderParameter(vertexShader, pDevice.COMPILE_STATUS)) {
-        //        alert(pDevice.getShaderInfoLog(vertexShader));
-        //        return;
-        //    }
-
-        var fragmentShader = pDevice.createShader(pDevice.FRAGMENT_SHADER);
-        pDevice.shaderSource(fragmentShader, fragmentShaderSrc);
-        pDevice.compileShader(fragmentShader);
-
-        //    if (!pDevice.getShaderParameter(fragmentShader, pDevice.COMPILE_STATUS)) {
-        //        alert(pDevice.getShaderInfoLog(fragmentShader));
-        //        return;
-        //    }
-
-        progCalculateNormalMap = pDevice.createProgram();
-        pDevice.attachShader(progCalculateNormalMap, vertexShader);
-        pDevice.attachShader(progCalculateNormalMap, fragmentShader);
-
-        pDevice.linkProgram(progCalculateNormalMap);
-
-        pDevice.computeNormalMapFromHeightMap = progCalculateNormalMap;
-    }
-    else {
-        progCalculateNormalMap = pDevice.computeNormalMapFromHeightMap;
-    }
 
     pDevice.useProgram(progCalculateNormalMap);
 
@@ -780,6 +665,72 @@ function computeNormalMap (pDevice, pImage, pNormalTable, iChannel, fAmplitude) 
 a.computeNormalMap = computeNormalMap;
 
 
+function computeNormalMapGPU(pEngine,pHeightImage,pNormalTable,iChannel,fScale){
+
+	iChannel = ifndef(iChannel,0);
+
+
+	var pProgram = pEngine.pGenerateNormalProg;
+	if(!pProgram)
+	{
+		pProgram=pEngine.pGenerateNormalProg=a.loadProgram(pEngine, '../effects/generate_normal_map.glsl');
+	}
+	pProgram.activate();
+
+	var pDevice = pEngine.pDevice;
+
+	pHeightImage.convert(a.IFORMAT.RGBA8);
+	var pHeightTexture = pEngine.displayManager().texturePool().
+		createResource('heightTexture' + a.now());
+	pHeightTexture.createTexture(pHeightImage.getWidth(),pHeightImage.getHeight(),
+		0,a.IFORMAT.RGBA8,a.ITYPE.UNSIGNED_BYTE,new Uint8Array(pHeightImage.getData(0)));
+
+	var pNormalTexture = pEngine.displayManager().texturePool().
+		createResource('normalTexture' + a.now());
+
+	var iSizeX = pHeightTexture.width;
+	var iSizeY = pHeightTexture.height;
+
+	pNormalTexture.createTexture(iSizeX,iSizeY,0,
+		a.IFORMAT.RGBA8,a.ITYPE.UNSIGNED_BYTE,null);
+
+	var pNormalFrameBuffer = pNormalTexture._pFrameBuffer;
+	pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pNormalFrameBuffer);
+	pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
+		pDevice.TEXTURE_2D, pNormalTexture.texture, 0);
+
+	var pBuffer = pEngine.displayManager().vertexBufferPool().findResource('normal map attribute');
+	if(pBuffer == null){
+		pBuffer = pEngine.displayManager().vertexBufferPool().createResource('normal map attribute');
+		pBuffer.create(32,0,new Float32Array([-1,-1,-1,1,1,-1,1,1]));
+	}
+
+	var pBufferMap = new a.BufferMap(pEngine);
+	pBufferMap.primType = a.PRIMTYPE.TRIANGLESTRIP;
+	pBufferMap.flow(0,pBuffer.getVertexData(0,4,[VE_VEC2('POSITION')]));
+
+	pHeightTexture.activate(0);
+
+	pProgram.applyInt('heightTexture',0);
+	pProgram.applyInt('iChannel',iChannel);
+	pProgram.applyFloat('fScale',fScale);
+	pProgram.applyVector2('fSteps',1/iSizeX,1/iSizeY);
+
+	pProgram.applyBufferMap(pBufferMap);
+
+	pDevice.viewport(0,0,iSizeX,iSizeY);
+
+	pBufferMap.draw();
+
+	pDevice.readPixels(0, 0, pHeightImage.getWidth(), pHeightImage.getHeight(),
+		pDevice.RGBA, pDevice.UNSIGNED_BYTE, pNormalTable);
+
+	pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, null);
+	return pNormalTable;
+};
+
+a.computeNormalMapGPU=computeNormalMapGPU;
+
 Define(a.IFORMAT.RGB, a.IFORMAT.RGB8);
 Define(a.IFORMAT.RGBA, a.IFORMAT.RGBA8);
 Define(a.TEXTUREUNIT.TEXTURE, 0x84C0);
@@ -799,7 +750,9 @@ Define(a.MAX_COLOR_ATTACHMENT, 1);
  * @return iFlags __DESCRIPTION__
  **/
 
-function createSingleStripGrid (iXVerts, iYVerts, iXStep, iYStep, iSride, iFlags) {
+function createSingleStripGrid (pIndexValues,iXVerts, iYVerts, iXStep, iYStep, iSride, iFlags)
+{
+	//TRIANGLESTRIP
     var iTotalStrips = iYVerts - 1;
     var iTotalIndexesPerStrip = iXVerts << 1;
 
@@ -812,7 +765,10 @@ function createSingleStripGrid (iXVerts, iYVerts, iXStep, iYStep, iSride, iFlags
 
     var iTotalIndexes = (iTotalStrips * iTotalIndexesPerStrip) + (iTotalStrips << 1) - 2;
 
-    var pIndexValues = new Array(iTotalIndexes);
+    if(pIndexValues.length<iTotalIndexes)
+	{
+		return 0;
+	}
 
     var iIndex = 0;
     var iStartVert = 0;
@@ -838,6 +794,17 @@ function createSingleStripGrid (iXVerts, iYVerts, iXStep, iYStep, iSride, iFlags
     }
 
     // return
-    return pIndexValues;
+    return iTotalIndexes;
 }
 a.createSingleStripGrid = createSingleStripGrid;
+
+function getCountIndexForStripGrid(iXVerts, iYVerts)
+{
+	//TRIANGLESTRIP
+	var iTotalStrips = iYVerts - 1;
+	var iTotalIndexesPerStrip = iXVerts << 1;
+	var iTotalIndexes = (iTotalStrips * iTotalIndexesPerStrip) + (iTotalStrips << 1) - 2;
+	return iTotalIndexes;
+}
+
+a.getCountIndexForStripGrid=getCountIndexForStripGrid;

@@ -441,14 +441,29 @@ Engine.prototype.renderLightings = function () {
 
 
     var pRenderList = pFirstMember;
+
     //Добавлено для отслеживания видимости узлов. aldore
     this.renderList = pRenderList;
+
     //Подготовка всех объектов к рендерингу
-//    trace("Engine.prototype.renderScene", pFirstMember);
+
+	//    trace("Engine.prototype.renderScene", pFirstMember);
+
+	//if(this.pTerrainSystem)
+	//{
+	//	this.pTerrainSystem.reset();
+	//}
+
+
     while (pFirstMember) {
         pFirstMember.prepareForRender();
         pFirstMember = pFirstMember.nextSearchLink();
     }
+
+	//if(this.pTerrainSystem)
+	//{
+	//	this.pTerrainSystem.prepareForRender();
+	//}
 
     //рендеринг всех объектов
     pFirstMember = pRenderList;

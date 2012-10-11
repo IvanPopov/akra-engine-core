@@ -550,4 +550,5 @@ Vec4.prototype.clear = function() {
     return this;
 };
 
+
 a.allocateStorage(Vec4,100);

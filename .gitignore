@@ -28,6 +28,13 @@ compiled/
 compiled/*.js
 build/build.bat
 build.bat
+<<<<<<< HEAD
 
 node_modules/
 
+=======
+server.js
+
+#node
+node_modules/
+>>>>>>> origin/terrain

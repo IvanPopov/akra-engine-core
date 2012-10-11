@@ -19,7 +19,8 @@ if (!trace) {
 var PIPE_TYPE_WEBSOCKET = 0;
 var PIPE_TYPE_WEBWORKER = 1;
 
-window.WebSocket = window.WebSocket || window.MozWebSocket;
+//Для совместимости с Node без window
+WebSocket = WebSocket || MozWebSocket;
 
 /**
  * Pipe, просто интерфейс для создания соединений между клиентом и сервером
