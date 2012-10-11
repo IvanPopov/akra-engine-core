@@ -3579,6 +3579,8 @@ Effect.prototype._initSystemData = function () {
     this._addSystemFunction("clamp", null, [null, "float", "float"], ["float2", "float3", "float4"], "clamp($1,$2,$3)");
 
     this._addSystemFunction("pow", null, [null, null], ["float", "float2", "float3", "float4"], "pow($1,$2)");
+    this._addSystemFunction("mod", null, [null, null], ["float2", "float3", "float4"], "mod($1,$2)");
+    this._addSystemFunction("mod", null, [null, "float"], ["float2", "float3", "float4"], "mod($1,$2)");
     this._addSystemFunction("exp", null, [null], ["float", "float2", "float3", "float4"], "exp($1)");
     this._addSystemFunction("exp2", null, [null], ["float", "float2", "float3", "float4"], "exp2($1)");
     this._addSystemFunction("log", null, [null], ["float", "float2", "float3", "float4"], "log($1)");
