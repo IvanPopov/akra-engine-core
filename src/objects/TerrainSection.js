@@ -185,7 +185,9 @@ TerrainSection.prototype._buildIndexBuffer=function()
 
 TerrainSection.prototype.render = function ()
 {
-	this.renderCallback();
+//	this.renderCallback();
+	this.getTerrainSystem().applyForRender();
+
 }
 
 TerrainSection.prototype.prepareForRender = function()
@@ -193,16 +195,16 @@ TerrainSection.prototype.prepareForRender = function()
 	return;
 }
 
-TerrainSection.prototype.renderCallback = function (entry, activationFlags)
-{
-	var pCamera = this._pEngine._pDefaultCamera;
-	this._pEngine.pDrawTerrainProgram.activate();
-	this.getTerrainSystem().applyForRender();
-	this._pEngine.pDrawTerrainProgram.applyMatrix4('model_mat', this.worldMatrix());
-	this._pEngine.pDrawTerrainProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
-	this._pEngine.pDrawTerrainProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
-	this._pRenderData.draw();
-}
+//TerrainSection.prototype.renderCallback = function (entry, activationFlags)
+//{
+//	var pCamera = this._pEngine._pDefaultCamera;
+//	this._pEngine.pDrawTerrainProgram.activate();
+//	this.getTerrainSystem().applyForRender();
+//	this._pEngine.pDrawTerrainProgram.applyMatrix4('model_mat', this.worldMatrix());
+//	this._pEngine.pDrawTerrainProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
+//	this._pEngine.pDrawTerrainProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
+//	this._pRenderData.draw();
+//}
 
 PROPERTY(TerrainSection,'visible',
 	function(){

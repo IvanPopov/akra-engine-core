@@ -1185,12 +1185,8 @@ Img.prototype.load=function(sFileName, fnCallBack)
 					debug_error("Флаг DDPF_LUMINANCE стоит, а подходящего формата не найдено");
 				}
 			}
-			else
-			{
-				debug_error("Флаг не DDS_RGB и не DDPF_LUMINANCE");
-			}
 			
-			if((!header.ddspf.dwFlags&DDPF_RGB)&&(!header.ddspf.dwFlags&DDPF_FOURCC))
+			if(!(header.ddspf.dwFlags&DDPF_RGB)&&!(header.ddspf.dwFlags&DDPF_FOURCC)&&!(header.ddspf.dwFlags&DDPF_ALPHAPIXELS))
             {
                 debug_error("Флаги DDPF_RGB или DDPF_FOURCC не выставлены, остальные являются устаревшими");
             }

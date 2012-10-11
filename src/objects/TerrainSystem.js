@@ -235,6 +235,10 @@ Terrain.prototype.allocateSectors = function () {
 
             iIndex = (y * this._iSectorCountX) + x;
             this._pSectorArray[iIndex] = new a.TerrainSection(this._pEngine);
+			var pEffectResource = this._pSectorArray[iIndex].effect;
+			pEffectResource.create();
+			pEffectResource.use("akra.system.terrain");
+			pEffectResource.use("akra.system.prepareForDeferredShading");
             if (!this._pSectorArray[iIndex].create(
                 this._pRootNode,
                 this,
@@ -262,6 +266,9 @@ Terrain.prototype.setRenderMethod = function (pRenderMethod) {
     if (this._pRenderMethod) {
         this._pRenderMethod.addRef();
     }
+	for(var i = 0; i < this._pSectorArray.length; i++){
+		this._pSectorArray[i].renderMethod = this._pRenderMethod;
+	}
 }
 
 //
