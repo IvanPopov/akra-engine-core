@@ -50,6 +50,8 @@ Enum([
          BGR5_A1 = 0x8058,
          RGB565 = 0x8D62,
          BGR565 = 0x8D63,
+		 L8=0x1909,
+		 L16=0x881E,
          RGB_DXT1 = 0x83F0,
          RGBA_DXT1 = 0x83F1,
          RGBA_DXT2 = 0x83F4,
@@ -64,7 +66,8 @@ Enum([
  */
 Enum([
          RGB = 0x1907,
-         RGBA = 0x1908
+         RGBA = 0x1908,
+		 L=0x1909
      ], IFORMATSHORT, a.IFORMATSHORT);
 
 function IFormatShortToString(eIFormatShort)
@@ -78,6 +81,10 @@ function IFormatShortToString(eIFormatShort)
 	{
 		return "RGBA";
 
+	}
+	else if(eIFormatShort==a.IFORMATSHORT.L)
+	{
+		return "L";
 	}
 	else
 	{
@@ -278,6 +285,9 @@ a.getTypeSize = getTypeSize;
  */
 function getIFormatNumElements (eFormat) {
     switch (eFormat) {
+		case a.IFORMAT.L8:
+		case a.IFORMAT.L16:
+			return 1;
         case a.IFORMAT.RGB8:
         case a.IFORMAT.BGR8:
         case a.IFORMAT.RGB5_A1:
