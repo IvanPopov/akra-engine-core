@@ -101,6 +101,7 @@ ShaderProgram.prototype.create = function (sHash, sVertexCode, sFragmentCode) {
 
     if (!pDevice.getProgramParameter(pHardwareProgram, pDevice.VALIDATE_STATUS)) {
         console.warn('program not valid', this.findResourceName());
+//        console.log(this._sVertexCode, this._sFragmentCode);
         console.warn(pDevice.getProgramInfoLog(pHardwareProgram));
     }
     debug_assert_win(pDevice.getProgramParameter(pHardwareProgram, pDevice.LINK_STATUS),
