@@ -2,8 +2,8 @@
 
 module akra {
     export class Vec2 {
-        x: float;
-        y: float;
+        x: float = 0.;
+        y: float = 0.;
 
         constructor ();
         constructor (v2f: Vec2);

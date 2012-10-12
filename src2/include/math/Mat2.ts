@@ -31,7 +31,7 @@ module akra {
                         pData[0] = pData[1] = pData[2] = pData[3] = f11;
                     }
                     else {
-                        pData.set(f11.pData);
+                        //pData.set(f11.pData);
                     }
                     break;
                 case 4:

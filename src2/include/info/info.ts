@@ -17,23 +17,29 @@ module akra.info {
 	export var api: IApiInfo = new util.ApiInfo;
 	export var screen: IScreenInfo = new util.ScreenInfo;
 
-	export var uri:IUri = uri(document.location.href);
+	export var uri: IURI = parseURI(document.location.href);
 
 	module is {
 		/**
          * show status - online or offline
          */
-        online  : function () {
-            return navigator.onLine;
-        },
-        /**
+		export var online;
+		/**
          * perform test on mobile device
          */
-        mobile  : (/mobile|iphone|ipad|ipod|android|blackberry|mini|windows\sce|palm/i)
-            .test(navigator.userAgent.toLowerCase()),
-        linux   : a.browser.os == 'Linux',
-        windows : a.browser.os == 'Windows',
-        mac     : a.browser.os == 'Mac',
-        iPhone  : a.browser.os == 'iPhone'
+		export var mobile: bool = (/mobile|iphone|ipad|ipod|android|blackberry|mini|windows\sce|palm/i)
+			.test(navigator.userAgent.toLowerCase());
+		export var linux: bool = browser.os === 'Linux';
+		export var windows: bool = browser.os === 'Windows';
+		export var mac: bool = browser.os === 'Mac';
+		export var iPhone: bool = browser.os === 'iPhone';
 	}
+
+
+	//TODO: move it to [akra.info.is] module, when typescript access this.
+	Object.defineProperty(is, 'online', {
+		get: function () {
+			return navigator.onLine;
+		}
+	});
 }

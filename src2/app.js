@@ -2,6 +2,8 @@ var akra;
 (function (akra) {
     var Vec2 = (function () {
         function Vec2(x, y) {
+            this.x = 0;
+            this.y = 0;
             switch(arguments.length) {
                 case 0: {
                     this.x = this.y = 0;
@@ -284,7 +286,6 @@ var akra;
                     if(akra.isFloat(f11)) {
                         pData[0] = pData[1] = pData[2] = pData[3] = f11;
                     } else {
-                        pData.set(f11.pData);
                     }
                     break;
 
@@ -319,6 +320,144 @@ var akra;
 var akra;
 (function (akra) {
     (function (util) {
+        var URI = (function () {
+            function URI(pUri) {
+                this.sScheme = null;
+                this.sUserinfo = null;
+                this.sHost = null;
+                this.nPort = 0;
+                this.sPath = null;
+                this.sQuery = null;
+                this.sFragment = null;
+                if(pUri) {
+                    this.set(pUri);
+                }
+            }
+            Object.defineProperty(URI.prototype, "urn", {
+                get: function () {
+                    return (this.sPath ? this.sPath : '') + (this.sQuery ? '?' + this.sQuery : '') + (this.sFragment ? '#' + this.sFragment : '');
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(URI.prototype, "url", {
+                get: function () {
+                    return (this.sScheme ? this.sScheme : '') + this.authority;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(URI.prototype, "authority", {
+                get: function () {
+                    return (this.sHost ? '//' + (this.sUserinfo ? this.sUserinfo + '@' : '') + this.sHost + (this.nPort ? ':' + this.nPort : '') : '');
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(URI.prototype, "scheme", {
+                get: function () {
+                    return this.sScheme;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(URI.prototype, "protocol", {
+                get: function () {
+                    if(!this.sScheme) {
+                        return this.sScheme;
+                    }
+                    return (this.sScheme.substr(0, this.sScheme.lastIndexOf(':')));
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(URI.prototype, "userinfo", {
+                get: function () {
+                    return this.sUserinfo;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(URI.prototype, "host", {
+                get: function () {
+                    return this.sHost;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(URI.prototype, "port", {
+                get: function () {
+                    return this.nPort;
+                },
+                set: function (iPort) {
+                    this.nPort = iPort;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(URI.prototype, "path", {
+                get: function () {
+                    return this.sPath;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(URI.prototype, "query", {
+                get: function () {
+                    return this.sQuery;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(URI.prototype, "fragment", {
+                get: function () {
+                    return this.sFragment;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            URI.prototype.set = function (pData) {
+                if(akra.isString(pData)) {
+                    var pUri = URI.uriExp.exec(pData);
+                    akra.debug_assert(pUri !== null, 'Invalid URI format used.\nused uri: ' + pData);
+                    if(!pUri) {
+                        return null;
+                    }
+                    this.sScheme = pUri[1] || null;
+                    this.sUserinfo = pUri[2] || null;
+                    this.sHost = pUri[3] || null;
+                    this.nPort = parseInt(pUri[4]) || null;
+                    this.sPath = pUri[5] || pUri[6] || null;
+                    this.sQuery = pUri[7] || null;
+                    this.sFragment = pUri[8] || null;
+                    return this;
+                } else {
+                    if(pData instanceof URI) {
+                        return this.set(pData.toString());
+                    }
+                }
+                akra.debug_error('Unexpected data type was used.');
+                return null;
+            };
+            URI.prototype.toString = function () {
+                return this.url + this.urn;
+            };
+            URI.uriExp = new RegExp("^([a-z0-9+.-]+:)?(?:\\/\\/(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(\\/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?|(\\/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})*(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?)(?:\\?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?$", "i");
+            return URI;
+        })();
+        util.URI = URI;        
+    })(akra.util || (akra.util = {}));
+    var util = akra.util;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    akra.parseURI = function (sUri) {
+        return new akra.util.URI(sUri);
+    };
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (util) {
         var KeyMap = (function () {
             function KeyMap() { }
             return KeyMap;
@@ -335,6 +474,237 @@ var akra;
             return GamepadMap;
         })();
         util.GamepadMap = GamepadMap;        
+    })(akra.util || (akra.util = {}));
+    var util = akra.util;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (util) {
+        var BrowserInfo = (function () {
+            function BrowserInfo() {
+                this.sBrowser = null;
+                this.sVersion = null;
+                this.sOS = null;
+                this.sVersionSearch = null;
+            }
+            Object.defineProperty(BrowserInfo.prototype, "name", {
+                get: function () {
+                    return this.sBrowser;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BrowserInfo.prototype, "version", {
+                get: function () {
+                    return this.sVersion;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(BrowserInfo.prototype, "os", {
+                get: function () {
+                    return this.sOS;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            BrowserInfo.prototype.init = function () {
+                this.sBrowser = this.searchString(BrowserInfo.dataBrowser) || "An unknown browser";
+                this.sVersion = this.searchVersion(navigator.userAgent) || this.searchVersion(navigator.appVersion) || "an unknown version";
+                this.sOS = this.searchString(BrowserInfo.dataOS) || "an unknown OS";
+            };
+            BrowserInfo.prototype.searchString = function (pDataBrowser) {
+                for(var i = 0; i < pDataBrowser.length; i++) {
+                    var t = 0;
+                    var k = 5;
+                    var g = t + k;
+                    t++ , k++;
+                    var f = 15.5;
+                    var n = 1;
+                    f = f + k + n;
+                    var sData = pDataBrowser[i].string;
+                    var dataProp = pDataBrowser[i].prop;
+                    this.sVersionSearch = pDataBrowser[i].versionSearch || pDataBrowser[i].identity;
+                    if(sData) {
+                        if(sData.indexOf(pDataBrowser[i].subString) != -1) {
+                            return pDataBrowser[i].identity;
+                        }
+                    } else {
+                        if(dataProp) {
+                            return pDataBrowser[i].identity;
+                        }
+                    }
+                }
+                return null;
+            };
+            BrowserInfo.prototype.searchVersion = function (sData) {
+                var iStartIndex = sData.indexOf(this.sVersionSearch);
+                if(iStartIndex == -1) {
+                    return null;
+                }
+                iStartIndex = sData.indexOf('/', iStartIndex + 1);
+                if(iStartIndex == -1) {
+                    return null;
+                }
+                var iEndIndex = sData.indexOf(' ', iStartIndex + 1);
+                if(iEndIndex == -1) {
+                    iEndIndex = sData.indexOf(';', iStartIndex + 1);
+                    if(iEndIndex == -1) {
+                        return null;
+                    }
+                    return sData.slice(iStartIndex + 1);
+                }
+                return sData.slice((iStartIndex + 1), iEndIndex);
+            };
+            BrowserInfo.dataBrowser = [
+                {
+                    string: navigator.userAgent,
+                    subString: "Chrome",
+                    identity: "Chrome"
+                }, 
+                {
+                    string: navigator.userAgent,
+                    subString: "OmniWeb",
+                    versionSearch: "OmniWeb/",
+                    identity: "OmniWeb"
+                }, 
+                {
+                    string: navigator.vendor,
+                    subString: "Apple",
+                    identity: "Safari",
+                    versionSearch: "Version"
+                }, 
+                {
+                    prop: window.opera,
+                    identity: "Opera",
+                    versionSearch: "Version"
+                }, 
+                {
+                    string: navigator.vendor,
+                    subString: "iCab",
+                    identity: "iCab"
+                }, 
+                {
+                    string: navigator.vendor,
+                    subString: "KDE",
+                    identity: "Konqueror"
+                }, 
+                {
+                    string: navigator.userAgent,
+                    subString: "Firefox",
+                    identity: "Firefox"
+                }, 
+                {
+                    string: navigator.vendor,
+                    subString: "Camino",
+                    identity: "Camino"
+                }, 
+                {
+                    string: navigator.userAgent,
+                    subString: "Netscape",
+                    identity: "Netscape"
+                }, 
+                {
+                    string: navigator.userAgent,
+                    subString: "MSIE",
+                    identity: "Explorer",
+                    versionSearch: "MSIE"
+                }, 
+                {
+                    string: navigator.userAgent,
+                    subString: "Gecko",
+                    identity: "Mozilla",
+                    versionSearch: "rv"
+                }, 
+                {
+                    string: navigator.userAgent,
+                    subString: "Mozilla",
+                    identity: "Netscape",
+                    versionSearch: "Mozilla"
+                }
+            ];
+            BrowserInfo.dataOS = [
+                {
+                    string: navigator.platform,
+                    subString: "Win",
+                    identity: "Windows"
+                }, 
+                {
+                    string: navigator.platform,
+                    subString: "Mac",
+                    identity: "Mac"
+                }, 
+                {
+                    string: navigator.userAgent,
+                    subString: "iPhone",
+                    identity: "iPhone/iPod"
+                }, 
+                {
+                    string: navigator.platform,
+                    subString: "Linux",
+                    identity: "Linux"
+                }
+            ];
+            return BrowserInfo;
+        })();
+        util.BrowserInfo = BrowserInfo;        
+    })(akra.util || (akra.util = {}));
+    var util = akra.util;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (util) {
+        var ApiInfo = (function () {
+            function ApiInfo() { }
+            return ApiInfo;
+        })();
+        util.ApiInfo = ApiInfo;        
+    })(akra.util || (akra.util = {}));
+    var util = akra.util;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (util) {
+        var ScreenInfo = (function () {
+            function ScreenInfo() { }
+            Object.defineProperty(ScreenInfo.prototype, "width", {
+                get: function () {
+                    return screen.width;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ScreenInfo.prototype, "height", {
+                get: function () {
+                    return screen.height;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ScreenInfo.prototype, "aspect", {
+                get: function () {
+                    return screen.width / screen.height;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ScreenInfo.prototype, "pixelDepth", {
+                get: function () {
+                    return screen.pixelDepth;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ScreenInfo.prototype, "colorDepth", {
+                get: function () {
+                    return screen.colorDepth;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return ScreenInfo;
+        })();
+        util.ScreenInfo = ScreenInfo;        
     })(akra.util || (akra.util = {}));
     var util = akra.util;
 })(akra || (akra = {}));
@@ -379,7 +749,18 @@ var akra;
     (function (scene) {
         var Node = (function () {
             function Node() {
+                this.sName = null;
             }
+            Object.defineProperty(Node.prototype, "name", {
+                get: function () {
+                    return this.sName;
+                },
+                set: function (sName) {
+                    this.sName = sName;
+                },
+                enumerable: true,
+                configurable: true
+            });
             return Node;
         })();
         scene.Node = Node;        
@@ -394,11 +775,11 @@ var __extends = this.__extends || function (d, b) {
 var akra;
 (function (akra) {
     (function (scene) {
-        scene.pEngine = null;
         var SceneNode = (function (_super) {
             __extends(SceneNode, _super);
             function SceneNode(pEngine) {
                         _super.call(this);
+                this.pEngine = null;
                 this.pEngine = pEngine;
             }
             return SceneNode;
@@ -440,6 +821,17 @@ var akra;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
+    (function (scene) {
+        var OcTree = (function () {
+            function OcTree() { }
+            return OcTree;
+        })();
+        scene.OcTree = OcTree;        
+    })(akra.scene || (akra.scene = {}));
+    var scene = akra.scene;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
     var Engine = (function () {
         function Engine(sCanvasId) {
             if (typeof sCanvasId === "undefined") { sCanvasId = null; }
@@ -470,6 +862,9 @@ var akra;
             this.pLightManager = null;
             this.pRootNode = null;
             this.pDefaultCamera = null;
+            this.pActiveCamera = null;
+            this.pSceneTree = null;
+            this.pWorldExtents = null;
             this.pRenderList = null;
             this.pRenderState = null;
             this.pause(true);
@@ -593,7 +988,14 @@ var akra;
                 this.pCanvas = pCanvas;
             }
             this.pRootNode = new akra.scene.SceneNode(this);
+            this.pRootNode.name = ".root";
             this.pDefaultCamera = new akra.scene.objects.Camera(this);
+            this.pDefaultCamera.name = ".default";
+            this.pSceneTree = new akra.scene.OcTree();
+            this.pActiveCamera = this.pDefaultCamera;
+            this.iCreationWidth = this.pCanvas.width;
+            this.iCreationHeight = this.pCanvas.height;
+            this.pDevice = null;
             return false;
         };
         Engine.prototype.run = function () {
@@ -753,6 +1155,31 @@ var akra;
             akra.warning.apply(null, arguments);
         }
     };
+    akra.debug_error = function (pArg) {
+        var pParams = [];
+        for (var _i = 0; _i < (arguments.length - 1); _i++) {
+            pParams[_i] = arguments[_i + 1];
+        }
+        if(akra.DEBUG) {
+            akra.error.apply(null, arguments);
+        }
+    };
+    function initDevice(pDevice) {
+        return pDevice;
+    }
+    akra.initDevice = initDevice;
+    function createDevice(pCanvas, pOptions) {
+        var pDevice = null;
+        try  {
+            pDevice = pCanvas.getContext("webgl", pOptions) || pCanvas.getContext("experimental-webgl", pOptions);
+        } catch (e) {
+        }
+        if(!pDevice) {
+            akra.debug_warning("cannot get 3d device");
+        }
+        return initDevice(pDevice);
+    }
+    akra.createDevice = createDevice;
 })(akra || (akra = {}));
 ; ;
 var DemoApp = (function (_super) {

@@ -21,9 +21,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="app.css" />
-    <Content Include="app.js">
-      <DependentUpon>app.ts</DependentUpon>
-    </Content>
     <Content Include="default.htm" />
   </ItemGroup>
   <ItemGroup>

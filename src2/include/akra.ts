@@ -101,6 +101,13 @@ module akra {
         }
     }
 
+	export var debug_error = (pArg:any, ...pParams: any[]): void => {
+        if (DEBUG) {
+            error.apply(null, arguments);
+        }
+    }
+
+
     export function initDevice(pDevice: WebGLRenderingContext):WebGLRenderingContext {
     	return pDevice;
     }
@@ -108,7 +115,7 @@ module akra {
     export function createDevice(pCanvas: HTMLCanvasElement, pOptions?: { antialias: bool; }) {
     	var pDevice: WebGLRenderingContext = null;
 		
-		debug_assert(info.support.webgl, 'Your browser does not support WebGL');
+		//debug_assert(info.support.webgl, 'Your browser does not support WebGL');
 		
 		try {
 			pDevice = pCanvas.getContext("webgl", pOptions) || 
@@ -122,6 +129,14 @@ module akra {
 
 		return initDevice(pDevice);
     }
+
+
+	window.URL = window.URL ? window.URL : window.webkitURL ? window.webkitURL : null;
+	window.BlobBuilder = window.WebKitBlobBuilder || window.MozBlobBuilder || window.BlobBuilder;
+	window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+	window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame ||
+		window.mozRequestAnimationFrame;
+	window.WebSocket = window.WebSocket || window.MozWebSocket;
 };
 
 ///<reference path="types.d.ts" />
@@ -135,6 +150,8 @@ module akra {
 ///<reference path="IWorldExtents.ts" />
 ///<reference path="IViewport.ts" />
 
+///<reference path="IURI.ts" />
+
 ///<reference path="IKeyMap.ts" />
 ///<reference path="IGamepadMap.ts" />
 
@@ -143,6 +160,7 @@ module akra {
 ///<reference path="IBrowserInfo.ts" />
 ///<reference path="IApiInfo.ts" />
 
+///<reference path="util/URI.ts" />
 ///<reference path="util/KeyMap.ts" />
 ///<reference path="util/GamepadMap.ts" />
 ///<reference path="util/BrowserInfo.ts" />
