@@ -61,8 +61,10 @@ function Texture(pEngine) {
     // this._pFrameBuffer = null;
 
     this._pTextureParams = { };
-    this._pTextureParams[a.TPARAM.MAG_FILTER] = a.TFILTER.LINEAR;
-    this._pTextureParams[a.TPARAM.MIN_FILTER] = a.TFILTER.LINEAR;
+//    this._pTextureParams[a.TPARAM.MAG_FILTER] = a.TFILTER.LINEAR;
+//    this._pTextureParams[a.TPARAM.MIN_FILTER] = a.TFILTER.LINEAR;
+//    this._pTextureParams[a.TPARAM.MAG_FILTER] = a.TFILTER.LINEAR;
+//    this._pTextureParams[a.TPARAM.MIN_FILTER] = a.TFILTER.LINEAR;
 
     this._iWidth = 0;
     this._iHeight = 0;
@@ -273,6 +275,11 @@ Texture.prototype._getParameter = function (eName) {
     return this._pTextureParams[eName];
 };
 
+Texture.prototype._getRealParameter = function (eName) {
+    return this._pDevice.getTexParameter(this.target, eName);
+//    return this._pTextureParams[eName];
+};
+
 Texture.prototype.applyParameter = function (eParam, eValue) {
     var pDevice = this._pDevice;
     if (this._pTexture) {
@@ -323,6 +330,7 @@ Texture.prototype.getMipLevels = function () {
 Texture.prototype.getPixelRGBA = function (iX, iY, iWidth, iHeight, pPixel, iMipMap, eCubeFlag) {
 
     var pDevice = this._pEngine.pDevice;
+    var pRenderer = this._pEngine.shaderManager();
 
     if ((!TEST_BIT(this._iFlags, a.Texture.MipMaps)) && iMipMap != undefined) {
         debug_error("Запрашивается уровень мип мапа, хотя текстура их не содрежит");
@@ -335,23 +343,22 @@ Texture.prototype.getPixelRGBA = function (iX, iY, iWidth, iHeight, pPixel, iMip
                                              + 1), "Запрашивается уровень мип мапа, которого нет");
     }
 
-
-    if (this._pFrameBuffer && this._pTexture) {
-        pDevice.bindFramebuffer(a.BTYPE.FRAME_BUFFER, this._pFrameBuffer);
+    if (this._pTexture) {
+        pRenderer.activateFrameBuffer();
 
         if (this.isCubeTexture()) {
-            debug_assert(eCubeFlag != undefined, "тип текстуры кубическая,а eCubeFlag - undefined")
-            pDevice.framebufferTexture2D(a.BTYPE.FRAME_BUFFER, a.ATYPE.COLOR_ATTACHMENT0, eCubeFlag, this._pTexture,
-                                         iMipMap);
+            debug_assert(eCubeFlag != undefined, "тип текстуры кубическая,а eCubeFlag - undefined");
+            pRenderer.applyFrameBufferTexture(this, a.ATYPE.COLOR_ATTACHMENT0, eCubeFlag, iMipMap);
         }
         else {
             debug_assert(eCubeFlag == undefined, "тип текстуры 2D,а eCubeFlag выставлен");
-            pDevice.framebufferTexture2D(a.BTYPE.FRAME_BUFFER, a.ATYPE.COLOR_ATTACHMENT0, a.TTYPE.TEXTURE_2D,
-                                         this._pTexture, iMipMap);
+            pRenderer.applyFrameBufferTexture(this, a.ATYPE.COLOR_ATTACHMENT0, a.TTYPE.TEXTURE_2D, iMipMap);
         }
 
         pDevice.readPixels(iX, iY, iWidth, iHeight, a.IFORMATSHORT.RGBA, a.ITYPE.UNSIGNED_BYTE, pPixel);
-        pDevice.bindFramebuffer(a.BTYPE.FRAME_BUFFER, null);
+
+        pRenderer.deactivateFrameBuffer();
+
         return pPixel;
     }
     else {
@@ -362,7 +369,6 @@ Texture.prototype.getPixelRGBA = function (iX, iY, iWidth, iHeight, pPixel, iMip
 Texture.prototype.setPixelRGBA = function (iX, iY, iWidth, iHeight, pPixel, iMipMap, eCubeFlag) {
     iMipMap = iMipMap || 0;
     eCubeFlag = eCubeFlag || 0;
-
     var pDevice = this._pEngine.pDevice;
     var pRenderer = this._pEngine.shaderManager();
     debug_assert(!((!TEST_BIT(this._iFlags, a.Texture.MipMaps)) && iMipMap),
@@ -424,6 +430,7 @@ Texture.prototype.releaseTexture = function () {
     var pDevice = this._pEngine.pDevice;
     if (this._pTexture) {
         pDevice.deleteTexture(this._pTexture);
+        this._isTextureChanged = true;
         // this._isTextureChanged = true;
     }
     // if (this._pFrameBuffer) {
@@ -739,6 +746,12 @@ Texture.prototype.uploadImage = function (pImage) {
     this.releaseTexture();
 
     this._pTexture = pDevice.createTexture();
+
+    this.applyParameter(a.TPARAM.WRAP_S, this._getParameter(a.TPARAM.WRAP_S) || a.TWRAPMODE.REPEAT);
+    this.applyParameter(a.TPARAM.WRAP_T, this._getParameter(a.TPARAM.WRAP_T) || a.TWRAPMODE.REPEAT);
+    this.applyParameter(a.TPARAM.MAG_FILTER, this._getParameter(a.TPARAM.MAG_FILTER) || a.TFILTER.LINEAR);
+    this.applyParameter(a.TPARAM.MIN_FILTER, this._getParameter(a.TPARAM.MIN_FILTER) || a.TFILTER.LINEAR);
+
     //this._pFrameBuffer = pDevice.createFramebuffer();
 
     if (!a.info.graphics.checkFormat(pDevice, pImage.getFormat())) {
@@ -811,6 +824,16 @@ Texture.prototype.uploadImage = function (pImage) {
         }
     }
 
+//    console.log((!TEST_BIT(this._iFlags, a.Texture.MipMaps) && this.minFilter != a.TFILTER.LINEAR && this.minFilter
+//        != a.TFILTER.NEAREST), !TEST_BIT(this._iFlags, a.Texture.MipMaps), this.minFilter != a.TFILTER.LINEAR,
+//                this.minFilter != a.TFILTER.NEAREST);
+//
+//    pRenderer.bindTexture(this);
+//    console.log(this._getParameter(a.TPARAM.MIN_FILTER),
+//                this._getRealParameter(a.TPARAM.MIN_FILTER),
+//                a.TFILTER.LINEAR);
+
+
     if (TEST_BIT(this._iFlags, a.Texture.MipMaps) && (this.minFilter == a.TFILTER.LINEAR || this.minFilter
         == a.TFILTER.NEAREST)) {
         //this.minFilter = (this.minFilter - a.TFILTER.NEAREST) * 2 + a.TFILTER.NEAREST_MIPMAP_NEAREST;
@@ -818,7 +841,7 @@ Texture.prototype.uploadImage = function (pImage) {
     }
     else if (!TEST_BIT(this._iFlags, a.Texture.MipMaps) && this.minFilter != a.TFILTER.LINEAR && this.minFilter
         != a.TFILTER.NEAREST) {
-        console.log(this.minFilter, Math.floor(this.minFilter - a.TFILTER.NEAREST_MIPMAP_NEAREST) / 2 + a.TFILTER.NEAREST);
+//        console.log(this.minFilter, Math.floor(this.minFilter - a.TFILTER.NEAREST_MIPMAP_NEAREST) / 2 + a.TFILTER.NEAREST);
         this.applyParameter(a.TPARAM.MIN_FILTER,
                             Math.floor(this.minFilter - a.TFILTER.NEAREST_MIPMAP_NEAREST) / 2 + a.TFILTER.NEAREST);
         //pDevice.generateMipmap(a.TTYPE.TEXTURE_2D);
@@ -860,8 +883,8 @@ Texture.prototype.resize = function (iWidth, iHeight){
 
     pDestinationTexture.applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
     pDestinationTexture.applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
-    pDestinationTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.NEAREST);
-    pDestinationTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.NEAREST);
+    pDestinationTexture.applyParameter(a.TPARAM.MAG_FILTER, a.TFILTER.LINEAR);
+    pDestinationTexture.applyParameter(a.TPARAM.MIN_FILTER, a.TFILTER.LINEAR);
 
     this.switchRenderMethod(".resize_texture");
 
@@ -874,7 +897,6 @@ Texture.prototype.resize = function (iWidth, iHeight){
     pRenderer.activateFrameBuffer();
 
     pRenderer.applyFrameBufferTexture(pDestinationTexture);
-    console.log(this);
     this.startRender();
 
     for (var i = 0; i < this.totalPasses(); i++) {
@@ -897,6 +919,12 @@ Texture.prototype.resize = function (iWidth, iHeight){
     pDestinationTexture._pTexture = null;
     this._isTextureChanged = true;
     pDestinationTexture._isTextureChanged = true;
+
+    this.applyParameter(a.TPARAM.WRAP_S, this._getParameter(a.TPARAM.WRAP_S));
+    this.applyParameter(a.TPARAM.WRAP_T, this._getParameter(a.TPARAM.WRAP_T));
+    this.applyParameter(a.TPARAM.MAG_FILTER, this._getParameter(a.TPARAM.MAG_FILTER));
+    this.applyParameter(a.TPARAM.MIN_FILTER, this._getParameter(a.TPARAM.MIN_FILTER));
+
     this._eFormat = eFormat;
     this._eType = eType;
     this._iWidth = iWidth;

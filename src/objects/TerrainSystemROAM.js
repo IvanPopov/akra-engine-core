@@ -94,6 +94,9 @@ TerrainROAM.prototype.allocateSectors = function () {
 	{
 		this._pSectorArray[i] = new a.TerrainSectionROAM(this._pEngine);
 	}
+
+    this.setRenderMethod(this._pDefaultRenderMethod);
+
 	// create the sector objects themselves
 	for (var y = 0; y < this._iSectorCountY; ++y) {
 		for (var x = 0; x < this._iSectorCountX; ++x) {
@@ -127,7 +130,7 @@ TerrainROAM.prototype.allocateSectors = function () {
 		}
 	}
 
-	var pVertexDescription =[VE_FLOAT3(a.DECLUSAGE.POSITION),VE_FLOAT2(a.DECLUSAGE.TEXCOORD)]
+	var pVertexDescription = [VE_FLOAT3(a.DECLUSAGE.POSITION),VE_FLOAT2(a.DECLUSAGE.TEXCOORD)];
 	this._iVertexID=this._pRenderData.allocateData(pVertexDescription,new Float32Array(this._pVerts));
 
 
@@ -275,15 +278,17 @@ TerrainROAM.prototype.prepareForRender = function()
 }
 
 //Применение параметров для рендеринга, коготрые зависят от самого терраина
-TerrainROAM.prototype.applyForRender= function(pWorldMatrix)
+TerrainROAM.prototype.render = function(pWorldMatrix)
 {
+//    this._pSectorArray[0].setRenderData(this._pRenderData);
 //    TerrainSection.prototype.render.call(this._pSectorArray[0]);
-	if(this._isRenderInThisFrame==false)
+    if(this._isRenderInThisFrame==false)
 	{
 		this._isRenderInThisFrame=true;
 
 		var pCamera = this._pEngine.getActiveCamera();
 //		this._pEngine.pDrawTerrainProgram.activate();
+        this._pSectorArray[0].setRenderData(this._pRenderData);
         TerrainSection.prototype.render.call(this._pSectorArray[0]);
 //		Terrain.prototype.applyForRender.call(this);
 //		this._pEngine.pDrawTerrainProgram.applyMatrix4('model_mat', pWorldMatrix);
@@ -291,7 +296,7 @@ TerrainROAM.prototype.applyForRender= function(pWorldMatrix)
 //		this._pEngine.pDrawTerrainProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
 //		this._pRenderData.draw();
 	}
-}
+};
 
 //
 // This function is called to sort the queue and

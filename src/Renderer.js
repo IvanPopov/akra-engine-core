@@ -1014,10 +1014,7 @@ Renderer.prototype.finishPass = function (iPass) {
 
         }
         pProgram = this._pPrograms[sHash];
-        // if(this._pActiveSceneObject && this._pActiveSceneObject.name === "node-wpn_gun" && this._pPreRenderState.pRenderObject.name === "submesh-0"){
-        //     console.log(this._pPreRenderState.pRenderObject.name,sHash, pAttrSemantics, pAttrKeys, pUniformValues,
-        //                        pTextures, pForeigns, pMaterialTexcoords);
-        // }
+
         if (!pProgram) {
             pProgram = pPassBlend.generateProgram(sHash, pAttrSemantics, pAttrKeys, pUniformValues,
                                                   pTextures, pForeigns, pMaterialTexcoords);
@@ -1025,10 +1022,6 @@ Renderer.prototype.finishPass = function (iPass) {
                 warning("It`s impossible to generate shader program");
                 return false;
             }
-//            if (this._pActiveSceneObject && this._pActiveSceneObject.name) {
-//                console.log(this._pActiveSceneObject.name, pProgram, pAttrSemantics, pAttrKeys, pUniformValues,
-//                            pTextures, pForeigns, pMaterialTexcoords);
-//            }
         }
         var pAttrs = pProgram.generateInputData(pAttrSemantics, pUniformValues);
 
@@ -1415,6 +1408,7 @@ Renderer.prototype.deactivateFrameBuffer = function (iId) {
         }
     }
     this._pRenderState.iFrameBuffer = null;
+    this.activateFrameBuffer(null);
     return true;
 };
 Renderer.prototype._activateFrameBuffer = function (iId) {
@@ -1437,7 +1431,7 @@ Renderer.prototype.bindTexture = function (pTexture) {
     if (this._pRenderState.pTexture === pTexture && this._pRenderState.pTexture._isTextureChanged === false) {
         return true;
     }
-    // trace("Real bind texture #" + pTexture.toNumber());
+//    console.log("Real bind texture #" + pTexture.toNumber());
     this._pRenderState.pTexture = pTexture;
 
     pTexture._isTextureChanged = false;
@@ -1522,6 +1516,7 @@ Renderer.prototype.render = function (pEntry) {
     var pDevice = this.pDevice;
     var i;
     // trace("-------START REAL RENDER---------");
+//    console.log("-------START REAL RENDER---------");
     this._activateFrameBuffer(pEntry.iFrameBuffer);
 
     this.activateProgram(pProgram);
@@ -1540,6 +1535,8 @@ Renderer.prototype.render = function (pEntry) {
     pProgram.setCurrentTextureSet(null);
     pProgram.resetActivationStreams();
 
+//    console.log(pEntry.pProgram, pEntry.iFrameBuffer, pEntry.eDrawPrim, pEntry.pIndexData, pEntry.pUniforms, pEntry.pTextures);
+//    console.log(pEntry.pProgram, pEntry.pUniforms);
     this._setViewport(pEntry.iViewportX, pEntry.iViewportY, pEntry.iViewportWidth, pEntry.iViewportHeight);
 
     if (pEntry.eDrawPrim === null) {
@@ -1560,6 +1557,7 @@ Renderer.prototype.render = function (pEntry) {
 //    pProgram.clear();
     // this._pCurrentRenderQueue._releaseEntry(pEntry);
     // trace("-------STOP REAL RENDER---------");
+//    console.log("-------STOP REAL RENDER---------");
 };
 Renderer.prototype._setViewport = function (x, y, width, height) {
     this.pDevice.viewport(x, y, width, height);
@@ -1751,8 +1749,8 @@ Renderer.prototype.createDeviceResources = function () {
     pSubMesh.effect.use("akra.system.projectLighting");
     pSubMesh.effect.use("akra.system.omniShadowsLighting");
     pSubMesh.effect.use("akra.system.projectShadowsLighting");
-    pSubMesh.effect.use("akra.system.skybox", 1);
-    pSubMesh.effect.use("akra.system.fxaa", 2);
+//    pSubMesh.effect.use("akra.system.skybox", 1);
+//    pSubMesh.effect.use("akra.system.fxaa", 2);
 
     var pTexturePool = this.pEngine.displayManager().texturePool();
 

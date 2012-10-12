@@ -454,7 +454,7 @@ TerrainSectionROAM.prototype.buildTriangleList=function()
 
 TerrainSectionROAM.prototype.render = function (entry, activationFlags)
 {
-	this.getTerrainSystem().applyForRender(this.worldMatrix());
+	this.getTerrainSystem().render(this.worldMatrix());
 }
 
 

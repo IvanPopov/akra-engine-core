@@ -23,7 +23,7 @@
 
 
 
-function Terrain (pEngine) {
+function Terrain(pEngine) {
 
     this._pEngine = pEngine;
     this._pDevice = pEngine.pDevice;
@@ -38,11 +38,11 @@ function Terrain (pEngine) {
     this._pSectorArray = null; //массив подчиненный секций
 
 
-	this._pDataFactory = new a.RenderDataBuffer(this._pEngine);
-	this._pDataFactory.dataType = a.RenderData;
-	this._pDataFactory.setup(a.RenderDataBuffer.VB_READABLE);
+    this._pDataFactory = new a.RenderDataBuffer(this._pEngine);
+    this._pDataFactory.dataType = a.RenderData;
+    this._pDataFactory.setup(a.RenderDataBuffer.VB_READABLE);
 
-	this._v2fSectorSize = new Vec2();
+    this._v2fSectorSize = new Vec2();
 
     this._iSectorShift;
     this._iSectorUnits; //Количество секторов по осям
@@ -52,17 +52,39 @@ function Terrain (pEngine) {
     this._iTableHeight; //размер карты высот
     this._pHeightTable = null;  //Таблица(карта высот)
 
-	this._pNormalMap=null
-	this._pTempNormalColor=new Uint8Array(4)
+    this._pNormalMap = null
+    this._pTempNormalColor = new Uint8Array(4)
 
-	this._pMegaTexures = null; //отоброжаемые куски текстуры
+    this._pMegaTexures = null; //отоброжаемые куски текстуры
 
-	this._fScale = 1.33;
-	this._fLimit = 0.03;
+    this._fScale = 1.33;
+    this._fLimit = 0.03;
 
+    this._pDefaultRenderMethod = null;
+    this._initSystemData();
+}
+;
 
+Terrain.prototype._initSystemData = function () {
+    var pMethod, pEffect;
+    var pEngine = this._pEngine;
+    pMethod = pEngine.pDisplayManager.renderMethodPool().findResource(".terrain_render");
+    if (pMethod) {
+        this._pDefaultRenderMethod = pMethod;
+        return true;
+    }
+
+    pEffect = pEngine.pDisplayManager.effectPool().createResource(".terrain_render");
+    pEffect.create();
+    pEffect.use("akra.system.terrain");
+    pEffect.use("akra.system.prepareForDeferredShading");
+
+    pMethod = pEngine.pDisplayManager.renderMethodPool().createResource(".terrain_render");
+    pMethod.effect = pEffect;
+
+    this._pDefaultRenderMethod = pMethod;
+    return true;
 };
-
 Terrain.prototype.tableWidth = function () {
     return this._iTableWidth;
 };
@@ -76,9 +98,8 @@ Terrain.prototype.worldExtents = function () {
     return this._pWorldExtents;
 };
 
-Terrain.prototype.worldSize = function()
-{
-	return this._v3fWorldSize;
+Terrain.prototype.worldSize = function () {
+    return this._v3fWorldSize;
 }
 
 Terrain.prototype.lodErrorScale = function () {
@@ -91,7 +112,7 @@ Terrain.prototype.sectorShift = function () {
     return this._iSectorShift;
 };
 Terrain.sSectorVertex = function () {
-  ///&???
+    ///&???
 };
 Terrain.prototype.elevationData = function () {
     this.fMinElevation;
@@ -110,19 +131,16 @@ Terrain.prototype.sample_data = function () {
     this.fScale;
 };
 
-Terrain.prototype.getDataFactory=function()
-{
-	return this._pDataFactory;
+Terrain.prototype.getDataFactory = function () {
+    return this._pDataFactory;
 }
 
-Terrain.prototype.getSectorCountX=function()
-{
-	return this._iSectorCountX;
+Terrain.prototype.getSectorCountX = function () {
+    return this._iSectorCountX;
 }
 
-Terrain.prototype.getSectorCountY=function()
-{
-	return this._iSectorCountY;
+Terrain.prototype.getSectorCountY = function () {
+    return this._iSectorCountY;
 }
 
 /**
@@ -136,73 +154,67 @@ Terrain.prototype.getSectorCountY=function()
 //iShiftY - количесвто сектионов по Y
 //iShift - количество вершин в сектионе
 
-Terrain.prototype.create = function (pRootNode, pMap,worldExtents, iShift, iShiftX,iShiftY,sSurfaceTextures)
-{
-	//Основные параметры
+Terrain.prototype.create = function (pRootNode, pMap, worldExtents, iShift, iShiftX, iShiftY, sSurfaceTextures) {
+    //Основные параметры
     this._iSectorShift = iShift;
     this._iSectorUnits = 1 << iShift;
     this._iSectorVerts = this._iSectorUnits + 1;
 
     this._pRootNode = pRootNode;
 
-	this._pWorldExtents=new a.Rect3d(worldExtents.fX0, worldExtents.fX1,worldExtents.fY0, worldExtents.fY1, worldExtents.fZ0, worldExtents.fZ1)
-	this._pWorldExtents.normalize();
-	this._v3fWorldSize = this._pWorldExtents.size();
+    this._pWorldExtents = new a.Rect3d(worldExtents.fX0, worldExtents.fX1, worldExtents.fY0, worldExtents.fY1,
+                                       worldExtents.fZ0, worldExtents.fZ1)
+    this._pWorldExtents.normalize();
+    this._v3fWorldSize = this._pWorldExtents.size();
 
-    this._iSectorCountX = 1<<iShiftX;//this._iTableWidth >> this._iSectorShift;
-	this._iSectorCountY = 1<<iShiftY;//this._iTableHeight >> this._iSectorShift;
+    this._iSectorCountX = 1 << iShiftX;//this._iTableWidth >> this._iSectorShift;
+    this._iSectorCountY = 1 << iShiftY;//this._iTableHeight >> this._iSectorShift;
 
-	this._iTableWidth  = this._iSectorCountX*this._iSectorUnits;
-	this._iTableHeight = this._iSectorCountY*this._iSectorUnits;
-
-
-	this._v2fSectorSize.set(this._v3fWorldSize.x / this._iSectorCountX, this._v3fWorldSize.y / this._iSectorCountY);
-
-	this._v3fMapScale.x = this._v3fWorldSize.x / this._iTableWidth;
-	this._v3fMapScale.y = this._v3fWorldSize.y / this._iTableHeight;
-	this._v3fMapScale.z = this._v3fWorldSize.z / 255.0;
+    this._iTableWidth = this._iSectorCountX * this._iSectorUnits;
+    this._iTableHeight = this._iSectorCountY * this._iSectorUnits;
 
 
-	//Мегатекстурные параметры
-	console.log("Мега текстура")
-	this._pMegaTexures = new a.MegaTexture(this._pEngine,this,sSurfaceTextures);
-	console.log("Мега текстура созадна")
+    this._v2fSectorSize.set(this._v3fWorldSize.x / this._iSectorCountX, this._v3fWorldSize.y / this._iSectorCountY);
+
+    this._v3fMapScale.x = this._v3fWorldSize.x / this._iTableWidth;
+    this._v3fMapScale.y = this._v3fWorldSize.y / this._iTableHeight;
+    this._v3fMapScale.z = this._v3fWorldSize.z / 255.0;
+
+
+    //Мегатекстурные параметры
+    console.log("Мега текстура")
+    this._pMegaTexures = new a.MegaTexture(this._pEngine, this, sSurfaceTextures);
+    console.log("Мега текстура созадна")
     // convert the height map to
     // data stored in local tables
-	console.log("Высоты и нормали")
-    this.buildHeightAndNormalTables(pMap["height"],pMap["normal"]);
-	for(var sMap in pMap)
-	{
-		if(sMap.destroyResource)
-		{
-			sMap.destroyResource();
-		}
-	}
+    console.log("Высоты и нормали")
+    this.buildHeightAndNormalTables(pMap["height"], pMap["normal"]);
+    for (var sMap in pMap) {
+        if (sMap.destroyResource) {
+            sMap.destroyResource();
+        }
+    }
 
-	console.log("Высоты и нормали созданы")
+    console.log("Высоты и нормали созданы")
 
-	return this.allocateSectors();
-	console.log("Сектора созданы")
+    return this.allocateSectors();
+    console.log("Сектора созданы")
 }
 
 
+Terrain.prototype.findSection = function (iX, iY) {
+    var pSection = null;
 
-Terrain.prototype.findSection = function(iX,iY)
-{
-	var pSection = null;
+    if (iX >= 0 && iX < this._iSectorCountX
+            && iY >= 0 && iY < this._iSectorCountY) {
+        pSection = this._pSectorArray[(iY * this._iSectorCountX) + iX];
+    }
+    else {
+        // if we had additional cRoamTerrain objects,
+        // we could reach out here to link with neighbors
+    }
 
-	if (iX >=0 && iX<this._iSectorCountX
-		&& iY >=0 && iY<this._iSectorCountY)
-	{
-		pSection =this._pSectorArray[(iY*this._iSectorCountX)+iX];
-	}
-	else
-	{
-		// if we had additional cRoamTerrain objects,
-		// we could reach out here to link with neighbors
-	}
-
-	return pSection;
+    return pSection;
 }
 /**
  * @property allocateSectors()
@@ -220,7 +232,7 @@ Terrain.prototype.allocateSectors = function () {
         for (var x = 0; x < this._iSectorCountX; ++x) {
             //cVector2 sectorPos(
             v2fSectorPos = new Vec2();
-			v2fSectorPos.set(
+            v2fSectorPos.set(
                 this._pWorldExtents.fX0 + (x * this._v2fSectorSize.x),
                 this._pWorldExtents.fY0 + (y * this._v2fSectorSize.y));
 
@@ -236,10 +248,7 @@ Terrain.prototype.allocateSectors = function () {
             iIndex = (y * this._iSectorCountX) + x;
 
             this._pSectorArray[iIndex] = new a.TerrainSection(this._pEngine);
-			var pEffectResource = this._pSectorArray[iIndex].effect;
-			pEffectResource.create();
-			pEffectResource.use("akra.system.terrain");
-			pEffectResource.use("akra.system.prepareForDeferredShading");
+
             if (!this._pSectorArray[iIndex].create(
                 this._pRootNode,
                 this,
@@ -253,6 +262,8 @@ Terrain.prototype.allocateSectors = function () {
         }
     }
 
+    this.setRenderMethod(this._pDefaultRenderMethod);
+
     return true;
 }
 
@@ -261,16 +272,19 @@ Terrain.prototype.allocateSectors = function () {
  * @memberof Terrain
  * @param pRenderMethod
  **/
-Terrain.prototype.setRenderMethod = function (pRenderMethod) {
+Terrain.prototype.setRenderMethod = function (pRenderMethod, name) {
     this._pRenderMethod = null;
     this._pRenderMethod = pRenderMethod;
     if (this._pRenderMethod) {
         this._pRenderMethod.addRef();
     }
-	for(var i = 0; i < this._pSectorArray.length; i++){
-		this._pSectorArray[i].renderMethod = this._pRenderMethod;
-	}
-}
+    name = name || ".default-render";
+    var pSection;
+    for (var i = 0; i < this._pSectorArray.length; i++) {
+        pSection = this._pSectorArray[i];
+        pSection.switchRenderMethod(pSection.addRenderMethod(pRenderMethod, name));
+    }
+};
 
 //
 // Here we convert the height map data into
@@ -284,56 +298,49 @@ Terrain.prototype.setRenderMethod = function (pRenderMethod) {
  * @memberof Terrain
  * @param pTexture
  **/
-Terrain.prototype.buildHeightAndNormalTables = function (pImageHightMap,pImageNormalMap)
-{
-	var fHeight=0;
-	var iComponents=4;
+Terrain.prototype.buildHeightAndNormalTables = function (pImageHightMap, pImageNormalMap) {
+    var fHeight = 0;
+    var iComponents = 4;
     this._pHeightTable = null;
-
 
 
     var iMaxY = this._iTableHeight;
     var iMaxX = this._iTableWidth;
 
-	trace("Terraim Map Size ",iMaxX,iMaxY);
+    trace("Terraim Map Size ", iMaxX, iMaxY);
 
-	var pColorData=new Uint8Array(4*iMaxY*iMaxX);
+    var pColorData = new Uint8Array(4 * iMaxY * iMaxX);
     this._pHeightTable = new Array(iMaxX * iMaxY); //float
 
 
-	var temp = new a.Texture(this._pEngine);
-
+    var temp = new a.Texture(this._pEngine);
+//    var
 
     // first, build a table of heights
-    if (pImageHightMap.isResourceLoaded())
-	{
-		temp.uploadImage(pImageHightMap);
-		temp.resize(iMaxX,iMaxY);
-		temp.getPixelRGBA(0, 0,iMaxX,iMaxY, pColorData);
+    if (pImageHightMap.isResourceLoaded()) {
+        temp.uploadImage(pImageHightMap);
+        temp.resize(iMaxX, iMaxY);
 
-		iComponents=temp.numElementsPerPixel;
-		for (i = 0; i < iMaxY*iMaxX; i++)
-		{
-			fHeight=pColorData[i*iComponents+0];
-			fHeight = (fHeight * this._v3fMapScale.z) + this._pWorldExtents.fZ0;
-			this._pHeightTable[i] = fHeight;
-		}
+        temp.getPixelRGBA(0, 0, iMaxX, iMaxY, pColorData);
+        iComponents = temp.numElementsPerPixel;
+        for (i = 0; i < iMaxY * iMaxX; i++) {
+            fHeight = pColorData[i * iComponents + 0];
+            fHeight = (fHeight * this._v3fMapScale.z) + this._pWorldExtents.fZ0;
+            this._pHeightTable[i] = fHeight;
+        }
     }
-	else
-	{
-		warning("Карта высот не загружена")
-	}
+    else {
+        warning("Карта высот не загружена")
+    }
 
-	if (pImageNormalMap.isResourceLoaded())
-	{
-		temp.uploadImage(pImageNormalMap);
-	}
-	else
-	{
-		warning("Карта высот не загружена")
-	}
+    if (pImageNormalMap.isResourceLoaded()) {
+        temp.uploadImage(pImageNormalMap);
+    }
+    else {
+        warning("Карта высот не загружена")
+    }
 
-	this._pNormalMap=temp
+    this._pNormalMap = temp
 
 };
 
@@ -356,7 +363,7 @@ Terrain.prototype.readWorldHeight = function () {
             iMapY = this._iTableHeight - 1;
         }
 
-		return this._pHeightTable[(iMapY * this._iTableWidth) + iMapX];
+        return this._pHeightTable[(iMapY * this._iTableWidth) + iMapX];
     }
     else {
         var iMapIndex = arguments[0];
@@ -391,22 +398,19 @@ Terrain.prototype.tableIndex = function (iMapX, iMapY) {
  * @param iMapY
  * @return vec3f
  **/
-Terrain.prototype.readWorldNormal = function (v3fNormal,iMapX, iMapY)
-{
-	if (iMapX >= this._pNormalMap.width)
-	{
+Terrain.prototype.readWorldNormal = function (v3fNormal, iMapX, iMapY) {
+    if (iMapX >= this._pNormalMap.width) {
         iMapX = this._pNormalMap.width - 1;
     }
-    if (iMapY >= this._pNormalMap.height)
-	{
+    if (iMapY >= this._pNormalMap.height) {
         iMapY = this._pNormalMap.height - 1;
     }
 
 
-	var iOffset=this._pNormalMap.getPixelRGBA(iMapX,iMapY,1,1,this._pTempNormalColor)
-	v3fNormal.set(this._pTempNormalColor[0],
-		this._pTempNormalColor[1],
-		this._pTempNormalColor[2])
+    var iOffset = this._pNormalMap.getPixelRGBA(iMapX, iMapY, 1, 1, this._pTempNormalColor)
+    v3fNormal.set(this._pTempNormalColor[0],
+                  this._pTempNormalColor[1],
+                  this._pTempNormalColor[2])
     return v3fNormal;
 };
 
@@ -485,14 +489,14 @@ Terrain.prototype.calcMapHeight = function (fMapX, fMapY) {
 Terrain.prototype.calcMapNormal = function (v3fNormal, fMapX, fMapY) {
     var fTempMapX = fMapX * (this._pNormalMap.width - 1);
     var fTempMapY = fMapY * (this._pNormalMap.height - 1);
-	//console.log(fTempMapX,fTempMapY)
+    //console.log(fTempMapX,fTempMapY)
 
 
     var iMapX0 = Math.floor(fTempMapX);
     var iMapY0 = Math.floor(fTempMapY);
 
-	fTempMapX -= iMapX0;
-	fTempMapY -= iMapY0;
+    fTempMapX -= iMapX0;
+    fTempMapY -= iMapY0;
 
     iMapX0 = Math.clamp(iMapX0, 0, this._pNormalMap.width - 1);
     iMapY0 = Math.clamp(iMapY0, 0, this._pNormalMap.height - 1);
@@ -502,30 +506,30 @@ Terrain.prototype.calcMapNormal = function (v3fNormal, fMapX, fMapY) {
 
     // read 4 map values
     var v3fH0 = Vec3();
-	this.readWorldNormal(v3fH0,iMapX0, iMapY0);
+    this.readWorldNormal(v3fH0, iMapX0, iMapY0);
 
     var v3fH1 = Vec3();
-	this.readWorldNormal(v3fH1,iMapX1, iMapY0);
+    this.readWorldNormal(v3fH1, iMapX1, iMapY0);
 
-	var v3fH2 = Vec3();
-	this.readWorldNormal(v3fH2,iMapX0, iMapY1);
+    var v3fH2 = Vec3();
+    this.readWorldNormal(v3fH2, iMapX0, iMapY1);
 
-	var v3fH3 = Vec3();
-	this.readWorldNormal(v3fH3,iMapX1, iMapY1);
+    var v3fH3 = Vec3();
+    this.readWorldNormal(v3fH3, iMapX1, iMapY1);
 
     v3fAvgLo = Vec3();
-	v3fAvgLo.set(v3fH1.scale(fTempMapX));
-	v3fAvgLo.add(v3fH0.scale(1.0 - fTempMapX));
+    v3fAvgLo.set(v3fH1.scale(fTempMapX));
+    v3fAvgLo.add(v3fH0.scale(1.0 - fTempMapX));
 
     v3fAvgHi = Vec3();
-	v3fAvgHi.set(v3fH3.scale(fTempMapX))
-	v3fAvgHi.add(v3fH2.scale(1.0 - fTempMapX));
+    v3fAvgHi.set(v3fH3.scale(fTempMapX))
+    v3fAvgHi.add(v3fH2.scale(1.0 - fTempMapX));
 
-	v3fNormal.set(v3fAvgHi.scale(fTempMapY));
-	v3fNormal.add(v3fAvgLo.scale(1.0 - fTempMapY));
-	v3fNormal.normalize();
+    v3fNormal.set(v3fAvgHi.scale(fTempMapY));
+    v3fNormal.add(v3fAvgLo.scale(1.0 - fTempMapY));
+    v3fNormal.normalize();
 
-	return v3fNormal;
+    return v3fNormal;
 };
 
 
@@ -710,79 +714,76 @@ Terrain.prototype.generateBlendImage = function (pBlendImage, pElevationData, iE
     v4fMask = new Array(4);
 
     v4fMask[0] = new Vec4();
-	v4fMask[0].set(1.0, 0.0, 0.0, 0.0);
+    v4fMask[0].set(1.0, 0.0, 0.0, 0.0);
 
     v4fMask[1] = new Vec4();
-	v4fMask[1].set(0.0, 1.0, 0.0, 0.0);
+    v4fMask[1].set(0.0, 1.0, 0.0, 0.0);
 
     v4fMask[2] = new Vec4();
-	v4fMask[2].set(0.0, 0.0, 1.0, 0.0);
+    v4fMask[2].set(0.0, 0.0, 1.0, 0.0);
 
     v4fMask[3] = new Vec4();
-	v4fMask[3].set(0.0, 0.0, 0.0, 1.0);
+    v4fMask[3].set(0.0, 0.0, 0.0, 1.0);
 
-    for (y = 0; y < iImg_height; y++) 
-	{
-        for (x = 0; x < iImg_width; x++) 
-		{
-			var fTotalBlend = 0.0;
-			var v4fBlendFactors = new Vec4();
-			v4fBlendFactors.set(0.0, 0.0, 0.0, 0.0);
-			if (iElevationDataCount == 3) 
-			{
-				v4fBlendFactors.w = 255;
-			}
+    for (y = 0; y < iImg_height; y++) {
+        for (x = 0; x < iImg_width; x++) {
+            var fTotalBlend = 0.0;
+            var v4fBlendFactors = new Vec4();
+            v4fBlendFactors.set(0.0, 0.0, 0.0, 0.0);
+            if (iElevationDataCount == 3) {
+                v4fBlendFactors.w = 255;
+            }
 
-			// get the elevation and surface v3fNormal
-			var fU = x * fUStep;
-			var fV = y * fVStep;
-			var fMap_height = this.calcMapHeight(fU, fV);
+            // get the elevation and surface v3fNormal
+            var fU = x * fUStep;
+            var fV = y * fVStep;
+            var fMap_height = this.calcMapHeight(fU, fV);
 
-			var v3fNormal = new Vec3();
-			var v4fTemp = new Vec4();
-			this.calcMapNormal(v3fNormal, fU, fV);
+            var v3fNormal = new Vec3();
+            var v4fTemp = new Vec4();
+            this.calcMapNormal(v3fNormal, fU, fV);
 
-			// examine each elevationData structure
-			// a compute a weight for each one
-			for (i = 0; i < iElevationDataCount; ++i) {
-				// compute a weight based on elevation
-				var fElevationScale = this.computeWeight(fMap_height,
-														 pElevationData[i].fMinElevation,
-														 pElevationData[i].fMaxElevation);
+            // examine each elevationData structure
+            // a compute a weight for each one
+            for (i = 0; i < iElevationDataCount; ++i) {
+                // compute a weight based on elevation
+                var fElevationScale = this.computeWeight(fMap_height,
+                                                         pElevationData[i].fMinElevation,
+                                                         pElevationData[i].fMaxElevation);
 
-				// compute a weight based on slope
-				var fSlopeScale = this.computeWeight(v3fNormal.z,
-													 pElevationData[i].fMinNormalZ, pElevationData[i].fMaxNormalZ);
+                // compute a weight based on slope
+                var fSlopeScale = this.computeWeight(v3fNormal.z,
+                                                     pElevationData[i].fMinNormalZ, pElevationData[i].fMaxNormalZ);
 
-				// combine the two with the relative
-				// strength of this surface type
-				var fScale = pElevationData[i].fStrength * fElevationScale * fSlopeScale;
+                // combine the two with the relative
+                // strength of this surface type
+                var fScale = pElevationData[i].fStrength * fElevationScale * fSlopeScale;
 
-				// write the result to the proper
-				// channel of the blend factor Vector
-				v4fTemp.set(v4fMask[i]);
-				v4fTemp.scale(fScale)
-				v4fBlendFactors.add(v4fTemp);
-				//v4fBlendFactors += v4fMask[i] * fScale;
+                // write the result to the proper
+                // channel of the blend factor Vector
+                v4fTemp.set(v4fMask[i]);
+                v4fTemp.scale(fScale)
+                v4fBlendFactors.add(v4fTemp);
+                //v4fBlendFactors += v4fMask[i] * fScale;
 
-				// and remember the total weight
-				fTotalBlend += fScale;
-			}
+                // and remember the total weight
+                fTotalBlend += fScale;
+            }
 
-			// balance the data (so they add up to 255)
-			var fBlendScale = 255.0 / fTotalBlend;
+            // balance the data (so they add up to 255)
+            var fBlendScale = 255.0 / fTotalBlend;
 
-			// now compute the actual color by
-			// multiplying each channel
-			// by the blend fScale
-			v4fBlendFactors.scale(fBlendScale)
+            // now compute the actual color by
+            // multiplying each channel
+            // by the blend fScale
+            v4fBlendFactors.scale(fBlendScale)
 
-			// clamp and convert to color values
-			pColor[0] = Math.clamp(v4fBlendFactors.x, 0.0, 255.0);
-			pColor[1] = Math.clamp(v4fBlendFactors.y, 0.0, 255.0);
-			pColor[2] = Math.clamp(v4fBlendFactors.z, 0.0, 255.0);
-			pColor[3] = Math.clamp(v4fBlendFactors.w, 0.0, 255.0);
-			pBlendImage.setPixelRGBA(x, iImg_height - y - 1, pColor); //так как текстура перевернута
+            // clamp and convert to color values
+            pColor[0] = Math.clamp(v4fBlendFactors.x, 0.0, 255.0);
+            pColor[1] = Math.clamp(v4fBlendFactors.y, 0.0, 255.0);
+            pColor[2] = Math.clamp(v4fBlendFactors.z, 0.0, 255.0);
+            pColor[3] = Math.clamp(v4fBlendFactors.w, 0.0, 255.0);
+            pBlendImage.setPixelRGBA(x, iImg_height - y - 1, pColor); //так как текстура перевернута
         }
     }
 }
@@ -794,8 +795,7 @@ Terrain.prototype.generateBlendImage = function (pBlendImage, pElevationData, iE
  * @param fVScale
  * @param fVLimit
  **/
-Terrain.prototype.setTessellationParameters = function (fScale, fLimit)
-{
+Terrain.prototype.setTessellationParameters = function (fScale, fLimit) {
     this._fScale = fScale;
     this._fLimit = fLimit;
 }
@@ -814,96 +814,93 @@ Terrain.prototype.setTessellationParameters = function (fScale, fLimit)
  **/
 
 /*Terrain.prototype.computeErrorMetricOfGrid = function (iXVerts, iYVerts, iXStep, iYStep, iXOffset, iYOffset) {
-    var fResult = 0.0;
-    var iTotalRows = iYVerts - 1;
-    var iTotalCells = iXVerts - 1;
+ var fResult = 0.0;
+ var iTotalRows = iYVerts - 1;
+ var iTotalCells = iXVerts - 1;
 
-    var iStartVert = (iYOffset * this._iTableWidth) + iXOffset;
-    var iLineStep = iYStep * this._iTableWidth;
+ var iStartVert = (iYOffset * this._iTableWidth) + iXOffset;
+ var iLineStep = iYStep * this._iTableWidth;
 
-    var fInvXStep = 1.0 / iXStep;
-    var fInvYStep = 1.0 / iYStep;
+ var fInvXStep = 1.0 / iXStep;
+ var fInvYStep = 1.0 / iYStep;
 
-    for (var j = 0; j < iTotalRows; ++j) {
-        var iIndexA = iStartVert;
-        var iIndexB = iStartVert + iLineStep;
-        var fCornerA = this.readWorldHeight(iIndexA);
-        var fCornerB = this.readWorldHeight(iIndexB);
+ for (var j = 0; j < iTotalRows; ++j) {
+ var iIndexA = iStartVert;
+ var iIndexB = iStartVert + iLineStep;
+ var fCornerA = this.readWorldHeight(iIndexA);
+ var fCornerB = this.readWorldHeight(iIndexB);
 
-        for (var i = 0; i < iTotalCells; ++i) {
-            // compute 2 new corner vertices
-            var iIndexC = iIndexA + iXStep;
-            var iIndexD = iIndexB + iXStep;
+ for (var i = 0; i < iTotalCells; ++i) {
+ // compute 2 new corner vertices
+ var iIndexC = iIndexA + iXStep;
+ var iIndexD = iIndexB + iXStep;
 
-            // grab 2 new corner height values
-            var fCornerC = this.readWorldHeight(iIndexC);
-            var fCornerD = this.readWorldHeight(iIndexD);
+ // grab 2 new corner height values
+ var fCornerC = this.readWorldHeight(iIndexC);
+ var fCornerD = this.readWorldHeight(iIndexD);
 
-            // setup the step values for
-            // both triangles of this cell
-            var fStepX0 = (fCornerD - fCornerA) * fInvXStep;
-            var fStepY0 = (fCornerB - fCornerA) * fInvYStep;
-            var fStepX1 = (fCornerB - fCornerC) * fInvXStep;
-            var fStepY1 = (fCornerD - fCornerC) * fInvYStep;
+ // setup the step values for
+ // both triangles of this cell
+ var fStepX0 = (fCornerD - fCornerA) * fInvXStep;
+ var fStepY0 = (fCornerB - fCornerA) * fInvYStep;
+ var fStepX1 = (fCornerB - fCornerC) * fInvXStep;
+ var fStepY1 = (fCornerD - fCornerC) * fInvYStep;
 
-            // find the max error for all points
-            // covered by the two triangles
-            var iSubIndex = iIndexA;
-            for (var y = 0; y < iYStep; ++y) {
-                for (var x = 0; x < iXStep; ++x) {
-                    var fTrueHeight = this.readWorldHeight(iSubIndex);
-                    ++iSubIndex;
+ // find the max error for all points
+ // covered by the two triangles
+ var iSubIndex = iIndexA;
+ for (var y = 0; y < iYStep; ++y) {
+ for (var x = 0; x < iXStep; ++x) {
+ var fTrueHeight = this.readWorldHeight(iSubIndex);
+ ++iSubIndex;
 
-                    var fIntepolatedHeight;
+ var fIntepolatedHeight;
 
-                    if (y < (iXStep - x)) {
-                        fIntepolatedHeight = fCornerA + (fStepX0 * x) + (fStepY0 * y);
-                    }
-                    else {
-                        fIntepolatedHeight = fCornerC + (fStepX1 * x) + (fStepY1 * y);
-                    }
+ if (y < (iXStep - x)) {
+ fIntepolatedHeight = fCornerA + (fStepX0 * x) + (fStepY0 * y);
+ }
+ else {
+ fIntepolatedHeight = fCornerC + (fStepX1 * x) + (fStepY1 * y);
+ }
 
-                    var fDelta = Math.absoluteValue(fTrueHeight - fIntepolatedHeight);
+ var fDelta = Math.absoluteValue(fTrueHeight - fIntepolatedHeight);
 
-                    fResult = Math.maximum(fResult, fDelta);
+ fResult = Math.maximum(fResult, fDelta);
 
-                }
-                iSubIndex = iIndexA + (y * this._iTableWidth);
-            }
+ }
+ iSubIndex = iIndexA + (y * this._iTableWidth);
+ }
 
-            // save the corners for the next cell
-            iIndexA = iIndexC;
-            iIndexB = iIndexD;
-            fCornerA = fCornerC;
-            fCornerB = fCornerD;
-        }
+ // save the corners for the next cell
+ iIndexA = iIndexC;
+ iIndexB = iIndexD;
+ fCornerA = fCornerC;
+ fCornerB = fCornerD;
+ }
 
-        iStartVert += iLineStep;
-    }
+ iStartVert += iLineStep;
+ }
 
-    return fResult;
-}
+ return fResult;
+ }
 
-*/
+ */
 
 
 
 //Подготовка терраина к рендерингу, а имменно, выичсление координат камеры над терраином, закладка новых частей текстру в мегатекстуру
-Terrain.prototype.prepareForRender= function()
-{
-	this._pMegaTexures.prepareForRender();
+Terrain.prototype.prepareForRender = function () {
+    this._pMegaTexures.prepareForRender();
 }
 
 //Применение параметров для рендеринга, коготрые зависят от самого терраина
-Terrain.prototype.applyForRender= function()
-{
-//	this._pMegaTexures.applyForRender();
-//	this._pNormalMap.activate(14);
-//	this._pEngine.pDrawTerrainProgram.applyInt('ptNormal',14);
-}
+Terrain.prototype.applyForRender = function (pSnapshot) {
+    var pMegaTexture = this._pMegaTexures;
+    pMegaTexture.applyForRender(pSnapshot);
+    pSnapshot.applyTextureBySemantic("TEXTURE6", this._pNormalMap);
+};
 
-Terrain.prototype.reset=function()
-{
+Terrain.prototype.reset = function () {
 
 }
 
@@ -911,43 +908,38 @@ Terrain.prototype.reset=function()
  * @property readUserInput()
  * @memberof Terrain
  **/
-Terrain.prototype.readUserInput = function ()
-{
+Terrain.prototype.readUserInput = function () {
     //
     // allow the user to adjust tesselation params
     //
     if (this._pEngine.pKeymap.isKeyPress(a.KEY.ADD)) //+
     {
-		this._fLimit += 0.0001;
+        this._fLimit += 0.0001;
     }
     else if (this._pEngine.pKeymap.isKeyPress(a.KEY.SUBTRACT)) //-
     {
-		this._fLimit -= 0.0001;
+        this._fLimit -= 0.0001;
     }
 
     if (this._pEngine.pKeymap.isKeyPress(a.KEY.MULTIPLY)) //*
     {
-		this._fScale += 0.0001;
+        this._fScale += 0.0001;
     }
     else if (this._pEngine.pKeymap.isKeyPress(a.KEY.DIVIDE))  // /
     {
-		this._fScale -= 0.0001;
+        this._fScale -= 0.0001;
     }
 
 
-
-
-    if (this._fLimit < 0.001)
-	{
-		this._fLimit = 0.001;
+    if (this._fLimit < 0.001) {
+        this._fLimit = 0.001;
     }
-    if (this._fScale < 0.001)
-	{
-		this._fScale = 0.001;
+    if (this._fScale < 0.001) {
+        this._fScale = 0.001;
     }
 
-	document.getElementById('setinfo4').innerHTML="fScale1 "+this._fScale;
-	document.getElementById('setinfo5').innerHTML="fLimit1 "+this._fLimit;
+    document.getElementById('setinfo4').innerHTML = "fScale1 " + this._fScale;
+    document.getElementById('setinfo5').innerHTML = "fLimit1 " + this._fLimit;
 
 }
 a.Terrain = Terrain;

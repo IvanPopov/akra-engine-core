@@ -691,6 +691,9 @@ ShaderProgram.prototype.applySampler2D = function (sName, pData) {
     }
     else {
         iSlot = this._pRenderer.activateTexture(pTexture);
+
+//        console.log("Activate texture", sRealName, sTexture, iSlot);
+
         pTextureParam = this._pTextureParams[iSlot];
         // trace("Slot #" + iSlot);
         pTextureParam[a.TPARAM.MAG_FILTER] = pData[a.TPARAM.MAG_FILTER] ||
@@ -1050,6 +1053,38 @@ ShaderProgram.prototype._chooseApplyUniformFunction = function (pVar, sVarName, 
                     pFunctions[sName] = this.applyVideoBuffer;
                 }
                 break;
+            case "bool":
+                if (isArray) {
+                    pFunctions[sName] = this.applyIntArray;
+                }
+                else {
+                    pFunctions[sName] = this.applyInt;
+                }
+                break;
+            case "bvec2":
+                if (isArray) {
+                    pFunctions[sName] = this.applyVec2IArray;
+                }
+                else {
+                    pFunctions[sName] = this.applyVec2I;
+                }
+                break;
+            case "bvec3":
+                if (isArray) {
+                    pFunctions[sName] = this.applyVec3IArray;
+                }
+                else {
+                    pFunctions[sName] = this.applyVec3I;
+                }
+                break;
+            case "bvec4":
+                if (isArray) {
+                    pFunctions[sName] = this.applyVec4IArray;
+                }
+                else {
+                    pFunctions[sName] = this.applyVec4I;
+                }
+                break;
             default:
                 warning("Another base types are not support yet");
         }
@@ -1114,7 +1149,7 @@ ShaderProgram.prototype.activateTextures = function () {
     var iCheck = this._nActiveTimes;
     for (i = 0; i < this._pTextureSlots.length; i++) {
         if (this._pTextureSlots[i] === iCheck) {
-            // trace("Activate texture slot #" + i);
+//            console.log("Activate texture slot #" + i);
             this._pRenderer._activateTextureSlot(i, this._pTextureParams[i]);
         }
     }
