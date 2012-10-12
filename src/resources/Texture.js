@@ -747,11 +747,6 @@ Texture.prototype.uploadImage = function (pImage) {
 
     this._pTexture = pDevice.createTexture();
 
-    this.applyParameter(a.TPARAM.WRAP_S, this._getParameter(a.TPARAM.WRAP_S) || a.TWRAPMODE.REPEAT);
-    this.applyParameter(a.TPARAM.WRAP_T, this._getParameter(a.TPARAM.WRAP_T) || a.TWRAPMODE.REPEAT);
-    this.applyParameter(a.TPARAM.MAG_FILTER, this._getParameter(a.TPARAM.MAG_FILTER) || a.TFILTER.LINEAR);
-    this.applyParameter(a.TPARAM.MIN_FILTER, this._getParameter(a.TPARAM.MIN_FILTER) || a.TFILTER.LINEAR);
-
     //this._pFrameBuffer = pDevice.createFramebuffer();
 
     if (!a.info.graphics.checkFormat(pDevice, pImage.getFormat())) {
@@ -784,6 +779,12 @@ Texture.prototype.uploadImage = function (pImage) {
 
 
         pRenderer.bindTexture(this);
+
+        this.applyParameter(a.TPARAM.WRAP_S, this._getParameter(a.TPARAM.WRAP_S) || a.TWRAPMODE.REPEAT);
+        this.applyParameter(a.TPARAM.WRAP_T, this._getParameter(a.TPARAM.WRAP_T) || a.TWRAPMODE.REPEAT);
+        this.applyParameter(a.TPARAM.MAG_FILTER, this._getParameter(a.TPARAM.MAG_FILTER) || a.TFILTER.LINEAR);
+        this.applyParameter(a.TPARAM.MIN_FILTER, this._getParameter(a.TPARAM.MIN_FILTER) || a.TFILTER.LINEAR);
+
         this.flipY();
 
         for (var i = 0; i < nMipMaps; i++) {
@@ -793,6 +794,7 @@ Texture.prototype.uploadImage = function (pImage) {
                                    this._eType, new Uint8Array(pImage.getData(i)));
             }
             else {
+
                 pDevice.compressedTexImage2D(a.TTYPE.TEXTURE_2D, i,
                                              this._eFormat, pImage.getWidth(i),
                                              pImage.getHeight(i), 0, new Uint8Array(pImage.getData(i)));
@@ -802,8 +804,13 @@ Texture.prototype.uploadImage = function (pImage) {
     else {
         SET_BIT(this._iFlags, a.Texture.CubeMap);
 
-
         pRenderer.bindTexture(this);
+
+        this.applyParameter(a.TPARAM.WRAP_S, this._getParameter(a.TPARAM.WRAP_S) || a.TWRAPMODE.REPEAT);
+        this.applyParameter(a.TPARAM.WRAP_T, this._getParameter(a.TPARAM.WRAP_T) || a.TWRAPMODE.REPEAT);
+        this.applyParameter(a.TPARAM.MAG_FILTER, this._getParameter(a.TPARAM.MAG_FILTER) || a.TFILTER.LINEAR);
+        this.applyParameter(a.TPARAM.MIN_FILTER, this._getParameter(a.TPARAM.MIN_FILTER) || a.TFILTER.LINEAR);
+
         this.flipY();
 
         for (var k = 0; k < 6; k++) {
@@ -930,63 +937,6 @@ Texture.prototype.resize = function (iWidth, iHeight){
     this._iWidth = iWidth;
     this._iHeight = iHeight;
     return true;
-
-//
-//	if (!statics._pResizeProgram)
-//	{
-//		statics._pResizeProgram = a.loadProgram(this._pEngine,'../effects/resize_texture.glsl')
-//	}
-//
-//	var pProgram = statics._pResizeProgram;
-//	pProgram.activate();
-//
-//	var pDestinationTexture = pDevice.createTexture();
-//	pDevice.activeTexture(pDevice.TEXTURE1);
-//	// pDevice.pixelStorei(a.WEBGLS.UNPACK_FLIP_Y_WEBGL, true);
-//	pDevice.bindTexture(pDevice.TEXTURE_2D, pDestinationTexture);
-//	pDevice.texImage2D(pDevice.TEXTURE_2D, 0, eFormat, iWidth, iHeight, 0, eFormat, eType, null);
-//	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MAG_FILTER, pDevice.LINEAR);
-//	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_MIN_FILTER, pDevice.LINEAR);
-//	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_WRAP_S, pDevice.CLAMP_TO_EDGE);
-//	pDevice.texParameteri(pDevice.TEXTURE_2D, pDevice.TEXTURE_WRAP_T, pDevice.CLAMP_TO_EDGE);
-//
-//
-//	var pDestinationFrameBuffer = pDevice.createFramebuffer();
-//	pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, pDestinationFrameBuffer);
-//	pDevice.framebufferTexture2D(pDevice.FRAMEBUFFER, pDevice.COLOR_ATTACHMENT0,
-//		pDevice.TEXTURE_2D, pDestinationTexture, 0);
-//
-//	var pRenderIndexData = new Float32Array([-1,-1,-1,1,1,-1,1,1]);
-//	var pRenderIndexBuffer = pDevice.createBuffer();
-//
-//	pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pRenderIndexBuffer);
-//	pDevice.bufferData(pDevice.ARRAY_BUFFER, pRenderIndexData, pDevice.STREAM_DRAW);
-//
-//	pDevice.bindTexture(pDevice.TEXTURE_2D, this._pTexture);
-//	pDevice.activeTexture(pDevice.TEXTURE0);
-//	pDevice.bindTexture(pDevice.TEXTURE_2D, this._pTexture);
-//	pProgram.applyInt("texture", 0);
-//
-//	pDevice.bindBuffer(pDevice.ARRAY_BUFFER, pRenderIndexBuffer);
-//	pDevice.vertexAttribPointer(pProgram._pAttributesByName['POSITION'].iLocation, 2, pDevice.FLOAT, false, 0, 0);
-//	// pDevice.disableVertexAttribArray(1);
-//	// pDevice.disableVertexAttribArray(2);
-//
-//	pDevice.viewport(0, 0, iWidth, iHeight);
-//	pDevice.drawArrays(pDevice.TRIANGLE_STRIP, 0, 4);
-//	pDevice.flush();
-//
-//	pDevice.bindFramebuffer(pDevice.FRAMEBUFFER, null);
-//	pDevice.deleteBuffer(pRenderIndexBuffer);
-//	pDevice.deleteTexture(this._pTexture);
-//	pDevice.deleteFramebuffer(pDestinationFrameBuffer);
-//
-//	pProgram.deactivate();
-//
-//	this._pTexture = pDestinationTexture;
-//	this._iWidth = iWidth;
-//	this._iHeight = iHeight;
-//	return true;
 };
 
 /**
