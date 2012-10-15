@@ -339,6 +339,8 @@ LightPoint.prototype._renderShadowsFromCamera = function (iIndex) {
     var pCamera;
     var pDepthTexture;
     var m4fOptimizedProj;
+    var pEngine = this._pEngine;
+
     if (typeof iIndex === 'number') {
         pCamera = this._pCameraCube[iIndex];
         pDepthTexture = this._pDepthTextureCube[iIndex];
@@ -352,11 +354,11 @@ LightPoint.prototype._renderShadowsFromCamera = function (iIndex) {
 
     //тест на видимость источника
     if(!this._testWithActiveCamera(pEngine.getActiveCamera(),pCamera)){
+        console.log("don't render shadow");
         m4fOptimizedProj.set(pCamera.projectionMatrix);
         return true;
     }
 
-    var pEngine = this._pEngine;
     var pFirstMember = pEngine._pSceneTree.buildSearchResults(pCamera.searchRect(), pCamera.frustum());
     var pOptimizedResult = this._optimizeSearchResult(pFirstMember);
     var pRenderList = pFirstMember = pOptimizedResult;

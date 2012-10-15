@@ -154,9 +154,9 @@ function Camera () {
     this.iCameraOptions = 0;
 
     //вершины frustum-а в пространстве камеры
-    this._pFrustumVertices = new Array[8];
+    this._pFrustumVertices = new Array(8);
     //вершины frustum-а в мировом пространстве
-    this.pFrustumVertices = new Array[8];
+    this.pFrustumVertices = new Array(8);
 
     // this._pFrustumVertices, this.pFrustumVertices
     // [0] - this._v4fLeftBottomNear;

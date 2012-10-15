@@ -985,7 +985,7 @@ Plane3d.prototype.xForm = function (m4fMatrix) {
  */
 Plane3d.prototype.signedDistance = function (v3fPoint) {
     INLINE();
-    return (v3fPoint.dot(this.v3fNormal) + this.fDistance);
+    return (this.v3fNormal.dot(v3fPoint) + this.fDistance);
 };
 
 //-------------------End Plane3D---------------------\\
