@@ -9,7 +9,7 @@ module akra.util {
 		prop?: string;
 	}
 
-	export class BrowserInfo implements IBrowserInfo {
+	export class BrowserInfo extends Singleton implements IBrowserInfo {
 		private sBrowser: string = null;
 		private sVersion: string = null;
 		private sOS: string = null;

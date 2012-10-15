@@ -163,7 +163,7 @@ module akra {
 
 		create(pCanvas: HTMLCanvasElement): bool;
 		create(sCanvasId: string): bool;
-		create(pCanvas? ): bool {
+		create(pCanvas?): bool {
 			//initializing
 
 			if (isString(pCanvas)) {
@@ -191,7 +191,19 @@ module akra {
 			this.iCreationHeight = this.pCanvas.height;
 			
 			//getting device
-			this.pDevice = null;
+			this.pDevice = createDevice(this.pCanvas, {antialias: this.useHWAA});
+
+			if (!this.pDevice) {
+				debug_warning('cannot create device object');
+				return false;
+			}
+
+			if (!this.initDefaultStates()) {
+				debug_warning('cannot init default states');
+				return false;
+			}
+
+			//this.pResourceManager = new a.Res
 
 			return false;
 		}
@@ -250,6 +262,23 @@ module akra {
 
 		updateStats(): void {
 
+		}
+
+		private initDefaultStates(): bool {
+			this.pRenderState = {
+		        mesh            : {
+		            isSkinning : false
+		        },
+		        isAdvancedIndex : false,
+		        lights          : {
+		            omni : 0,
+		            project : 0,
+		            omniShadows : 0,
+		            projectShadows : 0
+		        }
+		    };
+
+			return true;
 		}
 
 		private initialize3DEnvironment(): bool {

@@ -16,7 +16,7 @@ module akra.info {
 	export var browser: IBrowserInfo = new util.BrowserInfo;
 	export var api: IApiInfo = new util.ApiInfo;
 	export var screen: IScreenInfo = new util.ScreenInfo;
-
+	export var device: IDeviceInfo = new util.DeviceInfo;
 	export var uri: IURI = parseURI(document.location.href);
 
 	module is {

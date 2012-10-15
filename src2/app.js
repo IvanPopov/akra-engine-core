@@ -320,6 +320,20 @@ var akra;
 var akra;
 (function (akra) {
     (function (util) {
+        var Singleton = (function () {
+            function Singleton() {
+                var _constructor = (this).constructor;
+                akra.assert(!akra.isDef(_constructor._pInstance), 'Singleton class may be created only one time.');
+                _constructor._pInstance = this;
+            }
+            return Singleton;
+        })();        
+    })(akra.util || (akra.util = {}));
+    var util = akra.util;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (util) {
         var URI = (function () {
             function URI(pUri) {
                 this.sScheme = null;
@@ -477,11 +491,19 @@ var akra;
     })(akra.util || (akra.util = {}));
     var util = akra.util;
 })(akra || (akra = {}));
+var __extends = this.__extends || function (d, b) {
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 var akra;
 (function (akra) {
     (function (util) {
-        var BrowserInfo = (function () {
+        var BrowserInfo = (function (_super) {
+            __extends(BrowserInfo, _super);
             function BrowserInfo() {
+                _super.apply(this, arguments);
+
                 this.sBrowser = null;
                 this.sVersion = null;
                 this.sOS = null;
@@ -515,13 +537,6 @@ var akra;
             };
             BrowserInfo.prototype.searchString = function (pDataBrowser) {
                 for(var i = 0; i < pDataBrowser.length; i++) {
-                    var t = 0;
-                    var k = 5;
-                    var g = t + k;
-                    t++ , k++;
-                    var f = 15.5;
-                    var n = 1;
-                    f = f + k + n;
                     var sData = pDataBrowser[i].string;
                     var dataProp = pDataBrowser[i].prop;
                     this.sVersionSearch = pDataBrowser[i].versionSearch || pDataBrowser[i].identity;
@@ -646,7 +661,7 @@ var akra;
                 }
             ];
             return BrowserInfo;
-        })();
+        })(util.Singleton);
         util.BrowserInfo = BrowserInfo;        
     })(akra.util || (akra.util = {}));
     var util = akra.util;
@@ -654,10 +669,126 @@ var akra;
 var akra;
 (function (akra) {
     (function (util) {
-        var ApiInfo = (function () {
-            function ApiInfo() { }
+        var ApiInfo = (function (_super) {
+            __extends(ApiInfo, _super);
+            function ApiInfo() {
+                        _super.call(this);
+                this.bWebGL = false;
+                this.bWebAudio = false;
+                this.bFile = false;
+                this.bFileSystem = false;
+                this.bWebWorker = false;
+                this.bTransferableObjects = false;
+                this.bLocalStorage = false;
+                this.bWebSocket = false;
+                var pApi = {
+                };
+                this.bWebAudio = ((window).AudioContext && (window).webkitAudioContext ? true : false);
+                this.bFile = ((window).File && (window).FileReader && (window).FileList && (window).Blob ? true : false);
+                this.bFileSystem = (this.bFile && (window).URL && (window).requestFileSystem ? true : false);
+                this.bWebWorker = akra.isDef((window).Worker);
+                this.bLocalStorage = akra.isDef((window).localStorage);
+                this.bWebSocket = akra.isDef((window).WebSocket);
+            }
+            Object.defineProperty(ApiInfo.prototype, "webGL", {
+                get: function () {
+                    if(!this.bWebGL) {
+                        this.bWebGL = ((window).WebGLRenderingContext || this.checkWebGL() ? true : false);
+                    }
+                    return this.bWebGL;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ApiInfo.prototype, "transferableObjects", {
+                get: function () {
+                    if(!this.bTransferableObjects) {
+                        this.bTransferableObjects = (this.bWebWorker && this.chechTransferableObjects() ? true : false);
+                    }
+                    return this.bTransferableObjects;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ApiInfo.prototype, "file", {
+                get: function () {
+                    return this.bFile;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ApiInfo.prototype, "fileSystem", {
+                get: function () {
+                    return this.bFileSystem;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ApiInfo.prototype, "webAudio", {
+                get: function () {
+                    return this.bWebAudio;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ApiInfo.prototype, "webWorker", {
+                get: function () {
+                    return this.bWebWorker;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ApiInfo.prototype, "localStorage", {
+                get: function () {
+                    return this.bLocalStorage;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ApiInfo.prototype, "webSocket", {
+                get: function () {
+                    return this.bWebSocket;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            ApiInfo.prototype.checkWebGL = function () {
+                var pCanvas;
+                var pDevice;
+                try  {
+                    pCanvas = document.createElement('canvas');
+                    pDevice = pCanvas.getContext('webgl', {
+                    }) || pCanvas.getContext('experimental-webgl', {
+                    });
+                    if(pDevice) {
+                        return true;
+                    }
+                } catch (e) {
+                }
+                return false;
+            };
+            ApiInfo.prototype.chechTransferableObjects = function () {
+                var pBlob = new Blob([
+                    "onmessage = function(e) { postMessage(true); }"
+                ]);
+                var sBlobURL = (window).URL.createObjectURL(pBlob);
+                var pWorker = new Worker(sBlobURL);
+                var pBuffer = new ArrayBuffer(1);
+                try  {
+                    pWorker.postMessage(pBuffer, [
+                        pBuffer
+                    ]);
+                } catch (e) {
+                    akra.debug_print('transferable objects not supported in your browser...');
+                }
+                pWorker.terminate();
+                if(pBuffer.byteLength) {
+                    return false;
+                }
+                return true;
+            };
             return ApiInfo;
-        })();
+        })(util.Singleton);
         util.ApiInfo = ApiInfo;        
     })(akra.util || (akra.util = {}));
     var util = akra.util;
@@ -705,6 +836,191 @@ var akra;
             return ScreenInfo;
         })();
         util.ScreenInfo = ScreenInfo;        
+    })(akra.util || (akra.util = {}));
+    var util = akra.util;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (util) {
+        var DeviceInfo = (function (_super) {
+            __extends(DeviceInfo, _super);
+            function DeviceInfo() {
+                        _super.call(this);
+                this.nMaxTextureSize = 0;
+                this.nMaxCubeMapTextureSize = 0;
+                this.nMaxViewPortSize = 0;
+                this.nMaxTextureImageUnits = 0;
+                this.nMaxVertexAttributes = 0;
+                this.nMaxVertexTextureImageUnits = 0;
+                this.nMaxCombinedTextureImageUnits = 0;
+                this.nMaxColorAttachments = 1;
+                this.nStencilBits = 0;
+                this.pColorBits = [
+                    0, 
+                    0, 
+                    0
+                ];
+                this.nAlphaBits = 0;
+                this.fMultisampleType = 0;
+                this.fShaderVersion = 0;
+                var pDevice = akra.createDevice();
+                if(!pDevice) {
+                    return;
+                }
+                this.nMaxTextureSize = pDevice.getParameter(pDevice.MAX_TEXTURE_SIZE);
+                this.nMaxCubeMapTextureSize = pDevice.getParameter(pDevice.MAX_CUBE_MAP_TEXTURE_SIZE);
+                this.nMaxViewPortSize = pDevice.getParameter(pDevice.MAX_VIEWPORT_DIMS);
+                this.nMaxTextureImageUnits = pDevice.getParameter(pDevice.MAX_TEXTURE_IMAGE_UNITS);
+                this.nMaxVertexAttributes = pDevice.getParameter(pDevice.MAX_VERTEX_ATTRIBS);
+                this.nMaxVertexTextureImageUnits = pDevice.getParameter(pDevice.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
+                this.nMaxCombinedTextureImageUnits = pDevice.getParameter(pDevice.MAX_COMBINED_TEXTURE_IMAGE_UNITS);
+                this.nStencilBits = pDevice.getParameter(pDevice.STENCIL_BITS);
+                this.pColorBits = [
+                    pDevice.getParameter(pDevice.RED_BITS), 
+                    pDevice.getParameter(pDevice.GREEN_BITS), 
+                    pDevice.getParameter(pDevice.BLUE_BITS)
+                ];
+                this.nAlphaBits = pDevice.getParameter(pDevice.ALPHA_BITS);
+                this.fMultisampleType = pDevice.getParameter(pDevice.SAMPLE_COVERAGE_VALUE);
+            }
+            Object.defineProperty(DeviceInfo.prototype, "maxTextureSize", {
+                get: function () {
+                    return this.nMaxTextureSize;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DeviceInfo.prototype, "maxCubeMapTextureSize", {
+                get: function () {
+                    return this.nMaxCubeMapTextureSize;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DeviceInfo.prototype, "maxViewPortSize", {
+                get: function () {
+                    return this.nMaxViewPortSize;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DeviceInfo.prototype, "maxTextureImageUnits", {
+                get: function () {
+                    return this.nMaxTextureImageUnits;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DeviceInfo.prototype, "maxVertexAttributes", {
+                get: function () {
+                    return this.nMaxVertexAttributes;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DeviceInfo.prototype, "maxVertexTextureImageUnits", {
+                get: function () {
+                    return this.nMaxVertexTextureImageUnits;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DeviceInfo.prototype, "maxCombinedTextureImageUnits", {
+                get: function () {
+                    return this.nMaxCombinedTextureImageUnits;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DeviceInfo.prototype, "maxColorAttachments", {
+                get: function () {
+                    return this.nMaxColorAttachments;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DeviceInfo.prototype, "stencilBits", {
+                get: function () {
+                    return this.nStencilBits;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DeviceInfo.prototype, "colorBits", {
+                get: function () {
+                    return this.pColorBits;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DeviceInfo.prototype, "alphaBits", {
+                get: function () {
+                    return this.nAlphaBits;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DeviceInfo.prototype, "multisampleType", {
+                get: function () {
+                    return this.fMultisampleType;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(DeviceInfo.prototype, "shaderVersion", {
+                get: function () {
+                    return this.fShaderVersion;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            DeviceInfo.prototype.getExtention = function (pDevice, csExtension) {
+                var pExtentions;
+                var sExtention;
+                var pExtention = null;
+                pExtentions = pDevice.getSupportedExtensions();
+                for(var i in pExtentions) {
+                    sExtention = pExtentions[i];
+                    if(sExtention.search(csExtension) != -1) {
+                        pExtention = pDevice.getExtension(sExtention);
+                        akra.trace('extension successfuly loaded: ' + sExtention);
+                    }
+                }
+                return pExtention;
+            };
+            DeviceInfo.prototype.checkFormat = function (pDevice, eFormat) {
+                switch(eFormat) {
+                    case akra.ImageFormats.RGB_DXT1:
+                    case akra.ImageFormats.RGBA_DXT1:
+                    case akra.ImageFormats.RGBA_DXT2:
+                    case akra.ImageFormats.RGBA_DXT3:
+                    case akra.ImageFormats.RGBA_DXT4:
+                    case akra.ImageFormats.RGBA_DXT5: {
+                        for(var i in pDevice) {
+                            if(akra.isNumber(pDevice[i]) && pDevice[i] == eFormat) {
+                                return true;
+                            }
+                        }
+                        return false;
+
+                    }
+                    case akra.ImageFormats.RGB8:
+                    case akra.ImageFormats.RGBA8:
+                    case akra.ImageFormats.RGBA4:
+                    case akra.ImageFormats.RGB5_A1:
+                    case akra.ImageFormats.RGB565: {
+                        return true;
+
+                    }
+                    default: {
+                        return false;
+
+                    }
+                }
+            };
+            return DeviceInfo;
+        })(util.Singleton);
+        util.DeviceInfo = DeviceInfo;        
     })(akra.util || (akra.util = {}));
     var util = akra.util;
 })(akra || (akra = {}));
@@ -767,11 +1083,6 @@ var akra;
     })(akra.scene || (akra.scene = {}));
     var scene = akra.scene;
 })(akra || (akra = {}));
-var __extends = this.__extends || function (d, b) {
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
 var akra;
 (function (akra) {
     (function (scene) {
@@ -995,7 +1306,14 @@ var akra;
             this.pActiveCamera = this.pDefaultCamera;
             this.iCreationWidth = this.pCanvas.width;
             this.iCreationHeight = this.pCanvas.height;
-            this.pDevice = null;
+            this.pDevice = akra.createDevice(this.pCanvas, {
+                antialias: this.useHWAA
+            });
+            if(!this.pDevice) {
+                akra.debug_warning('cannot create device object');
+                return false;
+            }
+            this.initDe;
             return false;
         };
         Engine.prototype.run = function () {
@@ -1034,6 +1352,21 @@ var akra;
         Engine.prototype.updateCamera = function () {
         };
         Engine.prototype.updateStats = function () {
+        };
+        Engine.prototype.initDefaultStates = function () {
+            this.pRenderState = {
+                mesh: {
+                    isSkinning: false
+                },
+                isAdvancedIndex: false,
+                lights: {
+                    omni: 0,
+                    project: 0,
+                    omniShadows: 0,
+                    projectShadows: 0
+                }
+            };
+            return true;
         };
         Engine.prototype.initialize3DEnvironment = function () {
             return false;
@@ -1074,14 +1407,14 @@ var akra;
                         return s;
                     }
                 }
-                var className = Object.prototype.toString.call(x);
-                if(className == '[object Window]') {
+                var sClassName = Object.prototype.toString.call(x);
+                if(sClassName == '[object Window]') {
                     return 'object';
                 }
-                if((className == '[object Array]' || typeof x.length == 'number' && typeof x.splice != 'undefined' && typeof x.propertyIsEnumerable != 'undefined' && !x.propertyIsEnumerable('splice'))) {
+                if((sClassName == '[object Array]' || typeof x.length == 'number' && typeof x.splice != 'undefined' && typeof x.propertyIsEnumerable != 'undefined' && !x.propertyIsEnumerable('splice'))) {
                     return 'array';
                 }
-                if((className == '[object Function]' || typeof x.call != 'undefined' && typeof x.propertyIsEnumerable != 'undefined' && !x.propertyIsEnumerable('call'))) {
+                if((sClassName == '[object Function]' || typeof x.call != 'undefined' && typeof x.propertyIsEnumerable != 'undefined' && !x.propertyIsEnumerable('call'))) {
                     return 'function';
                 }
             } else {
@@ -1137,6 +1470,15 @@ var akra;
     akra.assert = console.assert.bind(console);
     akra.warning = console.warn.bind(console);
     akra.error = console.error.bind(console);
+    akra.debug_print = function (pArg) {
+        var pParams = [];
+        for (var _i = 0; _i < (arguments.length - 1); _i++) {
+            pParams[_i] = arguments[_i + 1];
+        }
+        if(akra.DEBUG) {
+            akra.trace.apply(null, arguments);
+        }
+    };
     akra.debug_assert = function (isOK) {
         var pParams = [];
         for (var _i = 0; _i < (arguments.length - 1); _i++) {
@@ -1169,6 +1511,7 @@ var akra;
     }
     akra.initDevice = initDevice;
     function createDevice(pCanvas, pOptions) {
+        if (typeof pCanvas === "undefined") { pCanvas = document.createElement("canvas"); }
         var pDevice = null;
         try  {
             pDevice = pCanvas.getContext("webgl", pOptions) || pCanvas.getContext("experimental-webgl", pOptions);
@@ -1180,6 +1523,344 @@ var akra;
         return initDevice(pDevice);
     }
     akra.createDevice = createDevice;
+    akra.MIN_INT32 = 4294967295;
+    akra.MAX_INT32 = 2147483647;
+    akra.MIN_INT16 = 65535;
+    akra.MAX_INT16 = 32767;
+    akra.MIN_INT8 = 255;
+    akra.MAX_INT8 = 127;
+    akra.MIN_UINT32 = 0;
+    akra.MAX_UINT32 = 4294967295;
+    akra.MIN_UINT16 = 0;
+    akra.MAX_UINT16 = 65535;
+    akra.MIN_UINT8 = 0;
+    akra.MAX_UINT8 = 255;
+    akra.SIZE_FLOAT64 = 8;
+    akra.SIZE_REAL64 = 8;
+    akra.SIZE_FLOAT32 = 4;
+    akra.SIZE_REAL32 = 4;
+    akra.SIZE_INT32 = 4;
+    akra.SIZE_UINT32 = 4;
+    akra.SIZE_INT16 = 2;
+    akra.SIZE_UINT16 = 2;
+    akra.SIZE_INT8 = 1;
+    akra.SIZE_UINT8 = 1;
+    akra.SIZE_BYTE = 1;
+    akra.SIZE_UBYTE = 1;
+    akra.MAX_FLOAT64 = Number.MAX_VALUE;
+    akra.MIN_FLOAT64 = -Number.MAX_VALUE;
+    akra.TINY_FLOAT64 = Number.MIN_VALUE;
+    akra.MAX_REAL64 = Number.MAX_VALUE;
+    akra.MIN_REAL64 = -Number.MAX_VALUE;
+    akra.TINY_REAL64 = Number.MIN_VALUE;
+    akra.MAX_FLOAT32 = 3.4e+38;
+    akra.MIN_FLOAT32 = -3.4e+38;
+    akra.TINY_FLOAT32 = 1.5e-45;
+    akra.MAX_REAL32 = 3.4e+38;
+    akra.MIN_REAL32 = -3.4e+38;
+    akra.TINY_REAL32 = 1.5e-45;
+    (function (DataTypes) {
+        DataTypes._map = [];
+        DataTypes.BYTE = 5120;
+        DataTypes.UNSIGNED_BYTE = 5121;
+        DataTypes.SHORT = 5122;
+        DataTypes.UNSIGNED_SHORT = 5123;
+        DataTypes.INT = 5124;
+        DataTypes.UNSIGNED_INT = 5125;
+        DataTypes.FLOAT = 5126;
+    })(akra.DataTypes || (akra.DataTypes = {}));
+    var DataTypes = akra.DataTypes;
+    ; ;
+    (function (DataTypeSizes) {
+        DataTypeSizes._map = [];
+        DataTypeSizes.BYTES_PER_BYTE = 1;
+        DataTypeSizes.BYTES_PER_UNSIGNED_BYTE = 1;
+        DataTypeSizes.BYTES_PER_UBYTE = 1;
+        DataTypeSizes.BYTES_PER_SHORT = 2;
+        DataTypeSizes.BYTES_PER_UNSIGNED_SHORT = 2;
+        DataTypeSizes.BYTES_PER_USHORT = 2;
+        DataTypeSizes.BYTES_PER_INT = 4;
+        DataTypeSizes.BYTES_PER_UNSIGNED_INT = 4;
+        DataTypeSizes.BYTES_PER_UINT = 4;
+        DataTypeSizes.BYTES_PER_FLOAT = 4;
+    })(akra.DataTypeSizes || (akra.DataTypeSizes = {}));
+    var DataTypeSizes = akra.DataTypeSizes;
+    ; ;
+    (function (ResourceTypes) {
+        ResourceTypes._map = [];
+        ResourceTypes.SURFACE = 1;
+        ResourceTypes._map[2] = "VOLUME";
+        ResourceTypes.VOLUME = 2;
+        ResourceTypes._map[3] = "TEXTURE";
+        ResourceTypes.TEXTURE = 3;
+        ResourceTypes._map[4] = "VOLUMETEXTURE";
+        ResourceTypes.VOLUMETEXTURE = 4;
+        ResourceTypes._map[5] = "CUBETEXTURE";
+        ResourceTypes.CUBETEXTURE = 5;
+        ResourceTypes._map[6] = "VERTEXBUFFER";
+        ResourceTypes.VERTEXBUFFER = 6;
+        ResourceTypes._map[7] = "INDEXBUFFER";
+        ResourceTypes.INDEXBUFFER = 7;
+        ResourceTypes.FORCE_DWORD = 2147483647;
+    })(akra.ResourceTypes || (akra.ResourceTypes = {}));
+    var ResourceTypes = akra.ResourceTypes;
+    ; ;
+    (function (PrimitiveTypes) {
+        PrimitiveTypes._map = [];
+        PrimitiveTypes.POINTLIST = 0;
+        PrimitiveTypes._map[1] = "LINELIST";
+        PrimitiveTypes.LINELIST = 1;
+        PrimitiveTypes._map[2] = "LINELOOP";
+        PrimitiveTypes.LINELOOP = 2;
+        PrimitiveTypes._map[3] = "LINESTRIP";
+        PrimitiveTypes.LINESTRIP = 3;
+        PrimitiveTypes._map[4] = "TRIANGLELIST";
+        PrimitiveTypes.TRIANGLELIST = 4;
+        PrimitiveTypes._map[5] = "TRIANGLESTRIP";
+        PrimitiveTypes.TRIANGLESTRIP = 5;
+        PrimitiveTypes._map[6] = "TRIANGLEFAN";
+        PrimitiveTypes.TRIANGLEFAN = 6;
+    })(akra.PrimitiveTypes || (akra.PrimitiveTypes = {}));
+    var PrimitiveTypes = akra.PrimitiveTypes;
+    ; ;
+    (function (ImageFormats) {
+        ImageFormats._map = [];
+        ImageFormats.RGB = 6407;
+        ImageFormats.RGB8 = 6407;
+        ImageFormats.BGR8 = 32864;
+        ImageFormats.RGBA = 6408;
+        ImageFormats.RGBA8 = 6408;
+        ImageFormats.BGRA8 = 6409;
+        ImageFormats.RGBA4 = 32854;
+        ImageFormats.BGRA4 = 32857;
+        ImageFormats.RGB5_A1 = 32855;
+        ImageFormats.BGR5_A1 = 32856;
+        ImageFormats.RGB565 = 36194;
+        ImageFormats.BGR565 = 36195;
+        ImageFormats.RGB_DXT1 = 33776;
+        ImageFormats.RGBA_DXT1 = 33777;
+        ImageFormats.RGBA_DXT2 = 33780;
+        ImageFormats.RGBA_DXT3 = 33778;
+        ImageFormats.RGBA_DXT4 = 33781;
+        ImageFormats.RGBA_DXT5 = 33779;
+        ImageFormats.DEPTH_COMPONENT = 6402;
+        ImageFormats.ALPHA = 6406;
+        ImageFormats.LUMINANCE = 6409;
+        ImageFormats.LUMINANCE_ALPHA = 6410;
+    })(akra.ImageFormats || (akra.ImageFormats = {}));
+    var ImageFormats = akra.ImageFormats;
+    ; ;
+    (function (ImageShortFormats) {
+        ImageShortFormats._map = [];
+        ImageShortFormats.RGB = 6407;
+        ImageShortFormats.RGBA = 6408;
+    })(akra.ImageShortFormats || (akra.ImageShortFormats = {}));
+    var ImageShortFormats = akra.ImageShortFormats;
+    ; ;
+    (function (ImageTypes) {
+        ImageTypes._map = [];
+        ImageTypes.UNSIGNED_BYTE = 5121;
+        ImageTypes.UNSIGNED_SHORT_4_4_4_4 = 32819;
+        ImageTypes.UNSIGNED_SHORT_5_5_5_1 = 32820;
+        ImageTypes.UNSIGNED_SHORT_5_6_5 = 33635;
+        ImageTypes.FLOAT = 5126;
+    })(akra.ImageTypes || (akra.ImageTypes = {}));
+    var ImageTypes = akra.ImageTypes;
+    ; ;
+    (function (TextureFilters) {
+        TextureFilters._map = [];
+        TextureFilters.NEAREST = 9728;
+        TextureFilters.LINEAR = 9729;
+        TextureFilters.NEAREST_MIPMAP_NEAREST = 9984;
+        TextureFilters.LINEAR_MIPMAP_NEAREST = 9985;
+        TextureFilters.NEAREST_MIPMAP_LINEAR = 9986;
+        TextureFilters.LINEAR_MIPMAP_LINEAR = 9987;
+    })(akra.TextureFilters || (akra.TextureFilters = {}));
+    var TextureFilters = akra.TextureFilters;
+    ; ;
+    (function (TextureWrapModes) {
+        TextureWrapModes._map = [];
+        TextureWrapModes.REPEAT = 10497;
+        TextureWrapModes.CLAMP_TO_EDGE = 33071;
+        TextureWrapModes.MIRRORED_REPEAT = 33648;
+    })(akra.TextureWrapModes || (akra.TextureWrapModes = {}));
+    var TextureWrapModes = akra.TextureWrapModes;
+    ; ;
+    (function (TextureParameters) {
+        TextureParameters._map = [];
+        TextureParameters.MAG_FILTER = 10240;
+        TextureParameters._map[10241] = "MIN_FILTER";
+        TextureParameters.MIN_FILTER = 10241;
+        TextureParameters._map[10242] = "WRAP_S";
+        TextureParameters.WRAP_S = 10242;
+        TextureParameters._map[10243] = "WRAP_T";
+        TextureParameters.WRAP_T = 10243;
+    })(akra.TextureParameters || (akra.TextureParameters = {}));
+    var TextureParameters = akra.TextureParameters;
+    ; ;
+    (function (TextureTypes) {
+        TextureTypes._map = [];
+        TextureTypes.TEXTURE_2D = 3553;
+        TextureTypes.TEXTURE = 5890;
+        TextureTypes.TEXTURE_CUBE_MAP = 34067;
+        TextureTypes.TEXTURE_BINDING_CUBE_MAP = 34068;
+        TextureTypes.TEXTURE_CUBE_MAP_POSITIVE_X = 34069;
+        TextureTypes.TEXTURE_CUBE_MAP_NEGATIVE_X = 34070;
+        TextureTypes.TEXTURE_CUBE_MAP_POSITIVE_Y = 34071;
+        TextureTypes.TEXTURE_CUBE_MAP_NEGATIVE_Y = 34072;
+        TextureTypes.TEXTURE_CUBE_MAP_POSITIVE_Z = 34073;
+        TextureTypes.TEXTURE_CUBE_MAP_NEGATIVE_Z = 34074;
+        TextureTypes.MAX_CUBE_MAP_TEXTURE_SIZE = 34076;
+    })(akra.TextureTypes || (akra.TextureTypes = {}));
+    var TextureTypes = akra.TextureTypes;
+    ; ;
+    (function (GLSpecifics) {
+        GLSpecifics._map = [];
+        GLSpecifics.UNPACK_ALIGNMENT = 3317;
+        GLSpecifics.PACK_ALIGNMENT = 3333;
+        GLSpecifics.UNPACK_FLIP_Y_WEBGL = 37440;
+        GLSpecifics.UNPACK_PREMULTIPLY_ALPHA_WEBGL = 37441;
+        GLSpecifics.CONTEXT_LOST_WEBGL = 37442;
+        GLSpecifics.UNPACK_COLORSPACE_CONVERSION_WEBGL = 37443;
+        GLSpecifics.BROWSER_DEFAULT_WEBGL = 37444;
+    })(akra.GLSpecifics || (akra.GLSpecifics = {}));
+    var GLSpecifics = akra.GLSpecifics;
+    ; ;
+    (function (BufferMasks) {
+        BufferMasks._map = [];
+        BufferMasks.DEPTH_BUFFER_BIT = 256;
+        BufferMasks.STENCIL_BUFFER_BIT = 1024;
+        BufferMasks.COLOR_BUFFER_BIT = 16384;
+    })(akra.BufferMasks || (akra.BufferMasks = {}));
+    var BufferMasks = akra.BufferMasks;
+    ; ;
+    (function (BufferUsages) {
+        BufferUsages._map = [];
+        BufferUsages.STREAM_DRAW = 35040;
+        BufferUsages.STATIC_DRAW = 35044;
+        BufferUsages.DYNAMIC_DRAW = 35048;
+    })(akra.BufferUsages || (akra.BufferUsages = {}));
+    var BufferUsages = akra.BufferUsages;
+    ; ;
+    (function (BufferTypes) {
+        BufferTypes._map = [];
+        BufferTypes.ARRAY_BUFFER = 34962;
+        BufferTypes.ELEMENT_ARRAY_BUFFER = 34963;
+        BufferTypes.FRAME_BUFFER = 36160;
+        BufferTypes.RENDER_BUFFER = 36161;
+    })(akra.BufferTypes || (akra.BufferTypes = {}));
+    var BufferTypes = akra.BufferTypes;
+    ; ;
+    (function (AttachmentTypes) {
+        AttachmentTypes._map = [];
+        AttachmentTypes.COLOR_ATTACHMENT0 = 36064;
+        AttachmentTypes.DEPTH_ATTACHMENT = 36096;
+        AttachmentTypes.STENCIL_ATTACHMENT = 36128;
+        AttachmentTypes.DEPTH_STENCIL_ATTACHMENT = 33306;
+    })(akra.AttachmentTypes || (akra.AttachmentTypes = {}));
+    var AttachmentTypes = akra.AttachmentTypes;
+    ; ;
+    (function (ShaderTypes) {
+        ShaderTypes._map = [];
+        ShaderTypes.PIXEL = 35632;
+        ShaderTypes._map[35633] = "VERTEX";
+        ShaderTypes.VERTEX = 35633;
+    })(akra.ShaderTypes || (akra.ShaderTypes = {}));
+    var ShaderTypes = akra.ShaderTypes;
+    ; ;
+    (function (RenderStates) {
+        RenderStates._map = [];
+        RenderStates.ZENABLE = 7;
+        RenderStates.ZWRITEENABLE = 14;
+        RenderStates.SRCBLEND = 19;
+        RenderStates.DESTBLEND = 20;
+        RenderStates.CULLMODE = 22;
+        RenderStates.ZFUNC = 23;
+        RenderStates.DITHERENABLE = 26;
+        RenderStates.ALPHABLENDENABLE = 27;
+        RenderStates._map[28] = "ALPHATESTENABLE";
+        RenderStates.ALPHATESTENABLE = 28;
+    })(akra.RenderStates || (akra.RenderStates = {}));
+    var RenderStates = akra.RenderStates;
+    ; ;
+    (function (BlendModes) {
+        BlendModes._map = [];
+        BlendModes.ZERO = 0;
+        BlendModes.ONE = 1;
+        BlendModes.SRCCOLOR = 768;
+        BlendModes.INVSRCCOLOR = 769;
+        BlendModes.SRCALPHA = 770;
+        BlendModes.INVSRCALPHA = 771;
+        BlendModes.DESTALPHA = 772;
+        BlendModes.INVDESTALPHA = 773;
+        BlendModes.DESTCOLOR = 774;
+        BlendModes.INVDESTCOLOR = 775;
+        BlendModes.SRCALPHASAT = 776;
+    })(akra.BlendModes || (akra.BlendModes = {}));
+    var BlendModes = akra.BlendModes;
+    ; ;
+    (function (CmpFuncs) {
+        CmpFuncs._map = [];
+        CmpFuncs.NEVER = 1;
+        CmpFuncs.LESS = 2;
+        CmpFuncs.EQUAL = 3;
+        CmpFuncs.LESSEQUAL = 4;
+        CmpFuncs.GREATER = 5;
+        CmpFuncs.NOTEQUAL = 6;
+        CmpFuncs.GREATEREQUAL = 7;
+        CmpFuncs.ALWAYS = 8;
+    })(akra.CmpFuncs || (akra.CmpFuncs = {}));
+    var CmpFuncs = akra.CmpFuncs;
+    ; ;
+    (function (CullModes) {
+        CullModes._map = [];
+        CullModes.NONE = 0;
+        CullModes.CW = 1028;
+        CullModes.CCW = 1029;
+        CullModes.FRONT_AND_BACK = 1032;
+    })(akra.CullModes || (akra.CullModes = {}));
+    var CullModes = akra.CullModes;
+    ; ;
+    (function (TextureUnits) {
+        TextureUnits._map = [];
+        TextureUnits.TEXTURE = 33984;
+    })(akra.TextureUnits || (akra.TextureUnits = {}));
+    var TextureUnits = akra.TextureUnits;
+    ; ;
+            function getTypeSize(eType) {
+        switch(eType) {
+            case DataTypes.BYTE:
+            case DataTypes.UNSIGNED_BYTE: {
+                return 1;
+
+            }
+            case DataTypes.SHORT:
+            case DataTypes.UNSIGNED_SHORT:
+            case ImageTypes.UNSIGNED_SHORT_4_4_4_4:
+            case ImageTypes.UNSIGNED_SHORT_5_5_5_1:
+            case ImageTypes.UNSIGNED_SHORT_5_6_5: {
+                return 2;
+
+            }
+            case DataTypes.INT:
+            case DataTypes.UNSIGNED_INT:
+            case DataTypes.FLOAT: {
+                return 4;
+
+            }
+            default: {
+                akra.error('unknown data/image type used');
+
+            }
+        }
+        return 0;
+    }
+    akra.getTypeSize = getTypeSize;
+    (window).URL = (window).URL ? (window).URL : (window).webkitURL ? (window).webkitURL : null;
+    (window).BlobBuilder = (window).WebKitBlobBuilder || (window).MozBlobBuilder || (window).BlobBuilder;
+    (window).requestFileSystem = (window).requestFileSystem || (window).webkitRequestFileSystem;
+    (window).requestAnimationFrame = (window).requestAnimationFrame || (window).webkitRequestAnimationFrame || (window).mozRequestAnimationFrame;
+    (window).WebSocket = (window).WebSocket || (window).MozWebSocket;
 })(akra || (akra = {}));
 ; ;
 var DemoApp = (function (_super) {
