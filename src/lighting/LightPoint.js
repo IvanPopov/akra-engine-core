@@ -354,7 +354,7 @@ LightPoint.prototype._renderShadowsFromCamera = function (iIndex) {
 
     //тест на видимость источника
     if(!this._testWithActiveCamera(pEngine.getActiveCamera(),pCamera)){
-        console.log("don't render shadow");
+//        console.log("don't render shadow");
         m4fOptimizedProj.set(pCamera.projectionMatrix);
         return true;
     }
