@@ -200,7 +200,7 @@ LightPoint.prototype._initializeTextures = function () {
     var pColor = this._pColorTexture;
 
     pColor.createTexture(iShadowResolution, iShadowResolution,
-                         0, a.IFORMAT.RGBA, a.DTYPE.UNSIGNED_BYTE, null);
+                         0, a.IFORMAT.LUMINANCE, a.DTYPE.UNSIGNED_BYTE, null);
 };
 
 
@@ -350,6 +350,12 @@ LightPoint.prototype._renderShadowsFromCamera = function (iIndex) {
         m4fOptimizedProj = this._m4fOptimizedProj;
     }
 
+    //тест на видимость источника
+    if(!this._testWithActiveCamera(pEngine.getActiveCamera(),pCamera)){
+        m4fOptimizedProj.set(pCamera.projectionMatrix);
+        return true;
+    }
+
     var pEngine = this._pEngine;
     var pFirstMember = pEngine._pSceneTree.buildSearchResults(pCamera.searchRect(), pCamera.frustum());
     var pOptimizedResult = this._optimizeSearchResult(pFirstMember);
@@ -377,6 +383,77 @@ LightPoint.prototype._renderShadowsFromCamera = function (iIndex) {
     }
 
     pEngine.setActiveCamera(pLastActiveCamera);
+    return true;
+};
+
+/**
+ * Возвращает True или False в зависимости от результата теста
+ * если false то источник можно отключать так как он не будет виден в камеру 
+ * @return Bool
+ */
+
+LightPoint.prototype._testWithActiveCamera = function(pCamera,pLightCamera) {
+    'use strict';
+    
+    var pCameraFrustum = pCamera.pFrustum;
+    var pLightFrustumVertices = pLightCamera.pFrustumVertices;
+
+    var i;
+
+    //left plane
+    var pLeftPlane = pCameraFrustum.leftPlane;
+    for(i=0;i<8;i++){
+        if(pLeftPlane.signedDistance(pLightFrustumVertices[i]) <= 0){
+            break;
+        }
+    }
+    if(i==8){ return false; }
+
+    //righ pPlane
+    var pRightPlane = pCameraFrustum.rightPlane;
+    for(i=0;i<8;i++){
+        if(pRightPlane.signedDistance(pLightFrustumVertices[i]) <= 0){
+            break;
+        }
+    }
+    if(i==8){ return false; }
+
+    //top plane
+    var pTopPlane = pCameraFrustum.topPlane;
+    for(i=0;i<8;i++){
+        if(pTopPlane.signedDistance(pLightFrustumVertices[i]) <= 0){
+            break;
+        }
+    }
+    if(i==8){ return false; }
+
+    //bottom plane
+    var pBottomPlane = pCameraFrustum.bottomPlane;
+    for(i=0;i<8;i++){
+        if(pBottomPlane.signedDistance(pLightFrustumVertices[i]) <= 0){
+            break;
+        }
+    }
+    if(i==8){ return false; }
+
+    //near plane
+    var pNearPlane = pCameraFrustum.nearPlane;
+    for(i=0;i<8;i++){
+        if(pNearPlane.signedDistance(pLightFrustumVertices[i]) <= 0){
+            break;
+        }
+    }
+    if(i==8){ return false; }
+
+    //far plane
+    var pFarPlane = pCameraFrustum.farPlane;
+    for(i=0;i<8;i++){
+        if(pFarPlane.signedDistance(pLightFrustumVertices[i]) <= 0){
+            break;
+        }
+    }
+    if(i==8){ return false; }
+
     return true;
 };
 
