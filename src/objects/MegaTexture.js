@@ -67,7 +67,7 @@ function MegaTexture(pEngine, pObject, sSurfaceTextures) {
         this._pXY[i] = {iX : 0, iY : 0, isUpdated : true, isLoaded : false};//Координты буфера в основной текстуре, для простыты должны быть кратну размеру блока
     }
 
-    this._pRPC = new a.NET.RPC('ws://192.168.194.128');
+    this._pRPC = new a.NET.RPC('ws://192.168.214.128');
     this.getDataFromServer(0, 0, 0, this._iTextureWidth, this._iTextureHeight);
 }
 

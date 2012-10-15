@@ -83,8 +83,8 @@ function (pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY
 		this._iHeightMapY = iHeightMapY;
 
 		bResult = this._createRenderDataForVertexAndIndex();
-		bResult = bResult&&this._buildVertexBuffer();
-		bResult = bResult&&this._buildIndexBuffer();
+		bResult = bResult && this._buildVertexBuffer();
+		bResult = bResult && this._buildIndexBuffer();
 
 		// set the scene object bounds data
 		this.accessLocalBounds().set(this._pWorldRect.fX0,
