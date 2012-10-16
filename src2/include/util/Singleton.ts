@@ -1,5 +1,5 @@
 module akra.util {
-	class Singleton {
+	export class Singleton {
 		constructor () {
 			var _constructor = (<any>this).constructor;
 

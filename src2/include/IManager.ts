@@ -3,6 +3,6 @@
 module akra {
     export interface IManager {
         initialize(): bool;
-
+        
     }
 }

@@ -6,6 +6,7 @@ module akra {
         particleManager: IParticleManager;
         spriteManager: ISpriteManager;
         lightManager: ILightManager;
+        resourceManager: IResourcePoolManager;
         /*
         rootNode: number;
         sceneTree: number;

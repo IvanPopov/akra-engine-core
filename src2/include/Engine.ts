@@ -59,7 +59,7 @@ module akra {
 
 		private pRenderer: IRenderer = null;
 
-		private pResourceManager: IResourceManager = null;
+		private pResourceManager: IResourcePoolManager = null;
 		private pDisplayManager: IDisplayManager = null;
 		private pParticleManager: IParticleManager = null;
 		private pSpriteManager: ISpriteManager = null;
@@ -104,6 +104,10 @@ module akra {
 		}
 
 		get lightManager(): ILightManager {
+			return null;
+		}
+
+		get resourceManager(): IResourcePoolManager {
 			return null;
 		}
 

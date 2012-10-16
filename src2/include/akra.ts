@@ -137,50 +137,52 @@ module akra {
 		return initDevice(pDevice);
     }
 
-    export var MIN_INT32 = 0xffffffff;  // (-2147483646);
-    export var MAX_INT32 = 0x7fffffff;  // ( 2147483647);
-    export var MIN_INT16 = 0xffff;      // (-32768);
-    export var MAX_INT16 = 0x7fff;      // ( 32767);
-    export var MIN_INT8 = 0xff;         // (-128);
-    export var MAX_INT8 = 0x7f;         // ( 127);
-    export var MIN_UINT32 = 0;
-    export var MAX_UINT32 = 0xffffffff;
-    export var MIN_UINT16 = 0;
-    export var MAX_UINT16 = 0xffff;
-    export var MIN_UINT8 = 0;
-    export var MAX_UINT8 = 0xff;
+    export var INVALID_INDEX: int =  0xffff;
+
+    export var MIN_INT32: int = 0xffffffff;  // (-2147483646);
+    export var MAX_INT32: int = 0x7fffffff;  // ( 2147483647);
+    export var MIN_INT16: int = 0xffff;      // (-32768);
+    export var MAX_INT16: int = 0x7fff;      // ( 32767);
+    export var MIN_INT8: int = 0xff;         // (-128);
+    export var MAX_INT8: int = 0x7f;         // ( 127);
+    export var MIN_UINT32: int = 0;
+    export var MAX_UINT32: int = 0xffffffff;
+    export var MIN_UINT16: int = 0;
+    export var MAX_UINT16: int = 0xffff;
+    export var MIN_UINT8: int = 0;
+    export var MAX_UINT8: int = 0xff;
 
 
-    export var SIZE_FLOAT64 = 8;
-    export var SIZE_REAL64 = 8;
-    export var SIZE_FLOAT32 = 4;
-    export var SIZE_REAL32 = 4;
-    export var SIZE_INT32 = 4;
-    export var SIZE_UINT32 = 4;
-    export var SIZE_INT16 = 2;
-    export var SIZE_UINT16 = 2;
-    export var SIZE_INT8 = 1;
-    export var SIZE_UINT8 = 1;
-    export var SIZE_BYTE = 1;
-    export var SIZE_UBYTE = 1;
+    export var SIZE_FLOAT64: int = 8;
+    export var SIZE_REAL64: int = 8;
+    export var SIZE_FLOAT32: int = 4;
+    export var SIZE_REAL32: int = 4;
+    export var SIZE_INT32: int = 4;
+    export var SIZE_UINT32: int = 4;
+    export var SIZE_INT16: int = 2;
+    export var SIZE_UINT16: int = 2;
+    export var SIZE_INT8: int = 1;
+    export var SIZE_UINT8: int = 1;
+    export var SIZE_BYTE: int = 1;
+    export var SIZE_UBYTE: int = 1;
 
 
-    export var MAX_FLOAT64 = Number.MAX_VALUE;      //1.7976931348623157e+308
-    export var MIN_FLOAT64 = -Number.MAX_VALUE;     //-1.7976931348623157e+308
-    export var TINY_FLOAT64 = Number.MIN_VALUE;     //5e-324
+    export var MAX_FLOAT64: int = Number.MAX_VALUE;      //1.7976931348623157e+308
+    export var MIN_FLOAT64: int = -Number.MAX_VALUE;     //-1.7976931348623157e+308
+    export var TINY_FLOAT64: int = Number.MIN_VALUE;     //5e-324
 
-    export var MAX_REAL64 = Number.MAX_VALUE;   //1.7976931348623157e+308
-    export var MIN_REAL64 = -Number.MAX_VALUE;  //-1.7976931348623157e+308
-    export var TINY_REAL64 = Number.MIN_VALUE;  //5e-324
+    export var MAX_REAL64: int = Number.MAX_VALUE;   //1.7976931348623157e+308
+    export var MIN_REAL64: int = -Number.MAX_VALUE;  //-1.7976931348623157e+308
+    export var TINY_REAL64: int = Number.MIN_VALUE;  //5e-324
 
 
-    export var MAX_FLOAT32 = 3.4e38;    //3.4e38
-    export var MIN_FLOAT32 = -3.4e38;   //-3.4e38
-    export var TINY_FLOAT32 = 1.5e-45;  //1.5e-45
+    export var MAX_FLOAT32: int = 3.4e38;    //3.4e38
+    export var MIN_FLOAT32: int = -3.4e38;   //-3.4e38
+    export var TINY_FLOAT32: int = 1.5e-45;  //1.5e-45
 
-    export var MAX_REAL32 = 3.4e38;     //3.4e38
-    export var MIN_REAL32 = -3.4e38;    //-3.4e38
-    export var TINY_REAL32 = 1.5e-45;   //1.5e-45
+    export var MAX_REAL32: int = 3.4e38;     //3.4e38
+    export var MIN_REAL32: int = -3.4e38;    //-3.4e38
+    export var TINY_REAL32: int = 1.5e-45;   //1.5e-45
 
     export enum DataTypes {
         BYTE = 0x1400,
@@ -447,12 +449,14 @@ module akra {
 ///<reference path="IKeyMap.ts" />
 ///<reference path="IGamepadMap.ts" />
 
+///<reference path="IReferenceCounter.ts" />
 ///<reference path="IScreenInfo.ts" />
 ///<reference path="ICanvasInfo.ts" />
 ///<reference path="IBrowserInfo.ts" />
 ///<reference path="IApiInfo.ts" />
 ///<reference path="IDeviceInfo.ts" />
 
+///<reference path="util/ReferenceCounter.ts" />
 ///<reference path="util/Singleton.ts" />
 ///<reference path="util/URI.ts" />
 ///<reference path="util/KeyMap.ts" />
@@ -462,13 +466,20 @@ module akra {
 ///<reference path="util/ScreenInfo.ts" />
 ///<reference path="util/DeviceInfo.ts" />
 
+
+///<reference path="IResourceWatcherFunc.ts" />
+///<reference path="IResourceNotifyRoutineFunc.ts" />
+///<reference path="IResourceCode.ts" />
+///<reference path="IDataPool.ts" />
 ///<reference path="IResourcePool.ts" />
+///<reference path="IResourcePoolItem.ts" />
 ///<reference path="IResourcePoolManager.ts" />
-//
+
+///<reference path="pool/ResourceCode.ts" />
 ///<reference path="pool/DataPool.ts" />
 ///<reference path="pool/ResourcePool.ts" />
 ///<reference path="pool/ResourcePoolItem.ts" />
-///<reference path="pool/IResourcePoolManager.ts" />
+///<reference path="pool/ResourcePoolManager.ts" />
 
 ///<reference path="ISceneTree.ts" />
 ///<reference path="IRenderState.ts" />

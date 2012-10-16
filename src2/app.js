@@ -320,6 +320,38 @@ var akra;
 var akra;
 (function (akra) {
     (function (util) {
+        var ReferenceCounter = (function () {
+            function ReferenceCounter(pSrc) {
+                this.nReferenceCount = 0;
+            }
+            ReferenceCounter.prototype.referenceCount = function () {
+                return this.nReferenceCount;
+            };
+            ReferenceCounter.prototype.destructor = function () {
+                akra.assert(this.nReferenceCount === 0, 'object is used');
+            };
+            ReferenceCounter.prototype.release = function () {
+                akra.assert(this.nReferenceCount > 0, 'object is used');
+                this.nReferenceCount--;
+                return this.nReferenceCount;
+            };
+            ReferenceCounter.prototype.addRef = function () {
+                akra.assert(this.nReferenceCount != akra.MIN_INT32, 'reference fail');
+                this.nReferenceCount++;
+                return this.nReferenceCount;
+            };
+            ReferenceCounter.prototype.eq = function (pSrc) {
+                return this;
+            };
+            return ReferenceCounter;
+        })();
+        util.ReferenceCounter = ReferenceCounter;        
+    })(akra.util || (akra.util = {}));
+    var util = akra.util;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (util) {
         var Singleton = (function () {
             function Singleton() {
                 var _constructor = (this).constructor;
@@ -327,7 +359,8 @@ var akra;
                 _constructor._pInstance = this;
             }
             return Singleton;
-        })();        
+        })();
+        util.Singleton = Singleton;        
     })(akra.util || (akra.util = {}));
     var util = akra.util;
 })(akra || (akra = {}));
@@ -1026,39 +1059,386 @@ var akra;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
-    var ResourcePool = (function () {
-        function ResourcePool() { }
-        ResourcePool.prototype.initialize = function () {
-            return false;
-        };
-        ResourcePool.prototype.isInitialized = function () {
-            return false;
-        };
-        ResourcePool.prototype.clean = function () {
-            return false;
-        };
-        ResourcePool.prototype.destroy = function () {
-            return false;
-        };
-        ResourcePool.prototype.destroyAll = function () {
-            return false;
-        };
-        ResourcePool.prototype.disableAll = function () {
-            return false;
-        };
-        ResourcePool.prototype.restoreAll = function () {
-            return false;
-        };
-        ResourcePool.prototype.registerResourcePool = function () {
-        };
-        ResourcePool.prototype.unregisterResourcePool = function () {
-        };
-        ResourcePool.prototype.findResourceHandle = function () {
-            return 0;
-        };
-        return ResourcePool;
-    })();
-    akra.ResourcePool = ResourcePool;    
+    (function (ResourceCodes) {
+        ResourceCodes._map = [];
+        ResourceCodes.INVALID_CODE = 4294967295;
+    })(akra.ResourceCodes || (akra.ResourceCodes = {}));
+    var ResourceCodes = akra.ResourceCodes;
+    ; ;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (ResourceItemEvents) {
+        ResourceItemEvents._map = [];
+        ResourceItemEvents._map[0] = "k_Created";
+        ResourceItemEvents.k_Created = 0;
+        ResourceItemEvents._map[1] = "k_Loaded";
+        ResourceItemEvents.k_Loaded = 1;
+        ResourceItemEvents._map[2] = "k_Disabled";
+        ResourceItemEvents.k_Disabled = 2;
+        ResourceItemEvents._map[3] = "k_Altered";
+        ResourceItemEvents.k_Altered = 3;
+        ResourceItemEvents._map[4] = "k_TotalResourceFlags";
+        ResourceItemEvents.k_TotalResourceFlags = 4;
+    })(akra.ResourceItemEvents || (akra.ResourceItemEvents = {}));
+    var ResourceItemEvents = akra.ResourceItemEvents;
+    ; ;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (ResourceFamilies) {
+        ResourceFamilies._map = [];
+        ResourceFamilies.VIDEO_RESOURCE = 0;
+        ResourceFamilies._map[1] = "AUDIO_RESOURCE";
+        ResourceFamilies.AUDIO_RESOURCE = 1;
+        ResourceFamilies._map[2] = "GAME_RESOURCE";
+        ResourceFamilies.GAME_RESOURCE = 2;
+        ResourceFamilies._map[3] = "TOTAL_RESOURCE_FAMILIES";
+        ResourceFamilies.TOTAL_RESOURCE_FAMILIES = 3;
+    })(akra.ResourceFamilies || (akra.ResourceFamilies = {}));
+    var ResourceFamilies = akra.ResourceFamilies;
+    ; ;
+    (function (VideoResources) {
+        VideoResources._map = [];
+        VideoResources._map[0] = "k_TextureResource";
+        VideoResources.k_TextureResource = 0;
+        VideoResources._map[1] = "k_VideoBufferResource";
+        VideoResources.k_VideoBufferResource = 1;
+        VideoResources._map[2] = "k_VertexBufferResource";
+        VideoResources.k_VertexBufferResource = 2;
+        VideoResources._map[3] = "k_IndexBufferResource";
+        VideoResources.k_IndexBufferResource = 3;
+        VideoResources._map[4] = "k_RenderResource";
+        VideoResources.k_RenderResource = 4;
+        VideoResources._map[5] = "k_RenderSetResource";
+        VideoResources.k_RenderSetResource = 5;
+        VideoResources._map[6] = "k_ModelResource";
+        VideoResources.k_ModelResource = 6;
+        VideoResources._map[7] = "k_EffectFileData";
+        VideoResources.k_EffectFileData = 7;
+        VideoResources._map[8] = "k_ImageResource";
+        VideoResources.k_ImageResource = 8;
+        VideoResources._map[9] = "k_SMaterialResource";
+        VideoResources.k_SMaterialResource = 9;
+        VideoResources._map[10] = "k_ShaderProgramResource";
+        VideoResources.k_ShaderProgramResource = 10;
+        VideoResources._map[11] = "k_ComponentResource";
+        VideoResources.k_ComponentResource = 11;
+        VideoResources._map[12] = "k_TotalVideoResources";
+        VideoResources.k_TotalVideoResources = 12;
+    })(akra.VideoResources || (akra.VideoResources = {}));
+    var VideoResources = akra.VideoResources;
+    ; ;
+    (function (AudioResources) {
+        AudioResources._map = [];
+        AudioResources._map[0] = "k_TotalAudioResources";
+        AudioResources.k_TotalAudioResources = 0;
+    })(akra.AudioResources || (akra.AudioResources = {}));
+    var AudioResources = akra.AudioResources;
+    ; ;
+    (function (GameResources) {
+        GameResources._map = [];
+        GameResources._map[0] = "k_TotalGameResources";
+        GameResources.k_TotalGameResources = 0;
+    })(akra.GameResources || (akra.GameResources = {}));
+    var GameResources = akra.GameResources;
+    ; ;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (pool) {
+        var ResourceCode = (function () {
+            function ResourceCode(iFamily, iType) {
+                this.iValue = (akra.ResourceCodes.INVALID_CODE);
+                switch(arguments.length) {
+                    case 0: {
+                        this.iValue = akra.ResourceCodes.INVALID_CODE;
+                        break;
+
+                    }
+                    case 1: {
+                        if(arguments[0] instanceof ResourceCode) {
+                            this.iValue = arguments[0].iValue;
+                        } else {
+                            this.iValue = arguments[0];
+                        }
+                        break;
+
+                    }
+                    case 2: {
+                        this.family = arguments[0];
+                        this.type = arguments[1];
+                        break;
+
+                    }
+                }
+            }
+            Object.defineProperty(ResourceCode.prototype, "family", {
+                get: function () {
+                    return this.iValue >> 16;
+                },
+                set: function (iNewFamily) {
+                    this.iValue &= 65535;
+                    this.iValue |= iNewFamily << 16;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ResourceCode.prototype, "type", {
+                get: function () {
+                    return this.iValue & 65535;
+                },
+                set: function (iNewType) {
+                    this.iValue &= 4294901760;
+                    this.iValue |= iNewType & 65535;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            ResourceCode.prototype.setInvalid = function () {
+                this.iValue = akra.ResourceCodes.INVALID_CODE;
+            };
+            ResourceCode.prototype.less = function (pSrc) {
+                return this.iValue < pSrc.valueOf();
+            };
+            ResourceCode.prototype.eq = function (pSrc) {
+                this.iValue = pSrc.valueOf();
+                return this;
+            };
+            ResourceCode.prototype.valueOf = function () {
+                return this.iValue;
+            };
+            ResourceCode.prototype.toNumber = function () {
+                return this.iValue;
+            };
+            return ResourceCode;
+        })();
+        pool.ResourceCode = ResourceCode;        
+    })(akra.pool || (akra.pool = {}));
+    var pool = akra.pool;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (pool) {
+        var DataPool = (function () {
+            function DataPool(pEngine, tTemplate) {
+            }
+            return DataPool;
+        })();
+        pool.DataPool = DataPool;        
+    })(akra.pool || (akra.pool = {}));
+    var pool = akra.pool;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (pool) {
+        var ResourcePool = (function (_super) {
+            __extends(ResourcePool, _super);
+            function ResourcePool(pEngine, tTemplate) {
+                        _super.call(this);
+                this.pEngine = null;
+                this.tTemplate = null;
+                this.sExt = null;
+                this.pRegistrationCode = new pool.ResourceCode(akra.ResourceCodes.INVALID_CODE);
+                this.pNameMap = new Array();
+                this.pDataPool = null;
+                this.pEngine = pEngine;
+                this.tTemplate = tTemplate;
+                this.pDataPool = new pool.DataPool(pEngine, tTemplate);
+            }
+            Object.defineProperty(ResourcePool.prototype, "iFourcc", {
+                get: function () {
+                    return (this.sExt.charCodeAt(3) << 24) | (this.sExt.charCodeAt(2) << 16) | (this.sExt.charCodeAt(1) << 8) | (this.sExt.charCodeAt(0));
+                },
+                set: function (iNewFourcc) {
+                    this.sExt = String.fromCharCode((iNewFourcc & 255), (iNewFourcc & 65280) >>> 8, (iNewFourcc & 16711680) >>> 16, (iNewFourcc & 4278190080) >>> 24);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            ResourcePool.prototype.registerResourcePool = function (pCode) {
+                this.pRegistrationCode.eq(pCode);
+                this.pEngine.resourceManager.registerResourcePool(this.pRegistrationCode, this);
+            };
+            ResourcePool.prototype.unregisterResourcePool = function (pCode) {
+                this.pEngine.resourceManager.unregisterResourcePool(this.pRegistrationCode);
+                this.pRegistrationCode.setInvalid();
+            };
+            ResourcePool.prototype.findResourceHandle = function (sName) {
+                var iNewHandle = akra.INVALID_INDEX;
+                for(var iHandle = 0; iHandle < this.pNameMap.length; ++iHandle) {
+                    if(this.pNameMap[iHandle] === sName) {
+                        return iHandle;
+                    }
+                }
+                return iNewHandle;
+            };
+            ResourcePool.prototype.findResourceName = function (iHandle) {
+                return this.pNameMap[iHandle];
+            };
+            ResourcePool.prototype.setResourceName = function (iHandle, sName) {
+                this.pNameMap[iHandle] = sName;
+            };
+            ResourcePool.prototype.initialize = function (iGrowSize) {
+                this.pDataPool.initialize(iGrowSize);
+            };
+            ResourcePool.prototype.destroy = function () {
+                this.pDataPool.destroy();
+            };
+            ResourcePool.prototype.clean = function () {
+                this.pDataPool.forEach(ResourcePool.callbackClean);
+            };
+            ResourcePool.prototype.destroyAll = function () {
+                this.pDataPool.forEach(ResourcePool.callbackDestroy);
+            };
+            ResourcePool.prototype.restoreAll = function () {
+                this.pDataPool.forEach(ResourcePool.callbackRestore);
+            };
+            ResourcePool.prototype.disableAll = function () {
+                this.pDataPool.forEach(ResourcePool.callbackDisable);
+            };
+            ResourcePool.prototype.isInitialized = function () {
+                return this.pDataPool.isInitialized();
+            };
+            ResourcePool.prototype.callbackDestroy = function (pPool, iHandle, pResource) {
+                pResource.destroyResource();
+            };
+            ResourcePool.prototype.callbackDisable = function (pPool, iHandle, pResource) {
+                pResource.disableResource();
+            };
+            ResourcePool.prototype.callbackRestore = function (pPool, iHandle, pResource) {
+                pResource.restoreResource();
+            };
+            ResourcePool.prototype.callbackClean = function (pPool, iHandle, pResource) {
+                if(pResource.referenceCount() == 0) {
+                    pPool.release(iHandle);
+                }
+            };
+            ResourcePool.prototype.createResource = function (sResourceName) {
+                var iHandle = this.internalCreateResource(sResourceName);
+                if(VALID_HANDLE(iHandle)) {
+                    var pResource = this.getResource(iHandle);
+                    pResource.setResourcePool(this);
+                    pResource.setResourceHandle(iHandle);
+                    pResource.setResourceCode(this.pRegistrationCode);
+                    return pResource;
+                }
+                return null;
+            };
+            ResourcePool.prototype.loadResource = function (sResourceName) {
+                var pResource = this.findResource(sResourceName);
+                if(pResource == null) {
+                    pResource = this.createResource(sResourceName);
+                    if(pResource != null) {
+                        if(pResource.loadResource(sResourceName)) {
+                            return pResource;
+                        }
+                        pResource.release();
+                        pResource = null;
+                    }
+                }
+                return pResource;
+            };
+            ResourcePool.prototype.saveResource = function (pResource) {
+                if(pResource != null) {
+                    return pResource.saveResource(0);
+                }
+                return false;
+            };
+            ResourcePool.prototype.destroyResource = function (pResource) {
+                if(pResource != null) {
+                    var iReferenceCount = pResource.referenceCount();
+                    akra.debug_assert(iReferenceCount == 0, "destruction of non-zero reference count!");
+                    if(iReferenceCount <= 0) {
+                        var iHandle = pResource.resourceHandle();
+                        this.internalDestroyResource(iHandle);
+                    }
+                }
+            };
+            ResourcePool.prototype.findResource = function (sName) {
+                for(var iHandle = 0; iHandle < this.pNameMap.length; ++iHandle) {
+                    if(this.pNameMap[iHandle] == sName) {
+                        if(iHandle != akra.INVALID_INDEX) {
+                            var pResource = this.getResource(iHandle);
+                            return pResource;
+                        }
+                    }
+                }
+                return null;
+            };
+            ResourcePool.prototype.getResource = function (iHandle) {
+                var pResource = this.internalGetResource(iHandle);
+                if(pResource != null) {
+                    pResource.addRef();
+                }
+                return pResource;
+            };
+            ResourcePool.prototype.internalGetResource = function (iHandle) {
+                return this.pDataPool.getPtr(iHandle);
+            };
+            ResourcePool.prototype.internalDestroyResource = function (iHandle) {
+                var pResource = this.pDataPool.getPtr(iHandle);
+                pResource.destroyResource();
+                delete this._pNameMap[iHandle];
+                this.pDataPool.release(iHandle);
+            };
+            ResourcePool.prototype.internalCreateResource = function (sResourceName) {
+                var iHandle = this.pDataPool.nextHandle();
+                for(var iter in this.pNameMap) {
+                    akra.debug_assert((this.pNameMap[iter] != sResourceName), "A resource with this name already exists: " + sResourceName);
+                }
+                this._pNameMap[iHandle] = sResourceName;
+                var pResource = this.pDataPool.getPtr(iHandle);
+                pResource.createResource();
+                return iHandle;
+            };
+            return ResourcePool;
+        })(akra.util.ReferenceCounter);
+        pool.ResourcePool = ResourcePool;        
+    })(akra.pool || (akra.pool = {}));
+    var pool = akra.pool;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (pool) {
+        var ResourcePoolItem = (function (_super) {
+            __extends(ResourcePoolItem, _super);
+            function ResourcePoolItem() {
+                _super.apply(this, arguments);
+
+            }
+            return ResourcePoolItem;
+        })(akra.util.ReferenceCounter);
+        pool.ResourcePoolItem = ResourcePoolItem;        
+    })(akra.pool || (akra.pool = {}));
+    var pool = akra.pool;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (pool) {
+        var ResourcePoolManager = (function () {
+            function ResourcePoolManager(pEngine) {
+                this.pResourceFamilyList = null;
+                this.pResourceTypeMap = null;
+                this.pWaiterResource = null;
+                _super.prototype();
+                this.pResourceFamilyList = new Array(akra.ResourceFamilies.TOTAL_RESOURCE_FAMILIES);
+                for(var i = 0; i < akra.ResourceFamilies.TOTAL_RESOURCE_FAMILIES; i++) {
+                    this.pResourceFamilyList[i] = new Array();
+                }
+                this.pResourceTypeMap = new Array();
+                this.pWaiterResource = new akra.pool.ResourcePoolItem(pEngine);
+            }
+            ResourcePoolManager.pTypedResourseTotal = [
+                akra.VideoResources.k_TotalVideoResources, 
+                akra.AudioResources.k_TotalAudioResources, 
+                akra.GameResources.k_TotalGameResources
+            ];
+            return ResourcePoolManager;
+        })();
+        pool.ResourcePoolManager = ResourcePoolManager;        
+    })(akra.pool || (akra.pool = {}));
+    var pool = akra.pool;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
@@ -1213,6 +1593,13 @@ var akra;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Engine.prototype, "resourceManager", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Engine.prototype, "rootNode", {
             get: function () {
                 return null;
@@ -1313,7 +1700,10 @@ var akra;
                 akra.debug_warning('cannot create device object');
                 return false;
             }
-            this.initDe;
+            if(!this.initDefaultStates()) {
+                akra.debug_warning('cannot init default states');
+                return false;
+            }
             return false;
         };
         Engine.prototype.run = function () {
@@ -1523,6 +1913,7 @@ var akra;
         return initDevice(pDevice);
     }
     akra.createDevice = createDevice;
+    akra.INVALID_INDEX = 65535;
     akra.MIN_INT32 = 4294967295;
     akra.MAX_INT32 = 2147483647;
     akra.MIN_INT16 = 65535;

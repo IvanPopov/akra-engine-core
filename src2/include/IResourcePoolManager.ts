@@ -38,9 +38,9 @@ module akra {
 	/** Конструктор класса, занимается очисткой списков пулов по семействам ресурсвов и краты пулов по коду ресурсов */
     export interface IResourcePoolManager extends IManager {
     	/** Регистрируется пул ресурсов опредленного типа в менеджере русурсов */
-    	registerResourcePool(pCode: IResourceCode, pInterface: any): void;
+    	registerResourcePool(pCode: IResourceCode, pInterface: IResourcePool): void;
     	/** Удаляет пул ресурсов опредленного типа в менеджере русурсов */
-    	unregisterResourcePool(pCode: IResourceCode): any;
+    	unregisterResourcePool(pCode: IResourceCode): IResourcePool;
 
     	/** Удаление ресурсов определенного семества */
     	destroyResourceFamily(iFamily: int): void;
@@ -53,13 +53,13 @@ module akra {
     	disableResourceType(pCode: IResourceCode): void;
     	cleanResourceType(pCode: IResourceCode): void;
     	/** Возвращает пул ресурса опредленного типа по его коду */
-    	findResourcePool(pCode: IResourceCode): IResourcePool
+    	findResourcePool(pCode: IResourceCode): IResourcePool;
     	/**
 		 * Возвращает хендл конкретного ресурса по его имени из конкретного пула опредленного типа
 		 **/
     	findResourceHandle(pCode: IResourceCode, sName: string): uint;
 
-    	monitorInitResources(fnMonitor: Function): void;
+    	monitorInitResources(fnMonitor: IResourceWatcherFunc): void;
     	setLoadedAllRoutine(fnCallback: Function): void;
 
     	/** Удаление всех ресурсов */
