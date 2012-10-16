@@ -1005,9 +1005,9 @@ Renderer.prototype.finishPass = function (iPass) {
         var pRenderObject = this._pPreRenderState.pRenderObject;
         if (pRenderObject.surfaceMaterial && pRenderObject.surfaceMaterial.textureFlags) {
             var pSurfaceTextures = pRenderObject.surfaceMaterial._pTexture;
-            for(var i in pSurfaceTextures){
+            for (var i in pSurfaceTextures) {
                 sHash += ".." + "TEXTURES" + i;
-                if(pSurfaceTextures[i]!== null){
+                if (pSurfaceTextures[i] !== null) {
                     sHash += "?TEX";
                 }
             }
@@ -1688,12 +1688,19 @@ Renderer.prototype.processRenderStage = function () {
         var iLength = pLightManager.getDeferredTextureCount();
         for (i = 0; i < iLength; i++) {
             this.activateFrameBuffer(pLightManager.deferredFrameBuffers[i]);
-            this.clearScreen(a.CLEAR.DEPTH_BUFFER_BIT | a.CLEAR.COLOR_BUFFER_BIT, Vec4(0));
+            if (i === 0) {
+                this.clearScreen(a.CLEAR.DEPTH_BUFFER_BIT | a.CLEAR.COLOR_BUFFER_BIT, Vec4(0));
+            }
+            else {
+                this.clearScreen(a.CLEAR.COLOR_BUFFER_BIT, Vec4(0));
+                this.pDevice.depthFunc(this.pDevice.EQUAL);
+            }
             this._pCurrentRenderQueue = pQueues[i];
             pQueues[i].execute();
 //            this.pDevice.flush();
             this.activateFrameBuffer(null);
         }
+        this.pDevice.depthFunc(this.pDevice.LESS);
     }
     this._pCurrentRenderQueue = null;
     this._eCurrentRenderStage = null;

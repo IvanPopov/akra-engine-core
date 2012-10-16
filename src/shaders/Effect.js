@@ -1398,29 +1398,29 @@ EffectVariable.prototype.toCodeDecl = function (isInit) {
     sCode = this.pType.toCode() + " " + this.sRealName;
     if (this.isArray) {
         if (typeof(this.iLength) === "object") {
-            if(this.iLength instanceof Array){
+            if (this.iLength instanceof Array) {
                 sCode += "[";
                 var pElement;
-                for(var i = 0; i < this.iLength.length; i++){
+                for (var i = 0; i < this.iLength.length; i++) {
                     pElement = this.iLength[i];
-                    if(typeof(pElement) === "string") {
+                    if (typeof(pElement) === "string") {
                         sCode += pElement;
                     }
                     else {
                         if (pElement._pData === null || pElement._pData === undefined) {
-                            if(!pCode){
+                            if (!pCode) {
                                 pCode = [sCode, pElement];
                             }
-                            else{
+                            else {
                                 pCode.push(pElement);
                             }
                             sCode = "";
                         }
-                        else{
+                        else {
                             sCode += pElement.toDataCode();
                         }
                     }
-                }   
+                }
                 sCode += "]";
             }
             else if (this.iLength._pData === null || this.iLength._pData === undefined) {
@@ -1515,9 +1515,9 @@ EffectVariable.prototype.setLength = function (pValue) {
     }
     else {
         this.iLength = pValue;
-        if(pValue instanceof EffectVariable){
+        if (pValue instanceof EffectVariable) {
             this.addDependence(pValue);
-        }   
+        }
     }
 };
 EffectVariable.prototype.isComplicate = function () {
@@ -1530,13 +1530,13 @@ EffectVariable.prototype.isComplicate = function () {
 EffectVariable.prototype.getLength = function () {
     var iLength = this.iLength;
     if (typeof(iLength) === "object") {
-        if(iLength instanceof Array){
+        if (iLength instanceof Array) {
             var sEval = "";
-            for(var i = 0; i < iLength.length; i++){
-                if(typeof iLength[i] === "object"){
+            for (var i = 0; i < iLength.length; i++) {
+                if (typeof iLength[i] === "object") {
                     sEval += iLength[i].toDataCode();
                 }
-                else{
+                else {
                     sEval += iLength[i];
                 }
             }
@@ -4803,7 +4803,7 @@ Effect.prototype.postAnalyzeEffect = function () {
     }
     //check all functions for used another functions
     var isNewFunction = true;
-    while(isNewFunction){
+    while (isNewFunction) {
         isNewFunction = false;
         for (i in this._pFunctionTableByHash) {
             pFunction = this._pFunctionTableByHash[i];
@@ -4817,7 +4817,7 @@ Effect.prototype.postAnalyzeEffect = function () {
                     }
                 }
             }
-        }     
+        }
     }
     //Check all functions for used in vertexOnly or in FragmentOnly
     var isNewConstraint = true;
@@ -4951,7 +4951,7 @@ Effect.prototype.postAnalyzeEffect = function () {
     }
     //Add function in functions
     var isNewFunction = true;
-    while(isNewFunction){
+    while (isNewFunction) {
         isNewFunction = false;
         for (i in this._pShaders) {
             pShader = this._pShaders[i];
@@ -4965,7 +4965,7 @@ Effect.prototype.postAnalyzeEffect = function () {
                     }
                 }
             }
-        }     
+        }
     }
     //global vars and uniforms, used types and externals for shaders
     isNew = true;
@@ -6091,7 +6091,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             else if (sName === a.fx.GLOBAL_VARS.EQUALITYEXPR || sName === a.fx.GLOBAL_VARS.RELATIONALEXPR) {
                 if (pType1 !== a.fx.GLOBAL_VARS.UNDEFINEDTYPE && pType2 !== a.fx.GLOBAL_VARS.UNDEFINEDTYPE &&
                     !pType1.isEqual(pType2)) {
-                    trace(pType1,pType2)
+                    trace(pType1, pType2)
                     error("bad 102");
                     return;
                 }
@@ -7528,37 +7528,19 @@ Effect.prototype.analyzeState = function (pNode) {
             isTexture = true;
             break;
         case "ADDRESSU":
-            eState = "ADDRESSU";
+            eState = a.TPARAM.WRAP_S;
             break;
         case "ADDRESSV":
-            eState = "ADDRESSV";
-            break;
-        case "ADDRESSW":
-            eState = "ADDRESSW";
-            break;
-        case "BORDERCOLOR":
-            eState = "BORDERCOLOR";
+            eState = a.TPARAM.WRAP_T;
             break;
         case "MAGFILTER":
-            eState = "MAGFILTER";
-            break;
-        case "MAXANISOTROPY":
-            eState = "MAXANISOTROPY";
-            break;
-        case "MAXMIPLEVEL":
-            eState = "MAXMIPLEVEL";
+            eState = a.TPARAM.MAG_FILTER;
             break;
         case "MINFILTER":
-            eState = "MINFILTER";
-            break;
-        case "MIPFILTER":
-            eState = "MIPFILTER";
-            break;
-        case "MIPMAPLODBIAS":
-            eState = "MIPMAPLODBIAS";
+            eState = a.TPARAM.MIN_FILTER;
             break;
         default:
-            error("Oh no, but it is error " + sType);
+            warning("WebGl don`t support this texture param: " + sType);
             return;
     }
     if (isTexture) {
@@ -7578,8 +7560,56 @@ Effect.prototype.analyzeState = function (pNode) {
         this._pCurrentVar.setTexture(pTexture);
         return;
     }
-    //TODO: add sampler valid tests
-    this._pCurrentVar.setState(eState, pExpr.sValue);
+
+    var sValue = pExpr.sValue.toUpperCase();
+    var eValue = 0;
+    switch (eState) {
+        case a.TPARAM.WRAP_S:
+        case a.TPARAM.WRAP_T:
+            switch (sValue) {
+                case "WRAP":
+                    eValue = a.TWRAPMODE.REPEAT;
+                    break;
+                case "CLAMP":
+                    eValue = a.TWRAPMODE.CLAMP_TO_EDGE;
+                    break;
+                case "MIRROR":
+                    eValue = a.TWRAPMODE.MIRRORED_REPEAT;
+                    break;
+                default:
+                    warning("Webgl don`t support this wrapmode: " + sValue);
+                    return;
+            }
+            break;
+
+        case a.TPARAM.MAG_FILTER:
+        case a.TPARAM.MAG_FILTER:
+            switch (sValue) {
+                case "NEAREST":
+                    eValue = a.TFILTER.NEAREST;
+                    break;
+                case "LINEAR":
+                    eValue = a.TFILTER.LINEAR;
+                    break;
+                case "NEAREST_MIPMAP_NEAREST":
+                    eValue = a.TFILTER.NEAREST_MIPMAP_NEAREST;
+                    break;
+                case "LINEAR_MIPMAP_NEAREST":
+                    eValue = a.TFILTER.LINEAR_MIPMAP_NEAREST;
+                    break;
+                case "NEAREST_MIPMAP_LINEAR":
+                    eValue = a.TFILTER.NEAREST_MIPMAP_LINEAR;
+                    break;
+                case "LINEAR_MIPMAP_LINEAR":
+                    eValue = a.TFILTER.LINEAR_MIPMAP_LINEAR;
+                    break;
+                default:
+                    warning("Webgl don`t support this texture filter: " + sValue);
+                    return;
+            }
+            break;
+    }
+    this._pCurrentVar.setState(eState, eValue);
     return;
 };
 Effect.prototype.analyzeComplexName = function (pNode) {
