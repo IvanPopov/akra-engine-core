@@ -3592,6 +3592,17 @@ Effect.prototype._initSystemData = function () {
     this._addSystemFunction("lessThanEqual", "bool3", [null, null], ["float3", "int3"], "lessThanEqual($1,$2)");
     this._addSystemFunction("lessThanEqual", "bool4", [null, null], ["float4", "int4"], "lessThanEqual($1,$2)");
 
+
+    this._addSystemFunction("radians", null, [null], ["float", "float2", "float3", "float4"], "radians($1)");
+    this._addSystemFunction("degrees", null, [null], ["float", "float2", "float3", "float4"], "degrees($1)");
+    this._addSystemFunction("sin", null, [null], ["float", "float2", "float3", "float4"], "sin($1)");
+    this._addSystemFunction("cos", null, [null], ["float", "float2", "float3", "float4"], "cos($1)");
+    this._addSystemFunction("tan", null, [null], ["float", "float2", "float3", "float4"], "tan($1)");
+    this._addSystemFunction("asin", null, [null], ["float", "float2", "float3", "float4"], "asin($1)");
+    this._addSystemFunction("acos", null, [null], ["float", "float2", "float3", "float4"], "acos($1)");
+    this._addSystemFunction("atan", null, [null], ["float", "float2", "float3", "float4"], "atan($1)");
+    this._addSystemFunction("atan", null, [null, null], ["float", "float2", "float3", "float4"], "atan($1)");
+
     this._addSystemFunction("fragCoord", "float4", [], null, "gl_FragCoord");
     Effect._isInit = true;
 };

@@ -12,12 +12,21 @@ function Text3D(pEngine,pFont){
 	'use strict';
 	A_CLASS;
 
-	STATIC(pTextProg,a.loadProgram(pEngine,'../effects/text3D.glsl'));
 	STATIC(pDrawRoutine,DrawRoutineText3D);
 
+	var pMethod = pEngine.pDisplayManager.renderMethodPool().createResource(".render_text3d");
+    this.addRenderMethod(pMethod, ".render_text3d");
+    this.switchRenderMethod(".render_text3d");
+
+    var pEffect = pEngine.pDisplayManager.effectPool().createResource(".render_text3d");
+    pEffect.create();
+    pEffect.use("akra.system.text3d");
+    
+    pMethod.effect = pEffect;
+
 	this._pFont = pFont;
-	this._v4fBackgroundColor = Vec4.create(0.,0.,0.,0.);
-	this._v4fFontColor = Vec4.create(0.,0.,0.,0.);
+	this._v4fBackgroundColor = new Vec4(0.);
+	this._v4fFontColor = new Vec4(0.);
 
 	this._fDistanceMultiplier = 1.;
 
@@ -26,7 +35,7 @@ function Text3D(pEngine,pFont){
 	this._nPixelLineLingth = 0;
 
 	this.setGeometry(2,2);
-	this.setProgram(statics.pTextProg);
+	//this.setProgram(statics.pTextProg);
 	this.drawRoutine = statics.pDrawRoutine;
 };
 
@@ -39,7 +48,7 @@ PROPERTY(Text3D,'backgroundColor',
 	},
 	function(v4fBackgroundColor){
 		'use strict';
-		Vec4.set(v4fBackgroundColor,this._v4fBackgroundColor)
+		this._v4fBackgroundColor.set(v4fBackgroundColor);
 	}
 );
 
@@ -50,28 +59,18 @@ PROPERTY(Text3D,'fontColor',
 	},
 	function(v4fFontColor){
 		'use strict';
-		Vec4.set(v4fFontColor,this._v4fFontColor);
+		this._v4fFontColor.set(v4fFontColor);
 	}
 );
 
 PROPERTY(Text3D,'fixedSize',
 	function(){
 		'use strict';
-		if(this._fDistanceMultiplier == 0.){
-			return true;
-		}
-		else{
-			return false;
-		}
+		return (this._fDistanceMultiplier == 0.) ? true : false;
 	},
 	function(isFixed){
 		'use strict';
-		if(isFixed){
-			this._fDistanceMultiplier = 0.;
-		}
-		else{
-			this._fDistanceMultiplier = 1.;	
-		}
+		this._fDistanceMultiplier = (isFixed) ? 0. : 1.;
 	}
 );
 
@@ -258,14 +257,14 @@ Text3D.prototype.setText = function(sString){
 	}
 
 
-	var pIndex = new Float32Array(4);
-	for(var i=0;i<4;i++){
-		pIndex[i] = i;
-	}
+	// var pIndex = new Float32Array(4);
+	// for(var i=0;i<4;i++){
+	// 	pIndex[i] = i;
+	// }
 
 	this._pRenderData.allocateData(VE_VEC4('STRING_DATA'),pStringData);
-	this._pRenderData.allocateIndex(VE_FLOAT('INDEX1'),pIndex);
-	this._pRenderData.index(this._pRenderData.getDataLocation('STRING_DATA'),'INDEX1');
+	// this._pRenderData.allocateIndex(VE_FLOAT('INDEX1'),pIndex);
+	// this._pRenderData.index(this._pRenderData.getDataLocation('STRING_DATA'),'INDEX1');
 	//trace(pStringData);
 };
 
@@ -280,36 +279,36 @@ Text3D.prototype.setDistanceMultiplier = function(fMultiplier) {
 
 A_NAMESPACE(Text3D);
 
-function DrawRoutineText3D(pProgram){
+function DrawRoutineText3D(pSnapshot){
 	'use strict';
-	var pCamera = this._pEngine.getActiveCamera();
+	// var pCamera = this._pEngine.getActiveCamera();
 
-	pProgram.applyMatrix4('model_mat', this.worldMatrix());
-	pProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
-	pProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
+	// pProgram.applyMatrix4('model_mat', this.worldMatrix());
+	// pProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
+	// pProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
 
 	//text unifoms
 
-	pProgram.applyFloat('nLineLength',this._nLineLength);
-	pProgram.applyFloat('nLineQuantity',this._nLineQuantity);
-	pProgram.applyFloat('startIndex',this._pRenderData.getDataLocation('STRING_DATA')/4.);
+	pSnapshot.setParameterBySemantic('LINE_LENGTH',this._nLineLength);
+	pSnapshot.setParameterBySemantic('LINE_QUANTITY',this._nLineQuantity);
+	pSnapshot.setParameterBySemantic('START_INDEX',this._pRenderData.getDataLocation('STRING_DATA')/4.);
 
-	pProgram.applyVector2('nPixelsSizes',this._nPixelLineLingth,
-		this._pFont.fontMetrics.fontMetrics.height*this._nLineQuantity);
+	pSnapshot.setParameterBySemantic('SPRITE_PIXEL_SIZES',Vec2(this._nPixelLineLingth,
+		this._pFont.fontMetrics.fontMetrics.height*this._nLineQuantity));
 
 	//set screen parameters (ограничивают максимальный размер текста на экране размером шрифта)
-	pProgram.applyVector2('v2fCanvasSizes',this._pEngine.pCanvas.width,this._pEngine.pCanvas.height);
-	//pProgram.applyVector2('v2fTextSizes',);
-	pProgram.applyFloat('nFontSize',this._pFont.totalFontSize);
-	pProgram.applyFloat('fDistanceMultiplier',this._fDistanceMultiplier);
+	pSnapshot.setParameterBySemantic('CANVAS_SIZE',this._pEngine.pCanvas.width,this._pEngine.pCanvas.height);
+	pSnapshot.setParameterBySemantic('FONT_SIZE',this._pFont.totalFontSize);
+	pSnapshot.setParameterBySemantic('DISTANCE_MULTIPLIER',this._fDistanceMultiplier);
 
 	//set font colors
-	pProgram.applyVector4('v4fBackgroundColor',this._v4fBackgroundColor);
-	pProgram.applyVector4('v4fFontColor',this._v4fFontColor);
+	pSnapshot.setParameterBySemantic('BACKGROUND_COLOR',this._v4fBackgroundColor);
+	pSnapshot.setParameterBySemantic('FONT_COLOR',this._v4fFontColor);
 	//
 
-	this._pFont.activate(1);
-	pProgram.applyInt('textTexture',1);
+	pSnapshot.applyTextureBySemantic("FONT_TEXTURE", this._pFont);
+
+	pSnapshot.setParameterBySemantic("TEXT_DATA",this._pEngine.spriteManager()._pDataFactory.buffer);
 
 	// var pDevice = this._pEngine.pDevice;
 	// pDevice.disable(pDevice.DEPTH_TEST);
