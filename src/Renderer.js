@@ -1697,7 +1697,6 @@ Renderer.prototype.processRenderStage = function () {
             }
             this._pCurrentRenderQueue = pQueues[i];
             pQueues[i].execute();
-//            this.pDevice.flush();
             this.activateFrameBuffer(null);
         }
         this.pDevice.depthFunc(this.pDevice.LESS);
