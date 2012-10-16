@@ -6229,7 +6229,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     if (pRes.pType.isEqual(this.hasType("video_buffer")) &&
                         pRes.iScope === a.fx.GLOBAL_VARS.GLOBAL &&
                         this._eFuncProperty !== a.Effect.Func.DEFAULT) {
-                        pFunction.addGlobalBuffer(pRes);
+                        pFunction.addGlobalBuffer(pRes.pBuffer);
                     }
 //                    if (pRes.isPointer !== false) {
 //                        if (this._eFuncProperty === a.Effect.Func.VERTEX && pRes.iScope === pFunction.iScope) {
