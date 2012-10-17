@@ -1,309 +1,644 @@
 var akra;
 (function (akra) {
-    var Vec2 = (function () {
-        function Vec2(x, y) {
-            this.x = 0;
-            this.y = 0;
-            switch(arguments.length) {
-                case 0: {
-                    this.x = this.y = 0;
-                    break;
-
-                }
-                case 1: {
-                    this.set(x);
-                    break;
-
-                }
-                case 2: {
-                    this.set(x, y);
-
-                }
-            }
-        }
-        Vec2.prototype.set = function (x, y) {
-            switch(arguments.length) {
-                case 0: {
-                    this.x = this.y = 0;
-                    break;
-
-                }
-                case 1: {
-                    if(akra.isFloat(x)) {
-                        this.x = x;
-                        this.y = x;
-                    } else {
-                        this.x = x.x;
-                        this.y = x.y;
-                    }
-                    break;
-
-                }
-                case 2: {
-                    this.x = x;
-                    this.y = y;
-
-                }
-            }
-            return this;
+    (function (bf) {
+        bf.flag = function (x) {
+            return (1 << (x));
         };
-        return Vec2;
-    })();
-    akra.Vec2 = Vec2;    
+        bf.testBit = function (value, bit) {
+            return ((value & bf.flag(bit)) != 0);
+        };
+        bf.testAll = function (value, set) {
+            return (((value) & (set)) == (set));
+        };
+        bf.testAny = function (value, set) {
+            return (((value) & (set)) != 0);
+        };
+        bf.setBit = function (value, bit, setting) {
+            if (typeof setting === "undefined") { setting = true; }
+            return (setting ? bf.setBit(value, bit) : bf.clearBit(value, bit));
+        };
+        bf.clearBit = function (value, bit) {
+            return ((value) &= ~bf.flag((bit)));
+        };
+        bf.setAll = function (value, set, setting) {
+            if (typeof setting === "undefined") { setting = true; }
+            return (setting ? bf.setAll(value, set) : bf.clearAll(value, set));
+        };
+        bf.clearAll = function (value, set) {
+            return ((value) &= ~(set));
+        };
+        bf.equal = function (value, src) {
+            value = src;
+        };
+        bf.isEqual = function (value, src) {
+            return value == src;
+        };
+        bf.isNotEqaul = function (value, src) {
+            return value != src;
+        };
+        bf.set = function (value, src) {
+            value = src;
+        };
+        bf.clear = function (value) {
+            value = 0;
+        };
+        bf.setFlags = function (value, src) {
+            return (value |= src);
+        };
+        bf.clearFlags = function (value, src) {
+            return value &= ~src;
+        };
+        bf.isEmpty = function (value) {
+            return (value == 0);
+        };
+        bf.totalBits = function (value) {
+            return 32;
+        };
+        bf.totalSet = function (value) {
+            var count = 0;
+            var total = bf.totalBits(value);
+            for(var i = total; i; --i) {
+                count += (value & 1);
+                value >>= 1;
+            }
+            return (count);
+        };
+    })(akra.bf || (akra.bf = {}));
+    var bf = akra.bf;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
-    var Vec3 = (function () {
-        function Vec3(x, y, z) {
-            switch(arguments.length) {
-                case 0: {
-                    this.x = this.y = this.z = 0;
-                    break;
+    (function (math) {
+        var Vec2 = (function () {
+            function Vec2(x, y) {
+                this.x = 0;
+                this.y = 0;
+                switch(arguments.length) {
+                    case 0: {
+                        this.x = this.y = 0;
+                        break;
 
-                }
-                case 1: {
-                    this.set(x);
-                    break;
-
-                }
-                case 2: {
-                    this.set(x, y);
-                    break;
-
-                }
-                case 3: {
-                    this.set(x, y, z);
-
-                }
-            }
-        }
-        Object.defineProperty(Vec3.prototype, "xy", {
-            get: function () {
-                return new akra.Vec2(this.x, this.y);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Vec3.prototype, "xz", {
-            get: function () {
-                return new akra.Vec2(this.x, this.z);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Vec3.prototype, "yx", {
-            get: function () {
-                return new akra.Vec2(this.y, this.x);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Vec3.prototype, "yz", {
-            get: function () {
-                return new akra.Vec2(this.y, this.z);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Vec3.prototype, "zx", {
-            get: function () {
-                return new akra.Vec2(this.z, this.x);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Vec3.prototype, "zy", {
-            get: function () {
-                return new akra.Vec2(this.z, this.y);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Vec3.prototype, "xyz", {
-            get: function () {
-                return new Vec3(this.x, this.y, this.z);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Vec3.prototype.set = function (x, y, z) {
-            switch(arguments.length) {
-                case 0:
-                case 1: {
-                    if(akra.isFloat(x)) {
-                        this.x = this.y = this.z = x || 0;
-                    } else {
-                        this.x = x.x;
-                        this.y = x.y;
-                        this.z = x.z;
                     }
-                    break;
+                    case 1: {
+                        this.set(x);
+                        break;
 
-                }
-                case 2: {
-                    if(akra.isFloat(x)) {
-                        this.x = x;
-                        this.y = y.x;
-                        this.z = y.y;
-                    } else {
-                        this.x = x.x;
-                        this.y = x.y;
-                        this.z = y;
                     }
-                    break;
+                    case 2: {
+                        this.set(x, y);
 
-                }
-                case 3: {
-                    this.x = x;
-                    this.y = y;
-                    this.z = z;
-
-                }
-            }
-            return this;
-        };
-        Vec3.prototype.add = function (v3fVec, v3fDest) {
-            if(!v3fDest) {
-                v3fDest = this;
-            }
-            v3fDest.x = this.x + v3fVec.x;
-            v3fDest.y = this.y + v3fVec.y;
-            v3fDest.z = this.z + v3fVec.z;
-            return this;
-        };
-        Vec3.prototype.toString = function () {
-            return "[x: " + this.x + ", y: " + this.y + ", z: " + this.z + "]";
-        };
-        Vec3.v3f = new Vec3();
-        return Vec3;
-    })();
-    akra.Vec3 = Vec3;    
-})(akra || (akra = {}));
-var akra;
-(function (akra) {
-    var Vec4 = (function () {
-        function Vec4(x, y, z, w) {
-            switch(arguments.length) {
-                case 0: {
-                    this.x = this.y = this.z = this.w = 0;
-                    break;
-
-                }
-                case 1: {
-                    this.set(x);
-                    break;
-
-                }
-                case 2: {
-                    this.set(x, y);
-                    break;
-
-                }
-                case 4: {
-                    this.set(x, y, z, w);
-                    break;
-
-                }
-            }
-        }
-        Vec4.prototype.set = function (x, y, z, w) {
-            switch(arguments.length) {
-                case 0: {
-                    this.x = this.y = this.z = this.w = 0;
-                    break;
-
-                }
-                case 1: {
-                    if(akra.isFloat(x)) {
-                        this.x = this.y = this.z = this.w = x;
-                    } else {
-                        this.x = x.x;
-                        this.y = x.y;
-                        this.z = x.z;
-                        this.w = x.w;
                     }
-                    break;
-
                 }
-                case 2: {
-                    if(akra.isFloat(x)) {
-                        this.x = x;
-                        this.y = y.x;
-                        this.z = y.y;
-                        this.w = y.z;
-                    } else {
-                        if(akra.isFloat(y)) {
-                            this.x = x.x;
-                            this.y = x.y;
-                            this.z = x.z;
-                            this.w = y;
+            }
+            Vec2.prototype.set = function (x, y) {
+                switch(arguments.length) {
+                    case 0: {
+                        this.x = this.y = 0;
+                        break;
+
+                    }
+                    case 1: {
+                        if(akra.isFloat(x)) {
+                            this.x = x;
+                            this.y = x;
                         } else {
                             this.x = x.x;
                             this.y = x.y;
-                            this.z = y.x;
-                            this.w = y.y;
                         }
+                        break;
+
                     }
-                    break;
+                    case 2: {
+                        this.x = x;
+                        this.y = y;
 
+                    }
                 }
-                case 4: {
-                    this.x = x;
-                    this.y = y;
-                    this.z = z;
-                    this.w = w;
-
-                }
-            }
-            return this;
-        };
-        return Vec4;
-    })();
-    akra.Vec4 = Vec4;    
+                return this;
+            };
+            return Vec2;
+        })();
+        math.Vec2 = Vec2;        
+    })(akra.math || (akra.math = {}));
+    var math = akra.math;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
-    var Mat2 = (function () {
-        function Mat2(f11, f12, f21, f22) {
-            this.pData = new Float32Array(4);
-            switch(arguments.length) {
-                case 1: {
-                    this.set(f11);
-                    break;
+    (function (math) {
+        var Vec3 = (function () {
+            function Vec3(x, y, z) {
+                switch(arguments.length) {
+                    case 0: {
+                        this.x = this.y = this.z = 0;
+                        break;
 
-                }
-                case 4: {
-                    this.set(f11, f12, f21, f22);
-                    break;
-
-                }
-            }
-        }
-        Mat2.prototype.set = function (f11, f12, f21, f22) {
-            var pData = this.pData;
-            switch(arguments.length) {
-                case 1: {
-                    if(akra.isFloat(f11)) {
-                        pData[0] = pData[1] = pData[2] = pData[3] = f11;
-                    } else {
                     }
-                    break;
+                    case 1: {
+                        this.set(x);
+                        break;
 
-                }
-                case 4: {
-                    pData[0] = f11;
-                    pData[1] = f21;
-                    pData[2] = f12;
-                    pData[3] = f22;
-                    break;
+                    }
+                    case 2: {
+                        this.set(x, y);
+                        break;
 
+                    }
+                    case 3: {
+                        this.set(x, y, z);
+
+                    }
                 }
             }
-            return this;
+            Object.defineProperty(Vec3.prototype, "xy", {
+                get: function () {
+                    return new math.Vec2(this.x, this.y);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Vec3.prototype, "xz", {
+                get: function () {
+                    return new math.Vec2(this.x, this.z);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Vec3.prototype, "yx", {
+                get: function () {
+                    return new math.Vec2(this.y, this.x);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Vec3.prototype, "yz", {
+                get: function () {
+                    return new math.Vec2(this.y, this.z);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Vec3.prototype, "zx", {
+                get: function () {
+                    return new math.Vec2(this.z, this.x);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Vec3.prototype, "zy", {
+                get: function () {
+                    return new math.Vec2(this.z, this.y);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Vec3.prototype, "xyz", {
+                get: function () {
+                    return new Vec3(this.x, this.y, this.z);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Vec3.prototype.set = function (x, y, z) {
+                switch(arguments.length) {
+                    case 0:
+                    case 1: {
+                        if(akra.isFloat(x)) {
+                            this.x = this.y = this.z = x || 0;
+                        } else {
+                            this.x = x.x;
+                            this.y = x.y;
+                            this.z = x.z;
+                        }
+                        break;
+
+                    }
+                    case 2: {
+                        if(akra.isFloat(x)) {
+                            this.x = x;
+                            this.y = y.x;
+                            this.z = y.y;
+                        } else {
+                            this.x = x.x;
+                            this.y = x.y;
+                            this.z = y;
+                        }
+                        break;
+
+                    }
+                    case 3: {
+                        this.x = x;
+                        this.y = y;
+                        this.z = z;
+
+                    }
+                }
+                return this;
+            };
+            Vec3.prototype.add = function (v3fVec, v3fDest) {
+                if(!v3fDest) {
+                    v3fDest = this;
+                }
+                v3fDest.x = this.x + v3fVec.x;
+                v3fDest.y = this.y + v3fVec.y;
+                v3fDest.z = this.z + v3fVec.z;
+                return this;
+            };
+            Vec3.prototype.toString = function () {
+                return "[x: " + this.x + ", y: " + this.y + ", z: " + this.z + "]";
+            };
+            Vec3.v3f = new Vec3();
+            return Vec3;
+        })();
+        math.Vec3 = Vec3;        
+    })(akra.math || (akra.math = {}));
+    var math = akra.math;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (math) {
+        var Vec4 = (function () {
+            function Vec4(x, y, z, w) {
+                switch(arguments.length) {
+                    case 0: {
+                        this.x = this.y = this.z = this.w = 0;
+                        break;
+
+                    }
+                    case 1: {
+                        this.set(x);
+                        break;
+
+                    }
+                    case 2: {
+                        this.set(x, y);
+                        break;
+
+                    }
+                    case 4: {
+                        this.set(x, y, z, w);
+                        break;
+
+                    }
+                }
+            }
+            Vec4.prototype.set = function (x, y, z, w) {
+                switch(arguments.length) {
+                    case 0: {
+                        this.x = this.y = this.z = this.w = 0;
+                        break;
+
+                    }
+                    case 1: {
+                        if(akra.isFloat(x)) {
+                            this.x = this.y = this.z = this.w = x;
+                        } else {
+                            this.x = x.x;
+                            this.y = x.y;
+                            this.z = x.z;
+                            this.w = x.w;
+                        }
+                        break;
+
+                    }
+                    case 2: {
+                        if(akra.isFloat(x)) {
+                            this.x = x;
+                            this.y = y.x;
+                            this.z = y.y;
+                            this.w = y.z;
+                        } else {
+                            if(akra.isFloat(y)) {
+                                this.x = x.x;
+                                this.y = x.y;
+                                this.z = x.z;
+                                this.w = y;
+                            } else {
+                                this.x = x.x;
+                                this.y = x.y;
+                                this.z = y.x;
+                                this.w = y.y;
+                            }
+                        }
+                        break;
+
+                    }
+                    case 4: {
+                        this.x = x;
+                        this.y = y;
+                        this.z = z;
+                        this.w = w;
+
+                    }
+                }
+                return this;
+            };
+            return Vec4;
+        })();
+        math.Vec4 = Vec4;        
+    })(akra.math || (akra.math = {}));
+    var math = akra.math;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (math) {
+        var Mat2 = (function () {
+            function Mat2(f11, f12, f21, f22) {
+                this.pData = new Float32Array(4);
+                switch(arguments.length) {
+                    case 1: {
+                        this.set(f11);
+                        break;
+
+                    }
+                    case 4: {
+                        this.set(f11, f12, f21, f22);
+                        break;
+
+                    }
+                }
+            }
+            Mat2.prototype.set = function (f11, f12, f21, f22) {
+                var pData = this.pData;
+                switch(arguments.length) {
+                    case 1: {
+                        if(akra.isFloat(f11)) {
+                            pData[0] = pData[1] = pData[2] = pData[3] = f11;
+                        } else {
+                        }
+                        break;
+
+                    }
+                    case 4: {
+                        pData[0] = f11;
+                        pData[1] = f21;
+                        pData[2] = f12;
+                        pData[3] = f22;
+                        break;
+
+                    }
+                }
+                return this;
+            };
+            return Mat2;
+        })();
+        math.Mat2 = Mat2;        
+    })(akra.math || (akra.math = {}));
+    var math = akra.math;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (math) {
+        var Mat3 = (function () {
+            function Mat3() { }
+            return Mat3;
+        })();
+        math.Mat3 = Mat3;        
+    })(akra.math || (akra.math = {}));
+    var math = akra.math;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (math) {
+        var Mat4 = (function () {
+            function Mat4() { }
+            return Mat4;
+        })();
+        math.Mat4 = Mat4;        
+    })(akra.math || (akra.math = {}));
+    var math = akra.math;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (math) {
+        var Quat4 = (function () {
+            function Quat4() { }
+            return Quat4;
+        })();
+        math.Quat4 = Quat4;        
+    })(akra.math || (akra.math = {}));
+    var math = akra.math;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    (function (math) {
+        math.E = Math.E;
+        math.LN2 = Math.LN2;
+        math.LOG2E = Math.LOG2E;
+        math.LOG10E = Math.LOG10E;
+        math.PI = Math.PI;
+        math.SQRT1_2 = Math.SQRT1_2;
+        math.SQRT2 = Math.SQRT2;
+        math.LN10 = Math.LN10;
+        math.FLOAT_PRECISION = (3.4e-8);
+        math.TWO_PI = (2 * math.PI);
+        math.HALF_PI = (math.PI / 2);
+        math.QUARTER_PI = (math.PI / 4);
+        math.EIGHTH_PI = (math.PI / 8);
+        math.PI_SQUARED = (9.869604401089358);
+        math.PI_INVERSE = (0.3183098861837907);
+        math.PI_OVER_180 = (math.PI / 180);
+        math.PI_DIV_180 = (180 / math.PI);
+        math.NATURAL_LOGARITHM_BASE = (2.718281828459045);
+        math.EULERS_CONSTANT = (0.5772156649015329);
+        math.SQUARE_ROOT_2 = (1.4142135623730951);
+        math.INVERSE_ROOT_2 = (0.7071067811865476);
+        math.SQUARE_ROOT_3 = (1.7320508075688772);
+        math.SQUARE_ROOT_5 = (2.23606797749979);
+        math.SQUARE_ROOT_10 = (3.1622776601683795);
+        math.CUBE_ROOT_2 = (1.2599210498948732);
+        math.CUBE_ROOT_3 = (1.4422495703074083);
+        math.FOURTH_ROOT_2 = (1.189207115002721);
+        math.NATURAL_LOG_2 = (0.6931471805599453);
+        math.NATURAL_LOG_3 = (1.0986122886681097);
+        math.NATURAL_LOG_10 = (2.302585092994046);
+        math.NATURAL_LOG_PI = (1.1447298858494001);
+        math.BASE_TEN_LOG_PI = (0.49714987269413385);
+        math.NATURAL_LOGARITHM_BASE_INVERSE = (0.36787944117144233);
+        math.NATURAL_LOGARITHM_BASE_SQUARED = (7.38905609893065);
+        math.GOLDEN_RATIO = ((math.SQUARE_ROOT_5 + 1) / 2);
+        math.DEGREE_RATIO = (math.PI_DIV_180);
+        math.RADIAN_RATIO = (math.PI_OVER_180);
+        math.GRAVITY_CONSTANT = 9.81;
+        math.abs = Math.abs;
+        math.acos = Math.acos;
+        math.asin = Math.asin;
+        math.atan = Math.atan;
+        math.atan2 = Math.atan2;
+        math.exp = Math.exp;
+        math.min = Math.min;
+        math.random = Math.random;
+        math.sqrt = Math.sqrt;
+        math.log = Math.log;
+        math.round = Math.round;
+        math.floor = Math.floor;
+        math.ceil = Math.ceil;
+        math.sin = Math.sin;
+        math.cos = Math.cos;
+        math.tan = Math.tan;
+        math.pow = Math.pow;
+        math.max = Math.max;
+        math.fpBits = function (f) {
+            return math.floor(f);
         };
-        return Mat2;
-    })();
-    akra.Mat2 = Mat2;    
+        math.intBits = function (i) {
+            return i;
+        };
+        math.fpSign = function (f) {
+            return (f >> 31);
+        };
+        math.fpExponent = function (f) {
+            return (((math.fpBits(f) & 2147483647) >> 23) - 127);
+        };
+        math.fpExponentSign = function (f) {
+            return (math.fpExponent(f) >> 31);
+        };
+        math.fpPureMantissa = function (f) {
+            return (math.fpBits(f) & 8388607);
+        };
+        math.fpMantissa = function (f) {
+            return (math.fpPureMantissa(f) | (1 << 23));
+        };
+        math.fpOneBits = 1065353216;
+        math.flipSign = function (i, flip) {
+            return ((flip == -1) ? -i : i);
+        };
+        math.absoluteValue = math.abs;
+        math.raiseToPower = math.pow;
+        math.isPositive = function (a) {
+            return (a >= 0);
+        };
+        math.isNegative = function (a) {
+            return (a < 0);
+        };
+        math.sameSigns = function (a, b) {
+            return (math.isNegative(a) == math.isNegative(b));
+        };
+        math.copySign = function (a, b) {
+            return (math.isNegative(b) ? -math.absoluteValue(a) : math.absoluteValue(a));
+        };
+        math.deltaRangeTest = function (a, b, epsilon) {
+            if (typeof epsilon === "undefined") { epsilon = 1e-7; }
+            return ((math.absoluteValue(a - b) < epsilon) ? true : false);
+        };
+        math.clamp = function (value, low, high) {
+            return math.max(low, math.min(value, high));
+        };
+        math.clampPositive = function (value) {
+            return (value < 0 ? 0 : value);
+        };
+        math.clampNegative = function (value) {
+            return (value > 0 ? 0 : value);
+        };
+        math.clampUnitSize = function (value) {
+            return math.clamp(value, -1, 1);
+        };
+        math.highestBitSet = function (value) {
+            return value == 0 ? (null) : (value < 0 ? 31 : ((math.log(value) / math.LN2) << 0));
+        };
+        math.lowestBitSet = function (value) {
+            var temp;
+            if(value == 0) {
+                return null;
+            }
+            for(temp = 0; temp <= 31; temp++) {
+                if(value & (1 << temp)) {
+                    return temp;
+                }
+            }
+            return null;
+        };
+        math.isPowerOfTwo = function (value) {
+            return (value > 0 && math.highestBitSet(value) == math.lowestBitSet(value));
+        };
+        math.nearestPowerOfTwo = function (value) {
+            if(value <= 1) {
+                return 1;
+            }
+            var highestBit = math.highestBitSet(value);
+            var roundingTest = value & (1 << (highestBit - 1));
+            if(roundingTest != 0) {
+                ++highestBit;
+            }
+            return 1 << highestBit;
+        };
+        math.ceilingPowerOfTwo = function (value) {
+            if(value <= 1) {
+                return 1;
+            }
+            var highestBit = math.highestBitSet(value);
+            var mask = value & ((1 << highestBit) - 1);
+            highestBit += mask && 1;
+            return 1 << highestBit;
+        };
+        math.floorPowerOfTwo = function (value) {
+            if(value <= 1) {
+                return 1;
+            }
+            var highestBit = math.highestBitSet(value);
+            return 1 << highestBit;
+        };
+        math.modulus = function (e, divisor) {
+            return (e - math.floor(e / divisor) * divisor);
+        };
+        math.mod = math.modulus;
+        math.alignUp = function (value, alignment) {
+            var iRemainder = math.modulus(value, alignment);
+            if(iRemainder == 0) {
+                return (value);
+            }
+            return (value + (alignment - iRemainder));
+        };
+        math.alignDown = function (value, alignment) {
+            var remainder = math.modulus(value, alignment);
+            if(remainder == 0) {
+                return (value);
+            }
+            return (value - remainder);
+        };
+        math.inverse = function (a) {
+            return 1 / a;
+        };
+        math.log2 = function (f) {
+            return math.log(f) / math.LN2;
+        };
+        math.trimFloat = function (f, precision) {
+            return f;
+        };
+        math.realToInt32_chop = function (a) {
+            return math.round(a);
+        };
+        math.realToInt32_floor = function (a) {
+            return math.floor(a);
+        };
+        math.realToInt32_ceil = function (a) {
+            return math.ceil(a);
+        };
+        math.nod = function (n, m) {
+            var p = n % m;
+            while(p != 0) {
+                n = m;
+                m = p;
+                p = n % m;
+            }
+            return m;
+        };
+        math.nok = function (n, m) {
+            return math.abs(n * m) / math.nod(n, m);
+        };
+        math.gcd = math.nod;
+        math.lcm = math.nok;
+    })(akra.math || (akra.math = {}));
+    var math = akra.math;
+})(akra || (akra = {}));
+var akra;
+(function (akra) {
+    akra.Vec2 = akra.math.Vec2;
+    akra.Vec3 = akra.math.Vec3;
+    akra.Vec4 = akra.math.Vec4;
+    akra.Mat2 = akra.math.Mat2;
+    akra.Mat3 = akra.math.Mat3;
+    akra.Mat4 = akra.math.Mat4;
+    akra.Quat4 = akra.math.Quat4;
 })(akra || (akra = {}));
 var akra;
 (function (akra) {
@@ -317,6 +652,9 @@ var akra;
     })(akra.geometry || (akra.geometry = {}));
     var geometry = akra.geometry;
 })(akra || (akra = {}));
+var akra;
+(function (akra) {
+    })(akra || (akra = {}));
 var akra;
 (function (akra) {
     (function (util) {
@@ -1220,9 +1558,252 @@ var akra;
 var akra;
 (function (akra) {
     (function (pool) {
+        var PoolGroup = (function () {
+            function PoolGroup(pEngine, tTemplate, iMaxCount) {
+                this.iTotalOpen = 0;
+                this.iFirstOpen = 0;
+                this.iMaxCount = 0;
+                this.pNextOpenList = null;
+                this.pMemberList = null;
+                this.pEngine = pEngine;
+                this.tTemplate = tTemplate;
+                this.iMaxCount = iMaxCount;
+            }
+            Object.defineProperty(PoolGroup.prototype, "totalOpen", {
+                get: function () {
+                    return this.iTotalOpen;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PoolGroup.prototype, "totalUsed", {
+                get: function () {
+                    return this.iMaxCount - this.iTotalOpen;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(PoolGroup.prototype, "firstOpen", {
+                get: function () {
+                    return this.iFirstOpen;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            PoolGroup.prototype.create = function () {
+                var i;
+                akra.debug_assert(this.pMemberList == null && this.pNextOpenList == null, "Group has already been created");
+                this.pNextOpenList = new Array(this.iMaxCount);
+                akra.debug_assert(this.pNextOpenList != null, "tragic memory allocation failure!");
+                this.pMemberList = new Array(this.iMaxCount);
+                for(i = 0; i < this.iMaxCount; i++) {
+                    this.pMemberList[i] = new this.tTemplate(this.pEngine);
+                }
+                akra.debug_assert(this.pNextOpenList != null, "tragic memory allocation failure!");
+                for(i = 0; i < this.iMaxCount - 1; i++) {
+                    this.pNextOpenList[i] = i + 1;
+                }
+                this.pNextOpenList[i] = i;
+                this.iTotalOpen = this.iMaxCount;
+                this.iFirstOpen = 0;
+            };
+            PoolGroup.prototype.destroy = function () {
+                akra.debug_assert(this.pMemberList != null && this.pNextOpenList != null, "Group has not been created");
+                akra.debug_assert(this.iTotalOpen == this.iMaxCount, "Group is not empty");
+                delete this.pMemberList;
+                this.pMemberList = null;
+                delete this.pNextOpenList;
+                this.pNextOpenList = null;
+                this.iTotalOpen = 0;
+                this.iMaxCount = 0;
+            };
+            PoolGroup.prototype.nextMember = function () {
+                akra.debug_assert(this.pMemberList != null && this.pNextOpenList != null, "Group has not been created");
+                akra.debug_assert(this.iTotalOpen != null, "no open slots");
+                var iSlot = this.iFirstOpen;
+                this.iFirstOpen = this.pNextOpenList[iSlot];
+                this.iTotalOpen--;
+                akra.debug_assert(this.iFirstOpen != akra.INVALID_INDEX, "Invalid Open Index");
+                akra.debug_assert(this.isOpen(iSlot), "invalid index");
+                this.pNextOpenList[iSlot] = akra.INVALID_INDEX;
+                return iSlot;
+            };
+            PoolGroup.prototype.addMember = function (pMember) {
+                var iSlot = this.nextMember();
+                this.pMemberList[iSlot] = pMember;
+                return iSlot;
+            };
+            PoolGroup.prototype.release = function (iIndex) {
+                akra.debug_assert(this.pMemberList != null && this.pNextOpenList != null, "Group has not been created");
+                akra.debug_assert(iIndex < this.iMaxCount, "invalid index");
+                akra.debug_assert(this.isOpen(iIndex) == false, "invalid index to release");
+                this.pNextOpenList[iIndex] = this.iTotalOpen > 0 ? this.iFirstOpen : iIndex;
+                this.iTotalOpen++;
+                this.iFirstOpen = iIndex;
+            };
+            PoolGroup.prototype.isOpen = function (iIndex) {
+                akra.debug_assert(this.pMemberList != null && this.pNextOpenList != null, "Group has not been created");
+                akra.debug_assert(iIndex < this.iMaxCount, "invalid index");
+                return this.pNextOpenList[iIndex] != akra.INVALID_INDEX;
+            };
+            PoolGroup.prototype.member = function (iIndex) {
+                akra.debug_assert(this.pMemberList != null && this.pNextOpenList != null, "Group has not been created");
+                akra.debug_assert(iIndex < this.iMaxCount, "invalid index");
+                return this.pMemberList[iIndex];
+            };
+            PoolGroup.prototype.memberPtr = function (iIndex) {
+                akra.debug_assert(this.pMemberList != null && this.pNextOpenList != null, "Group has not been created");
+                akra.debug_assert(iIndex < this.iMaxCount, "invalid index");
+                return this.pMemberList[iIndex];
+            };
+            return PoolGroup;
+        })();
+        pool.PoolGroup = PoolGroup;        
         var DataPool = (function () {
             function DataPool(pEngine, tTemplate) {
+                this.bInitialized = false;
+                this.pGroupList = null;
+                this.iTotalMembers = 0;
+                this.iTotalOpen = 0;
+                this.iGroupCount = 0;
+                this.iIndexMask = 0;
+                this.iIndexShift = 0;
+                this.pEngine = pEngine;
+                this.tTemplate = tTemplate;
             }
+            DataPool.prototype.initialize = function (iGrowSize) {
+                akra.debug_assert(this.isInitialized() == false, "the cDataPool is already initialized");
+                this.bInitialized = true;
+                this.iGroupCount = akra.math.nearestPowerOfTwo(iGrowSize);
+                this.iIndexShift = akra.math.lowestBitSet(this.iGroupCount);
+                this.iIndexShift = akra.math.clamp(this.iIndexShift, 1, 15);
+                this.iGroupCount = 1 << this.iIndexShift;
+                this.iIndexMask = this.iGroupCount - 1;
+            };
+            DataPool.prototype.isInitialized = function () {
+                return this.bInitialized;
+            };
+            DataPool.prototype.destroy = function () {
+                this.clear();
+                this.bInitialized = false;
+            };
+            DataPool.prototype.release = function (iHandle) {
+                akra.debug_assert(this.isInitialized() == true, "the cDataPool is not initialized");
+                if(this.isHandleValid(iHandle) == true) {
+                    akra.debug_assert(this.pGroupList.length != 0, "The cDataPool has not been properly created");
+                    var iGroupIndex = this.getGroupNumber(iHandle);
+                    var iItemIndex = this.getItemIndex(iHandle);
+                    var pGroup = this.getGroup(iGroupIndex);
+                    pGroup.release(iItemIndex);
+                    var pGroupBack = this.pGroupList[this.pGroupList.length - 1];
+                    if(pGroupBack.totalOpen == this.iGroupCount) {
+                        pGroupBack.destroy();
+                        this.pGroupList.splice(this.pGroupList.length - 1, 1);
+                    }
+                    this.iTotalOpen++;
+                }
+            };
+            DataPool.prototype.clear = function () {
+                for(var iGroupIter = 0; iGroupIter < this.pGroupList.length; ++iGroupIter) {
+                    this.pGroupList[iGroupIter].destroy();
+                }
+                this.pGroupList.clear();
+            };
+            DataPool.prototype.add = function (pMembers) {
+                akra.debug_assert(this.isInitialized() == true, "the cDataPool is not initialized");
+                var iGroupNumber = {
+                    value: 0
+                };
+                var pOpenGroup = this.findOpenGroup(iGroupNumber);
+                var iIndex = pOpenGroup.addMember(pMembers);
+                this.iTotalOpen--;
+                return this.buildHandle(iGroupNumber.value, iIndex);
+            };
+            DataPool.prototype.forEach = function (fFunction) {
+                akra.debug_assert(this.isInitialized() == true, "the cDataPool is not initialized");
+                var iGroupNumber = 0;
+                for(var iGroupIter = 0; iGroupIter < this.pGroupList.length; iGroupIter++) {
+                    var nCallbackCount = this.pGroupList[iGroupIter].totalUsed;
+                    var iItemIndex = 0;
+                    while(nCallbackCount != 0 && iItemIndex < this.iGroupCount) {
+                        if(this.pGroupList[iGroupIter].isOpen(iItemIndex) == false) {
+                            fFunction(this, this.buildHandle(iGroupNumber, iItemIndex), this.pGroupList[iGroupIter].member(iItemIndex));
+                            nCallbackCount--;
+                        }
+                        ++iItemIndex;
+                    }
+                    ++iGroupNumber;
+                }
+            };
+            DataPool.prototype.nextHandle = function () {
+                akra.debug_assert(this.isInitialized() == true, "the cDataPool is not initialized");
+                var iGroupNumber = {
+                    value: 0
+                };
+                var pOpenGroup = this.findOpenGroup(iGroupNumber);
+                var iIndex = pOpenGroup.nextMember();
+                this.iTotalOpen--;
+                return this.buildHandle(iGroupNumber.value, iIndex);
+            };
+            DataPool.prototype.isHandleValid = function (iHandle) {
+                akra.debug_assert(this.isInitialized() == true, "the cDataPool is not initialized");
+                if(iHandle !== akra.INVALID_INDEX) {
+                    akra.debug_assert(this.pGroupList.length != 0, "The cDataPool has not been properly created");
+                    var pGroup = this.getGroup(this.getGroupNumber(iHandle));
+                    return !pGroup.isOpen(this.getItemIndex(iHandle));
+                }
+                return false;
+            };
+            DataPool.prototype.get = function (iHandle) {
+                akra.debug_assert(this.isInitialized() == true, "the cDataPool is not initialized");
+                akra.debug_assert(this.pGroupList.length != 0, "The cDataPool has not been properly created");
+                var pGroup = this.getGroup(this.getGroupNumber(iHandle));
+                var iItemIndex = this.getItemIndex(iHandle);
+                return pGroup.member(iItemIndex);
+            };
+            DataPool.prototype.getPtr = function (iHandle) {
+                akra.debug_assert(this.isInitialized() == true, "the cDataPool is not initialized");
+                akra.debug_assert(this.pGroupList.length != 0, "The cDataPool has not been properly created");
+                var pGroup = this.getGroup(this.getGroupNumber(iHandle));
+                var iItemIndex = this.getItemIndex(iHandle);
+                return pGroup.memberPtr(iItemIndex);
+            };
+            DataPool.prototype.getGenericPtr = function (iHandle) {
+                akra.debug_assert(this.isInitialized() == true, "the cDataPool is not initialized");
+                return this.getPtr(iHandle);
+            };
+            DataPool.prototype.getGroupNumber = function (iHandle) {
+                return iHandle >> this.iIndexShift;
+            };
+            DataPool.prototype.getItemIndex = function (iHandle) {
+                return iHandle & this.iIndexMask;
+            };
+            DataPool.prototype.buildHandle = function (iGroup, iIndex) {
+                return (iGroup << this.iIndexShift) + iIndex;
+            };
+            DataPool.prototype.addGroup = function () {
+                var pNewGroup = new PoolGroup(this.pEngine, this.tTemplate, this.iGroupCount);
+                this.pGroupList.push(pNewGroup);
+                pNewGroup.create();
+                this.iTotalMembers += this.iGroupCount;
+                this.iTotalOpen += this.iGroupCount;
+                return pNewGroup;
+            };
+            DataPool.prototype.findOpenGroup = function (pGroupNumber) {
+                pGroupNumber.value = 0;
+                for(var iGroupIter = 0; iGroupIter < this.pGroupList.length; iGroupIter++) {
+                    if(this.pGroupList[iGroupIter].totalOpen > 0) {
+                        return this.pGroupList[iGroupIter];
+                    }
+                    pGroupNumber.value++;
+                }
+                akra.debug_assert((this.pGroupList.length + 1) < akra.MAX_UINT16, "the cDataPool is full!!!!");
+                return this.addGroup();
+            };
+            DataPool.prototype.getGroup = function (iIndex) {
+                akra.debug_assert(iIndex < this.pGroupList.length, "Invalid group index requested");
+                return this.pGroupList[iIndex];
+            };
             return DataPool;
         })();
         pool.DataPool = DataPool;        
@@ -1300,23 +1881,9 @@ var akra;
             ResourcePool.prototype.isInitialized = function () {
                 return this.pDataPool.isInitialized();
             };
-            ResourcePool.prototype.callbackDestroy = function (pPool, iHandle, pResource) {
-                pResource.destroyResource();
-            };
-            ResourcePool.prototype.callbackDisable = function (pPool, iHandle, pResource) {
-                pResource.disableResource();
-            };
-            ResourcePool.prototype.callbackRestore = function (pPool, iHandle, pResource) {
-                pResource.restoreResource();
-            };
-            ResourcePool.prototype.callbackClean = function (pPool, iHandle, pResource) {
-                if(pResource.referenceCount() == 0) {
-                    pPool.release(iHandle);
-                }
-            };
             ResourcePool.prototype.createResource = function (sResourceName) {
                 var iHandle = this.internalCreateResource(sResourceName);
-                if(VALID_HANDLE(iHandle)) {
+                if(iHandle !== akra.INVALID_INDEX) {
                     var pResource = this.getResource(iHandle);
                     pResource.setResourcePool(this);
                     pResource.setResourceHandle(iHandle);
@@ -1341,7 +1908,7 @@ var akra;
             };
             ResourcePool.prototype.saveResource = function (pResource) {
                 if(pResource != null) {
-                    return pResource.saveResource(0);
+                    return pResource.saveResource();
                 }
                 return false;
             };
@@ -1350,7 +1917,7 @@ var akra;
                     var iReferenceCount = pResource.referenceCount();
                     akra.debug_assert(iReferenceCount == 0, "destruction of non-zero reference count!");
                     if(iReferenceCount <= 0) {
-                        var iHandle = pResource.resourceHandle();
+                        var iHandle = pResource.resourceHandle;
                         this.internalDestroyResource(iHandle);
                     }
                 }
@@ -1379,7 +1946,7 @@ var akra;
             ResourcePool.prototype.internalDestroyResource = function (iHandle) {
                 var pResource = this.pDataPool.getPtr(iHandle);
                 pResource.destroyResource();
-                delete this._pNameMap[iHandle];
+                delete this.pNameMap[iHandle];
                 this.pDataPool.release(iHandle);
             };
             ResourcePool.prototype.internalCreateResource = function (sResourceName) {
@@ -1387,11 +1954,25 @@ var akra;
                 for(var iter in this.pNameMap) {
                     akra.debug_assert((this.pNameMap[iter] != sResourceName), "A resource with this name already exists: " + sResourceName);
                 }
-                this._pNameMap[iHandle] = sResourceName;
+                this.pNameMap[iHandle] = sResourceName;
                 var pResource = this.pDataPool.getPtr(iHandle);
                 pResource.createResource();
                 return iHandle;
             };
+            ResourcePool.callbackDestroy = function callbackDestroy(pPool, iHandle, pResource) {
+                pResource.destroyResource();
+            }
+            ResourcePool.callbackDisable = function callbackDisable(pPool, iHandle, pResource) {
+                pResource.disableResource();
+            }
+            ResourcePool.callbackRestore = function callbackRestore(pPool, iHandle, pResource) {
+                pResource.restoreResource();
+            }
+            ResourcePool.callbackClean = function callbackClean(pPool, iHandle, pResource) {
+                if(pResource.referenceCount() == 0) {
+                    pPool.release(iHandle);
+                }
+            }
             return ResourcePool;
         })(akra.util.ReferenceCounter);
         pool.ResourcePool = ResourcePool;        
@@ -1403,9 +1984,286 @@ var akra;
     (function (pool) {
         var ResourcePoolItem = (function (_super) {
             __extends(ResourcePoolItem, _super);
-            function ResourcePoolItem() {
-                _super.apply(this, arguments);
+            function ResourcePoolItem(pEngine) {
+                        _super.call(this);
+                this.pResourcePool = null;
+                this.iResourceHandle = 0;
+                this.iResourceFlags = 0;
+                this.pEngine = pEngine;
+                this.pResourceCode = new pool.ResourceCode(0);
+                this.iSystemId = akra.sid();
+                this.pCallbackFunctions = [];
+                this.pStateWatcher = [];
+                this.pCallbackSlots = akra.genArray(null, akra.ResourceItemEvents.k_TotalResourceFlags);
+            }
+            Object.defineProperty(ResourcePoolItem.prototype, "resourceCode", {
+                get: function () {
+                    return this.pResourceCode;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ResourcePoolItem.prototype, "resourcePool", {
+                get: function () {
+                    return this.pResourcePool;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ResourcePoolItem.prototype, "resourceHandle", {
+                get: function () {
+                    return this.iResourceHandle;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ResourcePoolItem.prototype, "resourceFlags", {
+                get: function () {
+                    return this.iResourceFlags;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(ResourcePoolItem.prototype, "alteredFlag", {
+                get: function () {
+                    return akra.bf.testBit(this.iResourceFlags, akra.ResourceItemEvents.k_Altered);
+                },
+                enumerable: true,
+                configurable: true
+            });
+            ResourcePoolItem.prototype.valueOf = function () {
+                return this.iSystemId;
+            };
+            ResourcePoolItem.prototype.toNumber = function () {
+                return this.iSystemId;
+            };
+            ResourcePoolItem.prototype.getEngine = function () {
+                return this.pEngine;
+            };
+            ResourcePoolItem.prototype.createResource = function () {
+                return false;
+            };
+            ResourcePoolItem.prototype.destroyResource = function () {
+                return false;
+            };
+            ResourcePoolItem.prototype.disableResource = function () {
+                return false;
+            };
+            ResourcePoolItem.prototype.restoreResource = function () {
+                return false;
+            };
+            ResourcePoolItem.prototype.loadResource = function (sFilename) {
+                if (typeof sFilename === "undefined") { sFilename = null; }
+                return false;
+            };
+            ResourcePoolItem.prototype.saveResource = function (sFilename) {
+                if (typeof sFilename === "undefined") { sFilename = null; }
+                return false;
+            };
+            ResourcePoolItem.prototype.setChangesNotifyRoutine = function (fn) {
+                for(var i = 0; i < this.pCallbackFunctions.length; i++) {
+                    if(this.pCallbackFunctions[i] == fn) {
+                        return;
+                    }
+                }
+                this.pCallbackFunctions.push(fn);
+            };
+            ResourcePoolItem.prototype.delChangesNotifyRoutine = function (fn) {
+                for(var i = 0; i < this.pCallbackFunctions.length; i++) {
+                    if(this.pCallbackFunctions[i] == fn) {
+                        this.pCallbackFunctions[i] = null;
+                    }
+                }
+            };
+            ResourcePoolItem.prototype.setStateWatcher = function (eEvent, fnWatcher) {
+                this.pStateWatcher[eEvent] = fnWatcher;
+            };
+            ResourcePoolItem.prototype.connect = function (pResourceItem, eSignal, eSlot) {
+                eSlot = akra.isDef(eSlot) ? eSlot : eSignal;
+                eSlot = ResourcePoolItem.parseEvent(eSlot);
+                eSignal = ResourcePoolItem.parseEvent(eSignal);
+                var pSlots = this.pCallbackSlots;
+                var pSignSlots;
 
+                var me = this;
+                var n;
+                var fn;
+                var bState;
+                if(akra.isNull(pSlots[eSlot])) {
+                    pSlots[eSlot] = [];
+                }
+                pSignSlots = pSlots[eSlot];
+                n = pSignSlots.length;
+                bState = akra.bf.testBit(pResourceItem.resourceFlags, eSignal);
+                fn = function (eFlag, iResourceFlags, isSet) {
+                    if(eFlag == eSignal) {
+                        pSignSlots[n].bState = isSet;
+                        me.notifyStateChange(eSlot, this);
+                        for(var i = 0; i < pSignSlots.length; ++i) {
+                            if(pSignSlots[i].bState === false) {
+                                if(akra.bf.testBit(me.resourceFlags, eFlag)) {
+                                    me.setResourceFlag(eFlag, false);
+                                }
+                                return;
+                            }
+                        }
+                        me.setResourceFlag(eFlag, true);
+                    }
+                };
+                pSignSlots.push({
+                    bState: bState,
+                    fn: fn,
+                    pResourceItem: pResourceItem
+                });
+                fn.call(pResourceItem, eSignal, pResourceItem.resourceFlags, bState);
+                pResourceItem.setChangesNotifyRoutine(fn);
+                return true;
+            };
+            ResourcePoolItem.prototype.disconnect = function (pResourceItem, eSignal, eSlot) {
+                eSlot = akra.isDef(eSlot) ? eSlot : eSignal;
+                eSlot = ResourcePoolItem.parseEvent(eSlot);
+                eSignal = ResourcePoolItem.parseEvent(eSignal);
+                var pSlots = this.pCallbackSlots;
+                var pSignSlots;
+
+                var me = this;
+                var isRem = false;
+                pSignSlots = pSlots[eSlot];
+                for(var i = 0, n = pSignSlots.length; i < n; ++i) {
+                    if(pSignSlots[i].pResourceItem === pResourceItem) {
+                        pSignSlots[i].pResourceItem.delChangesNotifyRoutine(pSignSlots[i].fn);
+                        pSignSlots.splice(i, 1);
+                        --n;
+                        --i;
+                        isRem = true;
+                    }
+                }
+                return isRem;
+            };
+            ResourcePoolItem.prototype.notifyCreated = function () {
+                this.setResourceFlag(akra.ResourceItemEvents.k_Created, true);
+            };
+            ResourcePoolItem.prototype.notifyDestroyed = function () {
+                this.setResourceFlag(akra.ResourceItemEvents.k_Created, false);
+            };
+            ResourcePoolItem.prototype.notifyLoaded = function () {
+                this.setAlteredFlag(false);
+                this.setResourceFlag(akra.ResourceItemEvents.k_Loaded, true);
+            };
+            ResourcePoolItem.prototype.notifyUnloaded = function () {
+                this.setResourceFlag(akra.ResourceItemEvents.k_Loaded, false);
+            };
+            ResourcePoolItem.prototype.notifyRestored = function () {
+                this.setResourceFlag(akra.ResourceItemEvents.k_Disabled, false);
+            };
+            ResourcePoolItem.prototype.notifyDisabled = function () {
+                this.setResourceFlag(akra.ResourceItemEvents.k_Disabled, true);
+            };
+            ResourcePoolItem.prototype.notifyAltered = function () {
+                this.setResourceFlag(akra.ResourceItemEvents.k_Altered, true);
+            };
+            ResourcePoolItem.prototype.notifySaved = function () {
+                this.setAlteredFlag(false);
+            };
+            ResourcePoolItem.prototype.isResourceCreated = function () {
+                return akra.bf.testBit(this.iResourceFlags, akra.ResourceItemEvents.k_Created);
+            };
+            ResourcePoolItem.prototype.isResourceLoaded = function () {
+                return akra.bf.testBit(this.iResourceFlags, akra.ResourceItemEvents.k_Loaded);
+            };
+            ResourcePoolItem.prototype.isResourceDisabled = function () {
+                return akra.bf.testBit(this.iResourceFlags, akra.ResourceItemEvents.k_Disabled);
+            };
+            ResourcePoolItem.prototype.isResourceAltered = function () {
+                return akra.bf.testBit(this.iResourceFlags, akra.ResourceItemEvents.k_Altered);
+            };
+            ResourcePoolItem.prototype.setAlteredFlag = function (isOn) {
+                if (typeof isOn === "undefined") { isOn = true; }
+                this.setResourceFlag(akra.ResourceItemEvents.k_Altered, isOn);
+            };
+            ResourcePoolItem.prototype.setResourceName = function (sName) {
+                if(this.pResourcePool != null) {
+                    this.pResourcePool.setResourceName(this.iResourceHandle, sName);
+                }
+            };
+            ResourcePoolItem.prototype.findResourceName = function () {
+                if(this.pResourcePool != null) {
+                    return this.pResourcePool.findResourceName(this.iResourceHandle);
+                }
+                return null;
+            };
+            ResourcePoolItem.prototype.release = function () {
+                var iRefCount = _super.prototype.release.call(this);
+                if(iRefCount == 0) {
+                    if(this.pResourcePool != null) {
+                        this.pResourcePool.destroyResource(this);
+                    }
+                }
+                return iRefCount;
+            };
+            ResourcePoolItem.prototype.setResourceCode = function (pCode) {
+                this.pResourceCode.eq(pCode);
+            };
+            ResourcePoolItem.prototype.setResourcePool = function (pPool) {
+                this.pResourcePool = pPool;
+            };
+            ResourcePoolItem.prototype.setResourceHandle = function (iHandle) {
+                this.iResourceHandle = iHandle;
+            };
+            ResourcePoolItem.prototype.notifyStateChange = function (eEvent, pTarget) {
+                if (typeof pTarget === "undefined") { pTarget = null; }
+                if(!this.pStateWatcher[eEvent]) {
+                    return;
+                }
+                var pSignSlots = this.pCallbackSlots[eEvent];
+                var nTotal = pSignSlots.length;
+                var nLoaded = 0;
+
+                for(var i = 0; i < nTotal; ++i) {
+                    if(pSignSlots[i].bState) {
+                        ++nLoaded;
+                    }
+                }
+                this.pStateWatcher[eEvent](nLoaded, nTotal, pTarget);
+            };
+            ResourcePoolItem.prototype.setResourceFlag = function (iFlagBit, isSetting) {
+                var iTempFlags = this.iResourceFlags;
+                akra.bf.setBit(this.iResourceFlags, iFlagBit, isSetting);
+                if(iTempFlags != this.iResourceFlags) {
+                    for(var i = 0; i < this.pCallbackFunctions.length; i++) {
+                        if(this.pCallbackFunctions[i]) {
+                            this.pCallbackFunctions[i].call(this, iFlagBit, this.iResourceFlags, isSetting);
+                        }
+                    }
+                }
+            };
+            ResourcePoolItem.parseEvent = function parseEvent(pEvent) {
+                if(akra.isInt(pEvent)) {
+                    return pEvent;
+                }
+                switch(pEvent.toLowerCase()) {
+                    case 'loaded': {
+                        return akra.ResourceItemEvents.k_Loaded;
+
+                    }
+                    case 'created': {
+                        return akra.ResourceItemEvents.k_Created;
+
+                    }
+                    case 'disabled': {
+                        return akra.ResourceItemEvents.k_Disabled;
+
+                    }
+                    case 'altered': {
+                        return akra.ResourceItemEvents.k_Altered;
+
+                    }
+                    default: {
+                        akra.error('Использовано неизвестное событие для ресурса.');
+                        return 0;
+
+                    }
+                }
             }
             return ResourcePoolItem;
         })(akra.util.ReferenceCounter);
@@ -1421,7 +2279,6 @@ var akra;
                 this.pResourceFamilyList = null;
                 this.pResourceTypeMap = null;
                 this.pWaiterResource = null;
-                _super.prototype();
                 this.pResourceFamilyList = new Array(akra.ResourceFamilies.TOTAL_RESOURCE_FAMILIES);
                 for(var i = 0; i < akra.ResourceFamilies.TOTAL_RESOURCE_FAMILIES; i++) {
                     this.pResourceFamilyList[i] = new Array();
@@ -1913,6 +2770,14 @@ var akra;
         return initDevice(pDevice);
     }
     akra.createDevice = createDevice;
+    function genArray(pType, nSize) {
+        var tmp = new Array(nSize);
+        for(var i = 0; i < nSize; ++i) {
+            tmp[i] = (pType ? new pType() : null);
+        }
+        return tmp;
+    }
+    akra.genArray = genArray;
     akra.INVALID_INDEX = 65535;
     akra.MIN_INT32 = 4294967295;
     akra.MAX_INT32 = 2147483647;
@@ -1941,15 +2806,9 @@ var akra;
     akra.MAX_FLOAT64 = Number.MAX_VALUE;
     akra.MIN_FLOAT64 = -Number.MAX_VALUE;
     akra.TINY_FLOAT64 = Number.MIN_VALUE;
-    akra.MAX_REAL64 = Number.MAX_VALUE;
-    akra.MIN_REAL64 = -Number.MAX_VALUE;
-    akra.TINY_REAL64 = Number.MIN_VALUE;
     akra.MAX_FLOAT32 = 3.4e+38;
     akra.MIN_FLOAT32 = -3.4e+38;
     akra.TINY_FLOAT32 = 1.5e-45;
-    akra.MAX_REAL32 = 3.4e+38;
-    akra.MIN_REAL32 = -3.4e+38;
-    akra.TINY_REAL32 = 1.5e-45;
     (function (DataTypes) {
         DataTypes._map = [];
         DataTypes.BYTE = 5120;
@@ -2247,6 +3106,44 @@ var akra;
         return 0;
     }
     akra.getTypeSize = getTypeSize;
+    function ab2ta(pBuffer, eType) {
+        switch(eType) {
+            case DataTypes.FLOAT: {
+                return new Float32Array(pBuffer);
+
+            }
+            case DataTypes.SHORT: {
+                return new Int16Array(pBuffer);
+
+            }
+            case DataTypes.UNSIGNED_SHORT: {
+                return new Uint16Array(pBuffer);
+
+            }
+            case DataTypes.INT: {
+                return new Int32Array(pBuffer);
+
+            }
+            case DataTypes.UNSIGNED_INT: {
+                return new Uint32Array(pBuffer);
+
+            }
+            case DataTypes.BYTE: {
+                return new Int8Array(pBuffer);
+
+            }
+            default:
+            case DataTypes.UNSIGNED_BYTE: {
+                return new Uint8Array(pBuffer);
+
+            }
+        }
+    }
+    akra.ab2ta = ab2ta;
+    akra.sid = function () {
+        return (++akra.sid._iTotal);
+    };
+    akra.sid._iTotal = 0;
     (window).URL = (window).URL ? (window).URL : (window).webkitURL ? (window).webkitURL : null;
     (window).BlobBuilder = (window).WebKitBlobBuilder || (window).MozBlobBuilder || (window).BlobBuilder;
     (window).requestFileSystem = (window).requestFileSystem || (window).webkitRequestFileSystem;

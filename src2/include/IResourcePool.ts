@@ -26,10 +26,10 @@ module akra {
 
 		isInitialized(): bool;
 
-		callbackDestroy(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
-		callbackDisable(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
-		callbackRestore(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
-		callbackClean(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
+		//callbackDestroy(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
+		//callbackDisable(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
+		//callbackRestore(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
+		//callbackClean(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
 
 		createResource(sResourceName: string): IResourcePoolItem;
         loadResource(sResourceName: string): IResourcePoolItem;

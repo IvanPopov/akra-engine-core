@@ -1,3 +1,7 @@
+///<reference path="base.d.ts" />
+///<reference path="types.d.ts" />
+///<reference path="WebGL.d.ts" />
+
 module akra {
     export var DEBUG: bool = true;
 
@@ -137,6 +141,17 @@ module akra {
 		return initDevice(pDevice);
     }
 
+    export function genArray(pType: any, nSize: uint) {
+        var tmp = new Array(nSize);
+
+        for (var i: int = 0; i < nSize; ++i) {
+            tmp[i] = (pType? new pType: null);
+        }
+
+        return tmp;
+    }
+
+
     export var INVALID_INDEX: int =  0xffff;
 
     export var MIN_INT32: int = 0xffffffff;  // (-2147483646);
@@ -167,22 +182,22 @@ module akra {
     export var SIZE_UBYTE: int = 1;
 
 
-    export var MAX_FLOAT64: int = Number.MAX_VALUE;      //1.7976931348623157e+308
-    export var MIN_FLOAT64: int = -Number.MAX_VALUE;     //-1.7976931348623157e+308
-    export var TINY_FLOAT64: int = Number.MIN_VALUE;     //5e-324
+    export var MAX_FLOAT64: float = Number.MAX_VALUE;      //1.7976931348623157e+308
+    export var MIN_FLOAT64: float = -Number.MAX_VALUE;     //-1.7976931348623157e+308
+    export var TINY_FLOAT64: float = Number.MIN_VALUE;     //5e-324
 
-    export var MAX_REAL64: int = Number.MAX_VALUE;   //1.7976931348623157e+308
-    export var MIN_REAL64: int = -Number.MAX_VALUE;  //-1.7976931348623157e+308
-    export var TINY_REAL64: int = Number.MIN_VALUE;  //5e-324
+//    export var MAX_REAL64: number = Number.MAX_VALUE;   //1.7976931348623157e+308
+//    export var MIN_REAL64: number = -Number.MAX_VALUE;  //-1.7976931348623157e+308
+//    export var TINY_REAL64: number = Number.MIN_VALUE;  //5e-324
 
 
-    export var MAX_FLOAT32: int = 3.4e38;    //3.4e38
-    export var MIN_FLOAT32: int = -3.4e38;   //-3.4e38
-    export var TINY_FLOAT32: int = 1.5e-45;  //1.5e-45
+    export var MAX_FLOAT32: float = 3.4e38;    //3.4e38
+    export var MIN_FLOAT32: float = -3.4e38;   //-3.4e38
+    export var TINY_FLOAT32: float = 1.5e-45;  //1.5e-45
 
-    export var MAX_REAL32: int = 3.4e38;     //3.4e38
-    export var MIN_REAL32: int = -3.4e38;    //-3.4e38
-    export var TINY_REAL32: int = 1.5e-45;   //1.5e-45
+//    export var MAX_REAL32: number = 3.4e38;     //3.4e38
+//    export var MIN_REAL32: number = -3.4e38;    //-3.4e38
+//    export var TINY_REAL32: number = 1.5e-45;   //1.5e-45
 
     export enum DataTypes {
         BYTE = 0x1400,
@@ -423,6 +438,30 @@ module akra {
         return 0;
     }
 
+    export function ab2ta(pBuffer: ArrayBuffer, eType: DataTypes): ArrayBufferView {
+        switch (eType) {
+            case DataTypes.FLOAT:
+                return new Float32Array(pBuffer);
+            case DataTypes.SHORT:
+                return new Int16Array(pBuffer);
+            case DataTypes.UNSIGNED_SHORT:
+                return new Uint16Array(pBuffer);
+            case DataTypes.INT:
+                return new Int32Array(pBuffer);
+            case DataTypes.UNSIGNED_INT:
+                return new Uint32Array(pBuffer);
+            case DataTypes.BYTE:
+                return new Int8Array(pBuffer);
+            default:
+            case DataTypes.UNSIGNED_BYTE:
+                return new Uint8Array(pBuffer);
+        }
+    }
+
+    
+    export var sid = (): uint => (++ sid._iTotal);
+    sid._iTotal = 0;
+
     //export function 
 
 	(<any>window).URL = (<any>window).URL ? (<any>window).URL : (<any>window).webkitURL ? (<any>window).webkitURL : null;
@@ -433,12 +472,15 @@ module akra {
 	(<any>window).WebSocket = (<any>window).WebSocket || (<any>window).MozWebSocket;
 };
 
-///<reference path="types.d.ts" />
-///<reference path="WebGL.d.ts" />
+
+
+
+///<reference path="libs/libs.ts" />
+///<reference path="bf/bitflags.ts" />
+///<reference path="bf/bitflags.ts" />
+///<reference path="math/math.ts" />
 
 ///<reference path="IRect3d.ts" />
-
-///<reference path="math/math.ts" />
 ///<reference path="geometry/geometry.ts" />
 
 ///<reference path="IWorldExtents.ts" />
@@ -456,6 +498,7 @@ module akra {
 ///<reference path="IApiInfo.ts" />
 ///<reference path="IDeviceInfo.ts" />
 
+///<reference path="util/util.ts" />
 ///<reference path="util/ReferenceCounter.ts" />
 ///<reference path="util/Singleton.ts" />
 ///<reference path="util/URI.ts" />

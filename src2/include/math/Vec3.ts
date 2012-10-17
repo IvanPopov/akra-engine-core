@@ -1,6 +1,6 @@
 ///<reference path="../akra.ts" />
 
-module akra {
+module akra.math {
     export class Vec3 {
         x: number;
         y: number;

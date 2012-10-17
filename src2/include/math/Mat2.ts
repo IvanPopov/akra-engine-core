@@ -1,6 +1,6 @@
 ///<reference path="../akra.ts" />
 
-module akra {
+module akra.math {
     export class Mat2 {
         private pData: Float32Array = new Float32Array(4);
 

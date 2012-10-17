@@ -11,7 +11,7 @@ module akra.pool {
     	private pWaiterResource: IResourcePoolItem = null;
 
     	constructor(pEngine: IEngine) {
-    		super();
+    		//super();
 
     		this.pResourceFamilyList = new Array(ResourceFamilies.TOTAL_RESOURCE_FAMILIES);
 

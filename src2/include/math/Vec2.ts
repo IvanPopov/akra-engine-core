@@ -1,6 +1,6 @@
 ///<reference path="../akra.ts" />
 
-module akra {
+module akra.math {
     export class Vec2 {
         x: float = 0.;
         y: float = 0.;

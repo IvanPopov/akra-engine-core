@@ -41,19 +41,19 @@ module akra {
 		restoreResource(): bool;
 
 		/** Загрузка ресурса из файла, или null при использовании имени ресурса. Виртуальная. */
-		loadResource(): bool;
+		loadResource(sFilename?: string): bool;
 		/** Сохранение ресурса в файл, или null при использовании имени ресурса. */
-		saveResource(): bool;
+		saveResource(sFilename?: string): bool;
 
 		/** Добавление и удаление функции, которая будет вызываться при изменении состояния ресурса( fnFunc(iNewSost,iOldSost) ) */
 		setChangesNotifyRoutine(fn: IResourceNotifyRoutineFunc): void;
 		delChangesNotifyRoutine(fn: IResourceNotifyRoutineFunc): void;
 
-		setStateWatcher(eEvent: ResourceItemEvents, fnWatcher: IResourceWatcherFunc);
+		setStateWatcher(eEvent: ResourceItemEvents, fnWatcher: IResourceWatcherFunc): void;
 
 		/** sinchronize events with other resourse */
-		connect(pResourceItem: IResourcePoolItem, eSignal: ResourceItemEvents, eSlot: ResourceItemEvents);
-		disconnect(pResourceItem: IResourcePoolItem, eSignal: ResourceItemEvents, eSlot: ResourceItemEvents);
+		connect(pResourceItem: IResourcePoolItem, eSignal: ResourceItemEvents, eSlot?: ResourceItemEvents): bool;
+		disconnect(pResourceItem: IResourcePoolItem, eSignal: ResourceItemEvents, eSlot?: ResourceItemEvents): bool;
 
 		/** Установка состояния в созданный */
 		notifyCreated(): void;
@@ -72,6 +72,8 @@ module akra {
 		/** Установка в состояние сохраненый */
 		notifySaved(): void;
 
+		notifyStateChange(eEvent: ResourceItemEvents, pTarget?: IResourcePoolItem);
+
 		/** Проверка создан ли ресурс */
 		isResourceCreated(): bool;
 		/** Проверка загружен ли ресурс */
@@ -82,7 +84,7 @@ module akra {
 		isResourceAltered(): bool;
 
 		/** Установка состояния в изменен после загружки */
-		setAlteredFlag(): void;
+		setAlteredFlag(isOn?: bool): void;
 
 		/** Пиписывание ресурсу имени */
 		setResourceName(sName: string);
@@ -93,6 +95,13 @@ module akra {
 		/** оповещение о уменьшении количесва ссылок на ресурс */
 		release(): uint;
 
+		setResourceCode(pCode: IResourceCode): void;
+		setResourcePool(pPool: IResourcePool): void;
+		setResourceHandle(iHandle: int): void;
+
+		setResourceFlag(eFlagBit: ResourceItemEvents, isSetting: bool): void;
+		setResourceFlag(iFlagBit: int, isSetting: bool): void;
+		
 		//static parseEvent(sEvent: string): uint;
 		//static parseEvent(eEvent: ResourceItemEvents): uint;
 	}

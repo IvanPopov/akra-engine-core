@@ -105,28 +105,12 @@ module akra.pool {
             return this.pDataPool.isInitialized();
         }
 
-        callbackDestroy(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void {
-            pResource.destroyResource();
-        }
-
-        callbackDisable(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void {
-            pResource.disableResource();
-        }
-
-        callbackRestore(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void {
-            pResource.restoreResource();
-        }
-
-        callbackClean(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void {
-            if (pResource.referenceCount() == 0) {
-                pPool.release(iHandle);
-            }
-        }
+       
 
         createResource(sResourceName: string): IResourcePoolItem {
             var iHandle: int = this.internalCreateResource(sResourceName);
 
-            if (VALID_HANDLE(iHandle)) {
+            if (iHandle !== INVALID_INDEX) {
                 var pResource: IResourcePoolItem = this.getResource(iHandle);
 
                 pResource.setResourcePool(this);
@@ -169,7 +153,7 @@ module akra.pool {
         saveResource(pResource: IResourcePoolItem): bool {
             if (pResource != null) {
                 // save the resource using it's own name as the file path
-                return pResource.saveResource(0);
+                return pResource.saveResource();
             }
             return false;
         }
@@ -181,7 +165,7 @@ module akra.pool {
                 debug_assert(iReferenceCount == 0, "destruction of non-zero reference count!");
 
                 if (iReferenceCount <= 0) {
-                    var iHandle = pResource.resourceHandle();
+                    var iHandle: int = pResource.resourceHandle;
                     this.internalDestroyResource(iHandle);
                 }
             }
@@ -222,7 +206,7 @@ module akra.pool {
 
             pResource.destroyResource();
 
-            delete this._pNameMap[iHandle];
+            delete this.pNameMap[iHandle];
 
             // free the resource slot associated with the handle
             this.pDataPool.release(iHandle);
@@ -238,7 +222,7 @@ module akra.pool {
             }
 
             // add this resource name to our map of handles
-            this._pNameMap[iHandle] = sResourceName;
+            this.pNameMap[iHandle] = sResourceName;
 
             // get a pointer to the resource and call it's creation function
             var pResource = this.pDataPool.getPtr(iHandle);
@@ -246,6 +230,24 @@ module akra.pool {
             pResource.createResource();
 
             return iHandle;
+        }
+
+        private static callbackDestroy(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void {
+            pResource.destroyResource();
+        }
+
+        private static callbackDisable(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void {
+            pResource.disableResource();
+        }
+
+        private static callbackRestore(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void {
+            pResource.restoreResource();
+        }
+
+        private static callbackClean(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void {
+            if (pResource.referenceCount() == 0) {
+                pPool.release(iHandle);
+            }
         }
     }
 }
