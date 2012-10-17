@@ -394,7 +394,8 @@ function PassBlend(pEngine) {
     this._pSamplersToReal = {};
     this._pBuffersToReal = {};
 
-    this._pRealSamplersDecl = null;
+    this._pRealSamplers2DDecl = null;
+    this._pRealSamplersCubeDecl = null;
     this._pRealBuffesDecl = null;
     this._pRealBuffesInit = null;
     this._pRealAttrDecl = null;
@@ -412,6 +413,20 @@ function PassBlend(pEngine) {
     this._pBlendTypes = {};
     this._pBlendTypesDecl = {};
     this._nBlendTypes = 1;
+
+    Enum([
+             k_VertexSampler = 0,
+             k_FragmentSampler,
+             k_VertexHeader,
+             k_FragmentHeader
+         ], REALSAMPLERUSAGEANDTYPES, a.fx.PassBlend);
+
+    Enum([
+             k_Sampler2D = 10,
+             k_SamplerCube
+         ], REALSAMPLERUSAGE, a.fx.PassBlend);
+
+
     STATIC(pExtractedFunctions, {
         "header" : "void A_extractTextureHeader(const sampler2D src, out A_TextureHeader texture) {" +
                    "vec4 v = texture2D(src, vec2(0.)); " +
@@ -526,9 +541,11 @@ function PassBlend(pEngine) {
                    "float stepY; " +
                    "};\n"
     });
-    STATIC(sZeroSamplerDecl, "uniform sampler2D A_zero_sampler;");
+    STATIC(sZeroSampler2DDecl, "uniform sampler2D A_zero_sampler2D;");
+    STATIC(sZeroSamplerCubeDecl, "uniform samplerCube A_zero_sampleCube;");
     STATIC(sZeroHeaderDecl, "A_TextureHeader A_zero_header;");
-    STATIC(sZeroSampler, "A_zero_sampler");
+    STATIC(sZeroSampler2D, "A_zero_sampler2D");
+    STATIC(sZeroSamplerCube, "A_zero_samplerCube");
     STATIC(sZeroHeader, "A_zero_header");
     STATIC(fnAddUniform, function (pVar, me, pShader, isVertex, sPrevRealName) {
         var pVar1;
@@ -590,24 +607,28 @@ function PassBlend(pEngine) {
 }
 
 PassBlend.prototype._initSystemData = function () {
-    if (PassBlend._pRealSamplersDecl) {
-        this._pRealSamplersDecl = PassBlend._pRealSamplersDecl;
+    if (PassBlend._pRealSamplers2DDecl) {
+        this._pRealSamplers2DDecl = PassBlend._pRealSamplers2DDecl;
+        this._pRealSamplersCubeDecl = PassBlend._pRealSamplersCubeDecl;
         this._pRealBuffesDecl = PassBlend._pRealBuffesDecl;
         this._pRealBuffesInit = PassBlend._pRealBuffesInit;
     }
-    var pSamplersDecl = new Array(30);
+    var pSamplers2DDecl = new Array(30);
+    var pSamplersCubeDecl = new Array(30);
     var pBufferDecl = new Array(30);
     var pBufferInit = new Array(30);
     var sSampler, sHeader, sAttr;
-    for (var i = 0; i < pSamplersDecl.length; i++) {
+    for (var i = 0; i < pSamplers2DDecl.length; i++) {
         sSampler = a.fx.SHADER_PREFIX.SAMPLER + i;
         sHeader = a.fx.SHADER_PREFIX.HEADER + i;
         sAttr = a.fx.SHADER_PREFIX.ATTRIBUTE + i;
-        pSamplersDecl[i] = "uniform sampler2D " + sSampler + ";";
+        pSamplers2DDecl[i] = "uniform sampler2D " + sSampler + ";";
+        pSamplersCubeDecl[i] = "uniform samplerCube " + sSampler + ";";
         pBufferDecl[i] = "A_TextureHeader " + sHeader + ";";
         pBufferInit[i] = "A_extractTextureHeader(" + sSampler + "," + sHeader + ");";
     }
-    this._pRealSamplersDecl = PassBlend._pRealSamplersDecl = pSamplersDecl;
+    this._pRealSamplers2DDecl = PassBlend._pRealSamplers2DDecl = pSamplers2DDecl;
+    this._pRealSamplersCubeDecl = PassBlend._pRealSamplersCubeDecl = pSamplersCubeDecl;
     this._pRealBuffesDecl = PassBlend._pRealBuffesDecl = pBufferDecl;
     this._pRealBuffesInit = PassBlend._pRealBuffesInit = pBufferInit;
 };
@@ -693,6 +714,15 @@ PassBlend.prototype.addPass = function (pPass) {
                 sName = pVar1.sRealName;
                 if (!this.pSamplers[sName]) {
                     this.pSamplers[sName] = [];
+                }
+                else {
+                    for (j = 0; j < this.pSamplers[sName].length; j++) {
+                        pVar2 = this.pSamplers[sName][j];
+                        if (pVar1.isSampler2D() !== pVar2.isSampler2D()) {
+                            error("Samplers with same names has different types");
+                            return;
+                        }
+                    }
                 }
                 this.pSamplers[sName].push(pVar1);
                 this._pSamplersToReal[sName] = null;
@@ -844,6 +874,15 @@ PassBlend.prototype.addPass = function (pPass) {
                 if (!this.pSamplers[sName]) {
                     this.pSamplers[sName] = [];
                 }
+                else {
+                    for (j = 0; j < this.pSamplers[sName].length; j++) {
+                        pVar2 = this.pSamplers[sName][j];
+                        if (pVar1.isSampler2D() !== pVar2.isSampler2D()) {
+                            error("Samplers with same names has different types");
+                            return;
+                        }
+                    }
+                }
                 this.pSamplers[sName].push(pVar1);
                 this._pSamplersToReal[sName] = null;
                 this.pSamplersF[sName] = null;
@@ -963,8 +1002,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     var pAttrToReal = {}, //AttrName ---> Stream number
         pAttrToBuffer = {}; //AttrName ---> Sampler number
     var pRealSamplers = {}; //ResourceID ---> Sampler real name
-    var pSamplersUsage = this._pRealSamplersUsage,
-        pSamplersArrayV = [],
+    var pSamplersArrayV = [],
         pSamplersArrayF = [];
     var pSamplersToReal = {}, //SamplerName ---> Sampler number
         pBuffersToReal = {}, //BufferName ---> Sampler number
@@ -990,12 +1028,16 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     var nAttr = 0, nBuffer = 0, iAttr, iBuffer;
     var pData1, pData2, sData1, sData2;
     var isNewBuffer = false;
-    var isZeroSamplerV = false;
-    var isZeroHeaderV = false;
-    var isZeroSamplerF = false;
-    var isZeroHeaderF = false;
-    var isExtractInitV = false;
-    var isExtractInitF = false;
+
+    var isZeroSampler2DV = false,
+        isZeroSampler2DF = false,
+        isZeroSamplerCubeV = false,
+        isZeroSamplerCubeF = false,
+        isZeroHeaderV = false,
+        isZeroHeaderF = false,
+        isExtractInitV = false,
+        isExtractInitF = false;
+
     var pUniformKeys = Object.keys(pUniformData);
     var nSamplers = 0;
     var pTempVarsDecl = {};
@@ -1004,12 +1046,16 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     for (i in pForeigns) {
         if (this.pForeignVariables[i]) {
             for (j = 0; j < this.pForeignVariables[i].length; j++) {
-                this.pForeignVariables[i][j]._pData = pForeigns[i];
+                this.pForeignVariables[i][j].setData(pForeigns[i]);
             }
         }
     }
 
     //Samplers and Globals Buffers generated here
+
+    var hasTextureData = true;
+    var hasNeedSamplerType = true;
+    var hasNeedTextureType = true;
 
     for (i = 0; i < pUniformKeys.length; i++) {
         sKey1 = pUniformKeys[i];
@@ -1022,39 +1068,63 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
             if (this.pGlobalBuffersF[sKey1] === null) {
                 isExtractInitF = true;
             }
-            if (pData1 === null) {
+            hasTextureData = true;
+            hasNeedSamplerType = true;
+            hasNeedTextureType = true;
+
+            hasTextureData = (pData1 !== null);
+            if (hasTextureData) {
+                hasNeedTextureType = pData1.target === a.TTYPE.TEXTURE_2D;
+                if (hasNeedTextureType) {
+                    iRealSampler = pRealSamplers[pData1.toNumber()];
+                    hasNeedSamplerType = iRealSampler === undefined ||
+                                         this._getRealSamplerType(iRealSampler) === a.fx.PassBlend.k_Sampler2D;
+                }
+            }
+
+            if (!hasTextureData ||
+                !hasNeedTextureType ||
+                !hasNeedSamplerType) {
+
+                if (!hasNeedTextureType) {
+                    warning("CRITICAL:: Bad texture target used for sampler 1");
+                }
+                if (!hasNeedSamplerType) {
+                    warning("CRITICAL:: You used same textures for video_buffer and sampler cube");
+                }
                 if (isExtractInitV) {
                     isZeroHeaderV = true;
-                    isZeroSamplerV = true;
+                    isZeroSampler2DV = true;
                 }
                 if (isExtractInitF) {
                     isZeroHeaderF = true;
-                    isZeroSamplerF = true;
+                    isZeroSampler2DF = true;
                 }
-                sData1 = PassBlend.sZeroSampler;
+                sData1 = PassBlend.sZeroSampler2D;
                 sData2 = PassBlend.sZeroHeader;
                 pBuffersToReal[sKey1] = null;
             }
             else {
-                iRealSampler = pRealSamplers[pData1.toNumber()];
                 if (iRealSampler === undefined) {
                     iRealSampler = nRealSamplers;
                     nRealSamplers++;
-                    pSamplersUsage[iRealSampler] = 0;
+                    this._clearRealSamplerUsage(iRealSampler);
+                    this._setRealSamplerType(iRealSampler, a.fx.PassBlend.k_Sampler2D);
                     pRealSamplers[pData1.toNumber()] = iRealSampler;
                 }
                 if (isExtractInitV) {
-                    SET_BIT(pSamplersUsage[iRealSampler], 0);
-                    SET_BIT(pSamplersUsage[iRealSampler], 1);
+                    this._setRealSamplerUsage(iRealSampler, a.fx.PassBlend.k_VertexSampler);
+                    this._setRealSamplerUsage(iRealSampler, a.fx.PassBlend.k_VertexHeader);
                 }
                 if (isExtractInitF) {
-                    SET_BIT(pSamplersUsage[iRealSampler], 2);
-                    SET_BIT(pSamplersUsage[iRealSampler], 3);
+                    this._setRealSamplerUsage(iRealSampler, a.fx.PassBlend.k_FragmentSampler);
+                    this._setRealSamplerUsage(iRealSampler, a.fx.PassBlend.k_FragmentHeader);
                 }
                 sData1 = a.fx.SHADER_PREFIX.SAMPLER + iRealSampler;
                 sData2 = a.fx.SHADER_PREFIX.HEADER + iRealSampler;
                 pBuffersToReal[sKey1] = sData1;
             }
+
             for (j = 0; j < this.pGlobalBuffers[sKey1].length; j++) {
                 pBuffer = this.pGlobalBuffers[sKey1][j];
                 pBuffer.pSampler.pData = sData1;
@@ -1064,94 +1134,172 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         }
 
         if (this.pSamplers[sKey1] !== undefined) {
+
             pSampler = this.pSamplers[sKey1][0];
+            var isSampler2D = pSampler.isSampler2D();
+            var eRealSamplerType = isSampler2D ? a.fx.PassBlend.k_Sampler2D : a.fx.PassBlend.k_SamplerCube;
+            var eTextureNeedType = isSampler2D ? a.TTYPE.TEXTURE_2D : a.TTYPE.TEXTURE_CUBE_MAP;
+            hasTextureData = true;
+            hasNeedSamplerType = true;
+            hasNeedTextureType = true;
+
             if (pSampler.isArray) {
-                if (!pData1 || pData1.length === 0) {
+                var isCollapse = true;
+                var hasCollapseTextureData = true;
+                var isSamplerArrayValid = true;
+
+                hasTextureData = (pData1 && pData1.length !== 0);
+
+                if (hasTextureData) {
+                    sTexture = pData1[0][a.fx.GLOBAL_VARS.TEXTURE];
+                    pTexture = pTextures[sTexture];
+                    hasNeedTextureType = pTexture.target === eTextureNeedType;
+                    if (hasNeedTextureType) {
+                        //Test for possibility for collapse array in one sampler
+                        for (j = 1; j < pData1.length; j++) {
+                            sTexture = pData1[j][a.fx.GLOBAL_VARS.TEXTURE];
+                            if (pTexture !== pTextures[sTexture]) {
+                                isCollapse = false;
+                                break;
+                            }
+                        }
+                        hasCollapseTextureData = !!(pTexture) && isCollapse;
+                        if (hasCollapseTextureData) {
+                            iRealSampler = pRealSamplers[pTexture.toNumber()];
+                            hasNeedSamplerType = iRealSampler === undefined ||
+                                                 this._getRealSamplerType(iRealSampler) === eRealSamplerType;
+                        }
+                    }
+                }
+
+                if (!hasTextureData ||
+                    !hasNeedTextureType ||
+                    !hasCollapseTextureData ||
+                    !hasNeedSamplerType) {
+
+                    if (!hasNeedTextureType) {
+                        warning("CRITICAL:: Bad texture target used for sampler 2");
+                    }
+                    if (!hasNeedSamplerType) {
+                        warning("CRITICAL:: You used same textures for sampler2D and samplerCube");
+                    }
+
                     if (this.pSamplersV[sKey1] === null) {
-                        isZeroSamplerV = true;
+                        if (isSampler2D) {
+                            isZeroSampler2DV = true;
+                        }
+                        else {
+                            isZeroSamplerCubeV = true;
+                        }
                     }
                     if (this.pSamplersF[sKey1] === null) {
-                        isZeroSamplerF = true;
+                        if (isSampler2D) {
+                            isZeroSampler2DF = true;
+                        }
+                        else {
+                            isZeroSamplerCubeF = true;
+                        }
                     }
-                    pSampler._pData = PassBlend.sZeroSampler;
-                    pSampler.isValid = false;
+                    if (isSampler2D) {
+                        sData1 = PassBlend.sZeroSampler2D;
+                    }
+                    else {
+                        sData1 = PassBlend.sZeroSamplerCube;
+                    }
                     pSamplersToReal[sKey1] = null;
-                    continue;
+                    isSamplerArrayValid = false;
                 }
-
-                var isCollapse = true;
-                sTexture = pData1[0][a.fx.GLOBAL_VARS.TEXTURE];
-                pTexture = pTextures[sTexture];
-
-                for (j = 1; j < pData1.length; j++) {
-                    sTexture = pData1[j][a.fx.GLOBAL_VARS.TEXTURE];
-                    if (pTexture !== pTextures[sTexture]) {
-                        isCollapse = false;
-                        break;
-                    }
-                }
-
-                if (isCollapse) {
-                    pSampler.isValid = false;
-
-                    if (!pTexture) {
-                        if (this.pSamplersV[sKey1] === null) {
-                            isZeroSamplerV = true;
-                        }
-                        if (this.pSamplersF[sKey1] === null) {
-                            isZeroSamplerF = true;
-                        }
-                        pSampler._pData = PassBlend.sZeroSampler;
-                        pSamplersToReal[sKey1] = null;
-                        continue;
-                    }
-
-                    iRealSampler = pRealSamplers[pTexture.toNumber()];
-
+                else if (isCollapse) {
                     if (iRealSampler === undefined) {
                         iRealSampler = nRealSamplers;
                         nRealSamplers++;
-                        pSamplersUsage[iRealSampler] = 0;
+                        this._clearRealSamplerUsage(iRealSampler);
+                        this._setRealSamplerType(iRealSampler, eRealSamplerType);
                         pRealSamplers[pTexture.toNumber()] = iRealSampler;
                     }
                     if (this.pSamplersV[sKey1] === null) {
-                        SET_BIT(pSamplersUsage[iRealSampler], 0);
+                        this._setRealSamplerUsage(iRealSampler, a.fx.PassBlend.k_VertexSampler);
                     }
                     if (this.pSamplersF[sKey1] === null) {
-                        SET_BIT(pSamplersUsage[iRealSampler], 2);
+                        this._setRealSamplerUsage(iRealSampler, a.fx.PassBlend.k_FragmentSampler);
                     }
+                    sData1 = a.fx.SHADER_PREFIX.SAMPLER + iRealSampler;
+                    isSamplerArrayValid = false;
+                }
+                else {
+                    if (this.pSamplersV[sKey1] === null) {
+                        pSamplersArrayV.push(pSampler);
+                    }
+                    if (this.pSamplersF[sKey1] === null) {
+                        pSamplersArrayF.push(pSampler);
+                    }
+                    sData1 = pSampler.sRealName;
+                    pSamplersToReal[sKey1] = new Array(pSampler.getLength() * 1);
+                    isSamplerArrayValid = true;
+                }
 
-                    pSamplersToReal[sKey1] = pSampler._pData = a.fx.SHADER_PREFIX.SAMPLER + iRealSampler;
-                    continue;
+                for (j = 0; j < this.pSamplers[sKey1].length; j++) {
+                    pSampler = this.pSamplers[sKey1][j];
+                    pSampler.setData(sData1);
+                    pSampler.isValid = isSamplerArrayValid;
                 }
-                if (this.pSamplersV[sKey1] === null) {
-                    pSamplersArrayV.push(pSampler);
-                }
-                if (this.pSamplersF[sKey1] === null) {
-                    pSamplersArrayF.push(pSampler);
-                }
-                //nRealSamplers += pSampler.iLength;
-
-                pSampler._pData = pSampler.sRealName;
-                pSampler.isValid = true;
-                pSamplersToReal[sKey1] = new Array(pSampler.getLength() * 1);
+                continue;
             }
             else {
-                sTexture = pData1[a.fx.GLOBAL_VARS.TEXTURE];
-//            if (typeof(sTexture) === "object") {
-//                pTexture = sTexture;
-//            }
-//            else {
-                pTexture = pTextures[sTexture];
-//            }
-                if (!pTexture) {
+                hasTextureData = !!(pData1);
+                if (hasTextureData) {
+                    sTexture = pData1[a.fx.GLOBAL_VARS.TEXTURE];
+                    if (typeof(sTexture) === "object") {
+                        pTexture = sTexture;
+                    }
+                    else {
+                        pTexture = pTextures[sTexture];
+                    }
+                    hasTextureData = !!(pTexture);
+                    if (hasTextureData) {
+                        hasNeedTextureType = (pTexture.target === eTextureNeedType);
+                        if (hasNeedTextureType) {
+                            iRealSampler = pRealSamplers[pTexture.toNumber()];
+                            hasNeedSamplerType = iRealSampler === undefined ||
+                                                 this._getRealSamplerType(iRealSampler) === eRealSamplerType;
+                        }
+                    }
+                }
+
+                if (!hasTextureData ||
+                    !hasNeedTextureType ||
+                    !hasNeedSamplerType) {
+
+                    if (!hasNeedTextureType) {
+                        warning("CRITICAL:: Bad texture target used for sampler 3");
+                    }
+
+                    if (!hasNeedSamplerType) {
+                        warning("CRITICAL:: You used same textures for sampler2D and samplerCube");
+                    }
+
                     if (this.pSamplersV[sKey1] === null) {
-                        isZeroSamplerV = true;
+                        if (isSampler2D) {
+                            isZeroSampler2DV = true;
+                        }
+                        else {
+                            isZeroSamplerCubeV = true;
+                        }
                     }
                     if (this.pSamplersF[sKey1] === null) {
-                        isZeroSamplerF = true;
+                        if (isSampler2D) {
+                            isZeroSampler2DF = true;
+                        }
+                        else {
+                            isZeroSamplerCubeF = true;
+                        }
                     }
-                    sData1 = PassBlend.sZeroSampler;
+                    if (isSampler2D) {
+                        sData1 = PassBlend.sZeroSampler2D;
+                    }
+                    else {
+                        sData1 = PassBlend.sZeroSamplerCube;
+                    }
                     pSamplersToReal[sKey1] = null;
                 }
                 else {
@@ -1159,20 +1307,21 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                     if (iRealSampler === undefined) {
                         iRealSampler = nRealSamplers;
                         nRealSamplers++;
-                        pSamplersUsage[iRealSampler] = 0;
+                        this._clearRealSamplerUsage(iRealSampler);
+                        this._setRealSamplerType(iRealSampler, eRealSamplerType);
                         pRealSamplers[pTexture.toNumber()] = iRealSampler;
                     }
                     if (this.pSamplersV[sKey1] === null) {
-                        SET_BIT(pSamplersUsage[iRealSampler], 0);
+                        this._setRealSamplerUsage(iRealSampler, a.fx.PassBlend.k_VertexSampler);
                     }
                     if (this.pSamplersF[sKey1] === null) {
-                        SET_BIT(pSamplersUsage[iRealSampler], 2);
+                        this._setRealSamplerUsage(iRealSampler, a.fx.PassBlend.k_FragmentSampler);
                     }
                     sData1 = a.fx.SHADER_PREFIX.SAMPLER + iRealSampler;
                     pSamplersToReal[sKey1] = sData1;
                 }
                 for (j = 0; j < this.pSamplers[sKey1].length; j++) {
-                    this.pSamplers[sKey1][j]._pData = sData1;
+                    this.pSamplers[sKey1][j].setData(sData1);
                 }
                 continue;
             }
@@ -1205,15 +1354,24 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         }
         else if (pAttrToBuffer[sKey1] === undefined) {
             iRealSampler = pRealSamplers[pData1.pData.buffer.toNumber()];
+            var hasNeedSamplerType = true;
+            hasNeedSamplerType = iRealSampler === undefined ||
+                                 this._getRealSamplerType(iRealSampler) === a.fx.PassBlend.k_Sampler2D;
+            if (!hasNeedSamplerType) {
+                warning("CRITICAL:: Same textures are use for video_buffer(attributes) and samplerCube");
+                this._setRealSamplerType(iRealSampler, a.fx.PassBlend.k_SamplerCube, false);
+                this._setRealSamplerType(iRealSampler, a.fx.PassBlend.k_Sampler2D);
+            }
             if (iRealSampler === undefined) {
                 iRealSampler = nRealSamplers;
                 nRealSamplers++;
-                pSamplersUsage[iRealSampler] = 0;
+                this._clearRealSamplerUsage(iRealSampler);
+                this._setRealSamplerType(iRealSampler, a.fx.PassBlend.k_Sampler2D);
                 pRealSamplers[pData1.pData.buffer.toNumber()] = iRealSampler;
             }
             pAttrToBuffer[sKey1] = iRealSampler;
-            SET_BIT(pSamplersUsage[iRealSampler], 0);
-            SET_BIT(pSamplersUsage[iRealSampler], 1);
+            this._setRealSamplerUsage(iRealSampler, a.fx.PassBlend.k_VertexSampler);
+            this._setRealSamplerUsage(iRealSampler, a.fx.PassBlend.k_VertexHeader);
         }
         for (j = i; j < pKeys.length; j++) {
             sKey2 = pKeys[j];
@@ -1277,20 +1435,14 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         sInit = "";
         sDecl = this._pAttrDataDecl[sKey1];
         if (!pData1) {
-//            sInit += pAttr.toCode() + "=0.0;";
             if (pAttr.isPointer === true) {
                 sDecl += this._pAttrIndexDecl[sKey1];
-//                for (j = 0; pAttr.pPointers && j < pAttr.pPointers.length; j++) {
-//                    pPointer = pAttr.pPointers[j];
-//                    sDecl += "float " + pPointer.toCode() + ";";
-////                sInit += pPointer.toCode() + "=0.0;";
-//                }
-                isZeroSamplerV = true;
+                isZeroSampler2DV = true;
                 isZeroHeaderV = true;
                 isExtractInitV = true;
                 for (j = 0; j < this.pAttrBuffers[sKey1].length; j++) {
                     pBuffer = this.pAttrBuffers[sKey1][j];
-                    pBuffer.pSampler.pData = PassBlend.sZeroSampler;
+                    pBuffer.pSampler.pData = PassBlend.sZeroSampler2D;
                     pBuffer.pHeader.pData = PassBlend.sZeroHeader;
                 }
             }
@@ -1399,21 +1551,30 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         sVertexCode += i + ";";
     }
     //Uniform samplers
-    if (isZeroSamplerV) {
+    if (isZeroSampler2DV) {
         nSamplers--;
-        sVertexCode += PassBlend.sZeroSamplerDecl;
+        sVertexCode += PassBlend.sZeroSampler2DDecl;
+    }
+    if (isZeroSamplerCubeV) {
+        nSamplers--;
+        sVertexCode += PassBlend.sZeroSamplerCubeDecl;
     }
     for (i = 0; i < nRealSamplers; i++) {
-        if (TEST_BIT(pSamplersUsage[i], 0)) {
+        if (this._isRealSamplerUsage(i, a.fx.PassBlend.k_VertexSampler)) {
             nSamplers--;
-            sVertexCode += this._pRealSamplersDecl[i];
+            if (this._getRealSamplerType(i) === a.fx.PassBlend.k_Sampler2D) {
+                sVertexCode += this._pRealSamplers2DDecl[i];
+            }
+            else {
+                sVertexCode += this._pRealSamplersCubeDecl[i];
+            }
         }
     }
     //Sampler arrays
     for (i = 0; i < pSamplersArrayV.length; i++) {
         pSampler = pSamplersArrayV[i];
         nSamplers -= pSampler.getLength();
-        if(!(pSampler.pType.pUsages && pSampler.pType.pUsagesName["uniform"])){
+        if (!(pSampler.pType.pUsages && pSampler.pType.pUsagesName["uniform"])) {
             sVertexCode += "uniform ";
         }
         sVertexCode += pSampler.toCodeDecl();
@@ -1434,7 +1595,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         sVertexCode += PassBlend.sZeroHeaderDecl;
     }
     for (i = 0; i < nRealSamplers; i++) {
-        if (TEST_BIT(pSamplersUsage[i], 1)) {
+        if (this._isRealSamplerUsage(i, a.fx.PassBlend.k_VertexHeader)) {
             nSamplers--;
             sVertexCode += this._pRealBuffesDecl[i];
         }
@@ -1484,8 +1645,8 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     sVertexCode += "void main(){";
     //Extract headers for attr`s buffers
     for (i = 0; i < nRealSamplers; i++) {
-        if (TEST_BIT(pSamplersUsage[i], 1)) {
-            nSamplers--;
+        if (this._isRealSamplerUsage(i, a.fx.PassBlend.k_VertexHeader)) {
+//            nSamplers--;
             sVertexCode += this._pRealBuffesInit[i];
         }
     }
@@ -1576,21 +1737,30 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         sFragmentCode += i + ";";
     }
     //Uniform samplers
-    if (isZeroSamplerF) {
+    if (isZeroSampler2DF) {
         nSamplers--;
-        sFragmentCode += PassBlend.sZeroSamplerDecl;
+        sFragmentCode += PassBlend.sZeroSampler2DDecl;
+    }
+    if (isZeroSamplerCubeF) {
+        nSamplers--;
+        sFragmentCode += PassBlend.sZeroSamplerCubeDecl;
     }
     for (i = 0; i < nRealSamplers; i++) {
-        if (TEST_BIT(pSamplersUsage[i], 2)) {
+        if (this._isRealSamplerUsage(i, a.fx.PassBlend.k_FragmentSampler)) {
             nSamplers--;
-            sFragmentCode += this._pRealSamplersDecl[i];
+            if (this._getRealSamplerType(i) === a.fx.PassBlend.k_Sampler2D) {
+                sFragmentCode += this._pRealSamplers2DDecl[i];
+            }
+            else {
+                sFragmentCode += this._pRealSamplersCubeDecl[i];
+            }
         }
     }
     //Uniform sampler`s arrays
     for (i = 0; i < pSamplersArrayF.length; i++) {
         pSampler = pSamplersArrayF[i];
         nSamplers -= pSampler.getLength();
-        if(!(pSampler.pType.pUsages && pSampler.pType.pUsagesName["uniform"])){
+        if (!(pSampler.pType.pUsages && pSampler.pType.pUsagesName["uniform"])) {
             sFragmentCode += "uniform ";
         }
         sFragmentCode += pSampler.toCodeDecl();
@@ -1616,7 +1786,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
         sFragmentCode += PassBlend.sZeroHeaderDecl;
     }
     for (i = 0; i < nRealSamplers; i++) {
-        if (TEST_BIT(pSamplersUsage[i], 3)) {
+        if (this._isRealSamplerUsage(i, a.fx.PassBlend.k_FragmentHeader)) {
             nSamplers--;
             sFragmentCode += this._pRealBuffesDecl[i];
         }
@@ -1646,9 +1816,8 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     sFragmentCode += "void main(){";
     //Extract headers for global buffers
     for (i = 0; i < nRealSamplers; i++) {
-        if (TEST_BIT(pSamplersUsage[i], 3)) {
-            nSamplers--;
-            sFragmentCode += this._pRealBuffesDecl[i];
+        if (this._isRealSamplerUsage(i, a.fx.PassBlend.k_FragmentHeader)) {
+            sFragmentCode += this._pRealBuffesInit[i];
         }
     }
     //Calls shader`s functions
@@ -1665,7 +1834,9 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     //Generate program
     pProgram = this._pEngine.displayManager().shaderProgramPool().createResource(sHash);
     pProgram._pPassBlend = this;
-    pProgram.setUniformVars(this.pUniforms, isZeroSamplerV || isZeroSamplerF);
+    pProgram.setUniformVars(this.pUniforms,
+                            isZeroSampler2DV || isZeroSampler2DF,
+                            isZeroSamplerCubeV || isZeroSamplerCubeF);
     pProgram.setAttrParams(pAttrToReal, pAttrToBuffer, pSamplersToReal, pBuffersToReal, nAttr, nRealSamplers);
     if (!pProgram.create(sHash, sVertexCode, sFragmentCode)) {
         return false;
@@ -1870,4 +2041,27 @@ PassBlend.prototype._addTypes = function (pUsedTypes, isVertex) {
         this.pTypesOrderF = pOrder;
     }
 };
+PassBlend.prototype._setRealSamplerUsage = function (iSlot, eUsage, isSet) {
+    isSet = (isSet === undefined) ? true : isSet;
+    SET_BIT(this._pRealSamplersUsage[iSlot], eUsage, isSet);
+};
+PassBlend.prototype._setRealSamplerType = function (iSlot, eType, isSet) {
+    isSet = (isSet === undefined) ? true : isSet;
+    SET_BIT(this._pRealSamplersUsage[iSlot], eType, isSet);
+};
+PassBlend.prototype._getRealSamplerType = function (iSlot) {
+    if (TEST_BIT(this._pRealSamplersUsage[iSlot], a.fx.PassBlend.k_Sampler2D)) {
+        return a.fx.PassBlend.k_Sampler2D;
+    }
+    else {
+        return a.fx.PassBlend.k_SamplerCube;
+    }
+};
+PassBlend.prototype._isRealSamplerUsage = function (iSlot, eUsage) {
+    return TEST_BIT(this._pRealSamplersUsage[iSlot], eUsage);
+};
+PassBlend.prototype._clearRealSamplerUsage = function (iSlot) {
+    this._pRealSamplersUsage[iSlot] = 0;
+};
+
 A_NAMESPACE(PassBlend, fx);

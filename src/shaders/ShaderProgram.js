@@ -31,7 +31,10 @@ function ShaderProgram(pEngine) {
     this._nActiveTimes = 0;
     this._pPassBlend = null;
     this._pTextures = null;
-    this._isZeroSampler = false;
+
+    this._isZeroSampler2D = false;
+    this._isZeroSamplerCube = false;
+
     this._eActiveStream = true;
     this._pActiveStreams = null;
 
@@ -106,6 +109,8 @@ ShaderProgram.prototype.create = function (sHash, sVertexCode, sFragmentCode) {
     }
     debug_assert_win(pDevice.getProgramParameter(pHardwareProgram, pDevice.LINK_STATUS),
                      'cannot link program', this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
+
+    console.log(this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
     
     this._isValid = true;
     this._pEngine.shaderManager()._registerProgram(this._sHash, this);
@@ -898,9 +903,11 @@ ShaderProgram.prototype.setAttrParams = function (pAttrToReal, pAttrToBuffer, pS
     this._pRealAttr = new Array(nAttr);
     this._pRealSamplers = new Array(nRealSamplers);
 };
-ShaderProgram.prototype.setUniformVars = function (pUniforms, isZeroSampler) {
+ShaderProgram.prototype.setUniformVars = function (pUniforms, isZeroSampler2D, isZeroSamplerCube) {
     this._pUniformVars = pUniforms;
-    this._isZeroSampler = isZeroSampler || false;
+    this._isZeroSampler2D = isZeroSampler2D || false;
+    this._isZeroSamplerCube = isZeroSamplerCube || false;
+
     var i;
     var pVar;
     for (i in pUniforms) {
@@ -1134,8 +1141,11 @@ ShaderProgram.prototype.getStreamNumber = function () {
 ShaderProgram.prototype.activate = function () {
     this._nActiveTimes++;
     this._pDevice.useProgram(this._pHardwareProgram);
-    if (this._isZeroSampler) {
-        this.applyInt(PassBlend.sZeroSampler, a.fx.ZEROSAMPLER);
+    if (this._isZeroSampler2D) {
+        this.applyInt(PassBlend.sZeroSampler2D, a.fx.ZEROSAMPLER);
+    }
+    if (this._isZeroSamplerCube) {
+        this.applyInt(PassBlend.sZeroSamplerCube, a.fx.ZEROSAMPLER);
     }
 };
 ShaderProgram.prototype.deactivate = function () {
@@ -1159,10 +1169,28 @@ ShaderProgram.prototype.resetActivationStreams = function () {
     this._eActiveStream = !(this._eActiveStream);
 };
 ShaderProgram.prototype._programInfoLog = function (pHardwareProgram, pVertexShader, pPixelShader) {
+//    var pShaderDebugger = this._pEngine.getDevice().getExtension("WEBGL_debug_shaders");
+//    console.log("===>>", pShaderDebugger);
+//    if (pShaderDebugger) {
+//        alert(1);
+//        console.warn('translated vertex shader =========>');
+//        console.warn(pShaderDebugger.getTranslatedShaderSource(pVertexShader));
+//        console.warn('translated pixel shader =========>');
+//        console.warn(pShaderDebugger.getTranslatedShaderSource(pPixelShader));
+//    }
+//
+//    return '<pre style="background-color: #FFCACA;">' + this._pDevice.getProgramInfoLog(this._pHardwareProgram) +
+//           '</pre>' + '<hr />' +
+//           '<pre>' + this.getSourceCode(a.SHADERTYPE.VERTEX) + '</pre><hr />' +
+//           '<pre>' + this.getSourceCode(a.SHADERTYPE.PIXEL) + '</pre>'
     var pShaderDebugger = this._pEngine.getDevice().getExtension("WEBGL_debug_shaders");
-    console.log("===>>", pShaderDebugger);
+    var pGPUInfoLog = this._pEngine.getDevice().getExtension("WEBGL_debug_renderer_info");
+
+    if (pGPUInfoLog) {
+        //TODO:
+    }
+
     if (pShaderDebugger) {
-        alert(1);
         console.warn('translated vertex shader =========>');
         console.warn(pShaderDebugger.getTranslatedShaderSource(pVertexShader));
         console.warn('translated pixel shader =========>');
@@ -1172,7 +1200,7 @@ ShaderProgram.prototype._programInfoLog = function (pHardwareProgram, pVertexSha
     return '<pre style="background-color: #FFCACA;">' + this._pDevice.getProgramInfoLog(this._pHardwareProgram) +
            '</pre>' + '<hr />' +
            '<pre>' + this.getSourceCode(a.SHADERTYPE.VERTEX) + '</pre><hr />' +
-           '<pre>' + this.getSourceCode(a.SHADERTYPE.PIXEL) + '</pre>'
+           '<pre>' + this.getSourceCode(a.SHADERTYPE.PIXEL) + '</pre>';
 };
 ShaderProgram.prototype._shaderInfoLog = function (pShader, eType) {
     var sCode = this.getSourceCode(eType), sLog;

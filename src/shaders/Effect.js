@@ -459,9 +459,6 @@ VariableType.prototype.isStrictEqual = function (pType) {
     return this.pEffectType.isStrictEqual(pType);
 };
 VariableType.prototype.isEqual = function (pType) {
-    if (pType instanceof VariableType) {
-        return this.pEffectType.isEqual(pType.pEffectType);
-    }
     return this.pEffectType.isEqual(pType);
 };
 VariableType.prototype.isType = function (pEffectType) {
@@ -630,6 +627,9 @@ EffectType.prototype.calcHash = function () {
     this._sStrongHash = sStrongHash;
 };
 EffectType.prototype.isEqual = function (pType) {
+    if(typeof(pType) === "string"){
+        return this.hash() === pType;
+    }
     if (pType instanceof VariableType) {
         return this.hash() === pType.pEffectType.hash();
     }
@@ -1468,11 +1468,19 @@ EffectVariable.prototype.toOffsetStr = function () {
 EffectVariable.prototype.toDataCode = function () {
     if (!this.isSampler() && !this.isForeign) {
         warning("Only for samplers amd foreigns, name: " + this.sName);
+        return "";
     }
     return this._pData;
 };
 EffectVariable.prototype.isSampler = function () {
     return this._isSampler;
+};
+EffectVariable.prototype.isSamplerCube = function(){
+    return this._isSampler && this.pType.isEqual(a.fx.GLOBAL_VARS.T_KW_SAMPLERCUBE);
+};
+EffectVariable.prototype.isSampler2D = function(){
+    return this._isSampler && (this.pType.isEqual(a.fx.GLOBAL_VARS.T_KW_SAMPLER) ||
+                               this.pType.isEqual(a.fx.GLOBAL_VARS.T_KW_SAMPLER2D));
 };
 EffectVariable.prototype.isBuffer = function () {
     return (this.pBuffer && this.iScope === a.fx.GLOBAL_VARS.GLOBAL);

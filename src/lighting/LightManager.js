@@ -272,8 +272,8 @@ LightManager.prototype.applyLight = function () {
     pSnapshot.setParameterBySemantic("CAMERA_POSITION", pEngine.getActiveCamera().worldPosition());
     pSnapshot.applyTextureBySemantic("TEXTURE0", pRenderer._pGlobalPostEffectTexture);
     pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE0", pDeferredTextures[0]);
-    pSnapshot.applyTextureBySemantic("TEXTURE1", pEngine.pSkyMap);
-    pSnapshot.setParameter("sky_container.skyboxSampler", {TEXTURE : "TEXTURE1"});
+    pSnapshot.applyTextureBySemantic("SKYBOX_TEXTURE", pEngine.pSkyMap);
+//    pSnapshot.setParameter("skyboxSampler", {TEXTURE : "TEXTURE1"});
     pSubMesh.applyRenderData(pSubMesh.data);
     pSubMesh.renderPass();
     pSubMesh.deactivatePass();
