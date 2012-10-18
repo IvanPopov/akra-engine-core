@@ -1,4 +1,4 @@
-function sha1 (str) {
+function sha1 (str: string): string {
     // http://kevin.vanzonneveld.net
     // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
     // + namespaced by: Michael White (http://getsprink.com)

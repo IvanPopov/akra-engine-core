@@ -497,6 +497,8 @@ module akra {
 ///<reference path="IBrowserInfo.ts" />
 ///<reference path="IApiInfo.ts" />
 ///<reference path="IDeviceInfo.ts" />
+///<reference path="IFont2d.ts" />
+///<reference path="IString2d.ts" />
 
 ///<reference path="util/util.ts" />
 ///<reference path="util/ReferenceCounter.ts" />
@@ -508,6 +510,8 @@ module akra {
 ///<reference path="util/ApiInfo.ts" />
 ///<reference path="util/ScreenInfo.ts" />
 ///<reference path="util/DeviceInfo.ts" />
+///<reference path="util/Font2d.ts" />
+///<reference path="util/String2d.ts" />
 
 
 ///<reference path="IResourceWatcherFunc.ts" />
@@ -517,6 +521,8 @@ module akra {
 ///<reference path="IResourcePool.ts" />
 ///<reference path="IResourcePoolItem.ts" />
 ///<reference path="IResourcePoolManager.ts" />
+
+
 
 ///<reference path="pool/ResourceCode.ts" />
 ///<reference path="pool/DataPool.ts" />

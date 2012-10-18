@@ -196,6 +196,16 @@ module akra.pool {
             return pResource;
         }
 
+        getResources(): IResourcePoolItem[] {
+            var pResources: IResourcePoolItem[] = [];
+
+            for (var iHandleResource in this.pNameMap) {
+                pResources.push(this.getResource(parseInt(iHandleResource)));
+            }
+
+            return pResources;
+        }
+
         private internalGetResource(iHandle: int): IResourcePoolItem {
             return this.pDataPool.getPtr(iHandle);
         }
@@ -218,7 +228,7 @@ module akra.pool {
             // make sure this name is not already in use
             for (var iter in this.pNameMap) {
                 debug_assert((this.pNameMap[iter] != sResourceName),
-                             "A resource with this name already exists: " + sResourceName);
+                            "A resource with this name already exists: " + sResourceName);
             }
 
             // add this resource name to our map of handles

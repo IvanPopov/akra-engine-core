@@ -3,7 +3,7 @@
 module akra {
 
 	/** Семейства ресурсов */
-	export enum ResourceFamilies{
+	export enum ResourceFamilies {
 		VIDEO_RESOURCE = 0, 
 		AUDIO_RESOURCE, 
 		GAME_RESOURCE, 
@@ -38,7 +38,7 @@ module akra {
 	/** Конструктор класса, занимается очисткой списков пулов по семействам ресурсвов и краты пулов по коду ресурсов */
     export interface IResourcePoolManager extends IManager {
     	/** Регистрируется пул ресурсов опредленного типа в менеджере русурсов */
-    	registerResourcePool(pCode: IResourceCode, pInterface: IResourcePool): void;
+    	registerResourcePool(pCode: IResourceCode, pPool: IResourcePool): void;
     	/** Удаляет пул ресурсов опредленного типа в менеджере русурсов */
     	unregisterResourcePool(pCode: IResourceCode): IResourcePool;
 
@@ -57,7 +57,10 @@ module akra {
     	/**
 		 * Возвращает хендл конкретного ресурса по его имени из конкретного пула опредленного типа
 		 **/
-    	findResourceHandle(pCode: IResourceCode, sName: string): uint;
+    	findResourceHandle(pCode: IResourceCode, sName: string): int;
+    	/** Возвращает конкретный ресурс по его имени из конкретного пула опредленного типа */
+    	findResource(pCode: IResourceCode, sName: string): IResourcePoolItem;
+        findResource(pCode: IResourceCode, iHandle: int): IResourcePoolItem;
 
     	monitorInitResources(fnMonitor: IResourceWatcherFunc): void;
     	setLoadedAllRoutine(fnCallback: Function): void;

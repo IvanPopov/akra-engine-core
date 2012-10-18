@@ -207,7 +207,8 @@ module akra {
 				return false;
 			}
 
-			//this.pResourceManager = new a.Res
+			this.pResourceManager = new pool.ResourcePoolManager(this);
+			//this.pDisplayManager = 
 
 			return false;
 		}

@@ -1,4 +1,4 @@
-function crc32 (str) {
+function crc32 (str: string): string {
     // http://kevin.vanzonneveld.net
     // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
     // +   improved by: T0bsn
@@ -15,9 +15,9 @@ function crc32 (str) {
     crc = crc ^ (-1);
     for (var i = 0, iTop = str.length; i < iTop; i++) {
         y = (crc ^ str.charCodeAt(i)) & 0xFF;
-        x = "0x" + table.substr(y * 9, 8);
+        x = parseInt("0x" + table.substr(y * 9, 8));
         crc = (crc >>> 8) ^ x;
     }
 
-    return crc ^ (-1);
+    return String(crc ^ (-1));
 }

@@ -1,4 +1,4 @@
-function utf8_encode (argString) {
+function utf8_encode (argString: string): string {
     // Encodes an ISO-8859-1 string to UTF-8  
     // 
     // version: 1109.2015
@@ -54,7 +54,7 @@ function utf8_encode (argString) {
 }
 
 
-function utf8_decode (str_data) {
+function utf8_decode (str_data: string): string {
     // http://kevin.vanzonneveld.net
     // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
     // +      input by: Aman Gupta

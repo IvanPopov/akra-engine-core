@@ -27,7 +27,7 @@ module akra.bf {
 	 * Выставляет бит под номером @a bit у числа @a value равным единице
 	 * @inline
 	 */
-	export var setBit = (value: int, bit: int, setting: bool = true) => (setting ? setBit(value, bit) : clearBit(value, bit));
+	export var setBit = (value: int, bit: int, setting: bool = true) => (setting ? ((value) |= flag((bit))) : clearBit(value, bit));
 	/**
 	 * 
 	 * @inline

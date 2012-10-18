@@ -1,5 +1,4 @@
 interface String {
-	toHex(length: int);
 	toUTF8(): string;
 	fromUTF8(): string;
 	
@@ -7,7 +6,6 @@ interface String {
 	sha1(): string;
 	crc32(): string;
 	replaceAt(n: int, s: string);
-
 }
 
 interface Array {
@@ -20,6 +18,7 @@ interface Array {
 }
 
 interface Number {
+	toHex(length: int): string;
 	printBinary(isPretty?: bool);
 }
 
