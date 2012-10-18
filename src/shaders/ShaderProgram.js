@@ -326,7 +326,13 @@ ShaderProgram.prototype.applyVec3F = function (sName, pData) {
     }
     pData = (pData.pData !== undefined) ? pData.pData : pData;
     var pDevice = this._pDevice;
-    pDevice.uniform3fv(this._pRealUniformList[sName], pData);
+//    if(sName == "points_omni_0_11[0].LIGHT_DATA.ATTENUATION" ||
+//       sName == "points_omni_0_11[1].LIGHT_DATA.ATTENUATION"){
+//        pDevice.uniform3f(this._pRealUniformList[sName], 0.1, 0., 0.);
+//    }
+//    else{
+        pDevice.uniform3fv(this._pRealUniformList[sName], pData);
+//    }
 };
 ShaderProgram.prototype.applyVec4F = function (sName, pData) {
     if (!this._pRealUniformList[sName]) {

@@ -203,7 +203,7 @@ LightManager.prototype.updateTextures = function () {
     }
 
 };
-
+var tempFlag;
 LightManager.prototype.applyLight = function () {
     var pEngine = this._pEngine;
     var pRenderer = pEngine.shaderManager();
@@ -254,7 +254,11 @@ LightManager.prototype.applyLight = function () {
     pSnapshot.applyTextureBySemantic("DEFERRED_TEXTURE1", pDeferredTextures[1]);
     pSnapshot.applyTextureBySemantic("SCENE_DEPTH_TEXTURE", pDepthTexture);
     var pEntry = pSubMesh.renderPass();
-    //console.log(pEntry.pUniforms, pEntry.pTextures);
+    if(tempFlag === undefined){
+        tempFlag = true;
+        console.log(pEntry.pProgram, pEntry.pUniforms, pEntry.pTextures);
+    }
+
     pSubMesh.deactivatePass();
 
 

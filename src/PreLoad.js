@@ -54,8 +54,14 @@ a.createDevice = function (pCanvas, bAntialias) {
 
     try {
 
+        function throwOnGLError(err, funcName, args) {
+            throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
+        };
+
         pContext = pCanvas.getContext("webgl", { antialias: bAntialias || true}) || 
             pCanvas.getContext("experimental-webgl", { antialias: bAntialias || true});
+
+        pContext = WebGLDebugUtils.makeDebugContext(pContext, throwOnGLError);
         //NOTE: context debugger moved to Engine.js
     }
     catch (e) {
