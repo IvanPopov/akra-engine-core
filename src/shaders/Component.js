@@ -518,7 +518,7 @@ function PassBlend(pEngine) {
                    "A_tex2Dv(sampler, header, A_findPixel(header, offset + 4.))," +
                    "A_tex2Dv(sampler, header, A_findPixel(header, offset + 8.))," +
                    "A_tex2Dv(sampler, header, A_findPixel(header, offset + 12.)));}\n",
-        "init"   : "\n#ifdef GL_FRAGMENT_PRECISION_HIGH\n" +
+        "init"   : "\n#ifdef AKRA_FRAGMENT\n" +
                    "//#define texture2D(sampler, ) texture2D\n" +
                    "#else\n" +
                    "#define texture2D(A, B) texture2DLod(A, B, 0.)\n" +
@@ -924,7 +924,7 @@ PassBlend.prototype.finalizeBlend = function () {
     }
 
     for (i in this.pGlobalBuffers) {
-        this.pUniforms[i] = this.pGlobalBuffers[i][0];//this.pGlobalBuffers[i][0].pType.pEffectType.toCode();
+        this.pUniforms[i] = this.pGlobalBuffers[i][0].pVar;//this.pGlobalBuffers[i][0].pType.pEffectType.toCode();
     }
 
     for (i in this.pUniformsF) {
@@ -1066,6 +1066,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                 isExtractInitV = true;
             }
             if (this.pGlobalBuffersF[sKey1] === null) {
+                //console.log("!!!!!!!!!!!!!!!!!must be here");
                 isExtractInitF = true;
             }
             hasTextureData = true;
@@ -1521,9 +1522,9 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
             sVertexCode += PassBlend.pExtractedFunctions["init"];
             isExtract = true;
         }
-        if (!PassBlend.pExtractedFunctions[i]) {
-            trace("ERRRRRRRRRRRRRRRRRRRRRRROR", i, PassBlend.pExtractedFunctions[i]);
-        }
+        // if (!PassBlend.pExtractedFunctions[i]) {
+        //     trace("ERRRRRRRRRRRRRRRRRRRRRRROR", i, PassBlend.pExtractedFunctions[i]);
+        // }
         sVertexCode += PassBlend.pExtractedFunctions[i];
     }
     //Types
@@ -1701,7 +1702,10 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     //Initial for extract functions
     isExtract = false;
     if (isExtractInitF) {
+        // console.log("####### must be here");
         sFragmentCode += PassBlend.pExtractedFunctions["init"];
+        // console.log("part", sFragmentCode);
+        this.pExtrectedFunctionsF["header"] = null;
         isExtract = true;
     }
     //Extract functions
@@ -1829,7 +1833,12 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
     //add precision
     if (sFragmentCode !== "") {
         sFragmentCode = "#ifdef GL_ES\nprecision highp float;\n#endif\n" + sFragmentCode;
+        sFragmentCode = "#define AKRA_FRAGMENT 1\n" + sFragmentCode;
     }
+
+    // if(isExtractInitF){
+    //     console.log("all", sFragmentCode);
+    // }
 
     //Generate program
     pProgram = this._pEngine.displayManager().shaderProgramPool().createResource(sHash);

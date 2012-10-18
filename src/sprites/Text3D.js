@@ -21,6 +21,7 @@ function Text3D(pEngine,pFont){
     var pEffect = pEngine.pDisplayManager.effectPool().createResource(".render_text3d");
     pEffect.create();
     pEffect.use("akra.system.text3d");
+    pEffect.use("akra.system.prepareForDeferredShading");
     
     pMethod.effect = pEffect;
 
@@ -281,11 +282,6 @@ A_NAMESPACE(Text3D);
 
 function DrawRoutineText3D(pSnapshot){
 	'use strict';
-	// var pCamera = this._pEngine.getActiveCamera();
-
-	// pProgram.applyMatrix4('model_mat', this.worldMatrix());
-	// pProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
-	// pProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
 
 	//text unifoms
 
@@ -293,11 +289,11 @@ function DrawRoutineText3D(pSnapshot){
 	pSnapshot.setParameterBySemantic('LINE_QUANTITY',this._nLineQuantity);
 	pSnapshot.setParameterBySemantic('START_INDEX',this._pRenderData.getDataLocation('STRING_DATA')/4.);
 
-	pSnapshot.setParameterBySemantic('SPRITE_PIXEL_SIZES',Vec2(this._nPixelLineLingth,
-		this._pFont.fontMetrics.fontMetrics.height*this._nLineQuantity));
+	pSnapshot.setParameterBySemantic('SPRITE_PIXEL_SIZES',[this._nPixelLineLingth,
+		this._pFont.fontMetrics.fontMetrics.height*this._nLineQuantity]);
 
 	//set screen parameters (ограничивают максимальный размер текста на экране размером шрифта)
-	pSnapshot.setParameterBySemantic('CANVAS_SIZE',this._pEngine.pCanvas.width,this._pEngine.pCanvas.height);
+	pSnapshot.setParameterBySemantic('CANVAS_SIZE',[this._pEngine.pCanvas.width,this._pEngine.pCanvas.height]);
 	pSnapshot.setParameterBySemantic('FONT_SIZE',this._pFont.totalFontSize);
 	pSnapshot.setParameterBySemantic('DISTANCE_MULTIPLIER',this._fDistanceMultiplier);
 
@@ -305,15 +301,7 @@ function DrawRoutineText3D(pSnapshot){
 	pSnapshot.setParameterBySemantic('BACKGROUND_COLOR',this._v4fBackgroundColor);
 	pSnapshot.setParameterBySemantic('FONT_COLOR',this._v4fFontColor);
 	//
-
 	pSnapshot.applyTextureBySemantic("FONT_TEXTURE", this._pFont);
-
 	pSnapshot.setParameterBySemantic("TEXT_DATA",this._pEngine.spriteManager()._pDataFactory.buffer);
 
-	// var pDevice = this._pEngine.pDevice;
-	// pDevice.disable(pDevice.DEPTH_TEST);
- //    pDevice.enable(pDevice.BLEND);
- //    pDevice.blendFunc(pDevice.SRC_ALPHA, pDevice.ONE_MINUS_SRC_ALPHA);
-
-	///////////////////////////////////////////
 }

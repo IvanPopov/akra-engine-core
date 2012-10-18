@@ -110,7 +110,7 @@ ShaderProgram.prototype.create = function (sHash, sVertexCode, sFragmentCode) {
     debug_assert_win(pDevice.getProgramParameter(pHardwareProgram, pDevice.LINK_STATUS),
                      'cannot link program', this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
 
-    console.log(this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
+    // console.log(this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
     
     this._isValid = true;
     this._pEngine.shaderManager()._registerProgram(this._sHash, this);
