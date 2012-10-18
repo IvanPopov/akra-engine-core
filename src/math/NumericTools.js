@@ -335,6 +335,10 @@ Define(Math.modulus(a, b), function () {
     (a % b)
 })
 
+Define(Math.mod(a, b), function () {
+    Math.modulus (a, b);
+});
+
 /**
  * @property alignUp(Int value,Int alignment)
  * Вырвнивание числа на alignment вверх

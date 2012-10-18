@@ -1164,7 +1164,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                                 break;
                             }
                         }
-                        hasCollapseTextureData = !!(pTexture) && isCollapse;
+                        hasCollapseTextureData = !!(pTexture);
                         if (hasCollapseTextureData) {
                             iRealSampler = pRealSamplers[pTexture.toNumber()];
                             hasNeedSamplerType = iRealSampler === undefined ||
@@ -1175,7 +1175,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
 
                 if (!hasTextureData ||
                     !hasNeedTextureType ||
-                    !hasCollapseTextureData ||
+                    (isCollapse && !hasCollapseTextureData) ||
                     !hasNeedSamplerType) {
 
                     if (!hasNeedTextureType) {
@@ -1225,6 +1225,7 @@ PassBlend.prototype.generateProgram = function (sHash, pAttrData, pKeys, pUnifor
                         this._setRealSamplerUsage(iRealSampler, a.fx.PassBlend.k_FragmentSampler);
                     }
                     sData1 = a.fx.SHADER_PREFIX.SAMPLER + iRealSampler;
+                    pSamplersToReal[sKey1] = sData1;
                     isSamplerArrayValid = false;
                 }
                 else {
