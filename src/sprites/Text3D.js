@@ -14,16 +14,7 @@ function Text3D(pEngine,pFont){
 
 	STATIC(pDrawRoutine,DrawRoutineText3D);
 
-	var pMethod = pEngine.pDisplayManager.renderMethodPool().createResource(".render_text3d");
-    this.addRenderMethod(pMethod, ".render_text3d");
-    this.switchRenderMethod(".render_text3d");
-
-    var pEffect = pEngine.pDisplayManager.effectPool().createResource(".render_text3d");
-    pEffect.create();
-    pEffect.use("akra.system.text3d");
-    pEffect.use("akra.system.prepareForDeferredShading");
-    
-    pMethod.effect = pEffect;
+	this._initializeRenderMethod();
 
 	this._pFont = pFont;
 	this._v4fBackgroundColor = new Vec4(0.);
@@ -74,6 +65,32 @@ PROPERTY(Text3D,'fixedSize',
 		this._fDistanceMultiplier = (isFixed) ? 0. : 1.;
 	}
 );
+
+Text3D.prototype._initializeRenderMethod = function() {
+	'use strict';
+	
+	var pEngine = this._pEngine;
+
+	var pMethod = pEngine.pDisplayManager.renderMethodPool().findResource(".render_text3d");
+	if(!pMethod){
+		pMethod = pEngine.pDisplayManager.renderMethodPool().createResource(".render_text3d");
+
+		this.addRenderMethod(pMethod, ".render_text3d");
+    	this.switchRenderMethod(".render_text3d");
+
+    	var pEffect = pEngine.pDisplayManager.effectPool().createResource(".render_text3d");
+
+    	pEffect.create();
+	    pEffect.use("akra.system.text3d");
+	    pEffect.use("akra.system.prepareForDeferredShading");
+
+	    pMethod.effect = pEffect;
+	}
+	else{
+		this.addRenderMethod(pMethod, ".render_text3d");
+		this.switchRenderMethod(".render_text3d");
+	} 
+};
 
 /**
  * @param sString строка с текстом
@@ -263,7 +280,14 @@ Text3D.prototype.setText = function(sString){
 	// 	pIndex[i] = i;
 	// }
 
-	this._pRenderData.allocateData(VE_VEC4('STRING_DATA'),pStringData);
+	var pTextData = this._pRenderData.getData('STRING_DATA');
+
+	if (pTextData) {
+		pTextData.setData(pStringData, 'STRING_DATA');
+	}
+	else {
+		this._pRenderData.allocateData(VE_VEC4('STRING_DATA'), pStringData);
+	}
 	// this._pRenderData.allocateIndex(VE_FLOAT('INDEX1'),pIndex);
 	// this._pRenderData.index(this._pRenderData.getDataLocation('STRING_DATA'),'INDEX1');
 	//trace(pStringData);

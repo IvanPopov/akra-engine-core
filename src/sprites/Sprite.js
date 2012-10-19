@@ -110,7 +110,7 @@ PROPERTY(Sprite,'visible',
 		this._isVisible = isVisible;
 	}
 );
-var zzzzz;
+
 Sprite.prototype.render = function(){
 	'use strict';
 	if(this._isVisible && this._fnDraw != null){
@@ -133,10 +133,6 @@ Sprite.prototype.render = function(){
 		pRenderer.activateFrameBuffer(pDeferredFrameBuffer);
 
 		var pEntry = this.renderPass();
-		if(zzzzz === undefined){
-			zzzzz = 1;
-			console.log(pEntry.pProgram,pEntry.pUniforms, pEntry.pTextures);
-		}
 
 		this.deactivatePass();
 		this.finishRender();
