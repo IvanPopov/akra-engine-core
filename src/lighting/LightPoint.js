@@ -400,61 +400,21 @@ LightPoint.prototype._testWithActiveCamera = function(pCamera,pLightCamera) {
     var pCameraFrustum = pCamera.pFrustum;
     var pLightFrustumVertices = pLightCamera.pFrustumVertices;
 
-    var i;
+    var sKeys = ["leftPlane","rightPlane","topPlane","bottomPlane","nearPlane","farPlane"];
 
-    //left plane
-    var pLeftPlane = pCameraFrustum.leftPlane;
-    for(i=0;i<8;i++){
-        if(pLeftPlane.signedDistance(pLightFrustumVertices[i]) <= 0){
-            break;
+    var i,j;
+
+    for(i=0;i<6;i++){
+        var pPlane = pCameraFrustum[sKeys[i]];
+        for(j=0;j<8;j++){
+            if(pPlane.signedDistance(pLightFrustumVertices[j]) <= 0){
+                break;
+            }
+        }
+        if(j==8){
+            return false;
         }
     }
-    if(i==8){ return false; }
-
-    //righ pPlane
-    var pRightPlane = pCameraFrustum.rightPlane;
-    for(i=0;i<8;i++){
-        if(pRightPlane.signedDistance(pLightFrustumVertices[i]) <= 0){
-            break;
-        }
-    }
-    if(i==8){ return false; }
-
-    //top plane
-    var pTopPlane = pCameraFrustum.topPlane;
-    for(i=0;i<8;i++){
-        if(pTopPlane.signedDistance(pLightFrustumVertices[i]) <= 0){
-            break;
-        }
-    }
-    if(i==8){ return false; }
-
-    //bottom plane
-    var pBottomPlane = pCameraFrustum.bottomPlane;
-    for(i=0;i<8;i++){
-        if(pBottomPlane.signedDistance(pLightFrustumVertices[i]) <= 0){
-            break;
-        }
-    }
-    if(i==8){ return false; }
-
-    //near plane
-    var pNearPlane = pCameraFrustum.nearPlane;
-    for(i=0;i<8;i++){
-        if(pNearPlane.signedDistance(pLightFrustumVertices[i]) <= 0){
-            break;
-        }
-    }
-    if(i==8){ return false; }
-
-    //far plane
-    var pFarPlane = pCameraFrustum.farPlane;
-    for(i=0;i<8;i++){
-        if(pFarPlane.signedDistance(pLightFrustumVertices[i]) <= 0){
-            break;
-        }
-    }
-    if(i==8){ return false; }
 
     return true;
 };
