@@ -225,6 +225,7 @@ module akra {
         BYTES_PER_FLOAT = 4
     };
 
+/*
     export enum ResourceTypes {
         SURFACE = 1,
         VOLUME,
@@ -236,180 +237,31 @@ module akra {
         FORCE_DWORD = 0x7fffffff
     };
 
-    export enum PrimitiveTypes {
-        POINTLIST = 0,
-        LINELIST,
-        LINELOOP,
-        LINESTRIP,
-        TRIANGLELIST,
-        TRIANGLESTRIP,
-        TRIANGLEFAN
+*/
+
+    export interface StringEnum {
+        [string]: string;
+        [string]: int;
     };
 
-    export enum ImageFormats {
-        RGB = 0x1907,
-        RGB8 = 0x1907,
-        BGR8 = 0x8060,
-        RGBA = 0x1908,
-        RGBA8 = 0x1908,
-        BGRA8 = 0x1909,
-        RGBA4 = 0x8056,
-        BGRA4 = 0x8059,
-        RGB5_A1 = 0x8057,
-        BGR5_A1 = 0x8058,
-        RGB565 = 0x8D62,
-        BGR565 = 0x8D63,
-        RGB_DXT1 = 0x83F0,
-        RGBA_DXT1 = 0x83F1,
-        RGBA_DXT2 = 0x83F4,
-        RGBA_DXT3 = 0x83F2,
-        RGBA_DXT4 = 0x83F5,
-        RGBA_DXT5 = 0x83F3,
-
-        DEPTH_COMPONENT = 0x1902,
-        ALPHA = 0x1906,
-        LUMINANCE = 0x1909,
-        LUMINANCE_ALPHA = 0x190A
+    export interface StringMap {
+        [string]: string;
     };
 
-    export enum ImageShortFormats {
-        RGB = 0x1907,
-        RGBA = 0x1908
-    };
+    export interface IntMap {
+        [string]: int;
+        [int]: int;
+    };    
 
-    export enum ImageTypes {
-        UNSIGNED_BYTE = 0x1401,
-        UNSIGNED_SHORT_4_4_4_4 = 0x8033,
-        UNSIGNED_SHORT_5_5_5_1 = 0x8034,
-        UNSIGNED_SHORT_5_6_5 = 0x8363,
-        FLOAT = 0x1406
-    };
+    export interface UintMap {
+        [string]: uint;
+        [uint]: uint;
+    };  
 
-    export enum TextureFilters {
-        NEAREST = 0x2600,
-        LINEAR = 0x2601,
-        NEAREST_MIPMAP_NEAREST = 0x2700,
-        LINEAR_MIPMAP_NEAREST = 0x2701,
-        NEAREST_MIPMAP_LINEAR = 0x2702,
-        LINEAR_MIPMAP_LINEAR = 0x2703
-    };
-
-    export enum TextureWrapModes {
-        REPEAT = 0x2901,
-        CLAMP_TO_EDGE = 0x812F,
-        MIRRORED_REPEAT = 0x8370
-    };
-
-    export enum TextureParameters {
-        MAG_FILTER = 0x2800,
-        MIN_FILTER,
-        WRAP_S,
-        WRAP_T
-    };
-
-    export enum TextureTypes {
-        TEXTURE_2D = 0x0DE1,
-        TEXTURE = 0x1702,
-        TEXTURE_CUBE_MAP = 0x8513,
-        TEXTURE_BINDING_CUBE_MAP = 0x8514,
-        TEXTURE_CUBE_MAP_POSITIVE_X = 0x8515,
-        TEXTURE_CUBE_MAP_NEGATIVE_X = 0x8516,
-        TEXTURE_CUBE_MAP_POSITIVE_Y = 0x8517,
-        TEXTURE_CUBE_MAP_NEGATIVE_Y = 0x8518,
-        TEXTURE_CUBE_MAP_POSITIVE_Z = 0x8519,
-        TEXTURE_CUBE_MAP_NEGATIVE_Z = 0x851A,
-        MAX_CUBE_MAP_TEXTURE_SIZE = 0x851C
-    };
-
-    export enum GLSpecifics {
-        UNPACK_ALIGNMENT = 0x0CF5,
-        PACK_ALIGNMENT = 0x0D05,
-        UNPACK_FLIP_Y_WEBGL = 0x9240,
-        UNPACK_PREMULTIPLY_ALPHA_WEBGL = 0x9241,
-        CONTEXT_LOST_WEBGL = 0x9242,
-        UNPACK_COLORSPACE_CONVERSION_WEBGL = 0x9243,
-        BROWSER_DEFAULT_WEBGL = 0x9244
-    };
-
-    export enum BufferMasks {
-        DEPTH_BUFFER_BIT               = 0x00000100,
-        STENCIL_BUFFER_BIT             = 0x00000400,
-        COLOR_BUFFER_BIT               = 0x00004000
-    };
-
-    export enum BufferUsages {
-        STREAM_DRAW = 0x88E0,
-        STATIC_DRAW = 0x88E4,
-        DYNAMIC_DRAW = 0x88E8
-    };
-
-    export enum BufferTypes {
-        ARRAY_BUFFER = 0x8892,
-        ELEMENT_ARRAY_BUFFER = 0x8893,
-        FRAME_BUFFER = 0x8D40,
-        RENDER_BUFFER = 0x8D41
-    };
-
-    export enum AttachmentTypes {
-        COLOR_ATTACHMENT0 = 0x8CE0,
-        DEPTH_ATTACHMENT = 0x8D00,
-        STENCIL_ATTACHMENT = 0x8D20,
-        DEPTH_STENCIL_ATTACHMENT = 0x821A
-    };
-
-    export enum ShaderTypes {
-        PIXEL = 0x8B30,
-        VERTEX
-    };
-
-    export enum RenderStates {
-        ZENABLE = 7,
-        ZWRITEENABLE = 14,
-        SRCBLEND = 19,
-        DESTBLEND = 20,
-        CULLMODE = 22,
-        ZFUNC = 23,
-        DITHERENABLE = 26,
-        ALPHABLENDENABLE = 27,
-        ALPHATESTENABLE
-    };
-
-    export enum BlendModes {
-        ZERO = 0,
-        ONE = 1,
-        SRCCOLOR = 0x0300,
-        INVSRCCOLOR = 0x301,
-        SRCALPHA = 0x0302,
-        INVSRCALPHA = 0x0303,
-        DESTALPHA = 0x0304,
-        INVDESTALPHA = 0x0305,
-        DESTCOLOR = 0x0306,
-        INVDESTCOLOR = 0x0307,
-        SRCALPHASAT = 0x0308
-    };
-
-    export enum CmpFuncs {
-        NEVER = 1,
-        LESS = 2,
-        EQUAL = 3,
-        LESSEQUAL = 4,
-        GREATER = 5,
-        NOTEQUAL = 6,
-        GREATEREQUAL = 7,
-        ALWAYS = 8
-    };
-
-    export enum CullModes {
-        NONE = 0,
-        CW = 0x404, //FRONT
-        CCW = 0x0405, //BACK
-        FRONT_AND_BACK = 0x0408
-    };
-
-    export enum TextureUnits {
-        TEXTURE = 0x84C0
-    };
-
+    export interface FloatMap {
+        [string]: float;
+        [float]: float;
+    };    
 
     /**
      * Возвращет размер типа в байтах
@@ -522,13 +374,16 @@ module akra {
 ///<reference path="IResourcePoolItem.ts" />
 ///<reference path="IResourcePoolManager.ts" />
 
-
+///<reference path="IRenderResource.ts" />
 
 ///<reference path="pool/ResourceCode.ts" />
 ///<reference path="pool/DataPool.ts" />
 ///<reference path="pool/ResourcePool.ts" />
 ///<reference path="pool/ResourcePoolItem.ts" />
 ///<reference path="pool/ResourcePoolManager.ts" />
+
+///<reference path="ITexture.ts" />
+///<reference path="IImg.ts" />
 
 ///<reference path="ISceneTree.ts" />
 ///<reference path="IRenderState.ts" />

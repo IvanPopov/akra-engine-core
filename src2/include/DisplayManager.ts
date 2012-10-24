@@ -111,7 +111,7 @@ module akra {
 
         disableDeviceResources(): bool {
             debug_print("Disabling Video Device Resources\n");
-            this.pResourceManager.disableResourceFamily(ResourceFamilies.VIDEO_RESOURCE);
+            this.resourceManager.disableResourceFamily(ResourceFamilies.VIDEO_RESOURCE);
             return true;
         }
 
@@ -190,5 +190,60 @@ module akra {
                 new a.ResourceCode(a.ResourcePoolManager.VideoResource,
                                    a.ResourcePoolManager.ComponentResource));
         }
+
+        private unregisterDeviceResources(): void {
+            debug_print("Unregistering Video Device Resources");
+
+            this.pTexturePool.unregisterResourcePool();
+            this.pVertexBufferPool.unregisterResourcePool();
+            this.pIndexBufferPool.unregisterResourcePool();
+            this.pEffectPool.unregisterResourcePool();
+            this.pRenderMethodPool.unregisterResourcePool();
+            this.pModelPool.unregisterResourcePool();
+            this.pImagePool.unregisterResourcePool();
+            this.pSurfaceMaterialPool.unregisterResourcePool();
+            this.pVideoBufferPool.unregisterResourcePool();
+            this.pShaderProgramPool.unregisterResourcePool();
+            this.pComponentPool.unregisterResourcePool();
+        }
+
+        /** load font texture */
+        private createDeviceResources(): bool {
+            return true;
+        }
+
+        /** destroy device resources */
+        private destroyDeviceResources(): bool {
+            // first disable...
+            this.disableDeviceResources();
+
+            // then destroy...
+            debug_print("Destroying Video Device Resources\n");
+            
+            this.resourceManager.destroyResourceFamily(a.ResourcePoolManager.VideoResource);
+
+            return true;
+        }
+
+        /**
+         * restore device resources
+         * @treturn Boolean always returns true
+         */
+        private restoreDeviceResources(): bool {
+            debug_print("Restoring Video Device Resources");
+            this.resourceManager.restoreResourceFamily(a.ResourcePoolManager.VideoResource);
+            return true;
+        }
+
+        /**
+         * disable device resources
+         * @treturn Boolean always returns true
+         */
+        private disableDeviceResources(): void {
+            debug_print("Disabling Video Device Resources");
+            this.resourceManager.disableResourceFamily(a.ResourcePoolManager.VideoResource);
+            return true;
+        };
+
     }
 }

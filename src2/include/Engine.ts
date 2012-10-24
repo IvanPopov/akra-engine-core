@@ -2,6 +2,7 @@
 
 module akra {
 	export class Engine implements IEngine {
+		private pTimer: UtilTimer;
 		/** use hardware antialiasing */
 		private useHWAA: bool = false;
 		/** hide cursor in fullscreen? */
@@ -55,7 +56,7 @@ module akra {
 
 
 		private pCanvas: HTMLCanvasElement = null;
-		private pDevice: WebGLRenderingContext = null;
+//		private pDevice: WebGLRenderingContext = null;
 
 		private pRenderer: IRenderer = null;
 
@@ -130,11 +131,11 @@ module akra {
 		get worldExtents(): IWorldExtents {
 			return {};
 		}
-
+/*
 		get device(): WebGLRenderingContext {
 			return null;
 		}
-
+ */
 		get activeCamera(): ICamera {
 			return null;
 		}
@@ -195,22 +196,48 @@ module akra {
 			this.iCreationHeight = this.pCanvas.height;
 			
 			//getting device
+/*
 			this.pDevice = createDevice(this.pCanvas, {antialias: this.useHWAA});
 
 			if (!this.pDevice) {
 				debug_warning('cannot create device object');
 				return false;
 			}
-
+*/
 			if (!this.initDefaultStates()) {
 				debug_warning('cannot init default states');
 				return false;
 			}
 
 			this.pResourceManager = new pool.ResourcePoolManager(this);
-			//this.pDisplayManager = 
+			this.pDisplayManager = new DisplayManager(this);
+			this.pRenderer = null;
+			this.pParticleManager = null;
+			this.pLightManager = null;
 
-			return false;
+			//go app timer
+			this.pTimer = util.UtilTimer.start();
+
+			//init add data
+			if (!this.oneTimeSceneInit()) {
+				debug_error('cannot init application');
+				return false;
+			}
+
+			var me: IEngine = this;
+
+			this.pResourceManager.setLoadedAllRoutine(function () {
+				//init scene objects
+				if (!me.initialize3DEnvironment()) {
+					debug_error('cannot initialize 3d enviroment');
+					return false;
+				}
+
+				//app ready to start
+				me.pause(false);
+			});
+
+			return true;
 		}
 
 		run(): bool {
