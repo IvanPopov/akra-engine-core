@@ -13,11 +13,13 @@ compiled/
 *.html
 *.bak
 *.dds
-*.png
 *.zip
 *.rar
 *.back
 *.prev
+
+src/*.png
+src2/*.png
 
 #project file
 *.sublime-project
