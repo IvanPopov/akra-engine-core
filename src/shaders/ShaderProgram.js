@@ -100,6 +100,10 @@ ShaderProgram.prototype.create = function (sHash, sVertexCode, sFragmentCode) {
     pDevice.attachShader(pHardwareProgram, pPixelShader);
 
     pDevice.linkProgram(pHardwareProgram);
+
+    debug_assert_win(pDevice.getProgramParameter(pHardwareProgram, pDevice.LINK_STATUS),
+                 'cannot link program', this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
+
     pDevice.validateProgram(pHardwareProgram);
 
     if (!pDevice.getProgramParameter(pHardwareProgram, pDevice.VALIDATE_STATUS)) {
@@ -107,6 +111,7 @@ ShaderProgram.prototype.create = function (sHash, sVertexCode, sFragmentCode) {
 //        console.log(this._sVertexCode, this._sFragmentCode);
         console.warn(pDevice.getProgramInfoLog(pHardwareProgram));
     }
+    
     debug_assert_win(pDevice.getProgramParameter(pHardwareProgram, pDevice.LINK_STATUS),
                      'cannot link program', this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
 

@@ -13,11 +13,13 @@ compiled/
 *.html
 *.bak
 *.dds
-*.png
 *.zip
 *.rar
 *.back
 *.prev
+
+src/*.png
+src2/*.png
 
 #project file
 *.sublime-project
@@ -28,13 +30,22 @@ compiled/
 compiled/*.js
 build/build.bat
 build.bat
-<<<<<<< HEAD
 
 node_modules/
 
-=======
-server.js
 
-#node
-node_modules/
->>>>>>> origin/terrain
+#visual
+#*.config
+*.suo
+#*.sln
+#*.csproj
+*.user
+#*.css
+
+src/*.htm
+#src2/*.htm
+
+obj/
+bin/
+properties/
+app.js
