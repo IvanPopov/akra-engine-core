@@ -368,16 +368,23 @@ module akra {
 ///<reference path="util/ReferenceCounter.ts" />
 ///<reference path="util/Singleton.ts" />
 ///<reference path="util/URI.ts" />
-///<reference path="util/KeyMap.ts" />
-///<reference path="util/GamepadMap.ts" />
 ///<reference path="util/BrowserInfo.ts" />
 ///<reference path="util/ApiInfo.ts" />
 ///<reference path="util/ScreenInfo.ts" />
 ///<reference path="util/DeviceInfo.ts" />
 ///<reference path="util/UtilTimer.ts" />
 
+///<reference path="controls/KeyMap.ts" />
+///<reference path="controls/GamepadMap.ts" />
+
 ///<reference path="gui/Font2d.ts" />
 ///<reference path="gui/String2d.ts" />
+
+///<reference path="IVertexElement.ts" />
+///<reference path="IvertexDeclaration.ts" />
+
+///<reference path="util/VertexElement.ts" />
+///<reference path="util/VertexDeclaration.ts" />
 
 ///<reference path="IBufferData.ts" />
 ///<reference path="IVertexData.ts" />
@@ -428,6 +435,9 @@ module akra {
 ///<reference path="IGPUBuffer.ts" />
 ///<reference path="IIndexBuffer.ts" />
 ///<reference path="IVertexBuffer.ts" />
+///<reference path="IRenderMethod.ts" />
+///<reference path="IVideoBuffer.ts" />
+///<reference path="IModel.ts" />
 
 ///<reference path="IScene.ts" />
 ///<reference path="IScene3d.ts" />

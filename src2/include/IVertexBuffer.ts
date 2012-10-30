@@ -2,6 +2,7 @@
 
 module akra {
 	export interface IVertexBuffer extends IGPUBuffer, IRenderResource {
+		
 
 	}
 }

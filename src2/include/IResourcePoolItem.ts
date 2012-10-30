@@ -26,8 +26,7 @@ module akra {
 		alteredFlag: bool;
 
 		
-		//valueOf(): int;
-		toNumber(): int;
+		getGuid(): int;
 		/** Get current Engine. */
 		getEngine(): IEngine;
 
@@ -101,9 +100,6 @@ module akra {
 
 		setResourceFlag(eFlagBit: EResourceItemEvents, isSetting: bool): void;
 		setResourceFlag(iFlagBit: int, isSetting: bool): void;
-		
-		//static parseEvent(sEvent: string): uint;
-		//static parseEvent(eEvent: EResourceItemEvents): uint;
 	}
 
 	export interface IResourcePoolItemType {

@@ -14,7 +14,7 @@ module akra.core.pool {
 		private pResourcePool: IResourcePool = null;
 		private iResourceHandle: int = 0;
 		private iResourceFlags: int = 0;
-		private iSystemId: uint; 
+		private iGuid: uint; 
 		private pCallbackFunctions: IResourceNotifyRoutineFunc[];
 		private pStateWatcher: IResourceWatcherFunc[];
 		private pCallbackSlots: ICallbackSlot[][];
@@ -51,20 +51,15 @@ module akra.core.pool {
 
 			this.pEngine = pEngine;
 			this.pResourceCode = new ResourceCode(0);
-			this.iSystemId = sid();
+			this.iGuid = sid();
 			this.pCallbackFunctions = [];
 			this.pStateWatcher = [];
 			this.pCallbackSlots = genArray(null, <number>EResourceItemEvents.k_TotalResourceFlags);
 		}
 
 		/** @inline */
-		valueOf(): int {
-			return this.iSystemId;
-		}
-
-		/** @inline */
-		toNumber(): int {
-			return this.iSystemId;
+		getGuid(): int {
+			return this.iGuid;
 		}
 
 		/** @inline */
