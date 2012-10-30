@@ -1,12 +1,12 @@
-///<reference path="../akra.ts" />
+///<reference path="../../akra.ts" />
 
-module akra.pool {
+module akra.core.pool {
     export class ResourcePool extends util.ReferenceCounter implements IResourcePool {
         private pEngine: IEngine = null;
         /** Конструктор для создания данных в пуле ресурсов */
         private tTemplate: IResourcePoolItemType = null;
         private sExt: string = null;
-        private pRegistrationCode: IResourceCode = new ResourceCode(ResourceCodes.INVALID_CODE);
+        private pRegistrationCode: IResourceCode = new ResourceCode(EResourceCodes.INVALID_CODE);
         private pNameMap: string[]/*{[index: number]: string;}*/ = new Array();
         private pDataPool: IDataPool = null;
 
@@ -38,12 +38,12 @@ module akra.pool {
         /** Добавление данного пула в менеджер ресурсво по его коду */
         registerResourcePool(pCode: IResourceCode): void {
             this.pRegistrationCode.eq(pCode);
-            this.pEngine.resourceManager.registerResourcePool(this.pRegistrationCode, this);
+            this.pEngine.getResourceManager().registerResourcePool(this.pRegistrationCode, this);
         }
 
         /** Удаление данного пула в менеджер ресурсво по его коду */
-        unregisterResourcePool(pCode: IResourceCode): void {
-            this.pEngine.resourceManager.unregisterResourcePool(this.pRegistrationCode);
+        unregisterResourcePool(): void {
+            this.pEngine.getResourceManager().unregisterResourcePool(this.pRegistrationCode);
             this.pRegistrationCode.setInvalid();
         }
 

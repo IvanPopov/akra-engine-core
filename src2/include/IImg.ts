@@ -1,7 +1,7 @@
 ///<reference path="akra.ts" />
 
 module akra {
-	 export enum ImageFormats {
+	 export enum EImageFormats {
         RGB = 0x1907,
         RGB8 = 0x1907,
         BGR8 = 0x8060,
@@ -27,12 +27,12 @@ module akra {
         LUMINANCE_ALPHA = 0x190A
     };
 
-    export enum ImageShortFormats {
+    export enum EImageShortFormats {
         RGB = 0x1907,
         RGBA = 0x1908
     };
 
-    export enum ImageTypes {
+    export enum EImageTypes {
         UNSIGNED_BYTE = 0x1401,
         UNSIGNED_SHORT_4_4_4_4 = 0x8033,
         UNSIGNED_SHORT_5_5_5_1 = 0x8034,
@@ -40,7 +40,7 @@ module akra {
         FLOAT = 0x1406
     };
 
-    export interface IImg implements IResourcePoolItem {
+    export interface IImg extends IResourcePoolItem {
     	
     }
 

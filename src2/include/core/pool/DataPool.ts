@@ -1,5 +1,7 @@
 
-module akra.pool {
+///<reference path="../../akra.ts" />
+
+module akra.core.pool {
 
 	export interface IGroupNumber {
 		value: uint;

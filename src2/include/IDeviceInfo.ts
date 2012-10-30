@@ -19,6 +19,6 @@ module akra {
 		shaderVersion: float;
 
 		getExtention(pDevice: WebGLRenderingContext, csExtension: string);
-		checkFormat(pDevice: WebGLRenderingContext, eFormat: ImageFormats);
+		checkFormat(pDevice: WebGLRenderingContext, eFormat: EImageFormats);
 	}
 }

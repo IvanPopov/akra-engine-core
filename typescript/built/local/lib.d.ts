@@ -6874,6 +6874,7 @@ interface WindowAnimationTiming {
     msCancelRequestAnimationFrame(handle: number): void;
     cancelAnimationFrame(handle: number): void;
     requestAnimationFrame(callback: FrameRequestCallback): number;
+    requestAnimationFrame(callback: FrameRequestCallback, element: HTMLElement): number;
     msRequestAnimationFrame(callback: FrameRequestCallback): number;
 }
 
@@ -7156,6 +7157,7 @@ interface Blob {
 declare var Blob: {
     prototype: Blob;
     new (): Blob;
+    new (request: any, mime?: string): Blob;
 }
 
 interface ApplicationCache extends EventTarget {
@@ -7641,6 +7643,7 @@ declare function msCancelRequestAnimationFrame(handle: number): void;
 declare function cancelAnimationFrame(handle: number): void;
 declare function requestAnimationFrame(callback: FrameRequestCallback): number;
 declare function msRequestAnimationFrame(callback: FrameRequestCallback): number;
+declare function requestAnimationFrame(callback: FrameRequestCallback, element: HTMLElement): number;
 declare function btoa(rawString: string): string;
 declare function atob(encodedString: string): string;
 declare var msIndexedDB: IDBFactory;

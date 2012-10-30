@@ -5,4 +5,8 @@ module akra {
         PIXEL = 0x8B30,
         VERTEX
     };
+
+    export interface IShaderProgram extends IRenderResource {
+
+    }
 }

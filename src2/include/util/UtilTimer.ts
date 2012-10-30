@@ -11,29 +11,29 @@ module akra.util {
 		private iBaseTime: int = 0;
 
 		get absoluteTime(): float {
-			return this.execCommand(UtilTimerCommands.TIMER_GET_ABSOLUTE_TIME);
+			return this.execCommand(EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME);
 		}
 
 		get appTime(): float {
-			return this.execCommand(UtilTimerCommands.TIMER_GET_APP_TIME);
+			return this.execCommand(EUtilTimerCommands.TIMER_GET_APP_TIME);
 		}
 
 		get elapsedTime(): float {
-			return this.execCommand(UtilTimerCommands.TIMER_GET_ELAPSED_TIME);
+			return this.execCommand(EUtilTimerCommands.TIMER_GET_ELAPSED_TIME);
 		}
 
 		start(): bool {
-			return this.execCommand(UtilTimerCommands.TIMER_START) === 0;
+			return this.execCommand(EUtilTimerCommands.TIMER_START) === 0;
 		}
         stop(): bool {
-        	return this.execCommand(UtilTimerCommands.TIMER_STOP) === 0;
+        	return this.execCommand(EUtilTimerCommands.TIMER_STOP) === 0;
         }
 
         reset(): bool {
-        	return this.execCommand(UtilTimerCommands.TIMER_RESET) === 0;
+        	return this.execCommand(EUtilTimerCommands.TIMER_RESET) === 0;
         }
 
-        execCommand(e: UtilTimerCommands): float {
+        execCommand(eCommand: EUtilTimerCommands): float {
 		    var fTime: float = 0.;
 		    var fElapsedTime: float = 0.;
 		    var iTime: int;
@@ -45,8 +45,8 @@ module akra.util {
 
 		    // Get either the current time or the stop time, depending
 		    // on whether we're stopped and what command was sent
-		    if (this.iStopTime != 0 && eCommand != UtilTimerCommands.TimerStart && 
-		    	eCommand != UtilTimerCommands.TimerGetAbsoluteTime) {
+		    if (this.iStopTime != 0 && eCommand != EUtilTimerCommands.TIMER_START && 
+		    	eCommand != EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME) {
 		        iTime = this.iStopTime;
 		    }
 		    else {
@@ -54,20 +54,20 @@ module akra.util {
 		    }
 
 		    // Return the elapsed time
-		    if (eCommand == UtilTimerCommands.TimerGetElapsedTime) {
+		    if (eCommand == EUtilTimerCommands.TIMER_GET_ELAPSED_TIME) {
 		        fElapsedTime = (iTime - this.iLastElapsedTime) / this.fTicksPerSec;
 		        this.iLastElapsedTime = iTime;
 		        return fElapsedTime;
 		    }
 
 		    // Return the current time
-		    if (eCommand == UtilTimerCommands.TimerGetAppTime) {
+		    if (eCommand == EUtilTimerCommands.TIMER_GET_APP_TIME) {
 		        var fAppTime = ( iTime - this.iBaseTime ) / this.fTicksPerSec;
 		        return fAppTime;
 		    }
 
 		    // Reset the timer
-		    if (eCommand == UtilTimerCommands.TimerReset) {
+		    if (eCommand == EUtilTimerCommands.TIMER_RESET) {
 		        this.iBaseTime = iTime;
 		        this.iLastElapsedTime = iTime;
 		        this.iStopTime = 0;
@@ -76,7 +76,7 @@ module akra.util {
 		    }
 
 		    // Start the timer
-		    if (eCommand == UtilTimerCommands.TimerStart) {
+		    if (eCommand == EUtilTimerCommands.TIMER_START) {
 		        if (this.isTimerStopped) {
 		            this.iBaseTime += iTime - this.iStopTime;
 		        }
@@ -87,7 +87,7 @@ module akra.util {
 		    }
 
 		    // Stop the timer
-		    if (eCommand == UtilTimerCommands.TimerStop) {
+		    if (eCommand == EUtilTimerCommands.TIMER_STOP) {
 		        if (!this.isTimerStopped) {
 		            this.iStopTime = iTime;
 		            this.iLastElapsedTime = iTime;
@@ -97,12 +97,12 @@ module akra.util {
 		    }
 
 		    // Advance the timer by 1/10th second
-		    if (eCommand == UtilTimerCommands.TimerAdvance) {
+		    if (eCommand == EUtilTimerCommands.TIMER_ADVANCE) {
 		        this.iStopTime += this.fTicksPerSec / 10;
 		        return 0;
 		    }
 
-		    if (eCommand == UtilTimerCommands.TimerGetAbsoluteTime) {
+		    if (eCommand == EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME) {
 		        fTime = iTime / this.fTicksPerSec;
 		        return  fTime;
 		    }

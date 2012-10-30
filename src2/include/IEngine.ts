@@ -2,41 +2,14 @@
 
 module akra {
     export interface IEngine {
-        displayManager: IDisplayManager;
-        particleManager: IParticleManager;
-        spriteManager: ISpriteManager;
-        lightManager: ILightManager;
-        resourceManager: IResourcePoolManager;
-        /*
-        rootNode: number;
-        sceneTree: number;
-        defaultCamera: number;
-        activeViewport: Viewport;
-        worldExtents: WorldExtents;
-        device: WebGLRenderingContext;
-        windowTitle: string;
-        currentRenderStage: number;
-        activeCamera: number;
-*/
-        setupWorldOcTree(pWorldExtents: geometry.Rect3d): void;
+        getDisplayManager(): IDisplayManager;
+        getParticleManager(): IParticleManager;
+        getResourceManager(): IResourcePoolManager;
 
-        create(): bool;
-        pause(isPause: bool): void;
-        run(): bool;
-        
-        showStats(isShow: bool): void;
-        
-        fullscreen(): bool;
-        inFullscreenMode(): bool;
+        getDefaultRenderer(): IRenderer;
 
-        notifyOneTimeSceneInit(): bool;
-        notifyRestoreDeviceObjects(): bool;
-        notifyDeleteDeviceObjects(): bool;
-        notifyUpdateScene(): bool;
-        notifyPreUpdateScene(): bool;
-        notifyInitDeviceObjects(): bool;
-
-        updateCamera(): void;
+        //start execution
+        exec(): bool;
     };
 
 }

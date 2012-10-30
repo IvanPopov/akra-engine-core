@@ -78,6 +78,11 @@ module akra {
         return type == 'object' || type == 'array' || type == 'function';
     };
 
+    /** @inline */
+    export var isArray = (x: any): bool => {
+        return typeOf(x) == 'array';
+    };    
+
     if (!isDef(console.assert)) {
         console.assert = function (isOK?: bool, ...pParams: any[]): void { 
             if (!isOK) {
@@ -199,7 +204,7 @@ module akra {
 //    export var MIN_REAL32: number = -3.4e38;    //-3.4e38
 //    export var TINY_REAL32: number = 1.5e-45;   //1.5e-45
 
-    export enum DataTypes {
+    export enum EDataTypes {
         BYTE = 0x1400,
         UNSIGNED_BYTE = 0x1401,
         SHORT = 0x1402,
@@ -209,7 +214,7 @@ module akra {
         FLOAT = 0x1406
     };
 
-    export enum DataTypeSizes {
+    export enum EDataTypeSizes {
         BYTES_PER_BYTE = 1,
         BYTES_PER_UNSIGNED_BYTE = 1,
         BYTES_PER_UBYTE = 1,
@@ -226,7 +231,7 @@ module akra {
     };
 
 /*
-    export enum ResourceTypes {
+    export enum EResourceTypes {
         SURFACE = 1,
         VOLUME,
         TEXTURE,   
@@ -240,48 +245,48 @@ module akra {
 */
 
     export interface StringEnum {
-        [string]: string;
-        [string]: int;
+        [index: string]: string;
+        [index: string]: int;
     };
 
     export interface StringMap {
-        [string]: string;
+        [index: string]: string;
     };
 
     export interface IntMap {
-        [string]: int;
-        [int]: int;
+        [index: string]: int;
+        [index: number]: int;
     };    
 
     export interface UintMap {
-        [string]: uint;
-        [uint]: uint;
+        [index: string]: uint;
+        [index: number]: uint;
     };  
 
     export interface FloatMap {
-        [string]: float;
-        [float]: float;
+        [index: string]: float;
+        [index: number]: float;
     };    
 
     /**
      * Возвращет размер типа в байтах
      **/
-    export function getTypeSize(eType: ImageTypes): uint;
-    export function getTypeSize(eType: DataTypes): uint;
+    export function getTypeSize(eType: EImageTypes): uint;
+    export function getTypeSize(eType: EDataTypes): uint;
     export function getTypeSize(eType): uint {
         switch (eType) {
-            case DataTypes.BYTE:
-            case DataTypes.UNSIGNED_BYTE:
+            case EDataTypes.BYTE:
+            case EDataTypes.UNSIGNED_BYTE:
                 return 1;
-            case DataTypes.SHORT:
-            case DataTypes.UNSIGNED_SHORT:
-            case ImageTypes.UNSIGNED_SHORT_4_4_4_4:
-            case ImageTypes.UNSIGNED_SHORT_5_5_5_1:
-            case ImageTypes.UNSIGNED_SHORT_5_6_5:
+            case EDataTypes.SHORT:
+            case EDataTypes.UNSIGNED_SHORT:
+            case EImageTypes.UNSIGNED_SHORT_4_4_4_4:
+            case EImageTypes.UNSIGNED_SHORT_5_5_5_1:
+            case EImageTypes.UNSIGNED_SHORT_5_6_5:
                 return 2;
-            case DataTypes.INT:
-            case DataTypes.UNSIGNED_INT:
-            case DataTypes.FLOAT:
+            case EDataTypes.INT:
+            case EDataTypes.UNSIGNED_INT:
+            case EDataTypes.FLOAT:
                 return 4;
             default:
                 error('unknown data/image type used');
@@ -290,22 +295,22 @@ module akra {
         return 0;
     }
 
-    export function ab2ta(pBuffer: ArrayBuffer, eType: DataTypes): ArrayBufferView {
+    export function ab2ta(pBuffer: ArrayBuffer, eType: EDataTypes): ArrayBufferView {
         switch (eType) {
-            case DataTypes.FLOAT:
+            case EDataTypes.FLOAT:
                 return new Float32Array(pBuffer);
-            case DataTypes.SHORT:
+            case EDataTypes.SHORT:
                 return new Int16Array(pBuffer);
-            case DataTypes.UNSIGNED_SHORT:
+            case EDataTypes.UNSIGNED_SHORT:
                 return new Uint16Array(pBuffer);
-            case DataTypes.INT:
+            case EDataTypes.INT:
                 return new Int32Array(pBuffer);
-            case DataTypes.UNSIGNED_INT:
+            case EDataTypes.UNSIGNED_INT:
                 return new Uint32Array(pBuffer);
-            case DataTypes.BYTE:
+            case EDataTypes.BYTE:
                 return new Int8Array(pBuffer);
             default:
-            case DataTypes.UNSIGNED_BYTE:
+            case EDataTypes.UNSIGNED_BYTE:
                 return new Uint8Array(pBuffer);
         }
     }
@@ -343,12 +348,19 @@ module akra {
 ///<reference path="IKeyMap.ts" />
 ///<reference path="IGamepadMap.ts" />
 
+///<reference path="IColor.ts" />
+
 ///<reference path="IReferenceCounter.ts" />
 ///<reference path="IScreenInfo.ts" />
 ///<reference path="ICanvasInfo.ts" />
 ///<reference path="IBrowserInfo.ts" />
 ///<reference path="IApiInfo.ts" />
 ///<reference path="IDeviceInfo.ts" />
+///<reference path="IUtilTimer.ts" />
+
+///<reference path="info/support/support.ts" />
+///<reference path="info/info.ts" />
+
 ///<reference path="IFont2d.ts" />
 ///<reference path="IString2d.ts" />
 
@@ -362,9 +374,17 @@ module akra {
 ///<reference path="util/ApiInfo.ts" />
 ///<reference path="util/ScreenInfo.ts" />
 ///<reference path="util/DeviceInfo.ts" />
-///<reference path="util/Font2d.ts" />
-///<reference path="util/String2d.ts" />
+///<reference path="util/UtilTimer.ts" />
 
+///<reference path="gui/Font2d.ts" />
+///<reference path="gui/String2d.ts" />
+
+///<reference path="IBufferData.ts" />
+///<reference path="IVertexData.ts" />
+///<reference path="IIndexData.ts" />
+///<reference path="IBufferMap.ts" />
+
+///<reference path="IMesh.ts" />
 
 ///<reference path="IResourceWatcherFunc.ts" />
 ///<reference path="IResourceNotifyRoutineFunc.ts" />
@@ -374,20 +394,52 @@ module akra {
 ///<reference path="IResourcePoolItem.ts" />
 ///<reference path="IResourcePoolManager.ts" />
 
+///<reference path="IRenderEntry.ts" />
 ///<reference path="IRenderResource.ts" />
+///<reference path="IRenderableObject.ts" />
+///<reference path="IRenderSnapshot.ts" />
 
-///<reference path="pool/ResourceCode.ts" />
-///<reference path="pool/DataPool.ts" />
-///<reference path="pool/ResourcePool.ts" />
-///<reference path="pool/ResourcePoolItem.ts" />
-///<reference path="pool/ResourcePoolManager.ts" />
+
+///<reference path="core/pool/ResourceCode.ts" />
+///<reference path="core/pool/DataPool.ts" />
+///<reference path="core/pool/ResourcePool.ts" />
+///<reference path="core/pool/ResourcePoolItem.ts" />
+///<reference path="core/pool/ResourcePoolManager.ts" />
+
+///<reference path="core/pool/resources/IndexBuffer.ts" />
+///<reference path="core/pool/resources/VertexBuffer.ts" />
+///<reference path="core/pool/resources/VideoBuffer.ts" />
+///<reference path="core/pool/resources/Texture.ts" />
+///<reference path="core/pool/resources/ShaderProgram.ts" />
+///<reference path="core/pool/resources/Component.ts" />
+///<reference path="core/pool/resources/Effect.ts" />
+///<reference path="core/pool/resources/SurfaceMaterial.ts" />
+///<reference path="core/pool/resources/Img.ts" />
+///<reference path="core/pool/resources/RenderMethod.ts" />
+///<reference path="core/pool/resources/Model.ts" />
+
+///<reference path="IBuffer.ts" />
+///<reference path="IFrameBuffer.ts" />
 
 ///<reference path="ITexture.ts" />
 ///<reference path="IImg.ts" />
+///<reference path="ISurfaceMaterial.ts" />
+///<reference path="IShaderProgram.ts" />
+///<reference path="IGPUBuffer.ts" />
+///<reference path="IIndexBuffer.ts" />
+///<reference path="IVertexBuffer.ts" />
+
+///<reference path="IScene.ts" />
+///<reference path="IScene3d.ts" />
+///<reference path="IScene2d.ts" />
+
+
+
 
 ///<reference path="ISceneTree.ts" />
 ///<reference path="IRenderState.ts" />
 ///<reference path="IRenderer.ts" />
+///<reference path="IScene3d.ts" />
 
 ///<reference path="INode.ts" />
 ///<reference path="ISceneNode.ts" />
@@ -396,20 +448,39 @@ module akra {
 
 ///<reference path="IFont2d.ts" />
 
+///<reference path="IDisplay.ts" />
+///<reference path="IDisplay2d.ts" />
+///<reference path="IDisplay3d.ts" />
+
 ///<reference path="IManager.ts" />
 ///<reference path="IResourceManager.ts" />
 ///<reference path="IDisplayManager.ts" />
-///<reference path="ILightManager.ts" />
 ///<reference path="IParticleManager.ts" />
-///<reference path="ISpriteManager.ts" />
 
+///<reference path="IAFXEffect.ts" />
+///<reference path="IAFXComponent.ts" />
+///<reference path="IAFXComponentBlend.ts" />
+///<reference path="IAFXPassBlend.ts" />
+///<reference path="IAFXPreRenderState.ts" />
 
+///<reference path="IScreen.ts" />
 
 ///<reference path="scene/Node.ts" />
 ///<reference path="scene/SceneNode.ts" />
 ///<reference path="scene/SceneObject.ts" />
 ///<reference path="scene/objects/Camera.ts" />
 ///<reference path="scene/OcTree.ts" />
+///<reference path="scene/Scene3d.ts" />
+
+///<reference path="IBuildScenario.ts" />
+///<reference path="ISceneBuilder.ts" />
+
+///<reference path="render/Renderer.ts" />
+///<reference path="scene/SceneBuilder.ts" />
 
 ///<reference path="IEngine.ts" />
-///<reference path="Engine.ts" />
+///<reference path="core/Engine.ts" />
+///<reference path="core/DisplayManager.ts" />
+
+///<reference path="display/Display2d.ts" />
+///<reference path="display/Display3d.ts" />

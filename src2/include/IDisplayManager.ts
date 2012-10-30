@@ -1,27 +1,18 @@
+///<reference path="akra.ts" />
+
 module akra {
     export interface IDisplayManager extends IManager {
-    	texturePool: IResourcePool;
-    	surfaceMaterialPool: IResourcePool;
-    	vertexBufferPool: IResourcePool;
-    	videoBufferPool: IResourcePool;
-    	indexBufferPool: IResourcePool;
-    	renderMethodPool: IResourcePool;
-    	modelPool: IResourcePool;
-    	imagePool: IResourcePool;			
-    	shaderProgramPool: IResourcePool;		//ex: private
-    	effectPool: IResourcePool;				//ex: private
-    	componentPool: IResourcePool;			//ex: private
+        createDisplay3D(): IDisplay3d;
+        createDisplay3D(pCanvas: HTMLCanvasElement): IDisplay3d;
+    	createDisplay3D(sCanvas?: string): IDisplay3d;
 
-    	textLayer: HTMLDivElement;
+        createDisplay2D(): IDisplay2d;
 
+        getDisplay3D(iDisplay?: uint): IDisplay3d;
+        getDisplay2D(iDisplay?: uint): IDisplay2d;
+        getDisplay(iDisplay?: uint, eType?: EDisplayTypes): IDisplay;
 
-    	draw2DText(iX?: int, iY?: int, sText?: string, pFont?: IFont2d): IString2d;
-
-    	destroy(): void; //TODO: move to IManager ?
-
-    	createDeviceResources(): bool;
-    	destroyDeviceResources(): bool;
-    	restoreDeviceResources(): bool;
-    	disableDeviceResources(): bool;
+        //enable all display
+        display(): bool;
     }	
 }

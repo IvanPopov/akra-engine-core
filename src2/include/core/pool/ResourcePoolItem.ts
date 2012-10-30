@@ -1,6 +1,6 @@
-///<reference path="../akra.ts" />
+///<reference path="../../akra.ts" />
 
-module akra.pool {
+module akra.core.pool {
 
 	export interface ICallbackSlot {
 		bState: bool;
@@ -42,7 +42,7 @@ module akra.pool {
 
 		/** @inline */
 		get alteredFlag(): bool {
-			return bf.testBit(this.iResourceFlags, <number>ResourceItemEvents.k_Altered);
+			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Altered);
 		}
 
 		/** Constructor of ResourcePoolItem class */
@@ -54,7 +54,7 @@ module akra.pool {
 			this.iSystemId = sid();
 			this.pCallbackFunctions = [];
 			this.pStateWatcher = [];
-			this.pCallbackSlots = genArray(null, <number>ResourceItemEvents.k_TotalResourceFlags);
+			this.pCallbackSlots = genArray(null, <number>EResourceItemEvents.k_TotalResourceFlags);
 		}
 
 		/** @inline */
@@ -116,11 +116,11 @@ module akra.pool {
 		    }
 		}
 
-		setStateWatcher(eEvent: ResourceItemEvents, fnWatcher: IResourceWatcherFunc): void {
+		setStateWatcher(eEvent: EResourceItemEvents, fnWatcher: IResourceWatcherFunc): void {
 			this.pStateWatcher[eEvent] = fnWatcher;
 		}
 
-		connect(pResourceItem: IResourcePoolItem, eSignal: ResourceItemEvents, eSlot?: ResourceItemEvents): bool {
+		connect(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool {
 			eSlot = isDef(eSlot)? eSlot: eSignal;
 
 		    eSlot = ResourcePoolItem.parseEvent(<number>eSlot);
@@ -141,7 +141,7 @@ module akra.pool {
 		    n = pSignSlots.length;
 		    bState = bf.testBit(pResourceItem.resourceFlags, <number>eSignal);
 
-		    fn = function (eFlag?: ResourceItemEvents, iResourceFlags?: int, isSet?: bool) {
+		    fn = function (eFlag?: EResourceItemEvents, iResourceFlags?: int, isSet?: bool) {
 		        if (eFlag == <number>eSignal) {
 		            pSignSlots[n].bState = isSet;
 		            me.notifyStateChange(eSlot, this);
@@ -167,7 +167,7 @@ module akra.pool {
 		    return true;
 		}
 
-		disconnect(pResourceItem: IResourcePoolItem, eSignal: ResourceItemEvents, eSlot?: ResourceItemEvents): bool {
+		disconnect(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool {
 			eSlot = isDef(eSlot)? eSlot: eSignal;
 		    eSlot = ResourcePoolItem.parseEvent(<number>eSlot);
 		    eSignal = ResourcePoolItem.parseEvent(<number>eSignal);
@@ -196,38 +196,38 @@ module akra.pool {
 
 		/** @inline */
 		notifyCreated(): void {
-			this.setResourceFlag(ResourceItemEvents.k_Created, true);
+			this.setResourceFlag(EResourceItemEvents.k_Created, true);
 		}
 
 		/** @inline */
 		notifyDestroyed(): void {
-			this.setResourceFlag(ResourceItemEvents.k_Created, false);
+			this.setResourceFlag(EResourceItemEvents.k_Created, false);
 		}
 
 		/** @inline */
 		notifyLoaded(): void {
 			this.setAlteredFlag(false);
-    		this.setResourceFlag(ResourceItemEvents.k_Loaded, true);
+    		this.setResourceFlag(EResourceItemEvents.k_Loaded, true);
 		}
 
 		/** @inline */
 		notifyUnloaded(): void {
-			this.setResourceFlag(ResourceItemEvents.k_Loaded, false);
+			this.setResourceFlag(EResourceItemEvents.k_Loaded, false);
 		}
 
 		/** @inline */
 		notifyRestored(): void {
-			this.setResourceFlag(ResourceItemEvents.k_Disabled, false);
+			this.setResourceFlag(EResourceItemEvents.k_Disabled, false);
 		}
 
 		/** @inline */
 		notifyDisabled(): void {
-			this.setResourceFlag(ResourceItemEvents.k_Disabled, true);
+			this.setResourceFlag(EResourceItemEvents.k_Disabled, true);
 		}
 
 		/** @inline */
 		notifyAltered(): void {
-			this.setResourceFlag(ResourceItemEvents.k_Altered, true);
+			this.setResourceFlag(EResourceItemEvents.k_Altered, true);
 		}
 		
 		/** @inline */
@@ -237,26 +237,26 @@ module akra.pool {
 
 		/** @inline */
 		isResourceCreated(): bool {
-			return bf.testBit(this.iResourceFlags, <number>ResourceItemEvents.k_Created);
+			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Created);
 		}
 
 		/** @inline */
 		isResourceLoaded(): bool {
-			return bf.testBit(this.iResourceFlags, <number>ResourceItemEvents.k_Loaded);
+			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Loaded);
 		}
 
 		/** @inline */
 		isResourceDisabled(): bool {
-			return bf.testBit(this.iResourceFlags, <number>ResourceItemEvents.k_Disabled);
+			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Disabled);
 		}
 
 		/** @inline */
 		isResourceAltered(): bool {
-			return bf.testBit(this.iResourceFlags, <number>ResourceItemEvents.k_Altered );
+			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Altered );
 		}
 
 		setAlteredFlag(isOn: bool = true): void {
-    		this.setResourceFlag(ResourceItemEvents.k_Altered, isOn);
+    		this.setResourceFlag(EResourceItemEvents.k_Altered, isOn);
 		}
 
 		/** @inline */
@@ -311,7 +311,7 @@ module akra.pool {
 			this.iResourceHandle = iHandle;
 		}
 
-		notifyStateChange(eEvent: ResourceItemEvents, pTarget: IResourcePoolItem = null): void {
+		notifyStateChange(eEvent: EResourceItemEvents, pTarget: IResourcePoolItem = null): void {
 			if (!this.pStateWatcher[eEvent]) {
 		        return;
 		    }
@@ -328,7 +328,7 @@ module akra.pool {
 		    this.pStateWatcher[eEvent](nLoaded, nTotal, pTarget);
 		}
 
-		setResourceFlag(eFlagBit: ResourceItemEvents, isSetting: bool): void;
+		setResourceFlag(eFlagBit: EResourceItemEvents, isSetting: bool): void;
 		setResourceFlag(iFlagBit: int, isSetting: bool): void;
 		setResourceFlag(iFlagBit, isSetting: bool): void {
 			var iTempFlags: int = this.iResourceFlags;
@@ -344,22 +344,22 @@ module akra.pool {
 		    }
 		}
 
-		static private parseEvent(sEvent: string): ResourceItemEvents;
-		static private parseEvent(iEvent: int): ResourceItemEvents;
+		static private parseEvent(sEvent: string): EResourceItemEvents;
+		static private parseEvent(iEvent: int): EResourceItemEvents;
 		static private parseEvent(pEvent) {
 		 	if (isInt(pEvent)) {
-		        return <ResourceItemEvents>pEvent;
+		        return <EResourceItemEvents>pEvent;
 		    }
 
 		    switch (pEvent.toLowerCase()) {
 		        case 'loaded':
-		            return ResourceItemEvents.k_Loaded;
+		            return EResourceItemEvents.k_Loaded;
 		        case 'created':
-		            return ResourceItemEvents.k_Created;
+		            return EResourceItemEvents.k_Created;
 		        case 'disabled':
-		            return ResourceItemEvents.k_Disabled;
+		            return EResourceItemEvents.k_Disabled;
 		        case 'altered':
-		            return ResourceItemEvents.k_Altered;
+		            return EResourceItemEvents.k_Altered;
 		        default:
 		            error('Использовано неизвестное событие для ресурса.');
 		            return 0;

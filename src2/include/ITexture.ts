@@ -1,7 +1,7 @@
 ///<reference path="akra.ts" />
 
 module akra {
-	export enum TextureFilters {
+	export enum ETextureFilters {
         NEAREST = 0x2600,
         LINEAR = 0x2601,
         NEAREST_MIPMAP_NEAREST = 0x2700,
@@ -10,20 +10,20 @@ module akra {
         LINEAR_MIPMAP_LINEAR = 0x2703
     };
 
-    export enum TextureWrapModes {
+    export enum ETextureWrapModes {
         REPEAT = 0x2901,
         CLAMP_TO_EDGE = 0x812F,
         MIRRORED_REPEAT = 0x8370
     };
 
-    export enum TextureParameters {
+    export enum ETextureParameters {
         MAG_FILTER = 0x2800,
         MIN_FILTER,
         WRAP_S,
         WRAP_T
     };
 
-    export enum TextureTypes {
+    export enum ETextureTypes {
         TEXTURE_2D = 0x0DE1,
         TEXTURE = 0x1702,
         TEXTURE_CUBE_MAP = 0x8513,
@@ -37,11 +37,11 @@ module akra {
         MAX_CUBE_MAP_TEXTURE_SIZE = 0x851C
     };
 
-    export enum TextureUnits {
+    export enum ETextureUnits {
         TEXTURE = 0x84C0
     };
 
-    export interface ITexture implements IRenderResource {
+    export interface ITexture extends IRenderResource {
     	
     }
 }

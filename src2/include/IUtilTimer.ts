@@ -1,7 +1,7 @@
 ///<reference path="akra.ts" />
 
 module akra {
-	export enum UtilTimerCommands {
+	export enum EUtilTimerCommands {
 		TIMER_RESET, //! <to reset the timer
 		TIMER_START, //! <to start the timer
 		TIMER_STOP, //! <to stop (or pause) the timer
@@ -20,8 +20,8 @@ module akra {
         start(): bool;
         stop(): bool;
         reset(): bool;
-        execCommand(e: UtilTimerCommands): float;
+        execCommand(e: EUtilTimerCommands): float;
         
-        static start(): UtilTimer;
+        //static start(): IUtilTimer;
     }
 }

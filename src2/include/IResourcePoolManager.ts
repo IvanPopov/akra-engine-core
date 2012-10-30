@@ -3,7 +3,7 @@
 module akra {
 
 	/** Семейства ресурсов */
-	export enum ResourceFamilies {
+	export enum EResourceFamilies {
 		VIDEO_RESOURCE = 0, 
 		AUDIO_RESOURCE, 
 		GAME_RESOURCE, 
@@ -11,42 +11,54 @@ module akra {
 	};
 
 	/** Члены семейства видео ресурсов */
-	export enum VideoResources {
-		k_TextureResource,
-		k_VideoBufferResource,
-		k_VertexBufferResource,
-		k_IndexBufferResource,
-		k_RenderResource,
-		k_RenderSetResource,
-		k_ModelResource,
-		k_EffectFileData,
-		k_ImageResource,
-		k_SMaterialResource,
-		k_ShaderProgramResource,
-		k_ComponentResource,
-		k_TotalVideoResources
+	export enum EVideoResources {
+		TEXTURE_RESOURCE,
+		VIDEOBUFFER_RESOURCE,
+		VERTEXBUFFER_RESOURCE,
+		INDEXBUFFER_RESOURCE,
+		EFFECT_RESOURCE,
+		RENDERMETHOD_RESOURCE,
+		MODEL_RESOURCE,
+		EFFECTFILEDATA_RESOURCE,
+		IMAGE_RESOURCE,
+		SURFACEMATERIAL_RESOURCE,
+		SHADERPROGRAM_RESOURCE,
+		COMPONENT_RESOURCE,
+		TOTAL_VIDEO_RESOURCES
 	};
 
-	export enum AudioResources {
-		k_TotalAudioResources
+	export enum EAudioResources {
+		TOTAL_AUDIO_RESOURCES
 	};
 
-	export enum GameResources {
-		k_TotalGameResources
+	export enum EGameResources {
+		TOTAL_GAME_RESOURCES
 	};
 
 	/** Конструктор класса, занимается очисткой списков пулов по семействам ресурсвов и краты пулов по коду ресурсов */
     export interface IResourcePoolManager extends IManager {
+    	texturePool: IResourcePool;
+    	surfaceMaterialPool: IResourcePool;
+    	vertexBufferPool: IResourcePool;
+    	videoBufferPool: IResourcePool;
+    	indexBufferPool: IResourcePool;
+    	renderMethodPool: IResourcePool;
+    	modelPool: IResourcePool;
+    	imagePool: IResourcePool;			
+    	shaderProgramPool: IResourcePool;		//ex: private
+    	effectPool: IResourcePool;				//ex: private
+    	componentPool: IResourcePool;			//ex: private
+
     	/** Регистрируется пул ресурсов опредленного типа в менеджере русурсов */
     	registerResourcePool(pCode: IResourceCode, pPool: IResourcePool): void;
     	/** Удаляет пул ресурсов опредленного типа в менеджере русурсов */
     	unregisterResourcePool(pCode: IResourceCode): IResourcePool;
 
     	/** Удаление ресурсов определенного семества */
-    	destroyResourceFamily(iFamily: int): void;
-    	restoreResourceFamily(iFamily: int): void;
-    	disableResourceFamily(iFamily: int): void;
-    	cleanResourceFamily(iFamily: int): void;
+    	destroyResourceFamily(eFamily: EResourceFamilies): void;
+    	restoreResourceFamily(eFamily: EResourceFamilies): void;
+    	disableResourceFamily(eFamily: EResourceFamilies): void;
+    	cleanResourceFamily(eFamily: EResourceFamilies): void;
 
     	destroyResourceType(pCode: IResourceCode): void;
     	restoreResourceType(pCode: IResourceCode): void;
@@ -72,5 +84,9 @@ module akra {
 
     	clean(): void;
 
+    	createDeviceResources(): bool;
+    	destroyDeviceResources(): bool;
+    	restoreDeviceResources(): bool;
+    	disableDeviceResources(): bool;
     }
 }

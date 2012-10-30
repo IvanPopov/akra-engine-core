@@ -5,7 +5,7 @@ module akra {
 	/**
      * Отражает состояние ресурса
      **/
-    export enum ResourceItemEvents{
+    export enum EResourceItemEvents{
 		k_Created, 			//ресур создан
 		k_Loaded, 			//ресур заполнен данным и готов к использованию
 		k_Disabled, 		//ресур в данный момент отключен для использования
@@ -26,7 +26,7 @@ module akra {
 		alteredFlag: bool;
 
 		
-		valueOf(): int;
+		//valueOf(): int;
 		toNumber(): int;
 		/** Get current Engine. */
 		getEngine(): IEngine;
@@ -49,11 +49,11 @@ module akra {
 		setChangesNotifyRoutine(fn: IResourceNotifyRoutineFunc): void;
 		delChangesNotifyRoutine(fn: IResourceNotifyRoutineFunc): void;
 
-		setStateWatcher(eEvent: ResourceItemEvents, fnWatcher: IResourceWatcherFunc): void;
+		setStateWatcher(eEvent: EResourceItemEvents, fnWatcher: IResourceWatcherFunc): void;
 
 		/** sinchronize events with other resourse */
-		connect(pResourceItem: IResourcePoolItem, eSignal: ResourceItemEvents, eSlot?: ResourceItemEvents): bool;
-		disconnect(pResourceItem: IResourcePoolItem, eSignal: ResourceItemEvents, eSlot?: ResourceItemEvents): bool;
+		connect(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool;
+		disconnect(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool;
 
 		/** Установка состояния в созданный */
 		notifyCreated(): void;
@@ -72,7 +72,7 @@ module akra {
 		/** Установка в состояние сохраненый */
 		notifySaved(): void;
 
-		notifyStateChange(eEvent: ResourceItemEvents, pTarget?: IResourcePoolItem);
+		notifyStateChange(eEvent: EResourceItemEvents, pTarget?: IResourcePoolItem);
 
 		/** Проверка создан ли ресурс */
 		isResourceCreated(): bool;
@@ -99,11 +99,11 @@ module akra {
 		setResourcePool(pPool: IResourcePool): void;
 		setResourceHandle(iHandle: int): void;
 
-		setResourceFlag(eFlagBit: ResourceItemEvents, isSetting: bool): void;
+		setResourceFlag(eFlagBit: EResourceItemEvents, isSetting: bool): void;
 		setResourceFlag(iFlagBit: int, isSetting: bool): void;
 		
 		//static parseEvent(sEvent: string): uint;
-		//static parseEvent(eEvent: ResourceItemEvents): uint;
+		//static parseEvent(eEvent: EResourceItemEvents): uint;
 	}
 
 	export interface IResourcePoolItemType {

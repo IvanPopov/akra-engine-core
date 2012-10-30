@@ -7,7 +7,7 @@ module akra {
                 /** Добавление данного пула в менеджер ресурсво по его коду */
                 registerResourcePool(pCode: IResourceCode): void;
                 /** Удаление данного пула в менеджер ресурсво по его коду */
-                unregisterResourcePool(pCode: IResourceCode): void;
+                unregisterResourcePool(): void;
                 /** По имени ресурса возвращает его хендл */
                 findResourceHandle(sName: string): int;
                 /** По хендлу ресурва возвращает его имя */

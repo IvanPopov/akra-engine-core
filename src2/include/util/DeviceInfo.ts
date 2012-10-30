@@ -87,25 +87,25 @@ module akra.util {
 	        return pExtention;
 		}
 
-		checkFormat(pDevice: WebGLRenderingContext, eFormat: ImageFormats) {
+		checkFormat(pDevice: WebGLRenderingContext, eFormat: EImageFormats) {
 	        switch (eFormat) {
-	            case ImageFormats.RGB_DXT1:
-	            case ImageFormats.RGBA_DXT1:
-	            case ImageFormats.RGBA_DXT2:
-	            case ImageFormats.RGBA_DXT3:
-	            case ImageFormats.RGBA_DXT4:
-	            case ImageFormats.RGBA_DXT5:
+	            case EImageFormats.RGB_DXT1:
+	            case EImageFormats.RGBA_DXT1:
+	            case EImageFormats.RGBA_DXT2:
+	            case EImageFormats.RGBA_DXT3:
+	            case EImageFormats.RGBA_DXT4:
+	            case EImageFormats.RGBA_DXT5:
 	                for (var i in pDevice) {
 	                    if (isNumber(pDevice[i]) && pDevice[i] == eFormat) {
 	                        return true;
 	                    }
 	                }
 	                return false;
-	            case ImageFormats.RGB8:
-	            case ImageFormats.RGBA8:
-	            case ImageFormats.RGBA4:
-	            case ImageFormats.RGB5_A1:
-	            case ImageFormats.RGB565:
+	            case EImageFormats.RGB8:
+	            case EImageFormats.RGBA8:
+	            case EImageFormats.RGBA4:
+	            case EImageFormats.RGB5_A1:
+	            case EImageFormats.RGB565:
 	                return true;
 	            default:
 	                return false;

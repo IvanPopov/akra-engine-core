@@ -1,7 +1,7 @@
 ///<reference path="akra.ts" />
 
 module akra {
-	export enum ResourceCodes {
+	export enum EResourceCodes {
 		INVALID_CODE = 0xFFFFFFFF
 	};
 

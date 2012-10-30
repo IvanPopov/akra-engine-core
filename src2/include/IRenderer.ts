@@ -4,7 +4,7 @@ module akra {
 
 	//API SPECIFIFC CONSTANTS
 
-	export enum PrimitiveTypes {
+	export enum EPrimitiveTypes {
         POINTLIST = 0,
         LINELIST,
         LINELOOP,
@@ -14,7 +14,7 @@ module akra {
         TRIANGLEFAN
     };
 
-    export enum GLSpecifics {
+    export enum EGLSpecifics {
         UNPACK_ALIGNMENT = 0x0CF5,
         PACK_ALIGNMENT = 0x0D05,
         UNPACK_FLIP_Y_WEBGL = 0x9240,
@@ -24,33 +24,33 @@ module akra {
         BROWSER_DEFAULT_WEBGL = 0x9244
     };
 
-    export enum BufferMasks {
+    export enum EBufferMasks {
         DEPTH_BUFFER_BIT               = 0x00000100,
         STENCIL_BUFFER_BIT             = 0x00000400,
         COLOR_BUFFER_BIT               = 0x00004000
     };
 
-    export enum BufferUsages {
+    export enum EBufferUsages {
         STREAM_DRAW = 0x88E0,
         STATIC_DRAW = 0x88E4,
         DYNAMIC_DRAW = 0x88E8
     };
 
-    export enum BufferTypes {
+    export enum EBufferTypes {
         ARRAY_BUFFER = 0x8892,
         ELEMENT_ARRAY_BUFFER = 0x8893,
         FRAME_BUFFER = 0x8D40,
         RENDER_BUFFER = 0x8D41
     };
 
-    export enum AttachmentTypes {
+    export enum EAttachmentTypes {
         COLOR_ATTACHMENT0 = 0x8CE0,
         DEPTH_ATTACHMENT = 0x8D00,
         STENCIL_ATTACHMENT = 0x8D20,
         DEPTH_STENCIL_ATTACHMENT = 0x821A
     };
 
-    export enum RenderStates {
+    export enum ERenderStates {
         ZENABLE = 7,
         ZWRITEENABLE = 14,
         SRCBLEND = 19,
@@ -62,7 +62,7 @@ module akra {
         ALPHATESTENABLE
     };
 
-    export enum BlendModes {
+    export enum EBlendModes {
         ZERO = 0,
         ONE = 1,
         SRCCOLOR = 0x0300,
@@ -76,7 +76,7 @@ module akra {
         SRCALPHASAT = 0x0308
     };
 
-    export enum CmpFuncs {
+    export enum ECmpFuncs {
         NEVER = 1,
         LESS = 2,
         EQUAL = 3,
@@ -87,7 +87,7 @@ module akra {
         ALWAYS = 8
     };
 
-    export enum CullModes {
+    export enum ECullModes {
         NONE = 0,
         CW = 0x404, //FRONT
         CCW = 0x0405, //BACK
@@ -96,7 +96,7 @@ module akra {
 
     //END OF API SPECIFIC
 
-	export var RenderStages {
+	export enum ERenderStages {
 		SHADOWS = 2,
 		LIGHTING,
 		GLOBALPOSTEFFECTS,
@@ -119,7 +119,7 @@ module akra {
     	push(pRenderObject: IRenderableObject, pSnapshot: IRenderSnapshot): bool;
     	pop(): bool;
 
-    	activatePass(pSnapshot: IRenderSnapshot, iPass: int): bool
+    	activatePass(pSnapshot: IRenderSnapshot, iPass: int): bool;
     	deactivatePass(pSnapshot: IRenderSnapshot): bool;
 
     	activateSceneObject(pSceneObject: ISceneObject): void;
@@ -128,8 +128,8 @@ module akra {
     	finishPass(iPass: int): bool;
 
     	applyBufferMap(pMap: IBufferMap): bool;
-    	applyVertexData(pData: IVertexData, ePrimType: PrimitiveTypes): bool;
-    	applyFrameBufferTexture(pTexture: ITexture, eAttachment: AttachmentTypes, eTexTarget: TextureTypes, iLevel?: uint): bool;
+    	applyVertexData(pData: IVertexData, ePrimType: EPrimitiveTypes): bool;
+    	applyFrameBufferTexture(pTexture: ITexture, eAttachment: EAttachmentTypes, eTexTarget: ETextureTypes, iLevel?: uint): bool;
     	applySurfaceMaterial(pMaterial: ISurfaceMaterial): bool;
 
     	getUniformRealName(sName: string): string;
@@ -174,12 +174,14 @@ module akra {
 
     	///public API
     	findEffect(sName?: string): IAFXEffect;
-    	getScreen(): IMesh;
-    	clearScreen(eValue: BufferMasks, c4Color: IColor): void;
-    	switchRenderStage(eType: RenderStages): void;
+    	clearScreen(eValue: EBufferMasks, c4Color: IColor): void;
+    	switchRenderStage(eType: ERenderStages): void;
     	processRenderStage(): bool;
     	updateScreen(): bool;
         /** Load *.fx file or *.abf */
         loadEffectFile(sFilename: string, isSync?: bool): bool;
+
+        debug(bValue?: bool, bTrace?: bool): bool;
+        isDeviceLost(): bool;
     }
 }
