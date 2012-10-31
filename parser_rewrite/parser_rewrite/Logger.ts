@@ -21,6 +21,8 @@ module akra {
     var isString = (x: any) =>(typeof x === "string");
     var isInt = (x: any) =>(typeof x === "number");
     var isObject = (x: any) =>(typeof x === "object");
+    var isNull = (x: any) =>(x === null);
+    var isDef = (x: any) =>(x !== undefined);
     //END TEMP
 
 
@@ -206,9 +208,9 @@ module akra {
         error(eCode: uint, pLocation?: ISourcePosition = null, sHint?: string = ""): void;
         error(): void {
             var sMessage: string;
-            sMessage = this._generateLoggerMessage.call(this, arguments[0],arguments[1], arguments[2]);
-            
-            this._printMessage(sMessage, ELogLevel.ERROR);
+            sMessage = this.generateLoggerMessage.call(this, arguments[0], arguments[1], arguments[2]);
+
+            this.printMessage(sMessage, ELogLevel.ERROR);
         }
 
         warning(sMessage: string, pLocation?: ISourcePosition = null): void;
@@ -216,9 +218,9 @@ module akra {
         warning(eCode: uint, pLocation?: ISourcePosition = null, sHint?: string = ""): void;
         warning(): void {
             var sMessage: string;
-            sMessage = this._generateLoggerMessage.call(this, arguments[0],arguments[1], arguments[2]);
-            
-            this._printMessage(sMessage, ELogLevel.WARNING);
+            sMessage = this.generateLoggerMessage.call(this, arguments[0], arguments[1], arguments[2]);
+
+            this.printMessage(sMessage, ELogLevel.WARNING);
         }
 
         info(sMessage: string, pLocation?: ISourcePosition = null): void;
@@ -226,9 +228,9 @@ module akra {
         info(eCode: uint, pLocation?: ISourcePosition = null, sHint?: string = ""): void;
         info(): void {
             var sMessage: string;
-            sMessage = this._generateLoggerMessage.call(this, arguments[0],arguments[1], arguments[2]);
-            
-            this._printMessage(sMessage, ELogLevel.INFORMATION);
+            sMessage = this.generateLoggerMessage.call(this, arguments[0], arguments[1], arguments[2]);
+
+            this.printMessage(sMessage, ELogLevel.INFORMATION);
         }
 
         debug_error(sMessage: string, pLocation?: ISourcePosition = null): void;
@@ -241,9 +243,9 @@ module akra {
             }
 
             var sMessage: string;
-            sMessage = this._generateLoggerMessage.call(this, arguments[0],arguments[1], arguments[2]);
-            
-            this._printMessage(sMessage, ELogLevel.DEBUG_ERROR);
+            sMessage = this.generateLoggerMessage.call(this, arguments[0], arguments[1], arguments[2]);
+
+            this.printMessage(sMessage, ELogLevel.DEBUG_ERROR);
         }
 
         debug_warning(sMessage: string, pLocation?: ISourcePosition = null): void;
@@ -256,9 +258,9 @@ module akra {
             }
 
             var sMessage: string;
-            sMessage = this._generateLoggerMessage.call(this, arguments[0],arguments[1], arguments[2]);
-            
-            this._printMessage(sMessage, ELogLevel.DEBUG_WARNING);
+            sMessage = this.generateLoggerMessage.call(this, arguments[0], arguments[1], arguments[2]);
+
+            this.printMessage(sMessage, ELogLevel.DEBUG_WARNING);
         }
 
         debug_info(sMessage: string, pLocation?: ISourcePosition = null): void;
@@ -271,17 +273,17 @@ module akra {
             }
 
             var sMessage: string;
-            sMessage = this._generateLoggerMessage.call(this, arguments[0],arguments[1], arguments[2]);
-            
-            this._printMessage(sMessage, ELogLevel.DEBUG_INFORMATION);
+            sMessage = this.generateLoggerMessage.call(this, arguments[0], arguments[1], arguments[2]);
+
+            this.printMessage(sMessage, ELogLevel.DEBUG_INFORMATION);
         }
 
 
 
-        private _generateLoggerMessage(sMessage: string, pLocation?: ISourcePosition = null): string;
-        private _generateLoggerMessage(pEntity: ILoggerEntity): string;
-        private _generateLoggerMessage(eCode: uint, pLocation?: ISourcePosition = null, sHint?: string = ""): string;
-        private _generateLoggerMessage(): string {
+        private generateLoggerMessage(sMessage: string, pLocation?: ISourcePosition = null): string;
+        private generateLoggerMessage(pEntity: ILoggerEntity): string;
+        private generateLoggerMessage(eCode: uint, pLocation?: ISourcePosition = null, sHint?: string = ""): string;
+        private generateLoggerMessage(): string {
 
             var sLoggerMessage: string;
 
@@ -297,14 +299,14 @@ module akra {
             else if (isObject(arguments[0])) {
                 var pEntity: ILoggerEntity = arguments[0];
 
-                sMessage = this._getMessageFromCode(pEntity.code, pEntity.info);
+                sMessage = this.getMessageFromCode(pEntity.code, pEntity.info);
                 pLocation = pEntity.position;
                 sHint = pEntity.hint;
             }
             else if (isInt(arguments[0])) {
                 var eCode: uint = arguments[0];
 
-                sMessage = this._getMessageFromCode(eCode);
+                sMessage = this.getMessageFromCode(eCode);
                 pLocation = arguments[1] || null;
                 sHint = arguments[2] || "";
             }
@@ -312,23 +314,40 @@ module akra {
                 return;
             }
 
-            sLoggerMessage = this._prepareMessage(pLocation, sMessage, sHint);
+            sLoggerMessage = this.prepareMessage(pLocation, sMessage, sHint);
             return sLoggerMessage;
         }
 
-        private _printMessage(sMessage: string, eLevel: ELogLevel): void {
+        private printMessage(sMessage: string, eLevel: ELogLevel): void {
             this._pLogRoutineMap[eLevel].call(null, sMessage);
         }
 
-        private _getMessageFromCode(eCode: uint, pInfo?: ObjectMap = null): string {
-            return "";
+        private getMessageFromCode(eCode: uint, pInfo?: ObjectMap = null): string {
+            if (!isDef(this._pCodeMessagesMap[eCode])) {
+                return "Code " + eCode + ": No Message";;
+            }
+            return this._pCodeFormatCallbackMap[eCode].call(null, pInfo);
         }
 
-        private _prepareMessage(pLocation: ISourcePosition, sMessage: string, sHint: string): string {
+        private prepareMessage(pLocation: ISourcePosition, sMessage: string, sHint: string): string {
+            var sLogMessage: string;
 
-            return "";
+            if (isNull(pLocation)) {
+                sLogMessage += pLocation.toString() + ": ";
+            }
+            else {
+                sLogMessage += "[Unknown]: ";
+            }
+
+            sLogMessage += sMessage;
+
+            if (sHint != "") {
+                sLogMessage += "\n Hint: " + sHint;
+            }
+
+            return sLogMessage;
         }
-        
+
     }
 
 }
