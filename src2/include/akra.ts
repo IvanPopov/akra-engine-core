@@ -271,7 +271,7 @@ module akra {
     /**
      * Возвращет размер типа в байтах
      **/
-    export function getTypeSize(eType: EImageTypes): uint;
+    //export function getTypeSize(eType: EImageTypes): uint;
     export function getTypeSize(eType: EDataTypes): uint;
     export function getTypeSize(eType): uint {
         switch (eType) {
@@ -280,9 +280,9 @@ module akra {
                 return 1;
             case EDataTypes.SHORT:
             case EDataTypes.UNSIGNED_SHORT:
-            case EImageTypes.UNSIGNED_SHORT_4_4_4_4:
-            case EImageTypes.UNSIGNED_SHORT_5_5_5_1:
-            case EImageTypes.UNSIGNED_SHORT_5_6_5:
+            //case EImageTypes.UNSIGNED_SHORT_4_4_4_4:
+            //case EImageTypes.UNSIGNED_SHORT_5_5_5_1:
+            //case EImageTypes.UNSIGNED_SHORT_5_6_5:
                 return 2;
             case EDataTypes.INT:
             case EDataTypes.UNSIGNED_INT:

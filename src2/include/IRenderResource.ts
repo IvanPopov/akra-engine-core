@@ -2,6 +2,6 @@
 
 module akra {
     export interface IRenderResource extends IResourcePoolItem {
-        
+        getHardwareObject(): WebGLObject;
     };
 }

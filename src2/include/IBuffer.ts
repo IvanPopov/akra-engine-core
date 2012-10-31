@@ -2,8 +2,12 @@
 
 module akra {
 	export interface IBuffer {
-		//size: int;
-		//length: int;
-		//byteLength: int;
+		//number of elements
+		length: int;
+		
+		//size in bytes
+		byteLength: int;
+
+		
 	}
 }

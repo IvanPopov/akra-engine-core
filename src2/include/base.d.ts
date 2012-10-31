@@ -22,3 +22,5 @@ interface Number {
 	printBinary(isPretty?: bool);
 }
 
+declare function requestAnimationFrame(callback: FrameRequestCallback, element: HTMLElement): number;
+

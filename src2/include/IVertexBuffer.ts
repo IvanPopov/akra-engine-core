@@ -1,7 +1,7 @@
 ///<reference path="akra.ts" />
 
 module akra {
-	export interface IVertexBuffer extends IGPUBuffer, IRenderResource {
+	export interface IVertexBuffer extends IVertexBufferBase, IRenderResource {
 		
 
 	}

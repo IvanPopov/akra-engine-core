@@ -66,7 +66,6 @@ module akra {
         isTextureCube(): bool;
         isCompressed(): bool;
 
-        getHardwareTexture(): WebGLTexture;
         getParameter(): int;
         setParameter(eParam: ETextureParameters, eValue: ETextureFilters): void;
         setParameter(eParam: ETextureParameters, eValue: ETextureWrapModes): void;

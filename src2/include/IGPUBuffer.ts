@@ -1,6 +1,14 @@
 ///<reference path="akra.ts" />
 
 module akra {
+	export enum EGPUBufferFlags {
+		MANY_UPDATES = 0,
+		MANY_DRAWS,
+		READABLE,
+		RAM_BACKUP,
+		SOFTWARE
+	}
+
 	export interface IGPUBuffer extends IBuffer {
 		clone(pSrc: IGPUBuffer): bool;
 
@@ -11,20 +19,11 @@ module akra {
 		isReadable(): bool;
 		isRAMBufferPresent(): bool;
 		isSoftware(): bool;
-		isAlignment(): bool;
+
+		getData(iOffset: uint, iSize: uint): ArrayBuffer;
+		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool;
 
 		getHardwareBuffer(): WebGLObject;
-		getOptions(): int; //instead getTypeFlags()
-		
-		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;
-		getVertexData(iOffset: uint, iCount: uint, pDecl: IVertexDeclaration): IVertexData;
-		
-		getEmptyVertexData(iCount: uint, pElements: IVertexElement[], ppVertexDataIn?: IVertexData): IVertexData;
-		getEmptyVertexData(iCount: uint, pDecl: IVertexDeclaration, ppVertexDataIn?: IVertexData): IVertexData;
-		
-		freeVertexData(pVertexData: IVertexData): bool;
-
-		allocateData(pElements: IVertexElement[], pData: ArrayBufferView): IVertexData;
-		allocateData(pDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
+		getFlags(): int; 
 	}
 }
