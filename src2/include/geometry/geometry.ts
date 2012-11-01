@@ -1,1 +1,0 @@
-///<reference path="Rect3d.ts" />
