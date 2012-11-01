@@ -8,7 +8,33 @@ var akra;
     var END_POSITION = "END";
     var T_EMPTY = "EMPTY";
     var UNKNOWN_TOKEN = "UNNOWN";
+    var START_SYMBOL = "S";
     var END_SYMBOL = "$";
+    var LEXER_RULES = "--LEXER--";
+    var FLAG_RULE_CREATE_NODE = "--AN";
+    var FLAG_RULE_NOT_CREATE_NODE = "--NN";
+    var FLAG_RULE_FUNCTION = "--F";
+    var bf;
+    (function (bf) {
+        bf.testAll = function (value, set) {
+            return (((value) & (set)) == (set));
+        };
+    })(bf || (bf = {}));
+    var isString = function (x) {
+        return (typeof x === "string");
+    };
+    var isInt = function (x) {
+        return (typeof x === "number");
+    };
+    var isObject = function (x) {
+        return (typeof x === "object");
+    };
+    var isNull = function (x) {
+        return (x === null);
+    };
+    var isDef = function (x) {
+        return (x === undefined);
+    };
     var EOperationType;
     (function (EOperationType) {
         EOperationType._map = [];
@@ -22,13 +48,6 @@ var akra;
         EOperationType._map[104] = "k_Pause";
         EOperationType.k_Pause = 104;
     })(EOperationType || (EOperationType = {}));
-    var EItemType;
-    (function (EItemType) {
-        EItemType._map = [];
-        EItemType.k_LR0 = 1;
-        EItemType._map[2] = "k_LR";
-        EItemType.k_LR = 2;
-    })(EItemType || (EItemType = {}));
     (function (ENodeCreateMode) {
         ENodeCreateMode._map = [];
         ENodeCreateMode._map[0] = "k_Default";
@@ -63,9 +82,21 @@ var akra;
     (function (ESyntaxErrorCode) {
         ESyntaxErrorCode._map = [];
         ESyntaxErrorCode.k_Parser = 100;
+        ESyntaxErrorCode._map[101] = "k_GrammarAddOperation";
+        ESyntaxErrorCode.k_GrammarAddOperation = 101;
+        ESyntaxErrorCode._map[102] = "k_GrammarAddStateLink";
+        ESyntaxErrorCode.k_GrammarAddStateLink = 102;
+        ESyntaxErrorCode._map[103] = "k_GrammarUnexpectedSymbol";
+        ESyntaxErrorCode.k_GrammarUnexpectedSymbol = 103;
+        ESyntaxErrorCode._map[104] = "k_GrammarBadAdditionalFunctionName";
+        ESyntaxErrorCode.k_GrammarBadAdditionalFunctionName = 104;
+        ESyntaxErrorCode._map[105] = "k_GrammarBadKeyword";
+        ESyntaxErrorCode.k_GrammarBadKeyword = 105;
         ESyntaxErrorCode.k_Lexer = 200;
         ESyntaxErrorCode._map[201] = "k_UnknownToken";
         ESyntaxErrorCode.k_UnknownToken = 201;
+        ESyntaxErrorCode._map[202] = "k_BadToken";
+        ESyntaxErrorCode.k_BadToken = 202;
     })(ESyntaxErrorCode || (ESyntaxErrorCode = {}));
     var ETokenType;
     (function (ETokenType) {
@@ -121,6 +152,16 @@ var akra;
             },
             set: function (pState) {
                 this._pState = pState;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Item.prototype, "index", {
+            get: function () {
+                return this._iIndex;
+            },
+            set: function (iIndex) {
+                this._iIndex = iIndex;
             },
             enumerable: true,
             configurable: true
@@ -195,11 +236,11 @@ var akra;
             configurable: true
         });
         ItemLR.prototype.isEqual = function (pItem, eType) {
-            if (typeof eType === "undefined") { eType = EItemType.k_LR0; }
-            if(eType === EItemType.k_LR0) {
+            if (typeof eType === "undefined") { eType = EParserType.k_LR0; }
+            if(eType === EParserType.k_LR0) {
                 return (this._pRule === pItem.rule && this._iPos === pItem.position);
             } else {
-                if(eType === EItemType.k_LR) {
+                if(eType === EParserType.k_LR1) {
                     if(!(this._pRule === pItem.rule && this._iPos === pItem.position && this._iLength === (pItem).length)) {
                         return false;
                     }
@@ -252,7 +293,7 @@ var akra;
     })(Item);    
     var State = (function () {
         function State() {
-            this._pItems = [];
+            this._pItemList = [];
             this._pNextStates = {
             };
             this._iIndex = 0;
@@ -260,7 +301,7 @@ var akra;
         }
         Object.defineProperty(State.prototype, "items", {
             get: function () {
-                return this._pItems;
+                return this._pItemList;
             },
             enumerable: true,
             configurable: true
@@ -272,9 +313,19 @@ var akra;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(State.prototype, "index", {
+            get: function () {
+                return this._iIndex;
+            },
+            set: function (iIndex) {
+                this._iIndex = iIndex;
+            },
+            enumerable: true,
+            configurable: true
+        });
         State.prototype.hasItem = function (pItem) {
             var i;
-            var pItems = this._pItems;
+            var pItems = this._pItemList;
             for(i = 0; i < pItems.length; i++) {
                 if(pItems[i].isEqual(pItem)) {
                     return pItems[i];
@@ -284,7 +335,7 @@ var akra;
         };
         State.prototype.hasParentItem = function (pItem) {
             var i;
-            var pItems = this._pItems;
+            var pItems = this._pItemList;
             for(i = 0; i < pItems.length; i++) {
                 if(pItems[i].isParentItem(pItem)) {
                     return pItems[i];
@@ -294,7 +345,7 @@ var akra;
         };
         State.prototype.hasChildItem = function (pItem) {
             var i;
-            var pItems = this._pItems;
+            var pItems = this._pItemList;
             for(i = 0; i < pItems.length; i++) {
                 if(pItems[i].isChildItem(pItem)) {
                     return pItems[i];
@@ -303,10 +354,10 @@ var akra;
             return null;
         };
         State.prototype.isEmpty = function () {
-            return !(this._pItems.length);
+            return !(this._pItemList.length);
         };
         State.prototype.isEqual = function (pState, eType) {
-            var pItemsA = this._pItems;
+            var pItemsA = this._pItemList;
             var pItemsB = pState.items;
             if(this._nBaseItems !== pState.baseItems) {
                 return false;
@@ -331,15 +382,15 @@ var akra;
             return true;
         };
         State.prototype.push = function (pItem) {
-            if(this._pItems.length === 0 || pItem.position > 0) {
+            if(this._pItemList.length === 0 || pItem.position > 0) {
                 this._nBaseItems += 1;
             }
             pItem.state = this;
-            this._pItems.push(pItem);
+            this._pItemList.push(pItem);
         };
         State.prototype.tryPush_LR0 = function (pRule, iPos) {
             var i;
-            var pItems = this._pItems;
+            var pItems = this._pItemList;
             for(i = 0; i < pItems.length; i++) {
                 if(pItems[i].rule === pRule && pItems[i].position === iPos) {
                     return false;
@@ -351,7 +402,7 @@ var akra;
         };
         State.prototype.tryPush_LR = function (pRule, iPos, sExpectedSymbol) {
             var i;
-            var pItems = (this._pItems);
+            var pItems = (this._pItemList);
             for(i = 0; i < pItems.length; i++) {
                 if(pItems[i].rule === pRule && pItems[i].position === iPos) {
                     return pItems[i].addExpected(sExpectedSymbol);
@@ -364,96 +415,25 @@ var akra;
             this.push(pItem);
             return true;
         };
+        State.prototype.getNextStateBySymbol = function (sSymbol) {
+            if(isDef(this._pNextStates[sSymbol])) {
+                return this._pNextStates[sSymbol];
+            } else {
+                return null;
+            }
+        };
+        State.prototype.addNextState = function (sSymbol, pState) {
+            if(isDef(this._pNextStates[sSymbol])) {
+                return false;
+            } else {
+                this._pNextStates[sSymbol] = pState;
+                return true;
+            }
+        };
         State.prototype.deleteNotBase = function () {
-            this._pItems.length = this._nBaseItems;
+            this._pItemList.length = this._nBaseItems;
         };
         return State;
-    })();    
-    var Operation = (function () {
-        function Operation() {
-            if(arguments.length === 0) {
-                this._eType = EOperationType.k_Error;
-            } else {
-                if(arguments.length === 2 && arguments[0] === EOperationType.k_Shift) {
-                    this._eType = EOperationType.k_Shift;
-                    this._iIndex = arguments[1];
-                } else {
-                    if(arguments.length === 2 && arguments[0] === EOperationType.k_Reduce) {
-                        this._eType = EOperationType.k_Reduce;
-                        this._pRule = arguments[1];
-                    }
-                }
-            }
-        }
-        Object.defineProperty(Operation.prototype, "type", {
-            get: function () {
-                return this._eType;
-            },
-            set: function (eType) {
-                this._eType = eType;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Operation.prototype, "rule", {
-            get: function () {
-                return this._pRule;
-            },
-            set: function (pRule) {
-                this._pRule = pRule;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Operation.prototype, "index", {
-            get: function () {
-                return this._iIndex;
-            },
-            set: function (iIndex) {
-                this._iIndex = iIndex;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return Operation;
-    })();    
-    var Rule = (function () {
-        function Rule() {
-            this._sLeft = "";
-            this._pRight = [];
-            this._iIndex = 0;
-        }
-        Object.defineProperty(Rule.prototype, "left", {
-            get: function () {
-                return this._sLeft;
-            },
-            set: function (sLeft) {
-                this._sLeft = sLeft;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Rule.prototype, "right", {
-            get: function () {
-                return this._pRight;
-            },
-            set: function (pRight) {
-                this._pRight = pRight;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Rule.prototype, "index", {
-            get: function () {
-                return this._iIndex;
-            },
-            set: function (iIndex) {
-                this._iIndex = iIndex;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return Rule;
     })();    
     var ParseTree = (function () {
         function ParseTree() {
@@ -499,7 +479,7 @@ var akra;
                     value: ""
                 };
                 while(iReduceCount) {
-                    this._addLink(pNode, pNodes.pop());
+                    this.addLink(pNode, pNodes.pop());
                     iReduceCount -= 1;
                 }
                 pNodes.push(pNode);
@@ -510,24 +490,24 @@ var akra;
         };
         ParseTree.prototype.toString = function () {
             if(this._pRoot) {
-                return this._toStringNode(this._pRoot);
+                return this.toStringNode(this._pRoot);
             } else {
                 return "";
             }
         };
         ParseTree.prototype.clone = function () {
             var pTree = new ParseTree();
-            pTree.root = this._cloneNode(this._pRoot);
+            pTree.root = this.cloneNode(this._pRoot);
             return pTree;
         };
-        ParseTree.prototype._addLink = function (pParent, pNode) {
+        ParseTree.prototype.addLink = function (pParent, pNode) {
             if(!pParent.children) {
                 pParent.children = [];
             }
             pParent.children.push(pParent);
             pNode.parent = pParent;
         };
-        ParseTree.prototype._cloneNode = function (pNode) {
+        ParseTree.prototype.cloneNode = function (pNode) {
             var pNewNode;
             pNewNode = {
                 name: pNode.name,
@@ -537,11 +517,11 @@ var akra;
             };
             var pChildren = pNode.children;
             for(var i = 0; pChildren && i < pChildren.length; i++) {
-                this._addLink(pNewNode, this._cloneNode(pChildren[i]));
+                this.addLink(pNewNode, this.cloneNode(pChildren[i]));
             }
             return pNewNode;
         };
-        ParseTree.prototype._toStringNode = function (pNode, sPadding) {
+        ParseTree.prototype.toStringNode = function (pNode, sPadding) {
             if (typeof sPadding === "undefined") { sPadding = ""; }
             var sRes = sPadding + "{\n";
             var sOldPadding = sPadding;
@@ -558,7 +538,7 @@ var akra;
                     sRes += "\n";
                     sPadding += sDefaultPadding;
                     for(var i = pChildren.length - 1; i >= 0; i--) {
-                        sRes += this._toStringNode(pChildren[i], sPadding);
+                        sRes += this.toStringNode(pChildren[i], sPadding);
                         sRes += ",\n";
                     }
                     sRes = sRes.slice(0, sRes.length - 2);
@@ -607,7 +587,7 @@ var akra;
             this._iIndex = 0;
         };
         Lexer.prototype.getNextToken = function () {
-            var ch = this._currentChar();
+            var ch = this.currentChar();
             if(!ch) {
                 return {
                     name: END_SYMBOL,
@@ -617,43 +597,43 @@ var akra;
                     line: this._iLineNumber
                 };
             }
-            var eType = this._identityTokenType();
+            var eType = this.identityTokenType();
             var pToken;
             switch(eType) {
                 case ETokenType.k_NumericLiteral: {
-                    pToken = this._scanNumber();
+                    pToken = this.scanNumber();
                     break;
 
                 }
                 case ETokenType.k_CommentLiteral: {
-                    this._scanComment();
+                    this.scanComment();
                     pToken = this.getNextToken();
                     break;
 
                 }
                 case ETokenType.k_StringLiteral: {
-                    pToken = this._scanString();
+                    pToken = this.scanString();
                     break;
 
                 }
                 case ETokenType.k_PunctuatorLiteral: {
-                    pToken = this._scanPunctuator();
+                    pToken = this.scanPunctuator();
                     break;
 
                 }
                 case ETokenType.k_IdentifierLiteral: {
-                    pToken = this._scanIdentifier();
+                    pToken = this.scanIdentifier();
                     break;
 
                 }
                 case ETokenType.k_WhitespaceLiteral: {
-                    this._scanWhiteSpace();
+                    this.scanWhiteSpace();
                     pToken = this.getNextToken();
                     break;
 
                 }
                 default: {
-                    this._error(ESyntaxErrorCode.k_UnknownToken, {
+                    this.error(ESyntaxErrorCode.k_UnknownToken, {
                         name: UNKNOWN_TOKEN,
                         value: ch + this._sSource[this._iIndex + 1],
                         start: this._iColumnNumber,
@@ -665,122 +645,853 @@ var akra;
             }
             return pToken;
         };
-        Lexer.prototype._error = function (eCode, pToken) {
+        Lexer.prototype.error = function (eCode, pToken) {
         };
-        Lexer.prototype._identityTokenType = function () {
-            if(this._isIdentifierStart()) {
+        Lexer.prototype.identityTokenType = function () {
+            if(this.isIdentifierStart()) {
                 return ETokenType.k_IdentifierLiteral;
             }
-            if(this._isWhiteSpaceStart()) {
+            if(this.isWhiteSpaceStart()) {
                 return ETokenType.k_WhitespaceLiteral;
             }
-            if(this._isStringStart()) {
+            if(this.isStringStart()) {
                 return ETokenType.k_StringLiteral;
             }
-            if(this._isCommentStart()) {
+            if(this.isCommentStart()) {
                 return ETokenType.k_CommentLiteral;
             }
-            if(this._isNumberStart()) {
+            if(this.isNumberStart()) {
                 return ETokenType.k_NumericLiteral;
             }
-            if(this._isPunctuatorStart()) {
+            if(this.isPunctuatorStart()) {
                 return ETokenType.k_PunctuatorLiteral;
             }
             return ETokenType.k_Unknown;
         };
-        Lexer.prototype._isNumberStart = function () {
-            var ch = this._currentChar();
+        Lexer.prototype.isNumberStart = function () {
+            var ch = this.currentChar();
             if((ch >= '0') && (ch <= '9')) {
                 return true;
             }
-            var ch1 = this._nextChar();
+            var ch1 = this.nextChar();
             if(ch === "." && (ch1 >= '0') && (ch1 <= '9')) {
                 return true;
             }
             return false;
         };
-        Lexer.prototype._isCommentStart = function () {
-            var ch = this._currentChar();
-            var ch1 = this._nextChar();
+        Lexer.prototype.isCommentStart = function () {
+            var ch = this.currentChar();
+            var ch1 = this.nextChar();
             if(ch === "/" && (ch1 === "/" || ch1 === "*")) {
                 return true;
             }
             return false;
         };
-        Lexer.prototype._isStringStart = function () {
-            var ch = this._currentChar();
+        Lexer.prototype.isStringStart = function () {
+            var ch = this.currentChar();
             if(ch === "\"" || ch === "'") {
                 return true;
             }
             return false;
         };
-        Lexer.prototype._isPunctuatorStart = function () {
-            var ch = this._currentChar();
+        Lexer.prototype.isPunctuatorStart = function () {
+            var ch = this.currentChar();
             if(this._pPunctuatorsFirstSymbols[ch]) {
                 return true;
             }
             return false;
         };
-        Lexer.prototype._isWhiteSpaceStart = function () {
-            var ch = this._currentChar();
+        Lexer.prototype.isWhiteSpaceStart = function () {
+            var ch = this.currentChar();
             if(ch === ' ' || ch === '\n' || ch === '\r' || ch === '\t') {
                 return true;
             }
             return false;
         };
-        Lexer.prototype._isIdentifierStart = function () {
-            var ch = this._currentChar();
+        Lexer.prototype.isIdentifierStart = function () {
+            var ch = this.currentChar();
             if((ch === '_') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
                 return true;
             }
             return false;
         };
-        Lexer.prototype._isLineTerminator = function (sSymbol) {
+        Lexer.prototype.isLineTerminator = function (sSymbol) {
             return (sSymbol === '\n' || sSymbol === '\r' || sSymbol === '\u2028' || sSymbol === '\u2029');
         };
-        Lexer.prototype._isWhiteSpace = function (sSymbol) {
+        Lexer.prototype.isWhiteSpace = function (sSymbol) {
             return (sSymbol === ' ') || (sSymbol === '\t');
         };
-        Lexer.prototype._isKeyword = function (sValue) {
+        Lexer.prototype.isKeyword = function (sValue) {
             return !!(this._pKeywordsMap[sValue]);
         };
-        Lexer.prototype._isPunctuator = function (sValue) {
+        Lexer.prototype.isPunctuator = function (sValue) {
             return !!(this._pPunctuatorsMap[sValue]);
         };
-        Lexer.prototype._nextChar = function () {
+        Lexer.prototype.nextChar = function () {
             return this._sSource[this._iIndex + 1];
         };
-        Lexer.prototype._currentChar = function () {
+        Lexer.prototype.currentChar = function () {
             return this._sSource[this._iIndex];
         };
-        Lexer.prototype._readNextChar = function () {
+        Lexer.prototype.readNextChar = function () {
             this._iIndex++;
             this._iColumnNumber++;
             return this._sSource[this._iIndex];
         };
-        Lexer.prototype._scanString = function () {
+        Lexer.prototype.scanString = function () {
+            var chFirst = this.currentChar();
+            var sValue = chFirst;
+            var ch;
+            var chPrevious = chFirst;
+            var isGoodFinish = false;
+            var iStart = this._iColumnNumber;
+            while(true) {
+                ch = this.readNextChar();
+                if(!ch) {
+                    break;
+                }
+                sValue += ch;
+                if(ch === chFirst && chPrevious !== '\\') {
+                    isGoodFinish = true;
+                    this.readNextChar();
+                    break;
+                }
+                chPrevious = ch;
+            }
+            if(isGoodFinish) {
+                return {
+                    name: "T_STRING",
+                    value: sValue,
+                    start: iStart,
+                    end: this._iColumnNumber - 1,
+                    line: this._iLineNumber
+                };
+            } else {
+                if(!ch) {
+                    ch = "EOF";
+                }
+                sValue += ch;
+                this.error(ESyntaxErrorCode.k_BadToken, {
+                    type: ETokenType.k_StringLiteral,
+                    value: sValue,
+                    start: iStart,
+                    end: this._iColumnNumber,
+                    line: this._iLineNumber
+                });
+                return null;
+            }
+        };
+        Lexer.prototype.scanPunctuator = function () {
+            var sValue = this.currentChar();
+            var ch;
+            var iStart = this._iColumnNumber;
+            while(true) {
+                ch = this.readNextChar();
+                if(ch) {
+                    sValue += ch;
+                    this._iColumnNumber++;
+                    if(!this.isPunctuator(sValue)) {
+                        sValue = sValue.slice(0, sValue.length - 1);
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
             return {
+                name: this._pPunctuatorsMap[sValue],
+                value: sValue,
+                start: iStart,
+                end: this._iColumnNumber - 1,
+                line: this._iLineNumber
             };
         };
-        Lexer.prototype._scanPunctuator = function () {
-            return {
-            };
+        Lexer.prototype.scanNumber = function () {
+            var ch = this.currentChar();
+            var sValue = "";
+            var isFloat = false;
+            var chPrevious = ch;
+            var isGoodFinish = false;
+            var iStart = this._iColumnNumber;
+            var isE = false;
+            if(ch === '.') {
+                sValue += 0;
+                isFloat = true;
+            }
+            sValue += ch;
+            while(true) {
+                ch = this.readNextChar();
+                if(ch === '.') {
+                    if(isFloat) {
+                        break;
+                    } else {
+                        isFloat = true;
+                    }
+                } else {
+                    if(ch === 'e') {
+                        if(isE) {
+                            break;
+                        } else {
+                            isE = true;
+                        }
+                    } else {
+                        if(((ch === '+' || ch === '-') && chPrevious === 'e')) {
+                            sValue += ch;
+                            chPrevious = ch;
+                            continue;
+                        } else {
+                            if(ch === 'f' && isFloat) {
+                                ch = this.readNextChar();
+                                if((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
+                                    break;
+                                }
+                                isGoodFinish = true;
+                                break;
+                            } else {
+                                if((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
+                                    break;
+                                } else {
+                                    if(!((ch >= '0') && (ch <= '9')) || !ch) {
+                                        if((isE && chPrevious !== '+' && chPrevious !== '-' && chPrevious !== 'e') || !isE) {
+                                            isGoodFinish = true;
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                sValue += ch;
+                chPrevious = ch;
+            }
+            if(isGoodFinish) {
+                var sName = isFloat ? "T_FLOAT" : "T_UINT";
+                return {
+                    name: sName,
+                    value: sValue,
+                    start: iStart,
+                    end: this._iColumnNumber - 1,
+                    line: this._iLineNumber
+                };
+            } else {
+                if(!ch) {
+                    ch = "EOF";
+                }
+                sValue += ch;
+                this.error(ESyntaxErrorCode.k_BadToken, {
+                    type: ETokenType.k_NumericLiteral,
+                    value: sValue,
+                    start: iStart,
+                    end: this._iColumnNumber,
+                    line: this._iLineNumber
+                });
+                return null;
+            }
         };
-        Lexer.prototype._scanNumber = function () {
-            return {
-            };
+        Lexer.prototype.scanIdentifier = function () {
+            var ch = this.currentChar();
+            var sValue = ch;
+            var iStart = this._iColumnNumber;
+            var isGoodFinish = false;
+            while(1) {
+                ch = this.readNextChar();
+                if(!ch) {
+                    isGoodFinish = true;
+                    break;
+                }
+                if(!((ch === '_') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9'))) {
+                    isGoodFinish = true;
+                    break;
+                }
+                sValue += ch;
+            }
+            if(isGoodFinish) {
+                if(this.isKeyword(sValue)) {
+                    return {
+                        name: this._pKeywordsMap[sValue],
+                        value: sValue,
+                        start: iStart,
+                        end: this._iColumnNumber - 1,
+                        line: this._iLineNumber
+                    };
+                } else {
+                    var sName = this._pParser.isTypeId(sValue) ? "T_TYPE_ID" : "T_NON_TYPE_ID";
+                    return {
+                        name: sName,
+                        value: sValue,
+                        start: iStart,
+                        end: this._iColumnNumber - 1,
+                        line: this._iLineNumber
+                    };
+                }
+            } else {
+                if(!ch) {
+                    ch = "EOF";
+                }
+                sValue += ch;
+                this.error(ESyntaxErrorCode.k_BadToken, {
+                    type: ETokenType.k_IdentifierLiteral,
+                    value: sValue,
+                    start: iStart,
+                    end: this._iColumnNumber,
+                    line: this._iLineNumber
+                });
+                return null;
+            }
         };
-        Lexer.prototype._scanIdentifier = function () {
-            return {
-            };
-        };
-        Lexer.prototype._scanWhiteSpace = function () {
+        Lexer.prototype.scanWhiteSpace = function () {
+            var ch = this.currentChar();
+            while(true) {
+                if(!ch) {
+                    break;
+                }
+                if(this.isLineTerminator(ch)) {
+                    this._iLineNumber++;
+                    ch = this.readNextChar();
+                    this._iColumnNumber = 0;
+                    continue;
+                } else {
+                    if(ch === '\t') {
+                        this._iColumnNumber += 3;
+                    } else {
+                        if(ch !== ' ') {
+                            break;
+                        }
+                    }
+                }
+                ch = this.readNextChar();
+            }
             return true;
         };
-        Lexer.prototype._scanComment = function () {
-            return true;
+        Lexer.prototype.scanComment = function () {
+            var sValue = this.currentChar();
+            var ch = this.readNextChar();
+            sValue += ch;
+            if(ch === '/') {
+                while(true) {
+                    ch = this.readNextChar();
+                    if(!ch) {
+                        break;
+                    }
+                    if(this.isLineTerminator(ch)) {
+                        this._iLineNumber++;
+                        this.readNextChar();
+                        this._iColumnNumber = 0;
+                        break;
+                    }
+                    sValue += ch;
+                }
+                return true;
+            } else {
+                var chPrevious = ch;
+                var isGoodFinish = false;
+                var iStart = this._iColumnNumber;
+                while(true) {
+                    ch = this.readNextChar();
+                    if(!ch) {
+                        break;
+                    }
+                    sValue += ch;
+                    if(ch === '/' && chPrevious === '*') {
+                        isGoodFinish = true;
+                        this.readNextChar();
+                        break;
+                    }
+                    if(this.isLineTerminator(ch)) {
+                        this._iLineNumber++;
+                        this._iColumnNumber = -1;
+                    }
+                    chPrevious = ch;
+                }
+                if(isGoodFinish) {
+                    return true;
+                } else {
+                    if(!ch) {
+                        ch = "EOF";
+                    }
+                    sValue += ch;
+                    this.error(ESyntaxErrorCode.k_BadToken, {
+                        type: ETokenType.k_CommentLiteral,
+                        value: sValue,
+                        start: iStart,
+                        end: this._iColumnNumber,
+                        line: this._iLineNumber
+                    });
+                }
+            }
         };
         return Lexer;
     })();
     akra.Lexer = Lexer;    
+    (function (EParseMode) {
+        EParseMode._map = [];
+        EParseMode.k_AllNode = 1;
+        EParseMode.k_Negate = 2;
+        EParseMode.k_Add = 4;
+        EParseMode.k_Optimize = 8;
+    })(akra.EParseMode || (akra.EParseMode = {}));
+    var EParseMode = akra.EParseMode;
+    ; ;
+    var Parser = (function () {
+        function Parser() {
+            this._sSource = "";
+            this._iIndex = 0;
+            this._pSyntaxTree = null;
+            this._pTypeIdMap = null;
+            this._pLexer = null;
+            this._pStack = [];
+            this._pToken = null;
+            this._pFinishCallback = null;
+            this._pCaller = null;
+            this._pSymbols = {
+            };
+            this._pSymbols[END_SYMBOL] = true;
+            this._pSyntaxTable = null;
+            this._pReduceOperationsMap = null;
+            this._pShiftOperationsMap = null;
+            this._pSuccessOperation = null;
+            this._pFirstTerminalsDMap = null;
+            this._pFollowTerminalsDMap = null;
+            this._pRulesDMap = null;
+            this._pStateList = null;
+            this._nRules = 0;
+            this._pRuleFunctionNamesMap = null;
+            this._pAdditionalFunctionsMap = null;
+            this._eType = EParserType.k_LR0;
+            this._pSymbolsWithNodesMap = null;
+            this._eParseMode = EParseMode.k_AllNode;
+            this._isSync = false;
+            this._pStatesTempMap = null;
+            this._pBaseItemList = null;
+            this._pExpectedExtensionDMap = null;
+        }
+        Parser.prototype.isTypeId = function (sValue) {
+            return true;
+        };
+        Parser.prototype.returnCode = function (pNode) {
+            return "";
+        };
+        Parser.prototype.init = function (sGrammar, eType, pFlags) {
+            return true;
+        };
+        Parser.prototype.parse = function (sSource, isSync) {
+            return EParseCode;
+        };
+        Parser.prototype.pause = function () {
+            return EParseCode.k_Ok;
+        };
+        Parser.prototype.resume = function () {
+            return true;
+        };
+        Parser.prototype.error = function (eCode) {
+        };
+        Parser.prototype.clearMem = function () {
+            delete this._pFirstTerminalsDMap;
+            delete this._pFollowTerminalsDMap;
+            delete this._pRulesDMap;
+            delete this._pStateList;
+            delete this._pReduceOperationsMap;
+            delete this._pShiftOperationsMap;
+            delete this._pSuccessOperation;
+            delete this._pStatesTempMap;
+            delete this._pBaseItemList;
+            delete this._pExpectedExtensionDMap;
+        };
+        Parser.prototype.hasState = function (pState, eType) {
+            if (typeof eType === "undefined") { eType = EParserType.k_LR0; }
+            var pStateList = this._pStateList;
+            var i = 0;
+            for(i = 0; i < pStateList.length; i++) {
+                if(pStateList[i].isEqual(pState, eType)) {
+                    return pStateList[i];
+                }
+            }
+            return null;
+        };
+        Parser.prototype.isTerminal = function (sSymbol) {
+            return !!(this._pRulesDMap[sSymbol]);
+        };
+        Parser.prototype.pushState = function (pState) {
+            pState.index = this._pStateList.length;
+            this._pStateList.push(pState);
+        };
+        Parser.prototype.pushBaseItem = function (pItem) {
+            pItem.index = this._pBaseItemList.length;
+            this._pBaseItemList.push(pItem);
+        };
+        Parser.prototype.tryAddState = function (pState, eType) {
+            if (typeof eType === "undefined") { eType = EParserType.k_LR0; }
+            var pRes = this.hasState(pState);
+            if(isNull(pRes)) {
+                if(eType === EParserType.k_LR0) {
+                    var pItems = pState.items;
+                    for(var i = 0; i < pItems.length; i++) {
+                        this.pushBaseItem(pItems[i]);
+                    }
+                }
+                this.pushState(pState);
+                this.closure(pState, eType);
+                return pState;
+            }
+            return pRes;
+        };
+        Parser.prototype.hasEmptyRule = function (sSymbol) {
+            if(this.isTerminal(sSymbol)) {
+                return false;
+            }
+            var pRulesDMap = this._pRulesDMap;
+            for(var i in pRulesDMap) {
+                if(pRulesDMap[sSymbol][i].right.length === 0) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        Parser.prototype.pushInSyntaxTable = function (iIndex, sSymbol, pOperation) {
+            var pSyntaxTable = this._pSyntaxTable;
+            if(!pSyntaxTable[iIndex]) {
+                pSyntaxTable[iIndex] = {
+                };
+            }
+            if(isDef(pSyntaxTable[iIndex][sSymbol])) {
+                this.error(ESyntaxErrorCode.k_GrammarAddOperation);
+            }
+            pSyntaxTable[iIndex][sSymbol] = pOperation;
+        };
+        Parser.prototype.addStateLink = function (pState, pNextState, sSymbol) {
+            var isAddState = pState.addNextState(sSymbol, pNextState);
+            if(!isAddState) {
+                this.error(ESyntaxErrorCode.k_GrammarAddStateLink);
+            }
+        };
+        Parser.prototype.firstTerminal = function (sSymbol) {
+            if(this.isTerminal(sSymbol)) {
+                return null;
+            }
+            if(isDef(this._pFirstTerminalsDMap[sSymbol])) {
+                return this._pFirstTerminalsDMap[sSymbol];
+            }
+            var i;
+            var j;
+            var k;
+
+            var pRulesMap = this._pRulesDMap[sSymbol];
+            var pTempRes;
+            var pRes;
+            var pRight;
+            var isFinish;
+            pRes = this._pFirstTerminalsDMap[sSymbol] = {
+            };
+            if(this.hasEmptyRule(sSymbol)) {
+                pRes[T_EMPTY] = true;
+            }
+            for(i in pRulesMap) {
+                isFinish = false;
+                pRight = pRulesMap[i].right;
+                for(j = 0; j < pRight.length; j++) {
+                    if(pRight[j] === sSymbol) {
+                        if(pRes[T_EMPTY]) {
+                            continue;
+                        }
+                        isFinish = true;
+                        break;
+                    }
+                    pTempRes = this.firstTerminal(pRight[j]);
+                    if(isNull(pTempRes)) {
+                        pRes[pRight[j]] = true;
+                    } else {
+                        for(k in pTempRes) {
+                            pRes[k] = true;
+                        }
+                    }
+                    if(!this.hasEmptyRule(pRight[j])) {
+                        isFinish = true;
+                        break;
+                    }
+                }
+                if(!isFinish) {
+                    pRes[T_EMPTY] = true;
+                }
+            }
+            return pRes;
+        };
+        Parser.prototype.followTerminal = function (sSymbol) {
+            if(isDef(this._pFollowTerminalsDMap[sSymbol])) {
+                return this._pFollowTerminalsDMap[sSymbol];
+            }
+            var i;
+            var j;
+            var k;
+            var l;
+            var m;
+
+            var pRulesDMap = this._pRulesDMap;
+            var pTempRes;
+            var pRes;
+            var pRight;
+            var isFinish;
+            pRes = this._pFollowTerminalsDMap[sSymbol] = {
+            };
+            for(i in pRulesDMap) {
+                for(j in pRulesDMap[i]) {
+                    pRight = pRulesDMap[i][j].right;
+                    for(k = 0; k < pRight.length; k++) {
+                        if(pRight[k] === sSymbol) {
+                            if(k === pRight.length - 1) {
+                                pTempRes = this.followTerminal(pRulesDMap[i][j].left);
+                                for(m in pTempRes) {
+                                    pRes[m] = true;
+                                }
+                            } else {
+                                isFinish = false;
+                                for(l = k + 1; l < pRight.length; l++) {
+                                    pTempRes = this.firstTerminal(pRight[l]);
+                                    if(isNull(pTempRes)) {
+                                        pRes[pRight[l]] = true;
+                                        isFinish = true;
+                                        break;
+                                    } else {
+                                        for(m in pTempRes) {
+                                            pRes[m] = true;
+                                        }
+                                    }
+                                    if(!pTempRes[T_EMPTY]) {
+                                        isFinish = true;
+                                        break;
+                                    }
+                                }
+                                if(!isFinish) {
+                                    pTempRes = this.followTerminal(pRulesDMap[i][j].left);
+                                    for(m in pTempRes) {
+                                        pRes[m] = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return pRes;
+        };
+        Parser.prototype.firstTerminalForSet = function (pSet, pExpected) {
+            var i;
+            var j;
+
+            var pTempRes;
+            var pRes;
+            var isEmpty;
+            for(i = 0; i < pSet.length; i++) {
+                pTempRes = this.firstTerminal(pSet[i]);
+                if(isNull(pTempRes)) {
+                    pRes[pSet[i]] = true;
+                }
+                isEmpty = false;
+                for(j in pTempRes) {
+                    if(j === T_EMPTY) {
+                        isEmpty = true;
+                        continue;
+                    }
+                    pRes[j] = true;
+                }
+                if(!isEmpty) {
+                    return pRes;
+                }
+            }
+            for(j in pExpected) {
+                pRes[j] = true;
+            }
+            return pRes;
+        };
+        Parser.prototype.generateRules = function (sGrammarSource) {
+            var pAllRuleList = sGrammarSource.split(/\r?\n/);
+            var pTempRule;
+            var pRule;
+            var isLexerBlock = false;
+            this._pRulesDMap = {
+            };
+            this._pRuleFunctionNamesMap = {
+            };
+            this._pSymbolsWithNodesMap = {
+            };
+            var i = 0;
+            var j = 0;
+
+            var isAllNodeMode = bf.testAll(this._eParseMode, EParseMode.k_AllNode);
+            var isNegateMode = bf.testAll(this._eParseMode, EParseMode.k_Negate);
+            var isAddMode = bf.testAll(this._eParseMode, EParseMode.k_Add);
+            var pSymbolsWithNodeMap = this._pSymbolsWithNodesMap;
+            for(i = 0; i < pAllRuleList.length; i++) {
+                if(pAllRuleList[i] === "" || pAllRuleList[i] === "\r") {
+                    continue;
+                }
+                pTempRule = pAllRuleList[i].split(/\s* \s*/);
+                if(isLexerBlock) {
+                    if((pTempRule.length === 3 || (pTempRule.length === 4 && pTempRule[3] === "")) && ((pTempRule[2][0] === "\"" || pTempRule[2][0] === "'") && pTempRule[2].length > 3)) {
+                        if(pTempRule[2][0] !== pTempRule[2][pTempRule[2].length - 1]) {
+                            this.error(ESyntaxErrorCode.k_GrammarUnexpectedSymbol);
+                        }
+                        pTempRule[2] = pTempRule[2].slice(1, pTempRule[2].length - 1);
+                        var ch = pTempRule[2][0];
+                        if((ch === '_') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
+                            this._pLexer.addKeyword(pTempRule[2], pTempRule[0]);
+                        } else {
+                            this._pLexer.addPunctuator(pTempRule[2], pTempRule[0]);
+                        }
+                    }
+                    continue;
+                }
+                if(pTempRule[0] === LEXER_RULES) {
+                    isLexerBlock = true;
+                    continue;
+                }
+                if(isDef(this._pRulesDMap[pTempRule[0]]) === false) {
+                    this._pRulesDMap[pTempRule[0]] = {
+                    };
+                }
+                pRule = {
+                    left: pTempRule[0],
+                    right: [],
+                    index: 0
+                };
+                this._pSymbols[pTempRule[0]] = true;
+                if(isAllNodeMode) {
+                    pSymbolsWithNodeMap[pTempRule[0]] = ENodeCreateMode.k_Default;
+                } else {
+                    if(isNegateMode && !isDef(pSymbolsWithNodeMap[pTempRule[0]])) {
+                        pSymbolsWithNodeMap[pTempRule[0]] = ENodeCreateMode.k_Default;
+                    } else {
+                        if(isAddMode && !isDef(pSymbolsWithNodeMap[pTempRule[0]])) {
+                            pSymbolsWithNodeMap[pTempRule[0]] = ENodeCreateMode.k_Not;
+                        }
+                    }
+                }
+                for(j = 2; j < pTempRule.length; j++) {
+                    if(pTempRule[j] === "") {
+                        continue;
+                    }
+                    if(pTempRule[j] === FLAG_RULE_CREATE_NODE) {
+                        if(isAddMode) {
+                            pSymbolsWithNodeMap[pTempRule[0]] = ENodeCreateMode.k_Necessary;
+                        }
+                        continue;
+                    }
+                    if(pTempRule[j] === FLAG_RULE_NOT_CREATE_NODE) {
+                        if(isNegateMode && !isAllNodeMode) {
+                            pSymbolsWithNodeMap[pTempRule[0]] = ENodeCreateMode.k_Not;
+                        }
+                        continue;
+                    }
+                    if(pTempRule[j] === FLAG_RULE_FUNCTION) {
+                        if((!pTempRule[j + 1] || pTempRule[j + 1].length === 0)) {
+                            this.error(ESyntaxErrorCode.k_GrammarBadAdditionalFunctionName);
+                        }
+                        this._pRuleFunctionNamesMap[this._nRules] = pTempRule[j + 1];
+                        j++;
+                        continue;
+                    }
+                    if(pTempRule[j][0] === "'" || pTempRule[j][0] === "\"") {
+                        if(pTempRule[j].length !== 3) {
+                            this.error(ESyntaxErrorCode.k_GrammarBadKeyword);
+                        }
+                        if(pTempRule[j][0] !== pTempRule[j][2]) {
+                            this.error(ESyntaxErrorCode.k_GrammarUnexpectedSymbol);
+                        }
+                        var sName = this._pLexer.addPunctuator(pTempRule[j][1]);
+                        pRule.right.push(sName);
+                        this._pSymbols[sName] = true;
+                    } else {
+                        pRule.right.push(pTempRule[j]);
+                        this._pSymbols[pTempRule[j]] = true;
+                    }
+                }
+                pRule.index = this._nRules;
+                this._pRulesDMap[pTempRule[0]][pRule.index] = pRule;
+                this._nRules += 1;
+            }
+        };
+        Parser.prototype.generateFirstState = function (eType) {
+            if(eType === EParserType.k_LR0) {
+                this.generateFirstState_LR0();
+            } else {
+                this.generateFirstState_LR();
+            }
+        };
+        Parser.prototype.generateFirstState_LR0 = function () {
+            var pState = new State();
+            var pItem = new Item(this._pRulesDMap[START_SYMBOL][0], 0);
+            this.pushBaseItem(pItem);
+            pState.push(pItem);
+            this.closure_LR0(pState);
+            this.pushState(pState);
+        };
+        Parser.prototype.generateFirstState_LR = function () {
+            var pState = new State();
+            var pExpected = {
+            };
+            pExpected[END_SYMBOL] = true;
+            pState.push(new ItemLR(this._pRulesDMap[START_SYMBOL][0], 0, pExpected));
+            this.closure_LR(pState);
+            this.pushState(pState);
+        };
+        Parser.prototype.closure = function (pState, eType) {
+            if(eType === EParserType.k_LR0) {
+                return this.closure_LR0(pState);
+            } else {
+                this.closure_LR(pState);
+            }
+        };
+        Parser.prototype.closure_LR0 = function (pState) {
+            var pItemList = pState.items;
+            var i = 0;
+            var j;
+
+            var sSymbol;
+            for(i = 0; i < pItemList.length; i++) {
+                sSymbol = pItemList[i].mark();
+                if(sSymbol !== END_POSITION && (!this.isTerminal(sSymbol))) {
+                    for(j in this._pRulesDMap[sSymbol]) {
+                        pState.tryPush_LR0(this._pRulesDMap[sSymbol][j], 0);
+                    }
+                }
+            }
+            return pState;
+        };
+        Parser.prototype.closure_LR = function (pState) {
+            var pItemList = (pState.items);
+            var i = 0;
+            var j;
+            var k;
+
+            var sSymbol;
+            var pSymbols;
+            var pTempSet;
+            var isNewExpected = false;
+            while(true) {
+                if(i === pItemList.length) {
+                    if(!isNewExpected) {
+                        break;
+                    }
+                    i = 0;
+                    isNewExpected = false;
+                }
+                sSymbol = pItemList[i].mark();
+                if(sSymbol !== END_POSITION && (!this.isTerminal(sSymbol))) {
+                    pTempSet = pItemList[i].rule.right.slice(pItemList[i].position + 1);
+                    pSymbols = this.firstTerminalForSet(pTempSet, pItemList[i].expectedSymbols);
+                    for(j in this._pRulesDMap[sSymbol]) {
+                        for(k in pSymbols) {
+                            if(pState.tryPush_LR(this._pRulesDMap[sSymbol][j], 0, k)) {
+                                isNewExpected = true;
+                            }
+                        }
+                    }
+                }
+                i++;
+            }
+            return pState;
+        };
+        return Parser;
+    })();
+    akra.Parser = Parser;    
 })(akra || (akra = {}));

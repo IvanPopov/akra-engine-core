@@ -25,14 +25,10 @@
     <Content Include="app.js">
       <DependentUpon>app.ts</DependentUpon>
     </Content>
-    <Content Include="Logger.js">
-      <DependentUpon>Logger.ts</DependentUpon>
-    </Content>
     <Content Include="parser\parser.js" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
-    <TypeScriptCompile Include="Logger.ts" />
     <TypeScriptCompile Include="parser\parser.ts" />
   </ItemGroup>
   <ItemGroup>

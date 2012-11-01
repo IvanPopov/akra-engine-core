@@ -3,21 +3,43 @@ module akra {
     var END_POSITION: string = "END";
     var T_EMPTY: string = "EMPTY";
     var UNKNOWN_TOKEN: string = "UNNOWN";
+    var START_SYMBOL: string = "S";
     var END_SYMBOL: string = "$";
+    var LEXER_RULES: string = "--LEXER--";
+    var FLAG_RULE_CREATE_NODE: string = "--AN";
+    var FLAG_RULE_NOT_CREATE_NODE: string = "--NN";
+    var FLAG_RULE_FUNCTION: string = "--F";
 
     // Need to be added in akra module
     //-------
+
+    module bf {
+        export var testAll = (value: number, set: number) =>(((value) & (set)) == (set));
+    }
+
     interface StringEnum {
         [s: string]: string;
         [s: number]: string;
     }
 
     interface StringMap {
-        [s: string]: string;
+        [k: string]: string;
+        [k: number]: string;
     }
 
     interface BoolMap {
-        [s: string]: bool;
+        [k: string]: bool;
+        [k: number]: bool;
+    }
+
+    interface IntMap {
+        [k: string]: number;
+        [k: number]: number;
+    }
+
+    interface BoolDMap {
+        [k: string]: BoolMap;
+        [k: number]: BoolMap;
     }
 
     //function error(...args: any[]): void {
@@ -28,6 +50,11 @@ module akra {
     //    //TODO: generate error from sMessage and ErrorContainer
     //    return "error";
     //}
+    var isString = (x: any) =>(typeof x === "string");
+    var isInt = (x: any) =>(typeof x === "number");
+    var isObject = (x: any) =>(typeof x === "object");
+    var isNull = (x: any) =>(x === null);
+    var isDef = (x: any) =>(x === undefined);
     //END TEMP
 
 
@@ -38,11 +65,6 @@ module akra {
         k_Reduce,
         k_Success,
         k_Pause
-    }
-
-    enum EItemType {
-        k_LR0 = 1,
-        k_LR
     }
 
     export enum ENodeCreateMode {
@@ -65,8 +87,15 @@ module akra {
 
     enum ESyntaxErrorCode {
         k_Parser = 100,
+        k_GrammarAddOperation,
+        k_GrammarAddStateLink,
+        k_GrammarUnexpectedSymbol,
+        k_GrammarBadAdditionalFunctionName,
+        k_GrammarBadKeyword,
+
         k_Lexer = 200,
-        k_UnknownToken
+        k_UnknownToken,
+        k_BadToken
     }
 
     enum ETokenType {
@@ -92,8 +121,8 @@ module akra {
 
     interface IOperation {
         type: EOperationType;
-        rule: IRule;
-        index: uint;
+        rule?: IRule;
+        index?: uint;
     }
 
     interface IItem {
@@ -109,6 +138,7 @@ module akra {
 
         rule: IRule;
         position: uint;
+        index: uint;
         state: IState;
     }
 
@@ -119,7 +149,7 @@ module akra {
         hasChildItem(pItem: IItem): IItem;
 
         isEmpty(): bool;
-        isEqual(pState: IState, eType: EItemType): bool;
+        isEqual(pState: IState, eType: EParserType): bool;
 
         push(pItem: IItem): void;
 
@@ -128,19 +158,25 @@ module akra {
 
         deleteNotBase(): void;
 
+        getNextStateBySymbol(sSymbol: string): IState;
+        addNextState(sSymbol: string, pState: IState): bool;
+
         items: IItem[];
         baseItems: uint;
+        index: uint;
     }
 
     interface IToken {
-        name: string;
         value: string;
         start: uint;
         end: uint;
         line: uint;
+
+        name?: string;
+        type?: ETokenType;
     }
 
-    interface IStatesMap {
+    interface IStateMap {
         [s: string]: IState;
     }
 
@@ -161,13 +197,17 @@ module akra {
     }
 
     export interface IParser {
+
         isTypeId(sValue: string): bool;
+
         returnCode(pNode: IParseNode): string;
+
         init(sGrammar: string, eType: EParserType, pFlags: IParseFlags): bool;
-        parse(sSource: string, isSync: bool): bool;
+
+        parse(sSource: string, isSync: bool): EParseCode;
+
         pause(): EParseCode;
         resume(): bool;
-        error(): ESyntaxErrorCode;
     }
 
     export interface IParseNode {
@@ -223,6 +263,14 @@ module akra {
         /** @inline */
         set state(pState: IState) {
             this._pState = pState;
+        }
+        /** @inline */
+        get index(): uint {
+            return this._iIndex;
+        }
+        /** @inline */
+        set index(iIndex: uint) {
+            this._iIndex = iIndex;
         }
 
         constructor (pRule: IRule, iPos: uint) {
@@ -304,7 +352,7 @@ module akra {
 
             this._isNewExpected = true;
             this._iLength = 0;
-            this._pExpected = {};
+            this._pExpected = <BoolMap>{};
 
             if (arguments.length === 3) {
                 var i: string;
@@ -314,11 +362,11 @@ module akra {
             }
         }
 
-        isEqual(pItem: IItem, eType?: EItemType = EItemType.k_LR0): bool {
-            if (eType === EItemType.k_LR0) {
+        isEqual(pItem: IItem, eType?: EParserType = EParserType.k_LR0): bool {
+            if (eType === EParserType.k_LR0) {
                 return (this._pRule === pItem.rule && this._iPos === pItem.position);
             }
-            else if (eType === EItemType.k_LR) {
+            else if (eType === EParserType.k_LR1) {
                 if (!(this._pRule === pItem.rule && this._iPos === pItem.position && this._iLength === (<ItemLR>pItem).length)) {
                     return false;
                 }
@@ -374,30 +422,38 @@ module akra {
     }
 
     class State implements IState {
-        private _pItems: IItem[];
-        private _pNextStates: IStatesMap;
+        private _pItemList: IItem[];
+        private _pNextStates: IStateMap;
         private _iIndex: uint;
         private _nBaseItems: uint;
 
         /** @inline */
         get items(): IItem[] {
-            return this._pItems;
+            return this._pItemList;
         }
         /** @inline */
         get baseItems(): uint {
             return this._nBaseItems;
         }
+        /** @inline */
+        get index(): uint {
+            return this._iIndex;
+        }
+        /** @inline */
+        set index(iIndex: uint) {
+            this._iIndex = iIndex;
+        }
 
         constructor () {
-            this._pItems = <IItem[]>[];
-            this._pNextStates = <IStatesMap>{};
+            this._pItemList = <IItem[]>[];
+            this._pNextStates = <IStateMap>{};
             this._iIndex = 0;
             this._nBaseItems = 0;
         }
 
         hasItem(pItem: IItem): IItem {
             var i;
-            var pItems: IItem[] = this._pItems;
+            var pItems: IItem[] = this._pItemList;
             for (i = 0; i < pItems.length; i++) {
                 if (pItems[i].isEqual(pItem)) {
                     return pItems[i];
@@ -408,7 +464,7 @@ module akra {
 
         hasParentItem(pItem: IItem): IItem {
             var i;
-            var pItems = this._pItems;
+            var pItems = this._pItemList;
             for (i = 0; i < pItems.length; i++) {
                 if (pItems[i].isParentItem(pItem)) {
                     return pItems[i];
@@ -419,7 +475,7 @@ module akra {
 
         hasChildItem(pItem: IItem): IItem {
             var i;
-            var pItems = this._pItems;
+            var pItems = this._pItemList;
             for (i = 0; i < pItems.length; i++) {
                 if (pItems[i].isChildItem(pItem)) {
                     return pItems[i];
@@ -429,12 +485,12 @@ module akra {
         }
 
         isEmpty(): bool {
-            return !(this._pItems.length);
+            return !(this._pItemList.length);
         }
 
-        isEqual(pState: IState, eType: EItemType): bool {
+        isEqual(pState: IState, eType: EParserType): bool {
 
-            var pItemsA: IItem[] = this._pItems;
+            var pItemsA: IItem[] = this._pItemList;
             var pItemsB: IItem[] = pState.items;
 
             if (this._nBaseItems !== pState.baseItems) {
@@ -459,16 +515,16 @@ module akra {
         }
 
         push(pItem: IItem): void {
-            if (this._pItems.length === 0 || pItem.position > 0) {
+            if (this._pItemList.length === 0 || pItem.position > 0) {
                 this._nBaseItems += 1;
             }
             pItem.state = this;
-            this._pItems.push(pItem);
+            this._pItemList.push(pItem);
         }
 
         tryPush_LR0(pRule: IRule, iPos: uint): bool {
             var i: uint;
-            var pItems: IItem[] = this._pItems;
+            var pItems: IItem[] = this._pItemList;
             for (i = 0; i < pItems.length; i++) {
                 if (pItems[i].rule === pRule && pItems[i].position === iPos) {
                     return false;
@@ -481,7 +537,7 @@ module akra {
 
         tryPush_LR(pRule: IRule, iPos: uint, sExpectedSymbol: string): bool {
             var i: uint;
-            var pItems: ItemLR[] = <ItemLR[]>(this._pItems);
+            var pItems: ItemLR[] = <ItemLR[]>(this._pItemList);
 
             for (i = 0; i < pItems.length; i++) {
                 if (pItems[i].rule === pRule && pItems[i].position === iPos) {
@@ -489,7 +545,7 @@ module akra {
                 }
             }
 
-            var pExpected: BoolMap = {};
+            var pExpected: BoolMap = <BoolMap>{};
             pExpected[sExpectedSymbol] = true;
 
             var pItem: ItemLR = new ItemLR(pRule, iPos, pExpected);
@@ -497,95 +553,113 @@ module akra {
             return true;
         }
 
+        getNextStateBySymbol(sSymbol: string): IState {
+            if (isDef(this._pNextStates[sSymbol])) {
+                return this._pNextStates[sSymbol];
+            }
+            else {
+                return null;
+            }
+        }
+
+        addNextState(sSymbol: string, pState: IState) {
+            if (isDef(this._pNextStates[sSymbol])) {
+                return false;
+            }
+            else {
+                this._pNextStates[sSymbol] = pState;
+                return true;
+            }
+        }
+
         deleteNotBase(): void {
-            this._pItems.length = this._nBaseItems;
+            this._pItemList.length = this._nBaseItems;
         }
     }
 
-    class Operation implements IOperation {
-        private _eType: EOperationType;
-        private _pRule: IRule;
-        private _iIndex: uint;
+    //class Operation implements IOperation {
+    //    private _eType: EOperationType;
+    //    private _pRule: IRule;
+    //    private _iIndex: uint;
 
-        /** @inline */
-        get type(): EOperationType {
-            return this._eType;
-        }
-        /** @inline */
-        set type(eType: EOperationType) {
-            this._eType = eType;
-        }
-        /** @inline */
-        get rule(): IRule {
-            return this._pRule;
-        }
-        /** @inline */
-        set rule(pRule: IRule) {
-            this._pRule = pRule;
-        }
-        /** @inline */
-        get index(): uint {
-            return this._iIndex;
-        }
-        /** @inline */
-        set index(iIndex: uint) {
-            this._iIndex = iIndex;
-        }
+    //    /** @inline */
+    //    get type(): EOperationType {
+    //        return this._eType;
+    //    }
+    //    /** @inline */
+    //    set type(eType: EOperationType) {
+    //        this._eType = eType;
+    //    }
+    //    /** @inline */
+    //    get rule(): IRule {
+    //        return this._pRule;
+    //    }
+    //    /** @inline */
+    //    set rule(pRule: IRule) {
+    //        this._pRule = pRule;
+    //    }
+    //    /** @inline */
+    //    get index(): uint {
+    //        return this._iIndex;
+    //    }
+    //    /** @inline */
+    //    set index(iIndex: uint) {
+    //        this._iIndex = iIndex;
+    //    }
 
-        constructor (eType: EOperationType, iIndex: uint);
-        constructor (eType: EOperationType, pRule: IRule);
-        constructor () {
-            if (arguments.length === 0) {
-                this._eType = EOperationType.k_Error;
-            }
-            else if (arguments.length === 2 && arguments[0] === EOperationType.k_Shift) {
-                this._eType = EOperationType.k_Shift;
-                this._iIndex = <uint>arguments[1];
-            }
-            else if (arguments.length === 2 && arguments[0] === EOperationType.k_Reduce) {
-                this._eType = EOperationType.k_Reduce;
-                this._pRule = <IRule>arguments[1];
-            }
-        }
-    }
+    //    constructor (eType: EOperationType, iIndex: uint);
+    //    constructor (eType: EOperationType, pRule: IRule);
+    //    constructor () {
+    //        if (arguments.length === 0) {
+    //            this._eType = EOperationType.k_Error;
+    //        }
+    //        else if (arguments.length === 2 && arguments[0] === EOperationType.k_Shift) {
+    //            this._eType = EOperationType.k_Shift;
+    //            this._iIndex = <uint>arguments[1];
+    //        }
+    //        else if (arguments.length === 2 && arguments[0] === EOperationType.k_Reduce) {
+    //            this._eType = EOperationType.k_Reduce;
+    //            this._pRule = <IRule>arguments[1];
+    //        }
+    //    }
+    //}
 
-    class Rule implements IRule {
-        private _sLeft: string;
-        private _pRight: string[];
-        private _iIndex: uint;
+    //class Rule implements IRule {
+    //    private _sLeft: string;
+    //    private _pRight: string[];
+    //    private _iIndex: uint;
 
-        /** @inline */
-        get left(): string {
-            return this._sLeft;
-        }
-        /** @inline */
-        set left(sLeft: string) {
-            this._sLeft = sLeft;
-        }
-        /** @inline */
-        get right(): string[] {
-            return this._pRight;
-        }
-        /** @inline */
-        set right(pRight: string[]) {
-            this._pRight = pRight;
-        }
-        /** @inline */
-        get index(): uint {
-            return this._iIndex;
-        }
-        /** @inline */
-        set index(iIndex: uint) {
-            this._iIndex = iIndex;
-        }
+    //    /** @inline */
+    //    get left(): string {
+    //        return this._sLeft;
+    //    }
+    //    /** @inline */
+    //    set left(sLeft: string) {
+    //        this._sLeft = sLeft;
+    //    }
+    //    /** @inline */
+    //    get right(): string[] {
+    //        return this._pRight;
+    //    }
+    //    /** @inline */
+    //    set right(pRight: string[]) {
+    //        this._pRight = pRight;
+    //    }
+    //    /** @inline */
+    //    get index(): uint {
+    //        return this._iIndex;
+    //    }
+    //    /** @inline */
+    //    set index(iIndex: uint) {
+    //        this._iIndex = iIndex;
+    //    }
 
-        constructor () {
-            this._sLeft = "";
-            this._pRight = <string[]>[];
-            this._iIndex = 0;
-        }
-    }
-
+    //    constructor () {
+    //        this._sLeft = "";
+    //        this._pRight = <string[]>[];
+    //        this._iIndex = 0;
+    //    }
+    //}
 
     export class ParseTree implements IParseTree {
         private _pRoot: IParseNode;
@@ -630,10 +704,10 @@ module akra {
             }
 
             if ((eCreate === ENodeCreateMode.k_Default && iReduceCount > nOptimize) || (eCreate === ENodeCreateMode.k_Necessary)) {
-                pNode = { name: pRule.left, children: null, parent: null, value: "" };
+                pNode = <IParseNode>{ name: pRule.left, children: null, parent: null, value: "" };
 
                 while (iReduceCount) {
-                    this._addLink(pNode, pNodes.pop());
+                    this.addLink(pNode, pNodes.pop());
                     iReduceCount -= 1;
                 }
 
@@ -647,7 +721,7 @@ module akra {
 
         toString(): string {
             if (this._pRoot) {
-                return this._toStringNode(this._pRoot);
+                return this.toStringNode(this._pRoot);
             }
             else {
                 return "";
@@ -656,11 +730,11 @@ module akra {
 
         clone(): IParseTree {
             var pTree = new ParseTree();
-            pTree.root = this._cloneNode(this._pRoot);
+            pTree.root = this.cloneNode(this._pRoot);
             return pTree;
         }
 
-        private _addLink(pParent: IParseNode, pNode: IParseNode): void {
+        private addLink(pParent: IParseNode, pNode: IParseNode): void {
             if (!pParent.children) {
                 pParent.children = <IParseNode[]>[];
             }
@@ -668,7 +742,7 @@ module akra {
             pNode.parent = pParent;
         }
 
-        private _cloneNode(pNode: IParseNode): IParseNode {
+        private cloneNode(pNode: IParseNode): IParseNode {
             var pNewNode: IParseNode;
             pNewNode = <IParseNode>{
                 name: pNode.name,
@@ -679,13 +753,13 @@ module akra {
 
             var pChildren: IParseNode[] = pNode.children;
             for (var i = 0; pChildren && i < pChildren.length; i++) {
-                this._addLink(pNewNode, this._cloneNode(pChildren[i]));
+                this.addLink(pNewNode, this.cloneNode(pChildren[i]));
             }
 
             return pNewNode;
         }
 
-        private _toStringNode(pNode: IParseNode, sPadding: string = ""): string {
+        private toStringNode(pNode: IParseNode, sPadding: string = ""): string {
             var sRes: string = sPadding + "{\n";
             var sOldPadding: string = sPadding;
             var sDefaultPadding: string = "  ";
@@ -708,7 +782,7 @@ module akra {
                     sPadding += sDefaultPadding;
 
                     for (var i = pChildren.length - 1; i >= 0; i--) {
-                        sRes += this._toStringNode(pChildren[i], sPadding);
+                        sRes += this.toStringNode(pChildren[i], sPadding);
                         sRes += ",\n";
                     }
 
@@ -741,9 +815,9 @@ module akra {
             this._sSource = "";
             this._iIndex = 0;
             this._pParser = pParser;
-            this._pPunctuatorsMap = {};
-            this._pKeywordsMap = {};
-            this._pPunctuatorsFirstSymbols = {};
+            this._pPunctuatorsMap = <StringMap>{};
+            this._pKeywordsMap = <StringMap>{};
+            this._pPunctuatorsFirstSymbols = <BoolMap>{};
         }
 
         addPunctuator(sValue: string, sName?: string): string {
@@ -767,9 +841,9 @@ module akra {
             this._iColumnNumber = 0;
             this._iIndex = 0;
         }
-        
+
         getNextToken(): IToken {
-            var ch: string = this._currentChar();
+            var ch: string = this.currentChar();
             if (!ch) {
                 return <IToken>{
                     name: END_SYMBOL,
@@ -779,31 +853,31 @@ module akra {
                     line: this._iLineNumber
                 };
             }
-            var eType: ETokenType = this._identityTokenType();
+            var eType: ETokenType = this.identityTokenType();
             var pToken: IToken;
             switch (eType) {
                 case ETokenType.k_NumericLiteral:
-                    pToken = this._scanNumber();
+                    pToken = this.scanNumber();
                     break;
                 case ETokenType.k_CommentLiteral:
-                    this._scanComment();
+                    this.scanComment();
                     pToken = this.getNextToken();
                     break;
                 case ETokenType.k_StringLiteral:
-                    pToken = this._scanString();
+                    pToken = this.scanString();
                     break;
                 case ETokenType.k_PunctuatorLiteral:
-                    pToken = this._scanPunctuator();
+                    pToken = this.scanPunctuator();
                     break;
                 case ETokenType.k_IdentifierLiteral:
-                    pToken = this._scanIdentifier();
+                    pToken = this.scanIdentifier();
                     break;
                 case ETokenType.k_WhitespaceLiteral:
-                    this._scanWhiteSpace();
+                    this.scanWhiteSpace();
                     pToken = this.getNextToken();
                     break;
                 default:
-                    this._error(ESyntaxErrorCode.k_UnknownToken,
+                    this.error(ESyntaxErrorCode.k_UnknownToken,
                                 <IToken>{
                                     name: UNKNOWN_TOKEN,
                                     value: ch + this._sSource[this._iIndex + 1],
@@ -815,40 +889,40 @@ module akra {
             return pToken;
         }
 
-        private _error(eCode: ESyntaxErrorCode, pToken: IToken): void {
+        private error(eCode: ESyntaxErrorCode, pToken: IToken): void {
             //ErrorContainer.Syntax.Lexer.
         }
 
-        private _identityTokenType(): ETokenType {
-            if (this._isIdentifierStart()) {
+        private identityTokenType(): ETokenType {
+            if (this.isIdentifierStart()) {
                 return ETokenType.k_IdentifierLiteral;
             }
-            if (this._isWhiteSpaceStart()) {
+            if (this.isWhiteSpaceStart()) {
                 return ETokenType.k_WhitespaceLiteral;
             }
-            if (this._isStringStart()) {
+            if (this.isStringStart()) {
                 return ETokenType.k_StringLiteral;
             }
-            if (this._isCommentStart()) {
+            if (this.isCommentStart()) {
                 return ETokenType.k_CommentLiteral;
             }
-            if (this._isNumberStart()) {
+            if (this.isNumberStart()) {
                 return ETokenType.k_NumericLiteral;
             }
-            if (this._isPunctuatorStart()) {
+            if (this.isPunctuatorStart()) {
                 return ETokenType.k_PunctuatorLiteral;
             }
             return ETokenType.k_Unknown;
         }
 
-        private _isNumberStart(): bool {
-            var ch: string = this._currentChar();
+        private isNumberStart(): bool {
+            var ch: string = this.currentChar();
 
             if ((ch >= '0') && (ch <= '9')) {
                 return true;
             }
 
-            var ch1: string = this._nextChar();
+            var ch1: string = this.nextChar();
             if (ch === "." && (ch1 >= '0') && (ch1 <= '9')) {
                 return true;
             }
@@ -856,9 +930,9 @@ module akra {
             return false;
         }
 
-        private _isCommentStart(): bool {
-            var ch: string = this._currentChar();
-            var ch1: string = this._nextChar();
+        private isCommentStart(): bool {
+            var ch: string = this.currentChar();
+            var ch1: string = this.nextChar();
 
             if (ch === "/" && (ch1 === "/" || ch1 === "*")) {
                 return true;
@@ -867,388 +941,1038 @@ module akra {
             return false;
         }
 
-        private _isStringStart(): bool {
-            var ch: string = this._currentChar();
+        private isStringStart(): bool {
+            var ch: string = this.currentChar();
             if (ch === "\"" || ch === "'") {
                 return true;
             }
             return false;
         }
 
-        private _isPunctuatorStart(): bool {
-            var ch: string = this._currentChar();
+        private isPunctuatorStart(): bool {
+            var ch: string = this.currentChar();
             if (this._pPunctuatorsFirstSymbols[ch]) {
                 return true;
             }
             return false;
         }
 
-        private _isWhiteSpaceStart(): bool {
-            var ch: string = this._currentChar();
+        private isWhiteSpaceStart(): bool {
+            var ch: string = this.currentChar();
             if (ch === ' ' || ch === '\n' || ch === '\r' || ch === '\t') {
                 return true;
             }
             return false;
         }
 
-        private _isIdentifierStart(): bool {
-            var ch: string = this._currentChar();
+        private isIdentifierStart(): bool {
+            var ch: string = this.currentChar();
             if ((ch === '_') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
                 return true;
             }
             return false;
         }
 
-        private _isLineTerminator(sSymbol: string): bool {
+        private isLineTerminator(sSymbol: string): bool {
             return (sSymbol === '\n' || sSymbol === '\r' || sSymbol === '\u2028' || sSymbol === '\u2029');
         }
 
-        private _isWhiteSpace(sSymbol: string): bool {
+        private isWhiteSpace(sSymbol: string): bool {
             return (sSymbol === ' ') || (sSymbol === '\t');
         }
 
         /** @inline */
-        private _isKeyword(sValue: string): bool {
+        private isKeyword(sValue: string): bool {
             return !!(this._pKeywordsMap[sValue]);
         }
 
         /** @inline */
-        private _isPunctuator(sValue: string): bool {
+        private isPunctuator(sValue: string): bool {
             return !!(this._pPunctuatorsMap[sValue]);
         }
 
         /** @inline */
-        private _nextChar(): string {
+        private nextChar(): string {
             return this._sSource[this._iIndex + 1];
         }
 
         /** @inline */
-        private _currentChar(): string {
+        private currentChar(): string {
             return this._sSource[<number>this._iIndex];
         }
 
         /** @inline */
-        private _readNextChar(): string {
+        private readNextChar(): string {
             this._iIndex++;
             this._iColumnNumber++;
             return this._sSource[<number>this._iIndex];
         }
 
-        private _scanString(): IToken {
-            return <IToken>{};
+        private scanString(): IToken {
+            var chFirst: string = this.currentChar();
+            var sValue: string = chFirst;
+            var ch: string;
+            var chPrevious: string = chFirst;
+            var isGoodFinish: bool = false;
+            var iStart: uint = this._iColumnNumber;
+
+            while (true) {
+                ch = this.readNextChar();
+                if (!ch) {
+                    break;
+                }
+                sValue += ch;
+                if (ch === chFirst && chPrevious !== '\\') {
+                    isGoodFinish = true;
+                    this.readNextChar();
+                    break;
+                }
+                chPrevious = ch;
+            }
+
+            if (isGoodFinish) {
+                return <IToken>{
+                    name: "T_STRING",
+                    value: sValue,
+                    start: iStart,
+                    end: this._iColumnNumber - 1,
+                    line: this._iLineNumber
+                };
+            }
+            else {
+                if (!ch) {
+                    ch = "EOF";
+                }
+                sValue += ch;
+
+                this.error(ESyntaxErrorCode.k_BadToken, <IToken> {
+                    type: ETokenType.k_StringLiteral,
+                    value: sValue,
+                    start: iStart,
+                    end: this._iColumnNumber,
+                    line: this._iLineNumber
+                });
+                return null;
+            }
         }
 
-        private _scanPunctuator(): IToken {
-            return <IToken>{};
+        private scanPunctuator(): IToken {
+            var sValue: string = this.currentChar();
+            var ch: string;
+            var iStart: uint = this._iColumnNumber;
+
+            while (true) {
+                ch = this.readNextChar();
+                if (ch) {
+                    sValue += ch;
+                    this._iColumnNumber++;
+                    if (!this.isPunctuator(sValue)) {
+                        sValue = sValue.slice(0, sValue.length - 1);
+                        break;
+                    }
+                }
+                else {
+                    break;
+                }
+            }
+
+            return <IToken>{
+                name: this._pPunctuatorsMap[sValue],
+                value: sValue,
+                start: iStart,
+                end: this._iColumnNumber - 1,
+                line: this._iLineNumber
+            };
         }
 
-        private _scanNumber(): IToken {
-            return <IToken>{};
+        private scanNumber(): IToken {
+            var ch: string = this.currentChar();
+            var sValue: string = "";
+            var isFloat: bool = false;
+            var chPrevious: string = ch;
+            var isGoodFinish: bool = false;
+            var iStart: uint = this._iColumnNumber;
+            var isE: bool = false;
+
+            if (ch === '.') {
+                sValue += 0;
+                isFloat = true;
+            }
+
+            sValue += ch;
+
+            while (true) {
+                ch = this.readNextChar();
+                if (ch === '.') {
+                    if (isFloat) {
+                        break;
+                    }
+                    else {
+                        isFloat = true;
+                    }
+                }
+                else if (ch === 'e') {
+                    if (isE) {
+                        break;
+                    }
+                    else {
+                        isE = true;
+                    }
+                }
+                else if (((ch === '+' || ch === '-') && chPrevious === 'e')) {
+                    sValue += ch;
+                    chPrevious = ch;
+                    continue;
+                }
+                else if (ch === 'f' && isFloat) {
+                    ch = this.readNextChar();
+                    if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
+                        break;
+                    }
+                    isGoodFinish = true;
+                    break;
+                }
+                else if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
+                    break;
+                }
+                else if (!((ch >= '0') && (ch <= '9')) || !ch) {
+                    if ((isE && chPrevious !== '+' && chPrevious !== '-' && chPrevious !== 'e') || !isE) {
+                        isGoodFinish = true;
+                    }
+                    break;
+                }
+                sValue += ch;
+                chPrevious = ch;
+            }
+
+            if (isGoodFinish) {
+                var sName = isFloat ? "T_FLOAT" : "T_UINT";
+                return {
+                    name: sName,
+                    value: sValue,
+                    start: iStart,
+                    end: this._iColumnNumber - 1,
+                    line: this._iLineNumber
+                };
+            }
+            else {
+                if (!ch) {
+                    ch = "EOF";
+                }
+                sValue += ch;
+                this.error(ESyntaxErrorCode.k_BadToken, <IToken> {
+                    type: ETokenType.k_NumericLiteral,
+                    value: sValue,
+                    start: iStart,
+                    end: this._iColumnNumber,
+                    line: this._iLineNumber
+                });
+                return null;
+            }
         }
 
-        private _scanIdentifier(): IToken {
-            return <IToken>{};
+        private scanIdentifier(): IToken {
+            var ch: string = this.currentChar();
+            var sValue: string = ch;
+            var iStart: uint = this._iColumnNumber;
+            var isGoodFinish: bool = false;
+
+            while (1) {
+                ch = this.readNextChar();
+                if (!ch) {
+                    isGoodFinish = true;
+                    break;
+                }
+                if (!((ch === '_') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9'))) {
+                    isGoodFinish = true;
+                    break;
+                }
+                sValue += ch;
+            }
+
+            if (isGoodFinish) {
+                if (this.isKeyword(sValue)) {
+                    return <IToken>{
+                        name: this._pKeywordsMap[sValue],
+                        value: sValue,
+                        start: iStart,
+                        end: this._iColumnNumber - 1,
+                        line: this._iLineNumber
+                    };
+                }
+                else {
+                    var sName = this._pParser.isTypeId(sValue) ? "T_TYPE_ID" : "T_NON_TYPE_ID";
+                    return <IToken> {
+                        name: sName,
+                        value: sValue,
+                        start: iStart,
+                        end: this._iColumnNumber - 1,
+                        line: this._iLineNumber
+                    };
+                }
+            }
+            else {
+                if (!ch) {
+                    ch = "EOF";
+                }
+                sValue += ch;
+                this.error(ESyntaxErrorCode.k_BadToken, <IToken> {
+                    type: ETokenType.k_IdentifierLiteral,
+                    value: sValue,
+                    start: iStart,
+                    end: this._iColumnNumber,
+                    line: this._iLineNumber
+                });
+                return null;
+            }
         }
 
-        private _scanWhiteSpace(): bool {
+        private scanWhiteSpace(): bool {
+            var ch: string = this.currentChar();
+
+            while (true) {
+                if (!ch) {
+                    break;
+                }
+                if (this.isLineTerminator(ch)) {
+                    this._iLineNumber++;
+                    ch = this.readNextChar();
+                    this._iColumnNumber = 0;
+                    continue;
+                }
+                else if (ch === '\t') {
+                    this._iColumnNumber += 3;
+                }
+                else if (ch !== ' ') {
+                    break;
+                }
+                ch = this.readNextChar();
+            }
+
             return true;
         }
 
-        private _scanComment(): bool {
+        private scanComment(): bool {
+            var sValue: string = this.currentChar();
+            var ch: string = this.readNextChar();
+            sValue += ch;
+
+            if (ch === '/') {
+                //Line Comment
+                while (true) {
+                    ch = this.readNextChar();
+                    if (!ch) {
+                        break;
+                    }
+                    if (this.isLineTerminator(ch)) {
+                        this._iLineNumber++;
+                        this.readNextChar();
+                        this._iColumnNumber = 0;
+                        break;
+                    }
+                    sValue += ch;
+                }
+
+                return true;
+            }
+            else {
+                //Multiline Comment
+                var chPrevious: string = ch;
+                var isGoodFinish: bool = false;
+                var iStart: uint = this._iColumnNumber;
+
+                while (true) {
+                    ch = this.readNextChar();
+                    if (!ch) {
+                        break;
+                    }
+                    sValue += ch;
+                    if (ch === '/' && chPrevious === '*') {
+                        isGoodFinish = true;
+                        this.readNextChar();
+                        break;
+                    }
+                    if (this.isLineTerminator(ch)) {
+                        this._iLineNumber++;
+                        this._iColumnNumber = -1;
+                    }
+                    chPrevious = ch;
+                }
+
+                if (isGoodFinish) {
+                    return true;
+                }
+                else {
+                    if (!ch) {
+                        ch = "EOF";
+                    }
+                    sValue += ch;
+                    this.error(ESyntaxErrorCode.k_BadToken, <IToken> {
+                        type: ETokenType.k_CommentLiteral,
+                        value: sValue,
+                        start: iStart,
+                        end: this._iColumnNumber,
+                        line: this._iLineNumber
+                    });
+
+                }
+
+            }
+        }
+    }
+
+
+    interface IOperationMap {
+        [k: string]: IOperation;
+        [k: number]: IOperation;
+    }
+
+    interface IOperationDMap {
+        [k: number]: IOperationMap;
+    }
+
+    interface IRuleMap {
+        [k: number]: IRule;
+        [k: string]: IRule;
+    }
+
+    interface IRuleDMap {
+        [k: number]: IRuleMap;
+        [k: string]: IRuleMap;
+    }
+
+    interface IRuleFunction {
+        (pRule: IRule): bool;
+    }
+
+    interface IRuleFunctionMap {
+        [k: number]: IRuleFunction;
+        [k: string]: IRuleFunction;
+    }
+
+    export enum EParseMode {
+        k_AllNode = 0x0001,
+        k_Negate = 0x0002,
+        k_Add = 0x0004,
+        k_Optimize = 0x0008
+    };
+
+    export class Parser implements IParser {
+        //Input
+        private _sSource: string;
+        private _iIndex: uint;
+
+        //Output
+        private _pSyntaxTree: IParseTree;
+        private _pTypeIdMap: BoolMap;
+
+        //Process params
+        private _pLexer: ILexer;
+        private _pStack: uint[];
+        private _pToken: IToken;
+
+        //For async loading of files work fine
+        private _pFinishCallback: any;
+        private _pCaller: any;
+
+        //Grammar Info
+        private _pSymbols: BoolMap;
+        private _pSyntaxTable: IOperationDMap;
+        private _pReduceOperationsMap: IOperationMap;
+        private _pShiftOperationsMap: IOperationMap;
+        private _pSuccessOperation: IOperation;
+
+        private _pFirstTerminalsDMap: BoolDMap;
+        private _pFollowTerminalsDMap: BoolDMap;
+
+        private _pRulesDMap: IRuleDMap;
+        private _pStateList: IState[];
+        private _nRules: uint;
+
+        private _pRuleFunctionNamesMap: StringMap;
+        private _pAdditionalFunctionsMap: IRuleFunctionMap;
+
+        private _eType: EParserType;
+
+        //Additioanal info
+        private _pSymbolsWithNodesMap: IntMap;///{ [k: string]: ENodeCreateMode; };
+        private _eParseMode: EParseMode;
+
+        private _isSync: bool;
+
+        //Temp
+
+        private _pStatesTempMap: IStateMap;
+        private _pBaseItemList: IItem[];
+        private _pExpectedExtensionDMap: BoolDMap;
+
+
+        constructor () {
+            this._sSource = "";
+            this._iIndex = 0;
+
+            this._pSyntaxTree = null;
+            this._pTypeIdMap = null;
+
+            this._pLexer = null;
+            this._pStack = <uint[]>[];
+            this._pToken = null;
+
+            this._pFinishCallback = null;
+            this._pCaller = null;
+
+            this._pSymbols = <BoolMap>{};
+            this._pSymbols[END_SYMBOL] = true;
+            this._pSyntaxTable = null;
+            this._pReduceOperationsMap = null;
+            this._pShiftOperationsMap = null;
+            this._pSuccessOperation = null;
+
+            this._pFirstTerminalsDMap = null;
+            this._pFollowTerminalsDMap = null;
+            this._pRulesDMap = null;
+            this._pStateList = null;
+            this._nRules = 0;
+            this._pRuleFunctionNamesMap = null;
+            this._pAdditionalFunctionsMap = null;
+
+            this._eType = EParserType.k_LR0;
+
+            this._pSymbolsWithNodesMap = null;
+            this._eParseMode = EParseMode.k_AllNode;
+
+            this._isSync = false;
+
+            this._pStatesTempMap = null;
+            this._pBaseItemList = null;
+            this._pExpectedExtensionDMap = null;
+
+        }
+
+        isTypeId(sValue: string): bool {
             return true;
         }
+
+        returnCode(pNode: IParseNode): string {
+            return "";
+        }
+
+        init(sGrammar: string, eType: EParserType, pFlags: IParseFlags): bool {
+            return true;
+        }
+
+        parse(sSource: string, isSync: bool): EParseCode {
+            return EParseCode;
+        }
+
+        pause(): EParseCode {
+            return EParseCode.k_Ok;
+        }
+
+        resume(): bool {
+            return true;
+        }
+
+        private error(eCode: ESyntaxErrorCode): void {
+
+        }
+
+        private clearMem(): void {
+            delete this._pFirstTerminalsDMap;
+            delete this._pFollowTerminalsDMap;
+            delete this._pRulesDMap;
+            delete this._pStateList;
+            delete this._pReduceOperationsMap;
+            delete this._pShiftOperationsMap;
+            delete this._pSuccessOperation;
+            delete this._pStatesTempMap;
+            delete this._pBaseItemList;
+            delete this._pExpectedExtensionDMap;
+        }
+
+        private hasState(pState: IState, eType: EParserType = EParserType.k_LR0) {
+            var pStateList: IState[] = this._pStateList;
+            var i: uint = 0;
+
+            for (i = 0; i < pStateList.length; i++) {
+                if (pStateList[i].isEqual(pState, eType)) {
+                    return pStateList[i];
+                }
+            }
+
+            return null;
+        }
+
+        private isTerminal(sSymbol: string): bool {
+            return !!(this._pRulesDMap[sSymbol]);
+        }
+
+        private pushState(pState: IState): void {
+            pState.index = this._pStateList.length;
+            this._pStateList.push(pState);
+        }
+
+        private pushBaseItem(pItem: IItem): void {
+            pItem.index = this._pBaseItemList.length;
+            this._pBaseItemList.push(pItem);
+        }
+
+        private tryAddState(pState: IState, eType: EParserType = EParserType.k_LR0): IState {
+            var pRes = this.hasState(pState);
+            if (isNull(pRes)) {
+                if (eType === EParserType.k_LR0) {
+                    var pItems = pState.items;
+                    for (var i = 0; i < pItems.length; i++) {
+                        this.pushBaseItem(pItems[i]);
+                    }
+                }
+
+                this.pushState(pState);
+                this.closure(pState, eType);
+
+                return pState;
+            }
+
+            return pRes;
+        }
+
+        private hasEmptyRule(sSymbol: string): bool {
+            if (this.isTerminal(sSymbol)) {
+                return false;
+            }
+
+            var pRulesDMap: IRuleDMap = this._pRulesDMap;
+            for (var i in pRulesDMap) {
+                if (pRulesDMap[sSymbol][i].right.length === 0) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private pushInSyntaxTable(iIndex: uint, sSymbol: string, pOperation: IOperation): void {
+            var pSyntaxTable: IOperationDMap = this._pSyntaxTable;
+            if (!pSyntaxTable[iIndex]) {
+                pSyntaxTable[iIndex] = <IOperationMap>{};
+            }
+            if (isDef(pSyntaxTable[iIndex][sSymbol])) {
+                this.error(ESyntaxErrorCode.k_GrammarAddOperation);
+                //this.error("Grammar is not LALR(1)!", "State:", this._pStates[iIndex], "Symbol:", sSymbol, ":",
+                //            "Old value:", this._ppSynatxTable[iIndex][sSymbol], "New Value: ", pOperation);
+            }
+            pSyntaxTable[iIndex][sSymbol] = pOperation;
+        }
+
+        private addStateLink(pState: IState, pNextState: IState, sSymbol: string): void {
+            var isAddState: bool = pState.addNextState(sSymbol, pNextState);
+            if (!isAddState) {
+                this.error(ESyntaxErrorCode.k_GrammarAddStateLink);
+                //this.error("AddlinkState: Grammar is not LALR(1)! Rewrite link!", "State", pState, "Link to", pNextState,
+                //    "Symbol", sSymbol);
+            }
+        }
+
+        private firstTerminal(sSymbol: string): BoolMap {
+            if (this.isTerminal(sSymbol)) {
+                return null;
+            }
+
+            if (isDef(this._pFirstTerminalsDMap[sSymbol])) {
+                return this._pFirstTerminalsDMap[sSymbol];
+            }
+
+            var i: string, j: uint, k: string;
+            var pRulesMap: IRuleMap = this._pRulesDMap[sSymbol];
+
+            var pTempRes: BoolMap;
+            var pRes: BoolMap;
+
+            var pRight: string[];
+            var isFinish: bool;
+
+            pRes = this._pFirstTerminalsDMap[sSymbol] = <BoolMap>{};
+
+            if (this.hasEmptyRule(sSymbol)) {
+                pRes[T_EMPTY] = true;
+            }
+            for (i in pRulesMap) {
+
+                isFinish = false;
+                pRight = pRulesMap[i].right;
+
+                for (j = 0; j < pRight.length; j++) {
+
+                    if (pRight[j] === sSymbol) {
+                        if (pRes[T_EMPTY]) {
+                            continue;
+                        }
+                        isFinish = true;
+                        break;
+                    }
+
+                    pTempRes = this.firstTerminal(pRight[j]);
+
+                    if (isNull(pTempRes)) {
+                        pRes[pRight[j]] = true;
+                    }
+                    else {
+                        for (k in pTempRes) {
+                            pRes[k] = true;
+                        }
+                    }
+
+                    if (!this.hasEmptyRule(pRight[j])) {
+                        isFinish = true;
+                        break;
+                    }
+
+                }
+
+                if (!isFinish) {
+                    pRes[T_EMPTY] = true;
+                }
+
+            }
+
+            return pRes;
+        }
+
+        private followTerminal(sSymbol: string): BoolMap {
+            if (isDef(this._pFollowTerminalsDMap[sSymbol])) {
+                return this._pFollowTerminalsDMap[sSymbol];
+            }
+
+            var i: string, j: string, k: uint, l: uint, m: string;
+            var pRulesDMap: IRuleDMap = this._pRulesDMap;
+
+            var pTempRes: BoolMap;
+            var pRes: BoolMap;
+
+            var pRight: string[];
+            var isFinish: bool;
+
+            pRes = this._pFollowTerminalsDMap[sSymbol] = <BoolMap>{};
+
+            for (i in pRulesDMap) {
+                for (j in pRulesDMap[i]) {
+
+                    pRight = pRulesDMap[i][j].right;
+
+                    for (k = 0; k < pRight.length; k++) {
+
+                        if (pRight[k] === sSymbol) {
+
+                            if (k === pRight.length - 1) {
+                                pTempRes = this.followTerminal(pRulesDMap[i][j].left);
+                                for (m in pTempRes) {
+                                    pRes[m] = true;
+                                }
+                            }
+                            else {
+                                isFinish = false;
+
+                                for (l = k + 1; l < pRight.length; l++) {
+                                    pTempRes = this.firstTerminal(pRight[l]);
+
+                                    if (isNull(pTempRes)) {
+                                        pRes[pRight[l]] = true;
+                                        isFinish = true;
+                                        break;
+                                    }
+                                    else {
+                                        for (m in pTempRes) {
+                                            pRes[m] = true;
+                                        }
+                                    }
+
+                                    if (!pTempRes[T_EMPTY]) {
+                                        isFinish = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!isFinish) {
+                                    pTempRes = this.followTerminal(pRulesDMap[i][j].left);
+                                    for (m in pTempRes) {
+                                        pRes[m] = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return pRes;
+        }
+
+        private firstTerminalForSet(pSet: string[], pExpected: BoolMap): BoolMap {
+            var i: uint, j: string;
+
+            var pTempRes: BoolMap;
+            var pRes: BoolMap;
+
+            var isEmpty: bool;
+
+            for (i = 0; i < pSet.length; i++) {
+                pTempRes = this.firstTerminal(pSet[i]);
+
+                if (isNull(pTempRes)) {
+                    pRes[pSet[i]] = true;
+                }
+
+                isEmpty = false;
+
+                for (j in pTempRes) {
+                    if (j === T_EMPTY) {
+                        isEmpty = true;
+                        continue;
+                    }
+                    pRes[j] = true;
+                }
+
+                if (!isEmpty) {
+                    return pRes;
+                }
+            }
+
+            for (j in pExpected) {
+                pRes[j] = true;
+            }
+
+            return pRes;
+        }
+
+        private generateRules(sGrammarSource: string): void {
+            var pAllRuleList: string[] = sGrammarSource.split(/\r?\n/);
+            var pTempRule: string[];
+            var pRule: IRule;
+            var isLexerBlock: bool = false;
+
+            this._pRulesDMap = <IRuleDMap>{};
+            this._pRuleFunctionNamesMap = <StringMap>{};
+            this._pSymbolsWithNodesMap = <IntMap>{};
+
+            var i: uint = 0, j: uint = 0;
+
+            var isAllNodeMode: bool = bf.testAll(this._eParseMode, EParseMode.k_AllNode);
+            var isNegateMode: bool = bf.testAll(this._eParseMode, EParseMode.k_Negate);
+            var isAddMode: bool = bf.testAll(this._eParseMode, EParseMode.k_Add);
+
+            var pSymbolsWithNodeMap: IntMap = this._pSymbolsWithNodesMap;
+
+
+            for (i = 0; i < pAllRuleList.length; i++) {
+                if (pAllRuleList[i] === "" || pAllRuleList[i] === "\r") {
+                    continue;
+                }
+
+                pTempRule = pAllRuleList[i].split(/\s* \s*/);
+
+                if (isLexerBlock) {
+                    if ((pTempRule.length === 3 || (pTempRule.length === 4 && pTempRule[3] === "")) &&
+                        ((pTempRule[2][0] === "\"" || pTempRule[2][0] === "'") && pTempRule[2].length > 3)) {
+
+                            //TERMINALS
+                        if (pTempRule[2][0] !== pTempRule[2][pTempRule[2].length - 1]) {
+                            this.error(ESyntaxErrorCode.k_GrammarUnexpectedSymbol);
+                            //this._error("Can`t generate rules from grammar! Unexpected symbol! Must be")
+                        }
+
+                        pTempRule[2] = pTempRule[2].slice(1, pTempRule[2].length - 1);
+
+                        var ch = pTempRule[2][0];
+
+                        if ((ch === '_') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
+                            this._pLexer.addKeyword(pTempRule[2], pTempRule[0]);
+                        }
+                        else {
+                            this._pLexer.addPunctuator(pTempRule[2], pTempRule[0]);
+                        }
+                    }
+
+                    continue;
+                }
+
+                if (pTempRule[0] === LEXER_RULES) {
+                    isLexerBlock = true;
+                    continue;
+                }
+
+                //NON TERMNINAL RULES
+                if (isDef(this._pRulesDMap[pTempRule[0]]) === false) {
+                    this._pRulesDMap[pTempRule[0]] = <IRuleMap>{};
+                }
+
+                pRule = <IRule>{
+                    left: pTempRule[0],
+                    right: <string[]>[],
+                    index: 0
+                };
+                this._pSymbols[pTempRule[0]] = true;
+
+                if (isAllNodeMode) {
+                    pSymbolsWithNodeMap[pTempRule[0]] = ENodeCreateMode.k_Default;
+                }
+                else if (isNegateMode && !isDef(pSymbolsWithNodeMap[pTempRule[0]])) {
+                    pSymbolsWithNodeMap[pTempRule[0]] = ENodeCreateMode.k_Default;
+                }
+                else if (isAddMode && !isDef(pSymbolsWithNodeMap[pTempRule[0]])) {
+                    pSymbolsWithNodeMap[pTempRule[0]] = ENodeCreateMode.k_Not;
+                }
+
+                for (j = 2; j < pTempRule.length; j++) {
+                    if (pTempRule[j] === "") {
+                        continue;
+                    }
+                    if (pTempRule[j] === FLAG_RULE_CREATE_NODE) {
+                        if (isAddMode) {
+                            pSymbolsWithNodeMap[pTempRule[0]] = ENodeCreateMode.k_Necessary;
+                        }
+                        continue;
+                    }
+                    if (pTempRule[j] === FLAG_RULE_NOT_CREATE_NODE) {
+                        if (isNegateMode && !isAllNodeMode) {
+                            pSymbolsWithNodeMap[pTempRule[0]] = ENodeCreateMode.k_Not;
+                        }
+                        continue;
+                    }
+                    if (pTempRule[j] === FLAG_RULE_FUNCTION) {
+                        if ((!pTempRule[j + 1] || pTempRule[j + 1].length === 0)) {
+                            this.error(ESyntaxErrorCode.k_GrammarBadAdditionalFunctionName);
+                            //this._error("Can`t generate rule for grammar! Addititional functionhas has bad name");
+                        }
+                        this._pRuleFunctionNamesMap[this._nRules] = pTempRule[j + 1];
+                        j++;
+                        continue;
+                    }
+                    if (pTempRule[j][0] === "'" || pTempRule[j][0] === "\"") {
+                        if (pTempRule[j].length !== 3) {
+                            this.error(ESyntaxErrorCode.k_GrammarBadKeyword);
+                            //this._error("Can`t generate rules from grammar! Keywords must be rules");
+                        }
+                        if (pTempRule[j][0] !== pTempRule[j][2]) {
+                            this.error(ESyntaxErrorCode.k_GrammarUnexpectedSymbol);
+                            //this._error("Can`t generate rules from grammar! Unexpected symbol! Must be");
+                        }
+                        var sName:string = this._pLexer.addPunctuator(pTempRule[j][1]);
+                        pRule.right.push(sName);
+                        this._pSymbols[sName] = true;
+                    }
+                    else {
+                        pRule.right.push(pTempRule[j]);
+                        this._pSymbols[pTempRule[j]] = true;
+                    }
+                }
+
+                pRule.index = this._nRules;
+                this._pRulesDMap[pTempRule[0]][pRule.index] = pRule;
+                this._nRules += 1;
+
+            }
+
+        }
+
+        
+        private generateFirstState(eType: EParserType): void {
+            if (eType === EParserType.k_LR0) {
+                this.generateFirstState_LR0();
+            }
+            else {
+                this.generateFirstState_LR();
+            }
+        }
+
+        private generateFirstState_LR0():void {
+            var pState: IState = new State();
+            var pItem: IItem = new Item(this._pRulesDMap[START_SYMBOL][0], 0);
+            
+            this.pushBaseItem(pItem);
+            pState.push(pItem);
+
+            this.closure_LR0(pState);
+            this.pushState(pState);
+        }
+
+        private generateFirstState_LR():void {
+            var pState: IState = new State();
+            var pExpected: BoolMap = <BoolMap>{};
+            pExpected[END_SYMBOL] = true;
+
+            pState.push(new ItemLR(this._pRulesDMap[START_SYMBOL][0], 0, pExpected));
+            
+            this.closure_LR(pState);
+            this.pushState(pState);
+        }
+
+        private closure(pState: IState, eType: EParserType): IState {
+            if (eType === EParserType.k_LR0) {
+                return this.closure_LR0(pState);
+            }
+            else {
+                this.closure_LR(pState);
+            }
+        }
+
+        private closure_LR0(pState: IState): IState {
+            var pItemList:IItem[] = pState.items;
+            var i:uint = 0, j:string;
+            var sSymbol:string;
+
+            for (i = 0; i < pItemList.length; i++) {
+                sSymbol = pItemList[i].mark();
+
+                if (sSymbol !== END_POSITION && (!this.isTerminal(sSymbol))) {
+                    for (j in this._pRulesDMap[sSymbol]) {
+                        pState.tryPush_LR0(this._pRulesDMap[sSymbol][j], 0);
+                    }
+                }
+
+            }
+            return pState;
+        }
+
+        private closure_LR(pState: IState): IState {
+            var pItemList: ItemLR[] = <ItemLR[]>(pState.items);
+            var i:uint = 0, j: string, k: string;
+            var sSymbol: string;
+            var pSymbols: BoolMap;
+            var pTempSet: string[];
+            var isNewExpected: bool = false;
+
+            while (true) {
+                if (i === pItemList.length) {
+                    if (!isNewExpected) {
+                        break;
+                    }
+                    i = 0;
+                    isNewExpected = false;
+                }
+                sSymbol = pItemList[i].mark();
+
+                if (sSymbol !== END_POSITION && (!this.isTerminal(sSymbol))) {
+                    pTempSet = pItemList[i].rule.right.slice(pItemList[i].position + 1);
+                    pSymbols = this.firstTerminalForSet(pTempSet, pItemList[i].expectedSymbols);
+
+                    for (j in this._pRulesDMap[sSymbol]) {
+                        for (k in pSymbols) {
+                            if (pState.tryPush_LR(this._pRulesDMap[sSymbol][j], 0, k)) {
+                                isNewExpected = true;
+                            }
+                        }
+                    }
+                }
+
+                i++;
+            }
+
+            return pState;
+        }
+
+
 
 
     }
-
-    //Lexer.prototype._scanString = function () {
-    //    var chFirst = this._currentChar();
-    //    var sValue = chFirst;
-    //    var ch;
-    //    var chPrevious = chFirst;
-    //    var isGoodFinish = false;
-    //    var iStart = this.iColumnNumber;
-    //    while (1) {
-    //        ch = this._nextChar();
-    //        if (!ch) {
-    //            break;
-    //        }
-    //        sValue += ch;
-    //        if (ch === chFirst && chPrevious !== '\\') {
-    //            isGoodFinish = true;
-    //            this._nextChar();
-    //            break;
-    //        }
-    //        chPrevious = ch;
-    //    }
-    //    if (isGoodFinish) {
-    //        return {
-    //            sName  : "T_STRING",
-    //            sValue : sValue,
-    //            iStart : iStart,
-    //            iEnd   : this.iColumnNumber - 1,
-    //            iLine  : this.iLineNumber
-    //        };
-    //    }
-    //    else {
-    //        if (!ch) {
-    //            ch = "EOF";
-    //        }
-    //        sValue += ch;
-    //        this._error(a.Lexer.Error.BAD_TOKEN_ERROR,
-    //                    {
-    //                        eType  : a.Parser.TokenType.STRING_LITERAL,
-    //                        sValue : sValue,
-    //                        iStart : iStart,
-    //                        iEnd   : this.iColumnNumber,
-    //                        iLine  : this.iLineNumber
-    //                    });
-    //    }
-    //};
-    //Lexer.prototype._scanPunctuator = function () {
-    //    var sValue = this._currentChar();
-    //    var ch;
-    //    var iStart = this.iColumnNumber;
-    //    while (1) {
-    //        ch = this._nextChar();
-    //        if (ch) {
-    //            sValue += ch;
-    //            this.iColumnNumber++;
-    //            if (!this._isPunctuator(sValue)) {
-    //                sValue = sValue.slice(0, sValue.length - 1);
-    //                break;
-    //            }
-    //        }
-    //        else {
-    //            break;
-    //        }
-    //    }
-    //    return {
-    //        sName  : this._pPunctuators[sValue],
-    //        sValue : sValue,
-    //        iStart : iStart,
-    //        iEnd   : this.iColumnNumber - 1,
-    //        iLine  : this.iLineNumber
-    //    };
-    //};
-    //Lexer.prototype._scanWhiteSpace = function () {
-    //    var ch = this._currentChar();
-    //    while (1) {
-    //        if (!ch) {
-    //            break;
-    //        }
-    //        if (this._isLineTerminator(ch)) {
-    //            this.iLineNumber++;
-    //            ch = this._nextChar();
-    //            this.iColumnNumber = 0;
-    //            continue;
-    //        }
-    //        else if (ch === '\t') {
-    //            this.iColumnNumber += 3;
-    //        }
-    //        else if (ch !== ' ') {
-    //            break;
-    //        }
-    //        ch = this._nextChar();
-    //    }
-    //    return true;
-    //};
-    //Lexer.prototype._scanComment = function () {
-    //    var sValue = this._currentChar();
-    //    var ch = this._nextChar();
-    //    sValue += ch;
-    //    if (ch === '/') {
-    //        //Line Comment
-    //        while (1) {
-    //            ch = this._nextChar();
-    //            if (!ch) {
-    //                break;
-    //            }
-    //            if (this._isLineTerminator(ch)) {
-    //                this.iLineNumber++;
-    //                this._nextChar();
-    //                this.iColumnNumber = 0;
-    //                break;
-    //            }
-    //            sValue += ch;
-    //        }
-    //        return true;
-    //    }
-    //    else {
-    //        //Multiline Comment
-    //        var chPrevious = ch;
-    //        var isGoodFinish = false;
-    //        var iStart = this.iColumnNumber;
-    //        while (1) {
-    //            ch = this._nextChar();
-    //            if (!ch) {
-    //                break;
-    //            }
-    //            sValue += ch;
-    //            if (ch === '/' && chPrevious === '*') {
-    //                isGoodFinish = true;
-    //                this._nextChar();
-    //                break;
-    //            }
-    //            if (this._isLineTerminator(ch)) {
-    //                this.iLineNumber++;
-    //                this.iColumnNumber = -1;
-    //            }
-    //            chPrevious = ch;
-    //        }
-    //        if (isGoodFinish) {
-    //            return true;
-    //        }
-    //        else {
-    //            if (!ch) {
-    //                ch = "EOF";
-    //            }
-    //            sValue += ch;
-    //            this._error(a.Lexer.Error.BAD_TOKEN_ERROR,
-    //                        {
-    //                            eType  : a.Parser.TokenType.COMMENT_LITERAL,
-    //                            sValue : sValue,
-    //                            iStart : iStart,
-    //                            iEnd   : this.iColumnNumber,
-    //                            iLine  : this.iLineNumber
-    //                        });
-    //        }
-    //    }
-    //};
-    //Lexer.prototype._scanNumber = function () {
-    //    var ch = this._currentChar();
-    //    var sValue = "";
-    //    var isFloat = false;
-    //    var chPrevious = ch;
-    //    var isGoodFinish = false;
-    //    var iStart = this.iColumnNumber;
-    //    var isE = false;
-    //    if (ch === '.') {
-    //        sValue += 0;
-    //        isFloat = true;
-    //    }
-    //    sValue += ch;
-    //    while (1) {
-    //        ch = this._nextChar();
-    //        if (ch === '.') {
-    //            if (isFloat) {
-    //                break;
-    //            }
-    //            else {
-    //                isFloat = true;
-    //            }
-    //        }
-    //        else if (ch === 'e') {
-    //            if (isE) {
-    //                break;
-    //            }
-    //            else {
-    //                isE = true;
-    //            }
-    //        }
-    //        else if (((ch === '+' || ch === '-') && chPrevious === 'e')) {
-    //            sValue += ch;
-    //            chPrevious = ch;
-    //            continue;
-    //        }
-    //        else if (ch === 'f' && isFloat) {
-    //            ch = this._nextChar();
-    //            if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
-    //                break;
-    //            }
-    //            isGoodFinish = true;
-    //            break;
-    //        }
-    //        else if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
-    //            break;
-    //        }
-    //        else if (!((ch >= '0') && (ch <= '9')) || !ch) {
-    //            if ((isE && chPrevious !== '+' && chPrevious !== '-' && chPrevious !== 'e') || !isE) {
-    //                isGoodFinish = true;
-    //            }
-    //            break;
-    //        }
-    //        sValue += ch;
-    //        chPrevious = ch;
-    //    }
-
-    //    if (isGoodFinish) {
-    //        var sName = isFloat ? "T_FLOAT" : "T_UINT";
-    //        return {
-    //            sName  : sName,
-    //            sValue : sValue,
-    //            iStart : iStart,
-    //            iEnd   : this.iColumnNumber - 1,
-    //            iLine  : this.iLineNumber
-    //        };
-    //    }
-    //    else {
-    //        if (!ch) {
-    //            ch = "EOF";
-    //        }
-    //        sValue += ch;
-    //        this._error(a.Lexer.Error.BAD_TOKEN_ERROR,
-    //                    {
-    //                        eType  : a.Parser.TokenType.NUMERIC_LITERAL,
-    //                        sValue : sValue,
-    //                        iStart : iStart,
-    //                        iEnd   : this.iColumnNumber,
-    //                        iLine  : this.iLineNumber
-    //                    });
-    //    }
-    //};
-    //Lexer.prototype._scanIdentifier = function () {
-    //    var ch = this._currentChar();
-    //    var sValue = ch;
-    //    var iStart = this.iColumnNumber;
-    //    var isGoodFinish = false;
-    //    while (1) {
-    //        ch = this._nextChar();
-    //        if (!ch) {
-    //            isGoodFinish = true;
-    //            break;
-    //        }
-    //        if (!((ch === '_') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9'))) {
-    //            isGoodFinish = true;
-    //            break;
-    //        }
-    //        sValue += ch;
-    //    }
-    //    if (isGoodFinish) {
-    //        if (this._isKeyword(sValue)) {
-    //            return {
-    //                sName  : this._pKeywords[sValue],
-    //                sValue : sValue,
-    //                iStart : iStart,
-    //                iEnd   : this.iColumnNumber - 1,
-    //                iLine  : this.iLineNumber
-    //            };
-    //        }
-    //        else {
-    //            var sName = this.pParser.isTypeId(sValue) ? "T_TYPE_ID" : "T_NON_TYPE_ID";
-    //            return {
-    //                sName  : sName,
-    //                sValue : sValue,
-    //                iStart : iStart,
-    //                iEnd   : this.iColumnNumber - 1,
-    //                iLine  : this.iLineNumber
-    //            };
-    //        }
-    //    }
-    //    else {
-    //        if (!ch) {
-    //            ch = "EOF";
-    //        }
-    //        sValue += ch;
-    //        this._error(a.Lexer.Error.BAD_TOKEN_ERROR,
-    //                    {
-    //                        eType  : a.Parser.TokenType.IDENTIFIER_LITERAL,
-    //                        sValue : sValue,
-    //                        iStart : iStart,
-    //                        iEnd   : this.iColumnNumber,
-    //                        iLine  : this.iLineNumber
-    //                    });
-    //    }
-    //};
 
 }
