@@ -6,23 +6,23 @@
 
 
 module akra.data {
-	export class IndexData implements IBufferData {
+	export class IndexData implements IIndexData {
 		private _pIndexBuffer: IIndexBuffer;
 		private _iOffset: uint;
-		private _iCount: uint;
+		private _iLength: uint;
 		private _ePrimitiveType: EPrimitiveTypes;
 		private _eElementsType: EDataTypes;
 
 		/** @inline */
 		get type(): uint { return this._eElementsType; };
 		/** @inline */
-		get count(): uint { return this._iCount; };
+		get length(): uint { return this._iLength; };
 		/** @inline */
 		get bytesPerIndex(): uint { return getTypeSize(this._eElementsType); };
 		/** @inline */
 		get offset(): uint { return this._iOffset; };
 		/** @inline */
-		get byteLength(): uint { return this._iCount * this.bytesPerIndex; };
+		get byteLength(): uint { return this._iLength * this.bytesPerIndex; };
 		/** @inline */
 		get buffer(): IIndexBuffer { return this._pIndexBuffer; };
 
@@ -40,7 +40,7 @@ module akra.data {
 
 			this._pIndexBuffer = pIndexBuffer;
 			this._iOffset = iOffset;
-			this._iCount = iCount;
+			this._iLength = iCount;
 
 			debug_assert(pIndexBuffer.byteLength >= this.byteLength + this.offset, "out of buffer limits.");
 		}
@@ -64,7 +64,7 @@ module akra.data {
 		destroy(): void {
 			this._pIndexBuffer = null;
 			this._iOffset = undefined;
-			this._iCount = undefined;
+			this._iLength = undefined;
 			this._eElementsType = undefined;
 			this._eElementsType = undefined;
 		}
@@ -79,7 +79,7 @@ module akra.data {
 			switch (arguments.length) {
 		        case 0:
 		            // when no count is specified, use the total count of indices
-		            return this.getPrimitiveCount(this.count);
+		            return this.getPrimitiveCount(this.length);
 		        case 1:
 		            var iCount: uint = iIndexCount;
 

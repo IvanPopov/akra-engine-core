@@ -5,6 +5,7 @@
 
 module akra {
 
+    IFACE(IEngine);
     IFACE(IResourceCode);
     IFACE(IResourcePool);
     IFACE(IResourceWatcherFunc);
@@ -96,6 +97,8 @@ module akra {
     	destroyDeviceResources(): bool;
     	restoreDeviceResources(): bool;
     	disableDeviceResources(): bool;
+
+        getEngine(): IEngine;
     }
 }
 

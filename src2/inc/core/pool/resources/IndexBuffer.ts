@@ -55,13 +55,8 @@ module akra.core.pool.resources {
 			return false;
 		}
 
-		inline getHardwareBuffer(): WebGLObject {
-			return null;
-		}
 
-		inline getHardwareObject(): WebGLObject {
-			return null;
-		}
+		
 
 		inline getFlags(): int {
 			return 0;
@@ -87,6 +82,14 @@ module akra.core.pool.resources {
 		getCountIndexForStripGrid(iXVerts: int, iYVerts: int): int {
 			return 0;
 		}
+
+		inline getHardwareObject(): WebGLObject {
+			return null;
+		}
+
+		destroy(): void {}
+		create(iByteSize: uint, iFlags: int, pData: ArrayBuffer): bool { return false; }
+		resize(iSize: uint): bool { return false; }
 	}
 }
 

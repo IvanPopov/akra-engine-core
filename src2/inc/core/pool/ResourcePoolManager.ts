@@ -56,7 +56,7 @@ module akra.core.pool {
 		    }
 
 		    this.pResourceTypeMap = new Array();
-		    this.pWaiterResource = new pool.ResourcePoolItem(pEngine);
+		    this.pWaiterResource = new pool.ResourcePoolItem(this);
 
             this.createDeviceResource();
     	}
@@ -303,38 +303,40 @@ module akra.core.pool {
             return true;
         }
 
+        inline getEngine(): IEngine { return this.pEngine; }
+
         private createDeviceResource(): void {
-            this.pSurfaceMaterialPool = new ResourcePool(this.pEngine, resources.SurfaceMaterial);
+            this.pSurfaceMaterialPool = new ResourcePool(this, resources.SurfaceMaterial);
             this.pSurfaceMaterialPool.initialize(16);
 
-            this.pEffectPool = new ResourcePool(this.pEngine, resources.Effect);
+            this.pEffectPool = new ResourcePool(this, resources.Effect);
             this.pEffectPool.initialize(16);
 
-            this.pRenderMethodPool = new ResourcePool(this.pEngine, resources.RenderMethod);
+            this.pRenderMethodPool = new ResourcePool(this, resources.RenderMethod);
             this.pRenderMethodPool.initialize(16);
 
-            this.pVertexBufferPool = new ResourcePool(this.pEngine, resources.VertexBuffer);
+            this.pVertexBufferPool = new ResourcePool(this, resources.VertexBufferVBO);
             this.pVertexBufferPool.initialize(16);
 
-            this.pIndexBufferPool = new ResourcePool(this.pEngine, resources.IndexBuffer);
+            this.pIndexBufferPool = new ResourcePool(this, resources.IndexBuffer);
             this.pIndexBufferPool.initialize(16);
 
-            this.pModelPool = new ResourcePool(this.pEngine, resources.Model);
+            this.pModelPool = new ResourcePool(this, resources.Model);
             this.pModelPool.initialize(16);
 
-            this.pImagePool = new ResourcePool(this.pEngine, resources.Img);
+            this.pImagePool = new ResourcePool(this, resources.Img);
             this.pImagePool.initialize(16);
 
-            this.pTexturePool = new ResourcePool(this.pEngine, resources.Texture);
+            this.pTexturePool = new ResourcePool(this, resources.Texture);
             this.pTexturePool.initialize(16);
 
-            this.pVideoBufferPool = new ResourcePool(this.pEngine, resources.VideoBuffer);
+            this.pVideoBufferPool = new ResourcePool(this, resources.VertexBufferTBO);
             this.pVideoBufferPool.initialize(16);
 
-            this.pShaderProgramPool = new ResourcePool(this.pEngine, resources.ShaderProgram);
+            this.pShaderProgramPool = new ResourcePool(this, resources.ShaderProgram);
             this.pShaderProgramPool.initialize(16);
 
-            this.pComponentPool = new ResourcePool(this.pEngine, resources.Component);
+            this.pComponentPool = new ResourcePool(this, resources.Component);
             this.pComponentPool.initialize(16);
         }
         

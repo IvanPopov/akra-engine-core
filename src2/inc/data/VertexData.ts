@@ -1,7 +1,7 @@
 #ifndef VERTEXDATA_TS
 #define VERTEXDATA_TS
 
-#include "IBufferData.ts"
+#include "IVertexData.ts"
 #include "IVertexBuffer.ts"
 #include "IVertexDeclaration.ts"
 
@@ -12,32 +12,33 @@ module akra.data {
 		k_MaxElementsSize = 256
 	};
 
-	export class VertexData implements IBufferData {
+	export class VertexData implements IVertexData {
 		private _pVertexBuffer: IVertexBuffer;
 		private _iOffset: uint;
 		private _iStride: uint;
-		private _nMemberCount: uint;
+		private _iLength: uint;
 		private _pVertexDeclaration: IVertexDeclaration;
 		private _iId: uint;
 
+		inline get length(): uint { return this._iLength; };
+		inline get offset(): uint { return this._iOffset; };
+		inline get byteLength(): uint { return this._iLength * this._iStride; };
+		inline get buffer(): IVertexBuffer { return this._pVertexBuffer; };
+		inline get stride(): uint { return this._iStride; };
+		inline get startIndex(): uint {  
+			var iIndex: uint = this.offset / this.stride;
+    		debug_assert(iIndex % 1 == 0, "Вычислить значенеи индекса указывающего на первый элемен нельзя)");
+   			return iIndex; 
+   		};
 
-		/** @inline */
-		get count(): uint { return this._nMemberCount; };
-		/** @inline */
-		get offset(): uint { return this._iOffset; };
-		/** @inline */
-		get byteLength(): uint { return this._nMemberCount * this._iStride; };
-		/** @inline */
-		get buffer(): IIndexBuffer { return this._pVertexBuffer; };
 
-		constructor (pVertexBuffer: IVertexBuffer, iOffset: uint, iCount: uint, nSize: uint);
-		constructor (pVertexBuffer: IVertexBuffer, iOffset: uint, iCount: uint, pDecl: IVertexDeclaration);
-		constructor (pVertexBuffer: IVertexBuffer, iOffset: uint, iCount: uint, pDecl: any) {
+		constructor (pVertexBuffer: IVertexBuffer, id: uint, iOffset: uint, iCount: uint, nSize: uint);
+		constructor (pVertexBuffer: IVertexBuffer, id: uint, iOffset: uint, iCount: uint, pDecl: IVertexDeclaration);
+		constructor (pVertexBuffer: IVertexBuffer, id: uint, iOffset: uint, iCount: uint, pDecl: any) {
 			this._pVertexBuffer = pVertexBuffer;
 			this._iOffset = iOffset;
-			this._nMemberCount = iCount;
-			this._iId = pVertexBuffer.getNextId();
-
+			this._iLength = iCount;
+			this._iId = id;
 			this._pVertexDeclaration = null;
 			this._iStride = 0;
 
@@ -64,15 +65,20 @@ module akra.data {
 				return false;
 			}	
 
-			var iStride: uint = pVertexDeclaration.stride;
+			var iStride: uint = pDecl.stride;
 
-		    this._pVertexDeclaration = pVertexDeclaration.clone();
+		    this._pVertexDeclaration = pDecl.clone();
 
 
-		    debug_assert(iStride < EVertexDataLimits.k_MaxElementsSize, "stride max is 255 bytes");
+		    debug_assert(iStride < <number>EVertexDataLimits.k_MaxElementsSize, "stride max is 255 bytes");
 		    debug_assert(iStride <= this.stride, "stride in VertexDeclaration grather than stride in construtor");
 
 		    return true;
+		}
+
+		destroy(): void {
+			this._pVertexDeclaration = null;
+    		this._iLength = 0;
 		}
 	}
 }

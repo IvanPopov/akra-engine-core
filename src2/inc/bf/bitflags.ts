@@ -1,6 +1,65 @@
 #ifndef BITFLAGS_TS
 #define BITFLAGS_TS
 
+/**
+ * FLAG(x)
+ * Сдвиг единицы на @a x позиций влево.
+ */
+#define FLAG(x) (1 << (x))
+
+/**
+ * TEST_BIT(value, bit)
+ * Проверка того что у @a value бит под номером @a bit равен единице.
+ */
+#define TEST_BIT(value, bit) ((value & FLAG(bit)) != 0)
+
+/**
+ * TEST_ALL(value, set)
+ * Проверка того что у @a value равны единице все биты,
+ * которые равны единице у @a set.
+ */
+#define TEST_ALL(value, set) (((value) & (set)) == (set))
+
+/**
+ * TEST_ANY(value, set)
+ * Проверка того что у @a value равны единице хотя бы какие то из битов,
+ * которые равны единице у @a set.
+ */
+#define TEST_ANY(value, set) (((value) & (set)) != 0)
+
+/**
+ * SET_BIT(value, bit)
+ * Выставляет бит под номером @a bit у числа @a value равным единице
+ */
+#define SET_BIT(value, bit) ((value) |= FLAG((bit)))
+
+#define SET_BIT(value, bit, setting) (setting ? SET_BIT(value, bit) : CLEAR_BIT(value, bit))
+
+
+/**
+ * CLEAR_BIT(value, bit)
+ * Выставляет бит под номером @a bit у числа @a value равным нулю
+ */
+#define CLEAR_BIT(value, bit) ((value) &= ~FLAG((bit)))
+
+/**
+ * SET_ALL(value, set)
+ * Выставляет все биты у числа @a value равными единице,
+ * которые равны единице у числа @a set
+ */
+#define SET_ALL(value, set) ((value) |= (set))
+
+/**
+ * CLEAR_ALL(value, set)
+ * Выставляет все биты у числа @a value равными нулю,
+ * которые равны единице у числа @a set
+ */
+#define CLEAR_ALL(value, set) ((value) &= ~(set))
+
+#define SET_ALL(value, set, setting) (setting ? SET_ALL(value, set) : CLEAR_ALL(value, set))
+
+
+
 module akra.bf {
 	/**
 	 * Сдвиг единицы на @a x позиций влево.

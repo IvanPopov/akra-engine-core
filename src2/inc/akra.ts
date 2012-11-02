@@ -5,6 +5,7 @@
 
 #define IFACE(IF) export interface IF {}
 #define readonly  
+#define protected
 
 module akra {
     export var DEBUG: bool = true;
@@ -437,8 +438,8 @@ module akra {
 
 
 #include "core/pool/resources/IndexBuffer.ts"
-#include "core/pool/resources/VertexBuffer.ts"
-#include "core/pool/resources/VideoBuffer.ts"
+#include "core/pool/resources/VertexBufferVBO.ts"
+#include "core/pool/resources/VertexBufferTBO.ts"
 #include "core/pool/resources/Texture.ts"
 #include "core/pool/resources/ShaderProgram.ts"
 #include "core/pool/resources/Component.ts"
