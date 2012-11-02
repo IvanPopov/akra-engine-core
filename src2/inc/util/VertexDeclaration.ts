@@ -66,21 +66,20 @@ module akra.util {
 }
 
 module akra {
-	export function _VDFromElements(pElements: IVertexElement[]);
-	export function _VDFromElements(pDecl: IVertexDeclaration);
-	export function _VDFromElements(pDataDecl) {
-		if (!(pDataDecl instanceof VertexDeclaration)) {
-	        if (!(pDataDecl instanceof Array)) {
-	            pDataDecl = [pDataDecl];
+	export var VertexDeclaration = util.VertexDeclaration;
+	
+	createVertexDeclaration = function (pData?): IVertexDeclaration {
+		if (!(pData instanceof VertexDeclaration)) {
+	        if (!(pData instanceof Array)) {
+	            pData = [pData];
 	        }
 
-	        pDataDecl = new VertexDeclaration(pDataDecl);
+	        pData = new VertexDeclaration(pData);
 	    }
 
-	    return pDataDecl;
+	    return pData;
 	}
-
-	export var VertexDeclaration = util.VertexDeclaration;
+	
 }
 
 #endif

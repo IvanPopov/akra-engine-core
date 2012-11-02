@@ -104,6 +104,8 @@ module akra {
 	export function VE_INT(sName: string, iOffset: uint) { return VE_CUSTOM(sName, EDataTypes.INT, 1, iOffset);};
 
 	export function VE_END(iOffset: uint = 0) { return VE_CUSTOM(DeclUsages.END, EDataTypes.UNSIGNED_BYTE, 0, iOffset); };
+
+	export var createVertexDeclaration: (pData?) => IVertexDeclaration;
 }
 
 #endif

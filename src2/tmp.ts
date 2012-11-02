@@ -35,6 +35,7 @@ interface Number {
 
 
 
+
 module akra {
     export var DEBUG: bool = true;
 
@@ -1003,6 +1004,73 @@ module akra.libs {
         return res;
     };
 }
+
+
+
+
+
+
+/**
+ * FLAG(x)
+ * Сдвиг единицы на @a x позиций влево.
+ */
+
+
+
+/**
+ * TEST_BIT(value, bit)
+ * Проверка того что у @a value бит под номером @a bit равен единице.
+ */
+
+
+
+/**
+ * TEST_ALL(value, set)
+ * Проверка того что у @a value равны единице все биты,
+ * которые равны единице у @a set.
+ */
+
+
+
+/**
+ * TEST_ANY(value, set)
+ * Проверка того что у @a value равны единице хотя бы какие то из битов,
+ * которые равны единице у @a set.
+ */
+
+
+
+/**
+ * SET_BIT(value, bit)
+ * Выставляет бит под номером @a bit у числа @a value равным единице
+ */
+
+
+
+
+
+
+/**
+ * CLEAR_BIT(value, bit)
+ * Выставляет бит под номером @a bit у числа @a value равным нулю
+ */
+
+
+
+/**
+ * SET_ALL(value, set)
+ * Выставляет все биты у числа @a value равными единице,
+ * которые равны единице у числа @a set
+ */
+
+
+
+/**
+ * CLEAR_ALL(value, set)
+ * Выставляет все биты у числа @a value равными нулю,
+ * которые равны единице у числа @a set
+ */
+
 
 
 
@@ -2359,6 +2427,7 @@ module akra {
 	export interface IResourceNotifyRoutineFunc {} ;
 	export interface IResourceCode {} ;
 	export interface IResourcePool {} ;
+	export interface IResourcePoolManager {} ;
 
 /**
      * Отражает состояние ресурса
@@ -2379,19 +2448,21 @@ module akra {
 	export interface IResourcePoolItem extends IReferenceCounter {
 /** resource code */
 
-		resourceCode: IResourceCode;
+		 resourceCode: IResourceCode;
 /** resource pool */
 
-		resourcePool: IResourcePool;
+		 resourcePool: IResourcePool;
 /** resource handle */
 
-		resourceHandle: int;
+		 resourceHandle: int;
 /** resource flags */
 
-		resourceFlags: int;
+		 resourceFlags: int;
 /** Проверка был ли изменен ресур после загрузки */
 
-		alteredFlag: bool;
+		 alteredFlag: bool;
+
+		 manager: IResourcePoolManager;
 
 
 		getGuid(): int;
@@ -2496,7 +2567,7 @@ module akra {
 	}
 
 	export interface IResourcePoolItemType {
-		new (pEngine: IEngine): IResourcePoolItem;
+		new (pManager: IResourcePoolManager): IResourcePoolItem;
 	}
 }
 
@@ -3651,6 +3722,8 @@ module akra {
 	export function VE_INT(sName: string, iOffset: uint) { return VE_CUSTOM(sName, EDataTypes.INT, 1, iOffset);};
 
 	export function VE_END(iOffset: uint = 0) { return VE_CUSTOM(DeclUsages.END, EDataTypes.UNSIGNED_BYTE, 0, iOffset); };
+
+	export var createVertexDeclaration: (pData?) => IVertexDeclaration;
 }
 
 
@@ -3718,21 +3791,20 @@ module akra.util {
 }
 
 module akra {
-	export function _VDFromElements(pElements: IVertexElement[]);
-	export function _VDFromElements(pDecl: IVertexDeclaration);
-	export function _VDFromElements(pDataDecl) {
-		if (!(pDataDecl instanceof VertexDeclaration)) {
-	        if (!(pDataDecl instanceof Array)) {
-	            pDataDecl = [pDataDecl];
+	export var VertexDeclaration = util.VertexDeclaration;
+
+	createVertexDeclaration = function (pData?): IVertexDeclaration {
+		if (!(pData instanceof VertexDeclaration)) {
+	        if (!(pData instanceof Array)) {
+	            pData = [pData];
 	        }
 
-	        pDataDecl = new VertexDeclaration(pDataDecl);
+	        pData = new VertexDeclaration(pData);
 	    }
 
-	    return pDataDecl;
+	    return pData;
 	}
 
-	export var VertexDeclaration = util.VertexDeclaration;
 }
 
 
@@ -3902,7 +3974,11 @@ module akra {
 
 module akra {
 
+	export interface IEngine {} ;
+	export interface IResourcePoolManager {} ;
+
 	export interface IDataPool {
+		manager: IResourcePoolManager;
 /** Инициализация пула данных */
 
 		initialize(iGrowSize: uint): void;
@@ -3956,6 +4032,133 @@ module akra {
 
 
 
+
+
+
+
+
+
+module akra {
+    export interface IManager {
+        initialize(): bool;
+        destroy(): void;
+    }
+}
+
+
+
+module akra {
+
+    export interface IEngine {} ;
+    export interface IResourceCode {} ;
+    export interface IResourcePool {} ;
+    export interface IResourceWatcherFunc {} ;
+    export interface IResourcePoolItem {} ;
+
+/** Семейства ресурсов */
+
+	export enum EResourceFamilies {
+		VIDEO_RESOURCE = 0,
+		AUDIO_RESOURCE,
+		GAME_RESOURCE,
+		TOTAL_RESOURCE_FAMILIES
+	};
+
+/** Члены семейства видео ресурсов */
+
+	export enum EVideoResources {
+		TEXTURE_RESOURCE,
+		VIDEOBUFFER_RESOURCE,
+		VERTEXBUFFER_RESOURCE,
+		INDEXBUFFER_RESOURCE,
+		EFFECT_RESOURCE,
+		RENDERMETHOD_RESOURCE,
+		MODEL_RESOURCE,
+		EFFECTFILEDATA_RESOURCE,
+		IMAGE_RESOURCE,
+		SURFACEMATERIAL_RESOURCE,
+		SHADERPROGRAM_RESOURCE,
+		COMPONENT_RESOURCE,
+		TOTAL_VIDEO_RESOURCES
+	};
+
+	export enum EAudioResources {
+		TOTAL_AUDIO_RESOURCES
+	};
+
+	export enum EGameResources {
+		TOTAL_GAME_RESOURCES
+	};
+
+/** Конструктор класса, занимается очисткой списков пулов по семействам ресурсвов и краты пулов по коду ресурсов */
+
+    export interface IResourcePoolManager extends IManager {
+    	texturePool: IResourcePool;
+    	surfaceMaterialPool: IResourcePool;
+    	vertexBufferPool: IResourcePool;
+    	videoBufferPool: IResourcePool;
+    	indexBufferPool: IResourcePool;
+    	renderMethodPool: IResourcePool;
+    	modelPool: IResourcePool;
+    	imagePool: IResourcePool;
+//ex: private    	shaderProgramPool: IResourcePool;
+//ex: private    	effectPool: IResourcePool;
+//ex: private    	componentPool: IResourcePool;
+
+/** Регистрируется пул ресурсов опредленного типа в менеджере русурсов */
+
+    	registerResourcePool(pCode: IResourceCode, pPool: IResourcePool): void;
+/** Удаляет пул ресурсов опредленного типа в менеджере русурсов */
+
+    	unregisterResourcePool(pCode: IResourceCode): IResourcePool;
+
+/** Удаление ресурсов определенного семества */
+
+    	destroyResourceFamily(eFamily: EResourceFamilies): void;
+    	restoreResourceFamily(eFamily: EResourceFamilies): void;
+    	disableResourceFamily(eFamily: EResourceFamilies): void;
+    	cleanResourceFamily(eFamily: EResourceFamilies): void;
+
+    	destroyResourceType(pCode: IResourceCode): void;
+    	restoreResourceType(pCode: IResourceCode): void;
+    	disableResourceType(pCode: IResourceCode): void;
+    	cleanResourceType(pCode: IResourceCode): void;
+/** Возвращает пул ресурса опредленного типа по его коду */
+
+    	findResourcePool(pCode: IResourceCode): IResourcePool;
+/**
+		 * Возвращает хендл конкретного ресурса по его имени из конкретного пула опредленного типа
+		 **/
+
+    	findResourceHandle(pCode: IResourceCode, sName: string): int;
+/** Возвращает конкретный ресурс по его имени из конкретного пула опредленного типа */
+
+    	findResource(pCode: IResourceCode, sName: string): IResourcePoolItem;
+        findResource(pCode: IResourceCode, iHandle: int): IResourcePoolItem;
+
+    	monitorInitResources(fnMonitor: IResourceWatcherFunc): void;
+    	setLoadedAllRoutine(fnCallback: Function): void;
+
+/** Удаление всех ресурсов */
+
+    	destroyAll(): void;
+    	restoreAll(): void;
+    	disableAll(): void;
+
+    	clean(): void;
+
+    	createDeviceResources(): bool;
+    	destroyDeviceResources(): bool;
+    	restoreDeviceResources(): bool;
+    	disableDeviceResources(): bool;
+
+        getEngine(): IEngine;
+    }
+}
+
+
+
+
 module akra.core.pool {
 
 	export interface IGroupNumber {
@@ -3963,7 +4166,7 @@ module akra.core.pool {
 	}
 
 	export class PoolGroup {
-		private pEngine: IEngine;
+		private pManager: IResourcePoolManager;
 
 /** Конструктор для создания данных в группе */
 
@@ -3985,6 +4188,8 @@ module akra.core.pool {
 /** Массив элементов группы */
 
 		private pMemberList: IResourcePoolItem[] = null;
+
+		/**@inline*/  get manager(): IResourcePoolManager { return this.pManager; }
 
 /** 
 		 * Возвращает количесвто свободных мест в группе 
@@ -4013,8 +4218,8 @@ module akra.core.pool {
 			return this.iFirstOpen;
 		}
 
-		constructor (pEngine: IEngine, tTemplate: IResourcePoolItemType, iMaxCount: uint) {
-			this.pEngine = pEngine;
+		constructor (pManager: IResourcePoolManager, tTemplate: IResourcePoolItemType, iMaxCount: uint) {
+			this.pManager = pManager;
 			this.tTemplate = tTemplate;
 			this.iMaxCount = iMaxCount;
 		}
@@ -4034,7 +4239,7 @@ module akra.core.pool {
 
 
 		    for (i = 0; i < this.iMaxCount; i++) {
-		        this.pMemberList[i] = new this.tTemplate(this.pEngine);
+		        this.pMemberList[i] = new this.tTemplate(this.pManager);
 		    }
 
 		    debug_assert(this.pNextOpenList != null, "tragic memory allocation failure!");
@@ -4135,7 +4340,7 @@ module akra.core.pool {
 	}
 
 	export class DataPool implements IDataPool {
-		private pEngine: IEngine;
+		private pManager: IResourcePoolManager;
 		private tTemplate: IResourcePoolItemType;
 		private bInitialized: bool = false;
 
@@ -4166,8 +4371,10 @@ module akra.core.pool {
 		private iIndexShift: int = 0;
 
 
-		constructor(pEngine: IEngine, tTemplate: IResourcePoolItemType) {
-			this.pEngine = pEngine;
+		/**@inline*/  get manager(): IResourcePoolManager { return this.pManager; }
+
+		constructor(pManager: IResourcePoolManager, tTemplate: IResourcePoolItemType) {
+			this.pManager = pManager;
 			this.tTemplate = tTemplate;
 		}
 
@@ -4321,6 +4528,7 @@ module akra.core.pool {
     		return this.getPtr(iHandle);
 		}
 
+
 /** 
 		 * @inline 
 		 * Получение номера группы по номеру элемента
@@ -4352,7 +4560,7 @@ module akra.core.pool {
 
 		private addGroup(): PoolGroup {
 // append a new group to the list to start things off
-		    var pNewGroup: PoolGroup = new PoolGroup(this.pEngine, this.tTemplate, this.iGroupCount);
+		    var pNewGroup: PoolGroup = new PoolGroup(this.pManager, this.tTemplate, this.iGroupCount);
 		    this.pGroupList.push(pNewGroup);
 // gain access to the new group and innitialize it
 		    pNewGroup.create();
@@ -4412,15 +4620,16 @@ module akra.core.pool {
 
 
 
-
-
 module akra {
 
+        export interface IEngine {} ;
         export interface IResourceCode {} ;
         export interface IResourcePoolItem {} ;
+        export interface IResourcePoolManager {} ;
 
         export interface IResourcePool {
                 iFourcc: int;
+                 manager: IResourcePoolManager;
 
 /** Добавление данного пула в менеджер ресурсво по его коду */
 
@@ -4475,9 +4684,11 @@ module akra {
 
 
 
+
+
 module akra.core.pool {
     export class ResourcePool extends util.ReferenceCounter implements IResourcePool {
-        private pEngine: IEngine = null;
+        private pManager: IResourcePoolManager = null;
 /** Конструктор для создания данных в пуле ресурсов */
 
         private tTemplate: IResourcePoolItemType = null;
@@ -4488,16 +4699,14 @@ module akra.core.pool {
         private pDataPool: IDataPool = null;
 
 
-/** @inline */
-
-        get iFourcc(): int {
+        /**@inline*/  get iFourcc(): int {
             return (this.sExt.charCodeAt(3) << 24)
                       | (this.sExt.charCodeAt(2) << 16)
                       | (this.sExt.charCodeAt(1) << 8)
                       | (this.sExt.charCodeAt(0));
         }
 
-/** @inline */
+
 
         set iFourcc(iNewFourcc: int) {
             this.sExt = String.fromCharCode((iNewFourcc & 0x000000FF),
@@ -4506,25 +4715,29 @@ module akra.core.pool {
                                              (iNewFourcc & 0xFF000000) >>> 24);
         }
 
-        constructor (pEngine: IEngine, tTemplate: IResourcePoolItemType) {
+        /**@inline*/  get manager(): IResourcePoolManager {
+            return this.pManager;
+        }
+
+        constructor (pManager: IResourcePoolManager, tTemplate: IResourcePoolItemType) {
             super();
 
-            this.pEngine = pEngine;
+            this.pManager = pManager;
             this.tTemplate = tTemplate;
-            this.pDataPool = new DataPool(pEngine, tTemplate);
+            this.pDataPool = new DataPool(this.pManager, tTemplate);
         }
 
 /** Добавление данного пула в менеджер ресурсво по его коду */
 
         registerResourcePool(pCode: IResourceCode): void {
             this.pRegistrationCode.eq(pCode);
-            this.pEngine.getResourceManager().registerResourcePool(this.pRegistrationCode, this);
+            this.pManager.registerResourcePool(this.pRegistrationCode, this);
         }
 
 /** Удаление данного пула в менеджер ресурсво по его коду */
 
         unregisterResourcePool(): void {
-            this.pEngine.getResourceManager().unregisterResourcePool(this.pRegistrationCode);
+            this.pManager.unregisterResourcePool(this.pRegistrationCode);
             this.pRegistrationCode.setInvalid();
         }
 
@@ -4691,6 +4904,7 @@ module akra.core.pool {
             return pResources;
         }
 
+
         private internalGetResource(iHandle: int): IResourcePoolItem {
             return this.pDataPool.getPtr(iHandle);
         }
@@ -4762,6 +4976,8 @@ module akra.core.pool {
 
 
 
+
+
 module akra {
 
 	export interface IResourcePoolItem {} ;
@@ -4799,7 +5015,7 @@ module akra.core.pool {
 	}
 
 	export class ResourcePoolItem extends util.ReferenceCounter implements IResourcePoolItem {
-		private pEngine: IEngine;
+		private pManager: IResourcePoolManager;
 		private pResourceCode: IResourceCode;
 		private pResourcePool: IResourcePool = null;
 		private iResourceHandle: int = 0;
@@ -4810,42 +5026,34 @@ module akra.core.pool {
 		private pCallbackSlots: ICallbackSlot[][];
 
 
-/** @inline */
-
-		get resourceCode(): IResourceCode {
+		/**@inline*/  get resourceCode(): IResourceCode {
 			return this.pResourceCode;
 		}
 
-/** @inline */
-
-		get resourcePool(): IResourcePool {
+		/**@inline*/  get resourcePool(): IResourcePool {
 			return this.pResourcePool;
 		}
 
-/** @inline */
-
-		get resourceHandle(): int {
+		/**@inline*/  get resourceHandle(): int {
 			return this.iResourceHandle;
 		}
 
-/** @inline */
-
-		get resourceFlags(): int {
+		/**@inline*/  get resourceFlags(): int {
 			return this.iResourceFlags;
 		}
 
-/** @inline */
-
-		get alteredFlag(): bool {
+		/**@inline*/  get alteredFlag(): bool {
 			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Altered);
 		}
 
+		/**@inline*/  get manager(): IResourcePoolManager { return this.pManager; }
+
 /** Constructor of ResourcePoolItem class */
 
-		constructor (pEngine: IEngine) {
+		constructor (pManager: IResourcePoolManager) {
 			super();
 
-			this.pEngine = pEngine;
+			this.pManager = pManager;
 			this.pResourceCode = new ResourceCode(0);
 			this.iGuid = sid();
 			this.pCallbackFunctions = [];
@@ -4853,16 +5061,12 @@ module akra.core.pool {
 			this.pCallbackSlots = genArray(null, <number>EResourceItemEvents.k_TotalResourceFlags);
 		}
 
-/** @inline */
-
-		getGuid(): int {
+		/**@inline*/  getGuid(): int {
 			return this.iGuid;
 		}
 
-/** @inline */
-
-		getEngine(): IEngine {
-			return this.pEngine;
+		/**@inline*/  getEngine(): IEngine {
+			return this.pManager.getEngine();
 		}
 
 		createResource(): bool {
@@ -5193,128 +5397,6 @@ module akra.core.pool {
 
 
 
-module akra {
-    export interface IManager {
-        initialize(): bool;
-        destroy(): void;
-    }
-}
-
-
-
-module akra {
-
-    export interface IResourceCode {} ;
-    export interface IResourcePool {} ;
-    export interface IResourceWatcherFunc {} ;
-    export interface IResourcePoolItem {} ;
-
-/** Семейства ресурсов */
-
-	export enum EResourceFamilies {
-		VIDEO_RESOURCE = 0,
-		AUDIO_RESOURCE,
-		GAME_RESOURCE,
-		TOTAL_RESOURCE_FAMILIES
-	};
-
-/** Члены семейства видео ресурсов */
-
-	export enum EVideoResources {
-		TEXTURE_RESOURCE,
-		VIDEOBUFFER_RESOURCE,
-		VERTEXBUFFER_RESOURCE,
-		INDEXBUFFER_RESOURCE,
-		EFFECT_RESOURCE,
-		RENDERMETHOD_RESOURCE,
-		MODEL_RESOURCE,
-		EFFECTFILEDATA_RESOURCE,
-		IMAGE_RESOURCE,
-		SURFACEMATERIAL_RESOURCE,
-		SHADERPROGRAM_RESOURCE,
-		COMPONENT_RESOURCE,
-		TOTAL_VIDEO_RESOURCES
-	};
-
-	export enum EAudioResources {
-		TOTAL_AUDIO_RESOURCES
-	};
-
-	export enum EGameResources {
-		TOTAL_GAME_RESOURCES
-	};
-
-/** Конструктор класса, занимается очисткой списков пулов по семействам ресурсвов и краты пулов по коду ресурсов */
-
-    export interface IResourcePoolManager extends IManager {
-    	texturePool: IResourcePool;
-    	surfaceMaterialPool: IResourcePool;
-    	vertexBufferPool: IResourcePool;
-    	videoBufferPool: IResourcePool;
-    	indexBufferPool: IResourcePool;
-    	renderMethodPool: IResourcePool;
-    	modelPool: IResourcePool;
-    	imagePool: IResourcePool;
-//ex: private    	shaderProgramPool: IResourcePool;
-//ex: private    	effectPool: IResourcePool;
-//ex: private    	componentPool: IResourcePool;
-
-/** Регистрируется пул ресурсов опредленного типа в менеджере русурсов */
-
-    	registerResourcePool(pCode: IResourceCode, pPool: IResourcePool): void;
-/** Удаляет пул ресурсов опредленного типа в менеджере русурсов */
-
-    	unregisterResourcePool(pCode: IResourceCode): IResourcePool;
-
-/** Удаление ресурсов определенного семества */
-
-    	destroyResourceFamily(eFamily: EResourceFamilies): void;
-    	restoreResourceFamily(eFamily: EResourceFamilies): void;
-    	disableResourceFamily(eFamily: EResourceFamilies): void;
-    	cleanResourceFamily(eFamily: EResourceFamilies): void;
-
-    	destroyResourceType(pCode: IResourceCode): void;
-    	restoreResourceType(pCode: IResourceCode): void;
-    	disableResourceType(pCode: IResourceCode): void;
-    	cleanResourceType(pCode: IResourceCode): void;
-/** Возвращает пул ресурса опредленного типа по его коду */
-
-    	findResourcePool(pCode: IResourceCode): IResourcePool;
-/**
-		 * Возвращает хендл конкретного ресурса по его имени из конкретного пула опредленного типа
-		 **/
-
-    	findResourceHandle(pCode: IResourceCode, sName: string): int;
-/** Возвращает конкретный ресурс по его имени из конкретного пула опредленного типа */
-
-    	findResource(pCode: IResourceCode, sName: string): IResourcePoolItem;
-        findResource(pCode: IResourceCode, iHandle: int): IResourcePoolItem;
-
-    	monitorInitResources(fnMonitor: IResourceWatcherFunc): void;
-    	setLoadedAllRoutine(fnCallback: Function): void;
-
-/** Удаление всех ресурсов */
-
-    	destroyAll(): void;
-    	restoreAll(): void;
-    	disableAll(): void;
-
-    	clean(): void;
-
-    	createDeviceResources(): bool;
-    	destroyDeviceResources(): bool;
-    	restoreDeviceResources(): bool;
-    	disableDeviceResources(): bool;
-    }
-}
-
-
-
-
-
-
-
-
 
 module akra.core.pool {
 //is this class really singleton??
@@ -5368,7 +5450,7 @@ module akra.core.pool {
 		    }
 
 		    this.pResourceTypeMap = new Array();
-		    this.pWaiterResource = new pool.ResourcePoolItem(pEngine);
+		    this.pWaiterResource = new pool.ResourcePoolItem(this);
 
             this.createDeviceResource();
     	}
@@ -5615,38 +5697,40 @@ module akra.core.pool {
             return true;
         }
 
+        /**@inline*/  getEngine(): IEngine { return this.pEngine; }
+
         private createDeviceResource(): void {
-            this.pSurfaceMaterialPool = new ResourcePool(this.pEngine, resources.SurfaceMaterial);
+            this.pSurfaceMaterialPool = new ResourcePool(this, resources.SurfaceMaterial);
             this.pSurfaceMaterialPool.initialize(16);
 
-            this.pEffectPool = new ResourcePool(this.pEngine, resources.Effect);
+            this.pEffectPool = new ResourcePool(this, resources.Effect);
             this.pEffectPool.initialize(16);
 
-            this.pRenderMethodPool = new ResourcePool(this.pEngine, resources.RenderMethod);
+            this.pRenderMethodPool = new ResourcePool(this, resources.RenderMethod);
             this.pRenderMethodPool.initialize(16);
 
-            this.pVertexBufferPool = new ResourcePool(this.pEngine, resources.VertexBuffer);
+            this.pVertexBufferPool = new ResourcePool(this, resources.VertexBufferVBO);
             this.pVertexBufferPool.initialize(16);
 
-            this.pIndexBufferPool = new ResourcePool(this.pEngine, resources.IndexBuffer);
+            this.pIndexBufferPool = new ResourcePool(this, resources.IndexBuffer);
             this.pIndexBufferPool.initialize(16);
 
-            this.pModelPool = new ResourcePool(this.pEngine, resources.Model);
+            this.pModelPool = new ResourcePool(this, resources.Model);
             this.pModelPool.initialize(16);
 
-            this.pImagePool = new ResourcePool(this.pEngine, resources.Img);
+            this.pImagePool = new ResourcePool(this, resources.Img);
             this.pImagePool.initialize(16);
 
-            this.pTexturePool = new ResourcePool(this.pEngine, resources.Texture);
+            this.pTexturePool = new ResourcePool(this, resources.Texture);
             this.pTexturePool.initialize(16);
 
-            this.pVideoBufferPool = new ResourcePool(this.pEngine, resources.VideoBuffer);
+            this.pVideoBufferPool = new ResourcePool(this, resources.VertexBufferTBO);
             this.pVideoBufferPool.initialize(16);
 
-            this.pShaderProgramPool = new ResourcePool(this.pEngine, resources.ShaderProgram);
+            this.pShaderProgramPool = new ResourcePool(this, resources.ShaderProgram);
             this.pShaderProgramPool.initialize(16);
 
-            this.pComponentPool = new ResourcePool(this.pEngine, resources.Component);
+            this.pComponentPool = new ResourcePool(this, resources.Component);
             this.pComponentPool.initialize(16);
         }
 
@@ -5761,7 +5845,8 @@ module akra {
 		MANY_DRAWS,
 		READABLE,
 		RAM_BACKUP,
-		SOFTWARE
+		SOFTWARE,
+		ALIGNMENT
 	}
 
 	export interface IGPUBuffer extends IBuffer {
@@ -5778,8 +5863,11 @@ module akra {
 		getData(iOffset: uint, iSize: uint): ArrayBuffer;
 		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool;
 
-		getHardwareBuffer(): WebGLObject;
 		getFlags(): int;
+
+		destroy(): void;
+		create(iByteSize: uint, iFlags: int, pData: ArrayBuffer): bool;
+		resize(iSize: uint): bool;
 	}
 }
 
@@ -6088,13 +6176,8 @@ module akra.core.pool.resources {
 			return false;
 		}
 
-		/**@inline*/  getHardwareBuffer(): WebGLObject {
-			return null;
-		}
 
-		/**@inline*/  getHardwareObject(): WebGLObject {
-			return null;
-		}
+
 
 		/**@inline*/  getFlags(): int {
 			return 0;
@@ -6120,8 +6203,18 @@ module akra.core.pool.resources {
 		getCountIndexForStripGrid(iXVerts: int, iYVerts: int): int {
 			return 0;
 		}
+
+		/**@inline*/  getHardwareObject(): WebGLObject {
+			return null;
+		}
+
+		destroy(): void {}
+		create(iByteSize: uint, iFlags: int, pData: ArrayBuffer): bool { return false; }
+		resize(iSize: uint): bool { return false; }
 	}
 }
+
+
 
 
 
@@ -6147,10 +6240,29 @@ module akra {
 
 
 module akra {
-	export interface IVertexData extends IBufferData {
+	export interface IVertexData extends IBufferData, IBuffer {
+		 stride: uint;
+		 startIndex: uint;
 
+		getVertexDeclaration(): IVertexDeclaration;
+		setVertexDeclaration(pDecl: IVertexDeclaration): bool;
+//getVertexElementCount(): uint;
+//hasSemantics(sSemantics: string): bool;
+
+		destroy(): void;
+
+//extend(pData: ArrayBufferView, pDecl: IVertexDeclaration): bool;
+//resize(nCount: uint, pDecl: IVertexDeclaration): bool;
+//applyModifier(sSemantics: string, fnModifier: Function): bool;
+
+///setData(pData, iOffset, iSize, nCountStart, nCount);
+//getData(iOffset, iSize, iFrom, iCount);
+//getTypedData(eUsage, iFrom, iCount);
+//toString(): string;
 	}
 }
+
+
 
 
 
@@ -6170,13 +6282,22 @@ module akra {
 	export interface IVertexElement {} ;
 	export interface IVertexDeclaration {} ;
 
+	export enum EVertexBufferTypes {
+		TYPE_UNKNOWN,
+		TYPE_VBO,
+		TYPE_TBO
+	};
 
-	export interface IVertexBufferBase extends IGPUBuffer {
+	export interface IVertexBuffer extends IGPUBuffer, IResourcePoolItem {
+
+		 type: EVertexBufferTypes;
+
 		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;
 		getVertexData(iOffset: uint, iCount: uint, pDecl: IVertexDeclaration): IVertexData;
 
 		getEmptyVertexData(iCount: uint, pElements: IVertexElement[], ppVertexDataIn?: IVertexData): IVertexData;
 		getEmptyVertexData(iCount: uint, pDecl: IVertexDeclaration, ppVertexDataIn?: IVertexData): IVertexData;
+		getEmptyVertexData(iCount: uint, pSize: uint, ppVertexDataIn?: IVertexData): IVertexData;
 
 		freeVertexData(pVertexData: IVertexData): bool;
 
@@ -6191,7 +6312,7 @@ module akra {
 
 
 module akra {
-	export interface IVertexBuffer extends IVertexBufferBase, IRenderResource {
+	export interface IVertexBufferVBO extends IVertexBuffer, IRenderResource {
 
 
 	}
@@ -6201,19 +6322,138 @@ module akra {
 
 
 
-module akra.core.pool.resources {
-	export class VertexBuffer extends ResourcePoolItem implements IVertexBuffer {
 
-		get byteLength(): uint {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra.data {
+
+	export enum EVertexDataLimits {
+		k_MaxElementsSize = 256
+	};
+
+	export class VertexData implements IVertexData {
+		private _pVertexBuffer: IVertexBuffer;
+		private _iOffset: uint;
+		private _iStride: uint;
+		private _iLength: uint;
+		private _pVertexDeclaration: IVertexDeclaration;
+		private _iId: uint;
+
+		/**@inline*/  get length(): uint { return this._iLength; };
+		/**@inline*/  get offset(): uint { return this._iOffset; };
+		/**@inline*/  get byteLength(): uint { return this._iLength * this._iStride; };
+		/**@inline*/  get buffer(): IVertexBuffer { return this._pVertexBuffer; };
+		/**@inline*/  get stride(): uint { return this._iStride; };
+		/**@inline*/  get startIndex(): uint {
+			var iIndex: uint = this.offset / this.stride;
+    		debug_assert(iIndex % 1 == 0, "Вычислить значенеи индекса указывающего на первый элемен нельзя)");
+   			return iIndex;
+   		};
+
+
+		constructor (pVertexBuffer: IVertexBuffer, id: uint, iOffset: uint, iCount: uint, nSize: uint);
+		constructor (pVertexBuffer: IVertexBuffer, id: uint, iOffset: uint, iCount: uint, pDecl: IVertexDeclaration);
+		constructor (pVertexBuffer: IVertexBuffer, id: uint, iOffset: uint, iCount: uint, pDecl: any) {
+			this._pVertexBuffer = pVertexBuffer;
+			this._iOffset = iOffset;
+			this._iLength = iCount;
+			this._iId = id;
+			this._pVertexDeclaration = null;
+			this._iStride = 0;
+
+			if (isInt(pDecl)) {
+				this._iStride = <uint>pDecl;
+			}
+			else {
+				this.setVertexDeclaration(pDecl);
+			}
+
+			debug_assert(pVertexBuffer.byteLength >= this.byteLength + this.offset, "vertex data out of array linits");
+		}
+
+
+
+		getVertexDeclaration(): IVertexDeclaration {
+			return this._pVertexDeclaration;
+		}
+
+		setVertexDeclaration(pDecl: IVertexDeclaration): bool {
+			if (this._pVertexDeclaration) {
+				debug_error("vertex declaration already exists");
+
+				return false;
+			}
+
+			var iStride: uint = pDecl.stride;
+
+		    this._pVertexDeclaration = pDecl.clone();
+
+
+		    debug_assert(iStride < <number>EVertexDataLimits.k_MaxElementsSize, "stride max is 255 bytes");
+		    debug_assert(iStride <= this.stride, "stride in VertexDeclaration grather than stride in construtor");
+
+		    return true;
+		}
+
+		destroy(): void {
+			this._pVertexDeclaration = null;
+    		this._iLength = 0;
+		}
+	}
+}
+
+
+
+
+
+module akra.core.pool.resources {
+	interface IBufferHole {
+		start: uint;
+		end: uint;
+	}
+
+	export class VertexBuffer extends ResourcePoolItem implements IVertexBuffer {
+		 _pBackupCopy: ArrayBuffer = null;
+		 _iFlags: int = 0;
+		 _pVertexDataArray: IVertexData[] = [];
+		 _iDataCounter: uint = 0;
+
+		/**@inline*/  get type(): EVertexBufferTypes { return EVertexBufferTypes.TYPE_UNKNOWN; }
+
+		/**@inline*/  get byteLength(): uint {
 			return 0;
 		}
 
-		get length(): uint {
+		/**@inline*/  get length(): uint {
 			return 0;
+		}
+
+		constructor (pManager: IResourcePoolManager) {
+			super(pManager);
+
 		}
 
 		clone(pSrc: IGPUBuffer): bool {
-			return false;
+			var pBuffer: IVertexBuffer = <IVertexBuffer> pSrc;
+
+// destroy any local data
+			this.destroy();
+
+			return this.create(pBuffer.byteLength, pBuffer.getFlags(), pBuffer.getData());
 		}
 
 		isValid(): bool {
@@ -6221,44 +6461,37 @@ module akra.core.pool.resources {
 		}
 
 		isDynamic(): bool {
-			return false;
+			return ( ((this._iFlags & (1 << (EGPUBufferFlags.MANY_UPDATES)) ) != 0)  &&
+    	   		((this._iFlags & (1 << (EGPUBufferFlags.MANY_DRAWS)) ) != 0) );
 		}
 
 		isStatic(): bool {
-			return false;
+			return ((! ((this._iFlags & (1 << (EGPUBufferFlags.MANY_UPDATES)) ) != 0) ) &&
+				((this._iFlags & (1 << (EGPUBufferFlags.MANY_DRAWS)) ) != 0) );
 		}
 
 		isStream(): bool {
-			return false;
+			return (! ((this._iFlags & (1 << (EGPUBufferFlags.MANY_UPDATES)) ) != 0) ) &&
+					(! ((this._iFlags & (1 << (EGPUBufferFlags.MANY_DRAWS)) ) != 0) );
 		}
 
 		isReadable(): bool {
-			return false;
+//Вроде как на данный момент нельхзя в вебЖл считывать буферы из видио памяти
+//(но нужно ли это вообще и есть ли смысл просто обратиться к локальной копии)
+			return  ((this._iFlags & (1 << (EGPUBufferFlags.READABLE)) ) != 0) ;
 		}
 
 		isRAMBufferPresent(): bool {
-			return false;
+			return this._pBackupCopy != null;
 		}
 
 		isSoftware(): bool {
-			return false;
+//на данный момент у нас нету понятия софтварной обработки и рендеренга
+    		return  ((this._iFlags & (1 << (EGPUBufferFlags.SOFTWARE)) ) != 0) ;
 		}
 
 		isAlignment(): bool {
-			return false;
-		}
-
-
-		getHardwareBuffer(): WebGLObject {
-			return null;
-		}
-
-		getHardwareObject(): WebGLObject {
-			return null;
-		}
-
-		getFlags(): int {
-		return 0;
+			return  ((this._iFlags & (1 << (EGPUBufferFlags.ALIGNMENT)) ) != 0) ;
 		}
 
 		getData(iOffset: uint, iSize: uint): ArrayBuffer {
@@ -6269,33 +6502,203 @@ module akra.core.pool.resources {
 			return false;
 		}
 
+		/**@inline*/  getFlags(): int {
+			return this._iFlags;
+		}
+
 
 		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;
 		getVertexData(iOffset: uint, iCount: uint, pDecl: IVertexDeclaration): IVertexData;
-		getVertexData(iOffset: uint, iCount: uint, pDecl: any): IVertexData {
-			return null;
+		getVertexData(iOffset: uint, iCount: uint, pData: any): IVertexData {
+			var pDecl: IVertexDeclaration = createVertexDeclaration(pData);
+			var pVertexData: IVertexData = new data.VertexData(this, this._iDataCounter++, iOffset, iCount, pDecl);
+
+			this._pVertexDataArray.push(pVertexData);
+			return pVertexData;
 		}
 
 
 		getEmptyVertexData(iCount: uint, pElements: IVertexElement[], ppVertexDataIn?: IVertexData): IVertexData;
 		getEmptyVertexData(iCount: uint, pDecl: IVertexDeclaration, ppVertexDataIn?: IVertexData): IVertexData;
-		getEmptyVertexData(iCount: uint, pDecl: any, ppVertexDataIn?: IVertexData): IVertexData {
+		getEmptyVertexData(iCount: uint, pSize: uint, ppVertexDataIn?: IVertexData): IVertexData;
+		getEmptyVertexData(iCount: uint, pDeclData: any, ppVertexDataIn?: IVertexData): IVertexData {
+			var pDecl: IVertexDeclaration;
+			var pHole: IBufferHole[] = [];
+			var i: int;
+			var pVertexData: IVertexData;
+			var iTemp: int;
+			var iStride: int = 0;
+			var iAligStart: int;
+
+			while(true) {
+
+				pHole[0] = {start:0, end: this.byteLength};
+
+				for(var k: uint = 0; k < this._pVertexDataArray.length; ++ k) {
+					pVertexData = this._pVertexDataArray[k];
+
+					for(i = 0; i < pHole.length; i++) {
+//Полностью попадает внутрь
+						if(pVertexData.offset > pHole[i].start &&
+							pVertexData.offset + pVertexData.byteLength < pHole[i].end) {
+							iTemp = pHole[i].end;
+							pHole[i].end=pVertexData.offset;
+							pHole.splice(i + 1, 0, {start: pVertexData.offset + pVertexData.byteLength, end: iTemp});
+							i--;
+						}
+						else if(pVertexData.offset == pHole[i].start &&
+							pVertexData.offset + pVertexData.byteLength < pHole[i].end) {
+							pHole[i].start = pVertexData.offset + pVertexData.byteLength;
+						}
+						else if(pVertexData.offset > pHole[i].start &&
+							pVertexData.offset + pVertexData.byteLength == pHole[i].end) {
+
+						}
+						else if(pVertexData.offset == pHole[i].start &&
+							pVertexData.byteLength == (pHole[i].end - pHole[i].start)) {
+							pHole.splice(i, 1);
+							i--;
+						}
+//Перекрывает снизу
+						else if(pVertexData.offset < pHole[i].start &&
+							pVertexData.offset + pVertexData.byteLength > pHole[i].start &&
+							pVertexData.offset + pVertexData.byteLength < pHole[i].end) {
+							pHole[i].start = pVertexData.offset + pVertexData.byteLength;
+						}
+						else if(pVertexData.offset < pHole[i].start &&
+							pVertexData.offset + pVertexData.byteLength > pHole[i].start &&
+							pVertexData.offset + pVertexData.byteLength == pHole[i].end) {
+							pHole.splice(i,1);
+							i--;
+						}
+//Перекрывается сверху
+						else if(pVertexData.offset + pVertexData.byteLength > pHole[i].end &&
+							pVertexData.offset > pHole[i].start && pVertexData.offset < pHole[i].end) {
+							pHole[i].end=pVertexData.offset;
+						}
+						else if(pVertexData.offset + pVertexData.byteLength > pHole[i].end &&
+							pVertexData.offset == pHole[i].start && pVertexData.offset < pHole[i].end) {
+							pHole.splice(i,1);
+							i--;
+						}
+//полнстью перекрывает
+						else if(pVertexData.offset < pHole[i].start &&
+							pVertexData.offset + pVertexData.byteLength > pHole[i].end) {
+							i--;
+						}
+					}
+				}
+
+
+				pHole.sort((a: IBufferHole, b: IBufferHole): number => ((a.end - a.start) - (b.end - b.start)));
+
+
+
+				if(isInt(pDeclData)) {
+					pDecl = createVertexDeclaration(pDeclData);
+					iStride = pDecl.stride;
+				}
+				else {
+					iStride = pDeclData;
+				}
+
+				for (i = 0; i < pHole.length; i++) {
+					iAligStart = this.isAlignment() ?
+						math.alignUp(pHole[i].start, math.nok(iStride,4)):
+						math.alignUp(pHole[i].start, iStride);
+
+					if((pHole[i].end - iAligStart) >= iCount * iStride) {
+						if(arguments.length == 2) {
+							pVertexData = new data.VertexData(this, iAligStart, iCount, pDeclData);
+							this._pVertexDataArray.push(pVertexData);
+
+							return pVertexData;
+						}
+						else if(arguments.length == 3) {
+							((<any>ppVertexDataIn).constructor).call(ppVertexDataIn, this, iAligStart, iCount, pDeclData);
+							this._pVertexDataArray.push(ppVertexDataIn);
+
+							return ppVertexDataIn;
+						}
+
+						return null;
+					}
+				}
+
+				if (this.resize(Math.max(this.byteLength * 2, this.byteLength + iCount * iStride)) == false) {
+					break;
+				}
+			}
+
 			return null;
 		}
 
 
 		freeVertexData(pVertexData: IVertexData): bool {
-			return false;
+			if(arguments.length == 0) {
+				for(var i: uint = 0; i < this._pVertexDataArray.length; i ++) {
+					this._pVertexDataArray[Number(i)].destroy();
+				}
+
+				this._pVertexDataArray = null;
+			}
+			else {
+				for(var i: uint = 0; i < this._pVertexDataArray.length; i ++) {
+					if(this._pVertexDataArray[i] == pVertexData) {
+						this._pVertexDataArray.splice(i, 1);
+						return true;
+					}
+				}
+
+				pVertexData.destroy();
+
+				return false;
+			}
 		}
 
 
 		allocateData(pElements: IVertexElement[], pData: ArrayBufferView): IVertexData;
 		allocateData(pDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
-		allocateData(pDecl: any, pData: ArrayBufferView): IVertexData {
+		allocateData(pDeclData: any, pData: ArrayBufferView): IVertexData {
+			var pDecl: IVertexDeclaration = createVertexDeclaration(pDeclData);
+
+			var pVertexData: IVertexData;
+		    var iCount: uint = pData.byteLength / pDecl.stride;
+
+		    debug_assert(iCount === math.floor(iCount), 'Data size should be a multiple of the vertex declaration.');
+
+		    pVertexData = this.getEmptyVertexData(iCount, pDecl);
+		    pVertexData.setData(pData, 0, pDecl.stride);
+
+		    return pVertexData;
+		}
+
+		destroy(): void {}
+		create(iByteSize: uint, iFlags: int, pData: ArrayBuffer): bool { return false; }
+		resize(iSize: uint): bool { return false; }
+	}
+}
+
+
+
+module akra.core.pool.resources {
+	export class VertexBufferVBO extends VertexBuffer implements IVertexBufferVBO {
+		/**@inline*/  get type(): EVertexBufferTypes { return EVertexBufferTypes.TYPE_VBO; }
+		/**@inline*/  get byteLength(): uint { return 0; }
+		/**@inline*/  get length(): uint { return 0; }
+
+		/**@inline*/  getHardwareObject(): WebGLObject {
 			return null;
+		}
+
+		constructor (pManager: IResourcePoolManager) {
+			super(pManager);
 		}
 	}
 }
+
+
+
 
 
 
@@ -6312,7 +6715,8 @@ module akra.core.pool.resources {
 
 
 module akra {
-	export interface IVideoBuffer extends IVertexBufferBase, IRenderResource {
+	export interface IVertexBufferTBO extends IVertexBuffer, IRenderResource {
+
 
 	}
 }
@@ -6320,6 +6724,28 @@ module akra {
 
 
 
+
+
+
+module akra.core.pool.resources {
+	export class VertexBufferTBO extends VertexBuffer implements IVertexBufferTBO {
+		/**@inline*/  get type(): EVertexBufferTypes { return EVertexBufferTypes.TYPE_TBO; }
+		/**@inline*/  get byteLength(): uint { return 0; }
+		/**@inline*/  get length(): uint { return 0; }
+
+
+
+		/**@inline*/  getHardwareObject(): WebGLObject {
+			return null;
+		}
+
+		constructor (pManager: IResourcePoolManager) {
+			super(pManager);
+		}
+	}
+
+
+}
 
 
 
@@ -6616,102 +7042,6 @@ module akra.core.pool.resources {
         }
 	}
 }
-
-
-
-module akra.core.pool.resources {
-	export class VideoBuffer extends Texture implements IVideoBuffer {
-		/**@inline*/  get byteLength(): uint {
-			return 0;
-		}
-
-		/**@inline*/  get length(): uint {
-			return 0;
-		}
-
-		clone(pSrc: IGPUBuffer): bool {
-			return false;
-		}
-
-		isValid(): bool {
-			return false;
-		}
-
-		isDynamic(): bool {
-			return false;
-		}
-
-		isStatic(): bool {
-			return false;
-		}
-
-		isStream(): bool {
-			return false;
-		}
-
-		isReadable(): bool {
-			return false;
-		}
-
-		isRAMBufferPresent(): bool {
-			return false;
-		}
-
-		isSoftware(): bool {
-			return false;
-		}
-
-		isAlignment(): bool {
-			return false;
-		}
-
-		getData(iOffset: uint, iSize: uint): ArrayBuffer {
-			return null;
-		}
-
-		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool {
-			return false;
-		}
-
-		/**@inline*/  getFlags(): int {
-			return 0;
-		}
-
-
-		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;
-		getVertexData(iOffset: uint, iCount: uint, pDecl: IVertexDeclaration): IVertexData;
-		getVertexData(iOffset: uint, iCount: uint, pDecl: any): IVertexData {
-			return null;
-		}
-
-
-		getEmptyVertexData(iCount: uint, pElements: IVertexElement[], ppVertexDataIn?: IVertexData): IVertexData;
-		getEmptyVertexData(iCount: uint, pDecl: IVertexDeclaration, ppVertexDataIn?: IVertexData): IVertexData;
-		getEmptyVertexData(iCount: uint, pDecl: any, ppVertexDataIn?: IVertexData): IVertexData {
-			return null;
-		}
-
-
-		freeVertexData(pVertexData: IVertexData): bool {
-			return false;
-		}
-
-
-		allocateData(pElements: IVertexElement[], pData: ArrayBufferView): IVertexData;
-		allocateData(pDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
-		allocateData(pDecl: any, pData: ArrayBufferView): IVertexData {
-			return null;
-		}
-
-		/**@inline*/  getHardwareBuffer(): WebGLObject {
-			return null;
-		}
-	}
-
-
-}
-
-
 
 
 

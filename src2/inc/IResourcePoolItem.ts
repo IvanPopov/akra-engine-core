@@ -10,6 +10,7 @@ module akra {
 	IFACE(IResourceNotifyRoutineFunc);
 	IFACE(IResourceCode);
 	IFACE(IResourcePool);
+	IFACE(IResourcePoolManager);
 
 	/**
      * Отражает состояние ресурса
@@ -28,15 +29,17 @@ module akra {
 
 	export interface IResourcePoolItem extends IReferenceCounter {
 		/** resource code */
-		resourceCode: IResourceCode;
+		readonly resourceCode: IResourceCode;
 		/** resource pool */
-		resourcePool: IResourcePool;
+		readonly resourcePool: IResourcePool;
 		/** resource handle */
-		resourceHandle: int;
+		readonly resourceHandle: int;
 		/** resource flags */
-		resourceFlags: int;
+		readonly resourceFlags: int;
 		/** Проверка был ли изменен ресур после загрузки */
-		alteredFlag: bool;
+		readonly alteredFlag: bool;
+
+		readonly manager: IResourcePoolManager;
 
 		
 		getGuid(): int;
@@ -116,7 +119,7 @@ module akra {
 	}
 
 	export interface IResourcePoolItemType {
-		new (pEngine: IEngine): IResourcePoolItem;
+		new (pManager: IResourcePoolManager): IResourcePoolItem;
 	}
 }
 

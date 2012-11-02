@@ -4,6 +4,7 @@
 #include "IEngine.ts"
 #include "IDataPool.ts"
 #include "IResourcePoolItem.ts"
+#include "IResourcePoolManager.ts"
 
 
 module akra.core.pool {
@@ -13,7 +14,7 @@ module akra.core.pool {
 	}
 
 	export class PoolGroup {
-		private pEngine: IEngine;
+		private pManager: IResourcePoolManager;
 
 		/** Конструктор для создания данных в группе */
 		private tTemplate: IResourcePoolItemType;
@@ -29,6 +30,8 @@ module akra.core.pool {
 		private pNextOpenList: uint[] = null;
 		/** Массив элементов группы */
 		private pMemberList: IResourcePoolItem[] = null;
+
+		inline get manager(): IResourcePoolManager { return this.pManager; }
 
 		/** 
 		 * Возвращает количесвто свободных мест в группе 
@@ -54,8 +57,8 @@ module akra.core.pool {
 			return this.iFirstOpen;
 		}
 
-		constructor (pEngine: IEngine, tTemplate: IResourcePoolItemType, iMaxCount: uint) {
-			this.pEngine = pEngine;
+		constructor (pManager: IResourcePoolManager, tTemplate: IResourcePoolItemType, iMaxCount: uint) {
+			this.pManager = pManager;
 			this.tTemplate = tTemplate;
 			this.iMaxCount = iMaxCount;
 		}
@@ -74,7 +77,7 @@ module akra.core.pool {
 
 
 		    for (i = 0; i < this.iMaxCount; i++) {
-		        this.pMemberList[i] = new this.tTemplate(this.pEngine);
+		        this.pMemberList[i] = new this.tTemplate(this.pManager);
 		    }
 
 		    debug_assert(this.pNextOpenList != null, "tragic memory allocation failure!");
@@ -169,7 +172,7 @@ module akra.core.pool {
 	}
 
 	export class DataPool implements IDataPool {
-		private pEngine: IEngine;
+		private pManager: IResourcePoolManager;
 		private tTemplate: IResourcePoolItemType;
 		private bInitialized: bool = false;
 
@@ -194,8 +197,10 @@ module akra.core.pool {
 		private iIndexShift: int = 0;
 
 
-		constructor(pEngine: IEngine, tTemplate: IResourcePoolItemType) {
-			this.pEngine = pEngine;
+		inline get manager(): IResourcePoolManager { return this.pManager; }
+
+		constructor(pManager: IResourcePoolManager, tTemplate: IResourcePoolItemType) {
+			this.pManager = pManager;
 			this.tTemplate = tTemplate;
 		}
 
@@ -347,6 +352,7 @@ module akra.core.pool {
 
     		return this.getPtr(iHandle);
 		}
+	
 
 		/** 
 		 * @inline 
@@ -375,7 +381,7 @@ module akra.core.pool {
 		/** Добавление группы в пул */
 		private addGroup(): PoolGroup {
 			// append a new group to the list to start things off
-		    var pNewGroup: PoolGroup = new PoolGroup(this.pEngine, this.tTemplate, this.iGroupCount);
+		    var pNewGroup: PoolGroup = new PoolGroup(this.pManager, this.tTemplate, this.iGroupCount);
 		    this.pGroupList.push(pNewGroup);
 		    // gain access to the new group and innitialize it
 		    pNewGroup.create();

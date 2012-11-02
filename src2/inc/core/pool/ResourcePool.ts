@@ -6,11 +6,12 @@
 #include "IResourcePoolItem.ts"
 #include "IDataPool.ts"
 #include "IResourceCode.ts"
+#include "IResourcePoolManager.ts"
 #include "util/ReferenceCounter.ts"
 
 module akra.core.pool {
     export class ResourcePool extends util.ReferenceCounter implements IResourcePool {
-        private pEngine: IEngine = null;
+        private pManager: IResourcePoolManager = null;
         /** Конструктор для создания данных в пуле ресурсов */
         private tTemplate: IResourcePoolItemType = null;
         private sExt: string = null;
@@ -19,15 +20,15 @@ module akra.core.pool {
         private pDataPool: IDataPool = null;
 
 
-        /** @inline */
-        get iFourcc(): int {
+        inline get iFourcc(): int {
             return (this.sExt.charCodeAt(3) << 24)
                       | (this.sExt.charCodeAt(2) << 16)
                       | (this.sExt.charCodeAt(1) << 8)
                       | (this.sExt.charCodeAt(0));
         }
 
-        /** @inline */
+
+
         set iFourcc(iNewFourcc: int) {
             this.sExt = String.fromCharCode((iNewFourcc & 0x000000FF),
                                              (iNewFourcc & 0x0000FF00) >>> 8,
@@ -35,23 +36,27 @@ module akra.core.pool {
                                              (iNewFourcc & 0xFF000000) >>> 24);
         }
 
-        constructor (pEngine: IEngine, tTemplate: IResourcePoolItemType) {
+        inline get manager(): IResourcePoolManager {
+            return this.pManager;
+        }
+
+        constructor (pManager: IResourcePoolManager, tTemplate: IResourcePoolItemType) {
             super();
 
-            this.pEngine = pEngine;
+            this.pManager = pManager;
             this.tTemplate = tTemplate;
-            this.pDataPool = new DataPool(pEngine, tTemplate);
+            this.pDataPool = new DataPool(this.pManager, tTemplate);
         }
 
         /** Добавление данного пула в менеджер ресурсво по его коду */
         registerResourcePool(pCode: IResourceCode): void {
             this.pRegistrationCode.eq(pCode);
-            this.pEngine.getResourceManager().registerResourcePool(this.pRegistrationCode, this);
+            this.pManager.registerResourcePool(this.pRegistrationCode, this);
         }
 
         /** Удаление данного пула в менеджер ресурсво по его коду */
         unregisterResourcePool(): void {
-            this.pEngine.getResourceManager().unregisterResourcePool(this.pRegistrationCode);
+            this.pManager.unregisterResourcePool(this.pRegistrationCode);
             this.pRegistrationCode.setInvalid();
         }
 
@@ -213,6 +218,7 @@ module akra.core.pool {
 
             return pResources;
         }
+
 
         private internalGetResource(iHandle: int): IResourcePoolItem {
             return this.pDataPool.getPtr(iHandle);

@@ -2,15 +2,16 @@
 #define IRESOURCEPOOL_TS
 
 
-
-
 module akra {
         
+        IFACE(IEngine);
         IFACE(IResourceCode);
         IFACE(IResourcePoolItem);
+        IFACE(IResourcePoolManager);
         
         export interface IResourcePool {
                 iFourcc: int;
+                readonly manager: IResourcePoolManager;
 
                 /** Добавление данного пула в менеджер ресурсво по его коду */
                 registerResourcePool(pCode: IResourceCode): void;

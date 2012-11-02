@@ -3,7 +3,11 @@
 
 module akra {
 
+	IFACE(IEngine);
+	IFACE(IResourcePoolManager);
+
 	export interface IDataPool {
+		manager: IResourcePoolManager;
 		/** Инициализация пула данных */
 		initialize(iGrowSize: uint): void;
 

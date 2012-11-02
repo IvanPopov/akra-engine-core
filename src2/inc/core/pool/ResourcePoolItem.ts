@@ -4,6 +4,7 @@
 #include "IEngine.ts"
 #include "IResourceCode.ts"
 #include "IResourcePool.ts"
+#include "IResourcePoolManager.ts"
 #include "IResourceWatcherFunc.ts"
 #include "IResourceNotifyRoutineFunc.ts"
 #include "IResourcePoolItem.ts"
@@ -18,7 +19,7 @@ module akra.core.pool {
 	}
 
 	export class ResourcePoolItem extends util.ReferenceCounter implements IResourcePoolItem {
-		private pEngine: IEngine;
+		private pManager: IResourcePoolManager;
 		private pResourceCode: IResourceCode;
 		private pResourcePool: IResourcePool = null;
 		private iResourceHandle: int = 0;
@@ -29,36 +30,33 @@ module akra.core.pool {
 		private pCallbackSlots: ICallbackSlot[][];
 
 
-		/** @inline */
-		get resourceCode(): IResourceCode {
+		inline get resourceCode(): IResourceCode {
 			return this.pResourceCode;
 		}
 
-		/** @inline */
-		get resourcePool(): IResourcePool {
+		inline get resourcePool(): IResourcePool {
 			return this.pResourcePool;
 		}
 
-		/** @inline */
-		get resourceHandle(): int {
+		inline get resourceHandle(): int {
 			return this.iResourceHandle;
 		}
 
-		/** @inline */
-		get resourceFlags(): int {
+		inline get resourceFlags(): int {
 			return this.iResourceFlags;
 		}
 
-		/** @inline */
-		get alteredFlag(): bool {
+		inline get alteredFlag(): bool {
 			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Altered);
 		}
 
+		inline get manager(): IResourcePoolManager { return this.pManager; }
+
 		/** Constructor of ResourcePoolItem class */
-		constructor (pEngine: IEngine) {
+		constructor (pManager: IResourcePoolManager) {
 			super();
 
-			this.pEngine = pEngine;
+			this.pManager = pManager;
 			this.pResourceCode = new ResourceCode(0);
 			this.iGuid = sid();
 			this.pCallbackFunctions = [];
@@ -66,14 +64,12 @@ module akra.core.pool {
 			this.pCallbackSlots = genArray(null, <number>EResourceItemEvents.k_TotalResourceFlags);
 		}
 
-		/** @inline */
-		getGuid(): int {
+		inline getGuid(): int {
 			return this.iGuid;
 		}
 
-		/** @inline */
-		getEngine(): IEngine {
-			return this.pEngine;
+		inline getEngine(): IEngine {
+			return this.pManager.getEngine();
 		}
 
 		createResource(): bool {

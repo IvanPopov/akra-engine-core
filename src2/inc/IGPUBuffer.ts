@@ -9,7 +9,8 @@ module akra {
 		MANY_DRAWS,
 		READABLE,
 		RAM_BACKUP,
-		SOFTWARE
+		SOFTWARE,
+		ALIGNMENT
 	}
 
 	export interface IGPUBuffer extends IBuffer {
@@ -26,8 +27,11 @@ module akra {
 		getData(iOffset: uint, iSize: uint): ArrayBuffer;
 		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool;
 
-		getHardwareBuffer(): WebGLObject;
 		getFlags(): int; 
+
+		destroy(): void;
+		create(iByteSize: uint, iFlags: int, pData: ArrayBuffer): bool;
+		resize(iSize: uint): bool;
 	}
 }
 
