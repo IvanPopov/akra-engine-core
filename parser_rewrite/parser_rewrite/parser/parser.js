@@ -1,14 +1,10 @@
-var __extends = this.__extends || function (d, b) {
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
 var akra;
 (function (akra) {
     var END_POSITION = "END";
     var T_EMPTY = "EMPTY";
     var UNKNOWN_TOKEN = "UNNOWN";
     var START_SYMBOL = "S";
+    var UNUSED_SYMBOL = "##";
     var END_SYMBOL = "$";
     var LEXER_RULES = "--LEXER--";
     var FLAG_RULE_CREATE_NODE = "--AN";
@@ -47,6 +43,8 @@ var akra;
         EOperationType.k_Success = 103;
         EOperationType._map[104] = "k_Pause";
         EOperationType.k_Pause = 104;
+        EOperationType._map[105] = "k_Ok";
+        EOperationType.k_Ok = 105;
     })(EOperationType || (EOperationType = {}));
     (function (ENodeCreateMode) {
         ENodeCreateMode._map = [];
@@ -58,16 +56,16 @@ var akra;
         ENodeCreateMode.k_Not = 2;
     })(akra.ENodeCreateMode || (akra.ENodeCreateMode = {}));
     var ENodeCreateMode = akra.ENodeCreateMode;
-    var EParseCode;
-    (function (EParseCode) {
-        EParseCode._map = [];
-        EParseCode._map[0] = "k_Pause";
-        EParseCode.k_Pause = 0;
-        EParseCode._map[1] = "k_Ok";
-        EParseCode.k_Ok = 1;
-        EParseCode._map[2] = "k_Error";
-        EParseCode.k_Error = 2;
-    })(EParseCode || (EParseCode = {}));
+    var EParserCode;
+    (function (EParserCode) {
+        EParserCode._map = [];
+        EParserCode._map[0] = "k_Pause";
+        EParserCode.k_Pause = 0;
+        EParserCode._map[1] = "k_Ok";
+        EParserCode.k_Ok = 1;
+        EParserCode._map[2] = "k_Error";
+        EParserCode.k_Error = 2;
+    })(EParserCode || (EParserCode = {}));
     var EParserType;
     (function (EParserType) {
         EParserType._map = [];
@@ -92,6 +90,8 @@ var akra;
         ESyntaxErrorCode.k_GrammarBadAdditionalFunctionName = 104;
         ESyntaxErrorCode._map[105] = "k_GrammarBadKeyword";
         ESyntaxErrorCode.k_GrammarBadKeyword = 105;
+        ESyntaxErrorCode._map[106] = "k_SyntaxError";
+        ESyntaxErrorCode.k_SyntaxError = 106;
         ESyntaxErrorCode.k_Lexer = 200;
         ESyntaxErrorCode._map[201] = "k_UnknownToken";
         ESyntaxErrorCode.k_UnknownToken = 201;
@@ -120,11 +120,21 @@ var akra;
         ETokenType.k_End = 9;
     })(ETokenType || (ETokenType = {}));
     var Item = (function () {
-        function Item(pRule, iPos) {
+        function Item(pRule, iPos, pExpected) {
             this._pRule = pRule;
             this._iPos = iPos;
             this._iIndex = 0;
             this._pState = null;
+            this._isNewExpected = true;
+            this._iLength = 0;
+            this._pExpected = {
+            };
+            if(arguments.length === 3) {
+                var i;
+                for(i in arguments[2]) {
+                    this.addExpected(i);
+                }
+            }
         }
         Object.defineProperty(Item.prototype, "rule", {
             get: function () {
@@ -166,8 +176,48 @@ var akra;
             enumerable: true,
             configurable: true
         });
-        Item.prototype.isEqual = function (pItem) {
-            return (this._pRule === pItem.rule && this._iPos === pItem.position);
+        Object.defineProperty(Item.prototype, "expectedSymbols", {
+            get: function () {
+                return this._pExpected;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Item.prototype, "length", {
+            get: function () {
+                return this._iLength;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Item.prototype, "isNewExpected", {
+            get: function () {
+                return this._isNewExpected;
+            },
+            set: function (_isNewExpected) {
+                this._isNewExpected = _isNewExpected;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Item.prototype.isEqual = function (pItem, eType) {
+            if (typeof eType === "undefined") { eType = EParserType.k_LR0; }
+            if(eType === EParserType.k_LR0) {
+                return (this._pRule === pItem.rule && this._iPos === pItem.position);
+            } else {
+                if(eType === EParserType.k_LR1) {
+                    if(!(this._pRule === pItem.rule && this._iPos === pItem.position && this._iLength === (pItem).length)) {
+                        return false;
+                    }
+                    var i;
+                    for(i in this._pExpected) {
+                        if(!(pItem).isExpected(i)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            }
         };
         Item.prototype.isParentItem = function (pItem) {
             return (this._pRule === pItem.rule && this._iPos === pItem.position + 1);
@@ -189,75 +239,10 @@ var akra;
         Item.prototype.nextMarked = function () {
             return this._pRule.right[this._iPos + 1] || END_POSITION;
         };
-        Item.prototype.toString = function () {
-            var sMsg = this._pRule.left + " -> ";
-            var pRight = this._pRule.right;
-            for(var k = 0; k < pRight.length; k++) {
-                if(k === this._iPos) {
-                    sMsg += ". ";
-                }
-                sMsg += pRight[k] + " ";
-            }
-            if(this._iPos === pRight.length) {
-                sMsg += ". ";
-            }
-            sMsg = sMsg.slice(0, sMsg.length - 1);
-            return sMsg;
-        };
-        return Item;
-    })();    
-    var ItemLR = (function (_super) {
-        __extends(ItemLR, _super);
-        function ItemLR(pRule, iPos) {
-                _super.call(this, pRule, iPos);
-            this._isNewExpected = true;
-            this._iLength = 0;
-            this._pExpected = {
-            };
-            if(arguments.length === 3) {
-                var i;
-                for(i in arguments[2]) {
-                    this.addExpected(i);
-                }
-            }
-        }
-        Object.defineProperty(ItemLR.prototype, "expectedSymbols", {
-            get: function () {
-                return this._pExpected;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ItemLR.prototype, "length", {
-            get: function () {
-                return this._iLength;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ItemLR.prototype.isEqual = function (pItem, eType) {
-            if (typeof eType === "undefined") { eType = EParserType.k_LR0; }
-            if(eType === EParserType.k_LR0) {
-                return (this._pRule === pItem.rule && this._iPos === pItem.position);
-            } else {
-                if(eType === EParserType.k_LR1) {
-                    if(!(this._pRule === pItem.rule && this._iPos === pItem.position && this._iLength === (pItem).length)) {
-                        return false;
-                    }
-                    var i;
-                    for(i in this._pExpected) {
-                        if(!(pItem).isExpected(i)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }
-            }
-        };
-        ItemLR.prototype.isExpected = function (sSymbol) {
+        Item.prototype.isExpected = function (sSymbol) {
             return !!(this._pExpected[sSymbol]);
         };
-        ItemLR.prototype.addExpected = function (sSymbol) {
+        Item.prototype.addExpected = function (sSymbol) {
             if(this._pExpected[sSymbol]) {
                 return false;
             }
@@ -266,7 +251,7 @@ var akra;
             this._iLength++;
             return true;
         };
-        ItemLR.prototype.toString = function () {
+        Item.prototype.toString = function () {
             var sMsg = this._pRule.left + " -> ";
             var sExpected = "";
             var pRight = this._pRule.right;
@@ -279,18 +264,20 @@ var akra;
             if(this._iPos === pRight.length) {
                 sMsg += ". ";
             }
-            sExpected = ", ";
-            for(var l in this._pExpected) {
-                sExpected += l + "/";
-            }
-            if(sExpected !== ", ") {
-                sMsg += sExpected;
+            if(isDef(this._pExpected)) {
+                sExpected = ", ";
+                for(var l in this._pExpected) {
+                    sExpected += l + "/";
+                }
+                if(sExpected !== ", ") {
+                    sMsg += sExpected;
+                }
             }
             sMsg = sMsg.slice(0, sMsg.length - 1);
             return sMsg;
         };
-        return ItemLR;
-    })(Item);    
+        return Item;
+    })();    
     var State = (function () {
         function State() {
             this._pItemList = [];
@@ -306,7 +293,7 @@ var akra;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(State.prototype, "baseItems", {
+        Object.defineProperty(State.prototype, "numBaseItems", {
             get: function () {
                 return this._nBaseItems;
             },
@@ -323,11 +310,18 @@ var akra;
             enumerable: true,
             configurable: true
         });
-        State.prototype.hasItem = function (pItem) {
+        Object.defineProperty(State.prototype, "nextStates", {
+            get: function () {
+                return this._pNextStates;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        State.prototype.hasItem = function (pItem, eType) {
             var i;
             var pItems = this._pItemList;
             for(i = 0; i < pItems.length; i++) {
-                if(pItems[i].isEqual(pItem)) {
+                if(pItems[i].isEqual(pItem, eType)) {
                     return pItems[i];
                 }
             }
@@ -359,7 +353,7 @@ var akra;
         State.prototype.isEqual = function (pState, eType) {
             var pItemsA = this._pItemList;
             var pItemsB = pState.items;
-            if(this._nBaseItems !== pState.baseItems) {
+            if(this._nBaseItems !== pState.numBaseItems) {
                 return false;
             }
             var nItems = this._nBaseItems;
@@ -370,7 +364,7 @@ var akra;
             for(i = 0; i < nItems; i++) {
                 isEqual = false;
                 for(j = 0; j < nItems; j++) {
-                    if((pItemsA[i]).isEqual(pItemsB[j], eType)) {
+                    if(pItemsA[i].isEqual(pItemsB[j], eType)) {
                         isEqual = true;
                         break;
                     }
@@ -411,7 +405,7 @@ var akra;
             var pExpected = {
             };
             pExpected[sExpectedSymbol] = true;
-            var pItem = new ItemLR(pRule, iPos, pExpected);
+            var pItem = new Item(pRule, iPos, pExpected);
             this.push(pItem);
             return true;
         };
@@ -433,6 +427,19 @@ var akra;
         State.prototype.deleteNotBase = function () {
             this._pItemList.length = this._nBaseItems;
         };
+        State.prototype.toString = function (isBase) {
+            var len = 0;
+            var sMsg;
+            var pItemList = this._pItemList;
+            sMsg = "State " + this._iIndex + ":\n";
+            len = isBase ? this._nBaseItems : pItemList.length;
+            for(var j = 0; j < len; j++) {
+                sMsg += "\t\t";
+                sMsg += pItemList[j].toString();
+                sMsg += "\n";
+            }
+            return sMsg;
+        };
         return State;
     })();    
     var ParseTree = (function () {
@@ -440,6 +447,7 @@ var akra;
             this._pRoot = null;
             this._pNodes = [];
             this._pNodesCountStack = [];
+            this._isOptimizeMode = false;
         }
         Object.defineProperty(ParseTree.prototype, "root", {
             get: function () {
@@ -454,19 +462,21 @@ var akra;
         ParseTree.prototype.setRoot = function () {
             this._pRoot = this._pNodes.pop();
         };
+        ParseTree.prototype.setOptimizeMode = function (isOptimize) {
+            this._isOptimizeMode = isOptimize;
+        };
         ParseTree.prototype.addNode = function (pNode) {
             this._pNodes.push(pNode);
             this._pNodesCountStack.push(1);
         };
-        ParseTree.prototype.reduceByRule = function (pRule, eCreate, isOptimize) {
+        ParseTree.prototype.reduceByRule = function (pRule, eCreate) {
             if (typeof eCreate === "undefined") { eCreate = ENodeCreateMode.k_Default; }
-            if (typeof isOptimize === "undefined") { isOptimize = false; }
             var iReduceCount = 0;
             var pNodesCountStack = this._pNodesCountStack;
             var pNode;
             var iRuleLength = pRule.right.length;
             var pNodes = this._pNodes;
-            var nOptimize = isOptimize ? 1 : 0;
+            var nOptimize = this._isOptimizeMode ? 1 : 0;
             while(iRuleLength) {
                 iReduceCount += pNodesCountStack.pop();
                 iRuleLength--;
@@ -1042,7 +1052,7 @@ var akra;
             this._pLexer = null;
             this._pStack = [];
             this._pToken = null;
-            this._pFinishCallback = null;
+            this._fnFinishCallback = null;
             this._pCaller = null;
             this._pSymbols = {
             };
@@ -1067,22 +1077,116 @@ var akra;
             this._pExpectedExtensionDMap = null;
         }
         Parser.prototype.isTypeId = function (sValue) {
-            return true;
+            return !!(this._pTypeIdMap[sValue]);
         };
         Parser.prototype.returnCode = function (pNode) {
+            if(pNode) {
+                if(pNode.value) {
+                    return pNode.value + " ";
+                } else {
+                    if(pNode.children) {
+                        var sCode = "";
+                        var i = 0;
+                        for(i = pNode.children.length - 1; i >= 0; i--) {
+                            sCode += this.returnCode(pNode.children[i]);
+                        }
+                        return sCode;
+                    }
+                }
+            }
             return "";
         };
-        Parser.prototype.init = function (sGrammar, eType, pFlags) {
-            return true;
+        Parser.prototype.init = function (sGrammar, eType, eMode) {
+            try  {
+                this._eType = eType || EParserType.k_LALR;
+                this._pLexer = new Lexer(this);
+                this._eParseMode = eMode || EParseMode.k_AllNode;
+                this.generateRules(sGrammar);
+                this.buildSyntaxTable();
+                this.clearMem();
+                return true;
+            } catch (e) {
+                return false;
+            }
         };
-        Parser.prototype.parse = function (sSource, isSync) {
-            return EParseCode;
+        Parser.prototype.parse = function (sSource, isSync, fnFinishCallback, pCaller) {
+            if (typeof fnFinishCallback === "undefined") { fnFinishCallback = null; }
+            if (typeof pCaller === "undefined") { pCaller = null; }
+            try  {
+                this.defaultInit();
+                this._sSource = sSource;
+                this._pLexer.init(sSource);
+                this._isSync = isSync;
+                this._fnFinishCallback = fnFinishCallback;
+                this._pCaller = pCaller;
+                var pTree = this._pSyntaxTree;
+                var pStack = this._pStack;
+                var pSyntaxTable = this._pSyntaxTable;
+                var isStop = false;
+                var isError = false;
+                var isPause = false;
+                var pToken = this.readToken();
+                var pOperation;
+                var iRuleLength;
+                while(!isStop) {
+                    pOperation = pSyntaxTable[pStack[pStack.length - 1]][pToken.name];
+                    if(isDef(pOperation)) {
+                        switch(pOperation.type) {
+                            case EOperationType.k_Success: {
+                                isStop = true;
+                                break;
+
+                            }
+                            case EOperationType.k_Shift: {
+                                pStack.push(pOperation.index);
+                                pTree.addNode(pToken);
+                                pToken = this.readToken();
+                                break;
+
+                            }
+                            case EOperationType.k_Reduce: {
+                                iRuleLength = pOperation.rule.right.length;
+                                pStack.length -= iRuleLength;
+                                pStack.push(pSyntaxTable[pStack[pStack.length - 1]][pOperation.rule.left].index);
+                                if(this.ruleAction(pOperation.rule) === EOperationType.k_Pause) {
+                                    this._pToken = pToken;
+                                    isStop = true;
+                                    isPause = true;
+                                }
+                                break;
+
+                            }
+                        }
+                    } else {
+                        isError = true;
+                        isStop = true;
+                    }
+                }
+                if(isPause) {
+                    return EParserCode.k_Pause;
+                }
+                if(!isError) {
+                    pTree.setRoot();
+                    if(isDef(this._fnFinishCallback)) {
+                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok);
+                    }
+                    return EParserCode.k_Ok;
+                } else {
+                    this.error(ESyntaxErrorCode.k_SyntaxError);
+                    if(isDef(this._fnFinishCallback)) {
+                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error);
+                    }
+                    return EParserCode.k_Error;
+                }
+            } catch (e) {
+                return EParserCode.k_Error;
+            }
         };
         Parser.prototype.pause = function () {
-            return EParseCode.k_Ok;
+            return EParserCode.k_Pause;
         };
         Parser.prototype.resume = function () {
-            return true;
+            return this.resumeParse();
         };
         Parser.prototype.error = function (eCode) {
         };
@@ -1099,7 +1203,6 @@ var akra;
             delete this._pExpectedExtensionDMap;
         };
         Parser.prototype.hasState = function (pState, eType) {
-            if (typeof eType === "undefined") { eType = EParserType.k_LR0; }
             var pStateList = this._pStateList;
             var i = 0;
             for(i = 0; i < pStateList.length; i++) {
@@ -1121,8 +1224,7 @@ var akra;
             this._pBaseItemList.push(pItem);
         };
         Parser.prototype.tryAddState = function (pState, eType) {
-            if (typeof eType === "undefined") { eType = EParserType.k_LR0; }
-            var pRes = this.hasState(pState);
+            var pRes = this.hasState(pState, eType);
             if(isNull(pRes)) {
                 if(eType === EParserType.k_LR0) {
                     var pItems = pState.items;
@@ -1430,7 +1532,7 @@ var akra;
             var pExpected = {
             };
             pExpected[END_SYMBOL] = true;
-            pState.push(new ItemLR(this._pRulesDMap[START_SYMBOL][0], 0, pExpected));
+            pState.push(new Item(this._pRulesDMap[START_SYMBOL][0], 0, pExpected));
             this.closure_LR(pState);
             this.pushState(pState);
         };
@@ -1490,6 +1592,392 @@ var akra;
                 i++;
             }
             return pState;
+        };
+        Parser.prototype.nexeState = function (pState, sSymbol, eType) {
+            if(eType === EParserType.k_LR0) {
+                return this.nextState_LR0(pState, sSymbol);
+            } else {
+                return this.nextState_LR(pState, sSymbol);
+            }
+        };
+        Parser.prototype.nextState_LR0 = function (pState, sSymbol) {
+            var pItemList = pState.items;
+            var i = 0;
+            var pNewState = new State();
+            for(i = 0; i < pItemList.length; i++) {
+                if(sSymbol === pItemList[i].mark()) {
+                    pNewState.push(new Item(pItemList[i].rule, pItemList[i].position + 1));
+                }
+            }
+            return pNewState;
+        };
+        Parser.prototype.nextState_LR = function (pState, sSymbol) {
+            var pItemList = pState.items;
+            var i = 0;
+            var pNewState = new State();
+            for(i = 0; i < pItemList.length; i++) {
+                if(sSymbol === pItemList[i].mark()) {
+                    pNewState.push(new Item(pItemList[i].rule, pItemList[i].position + 1, pItemList[i].expectedSymbols));
+                }
+            }
+            return pNewState;
+        };
+        Parser.prototype.deleteNotBaseItems = function () {
+            var i = 0;
+            for(i = 0; i < this._pStateList.length; i++) {
+                this._pStateList[i].deleteNotBase();
+            }
+        };
+        Parser.prototype.closureForItem = function (pRule, iPos) {
+            var sIndex = "";
+            sIndex += pRule.index + "_" + iPos;
+            var pState = this._pStatesTempMap[sIndex];
+            if(isDef(pState)) {
+                return pState;
+            } else {
+                var pExpected = {
+                };
+                pExpected[UNUSED_SYMBOL] = true;
+                pState = new State();
+                pState.push(new Item(pRule, iPos, pExpected));
+                this.closure_LR(pState);
+                this._pStatesTempMap[sIndex] = pState;
+                return pState;
+            }
+        };
+        Parser.prototype.addLinkExpected = function (pItem, pItemX) {
+            var pTable = this._pExpectedExtensionDMap;
+            var iIndex = pItem.index;
+            if(!isDef(pTable[iIndex])) {
+                pTable[iIndex] = {
+                };
+            }
+            pTable[iIndex][pItemX.index] = true;
+        };
+        Parser.prototype.determineExpected = function (pTestState, sSymbol) {
+            var pStateX = pTestState.getNextStateBySymbol(sSymbol);
+            if(isNull(pStateX)) {
+                return;
+            }
+            var pItemListX = pStateX.items;
+            var pItemList = pTestState.items;
+            var pState;
+            var pItem;
+            var i;
+            var j;
+            var k;
+
+            var nBaseItemTest = pTestState.numBaseItems;
+            var nBaseItemX = pStateX.numBaseItems;
+            for(i = 0; i < nBaseItemTest; i++) {
+                pState = this.closureForItem(pItemList[i].rule, pItemList[i].position);
+                for(j = 0; j < nBaseItemX; j++) {
+                    pItem = pState.hasChildItem(pItemListX[j]);
+                    if(pItem) {
+                        var pExpected = pItem.expectedSymbols;
+                        for(k in pExpected) {
+                            if(k === UNUSED_SYMBOL) {
+                                this.addLinkExpected(pItemList[i], pItemListX[j]);
+                            } else {
+                                pItemListX[j].addExpected(k);
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        Parser.prototype.generateLinksExpected = function () {
+            var i;
+            var j;
+
+            var pStates = this._pStateList;
+            for(i = 0; i < pStates.length; i++) {
+                for(j in this._pSymbols) {
+                    this.determineExpected(pStates[i], j);
+                }
+            }
+        };
+        Parser.prototype.expandExpected = function () {
+            var pItemList = this._pBaseItemList;
+            var pTable = this._pExpectedExtensionDMap;
+            var i = 0;
+            var j;
+
+            var sSymbol;
+            var isNewExpected = false;
+            pItemList[0].addExpected(END_SYMBOL);
+            pItemList[0].isNewExpected = true;
+            while(true) {
+                if(i === pItemList.length) {
+                    if(!isNewExpected) {
+                        break;
+                    }
+                    isNewExpected = false;
+                    i = 0;
+                }
+                if(pItemList[i].isNewExpected) {
+                    var pExpected = pItemList[i].expectedSymbols;
+                    for(sSymbol in pExpected) {
+                        for(j in pTable[i]) {
+                            if(pItemList[j].addExpected(sSymbol)) {
+                                isNewExpected = true;
+                            }
+                        }
+                    }
+                }
+                pItemList[i].isNewExpected = false;
+                i++;
+            }
+        };
+        Parser.prototype.generateStates = function (eType) {
+            if(eType === EParserType.k_LR0) {
+                this.generateStates_LR0();
+            } else {
+                if(eType === EParserType.k_LR1) {
+                    this.generateStates_LR();
+                } else {
+                    if(eType === EParserType.k_LALR) {
+                        this.generateStates_LALR();
+                    }
+                }
+            }
+        };
+        Parser.prototype.generateStates_LR0 = function () {
+            this.generateFirstState_LR0();
+            var i;
+            var pStateList = this._pStateList;
+            var sSymbol;
+            var pState;
+            for(i = 0; i < pStateList.length; i++) {
+                for(sSymbol in this._pSymbols) {
+                    pState = this.nextState_LR0(pStateList[i], sSymbol);
+                    if(!pState.isEmpty()) {
+                        pState = this.tryAddState(pState, EParserType.k_LR0);
+                        this.addStateLink(pStateList[i], pState, sSymbol);
+                    }
+                }
+            }
+        };
+        Parser.prototype.generateStates_LR = function () {
+            this._pFirstTerminalsDMap = {
+            };
+            this.generateFirstState_LR();
+            var i;
+            var pStateList = this._pStateList;
+            var sSymbol;
+            var pState;
+            for(i = 0; i < pStateList.length; i++) {
+                for(sSymbol in this._pSymbols) {
+                    pState = this.nextState_LR(pStateList[i], sSymbol);
+                    if(!pState.isEmpty()) {
+                        pState = this.tryAddState(pState, EParserType.k_LR1);
+                        this.addStateLink(pStateList[i], pState, sSymbol);
+                    }
+                }
+            }
+        };
+        Parser.prototype.generateStates_LALR = function () {
+            this._pStatesTempMap = {
+            };
+            this._pBaseItemList = [];
+            this._pExpectedExtensionDMap = {
+            };
+            this._pFirstTerminalsDMap = {
+            };
+            this.generateStates_LR0();
+            this.deleteNotBaseItems();
+            this.generateLinksExpected();
+            this.expandExpected();
+            var i = 0;
+            var pStateList = this._pStateList;
+            for(i = 0; i < pStateList.length; i++) {
+                this.closure_LR(pStateList[i]);
+            }
+        };
+        Parser.prototype.calcBaseItem = function () {
+            var num = 0;
+            var i = 0;
+            for(i = 0; i < this._pStateList.length; i++) {
+                num += this._pStateList[i].numBaseItems;
+            }
+            return num;
+        };
+        Parser.prototype.printStates = function (isBase) {
+            var sMsg = "";
+            var i = 0;
+            for(i = 0; i < this._pStateList.length; i++) {
+                sMsg += this.printState(this._pStateList[i], isBase);
+                sMsg += " ";
+            }
+            return sMsg;
+        };
+        Parser.prototype.printState = function (pState, isBase) {
+            var sMsg = pState.toString(isBase);
+            return sMsg;
+        };
+        Parser.prototype.printExpectedTable = function () {
+            var i;
+            var j;
+
+            var sMsg = "";
+            for(i in this._pExpectedExtensionDMap) {
+                sMsg += "State " + this._pBaseItemList[i].state.index + ":   ";
+                sMsg += this._pBaseItemList[i].toString() + "  |----->\n";
+                for(j in this._pExpectedExtensionDMap[i]) {
+                    sMsg += "\t\t\t\t\t" + "State " + this._pBaseItemList[j].state.index + ":   ";
+                    sMsg += this._pBaseItemList[j].toString() + "\n";
+                }
+                sMsg += "\n";
+            }
+            return sMsg;
+        };
+        Parser.prototype.addReducing = function (pState) {
+            var i;
+            var j;
+
+            var pItemList = pState.items;
+            for(i = 0; i < pItemList.length; i++) {
+                if(pItemList[i].mark() === END_POSITION) {
+                    if(pItemList[i].rule.left === START_SYMBOL) {
+                        this.pushInSyntaxTable(pState.index, END_SYMBOL, this._pSuccessOperation);
+                    } else {
+                        var pExpected = pItemList[i].expectedSymbols;
+                        for(j in pExpected) {
+                            this.pushInSyntaxTable(pState.index, j, this._pReduceOperationsMap[pItemList[i].rule.index]);
+                        }
+                    }
+                }
+            }
+        };
+        Parser.prototype.addShift = function (pState) {
+            var i;
+            var pStateMap = pState.nextStates;
+            for(i in pStateMap) {
+                this.pushInSyntaxTable(pState.index, i, this._pShiftOperationsMap[pStateMap[i].index]);
+            }
+        };
+        Parser.prototype.buildSyntaxTable = function () {
+            this._pStateList = [];
+            var pStateList = this._pStateList;
+            var pState;
+            this.generateStates(this._eType);
+            this._pSyntaxTable = {
+            };
+            this._pReduceOperationsMap = {
+            };
+            this._pShiftOperationsMap = {
+            };
+            this._pSuccessOperation = {
+                type: EOperationType.k_Success
+            };
+            var i = 0;
+            var j;
+            var k;
+
+            for(i = 0; i < pStateList.length; i++) {
+                this._pShiftOperationsMap[pStateList[i].index] = {
+                    type: EOperationType.k_Shift,
+                    index: pStateList[i].index
+                };
+            }
+            for(j in this._pRulesDMap) {
+                for(k in this._pRulesDMap[j]) {
+                    this._pReduceOperationsMap[k] = {
+                        type: EOperationType.k_Reduce,
+                        rule: this._pRulesDMap[j][k]
+                    };
+                }
+            }
+            for(var i = 0; i < pStateList.length; i++) {
+                pState = pStateList[i];
+                this.addReducing(pState);
+                this.addShift(pState);
+            }
+        };
+        Parser.prototype.readToken = function () {
+            return this._pLexer.getNextToken();
+        };
+        Parser.prototype.ruleAction = function (pRule) {
+            this._pSyntaxTree.reduceByRule(pRule, this._pSymbolsWithNodesMap[pRule.left]);
+            var sActionName = this._pRuleFunctionNamesMap[pRule.index];
+            if(isDef(sActionName)) {
+                return (this._pAdditionalFunctionsMap[sActionName]).call(this, pRule);
+            }
+            return EOperationType.k_Ok;
+        };
+        Parser.prototype.defaultInit = function () {
+            this._iIndex = 0;
+            this._pStack = [
+                0
+            ];
+            this._pSyntaxTree = new ParseTree();
+            this._pTypeIdMap = {
+            };
+        };
+        Parser.prototype.resumeParse = function () {
+            try  {
+                var pTree = this._pSyntaxTree;
+                var pStack = this._pStack;
+                var pSyntaxTable = this._pSyntaxTable;
+                var isStop = false;
+                var isError = false;
+                var isPause = false;
+                var pToken = this._pToken;
+                var pOperation;
+                var iRuleLength;
+                while(!isStop) {
+                    pOperation = pSyntaxTable[pStack[pStack.length - 1]][pToken.name];
+                    if(isDef(pOperation)) {
+                        switch(pOperation.type) {
+                            case EOperationType.k_Success: {
+                                isStop = true;
+                                break;
+
+                            }
+                            case EOperationType.k_Shift: {
+                                pStack.push(pOperation.index);
+                                pTree.addNode(pToken);
+                                pToken = this.readToken();
+                                break;
+
+                            }
+                            case EOperationType.k_Reduce: {
+                                iRuleLength = pOperation.rule.right.length;
+                                pStack.length -= iRuleLength;
+                                pStack.push(pSyntaxTable[pStack[pStack.length - 1]][pOperation.rule.left].index);
+                                if(this.ruleAction(pOperation.rule) === EOperationType.k_Pause) {
+                                    this._pToken = pToken;
+                                    isStop = true;
+                                    isPause = true;
+                                }
+                                break;
+
+                            }
+                        }
+                    } else {
+                        isError = true;
+                        isStop = true;
+                    }
+                }
+                if(isPause) {
+                    return EParserCode.k_Pause;
+                }
+                if(!isError) {
+                    pTree.setRoot();
+                    if(isDef(this._fnFinishCallback)) {
+                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok);
+                    }
+                    return EParserCode.k_Ok;
+                } else {
+                    this.error(ESyntaxErrorCode.k_SyntaxError);
+                    if(isDef(this._fnFinishCallback)) {
+                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error);
+                    }
+                    return EParserCode.k_Error;
+                }
+            } catch (e) {
+                return EParserCode.k_Error;
+            }
         };
         return Parser;
     })();

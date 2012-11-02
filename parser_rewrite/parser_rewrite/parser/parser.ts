@@ -4,6 +4,7 @@ module akra {
     var T_EMPTY: string = "EMPTY";
     var UNKNOWN_TOKEN: string = "UNNOWN";
     var START_SYMBOL: string = "S";
+    var UNUSED_SYMBOL: string = "##";
     var END_SYMBOL: string = "$";
     var LEXER_RULES: string = "--LEXER--";
     var FLAG_RULE_CREATE_NODE: string = "--AN";
@@ -64,7 +65,8 @@ module akra {
         k_Shift,
         k_Reduce,
         k_Success,
-        k_Pause
+        k_Pause,
+        k_Ok
     }
 
     export enum ENodeCreateMode {
@@ -73,7 +75,7 @@ module akra {
         k_Not
     }
 
-    enum EParseCode {
+    enum EParserCode {
         k_Pause,
         k_Ok,
         k_Error
@@ -92,6 +94,7 @@ module akra {
         k_GrammarUnexpectedSymbol,
         k_GrammarBadAdditionalFunctionName,
         k_GrammarBadKeyword,
+        k_SyntaxError,
 
         k_Lexer = 200,
         k_UnknownToken,
@@ -126,7 +129,7 @@ module akra {
     }
 
     interface IItem {
-        isEqual(pItem: IItem): bool;
+        isEqual(pItem: IItem, eType?: EParserType): bool;
         isParentItem(pItem: IItem): bool;
         isChildItem(pItem: IItem): bool;
 
@@ -136,15 +139,21 @@ module akra {
 
         toString(): string;
 
+        isExpected(sSymbol: string): bool;
+        addExpected(sSymbol: string): bool;
+
         rule: IRule;
         position: uint;
         index: uint;
         state: IState;
+        expectedSymbols: BoolMap;
+        isNewExpected: bool;
+        length: uint;
     }
 
     interface IState {
 
-        hasItem(pItem: IItem): IItem;
+        hasItem(pItem: IItem, eType: EParserType): IItem;
         hasParentItem(pItem: IItem): IItem;
         hasChildItem(pItem: IItem): IItem;
 
@@ -161,9 +170,12 @@ module akra {
         getNextStateBySymbol(sSymbol: string): IState;
         addNextState(sSymbol: string, pState: IState): bool;
 
+        toString(isBase: bool): string;
+
         items: IItem[];
-        baseItems: uint;
+        numBaseItems: uint;
         index: uint;
+        nextStates: IStateMap;
     }
 
     interface IToken {
@@ -189,11 +201,8 @@ module akra {
         getNextToken(): IToken;
     }
 
-    export interface IParseFlags {
-        add: bool;
-        negate: bool;
-        all: bool;
-        optimize: bool;
+    interface IFinishFunc {
+        (eCode: EParserCode): void;
     }
 
     export interface IParser {
@@ -202,12 +211,12 @@ module akra {
 
         returnCode(pNode: IParseNode): string;
 
-        init(sGrammar: string, eType: EParserType, pFlags: IParseFlags): bool;
+        init(sGrammar: string, eType: EParserType, eMode: EParseMode): bool;
 
-        parse(sSource: string, isSync: bool): EParseCode;
+        parse(sSource: string, isSync: bool, fnFinishCallback?: IFinishFunc, pCaller?: any): EParserCode;
 
-        pause(): EParseCode;
-        resume(): bool;
+        pause(): EParserCode;
+        resume(): EParserCode;
     }
 
     export interface IParseNode {
@@ -215,13 +224,19 @@ module akra {
         parent: IParseNode;
         name: string;
         value: string;
+
+        start?: uint;
+        end?: uint;
+        line?: uint;
     }
 
     export interface IParseTree {
         setRoot(): void;
 
+        setOptimizeMode(isOptimize: bool): void;
+
         addNode(pNode: IParseNode): void;
-        reduceByRule(pRule: IRule, eCreate: ENodeCreateMode, isOptimize: bool);
+        reduceByRule(pRule: IRule, eCreate: ENodeCreateMode);
 
         toString(): string;
 
@@ -239,6 +254,10 @@ module akra {
         private _iPos: uint;
         private _iIndex: uint;
         private _pState: IState;
+
+        private _pExpected: BoolMap;
+        private _isNewExpected: bool;
+        private _iLength: uint;
 
         /** @inline */
         get rule(): IRule {
@@ -273,15 +292,57 @@ module akra {
             this._iIndex = iIndex;
         }
 
-        constructor (pRule: IRule, iPos: uint) {
+        /** @inline */
+        get expectedSymbols(): BoolMap {
+            return this._pExpected;
+        }
+        /** @inline */
+        get length(): uint {
+            return this._iLength;
+        }
+        /** @inline */
+        get isNewExpected(): bool {
+            return this._isNewExpected;
+        }
+        /** @inline */
+        set isNewExpected(_isNewExpected: bool) {
+            this._isNewExpected = _isNewExpected;
+        }
+
+        constructor (pRule: IRule, iPos: uint, pExpected?: BoolMap) {
             this._pRule = pRule;
             this._iPos = iPos;
             this._iIndex = 0;
             this._pState = null;
+
+            this._isNewExpected = true;
+            this._iLength = 0;
+            this._pExpected = <BoolMap>{};
+
+            if (arguments.length === 3) {
+                var i: string;
+                for (i in <BoolMap>arguments[2]) {
+                    this.addExpected(i);
+                }
+            }
         }
 
-        isEqual(pItem: IItem): bool {
-            return (this._pRule === pItem.rule && this._iPos === pItem.position);
+        isEqual(pItem: IItem, eType?: EParserType = EParserType.k_LR0): bool {
+            if (eType === EParserType.k_LR0) {
+                return (this._pRule === pItem.rule && this._iPos === pItem.position);
+            }
+            else if (eType === EParserType.k_LR1) {
+                if (!(this._pRule === pItem.rule && this._iPos === pItem.position && this._iLength === (<IItem>pItem).length)) {
+                    return false;
+                }
+                var i: string;
+                for (i in this._pExpected) {
+                    if (!(<IItem>pItem).isExpected(i)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
         }
 
         isParentItem(pItem: IItem): bool {
@@ -309,77 +370,6 @@ module akra {
             return this._pRule.right[this._iPos + 1] || END_POSITION;
         }
 
-        toString(): string {
-            var sMsg: string = this._pRule.left + " -> ";
-            var pRight: string[] = this._pRule.right;
-
-            for (var k: uint = 0; k < pRight.length; k++) {
-                if (k === this._iPos) {
-                    sMsg += ". ";
-                }
-                sMsg += pRight[k] + " ";
-            }
-            if (this._iPos === pRight.length) {
-                sMsg += ". ";
-            }
-            sMsg = sMsg.slice(0, sMsg.length - 1);
-            return sMsg;
-        }
-    }
-
-    class ItemLR extends Item {
-        private _pRule: IRule;
-        private _iPos: uint;
-        private _iIndex: uint;
-        private _pState: IState;
-
-        private _pExpected: BoolMap;
-        private _isNewExpected: bool;
-        private _iLength: uint;
-
-        /** @inline */
-        get expectedSymbols(): BoolMap {
-            return this._pExpected;
-        }
-        /** @inline */
-        get length(): uint {
-            return this._iLength;
-        }
-
-        constructor (pRule: IRule, iPos: uint, pExpected: BoolMap);
-        constructor (pRule: IRule, iPos: uint) {
-            super(pRule, iPos);
-
-            this._isNewExpected = true;
-            this._iLength = 0;
-            this._pExpected = <BoolMap>{};
-
-            if (arguments.length === 3) {
-                var i: string;
-                for (i in <BoolMap>arguments[2]) {
-                    this.addExpected(i);
-                }
-            }
-        }
-
-        isEqual(pItem: IItem, eType?: EParserType = EParserType.k_LR0): bool {
-            if (eType === EParserType.k_LR0) {
-                return (this._pRule === pItem.rule && this._iPos === pItem.position);
-            }
-            else if (eType === EParserType.k_LR1) {
-                if (!(this._pRule === pItem.rule && this._iPos === pItem.position && this._iLength === (<ItemLR>pItem).length)) {
-                    return false;
-                }
-                var i: string;
-                for (i in this._pExpected) {
-                    if (!(<ItemLR>pItem).isExpected(i)) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-        }
-
         isExpected(sSymbol: string): bool {
             return !!(this._pExpected[sSymbol]);
         }
@@ -405,15 +395,19 @@ module akra {
                 }
                 sMsg += pRight[k] + " ";
             }
+
             if (this._iPos === pRight.length) {
                 sMsg += ". ";
             }
-            sExpected = ", ";
-            for (var l in this._pExpected) {
-                sExpected += l + "/";
-            }
-            if (sExpected !== ", ") {
-                sMsg += sExpected;
+
+            if (isDef(this._pExpected)) {
+                sExpected = ", ";
+                for (var l in this._pExpected) {
+                    sExpected += l + "/";
+                }
+                if (sExpected !== ", ") {
+                    sMsg += sExpected;
+                }
             }
 
             sMsg = sMsg.slice(0, sMsg.length - 1);
@@ -432,7 +426,7 @@ module akra {
             return this._pItemList;
         }
         /** @inline */
-        get baseItems(): uint {
+        get numBaseItems(): uint {
             return this._nBaseItems;
         }
         /** @inline */
@@ -443,6 +437,10 @@ module akra {
         set index(iIndex: uint) {
             this._iIndex = iIndex;
         }
+        /** @inline */
+        get nextStates(): IStateMap {
+            return this._pNextStates;
+        }
 
         constructor () {
             this._pItemList = <IItem[]>[];
@@ -451,11 +449,11 @@ module akra {
             this._nBaseItems = 0;
         }
 
-        hasItem(pItem: IItem): IItem {
+        hasItem(pItem: IItem, eType: EParserType): IItem {
             var i;
             var pItems: IItem[] = this._pItemList;
             for (i = 0; i < pItems.length; i++) {
-                if (pItems[i].isEqual(pItem)) {
+                if (pItems[i].isEqual(pItem, eType)) {
                     return pItems[i];
                 }
             }
@@ -493,7 +491,7 @@ module akra {
             var pItemsA: IItem[] = this._pItemList;
             var pItemsB: IItem[] = pState.items;
 
-            if (this._nBaseItems !== pState.baseItems) {
+            if (this._nBaseItems !== pState.numBaseItems) {
                 return false;
             }
             var nItems = this._nBaseItems;
@@ -502,7 +500,7 @@ module akra {
             for (i = 0; i < nItems; i++) {
                 isEqual = false;
                 for (j = 0; j < nItems; j++) {
-                    if ((<ItemLR>pItemsA[i]).isEqual(pItemsB[j], eType)) {
+                    if (pItemsA[i].isEqual(pItemsB[j], eType)) {
                         isEqual = true;
                         break;
                     }
@@ -530,14 +528,14 @@ module akra {
                     return false;
                 }
             }
-            var pItem = new Item(pRule, iPos);
+            var pItem: IItem = new Item(pRule, iPos);
             this.push(pItem);
             return true;
         }
 
         tryPush_LR(pRule: IRule, iPos: uint, sExpectedSymbol: string): bool {
             var i: uint;
-            var pItems: ItemLR[] = <ItemLR[]>(this._pItemList);
+            var pItems: IItem[] = <IItem[]>(this._pItemList);
 
             for (i = 0; i < pItems.length; i++) {
                 if (pItems[i].rule === pRule && pItems[i].position === iPos) {
@@ -548,7 +546,7 @@ module akra {
             var pExpected: BoolMap = <BoolMap>{};
             pExpected[sExpectedSymbol] = true;
 
-            var pItem: ItemLR = new ItemLR(pRule, iPos, pExpected);
+            var pItem: IItem = new Item(pRule, iPos, pExpected);
             this.push(pItem);
             return true;
         }
@@ -575,96 +573,30 @@ module akra {
         deleteNotBase(): void {
             this._pItemList.length = this._nBaseItems;
         }
+
+        toString(isBase: bool): string {
+            var len: uint = 0;
+            var sMsg: string;
+            var pItemList: IItem[] = this._pItemList;
+
+            sMsg = "State " + this._iIndex + ":\n";
+            len = isBase ? this._nBaseItems : pItemList.length;
+
+            for (var j = 0; j < len; j++) {
+                sMsg += "\t\t";
+                sMsg += pItemList[j].toString();
+                sMsg += "\n";
+            }
+
+            return sMsg;
+        }
     }
-
-    //class Operation implements IOperation {
-    //    private _eType: EOperationType;
-    //    private _pRule: IRule;
-    //    private _iIndex: uint;
-
-    //    /** @inline */
-    //    get type(): EOperationType {
-    //        return this._eType;
-    //    }
-    //    /** @inline */
-    //    set type(eType: EOperationType) {
-    //        this._eType = eType;
-    //    }
-    //    /** @inline */
-    //    get rule(): IRule {
-    //        return this._pRule;
-    //    }
-    //    /** @inline */
-    //    set rule(pRule: IRule) {
-    //        this._pRule = pRule;
-    //    }
-    //    /** @inline */
-    //    get index(): uint {
-    //        return this._iIndex;
-    //    }
-    //    /** @inline */
-    //    set index(iIndex: uint) {
-    //        this._iIndex = iIndex;
-    //    }
-
-    //    constructor (eType: EOperationType, iIndex: uint);
-    //    constructor (eType: EOperationType, pRule: IRule);
-    //    constructor () {
-    //        if (arguments.length === 0) {
-    //            this._eType = EOperationType.k_Error;
-    //        }
-    //        else if (arguments.length === 2 && arguments[0] === EOperationType.k_Shift) {
-    //            this._eType = EOperationType.k_Shift;
-    //            this._iIndex = <uint>arguments[1];
-    //        }
-    //        else if (arguments.length === 2 && arguments[0] === EOperationType.k_Reduce) {
-    //            this._eType = EOperationType.k_Reduce;
-    //            this._pRule = <IRule>arguments[1];
-    //        }
-    //    }
-    //}
-
-    //class Rule implements IRule {
-    //    private _sLeft: string;
-    //    private _pRight: string[];
-    //    private _iIndex: uint;
-
-    //    /** @inline */
-    //    get left(): string {
-    //        return this._sLeft;
-    //    }
-    //    /** @inline */
-    //    set left(sLeft: string) {
-    //        this._sLeft = sLeft;
-    //    }
-    //    /** @inline */
-    //    get right(): string[] {
-    //        return this._pRight;
-    //    }
-    //    /** @inline */
-    //    set right(pRight: string[]) {
-    //        this._pRight = pRight;
-    //    }
-    //    /** @inline */
-    //    get index(): uint {
-    //        return this._iIndex;
-    //    }
-    //    /** @inline */
-    //    set index(iIndex: uint) {
-    //        this._iIndex = iIndex;
-    //    }
-
-    //    constructor () {
-    //        this._sLeft = "";
-    //        this._pRight = <string[]>[];
-    //        this._iIndex = 0;
-    //    }
-    //}
 
     export class ParseTree implements IParseTree {
         private _pRoot: IParseNode;
         private _pNodes: IParseNode[];
         private _pNodesCountStack: uint[];
+        private _isOptimizeMode: bool;
 
         /** @inline */
         get root(): IParseNode {
@@ -679,10 +611,15 @@ module akra {
             this._pRoot = null;
             this._pNodes = <IParseNode[]>[];
             this._pNodesCountStack = <uint[]>[];
+            this._isOptimizeMode = false;
         }
 
         setRoot(): void {
             this._pRoot = this._pNodes.pop();
+        }
+
+        setOptimizeMode(isOptimize: bool): void {
+            this._isOptimizeMode = isOptimize;
         }
 
         addNode(pNode: IParseNode): void {
@@ -690,13 +627,13 @@ module akra {
             this._pNodesCountStack.push(1);
         }
 
-        reduceByRule(pRule: IRule, eCreate: ENodeCreateMode = ENodeCreateMode.k_Default, isOptimize: bool = false): void {
+        reduceByRule(pRule: IRule, eCreate: ENodeCreateMode = ENodeCreateMode.k_Default): void {
             var iReduceCount: uint = 0;
             var pNodesCountStack: uint[] = this._pNodesCountStack;
             var pNode: IParseNode;
             var iRuleLength: uint = pRule.right.length;
             var pNodes: IParseNode[] = this._pNodes;
-            var nOptimize: uint = isOptimize ? 1 : 0;
+            var nOptimize: uint = this._isOptimizeMode ? 1 : 0;
 
             while (iRuleLength) {
                 iReduceCount += pNodesCountStack.pop();
@@ -1342,7 +1279,7 @@ module akra {
     }
 
     interface IRuleFunction {
-        (pRule: IRule): bool;
+        (pRule: IRule): EOperationType;
     }
 
     interface IRuleFunctionMap {
@@ -1372,7 +1309,7 @@ module akra {
         private _pToken: IToken;
 
         //For async loading of files work fine
-        private _pFinishCallback: any;
+        private _fnFinishCallback: IFinishFunc;
         private _pCaller: any;
 
         //Grammar Info
@@ -1418,7 +1355,7 @@ module akra {
             this._pStack = <uint[]>[];
             this._pToken = null;
 
-            this._pFinishCallback = null;
+            this._fnFinishCallback = null;
             this._pCaller = null;
 
             this._pSymbols = <BoolMap>{};
@@ -1450,28 +1387,130 @@ module akra {
         }
 
         isTypeId(sValue: string): bool {
-            return true;
+            return !!(this._pTypeIdMap[sValue]);
         }
 
         returnCode(pNode: IParseNode): string {
+            if (pNode) {
+                if (pNode.value) {
+                    return pNode.value + " ";
+                }
+                else if (pNode.children) {
+                    var sCode: string = "";
+                    var i: uint = 0;
+                    for (i = pNode.children.length - 1; i >= 0; i--) {
+                        sCode += this.returnCode(pNode.children[i]);
+                    }
+                    return sCode;
+                }
+            }
             return "";
         }
 
-        init(sGrammar: string, eType: EParserType, pFlags: IParseFlags): bool {
-            return true;
+        init(sGrammar: string, eType: EParserType, eMode: EParseMode): bool {
+            try {
+                this._eType = eType || EParserType.k_LALR;
+                this._pLexer = new Lexer(this);
+                this._eParseMode = eMode || EParseMode.k_AllNode;
+                this.generateRules(sGrammar);
+                this.buildSyntaxTable();
+                this.clearMem();
+                return true;
+            }
+            catch (e) {
+                return false;
+            }
         }
 
-        parse(sSource: string, isSync: bool): EParseCode {
-            return EParseCode;
+        parse(sSource: string, isSync: bool, fnFinishCallback?: IFinishFunc = null, pCaller?: any = null): EParserCode {
+             try {
+                this.defaultInit();
+                this._sSource = sSource;
+                this._pLexer.init(sSource);
+
+                this._isSync = isSync;
+
+                this._fnFinishCallback = fnFinishCallback;
+                this._pCaller = pCaller;
+
+                var pTree:IParseTree = this._pSyntaxTree;
+                var pStack:uint[] = this._pStack;
+                var pSyntaxTable:IOperationDMap = this._pSyntaxTable;
+
+                var isStop:bool = false;
+                var isError:bool = false;
+                var isPause:bool = false;
+                var pToken:IToken = this.readToken();
+
+                var pOperation:IOperation;
+                var iRuleLength:uint;
+
+                while (!isStop) {
+                    pOperation = pSyntaxTable[pStack[pStack.length - 1]][pToken.name];
+                    if (isDef(pOperation)) {
+                        switch (pOperation.type) {
+                            case EOperationType.k_Success:
+                                isStop = true;
+                                break;
+
+                            case EOperationType.k_Shift:
+                                pStack.push(pOperation.index);
+                                pTree.addNode(<IParseNode>pToken);
+                                pToken = this.readToken();
+                                break;
+                            
+                            case EOperationType.k_Reduce:
+                                iRuleLength = pOperation.rule.right.length;
+                                pStack.length -= iRuleLength;
+                                pStack.push(pSyntaxTable[pStack[pStack.length - 1]][pOperation.rule.left].index);
+
+                                if (this.ruleAction(pOperation.rule) === EOperationType.k_Pause) {
+                                    this._pToken = pToken;
+                                    isStop = true;
+                                    isPause = true;
+                                }
+                                break;
+                        }
+                    }
+                    else {
+                        isError = true;
+                        isStop = true;
+                    }
+                }
+                if (isPause) {
+                    return EParserCode.k_Pause;
+                }
+
+                if (!isError) {
+                    pTree.setRoot();
+                    if (isDef(this._fnFinishCallback)) {
+                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok);
+                    }
+                    return EParserCode.k_Ok;
+                }
+                else {
+                    this.error(ESyntaxErrorCode.k_SyntaxError);
+                    //console.log("Error!!!", pToken);
+                    if (isDef(this._fnFinishCallback)) {
+                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error);
+                    }
+                    return EParserCode.k_Error;
+                }
+
+            }
+            catch (e) {
+                 return EParserCode.k_Error;
+            }
         }
 
-        pause(): EParseCode {
-            return EParseCode.k_Ok;
+        pause(): EParserCode {
+            return EParserCode.k_Pause;
         }
 
-        resume(): bool {
-            return true;
+        resume(): EParserCode {
+            return this.resumeParse();
         }
+
 
         private error(eCode: ESyntaxErrorCode): void {
 
@@ -1490,7 +1529,7 @@ module akra {
             delete this._pExpectedExtensionDMap;
         }
 
-        private hasState(pState: IState, eType: EParserType = EParserType.k_LR0) {
+        private hasState(pState: IState, eType: EParserType) {
             var pStateList: IState[] = this._pStateList;
             var i: uint = 0;
 
@@ -1517,8 +1556,9 @@ module akra {
             this._pBaseItemList.push(pItem);
         }
 
-        private tryAddState(pState: IState, eType: EParserType = EParserType.k_LR0): IState {
-            var pRes = this.hasState(pState);
+        private tryAddState(pState: IState, eType: EParserType): IState {
+            var pRes = this.hasState(pState, eType);
+
             if (isNull(pRes)) {
                 if (eType === EParserType.k_LR0) {
                     var pItems = pState.items;
@@ -1856,7 +1896,7 @@ module akra {
                             this.error(ESyntaxErrorCode.k_GrammarUnexpectedSymbol);
                             //this._error("Can`t generate rules from grammar! Unexpected symbol! Must be");
                         }
-                        var sName:string = this._pLexer.addPunctuator(pTempRule[j][1]);
+                        var sName: string = this._pLexer.addPunctuator(pTempRule[j][1]);
                         pRule.right.push(sName);
                         this._pSymbols[sName] = true;
                     }
@@ -1874,7 +1914,7 @@ module akra {
 
         }
 
-        
+
         private generateFirstState(eType: EParserType): void {
             if (eType === EParserType.k_LR0) {
                 this.generateFirstState_LR0();
@@ -1884,10 +1924,10 @@ module akra {
             }
         }
 
-        private generateFirstState_LR0():void {
+        private generateFirstState_LR0(): void {
             var pState: IState = new State();
             var pItem: IItem = new Item(this._pRulesDMap[START_SYMBOL][0], 0);
-            
+
             this.pushBaseItem(pItem);
             pState.push(pItem);
 
@@ -1895,13 +1935,13 @@ module akra {
             this.pushState(pState);
         }
 
-        private generateFirstState_LR():void {
+        private generateFirstState_LR(): void {
             var pState: IState = new State();
             var pExpected: BoolMap = <BoolMap>{};
             pExpected[END_SYMBOL] = true;
 
-            pState.push(new ItemLR(this._pRulesDMap[START_SYMBOL][0], 0, pExpected));
-            
+            pState.push(new Item(this._pRulesDMap[START_SYMBOL][0], 0, pExpected));
+
             this.closure_LR(pState);
             this.pushState(pState);
         }
@@ -1916,9 +1956,9 @@ module akra {
         }
 
         private closure_LR0(pState: IState): IState {
-            var pItemList:IItem[] = pState.items;
-            var i:uint = 0, j:string;
-            var sSymbol:string;
+            var pItemList: IItem[] = pState.items;
+            var i: uint = 0, j: string;
+            var sSymbol: string;
 
             for (i = 0; i < pItemList.length; i++) {
                 sSymbol = pItemList[i].mark();
@@ -1934,8 +1974,8 @@ module akra {
         }
 
         private closure_LR(pState: IState): IState {
-            var pItemList: ItemLR[] = <ItemLR[]>(pState.items);
-            var i:uint = 0, j: string, k: string;
+            var pItemList: IItem[] = <IItem[]>(pState.items);
+            var i: uint = 0, j: string, k: string;
             var sSymbol: string;
             var pSymbols: BoolMap;
             var pTempSet: string[];
@@ -1970,8 +2010,453 @@ module akra {
             return pState;
         }
 
+        private nexeState(pState: IState, sSymbol: string, eType: EParserType): IState {
+            if (eType === EParserType.k_LR0) {
+                return this.nextState_LR0(pState, sSymbol);
+            }
+            else {
+                return this.nextState_LR(pState, sSymbol);
+            }
+        }
 
+        private nextState_LR0(pState: IState, sSymbol: string): IState {
+            var pItemList: IItem[] = pState.items;
+            var i: uint = 0;
+            var pNewState: IState = new State();
 
+            for (i = 0; i < pItemList.length; i++) {
+                if (sSymbol === pItemList[i].mark()) {
+                    pNewState.push(new Item(pItemList[i].rule, pItemList[i].position + 1));
+                }
+            }
+
+            return pNewState;
+        }
+
+        private nextState_LR(pState: IState, sSymbol: string): IState {
+            var pItemList: IItem[] = <IItem[]>pState.items;
+            var i: uint = 0;
+            var pNewState: IState = new State();
+
+            for (i = 0; i < pItemList.length; i++) {
+                if (sSymbol === pItemList[i].mark()) {
+                    pNewState.push(new Item(pItemList[i].rule, pItemList[i].position + 1, pItemList[i].expectedSymbols));
+                }
+            }
+
+            return pNewState;
+        }
+
+        private deleteNotBaseItems(): void {
+            var i: uint = 0;
+            for (i = 0; i < this._pStateList.length; i++) {
+                this._pStateList[i].deleteNotBase();
+            }
+        }
+
+        private closureForItem(pRule: IRule, iPos: uint): IState {
+            var sIndex: string = "";
+            sIndex += pRule.index + "_" + iPos;
+
+            var pState: IState = this._pStatesTempMap[sIndex];
+            if (isDef(pState)) {
+                return pState;
+            }
+            else {
+                var pExpected: BoolMap = <BoolMap>{};
+                pExpected[UNUSED_SYMBOL] = true;
+
+                pState = new State();
+                pState.push(new Item(pRule, iPos, pExpected));
+
+                this.closure_LR(pState);
+                this._pStatesTempMap[sIndex] = pState;
+
+                return pState;
+            }
+        }
+
+        private addLinkExpected(pItem: IItem, pItemX: IItem): void {
+            var pTable: BoolDMap = this._pExpectedExtensionDMap;
+            var iIndex: uint = pItem.index;
+
+            if (!isDef(pTable[iIndex])) {
+                pTable[iIndex] = <BoolMap>{};
+            }
+
+            pTable[iIndex][pItemX.index] = true;
+        }
+
+        private determineExpected(pTestState: IState, sSymbol: string): void {
+            var pStateX = pTestState.getNextStateBySymbol(sSymbol);
+
+            if (isNull(pStateX)) {
+                return;
+            }
+
+            var pItemListX: IItem[] = <IItem[]>pStateX.items;
+            var pItemList: IItem[] = <IItem[]>pTestState.items;
+            var pState: IState;
+            var pItem: IItem;
+                var i: uint, j: uint, k: string;
+
+            var nBaseItemTest = pTestState.numBaseItems;
+            var nBaseItemX = pStateX.numBaseItems;
+
+            for (i = 0; i < nBaseItemTest; i++) {
+                pState = this.closureForItem(pItemList[i].rule, pItemList[i].position);
+
+                for (j = 0; j < nBaseItemX; j++) {
+                    pItem = <IItem>pState.hasChildItem(pItemListX[j]);
+
+                    if (pItem) {
+                        var pExpected: BoolMap = pItem.expectedSymbols;
+
+                        for (k in pExpected) {
+                            if (k === UNUSED_SYMBOL) {
+                                this.addLinkExpected(pItemList[i], pItemListX[j]);
+                            }
+                            else {
+                                pItemListX[j].addExpected(k);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private generateLinksExpected(): void {
+            var i: uint, j: string;
+            var pStates: IState[] = this._pStateList;
+
+            for (i = 0; i < pStates.length; i++) {
+                for (j in this._pSymbols) {
+                    this.determineExpected(pStates[i], j);
+                }
+            }
+        }
+
+        private expandExpected(): void {
+            var pItemList: IItem[] = <IItem[]>this._pBaseItemList;
+            var pTable: BoolDMap = this._pExpectedExtensionDMap;
+            var i: uint = 0, j: string;
+            var sSymbol: string;
+            var isNewExpected: bool = false;
+
+            pItemList[0].addExpected(END_SYMBOL);
+            pItemList[0].isNewExpected = true;
+
+            while (true) {
+
+                if (i === pItemList.length) {
+                    if (!isNewExpected) {
+                        break;
+                    }
+                    isNewExpected = false;
+                    i = 0;
+                }
+
+                if (pItemList[i].isNewExpected) {
+                    var pExpected: BoolMap = pItemList[i].expectedSymbols;
+
+                    for (sSymbol in pExpected) {
+                        for (j in pTable[i]) {
+                            if (pItemList[<number><any>j].addExpected(sSymbol)) {
+                                isNewExpected = true;
+                            }
+                        }
+                    }
+                }
+
+                pItemList[i].isNewExpected = false;
+                i++;
+            }
+        }
+
+        private generateStates(eType: EParserType): void {
+            if (eType === EParserType.k_LR0) {
+                this.generateStates_LR0();
+            }
+            else if (eType === EParserType.k_LR1) {
+                this.generateStates_LR();
+            }
+            else if (eType === EParserType.k_LALR) {
+                this.generateStates_LALR();
+            }
+        }
+
+        private generateStates_LR0(): void {
+            this.generateFirstState_LR0();
+
+            var i: uint;
+            var pStateList: IState[] = this._pStateList;
+            var sSymbol: string;
+            var pState: IState;
+
+            for (i = 0; i < pStateList.length; i++) {
+                for (sSymbol in this._pSymbols) {
+                    pState = this.nextState_LR0(pStateList[i], sSymbol);
+
+                    if (!pState.isEmpty()) {
+                        pState = this.tryAddState(pState, EParserType.k_LR0);
+                        this.addStateLink(pStateList[i], pState, sSymbol);
+                    }
+                }
+            }
+        }
+
+        private generateStates_LR(): void {
+            this._pFirstTerminalsDMap = <BoolDMap>{};
+            this.generateFirstState_LR();
+
+            var i: uint;
+            var pStateList: IState[] = this._pStateList;
+            var sSymbol: string;
+            var pState: IState;
+
+            for (i = 0; i < pStateList.length; i++) {
+                for (sSymbol in this._pSymbols) {
+                    pState = this.nextState_LR(pStateList[i], sSymbol);
+
+                    if (!pState.isEmpty()) {
+                        pState = this.tryAddState(pState, EParserType.k_LR1);
+                        this.addStateLink(pStateList[i], pState, sSymbol);
+                    }
+                }
+            }
+        }
+
+        private generateStates_LALR(): void {
+            this._pStatesTempMap = <IStateMap>{};
+            this._pBaseItemList = <IItem[]>[];
+            this._pExpectedExtensionDMap = <BoolDMap>{};
+            this._pFirstTerminalsDMap = <BoolDMap>{};
+
+            this.generateStates_LR0();
+            this.deleteNotBaseItems();
+            this.generateLinksExpected();
+            this.expandExpected();
+
+            var i: uint = 0;
+            var pStateList: IState[] = this._pStateList;
+
+            for (i = 0; i < pStateList.length; i++) {
+                this.closure_LR(pStateList[i]);
+            }
+        }
+
+        private calcBaseItem(): uint {
+            var num: uint = 0;
+            var i: uint = 0;
+
+            for (i = 0; i < this._pStateList.length; i++) {
+                num += this._pStateList[i].numBaseItems;
+            }
+
+            return num;
+        }
+
+        private printStates(isBase: bool): string {
+            var sMsg: string = "";
+            var i: uint = 0;
+
+            for (i = 0; i < this._pStateList.length; i++) {
+                sMsg += this.printState(this._pStateList[i], isBase);
+                sMsg += " ";
+            }
+
+            return sMsg;
+        }
+
+        private printState(pState: IState, isBase: bool): string {
+            var sMsg: string = pState.toString(isBase);
+            return sMsg;
+        }
+
+        private printExpectedTable(): string {
+            var i: string, j: string;
+            var sMsg: string = "";
+
+            for (i in this._pExpectedExtensionDMap) {
+                sMsg += "State " + this._pBaseItemList[<number><any>i].state.index + ":   ";
+                sMsg += this._pBaseItemList[<number><any>i].toString() + "  |----->\n";
+
+                for (j in this._pExpectedExtensionDMap[i]) {
+                    sMsg += "\t\t\t\t\t" + "State " + this._pBaseItemList[<number><any>j].state.index + ":   ";
+                    sMsg += this._pBaseItemList[<number><any>j].toString() + "\n";
+                }
+
+                sMsg += "\n";
+            }
+
+            return sMsg;
+        }
+
+        private addReducing(pState: IState): void {
+            var i: uint, j: string;
+            var pItemList: IItem[] = pState.items;
+
+            for (i = 0; i < pItemList.length; i++) {
+                if (pItemList[i].mark() === END_POSITION) {
+
+                    if (pItemList[i].rule.left === START_SYMBOL) {
+                        this.pushInSyntaxTable(pState.index, END_SYMBOL, this._pSuccessOperation);
+                    }
+                    else {
+                        var pExpected = pItemList[i].expectedSymbols;
+
+                        for (j in pExpected) {
+                            this.pushInSyntaxTable(pState.index, j, this._pReduceOperationsMap[pItemList[i].rule.index]);
+                        }
+                    }
+                }
+            }
+        }
+
+        private addShift(pState: IState) {
+            var i: string;
+            var pStateMap: IStateMap = pState.nextStates;
+
+            for (i in pStateMap) {
+                this.pushInSyntaxTable(pState.index, i, this._pShiftOperationsMap[pStateMap[i].index]);
+            }
+        }
+
+        private buildSyntaxTable(): void {
+            this._pStateList = <IState[]>[];
+
+            var pStateList: IState[] = this._pStateList;
+            var pState: IState;
+
+            //Generate states
+            this.generateStates(this._eType);
+
+            //Init necessary properties
+            this._pSyntaxTable = <IOperationDMap>{};
+            this._pReduceOperationsMap = <IOperationMap>{};
+            this._pShiftOperationsMap = <IOperationMap>{};
+
+            this._pSuccessOperation = <IOperation>{ type: EOperationType.k_Success };
+
+            var i: uint = 0, j: string, k: string;
+
+            for (i = 0; i < pStateList.length; i++) {
+                this._pShiftOperationsMap[pStateList[i].index] = <IOperation>{
+                    type: EOperationType.k_Shift,
+                    index: pStateList[i].index
+                };
+            }
+
+            for (j in this._pRulesDMap) {
+                for (k in this._pRulesDMap[j]) {
+                    this._pReduceOperationsMap[k] = <IOperation>{
+                        type: EOperationType.k_Reduce,
+                        rule: this._pRulesDMap[j][k]
+                    };
+                }
+            }
+
+            //Build syntax table
+            for (var i = 0; i < pStateList.length; i++) {
+                pState = pStateList[i];
+                this.addReducing(pState);
+                this.addShift(pState);
+            }
+        }
+
+        private readToken(): IToken {
+            return this._pLexer.getNextToken();
+        }
+
+        private ruleAction(pRule: IRule): EOperationType {
+            this._pSyntaxTree.reduceByRule(pRule, this._pSymbolsWithNodesMap[pRule.left]);
+
+            var sActionName:string = this._pRuleFunctionNamesMap[pRule.index];
+            if (isDef(sActionName)) {
+                return (this._pAdditionalFunctionsMap[sActionName]).call(this, pRule);
+            }
+
+            return EOperationType.k_Ok;
+        }
+
+        private defaultInit(): void {
+            this._iIndex = 0;
+            this._pStack = [0];
+            this._pSyntaxTree = new ParseTree();
+            this._pTypeIdMap = <BoolMap>{};
+        }
+
+        private resumeParse(): EParserCode {
+            try {
+                var pTree:IParseTree = this._pSyntaxTree;
+                var pStack:uint[] = this._pStack;
+                var pSyntaxTable:IOperationDMap = this._pSyntaxTable;
+
+                var isStop:bool = false;
+                var isError:bool = false;
+                var isPause:bool = false;
+                var pToken:IToken = this._pToken;
+
+                var pOperation:IOperation;
+                var iRuleLength:uint;
+
+                while (!isStop) {
+                    pOperation = pSyntaxTable[pStack[pStack.length - 1]][pToken.name];
+                    if (isDef(pOperation)) {
+                        switch (pOperation.type) {
+                            case EOperationType.k_Success:
+                                isStop = true;
+                                break;
+
+                            case EOperationType.k_Shift:
+                                pStack.push(pOperation.index);
+                                pTree.addNode(<IParseNode>pToken);
+                                pToken = this.readToken();
+                                break;
+                            
+                            case EOperationType.k_Reduce:
+                                iRuleLength = pOperation.rule.right.length;
+                                pStack.length -= iRuleLength;
+                                pStack.push(pSyntaxTable[pStack[pStack.length - 1]][pOperation.rule.left].index);
+
+                                if (this.ruleAction(pOperation.rule) === EOperationType.k_Pause) {
+                                    this._pToken = pToken;
+                                    isStop = true;
+                                    isPause = true;
+                                }
+                                break;
+                        }
+                    }
+                    else {
+                        isError = true;
+                        isStop = true;
+                    }
+                }
+                if (isPause) {
+                    return EParserCode.k_Pause;
+                }
+
+                if (!isError) {
+                    pTree.setRoot();
+                    if (isDef(this._fnFinishCallback)) {
+                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok);
+                    }
+                    return EParserCode.k_Ok;
+                }
+                else {
+                    this.error(ESyntaxErrorCode.k_SyntaxError);
+                    //console.log("Error!!!", pToken);
+                    if (isDef(this._fnFinishCallback)) {
+                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error);
+                    }
+                    return EParserCode.k_Error;
+                }
+
+            }
+            catch (e) {
+                 return EParserCode.k_Error;
+            }
+        }
 
     }
 
