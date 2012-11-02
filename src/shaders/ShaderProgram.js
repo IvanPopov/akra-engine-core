@@ -869,6 +869,10 @@ ShaderProgram.prototype.applyData = function (pData, iSlot) {
     for (var i = 0; i < pDecl.length; i++) {
         pVertexElement = pDecl[i];
         iStream = pAttrs[pVertexElement.eUsage];
+        if(iStream === undefined){
+            continue;
+        }
+        //console.log(pVertexElement.toString(),iStream);
         if (iStreamState !== pManager._getStreamState(iSlot)) {
             isChange = true;
         }

@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief файл содержит реализацию прайтов в Akra Engine
+ * @brief файл содержит реализацию спрайтов в Akra Engine
  * @author Igor Karateev
  * @email iakarateev@gmail.com
  */
@@ -32,6 +32,11 @@ function Sprite(pEngine){
 	this._pEngine = pEngine;
 	this._pRenderData = pEngine.spriteManager().registerSprite(this);
 
+	var pVertexBuffer = pEngine.pDisplayManager.vertexBufferPool().createResource('sprite' + a.sid());
+	pVertexBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
+
+	this._pVertexData = new a.VertexData(pVertexBuffer,0,4,VE_END());
+
 	this._bGeometrySetted = false;
 	this._fnDraw = null; //пользовательская функция для отрисовки спрайта
 
@@ -41,6 +46,8 @@ function Sprite(pEngine){
 EXTENDS(Sprite, a.SceneObject, a.RenderableObject);
 
 Sprite.prototype._setup = function(pAttrDecl,pData){
+	this._pVertexData.extend(pAttrDecl,pData);
+	console.log(this._pVertexData.toString());
 	return this._pRenderData.allocateAttribute(pAttrDecl,pData);
 }
 
@@ -128,7 +135,9 @@ Sprite.prototype.render = function(){
 		var pSnapshot = this._pActiveSnapshot;
 
 		this._fnDraw(pSnapshot);
-		this.applyRenderData(this._pRenderData);
+		//this.applyRenderData(this._pRenderData);
+		this.applyVertexData(this._pVertexData,a.PRIMTYPE.TRIANGLESTRIP);
+		console.log('apply vertex data');
 
 		pRenderer.activateFrameBuffer(pDeferredFrameBuffer);
 

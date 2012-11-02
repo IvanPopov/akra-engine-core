@@ -76,7 +76,7 @@ VertexBuffer.prototype.create = function (iByteSize, iFlags, pData)
     var pRenderer = this._pEngine.shaderManager();
 
     //Софтварного рендеринга буфера у нас нет
-    debug_assert(!TEST_BIT(this._iTypeFlags, a.VBufferBase.SoftwareBit), "no sftware rendering");
+    debug_assert(!TEST_BIT(this._iTypeFlags, a.VBufferBase.SoftwareBit), "no software rendering");
 
     //Нету смысла много обновлять и только один раз рисовать
     if (TEST_BIT(this._iTypeFlags, a.VBufferBase.ManyUpdateBit) && (!TEST_BIT(this._iTypeFlags,

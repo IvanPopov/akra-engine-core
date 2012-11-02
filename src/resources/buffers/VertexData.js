@@ -377,7 +377,6 @@ A_NAMESPACE(normalizeVertexDecl);
 function VertexData (pVertexBuffer, iOffset, iCount, pVertexDeclaration) {
     debug_assert(pVertexBuffer, "Вертекс буффер не передан при создании VertexData");
 
-
     /**
      * @enum eBufferStateBits
      * maximum number of vertex elements stored
@@ -419,6 +418,7 @@ function VertexData (pVertexBuffer, iOffset, iCount, pVertexDeclaration) {
         this._iStride = pVertexDeclaration;
     }
     else {
+        pVertexDeclaration = normalizeVertexDecl(pVertexDeclaration);
         this._iStride = pVertexDeclaration.stride;
         this.setVertexDeclaration(pVertexDeclaration);
     }
@@ -463,7 +463,7 @@ VertexData.prototype.getVertexBuffer = function () {
  **/
 VertexData.prototype.getStartIndex = function () {
     var iIndex = this.getOffset() / this.getStride();
-    debug_assert(iIndex % 1 == 0, "Вычислить значенеи индекса указывающего на первый элемен нельзя)");
+    debug_assert(iIndex % 1 == 0, "Вычислить значение индекса указывающего на первый элемент нельзя)");
     return iIndex;
 };
 
