@@ -1198,7 +1198,8 @@ module akra.math {
     }
 }
 
-///<reference path="../akra.ts" />
+
+
 
 module akra.math {
     export class Vec3 {
@@ -1318,6 +1319,8 @@ module akra.math {
 
 
 }
+
+
 
 module akra.math {
     export class Vec4 {
@@ -1461,29 +1464,874 @@ module akra.math {
     }
 }
 
-///<reference path="../akra.ts" />
+
+
+
+
+
+
+
+/**
+ * @important Если внезапно задумаем перейти обратно на 
+ * хранение данных в матрицах по строкам, как собственно и было в начале,
+ * то необходимо раскомментить definы и переписать метод set, 
+ * так как он ложит по столбцам
+ */
+
+
+// #define __a11 0
+// #define __a12 1
+// #define __a13 2
+// #define __a21 3
+// #define __a22 4
+// #define __a23 5
+// #define __a31 6
+// #define __a32 7
+// #define __a33 8
+
+
+
+
+
+
+
+
+
+
+
+module akra.math {
+	export interface IMat4 {} ;
+	export interface IVec3 {} ;
+	export interface IQuat4 {} ;
+
+	export interface IMat3 {
+		data: Float32Array;
+
+		set(): IMat3;
+		set(fValue: float): IMat3;
+		set(v3fVec: IVec3): IMat3;
+		set(m3fMat: IMat3): IMat3;
+		set(pArray: float[]): IMat3;
+		set(fValue1: float, fValue2: float, fValue3: float): IMat3;
+		set(v3fVec1: IVec3, v3fVec2: IVec3, v3fVec3: IVec3): IMat3;
+		set(pArray1: float[], pArray2: float[], pArray3: float[]): IMat3;
+		set(fValue1: float, fValue2: float, fValue3: float,
+			fValue4: float, fValue5: float, fValue6: float,
+			fValue7: float, fValue8: float, fValue9: float): IMat3;
+
+		identity(): IMat3;
+
+		add(m3fMat: IMat3, m3fDestination?: IMat3): IMat3;
+		subtract(m3fMat: IMat3, m3fDestination?: IMat3): IMat3;
+		multiply(m3fMat: IMat3, m3fDestination?: IMat3): IMat3;
+		multiplyVec3(v3fVec: IVec3, v3fDestination?: IVec3): IVec3;
+
+		transpose(m3fDestination?: IMat3): IMat3;
+		determinant(): float;
+		inverse(m3fDestination?: IMat3): IMat3;
+
+		isEqual(m3fMat: IMat3, fEps?: float): bool;
+		isDiagonal(fEps?: float) : bool;
+
+		toMat4(m4fDestination?: IMat4): IMat4;
+		toQuat4(q4fDestination?: IQuat4): IQuat4;
+		toString(): string;
+	};
+};
+
+
+
+
+
+
+/**
+ * @important Если внезапно задумаем перейти обратно на 
+ * хранение данных в матрицах по строкам, как собственно и было в начале,
+ * то необходимо раскомментить definы и переписать метод set, 
+ * так как он ложит по столбцам
+ */
+
+
+// #define __11 0
+// #define __12 1
+// #define __13 2
+// #define __14 3
+// #define __21 4
+// #define __22 5
+// #define __23 6
+// #define __24 7
+// #define __31 8
+// #define __32 9
+// #define __33 10
+// #define __34 11
+// #define __41 12
+// #define __42 13
+// #define __43 14
+// #define __44 15
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra.math {
+	export interface IMat4 {
+		data: Float32Array;
+	};
+};
+
+
+
+
+
+
+module akra.math {
+	export interface IVec3 {
+		x: float;
+		y: float;
+		z: float;
+	};
+};
+
+
+
+
+
+
+module akra.math {
+	export interface IQuat4 {
+		x: float;
+		y: float;
+		z: float;
+		w: float;
+	};
+};
+
+
 
 module akra.math {
     export class Mat3 {
-    }
-}
+/*var m3fMat;
 
-///<reference path="../akra.ts" />
+	    if(this === window  || this === window.AKRA){
+	        m3fMat = Mat3._pStorage[Mat3._iIndex++];
+	        if(Mat3._iIndex == Mat3._nStorageSize){
+	            Mat3._iIndex = 0;
+	        }        
+
+	        //clear
+	        if(arguments.length == 0){
+	            // var pData = m3fMat.pData;
+	            // pData.a11 = pData.a12 = pData.a13 = 
+	            // pData.a21 = pData.a22 = pData.a23 = 
+	            // pData.a31 = pData.a32 = pData.a33 = 0;
+	            return m3fMat;
+	        }
+	    }
+	    else{
+	        this.pData = new Float32Array(9);
+	        m3fMat = this;
+	    }*/
+
+
+	    data : Float32Array;
+
+	    constructor();
+		constructor(fValue: float);
+		constructor(v3fVec: IVec3);
+		constructor(m3fMat: IMat3);
+		constructor(pArray: float[]);
+		constructor(fValue1: float, fValue2: float, fValue3: float);
+		constructor(v3fVec1: IVec3, v3fVec2: IVec3, v3fVec3: IVec3);
+		constructor(pArray1: float[], pArray2: float[], pArray3: float[]);
+		constructor(fValue1: float, fValue2: float, fValue3: float,
+					fValue4: float, fValue5: float, fValue6: float,
+					fValue7: float, fValue8: float, fValue9: float);
+
+		constructor(fValue1?, fValue2?, fValue3?,
+					fValue4?, fValue5?, fValue6?,
+					fValue7?, fValue8?, fValue9?){
+
+			this.data = new Float32Array(9);
+
+			var nArgumentsLength: uint = arguments.length;
+
+			if(nArgumentsLength == 1){
+		        this.set(arguments[0]);
+		    }
+		    else if(nArgumentsLength == 3){
+		        this.set(arguments[0],arguments[1],arguments[2]);
+		    }
+		    else if(nArgumentsLength == 9){
+		        this.set(arguments[0],arguments[1],arguments[2],
+                        arguments[3],arguments[4],arguments[5],
+                        arguments[6],arguments[7],arguments[8]);
+		    }
+		};
+
+		set(): IMat3;
+		set(fValue: float): IMat3;
+		set(v3fVec: IVec3): IMat3;
+		set(m3fMat: IMat3): IMat3;
+		set(pArray: float[]): IMat3;
+		set(fValue1: float, fValue2: float, fValue3: float): IMat3;
+		set(v3fVec1: IVec3, v3fVec2: IVec3, v3fVec3: IVec3): IMat3;
+		set(pArray1: float[], pArray2: float[], pArray3: float[]): IMat3;
+		set(fValue1: float, fValue2: float, fValue3: float,
+			fValue4: float, fValue5: float, fValue6: float,
+			fValue7: float, fValue8: float, fValue9: float): IMat3;
+
+		set(fValue1?, fValue2?, fValue3?,
+			fValue4?, fValue5?, fValue6?,
+			fValue7?, fValue8?, fValue9?): IMat3{
+
+			var pData: Float32Array = this.data;
+
+//без аргументов инициализируется нулями
+
+		    var nArgumentsLength: uint = arguments.length;
+		    if(nArgumentsLength == 0){
+		        pData[ 0 ] = pData[ 3 ] = pData[ 6 ] = 0;
+		        pData[ 1 ] = pData[ 4 ] = pData[ 7 ] = 0;
+		        pData[ 2 ] = pData[ 5 ] = pData[ 8 ] = 0;
+		    }
+		    if(nArgumentsLength == 1){
+		        if(isFloat(arguments[0])){
+		            var nValue: float = arguments[0];
+
+		            pData[ 0 ] = nValue;
+		            pData[ 3 ] = 0;
+		            pData[ 6 ] = 0;
+
+		            pData[ 1 ] = 0;
+		            pData[ 4 ] = nValue;
+		            pData[ 7 ] = 0;
+
+		            pData[ 2 ] = 0;
+		            pData[ 5 ] = 0;
+		            pData[ 8 ] = nValue;
+		        }
+
+		        else if(arguments[0] instanceof Mat3){
+		            var pElements: Float32Array = arguments[0].data;
+
+		            pData[ 0 ] = pElements[ 0 ];
+		            pData[ 3 ] = pElements[ 3 ];
+		            pData[ 6 ] = pElements[ 6 ];
+
+		            pData[ 1 ] = pElements[ 1 ];
+		            pData[ 4 ] = pElements[ 4 ];
+		            pData[ 7 ] = pElements[ 7 ];
+
+		            pData[ 2 ] = pElements[ 2 ];
+		            pData[ 5 ] = pElements[ 5 ];
+		            pData[ 8 ] = pElements[ 8 ];
+		        }
+		        else if(arguments[0] instanceof Vec3){
+		            var v3fVec: IVec3 = arguments[0];
+
+//диагональ
+
+		            pData[ 0 ] = v3fVec.x;
+		            pData[ 3 ] = 0;
+		            pData[ 6 ] = 0;
+
+		            pData[ 1 ] = 0;
+		            pData[ 4 ] = v3fVec.y;
+		            pData[ 7 ] = 0;
+
+		            pData[ 2 ] = 0;
+		            pData[ 5 ] = 0;
+		            pData[ 8 ] = v3fVec.z;
+		        }
+		        else{
+		            var pElements: float[] = arguments[0];
+
+		            if(pElements.length == 3){
+//ложим диагональ
+		                pData[ 0 ] = pElements[0];
+		                pData[ 3 ] = 0;
+		                pData[ 6 ] = 0;
+
+		                pData[ 1 ] = 0;
+		                pData[ 4 ] = pElements[1];
+		                pData[ 7 ] = 0;
+
+		                pData[ 2 ] = 0;
+		                pData[ 5 ] = 0;
+		                pData[ 8 ] = pElements[2];
+		            }
+		            else{
+		                pData[ 0 ] = pElements[ 0 ];
+		                pData[ 3 ] = pElements[ 3 ];
+		                pData[ 6 ] = pElements[ 6 ];
+
+		                pData[ 1 ] = pElements[ 1 ];
+		                pData[ 4 ] = pElements[ 4 ];
+		                pData[ 7 ] = pElements[ 7 ];
+
+		                pData[ 2 ] = pElements[ 2 ];
+		                pData[ 5 ] = pElements[ 5 ];
+		                pData[ 8 ] = pElements[ 8 ];
+		            }
+		        }
+		    }
+		    else if(nArgumentsLength == 3){
+		        if(isFloat(arguments[0])){
+//выставляем диагональ
+		            pData[ 0 ] = arguments[0];
+		            pData[ 3 ] = 0;
+		            pData[ 6 ] = 0;
+
+		            pData[ 1 ] = 0;
+		            pData[ 4 ] = arguments[1];
+		            pData[ 7 ] = 0;
+
+		            pData[ 2 ] = 0;
+		            pData[ 5 ] = 0;
+		            pData[ 8 ] = arguments[2];
+		        }
+		        else{
+		            var pData1,pData2,pData3;
+		            if(arguments[0] instanceof Vec3){
+
+		                var v3fVec1: IVec3 = arguments[0];
+		                var v3fVec2: IVec3 = arguments[1];
+		                var v3fVec3: IVec3 = arguments[2];
+
+//ложим по столбцам
+
+		                pData[ 0 ] = v3fVec1.x;
+		                pData[ 3 ] = v3fVec2.x;
+		                pData[ 6 ] = v3fVec3.x;
+
+		                pData[ 1 ] = v3fVec1.y;
+		                pData[ 4 ] = v3fVec2.y;
+		                pData[ 7 ] = v3fVec3.y;
+
+		                pData[ 2 ] = v3fVec1.z;
+		                pData[ 5 ] = v3fVec2.z;
+		                pData[ 8 ] = v3fVec3.z;
+		            }
+		            else{
+
+		                var v3fVec1: float[] = arguments[0];
+		                var v3fVec2: float[] = arguments[1];
+		                var v3fVec3: float[] = arguments[2];
+
+//ложим по столбцам
+
+		                pData[ 0 ] = v3fVec1[0];
+		                pData[ 3 ] = v3fVec2[0];
+		                pData[ 6 ] = v3fVec3[0];
+
+		                pData[ 1 ] = v3fVec1[1];
+		                pData[ 4 ] = v3fVec2[1];
+		                pData[ 7 ] = v3fVec3[1];
+
+		                pData[ 2 ] = v3fVec1[2];
+		                pData[ 5 ] = v3fVec2[2];
+		                pData[ 8 ] = v3fVec3[2];
+		            }
+		        }
+		    }
+		    else if(nArgumentsLength == 9){
+//просто числа
+		        pData[ 0 ] = arguments[ 0 ];
+		        pData[ 3 ] = arguments[ 3 ];
+		        pData[ 6 ] = arguments[ 6 ];
+
+		        pData[ 1 ] = arguments[ 1 ];
+		        pData[ 4 ] = arguments[ 4 ];
+		        pData[ 7 ] = arguments[ 7 ];
+
+		        pData[ 2 ] = arguments[ 2 ];
+		        pData[ 5 ] = arguments[ 5 ];
+		        pData[ 8 ] = arguments[ 8 ];
+		    }
+
+		    return this;
+		};
+
+		identity(): IMat3{
+			var pData: Float32Array = this.data;
+
+		    pData[ 0 ] = 1.;
+		    pData[ 3 ] = 0.;
+		    pData[ 6 ] = 0.;
+
+		    pData[ 1 ] = 0.;
+		    pData[ 4 ] = 1.;
+		    pData[ 7 ] = 0.;
+
+		    pData[ 2 ] = 0.;
+		    pData[ 5 ] = 0.;
+		    pData[ 8 ] = 1.;
+
+		    return this;
+		};
+
+		add(m3fMat: IMat3, m3fDestination?: IMat3): IMat3{
+			if(!isDef(m3fDestination)){
+		        m3fDestination = this;
+		    }
+
+		    var pData1: Float32Array = this.data;
+		    var pData2: Float32Array = m3fMat.data;
+		    var pDataDestination: Float32Array = m3fDestination.data;
+
+		    pDataDestination[ 0 ] = pData1[ 0 ] + pData2[ 0 ];
+		    pDataDestination[ 3 ] = pData1[ 3 ] + pData2[ 3 ];
+		    pDataDestination[ 6 ] = pData1[ 6 ] + pData2[ 6 ];
+
+		    pDataDestination[ 1 ] = pData1[ 1 ] + pData2[ 1 ];
+		    pDataDestination[ 4 ] = pData1[ 4 ] + pData2[ 4 ];
+		    pDataDestination[ 7 ] = pData1[ 7 ] + pData2[ 7 ];
+
+		    pDataDestination[ 2 ] = pData1[ 2 ] + pData2[ 2 ];
+		    pDataDestination[ 5 ] = pData1[ 5 ] + pData2[ 5 ];
+		    pDataDestination[ 8 ] = pData1[ 8 ] + pData2[ 8 ];
+
+		    return m3fDestination;
+		};
+
+		subtract(m3fMat: IMat3, m3fDestination?: IMat3): IMat3{
+			if(!isDef(m3fDestination)){
+		        m3fDestination = this;
+		    }
+
+		    var pData1: Float32Array = this.data;
+		    var pData2: Float32Array = m3fMat.data;
+		    var pDataDestination: Float32Array = m3fDestination.data;
+
+		    pDataDestination[ 0 ] = pData1[ 0 ] - pData2[ 0 ];
+		    pDataDestination[ 3 ] = pData1[ 3 ] - pData2[ 3 ];
+		    pDataDestination[ 6 ] = pData1[ 6 ] - pData2[ 6 ];
+
+		    pDataDestination[ 1 ] = pData1[ 1 ] - pData2[ 1 ];
+		    pDataDestination[ 4 ] = pData1[ 4 ] - pData2[ 4 ];
+		    pDataDestination[ 7 ] = pData1[ 7 ] - pData2[ 7 ];
+
+		    pDataDestination[ 2 ] = pData1[ 2 ] - pData2[ 2 ];
+		    pDataDestination[ 5 ] = pData1[ 5 ] - pData2[ 5 ];
+		    pDataDestination[ 8 ] = pData1[ 8 ] - pData2[ 8 ];
+
+		    return m3fDestination;
+		};
+
+		multiply(m3fMat: IMat3, m3fDestination?: IMat3): IMat3{
+			var pData1: Float32Array = this.data;
+	        var pData2: Float32Array = m3fMat.data;
+
+	        if(!isDef(m3fDestination)){
+	            m3fDestination = this;
+	        }
+	        var pDataDestination = m3fDestination.data;
+
+// Cache the matrix values (makes for huge speed increases!)
+	        var a11: float = pData1[ 0 ], a12: float = pData1[ 3 ], a13: float = pData1[ 6 ];
+	        var a21: float = pData1[ 1 ], a22: float = pData1[ 4 ], a23: float = pData1[ 7 ];
+	        var a31: float = pData1[ 2 ], a32: float = pData1[ 5 ], a33: float = pData1[ 8 ];
+
+	        var b11: float = pData2[ 0 ], b12: float = pData2[ 3 ], b13: float = pData2[ 6 ];
+	        var b21: float = pData2[ 1 ], b22: float = pData2[ 4 ], b23: float = pData2[ 7 ];
+	        var b31: float = pData2[ 2 ], b32: float = pData2[ 5 ], b33: float = pData2[ 8 ];
+
+	        pDataDestination[ 0 ] = a11 * b11 + a12 * b21 + a13 * b31;
+	        pDataDestination[ 3 ] = a11 * b12 + a12 * b22 + a13 * b32;
+	        pDataDestination[ 6 ] = a11 * b13 + a12 * b23 + a13 * b33;
+
+	        pDataDestination[ 1 ] = a21 * b11 + a22 * b21 + a23 * b31;
+	        pDataDestination[ 4 ] = a21 * b12 + a22 * b22 + a23 * b32;
+	        pDataDestination[ 7 ] = a21 * b13 + a22 * b23 + a23 * b33;
+
+	        pDataDestination[ 2 ] = a31 * b11 + a32 * b21 + a33 * b31;
+	        pDataDestination[ 5 ] = a31 * b12 + a32 * b22 + a33 * b32;
+	        pDataDestination[ 8 ] = a31 * b13 + a32 * b23 + a33 * b33;
+
+		    return m3fDestination;
+		};
+
+		multiplyVec3(v3fVec: IVec3, v3fDestination?: IVec3): IVec3{
+			var pData: Float32Array = this.data;
+
+	        if(!isDef(v3fDestination)){
+	            v3fDestination = new Vec3();
+	        }
+
+	        var x: float = v3fVec.x, y: float = v3fVec.y, z: float = v3fVec.z;
+
+	        v3fDestination.x = pData[ 0 ] * x + pData[ 3 ] * y + pData[ 6 ] * z;
+	        v3fDestination.y = pData[ 1 ] * x + pData[ 4 ] * y + pData[ 7 ] * z;
+	        v3fDestination.z = pData[ 2 ] * x + pData[ 5 ] * y + pData[ 8 ] * z;
+
+		    return v3fDestination;
+		};
+
+		transpose(m3fDestination?: IMat3): IMat3{
+			var pData: Float32Array = this.data;
+		    if(!isDef(m3fDestination)){
+//быстрее будет явно обработать оба случая
+		        var a12: float = pData[ 3 ], a13: float = pData[ 6 ], a23: float = pData[ 7 ];
+
+		        pData[ 3 ] = pData[ 1 ];
+		        pData[ 6 ] = pData[ 2 ];
+
+		        pData[ 1 ] = a12;
+		        pData[ 7 ] = pData[ 5 ];
+
+		        pData[ 2 ] = a13;
+		        pData[ 5 ] = a23;
+
+		        return this;
+		    }
+
+		    var pDataDestination: Float32Array = m3fDestination.data;
+
+		    pDataDestination[ 0 ] = pData[ 0 ];
+		    pDataDestination[ 3 ] = pData[ 1 ];
+		    pDataDestination[ 6 ] = pData[ 2 ];
+
+		    pDataDestination[ 1 ] = pData[ 3 ];
+		    pDataDestination[ 4 ] = pData[ 4 ];
+		    pDataDestination[ 7 ] = pData[ 5 ];
+
+		    pDataDestination[ 2 ] = pData[ 6 ];
+		    pDataDestination[ 5 ] = pData[ 7 ];
+		    pDataDestination[ 8 ] = pData[ 8 ];
+
+		    return m3fDestination;
+		};
+
+		determinant(): float{
+			var pData: Float32Array = this.data;
+
+		    var a11: float = pData[ 0 ], a12: float = pData[ 3 ], a13: float = pData[ 6 ];
+		    var a21: float = pData[ 1 ], a22: float = pData[ 4 ], a23: float = pData[ 7 ];
+		    var a31: float = pData[ 2 ], a32: float = pData[ 5 ], a33: float = pData[ 8 ];
+
+		    return  a11 * (a22 * a33 - a23 * a32)
+		            - a12 * (a21 * a33 - a23 * a31)
+		            + a13 * (a21 * a32 - a22 * a31);
+		};
+
+		inverse(m3fDestination?: IMat3): IMat3{
+			if(!isDef(m3fDestination)){
+		        m3fDestination = this;
+		    }
+
+		    var pData: Float32Array = this.data;
+		    var pDataDestination: Float32Array = m3fDestination.data;
+
+		    var a11: float = pData[ 0 ], a12: float = pData[ 3 ], a13: float = pData[ 6 ];
+		    var a21: float = pData[ 1 ], a22: float = pData[ 4 ], a23: float = pData[ 7 ];
+		    var a31: float = pData[ 2 ], a32: float = pData[ 5 ], a33: float = pData[ 8 ];
+
+		    var A11: float = a22 * a33 - a23 * a32;
+		    var A12: float = a21 * a33 - a23 * a31;
+		    var A13: float = a21 * a32 - a22 * a31;
+
+		    var A21: float = a12 * a33 - a13 * a32;
+		    var A22: float = a11 * a33 - a13 * a31;
+		    var A23: float = a11 * a32 - a12 * a31;
+
+		    var A31: float = a12 * a23 - a13 * a22;
+		    var A32: float = a11 * a23 - a13 * a21;
+		    var A33: float = a11 * a22 - a12 * a21;
+
+		    var fDeterminant: float = a11*A11 - a12 * A12 + a13 * A13;
+
+		    if(fDeterminant == 0.){
+		        error("обращение матрицы с нулевым детеминантом:\n",
+		                    this.toString());
+
+		        return m3fDestination.set(1.);
+//чтоб все не навернулось
+		    }
+
+		    var fInverseDeterminant: float = 1./fDeterminant;
+
+		    pDataDestination[ 0 ] = A11 * fInverseDeterminant;
+		    pDataDestination[ 3 ] = -A21 * fInverseDeterminant;
+		    pDataDestination[ 6 ] = A31 * fInverseDeterminant;
+
+		    pDataDestination[ 1 ] = -A12 * fInverseDeterminant;
+		    pDataDestination[ 4 ] = A22 * fInverseDeterminant;
+		    pDataDestination[ 7 ] = -A32 * fInverseDeterminant;
+
+		    pDataDestination[ 2 ] = A13 * fInverseDeterminant;
+		    pDataDestination[ 5 ] = -A23 * fInverseDeterminant;
+		    pDataDestination[ 8 ] = A33 * fInverseDeterminant;
+
+		    return m3fDestination;
+		};
+
+		isEqual(m3fMat: IMat3, fEps?: float = 0.): bool{
+			var pData1: Float32Array = this.data;
+		    var pData2: Float32Array = m3fMat.data;
+
+		    if(fEps == 0){
+		        if(    pData1[ 0 ] != pData2[ 0 ]
+		            || pData1[ 3 ] != pData2[ 3 ]
+		            || pData1[ 6 ] != pData2[ 6 ]
+		            || pData1[ 1 ] != pData2[ 1 ]
+		            || pData1[ 4 ] != pData2[ 4 ]
+		            || pData1[ 7 ] != pData2[ 7 ]
+		            || pData1[ 2 ] != pData2[ 2 ]
+		            || pData1[ 5 ] != pData2[ 5 ]
+		            || pData1[ 8 ] != pData2[ 8 ]){
+
+		            return false;
+		        }
+		    }
+		    else{
+		        if(    Math.abs(pData1[ 0 ] - pData2[ 0 ]) > fEps
+		            || Math.abs(pData1[ 3 ] - pData2[ 3 ]) > fEps
+		            || Math.abs(pData1[ 6 ] - pData2[ 6 ]) > fEps
+		            || Math.abs(pData1[ 1 ] - pData2[ 1 ]) > fEps
+		            || Math.abs(pData1[ 4 ] - pData2[ 4 ]) > fEps
+		            || Math.abs(pData1[ 7 ] - pData2[ 7 ]) > fEps
+		            || Math.abs(pData1[ 2 ] - pData2[ 2 ]) > fEps
+		            || Math.abs(pData1[ 5 ] - pData2[ 5 ]) > fEps
+		            || Math.abs(pData1[ 8 ] - pData2[ 8 ]) > fEps){
+
+		            return false;
+		        }
+		    }
+		    return true;
+		};
+
+		isDiagonal(fEps?: float = 0.) : bool{
+			var pData: Float32Array = this.data;
+
+		    if(fEps == 0){
+		        if(    pData[ 3 ] != 0 || pData[ 6 ] != 0
+		            || pData[ 1 ] != 0 || pData[ 7 ] != 0
+		            || pData[ 2 ] != 0 || pData[ 5 ] != 0){
+
+		            return false;
+		        }
+		    }
+		    else{
+		        if(    Math.abs(pData[ 3 ]) > fEps || Math.abs(pData[ 6 ]) > fEps
+		            || Math.abs(pData[ 1 ]) > fEps || Math.abs(pData[ 7 ]) > fEps
+		            || Math.abs(pData[ 2 ]) > fEps || Math.abs(pData[ 5 ]) > fEps){
+
+		            return false;
+		        }
+		    }
+
+		    return true;
+		};
+
+		toMat4(m4fDestination?: IMat4): IMat4{
+			if(!isDef(m4fDestination)){
+		        m4fDestination = new Mat4();
+		    }
+
+		    var pData: Float32Array = this.data;
+		    var pDataDestination: Float32Array = m4fDestination.data;
+
+		    pDataDestination[ 0 ] = pData[ 0 ];
+		    pDataDestination[ 4 ] = pData[ 3 ];
+		    pDataDestination[ 8 ] = pData[ 6 ];
+		    pDataDestination[ 12 ] = 0;
+
+		    pDataDestination[ 1 ] = pData[ 1 ];
+		    pDataDestination[ 5 ] = pData[ 4 ];
+		    pDataDestination[ 9 ] = pData[ 7 ];
+		    pDataDestination[ 13 ] = 0;
+
+		    pDataDestination[ 2 ] = pData[ 2 ];
+		    pDataDestination[ 6 ] = pData[ 5 ];
+		    pDataDestination[ 10 ] = pData[ 8 ];
+		    pDataDestination[ 14 ] = 0;
+
+		    pDataDestination[ 3 ] = 0;
+		    pDataDestination[ 7 ] = 0;
+		    pDataDestination[ 11 ] = 0;
+		    pDataDestination[ 15 ] = 1;
+
+		    return m4fDestination;
+		};
+
+		toQuat4(q4fDestination?: IQuat4): IQuat4{
+			if(!isDef(q4fDestination)){
+		        q4fDestination = new Quat4();
+		    }
+
+		    var pData: Float32Array = this.data;
+
+		    var a11: float = pData[ 0 ], a12: float = pData[ 3 ], a13: float = pData[ 6 ];
+		    var a21: float = pData[ 1 ], a22: float = pData[ 4 ], a23: float = pData[ 7 ];
+		    var a31: float = pData[ 2 ], a32: float = pData[ 5 ], a33: float = pData[ 8 ];
+
+/*x^2*/
+		    var x2: float = ((a11 - a22 - a33) + 1)/4;
+/*y^2*/
+		    var y2: float = ((a22 - a11 - a33) + 1)/4;
+/*z^2*/
+		    var z2: float = ((a33 - a11 - a22) + 1)/4;
+/*w^2*/
+		    var w2: float = ((a11 + a22 + a33) + 1)/4;
+
+		    var fMax: float = Math.max(x2,Math.max(y2,Math.max(z2,w2)));
+
+		    if(fMax == x2){
+//максимальная компонента берется положительной
+		        var x: float = Math.sqrt(x2);
+
+		        q4fDestination.x = x;
+		        q4fDestination.y = (a21 + a12)/4/x;
+		        q4fDestination.z = (a31 + a13)/4/x;
+		        q4fDestination.w = (a32 - a23)/4/x;
+		    }
+		    else if(fMax == y2){
+//максимальная компонента берется положительной
+		        var y: float = Math.sqrt(y2); x
+
+		        q4fDestination.x = (a21 + a12)/4/y;
+		        q4fDestination.y = y;
+		        q4fDestination.z = (a32 + a23)/4/y;
+		        q4fDestination.w = (a13 - a31)/4/y;
+		    }
+		    else if(fMax == z2){
+//максимальная компонента берется положительной
+		        var z: float = Math.sqrt(z2);
+
+		        q4fDestination.x = (a31 + a13)/4/z;
+		        q4fDestination.y = (a32 + a23)/4/z;
+		        q4fDestination.z = z;
+		        q4fDestination.w = (a21 - a12)/4/z;
+		    }
+		    else{
+//максимальная компонента берется положительной
+		        var w: float = Math.sqrt(w2);
+
+		        q4fDestination.x = (a32 - a23)/4/w;
+		        q4fDestination.y = (a13 - a31)/4/w;
+		        q4fDestination.z = (a21 - a12)/4/w;
+		        q4fDestination.w = w;
+		    }
+
+		    return q4fDestination;
+		};
+
+		toString(): string{
+			var pData = this.data;
+		    return '[' + pData[ 0 ] + ', ' + pData[ 3 ] + ', ' + pData[ 6 ] + ',\n' +
+		               + pData[ 1 ] + ', ' + pData[ 4 ] + ', ' + pData[ 7 ] + ',\n' +
+		               + pData[ 2 ] + ', ' + pData[ 5 ] + ', ' + pData[ 8 ] + ']';
+		};
+
+		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, m3fDestination?: IMat3): IMat3;
+		static fromYawPitchRoll(v3fAngles: IVec3, m3fDestination?: IMat3): IMat3;
+		static fromYawPitchRoll(fYaw?,fPitch?,fRoll?,m3fDestination?): IMat3{
+			if(arguments.length <= 2){
+//Vec3 + m3fDestination
+		        var v3fVec: IVec3 = arguments[0];
+
+		        fYaw   = v3fVec.x;
+		        fPitch = v3fVec.y;
+		        fRoll  = v3fVec.z;
+
+		        m3fDestination = arguments[1];
+		    }
+
+		    if(!isDef(m3fDestination)){
+		        m3fDestination = new Mat3();
+		    }
+
+		    var pDataDestination: Float32Array = m3fDestination.data;
+
+		    var fSin1: float = Math.sin(fYaw);
+		    var fSin2: float = Math.sin(fPitch);
+		    var fSin3: float = Math.sin(fRoll);
+
+		    var fCos1: float = Math.cos(fYaw);
+		    var fCos2: float = Math.cos(fPitch);
+		    var fCos3: float = Math.cos(fRoll);
+
+		    pDataDestination[ 0 ] = fCos1 * fCos3 + fSin1 * fSin2 * fSin3;
+		    pDataDestination[ 3 ] = fCos3 * fSin1 * fSin2 - fCos1 * fSin3;
+		    pDataDestination[ 6 ] = fCos2 * fSin1;
+
+		    pDataDestination[ 1 ] = fCos2 * fSin3;
+		    pDataDestination[ 4 ] = fCos2 * fCos3;
+		    pDataDestination[ 7 ] = -fSin2;
+
+		    pDataDestination[ 2 ] = fCos1 * fSin2 * fSin3 - fCos3 * fSin1;
+		    pDataDestination[ 5 ] = fSin1 * fSin3 + fCos1 * fCos3 * fSin2;
+		    pDataDestination[ 8 ] = fCos1 * fCos2;
+
+		    return m3fDestination;
+		};
+
+		static fromXYZ(fX: float, fY: float, fZ: float, m3fDestination?: IMat3): IMat3;
+		static fromXYZ(v3fAngles: IVec3, m3fDestination?: IMat3): IMat3;
+		static fromXYZ(fX?, fY?, fZ?, m3fDestination?) : IMat3{
+			if(arguments.length <= 2){
+//Vec3 + m3fDestination
+				var v3fAngles: IVec3 = arguments[0];
+				return Mat3.fromYawPitchRoll(v3fAngles.y,v3fAngles.x,v3fAngles.z,arguments[1]);
+			}
+			else{
+//fX fY fZ m3fDestination
+				var fX: float = arguments[0];
+				var fY: float = arguments[1];
+				var fZ: float = arguments[2];
+
+				return Mat3.fromYawPitchRoll(fY, fX, fZ, arguments[3]);
+			}
+		};
+    };
+};
+
+
+
+
+
+
+
+
 
 module akra.math {
     export class Mat4 {
-
+    	data: Float32Array;
     }
 }
 
 
-///<reference path="../akra.ts" />
+
+
+
+
+
+
+
 
 module akra.math {
-    export class Quat4 {
-
+    export class Quat4 implements IQuat4{
+    	x: float;
+    	y: float;
+    	z: float;
+    	w: float;
     }
 }
+
+
 
 module akra.math {
 

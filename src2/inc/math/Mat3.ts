@@ -6,33 +6,6 @@
 #include "IVec3.ts"
 #include "IQuat4.ts"
 
-/**
- * @important Если внезапно задумаем перейти обратно на 
- * хранение данных в матрицах по строкам, как собственно и было в начале,
- * то необходимо раскомментить definы и переписать метод set, 
- * так как он ложит по столбцам
- */
-
-// #define __a11 0
-// #define __a12 1
-// #define __a13 2
-// #define __a21 3
-// #define __a22 4
-// #define __a23 5
-// #define __a31 6
-// #define __a32 7
-// #define __a33 8
-
-#define __a11 0
-#define __a12 3
-#define __a13 6
-#define __a21 1
-#define __a22 4
-#define __a23 7
-#define __a31 2
-#define __a32 5
-#define __a33 8
-
 module akra.math {
     export class Mat3 {
     	/*var m3fMat;
@@ -75,7 +48,7 @@ module akra.math {
 					fValue4?, fValue5?, fValue6?,
 					fValue7?, fValue8?, fValue9?){
 
-			this._pData = new Float32Array(9);
+			this.data = new Float32Array(9);
 
 			var nArgumentsLength: uint = arguments.length;
 
@@ -112,7 +85,7 @@ module akra.math {
 
 		    //без аргументов инициализируется нулями
 		    
-		    nArgumentsLength: uint = arguments.length;
+		    var nArgumentsLength: uint = arguments.length;
 		    if(nArgumentsLength == 0){
 		        pData[__a11] = pData[__a12] = pData[__a13] = 0;
 		        pData[__a21] = pData[__a22] = pData[__a23] = 0;
@@ -120,7 +93,7 @@ module akra.math {
 		    }
 		    if(nArgumentsLength == 1){
 		        if(isFloat(arguments[0])){
-		            nValue: float = arguments[0];
+		            var nValue: float = arguments[0];
 
 		            pData[__a11] = nValue;
 		            pData[__a12] = 0;
@@ -136,7 +109,7 @@ module akra.math {
 		        }
 
 		        else if(arguments[0] instanceof Mat3){
-		            pElements: Float32Array = arguments[0].data;
+		            var pElements: Float32Array = arguments[0].data;
 
 		            pData[__a11] = pElements[__a11];
 		            pData[__a12] = pElements[__a12];
@@ -151,9 +124,11 @@ module akra.math {
 		            pData[__a33] = pElements[__a33];
 		        }
 		        else if(arguments[0] instanceof Vec3){
-		            v3fVec: Vec3 = arguments[0];
+		            var v3fVec: IVec3 = arguments[0];
 
-		            pData[__a11] = v3fVec.x; //диагональ
+		            //диагональ
+
+		            pData[__a11] = v3fVec.x; 
 		            pData[__a12] = 0;
 		            pData[__a13] = 0;
 
@@ -166,7 +141,7 @@ module akra.math {
 		            pData[__a33] = v3fVec.z;
 		        }
 		        else{
-		            pElements: float[] = arguments[0];            
+		            var pElements: float[] = arguments[0];            
 
 		            if(pElements.length == 3){
 		                //ложим диагональ
@@ -216,9 +191,9 @@ module akra.math {
 		            var pData1,pData2,pData3;
 		            if(arguments[0] instanceof Vec3){
 
-		                v3fVec1: Vec3 = arguments[0];
-		                v3fVec2: Vec3 = arguments[1];
-		                v3fVec3: Vec3 = arguments[2];
+		                var v3fVec1: IVec3 = arguments[0];
+		                var v3fVec2: IVec3 = arguments[1];
+		                var v3fVec3: IVec3 = arguments[2];
 
 		                //ложим по столбцам
 
@@ -236,9 +211,9 @@ module akra.math {
 		            }
 		            else{
 
-		                v3fVec1: float[] = arguments[0];
-		                v3fVec2: float[] = arguments[1];
-		                v3fVec3: float[] = arguments[2];    
+		                var v3fVec1: float[] = arguments[0];
+		                var v3fVec2: float[] = arguments[1];
+		                var v3fVec3: float[] = arguments[2];    
 
 		                //ложим по столбцам
 
@@ -326,7 +301,7 @@ module akra.math {
 		    var pDataDestination: Float32Array = m3fDestination.data;
 
 		    pDataDestination[__a11] = pData1[__a11] - pData2[__a11];
-		    pDataDestination[__a12} = pData1[__a12] - pData2[__a12];
+		    pDataDestination[__a12] = pData1[__a12] - pData2[__a12];
 		    pDataDestination[__a13] = pData1[__a13] - pData2[__a13];
 
 		    pDataDestination[__a21] = pData1[__a21] - pData2[__a21];
@@ -389,8 +364,8 @@ module akra.math {
 		    return v3fDestination;
 		};
 
-		transpose(m3fDestination?: Mat3): IMat3{
-			pData: Float32Array = this.data;
+		transpose(m3fDestination?: IMat3): IMat3{
+			var pData: Float32Array = this.data;
 		    if(!isDef(m3fDestination)){
 		        //быстрее будет явно обработать оба случая
 		        var a12: float = pData[__a12], a13: float = pData[__a13], a23: float = pData[__a23];
@@ -407,7 +382,7 @@ module akra.math {
 		        return this;
 		    }
 
-		    pDataDestination: Float32Array = m3fDestination.data;
+		    var pDataDestination: Float32Array = m3fDestination.data;
 
 		    pDataDestination[__a11] = pData[__a11];
 		    pDataDestination[__a12] = pData[__a21];
@@ -462,11 +437,12 @@ module akra.math {
 
 		    var fDeterminant: float = a11*A11 - a12 * A12 + a13 * A13;
 
-		    if(fDeterminant == 0){
-		        debug_assert(0,"обращение матрицы с нулевым детеминантом:\n" 
-		                    + this.toString());
+		    if(fDeterminant == 0.){
+		        error("обращение матрицы с нулевым детеминантом:\n", 
+		                    this.toString());
 
-		        return m3fDestination.set(1.);//чтоб все не навернулось
+		        return m3fDestination.set(1.);
+		        //чтоб все не навернулось
 		    }
 
 		    var fInverseDeterminant: float = 1./fDeterminant;
@@ -486,7 +462,7 @@ module akra.math {
 		    return m3fDestination;
 		};
 
-		isEqual(m3fMat: Mat3, fEps?: float = 0.): bool{
+		isEqual(m3fMat: IMat3, fEps?: float = 0.): bool{
 			var pData1: Float32Array = this.data;
 		    var pData2: Float32Array = m3fMat.data;
 
@@ -586,15 +562,16 @@ module akra.math {
 		    var a21: float = pData[__a21], a22: float = pData[__a22], a23: float = pData[__a23];
 		    var a31: float = pData[__a31], a32: float = pData[__a32], a33: float = pData[__a33];
 
-		    var x2: float = ((a11 - a22 - a33) + 1)/4; //x^2
-		    var y2: float = ((a22 - a11 - a33) + 1)/4; //y^2
-		    var z2: float = ((a33 - a11 - a22) + 1)/4; //z^2
-		    var w2: float = ((a11 + a22 + a33) + 1)/4; //w^2
+		    var x2: float = ((a11 - a22 - a33) + 1)/4; /*x^2*/
+		    var y2: float = ((a22 - a11 - a33) + 1)/4; /*y^2*/
+		    var z2: float = ((a33 - a11 - a22) + 1)/4; /*z^2*/
+		    var w2: float = ((a11 + a22 + a33) + 1)/4; /*w^2*/
 
 		    var fMax: float = Math.max(x2,Math.max(y2,Math.max(z2,w2)));
 
 		    if(fMax == x2){
-		        var x: float = Math.sqrt(x2); //максимальная компонента берется положительной
+		    	//максимальная компонента берется положительной
+		        var x: float = Math.sqrt(x2);
 
 		        q4fDestination.x = x;
 		        q4fDestination.y = (a21 + a12)/4/x;
@@ -602,7 +579,8 @@ module akra.math {
 		        q4fDestination.w = (a32 - a23)/4/x;
 		    }
 		    else if(fMax == y2){
-		        var y: float = Math.sqrt(y2); //максимальная компонента берется положительной
+		    	//максимальная компонента берется положительной
+		        var y: float = Math.sqrt(y2); x
 
 		        q4fDestination.x = (a21 + a12)/4/y;
 		        q4fDestination.y = y;
@@ -610,7 +588,8 @@ module akra.math {
 		        q4fDestination.w = (a13 - a31)/4/y;
 		    }
 		    else if(fMax == z2){
-		        var z: float = Math.sqrt(z2); //максимальная компонента берется положительной
+		    	//максимальная компонента берется положительной
+		        var z: float = Math.sqrt(z2); 
 
 		        q4fDestination.x = (a31 + a13)/4/z;
 		        q4fDestination.y = (a32 + a23)/4/z;
@@ -618,7 +597,8 @@ module akra.math {
 		        q4fDestination.w = (a21 - a12)/4/z;
 		    }
 		    else{
-		        var w: float = Math.sqrt(w2); //максимальная компонента берется положительной
+		    	//максимальная компонента берется положительной
+		        var w: float = Math.sqrt(w2); 
 
 		        q4fDestination.x = (a32 - a23)/4/w;
 		        q4fDestination.y = (a13 - a31)/4/w;
@@ -679,12 +659,22 @@ module akra.math {
 		    return m3fDestination;
 		};
 
-		static fromXYZ(fX: float, fY: float, fZ: float, m3fDestination?: IMat3): IMat3{
-			return Mat3.fromYawPitchRoll(fY,fX,fZ,m3fDestination);
-		};
+		static fromXYZ(fX: float, fY: float, fZ: float, m3fDestination?: IMat3): IMat3;
+		static fromXYZ(v3fAngles: IVec3, m3fDestination?: IMat3): IMat3;
+		static fromXYZ(fX?, fY?, fZ?, m3fDestination?) : IMat3{
+			if(arguments.length <= 2){
+				//Vec3 + m3fDestination
+				var v3fAngles: IVec3 = arguments[0];
+				return Mat3.fromYawPitchRoll(v3fAngles.y,v3fAngles.x,v3fAngles.z,arguments[1]);
+			}
+			else{
+				//fX fY fZ m3fDestination
+				var fX: float = arguments[0];
+				var fY: float = arguments[1];
+				var fZ: float = arguments[2];
 
-		static fromXYZ(v3fAngles: IVec3, m3fDestination?: IMat3): IMat3{
-			return Mat3.fromYawPitchRoll(v3fAngles.y,v3fAngles.x,v3fAngles.z,m3fDestination);
+				return Mat3.fromYawPitchRoll(fY, fX, fZ, arguments[3]);
+			}
 		};
     };
 };
