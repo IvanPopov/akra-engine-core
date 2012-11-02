@@ -1,4 +1,5 @@
-///<reference path="akra.ts" />
+#ifndef ISTRING2D_TS
+#define ISTRING2D_TS
 
 module akra {
 	export interface IString2d {
@@ -17,3 +18,5 @@ module akra {
 		toString(): string;
 	}
 }
+
+#endif

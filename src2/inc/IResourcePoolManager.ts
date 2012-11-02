@@ -3,12 +3,12 @@
 
 #include "IManager.ts"
 
-IFACE(IResourceCode);
-IFACE(IResourcePool);
-IFACE(IResourceWatcherFunc);
-IFACE(IResourcePoolItem);
-
 module akra {
+
+    IFACE(IResourceCode);
+    IFACE(IResourcePool);
+    IFACE(IResourceWatcherFunc);
+    IFACE(IResourcePoolItem);
 
 	/** Семейства ресурсов */
 	export enum EResourceFamilies {

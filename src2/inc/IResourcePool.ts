@@ -1,11 +1,14 @@
 #ifndef IRESOURCEPOOL_TS
 #define IRESOURCEPOOL_TS
 
-IFACE(IResourceCode);
-IFACE(IResourcePoolItem);
+
 
 
 module akra {
+        
+        IFACE(IResourceCode);
+        IFACE(IResourcePoolItem);
+        
         export interface IResourcePool {
                 iFourcc: int;
 

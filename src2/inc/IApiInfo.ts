@@ -1,4 +1,5 @@
-///<reference path="akra.ts" />
+#ifndef IAPIINFO_TS
+#define IAPIINFO_TS
 
 module akra {
 	export interface IApiInfo {
@@ -12,3 +13,5 @@ module akra {
 		webSocket: bool;
 	}
 }
+
+#endif

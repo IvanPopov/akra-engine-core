@@ -1,5 +1,10 @@
+#ifndef DATAPOOL_TS
+#define DATAPOOL_TS
 
-///<reference path="../../akra.ts" />
+#include "IEngine.ts"
+#include "IDataPool.ts"
+#include "IResourcePoolItem.ts"
+
 
 module akra.core.pool {
 
@@ -415,3 +420,5 @@ module akra.core.pool {
 
 	}
 }
+
+#endif

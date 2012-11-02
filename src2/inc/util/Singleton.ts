@@ -1,3 +1,6 @@
+#ifndef SINGLETON_TS
+#define SINGLETON_TS
+
 module akra.util {
 	export class Singleton {
 		constructor () {
@@ -10,3 +13,5 @@ module akra.util {
 		}
 	}
 }
+
+#endif

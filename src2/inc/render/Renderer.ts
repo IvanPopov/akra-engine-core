@@ -5,6 +5,10 @@
 
 #include "IAFXComponent.ts"
 #include "IAFXEffect.ts"
+#include "IAFXPreRenderState.ts"
+#include "IAFXComponentBlend.ts"
+#include "IAFXPassBlend.ts"
+#include "IMesh.ts"
 #include "IRenderableObject.ts"
 #include "IRenderSnapshot.ts"
 #include "ISceneObject.ts"

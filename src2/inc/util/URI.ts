@@ -1,4 +1,7 @@
-///<reference path="../akra.ts" />
+#ifndef URI_TS
+#define URI_TS
+
+#include "IURI.ts"
 
 module akra.util {
 	export class URI implements IURI {
@@ -11,18 +14,18 @@ module akra.util {
 		private sFragment: string = null;
 
 		get urn(): string {
-			return (this.sPath ? this.sPath : '') +
-			(this.sQuery ? '?' + this.sQuery : '') +
-			(this.sFragment ? '#' + this.sFragment : '');
+			return (this.sPath ? this.sPath : "") +
+			(this.sQuery ? '?' + this.sQuery : "") +
+			(this.sFragment ? '#' + this.sFragment : "");
 		}
 
 		get url(): string {
-			return (this.sScheme ? this.sScheme : '') + this.authority;
+			return (this.sScheme ? this.sScheme : "") + this.authority;
 		}
 
 		get authority(): string {
-			return (this.sHost ? '//' + (this.sUserinfo ? this.sUserinfo + '@' : '') +
-				this.sHost + (this.nPort ? ':' + this.nPort : '') : '');
+			return (this.sHost ? '//' + (this.sUserinfo ? this.sUserinfo + '@' : "") +
+				this.sHost + (this.nPort ? ':' + this.nPort : "") : "");
 		}
 
 		get scheme(): string {
@@ -158,3 +161,5 @@ module akra.util {
 module akra {
 	export var parseURI = (sUri:string): IURI => new util.URI(sUri);
 }
+
+#endif

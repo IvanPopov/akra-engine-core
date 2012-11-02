@@ -1,4 +1,9 @@
-///<reference path="../akra.ts" />
+#ifndef INDEXDATA_TS
+#define INDEXDATA_TS
+
+#include "IBufferData.ts"
+#include "IIndexBuffer.ts"
+
 
 module akra.data {
 	export class IndexData implements IBufferData {
@@ -95,3 +100,5 @@ module akra.data {
 		}
 	}
 }
+
+#endif

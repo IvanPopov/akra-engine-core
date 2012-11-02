@@ -1,4 +1,7 @@
-///<reference path="../akra.ts" />
+#ifndef UTILTIMER_TS
+#define UTILTIMER_TS
+
+#include "IUtilTimer.ts"
 
 module akra.util {
 	
@@ -123,3 +126,5 @@ module akra.util {
         }
 	}
 }
+
+#endif

@@ -1,4 +1,7 @@
-///<reference path="../akra.ts" />
+#ifndef NODE_TS
+#define NODE_TS
+
+#include "INode.ts"
 
 module akra.scene {
 	export class Node implements INode {
@@ -12,3 +15,5 @@ module akra.scene {
 		}
 	}
 }
+
+#endif

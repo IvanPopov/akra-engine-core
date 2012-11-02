@@ -3,22 +3,26 @@
 
 #include "IReferenceCounter.ts"
 
-IFACE(IEngine);
-IFACE(IResourceWatcherFunc);
-IFACE(IResourceNotifyRoutineFunc);
-IFACE(IResourceCode);
-IFACE(IResourcePool);
-
 module akra {
+
+	IFACE(IEngine);
+	IFACE(IResourceWatcherFunc);
+	IFACE(IResourceNotifyRoutineFunc);
+	IFACE(IResourceCode);
+	IFACE(IResourcePool);
 
 	/**
      * Отражает состояние ресурса
      **/
     export enum EResourceItemEvents{
-		k_Created, 			//ресур создан
-		k_Loaded, 			//ресур заполнен данным и готов к использованию
-		k_Disabled, 		//ресур в данный момент отключен для использования
-		k_Altered, 			//ресур был изменен после загрузки
+    	//ресур создан
+		k_Created, 			
+		//ресур заполнен данным и готов к использованию
+		k_Loaded, 			
+		//ресур в данный момент отключен для использования
+		k_Disabled, 
+		//ресур был изменен после загрузки		
+		k_Altered, 			
 		k_TotalResourceFlags
 	};
 

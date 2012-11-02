@@ -1,4 +1,7 @@
-///<reference path="../akra.ts" />
+#ifndef VERTEXDECLARATION_TS
+#define VERTEXDECLARATION_TS
+
+#include "IVertexDeclaration.ts"
 
 module akra.util {
 	export class VertexDeclaration implements IVertexDeclaration {
@@ -63,5 +66,21 @@ module akra.util {
 }
 
 module akra {
+	export function _VDFromElements(pElements: IVertexElement[]);
+	export function _VDFromElements(pDecl: IVertexDeclaration);
+	export function _VDFromElements(pDataDecl) {
+		if (!(pDataDecl instanceof VertexDeclaration)) {
+	        if (!(pDataDecl instanceof Array)) {
+	            pDataDecl = [pDataDecl];
+	        }
+
+	        pDataDecl = new VertexDeclaration(pDataDecl);
+	    }
+
+	    return pDataDecl;
+	}
+
 	export var VertexDeclaration = util.VertexDeclaration;
 }
+
+#endif

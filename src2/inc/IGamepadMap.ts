@@ -1,7 +1,10 @@
-///<reference path="akra.ts" />
+#ifndef IGAMEPADMAP_TS
+#define IGAMEPADMAP_TS
 
 module akra {
     export interface IGamepadMap {
 
     }
 }
+
+#endif

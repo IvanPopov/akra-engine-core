@@ -1,4 +1,7 @@
-///<reference path="../akra.ts" />
+#ifndef SCREENINFO_TS
+#define SCREENINFO_TS
+
+#include "IScreenInfo.ts"
 
 module akra.util {
 	export class ScreenInfo implements IScreenInfo {
@@ -24,3 +27,4 @@ module akra.util {
 	}
 }
 
+#endif

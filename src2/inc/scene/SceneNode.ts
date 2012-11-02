@@ -1,4 +1,8 @@
-///<reference path="../akra.ts" />
+#ifndef SCENENODE_TS
+#define SCENENODE_TS
+
+#include "IEngine.ts"
+#include "ISceneNode.ts"
 
 module akra.scene {
 	export class SceneNode extends Node implements ISceneNode {
@@ -11,3 +15,5 @@ module akra.scene {
 		}
 	}
 }
+
+#endif

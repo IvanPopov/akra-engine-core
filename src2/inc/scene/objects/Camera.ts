@@ -1,4 +1,9 @@
-///<reference path="../../akra.ts" />
+#ifndef CAMERA_TS
+#define CAMERA_TS
+
+#include "IEngine.ts"
+#include "ICamera.ts"
+#include "../SceneObject.ts"
 
 module akra.scene.objects {
 	export class Camera extends SceneObject implements ICamera {
@@ -7,3 +12,5 @@ module akra.scene.objects {
 		}
 	}
 }
+
+#endif

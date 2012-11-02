@@ -1,12 +1,13 @@
 #ifndef IENGINE_TS
 #define IENGINE_TS
 
-IFACE(IDisplayManager);
-IFACE(IParticleManager);
-IFACE(IResourcePoolManager);
-IFACE(IRenderer);
-
 module akra {
+	
+	IFACE(IDisplayManager);
+	IFACE(IParticleManager);
+	IFACE(IResourcePoolManager);
+	IFACE(IRenderer);
+
     export interface IEngine {
         getDisplayManager(): IDisplayManager;
         getParticleManager(): IParticleManager;
@@ -18,6 +19,8 @@ module akra {
         exec(): bool;
     };
 
+    export var createEngine: () => IEngine;
 }
+
 
 #endif

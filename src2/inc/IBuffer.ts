@@ -1,13 +1,16 @@
-///<reference path="akra.ts" />
+#ifndef IBUFFER_TS
+#define IBUFFER_TS
 
 module akra {
 	export interface IBuffer {
 		//number of elements
-		length: int;
+		readonly length: int;
 		
 		//size in bytes
-		byteLength: int;
+		readonly byteLength: int;
 
 		
 	}
 }
+
+#endif

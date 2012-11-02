@@ -1,4 +1,11 @@
-///<reference path="../../akra.ts" />
+#ifndef RESOURCEPOOLMANAGER_TS
+#define RESOURCEPOOLMANAGER_TS
+
+#include "IEngine.ts"
+#include "IResourcePoolManager.ts"
+#include "IResourcePool.ts"
+#include "IResourcePoolItem.ts"
+#include "IResourceWatcherFunc.ts"
 
 module akra.core.pool {
 	//is this class really singleton??
@@ -402,3 +409,5 @@ module akra.core.pool {
 	    ];
     }
 }
+
+#endif

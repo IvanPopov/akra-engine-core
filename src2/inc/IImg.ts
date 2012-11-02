@@ -1,4 +1,7 @@
-///<reference path="akra.ts" />
+#ifndef IIMG_TS
+#define IIMG_TS
+
+#include "IResourcePoolItem.ts"
 
 module akra {
 	 export enum EImageFormats {
@@ -45,3 +48,5 @@ module akra {
     }
 
 }
+
+#endif

@@ -1,4 +1,5 @@
-///<reference path="akra.ts" />
+#ifndef IBUFFERDATA_TS
+#define IBUFFERDATA_TS
 
 module akra {
 	export interface IBufferData {
@@ -7,3 +8,5 @@ module akra {
 		buffer: IBuffer;
 	}
 }
+
+#endif

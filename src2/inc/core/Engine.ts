@@ -60,7 +60,7 @@ module akra.core {
 }
 
 module akra {
-	export function createEngine() {
+	createEngine = function (): IEngine {
 		return new core.Engine();
 	}
 }

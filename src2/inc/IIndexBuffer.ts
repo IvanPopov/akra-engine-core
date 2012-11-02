@@ -3,8 +3,12 @@
 
 #include "IGPUBuffer.ts"
 #include "IRenderResource.ts"
+#include "IRenderer.ts"
 
 module akra {
+
+	IFACE(IIndexData);
+
 	export interface IIndexBuffer extends IGPUBuffer, IRenderResource {
 
 		getIndexData(iOffset: uint, iCount: uint, ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes): IIndexData;

@@ -1,9 +1,12 @@
 #ifndef ISCENEBUILDER_TS
 #define ISCENEBUILDER_TS
 
-IFACE(IBuildScenario);
+
 
 module akra {
+
+	IFACE(IBuildScenario);
+
 	export interface ISceneBuilder {
 		build(pScenario: IBuildScenario): bool;
 	}

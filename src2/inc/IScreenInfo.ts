@@ -1,4 +1,5 @@
-///<reference path="akra.ts" />
+#ifndef ISCREENINFO_TS
+#define ISCREENINFO_TS
 
 module akra {
 	export interface IScreenInfo {
@@ -9,3 +10,5 @@ module akra {
 		colorDepth: int;
 	}
 }
+
+#endif

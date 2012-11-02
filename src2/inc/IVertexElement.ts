@@ -1,4 +1,5 @@
-///<reference path="akra.ts" />
+#ifndef IVERTEXELEMENT_TS
+#define IVERTEXELEMENT_TS
 
 module akra {
 	export interface IVertexElement {
@@ -16,3 +17,5 @@ module akra {
 		toString(): string;
 	}
 }
+
+#endif

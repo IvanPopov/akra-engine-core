@@ -1,4 +1,9 @@
-///<reference path="../akra.ts" />
+#ifndef BROWSERINFO_TS
+#define BROWSERINFO_TS
+
+#include "IBrowserInfo.ts"
+#include "Singleton.ts"
+
 
 module akra.util {
 	export interface IBrowserData {
@@ -123,7 +128,8 @@ module akra.util {
 				subString: "Camino",
 				identity: "Camino"
 			},
-			{        // for newer Netscapes (6+)
+			{        
+				// for newer Netscapes (6+)
 				string: navigator.userAgent,
 				subString: "Netscape",
 				identity: "Netscape"
@@ -140,7 +146,8 @@ module akra.util {
 				identity: "Mozilla",
 				versionSearch: "rv"
 			},
-			{         // for older Netscapes (4-)
+			{         
+				// for older Netscapes (4-)
 				string: navigator.userAgent,
 				subString: "Mozilla",
 				identity: "Netscape",
@@ -173,3 +180,5 @@ module akra.util {
 	}
 }
 
+
+#endif

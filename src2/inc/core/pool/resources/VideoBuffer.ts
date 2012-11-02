@@ -1,7 +1,21 @@
-///<reference path="../../../akra.ts" />
+#ifndef VIDEOBUFFER_TS
+#define VIDEOBUFFER_TS
+
+#include "IVideoBuffer.ts"
+#include "IVertexDeclaration.ts"
+#include "IVertexData.ts"
+#include "Texture.ts"
 
 module akra.core.pool.resources {
 	export class VideoBuffer extends Texture implements IVideoBuffer {
+		inline get byteLength(): uint {
+			return 0;
+		}
+
+		inline get length(): uint {
+			return 0;
+		}
+
 		clone(pSrc: IGPUBuffer): bool {
 			return false;
 		}
@@ -38,12 +52,15 @@ module akra.core.pool.resources {
 			return false;
 		}
 
-
-		getHardwareBuffer(): WebGLObject {
+		getData(iOffset: uint, iSize: uint): ArrayBuffer {
 			return null;
 		}
 
-		getOptions(): int {
+		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool {
+			return false;
+		}
+
+		inline getFlags(): int {
 			return 0;
 		}
 
@@ -72,7 +89,13 @@ module akra.core.pool.resources {
 		allocateData(pDecl: any, pData: ArrayBufferView): IVertexData {
 			return null;
 		}
+
+		inline getHardwareBuffer(): WebGLObject {
+			return null;
+		}
 	}
 
 	
 }
+
+#endif

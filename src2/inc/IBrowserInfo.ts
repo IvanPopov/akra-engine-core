@@ -1,4 +1,5 @@
-///<reference path="akra.ts" />
+#ifndef IBROWSERINFO_TS
+#define IBROWSERINFO_TS
 
 module akra {
 	export interface IBrowserInfo {
@@ -7,3 +8,5 @@ module akra {
 		os: string;
 	}
 }
+
+#endif

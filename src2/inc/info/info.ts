@@ -1,4 +1,11 @@
-///<reference path="../akra.ts" />
+#ifndef INFO_TS
+#define INFO_TS
+
+#include "ICanvasInfo.ts"
+#include "IURI.ts"
+#include "util/BrowserInfo.ts"
+#include "util/ScreenInfo.ts"
+#include "util/DeviceInfo.ts"
 
 module akra.info {
 	export function canvas(pCanvas: HTMLCanvasElement): ICanvasInfo;
@@ -43,3 +50,5 @@ module akra.info {
 		}
 	});
 }
+
+#endif

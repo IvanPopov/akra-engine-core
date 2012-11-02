@@ -1,3 +1,6 @@
+#ifndef IREFERENCECOUNTER_TS
+#define IREFERENCECOUNTER_TS
+
 module akra {
 	export interface IReferenceCounter {
 		/**
@@ -29,3 +32,5 @@ module akra {
 		eq(pSrc: IReferenceCounter): IReferenceCounter;
 	}
 }
+
+#endif

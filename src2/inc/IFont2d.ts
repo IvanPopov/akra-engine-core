@@ -1,4 +1,5 @@
-///<reference path="akra.ts" />
+#ifndef IFONT2D_TS
+#define IFONT2D_TS
 
 module akra {
 	export enum FontStyle {
@@ -16,3 +17,5 @@ module akra {
 		italic: bool;
 	}
 }
+
+#endif

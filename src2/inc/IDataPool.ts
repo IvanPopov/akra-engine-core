@@ -1,4 +1,5 @@
-///<reference path="akra.ts" />
+#ifndef IDATAPOOL_TS
+#define IDATAPOOL_TS
 
 module akra {
 
@@ -38,3 +39,5 @@ module akra {
 		getGenericPtr(iHandle: int): IResourcePoolItem;
 	}
 }
+
+#endif

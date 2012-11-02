@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BITFLAGS_TS
+#define BITFLAGS_TS
 
 module akra.bf {
 	/**
@@ -110,3 +111,5 @@ module akra.bf {
         return(count);
 	}
 }
+
+#endif

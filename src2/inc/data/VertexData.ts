@@ -1,4 +1,10 @@
-///<reference path="../akra.ts" />
+#ifndef VERTEXDATA_TS
+#define VERTEXDATA_TS
+
+#include "IBufferData.ts"
+#include "IVertexBuffer.ts"
+#include "IVertexDeclaration.ts"
+
 
 module akra.data {
 
@@ -70,3 +76,5 @@ module akra.data {
 		}
 	}
 }
+
+#endif

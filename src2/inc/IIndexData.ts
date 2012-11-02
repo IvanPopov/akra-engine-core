@@ -1,4 +1,7 @@
-///<reference path="akra.ts" />
+#ifndef IINDEXDATA_TS
+#define IINDEXDATA_TS
+
+#include "IRenderer.ts"
 
 module akra {
 	export interface IIndexData extends IBufferData {
@@ -15,3 +18,5 @@ module akra {
 		getPrimitiveCount(): uint;
 	}
 }
+
+#endif

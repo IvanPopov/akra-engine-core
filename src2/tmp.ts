@@ -34,6 +34,7 @@ interface Number {
 
 
 
+
 module akra {
     export var DEBUG: bool = true;
 
@@ -85,6 +86,11 @@ module akra {
 /** @inline */
 
     export var isDef = (x: any): bool =>  x !== undefined;
+
+// Note that undefined == null.
+/** @inline */
+
+    export var isDefAndNotNull = (x: any): bool =>  x != null;
 
 /** @inline */
 
@@ -201,12 +207,18 @@ module akra {
 
     export var INVALID_INDEX: int =  0xffff;
 
-// (-2147483646);    export var MIN_INT32: int = 0xffffffff;
-// ( 2147483647);    export var MAX_INT32: int = 0x7fffffff;
-// (-32768);    export var MIN_INT16: int = 0xffff;
-// ( 32767);    export var MAX_INT16: int = 0x7fff;
-// (-128);    export var MIN_INT8: int = 0xff;
-// ( 127);    export var MAX_INT8: int = 0x7f;
+// (-2147483646);
+    export var MIN_INT32: int = 0xffffffff;
+// ( 2147483647);
+    export var MAX_INT32: int = 0x7fffffff;
+// (-32768);
+    export var MIN_INT16: int = 0xffff;
+// ( 32767);  
+    export var MAX_INT16: int = 0x7fff;
+// (-128);
+    export var MIN_INT8: int = 0xff;
+// ( 127);        
+    export var MAX_INT8: int = 0x7f;
     export var MIN_UINT32: int = 0;
     export var MAX_UINT32: int = 0xffffffff;
     export var MIN_UINT16: int = 0;
@@ -228,19 +240,24 @@ module akra {
     export var SIZE_BYTE: int = 1;
     export var SIZE_UBYTE: int = 1;
 
-
-//1.7976931348623157e+308    export var MAX_FLOAT64: float = Number.MAX_VALUE;
-//-1.7976931348623157e+308    export var MIN_FLOAT64: float = -Number.MAX_VALUE;
-//5e-324    export var TINY_FLOAT64: float = Number.MIN_VALUE;
+//1.7976931348623157e+308
+    export var MAX_FLOAT64: float = Number.MAX_VALUE;
+//-1.7976931348623157e+308
+    export var MIN_FLOAT64: float = -Number.MAX_VALUE;
+//5e-324
+    export var TINY_FLOAT64: float = Number.MIN_VALUE;
 
 //    export var MAX_REAL64: number = Number.MAX_VALUE;   //1.7976931348623157e+308
 //    export var MIN_REAL64: number = -Number.MAX_VALUE;  //-1.7976931348623157e+308
 //    export var TINY_REAL64: number = Number.MIN_VALUE;  //5e-324
 
 
-//3.4e38    export var MAX_FLOAT32: float = 3.4e38;
-//-3.4e38    export var MIN_FLOAT32: float = -3.4e38;
-//1.5e-45    export var TINY_FLOAT32: float = 1.5e-45;
+//3.4e38
+    export var MAX_FLOAT32: float = 3.4e38;
+//-3.4e38
+    export var MIN_FLOAT32: float = -3.4e38;
+//1.5e-45  
+    export var TINY_FLOAT32: float = 1.5e-45;
 
 //    export var MAX_REAL32: number = 3.4e38;     //3.4e38
 //    export var MIN_REAL32: number = -3.4e38;    //-3.4e38
@@ -991,6 +1008,7 @@ module akra.libs {
 
 
 
+
 module akra.bf {
 /**
 	 * Сдвиг единицы на @a x позиций влево.
@@ -1119,6 +1137,8 @@ module akra.bf {
         return(count);
 	}
 }
+
+
 
 
 
@@ -1868,6 +1888,20 @@ module akra {
 }
 
 
+/*
+#include "IRect3d.ts"
+#include "IRect3d.ts"
+#include "IRect3d.ts"
+#include "IRect3d.ts"
+*/
+
+
+
+
+
+
+
+
 
 
 
@@ -1883,22 +1917,6 @@ module akra {
 		z1: float;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1944,35 +1962,1781 @@ module akra.geometry {
 #include "IApiInfo.ts"
 #include "IDeviceInfo.ts"
 #include "IUtilTimer.ts"
+*/
 
-#include "info/support/support.ts"
-#include "info/info.ts"
 
+///<reference path="../../akra.ts" />
+
+module akra.info.support {
+
+}
+
+
+
+
+
+
+
+
+module akra {
+	export interface ICanvasInfo {
+		width: int;
+		height: int;
+		id: string;
+	}
+}
+
+
+
+
+
+
+module akra {
+	export interface IURI {
+		scheme: string;
+		userinfo: string;
+		host: string;
+		port: uint;
+		path: string;
+		query: string;
+		fragment: string;
+		urn: string;
+		url: string;
+		authority: string;
+		protocol: string;
+
+		toString(): string;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IBrowserInfo {
+		name: string;
+		version: string;
+		os: string;
+	}
+}
+
+
+
+
+
+
+module akra.util {
+	export class Singleton {
+		constructor () {
+			var _constructor = (<any>this).constructor;
+
+			assert(!isDef(_constructor._pInstance),
+				'Singleton class may be created only one time.');
+
+			_constructor._pInstance = this;
+		}
+	}
+}
+
+
+
+
+module akra.util {
+	export interface IBrowserData {
+		string: string;
+		subString: string;
+		identity: string;
+		versionSearch?: string;
+		prop?: string;
+	}
+
+	export class BrowserInfo extends Singleton implements IBrowserInfo {
+		private sBrowser: string = null;
+		private sVersion: string = null;
+		private sOS: string = null;
+		private sVersionSearch: string = null;
+
+		get name(): string {
+			return this.sBrowser;
+		}
+
+		get version(): string {
+			return this.sVersion;
+		}
+
+		get os(): string {
+			return this.sOS;
+		}
+
+		private init(): void {
+			this.sBrowser = this.searchString(BrowserInfo.dataBrowser) || "An unknown browser";
+			this.sVersion = this.searchVersion(navigator.userAgent)
+								|| this.searchVersion(navigator.appVersion)
+				|| "an unknown version";
+			this.sOS = this.searchString(BrowserInfo.dataOS) || "an unknown OS";
+		}
+
+		private searchString(pDataBrowser: IBrowserData[]): string {
+			for (var i:int = 0; i < pDataBrowser.length; i++) {
+				var sData:string = pDataBrowser[i].string;
+				var dataProp:string = pDataBrowser[i].prop;
+
+				this.sVersionSearch = pDataBrowser[i].versionSearch || pDataBrowser[i].identity;
+
+				if (sData) {
+					if (sData.indexOf(pDataBrowser[i].subString) != -1) {
+						return pDataBrowser[i].identity;
+					}
+				}
+				else if (dataProp) {
+					return pDataBrowser[i].identity;
+				}
+			}
+			return null;
+		}
+
+		private searchVersion(sData: string): string {
+			var iStartIndex:int = sData.indexOf(this.sVersionSearch);
+
+			if (iStartIndex == -1) {
+				return null;
+			}
+
+			iStartIndex = sData.indexOf('/', iStartIndex + 1);
+
+			if (iStartIndex == -1) {
+				return null;
+			}
+
+			var iEndIndex:int = sData.indexOf(' ', iStartIndex + 1);
+
+			if (iEndIndex == -1) {
+				iEndIndex = sData.indexOf(';', iStartIndex + 1);
+				if (iEndIndex == -1) {
+					return null;
+				}
+				return sData.slice(iStartIndex + 1);
+			}
+
+			return sData.slice((iStartIndex + 1), iEndIndex);
+		}
+
+		static private dataBrowser: IBrowserData[] = [
+			{
+				string: navigator.userAgent,
+				subString: "Chrome",
+				identity: "Chrome"
+			},
+			{
+				string: navigator.userAgent,
+				subString: "OmniWeb",
+				versionSearch: "OmniWeb/",
+				identity: "OmniWeb"
+			},
+			{
+				string: navigator.vendor,
+				subString: "Apple",
+				identity: "Safari",
+				versionSearch: "Version"
+			},
+			{
+				prop: window.opera,
+				identity: "Opera",
+				versionSearch: "Version"
+			},
+			{
+				string: navigator.vendor,
+				subString: "iCab",
+				identity: "iCab"
+			},
+			{
+				string: navigator.vendor,
+				subString: "KDE",
+				identity: "Konqueror"
+			},
+			{
+				string: navigator.userAgent,
+				subString: "Firefox",
+				identity: "Firefox"
+			},
+			{
+				string: navigator.vendor,
+				subString: "Camino",
+				identity: "Camino"
+			},
+			{
+// for newer Netscapes (6+)
+				string: navigator.userAgent,
+				subString: "Netscape",
+				identity: "Netscape"
+			},
+			{
+				string: navigator.userAgent,
+				subString: "MSIE",
+				identity: "Explorer",
+				versionSearch: "MSIE"
+			},
+			{
+				string: navigator.userAgent,
+				subString: "Gecko",
+				identity: "Mozilla",
+				versionSearch: "rv"
+			},
+			{
+// for older Netscapes (4-)
+				string: navigator.userAgent,
+				subString: "Mozilla",
+				identity: "Netscape",
+				versionSearch: "Mozilla"
+			}
+		];
+
+		static private dataOS: IBrowserData[] = [
+			{
+				string    : navigator.platform,
+				subString : "Win",
+				identity  : "Windows"
+			},
+			{
+				string    : navigator.platform,
+				subString : "Mac",
+				identity  : "Mac"
+			},
+			{
+				string    : navigator.userAgent,
+				subString : "iPhone",
+				identity  : "iPhone/iPod"
+			},
+			{
+				string    : navigator.platform,
+				subString : "Linux",
+				identity  : "Linux"
+			}
+		];
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IScreenInfo {
+		width: int;
+		height: int;
+		aspect: float;
+		pixelDepth: int;
+		colorDepth: int;
+	}
+}
+
+
+
+module akra.util {
+	export class ScreenInfo implements IScreenInfo {
+		get width(): int {
+			return screen.width;
+		}
+
+		get height(): int {
+			return screen.height;
+		}
+
+		get aspect(): float {
+			return screen.width / screen.height;
+		}
+
+		get pixelDepth(): int {
+			return screen.pixelDepth;
+		}
+
+		get colorDepth(): int {
+			return screen.colorDepth;
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IDeviceInfo {
+		maxTextureSize: uint;
+		maxCubeMapTextureSize: uint;
+		maxViewPortSize: uint;
+
+		maxTextureImageUnits: uint;
+		maxVertexAttributes: uint;
+		maxVertexTextureImageUnits: uint;
+		maxCombinedTextureImageUnits: uint;
+
+		stencilBits: uint;
+		colorBits: uint[];
+		alphaBits: uint;
+		multisampleType: float;
+
+		shaderVersion: float;
+
+		getExtention(pDevice: WebGLRenderingContext, csExtension: string);
+		checkFormat(pDevice: WebGLRenderingContext, eFormat: EImageFormats);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IReferenceCounter {
+/**
+		 * Текущее количесвто ссылок  на объект
+		 **/
+
+		referenceCount(): uint;
+
+/** Предупреждает если объект еще используется */
+
+		destructor(): void;
+
+
+/**
+		 * Добаволение ссылки  на объект, увеличивает внутренний счетчки на 1,
+		 * проверяет не достигнуто ли максимальное количесвто
+		 **/
+
+		addRef(): uint;
+
+/**
+		 * Уведомление об удалении ссылки  на объект, уменьшает внутренний счетчки на 1,
+		 * проверяет есть ли ее объекты
+		 **/
+
+		release(): uint;
+
+
+/** 
+		 * Данная функция нужна чтобы обеспечить наследникам ее возможность,
+		 * само количестdо ссылок не копируется
+		 */
+
+		eq(pSrc: IReferenceCounter): IReferenceCounter;
+	}
+}
+
+
+
+module akra {
+
+	export interface IEngine {} ;
+	export interface IResourceWatcherFunc {} ;
+	export interface IResourceNotifyRoutineFunc {} ;
+	export interface IResourceCode {} ;
+	export interface IResourcePool {} ;
+
+/**
+     * Отражает состояние ресурса
+     **/
+
+    export enum EResourceItemEvents{
+//ресур создан
+		k_Created,
+//ресур заполнен данным и готов к использованию
+		k_Loaded,
+//ресур в данный момент отключен для использования
+		k_Disabled,
+//ресур был изменен после загрузки		
+		k_Altered,
+		k_TotalResourceFlags
+	};
+
+	export interface IResourcePoolItem extends IReferenceCounter {
+/** resource code */
+
+		resourceCode: IResourceCode;
+/** resource pool */
+
+		resourcePool: IResourcePool;
+/** resource handle */
+
+		resourceHandle: int;
+/** resource flags */
+
+		resourceFlags: int;
+/** Проверка был ли изменен ресур после загрузки */
+
+		alteredFlag: bool;
+
+
+		getGuid(): int;
+/** Get current Engine. */
+
+		getEngine(): IEngine;
+
+/** Инициализация ресурса, вызывается один раз. Виртуальная. */
+
+		createResource(): bool;
+/** Уничтожение ресурса. Виртуальная. */
+
+		destroyResource(): bool;
+/**  Удаление ресурса из энергозависимой памяти. Виртуальная. */
+
+		disableResource(): bool;
+/** Возвращение ресурса в энегрозависимю память. Виртуальная. */
+
+		restoreResource(): bool;
+
+/** Загрузка ресурса из файла, или null при использовании имени ресурса. Виртуальная. */
+
+		loadResource(sFilename?: string): bool;
+/** Сохранение ресурса в файл, или null при использовании имени ресурса. */
+
+		saveResource(sFilename?: string): bool;
+
+/** Добавление и удаление функции, которая будет вызываться при изменении состояния ресурса( fnFunc(iNewSost,iOldSost) ) */
+
+		setChangesNotifyRoutine(fn: IResourceNotifyRoutineFunc): void;
+		delChangesNotifyRoutine(fn: IResourceNotifyRoutineFunc): void;
+
+		setStateWatcher(eEvent: EResourceItemEvents, fnWatcher: IResourceWatcherFunc): void;
+
+/** sinchronize events with other resourse */
+
+		connect(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool;
+		disconnect(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool;
+
+/** Установка состояния в созданный */
+
+		notifyCreated(): void;
+/** Установка в состояние не созданный */
+
+		notifyDestroyed(): void;
+/** Уставнока в состояние загруженный */
+
+		notifyLoaded(): void;
+/** Уставнока в состояние незагруженный */
+
+		notifyUnloaded(): void;
+/** Установка в состояние используемый */
+
+		notifyRestored(): void;
+/** Установка в состояние не используемый */
+
+		notifyDisabled(): void;
+/** Установка в состояние не используемый */
+
+		notifyAltered(): void;
+/** Установка в состояние сохраненый */
+
+		notifySaved(): void;
+
+		notifyStateChange(eEvent: EResourceItemEvents, pTarget?: IResourcePoolItem);
+
+/** Проверка создан ли ресурс */
+
+		isResourceCreated(): bool;
+/** Проверка загружен ли ресурс */
+
+		isResourceLoaded(): bool;
+/** Проверка активен ли ресурс */
+
+		isResourceDisabled(): bool;
+/** Проверка обновлен ли ресурс */
+
+		isResourceAltered(): bool;
+
+/** Установка состояния в изменен после загружки */
+
+		setAlteredFlag(isOn?: bool): void;
+
+/** Пиписывание ресурсу имени */
+
+		setResourceName(sName: string);
+
+/** Поиск имени ресурса */
+
+		findResourceName(): string;
+
+/** оповещение о уменьшении количесва ссылок на ресурс */
+
+		release(): uint;
+
+		setResourceCode(pCode: IResourceCode): void;
+		setResourcePool(pPool: IResourcePool): void;
+		setResourceHandle(iHandle: int): void;
+
+		setResourceFlag(eFlagBit: EResourceItemEvents, isSetting: bool): void;
+		setResourceFlag(iFlagBit: int, isSetting: bool): void;
+	}
+
+	export interface IResourcePoolItemType {
+		new (pEngine: IEngine): IResourcePoolItem;
+	}
+}
+
+
+
+module akra {
+	 export enum EImageFormats {
+        RGB = 0x1907,
+        RGB8 = 0x1907,
+        BGR8 = 0x8060,
+        RGBA = 0x1908,
+        RGBA8 = 0x1908,
+        BGRA8 = 0x1909,
+        RGBA4 = 0x8056,
+        BGRA4 = 0x8059,
+        RGB5_A1 = 0x8057,
+        BGR5_A1 = 0x8058,
+        RGB565 = 0x8D62,
+        BGR565 = 0x8D63,
+        RGB_DXT1 = 0x83F0,
+        RGBA_DXT1 = 0x83F1,
+        RGBA_DXT2 = 0x83F4,
+        RGBA_DXT3 = 0x83F2,
+        RGBA_DXT4 = 0x83F5,
+        RGBA_DXT5 = 0x83F3,
+
+        DEPTH_COMPONENT = 0x1902,
+        ALPHA = 0x1906,
+        LUMINANCE = 0x1909,
+        LUMINANCE_ALPHA = 0x190A
+    };
+
+    export enum EImageShortFormats {
+        RGB = 0x1907,
+        RGBA = 0x1908
+    };
+
+    export enum EImageTypes {
+        UNSIGNED_BYTE = 0x1401,
+        UNSIGNED_SHORT_4_4_4_4 = 0x8033,
+        UNSIGNED_SHORT_5_5_5_1 = 0x8034,
+        UNSIGNED_SHORT_5_6_5 = 0x8363,
+        FLOAT = 0x1406
+    };
+
+    export interface IImg extends IResourcePoolItem {
+
+    }
+
+}
+
+
+
+
+
+module akra.util {
+	export class DeviceInfo extends Singleton implements IDeviceInfo {
+		private nMaxTextureSize: uint = 0;
+		private nMaxCubeMapTextureSize: uint = 0;
+		private nMaxViewPortSize: uint = 0;
+
+		private nMaxTextureImageUnits: uint = 0;
+		private nMaxVertexAttributes: uint = 0;
+		private nMaxVertexTextureImageUnits: uint = 0;
+		private nMaxCombinedTextureImageUnits: uint = 0;
+
+		private nMaxColorAttachments: uint = 1;
+
+		private nStencilBits: uint = 0;
+		private pColorBits: uint[] = [0, 0, 0];
+		private nAlphaBits: uint = 0;
+		private fMultisampleType: float = 0.;
+
+		private fShaderVersion: float = 0;
+
+		get maxTextureSize(): uint { return this.nMaxTextureSize; }
+		get maxCubeMapTextureSize(): uint { return this.nMaxCubeMapTextureSize; }
+		get maxViewPortSize(): uint { return this.nMaxViewPortSize; }
+
+ 		get maxTextureImageUnits(): uint { return this.nMaxTextureImageUnits; }
+		get maxVertexAttributes(): uint { return this.nMaxVertexAttributes; }
+		get maxVertexTextureImageUnits(): uint { return this.nMaxVertexTextureImageUnits; }
+		get maxCombinedTextureImageUnits(): uint { return this.nMaxCombinedTextureImageUnits; }
+
+		get maxColorAttachments(): uint { return this.nMaxColorAttachments; }
+
+		get stencilBits(): uint { return this.nStencilBits; }
+		get colorBits(): uint[] { return this.pColorBits; }
+		get alphaBits(): uint { return this.nAlphaBits; }
+		get multisampleType(): float { return this.fMultisampleType; }
+
+		get shaderVersion(): float { return this.fShaderVersion; }
+
+		constructor () {
+			super();
+
+			var pDevice = createDevice();
+
+			if (!pDevice) {
+				return;
+			}
+
+			this.nMaxTextureSize = pDevice.getParameter(pDevice.MAX_TEXTURE_SIZE);
+			this.nMaxCubeMapTextureSize = pDevice.getParameter(pDevice.MAX_CUBE_MAP_TEXTURE_SIZE);
+			this.nMaxViewPortSize = pDevice.getParameter(pDevice.MAX_VIEWPORT_DIMS);
+
+			this.nMaxTextureImageUnits = pDevice.getParameter(pDevice.MAX_TEXTURE_IMAGE_UNITS);
+			this.nMaxVertexAttributes = pDevice.getParameter(pDevice.MAX_VERTEX_ATTRIBS);
+			this.nMaxVertexTextureImageUnits = pDevice.getParameter(pDevice.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
+			this.nMaxCombinedTextureImageUnits = pDevice.getParameter(pDevice.MAX_COMBINED_TEXTURE_IMAGE_UNITS);
+
+			this.nStencilBits = pDevice.getParameter(pDevice.STENCIL_BITS);
+			this.pColorBits = [
+                pDevice.getParameter(pDevice.RED_BITS),
+                pDevice.getParameter(pDevice.GREEN_BITS),
+                pDevice.getParameter(pDevice.BLUE_BITS)
+            ];
+
+            this.nAlphaBits = pDevice.getParameter(pDevice.ALPHA_BITS);
+            this.fMultisampleType = pDevice.getParameter(pDevice.SAMPLE_COVERAGE_VALUE);
+		}
+
+
+		getExtention(pDevice: WebGLRenderingContext, csExtension: string): any {
+			var pExtentions: string[];
+			var sExtention: string;
+			var pExtention: any = null;
+
+	        pExtentions = pDevice.getSupportedExtensions();
+
+	        for (var i in pExtentions) {
+	            sExtention = pExtentions[i];
+	            if (sExtention.search(csExtension) != -1) {
+	                pExtention = pDevice.getExtension(sExtention);
+
+	                trace('extension successfuly loaded: ' + sExtention);
+	            }
+	        }
+
+	        return pExtention;
+		}
+
+		checkFormat(pDevice: WebGLRenderingContext, eFormat: EImageFormats) {
+	        switch (eFormat) {
+	            case EImageFormats.RGB_DXT1:
+	            case EImageFormats.RGBA_DXT1:
+	            case EImageFormats.RGBA_DXT2:
+	            case EImageFormats.RGBA_DXT3:
+	            case EImageFormats.RGBA_DXT4:
+	            case EImageFormats.RGBA_DXT5:
+	                for (var i in pDevice) {
+	                    if (isNumber(pDevice[i]) && pDevice[i] == eFormat) {
+	                        return true;
+	                    }
+	                }
+	                return false;
+	            case EImageFormats.RGB8:
+	            case EImageFormats.RGBA8:
+	            case EImageFormats.RGBA4:
+	            case EImageFormats.RGB5_A1:
+	            case EImageFormats.RGB565:
+	                return true;
+	            default:
+	                return false;
+	        }
+	    }
+    }
+}
+
+
+
+module akra.info {
+	export function canvas(pCanvas: HTMLCanvasElement): ICanvasInfo;
+	export function canvas(id: string): ICanvasInfo;
+	export function canvas(id): ICanvasInfo {
+		var pCanvas: HTMLCanvasElement = isString(id) ? document.getElementById(id) : id;
+
+		return {
+			width: isInt(pCanvas.width) ? pCanvas.width : parseInt(pCanvas.style.width),
+			height: isInt(pCanvas.height) ? pCanvas.height : parseInt(pCanvas.style.height),
+			id: pCanvas.id
+		};
+	}
+
+	export var browser: IBrowserInfo = new util.BrowserInfo;
+	export var api: IApiInfo = new util.ApiInfo;
+	export var screen: IScreenInfo = new util.ScreenInfo;
+	export var device: IDeviceInfo = new util.DeviceInfo;
+	export var uri: IURI = parseURI(document.location.href);
+
+	module is {
+/**
+         * show status - online or offline
+         */
+
+		export var online;
+/**
+         * perform test on mobile device
+         */
+
+		export var mobile: bool = (/mobile|iphone|ipad|ipod|android|blackberry|mini|windows\sce|palm/i)
+			.test(navigator.userAgent.toLowerCase());
+		export var linux: bool = browser.os === 'Linux';
+		export var windows: bool = browser.os === 'Windows';
+		export var mac: bool = browser.os === 'Mac';
+		export var iPhone: bool = browser.os === 'iPhone';
+	}
+
+
+//TODO: move it to [akra.info.is] module, when typescript access this.
+	Object.defineProperty(is, 'online', {
+		get: function () {
+			return navigator.onLine;
+		}
+	});
+}
+
+
+/*
 #include "IFont2d.ts"
 #include "IString2d.ts"
+*/
 
-#include "util/util.ts"
-#include "util/ReferenceCounter.ts"
-#include "util/Singleton.ts"
-#include "util/URI.ts"
-#include "util/BrowserInfo.ts"
-#include "util/ApiInfo.ts"
-#include "util/ScreenInfo.ts"
-#include "util/DeviceInfo.ts"
-#include "util/UtilTimer.ts"
 
-#include "controls/KeyMap.ts"
-#include "controls/GamepadMap.ts"
 
-#include "gui/Font2d.ts"
-#include "gui/String2d.ts"
 
+
+module akra.util {
+
+}
+
+
+
+
+
+
+
+
+
+module akra.util {
+	export class ReferenceCounter implements IReferenceCounter {
+		private nReferenceCount: uint = 0;
+
+/** Выстанавливает чило ссылок  на объект в ноль */
+
+		constructor ();
+/** 
+		 * Выстанавливает чило ссылок  на объект в ноль
+ 		 * количесвто ссылок привязаны к конкретному экземпляру, поэтому никогда не копируются 
+ 		 */
+
+		constructor (pSrc: IReferenceCounter);
+		constructor (pSrc?) {}
+
+/** @inline */
+
+		referenceCount(): uint {
+			return this.nReferenceCount;
+		}
+
+/** @inline */
+
+		destructor(): void {
+			assert(this.nReferenceCount === 0, 'object is used');
+		}
+
+		release(): uint {
+			assert(this.nReferenceCount > 0, 'object is used');
+		    this.nReferenceCount--;
+		    return this.nReferenceCount;
+		}
+
+		addRef(): uint {
+			assert(this.nReferenceCount != MIN_INT32, 'reference fail');
+
+    		this.nReferenceCount ++;
+
+			return this.nReferenceCount;
+		}
+
+/** @inline */
+
+		eq (pSrc: IReferenceCounter): IReferenceCounter {
+		    return this;
+		};
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+module akra.util {
+	export class URI implements IURI {
+		private sScheme: string = null;
+		private sUserinfo: string = null;
+		private sHost: string = null;
+		private nPort: uint = 0;
+		private sPath: string = null;
+		private sQuery: string = null;
+		private sFragment: string = null;
+
+		get urn(): string {
+			return (this.sPath ? this.sPath : "") +
+			(this.sQuery ? '?' + this.sQuery : "") +
+			(this.sFragment ? '#' + this.sFragment : "");
+		}
+
+		get url(): string {
+			return (this.sScheme ? this.sScheme : "") + this.authority;
+		}
+
+		get authority(): string {
+			return (this.sHost ? '//' + (this.sUserinfo ? this.sUserinfo + '@' : "") +
+				this.sHost + (this.nPort ? ':' + this.nPort : "") : "");
+		}
+
+		get scheme(): string {
+			return this.sScheme;
+		}
+
+		get protocol(): string {
+			if (!this.sScheme) {
+				return this.sScheme;
+			}
+
+			return (this.sScheme.substr(0, this.sScheme.lastIndexOf(':')));
+		}
+
+		get userinfo(): string {
+			return this.sUserinfo;
+		}
+
+		get host(): string {
+			return this.sHost;
+		}
+
+		get port(): uint {
+			return this.nPort;
+		}
+
+		set port(iPort: uint) {
+			this.nPort = iPort;
+		}
+
+		get path(): string {
+			return this.sPath;
+		}
+
+		get query(): string {
+			return this.sQuery;
+		}
+
+		get fragment(): string {
+			return this.sFragment;
+		}
+
+
+		constructor (pUri: URI);
+		constructor (sUri: string);
+		constructor (pUri?) {
+			if (pUri) {
+				this.set(pUri);
+			}
+		}
+
+		set(pUri: URI);
+		set(sUri: string);
+		set(pData?): URI {
+			if (isString(pData)) {
+				var pUri:RegExpExecArray = URI.uriExp.exec(<string>pData);
+
+				debug_assert(pUri !== null, 'Invalid URI format used.\nused uri: ' + pData);
+
+				if (!pUri) {
+					return null;
+				}
+
+				this.sScheme = pUri[1] || null;
+				this.sUserinfo = pUri[2] || null;
+				this.sHost = pUri[3] || null;
+				this.nPort = parseInt(pUri[4]) || null;
+				this.sPath = pUri[5] || pUri[6] || null;
+				this.sQuery = pUri[7] || null;
+				this.sFragment = pUri[8] || null;
+
+				return this;
+
+			}
+			else if (pData instanceof URI) {
+				return this.set(pData.toString());
+			}
+
+			debug_error('Unexpected data type was used.');
+
+			return null;
+		}
+
+		toString(): string {
+			return this.url + this.urn;
+		}
+
+//------------------------------------------------------------------//
+//----- Validate a URI -----//
+//------------------------------------------------------------------//
+//- The different parts are kept in their own groups and can be recombined
+//  depending on the scheme:
+//  - http as $1://$3:$4$5?$7#$8
+//  - ftp as $1://$2@$3:$4$5
+//  - mailto as $1:$6?$7
+//- groups are as follows:
+//  1   == scheme
+//  2   == userinfo
+//  3   == host
+//  4   == port
+//  5,6 == path (5 if it has an authority, 6 if it doesn't)
+//  7   == query
+//  8   == fragment
+
+
+		static private uriExp:RegExp = new RegExp("^([a-z0-9+.-]+:)?(?:\\/\\/(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(\\/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?|(\\/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})*(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?)(?:\\?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?$", "i");
+
+/*
+		 composed as follows:
+		 ^
+		 ([a-z0-9+.-]+):							#scheme
+		 (?:
+		 //							#it has an authority:
+		 (?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?	#userinfo
+		 ((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)		#host
+		 (?::(\d*))?						#port
+		 (/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?	#path
+		 |
+		 #it doesn't have an authority:
+		 (/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?	#path
+		 )
+		 (?:
+		 \?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*)	#query string
+		 )?
+		 (?:
+		 #((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*)	#fragment
+		 )?
+		 $
+		 */
+
+	}
+}
+
+module akra {
+	export var parseURI = (sUri:string): IURI => new util.URI(sUri);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IApiInfo {
+		webGL: bool;
+		webAudio: bool;
+		file: bool;
+		fileSystem: bool;
+		webWorker: bool;
+		transferableObjects: bool;
+		localStorage: bool;
+		webSocket: bool;
+	}
+}
+
+
+
+
+
+module akra.util {
+	export class ApiInfo extends Singleton implements IApiInfo {
+		private bWebGL: bool = false;
+		private bWebAudio: bool = false;
+		private bFile: bool = false;
+		private bFileSystem: bool = false;
+		private bWebWorker: bool = false;
+		private bTransferableObjects: bool = false;
+		private bLocalStorage: bool = false;
+		private bWebSocket: bool = false;
+
+		get webGL(): bool {
+			if (!this.bWebGL) {
+				this.bWebGL = ((<any>window).WebGLRenderingContext || this.checkWebGL() ? true : false);
+			}
+
+			return this.bWebGL;
+		}
+
+		get transferableObjects(): bool {
+			if (!this.bTransferableObjects) {
+				this.bTransferableObjects = (this.bWebWorker && this.chechTransferableObjects() ? true : false);
+			}
+
+			return this.bTransferableObjects;
+		}
+
+		get file(): bool {
+			return this.bFile;
+		}
+
+		get fileSystem(): bool {
+			return this.bFileSystem;
+		}
+
+		get webAudio(): bool {
+			return this.bWebAudio;
+		}
+
+		get webWorker(): bool {
+			return this.bWebWorker;
+		}
+
+		get localStorage(): bool {
+			return this.bLocalStorage;
+		}
+
+		get webSocket(): bool {
+			return this.bWebSocket;
+		}
+
+		constructor () {
+			super();
+
+			var pApi = {};
+
+			this.bWebAudio = ((<any>window).AudioContext && (<any>window).webkitAudioContext ? true : false);
+			this.bFile = ((<any>window).File && (<any>window).FileReader && (<any>window).FileList && (<any>window).Blob ? true : false);
+			this.bFileSystem = (this.bFile && (<any>window).URL && (<any>window).requestFileSystem ? true : false);
+			this.bWebWorker = isDef((<any>window).Worker);
+			this.bLocalStorage = isDef((<any>window).localStorage);
+			this.bWebSocket = isDef((<any>window).WebSocket);
+		}
+
+		private checkWebGL(): bool {
+			var pCanvas: HTMLCanvasElement;
+			var pDevice: WebGLRenderingContext;
+
+			try {
+				pCanvas = <HTMLCanvasElement> document.createElement('canvas');
+				pDevice = pCanvas.getContext('webgl', {}) ||
+                       		pCanvas.getContext('experimental-webgl', {});
+
+                if (pDevice) {
+                	return true;
+                }
+			}
+			catch (e) {}
+
+			return false;
+		}
+
+		private chechTransferableObjects(): bool {
+			var pBlob: Blob = new Blob(["onmessage = function(e) { postMessage(true); }"]);
+			var sBlobURL: string = (<any>window).URL.createObjectURL(pBlob);
+			var pWorker: Worker = new Worker(sBlobURL);
+
+			var pBuffer: ArrayBuffer = new ArrayBuffer(1);
+
+		    try {
+		        pWorker.postMessage(pBuffer, [pBuffer]);
+		    }
+		    catch (e) {
+		        debug_print('transferable objects not supported in your browser...');
+		    }
+
+		    pWorker.terminate();
+
+		    if (pBuffer.byteLength) {
+		        return false
+		    }
+
+		    return true;
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export enum EUtilTimerCommands {
+//! <to reset the timer
+		TIMER_RESET,
+//! <to start the timer
+		TIMER_START,
+//! <to stop (or pause) the timer
+		TIMER_STOP,
+//! <to advance the timer by 0.1 seconds
+		TIMER_ADVANCE,
+//! <to get the absolute system time
+		TIMER_GET_ABSOLUTE_TIME,
+//! <to get the current time
+		TIMER_GET_APP_TIME,
+		TIMER_GET_ELAPSED_TIME
+//! to get the time that elapsed between TIMER_GETELAPSEDTIME calls
+	}
+
+    export interface IUtilTimer {
+        absoluteTime: float;
+        appTime: float;
+        elapsedTime: float;
+
+        start(): bool;
+        stop(): bool;
+        reset(): bool;
+        execCommand(e: EUtilTimerCommands): float;
+
+//static start(): IUtilTimer;
+    }
+}
+
+
+
+module akra.util {
+
+	export class UtilTimer implements IUtilTimer {
+		private isTimerInitialized: bool = false;
+		private isTimerStopped: bool = false;
+		private fTicksPerSec: float = 0.;
+		private iStopTime: int = 0;
+		private iLastElapsedTime: int = 0;
+		private iBaseTime: int = 0;
+
+		get absoluteTime(): float {
+			return this.execCommand(EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME);
+		}
+
+		get appTime(): float {
+			return this.execCommand(EUtilTimerCommands.TIMER_GET_APP_TIME);
+		}
+
+		get elapsedTime(): float {
+			return this.execCommand(EUtilTimerCommands.TIMER_GET_ELAPSED_TIME);
+		}
+
+		start(): bool {
+			return this.execCommand(EUtilTimerCommands.TIMER_START) === 0;
+		}
+        stop(): bool {
+        	return this.execCommand(EUtilTimerCommands.TIMER_STOP) === 0;
+        }
+
+        reset(): bool {
+        	return this.execCommand(EUtilTimerCommands.TIMER_RESET) === 0;
+        }
+
+        execCommand(eCommand: EUtilTimerCommands): float {
+		    var fTime: float = 0.;
+		    var fElapsedTime: float = 0.;
+		    var iTime: int;
+
+		    if (this.isTimerInitialized == false) {
+		        this.isTimerInitialized = true;
+		        this.fTicksPerSec = 1000;
+		    }
+
+// Get either the current time or the stop time, depending
+// on whether we're stopped and what command was sent
+		    if (this.iStopTime != 0 && eCommand != EUtilTimerCommands.TIMER_START &&
+		    	eCommand != EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME) {
+		        iTime = this.iStopTime;
+		    }
+		    else {
+		        iTime = (new Date()).getTime();
+		    }
+
+// Return the elapsed time
+		    if (eCommand == EUtilTimerCommands.TIMER_GET_ELAPSED_TIME) {
+		        fElapsedTime = (iTime - this.iLastElapsedTime) / this.fTicksPerSec;
+		        this.iLastElapsedTime = iTime;
+		        return fElapsedTime;
+		    }
+
+// Return the current time
+		    if (eCommand == EUtilTimerCommands.TIMER_GET_APP_TIME) {
+		        var fAppTime = ( iTime - this.iBaseTime ) / this.fTicksPerSec;
+		        return fAppTime;
+		    }
+
+// Reset the timer
+		    if (eCommand == EUtilTimerCommands.TIMER_RESET) {
+		        this.iBaseTime = iTime;
+		        this.iLastElapsedTime = iTime;
+		        this.iStopTime = 0;
+		        this.isTimerStopped = false;
+		        return 0;
+		    }
+
+// Start the timer
+		    if (eCommand == EUtilTimerCommands.TIMER_START) {
+		        if (this.isTimerStopped) {
+		            this.iBaseTime += iTime - this.iStopTime;
+		        }
+		        this.iStopTime = 0;
+		        this.iLastElapsedTime = iTime;
+		        this.isTimerStopped = false;
+		        return 0;
+		    }
+
+// Stop the timer
+		    if (eCommand == EUtilTimerCommands.TIMER_STOP) {
+		        if (!this.isTimerStopped) {
+		            this.iStopTime = iTime;
+		            this.iLastElapsedTime = iTime;
+		            this.isTimerStopped = true;
+		        }
+		        return 0;
+		    }
+
+// Advance the timer by 1/10th second
+		    if (eCommand == EUtilTimerCommands.TIMER_ADVANCE) {
+		        this.iStopTime += this.fTicksPerSec / 10;
+		        return 0;
+		    }
+
+		    if (eCommand == EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME) {
+		        fTime = iTime / this.fTicksPerSec;
+		        return  fTime;
+		    }
+
+// Invalid command specified		    return -1;
+        }
+
+        static start(): UtilTimer {
+        	var pTimer: UtilTimer = new UtilTimer;
+
+        	if (pTimer.start()) {
+        		return pTimer;
+        	}
+
+        	debug_error('cannot start util timer');
+
+        	return null;
+        }
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IKeyMap {
+
+	}
+}
+
+
+
+module akra.controls {
+	export class KeyMap implements IKeyMap {
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+    export interface IGamepadMap {
+
+    }
+}
+
+
+
+module akra.controls {
+	export class GamepadMap implements IGamepadMap {
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export enum FontStyle {
+		ITALIC,
+		BOLD
+	};
+
+	export interface IFont2d {
+		size: uint;
+		htmlSize: string;
+		color: uint;
+		htmlColor: string;
+		family: string;
+		bold: bool;
+		italic: bool;
+	}
+}
+
+
+
+module akra.gui {
+	export class Font2d implements IFont2d {
+		private iColor: uint;
+		private nSize: uint;
+		private iStyle: int;
+		private sFamily: string;
+
+		constructor (nSize: uint = 12, iColor: uint = 0xFFFFFF, iStyle: int = 0, sFontFamily: string = "monospace") {
+			this.nSize = nSize;
+			this.iColor = iColor;
+			this.iStyle = iStyle;
+		}
+
+/** @inline */
+
+		get size(): uint { return this.nSize; }
+/** @inline */
+
+		set size(nSize: uint) { this.nSize = nSize; }
+
+/** @inline */
+
+		get color(): uint { return this.iColor; }
+/** @inline */
+
+		set color(iColor: uint) { this.iColor = iColor; }
+
+/** @inline */
+
+		get family(): string { return this.sFamily; }
+/** @inline */
+
+		set family(sFamily: string) { this.sFamily = sFamily; }
+
+/** @inline */
+
+		get bold(): bool { return bf.testBit(this.iStyle, <number>FontStyle.BOLD); }
+/** @inline */
+
+		set bold(bValue: bool) { this.iStyle = bf.setBit(this.iStyle, <number>FontStyle.BOLD, bValue); }
+
+/** @inline */
+
+		get italic(): bool { return bf.testBit(this.iStyle, <number>FontStyle.BOLD); }
+/** @inline */
+
+		set italic(bValue: bool) { this.iStyle = bf.setBit(this.iStyle, <number>FontStyle.ITALIC, bValue); }
+
+/** @inline */
+
+		get htmlColor(): string {
+			return "#" + Number(this.iColor).toString(16);
+		}
+
+/** @inline */
+
+		get htmlSize(): string {
+			return String(this.size) + "px";
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IString2d {
+		x: int;
+		y: int;
+//font: IFont2d;
+
+
+		hide(): void;
+		show(isVisible?: bool): void;
+
+		append(s: string, pFont?: IFont2d): void;
+		clear(): void;
+		edit(s: string): void;
+
+		toString(): string;
+	}
+}
+
+
+
+
+
+module akra.gui {
+	export class String2d implements IString2d {
+		private pSpan: HTMLSpanElement = null;
+		private pLastSpan: HTMLSpanElement = null;
+		private pFont: IFont2d;
+
+		get x(): int { return parseInt(this.pSpan.style.left); }
+		get y(): int { return parseInt(this.pSpan.style.top); }
+//font: IFont2d;
+
+		constructor (iX: int = 0, iY: int = 0, sStr: string = "", pParent: HTMLElement = document.body, pFont: IFont2d = new gui.Font2d()) {
+			var pSpan: HTMLSpanElement = <HTMLSpanElement>document.createElement("span");
+			var pStyle: CSSStyleDeclaration = pSpan.style;
+
+			pStyle.position = "absolute";
+		    pStyle.left = String(iX) + 'px';
+		    pStyle.top = String(iY) + 'px';
+
+		    this.addSpan(sStr, pFont, pSpan);
+
+    		pParent.appendChild(pSpan);
+
+    		this.pSpan = pSpan;
+    		this.pLastSpan = pSpan;
+		}
+
+		hide(): void {
+			this.show(false);
+		}
+
+		show(isVisible: bool = true): void {
+			this.pSpan.style.visibility = isVisible? "visible": "hidden";
+		}
+
+		append(sStr: string, pFont?: IFont2d): void {
+			if (isDef(pFont)) {
+		        var pStyle: CSSStyleDeclaration = this.pLastSpan.style;
+
+		        if (pStyle.fontSize != pFont.htmlSize ||
+		            pStyle.color != pFont.htmlColor ||
+		            pStyle.fontFamily != pFont.family ||
+		            pStyle.fontWeight != (pFont.bold? "bold": "") ||
+		            pStyle.fontStyle != (pFont.italic? "italic": "")) {
+
+		            this.addSpan(sStr, pFont);
+		        }
+		        else {
+		            this.pLastSpan.innerHTML += sStr;
+		        }
+		    }
+		    else {
+		        this.pLastSpan.innerHTML += sStr;
+		    }
+		}
+
+		clear(): void {
+			this.pSpan.innerHTML = null;
+    		this.pLastSpan = this.pSpan;
+		}
+
+		edit(sStr: string): void {
+			this.pSpan.innerHTML = sStr;
+			this.pLastSpan = this.pSpan;
+		}
+
+		toString(): string {
+			return this.pSpan.innerHTML;
+		}
+
+		private addSpan(sStr: string, pFont: IFont2d, pSpan: HTMLSpanElement = <HTMLSpanElement>document.createElement('span')): void {
+			var pStyle: CSSStyleDeclaration = pSpan.style;
+
+		    pStyle.fontSize = pFont.htmlSize;
+		    pStyle.color = pFont.htmlColor;
+		    pStyle.fontFamily = pFont.family;
+		    pStyle.fontWeight = (pFont.bold? "bold": "");
+		    pStyle.fontStyle = (pFont.italic? "italic": "");
+
+		    (<any>pStyle).webkitUserSelect = "none";
+    		(<any>pStyle).mozUserSelect = "none";
+
+		    pSpan.innerHTML = sStr;
+
+		    if (this.pSpan) {
+			    this.pSpan.appendChild(pSpan);
+			    this.pLastSpan = pSpan;
+		    }
+		}
+	}
+}
+
+
+/*
 #include "IVertexElement.ts"
 #include "IvertexDeclaration.ts"
+*/
 
-#include "util/VertexElement.ts"
-#include "util/VertexDeclaration.ts"
 
+
+
+
+module akra.util {
+
+}
+
+module akra {
+
+}
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IVertexElement {} ;
+
+	export var DeclarationUsages = {
+		POSITION 	: "POSITION",
+	    POSITION1	: "POSITION1",
+	    POSITION2	: "POSITION2",
+	    POSITION3	: "POSITION3",
+
+	    BLENDWEIGHT	: "BLENDWEIGHT",
+	    BLENDINDICES: "BLENDINDICES",
+	    BLENDMETA	: "BLENDMETA",
+
+	    NORMAL 		: "NORMAL",
+	    NORMAL1		: "NORMAL1",
+	    NORMAL2		: "NORMAL2",
+	    NORMAL3		: "NORMAL3",
+
+	    PSIZE		: "PSIZE",
+
+	    TEXCOORD 	: "TEXCOORD",
+	    TEXCOORD1	: "TEXCOORD1",
+	    TEXCOORD2	: "TEXCOORD2",
+	    TEXCOORD3	: "TEXCOORD3",
+	    TEXCOORD4	: "TEXCOORD4",
+	    TEXCOORD5	: "TEXCOORD5",
+
+	    TANGENT		: "TANGENT",
+	    BINORMAL 	: "BINORMAL",
+
+	    TESSFACTOR	: "TESSFACTOR",
+	    COLOR 		: "COLOR",
+	    FOG 		: "FOG",
+	    DEPTH 		: "DEPTH",
+	    SAMPLE 		: "SAMPLE",
+
+	    INDEX 		: "INDEX",
+		INDEX0 		: "INDEX0",
+	    INDEX1 		: "INDEX1",
+	    INDEX2 		: "INDEX2",
+	    INDEX3 		: "INDEX3",
+//system indices starts from 10	    INDEX10 	: "INDEX10",
+	    INDEX11 	: "INDEX11",
+	    INDEX12 	: "INDEX12",
+	    INDEX13 	: "INDEX13",
+
+	    MATERIAL 	: "MATERIAL",
+	    MATERIAL1 	: "MATERIAL1",
+	    MATERIAL2 	: "MATERIAL2",
+
+	    DIFFUSE		: "DIFFUSE",
+	    AMBIENT 	: "AMBIENT",
+	    SPECULAR 	: "SPECULAR",
+	    EMISSIVE 	: "EMISSIVE",
+	    SHININESS 	: "SHININESS",
+	    UNKNOWN 	: "UNKNOWN",
+	    END 		: "\a\n\r"
+	};
+
+	export var DeclUsages = DeclarationUsages;
+
+	export interface IVertexDeclaration {
+		stride: uint;
+		length: uint;
+
+
+//[index: number]: IVertexElement;
+
+		append(...pElement: IVertexElement[]): bool;
+		append(pElements: IVertexElement[]): bool;
+
+		extend(pDecl: IVertexDeclaration): bool;
+
+		hasSemantics(sSemantics: string): bool;
+		findElement(sSemantics: string, iCount?: uint): IVertexElement;
+		clone(): IVertexDeclaration;
+
+
+
+///DEBUG!!!
+		toString(): string;
+	}
+
+
+
+	export function VE_CUSTOM(sUsage: string, eType: EDataTypes = EDataTypes.FLOAT, iCount: uint = 1, iOffset?: uint) {
+		return {count: iCount, type: eType, usage: sUsage, offset: iOffset};
+	}
+
+	export function VE_FLOAT(sName: string, iOffset?: uint) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 1, iOffset); };
+	export function VE_FLOAT2(sName: string, iOffset: uint = 2) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 2, iOffset); };
+	export function VE_FLOAT3(sName: string, iOffset: uint = 3) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 3, iOffset); };
+	export function VE_FLOAT4(sName: string, iOffset: uint = 4) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 4, iOffset); };
+	export function VE_FLOAT4x4(sName: string, iOffset: uint = 16) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 16, iOffset); };
+	export function VE_VEC2(sName: string, iOffset: uint = 2) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 2, iOffset); };
+	export function VE_VEC3(sName: string, iOffset: uint = 3) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 3, iOffset); };
+	export function VE_VEC4(sName: string, iOffset: uint = 4) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 4, iOffset); };
+	export function VE_MAT4(sName: string, iOffset: uint = 16) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 16, iOffset); };
+	export function VE_INT(sName: string, iOffset: uint) { return VE_CUSTOM(sName, EDataTypes.INT, 1, iOffset);};
+
+	export function VE_END(iOffset: uint = 0) { return VE_CUSTOM(DeclUsages.END, EDataTypes.UNSIGNED_BYTE, 0, iOffset); };
+}
+
+
+
+module akra.util {
+	export class VertexDeclaration implements IVertexDeclaration {
+		stride: uint = 0;
+		length: uint;
+
+//FIXME: typescript error "Overload signature is not compatible with function definition" ???
+//constructor (...pElement: IVertexElement[]) 
+		constructor (pElements: IVertexElement[]) {
+			if (arguments.length) {
+				if (arguments.length > 1) {
+					this.append(<IVertexElement[]><any>arguments);
+				}
+				else {
+					this.append(<IVertexElement[]><any>arguments[0]);
+				}
+			}
+		}
+
+//append(...pElement: IVertexElement[]): bool;
+		append(pElements?: IVertexElement[]): bool {
+			return false;
+		}
+
+
+
+		extend(pDecl: IVertexDeclaration): bool {
+			return false;
+		}
+
+		hasSemantics(sSemantics: string): bool {
+			return false;
+		}
+
+		findElement(sSemantics: string, iCount?: uint): IVertexElement {
+			return null;
+		}
+
+		clone(): IVertexDeclaration {
+			return null;
+		}
+
+///DEBUG!!!
+		toString(): string {
+			if (DEBUG) {
+
+			}
+
+			return null;
+		}
+	}
+
+//FIXME: typescript hack, to extends with Array
+
+	var __extends = function (d, b) {
+	    function __() { this.constructor = d; }
+	    __.prototype = b.prototype;
+	    d.prototype = new __();
+	};
+
+	__extends(VertexDeclaration, Array);
+}
+
+module akra {
+	export function _VDFromElements(pElements: IVertexElement[]);
+	export function _VDFromElements(pDecl: IVertexDeclaration);
+	export function _VDFromElements(pDataDecl) {
+		if (!(pDataDecl instanceof VertexDeclaration)) {
+	        if (!(pDataDecl instanceof Array)) {
+	            pDataDecl = [pDataDecl];
+	        }
+
+	        pDataDecl = new VertexDeclaration(pDataDecl);
+	    }
+
+	    return pDataDecl;
+	}
+
+	export var VertexDeclaration = util.VertexDeclaration;
+}
+
+
+/*
 #include "IBufferData.ts"
 #include "IVertexData.ts"
 #include "IIndexData.ts"
@@ -1992,161 +3756,1428 @@ module akra.geometry {
 #include "IRenderResource.ts"
 #include "IRenderableObject.ts"
 #include "IRenderSnapshot.ts"
-
-
-#include "core/pool/ResourceCode.ts"
-#include "core/pool/DataPool.ts"
-#include "core/pool/ResourcePool.ts"
-#include "core/pool/ResourcePoolItem.ts"
-#include "core/pool/ResourcePoolManager.ts"
-
-#include "core/pool/resources/IndexBuffer.ts"
-#include "core/pool/resources/VertexBuffer.ts"
-#include "core/pool/resources/VideoBuffer.ts"
-#include "core/pool/resources/Texture.ts"
-#include "core/pool/resources/ShaderProgram.ts"
-#include "core/pool/resources/Component.ts"
-#include "core/pool/resources/Effect.ts"
-#include "core/pool/resources/SurfaceMaterial.ts"
-#include "core/pool/resources/Img.ts"
-#include "core/pool/resources/RenderMethod.ts"
-#include "core/pool/resources/Model.ts"
-
-#include "IBuffer.ts"
-#include "IFrameBuffer.ts"
-
-#include "ITexture.ts"
-#include "IImg.ts"
-#include "ISurfaceMaterial.ts"
-#include "IShaderProgram.ts"
-#include "IGPUBuffer.ts"
-#include "IIndexBuffer.ts"
-#include "IVertexBuffer.ts"
-#include "IRenderMethod.ts"
-#include "IVideoBuffer.ts"
-#include "IModel.ts"
-
-#include "IScene.ts"
-#include "IScene3d.ts"
-#include "IScene2d.ts"
-
-
-
-
-#include "ISceneTree.ts"
-#include "IRenderState.ts"
-#include "IRenderer.ts"
-#include "IScene3d.ts"
-
-#include "INode.ts"
-#include "ISceneNode.ts"
-#include "ISceneObject.ts"
-#include "ICamera.ts"
-
-#include "IFont2d.ts"
-
-#include "IDisplay.ts"
-#include "IDisplay2d.ts"
-#include "IDisplay3d.ts"
-
-#include "IManager.ts"
-#include "IResourceManager.ts"
-#include "IDisplayManager.ts"
-#include "IParticleManager.ts"
-
-#include "IAFXEffect.ts"
-#include "IAFXComponent.ts"
-#include "IAFXComponentBlend.ts"
-#include "IAFXPassBlend.ts"
-#include "IAFXPreRenderState.ts"
-
-#include "IScreen.ts"
 */
 
 
-///<reference path="../akra.ts" />
 
-module akra.scene {
-	export class Node implements INode {
-		private sName: string = null;
 
-		get name(): string { return this.sName; }
-		set name(sName: string) { this.sName = sName; }
 
-		constructor () {
 
-		}
+
+
+
+
+module akra {
+	export enum EResourceCodes {
+		INVALID_CODE = 0xFFFFFFFF
+	};
+
+	export interface IResourceCode {
+		family: int;
+		type: int;
+/** Пеерводит текущее состояние идентифиакора в невалидное */
+
+		setInvalid(): void;
+/** operator "<" */
+
+		less(pSrc: IResourceCode): bool;
+/** operator = */
+
+		eq(pSrc: IResourceCode): IResourceCode;
+
+		valueOf(): int;
+		toNumber(): int;
 	}
 }
 
-///<reference path="../akra.ts" />
 
-module akra.scene {
-	export class SceneNode extends Node implements ISceneNode {
-		private pEngine: IEngine = null;
+
+module akra.core.pool {
+	export class ResourceCode implements IResourceCode {
+		private iValue: int = <number>(EResourceCodes.INVALID_CODE);
+
+		get family(): int {
+			return this.iValue >> 16;
+		}
+
+		set family(iNewFamily: int) {
+			this.iValue &= 0x0000FFFF;
+	        this.iValue |= iNewFamily << 16;
+		}
+
+		get type(): int {
+			return this.iValue & 0x0000FFFF;
+		}
+
+		set type(iNewType: int) {
+			this.iValue &= 0xFFFF0000;
+            this.iValue |= iNewType & 0x0000FFFF;
+		}
+
+		constructor ();
+		constructor(iCode: int);
+		constructor(eCode: EResourceCodes);
+		constructor(pCode: IResourceCode);
+		constructor(iFamily: int, iType: int);
+		constructor (iFamily?, iType?) {
+			switch (arguments.length) {
+		        case 0:
+		            this.iValue = <number>EResourceCodes.INVALID_CODE;
+		            break;
+		        case 1:
+		            if (arguments[0] instanceof ResourceCode) {
+		                this.iValue = arguments[0].iValue;
+		            }
+		            else {
+		                this.iValue = arguments[0];
+		            }
+		            break;
+		        case 2:
+		            this.family = arguments[0];
+		            this.type = arguments[1];
+		            break;
+		    }
+		}
+
+		setInvalid(): void {
+		    this.iValue = <number>EResourceCodes.INVALID_CODE;
+		}
+
+		less (pSrc: IResourceCode): bool {
+		    return this.iValue < pSrc.valueOf();
+		}
+
+		eq(pSrc: IResourceCode): IResourceCode {
+		    this.iValue = pSrc.valueOf();
+		    return this;
+		};
+
+		valueOf(): int {
+		    return this.iValue;
+		};
+
+		toNumber(): int {
+			return this.iValue;
+		}
+	}
+
+
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IDisplayManager {} ;
+	export interface IParticleManager {} ;
+	export interface IResourcePoolManager {} ;
+	export interface IRenderer {} ;
+
+    export interface IEngine {
+        getDisplayManager(): IDisplayManager;
+        getParticleManager(): IParticleManager;
+        getResourceManager(): IResourcePoolManager;
+
+        getDefaultRenderer(): IRenderer;
+
+//start execution
+        exec(): bool;
+    };
+
+    export var createEngine: () => IEngine;
+}
+
+
+
+
+
+
+
+module akra {
+
+	export interface IDataPool {
+/** Инициализация пула данных */
+
+		initialize(iGrowSize: uint): void;
+
+/** Инициализирован ли пул */
+
+		isInitialized(): bool;
+
+/** Очистка пула и пометка о том что он больш не инициализирован */
+
+		destroy(): void;
+
+/** Высвобождаем элемент в пуле по его номеру */
+
+		release(iHandle: int): void;
+/*
+		 * даление всех групп
+ 		 * Все группы должны быть пусты, иначе во время удаления произойдет ошибка
+		 **/
+
+		clear(): void;
+/** Добавляет новый элемент в пул */
+
+		add(pMembers: IResourcePoolItem): int;
+
+/** Цикл по всем объектам с приминением к ним функции, как fFunction(текущий пул данных, объект к торому применяется); */
+
+		forEach(fFunction: (pPool: IDataPool, iHandle: int, pMember: IResourcePoolItem) => void): void;
+
+/** Ищет первый свободный элемент в пуле */
+
+		nextHandle(): int;
+/** Проверяется используется лм этот элемент */
+
+		isHandleValid(iHandle: int): bool;
+
+/** Возвратитть элемент по хендлу */
+
+		get(iHandle: int): IResourcePoolItem;
+/** Возвратитть элемент по хендлу */
+
+		getPtr(iHandle: int): IResourcePoolItem;
+/** Возвратитть элемент по хендлу */
+
+		getGenericPtr(iHandle: int): IResourcePoolItem;
+	}
+}
+
+
+
+
+
+
+module akra.core.pool {
+
+	export interface IGroupNumber {
+		value: uint;
+	}
+
+	export class PoolGroup {
+		private pEngine: IEngine;
+
+/** Конструктор для создания данных в группе */
+
+		private tTemplate: IResourcePoolItemType;
+
+/** Число свободных элементов группы */
+
+		private iTotalOpen: uint = 0;
+/** Первый свободный элемент группы */
+
+		private iFirstOpen: uint = 0;
+/** Колмичество элементов в группе */
+
+		private iMaxCount: uint = 0;
+
+/** Список свободных элементов группы */
+
+		private pNextOpenList: uint[] = null;
+/** Массив элементов группы */
+
+		private pMemberList: IResourcePoolItem[] = null;
+
+/** 
+		 * Возвращает количесвто свободных мест в группе 
+		 * @inline
+		 */
+
+		get totalOpen(): uint {
+			return this.iTotalOpen;
+		}
+
+/** 
+		 * Возвращает количесвто занятых мест в группе 
+		 * @inline
+		 */
+
+		get totalUsed(): uint {
+			return this.iMaxCount - this.iTotalOpen;
+		}
+
+/**
+		 * Номер первого свободного элемента в группе
+		 * @inline
+		 */
+
+		get firstOpen(): uint {
+			return this.iFirstOpen;
+		}
+
+		constructor (pEngine: IEngine, tTemplate: IResourcePoolItemType, iMaxCount: uint) {
+			this.pEngine = pEngine;
+			this.tTemplate = tTemplate;
+			this.iMaxCount = iMaxCount;
+		}
+
+/** Создание группы, создается массив элементов, инициализирется список свободный и т.д. */
+
+		create(): void {
+			var i: int;
+
+		    debug_assert(this.pMemberList == null && this.pNextOpenList == null, "Group has already been created");
+
+		    this.pNextOpenList = new Array(this.iMaxCount);
+
+		    debug_assert(this.pNextOpenList != null, "tragic memory allocation failure!");
+
+		    this.pMemberList = new Array(this.iMaxCount);
+
+
+		    for (i = 0; i < this.iMaxCount; i++) {
+		        this.pMemberList[i] = new this.tTemplate(this.pEngine);
+		    }
+
+		    debug_assert(this.pNextOpenList != null, "tragic memory allocation failure!");
+
+		    for (i = 0; i < this.iMaxCount - 1; i++) {
+		        this.pNextOpenList[i] = i + 1;
+		    }
+
+		    this.pNextOpenList[i] = i;
+		    this.iTotalOpen = this.iMaxCount;
+		    this.iFirstOpen = 0;
+		}
+
+/**  
+		 * Удаление группы: удаление массива элементов, списка совбодных элементов и т.д.
+		 * Выдается ошибка если группа не пуста 
+		 * */
+
+		destroy(): void {
+		    debug_assert(this.pMemberList != null && this.pNextOpenList != null, "Group has not been created");
+		    debug_assert(this.iTotalOpen == this.iMaxCount, "Group is not empty");
+
+		    delete this.pMemberList;
+		    this.pMemberList = null;
+
+		    delete this.pNextOpenList;
+		    this.pNextOpenList = null;
+
+		    this.iTotalOpen = 0;
+		    this.iMaxCount = 0;
+		}
+
+/** Возвращает номер следующего совбодного элемента в списке, и помечает его как используемый */
+
+		nextMember() {
+		    debug_assert(this.pMemberList != null && this.pNextOpenList != null, "Group has not been created");
+		    debug_assert(this.iTotalOpen != null, "no open slots");
+//Возвращает номер первого свободного элемента в группе,
+//и изменяет номер первого свободного на следующего свободного
+
+		    var iSlot = this.iFirstOpen;
+		    this.iFirstOpen = this.pNextOpenList[iSlot];
+		    this.iTotalOpen --;
+
+		    debug_assert(this.iFirstOpen != INVALID_INDEX, "Invalid Open Index");
+		    debug_assert(this.isOpen(iSlot), "invalid index");
+
+//помечаем что элемент который отдали является используемым
+		    this.pNextOpenList[iSlot] = INVALID_INDEX;
+
+		    return iSlot;
+		}
+
+/** Добавляем новый элемент в список */
+
+		addMember(pMember: IResourcePoolItem): uint {
+			var iSlot: uint = this.nextMember();
+		    this.pMemberList[iSlot] = pMember;
+
+		    return iSlot;
+		}
+
+/** Исключение элемента из списка по его номеру */
+
+		release(iIndex: uint): void {
+			debug_assert(this.pMemberList != null && this.pNextOpenList != null, "Group has not been created");
+		    debug_assert(iIndex < this.iMaxCount, "invalid index");
+		    debug_assert(this.isOpen(iIndex) == false, "invalid index to release");
+
+		    this.pNextOpenList[iIndex] = this.iTotalOpen > 0 ? this.iFirstOpen : iIndex;
+		    this.iTotalOpen ++;
+		    this.iFirstOpen = iIndex;
+		}
+
+
+/** Проверить свободна ли эта ячейка в группе */
+
+		isOpen (iIndex: uint): bool {
+		    debug_assert(this.pMemberList != null && this.pNextOpenList != null, "Group has not been created");
+		    debug_assert(iIndex < this.iMaxCount, "invalid index");
+
+		    return this.pNextOpenList[iIndex] != INVALID_INDEX;
+		}
+
+/** Получение элемента по его номеру */
+
+		member(iIndex: uint): IResourcePoolItem {
+		    debug_assert(this.pMemberList != null && this.pNextOpenList != null, "Group has not been created");
+		    debug_assert(iIndex < this.iMaxCount, "invalid index");
+		    return this.pMemberList[iIndex];
+		}
+
+		memberPtr(iIndex: uint): IResourcePoolItem {
+		    debug_assert(this.pMemberList != null && this.pNextOpenList != null, "Group has not been created");
+		    debug_assert(iIndex < this.iMaxCount, "invalid index");
+		    return this.pMemberList[iIndex];
+		}
+	}
+
+	export class DataPool implements IDataPool {
+		private pEngine: IEngine;
+		private tTemplate: IResourcePoolItemType;
+		private bInitialized: bool = false;
+
+/** Массив групп */
+
+		private pGroupList: PoolGroup[] = null;
+
+/** Общее число ячеек */
+
+		private iTotalMembers: uint = 0;
+/** Количесвто свободных ячеек */
+
+		private iTotalOpen: uint = 0;
+/** Количесвто элементов в группе */
+
+		private iGroupCount: uint = 0;
+/**
+		 * Номер элемента состоит из номер группы сдвинутого на _iIndexShift
+    	 * и номера элемента в этой группе, который можно вырезать маской _iIndexMask
+		 */
+
+		private iIndexMask: int = 0;
+/**
+		 * Номер элемента состоит из номер группы сдвинутого на _iIndexShift
+     	 * и номера элемента в этой группе, который можно вырезать маской _iIndexMask
+		 */
+
+		private iIndexShift: int = 0;
+
+
+		constructor(pEngine: IEngine, tTemplate: IResourcePoolItemType) {
+			this.pEngine = pEngine;
+			this.tTemplate = tTemplate;
+		}
+
+
+		initialize(iGrowSize: uint): void {
+			debug_assert(this.isInitialized() == false, "the cDataPool is already initialized");
+
+		    this.bInitialized = true;
+		    this.iGroupCount = math.nearestPowerOfTwo(iGrowSize);
+		    this.iIndexShift = math.lowestBitSet(this.iGroupCount);
+		    this.iIndexShift = math.clamp(this.iIndexShift, 1, 15);
+		    this.iGroupCount = 1 << this.iIndexShift;
+		    this.iIndexMask = this.iGroupCount - 1;
+		}
+
+
+/** @inline */
+
+		isInitialized(): bool {
+			return this.bInitialized;
+		}
+
+
+		destroy(): void {
+			this.clear();
+    		this.bInitialized = false;
+		}
+
+
+		release(iHandle: int): void {
+			debug_assert(this.isInitialized() == true, "the cDataPool is not initialized");
+
+		    if (this.isHandleValid(iHandle) == true) {
+		        debug_assert(this.pGroupList.length != 0, "The cDataPool has not been properly created");
+
+		        var iGroupIndex: uint = this.getGroupNumber(iHandle);
+		        var iItemIndex: uint = this.getItemIndex(iHandle);
+
+		        var pGroup: PoolGroup = this.getGroup(iGroupIndex);
+		        pGroup.release(iItemIndex);
+		        var pGroupBack: PoolGroup = this.pGroupList[this.pGroupList.length - 1];
+
+		        if (pGroupBack.totalOpen == this.iGroupCount) {
+		            pGroupBack.destroy();
+		            this.pGroupList.splice(this.pGroupList.length - 1, 1);
+		        }
+
+		        this.iTotalOpen ++;
+		    }
+		}
+
+		clear(): void {
+// destroy all groups in the list
+		    for (var iGroupIter: uint = 0; iGroupIter < this.pGroupList.length; ++ iGroupIter) {
+		        this.pGroupList[iGroupIter].destroy();
+		    }
+
+// now clear the list itself
+		    this.pGroupList.clear();
+		}
+
+		add(pMembers: IResourcePoolItem): int {
+			debug_assert(this.isInitialized() == true, "the cDataPool is not initialized");
+
+		    var iGroupNumber: IGroupNumber = {value: 0};
+
+		    var pOpenGroup: PoolGroup = this.findOpenGroup(iGroupNumber);
+		    var iIndex: uint = pOpenGroup.addMember(pMembers);
+
+		    this.iTotalOpen --;
+
+		    return this.buildHandle(iGroupNumber.value, iIndex);
+		}
+
+		forEach(fFunction: (pPool: IDataPool, iHandle: int, pMember: IResourcePoolItem) => void): void {
+			debug_assert(this.isInitialized() == true, "the cDataPool is not initialized");
+// iterate through every group
+
+		    var iGroupNumber: uint = 0;
+		    for (var iGroupIter: uint = 0; iGroupIter < this.pGroupList.length; iGroupIter++) {
+
+		        var nCallbackCount: uint = this.pGroupList[iGroupIter].totalUsed;
+		        var iItemIndex: uint = 0;
+
+		        while (nCallbackCount != 0 && iItemIndex < this.iGroupCount) {
+		            if (this.pGroupList[iGroupIter].isOpen(iItemIndex) == false) {
+		                fFunction(
+		                	this,
+		                	this.buildHandle(iGroupNumber, iItemIndex),
+		                	this.pGroupList[iGroupIter].member(iItemIndex)
+		                	);
+		                nCallbackCount--;
+		            }
+
+		            ++iItemIndex;
+		        }
+
+		        ++iGroupNumber;
+		    }
+		}
+
+		nextHandle(): int {
+			debug_assert(this.isInitialized() == true, "the cDataPool is not initialized");
+
+		    var iGroupNumber: IGroupNumber = {value: 0};
+		    var pOpenGroup: PoolGroup = this.findOpenGroup(iGroupNumber);
+		    var iIndex: uint = pOpenGroup.nextMember();
+
+		    this.iTotalOpen --;
+
+		    return this.buildHandle(iGroupNumber.value, iIndex);
+		}
+
+		isHandleValid(iHandle: int): bool {
+			debug_assert(this.isInitialized() == true, "the cDataPool is not initialized");
+
+		    if (iHandle !== INVALID_INDEX) {
+		        debug_assert(this.pGroupList.length != 0, "The cDataPool has not been properly created");
+
+		        var pGroup: PoolGroup = this.getGroup(this.getGroupNumber(iHandle));
+
+		        return !pGroup.isOpen(this.getItemIndex(iHandle));
+		    }
+
+		    return false;
+		}
+
+		get(iHandle: int): IResourcePoolItem {
+			debug_assert(this.isInitialized() == true, "the cDataPool is not initialized");
+		    debug_assert(this.pGroupList.length != 0, "The cDataPool has not been properly created");
+
+		    var pGroup: PoolGroup = this.getGroup(this.getGroupNumber(iHandle));
+		    var iItemIndex: uint = this.getItemIndex(iHandle);
+
+		    return pGroup.member(iItemIndex);
+		}
+
+		getPtr(iHandle: int): IResourcePoolItem {
+			debug_assert(this.isInitialized() == true, "the cDataPool is not initialized");
+		    debug_assert(this.pGroupList.length != 0, "The cDataPool has not been properly created");
+
+		    var pGroup: PoolGroup = this.getGroup(this.getGroupNumber(iHandle));
+		    var iItemIndex: uint = this.getItemIndex(iHandle);
+
+		    return pGroup.memberPtr(iItemIndex);
+		}
+
+		getGenericPtr(iHandle: int): IResourcePoolItem {
+			debug_assert(this.isInitialized() == true, "the cDataPool is not initialized");
+
+    		return this.getPtr(iHandle);
+		}
+
+/** 
+		 * @inline 
+		 * Получение номера группы по номеру элемента
+		 */
+
+		private getGroupNumber(iHandle: int): int {
+			return iHandle >> this.iIndexShift;
+		}
+
+/** 
+		 * @inline 
+		 * Получение номера элеменат в группе по его номеру
+		 */
+
+		private getItemIndex(iHandle: int): int {
+			return iHandle & this.iIndexMask;
+		}
+
+/** 
+		 * @inline 
+		 * Полученяи номера элеменат по его номеру группы и группе
+		 */
+
+		private buildHandle(iGroup, iIndex): int {
+			return (iGroup << this.iIndexShift) + iIndex;
+		}
+
+/** Добавление группы в пул */
+
+		private addGroup(): PoolGroup {
+// append a new group to the list to start things off
+		    var pNewGroup: PoolGroup = new PoolGroup(this.pEngine, this.tTemplate, this.iGroupCount);
+		    this.pGroupList.push(pNewGroup);
+// gain access to the new group and innitialize it
+		    pNewGroup.create();
+// increment our internal counters
+		    this.iTotalMembers += this.iGroupCount;
+		    this.iTotalOpen += this.iGroupCount;
+
+		    return pNewGroup;
+		}
+
+/** Поиск первой группы которая имеет свободную область */
+
+		private findOpenGroup(pGroupNumber: IGroupNumber): PoolGroup {
+			pGroupNumber.value = 0;
+
+//найдем и вренем первую группу имеющую свободную группу
+		    for (var iGroupIter: uint = 0; iGroupIter < this.pGroupList.length; iGroupIter++) {
+		        if (this.pGroupList[iGroupIter].totalOpen > 0) {
+		            return this.pGroupList[iGroupIter];
+		        }
+
+		        pGroupNumber.value ++;
+		    }
+
+//свободных областей нет, поэтому мы должны добавить новую группу в пул,
+//но пержде чем содавать убедимся что не достигли максимума
+
+		    debug_assert((this.pGroupList.length + 1) < MAX_UINT16, "the cDataPool is full!!!!");
+//добавим новую группу
+
+		    return this.addGroup();
+		}
+
+/** 
+		 * @inline 
+		 * Возвращает группу по ее номеру
+		 */
+
+		private getGroup(iIndex: uint): PoolGroup {
+			debug_assert(iIndex < this.pGroupList.length, "Invalid group index requested");
+    		return this.pGroupList[iIndex];
+		}
+
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+        export interface IResourceCode {} ;
+        export interface IResourcePoolItem {} ;
+
+        export interface IResourcePool {
+                iFourcc: int;
+
+/** Добавление данного пула в менеджер ресурсво по его коду */
+
+                registerResourcePool(pCode: IResourceCode): void;
+/** Удаление данного пула в менеджер ресурсво по его коду */
+
+                unregisterResourcePool(): void;
+/** По имени ресурса возвращает его хендл */
+
+                findResourceHandle(sName: string): int;
+/** По хендлу ресурва возвращает его имя */
+
+                findResourceName(iHandle: int): string;
+
+/** set resource name */
+
+                setResourceName(iHandle: int, sName: string): void;
+
+                initialize(iGrowSize: int): void;
+                destroy(): void;
+                clean(): void;
+
+                destroyAll(): void;
+                restoreAll(): void;
+                disableAll(): void;
+
+                isInitialized(): bool;
+
+//callbackDestroy(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
+//callbackDisable(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
+//callbackRestore(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
+//callbackClean(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
+
+                createResource(sResourceName: string): IResourcePoolItem;
+                loadResource(sResourceName: string): IResourcePoolItem;
+                saveResource(pResource: IResourcePoolItem): bool;
+                destroyResource(pResource: IResourcePoolItem): void;
+
+                findResource(sName: string): IResourcePoolItem;
+                getResource(iHandle: int): IResourcePoolItem;
+                getResources(): IResourcePoolItem[];
+        }
+}
+
+
+
+
+
+
+
+
+
+
+
+module akra.core.pool {
+    export class ResourcePool extends util.ReferenceCounter implements IResourcePool {
+        private pEngine: IEngine = null;
+/** Конструктор для создания данных в пуле ресурсов */
+
+        private tTemplate: IResourcePoolItemType = null;
+        private sExt: string = null;
+        private pRegistrationCode: IResourceCode = new ResourceCode(EResourceCodes.INVALID_CODE);
+/*{[index: number]: string;}*/
+        private pNameMap: string[]                               = new Array();
+        private pDataPool: IDataPool = null;
+
+
+/** @inline */
+
+        get iFourcc(): int {
+            return (this.sExt.charCodeAt(3) << 24)
+                      | (this.sExt.charCodeAt(2) << 16)
+                      | (this.sExt.charCodeAt(1) << 8)
+                      | (this.sExt.charCodeAt(0));
+        }
+
+/** @inline */
+
+        set iFourcc(iNewFourcc: int) {
+            this.sExt = String.fromCharCode((iNewFourcc & 0x000000FF),
+                                             (iNewFourcc & 0x0000FF00) >>> 8,
+                                             (iNewFourcc & 0x00FF0000) >>> 16,
+                                             (iNewFourcc & 0xFF000000) >>> 24);
+        }
+
+        constructor (pEngine: IEngine, tTemplate: IResourcePoolItemType) {
+            super();
+
+            this.pEngine = pEngine;
+            this.tTemplate = tTemplate;
+            this.pDataPool = new DataPool(pEngine, tTemplate);
+        }
+
+/** Добавление данного пула в менеджер ресурсво по его коду */
+
+        registerResourcePool(pCode: IResourceCode): void {
+            this.pRegistrationCode.eq(pCode);
+            this.pEngine.getResourceManager().registerResourcePool(this.pRegistrationCode, this);
+        }
+
+/** Удаление данного пула в менеджер ресурсво по его коду */
+
+        unregisterResourcePool(): void {
+            this.pEngine.getResourceManager().unregisterResourcePool(this.pRegistrationCode);
+            this.pRegistrationCode.setInvalid();
+        }
+
+/** По имени ресурса возвращает его хендл */
+
+        findResourceHandle(sName: string): int {
+// look up the name in our map
+            var iNewHandle = INVALID_INDEX;
+
+            for (var iHandle: int = 0; iHandle < this.pNameMap.length; ++ iHandle) {
+                if (this.pNameMap[iHandle] === sName) {
+                    return iHandle;
+                }
+            }
+
+            return iNewHandle;
+        }
+
+/** 
+         * Get resource name by handle.
+         * @inline
+         */
+
+        findResourceName(iHandle: int): string {
+            return this.pNameMap[iHandle];
+        }
+
+        setResourceName(iHandle: int, sName: string): void {
+            this.pNameMap[iHandle] = sName;
+        }
+
+
+        initialize(iGrowSize: int): void {
+            this.pDataPool.initialize(iGrowSize);
+        }
+
+/** @inline */
+
+        destroy(): void {
+            this.pDataPool.destroy();
+        }
+
+
+        clean(): void {
+            this.pDataPool.forEach(ResourcePool.callbackClean);
+        }
+
+        destroyAll(): void {
+            this.pDataPool.forEach(ResourcePool.callbackDestroy);
+        }
+
+        restoreAll(): void {
+            this.pDataPool.forEach(ResourcePool.callbackRestore);
+        }
+
+        disableAll(): void {
+            this.pDataPool.forEach(ResourcePool.callbackDisable);
+        }
+
+/** @inline */
+
+        isInitialized(): bool {
+            return this.pDataPool.isInitialized();
+        }
+
+
+
+        createResource(sResourceName: string): IResourcePoolItem {
+            var iHandle: int = this.internalCreateResource(sResourceName);
+
+            if (iHandle !== INVALID_INDEX) {
+                var pResource: IResourcePoolItem = this.getResource(iHandle);
+
+                pResource.setResourcePool(this);
+                pResource.setResourceHandle(iHandle);
+                pResource.setResourceCode(this.pRegistrationCode);
+
+                return pResource;
+            }
+
+            return null;
+        }
+
+        loadResource(sResourceName: string): IResourcePoolItem {
+// does the resource already exist?
+            var pResource: IResourcePoolItem = this.findResource(sResourceName);
+
+            if (pResource == null) {
+// create a new resource
+                pResource = this.createResource(sResourceName);
+
+                if (pResource != null) {
+// attempt to load the desired data
+                    if (pResource.loadResource(sResourceName)) {
+// ok!
+                        return pResource;
+                    }
+
+// loading failed.
+// destroy the resource we created
+// destroyResource(pResource);
+                    pResource.release();
+                    pResource = null;
+                }
+
+            }
+
+            return pResource;
+        }
+
+        saveResource(pResource: IResourcePoolItem): bool {
+            if (pResource != null) {
+// save the resource using it's own name as the file path
+                return pResource.saveResource();
+            }
+            return false;
+        }
+
+        destroyResource(pResource: IResourcePoolItem): void {
+            if (pResource != null) {
+                var iReferenceCount: int = pResource.referenceCount();
+
+                debug_assert(iReferenceCount == 0, "destruction of non-zero reference count!");
+
+                if (iReferenceCount <= 0) {
+                    var iHandle: int = pResource.resourceHandle;
+                    this.internalDestroyResource(iHandle);
+                }
+            }
+        }
+
+        findResource(sName: string): IResourcePoolItem {
+
+// look up the name in our map
+            for (var iHandle: int = 0; iHandle < this.pNameMap.length; ++ iHandle) {
+                if (this.pNameMap[iHandle] == sName) {
+                    if (iHandle != INVALID_INDEX) {
+                        var pResource = this.getResource(iHandle);
+                        return pResource;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        getResource(iHandle: int): IResourcePoolItem {
+            var pResource: IResourcePoolItem = this.internalGetResource(iHandle);
+
+            if (pResource != null) {
+                pResource.addRef();
+            }
+
+            return pResource;
+        }
+
+        getResources(): IResourcePoolItem[] {
+            var pResources: IResourcePoolItem[] = [];
+
+            for (var iHandleResource in this.pNameMap) {
+                pResources.push(this.getResource(parseInt(iHandleResource)));
+            }
+
+            return pResources;
+        }
+
+        private internalGetResource(iHandle: int): IResourcePoolItem {
+            return this.pDataPool.getPtr(iHandle);
+        }
+
+        private internalDestroyResource(iHandle: int): void {
+// get a pointer to the resource and call it's destruction handler
+            var pResource = this.pDataPool.getPtr(iHandle);
+
+            pResource.destroyResource();
+
+            delete this.pNameMap[iHandle];
+
+// free the resource slot associated with the handle
+            this.pDataPool.release(iHandle);
+        };
+
+        private internalCreateResource(sResourceName: string): int {
+            var iHandle: int = this.pDataPool.nextHandle();
+
+// make sure this name is not already in use
+            for (var iter in this.pNameMap) {
+                debug_assert((this.pNameMap[iter] != sResourceName),
+                            "A resource with this name already exists: " + sResourceName);
+            }
+
+// add this resource name to our map of handles
+            this.pNameMap[iHandle] = sResourceName;
+
+// get a pointer to the resource and call it's creation function
+            var pResource = this.pDataPool.getPtr(iHandle);
+
+            pResource.createResource();
+
+            return iHandle;
+        }
+
+        private static callbackDestroy(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void {
+            pResource.destroyResource();
+        }
+
+        private static callbackDisable(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void {
+            pResource.disableResource();
+        }
+
+        private static callbackRestore(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void {
+            pResource.restoreResource();
+        }
+
+        private static callbackClean(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void {
+            if (pResource.referenceCount() == 0) {
+                pPool.release(iHandle);
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IResourcePoolItem {} ;
+
+	export interface IResourceWatcherFunc {
+		(nLoaded?: uint, nTotal?: uint, pTarget?: IResourcePoolItem): void;
+	}
+}
+
+
+
+
+
+
+
+module akra {
+	export interface IResourceNotifyRoutineFunc {
+		(iFlagBit?: int, iResourceFlags?: int, isSet?: bool): void;
+		(eEvent?: EResourceItemEvents, iResourceFlags?: int, isSet?: bool): void;
+	}
+}
+
+
+
+
+
+
+
+module akra.core.pool {
+
+	export interface ICallbackSlot {
+		bState: bool;
+		fn: IResourceNotifyRoutineFunc;
+		pResourceItem: IResourcePoolItem;
+	}
+
+	export class ResourcePoolItem extends util.ReferenceCounter implements IResourcePoolItem {
+		private pEngine: IEngine;
+		private pResourceCode: IResourceCode;
+		private pResourcePool: IResourcePool = null;
+		private iResourceHandle: int = 0;
+		private iResourceFlags: int = 0;
+		private iGuid: uint;
+		private pCallbackFunctions: IResourceNotifyRoutineFunc[];
+		private pStateWatcher: IResourceWatcherFunc[];
+		private pCallbackSlots: ICallbackSlot[][];
+
+
+/** @inline */
+
+		get resourceCode(): IResourceCode {
+			return this.pResourceCode;
+		}
+
+/** @inline */
+
+		get resourcePool(): IResourcePool {
+			return this.pResourcePool;
+		}
+
+/** @inline */
+
+		get resourceHandle(): int {
+			return this.iResourceHandle;
+		}
+
+/** @inline */
+
+		get resourceFlags(): int {
+			return this.iResourceFlags;
+		}
+
+/** @inline */
+
+		get alteredFlag(): bool {
+			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Altered);
+		}
+
+/** Constructor of ResourcePoolItem class */
 
 		constructor (pEngine: IEngine) {
 			super();
 
 			this.pEngine = pEngine;
-		}
-	}
-}
-
-///<reference path="../akra.ts" />
-
-module akra.scene {
-	export class SceneObject extends SceneNode implements ISceneObject {
-		constructor (pEngine: IEngine) {
-			super(pEngine);
-		}
-	}
-}
-
-///<reference path="../../akra.ts" />
-
-module akra.scene.objects {
-	export class Camera extends SceneObject implements ICamera {
-		constructor (pEngine: IEngine) {
-			super(pEngine);
-		}
-	}
-}
-
-///<reference path="../akra.ts" />
-
-module akra.scene {
-	export class OcTree implements ISceneTree {
-
-	}
-}
-
-module akra.scene {
-	export class Scene3d implements IScene3d {
-		constructor (pDisplay: IDisplay3d) {
-
+			this.pResourceCode = new ResourceCode(0);
+			this.iGuid = sid();
+			this.pCallbackFunctions = [];
+			this.pStateWatcher = [];
+			this.pCallbackSlots = genArray(null, <number>EResourceItemEvents.k_TotalResourceFlags);
 		}
 
-		recursivePreUpdate(): void {
+/** @inline */
 
+		getGuid(): int {
+			return this.iGuid;
 		}
 
-		recursiveUpdate(): void {
+/** @inline */
 
+		getEngine(): IEngine {
+			return this.pEngine;
 		}
 
-		updateCamera(): bool {
+		createResource(): bool {
 			return false;
 		}
 
-		updateScene(): bool {
+		destroyResource(): bool {
 			return false;
 		}
+
+		disableResource(): bool{
+			return false;
+		}
+
+		restoreResource(): bool {
+			return false;
+		}
+
+		loadResource(sFilename: string = null): bool {
+			return false;
+		}
+
+		saveResource(sFilename: string = null): bool {
+			return false;
+		}
+
+
+		setChangesNotifyRoutine(fn: IResourceNotifyRoutineFunc): void {
+			for (var i: int = 0; i < this.pCallbackFunctions.length; i ++) {
+
+			    if (this.pCallbackFunctions[i] == fn) {
+			        return;
+			    }
+			}
+
+			this.pCallbackFunctions.push(fn);
+		}
+
+		delChangesNotifyRoutine(fn: IResourceNotifyRoutineFunc): void {
+			for (var i: int = 0; i < this.pCallbackFunctions.length; i ++) {
+		        if (this.pCallbackFunctions[i] == fn) {
+		            this.pCallbackFunctions[i] = null;
+		        }
+		    }
+		}
+
+		setStateWatcher(eEvent: EResourceItemEvents, fnWatcher: IResourceWatcherFunc): void {
+			this.pStateWatcher[eEvent] = fnWatcher;
+		}
+
+		connect(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool {
+			eSlot = isDef(eSlot)? eSlot: eSignal;
+
+		    eSlot = ResourcePoolItem.parseEvent(<number>eSlot);
+		    eSignal = ResourcePoolItem.parseEvent(<number>eSignal);
+
+		    var pSlots: ICallbackSlot[][] = this.pCallbackSlots, pSignSlots: ICallbackSlot[];
+
+		    var me: IResourcePoolItem = this;
+		    var n: uint;
+		    var fn: IResourceNotifyRoutineFunc;
+		    var bState: bool;
+
+		    if (isNull(pSlots[eSlot])) {
+		        pSlots[eSlot] = [];
+		    }
+
+		    pSignSlots = pSlots[eSlot];
+		    n = pSignSlots.length;
+		    bState = bf.testBit(pResourceItem.resourceFlags, <number>eSignal);
+
+		    fn = function (eFlag?: EResourceItemEvents, iResourceFlags?: int, isSet?: bool) {
+		        if (eFlag == <number>eSignal) {
+		            pSignSlots[n].bState = isSet;
+		            me.notifyStateChange(eSlot, this);
+
+		            for (var i: int = 0; i < pSignSlots.length; ++i) {
+		                if (pSignSlots[i].bState === false) {
+		                    if (bf.testBit(me.resourceFlags, <number>eFlag)) {
+		                        me.setResourceFlag(eFlag, false);
+		                    }
+		                    return;
+		                }
+		            }
+
+		            me.setResourceFlag(eFlag, true);
+		        }
+		    };
+
+		    pSignSlots.push({bState : bState, fn : fn, pResourceItem : pResourceItem});
+
+		    fn.call(pResourceItem, eSignal, pResourceItem.resourceFlags, bState);
+		    pResourceItem.setChangesNotifyRoutine(fn);
+
+		    return true;
+		}
+
+		disconnect(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool {
+			eSlot = isDef(eSlot)? eSlot: eSignal;
+		    eSlot = ResourcePoolItem.parseEvent(<number>eSlot);
+		    eSignal = ResourcePoolItem.parseEvent(<number>eSignal);
+
+		    var pSlots: ICallbackSlot[][] = this.pCallbackSlots, pSignSlots: ICallbackSlot[];
+		    var me: IResourcePoolItem = this;
+		    var isRem: bool = false;
+
+		    pSignSlots = pSlots[eSlot];
+
+
+		    for (var i: int = 0, n: uint = pSignSlots.length; i < n; ++i) {
+		        if (pSignSlots[i].pResourceItem === pResourceItem) {
+		            pSignSlots[i].pResourceItem.delChangesNotifyRoutine(pSignSlots[i].fn);
+		            pSignSlots.splice(i, 1);
+
+		            --n;
+		            --i;
+
+		            isRem = true;
+		        }
+		    }
+
+		    return isRem;
+		}
+
+/** @inline */
+
+		notifyCreated(): void {
+			this.setResourceFlag(EResourceItemEvents.k_Created, true);
+		}
+
+/** @inline */
+
+		notifyDestroyed(): void {
+			this.setResourceFlag(EResourceItemEvents.k_Created, false);
+		}
+
+/** @inline */
+
+		notifyLoaded(): void {
+			this.setAlteredFlag(false);
+    		this.setResourceFlag(EResourceItemEvents.k_Loaded, true);
+		}
+
+/** @inline */
+
+		notifyUnloaded(): void {
+			this.setResourceFlag(EResourceItemEvents.k_Loaded, false);
+		}
+
+/** @inline */
+
+		notifyRestored(): void {
+			this.setResourceFlag(EResourceItemEvents.k_Disabled, false);
+		}
+
+/** @inline */
+
+		notifyDisabled(): void {
+			this.setResourceFlag(EResourceItemEvents.k_Disabled, true);
+		}
+
+/** @inline */
+
+		notifyAltered(): void {
+			this.setResourceFlag(EResourceItemEvents.k_Altered, true);
+		}
+
+/** @inline */
+
+		notifySaved(): void {
+			this.setAlteredFlag(false);
+		}
+
+/** @inline */
+
+		isResourceCreated(): bool {
+			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Created);
+		}
+
+/** @inline */
+
+		isResourceLoaded(): bool {
+			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Loaded);
+		}
+
+/** @inline */
+
+		isResourceDisabled(): bool {
+			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Disabled);
+		}
+
+/** @inline */
+
+		isResourceAltered(): bool {
+			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Altered );
+		}
+
+		setAlteredFlag(isOn: bool = true): void {
+    		this.setResourceFlag(EResourceItemEvents.k_Altered, isOn);
+		}
+
+/** @inline */
+
+		setResourceName(sName: string) {
+			if (this.pResourcePool != null) {
+		        this.pResourcePool.setResourceName(this.iResourceHandle, sName);
+		    }
+		}
+
+		findResourceName(): string {
+			if (this.pResourcePool != null) {
+		        return this.pResourcePool.findResourceName(this.iResourceHandle);
+		    }
+
+		    return null;
+		}
+
+		release(): uint {
+			var iRefCount = super.release();
+
+		    if (iRefCount == 0) {
+//Если у нас есть менеджер попросим его удалить нас
+		        if (this.pResourcePool != null) {
+		            this.pResourcePool.destroyResource(this);
+		        }
+		    }
+
+		    return iRefCount;
+		}
+
+/**
+		 * Назначение кода ресурсу
+		 * @inline
+		 */
+
+		setResourceCode(pCode: IResourceCode): void {
+			this.pResourceCode.eq(pCode);
+		}
+
+/**
+		 * Чтобы ресурс знал какому пулу ресурсов принадлжит
+		 * @inline
+		 */
+
+		setResourcePool(pPool: IResourcePool): void {
+			this.pResourcePool = pPool;
+		}
+
+/**
+		 * Назначение хендла ресурсу
+		 * @inline
+		 */
+
+		setResourceHandle(iHandle: int): void {
+			this.iResourceHandle = iHandle;
+		}
+
+		notifyStateChange(eEvent: EResourceItemEvents, pTarget: IResourcePoolItem = null): void {
+			if (!this.pStateWatcher[eEvent]) {
+		        return;
+		    }
+
+		    var pSignSlots: ICallbackSlot[]  = this.pCallbackSlots[eEvent];
+		    var nTotal: uint = pSignSlots.length, nLoaded: uint = 0;
+
+		    for (var i: int = 0; i < nTotal; ++i) {
+		        if (pSignSlots[i].bState) {
+		            ++ nLoaded;
+		        }
+		    }
+
+		    this.pStateWatcher[eEvent](nLoaded, nTotal, pTarget);
+		}
+
+		setResourceFlag(eFlagBit: EResourceItemEvents, isSetting: bool): void;
+		setResourceFlag(iFlagBit: int, isSetting: bool): void;
+		setResourceFlag(iFlagBit, isSetting: bool): void {
+			var iTempFlags: int = this.iResourceFlags;
+
+		    bf.setBit(this.iResourceFlags, iFlagBit, isSetting);
+
+		    if (iTempFlags != this.iResourceFlags) {
+		        for (var i: int = 0; i < this.pCallbackFunctions.length; i++) {
+		            if (this.pCallbackFunctions[i]) {
+		                this.pCallbackFunctions[i].call(this, iFlagBit, this.iResourceFlags, isSetting);
+		            }
+		        }
+		    }
+		}
+
+		static private parseEvent(sEvent: string): EResourceItemEvents;
+		static private parseEvent(iEvent: int): EResourceItemEvents;
+		static private parseEvent(pEvent) {
+		 	if (isInt(pEvent)) {
+		        return <EResourceItemEvents>pEvent;
+		    }
+
+		    switch (pEvent.toLowerCase()) {
+		        case 'loaded':
+		            return EResourceItemEvents.k_Loaded;
+		        case 'created':
+		            return EResourceItemEvents.k_Created;
+		        case 'disabled':
+		            return EResourceItemEvents.k_Disabled;
+		        case 'altered':
+		            return EResourceItemEvents.k_Altered;
+		        default:
+		            error('Использовано неизвестное событие для ресурса.');
+		            return 0;
+		    }
+		}
 	}
+
 }
 
-//#include "IBuildScenario.ts"
-//#include "ISceneBuilder.ts"
 
 
 
@@ -2156,25 +5187,641 @@ module akra.scene {
 
 
 
-interface IAFXComponent {} ;
-interface IAFXEffect {} ;
-interface IRenderableObject {} ;
-interface IRenderSnapshot {} ;
-interface ISceneObject {} ;
-interface IBufferMap {} ;
-interface IShaderProgram {} ;
-interface ISurfaceMaterial {} ;
-interface IVertexData {} ;
-interface IVertexBuffer {} ;
-interface ITexture {} ;
-interface IIndexBuffer {} ;
-interface IRenderResource {} ;
-interface IRenderEntry {} ;
-interface IFrameBuffer {} ;
-interface IViewport {} ;
+
+
+
+
 
 
 module akra {
+    export interface IManager {
+        initialize(): bool;
+        destroy(): void;
+    }
+}
+
+
+
+module akra {
+
+    export interface IResourceCode {} ;
+    export interface IResourcePool {} ;
+    export interface IResourceWatcherFunc {} ;
+    export interface IResourcePoolItem {} ;
+
+/** Семейства ресурсов */
+
+	export enum EResourceFamilies {
+		VIDEO_RESOURCE = 0,
+		AUDIO_RESOURCE,
+		GAME_RESOURCE,
+		TOTAL_RESOURCE_FAMILIES
+	};
+
+/** Члены семейства видео ресурсов */
+
+	export enum EVideoResources {
+		TEXTURE_RESOURCE,
+		VIDEOBUFFER_RESOURCE,
+		VERTEXBUFFER_RESOURCE,
+		INDEXBUFFER_RESOURCE,
+		EFFECT_RESOURCE,
+		RENDERMETHOD_RESOURCE,
+		MODEL_RESOURCE,
+		EFFECTFILEDATA_RESOURCE,
+		IMAGE_RESOURCE,
+		SURFACEMATERIAL_RESOURCE,
+		SHADERPROGRAM_RESOURCE,
+		COMPONENT_RESOURCE,
+		TOTAL_VIDEO_RESOURCES
+	};
+
+	export enum EAudioResources {
+		TOTAL_AUDIO_RESOURCES
+	};
+
+	export enum EGameResources {
+		TOTAL_GAME_RESOURCES
+	};
+
+/** Конструктор класса, занимается очисткой списков пулов по семействам ресурсвов и краты пулов по коду ресурсов */
+
+    export interface IResourcePoolManager extends IManager {
+    	texturePool: IResourcePool;
+    	surfaceMaterialPool: IResourcePool;
+    	vertexBufferPool: IResourcePool;
+    	videoBufferPool: IResourcePool;
+    	indexBufferPool: IResourcePool;
+    	renderMethodPool: IResourcePool;
+    	modelPool: IResourcePool;
+    	imagePool: IResourcePool;
+//ex: private    	shaderProgramPool: IResourcePool;
+//ex: private    	effectPool: IResourcePool;
+//ex: private    	componentPool: IResourcePool;
+
+/** Регистрируется пул ресурсов опредленного типа в менеджере русурсов */
+
+    	registerResourcePool(pCode: IResourceCode, pPool: IResourcePool): void;
+/** Удаляет пул ресурсов опредленного типа в менеджере русурсов */
+
+    	unregisterResourcePool(pCode: IResourceCode): IResourcePool;
+
+/** Удаление ресурсов определенного семества */
+
+    	destroyResourceFamily(eFamily: EResourceFamilies): void;
+    	restoreResourceFamily(eFamily: EResourceFamilies): void;
+    	disableResourceFamily(eFamily: EResourceFamilies): void;
+    	cleanResourceFamily(eFamily: EResourceFamilies): void;
+
+    	destroyResourceType(pCode: IResourceCode): void;
+    	restoreResourceType(pCode: IResourceCode): void;
+    	disableResourceType(pCode: IResourceCode): void;
+    	cleanResourceType(pCode: IResourceCode): void;
+/** Возвращает пул ресурса опредленного типа по его коду */
+
+    	findResourcePool(pCode: IResourceCode): IResourcePool;
+/**
+		 * Возвращает хендл конкретного ресурса по его имени из конкретного пула опредленного типа
+		 **/
+
+    	findResourceHandle(pCode: IResourceCode, sName: string): int;
+/** Возвращает конкретный ресурс по его имени из конкретного пула опредленного типа */
+
+    	findResource(pCode: IResourceCode, sName: string): IResourcePoolItem;
+        findResource(pCode: IResourceCode, iHandle: int): IResourcePoolItem;
+
+    	monitorInitResources(fnMonitor: IResourceWatcherFunc): void;
+    	setLoadedAllRoutine(fnCallback: Function): void;
+
+/** Удаление всех ресурсов */
+
+    	destroyAll(): void;
+    	restoreAll(): void;
+    	disableAll(): void;
+
+    	clean(): void;
+
+    	createDeviceResources(): bool;
+    	destroyDeviceResources(): bool;
+    	restoreDeviceResources(): bool;
+    	disableDeviceResources(): bool;
+    }
+}
+
+
+
+
+
+
+
+
+
+module akra.core.pool {
+//is this class really singleton??
+    export class ResourcePoolManager implements IResourcePoolManager {
+//all predefined pools
+        private pSurfaceMaterialPool: IResourcePool;
+        private pEffectPool: IResourcePool;
+        private pRenderMethodPool: IResourcePool;
+        private pVertexBufferPool: IResourcePool;
+        private pIndexBufferPool: IResourcePool;
+        private pModelPool: IResourcePool;
+        private pImagePool: IResourcePool;
+        private pTexturePool: IResourcePool;
+        private pVideoBufferPool: IResourcePool;
+        private pShaderProgramPool: IResourcePool;
+        private pComponentPool: IResourcePool;
+
+/** Списки пулов по семействам ресурсов */
+
+    	private pResourceFamilyList: IResourcePool[][] = null;
+/** Карта пулов по коду ресурса */
+
+    	private pResourceTypeMap: IResourcePool[] = null;
+/** Ресурс для ожидания остальных */
+
+    	private pWaiterResource: IResourcePoolItem = null;
+
+        private pEngine: IEngine;
+
+        get surfaceMaterialPool(): IResourcePool { return this.pSurfaceMaterialPool; }
+        get effectPool(): IResourcePool { return this.pEffectPool; }
+        get renderMethodPool(): IResourcePool { return this.pRenderMethodPool; }
+        get vertexBufferPool(): IResourcePool { return this.pVertexBufferPool; }
+        get indexBufferPool(): IResourcePool { return this.pIndexBufferPool; }
+        get modelPool(): IResourcePool { return this.pModelPool; }
+        get imagePool(): IResourcePool { return this.pImagePool; }
+        get texturePool(): IResourcePool { return this.pTexturePool; }
+        get videoBufferPool(): IResourcePool { return this.pVideoBufferPool; }
+        get shaderProgramPool(): IResourcePool { return this.pShaderProgramPool; }
+        get componentPool(): IResourcePool { return this.pComponentPool; }
+
+    	constructor(pEngine: IEngine) {
+//super();
+
+            this.pEngine = pEngine;
+
+    		this.pResourceFamilyList = new Array(EResourceFamilies.TOTAL_RESOURCE_FAMILIES);
+
+    		for (var i = 0; i < EResourceFamilies.TOTAL_RESOURCE_FAMILIES; i++) {
+		        this.pResourceFamilyList[i] = new Array();
+		    }
+
+		    this.pResourceTypeMap = new Array();
+		    this.pWaiterResource = new pool.ResourcePoolItem(pEngine);
+
+            this.createDeviceResource();
+    	}
+
+        initialize(): bool {
+            this.registerDeviceResources();
+            return true;
+        }
+
+        destroy(): void {
+            this.unregisterDeviceResources();
+        }
+
+        registerResourcePool(pCode: IResourceCode, pPool: IResourcePool): void {
+            debug_assert(pCode.family >= 0 && pCode.family < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES,
+                "invalid code familyi index");
+
+            debug_assert(!isDef(this.pResourceTypeMap[pCode.toNumber()]), "Resource type code already registered");
+
+            this.pResourceTypeMap[pCode.toNumber()] = pPool;
+            this.pResourceFamilyList[pCode.family].push(pPool);
+        }
+
+    	unregisterResourcePool(pCode: IResourceCode): IResourcePool {
+            debug_assert(pCode.family >= 0, "invalid family index");
+            debug_assert(pCode.family < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES, "invalid family index");
+
+            var iCode = pCode.toNumber();
+            var pPool = null;
+            if (this.pResourceTypeMap[iCode] != undefined) {
+                pPool = this.pResourceTypeMap[iCode];
+                delete this.pResourceTypeMap[iCode];
+            }
+
+            if (pPool != null) {
+                for (var i in this.pResourceFamilyList[pCode.family]) {
+                    if (this.pResourceFamilyList[pCode.family][i] == pPool) {
+                        delete this.pResourceFamilyList[pCode.family][i];
+                        return pPool;
+                    }
+                }
+            }
+
+            return pPool;
+        }
+
+
+        destroyResourceFamily(eFamily: EResourceFamilies): void {
+            debug_assert(eFamily < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES, "invalid family index");
+
+
+            for (var i in this.pResourceFamilyList[eFamily]) {
+                this.pResourceFamilyList[eFamily][i].destroyAll();
+            }
+        }
+
+        restoreResourceFamily(eFamily: EResourceFamilies): void {
+            debug_assert(eFamily >= 0, "invalid family index");
+            debug_assert(eFamily < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES, "invalid family index");
+
+            for (var i in this.pResourceFamilyList[eFamily]) {
+                this.pResourceFamilyList[eFamily][i].restoreAll();
+            }
+        }
+
+        disableResourceFamily(eFamily: EResourceFamilies): void {
+            debug_assert(eFamily >= 0, "invalid family index");
+            debug_assert(eFamily < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES, "invalid family index");
+
+            for (var i in this.pResourceFamilyList[eFamily]) {
+                this.pResourceFamilyList[eFamily][i].disableAll();
+            }
+        }
+
+        cleanResourceFamily(eFamily: EResourceFamilies): void  {
+            debug_assert(eFamily >= 0, "invalid family index");
+            debug_assert(eFamily < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES, "invalid family index");
+
+            for (var i in this.pResourceFamilyList[eFamily]) {
+                this.pResourceFamilyList[eFamily][i].clean();
+            }
+        }
+
+        destroyResourceType(pCode: IResourceCode): void {
+            if (isDef(this.pResourceTypeMap[pCode.toNumber()])) {
+                this.pResourceTypeMap[pCode.toNumber()].destroyAll();
+            }
+        }
+
+        restoreResourceType(pCode: IResourceCode): void {
+            if (isDef(this.pResourceTypeMap[pCode.toNumber()])) {
+                this.pResourceTypeMap[pCode.toNumber()].restoreAll();
+            }
+        }
+
+        disableResourceType(pCode: IResourceCode): void {
+            if (isDef(this.pResourceTypeMap[pCode.toNumber()])) {
+                this.pResourceTypeMap[pCode.toNumber()].disableAll();
+            }
+        }
+
+        cleanResourceType(pCode: IResourceCode): void {
+            if (isDef(this.pResourceTypeMap[pCode.toNumber()])) {
+                this.pResourceTypeMap[pCode.toNumber()].clean();
+            }
+        }
+
+        findResourcePool(pCode: IResourceCode): IResourcePool {
+            if (isDef(this.pResourceTypeMap[pCode.toNumber()])) {
+                return this.pResourceTypeMap[pCode.toNumber()];
+            }
+
+            return null;
+        }
+
+        findResourceHandle(pCode: IResourceCode, sName: string): int {
+            var pPool: IResourcePool = this.findResourcePool(pCode);
+            var iHandle: int = INVALID_INDEX;
+
+            if (!isNull(pPool)) {
+                iHandle = pPool.findResourceHandle(sName);
+            }
+
+            return iHandle;
+        }
+
+        findResource(pCode: IResourceCode, sName: string): IResourcePoolItem;
+        findResource(pCode: IResourceCode, iHandle: int): IResourcePoolItem;
+        findResource(pCode, sName): IResourcePoolItem {
+            var pPool: IResourcePool = this.findResourcePool(pCode);
+            var pResult: IResourcePoolItem = null;
+            var iHandle: int;
+
+            if (isString(arguments[1])) {
+                iHandle = pPool.findResourceHandle(sName);
+            }
+            else if (isInt(arguments[1])) {
+                iHandle = arguments[1];
+            }
+
+            if (pPool != null && iHandle != INVALID_INDEX) {
+                pResult = pPool.getResource(iHandle);
+            }
+
+            return pResult;
+        }
+
+        monitorInitResources(fnMonitor: IResourceWatcherFunc): void {
+            var me: IResourcePoolManager = this;
+
+            this.pWaiterResource.setStateWatcher(EResourceItemEvents.k_Loaded, function () {
+                fnMonitor.apply(me, arguments);
+            });
+        }
+
+        setLoadedAllRoutine(fnCallback: Function): void {
+            var pPool: IResourcePool;
+            var pResource: IResourcePoolItem;
+            var iHandleResource: int;
+            var pWaiterResouse: IResourcePoolItem = this.pWaiterResource;
+
+            var fnResCallback = function (iFlagBit?: int, iResourceFlags?: int, isSetting?: bool) {
+                if (iFlagBit == <number>EResourceItemEvents.k_Loaded && isSetting) {
+                    fnCallback();
+                }
+            };
+
+            pWaiterResouse.notifyLoaded();
+
+            for (var n: uint = 0; n < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES; n ++) {
+                for (var i: int = 0; i < ResourcePoolManager.pTypedResourseTotal[n]; i ++) {
+                    pPool = this.findResourcePool(new ResourceCode(n, i));
+
+                    if (pPool) {
+                        var pResources: IResourcePoolItem[] = pPool.getResources();
+                        var pResource: IResourcePoolItem;
+
+                        for (var i: int = 0; i < pResources.length; ++ i) {
+                            pResource = pResources[i];
+                            pWaiterResouse.connect(pResource, EResourceItemEvents.k_Loaded);
+                        }
+                    }
+
+                }
+            }
+
+            if (pWaiterResouse.isResourceLoaded()) {
+                fnCallback();
+            }
+            else {
+                pWaiterResouse.setChangesNotifyRoutine(fnResCallback);
+            }
+        }
+
+        destroyAll(): void {
+            for (var i: int = 0; i < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES; i ++) {
+                this.destroyResourceFamily(<EResourceFamilies><number>i);
+            }
+        }
+
+        restoreAll(): void {
+            for (var i: int = 0; i < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES; i ++) {
+                this.restoreResourceFamily(<EResourceFamilies><number>i);
+            }
+        }
+
+        disableAll(): void {
+            for (var i: int = 0; i < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES; i ++) {
+                this.disableResourceFamily(<EResourceFamilies><number>i);
+            }
+        }
+
+
+        clean(): void {
+            for (var i: int = 0; i < <number>EResourceFamilies.TOTAL_RESOURCE_FAMILIES; i ++) {
+                this.cleanResourceFamily(<EResourceFamilies><number>i);
+            }
+        }
+
+        createDeviceResources(): bool {
+            return true;
+        }
+
+        destroyDeviceResources(): bool {
+            this.disableDeviceResources();
+
+// then destroy...
+            debug_print("Destroying Video Device Resources\n");
+
+            this.destroyResourceFamily(EResourceFamilies.VIDEO_RESOURCE);
+
+            return true;
+        }
+
+        restoreDeviceResources(): bool {
+            debug_print("Restoring Video Device Resources\n");
+            this.restoreResourceFamily(EResourceFamilies.VIDEO_RESOURCE);
+            return true;
+        }
+
+        disableDeviceResources(): bool {
+            debug_print("Disabling Video Device Resources\n");
+            this.disableResourceFamily(EResourceFamilies.VIDEO_RESOURCE);
+            return true;
+        }
+
+        private createDeviceResource(): void {
+            this.pSurfaceMaterialPool = new ResourcePool(this.pEngine, resources.SurfaceMaterial);
+            this.pSurfaceMaterialPool.initialize(16);
+
+            this.pEffectPool = new ResourcePool(this.pEngine, resources.Effect);
+            this.pEffectPool.initialize(16);
+
+            this.pRenderMethodPool = new ResourcePool(this.pEngine, resources.RenderMethod);
+            this.pRenderMethodPool.initialize(16);
+
+            this.pVertexBufferPool = new ResourcePool(this.pEngine, resources.VertexBuffer);
+            this.pVertexBufferPool.initialize(16);
+
+            this.pIndexBufferPool = new ResourcePool(this.pEngine, resources.IndexBuffer);
+            this.pIndexBufferPool.initialize(16);
+
+            this.pModelPool = new ResourcePool(this.pEngine, resources.Model);
+            this.pModelPool.initialize(16);
+
+            this.pImagePool = new ResourcePool(this.pEngine, resources.Img);
+            this.pImagePool.initialize(16);
+
+            this.pTexturePool = new ResourcePool(this.pEngine, resources.Texture);
+            this.pTexturePool.initialize(16);
+
+            this.pVideoBufferPool = new ResourcePool(this.pEngine, resources.VideoBuffer);
+            this.pVideoBufferPool.initialize(16);
+
+            this.pShaderProgramPool = new ResourcePool(this.pEngine, resources.ShaderProgram);
+            this.pShaderProgramPool.initialize(16);
+
+            this.pComponentPool = new ResourcePool(this.pEngine, resources.Component);
+            this.pComponentPool.initialize(16);
+        }
+
+        private registerDeviceResources(): void {
+            debug_print("Registering Video Device Resources\n");
+            this.pTexturePool.registerResourcePool(
+                new ResourceCode(
+                    <number>EResourceFamilies.VIDEO_RESOURCE,
+                    <number>EVideoResources.TEXTURE_RESOURCE));
+            this.pVertexBufferPool.registerResourcePool(
+                new ResourceCode(
+                    <number>EResourceFamilies.VIDEO_RESOURCE,
+                    <number>EVideoResources.VERTEXBUFFER_RESOURCE));
+            this.pIndexBufferPool.registerResourcePool(
+                new ResourceCode(
+                    <number>EResourceFamilies.VIDEO_RESOURCE,
+                    <number>EVideoResources.INDEXBUFFER_RESOURCE));
+            this.pEffectPool.registerResourcePool(
+                new ResourceCode(
+                    <number>EResourceFamilies.VIDEO_RESOURCE,
+                    <number>EVideoResources.EFFECT_RESOURCE));
+            this.pRenderMethodPool.registerResourcePool(
+                new ResourceCode(
+                    <number>EResourceFamilies.VIDEO_RESOURCE,
+                    <number>EVideoResources.RENDERMETHOD_RESOURCE));
+            this.pModelPool.registerResourcePool(
+                new ResourceCode(
+                    <number>EResourceFamilies.VIDEO_RESOURCE,
+                    <number>EVideoResources.MODEL_RESOURCE));
+            this.pImagePool.registerResourcePool(
+                new ResourceCode(
+                    <number>EResourceFamilies.VIDEO_RESOURCE,
+                    <number>EVideoResources.IMAGE_RESOURCE));
+            this.pSurfaceMaterialPool.registerResourcePool(
+                new ResourceCode(
+                    <number>EResourceFamilies.VIDEO_RESOURCE,
+                    <number>EVideoResources.SURFACEMATERIAL_RESOURCE));
+            this.pVideoBufferPool.registerResourcePool(
+                new ResourceCode(
+                    <number>EResourceFamilies.VIDEO_RESOURCE,
+                    <number>EVideoResources.VIDEOBUFFER_RESOURCE));
+            this.pShaderProgramPool.registerResourcePool(
+                new ResourceCode(
+                    <number>EResourceFamilies.VIDEO_RESOURCE,
+                    <number>EVideoResources.SHADERPROGRAM_RESOURCE));
+            this.pComponentPool.registerResourcePool(
+                new ResourceCode(
+                    <number>EResourceFamilies.VIDEO_RESOURCE,
+                    <number>EVideoResources.COMPONENT_RESOURCE));
+        }
+
+        private unregisterDeviceResources(): void {
+            debug_print("Unregistering Video Device Resources");
+
+            this.pTexturePool.unregisterResourcePool();
+            this.pVertexBufferPool.unregisterResourcePool();
+            this.pIndexBufferPool.unregisterResourcePool();
+            this.pEffectPool.unregisterResourcePool();
+            this.pRenderMethodPool.unregisterResourcePool();
+            this.pModelPool.unregisterResourcePool();
+            this.pImagePool.unregisterResourcePool();
+            this.pSurfaceMaterialPool.unregisterResourcePool();
+            this.pVideoBufferPool.unregisterResourcePool();
+            this.pShaderProgramPool.unregisterResourcePool();
+            this.pComponentPool.unregisterResourcePool();
+        }
+
+    	static private pTypedResourseTotal: uint[] = [
+	        <number>EVideoResources.TOTAL_VIDEO_RESOURCES,
+	        <number>EAudioResources.TOTAL_AUDIO_RESOURCES,
+	        <number>EGameResources.TOTAL_GAME_RESOURCES
+	    ];
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IBuffer {
+//number of elements
+		 length: int;
+
+//size in bytes
+		 byteLength: int;
+
+
+	}
+}
+
+
+
+module akra {
+	export enum EGPUBufferFlags {
+		MANY_UPDATES = 0,
+		MANY_DRAWS,
+		READABLE,
+		RAM_BACKUP,
+		SOFTWARE
+	}
+
+	export interface IGPUBuffer extends IBuffer {
+		clone(pSrc: IGPUBuffer): bool;
+
+		isValid(): bool;
+		isDynamic(): bool;
+		isStatic(): bool;
+		isStream(): bool;
+		isReadable(): bool;
+		isRAMBufferPresent(): bool;
+		isSoftware(): bool;
+
+		getData(iOffset: uint, iSize: uint): ArrayBuffer;
+		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool;
+
+		getHardwareBuffer(): WebGLObject;
+		getFlags(): int;
+	}
+}
+
+
+
+
+
+
+
+
+
+module akra {
+    export interface IRenderResource extends IResourcePoolItem {
+        getHardwareObject(): WebGLObject;
+    };
+}
+
+
+
+
+
+
+module akra {
+
+    export interface IAFXComponent {} ;
+    export interface IAFXEffect {} ;
+    export interface IRenderableObject {} ;
+    export interface IRenderSnapshot {} ;
+    export interface ISceneObject {} ;
+    export interface IBufferMap {} ;
+    export interface IShaderProgram {} ;
+    export interface ISurfaceMaterial {} ;
+    export interface IVertexData {} ;
+    export interface IVertexBuffer {} ;
+    export interface ITexture {} ;
+    export interface IIndexBuffer {} ;
+    export interface IRenderResource {} ;
+    export interface IRenderEntry {} ;
+    export interface IFrameBuffer {} ;
+    export interface IViewport {} ;
+    export interface IColor {} ;
+
 
 //API SPECIFIFC CONSTANTS
 
@@ -2368,201 +6015,111 @@ module akra {
 
 
 
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface IReferenceCounter {
-/**
-		 * Текущее количесвто ссылок  на объект
-		 **/
-
-		referenceCount(): uint;
-
-/** Предупреждает если объект еще используется */
-
-		destructor(): void;
-
-
-/**
-		 * Добаволение ссылки  на объект, увеличивает внутренний счетчки на 1,
-		 * проверяет не достигнуто ли максимальное количесвто
-		 **/
-
-		addRef(): uint;
-
-/**
-		 * Уведомление об удалении ссылки  на объект, уменьшает внутренний счетчки на 1,
-		 * проверяет есть ли ее объекты
-		 **/
-
-		release(): uint;
-
-
-/** 
-		 * Данная функция нужна чтобы обеспечить наследникам ее возможность,
-		 * само количестdо ссылок не копируется
-		 */
-
-		eq(pSrc: IReferenceCounter): IReferenceCounter;
-	}
-}
-
-interface IEngine {} ;
-interface IResourceWatcherFunc {} ;
-interface IResourceNotifyRoutineFunc {} ;
-interface IResourceCode {} ;
-interface IResourcePool {} ;
-
 module akra {
 
-/**
-     * Отражает состояние ресурса
-     **/
+	export interface IIndexData {} ;
 
-    export enum EResourceItemEvents{
-//ресур создан		k_Created,
-//ресур заполнен данным и готов к использованию		k_Loaded,
-//ресур в данный момент отключен для использования		k_Disabled,
-//ресур был изменен после загрузки		k_Altered,
-		k_TotalResourceFlags
-	};
+	export interface IIndexBuffer extends IGPUBuffer, IRenderResource {
 
-	export interface IResourcePoolItem extends IReferenceCounter {
-/** resource code */
+		getIndexData(iOffset: uint, iCount: uint, ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes): IIndexData;
+		getEmptyIndexData(iCount: uint, ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes): IIndexData;
 
-		resourceCode: IResourceCode;
-/** resource pool */
-
-		resourcePool: IResourcePool;
-/** resource handle */
-
-		resourceHandle: int;
-/** resource flags */
-
-		resourceFlags: int;
-/** Проверка был ли изменен ресур после загрузки */
-
-		alteredFlag: bool;
+		freeIndexData(pIndexData: IIndexData): bool;
 
 
-		getGuid(): int;
-/** Get current Engine. */
+		allocateData(ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes, pData: ArrayBufferView): IIndexData;
+		getCountIndexForStripGrid(iXVerts: int, iYVerts: int): int;
 
-		getEngine(): IEngine;
-
-/** Инициализация ресурса, вызывается один раз. Виртуальная. */
-
-		createResource(): bool;
-/** Уничтожение ресурса. Виртуальная. */
-
-		destroyResource(): bool;
-/**  Удаление ресурса из энергозависимой памяти. Виртуальная. */
-
-		disableResource(): bool;
-/** Возвращение ресурса в энегрозависимю память. Виртуальная. */
-
-		restoreResource(): bool;
-
-/** Загрузка ресурса из файла, или null при использовании имени ресурса. Виртуальная. */
-
-		loadResource(sFilename?: string): bool;
-/** Сохранение ресурса в файл, или null при использовании имени ресурса. */
-
-		saveResource(sFilename?: string): bool;
-
-/** Добавление и удаление функции, которая будет вызываться при изменении состояния ресурса( fnFunc(iNewSost,iOldSost) ) */
-
-		setChangesNotifyRoutine(fn: IResourceNotifyRoutineFunc): void;
-		delChangesNotifyRoutine(fn: IResourceNotifyRoutineFunc): void;
-
-		setStateWatcher(eEvent: EResourceItemEvents, fnWatcher: IResourceWatcherFunc): void;
-
-/** sinchronize events with other resourse */
-
-		connect(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool;
-		disconnect(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool;
-
-/** Установка состояния в созданный */
-
-		notifyCreated(): void;
-/** Установка в состояние не созданный */
-
-		notifyDestroyed(): void;
-/** Уставнока в состояние загруженный */
-
-		notifyLoaded(): void;
-/** Уставнока в состояние незагруженный */
-
-		notifyUnloaded(): void;
-/** Установка в состояние используемый */
-
-		notifyRestored(): void;
-/** Установка в состояние не используемый */
-
-		notifyDisabled(): void;
-/** Установка в состояние не используемый */
-
-		notifyAltered(): void;
-/** Установка в состояние сохраненый */
-
-		notifySaved(): void;
-
-		notifyStateChange(eEvent: EResourceItemEvents, pTarget?: IResourcePoolItem);
-
-/** Проверка создан ли ресурс */
-
-		isResourceCreated(): bool;
-/** Проверка загружен ли ресурс */
-
-		isResourceLoaded(): bool;
-/** Проверка активен ли ресурс */
-
-		isResourceDisabled(): bool;
-/** Проверка обновлен ли ресурс */
-
-		isResourceAltered(): bool;
-
-/** Установка состояния в изменен после загружки */
-
-		setAlteredFlag(isOn?: bool): void;
-
-/** Пиписывание ресурсу имени */
-
-		setResourceName(sName: string);
-
-/** Поиск имени ресурса */
-
-		findResourceName(): string;
-
-/** оповещение о уменьшении количесва ссылок на ресурс */
-
-		release(): uint;
-
-		setResourceCode(pCode: IResourceCode): void;
-		setResourcePool(pPool: IResourcePool): void;
-		setResourceHandle(iHandle: int): void;
-
-		setResourceFlag(eFlagBit: EResourceItemEvents, isSetting: bool): void;
-		setResourceFlag(iFlagBit: int, isSetting: bool): void;
-	}
-
-	export interface IResourcePoolItemType {
-		new (pEngine: IEngine): IResourcePoolItem;
 	}
 }
 
 
 
-module akra {
-	export interface IAFXComponent extends IResourcePoolItem {
 
+
+module akra.core.pool.resources {
+	export class IndexBuffer extends ResourcePoolItem implements IIndexBuffer {
+
+		/**@inline*/  get byteLength(): uint {
+			return 0;
+		}
+
+		/**@inline*/  get length(): uint {
+			return 0;
+		}
+
+		clone(pSrc: IGPUBuffer): bool {
+			return false;
+		}
+
+		isValid(): bool {
+			return false;
+		}
+
+		isDynamic(): bool {
+			return false;
+		}
+
+		isStatic(): bool {
+			return false;
+		}
+
+		isStream(): bool {
+			return false;
+		}
+
+		isReadable(): bool {
+			return false;
+		}
+
+		isRAMBufferPresent(): bool {
+			return false;
+		}
+
+		isSoftware(): bool {
+			return false;
+		}
+
+		getData(iOffset: uint, iSize: uint): ArrayBuffer {
+			return null;
+		}
+
+		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool {
+			return false;
+		}
+
+		/**@inline*/  getHardwareBuffer(): WebGLObject {
+			return null;
+		}
+
+		/**@inline*/  getHardwareObject(): WebGLObject {
+			return null;
+		}
+
+		/**@inline*/  getFlags(): int {
+			return 0;
+		}
+
+		getIndexData(iOffset: uint, iCount: uint, ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes): IIndexData {
+			return null;
+		}
+
+		getEmptyIndexData(iCount: uint, ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes): IIndexData {
+			return null;
+		}
+
+		freeIndexData(pIndexData: IIndexData): bool {
+			return false;
+		}
+
+
+		allocateData(ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes, pData: ArrayBufferView): IIndexData {
+			return null;
+		}
+
+		getCountIndexForStripGrid(iXVerts: int, iYVerts: int): int {
+			return 0;
+		}
 	}
 }
 
@@ -2574,85 +6131,18 @@ module akra {
 
 
 
-module akra {
-	export interface IAFXEffect extends IResourcePoolItem {
 
+
+
+
+
+module akra {
+	export interface IBufferData {
+		offset: uint;
+		byteLength: uint;
+		buffer: IBuffer;
 	}
 }
-
-
-
-
-
-
-
-module akra {
-	export interface IRenderableObject {
-
-	}
-}
-
-
-
-
-
-
-module akra {
-	export interface IRenderSnapshot {
-
-	}
-}
-
-
-
-///<reference path="akra.ts" />
-
-module akra {
-    export interface ISceneObject extends ISceneNode {
-
-    }
-}
-
-
-
-
-module akra {
-	export interface IBufferMap {
-
-	}
-}
-
-
-
-
-
-
-module akra {
-    export enum ShaderTypes {
-        PIXEL = 0x8B30,
-        VERTEX
-    };
-
-    export interface IShaderProgram extends IRenderResource {
-
-    }
-}
-
-
-
-
-
-
-module akra {
-    export interface ISurfaceMaterial {
-
-    }
-
-}
-
-
-
-
 
 
 
@@ -2668,9 +6158,19 @@ module akra {
 
 
 
-///<reference path="akra.ts" />
+
+
+
+
+
 
 module akra {
+
+	export interface IVertexData {} ;
+	export interface IVertexElement {} ;
+	export interface IVertexDeclaration {} ;
+
+
 	export interface IVertexBufferBase extends IGPUBuffer {
 		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;
 		getVertexData(iOffset: uint, iCount: uint, pDecl: IVertexDeclaration): IVertexData;
@@ -2690,19 +6190,129 @@ module akra {
 
 
 
-
 module akra {
-    export interface IRenderResource extends IResourcePoolItem {
-        getHardwareObject(): WebGLObject;
-    };
+	export interface IVertexBuffer extends IVertexBufferBase, IRenderResource {
+
+
+	}
 }
 
 
 
 
-module akra {
-	export interface IVertexBuffer extends IVertexBufferBase, IRenderResource {
 
+module akra.core.pool.resources {
+	export class VertexBuffer extends ResourcePoolItem implements IVertexBuffer {
+
+		get byteLength(): uint {
+			return 0;
+		}
+
+		get length(): uint {
+			return 0;
+		}
+
+		clone(pSrc: IGPUBuffer): bool {
+			return false;
+		}
+
+		isValid(): bool {
+			return false;
+		}
+
+		isDynamic(): bool {
+			return false;
+		}
+
+		isStatic(): bool {
+			return false;
+		}
+
+		isStream(): bool {
+			return false;
+		}
+
+		isReadable(): bool {
+			return false;
+		}
+
+		isRAMBufferPresent(): bool {
+			return false;
+		}
+
+		isSoftware(): bool {
+			return false;
+		}
+
+		isAlignment(): bool {
+			return false;
+		}
+
+
+		getHardwareBuffer(): WebGLObject {
+			return null;
+		}
+
+		getHardwareObject(): WebGLObject {
+			return null;
+		}
+
+		getFlags(): int {
+		return 0;
+		}
+
+		getData(iOffset: uint, iSize: uint): ArrayBuffer {
+			return null;
+		}
+
+		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool {
+			return false;
+		}
+
+
+		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;
+		getVertexData(iOffset: uint, iCount: uint, pDecl: IVertexDeclaration): IVertexData;
+		getVertexData(iOffset: uint, iCount: uint, pDecl: any): IVertexData {
+			return null;
+		}
+
+
+		getEmptyVertexData(iCount: uint, pElements: IVertexElement[], ppVertexDataIn?: IVertexData): IVertexData;
+		getEmptyVertexData(iCount: uint, pDecl: IVertexDeclaration, ppVertexDataIn?: IVertexData): IVertexData;
+		getEmptyVertexData(iCount: uint, pDecl: any, ppVertexDataIn?: IVertexData): IVertexData {
+			return null;
+		}
+
+
+		freeVertexData(pVertexData: IVertexData): bool {
+			return false;
+		}
+
+
+		allocateData(pElements: IVertexElement[], pData: ArrayBufferView): IVertexData;
+		allocateData(pDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
+		allocateData(pDecl: any, pData: ArrayBufferView): IVertexData {
+			return null;
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IVideoBuffer extends IVertexBufferBase, IRenderResource {
 
 	}
 }
@@ -2715,10 +6325,18 @@ module akra {
 
 
 
-interface IImg {} ;
+
+
+
+
+
+
 
 
 module akra {
+
+    export interface IImg {} ;
+
 	export enum ETextureFilters {
         NEAREST = 0x2600,
         LINEAR = 0x2601,
@@ -2812,9 +6430,9 @@ module akra {
 
         maskWithImage(pImage: IImg): bool;
 
-        uploadCubeFace(pImage: IImg, eFace: ETextureTypes, isCopyAll?: bool);
-        uploadHTMLElement(pElement: HTMLElement);
-        uploadImage(pImage: IImg);
+        uploadCubeFace(pImage: IImg, eFace: ETextureTypes, isCopyAll?: bool): bool;
+        uploadHTMLElement(pElement: HTMLElement): bool;
+        uploadImage(pImage: IImg): bool;
 
         resize(iWidth: uint, iHeight: uint): bool;
         repack(iWidth: uint, iHeight: uint, eFormat?: EImageFormats, eType?: EImageTypes): bool;
@@ -2826,7 +6444,7 @@ module akra {
             iFlags?: int,
             eFormat?: EImageFormats,
             eType?: EImageTypes,
-            pData?: ArrayBufferView);
+            pData?: ArrayBufferView): bool;
 
 //------------
 // Эти вызовы надо убрать, так как пользователю не положено делать их самому,
@@ -2844,54 +6462,862 @@ module akra {
 
 
 
+module akra.core.pool.resources {
+	export class Texture extends ResourcePoolItem implements ITexture {
+		/**@inline*/  get width(): uint {
+			return 0;
+		}
+
+        /**@inline*/  get height(): uint {
+        	return 0;
+        }
+
+        /**@inline*/  get type(): EImageTypes {
+        	return null;
+        }
+
+        /**@inline*/  get format(): EImageFormats {
+        	return null;
+        }
 
 
-///<reference path="akra.ts" />
+//number of color components per pixel. usually: 1, 3, 4
+        /**@inline*/  get componentsPerPixel(): uint {
+        	return 0;
+        }
 
-module akra {
-	export enum EGPUBufferFlags {
-		MANY_UPDATES = 0,
-		MANY_DRAWS,
-		READABLE,
-		RAM_BACKUP,
-		SOFTWARE
+        /**@inline*/  get bytesPerPixel(): uint {
+        	return 0;
+        }
+
+        get magFilter(): ETextureFilters {
+        	return 0;
+        }
+
+        get minFilter(): ETextureFilters {
+        	return 0;
+        }
+
+        get wrapS(): ETextureWrapModes {
+        	return 0;
+        }
+
+        get wrapT(): ETextureWrapModes {
+        	return 0;
+        }
+
+        get target(): ETextureTypes {
+        	return 0;
+        }
+
+        get mipLevels(): uint {
+        	return 0;
+        }
+
+        isTexture2D(): bool {
+        	return false;
+        }
+
+        isTextureCube(): bool {
+        	return false;
+        }
+
+        isCompressed(): bool {
+        	return false;
+        }
+
+
+        getParameter(): int {
+        	return 0;
+        }
+
+        setParameter(eParam: ETextureParameters, eValue: ETextureFilters): void;
+        setParameter(eParam: ETextureParameters, eValue: ETextureWrapModes): void;
+
+        setParameter(eParam: ETextureParameters, eValue): void {
+        	return;
+        }
+
+
+        getPixels(
+            iX?: uint,
+            iY?: uint,
+            iWidth?: uint,
+            iHeight?: uint,
+            ppPixelBuffer?: ArrayBufferView,
+            iMipMap?: uint,
+            eCubeFlag?: ETextureTypes): ArrayBufferView {
+        	return null;
+        }
+
+        setPixels(
+            iX?: uint,
+            iY?: uint,
+            iWidth?: uint,
+            iHeight?: uint,
+            pPixelBuffer?: ArrayBufferView,
+            iMipMap?: uint,
+            eCubeFlag?: ETextureTypes): bool {
+        	return null;
+        }
+
+        generateNormalMap(pHeightMap: IImg, iChannel?: uint, fAmplitude?: float): bool {
+        	return false;
+        }
+
+        generateNormalizationCubeMap(): bool {
+        	return false;
+        }
+
+        convertToNormalMap(iChannel: uint, iFlags: uint, fAmplitude: float): bool {
+        	return false;
+        }
+
+        maskWithImage(pImage: IImg): bool {
+        	return false;
+        }
+
+        uploadCubeFace(pImage: IImg, eFace: ETextureTypes, isCopyAll?: bool): bool {
+        	return false;
+        }
+
+        uploadHTMLElement(pElement: HTMLElement): bool {
+        	return false;
+        }
+
+        uploadImage(pImage: IImg): bool {
+        	return false;
+        }
+
+        resize(iWidth: uint, iHeight: uint): bool {
+        	return false;
+        }
+
+        repack(iWidth: uint, iHeight: uint, eFormat?: EImageFormats, eType?: EImageTypes): bool {
+        	return false;
+        }
+
+        extend(iWidth: uint, iHeight: uint, cColor: IColor) {
+        	return false;
+        }
+
+        createTexture(
+            iWidth?: uint,
+            iHeight?: uint,
+            iFlags?: int,
+            eFormat?: EImageFormats,
+            eType?: EImageTypes,
+            pData?: ArrayBufferView): bool {
+        	return false;
+        }
+
+        /**@inline*/  getHardwareObject(): WebGLObject {
+        	return null;
+        }
+	}
+}
+
+
+
+module akra.core.pool.resources {
+	export class VideoBuffer extends Texture implements IVideoBuffer {
+		/**@inline*/  get byteLength(): uint {
+			return 0;
+		}
+
+		/**@inline*/  get length(): uint {
+			return 0;
+		}
+
+		clone(pSrc: IGPUBuffer): bool {
+			return false;
+		}
+
+		isValid(): bool {
+			return false;
+		}
+
+		isDynamic(): bool {
+			return false;
+		}
+
+		isStatic(): bool {
+			return false;
+		}
+
+		isStream(): bool {
+			return false;
+		}
+
+		isReadable(): bool {
+			return false;
+		}
+
+		isRAMBufferPresent(): bool {
+			return false;
+		}
+
+		isSoftware(): bool {
+			return false;
+		}
+
+		isAlignment(): bool {
+			return false;
+		}
+
+		getData(iOffset: uint, iSize: uint): ArrayBuffer {
+			return null;
+		}
+
+		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool {
+			return false;
+		}
+
+		/**@inline*/  getFlags(): int {
+			return 0;
+		}
+
+
+		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;
+		getVertexData(iOffset: uint, iCount: uint, pDecl: IVertexDeclaration): IVertexData;
+		getVertexData(iOffset: uint, iCount: uint, pDecl: any): IVertexData {
+			return null;
+		}
+
+
+		getEmptyVertexData(iCount: uint, pElements: IVertexElement[], ppVertexDataIn?: IVertexData): IVertexData;
+		getEmptyVertexData(iCount: uint, pDecl: IVertexDeclaration, ppVertexDataIn?: IVertexData): IVertexData;
+		getEmptyVertexData(iCount: uint, pDecl: any, ppVertexDataIn?: IVertexData): IVertexData {
+			return null;
+		}
+
+
+		freeVertexData(pVertexData: IVertexData): bool {
+			return false;
+		}
+
+
+		allocateData(pElements: IVertexElement[], pData: ArrayBufferView): IVertexData;
+		allocateData(pDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
+		allocateData(pDecl: any, pData: ArrayBufferView): IVertexData {
+			return null;
+		}
+
+		/**@inline*/  getHardwareBuffer(): WebGLObject {
+			return null;
+		}
 	}
 
-	export interface IGPUBuffer extends IBuffer {
-		clone(pSrc: IGPUBuffer): bool;
 
-		isValid(): bool;
-		isDynamic(): bool;
-		isStatic(): bool;
-		isStream(): bool;
-		isReadable(): bool;
-		isRAMBufferPresent(): bool;
-		isSoftware(): bool;
+}
 
-		getData(iOffset: uint, iSize: uint): ArrayBuffer;
-		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool;
 
-		getHardwareBuffer(): WebGLObject;
-		getFlags(): int;
+
+
+
+
+
+
+
+
+
+
+module akra {
+    export enum ShaderTypes {
+        PIXEL = 0x8B30,
+        VERTEX
+    };
+
+    export interface IShaderProgram extends IRenderResource {
+
+    }
+}
+
+
+
+
+
+module akra.core.pool.resources {
+	export class ShaderProgram extends ResourcePoolItem implements IShaderProgram {
+		/**@inline*/  getHardwareObject(): WebGLObject {
+			return null;
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IAFXComponent extends IResourcePoolItem {
+
+	}
+}
+
+
+
+
+
+module akra.core.pool.resources {
+	export class Component extends ResourcePoolItem implements IAFXComponent{
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IAFXEffect extends IResourcePoolItem {
+
+	}
+}
+
+
+
+
+
+
+module akra.core.pool.resources {
+	export class Effect extends ResourcePoolItem implements IAFXEffect {
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+    export interface ISurfaceMaterial {
+
+    }
+
+}
+
+
+
+
+
+
+module akra.core.pool.resources {
+	export class SurfaceMaterial extends ResourcePoolItem implements ISurfaceMaterial {
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+module akra.core.pool.resources {
+	export class Img extends ResourcePoolItem implements IImg {
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IRenderMethod extends IResourcePoolItem {
+
+	}
+}
+
+
+
+
+
+module akra.core.pool.resources {
+	export class RenderMethod extends ResourcePoolItem implements IRenderMethod {
+
+	}
+
+
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+    export interface IModel extends IResourcePoolItem {
+
+    }
+}
+
+
+
+
+
+module akra.core.pool.resources {
+	export class Model extends ResourcePoolItem implements IModel {
+
+	}
+
+
+}
+
+
+/*
+#include "IBuffer.ts"
+#include "IFrameBuffer.ts"
+
+#include "ITexture.ts"
+#include "IImg.ts"
+#include "ISurfaceMaterial.ts"
+#include "IShaderProgram.ts"
+#include "IGPUBuffer.ts"
+#include "IIndexBuffer.ts"
+#include "IVertexBuffer.ts"
+#include "IRenderMethod.ts"
+#include "IVideoBuffer.ts"
+#include "IModel.ts"
+
+#include "IScene.ts"
+#include "IScene3d.ts"
+#include "IScene2d.ts"
+
+
+
+
+#include "ISceneTree.ts"
+#include "IRenderState.ts"
+#include "IRenderer.ts"
+#include "IScene3d.ts"
+
+#include "INode.ts"
+#include "ISceneNode.ts"
+#include "ISceneObject.ts"
+#include "ICamera.ts"
+
+#include "IFont2d.ts"
+
+#include "IDisplay.ts"
+#include "IDisplay2d.ts"
+#include "IDisplay3d.ts"
+
+#include "IManager.ts"
+#include "IResourceManager.ts"
+#include "IDisplayManager.ts"
+#include "IParticleManager.ts"
+
+#include "IAFXEffect.ts"
+#include "IAFXComponent.ts"
+#include "IAFXComponentBlend.ts"
+#include "IAFXPassBlend.ts"
+#include "IAFXPreRenderState.ts"
+
+#include "IScreen.ts"
+*/
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface INode {
+		name: string;
+	}
+}
+
+
+
+module akra.scene {
+	export class Node implements INode {
+		private sName: string = null;
+
+		get name(): string { return this.sName; }
+		set name(sName: string) { this.sName = sName; }
+
+		constructor () {
+
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+    export interface ISceneNode extends INode {
+
+    }
+}
+
+
+
+module akra.scene {
+	export class SceneNode extends Node implements ISceneNode {
+		private pEngine: IEngine = null;
+
+		constructor (pEngine: IEngine) {
+			super();
+
+			this.pEngine = pEngine;
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+    export interface ISceneObject extends ISceneNode {
+
+    }
+}
+
+
+
+
+
+module akra.scene {
+	export class SceneObject extends SceneNode implements ISceneObject {
+		constructor (pEngine: IEngine) {
+			super(pEngine);
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+    export interface ICamera extends ISceneObject {
+
+    }
+}
+
+
+
+
+
+module akra.scene.objects {
+	export class Camera extends SceneObject implements ICamera {
+		constructor (pEngine: IEngine) {
+			super(pEngine);
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface ISceneTree {
+
+	}
+}
+
+
+
+module akra.scene {
+	export class OcTree implements ISceneTree {
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IScene {
+
 	}
 }
 
 
 
 module akra {
-	export interface IIndexBuffer extends IGPUBuffer, IRenderResource {
+	export interface IScene3d extends IScene {
+		recursivePreUpdate(): void;
+		updateCamera(): bool;
+		updateScene(): bool;
+		recursiveUpdate(): void;
+	}
+}
 
-		getIndexData(iOffset: uint, iCount: uint, ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes): IIndexData;
-		getEmptyIndexData(iCount: uint, ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes): IIndexData;
-
-		freeIndexData(pIndexData: IIndexData): bool;
 
 
-		allocateData(ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes, pData: ArrayBufferView): IIndexData;
-		getCountIndexForStripGrid(iXVerts: int, iYVerts: int): int;
+
+
+
+
+
+
+
+module akra {
+	export enum EDisplayTypes {
+		TYPE_UNKNOWN = -1,
+		TYPE_2D = 1,
+		TYPE_3D
+	};
+
+	export interface IDisplay {
+		type: EDisplayTypes;
+
+
+		isFullscreen(): bool;
+		fullscreen(): bool;
+	}
+}
+
+
+
+module akra {
+	export interface IDisplay3d extends IDisplay {
+		render(): void;
+		renderFrame(): bool;
+
+		play(): bool;
+		pause(isPaused?: bool): bool;
+
+		inRendering(): bool;
+
+
+		getCanvas(): HTMLCanvasElement;
+		getScene(): IScene3d;
+		getBuilder(): ISceneBuilder;
+		getRenderer(): IRenderer;
+		getScreen(): IScreen;
+
+		getTime(): float;
+		getElapsedTime(): float;
+		getFPS(): float;
 
 	}
 }
+
+
+
+module akra.scene {
+	export class Scene3d implements IScene3d {
+		constructor (pDisplay: IDisplay3d) {
+
+		}
+
+		recursivePreUpdate(): void {
+
+		}
+
+		recursiveUpdate(): void {
+
+		}
+
+		updateCamera(): bool {
+			return false;
+		}
+
+		updateScene(): bool {
+			return false;
+		}
+	}
+}
+
+
+
+//#include "IBuildScenario.ts"
+//#include "ISceneBuilder.ts"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IAFXPreRenderState {
+
+	}
+}
+
+
+
+
+
+
+
+module akra {
+	export interface IAFXComponentBlend {
+
+	}
+}
+
+
+
+
+
+
+
+module akra {
+	export interface IAFXPassBlend {
+
+	}
+}
+
+
+
+
+
+
+module akra {
+	export interface IMesh {
+
+	}
+}
+
+
+
+
+
+
+module akra {
+	export interface IRenderableObject {
+
+	}
+}
+
+
+
+
+
+
+module akra {
+	export interface IRenderSnapshot {
+
+	}
+}
+
+
+
+
+
+
+
+
+module akra {
+	export interface IBufferMap {
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3214,7 +7640,39 @@ module  akra.render {
 
 
 
-///<reference path="../akra.ts" />
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IBuildScenario {} ;
+
+	export interface ISceneBuilder {
+		build(pScenario: IBuildScenario): bool;
+	}
+}
+
+
+
+
+
+
+module akra {
+	export interface IBuildScenario {
+
+	}
+}
+
+
+
+
+
 
 module akra.scene {
 	export class SceneBuilder extends util.Singleton implements ISceneBuilder {
@@ -3238,6 +7696,8 @@ module akra.scene {
 }
 
 
+
+
 //#include "IEngine.ts"
 
 
@@ -3248,46 +7708,18 @@ module akra.scene {
 
 
 
-interface IDisplayManager {} ;
-interface IParticleManager {} ;
-interface IResourcePoolManager {} ;
-interface IRenderer {} ;
-
-module akra {
-    export interface IEngine {
-        getDisplayManager(): IDisplayManager;
-        getParticleManager(): IParticleManager;
-        getResourceManager(): IResourcePoolManager;
-
-        getDefaultRenderer(): IRenderer;
-
-//start execution
-        exec(): bool;
-    };
-
-}
-
-
-
-
 
 
 
 
 
 module akra {
-    export interface IManager {
-        initialize(): bool;
-        destroy(): void;
-    }
-}
 
-interface IEngine {} ;
-interface IDisplay {} ;
-interface IDisplay2d {} ;
-interface IDisplay3d {} ;
+    export interface IEngine {} ;
+    export interface IDisplay {} ;
+    export interface IDisplay2d {} ;
+    export interface IDisplay3d {} ;
 
-module akra {
     export interface IDisplayManager extends IManager {
         createDisplay3D(): IDisplay3d;
         createDisplay3D(pCanvas: HTMLCanvasElement): IDisplay3d;
@@ -3306,122 +7738,19 @@ module akra {
 
 
 
+
+
+
+
+
+
 module akra {
-    export interface IParticleManager {
+    export interface IParticleManager extends IManager {
 
     }
 }
 
 
-
-
-
-
-interface IResourceCode {} ;
-interface IResourcePool {} ;
-interface IResourceWatcherFunc {} ;
-interface IResourcePoolItem {} ;
-
-module akra {
-
-/** Семейства ресурсов */
-
-	export enum EResourceFamilies {
-		VIDEO_RESOURCE = 0,
-		AUDIO_RESOURCE,
-		GAME_RESOURCE,
-		TOTAL_RESOURCE_FAMILIES
-	};
-
-/** Члены семейства видео ресурсов */
-
-	export enum EVideoResources {
-		TEXTURE_RESOURCE,
-		VIDEOBUFFER_RESOURCE,
-		VERTEXBUFFER_RESOURCE,
-		INDEXBUFFER_RESOURCE,
-		EFFECT_RESOURCE,
-		RENDERMETHOD_RESOURCE,
-		MODEL_RESOURCE,
-		EFFECTFILEDATA_RESOURCE,
-		IMAGE_RESOURCE,
-		SURFACEMATERIAL_RESOURCE,
-		SHADERPROGRAM_RESOURCE,
-		COMPONENT_RESOURCE,
-		TOTAL_VIDEO_RESOURCES
-	};
-
-	export enum EAudioResources {
-		TOTAL_AUDIO_RESOURCES
-	};
-
-	export enum EGameResources {
-		TOTAL_GAME_RESOURCES
-	};
-
-/** Конструктор класса, занимается очисткой списков пулов по семействам ресурсвов и краты пулов по коду ресурсов */
-
-    export interface IResourcePoolManager extends IManager {
-    	texturePool: IResourcePool;
-    	surfaceMaterialPool: IResourcePool;
-    	vertexBufferPool: IResourcePool;
-    	videoBufferPool: IResourcePool;
-    	indexBufferPool: IResourcePool;
-    	renderMethodPool: IResourcePool;
-    	modelPool: IResourcePool;
-    	imagePool: IResourcePool;
-//ex: private    	shaderProgramPool: IResourcePool;
-//ex: private    	effectPool: IResourcePool;
-//ex: private    	componentPool: IResourcePool;
-
-/** Регистрируется пул ресурсов опредленного типа в менеджере русурсов */
-
-    	registerResourcePool(pCode: IResourceCode, pPool: IResourcePool): void;
-/** Удаляет пул ресурсов опредленного типа в менеджере русурсов */
-
-    	unregisterResourcePool(pCode: IResourceCode): IResourcePool;
-
-/** Удаление ресурсов определенного семества */
-
-    	destroyResourceFamily(eFamily: EResourceFamilies): void;
-    	restoreResourceFamily(eFamily: EResourceFamilies): void;
-    	disableResourceFamily(eFamily: EResourceFamilies): void;
-    	cleanResourceFamily(eFamily: EResourceFamilies): void;
-
-    	destroyResourceType(pCode: IResourceCode): void;
-    	restoreResourceType(pCode: IResourceCode): void;
-    	disableResourceType(pCode: IResourceCode): void;
-    	cleanResourceType(pCode: IResourceCode): void;
-/** Возвращает пул ресурса опредленного типа по его коду */
-
-    	findResourcePool(pCode: IResourceCode): IResourcePool;
-/**
-		 * Возвращает хендл конкретного ресурса по его имени из конкретного пула опредленного типа
-		 **/
-
-    	findResourceHandle(pCode: IResourceCode, sName: string): int;
-/** Возвращает конкретный ресурс по его имени из конкретного пула опредленного типа */
-
-    	findResource(pCode: IResourceCode, sName: string): IResourcePoolItem;
-        findResource(pCode: IResourceCode, iHandle: int): IResourcePoolItem;
-
-    	monitorInitResources(fnMonitor: IResourceWatcherFunc): void;
-    	setLoadedAllRoutine(fnCallback: Function): void;
-
-/** Удаление всех ресурсов */
-
-    	destroyAll(): void;
-    	restoreAll(): void;
-    	disableAll(): void;
-
-    	clean(): void;
-
-    	createDeviceResources(): bool;
-    	destroyDeviceResources(): bool;
-    	restoreDeviceResources(): bool;
-    	disableDeviceResources(): bool;
-    }
-}
 
 
 
@@ -3480,7 +7809,7 @@ module akra.core {
 }
 
 module akra {
-	export function createEngine() {
+	createEngine = function (): IEngine {
 		return new core.Engine();
 	}
 }
@@ -3518,25 +7847,6 @@ module akra {
 
 
 
-module akra {
-	export enum EDisplayTypes {
-		TYPE_UNKNOWN = -1,
-		TYPE_2D = 1,
-		TYPE_3D
-	};
-
-	export interface IDisplay {
-		type: EDisplayTypes;
-
-
-		isFullscreen(): bool;
-		fullscreen(): bool;
-	}
-}
-
-
-
-
 
 
 
@@ -3549,36 +7859,6 @@ module akra {
 }
 
 
-
-
-
-
-
-
-
-module akra {
-	export interface IDisplay3d extends IDisplay {
-		render(): void;
-		renderFrame(): bool;
-
-		play(): bool;
-		pause(isPaused?: bool): bool;
-
-		inRendering(): bool;
-
-
-		getCanvas(): HTMLCanvasElement;
-		getScene(): IScene3d;
-		getBuilder(): ISceneBuilder;
-		getRenderer(): IRenderer;
-		getScreen(): IScreen;
-
-		getTime(): float;
-		getElapsedTime(): float;
-		getFPS(): float;
-
-	}
-}
 
 
 
@@ -3724,41 +8004,6 @@ module akra.display {
 
 
 
-
-module akra {
-	export interface IScene {
-
-	}
-}
-
-
-
-module akra {
-	export interface IScene3d extends IScene {
-		recursivePreUpdate(): void;
-		updateCamera(): bool;
-		updateScene(): bool;
-		recursiveUpdate(): void;
-	}
-}
-
-
-
-
-
-
-interface IBuildScenario {} ;
-
-module akra {
-	export interface ISceneBuilder {
-		build(pScenario: IBuildScenario): bool;
-	}
-}
-
-
-
-
-
 ///<reference path="akra.ts" />
 
 module akra {
@@ -3767,56 +8012,10 @@ module akra {
 	}
 }
 
-///<reference path="akra.ts" />
-
-module akra {
-	export enum EUtilTimerCommands {
-//! <to reset the timer		TIMER_RESET,
-//! <to start the timer		TIMER_START,
-//! <to stop (or pause) the timer		TIMER_STOP,
-//! <to advance the timer by 0.1 seconds		TIMER_ADVANCE,
-//! <to get the absolute system time		TIMER_GET_ABSOLUTE_TIME,
-//! <to get the current time		TIMER_GET_APP_TIME,
-		TIMER_GET_ELAPSED_TIME
-//! to get the time that elapsed between TIMER_GETELAPSEDTIME calls
-	}
-
-    export interface IUtilTimer {
-        absoluteTime: float;
-        appTime: float;
-        elapsedTime: float;
-
-        start(): bool;
-        stop(): bool;
-        reset(): bool;
-        execCommand(e: EUtilTimerCommands): float;
-
-//static start(): IUtilTimer;
-    }
-}
 
 
 
 
-module akra {
-	export interface IBuildScenario {
-
-	}
-}
-
-
-
-
-
-
-
-module akra {
-	export interface ICanvasInfo {
-		width: int;
-		height: int;
-		id: string;
-	}
-}
 
 
 
@@ -4109,7 +8308,9 @@ module akra.display {
 
 
 
-var engine = akra.createEngine();
-var dmgr = engine.getDisplayManager();
-var view = dmgr.createDisplay3D();
-var scene = view.getScene();
+module akra {
+	var engine: IEngine = createEngine();
+	var dmgr: IDisplayManager = engine.getDisplayManager();
+	var view: IDisplay3d = dmgr.createDisplay3D();
+	var scene: IScene = view.getScene();
+}

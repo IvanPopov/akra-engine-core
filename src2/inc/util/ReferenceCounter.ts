@@ -1,4 +1,7 @@
-///<reference path="../akra.ts" />
+#ifndef REFERENCECOUNTER_TS
+#define REFERENCECOUNTER_TS
+
+#include "IReferenceCounter.ts"
 
 module akra.util {
 	export class ReferenceCounter implements IReferenceCounter {
@@ -43,3 +46,5 @@ module akra.util {
 		};
 	}
 }
+
+#endif

@@ -1,6 +1,8 @@
 #include "inc/akra.ts"
 
-var engine = akra.createEngine();
-var dmgr = engine.getDisplayManager();
-var view = dmgr.createDisplay3D();
-var scene = view.getScene();
+module akra {
+	var engine: IEngine = createEngine();
+	var dmgr: IDisplayManager = engine.getDisplayManager();
+	var view: IDisplay3d = dmgr.createDisplay3D();
+	var scene: IScene = view.getScene();
+}

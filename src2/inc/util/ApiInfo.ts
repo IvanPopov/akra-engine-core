@@ -1,4 +1,8 @@
-///<reference path="../akra.ts" />
+#ifndef APIINFO_TS
+#define APIINFO_TS
+
+#include "IApiInfo.ts"
+#include "Singleton.ts"
 
 module akra.util {
 	export class ApiInfo extends Singleton implements IApiInfo {
@@ -107,3 +111,4 @@ module akra.util {
 	}
 }
 
+#endif

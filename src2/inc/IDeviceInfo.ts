@@ -1,4 +1,5 @@
-///<reference path="akra.ts" />
+#ifndef IDEVICEINFO_TS
+#define IDEVICEINFO_TS
 
 module akra {
 	export interface IDeviceInfo {
@@ -22,3 +23,5 @@ module akra {
 		checkFormat(pDevice: WebGLRenderingContext, eFormat: EImageFormats);
 	}
 }
+
+#endif

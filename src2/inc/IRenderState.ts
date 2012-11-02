@@ -1,4 +1,5 @@
-///<reference path="akra.ts" />
+#ifndef IRENDERSTATE_TS
+#define IRENDERSTATE_TS
 
 module akra {
 	export interface IRenderState {
@@ -14,3 +15,5 @@ module akra {
 		isAdvancedIndex: bool;
 	}
 }
+
+#endif

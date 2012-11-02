@@ -3,10 +3,10 @@
 
 #include "IRenderResource.ts"
 
-IFACE(IImg);
-
-
 module akra {
+
+    IFACE(IImg);
+
 	export enum ETextureFilters {
         NEAREST = 0x2600,
         LINEAR = 0x2601,
@@ -100,9 +100,9 @@ module akra {
         
         maskWithImage(pImage: IImg): bool;
 
-        uploadCubeFace(pImage: IImg, eFace: ETextureTypes, isCopyAll?: bool);
-        uploadHTMLElement(pElement: HTMLElement);
-        uploadImage(pImage: IImg);
+        uploadCubeFace(pImage: IImg, eFace: ETextureTypes, isCopyAll?: bool): bool;
+        uploadHTMLElement(pElement: HTMLElement): bool;
+        uploadImage(pImage: IImg): bool;
 
         resize(iWidth: uint, iHeight: uint): bool;
         repack(iWidth: uint, iHeight: uint, eFormat?: EImageFormats, eType?: EImageTypes): bool;
@@ -114,7 +114,7 @@ module akra {
             iFlags?: int, 
             eFormat?: EImageFormats, 
             eType?: EImageTypes,
-            pData?: ArrayBufferView);
+            pData?: ArrayBufferView): bool;
 
         //------------
         // Эти вызовы надо убрать, так как пользователю не положено делать их самому,

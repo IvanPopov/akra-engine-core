@@ -1,4 +1,9 @@
-///<reference path="../akra.ts" />
+#ifndef DEVICEINFO_TS
+#define DEVICEINFO_TS
+
+#include "IDeviceInfo.ts"
+#include "IImg.ts"
+#include "Singleton.ts"
 
 module akra.util {
 	export class DeviceInfo extends Singleton implements IDeviceInfo {
@@ -113,3 +118,5 @@ module akra.util {
 	    }
     }
 }
+
+#endif

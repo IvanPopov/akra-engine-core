@@ -1,6 +1,15 @@
-///<reference path="akra.ts" />
+#ifndef IVERTEXBUFFERBASE_TS
+#define IVERTEXBUFFERBASE_TS
+
+#include "IGPUBuffer.ts"
 
 module akra {
+
+	IFACE(IVertexData);
+	IFACE(IVertexElement);
+	IFACE(IVertexDeclaration);
+
+
 	export interface IVertexBufferBase extends IGPUBuffer {
 		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;
 		getVertexData(iOffset: uint, iCount: uint, pDecl: IVertexDeclaration): IVertexData;
@@ -14,3 +23,5 @@ module akra {
 		allocateData(pDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
 	}
 }
+
+#endif

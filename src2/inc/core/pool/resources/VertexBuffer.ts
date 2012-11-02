@@ -1,7 +1,21 @@
-///<reference path="../../../akra.ts" />
+#ifndef VERTEXBUFFER_TS
+#define VERTEXBUFFER_TS
+
+#include "IVertexData.ts"
+#include "IVertexBuffer.ts"
+#include "../ResourcePoolItem.ts"
 
 module akra.core.pool.resources {
 	export class VertexBuffer extends ResourcePoolItem implements IVertexBuffer {
+
+		get byteLength(): uint {
+			return 0;
+		}
+
+		get length(): uint {
+			return 0;
+		}
+
 		clone(pSrc: IGPUBuffer): bool {
 			return false;
 		}
@@ -43,8 +57,20 @@ module akra.core.pool.resources {
 			return null;
 		}
 
-		getOptions(): int {
-			return 0;
+		getHardwareObject(): WebGLObject {
+			return null;
+		}
+
+		getFlags(): int {
+		return 0;
+		}
+
+		getData(iOffset: uint, iSize: uint): ArrayBuffer {
+			return null;
+		}
+
+		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool {
+			return false;
 		}
 
 		
@@ -74,3 +100,5 @@ module akra.core.pool.resources {
 		}
 	}
 }
+
+#endif

@@ -3,12 +3,13 @@
 
 #include "IManager.ts"
 
-IFACE(IEngine);
-IFACE(IDisplay);
-IFACE(IDisplay2d);
-IFACE(IDisplay3d);
-
 module akra {
+
+    IFACE(IEngine);
+    IFACE(IDisplay);
+    IFACE(IDisplay2d);
+    IFACE(IDisplay3d);
+
     export interface IDisplayManager extends IManager {
         createDisplay3D(): IDisplay3d;
         createDisplay3D(pCanvas: HTMLCanvasElement): IDisplay3d;

@@ -1,4 +1,12 @@
-///<reference path="../../akra.ts" />
+#ifndef RESOURCEPOOL_TS
+#define RESOURCEPOOL_TS
+
+#include "IEngine.ts"
+#include "IResourcePool.ts"
+#include "IResourcePoolItem.ts"
+#include "IDataPool.ts"
+#include "IResourceCode.ts"
+#include "util/ReferenceCounter.ts"
 
 module akra.core.pool {
     export class ResourcePool extends util.ReferenceCounter implements IResourcePool {
@@ -261,3 +269,5 @@ module akra.core.pool {
         }
     }
 }
+
+#endif

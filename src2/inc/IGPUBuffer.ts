@@ -1,4 +1,7 @@
-///<reference path="akra.ts" />
+#ifndef IGPUBUFFER_TS
+#define IGPUBUFFER_TS
+
+#include "IBuffer.ts"
 
 module akra {
 	export enum EGPUBufferFlags {
@@ -27,3 +30,5 @@ module akra {
 		getFlags(): int; 
 	}
 }
+
+#endif

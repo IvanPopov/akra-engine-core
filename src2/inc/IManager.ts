@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IMANAGER_TS
+#define IMANAGER_TS
 
 module akra {
     export interface IManager {
@@ -6,3 +7,5 @@ module akra {
         destroy(): void;
     }
 }
+
+#endif

@@ -1,4 +1,7 @@
-///<reference path="../../akra.ts" />
+#ifndef RESOURCECODE_TS
+#define RESOURCECODE_TS
+
+#include "IResourceCode.ts"
 
 module akra.core.pool {
 	export class ResourceCode implements IResourceCode {
@@ -71,3 +74,5 @@ module akra.core.pool {
 
 	
 }
+
+#endif

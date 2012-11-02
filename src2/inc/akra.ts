@@ -3,7 +3,8 @@
 
 #include "base.d.ts"
 
-#define IFACE(IF) interface IF {}
+#define IFACE(IF) export interface IF {}
+#define readonly  
 
 module akra {
     export var DEBUG: bool = true;
@@ -55,6 +56,10 @@ module akra {
 
     /** @inline */
     export var isDef = (x: any): bool =>  x !== undefined;
+
+    // Note that undefined == null.
+    /** @inline */ 
+    export var isDefAndNotNull = (x: any): bool =>  x != null;
 
     /** @inline */
     export var isNull = (x: any): bool =>  x === null;
@@ -162,12 +167,18 @@ module akra {
 
     export var INVALID_INDEX: int =  0xffff;
 
-    export var MIN_INT32: int = 0xffffffff;  // (-2147483646);
-    export var MAX_INT32: int = 0x7fffffff;  // ( 2147483647);
-    export var MIN_INT16: int = 0xffff;      // (-32768);
-    export var MAX_INT16: int = 0x7fff;      // ( 32767);
-    export var MIN_INT8: int = 0xff;         // (-128);
-    export var MAX_INT8: int = 0x7f;         // ( 127);
+    // (-2147483646);
+    export var MIN_INT32: int = 0xffffffff;  
+    // ( 2147483647);
+    export var MAX_INT32: int = 0x7fffffff; 
+    // (-32768);
+    export var MIN_INT16: int = 0xffff;    
+    // ( 32767);  
+    export var MAX_INT16: int = 0x7fff;      
+    // (-128);
+    export var MIN_INT8: int = 0xff; 
+    // ( 127);        
+    export var MAX_INT8: int = 0x7f;         
     export var MIN_UINT32: int = 0;
     export var MAX_UINT32: int = 0xffffffff;
     export var MIN_UINT16: int = 0;
@@ -189,19 +200,24 @@ module akra {
     export var SIZE_BYTE: int = 1;
     export var SIZE_UBYTE: int = 1;
 
-
-    export var MAX_FLOAT64: float = Number.MAX_VALUE;      //1.7976931348623157e+308
-    export var MIN_FLOAT64: float = -Number.MAX_VALUE;     //-1.7976931348623157e+308
-    export var TINY_FLOAT64: float = Number.MIN_VALUE;     //5e-324
+    //1.7976931348623157e+308
+    export var MAX_FLOAT64: float = Number.MAX_VALUE;      
+    //-1.7976931348623157e+308
+    export var MIN_FLOAT64: float = -Number.MAX_VALUE;     
+    //5e-324
+    export var TINY_FLOAT64: float = Number.MIN_VALUE;     
 
 //    export var MAX_REAL64: number = Number.MAX_VALUE;   //1.7976931348623157e+308
 //    export var MIN_REAL64: number = -Number.MAX_VALUE;  //-1.7976931348623157e+308
 //    export var TINY_REAL64: number = Number.MIN_VALUE;  //5e-324
 
 
-    export var MAX_FLOAT32: float = 3.4e38;    //3.4e38
-    export var MIN_FLOAT32: float = -3.4e38;   //-3.4e38
-    export var TINY_FLOAT32: float = 1.5e-45;  //1.5e-45
+    //3.4e38
+    export var MAX_FLOAT32: float = 3.4e38;    
+    //-3.4e38
+    export var MIN_FLOAT32: float = -3.4e38;
+    //1.5e-45  
+    export var TINY_FLOAT32: float = 1.5e-45;  
 
 //    export var MAX_REAL32: number = 3.4e38;     //3.4e38
 //    export var MIN_REAL32: number = -3.4e38;    //-3.4e38
@@ -338,11 +354,12 @@ module akra {
 #include "libs/libs.ts"
 #include "bf/bitflags.ts"
 #include "math/math.ts"
-
+/*
 #include "IRect3d.ts"
 #include "IRect3d.ts"
 #include "IRect3d.ts"
 #include "IRect3d.ts"
+*/
 #include "geometry/geometry.ts"
 /*
 #include "IWorldExtents.ts"
@@ -362,13 +379,13 @@ module akra {
 #include "IApiInfo.ts"
 #include "IDeviceInfo.ts"
 #include "IUtilTimer.ts"
-
+*/
 #include "info/support/support.ts"
 #include "info/info.ts"
-
+/*
 #include "IFont2d.ts"
 #include "IString2d.ts"
-
+*/
 #include "util/util.ts"
 #include "util/ReferenceCounter.ts"
 #include "util/Singleton.ts"
@@ -384,13 +401,13 @@ module akra {
 
 #include "gui/Font2d.ts"
 #include "gui/String2d.ts"
-
+/*
 #include "IVertexElement.ts"
 #include "IvertexDeclaration.ts"
-
+*/
 #include "util/VertexElement.ts"
 #include "util/VertexDeclaration.ts"
-
+/*
 #include "IBufferData.ts"
 #include "IVertexData.ts"
 #include "IIndexData.ts"
@@ -410,13 +427,14 @@ module akra {
 #include "IRenderResource.ts"
 #include "IRenderableObject.ts"
 #include "IRenderSnapshot.ts"
-
+*/
 
 #include "core/pool/ResourceCode.ts"
 #include "core/pool/DataPool.ts"
 #include "core/pool/ResourcePool.ts"
 #include "core/pool/ResourcePoolItem.ts"
 #include "core/pool/ResourcePoolManager.ts"
+
 
 #include "core/pool/resources/IndexBuffer.ts"
 #include "core/pool/resources/VertexBuffer.ts"
@@ -429,7 +447,7 @@ module akra {
 #include "core/pool/resources/Img.ts"
 #include "core/pool/resources/RenderMethod.ts"
 #include "core/pool/resources/Model.ts"
-
+/*
 #include "IBuffer.ts"
 #include "IFrameBuffer.ts"
 

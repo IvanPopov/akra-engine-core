@@ -1,4 +1,8 @@
-///<reference path="../akra.ts" />
+#ifndef STRING2D_TS
+#define STRING2D_TS
+
+#include "IString2d.ts"
+#include "IFont2d.ts"
 
 module akra.gui {
 	export class String2d implements IString2d {
@@ -90,3 +94,5 @@ module akra.gui {
 		}
 	}
 }
+
+#endif

@@ -1,4 +1,7 @@
-///<reference path="../akra.ts" />
+#ifndef FONT2D_TS
+#define FONT2D_TS
+
+#include "IFont2d.ts"
 
 module akra.gui {
 	export class Font2d implements IFont2d {
@@ -49,3 +52,5 @@ module akra.gui {
 		}
 	}
 }
+
+#endif

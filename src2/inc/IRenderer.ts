@@ -1,25 +1,26 @@
 #ifndef IRENDERER_TS
 #define IRENDERER_TS
 
-IFACE(IAFXComponent);
-IFACE(IAFXEffect);
-IFACE(IRenderableObject);
-IFACE(IRenderSnapshot);
-IFACE(ISceneObject);
-IFACE(IBufferMap);
-IFACE(IShaderProgram);
-IFACE(ISurfaceMaterial);
-IFACE(IVertexData);
-IFACE(IVertexBuffer);
-IFACE(ITexture);
-IFACE(IIndexBuffer);
-IFACE(IRenderResource);
-IFACE(IRenderEntry);
-IFACE(IFrameBuffer);
-IFACE(IViewport);
-
-
 module akra {
+
+    IFACE(IAFXComponent);
+    IFACE(IAFXEffect);
+    IFACE(IRenderableObject);
+    IFACE(IRenderSnapshot);
+    IFACE(ISceneObject);
+    IFACE(IBufferMap);
+    IFACE(IShaderProgram);
+    IFACE(ISurfaceMaterial);
+    IFACE(IVertexData);
+    IFACE(IVertexBuffer);
+    IFACE(ITexture);
+    IFACE(IIndexBuffer);
+    IFACE(IRenderResource);
+    IFACE(IRenderEntry);
+    IFACE(IFrameBuffer);
+    IFACE(IViewport);
+    IFACE(IColor);
+
 
 	//API SPECIFIFC CONSTANTS
 

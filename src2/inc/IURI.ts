@@ -1,4 +1,5 @@
-///<reference path="akra.ts" />
+#ifndef IURI_TS
+#define IURI_TS
 
 module akra {
 	export interface IURI {
@@ -17,3 +18,5 @@ module akra {
 		toString(): string;
 	}
 }
+
+#endif
