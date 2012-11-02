@@ -1,4 +1,5 @@
-///<reference path="../akra.ts" />
+#ifndef VEC3_TS
+#define VEC3_TS
 
 module akra.math {
     export class Vec3 {
@@ -115,3 +116,5 @@ module akra.math {
 
 
 }
+
+#endif
