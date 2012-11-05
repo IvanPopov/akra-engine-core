@@ -29,7 +29,6 @@ src2/*.png
 #complete build
 compiled/*.js
 build/build.bat
-build.bat
 
 node_modules/
 

@@ -1,0 +1,1 @@
+make.bat -D ../ -o ../bin/main.ts ../main.ts
