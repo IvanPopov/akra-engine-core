@@ -1,3 +1,4 @@
+#include "parser.ts"
 /// <reference path="parser/parser.ts" />
 
 //var pTree: akra.IParseTree = new akra.ParseTree();

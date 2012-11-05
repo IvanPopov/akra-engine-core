@@ -246,9 +246,6 @@ module akra {
     }
 
 
-
-
-
     class Item implements IItem {
         private _pRule: IRule;
         private _iPos: uint;
