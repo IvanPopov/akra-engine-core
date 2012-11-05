@@ -18,6 +18,10 @@
 	_EVENT_BC(event, signal);
 #define EVENT(event) \
 	event
+
+#define CONNECT(sender, signal, recivier, slot) recivier.connect(sender, signal, slot)
+#define BIND(sender, signal, callback) sender.bind(signal, callback)
+
 #define BEGIN_EVENT_TABLE(object) \
 	private _iGuid: uint = sid(); 																						\
 	private static _pEvenetTable: IEventTable = new events.EventTable(); 													\
