@@ -40,6 +40,7 @@ module akra.math {
 		set(fValue: float): IMat3;
 		set(v3fVec: IVec3): IMat3;
 		set(m3fMat: IMat3): IMat3;
+		set(m4fMat: IMat4): IMat3;
 		set(pArray: float[]): IMat3;
 		set(fValue1: float, fValue2: float, fValue3: float): IMat3;
 		set(v3fVec1: IVec3, v3fVec2: IVec3, v3fVec3: IVec3): IMat3;
