@@ -401,6 +401,7 @@ declare var Array: {
 
 interface ArrayBuffer {
     byteLength: number;
+    slice(begin: number, end?: number);
 }
 declare var ArrayBuffer: {
     prototype: ArrayBuffer;

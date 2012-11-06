@@ -19,7 +19,6 @@ module akra {
 
 		allocateData(ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes, pData: ArrayBufferView): IIndexData;
 		getCountIndexForStripGrid(iXVerts: int, iYVerts: int): int;
-
 	}
 }
 

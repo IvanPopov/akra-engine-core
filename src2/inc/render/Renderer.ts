@@ -25,7 +25,10 @@
 #include "IViewport.ts"
 
 module  akra.render {
-	export var ShaderPrefixes: StringMap = {
+
+
+
+	export var SShaderPrefixes = {
 		k_Sampler    : "A_s_",
 	    k_Header     : "A_h_",
 	    k_Attribute  : "A_a_",
@@ -39,7 +42,7 @@ module  akra.render {
 
 	export var ZEROSAMPLER: int = 19;
 
-	export var SystemSemantics: StringMap = {
+	export var SSystemSemantics = {
 		MODEL_MATRIX: 		"MODEL_MATRIX",
 		VIEW_MATRIX: 		"VIEW_MATRIX",
 		PROJ_MATRIX: 		"PROJ_MATRIX",

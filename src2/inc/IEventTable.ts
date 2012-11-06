@@ -1,7 +1,6 @@
 #ifndef IEVENTTABLE_TS
 #define IEVENTTABLE_TS
 
-
 module akra {
 	export interface IEventSlot {
 		target: any;
@@ -18,13 +17,18 @@ module akra {
 		[index: string]: IEventSlotMap;
 	}
 
-	export interface IEventTable {
-		slots: IEventSlotTable;
+	export interface IEventSlotList {
+		[index: number]: {[index: string]: IEventSlot;};
+		[index: string]: {[index: string]: IEventSlot;};
+	}
 
-		addDestination(iGuid: int, sSignal: string, pTarget: IEventProvider, sSlot: string): bool;
-		addListener(iGuid: int, sSignal: string, fnListener: Function): bool;
+	export interface IEventTable {
+		broadcast: IEventSlotTable;
+		unicast: IEventSlotList;
+
+		addDestination(iGuid: int, sSignal: string, pTarget: IEventProvider, sSlot: string, eType?: EEventTypes): bool;
+		addListener(iGuid: int, sSignal: string, fnListener: Function, eType?: EEventTypes): bool;
 	}
 }
-
 
 #endif

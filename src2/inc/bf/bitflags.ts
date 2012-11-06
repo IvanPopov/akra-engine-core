@@ -31,7 +31,7 @@
  * SET_BIT(value, bit)
  * Выставляет бит под номером @a bit у числа @a value равным единице
  */
-#define SET_BIT(value, bit) ((value) |= FLAG((bit)))
+#define TRUE_BIT(value, bit) ((value) |= FLAG((bit)))
 
 #define SET_BIT(value, bit, setting) (setting ? SET_BIT(value, bit) : CLEAR_BIT(value, bit))
 
@@ -56,7 +56,7 @@
  */
 #define CLEAR_ALL(value, set) ((value) &= ~(set))
 
-#define SET_ALL(value, set, setting) (setting ? SET_ALL(value, set) : CLEAR_ALL(value, set))
+//#define SET_ALL(value, set, setting) (setting ? SET_ALL(value, set) : CLEAR_ALL(value, set))
 
 
 

@@ -6,11 +6,18 @@
 #define IFACE(IF) export interface IF {}
 #define readonly  
 #define protected
+#define struct class
 #define const var
+#define DEBUG DEBUG
 
 
 module akra {
+
+#ifdef DEBUG
     export var DEBUG: bool = true;
+#else
+    export var DEBUG: bool = false;
+#endif
 
     export function typeOf(x: any): string {
         var s: string = typeof x;
@@ -109,30 +116,30 @@ module akra {
     export var warning = console.warn.bind(console);
 	export var error = console.error.bind(console);
 
+#ifdef DEBUG
     export var debug_print = (pArg:any, ...pParams: any[]): void => {
-        if (DEBUG) {
             trace.apply(null, arguments);
-        }
     }
 
     export var debug_assert = (isOK: bool, ...pParams: any[]): void => {
-        if (DEBUG) {
             assert.apply(null, arguments);
-        }
     }
     
     export var debug_warning = (pArg:any, ...pParams: any[]): void => {
-        if (DEBUG) {
             warning.apply(null, arguments);
-        }
     }
 
 	export var debug_error = (pArg:any, ...pParams: any[]): void => {
-        if (DEBUG) {
             error.apply(null, arguments);
-        }
     }
+#else
 
+#define debug_print(...)
+#define debug_assert(...)
+#define debug_warning(...)
+#define debug_error(...)
+
+#endif
 
     export function initDevice(pDevice: WebGLRenderingContext):WebGLRenderingContext {
     	return pDevice;

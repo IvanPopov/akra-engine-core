@@ -27,14 +27,16 @@ module akra {
 		resize(nCount: uint, iStride?: uint): bool;
 		applyModifier(sUsage: string, fnModifier: IBufferDataModifier): bool;
 
-		setData(pData: ArrayBuffer, iOffset: int, iSize?: uint, nCountStart?: uint, nCount?: uint): bool;
-		setData(pData: ArrayBuffer, sUsage?: string, iSize?: uint, nCountStart?: uint, nCount?: uint): bool;
+		setData(pData: ArrayBufferView, iOffset: int, iSize?: uint, nCountStart?: uint, nCount?: uint): bool;
+		setData(pData: ArrayBufferView, sUsage?: string, iSize?: uint, nCountStart?: uint, nCount?: uint): bool;
 
+		getData(): ArrayBuffer;
 		getData(iOffset: int, iSize: uint, iFrom?: uint, iCount?: uint): ArrayBuffer;
 		getData(sUsage: string): ArrayBuffer;
 		getData(sUsage: string, iFrom: uint, iCount: uint): ArrayBuffer;
 
-		getTypedData(sUsage: string, iFrom: int, iCount: uint): ArrayBufferView;
+		getTypedData(sUsage: string, iFrom?: int, iCount?: uint): ArrayBufferView;
+		getBufferHandle(): int;
 		
 		toString(): string;
 	}
