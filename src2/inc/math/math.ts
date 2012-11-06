@@ -371,6 +371,14 @@ module akra {
 	export var Mat3 = math.Mat3;
 	export var Mat4 = math.Mat4;
 	export var Quat4 = math.Quat4;
+
+	//export var vec2: () => IVec2;
+	export var vec3: (fX?:any, fY?:any, fZ?:any) => IVec3;
+	export var vec4: (fX?:any, fY?:any, fZ?:any, fW?: any) => IVec4;
+	//export var mat2: () => IMat2;
+	export var mat3: (fX?:any) => IMat3;
+	export var mat4: (fX?:any) => IMat4;
+	export var quat4: (fX?:any, fY?:any, fZ?:any, fW?: any) => IQuat4;
 }
 
 #endif

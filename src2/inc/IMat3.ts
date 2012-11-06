@@ -28,7 +28,7 @@
 #define __a32 5
 #define __a33 8
 
-module akra.math {
+module akra {
 	IFACE(IMat4);
 	IFACE(IVec3);
 	IFACE(IQuat4);

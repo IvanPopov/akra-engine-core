@@ -23,7 +23,7 @@ module akra.scene {
 		private _m4fLocalMatrix: IMat4 = null;
 		private _m4fWorldMatrix: IMat4 = null;
 		private _m4fInverseWorldMatrix: IMat4 = null;
-		private _m4fNormalMatrix: IMat3 = null;
+		private _m3fNormalMatrix: IMat3 = null;
 		
 		private _v3fWorldPosition: IVec3 = null;
 
@@ -89,7 +89,7 @@ module akra.scene {
 			return this._m4fInverseWorldMatrix;
 		}
 
-		get normalMatrix(): IMat4 {
+		get normalMatrix(): IMat3 {
 			if (TEST_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildNormalMatrix)) {
 		        this._m4fWorldMatrix.toInverseMat3(this._m3fNormalMatrix).transpose();
 		        CLEAR_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildNormalMatrix);
@@ -119,7 +119,7 @@ module akra.scene {
 		}
 
 		inline getInheritance(): ENodeInheritance {
-			this._eInheritance;
+			return this._eInheritance;
 		}
 
 		inline isWorldMatrixNew(): bool {
@@ -131,7 +131,7 @@ module akra.scene {
 		}
 
 		recalcWorldMatrix(): bool {
-			var isParentMoved: bool = this._pParent && this._pParent.isWorldMatrixNew();
+			var isParentMoved: bool = this._pParent && (<Node>this._pParent).isWorldMatrixNew();
 		    var isOrientModified: bool = TEST_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		    var isLocalModified: bool = TEST_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewLocalMatrix);
 
@@ -139,7 +139,7 @@ module akra.scene {
 
 		        var m4fLocal: IMat4 = this._m4fLocalMatrix;
 		        var m4fWorld: IMat4 = this._m4fWorldMatrix;
-		        var m4fParent: IMat4 = this._pParent.worldMatrix();
+		        var m4fParent: IMat4 = (<Node>this._pParent).worldMatrix;
 		        var m4fOrient: IMat4 = Node._m4fTemp;
 		        var v3fTemp: IVec3 = Node._v3fTemp;
 		        
@@ -150,7 +150,7 @@ module akra.scene {
 		        this._qRotation.toMat4(m4fOrient);
 
 		        m4fOrient.setTranslation(this._v3fTranslation);
-		        m4fOrient.scale(this._v3fScale);
+		        m4fOrient.scaleLeft(this._v3fScale);
 		        m4fOrient.multiply(m4fLocal); 
 
 
@@ -203,15 +203,15 @@ module akra.scene {
 		            m4fWorld.set(m4fOrient);
 		        }
 
-		        this._v3fWorldPosition.pData.X = pWorldData[__14];
-		        this._v3fWorldPosition.pData.Y = pWorldData[__24];
-		        this._v3fWorldPosition.pData.Z = pWorldData[__34];
+		        this._v3fWorldPosition.x = pWorldData[__14];
+		        this._v3fWorldPosition.y = pWorldData[__24];
+		        this._v3fWorldPosition.z = pWorldData[__34];
 
 		        // set the flag that our world matrix has changed
-		        SET_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewWorldMatrix, true);
+		        TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewWorldMatrix);
 		        // and it's inverse & vectors are out of date
-		        SET_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildInverseWorldMatrix, true);
-		        SET_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildNormalMatrix, true);
+		        TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildInverseWorldMatrix);
+		        TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildNormalMatrix);
 
 		        return true;
 		    }
@@ -227,7 +227,7 @@ module akra.scene {
 
 		    v3fTranslation.set(pPos);
 
-		    SET_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation, true);
+		    TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		addPosition(v3fPosition: IVec3): void;
@@ -238,7 +238,7 @@ module akra.scene {
 		    
 		    v3fTranslation.add(pPos);
 
-		    SET_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation, true);
+		    TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		addRelPosition(v3fPosition: IVec3): void;
@@ -250,39 +250,39 @@ module akra.scene {
 		    this._qRotation.multiplyVec3(pPos);
     		v3fTranslation.add(pPos);
 
-		    SET_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation, true);
+		    TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		setRotationByMatrix(m3fRotation: IMat3): void;
 		setRotationByMatrix(m4fRotation: IMat4): void;
 		setRotationByMatrix(matrix: any): void {
 			matrix.toQuat4(this._qRotation);
-			SET_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation, true);
+			TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		setRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void {
 			Quat4.fromAxisAngle(v3fAxis, fAngle, this._qRotation);
-			SET_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation, true);
+			TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		setRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
 			Quat4.fromForwardUp(v3fForward, v3fUp, this._qRotation);
-			SET_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation, true);
+			TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		setRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void {
 			Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, this._qRotation);
-			SET_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation, true);
+			TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		setRotationByXYZAxis(fX: float, fY: float, fZ: float): void {
 			Quat4.fromYawPitchRoll(fY, fX, fZ, this._qRotation);
-			SET_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation, true);
+			TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		setRotation(q4fRotation: IQuat4): void {
 			this._qRotation.set(q4fRotation);
-			SET_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation, true);
+			TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		addRelRotationByMatrix(m3fRotation: IMat3): void;
@@ -309,7 +309,7 @@ module akra.scene {
 
 		addRelRotation(q4fRotation: IQuat4): void {
 			this._qRotation.multiply(q4fRotation);
-			SET_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation, true);
+			TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		addRotationByMatrix(m3fRotation: IMat3): void;
@@ -337,7 +337,7 @@ module akra.scene {
 		addRotation(q4fRotation: IQuat4): void {
 			q4fRotation.multiplyVec3(this._v3fTranslation);
     		q4fRotation.multiply(this._qRotation, this._qRotation);
-    		SET_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation, true);
+    		TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 
@@ -349,7 +349,7 @@ module akra.scene {
 
 		    v3fScale.scale(pScale);
 		    
-		    SET_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation, true);
+		    TRUE_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		}
 
 		
@@ -358,7 +358,7 @@ module akra.scene {
 			if (super.attachToParent(pParent)) {
 				// adjust my local matrix to be relative to this new parent
 	            var m4fInvertedParentMatrix: IMat4 = mat4();
-	            this._pParent._m4fWorldMatrix.inverse(m4fInvertedParentMatrix);
+	            (<Node>this._pParent)._m4fWorldMatrix.inverse(m4fInvertedParentMatrix);
 	            return true;
 			}
 

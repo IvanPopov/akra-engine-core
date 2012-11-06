@@ -1104,6 +1104,26 @@ module akra.math {
 
 		    return m4fDestination;
 		};
+
+		toInverseMat3(m3fDestination: IMat3): IMat3 {
+			return null;
+		}
+
+		setTranslation(v3fTranslation: IVec3): IMat4 {
+			return null;
+		}
+
+		getTranslation(v3fTranslation?: IVec3): IVec3 {
+			return null;
+		}
+
+		scaleRight(v3fScale: IVec3, m4fDestination?: IMat4): IMat4 {
+			return null;
+		}
+
+		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4 {
+			return null;
+		}
     }
 }
 

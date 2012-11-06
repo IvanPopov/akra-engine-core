@@ -29,7 +29,7 @@ module akra {
 		readonly worldPosition: IVec3;
 		
 		readonly inverseWorldMatrix: IMat4;
-		readonly normalMatrix: IMat4;
+		readonly normalMatrix: IMat3;
 
 		setInheritance(eInheritance: ENodeInheritance);
 		getInheritance(): ENodeInheritance;

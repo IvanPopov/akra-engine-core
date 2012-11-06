@@ -6,6 +6,10 @@
 
 
 
+
+
+
+
 interface String {
 	toUTF8(): string;
 	fromUTF8(): string;
@@ -36,8 +40,15 @@ interface Number {
 
 
 
+
+
+
+
 module akra {
-    export var DEBUG: bool = true;
+
+
+    export var  DEBUG : bool = true;
+
 
     export function typeOf(x: any): string {
         var s: string = typeof x;
@@ -147,28 +158,21 @@ module akra {
     export var warning = console.warn.bind(console);
 	export var error = console.error.bind(console);
 
+
     export var debug_print = (pArg:any, ...pParams: any[]): void => {
-        if (DEBUG) {
             trace.apply(null, arguments);
-        }
     }
 
     export var debug_assert = (isOK: bool, ...pParams: any[]): void => {
-        if (DEBUG) {
             assert.apply(null, arguments);
-        }
     }
 
     export var debug_warning = (pArg:any, ...pParams: any[]): void => {
-        if (DEBUG) {
             warning.apply(null, arguments);
-        }
     }
 
 	export var debug_error = (pArg:any, ...pParams: any[]): void => {
-        if (DEBUG) {
             error.apply(null, arguments);
-        }
     }
 
 
@@ -206,63 +210,63 @@ module akra {
     }
 
 
-    export var INVALID_INDEX: int =  0xffff;
+    export  var  INVALID_INDEX: int =  0xffff;
 
 // (-2147483646);
-    export var MIN_INT32: int = 0xffffffff;
+    export  var  MIN_INT32: int = 0xffffffff;
 // ( 2147483647);
-    export var MAX_INT32: int = 0x7fffffff;
+    export  var  MAX_INT32: int = 0x7fffffff;
 // (-32768);
-    export var MIN_INT16: int = 0xffff;
+    export  var  MIN_INT16: int = 0xffff;
 // ( 32767);  
-    export var MAX_INT16: int = 0x7fff;
+    export  var  MAX_INT16: int = 0x7fff;
 // (-128);
-    export var MIN_INT8: int = 0xff;
+    export  var  MIN_INT8: int = 0xff;
 // ( 127);        
-    export var MAX_INT8: int = 0x7f;
-    export var MIN_UINT32: int = 0;
-    export var MAX_UINT32: int = 0xffffffff;
-    export var MIN_UINT16: int = 0;
-    export var MAX_UINT16: int = 0xffff;
-    export var MIN_UINT8: int = 0;
-    export var MAX_UINT8: int = 0xff;
+    export  var  MAX_INT8: int = 0x7f;
+    export  var  MIN_UINT32: int = 0;
+    export  var  MAX_UINT32: int = 0xffffffff;
+    export  var  MIN_UINT16: int = 0;
+    export  var  MAX_UINT16: int = 0xffff;
+    export  var  MIN_UINT8: int = 0;
+    export  var  MAX_UINT8: int = 0xff;
 
 
-    export var SIZE_FLOAT64: int = 8;
-    export var SIZE_REAL64: int = 8;
-    export var SIZE_FLOAT32: int = 4;
-    export var SIZE_REAL32: int = 4;
-    export var SIZE_INT32: int = 4;
-    export var SIZE_UINT32: int = 4;
-    export var SIZE_INT16: int = 2;
-    export var SIZE_UINT16: int = 2;
-    export var SIZE_INT8: int = 1;
-    export var SIZE_UINT8: int = 1;
-    export var SIZE_BYTE: int = 1;
-    export var SIZE_UBYTE: int = 1;
+    export  var  SIZE_FLOAT64: int = 8;
+    export  var  SIZE_REAL64: int = 8;
+    export  var  SIZE_FLOAT32: int = 4;
+    export  var  SIZE_REAL32: int = 4;
+    export  var  SIZE_INT32: int = 4;
+    export  var  SIZE_UINT32: int = 4;
+    export  var  SIZE_INT16: int = 2;
+    export  var  SIZE_UINT16: int = 2;
+    export  var  SIZE_INT8: int = 1;
+    export  var  SIZE_UINT8: int = 1;
+    export  var  SIZE_BYTE: int = 1;
+    export  var  SIZE_UBYTE: int = 1;
 
 //1.7976931348623157e+308
-    export var MAX_FLOAT64: float = Number.MAX_VALUE;
+    export  var  MAX_FLOAT64: float = Number.MAX_VALUE;
 //-1.7976931348623157e+308
-    export var MIN_FLOAT64: float = -Number.MAX_VALUE;
+    export  var  MIN_FLOAT64: float = -Number.MAX_VALUE;
 //5e-324
-    export var TINY_FLOAT64: float = Number.MIN_VALUE;
+    export  var  TINY_FLOAT64: float = Number.MIN_VALUE;
 
-//    export var MAX_REAL64: number = Number.MAX_VALUE;   //1.7976931348623157e+308
-//    export var MIN_REAL64: number = -Number.MAX_VALUE;  //-1.7976931348623157e+308
-//    export var TINY_REAL64: number = Number.MIN_VALUE;  //5e-324
+//    export const MAX_REAL64: number = Number.MAX_VALUE;   //1.7976931348623157e+308
+//    export const MIN_REAL64: number = -Number.MAX_VALUE;  //-1.7976931348623157e+308
+//    export const TINY_REAL64: number = Number.MIN_VALUE;  //5e-324
 
 
 //3.4e38
-    export var MAX_FLOAT32: float = 3.4e38;
+    export  var  MAX_FLOAT32: float = 3.4e38;
 //-3.4e38
-    export var MIN_FLOAT32: float = -3.4e38;
+    export  var  MIN_FLOAT32: float = -3.4e38;
 //1.5e-45  
-    export var TINY_FLOAT32: float = 1.5e-45;
+    export  var  TINY_FLOAT32: float = 1.5e-45;
 
-//    export var MAX_REAL32: number = 3.4e38;     //3.4e38
-//    export var MIN_REAL32: number = -3.4e38;    //-3.4e38
-//    export var TINY_REAL32: number = 1.5e-45;   //1.5e-45
+//    export const MAX_REAL32: number = 3.4e38;     //3.4e38
+//    export const MIN_REAL32: number = -3.4e38;    //-3.4e38
+//    export const TINY_REAL32: number = 1.5e-45;   //1.5e-45
 
     export enum EDataTypes {
         BYTE = 0x1400,
@@ -312,6 +316,7 @@ module akra {
 
     export interface StringMap {
         [index: string]: string;
+        [index: number]: string;
     };
 
     export interface IntMap {
@@ -380,6 +385,8 @@ module akra {
 
     export var sid = (): uint => (++ sid._iTotal);
     sid._iTotal = 0;
+
+//export var now = (): uint => ((new Date()).getTime());
 
 //export function 
 
@@ -1073,7 +1080,7 @@ module akra.libs {
 
 
 
-
+//#define SET_ALL(value, set, setting) (setting ? SET_ALL(value, set) : CLEAR_ALL(value, set))
 
 
 
@@ -1269,8 +1276,26 @@ module akra.math {
 
 
 
+
+
+
+
+module akra {
+	export interface IVec3 {
+		x: float;
+		y: float;
+		z: float;
+
+		set(x?, y?, z?): IVec3;
+		add(v3fVec: IVec3, v3fDest?: IVec3): IVec3;
+		scale(x?, y?, z?): IVec3;
+	};
+};
+
+
+
 module akra.math {
-    export class Vec3 {
+    export class Vec3 implements IVec3 {
         x: number;
         y: number;
         z: number;
@@ -1309,16 +1334,16 @@ module akra.math {
         }
 
 
-        set(v3f: Vec3);
-        set(v2f: Vec2, z: number);
-        set(x: number, v2f: Vec2);
-        set(x: number, y: number, z: number);
+        set(v3f: Vec3): IVec3;
+        set(v2f: Vec2, z: number): IVec3;
+        set(x: number, v2f: Vec2): IVec3;
+        set(x: number, y: number, z: number): IVec3;
 
 /**
          * @inline
          */
 
-        set(x? , y? , z? ): Vec3 {
+        set(x? , y? , z? ): IVec3 {
 
             switch (arguments.length) {
                 case 0:
@@ -1381,6 +1406,8 @@ module akra.math {
         toString(): string {
             return "[x: " + this.x + ", y: " + this.y + ", z: " + this.z + "]";
         }
+
+        scale(x?, y?, z?): IVec3 {return null;}
 
         static v3f: Vec3 = new Vec3;
     }
@@ -1567,7 +1594,7 @@ module akra.math {
 
 
 
-module akra.math {
+module akra {
 	export interface IMat4 {} ;
 	export interface IVec3 {} ;
 	export interface IQuat4 {} ;
@@ -1655,7 +1682,7 @@ module akra.math {
 
 
 
-module akra.math {
+module akra {
 
 	export interface IVec3 {} ;
 	export interface IVec4 {} ;
@@ -1705,23 +1732,25 @@ module akra.math {
 		rotateRight(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
 		rotateLeft(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
 
-		rotateXRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-		rotateXLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
-		rotateYRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-		rotateYLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
-		rotateZRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-		rotateZLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+		toInverseMat3(m3fDestination: IMat3): IMat3;
+
+// rotateXRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+// rotateXLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+// rotateYRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+// rotateYLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+// rotateZRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+// rotateZLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
 
 		setTranslation(v3fTranslation: IVec3): IMat4;
 		getTranslation(v3fTranslation?: IVec3): IVec3;
 
-		translateRight(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
-		translateLeft(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
+// translateRight(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
+// translateLeft(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
 
 		scaleRight(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
 		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
 
-		decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): void;
+// decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): void;
 
 
 
@@ -1733,25 +1762,19 @@ module akra.math {
 
 
 
-module akra.math {
-	export interface IVec3 {
-		x: float;
-		y: float;
-		z: float;
-	};
-};
 
 
-
-
-
-
-module akra.math {
+module akra {
 	export interface IQuat4 {
 		x: float;
 		y: float;
 		z: float;
 		w: float;
+
+		set(x?, y?, z?, w?): IQuat4;
+		toMat4(m4fDestination?: IMat4): IMat4;
+		multiplyVec3(v3fVec: IVec3, v3fDestionation?: IVec3): IVec3;
+		multiply(q4fQuat: IQuat4, q4fDestination?: IQuat4): IQuat4;
 	};
 };
 
@@ -2469,12 +2492,14 @@ module akra.math {
 
 
 
-module akra.math {
+module akra {
 	export interface IVec4 {
 		x: float;
 		y: float;
 		z: float;
 		w: float;
+
+		set(x?, y?, z?, w?): IVec4;
 	};
 };
 
@@ -3583,6 +3608,26 @@ module akra.math {
 
 		    return m4fDestination;
 		};
+
+		toInverseMat3(m3fDestination: IMat3): IMat3 {
+			return null;
+		}
+
+		setTranslation(v3fTranslation: IVec3): IMat4 {
+			return null;
+		}
+
+		getTranslation(v3fTranslation?: IVec3): IVec3 {
+			return null;
+		}
+
+		scaleRight(v3fScale: IVec3, m4fDestination?: IMat4): IMat4 {
+			return null;
+		}
+
+		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4 {
+			return null;
+		}
     }
 }
 
@@ -3601,6 +3646,15 @@ module akra.math {
     	y: float;
     	z: float;
     	w: float;
+
+    	set(x?, y?, z?, w?): IQuat4 { return null; }
+    	toMat4(m4fDestination?: IMat4): IMat4 { return null; }
+    	multiplyVec3(v3fVec: IVec3, v3fDestionation?: IVec3): IVec3 { return null; }
+    	multiply(q4fQuat: IQuat4, q4fDestination?: IQuat4): IQuat4 { return null; }
+
+    	static fromAxisAngle(v3fAxis: IVec3, fAngle: float, q4fDest?: IQuat4): IQuat4 { return null; }
+    	static fromForwardUp(v3fForward: IVec3, v3fUp: IVec3, q4fDest?: IQuat4): IQuat4 { return null; }
+    	static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, q4fDest?: IQuat4): IQuat4 { return null; }
     }
 }
 
@@ -3612,45 +3666,45 @@ module akra.math {
 // BASIC MATH AND UNIT CONVERSION CONSTANTS
 //
 
-	export var E: float 								= <float>Math.E;
-	export var LN2: float 								= <float>Math.LN2;
-	export var LOG2E: float 							= <float>Math.LOG2E;
-	export var LOG10E: float 							= <float>Math.LOG10E;
-	export var PI: float 								= <float>Math.PI;
-	export var SQRT1_2: float 							= <float>Math.SQRT1_2;
-	export var SQRT2: float 							= <float>Math.SQRT2;
-	export var LN10: float 								= <float>Math.LN10;
+	export  var  E: float 								= <float>Math.E;
+	export  var  LN2: float 							= <float>Math.LN2;
+	export  var  LOG2E: float 							= <float>Math.LOG2E;
+	export  var  LOG10E: float 							= <float>Math.LOG10E;
+	export  var  PI: float 								= <float>Math.PI;
+	export  var  SQRT1_2: float 						= <float>Math.SQRT1_2;
+	export  var  SQRT2: float 							= <float>Math.SQRT2;
+	export  var  LN10: float 							= <float>Math.LN10;
 
-	export var FLOAT_PRECISION: float					= <float>(3.4e-8);
-	export var TWO_PI: float							= <float>(2.0*PI);
-	export var HALF_PI: float							= <float>(PI/2.0);
-	export var QUARTER_PI: float						= <float>(PI/4.0);
-	export var EIGHTH_PI: float							= <float>(PI/8.0);
-	export var PI_SQUARED: float						= <float>(9.86960440108935861883449099987615113531369940724079);
-	export var PI_INVERSE: float						= <float>(0.31830988618379067153776752674502872406891929148091);
-	export var PI_OVER_180: float						= <float>(PI/180);
-	export var PI_DIV_180: float						= <float>(180/PI);
-	export var NATURAL_LOGARITHM_BASE: float			= <float>(2.71828182845904523536028747135266249775724709369996);
-	export var EULERS_CONSTANT: float					= <float>(0.57721566490153286060651);
-	export var SQUARE_ROOT_2: float						= <float>(1.41421356237309504880168872420969807856967187537695);
-	export var INVERSE_ROOT_2: float					= <float>(0.707106781186547524400844362105198);
-	export var SQUARE_ROOT_3: float						= <float>(1.73205080756887729352744634150587236694280525381038);
-	export var SQUARE_ROOT_5: float						= <float>(2.23606797749978969640917366873127623544061835961153);
-	export var SQUARE_ROOT_10: float					= <float>(3.16227766016837933199889354443271853371955513932522);
-	export var CUBE_ROOT_2: float						= <float>(1.25992104989487316476721060727822835057025146470151);
-	export var CUBE_ROOT_3: float						= <float>(1.44224957030740838232163831078010958839186925349935);
-	export var FOURTH_ROOT_2: float						= <float>(1.18920711500272106671749997056047591529297209246382);
-	export var NATURAL_LOG_2: float						= <float>(0.69314718055994530941723212145817656807550013436026);
-	export var NATURAL_LOG_3: float						= <float>(1.09861228866810969139524523692252570464749055782275);
-	export var NATURAL_LOG_10: float					= <float>(2.30258509299404568401799145468436420760110148862877);
-	export var NATURAL_LOG_PI: float					= <float>(1.14472988584940017414342735135305871164729481291531);
-	export var BASE_TEN_LOG_PI: float					= <float>(0.49714987269413385435126828829089887365167832438044);
-	export var NATURAL_LOGARITHM_BASE_INVERSE: float	= <float>(0.36787944117144232159552377016146086744581113103177);
-	export var NATURAL_LOGARITHM_BASE_SQUARED: float	= <float>(7.38905609893065022723042746057500781318031557055185);
-	export var GOLDEN_RATIO: float						= <float>((SQUARE_ROOT_5 + 1.0) / 2.0);
-	export var DEGREE_RATIO: float						= <float>(PI_DIV_180);
-	export var RADIAN_RATIO: float						= <float>(PI_OVER_180);
-	export var GRAVITY_CONSTANT: float 					= 9.81;
+	export  var  FLOAT_PRECISION: float					= <float>(3.4e-8);
+	export  var  TWO_PI: float							= <float>(2.0*PI);
+	export  var  HALF_PI: float							= <float>(PI/2.0);
+	export  var  QUARTER_PI: float						= <float>(PI/4.0);
+	export  var  EIGHTH_PI: float						= <float>(PI/8.0);
+	export  var  PI_SQUARED: float						= <float>(9.86960440108935861883449099987615113531369940724079);
+	export  var  PI_INVERSE: float						= <float>(0.31830988618379067153776752674502872406891929148091);
+	export  var  PI_OVER_180: float						= <float>(PI/180);
+	export  var  PI_DIV_180: float						= <float>(180/PI);
+	export  var  NATURAL_LOGARITHM_BASE: float			= <float>(2.71828182845904523536028747135266249775724709369996);
+	export  var  EULERS_CONSTANT: float					= <float>(0.57721566490153286060651);
+	export  var  SQUARE_ROOT_2: float					= <float>(1.41421356237309504880168872420969807856967187537695);
+	export  var  INVERSE_ROOT_2: float					= <float>(0.707106781186547524400844362105198);
+	export  var  SQUARE_ROOT_3: float					= <float>(1.73205080756887729352744634150587236694280525381038);
+	export  var  SQUARE_ROOT_5: float					= <float>(2.23606797749978969640917366873127623544061835961153);
+	export  var  SQUARE_ROOT_10: float					= <float>(3.16227766016837933199889354443271853371955513932522);
+	export  var  CUBE_ROOT_2: float						= <float>(1.25992104989487316476721060727822835057025146470151);
+	export  var  CUBE_ROOT_3: float						= <float>(1.44224957030740838232163831078010958839186925349935);
+	export  var  FOURTH_ROOT_2: float					= <float>(1.18920711500272106671749997056047591529297209246382);
+	export  var  NATURAL_LOG_2: float					= <float>(0.69314718055994530941723212145817656807550013436026);
+	export  var  NATURAL_LOG_3: float					= <float>(1.09861228866810969139524523692252570464749055782275);
+	export  var  NATURAL_LOG_10: float					= <float>(2.30258509299404568401799145468436420760110148862877);
+	export  var  NATURAL_LOG_PI: float					= <float>(1.14472988584940017414342735135305871164729481291531);
+	export  var  BASE_TEN_LOG_PI: float					= <float>(0.49714987269413385435126828829089887365167832438044);
+	export  var  NATURAL_LOGARITHM_BASE_INVERSE: float	= <float>(0.36787944117144232159552377016146086744581113103177);
+	export  var  NATURAL_LOGARITHM_BASE_SQUARED: float	= <float>(7.38905609893065022723042746057500781318031557055185);
+	export  var  GOLDEN_RATIO: float					= <float>((SQUARE_ROOT_5 + 1.0) / 2.0);
+	export  var  DEGREE_RATIO: float					= <float>(PI_DIV_180);
+	export  var  RADIAN_RATIO: float					= <float>(PI_OVER_180);
+	export  var  GRAVITY_CONSTANT: float 				= 9.81;
 
 //
 // MATH AND UNIT CONVERSION FUNCTION PROTOTYPES
@@ -4006,6 +4060,14 @@ module akra {
 	export var Mat3 = math.Mat3;
 	export var Mat4 = math.Mat4;
 	export var Quat4 = math.Quat4;
+
+//export var vec2: () => IVec2;
+	export var vec3: (fX?:any, fY?:any, fZ?:any) => IVec3;
+	export var vec4: (fX?:any, fY?:any, fZ?:any, fW?: any) => IVec4;
+//export var mat2: () => IMat2;
+	export var mat3: (fX?:any) => IMat3;
+	export var mat4: (fX?:any) => IMat4;
+	export var quat4: (fX?:any, fY?:any, fZ?:any, fW?: any) => IQuat4;
 }
 
 
@@ -4518,7 +4580,7 @@ module akra {
 		 manager: IResourcePoolManager;
 
 
-		getGuid(): int;
+		/**@inline*/  getGuid(): int;
 /** Get current Engine. */
 
 		getEngine(): IEngine;
@@ -5824,7 +5886,7 @@ module akra.util {
 
 ///DEBUG!!!
 		toString(): string {
-			if (DEBUG) {
+			if ( DEBUG ) {
 
 			}
 
@@ -7913,6 +7975,7 @@ module akra {
 		isRAMBufferPresent(): bool;
 		isSoftware(): bool;
 
+		getData(): ArrayBuffer;
 		getData(iOffset: uint, iSize: uint): ArrayBuffer;
 		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool;
 
@@ -8170,7 +8233,6 @@ module akra {
 
 		allocateData(ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes, pData: ArrayBufferView): IIndexData;
 		getCountIndexForStripGrid(iXVerts: int, iYVerts: int): int;
-
 	}
 }
 
@@ -8221,7 +8283,8 @@ module akra.core.pool.resources {
 			return false;
 		}
 
-		getData(iOffset: uint, iSize: uint): ArrayBuffer {
+		getData(): ArrayBuffer;
+		getData(iOffset?: uint, iSize?: uint): ArrayBuffer {
 			return null;
 		}
 
@@ -8293,25 +8356,40 @@ module akra {
 
 
 module akra {
-	export interface IVertexData extends IBufferData, IBuffer {
+	export interface IBufferDataModifier {} ;
+	export interface IVertexDeclaration {} ;
+	export interface IVertexBuffer {} ;
+	export interface IEventProvider {} ;
+
+	export interface IVertexData extends IBufferData, IBuffer, IEventProvider {
 		 stride: uint;
 		 startIndex: uint;
 
 		getVertexDeclaration(): IVertexDeclaration;
 		setVertexDeclaration(pDecl: IVertexDeclaration): bool;
-//getVertexElementCount(): uint;
-//hasSemantics(sSemantics: string): bool;
+
+		getVertexElementCount(): uint;
+		hasSemantics(sSemantics: string): bool;
 
 		destroy(): void;
 
-//extend(pData: ArrayBufferView, pDecl: IVertexDeclaration): bool;
-//resize(nCount: uint, pDecl: IVertexDeclaration): bool;
-//applyModifier(sSemantics: string, fnModifier: Function): bool;
+		extend(pDecl: IVertexDeclaration, pData?: ArrayBufferView): bool;
+		resize(nCount: uint, pDecl?: IVertexDeclaration): bool;
+		resize(nCount: uint, iStride?: uint): bool;
+		applyModifier(sUsage: string, fnModifier: IBufferDataModifier): bool;
 
-///setData(pData, iOffset, iSize, nCountStart, nCount);
-//getData(iOffset, iSize, iFrom, iCount);
-//getTypedData(eUsage, iFrom, iCount);
-//toString(): string;
+		setData(pData: ArrayBufferView, iOffset: int, iSize?: uint, nCountStart?: uint, nCount?: uint): bool;
+		setData(pData: ArrayBufferView, sUsage?: string, iSize?: uint, nCountStart?: uint, nCount?: uint): bool;
+
+		getData(): ArrayBuffer;
+		getData(iOffset: int, iSize: uint, iFrom?: uint, iCount?: uint): ArrayBuffer;
+		getData(sUsage: string): ArrayBuffer;
+		getData(sUsage: string, iFrom: uint, iCount: uint): ArrayBuffer;
+
+		getTypedData(sUsage: string, iFrom?: int, iCount?: uint): ArrayBufferView;
+		getBufferHandle(): int;
+
+		toString(): string;
 	}
 }
 
@@ -8392,6 +8470,153 @@ module akra {
 
 
 
+module akra {
+	export interface IVertexElement {
+		count: uint;
+		type: EDataTypes;
+		usage: string;
+		offset: int;
+		size: uint;
+		index: uint;
+		semantics: string;
+
+		clone(): IVertexElement;
+
+//DEBUG!!
+		toString(): string;
+	}
+}
+
+
+
+
+
+
+
+
+module akra {
+	export interface IBufferDataModifier {
+		(pData: ArrayBufferView): void;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IEventSlot {
+		target: any;
+		callback: string;
+		listener: Function;
+	}
+
+	export interface IEventSlotMap {
+		[index: string]: IEventSlot[];
+	}
+
+	export interface IEventSlotTable {
+		[index: number]: IEventSlotMap;
+		[index: string]: IEventSlotMap;
+	}
+
+	export interface IEventSlotList {
+		[index: number]: {[index: string]: IEventSlot;};
+		[index: string]: {[index: string]: IEventSlot;};
+	}
+
+	export interface IEventTable {
+		broadcast: IEventSlotTable;
+		unicast: IEventSlotList;
+
+		addDestination(iGuid: int, sSignal: string, pTarget: IEventProvider, sSlot: string, eType?: EEventTypes): bool;
+		addListener(iGuid: int, sSignal: string, fnListener: Function, eType?: EEventTypes): bool;
+	}
+}
+
+
+
+
+
+
+module akra {
+	export interface IEventTable {} ;
+
+	export enum EEventTypes {
+		BROADCAST,
+		UNICAST
+	};
+
+	export interface IEventProvider {
+		getGuid(): uint;
+		getEventTable(): IEventTable;
+		connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra.events {
+	export class EventTable implements IEventTable {
+		broadcast: IEventSlotTable = <IEventSlotTable>{};
+		unicast: IEventSlotList = <IEventSlotList>{};
+
+		addDestination(iGuid: int, sSignal: string, pTarget: IEventProvider, sSlot: string, eType: EEventTypes = EEventTypes.BROADCAST): bool {
+			if (eType === EEventTypes.BROADCAST) {
+				this.findBroadcastList(iGuid, sSignal).push({target: pTarget, callback: sSlot, listener: null});
+			}
+			else {
+				this.unicast[iGuid] = this.unicast[iGuid] || {};
+				this.unicast[iGuid][sSignal] = {target: pTarget, callback: sSlot, listener: null};
+			}
+			return true;
+		}
+
+		addListener(iGuid: int, sSignal: string, fnListener: Function, eType: EEventTypes = EEventTypes.BROADCAST): bool {
+			if (eType === EEventTypes.BROADCAST) {
+				this.findBroadcastList(iGuid, sSignal).push({target: null, callback: null, listener: fnListener});
+			}
+			else {
+				this.unicast[iGuid] = this.unicast[iGuid] || {};
+				this.unicast[iGuid][sSignal] = {target: null, callback: null, listener: fnListener};
+			}
+			return true;
+		}
+
+		private findBroadcastList(iGuid: int, sSignal: string): IEventSlot[] {
+			this.broadcast[iGuid] = this.broadcast[iGuid] || {};
+			this.broadcast[iGuid][sSignal] = this.broadcast[iGuid][sSignal] || [];
+			return this.broadcast[iGuid][sSignal];
+		}
+
+		private
+	}
+}
+
+
+
+
 module akra.data {
 
 	export enum EVertexDataLimits {
@@ -8406,6 +8631,7 @@ module akra.data {
 		private _pVertexDeclaration: IVertexDeclaration;
 		private _iId: uint;
 
+		/**@inline*/  get id(): uint { return this._iId; }
 		/**@inline*/  get length(): uint { return this._iLength; };
 		/**@inline*/  get offset(): uint { return this._iOffset; };
 		/**@inline*/  get byteLength(): uint { return this._iLength * this._iStride; };
@@ -8413,7 +8639,7 @@ module akra.data {
 		/**@inline*/  get stride(): uint { return this._iStride; };
 		/**@inline*/  get startIndex(): uint {
 			var iIndex: uint = this.offset / this.stride;
-    		debug_assert(iIndex % 1 == 0, "Вычислить значенеи индекса указывающего на первый элемен нельзя)");
+    		debug_assert(iIndex % 1 == 0, "cannot calc first element index");
    			return iIndex;
    		};
 
@@ -8421,6 +8647,7 @@ module akra.data {
 		constructor (pVertexBuffer: IVertexBuffer, id: uint, iOffset: uint, iCount: uint, nSize: uint);
 		constructor (pVertexBuffer: IVertexBuffer, id: uint, iOffset: uint, iCount: uint, pDecl: IVertexDeclaration);
 		constructor (pVertexBuffer: IVertexBuffer, id: uint, iOffset: uint, iCount: uint, pDecl: any) {
+
 			this._pVertexBuffer = pVertexBuffer;
 			this._iOffset = iOffset;
 			this._iLength = iCount;
@@ -8462,11 +8689,365 @@ module akra.data {
 		    return true;
 		}
 
+		/**@inline*/  getVertexElementCount(): uint {
+			return this._pVertexDeclaration.length;
+		}
+
+		hasSemantics(sUsage: string): bool {
+			if (this._pVertexDeclaration != null) {
+		        return this._pVertexDeclaration.hasSemantics(sUsage);
+		    }
+
+		    return false;
+		}
+
 		destroy(): void {
 			this._pVertexDeclaration = null;
     		this._iLength = 0;
 		}
+
+		extend(pDecl: IVertexDeclaration, pData: ArrayBufferView = null): bool {
+			pDecl = createVertexDeclaration(pDecl);
+
+			if (isNull(pData)) {
+				pData = new Uint8Array(this.length * pDecl.stride);
+			}
+			else {
+				pData = new Uint8Array(pData.buffer);
+			}
+
+		    debug_assert(this.length === pData.byteLength / pDecl.stride, 'invalid data size for extending');
+
+		    var nCount: uint = this._iLength;
+//strides modifications
+		    var nStrideNew: uint = pDecl.stride;
+		    var nStridePrev: uint = this.stride;
+		    var nStrideNext: uint = nStridePrev + nStrideNew;
+//total bytes after extending
+		    var nTotalSize: uint = nStrideNext * this.length;
+		    var pDeclNew: IVertexDeclaration = this.getVertexDeclaration().clone();
+
+//data migration
+		    var pDataPrev: Uint8Array = new Uint8Array(<ArrayBuffer>this.getData());
+		    var pDataNext: Uint8Array = new Uint8Array(nTotalSize);
+
+		    for (var i: int = 0, iOffset: int; i < nCount; ++i) {
+		        iOffset = i * nStrideNext;
+		        pDataNext.set(pDataPrev.subarray(i * nStridePrev, (i + 1) * nStridePrev), iOffset);
+		        pDataNext.set((<Uint8Array>pData).subarray(i * nStrideNew, (i + 1) * nStrideNew), iOffset + nStridePrev);
+		    }
+
+		    if (!pDeclNew.extend(pDecl)) {
+		        return false;
+		    }
+
+		    if (!this.resize(nCount, pDeclNew)) {
+		        return false;
+		    }
+
+		    return this.setData(pDataNext, 0, nStrideNext);
+		}
+
+
+		resize(nCount: uint, pDecl?: IVertexDeclaration): bool;
+		resize(nCount: uint, iStride?: uint): bool;
+		resize(nCount: uint, pDecl?: any) {
+			var iStride: uint = 0;
+		    var iOldOffset: uint = this.offset;
+		    var pOldVertexBuffer: IVertexBuffer;
+		    var pOldVertexDeclaration: IVertexDeclaration;
+		    var iOldStride: uint
+
+		    if (arguments.length == 2) {
+		        if (isInt(pDecl)) {
+		            iStride = <uint>pDecl;
+		        }
+		        else {
+		            iStride = (<IVertexDeclaration>pDecl).stride;
+		        }
+
+		        if (nCount * iStride <= this.byteLength) {
+		            this._iLength = nCount;
+		            this._iStride = iStride;
+		            this._pVertexDeclaration = null;
+
+		            if (!isInt(pDecl)) {
+		                this.setVertexDeclaration(pDecl);
+		            }
+
+		            return true;
+		        }
+		        else {
+		            pOldVertexBuffer = this.buffer;
+
+		            pOldVertexBuffer.freeVertexData(this);
+
+		            if (pOldVertexBuffer.getEmptyVertexData(nCount, pDecl, this) !== this) {
+		                return false;
+		            }
+
+		            if (this.offset != iOldOffset) {
+		                warning('vertex data moved from ' + iOldOffset + ' ---> ' + this.offset);
+		                this.relocation(this, iOldOffset, this.offset);
+		            }
+
+		            return true;
+		        }
+		    }
+		    else if (arguments.length == 1) {
+		        if (nCount <= this.length) {
+		            this._iLength = nCount;
+		            return true;
+		        }
+		        else {
+		            pOldVertexBuffer = this.buffer;
+		            pOldVertexDeclaration = this.getVertexDeclaration();
+		            iOldStride = this.stride;
+
+		            pOldVertexBuffer.freeVertexData(this);
+
+		            if (pOldVertexBuffer.getEmptyVertexData(nCount, iOldStride, this) == null) {
+		                return false;
+		            }
+
+		            this.setVertexDeclaration(pOldVertexDeclaration);
+
+		            if (this.offset != iOldOffset) {
+		                warning('vertex data moved from ' + iOldOffset + ' ---> ' + this.offset);
+		                this.relocation(this, iOldOffset, this.offset);
+		            }
+
+		            return true;
+		        }
+		    }
+
+		    return false;
+		}
+
+		applyModifier(sUsage: string, fnModifier: IBufferDataModifier): bool {
+			var pData = this.getTypedData(sUsage);
+		    fnModifier(pData);
+		    return this.setData(pData, sUsage);
+		}
+
+		setData(pData: ArrayBufferView, iOffset: int, iSize?: uint, nCountStart?: uint, nCount?: uint): bool;
+		setData(pData: ArrayBufferView, sUsage?: string, iSize?: uint, nCountStart?: uint, nCount?: uint): bool;
+		setData(pData: ArrayBufferView, iOffset?: any, iSize?: uint, nCountStart?: uint, nCount?: uint): bool {
+			var iStride: uint;
+			var pVertexBuffer: IVertexBuffer = this._pVertexBuffer;
+			var pBackupBuf: Uint8Array;
+			var pDataU8: Uint8Array;
+			var k: uint;
+			var iOffsetBuffer: uint;
+			var pDeclaration: IVertexDeclaration = this._pVertexDeclaration;
+			var pElement: IVertexElement;
+
+			switch (arguments.length) {
+		        case 5:
+		            iStride = this.stride;
+		            if (iStride != iSize) {
+//FIXME: очень тормознутое место, крайне медленно работает...
+						if(pVertexBuffer.isRAMBufferPresent() && nCount > 1) {
+							pBackupBuf = new Uint8Array(this._pVertexBuffer.getData());
+							pDataU8 = new Uint8Array(pData.buffer);
+							iOffsetBuffer = this.offset;
+
+							for (var i = nCountStart; i < nCount + nCountStart; i++) {
+								for(k = 0; k < iSize; k++) {
+									pBackupBuf[iStride * i + iOffset + iOffsetBuffer + k] = pDataU8[iSize * (i - nCountStart) + k];
+								}
+							}
+
+							pVertexBuffer.setData(pBackupBuf.buffer, 0, pVertexBuffer.byteLength);
+						}
+						else {
+							for (var i: uint = nCountStart; i < nCount + nCountStart; i++) {
+								pVertexBuffer.setData(
+										pData.buffer.slice(
+											iSize * (i - nCountStart),
+											iSize * (i - nCountStart) + iSize),
+										iStride * i + iOffset + this.offset,
+										iSize);
+							}
+						}
+		            }
+		            else {
+		                pVertexBuffer.setData(pData.buffer.slice(0, iStride * nCount), iOffset + this.offset,
+		                    iStride * nCount);
+		            }
+		            return true;
+		        case 4:
+		            pElement = null;
+
+		            if (isString(arguments[1])) {
+		                pElement = pDeclaration.findElement(arguments[1]);
+
+		                if (pElement) {
+		                    return this.setData(
+		                        pData,
+		                        pElement.offset,
+		                        pElement.size,
+		                        arguments[2],
+		                        arguments[3]);
+		                }
+
+		                return false;
+		            }
+
+		            nCountStart = nCountStart || 0;
+
+		            if (!nCount) {
+		                nCount = pData.buffer.byteLength / iSize;
+		            }
+
+		            return this.setData(pData, iOffset, iSize, nCountStart, nCount);
+
+
+		        case 2:
+		        case 3:
+		            var pDeclaration = this._pVertexDeclaration,
+		                pElement = null;
+
+		            if (isString(arguments[1])) {
+		                pElement = pDeclaration.findElement(arguments[1]);
+
+		                if (pElement) {
+		                    arguments[2] = arguments[2] || 0;
+
+		                    if (!arguments[3]) {
+		                        arguments[3] = pData.buffer.byteLength / pElement.size;
+		                    }
+
+		                    return this.setData(
+		                    	pData,
+		                        pElement.offset,
+		                        pElement.size,
+		                        arguments[2],
+		                        arguments[3])
+		                }
+		                return false
+		            }
+		            else if (arguments.length === 3) {
+
+		                nCountStart = nCountStart || 0;
+
+		                if (!nCount) {
+		                    nCount = pData.byteLength / iSize;
+		                }
+
+		                return this.setData(pData, iOffset, iSize, nCountStart, nCount);
+		            }
+
+		            return false;
+		        case 1:
+		            return this.setData(pData, this._pVertexDeclaration[0].eUsage);
+		        default:
+		            return false;
+		    }
+		}
+
+
+		getData(): ArrayBuffer;
+		getData(iOffset: int, iSize: uint, iFrom?: uint, iCount?: uint): ArrayBuffer;
+		getData(sUsage: string): ArrayBuffer;
+		getData(sUsage: string, iFrom: uint, iCount: uint): ArrayBuffer;
+		getData(iOffset?: any, iSize?: any, iFrom?: any, iCount?: any): ArrayBuffer {
+			switch (arguments.length) {
+		        case 4:
+		        case 2:
+		            if (isString(arguments[0])) {
+						return null;
+		            }
+
+		            iFrom = iFrom || 0;
+		            iCount = iCount || this._iLength;
+		            iCount = Math.min(iCount, this._iLength);
+
+		            var iStride: uint = this.stride;
+		            var pBufferData: Uint8Array = new Uint8Array(iSize * this.length);
+
+		            for (var i: int = iFrom; i < iCount; i++) {
+		                pBufferData.set(
+		                	new Uint8Array(
+		                		this._pVertexBuffer.getData(iStride * i + iOffset + this.offset, iSize)),
+		                		i * iSize);
+		            }
+
+		            return pBufferData.buffer;
+		        case 3:
+		        case 1:
+		            var pDeclaration: IVertexDeclaration = this._pVertexDeclaration,
+		                pElement: IVertexElement = null;
+
+		            if (isString("string")) {
+		                pElement = pDeclaration.findElement(arguments[0]);
+
+		                if (pElement) {
+		                    return this.getData(
+		                        pElement.offset,
+		                        pElement.size,
+		                        arguments[1],
+		                        arguments[2]
+		                        )
+		                }
+		                return null;
+		            }
+
+		            return null;
+
+		        case 0:
+		            return this.getData(0, this._pVertexDeclaration.stride);
+		        default:
+		            return null;
+		    }
+		}
+
+		getTypedData(sUsage: string, iFrom?: int, iCount?: uint): ArrayBufferView {
+		    sUsage = sUsage || this._pVertexDeclaration[0].sUsage;
+
+		    var pVertexElement: IVertexElement = this._pVertexDeclaration.findElement(sUsage);
+
+		    if (pVertexElement) {
+		        return ab2ta(this.getData(sUsage, iFrom, iCount), pVertexElement.type);
+		    }
+
+		    return null;
+		}
+
+		/**@inline*/  getBufferHandle(): int {
+			return this._pVertexBuffer.resourceHandle;
+		}
+
+		toString(): string {
+		    if ( DEBUG ) {
+
+			    var s: string = "";
+
+			    s += "          VERTEX DATA  #" + this.id + "\n";
+			    s += "---------------+-----------------------\n";
+			    s += "        BUFFER : " + this.getBufferHandle() + "\n";
+			    s += "          SIZE : " + this.byteLength + " b.\n";
+			    s += "        OFFSET : " + this.offset + " b.\n";
+			    s += "---------------+-----------------------\n";
+			    s += " MEMBERS COUNT : " + this.length + " \n";
+			    s += "        STRIDE : " + this.stride + " \n";
+			    s += "---------------+-----------------------\n";
+			    s += this.getVertexDeclaration().toString();
+
+			    return s;
+		    }
+
+		    return null;
+		}
+
+
+
+		private _iGuid: uint = sid(); private static _pEvenetTable: IEventTable = new events.EventTable(); /**@inline*/ getEventTable(): IEventTable {return VertexData._pEvenetTable; } /**@inline*/ getGuid(): uint {return this._iGuid; } /**@inline*/ connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; /**@inline*/ bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } ;
+			relocation (pTarget, iFrom, iTo) : void { var broadcast: IEventSlot[] = (this.getEventTable()).broadcast[this._iGuid]["relocation"]; for (var i = 0; i < broadcast.length; ++ i) { broadcast[i].target? broadcast[i].target[broadcast[i].callback] (pTarget, iFrom, iTo) : broadcast[i].listener (pTarget, iFrom, iTo) ; } } ; ;
+		;
+
 	}
+
 }
 
 
@@ -8547,7 +9128,8 @@ module akra.core.pool.resources {
 			return  ((this._iFlags & (1 << (EGPUBufferFlags.ALIGNMENT)) ) != 0) ;
 		}
 
-		getData(iOffset: uint, iSize: uint): ArrayBuffer {
+		getData(): ArrayBuffer;
+		getData(iOffset?: uint, iSize?: uint): ArrayBuffer {
 			return null;
 		}
 
@@ -8564,7 +9146,7 @@ module akra.core.pool.resources {
 		getVertexData(iOffset: uint, iCount: uint, pDecl: IVertexDeclaration): IVertexData;
 		getVertexData(iOffset: uint, iCount: uint, pData: any): IVertexData {
 			var pDecl: IVertexDeclaration = createVertexDeclaration(pData);
-			var pVertexData: IVertexData = new data.VertexData(this, this._iDataCounter++, iOffset, iCount, pDecl);
+			var pVertexData: IVertexData = new data.VertexData(this, this._iDataCounter ++, iOffset, iCount, pDecl);
 
 			this._pVertexDataArray.push(pVertexData);
 			return pVertexData;
@@ -8662,7 +9244,7 @@ module akra.core.pool.resources {
 
 					if((pHole[i].end - iAligStart) >= iCount * iStride) {
 						if(arguments.length == 2) {
-							pVertexData = new data.VertexData(this, iAligStart, iCount, pDeclData);
+							pVertexData = new data.VertexData(this, this._iDataCounter ++, iAligStart, iCount, pDeclData);
 							this._pVertexDataArray.push(pVertexData);
 
 							return pVertexData;
@@ -9346,24 +9928,992 @@ module akra.core.pool.resources {
 
 
 
+
+
+
+
 module akra {
-	export interface INode {
+
+	export interface IExplorerFunc {} ;
+	export interface IReferenceCounter {} ;
+
+	export interface IEntity extends IReferenceCounter {
 		name: string;
+
+		parent: IEntity;
+		sibling: IEntity;
+		child: IEntity;
+
+		 depth: int;
+		 root: IEntity;
+
+		create(): bool;
+		destroy(): void;
+
+		findEntity(sName: string): IEntity;
+		explore(fn: IExplorerFunc): void;
+		childOf(pParent: IEntity): bool;
+		siblingCount(): uint;
+		childCount(): uint;
+
+		update(): void;
+		recursiveUpdate(): void;
+		recursivePreUpdate(): void;
+		prepareForUpdate(): void;
+
+		hasParent(): bool;
+		hasChild(): bool;
+		hasSibling(): bool;
+
+		isASibling(pSibling: IEntity): bool;
+		isAChild(pChild: IEntity): bool;
+		isInFamily(pEntity: IEntity, bSearchEntireTree?: bool): bool;
+
+
+		addSibling(pSibling: IEntity): IEntity;
+		addChild(pChild: IEntity): IEntity;
+		removeChild(pChild: IEntity): IEntity;
+		removeAllChildren(): void;
+
+		attachToParent(pParent: IEntity): bool;
+		detachFromParent(): bool;
+
+		promoteChildren(): void;
+		relocateChildren(pParent: IEntity): void;
+
+		toString(isRecursive?: bool, iDepth?: int): string;
+	}
+
+}
+
+
+
+module akra {
+
+	export interface IVec3 {} ;
+	export interface IMat3 {} ;
+	export interface IMat4 {} ;
+	export interface IQuat4 {} ;
+
+	export enum ENodeInheritance {
+//inheritance only position
+		POSITION = 0,
+//inheritance rotation and scale only
+        ROTSCALE,
+//inheritance all
+    	ALL
+	};
+
+	export interface INode extends IEntity {
+		localOrientation: IQuat4;
+		localPosition: IVec3;
+		localScale: IVec3;
+		localMatrix: IMat4;
+
+		 worldMatrix: IMat4;
+		 worldPosition: IVec3;
+
+		 inverseWorldMatrix: IMat4;
+		 normalMatrix: IMat3;
+
+		setInheritance(eInheritance: ENodeInheritance);
+		getInheritance(): ENodeInheritance;
+
+		isWorldMatrixNew(): bool;
+		isLocalMatrixNew(): bool;
+
+		recalcWorldMatrix(): bool;
+
+		setPosition(v3fPosition: IVec3): void;
+		setPosition(fX: float, fY: float, fZ: float): void;
+
+		addPosition(v3fPosition: IVec3): void;
+		addPosition(fX: float, fY: float, fZ: float): void;
+		addRelPosition(v3fPosition: IVec3): void;
+		addRelPosition(fX: float, fY: float, fZ: float): void;
+
+		setRotationByMatrix(m3fRotation: IMat3): void;
+		setRotationByMatrix(m4fRotation: IMat4): void;
+		setRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void;
+		setRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void;
+		setRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void;
+		setRotationByXYZAxis(fX: float, fY: float, fZ: float): void;
+		setRotation(q4fRotation: IQuat4): void;
+
+		addRelRotationByMatrix(m4fRotation: IMat4): void;
+		addRelRotationByMatrix(m3fRotation: IMat3): void;
+		addRelRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void;
+		addRelRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void;
+		addRelRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void;
+		addRelRotationByXYZAxis(fX: float, fY: float, fZ: float): void;
+		addRelRotation(q4fRotation: IQuat4): void;
+
+		addRotationByMatrix(m4fRotation: IMat4): void;
+		addRotationByMatrix(m3fRotation: IMat3): void;
+		addRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void;
+		addRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void;
+		addRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void;
+		addRotationByXYZAxis(fX: float, fY: float, fZ: float): void;
+		addRotation(q4fRotation: IQuat4): void;
+
+		scale(fScale: float): void;
+		scale(fX: float, fY: float, fZ: float): void;
 	}
 }
 
 
 
-module akra.scene {
-	export class Node implements INode {
-		private sName: string = null;
 
-		get name(): string { return this.sName; }
-		set name(sName: string) { this.sName = sName; }
 
-		constructor () {
+
+
+
+
+
+
+
+module akra {
+
+	export interface IEntity {} ;
+
+	export interface IExplorerFunc {
+		(pEntity: IEntity): bool;
+	}
+}
+
+
+
+module akra.util {
+	export class Entity extends ReferenceCounter implements IEntity {
+		 _sName: string = null;
+		 _pParent: IEntity = null;
+		 _pSibling: IEntity = null;
+		 _pChild: IEntity = null;
+
+		/**@inline*/  get name(): string { return this._sName; }
+		/**@inline*/  set name(sName: string) { this._sName = sName; }
+
+		/**@inline*/  get parent(): IEntity { return this._pParent; }
+		/**@inline*/  set parent(pParent: IEntity) { this.attachToParent(pParent); }
+
+		/**@inline*/  get sibling(): IEntity { return this._pSibling; }
+		/**@inline*/  set sibling(pSibling: IEntity) { this._pSibling = pSibling; }
+
+		/**@inline*/  get child(): IEntity { return this._pChild; }
+		/**@inline*/  set child(pChild: IEntity) { this._pChild = pChild; }
+
+		get depth(): int {
+			var iDepth: int = -1;
+	        for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent, ++ iDepth){};
+	        return iDepth;
+		}
+
+		get root(): IEntity {
+	        for (var pEntity: IEntity = this, iDepth: int = -1; pEntity.parent; pEntity = pEntity.parent, ++ iDepth){};
+	        return pEntity;
+		}
+
+
+		create(): bool {
+			return true;
+		}
+
+		destroy(): void {
+// destroy anything attached to this node
+//	destroySceneObject();
+// promote any children up to our parent
+		    this.promoteChildren();
+// now remove ourselves from our parent
+		    this.detachFromParent();
+// we should now be removed from the tree, and have no dependants
+		    debug_assert(this.referenceCount() == 0, "Attempting to delete a scene node which is still in use");
+		    debug_assert(this._pSibling == null, "Failure Destroying Node");
+		    debug_assert(this._pChild == null, "Failure Destroying Node");
+		}
+
+		findEntity(sName: string): IEntity {
+			 var pEntity: IEntity = null;
+
+		    if (this._sName === sName) {
+		        return this;
+		    }
+
+		    if (this._pSibling) {
+		        pEntity = this._pSibling.findEntity(sName);
+		    }
+
+		    if (pEntity == null && this._pChild) {
+		        pEntity = this._pChild.findEntity(sName);
+		    }
+
+		    return pEntity;
+		}
+
+		explore(fn: IExplorerFunc): void {
+			if (fn(this) === false) {
+		        return;
+		    }
+
+		    if (this._pSibling) {
+		        this._pSibling.explore(fn);
+		    }
+
+		    if (this._pChild) {
+		        this._pChild.explore(fn);
+		    }
+		}
+
+
+		childOf(pParent: IEntity): bool {
+			for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent) {
+		        if (pEntity.parent === pParent) {
+		            return true;
+		        }
+		    }
+
+		    return false;
+		}
+
+
+/**
+		 * Returns the current number of siblings of this object.
+		 */
+
+		siblingCount(): uint {
+			var iCount: uint = 0;
+
+		    if (this._pParent) {
+		        var pNextSibling = this._pParent.child;
+		        if (pNextSibling) {
+		            while (pNextSibling) {
+		                pNextSibling = pNextSibling.sibling;
+		                ++ iCount;
+		            }
+		        }
+		    }
+
+		    return iCount;
+		}
+
+
+/**
+		 * Returns the current number of children of this object
+		 */
+
+		childCount(): uint {
+			var iCount: uint = 0;
+
+		    var pNextChild: IEntity = this.child;
+
+		    if (pNextChild) {
+		        ++ iCount;
+		        while (pNextChild) {
+		            pNextChild = pNextChild.sibling;
+		            ++ iCount;
+		        }
+		    }
+		    return iCount;
+		}
+
+
+		update(): void {}
+
+
+		recursiveUpdate(): void {
+// update myself
+		    this.update();
+// update my sibling
+		    if (this._pSibling) {
+		        this._pSibling.recursiveUpdate();
+		    }
+// update my child
+		    if (this._pChild) {
+		        this._pChild.recursiveUpdate();
+		    }
+		}
+
+		recursivePreUpdate(): void {
+// clear the flags from the previous update
+		    this.prepareForUpdate();
+
+// update my sibling
+		    if (this._pSibling) {
+		        this._pSibling.recursivePreUpdate();
+		    }
+// update my child
+		    if (this._pChild) {
+		        this._pChild.recursivePreUpdate();
+		    }
+		}
+
+
+		prepareForUpdate(): void {};
+
+/** Parent is not undef */
+
+		/**@inline*/  hasParent(): bool {
+		    return isDefAndNotNull(this._pParent);
+		}
+
+/** Child is not undef*/
+
+		/**@inline*/  hasChild(): bool {
+		    return isDefAndNotNull(this._pChild);
+		}
+
+/** Sibling is not undef */
+
+		/**@inline*/  hasSibling(): bool {
+			return isDefAndNotNull(this._pSibling);
+		}
+
+/**
+		 * Checks to see if the provided item is a sibling of this object
+		 */
+
+		isASibling(pSibling: IEntity): bool {
+			if (!pSibling) {
+		        return false;
+		    }
+// if the sibling we are looking for is me, or my FirstSibling, return true
+		    if (this == pSibling || this._pSibling == pSibling) {
+		        return true;
+		    }
+// if we have a sibling, continue searching
+		    if (this._pSibling) {
+		        return this._pSibling.isASibling(pSibling);
+		    }
+// it's not us, and we have no sibling to check. This is not a sibling of ours.
+		    return false;
+		}
+
+/** Checks to see if the provided item is a child of this object. (one branch depth only) */
+
+		isAChild(pChild: IEntity): bool {
+			if (!pChild) {
+		        return (false);
+		    }
+// if the sibling we are looking for is my FirstChild return true
+		    if (this._pChild == pChild) {
+		        return (true);
+		    }
+// if we have a child, continue searching
+		    if (this._pChild) {
+		        return (this._pChild.isASibling(pChild));
+		    }
+// it's not us, and we have no child to check. This is not a sibling of ours.
+		    return (false);
+		}
+
+/**
+		 * Checks to see if the provided item is a child or sibling of this object. If SearchEntireTree
+		 * is TRUE, the check is done recursivly through all siblings and children. SearchEntireTree
+		 * is FALSE by default.
+		 */
+
+		isInFamily(pEntity: IEntity, bSearchEntireTree?: bool): bool {
+			if (!pEntity) {
+		        return (false);
+		    }
+// if the model we are looking for is me or my immediate family, return true
+		    if (this == pEntity || this._pChild == pEntity || this._pSibling == pEntity) {
+		        return (true);
+		    }
+// if not set to seach entire tree, just check my siblings and kids
+		    if (!bSearchEntireTree) {
+		        if (this.isASibling(pEntity)) {
+		            return (true);
+		        }
+		        if (this._pChild && this._pChild.isASibling(pEntity)) {
+		            return (true);
+		        }
+		    }
+// seach entire Tree!!!
+		    else {
+		        if (this._pSibling && this._pSibling.isInFamily(pEntity, bSearchEntireTree)) {
+		            return (true);
+		        }
+
+		        if (this._pChild && this._pChild.isInFamily(pEntity, bSearchEntireTree)) {
+		            return (true);
+		        }
+		    }
+
+		    return (false);
+		}
+
+/**
+		 * Adds the provided ModelSpace object to the descendant list of this object. The provided
+		 * ModelSpace object is removed from any parent it may already belong to.
+		 */
+
+		addSibling(pSibling: IEntity): IEntity {
+			if (pSibling) {
+// replace objects current sibling pointer with this new one
+		        pSibling.sibling = this._pSibling;
+		        this.sibling = pSibling;
+		    }
+
+		    return pSibling;
+		}
+
+/**
+		 * Adds the provided ModelSpace object to the descendant list of this object. The provided
+		 * ModelSpace object is removed from any parent it may already belong to.
+		 */
+
+		addChild(pChild: IEntity): IEntity {
+			if (pChild) {
+// Replace the new child's sibling pointer with our old first child.
+		        pChild.sibling = this._pChild;
+// the new child becomes our first child pointer.
+		        this._pChild = pChild;
+    		}
+
+    		return pChild;
+		}
+
+/**
+		 * Removes a specified child object from this parent object. If the child is not the
+		 * FirstChild of this object, all of the Children are searched to find the object to remove.
+		 */
+
+		removeChild(pChild: IEntity): IEntity {
+			if (this._pChild && pChild) {
+		        if (this._pChild == pChild) {
+		            this._pChild = pChild.sibling;
+		            pChild.sibling  = null;
+		        }
+		        else {
+		            var pTempNode: IEntity = this._pChild;
+// keep searching until we find the node who's sibling is our target
+// or we reach the end of the sibling chain
+		            while (pTempNode && (pTempNode.sibling != pChild)) {
+		                pTempNode = pTempNode.sibling;
+		            }
+// if we found the proper item, set it's FirstSibling to be the FirstSibling of the child
+// we are removing
+		            if (pTempNode) {
+		                pTempNode.sibling = pChild.sibling;
+		                pChild.sibling = null;
+		            }
+		        }
+	    	}
+
+	    	return pChild;
+		}
+
+/** Removes all Children from this parent object */
+
+		removeAllChildren(): void {
+// keep removing children until end of chain is reached
+		    while (!isNull(this._pChild)) {
+		        var pNextSibling = this._pChild.sibling;
+		        this._pChild.detachFromParent();
+		        this._pChild = pNextSibling;
+		    }
+		}
+
+/** Attaches this object ot a new parent. Same as calling the parent's addChild() routine. */
+
+		attachToParent(pParent: IEntity): bool {
+			if (pParent != this._pParent) {
+
+		        this.detachFromParent();
+
+		        if (pParent) {
+		            this._pParent = pParent;
+		            this._pParent.addChild(this);
+		            this._pParent.addRef();
+		            return true;
+		        }
+	    	}
+
+	    	return false;
+		}
+
+		detachFromParent(): bool {
+// tell our current parent to release us
+		    if (this._pParent) {
+		        this._pParent.removeChild(this);
+//TODO: разобраться что за херня!!!!
+		        if (this._pParent) {
+		            this._pParent.release();
+		        }
+
+		        this._pParent = null;
+// my world matrix is now my local matrix
+
+		        return true;
+		    }
+
+		    return false;
+		}
+
+/**
+		 * Attaches this object's children to it's parent, promoting them up the tree
+		 */
+
+		promoteChildren(): void {
+// Do I have any children to promote?
+		    while (!isNull(this._pChild)) {
+		        var pNextSibling: IEntity = this._pChild.sibling;
+		        this._pChild.attachToParent(this._pParent);
+		        this._pChild = pNextSibling;
+		    }
+		}
+
+		relocateChildren(pParent: IEntity): void {
+			if (pParent != this) {
+// Do I have any children to relocate?
+		        while (!isNull(this._pChild)) {
+		            var pNextSibling: IEntity = this._pChild.sibling;
+		            this._pChild.attachToParent(pParent);
+		            this._pChild = pNextSibling;
+		        }
+		    }
+		}
+
+		toString(isRecursive: bool = false, iDepth: int = 0): string {
+
+		    if (!isRecursive) {
+		        return '<entity' + (this._sName? ' ' + this._sName: "") + '>';
+		    }
+
+		    var pSibling: IEntity = this.sibling;
+		    var pChild: IEntity = this.child;
+		    var s: string = "";
+
+		    for (var i = 0; i < iDepth; ++ i) {
+		        s += ':  ';
+		    }
+
+		    s += '+----[depth: ' + this.depth + ']' + this.toString() + '\n';
+
+		    if (pChild) {
+		        s += pChild.toString(true, iDepth + 1);
+		    }
+
+		    if (pSibling) {
+		        s += pSibling.toString(true, iDepth);
+		    }
+
+		    return s;
+
 
 		}
+
+	}
+}
+
+
+
+
+
+
+module akra.scene {
+
+	export enum ENodeUpdateFlags {
+		k_SetForDestruction = 0,
+//if changed scale, otation or position
+		k_NewOrientation,
+// k_NewTranslation,
+// k_NewScale,
+		k_NewWorldMatrix,
+		k_NewLocalMatrix,
+		k_RebuildInverseWorldMatrix,
+		k_RebuildNormalMatrix,
+     };
+
+	export class Node extends util.Entity implements INode {
+		private _m4fLocalMatrix: IMat4 = null;
+		private _m4fWorldMatrix: IMat4 = null;
+		private _m4fInverseWorldMatrix: IMat4 = null;
+		private _m3fNormalMatrix: IMat3 = null;
+
+		private _v3fWorldPosition: IVec3 = null;
+
+		private _qRotation: IQuat4 = null;
+		private _v3fTranslation: IVec3 = null;
+		private _v3fScale: IVec3 = null;
+
+		private _iUpdateFlags: int = 0;
+		private _eInheritance: ENodeInheritance = ENodeInheritance.POSITION;
+
+
+		/**@inline*/  get localOrientation(): IQuat4 {
+			return this._qRotation;
+		}
+
+		/**@inline*/  set localOrientation(qOrient: IQuat4) {
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+			this._qRotation.set(qOrient);
+		}
+
+		/**@inline*/  get localPosition(): IVec3 {
+			return this._v3fTranslation;
+		}
+
+		/**@inline*/  set localPosition(v3fPosition: IVec3) {
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+			this._v3fTranslation.set(v3fPosition);
+		}
+
+		/**@inline*/  get localScale(): IVec3 {
+			return this._v3fScale;
+		}
+
+		/**@inline*/  set localScale(v3fScale: IVec3) {
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+			this._v3fScale.set(v3fScale);
+		}
+
+		/**@inline*/  get localMatrix(): IMat4 {
+			return this._m4fLocalMatrix;
+		}
+
+		/**@inline*/  set localMatrix(m4fLocalMatrix: IMat4) {
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewLocalMatrix))) ) ;
+			this._m4fLocalMatrix.set(m4fLocalMatrix);
+		}
+
+
+		/**@inline*/  get worldMatrix(): IMat4 {
+			return this._m4fWorldMatrix;
+		}
+
+		/**@inline*/  get worldPosition(): IVec3 {
+			return this._v3fWorldPosition;
+		}
+
+		get inverseWorldMatrix(): IMat4 {
+			if ( ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_RebuildInverseWorldMatrix)) ) != 0) ) {
+		        this._m4fWorldMatrix.inverse(this._m4fInverseWorldMatrix);
+		        ((this._iUpdateFlags) &= ~ (1 << ((ENodeUpdateFlags.k_RebuildInverseWorldMatrix))) ) ;
+		    }
+
+			return this._m4fInverseWorldMatrix;
+		}
+
+		get normalMatrix(): IMat3 {
+			if ( ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_RebuildNormalMatrix)) ) != 0) ) {
+		        this._m4fWorldMatrix.toInverseMat3(this._m3fNormalMatrix).transpose();
+		        ((this._iUpdateFlags) &= ~ (1 << ((ENodeUpdateFlags.k_RebuildNormalMatrix))) ) ;
+		    }
+
+			return this._m3fNormalMatrix;
+		}
+
+
+		update(): void {
+// derived classes update the local matrix
+// then call this base function to complete
+// the update
+		    this.recalcWorldMatrix();
+		}
+
+
+		prepareForUpdate(): void {
+// clear the temporary flags
+			((this._iUpdateFlags) &= ~( (1 << (ENodeUpdateFlags.k_NewLocalMatrix)) | (1 << (ENodeUpdateFlags.k_NewOrientation)) | (1 << (ENodeUpdateFlags.k_NewWorldMatrix)) ))
+                                                                                            ;
+		}
+
+
+		/**@inline*/  setInheritance(eInheritance: ENodeInheritance) {
+			this._eInheritance = eInheritance;
+		}
+
+		/**@inline*/  getInheritance(): ENodeInheritance {
+			return this._eInheritance;
+		}
+
+		/**@inline*/  isWorldMatrixNew(): bool {
+			return  ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_NewWorldMatrix)) ) != 0) ;
+		}
+
+		/**@inline*/  isLocalMatrixNew(): bool {
+			return  ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_NewLocalMatrix)) ) != 0) ;
+		}
+
+		recalcWorldMatrix(): bool {
+			var isParentMoved: bool = this._pParent && (<Node>this._pParent).isWorldMatrixNew();
+		    var isOrientModified: bool =  ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_NewOrientation)) ) != 0) ;
+		    var isLocalModified: bool =  ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_NewLocalMatrix)) ) != 0) ;
+
+		    if (isOrientModified || isParentMoved || isLocalModified) {
+
+		        var m4fLocal: IMat4 = this._m4fLocalMatrix;
+		        var m4fWorld: IMat4 = this._m4fWorldMatrix;
+		        var m4fParent: IMat4 = (<Node>this._pParent).worldMatrix;
+		        var m4fOrient: IMat4 = Node._m4fTemp;
+		        var v3fTemp: IVec3 = Node._v3fTemp;
+
+		        var pWorldData: Float32Array = m4fWorld.data;
+		        var pParentData: Float32Array = m4fParent.data;
+		        var pOrientData: Float32Array = m4fOrient.data;
+
+		        this._qRotation.toMat4(m4fOrient);
+
+		        m4fOrient.setTranslation(this._v3fTranslation);
+		        m4fOrient.scaleLeft(this._v3fScale);
+		        m4fOrient.multiply(m4fLocal);
+
+
+		        if (this._pParent) {
+		            if (this._eInheritance === ENodeInheritance.ALL) {
+		                m4fParent.multiply(m4fOrient, m4fWorld);
+		            }
+		            else if (this._eInheritance === ENodeInheritance.POSITION) {
+		                m4fWorld.set(m4fOrient);
+
+		                pWorldData[ 12 ] = pParentData[ 12 ] + pOrientData[ 12 ];
+		                pWorldData[ 13 ] = pParentData[ 13 ] + pOrientData[ 13 ];
+		                pWorldData[ 14 ] = pParentData[ 14 ] + pOrientData[ 14 ];
+		            }
+		            else if (this._eInheritance === ENodeInheritance.ROTSCALE) {
+		                var p11 = pParentData[ 0 ], p12 = pParentData[ 4 ],
+		                    p13 = pParentData[ 8 ];
+		                var p21 = pParentData[ 1 ], p22 = pParentData[ 5 ],
+		                    p23 = pParentData[ 9 ];
+		                var p31 = pParentData[ 2 ], p32 = pParentData[ 6 ],
+		                    p33 = pParentData[ 10 ];
+
+		                var l11 = pOrientData[ 0 ], l12 = pOrientData[ 4 ],
+		                    l13 = pOrientData[ 8 ];
+		                var l21 = pOrientData[ 1 ], l22 = pOrientData[ 5 ],
+		                    l23 = pOrientData[ 9 ];
+		                var l31 = pOrientData[ 2 ], l32 = pOrientData[ 6 ],
+		                    l33 = pOrientData[ 10 ];
+
+		                pWorldData[ 0 ] = p11 * l11 + p12 * l21 + p13 * l31;
+		                pWorldData[ 4 ] = p11 * l12 + p12 * l22 + p13 * l32;
+		                pWorldData[ 8 ] = p11 * l13 + p12 * l23 + p13 * l33;
+		                pWorldData[ 12 ] = pOrientData[ 12 ];
+		                pWorldData[ 1 ] = p21 * l11 + p22 * l21 + p23 * l31;
+		                pWorldData[ 5  = p21 * l12 + p22 * l22 + p23 * l32];
+		                pWorldData[ 9 ] = p21 * l13 + p22 * l23 + p23 * l33;
+		                pWorldData[ 13 ] = pOrientData[ 13 ];
+		                pWorldData[ 2 ] = p31 * l11 + p32 * l21 + p33 * l31;
+		                pWorldData[ 6 ] = p31 * l12 + p32 * l22 + p33 * l32;
+		                pWorldData[ 10 ] = p31 * l13 + p32 * l23 + p33 * l33;
+		                pWorldData[ 14 ] = pOrientData[ 14 ];
+
+		                pWorldData[ 3 ] = pOrientData[ 3 ];
+		                pWorldData[ 7 ] = pOrientData[ 7 ];
+		                pWorldData[ 11 ] = pOrientData[ 11 ];
+		                pWorldData[ 15 ] = pOrientData[ 15 ];
+		            }
+		        }
+		        else {
+		            m4fWorld.set(m4fOrient);
+		        }
+
+		        this._v3fWorldPosition.x = pWorldData[ 12 ];
+		        this._v3fWorldPosition.y = pWorldData[ 13 ];
+		        this._v3fWorldPosition.z = pWorldData[ 14 ];
+
+// set the flag that our world matrix has changed
+		        ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewWorldMatrix))) ) ;
+// and it's inverse & vectors are out of date
+		        ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_RebuildInverseWorldMatrix))) ) ;
+		        ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_RebuildNormalMatrix))) ) ;
+
+		        return true;
+		    }
+
+		    return false;
+		}
+
+		setPosition(v3fPosition: IVec3): void;
+		setPosition(fX: float, fY: float, fZ: float): void;
+		setPosition(fX?: any, fY?: any, fZ?: any): void {
+			var pPos: IVec3 = arguments.length === 1? arguments[0]: vec3(fX, fY, fZ);
+		    var v3fTranslation: IVec3 = this._v3fTranslation;
+
+		    v3fTranslation.set(pPos);
+
+		    ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		addPosition(v3fPosition: IVec3): void;
+		addPosition(fX: float, fY: float, fZ: float): void;
+		addPosition(fX?: any, fY?: any, fZ?: any): void {
+			var pPos: IVec3 = arguments.length === 1? arguments[0]: vec3(fX, fY, fZ);
+		    var v3fTranslation: IVec3 = this._v3fTranslation;
+
+		    v3fTranslation.add(pPos);
+
+		    ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		addRelPosition(v3fPosition: IVec3): void;
+		addRelPosition(fX: float, fY: float, fZ: float): void;
+		addRelPosition(fX?: any, fY?: any, fZ?: any): void {
+			var pPos: IVec3 = arguments.length === 1? arguments[0]: vec3(fX, fY, fZ);
+		    var v3fTranslation: IVec3 = this._v3fTranslation;
+
+		    this._qRotation.multiplyVec3(pPos);
+    		v3fTranslation.add(pPos);
+
+		    ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		setRotationByMatrix(m3fRotation: IMat3): void;
+		setRotationByMatrix(m4fRotation: IMat4): void;
+		setRotationByMatrix(matrix: any): void {
+			matrix.toQuat4(this._qRotation);
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		setRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void {
+			Quat4.fromAxisAngle(v3fAxis, fAngle, this._qRotation);
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		setRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
+			Quat4.fromForwardUp(v3fForward, v3fUp, this._qRotation);
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		setRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void {
+			Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, this._qRotation);
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		setRotationByXYZAxis(fX: float, fY: float, fZ: float): void {
+			Quat4.fromYawPitchRoll(fY, fX, fZ, this._qRotation);
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		setRotation(q4fRotation: IQuat4): void {
+			this._qRotation.set(q4fRotation);
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		addRelRotationByMatrix(m3fRotation: IMat3): void;
+		addRelRotationByMatrix(m4fRotation: IMat4): void;
+		addRelRotationByMatrix(matrix: any): void {
+			this.addRelRotation(arguments[0].toQuat4(Node._q4fTemp));
+		}
+
+		addRelRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void {
+			this.addRelRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp));
+		}
+
+		addRelRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
+			this.addRelRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp));
+		}
+
+		addRelRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void {
+			this.addRelRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp));
+		}
+
+		addRelRotationByXYZAxis(fX: float, fY: float, fZ: float): void {
+			this.addRelRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp));
+		}
+
+		addRelRotation(q4fRotation: IQuat4): void {
+			this._qRotation.multiply(q4fRotation);
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		addRotationByMatrix(m3fRotation: IMat3): void;
+		addRotationByMatrix(m4fRotation: IMat4): void;
+		addRotationByMatrix(matrix: any): void {
+			this.addRotation(arguments[0].toQuat4(Node._q4fTemp));
+		}
+
+		addRotationByAxisAngle(v3fAxis: IVec3, fAngle: float): void {
+			this.addRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp));
+		}
+
+		addRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
+			this.addRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp));
+		}
+
+		addRotationByEulerAngles(fYaw: float, fPitch: float, fRoll: float): void {
+			this.addRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp));
+		}
+
+		addRotationByXYZAxis(fX: float, fY: float, fZ: float): void {
+			this.addRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp));
+		}
+
+		addRotation(q4fRotation: IQuat4): void {
+			q4fRotation.multiplyVec3(this._v3fTranslation);
+    		q4fRotation.multiply(this._qRotation, this._qRotation);
+    		((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+
+		scale(fScale: float): void;
+		scale(fX: float, fY: float, fZ: float): void;
+		scale(fX: any, fY?: any, fZ?: any): void {
+			var pScale: IVec3 = arguments.length === 1? arguments[0]: vec3(fX);
+		    var v3fScale: IVec3 = this._v3fScale;
+
+		    v3fScale.scale(pScale);
+
+		    ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+
+
+		attachToParent(pParent: IEntity): bool {
+			if (super.attachToParent(pParent)) {
+// adjust my local matrix to be relative to this new parent
+	            var m4fInvertedParentMatrix: IMat4 = mat4();
+	            (<Node>this._pParent)._m4fWorldMatrix.inverse(m4fInvertedParentMatrix);
+	            return true;
+			}
+
+			return false;
+		}
+
+		detachFromParent(): bool {
+			if (super.detachFromParent()) {
+				this._m4fWorldMatrix.identity();
+				return true;
+			}
+
+			return false;
+		}
+
+		toString(isRecursive: bool = false, iDepth: int = 0): string {
+
+
+		    if (!isRecursive) {
+		        return '<node' + (this.name? " " + this.name: "") + '>';
+		    }
+
+		    var pSibling: IEntity = this.sibling;
+		    var pChild: IEntity = this.child;
+		    var s = "";
+
+		    for (var i = 0; i < iDepth; ++ i) {
+		        s += ':  ';
+		    }
+
+		    s += '+----[depth: ' + this.depth + ']' + this.toString() + '\n';
+
+		    if (pChild) {
+		        s += pChild.toString(true, iDepth + 1);
+		    }
+
+		    if (pSibling) {
+		        s += pSibling.toString(true, iDepth);
+		    }
+
+		    return s;
+
+		};
+
+		private static _v3fTemp: IVec3 = vec3();
+		private static _v4fTemp: IVec4 = vec4();
+		private static _m3fTemp: IMat3 = mat3();
+		private static _m4fTemp: IMat4 = mat4();
+		private static _q4fTemp: IQuat4 = quat4();
 	}
 }
 
@@ -9745,7 +11295,10 @@ module akra {
 
 
 module  akra.render {
-	export var ShaderPrefixes: StringMap = {
+
+
+
+	export var SShaderPrefixes = {
 		k_Sampler    : "A_s_",
 	    k_Header     : "A_h_",
 	    k_Attribute  : "A_a_",
@@ -9759,7 +11312,7 @@ module  akra.render {
 
 	export var ZEROSAMPLER: int = 19;
 
-	export var SystemSemantics: StringMap = {
+	export var SSystemSemantics = {
 		MODEL_MATRIX: 		"MODEL_MATRIX",
 		VIEW_MATRIX: 		"VIEW_MATRIX",
 		PROJ_MATRIX: 		"PROJ_MATRIX",
@@ -10505,7 +12058,7 @@ module akra.display {
 			var pDisplay: IDisplay3d = this;
 			var pRenderer: IRenderer = this.pRenderer;
 			var fnRender = (iTime: int): void => {
-				if (DEBUG) {
+				if ( DEBUG ) {
 					if (pRenderer.isDeviceLost()) {
 						debug_error("Device lost");
 					}

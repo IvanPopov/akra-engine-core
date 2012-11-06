@@ -5,7 +5,9 @@
 
 module akra {
     export interface ISceneNode extends INode {
-
+    	render(): void;
+    	prepareForRender(): void;
+    	recursiveRender(): void;
     }
 }
 

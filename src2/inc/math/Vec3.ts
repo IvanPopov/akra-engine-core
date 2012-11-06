@@ -1,8 +1,10 @@
 #ifndef VEC3_TS
 #define VEC3_TS
 
+#include "IVec3.ts"
+
 module akra.math {
-    export class Vec3 {
+    export class Vec3 implements IVec3 {
         x: number;
         y: number;
         z: number;
@@ -41,15 +43,15 @@ module akra.math {
         }
 
 
-        set(v3f: Vec3);
-        set(v2f: Vec2, z: number);
-        set(x: number, v2f: Vec2);
-        set(x: number, y: number, z: number);
+        set(v3f: Vec3): IVec3;
+        set(v2f: Vec2, z: number): IVec3;
+        set(x: number, v2f: Vec2): IVec3;
+        set(x: number, y: number, z: number): IVec3;
 
         /**
          * @inline
          */
-        set(x? , y? , z? ): Vec3 {
+        set(x? , y? , z? ): IVec3 {
 
             switch (arguments.length) {
                 case 0:
@@ -110,6 +112,8 @@ module akra.math {
         toString(): string {
             return "[x: " + this.x + ", y: " + this.y + ", z: " + this.z + "]";
         }
+
+        scale(x?, y?, z?): IVec3 {return null;}
 
         static v3f: Vec3 = new Vec3;
     }
