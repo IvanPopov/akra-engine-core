@@ -43,6 +43,7 @@ node_modules/
 
 src/*.htm
 #src2/*.htm
+src2/tmp.ts
 
 obj/
 bin/
