@@ -36,6 +36,7 @@ module akra.math {
 		constructor(fValue: float);
 		constructor(v3fVec: IVec3);
 		constructor(m3fMat: IMat3);
+		constructor(m4fMat: IMat4);
 		constructor(pArray: float[]);
 		constructor(fValue1: float, fValue2: float, fValue3: float);
 		constructor(v3fVec1: IVec3, v3fVec2: IVec3, v3fVec3: IVec3);
@@ -69,6 +70,7 @@ module akra.math {
 		set(fValue: float): IMat3;
 		set(v3fVec: IVec3): IMat3;
 		set(m3fMat: IMat3): IMat3;
+		set(m4fMat: IMat4): IMat3;
 		set(pArray: float[]): IMat3;
 		set(fValue1: float, fValue2: float, fValue3: float): IMat3;
 		set(v3fVec1: IVec3, v3fVec2: IVec3, v3fVec3: IVec3): IMat3;
@@ -108,20 +110,37 @@ module akra.math {
 		            pData[__a33] = nValue;
 		        }
 
-		        else if(arguments[0] instanceof Mat3){
+		        else if(isDef(arguments[0].data)){
 		            var pElements: Float32Array = arguments[0].data;
 
-		            pData[__a11] = pElements[__a11];
-		            pData[__a12] = pElements[__a12];
-		            pData[__a13] = pElements[__a13];
+		            if(pElements.length === 9){
+		            	//Mat3
+			            pData[__a11] = pElements[__a11];
+			            pData[__a12] = pElements[__a12];
+			            pData[__a13] = pElements[__a13];
 
-		            pData[__a21] = pElements[__a21];
-		            pData[__a22] = pElements[__a22];
-		            pData[__a23] = pElements[__a23];
+			            pData[__a21] = pElements[__a21];
+			            pData[__a22] = pElements[__a22];
+			            pData[__a23] = pElements[__a23];
 
-		            pData[__a31] = pElements[__a31];
-		            pData[__a32] = pElements[__a32];
-		            pData[__a33] = pElements[__a33];
+			            pData[__a31] = pElements[__a31];
+			            pData[__a32] = pElements[__a32];
+			            pData[__a33] = pElements[__a33];
+		        	}
+		        	else{
+		        		//Mat4
+		        		pData[__a11] = pElements[__11];
+			            pData[__a12] = pElements[__12];
+			            pData[__a13] = pElements[__13];
+
+			            pData[__a21] = pElements[__21];
+			            pData[__a22] = pElements[__22];
+			            pData[__a23] = pElements[__23];
+
+			            pData[__a31] = pElements[__31];
+			            pData[__a32] = pElements[__32];
+			            pData[__a33] = pElements[__33];
+		        	}
 		        }
 		        else if(arguments[0] instanceof Vec3){
 		            var v3fVec: IVec3 = arguments[0];

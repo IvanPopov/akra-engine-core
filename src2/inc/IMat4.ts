@@ -55,7 +55,7 @@ module akra.math {
 		set(): IMat4;
 		set(fValue: float): IMat4;
 		set(v4fVec: IVec4): IMat4;
-		set(m3fMat: IMat3): IMat4;
+		set(m3fMat: IMat3, v3fTranslation?: IVec3): IMat4;
 		set(m4fMat: IMat4): IMat4;
 		set(pArray: float[]): IMat4;
 		set(fValue1: float, fValue2: float,
@@ -87,7 +87,6 @@ module akra.math {
 		toMat3(m3fDestination?: IMat3): IMat3;
 		toQuat4(q4fDestination?: IQuat4): IQuat4;
 		toRotationMatrix(m4fDestination?: IMat4): IMat4;
-		toInverseMat3(m3fDestination?: IMat3): IMat3;
 		toString(): string;
 
 		rotateRight(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
