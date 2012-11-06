@@ -301,6 +301,11 @@ module akra {
         [index: string]: BoolMap;
         [index: number]: BoolMap;
     };
+
+    export interface StringDMap{
+        [index: string]: StringMap;
+        [index: number]: StringMap;
+    }
     
 
     /**

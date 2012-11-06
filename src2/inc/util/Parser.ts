@@ -82,6 +82,8 @@ module akra.util {
         hasParentItem(pItem: IItem): IItem;
         hasChildItem(pItem: IItem): IItem;
 
+        hasRule(pRule:IRule, iPos:uint):bool;
+
         isEmpty(): bool;
         isEqual(pState: IState, eType: EParserType): bool;
 
@@ -128,53 +130,52 @@ module akra.util {
         private _isNewExpected: bool;
         private _iLength: uint;
 
-        /** @inline */
-        get rule(): IRule {
+        
+        inline get rule(): IRule {
             return this._pRule;
         }
-        /** @inline */
-        set rule(pRule: IRule) {
+        
+        inline set rule(pRule: IRule) {
             this._pRule = pRule;
         }
-        /** @inline */
-        get position(): uint {
+        
+        inline get position(): uint {
             return this._iPos;
         }
-        /** @inline */
-        set position(iPos: uint) {
+        
+        inline set position(iPos: uint) {
             this._iPos = iPos;
         }
-        /** @inline */
-        get state(): IState {
+        
+        inline get state(): IState {
             return this._pState;
         }
-        /** @inline */
-        set state(pState: IState) {
+        
+        inline set state(pState: IState) {
             this._pState = pState;
         }
-        /** @inline */
-        get index(): uint {
+        
+        inline get index(): uint {
             return this._iIndex;
         }
-        /** @inline */
-        set index(iIndex: uint) {
+        
+        inline set index(iIndex: uint) {
             this._iIndex = iIndex;
         }
 
-        /** @inline */
-        get expectedSymbols(): BoolMap {
+        inline get expectedSymbols(): BoolMap {
             return this._pExpected;
         }
-        /** @inline */
-        get length(): uint {
+        
+        inline get length(): uint {
             return this._iLength;
         }
-        /** @inline */
-        get isNewExpected(): bool {
+        
+        inline get isNewExpected(): bool {
             return this._isNewExpected;
         }
-        /** @inline */
-        set isNewExpected(_isNewExpected: bool) {
+        
+        inline set isNewExpected(_isNewExpected: bool) {
             this._isNewExpected = _isNewExpected;
         }
 
@@ -230,16 +231,15 @@ module akra.util {
             return pRight[this._iPos];
         }
 
-        end(): string {
-            var pRight = this._pRule.right;
-            return pRight[pRight.length - 1] || T_EMPTY;
+        inline end(): string {
+            return this._pRule.right[this._pRule.right.length - 1] || T_EMPTY;
         }
 
-        nextMarked(): string {
+        inline nextMarked(): string {
             return this._pRule.right[this._iPos + 1] || END_POSITION;
         }
 
-        isExpected(sSymbol: string): bool {
+        inline isExpected(sSymbol: string): bool {
             return !!(this._pExpected[sSymbol]);
         }
 
@@ -290,24 +290,23 @@ module akra.util {
         private _iIndex: uint;
         private _nBaseItems: uint;
 
-        /** @inline */
-        get items(): IItem[] {
+        inline get items(): IItem[] {
             return this._pItemList;
         }
-        /** @inline */
-        get numBaseItems(): uint {
+
+        inline get numBaseItems(): uint {
             return this._nBaseItems;
         }
-        /** @inline */
-        get index(): uint {
+
+        inline get index(): uint {
             return this._iIndex;
         }
-        /** @inline */
-        set index(iIndex: uint) {
+
+        inline set index(iIndex: uint) {
             this._iIndex = iIndex;
         }
-        /** @inline */
-        get nextStates(): IStateMap {
+
+        inline get nextStates(): IStateMap {
             return this._pNextStates;
         }
 
@@ -351,7 +350,22 @@ module akra.util {
             return null;
         }
 
-        isEmpty(): bool {
+        hasRule(pRule:IRule, iPos: uint): bool {
+            var i:uint = 0;
+            var pItemList:IItem[] = this._pItemList;
+            var pItem:IItem;
+
+            for(i = 0; i < this._nBaseItems; i++){
+                pItem = pItemList[i];
+                if(pItem.rule === pRule && pItem.position === iPos){
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        inline isEmpty(): bool {
             return !(this._pItemList.length);
         }
 
@@ -439,7 +453,7 @@ module akra.util {
             }
         }
 
-        deleteNotBase(): void {
+        inline deleteNotBase(): void {
             this._pItemList.length = this._nBaseItems;
         }
 
@@ -467,12 +481,11 @@ module akra.util {
         private _pNodesCountStack: uint[];
         private _isOptimizeMode: bool;
 
-        /** @inline */
-        get root(): IParseNode {
+        inline get root(): IParseNode {
             return this._pRoot;
         }
-        /** @inline */
-        set root(pRoot: IParseNode) {
+
+        inline set root(pRoot: IParseNode) {
             this._pRoot = pRoot;
         }
 
@@ -544,7 +557,7 @@ module akra.util {
             if (!pParent.children) {
                 pParent.children = <IParseNode[]>[];
             }
-            pParent.children.push(pParent);
+            pParent.children.push(pNode);
             pNode.parent = pParent;
         }
 
@@ -627,7 +640,7 @@ module akra.util {
         }
 
         addPunctuator(sValue: string, sName?: string): string {
-            if (typeof (sName) === undefined && sValue.length === 1) {
+            if (sName === undefined && sValue.length === 1) {
                 sName = "T_PUNCTUATOR_" + sValue.charCodeAt(0);
 
             }
@@ -788,28 +801,23 @@ module akra.util {
             return (sSymbol === ' ') || (sSymbol === '\t');
         }
 
-        /** @inline */
-        private isKeyword(sValue: string): bool {
+        private inline isKeyword(sValue: string): bool {
             return !!(this._pKeywordsMap[sValue]);
         }
 
-        /** @inline */
-        private isPunctuator(sValue: string): bool {
+        private inline isPunctuator(sValue: string): bool {
             return !!(this._pPunctuatorsMap[sValue]);
         }
 
-        /** @inline */
-        private nextChar(): string {
+        private inline nextChar(): string {
             return this._sSource[this._iIndex + 1];
         }
 
-        /** @inline */
-        private currentChar(): string {
+        private inline currentChar(): string {
             return this._sSource[<number>this._iIndex];
         }
 
-        /** @inline */
-        private readNextChar(): string {
+        private inline readNextChar(): string {
             this._iIndex++;
             this._iColumnNumber++;
             return this._sSource[<number>this._iIndex];
@@ -839,7 +847,7 @@ module akra.util {
 
             if (isGoodFinish) {
                 return <IToken>{
-                    name: "T_STRING",
+                    name: T_STRING,
                     value: sValue,
                     start: iStart,
                     end: this._iColumnNumber - 1,
@@ -848,7 +856,7 @@ module akra.util {
             }
             else {
                 if (!ch) {
-                    ch = "EOF";
+                    ch = EOF;
                 }
                 sValue += ch;
 
@@ -953,7 +961,7 @@ module akra.util {
             }
 
             if (isGoodFinish) {
-                var sName = isFloat ? "T_FLOAT" : "T_UINT";
+                var sName = isFloat ? T_FLOAT : T_UINT;
                 return {
                     name: sName,
                     value: sValue,
@@ -964,7 +972,7 @@ module akra.util {
             }
             else {
                 if (!ch) {
-                    ch = "EOF";
+                    ch = EOF;
                 }
                 sValue += ch;
                 this.error(ESyntaxErrorCode.k_BadToken, <IToken> {
@@ -1008,7 +1016,7 @@ module akra.util {
                     };
                 }
                 else {
-                    var sName = this._pParser.isTypeId(sValue) ? "T_TYPE_ID" : "T_NON_TYPE_ID";
+                    var sName = this._pParser.isTypeId(sValue) ? T_TYPE_ID : T_NON_TYPE_ID;
                     return <IToken> {
                         name: sName,
                         value: sValue,
@@ -1020,7 +1028,7 @@ module akra.util {
             }
             else {
                 if (!ch) {
-                    ch = "EOF";
+                    ch = EOF;
                 }
                 sValue += ch;
                 this.error(ESyntaxErrorCode.k_BadToken, <IToken> {
@@ -1042,6 +1050,9 @@ module akra.util {
                     break;
                 }
                 if (this.isLineTerminator(ch)) {
+                    if(ch === "\r" && this.nextChar() === "\n"){
+                        this._iLineNumber--;    
+                    }
                     this._iLineNumber++;
                     ch = this.readNextChar();
                     this._iColumnNumber = 0;
@@ -1072,6 +1083,9 @@ module akra.util {
                         break;
                     }
                     if (this.isLineTerminator(ch)) {
+                        if(ch === "\r" && this.nextChar() === "\n"){
+                            this._iLineNumber--;    
+                        }
                         this._iLineNumber++;
                         this.readNextChar();
                         this._iColumnNumber = 0;
@@ -1100,6 +1114,9 @@ module akra.util {
                         break;
                     }
                     if (this.isLineTerminator(ch)) {
+                        if(ch === "\r" && this.nextChar() === "\n"){
+                            this._iLineNumber--;    
+                        }
                         this._iLineNumber++;
                         this._iColumnNumber = -1;
                     }
@@ -1111,7 +1128,7 @@ module akra.util {
                 }
                 else {
                     if (!ch) {
-                        ch = "EOF";
+                        ch = EOF;
                     }
                     sValue += ch;
                     this.error(ESyntaxErrorCode.k_BadToken, <IToken> {
@@ -1130,22 +1147,22 @@ module akra.util {
 
 
     interface IOperationMap {
-        [k: string]: IOperation;
-        [k: number]: IOperation;
+        [grammarSymbol: string]: IOperation;
+        [stateIndex: uint]: IOperation;
     }
 
     interface IOperationDMap {
-        [k: number]: IOperationMap;
+        [stateIndex: uint]: IOperationMap;
     }
 
     interface IRuleMap {
-        [k: number]: IRule;
-        [k: string]: IRule;
+        [ruleIndex: uint]: IRule;
+        [ruleName: string]: IRule;
     }
 
     interface IRuleDMap {
-        [k: number]: IRuleMap;
-        [k: string]: IRuleMap;
+        [ruleIndex: uint]: IRuleMap;
+        [ruleName: string]: IRuleMap;
     }
 
     interface IRuleFunction {
@@ -1153,8 +1170,17 @@ module akra.util {
     }
 
     interface IRuleFunctionMap {
-        [k: number]: IRuleFunction;
-        [k: string]: IRuleFunction;
+        [grammarSymbol: string]: IRuleFunction;
+    }
+
+    interface IRuleFunctionDMap {
+        [stateIndex: uint]: IRuleFunctionMap;
+    }
+
+    interface IAdditionalFuncInfo{
+        name: string;
+        position: uint;
+        rule: IRule;
     }
 
     export class Parser implements IParser{
@@ -1181,7 +1207,7 @@ module akra.util {
 
         //Grammar Info
         
-        private _pSymbols: BoolMap;
+        private _pSymbolMap: BoolMap;
         private _pSyntaxTable: IOperationDMap;
         private _pReduceOperationsMap: IOperationMap;
         private _pShiftOperationsMap: IOperationMap;
@@ -1194,8 +1220,10 @@ module akra.util {
         private _pStateList: IState[];
         private _nRules: uint;
 
-        private _pRuleFunctionNamesMap: StringMap;
+        private _pAdditionalFuncInfoList: IAdditionalFuncInfo[];
         private _pAdditionalFunctionsMap: IRuleFunctionMap;
+
+        private _pAdidtionalFunctByStateMap: IRuleFunctionDMap;
 
         private _eType: EParserType;
 
@@ -1227,8 +1255,7 @@ module akra.util {
             this._fnFinishCallback = null;
             this._pCaller = null;
 
-            this._pSymbols = <BoolMap>{};
-            this._pSymbols[END_SYMBOL] = true;
+            this._pSymbolMap = <BoolMap><any>{END_SYMBOL: true};
             this._pSyntaxTable = null;
             this._pReduceOperationsMap = null;
             this._pShiftOperationsMap = null;
@@ -1239,8 +1266,9 @@ module akra.util {
             this._pRulesDMap = null;
             this._pStateList = null;
             this._nRules = 0;
-            this._pRuleFunctionNamesMap = null;
+            this._pAdditionalFuncInfoList = null;
             this._pAdditionalFunctionsMap = null;
+            this._pAdidtionalFunctByStateMap = null;
 
             this._eType = EParserType.k_LR0;
 
@@ -1251,8 +1279,19 @@ module akra.util {
 
             this._pStatesTempMap = null;
             this._pBaseItemList = null;
+
             this._pExpectedExtensionDMap = null;
 
+            //Tempory
+            this._pAdditionalFunctionsMap = <IRuleFunctionMap><any>{"testFunc1": this.testFunc,
+            "testFunc2": this.testFunc,
+            "testFunc3": this.testFunc,
+            "testFunc4": this.testFunc};
+        }
+
+        testFunc(pRule: IRule): EOperationType{
+            console.log(pRule);
+            return EOperationType.k_Ok;
         }
 
         isTypeId(sValue: string): bool {
@@ -1283,7 +1322,9 @@ module akra.util {
                 this._eParseMode = eMode;
                 this.generateRules(sGrammar);
                 this.buildSyntaxTable();
-                this.clearMem();
+                this.generateFunctionByStateMap();
+                console.log(this.printStates(true));
+                // this.clearMem();
                 return true;
             }
             catch (e) {
@@ -1314,6 +1355,8 @@ module akra.util {
                 var pOperation:IOperation;
                 var iRuleLength:uint;
 
+                var sLastGrammarSymbol: string;
+
                 while (!isStop) {
                     pOperation = pSyntaxTable[pStack[pStack.length - 1]][pToken.name];
                     if (isDef(pOperation)) {
@@ -1323,17 +1366,33 @@ module akra.util {
                                 break;
 
                             case EOperationType.k_Shift:
+                                sLastGrammarSymbol = pToken.name;
                                 pStack.push(pOperation.index);
+
+                                if(this._pAdidtionalFunctByStateMap[pStack[pStack.length-1]] &&
+                                    this._pAdidtionalFunctByStateMap[pStack[pStack.length-1]][sLastGrammarSymbol]){
+                                    console.log("shift", pStack[pStack.length-1], sLastGrammarSymbol, pToken);
+                                }
+
+                                
                                 pTree.addNode(<IParseNode>pToken);
                                 pToken = this.readToken();
+                                
+
                                 break;
                             
                             case EOperationType.k_Reduce:
                                 iRuleLength = pOperation.rule.right.length;
                                 pStack.length -= iRuleLength;
                                 pStack.push(pSyntaxTable[pStack[pStack.length - 1]][pOperation.rule.left].index);
+                                sLastGrammarSymbol = pOperation.rule.left;
 
-                                if (this.ruleAction(pOperation.rule) === EOperationType.k_Pause) {
+                                if(this._pAdidtionalFunctByStateMap[pStack[pStack.length-1]] &&
+                                    this._pAdidtionalFunctByStateMap[pStack[pStack.length-1]][sLastGrammarSymbol]){
+                                    console.log("reduce", pStack[pStack.length-1], sLastGrammarSymbol, pToken);
+                                }
+
+                                if (this.reduceAction(pOperation.rule) === EOperationType.k_Pause) {
                                     this._pToken = pToken;
                                     isStop = true;
                                     isPause = true;
@@ -1382,8 +1441,8 @@ module akra.util {
 
         private error(eCode: ESyntaxErrorCode): void {
             console.log(this.printStates(true));
-            console.log((new Error).stack);
-            console.log(eCode);
+            //console.log((new Error).stack);
+            console.log("Error with code", eCode);
         }
 
         private clearMem(): void {
@@ -1413,7 +1472,7 @@ module akra.util {
         }
 
         private isTerminal(sSymbol: string): bool {
-            return !!(this._pRulesDMap[sSymbol]);
+            return !(this._pRulesDMap[sSymbol]);
         }
 
         private pushState(pState: IState): void {
@@ -1495,7 +1554,7 @@ module akra.util {
             var i: string, j: uint, k: string;
             var pRulesMap: IRuleMap = this._pRulesDMap[sSymbol];
 
-            var pTempRes: BoolMap;
+            var pTempRes: BoolMap = <BoolMap>{};
             var pRes: BoolMap;
 
             var pRight: string[];
@@ -1621,7 +1680,7 @@ module akra.util {
             var i: uint, j: string;
 
             var pTempRes: BoolMap;
-            var pRes: BoolMap;
+            var pRes: BoolMap = <BoolMap>{};
 
             var isEmpty: bool;
 
@@ -1661,7 +1720,7 @@ module akra.util {
             var isLexerBlock: bool = false;
 
             this._pRulesDMap = <IRuleDMap>{};
-            this._pRuleFunctionNamesMap = <StringMap>{};
+            this._pAdditionalFuncInfoList = <IAdditionalFuncInfo[]>[];
             this._pSymbolsWithNodesMap = <IntMap>{};
 
             var i: uint = 0, j: uint = 0;
@@ -1720,7 +1779,7 @@ module akra.util {
                     right: <string[]>[],
                     index: 0
                 };
-                this._pSymbols[pTempRule[0]] = true;
+                this._pSymbolMap[pTempRule[0]] = true;
 
                 if (isAllNodeMode) {
                     pSymbolsWithNodeMap[pTempRule[0]] = ENodeCreateMode.k_Default;
@@ -1753,7 +1812,11 @@ module akra.util {
                             this.error(ESyntaxErrorCode.k_GrammarBadAdditionalFunctionName);
                             //this._error("Can`t generate rule for grammar! Addititional functionhas has bad name");
                         }
-                        this._pRuleFunctionNamesMap[this._nRules] = pTempRule[j + 1];
+
+                        var pFuncInfo: IAdditionalFuncInfo = <IAdditionalFuncInfo>{name: pTempRule[j + 1], 
+                                                                                   position: pRule.right.length,
+                                                                                   rule: pRule};
+                        this._pAdditionalFuncInfoList.push(pFuncInfo);
                         j++;
                         continue;
                     }
@@ -1768,11 +1831,11 @@ module akra.util {
                         }
                         var sName: string = this._pLexer.addPunctuator(pTempRule[j][1]);
                         pRule.right.push(sName);
-                        this._pSymbols[sName] = true;
+                        this._pSymbolMap[sName] = true;
                     }
                     else {
                         pRule.right.push(pTempRule[j]);
-                        this._pSymbols[pTempRule[j]] = true;
+                        this._pSymbolMap[pTempRule[j]] = true;
                     }
                 }
 
@@ -1781,9 +1844,45 @@ module akra.util {
                 this._nRules += 1;
 
             }
-
         }
 
+        private generateFunctionByStateMap():void{
+            var pStateList: IState[] = this._pStateList; 
+            var pFuncInfoList: IAdditionalFuncInfo[] = this._pAdditionalFuncInfoList;
+            var pFuncInfo: IAdditionalFuncInfo;
+            var pRule: IRule;
+            var iPos: uint = 0;
+            var pFunc: IRuleFunction;
+            var sGrammarSymbol: string; 
+
+            var i:uint = 0, j: uint = 0;
+
+            var pFuncByStateDMap:IRuleFunctionDMap = <IRuleFunctionDMap>{}; 
+            pFuncByStateDMap = this._pAdidtionalFunctByStateMap = <IRuleFunctionDMap>{};
+
+            for(i = 0; i < pFuncInfoList.length; i++){
+                pFuncInfo = pFuncInfoList[i];
+                
+                pFunc = this._pAdditionalFunctionsMap[pFuncInfo.name];
+                if(!isDef(pFunc)){
+                    continue;
+                }
+
+                pRule = pFuncInfo.rule;
+                iPos = pFuncInfo.position;
+                sGrammarSymbol = pRule.right[iPos - 1];                
+
+                for(j = 0; j < pStateList.length; j++){
+                    if(pStateList[j].hasRule(pRule, iPos)){
+                        if(!isDef(pFuncByStateDMap[pStateList[j].index])){
+                            pFuncByStateDMap[pStateList[j].index] = <IRuleFunctionMap>{};    
+                        }
+
+                        pFuncByStateDMap[pStateList[j].index][sGrammarSymbol] = pFunc;    
+                    }
+                }
+            }
+        }
 
         private generateFirstState(eType: EParserType): void {
             if (eType === EParserType.k_LR0) {
@@ -2000,10 +2099,10 @@ module akra.util {
             var pStates: IState[] = this._pStateList;
 
             for (i = 0; i < pStates.length; i++) {
-                for (j in this._pSymbols) {
+                for (j in this._pSymbolMap) {
                     this.determineExpected(pStates[i], j);
                 }
-            }
+            }    
         }
 
         private expandExpected(): void {
@@ -2064,7 +2163,7 @@ module akra.util {
             var pState: IState;
 
             for (i = 0; i < pStateList.length; i++) {
-                for (sSymbol in this._pSymbols) {
+                for (sSymbol in this._pSymbolMap) {
                     pState = this.nextState_LR0(pStateList[i], sSymbol);
 
                     if (!pState.isEmpty()) {
@@ -2085,7 +2184,7 @@ module akra.util {
             var pState: IState;
 
             for (i = 0; i < pStateList.length; i++) {
-                for (sSymbol in this._pSymbols) {
+                for (sSymbol in this._pSymbolMap) {
                     pState = this.nextState_LR(pStateList[i], sSymbol);
 
                     if (!pState.isEmpty()) {
@@ -2097,6 +2196,7 @@ module akra.util {
         }
 
         private generateStates_LALR(): void {
+
             this._pStatesTempMap = <IStateMap>{};
             this._pBaseItemList = <IItem[]>[];
             this._pExpectedExtensionDMap = <BoolDMap>{};
@@ -2238,13 +2338,18 @@ module akra.util {
             return this._pLexer.getNextToken();
         }
 
-        private ruleAction(pRule: IRule): EOperationType {
+        private reduceAction(pRule: IRule): EOperationType {
             this._pSyntaxTree.reduceByRule(pRule, this._pSymbolsWithNodesMap[pRule.left]);
 
-            var sActionName:string = this._pRuleFunctionNamesMap[pRule.index];
-            if (isDef(sActionName)) {
-                return (this._pAdditionalFunctionsMap[sActionName]).call(this, pRule);
-            }
+            // if(!isDef(this._pAdditionalFuncInfoByRuleMap[pRule.index])){
+            //     return EOperationType.k_Ok;    
+            // }
+
+            // var sActionName:string = this._pAdditionalFuncInfoByRuleMap[pRule.index][0].name;
+
+            // if (isDef(sActionName)) {
+            //     return (this._pAdditionalFunctionsMap[sActionName]).call(this, pRule);
+            // }
 
             return EOperationType.k_Ok;
         }
@@ -2289,7 +2394,7 @@ module akra.util {
                                 pStack.length -= iRuleLength;
                                 pStack.push(pSyntaxTable[pStack[pStack.length - 1]][pOperation.rule.left].index);
 
-                                if (this.ruleAction(pOperation.rule) === EOperationType.k_Pause) {
+                                if (this.reduceAction(pOperation.rule) === EOperationType.k_Pause) {
                                     this._pToken = pToken;
                                     isStop = true;
                                     isPause = true;

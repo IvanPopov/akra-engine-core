@@ -12,6 +12,12 @@ module akra.util {
     #define FLAG_RULE_CREATE_NODE "--AN"
     #define FLAG_RULE_NOT_CREATE_NODE "--NN"
     #define FLAG_RULE_FUNCTION "--F"
+    #define EOF "EOF"
+    #define T_STRING "T_STRING"
+    #define T_FLOAT "T_FLOAT"
+    #define T_UINT "T_UINT"
+    #define T_TYPE_ID "T_TYPE_ID"
+    #define T_NON_TYPE_ID "T_NON_TYPE_ID"
 
     export enum ENodeCreateMode {
         k_Default,
