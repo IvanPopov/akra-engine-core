@@ -10933,9 +10933,13 @@ module akra.scene {
 
 module akra {
     export interface ISceneNode extends INode {
-
+//render(): void;
+//prepareForRender(): void;
+//recursiveRender(): void;
     }
 }
+
+
 
 
 
@@ -10967,7 +10971,10 @@ module akra.scene {
 
 module akra {
     export interface ISceneObject extends ISceneNode {
+//worldBounds: Rect3d;
 
+
+//getObjectFlags(): int;
     }
 }
 

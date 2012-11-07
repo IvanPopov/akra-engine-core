@@ -4,9 +4,12 @@
 #include "ISceneNode.ts"
 
 module akra {
-    export interface ISceneObject extends ISceneNode {
-    	worldBounds: Rect3d;
+	IFACE(IRect3d);
 
+    export interface ISceneObject extends ISceneNode {
+    	worldBounds: IRect3d;
+    	localBounds: IRect3d;
+    	
 
     	getObjectFlags(): int;
     }

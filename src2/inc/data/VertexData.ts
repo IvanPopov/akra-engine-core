@@ -352,7 +352,7 @@ module akra.data {
 
 		            iFrom = iFrom || 0;
 		            iCount = iCount || this._iLength;
-		            iCount = Math.min(iCount, this._iLength);
+		            iCount = math.min(iCount, this._iLength);
 
 		            var iStride: uint = this.stride;
 		            var pBufferData: Uint8Array = new Uint8Array(iSize * this.length);

@@ -211,7 +211,7 @@ module akra.core.pool.resources {
 					}
 				}		
 
-				if (this.resize(Math.max(this.byteLength * 2, this.byteLength + iCount * iStride)) == false) {
+				if (this.resize(math.max(this.byteLength * 2, this.byteLength + iCount * iStride)) == false) {
 					break;
 				}
 			}

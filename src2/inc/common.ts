@@ -359,6 +359,8 @@ module akra {
 	(<any>window).requestAnimationFrame = (<any>window).requestAnimationFrame || (<any>window).webkitRequestAnimationFrame ||
 		(<any>window).mozRequestAnimationFrame;
 	(<any>window).WebSocket = (<any>window).WebSocket || (<any>window).MozWebSocket;
+
+    Worker.prototype.postMessage = Worker.prototype.webkitPostMessage || Worker.prototype.postMessage;
 };
 
 #endif
