@@ -47,7 +47,8 @@ module akra.core.pool.resources {
 			return false;
 		}
 
-		getData(iOffset: uint, iSize: uint): ArrayBuffer {
+		getData(): ArrayBuffer;
+		getData(iOffset?: uint, iSize?: uint): ArrayBuffer {
 			return null;
 		}
 

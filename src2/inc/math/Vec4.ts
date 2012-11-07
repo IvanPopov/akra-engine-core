@@ -1,5 +1,5 @@
 module akra.math {
-    export class Vec4 {
+    export class Vec4{
         x: float;
         y: float;
         z: float;

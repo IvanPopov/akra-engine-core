@@ -42,7 +42,7 @@ module akra {
 		readonly manager: IResourcePoolManager;
 
 		
-		getGuid(): int;
+		inline getGuid(): int;
 		/** Get current Engine. */
 		getEngine(): IEngine;
 

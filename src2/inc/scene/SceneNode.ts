@@ -3,6 +3,7 @@
 
 #include "IEngine.ts"
 #include "ISceneNode.ts"
+#include "scene/Node.ts"
 
 module akra.scene {
 	export class SceneNode extends Node implements ISceneNode {

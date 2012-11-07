@@ -24,6 +24,7 @@ module akra {
 		isRAMBufferPresent(): bool;
 		isSoftware(): bool;
 
+		getData(): ArrayBuffer;
 		getData(iOffset: uint, iSize: uint): ArrayBuffer;
 		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool;
 

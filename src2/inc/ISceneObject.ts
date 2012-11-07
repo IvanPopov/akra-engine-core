@@ -5,7 +5,10 @@
 
 module akra {
     export interface ISceneObject extends ISceneNode {
+    	worldBounds: Rect3d;
 
+
+    	getObjectFlags(): int;
     }
 }
 

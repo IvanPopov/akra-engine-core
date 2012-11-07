@@ -79,7 +79,8 @@ module akra.core.pool.resources {
 			return TEST_BIT(this._iFlags, EGPUBufferFlags.ALIGNMENT);
 		}
 
-		getData(iOffset: uint, iSize: uint): ArrayBuffer {
+		getData(): ArrayBuffer;
+		getData(iOffset?: uint, iSize?: uint): ArrayBuffer {
 			return null;
 		}
 
@@ -96,7 +97,7 @@ module akra.core.pool.resources {
 		getVertexData(iOffset: uint, iCount: uint, pDecl: IVertexDeclaration): IVertexData;
 		getVertexData(iOffset: uint, iCount: uint, pData: any): IVertexData {
 			var pDecl: IVertexDeclaration = createVertexDeclaration(pData);
-			var pVertexData: IVertexData = new data.VertexData(this, this._iDataCounter++, iOffset, iCount, pDecl);
+			var pVertexData: IVertexData = new data.VertexData(this, this._iDataCounter ++, iOffset, iCount, pDecl);
 
 			this._pVertexDataArray.push(pVertexData);
 			return pVertexData;
@@ -194,7 +195,7 @@ module akra.core.pool.resources {
 
 					if((pHole[i].end - iAligStart) >= iCount * iStride) {
 						if(arguments.length == 2) {
-							pVertexData = new data.VertexData(this, iAligStart, iCount, pDeclData);
+							pVertexData = new data.VertexData(this, this._iDataCounter ++, iAligStart, iCount, pDeclData);
 							this._pVertexDataArray.push(pVertexData);
 							
 							return pVertexData;
