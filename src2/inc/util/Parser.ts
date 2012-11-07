@@ -1166,7 +1166,7 @@ module akra.util {
     }
 
     interface IRuleFunction {
-        (pRule: IRule): EOperationType;
+        (): EOperationType;
     }
 
     interface IRuleFunctionMap {
@@ -1183,7 +1183,7 @@ module akra.util {
         rule: IRule;
     }
 
-    export class Parser implements IParser{
+    export class Parser implements IParser {
         // //Input
         
         private _sSource: string;
@@ -1223,13 +1223,13 @@ module akra.util {
         private _pAdditionalFuncInfoList: IAdditionalFuncInfo[];
         private _pAdditionalFunctionsMap: IRuleFunctionMap;
 
-        private _pAdidtionalFunctByStateMap: IRuleFunctionDMap;
+        private _pAdidtionalFunctByStateDMap: IRuleFunctionDMap;
 
         private _eType: EParserType;
 
         //Additioanal info
         
-        private _pSymbolsWithNodesMap: IntMap;
+        private _pRuleCreationModeMap: IntMap;
         private _eParseMode: EParseMode;
 
         private _isSync: bool;
@@ -1268,11 +1268,11 @@ module akra.util {
             this._nRules = 0;
             this._pAdditionalFuncInfoList = null;
             this._pAdditionalFunctionsMap = null;
-            this._pAdidtionalFunctByStateMap = null;
+            this._pAdidtionalFunctByStateDMap = null;
 
             this._eType = EParserType.k_LR0;
 
-            this._pSymbolsWithNodesMap = null;
+            this._pRuleCreationModeMap = null;
             this._eParseMode = EParseMode.k_AllNode;
 
             this._isSync = false;
@@ -1281,17 +1281,6 @@ module akra.util {
             this._pBaseItemList = null;
 
             this._pExpectedExtensionDMap = null;
-
-            //Tempory
-            this._pAdditionalFunctionsMap = <IRuleFunctionMap><any>{"testFunc1": this.testFunc,
-            "testFunc2": this.testFunc,
-            "testFunc3": this.testFunc,
-            "testFunc4": this.testFunc};
-        }
-
-        testFunc(pRule: IRule): EOperationType{
-            console.log(pRule);
-            return EOperationType.k_Ok;
         }
 
         isTypeId(sValue: string): bool {
@@ -1323,8 +1312,7 @@ module akra.util {
                 this.generateRules(sGrammar);
                 this.buildSyntaxTable();
                 this.generateFunctionByStateMap();
-                console.log(this.printStates(true));
-                // this.clearMem();
+                this.clearMem();
                 return true;
             }
             catch (e) {
@@ -1355,7 +1343,8 @@ module akra.util {
                 var pOperation:IOperation;
                 var iRuleLength:uint;
 
-                var sLastGrammarSymbol: string;
+                var eAdditionalOperationCode: EOperationType;
+                var iStateIndex: uint = 0;
 
                 while (!isStop) {
                     pOperation = pSyntaxTable[pStack[pStack.length - 1]][pToken.name];
@@ -1366,37 +1355,48 @@ module akra.util {
                                 break;
 
                             case EOperationType.k_Shift:
-                                sLastGrammarSymbol = pToken.name;
-                                pStack.push(pOperation.index);
 
-                                if(this._pAdidtionalFunctByStateMap[pStack[pStack.length-1]] &&
-                                    this._pAdidtionalFunctByStateMap[pStack[pStack.length-1]][sLastGrammarSymbol]){
-                                    console.log("shift", pStack[pStack.length-1], sLastGrammarSymbol, pToken);
-                                }
-
-                                
+                                iStateIndex = pOperation.index;
+                                pStack.push(iStateIndex);
                                 pTree.addNode(<IParseNode>pToken);
-                                pToken = this.readToken();
-                                
+
+                                eAdditionalOperationCode = this.operationAdditionalAction(iStateIndex, pToken.name);
+
+                                if(eAdditionalOperationCode === EOperationType.k_Error){
+                                    isError = true;
+                                    isStop = true;    
+                                }
+                                else if(eAdditionalOperationCode === EOperationType.k_Pause){
+                                    this._pToken = null;
+                                    isStop = true;
+                                    isPause = true;
+                                }
+                                else if(eAdditionalOperationCode === EOperationType.k_Ok){
+                                    pToken = this.readToken();
+                                }
 
                                 break;
                             
                             case EOperationType.k_Reduce:
+
                                 iRuleLength = pOperation.rule.right.length;
                                 pStack.length -= iRuleLength;
-                                pStack.push(pSyntaxTable[pStack[pStack.length - 1]][pOperation.rule.left].index);
-                                sLastGrammarSymbol = pOperation.rule.left;
+                                iStateIndex = pSyntaxTable[pStack[pStack.length - 1]][pOperation.rule.left].index;
+                                pStack.push(iStateIndex);
+                                pTree.reduceByRule(pOperation.rule, this._pRuleCreationModeMap[pOperation.rule.left]);
 
-                                if(this._pAdidtionalFunctByStateMap[pStack[pStack.length-1]] &&
-                                    this._pAdidtionalFunctByStateMap[pStack[pStack.length-1]][sLastGrammarSymbol]){
-                                    console.log("reduce", pStack[pStack.length-1], sLastGrammarSymbol, pToken);
+                                eAdditionalOperationCode = this.operationAdditionalAction(iStateIndex, pOperation.rule.left);
+
+                                if(eAdditionalOperationCode === EOperationType.k_Error){
+                                    isError = true;
+                                    isStop = true;    
                                 }
-
-                                if (this.reduceAction(pOperation.rule) === EOperationType.k_Pause) {
+                                else if(eAdditionalOperationCode === EOperationType.k_Pause){
                                     this._pToken = pToken;
                                     isStop = true;
                                     isPause = true;
                                 }
+
                                 break;
                         }
                     }
@@ -1721,7 +1721,7 @@ module akra.util {
 
             this._pRulesDMap = <IRuleDMap>{};
             this._pAdditionalFuncInfoList = <IAdditionalFuncInfo[]>[];
-            this._pSymbolsWithNodesMap = <IntMap>{};
+            this._pRuleCreationModeMap = <IntMap>{};
 
             var i: uint = 0, j: uint = 0;
 
@@ -1729,7 +1729,7 @@ module akra.util {
             var isNegateMode: bool = bf.testAll(<int>this._eParseMode, <int>EParseMode.k_Negate);
             var isAddMode: bool = bf.testAll(<int>this._eParseMode, <int>EParseMode.k_Add);
 
-            var pSymbolsWithNodeMap: IntMap = this._pSymbolsWithNodesMap;
+            var pSymbolsWithNodeMap: IntMap = this._pRuleCreationModeMap;
 
 
             for (i = 0; i < pAllRuleList.length; i++) {
@@ -1846,7 +1846,11 @@ module akra.util {
             }
         }
 
-        private generateFunctionByStateMap():void{
+        private generateFunctionByStateMap():void {
+            if(isNull(this._pAdditionalFunctionsMap)){
+                return;
+            }
+
             var pStateList: IState[] = this._pStateList; 
             var pFuncInfoList: IAdditionalFuncInfo[] = this._pAdditionalFuncInfoList;
             var pFuncInfo: IAdditionalFuncInfo;
@@ -1858,7 +1862,7 @@ module akra.util {
             var i:uint = 0, j: uint = 0;
 
             var pFuncByStateDMap:IRuleFunctionDMap = <IRuleFunctionDMap>{}; 
-            pFuncByStateDMap = this._pAdidtionalFunctByStateMap = <IRuleFunctionDMap>{};
+            pFuncByStateDMap = this._pAdidtionalFunctByStateDMap = <IRuleFunctionDMap>{};
 
             for(i = 0; i < pFuncInfoList.length; i++){
                 pFuncInfo = pFuncInfoList[i];
@@ -2338,18 +2342,14 @@ module akra.util {
             return this._pLexer.getNextToken();
         }
 
-        private reduceAction(pRule: IRule): EOperationType {
-            this._pSyntaxTree.reduceByRule(pRule, this._pSymbolsWithNodesMap[pRule.left]);
+        private operationAdditionalAction(iStateIndex:uint, sGrammarSymbol: string): EOperationType {
+            var pFuncDMap:IRuleFunctionDMap = this._pAdidtionalFunctByStateDMap;
+            
+            if(isDef(pFuncDMap[iStateIndex]) && 
+               isDef(pFuncDMap[iStateIndex][sGrammarSymbol])){
 
-            // if(!isDef(this._pAdditionalFuncInfoByRuleMap[pRule.index])){
-            //     return EOperationType.k_Ok;    
-            // }
-
-            // var sActionName:string = this._pAdditionalFuncInfoByRuleMap[pRule.index][0].name;
-
-            // if (isDef(sActionName)) {
-            //     return (this._pAdditionalFunctionsMap[sActionName]).call(this, pRule);
-            // }
+                return pFuncDMap[iStateIndex][sGrammarSymbol].call(this);
+            }
 
             return EOperationType.k_Ok;
         }
@@ -2370,7 +2370,7 @@ module akra.util {
                 var isStop:bool = false;
                 var isError:bool = false;
                 var isPause:bool = false;
-                var pToken:IToken = this._pToken;
+                var pToken:IToken = isNull(this._pToken) ? this.readToken() : this._pToken;
 
                 var pOperation:IOperation;
                 var iRuleLength:uint;
@@ -2384,21 +2384,48 @@ module akra.util {
                                 break;
 
                             case EOperationType.k_Shift:
-                                pStack.push(pOperation.index);
+
+                                iStateIndex = pOperation.index;
+                                pStack.push(iStateIndex);
                                 pTree.addNode(<IParseNode>pToken);
-                                pToken = this.readToken();
+
+                                eAdditionalOperationCode = this.operationAdditionalAction(iStateIndex, pToken.name);
+
+                                if(eAdditionalOperationCode === EOperationType.k_Error){
+                                    isError = true;
+                                    isStop = true;    
+                                }
+                                else if(eAdditionalOperationCode === EOperationType.k_Pause){
+                                    this._pToken = null;
+                                    isStop = true;
+                                    isPause = true;
+                                }
+                                else if(eAdditionalOperationCode === EOperationType.k_Ok){
+                                    pToken = this.readToken();
+                                }
+
                                 break;
                             
                             case EOperationType.k_Reduce:
+
                                 iRuleLength = pOperation.rule.right.length;
                                 pStack.length -= iRuleLength;
-                                pStack.push(pSyntaxTable[pStack[pStack.length - 1]][pOperation.rule.left].index);
+                                iStateIndex = pSyntaxTable[pStack[pStack.length - 1]][pOperation.rule.left].index;
+                                pStack.push(iStateIndex);
+                                pTree.reduceByRule(pOperation.rule, this._pRuleCreationModeMap[pOperation.rule.left]);
 
-                                if (this.reduceAction(pOperation.rule) === EOperationType.k_Pause) {
+                                eAdditionalOperationCode = this.operationAdditionalAction(iStateIndex, pOperation.rule.left);
+
+                                if(eAdditionalOperationCode === EOperationType.k_Error){
+                                    isError = true;
+                                    isStop = true;    
+                                }
+                                else if(eAdditionalOperationCode === EOperationType.k_Pause){
                                     this._pToken = pToken;
                                     isStop = true;
                                     isPause = true;
                                 }
+
                                 break;
                         }
                     }

@@ -10,7 +10,7 @@ module akra {
 var x: akra.util.IParser = new akra.util.Parser;
 
 var sGrammar:string = "S : E\n"			+
-					  "E : T --F testFunc2 '+' --F testFunc1 E\n"	+
+					  "E : T '+' --F testFunc1 E\n"	+
 					  "E : T '-' E\n"	+
 					  "E : T\n"			+
 					  "T : F '*' T\n"	+
