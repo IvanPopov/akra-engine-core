@@ -1,7 +1,7 @@
 #ifndef PARSER_TS
 #define PARSER_TS
 
-#include "akra.ts"
+#include "common.ts"
 #include "IParser.ts"
 #include "bf/bitflags.ts"
 
@@ -1411,14 +1411,14 @@ module akra.util {
 
                 if (!isError) {
                     pTree.setRoot();
-                    if (isDef(this._fnFinishCallback)) {
+                    if (!isNull(this._fnFinishCallback)) {
                         this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok);
                     }
                     return EParserCode.k_Ok;
                 }
                 else {
                     this.error(ESyntaxErrorCode.k_SyntaxError);
-                    if (isDef(this._fnFinishCallback)) {
+                    if (!isNull(this._fnFinishCallback)) {
                         this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error);
                     }
                     return EParserCode.k_Error;
@@ -1426,7 +1426,7 @@ module akra.util {
 
             }
             catch (e) {
-                 return EParserCode.k_Error;
+                return EParserCode.k_Error;
             }
         }
 
@@ -2345,7 +2345,8 @@ module akra.util {
         private operationAdditionalAction(iStateIndex:uint, sGrammarSymbol: string): EOperationType {
             var pFuncDMap:IRuleFunctionDMap = this._pAdidtionalFunctByStateDMap;
             
-            if(isDef(pFuncDMap[iStateIndex]) && 
+            if(!isNull(this._pAdidtionalFunctByStateDMap) &&
+               isDef(pFuncDMap[iStateIndex]) && 
                isDef(pFuncDMap[iStateIndex][sGrammarSymbol])){
 
                 return pFuncDMap[iStateIndex][sGrammarSymbol].call(this);

@@ -9,6 +9,9 @@
 #define struct class
 #define const var
 #define DEBUG DEBUG
+#define int number
+#define uint number
+#define float number
 
 
 module akra {
@@ -297,6 +300,21 @@ module akra {
         [index: string]: float;
         [index: number]: float;
     };    
+
+    export interface BoolMap {
+        [index: string]: bool;
+        [index: number]: bool;
+    };        
+
+    export interface BoolDMap{
+        [index: string]: BoolMap;
+        [index: number]: BoolMap;
+    };
+
+    export interface StringDMap{
+        [index: string]: StringMap;
+        [index: number]: StringMap;
+    }
 
     /**
      * Возвращет размер типа в байтах

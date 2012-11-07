@@ -1,30 +1,11 @@
-//Temp
-module akra.bf {
-    export var testAll = (value: int, set: int) =>(((value) & (set)) == (set));
-}
-//Temp
-module akra {
-    // TEMP
-    interface StringMap {
-        [s: string]: string;
-        [s: number]: string;
-    }
+#ifndef LOGGER_TS
+#define LOGGER_TS
 
-    export interface ObjectMap {
-        [s: string]: Object;
-        [s: number]: Object;
-    }
+#include "common.js"
+#include "ILogger.ts"
+#include "bf/bitflags.ts"
 
-    interface IEngine {
-        isDebug(): bool;
-    }
-    var isString = (x: any) =>(typeof x === "string");
-    var isInt = (x: any) =>(typeof x === "number");
-    var isObject = (x: any) =>(typeof x === "object");
-    var isNull = (x: any) =>(x === null);
-    var isDef = (x: any) =>(x !== undefined);
-    //END TEMP
-
+module akra.util {
 
     interface IFormatMessageFunc {
         (sMessage: string, pInfo?: ObjectMap): string;
@@ -38,89 +19,6 @@ module akra {
         [s: number]: ILogRoutineFunc;
     }
 
-    export enum ELogLevel {
-
-        RELEASE = 0x0000,
-        INFORMATION = 0x0001,
-        ERROR = 0x0002,
-        WARNING = 0x0004,
-        LOG = 0x0008,
-
-        DEBUG = 0x0020,
-        DEBUG_INFORMATION = 0x0040,
-        DEBUG_ERROR = 0x0080,
-        DEBUG_WARNING = 0x0100,
-        DEBUG_LOG = 0x0200
-    }
-
-    export interface ILogRoutineFunc {
-        (...pArgs: any[]): void;
-    }
-
-    export interface ISourcePosition {
-
-    }
-
-    export interface ILoggerEntity {
-        code: uint;
-        position: ISourcePosition;
-        info: ObjectMap;
-        hint: string;
-    }
-
-    export interface ILogger {
-
-        error(eCode: uint, pLocation?: ISourcePosition, sHint?: string): void;
-        error(sMessage: string, pLocation?: ISourcePosition): void;
-        error(pEntity: ILoggerEntity): void;
-
-        warning(eCode: uint, pLocation?: ISourcePosition, sHint?: string): void;
-        warning(sMessage: string, pLocation?: ISourcePosition): void;
-        warning(pEntity: ILoggerEntity): void;
-
-        info(eCode: uint, pLocation?: ISourcePosition, sHint?: string): void;
-        info(sMessage: string, pLocation?: ISourcePosition): void;
-        info(pEntity: ILoggerEntity): void;
-
-        debug_error(eCode: uint, pLocation?: ISourcePosition, sHint?: string): void;
-        debug_error(sMessage: string, pLocation?: ISourcePosition): void;
-        debug_error(pEntity: ILoggerEntity): void;
-
-        debug_warning(eCode: uint, pLocation?: ISourcePosition, sHint?: string): void;
-        debug_warning(sMessage: string, pLocation?: ISourcePosition): void;
-        debug_warning(pEntity: ILoggerEntity): void;
-
-        debug_info(eCode: uint, pLocation?: ISourcePosition, sHint?: string): void;
-        debug_info(sMessage: string, pLocation?: ISourcePosition): void;
-        debug_info(pEntity: ILoggerEntity): void;
-
-        log(...pArgs: any[]);
-        debug_log(...pArgs: any[]);
-
-        formatMessage(eCode: uint, pEntity: ILoggerEntity): string;
-
-        setLogLevel(eLevel: ELogLevel): bool;
-        getLogLevel(): ELogLevel;
-
-        init(): bool;
-        ///**
-        //* For plugin api:
-        //* Load file with custom user codes and three messages 
-        //*/
-        //loadManifestFile(): bool;
-
-
-        ///** For plugin API */
-        //registerCode(eCode: uint, sMessage: string, sDebugMessage: string): bool;
-        ///** For plugin API */
-        //registerCodeFamily(sFamilyName:string): bool;
-        /** 
-        * logger.setLogRoutine(function(sMsg){console.log(sMsg)}, ELogLevel.INFORMATION | ELogLevel.DEBUG_INFORMATION);
-        */
-        setLogRoutine(fnLogRoutine: ILogRoutineFunc, eLevel: ELogLevel): bool;
-
-    }
-
     class Logger implements ILogger {
 
         private _pCodeMessagesMap: StringMap;
@@ -130,12 +28,27 @@ module akra {
         private _eLogLevel: ELogLevel;
         private _pEngine: IEngine;
 
+        private _pLastLogEntity: ILoggerEntity; 
+        private _pCurrentSourceLocation: ISourcePosition;
+
         constructor (pEngine: IEngine) {
             this._pEngine = pEngine;
 
             this._pCodeMessagesMap = <StringMap>{};
             this._pCodeFormatCallbackMap = <IFormatCallbackMap>{};
             this._pLogRoutineMap = <ILogRoutineMap>{};
+
+            this._pCurrentSourceLocation = <ISourcePosition>{
+                                            file: "",
+                                            line: 0
+                                        };
+
+            this._pLastLogEntity = <ILoggerEntity>{
+                                    code: UNKNOWN_CODE,
+                                    position: this._pCurrentSourceLocation,
+                                    info: null,
+                                    
+                                   };
         }
 
         init(): bool {
@@ -203,6 +116,22 @@ module akra {
 
         }
 
+        error(...pArgs:any[]){
+
+            if(pArgs.length === 0){
+                //default unknown error
+            }
+            else if(pArgs.length === 1 && this.isLogEntity(pArgs[0])){
+                //By log entity
+            }
+            else if(this.isLogCode(pArgs[0])){
+                //By code
+            }
+            else{
+                //Unknown error
+            }
+        }
+
         error(sMessage: string, pLocation?: ISourcePosition = null): void;
         error(pEntity: ILoggerEntity): void;
         error(eCode: uint, pLocation?: ISourcePosition = null, sHint?: string = ""): void;
@@ -233,53 +162,22 @@ module akra {
             this.printMessage(sMessage, ELogLevel.INFORMATION);
         }
 
-        debug_error(sMessage: string, pLocation?: ISourcePosition = null): void;
-        debug_error(pEntity: ILoggerEntity): void;
-        debug_error(eCode: uint, pLocation?: ISourcePosition = null, sHint?: string = ""): void;
-        debug_error(): void {
-
-            if (!this._pEngine.isDebug()) {
-                return;
+        private isLogEntity(pObj:any):bool{
+            if(isObject(pObj) && isDef(pObj.code) && isDef(pObj.position)){
+                return true;
             }
 
-            var sMessage: string;
-            sMessage = this.generateLoggerMessage.call(this, arguments[0], arguments[1], arguments[2]);
-
-            this.printMessage(sMessage, ELogLevel.DEBUG_ERROR);
+            return false;
         }
 
-        debug_warning(sMessage: string, pLocation?: ISourcePosition = null): void;
-        debug_warning(pEntity: ILoggerEntity): void;
-        debug_warning(eCode: uint, pLocation?: ISourcePosition = null, sHint?: string = ""): void;
-        debug_warning(): void {
-
-            if (!this._pEngine.isDebug()) {
-                return;
+        private static isLogCode(eCode:any):bool{
+            if(isInt(eCode) && isDef(this._pCodeMessagesMap[eCode])){
+                return true;
             }
 
-            var sMessage: string;
-            sMessage = this.generateLoggerMessage.call(this, arguments[0], arguments[1], arguments[2]);
-
-            this.printMessage(sMessage, ELogLevel.DEBUG_WARNING);
+            return false;
         }
-
-        debug_info(sMessage: string, pLocation?: ISourcePosition = null): void;
-        debug_info(pEntity: ILoggerEntity): void;
-        debug_info(eCode: uint, pLocation?: ISourcePosition = null, sHint?: string = ""): void;
-        debug_info(): void {
-
-            if (!this._pEngine.isDebug()) {
-                return;
-            }
-
-            var sMessage: string;
-            sMessage = this.generateLoggerMessage.call(this, arguments[0], arguments[1], arguments[2]);
-
-            this.printMessage(sMessage, ELogLevel.DEBUG_INFORMATION);
-        }
-
-
-
+        
         private generateLoggerMessage(sMessage: string, pLocation?: ISourcePosition = null): string;
         private generateLoggerMessage(pEntity: ILoggerEntity): string;
         private generateLoggerMessage(eCode: uint, pLocation?: ISourcePosition = null, sHint?: string = ""): string;
