@@ -66,6 +66,8 @@ module akra.math {
 		toMat4(m4fDestination?: IMat4): IMat4;
 		toQuat4(q4fDestination?: IQuat4): IQuat4;
 		toString(): string;
+
+		decompose(q4fRotation: IQuat4, v3fScale: IVec3): bool;
 	};
 };
 

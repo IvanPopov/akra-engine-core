@@ -1008,45 +1008,103 @@ module akra.math {
 		    return m4fDestination;
 		};
 
-		rotateXRight(fAngle: float, m4fDestination?: IMat4): IMat4{
+		setTranslation(v3fTranslation: IVec3): IMat4{
 			var pData: Float32Array = this.data;
 
-		    var fSin: float = sin(fAngle);
-		    var fCos: float = cos(fAngle);
+			pData[__14] = v3fTranslation.x;
+			pData[__24] = v3fTranslation.y;
+			pData[__34] = v3fTranslation.z;
 
-		    var a12: float = pData[__12], a13: float = pData[__13];
-		    var a22: float = pData[__22], a23: float = pData[__23];
-		    var a32: float = pData[__32], a33: float = pData[__33];
+			return this;
+		};
+
+		getTranslation(v3fTranslation?: IVec3): IVec3{
+			if(!isDef(v3fTranslation)){
+				v3fTranslation = new Vec3();
+			}
+
+			var pData: Float32Array = this.data;
+
+			v3fTranslation.x = pData[__14];
+			v3fTranslation.y = pData[__24];
+			v3fTranslation.z = pData[__34];
+
+			return v3fTranslation;
+		};
+
+		translateRight(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4{
+			var pData: Float32Array = this.data;
+
+		    var x: float = v3fTranslation.x, y: float = v3fTranslation.y, z: float = v3fTranslation.z;
 
 		    if(!isDef(m4fDestination)){
-		        pData[__12] =  a12*fCos + a13*fSin;
-		        pData[__13] = -a12*fSin + a13*fCos;
+		        pData[__14] = pData[__11]*x + pData[__12]*y + pData[__13]*z + pData[__14];
+		        pData[__24] = pData[__21]*x + pData[__22]*y + pData[__23]*z + pData[__24];
+		        pData[__34] = pData[__31]*x + pData[__32]*y + pData[__33]*z + pData[__34];
+		        pData[__44] = pData[__41]*x + pData[__42]*y + pData[__43]*z + pData[__44];
+		        //строго говоря последнюю строчку умножать не обязательно, так как она должна быть -> 0 0 0 1
+		        return this;
+		    }
 
-		        pData[__22] =  a22*fCos + a23*fSin;
-		        pData[__23] = -a22*fSin + a23*fCos;
+		    var pDataDestination: Float32Array = m4fDestination.data;
 
-		        pData[__32] =  a32*fCos + a33*fSin;
-		        pData[__33] = -a32*fSin + a33*fCos;
+		    //кешируем матрицу вращений
+		    var a11: float = pData[__11], a12: float = pData[__12], a13: float = pData[__13];
+		    var a21: float = pData[__11], a22: float = pData[__22], a23: float = pData[__23];
+		    var a31: float = pData[__11], a32: float = pData[__32], a33: float = pData[__33];
+		    var a41: float = pData[__11], a42: float = pData[__42], a43: float = pData[__43];
 
+		    pDataDestination[__11] = a11;
+		    pDataDestination[__12] = a12;
+		    pDataDestination[__13] = a13;
+		    pDataDestination[__14] = a11*x + a12*y + a13*z + pData[__14];
+
+		    pDataDestination[__21] = a21;
+		    pDataDestination[__22] = a22;
+		    pDataDestination[__23] = a23;
+		    pDataDestination[__24] = a21*x + a22*y + a23*z + pData[__24];
+
+		    pDataDestination[__31] = a31;
+		    pDataDestination[__32] = a32;
+		    pDataDestination[__33] = a33;
+		    pDataDestination[__34] = a31*x + a32*y + a33*z + pData[__34];
+
+		    pDataDestination[__41] = a41;
+		    pDataDestination[__42] = a42;
+		    pDataDestination[__43] = a43;
+		    pDataDestination[__44] = a41*x + a42*y + a43*z + pData[__44];
+
+		    return m4fDestination;
+		};
+
+		translateLeft(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4{
+			var pData: Float32Array = this.data;
+
+		    var x: float = v3fTranslation.x, y: float = v3fTranslation.y, z: float = v3fTranslation.z;
+
+		    if(!isDef(m4fDestination)){
+		        pData[__14] = x + pData[__14];
+		        pData[__24] = y + pData[__24];
+		        pData[__34] = z + pData[__34];
 		        return this;
 		    }
 
 		    var pDataDestination: Float32Array = m4fDestination.data;
 
 		    pDataDestination[__11] = pData[__11];
-		    pDataDestination[__12] =  a12*fCos + a13*fSin;
-		    pDataDestination[__13] = -a12*fSin + a13*fCos;
-		    pDataDestination[__14] = pData[__14];
+		    pDataDestination[__12] = pData[__12];
+		    pDataDestination[__13] = pData[__13];
+		    pDataDestination[__14] = x + pData[__14];
 
 		    pDataDestination[__21] = pData[__21];
-		    pDataDestination[__22] =  a22*fCos + a23*fSin;
-		    pDataDestination[__23] = -a22*fSin + a23*fCos;
-		    pDataDestination[__24] = pData[__24];
+		    pDataDestination[__22] = pData[__22];
+		    pDataDestination[__23] = pData[__23];
+		    pDataDestination[__24] = y + pData[__24];
 
-		    pDataDestination[__31] = pData[__21];
-		    pDataDestination[__32] =  a32*fCos + a33*fSin;
-		    pDataDestination[__33] = -a32*fSin + a33*fCos;
-		    pDataDestination[__34] = pData[__34];
+		    pDataDestination[__31] = pData[__31];
+		    pDataDestination[__32] = pData[__32];
+		    pDataDestination[__33] = pData[__33];
+		    pDataDestination[__34] = z + pData[__34];
 
 		    pDataDestination[__41] = pData[__41];
 		    pDataDestination[__42] = pData[__42];
@@ -1056,53 +1114,111 @@ module akra.math {
 		    return m4fDestination;
 		};
 
-		rotateXLeft(fAngle: float, m4fDestination?: IMat4): IMat4{
+		scaleRight(v3fScale: IVec3, m4fDestination?: IMat4): IMat4{
 			var pData: Float32Array = this.data;
 
-		    var fSin: float = sin(fAngle);
-		    var fCos: float = cos(fAngle);
-
-		    var a21: float = pData[__21], a22: float = pData[__22], a23: float = pData[__23], a24: float = pData[__24];
-		    var a31: float = pData[__31], a32: float = pData[__32], a33: float = pData[__33], a34: float = pData[__34];
+		    var x: float = v3fScale.x, y: float = v3fScale.y, z: float = v3fScale.z;
 
 		    if(!isDef(m4fDestination)){
+		        pData[__11] *= x;
+		        pData[__12] *= y;
+		        pData[__13] *= z;
 
-		        pData[__21] = fCos*a21 - fSin*a31;
-		        pData[__22] = fCos*a22 - fSin*a32;
-		        pData[__23] = fCos*a23 - fSin*a33;
-		        pData[__24] = fCos*a24 - fSin*a34;
+		        pData[__21] *= x;
+		        pData[__22] *= y;
+		        pData[__23] *= z;
 
-		        pData[__31] = fSin*a21 + fCos*a31;
-		        pData[__32] = fSin*a22 + fCos*a32;
-		        pData[__33] = fSin*a23 + fCos*a33;
-		        pData[__34] = fSin*a24 + fCos*a34;        
+		        pData[__31] *= x;
+		        pData[__32] *= y;
+		        pData[__33] *= z;
+
+		        //скейлить эти компоненты необязательно, так как там должны лежать нули
+		        pData[__41] *= x;
+		        pData[__42] *= y;
+		        pData[__43] *= z;
 
 		        return this;
 		    }
 
 		    var pDataDestination: Float32Array = m4fDestination.data;
 
-		    pDataDestination[__11] = pData[__11];
-		    pDataDestination[__12] = pData[__12];
-		    pDataDestination[__13] = pData[__13];
+		    pDataDestination[__11] = pData[__11]*x;
+		    pDataDestination[__12] = pData[__12]*y;
+		    pDataDestination[__13] = pData[__13]*z;
 		    pDataDestination[__14] = pData[__14];
 
-		    pDataDestination[__21] = fCos*a21 - fSin*a31;
-		    pDataDestination[__22] = fCos*a22 - fSin*a32;
-		    pDataDestination[__23] = fCos*a23 - fSin*a33;
-		    pDataDestination[__24] = fCos*a24 - fSin*a34;
+		    pDataDestination[__21] = pData[__21]*x;
+		    pDataDestination[__22] = pData[__22]*y;
+		    pDataDestination[__23] = pData[__23]*z;
+		    pDataDestination[__24] = pData[__24];
 
-		    pDataDestination[__31] = fSin*a21 + fCos*a31;
-		    pDataDestination[__32] = fSin*a22 + fCos*a32;
-		    pDataDestination[__33] = fSin*a23 + fCos*a33;
-		    pDataDestination[__34] = fSin*a24 + fCos*a34;  
+		    pDataDestination[__31] = pData[__31]*x;
+		    pDataDestination[__32] = pData[__32]*y;
+		    pDataDestination[__33] = pData[__33]*z;
+		    pDataDestination[__34] = pData[__34];
+
+		    //скейлить эти компоненты необязательно, так как там должны лежать нули
+		    pDataDestination[__41] = pData[__41]*x;
+		    pDataDestination[__42] = pData[__42]*y;
+		    pDataDestination[__43] = pData[__43]*z;
+		    pDataDestination[__44] = pData[__44];
+
+		    return m4fDestination;
+		};
+
+		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4{
+			var pData: Float32Array = this.data;
+
+		    var x: float = v3fScale.x, y: float = v3fScale.y, z: float = v3fScale.z;
+
+		    if(!isDef(m4fDestination)){
+		        pData[__11] *= x;
+		        pData[__12] *= x;
+		        pData[__13] *= x;
+		        pData[__14] *= x;
+
+		        pData[__21] *= y;
+		        pData[__22] *= y;
+		        pData[__23] *= y;
+		        pData[__24] *= y;
+
+		        pData[__31] *= z;
+		        pData[__32] *= z;
+		        pData[__33] *= z;
+		        pData[__34] *= z;
+
+		        return this;
+		    }
+
+		    var pDataDestination: Float32Array = m4fDestination.data;
+
+		    pDataDestination[__11] = pData[__11]*x;
+		    pDataDestination[__12] = pData[__12]*x;
+		    pDataDestination[__13] = pData[__13]*x;
+		    pDataDestination[__14] = pData[__14]*x;
+
+		    pDataDestination[__21] = pData[__21]*y;
+		    pDataDestination[__22] = pData[__22]*y;
+		    pDataDestination[__23] = pData[__23]*y;
+		    pDataDestination[__24] = pData[__24]*y;
+
+		    pDataDestination[__31] = pData[__31]*z;
+		    pDataDestination[__32] = pData[__32]*z;
+		    pDataDestination[__33] = pData[__33]*z;
+		    pDataDestination[__34] = pData[__34]*z;
 
 		    pDataDestination[__41] = pData[__41];
 		    pDataDestination[__42] = pData[__42];
 		    pDataDestination[__43] = pData[__43];
-		    pDataDestination[__44] = pData[__44];
+		    pDataDestination[__44] = pData[__44];    
 
 		    return m4fDestination;
+		};
+
+		inline decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): bool{
+			this.getTranslation(v3fTranslation);
+			var m3fRotScale = this.toMat3(mat3());
+			return m3fRotScale.decompose(q4fRotation,v3fScale);
 		};
     }
 }

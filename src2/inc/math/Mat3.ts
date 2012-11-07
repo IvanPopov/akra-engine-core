@@ -635,6 +635,63 @@ module akra.math {
 		               + pData[__a31] + ', ' + pData[__a32] + ', ' + pData[__a33] + ']';
 		};
 
+		decompose(q4fRotation: IQuat4, v3fScale: IVec3): bool{
+			//изначально предполагаем, что порядок умножения был rot * scale
+			var m3fRotScale: IMat3 = this;
+			var m3fRotScaleTransposed: IMat3 = this.transpose(mat3());
+			var isRotScale: bool = true; 
+
+		    //понадобятся если порядок умножения был другим
+		    var m3fScaleRot: IMat3, m3fScaleRotTransposed: IMat3;
+
+		    //было отражение или нет
+    		var scaleSign: int = (m3fRotScale.determinant() >= 0.) ? 1 : -1;
+
+    		var m3fResult: IMat3 = mat3();
+
+    		//first variant rot * scale
+		    // (rot * scale)T * (rot * scale) = 
+		    // scaleT * rotT * rot * scale = scaleT *rot^-1 * rot * scale = 
+		    // scaleT * scale
+		    m3fRotScaleTransposed.multiply(m3fRotScale, m3fResult);
+		   	if(!m3fResult.isDiagonal(1e-4)){
+		   		//предположение было неверным
+		   		isRotScale = false;
+		        //просто переобозначения чтобы не было путаницы
+		        m3fScaleRot = m3fRotScale;
+		        m3fScaleRotTransposed = m3fRotScaleTransposed;
+
+		        //second variant scale * rot
+		        // (scale * rot) * (scale * rot)T = 
+		        // scale * rot * rotT * scaleT = scale *rot * rot^-1 * scaleT = 
+		        // scale * scaleT
+
+		        m3fScaleRot.multiply(m3fScaleRotTransposed,m3fResult);
+		   	}
+
+		   	var pResultData: Float32Array = m3fResult.data;
+
+		   	var x: float = sqrt(pResultData[__a11]);
+		   	var y: float = sqrt(pResultData[__a22])*scaleSign;/*если было отражение, считается что оно было по y*/
+		   	var z: float = sqrt(pResultData[__a33]);
+
+		   	v3fScale.x = x;
+		   	v3fScale.y = y;
+		   	v3fScale.z = z;
+
+		   	var m3fInverseScale: IMat3 = mat3(1./x,1./y,1./z);
+
+		   	if(isRotScale){
+		   		m3fRotScale.multiply(m3fInverseScale,mat3()).toQuat4(q4fRotation);
+		   		return true;
+		   	}
+		   	else{
+		   		m3fInverseScale.multiply(m3fScaleRot,mat3()).toQuat4(q4fRotation);
+		   		debug_assert(false,"порядок умножения scale rot в данный момент не поддерживается");
+		   		return false;
+		   	}
+		};
+
 		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, m3fDestination?: IMat3): IMat3;
 		static fromYawPitchRoll(v3fAngles: IVec3, m3fDestination?: IMat3): IMat3;
 		static fromYawPitchRoll(fYaw?,fPitch?,fRoll?,m3fDestination?): IMat3{

@@ -92,12 +92,12 @@ module akra.math {
 		rotateRight(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
 		rotateLeft(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
 
-		rotateXRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-		rotateXLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
-		rotateYRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-		rotateYLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
-		rotateZRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-		rotateZLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+		//rotateXRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+		//rotateXLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+		//rotateYRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+		//rotateYLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+		//rotateZRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+		//rotateZLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
 
 		setTranslation(v3fTranslation: IVec3): IMat4;
 		getTranslation(v3fTranslation?: IVec3): IVec3;
@@ -108,7 +108,7 @@ module akra.math {
 		scaleRight(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
 		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
 
-		decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): void;
+		decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): bool;
 
 
 
