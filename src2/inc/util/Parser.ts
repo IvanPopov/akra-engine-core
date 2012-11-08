@@ -4,6 +4,8 @@
 #include "common.ts"
 #include "IParser.ts"
 #include "bf/bitflags.ts"
+#include "ILogger.ts"
+#include "logger.ts"
 
 module akra.util {
 
@@ -16,21 +18,44 @@ module akra.util {
         k_Ok
     }
 
+    #define PARSER_GRAMMAR_ADD_OPERATION 2001
+    #define PARSER_GRAMMAR_ADD_STATE_LINK 2002
+    #define PARSER_GRAMMAR_UNEXPECTED_SYMBOL 2003
+    #define PARSER_GRAMMAR_BAD_ADDITIONAL_FUNC_NAME 2004
+    #define PARSER_GRAMMAR_BAD_KEYWORD 2005
+    #define PARSER_SYNTAX_ERROR 2051
 
+    #define LEXER_UNKNOWN_TOKEN 2101
+    #define LEXER_BAD_TOKEN 2102
 
-    enum ESyntaxErrorCode {
-        k_Parser = 100,
-        k_GrammarAddOperation,
-        k_GrammarAddStateLink,
-        k_GrammarUnexpectedSymbol,
-        k_GrammarBadAdditionalFunctionName,
-        k_GrammarBadKeyword,
-        k_SyntaxError,
+    akra.logger.registerCode(LEXER_UNKNOWN_TOKEN, "Unknown token: {tokenValue}");
+    akra.logger.registerCode(LEXER_BAD_TOKEN, "Bad token: {tokenValue}");
 
-        k_Lexer = 200,
-        k_UnknownToken,
-        k_BadToken
+    function sourceLocationToString(pLocation: util.ISourceLocation): string {
+        var sLocation:string = "[" + pLocation.file + ":" + pLocation.line.toString() + "]: ";
+        return sLocation;
     }
+
+    function syntaxErrorLogRoutine(pLogEntity: ILoggerEntity): void{
+        var sPosition:string = sourceLocationToString(pLogEntity.location);
+        var sError: string = "Code: " + pLogEntity.code.toString() + ". ";
+        var pParseMessage: string[] = pLogEntity.message.split(/\{(\w+)\}/);
+        var pInfo:any = pLogEntity.info;
+
+        for(var i = 0; i < pParseMessage.length; i++){
+            if(isDef(pInfo[pParseMessage[i]])){
+                pParseMessage[i] = <string><any>pInfo[pParseMessage[i]];
+            }
+        }
+
+        var sMessage = sPosition + sError + pParseMessage.join("");
+        
+        console["error"].call(console, sMessage);
+    }
+
+    akra.logger.setCodeFamilyRoutine("ParserSyntaxErrors", syntaxErrorLogRoutine, util.ELogLevel.ERROR);
+
+    //akra.logger
 
     enum ETokenType {
         k_NumericLiteral = 1,
@@ -43,9 +68,6 @@ module akra.util {
         k_Unknown,
         k_End
     }
-
-//     //    var SyntaxErrorMessages: StringEnum = <StringEnum>{};
-//     //    SyntaxErrorMessages[ESyntaxErrorCode.k_UnknownToken] = "Uknown token: \'{Syntax.Lexer.VALUE}\'. In line: {Syntax.Lexer.LINE}. In column {Syntax.Lexer.START_COLUMN}.";
 
     interface IOperation {
         type: EOperationType;
@@ -696,7 +718,7 @@ module akra.util {
                     pToken = this.getNextToken();
                     break;
                 default:
-                    this.error(ESyntaxErrorCode.k_UnknownToken,
+                    this._error(LEXER_UNKNOWN_TOKEN,
                                 <IToken>{
                                     name: UNKNOWN_TOKEN,
                                     value: ch + this._sSource[this._iIndex + 1],
@@ -708,9 +730,19 @@ module akra.util {
             return pToken;
         }
 
-        private error(eCode: ESyntaxErrorCode, pToken: IToken): void {
-            console.log(eCode, pToken);
-            //ErrorContainer.Syntax.Lexer.
+        private _error(eCode: uint, pToken: IToken): void {
+            var pLocation: ISourceLocation = <ISourceLocation>{
+                                                file: this._pParser.getParseFileName(),
+                                                line: this._iLineNumber
+                                             };
+            var pInfo:Object = {
+                tokenValue: pToken.value,
+                tokenType: pToken.type
+            };
+
+            var pLogEntity: ILoggerEntity = <ILoggerEntity>{code: eCode, info: pInfo, location: pLocation};
+
+            akra.logger["error"](pLogEntity);
         }
 
         private identityTokenType(): ETokenType {
@@ -860,7 +892,7 @@ module akra.util {
                 }
                 sValue += ch;
 
-                this.error(ESyntaxErrorCode.k_BadToken, <IToken> {
+                this._error(LEXER_BAD_TOKEN, <IToken> {
                     type: ETokenType.k_StringLiteral,
                     value: sValue,
                     start: iStart,
@@ -975,7 +1007,7 @@ module akra.util {
                     ch = EOF;
                 }
                 sValue += ch;
-                this.error(ESyntaxErrorCode.k_BadToken, <IToken> {
+                this._error(LEXER_BAD_TOKEN, <IToken> {
                     type: ETokenType.k_NumericLiteral,
                     value: sValue,
                     start: iStart,
@@ -992,7 +1024,7 @@ module akra.util {
             var iStart: uint = this._iColumnNumber;
             var isGoodFinish: bool = false;
 
-            while (1) {
+            while (true) {
                 ch = this.readNextChar();
                 if (!ch) {
                     isGoodFinish = true;
@@ -1031,7 +1063,7 @@ module akra.util {
                     ch = EOF;
                 }
                 sValue += ch;
-                this.error(ESyntaxErrorCode.k_BadToken, <IToken> {
+                this._error(LEXER_BAD_TOKEN, <IToken> {
                     type: ETokenType.k_IdentifierLiteral,
                     value: sValue,
                     start: iStart,
@@ -1131,7 +1163,7 @@ module akra.util {
                         ch = EOF;
                     }
                     sValue += ch;
-                    this.error(ESyntaxErrorCode.k_BadToken, <IToken> {
+                    this._error(LEXER_BAD_TOKEN, <IToken> {
                         type: ETokenType.k_CommentLiteral,
                         value: sValue,
                         start: iStart,
@@ -1188,6 +1220,7 @@ module akra.util {
         
         private _sSource: string;
         private _iIndex: uint;
+        private _sFileName: string;
 
         //Output
         
@@ -1281,6 +1314,8 @@ module akra.util {
             this._pBaseItemList = null;
 
             this._pExpectedExtensionDMap = null;
+
+            this._sFileName = "stdin";;
         }
 
         isTypeId(sValue: string): bool {
@@ -1411,13 +1446,15 @@ module akra.util {
 
                 if (!isError) {
                     pTree.setRoot();
+                    this._sFileName = "stdin";
                     if (!isNull(this._fnFinishCallback)) {
                         this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok);
                     }
                     return EParserCode.k_Ok;
                 }
                 else {
-                    this.error(ESyntaxErrorCode.k_SyntaxError);
+                    this._error(PARSER_SYNTAX_ERROR);
+                    this._sFileName = "stdin";
                     if (!isNull(this._fnFinishCallback)) {
                         this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error);
                     }
@@ -1426,8 +1463,17 @@ module akra.util {
 
             }
             catch (e) {
+                this._sFileName = "stdin";
                 return EParserCode.k_Error;
             }
+        }
+
+        setParseFileName(sFileName: string): void {
+            this._sFileName = sFileName;
+        }
+
+        getParseFileName(): string{
+            return this._sFileName;
         }
 
         pause(): EParserCode {
@@ -1439,10 +1485,9 @@ module akra.util {
         }
 
 
-        private error(eCode: ESyntaxErrorCode): void {
-            console.log(this.printStates(true));
-            //console.log((new Error).stack);
-            console.log("Error with code", eCode);
+        private _error(eCode: uint): void {
+            log(this.printStates(true));
+            log("Error with code", eCode);
         }
 
         private clearMem(): void {
@@ -1526,8 +1571,8 @@ module akra.util {
                 pSyntaxTable[iIndex] = <IOperationMap>{};
             }
             if (isDef(pSyntaxTable[iIndex][sSymbol])) {
-                this.error(ESyntaxErrorCode.k_GrammarAddOperation);
-                //this.error("Grammar is not LALR(1)!", "State:", this._pStates[iIndex], "Symbol:", sSymbol, ":",
+                this._error(PARSER_GRAMMAR_ADD_OPERATION);
+                //this._error("Grammar is not LALR(1)!", "State:", this._pStates[iIndex], "Symbol:", sSymbol, ":",
                 //            "Old value:", this._ppSynatxTable[iIndex][sSymbol], "New Value: ", pOperation);
             }
             pSyntaxTable[iIndex][sSymbol] = pOperation;
@@ -1536,8 +1581,8 @@ module akra.util {
         private addStateLink(pState: IState, pNextState: IState, sSymbol: string): void {
             var isAddState: bool = pState.addNextState(sSymbol, pNextState);
             if (!isAddState) {
-                this.error(ESyntaxErrorCode.k_GrammarAddStateLink);
-                //this.error("AddlinkState: Grammar is not LALR(1)! Rewrite link!", "State", pState, "Link to", pNextState,
+                this._error(PARSER_GRAMMAR_ADD_STATE_LINK);
+                //this._error("AddlinkState: Grammar is not LALR(1)! Rewrite link!", "State", pState, "Link to", pNextState,
                 //    "Symbol", sSymbol);
             }
         }
@@ -1745,7 +1790,7 @@ module akra.util {
 
                             //TERMINALS
                         if (pTempRule[2][0] !== pTempRule[2][pTempRule[2].length - 1]) {
-                            this.error(ESyntaxErrorCode.k_GrammarUnexpectedSymbol);
+                            this._error(PARSER_GRAMMAR_UNEXPECTED_SYMBOL);
                             //this._error("Can`t generate rules from grammar! Unexpected symbol! Must be")
                         }
 
@@ -1809,7 +1854,7 @@ module akra.util {
                     }
                     if (pTempRule[j] === FLAG_RULE_FUNCTION) {
                         if ((!pTempRule[j + 1] || pTempRule[j + 1].length === 0)) {
-                            this.error(ESyntaxErrorCode.k_GrammarBadAdditionalFunctionName);
+                            this._error(PARSER_GRAMMAR_BAD_ADDITIONAL_FUNC_NAME);
                             //this._error("Can`t generate rule for grammar! Addititional functionhas has bad name");
                         }
 
@@ -1822,11 +1867,11 @@ module akra.util {
                     }
                     if (pTempRule[j][0] === "'" || pTempRule[j][0] === "\"") {
                         if (pTempRule[j].length !== 3) {
-                            this.error(ESyntaxErrorCode.k_GrammarBadKeyword);
+                            this._error(PARSER_GRAMMAR_BAD_KEYWORD);
                             //this._error("Can`t generate rules from grammar! Keywords must be rules");
                         }
                         if (pTempRule[j][0] !== pTempRule[j][2]) {
-                            this.error(ESyntaxErrorCode.k_GrammarUnexpectedSymbol);
+                            this._error(PARSER_GRAMMAR_UNEXPECTED_SYMBOL);
                             //this._error("Can`t generate rules from grammar! Unexpected symbol! Must be");
                         }
                         var sName: string = this._pLexer.addPunctuator(pTempRule[j][1]);
@@ -2441,14 +2486,16 @@ module akra.util {
 
                 if (!isError) {
                     pTree.setRoot();
+                    this._sFileName = "stdin";
                     if (isDef(this._fnFinishCallback)) {
                         this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok);
                     }
                     return EParserCode.k_Ok;
                 }
                 else {
-                    this.error(ESyntaxErrorCode.k_SyntaxError);
-                    //console.log("Error!!!", pToken);
+                    this._error(PARSER_SYNTAX_ERROR);
+                    this._sFileName = "stdin";
+                    //log("Error!!!", pToken);
                     if (isDef(this._fnFinishCallback)) {
                         this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error);
                     }
@@ -2457,7 +2504,8 @@ module akra.util {
 
             }
             catch (e) {
-                 return EParserCode.k_Error;
+                this._sFileName = "stdin";
+                return EParserCode.k_Error;
             }
         }
 

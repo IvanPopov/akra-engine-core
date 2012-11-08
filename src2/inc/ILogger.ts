@@ -2,12 +2,11 @@
 #define ILOGGER_TS
 
 module akra.util {
-    
-    #define UNKNOWN_CODE 0
 
 	export enum ELogLevel {
-        INFORMATION = 0x0001,
-        LOG = 0x0002,
+        NONE = 0x0000,
+        LOG = 0x0001,
+        INFORMATION = 0x0002,
         WARNING = 0x0004,
         ERROR = 0x0008,
         CRITICAL = 0x0010,
@@ -22,62 +21,62 @@ module akra.util {
     }
 
     export interface ILogRoutineFunc {
-        (...pArgs: any[]): void;
+        (pEntity: ILoggerEntity): void;
     }
 
-    export interface ISourcePosition {
+    export interface ISourceLocation {
         file: string;
         line: uint;
     }
 
     export interface ILoggerEntity {
         code: uint;
-        position: ISourcePosition;
-        info?: Object;
-        hint?: string;
+        location: ISourceLocation;
         message?: string;
+        info: any;        
     }
 
     export interface ILogger {
-
-        error(...pArgs: any[]): void;
-
-        warning(eCode: uint, pLocation?: ISourcePosition, sHint?: string): void;
-        warning(sMessage: string, pLocation?: ISourcePosition): void;
-        warning(pEntity: ILoggerEntity): void;
-
-        info(eCode: uint, pLocation?: ISourcePosition, sHint?: string): void;
-        info(sMessage: string, pLocation?: ISourcePosition): void;
-        info(pEntity: ILoggerEntity): void;
-
-        critical_error():void;
-        assert():void;
-
-        log(...pArgs: any[]);
-
-        formatMessage(eCode: uint, pEntity: ILoggerEntity): string;
-
-        setLogLevel(eLevel: ELogLevel): bool;
-        getLogLevel(): ELogLevel;
-
-        init(): bool;
+       
         ///**
         //* For plugin api:
         //* Load file with custom user codes and three messages 
         //*/
         //loadManifestFile(): bool;
 
+        init(): bool;
 
-        ///** For plugin API */
-        //registerCode(eCode: uint, sMessage: string, sDebugMessage: string): bool;
-        ///** For plugin API */
-        //registerCodeFamily(sFamilyName:string): bool;
-        /** 
-        * logger.setLogRoutine(function(sMsg){console.log(sMsg)}, ELogLevel.INFORMATION | ELogLevel.DEBUG_INFORMATION);
-        */
-        setLogRoutine(fnLogRoutine: ILogRoutineFunc, eLevel: ELogLevel): bool;
+        setLogLevel(eLevel: ELogLevel): void;
+        getLogLevel(): ELogLevel;
+        
+        registerCode(eCode: uint, sMessage?: string): bool;
+        setUnknownCode(eCode: uint, sMessage: string): void;
 
-        setSourceLocation(pLocation: ISourcePosition);
+        registerCodeFamily(eCodeMin: uint, eCodeMax: uint, sFamilyName?: string): bool;
+
+        getFamilyName(eCode: uint): string;
+
+        setCodeFamilyRoutine(eCodeFromFamily: uint, fnLogRoutine: ILogRoutineFunc, eLevel: ELogLevel): bool;
+        setCodeFamilyRoutine(sFamilyName: string, fnLogRoutine: ILogRoutineFunc, eLevel: ELogLevel): bool;
+
+        setLogRoutine(fnLogRoutine: ILogRoutineFunc, eLevel: ELogLevel): void;
+
+        setSourceLocation(sFile: string, iLine: uint): void;
+        setSourceLocation(pLocation: ISourceLocation): void;
+
+        // Print messages methods
+        
+        log(...pArgs: any[]);
+
+        info(...pArgs: any[]): void;
+
+        warning(...pArgs: any[]): void;
+
+        error(...pArgs: any[]): void;
+
+        critical_error(...pArgs: any[]):void;
+
+        assert(bCondition: bool, ...pArgs: any[]):void;
 
     }
 }

@@ -100,6 +100,9 @@ module akra.util {
 
         parse(sSource: string, isSync?: bool, fnFinishCallback?: IFinishFunc, pCaller?: any): EParserCode;
 
+        setParseFileName(sFileName: string): void;
+        getParseFileName(): string;
+
         pause(): EParserCode;
         resume(): EParserCode;
     }

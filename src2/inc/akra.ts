@@ -2,6 +2,7 @@
 #define AKRA_TS
 
 #include "common.ts"
+#include "logger.ts"
 
 #include "libs/libs.ts"
 #include "bf/bitflags.ts"
@@ -173,5 +174,6 @@
 // #include "display/Display3d.ts"
 
 #include "util/Parser.ts"
+#include "util/Logger.ts"
 
 #endif

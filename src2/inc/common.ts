@@ -2,6 +2,7 @@
 #define COMMON_TS
 
 #include "base.d.ts"
+#include "util/Logger.ts"
 
 #define IFACE(IF) export interface IF {}
 #define readonly  
@@ -12,6 +13,7 @@
 #define int number
 #define uint number
 #define float number
+
 
 
 module akra {
@@ -114,27 +116,13 @@ module akra {
         }
     }
 
-    export var trace = console.log.bind(console);
-    export var assert = console.assert.bind(console);
-    export var warning = console.warn.bind(console);
-	export var error = console.error.bind(console);
-
 #ifdef DEBUG
-    export var debug_print = (pArg:any, ...pParams: any[]): void => {
-            trace.apply(null, arguments);
-    }
 
-    export var debug_assert = (isOK: bool, ...pParams: any[]): void => {
-            assert.apply(null, arguments);
-    }
-    
-    export var debug_warning = (pArg:any, ...pParams: any[]): void => {
-            warning.apply(null, arguments);
-    }
+#define debug_print(...)    log(__VA_ARGS__)
+#define debug_assert(...)   assert(__VA_ARGS__)
+#define debug_warning(...)  warning(__VA_ARGS__)
+#define debug_error(...)    error(__VA_ARGS__)
 
-	export var debug_error = (pArg:any, ...pParams: any[]): void => {
-            error.apply(null, arguments);
-    }
 #else
 
 #define debug_print(...)
@@ -143,6 +131,8 @@ module akra {
 #define debug_error(...)
 
 #endif
+
+
 
     export function initDevice(pDevice: WebGLRenderingContext):WebGLRenderingContext {
     	return pDevice;

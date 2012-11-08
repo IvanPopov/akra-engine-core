@@ -1,54 +1,88 @@
 #ifndef LOGGER_TS
 #define LOGGER_TS
 
-#include "common.js"
+#include "common.ts"
 #include "ILogger.ts"
 #include "bf/bitflags.ts"
 
 module akra.util {
-
-    interface IFormatMessageFunc {
-        (sMessage: string, pInfo?: ObjectMap): string;
-    }
-
-    interface IFormatCallbackMap {
-        [s: number]: IFormatMessageFunc;
-    }
-
+ 
     interface ILogRoutineMap {
-        [s: number]: ILogRoutineFunc;
+        [eLogLevel: uint]: ILogRoutineFunc;
     }
 
-    class Logger implements ILogger {
+    interface ICodeFamily {
+        familyName: string;
+        codeMin: uint;
+        codeMax: uint;
+    }
 
-        private _pCodeMessagesMap: StringMap;
-        private _pCodeFormatCallbackMap: IFormatCallbackMap;
-        private _pLogRoutineMap: ILogRoutineMap;
+    interface ICodeFamilyMap{
+        [familyName: string]: ICodeFamily;
+    }
+
+    interface ICodeInfo{
+        code: uint;
+        message: string;
+        familyName: string;
+    }
+
+    interface ICodeInfoMap{
+        [code: uint] : ICodeInfo;
+    }
+
+    interface ICodeFamilyRoutineDMap{
+        [familyName: string]: ILogRoutineMap;
+    }
+
+    export class Logger implements ILogger {
 
         private _eLogLevel: ELogLevel;
-        private _pEngine: IEngine;
+        private _pGeneralRoutineMap: ILogRoutineMap;
 
+        private _pCurrentSourceLocation: ISourceLocation;
         private _pLastLogEntity: ILoggerEntity; 
-        private _pCurrentSourceLocation: ISourcePosition;
+        
+        private _pCodeFamilyList: ICodeFamily[];
+        private _pCodeFamilyMap: ICodeFamilyMap;
+        private _pCodeInfoMap: ICodeInfoMap;
 
-        constructor (pEngine: IEngine) {
-            this._pEngine = pEngine;
+        private _pCodeFamilyRoutineDMap: ICodeFamilyRoutineDMap;
 
-            this._pCodeMessagesMap = <StringMap>{};
-            this._pCodeFormatCallbackMap = <IFormatCallbackMap>{};
-            this._pLogRoutineMap = <ILogRoutineMap>{};
+        private _nFamilyGenerator: uint;
+        static private _sDefaultFamilyName: string = "CodeFamily";
 
-            this._pCurrentSourceLocation = <ISourcePosition>{
+        private _eUnknownCode: uint;
+        private _sUnknownMessage: sMessage;
+
+        constructor () {
+            this._eUnknownCode = 0;
+            this._sUnknownMessage = "Unknown code";  
+
+            this._eLogLevel = ELogLevel.ALL;
+            this._pGeneralRoutineMap = <ILogRoutineMap>{};
+
+            this._pCurrentSourceLocation = <ISourceLocation>{
                                             file: "",
                                             line: 0
                                         };
 
             this._pLastLogEntity = <ILoggerEntity>{
-                                    code: UNKNOWN_CODE,
-                                    position: this._pCurrentSourceLocation,
-                                    info: null,
-                                    
+                                    code: this._eUnknownCode,
+                                    location: this._pCurrentSourceLocation,
+                                    message: this._sUnknownMessage,
+                                    info: null,                                    
                                    };
+            
+            this._pCodeFamilyMap = <ICodeFamilyMap>{};        
+            this._pCodeFamilyList = <ICodeFamily[]>[];
+            this._pCodeInfoMap = <ICodeInfoMap>{};
+
+            this._pCodeFamilyRoutineDMap = <ICodeFamilyRoutineDMap>{};
+
+            this._nFamilyGenerator = 0;                       
+
+              
         }
 
         init(): bool {
@@ -56,15 +90,7 @@ module akra.util {
             return true;
         }
 
-        formatMessage(eCode: uint, pEntity: ILoggerEntity): string {
-
-            return "";
-        }
-
-        setLogLevel(eLevel: ELogLevel): bool {
-            if (!this._pEngine.isDebug() && eLevel > ELogLevel.DEBUG) {
-                return false;
-            }
+        setLogLevel(eLevel: ELogLevel): void {
             this._eLogLevel = eLevel;
         }
 
@@ -72,180 +98,440 @@ module akra.util {
             return this._eLogLevel;
         }
 
-
-        setLogRoutine(fnLogRoutine: ILogRoutineFunc, eLevel: ELogLevel): bool {
-            if (this._pEngine.isDebug() && eLevel > ELogLevel.DEBUG) {
+        registerCode(eCode: uint, sMessage?: string = this._sUnknownMessage): bool{
+            if(this.isUsedCode(eCode)){
                 return false;
             }
 
+            var sFamilyName: string = this.getFamilyName(eCode);
+            if(isNull(sFamilyName)){
+                return false;
+            }
 
-            //if (bf.testAll(eLevel, ELogLevel.INFORMATION)) {
-            //    this._pLogRoutineMap[ELogLevel.INFORMATION] = fnLogRoutine;
-            //}
-            //else if (bf.testAll(eLevel, ELogLevel.ERROR)) {
-            //    this._pLogRoutineMap[ELogLevel.ERROR] = fnLogRoutine;
-            //}
-            //else if (bf.testAll(eLevel, ELogLevel.WARNING)) {
-            //    this._pLogRoutineMap[ELogLevel.WARNING] = fnLogRoutine;
-            //}
-            //else if (bf.testAll(eLevel, ELogLevel.LOG)) {
-            //    this._pLogRoutineMap[ELogLevel.LOG] = fnLogRoutine;
-            //}
-            //else if (bf.testAll(eLevel, ELogLevel.DEBUG_INFORMATION)) {
-            //    this._pLogRoutineMap[ELogLevel.DEBUG_INFORMATION] = fnLogRoutine;
-            //}
-            //else if (bf.testAll(eLevel, ELogLevel.DEBUG_ERROR)) {
-            //    this._pLogRoutineMap[ELogLevel.DEBUG_ERROR] = fnLogRoutine;
-            //}
-            //else if (bf.testAll(eLevel, ELogLevel.DEBUG_WARNING)) {
-            //    this._pLogRoutineMap[ELogLevel.DEBUG_WARNING] = fnLogRoutine;
-            //}
-            //else if (bf.testAll(eLevel, ELogLevel.DEBUG_LOG)) {
-            //    this._pLogRoutineMap[ELogLevel.DEBUG_LOG] = fnLogRoutine;
-            //}
+            var pCodeInfo: ICodeInfo = <ICodeInfo>{
+                                            code: eCode,
+                                            message: sMessage,
+                                            familyName: sFamilyName   
+                                            };
+
+            this._pCodeInfoMap[eCode] = pCodeInfo;
 
             return true;
         }
 
-
-        log(...pArgs: any[]): void {
-
+        setUnknownCode(eCode: uint, sMessage: string):void{
+            this._eUnknownCode = eCode;
+            this._sUnknownMessage = sMessage;
         }
 
-        debug_log(...pArgs: any[]): void {
+        registerCodeFamily(eCodeMin: uint, eCodeMax: uint, sFamilyName?: string): bool{
+            if(!isDef(sFamilyName)){
+                sFamilyName = this.generateFamilyName();
+            }
 
+            if(this.isUsedFamilyName(sFamilyName)){
+                return false;
+            }
+
+            if(!this.isValidCodeInterval(eCodeMin, eCodeMax)){
+                return false;
+            }
+
+            var pCodeFamily: ICodeFamily = <ICodeFamily>{
+                                                    familyName: sFamilyName,
+                                                    codeMin: eCodeMin,
+                                                    codeMax: eCodeMax
+                                                    };
+
+            this._pCodeFamilyMap[sFamilyName] = pCodeFamily;
+            this._pCodeFamilyList.push(pCodeFamily);
+
+            return true;
         }
 
-        error(...pArgs:any[]){
+        getFamilyName(eCode): string{
+            var i: uint = 0;
+            var pCodeFamilyList: ICodeFamily[] = this._pCodeFamilyList;
+            var pCodeFamily: ICodeFamily;
 
-            if(pArgs.length === 0){
-                //default unknown error
+            for(i = 0; i < pCodeFamilyList.length; i++){
+                pCodeFamily = pCodeFamilyList[i];
+
+                if(pCodeFamily.codeMin <= eCode && pCodeFamily.codeMax >= eCode){
+                    return pCodeFamily.familyName;
+                }
             }
-            else if(pArgs.length === 1 && this.isLogEntity(pArgs[0])){
-                //By log entity
-            }
-            else if(this.isLogCode(pArgs[0])){
-                //By code
-            }
-            else{
-                //Unknown error
-            }
+
+            return null;
         }
 
-        error(sMessage: string, pLocation?: ISourcePosition = null): void;
-        error(pEntity: ILoggerEntity): void;
-        error(eCode: uint, pLocation?: ISourcePosition = null, sHint?: string = ""): void;
-        error(): void {
-            var sMessage: string;
-            sMessage = this.generateLoggerMessage.call(this, arguments[0], arguments[1], arguments[2]);
+        setCodeFamilyRoutine(eCodeFromFamily: uint, fnLogRoutine: ILogRoutineFunc, eLevel: ELogLevel): bool;
+        setCodeFamilyRoutine(sFamilyName: string, fnLogRoutine: ILogRoutineFunc, eLevel: ELogLevel): bool;
+        setCodeFamilyRoutine():bool {
+            var sFamilyName: string;
+            var fnLogRoutine: ILogRoutineFunc;
+            var eLevel:ELogLevel;
 
-            this.printMessage(sMessage, ELogLevel.ERROR);
-        }
-
-        warning(sMessage: string, pLocation?: ISourcePosition = null): void;
-        warning(pEntity: ILoggerEntity): void;
-        warning(eCode: uint, pLocation?: ISourcePosition = null, sHint?: string = ""): void;
-        warning(): void {
-            var sMessage: string;
-            sMessage = this.generateLoggerMessage.call(this, arguments[0], arguments[1], arguments[2]);
-
-            this.printMessage(sMessage, ELogLevel.WARNING);
-        }
-
-        info(sMessage: string, pLocation?: ISourcePosition = null): void;
-        info(pEntity: ILoggerEntity): void;
-        info(eCode: uint, pLocation?: ISourcePosition = null, sHint?: string = ""): void;
-        info(): void {
-            var sMessage: string;
-            sMessage = this.generateLoggerMessage.call(this, arguments[0], arguments[1], arguments[2]);
-
-            this.printMessage(sMessage, ELogLevel.INFORMATION);
-        }
-
-        private isLogEntity(pObj:any):bool{
-            if(isObject(pObj) && isDef(pObj.code) && isDef(pObj.position)){
-                return true;
+            if(isInt(arguments[0])){
+                sFamilyName = this.getFamilyName(arguments[0]);
+                fnLogRoutine = arguments[1];
+                eLevel = arguments[2];
+                
+                if(isNull(sFamilyName)){
+                    return false;
+                }
+            }
+            else if(isString(arguments[0])){
+                sFamilyName = arguments[0];
+                fnLogRoutine = arguments[1];
+                eLevel = arguments[2];
             }
 
-            return false;
+            if(!this.isUsedFamilyName(sFamilyName)){
+                return false;
+            }
+
+            var pCodeFamilyRoutineMap: ILogRoutineMap = this._pCodeFamilyRoutineDMap[sFamilyName];
+
+            if(!isDef(pCodeFamilyRoutineMap)){
+                pCodeFamilyRoutineMap = this._pCodeFamilyRoutineDMap[sFamilyName] = <ILogRoutineMap>{};
+            }
+
+            if (bf.testAll(eLevel, ELogLevel.LOG)) {
+               pCodeFamilyRoutineMap[ELogLevel.LOG] = fnLogRoutine;
+            }
+            if (bf.testAll(eLevel, ELogLevel.INFORMATION)) {
+               pCodeFamilyRoutineMap[ELogLevel.INFORMATION] = fnLogRoutine;
+            }
+            if (bf.testAll(eLevel, ELogLevel.WARNING)) {
+               pCodeFamilyRoutineMap[ELogLevel.WARNING] = fnLogRoutine;
+            }
+            if (bf.testAll(eLevel, ELogLevel.ERROR)) {
+               pCodeFamilyRoutineMap[ELogLevel.ERROR] = fnLogRoutine;
+            }
+            if (bf.testAll(eLevel, ELogLevel.CRITICAL)) {
+               pCodeFamilyRoutineMap[ELogLevel.CRITICAL] = fnLogRoutine;
+            }
+
+            return true;
         }
 
-        private static isLogCode(eCode:any):bool{
-            if(isInt(eCode) && isDef(this._pCodeMessagesMap[eCode])){
-                return true;
-            }
+        setLogRoutine(fnLogRoutine: ILogRoutineFunc, eLevel: ELogLevel): void {
 
-            return false;
+            if (bf.testAll(eLevel, ELogLevel.LOG)) {
+               this._pGeneralRoutineMap[ELogLevel.LOG] = fnLogRoutine;
+            }
+            if (bf.testAll(eLevel, ELogLevel.INFORMATION)) {
+               this._pGeneralRoutineMap[ELogLevel.INFORMATION] = fnLogRoutine;
+            }
+            if (bf.testAll(eLevel, ELogLevel.WARNING)) {
+               this._pGeneralRoutineMap[ELogLevel.WARNING] = fnLogRoutine;
+            }
+            if (bf.testAll(eLevel, ELogLevel.ERROR)) {
+               this._pGeneralRoutineMap[ELogLevel.ERROR] = fnLogRoutine;
+            }
+            if (bf.testAll(eLevel, ELogLevel.CRITICAL)) {
+               this._pGeneralRoutineMap[ELogLevel.CRITICAL] = fnLogRoutine;
+            }          
+
+            return true;
         }
-        
-        private generateLoggerMessage(sMessage: string, pLocation?: ISourcePosition = null): string;
-        private generateLoggerMessage(pEntity: ILoggerEntity): string;
-        private generateLoggerMessage(eCode: uint, pLocation?: ISourcePosition = null, sHint?: string = ""): string;
-        private generateLoggerMessage(): string {
 
-            var sLoggerMessage: string;
+        setSourceLocation(sFile: string, iLine: uint): void;
+        setSourceLocation(pLocation: ISourceLocation): void;
+        setSourceLocation(): void {
+            var sFile: string;
+            var iLine: uint;
 
-            var sMessage: string;
-            var pLocation: ISourcePosition;
-            var sHint: string;
-
-            if (isString(arguments[0])) {
-                sMessage = arguments[0];
-                pLocation = arguments[1] || null;
-                sHint = "";
-            }
-            else if (isObject(arguments[0])) {
-                var pEntity: ILoggerEntity = arguments[0];
-
-                sMessage = this.getMessageFromCode(pEntity.code, pEntity.info);
-                pLocation = pEntity.position;
-                sHint = pEntity.hint;
-            }
-            else if (isInt(arguments[0])) {
-                var eCode: uint = arguments[0];
-
-                sMessage = this.getMessageFromCode(eCode);
-                pLocation = arguments[1] || null;
-                sHint = arguments[2] || "";
+            if(arguments.length === 2){
+                sFile = arguments[0];
+                iLine = arguments[1];
             }
             else {
+                if(isDef(arguments[0]) && !(isNull(arguments[0]))){
+                    sFile = arguments[0].file;
+                    iLine = arguments[0].line;
+                }
+                else{
+                    sFile = "";
+                    iLine = 0;    
+                }
+            }
+
+            this._pCurrentSourceLocation.file = sFile;
+            this._pCurrentSourceLocation.line = iLine;
+        }
+
+
+        log(...pArgs: any[]): void {
+            if(!bf.testAll(this._eLogLevel, ELogLevel.LOG)){
                 return;
             }
 
-            sLoggerMessage = this.prepareMessage(pLocation, sMessage, sHint);
-            return sLoggerMessage;
-        }
-
-        private printMessage(sMessage: string, eLevel: ELogLevel): void {
-            this._pLogRoutineMap[eLevel].call(null, sMessage);
-        }
-
-        private getMessageFromCode(eCode: uint, pInfo?: ObjectMap = null): string {
-            if (!isDef(this._pCodeMessagesMap[eCode])) {
-                return "Code " + eCode + ": No Message";;
+            var fnLogRoutine:ILogRoutineFunc = this._pGeneralRoutineMap[ELogLevel.LOG];
+            if(!isDef(fnLogRoutine)){
+                return;
             }
-            return this._pCodeFormatCallbackMap[eCode].call(null, pInfo);
+
+            var pLogEntity: ILoggerEntity = this._pLastLogEntity;
+
+            pLogEntity.code = this._eUnknownCode;
+            pLogEntity.location = this._pCurrentSourceLocation;
+            pLogEntity.info = pArgs;
+            pLogEntity.message = this._sUnknownMessage;
+
+            fnLogRoutine.call(null, pLogEntity);
         }
 
-        private prepareMessage(pLocation: ISourcePosition, sMessage: string, sHint: string): string {
-            var sLogMessage: string;
+        info(...pArgs: any[]): void {
+            if(!bf.testAll(this._eLogLevel, ELogLevel.INFO)){
+                return;
+            }
 
-            if (isNull(pLocation)) {
-                sLogMessage += pLocation.toString() + ": ";
+            var pLogEntity: ILoggerEntity;
+            var fnLogRoutine: ILogRoutineFunc;
+
+            pLogEntity = this.prepareLogEntity(pArgs);
+            fnLogRoutine = this.getCodeRoutineFunc(pLogEntity.code, ELogLevel.INFO);
+
+            if(isNull(fnLogRoutine)){
+                return;
+            }         
+
+            fnLogRoutine.call(null, pLogEntity);
+        }
+
+        warning(...pArgs: any[]): void {
+            if(!bf.testAll(this._eLogLevel, ELogLevel.WARNING)){
+                return;
+            }
+
+            var pLogEntity: ILoggerEntity;
+            var fnLogRoutine: ILogRoutineFunc;
+
+            pLogEntity = this.prepareLogEntity(pArgs);
+            fnLogRoutine = this.getCodeRoutineFunc(pLogEntity.code, ELogLevel.WARNING);
+
+            if(isNull(fnLogRoutine)){
+                return;
+            }         
+
+            fnLogRoutine.call(null, pLogEntity);
+        }
+
+        error(...pArgs:any[]): void {
+            if(!bf.testAll(this._eLogLevel, ELogLevel.ERROR)){
+                return;
+            }
+
+            var pLogEntity: ILoggerEntity;
+            var fnLogRoutine: ILogRoutineFunc;
+
+            pLogEntity = this.prepareLogEntity(pArgs);
+            fnLogRoutine = this.getCodeRoutineFunc(pLogEntity.code, ELogLevel.ERROR);
+
+            if(isNull(fnLogRoutine)){
+                return;
+            }         
+
+            fnLogRoutine.call(null, pLogEntity);
+        }
+
+        critical_error(...pArgs: any[]):void {
+
+            var pLogEntity: ILoggerEntity;
+            var fnLogRoutine: ILogRoutineFunc;
+
+            pLogEntity = this.prepareLogEntity(pArgs);
+            fnLogRoutine = this.getCodeRoutineFunc(pLogEntity.code, ELogLevel.CRITICAL);
+
+            var sSystemMessage: string = "A Critical error has occured! Code: " + pLogEntity.code.toString();
+            
+            if(bf.testAll(this._eLogLevel, ELogLevel.CRITICAL) && !isNull(fnLogRoutine)){
+                fnLogRoutine.call(null, pLogEntity);
+            }        
+
+            alert(sSystemMessage);
+            throw new Error(sSystemMessage);
+        }
+        
+        assert(bCondition: bool, ...pArgs: any[]):void{
+            if(!bCondition){
+                var pLogEntity: ILoggerEntity;
+                var fnLogRoutine: ILogRoutineFunc;
+
+                pLogEntity = this.prepareLogEntity(pArgs);
+                fnLogRoutine = this.getCodeRoutineFunc(pLogEntity.code, ELogLevel.CRITICAL);
+
+                var sSystemMessage: string = "A error has occured! Code: " + pLogEntity.code.toString() + 
+                                             "\n Accept to exit, refuse to continue.";
+                
+                if(bf.testAll(this._eLogLevel, ELogLevel.CRITICAL) && !isNull(fnLogRoutine)){
+                    fnLogRoutine.call(null, pLogEntity);
+                }        
+
+                if(confirm(sSystemMessage)){
+                    throw new Error(sSystemMessage);
+                }    
+            }
+        }
+
+
+        private generateFamilyName(): string {
+            var sSuffix: string = <string><any>(this._nFamilyGenerator++);
+            var sName: string = Logger._sDefaultFamilyName + sSuffix;
+
+            if(this.isUsedFamilyName(sName)){
+                return this.generateFamilyName();
             }
             else {
-                sLogMessage += "[Unknown]: ";
+                return sName;
+            }
+        }
+
+        private isValidCodeInterval(eCodeMin: uint, eCodeMax: uint): bool{
+            if(eCodeMin > eCodeMax){
+                return false;
             }
 
-            sLogMessage += sMessage;
+            var i: uint = 0;
+            var pCodeFamilyList: ICodeFamily[] = this._pCodeFamilyList;
+            var pCodeFamily: ICodeFamily;
 
-            if (sHint != "") {
-                sLogMessage += "\n Hint: " + sHint;
+            for(i = 0; i < pCodeFamilyList.length; i++){
+                pCodeFamily = pCodeFamilyList[i];
+
+                if((pCodeFamily.codeMin <= eCodeMin && pCodeFamily.codeMax >= eCodeMin) ||
+                   (pCodeFamily.codeMin <= eCodeMax && pCodeFamily.codeMax >= eCodeMax)){
+
+                    return false;    
+                }
             }
 
-            return sLogMessage;
+            return true;
+        }
+
+        private inline isUsedFamilyName(sFamilyName: string): bool{
+            return isDef(this._pCodeFamilyMap[sFamilyName]);
+        }
+
+        private inline isUsedCode(eCode: uint): bool{
+            return isDef(this._pCodeInfoMap[eCode]);
+        }
+
+        private isLogEntity(pObj:any):bool {
+            if(isObject(pObj) && isDef(pObj.code) && isDef(pObj.location)){
+                return true;
+            }
+
+            return false;
+        }
+
+        private inline isLogCode(eCode:any):bool {
+            return isInt(eCode);
+        }
+
+        private prepareLogEntity(pArgs:any[]): ILoggerEntity{
+            var eCode: uint = this._eUnknownCode;
+            var sMessage:string = this._sUnknownMessage;
+            var pInfo: any = null;
+
+            if(pArgs.length === 1 && this.isLogEntity(pArgs[0])){
+                eCode = pArgs[0].code;
+                pInfo = pArgs[0].info;
+                this.setSourceLocation(pArgs[0].location);    
+                
+                if(!isDef(pArgs[0].message)){
+                    var pCodeInfo: ICodeInfo = this._pCodeInfoMap[eCode];  
+                    if(isDef(pCodeInfo)){
+                        sMessage = pCodeInfo.message;
+                    }
+                }
+
+            }
+            else {
+                if(this.isLogCode(pArgs[0])){
+                    eCode = <uint>pArgs[0];
+                    if(pArgs.length > 1){
+                        if(isArray(pArgs)){
+                            pArgs.shift();
+                            pInfo = pArgs;
+                        } 
+                        else{
+                            pInfo = new Array(pArgs.length - 1);
+                            var i: uint = 0;
+                            for(i = 0; i < pArguments.length; i++){
+                                pInfo[i] = pArgs[i+1];
+                            }
+                        }
+                    }
+                }
+                else {
+                    eCode = this._eUnknownCode; 
+                    pInfo = pArgs.length > 0 ? pArgs : null;   
+                }
+
+                var pCodeInfo: ICodeInfo = this._pCodeInfoMap[eCode];  
+                if(isDef(pCodeInfo)){
+                    sMessage = pCodeInfo.message;
+                }
+            }
+
+            var pLogEntity: ILoggerEntity = this._pLastLogEntity;
+
+            pLogEntity.code = eCode;
+            pLogEntity.location = this._pCurrentSourceLocation;
+            pLogEntity.message = sMessage;
+            pLogEntity.info = pInfo;
+
+            return pLogEntity;
+        }
+
+        private getCodeRoutineFunc(eCode: uint, eLevel: ELogLevel): ILogRoutineFunc{
+            var pCodeInfo: ICodeInfo = this._pCodeInfoMap[eCode];
+            var fnLogRoutine: ILogRoutineFunc;
+
+            if(!isDef(pCodeInfo)){
+                fnLogRoutine = this._pGeneralRoutineMap[eLevel];
+                return isDef(fnLogRoutine) ? fnLogRoutine : null;
+            }
+
+            var pCodeFamilyRoutineMap: ILogRoutineMap = this._pCodeFamilyRoutineDMap[pCodeInfo.familyName];
+
+            if(!isDef(pCodeFamilyRoutineMap) || !isDef(pCodeFamilyRoutineMap[eLevel])) {
+                fnLogRoutine = this._pGeneralRoutineMap[eLevel];
+                return isDef(fnLogRoutine) ? fnLogRoutine : null;
+            }
+
+            fnLogRoutine = pCodeFamilyRoutineMap[eLevel];
+
+            return fnLogRoutine;
         }
 
     }
 
+    #define log(...)            akra.logger.setSourceLocation(__FILE__, __LINE__); \
+                            akra.logger.log(__VA_ARGS__);
+
+    #define info(...)           akra.logger.setSourceLocation(__FILE__, __LINE__); \
+                                akra.logger.info(__VA_ARGS__);
+
+    #define warning(...)        akra.logger.setSourceLocation(__FILE__, __LINE__); \
+                                akra.logger.warning(__VA_ARGS__);
+
+    #define error(...)          akra.logger.setSourceLocation(__FILE__, __LINE__); \
+                                akra.logger.error(__VA_ARGS__);
+
+    #define critical(...)       akra.logger.setSourceLocation(__FILE__, __LINE__); \
+                                akra.logger.critical_error(__VA_ARGS__);
+
+    #define critical_error(...) akra.logger.setSourceLocation(__FILE__, __LINE__); \
+                                akra.logger.critical_error(__VA_ARGS__);
+
+    #define assert(...)         akra.logger.setSourceLocation(__FILE__, __LINE__); \
+                                akra.logger.assert(__VA_ARGS__);
+
+
 }
+
+#endif

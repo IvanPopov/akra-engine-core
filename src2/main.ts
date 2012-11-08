@@ -18,16 +18,19 @@ var sGrammar:string = "S : E\n"			+
 					  "T : F\n"			+
 					  "F : T_UINT\n"	+
 					  "F : '(' E ')'\n";
-// "S : E\n"			+
-// 					  "E : T --F testFunc2 '+' --F testFunc1 E\n"	+
-// 					  "E : T '-' E\n"	+
-// 					  "E : T --F testFunc2\n"			+
-// 					  "T : F --F testFunc3 '*' T\n"	+
-// 					  "T : F '/' T\n"	+
-// 					  "T : F\n"			+
-// 					  "F : T_UINT\n"	+
-// 					  "F : '(' E ')' --F testFunc4\n";
+// // "S : E\n"			+
+// // 					  "E : T --F testFunc2 '+' --F testFunc1 E\n"	+
+// // 					  "E : T '-' E\n"	+
+// // 					  "E : T --F testFunc2\n"			+
+// // 					  "T : F --F testFunc3 '*' T\n"	+
+// // 					  "T : F '/' T\n"	+
+// // 					  "T : F\n"			+
+// // 					  "F : T_UINT\n"	+
+// // 					  "F : '(' E ')' --F testFunc4\n";
 
 x.init(sGrammar);
-x.parse("2+3");
-console.log(x);
+x.setParseFileName("/parse.test");
+x.parse("2+' 3");
+log(x);
+
+//error(20, akra.logger);
