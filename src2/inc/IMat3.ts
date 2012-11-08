@@ -28,7 +28,7 @@
 #define __a32 5
 #define __a33 8
 
-module akra.math {
+module akra {
 	IFACE(IMat4);
 	IFACE(IVec3);
 	IFACE(IQuat4);
@@ -68,6 +68,8 @@ module akra.math {
 		toString(): string;
 
 		decompose(q4fRotation: IQuat4, v3fScale: IVec3): bool;
+		row(iRow: int, v3fDestination?: IVec3): IVec3;
+		column(iColumn: int, v3fDestination?: IVec3): IVec3;
 	};
 };
 

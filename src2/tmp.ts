@@ -6,6 +6,10 @@
 
 
 
+
+
+
+
 interface String {
 	toUTF8(): string;
 	fromUTF8(): string;
@@ -36,8 +40,16 @@ interface Number {
 
 
 
+
+
+
+
+
 module akra {
-    export var DEBUG: bool = true;
+
+
+    export var  DEBUG : bool = true;
+
 
     export function typeOf(x: any): string {
         var s: string = typeof x;
@@ -147,28 +159,21 @@ module akra {
     export var warning = console.warn.bind(console);
 	export var error = console.error.bind(console);
 
+
     export var debug_print = (pArg:any, ...pParams: any[]): void => {
-        if (DEBUG) {
             trace.apply(null, arguments);
-        }
     }
 
     export var debug_assert = (isOK: bool, ...pParams: any[]): void => {
-        if (DEBUG) {
             assert.apply(null, arguments);
-        }
     }
 
     export var debug_warning = (pArg:any, ...pParams: any[]): void => {
-        if (DEBUG) {
             warning.apply(null, arguments);
-        }
     }
 
 	export var debug_error = (pArg:any, ...pParams: any[]): void => {
-        if (DEBUG) {
             error.apply(null, arguments);
-        }
     }
 
 
@@ -206,63 +211,63 @@ module akra {
     }
 
 
-    export var INVALID_INDEX: int =  0xffff;
+    export  var  INVALID_INDEX: int =  0xffff;
 
 // (-2147483646);
-    export var MIN_INT32: int = 0xffffffff;
+    export  var  MIN_INT32: int = 0xffffffff;
 // ( 2147483647);
-    export var MAX_INT32: int = 0x7fffffff;
+    export  var  MAX_INT32: int = 0x7fffffff;
 // (-32768);
-    export var MIN_INT16: int = 0xffff;
+    export  var  MIN_INT16: int = 0xffff;
 // ( 32767);  
-    export var MAX_INT16: int = 0x7fff;
+    export  var  MAX_INT16: int = 0x7fff;
 // (-128);
-    export var MIN_INT8: int = 0xff;
+    export  var  MIN_INT8: int = 0xff;
 // ( 127);        
-    export var MAX_INT8: int = 0x7f;
-    export var MIN_UINT32: int = 0;
-    export var MAX_UINT32: int = 0xffffffff;
-    export var MIN_UINT16: int = 0;
-    export var MAX_UINT16: int = 0xffff;
-    export var MIN_UINT8: int = 0;
-    export var MAX_UINT8: int = 0xff;
+    export  var  MAX_INT8: int = 0x7f;
+    export  var  MIN_UINT32: int = 0;
+    export  var  MAX_UINT32: int = 0xffffffff;
+    export  var  MIN_UINT16: int = 0;
+    export  var  MAX_UINT16: int = 0xffff;
+    export  var  MIN_UINT8: int = 0;
+    export  var  MAX_UINT8: int = 0xff;
 
 
-    export var SIZE_FLOAT64: int = 8;
-    export var SIZE_REAL64: int = 8;
-    export var SIZE_FLOAT32: int = 4;
-    export var SIZE_REAL32: int = 4;
-    export var SIZE_INT32: int = 4;
-    export var SIZE_UINT32: int = 4;
-    export var SIZE_INT16: int = 2;
-    export var SIZE_UINT16: int = 2;
-    export var SIZE_INT8: int = 1;
-    export var SIZE_UINT8: int = 1;
-    export var SIZE_BYTE: int = 1;
-    export var SIZE_UBYTE: int = 1;
+    export  var  SIZE_FLOAT64: int = 8;
+    export  var  SIZE_REAL64: int = 8;
+    export  var  SIZE_FLOAT32: int = 4;
+    export  var  SIZE_REAL32: int = 4;
+    export  var  SIZE_INT32: int = 4;
+    export  var  SIZE_UINT32: int = 4;
+    export  var  SIZE_INT16: int = 2;
+    export  var  SIZE_UINT16: int = 2;
+    export  var  SIZE_INT8: int = 1;
+    export  var  SIZE_UINT8: int = 1;
+    export  var  SIZE_BYTE: int = 1;
+    export  var  SIZE_UBYTE: int = 1;
 
 //1.7976931348623157e+308
-    export var MAX_FLOAT64: float = Number.MAX_VALUE;
+    export  var  MAX_FLOAT64: float = Number.MAX_VALUE;
 //-1.7976931348623157e+308
-    export var MIN_FLOAT64: float = -Number.MAX_VALUE;
+    export  var  MIN_FLOAT64: float = -Number.MAX_VALUE;
 //5e-324
-    export var TINY_FLOAT64: float = Number.MIN_VALUE;
+    export  var  TINY_FLOAT64: float = Number.MIN_VALUE;
 
-//    export var MAX_REAL64: number = Number.MAX_VALUE;   //1.7976931348623157e+308
-//    export var MIN_REAL64: number = -Number.MAX_VALUE;  //-1.7976931348623157e+308
-//    export var TINY_REAL64: number = Number.MIN_VALUE;  //5e-324
+//    export const MAX_REAL64: number = Number.MAX_VALUE;   //1.7976931348623157e+308
+//    export const MIN_REAL64: number = -Number.MAX_VALUE;  //-1.7976931348623157e+308
+//    export const TINY_REAL64: number = Number.MIN_VALUE;  //5e-324
 
 
 //3.4e38
-    export var MAX_FLOAT32: float = 3.4e38;
+    export  var  MAX_FLOAT32: float = 3.4e38;
 //-3.4e38
-    export var MIN_FLOAT32: float = -3.4e38;
+    export  var  MIN_FLOAT32: float = -3.4e38;
 //1.5e-45  
-    export var TINY_FLOAT32: float = 1.5e-45;
+    export  var  TINY_FLOAT32: float = 1.5e-45;
 
-//    export var MAX_REAL32: number = 3.4e38;     //3.4e38
-//    export var MIN_REAL32: number = -3.4e38;    //-3.4e38
-//    export var TINY_REAL32: number = 1.5e-45;   //1.5e-45
+//    export const MAX_REAL32: number = 3.4e38;     //3.4e38
+//    export const MIN_REAL32: number = -3.4e38;    //-3.4e38
+//    export const TINY_REAL32: number = 1.5e-45;   //1.5e-45
 
     export enum EDataTypes {
         BYTE = 0x1400,
@@ -312,6 +317,7 @@ module akra {
 
     export interface StringMap {
         [index: string]: string;
+        [index: number]: string;
     };
 
     export interface IntMap {
@@ -381,6 +387,10 @@ module akra {
     export var sid = (): uint => (++ sid._iTotal);
     sid._iTotal = 0;
 
+    export function now(): uint {
+        return (new Date).getTime();
+    }
+
 //export function 
 
 	(<any>window).URL = (<any>window).URL ? (<any>window).URL : (<any>window).webkitURL ? (<any>window).webkitURL : null;
@@ -389,6 +399,8 @@ module akra {
 	(<any>window).requestAnimationFrame = (<any>window).requestAnimationFrame || (<any>window).webkitRequestAnimationFrame ||
 		(<any>window).mozRequestAnimationFrame;
 	(<any>window).WebSocket = (<any>window).WebSocket || (<any>window).MozWebSocket;
+
+    Worker.prototype.postMessage = (<any>Worker).prototype.webkitPostMessage || Worker.prototype.postMessage;
 };
 
 
@@ -1382,11 +1394,19 @@ module akra.math {
             return "[x: " + this.x + ", y: " + this.y + ", z: " + this.z + "]";
         }
 
-        static v3f: Vec3 = new Vec3;
+        static stackSize: uint = 100; static stackPosition: int = 0; static stack: IVec3 [] = (function(): IVec3 []{ var pStack: IVec3 [] = new Array(Vec3.stackSize); for(var i:int = 0; i<Vec3.stackSize; i++){ pStack[i] = new Vec3(); } return pStack})();
+
+// static stack = new Array(100);
+// static stackSize = 100;
+// static iIndex = 100;
     }
 
 
 }
+
+//#define ALLOCATE_STORAGE(sClass, nCount)    static stack: sClass = new Array(nCount);
+// static stackSize = nCount;                                            // static stackPosition = 0;
+
 
 
 
@@ -1567,7 +1587,7 @@ module akra.math {
 
 
 
-module akra.math {
+module akra {
 	export interface IMat4 {} ;
 	export interface IVec3 {} ;
 	export interface IQuat4 {} ;
@@ -1605,6 +1625,10 @@ module akra.math {
 		toMat4(m4fDestination?: IMat4): IMat4;
 		toQuat4(q4fDestination?: IQuat4): IQuat4;
 		toString(): string;
+
+		decompose(q4fRotation: IQuat4, v3fScale: IVec3): bool;
+		row(iRow: int, v3fDestination?: IVec3): IVec3;
+		column(iColumn: int, v3fDestination?: IVec3): IVec3;
 	};
 };
 
@@ -1655,7 +1679,7 @@ module akra.math {
 
 
 
-module akra.math {
+module akra {
 
 	export interface IVec3 {} ;
 	export interface IVec4 {} ;
@@ -1693,6 +1717,7 @@ module akra.math {
 		transpose(m4fDestination?: IMat4): IMat4;
 		determinant(): float;
 		inverse(m4fDestination?: IMat4): IMat4;
+		trace(): float;
 
 		isEqual(m4fMat: IMat4, fEps?: float): bool;
 		isDiagonal(fEps?: float): bool;
@@ -1705,12 +1730,12 @@ module akra.math {
 		rotateRight(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
 		rotateLeft(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
 
-		rotateXRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-		rotateXLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
-		rotateYRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-		rotateYLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
-		rotateZRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-		rotateZLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+//rotateXRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+//rotateXLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+//rotateYRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+//rotateYLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+//rotateZRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+//rotateZLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
 
 		setTranslation(v3fTranslation: IVec3): IMat4;
 		getTranslation(v3fTranslation?: IVec3): IVec3;
@@ -1721,9 +1746,10 @@ module akra.math {
 		scaleRight(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
 		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
 
-		decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): void;
+		decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): bool;
 
-
+		row(iRow: int, v4fDestination?: IVec4): IVec4;
+		column(iColumn: int, v4fDestination?: IVec4): IVec4;
 
 	};
 };
@@ -1746,12 +1772,49 @@ module akra.math {
 
 
 
-module akra.math {
+module akra {
+
+	export interface IVec3 {} ;
+	export interface IMat3 {} ;
+	export interface IMat4 {} ;
+
 	export interface IQuat4 {
 		x: float;
 		y: float;
 		z: float;
 		w: float;
+
+		set(): IQuat4;
+		set(q4fQuat: IQuat4): IQuat4;
+		set(pArray: float[]): IQuat4;
+		set(fValue: float, fW: float): IQuat4;
+		set(v3fValue: IVec3, fW: float): IQuat4;
+		set(fX: float, fY: float, fZ: float, fW: float): IQuat4;
+
+		multiply(q4fQuat: IQuat4, q4fDestination?: IQuat4): IQuat4;
+		multiplyVec3(v3fVec: IVec3, v3fDestination?: IVec3): IVec3;
+
+		conjugate(q4fDestination?: IQuat4): IQuat4;
+		inverse(q4fDestination?: IQuat4): IQuat4;
+
+		length(): float;
+		normalize(q4fDestination?: IQuat4): IQuat4;
+
+		calculateW(q4fDestination?: IQuat4): IQuat4;
+
+		isEqual(q4fQuat: IQuat4, fEps?: float, asMatrix?: bool): bool;
+
+		getYaw(): float;
+		getPitch(): float;
+		getRoll(): float;
+		toYawPitchRoll(v3fDestination?: IVec3): IVec3;
+
+		toMat3(m3fDestination?: IMat3): IMat3;
+		toMat4(m4fDestination?: IMat4): IMat4;
+		toString(): string;
+
+		mix(q4fQuat: IQuat4, fA: float, q4fDestination?: IQuat4, bShortestPath?: bool);
+		smix(q4fQuat: IQuat4, fA: float, q4fDestination?: IQuat4, bShortestPath?: bool);
 	};
 };
 
@@ -2233,7 +2296,7 @@ module akra.math {
 		    return m3fDestination;
 		};
 
-		isEqual(m3fMat: IMat3, fEps?: float = 0.): bool{
+		isEqual(m3fMat: IMat3, fEps: float = 0.): bool{
 			var pData1: Float32Array = this.data;
 		    var pData2: Float32Array = m3fMat.data;
 
@@ -2268,7 +2331,7 @@ module akra.math {
 		    return true;
 		};
 
-		isDiagonal(fEps?: float = 0.) : bool{
+		isDiagonal(fEps: float = 0.) : bool{
 			var pData: Float32Array = this.data;
 
 		    if(fEps == 0){
@@ -2391,6 +2454,120 @@ module akra.math {
 		               + pData[ 2 ] + ', ' + pData[ 5 ] + ', ' + pData[ 8 ] + ']';
 		};
 
+		decompose(q4fRotation: IQuat4, v3fScale: IVec3): bool{
+//изначально предполагаем, что порядок умножения был rot * scale
+			var m3fRotScale: IMat3 = this;
+			var m3fRotScaleTransposed: IMat3 = this.transpose(mat3());
+			var isRotScale: bool = true;
+
+//понадобятся если порядок умножения был другим
+		    var m3fScaleRot: IMat3, m3fScaleRotTransposed: IMat3;
+
+//было отражение или нет
+    		var scaleSign: int = (m3fRotScale.determinant() >= 0.) ? 1 : -1;
+
+    		var m3fResult: IMat3 = mat3();
+
+//first variant rot * scale
+// (rot * scale)T * (rot * scale) = 
+// scaleT * rotT * rot * scale = scaleT *rot^-1 * rot * scale = 
+// scaleT * scale
+		    m3fRotScaleTransposed.multiply(m3fRotScale, m3fResult);
+		   	if(!m3fResult.isDiagonal(1e-4)){
+//предположение было неверным
+		   		isRotScale = false;
+//просто переобозначения чтобы не было путаницы
+		        m3fScaleRot = m3fRotScale;
+		        m3fScaleRotTransposed = m3fRotScaleTransposed;
+
+//second variant scale * rot
+// (scale * rot) * (scale * rot)T = 
+// scale * rot * rotT * scaleT = scale *rot * rot^-1 * scaleT = 
+// scale * scaleT
+
+		        m3fScaleRot.multiply(m3fScaleRotTransposed,m3fResult);
+		   	}
+
+		   	var pResultData: Float32Array = m3fResult.data;
+
+		   	var x: float = sqrt(pResultData[ 0 ]);
+/*если было отражение, считается что оно было по y*/
+		   	var y: float = sqrt(pResultData[ 4 ])*scaleSign;
+		   	var z: float = sqrt(pResultData[ 8 ]);
+
+		   	v3fScale.x = x;
+		   	v3fScale.y = y;
+		   	v3fScale.z = z;
+
+		   	var m3fInverseScale: IMat3 = mat3(1./x,1./y,1./z);
+
+		   	if(isRotScale){
+		   		m3fRotScale.multiply(m3fInverseScale,mat3()).toQuat4(q4fRotation);
+		   		return true;
+		   	}
+		   	else{
+		   		m3fInverseScale.multiply(m3fScaleRot,mat3()).toQuat4(q4fRotation);
+		   		debug_assert(false,"порядок умножения scale rot в данный момент не поддерживается");
+		   		return false;
+		   	}
+		};
+
+		row(iRow: int, v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+				v3fDestination = new Vec3();
+			}
+
+			var pData: Float32Array = this.data;
+
+			switch(iRow){
+				case 1:
+					v3fDestination.x = pData[ 0 ];
+					v3fDestination.y = pData[ 3 ];
+					v3fDestination.z = pData[ 6 ];
+					break;
+				case 2:
+					v3fDestination.x = pData[ 1 ];
+					v3fDestination.y = pData[ 4 ];
+					v3fDestination.z = pData[ 7 ];
+					break;
+				case 3:
+					v3fDestination.x = pData[ 2 ];
+					v3fDestination.y = pData[ 5 ];
+					v3fDestination.z = pData[ 8 ];
+					break;
+			}
+
+			return v3fDestination;
+		};
+
+		column(iColumn: int, v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+				v3fDestination = new Vec3();
+			}
+
+			var pData: Float32Array = this.data;
+
+			switch(iColumn){
+				case 1:
+					v3fDestination.x = pData[ 0 ];
+					v3fDestination.y = pData[ 1 ];
+					v3fDestination.z = pData[ 2 ];
+					break;
+				case 2:
+					v3fDestination.x = pData[ 3 ];
+					v3fDestination.y = pData[ 4 ];
+					v3fDestination.z = pData[ 5 ];
+					break;
+				case 3:
+					v3fDestination.x = pData[ 6 ];
+					v3fDestination.y = pData[ 7 ];
+					v3fDestination.z = pData[ 8 ];
+					break;
+			}
+
+			return v3fDestination;
+		};
+
 		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, m3fDestination?: IMat3): IMat3;
 		static fromYawPitchRoll(v3fAngles: IVec3, m3fDestination?: IMat3): IMat3;
 		static fromYawPitchRoll(fYaw?,fPitch?,fRoll?,m3fDestination?): IMat3{
@@ -2439,8 +2616,8 @@ module akra.math {
 		static fromXYZ(fX?, fY?, fZ?, m3fDestination?) : IMat3{
 			if(arguments.length <= 2){
 //Vec3 + m3fDestination
-				var v3fAngles: IVec3 = arguments[0];
-				return Mat3.fromYawPitchRoll(v3fAngles.y,v3fAngles.x,v3fAngles.z,arguments[1]);
+				var v3fVec: IVec3 = arguments[0];
+				return Mat3.fromYawPitchRoll(v3fVec.y,v3fVec.x,v3fVec.z,arguments[1]);
 			}
 			else{
 //fX fY fZ m3fDestination
@@ -2451,6 +2628,8 @@ module akra.math {
 				return Mat3.fromYawPitchRoll(fY, fX, fZ, arguments[3]);
 			}
 		};
+
+		static stackSize: uint = 100; static stackPosition: int = 0; static stack: IMat3 [] = (function(): IMat3 []{ var pStack: IMat3 [] = new Array(Mat3.stackSize); for(var i:int = 0; i<Mat3.stackSize; i++){ pStack[i] = new Mat3(); } return pStack})(); ;
     };
 };
 
@@ -3123,11 +3302,12 @@ module akra.math {
 		    return m4fDestination;
 		};
 
-		isEqual(m4fMat: IMat4, fEps?: float): bool{
-			if(!isDef(fEps)){
-				fEps = 0.;
-			}
+		/**@inline*/  trace(): float{
+			var pData: Float32Array = this.data;
+			return pData[ 0 ] + pData[ 5 ] + pData[ 10 ] + pData[ 15 ];
+		};
 
+		isEqual(m4fMat: IMat4, fEps: float = 0.): bool{
 		    var pData1: Float32Array = this.data;
 		    var pData2: Float32Array = m4fMat.data;
 
@@ -3176,10 +3356,7 @@ module akra.math {
 		    return true;
 		};
 
-		isDiagonal(fEps?: float): bool{
-			if(!isDef(fEps)){
-				fEps = 0.;
-			}
+		isDiagonal(fEps: float = 0.): bool{
 			var pData: Float32Array = this.data;
 
 		    if(fEps === 0.){
@@ -3238,13 +3415,13 @@ module akra.math {
 		    var a31: float = pData[ 2 ], a32: float = pData[ 6 ], a33: float = pData[ 10 ];
 
 /*x^2*/
-		    var x2: float = ((a11 - a22 - a33) + 1)/4;
+		    var x2: float = ((a11 - a22 - a33) + 1.)/4.;
 /*y^2*/
-		    var y2: float = ((a22 - a11 - a33) + 1)/4;
+		    var y2: float = ((a22 - a11 - a33) + 1.)/4.;
 /*z^2*/
-		    var z2: float = ((a33 - a11 - a22) + 1)/4;
+		    var z2: float = ((a33 - a11 - a22) + 1.)/4.;
 /*w^2*/
-		    var w2: float = ((a11 + a22 + a33) + 1)/4;
+		    var w2: float = ((a11 + a22 + a33) + 1.)/4.;
 
 		    var fMax: float = max(x2,max(y2,max(z2,w2)));
 
@@ -3253,35 +3430,35 @@ module akra.math {
 		        var x: float = sqrt(x2);
 
 		        q4fDestination.x = x;
-		        q4fDestination.y = (a21 + a12)/4/x;
-		        q4fDestination.z = (a31 + a13)/4/x;
-		        q4fDestination.w = (a32 - a23)/4/x;
+		        q4fDestination.y = (a21 + a12)/4./x;
+		        q4fDestination.z = (a31 + a13)/4./x;
+		        q4fDestination.w = (a32 - a23)/4./x;
 		    }
 		    else if(fMax == y2){
 //максимальная компонента берется положительной
 		        var y: float = sqrt(y2);
 
-		        q4fDestination.x = (a21 + a12)/4/y;
+		        q4fDestination.x = (a21 + a12)/4./y;
 		        q4fDestination.y = y;
-		        q4fDestination.z = (a32 + a23)/4/y;
-		        q4fDestination.w = (a13 - a31)/4/y;
+		        q4fDestination.z = (a32 + a23)/4./y;
+		        q4fDestination.w = (a13 - a31)/4./y;
 		    }
 		    else if(fMax == z2){
 //максимальная компонента берется положительной
 		        var z: float = sqrt(z2);
 
-		        q4fDestination.x = (a31 + a13)/4/z;
-		        q4fDestination.y = (a32 + a23)/4/z;
+		        q4fDestination.x = (a31 + a13)/4./z;
+		        q4fDestination.y = (a32 + a23)/4./z;
 		        q4fDestination.z = z;
-		        q4fDestination.w = (a21 - a12)/4/z;
+		        q4fDestination.w = (a21 - a12)/4./z;
 		    }
 		    else{
 //максимальная компонента берется положительной
 		        var w: float = sqrt(w2);
 
-		        q4fDestination.x = (a32 - a23)/4/w;
-		        q4fDestination.y = (a13 - a31)/4/w;
-		        q4fDestination.z = (a21 - a12)/4/w;
+		        q4fDestination.x = (a32 - a23)/4./w;
+		        q4fDestination.y = (a13 - a31)/4./w;
+		        q4fDestination.z = (a21 - a12)/4./w;
 		        q4fDestination.w = w;
 		    }
 
@@ -3299,22 +3476,22 @@ module akra.math {
 		    pDataDestination[ 0 ] = pData[ 0 ];
 		    pDataDestination[ 4 ] = pData[ 4 ];
 		    pDataDestination[ 8 ] = pData[ 8 ];
-		    pDataDestination[ 12 ] = 0;
+		    pDataDestination[ 12 ] = 0.;
 
 		    pDataDestination[ 1 ] = pData[ 1 ];
 		    pDataDestination[ 5 ] = pData[ 5 ];
 		    pDataDestination[ 9 ] = pData[ 9 ];
-		    pDataDestination[ 13 ] = 0;
+		    pDataDestination[ 13 ] = 0.;
 
 		    pDataDestination[ 2 ] = pData[ 2 ];
 		    pDataDestination[ 6 ] = pData[ 6 ];
 		    pDataDestination[ 10 ] = pData[ 10 ];
-		    pDataDestination[ 14 ] = 0;
+		    pDataDestination[ 14 ] = 0.;
 
-		    pDataDestination[ 3 ] = 0;
-		    pDataDestination[ 7 ] = 0;
-		    pDataDestination[ 11 ] = 0;
-		    pDataDestination[ 15 ] = 1;
+		    pDataDestination[ 3 ] = 0.;
+		    pDataDestination[ 7 ] = 0.;
+		    pDataDestination[ 11 ] = 0.;
+		    pDataDestination[ 15 ] = 1.;
 
 		    return m4fDestination;
 		};
@@ -3487,75 +3664,84 @@ module akra.math {
 		    return m4fDestination;
 		};
 
-		rotateXRight(fAngle: float, m4fDestination?: IMat4): IMat4{
+		/**@inline*/  setTranslation(v3fTranslation: IVec3): IMat4{
 			var pData: Float32Array = this.data;
 
-		    var fSin: float = sin(fAngle);
-		    var fCos: float = cos(fAngle);
+			pData[ 12 ] = v3fTranslation.x;
+			pData[ 13 ] = v3fTranslation.y;
+			pData[ 14 ] = v3fTranslation.z;
 
-		    var a12: float = pData[ 4 ], a13: float = pData[ 8 ];
-		    var a22: float = pData[ 5 ], a23: float = pData[ 9 ];
-		    var a32: float = pData[ 6 ], a33: float = pData[ 10 ];
+			return this;
+		};
+
+		/**@inline*/  getTranslation(v3fTranslation?: IVec3): IVec3{
+			if(!isDef(v3fTranslation)){
+				v3fTranslation = new Vec3();
+			}
+
+			var pData: Float32Array = this.data;
+
+			v3fTranslation.x = pData[ 12 ];
+			v3fTranslation.y = pData[ 13 ];
+			v3fTranslation.z = pData[ 14 ];
+
+			return v3fTranslation;
+		};
+
+		translateRight(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4{
+			var pData: Float32Array = this.data;
+
+		    var x: float = v3fTranslation.x, y: float = v3fTranslation.y, z: float = v3fTranslation.z;
 
 		    if(!isDef(m4fDestination)){
-		        pData[ 4 ] =  a12*fCos + a13*fSin;
-		        pData[ 8 ] = -a12*fSin + a13*fCos;
-
-		        pData[ 5 ] =  a22*fCos + a23*fSin;
-		        pData[ 9 ] = -a22*fSin + a23*fCos;
-
-		        pData[ 6 ] =  a32*fCos + a33*fSin;
-		        pData[ 10 ] = -a32*fSin + a33*fCos;
-
+		        pData[ 12 ] = pData[ 0 ]*x + pData[ 4 ]*y + pData[ 8 ]*z + pData[ 12 ];
+		        pData[ 13 ] = pData[ 1 ]*x + pData[ 5 ]*y + pData[ 9 ]*z + pData[ 13 ];
+		        pData[ 14 ] = pData[ 2 ]*x + pData[ 6 ]*y + pData[ 10 ]*z + pData[ 14 ];
+		        pData[ 15 ] = pData[ 3 ]*x + pData[ 7 ]*y + pData[ 11 ]*z + pData[ 15 ];
+//строго говоря последнюю строчку умножать не обязательно, так как она должна быть -> 0 0 0 1
 		        return this;
 		    }
 
 		    var pDataDestination: Float32Array = m4fDestination.data;
 
-		    pDataDestination[ 0 ] = pData[ 0 ];
-		    pDataDestination[ 4 ] =  a12*fCos + a13*fSin;
-		    pDataDestination[ 8 ] = -a12*fSin + a13*fCos;
-		    pDataDestination[ 12 ] = pData[ 12 ];
+//кешируем матрицу вращений
+		    var a11: float = pData[ 0 ], a12: float = pData[ 4 ], a13: float = pData[ 8 ];
+		    var a21: float = pData[ 0 ], a22: float = pData[ 5 ], a23: float = pData[ 9 ];
+		    var a31: float = pData[ 0 ], a32: float = pData[ 6 ], a33: float = pData[ 10 ];
+		    var a41: float = pData[ 0 ], a42: float = pData[ 7 ], a43: float = pData[ 11 ];
 
-		    pDataDestination[ 1 ] = pData[ 1 ];
-		    pDataDestination[ 5 ] =  a22*fCos + a23*fSin;
-		    pDataDestination[ 9 ] = -a22*fSin + a23*fCos;
-		    pDataDestination[ 13 ] = pData[ 13 ];
+		    pDataDestination[ 0 ] = a11;
+		    pDataDestination[ 4 ] = a12;
+		    pDataDestination[ 8 ] = a13;
+		    pDataDestination[ 12 ] = a11*x + a12*y + a13*z + pData[ 12 ];
 
-		    pDataDestination[ 2 ] = pData[ 1 ];
-		    pDataDestination[ 6 ] =  a32*fCos + a33*fSin;
-		    pDataDestination[ 10 ] = -a32*fSin + a33*fCos;
-		    pDataDestination[ 14 ] = pData[ 14 ];
+		    pDataDestination[ 1 ] = a21;
+		    pDataDestination[ 5 ] = a22;
+		    pDataDestination[ 9 ] = a23;
+		    pDataDestination[ 13 ] = a21*x + a22*y + a23*z + pData[ 13 ];
 
-		    pDataDestination[ 3 ] = pData[ 3 ];
-		    pDataDestination[ 7 ] = pData[ 7 ];
-		    pDataDestination[ 11 ] = pData[ 11 ];
-		    pDataDestination[ 15 ] = pData[ 15 ];
+		    pDataDestination[ 2 ] = a31;
+		    pDataDestination[ 6 ] = a32;
+		    pDataDestination[ 10 ] = a33;
+		    pDataDestination[ 14 ] = a31*x + a32*y + a33*z + pData[ 14 ];
+
+		    pDataDestination[ 3 ] = a41;
+		    pDataDestination[ 7 ] = a42;
+		    pDataDestination[ 11 ] = a43;
+		    pDataDestination[ 15 ] = a41*x + a42*y + a43*z + pData[ 15 ];
 
 		    return m4fDestination;
 		};
 
-		rotateXLeft(fAngle: float, m4fDestination?: IMat4): IMat4{
+		translateLeft(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4{
 			var pData: Float32Array = this.data;
 
-		    var fSin: float = sin(fAngle);
-		    var fCos: float = cos(fAngle);
-
-		    var a21: float = pData[ 1 ], a22: float = pData[ 5 ], a23: float = pData[ 9 ], a24: float = pData[ 13 ];
-		    var a31: float = pData[ 2 ], a32: float = pData[ 6 ], a33: float = pData[ 10 ], a34: float = pData[ 14 ];
+		    var x: float = v3fTranslation.x, y: float = v3fTranslation.y, z: float = v3fTranslation.z;
 
 		    if(!isDef(m4fDestination)){
-
-		        pData[ 1 ] = fCos*a21 - fSin*a31;
-		        pData[ 5 ] = fCos*a22 - fSin*a32;
-		        pData[ 9 ] = fCos*a23 - fSin*a33;
-		        pData[ 13 ] = fCos*a24 - fSin*a34;
-
-		        pData[ 2 ] = fSin*a21 + fCos*a31;
-		        pData[ 6 ] = fSin*a22 + fCos*a32;
-		        pData[ 10 ] = fSin*a23 + fCos*a33;
-		        pData[ 14 ] = fSin*a24 + fCos*a34;
-
+		        pData[ 12 ] = x + pData[ 12 ];
+		        pData[ 13 ] = y + pData[ 13 ];
+		        pData[ 14 ] = z + pData[ 14 ];
 		        return this;
 		    }
 
@@ -3564,17 +3750,17 @@ module akra.math {
 		    pDataDestination[ 0 ] = pData[ 0 ];
 		    pDataDestination[ 4 ] = pData[ 4 ];
 		    pDataDestination[ 8 ] = pData[ 8 ];
-		    pDataDestination[ 12 ] = pData[ 12 ];
+		    pDataDestination[ 12 ] = x + pData[ 12 ];
 
-		    pDataDestination[ 1 ] = fCos*a21 - fSin*a31;
-		    pDataDestination[ 5 ] = fCos*a22 - fSin*a32;
-		    pDataDestination[ 9 ] = fCos*a23 - fSin*a33;
-		    pDataDestination[ 13 ] = fCos*a24 - fSin*a34;
+		    pDataDestination[ 1 ] = pData[ 1 ];
+		    pDataDestination[ 5 ] = pData[ 5 ];
+		    pDataDestination[ 9 ] = pData[ 9 ];
+		    pDataDestination[ 13 ] = y + pData[ 13 ];
 
-		    pDataDestination[ 2 ] = fSin*a21 + fCos*a31;
-		    pDataDestination[ 6 ] = fSin*a22 + fCos*a32;
-		    pDataDestination[ 10 ] = fSin*a23 + fCos*a33;
-		    pDataDestination[ 14 ] = fSin*a24 + fCos*a34;
+		    pDataDestination[ 2 ] = pData[ 2 ];
+		    pDataDestination[ 6 ] = pData[ 6 ];
+		    pDataDestination[ 10 ] = pData[ 10 ];
+		    pDataDestination[ 14 ] = z + pData[ 14 ];
 
 		    pDataDestination[ 3 ] = pData[ 3 ];
 		    pDataDestination[ 7 ] = pData[ 7 ];
@@ -3583,8 +3769,444 @@ module akra.math {
 
 		    return m4fDestination;
 		};
+
+		scaleRight(v3fScale: IVec3, m4fDestination?: IMat4): IMat4{
+			var pData: Float32Array = this.data;
+
+		    var x: float = v3fScale.x, y: float = v3fScale.y, z: float = v3fScale.z;
+
+		    if(!isDef(m4fDestination)){
+		        pData[ 0 ] *= x;
+		        pData[ 4 ] *= y;
+		        pData[ 8 ] *= z;
+
+		        pData[ 1 ] *= x;
+		        pData[ 5 ] *= y;
+		        pData[ 9 ] *= z;
+
+		        pData[ 2 ] *= x;
+		        pData[ 6 ] *= y;
+		        pData[ 10 ] *= z;
+
+//скейлить эти компоненты необязательно, так как там должны лежать нули
+		        pData[ 3 ] *= x;
+		        pData[ 7 ] *= y;
+		        pData[ 11 ] *= z;
+
+		        return this;
+		    }
+
+		    var pDataDestination: Float32Array = m4fDestination.data;
+
+		    pDataDestination[ 0 ] = pData[ 0 ]*x;
+		    pDataDestination[ 4 ] = pData[ 4 ]*y;
+		    pDataDestination[ 8 ] = pData[ 8 ]*z;
+		    pDataDestination[ 12 ] = pData[ 12 ];
+
+		    pDataDestination[ 1 ] = pData[ 1 ]*x;
+		    pDataDestination[ 5 ] = pData[ 5 ]*y;
+		    pDataDestination[ 9 ] = pData[ 9 ]*z;
+		    pDataDestination[ 13 ] = pData[ 13 ];
+
+		    pDataDestination[ 2 ] = pData[ 2 ]*x;
+		    pDataDestination[ 6 ] = pData[ 6 ]*y;
+		    pDataDestination[ 10 ] = pData[ 10 ]*z;
+		    pDataDestination[ 14 ] = pData[ 14 ];
+
+//скейлить эти компоненты необязательно, так как там должны лежать нули
+		    pDataDestination[ 3 ] = pData[ 3 ]*x;
+		    pDataDestination[ 7 ] = pData[ 7 ]*y;
+		    pDataDestination[ 11 ] = pData[ 11 ]*z;
+		    pDataDestination[ 15 ] = pData[ 15 ];
+
+		    return m4fDestination;
+		};
+
+		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4{
+			var pData: Float32Array = this.data;
+
+		    var x: float = v3fScale.x, y: float = v3fScale.y, z: float = v3fScale.z;
+
+		    if(!isDef(m4fDestination)){
+		        pData[ 0 ] *= x;
+		        pData[ 4 ] *= x;
+		        pData[ 8 ] *= x;
+		        pData[ 12 ] *= x;
+
+		        pData[ 1 ] *= y;
+		        pData[ 5 ] *= y;
+		        pData[ 9 ] *= y;
+		        pData[ 13 ] *= y;
+
+		        pData[ 2 ] *= z;
+		        pData[ 6 ] *= z;
+		        pData[ 10 ] *= z;
+		        pData[ 14 ] *= z;
+
+		        return this;
+		    }
+
+		    var pDataDestination: Float32Array = m4fDestination.data;
+
+		    pDataDestination[ 0 ] = pData[ 0 ]*x;
+		    pDataDestination[ 4 ] = pData[ 4 ]*x;
+		    pDataDestination[ 8 ] = pData[ 8 ]*x;
+		    pDataDestination[ 12 ] = pData[ 12 ]*x;
+
+		    pDataDestination[ 1 ] = pData[ 1 ]*y;
+		    pDataDestination[ 5 ] = pData[ 5 ]*y;
+		    pDataDestination[ 9 ] = pData[ 9 ]*y;
+		    pDataDestination[ 13 ] = pData[ 13 ]*y;
+
+		    pDataDestination[ 2 ] = pData[ 2 ]*z;
+		    pDataDestination[ 6 ] = pData[ 6 ]*z;
+		    pDataDestination[ 10 ] = pData[ 10 ]*z;
+		    pDataDestination[ 14 ] = pData[ 14 ]*z;
+
+		    pDataDestination[ 3 ] = pData[ 3 ];
+		    pDataDestination[ 7 ] = pData[ 7 ];
+		    pDataDestination[ 11 ] = pData[ 11 ];
+		    pDataDestination[ 15 ] = pData[ 15 ];
+
+		    return m4fDestination;
+		};
+
+		/**@inline*/  decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): bool{
+			this.getTranslation(v3fTranslation);
+			var m3fRotScale = this.toMat3(mat3());
+			return m3fRotScale.decompose(q4fRotation,v3fScale);
+		};
+
+		row(iRow: int, v4fDestination?: IVec4): IVec4{
+			if(!isDef(v4fDestination)){
+				v4fDestination = new Vec4();
+			}
+
+			var pData: Float32Array = this.data;
+
+			switch(iRow){
+				case 1:
+					v4fDestination.x = pData[ 0 ];
+					v4fDestination.y = pData[ 4 ];
+					v4fDestination.z = pData[ 8 ];
+					v4fDestination.w = pData[ 12 ];
+					break;
+				case 2:
+					v4fDestination.x = pData[ 1 ];
+					v4fDestination.y = pData[ 5 ];
+					v4fDestination.z = pData[ 9 ];
+					v4fDestination.w = pData[ 13 ];
+					break;
+				case 3:
+					v4fDestination.x = pData[ 2 ];
+					v4fDestination.y = pData[ 6 ];
+					v4fDestination.z = pData[ 10 ];
+					v4fDestination.w = pData[ 14 ];
+					break;
+				case 4:
+					v4fDestination.x = pData[ 3 ];
+					v4fDestination.y = pData[ 7 ];
+					v4fDestination.z = pData[ 11 ];
+					v4fDestination.w = pData[ 15 ];
+					break;
+			}
+
+			return v4fDestination;
+		};
+
+		column(iColumn: int, v4fDestination?: IVec4): IVec4{
+			if(!isDef(v4fDestination)){
+				v4fDestination = new Vec4();
+			}
+
+			var pData: Float32Array = this.data;
+
+			switch(iColumn){
+				case 1:
+					v4fDestination.x = pData[ 0 ];
+					v4fDestination.y = pData[ 1 ];
+					v4fDestination.z = pData[ 2 ];
+					v4fDestination.w = pData[ 3 ];
+					break;
+				case 2:
+					v4fDestination.x = pData[ 4 ];
+					v4fDestination.y = pData[ 5 ];
+					v4fDestination.z = pData[ 6 ];
+					v4fDestination.w = pData[ 7 ];
+					break;
+				case 3:
+					v4fDestination.x = pData[ 8 ];
+					v4fDestination.y = pData[ 9 ];
+					v4fDestination.z = pData[ 10 ];
+					v4fDestination.w = pData[ 11 ];
+					break;
+				case 4:
+					v4fDestination.x = pData[ 12 ];
+					v4fDestination.y = pData[ 13 ];
+					v4fDestination.z = pData[ 14 ];
+					v4fDestination.w = pData[ 15 ];
+					break;
+			}
+
+			return v4fDestination;
+		};
+
+		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, m4fDestination?: IMat4): IMat4;
+		static fromYawPitchRoll(v3fAngles: IVec3, m4fDestination?: IMat4): IMat4;
+		static fromYawPitchRoll(fYaw?,fPitch?,fRoll?,m4fDestination?): IMat4{
+			if(arguments.length <= 2){
+//Vec3 + m4fDestination
+		        var v3fVec: IVec3 = arguments[0];
+
+		        fYaw   = v3fVec.x;
+		        fPitch = v3fVec.y;
+		        fRoll  = v3fVec.z;
+
+		        m4fDestination = arguments[1];
+		    }
+
+		    if(!isDef(m4fDestination)){
+		        m4fDestination = new Mat4();
+		    }
+
+		    var pDataDestination: Float32Array = m4fDestination.data;
+
+		    var fSin1: float = Math.sin(fYaw);
+		    var fSin2: float = Math.sin(fPitch);
+		    var fSin3: float = Math.sin(fRoll);
+
+		    var fCos1: float = Math.cos(fYaw);
+		    var fCos2: float = Math.cos(fPitch);
+		    var fCos3: float = Math.cos(fRoll);
+
+		    pDataDestination[ 0 ] = fCos1 * fCos3 + fSin1 * fSin2 * fSin3;
+		    pDataDestination[ 4 ] = fCos3 * fSin1 * fSin2 - fCos1 * fSin3;
+		    pDataDestination[ 8 ] = fCos2 * fSin1;
+		    pDataDestination[ 12 ] = 0.;
+
+		    pDataDestination[ 1 ] = fCos2 * fSin3;
+		    pDataDestination[ 5 ] = fCos2 * fCos3;
+		    pDataDestination[ 9 ] = -fSin2;
+		    pDataDestination[ 13 ] = 0.;
+
+		    pDataDestination[ 2 ] = fCos1 * fSin2 * fSin3 - fCos3 * fSin1;
+		    pDataDestination[ 6 ] = fSin1 * fSin3 + fCos1 * fCos3 * fSin2;
+		    pDataDestination[ 10 ] = fCos1 * fCos2;
+		    pDataDestination[ 14 ] = 0.;
+
+		    pDataDestination[ 3 ] = 0.;
+		    pDataDestination[ 7 ] = 0.;
+		    pDataDestination[ 11 ] = 0.;
+		    pDataDestination[ 15 ] = 1.;
+
+		    return m4fDestination;
+		};
+
+		static fromXYZ(fX: float, fY: float, fZ: float, m4fDestination?: IMat4): IMat4;
+		static fromXYZ(v3fAngles: IVec3, m4fDestination?: IMat4): IMat4;
+		static fromXYZ(fX?, fY?, fZ?, m4fDestination?) : IMat4{
+			if(arguments.length <= 2){
+//Vec3 + m4fDestination
+				var v3fVec: IVec3 = arguments[0];
+				return Mat4.fromYawPitchRoll(v3fVec.y,v3fVec.x,v3fVec.z,arguments[1]);
+			}
+			else{
+//fX fY fZ m4fDestination
+				var fX: float = arguments[0];
+				var fY: float = arguments[1];
+				var fZ: float = arguments[2];
+
+				return Mat4.fromYawPitchRoll(fY, fX, fZ, arguments[3]);
+			}
+		};
+
+		static frustum(fLeft: float, fRight: float, fBottom: float, fTop: float, fNear: float, fFar: float, m4fDestination?: IMat4): IMat4{
+			if(!isDef(m4fDestination)){
+		        m4fDestination = new Mat4();
+		    }
+
+		    var pDataDestination: Float32Array = m4fDestination.data;
+
+		    var fRL: float = fRight - fLeft;
+		    var fTB: float = fTop - fBottom;
+		    var fFN: float = fFar - fNear;
+
+		    pDataDestination[ 0 ] = 2.*fNear/fRL;
+		    pDataDestination[ 4 ] = 0.;
+		    pDataDestination[ 8 ] = (fRight + fLeft)/fRL;
+		    pDataDestination[ 12 ] = 0.;
+
+		    pDataDestination[ 1 ] = 0.;
+		    pDataDestination[ 5 ] = 2.*fNear/fTB;
+		    pDataDestination[ 9 ] = (fTop + fBottom)/fTB;
+		    pDataDestination[ 13 ] = 0.;
+
+		    pDataDestination[ 2 ] = 0.;
+		    pDataDestination[ 6 ] = 0.;
+		    pDataDestination[ 10 ] = -(fFar + fNear)/fFN;
+		    pDataDestination[ 14 ] = -2.*fFar*fNear/fFN;
+
+		    pDataDestination[ 3 ] = 0.;
+		    pDataDestination[ 7 ] = 0.;
+		    pDataDestination[ 11 ] = -1.;
+		    pDataDestination[ 15 ] = 0.;
+
+		    return m4fDestination;
+		};
+
+		/**@inline*/  static perspective(fFovy: float, fAspect: float, fNear: float, fFar: float, m4fDestination?: IMat4): IMat4{
+			var fTop: float = fNear*tan(fFovy/2.);
+			var fRight: float = fTop*fAspect;
+
+			return Mat4.frustum(-fRight, fRight, -fTop, fTop, fNear, fFar, m4fDestination);
+		};
+
+		static orthogonalProjectionAsymmetric(fLeft: float, fRight: float, fBottom: float,
+												 fTop: float, fNear: float, fFar: float, m4fDestination?: IMat4): IMat4{
+
+			 if(!isDef(m4fDestination)){
+		        m4fDestination = new Mat4();
+		    }
+
+		    var pDataDestination: Float32Array = m4fDestination.data;
+
+		    var fRL: float = fRight - fLeft;
+		    var fTB: float = fTop - fBottom;
+		    var fFN: float = fFar - fNear;
+
+		    pDataDestination[ 0 ] = 2./fRL;
+		    pDataDestination[ 4 ] = 0.;
+		    pDataDestination[ 8 ] = 0.;
+		    pDataDestination[ 12 ] = -(fRight + fLeft)/fRL;
+
+		    pDataDestination[ 1 ] = 0.;
+		    pDataDestination[ 5 ] = 2./fTB;
+		    pDataDestination[ 9 ] = 0.;
+		    pDataDestination[ 13 ] = -(fTop + fBottom)/fTB;
+
+		    pDataDestination[ 2 ] = 0.;
+		    pDataDestination[ 6 ] = 0.;
+		    pDataDestination[ 10 ] = -2./fFN;
+		    pDataDestination[ 14 ] = -(fFar + fNear)/fFN;
+
+		    pDataDestination[ 3 ] = 0.;
+		    pDataDestination[ 7 ] = 0.;
+		    pDataDestination[ 11 ] = 0.;
+		    pDataDestination[ 15 ] = 1.;
+
+		    return m4fDestination;
+		};
+
+		/**@inline*/  static orthogonalProjection(fWidth: float, fHeight: float, fNear: float, fFar: float, m4fDestination?: IMat4): IMat4{
+			var fRight: float = fWidth/2.;
+		    var fTop: float = fHeight/2.;
+		    return Mat4.orthogonalProjectionAsymmetric(-fRight, fRight, -fTop, fTop, fNear, fFar, m4fDestination);
+		};
+
+		static lookAt(v3fEye: IVec3, v3fCenter: IVec3, v3fUp: IVec3, m4fDestination?: IMat4): IMat4{
+			if(!isDef(m4fDestination)){
+		        m4fDestination = new Mat4(1.);
+		    }
+
+		    var fEyeX: float = v3fEye.x, fEyeY: float = v3fEye.y, fEyeZ: float = v3fEye.z;
+		    var fCenterX: float = v3fCenter.x, fCenterY: float = v3fCenter.y, fCenterZ: float = v3fCenter.z;
+		    var fUpX: float = v3fUp.x, fUpY: float = v3fUp.y, fUpZ: float = v3fUp.z;
+
+		    var fLength: float;
+		    var fInvLength: float;
+
+		    if(fEyeX === fCenterX && fEyeY === fCenterY && fEyeZ === fCenterZ){
+		        return m4fDestination;
+		    }
+
+		    var fXNewX: float, fXNewY: float, fXNewZ: float;
+		    var fYNewX: float, fYNewY: float, fYNewZ: float;
+		    var fZNewX: float, fZNewY: float, fZNewZ: float;
+
+//ось Z направлена на наблюдателя
+		    fZNewX = fEyeX - fCenterX;
+		    fZNewY = fEyeY - fCenterY;
+		    fZNewZ = fEyeZ - fCenterZ;
+
+		    fLength = sqrt(fZNewX*fZNewX + fZNewY*fZNewY + fZNewZ*fZNewZ);
+		    fInvLength = 1./fLength;
+
+//новая ось Z
+		    fZNewX = fZNewX*fInvLength;
+		    fZNewY = fZNewY*fInvLength;
+		    fZNewZ = fZNewZ*fInvLength;
+
+//новая ось X
+		    fXNewX = fUpY*fZNewZ - fUpZ*fZNewY;
+		    fXNewY = fUpZ*fZNewX - fUpX*fZNewZ;
+		    fXNewZ = fUpX*fZNewY - fUpY*fZNewX;
+
+		    fLength = sqrt(fXNewX*fXNewX + fXNewY*fXNewY + fXNewZ*fXNewZ);
+		    if(fLength){
+		    	fInvLength = 1./fLength;
+
+		        fXNewX = fXNewX*fInvLength;
+		        fXNewY = fXNewY*fInvLength;
+		        fXNewZ = fXNewZ*fInvLength;
+		    }
+
+//новая ось Y
+
+		    fYNewX = fZNewY*fXNewZ - fZNewZ*fXNewY;
+		    fYNewY = fZNewZ*fXNewX - fZNewX*fXNewZ;
+		    fYNewZ = fZNewX*fXNewY - fZNewY*fXNewX;
+
+//нормировать ненужно, так как было векторное умножение двух ортонормированных векторов
+
+//положение камеры в новых осях
+		    var fEyeNewX: float = fEyeX*fXNewX + fEyeY*fXNewY + fEyeZ*fXNewZ;
+		    var fEyeNewY: float = fEyeX*fYNewX + fEyeY*fYNewY + fEyeZ*fYNewZ;
+		    var fEyeNewZ: float = fEyeX*fZNewX + fEyeY*fZNewY + fEyeZ*fZNewZ;
+
+		    var pDataDestination: Float32Array = m4fDestination.data;
+
+//lookAt matrix === camera view matrix 
+//почему новый базис записывается по строкам?
+//это сзязано с тем, что это получающаяся матрица - 
+//это viewMatrix камеры, а на эту матрицу умножается при рендеринге, то есть
+//модель должна испытать преобразования противоположные тем, которые испытывает камера
+//то есть вращение в другую сторону(базис по строкам) и сдвиг в противоположную сторону
+
+		    pDataDestination[ 0 ] = fXNewX;
+		    pDataDestination[ 4 ] = fXNewY;
+		    pDataDestination[ 8 ] = fXNewZ;
+/*отъезжаем в позицию камеры*/
+		    pDataDestination[ 12 ] = -fEyeNewX;
+
+		    pDataDestination[ 1 ] = fYNewX;
+		    pDataDestination[ 5 ] = fYNewY;
+		    pDataDestination[ 9 ] = fYNewZ;
+/*отъезжаем в позицию камеры*/
+		    pDataDestination[ 13 ] = -fEyeNewY;
+
+		    pDataDestination[ 2 ] = fZNewX;
+		    pDataDestination[ 6 ] = fZNewY;
+		    pDataDestination[ 10 ] = fZNewZ;
+/*отъезжаем в позицию камеры*/
+		    pDataDestination[ 14 ] = -fEyeNewZ;
+
+		    pDataDestination[ 3 ] = 0.;
+		    pDataDestination[ 7 ] = 0.;
+		    pDataDestination[ 11 ] = 0.;
+		    pDataDestination[ 15 ] = 1.;
+
+		    return m4fDestination;
+		};
+
+		static stackSize: uint = 100; static stackPosition: int = 0; static stack: IMat4 [] = (function(): IMat4 []{ var pStack: IMat4 [] = new Array(Mat4.stackSize); for(var i:int = 0; i<Mat4.stackSize; i++){ pStack[i] = new Mat4(); } return pStack})();
     }
 }
+
+
+
+
+
+
 
 
 
@@ -3601,6 +4223,671 @@ module akra.math {
     	y: float;
     	z: float;
     	w: float;
+
+    	constructor();
+    	constructor(q4fQuat: IQuat4);
+    	constructor(pArray: float[]);
+    	constructor(fValue: float, fW: float);
+    	constructor(v3fValue: IVec3, fW: float);
+    	constructor(fX: float, fY: float, fZ: float, fW: float);
+    	constructor(fX?, fY?, fZ?, fW?){
+    		var nArgumentsLength: uint = arguments.length;
+
+    		if(nArgumentsLength === 1){
+    			this.set(arguments[0]);
+    		}
+    		else if(nArgumentsLength === 2){
+    			this.set(arguments[0],arguments[1]);
+    		}
+    		else if(nArgumentsLength === 4){
+    			this.set(arguments[0], arguments[1], arguments[2], arguments[3]);
+    		}
+    		else{
+    			this.x = 0.;
+    			this.y = 0.;
+    			this.z = 0.;
+    			this.w = 1.;
+    		}
+    	};
+
+    	set(): IQuat4;
+		set(q4fQuat: IQuat4): IQuat4;
+		set(pArray: float[]): IQuat4;
+		set(fValue: float, fW: float): IQuat4;
+		set(v3fValue: IVec3, fW: float): IQuat4;
+		set(fX: float, fY: float, fZ: float, fW: float): IQuat4;
+		set(fX?, fY?, fZ?, fW?): IQuat4{
+			var nArgumentsLength: uint = arguments.length;
+
+		    if(nArgumentsLength === 0){
+		        this.x = this.y = this.z = 0.;
+		        this.w = 1.;
+		    }
+		    if(nArgumentsLength === 1){
+		        if(arguments[0] instanceof Quat4){
+		        	var q4fQuat: IQuat4 = arguments[0];
+
+		            this.x = q4fQuat.x;
+		            this.y = q4fQuat.y;
+		            this.z = q4fQuat.z;
+		            this.w = q4fQuat.w;
+		        }
+		        else{
+//Array
+		            var pElements: float[] = arguments[0];
+
+		            this.x = pElements[0];
+		            this.y = pElements[1];
+		            this.z = pElements[2];
+		            this.w = pElements[3];
+		        }
+		    }
+		    else if(nArgumentsLength === 2){
+//float float
+//vec3 float
+		        if(isFloat(arguments[0])){
+//float float
+		            var fValue: float = arguments[0];
+
+		            this.x = fValue;
+		            this.y = fValue;
+		            this.z = fValue;
+		            this.w = arguments[1];
+		        }
+		        else{
+//vec3 float
+		            var v3fValue: IVec3 = arguments[0];
+
+		            this.x = v3fValue.x;
+		            this.y = v3fValue.y;
+		            this.z = v3fValue.z;
+		            this.w = arguments[1];
+		        }
+		    }
+		    else if(nArgumentsLength === 4){
+		        this.x = arguments[0];
+		        this.y = arguments[1];
+		        this.z = arguments[2];
+		        this.w = arguments[3];
+		    }
+
+		    return this;
+		};
+
+		multiply(q4fQuat: IQuat4, q4fDestination?: IQuat4): IQuat4{
+			if(!isDef(q4fDestination)){
+		        q4fDestination = this;
+		    }
+
+		    var x1: float = this.x, y1: float = this.y, z1: float = this.z, w1: float = this.w;
+		    var x2: float = q4fQuat.x, y2: float = q4fQuat.y, z2: float = q4fQuat.z, w2: float = q4fQuat.w;
+
+		    q4fDestination.x = x1*w2 + x2*w1 + y1*z2 - z1*y2;
+		    q4fDestination.y = y1*w2 + y2*w1 + z1*x2 - x1*z2;
+		    q4fDestination.z = z1*w2 + z2*w1 + x1*y2 - y1*x2;
+		    q4fDestination.w = w1*w2 - x1*x2 - y1*y2 - z1*z2;
+
+		    return q4fDestination;
+		};
+
+		multiplyVec3(v3fVec: IVec3, v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+		        v3fDestination = v3fVec;
+		    }
+
+		    var q4fVec: IQuat4 = quat4(v3fVec,0);
+		    var qInverse: IQuat4 = this.inverse(quat4());
+
+		    var qResult: IQuat4 = this.multiply(q4fVec.multiply(qInverse),quat4());
+
+		    v3fDestination.x = qResult.x;
+		    v3fDestination.y = qResult.y;
+		    v3fDestination.z = qResult.z;
+
+		    return v3fDestination;
+		};
+
+		conjugate(q4fDestination?: IQuat4): IQuat4{
+			if(!isDef(q4fDestination)){
+			    this.x = -this.x;
+			    this.y = -this.y;
+			    this.z = -this.z;
+
+			    return this;
+			}
+
+			q4fDestination.x = -this.x;
+			q4fDestination.y = -this.y;
+			q4fDestination.z = -this.z;
+			q4fDestination.w = this.w;
+
+			return q4fDestination;
+		};
+
+		inverse(q4fDestination?: IQuat4): IQuat4{
+			if(!isDef(q4fDestination)){
+		        q4fDestination = this;
+		    }
+
+		    var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+		    var fSqLength: float = x*x + y*y + z*z + w*w;
+
+		    if(fSqLength === 0.){
+		        q4fDestination.x = 0.;
+		        q4fDestination.y = 0.;
+		        q4fDestination.z = 0.;
+		        q4fDestination.w = 0.;
+		    }
+		    else{
+		        var fInvSqLength : float= 1./fSqLength;
+		        q4fDestination.x = -x*fInvSqLength;
+		        q4fDestination.y = -y*fInvSqLength;
+		        q4fDestination.z = -z*fInvSqLength;
+		        q4fDestination.w =  w*fInvSqLength;
+		    }
+
+		    return q4fDestination;
+		};
+
+		/**@inline*/  length() : float{
+			var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+    		return sqrt(x*x + y*y + z*z + w*w);
+		};
+
+		normalize(q4fDestination?: IQuat4): IQuat4{
+			if(!isDef(q4fDestination)){
+		        q4fDestination = this;
+		    }
+
+		    var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+
+		    var fLength: float = sqrt(x*x + y*y + z*z + w*w);
+
+		    if(fLength === 0.){
+		    	q4fDestination.x = 0.;
+		    	q4fDestination.y = 0.;
+		    	q4fDestination.z = 0.;
+		    	q4fDestination.w = 0.;
+
+		    }
+		    else{
+		    	var fInvLength: float = 1/fLength;
+
+		    	q4fDestination.x = x*fInvLength;
+		    	q4fDestination.y = y*fInvLength;
+		    	q4fDestination.z = z*fInvLength;
+		    	q4fDestination.w = w*fInvLength;
+		    }
+
+		    return q4fDestination;
+		};
+
+		calculateW(q4fDestination?: IQuat4): IQuat4{
+			var x: float = this.x, y: float = this.y, z: float = this.z;
+
+		    if(!isDef(q4fDestination)){
+		        this.w = sqrt(1. - x*x - y*y - z*z);
+		        return this;
+		    }
+
+		    q4fDestination.x = x;
+		    q4fDestination.y = y;
+		    q4fDestination.z = z;
+		    q4fDestination.w = sqrt(1. - x*x - y*y - z*z);
+
+		    return q4fDestination;
+		};
+
+		isEqual(q4fQuat: IQuat4, fEps: float = 0., asMatrix: bool = false): bool{
+
+		    var x1: float = this.x, y1: float = this.y, z1: float = this.z, w1: float = this.w;
+		    var x2: float = q4fQuat.x, y2: float = q4fQuat.y, z2: float = q4fQuat.z, w2: float = q4fQuat.w;
+
+		    var fLength1: float = sqrt(x1*x1 + y1*y1 + z1*z1 + w1*w1);
+		    var fLength2: float = sqrt(x2*x2 + y2*y2 + z2*z2 + w2*w2);
+
+		    if(abs(fLength2 - fLength2) > fEps){
+		        return false;
+		    }
+
+		    var cosHalfTheta: float = (x1*x2 + y1*y2 + z1*z2 + w1*w2)/fLength1/fLength2;
+
+		    if(asMatrix){
+		        cosHalfTheta = abs(cosHalfTheta);
+		    }
+
+		    if(1. - cosHalfTheta > fEps){
+		        return false;
+		    }
+		    return true;
+		};
+
+		getYaw(): float{
+		    var fYaw: float;
+
+		    var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+
+		    var fx2: float = x*2.;
+		    var fy2: float = y*2.;
+
+		    if(abs(x) == abs(w)){
+//вырожденный случай обрабатывается отдельно
+//
+		        var wTemp: float = w*sqrt(2.);
+//cos(Yaw/2)*cos(Roll/2) + sin(Yaw/2)*sin(Roll/2) = cos((Yaw-Roll)/2); Roll = 0;
+//x==-w
+//cos(Yaw/2)*cos(Roll/2) - sin(Yaw/2)*sin(Roll/2) = cos((Yaw+Roll)/2); Roll = 0;
+		        var yTemp: float = y*sqrt(2.);
+//sin(Yaw/2)*cos(Roll/2) - cos(Yaw/2)*sin(Roll/2) = sin((Yaw-Roll)/2); Roll = 0;
+//x==-w
+//sin(Yaw/2)*cos(Roll/2) + cos(Yaw/2)*sin(Roll/2) = sin((Yaw+Roll)/2); Roll = 0;
+
+		        fYaw = atan2(yTemp,wTemp)*2.;
+//fRoll = 0;
+
+//убираем дополнительный оборот
+		        var pi: float = PI;
+		        if(fYaw > pi){
+		            fYaw -= pi;
+//fRoll = (x == w) ? -pi : pi;
+		        }
+		        else if(fYaw < -pi){
+		            fYaw += pi;
+//fRoll = (x == w) ? pi : -pi;
+		        }
+		    }
+		    else{
+//Math.atan2(sin(Yaw)*cos(Pitch),cos(Yaw)*cos(Pitch));
+		        fYaw = atan2(fx2*z + fy2*w, 1. - (fx2*x + fy2*y));
+		    }
+
+		    return fYaw;
+		};
+
+		getPitch(): float{
+			var fPitch: float;
+
+		    var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+
+		    var fx2: float = x*2.;
+		    var fy2: float = y*2.;
+
+/*в очень редких случаях из-за ошибок округления получается результат > 1*/
+		    var fSinPitch: float = clamp(fx2*w - fy2*z,-1.,1.);
+		    fPitch = asin(fSinPitch)
+
+		    return fPitch;
+		};
+
+		getRoll(): float{
+		    var fRoll: float;
+
+		    var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+
+		    var fx2: float = x*2.;
+		    var fz2: float = z*2.;
+
+		    if(abs(x) == abs(w)){
+//вырожденный случай обрабатывается отдельно
+//
+		        var wTemp: float = w*sqrt(2.);
+//cos(Yaw/2)*cos(Roll/2) + sin(Yaw/2)*sin(Roll/2) = cos((Yaw-Roll)/2); Roll = 0;
+//x==-w
+//cos(Yaw/2)*cos(Roll/2) - sin(Yaw/2)*sin(Roll/2) = cos((Yaw+Roll)/2); Roll = 0;
+		        var yTemp: float = y*sqrt(2.);
+//sin(Yaw/2)*cos(Roll/2) - cos(Yaw/2)*sin(Roll/2) = sin((Yaw-Roll)/2); Roll = 0;
+//x==-w
+//sin(Yaw/2)*cos(Roll/2) + cos(Yaw/2)*sin(Roll/2) = sin((Yaw+Roll)/2); Roll = 0;
+
+		        var fYaw: float = atan2(yTemp,wTemp)*2.;
+		        fRoll = 0.;
+
+//убираем дополнительный оборот
+		        var pi: float = PI;
+		        if(fYaw > pi){
+//fYaw -= pi;
+		            fRoll = (x == w) ? -pi : pi;
+		        }
+		        else if(fYaw < -pi){
+//fYaw += pi;
+		            fRoll = (x == w) ? pi : -pi;
+		        }
+		    }
+		    else{
+//Math.atan2(cos(Pitch) * sin(Roll),cos(Pitch)*cos(Roll));
+		        fRoll = atan2(fx2*y + fz2*w, 1. - (fx2*x + fz2*z));
+		    }
+
+		    return fRoll;
+		};
+
+		toYawPitchRoll(v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+		        v3fDestination = new Vec3();
+		    }
+
+		    var fYaw: float, fPitch: float, fRoll: float;
+
+		    var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+
+		    var fx2: float = x*2.;
+		    var fy2: float = y*2.;
+		    var fz2: float = z*2.;
+		    var fw2: float = w*2.;
+
+/*в очень редких случаях из-за ошибок округления получается результат > 1*/
+		    var fSinPitch: float = clamp(fx2*w - fy2*z,-1.,1.);
+		    fPitch = asin(fSinPitch);
+//не известен знак косинуса, как следствие это потребует дополнительной проверки.
+//как показала практика - это не на что не влияет, просто один и тот же кватернион можно получить двумя разными вращениями
+
+		    if(abs(x) == abs(w)){
+//вырожденный случай обрабатывается отдельно
+//
+		        var wTemp: float = w*sqrt(2.);
+//cos(Yaw/2)*cos(Roll/2) + sin(Yaw/2)*sin(Roll/2) = cos((Yaw-Roll)/2); Roll = 0;
+//x==-w
+//cos(Yaw/2)*cos(Roll/2) - sin(Yaw/2)*sin(Roll/2) = cos((Yaw+Roll)/2); Roll = 0;
+		        var yTemp: float = y*sqrt(2.);
+//sin(Yaw/2)*cos(Roll/2) - cos(Yaw/2)*sin(Roll/2) = sin((Yaw-Roll)/2); Roll = 0;
+//x==-w
+//sin(Yaw/2)*cos(Roll/2) + cos(Yaw/2)*sin(Roll/2) = sin((Yaw+Roll)/2); Roll = 0;
+
+		        fYaw = atan2(yTemp,wTemp)*2.;
+		        fRoll = 0.;
+
+//убираем дополнительный оборот
+		        var pi: float = PI;
+		        if(fYaw > pi){
+		            fYaw -= pi;
+		            fRoll = (x == w) ? -pi : pi;
+		        }
+		        else if(fYaw < -pi){
+		            fYaw += pi;
+		            fRoll = (x == w) ? pi : -pi;
+		        }
+		    }
+		    else{
+//Math.atan2(sin(Yaw)*cos(Pitch),cos(Yaw)*cos(Pitch));
+		        fYaw = atan2(fx2*z + fy2*w, 1. - (fx2*x + fy2*y));
+//Math.atan2(cos(Pitch) * sin(Roll),cos(Pitch)*cos(Roll));
+		        fRoll = atan2(fx2*y + fz2*w, 1. - (fx2*x + fz2*z));
+		    }
+
+		    v3fDestination.x = fYaw;
+		    v3fDestination.y = fPitch;
+		    v3fDestination.z = fRoll;
+
+		    return v3fDestination;
+		};
+
+		toMat3(m3fDestination?: IMat3): IMat3{
+			if(!isDef(m3fDestination)){
+		        m3fDestination = new Mat3();
+		    }
+		    var pDataDestination: Float32Array = m3fDestination.data;
+
+		    var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+
+//потом необходимо ускорить
+
+		    pDataDestination[ 0 ] = 1. - 2.*(y*y + z*z);
+		    pDataDestination[ 3 ] = 2.*(x*y - z*w);
+		    pDataDestination[ 6 ] = 2.*(x*z + y*w);
+
+		    pDataDestination[ 1 ] = 2.*(x*y + z*w);
+		    pDataDestination[ 4 ] = 1. - 2.*(x*x + z*z);
+		    pDataDestination[ 7 ] = 2.*(y*z - x*w);
+
+		    pDataDestination[ 2 ] = 2.*(x*z - y*w);
+		    pDataDestination[ 5 ] = 2.*(y*z + x*w);
+		    pDataDestination[ 8 ] = 1. - 2.*(x*x + y*y);
+
+		    return m3fDestination;
+		};
+
+		toMat4(m4fDestination?: IMat4): IMat4{
+			if(!isDef(m4fDestination)){
+		        m4fDestination = new Mat4();
+		    }
+		    var pDataDestination: Float32Array = m4fDestination.data;
+
+		    var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+
+//потом необходимо ускорить
+
+		    pDataDestination[ 0 ] = 1. - 2.*(y*y + z*z);
+		    pDataDestination[ 4 ] = 2.*(x*y - z*w);
+		    pDataDestination[ 8 ] = 2.*(x*z + y*w);
+		    pDataDestination[ 12 ] = 0.;
+
+		    pDataDestination[ 1 ] = 2.*(x*y + z*w);
+		    pDataDestination[ 5 ] = 1. - 2.*(x*x + z*z);
+		    pDataDestination[ 9 ] = 2.*(y*z - x*w);
+		    pDataDestination[ 13 ] = 0.;
+
+		    pDataDestination[ 2 ] = 2.*(x*z - y*w);
+		    pDataDestination[ 6 ] = 2.*(y*z + x*w);
+		    pDataDestination[ 10 ] = 1. - 2.*(x*x + y*y);
+		    pDataDestination[ 14 ] = 0.;
+
+		    pDataDestination[ 3 ] = 0.;
+		    pDataDestination[ 7 ] = 0.;
+		    pDataDestination[ 11 ] = 0.;
+		    pDataDestination[ 15 ] = 1.;
+
+    		return m4fDestination;
+		};
+
+		/**@inline*/  toString(): string{
+			return "[x: " + this.x + ", y: " + this.y + ", z: " + this.z + ", w: " + this.w + "]";
+		};
+
+		mix(q4fQuat: IQuat4, fA: float, q4fDestination?: IQuat4, bShortestPath: bool = true){
+			if(!isDef(q4fDestination)){
+		        q4fDestination = this;
+		    }
+
+		    fA = clamp(fA,0,1);
+
+		    var x1: float = this.x, y1: float = this.y, z1: float = this.z, w1: float = this.w;
+		    var x2: float = q4fQuat.x, y2: float = q4fQuat.y, z2: float = q4fQuat.z, w2: float = q4fQuat.w;
+
+//скалярное произведение
+		    var fCos: float = x1*x2 + y1*y2 + z1*z2 + w1*w2;
+
+		    if(fCos < 0. && bShortestPath){
+		        x2 = -x2;
+		        y2 = -y2;
+		        z2 = -z2;
+		        w2 = -w2;
+		    }
+
+		    var k1: float = 1. - fA;
+		    var k2: float = fA;
+
+		    q4fDestination.x = x1*k1 + x2*k2;
+		    q4fDestination.y = y1*k1 + y2*k2;
+		    q4fDestination.z = z1*k1 + z2*k2;
+		    q4fDestination.w = w1*k1 + w2*k2;
+
+		    return q4fDestination;
+		};
+
+		smix(q4fQuat: IQuat4, fA: float, q4fDestination?: IQuat4, bShortestPath: bool = true){
+			if(!isDef(q4fDestination)){
+		        q4fDestination = this;
+		    }
+
+		    fA = clamp(fA,0,1);
+
+		    var x1: float = this.x, y1: float = this.y, z1: float = this.z, w1: float = this.w;
+		    var x2: float = q4fQuat.x, y2: float = q4fQuat.y, z2: float = q4fQuat.z, w2: float = q4fQuat.w;
+
+//скалярное произведение
+		    var fCos: float = x1*x2 + y1*y2 + z1*z2 + w1*w2;
+
+		    if(fCos < 0 && bShortestPath){
+		        fCos = -fCos;
+		        x2 = -x2;
+		        y2 = -y2;
+		        z2 = -z2;
+		        w2 = -w2;
+		    }
+
+		    var fEps: float = 1e-3;
+		    if(abs(fCos) < 1. - fEps){
+		        var fSin: float = sqrt(1. - fCos*fCos);
+		        var fInvSin: float = 1./fSin;
+
+		        var fAngle: float = atan2(fSin,fCos);
+
+		        var k1: float = sin((1. - fA) * fAngle)*fInvSin;
+		        var k2: float = sin(fA * fAngle)*fInvSin;
+
+		        q4fDestination.x = x1*k1 + x2*k2;
+		        q4fDestination.y = y1*k1 + y2*k2;
+		        q4fDestination.z = z1*k1 + z2*k2;
+		        q4fDestination.w = w1*k1 + w2*k2;
+		    }
+		    else{
+//два кватерниона или очень близки (тогда можно делать линейную интерполяцию) 
+//или два кватениона диаметрально противоположны, тогда можно интерполировать любым способом
+//позже надо будет реализовать какой-нибудь, а пока тоже линейная интерполяция
+
+		        var k1: float = 1 - fA;
+		        var k2: float = fA;
+
+		        var x: float = x1*k1 + x2*k2;
+		        var y: float = y1*k1 + y2*k2;
+		        var z: float = z1*k1 + z2*k2;
+		        var w: float = w1*k1 + w2*k2;
+
+// и нормализуем так-как мы сошли со сферы
+
+		        var fLength: float = sqrt(x*x + y*y + z*z + w*w);
+		        var fInvLen: float = fLength ? 1/fLength : 0;
+
+		        q4fDestination.x = x*fInvLen;
+		        q4fDestination.y = y*fInvLen;
+		        q4fDestination.z = z*fInvLen;
+		        q4fDestination.w = w*fInvLen;
+		    }
+
+		    return q4fDestination;
+		};
+
+		static fromForwardUp(v3fForward: IVec3, v3fUp: IVec3, q4fDestination?: IQuat4): IQuat4{
+			if(!isDef(q4fDestination)){
+		        q4fDestination = new Quat4();
+		    }
+
+		    var fForwardX: float = v3fForward.x, fForwardY: float = v3fForward.y, fForwardZ: float = v3fForward.z;
+		    var fUpX: float = v3fUp.x, fUpY: float = v3fUp.y, fUpZ: float = v3fUp.z;
+
+		    var m3fTemp: IMat3 = mat3();
+		    var pTempData: Float32Array = m3fTemp.data;
+
+		    pTempData[ 0 ] = fUpY*fForwardZ - fUpZ*fForwardY;
+		    pTempData[ 3 ] = fUpX;
+		    pTempData[ 6 ] = fForwardX;
+
+		    pTempData[ 1 ] = fUpZ*fForwardX - fUpX*fForwardZ;
+		    pTempData[ 4 ] = fUpY;
+		    pTempData[ 7 ] = fForwardY;
+
+		    pTempData[ 2 ] = fUpX*fForwardY - fUpY*fForwardX;
+		    pTempData[ 5 ] = fUpZ;
+		    pTempData[ 8 ] = fForwardZ;
+
+		    return m3fTemp.toQuat4(q4fDestination);
+		};
+
+		static fromAxisAngle(v3fAxis: IVec3, fAngle: float, q4fDestination?: IQuat4): IQuat4{
+
+			if(!isDef(q4fDestination)){
+		        q4fDestination = new Quat4();
+		    }
+
+		    var x: float = v3fAxis.x, y: float = v3fAxis.y, z: float = v3fAxis.z;
+
+		    var fLength: float = sqrt(x*x + y*y + z*z);
+
+		    if(fLength === 0.){
+		        q4fDestination.x = q4fDestination.y = q4fDestination.z = 0;
+		        q4fDestination.w = 1;
+		        return q4fDestination;
+		    }
+
+		    var fInvLength = 1/fLength;
+
+		    x *= fInvLength;
+		    y *= fInvLength;
+		    z *= fInvLength;
+
+		    var fSin: float = sin(fAngle/2);
+		    var fCos: float = cos(fAngle/2);
+
+		    q4fDestination.x = x * fSin;
+		    q4fDestination.y = y * fSin;
+		    q4fDestination.z = z * fSin;
+		    q4fDestination.w = fCos;
+
+		    return q4fDestination;
+		};
+
+		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float,q4fDestination?: IQuat4): IQuat4;
+		static fromYawPitchRoll(v3fAngles: IVec3,q4fDestination?: IQuat4): IQuat4;
+		static fromYawPitchRoll(fYaw? ,fPitch?, fRoll?, q4fDestination?): IQuat4{
+			if(arguments.length <= 2){
+				var v3fVec: IVec3 = arguments[0];
+
+				fYaw = v3fVec.x;
+				fPitch = v3fVec.y;
+				fRoll = v3fVec.z;
+
+				q4fDestination = arguments[1];
+			}
+
+			if(!isDef(q4fDestination)){
+				q4fDestination = new Quat4();
+			}
+
+		    var fHalfYaw: float = fYaw * 0.5;
+		    var fHalfPitch: float = fPitch * 0.5;
+		    var fHalfRoll: float = fRoll * 0.5;
+
+		    var fCos1: float = cos(fHalfYaw), fSin1: float = sin(fHalfYaw);
+		    var fCos2: float = cos(fHalfPitch), fSin2: float = sin(fHalfPitch);
+		    var fCos3: float = cos(fHalfRoll), fSin3: float = sin(fHalfRoll);
+
+		    q4fDestination.x = fCos1 * fSin2 * fCos3 + fSin1 * fCos2 * fSin3;
+		    q4fDestination.y = fSin1 * fCos2 * fCos3 - fCos1 * fSin2 * fSin3;
+		    q4fDestination.z = fCos1 * fCos2 * fSin3 - fSin1 * fSin2 * fCos3;
+		    q4fDestination.w = fCos1 * fCos2 * fCos3 + fSin1 * fSin2 * fSin3;
+
+		    return q4fDestination;
+		};
+
+		static fromXYZ(fX: float, fY: float, fZ: float, q4fDestination?: IQuat4): IQuat4;
+		static fromXYZ(v3fAngles: IVec3, q4fDestination?: IQuat4): IQuat4;
+		static fromXYZ(fX?, fY?, fZ?, q4fDestination?) : IQuat4{
+			if(arguments.length <= 2){
+//Vec3 + m4fDestination
+				var v3fVec: IVec3 = arguments[0];
+				return Quat4.fromYawPitchRoll(v3fVec.y,v3fVec.x,v3fVec.z,arguments[1]);
+			}
+			else{
+//fX fY fZ m4fDestination
+				var fX: float = arguments[0];
+				var fY: float = arguments[1];
+				var fZ: float = arguments[2];
+
+				return Quat4.fromYawPitchRoll(fY, fX, fZ, arguments[3]);
+			}
+		};
+
+		static stackSize: uint = 100; static stackPosition: int = 0; static stack: IQuat4 [] = (function(): IQuat4 []{ var pStack: IQuat4 [] = new Array(Quat4.stackSize); for(var i:int = 0; i<Quat4.stackSize; i++){ pStack[i] = new Quat4(); } return pStack})();
     }
 }
 
@@ -3996,6 +5283,25 @@ module akra.math {
 	 */
 
 	export var lcm = nok;
+
+// var pMat3Stack = new Array(100);
+// var iMat3StackIndex = 0;
+
+// function mat3 ();
+// function mat3 (fValue: float);
+// function mat3 (fValue?) {
+// 	var pStorage: IMat3[] = Mat3.stack;
+// 	var iIndex = Mat3.iIndex;
+// 	var nMax = Mat3.nMax;
+// }
+
+
+	export var vec2 = vec2;
+	export var vec3 = vec3;
+	export var vec4 = vec4;
+	export var quat4 = quat4;
+	export var mat3 = mat3;
+	export var mat4 = mat4;
 }
 
 module akra {
@@ -4009,12 +5315,6 @@ module akra {
 }
 
 
-/*
-#include "IRect3d.ts"
-#include "IRect3d.ts"
-#include "IRect3d.ts"
-#include "IRect3d.ts"
-*/
 
 
 
@@ -4065,25 +5365,6 @@ module akra.geometry {
 
 
 
-/*
-#include "IWorldExtents.ts"
-#include "IViewport.ts"
-
-#include "IURI.ts"
-
-#include "IKeyMap.ts"
-#include "IGamepadMap.ts"
-
-#include "IColor.ts"
-
-#include "IReferenceCounter.ts"
-#include "IScreenInfo.ts"
-#include "ICanvasInfo.ts"
-#include "IBrowserInfo.ts"
-#include "IApiInfo.ts"
-#include "IDeviceInfo.ts"
-#include "IUtilTimer.ts"
-*/
 
 
 ///<reference path="../../akra.ts" />
@@ -4839,10 +6120,6 @@ module akra.info {
 }
 
 
-/*
-#include "IFont2d.ts"
-#include "IString2d.ts"
-*/
 
 
 
@@ -4852,538 +6129,6 @@ module akra.util {
 
 }
 
-
-
-
-
-
-
-
-
-module akra.util {
-	export class ReferenceCounter implements IReferenceCounter {
-		private nReferenceCount: uint = 0;
-
-/** Выстанавливает чило ссылок  на объект в ноль */
-
-		constructor ();
-/** 
-		 * Выстанавливает чило ссылок  на объект в ноль
- 		 * количесвто ссылок привязаны к конкретному экземпляру, поэтому никогда не копируются 
- 		 */
-
-		constructor (pSrc: IReferenceCounter);
-		constructor (pSrc?) {}
-
-/** @inline */
-
-		referenceCount(): uint {
-			return this.nReferenceCount;
-		}
-
-/** @inline */
-
-		destructor(): void {
-			assert(this.nReferenceCount === 0, 'object is used');
-		}
-
-		release(): uint {
-			assert(this.nReferenceCount > 0, 'object is used');
-		    this.nReferenceCount--;
-		    return this.nReferenceCount;
-		}
-
-		addRef(): uint {
-			assert(this.nReferenceCount != MIN_INT32, 'reference fail');
-
-    		this.nReferenceCount ++;
-
-			return this.nReferenceCount;
-		}
-
-/** @inline */
-
-		eq (pSrc: IReferenceCounter): IReferenceCounter {
-		    return this;
-		};
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-module akra.util {
-	export class URI implements IURI {
-		private sScheme: string = null;
-		private sUserinfo: string = null;
-		private sHost: string = null;
-		private nPort: uint = 0;
-		private sPath: string = null;
-		private sQuery: string = null;
-		private sFragment: string = null;
-
-		get urn(): string {
-			return (this.sPath ? this.sPath : "") +
-			(this.sQuery ? '?' + this.sQuery : "") +
-			(this.sFragment ? '#' + this.sFragment : "");
-		}
-
-		get url(): string {
-			return (this.sScheme ? this.sScheme : "") + this.authority;
-		}
-
-		get authority(): string {
-			return (this.sHost ? '//' + (this.sUserinfo ? this.sUserinfo + '@' : "") +
-				this.sHost + (this.nPort ? ':' + this.nPort : "") : "");
-		}
-
-		get scheme(): string {
-			return this.sScheme;
-		}
-
-		get protocol(): string {
-			if (!this.sScheme) {
-				return this.sScheme;
-			}
-
-			return (this.sScheme.substr(0, this.sScheme.lastIndexOf(':')));
-		}
-
-		get userinfo(): string {
-			return this.sUserinfo;
-		}
-
-		get host(): string {
-			return this.sHost;
-		}
-
-		get port(): uint {
-			return this.nPort;
-		}
-
-		set port(iPort: uint) {
-			this.nPort = iPort;
-		}
-
-		get path(): string {
-			return this.sPath;
-		}
-
-		get query(): string {
-			return this.sQuery;
-		}
-
-		get fragment(): string {
-			return this.sFragment;
-		}
-
-
-		constructor (pUri: URI);
-		constructor (sUri: string);
-		constructor (pUri?) {
-			if (pUri) {
-				this.set(pUri);
-			}
-		}
-
-		set(pUri: URI);
-		set(sUri: string);
-		set(pData?): URI {
-			if (isString(pData)) {
-				var pUri:RegExpExecArray = URI.uriExp.exec(<string>pData);
-
-				debug_assert(pUri !== null, 'Invalid URI format used.\nused uri: ' + pData);
-
-				if (!pUri) {
-					return null;
-				}
-
-				this.sScheme = pUri[1] || null;
-				this.sUserinfo = pUri[2] || null;
-				this.sHost = pUri[3] || null;
-				this.nPort = parseInt(pUri[4]) || null;
-				this.sPath = pUri[5] || pUri[6] || null;
-				this.sQuery = pUri[7] || null;
-				this.sFragment = pUri[8] || null;
-
-				return this;
-
-			}
-			else if (pData instanceof URI) {
-				return this.set(pData.toString());
-			}
-
-			debug_error('Unexpected data type was used.');
-
-			return null;
-		}
-
-		toString(): string {
-			return this.url + this.urn;
-		}
-
-//------------------------------------------------------------------//
-//----- Validate a URI -----//
-//------------------------------------------------------------------//
-//- The different parts are kept in their own groups and can be recombined
-//  depending on the scheme:
-//  - http as $1://$3:$4$5?$7#$8
-//  - ftp as $1://$2@$3:$4$5
-//  - mailto as $1:$6?$7
-//- groups are as follows:
-//  1   == scheme
-//  2   == userinfo
-//  3   == host
-//  4   == port
-//  5,6 == path (5 if it has an authority, 6 if it doesn't)
-//  7   == query
-//  8   == fragment
-
-
-		static private uriExp:RegExp = new RegExp("^([a-z0-9+.-]+:)?(?:\\/\\/(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(\\/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?|(\\/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})*(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?)(?:\\?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?$", "i");
-
-/*
-		 composed as follows:
-		 ^
-		 ([a-z0-9+.-]+):							#scheme
-		 (?:
-		 //							#it has an authority:
-		 (?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?	#userinfo
-		 ((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)		#host
-		 (?::(\d*))?						#port
-		 (/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?	#path
-		 |
-		 #it doesn't have an authority:
-		 (/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?	#path
-		 )
-		 (?:
-		 \?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*)	#query string
-		 )?
-		 (?:
-		 #((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*)	#fragment
-		 )?
-		 $
-		 */
-
-	}
-}
-
-module akra {
-	export var parseURI = (sUri:string): IURI => new util.URI(sUri);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface IApiInfo {
-		webGL: bool;
-		webAudio: bool;
-		file: bool;
-		fileSystem: bool;
-		webWorker: bool;
-		transferableObjects: bool;
-		localStorage: bool;
-		webSocket: bool;
-	}
-}
-
-
-
-
-
-module akra.util {
-	export class ApiInfo extends Singleton implements IApiInfo {
-		private bWebGL: bool = false;
-		private bWebAudio: bool = false;
-		private bFile: bool = false;
-		private bFileSystem: bool = false;
-		private bWebWorker: bool = false;
-		private bTransferableObjects: bool = false;
-		private bLocalStorage: bool = false;
-		private bWebSocket: bool = false;
-
-		get webGL(): bool {
-			if (!this.bWebGL) {
-				this.bWebGL = ((<any>window).WebGLRenderingContext || this.checkWebGL() ? true : false);
-			}
-
-			return this.bWebGL;
-		}
-
-		get transferableObjects(): bool {
-			if (!this.bTransferableObjects) {
-				this.bTransferableObjects = (this.bWebWorker && this.chechTransferableObjects() ? true : false);
-			}
-
-			return this.bTransferableObjects;
-		}
-
-		get file(): bool {
-			return this.bFile;
-		}
-
-		get fileSystem(): bool {
-			return this.bFileSystem;
-		}
-
-		get webAudio(): bool {
-			return this.bWebAudio;
-		}
-
-		get webWorker(): bool {
-			return this.bWebWorker;
-		}
-
-		get localStorage(): bool {
-			return this.bLocalStorage;
-		}
-
-		get webSocket(): bool {
-			return this.bWebSocket;
-		}
-
-		constructor () {
-			super();
-
-			var pApi = {};
-
-			this.bWebAudio = ((<any>window).AudioContext && (<any>window).webkitAudioContext ? true : false);
-			this.bFile = ((<any>window).File && (<any>window).FileReader && (<any>window).FileList && (<any>window).Blob ? true : false);
-			this.bFileSystem = (this.bFile && (<any>window).URL && (<any>window).requestFileSystem ? true : false);
-			this.bWebWorker = isDef((<any>window).Worker);
-			this.bLocalStorage = isDef((<any>window).localStorage);
-			this.bWebSocket = isDef((<any>window).WebSocket);
-		}
-
-		private checkWebGL(): bool {
-			var pCanvas: HTMLCanvasElement;
-			var pDevice: WebGLRenderingContext;
-
-			try {
-				pCanvas = <HTMLCanvasElement> document.createElement('canvas');
-				pDevice = pCanvas.getContext('webgl', {}) ||
-                       		pCanvas.getContext('experimental-webgl', {});
-
-                if (pDevice) {
-                	return true;
-                }
-			}
-			catch (e) {}
-
-			return false;
-		}
-
-		private chechTransferableObjects(): bool {
-			var pBlob: Blob = new Blob(["onmessage = function(e) { postMessage(true); }"]);
-			var sBlobURL: string = (<any>window).URL.createObjectURL(pBlob);
-			var pWorker: Worker = new Worker(sBlobURL);
-
-			var pBuffer: ArrayBuffer = new ArrayBuffer(1);
-
-		    try {
-		        pWorker.postMessage(pBuffer, [pBuffer]);
-		    }
-		    catch (e) {
-		        debug_print('transferable objects not supported in your browser...');
-		    }
-
-		    pWorker.terminate();
-
-		    if (pBuffer.byteLength) {
-		        return false
-		    }
-
-		    return true;
-		}
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export enum EUtilTimerCommands {
-//! <to reset the timer
-		TIMER_RESET,
-//! <to start the timer
-		TIMER_START,
-//! <to stop (or pause) the timer
-		TIMER_STOP,
-//! <to advance the timer by 0.1 seconds
-		TIMER_ADVANCE,
-//! <to get the absolute system time
-		TIMER_GET_ABSOLUTE_TIME,
-//! <to get the current time
-		TIMER_GET_APP_TIME,
-		TIMER_GET_ELAPSED_TIME
-//! to get the time that elapsed between TIMER_GETELAPSEDTIME calls
-	}
-
-    export interface IUtilTimer {
-        absoluteTime: float;
-        appTime: float;
-        elapsedTime: float;
-
-        start(): bool;
-        stop(): bool;
-        reset(): bool;
-        execCommand(e: EUtilTimerCommands): float;
-
-//static start(): IUtilTimer;
-    }
-}
-
-
-
-module akra.util {
-
-	export class UtilTimer implements IUtilTimer {
-		private isTimerInitialized: bool = false;
-		private isTimerStopped: bool = false;
-		private fTicksPerSec: float = 0.;
-		private iStopTime: int = 0;
-		private iLastElapsedTime: int = 0;
-		private iBaseTime: int = 0;
-
-		get absoluteTime(): float {
-			return this.execCommand(EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME);
-		}
-
-		get appTime(): float {
-			return this.execCommand(EUtilTimerCommands.TIMER_GET_APP_TIME);
-		}
-
-		get elapsedTime(): float {
-			return this.execCommand(EUtilTimerCommands.TIMER_GET_ELAPSED_TIME);
-		}
-
-		start(): bool {
-			return this.execCommand(EUtilTimerCommands.TIMER_START) === 0;
-		}
-        stop(): bool {
-        	return this.execCommand(EUtilTimerCommands.TIMER_STOP) === 0;
-        }
-
-        reset(): bool {
-        	return this.execCommand(EUtilTimerCommands.TIMER_RESET) === 0;
-        }
-
-        execCommand(eCommand: EUtilTimerCommands): float {
-		    var fTime: float = 0.;
-		    var fElapsedTime: float = 0.;
-		    var iTime: int;
-
-		    if (this.isTimerInitialized == false) {
-		        this.isTimerInitialized = true;
-		        this.fTicksPerSec = 1000;
-		    }
-
-// Get either the current time or the stop time, depending
-// on whether we're stopped and what command was sent
-		    if (this.iStopTime != 0 && eCommand != EUtilTimerCommands.TIMER_START &&
-		    	eCommand != EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME) {
-		        iTime = this.iStopTime;
-		    }
-		    else {
-		        iTime = (new Date()).getTime();
-		    }
-
-// Return the elapsed time
-		    if (eCommand == EUtilTimerCommands.TIMER_GET_ELAPSED_TIME) {
-		        fElapsedTime = (iTime - this.iLastElapsedTime) / this.fTicksPerSec;
-		        this.iLastElapsedTime = iTime;
-		        return fElapsedTime;
-		    }
-
-// Return the current time
-		    if (eCommand == EUtilTimerCommands.TIMER_GET_APP_TIME) {
-		        var fAppTime = ( iTime - this.iBaseTime ) / this.fTicksPerSec;
-		        return fAppTime;
-		    }
-
-// Reset the timer
-		    if (eCommand == EUtilTimerCommands.TIMER_RESET) {
-		        this.iBaseTime = iTime;
-		        this.iLastElapsedTime = iTime;
-		        this.iStopTime = 0;
-		        this.isTimerStopped = false;
-		        return 0;
-		    }
-
-// Start the timer
-		    if (eCommand == EUtilTimerCommands.TIMER_START) {
-		        if (this.isTimerStopped) {
-		            this.iBaseTime += iTime - this.iStopTime;
-		        }
-		        this.iStopTime = 0;
-		        this.iLastElapsedTime = iTime;
-		        this.isTimerStopped = false;
-		        return 0;
-		    }
-
-// Stop the timer
-		    if (eCommand == EUtilTimerCommands.TIMER_STOP) {
-		        if (!this.isTimerStopped) {
-		            this.iStopTime = iTime;
-		            this.iLastElapsedTime = iTime;
-		            this.isTimerStopped = true;
-		        }
-		        return 0;
-		    }
-
-// Advance the timer by 1/10th second
-		    if (eCommand == EUtilTimerCommands.TIMER_ADVANCE) {
-		        this.iStopTime += this.fTicksPerSec / 10;
-		        return 0;
-		    }
-
-		    if (eCommand == EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME) {
-		        fTime = iTime / this.fTicksPerSec;
-		        return  fTime;
-		    }
-
-// Invalid command specified		    return -1;
-        }
-
-        static start(): UtilTimer {
-        	var pTimer: UtilTimer = new UtilTimer;
-
-        	if (pTimer.start()) {
-        		return pTimer;
-        	}
-
-        	debug_error('cannot start util timer');
-
-        	return null;
-        }
-	}
-}
 
 
 
@@ -5646,242 +6391,9 @@ module akra.gui {
 }
 
 
-/*
-#include "IVertexElement.ts"
-#include "IvertexDeclaration.ts"
-*/
 
 
 
-
-
-module akra.util {
-
-}
-
-module akra {
-
-}
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-
-	export interface IVertexElement {} ;
-
-	export var DeclarationUsages = {
-		POSITION 	: "POSITION",
-	    POSITION1	: "POSITION1",
-	    POSITION2	: "POSITION2",
-	    POSITION3	: "POSITION3",
-
-	    BLENDWEIGHT	: "BLENDWEIGHT",
-	    BLENDINDICES: "BLENDINDICES",
-	    BLENDMETA	: "BLENDMETA",
-
-	    NORMAL 		: "NORMAL",
-	    NORMAL1		: "NORMAL1",
-	    NORMAL2		: "NORMAL2",
-	    NORMAL3		: "NORMAL3",
-
-	    PSIZE		: "PSIZE",
-
-	    TEXCOORD 	: "TEXCOORD",
-	    TEXCOORD1	: "TEXCOORD1",
-	    TEXCOORD2	: "TEXCOORD2",
-	    TEXCOORD3	: "TEXCOORD3",
-	    TEXCOORD4	: "TEXCOORD4",
-	    TEXCOORD5	: "TEXCOORD5",
-
-	    TANGENT		: "TANGENT",
-	    BINORMAL 	: "BINORMAL",
-
-	    TESSFACTOR	: "TESSFACTOR",
-	    COLOR 		: "COLOR",
-	    FOG 		: "FOG",
-	    DEPTH 		: "DEPTH",
-	    SAMPLE 		: "SAMPLE",
-
-	    INDEX 		: "INDEX",
-		INDEX0 		: "INDEX0",
-	    INDEX1 		: "INDEX1",
-	    INDEX2 		: "INDEX2",
-	    INDEX3 		: "INDEX3",
-//system indices starts from 10	    INDEX10 	: "INDEX10",
-	    INDEX11 	: "INDEX11",
-	    INDEX12 	: "INDEX12",
-	    INDEX13 	: "INDEX13",
-
-	    MATERIAL 	: "MATERIAL",
-	    MATERIAL1 	: "MATERIAL1",
-	    MATERIAL2 	: "MATERIAL2",
-
-	    DIFFUSE		: "DIFFUSE",
-	    AMBIENT 	: "AMBIENT",
-	    SPECULAR 	: "SPECULAR",
-	    EMISSIVE 	: "EMISSIVE",
-	    SHININESS 	: "SHININESS",
-	    UNKNOWN 	: "UNKNOWN",
-	    END 		: "\a\n\r"
-	};
-
-	export var DeclUsages = DeclarationUsages;
-
-	export interface IVertexDeclaration {
-		stride: uint;
-		length: uint;
-
-
-//[index: number]: IVertexElement;
-
-		append(...pElement: IVertexElement[]): bool;
-		append(pElements: IVertexElement[]): bool;
-
-		extend(pDecl: IVertexDeclaration): bool;
-
-		hasSemantics(sSemantics: string): bool;
-		findElement(sSemantics: string, iCount?: uint): IVertexElement;
-		clone(): IVertexDeclaration;
-
-
-
-///DEBUG!!!
-		toString(): string;
-	}
-
-
-
-	export function VE_CUSTOM(sUsage: string, eType: EDataTypes = EDataTypes.FLOAT, iCount: uint = 1, iOffset?: uint) {
-		return {count: iCount, type: eType, usage: sUsage, offset: iOffset};
-	}
-
-	export function VE_FLOAT(sName: string, iOffset?: uint) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 1, iOffset); };
-	export function VE_FLOAT2(sName: string, iOffset: uint = 2) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 2, iOffset); };
-	export function VE_FLOAT3(sName: string, iOffset: uint = 3) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 3, iOffset); };
-	export function VE_FLOAT4(sName: string, iOffset: uint = 4) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 4, iOffset); };
-	export function VE_FLOAT4x4(sName: string, iOffset: uint = 16) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 16, iOffset); };
-	export function VE_VEC2(sName: string, iOffset: uint = 2) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 2, iOffset); };
-	export function VE_VEC3(sName: string, iOffset: uint = 3) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 3, iOffset); };
-	export function VE_VEC4(sName: string, iOffset: uint = 4) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 4, iOffset); };
-	export function VE_MAT4(sName: string, iOffset: uint = 16) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 16, iOffset); };
-	export function VE_INT(sName: string, iOffset: uint) { return VE_CUSTOM(sName, EDataTypes.INT, 1, iOffset);};
-
-	export function VE_END(iOffset: uint = 0) { return VE_CUSTOM(DeclUsages.END, EDataTypes.UNSIGNED_BYTE, 0, iOffset); };
-
-	export var createVertexDeclaration: (pData?) => IVertexDeclaration;
-}
-
-
-
-module akra.util {
-	export class VertexDeclaration implements IVertexDeclaration {
-		stride: uint = 0;
-		length: uint;
-
-//FIXME: typescript error "Overload signature is not compatible with function definition" ???
-//constructor (...pElement: IVertexElement[]) 
-		constructor (pElements: IVertexElement[]) {
-			if (arguments.length) {
-				if (arguments.length > 1) {
-					this.append(<IVertexElement[]><any>arguments);
-				}
-				else {
-					this.append(<IVertexElement[]><any>arguments[0]);
-				}
-			}
-		}
-
-//append(...pElement: IVertexElement[]): bool;
-		append(pElements?: IVertexElement[]): bool {
-			return false;
-		}
-
-
-
-		extend(pDecl: IVertexDeclaration): bool {
-			return false;
-		}
-
-		hasSemantics(sSemantics: string): bool {
-			return false;
-		}
-
-		findElement(sSemantics: string, iCount?: uint): IVertexElement {
-			return null;
-		}
-
-		clone(): IVertexDeclaration {
-			return null;
-		}
-
-///DEBUG!!!
-		toString(): string {
-			if (DEBUG) {
-
-			}
-
-			return null;
-		}
-	}
-
-//FIXME: typescript hack, to extends with Array
-
-	var __extends = function (d, b) {
-	    function __() { this.constructor = d; }
-	    __.prototype = b.prototype;
-	    d.prototype = new __();
-	};
-
-	__extends(VertexDeclaration, Array);
-}
-
-module akra {
-	export var VertexDeclaration = util.VertexDeclaration;
-
-	createVertexDeclaration = function (pData?): IVertexDeclaration {
-		if (!(pData instanceof VertexDeclaration)) {
-	        if (!(pData instanceof Array)) {
-	            pData = [pData];
-	        }
-
-	        pData = new VertexDeclaration(pData);
-	    }
-
-	    return pData;
-	}
-
-}
-
-
-/*
-#include "IBufferData.ts"
-#include "IVertexData.ts"
-#include "IIndexData.ts"
-#include "IBufferMap.ts"
-
-#include "IMesh.ts"
-
-#include "IResourceWatcherFunc.ts"
-#include "IResourceNotifyRoutineFunc.ts"
-#include "IResourceCode.ts"
-#include "IDataPool.ts"
-#include "IResourcePool.ts"
-#include "IResourcePoolItem.ts"
-#include "IResourcePoolManager.ts"
-
-#include "IRenderEntry.ts"
-#include "IRenderResource.ts"
-#include "IRenderableObject.ts"
-#include "IRenderSnapshot.ts"
-*/
 
 
 
@@ -6736,6 +7248,61 @@ module akra {
 
 
 
+
+
+
+
+
+
+
+module akra.util {
+	export class ReferenceCounter implements IReferenceCounter {
+		private nReferenceCount: uint = 0;
+
+/** Выстанавливает чило ссылок  на объект в ноль */
+
+		constructor ();
+/** 
+		 * Выстанавливает чило ссылок  на объект в ноль
+ 		 * количесвто ссылок привязаны к конкретному экземпляру, поэтому никогда не копируются 
+ 		 */
+
+		constructor (pSrc: IReferenceCounter);
+		constructor (pSrc?) {}
+
+/** @inline */
+
+		referenceCount(): uint {
+			return this.nReferenceCount;
+		}
+
+/** @inline */
+
+		destructor(): void {
+			assert(this.nReferenceCount === 0, 'object is used');
+		}
+
+		release(): uint {
+			assert(this.nReferenceCount > 0, 'object is used');
+		    this.nReferenceCount--;
+		    return this.nReferenceCount;
+		}
+
+		addRef(): uint {
+			assert(this.nReferenceCount != MIN_INT32, 'reference fail');
+
+    		this.nReferenceCount ++;
+
+			return this.nReferenceCount;
+		}
+
+/** @inline */
+
+		eq (pSrc: IReferenceCounter): IReferenceCounter {
+		    return this;
+		};
+	}
+}
 
 
 
@@ -8377,6 +8944,116 @@ module akra {
 
 
 
+module akra {
+
+	export interface IVertexElement {} ;
+
+	export var DeclarationUsages = {
+		POSITION 	: "POSITION",
+	    POSITION1	: "POSITION1",
+	    POSITION2	: "POSITION2",
+	    POSITION3	: "POSITION3",
+
+	    BLENDWEIGHT	: "BLENDWEIGHT",
+	    BLENDINDICES: "BLENDINDICES",
+	    BLENDMETA	: "BLENDMETA",
+
+	    NORMAL 		: "NORMAL",
+	    NORMAL1		: "NORMAL1",
+	    NORMAL2		: "NORMAL2",
+	    NORMAL3		: "NORMAL3",
+
+	    PSIZE		: "PSIZE",
+
+	    TEXCOORD 	: "TEXCOORD",
+	    TEXCOORD1	: "TEXCOORD1",
+	    TEXCOORD2	: "TEXCOORD2",
+	    TEXCOORD3	: "TEXCOORD3",
+	    TEXCOORD4	: "TEXCOORD4",
+	    TEXCOORD5	: "TEXCOORD5",
+
+	    TANGENT		: "TANGENT",
+	    BINORMAL 	: "BINORMAL",
+
+	    TESSFACTOR	: "TESSFACTOR",
+	    COLOR 		: "COLOR",
+	    FOG 		: "FOG",
+	    DEPTH 		: "DEPTH",
+	    SAMPLE 		: "SAMPLE",
+
+	    INDEX 		: "INDEX",
+		INDEX0 		: "INDEX0",
+	    INDEX1 		: "INDEX1",
+	    INDEX2 		: "INDEX2",
+	    INDEX3 		: "INDEX3",
+//system indices starts from 10	    INDEX10 	: "INDEX10",
+	    INDEX11 	: "INDEX11",
+	    INDEX12 	: "INDEX12",
+	    INDEX13 	: "INDEX13",
+
+	    MATERIAL 	: "MATERIAL",
+	    MATERIAL1 	: "MATERIAL1",
+	    MATERIAL2 	: "MATERIAL2",
+
+	    DIFFUSE		: "DIFFUSE",
+	    AMBIENT 	: "AMBIENT",
+	    SPECULAR 	: "SPECULAR",
+	    EMISSIVE 	: "EMISSIVE",
+	    SHININESS 	: "SHININESS",
+	    UNKNOWN 	: "UNKNOWN",
+	    END 		: "\a\n\r"
+	};
+
+	export var DeclUsages = DeclarationUsages;
+
+	export interface IVertexDeclaration {
+		stride: uint;
+		length: uint;
+
+
+//[index: number]: IVertexElement;
+
+		append(...pElement: IVertexElement[]): bool;
+		append(pElements: IVertexElement[]): bool;
+
+		extend(pDecl: IVertexDeclaration): bool;
+
+		hasSemantics(sSemantics: string): bool;
+		findElement(sSemantics: string, iCount?: uint): IVertexElement;
+		clone(): IVertexDeclaration;
+
+
+
+///DEBUG!!!
+		toString(): string;
+	}
+
+
+
+	export function VE_CUSTOM(sUsage: string, eType: EDataTypes = EDataTypes.FLOAT, iCount: uint = 1, iOffset?: uint) {
+		return {count: iCount, type: eType, usage: sUsage, offset: iOffset};
+	}
+
+	export function VE_FLOAT(sName: string, iOffset?: uint) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 1, iOffset); };
+	export function VE_FLOAT2(sName: string, iOffset: uint = 2) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 2, iOffset); };
+	export function VE_FLOAT3(sName: string, iOffset: uint = 3) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 3, iOffset); };
+	export function VE_FLOAT4(sName: string, iOffset: uint = 4) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 4, iOffset); };
+	export function VE_FLOAT4x4(sName: string, iOffset: uint = 16) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 16, iOffset); };
+	export function VE_VEC2(sName: string, iOffset: uint = 2) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 2, iOffset); };
+	export function VE_VEC3(sName: string, iOffset: uint = 3) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 3, iOffset); };
+	export function VE_VEC4(sName: string, iOffset: uint = 4) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 4, iOffset); };
+	export function VE_MAT4(sName: string, iOffset: uint = 16) { return VE_CUSTOM(sName, EDataTypes.FLOAT, 16, iOffset); };
+	export function VE_INT(sName: string, iOffset: uint) { return VE_CUSTOM(sName, EDataTypes.INT, 1, iOffset);};
+
+	export function VE_END(iOffset: uint = 0) { return VE_CUSTOM(DeclUsages.END, EDataTypes.UNSIGNED_BYTE, 0, iOffset); };
+
+	export var createVertexDeclaration: (pData?) => IVertexDeclaration;
+}
+
+
+
+
+
 
 
 
@@ -9286,57 +9963,6 @@ module akra.core.pool.resources {
 }
 
 
-/*
-#include "IBuffer.ts"
-#include "IFrameBuffer.ts"
-
-#include "ITexture.ts"
-#include "IImg.ts"
-#include "ISurfaceMaterial.ts"
-#include "IShaderProgram.ts"
-#include "IGPUBuffer.ts"
-#include "IIndexBuffer.ts"
-#include "IVertexBuffer.ts"
-#include "IRenderMethod.ts"
-#include "IVideoBuffer.ts"
-#include "IModel.ts"
-
-#include "IScene.ts"
-#include "IScene3d.ts"
-#include "IScene2d.ts"
-
-
-
-
-#include "ISceneTree.ts"
-#include "IRenderState.ts"
-#include "IRenderer.ts"
-#include "IScene3d.ts"
-
-#include "INode.ts"
-#include "ISceneNode.ts"
-#include "ISceneObject.ts"
-#include "ICamera.ts"
-
-#include "IFont2d.ts"
-
-#include "IDisplay.ts"
-#include "IDisplay2d.ts"
-#include "IDisplay3d.ts"
-
-#include "IManager.ts"
-#include "IResourceManager.ts"
-#include "IDisplayManager.ts"
-#include "IParticleManager.ts"
-
-#include "IAFXEffect.ts"
-#include "IAFXComponent.ts"
-#include "IAFXComponentBlend.ts"
-#include "IAFXPassBlend.ts"
-#include "IAFXPreRenderState.ts"
-
-#include "IScreen.ts"
-*/
 
 
 
@@ -9593,9 +10219,6 @@ module akra.scene {
 }
 
 
-
-//#include "IBuildScenario.ts"
-//#include "ISceneBuilder.ts"
 
 
 
@@ -10081,9 +10704,6 @@ module akra.scene {
 
 
 
-//#include "IEngine.ts"
-
-
 
 
 
@@ -10398,6 +11018,41 @@ module akra {
 
 
 
+module akra {
+	export enum EUtilTimerCommands {
+//! <to reset the timer
+		TIMER_RESET,
+//! <to start the timer
+		TIMER_START,
+//! <to stop (or pause) the timer
+		TIMER_STOP,
+//! <to advance the timer by 0.1 seconds
+		TIMER_ADVANCE,
+//! <to get the absolute system time
+		TIMER_GET_ABSOLUTE_TIME,
+//! <to get the current time
+		TIMER_GET_APP_TIME,
+		TIMER_GET_ELAPSED_TIME
+//! to get the time that elapsed between TIMER_GETELAPSEDTIME calls
+	}
+
+    export interface IUtilTimer {
+        absoluteTime: float;
+        appTime: float;
+        elapsedTime: float;
+
+        start(): bool;
+        stop(): bool;
+        reset(): bool;
+        execCommand(e: EUtilTimerCommands): float;
+
+//static start(): IUtilTimer;
+    }
+}
+
+
+
+
 
 
 
@@ -10505,7 +11160,7 @@ module akra.display {
 			var pDisplay: IDisplay3d = this;
 			var pRenderer: IRenderer = this.pRenderer;
 			var fnRender = (iTime: int): void => {
-				if (DEBUG) {
+				if ( DEBUG ) {
 					if (pRenderer.isDeviceLost()) {
 						debug_error("Device lost");
 					}

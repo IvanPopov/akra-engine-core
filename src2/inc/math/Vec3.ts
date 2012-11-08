@@ -111,10 +111,20 @@ module akra.math {
             return "[x: " + this.x + ", y: " + this.y + ", z: " + this.z + "]";
         }
 
-        static v3f: Vec3 = new Vec3;
+        ALLOCATE_STORAGE(Vec3,100)
+
+        // static stack = new Array(100);
+        // static stackSize = 100;
+        // static iIndex = 100;
     }
 
 
 }
+
+//#define ALLOCATE_STORAGE(sClass, nCount)    static stack: sClass = new Array(nCount);
+                                            // static stackSize = nCount;\
+                                            // static stackPosition = 0;\
+
+
 
 #endif

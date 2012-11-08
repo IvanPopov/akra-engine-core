@@ -361,6 +361,25 @@ module akra.math {
 	 * @inline
 	 */
 	export var lcm = nok;
+
+	// var pMat3Stack = new Array(100);
+	// var iMat3StackIndex = 0;
+
+	// function mat3 ();
+	// function mat3 (fValue: float);
+	// function mat3 (fValue?) {
+	// 	var pStorage: IMat3[] = Mat3.stack;
+	// 	var iIndex = Mat3.iIndex;
+	// 	var nMax = Mat3.nMax;
+	// }
+
+
+	export var vec2 = vec2;
+	export var vec3 = vec3;
+	export var vec4 = vec4;
+	export var quat4 = quat4;
+	export var mat3 = mat3;
+	export var mat4 = mat4;
 }
 
 module akra {

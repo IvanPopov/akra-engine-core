@@ -481,7 +481,7 @@ module akra.math {
 		    return m3fDestination;
 		};
 
-		isEqual(m3fMat: IMat3, fEps?: float = 0.): bool{
+		isEqual(m3fMat: IMat3, fEps: float = 0.): bool{
 			var pData1: Float32Array = this.data;
 		    var pData2: Float32Array = m3fMat.data;
 
@@ -516,7 +516,7 @@ module akra.math {
 		    return true;
 		};
 
-		isDiagonal(fEps?: float = 0.) : bool{
+		isDiagonal(fEps: float = 0.) : bool{
 			var pData: Float32Array = this.data;
 
 		    if(fEps == 0){
@@ -692,6 +692,62 @@ module akra.math {
 		   	}
 		};
 
+		row(iRow: int, v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+				v3fDestination = new Vec3();
+			}
+
+			var pData: Float32Array = this.data;
+
+			switch(iRow){
+				case 1:
+					v3fDestination.x = pData[__a11];
+					v3fDestination.y = pData[__a12];
+					v3fDestination.z = pData[__a13];
+					break;
+				case 2:
+					v3fDestination.x = pData[__a21];
+					v3fDestination.y = pData[__a22];
+					v3fDestination.z = pData[__a23];
+					break;
+				case 3:
+					v3fDestination.x = pData[__a31];
+					v3fDestination.y = pData[__a32];
+					v3fDestination.z = pData[__a33];
+					break;
+			}
+
+			return v3fDestination;
+		};
+
+		column(iColumn: int, v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+				v3fDestination = new Vec3();
+			}
+
+			var pData: Float32Array = this.data;
+
+			switch(iColumn){
+				case 1:
+					v3fDestination.x = pData[__a11];
+					v3fDestination.y = pData[__a21];
+					v3fDestination.z = pData[__a31];
+					break;
+				case 2:
+					v3fDestination.x = pData[__a12];
+					v3fDestination.y = pData[__a22];
+					v3fDestination.z = pData[__a32];
+					break;
+				case 3:
+					v3fDestination.x = pData[__a13];
+					v3fDestination.y = pData[__a23];
+					v3fDestination.z = pData[__a33];
+					break;
+			}
+
+			return v3fDestination;
+		};
+
 		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, m3fDestination?: IMat3): IMat3;
 		static fromYawPitchRoll(v3fAngles: IVec3, m3fDestination?: IMat3): IMat3;
 		static fromYawPitchRoll(fYaw?,fPitch?,fRoll?,m3fDestination?): IMat3{
@@ -740,8 +796,8 @@ module akra.math {
 		static fromXYZ(fX?, fY?, fZ?, m3fDestination?) : IMat3{
 			if(arguments.length <= 2){
 				//Vec3 + m3fDestination
-				var v3fAngles: IVec3 = arguments[0];
-				return Mat3.fromYawPitchRoll(v3fAngles.y,v3fAngles.x,v3fAngles.z,arguments[1]);
+				var v3fVec: IVec3 = arguments[0];
+				return Mat3.fromYawPitchRoll(v3fVec.y,v3fVec.x,v3fVec.z,arguments[1]);
 			}
 			else{
 				//fX fY fZ m3fDestination
@@ -752,6 +808,8 @@ module akra.math {
 				return Mat3.fromYawPitchRoll(fY, fX, fZ, arguments[3]);
 			}
 		};
+
+		ALLOCATE_STORAGE(Mat3,100);
     };
 };
 
