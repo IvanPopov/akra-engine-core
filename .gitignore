@@ -30,7 +30,7 @@ src2/*.png
 compiled/*.js
 build/build.bat
 
-node_modules/
+#src/node_modules/
 
 
 #visual

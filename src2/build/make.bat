@@ -38,10 +38,22 @@ echo "OUT: %output_file%"
 echo "FILES: %file%"
 
 
-
 mcpp -P -C -e utf8 -I %source_dir%/inc/ -j -+ -W 0 -k -D inline=/**@inline*/ %file% > %source_dir%/tmp.ts
 
-cd %source_dir% && node %current_dir%/tsc.js -c --target ES5 %current_dir%\lib.d.ts %current_dir%\fixes.d.ts %current_dir%\WebGL.d.ts tmp.ts --out %current_dir%/%output_file%
+cd %source_dir%
+::if exist tmp.ts DEL tmp.ts
+
+set filename=%output_file%
+for %%A in ("%filename%") do (
+    set output_folder=%%~dpA
+    set output_filename=%%~nxA
+)
+
+if not exist %output_folder% mkdir %output_folder%
+::%current_dir%\lib.d.ts
+node %current_dir%/tsc.js -c --target ES5  %current_dir%\fixes.d.ts %current_dir%\WebGL.d.ts tmp.ts --out %current_dir%/%output_file%
+
+
 ::DEL tmp.ts
 cd %current_dir%
 

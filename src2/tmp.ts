@@ -3393,7 +3393,7 @@ module akra.utils.test {
 
 		check(info.api.webWorker);
 
-		var pFile: IFile = io.fopen("test.txt");
+		var pFile: IFile = io.fopen("../../tests/common/file/test.txt");
 
 		check(pFile != null);
 
