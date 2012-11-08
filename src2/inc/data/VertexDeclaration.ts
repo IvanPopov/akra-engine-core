@@ -66,7 +66,7 @@ module akra.data {
 }
 
 module akra {
-	export var VertexDeclaration = util.VertexDeclaration;
+	export var VertexDeclaration = data.VertexDeclaration;
 	
 	createVertexDeclaration = function (pData?): IVertexDeclaration {
 		if (!(pData instanceof VertexDeclaration)) {

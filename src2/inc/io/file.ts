@@ -1,8 +1,6 @@
 #ifndef FILE_TS
 #define FILE_TS
 
-#include "Pathinfo.ts"
-
 #define CAN_CREATE(MODE) TEST_BIT(MODE, 1)
 #define CAN_READ(MODE) TEST_BIT(MODE, 0)
 #define CAN_WRITE(MODE) TEST_BIT(MODE, 1)
@@ -11,9 +9,13 @@
 #define IS_APPEND(MODE) TEST_BIT(MODE, 3)
 #define IS_TRUNC(MODE) TEST_BIT(MODE, 4)
 
+#include "util/util.ts"
+#include "info/info.ts"
+#include "FileThread.ts"
+
 module akra.io {
 
-	export enum EModes {
+	export enum EIO {
 		IN = 0x01,
 		OUT = 0x02,
 		ATE = 0x04,
@@ -24,53 +26,72 @@ module akra.io {
 		TEXT = 0x40
 	};
 
-	export filemode(sMode: string): int {
+	export function filemode(sMode: string): int {
 		switch (sMode.toLowerCase()) {
 	        case "a+t":
-	            return EModes.IN | EModes.OUT | EModes.APP | EModes.TEXT;
+	            return EIO.IN | EIO.OUT | EIO.APP | EIO.TEXT;
 	        case "w+t":
-	            return EModes.IN | EModes.OUT | EModes.TRUNC | EModes.TEXT;
+	            return EIO.IN | EIO.OUT | EIO.TRUNC | EIO.TEXT;
 	        case "r+t":
-	            return EModes.IN | EModes.OUT | EModes.TEXT;
+	            return EIO.IN | EIO.OUT | EIO.TEXT;
 
 	        case "at":
-	            return EModes.APP | EModes.TEXT;
+	            return EIO.APP | EIO.TEXT;
 	        case "wt":
-	            return EModes.OUT | EModes.TEXT;
+	            return EIO.OUT | EIO.TEXT;
 	        case "rt":
-	            return EModes.IN | EModes.TEXT;
+	            return EIO.IN | EIO.TEXT;
 
 	        case "a+b":
-	            return EModes.IN | EModes.OUT | EModes.APP | EModes.BIN;
+	            return EIO.IN | EIO.OUT | EIO.APP | EIO.BIN;
 	        case "w+b":
-	            return EModes.IN | EModes.OUT | EModes.TRUNC | EModes.BIN;
+	            return EIO.IN | EIO.OUT | EIO.TRUNC | EIO.BIN;
 	        case "r+b":
-	            return EModes.IN | EModes.OUT | EModes.BIN;
+	            return EIO.IN | EIO.OUT | EIO.BIN;
 
 	        case "ab":
-	            return EModes.APP | EModes.BIN;
+	            return EIO.APP | EIO.BIN;
 	        case "wb":
-	            return EModes.OUT | EModes.BIN;
+	            return EIO.OUT | EIO.BIN;
 	        case "rb":
-	            return EModes.IN | EModes.BIN;
+	            return EIO.IN | EIO.BIN;
 
 	        case "a+":
-	            return EModes.IN | EModes.OUT | EModes.APP;
+	            return EIO.IN | EIO.OUT | EIO.APP;
 	        case "w+":
-	            return EModes.IN | EModes.OUT | EModes.TRUNC;
+	            return EIO.IN | EIO.OUT | EIO.TRUNC;
 	        case "r+":
-	            return EModes.IN | EModes.OUT;
+	            return EIO.IN | EIO.OUT;
 
 	        case "a":
-	            return EModes.APP | EModes.OUT;
+	            return EIO.APP | EIO.OUT;
 	        case "w":
-	            return EModes.OUT;
+	            return <number>EIO.OUT;
 	        case "r":
 	        default:
-	            return EModes.IN;
+	            return <number>EIO.IN;
 	    }
 	}
 
+
+	// function _fopen (sUri: string, iMode?: int): IFile;
+	// function _fopen (sUri: string, sMode?: int): IFile;
+	// function _fopen (pUri: IURI, iMode: int): IFile;
+	// function _fopen (pUri: IURI, sMode: string): IFile;
+
+	function _fopen(sUri: any, pMode: any = EIO.IN): IFile {
+		var iMode: int = isString(pMode)? filemode(pMode): pMode;
+
+		if (info.api.webWorker) {
+			return new FileThread(<string>sUri, iMode);
+		}
+		else {
+			warning("FILES support disabled.");
+			return null;
+		}
+	}
+
+	export var fopen = _fopen;
 }
 
-#endif FILE_TS
+#endif

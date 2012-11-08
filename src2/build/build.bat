@@ -1,1 +1,1 @@
-make.bat -D ../ -o ../bin/main.ts ../main.ts
+make.bat -D ../ -o ../bin/main.js ../main.ts

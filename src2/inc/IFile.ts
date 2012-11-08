@@ -3,9 +3,14 @@
 
 module akra {
 
+	export interface IFileMeta {
+		lastModifiedDate: string;
+		size: uint;
+	}
+
 	export interface IFile {
 		readonly path: string;
-		name: string;
+		readonly name: string;
 		mode: int;
 
 		onread: Function;
@@ -17,9 +22,9 @@ module akra {
 
 		open(sFilename: string, iMode: int, fnCallback?: Function): void;
 		open(sFilename: string, sMode: string, fnCallback?: Function): void;
-		open(sFilename: string, fnCallback?: Functionn): void;
+		open(sFilename: string, fnCallback?: Function): void;
 		open(iMode: int, fnCallback?: Function): void;
-		open(sMode: string, fnCallback?: Function): void;
+		open(fnCallback?: Function): void;
 
 		close(): void;
 		clear(fnCallback?: Function): void;
@@ -38,6 +43,7 @@ module akra {
 
 		isOpened(): bool;
 		isExists(fnCallback?: Function): void;
+		isLocal(): bool;
 
 		getMetaData(fnCallback: Function): void;
 	}

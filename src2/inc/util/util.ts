@@ -22,12 +22,13 @@ module akra.util {
 
 	export var uri = (sUri:string): IURI => new util.URI(sUri);
 
-	export var pathinfo: (sPath: string) => IPathinfo;
-	export var pathinfo: (pPath: IPathinfo) => IPathinfo;
+	// export var pathinfo: (sPath: string) => IPathinfo;
+	// export var pathinfo: (pPath: IPathinfo) => IPathinfo;
+	export var pathinfo: (pPath?) => IPathinfo;
 
-	pathinfo = (pPath?): IPathinfo => new Pathinfo(pPath);
-
-	
+	pathinfo = function (pPath?): IPathinfo {
+		return new Pathinfo(pPath);
+	}
 }
 
 #endif

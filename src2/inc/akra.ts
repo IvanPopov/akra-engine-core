@@ -14,6 +14,7 @@
 #include "info/info.ts"
 
 #include "util/util.ts"
+#include "io/file.ts"
 
 
 #include "controls/KeyMap.ts"
@@ -22,8 +23,8 @@
 #include "gui/Font2d.ts"
 #include "gui/String2d.ts"
 
-#include "util/VertexElement.ts"
-#include "util/VertexDeclaration.ts"
+#include "data/VertexElement.ts"
+#include "data/VertexDeclaration.ts"
 
 
 #include "core/pool/ResourceCode.ts"

@@ -12,7 +12,7 @@ module akra {
 
 		set(sPath: string): void;
 		set(pPath: IPathinfo): void;
-		isAbsolute(): booll
+		isAbsolute(): bool;
 
 		toString(): string;
 	}
