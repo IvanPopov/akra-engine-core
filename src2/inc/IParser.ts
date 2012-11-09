@@ -41,7 +41,8 @@ module akra.util {
         k_AllNode = 0x0001,
         k_Negate = 0x0002,
         k_Add = 0x0004,
-        k_Optimize = 0x0008
+        k_Optimize = 0x0008,
+        k_DebugMode = 0x0010
     };
 
 
@@ -85,6 +86,8 @@ module akra.util {
         addPunctuator(sValue: string, sName?: string): string;
         addKeyword(sValue: string, sName: string): string;
 
+        getTerminalValueByName(sName: string): string;
+
         init(sSource: string): void;
 
         getNextToken(): IToken;
@@ -96,7 +99,7 @@ module akra.util {
 
         returnCode(pNode: IParseNode): string;
 
-        init(sGrammar: string, eType?: EParserType, eMode?: EParseMode): bool;
+        init(sGrammar: string, eMode?: EParseMode, eType?: EParserType): bool;
 
         parse(sSource: string, isSync?: bool, fnFinishCallback?: IFinishFunc, pCaller?: any): EParserCode;
 
@@ -105,6 +108,9 @@ module akra.util {
 
         pause(): EParserCode;
         resume(): EParserCode;
+
+        printStates(isPrintOnlyBase?: bool): void;
+        printState(iStateIndex: uint, isPrintOnlyBase?: bool): void; 
     }
 }
 

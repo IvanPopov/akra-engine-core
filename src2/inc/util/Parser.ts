@@ -9,15 +9,6 @@
 
 module akra.util {
 
-    enum EOperationType {
-        k_Error = 100,
-        k_Shift,
-        k_Reduce,
-        k_Success,
-        k_Pause,
-        k_Ok
-    }
-
     #define PARSER_GRAMMAR_ADD_OPERATION 2001
     #define PARSER_GRAMMAR_ADD_STATE_LINK 2002
     #define PARSER_GRAMMAR_UNEXPECTED_SYMBOL 2003
@@ -28,8 +19,33 @@ module akra.util {
     #define LEXER_UNKNOWN_TOKEN 2101
     #define LEXER_BAD_TOKEN 2102
 
+    akra.logger.registerCode(PARSER_GRAMMAR_ADD_OPERATION, "Grammar not LALR(1)! Cannot to generate syntax table. Add operation error.\n" +
+                                                           "Conflict in state with index: {stateIndex}. With grammar symbol: \"{grammarSymbol}\"\n" +
+                                                           "Old operation: {oldOperation}\n" + 
+                                                           "New operation: {newOperation}\n" +
+                                                           "For more info init parser in debug-mode and see syntax table and list of states.");
+
+    akra.logger.registerCode(PARSER_GRAMMAR_ADD_STATE_LINK, "Grammar not LALR(1)! Cannot to generate syntax table. Add state link error.\n" +
+                                                            "Conflict in state with index: {stateIndex}. With grammar symbol: \"{grammarSymbol}\"\n" +
+                                                            "Old next state: {oldNextStateIndex}\n" +
+                                                            "New next state: {newNextStateIndex}\n" +
+                                                            "For more info init parser in debug-mode and see syntax table and list of states.");
+
+    akra.logger.registerCode(PARSER_GRAMMAR_UNEXPECTED_SYMBOL, "Grammar error. Can`t generate rules from grammar\n" +
+                                                               "Unexpected symbol: {unexpectedSymbol}\n" +
+                                                               "Expected: {expectedSymbol}");
+
+    akra.logger.registerCode(PARSER_GRAMMAR_BAD_ADDITIONAL_FUNC_NAME, "Grammar error. Empty additional function name.");
+    akra.logger.registerCode(PARSER_GRAMMAR_BAD_KEYWORD, "Grammar error. Bad keyword: {badKeyword}\n" +
+                                                         "All keyword must be define in lexer rule block.");
+
+    akra.logger.registerCode(PARSER_SYNTAX_ERROR, "Syntax error during parsing. Token: {tokenValue}\n" +
+                                                  "Line: {line}. Column: {column}.");
+
     akra.logger.registerCode(LEXER_UNKNOWN_TOKEN, "Unknown token: {tokenValue}");
     akra.logger.registerCode(LEXER_BAD_TOKEN, "Bad token: {tokenValue}");
+
+
 
     function sourceLocationToString(pLocation: util.ISourceLocation): string {
         var sLocation:string = "[" + pLocation.file + ":" + pLocation.line.toString() + "]: ";
@@ -56,6 +72,15 @@ module akra.util {
     akra.logger.setCodeFamilyRoutine("ParserSyntaxErrors", syntaxErrorLogRoutine, util.ELogLevel.ERROR);
 
     //akra.logger
+
+    enum EOperationType {
+        k_Error = 100,
+        k_Shift,
+        k_Reduce,
+        k_Success,
+        k_Pause,
+        k_Ok
+    }
 
     enum ETokenType {
         k_NumericLiteral = 1,
@@ -465,7 +490,7 @@ module akra.util {
             }
         }
 
-        addNextState(sSymbol: string, pState: IState) {
+        addNextState(sSymbol: string, pState: IState): bool {
             if (isDef(this._pNextStates[sSymbol])) {
                 return false;
             }
@@ -676,6 +701,24 @@ module akra.util {
             return sName;
         }
 
+        getTerminalValueByName(sName: string): string{
+            var sValue: string;
+            
+            for(sValue in this._pPunctuatorsMap){
+                if(this._pPunctuatorsMap[sValue] === sName){
+                    return sValue;
+                }
+            }
+
+            for(sValue in this._pKeywordsMap){
+                if(this._pKeywordsMap[sValue] === sName){
+                    return sValue;
+                }
+            }
+
+            return sName;
+        }
+
         init(sSource: string): void {
             this._sSource = sSource;
             this._iLineNumber = 0;
@@ -743,6 +786,8 @@ module akra.util {
             var pLogEntity: ILoggerEntity = <ILoggerEntity>{code: eCode, info: pInfo, location: pLocation};
 
             akra.logger["error"](pLogEntity);
+
+            throw new Error(eCode);
         }
 
         private identityTokenType(): ETokenType {
@@ -1339,7 +1384,7 @@ module akra.util {
             return "";
         }
 
-        init(sGrammar: string, eType?: EParserType = EParserType.k_LALR, eMode?: EParseMode = EParseMode.k_AllNode): bool {
+        init(sGrammar: string, eMode?: EParseMode = EParseMode.k_AllNode, eType?: EParserType = EParserType.k_LALR): bool {
             try {
                 this._eType = eType;
                 this._pLexer = new Lexer(this);
@@ -1347,10 +1392,13 @@ module akra.util {
                 this.generateRules(sGrammar);
                 this.buildSyntaxTable();
                 this.generateFunctionByStateMap();
-                this.clearMem();
+                if(!bf.testAll(eMode, EParseMode.k_DebugMode)){
+                    this.clearMem();
+                }
                 return true;
             }
             catch (e) {
+                // error("Could`not initialize parser. Error with code has occurred: " + e.message + ". See log for more info.");
                 return false;
             }
         }
@@ -1453,7 +1501,7 @@ module akra.util {
                     return EParserCode.k_Ok;
                 }
                 else {
-                    this._error(PARSER_SYNTAX_ERROR);
+                    this._error(PARSER_SYNTAX_ERROR, pToken);
                     this._sFileName = "stdin";
                     if (!isNull(this._fnFinishCallback)) {
                         this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error);
@@ -1484,10 +1532,122 @@ module akra.util {
             return this.resumeParse();
         }
 
+        printStates(isBaseOnly?: bool = true): void {
+            if(!isDef(this._pStateList)){
+                log("It`s impossible to print states. You must init parser in debug-mode");
+                return;
+            }
+            var sMsg: string = "\n" + this.statesToString(isBaseOnly);
+            log(sMsg);
+        }
 
-        private _error(eCode: uint): void {
-            log(this.printStates(true));
-            log("Error with code", eCode);
+        printState(iStateIndex: uint, isBaseOnly?: bool = true): void {
+            if(!isDef(this._pStateList)){
+                log("It`s impossible to print states. You must init parser in debug-mode");
+                return;
+            }
+            
+            var pState:IState = this._pStateList[iStateIndex];
+            if(!isDef(pState)){
+                log("Can not print stete with index: " + iStateIndex.toString());
+                return;
+            }
+            
+            var sMsg: string = "\n" + pState.toString(isBaseOnly);
+            log(sMsg);
+        }
+
+        private _error(eCode: uint, pErrorInfo: any): void {
+            var pLocation: ISourceLocation = <ISourceLocation>{};
+            
+            var pInfo:Object = {
+                tokenValue: null,
+                line: null,
+                column: null,
+                stateIndex: null,
+                oldNextStateIndex: null,
+                newNextStateIndex: null,
+                grammarSymbol: null,
+                stateIndex: null,
+                newOperation: null,
+                oldOperation: null,
+                expectedSymbol: null,
+                unexpectedSymbol: null,
+                badKeyword: null
+            };
+
+            var pLogEntity: ILoggerEntity = <ILoggerEntity>{code: eCode, info: pInfo, location: pLocation};
+
+            if(eCode === PARSER_SYNTAX_ERROR){
+                var pToken: IToken = <IToken>pErrorInfo;
+                var iLine: uint = pToken.line;
+                var iColumn: uint = pToken.start;
+
+                pInfo.tokenValue = pToken.value;
+                pInfo.line = iLine;
+                pInfo.column = iColumn;
+
+                pLocation.file = this.getParseFileName();
+                pLocation.line = iLine;
+            }
+            else if(eCode === PARSER_GRAMMAR_ADD_OPERATION){
+                var iStateIndex: uint = pErrorInfo.stateIndex;
+                var sSymbol: string = pErrorInfo.grammarSymbol;
+                var pOldOperation: IOperation = pErrorInfo.oldOperation;
+                var pNewOperation: IOperation = pErrorInfo.newOperation;
+
+                pInfo.stateIndex = iStateIndex;
+                pInfo.grammarSymbol = sSymbol;
+                pInfo.oldOperation = this.operationToString(pOldOperation);
+                pInfo.newOperation = this.operationToString(pNewOperation);
+
+                pLocation.file = "GRAMMAR";
+                pLocation.line = 0;
+            }
+            else if(eCode === PARSER_GRAMMAR_ADD_STATE_LINK){
+                var iStateIndex: uint = pErrorInfo.stateIndex;
+                var sSymbol: string = pErrorInfo.grammarSymbol;
+                var iOldNextStateIndex: uint = pErrorInfo.oldNextStateIndex;
+                var iNewNextStateIndex: uint = pErrorInfo.newNextStateIndex;
+
+                pInfo.stateIndex = iStateIndex;
+                pInfo.grammarSymbol = sSymbol;
+                pInfo.oldNextStateIndex = iOldNextStateIndex;
+                pInfo.newNextStateIndex = iNewNextStateIndex;
+
+                pLocation.file = "GRAMMAR";
+                pLocation.line = 0;    
+            }
+            else if(eCode === PARSER_GRAMMAR_UNEXPECTED_SYMBOL){
+                var iLine: uint = pErrorInfo.grammarLine;
+                var sExpectedSymbol: string = pErrorInfo.expectedSymbol;
+                var sUnexpectedSymbol: string = pErrorInfo.unexpectedSymbol;
+
+                pInfo.expectedSymbol = sExpectedSymbol;
+                pInfo.unexpectedSymbol = sExpectedSymbol;
+
+                pLocation.file = "GRAMMAR";
+                pLocation.line = iLine || 0;
+            }
+            else if(eCode === PARSER_GRAMMAR_BAD_ADDITIONAL_FUNC_NAME){
+                var iLine: uint = pErrorInfo.grammarLine;    
+
+                pLocation.file = "GRAMMAR";
+                pLocation.line = iLine || 0;
+            }
+            else if(eCode === PARSER_GRAMMAR_BAD_KEYWORD){
+                var iLine: uint = pErrorInfo.grammarLine;    
+                var sBadKeyword: string = pErrorInfo.badKeyword;
+
+                pInfo.badKeyword = sBadKeyword;
+
+                pLocation.file = "GRAMMAR";
+                pLocation.line = iLine || 0;
+            }
+
+            akra.logger["error"](pLogEntity);
+
+            throw new Error(eCode);
         }
 
         private clearMem(): void {
@@ -1571,9 +1731,10 @@ module akra.util {
                 pSyntaxTable[iIndex] = <IOperationMap>{};
             }
             if (isDef(pSyntaxTable[iIndex][sSymbol])) {
-                this._error(PARSER_GRAMMAR_ADD_OPERATION);
-                //this._error("Grammar is not LALR(1)!", "State:", this._pStates[iIndex], "Symbol:", sSymbol, ":",
-                //            "Old value:", this._ppSynatxTable[iIndex][sSymbol], "New Value: ", pOperation);
+                this._error(PARSER_GRAMMAR_ADD_OPERATION, {stateIndex: iIndex, 
+                                                           grammarSymbol: this.convertGrammarSymbol(sSymbol), 
+                                                           oldOperation: this._pSyntaxTable[iIndex][sSymbol],
+                                                           newOperation: pOperation});
             }
             pSyntaxTable[iIndex][sSymbol] = pOperation;
         }
@@ -1581,9 +1742,10 @@ module akra.util {
         private addStateLink(pState: IState, pNextState: IState, sSymbol: string): void {
             var isAddState: bool = pState.addNextState(sSymbol, pNextState);
             if (!isAddState) {
-                this._error(PARSER_GRAMMAR_ADD_STATE_LINK);
-                //this._error("AddlinkState: Grammar is not LALR(1)! Rewrite link!", "State", pState, "Link to", pNextState,
-                //    "Symbol", sSymbol);
+                this._error(PARSER_GRAMMAR_ADD_STATE_LINK, {stateIndex: pState.index,
+                                                            oldNextStateIndex: pState.getNextStateBySymbol(sSymbol),
+                                                            newNextStateIndex: pNextState.index,
+                                                            grammarSymbol: this.convertGrammarSymbol(sSymbol)});
             }
         }
 
@@ -1790,8 +1952,9 @@ module akra.util {
 
                             //TERMINALS
                         if (pTempRule[2][0] !== pTempRule[2][pTempRule[2].length - 1]) {
-                            this._error(PARSER_GRAMMAR_UNEXPECTED_SYMBOL);
-                            //this._error("Can`t generate rules from grammar! Unexpected symbol! Must be")
+                            this._error(PARSER_GRAMMAR_UNEXPECTED_SYMBOL, {unexpectedSymbol: pTempRule[2][pTempRule[2].length - 1],
+                                                                           expectedSymbol: pTempRule[2][0],
+                                                                           grammarLine: i});
                         }
 
                         pTempRule[2] = pTempRule[2].slice(1, pTempRule[2].length - 1);
@@ -1854,8 +2017,7 @@ module akra.util {
                     }
                     if (pTempRule[j] === FLAG_RULE_FUNCTION) {
                         if ((!pTempRule[j + 1] || pTempRule[j + 1].length === 0)) {
-                            this._error(PARSER_GRAMMAR_BAD_ADDITIONAL_FUNC_NAME);
-                            //this._error("Can`t generate rule for grammar! Addititional functionhas has bad name");
+                            this._error(PARSER_GRAMMAR_BAD_ADDITIONAL_FUNC_NAME, {grammarLine: i});
                         }
 
                         var pFuncInfo: IAdditionalFuncInfo = <IAdditionalFuncInfo>{name: pTempRule[j + 1], 
@@ -1867,11 +2029,13 @@ module akra.util {
                     }
                     if (pTempRule[j][0] === "'" || pTempRule[j][0] === "\"") {
                         if (pTempRule[j].length !== 3) {
-                            this._error(PARSER_GRAMMAR_BAD_KEYWORD);
-                            //this._error("Can`t generate rules from grammar! Keywords must be rules");
+                            this._error(PARSER_GRAMMAR_BAD_KEYWORD, {badKeyword: pTempRule[j],
+                                                                     grammarLine: i});
                         }
                         if (pTempRule[j][0] !== pTempRule[j][2]) {
-                            this._error(PARSER_GRAMMAR_UNEXPECTED_SYMBOL);
+                            this._error(PARSER_GRAMMAR_UNEXPECTED_SYMBOL, {unexpectedSymbol: pTempRule[j][2],
+                                                                           expectedSymbol: pTempRule[j][0],
+                                                                           grammarLine: i});
                             //this._error("Can`t generate rules from grammar! Unexpected symbol! Must be");
                         }
                         var sName: string = this._pLexer.addPunctuator(pTempRule[j][1]);
@@ -2275,23 +2439,6 @@ module akra.util {
             return num;
         }
 
-        private printStates(isBase: bool): string {
-            var sMsg: string = "";
-            var i: uint = 0;
-
-            for (i = 0; i < this._pStateList.length; i++) {
-                sMsg += this.printState(this._pStateList[i], isBase);
-                sMsg += " ";
-            }
-
-            return sMsg;
-        }
-
-        private printState(pState: IState, isBase: bool): string {
-            var sMsg: string = pState.toString(isBase);
-            return sMsg;
-        }
-
         private printExpectedTable(): string {
             var i: string, j: string;
             var sMsg: string = "";
@@ -2493,9 +2640,8 @@ module akra.util {
                     return EParserCode.k_Ok;
                 }
                 else {
-                    this._error(PARSER_SYNTAX_ERROR);
+                    this._error(PARSER_SYNTAX_ERROR, pToken);
                     this._sFileName = "stdin";
-                    //log("Error!!!", pToken);
                     if (isDef(this._fnFinishCallback)) {
                         this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error);
                     }
@@ -2506,6 +2652,57 @@ module akra.util {
             catch (e) {
                 this._sFileName = "stdin";
                 return EParserCode.k_Error;
+            }
+        }
+
+        private statesToString(isBaseOnly?: bool = true): string {
+            if(!isDef(this._pStateList)){
+                return null;
+            }
+
+            var sMsg: string = "";
+            var i: uint = 0;
+
+            for (i = 0; i < this._pStateList.length; i++) {
+                sMsg += this._pStateList[i].toString(isBaseOnly);
+                sMsg += " ";
+            }
+
+            return sMsg;
+        }
+
+        private operationToString(pOperation: IOperation): string{
+            var sOperation: string;
+
+            switch(pOperation.type){
+                case EOperationType.k_Shift:
+                    sOperation = "SHIFT to state " + pOperation.index.toString();
+                    break;
+                case EOperationType.k_Reduce:
+                    sOperation = "REDUCE by rule { " + this.ruleToString(pOperation.rule) + " }";
+                    break;
+                case EOperationType.k_Success:
+                    sOperation = "SUCCESS";
+                    break;
+            }
+
+            return sOperation;
+        }
+
+        private ruleToString(pRule: IRule): string {
+            var sRule: string;
+
+            sRule = pRule.left + " : " + pRule.right.join(" ");
+
+            return sRule;
+        }
+
+        private convertGrammarSymbol(sSymbol: string): string{
+            if(!this.isTerminal(sSymbol)){
+                return sSymbol;
+            }
+            else{
+                return this._pLexer.getTerminalValueByName(sSymbol);
             }
         }
 

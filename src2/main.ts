@@ -13,7 +13,7 @@ var sGrammar:string = "S : E\n"			+
 					  "E : T '+' --F testFunc1 E\n"	+
 					  "E : T '-' E\n"	+
 					  "E : T\n"			+
-					  "T : F '*' T\n"	+
+					  "T : F '*' T \n"	+
 					  "T : F '/' T\n"	+
 					  "T : F\n"			+
 					  "F : T_UINT\n"	+
@@ -28,9 +28,9 @@ var sGrammar:string = "S : E\n"			+
 // // 					  "F : T_UINT\n"	+
 // // 					  "F : '(' E ')' --F testFunc4\n";
 
-x.init(sGrammar);
+x.init(sGrammar, akra.util.EParseMode.k_AllNode | akra.util.EParseMode.k_DebugMode);
 x.setParseFileName("/parse.test");
-x.parse("2+' 3");
+x.parse("2+3");
 log(x);
 
 //error(20, akra.logger);
