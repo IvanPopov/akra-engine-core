@@ -54,9 +54,12 @@ module akra {
     	renderMethodPool: IResourcePool;
     	modelPool: IResourcePool;
     	imagePool: IResourcePool;			
-    	shaderProgramPool: IResourcePool;		//ex: private
-    	effectPool: IResourcePool;				//ex: private
-    	componentPool: IResourcePool;			//ex: private
+        //ex: private
+    	shaderProgramPool: IResourcePool;		
+        //ex: private
+    	effectPool: IResourcePool;				
+        //ex: private
+    	componentPool: IResourcePool;			
 
     	/** Регистрируется пул ресурсов опредленного типа в менеджере русурсов */
     	registerResourcePool(pCode: IResourceCode, pPool: IResourcePool): void;

@@ -6,6 +6,7 @@
 #include "io/file.ts"
 #include "FileThreadManager.ts"
 #include "bf/bitflags.ts"
+#include "math/math.ts"
 
 module akra.io {
 

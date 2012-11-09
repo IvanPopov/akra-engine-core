@@ -73,7 +73,6 @@ module akra.io {
 	    }
 	}
 
-
 	// function _fopen (sUri: string, iMode?: int): IFile;
 	// function _fopen (sUri: string, sMode?: int): IFile;
 	// function _fopen (pUri: IURI, iMode: int): IFile;

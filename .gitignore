@@ -39,6 +39,7 @@ build/build.bat
 #*.sln
 #*.csproj
 *.user
+*.nw
 #*.css
 
 src/*.htm

@@ -18,6 +18,8 @@
 #define TM_THREAD_MAX_IDLE_TIME 30 
 #endif
 
+#include "IManager.ts"
+
 module akra {
 
 	IFACE(IThread);

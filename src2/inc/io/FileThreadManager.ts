@@ -4,11 +4,11 @@
 #include "util/ThreadManager.ts"
 
 #ifndef FTM_DEFAULT_LOCAL_THREAD
-#define FTM_DEFAULT_LOCAL_THREAD "scripts/LocalFile.thread.js"
+#define FTM_DEFAULT_LOCAL_THREAD "LocalFile.thread.js"
 #endif
 
 #ifndef FTM_DEFAULT_REMOTE_THREAD
-#define FTM_DEFAULT_REMOTE_THREAD "scripts/RemoteFile.thread.js"
+#define FTM_DEFAULT_REMOTE_THREAD "RemoteFile.thread.js"
 #endif
 
 #define LocalFileThreadManager() util.ThreadManager(FTM_DEFAULT_LOCAL_THREAD)

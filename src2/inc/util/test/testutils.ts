@@ -11,7 +11,7 @@ module akra.utils.test {
 		pTestCondList.unshift(pCond);
 	}
 
-	interface ITestCond {
+	export interface ITestCond {
 		description: string;
 		toString(): string;
 		verify(pArgv: any[]): bool;
@@ -24,6 +24,14 @@ module akra.utils.test {
 		}
 
 		toString(): string {
+			return this.sDescription;
+		}
+
+		verify(pArgv: any[]) {
+			return false;
+		}
+
+		get description(): string {
 			return this.sDescription;
 		}
 	}
@@ -48,7 +56,7 @@ module akra.utils.test {
 		var pTest: ITestCond = pTestCondList.pop();
 
 		if (!pTest) {
-			console.log((new Error).stack);
+			console.log((<any>(new Error)).stack);
 			console.warn("chech() without condition...");
 			return;
 		}
@@ -80,7 +88,7 @@ module akra.utils.test {
 			Test.pTestList.push(pManifest);
 		}
 
-		static pTestList: Test[] = [];
+		static pTestList: ITestManifest[] = [];
 		static run(): void {
 			var pTestList = Test.pTestList;
 			for (var i: int = 0; i < pTestList.length; ++ i) {

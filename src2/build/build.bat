@@ -1,1 +1,1 @@
-make.bat -D ../ -o ../bin/main.js ../main.ts
+node make.js inc/akra.ts -o ./bin/akra.js --build ../ -t CORE
