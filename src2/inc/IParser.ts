@@ -55,6 +55,19 @@ module akra.util {
     export interface IFinishFunc {
         (eCode: EParserCode): void;
     }
+
+    export enum EOperationType {
+        k_Error = 100,
+        k_Shift,
+        k_Reduce,
+        k_Success,
+        k_Pause,
+        k_Ok
+    }
+
+    export interface IRuleFunction {
+        (): EOperationType;
+    }
     
     export interface IParseNode {
         children: IParseNode[];
@@ -78,6 +91,9 @@ module akra.util {
         toString(): string;
 
         clone(): IParseTree;
+
+        getNodes(): IParseNode[];
+        getLastNode(): IParseNode;
 
         root: IParseNode;
     }

@@ -41,11 +41,9 @@ echo "FILES: %file%"
 
 mcpp -P -C -e utf8 -I %source_dir%/inc/ -j -+ -W 0 -k -D inline=/**@inline*/ %file% > %source_dir%/tmp.ts
 
-cd %source_dir% && node %current_dir%/tsc.js -c --target ES5 %current_dir%\lib.d.ts %current_dir%\fixes.d.ts %current_dir%\WebGL.d.ts tmp.ts --out %current_dir%/%output_file%
+cd %source_dir% && node %current_dir%/tsc.js -c --target ES5 %current_dir%\fixes.d.ts %current_dir%\WebGL.d.ts tmp.ts --out %current_dir%/%output_file%
 ::DEL tmp.ts
 cd %current_dir%
-
-
 
 IF NOT %file%=="" GOTO end
 

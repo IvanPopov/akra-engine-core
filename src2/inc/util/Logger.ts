@@ -7,31 +7,31 @@
 
 module akra.util {
  
-    interface ILogRoutineMap {
+    export interface ILogRoutineMap {
         [eLogLevel: uint]: ILogRoutineFunc;
     }
 
-    interface ICodeFamily {
+    export  interface ICodeFamily {
         familyName: string;
         codeMin: uint;
         codeMax: uint;
     }
 
-    interface ICodeFamilyMap{
+    export  interface ICodeFamilyMap{
         [familyName: string]: ICodeFamily;
     }
 
-    interface ICodeInfo{
+    export interface ICodeInfo{
         code: uint;
         message: string;
         familyName: string;
     }
 
-    interface ICodeInfoMap{
+    export interface ICodeInfoMap{
         [code: uint] : ICodeInfo;
     }
 
-    interface ICodeFamilyRoutineDMap{
+    export interface ICodeFamilyRoutineDMap{
         [familyName: string]: ILogRoutineMap;
     }
 
@@ -53,7 +53,7 @@ module akra.util {
         static private _sDefaultFamilyName: string = "CodeFamily";
 
         private _eUnknownCode: uint;
-        private _sUnknownMessage: sMessage;
+        private _sUnknownMessage: string;
 
         constructor () {
             this._eUnknownCode = 0;
@@ -233,8 +233,6 @@ module akra.util {
             if (bf.testAll(eLevel, ELogLevel.CRITICAL)) {
                this._pGeneralRoutineMap[ELogLevel.CRITICAL] = fnLogRoutine;
             }          
-
-            return true;
         }
 
         setSourceLocation(sFile: string, iLine: uint): void;
@@ -284,7 +282,7 @@ module akra.util {
         }
 
         info(...pArgs: any[]): void {
-            if(!bf.testAll(this._eLogLevel, ELogLevel.INFO)){
+            if(!bf.testAll(this._eLogLevel, ELogLevel.INFORMATION)){
                 return;
             }
 
@@ -292,7 +290,7 @@ module akra.util {
             var fnLogRoutine: ILogRoutineFunc;
 
             pLogEntity = this.prepareLogEntity(pArgs);
-            fnLogRoutine = this.getCodeRoutineFunc(pLogEntity.code, ELogLevel.INFO);
+            fnLogRoutine = this.getCodeRoutineFunc(pLogEntity.code, ELogLevel.INFORMATION);
 
             if(isNull(fnLogRoutine)){
                 return;
@@ -460,7 +458,7 @@ module akra.util {
                         else{
                             pInfo = new Array(pArgs.length - 1);
                             var i: uint = 0;
-                            for(i = 0; i < pArguments.length; i++){
+                            for(i = 0; i < pInfo.length; i++){
                                 pInfo[i] = pArgs[i+1];
                             }
                         }

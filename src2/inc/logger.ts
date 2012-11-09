@@ -57,13 +57,12 @@ module akra {
     
 
     logger.setLogRoutine(logRoutine, util.ELogLevel.LOG | 
-                                     util.ELogLevel.INFO);
+                                     util.ELogLevel.INFORMATION);
 
     logger.setLogRoutine(warningRoutine, util.ELogLevel.WARNING);
     
     logger.setLogRoutine(errorRoutine, util.ELogLevel.ERROR | 
-                                       util.ELogLevel.CRITICAL | 
-                                       util.ELogLevel.ASSERT);
+                                       util.ELogLevel.CRITICAL);
 
 }
 

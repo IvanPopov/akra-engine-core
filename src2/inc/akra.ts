@@ -175,5 +175,6 @@
 
 #include "util/Parser.ts"
 #include "util/Logger.ts"
+#include "util/EffectParser.ts"
 
 #endif

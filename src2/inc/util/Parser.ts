@@ -73,16 +73,7 @@ module akra.util {
 
     //akra.logger
 
-    enum EOperationType {
-        k_Error = 100,
-        k_Shift,
-        k_Reduce,
-        k_Success,
-        k_Pause,
-        k_Ok
-    }
-
-    enum ETokenType {
+    export enum ETokenType {
         k_NumericLiteral = 1,
         k_CommentLiteral,
         k_StringLiteral,
@@ -94,13 +85,13 @@ module akra.util {
         k_End
     }
 
-    interface IOperation {
+    export interface IOperation {
         type: EOperationType;
         rule?: IRule;
         index?: uint;
     }
 
-    interface IItem {
+    export interface IItem {
         isEqual(pItem: IItem, eType?: EParserType): bool;
         isParentItem(pItem: IItem): bool;
         isChildItem(pItem: IItem): bool;
@@ -123,7 +114,7 @@ module akra.util {
         length: uint;
     }
 
-    interface IState {
+    export interface IState {
 
         hasItem(pItem: IItem, eType: EParserType): IItem;
         hasParentItem(pItem: IItem): IItem;
@@ -152,7 +143,7 @@ module akra.util {
         nextStates: IStateMap;
     }
 
-    interface IToken {
+    export interface IToken {
         value: string;
         start: uint;
         end: uint;
@@ -162,7 +153,7 @@ module akra.util {
         type?: ETokenType;
     }
 
-    interface IStateMap {
+    export interface IStateMap {
         [index: string]: IState;
     }
 
@@ -600,6 +591,14 @@ module akra.util {
             return pTree;
         }
 
+        inline getNodes(): IParseNode[]{
+            return this._pNodes;
+        }
+
+        inline getLastNode(): IParseNode{
+            return this._pNodes[this._pNodes.length - 1];
+        }
+
         private addLink(pParent: IParseNode, pNode: IParseNode): void {
             if (!pParent.children) {
                 pParent.children = <IParseNode[]>[];
@@ -787,7 +786,7 @@ module akra.util {
 
             akra.logger["error"](pLogEntity);
 
-            throw new Error(eCode);
+            throw new Error(eCode.toString());
         }
 
         private identityTokenType(): ETokenType {
@@ -1223,38 +1222,34 @@ module akra.util {
     }
 
 
-    interface IOperationMap {
+    export interface IOperationMap {
         [grammarSymbol: string]: IOperation;
         [stateIndex: uint]: IOperation;
     }
 
-    interface IOperationDMap {
+    export interface IOperationDMap {
         [stateIndex: uint]: IOperationMap;
     }
 
-    interface IRuleMap {
+    export interface IRuleMap {
         [ruleIndex: uint]: IRule;
         [ruleName: string]: IRule;
     }
 
-    interface IRuleDMap {
+    export interface IRuleDMap {
         [ruleIndex: uint]: IRuleMap;
         [ruleName: string]: IRuleMap;
     }
 
-    interface IRuleFunction {
-        (): EOperationType;
+    export interface IRuleFunctionMap {
+        [grammarSymbolOrFuncName: string]: IRuleFunction;
     }
 
-    interface IRuleFunctionMap {
-        [grammarSymbol: string]: IRuleFunction;
-    }
-
-    interface IRuleFunctionDMap {
+    export interface IRuleFunctionDMap {
         [stateIndex: uint]: IRuleFunctionMap;
     }
 
-    interface IAdditionalFuncInfo{
+    export interface IAdditionalFuncInfo{
         name: string;
         position: uint;
         rule: IRule;
@@ -1398,6 +1393,7 @@ module akra.util {
                 return true;
             }
             catch (e) {
+                debug_print(e.stack);
                 // error("Could`not initialize parser. Error with code has occurred: " + e.message + ". See log for more info.");
                 return false;
             }
@@ -1511,6 +1507,7 @@ module akra.util {
 
             }
             catch (e) {
+                // debug_print(e.stack);
                 this._sFileName = "stdin";
                 return EParserCode.k_Error;
             }
@@ -1557,10 +1554,37 @@ module akra.util {
             log(sMsg);
         }
 
+        protected addAdditionalFunction(sFuncName: string, fnRuleFunction: IRuleFunction): void {
+            if(isNull(this._pAdditionalFunctionsMap)){
+                this._pAdditionalFunctionsMap = <IRuleFunctionMap>{};
+            }
+            this._pAdditionalFunctionsMap[sFuncName] = fnRuleFunction;
+        }
+
+        protected addTypeId(sIdentifier: string): void {
+            if(isNull(this._pTypeIdMap)){
+                this._pTypeIdMap = <BoolMap>{};
+            }
+            this._pTypeIdMap[sIdentifier] = true;
+        }
+
+        protected defaultInit(): void {
+            this._iIndex = 0;
+            this._pStack = [0];
+            this._pSyntaxTree = new ParseTree();
+            this._pTypeIdMap = <BoolMap>{};
+
+            this._pSyntaxTree.setOptimizeMode(bf.testAll(this._eParseMode, EParseMode.k_Optimize));
+        }
+
+        protected inline getSyntaxTree(): IParseTree {
+            return this._pSyntaxTree;
+        }
+
         private _error(eCode: uint, pErrorInfo: any): void {
             var pLocation: ISourceLocation = <ISourceLocation>{};
             
-            var pInfo:Object = {
+            var pInfo:any = {
                 tokenValue: null,
                 line: null,
                 column: null,
@@ -1647,7 +1671,7 @@ module akra.util {
 
             akra.logger["error"](pLogEntity);
 
-            throw new Error(eCode);
+            throw new Error(eCode.toString());
         }
 
         private clearMem(): void {
@@ -1716,7 +1740,7 @@ module akra.util {
             }
 
             var pRulesDMap: IRuleDMap = this._pRulesDMap;
-            for (var i in pRulesDMap) {
+            for (var i in pRulesDMap[sSymbol]) {
                 if (pRulesDMap[sSymbol][i].right.length === 0) {
                     return true;
                 }
@@ -2547,13 +2571,6 @@ module akra.util {
             return EOperationType.k_Ok;
         }
 
-        private defaultInit(): void {
-            this._iIndex = 0;
-            this._pStack = [0];
-            this._pSyntaxTree = new ParseTree();
-            this._pTypeIdMap = <BoolMap>{};
-        }
-
         private resumeParse(): EParserCode {
             try {
                 var pTree:IParseTree = this._pSyntaxTree;
@@ -2567,6 +2584,9 @@ module akra.util {
 
                 var pOperation:IOperation;
                 var iRuleLength:uint;
+
+                var eAdditionalOperationCode: EOperationType;
+                var iStateIndex: uint = 0;
 
                 while (!isStop) {
                     pOperation = pSyntaxTable[pStack[pStack.length - 1]][pToken.name];

@@ -1,9 +1,6 @@
 #ifndef COMMON_TS
 #define COMMON_TS
 
-#include "base.d.ts"
-#include "util/Logger.ts"
-
 #define IFACE(IF) export interface IF {}
 #define readonly  
 #define protected
@@ -13,6 +10,11 @@
 #define int number
 #define uint number
 #define float number
+
+#include "base.d.ts"
+#include "util/Logger.ts"
+
+
 
 
 
@@ -105,16 +107,6 @@ module akra {
     export var isArray = (x: any): bool => {
         return typeOf(x) == 'array';
     };    
-
-    if (!isDef(console.assert)) {
-        console.assert = function (isOK?: bool, ...pParams: any[]): void { 
-            if (!isOK) {
-                trace('---------------------------');
-                trace.apply(null, pParams);
-                throw new Error("[assertion failed]");
-            }
-        }
-    }
 
 #ifdef DEBUG
 
