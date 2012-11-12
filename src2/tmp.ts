@@ -1224,283 +1224,1163 @@ module akra.bf {
 
 
 
-///<reference path="../akra.ts" />
+
+
+
+
+
+
+
+module akra {
+	export interface IVec2 {
+		x: float;
+		y: float;
+
+		set(): IVec2;
+		set(fValue: float): IVec2;
+		set(v2fVec: IVec2): IVec2;
+		set(pArray: float[]): IVec2;
+		set(fValue1: float, fValue2: float): IVec2;
+
+		clear(): IVec2;
+
+		add(v2fVec: IVec2, v2fDestination?: IVec2): IVec2;
+		subtract(v2fVec: IVec2, v2fDestination?: IVec2): IVec2;
+		dot(v2fVec: IVec2): float;
+
+		isEqual(v2fVec: IVec2, fEps?: float): bool;
+		isClear(fEps?: float): bool;
+
+		negate(v2fDestination?: IVec2): IVec2;
+		scale(fScale: float, v2fDestination?: IVec2): IVec2;
+		normalize(v2fDestination?: IVec2): IVec2;
+		length(): float;
+		lengthSquare(): float;
+
+
+		direction(v2fVec: IVec2, v2fDestination?: IVec2): IVec2;
+
+		mix(v2fVec: IVec2, fA: float, v2fDestination?: IVec2): IVec2;
+
+		toString(): string;
+	};
+};
+
+
 
 module akra.math {
-    export class Vec2 {
+    export class Vec2 implements IVec2{
         x: float = 0.;
         y: float = 0.;
 
-        constructor ();
-        constructor (v2f: Vec2);
-        constructor (x: float, y: float);
-        constructor (x?, y?) {
-            switch (arguments.length) {
-                case 0:
-                    this.x = this.y =  0.;
-                break;
+        constructor();
+        constructor(fValue: float);
+        constructor(v2fVec: IVec2);
+        constructor(pArray: float[]);
+        constructor(fValue1: float, fValue2: float);
+        constructor(fValue1?, fValue2?){
+            var nArgumentsLength: uint = arguments.length;
+
+            switch(nArgumentsLength){
                 case 1:
-                    this.set(x);
-                break;
+                    this.set(arguments[0]);
+                    break;
                 case 2:
-                    this.set(x, y);
-            }
+                    this.set(arguments[0], arguments[1]);
+                    break;
+                default:
+                    this.x = this.y = 0.;
+                    break;
+            };
+        };
 
-        }
+        set(): IVec2;
+        set(fValue: float): IVec2;
+        set(v2fVec: IVec2): IVec2;
+        set(pArray: float[]): IVec2;
+        set(fValue1: float, fValue2: float): IVec2;
+        set(fValue1?, fValue2?): IVec2{
+            var nArgumentsLength: uint = arguments.length;
 
-
-        set(): Vec2;
-        set (v2f: Vec2): Vec2;
-        set (x: float, y: float): Vec2;
-        set (x?, y?): Vec2 {
-            switch(arguments.length) {
+            switch(nArgumentsLength){
                 case 0:
                     this.x = this.y = 0.;
                     break;
                 case 1:
-                    if (isFloat(x)) {
-                        this.x = x;
-                        this.y = x;
+                    if(isFloat(arguments[0])){
+                        this.x = this.y = arguments[0];
                     }
-                    else {
-                        this.x = x.x;
-                        this.y = x.y;
+                    else if(arguments[0] instanceof Vec2){
+                        var v2fVec: IVec2 = arguments[0];
+
+                        this.x = v2fVec.x;
+                        this.y = v2fVec.y;
+                    }
+                    else{
+                        var pArray: float[] = arguments[0];
+
+                        this.x = pArray[0];
+                        this.y = pArray[1];
                     }
                     break;
                 case 2:
-                    this.x = x;
-                    this.y = y;
-            }
+                    this.x = arguments[0];
+                    this.y = arguments[1];
+                    break;
+            };
 
             return this;
-        }
+        };
 
-    }
+        /**@inline*/  clear(): IVec2{
+            this.x = this.y = 0.;
+            return this;
+        };
+
+        add(v2fVec: IVec2, v2fDestination?: IVec2): IVec2{
+            if(!isDef(v2fDestination)){
+                v2fDestination = this;
+            }
+
+            v2fDestination.x = this.x + v2fVec.x;
+            v2fDestination.y = this.y + v2fVec.y;
+
+            return v2fDestination;
+        };
+
+        subtract(v2fVec: IVec2, v2fDestination?: IVec2): IVec2{
+            if(!isDef(v2fDestination)){
+                v2fDestination = this;
+            }
+
+            v2fDestination.x = this.x - v2fVec.x;
+            v2fDestination.y = this.y - v2fVec.y;
+
+            return v2fDestination;
+        };
+
+        /**@inline*/  dot(v2fVec: IVec2): float{
+            return this.x*v2fVec.x + this.y*v2fVec.y;
+        };
+
+        isEqual(v2fVec: IVec2, fEps: float = 0.): bool{
+            if(fEps === 0.){
+                if(    this.x != v2fVec.x
+                    || this.y != v2fVec.y){
+
+                    return false;
+                }
+            }
+            else{
+                if(    abs(this.x - v2fVec.x) > fEps
+                    || abs(this.y - v2fVec.y) > fEps){
+
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
+        isClear(fEps: float = 0.): bool{
+            if(fEps === 0.){
+                if(    this.x != 0.
+                    || this.y != 0.){
+
+                    return false;
+                }
+            }
+            else{
+                if(    abs(this.x) > fEps
+                    || abs(this.y) > fEps){
+
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
+        negate(v2fDestination?: IVec2): IVec2{
+            if(!isDef(v2fDestination)){
+                v2fDestination = this;
+            }
+
+            v2fDestination.x = -this.x;
+            v2fDestination.y = -this.y;
+
+            return v2fDestination;
+        };
+
+        scale(fScale: float, v2fDestination?: IVec2): IVec2{
+            if(!isDef(v2fDestination)){
+                v2fDestination = this;
+            }
+
+            v2fDestination.x = this.x*fScale;
+            v2fDestination.y = this.y*fScale;
+
+            return v2fDestination;
+        };
+
+        normalize(v2fDestination?: IVec2): IVec2{
+            if(!isDef(v2fDestination)){
+                v2fDestination = this;
+            }
+
+            var x: float = this.x, y: float = this.y;
+            var fLength: float = sqrt(x*x + y*y);
+
+            if(fLength !== 0.){
+                var fInvLength: float = 1./fLength;
+
+                x *= fInvLength;
+                y *= fInvLength;
+            }
+
+            v2fDestination.x = x;
+            v2fDestination.y = y;
+
+            return v2fDestination;
+        };
+
+        /**@inline*/  length(): float{
+            var x: float = this.x, y: float = this.y;
+            return sqrt(x*x + y*y);
+        };
+
+        /**@inline*/  lengthSquare(): float{
+            var x: float = this.x, y: float = this.y;
+            return x*x + y*y;
+        };
+
+        direction(v2fVec: IVec2, v2fDestination?: IVec2): IVec2{
+            if(!isDef(v2fDestination)){
+                v2fDestination = this;
+            }
+
+            var x: float = v2fVec.x - this.x;
+            var y: float = v2fVec.y - this.y;
+
+            var fLength: float = sqrt(x*x + y*y);
+
+            if(fLength !== 0.){
+                var fInvLength: float = 1./fLength;
+
+                x *= fInvLength;
+                y *= fInvLength;
+            }
+
+            v2fDestination.x = x;
+            v2fDestination.y = y;
+
+            return v2fDestination;
+        };
+
+        mix(v2fVec: IVec2, fA: float, v2fDestination?: IVec2): IVec2{
+            if(!isDef(v2fDestination)){
+                v2fDestination = this;
+            }
+
+            fA = clamp(fA,0.,1.);
+
+            var fA1: float = 1. - fA;
+            var fA2: float = fA;
+
+            v2fDestination.x = fA1*this.x + fA2*v2fVec.x;
+            v2fDestination.y = fA1*this.y + fA2*v2fVec.y;
+
+            return v2fDestination;
+        };
+
+        /**@inline*/  toString(): string{
+            return "[x: " + this.x + ", y: " + this.y + "]";
+        }
+   }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IVec2 {} ;
+	export interface IMat4 {} ;
+
+	export interface IVec3 {
+		x: float;
+		y: float;
+		z: float;
+
+		set(): IVec3;
+		set(fValue: float): IVec3;
+		set(v3fVec: IVec3): IVec3;
+		set(pArray: float[]): IVec3;
+		set(fValue: float, v2fVec: IVec2): IVec3;
+		set(v2fVec: IVec2, fValue: float): IVec3;
+		set(fValue1: float, fValue2: float, fValue3: float): IVec3;
+
+		clear(): IVec3;
+
+		add(v3fVec: IVec3, v3fDestination?: IVec3): IVec3;
+		subtract(v3fVec: IVec3, v3fDestination?: IVec3): IVec3;
+		dot(v3fVec: IVec3): float;
+		cross(v3fVec: IVec3, v3fDestination?: IVec3): IVec3;
+
+		isEqual(v3fVec: IVec3, fEps?: float): bool;
+		isClear(fEps?: float): bool;
+
+		negate(v3fDestination?: IVec3): IVec3;
+		scale(fScale: float, v3fDestination?: IVec3): IVec3;
+		normalize(v3fDestination?: IVec3): IVec3;
+		length(): float;
+		lengthSquare(): float;
+
+		direction(v3fVec: IVec3, v3fDestination?: IVec3): IVec3;
+
+		mix(v3fVec: IVec3, fA: float, v3fDestination?: IVec3): IVec3;
+
+		toString(): string;
+		toTranslationMatrix(m4fDestination?: IMat4);
+
+		vec3TransformCoord(m4fTransformation: IMat4, v3fDestination?: IVec3): IVec3;
+
+	};
+};
+
+
+
+
+
+
+/**
+ * @important Если внезапно задумаем перейти обратно на 
+ * хранение данных в матрицах по строкам, как собственно и было в начале,
+ * то необходимо раскомментить definы и переписать метод set, 
+ * так как он ложит по столбцам
+ */
+
+
+// #define __11 0
+// #define __12 1
+// #define __13 2
+// #define __14 3
+// #define __21 4
+// #define __22 5
+// #define __23 6
+// #define __24 7
+// #define __31 8
+// #define __32 9
+// #define __33 10
+// #define __34 11
+// #define __41 12
+// #define __42 13
+// #define __43 14
+// #define __44 15
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IVec3 {} ;
+	export interface IVec4 {} ;
+	export interface IMat3 {} ;
+	export interface IQuat4 {} ;
+
+	export interface IMat4 {
+		data: Float32Array;
+
+		set(): IMat4;
+		set(fValue: float): IMat4;
+		set(v4fVec: IVec4): IMat4;
+		set(m3fMat: IMat3, v3fTranslation?: IVec3): IMat4;
+		set(m4fMat: IMat4): IMat4;
+		set(pArray: float[]): IMat4;
+		set(fValue1: float, fValue2: float,
+			fValue3: float, fValue4: float): IMat4;
+		set(v4fVec1: IVec4, v4fVec2: IVec4,
+			v4fVec3: IVec4, v4fVec4: IVec4): IMat4;
+		set(pArray1: float[], pArray2: float[],
+			pArray3: float[], pArray4: float[]): IMat4;
+		set(fValue1: float, fValue2: float, fValue3: float, fValue4: float,
+			fValue5: float, fValue6: float, fValue7: float, fValue8: float,
+			fValue9: float, fValue10: float, fValue11: float, fValue12: float,
+			fValue13: float, fValue14: float, fValue15: float, fValue16: float): IMat4;
+
+		identity(): IMat4;
+
+		add(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
+		subtract(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
+		multiply(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
+		multiplyLeft(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
+		multiplyVec4(v4fVec: IVec4, v4fDestination?: IVec4): IVec4;
+
+		transpose(m4fDestination?: IMat4): IMat4;
+		determinant(): float;
+		inverse(m4fDestination?: IMat4): IMat4;
+		trace(): float;
+
+		isEqual(m4fMat: IMat4, fEps?: float): bool;
+		isDiagonal(fEps?: float): bool;
+
+		toMat3(m3fDestination?: IMat3): IMat3;
+		toQuat4(q4fDestination?: IQuat4): IQuat4;
+		toRotationMatrix(m4fDestination?: IMat4): IMat4;
+		toString(): string;
+
+		rotateRight(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
+		rotateLeft(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
+
+//rotateXRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+//rotateXLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+//rotateYRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+//rotateYLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+//rotateZRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+//rotateZLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+
+		setTranslation(v3fTranslation: IVec3): IMat4;
+		getTranslation(v3fTranslation?: IVec3): IVec3;
+
+		translateRight(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
+		translateLeft(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
+
+		scaleRight(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
+		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
+
+		decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): bool;
+
+		row(iRow: int, v4fDestination?: IVec4): IVec4;
+		column(iColumn: int, v4fDestination?: IVec4): IVec4;
+
+	};
+};
 
 
 
 module akra.math {
     export class Vec3 {
-        x: number;
-        y: number;
-        z: number;
+        x: float;
+        y: float;
+        z: float;
 
+        constructor();
+        constructor(fValue: float);
+        constructor(v3fVec: IVec3);
+        constructor(pArray: float[]);
+        constructor(fValue: float, v2fVec: IVec2);
+        constructor(v2fVec: IVec2, fValue: float);
+        constructor(fValue1: float, fValue2: float, fValue3: float);
+        constructor(fValue1?, fValue2?, fValue3?){
+            var nArgumentsLength = arguments.length;
 
-        constructor (f? );
-        constructor (v3f: Vec3);
-        constructor (v2f: Vec2, z: number);
-        constructor (x: number, v2f: Vec2);
-        constructor (x: number, y: number, z: number);
+            switch(nArgumentsLength){
+                case 1:
+                    this.set(arguments[0]);
+                    break;
+                case 2:
+                    this.set(arguments[0], arguments[1]);
+                    break;
+                case 3:
+                    this.set(arguments[0], arguments[1], arguments[2]);
+                    break;
+                default:
+                    this.x = this.y = this.z = 0.;
+                    break;
+            }
+        };
 
+        set(): IVec3;
+        set(fValue: float): IVec3;
+        set(v3fVec: IVec3): IVec3;
+        set(pArray: float[]): IVec3;
+        set(fValue: float, v2fVec: IVec2): IVec3;
+        set(v2fVec: IVec2, fValue: float): IVec3;
+        set(fValue1: float, fValue2: float, fValue3: float): IVec3;
+        set(fValue1?, fValue2?, fValue3?): IVec3{
+            var nArgumentsLength = arguments.length;
 
-        get xy(): Vec2  { return new Vec2(this.x, this.y); }
+            switch(nArgumentsLength){
+                case 0:
+                    this.x = this.y = this.z = 0.;
+                    break;
+                case 1:
+                    if(isFloat(arguments[0])){
+                        this.x = this.y = this.z = arguments[0];
+                    }
+                    else if(arguments[0] instanceof Vec3){
+                        var v3fVec: IVec3 = arguments[0];
+
+                        this.x = v3fVec.x;
+                        this.y = v3fVec.y;
+                        this.z = v3fVec.z;
+                    }
+                    else{
+                        var pArray: float[] = arguments[0];
+
+                        this.x = pArray[0];
+                        this.y = pArray[1];
+                        this.z = pArray[2];
+                    }
+                    break;
+                case 2:
+                    if(isFloat(arguments[0])){
+                        var fValue: float = arguments[0];
+                        var v2fVec: IVec2 = arguments[1];
+
+                        this.x = fValue;
+                        this.y = v2fVec.x;
+                        this.z = v2fVec.y;
+                    }
+                    else{
+                        var v2fVec: IVec2 = arguments[0];
+                        var fValue: float = arguments[1];
+
+                        this.x = v2fVec.x;
+                        this.y = v2fVec.y;
+                        this.z = fValue;
+                    }
+                    break;
+                case 3:
+                    this.x = arguments[0];
+                    this.y = arguments[1];
+                    this.z = arguments[2];
+                    break;
+            }
+
+            return this;
+        };
+
+        /**@inline*/  clear(): IVec3{
+            this.x = this.y = this.z = 0.;
+            return this;
+        };
+
+        add(v3fVec: IVec3, v3fDestination?: IVec3): IVec3{
+            if(!isDef(v3fDestination)){
+                v3fDestination = this;
+            }
+
+            v3fDestination.x = this.x + v3fVec.x;
+            v3fDestination.y = this.y + v3fVec.y;
+            v3fDestination.z = this.z + v3fVec.z;
+
+            return v3fDestination;
+        };
+
+        subtract(v3fVec: IVec3, v3fDestination?: IVec3): IVec3{
+            if(!isDef(v3fDestination)){
+                v3fDestination = this;
+            }
+
+            v3fDestination.x = this.x - v3fVec.x;
+            v3fDestination.y = this.y - v3fVec.y;
+            v3fDestination.z = this.z - v3fVec.z;
+
+            return v3fDestination;
+        };
+
+        /**@inline*/  dot(v3fVec: IVec3): float{
+            return this.x*v3fVec.x + this.y*v3fVec.y + this.z*v3fVec.z;
+        };
+
+        cross(v3fVec: IVec3, v3fDestination?: IVec3): IVec3{
+            if(!isDef(v3fDestination)){
+                v3fDestination = this;
+            }
+
+            var x1: float = this.x, y1: float = this.y, z1: float = this.z;
+            var x2: float = v3fVec.x, y2: float = v3fVec.y, z2: float = v3fVec.z;
+
+            v3fDestination.x = y1*z2 - z1*y2;
+            v3fDestination.y = z1*x2 - x1*z2;
+            v3fDestination.z = x1*y2 - y1*x2;
+
+            return v3fDestination;
+        };
+
+        isEqual(v3fVec: IVec3, fEps: float = 0.): bool{
+            if(fEps === 0.){
+                if(    this.x != v3fVec.x
+                    || this.y != v3fVec.y
+                    || this.z != v3fVec.z){
+
+                    return false;
+                }
+            }
+            else{
+                if(    abs(this.x - v3fVec.x) > fEps
+                    || abs(this.y - v3fVec.y) > fEps
+                    || abs(this.z - v3fVec.z) > fEps){
+
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        isClear(fEps: float = 0.): bool{
+            if(fEps === 0.){
+                if(    this.x != 0.
+                    || this.y != 0.
+                    || this.z != 0.){
+
+                    return false;
+                }
+            }
+            else{
+                if(    abs(this.x) > fEps
+                    || abs(this.y) > fEps
+                    || abs(this.z) > fEps){
+
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
+        negate(v3fDestination?: IVec3): IVec3{
+            if(!isDef(v3fDestination)){
+                v3fDestination = this;
+            }
+
+            v3fDestination.x = -this.x;
+            v3fDestination.y = -this.y;
+            v3fDestination.z = -this.z;
+
+            return v3fDestination;
+        };
+
+        scale(fScale: float, v3fDestination?: IVec3): IVec3{
+            if(!isDef(v3fDestination)){
+                v3fDestination = this;
+            }
+
+            v3fDestination.x = this.x*fScale;
+            v3fDestination.y = this.y*fScale;
+            v3fDestination.z = this.z*fScale;
+
+            return v3fDestination;
+        };
+
+        normalize(v3fDestination?: IVec3): IVec3{
+            if(!v3fDestination){
+                v3fDestination = this;
+            }
+
+            var x: float = this.x, y: float = this.y, z: float = this.z;
+            var fLength: float = sqrt(x*x + y*y + z*z);
+
+            if(fLength !== 0.){
+                var fInvLength: float = 1./fLength;
+
+                x *= fInvLength;
+                y *= fInvLength;
+                z *= fInvLength;
+            }
+
+            v3fDestination.x = x;
+            v3fDestination.y = y;
+            v3fDestination.z = z;
+
+            return v3fDestination;
+        };
+
+        /**@inline*/  length(): float{
+            var x: float = this.x, y: float = this.y, z: float = this.z;
+            return sqrt(x*x + y*y + z*z);
+        };
+
+        /**@inline*/  lengthSquare(): float{
+            var x: float = this.x, y: float = this.y, z: float = this.z;
+            return x*x + y*y + z*z;
+        };
+
+        direction(v3fVec: IVec3, v3fDestination?: IVec3): IVec3{
+            if(!isDef(v3fDestination)){
+                v3fDestination = this;
+            }
+
+            var x: float = v3fVec.x - this.x;
+            var y: float = v3fVec.y - this.y;
+            var z: float = v3fVec.z - this.z;
+
+            var fLength: float = sqrt(x*x + y*y + z*z);
+
+            if(fLength !== 0.){
+                var fInvLength = 1./fLength;
+
+                x *= fInvLength;
+                y *= fInvLength;
+                z *= fInvLength;
+            }
+
+            v3fDestination.x = x;
+            v3fDestination.y = y;
+            v3fDestination.z = z;
+
+            return v3fDestination;
+        };
+
+        mix(v3fVec: IVec3, fA: float, v3fDestination?: IVec3): IVec3{
+           if(!isDef(v3fDestination)){
+                v3fDestination = this;
+            }
+
+            fA = clamp(fA,0.,1.);
+
+            var fA1: float = 1. - fA;
+            var fA2: float = fA;
+
+            v3fDestination.x = fA1*this.x + fA2*v3fVec.x;
+            v3fDestination.y = fA1*this.y + fA2*v3fVec.y;
+            v3fDestination.z = fA1*this.z + fA2*v3fVec.z;
+
+            return v3fDestination;
+        };
+
+        /**@inline*/  toString(): string{
+            return "[x: " + this.x + " ,y: " + this.y + ", z: " + this.z + "]";
+        };
+
+        toTranslationMatrix(m4fDestination?: IMat4): IMat4{
+            if(!isDef(m4fDestination)){
+                m4fDestination = new Mat4(1.);
+            }
+            else{
+                m4fDestination.set(1.);
+            }
+
+            var pData: Float32Array = m4fDestination.data;
+
+            pData[ 12 ] = this.x;
+            pData[ 13 ] = this.y;
+            pData[ 14 ] = this.z;
+
+            return m4fDestination;
+        };
+
+        vec3TransformCoord(m4fTransformation: IMat4, v3fDestination?: IVec3): IVec3{
+            if(!v3fDestination){
+                v3fDestination = this;
+            }
+
+            var pData: Float32Array = m4fTransformation.data;
+
+            var x: float = this.x;
+            var y: float = this.y;
+            var z: float = this.z;
+            var w: float;
+
+            x = pData[ 0 ]*x + pData[ 4 ]*y + pData[ 8 ]*z + pData[ 12 ];
+            y = pData[ 1 ]*x + pData[ 5 ]*y + pData[ 9 ]*z + pData[ 13 ];
+            z = pData[ 2 ]*x + pData[ 6 ]*y + pData[ 10 ]*z + pData[ 14 ];
+            w = pData[ 2 ]*x + pData[ 7 ]*y + pData[ 11 ]*z + pData[ 15 ];
+
+            var fInvW: float = 1./w;
+
+            v3fDestination.x = x*fInvW;
+            v3fDestination.y = y*fInvW;
+            v3fDestination.z = z*fInvW;
+
+            return v3fDestination;
+        };
+
+/*get xy(): Vec2  { return new Vec2(this.x, this.y); }
         get xz(): Vec2  { return new Vec2(this.x, this.z); }
         get yx(): Vec2  { return new Vec2(this.y, this.x); }
         get yz(): Vec2  { return new Vec2(this.y, this.z); }
         get zx(): Vec2  { return new Vec2(this.z, this.x); }
         get zy(): Vec2  { return new Vec2(this.z, this.y); }
-        get xyz(): Vec3 { return new Vec3(this.x, this.y, this.z); }
+        get xyz(): Vec3 { return new Vec3(this.x, this.y, this.z); }*/
 
-        constructor (x? , y? , z? ) {
-//TODO: may be use only simple constructor(x, y, z)?
-            switch (arguments.length) {
-                case 0:
-                    this.x = this.y = this.z = 0.;
-                    break;
-                case 1:
-                    this.set(x);
-                    break;
-                case 2:
-                    this.set(x, y);
-                    break;
-                case 3:
-                    this.set(x, y, z);
-            }
-        }
-
-
-        set(v3f: Vec3);
-        set(v2f: Vec2, z: number);
-        set(x: number, v2f: Vec2);
-        set(x: number, y: number, z: number);
-
-/**
-         * @inline
-         */
-
-        set(x? , y? , z? ): Vec3 {
-
-            switch (arguments.length) {
-                case 0:
-                case 1:
-//number
-                    if (isFloat(x)) {
-                        this.x = this.y = this.z = x || 0.;
-                    }
-                    else {
-                        this.x = x.x;
-                        this.y = x.y;
-                        this.z = x.z;
-                    }
-                    break;
-                case 2:
-//number and vec2
-                    if (isFloat(x)) {
-                        this.x = x;
-                        this.y = y.x;
-                        this.z = y.y;
-                    }
-//number and vec3
-                    else {
-                        this.x = x.x;
-                        this.y = x.y;
-                        this.z = y;
-                    }
-                    break;
-                case 3:
-                    this.x = x;
-                    this.y = y;
-                    this.z = z;
-            }
-
-            return this;
-        }
-
-/*
-         * Performs a vector addition
-         * @inline
-         */
-
-        add(v3fVec: Vec3, v3fDest?: Vec3): Vec3 {
-            if (!v3fDest) {
-                v3fDest = this;
-            }
-
-            v3fDest.x = this.x + v3fVec.x;
-            v3fDest.y = this.y + v3fVec.y;
-            v3fDest.z = this.z + v3fVec.z;
-
-            return this;
-        }
-
-
-/**
-         * @inline
-         */
-
-        toString(): string {
-            return "[x: " + this.x + ", y: " + this.y + ", z: " + this.z + "]";
-        }
-
-        static stackSize: uint = 100; static stackPosition: int = 0; static stack: IVec3 [] = (function(): IVec3 []{ var pStack: IVec3 [] = new Array(Vec3.stackSize); for(var i:int = 0; i<Vec3.stackSize; i++){ pStack[i] = new Vec3(); } return pStack})();
-
-// static stack = new Array(100);
-// static stackSize = 100;
-// static iIndex = 100;
     }
-
-
 }
 
-//#define ALLOCATE_STORAGE(sClass, nCount)    static stack: sClass = new Array(nCount);
-// static stackSize = nCount;                                            // static stackPosition = 0;
+
+
+
+
+
+
 
 
 
 
 module akra.math {
-    export class Vec4{
+
+    export class Vec4 implements IVec4{
         x: float;
         y: float;
         z: float;
         w: float;
 
-        constructor ();
-        constructor (f: float);
-        constructor (v4f: Vec4);
-        constructor (v3f: Vec3, w?: float);
-        constructor (x: float, v3f: Vec3);
-        constructor (v2f1: Vec2, v2f2: Vec2);
-        constructor (x: float, y: float, z: float, w: float);
-        constructor (x? , y? , z? , w? ) {
-            switch (arguments.length) {
+        constructor();
+        constructor(fValue: float);
+        constructor(v4fVec: IVec4);
+        constructor(pArray: float[]);
+        constructor(fValue: float, v3fVec: IVec3);
+        constructor(v2fVec1: IVec2, v2fVec2: IVec2);
+        constructor(v3fVec: IVec3, fValue: float);
+        constructor(fValue1: float, fValue2: float, v2fVec: IVec2);
+        constructor(fValue1: float, v2fVec: IVec2, fValue2: float);
+        constructor(v2fVec: IVec2 ,fValue1: float, fValue2: float);
+        constructor(fValue1: float, fValue2: float, fValue3: float, fValue4: float);
+        constructor(fValue1?, fValue2?, fValue3?, fValue4?){
+            var nArgumentsLength: uint = arguments.length;
+
+            switch(nArgumentsLength){
+                case 1:
+                    this.set(arguments[0]);
+                    break;
+                case 2:
+                    this.set(arguments[0],arguments[1]);
+                    break;
+                case 3:
+                    this.set(arguments[0],arguments[1], arguments[2]);
+                    break;
+                case 4:
+                    this.set(arguments[0],arguments[1], arguments[2], arguments[3]);
+                    break;
+                default:
+                    this.x = this.y = this.z = this.w = 0.;
+                    break;
+            }
+        };
+
+        set(): IVec4;
+        set(fValue: float): IVec4;
+        set(v4fVec: IVec4): IVec4;
+        set(pArray: float[]): IVec4;
+        set(fValue: float, v3fVec: IVec3): IVec4;
+        set(v2fVec1: IVec2, v2fVec2: IVec2): IVec4;
+        set(v3fVec: IVec3, fValue: float): IVec4;
+        set(fValue1: float, fValue2: float, v2fVec: IVec2): IVec4;
+        set(fValue1: float, v2fVec: IVec2, fValue2: float): IVec4;
+        set(v2fVec: IVec2, fValue1: float, fValue2: float): IVec4;
+        set(fValue1: float, fValue2: float, fValue3: float, fValue4: float): IVec4;
+        set(fValue1?, fValue2?, fValue3?, fValue4?): IVec4{
+            var nArgumentsLength: uint = arguments.length;
+
+            switch(nArgumentsLength){
                 case 0:
                     this.x = this.y = this.z = this.w = 0.;
                     break;
                 case 1:
-                    this.set(x);
-                    break;
-                case 2:
-                    this.set(x, y);
-                    break;
-                case 4:
-                    this.set(x, y, z, w);
-                    break;
-            }
-
-        }
-
-
-        set(): Vec4;
-        set(f: float): Vec4;
-        set(v4f: Vec4): Vec4;
-        set(v3f: Vec3, w?: float): Vec4;
-        set(x: float, v3f: Vec3): Vec4;
-        set(v2f1: Vec2, v2f2: Vec2): Vec4;
-        set(x: float, y: float, z: float, w: float): Vec4;
-        set(x? , y? , z? , w? ): Vec4 {
-            switch (arguments.length) {
-                case 0:
-                    this.x = this.y = this.z = this.w = 0.;
-                    break;
-                case 1:
-//float
-                    if (isFloat(x)) {
-                        this.x = this.y = this.z = this.w = x;
+                    if(isFloat(arguments[0])){
+                        this.x = this.y = this.z = this.w = arguments[0];
                     }
-//vec4
-                    else {
-                        this.x = x.x;
-                        this.y = x.y;
-                        this.z = x.z;
-                        this.w = x.w;
+                    else if(arguments[0] instanceof Vec4){
+                        var v4fVec: IVec4 = arguments[0];
+
+                        this.x = v4fVec.x;
+                        this.y = v4fVec.y;
+                        this.z = v4fVec.z;
+                        this.w = v4fVec.w;
+                    }
+                    else{
+//array
+                        var pArray: float[] = arguments[0];
+
+                        this.x = pArray[0];
+                        this.y = pArray[1];
+                        this.z = pArray[2];
+                        this.w = pArray[3];
                     }
                     break;
                 case 2:
-//float and vec3
-                    if (isFloat(x)) {
-                        this.x = x;
-                        this.y = y.x;
-                        this.z = y.y;
-                        this.w = y.z;
+                    if(isFloat(arguments[0])){
+                        var fValue: float = arguments[0];
+                        var v3fVec: IVec3 = arguments[1];
+
+                        this.x = fValue;
+                        this.y = v3fVec.x;
+                        this.z = v3fVec.y;
+                        this.w = v3fVec.z;
                     }
-//vec3 and float
-                    else if (isFloat(y)) {
-                        this.x = x.x;
-                        this.y = x.y;
-                        this.z = x.z;
-                        this.w = y;
+                    else if(arguments[0] instanceof Vec2){
+                        var v2fVec1: IVec2 = arguments[0];
+                        var v2fVec2: IVec2 = arguments[1];
+
+                        this.x = v2fVec1.x;
+                        this.y = v2fVec1.y;
+                        this.z = v2fVec2.x;
+                        this.w = v2fVec2.y;
                     }
-//vec2 and vec2
-                    else {
-                        this.x = x.x;
-                        this.y = x.y;
-                        this.z = y.x;
-                        this.w = y.y;
+                    else{
+                        var v3fVec: IVec3 = arguments[0];
+                        var fValue: float = arguments[1];
+
+                        this.x = v3fVec.x;
+                        this.y = v3fVec.y;
+                        this.z = v3fVec.z;
+                        this.w = fValue;
+                    }
+                    break;
+                case 3:
+                    if(isFloat(arguments[0])){
+                        var fValue1: float = arguments[0];
+
+                        if(isFloat(arguments[1])){
+                            var fValue2: float = arguments[1];
+                            var v2fVec: IVec2 = arguments[2];
+
+                            this.x = fValue1;
+                            this.y = fValue2;
+                            this.z = v2fVec.x;
+                            this.w = v2fVec.y;
+                        }
+                        else{
+                            var v2fVec: IVec2 = arguments[1];
+                            var fValue2: float = arguments[2];
+
+                            this.x = fValue1;
+                            this.y = v2fVec.x;
+                            this.z = v2fVec.y;
+                            this.w = fValue2;
+                        }
+                    }
+                    else{
+                        var v2fVec: IVec2 = arguments[0];
+                        var fValue1: float = arguments[1];
+                        var fValue2: float = arguments[2];
+
+                        this.x = v2fVec.x;
+                        this.y = v2fVec.y;
+                        this.z = fValue1;
+                        this.w = fValue2;
                     }
                     break;
                 case 4:
-                    this.x = x;
-                    this.y = y;
-                    this.z = z;
-                    this.w = w;
+                    this.x = arguments[0];
+                    this.y = arguments[1];
+                    this.z = arguments[2];
+                    this.w = arguments[3];
+                    break;
             }
+
             return this;
-        }
+        };
+
+        /**@inline*/  clear(): IVec4{
+            this.x = this.y = this.z = this.w = 0.;
+            return this;
+        };
+
+        add(v4fVec: IVec4, v4fDestination?: IVec4): IVec4{
+            if(!isDef(v4fDestination)){
+                v4fDestination = this;
+            }
+
+            v4fDestination.x = this.x + v4fVec.x;
+            v4fDestination.y = this.y + v4fVec.y;
+            v4fDestination.z = this.z + v4fVec.z;
+            v4fDestination.w = this.w + v4fVec.w;
+
+            return v4fDestination;
+        };
+
+        subtract(v4fVec: IVec4, v4fDestination?: IVec4): IVec4{
+            if(!isDef(v4fDestination)){
+                v4fDestination = this;
+            }
+
+            v4fDestination.x = this.x - v4fVec.x;
+            v4fDestination.y = this.y - v4fVec.y;
+            v4fDestination.z = this.z - v4fVec.z;
+            v4fDestination.w = this.w - v4fVec.w;
+
+            return v4fDestination;
+        };
+
+        /**@inline*/  dot(v4fVec: IVec4): float{
+            return this.x*v4fVec.x + this.y*v4fVec.y + this.z*v4fVec.z + this.w*v4fVec.w;
+        };
+
+        isEqual(v4fVec: IVec4, fEps: float = 0.): bool{
+            if(fEps === 0.){
+                if(    this.x != v4fVec.x
+                    || this.y != v4fVec.y
+                    || this.z != v4fVec.z
+                    || this.w != v4fVec.w){
+
+                    return false;
+                }
+            }
+            else{
+                if(    abs(this.x - v4fVec.x) > fEps
+                    || abs(this.y - v4fVec.y) > fEps
+                    || abs(this.z - v4fVec.z) > fEps
+                    || abs(this.w - v4fVec.w) > fEps){
+
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        isClear(fEps: float = 0.): bool{
+
+            if(fEps === 0.){
+                if(    this.x != 0.
+                    || this.y != 0.
+                    || this.z != 0.
+                    || this.w != 0.){
+
+                    return false;
+                }
+            }
+            else{
+                if(    abs(this.x) > fEps
+                    || abs(this.y) > fEps
+                    || abs(this.z) > fEps
+                    || abs(this.w) > fEps){
+
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        negate(v4fDestination?: IVec4): IVec4{
+            if(!isDef(v4fDestination)){
+                v4fDestination = this;
+            }
+
+            v4fDestination.x = -this.x;
+            v4fDestination.y = -this.y;
+            v4fDestination.z = -this.z;
+            v4fDestination.w = -this.w;
+
+            return v4fDestination;
+        };
+
+        scale(fScale: float, v4fDestination?: IVec4): IVec4{
+            if(!isDef(v4fDestination)){
+                v4fDestination = this;
+            }
+
+            v4fDestination.x = this.x*fScale;
+            v4fDestination.y = this.y*fScale;
+            v4fDestination.z = this.z*fScale;
+            v4fDestination.w = this.w*fScale;
+
+            return v4fDestination;
+        };
+
+        normalize(v4fDestination?: IVec4): IVec4{
+            if(!isDef(v4fDestination)){
+                v4fDestination = this;
+            }
+
+            var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+            var fLength: float = sqrt(x*x + y*y +z*z + w*w);
+
+            if(fLength !== 0.){
+                var fInvLength: float = 1./fLength;
+
+                x *= fInvLength;
+                y *= fInvLength;
+                z *= fInvLength;
+                w *= fInvLength;
+            }
+
+            v4fDestination.x = x;
+            v4fDestination.y = y;
+            v4fDestination.z = z;
+            v4fDestination.w = w;
+
+            return v4fDestination;
+        };
+
+        /**@inline*/  length(): float{
+            var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+            return sqrt(x*x + y*y + z*z + w*w);
+        };
+
+        /**@inline*/  lengthSquare(): float{
+            var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+            return x*x + y*y + z*z + w*w;
+        };
+
+        direction(v4fVec: IVec4, v4fDestination?: IVec4): IVec4{
+            if(!isDef(v4fDestination)){
+                v4fDestination = this;
+            }
+
+            var x: float = v4fVec.x - this.x;
+            var y: float = v4fVec.y - this.y;
+            var z: float = v4fVec.z - this.z;
+            var w: float = v4fVec.w - this.w;
+
+            var fLength: float = sqrt(x*x + y*y + z*z + w*w);
+
+            if(fLength !== 0.){
+                var fInvLength = 1./fLength;
+
+                x *= fInvLength;
+                y *= fInvLength;
+                z *= fInvLength;
+                w *= fInvLength;
+            }
+
+            v4fDestination.x = x;
+            v4fDestination.y = y;
+            v4fDestination.z = z;
+            v4fDestination.w = w;
+
+            return v4fDestination;
+        };
+
+        mix(v4fVec: IVec4, fA: float, v4fDestination?: IVec4): IVec4{
+            if(!isDef(v4fDestination)){
+                v4fDestination = this;
+            }
+
+            fA = clamp(fA,0.,1.);
+
+            var fA1: float = 1. - fA;
+            var fA2: float = fA;
+
+            v4fDestination.x = fA1*this.x + fA2*v4fVec.x;
+            v4fDestination.y = fA1*this.y + fA2*v4fVec.y;
+            v4fDestination.z = fA1*this.z + fA2*v4fVec.z;
+            v4fDestination.w = fA1*this.w + fA2*v4fVec.w;
+
+            return v4fDestination;
+        };
+
+        /**@inline*/  toString(): string{
+            return "[x: " + this.x + ", y: " + this.y
+                        + ", z: " + this.z + ", w: " + this.w + "]";
+        };
     }
 }
+
+
 
 
 ///<reference path="../akra.ts" />
@@ -1635,137 +2515,6 @@ module akra {
 
 
 
-
-
-/**
- * @important Если внезапно задумаем перейти обратно на 
- * хранение данных в матрицах по строкам, как собственно и было в начале,
- * то необходимо раскомментить definы и переписать метод set, 
- * так как он ложит по столбцам
- */
-
-
-// #define __11 0
-// #define __12 1
-// #define __13 2
-// #define __14 3
-// #define __21 4
-// #define __22 5
-// #define __23 6
-// #define __24 7
-// #define __31 8
-// #define __32 9
-// #define __33 10
-// #define __34 11
-// #define __41 12
-// #define __42 13
-// #define __43 14
-// #define __44 15
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-
-	export interface IVec3 {} ;
-	export interface IVec4 {} ;
-	export interface IMat3 {} ;
-	export interface IQuat4 {} ;
-
-	export interface IMat4 {
-		data: Float32Array;
-
-		set(): IMat4;
-		set(fValue: float): IMat4;
-		set(v4fVec: IVec4): IMat4;
-		set(m3fMat: IMat3, v3fTranslation?: IVec3): IMat4;
-		set(m4fMat: IMat4): IMat4;
-		set(pArray: float[]): IMat4;
-		set(fValue1: float, fValue2: float,
-			fValue3: float, fValue4: float): IMat4;
-		set(v4fVec1: IVec4, v4fVec2: IVec4,
-			v4fVec3: IVec4, v4fVec4: IVec4): IMat4;
-		set(pArray1: float[], pArray2: float[],
-			pArray3: float[], pArray4: float[]): IMat4;
-		set(fValue1: float, fValue2: float, fValue3: float, fValue4: float,
-			fValue5: float, fValue6: float, fValue7: float, fValue8: float,
-			fValue9: float, fValue10: float, fValue11: float, fValue12: float,
-			fValue13: float, fValue14: float, fValue15: float, fValue16: float): IMat4;
-
-		identity(): IMat4;
-
-		add(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
-		subtract(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
-		multiply(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
-		multiplyLeft(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
-		multiplyVec4(v4fVec: IVec4, v4fDestination?: IVec4): IVec4;
-
-		transpose(m4fDestination?: IMat4): IMat4;
-		determinant(): float;
-		inverse(m4fDestination?: IMat4): IMat4;
-		trace(): float;
-
-		isEqual(m4fMat: IMat4, fEps?: float): bool;
-		isDiagonal(fEps?: float): bool;
-
-		toMat3(m3fDestination?: IMat3): IMat3;
-		toQuat4(q4fDestination?: IQuat4): IQuat4;
-		toRotationMatrix(m4fDestination?: IMat4): IMat4;
-		toString(): string;
-
-		rotateRight(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
-		rotateLeft(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
-
-//rotateXRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-//rotateXLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
-//rotateYRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-//rotateYLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
-//rotateZRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-//rotateZLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
-
-		setTranslation(v3fTranslation: IVec3): IMat4;
-		getTranslation(v3fTranslation?: IVec3): IVec3;
-
-		translateRight(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
-		translateLeft(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
-
-		scaleRight(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
-		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
-
-		decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): bool;
-
-		row(iRow: int, v4fDestination?: IVec4): IVec4;
-		column(iColumn: int, v4fDestination?: IVec4): IVec4;
-
-	};
-};
-
-
-
-
-
-
-module akra.math {
-	export interface IVec3 {
-		x: float;
-		y: float;
-		z: float;
-	};
-};
 
 
 
@@ -2648,12 +3397,49 @@ module akra.math {
 
 
 
-module akra.math {
+module akra {
+
+	export interface IVec2 {} ;
+	export interface IVec3 {} ;
+
 	export interface IVec4 {
 		x: float;
 		y: float;
 		z: float;
 		w: float;
+
+		set(): IVec4;
+		set(fValue: float): IVec4;
+		set(v4fVec: IVec4): IVec4;
+		set(pArray: float[]): IVec4;
+		set(fValue: float, v3fVec: IVec3): IVec4;
+		set(v2fVec1: IVec2, v2fVec2: IVec2): IVec4;
+		set(v3fVec: IVec3, fValue: float): IVec4;
+		set(fValue1: float, fValue2: float, v2fVec: IVec2): IVec4;
+		set(fValue1: float, v2fVec: IVec2, fValue2: float): IVec4;
+		set(v2fVec: IVec2, fValue1: float, fValue2: float): IVec4;
+		set(fValue1: float, fValue2: float, fValue3: float, fValue4: float): IVec4;
+
+		clear(): IVec4;
+
+		add(v4fVec: IVec4, v4fDestination?: IVec4): IVec4;
+		subtract(v4fVec: IVec4, v4fDestination?: IVec4): IVec4;
+		dot(v4fVec: IVec4): float;
+
+		isEqual(v4fVec: IVec4, fEps?: float): bool;
+		isClear(fEps?: float): bool;
+
+		negate(v4fDestination?: IVec4): IVec4;
+		scale(fScale: float, v4fDestination?: IVec4): IVec4;
+		normalize(v4fDestination?: IVec4): IVec4;
+		length(): float;
+		lengthSquare(): float;
+
+		direction(v4fVec: IVec4, v4fDestination?: IVec4): IVec4;
+
+		mix(v4fVec: IVec4, fA: float, v4fDestination?: IVec4): IVec4;
+
+		toString(): string;
 	};
 };
 

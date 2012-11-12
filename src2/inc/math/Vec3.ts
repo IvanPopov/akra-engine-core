@@ -275,7 +275,7 @@ module akra.math {
                 v3fDestination = this;
             }
 
-            fA: float = clamp(fA,0.,1.);
+            fA = clamp(fA,0.,1.);
 
             var fA1: float = 1. - fA;
             var fA2: float = fA;
