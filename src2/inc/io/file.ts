@@ -79,10 +79,8 @@ module akra.io {
 	// function _fopen (pUri: IURI, sMode: string): IFile;
 
 	function _fopen(sUri: any, pMode: any = EIO.IN): IFile {
-		var iMode: int = isString(pMode)? filemode(pMode): pMode;
-
 		if (info.api.webWorker) {
-			return new FileThread(<string>sUri, iMode);
+			return new FileThread(<string>sUri, pMode);
 		}
 		else {
 			warning("FILES support disabled.");

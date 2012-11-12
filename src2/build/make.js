@@ -5,8 +5,11 @@ var zip 	= require("node-native-zip");
 var path 	= require('path');
 var spawn 	= require('child_process').spawn;
 var md5 	= require('MD5');
+var stream  = require('stream');
 
 var BUFFER_SIZE = 5 * 1024 * 1024;
+
+
 
 function isDef(pObject) {
 	return pObject != null;
@@ -142,7 +145,7 @@ function verifyOptions() {
 }
 
 function preprocess() {
-	console.log("\n\n+---+ preprocessing started +---+\n\n");
+	console.log("\n> preprocessing started (" + this.process.pid + ")\n");
 
 	var cmd = pOptions.baseDir + "/mcpp";
 	var argv = ("-P -C -e utf8 -I " + "inc/ -j -+ -W 0 -k -D inline=/**@inline*/ " + pOptions.files.join(" ")).
@@ -161,7 +164,7 @@ function preprocess() {
 	});
 
 	mcpp.on('exit', function (code) {
-	  console.log('preprocessing exited with code ' + code);
+	  console.log('preprocessing exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
 
 	  if (code == 0) {
 	  	pOptions.pathToTemp = pOptions.outputFolder + "/" + pOptions.tempFile;
@@ -175,7 +178,8 @@ function preprocess() {
 }
 
 function compile() {
-	console.log("\n\n+---+  compilation started  +---+\n\n");
+	//console.log(this);
+	console.log("\n> compilation started (" + this.process.pid + ")  \n");
 
 	var cmd = "node";
 	var argv = (  
@@ -187,9 +191,8 @@ function compile() {
 
 	var node = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE,  stdio: 'inherit' });
 
-
 	node.on('exit', function (code) {
-	  console.log('compilation exited with code ' + code);
+	  console.log('compilation exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
 
 	  if (code == 0) {
 	  	console.log("compiled to: ", pOptions.outputFolder + "/" + pOptions.outputFile);
@@ -202,8 +205,16 @@ function compile() {
 			console.log("temp file: " + pOptions.pathToTemp + " removed.");
 		});
 	  }
+	  else {
+	  	process.exit(1);
+	  }
 	});
+
 }
+
+var pTestQueue = [];
+var iTestQuitMutex = 0;
+var pTestResults = [];
 
 function buildCore() {
 	preprocess();
@@ -228,6 +239,13 @@ function buildTests() {
     });
 }
 
+function printTestResultTable() {
+	console.log("\n-----------------------");
+	pTestResults.forEach(function(pResult, i) {
+		console.log(i + ". " + pResult.name + ' ( ' + pResult.file + ' ) : ' + (pResult.result == false? 'failed': 'successful'));
+	})
+}
+
 function createTestName(sEntryFileName) {
 	var sFileName = path.basename(sEntryFileName);
 	var i = sFileName.lastIndexOf('.');
@@ -242,7 +260,7 @@ function compileTest(sDir, sFile, sName, pData, sTestData) {
                   		<title>" + sFile + "</title>   				\n\
                   	</head>                              			\n\
                   	<body>                               			\n\
-                  		<h1>Tests</h1>                	   			\n\
+                  		<h1 id=\"test_name\">Tests</h1>             \n\
                   		<script>" + sTestData + "</script>   		\n\
                   		<script> akra.utils.test.run(); </script>   \n\
                   	</body>                              			\n\
@@ -277,8 +295,23 @@ function compileTest(sDir, sFile, sName, pData, sTestData) {
 		if (err) return console.log("err while adding files", err);
 		var buff = pArchive.toBuffer();
 
-	    fs.writeFile(sDir + "/" + sName + ".nw", buff, function () {
+	    fs.writeFile(sDir + "/" + sName + ".nw", buff, function (err) {
+	    	if (err) {
+	    		pTestResults.push({file: sFile, name: sName, results: false});
+	    		throw err;
+	    	}
+
 	        console.log("test created: " + sFile + " (" + sName +") ");
+	        pTestResults.push({file: sFile, name: sName, results: true});
+
+	        iTestQuitMutex --;
+	        if (iTestQuitMutex >= 0) {
+		        var argv = pTestQueue.pop();
+		        packTest(argv.dir, argv.main, argv.name, argv.data);
+	        }
+	        else {
+	        	printTestResultTable();
+	        }
 	    });
 	});
 }
@@ -289,6 +322,12 @@ function compileTest(sDir, sFile, sName, pData, sTestData) {
 //pData -- path list to all tests data
 
 function packTest(sDir, sFile, sName, pData) {
+
+	console.log("\n");
+	console.log("#########################################################");
+	console.log("### PACK TEST: " + sFile + "");
+	console.log("#########################################################");
+	console.log("\n");
 
 	var sTempFile = sFile + ".temp";
 
@@ -301,6 +340,10 @@ function packTest(sDir, sFile, sName, pData) {
 		if (code == 0) {
 			compileTest(sDir, sFile, sName, pData, fs.readFileSync(sTempFile, "utf8"));
 			fs.unlinkSync(sTempFile)
+		}
+		else {
+			pTestResults.push({file: sFile, name: sName, results: false});
+			iTestQuitMutex --;
 		}
 	});
 }
@@ -345,9 +388,14 @@ function createTestData(sDir, sFile) {
     			iDepth --;
 
     			if (iDepth === 0) {
-    				//console.log(pTestFiles);
-
-    				packTest(sDir, sTestMain, sTest, pTestFiles);
+    
+    				if (iTestQuitMutex == 0) {
+    					iTestQuitMutex ++;
+    					packTest(sDir, sTestMain, sTest, pTestFiles);
+    				}
+    				else {
+    					pTestQueue.push({dir: sDir, main: sTestMain, name: sTest, data: pTestFiles});
+    				}
     			}
     		}, true);
         })
@@ -355,7 +403,7 @@ function createTestData(sDir, sFile) {
 }
 
 function addTestDirectory(sTestDir) {
-	console.log("+---> [ " + sTestDir + " ]");
+	console.log("> test directory: " + sTestDir + " ");
 
 	fs.readdir(sTestDir, function(err, list) {
         if (err) throw (err);
@@ -399,7 +447,7 @@ verifyOptions();
 process.chdir(pOptions.buildDir);
 
 if (!fs.existsSync(pOptions.outputFolder)) { 
-	console.log("\n\n--- target: CORE ---\n\n");
+	console.log("\n\n> target: CORE\n\n");
 
     fs.mkdirSync(pOptions.outputFolder);
 }
@@ -421,7 +469,7 @@ if (pOptions.target.tests) {
 
 	// });
 	
-	console.log("\n\n+---+   founded test dirs   +---+\n\n");
+	console.log("\n> founded test dirs\n");
 
 	buildTests();
 }

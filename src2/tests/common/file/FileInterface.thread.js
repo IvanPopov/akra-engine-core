@@ -73,7 +73,9 @@ onmessage = function (pEvent) {
             break;
         case File.READ:
             var pData = read(pFile);
+
             var nPos = pFile.pos;
+
             if (nPos) {
                 if (isBinary(pFile.mode)) {
                     pData = (new Uint8Array((new Uint8Array(pData)).subarray(nPos))).buffer;
@@ -82,7 +84,7 @@ onmessage = function (pEvent) {
                     pData = pData.substr(nPos);
                 }
             }
-
+          
             if (isBinary(pFile.mode) && pCommand.transfer != TRANSFER.NORMAL) {
                 if (pCommand.transfer == TRANSFER.FAST) {
                     postMessage(pData, [pData]);
@@ -97,6 +99,7 @@ onmessage = function (pEvent) {
                 }
             }
             else {
+
                 postMessage(pData);
             }
             break;

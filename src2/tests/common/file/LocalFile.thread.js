@@ -1,4 +1,3 @@
-self.BlobBuilder = self.WebKitBlobBuilder || self.MozBlobBuilder || self.BlobBuilder;
 self.requestFileSystemSync = self.webkitRequestFileSystemSync || self.requestFileSystemSync;
 
 var pFileSystem = null;
@@ -20,6 +19,7 @@ function read (pFile) {
     }
 
     pData = pFile.reader.readAsText(pFile.entry.file());
+
     return pData;
 }
 
@@ -33,16 +33,15 @@ function remove (pFile) {
 
 
 function write (pFile, pData, sContentType) {
-    var pBuilder, pWriter;
+    var pBlob, pWriter;
     try {
         pWriter = pFile.entry.createWriter();
 
         pWriter.seek(pFile.pos);
 
-        pBuilder = new BlobBuilder();
-        pBuilder.append(pData);
+        pBlob = new Blob([pData], {type: sContentType});
 
-        pWriter.write(pBuilder.getBlob(sContentType));
+        pWriter.write(pBlob);
     }
     catch (e) {
         throw e;

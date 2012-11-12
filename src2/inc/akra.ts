@@ -1,6 +1,6 @@
 #ifndef AKRA_TS
 #define AKRA_TS
-	
+
 #include "common.ts"
 
 

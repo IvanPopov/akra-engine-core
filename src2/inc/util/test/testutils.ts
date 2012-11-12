@@ -73,6 +73,13 @@ module akra.utils.test {
 
 	}
 
+	export function failed(): void {
+		var iTotal: int = pTestCondList.length;
+		for (var i: int = 0; i < iTotal; ++ i) {
+			check(false);
+		}
+	}
+
 	export function shouldBeTrue(sDescription: string) {
 		addCond(new TrueCond(sDescription));
 	}
@@ -93,6 +100,7 @@ module akra.utils.test {
 			var pTestList = Test.pTestList;
 			for (var i: int = 0; i < pTestList.length; ++ i) {
 				var pTest: ITestManifest = pTestList[i];
+				document.getElementById('test_name').innerHTML = ("<h2>" + pTest.name || "" + "</h2><hr />");
 				pTest.main();
 			};
 		}

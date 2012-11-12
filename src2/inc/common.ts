@@ -3,6 +3,12 @@
 
 #include "base.d.ts"
 
+#define int number
+#define uint number
+#define float number
+#define double number
+#define long number
+
 #define IFACE(IF) export interface IF {}
 #define readonly  
 #define protected

@@ -29,6 +29,15 @@ module akra.util {
 	pathinfo = function (pPath?): IPathinfo {
 		return new Pathinfo(pPath);
 	}
+
+	//string to array buffer
+	export stoab = function (s: string): ArrayBuffer {
+		var pCodeList: int = new Array(len);
+	    for (var i: int = 0, len = s.length; i < len; ++i) {
+	        pCodeList[ i ] = s.charCodeAt(i);// & 0xFF;
+	    }
+	    return (new Uint8Array(pCodeList)).buffer;
+	}
 }
 
 #endif

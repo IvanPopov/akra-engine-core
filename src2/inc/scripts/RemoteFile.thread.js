@@ -57,20 +57,23 @@ function read (pFile) {
         }
 
         pXhr.send();
-        if (pXhr.status !== 200) {
+
+        if (parseInt(pXhr.status) != 200 && parseInt(pXhr.status) != 0) {
             throw pXhr.status;
         }
+        
         //если не поддерживается XMLHTTPRequest Level 2
         if (isLevel1) {
             pData = pXhr.responseText;
             if (isBinary(pFile.mode)) {
                 pData = str2buf(pXhr.responseText);
             }
+            
         }
         else {
             pData = pXhr.response;
         }
-
+        
         if (isBinary(pFile.mode)) {
             var nExpectedLength = Number(pXhr.getResponseHeader('Content-Length'));
             var nRealLength = pData.byteLength;
