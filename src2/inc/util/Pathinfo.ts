@@ -38,6 +38,14 @@ module akra {
 	        }
 		}
 
+		constructor(sPath: string);
+		constructor(pPath: IPathinfo);
+		constructor(pPath?: any) {
+			if (isDef(pPath)) {
+				this.set(pPath);
+			}
+		}
+
 
 		set(sPath: string): void;
 		set(pPath: IPathinfo): void;
@@ -62,7 +70,7 @@ module akra {
 
 		isAbsolute(): bool { return this._sDirname[0] === "/"; }
 
-		toString(): string;
+		toString(): string { return null; }
 	}
 	
 }

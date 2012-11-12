@@ -360,7 +360,7 @@ module akra {
 		(<any>window).mozRequestAnimationFrame;
 	(<any>window).WebSocket = (<any>window).WebSocket || (<any>window).MozWebSocket;
 
-    Worker.prototype.postMessage = Worker.prototype.webkitPostMessage || Worker.prototype.postMessage;
+    Worker.prototype.postMessage = (<any>Worker).prototype.webkitPostMessage || Worker.prototype.postMessage;
 };
 
 #endif

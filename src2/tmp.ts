@@ -396,6 +396,8 @@ module akra {
 	(<any>window).requestAnimationFrame = (<any>window).requestAnimationFrame || (<any>window).webkitRequestAnimationFrame ||
 		(<any>window).mozRequestAnimationFrame;
 	(<any>window).WebSocket = (<any>window).WebSocket || (<any>window).MozWebSocket;
+
+    Worker.prototype.postMessage = (<any>Worker).prototype.webkitPostMessage || Worker.prototype.postMessage;
 };
 
 
@@ -3609,6 +3611,12 @@ module akra.math {
 		    return m4fDestination;
 		};
 
+		/**@inline*/  decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): bool{
+			this.getTranslation(v3fTranslation);
+			var m3fRotScale = this.toMat3(mat3());
+			return m3fRotScale.decompose(q4fRotation,v3fScale);
+		};
+
 		toInverseMat3(m3fDestination: IMat3): IMat3 {
 			return null;
 		}
@@ -4071,12 +4079,6 @@ module akra {
 }
 
 
-/*
-#include "IRect3d.ts"
-#include "IRect3d.ts"
-#include "IRect3d.ts"
-#include "IRect3d.ts"
-*/
 
 
 
@@ -4127,25 +4129,6 @@ module akra.geometry {
 
 
 
-/*
-#include "IWorldExtents.ts"
-#include "IViewport.ts"
-
-#include "IURI.ts"
-
-#include "IKeyMap.ts"
-#include "IGamepadMap.ts"
-
-#include "IColor.ts"
-
-#include "IReferenceCounter.ts"
-#include "IScreenInfo.ts"
-#include "ICanvasInfo.ts"
-#include "IBrowserInfo.ts"
-#include "IApiInfo.ts"
-#include "IDeviceInfo.ts"
-#include "IUtilTimer.ts"
-*/
 
 
 ///<reference path="../../akra.ts" />
@@ -4871,7 +4854,7 @@ module akra.info {
 	export var api: IApiInfo = new util.ApiInfo;
 	export var screen: IScreenInfo = new util.ScreenInfo;
 	export var device: IDeviceInfo = new util.DeviceInfo;
-	export var uri: IURI = parseURI(document.location.href);
+	export var uri: IURI = util.uri(document.location.href);
 
 	module is {
 /**
@@ -4901,18 +4884,6 @@ module akra.info {
 }
 
 
-/*
-#include "IFont2d.ts"
-#include "IString2d.ts"
-*/
-
-
-
-
-
-module akra.util {
-
-}
 
 
 
@@ -4922,56 +4893,101 @@ module akra.util {
 
 
 
-module akra.util {
-	export class ReferenceCounter implements IReferenceCounter {
-		private nReferenceCount: uint = 0;
 
-/** Выстанавливает чило ссылок  на объект в ноль */
 
-		constructor ();
-/** 
-		 * Выстанавливает чило ссылок  на объект в ноль
- 		 * количесвто ссылок привязаны к конкретному экземпляру, поэтому никогда не копируются 
- 		 */
 
-		constructor (pSrc: IReferenceCounter);
-		constructor (pSrc?) {}
 
-/** @inline */
+module akra {
+	export interface IPathinfo {
+		path: string;
+		dirname: string;
+		filename: string;
+		ext: string;
+		basename: string;
 
-		referenceCount(): uint {
-			return this.nReferenceCount;
-		}
 
-/** @inline */
+		set(sPath: string): void;
+		set(pPath: IPathinfo): void;
+		isAbsolute(): bool;
 
-		destructor(): void {
-			assert(this.nReferenceCount === 0, 'object is used');
-		}
-
-		release(): uint {
-			assert(this.nReferenceCount > 0, 'object is used');
-		    this.nReferenceCount--;
-		    return this.nReferenceCount;
-		}
-
-		addRef(): uint {
-			assert(this.nReferenceCount != MIN_INT32, 'reference fail');
-
-    		this.nReferenceCount ++;
-
-			return this.nReferenceCount;
-		}
-
-/** @inline */
-
-		eq (pSrc: IReferenceCounter): IReferenceCounter {
-		    return this;
-		};
+		toString(): string;
 	}
+
 }
 
 
+
+module akra {
+	export class Pathinfo implements IPathinfo {
+		private _sDirname: string = null;
+		private _sExtension: string = null;
+		private _sFilename: string = null;
+
+		/**@inline*/  get path(): string { return this.toString(); }
+		/**@inline*/  set path(sPath: string) { this.set(sPath); }
+
+		/**@inline*/  get dirname(): string { return this._sDirname; }
+		/**@inline*/  set dirname(sDirname: string) { this._sDirname = sDirname; }
+
+		/**@inline*/  get filename(): string { return this._sFilename; }
+		/**@inline*/  set filename(sFilename: string) { this._sFilename = sFilename; }
+
+		/**@inline*/  get ext(): string { return this._sExtension; }
+		/**@inline*/  set ext(sExtension: string) { this._sExtension = sExtension; }
+
+		/**@inline*/  get basename(): string {
+			return (this._sFilename ? this._sFilename + (this._sExtension ? "." + this._sExtension : "") : "");
+		}
+
+		/**@inline*/  set basename(sBasename: string) {
+			var nPos: uint = sBasename.lastIndexOf(".");
+
+	        if (nPos < 0) {
+	            this._sFilename = sBasename.substr(0);
+	            this._sExtension = null;
+	        }
+	        else {
+	            this._sFilename = sBasename.substr(0, nPos);
+	            this._sExtension = sBasename.substr(nPos + 1);
+	        }
+		}
+
+		constructor(sPath: string);
+		constructor(pPath: IPathinfo);
+		constructor(pPath?: any) {
+			if (isDef(pPath)) {
+				this.set(pPath);
+			}
+		}
+
+
+		set(sPath: string): void;
+		set(pPath: IPathinfo): void;
+		set(sPath?: any) {
+			if (isString(sPath)) {
+		        var pParts: string[] = sPath.replace('\\', '/').split('/');
+
+		        this.basename = pParts.pop();
+
+		        this._sDirname = pParts.join('/');
+		    }
+		    else if (sPath instanceof Pathinfo) {
+		        this._sDirname = sPath.dirname;
+		        this._sFilename = sPath.filename;
+		        this._sExtension = sPath.ext;
+		    }
+		    else {
+//critical_error
+		        error("Unexpected data type was used.");
+		    }
+		}
+
+		isAbsolute(): bool { return this._sDirname[0] === "/"; }
+
+		toString(): string { return null; }
+	}
+
+}
 
 
 
@@ -5006,7 +5022,7 @@ module akra.util {
 				this.sHost + (this.nPort ? ':' + this.nPort : "") : "");
 		}
 
-		get scheme(): string {
+		/**@inline*/  get scheme(): string {
 			return this.sScheme;
 		}
 
@@ -5018,31 +5034,31 @@ module akra.util {
 			return (this.sScheme.substr(0, this.sScheme.lastIndexOf(':')));
 		}
 
-		get userinfo(): string {
+		/**@inline*/  get userinfo(): string {
 			return this.sUserinfo;
 		}
 
-		get host(): string {
+		/**@inline*/  get host(): string {
 			return this.sHost;
 		}
 
-		get port(): uint {
+		/**@inline*/  get port(): uint {
 			return this.nPort;
 		}
 
-		set port(iPort: uint) {
+		/**@inline*/  set port(iPort: uint) {
 			this.nPort = iPort;
 		}
 
-		get path(): string {
+		/**@inline*/  get path(): string {
 			return this.sPath;
 		}
 
-		get query(): string {
+		/**@inline*/  get query(): string {
 			return this.sQuery;
 		}
 
-		get fragment(): string {
+		/**@inline*/  get fragment(): string {
 			return this.sFragment;
 		}
 
@@ -5137,9 +5153,66 @@ module akra.util {
 	}
 }
 
-module akra {
-	export var parseURI = (sUri:string): IURI => new util.URI(sUri);
+
+
+
+
+
+
+
+
+
+module akra.util {
+	export class ReferenceCounter implements IReferenceCounter {
+		private nReferenceCount: uint = 0;
+
+/** Выстанавливает чило ссылок  на объект в ноль */
+
+		constructor ();
+/** 
+		 * Выстанавливает чило ссылок  на объект в ноль
+ 		 * количесвто ссылок привязаны к конкретному экземпляру, поэтому никогда не копируются 
+ 		 */
+
+		constructor (pSrc: IReferenceCounter);
+		constructor (pSrc?) {}
+
+/** @inline */
+
+		referenceCount(): uint {
+			return this.nReferenceCount;
+		}
+
+/** @inline */
+
+		destructor(): void {
+			assert(this.nReferenceCount === 0, 'object is used');
+		}
+
+		release(): uint {
+			assert(this.nReferenceCount > 0, 'object is used');
+		    this.nReferenceCount--;
+		    return this.nReferenceCount;
+		}
+
+		addRef(): uint {
+			assert(this.nReferenceCount != MIN_INT32, 'reference fail');
+
+    		this.nReferenceCount ++;
+
+			return this.nReferenceCount;
+		}
+
+/** @inline */
+
+		eq (pSrc: IReferenceCounter): IReferenceCounter {
+		    return this;
+		};
+	}
 }
+
+
+
 
 
 
@@ -5275,6 +5348,7 @@ module akra.util {
 		}
 	}
 }
+
 
 
 
@@ -5446,6 +5520,530 @@ module akra.util {
         }
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IExplorerFunc {} ;
+	export interface IReferenceCounter {} ;
+
+	export interface IEntity extends IReferenceCounter {
+		name: string;
+
+		parent: IEntity;
+		sibling: IEntity;
+		child: IEntity;
+
+		 depth: int;
+		 root: IEntity;
+
+		create(): bool;
+		destroy(): void;
+
+		findEntity(sName: string): IEntity;
+		explore(fn: IExplorerFunc): void;
+		childOf(pParent: IEntity): bool;
+		siblingCount(): uint;
+		childCount(): uint;
+
+		update(): void;
+		recursiveUpdate(): void;
+		recursivePreUpdate(): void;
+		prepareForUpdate(): void;
+
+		hasParent(): bool;
+		hasChild(): bool;
+		hasSibling(): bool;
+
+		isASibling(pSibling: IEntity): bool;
+		isAChild(pChild: IEntity): bool;
+		isInFamily(pEntity: IEntity, bSearchEntireTree?: bool): bool;
+
+
+		addSibling(pSibling: IEntity): IEntity;
+		addChild(pChild: IEntity): IEntity;
+		removeChild(pChild: IEntity): IEntity;
+		removeAllChildren(): void;
+
+		attachToParent(pParent: IEntity): bool;
+		detachFromParent(): bool;
+
+		promoteChildren(): void;
+		relocateChildren(pParent: IEntity): void;
+
+		toString(isRecursive?: bool, iDepth?: int): string;
+	}
+
+}
+
+
+
+
+
+
+module akra {
+
+	export interface IEntity {} ;
+
+	export interface IExplorerFunc {
+		(pEntity: IEntity): bool;
+	}
+}
+
+
+
+module akra.util {
+	export class Entity extends ReferenceCounter implements IEntity {
+		 _sName: string = null;
+		 _pParent: IEntity = null;
+		 _pSibling: IEntity = null;
+		 _pChild: IEntity = null;
+
+		/**@inline*/  get name(): string { return this._sName; }
+		/**@inline*/  set name(sName: string) { this._sName = sName; }
+
+		/**@inline*/  get parent(): IEntity { return this._pParent; }
+		/**@inline*/  set parent(pParent: IEntity) { this.attachToParent(pParent); }
+
+		/**@inline*/  get sibling(): IEntity { return this._pSibling; }
+		/**@inline*/  set sibling(pSibling: IEntity) { this._pSibling = pSibling; }
+
+		/**@inline*/  get child(): IEntity { return this._pChild; }
+		/**@inline*/  set child(pChild: IEntity) { this._pChild = pChild; }
+
+		get depth(): int {
+			var iDepth: int = -1;
+	        for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent, ++ iDepth){};
+	        return iDepth;
+		}
+
+		get root(): IEntity {
+	        for (var pEntity: IEntity = this, iDepth: int = -1; pEntity.parent; pEntity = pEntity.parent, ++ iDepth){};
+	        return pEntity;
+		}
+
+
+		create(): bool {
+			return true;
+		}
+
+		destroy(): void {
+// destroy anything attached to this node
+//	destroySceneObject();
+// promote any children up to our parent
+		    this.promoteChildren();
+// now remove ourselves from our parent
+		    this.detachFromParent();
+// we should now be removed from the tree, and have no dependants
+		    debug_assert(this.referenceCount() == 0, "Attempting to delete a scene node which is still in use");
+		    debug_assert(this._pSibling == null, "Failure Destroying Node");
+		    debug_assert(this._pChild == null, "Failure Destroying Node");
+		}
+
+		findEntity(sName: string): IEntity {
+			 var pEntity: IEntity = null;
+
+		    if (this._sName === sName) {
+		        return this;
+		    }
+
+		    if (this._pSibling) {
+		        pEntity = this._pSibling.findEntity(sName);
+		    }
+
+		    if (pEntity == null && this._pChild) {
+		        pEntity = this._pChild.findEntity(sName);
+		    }
+
+		    return pEntity;
+		}
+
+		explore(fn: IExplorerFunc): void {
+			if (fn(this) === false) {
+		        return;
+		    }
+
+		    if (this._pSibling) {
+		        this._pSibling.explore(fn);
+		    }
+
+		    if (this._pChild) {
+		        this._pChild.explore(fn);
+		    }
+		}
+
+
+		childOf(pParent: IEntity): bool {
+			for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent) {
+		        if (pEntity.parent === pParent) {
+		            return true;
+		        }
+		    }
+
+		    return false;
+		}
+
+
+/**
+		 * Returns the current number of siblings of this object.
+		 */
+
+		siblingCount(): uint {
+			var iCount: uint = 0;
+
+		    if (this._pParent) {
+		        var pNextSibling = this._pParent.child;
+		        if (pNextSibling) {
+		            while (pNextSibling) {
+		                pNextSibling = pNextSibling.sibling;
+		                ++ iCount;
+		            }
+		        }
+		    }
+
+		    return iCount;
+		}
+
+
+/**
+		 * Returns the current number of children of this object
+		 */
+
+		childCount(): uint {
+			var iCount: uint = 0;
+
+		    var pNextChild: IEntity = this.child;
+
+		    if (pNextChild) {
+		        ++ iCount;
+		        while (pNextChild) {
+		            pNextChild = pNextChild.sibling;
+		            ++ iCount;
+		        }
+		    }
+		    return iCount;
+		}
+
+
+		update(): void {}
+
+
+		recursiveUpdate(): void {
+// update myself
+		    this.update();
+// update my sibling
+		    if (this._pSibling) {
+		        this._pSibling.recursiveUpdate();
+		    }
+// update my child
+		    if (this._pChild) {
+		        this._pChild.recursiveUpdate();
+		    }
+		}
+
+		recursivePreUpdate(): void {
+// clear the flags from the previous update
+		    this.prepareForUpdate();
+
+// update my sibling
+		    if (this._pSibling) {
+		        this._pSibling.recursivePreUpdate();
+		    }
+// update my child
+		    if (this._pChild) {
+		        this._pChild.recursivePreUpdate();
+		    }
+		}
+
+
+		prepareForUpdate(): void {};
+
+/** Parent is not undef */
+
+		/**@inline*/  hasParent(): bool {
+		    return isDefAndNotNull(this._pParent);
+		}
+
+/** Child is not undef*/
+
+		/**@inline*/  hasChild(): bool {
+		    return isDefAndNotNull(this._pChild);
+		}
+
+/** Sibling is not undef */
+
+		/**@inline*/  hasSibling(): bool {
+			return isDefAndNotNull(this._pSibling);
+		}
+
+/**
+		 * Checks to see if the provided item is a sibling of this object
+		 */
+
+		isASibling(pSibling: IEntity): bool {
+			if (!pSibling) {
+		        return false;
+		    }
+// if the sibling we are looking for is me, or my FirstSibling, return true
+		    if (this == pSibling || this._pSibling == pSibling) {
+		        return true;
+		    }
+// if we have a sibling, continue searching
+		    if (this._pSibling) {
+		        return this._pSibling.isASibling(pSibling);
+		    }
+// it's not us, and we have no sibling to check. This is not a sibling of ours.
+		    return false;
+		}
+
+/** Checks to see if the provided item is a child of this object. (one branch depth only) */
+
+		isAChild(pChild: IEntity): bool {
+			if (!pChild) {
+		        return (false);
+		    }
+// if the sibling we are looking for is my FirstChild return true
+		    if (this._pChild == pChild) {
+		        return (true);
+		    }
+// if we have a child, continue searching
+		    if (this._pChild) {
+		        return (this._pChild.isASibling(pChild));
+		    }
+// it's not us, and we have no child to check. This is not a sibling of ours.
+		    return (false);
+		}
+
+/**
+		 * Checks to see if the provided item is a child or sibling of this object. If SearchEntireTree
+		 * is TRUE, the check is done recursivly through all siblings and children. SearchEntireTree
+		 * is FALSE by default.
+		 */
+
+		isInFamily(pEntity: IEntity, bSearchEntireTree?: bool): bool {
+			if (!pEntity) {
+		        return (false);
+		    }
+// if the model we are looking for is me or my immediate family, return true
+		    if (this == pEntity || this._pChild == pEntity || this._pSibling == pEntity) {
+		        return (true);
+		    }
+// if not set to seach entire tree, just check my siblings and kids
+		    if (!bSearchEntireTree) {
+		        if (this.isASibling(pEntity)) {
+		            return (true);
+		        }
+		        if (this._pChild && this._pChild.isASibling(pEntity)) {
+		            return (true);
+		        }
+		    }
+// seach entire Tree!!!
+		    else {
+		        if (this._pSibling && this._pSibling.isInFamily(pEntity, bSearchEntireTree)) {
+		            return (true);
+		        }
+
+		        if (this._pChild && this._pChild.isInFamily(pEntity, bSearchEntireTree)) {
+		            return (true);
+		        }
+		    }
+
+		    return (false);
+		}
+
+/**
+		 * Adds the provided ModelSpace object to the descendant list of this object. The provided
+		 * ModelSpace object is removed from any parent it may already belong to.
+		 */
+
+		addSibling(pSibling: IEntity): IEntity {
+			if (pSibling) {
+// replace objects current sibling pointer with this new one
+		        pSibling.sibling = this._pSibling;
+		        this.sibling = pSibling;
+		    }
+
+		    return pSibling;
+		}
+
+/**
+		 * Adds the provided ModelSpace object to the descendant list of this object. The provided
+		 * ModelSpace object is removed from any parent it may already belong to.
+		 */
+
+		addChild(pChild: IEntity): IEntity {
+			if (pChild) {
+// Replace the new child's sibling pointer with our old first child.
+		        pChild.sibling = this._pChild;
+// the new child becomes our first child pointer.
+		        this._pChild = pChild;
+    		}
+
+    		return pChild;
+		}
+
+/**
+		 * Removes a specified child object from this parent object. If the child is not the
+		 * FirstChild of this object, all of the Children are searched to find the object to remove.
+		 */
+
+		removeChild(pChild: IEntity): IEntity {
+			if (this._pChild && pChild) {
+		        if (this._pChild == pChild) {
+		            this._pChild = pChild.sibling;
+		            pChild.sibling  = null;
+		        }
+		        else {
+		            var pTempNode: IEntity = this._pChild;
+// keep searching until we find the node who's sibling is our target
+// or we reach the end of the sibling chain
+		            while (pTempNode && (pTempNode.sibling != pChild)) {
+		                pTempNode = pTempNode.sibling;
+		            }
+// if we found the proper item, set it's FirstSibling to be the FirstSibling of the child
+// we are removing
+		            if (pTempNode) {
+		                pTempNode.sibling = pChild.sibling;
+		                pChild.sibling = null;
+		            }
+		        }
+	    	}
+
+	    	return pChild;
+		}
+
+/** Removes all Children from this parent object */
+
+		removeAllChildren(): void {
+// keep removing children until end of chain is reached
+		    while (!isNull(this._pChild)) {
+		        var pNextSibling = this._pChild.sibling;
+		        this._pChild.detachFromParent();
+		        this._pChild = pNextSibling;
+		    }
+		}
+
+/** Attaches this object ot a new parent. Same as calling the parent's addChild() routine. */
+
+		attachToParent(pParent: IEntity): bool {
+			if (pParent != this._pParent) {
+
+		        this.detachFromParent();
+
+		        if (pParent) {
+		            this._pParent = pParent;
+		            this._pParent.addChild(this);
+		            this._pParent.addRef();
+		            return true;
+		        }
+	    	}
+
+	    	return false;
+		}
+
+		detachFromParent(): bool {
+// tell our current parent to release us
+		    if (this._pParent) {
+		        this._pParent.removeChild(this);
+//TODO: разобраться что за херня!!!!
+		        if (this._pParent) {
+		            this._pParent.release();
+		        }
+
+		        this._pParent = null;
+// my world matrix is now my local matrix
+
+		        return true;
+		    }
+
+		    return false;
+		}
+
+/**
+		 * Attaches this object's children to it's parent, promoting them up the tree
+		 */
+
+		promoteChildren(): void {
+// Do I have any children to promote?
+		    while (!isNull(this._pChild)) {
+		        var pNextSibling: IEntity = this._pChild.sibling;
+		        this._pChild.attachToParent(this._pParent);
+		        this._pChild = pNextSibling;
+		    }
+		}
+
+		relocateChildren(pParent: IEntity): void {
+			if (pParent != this) {
+// Do I have any children to relocate?
+		        while (!isNull(this._pChild)) {
+		            var pNextSibling: IEntity = this._pChild.sibling;
+		            this._pChild.attachToParent(pParent);
+		            this._pChild = pNextSibling;
+		        }
+		    }
+		}
+
+		toString(isRecursive: bool = false, iDepth: int = 0): string {
+
+		    if (!isRecursive) {
+		        return '<entity' + (this._sName? ' ' + this._sName: "") + '>';
+		    }
+
+		    var pSibling: IEntity = this.sibling;
+		    var pChild: IEntity = this.child;
+		    var s: string = "";
+
+		    for (var i = 0; i < iDepth; ++ i) {
+		        s += ':  ';
+		    }
+
+		    s += '+----[depth: ' + this.depth + ']' + this.toString() + '\n';
+
+		    if (pChild) {
+		        s += pChild.toString(true, iDepth + 1);
+		    }
+
+		    if (pSibling) {
+		        s += pSibling.toString(true, iDepth);
+		    }
+
+		    return s;
+
+
+		}
+
+	}
+}
+
+
+
+
+//#include "ThreadManager.ts"
+
+module akra.util {
+
+	export var uri = (sUri:string): IURI => new util.URI(sUri);
+
+//export var pathinfo: (sPath: string) => IPathinfo;
+//export var pathinfo: (pPath: IPathinfo) => IPathinfo;
+	export var pathinfo: (pPath?) => IPathinfo;
+
+	pathinfo = function (pPath?): IPathinfo {
+		return new Pathinfo(<string>pPath);
+	}
+
+
+}
+
 
 
 
@@ -5708,10 +6306,6 @@ module akra.gui {
 }
 
 
-/*
-#include "IVertexElement.ts"
-#include "IvertexDeclaration.ts"
-*/
 
 
 
@@ -5923,27 +6517,6 @@ module akra {
 }
 
 
-/*
-#include "IBufferData.ts"
-#include "IVertexData.ts"
-#include "IIndexData.ts"
-#include "IBufferMap.ts"
-
-#include "IMesh.ts"
-
-#include "IResourceWatcherFunc.ts"
-#include "IResourceNotifyRoutineFunc.ts"
-#include "IResourceCode.ts"
-#include "IDataPool.ts"
-#include "IResourcePool.ts"
-#include "IResourcePoolItem.ts"
-#include "IResourcePoolManager.ts"
-
-#include "IRenderEntry.ts"
-#include "IRenderResource.ts"
-#include "IRenderableObject.ts"
-#include "IRenderSnapshot.ts"
-*/
 
 
 
@@ -8961,7 +9534,7 @@ module akra.data {
 
 		            iFrom = iFrom || 0;
 		            iCount = iCount || this._iLength;
-		            iCount = Math.min(iCount, this._iLength);
+		            iCount = math.min(iCount, this._iLength);
 
 		            var iStride: uint = this.stride;
 		            var pBufferData: Uint8Array = new Uint8Array(iSize * this.length);
@@ -9260,7 +9833,7 @@ module akra.core.pool.resources {
 					}
 				}
 
-				if (this.resize(Math.max(this.byteLength * 2, this.byteLength + iCount * iStride)) == false) {
+				if (this.resize(math.max(this.byteLength * 2, this.byteLength + iCount * iStride)) == false) {
 					break;
 				}
 			}
@@ -9868,57 +10441,6 @@ module akra.core.pool.resources {
 }
 
 
-/*
-#include "IBuffer.ts"
-#include "IFrameBuffer.ts"
-
-#include "ITexture.ts"
-#include "IImg.ts"
-#include "ISurfaceMaterial.ts"
-#include "IShaderProgram.ts"
-#include "IGPUBuffer.ts"
-#include "IIndexBuffer.ts"
-#include "IVertexBuffer.ts"
-#include "IRenderMethod.ts"
-#include "IVideoBuffer.ts"
-#include "IModel.ts"
-
-#include "IScene.ts"
-#include "IScene3d.ts"
-#include "IScene2d.ts"
-
-
-
-
-#include "ISceneTree.ts"
-#include "IRenderState.ts"
-#include "IRenderer.ts"
-#include "IScene3d.ts"
-
-#include "INode.ts"
-#include "ISceneNode.ts"
-#include "ISceneObject.ts"
-#include "ICamera.ts"
-
-#include "IFont2d.ts"
-
-#include "IDisplay.ts"
-#include "IDisplay2d.ts"
-#include "IDisplay3d.ts"
-
-#include "IManager.ts"
-#include "IResourceManager.ts"
-#include "IDisplayManager.ts"
-#include "IParticleManager.ts"
-
-#include "IAFXEffect.ts"
-#include "IAFXComponent.ts"
-#include "IAFXComponentBlend.ts"
-#include "IAFXPassBlend.ts"
-#include "IAFXPreRenderState.ts"
-
-#include "IScreen.ts"
-*/
 
 
 
@@ -9928,63 +10450,6 @@ module akra.core.pool.resources {
 
 
 
-
-
-
-
-module akra {
-
-	export interface IExplorerFunc {} ;
-	export interface IReferenceCounter {} ;
-
-	export interface IEntity extends IReferenceCounter {
-		name: string;
-
-		parent: IEntity;
-		sibling: IEntity;
-		child: IEntity;
-
-		 depth: int;
-		 root: IEntity;
-
-		create(): bool;
-		destroy(): void;
-
-		findEntity(sName: string): IEntity;
-		explore(fn: IExplorerFunc): void;
-		childOf(pParent: IEntity): bool;
-		siblingCount(): uint;
-		childCount(): uint;
-
-		update(): void;
-		recursiveUpdate(): void;
-		recursivePreUpdate(): void;
-		prepareForUpdate(): void;
-
-		hasParent(): bool;
-		hasChild(): bool;
-		hasSibling(): bool;
-
-		isASibling(pSibling: IEntity): bool;
-		isAChild(pChild: IEntity): bool;
-		isInFamily(pEntity: IEntity, bSearchEntireTree?: bool): bool;
-
-
-		addSibling(pSibling: IEntity): IEntity;
-		addChild(pChild: IEntity): IEntity;
-		removeChild(pChild: IEntity): IEntity;
-		removeAllChildren(): void;
-
-		attachToParent(pParent: IEntity): bool;
-		detachFromParent(): bool;
-
-		promoteChildren(): void;
-		relocateChildren(pParent: IEntity): void;
-
-		toString(isRecursive?: bool, iDepth?: int): string;
-	}
-
-}
 
 
 
@@ -10061,450 +10526,6 @@ module akra {
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-
-	export interface IEntity {} ;
-
-	export interface IExplorerFunc {
-		(pEntity: IEntity): bool;
-	}
-}
-
-
-
-module akra.util {
-	export class Entity extends ReferenceCounter implements IEntity {
-		 _sName: string = null;
-		 _pParent: IEntity = null;
-		 _pSibling: IEntity = null;
-		 _pChild: IEntity = null;
-
-		/**@inline*/  get name(): string { return this._sName; }
-		/**@inline*/  set name(sName: string) { this._sName = sName; }
-
-		/**@inline*/  get parent(): IEntity { return this._pParent; }
-		/**@inline*/  set parent(pParent: IEntity) { this.attachToParent(pParent); }
-
-		/**@inline*/  get sibling(): IEntity { return this._pSibling; }
-		/**@inline*/  set sibling(pSibling: IEntity) { this._pSibling = pSibling; }
-
-		/**@inline*/  get child(): IEntity { return this._pChild; }
-		/**@inline*/  set child(pChild: IEntity) { this._pChild = pChild; }
-
-		get depth(): int {
-			var iDepth: int = -1;
-	        for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent, ++ iDepth){};
-	        return iDepth;
-		}
-
-		get root(): IEntity {
-	        for (var pEntity: IEntity = this, iDepth: int = -1; pEntity.parent; pEntity = pEntity.parent, ++ iDepth){};
-	        return pEntity;
-		}
-
-
-		create(): bool {
-			return true;
-		}
-
-		destroy(): void {
-// destroy anything attached to this node
-//	destroySceneObject();
-// promote any children up to our parent
-		    this.promoteChildren();
-// now remove ourselves from our parent
-		    this.detachFromParent();
-// we should now be removed from the tree, and have no dependants
-		    debug_assert(this.referenceCount() == 0, "Attempting to delete a scene node which is still in use");
-		    debug_assert(this._pSibling == null, "Failure Destroying Node");
-		    debug_assert(this._pChild == null, "Failure Destroying Node");
-		}
-
-		findEntity(sName: string): IEntity {
-			 var pEntity: IEntity = null;
-
-		    if (this._sName === sName) {
-		        return this;
-		    }
-
-		    if (this._pSibling) {
-		        pEntity = this._pSibling.findEntity(sName);
-		    }
-
-		    if (pEntity == null && this._pChild) {
-		        pEntity = this._pChild.findEntity(sName);
-		    }
-
-		    return pEntity;
-		}
-
-		explore(fn: IExplorerFunc): void {
-			if (fn(this) === false) {
-		        return;
-		    }
-
-		    if (this._pSibling) {
-		        this._pSibling.explore(fn);
-		    }
-
-		    if (this._pChild) {
-		        this._pChild.explore(fn);
-		    }
-		}
-
-
-		childOf(pParent: IEntity): bool {
-			for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent) {
-		        if (pEntity.parent === pParent) {
-		            return true;
-		        }
-		    }
-
-		    return false;
-		}
-
-
-/**
-		 * Returns the current number of siblings of this object.
-		 */
-
-		siblingCount(): uint {
-			var iCount: uint = 0;
-
-		    if (this._pParent) {
-		        var pNextSibling = this._pParent.child;
-		        if (pNextSibling) {
-		            while (pNextSibling) {
-		                pNextSibling = pNextSibling.sibling;
-		                ++ iCount;
-		            }
-		        }
-		    }
-
-		    return iCount;
-		}
-
-
-/**
-		 * Returns the current number of children of this object
-		 */
-
-		childCount(): uint {
-			var iCount: uint = 0;
-
-		    var pNextChild: IEntity = this.child;
-
-		    if (pNextChild) {
-		        ++ iCount;
-		        while (pNextChild) {
-		            pNextChild = pNextChild.sibling;
-		            ++ iCount;
-		        }
-		    }
-		    return iCount;
-		}
-
-
-		update(): void {}
-
-
-		recursiveUpdate(): void {
-// update myself
-		    this.update();
-// update my sibling
-		    if (this._pSibling) {
-		        this._pSibling.recursiveUpdate();
-		    }
-// update my child
-		    if (this._pChild) {
-		        this._pChild.recursiveUpdate();
-		    }
-		}
-
-		recursivePreUpdate(): void {
-// clear the flags from the previous update
-		    this.prepareForUpdate();
-
-// update my sibling
-		    if (this._pSibling) {
-		        this._pSibling.recursivePreUpdate();
-		    }
-// update my child
-		    if (this._pChild) {
-		        this._pChild.recursivePreUpdate();
-		    }
-		}
-
-
-		prepareForUpdate(): void {};
-
-/** Parent is not undef */
-
-		/**@inline*/  hasParent(): bool {
-		    return isDefAndNotNull(this._pParent);
-		}
-
-/** Child is not undef*/
-
-		/**@inline*/  hasChild(): bool {
-		    return isDefAndNotNull(this._pChild);
-		}
-
-/** Sibling is not undef */
-
-		/**@inline*/  hasSibling(): bool {
-			return isDefAndNotNull(this._pSibling);
-		}
-
-/**
-		 * Checks to see if the provided item is a sibling of this object
-		 */
-
-		isASibling(pSibling: IEntity): bool {
-			if (!pSibling) {
-		        return false;
-		    }
-// if the sibling we are looking for is me, or my FirstSibling, return true
-		    if (this == pSibling || this._pSibling == pSibling) {
-		        return true;
-		    }
-// if we have a sibling, continue searching
-		    if (this._pSibling) {
-		        return this._pSibling.isASibling(pSibling);
-		    }
-// it's not us, and we have no sibling to check. This is not a sibling of ours.
-		    return false;
-		}
-
-/** Checks to see if the provided item is a child of this object. (one branch depth only) */
-
-		isAChild(pChild: IEntity): bool {
-			if (!pChild) {
-		        return (false);
-		    }
-// if the sibling we are looking for is my FirstChild return true
-		    if (this._pChild == pChild) {
-		        return (true);
-		    }
-// if we have a child, continue searching
-		    if (this._pChild) {
-		        return (this._pChild.isASibling(pChild));
-		    }
-// it's not us, and we have no child to check. This is not a sibling of ours.
-		    return (false);
-		}
-
-/**
-		 * Checks to see if the provided item is a child or sibling of this object. If SearchEntireTree
-		 * is TRUE, the check is done recursivly through all siblings and children. SearchEntireTree
-		 * is FALSE by default.
-		 */
-
-		isInFamily(pEntity: IEntity, bSearchEntireTree?: bool): bool {
-			if (!pEntity) {
-		        return (false);
-		    }
-// if the model we are looking for is me or my immediate family, return true
-		    if (this == pEntity || this._pChild == pEntity || this._pSibling == pEntity) {
-		        return (true);
-		    }
-// if not set to seach entire tree, just check my siblings and kids
-		    if (!bSearchEntireTree) {
-		        if (this.isASibling(pEntity)) {
-		            return (true);
-		        }
-		        if (this._pChild && this._pChild.isASibling(pEntity)) {
-		            return (true);
-		        }
-		    }
-// seach entire Tree!!!
-		    else {
-		        if (this._pSibling && this._pSibling.isInFamily(pEntity, bSearchEntireTree)) {
-		            return (true);
-		        }
-
-		        if (this._pChild && this._pChild.isInFamily(pEntity, bSearchEntireTree)) {
-		            return (true);
-		        }
-		    }
-
-		    return (false);
-		}
-
-/**
-		 * Adds the provided ModelSpace object to the descendant list of this object. The provided
-		 * ModelSpace object is removed from any parent it may already belong to.
-		 */
-
-		addSibling(pSibling: IEntity): IEntity {
-			if (pSibling) {
-// replace objects current sibling pointer with this new one
-		        pSibling.sibling = this._pSibling;
-		        this.sibling = pSibling;
-		    }
-
-		    return pSibling;
-		}
-
-/**
-		 * Adds the provided ModelSpace object to the descendant list of this object. The provided
-		 * ModelSpace object is removed from any parent it may already belong to.
-		 */
-
-		addChild(pChild: IEntity): IEntity {
-			if (pChild) {
-// Replace the new child's sibling pointer with our old first child.
-		        pChild.sibling = this._pChild;
-// the new child becomes our first child pointer.
-		        this._pChild = pChild;
-    		}
-
-    		return pChild;
-		}
-
-/**
-		 * Removes a specified child object from this parent object. If the child is not the
-		 * FirstChild of this object, all of the Children are searched to find the object to remove.
-		 */
-
-		removeChild(pChild: IEntity): IEntity {
-			if (this._pChild && pChild) {
-		        if (this._pChild == pChild) {
-		            this._pChild = pChild.sibling;
-		            pChild.sibling  = null;
-		        }
-		        else {
-		            var pTempNode: IEntity = this._pChild;
-// keep searching until we find the node who's sibling is our target
-// or we reach the end of the sibling chain
-		            while (pTempNode && (pTempNode.sibling != pChild)) {
-		                pTempNode = pTempNode.sibling;
-		            }
-// if we found the proper item, set it's FirstSibling to be the FirstSibling of the child
-// we are removing
-		            if (pTempNode) {
-		                pTempNode.sibling = pChild.sibling;
-		                pChild.sibling = null;
-		            }
-		        }
-	    	}
-
-	    	return pChild;
-		}
-
-/** Removes all Children from this parent object */
-
-		removeAllChildren(): void {
-// keep removing children until end of chain is reached
-		    while (!isNull(this._pChild)) {
-		        var pNextSibling = this._pChild.sibling;
-		        this._pChild.detachFromParent();
-		        this._pChild = pNextSibling;
-		    }
-		}
-
-/** Attaches this object ot a new parent. Same as calling the parent's addChild() routine. */
-
-		attachToParent(pParent: IEntity): bool {
-			if (pParent != this._pParent) {
-
-		        this.detachFromParent();
-
-		        if (pParent) {
-		            this._pParent = pParent;
-		            this._pParent.addChild(this);
-		            this._pParent.addRef();
-		            return true;
-		        }
-	    	}
-
-	    	return false;
-		}
-
-		detachFromParent(): bool {
-// tell our current parent to release us
-		    if (this._pParent) {
-		        this._pParent.removeChild(this);
-//TODO: разобраться что за херня!!!!
-		        if (this._pParent) {
-		            this._pParent.release();
-		        }
-
-		        this._pParent = null;
-// my world matrix is now my local matrix
-
-		        return true;
-		    }
-
-		    return false;
-		}
-
-/**
-		 * Attaches this object's children to it's parent, promoting them up the tree
-		 */
-
-		promoteChildren(): void {
-// Do I have any children to promote?
-		    while (!isNull(this._pChild)) {
-		        var pNextSibling: IEntity = this._pChild.sibling;
-		        this._pChild.attachToParent(this._pParent);
-		        this._pChild = pNextSibling;
-		    }
-		}
-
-		relocateChildren(pParent: IEntity): void {
-			if (pParent != this) {
-// Do I have any children to relocate?
-		        while (!isNull(this._pChild)) {
-		            var pNextSibling: IEntity = this._pChild.sibling;
-		            this._pChild.attachToParent(pParent);
-		            this._pChild = pNextSibling;
-		        }
-		    }
-		}
-
-		toString(isRecursive: bool = false, iDepth: int = 0): string {
-
-		    if (!isRecursive) {
-		        return '<entity' + (this._sName? ' ' + this._sName: "") + '>';
-		    }
-
-		    var pSibling: IEntity = this.sibling;
-		    var pChild: IEntity = this.child;
-		    var s: string = "";
-
-		    for (var i = 0; i < iDepth; ++ i) {
-		        s += ':  ';
-		    }
-
-		    s += '+----[depth: ' + this.depth + ']' + this.toString() + '\n';
-
-		    if (pChild) {
-		        s += pChild.toString(true, iDepth + 1);
-		    }
-
-		    if (pSibling) {
-		        s += pSibling.toString(true, iDepth);
-		    }
-
-		    return s;
-
-
-		}
-
-	}
-}
 
 
 
@@ -10970,11 +10991,14 @@ module akra.scene {
 
 
 module akra {
+	export interface IRect3d {} ;
+
     export interface ISceneObject extends ISceneNode {
-//worldBounds: Rect3d;
+//    	worldBounds: IRect3d;
+//   	localBounds: IRect3d;
 
 
-//getObjectFlags(): int;
+// 	getObjectFlags(): int;
     }
 }
 
@@ -11150,9 +11174,6 @@ module akra.scene {
 }
 
 
-
-//#include "IBuildScenario.ts"
-//#include "ISceneBuilder.ts"
 
 
 
@@ -11641,7 +11662,662 @@ module akra.scene {
 
 
 
-//#include "IEngine.ts"
+
+
+
+
+
+
+
+module akra {
+	export interface INode {} ;
+	export interface IJoint {} ;
+	export interface IAnimationFrame {} ;
+	export interface IAnimationTrack {} ;
+	export interface IAnimationTarget{
+		target: INode;
+		index: int;
+		name: string;
+		track?: IAnimationTrack;
+	}
+
+	export interface IAnimationBase extends IEventProvider {
+		duration: float;
+		name: string;
+
+
+		play(fRealTime: float): void;
+		stop(fRealTime: float): void;
+
+		attach(pTarget: INode): void;
+
+		frame(sName: string, fRealTime: float): IAnimationFrame;
+		apply(fRealTime: float): void;
+
+		addTarget(sName: string, pTarget: INode): IAnimationTarget;
+		setTarget(sName: string, pTarget: INode): IAnimationTarget;
+		getTarget(sTargetName: string): IAnimationTarget;
+		getTargetList(): IAnimationTarget[];
+		getTargetByName(sName: string): IAnimationTarget;
+		targetNames(): string[];
+		targetList(): INode[];
+		jointList(): IJoint[];
+		grab(pAnimationBase: IAnimationBase, bRewrite?: bool): void;
+
+		createAnimationMask(): IntMap;
+
+	}
+}
+
+
+
+
+
+
+
+
+module akra {
+	export enum EAnimationInterpolations {
+		MATRIX_LINEAR,
+		LINEAR
+	}
+
+	export interface IAnimationFrame {
+		toMatrix(): IMat4;
+	}
+}
+
+
+
+
+
+
+module akra {
+	export interface IAnimationFrame {} ;
+	export interface ISkeleton {} ;
+	export interface INode {} ;
+	export interface IMat4 {} ;
+	export interface IAnimationTrack {
+		 targetName: string;
+		 target;
+		nodeName: string;
+		 duration: float;
+
+		keyFrame(fTime: float, pMatrix: IMat4): bool;
+		getKeyFrame(iFrame: int): IAnimationFrame;
+		findKeyFrame(fTime: float): int;
+		bind(sJoint: string, pSkeleton: ISkeleton);
+		bind(pSkeleton: ISkeleton);
+		bind(pNode: INode);
+		getTarget(): string;
+		frame(fTime: float): IAnimationFrame;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IJoint extends INode {
+
+	}
+}
+
+
+
+
+module akra.scene {
+	export class Joint extends Node implements IJoint {
+
+	}
+}
+
+
+
+
+module akra.animation {
+	export interface IAnimationTargetMap{
+		[index: string]: IAnimationTarget;
+	}
+
+	export class AnimationBase implements IAnimationBase {
+
+		private _pTargetMap: IAnimationTargetMap = {};
+    	private _pTargetList: IAnimationTarget[] = [];
+
+    	 _fDuration: float = 0.0;
+		private _sName: string;
+
+		/**@inline*/  get duration(): float{
+			return this._fDuration;
+		}
+
+		/**@inline*/  set duration(fValue: float){
+			this._fDuration = fValue;
+		}
+
+		/**@inline*/  get name(): string{
+			return this._sName;
+		};
+
+		/**@inline*/  set name(sName: string){
+			this._sName = sName;
+		};
+
+
+		play(fRealTime: float): void {
+			this.onplay(fRealTime);
+		}
+
+		stop(fRealTime: float): void {
+			this.onstop(fRealTime);
+		}
+
+		attach(pTarget: INode): void {
+			debug_error("method AnimationBase::bind() must be overwritten.");
+		}
+
+		frame(sName: string, fRealTime: float): IAnimationFrame {
+			return null;
+		}
+
+		apply(fRealTime: float): void {
+			var pTargetList: IAnimationTarget[] = this._pTargetList;
+		    var pTarget: INode;
+		    var pFrame: IAnimationFrame;
+		    var pTransform;
+
+			for (var i = 0; i < pTargetList.length; ++ i) {
+				pFrame = this.frame(pTargetList[i].name, fRealTime);
+				pTarget = pTargetList[i].target;
+
+				if (!pFrame || !pTarget) {
+					continue;
+				}
+
+				pTransform = pFrame.toMatrix();
+				pTarget.localMatrix.set(pTransform);
+			};
+
+		}
+
+		addTarget(sName: string, pTarget: INode = null): IAnimationTarget {
+//pTarget = pTarget || null;
+
+		    var pPointer: IAnimationTarget = this._pTargetMap[sName];
+
+		    if (pPointer) {
+		    	pPointer.target = pTarget || pPointer.target || null;
+		    	return pPointer;
+		    }
+
+		    pPointer = {
+				target: pTarget,
+				index: this._pTargetList.length,
+				name: sName
+			};
+
+		    this._pTargetList.push(pPointer);
+			this._pTargetMap[sName] = pPointer;
+
+			return pPointer;
+		}
+
+		setTarget(sName: string, pTarget: INode): IAnimationTarget {
+
+		    var pPointer: IAnimationTarget = this._pTargetMap[sName];
+			pPointer.target = pTarget;
+			return pPointer;
+		}
+
+		getTarget(sTargetName: string): IAnimationTarget {
+			return this._pTargetMap[sTargetName];
+		}
+
+		/**@inline*/  getTargetList(): IAnimationTarget[] {
+			return this._pTargetList;
+		}
+
+		/**@inline*/  getTargetByName(sName: string): IAnimationTarget {
+			return this._pTargetMap[sName];
+		}
+
+		targetNames(): string[] {
+			var pTargets: IAnimationTarget[] = this._pTargetList;
+			var pTargetNames: string[] = [];
+
+			for (var i = 0; i < pTargets.length; ++ i) {
+				pTargetNames.push(pTargets[i].name);
+			}
+
+			return pTargetNames;
+		}
+
+		targetList(): INode[] {
+			var pTargets: IAnimationTarget[] = this._pTargetList;
+			var pTargetList: INode[] = [];
+
+			for (var i = 0; i < pTargets.length; ++ i) {
+				pTargetList.push(pTargets[i].target);
+			}
+
+			return pTargetList;
+		}
+
+		jointList(): IJoint[] {
+			var pTargets: IAnimationTarget[] = this._pTargetList;
+			var pJointList: IJoint[] = [];
+
+			for (var i = 0; i < pTargets.length; ++ i) {
+				if (pTargets[i].target instanceof scene.Joint) {
+					pJointList.push(pTargets[i].target);
+				}
+			}
+
+			return pJointList;
+		}
+
+		grab(pAnimationBase: IAnimationBase, bRewrite: bool = true): void{
+
+		    var pAdoptTargets: IAnimationTarget[] = pAnimationBase.getTargetList();
+
+			for (var i = 0; i < pAdoptTargets.length; ++ i) {
+
+				if (!pAdoptTargets[i].target) {
+//warning('cannot grab target <' + pAdoptTargets[i].name + '>, becaus "target" is null');
+					continue;
+				}
+
+				if (bRewrite || !this.getTarget(pAdoptTargets[i].name)) {
+					this.addTarget(pAdoptTargets[i].name, pAdoptTargets[i].target);
+				}
+			};
+		}
+
+		createAnimationMask(): FloatMap {
+			var pTargets: string[] = this.targetNames();
+		    var pMask: FloatMap = <FloatMap>{};
+
+		    for (var i = 0; i < pTargets.length; ++ i) {
+		    	pMask[pTargets[i]] = 1.0;
+		    }
+
+		    return pMask;
+		}
+
+		private _iGuid: uint = sid(); private static _pEvenetTable: IEventTable = new events.EventTable(); /**@inline*/ getEventTable(): IEventTable {return AnimationBase._pEvenetTable; } /**@inline*/ getGuid(): uint {return this._iGuid; } /**@inline*/ connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; /**@inline*/ bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } ;
+			onplay (fRealTime) : void { var broadcast: IEventSlot[] = (this.getEventTable()).broadcast[this._iGuid]["onplay"]; for (var i = 0; i < broadcast.length; ++ i) { broadcast[i].target? broadcast[i].target[broadcast[i].callback] (fRealTime) : broadcast[i].listener (fRealTime) ; } } ; ;
+			onstop (fRealTime) : void { var broadcast: IEventSlot[] = (this.getEventTable()).broadcast[this._iGuid]["onstop"]; for (var i = 0; i < broadcast.length; ++ i) { broadcast[i].target? broadcast[i].target[broadcast[i].callback] (fRealTime) : broadcast[i].listener (fRealTime) ; } } ; ;
+		;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface INode {} ;
+	export interface IAnimationFrame {} ;
+	export interface IAnimationTrack {} ;
+
+	export interface IAnimation extends IAnimationBase {
+		 totalTracks: int;
+
+		push(pTrack: IAnimationTrack): void;
+		attach(pTarget: INode): void;
+
+		getTracks(): IAnimationTrack[];
+
+		frame(sName: string, fTime: float): IAnimationFrame;
+		extend(pAnimation: IAnimation): void;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra.animation {
+	export class Animation implements IAnimation extends AnimationBase {
+
+		private _pTracks: IAnimationTrack[] = [];
+
+
+		/**@inline*/  get totalTracks(): float{
+			return this._pTracks.length;
+		}
+
+		push(pTrack: IAnimationTrack): void {
+			this._pTracks.push(pTrack);
+			this._fDuration = Math.max(this._fDuration, pTrack.duration);
+			this.addTarget(pTrack.targetName);
+		}
+
+		attach(pTarget: INode): void {
+			var pPointer;
+		    var pTracks: IAnimationTrack[] = this._pTracks;
+			for (var i = 0; i < pTracks.length; ++ i) {
+				if (!pTracks[i].bind(pTarget)) {
+					trace('cannot bind animation track [', i, '] to joint <', pTracks[i].getTarget(), '>');
+				}
+				else {
+					pPointer = this.setTarget(pTracks[i].targetName, pTracks[i].target);
+					pPointer.track = pTracks[i];
+				}
+			};
+		}
+
+		getTracks(): IAnimationTrack[] {
+			return this._pTracks;
+		}
+
+		frame(sName: string, fTime: float): IAnimationFrame {
+			var pPointer: IAnimationTarget = this.getTargetByName(sName);
+
+		    if (!pPointer || !pPointer.track) {
+		    	return null;
+		    }
+
+			return pPointer.track.frame(math.clamp(fTime, 0, this._fDuration));
+		}
+
+		extend(pAnimation: IAnimation): void {
+			var pTracks: IAnimationTrack[] = pAnimation.getTracks();
+
+			for (var i = 0; i < pTracks.length; ++ i) {
+				if (!this.getTarget(pTracks[i].targetName)) {
+					this.push(pTracks[i]);
+				}
+			}
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra.animation {
+	export class AnimationFrame implements IAnimationFrame{
+		private _fTime:   float = 0.0;
+		private _fWeight: float = 1.0;
+
+		private _pMatrix: IMat4 = null;
+
+		private _qRotation:      IQuat4 = new Quat4;
+		private _v3fScale:       IVec3  = new Vec3;
+		private _v3fTranslation: IVec3  = new Vec3;
+
+		/**@inline*/  get time(): float{
+			return this._fTime;
+		}
+
+		/**@inline*/  set time(fValue: float){
+			this._fTime = fValue;
+		}
+
+		/**@inline*/  get weight(): float{
+			return this._fWeight;
+		}
+
+		/**@inline*/  set weight(fValue: float){
+			this._fWeight = fValue;
+		}
+
+		/**@inline*/  get matrix(): IMat4{
+			return this._pMatrix;
+		}
+
+		/**@inline*/  set matrix(pMatrix: IMat4){
+			this._pMatrix = pMatrix;
+		}
+
+		/**@inline*/  get rotation(): IQuat4{
+			return this._qRotation;
+		}
+
+		/**@inline*/  set rotation(qRotation: IQuat4){
+			this._qRotation = qRotation;
+		}
+
+		/**@inline*/  get scale(): IVec3{
+			return this._v3fScale;
+		}
+
+		/**@inline*/  set scale(v3fScale: IVec3){
+			this._v3fScale = v3fScale;
+		}
+
+		/**@inline*/  get translation(): IVec3{
+			return this._v3fTranslation;
+		}
+
+		/**@inline*/  set translation(v3fTranslation: IVec3){
+			this._v3fTranslation = v3fTranslation;
+		}
+
+		constructor(fTime?: float, pMatrix?: IMat4, fWeight?: float) {
+			switch (arguments.length) {
+				case 0:
+					this.matrix = new Mat4;
+					return;
+				case 3:
+					this.weight = fWeight;
+				case 2:
+					this.matrix = pMatrix;
+				case 1:
+					this.time = fTime;
+			};
+
+			this.matrix.decompose(this.rotation, this.scale, this.translation);
+		}
+
+		toMatrix() {
+			return this.rotation.toMat4(this.matrix)
+				.setTranslation(this.translation).scaleRight(this.scale);
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra.animation {
+	export class AnimationTrack implements IAnimationTrack{
+		private _sTarget: string;
+		private _pTarget: INode = null;
+		private _pKeyFrames: IAnimationFrame[] = [];
+		private _eInterpolationType: EAnimationInterpolations = EAnimationInterpolations.MATRIX_LINEAR;
+
+		/**@inline*/  get targetName(): string{
+			return this.nodeName;
+		}
+
+		/**@inline*/  get target(): INode{
+			return this._pTarget;
+		}
+
+		/**@inline*/  get nodeName(): string{
+			return this._sTarget;
+		}
+
+		/**@inline*/  set nodeName(sValue: string){
+			this._sTarget = sValue;
+		}
+
+		/**@inline*/  get duration(): string{
+			return this._pKeyFrames.last.fTime;
+		}
+
+		keyFrame(fTime: float, pMatrix: IMat4) {
+			var pFrame: IAnimationFrame;
+		    var iFrame: int;
+
+		    var pKeyFrames: IAnimationFrame[] = this._pKeyFrames;
+		  	var nTotalFrames: int = pKeyFrames.length;
+
+		  	if (arguments.length > 1) {
+		  		pFrame = new animation.AnimationFrame(fTime, pMatrix);
+		  	}
+		    else {
+		    	pFrame = arguments[0];
+		    }
+
+		    if (nTotalFrames && (iFrame = this.findKeyFrame(pFrame.fTime)) >= 0) {
+				pKeyFrames.splice(iFrame, 0, pFrame);
+			}
+			else {
+				pKeyFrames.push(pFrame);
+			}
+
+			return true;
+		}
+
+		getKeyFrame(iFrame: int) {
+			debug_assert(iFrame < this._pKeyFrames.length, 'iFrame must be less then number of total jey frames.');
+
+			return this._pKeyFrames[iFrame];
+		}
+
+		findKeyFrame(fTime: float) {
+			var pKeyFrames: IAnimationFrame[] = this._pKeyFrames;
+		    var nTotalFrames: int             = pKeyFrames.length;
+
+			if (pKeyFrames[nTotalFrames - 1].fTime == fTime) {
+				return nTotalFrames - 1;
+			}
+			else {
+				for (var i: int = nTotalFrames - 1; i >= 0; i--) {
+					if (pKeyFrames[i].fTime > fTime && pKeyFrames[i - 1].fTime <= fTime) {
+						return i - 1;
+					}
+				}
+			}
+
+			return -1;
+		}
+
+		bind(sJoint: string, pSkeleton: ISkeleton);
+		bind(pSkeleton: ISkeleton);
+		bind(pNode: INode);
+		bind(pJoint: any, pSkeleton?: any) {
+			var pNode: INode = null,
+				pRootNode: INode;
+
+			var sJoint: string;
+
+			switch (arguments.length) {
+				case 2:
+//bind by pair <String joint, Skeleton skeleton>
+					sJoint = <string>pJoint;
+
+					this._sTarget = sJoint;
+					pNode = (<ISkeleton>pSkeleton).findJoint(sJoint);
+					break;
+				default:
+//bind by <Skeleton skeleton>
+					if (arguments[0] instanceof animation.Skeleton) {
+
+						if (this._sTarget == null) {
+							return false;
+						}
+
+						pSkeleton = <ISkeleton>arguments[0];
+						pNode = (<ISkeleton>pSkeleton).findJoint(this._sTarget);
+					}
+//bind by <Node node>
+					else if (arguments[0] instanceof a.Node) {
+						pRootNode = <INode>arguments[0];
+						pNode = pRootNode.findNode(this.nodeName);
+					}
+			}
+
+			this._pTarget = pNode;
+
+			return isDefAndNotNull(pNode);
+		}
+
+		frame(fTime: float) {
+			var iKey1: int = 0, iKey2: int = 0;
+			var fScalar: float;
+			var fTimeDiff: float;
+
+			var pKeys:  IAnimationFrame[] = this._pKeyFrames
+			var nKeys:  int = pKeys.length;
+			var pFrame: IAnimationFrame = animation.AnimationFrame();
+
+			debug_assert(nKeys, 'no frames :(');
+
+			if (nKeys === 1) {
+				pFrame.set(pKeys[0]);
+			}
+			else {
+//TODO: реализовать существенно более эффективный поиск кадра.
+				for (var i: int = 0; i < nKeys; i ++) {
+			    	if (fTime >= this._pKeyFrames[i].fTime) {
+			            iKey1 = i;
+			        }
+			    }
+
+			    iKey2 = (iKey1 >= (nKeys - 1))? iKey1 : iKey1 + 1;
+
+			    fTimeDiff = pKeys[iKey2].fTime - pKeys[iKey1].fTime;
+
+			    if (!fTimeDiff)
+			        fTimeDiff = 1;
+
+				fScalar = (fTime - pKeys[iKey1].fTime) / fTimeDiff;
+
+				pFrame.interpolate(
+					this._pKeyFrames[iKey1],
+					this._pKeyFrames[iKey2],
+					fScalar);
+			}
+
+			pFrame.fTime = fTime;
+			pFrame.fWeight = 1.0;
+
+			return pFrame;
+		}
+	}
+}
+
+
 
 
 
