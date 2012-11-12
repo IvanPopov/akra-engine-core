@@ -79,11 +79,38 @@ module akra.animation {
 			this.matrix.decompose(this.rotation, this.scale, this.translation);
 		}
 
-		toMatrix() {
+		set(pFrame: IAnimationFrame): void {
+			//FIXME: расписать побыстрее
+			this.matrix.set(pFrame.matrix);
+
+			this.rotation.set(pFrame.rotation);
+			this.scale.set(pFrame.scale);
+			this.translation.set(pFrame.translation);
+
+			this.time = pFrame.time;
+			this.weight = pFrame.weight;
+		}
+
+		interpolate(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend: float): void {
+			var pResultData = this.matrix.data;
+			var pStartData = pStartFrame.matrix.data;
+			var pEndData = pEndFrame.matrix.data;
+			var fBlendInv = 1. - fBlend;
+
+			for (var i = 0; i < 16; i++) {
+				pResultData[i] = pEndData[i] * fBlend + pStartData[i] * fBlendInv;
+			};
+		}
+
+		toMatrix(): IMat4{
 			return this.rotation.toMat4(this.matrix)
 				.setTranslation(this.translation).scaleRight(this.scale);
 		}
 	} 
+
+	export function animationFrame(): IAnimationFrame {
+		return null;
+	}
 }
 
 #endif

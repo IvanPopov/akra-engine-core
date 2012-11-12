@@ -7,9 +7,8 @@ module akra {
 	IFACE(INode);
 	IFACE(IMat4);
 	export interface IAnimationTrack {
-		readonly targetName: string;
-		readonly target;
-		nodeName: string;
+		targetName: string;
+		readonly target: INode;
 		readonly duration: float;
 
 		keyFrame(fTime: float, pMatrix: IMat4): bool;
@@ -18,7 +17,6 @@ module akra {
 		bind(sJoint: string, pSkeleton: ISkeleton);
 		bind(pSkeleton: ISkeleton);
 		bind(pNode: INode);
-		getTarget(): string;
 		frame(fTime: float): IAnimationFrame;
 	}
 }

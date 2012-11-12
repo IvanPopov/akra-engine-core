@@ -28,7 +28,7 @@ module akra.animation {
 		    var pTracks: IAnimationTrack[] = this._pTracks;
 			for (var i = 0; i < pTracks.length; ++ i) {
 				if (!pTracks[i].bind(pTarget)) {
-					trace('cannot bind animation track [', i, '] to joint <', pTracks[i].getTarget(), '>');
+					trace('cannot bind animation track [', i, '] to joint <', pTracks[i].target, '>');
 				}
 				else {
 					pPointer = this.setTarget(pTracks[i].targetName, pTracks[i].target);

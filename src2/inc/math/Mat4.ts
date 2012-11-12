@@ -11,6 +11,10 @@ module akra.math {
     export class Mat4 implements IMat4{
     	data: Float32Array;
 
+    	decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): bool{	
+			return true;
+		};
+
 		constructor();
 		constructor(fValue: float);
 		constructor(v4fVec: IVec4);
@@ -1124,6 +1128,8 @@ module akra.math {
 		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4 {
 			return null;
 		}
+
+		
     }
 }
 

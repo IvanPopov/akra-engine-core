@@ -1752,7 +1752,7 @@ module akra {
 		scaleRight(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
 		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
 
-// decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): void;
+		decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): void;
 
 
 
@@ -2512,6 +2512,10 @@ module akra {
 module akra.math {
     export class Mat4 implements IMat4{
     	data: Float32Array;
+
+    	decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): bool{
+			return true;
+		};
 
 		constructor();
 		constructor(fValue: float);
@@ -3611,12 +3615,6 @@ module akra.math {
 		    return m4fDestination;
 		};
 
-		/**@inline*/  decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): bool{
-			this.getTranslation(v3fTranslation);
-			var m3fRotScale = this.toMat3(mat3());
-			return m3fRotScale.decompose(q4fRotation,v3fScale);
-		};
-
 		toInverseMat3(m3fDestination: IMat3): IMat3 {
 			return null;
 		}
@@ -3636,6 +3634,8 @@ module akra.math {
 		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4 {
 			return null;
 		}
+
+
     }
 }
 
@@ -11717,12 +11717,24 @@ module akra {
 
 
 module akra {
+	export interface IMat4 {} ;
+	export interface IQuat4 {} ;
+	export interface IVec3 {} ;
+	export interface IAnimationFrame {} ;
 	export enum EAnimationInterpolations {
 		MATRIX_LINEAR,
 		LINEAR
 	}
 
 	export interface IAnimationFrame {
+		time: float;
+		weight: float;
+		matrix: IMat4;
+		rotation: IQuat4;
+		scale: IVec3;
+		translation: IVec3;
+		set(pFrame: IAnimationFrame): void;
+		interpolate(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend: float): void;
 		toMatrix(): IMat4;
 	}
 }
@@ -11738,9 +11750,8 @@ module akra {
 	export interface INode {} ;
 	export interface IMat4 {} ;
 	export interface IAnimationTrack {
-		 targetName: string;
-		 target;
-		nodeName: string;
+		targetName: string;
+		 target: INode;
 		 duration: float;
 
 		keyFrame(fTime: float, pMatrix: IMat4): bool;
@@ -11749,7 +11760,6 @@ module akra {
 		bind(sJoint: string, pSkeleton: ISkeleton);
 		bind(pSkeleton: ISkeleton);
 		bind(pNode: INode);
-		getTarget(): string;
 		frame(fTime: float): IAnimationFrame;
 	}
 }
@@ -12015,7 +12025,7 @@ module akra.animation {
 		    var pTracks: IAnimationTrack[] = this._pTracks;
 			for (var i = 0; i < pTracks.length; ++ i) {
 				if (!pTracks[i].bind(pTarget)) {
-					trace('cannot bind animation track [', i, '] to joint <', pTracks[i].getTarget(), '>');
+					trace('cannot bind animation track [', i, '] to joint <', pTracks[i].target, '>');
 				}
 				else {
 					pPointer = this.setTarget(pTracks[i].targetName, pTracks[i].target);
@@ -12055,6 +12065,34 @@ module akra.animation {
 
 
 
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface INode {} ;
+	export interface ISkeleton {
+		findJoint(sJoint: string): INode;
+	}
+}
+
+
+
+
+
+module akra.model {
+	export class Skeleton implements ISkeleton{
+		findJoint(sJoint: string): INode {
+			return null;
+		}
+	}
+}
 
 
 
@@ -12141,10 +12179,37 @@ module akra.animation {
 			this.matrix.decompose(this.rotation, this.scale, this.translation);
 		}
 
-		toMatrix() {
+		set(pFrame: IAnimationFrame): void {
+//FIXME: расписать побыстрее
+			this.matrix.set(pFrame.matrix);
+
+			this.rotation.set(pFrame.rotation);
+			this.scale.set(pFrame.scale);
+			this.translation.set(pFrame.translation);
+
+			this.time = pFrame.time;
+			this.weight = pFrame.weight;
+		}
+
+		interpolate(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend: float): void {
+			var pResultData = this.matrix.data;
+			var pStartData = pStartFrame.matrix.data;
+			var pEndData = pEndFrame.matrix.data;
+			var fBlendInv = 1. - fBlend;
+
+			for (var i = 0; i < 16; i++) {
+				pResultData[i] = pEndData[i] * fBlend + pStartData[i] * fBlendInv;
+			};
+		}
+
+		toMatrix(): IMat4{
 			return this.rotation.toMat4(this.matrix)
 				.setTranslation(this.translation).scaleRight(this.scale);
 		}
+	}
+
+	export function animationFrame(): IAnimationFrame {
+		return null;
 	}
 }
 
@@ -12164,27 +12229,23 @@ module akra.animation {
 		private _pKeyFrames: IAnimationFrame[] = [];
 		private _eInterpolationType: EAnimationInterpolations = EAnimationInterpolations.MATRIX_LINEAR;
 
-		/**@inline*/  get targetName(): string{
-			return this.nodeName;
-		}
-
 		/**@inline*/  get target(): INode{
 			return this._pTarget;
 		}
 
-		/**@inline*/  get nodeName(): string{
+		/**@inline*/  get targetName(): string{
 			return this._sTarget;
 		}
 
-		/**@inline*/  set nodeName(sValue: string){
+		/**@inline*/  set targetName(sValue: string){
 			this._sTarget = sValue;
 		}
 
-		/**@inline*/  get duration(): string{
+		/**@inline*/  get duration(): float{
 			return this._pKeyFrames.last.fTime;
 		}
 
-		keyFrame(fTime: float, pMatrix: IMat4) {
+		keyFrame(fTime: float, pMatrix: IMat4): bool {
 			var pFrame: IAnimationFrame;
 		    var iFrame: int;
 
@@ -12198,7 +12259,7 @@ module akra.animation {
 		    	pFrame = arguments[0];
 		    }
 
-		    if (nTotalFrames && (iFrame = this.findKeyFrame(pFrame.fTime)) >= 0) {
+		    if (nTotalFrames && (iFrame = this.findKeyFrame(pFrame.time)) >= 0) {
 				pKeyFrames.splice(iFrame, 0, pFrame);
 			}
 			else {
@@ -12208,22 +12269,22 @@ module akra.animation {
 			return true;
 		}
 
-		getKeyFrame(iFrame: int) {
+		getKeyFrame(iFrame: int): IAnimationFrame {
 			debug_assert(iFrame < this._pKeyFrames.length, 'iFrame must be less then number of total jey frames.');
 
 			return this._pKeyFrames[iFrame];
 		}
 
-		findKeyFrame(fTime: float) {
+		findKeyFrame(fTime: float): int {
 			var pKeyFrames: IAnimationFrame[] = this._pKeyFrames;
 		    var nTotalFrames: int             = pKeyFrames.length;
 
-			if (pKeyFrames[nTotalFrames - 1].fTime == fTime) {
+			if (pKeyFrames[nTotalFrames - 1].time == fTime) {
 				return nTotalFrames - 1;
 			}
 			else {
 				for (var i: int = nTotalFrames - 1; i >= 0; i--) {
-					if (pKeyFrames[i].fTime > fTime && pKeyFrames[i - 1].fTime <= fTime) {
+					if (pKeyFrames[i].time > fTime && pKeyFrames[i - 1].time <= fTime) {
 						return i - 1;
 					}
 				}
@@ -12232,10 +12293,10 @@ module akra.animation {
 			return -1;
 		}
 
-		bind(sJoint: string, pSkeleton: ISkeleton);
-		bind(pSkeleton: ISkeleton);
-		bind(pNode: INode);
-		bind(pJoint: any, pSkeleton?: any) {
+		bind(sJoint: string, pSkeleton: ISkeleton): bool;
+		bind(pSkeleton: ISkeleton): bool;
+		bind(pNode: INode): bool;
+		bind(pJoint: any, pSkeleton?: any): bool {
 			var pNode: INode = null,
 				pRootNode: INode;
 
@@ -12251,7 +12312,7 @@ module akra.animation {
 					break;
 				default:
 //bind by <Skeleton skeleton>
-					if (arguments[0] instanceof animation.Skeleton) {
+					if (arguments[0] instanceof model.Skeleton) {
 
 						if (this._sTarget == null) {
 							return false;
@@ -12261,9 +12322,9 @@ module akra.animation {
 						pNode = (<ISkeleton>pSkeleton).findJoint(this._sTarget);
 					}
 //bind by <Node node>
-					else if (arguments[0] instanceof a.Node) {
+					else if (arguments[0] instanceof scene.Node) {
 						pRootNode = <INode>arguments[0];
-						pNode = pRootNode.findNode(this.nodeName);
+						pNode = <INode>pRootNode.findEntity(this.targetName);
 					}
 			}
 
@@ -12272,16 +12333,16 @@ module akra.animation {
 			return isDefAndNotNull(pNode);
 		}
 
-		frame(fTime: float) {
+		frame(fTime: float): IAnimationFrame {
 			var iKey1: int = 0, iKey2: int = 0;
 			var fScalar: float;
 			var fTimeDiff: float;
 
 			var pKeys:  IAnimationFrame[] = this._pKeyFrames
 			var nKeys:  int = pKeys.length;
-			var pFrame: IAnimationFrame = animation.AnimationFrame();
+			var pFrame: IAnimationFrame = animation.animationFrame();
 
-			debug_assert(nKeys, 'no frames :(');
+			debug_assert(nKeys > 0, 'no frames :(');
 
 			if (nKeys === 1) {
 				pFrame.set(pKeys[0]);
@@ -12289,19 +12350,19 @@ module akra.animation {
 			else {
 //TODO: реализовать существенно более эффективный поиск кадра.
 				for (var i: int = 0; i < nKeys; i ++) {
-			    	if (fTime >= this._pKeyFrames[i].fTime) {
+			    	if (fTime >= this._pKeyFrames[i].time) {
 			            iKey1 = i;
 			        }
 			    }
 
 			    iKey2 = (iKey1 >= (nKeys - 1))? iKey1 : iKey1 + 1;
 
-			    fTimeDiff = pKeys[iKey2].fTime - pKeys[iKey1].fTime;
+			    fTimeDiff = pKeys[iKey2].time - pKeys[iKey1].time;
 
 			    if (!fTimeDiff)
 			        fTimeDiff = 1;
 
-				fScalar = (fTime - pKeys[iKey1].fTime) / fTimeDiff;
+				fScalar = (fTime - pKeys[iKey1].time) / fTimeDiff;
 
 				pFrame.interpolate(
 					this._pKeyFrames[iKey1],
@@ -12309,8 +12370,8 @@ module akra.animation {
 					fScalar);
 			}
 
-			pFrame.fTime = fTime;
-			pFrame.fWeight = 1.0;
+			pFrame.time = fTime;
+			pFrame.weight = 1.0;
 
 			return pFrame;
 		}
