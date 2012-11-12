@@ -1,7 +1,7 @@
 #ifndef ILOGGER_TS
 #define ILOGGER_TS
 
-module akra.util {
+module akra {
 
 	export enum ELogLevel {
         NONE = 0x0000,

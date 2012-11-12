@@ -1,7 +1,9 @@
 #ifndef IPARSER_TS
 #define IPARSER_TS
 
-module akra.util {
+#include "common.ts"
+
+module akra {
 	#define END_POSITION "END"
     #define T_EMPTY "EMPTY"
     #define UNKNOWN_TOKEN "UNNOWN"
@@ -43,7 +45,29 @@ module akra.util {
         k_Add = 0x0004,
         k_Optimize = 0x0008,
         k_DebugMode = 0x0010
-    };
+    }
+
+    export enum ETokenType {
+        k_NumericLiteral = 1,
+        k_CommentLiteral,
+        k_StringLiteral,
+        k_PunctuatorLiteral,
+        k_WhitespaceLiteral,
+        k_IdentifierLiteral,
+        k_KeywordLiteral,
+        k_Unknown,
+        k_End
+    }
+
+    export interface IToken {
+        value: string;
+        start: uint;
+        end: uint;
+        line: uint;
+
+        name?: string;
+        type?: ETokenType;
+    }
 
 
     export interface IRule {
@@ -74,6 +98,10 @@ module akra.util {
         parent: IParseNode;
         name: string;
         value: string;
+        
+        //Data for next-step analyze
+        isAnalyzed: bool;
+        position: uint;
 
         start?: uint;
         end?: uint;
@@ -127,6 +155,8 @@ module akra.util {
 
         printStates(isPrintOnlyBase?: bool): void;
         printState(iStateIndex: uint, isPrintOnlyBase?: bool): void; 
+
+        getGrammarSymbols(): StringMap;
     }
 }
 

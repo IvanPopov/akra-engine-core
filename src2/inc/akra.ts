@@ -177,4 +177,6 @@
 #include "util/Logger.ts"
 #include "util/EffectParser.ts"
 
+#include "fx/Effect.ts"
+
 #endif

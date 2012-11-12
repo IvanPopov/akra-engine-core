@@ -349,7 +349,7 @@ module akra {
     export var sid = (): uint => (++ sid._iTotal);
     sid._iTotal = 0;
 
-    //export var now = (): uint => ((new Date()).getTime());
+    export var now = (): uint => ((new Date()).getTime());
 
     //export function 
 

@@ -1,27 +1,6 @@
 module akra.fx {
-    
-    //Temp
-    export interface IParseNode {
-        name: string;
-        value: string;
-        line: uint;
-        start: uint;
-        end: uint;
-    }
 
-    export interface IParseTree {
-        root: IParseNode;
-    }
-    //End temp
-
-
-    export interface StringMap {
-        [s: string]: string;
-    }
-
-    export var NodeNameMap: StringMap = { };
-
-    export interface IEffectVariable {
+    export interface IAFXVariable {
         type: IComplexType;
         
         name: string;
@@ -39,47 +18,45 @@ module akra.fx {
         isConst(): bool;
     }
 
-    export interface IEffectUsages {
+    export interface IAFXUsages {
     }
 
-    export interface IEffectType {
+    export interface IAFXType {
         hash: string;
         name: string;
 
         isBase(): bool;
     }
 
-    export interface IComplexType extends IEffectType{
+    export interface IAFXComplexType extends IAFXType {
         usages: IEffectUsages;
-
     }
 
-    export interface IEffectFunction {
-
+    export interface IAFXFunction {
     }
 
-    export interface IEffecStrunct {
+    export interface IAFXStrunct {
     
     }
 
-    export interface IEffectStructField {
+    export interface IAFXStructField {
         padding: uint;
     }
     
-    export interface IEffectPass {
+    export interface IAFXPass {
     
     }
 
-    export interface IEffectTechnique {
+    export interface IAFXTechnique {
     
     }
 
 
-    export interface IInstuction {
+    export interface IAFXInstuction {
         isValid(): bool;
     }
 
-    export interface IEffectFile {
+    export interface IAFXEffect {
         analyze(pTree: IParseTree): bool;
         clear(): void;
     }

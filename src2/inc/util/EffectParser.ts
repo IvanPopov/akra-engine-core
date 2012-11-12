@@ -567,10 +567,10 @@ T_OP_RE : \"%=\"\n\
 T_OP_AE : \"+=\"\n\
 T_OP_SE : \"-=\"";
 
-	parser.init(sGrammar, akra.util.EParseMode.k_Add | 
-						  akra.util.EParseMode.k_Negate |
-						  akra.util.EParseMode.k_Optimize |
-						  akra.util.EParseMode.k_DebugMode);
+	parser.init(sGrammar, akra.EParseMode.k_Add | 
+						  akra.EParseMode.k_Negate |
+						  akra.EParseMode.k_Optimize |
+						  akra.EParseMode.k_DebugMode);
 
 }
 

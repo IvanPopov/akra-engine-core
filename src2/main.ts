@@ -7,7 +7,7 @@ module akra {
 	// var scene: IScene = view.getScene();
 }
 
-var parser: akra.util.IParser = akra.util.parser;
+var parser: akra.IParser = akra.util.parser;
 
 // var sGrammar:string = "S : E\n"			+
 // 					  "E : T '+' --F testFunc1 E\n"	+
@@ -36,6 +36,6 @@ var parser: akra.util.IParser = akra.util.parser;
 // 				 akra.util.EParseMode.k_DebugMode);
 // x.setParseFileName("/parse.test");
 parser.parse("struct type1{int x;}; type1 y;");
-log(parser);
+log(parser.getGrammarSymbols());
 
 //error(20, akra.logger);

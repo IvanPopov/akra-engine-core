@@ -8,7 +8,7 @@
 #define UNKONWN_MESSAGE "Unknown code."
 
 module akra {
-	export var logger: util.ILogger = new util.Logger();
+	export var logger: ILogger = new util.Logger();
 
 	logger.init();
 	logger.setUnknownCode(UNKNOWN_CODE, UNKONWN_MESSAGE);
@@ -22,12 +22,12 @@ module akra {
    
     //Default log routines
 
-    function sourceLocationToString(pLocation: util.ISourceLocation): string {
+    function sourceLocationToString(pLocation: ISourceLocation): string {
         var sLocation:string = "[" + pLocation.file + ":" + pLocation.line.toString() + "]: ";
         return sLocation;
     }
 
-    function logRoutine(pLogEntity: util.ILoggerEntity): void{
+    function logRoutine(pLogEntity: ILoggerEntity): void{
         var pArgs:any[] = pLogEntity.info;
         
         pArgs.unshift(sourceLocationToString(pLogEntity.location));
@@ -35,7 +35,7 @@ module akra {
         console["log"].apply(console, pArgs);
     }
 
-    function warningRoutine(pLogEntity: util.ILoggerEntity): void{
+    function warningRoutine(pLogEntity: ILoggerEntity): void{
         var pArgs:any[] = pLogEntity.info; 
 
         pArgs.unshift("Code: " + pLogEntity.code.toString());
@@ -44,7 +44,7 @@ module akra {
         console["warning"].apply(console, pArgs);    
     }
 
-    function errorRoutine(pLogEntity: util.ILoggerEntity): void{
+    function errorRoutine(pLogEntity: ILoggerEntity): void{
         var pArgs:any[] = pLogEntity.info; 
 
         pArgs.unshift(pLogEntity.message);
@@ -56,13 +56,13 @@ module akra {
 
     
 
-    logger.setLogRoutine(logRoutine, util.ELogLevel.LOG | 
-                                     util.ELogLevel.INFORMATION);
+    logger.setLogRoutine(logRoutine, ELogLevel.LOG | 
+                                     ELogLevel.INFORMATION);
 
-    logger.setLogRoutine(warningRoutine, util.ELogLevel.WARNING);
+    logger.setLogRoutine(warningRoutine, ELogLevel.WARNING);
     
-    logger.setLogRoutine(errorRoutine, util.ELogLevel.ERROR | 
-                                       util.ELogLevel.CRITICAL);
+    logger.setLogRoutine(errorRoutine, ELogLevel.ERROR | 
+                                       ELogLevel.CRITICAL);
 
 }
 

@@ -47,7 +47,7 @@ module akra.util {
 
 
 
-    function sourceLocationToString(pLocation: util.ISourceLocation): string {
+    function sourceLocationToString(pLocation: ISourceLocation): string {
         var sLocation:string = "[" + pLocation.file + ":" + pLocation.line.toString() + "]: ";
         return sLocation;
     }
@@ -69,21 +69,9 @@ module akra.util {
         console["error"].call(console, sMessage);
     }
 
-    akra.logger.setCodeFamilyRoutine("ParserSyntaxErrors", syntaxErrorLogRoutine, util.ELogLevel.ERROR);
+    akra.logger.setCodeFamilyRoutine("ParserSyntaxErrors", syntaxErrorLogRoutine, ELogLevel.ERROR);
 
     //akra.logger
-
-    export enum ETokenType {
-        k_NumericLiteral = 1,
-        k_CommentLiteral,
-        k_StringLiteral,
-        k_PunctuatorLiteral,
-        k_WhitespaceLiteral,
-        k_IdentifierLiteral,
-        k_KeywordLiteral,
-        k_Unknown,
-        k_End
-    }
 
     export interface IOperation {
         type: EOperationType;
@@ -141,16 +129,6 @@ module akra.util {
         numBaseItems: uint;
         index: uint;
         nextStates: IStateMap;
-    }
-
-    export interface IToken {
-        value: string;
-        start: uint;
-        end: uint;
-        line: uint;
-
-        name?: string;
-        type?: ETokenType;
     }
 
     export interface IStateMap {
@@ -561,7 +539,14 @@ module akra.util {
             }
 
             if ((eCreate === ENodeCreateMode.k_Default && iReduceCount > nOptimize) || (eCreate === ENodeCreateMode.k_Necessary)) {
-                pNode = <IParseNode>{ name: pRule.left, children: null, parent: null, value: "" };
+                pNode = <IParseNode>{
+                            name: pRule.left, 
+                            children: null, 
+                            parent: null, 
+                            value: "" , 
+                            isAnalyzed: false,
+                            position: this._pNodes.length
+                        };
 
                 while (iReduceCount) {
                     this.addLink(pNode, pNodes.pop());
@@ -613,7 +598,9 @@ module akra.util {
                 name: pNode.name,
                 value: pNode.value,
                 children: null,
-                parent: null
+                parent: null,
+                isAnalyzed: pNode.isAnalyzed,
+                position: pNode.position
             };
 
             var pChildren: IParseNode[] = pNode.children;
@@ -664,7 +651,7 @@ module akra.util {
         }
     }
 
-    export class Lexer implements ILexer {
+    class Lexer implements ILexer {
         private _iLineNumber: uint;
         private _iColumnNumber: uint;
         private _sSource: string;
@@ -1300,6 +1287,8 @@ module akra.util {
 
         private _eType: EParserType;
 
+        private _pGrammarSymbols: StringMap;
+
         //Additioanal info
         
         private _pRuleCreationModeMap: IntMap;
@@ -1552,6 +1541,10 @@ module akra.util {
             
             var sMsg: string = "\n" + pState.toString(isBaseOnly);
             log(sMsg);
+        }
+
+        getGrammarSymbols(): StringMap{
+            return this._pGrammarSymbols;
         }
 
         protected addAdditionalFunction(sFuncName: string, fnRuleFunction: IRuleFunction): void {
@@ -1953,6 +1946,7 @@ module akra.util {
             this._pRulesDMap = <IRuleDMap>{};
             this._pAdditionalFuncInfoList = <IAdditionalFuncInfo[]>[];
             this._pRuleCreationModeMap = <IntMap>{};
+            this._pGrammarSymbols = <StringMap>{};
 
             var i: uint = 0, j: uint = 0;
 
@@ -1983,14 +1977,17 @@ module akra.util {
 
                         pTempRule[2] = pTempRule[2].slice(1, pTempRule[2].length - 1);
 
-                        var ch = pTempRule[2][0];
+                        var ch: string = pTempRule[2][0];
+                        var sName: string;
 
                         if ((ch === "_") || (ch >= "a" && ch <= "z") || (ch >= "A" && ch <= "Z")) {
-                            this._pLexer.addKeyword(pTempRule[2], pTempRule[0]);
+                            sName = this._pLexer.addKeyword(pTempRule[2], pTempRule[0]);
                         }
                         else {
-                            this._pLexer.addPunctuator(pTempRule[2], pTempRule[0]);
+                            sName = this._pLexer.addPunctuator(pTempRule[2], pTempRule[0]);
                         }
+
+                        this._pGrammarSymbols[sName] = pTempRule[2];
                     }
 
                     continue;
@@ -2012,6 +2009,7 @@ module akra.util {
                     index: 0
                 };
                 this._pSymbolMap[pTempRule[0]] = true;
+                this._pGrammarSymbols[pTempRule[0]] = pTempRule[0];
 
                 if (isAllNodeMode) {
                     pSymbolsWithNodeMap[pTempRule[0]] = ENodeCreateMode.k_Default;
