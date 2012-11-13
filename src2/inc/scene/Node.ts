@@ -91,7 +91,7 @@ module akra.scene {
 
 		get normalMatrix(): IMat3 {
 			if (TEST_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildNormalMatrix)) {
-		        this._m4fWorldMatrix.toInverseMat3(this._m3fNormalMatrix).transpose();
+		        this._m4fWorldMatrix.toMat3(this._m3fNormalMatrix).inverse().transpose();
 		        CLEAR_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildNormalMatrix);
 		    }
 

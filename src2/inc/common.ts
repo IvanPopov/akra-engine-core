@@ -9,6 +9,15 @@
 #define struct class
 #define const var
 #define DEBUG DEBUG
+#define ALLOCATE_STORAGE(sName, nCount)    \
+        static stackSize: uint = nCount;\
+        static stackPosition: int = 0;\
+        static stack: I ## sName[] = (function(): I ## sName[]{\
+                                    var pStack: I ## sName[] = new Array(sName.stackSize);\
+                                    for(var i:int = 0; i<sName.stackSize; i++){\
+                                        pStack[i] = new sName();\
+                                    }\
+                                    return pStack})();
 
 
 module akra {

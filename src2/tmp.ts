@@ -44,6 +44,7 @@ interface Number {
 
 
 
+
 module akra {
 
 
@@ -1221,59 +1222,284 @@ module akra.bf {
 
 
 
-///<reference path="../akra.ts" />
+
+
+
+
+
+
+
+module akra {
+	export interface IVec2 {
+		x: float;
+		y: float;
+
+		set(): IVec2;
+		set(fValue: float): IVec2;
+		set(v2fVec: IVec2): IVec2;
+		set(pArray: float[]): IVec2;
+		set(fValue1: float, fValue2: float): IVec2;
+
+		clear(): IVec2;
+
+		add(v2fVec: IVec2, v2fDestination?: IVec2): IVec2;
+		subtract(v2fVec: IVec2, v2fDestination?: IVec2): IVec2;
+		dot(v2fVec: IVec2): float;
+
+		isEqual(v2fVec: IVec2, fEps?: float): bool;
+		isClear(fEps?: float): bool;
+
+		negate(v2fDestination?: IVec2): IVec2;
+		scale(fScale: float, v2fDestination?: IVec2): IVec2;
+		normalize(v2fDestination?: IVec2): IVec2;
+		length(): float;
+		lengthSquare(): float;
+
+
+		direction(v2fVec: IVec2, v2fDestination?: IVec2): IVec2;
+
+		mix(v2fVec: IVec2, fA: float, v2fDestination?: IVec2): IVec2;
+
+		toString(): string;
+	};
+};
+
+
 
 module akra.math {
-    export class Vec2 {
+    export class Vec2 implements IVec2{
         x: float = 0.;
         y: float = 0.;
 
-        constructor ();
-        constructor (v2f: Vec2);
-        constructor (x: float, y: float);
-        constructor (x?, y?) {
-            switch (arguments.length) {
-                case 0:
-                    this.x = this.y =  0.;
-                break;
+        constructor();
+        constructor(fValue: float);
+        constructor(v2fVec: IVec2);
+        constructor(pArray: float[]);
+        constructor(fValue1: float, fValue2: float);
+        constructor(fValue1?, fValue2?){
+            var nArgumentsLength: uint = arguments.length;
+
+            switch(nArgumentsLength){
                 case 1:
-                    this.set(x);
-                break;
+                    this.set(arguments[0]);
+                    break;
                 case 2:
-                    this.set(x, y);
-            }
+                    this.set(arguments[0], arguments[1]);
+                    break;
+                default:
+                    this.x = this.y = 0.;
+                    break;
+            };
+        };
 
-        }
+        set(): IVec2;
+        set(fValue: float): IVec2;
+        set(v2fVec: IVec2): IVec2;
+        set(pArray: float[]): IVec2;
+        set(fValue1: float, fValue2: float): IVec2;
+        set(fValue1?, fValue2?): IVec2{
+            var nArgumentsLength: uint = arguments.length;
 
-
-        set(): Vec2;
-        set (v2f: Vec2): Vec2;
-        set (x: float, y: float): Vec2;
-        set (x?, y?): Vec2 {
-            switch(arguments.length) {
+            switch(nArgumentsLength){
                 case 0:
                     this.x = this.y = 0.;
                     break;
                 case 1:
-                    if (isFloat(x)) {
-                        this.x = x;
-                        this.y = x;
+                    if(isFloat(arguments[0])){
+                        this.x = this.y = arguments[0];
                     }
-                    else {
-                        this.x = x.x;
-                        this.y = x.y;
+                    else if(arguments[0] instanceof Vec2){
+                        var v2fVec: IVec2 = arguments[0];
+
+                        this.x = v2fVec.x;
+                        this.y = v2fVec.y;
+                    }
+                    else{
+                        var pArray: float[] = arguments[0];
+
+                        this.x = pArray[0];
+                        this.y = pArray[1];
                     }
                     break;
                 case 2:
-                    this.x = x;
-                    this.y = y;
-            }
+                    this.x = arguments[0];
+                    this.y = arguments[1];
+                    break;
+            };
 
             return this;
-        }
+        };
 
-    }
+        /**@inline*/  clear(): IVec2{
+            this.x = this.y = 0.;
+            return this;
+        };
+
+        add(v2fVec: IVec2, v2fDestination?: IVec2): IVec2{
+            if(!isDef(v2fDestination)){
+                v2fDestination = this;
+            }
+
+            v2fDestination.x = this.x + v2fVec.x;
+            v2fDestination.y = this.y + v2fVec.y;
+
+            return v2fDestination;
+        };
+
+        subtract(v2fVec: IVec2, v2fDestination?: IVec2): IVec2{
+            if(!isDef(v2fDestination)){
+                v2fDestination = this;
+            }
+
+            v2fDestination.x = this.x - v2fVec.x;
+            v2fDestination.y = this.y - v2fVec.y;
+
+            return v2fDestination;
+        };
+
+        /**@inline*/  dot(v2fVec: IVec2): float{
+            return this.x*v2fVec.x + this.y*v2fVec.y;
+        };
+
+        isEqual(v2fVec: IVec2, fEps: float = 0.): bool{
+            if(fEps === 0.){
+                if(    this.x != v2fVec.x
+                    || this.y != v2fVec.y){
+
+                    return false;
+                }
+            }
+            else{
+                if(    abs(this.x - v2fVec.x) > fEps
+                    || abs(this.y - v2fVec.y) > fEps){
+
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
+        isClear(fEps: float = 0.): bool{
+            if(fEps === 0.){
+                if(    this.x != 0.
+                    || this.y != 0.){
+
+                    return false;
+                }
+            }
+            else{
+                if(    abs(this.x) > fEps
+                    || abs(this.y) > fEps){
+
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
+        negate(v2fDestination?: IVec2): IVec2{
+            if(!isDef(v2fDestination)){
+                v2fDestination = this;
+            }
+
+            v2fDestination.x = -this.x;
+            v2fDestination.y = -this.y;
+
+            return v2fDestination;
+        };
+
+        scale(fScale: float, v2fDestination?: IVec2): IVec2{
+            if(!isDef(v2fDestination)){
+                v2fDestination = this;
+            }
+
+            v2fDestination.x = this.x*fScale;
+            v2fDestination.y = this.y*fScale;
+
+            return v2fDestination;
+        };
+
+        normalize(v2fDestination?: IVec2): IVec2{
+            if(!isDef(v2fDestination)){
+                v2fDestination = this;
+            }
+
+            var x: float = this.x, y: float = this.y;
+            var fLength: float = sqrt(x*x + y*y);
+
+            if(fLength !== 0.){
+                var fInvLength: float = 1./fLength;
+
+                x *= fInvLength;
+                y *= fInvLength;
+            }
+
+            v2fDestination.x = x;
+            v2fDestination.y = y;
+
+            return v2fDestination;
+        };
+
+        /**@inline*/  length(): float{
+            var x: float = this.x, y: float = this.y;
+            return sqrt(x*x + y*y);
+        };
+
+        /**@inline*/  lengthSquare(): float{
+            var x: float = this.x, y: float = this.y;
+            return x*x + y*y;
+        };
+
+        direction(v2fVec: IVec2, v2fDestination?: IVec2): IVec2{
+            if(!isDef(v2fDestination)){
+                v2fDestination = this;
+            }
+
+            var x: float = v2fVec.x - this.x;
+            var y: float = v2fVec.y - this.y;
+
+            var fLength: float = sqrt(x*x + y*y);
+
+            if(fLength !== 0.){
+                var fInvLength: float = 1./fLength;
+
+                x *= fInvLength;
+                y *= fInvLength;
+            }
+
+            v2fDestination.x = x;
+            v2fDestination.y = y;
+
+            return v2fDestination;
+        };
+
+        mix(v2fVec: IVec2, fA: float, v2fDestination?: IVec2): IVec2{
+            if(!isDef(v2fDestination)){
+                v2fDestination = this;
+            }
+
+            fA = clamp(fA,0.,1.);
+
+            var fA1: float = 1. - fA;
+            var fA2: float = fA;
+
+            v2fDestination.x = fA1*this.x + fA2*v2fVec.x;
+            v2fDestination.y = fA1*this.y + fA2*v2fVec.y;
+
+            return v2fDestination;
+        };
+
+        /**@inline*/  toString(): string{
+            return "[x: " + this.x + ", y: " + this.y + "]";
+        }
+   }
 }
+
+
+
+
 
 
 
@@ -1283,233 +1509,888 @@ module akra.math {
 
 
 module akra {
+
+	export interface IVec2 {} ;
+	export interface IMat4 {} ;
+
 	export interface IVec3 {
 		x: float;
 		y: float;
 		z: float;
 
-		set(x?, y?, z?): IVec3;
-		add(v3fVec: IVec3, v3fDest?: IVec3): IVec3;
-		scale(x?, y?, z?): IVec3;
+		set(): IVec3;
+		set(fValue: float): IVec3;
+		set(v3fVec: IVec3): IVec3;
+		set(pArray: float[]): IVec3;
+		set(fValue: float, v2fVec: IVec2): IVec3;
+		set(v2fVec: IVec2, fValue: float): IVec3;
+		set(fValue1: float, fValue2: float, fValue3: float): IVec3;
+
+		clear(): IVec3;
+
+		add(v3fVec: IVec3, v3fDestination?: IVec3): IVec3;
+		subtract(v3fVec: IVec3, v3fDestination?: IVec3): IVec3;
+		dot(v3fVec: IVec3): float;
+		cross(v3fVec: IVec3, v3fDestination?: IVec3): IVec3;
+
+		isEqual(v3fVec: IVec3, fEps?: float): bool;
+		isClear(fEps?: float): bool;
+
+		negate(v3fDestination?: IVec3): IVec3;
+		scale(fScale: float, v3fDestination?: IVec3): IVec3;
+		scale(v3fScale: IVec3, v3fDestination?: IVec3): IVec3;
+		normalize(v3fDestination?: IVec3): IVec3;
+		length(): float;
+		lengthSquare(): float;
+
+		direction(v3fVec: IVec3, v3fDestination?: IVec3): IVec3;
+
+		mix(v3fVec: IVec3, fA: float, v3fDestination?: IVec3): IVec3;
+
+		toString(): string;
+		toTranslationMatrix(m4fDestination?: IMat4);
+
+		vec3TransformCoord(m4fTransformation: IMat4, v3fDestination?: IVec3): IVec3;
+
+	};
+};
+
+
+
+
+
+
+/**
+ * @important Если внезапно задумаем перейти обратно на 
+ * хранение данных в матрицах по строкам, как собственно и было в начале,
+ * то необходимо раскомментить definы и переписать метод set, 
+ * так как он ложит по столбцам
+ */
+
+
+// #define __11 0
+// #define __12 1
+// #define __13 2
+// #define __14 3
+// #define __21 4
+// #define __22 5
+// #define __23 6
+// #define __24 7
+// #define __31 8
+// #define __32 9
+// #define __33 10
+// #define __34 11
+// #define __41 12
+// #define __42 13
+// #define __43 14
+// #define __44 15
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IVec3 {} ;
+	export interface IVec4 {} ;
+	export interface IMat3 {} ;
+	export interface IQuat4 {} ;
+
+	export interface IMat4 {
+		data: Float32Array;
+
+		set(): IMat4;
+		set(fValue: float): IMat4;
+		set(v4fVec: IVec4): IMat4;
+		set(m3fMat: IMat3, v3fTranslation?: IVec3): IMat4;
+		set(m4fMat: IMat4): IMat4;
+		set(pArray: float[]): IMat4;
+		set(fValue1: float, fValue2: float,
+			fValue3: float, fValue4: float): IMat4;
+		set(v4fVec1: IVec4, v4fVec2: IVec4,
+			v4fVec3: IVec4, v4fVec4: IVec4): IMat4;
+		set(pArray1: float[], pArray2: float[],
+			pArray3: float[], pArray4: float[]): IMat4;
+		set(fValue1: float, fValue2: float, fValue3: float, fValue4: float,
+			fValue5: float, fValue6: float, fValue7: float, fValue8: float,
+			fValue9: float, fValue10: float, fValue11: float, fValue12: float,
+			fValue13: float, fValue14: float, fValue15: float, fValue16: float): IMat4;
+
+		identity(): IMat4;
+
+		add(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
+		subtract(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
+		multiply(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
+		multiplyLeft(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
+		multiplyVec4(v4fVec: IVec4, v4fDestination?: IVec4): IVec4;
+
+		transpose(m4fDestination?: IMat4): IMat4;
+		determinant(): float;
+		inverse(m4fDestination?: IMat4): IMat4;
+		trace(): float;
+
+		isEqual(m4fMat: IMat4, fEps?: float): bool;
+		isDiagonal(fEps?: float): bool;
+
+		toMat3(m3fDestination?: IMat3): IMat3;
+		toQuat4(q4fDestination?: IQuat4): IQuat4;
+		toRotationMatrix(m4fDestination?: IMat4): IMat4;
+		toString(): string;
+
+		rotateRight(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
+		rotateLeft(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
+
+//rotateXRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+//rotateXLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+//rotateYRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+//rotateYLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+//rotateZRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+//rotateZLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+
+		setTranslation(v3fTranslation: IVec3): IMat4;
+		getTranslation(v3fTranslation?: IVec3): IVec3;
+
+		translateRight(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
+		translateLeft(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
+
+		scaleRight(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
+		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
+
+		decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): bool;
+
+		row(iRow: int, v4fDestination?: IVec4): IVec4;
+		column(iColumn: int, v4fDestination?: IVec4): IVec4;
+
 	};
 };
 
 
 
 module akra.math {
-    export class Vec3 implements IVec3 {
-        x: number;
-        y: number;
-        z: number;
+    export class Vec3 {
+        x: float;
+        y: float;
+        z: float;
 
+        constructor();
+        constructor(fValue: float);
+        constructor(v3fVec: IVec3);
+        constructor(pArray: float[]);
+        constructor(fValue: float, v2fVec: IVec2);
+        constructor(v2fVec: IVec2, fValue: float);
+        constructor(fValue1: float, fValue2: float, fValue3: float);
+        constructor(fValue1?, fValue2?, fValue3?){
+            var nArgumentsLength = arguments.length;
 
-        constructor (f? );
-        constructor (v3f: Vec3);
-        constructor (v2f: Vec2, z: number);
-        constructor (x: number, v2f: Vec2);
-        constructor (x: number, y: number, z: number);
+            switch(nArgumentsLength){
+                case 1:
+                    this.set(arguments[0]);
+                    break;
+                case 2:
+                    this.set(arguments[0], arguments[1]);
+                    break;
+                case 3:
+                    this.set(arguments[0], arguments[1], arguments[2]);
+                    break;
+                default:
+                    this.x = this.y = this.z = 0.;
+                    break;
+            }
+        };
 
+        set(): IVec3;
+        set(fValue: float): IVec3;
+        set(v3fVec: IVec3): IVec3;
+        set(pArray: float[]): IVec3;
+        set(fValue: float, v2fVec: IVec2): IVec3;
+        set(v2fVec: IVec2, fValue: float): IVec3;
+        set(fValue1: float, fValue2: float, fValue3: float): IVec3;
+        set(fValue1?, fValue2?, fValue3?): IVec3{
+            var nArgumentsLength = arguments.length;
 
-        get xy(): Vec2  { return new Vec2(this.x, this.y); }
+            switch(nArgumentsLength){
+                case 0:
+                    this.x = this.y = this.z = 0.;
+                    break;
+                case 1:
+                    if(isFloat(arguments[0])){
+                        this.x = this.y = this.z = arguments[0];
+                    }
+                    else if(arguments[0] instanceof Vec3){
+                        var v3fVec: IVec3 = arguments[0];
+
+                        this.x = v3fVec.x;
+                        this.y = v3fVec.y;
+                        this.z = v3fVec.z;
+                    }
+                    else{
+                        var pArray: float[] = arguments[0];
+
+                        this.x = pArray[0];
+                        this.y = pArray[1];
+                        this.z = pArray[2];
+                    }
+                    break;
+                case 2:
+                    if(isFloat(arguments[0])){
+                        var fValue: float = arguments[0];
+                        var v2fVec: IVec2 = arguments[1];
+
+                        this.x = fValue;
+                        this.y = v2fVec.x;
+                        this.z = v2fVec.y;
+                    }
+                    else{
+                        var v2fVec: IVec2 = arguments[0];
+                        var fValue: float = arguments[1];
+
+                        this.x = v2fVec.x;
+                        this.y = v2fVec.y;
+                        this.z = fValue;
+                    }
+                    break;
+                case 3:
+                    this.x = arguments[0];
+                    this.y = arguments[1];
+                    this.z = arguments[2];
+                    break;
+            }
+
+            return this;
+        };
+
+        /**@inline*/  clear(): IVec3{
+            this.x = this.y = this.z = 0.;
+            return this;
+        };
+
+        add(v3fVec: IVec3, v3fDestination?: IVec3): IVec3{
+            if(!isDef(v3fDestination)){
+                v3fDestination = this;
+            }
+
+            v3fDestination.x = this.x + v3fVec.x;
+            v3fDestination.y = this.y + v3fVec.y;
+            v3fDestination.z = this.z + v3fVec.z;
+
+            return v3fDestination;
+        };
+
+        subtract(v3fVec: IVec3, v3fDestination?: IVec3): IVec3{
+            if(!isDef(v3fDestination)){
+                v3fDestination = this;
+            }
+
+            v3fDestination.x = this.x - v3fVec.x;
+            v3fDestination.y = this.y - v3fVec.y;
+            v3fDestination.z = this.z - v3fVec.z;
+
+            return v3fDestination;
+        };
+
+        /**@inline*/  dot(v3fVec: IVec3): float{
+            return this.x*v3fVec.x + this.y*v3fVec.y + this.z*v3fVec.z;
+        };
+
+        cross(v3fVec: IVec3, v3fDestination?: IVec3): IVec3{
+            if(!isDef(v3fDestination)){
+                v3fDestination = this;
+            }
+
+            var x1: float = this.x, y1: float = this.y, z1: float = this.z;
+            var x2: float = v3fVec.x, y2: float = v3fVec.y, z2: float = v3fVec.z;
+
+            v3fDestination.x = y1*z2 - z1*y2;
+            v3fDestination.y = z1*x2 - x1*z2;
+            v3fDestination.z = x1*y2 - y1*x2;
+
+            return v3fDestination;
+        };
+
+        isEqual(v3fVec: IVec3, fEps: float = 0.): bool{
+            if(fEps === 0.){
+                if(    this.x != v3fVec.x
+                    || this.y != v3fVec.y
+                    || this.z != v3fVec.z){
+
+                    return false;
+                }
+            }
+            else{
+                if(    abs(this.x - v3fVec.x) > fEps
+                    || abs(this.y - v3fVec.y) > fEps
+                    || abs(this.z - v3fVec.z) > fEps){
+
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        isClear(fEps: float = 0.): bool{
+            if(fEps === 0.){
+                if(    this.x != 0.
+                    || this.y != 0.
+                    || this.z != 0.){
+
+                    return false;
+                }
+            }
+            else{
+                if(    abs(this.x) > fEps
+                    || abs(this.y) > fEps
+                    || abs(this.z) > fEps){
+
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
+        negate(v3fDestination?: IVec3): IVec3{
+            if(!isDef(v3fDestination)){
+                v3fDestination = this;
+            }
+
+            v3fDestination.x = -this.x;
+            v3fDestination.y = -this.y;
+            v3fDestination.z = -this.z;
+
+            return v3fDestination;
+        };
+
+        scale(v3fScale: IVec3, v3fDestination?: IVec3): IVec3;
+        scale(fScale: float, v3fDestination?: IVec3): IVec3;
+        scale(fScale?, v3fDestination?): IVec3{
+            if(!isDef(v3fDestination)){
+                v3fDestination = this;
+            }
+
+            if(isNumber(arguments[0])){
+                var fScale: float = arguments[0];
+                v3fDestination.x = this.x*fScale;
+                v3fDestination.y = this.y*fScale;
+                v3fDestination.z = this.z*fScale;
+            }
+            else{
+                var v3fScale: IVec3 = arguments[0];
+                v3fDestination.x = this.x*v3fScale.x;
+                v3fDestination.y = this.y*v3fScale.y;
+                v3fDestination.z = this.z*v3fScale.z;
+            }
+
+            return v3fDestination;
+        };
+
+        normalize(v3fDestination?: IVec3): IVec3{
+            if(!v3fDestination){
+                v3fDestination = this;
+            }
+
+            var x: float = this.x, y: float = this.y, z: float = this.z;
+            var fLength: float = sqrt(x*x + y*y + z*z);
+
+            if(fLength !== 0.){
+                var fInvLength: float = 1./fLength;
+
+                x *= fInvLength;
+                y *= fInvLength;
+                z *= fInvLength;
+            }
+
+            v3fDestination.x = x;
+            v3fDestination.y = y;
+            v3fDestination.z = z;
+
+            return v3fDestination;
+        };
+
+        /**@inline*/  length(): float{
+            var x: float = this.x, y: float = this.y, z: float = this.z;
+            return sqrt(x*x + y*y + z*z);
+        };
+
+        /**@inline*/  lengthSquare(): float{
+            var x: float = this.x, y: float = this.y, z: float = this.z;
+            return x*x + y*y + z*z;
+        };
+
+        direction(v3fVec: IVec3, v3fDestination?: IVec3): IVec3{
+            if(!isDef(v3fDestination)){
+                v3fDestination = this;
+            }
+
+            var x: float = v3fVec.x - this.x;
+            var y: float = v3fVec.y - this.y;
+            var z: float = v3fVec.z - this.z;
+
+            var fLength: float = sqrt(x*x + y*y + z*z);
+
+            if(fLength !== 0.){
+                var fInvLength = 1./fLength;
+
+                x *= fInvLength;
+                y *= fInvLength;
+                z *= fInvLength;
+            }
+
+            v3fDestination.x = x;
+            v3fDestination.y = y;
+            v3fDestination.z = z;
+
+            return v3fDestination;
+        };
+
+        mix(v3fVec: IVec3, fA: float, v3fDestination?: IVec3): IVec3{
+           if(!isDef(v3fDestination)){
+                v3fDestination = this;
+            }
+
+            fA = clamp(fA,0.,1.);
+
+            var fA1: float = 1. - fA;
+            var fA2: float = fA;
+
+            v3fDestination.x = fA1*this.x + fA2*v3fVec.x;
+            v3fDestination.y = fA1*this.y + fA2*v3fVec.y;
+            v3fDestination.z = fA1*this.z + fA2*v3fVec.z;
+
+            return v3fDestination;
+        };
+
+        /**@inline*/  toString(): string{
+            return "[x: " + this.x + " ,y: " + this.y + ", z: " + this.z + "]";
+        };
+
+        toTranslationMatrix(m4fDestination?: IMat4): IMat4{
+            if(!isDef(m4fDestination)){
+                m4fDestination = new Mat4(1.);
+            }
+            else{
+                m4fDestination.set(1.);
+            }
+
+            var pData: Float32Array = m4fDestination.data;
+
+            pData[ 12 ] = this.x;
+            pData[ 13 ] = this.y;
+            pData[ 14 ] = this.z;
+
+            return m4fDestination;
+        };
+
+        vec3TransformCoord(m4fTransformation: IMat4, v3fDestination?: IVec3): IVec3{
+            if(!v3fDestination){
+                v3fDestination = this;
+            }
+
+            var pData: Float32Array = m4fTransformation.data;
+
+            var x: float = this.x;
+            var y: float = this.y;
+            var z: float = this.z;
+            var w: float;
+
+            x = pData[ 0 ]*x + pData[ 4 ]*y + pData[ 8 ]*z + pData[ 12 ];
+            y = pData[ 1 ]*x + pData[ 5 ]*y + pData[ 9 ]*z + pData[ 13 ];
+            z = pData[ 2 ]*x + pData[ 6 ]*y + pData[ 10 ]*z + pData[ 14 ];
+            w = pData[ 2 ]*x + pData[ 7 ]*y + pData[ 11 ]*z + pData[ 15 ];
+
+            var fInvW: float = 1./w;
+
+            v3fDestination.x = x*fInvW;
+            v3fDestination.y = y*fInvW;
+            v3fDestination.z = z*fInvW;
+
+            return v3fDestination;
+        };
+
+/*get xy(): Vec2  { return new Vec2(this.x, this.y); }
         get xz(): Vec2  { return new Vec2(this.x, this.z); }
         get yx(): Vec2  { return new Vec2(this.y, this.x); }
         get yz(): Vec2  { return new Vec2(this.y, this.z); }
         get zx(): Vec2  { return new Vec2(this.z, this.x); }
         get zy(): Vec2  { return new Vec2(this.z, this.y); }
-        get xyz(): Vec3 { return new Vec3(this.x, this.y, this.z); }
+        get xyz(): Vec3 { return new Vec3(this.x, this.y, this.z); }*/
 
-        constructor (x? , y? , z? ) {
-//TODO: may be use only simple constructor(x, y, z)?
-            switch (arguments.length) {
-                case 0:
-                    this.x = this.y = this.z = 0.;
-                    break;
-                case 1:
-                    this.set(x);
-                    break;
-                case 2:
-                    this.set(x, y);
-                    break;
-                case 3:
-                    this.set(x, y, z);
-            }
-        }
-
-
-        set(v3f: Vec3): IVec3;
-        set(v2f: Vec2, z: number): IVec3;
-        set(x: number, v2f: Vec2): IVec3;
-        set(x: number, y: number, z: number): IVec3;
-
-/**
-         * @inline
-         */
-
-        set(x? , y? , z? ): IVec3 {
-
-            switch (arguments.length) {
-                case 0:
-                case 1:
-//number
-                    if (isFloat(x)) {
-                        this.x = this.y = this.z = x || 0.;
-                    }
-                    else {
-                        this.x = x.x;
-                        this.y = x.y;
-                        this.z = x.z;
-                    }
-                    break;
-                case 2:
-//number and vec2
-                    if (isFloat(x)) {
-                        this.x = x;
-                        this.y = y.x;
-                        this.z = y.y;
-                    }
-//number and vec3
-                    else {
-                        this.x = x.x;
-                        this.y = x.y;
-                        this.z = y;
-                    }
-                    break;
-                case 3:
-                    this.x = x;
-                    this.y = y;
-                    this.z = z;
-            }
-
-            return this;
-        }
-
-/*
-         * Performs a vector addition
-         * @inline
-         */
-
-        add(v3fVec: Vec3, v3fDest?: Vec3): Vec3 {
-            if (!v3fDest) {
-                v3fDest = this;
-            }
-
-            v3fDest.x = this.x + v3fVec.x;
-            v3fDest.y = this.y + v3fVec.y;
-            v3fDest.z = this.z + v3fVec.z;
-
-            return this;
-        }
-
-
-/**
-         * @inline
-         */
-
-        toString(): string {
-            return "[x: " + this.x + ", y: " + this.y + ", z: " + this.z + "]";
-        }
-
-        scale(x?, y?, z?): IVec3 {return null;}
-
-        static v3f: Vec3 = new Vec3;
     }
-
-
 }
 
 
 
+
+
+
+
+
+
+
+
 module akra.math {
-    export class Vec4{
+
+    export class Vec4 implements IVec4{
         x: float;
         y: float;
         z: float;
         w: float;
 
-        constructor ();
-        constructor (f: float);
-        constructor (v4f: Vec4);
-        constructor (v3f: Vec3, w?: float);
-        constructor (x: float, v3f: Vec3);
-        constructor (v2f1: Vec2, v2f2: Vec2);
-        constructor (x: float, y: float, z: float, w: float);
-        constructor (x? , y? , z? , w? ) {
-            switch (arguments.length) {
+        constructor();
+        constructor(fValue: float);
+        constructor(v4fVec: IVec4);
+        constructor(pArray: float[]);
+        constructor(fValue: float, v3fVec: IVec3);
+        constructor(v2fVec1: IVec2, v2fVec2: IVec2);
+        constructor(v3fVec: IVec3, fValue: float);
+        constructor(fValue1: float, fValue2: float, v2fVec: IVec2);
+        constructor(fValue1: float, v2fVec: IVec2, fValue2: float);
+        constructor(v2fVec: IVec2 ,fValue1: float, fValue2: float);
+        constructor(fValue1: float, fValue2: float, fValue3: float, fValue4: float);
+        constructor(fValue1?, fValue2?, fValue3?, fValue4?){
+            var nArgumentsLength: uint = arguments.length;
+
+            switch(nArgumentsLength){
+                case 1:
+                    this.set(arguments[0]);
+                    break;
+                case 2:
+                    this.set(arguments[0],arguments[1]);
+                    break;
+                case 3:
+                    this.set(arguments[0],arguments[1], arguments[2]);
+                    break;
+                case 4:
+                    this.set(arguments[0],arguments[1], arguments[2], arguments[3]);
+                    break;
+                default:
+                    this.x = this.y = this.z = this.w = 0.;
+                    break;
+            }
+        };
+
+        set(): IVec4;
+        set(fValue: float): IVec4;
+        set(v4fVec: IVec4): IVec4;
+        set(pArray: float[]): IVec4;
+        set(fValue: float, v3fVec: IVec3): IVec4;
+        set(v2fVec1: IVec2, v2fVec2: IVec2): IVec4;
+        set(v3fVec: IVec3, fValue: float): IVec4;
+        set(fValue1: float, fValue2: float, v2fVec: IVec2): IVec4;
+        set(fValue1: float, v2fVec: IVec2, fValue2: float): IVec4;
+        set(v2fVec: IVec2, fValue1: float, fValue2: float): IVec4;
+        set(fValue1: float, fValue2: float, fValue3: float, fValue4: float): IVec4;
+        set(fValue1?, fValue2?, fValue3?, fValue4?): IVec4{
+            var nArgumentsLength: uint = arguments.length;
+
+            switch(nArgumentsLength){
                 case 0:
                     this.x = this.y = this.z = this.w = 0.;
                     break;
                 case 1:
-                    this.set(x);
-                    break;
-                case 2:
-                    this.set(x, y);
-                    break;
-                case 4:
-                    this.set(x, y, z, w);
-                    break;
-            }
-
-        }
-
-
-        set(): Vec4;
-        set(f: float): Vec4;
-        set(v4f: Vec4): Vec4;
-        set(v3f: Vec3, w?: float): Vec4;
-        set(x: float, v3f: Vec3): Vec4;
-        set(v2f1: Vec2, v2f2: Vec2): Vec4;
-        set(x: float, y: float, z: float, w: float): Vec4;
-        set(x? , y? , z? , w? ): Vec4 {
-            switch (arguments.length) {
-                case 0:
-                    this.x = this.y = this.z = this.w = 0.;
-                    break;
-                case 1:
-//float
-                    if (isFloat(x)) {
-                        this.x = this.y = this.z = this.w = x;
+                    if(isFloat(arguments[0])){
+                        this.x = this.y = this.z = this.w = arguments[0];
                     }
-//vec4
-                    else {
-                        this.x = x.x;
-                        this.y = x.y;
-                        this.z = x.z;
-                        this.w = x.w;
+                    else if(arguments[0] instanceof Vec4){
+                        var v4fVec: IVec4 = arguments[0];
+
+                        this.x = v4fVec.x;
+                        this.y = v4fVec.y;
+                        this.z = v4fVec.z;
+                        this.w = v4fVec.w;
+                    }
+                    else{
+//array
+                        var pArray: float[] = arguments[0];
+
+                        this.x = pArray[0];
+                        this.y = pArray[1];
+                        this.z = pArray[2];
+                        this.w = pArray[3];
                     }
                     break;
                 case 2:
-//float and vec3
-                    if (isFloat(x)) {
-                        this.x = x;
-                        this.y = y.x;
-                        this.z = y.y;
-                        this.w = y.z;
+                    if(isFloat(arguments[0])){
+                        var fValue: float = arguments[0];
+                        var v3fVec: IVec3 = arguments[1];
+
+                        this.x = fValue;
+                        this.y = v3fVec.x;
+                        this.z = v3fVec.y;
+                        this.w = v3fVec.z;
                     }
-//vec3 and float
-                    else if (isFloat(y)) {
-                        this.x = x.x;
-                        this.y = x.y;
-                        this.z = x.z;
-                        this.w = y;
+                    else if(arguments[0] instanceof Vec2){
+                        var v2fVec1: IVec2 = arguments[0];
+                        var v2fVec2: IVec2 = arguments[1];
+
+                        this.x = v2fVec1.x;
+                        this.y = v2fVec1.y;
+                        this.z = v2fVec2.x;
+                        this.w = v2fVec2.y;
                     }
-//vec2 and vec2
-                    else {
-                        this.x = x.x;
-                        this.y = x.y;
-                        this.z = y.x;
-                        this.w = y.y;
+                    else{
+                        var v3fVec: IVec3 = arguments[0];
+                        var fValue: float = arguments[1];
+
+                        this.x = v3fVec.x;
+                        this.y = v3fVec.y;
+                        this.z = v3fVec.z;
+                        this.w = fValue;
+                    }
+                    break;
+                case 3:
+                    if(isFloat(arguments[0])){
+                        var fValue1: float = arguments[0];
+
+                        if(isFloat(arguments[1])){
+                            var fValue2: float = arguments[1];
+                            var v2fVec: IVec2 = arguments[2];
+
+                            this.x = fValue1;
+                            this.y = fValue2;
+                            this.z = v2fVec.x;
+                            this.w = v2fVec.y;
+                        }
+                        else{
+                            var v2fVec: IVec2 = arguments[1];
+                            var fValue2: float = arguments[2];
+
+                            this.x = fValue1;
+                            this.y = v2fVec.x;
+                            this.z = v2fVec.y;
+                            this.w = fValue2;
+                        }
+                    }
+                    else{
+                        var v2fVec: IVec2 = arguments[0];
+                        var fValue1: float = arguments[1];
+                        var fValue2: float = arguments[2];
+
+                        this.x = v2fVec.x;
+                        this.y = v2fVec.y;
+                        this.z = fValue1;
+                        this.w = fValue2;
                     }
                     break;
                 case 4:
-                    this.x = x;
-                    this.y = y;
-                    this.z = z;
-                    this.w = w;
+                    this.x = arguments[0];
+                    this.y = arguments[1];
+                    this.z = arguments[2];
+                    this.w = arguments[3];
+                    break;
             }
+
             return this;
-        }
+        };
+
+        /**@inline*/  clear(): IVec4{
+            this.x = this.y = this.z = this.w = 0.;
+            return this;
+        };
+
+        add(v4fVec: IVec4, v4fDestination?: IVec4): IVec4{
+            if(!isDef(v4fDestination)){
+                v4fDestination = this;
+            }
+
+            v4fDestination.x = this.x + v4fVec.x;
+            v4fDestination.y = this.y + v4fVec.y;
+            v4fDestination.z = this.z + v4fVec.z;
+            v4fDestination.w = this.w + v4fVec.w;
+
+            return v4fDestination;
+        };
+
+        subtract(v4fVec: IVec4, v4fDestination?: IVec4): IVec4{
+            if(!isDef(v4fDestination)){
+                v4fDestination = this;
+            }
+
+            v4fDestination.x = this.x - v4fVec.x;
+            v4fDestination.y = this.y - v4fVec.y;
+            v4fDestination.z = this.z - v4fVec.z;
+            v4fDestination.w = this.w - v4fVec.w;
+
+            return v4fDestination;
+        };
+
+        /**@inline*/  dot(v4fVec: IVec4): float{
+            return this.x*v4fVec.x + this.y*v4fVec.y + this.z*v4fVec.z + this.w*v4fVec.w;
+        };
+
+        isEqual(v4fVec: IVec4, fEps: float = 0.): bool{
+            if(fEps === 0.){
+                if(    this.x != v4fVec.x
+                    || this.y != v4fVec.y
+                    || this.z != v4fVec.z
+                    || this.w != v4fVec.w){
+
+                    return false;
+                }
+            }
+            else{
+                if(    abs(this.x - v4fVec.x) > fEps
+                    || abs(this.y - v4fVec.y) > fEps
+                    || abs(this.z - v4fVec.z) > fEps
+                    || abs(this.w - v4fVec.w) > fEps){
+
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        isClear(fEps: float = 0.): bool{
+
+            if(fEps === 0.){
+                if(    this.x != 0.
+                    || this.y != 0.
+                    || this.z != 0.
+                    || this.w != 0.){
+
+                    return false;
+                }
+            }
+            else{
+                if(    abs(this.x) > fEps
+                    || abs(this.y) > fEps
+                    || abs(this.z) > fEps
+                    || abs(this.w) > fEps){
+
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        negate(v4fDestination?: IVec4): IVec4{
+            if(!isDef(v4fDestination)){
+                v4fDestination = this;
+            }
+
+            v4fDestination.x = -this.x;
+            v4fDestination.y = -this.y;
+            v4fDestination.z = -this.z;
+            v4fDestination.w = -this.w;
+
+            return v4fDestination;
+        };
+
+        scale(fScale: float, v4fDestination?: IVec4): IVec4{
+            if(!isDef(v4fDestination)){
+                v4fDestination = this;
+            }
+
+            v4fDestination.x = this.x*fScale;
+            v4fDestination.y = this.y*fScale;
+            v4fDestination.z = this.z*fScale;
+            v4fDestination.w = this.w*fScale;
+
+            return v4fDestination;
+        };
+
+        normalize(v4fDestination?: IVec4): IVec4{
+            if(!isDef(v4fDestination)){
+                v4fDestination = this;
+            }
+
+            var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+            var fLength: float = sqrt(x*x + y*y +z*z + w*w);
+
+            if(fLength !== 0.){
+                var fInvLength: float = 1./fLength;
+
+                x *= fInvLength;
+                y *= fInvLength;
+                z *= fInvLength;
+                w *= fInvLength;
+            }
+
+            v4fDestination.x = x;
+            v4fDestination.y = y;
+            v4fDestination.z = z;
+            v4fDestination.w = w;
+
+            return v4fDestination;
+        };
+
+        /**@inline*/  length(): float{
+            var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+            return sqrt(x*x + y*y + z*z + w*w);
+        };
+
+        /**@inline*/  lengthSquare(): float{
+            var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+            return x*x + y*y + z*z + w*w;
+        };
+
+        direction(v4fVec: IVec4, v4fDestination?: IVec4): IVec4{
+            if(!isDef(v4fDestination)){
+                v4fDestination = this;
+            }
+
+            var x: float = v4fVec.x - this.x;
+            var y: float = v4fVec.y - this.y;
+            var z: float = v4fVec.z - this.z;
+            var w: float = v4fVec.w - this.w;
+
+            var fLength: float = sqrt(x*x + y*y + z*z + w*w);
+
+            if(fLength !== 0.){
+                var fInvLength = 1./fLength;
+
+                x *= fInvLength;
+                y *= fInvLength;
+                z *= fInvLength;
+                w *= fInvLength;
+            }
+
+            v4fDestination.x = x;
+            v4fDestination.y = y;
+            v4fDestination.z = z;
+            v4fDestination.w = w;
+
+            return v4fDestination;
+        };
+
+        mix(v4fVec: IVec4, fA: float, v4fDestination?: IVec4): IVec4{
+            if(!isDef(v4fDestination)){
+                v4fDestination = this;
+            }
+
+            fA = clamp(fA,0.,1.);
+
+            var fA1: float = 1. - fA;
+            var fA2: float = fA;
+
+            v4fDestination.x = fA1*this.x + fA2*v4fVec.x;
+            v4fDestination.y = fA1*this.y + fA2*v4fVec.y;
+            v4fDestination.z = fA1*this.z + fA2*v4fVec.z;
+            v4fDestination.w = fA1*this.w + fA2*v4fVec.w;
+
+            return v4fDestination;
+        };
+
+        /**@inline*/  toString(): string{
+            return "[x: " + this.x + ", y: " + this.y
+                        + ", z: " + this.z + ", w: " + this.w + "]";
+        };
     }
 }
+
+
 
 
 ///<reference path="../akra.ts" />
@@ -1634,46 +2515,12 @@ module akra {
 		toMat4(m4fDestination?: IMat4): IMat4;
 		toQuat4(q4fDestination?: IQuat4): IQuat4;
 		toString(): string;
+
+		decompose(q4fRotation: IQuat4, v3fScale: IVec3): bool;
+		row(iRow: int, v3fDestination?: IVec3): IVec3;
+		column(iColumn: int, v3fDestination?: IVec3): IVec3;
 	};
 };
-
-
-
-
-
-
-/**
- * @important Если внезапно задумаем перейти обратно на 
- * хранение данных в матрицах по строкам, как собственно и было в начале,
- * то необходимо раскомментить definы и переписать метод set, 
- * так как он ложит по столбцам
- */
-
-
-// #define __11 0
-// #define __12 1
-// #define __13 2
-// #define __14 3
-// #define __21 4
-// #define __22 5
-// #define __23 6
-// #define __24 7
-// #define __31 8
-// #define __32 9
-// #define __33 10
-// #define __34 11
-// #define __41 12
-// #define __42 13
-// #define __43 14
-// #define __44 15
-
-
-
-
-
-
-
-
 
 
 
@@ -1687,97 +2534,46 @@ module akra {
 module akra {
 
 	export interface IVec3 {} ;
-	export interface IVec4 {} ;
 	export interface IMat3 {} ;
-	export interface IQuat4 {} ;
+	export interface IMat4 {} ;
 
-	export interface IMat4 {
-		data: Float32Array;
-
-		set(): IMat4;
-		set(fValue: float): IMat4;
-		set(v4fVec: IVec4): IMat4;
-		set(m3fMat: IMat3, v3fTranslation?: IVec3): IMat4;
-		set(m4fMat: IMat4): IMat4;
-		set(pArray: float[]): IMat4;
-		set(fValue1: float, fValue2: float,
-			fValue3: float, fValue4: float): IMat4;
-		set(v4fVec1: IVec4, v4fVec2: IVec4,
-			v4fVec3: IVec4, v4fVec4: IVec4): IMat4;
-		set(pArray1: float[], pArray2: float[],
-			pArray3: float[], pArray4: float[]): IMat4;
-		set(fValue1: float, fValue2: float, fValue3: float, fValue4: float,
-			fValue5: float, fValue6: float, fValue7: float, fValue8: float,
-			fValue9: float, fValue10: float, fValue11: float, fValue12: float,
-			fValue13: float, fValue14: float, fValue15: float, fValue16: float): IMat4;
-
-		identity(): IMat4;
-
-		add(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
-		subtract(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
-		multiply(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
-		multiplyLeft(m4fMat: IMat4, m4fDestination?: IMat4): IMat4;
-		multiplyVec4(v4fVec: IVec4, v4fDestination?: IVec4): IVec4;
-
-		transpose(m4fDestination?: IMat4): IMat4;
-		determinant(): float;
-		inverse(m4fDestination?: IMat4): IMat4;
-
-		isEqual(m4fMat: IMat4, fEps?: float): bool;
-		isDiagonal(fEps?: float): bool;
-
-		toMat3(m3fDestination?: IMat3): IMat3;
-		toQuat4(q4fDestination?: IQuat4): IQuat4;
-		toRotationMatrix(m4fDestination?: IMat4): IMat4;
-		toString(): string;
-
-		rotateRight(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
-		rotateLeft(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
-
-		toInverseMat3(m3fDestination: IMat3): IMat3;
-
-// rotateXRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-// rotateXLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
-// rotateYRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-// rotateYLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
-// rotateZRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-// rotateZLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
-
-		setTranslation(v3fTranslation: IVec3): IMat4;
-		getTranslation(v3fTranslation?: IVec3): IVec3;
-
-// translateRight(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
-// translateLeft(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
-
-		scaleRight(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
-		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
-
-		decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): void;
-
-
-
-	};
-};
-
-
-
-
-
-
-
-
-module akra {
 	export interface IQuat4 {
 		x: float;
 		y: float;
 		z: float;
 		w: float;
 
-		set(x?, y?, z?, w?): IQuat4;
-		toMat4(m4fDestination?: IMat4): IMat4;
-		multiplyVec3(v3fVec: IVec3, v3fDestionation?: IVec3): IVec3;
+		set(): IQuat4;
+		set(q4fQuat: IQuat4): IQuat4;
+		set(pArray: float[]): IQuat4;
+		set(fValue: float, fW: float): IQuat4;
+		set(v3fValue: IVec3, fW: float): IQuat4;
+		set(fX: float, fY: float, fZ: float, fW: float): IQuat4;
+
 		multiply(q4fQuat: IQuat4, q4fDestination?: IQuat4): IQuat4;
-		smix(q4fQuat: IQuat4, fRoll: float): IQuat4;
+		multiplyVec3(v3fVec: IVec3, v3fDestination?: IVec3): IVec3;
+
+		conjugate(q4fDestination?: IQuat4): IQuat4;
+		inverse(q4fDestination?: IQuat4): IQuat4;
+
+		length(): float;
+		normalize(q4fDestination?: IQuat4): IQuat4;
+
+		calculateW(q4fDestination?: IQuat4): IQuat4;
+
+		isEqual(q4fQuat: IQuat4, fEps?: float, asMatrix?: bool): bool;
+
+		getYaw(): float;
+		getPitch(): float;
+		getRoll(): float;
+		toYawPitchRoll(v3fDestination?: IVec3): IVec3;
+
+		toMat3(m3fDestination?: IMat3): IMat3;
+		toMat4(m4fDestination?: IMat4): IMat4;
+		toString(): string;
+
+		mix(q4fQuat: IQuat4, fA: float, q4fDestination?: IQuat4, bShortestPath?: bool);
+		smix(q4fQuat: IQuat4, fA: float, q4fDestination?: IQuat4, bShortestPath?: bool);
 	};
 };
 
@@ -2259,7 +3055,7 @@ module akra.math {
 		    return m3fDestination;
 		};
 
-		isEqual(m3fMat: IMat3, fEps?: float = 0.): bool{
+		isEqual(m3fMat: IMat3, fEps: float = 0.): bool{
 			var pData1: Float32Array = this.data;
 		    var pData2: Float32Array = m3fMat.data;
 
@@ -2294,7 +3090,7 @@ module akra.math {
 		    return true;
 		};
 
-		isDiagonal(fEps?: float = 0.) : bool{
+		isDiagonal(fEps: float = 0.) : bool{
 			var pData: Float32Array = this.data;
 
 		    if(fEps == 0){
@@ -2417,6 +3213,120 @@ module akra.math {
 		               + pData[ 2 ] + ', ' + pData[ 5 ] + ', ' + pData[ 8 ] + ']';
 		};
 
+		decompose(q4fRotation: IQuat4, v3fScale: IVec3): bool{
+//изначально предполагаем, что порядок умножения был rot * scale
+			var m3fRotScale: IMat3 = this;
+			var m3fRotScaleTransposed: IMat3 = this.transpose(mat3());
+			var isRotScale: bool = true;
+
+//понадобятся если порядок умножения был другим
+		    var m3fScaleRot: IMat3, m3fScaleRotTransposed: IMat3;
+
+//было отражение или нет
+    		var scaleSign: int = (m3fRotScale.determinant() >= 0.) ? 1 : -1;
+
+    		var m3fResult: IMat3 = mat3();
+
+//first variant rot * scale
+// (rot * scale)T * (rot * scale) = 
+// scaleT * rotT * rot * scale = scaleT *rot^-1 * rot * scale = 
+// scaleT * scale
+		    m3fRotScaleTransposed.multiply(m3fRotScale, m3fResult);
+		   	if(!m3fResult.isDiagonal(1e-4)){
+//предположение было неверным
+		   		isRotScale = false;
+//просто переобозначения чтобы не было путаницы
+		        m3fScaleRot = m3fRotScale;
+		        m3fScaleRotTransposed = m3fRotScaleTransposed;
+
+//second variant scale * rot
+// (scale * rot) * (scale * rot)T = 
+// scale * rot * rotT * scaleT = scale *rot * rot^-1 * scaleT = 
+// scale * scaleT
+
+		        m3fScaleRot.multiply(m3fScaleRotTransposed,m3fResult);
+		   	}
+
+		   	var pResultData: Float32Array = m3fResult.data;
+
+		   	var x: float = sqrt(pResultData[ 0 ]);
+/*если было отражение, считается что оно было по y*/
+		   	var y: float = sqrt(pResultData[ 4 ])*scaleSign;
+		   	var z: float = sqrt(pResultData[ 8 ]);
+
+		   	v3fScale.x = x;
+		   	v3fScale.y = y;
+		   	v3fScale.z = z;
+
+		   	var m3fInverseScale: IMat3 = mat3(1./x,1./y,1./z);
+
+		   	if(isRotScale){
+		   		m3fRotScale.multiply(m3fInverseScale,mat3()).toQuat4(q4fRotation);
+		   		return true;
+		   	}
+		   	else{
+		   		m3fInverseScale.multiply(m3fScaleRot,mat3()).toQuat4(q4fRotation);
+		   		debug_assert(false,"порядок умножения scale rot в данный момент не поддерживается");
+		   		return false;
+		   	}
+		};
+
+		row(iRow: int, v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+				v3fDestination = new Vec3();
+			}
+
+			var pData: Float32Array = this.data;
+
+			switch(iRow){
+				case 1:
+					v3fDestination.x = pData[ 0 ];
+					v3fDestination.y = pData[ 3 ];
+					v3fDestination.z = pData[ 6 ];
+					break;
+				case 2:
+					v3fDestination.x = pData[ 1 ];
+					v3fDestination.y = pData[ 4 ];
+					v3fDestination.z = pData[ 7 ];
+					break;
+				case 3:
+					v3fDestination.x = pData[ 2 ];
+					v3fDestination.y = pData[ 5 ];
+					v3fDestination.z = pData[ 8 ];
+					break;
+			}
+
+			return v3fDestination;
+		};
+
+		column(iColumn: int, v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+				v3fDestination = new Vec3();
+			}
+
+			var pData: Float32Array = this.data;
+
+			switch(iColumn){
+				case 1:
+					v3fDestination.x = pData[ 0 ];
+					v3fDestination.y = pData[ 1 ];
+					v3fDestination.z = pData[ 2 ];
+					break;
+				case 2:
+					v3fDestination.x = pData[ 3 ];
+					v3fDestination.y = pData[ 4 ];
+					v3fDestination.z = pData[ 5 ];
+					break;
+				case 3:
+					v3fDestination.x = pData[ 6 ];
+					v3fDestination.y = pData[ 7 ];
+					v3fDestination.z = pData[ 8 ];
+					break;
+			}
+
+			return v3fDestination;
+		};
+
 		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, m3fDestination?: IMat3): IMat3;
 		static fromYawPitchRoll(v3fAngles: IVec3, m3fDestination?: IMat3): IMat3;
 		static fromYawPitchRoll(fYaw?,fPitch?,fRoll?,m3fDestination?): IMat3{
@@ -2465,8 +3375,8 @@ module akra.math {
 		static fromXYZ(fX?, fY?, fZ?, m3fDestination?) : IMat3{
 			if(arguments.length <= 2){
 //Vec3 + m3fDestination
-				var v3fAngles: IVec3 = arguments[0];
-				return Mat3.fromYawPitchRoll(v3fAngles.y,v3fAngles.x,v3fAngles.z,arguments[1]);
+				var v3fVec: IVec3 = arguments[0];
+				return Mat3.fromYawPitchRoll(v3fVec.y,v3fVec.x,v3fVec.z,arguments[1]);
 			}
 			else{
 //fX fY fZ m3fDestination
@@ -2477,6 +3387,8 @@ module akra.math {
 				return Mat3.fromYawPitchRoll(fY, fX, fZ, arguments[3]);
 			}
 		};
+
+		static stackSize: uint = 100; static stackPosition: int = 0; static stack: IMat3 [] = (function(): IMat3 []{ var pStack: IMat3 [] = new Array(Mat3.stackSize); for(var i:int = 0; i<Mat3.stackSize; i++){ pStack[i] = new Mat3(); } return pStack})(); ;
     };
 };
 
@@ -2496,13 +3408,48 @@ module akra.math {
 
 
 module akra {
+
+	export interface IVec2 {} ;
+	export interface IVec3 {} ;
+
 	export interface IVec4 {
 		x: float;
 		y: float;
 		z: float;
 		w: float;
 
-		set(x?, y?, z?, w?): IVec4;
+		set(): IVec4;
+		set(fValue: float): IVec4;
+		set(v4fVec: IVec4): IVec4;
+		set(pArray: float[]): IVec4;
+		set(fValue: float, v3fVec: IVec3): IVec4;
+		set(v2fVec1: IVec2, v2fVec2: IVec2): IVec4;
+		set(v3fVec: IVec3, fValue: float): IVec4;
+		set(fValue1: float, fValue2: float, v2fVec: IVec2): IVec4;
+		set(fValue1: float, v2fVec: IVec2, fValue2: float): IVec4;
+		set(v2fVec: IVec2, fValue1: float, fValue2: float): IVec4;
+		set(fValue1: float, fValue2: float, fValue3: float, fValue4: float): IVec4;
+
+		clear(): IVec4;
+
+		add(v4fVec: IVec4, v4fDestination?: IVec4): IVec4;
+		subtract(v4fVec: IVec4, v4fDestination?: IVec4): IVec4;
+		dot(v4fVec: IVec4): float;
+
+		isEqual(v4fVec: IVec4, fEps?: float): bool;
+		isClear(fEps?: float): bool;
+
+		negate(v4fDestination?: IVec4): IVec4;
+		scale(fScale: float, v4fDestination?: IVec4): IVec4;
+		normalize(v4fDestination?: IVec4): IVec4;
+		length(): float;
+		lengthSquare(): float;
+
+		direction(v4fVec: IVec4, v4fDestination?: IVec4): IVec4;
+
+		mix(v4fVec: IVec4, fA: float, v4fDestination?: IVec4): IVec4;
+
+		toString(): string;
 	};
 };
 
@@ -2513,10 +3460,6 @@ module akra {
 module akra.math {
     export class Mat4 implements IMat4{
     	data: Float32Array;
-
-    	decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): bool{
-			return true;
-		};
 
 		constructor();
 		constructor(fValue: float);
@@ -3155,11 +4098,12 @@ module akra.math {
 		    return m4fDestination;
 		};
 
-		isEqual(m4fMat: IMat4, fEps?: float): bool{
-			if(!isDef(fEps)){
-				fEps = 0.;
-			}
+		/**@inline*/  trace(): float{
+			var pData: Float32Array = this.data;
+			return pData[ 0 ] + pData[ 5 ] + pData[ 10 ] + pData[ 15 ];
+		};
 
+		isEqual(m4fMat: IMat4, fEps: float = 0.): bool{
 		    var pData1: Float32Array = this.data;
 		    var pData2: Float32Array = m4fMat.data;
 
@@ -3208,10 +4152,7 @@ module akra.math {
 		    return true;
 		};
 
-		isDiagonal(fEps?: float): bool{
-			if(!isDef(fEps)){
-				fEps = 0.;
-			}
+		isDiagonal(fEps: float = 0.): bool{
 			var pData: Float32Array = this.data;
 
 		    if(fEps === 0.){
@@ -3270,13 +4211,13 @@ module akra.math {
 		    var a31: float = pData[ 2 ], a32: float = pData[ 6 ], a33: float = pData[ 10 ];
 
 /*x^2*/
-		    var x2: float = ((a11 - a22 - a33) + 1)/4;
+		    var x2: float = ((a11 - a22 - a33) + 1.)/4.;
 /*y^2*/
-		    var y2: float = ((a22 - a11 - a33) + 1)/4;
+		    var y2: float = ((a22 - a11 - a33) + 1.)/4.;
 /*z^2*/
-		    var z2: float = ((a33 - a11 - a22) + 1)/4;
+		    var z2: float = ((a33 - a11 - a22) + 1.)/4.;
 /*w^2*/
-		    var w2: float = ((a11 + a22 + a33) + 1)/4;
+		    var w2: float = ((a11 + a22 + a33) + 1.)/4.;
 
 		    var fMax: float = max(x2,max(y2,max(z2,w2)));
 
@@ -3285,35 +4226,35 @@ module akra.math {
 		        var x: float = sqrt(x2);
 
 		        q4fDestination.x = x;
-		        q4fDestination.y = (a21 + a12)/4/x;
-		        q4fDestination.z = (a31 + a13)/4/x;
-		        q4fDestination.w = (a32 - a23)/4/x;
+		        q4fDestination.y = (a21 + a12)/4./x;
+		        q4fDestination.z = (a31 + a13)/4./x;
+		        q4fDestination.w = (a32 - a23)/4./x;
 		    }
 		    else if(fMax == y2){
 //максимальная компонента берется положительной
 		        var y: float = sqrt(y2);
 
-		        q4fDestination.x = (a21 + a12)/4/y;
+		        q4fDestination.x = (a21 + a12)/4./y;
 		        q4fDestination.y = y;
-		        q4fDestination.z = (a32 + a23)/4/y;
-		        q4fDestination.w = (a13 - a31)/4/y;
+		        q4fDestination.z = (a32 + a23)/4./y;
+		        q4fDestination.w = (a13 - a31)/4./y;
 		    }
 		    else if(fMax == z2){
 //максимальная компонента берется положительной
 		        var z: float = sqrt(z2);
 
-		        q4fDestination.x = (a31 + a13)/4/z;
-		        q4fDestination.y = (a32 + a23)/4/z;
+		        q4fDestination.x = (a31 + a13)/4./z;
+		        q4fDestination.y = (a32 + a23)/4./z;
 		        q4fDestination.z = z;
-		        q4fDestination.w = (a21 - a12)/4/z;
+		        q4fDestination.w = (a21 - a12)/4./z;
 		    }
 		    else{
 //максимальная компонента берется положительной
 		        var w: float = sqrt(w2);
 
-		        q4fDestination.x = (a32 - a23)/4/w;
-		        q4fDestination.y = (a13 - a31)/4/w;
-		        q4fDestination.z = (a21 - a12)/4/w;
+		        q4fDestination.x = (a32 - a23)/4./w;
+		        q4fDestination.y = (a13 - a31)/4./w;
+		        q4fDestination.z = (a21 - a12)/4./w;
 		        q4fDestination.w = w;
 		    }
 
@@ -3331,22 +4272,22 @@ module akra.math {
 		    pDataDestination[ 0 ] = pData[ 0 ];
 		    pDataDestination[ 4 ] = pData[ 4 ];
 		    pDataDestination[ 8 ] = pData[ 8 ];
-		    pDataDestination[ 12 ] = 0;
+		    pDataDestination[ 12 ] = 0.;
 
 		    pDataDestination[ 1 ] = pData[ 1 ];
 		    pDataDestination[ 5 ] = pData[ 5 ];
 		    pDataDestination[ 9 ] = pData[ 9 ];
-		    pDataDestination[ 13 ] = 0;
+		    pDataDestination[ 13 ] = 0.;
 
 		    pDataDestination[ 2 ] = pData[ 2 ];
 		    pDataDestination[ 6 ] = pData[ 6 ];
 		    pDataDestination[ 10 ] = pData[ 10 ];
-		    pDataDestination[ 14 ] = 0;
+		    pDataDestination[ 14 ] = 0.;
 
-		    pDataDestination[ 3 ] = 0;
-		    pDataDestination[ 7 ] = 0;
-		    pDataDestination[ 11 ] = 0;
-		    pDataDestination[ 15 ] = 1;
+		    pDataDestination[ 3 ] = 0.;
+		    pDataDestination[ 7 ] = 0.;
+		    pDataDestination[ 11 ] = 0.;
+		    pDataDestination[ 15 ] = 1.;
 
 		    return m4fDestination;
 		};
@@ -3519,75 +4460,84 @@ module akra.math {
 		    return m4fDestination;
 		};
 
-		rotateXRight(fAngle: float, m4fDestination?: IMat4): IMat4{
+		/**@inline*/  setTranslation(v3fTranslation: IVec3): IMat4{
 			var pData: Float32Array = this.data;
 
-		    var fSin: float = sin(fAngle);
-		    var fCos: float = cos(fAngle);
+			pData[ 12 ] = v3fTranslation.x;
+			pData[ 13 ] = v3fTranslation.y;
+			pData[ 14 ] = v3fTranslation.z;
 
-		    var a12: float = pData[ 4 ], a13: float = pData[ 8 ];
-		    var a22: float = pData[ 5 ], a23: float = pData[ 9 ];
-		    var a32: float = pData[ 6 ], a33: float = pData[ 10 ];
+			return this;
+		};
+
+		/**@inline*/  getTranslation(v3fTranslation?: IVec3): IVec3{
+			if(!isDef(v3fTranslation)){
+				v3fTranslation = new Vec3();
+			}
+
+			var pData: Float32Array = this.data;
+
+			v3fTranslation.x = pData[ 12 ];
+			v3fTranslation.y = pData[ 13 ];
+			v3fTranslation.z = pData[ 14 ];
+
+			return v3fTranslation;
+		};
+
+		translateRight(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4{
+			var pData: Float32Array = this.data;
+
+		    var x: float = v3fTranslation.x, y: float = v3fTranslation.y, z: float = v3fTranslation.z;
 
 		    if(!isDef(m4fDestination)){
-		        pData[ 4 ] =  a12*fCos + a13*fSin;
-		        pData[ 8 ] = -a12*fSin + a13*fCos;
-
-		        pData[ 5 ] =  a22*fCos + a23*fSin;
-		        pData[ 9 ] = -a22*fSin + a23*fCos;
-
-		        pData[ 6 ] =  a32*fCos + a33*fSin;
-		        pData[ 10 ] = -a32*fSin + a33*fCos;
-
+		        pData[ 12 ] = pData[ 0 ]*x + pData[ 4 ]*y + pData[ 8 ]*z + pData[ 12 ];
+		        pData[ 13 ] = pData[ 1 ]*x + pData[ 5 ]*y + pData[ 9 ]*z + pData[ 13 ];
+		        pData[ 14 ] = pData[ 2 ]*x + pData[ 6 ]*y + pData[ 10 ]*z + pData[ 14 ];
+		        pData[ 15 ] = pData[ 3 ]*x + pData[ 7 ]*y + pData[ 11 ]*z + pData[ 15 ];
+//строго говоря последнюю строчку умножать не обязательно, так как она должна быть -> 0 0 0 1
 		        return this;
 		    }
 
 		    var pDataDestination: Float32Array = m4fDestination.data;
 
-		    pDataDestination[ 0 ] = pData[ 0 ];
-		    pDataDestination[ 4 ] =  a12*fCos + a13*fSin;
-		    pDataDestination[ 8 ] = -a12*fSin + a13*fCos;
-		    pDataDestination[ 12 ] = pData[ 12 ];
+//кешируем матрицу вращений
+		    var a11: float = pData[ 0 ], a12: float = pData[ 4 ], a13: float = pData[ 8 ];
+		    var a21: float = pData[ 0 ], a22: float = pData[ 5 ], a23: float = pData[ 9 ];
+		    var a31: float = pData[ 0 ], a32: float = pData[ 6 ], a33: float = pData[ 10 ];
+		    var a41: float = pData[ 0 ], a42: float = pData[ 7 ], a43: float = pData[ 11 ];
 
-		    pDataDestination[ 1 ] = pData[ 1 ];
-		    pDataDestination[ 5 ] =  a22*fCos + a23*fSin;
-		    pDataDestination[ 9 ] = -a22*fSin + a23*fCos;
-		    pDataDestination[ 13 ] = pData[ 13 ];
+		    pDataDestination[ 0 ] = a11;
+		    pDataDestination[ 4 ] = a12;
+		    pDataDestination[ 8 ] = a13;
+		    pDataDestination[ 12 ] = a11*x + a12*y + a13*z + pData[ 12 ];
 
-		    pDataDestination[ 2 ] = pData[ 1 ];
-		    pDataDestination[ 6 ] =  a32*fCos + a33*fSin;
-		    pDataDestination[ 10 ] = -a32*fSin + a33*fCos;
-		    pDataDestination[ 14 ] = pData[ 14 ];
+		    pDataDestination[ 1 ] = a21;
+		    pDataDestination[ 5 ] = a22;
+		    pDataDestination[ 9 ] = a23;
+		    pDataDestination[ 13 ] = a21*x + a22*y + a23*z + pData[ 13 ];
 
-		    pDataDestination[ 3 ] = pData[ 3 ];
-		    pDataDestination[ 7 ] = pData[ 7 ];
-		    pDataDestination[ 11 ] = pData[ 11 ];
-		    pDataDestination[ 15 ] = pData[ 15 ];
+		    pDataDestination[ 2 ] = a31;
+		    pDataDestination[ 6 ] = a32;
+		    pDataDestination[ 10 ] = a33;
+		    pDataDestination[ 14 ] = a31*x + a32*y + a33*z + pData[ 14 ];
+
+		    pDataDestination[ 3 ] = a41;
+		    pDataDestination[ 7 ] = a42;
+		    pDataDestination[ 11 ] = a43;
+		    pDataDestination[ 15 ] = a41*x + a42*y + a43*z + pData[ 15 ];
 
 		    return m4fDestination;
 		};
 
-		rotateXLeft(fAngle: float, m4fDestination?: IMat4): IMat4{
+		translateLeft(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4{
 			var pData: Float32Array = this.data;
 
-		    var fSin: float = sin(fAngle);
-		    var fCos: float = cos(fAngle);
-
-		    var a21: float = pData[ 1 ], a22: float = pData[ 5 ], a23: float = pData[ 9 ], a24: float = pData[ 13 ];
-		    var a31: float = pData[ 2 ], a32: float = pData[ 6 ], a33: float = pData[ 10 ], a34: float = pData[ 14 ];
+		    var x: float = v3fTranslation.x, y: float = v3fTranslation.y, z: float = v3fTranslation.z;
 
 		    if(!isDef(m4fDestination)){
-
-		        pData[ 1 ] = fCos*a21 - fSin*a31;
-		        pData[ 5 ] = fCos*a22 - fSin*a32;
-		        pData[ 9 ] = fCos*a23 - fSin*a33;
-		        pData[ 13 ] = fCos*a24 - fSin*a34;
-
-		        pData[ 2 ] = fSin*a21 + fCos*a31;
-		        pData[ 6 ] = fSin*a22 + fCos*a32;
-		        pData[ 10 ] = fSin*a23 + fCos*a33;
-		        pData[ 14 ] = fSin*a24 + fCos*a34;
-
+		        pData[ 12 ] = x + pData[ 12 ];
+		        pData[ 13 ] = y + pData[ 13 ];
+		        pData[ 14 ] = z + pData[ 14 ];
 		        return this;
 		    }
 
@@ -3596,17 +4546,17 @@ module akra.math {
 		    pDataDestination[ 0 ] = pData[ 0 ];
 		    pDataDestination[ 4 ] = pData[ 4 ];
 		    pDataDestination[ 8 ] = pData[ 8 ];
-		    pDataDestination[ 12 ] = pData[ 12 ];
+		    pDataDestination[ 12 ] = x + pData[ 12 ];
 
-		    pDataDestination[ 1 ] = fCos*a21 - fSin*a31;
-		    pDataDestination[ 5 ] = fCos*a22 - fSin*a32;
-		    pDataDestination[ 9 ] = fCos*a23 - fSin*a33;
-		    pDataDestination[ 13 ] = fCos*a24 - fSin*a34;
+		    pDataDestination[ 1 ] = pData[ 1 ];
+		    pDataDestination[ 5 ] = pData[ 5 ];
+		    pDataDestination[ 9 ] = pData[ 9 ];
+		    pDataDestination[ 13 ] = y + pData[ 13 ];
 
-		    pDataDestination[ 2 ] = fSin*a21 + fCos*a31;
-		    pDataDestination[ 6 ] = fSin*a22 + fCos*a32;
-		    pDataDestination[ 10 ] = fSin*a23 + fCos*a33;
-		    pDataDestination[ 14 ] = fSin*a24 + fCos*a34;
+		    pDataDestination[ 2 ] = pData[ 2 ];
+		    pDataDestination[ 6 ] = pData[ 6 ];
+		    pDataDestination[ 10 ] = pData[ 10 ];
+		    pDataDestination[ 14 ] = z + pData[ 14 ];
 
 		    pDataDestination[ 3 ] = pData[ 3 ];
 		    pDataDestination[ 7 ] = pData[ 7 ];
@@ -3616,29 +4566,443 @@ module akra.math {
 		    return m4fDestination;
 		};
 
-		toInverseMat3(m3fDestination: IMat3): IMat3 {
-			return null;
-		}
+		scaleRight(v3fScale: IVec3, m4fDestination?: IMat4): IMat4{
+			var pData: Float32Array = this.data;
 
-		setTranslation(v3fTranslation: IVec3): IMat4 {
-			return null;
-		}
+		    var x: float = v3fScale.x, y: float = v3fScale.y, z: float = v3fScale.z;
 
-		getTranslation(v3fTranslation?: IVec3): IVec3 {
-			return null;
-		}
+		    if(!isDef(m4fDestination)){
+		        pData[ 0 ] *= x;
+		        pData[ 4 ] *= y;
+		        pData[ 8 ] *= z;
 
-		scaleRight(v3fScale: IVec3, m4fDestination?: IMat4): IMat4 {
-			return null;
-		}
+		        pData[ 1 ] *= x;
+		        pData[ 5 ] *= y;
+		        pData[ 9 ] *= z;
 
-		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4 {
-			return null;
-		}
+		        pData[ 2 ] *= x;
+		        pData[ 6 ] *= y;
+		        pData[ 10 ] *= z;
 
+//скейлить эти компоненты необязательно, так как там должны лежать нули
+		        pData[ 3 ] *= x;
+		        pData[ 7 ] *= y;
+		        pData[ 11 ] *= z;
 
+		        return this;
+		    }
+
+		    var pDataDestination: Float32Array = m4fDestination.data;
+
+		    pDataDestination[ 0 ] = pData[ 0 ]*x;
+		    pDataDestination[ 4 ] = pData[ 4 ]*y;
+		    pDataDestination[ 8 ] = pData[ 8 ]*z;
+		    pDataDestination[ 12 ] = pData[ 12 ];
+
+		    pDataDestination[ 1 ] = pData[ 1 ]*x;
+		    pDataDestination[ 5 ] = pData[ 5 ]*y;
+		    pDataDestination[ 9 ] = pData[ 9 ]*z;
+		    pDataDestination[ 13 ] = pData[ 13 ];
+
+		    pDataDestination[ 2 ] = pData[ 2 ]*x;
+		    pDataDestination[ 6 ] = pData[ 6 ]*y;
+		    pDataDestination[ 10 ] = pData[ 10 ]*z;
+		    pDataDestination[ 14 ] = pData[ 14 ];
+
+//скейлить эти компоненты необязательно, так как там должны лежать нули
+		    pDataDestination[ 3 ] = pData[ 3 ]*x;
+		    pDataDestination[ 7 ] = pData[ 7 ]*y;
+		    pDataDestination[ 11 ] = pData[ 11 ]*z;
+		    pDataDestination[ 15 ] = pData[ 15 ];
+
+		    return m4fDestination;
+		};
+
+		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4{
+			var pData: Float32Array = this.data;
+
+		    var x: float = v3fScale.x, y: float = v3fScale.y, z: float = v3fScale.z;
+
+		    if(!isDef(m4fDestination)){
+		        pData[ 0 ] *= x;
+		        pData[ 4 ] *= x;
+		        pData[ 8 ] *= x;
+		        pData[ 12 ] *= x;
+
+		        pData[ 1 ] *= y;
+		        pData[ 5 ] *= y;
+		        pData[ 9 ] *= y;
+		        pData[ 13 ] *= y;
+
+		        pData[ 2 ] *= z;
+		        pData[ 6 ] *= z;
+		        pData[ 10 ] *= z;
+		        pData[ 14 ] *= z;
+
+		        return this;
+		    }
+
+		    var pDataDestination: Float32Array = m4fDestination.data;
+
+		    pDataDestination[ 0 ] = pData[ 0 ]*x;
+		    pDataDestination[ 4 ] = pData[ 4 ]*x;
+		    pDataDestination[ 8 ] = pData[ 8 ]*x;
+		    pDataDestination[ 12 ] = pData[ 12 ]*x;
+
+		    pDataDestination[ 1 ] = pData[ 1 ]*y;
+		    pDataDestination[ 5 ] = pData[ 5 ]*y;
+		    pDataDestination[ 9 ] = pData[ 9 ]*y;
+		    pDataDestination[ 13 ] = pData[ 13 ]*y;
+
+		    pDataDestination[ 2 ] = pData[ 2 ]*z;
+		    pDataDestination[ 6 ] = pData[ 6 ]*z;
+		    pDataDestination[ 10 ] = pData[ 10 ]*z;
+		    pDataDestination[ 14 ] = pData[ 14 ]*z;
+
+		    pDataDestination[ 3 ] = pData[ 3 ];
+		    pDataDestination[ 7 ] = pData[ 7 ];
+		    pDataDestination[ 11 ] = pData[ 11 ];
+		    pDataDestination[ 15 ] = pData[ 15 ];
+
+		    return m4fDestination;
+		};
+
+		/**@inline*/  decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): bool{
+			this.getTranslation(v3fTranslation);
+			var m3fRotScale = this.toMat3(mat3());
+			return m3fRotScale.decompose(q4fRotation,v3fScale);
+		};
+
+		row(iRow: int, v4fDestination?: IVec4): IVec4{
+			if(!isDef(v4fDestination)){
+				v4fDestination = new Vec4();
+			}
+
+			var pData: Float32Array = this.data;
+
+			switch(iRow){
+				case 1:
+					v4fDestination.x = pData[ 0 ];
+					v4fDestination.y = pData[ 4 ];
+					v4fDestination.z = pData[ 8 ];
+					v4fDestination.w = pData[ 12 ];
+					break;
+				case 2:
+					v4fDestination.x = pData[ 1 ];
+					v4fDestination.y = pData[ 5 ];
+					v4fDestination.z = pData[ 9 ];
+					v4fDestination.w = pData[ 13 ];
+					break;
+				case 3:
+					v4fDestination.x = pData[ 2 ];
+					v4fDestination.y = pData[ 6 ];
+					v4fDestination.z = pData[ 10 ];
+					v4fDestination.w = pData[ 14 ];
+					break;
+				case 4:
+					v4fDestination.x = pData[ 3 ];
+					v4fDestination.y = pData[ 7 ];
+					v4fDestination.z = pData[ 11 ];
+					v4fDestination.w = pData[ 15 ];
+					break;
+			}
+
+			return v4fDestination;
+		};
+
+		column(iColumn: int, v4fDestination?: IVec4): IVec4{
+			if(!isDef(v4fDestination)){
+				v4fDestination = new Vec4();
+			}
+
+			var pData: Float32Array = this.data;
+
+			switch(iColumn){
+				case 1:
+					v4fDestination.x = pData[ 0 ];
+					v4fDestination.y = pData[ 1 ];
+					v4fDestination.z = pData[ 2 ];
+					v4fDestination.w = pData[ 3 ];
+					break;
+				case 2:
+					v4fDestination.x = pData[ 4 ];
+					v4fDestination.y = pData[ 5 ];
+					v4fDestination.z = pData[ 6 ];
+					v4fDestination.w = pData[ 7 ];
+					break;
+				case 3:
+					v4fDestination.x = pData[ 8 ];
+					v4fDestination.y = pData[ 9 ];
+					v4fDestination.z = pData[ 10 ];
+					v4fDestination.w = pData[ 11 ];
+					break;
+				case 4:
+					v4fDestination.x = pData[ 12 ];
+					v4fDestination.y = pData[ 13 ];
+					v4fDestination.z = pData[ 14 ];
+					v4fDestination.w = pData[ 15 ];
+					break;
+			}
+
+			return v4fDestination;
+		};
+
+		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, m4fDestination?: IMat4): IMat4;
+		static fromYawPitchRoll(v3fAngles: IVec3, m4fDestination?: IMat4): IMat4;
+		static fromYawPitchRoll(fYaw?,fPitch?,fRoll?,m4fDestination?): IMat4{
+			if(arguments.length <= 2){
+//Vec3 + m4fDestination
+		        var v3fVec: IVec3 = arguments[0];
+
+		        fYaw   = v3fVec.x;
+		        fPitch = v3fVec.y;
+		        fRoll  = v3fVec.z;
+
+		        m4fDestination = arguments[1];
+		    }
+
+		    if(!isDef(m4fDestination)){
+		        m4fDestination = new Mat4();
+		    }
+
+		    var pDataDestination: Float32Array = m4fDestination.data;
+
+		    var fSin1: float = Math.sin(fYaw);
+		    var fSin2: float = Math.sin(fPitch);
+		    var fSin3: float = Math.sin(fRoll);
+
+		    var fCos1: float = Math.cos(fYaw);
+		    var fCos2: float = Math.cos(fPitch);
+		    var fCos3: float = Math.cos(fRoll);
+
+		    pDataDestination[ 0 ] = fCos1 * fCos3 + fSin1 * fSin2 * fSin3;
+		    pDataDestination[ 4 ] = fCos3 * fSin1 * fSin2 - fCos1 * fSin3;
+		    pDataDestination[ 8 ] = fCos2 * fSin1;
+		    pDataDestination[ 12 ] = 0.;
+
+		    pDataDestination[ 1 ] = fCos2 * fSin3;
+		    pDataDestination[ 5 ] = fCos2 * fCos3;
+		    pDataDestination[ 9 ] = -fSin2;
+		    pDataDestination[ 13 ] = 0.;
+
+		    pDataDestination[ 2 ] = fCos1 * fSin2 * fSin3 - fCos3 * fSin1;
+		    pDataDestination[ 6 ] = fSin1 * fSin3 + fCos1 * fCos3 * fSin2;
+		    pDataDestination[ 10 ] = fCos1 * fCos2;
+		    pDataDestination[ 14 ] = 0.;
+
+		    pDataDestination[ 3 ] = 0.;
+		    pDataDestination[ 7 ] = 0.;
+		    pDataDestination[ 11 ] = 0.;
+		    pDataDestination[ 15 ] = 1.;
+
+		    return m4fDestination;
+		};
+
+		static fromXYZ(fX: float, fY: float, fZ: float, m4fDestination?: IMat4): IMat4;
+		static fromXYZ(v3fAngles: IVec3, m4fDestination?: IMat4): IMat4;
+		static fromXYZ(fX?, fY?, fZ?, m4fDestination?) : IMat4{
+			if(arguments.length <= 2){
+//Vec3 + m4fDestination
+				var v3fVec: IVec3 = arguments[0];
+				return Mat4.fromYawPitchRoll(v3fVec.y,v3fVec.x,v3fVec.z,arguments[1]);
+			}
+			else{
+//fX fY fZ m4fDestination
+				var fX: float = arguments[0];
+				var fY: float = arguments[1];
+				var fZ: float = arguments[2];
+
+				return Mat4.fromYawPitchRoll(fY, fX, fZ, arguments[3]);
+			}
+		};
+
+		static frustum(fLeft: float, fRight: float, fBottom: float, fTop: float, fNear: float, fFar: float, m4fDestination?: IMat4): IMat4{
+			if(!isDef(m4fDestination)){
+		        m4fDestination = new Mat4();
+		    }
+
+		    var pDataDestination: Float32Array = m4fDestination.data;
+
+		    var fRL: float = fRight - fLeft;
+		    var fTB: float = fTop - fBottom;
+		    var fFN: float = fFar - fNear;
+
+		    pDataDestination[ 0 ] = 2.*fNear/fRL;
+		    pDataDestination[ 4 ] = 0.;
+		    pDataDestination[ 8 ] = (fRight + fLeft)/fRL;
+		    pDataDestination[ 12 ] = 0.;
+
+		    pDataDestination[ 1 ] = 0.;
+		    pDataDestination[ 5 ] = 2.*fNear/fTB;
+		    pDataDestination[ 9 ] = (fTop + fBottom)/fTB;
+		    pDataDestination[ 13 ] = 0.;
+
+		    pDataDestination[ 2 ] = 0.;
+		    pDataDestination[ 6 ] = 0.;
+		    pDataDestination[ 10 ] = -(fFar + fNear)/fFN;
+		    pDataDestination[ 14 ] = -2.*fFar*fNear/fFN;
+
+		    pDataDestination[ 3 ] = 0.;
+		    pDataDestination[ 7 ] = 0.;
+		    pDataDestination[ 11 ] = -1.;
+		    pDataDestination[ 15 ] = 0.;
+
+		    return m4fDestination;
+		};
+
+		/**@inline*/  static perspective(fFovy: float, fAspect: float, fNear: float, fFar: float, m4fDestination?: IMat4): IMat4{
+			var fTop: float = fNear*tan(fFovy/2.);
+			var fRight: float = fTop*fAspect;
+
+			return Mat4.frustum(-fRight, fRight, -fTop, fTop, fNear, fFar, m4fDestination);
+		};
+
+		static orthogonalProjectionAsymmetric(fLeft: float, fRight: float, fBottom: float,
+												 fTop: float, fNear: float, fFar: float, m4fDestination?: IMat4): IMat4{
+
+			 if(!isDef(m4fDestination)){
+		        m4fDestination = new Mat4();
+		    }
+
+		    var pDataDestination: Float32Array = m4fDestination.data;
+
+		    var fRL: float = fRight - fLeft;
+		    var fTB: float = fTop - fBottom;
+		    var fFN: float = fFar - fNear;
+
+		    pDataDestination[ 0 ] = 2./fRL;
+		    pDataDestination[ 4 ] = 0.;
+		    pDataDestination[ 8 ] = 0.;
+		    pDataDestination[ 12 ] = -(fRight + fLeft)/fRL;
+
+		    pDataDestination[ 1 ] = 0.;
+		    pDataDestination[ 5 ] = 2./fTB;
+		    pDataDestination[ 9 ] = 0.;
+		    pDataDestination[ 13 ] = -(fTop + fBottom)/fTB;
+
+		    pDataDestination[ 2 ] = 0.;
+		    pDataDestination[ 6 ] = 0.;
+		    pDataDestination[ 10 ] = -2./fFN;
+		    pDataDestination[ 14 ] = -(fFar + fNear)/fFN;
+
+		    pDataDestination[ 3 ] = 0.;
+		    pDataDestination[ 7 ] = 0.;
+		    pDataDestination[ 11 ] = 0.;
+		    pDataDestination[ 15 ] = 1.;
+
+		    return m4fDestination;
+		};
+
+		/**@inline*/  static orthogonalProjection(fWidth: float, fHeight: float, fNear: float, fFar: float, m4fDestination?: IMat4): IMat4{
+			var fRight: float = fWidth/2.;
+		    var fTop: float = fHeight/2.;
+		    return Mat4.orthogonalProjectionAsymmetric(-fRight, fRight, -fTop, fTop, fNear, fFar, m4fDestination);
+		};
+
+		static lookAt(v3fEye: IVec3, v3fCenter: IVec3, v3fUp: IVec3, m4fDestination?: IMat4): IMat4{
+			if(!isDef(m4fDestination)){
+		        m4fDestination = new Mat4(1.);
+		    }
+
+		    var fEyeX: float = v3fEye.x, fEyeY: float = v3fEye.y, fEyeZ: float = v3fEye.z;
+		    var fCenterX: float = v3fCenter.x, fCenterY: float = v3fCenter.y, fCenterZ: float = v3fCenter.z;
+		    var fUpX: float = v3fUp.x, fUpY: float = v3fUp.y, fUpZ: float = v3fUp.z;
+
+		    var fLength: float;
+		    var fInvLength: float;
+
+		    if(fEyeX === fCenterX && fEyeY === fCenterY && fEyeZ === fCenterZ){
+		        return m4fDestination;
+		    }
+
+		    var fXNewX: float, fXNewY: float, fXNewZ: float;
+		    var fYNewX: float, fYNewY: float, fYNewZ: float;
+		    var fZNewX: float, fZNewY: float, fZNewZ: float;
+
+//ось Z направлена на наблюдателя
+		    fZNewX = fEyeX - fCenterX;
+		    fZNewY = fEyeY - fCenterY;
+		    fZNewZ = fEyeZ - fCenterZ;
+
+		    fLength = sqrt(fZNewX*fZNewX + fZNewY*fZNewY + fZNewZ*fZNewZ);
+		    fInvLength = 1./fLength;
+
+//новая ось Z
+		    fZNewX = fZNewX*fInvLength;
+		    fZNewY = fZNewY*fInvLength;
+		    fZNewZ = fZNewZ*fInvLength;
+
+//новая ось X
+		    fXNewX = fUpY*fZNewZ - fUpZ*fZNewY;
+		    fXNewY = fUpZ*fZNewX - fUpX*fZNewZ;
+		    fXNewZ = fUpX*fZNewY - fUpY*fZNewX;
+
+		    fLength = sqrt(fXNewX*fXNewX + fXNewY*fXNewY + fXNewZ*fXNewZ);
+		    if(fLength){
+		    	fInvLength = 1./fLength;
+
+		        fXNewX = fXNewX*fInvLength;
+		        fXNewY = fXNewY*fInvLength;
+		        fXNewZ = fXNewZ*fInvLength;
+		    }
+
+//новая ось Y
+
+		    fYNewX = fZNewY*fXNewZ - fZNewZ*fXNewY;
+		    fYNewY = fZNewZ*fXNewX - fZNewX*fXNewZ;
+		    fYNewZ = fZNewX*fXNewY - fZNewY*fXNewX;
+
+//нормировать ненужно, так как было векторное умножение двух ортонормированных векторов
+
+//положение камеры в новых осях
+		    var fEyeNewX: float = fEyeX*fXNewX + fEyeY*fXNewY + fEyeZ*fXNewZ;
+		    var fEyeNewY: float = fEyeX*fYNewX + fEyeY*fYNewY + fEyeZ*fYNewZ;
+		    var fEyeNewZ: float = fEyeX*fZNewX + fEyeY*fZNewY + fEyeZ*fZNewZ;
+
+		    var pDataDestination: Float32Array = m4fDestination.data;
+
+//lookAt matrix === camera view matrix 
+//почему новый базис записывается по строкам?
+//это сзязано с тем, что это получающаяся матрица - 
+//это viewMatrix камеры, а на эту матрицу умножается при рендеринге, то есть
+//модель должна испытать преобразования противоположные тем, которые испытывает камера
+//то есть вращение в другую сторону(базис по строкам) и сдвиг в противоположную сторону
+
+		    pDataDestination[ 0 ] = fXNewX;
+		    pDataDestination[ 4 ] = fXNewY;
+		    pDataDestination[ 8 ] = fXNewZ;
+/*отъезжаем в позицию камеры*/
+		    pDataDestination[ 12 ] = -fEyeNewX;
+
+		    pDataDestination[ 1 ] = fYNewX;
+		    pDataDestination[ 5 ] = fYNewY;
+		    pDataDestination[ 9 ] = fYNewZ;
+/*отъезжаем в позицию камеры*/
+		    pDataDestination[ 13 ] = -fEyeNewY;
+
+		    pDataDestination[ 2 ] = fZNewX;
+		    pDataDestination[ 6 ] = fZNewY;
+		    pDataDestination[ 10 ] = fZNewZ;
+/*отъезжаем в позицию камеры*/
+		    pDataDestination[ 14 ] = -fEyeNewZ;
+
+		    pDataDestination[ 3 ] = 0.;
+		    pDataDestination[ 7 ] = 0.;
+		    pDataDestination[ 11 ] = 0.;
+		    pDataDestination[ 15 ] = 1.;
+
+		    return m4fDestination;
+		};
+
+		static stackSize: uint = 100; static stackPosition: int = 0; static stack: IMat4 [] = (function(): IMat4 []{ var pStack: IMat4 [] = new Array(Mat4.stackSize); for(var i:int = 0; i<Mat4.stackSize; i++){ pStack[i] = new Mat4(); } return pStack})();
     }
 }
+
+
+
+
+
+
 
 
 
@@ -3656,15 +5020,670 @@ module akra.math {
     	z: float;
     	w: float;
 
-    	set(x?, y?, z?, w?): IQuat4 { return null; }
-    	toMat4(m4fDestination?: IMat4): IMat4 { return null; }
-    	multiplyVec3(v3fVec: IVec3, v3fDestionation?: IVec3): IVec3 { return null; }
-    	multiply(q4fQuat: IQuat4, q4fDestination?: IQuat4): IQuat4 { return null; }
-        smix(q4fQuat: IQuat4, fRoll: float): IQuat4 { return null; }
+    	constructor();
+    	constructor(q4fQuat: IQuat4);
+    	constructor(pArray: float[]);
+    	constructor(fValue: float, fW: float);
+    	constructor(v3fValue: IVec3, fW: float);
+    	constructor(fX: float, fY: float, fZ: float, fW: float);
+    	constructor(fX?, fY?, fZ?, fW?){
+    		var nArgumentsLength: uint = arguments.length;
 
-    	static fromAxisAngle(v3fAxis: IVec3, fAngle: float, q4fDest?: IQuat4): IQuat4 { return null; }
-    	static fromForwardUp(v3fForward: IVec3, v3fUp: IVec3, q4fDest?: IQuat4): IQuat4 { return null; }
-    	static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, q4fDest?: IQuat4): IQuat4 { return null; }
+    		if(nArgumentsLength === 1){
+    			this.set(arguments[0]);
+    		}
+    		else if(nArgumentsLength === 2){
+    			this.set(arguments[0],arguments[1]);
+    		}
+    		else if(nArgumentsLength === 4){
+    			this.set(arguments[0], arguments[1], arguments[2], arguments[3]);
+    		}
+    		else{
+    			this.x = 0.;
+    			this.y = 0.;
+    			this.z = 0.;
+    			this.w = 1.;
+    		}
+    	};
+
+    	set(): IQuat4;
+		set(q4fQuat: IQuat4): IQuat4;
+		set(pArray: float[]): IQuat4;
+		set(fValue: float, fW: float): IQuat4;
+		set(v3fValue: IVec3, fW: float): IQuat4;
+		set(fX: float, fY: float, fZ: float, fW: float): IQuat4;
+		set(fX?, fY?, fZ?, fW?): IQuat4{
+			var nArgumentsLength: uint = arguments.length;
+
+		    if(nArgumentsLength === 0){
+		        this.x = this.y = this.z = 0.;
+		        this.w = 1.;
+		    }
+		    if(nArgumentsLength === 1){
+		        if(arguments[0] instanceof Quat4){
+		        	var q4fQuat: IQuat4 = arguments[0];
+
+		            this.x = q4fQuat.x;
+		            this.y = q4fQuat.y;
+		            this.z = q4fQuat.z;
+		            this.w = q4fQuat.w;
+		        }
+		        else{
+//Array
+		            var pElements: float[] = arguments[0];
+
+		            this.x = pElements[0];
+		            this.y = pElements[1];
+		            this.z = pElements[2];
+		            this.w = pElements[3];
+		        }
+		    }
+		    else if(nArgumentsLength === 2){
+//float float
+//vec3 float
+		        if(isFloat(arguments[0])){
+//float float
+		            var fValue: float = arguments[0];
+
+		            this.x = fValue;
+		            this.y = fValue;
+		            this.z = fValue;
+		            this.w = arguments[1];
+		        }
+		        else{
+//vec3 float
+		            var v3fValue: IVec3 = arguments[0];
+
+		            this.x = v3fValue.x;
+		            this.y = v3fValue.y;
+		            this.z = v3fValue.z;
+		            this.w = arguments[1];
+		        }
+		    }
+		    else if(nArgumentsLength === 4){
+		        this.x = arguments[0];
+		        this.y = arguments[1];
+		        this.z = arguments[2];
+		        this.w = arguments[3];
+		    }
+
+		    return this;
+		};
+
+		multiply(q4fQuat: IQuat4, q4fDestination?: IQuat4): IQuat4{
+			if(!isDef(q4fDestination)){
+		        q4fDestination = this;
+		    }
+
+		    var x1: float = this.x, y1: float = this.y, z1: float = this.z, w1: float = this.w;
+		    var x2: float = q4fQuat.x, y2: float = q4fQuat.y, z2: float = q4fQuat.z, w2: float = q4fQuat.w;
+
+		    q4fDestination.x = x1*w2 + x2*w1 + y1*z2 - z1*y2;
+		    q4fDestination.y = y1*w2 + y2*w1 + z1*x2 - x1*z2;
+		    q4fDestination.z = z1*w2 + z2*w1 + x1*y2 - y1*x2;
+		    q4fDestination.w = w1*w2 - x1*x2 - y1*y2 - z1*z2;
+
+		    return q4fDestination;
+		};
+
+		multiplyVec3(v3fVec: IVec3, v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+		        v3fDestination = v3fVec;
+		    }
+
+		    var q4fVec: IQuat4 = quat4(v3fVec,0);
+		    var qInverse: IQuat4 = this.inverse(quat4());
+
+		    var qResult: IQuat4 = this.multiply(q4fVec.multiply(qInverse),quat4());
+
+		    v3fDestination.x = qResult.x;
+		    v3fDestination.y = qResult.y;
+		    v3fDestination.z = qResult.z;
+
+		    return v3fDestination;
+		};
+
+		conjugate(q4fDestination?: IQuat4): IQuat4{
+			if(!isDef(q4fDestination)){
+			    this.x = -this.x;
+			    this.y = -this.y;
+			    this.z = -this.z;
+
+			    return this;
+			}
+
+			q4fDestination.x = -this.x;
+			q4fDestination.y = -this.y;
+			q4fDestination.z = -this.z;
+			q4fDestination.w = this.w;
+
+			return q4fDestination;
+		};
+
+		inverse(q4fDestination?: IQuat4): IQuat4{
+			if(!isDef(q4fDestination)){
+		        q4fDestination = this;
+		    }
+
+		    var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+		    var fSqLength: float = x*x + y*y + z*z + w*w;
+
+		    if(fSqLength === 0.){
+		        q4fDestination.x = 0.;
+		        q4fDestination.y = 0.;
+		        q4fDestination.z = 0.;
+		        q4fDestination.w = 0.;
+		    }
+		    else{
+		        var fInvSqLength : float= 1./fSqLength;
+		        q4fDestination.x = -x*fInvSqLength;
+		        q4fDestination.y = -y*fInvSqLength;
+		        q4fDestination.z = -z*fInvSqLength;
+		        q4fDestination.w =  w*fInvSqLength;
+		    }
+
+		    return q4fDestination;
+		};
+
+		/**@inline*/  length() : float{
+			var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+    		return sqrt(x*x + y*y + z*z + w*w);
+		};
+
+		normalize(q4fDestination?: IQuat4): IQuat4{
+			if(!isDef(q4fDestination)){
+		        q4fDestination = this;
+		    }
+
+		    var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+
+		    var fLength: float = sqrt(x*x + y*y + z*z + w*w);
+
+		    if(fLength === 0.){
+		    	q4fDestination.x = 0.;
+		    	q4fDestination.y = 0.;
+		    	q4fDestination.z = 0.;
+		    	q4fDestination.w = 0.;
+
+		    }
+		    else{
+		    	var fInvLength: float = 1/fLength;
+
+		    	q4fDestination.x = x*fInvLength;
+		    	q4fDestination.y = y*fInvLength;
+		    	q4fDestination.z = z*fInvLength;
+		    	q4fDestination.w = w*fInvLength;
+		    }
+
+		    return q4fDestination;
+		};
+
+		calculateW(q4fDestination?: IQuat4): IQuat4{
+			var x: float = this.x, y: float = this.y, z: float = this.z;
+
+		    if(!isDef(q4fDestination)){
+		        this.w = sqrt(1. - x*x - y*y - z*z);
+		        return this;
+		    }
+
+		    q4fDestination.x = x;
+		    q4fDestination.y = y;
+		    q4fDestination.z = z;
+		    q4fDestination.w = sqrt(1. - x*x - y*y - z*z);
+
+		    return q4fDestination;
+		};
+
+		isEqual(q4fQuat: IQuat4, fEps: float = 0., asMatrix: bool = false): bool{
+
+		    var x1: float = this.x, y1: float = this.y, z1: float = this.z, w1: float = this.w;
+		    var x2: float = q4fQuat.x, y2: float = q4fQuat.y, z2: float = q4fQuat.z, w2: float = q4fQuat.w;
+
+		    var fLength1: float = sqrt(x1*x1 + y1*y1 + z1*z1 + w1*w1);
+		    var fLength2: float = sqrt(x2*x2 + y2*y2 + z2*z2 + w2*w2);
+
+		    if(abs(fLength2 - fLength2) > fEps){
+		        return false;
+		    }
+
+		    var cosHalfTheta: float = (x1*x2 + y1*y2 + z1*z2 + w1*w2)/fLength1/fLength2;
+
+		    if(asMatrix){
+		        cosHalfTheta = abs(cosHalfTheta);
+		    }
+
+		    if(1. - cosHalfTheta > fEps){
+		        return false;
+		    }
+		    return true;
+		};
+
+		getYaw(): float{
+		    var fYaw: float;
+
+		    var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+
+		    var fx2: float = x*2.;
+		    var fy2: float = y*2.;
+
+		    if(abs(x) == abs(w)){
+//вырожденный случай обрабатывается отдельно
+//
+		        var wTemp: float = w*sqrt(2.);
+//cos(Yaw/2)*cos(Roll/2) + sin(Yaw/2)*sin(Roll/2) = cos((Yaw-Roll)/2); Roll = 0;
+//x==-w
+//cos(Yaw/2)*cos(Roll/2) - sin(Yaw/2)*sin(Roll/2) = cos((Yaw+Roll)/2); Roll = 0;
+		        var yTemp: float = y*sqrt(2.);
+//sin(Yaw/2)*cos(Roll/2) - cos(Yaw/2)*sin(Roll/2) = sin((Yaw-Roll)/2); Roll = 0;
+//x==-w
+//sin(Yaw/2)*cos(Roll/2) + cos(Yaw/2)*sin(Roll/2) = sin((Yaw+Roll)/2); Roll = 0;
+
+		        fYaw = atan2(yTemp,wTemp)*2.;
+//fRoll = 0;
+
+//убираем дополнительный оборот
+		        var pi: float = PI;
+		        if(fYaw > pi){
+		            fYaw -= pi;
+//fRoll = (x == w) ? -pi : pi;
+		        }
+		        else if(fYaw < -pi){
+		            fYaw += pi;
+//fRoll = (x == w) ? pi : -pi;
+		        }
+		    }
+		    else{
+//Math.atan2(sin(Yaw)*cos(Pitch),cos(Yaw)*cos(Pitch));
+		        fYaw = atan2(fx2*z + fy2*w, 1. - (fx2*x + fy2*y));
+		    }
+
+		    return fYaw;
+		};
+
+		getPitch(): float{
+			var fPitch: float;
+
+		    var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+
+		    var fx2: float = x*2.;
+		    var fy2: float = y*2.;
+
+/*в очень редких случаях из-за ошибок округления получается результат > 1*/
+		    var fSinPitch: float = clamp(fx2*w - fy2*z,-1.,1.);
+		    fPitch = asin(fSinPitch)
+
+		    return fPitch;
+		};
+
+		getRoll(): float{
+		    var fRoll: float;
+
+		    var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+
+		    var fx2: float = x*2.;
+		    var fz2: float = z*2.;
+
+		    if(abs(x) == abs(w)){
+//вырожденный случай обрабатывается отдельно
+//
+		        var wTemp: float = w*sqrt(2.);
+//cos(Yaw/2)*cos(Roll/2) + sin(Yaw/2)*sin(Roll/2) = cos((Yaw-Roll)/2); Roll = 0;
+//x==-w
+//cos(Yaw/2)*cos(Roll/2) - sin(Yaw/2)*sin(Roll/2) = cos((Yaw+Roll)/2); Roll = 0;
+		        var yTemp: float = y*sqrt(2.);
+//sin(Yaw/2)*cos(Roll/2) - cos(Yaw/2)*sin(Roll/2) = sin((Yaw-Roll)/2); Roll = 0;
+//x==-w
+//sin(Yaw/2)*cos(Roll/2) + cos(Yaw/2)*sin(Roll/2) = sin((Yaw+Roll)/2); Roll = 0;
+
+		        var fYaw: float = atan2(yTemp,wTemp)*2.;
+		        fRoll = 0.;
+
+//убираем дополнительный оборот
+		        var pi: float = PI;
+		        if(fYaw > pi){
+//fYaw -= pi;
+		            fRoll = (x == w) ? -pi : pi;
+		        }
+		        else if(fYaw < -pi){
+//fYaw += pi;
+		            fRoll = (x == w) ? pi : -pi;
+		        }
+		    }
+		    else{
+//Math.atan2(cos(Pitch) * sin(Roll),cos(Pitch)*cos(Roll));
+		        fRoll = atan2(fx2*y + fz2*w, 1. - (fx2*x + fz2*z));
+		    }
+
+		    return fRoll;
+		};
+
+		toYawPitchRoll(v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+		        v3fDestination = new Vec3();
+		    }
+
+		    var fYaw: float, fPitch: float, fRoll: float;
+
+		    var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+
+		    var fx2: float = x*2.;
+		    var fy2: float = y*2.;
+		    var fz2: float = z*2.;
+		    var fw2: float = w*2.;
+
+/*в очень редких случаях из-за ошибок округления получается результат > 1*/
+		    var fSinPitch: float = clamp(fx2*w - fy2*z,-1.,1.);
+		    fPitch = asin(fSinPitch);
+//не известен знак косинуса, как следствие это потребует дополнительной проверки.
+//как показала практика - это не на что не влияет, просто один и тот же кватернион можно получить двумя разными вращениями
+
+		    if(abs(x) == abs(w)){
+//вырожденный случай обрабатывается отдельно
+//
+		        var wTemp: float = w*sqrt(2.);
+//cos(Yaw/2)*cos(Roll/2) + sin(Yaw/2)*sin(Roll/2) = cos((Yaw-Roll)/2); Roll = 0;
+//x==-w
+//cos(Yaw/2)*cos(Roll/2) - sin(Yaw/2)*sin(Roll/2) = cos((Yaw+Roll)/2); Roll = 0;
+		        var yTemp: float = y*sqrt(2.);
+//sin(Yaw/2)*cos(Roll/2) - cos(Yaw/2)*sin(Roll/2) = sin((Yaw-Roll)/2); Roll = 0;
+//x==-w
+//sin(Yaw/2)*cos(Roll/2) + cos(Yaw/2)*sin(Roll/2) = sin((Yaw+Roll)/2); Roll = 0;
+
+		        fYaw = atan2(yTemp,wTemp)*2.;
+		        fRoll = 0.;
+
+//убираем дополнительный оборот
+		        var pi: float = PI;
+		        if(fYaw > pi){
+		            fYaw -= pi;
+		            fRoll = (x == w) ? -pi : pi;
+		        }
+		        else if(fYaw < -pi){
+		            fYaw += pi;
+		            fRoll = (x == w) ? pi : -pi;
+		        }
+		    }
+		    else{
+//Math.atan2(sin(Yaw)*cos(Pitch),cos(Yaw)*cos(Pitch));
+		        fYaw = atan2(fx2*z + fy2*w, 1. - (fx2*x + fy2*y));
+//Math.atan2(cos(Pitch) * sin(Roll),cos(Pitch)*cos(Roll));
+		        fRoll = atan2(fx2*y + fz2*w, 1. - (fx2*x + fz2*z));
+		    }
+
+		    v3fDestination.x = fYaw;
+		    v3fDestination.y = fPitch;
+		    v3fDestination.z = fRoll;
+
+		    return v3fDestination;
+		};
+
+		toMat3(m3fDestination?: IMat3): IMat3{
+			if(!isDef(m3fDestination)){
+		        m3fDestination = new Mat3();
+		    }
+		    var pDataDestination: Float32Array = m3fDestination.data;
+
+		    var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+
+//потом необходимо ускорить
+
+		    pDataDestination[ 0 ] = 1. - 2.*(y*y + z*z);
+		    pDataDestination[ 3 ] = 2.*(x*y - z*w);
+		    pDataDestination[ 6 ] = 2.*(x*z + y*w);
+
+		    pDataDestination[ 1 ] = 2.*(x*y + z*w);
+		    pDataDestination[ 4 ] = 1. - 2.*(x*x + z*z);
+		    pDataDestination[ 7 ] = 2.*(y*z - x*w);
+
+		    pDataDestination[ 2 ] = 2.*(x*z - y*w);
+		    pDataDestination[ 5 ] = 2.*(y*z + x*w);
+		    pDataDestination[ 8 ] = 1. - 2.*(x*x + y*y);
+
+		    return m3fDestination;
+		};
+
+		toMat4(m4fDestination?: IMat4): IMat4{
+			if(!isDef(m4fDestination)){
+		        m4fDestination = new Mat4();
+		    }
+		    var pDataDestination: Float32Array = m4fDestination.data;
+
+		    var x: float = this.x, y: float = this.y, z: float = this.z, w: float = this.w;
+
+//потом необходимо ускорить
+
+		    pDataDestination[ 0 ] = 1. - 2.*(y*y + z*z);
+		    pDataDestination[ 4 ] = 2.*(x*y - z*w);
+		    pDataDestination[ 8 ] = 2.*(x*z + y*w);
+		    pDataDestination[ 12 ] = 0.;
+
+		    pDataDestination[ 1 ] = 2.*(x*y + z*w);
+		    pDataDestination[ 5 ] = 1. - 2.*(x*x + z*z);
+		    pDataDestination[ 9 ] = 2.*(y*z - x*w);
+		    pDataDestination[ 13 ] = 0.;
+
+		    pDataDestination[ 2 ] = 2.*(x*z - y*w);
+		    pDataDestination[ 6 ] = 2.*(y*z + x*w);
+		    pDataDestination[ 10 ] = 1. - 2.*(x*x + y*y);
+		    pDataDestination[ 14 ] = 0.;
+
+		    pDataDestination[ 3 ] = 0.;
+		    pDataDestination[ 7 ] = 0.;
+		    pDataDestination[ 11 ] = 0.;
+		    pDataDestination[ 15 ] = 1.;
+
+    		return m4fDestination;
+		};
+
+		/**@inline*/  toString(): string{
+			return "[x: " + this.x + ", y: " + this.y + ", z: " + this.z + ", w: " + this.w + "]";
+		};
+
+		mix(q4fQuat: IQuat4, fA: float, q4fDestination?: IQuat4, bShortestPath: bool = true){
+			if(!isDef(q4fDestination)){
+		        q4fDestination = this;
+		    }
+
+		    fA = clamp(fA,0,1);
+
+		    var x1: float = this.x, y1: float = this.y, z1: float = this.z, w1: float = this.w;
+		    var x2: float = q4fQuat.x, y2: float = q4fQuat.y, z2: float = q4fQuat.z, w2: float = q4fQuat.w;
+
+//скалярное произведение
+		    var fCos: float = x1*x2 + y1*y2 + z1*z2 + w1*w2;
+
+		    if(fCos < 0. && bShortestPath){
+		        x2 = -x2;
+		        y2 = -y2;
+		        z2 = -z2;
+		        w2 = -w2;
+		    }
+
+		    var k1: float = 1. - fA;
+		    var k2: float = fA;
+
+		    q4fDestination.x = x1*k1 + x2*k2;
+		    q4fDestination.y = y1*k1 + y2*k2;
+		    q4fDestination.z = z1*k1 + z2*k2;
+		    q4fDestination.w = w1*k1 + w2*k2;
+
+		    return q4fDestination;
+		};
+
+		smix(q4fQuat: IQuat4, fA: float, q4fDestination?: IQuat4, bShortestPath: bool = true){
+			if(!isDef(q4fDestination)){
+		        q4fDestination = this;
+		    }
+
+		    fA = clamp(fA,0,1);
+
+		    var x1: float = this.x, y1: float = this.y, z1: float = this.z, w1: float = this.w;
+		    var x2: float = q4fQuat.x, y2: float = q4fQuat.y, z2: float = q4fQuat.z, w2: float = q4fQuat.w;
+
+//скалярное произведение
+		    var fCos: float = x1*x2 + y1*y2 + z1*z2 + w1*w2;
+
+		    if(fCos < 0 && bShortestPath){
+		        fCos = -fCos;
+		        x2 = -x2;
+		        y2 = -y2;
+		        z2 = -z2;
+		        w2 = -w2;
+		    }
+
+		    var fEps: float = 1e-3;
+		    if(abs(fCos) < 1. - fEps){
+		        var fSin: float = sqrt(1. - fCos*fCos);
+		        var fInvSin: float = 1./fSin;
+
+		        var fAngle: float = atan2(fSin,fCos);
+
+		        var k1: float = sin((1. - fA) * fAngle)*fInvSin;
+		        var k2: float = sin(fA * fAngle)*fInvSin;
+
+		        q4fDestination.x = x1*k1 + x2*k2;
+		        q4fDestination.y = y1*k1 + y2*k2;
+		        q4fDestination.z = z1*k1 + z2*k2;
+		        q4fDestination.w = w1*k1 + w2*k2;
+		    }
+		    else{
+//два кватерниона или очень близки (тогда можно делать линейную интерполяцию) 
+//или два кватениона диаметрально противоположны, тогда можно интерполировать любым способом
+//позже надо будет реализовать какой-нибудь, а пока тоже линейная интерполяция
+
+		        var k1: float = 1 - fA;
+		        var k2: float = fA;
+
+		        var x: float = x1*k1 + x2*k2;
+		        var y: float = y1*k1 + y2*k2;
+		        var z: float = z1*k1 + z2*k2;
+		        var w: float = w1*k1 + w2*k2;
+
+// и нормализуем так-как мы сошли со сферы
+
+		        var fLength: float = sqrt(x*x + y*y + z*z + w*w);
+		        var fInvLen: float = fLength ? 1/fLength : 0;
+
+		        q4fDestination.x = x*fInvLen;
+		        q4fDestination.y = y*fInvLen;
+		        q4fDestination.z = z*fInvLen;
+		        q4fDestination.w = w*fInvLen;
+		    }
+
+		    return q4fDestination;
+		};
+
+		static fromForwardUp(v3fForward: IVec3, v3fUp: IVec3, q4fDestination?: IQuat4): IQuat4{
+			if(!isDef(q4fDestination)){
+		        q4fDestination = new Quat4();
+		    }
+
+		    var fForwardX: float = v3fForward.x, fForwardY: float = v3fForward.y, fForwardZ: float = v3fForward.z;
+		    var fUpX: float = v3fUp.x, fUpY: float = v3fUp.y, fUpZ: float = v3fUp.z;
+
+		    var m3fTemp: IMat3 = mat3();
+		    var pTempData: Float32Array = m3fTemp.data;
+
+		    pTempData[ 0 ] = fUpY*fForwardZ - fUpZ*fForwardY;
+		    pTempData[ 3 ] = fUpX;
+		    pTempData[ 6 ] = fForwardX;
+
+		    pTempData[ 1 ] = fUpZ*fForwardX - fUpX*fForwardZ;
+		    pTempData[ 4 ] = fUpY;
+		    pTempData[ 7 ] = fForwardY;
+
+		    pTempData[ 2 ] = fUpX*fForwardY - fUpY*fForwardX;
+		    pTempData[ 5 ] = fUpZ;
+		    pTempData[ 8 ] = fForwardZ;
+
+		    return m3fTemp.toQuat4(q4fDestination);
+		};
+
+		static fromAxisAngle(v3fAxis: IVec3, fAngle: float, q4fDestination?: IQuat4): IQuat4{
+
+			if(!isDef(q4fDestination)){
+		        q4fDestination = new Quat4();
+		    }
+
+		    var x: float = v3fAxis.x, y: float = v3fAxis.y, z: float = v3fAxis.z;
+
+		    var fLength: float = sqrt(x*x + y*y + z*z);
+
+		    if(fLength === 0.){
+		        q4fDestination.x = q4fDestination.y = q4fDestination.z = 0;
+		        q4fDestination.w = 1;
+		        return q4fDestination;
+		    }
+
+		    var fInvLength = 1/fLength;
+
+		    x *= fInvLength;
+		    y *= fInvLength;
+		    z *= fInvLength;
+
+		    var fSin: float = sin(fAngle/2);
+		    var fCos: float = cos(fAngle/2);
+
+		    q4fDestination.x = x * fSin;
+		    q4fDestination.y = y * fSin;
+		    q4fDestination.z = z * fSin;
+		    q4fDestination.w = fCos;
+
+		    return q4fDestination;
+		};
+
+		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float,q4fDestination?: IQuat4): IQuat4;
+		static fromYawPitchRoll(v3fAngles: IVec3,q4fDestination?: IQuat4): IQuat4;
+		static fromYawPitchRoll(fYaw? ,fPitch?, fRoll?, q4fDestination?): IQuat4{
+			if(arguments.length <= 2){
+				var v3fVec: IVec3 = arguments[0];
+
+				fYaw = v3fVec.x;
+				fPitch = v3fVec.y;
+				fRoll = v3fVec.z;
+
+				q4fDestination = arguments[1];
+			}
+
+			if(!isDef(q4fDestination)){
+				q4fDestination = new Quat4();
+			}
+
+		    var fHalfYaw: float = fYaw * 0.5;
+		    var fHalfPitch: float = fPitch * 0.5;
+		    var fHalfRoll: float = fRoll * 0.5;
+
+		    var fCos1: float = cos(fHalfYaw), fSin1: float = sin(fHalfYaw);
+		    var fCos2: float = cos(fHalfPitch), fSin2: float = sin(fHalfPitch);
+		    var fCos3: float = cos(fHalfRoll), fSin3: float = sin(fHalfRoll);
+
+		    q4fDestination.x = fCos1 * fSin2 * fCos3 + fSin1 * fCos2 * fSin3;
+		    q4fDestination.y = fSin1 * fCos2 * fCos3 - fCos1 * fSin2 * fSin3;
+		    q4fDestination.z = fCos1 * fCos2 * fSin3 - fSin1 * fSin2 * fCos3;
+		    q4fDestination.w = fCos1 * fCos2 * fCos3 + fSin1 * fSin2 * fSin3;
+
+		    return q4fDestination;
+		};
+
+		static fromXYZ(fX: float, fY: float, fZ: float, q4fDestination?: IQuat4): IQuat4;
+		static fromXYZ(v3fAngles: IVec3, q4fDestination?: IQuat4): IQuat4;
+		static fromXYZ(fX?, fY?, fZ?, q4fDestination?) : IQuat4{
+			if(arguments.length <= 2){
+//Vec3 + m4fDestination
+				var v3fVec: IVec3 = arguments[0];
+				return Quat4.fromYawPitchRoll(v3fVec.y,v3fVec.x,v3fVec.z,arguments[1]);
+			}
+			else{
+//fX fY fZ m4fDestination
+				var fX: float = arguments[0];
+				var fY: float = arguments[1];
+				var fZ: float = arguments[2];
+
+				return Quat4.fromYawPitchRoll(fY, fX, fZ, arguments[3]);
+			}
+		};
+
+		static stackSize: uint = 100; static stackPosition: int = 0; static stack: IQuat4 [] = (function(): IQuat4 []{ var pStack: IQuat4 [] = new Array(Quat4.stackSize); for(var i:int = 0; i<Quat4.stackSize; i++){ pStack[i] = new Quat4(); } return pStack})();
     }
 }
 
@@ -3676,45 +5695,45 @@ module akra.math {
 // BASIC MATH AND UNIT CONVERSION CONSTANTS
 //
 
-	export  var  E: float 								= <float>Math.E;
-	export  var  LN2: float 							= <float>Math.LN2;
-	export  var  LOG2E: float 							= <float>Math.LOG2E;
-	export  var  LOG10E: float 							= <float>Math.LOG10E;
-	export  var  PI: float 								= <float>Math.PI;
-	export  var  SQRT1_2: float 						= <float>Math.SQRT1_2;
-	export  var  SQRT2: float 							= <float>Math.SQRT2;
-	export  var  LN10: float 							= <float>Math.LN10;
+	export var E: float 								= <float>Math.E;
+	export var LN2: float 								= <float>Math.LN2;
+	export var LOG2E: float 							= <float>Math.LOG2E;
+	export var LOG10E: float 							= <float>Math.LOG10E;
+	export var PI: float 								= <float>Math.PI;
+	export var SQRT1_2: float 							= <float>Math.SQRT1_2;
+	export var SQRT2: float 							= <float>Math.SQRT2;
+	export var LN10: float 								= <float>Math.LN10;
 
-	export  var  FLOAT_PRECISION: float					= <float>(3.4e-8);
-	export  var  TWO_PI: float							= <float>(2.0*PI);
-	export  var  HALF_PI: float							= <float>(PI/2.0);
-	export  var  QUARTER_PI: float						= <float>(PI/4.0);
-	export  var  EIGHTH_PI: float						= <float>(PI/8.0);
-	export  var  PI_SQUARED: float						= <float>(9.86960440108935861883449099987615113531369940724079);
-	export  var  PI_INVERSE: float						= <float>(0.31830988618379067153776752674502872406891929148091);
-	export  var  PI_OVER_180: float						= <float>(PI/180);
-	export  var  PI_DIV_180: float						= <float>(180/PI);
-	export  var  NATURAL_LOGARITHM_BASE: float			= <float>(2.71828182845904523536028747135266249775724709369996);
-	export  var  EULERS_CONSTANT: float					= <float>(0.57721566490153286060651);
-	export  var  SQUARE_ROOT_2: float					= <float>(1.41421356237309504880168872420969807856967187537695);
-	export  var  INVERSE_ROOT_2: float					= <float>(0.707106781186547524400844362105198);
-	export  var  SQUARE_ROOT_3: float					= <float>(1.73205080756887729352744634150587236694280525381038);
-	export  var  SQUARE_ROOT_5: float					= <float>(2.23606797749978969640917366873127623544061835961153);
-	export  var  SQUARE_ROOT_10: float					= <float>(3.16227766016837933199889354443271853371955513932522);
-	export  var  CUBE_ROOT_2: float						= <float>(1.25992104989487316476721060727822835057025146470151);
-	export  var  CUBE_ROOT_3: float						= <float>(1.44224957030740838232163831078010958839186925349935);
-	export  var  FOURTH_ROOT_2: float					= <float>(1.18920711500272106671749997056047591529297209246382);
-	export  var  NATURAL_LOG_2: float					= <float>(0.69314718055994530941723212145817656807550013436026);
-	export  var  NATURAL_LOG_3: float					= <float>(1.09861228866810969139524523692252570464749055782275);
-	export  var  NATURAL_LOG_10: float					= <float>(2.30258509299404568401799145468436420760110148862877);
-	export  var  NATURAL_LOG_PI: float					= <float>(1.14472988584940017414342735135305871164729481291531);
-	export  var  BASE_TEN_LOG_PI: float					= <float>(0.49714987269413385435126828829089887365167832438044);
-	export  var  NATURAL_LOGARITHM_BASE_INVERSE: float	= <float>(0.36787944117144232159552377016146086744581113103177);
-	export  var  NATURAL_LOGARITHM_BASE_SQUARED: float	= <float>(7.38905609893065022723042746057500781318031557055185);
-	export  var  GOLDEN_RATIO: float					= <float>((SQUARE_ROOT_5 + 1.0) / 2.0);
-	export  var  DEGREE_RATIO: float					= <float>(PI_DIV_180);
-	export  var  RADIAN_RATIO: float					= <float>(PI_OVER_180);
-	export  var  GRAVITY_CONSTANT: float 				= 9.81;
+	export var FLOAT_PRECISION: float					= <float>(3.4e-8);
+	export var TWO_PI: float							= <float>(2.0*PI);
+	export var HALF_PI: float							= <float>(PI/2.0);
+	export var QUARTER_PI: float						= <float>(PI/4.0);
+	export var EIGHTH_PI: float							= <float>(PI/8.0);
+	export var PI_SQUARED: float						= <float>(9.86960440108935861883449099987615113531369940724079);
+	export var PI_INVERSE: float						= <float>(0.31830988618379067153776752674502872406891929148091);
+	export var PI_OVER_180: float						= <float>(PI/180);
+	export var PI_DIV_180: float						= <float>(180/PI);
+	export var NATURAL_LOGARITHM_BASE: float			= <float>(2.71828182845904523536028747135266249775724709369996);
+	export var EULERS_CONSTANT: float					= <float>(0.57721566490153286060651);
+	export var SQUARE_ROOT_2: float						= <float>(1.41421356237309504880168872420969807856967187537695);
+	export var INVERSE_ROOT_2: float					= <float>(0.707106781186547524400844362105198);
+	export var SQUARE_ROOT_3: float						= <float>(1.73205080756887729352744634150587236694280525381038);
+	export var SQUARE_ROOT_5: float						= <float>(2.23606797749978969640917366873127623544061835961153);
+	export var SQUARE_ROOT_10: float					= <float>(3.16227766016837933199889354443271853371955513932522);
+	export var CUBE_ROOT_2: float						= <float>(1.25992104989487316476721060727822835057025146470151);
+	export var CUBE_ROOT_3: float						= <float>(1.44224957030740838232163831078010958839186925349935);
+	export var FOURTH_ROOT_2: float						= <float>(1.18920711500272106671749997056047591529297209246382);
+	export var NATURAL_LOG_2: float						= <float>(0.69314718055994530941723212145817656807550013436026);
+	export var NATURAL_LOG_3: float						= <float>(1.09861228866810969139524523692252570464749055782275);
+	export var NATURAL_LOG_10: float					= <float>(2.30258509299404568401799145468436420760110148862877);
+	export var NATURAL_LOG_PI: float					= <float>(1.14472988584940017414342735135305871164729481291531);
+	export var BASE_TEN_LOG_PI: float					= <float>(0.49714987269413385435126828829089887365167832438044);
+	export var NATURAL_LOGARITHM_BASE_INVERSE: float	= <float>(0.36787944117144232159552377016146086744581113103177);
+	export var NATURAL_LOGARITHM_BASE_SQUARED: float	= <float>(7.38905609893065022723042746057500781318031557055185);
+	export var GOLDEN_RATIO: float						= <float>((SQUARE_ROOT_5 + 1.0) / 2.0);
+	export var DEGREE_RATIO: float						= <float>(PI_DIV_180);
+	export var RADIAN_RATIO: float						= <float>(PI_OVER_180);
+	export var GRAVITY_CONSTANT: float 					= 9.81;
 
 //
 // MATH AND UNIT CONVERSION FUNCTION PROTOTYPES
@@ -4060,6 +6079,25 @@ module akra.math {
 	 */
 
 	export var lcm = nok;
+
+// var pMat3Stack = new Array(100);
+// var iMat3StackIndex = 0;
+
+// function mat3 ();
+// function mat3 (fValue: float);
+// function mat3 (fValue?) {
+// 	var pStorage: IMat3[] = Mat3.stack;
+// 	var iIndex = Mat3.iIndex;
+// 	var nMax = Mat3.nMax;
+// }
+
+
+	export var vec2 = vec2;
+	export var vec3 = vec3;
+	export var vec4 = vec4;
+	export var quat4 = quat4;
+	export var mat3 = mat3;
+	export var mat4 = mat4;
 }
 
 module akra {
@@ -4071,13 +6109,12 @@ module akra {
 	export var Mat4 = math.Mat4;
 	export var Quat4 = math.Quat4;
 
-//export var vec2: () => IVec2;
-	export var vec3: (fX?:any, fY?:any, fZ?:any) => IVec3;
-	export var vec4: (fX?:any, fY?:any, fZ?:any, fW?: any) => IVec4;
-//export var mat2: () => IMat2;
-	export var mat3: (fX?:any) => IMat3;
-	export var mat4: (fX?:any) => IMat4;
-	export var quat4: (fX?:any, fY?:any, fZ?:any, fW?: any) => IQuat4;
+	export var vec2 = math.vec2;
+	export var vec3 = math.vec3;
+	export var vec4 = math.vec4;
+	export var quat4 = math.quat4;
+	export var mat3 = math.mat3;
+	export var mat4 = math.mat4;
 }
 
 
@@ -10620,7 +12657,7 @@ module akra.scene {
 
 		get normalMatrix(): IMat3 {
 			if ( ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_RebuildNormalMatrix)) ) != 0) ) {
-		        this._m4fWorldMatrix.toInverseMat3(this._m3fNormalMatrix).transpose();
+		        this._m4fWorldMatrix.toMat3(this._m3fNormalMatrix).inverse().transpose();
 		        ((this._iUpdateFlags) &= ~ (1 << ((ENodeUpdateFlags.k_RebuildNormalMatrix))) ) ;
 		    }
 
