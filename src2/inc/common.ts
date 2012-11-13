@@ -258,11 +258,6 @@ module akra {
 
 */
 
-    export interface StringEnum {
-        [index: string]: string;
-        [index: string]: int;
-    };
-
     export interface StringMap {
         [index: string]: string;
         [index: number]: string;

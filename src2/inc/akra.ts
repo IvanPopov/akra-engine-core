@@ -178,5 +178,6 @@
 #include "util/EffectParser.ts"
 
 #include "fx/Effect.ts"
+#include "fx/Instruction.ts"
 
 #endif

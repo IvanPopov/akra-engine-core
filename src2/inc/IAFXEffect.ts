@@ -61,11 +61,6 @@ module akra {
     
     }
 
-
-    export interface IAFXInstuction {
-        // isValid(): bool;
-    }
-
     export interface IAFXEffectStats{
         time: uint;
     }
