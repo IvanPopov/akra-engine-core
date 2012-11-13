@@ -19,7 +19,7 @@ function read (pFile) {
     }
 
     pData = pFile.reader.readAsText(pFile.entry.file());
-
+    
     return pData;
 }
 
@@ -115,4 +115,4 @@ function file (pCmd) {
 }
 
 
-importScripts('FileInterface.thread.js');
+importScripts('FileInterface.t.js');

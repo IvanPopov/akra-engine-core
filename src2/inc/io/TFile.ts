@@ -1,13 +1,23 @@
-#ifndef FILETHREAD_TS
-#define FILETHREAD_TS
+#ifndef TFILE_TS
+#define TFILE_TS
 
 #include "IFile.ts"
 #include "IThread.ts"
-#include "io/file.ts"
-#include "FileThreadManager.ts"
+#include "io/files.ts"
 #include "bf/bitflags.ts"
 #include "math/math.ts"
+#include "util/ThreadManager.ts"
 
+#ifndef FTM_DEFAULT_LOCAL_THREAD
+#define FTM_DEFAULT_LOCAL_THREAD "LocalFile.t.js"
+#endif
+
+#ifndef FTM_DEFAULT_REMOTE_THREAD
+#define FTM_DEFAULT_REMOTE_THREAD "RemoteFile.t.js"
+#endif
+
+#define LocalFileThreadManager() util.ThreadManager(FTM_DEFAULT_LOCAL_THREAD)
+#define RemoteFileThreadManager() util.ThreadManager(FTM_DEFAULT_REMOTE_THREAD)
 
 #define CHECK_IFNOT_OPEN(method, callback) \
 		if (!this.isOpened()) {						\
@@ -45,14 +55,22 @@ module akra.io {
 		contentType?: string;
 	}
 
-	export class FileThread implements IFile {
-		private _iMode: int;
-		private _pUri: IURI = null;
-		private _nCursorPosition: uint = 0;
-		private _bOpened: bool = false;
-		private _eTransferMode: EFileTransferModes = EFileTransferModes.k_Normal;
-		private _pFileMeta: IFileMeta = null;
-		private _isLocal: bool = false;
+
+	var pLocalFileThreadManager = new LocalFileThreadManager();
+	var pRemoteFileThreadManager = new RemoteFileThreadManager();
+
+	export var getLocalFileThreadManager = (): IThreadManager => pLocalFileThreadManager;
+	export var getRemoteFileThreadManager = (): IThreadManager => pRemoteFileThreadManager;
+
+
+	export class TFile implements IFile {
+		protected _iMode: int;
+		protected _pUri: IURI = null;
+		protected _nCursorPosition: uint = 0;
+		protected _bOpened: bool = false;
+		protected _eTransferMode: EFileTransferModes = EFileTransferModes.k_Normal;
+		protected _pFileMeta: IFileMeta = null;
+		protected _isLocal: bool = false;
 
 
 		inline get path(): string {
@@ -96,9 +114,9 @@ module akra.io {
        	 return this._pFileMeta? this._pFileMeta.size: 0;
 		}
 
-		constructor (sFilename?: string, sMode?: string, fnCallback: Function = FileThread.defaultCallback);
-		constructor (sFilename?: string, iMode?: int, fnCallback: Function = FileThread.defaultCallback);
-		constructor (sFilename?: string, sMode?: any, fnCallback: Function = FileThread.defaultCallback) {
+		constructor (sFilename?: string, sMode?: string, fnCallback: Function = TFile.defaultCallback);
+		constructor (sFilename?: string, iMode?: int, fnCallback: Function = TFile.defaultCallback);
+		constructor (sFilename?: string, sMode?: any, fnCallback: Function = TFile.defaultCallback) {
 			if (isDef(sMode)) {
 				this._iMode = isString(sMode)? filemode(sMode): sMode;
 			}
@@ -148,7 +166,7 @@ module akra.io {
 		    }
 
 		    fnCallback = arguments[hasMode ? 2 : 1];
-		    fnCallback = fnCallback || FileThread.defaultCallback;
+		    fnCallback = fnCallback || TFile.defaultCallback;
 
 		    if (this.isOpened()) {
 		        warning("file already opened: " + this.name);
@@ -183,7 +201,7 @@ module akra.io {
 			this._pFileMeta = null;
 		}
 
-		clear(fnCallback: Function = FileThread.defaultCallback): void {
+		clear(fnCallback: Function = TFile.defaultCallback): void {
 			CHECK_IFNOT_OPEN(clear, fnCallback);
 
 			var pCommand: IFileCommand = {
@@ -196,7 +214,7 @@ module akra.io {
 		}
 
 
-		read(fnCallback: Function = FileThread.defaultCallback): void {
+		read(fnCallback: Function = TFile.defaultCallback): void {
 			CHECK_IFNOT_OPEN(read, fnCallback);
 
 		    var pFile: IFile = this;
@@ -231,9 +249,9 @@ module akra.io {
 		    this.execCommand(pCommand, fnCallbackSystem);
 		}
 
-		write(sData: string, fnCallback: Function = FileThread.defaultCallback, sContentType?: string): void;
-		write(pData: ArrayBuffer, fnCallback: Function = FileThread.defaultCallback, sContentType?: string): void;
-		write(pData: any, fnCallback: Function = FileThread.defaultCallback, sContentType?: string): void {
+		write(sData: string, fnCallback: Function = TFile.defaultCallback, sContentType?: string): void;
+		write(pData: ArrayBuffer, fnCallback: Function = TFile.defaultCallback, sContentType?: string): void;
+		write(pData: any, fnCallback: Function = TFile.defaultCallback, sContentType?: string): void {
 			CHECK_IFNOT_OPEN(write, fnCallback);
 
 		    var pFile: IFile = this;
@@ -272,7 +290,7 @@ module akra.io {
         	}
 		}
 
-		move(sFilename: string, fnCallback: Function = FileThread.defaultCallback): void {
+		move(sFilename: string, fnCallback: Function = TFile.defaultCallback): void {
 			var pFile: IFile = this;
 
 			this.copy(sFilename, function(err) {
@@ -285,7 +303,7 @@ module akra.io {
 			});
 		}
 
-		copy(sFilename: string, fnCallback: Function = FileThread.defaultCallback): void {
+		copy(sFilename: string, fnCallback: Function = TFile.defaultCallback): void {
 			var iMode: int = EIO.IN | EIO.OUT | EIO.TRUNC;
 		    var pFile: IFile = this;
 		    var pFileCopy: IFile;
@@ -294,7 +312,7 @@ module akra.io {
 		        iMode |= EIO.BIN;
 		    }
 
-		    pFileCopy = new FileThread(sFilename, iMode,
+		    pFileCopy = new TFile(sFilename, iMode,
 		                                     function (err) {
 		                                     	if (err) {
 		                                     		fnCallback(err);
@@ -306,7 +324,7 @@ module akra.io {
 		                                     });
 		}
 
-		rename(sFilename: string, fnCallback: Function = FileThread.defaultCallback): void {
+		rename(sFilename: string, fnCallback: Function = TFile.defaultCallback): void {
 			var pName: IPathinfo = util.pathinfo(sFilename);
 
 		    assert(!pName.dirname, 'only filename can be specified.');
@@ -314,7 +332,7 @@ module akra.io {
 		    this.move(util.pathinfo(this._pUri.path).dirname + "/" + pName.basename, fnCallback);
 		}
 
-		remove(fnCallback: Function = FileThread.defaultCallback): void {
+		remove(fnCallback: Function = TFile.defaultCallback): void {
 			CHECK_IFNOT_OPEN(remove, fnCallback);
 
 		    var pFile: IFile = this;
@@ -359,7 +377,7 @@ module akra.io {
 			return this._pFileMeta !== null;
 		}
 
-		isExists(fnCallback?: Function): void {
+		isExists(fnCallback: Function): void {
 			var pCommand: IFileCommand = {
                                               act:  EFileActions.k_Exists,
                                               name: this.path,
@@ -407,7 +425,7 @@ module akra.io {
 			}
 		}
 
-		private update(fnCallback: Function = FileThread.defaultCallback) {
+		private update(fnCallback: Function = TFile.defaultCallback) {
 			var pFile: IFile = this;
 			var pCommand: IFileCommand = {
                      act:  EFileActions.k_Open,
@@ -423,7 +441,7 @@ module akra.io {
 		}
 
 		private execCommand(pCommand: IFileCommand, fnCallback: Function, pTransferables?: any[]): void {
-			FileThread.execCommand(this.isLocal(), pCommand, fnCallback);
+			TFile.execCommand(this.isLocal(), pCommand, fnCallback);
 		}
 
 		static defaultCallback: Function = function (err) {

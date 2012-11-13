@@ -11,7 +11,10 @@
 
 #include "util/util.ts"
 #include "info/info.ts"
-#include "FileThread.ts"
+#include "TFile.ts" 		/*local and remote via thread*/
+#include "LocalFile.ts" 	/*local file via local files system(async)*/
+#include "StorageFile.ts" 	/*local file via local files system(async)*/
+
 
 module akra.io {
 
@@ -80,11 +83,13 @@ module akra.io {
 
 	function _fopen(sUri: any, pMode: any = EIO.IN): IFile {
 		if (info.api.webWorker) {
-			return new FileThread(<string>sUri, pMode);
+			return new TFile(<string>sUri, pMode);
+		}
+		else if (info.api.fileSystem) {
+			return new LocalFile(<string>sUri, pMode);
 		}
 		else {
-			warning("FILES support disabled.");
-			return null;
+			return new StorageFile(<string>sUri, pMode);
 		}
 	}
 

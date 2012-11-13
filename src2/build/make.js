@@ -304,10 +304,11 @@ function compileTest(sDir, sFile, sName, pData, sTestData) {
 	        console.log("test created: " + sFile + " (" + sName +") ");
 	        pTestResults.push({file: sFile, name: sName, results: true});
 
-	        iTestQuitMutex --;
+	        
 	        if (iTestQuitMutex >= 0) {
 		        var argv = pTestQueue.pop();
 		        packTest(argv.dir, argv.main, argv.name, argv.data);
+		        iTestQuitMutex --;
 	        }
 	        else {
 	        	printTestResultTable();

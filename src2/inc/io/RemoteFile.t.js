@@ -181,4 +181,4 @@ function file (pCmd) {
 }
 
 
-importScripts('FileInterface.thread.js');
+importScripts('FileInterface.t.js');

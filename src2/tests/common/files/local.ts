@@ -1,5 +1,5 @@
 #include "util/test/testutils.ts"
-#include "io/file.ts"
+#include "io/files.ts"
 
 module akra.utils.test {
 	

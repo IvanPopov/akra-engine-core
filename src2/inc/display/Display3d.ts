@@ -10,6 +10,7 @@
 #include "IUtilTimer.ts"
 #include "IBuildScenario.ts"
 #include "ICanvasInfo.ts"
+#include "util/UtilTimer.ts"
 
 
 module akra.display {

@@ -279,11 +279,6 @@ module akra {
 
 */
 
-    export interface StringEnum {
-        [index: string]: string;
-        [index: string]: int;
-    };
-
     export interface StringMap {
         [index: string]: string;
         [index: number]: string;
@@ -367,7 +362,7 @@ module akra {
 	(<any>window).requestAnimationFrame = (<any>window).requestAnimationFrame || (<any>window).webkitRequestAnimationFrame ||
 		(<any>window).mozRequestAnimationFrame;
 	(<any>window).WebSocket = (<any>window).WebSocket || (<any>window).MozWebSocket;
-
+    (<any>window).storageInfo = (<any>window).storageInfo || (<any>window).webkitStorageInfo;
     Worker.prototype.postMessage = (<any>Worker).prototype.webkitPostMessage || Worker.prototype.postMessage;
 };
 

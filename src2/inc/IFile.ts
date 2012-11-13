@@ -42,7 +42,7 @@ module akra {
 		seek(iOffset: int): int;
 
 		isOpened(): bool;
-		isExists(fnCallback?: Function): void;
+		isExists(fnCallback: Function): void;
 		isLocal(): bool;
 
 		getMetaData(fnCallback: Function): void;

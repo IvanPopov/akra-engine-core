@@ -15,7 +15,8 @@
 
 #include "util/util.ts"
 //#include "util/test/testutils.ts"
-#include "io/file.ts"
+#include "io/ajax.ts"
+#include "io/files.ts"
 
 
 #include "controls/KeyMap.ts"
