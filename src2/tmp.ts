@@ -1540,6 +1540,7 @@ module akra {
 
 		negate(v3fDestination?: IVec3): IVec3;
 		scale(fScale: float, v3fDestination?: IVec3): IVec3;
+		scale(v3fScale: IVec3, v3fDestination?: IVec3): IVec3;
 		normalize(v3fDestination?: IVec3): IVec3;
 		length(): float;
 		lengthSquare(): float;
@@ -1874,14 +1875,25 @@ module akra.math {
             return v3fDestination;
         };
 
-        scale(fScale: float, v3fDestination?: IVec3): IVec3{
+        scale(v3fScale: IVec3, v3fDestination?: IVec3): IVec3;
+        scale(fScale: float, v3fDestination?: IVec3): IVec3;
+        scale(fScale?, v3fDestination?): IVec3{
             if(!isDef(v3fDestination)){
                 v3fDestination = this;
             }
 
-            v3fDestination.x = this.x*fScale;
-            v3fDestination.y = this.y*fScale;
-            v3fDestination.z = this.z*fScale;
+            if(isNumber(arguments[0])){
+                var fScale: float = arguments[0];
+                v3fDestination.x = this.x*fScale;
+                v3fDestination.y = this.y*fScale;
+                v3fDestination.z = this.z*fScale;
+            }
+            else{
+                var v3fScale: IVec3 = arguments[0];
+                v3fDestination.x = this.x*v3fScale.x;
+                v3fDestination.y = this.y*v3fScale.y;
+                v3fDestination.z = this.z*v3fScale.z;
+            }
 
             return v3fDestination;
         };
@@ -6114,38 +6126,481 @@ module akra {
 
 
 
+
+
 module akra {
-	export interface IRect3d {
-		x0: float;
-		y0: float;
-		z0: float;
-		x1: float;
-		y1: float;
-		z1: float;
-	}
+
+	export interface IVec2 {} ;
+
+	export interface IRay2d {
+		v2fPoint: IVec2;
+		v2fNormal: IVec2;
+	};
 }
 
 
 
-module akra.geometry {
-    export class Rect3d implements IRect3d{
-    	x0: float;
-		y0: float;
-		z0: float;
-		x1: float;
-		y1: float;
-		z1: float;
+module akra.geometry{
+	export  class  Ray2d implements IRay2d{
+		v2fPoint: IVec2;
+		v2fNormal: IVec2;
 
-        constructor ();
-        constructor (pRect3d: Rect3d);
-        constructor (x0: float, y0:float, z0:float, x1:float, y1:float, z1:float);
-		constructor (fXSize: float, fYSize: float, fZSize: float);
-		constructor (pData: Float32Array);
+		constructor(){
+			this.v2fPoint = new Vec2();
+			this.v2fNormal = new Vec2();
+		};
+	};
+}
 
-		constructor (x0?, y0?, z0?, x1?, y1?, z1?) {
 
-		}
-    }
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IVec3 {} ;
+
+	export interface IRay3d {
+		v3fPoint: IVec3;
+		v3fNormal: IVec3;
+	};
+}
+
+
+
+module akra.geometry{
+	export  class  Ray3d implements IRay3d{
+		v3fPoint: IVec3;
+		v3fNormal: IVec3;
+
+		constructor(){
+			this.v3fPoint = new Vec3();
+			this.v3fNormal = new Vec3();
+		};
+	};
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IRay2d {} ;
+
+	export interface ISegment2d{
+		pRay: IRay2d;
+		fDistance: float;
+
+		point: IVec2;
+		normal: IVec2;
+	};
+}
+
+
+
+module akra.geometry{
+	export class Segment2d implements ISegment2d{
+		pRay: IRay2d;
+		fDistance: float;
+
+		constructor(){
+			this.pRay = new Ray2d();
+			this.fDistance = 0.;
+		};
+
+		get point(): IVec2{
+			return this.pRay.v2fPoint;
+		};
+		set point(v2fPoint: IVec2){
+			this.pRay.v2fPoint.set(v2fPoint);
+		};
+
+		get normal(): IVec2{
+			return this.pRay.v2fNormal;
+		};
+		set normal(v2fNormal: IVec2){
+			this.pRay.v2fNormal.set(v2fNormal);
+		};
+	};
+}
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IRay3d {} ;
+
+	export interface ISegment3d{
+		pRay: IRay3d;
+		fDistance: float;
+
+		point: IVec3;
+		normal: IVec3;
+	};
+}
+
+
+
+module akra.geometry{
+	export class Segment3d implements ISegment3d{
+		pRay: IRay3d;
+		fDistance: float;
+
+		constructor(){
+			this.pRay = new Ray3d();
+			this.fDistance = 0.;
+		};
+
+		get point(): IVec3{
+			return this.pRay.v3fPoint;
+		};
+		set point(v3fPoint: IVec3){
+			this.pRay.v3fPoint.set(v3fPoint);
+		};
+
+		get normal(): IVec3{
+			return this.pRay.v3fNormal;
+		};
+		set normal(v3fNormal: IVec3){
+			this.pRay.v3fNormal.set(v3fNormal);
+		};
+	};
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IVec2 {} ;
+
+	export interface ICircle {
+
+		fRadius: float;
+		v2fCenter: IVec2;
+
+		set(pCircle: ICircle): ICircle;
+		set(v2fCenter: IVec2, fRadius: float): ICircle;
+		set(fCenterX: float, fCenterY: float, fRadius: float): ICircle;
+
+		clear(): ICircle;
+
+		isEqual(pCircle: ICircle): bool;
+		isClear(): bool;
+		isValid(): bool;
+
+		offset(v2fOffset: IVec2): ICircle;
+		expand(fInc: float): ICircle;
+		normalize(): ICircle;
+	};
+};
+
+
+
+module akra.geometry{
+	export class Circle implements ICircle{
+		v2fCenter: IVec2;
+		fRadius: float;
+
+		constructor();
+		constructor(pCircle: ICircle);
+		constructor(v2fCenter: IVec2, fRadius: float);
+		constructor(fCenterX: float, fCenterY: float, fRadius: float);
+		constructor(fCenterX?, fCenterY?, fRadius?){
+			var nArgumentsLength: uint = arguments.length;
+
+			switch(nArgumentsLength){
+				case 1:
+					var pCircle: ICircle = arguments[0];
+					this.v2fCenter = new Vec2(pCircle.v2fCenter);
+					this.fRadius = pCircle.fRadius;
+					break;
+				case 2:
+					var v2fCenter: IVec2 = arguments[0];
+					var fRadius: float = arguments[1];
+
+					this.v2fCenter = new Vec2(v2fCenter);
+					this.fRadius = fRadius;
+					break;
+				case 3:
+					this.v2fCenter = new Vec2(arguments[0], arguments[1]);
+					this.fRadius = arguments[2];
+					break;
+				default:
+					this.v2fCenter = new Vec2();
+					this.fRadius = 0.;
+					break;
+			}
+		};
+
+		set(pCircle: ICircle): ICircle;
+		set(v2fCenter: IVec2, fRadius: float): ICircle;
+		set(fCenterX: float, fCenterY: float, fRadius: float): ICircle;
+		set(fCenterX?, fCenterY?, fRadius?): ICircle{
+			var nArgumentsLength: uint = arguments.length;
+
+			switch(nArgumentsLength){
+				case 1:
+					var pCircle: ICircle = arguments[0];
+					this.v2fCenter.set(pCircle.v2fCenter);
+					this.fRadius = pCircle.fRadius;
+					break;
+				case 2:
+					var v2fCenter: IVec2 = arguments[0];
+					var fRadius: float = arguments[1];
+
+					this.v2fCenter.set(v2fCenter);
+					this.fRadius = fRadius;
+					break;
+				case 3:
+					this.v2fCenter.set(arguments[0], arguments[1]);
+					this.fRadius = arguments[2];
+					break;
+				default:
+					this.v2fCenter.set(0.);
+					this.fRadius = 0.;
+			}
+
+			return this;
+		};
+
+		/**@inline*/  clear(): ICircle{
+			this.v2fCenter.clear();
+			this.fRadius = 0.;
+
+			return this;
+		};
+
+		/**@inline*/  isEqual(pCircle: ICircle): bool{
+			return this.v2fCenter.isEqual(pCircle.v2fCenter) && (this.fRadius == pCircle.fRadius);
+		};
+
+		/**@inline*/  isClear(): bool{
+			return this.v2fCenter.isClear() && (this.fRadius === 0.);
+		};
+
+		/**@inline*/  isValid(): bool{
+			return (this.fRadius >= 0.);
+		};
+
+		/**@inline*/  offset(v2fOffset: IVec2): ICircle{
+			this.v2fCenter.add(v2fOffset);
+			return this;
+		};
+
+		/**@inline*/  expand(fInc: float): ICircle{
+			this.fRadius += fInc;
+			return this;
+		};
+
+		/**@inline*/  normalize(): ICircle{
+			this.fRadius = math.abs(this.fRadius);
+			return this;
+		};
+	};
+};
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IVec3 {} ;
+	export interface ICircle {} ;
+
+	export interface ISphere {
+
+		fRadius: float;
+		v3fCenter: IVec3;
+
+		circle: ICircle;
+		z: float;
+
+		set(pSphere: ISphere): ISphere;
+		set(v3fCenter: IVec3, fRadius: float): ISphere;
+		set(fCenterX: float, fCenterY: float, fCenterZ: float, fRadius: float): ISphere;
+
+		clear(): ISphere;
+
+		isEqual(pSphere: ISphere): bool;
+		isClear(): bool;
+		isValid(): bool;
+
+		offset(v3fOffset: IVec3): ISphere;
+		expand(fInc: float): ISphere;
+		normalize(): ISphere;
+	};
+};
+
+
+
+
+
+module akra.geometry{
+	export class Sphere implements ISphere{
+		v3fCenter: IVec3;
+		fRadius: float;
+
+		constructor();
+		constructor(pSphere: ISphere);
+		constructor(v3fCenter: IVec3, fRadius: float);
+		constructor(fCenterX: float, fCenterY: float, fCenterZ: float, fRadius: float);
+		constructor(fCenterX?, fCenterY?, fCenterZ?, fRadius?){
+			var nArgumentsLength: uint = arguments.length;
+
+			switch(nArgumentsLength){
+				case 1:
+					var pSphere = arguments[0];
+
+					this.v3fCenter = new Vec3(pSphere.v3fCenter);
+					this.fRadius = pSphere.fRadius;
+					break;
+				case 2:
+					var v3fCenter: IVec3 = arguments[0];
+					var fRadius: float = arguments[1];
+
+					this.v3fCenter = new Vec3(v3fCenter);
+					this.fRadius = fRadius;
+					break;
+				case 4:
+					this.v3fCenter = new Vec3(arguments[0], arguments[1], arguments[2]);
+					this.fRadius = arguments[3];
+					break;
+				default:
+					this.v3fCenter = new Vec3();
+					this.fRadius = 0.;
+					break;
+			}
+		};
+
+		get circle(): ICircle{
+			var v3fCenter: IVec3 = this.v3fCenter;
+			return new Circle(v3fCenter.x, v3fCenter.y, this.fRadius);
+		};
+		set circle(pCircle: ICircle){
+			var v3fCenter: IVec3 = this.v3fCenter;
+			var v2fCircleCenter: IVec2 = pCircle.v2fCenter;
+			v3fCenter.x = v2fCircleCenter.x;
+			v3fCenter.y = v2fCircleCenter.y;
+			this.fRadius = pCircle.fRadius;
+		};
+
+		get z(): float{
+			return this.v3fCenter.z;
+		};
+		set z(fZ: float){
+			this.v3fCenter.z = fZ;
+		};
+
+		set(pSphere: ISphere): ISphere;
+		set(v3fCenter: IVec3, fRadius: float): ISphere;
+		set(fCenterX: float, fCenterY: float, fCenterZ: float, fRadius: float): ISphere;
+		set(fCenterX?, fCenterY?, fCenterZ?, fRadius?): ISphere{
+			var nArgumentsLength: uint = arguments.length;
+
+			switch(nArgumentsLength){
+				case 1:
+					var pSphere = arguments[0];
+
+					this.v3fCenter.set(pSphere.v3fCenter);
+					this.fRadius = pSphere.fRadius;
+					break;
+				case 2:
+					var v3fCenter: IVec3 = arguments[0];
+					var fRadius: float = arguments[1];
+
+					this.v3fCenter.set(v3fCenter);
+					this.fRadius = fRadius;
+					break;
+				case 4:
+					this.v3fCenter.set(arguments[0], arguments[1], arguments[2]);
+					this.fRadius = arguments[3];
+					break;
+				default:
+					this.v3fCenter.set(0.);
+					this.fRadius = 0.;
+					break;
+			}
+
+			return this;
+		};
+
+		/**@inline*/  clear(): ISphere{
+			this.v3fCenter.clear();
+			this.fRadius = 0.;
+
+			return this;
+		};
+
+		/**@inline*/  isEqual(pSphere: ISphere): bool{
+			return this.v3fCenter.isEqual(pSphere.v3fCenter) && (this.fRadius == pSphere.fRadius);
+		};
+
+		/**@inline*/  isClear(): bool{
+			return this.v3fCenter.isClear() && (this.fRadius === 0.);
+		};
+
+		/**@inline*/  isValid(): bool{
+			return (this.fRadius >= 0.);
+		};
+
+		/**@inline*/  offset(v3fOffset: IVec3): ISphere{
+			this.v3fCenter.add(v3fOffset);
+			return this;
+		};
+
+		/**@inline*/  expand(fInc: float): ISphere{
+			this.fRadius += fInc;
+			return this;
+		};
+
+		/**@inline*/  normalize(): ISphere{
+			this.fRadius = math.abs(this.fRadius);
+			return this;
+		};
+	};
 }
 
 

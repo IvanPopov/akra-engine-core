@@ -31,6 +31,7 @@ module akra {
 
 		negate(v3fDestination?: IVec3): IVec3;
 		scale(fScale: float, v3fDestination?: IVec3): IVec3;
+		scale(v3fScale: IVec3, v3fDestination?: IVec3): IVec3;
 		normalize(v3fDestination?: IVec3): IVec3;
 		length(): float;
 		lengthSquare(): float;

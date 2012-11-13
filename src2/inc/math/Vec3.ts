@@ -199,14 +199,25 @@ module akra.math {
             return v3fDestination;
         };
 
-        scale(fScale: float, v3fDestination?: IVec3): IVec3{
+        scale(v3fScale: IVec3, v3fDestination?: IVec3): IVec3;
+        scale(fScale: float, v3fDestination?: IVec3): IVec3;
+        scale(fScale?, v3fDestination?): IVec3{
             if(!isDef(v3fDestination)){
                 v3fDestination = this;
             }
 
-            v3fDestination.x = this.x*fScale;
-            v3fDestination.y = this.y*fScale;
-            v3fDestination.z = this.z*fScale;
+            if(isNumber(arguments[0])){
+                var fScale: float = arguments[0];
+                v3fDestination.x = this.x*fScale;
+                v3fDestination.y = this.y*fScale;
+                v3fDestination.z = this.z*fScale;
+            }
+            else{
+                var v3fScale: IVec3 = arguments[0];
+                v3fDestination.x = this.x*v3fScale.x;
+                v3fDestination.y = this.y*v3fScale.y;
+                v3fDestination.z = this.z*v3fScale.z;
+            }
 
             return v3fDestination;
         };

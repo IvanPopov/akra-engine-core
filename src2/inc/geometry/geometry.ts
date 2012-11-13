@@ -1,6 +1,13 @@
 #ifndef GEOMETRY_TS
 #define GEOMETRY_TS
 
-#include "Rect3d.ts"
+#include "Ray2d.ts"
+#include "Ray3d.ts"
+
+#include "Segment2d.ts"
+#include "Segment3d.ts"
+
+#include "Circle.ts"
+#include "Sphere.ts"
 
 #endif
