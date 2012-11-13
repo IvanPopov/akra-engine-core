@@ -14,6 +14,7 @@ module akra.math {
     	toMat4(m4fDestination?: IMat4): IMat4 { return null; }
     	multiplyVec3(v3fVec: IVec3, v3fDestionation?: IVec3): IVec3 { return null; }
     	multiply(q4fQuat: IQuat4, q4fDestination?: IQuat4): IQuat4 { return null; }
+        smix(q4fQuat: IQuat4, fRoll: float): IQuat4 { return null; }
     	
     	static fromAxisAngle(v3fAxis: IVec3, fAngle: float, q4fDest?: IQuat4): IQuat4 { return null; }
     	static fromForwardUp(v3fForward: IVec3, v3fUp: IVec3, q4fDest?: IQuat4): IQuat4 { return null; }

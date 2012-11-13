@@ -1777,6 +1777,7 @@ module akra {
 		toMat4(m4fDestination?: IMat4): IMat4;
 		multiplyVec3(v3fVec: IVec3, v3fDestionation?: IVec3): IVec3;
 		multiply(q4fQuat: IQuat4, q4fDestination?: IQuat4): IQuat4;
+		smix(q4fQuat: IQuat4, fRoll: float): IQuat4;
 	};
 };
 
@@ -3659,6 +3660,7 @@ module akra.math {
     	toMat4(m4fDestination?: IMat4): IMat4 { return null; }
     	multiplyVec3(v3fVec: IVec3, v3fDestionation?: IVec3): IVec3 { return null; }
     	multiply(q4fQuat: IQuat4, q4fDestination?: IQuat4): IQuat4 { return null; }
+        smix(q4fQuat: IQuat4, fRoll: float): IQuat4 { return null; }
 
     	static fromAxisAngle(v3fAxis: IVec3, fAngle: float, q4fDest?: IQuat4): IQuat4 { return null; }
     	static fromForwardUp(v3fForward: IVec3, v3fUp: IVec3, q4fDest?: IQuat4): IQuat4 { return null; }
@@ -11733,9 +11735,17 @@ module akra {
 		rotation: IQuat4;
 		scale: IVec3;
 		translation: IVec3;
-		set(pFrame: IAnimationFrame): void;
-		interpolate(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend: float): void;
 		toMatrix(): IMat4;
+		toMatrixFromMatrix(): IMat4;
+		reset(): IAnimationFrame;
+		set(pFrame: IAnimationFrame): void;
+		add(pFrame: IAnimationFrame, isFirst: bool): IAnimationFrame;
+		addMatrix(pFrame: IAnimationFrame): IAnimationFrame;
+		mult(fScalar: float): IAnimationFrame;
+		normilize(): IAnimationFrame;
+		normilizeMatrix(): IAnimationFrame;
+		interpolate(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend: float): void;
+		interpolateMatrix(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend: float): void;
 	}
 }
 
@@ -12179,6 +12189,35 @@ module akra.animation {
 			this.matrix.decompose(this.rotation, this.scale, this.translation);
 		}
 
+		toMatrix(): IMat4{
+			return this.rotation.toMat4(this.matrix)
+				.setTranslation(this.translation).scaleRight(this.scale);
+		}
+
+		toMatrixFromMatrix(): IMat4 {
+			return this.matrix;
+		}
+
+		reset(): IAnimationFrame {
+			this.weight = 0.0;
+			this.time = 0.0;
+
+			var pData = this.matrix.data;
+			pData[ 0 ] = pData[ 4 ] = pData[ 8 ] = pData[ 12 ] =
+			pData[ 1 ] = pData[ 5 ] = pData[ 9 ] = pData[ 13 ] =
+			pData[ 2 ] = pData[ 6 ] = pData[ 10 ] = pData[ 14 ] =
+			pData[ 3 ] = pData[ 7 ] = pData[ 11 ] = pData[ 15 ] = 0;
+
+			this.rotation.x = this.rotation.y = this.rotation.z = 0;
+			this.rotation.w = 1.0;
+
+			this.translation.x = this.translation.y = this.translation.z = 0;
+
+			this.scale.x = this.scale.y = this.scale.z = 0;
+
+			return this;
+		}
+
 		set(pFrame: IAnimationFrame): void {
 //FIXME: расписать побыстрее
 			this.matrix.set(pFrame.matrix);
@@ -12189,6 +12228,88 @@ module akra.animation {
 
 			this.time = pFrame.time;
 			this.weight = pFrame.weight;
+		}
+
+		add(pFrame: IAnimationFrame, isFirst: bool): IAnimationFrame {
+			var fWeight: float = pFrame.weight;
+
+			this.scale.x += pFrame.scale.x * fWeight;
+			this.scale.y += pFrame.scale.y * fWeight;
+			this.scale.z += pFrame.scale.z * fWeight;
+
+			this.translation.x += pFrame.translation.x * fWeight;
+			this.translation.y += pFrame.translation.y * fWeight;
+			this.translation.z += pFrame.translation.z * fWeight;
+
+			this.weight += fWeight;
+
+			if (!isFirst) {
+				this.rotation.smix(pFrame.rotation, fWeight / this.weight);
+			}
+			else {
+				this.rotation.set(pFrame.rotation);
+			}
+
+			return this;
+		}
+
+		addMatrix(pFrame: IAnimationFrame): IAnimationFrame {
+			var pMatData = pFrame.matrix.data;
+			var fWeight: float = pFrame.weight;
+			var pResData = this.matrix.data;
+
+			for (var i = 0; i < 16; ++ i) {
+				pResData[i] += pMatData[i] * fWeight;
+			}
+
+			this.weight += fWeight;
+			return this;
+		}
+
+		mult(fScalar: float): IAnimationFrame{
+			this.weight *= fScalar;
+			return this;
+		}
+
+		normilize(): IAnimationFrame{
+			var fScalar: float = 1.0 / this.weight;
+
+		    this.scale.x *= fScalar;
+		    this.scale.y *= fScalar;
+		    this.scale.z *= fScalar;
+
+		    this.translation.x *= fScalar;
+		    this.translation.y *= fScalar;
+		    this.translation.z *= fScalar;
+
+			return this;
+		}
+
+		normilizeMatrix(): IAnimationFrame{
+			var fScalar: float = 1.0 / this.weight;
+		    var pData = this.matrix.data;
+
+		    pData[ 0 ] *= fScalar;
+		    pData[ 4 ] *= fScalar;
+		    pData[ 8 ] *= fScalar;
+		    pData[ 12 ] *= fScalar;
+
+			pData[ 1 ] *= fScalar;
+		    pData[ 5 ] *= fScalar;
+		    pData[ 9 ] *= fScalar;
+		    pData[ 13 ] *= fScalar;
+
+			pData[ 2 ] *= fScalar;
+		    pData[ 6 ] *= fScalar;
+		    pData[ 10 ] *= fScalar;
+		    pData[ 14 ] *= fScalar;
+
+			pData[ 3 ] *= fScalar;
+		    pData[ 7 ] *= fScalar;
+		    pData[ 11 ] *= fScalar;
+		    pData[ 15 ] *= fScalar;
+
+			return this;
 		}
 
 		interpolate(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend: float): void {
@@ -12202,9 +12323,15 @@ module akra.animation {
 			};
 		}
 
-		toMatrix(): IMat4{
-			return this.rotation.toMat4(this.matrix)
-				.setTranslation(this.translation).scaleRight(this.scale);
+		interpolateMatrix(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend: float): void {
+			var pResultData = this.matrix.data;
+			var pStartData = pStartFrame.matrix.data;
+			var pEndData = pEndFrame.matrix.data;
+			var fBlendInv: float = 1. - fBlend;
+
+			for (var i = 0; i < 16; i++) {
+				pResultData[i] = pEndData[i] * fBlend + pStartData[i] * fBlendInv;
+			};
 		}
 	}
 
@@ -12377,6 +12504,8 @@ module akra.animation {
 		}
 	}
 }
+
+
 
 
 

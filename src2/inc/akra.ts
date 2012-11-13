@@ -58,6 +58,7 @@
 #include "animation/AnimationBase.ts"
 #include "animation/Animation.ts"
 #include "animation/AnimationTrack.ts"
+#include "animation/AnimationFrame.ts"
 
 #include "core/Engine.ts"
 #include "core/DisplayManager.ts"

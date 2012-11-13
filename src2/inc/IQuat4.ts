@@ -12,6 +12,7 @@ module akra {
 		toMat4(m4fDestination?: IMat4): IMat4;
 		multiplyVec3(v3fVec: IVec3, v3fDestionation?: IVec3): IVec3;
 		multiply(q4fQuat: IQuat4, q4fDestination?: IQuat4): IQuat4;
+		smix(q4fQuat: IQuat4, fRoll: float): IQuat4;
 	};
 };
 
