@@ -36,7 +36,7 @@ module akra {
 		jointList(): IJoint[];
 		grab(pAnimationBase: IAnimationBase, bRewrite?: bool): void;
 		
-		createAnimationMask(): IntMap;
+		createAnimationMask(): FloatMap;
 
 	}
 }
