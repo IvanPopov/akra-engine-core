@@ -53,7 +53,6 @@ module akra.animation {
 			debug_assert(iAnimation <= this._pAnimationList.length, 'invalid animation slot: ' + iAnimation + '/' + this._pAnimationList.length);
 
 		    var pPointer: IAnimationElement = this._pAnimationList[iAnimation];
-		    var me: AnimationBlend = this;
 		    var pAnimationList: IAnimationElement[] = this._pAnimationList;
 
 		    if (!pAnimation) {
@@ -71,9 +70,7 @@ module akra.animation {
 					realTime: 0.0
 				};
 
-				pAnimation.on('updateDuration', function () {
-					me.updateDuration();
-				})
+				CONNECT(pAnimation, SIGNAL(updateAnimation), this, SLOT(onUpdateAnimation))
 
 				if (iAnimation == this._pAnimationList.length) {
 					pAnimationList.push(pPointer);

@@ -60,6 +60,7 @@
 #include "animation/AnimationTrack.ts"
 #include "animation/AnimationFrame.ts"
 #include "animation/AnimationBlend.ts"
+#include "animation/AnimationContainer.ts"
 
 #include "core/Engine.ts"
 #include "core/DisplayManager.ts"

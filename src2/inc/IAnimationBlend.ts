@@ -25,7 +25,7 @@ module akra {
 		setAnimation(iAnimation: int, pAnimation: IAnimationBase, fWeight: float, pMask: FloatMap): int;
 		updateDuration(): void;
 		getAnimationIndex(sName: string): int;
-		getAnimation(iAnimation: int); IAnimationBase;
+		getAnimation(iAnimation: int): IAnimationBase;
 		getAnimationWeight(iAnimation: int): float;
 		setWeights(): bool;
 		setWeightSwitching(fWeight: float, iAnimationFrom: int, iAnimationTo: int): bool;
