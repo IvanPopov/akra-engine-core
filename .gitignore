@@ -40,6 +40,7 @@ build/build.bat
 #*.csproj
 *.user
 *.nw
+*.ts.html
 #*.css
 
 src/*.htm
