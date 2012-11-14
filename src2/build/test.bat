@@ -1,1 +1,1 @@
-cls && node make.js inc/akra.ts -o ./bin/akra.js --build ../ -t TESTS --tests tests/common
+cls && node make.js inc/akra.ts -o ./bin/akra.js --build ../ -t TESTS --tests tests/common --html

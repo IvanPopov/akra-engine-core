@@ -24,6 +24,8 @@ function usage() {
 		'\n\t--build		[-d] < path/to/build/directory > Specify build directory. ' + 
 		'\n\t--tests		[-s] < path/to/tests/folder > Specify tests directory. ' + 
 		'\n\t--test			[-c] < path/to/single/test > Specify test directory. ' + 
+		'\n\t--html			build tests as HTML. ' + 
+		'\n\t--nw			build tests as NW. ' + 
 		'\n\t--help			[-h] Print this text. '
 	);
 	
@@ -40,7 +42,8 @@ var pOptions = {
 	testDir: null,
 	pathToTests: null,
 	files: [],
-	pathToTemp: null
+	pathToTemp: null,
+	testsFormat: {nw: false, html: false}
 };
 
 if (process.argv.length < 3) {
@@ -104,6 +107,12 @@ function parseArguments() {
 				}
 				
 				break;
+			case '--html':
+				pOptions.testsFormat.html = true;
+				break;
+			case '--nw':
+				pOptions.testsFormat.nw = true;
+				break;
 			case '--tests':
 			case '-s':
 				readKey("pathToTests", ++ i);
@@ -138,6 +147,10 @@ function verifyOptions() {
 
 	pOptions.outputFile = path.basename(pOptions.outputFolder);
 	pOptions.outputFolder = path.dirname(pOptions.outputFolder);
+
+	if (pOptions.testsFormat.html == false && pOptions.testsFormat.nw == false) {
+		pOptions.testsFormat.nw = true;
+	}
 
 	if (pOptions.outputFile == null || pOptions.outputFile == "") {
 		pOptions.outputFile = pOptions.files[0] + ".out.js";
@@ -253,7 +266,7 @@ function createTestName(sEntryFileName) {
 }
 
 function compileTest(sDir, sFile, sName, pData, sTestData) {
-	var pArchive = new zip();
+	var pArchive;
 	var sIndexHTML = "\n\
 				  <html>                           					\n\
                   	<head>                               			\n\
@@ -266,36 +279,8 @@ function compileTest(sDir, sFile, sName, pData, sTestData) {
                   	</body>                              			\n\
                   </html>";
 
-    pArchive.add("index.html", new Buffer(sIndexHTML, "utf8"));
-    pArchive.add("package.json", new Buffer(
-                  JSON.stringify({
-                            "name": sFile,
-                            "main": "index.html",
-                            "window": {
-                              "toolbar": false,
-                              "width": 800,
-                              "height": 600,
-                              "min_width": 400,
-                              "min_height": 200,
-                              "max_width": 800,
-                              "max_height": 600
-                            }
-                          }), "utf8"));
-    
-	//console.log(sIndexHTML.length, 'bytes in index.html');
-
-	var pArchiveFiles = [];
-	pData.forEach(function(pFile) {
-		if (pFile.folder) return;
-
-		pArchiveFiles.push({name: path.relative(sDir, pFile.path), path: pFile.path});
-	});
-
-	pArchive.addFiles(pArchiveFiles, function (err) {
-		if (err) return console.log("err while adding files", err);
-		var buff = pArchive.toBuffer();
-
-	    fs.writeFile(sDir + "/" + sName + ".nw", buff, function (err) {
+    function writeOutput(sOutputFile, pData) {
+    	fs.writeFile(sOutputFile, pData, function (err) {
 	    	if (err) {
 	    		pTestResults.push({file: sFile, name: sName, results: false});
 	    		throw err;
@@ -314,7 +299,44 @@ function compileTest(sDir, sFile, sName, pData, sTestData) {
 	        	printTestResultTable();
 	        }
 	    });
-	});
+    }
+
+    if (pOptions.testsFormat.nw) {
+	   	pArchive = new zip();
+	    pArchive.add("index.html", new Buffer(sIndexHTML, "utf8"));
+	    pArchive.add("package.json", new Buffer(
+	                  JSON.stringify({
+	                            "name": sFile,
+	                            "main": "index.html",
+	                            "window": {
+	                              "toolbar": false,
+	                              "width": 800,
+	                              "height": 600,
+	                              "min_width": 400,
+	                              "min_height": 200,
+	                              "max_width": 800,
+	                              "max_height": 600
+	                            }
+	                          }), "utf8"));
+	    
+		var pArchiveFiles = [];
+		pData.forEach(function(pFile) {
+			if (pFile.folder) return;
+
+			pArchiveFiles.push({name: path.relative(sDir, pFile.path), path: pFile.path});
+		});
+
+
+		pArchive.addFiles(pArchiveFiles, function (err) {
+			if (err) return console.log("err while adding files", err);
+
+			writeOutput(sDir + "/" + sName + ".nw", pArchive.toBuffer());
+		});
+	}
+	else 
+	if (pOptions.testsFormat.html) {
+		writeOutput(sDir + "/" + sName + ".ts.html", sIndexHTML);
+	}
 }
 
 //sDir -- path to dir with test
@@ -375,7 +397,11 @@ function createTestData(sDir, sFile) {
             		pDirsForScan.push(sFile);
             		pTestFiles.push({path: sFile, folder: true});
             	}
-            	else if (path.extname(sFile) !== ".ts" && path.extname(sFile) !== ".nw") {
+            	else if (
+            		path.extname(sFile) !== ".ts" && 
+            		path.extname(sFile) !== ".nw" && 
+            		path.basename(sFile) !== sTest + ".ts.html") {
+
             		pTestFiles.push({path: sFile, folder: false});
             	}
             }  

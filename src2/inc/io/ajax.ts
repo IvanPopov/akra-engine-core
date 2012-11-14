@@ -116,18 +116,24 @@ module akra.io {
 
 
 	function _ajax (sUrl: string, pSettings?: IAjaxParams, pRequest?: XMLHttpRequest): IAjaxResultSync;
-	function _ajax (pSettings: IAjaxParams, pRequest?: XMLHttpRequest): IAjaxResultSync {
+	function _ajax (pSettings: IAjaxParams, pRequest?: XMLHttpRequest): IAjaxResultSync;
+	function _ajax (pUrl: any, pSettings?: any, pRequest?: any): IAjaxResultSync {
 
 		var iTimeoutId: int = 0;
 		var isAborted: bool = false;
 		var sQueryString: string;
 		var pData: Object;
+		var sUrl: string;
 
 		if (isString(arguments[0])) {
-
-			pSettings = <IAjaxParams>arguments[1] || <IAjaxParams>{};
-			pRequest = <XMLHttpRequest>arguments[2];
-			pSettings.url = <string>arguments[0];
+			sUrl 			= String(arguments[0]);
+			pSettings 		= <IAjaxParams>arguments[1] || <IAjaxParams>{};
+			pRequest 		= <XMLHttpRequest>arguments[2];
+			pSettings.url 	= sUrl;
+		}
+		else {
+			pSettings 	= <IAjaxParams>arguments[0];
+			pRequest 	= <XMLHttpRequest>arguments[1];
 		}
 
 		pData = pSettings.data || {};
