@@ -45,7 +45,7 @@ module akra {
         hash: string;
     }
 
-    export interface IAFXStrunct extends IAFXObject {
+    export interface IAFXStruct extends IAFXObject {
     
     }
 

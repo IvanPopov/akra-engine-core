@@ -6,6 +6,7 @@
 #include "logger.ts"
 #include "common.ts"
 #include "ILogger.ts"
+#include "fx/Instruction.ts"
 
 module akra.fx {
 
@@ -43,7 +44,7 @@ module akra.fx {
 
     akra.logger.setCodeFamilyRoutine("EffectSyntaxErrors", syntaxErrorLogRoutine, ELogLevel.ERROR);
 
-    interface IEffectErrorInfo{
+    export interface IEffectErrorInfo{
     	
     	typeName?: string;
     	
@@ -61,19 +62,19 @@ module akra.fx {
 
 
 
-	interface IAFXVariableMap { 
+	export interface IAFXVariableMap { 
 		[variableName: string] : IAFXVariable;
 	}
 	
-	interface IAFXTypeMap {
+	export interface IAFXTypeMap {
 		[typeName: string] : IAFXType;
 	}
 
-	interface IAFXFunctionMap {
+	export interface IAFXFunctionMap {
 		[functionHash: string] : IAFXFunction;
 	}
 
-	interface IScope {
+	export interface IScope {
 		parent : IScope;
 		index: uint;
 
@@ -82,11 +83,11 @@ module akra.fx {
 		functionMap : IAFXFunctionMap;
 	}
 
-	interface IScopeMap {
+	export interface IScopeMap {
 		[scopeIndex: uint] : IScope;
 	}
 
-	class ProgramScope {
+	export class ProgramScope {
 		
 		private _pScopeMap: IScopeMap; 
 		private _iCurrentScope: int;
@@ -367,10 +368,11 @@ module akra.fx {
 
 	export class Effect implements IAFXEffect {
 
-		private _pEffectScope: ProgramScope;
-
 		private _pParseTree: IParseTree;
 		private _pAnalyzedNode: IParseNode;
+
+		private _pEffectScope: ProgramScope;
+		private _pCurrentInstruction: IAFXInstruction;
 
 		private _pStatistics: IAFXEffectStats;
 
@@ -379,7 +381,14 @@ module akra.fx {
 		static private _pGrammarSymbols = akra.util.parser.getGrammarSymbols();
 
 		constructor() {
+			this._pParseTree = null;
+			this._pAnalyzedNode = null;
+
 			this._pEffectScope = new ProgramScope();
+			this._pCurrentInstruction = null;
+
+			this._pStatistics = null;
+			this._sAnalyzedFileName = "";
 		}
 
 		analyze(pTree: IParseTree): bool {
@@ -391,11 +400,12 @@ module akra.fx {
 
 			this.newScope();
 
-			this.analyzeTypes();
+			// this.analyzeTypes();
 			
-			this.preAnalyzeFunctions();
-			this.preAnalyzeVariables();
-			this.preAnalyzeTechniques();
+			// this.preAnalyzeFunctions();
+			// this.preAnalyzeVariables();
+			// this.preAnalyzeTechniques();
+			this.analyzeDecls();
 
 			// this.analyzeEffect();
 			// this.postAnalyzeEffect();
@@ -489,6 +499,27 @@ module akra.fx {
 			this._pEffectScope.endScope();
 		}
 
+		private inline newInstruction(pInstruction: IAFXInstruction): void {
+			pInstruction.parent = this._pCurrentInstruction;
+			this._pCurrentInstruction = pInstruction;
+		}
+
+		private inline endInstruction(): void {
+			this._pCurrentInstruction = this._pCurrentInstruction.parent;
+		}
+
+		private inline pushCommand(pInstruction: IAFXInstruction): void {
+			if(!isNull(this._pCurrentInstruction)){
+				this._pCurrentInstruction.push(pInstruction);
+			}
+		}
+
+		private inline setOperator(sOperator: string): void {
+			if(!isNull(this._pCurrentInstruction)){
+				this._pCurrentInstruction.operator = sOperator;
+			}	
+		}
+
 		private addType(pType: IAFXType): void {
 			if(this.isSystemType(pType)){
 				error(EFFECT_REDEFINE_SYSTEM_TYPE, {typeName: pType.name});
@@ -500,6 +531,8 @@ module akra.fx {
 				error(EFFECT_REDEFINE_TYPE, {typeName: pType.name});
 			}
 		}
+
+		private 
 
 		private analyzeTypes(): void {
 			var pChildren: IParseNode[] = this._pParseTree.root.children;
@@ -542,6 +575,13 @@ module akra.fx {
 
 			pNode.isAnalyzed = true;
 		}
+
+
+        private analyzeStructDecl(pNode: IParseNode): IAFXStruct {
+        	var pInstruction: StructDeclInstruction = new StructDeclInstruction();
+        	pInstruction.
+        	return null;
+        }
 
 		private getNodeSourceLocation(pNode: IParseNode): {line: uint; column: uint;} {
 			if(isDef(pNode.line)){

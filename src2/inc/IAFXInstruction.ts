@@ -17,6 +17,8 @@ module akra {
 	 * Operator and instructions may be empty.
 	 */
 	export interface IAFXInstruction {
+        parent: IAFXInstruction;
+
     	operator: string;
     	instructions: IAFXInstruction[];
 

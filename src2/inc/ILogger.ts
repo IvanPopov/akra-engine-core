@@ -11,13 +11,6 @@ module akra {
         ERROR = 0x0008,
         CRITICAL = 0x0010,
         ALL = 0x001F
-
-        // DEBUG_INFORMATION = 0x0020,
-        // DEBUG_LOG = 0x0040,
-        // DEBUG_WARNING = 0x0080,
-        // DEBUG_ERROR = 0x0100,
-        // DEBUG_CRITICAL = 0x0200,
-        // DEBUG_ALL = 0x03E0
     }
 
     export interface ILogRoutineFunc {

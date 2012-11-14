@@ -10,12 +10,21 @@ module akra.fx {
 	// }
 
 	export class Instruction implements IAFXInstruction{
+		protected _pParentInstruction: IAFXInstruction;
 		protected _sOperatorName: string;
 		protected _pInstructionList: IAFXInstruction[];
 		protected _pStateMap: IAFXInstructionStateMap;
 		// private _pRoutineList: IAFXInstructionRoutine[];
 		// private _pRoutineByPriorityMap: IAFXInstructionRoutineMap;
 		protected _isStateChange: bool;
+
+		get parent(): IAFXInstruction{
+			return this._pParentInstruction;
+		}
+
+		set parent(pParentInstruction: IAFXInstruction){
+			this._pParentInstruction = pParentInstruction;
+		}
 
 		get operator(): string{
 			return this._sOperatorName;
