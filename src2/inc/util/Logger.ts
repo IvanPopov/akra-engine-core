@@ -281,7 +281,10 @@ module akra.util {
             fnLogRoutine.call(null, pLogEntity);
         }
 
-        info(...pArgs: any[]): void {
+        info(pEntity: ILoggerEntity): void;
+        info(eCode: uint, ...pArgs: any[]): void;
+        info(...pArgs: any[]): void;
+        info(): void {
             if(!bf.testAll(this._eLogLevel, ELogLevel.INFORMATION)){
                 return;
             }
@@ -289,7 +292,7 @@ module akra.util {
             var pLogEntity: ILoggerEntity;
             var fnLogRoutine: ILogRoutineFunc;
 
-            pLogEntity = this.prepareLogEntity(pArgs);
+            pLogEntity = this.prepareLogEntity.apply(this, arguments);
             fnLogRoutine = this.getCodeRoutineFunc(pLogEntity.code, ELogLevel.INFORMATION);
 
             if(isNull(fnLogRoutine)){
@@ -299,7 +302,10 @@ module akra.util {
             fnLogRoutine.call(null, pLogEntity);
         }
 
-        warning(...pArgs: any[]): void {
+        warning(pEntity: ILoggerEntity): void;
+        warning(eCode: uint, ...pArgs: any[]): void;
+        warning(...pArgs: any[]): void;
+        warning(): void {
             if(!bf.testAll(this._eLogLevel, ELogLevel.WARNING)){
                 return;
             }
@@ -307,7 +313,7 @@ module akra.util {
             var pLogEntity: ILoggerEntity;
             var fnLogRoutine: ILogRoutineFunc;
 
-            pLogEntity = this.prepareLogEntity(pArgs);
+            pLogEntity = this.prepareLogEntity.apply(this, arguments);
             fnLogRoutine = this.getCodeRoutineFunc(pLogEntity.code, ELogLevel.WARNING);
 
             if(isNull(fnLogRoutine)){
@@ -317,7 +323,10 @@ module akra.util {
             fnLogRoutine.call(null, pLogEntity);
         }
 
-        error(...pArgs:any[]): void {
+        error(pEntity: ILoggerEntity): void;
+        error(eCode: uint, ...pArgs: any[]): void;
+        error(...pArgs: any[]): void;
+        error(): void {
             if(!bf.testAll(this._eLogLevel, ELogLevel.ERROR)){
                 return;
             }
@@ -325,7 +334,7 @@ module akra.util {
             var pLogEntity: ILoggerEntity;
             var fnLogRoutine: ILogRoutineFunc;
 
-            pLogEntity = this.prepareLogEntity(pArgs);
+            pLogEntity = this.prepareLogEntity.apply(this, arguments);
             fnLogRoutine = this.getCodeRoutineFunc(pLogEntity.code, ELogLevel.ERROR);
 
             if(isNull(fnLogRoutine)){
@@ -335,12 +344,15 @@ module akra.util {
             fnLogRoutine.call(null, pLogEntity);
         }
 
-        critical_error(...pArgs: any[]):void {
+        critical_error(pEntity: ILoggerEntity): void;
+        critical_error(eCode: uint, ...pArgs: any[]): void;
+        critical_error(...pArgs: any[]):void;
+        critical_error():void {
 
             var pLogEntity: ILoggerEntity;
             var fnLogRoutine: ILogRoutineFunc;
 
-            pLogEntity = this.prepareLogEntity(pArgs);
+            pLogEntity = this.prepareLogEntity.apply(this, arguments);
             fnLogRoutine = this.getCodeRoutineFunc(pLogEntity.code, ELogLevel.CRITICAL);
 
             var sSystemMessage: string = "A Critical error has occured! Code: " + pLogEntity.code.toString();
@@ -353,12 +365,23 @@ module akra.util {
             throw new Error(sSystemMessage);
         }
         
-        assert(bCondition: bool, ...pArgs: any[]):void{
+        assert(bCondition: bool, pEntity: ILoggerEntity): void;
+        assert(bCondition: bool, eCode: uint, ...pArgs: any[]): void;
+        assert(bCondition: bool, ...pArgs: any[]):void;
+        assert():void{
+            var bCondition: bool = <bool> arguments[0];
+
             if(!bCondition){
                 var pLogEntity: ILoggerEntity;
                 var fnLogRoutine: ILogRoutineFunc;
 
-                pLogEntity = this.prepareLogEntity(pArgs);
+                var pArgs: any[] = [];
+
+                for(var i = 1; i < arguments.length; i++){
+                    pArgs[i - 1] = arguments[i];
+                }
+
+                pLogEntity = this.prepareLogEntity.apply(this, pArgs);
                 fnLogRoutine = this.getCodeRoutineFunc(pLogEntity.code, ELogLevel.CRITICAL);
 
                 var sSystemMessage: string = "A error has occured! Code: " + pLogEntity.code.toString() + 
@@ -429,17 +452,22 @@ module akra.util {
             return isInt(eCode);
         }
 
-        private prepareLogEntity(pArgs:any[]): ILoggerEntity{
+        private prepareLogEntity(pEntity: ILoggerEntity): void;
+        private prepareLogEntity(eCode: uint, ...pArgs: any[]): void;
+        private prepareLogEntity(pArgs:any[]): ILoggerEntity;
+        private prepareLogEntity(): ILoggerEntity{
             var eCode: uint = this._eUnknownCode;
             var sMessage:string = this._sUnknownMessage;
             var pInfo: any = null;
 
-            if(pArgs.length === 1 && this.isLogEntity(pArgs[0])){
-                eCode = pArgs[0].code;
-                pInfo = pArgs[0].info;
-                this.setSourceLocation(pArgs[0].location);    
+            if(arguments.length === 1 && this.isLogEntity(arguments[0])){
+                var pEntity: ILoggerEntity = arguments[0];
+
+                eCode = pEntity.code;
+                pInfo = pEntity.info;
+                this.setSourceLocation(pEntity.location);    
                 
-                if(!isDef(pArgs[0].message)){
+                if(!isDef(pEntity.message)){
                     var pCodeInfo: ICodeInfo = this._pCodeInfoMap[eCode];  
                     if(isDef(pCodeInfo)){
                         sMessage = pCodeInfo.message;
@@ -448,25 +476,30 @@ module akra.util {
 
             }
             else {
-                if(this.isLogCode(pArgs[0])){
-                    eCode = <uint>pArgs[0];
-                    if(pArgs.length > 1){
-                        if(isArray(pArgs)){
-                            pArgs.shift();
-                            pInfo = pArgs;
-                        } 
-                        else{
-                            pInfo = new Array(pArgs.length - 1);
-                            var i: uint = 0;
-                            for(i = 0; i < pInfo.length; i++){
-                                pInfo[i] = pArgs[i+1];
-                            }
+                if(this.isLogCode(arguments[0])){
+                    eCode = <uint>arguments[0];
+                    if(arguments.length > 1){
+                        pInfo = new Array(arguments.length - 1);
+                        var i: uint = 0;
+
+                        for(i = 0; i < pInfo.length; i++){
+                            pInfo[i] = arguments[i+1];
                         }
                     }
                 }
                 else {
                     eCode = this._eUnknownCode; 
-                    pInfo = pArgs.length > 0 ? pArgs : null;   
+                    if(arguments.length > 0){
+                        pInfo = new Array(arguments.length);
+                        var i: uint = 0;
+                        
+                        for(i = 0; i < pInfo.length; i++){
+                            pInfo[i] = arguments[i];
+                        }
+                    }
+                    else {
+                        pInfo = null;    
+                    }
                 }
 
                 var pCodeInfo: ICodeInfo = this._pCodeInfoMap[eCode];  

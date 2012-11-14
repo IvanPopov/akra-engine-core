@@ -12,7 +12,7 @@ module akra {
 
 	logger.init();
 	logger.setUnknownCode(UNKNOWN_CODE, UNKONWN_MESSAGE);
-    
+    logger.setLogLevel(ELogLevel.ALL);
 
 	//Default code families
     
@@ -31,7 +31,6 @@ module akra {
         var pArgs:any[] = pLogEntity.info;
         
         pArgs.unshift(sourceLocationToString(pLogEntity.location));
-        
         console["log"].apply(console, pArgs);
     }
 

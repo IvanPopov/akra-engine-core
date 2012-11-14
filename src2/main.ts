@@ -37,5 +37,3 @@ var parser: akra.IParser = akra.util.parser;
 // x.setParseFileName("/parse.test");
 parser.parse("struct type1{int x;}; type1 y;");
 log(parser.getGrammarSymbols());
-
-//error(20, akra.logger);

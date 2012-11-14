@@ -68,14 +68,24 @@ module akra {
         
         log(...pArgs: any[]);
 
+        info(pEntity: ILoggerEntity): void;
+        info(eCode: uint, ...pArgs: any[]): void;
         info(...pArgs: any[]): void;
 
+        warning(pEntity: ILoggerEntity): void;
+        warning(eCode: uint, ...pArgs: any[]): void;
         warning(...pArgs: any[]): void;
 
+        error(pEntity: ILoggerEntity): void;
+        error(eCode: uint, ...pArgs: any[]): void;
         error(...pArgs: any[]): void;
 
+        critical_error(pEntity: ILoggerEntity): void;
+        critical_error(eCode: uint, ...pArgs: any[]): void;
         critical_error(...pArgs: any[]):void;
 
+        assert(bCondition: bool, pEntity: ILoggerEntity): void;
+        assert(bCondition: bool, eCode: uint, ...pArgs: any[]): void;
         assert(bCondition: bool, ...pArgs: any[]):void;
 
     }
