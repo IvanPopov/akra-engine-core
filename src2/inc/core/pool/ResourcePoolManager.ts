@@ -236,7 +236,7 @@ module akra.core.pool {
 
                         for (var i: int = 0; i < pResources.length; ++ i) {
                             pResource = pResources[i];
-                            pWaiterResouse.connect(pResource, EResourceItemEvents.k_Loaded);
+                            pWaiterResouse.sync(pResource, EResourceItemEvents.k_Loaded);
                         }
                     }
 

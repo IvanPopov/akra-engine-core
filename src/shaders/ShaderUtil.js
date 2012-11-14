@@ -171,7 +171,9 @@ PreRenderState.prototype.release = function () {
     this.pBlend = null;
     this.nShift = 0;
     for (i = 0; i < this.pAttributeData.length; i++) {
-        this.pAttributeData[i].length = 0;
+        if (this.pAttributeData[i]) {
+            this.pAttributeData[i].length = 0;
+        }
     }
     this.pRenderObject = null;
     this.pSurfaceMaterial = null;

@@ -457,7 +457,7 @@ module akra.math {
 		    var fDeterminant: float = a11*A11 - a12 * A12 + a13 * A13;
 
 		    if(fDeterminant == 0.){
-		        error("обращение матрицы с нулевым детеминантом:\n", 
+		        ERROR("обращение матрицы с нулевым детеминантом:\n", 
 		                    this.toString());
 
 		        return m3fDestination.set(1.);

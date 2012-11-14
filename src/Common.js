@@ -6,8 +6,8 @@
  */
 
 Define(__AKRA_ENGINE__, true);
-Define(trace(__ARGS__), function () { /*console.log(__ARGS__);*/ });
-// Define(console.log(__ARGS__), function () { /*console.log(__ARGS__);*/ });
+//Define(trace(__ARGS__), function () { console.log(__ARGS__); });
+//Define(console.log(__ARGS__), function () { console.log(__ARGS__); });
 window.trace = console.log.bind(console);
 window.trace2 = console.log.bind(console);
 // ========== NAMEPSPACEs ========
@@ -32,6 +32,7 @@ Define(A_NAMESPACE(object), function () {
 
 A_DEFINE_NAMESPACE(fx);
 A_DEFINE_NAMESPACE(util);
+
 
 
 /**
@@ -579,4 +580,6 @@ Define(A_TRACER.MESG(message),  function() {});
 Define(A_TRACER.BEGIN(),        function() {});
 Define(A_TRACER.END(),          function() {});
 
+
 Endif ();
+

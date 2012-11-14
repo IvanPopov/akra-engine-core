@@ -2,6 +2,7 @@
 #define IRESOURCEPOOLITEM_TS
 
 #include "IReferenceCounter.ts"
+#include "IEventProvider.ts"
 
 module akra {
 
@@ -27,7 +28,7 @@ module akra {
 		k_TotalResourceFlags
 	};
 
-	export interface IResourcePoolItem extends IReferenceCounter {
+	export interface IResourcePoolItem extends IReferenceCounter, IEventProvider {
 		/** resource code */
 		readonly resourceCode: IResourceCode;
 		/** resource pool */
@@ -42,7 +43,7 @@ module akra {
 		readonly manager: IResourcePoolManager;
 
 		
-		inline getGuid(): int;
+		
 		/** Get current Engine. */
 		getEngine(): IEngine;
 
@@ -67,8 +68,8 @@ module akra {
 		setStateWatcher(eEvent: EResourceItemEvents, fnWatcher: IResourceWatcherFunc): void;
 
 		/** sinchronize events with other resourse */
-		connect(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool;
-		disconnect(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool;
+		sync(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool;
+		async(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool;
 
 		/** Установка состояния в созданный */
 		notifyCreated(): void;
@@ -99,7 +100,7 @@ module akra {
 		isResourceAltered(): bool;
 
 		/** Установка состояния в изменен после загружки */
-		setAlteredFlag(isOn?: bool): void;
+		setAlteredFlag(isOn?: bool): bool;
 
 		/** Пиписывание ресурсу имени */
 		setResourceName(sName: string);
@@ -114,8 +115,18 @@ module akra {
 		setResourcePool(pPool: IResourcePool): void;
 		setResourceHandle(iHandle: int): void;
 
-		setResourceFlag(eFlagBit: EResourceItemEvents, isSetting: bool): void;
-		setResourceFlag(iFlagBit: int, isSetting: bool): void;
+		setResourceFlag(eFlagBit: EResourceItemEvents, isSetting: bool): bool;
+		setResourceFlag(iFlagBit: int, isSetting: bool): bool;
+
+		signal created(): void;
+		signal destroyed(): void;
+		signal loaded(): void;
+		signal unloaded(): void;
+		signal restored(): void;
+		signal disabled(): void;
+		signal altered(): void;
+		signal saved(): void;
+
 	}
 
 	export interface IResourcePoolItemType {

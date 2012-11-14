@@ -46,9 +46,9 @@ build/build.bat
 src/*.htm
 src2/tmp.*
 #src2/*.htm
+src2/tmp.ts
 
 obj/
 bin/
 properties/
 app.js
-

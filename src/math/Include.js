@@ -15,6 +15,7 @@ window['Mat3'] = Mat3;
 window['Mat4'] = Mat4;
 window['Quat4'] = Quat4;
 
+
 Include("NumericTools.js");
 Include("Bitflags.js");
 Include("DataTypes.js");

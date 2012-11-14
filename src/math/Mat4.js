@@ -357,6 +357,7 @@ Mat4.prototype.identity = function() {
     pData._43 = 0;
     pData._44 = 1;
 
+
     return this;
 };
 
@@ -2080,6 +2081,46 @@ Mat4.lookAt = function (v3fEye, v3fCenter, v3fUp, m4fDestination) {
     return m4fDestination;
 };
 
+
+/**
+ * метод выполняет обратную проекцию
+ * можно использовать только с матрицами перспективы
+ */
+Mat4.prototype.unproj = function(v4fScreen,v4fDestination){
+    'use strict';
+    if(!v4fDestination){
+        v4fDestination = new Vec4();
+    }
+
+    var pData1 = this.pData;
+    var pData2 = v4fScreen.pData;
+    var pDataDestination = v4fDestination.pData;
+  
+    var z = -pData1._34/(pData1._33 + pData2.Z);
+    var y = (-pData2.Y * z - pData1._23*z)/pData1._22;
+    var x = (-pData2.X * z - pData1._13*z)/pData1._11;
+  
+    pDataDestination.X = x;
+    pDataDestination.Y = y;
+    pDataDestination.Z = z;
+    pDataDestination.W = 1;
+
+    return v4fDestination;
+};
+/**
+ * метод выполняет обратную проекцию только значения z
+ * можно использовать только с матрицами перспективы
+ */
+Mat4.prototype.unprojZ = function(zScreen){
+    'use strict';
+    var pData1 = this.pData;
+    var z = -pData1._34/(pData1._33 + zScreen);
+
+    return z;
+};
+
+
+
 Mat4.prototype.translate = Mat4.prototype.translateLeft;
 Mat4.prototype.scale = Mat4.prototype.scaleLeft;
 Mat4.prototype.rotate = Mat4.prototype.rotateLeft;
@@ -2089,9 +2130,11 @@ Mat4.prototype.rotateZ = Mat4.prototype.rotateZLeft;
 Mat4.prototype.mult = Mat4.prototype.multiply;
 Mat4.prototype.multLeft = Mat4.prototype.multiplyLeft;
 Mat4.prototype.toSource = Mat4.prototype.toString;
+
 Mat4.prototype.spur = Mat4.prototype.trace; //в угоду любителям немецкого
 Mat4.prototype.tr = Mat4.prototype.trace;
 Mat4.prototype.sp = Mat4.prototype.trace;
+
 
 Mat4.matrixPerspectiveFovRH = Mat4.perspective;
 

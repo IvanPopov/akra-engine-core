@@ -410,4 +410,5 @@ RenderableObject.prototype.hasShadow = function (hasShadow) {
 //     RenderableObject.prototype.renderCallback = function (pEntry, iActivationFlags) {
 //     };
 
+
 a.RenderableObject = RenderableObject;

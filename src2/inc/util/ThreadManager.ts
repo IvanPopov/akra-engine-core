@@ -49,12 +49,12 @@ module akra.util {
 		createThread(): bool {
 			//console.log((new Error).stack)
 			if (this._pWorkerList.length === TM_MAX_THREAD_NUMBER) {
-				error("Reached limit the number of threads");
+				ERROR("Reached limit the number of threads");
 				return false;
 			}
 
 			if (!info.api.webWorker) {
-				error("WebWorkers unsupprted..");
+				ERROR("WebWorkers unsupprted..");
 				return false;
 			}
 
@@ -90,7 +90,7 @@ module akra.util {
 		    }
 
 		    else {
-		    	error("cannot occupy thread");
+		    	ERROR("cannot occupy thread");
 		    	return null;
 		    }
 		}

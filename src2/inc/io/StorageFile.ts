@@ -33,7 +33,7 @@ module akra.io {
 		read(fnCallback: Function = TFile.defaultCallback): void {
 			CHECK_IFNOT_OPEN(read, fnCallback);
 
-			assert(CAN_CREATE(this._iMode), "The file is not readable.");
+			ASSERT(CAN_CREATE(this._iMode), "The file is not readable.");
 
 		    var pData: any = this.readData();   
 		    var nPos: uint = this._nCursorPosition;
@@ -63,7 +63,7 @@ module akra.io {
 			var nSeek: uint;
 			var pCurrentData: any;
 
-		    assert(CAN_WRITE(iMode), "The file is not writable.");
+		    ASSERT(CAN_WRITE(iMode), "The file is not writable.");
 
 		    sContentType = sContentType || (IS_BINARY(iMode) ? "application/octet-stream" : "text/plain");
 

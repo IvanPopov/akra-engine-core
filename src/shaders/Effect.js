@@ -459,9 +459,6 @@ VariableType.prototype.isStrictEqual = function (pType) {
     return this.pEffectType.isStrictEqual(pType);
 };
 VariableType.prototype.isEqual = function (pType) {
-    if (pType instanceof VariableType) {
-        return this.pEffectType.isEqual(pType.pEffectType);
-    }
     return this.pEffectType.isEqual(pType);
 };
 VariableType.prototype.isType = function (pEffectType) {
@@ -630,6 +627,9 @@ EffectType.prototype.calcHash = function () {
     this._sStrongHash = sStrongHash;
 };
 EffectType.prototype.isEqual = function (pType) {
+    if(typeof(pType) === "string"){
+        return this.hash() === pType;
+    }
     if (pType instanceof VariableType) {
         return this.hash() === pType.pEffectType.hash();
     }
@@ -1398,7 +1398,32 @@ EffectVariable.prototype.toCodeDecl = function (isInit) {
     sCode = this.pType.toCode() + " " + this.sRealName;
     if (this.isArray) {
         if (typeof(this.iLength) === "object") {
-            if (this.iLength._pData === null || this.iLength._pData === undefined) {
+            if (this.iLength instanceof Array) {
+                sCode += "[";
+                var pElement;
+                for (var i = 0; i < this.iLength.length; i++) {
+                    pElement = this.iLength[i];
+                    if (typeof(pElement) === "string") {
+                        sCode += pElement;
+                    }
+                    else {
+                        if (pElement._pData === null || pElement._pData === undefined) {
+                            if (!pCode) {
+                                pCode = [sCode, pElement];
+                            }
+                            else {
+                                pCode.push(pElement);
+                            }
+                            sCode = "";
+                        }
+                        else {
+                            sCode += pElement.toDataCode();
+                        }
+                    }
+                }
+                sCode += "]";
+            }
+            else if (this.iLength._pData === null || this.iLength._pData === undefined) {
                 pCode = [sCode, "[", this.iLength, "]"];
                 sCode = "";
 //                error("You must set value of foreign varibale before use it");
@@ -1443,11 +1468,19 @@ EffectVariable.prototype.toOffsetStr = function () {
 EffectVariable.prototype.toDataCode = function () {
     if (!this.isSampler() && !this.isForeign) {
         warning("Only for samplers amd foreigns, name: " + this.sName);
+        return "";
     }
     return this._pData;
 };
 EffectVariable.prototype.isSampler = function () {
     return this._isSampler;
+};
+EffectVariable.prototype.isSamplerCube = function(){
+    return this._isSampler && this.pType.isEqual(a.fx.GLOBAL_VARS.T_KW_SAMPLERCUBE);
+};
+EffectVariable.prototype.isSampler2D = function(){
+    return this._isSampler && (this.pType.isEqual(a.fx.GLOBAL_VARS.T_KW_SAMPLER) ||
+                               this.pType.isEqual(a.fx.GLOBAL_VARS.T_KW_SAMPLER2D));
 };
 EffectVariable.prototype.isBuffer = function () {
     return (this.pBuffer && this.iScope === a.fx.GLOBAL_VARS.GLOBAL);
@@ -1490,7 +1523,9 @@ EffectVariable.prototype.setLength = function (pValue) {
     }
     else {
         this.iLength = pValue;
-        this.addDependence(pValue);
+        if (pValue instanceof EffectVariable) {
+            this.addDependence(pValue);
+        }
     }
 };
 EffectVariable.prototype.isComplicate = function () {
@@ -1503,7 +1538,21 @@ EffectVariable.prototype.isComplicate = function () {
 EffectVariable.prototype.getLength = function () {
     var iLength = this.iLength;
     if (typeof(iLength) === "object") {
-        iLength = iLength.toDataCode();
+        if (iLength instanceof Array) {
+            var sEval = "";
+            for (var i = 0; i < iLength.length; i++) {
+                if (typeof iLength[i] === "object") {
+                    sEval += iLength[i].toDataCode();
+                }
+                else {
+                    sEval += iLength[i];
+                }
+            }
+            return eval(sEval) * 1;
+        }
+        else {
+            iLength = iLength.toDataCode();
+        }
     }
     return iLength * 1;
 };
@@ -1725,7 +1774,11 @@ EffectBaseFunction.prototype.addFunction = function (pFunc) {
     if (!this.pFunctions) {
         this.pFunctions = {};
     }
+    if (this.pFunctions[pFunc.sHash]) {
+        return false;
+    }
     this.pFunctions[pFunc.sHash] = pFunc;
+    return true;
 };
 EffectBaseFunction.prototype.addType = function (pType) {
     if (!pType) {
@@ -3534,16 +3587,29 @@ Effect.prototype._initSystemData = function () {
     this._addSystemFunction("clamp", null, [null, "float", "float"], ["float2", "float3", "float4"], "clamp($1,$2,$3)");
 
     this._addSystemFunction("pow", null, [null, null], ["float", "float2", "float3", "float4"], "pow($1,$2)");
+    this._addSystemFunction("mod", null, [null, null], ["float2", "float3", "float4"], "mod($1,$2)");
+    this._addSystemFunction("mod", null, [null, "float"], ["float2", "float3", "float4"], "mod($1,$2)");
     this._addSystemFunction("exp", null, [null], ["float", "float2", "float3", "float4"], "exp($1)");
     this._addSystemFunction("exp2", null, [null], ["float", "float2", "float3", "float4"], "exp2($1)");
     this._addSystemFunction("log", null, [null], ["float", "float2", "float3", "float4"], "log($1)");
     this._addSystemFunction("log2", null, [null], ["float", "float2", "float3", "float4"], "log2($1)");
     this._addSystemFunction("inversesqrt", null, [null], ["float", "float2", "float3", "float4"], "inversesqrt($1)");
     this._addSystemFunction("sqrt", null, [null], ["float", "float2", "float3", "float4"], "sqrt($1)");
-    this._addSystemFunction("all", null, [null], ["bool2", "bool3", "bool4"], "all($1)");
+    this._addSystemFunction("all", "bool", [null], ["bool2", "bool3", "bool4"], "all($1)");
     this._addSystemFunction("lessThanEqual", "bool2", [null, null], ["float2", "int2"], "lessThanEqual($1,$2)");
     this._addSystemFunction("lessThanEqual", "bool3", [null, null], ["float3", "int3"], "lessThanEqual($1,$2)");
     this._addSystemFunction("lessThanEqual", "bool4", [null, null], ["float4", "int4"], "lessThanEqual($1,$2)");
+
+
+    this._addSystemFunction("radians", null, [null], ["float", "float2", "float3", "float4"], "radians($1)");
+    this._addSystemFunction("degrees", null, [null], ["float", "float2", "float3", "float4"], "degrees($1)");
+    this._addSystemFunction("sin", null, [null], ["float", "float2", "float3", "float4"], "sin($1)");
+    this._addSystemFunction("cos", null, [null], ["float", "float2", "float3", "float4"], "cos($1)");
+    this._addSystemFunction("tan", null, [null], ["float", "float2", "float3", "float4"], "tan($1)");
+    this._addSystemFunction("asin", null, [null], ["float", "float2", "float3", "float4"], "asin($1)");
+    this._addSystemFunction("acos", null, [null], ["float", "float2", "float3", "float4"], "acos($1)");
+    this._addSystemFunction("atan", null, [null], ["float", "float2", "float3", "float4"], "atan($1)");
+    this._addSystemFunction("atan", null, [null, null], ["float", "float2", "float3", "float4"], "atan($1)");
 
     this._addSystemFunction("fragCoord", "float4", [], null, "gl_FragCoord");
     Effect._isInit = true;
@@ -3628,6 +3694,9 @@ Effect.prototype.evalHLSL = function (pCode, pVar) {
         if (pCode[0].isForeign) {
             return pCode[0];
         }
+    }
+    else if (pVar === undefined) {
+        return pCode;
     }
     else {
         if (!pVar.pType.isBase()) {
@@ -4648,6 +4717,7 @@ Effect.prototype.analyze = function (pTree) {
     this.checkEffect();
     this.endScope();
     trace("Time of analyzing effect file(without parseing) ", a.now() - time);//, "Result effect: ", this);
+//    console.log("Result effect: ", this);
     return true;
 //    }
 //    catch (e) {
@@ -4746,6 +4816,24 @@ Effect.prototype.postAnalyzeEffect = function () {
                 if (this._pFunctionBlackList[j]) {
                     this.addFunctionToBlackList(pFunction);
                     isNewDelete = true;
+                }
+            }
+        }
+    }
+    //check all functions for used another functions
+    var isNewFunction = true;
+    while (isNewFunction) {
+        isNewFunction = false;
+        for (i in this._pFunctionTableByHash) {
+            pFunction = this._pFunctionTableByHash[i];
+            if (!pFunction) {
+                continue;
+            }
+            for (j in pFunction.pFunctions) {
+                for (k in pFunction.pFunctions[j].pFunctions) {
+                    if (pFunction.addFunction(pFunction.pFunctions[j].pFunctions[k])) {
+                        isNewFunction = true;
+                    }
                 }
             }
         }
@@ -4876,6 +4964,24 @@ Effect.prototype.postAnalyzeEffect = function () {
                     this.addShaderToBlackList(pShader);
                     isNewDelete = true;
                     break;
+                }
+            }
+        }
+    }
+    //Add function in functions
+    var isNewFunction = true;
+    while (isNewFunction) {
+        isNewFunction = false;
+        for (i in this._pShaders) {
+            pShader = this._pShaders[i];
+            if (!pShader) {
+                continue;
+            }
+            for (j in pShader.pFunctions) {
+                for (k in pShader.pFunctions[j].pFunctions) {
+                    if (pShader.addFunction(pShader.pFunctions[j].pFunctions[k])) {
+                        isNewFunction = true;
+                    }
                 }
             }
         }
@@ -5792,7 +5898,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 pVar = this._pLastVar;
                 pType1 = pVar.pType;
                 bSavedNewName = this._isNewName;
-                this.newVarName();
+                this._isNewName = false;
                 if (pVar.isSampler()) {
                     if (!pVar.isArray) {
                         error("Here must be array of samplers");
@@ -5809,7 +5915,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     return;
                 }
                 this.pushCode("]");
-                this.endVarName();
+                // this.endVarName();
                 this._isNewName = bSavedNewName;
                 if (pVar.isSampler() && (pVar.isParametr === false || pVar.isUniform === true)) {
                     pIndex = new SamplerIndex(this._pCode, pVar);
@@ -6004,7 +6110,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
             else if (sName === a.fx.GLOBAL_VARS.EQUALITYEXPR || sName === a.fx.GLOBAL_VARS.RELATIONALEXPR) {
                 if (pType1 !== a.fx.GLOBAL_VARS.UNDEFINEDTYPE && pType2 !== a.fx.GLOBAL_VARS.UNDEFINEDTYPE &&
                     !pType1.isEqual(pType2)) {
-                    trace(pType1,pType2)
+                    trace(pType1, pType2)
                     error("bad 102");
                     return;
                 }
@@ -6078,7 +6184,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                 else {
                     pVar = pType.pDesc.hasField(pNode.sValue);
                     if (!pVar) {
-                        trace(pType, pNode);
+                        console.log(pType, pNode);
                         error("Return type is not enough cool for you.");
                         return;
                     }
@@ -6142,7 +6248,7 @@ Effect.prototype.analyzeExpr = function (pNode) {
                     if (pRes.pType.isEqual(this.hasType("video_buffer")) &&
                         pRes.iScope === a.fx.GLOBAL_VARS.GLOBAL &&
                         this._eFuncProperty !== a.Effect.Func.DEFAULT) {
-                        pFunction.addGlobalBuffer(pRes);
+                        pFunction.addGlobalBuffer(pRes.pBuffer);
                     }
 //                    if (pRes.isPointer !== false) {
 //                        if (this._eFuncProperty === a.Effect.Func.VERTEX && pRes.iScope === pFunction.iScope) {
@@ -7441,37 +7547,19 @@ Effect.prototype.analyzeState = function (pNode) {
             isTexture = true;
             break;
         case "ADDRESSU":
-            eState = "ADDRESSU";
+            eState = a.TPARAM.WRAP_S;
             break;
         case "ADDRESSV":
-            eState = "ADDRESSV";
-            break;
-        case "ADDRESSW":
-            eState = "ADDRESSW";
-            break;
-        case "BORDERCOLOR":
-            eState = "BORDERCOLOR";
+            eState = a.TPARAM.WRAP_T;
             break;
         case "MAGFILTER":
-            eState = "MAGFILTER";
-            break;
-        case "MAXANISOTROPY":
-            eState = "MAXANISOTROPY";
-            break;
-        case "MAXMIPLEVEL":
-            eState = "MAXMIPLEVEL";
+            eState = a.TPARAM.MAG_FILTER;
             break;
         case "MINFILTER":
-            eState = "MINFILTER";
-            break;
-        case "MIPFILTER":
-            eState = "MIPFILTER";
-            break;
-        case "MIPMAPLODBIAS":
-            eState = "MIPMAPLODBIAS";
+            eState = a.TPARAM.MIN_FILTER;
             break;
         default:
-            error("Oh no, but it is error " + sType);
+            warning("WebGl don`t support this texture param: " + sType);
             return;
     }
     if (isTexture) {
@@ -7491,8 +7579,56 @@ Effect.prototype.analyzeState = function (pNode) {
         this._pCurrentVar.setTexture(pTexture);
         return;
     }
-    //TODO: add sampler valid tests
-    this._pCurrentVar.setState(eState, pExpr.sValue);
+
+    var sValue = pExpr.sValue.toUpperCase();
+    var eValue = 0;
+    switch (eState) {
+        case a.TPARAM.WRAP_S:
+        case a.TPARAM.WRAP_T:
+            switch (sValue) {
+                case "WRAP":
+                    eValue = a.TWRAPMODE.REPEAT;
+                    break;
+                case "CLAMP":
+                    eValue = a.TWRAPMODE.CLAMP_TO_EDGE;
+                    break;
+                case "MIRROR":
+                    eValue = a.TWRAPMODE.MIRRORED_REPEAT;
+                    break;
+                default:
+                    warning("Webgl don`t support this wrapmode: " + sValue);
+                    return;
+            }
+            break;
+
+        case a.TPARAM.MAG_FILTER:
+        case a.TPARAM.MAG_FILTER:
+            switch (sValue) {
+                case "NEAREST":
+                    eValue = a.TFILTER.NEAREST;
+                    break;
+                case "LINEAR":
+                    eValue = a.TFILTER.LINEAR;
+                    break;
+                case "NEAREST_MIPMAP_NEAREST":
+                    eValue = a.TFILTER.NEAREST_MIPMAP_NEAREST;
+                    break;
+                case "LINEAR_MIPMAP_NEAREST":
+                    eValue = a.TFILTER.LINEAR_MIPMAP_NEAREST;
+                    break;
+                case "NEAREST_MIPMAP_LINEAR":
+                    eValue = a.TFILTER.NEAREST_MIPMAP_LINEAR;
+                    break;
+                case "LINEAR_MIPMAP_LINEAR":
+                    eValue = a.TFILTER.LINEAR_MIPMAP_LINEAR;
+                    break;
+                default:
+                    warning("Webgl don`t support this texture filter: " + sValue);
+                    return;
+            }
+            break;
+    }
+    this._pCurrentVar.setState(eState, eValue);
     return;
 };
 Effect.prototype.analyzeComplexName = function (pNode) {

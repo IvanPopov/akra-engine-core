@@ -1,4 +1,4 @@
-self.BlobBuilder = self.WebKitBlobBuilder || self.MozBlobBuilder || self.BlobBuilder;
+self.BlobBuilder = self.WebKitBlobBuilder  || self.MozBlobBuilder  || self.BlobBuilder ;
 self.requestFileSystemSync = self.webkitRequestFileSystemSync || self.requestFileSystemSync;
 
 var pFileSystem = null;

@@ -159,10 +159,12 @@ PROPERTY(BrowserInfo, 'name',
        return this.sBrowser;
     });
 
+
 PROPERTY(BrowserInfo, 'version',
     function () {
        return this.sVersion;
     });
+
 
 PROPERTY(BrowserInfo, 'os',
     function () {
@@ -170,13 +172,15 @@ PROPERTY(BrowserInfo, 'os',
     });
 
 window.URL = window.URL ? window.URL : window.webkitURL ? window.webkitURL : null;
-window.BlobBuilder = window.WebKitBlobBuilder || window.MozBlobBuilder || window.BlobBuilder;
+window.Blob = window.WebKitBlob || window.MozBlob || window.Blob;
 window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame ||
     window.mozRequestAnimationFrame;
 window.WebSocket = window.WebSocket || window.MozWebSocket;
 
+
 function ApiInfo() {
+
     this.webgl = (window.WebGLRenderingContext || this.checkWebGL() ? true : false);
     this.webAudio = (window.AudioContext && window.webkitAudioContext ? true : false);
     this.file = (window.File && window.FileReader && window.FileList && window.Blob ? true : false);
@@ -366,11 +370,13 @@ a.info = {
         * @treturn Array
         */
         colorBits: function (pContext) {
+
 			return [
 				pContext.getParameter(pContext.RED_BITS),
 				pContext.getParameter(pContext.GREEN_BITS),
 				pContext.getParameter(pContext.BLUE_BITS)
 			];
+
         },
 
         /**
@@ -481,10 +487,12 @@ Object.defineProperty(a.info.support, "webgl", {
 });
 
 Object.defineProperty(a.info.support, "webSocket", {
+
     get: function () {
         return a.info.support.api.webSocket;
     }
 });
+
 
 Object.defineProperty(a.info.support, "webAudio", {
     get : function () {

@@ -16,9 +16,10 @@
 
 #define CHECK_IFNOT_OPEN(method, callback) \
 		if (!this.isOpened()) {						\
+			var _pArgv: IArguments = arguments;		\
 			this.open(function(err) {				\
 				if (err) callback(err);				\
-				this.method.apply(this, arguments);	\
+				this.method.apply(this, _pArgv);	\
 			});										\
 			return;									\
 		}
@@ -98,7 +99,7 @@ module akra.io {
 	                break;
 	        }
 
-	        error(sMesg);
+	        ERROR(sMesg);
 		}
 	}
 
@@ -122,7 +123,7 @@ module akra.io {
 		private _nCursorPosition: uint = 0;
 
 		inline get path(): string {
-			assert(this._pFile, "There is no file handle open.");
+			ASSERT(isDefAndNotNull(this._pFile), "There is no file handle open.");
         	return this._pUri.toString();
 		}
 
@@ -149,12 +150,12 @@ module akra.io {
 		}
 
 		inline get position(): uint {
-			assert(this._pFile, "There is no file handle open.");
+			ASSERT(isDefAndNotNull(this._pFile), "There is no file handle open.");
         	return this._nCursorPosition; 
 		}
 
 		set position(iOffset: uint) {
-			assert(this._pFile, "There is no file handle open.");
+			ASSERT(isDefAndNotNull(this._pFile), "There is no file handle open.");
 			this._nCursorPosition = iOffset;
 		}
 
@@ -179,7 +180,7 @@ module akra.io {
 
 
 		open(sFilename: string, iMode: int, fnCallback?: Function): void;
-		open(sFilename: string, sMode: string, fnCallback?: Function): void;
+		//open(sFilename: string, sMode: string, fnCallback?: Function): void;
 		open(sFilename: string, fnCallback?: Function): void;
 		open(iMode: int, fnCallback?: Function): void;
 		open(fnCallback?: Function): void;
@@ -200,7 +201,7 @@ module akra.io {
 		            fnCallback = arguments[0];
 		        }
 
-		        assert(this._pUri, "No filename provided.");
+		        ASSERT(isDefAndNotNull(this._pUri), "No filename provided.");
 
 
 		        this.open(this._pUri.toString(), this._iMode, fnCallback);
@@ -212,7 +213,7 @@ module akra.io {
 		    fnCallback = fnCallback || LocalFile.defaultCallback;
 
 		    if (this.isOpened()) {
-		        warning("file already opened: " + this.name);
+		        WARNING("file already opened: " + this.name);
 		        (<Function>fnCallback)(null, this._pFile);
 		    }
 
@@ -246,7 +247,7 @@ module akra.io {
 		    };
 
 		    fnFSInited = function (pFs: FileSystem) {
-		        assert(pFs, "local file system not initialized");
+		        ASSERT(isDefAndNotNull(pFs), "local file system not initialized");
 
 		        pFileSystem = pFs;
 		        pFs.root.getFile(this.path,
@@ -299,7 +300,7 @@ module akra.io {
 		clear(fnCallback: Function = LocalFile.defaultCallback): void {
 			CHECK_IFNOT_OPEN(clear, fnCallback);
 
-			assert(this._pFile, 'There is no file handle open');
+			ASSERT(isDefAndNotNull(this._pFile), 'There is no file handle open');
 
 		    var pFile: IFile = this;
 		    var pFileEntry: FileEntry = this._pFileEntry;
@@ -326,7 +327,7 @@ module akra.io {
 		    var pFile: IFile = this;
 		    var eTransferMode: EFileTransferModes = this._iMode;
 
-		    assert(CAN_READ(this._iMode), "The file is not readable.");
+		    ASSERT(CAN_READ(this._iMode), "The file is not readable.");
 
 			var pReader: FileReader = this._pFileReader;
 			var pFileObject: File = this._pFile;
@@ -365,7 +366,7 @@ module akra.io {
 		    var pFile: IFile = this;
 		    var iMode: int = this._iMode;
 
-		    assert(CAN_WRITE(iMode), "The file is not writable.");
+		    ASSERT(CAN_WRITE(iMode), "The file is not writable.");
 
 		    sContentType = sContentType || (IS_BINARY(iMode) ? "application/octet-stream" : "text/plain");
 
@@ -437,7 +438,7 @@ module akra.io {
 		rename(sFilename: string, fnCallback: Function = LocalFile.defaultCallback): void {
 			var pName: IPathinfo = util.pathinfo(sFilename);
 
-		    assert(!pName.dirname, 'only filename can be specified.');
+		    ASSERT(!pName.dirname, 'only filename can be specified.');
 		    
 		    this.move(util.pathinfo(this._pUri.path).dirname + "/" + pName.basename, fnCallback);
 		}
@@ -460,14 +461,14 @@ module akra.io {
 		}
 		//return current position;
 		seek(iOffset: int): int {
-			assert(this._pFile, "There is no file handle open.");
+			ASSERT(isDefAndNotNull(this._pFile), "There is no file handle open.");
 
 		    var nSeek: int = this._nCursorPosition + iOffset;
 		    if (nSeek < 0) {
 		        nSeek = this.byteLength - (math.abs(nSeek) % this.byteLength);
 		    }
 
-		    assert(nSeek >= 0 && nSeek <= this.byteLength, "Invalid offset parameter");
+		    ASSERT(nSeek >= 0 && nSeek <= this.byteLength, "Invalid offset parameter");
 
 		    this._nCursorPosition = nSeek;
 
@@ -489,7 +490,7 @@ module akra.io {
 		}
 
 		getMetaData(fnCallback: Function): void {
-			assert(this._pFile, 'There is no file handle open.');
+			ASSERT(isDefAndNotNull(this._pFile), 'There is no file handle open.');
 		    fnCallback(null, {
 		                  lastModifiedDate: this._pFile.lastModifiedDate
 		              });
@@ -523,7 +524,7 @@ module akra.io {
 			if (pUri.protocol === "filesystem") {
 		        pUriLocal = util.uri(pUri.path);
 
-		        assert(!(pUriLocal.protocol && pUriLocal.host != info.uri.host),
+		        ASSERT(!(pUriLocal.protocol && pUriLocal.host != info.uri.host),
 		               "Поддерживаются только локальные файлы в пределах текущего домена.");
 
 		        var pFolders: string[] = pUriLocal.path.split('/');
@@ -532,13 +533,13 @@ module akra.io {
 		            pFolders = pFolders.slice(1);
 		        }
 		 
-		        assert(pUri.host === "temporary",
+		        ASSERT(pUri.host === "temporary",
 		               "Поддерживаются только файловые системы типа \"temporary\".");
 		        
 		        this._pUri = util.uri(pFolders.join("/"));
 		    }
 		    else {
-		    	error("used non local uri");
+		    	ERROR("used non local uri");
 			}
 		}
 
@@ -566,7 +567,7 @@ module akra.io {
 	                break;
 	        }
 
-	        error(sMesg);
+	        ERROR(sMesg);
 		}
 
 		static createDir(pRootDirEntry: DirectoryEntry, pFolders: string[], fnCallback) {

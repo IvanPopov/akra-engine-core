@@ -6,12 +6,29 @@
 #include "crypto/md5.ts"
 #include "crypto/sha-1.ts"
 
-//declare function utf8_encode(src: string): string;
-//declare function utf8_decode(src: string): string;
+interface String {
+    toUTF8(): string;
+    fromUTF8(): string;
+    
+    md5(): string;
+    sha1(): string;
+    crc32(): string;
+    replaceAt(n: int, s: string);
+}
 
-//declare function md5(src: string): string;
-//declare function sha1(src: string): string;
-//declare function crc32(src: string): string;
+interface Array {
+    last: any;
+    first: any;
+    el(i :int): any;
+    clear(): any[];
+    swap(i: int, j: int): any[];
+    insert(elements: any[]): any[];
+}
+
+interface Number {
+    toHex(length: int): string;
+    printBinary(isPretty?: bool);
+}
 
 module akra.libs {
 	/**

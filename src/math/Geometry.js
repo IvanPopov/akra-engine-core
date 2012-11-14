@@ -985,7 +985,7 @@ Plane3d.prototype.xForm = function (m4fMatrix) {
  */
 Plane3d.prototype.signedDistance = function (v3fPoint) {
     INLINE();
-    return (v3fPoint.dot(this.v3fNormal) + this.fDistance);
+    return (this.v3fNormal.dot(v3fPoint) + this.fDistance);
 };
 
 //-------------------End Plane3D---------------------\\
@@ -3231,7 +3231,7 @@ function planeClassify_Rect2d_Plane (pRect, pPlane) {
     if (dmin * dmax < 0.0) {
         return a.Geometry.k_plane_intersect;
     }
-    else if (dmin) {
+    else if (dmax <= 0.) {
         return a.Geometry.k_plane_front;
     }
     return a.Geometry.k_plane_back;
@@ -3288,7 +3288,7 @@ function planeClassify_Rect3d_Plane (pRect, pPlane) {
     if (dmin * dmax < 0.0) {
         return a.Geometry.k_plane_intersect;
     }
-    else if (dmin < 0) {
+    else if (dmax <= 0.) {
       return a.Geometry.k_plane_front;
     }
 

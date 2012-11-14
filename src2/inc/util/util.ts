@@ -52,11 +52,31 @@ module akra.util {
 	    return s;
 	}
 
+
+	export function abtota(pBuffer: ArrayBuffer, eType: EDataTypes): ArrayBufferView {
+        switch (eType) {
+            case EDataTypes.FLOAT:
+                return new Float32Array(pBuffer);
+            case EDataTypes.SHORT:
+                return new Int16Array(pBuffer);
+            case EDataTypes.UNSIGNED_SHORT:
+                return new Uint16Array(pBuffer);
+            case EDataTypes.INT:
+                return new Int32Array(pBuffer);
+            case EDataTypes.UNSIGNED_INT:
+                return new Uint32Array(pBuffer);
+            case EDataTypes.BYTE:
+                return new Int8Array(pBuffer);
+            default:
+            case EDataTypes.UNSIGNED_BYTE:
+                return new Uint8Array(pBuffer);
+        }
+    }
+
+
 	export function parseJSON(sJSON: string): Object {
 		return eval('(' + sJSON + ')');
 	};
-
-
 
 	/**
 	 * Преобразование html-сформированного текста

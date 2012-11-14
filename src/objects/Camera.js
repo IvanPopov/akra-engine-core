@@ -63,16 +63,17 @@ function Camera () {
      * @type Float32Array
      */
     this.m4fProjView = new Mat4;
-    /**
-     * Special matrix for billboarding effects
-     * @type Float32Array
-     */
-    this.m4fBillboard = new Mat4;
-    /**
-     * Special matrix for sky box effects
-     * @type Float32Array
-     */
-    this.m4fSkyBox = new Mat4;
+	
+    // /**
+    //  * Special matrix for billboarding effects
+    //  * @type Float32Array
+    //  */
+    // this.m4fBillboard = new Mat4;
+    // /**
+    //  * Special matrix for sky box effects
+    //  * @type Float32Array
+    //  */
+    // this.m4fSkyBox = new Mat4;
     /**
      * Biased for use during current render stage
      * @type Float32Array
@@ -83,6 +84,7 @@ function Camera () {
      * @type Float32Array
      */
     this.m4fRenderStageProjView = new Mat4;
+
     /**
      * Search rect for scene culling
      * @type Rect3d
@@ -143,7 +145,6 @@ function Camera () {
      * @type Float
      */
     this.fMaxY = 0.0;
-
     /**
      * Frustum
      * @type Frustum
@@ -152,16 +153,36 @@ function Camera () {
 
     this.iCameraOptions = 0;
 
-    //вершины frustum-а
-    this._v4fLeftBottomNear = new Vec4();
-    this._v4fRightBottomNear = new Vec4();
-    this._v4fLeftTopNear = new Vec4();
-    this._v4fRightTopNear = new Vec4();
+    //вершины frustum-а в пространстве камеры
+    this._pFrustumVertices = new Array(8);
+    //вершины frustum-а в мировом пространстве
+    this.pFrustumVertices = new Array(8);
 
-    this._v4fLeftBottomFar = new Vec4();
-    this._v4fRightBottomFar = new Vec4();
-    this._v4fLeftTopFar = new Vec4();
-    this._v4fRightTopFar = new Vec4();
+    // this._pFrustumVertices, this.pFrustumVertices
+    // [0] - this._v4fLeftBottomNear;
+    // [1] - this._v4fRightBottomNear;
+    // [2] - this._v4fLeftTopNear;
+    // [3] - this._v4fRightTopNear;
+
+    // [4] - this._v4fLeftBottomFar;
+    // [5] - this._v4fRightBottomFar;
+    // [6] - this._v4fLeftTopFar;
+    // [7] - this._v4fRightTopFar;
+
+    for(var i=0; i<8;i++){
+        this._pFrustumVertices[i] = new Vec4();
+        this.pFrustumVertices[i] = new Vec4();
+    }
+
+    // this._v4fLeftBottomNear = new Vec4();
+    // this._v4fRightBottomNear = new Vec4();
+    // this._v4fLeftTopNear = new Vec4();
+    // this._v4fRightTopNear = new Vec4();
+
+    // this._v4fLeftBottomFar = new Vec4();
+    // this._v4fRightBottomFar = new Vec4();
+    // this._v4fLeftTopFar = new Vec4();
+    // this._v4fRightTopFar = new Vec4();
 }
 
 EXTENDS(Camera, a.SceneNode);
@@ -302,24 +323,23 @@ Camera.prototype.recalcMatrices = function () {
     // camera view matrix) without 
     // any translation information.
 
-    this.m4fSkyBox.set(this.m4fView);
+    //this.m4fSkyBox.set(this.m4fView);
     // this.m4fSkyBox.pData._14 = 0.0;
     // this.m4fSkyBox.pData._24 = 0.0;
     // this.m4fSkyBox.pData._34 = 0.0;
 
-
     // this is combined with the unit
     // space projection matrix to form
     // the sky box viewing matrix
-    this.m4fSkyBox.multiply(this.m4fUnitProj, this.m4fSkyBox);
+    //this.m4fSkyBox.multiply(this.m4fUnitProj, this.m4fSkyBox);
+
 
     // billboard objects use our world matrix
     // without translation
-    this.m4fBillboard.set(this.worldMatrix());
-    this.m4fBillboard.pData._14 = 0.0;
-    this.m4fBillboard.pData._24 = 0.0;
-    this.m4fBillboard.pData._34 = 0.0;
-
+    // this.m4fBillboard.set(this.worldMatrix());
+    // this.m4fBillboard.pData._14 = 0.0;
+    // this.m4fBillboard.pData._24 = 0.0;
+    // this.m4fBillboard.pData._34 = 0.0;
 };
 /**
  * Update
@@ -337,13 +357,12 @@ Camera.prototype.update = function () {
 
             // our view proj matrix is the inverse of our world matrix
             // multiplied by the projection matrix
-            this.m4fProj.multiply(this.m4fView, this.m4fRenderStageProjView);            
+            this.m4fProj.multiply(this.m4fView, this.m4fRenderStageProjView);
         }
     }
 
     if (this.isWorldMatrixNew()) {
         this.recalcMatrices();
-
         this._rebuildSearchRectAndFrustum();
 
         // our view proj matrix is the inverse of our world matrix
@@ -388,22 +407,22 @@ Camera.prototype.projViewMatrix = function () {
     INLINE();
     return this.m4fRenderStageProjView;
 };
-/**
- * Getter
- * @treturn Float32Array Matrix
- */
-Camera.prototype.billboardMatrix = function () {
-    INLINE();
-    return this.m4fBillboard;
-};
-/**
- * Getter
- * @treturn Float32Array Matrix
- */
-Camera.prototype.skyBoxMatrix = function () {
-    INLINE();
-    return this.m4fSkyBox;
-};
+// /**
+//  * Getter
+//  * @treturn Float32Array Matrix
+//  */
+// Camera.prototype.billboardMatrix = function () {
+//     INLINE();
+//     return this.m4fBillboard;
+// };
+// /**
+//  * Getter
+//  * @treturn Float32Array Matrix
+//  */
+// Camera.prototype.skyBoxMatrix = function () {
+//     INLINE();
+//     return this.m4fSkyBox;
+// };
 /**
  * Getter
  * @treturn Float32Array Matrix
@@ -591,42 +610,43 @@ Camera.prototype.lookAt = function() {
     }
 };
 
-
-function unproj(m4fProj,v4fScreen,v4fDestination){
-    if(!v4fDestination){
-        v4fDestination = new Vec4();
-    }
-
-    var pData1 = m4fProj.pData;
-    var pData2 = v4fScreen.pData;
-    var pDataDestination = v4fDestination.pData;
-  
-    var z = -pData1._34/(pData1._33 + pData2.Z);
-    var y = (-pData2.Y * z - pData1._23*z)/pData1._22;
-    var x = (-pData2.X * z - pData1._13*z)/pData1._11;
-  
-    pDataDestination.X = x;
-    pDataDestination.Y = y;
-    pDataDestination.Z = z;
-    pDataDestination.W = 1;
-
-    return v4fDestination;
-};
-
 Camera.prototype._extractFrustumVertices = function() {
     'use strict';
 
+    var _pFrustumVertices = this._pFrustumVertices;
+
     var m4fProj = this.m4fProj;
 
-    unproj(m4fProj,Vec4(-1,-1,-1,1),this._v4fLeftBottomNear);
-    unproj(m4fProj,Vec4(1,-1,-1,1),this._v4fRightBottomNear);
-    unproj(m4fProj,Vec4(-1,1,-1,1),this._v4fLeftTopNear);
-    unproj(m4fProj,Vec4(1,1,-1,1),this._v4fRightTopNear);
+    // this._pFrustumVertices, this.pFrustumVertices
+    // [0] - this._v4fLeftBottomNear;
+    // [1] - this._v4fRightBottomNear;
+    // [2] - this._v4fLeftTopNear;
+    // [3] - this._v4fRightTopNear;
 
-    unproj(m4fProj,Vec4(-1,-1,1,1),this._v4fLeftBottomFar);
-    unproj(m4fProj,Vec4(1,-1,1,1),this._v4fRightBottomFar);
-    unproj(m4fProj,Vec4(-1,1,1,1),this._v4fLeftTopFar);
-    unproj(m4fProj,Vec4(1,1,1,1),this._v4fRightTopFar);
+    // [4] - this._v4fLeftBottomFar;
+    // [5] - this._v4fRightBottomFar;
+    // [6] - this._v4fLeftTopFar;
+    // [7] - this._v4fRightTopFar;
+
+    // m4fProj.unproj(Vec4(-1,-1,-1,1),this._v4fLeftBottomNear);
+    // m4fProj.unproj(Vec4(1,-1,-1,1),this._v4fRightBottomNear);
+    // m4fProj.unproj(Vec4(-1,1,-1,1),this._v4fLeftTopNear);
+    // m4fProj.unproj(Vec4(1,1,-1,1),this._v4fRightTopNear);
+
+    // m4fProj.unproj(Vec4(-1,-1,1,1),this._v4fLeftBottomFar);
+    // m4fProj.unproj(Vec4(1,-1,1,1),this._v4fRightBottomFar);
+    // m4fProj.unproj(Vec4(-1,1,1,1),this._v4fLeftTopFar);
+    // m4fProj.unproj(Vec4(1,1,1,1),this._v4fRightTopFar);
+
+    m4fProj.unproj(Vec4(-1,-1,-1,1),_pFrustumVertices[0]);
+    m4fProj.unproj(Vec4(1,-1,-1,1),_pFrustumVertices[1]);
+    m4fProj.unproj(Vec4(-1,1,-1,1),_pFrustumVertices[2]);
+    m4fProj.unproj(Vec4(1,1,-1,1),_pFrustumVertices[3]);
+
+    m4fProj.unproj(Vec4(-1,-1,1,1),_pFrustumVertices[4]);
+    m4fProj.unproj(Vec4(1,-1,1,1),_pFrustumVertices[5]);
+    m4fProj.unproj(Vec4(-1,1,1,1),_pFrustumVertices[6]);
+    m4fProj.unproj(Vec4(1,1,1,1),_pFrustumVertices[7]);
 
     CLEAR_BIT(this._iUpdateProjectionFlags, a.Camera.k_newProjectionMatrix);
 };
@@ -639,15 +659,32 @@ Camera.prototype._rebuildSearchRectAndFrustum = function() {
     var m4fCameraWorld = this._m4fWorldMatrix;
     var pFrustum = this.pFrustum;
 
-    var v4fLeftBottomNear = m4fCameraWorld.multiply(this._v4fLeftBottomNear,Vec4());
-    var v4fRightBottomNear = m4fCameraWorld.multiply(this._v4fRightBottomNear,Vec4());
-    var v4fLeftTopNear = m4fCameraWorld.multiply(this._v4fLeftTopNear,Vec4());
-    var v4fRightTopNear = m4fCameraWorld.multiply(this._v4fRightTopNear,Vec4());
+    // var v4fLeftBottomNear = m4fCameraWorld.multiply(this._v4fLeftBottomNear,Vec4());
+    // var v4fRightBottomNear = m4fCameraWorld.multiply(this._v4fRightBottomNear,Vec4());
+    // var v4fLeftTopNear = m4fCameraWorld.multiply(this._v4fLeftTopNear,Vec4());
+    // var v4fRightTopNear = m4fCameraWorld.multiply(this._v4fRightTopNear,Vec4());
 
-    var v4fLeftBottomFar = m4fCameraWorld.multiply(this._v4fLeftBottomFar,Vec4());
-    var v4fRightBottomFar = m4fCameraWorld.multiply(this._v4fRightBottomFar,Vec4());
-    var v4fLeftTopFar = m4fCameraWorld.multiply(this._v4fLeftTopFar,Vec4());
-    var v4fRightTopFar = m4fCameraWorld.multiply(this._v4fRightTopFar,Vec4());
+    // var v4fLeftBottomFar = m4fCameraWorld.multiply(this._v4fLeftBottomFar,Vec4());
+    // var v4fRightBottomFar = m4fCameraWorld.multiply(this._v4fRightBottomFar,Vec4());
+    // var v4fLeftTopFar = m4fCameraWorld.multiply(this._v4fLeftTopFar,Vec4());
+    // var v4fRightTopFar = m4fCameraWorld.multiply(this._v4fRightTopFar,Vec4());
+    
+    var _pFrustumVertices = this._pFrustumVertices;
+    var pFrustumVertices = this.pFrustumVertices;
+
+    ////////////////////////////////////////////////////////////////////////////////
+    
+    var v4fLeftBottomNear = m4fCameraWorld.multiply(_pFrustumVertices[0],pFrustumVertices[0]);
+    var v4fRightBottomNear = m4fCameraWorld.multiply(_pFrustumVertices[1],pFrustumVertices[1]);
+    var v4fLeftTopNear = m4fCameraWorld.multiply(_pFrustumVertices[2],pFrustumVertices[2]);
+    var v4fRightTopNear = m4fCameraWorld.multiply(_pFrustumVertices[3],pFrustumVertices[3]);
+
+    var v4fLeftBottomFar = m4fCameraWorld.multiply(_pFrustumVertices[4],pFrustumVertices[4]);
+    var v4fRightBottomFar = m4fCameraWorld.multiply(_pFrustumVertices[5],pFrustumVertices[5]);
+    var v4fLeftTopFar = m4fCameraWorld.multiply(_pFrustumVertices[6],pFrustumVertices[6]);
+    var v4fRightTopFar = m4fCameraWorld.multiply(_pFrustumVertices[7],pFrustumVertices[7]);
+
+    ////////////////////////////////////////////////////////////////////////////////
 
     var v4fLeftBottomNearData = v4fLeftBottomNear.pData;
     var v4fRightBottomNearData = v4fRightBottomNear.pData;
@@ -658,6 +695,7 @@ Camera.prototype._rebuildSearchRectAndFrustum = function() {
     var v4fRightBottomFarData = v4fRightBottomFar.pData;
     var v4fLeftTopFarData = v4fLeftTopFar.pData;
     var v4fRightTopFarData = v4fRightTopFar.pData;
+
 
     var x1,y1,z1; //первый вектор
     var x2,y2,z2; //второй вектор

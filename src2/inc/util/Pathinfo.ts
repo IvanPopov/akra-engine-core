@@ -63,7 +63,7 @@ module akra {
 		    }
 		    else {
 		        //critical_error
-		        error("Unexpected data type was used.");
+		        ERROR("Unexpected data type was used.");
 		    }
 		}
 

@@ -441,14 +441,29 @@ Engine.prototype.renderLightings = function () {
 
 
     var pRenderList = pFirstMember;
+
     //Добавлено для отслеживания видимости узлов. aldore
     this.renderList = pRenderList;
+
     //Подготовка всех объектов к рендерингу
-//    trace("Engine.prototype.renderScene", pFirstMember);
+
+	//    trace("Engine.prototype.renderScene", pFirstMember);
+
+	if(this.pTerrainSystem)
+	{
+		this.pTerrainSystem.reset();
+	}
+
+
     while (pFirstMember) {
         pFirstMember.prepareForRender();
         pFirstMember = pFirstMember.nextSearchLink();
     }
+
+	if(this.pTerrainSystem)
+	{
+		this.pTerrainSystem.prepareForRender();
+	}
 
     //рендеринг всех объектов
     pFirstMember = pRenderList;
@@ -644,6 +659,7 @@ Engine.prototype.render = function () {
     }
     var iRenderBegin = a.now();
     if (this.pDisplayManager.beginRenderSession()) {
+//        console.log("----------start render-------");
         // render the scene
         // A_TRACER.BEGIN();
 //        A_TRACER.MESG("=====START RENDER SCENE OBJECTS==========");
@@ -663,12 +679,18 @@ Engine.prototype.render = function () {
         //trace("==============Stop Render Shadow===========");
         //trace("==============Render Scene===========");
         
-        
+//        console.log("before pre-render lights");
         this.renderLightings();
         // iTime.push(a.now());
         // process the contents of the render queue
-        
+
+//        console.log("after pre-render lights");
+//
+//        console.log("before render lights");
+
         this.pShaderManager.processRenderStage();
+//        console.log("after render lights");
+
         // iTime.push(a.now());
         
         //this.pDevice.flush();
@@ -687,6 +709,7 @@ Engine.prototype.render = function () {
         //trace("==============Stop Apply lights===========");
         // this.pDevice.finish();
         this.pDisplayManager.endRenderSession();
+//        console.log("----------finish render-------");
         // iTime.push(a.now());
 
         // A_TRACER.END();
@@ -706,7 +729,7 @@ Engine.prototype.render = function () {
         }*/
        
 //        if(zzz-- == 0){
-           // this.pause(true);
+//           this.pause(true);
 //        }
     }
 /*    if (iFrame > 5 && iFrame%100 === 0) {

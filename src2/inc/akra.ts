@@ -5,16 +5,16 @@
 
 #include "common.ts"
 
-
 #include "libs/libs.ts"
 #include "bf/bitflags.ts"
 #include "math/math.ts"
 
-#include "geometry/geometry.ts"
+#include "geometry/geometry.ts" 
 
 #include "info/support/support.ts"
 #include "info/info.ts"
 
+#include "util/Logger.ts"
 #include "util/util.ts"
 //#include "util/test/testutils.ts"
 #include "io/ajax.ts"

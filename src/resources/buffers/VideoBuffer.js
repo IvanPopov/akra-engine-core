@@ -374,7 +374,9 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
         var pParent = parent(Texture);
         var me = this;
         //hack: if iEndPixel is first pixel from next row
+
         iXend = (iXend === 0 ? iWidth : iXend);
+
 
         var fnWriteRect = function (iX, iY, iW, iH) {
             iBeginElement = iEndElement;
@@ -391,6 +393,9 @@ VideoBuffer.prototype.setData = function (pData, iOffset, iSize, bUpdateRamCopy)
             if (iHeight > 2) {
                 fnWriteRect(0, iYmin + 1, iWidth, iHeight - 2);
             }
+			//for(var k=0;k< iHeight - 2;k++){
+			//	fnWriteRect(0, iYmin + 1 + k, iWidth, 1);
+			//}
             fnWriteRect(0, iYmax - 1, iXend, 1);
         }
     }

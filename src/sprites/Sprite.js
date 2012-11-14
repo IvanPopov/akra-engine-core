@@ -36,7 +36,6 @@ function Sprite(pEngine){
 	this._fnDraw = null; //пользовательская функция для отрисовки спрайта
 
 	this._isVisible = true; //отображать спрайт на экране или нет?
-	this._pProgram = null;//временно здесь хранятся программы
 }
 
 EXTENDS(Sprite, a.SceneObject, a.RenderableObject);
@@ -65,6 +64,10 @@ Sprite.prototype.setGeometry = function(fSizeX,fSizeY) {
 		pGeometry[3*i + 1] = signY*fSizeY/2;
 		pGeometry[3*i + 2] = 0;
 	}
+
+	var fMaxSize = (fSizeX > fSizeY) ? fSizeX : fSizeY;
+
+	this.accessLocalBounds().set(fMaxSize,fMaxSize,fMaxSize);
 
 	return this._setup([VE_VEC3('POSITION_OFFSET')],pGeometry);
 };
@@ -108,26 +111,45 @@ PROPERTY(Sprite,'visible',
 	}
 );
 
-Sprite.prototype.setProgram = function(pProgram) {
-	'use strict';
-	this._pProgram = pProgram;
-};
-
 Sprite.prototype.render = function(){
 	'use strict';
 	if(this._isVisible && this._fnDraw != null){
-		this.renderCallback();
+
+		var pRenderer = this._pEngine.shaderManager();
+		var pDeferredFrameBuffer = this._pEngine.lightManager().deferredFrameBuffers[0];
+
+		pRenderer.setViewport(0, 0, this._pEngine.pCanvas.width, this._pEngine.pCanvas.height);
+
+		pRenderer.activateSceneObject(this);
+		this.startRender();
+
+		this.activatePass(0);
+
+		var pSnapshot = this._pActiveSnapshot;
+
+		this._fnDraw(pSnapshot);
+		this.applyRenderData(this._pRenderData);
+
+		pRenderer.activateFrameBuffer(pDeferredFrameBuffer);
+
+		var pEntry = this.renderPass();
+
+		this.deactivatePass();
+		this.finishRender();
+
+		pRenderer.deactivateSceneObject();
+
+		pRenderer.activateFrameBuffer(null);
 	}
 };
 
-Sprite.prototype.renderCallback = function() {
-	'use strict';
-	var pProgram = this._pProgram;
-	pProgram.activate();
+// Sprite.prototype.renderCallback = function() {
+// 	'use strict';
+// 	var pProgram = this._pProgram;
+// 	pProgram.activate();
 
-	this._fnDraw(pProgram);
-	this._pRenderData.draw();
+	
 
-};
+// };
 
 A_NAMESPACE(Sprite);

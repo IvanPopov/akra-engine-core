@@ -31,7 +31,10 @@ function ShaderProgram(pEngine) {
     this._nActiveTimes = 0;
     this._pPassBlend = null;
     this._pTextures = null;
-    this._isZeroSampler = false;
+
+    this._isZeroSampler2D = false;
+    this._isZeroSamplerCube = false;
+
     this._eActiveStream = true;
     this._pActiveStreams = null;
 
@@ -105,9 +108,14 @@ ShaderProgram.prototype.create = function (sHash, sVertexCode, sFragmentCode) {
 
     if (!pDevice.getProgramParameter(pHardwareProgram, pDevice.VALIDATE_STATUS)) {
         console.warn('program not valid', this.findResourceName());
+//        console.log(this._sVertexCode, this._sFragmentCode);
         console.warn(pDevice.getProgramInfoLog(pHardwareProgram));
     }
-  
+    
+    debug_assert_win(pDevice.getProgramParameter(pHardwareProgram, pDevice.LINK_STATUS),
+                     'cannot link program', this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
+
+    // console.log(this._programInfoLog(pHardwareProgram, pVertexShader, pPixelShader));
     
     this._isValid = true;
     this._pEngine.shaderManager()._registerProgram(this._sHash, this);
@@ -323,7 +331,13 @@ ShaderProgram.prototype.applyVec3F = function (sName, pData) {
     }
     pData = (pData.pData !== undefined) ? pData.pData : pData;
     var pDevice = this._pDevice;
-    pDevice.uniform3fv(this._pRealUniformList[sName], pData);
+//    if(sName == "points_omni_0_11[0].LIGHT_DATA.ATTENUATION" ||
+//       sName == "points_omni_0_11[1].LIGHT_DATA.ATTENUATION"){
+//        pDevice.uniform3f(this._pRealUniformList[sName], 0.1, 0., 0.);
+//    }
+//    else{
+        pDevice.uniform3fv(this._pRealUniformList[sName], pData);
+//    }
 };
 ShaderProgram.prototype.applyVec4F = function (sName, pData) {
     if (!this._pRealUniformList[sName]) {
@@ -693,6 +707,9 @@ ShaderProgram.prototype.applySampler2D = function (sName, pData) {
     }
     else {
         iSlot = this._pRenderer.activateTexture(pTexture);
+
+//        console.log("Activate texture", sRealName, sTexture, iSlot);
+
         pTextureParam = this._pTextureParams[iSlot];
         // trace("Slot #" + iSlot);
         pTextureParam[a.TPARAM.MAG_FILTER] = pData[a.TPARAM.MAG_FILTER] ||
@@ -897,9 +914,11 @@ ShaderProgram.prototype.setAttrParams = function (pAttrToReal, pAttrToBuffer, pS
     this._pRealAttr = new Array(nAttr);
     this._pRealSamplers = new Array(nRealSamplers);
 };
-ShaderProgram.prototype.setUniformVars = function (pUniforms, isZeroSampler) {
+ShaderProgram.prototype.setUniformVars = function (pUniforms, isZeroSampler2D, isZeroSamplerCube) {
     this._pUniformVars = pUniforms;
-    this._isZeroSampler = isZeroSampler || false;
+    this._isZeroSampler2D = isZeroSampler2D || false;
+    this._isZeroSamplerCube = isZeroSamplerCube || false;
+
     var i;
     var pVar;
     for (i in pUniforms) {
@@ -916,6 +935,9 @@ ShaderProgram.prototype.setTextureSlot = function (iSlot, pTexture) {
 ShaderProgram.prototype._preparedUniformData = function (pVar) {
     var pData;
     var sType;
+    if(!pVar.iSize){
+        return null;
+    }
     if (!pVar.isArray && pVar.iSize === 1) {
         return null;
     }
@@ -1049,6 +1071,38 @@ ShaderProgram.prototype._chooseApplyUniformFunction = function (pVar, sVarName, 
                     pFunctions[sName] = this.applyVideoBuffer;
                 }
                 break;
+            case "bool":
+                if (isArray) {
+                    pFunctions[sName] = this.applyIntArray;
+                }
+                else {
+                    pFunctions[sName] = this.applyInt;
+                }
+                break;
+            case "bvec2":
+                if (isArray) {
+                    pFunctions[sName] = this.applyVec2IArray;
+                }
+                else {
+                    pFunctions[sName] = this.applyVec2I;
+                }
+                break;
+            case "bvec3":
+                if (isArray) {
+                    pFunctions[sName] = this.applyVec3IArray;
+                }
+                else {
+                    pFunctions[sName] = this.applyVec3I;
+                }
+                break;
+            case "bvec4":
+                if (isArray) {
+                    pFunctions[sName] = this.applyVec4IArray;
+                }
+                else {
+                    pFunctions[sName] = this.applyVec4I;
+                }
+                break;
             default:
                 warning("Another base types are not support yet");
         }
@@ -1098,8 +1152,11 @@ ShaderProgram.prototype.getStreamNumber = function () {
 ShaderProgram.prototype.activate = function () {
     this._nActiveTimes++;
     this._pDevice.useProgram(this._pHardwareProgram);
-    if (this._isZeroSampler) {
-        this.applyInt(PassBlend.sZeroSampler, a.fx.ZEROSAMPLER);
+    if (this._isZeroSampler2D) {
+        this.applyInt(PassBlend.sZeroSampler2D, a.fx.ZEROSAMPLER);
+    }
+    if (this._isZeroSamplerCube) {
+        this.applyInt(PassBlend.sZeroSamplerCube, a.fx.ZEROSAMPLER);
     }
 };
 ShaderProgram.prototype.deactivate = function () {
@@ -1113,7 +1170,7 @@ ShaderProgram.prototype.activateTextures = function () {
     var iCheck = this._nActiveTimes;
     for (i = 0; i < this._pTextureSlots.length; i++) {
         if (this._pTextureSlots[i] === iCheck) {
-            // trace("Activate texture slot #" + i);
+//            console.log("Activate texture slot #" + i);
             this._pRenderer._activateTextureSlot(i, this._pTextureParams[i]);
         }
     }
@@ -1123,6 +1180,20 @@ ShaderProgram.prototype.resetActivationStreams = function () {
     this._eActiveStream = !(this._eActiveStream);
 };
 ShaderProgram.prototype._programInfoLog = function (pHardwareProgram, pVertexShader, pPixelShader) {
+//    var pShaderDebugger = this._pEngine.getDevice().getExtension("WEBGL_debug_shaders");
+//    console.log("===>>", pShaderDebugger);
+//    if (pShaderDebugger) {
+//        alert(1);
+//        console.warn('translated vertex shader =========>');
+//        console.warn(pShaderDebugger.getTranslatedShaderSource(pVertexShader));
+//        console.warn('translated pixel shader =========>');
+//        console.warn(pShaderDebugger.getTranslatedShaderSource(pPixelShader));
+//    }
+//
+//    return '<pre style="background-color: #FFCACA;">' + this._pDevice.getProgramInfoLog(this._pHardwareProgram) +
+//           '</pre>' + '<hr />' +
+//           '<pre>' + this.getSourceCode(a.SHADERTYPE.VERTEX) + '</pre><hr />' +
+//           '<pre>' + this.getSourceCode(a.SHADERTYPE.PIXEL) + '</pre>'
     var pShaderDebugger = this._pEngine.getDevice().getExtension("WEBGL_debug_shaders");
     var pGPUInfoLog = this._pEngine.getDevice().getExtension("WEBGL_debug_renderer_info");
 
@@ -1140,7 +1211,7 @@ ShaderProgram.prototype._programInfoLog = function (pHardwareProgram, pVertexSha
     return '<pre style="background-color: #FFCACA;">' + this._pDevice.getProgramInfoLog(this._pHardwareProgram) +
            '</pre>' + '<hr />' +
            '<pre>' + this.getSourceCode(a.SHADERTYPE.VERTEX) + '</pre><hr />' +
-           '<pre>' + this.getSourceCode(a.SHADERTYPE.PIXEL) + '</pre>'
+           '<pre>' + this.getSourceCode(a.SHADERTYPE.PIXEL) + '</pre>';
 };
 ShaderProgram.prototype._shaderInfoLog = function (pShader, eType) {
     var sCode = this.getSourceCode(eType), sLog;

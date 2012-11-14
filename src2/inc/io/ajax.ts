@@ -158,7 +158,7 @@ module akra.io {
 
 		var fnCauseError = function (pReq: XMLHttpRequest, pErr: Error) {
 	        if (!pSettings.error) {
-	            throw pErr;
+	            ERROR(pErr);
 	        }
 	        else {
 	            pSettings.error(pReq, (pReq ? pReq.statusText : null), pErr);
