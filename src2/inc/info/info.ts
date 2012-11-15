@@ -6,6 +6,7 @@
 #include "util/BrowserInfo.ts"
 #include "util/ScreenInfo.ts"
 #include "util/DeviceInfo.ts"
+#include "util/ApiInfo.ts"
 
 module akra.info {
 	export function canvas(pCanvas: HTMLCanvasElement): ICanvasInfo;
@@ -24,7 +25,7 @@ module akra.info {
 	export var api: IApiInfo = new util.ApiInfo;
 	export var screen: IScreenInfo = new util.ScreenInfo;
 	export var device: IDeviceInfo = new util.DeviceInfo;
-	export var uri: IURI = parseURI(document.location.href);
+	export var uri: IURI = util.uri(document.location.href);
 
 	module is {
 		/**

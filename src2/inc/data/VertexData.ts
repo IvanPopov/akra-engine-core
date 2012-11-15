@@ -7,6 +7,7 @@
 #include "IVertexDeclaration.ts"
 #include "IBufferDataModifier.ts"
 #include "events/events.ts"
+#include "util/util.ts"
 
 module akra.data {
 
@@ -178,7 +179,7 @@ module akra.data {
 		            }
 
 		            if (this.offset != iOldOffset) {
-		                warning('vertex data moved from ' + iOldOffset + ' ---> ' + this.offset);
+		                WARNING("vertex data moved from " + iOldOffset + " ---> " + this.offset);
 		                this.relocation(this, iOldOffset, this.offset);
 		            }
 
@@ -204,7 +205,7 @@ module akra.data {
 		            this.setVertexDeclaration(pOldVertexDeclaration);
 
 		            if (this.offset != iOldOffset) {
-		                warning('vertex data moved from ' + iOldOffset + ' ---> ' + this.offset);
+		                WARNING("vertex data moved from " + iOldOffset + " ---> " + this.offset);
 		                this.relocation(this, iOldOffset, this.offset);
 		            }
 
@@ -352,7 +353,7 @@ module akra.data {
 
 		            iFrom = iFrom || 0;
 		            iCount = iCount || this._iLength;
-		            iCount = Math.min(iCount, this._iLength);
+		            iCount = math.min(iCount, this._iLength);
 
 		            var iStride: uint = this.stride;
 		            var pBufferData: Uint8Array = new Uint8Array(iSize * this.length);
@@ -399,7 +400,7 @@ module akra.data {
 		    var pVertexElement: IVertexElement = this._pVertexDeclaration.findElement(sUsage);
 
 		    if (pVertexElement) {
-		        return ab2ta(this.getData(sUsage, iFrom, iCount), pVertexElement.type);
+		        return util.abtota(this.getData(sUsage, iFrom, iCount), pVertexElement.type);
 		    }
 
 		    return null;
@@ -437,6 +438,14 @@ module akra.data {
 			BROADCAST(relocation, CALL(pTarget, iFrom, iTo));
 		END_EVENT_TABLE();
 
+
+		// BEGIN_EVENT_TABLE(VertexData);
+
+		// relocation(pTarget: IVertexData, iFrom: uint, iTo: uint): void {
+		// 	EMIT_BROADCAST(relocation, CALL(pTarget, iFrom, iTo));
+		// }
+
+		// END_EVENT_TABLE();
 	}
 
 }

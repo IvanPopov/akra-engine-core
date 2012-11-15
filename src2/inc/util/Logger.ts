@@ -4,6 +4,7 @@
 #include "common.ts"
 #include "ILogger.ts"
 #include "bf/bitflags.ts"
+#include "Singleton.ts"
 
 module akra.util {
  
@@ -35,8 +36,7 @@ module akra.util {
         [familyName: string]: ILogRoutineMap;
     }
 
-    export class Logger implements ILogger {
-
+    export class Logger extends Singleton implements ILogger {
         private _eLogLevel: ELogLevel;
         private _pGeneralRoutineMap: ILogRoutineMap;
 
@@ -56,6 +56,8 @@ module akra.util {
         private _sUnknownMessage: string;
 
         constructor () {
+            super();
+            
             this._eUnknownCode = 0;
             this._sUnknownMessage = "Unknown code";  
 
@@ -344,10 +346,10 @@ module akra.util {
             fnLogRoutine.call(null, pLogEntity);
         }
 
-        critical_error(pEntity: ILoggerEntity): void;
-        critical_error(eCode: uint, ...pArgs: any[]): void;
-        critical_error(...pArgs: any[]):void;
-        critical_error():void {
+        criticalError(pEntity: ILoggerEntity): void;
+        criticalError(eCode: uint, ...pArgs: any[]): void;
+        criticalError(...pArgs: any[]):void;
+        criticalError():void {
 
             var pLogEntity: ILoggerEntity;
             var fnLogRoutine: ILogRoutineFunc;
@@ -540,29 +542,59 @@ module akra.util {
         }
 
     }
-
-    #define log(...)            akra.logger.setSourceLocation(__FILE__, __LINE__); \
-                            akra.logger.log(__VA_ARGS__);
-
-    #define info(...)           akra.logger.setSourceLocation(__FILE__, __LINE__); \
-                                akra.logger.info(__VA_ARGS__);
-
-    #define warning(...)        akra.logger.setSourceLocation(__FILE__, __LINE__); \
-                                akra.logger.warning(__VA_ARGS__);
-
-    #define error(...)          akra.logger.setSourceLocation(__FILE__, __LINE__); \
-                                akra.logger.error(__VA_ARGS__);
-
-    #define critical(...)       akra.logger.setSourceLocation(__FILE__, __LINE__); \
-                                akra.logger.critical_error(__VA_ARGS__);
-
-    #define critical_error(...) akra.logger.setSourceLocation(__FILE__, __LINE__); \
-                                akra.logger.critical_error(__VA_ARGS__);
-
-    #define assert(...)         akra.logger.setSourceLocation(__FILE__, __LINE__); \
-                                akra.logger.assert(__VA_ARGS__);
-
-
 }
+
+module akra.util {
+    logger = new Logger();
+
+    logger.init();
+    logger.setUnknownCode(UNKNOWN_CODE, UNKONWN_MESSAGE);
+    logger.setLogLevel(ELogLevel.ALL);
+
+    //Default code families
+    
+    logger.registerCodeFamily(0, 100, "SystemCodes");
+    logger.registerCodeFamily(2000, 2199, "ParserSyntaxErrors");
+    logger.registerCodeFamily(2200, 2500, "EffectSyntaxErrors");
+   
+    //Default log routines
+
+    function sourceLocationToString(pLocation: ISourceLocation): string {
+        var sLocation:string = "[" + pLocation.file + ":" + pLocation.line.toString() + "]: ";
+        return sLocation;
+    }
+
+    function logRoutine(pLogEntity: ILoggerEntity): void{
+        var pArgs:any[] = pLogEntity.info;
+        
+        pArgs.unshift(sourceLocationToString(pLogEntity.location));
+        console["log"].apply(console, pArgs);
+    }
+
+    function warningRoutine(pLogEntity: ILoggerEntity): void{
+        var pArgs:any[] = pLogEntity.info; 
+
+        pArgs.unshift("Code: " + pLogEntity.code.toString());
+        pArgs.unshift(sourceLocationToString(pLogEntity.location));
+        
+        console["warning"].apply(console, pArgs);    
+    }
+
+    function errorRoutine(pLogEntity: ILoggerEntity): void{
+        var pArgs:any[] = pLogEntity.info; 
+
+        pArgs.unshift(pLogEntity.message);
+        pArgs.unshift("Error code: " + pLogEntity.code.toString() + ".");
+        pArgs.unshift(sourceLocationToString(pLogEntity.location));
+        
+        console["error"].apply(console, pArgs);    
+    }
+
+    
+    logger.setLogRoutine(logRoutine, ELogLevel.LOG | ELogLevel.INFORMATION);
+    logger.setLogRoutine(warningRoutine, ELogLevel.WARNING);
+    logger.setLogRoutine(errorRoutine, ELogLevel.ERROR | ELogLevel.CRITICAL);
+}
+
 
 #endif

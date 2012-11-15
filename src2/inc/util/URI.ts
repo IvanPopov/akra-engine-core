@@ -28,7 +28,7 @@ module akra.util {
 				this.sHost + (this.nPort ? ':' + this.nPort : "") : "");
 		}
 
-		get scheme(): string {
+		inline get scheme(): string {
 			return this.sScheme;
 		}
 
@@ -40,31 +40,31 @@ module akra.util {
 			return (this.sScheme.substr(0, this.sScheme.lastIndexOf(':')));
 		}
 
-		get userinfo(): string {
+		inline get userinfo(): string {
 			return this.sUserinfo;
 		}
 
-		get host(): string {
+		inline get host(): string {
 			return this.sHost;
 		}
 
-		get port(): uint {
+		inline get port(): uint {
 			return this.nPort;
 		}
 
-		set port(iPort: uint) {
+		inline set port(iPort: uint) {
 			this.nPort = iPort;
 		}
 
-		get path(): string {
+		inline get path(): string {
 			return this.sPath;
 		}
 
-		get query(): string {
+		inline get query(): string {
 			return this.sQuery;
 		}
 
-		get fragment(): string {
+		inline get fragment(): string {
 			return this.sFragment;
 		}
 
@@ -156,10 +156,6 @@ module akra.util {
 		 $
 		 */
 	}
-}
-
-module akra {
-	export var parseURI = (sUri:string): IURI => new util.URI(sUri);
 }
 
 #endif

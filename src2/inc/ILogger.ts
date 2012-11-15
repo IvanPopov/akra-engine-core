@@ -73,9 +73,9 @@ module akra {
         error(eCode: uint, ...pArgs: any[]): void;
         error(...pArgs: any[]): void;
 
-        critical_error(pEntity: ILoggerEntity): void;
-        critical_error(eCode: uint, ...pArgs: any[]): void;
-        critical_error(...pArgs: any[]):void;
+        criticalError(pEntity: ILoggerEntity): void;
+        criticalError(eCode: uint, ...pArgs: any[]): void;
+        criticalError(...pArgs: any[]):void;
 
         assert(bCondition: bool, pEntity: ILoggerEntity): void;
         assert(bCondition: bool, eCode: uint, ...pArgs: any[]): void;

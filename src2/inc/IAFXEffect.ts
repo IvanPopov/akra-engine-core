@@ -66,11 +66,11 @@ module akra {
     }
 
     export interface IAFXEffect {
-        analyze(pTree: IParseTree): bool;
-        setAnalyzedFileName(sFileName: string): void;
-        getStats(): IAFXEffectStats;
+        // analyze(pTree: IParseTree): bool;
+        // setAnalyzedFileName(sFileName: string): void;
+        // getStats(): IAFXEffectStats;
 
-        clear(): void;
+        // clear(): void;
     }
 }
 

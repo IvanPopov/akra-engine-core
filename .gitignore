@@ -30,7 +30,7 @@ src2/*.png
 compiled/*.js
 build/build.bat
 
-node_modules/
+#src/node_modules/
 
 
 #visual
@@ -39,6 +39,8 @@ node_modules/
 #*.sln
 #*.csproj
 *.user
+*.nw
+*.ts.html
 #*.css
 
 src/*.htm

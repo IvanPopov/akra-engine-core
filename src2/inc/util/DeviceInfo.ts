@@ -85,7 +85,7 @@ module akra.util {
 	            if (sExtention.search(csExtension) != -1) {
 	                pExtention = pDevice.getExtension(sExtention);
 	                
-	                trace('extension successfuly loaded: ' + sExtention);
+	                TRACE('extension successfuly loaded: ' + sExtention);
 	            }
 	        }
 

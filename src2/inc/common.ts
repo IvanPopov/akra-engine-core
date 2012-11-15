@@ -1,22 +1,42 @@
 #ifndef COMMON_TS
 #define COMMON_TS
 
+
+#define int number
+#define uint number
+#define float number
+#define double number
+#define long number
+
 #define IFACE(IF) export interface IF {}
 #define readonly  
 #define protected
 #define struct class
 #define const var
 #define DEBUG DEBUG
-#define int number
-#define uint number
-#define float number
-
-#include "base.d.ts"
-#include "util/Logger.ts"
 
 
+#include "ILogger.ts"
 
+#define UNKNOWN_CODE 0
+#define UNKONWN_MESSAGE "Unknown code."
 
+#define LOG(...)            logger.setSourceLocation(__FILE__, __LINE__); \
+                            logger.log(__VA_ARGS__);
+#define TRACE(...)          logger.setSourceLocation(__FILE__, __LINE__); \
+                            logger.log(__VA_ARGS__);
+#define INFO(...)           logger.setSourceLocation(__FILE__, __LINE__); \
+                            logger.info(__VA_ARGS__);
+#define WARNING(...)        logger.setSourceLocation(__FILE__, __LINE__); \
+                            logger.warning(__VA_ARGS__);
+#define ERROR(...)          logger.setSourceLocation(__FILE__, __LINE__); \
+                            logger.error(__VA_ARGS__);
+#define CRITICAL(...)       logger.setSourceLocation(__FILE__, __LINE__); \
+                            logger.critical_error(__VA_ARGS__);
+#define CRITICAL_ERROR(...) logger.setSourceLocation(__FILE__, __LINE__); \
+                            logger.critical_error(__VA_ARGS__);
+#define ASSERT(...)         logger.setSourceLocation(__FILE__, __LINE__); \
+                            logger.assert(__VA_ARGS__);
 
 module akra {
 
@@ -26,7 +46,10 @@ module akra {
     export var DEBUG: bool = false;
 #endif
 
-    export function typeOf(x: any): string {
+    export var logger: ILogger;
+    export var typeOf: (x: any) => string;
+
+    typeOf = function typeOf(x: any): string {
         var s: string = typeof x;
 
         if (s === "object") {
@@ -71,6 +94,7 @@ module akra {
         return s;
     };
 
+
     /** @inline */
     export var isDef = (x: any): bool =>  x !== undefined;
 
@@ -108,12 +132,44 @@ module akra {
         return typeOf(x) == 'array';
     };    
 
+    // if (!isDef(console.assert)) {
+    //     console.assert = function (isOK?: bool, ...pParams: any[]): void {
+    //         if (!isOK) {
+    //             trace('---------------------------');
+    //             trace.apply(null, pParams);
+    //             throw new Error("[assertion failed]");
+    //         }
+    //     }
+    // }
+
+    // export var trace = console.log.bind(console);
+    // export var assert = console.assert.bind(console);
+    // export var warning = console.warn.bind(console);
+    // export var error = console.error.bind(console); 
+
+
 #ifdef DEBUG
 
-#define debug_print(...)    log(__VA_ARGS__)
-#define debug_assert(...)   assert(__VA_ARGS__)
-#define debug_warning(...)  warning(__VA_ARGS__)
-#define debug_error(...)    error(__VA_ARGS__)
+    #define debug_assert(...)     ASSERT(__VA_ARGS__)
+    #define debug_print(...)      LOG(__VA_ARGS__)
+    #define debug_warning(...)    WARNING(__VA_ARGS__)
+    #define debug_error(...)      ERROR(__VA_ARGS__)
+
+    // export var debug_print = (pArg:any, ...pParams: any[]): void => {
+    //         trace.apply(null, arguments);
+    // }
+
+    // export var debug_assert = (isOK: bool, ...pParams: any[]): void => {
+    //         assert.apply(null, arguments);
+    // }
+    
+    // export var debug_warning = (pArg:any, ...pParams: any[]): void => {
+    //         warning.apply(null, arguments);
+    // }
+
+    // export var debug_error = (pArg:any, ...pParams: any[]): void => {
+    //         error.apply(null, arguments);
+    // }
 
 #else
 
@@ -126,7 +182,7 @@ module akra {
 
 
 
-    export function initDevice(pDevice: WebGLRenderingContext):WebGLRenderingContext {
+    function initDevice(pDevice: WebGLRenderingContext):WebGLRenderingContext {
     	return pDevice;
     }
 
@@ -314,37 +370,20 @@ module akra {
             case EDataTypes.FLOAT:
                 return 4;
             default:
-                error('unknown data/image type used');
+                ERROR('unknown data/image type used');
         }
 
         return 0;
-    }
-
-    export function ab2ta(pBuffer: ArrayBuffer, eType: EDataTypes): ArrayBufferView {
-        switch (eType) {
-            case EDataTypes.FLOAT:
-                return new Float32Array(pBuffer);
-            case EDataTypes.SHORT:
-                return new Int16Array(pBuffer);
-            case EDataTypes.UNSIGNED_SHORT:
-                return new Uint16Array(pBuffer);
-            case EDataTypes.INT:
-                return new Int32Array(pBuffer);
-            case EDataTypes.UNSIGNED_INT:
-                return new Uint32Array(pBuffer);
-            case EDataTypes.BYTE:
-                return new Int8Array(pBuffer);
-            default:
-            case EDataTypes.UNSIGNED_BYTE:
-                return new Uint8Array(pBuffer);
-        }
     }
 
     
     export var sid = (): uint => (++ sid._iTotal);
     sid._iTotal = 0;
 
-    export var now = (): uint => ((new Date()).getTime());
+
+    export function now(): uint {
+        return (new Date).getTime();
+    }
 
     //export function 
 
@@ -354,6 +393,8 @@ module akra {
 	(<any>window).requestAnimationFrame = (<any>window).requestAnimationFrame || (<any>window).webkitRequestAnimationFrame ||
 		(<any>window).mozRequestAnimationFrame;
 	(<any>window).WebSocket = (<any>window).WebSocket || (<any>window).MozWebSocket;
+    (<any>window).storageInfo = (<any>window).storageInfo || (<any>window).webkitStorageInfo;
+    Worker.prototype.postMessage = (<any>Worker).prototype.webkitPostMessage || Worker.prototype.postMessage;
 };
 
 #endif

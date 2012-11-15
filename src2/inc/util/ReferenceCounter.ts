@@ -23,17 +23,17 @@ module akra.util {
 
 		/** @inline */
 		destructor(): void {
-			assert(this.nReferenceCount === 0, 'object is used');
+			ASSERT(this.nReferenceCount === 0, 'object is used');
 		}
 
 		release(): uint {
-			assert(this.nReferenceCount > 0, 'object is used');
+			ASSERT(this.nReferenceCount > 0, 'object is used');
 		    this.nReferenceCount--;
 		    return this.nReferenceCount;
 		}
 
 		addRef(): uint {
-			assert(this.nReferenceCount != MIN_INT32, 'reference fail');
+			ASSERT(this.nReferenceCount != MIN_INT32, 'reference fail');
 
     		this.nReferenceCount ++;
 

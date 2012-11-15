@@ -4,16 +4,20 @@
 #include "IEventTable.ts"
 #include "IEventProvider.ts"
 
+#define EMIT_UNICAST(e, s) \
+	(this.getEventTable()).unicast[this._iGuid][#e] s;
+#define EMIT_BROADCAST(e, s) \
+	var _broadcast: IEventSlot[] = (this.getEventTable()).broadcast[this._iGuid][#e]; \
+		for (var i = 0; i < _broadcast.length; ++ i) { \
+			_broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] s: _broadcast[i].listener s; \
+		} 
 #define _EVENT_BC(e, s) \
 	e s: void { \
-		var broadcast: IEventSlot[] = (this.getEventTable()).broadcast[this._iGuid][#e]; \
-		for (var i = 0; i < broadcast.length; ++ i) { \
-			broadcast[i].target? broadcast[i].target[broadcast[i].callback] s: broadcast[i].listener s; \
-		} \
+		EMIT_BROADCAST(e, s)\
 	}
 #define _EVENT_UC(e, s) \
 	e s: void { \
-		(this.getEventTable()).unicast[this._iGuid][#e] s; \
+		EMIT_UNICAST(e, s) \
 	}
 #define CALL(...)  (__VA_ARGS__)
 #define SLOT(call) #call
