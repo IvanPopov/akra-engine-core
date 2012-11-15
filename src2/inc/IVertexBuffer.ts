@@ -28,6 +28,7 @@ module akra {
 		getEmptyVertexData(iCount: uint, pSize: uint, ppVertexDataIn?: IVertexData): IVertexData;
 		
 		freeVertexData(pVertexData: IVertexData): bool;
+		freeVertexData(): bool;
 
 		allocateData(pElements: IVertexElement[], pData: ArrayBufferView): IVertexData;
 		allocateData(pDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;

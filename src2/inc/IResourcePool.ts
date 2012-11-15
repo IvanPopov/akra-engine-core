@@ -9,7 +9,7 @@ module akra {
         IFACE(IResourcePoolItem);
         IFACE(IResourcePoolManager);
         
-        export interface IResourcePool {
+        export interface IResourcePool extends IEventProvider {
                 iFourcc: int;
                 readonly manager: IResourcePoolManager;
 
@@ -48,6 +48,8 @@ module akra {
                 findResource(sName: string): IResourcePoolItem;
                 getResource(iHandle: int): IResourcePoolItem;
                 getResources(): IResourcePoolItem[];
+
+                signal createdResource(pResource: IResourcePoolItem): void;
         }
 }
 

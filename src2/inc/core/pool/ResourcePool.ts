@@ -8,6 +8,7 @@
 #include "IResourceCode.ts"
 #include "IResourcePoolManager.ts"
 #include "util/ReferenceCounter.ts"
+#include "events/events.ts"
 
 module akra.core.pool {
     export class ResourcePool extends util.ReferenceCounter implements IResourcePool {
@@ -129,6 +130,8 @@ module akra.core.pool {
                 pResource.setResourcePool(this);
                 pResource.setResourceHandle(iHandle);
                 pResource.setResourceCode(this.pRegistrationCode);
+
+                this.createdResource(pResource);
 
                 return pResource;
             }
@@ -273,6 +276,10 @@ module akra.core.pool {
                 pPool.release(iHandle);
             }
         }
+
+        BEGIN_EVENT_TABLE(ResourcePool);
+            BROADCAST(createdResource, CALL(pResource));
+        END_EVENT_TABLE();
     }
 }
 

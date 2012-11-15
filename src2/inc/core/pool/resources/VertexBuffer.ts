@@ -100,6 +100,8 @@ module akra.core.pool.resources {
 			var pVertexData: IVertexData = new data.VertexData(this, this._iDataCounter ++, iOffset, iCount, pDecl);
 
 			this._pVertexDataArray.push(pVertexData);
+			this.notifyAltered();
+
 			return pVertexData;
 		}
 
@@ -198,12 +200,14 @@ module akra.core.pool.resources {
 							pVertexData = new data.VertexData(this, this._iDataCounter ++, iAligStart, iCount, pDeclData);
 							this._pVertexDataArray.push(pVertexData);
 							
+							this.notifyAltered();
 							return pVertexData;
 						}
 						else if(arguments.length == 3) {
 							((<any>ppVertexDataIn).constructor).call(ppVertexDataIn, this, iAligStart, iCount, pDeclData);
 							this._pVertexDataArray.push(ppVertexDataIn);
 							
+							this.notifyAltered();
 							return ppVertexDataIn;
 						}
 
@@ -220,7 +224,8 @@ module akra.core.pool.resources {
 		}
 
 		
-		freeVertexData(pVertexData: IVertexData): bool {
+		freeVertexData(): bool;
+		freeVertexData(pVertexData?: IVertexData): bool {
 			if(arguments.length == 0) {
 				for(var i: uint = 0; i < this._pVertexDataArray.length; i ++) {
 					this._pVertexDataArray[Number(i)].destroy();
@@ -232,6 +237,7 @@ module akra.core.pool.resources {
 				for(var i: uint = 0; i < this._pVertexDataArray.length; i ++) {
 					if(this._pVertexDataArray[i] == pVertexData) {
 						this._pVertexDataArray.splice(i, 1);
+						this.notifyAltered();
 						return true;
 					}
 				}
@@ -240,6 +246,9 @@ module akra.core.pool.resources {
 
 				return false;
 			}
+
+			this.notifyAltered();
+			return true;
 		}
 
 

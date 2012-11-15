@@ -4,26 +4,31 @@
 #include "IEventTable.ts"
 #include "IEventProvider.ts"
 
-#define EMIT_UNICAST(e, s) \
-	(this.getEventTable()).unicast[this._iGuid][#e] s;
-#define EMIT_BROADCAST(e, s) \
-	var _broadcast: IEventSlot[] = (this.getEventTable()).broadcast[this._iGuid][#e]; \
+#define EMIT_UNICAST(event, call) \
+	this._pUnicastSlotMap.event call;
+#define EMIT_BROADCAST(event, call) \
+	var _broadcast: IEventSlot[] = this._pBroadcastSlotList.event; \
+	var _recivier: any = this; \
 		for (var i = 0; i < _broadcast.length; ++ i) { \
-			_broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] s: _broadcast[i].listener s; \
+			_broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] call: _broadcast[i].listener call; \
 		} 
-#define _EVENT_BC(e, s) \
-	e s: void { \
-		EMIT_BROADCAST(e, s)\
+#define _EVENT_BC(event, signal, call) \
+	event signal: void { \
+		EMIT_BROADCAST(event, call)\
 	}
-#define _EVENT_UC(e, s) \
-	e s: void { \
-		EMIT_UNICAST(e, s) \
+#define _EVENT_UC(event, signal, call) \
+	event signal: void { \
+		EMIT_UNICAST(event, call) \
 	}
-#define CALL(...)  (__VA_ARGS__)
+
+#define CALL(...)  (__VA_ARGS__), (_recivier, __VA_ARGS__)
+#define VOID  (), (_recivier)
 #define SLOT(call) #call
 #define SIGNAL(call) #call
-#define BROADCAST(event, signal) _EVENT_BC(event, signal);
-#define UNICAST(event, signal) _EVENT_UC(event, signal);
+/**event, signal, slot*/
+#define BROADCAST(...) _EVENT_BC(__VA_ARGS__);
+/**event, signal, slot*/
+#define UNICAST(...) _EVENT_UC(__VA_ARGS__);
 #define EVENT(event) event
 
 #define CONNECT(sender, signal, recivier, slot) recivier.connect(sender, signal, slot)
@@ -31,14 +36,23 @@
 
 #define BEGIN_EVENT_TABLE(object) \
 	private _iGuid: uint = sid(); 																						\
+	private _pUnicastSlotMap: IEventSlotMap = this.getEventTable().findUnicastList(this._iGuid);						\
+	private _pBroadcastSlotList: IEventSlotListMap = this.getEventTable().findBroadcastList(this._iGuid);				\
 	private static _pEvenetTable: IEventTable = new events.EventTable(); 												\
+																														\
 	inline getEventTable(): IEventTable {return object._pEvenetTable; } 												\
 	inline getGuid(): uint {return this._iGuid; } 																		\
 	inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
 		return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType);					\
 	}; 																													\
+	inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
+		return this.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType);					\
+	}																													\
 	inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { 									\
 		return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType);							\
+	}																													\
+	inline unbind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool {									\
+		return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType);							\
 	}
 #define END_EVENT_TABLE()
 
@@ -50,18 +64,41 @@ module akra.events {
 
 		addDestination(iGuid: int, sSignal: string, pTarget: IEventProvider, sSlot: string, eType: EEventTypes = EEventTypes.BROADCAST): bool {
 			if (eType === EEventTypes.BROADCAST) {
-				this.findBroadcastList(iGuid, sSignal).push({target: pTarget, callback: sSlot, listener: null});
+				this.findBroadcastSignalMap(iGuid, sSignal).push({target: pTarget, callback: sSlot, listener: null});
+				return true;
 			}
 			else {
 				this.unicast[iGuid] = this.unicast[iGuid] || {};
-				this.unicast[iGuid][sSignal] = {target: pTarget, callback: sSlot, listener: null};
+				if (!isDef(this.unicast[iGuid][sSignal])) {
+					this.unicast[iGuid][sSignal] = {target: pTarget, callback: sSlot, listener: null};
+					return true;
+				}
 			}
-			return true;
+			return false;
+		}
+
+		removeDestination(iGuid: int, sSignal: string, pTarget: IEventProvider, sSlot: string, eType: EEventTypes = EEventTypes.BROADCAST): bool {
+			if (eType === EEventTypes.BROADCAST) {
+				var pList: IEventSlot[] = this.findBroadcastSignalMap(iGuid, sSignal);
+				for (var i: int = 0; i < pList.length; ++ i) {
+					if (pList[i].target === pTarget && pList[i].callback === sSlot) {
+						pList.splice(i, 1);
+						return true;
+					}
+				}
+			}
+			else {
+				if (this.unicast[iGuid] && this.unicast[iGuid][sSignal]) {
+					delete this.unicast[iGuid][sSignal];
+					return true;
+				}
+			}
+			return false;
 		}
 
 		addListener(iGuid: int, sSignal: string, fnListener: Function, eType: EEventTypes = EEventTypes.BROADCAST): bool {
 			if (eType === EEventTypes.BROADCAST) {
-				this.findBroadcastList(iGuid, sSignal).push({target: null, callback: null, listener: fnListener});
+				this.findBroadcastSignalMap(iGuid, sSignal).push({target: null, callback: null, listener: fnListener});
 			}
 			else {
 				this.unicast[iGuid] = this.unicast[iGuid] || {};
@@ -70,7 +107,36 @@ module akra.events {
 			return true;
 		}
 
-		private findBroadcastList(iGuid: int, sSignal: string): IEventSlot[] {
+		removeListener(iGuid: int, sSignal: string, fnListener: Function, eType: EEventTypes = EEventTypes.BROADCAST): bool {
+			if (eType === EEventTypes.BROADCAST) {
+				var pList: IEventSlot[] = this.findBroadcastSignalMap(iGuid, sSignal);
+				for (var i: int = 0; i < pList.length; ++ i) {
+					if (pList[i].listener === fnListener) {
+						pList.splice(i, 1);
+						return true;
+					}
+				}
+			}
+			else {
+				if (this.unicast[iGuid] && this.unicast[iGuid][sSignal]) {
+					delete this.unicast[iGuid][sSignal];
+					return true;
+				}
+			}
+			return false;
+		}
+
+		findBroadcastList(iGuid: int): IEventSlotListMap {
+			this.broadcast[iGuid] = this.broadcast[iGuid] || {};
+			return this.broadcast[iGuid];
+		}
+
+		findUnicastList(iGuid: int): IEventSlotMap {
+			this.unicast[iGuid] = this.unicast[iGuid] || {};
+			return this.unicast[iGuid];
+		}
+
+		private findBroadcastSignalMap(iGuid: int, sSignal: string): IEventSlot[] {
 			this.broadcast[iGuid] = this.broadcast[iGuid] || {};
 			this.broadcast[iGuid][sSignal] = this.broadcast[iGuid][sSignal] || [];
 			return this.broadcast[iGuid][sSignal];

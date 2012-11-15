@@ -207,7 +207,7 @@ module akra.core.pool {
         monitorInitResources(fnMonitor: IResourceWatcherFunc): void {
             var me: IResourcePoolManager = this;
             
-            this.pWaiterResource.setStateWatcher(EResourceItemEvents.k_Loaded, function () {
+            this.pWaiterResource.setStateWatcher(EResourceItemEvents.LOADED, function () {
                 fnMonitor.apply(me, arguments);
             });
         }
@@ -219,7 +219,7 @@ module akra.core.pool {
             var pWaiterResouse: IResourcePoolItem = this.pWaiterResource;
 
             var fnResCallback = function (iFlagBit?: int, iResourceFlags?: int, isSetting?: bool) {
-                if (iFlagBit == <number>EResourceItemEvents.k_Loaded && isSetting) {
+                if (iFlagBit == <number>EResourceItemEvents.LOADED && isSetting) {
                     fnCallback();
                 }
             };
@@ -236,7 +236,7 @@ module akra.core.pool {
 
                         for (var i: int = 0; i < pResources.length; ++ i) {
                             pResource = pResources[i];
-                            pWaiterResouse.sync(pResource, EResourceItemEvents.k_Loaded);
+                            pWaiterResouse.sync(pResource, EResourceItemEvents.LOADED);
                         }
                     }
 

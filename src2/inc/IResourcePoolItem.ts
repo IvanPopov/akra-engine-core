@@ -18,14 +18,14 @@ module akra {
      **/
     export enum EResourceItemEvents{
     	//ресур создан
-		k_Created, 			
+		CREATED, 			
 		//ресур заполнен данным и готов к использованию
-		k_Loaded, 			
+		LOADED, 			
 		//ресур в данный момент отключен для использования
-		k_Disabled, 
+		DISABLED, 
 		//ресур был изменен после загрузки		
-		k_Altered, 			
-		k_TotalResourceFlags
+		ALTERED, 			
+		TOTALRESOURCEFLAGS
 	};
 
 	export interface IResourcePoolItem extends IReferenceCounter, IEventProvider {
@@ -68,8 +68,11 @@ module akra {
 		setStateWatcher(eEvent: EResourceItemEvents, fnWatcher: IResourceWatcherFunc): void;
 
 		/** sinchronize events with other resourse */
+		//sync(pResourceItem: IResourcePoolItem, sSignal: string, sSlot?: string): bool;
 		sync(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool;
-		async(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool;
+
+		//unsync(pResourceItem: IResourcePoolItem, sSignal: string, sSlot?: string): bool;
+		unsync(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool;
 
 		/** Установка состояния в созданный */
 		notifyCreated(): void;

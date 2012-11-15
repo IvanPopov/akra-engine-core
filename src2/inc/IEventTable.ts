@@ -8,18 +8,21 @@ module akra {
 		listener: Function;
 	}
 
-	export interface IEventSlotMap {
+	export interface IEventSlotListMap {
 		[index: string]: IEventSlot[];
+	}
+	export interface IEventSlotMap {
+		[index: string]: IEventSlot;
 	}
 
 	export interface IEventSlotTable {
-		[index: number]: IEventSlotMap;
-		[index: string]: IEventSlotMap;
+		[index: number]: IEventSlotListMap;
+		[index: string]: IEventSlotListMap;
 	}
 
 	export interface IEventSlotList {
-		[index: number]: {[index: string]: IEventSlot;};
-		[index: string]: {[index: string]: IEventSlot;};
+		[index: number]: IEventSlotMap;
+		[index: string]: IEventSlotMap;
 	}
 
 	export interface IEventTable {
@@ -27,7 +30,12 @@ module akra {
 		unicast: IEventSlotList;
 
 		addDestination(iGuid: int, sSignal: string, pTarget: IEventProvider, sSlot: string, eType?: EEventTypes): bool;
+		removeDestination(iGuid: int, sSignal: string, pTarget: IEventProvider, sSlot: string, eType?: EEventTypes): bool;
 		addListener(iGuid: int, sSignal: string, fnListener: Function, eType?: EEventTypes): bool;
+		removeListener(iGuid: int, sSignal: string, fnListener: Function, eType?: EEventTypes): bool;
+
+		findUnicastList(iGuid: int): IEventSlotMap;
+		findBroadcastList(iGuid: int): IEventSlotListMap;
 	}
 }
 

@@ -127,17 +127,17 @@ module akra {
     	//// frendly for EffectResource
 
     	/** * Регистрация компонента эффекта. **/
-    	registerComponent(pComponent: IAFXComponent): bool;
+    	//registerComponent(pComponent: IAFXComponent): bool;
     	/** Активация компонента для эффект ресурса. */
-    	activateComponent(pEffectResource: IAFXEffect, iComponentHandle: int, nShift?: uint): bool;
+    	//activateComponent(pEffectResource: IAFXEffect, iComponentHandle: int, nShift?: uint): bool;
     	/** Деактивация компонента для эффект ресурса. */
-    	deactivateComponent(pEffectResource: IAFXEffect, iComponentHandle: int, nShift?: uint): bool;
+    	//deactivateComponent(pEffectResource: IAFXEffect, iComponentHandle: int, nShift?: uint): bool;
     	/** Get effect components number */
     	getComponentCount(pEffectResource: IAFXEffect): uint;
 
     	//// frendly for Snapshot
-    	push(pRenderObject: IRenderableObject, pSnapshot: IRenderSnapshot): bool;
-    	pop(): bool;
+    	//push(pRenderObject: IRenderableObject, pSnapshot: IRenderSnapshot): bool;
+    	//pop(): bool;
 
     	activatePass(pSnapshot: IRenderSnapshot, iPass: int): bool;
     	deactivatePass(pSnapshot: IRenderSnapshot): bool;
