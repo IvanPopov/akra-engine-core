@@ -390,6 +390,13 @@ module akra {
 	export var Mat3 = math.Mat3;
 	export var Mat4 = math.Mat4;
 	export var Quat4 = math.Quat4;
+
+	export var vec2 = math.vec2;
+	export var vec3 = math.vec3;
+	export var vec4 = math.vec4;
+	export var quat4 = math.quat4;
+	export var mat3 = math.mat3;
+	export var mat4 = math.mat4;
 }
 
 #endif

@@ -7,8 +7,8 @@ module akra {
 
 	export interface ICircle {
 
-		fRadius: float;
-		v2fCenter: IVec2;
+		radius: float;
+		center: IVec2;
 
 		set(): ICircle;
 		set(pCircle: ICircle): ICircle;

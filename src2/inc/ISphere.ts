@@ -8,8 +8,8 @@ module akra {
 
 	export interface ISphere {
 
-		fRadius: float;
-		v3fCenter: IVec3;
+		center: IVec3;
+		radius: float;
 
 		circle: ICircle;
 		z: float;

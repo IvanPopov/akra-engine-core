@@ -7,8 +7,8 @@
 
 module akra.geometry{
 	export class Sphere implements ISphere{
-		v3fCenter: IVec3;
-		fRadius: float;
+		center: IVec3;
+		radius: float;
 
 		constructor();
 		constructor(pSphere: ISphere);
@@ -21,44 +21,44 @@ module akra.geometry{
 				case 1:
 					var pSphere = arguments[0];
 
-					this.v3fCenter = new Vec3(pSphere.v3fCenter);
-					this.fRadius = pSphere.fRadius;
+					this.center = new Vec3(pSphere.v3fCenter);
+					this.radius = pSphere.fRadius;
 					break;
 				case 2:
 					var v3fCenter: IVec3 = arguments[0];
 					var fRadius: float = arguments[1];
 
-					this.v3fCenter = new Vec3(v3fCenter);
-					this.fRadius = fRadius;
+					this.center = new Vec3(v3fCenter);
+					this.radius = fRadius;
 					break;
 				case 4:
-					this.v3fCenter = new Vec3(arguments[0], arguments[1], arguments[2]);
-					this.fRadius = arguments[3];
+					this.center = new Vec3(arguments[0], arguments[1], arguments[2]);
+					this.radius = arguments[3];
 					break;
 				default:
-					this.v3fCenter = new Vec3();
-					this.fRadius = 0.;
+					this.center = new Vec3();
+					this.radius = 0.;
 					break;
 			}
 		};
 
 		get circle(): ICircle{
-			var v3fCenter: IVec3 = this.v3fCenter;
-			return new Circle(v3fCenter.x, v3fCenter.y, this.fRadius);
+			var v3fCenter: IVec3 = this.center;
+			return new Circle(v3fCenter.x, v3fCenter.y, this.radius);
 		};
 		set circle(pCircle: ICircle){
-			var v3fCenter: IVec3 = this.v3fCenter;
-			var v2fCircleCenter: IVec2 = pCircle.v2fCenter;
+			var v3fCenter: IVec3 = this.center;
+			var v2fCircleCenter: IVec2 = pCircle.center;
 			v3fCenter.x = v2fCircleCenter.x;
 			v3fCenter.y = v2fCircleCenter.y;
-			this.fRadius = pCircle.fRadius;
+			this.radius = pCircle.radius;
 		};
 
 		get z(): float{
-			return this.v3fCenter.z;
+			return this.center.z;
 		};
 		set z(fZ: float){
-			this.v3fCenter.z = fZ;
+			this.center.z = fZ;
 		};
 
 		set(): ISphere;
@@ -72,23 +72,23 @@ module akra.geometry{
 				case 1:
 					var pSphere = arguments[0];
 
-					this.v3fCenter.set(pSphere.v3fCenter);
-					this.fRadius = pSphere.fRadius;
+					this.center.set(pSphere.center);
+					this.radius = pSphere.radius;
 					break;
 				case 2:
 					var v3fCenter: IVec3 = arguments[0];
 					var fRadius: float = arguments[1];
 
-					this.v3fCenter.set(v3fCenter);
-					this.fRadius = fRadius;
+					this.center.set(v3fCenter);
+					this.radius = fRadius;
 					break;
 				case 4:
-					this.v3fCenter.set(arguments[0], arguments[1], arguments[2]);
-					this.fRadius = arguments[3];
+					this.center.set(arguments[0], arguments[1], arguments[2]);
+					this.radius = arguments[3];
 					break;
 				default:
-					this.v3fCenter.set(0.);
-					this.fRadius = 0.;
+					this.center.set(0.);
+					this.radius = 0.;
 					break;
 			}
 
@@ -96,36 +96,36 @@ module akra.geometry{
 		};
 
 		inline clear(): ISphere{
-			this.v3fCenter.clear();
-			this.fRadius = 0.;
+			this.center.clear();
+			this.radius = 0.;
 
 			return this;
 		};
 
 		inline isEqual(pSphere: ISphere): bool{
-			return this.v3fCenter.isEqual(pSphere.v3fCenter) && (this.fRadius == pSphere.fRadius);
+			return this.center.isEqual(pSphere.center) && (this.radius == pSphere.radius);
 		};
 
 		inline isClear(): bool{
-			return this.v3fCenter.isClear() && (this.fRadius === 0.);	
+			return this.center.isClear() && (this.radius === 0.);	
 		};
 
 		inline isValid(): bool{
-			return (this.fRadius >= 0.);
+			return (this.radius >= 0.);
 		};
 
 		inline offset(v3fOffset: IVec3): ISphere{
-			this.v3fCenter.add(v3fOffset);
+			this.center.add(v3fOffset);
 			return this;
 		};
 
 		inline expand(fInc: float): ISphere{
-			this.fRadius += fInc;
+			this.radius += fInc;
 			return this;
 		};
 
 		inline normalize(): ISphere{
-			this.fRadius = math.abs(this.fRadius);
+			this.radius = math.abs(this.radius);
 			return this;
 		};
 	};

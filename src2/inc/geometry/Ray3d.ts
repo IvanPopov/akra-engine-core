@@ -6,12 +6,12 @@
 
 module akra.geometry{
 	export struct Ray3d implements IRay3d{
-		v3fPoint: IVec3;
-		v3fNormal: IVec3;
+		point: IVec3;
+		normal: IVec3;
 
 		constructor(){
-			this.v3fPoint = new Vec3();
-			this.v3fNormal = new Vec3();
+			this.point = new Vec3();
+			this.normal = new Vec3();
 		};
 	};
 }

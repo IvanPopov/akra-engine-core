@@ -6,8 +6,8 @@ module akra {
 	IFACE(IRay3d);
 
 	export interface ISegment3d{
-		pRay: IRay3d;
-		fDistance: float;
+		ray: IRay3d;
+		distance: float;
 
 		point: IVec3;
 		normal: IVec3;

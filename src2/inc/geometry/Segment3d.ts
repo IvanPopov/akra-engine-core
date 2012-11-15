@@ -6,26 +6,26 @@
 
 module akra.geometry{
 	export class Segment3d implements ISegment3d{
-		pRay: IRay3d;
-		fDistance: float;
+		ray: IRay3d;
+		distance: float;
 
 		constructor(){
-			this.pRay = new Ray3d();
-			this.fDistance = 0.;
+			this.ray = new Ray3d();
+			this.distance = 0.;
 		};
 
 		get point(): IVec3{
-			return this.pRay.v3fPoint;
+			return this.ray.point;
 		};
 		set point(v3fPoint: IVec3){
-			this.pRay.v3fPoint.set(v3fPoint);
+			this.ray.point.set(v3fPoint);
 		};
 
 		get normal(): IVec3{
-			return this.pRay.v3fNormal;
+			return this.ray.normal;
 		};
 		set normal(v3fNormal: IVec3){
-			this.pRay.v3fNormal.set(v3fNormal);
+			this.ray.normal.set(v3fNormal);
 		};
 	};
 }

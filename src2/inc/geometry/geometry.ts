@@ -10,4 +10,7 @@
 #include "Circle.ts"
 #include "Sphere.ts"
 
+#include "Plane2d.ts"
+#include "Plane3d.ts"
+
 #endif

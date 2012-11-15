@@ -6,8 +6,8 @@ module akra {
 	IFACE(IRay2d);
 
 	export interface ISegment2d{
-		pRay: IRay2d;
-		fDistance: float;
+		ray: IRay2d;
+		distance: float;
 
 		point: IVec2;
 		normal: IVec2;

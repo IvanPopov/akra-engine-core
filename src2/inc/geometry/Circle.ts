@@ -6,8 +6,8 @@
 
 module akra.geometry{
 	export class Circle implements ICircle{
-		v2fCenter: IVec2;
-		fRadius: float;
+		center: IVec2;
+		radius: float;
 
 		constructor();
 		constructor(pCircle: ICircle);
@@ -19,23 +19,23 @@ module akra.geometry{
 			switch(nArgumentsLength){
 				case 1:
 					var pCircle: ICircle = arguments[0];
-					this.v2fCenter = new Vec2(pCircle.v2fCenter);
-					this.fRadius = pCircle.fRadius;
+					this.center = new Vec2(pCircle.center);
+					this.radius = pCircle.radius;
 					break;
 				case 2:
 					var v2fCenter: IVec2 = arguments[0];
 					var fRadius: float = arguments[1];
 
-					this.v2fCenter = new Vec2(v2fCenter);
-					this.fRadius = fRadius;
+					this.center = new Vec2(v2fCenter);
+					this.radius = fRadius;
 					break;
 				case 3:
-					this.v2fCenter = new Vec2(arguments[0], arguments[1]);
-					this.fRadius = arguments[2];
+					this.center = new Vec2(arguments[0], arguments[1]);
+					this.radius = arguments[2];
 					break;
 				default:
-					this.v2fCenter = new Vec2();
-					this.fRadius = 0.;
+					this.center = new Vec2();
+					this.radius = 0.;
 					break;
 			}
 		};
@@ -50,59 +50,59 @@ module akra.geometry{
 			switch(nArgumentsLength){
 				case 1:
 					var pCircle: ICircle = arguments[0];
-					this.v2fCenter.set(pCircle.v2fCenter);
-					this.fRadius = pCircle.fRadius;
+					this.center.set(pCircle.center);
+					this.radius = pCircle.radius;
 					break;
 				case 2:
 					var v2fCenter: IVec2 = arguments[0];
 					var fRadius: float = arguments[1];
 
-					this.v2fCenter.set(v2fCenter);
-					this.fRadius = fRadius;
+					this.center.set(v2fCenter);
+					this.radius = fRadius;
 					break;
 				case 3:
-					this.v2fCenter.set(arguments[0], arguments[1]);
-					this.fRadius = arguments[2];
+					this.center.set(arguments[0], arguments[1]);
+					this.radius = arguments[2];
 					break;
 				default:
-					this.v2fCenter.set(0.);
-					this.fRadius = 0.;
+					this.center.set(0.);
+					this.radius = 0.;
 			}
 
 			return this;
 		};
 
 		inline clear(): ICircle{
-			this.v2fCenter.clear();
-			this.fRadius = 0.;
+			this.center.clear();
+			this.radius = 0.;
 
 			return this;
 		};
 
 		inline isEqual(pCircle: ICircle): bool{
-			return this.v2fCenter.isEqual(pCircle.v2fCenter) && (this.fRadius == pCircle.fRadius);
+			return this.center.isEqual(pCircle.center) && (this.radius == pCircle.radius);
 		};
 
 		inline isClear(): bool{
-			return this.v2fCenter.isClear() && (this.fRadius === 0.);
+			return this.center.isClear() && (this.radius === 0.);
 		};
 
 		inline isValid(): bool{
-			return (this.fRadius >= 0.);
+			return (this.radius >= 0.);
 		};
 
 		inline offset(v2fOffset: IVec2): ICircle{
-			this.v2fCenter.add(v2fOffset);
+			this.center.add(v2fOffset);
 			return this;
 		};
 
 		inline expand(fInc: float): ICircle{
-			this.fRadius += fInc;
+			this.radius += fInc;
 			return this;
 		};
 
 		inline normalize(): ICircle{
-			this.fRadius = math.abs(this.fRadius);
+			this.radius = math.abs(this.radius);
 			return this;
 		};
 	};

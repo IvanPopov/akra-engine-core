@@ -6,8 +6,8 @@ module akra {
 	IFACE(IVec2);
 
 	export interface IRay2d {
-		v2fPoint: IVec2;
-		v2fNormal: IVec2;
+		point: IVec2;
+		normal: IVec2;
 	};
 }
 
