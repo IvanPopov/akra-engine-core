@@ -4,14 +4,6 @@
 #include "IBuffer.ts"
 
 module akra {
-	export enum EGPUBufferFlags {
-		MANY_UPDATES = 0,
-		MANY_DRAWS,
-		READABLE,
-		RAM_BACKUP,
-		SOFTWARE,
-		ALIGNMENT
-	}
 
 	export interface IGPUBuffer extends IBuffer {
 		clone(pSrc: IGPUBuffer): bool;
