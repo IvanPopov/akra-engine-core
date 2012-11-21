@@ -15,7 +15,7 @@ module akra.util {
 			this.addAdditionalFunction("includeCode", this._includeCode);
 		}
 
-		protected defaultInit(): void{
+		protected defaultInit(): void {
 			super.defaultInit();
 
 			this.addTypeId("float2");
@@ -53,7 +53,7 @@ module akra.util {
 
 	}	
 
-	export var parser = new EffectParser();
+	export var parser: EffectParser = new EffectParser();
 
 	var sGrammar: string = "S : Program\n\
 Program : --AN\n\

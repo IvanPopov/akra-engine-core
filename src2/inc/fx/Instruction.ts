@@ -51,6 +51,7 @@ module akra.fx {
 		}
 
 		constructor(){
+			this._pParentInstruction = null;
 			this._sOperatorName = null;
 			this._pInstructionList = null;
 			this._pStateMap = null;
@@ -59,9 +60,12 @@ module akra.fx {
 			this._isStateChange = false;
 		}
 
-		inline push(pInstruction: IAFXInstruction): void {
+		inline push(pInstruction: IAFXInstruction, isSetParent?: bool = false): void {
 			if(!isNull(this._pInstructionList)){
 				this._pInstructionList.push(pInstruction);
+			}
+			if(isSetParent){
+				pInstruction.parent = this;
 			}
 		}
 
@@ -98,7 +102,7 @@ module akra.fx {
 		realName: string;
 		isUsed: bool;
 	}
-	export class IdInstruction extends Instruction {
+	export class IdInstruction extends Instruction implements IAFXIdInstruction {
 		protected _pStateMap: IdInstructionStates;
 
 		/**
@@ -110,6 +114,14 @@ module akra.fx {
 									name: "",
 									realName: "",
 									isUsed: false};
+		}
+
+		inline getName(): string{
+			return this._pStateMap.name;
+		}
+
+		inline getRealName(): string{
+			return this._pStateMap.realName;
 		}
 
 		inline setName(sName: string): void{
@@ -199,7 +211,7 @@ module akra.fx {
 	export interface KeywordInstructionStates extends IAFXInstructionStateMap{
 		value: string;
 	}
-	export class KeywordInstruction extends Instruction {
+	export class KeywordInstruction extends Instruction implements IAFXKeywordInstruction {
 		protected _pStateMap: KeywordInstructionStates;
 
 		/**
@@ -220,10 +232,10 @@ module akra.fx {
 	}
 
 
-	export class StructDeclInstruction extends Instruction {
+	export class StructDeclInstruction extends Instruction implements IAFXStructDeclInstruction {
 		/**
 		 * Represent struct typeName {[fields]};
-		 * EMPTY_OPERATOR IdInstruction StructInstruction
+		 * EMPTY_OPERATOR IdInstruction StructFieldsInstruction
 		 */
 		constructor(){
 			super();
@@ -242,7 +254,7 @@ module akra.fx {
 		}
 	}
 
-	export class StructInstruction extends Instruction {
+	export class StructFieldsInstruction extends Instruction {
 		/**
 		 * Represent {[fields]};
 		 * EMPTY_OPERATOR VarDeclInstruction ... VarDeclInstruction
@@ -268,12 +280,13 @@ module akra.fx {
 		}
 	}
 
-	export class VarDeclInstruction extends Instruction {
+	export class VarDeclInstruction extends Instruction implements IAFXVariableDeclInstruction {
 		/**
 		 * Represent type var_name [= init_expr]
 		 * EMPTY_OPERATOR TypeInstruction VariableInitInstruction
 		 */
 	}
+
 
 	export class TypeInstruction extends Instruction {
 		/**

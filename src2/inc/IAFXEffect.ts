@@ -2,11 +2,13 @@
 #define IAFXEFFECT_TS
 
 #include "IParser.ts"
+#include "IAFXInstruction.ts"
 
 module akra {
 
     export interface IAFXObject{
-        name: string;
+        getName(): string;
+        getId(): IAFXIdInstruction;
     }
 
     export interface IAFXVariable extends IAFXObject {
@@ -25,32 +27,27 @@ module akra {
         // isForeign(): bool;
         // isShared(): bool;
         // isConst(): bool;
+        setName(sName: string): void;
+        setType(pType: IAFXComplexType): void;
+        initializeFromInstruction(pInstruction: IAFXVariableDeclInstruction): void;
+
     }
 
-    export interface IAFXUsages {
+    export interface IAFXType extends IAFXObject {
+        isBase(): bool;
+        initializeFromStruct(pStruct: IAFXStructDeclInstruction): bool;
     }
 
-    export interface IAFXType extends IAFXObject  {
-        // hash: string;
-        // name: string;
+    export interface IAFXComplexType extends IAFXObject {
+        getUsages(): IAFXKeywordInstruction[];
+        getType(): IAFXType;
 
-        // isBase(): bool;
-    }
-
-    export interface IAFXComplexType extends IAFXType {
-        // usages: IAFXUsages;
+        setType(pType: IAFXType): void;
+        setUsage(pUsage: IAFXKeywordInstruction): void;
     }
 
     export interface IAFXFunction extends IAFXObject {
-        hash: string;
-    }
-
-    export interface IAFXStruct extends IAFXObject {
-    
-    }
-
-    export interface IAFXStructField extends IAFXObject {
-        // padding: uint;
+        getHash(): string;
     }
     
     export interface IAFXPass extends IAFXObject {
@@ -66,11 +63,11 @@ module akra {
     }
 
     export interface IAFXEffect {
-        // analyze(pTree: IParseTree): bool;
-        // setAnalyzedFileName(sFileName: string): void;
-        // getStats(): IAFXEffectStats;
+        analyze(pTree: IParseTree): bool;
+        setAnalyzedFileName(sFileName: string): void;
+        getStats(): IAFXEffectStats;
 
-        // clear(): void;
+        clear(): void;
     }
 }
 

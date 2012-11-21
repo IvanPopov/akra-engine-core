@@ -27,7 +27,7 @@ module akra {
     	 */
     	stateMap: IAFXInstructionStateMap;
 
-    	push(pInstruction: IAFXInstruction): void;
+    	push(pInstruction: IAFXInstruction, isSetParent?: bool): void;
 
     	changeState(sStateName: string, sValue: string): void;
     	changeState(iStateIndex: int, sValue: string): void;
@@ -37,6 +37,26 @@ module akra {
 
     	addRoutine(fnRoutine: IAFXInstructionRoutine, iPriority?: uint);
     	toString(): string;
+    }
+
+    export interface IAFXIdInstruction extends IAFXInstruction {
+        getName(): string;
+        getRealName(): string;
+
+        setName(sName: string): void;
+        setRealName(sName: string): void;
+    }
+
+    export interface IAFXKeywordInstruction extends IAFXInstruction {
+        setValue(sValue: string): void;
+    }
+
+    export interface IAFXStructDeclInstruction extends IAFXInstruction {
+
+    }
+
+    export interface IAFXVariableDeclInstruction extends IAFXInstruction {
+        
     }
 }
 

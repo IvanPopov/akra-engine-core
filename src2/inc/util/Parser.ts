@@ -1520,27 +1520,27 @@ module akra.util {
 
         printStates(isBaseOnly?: bool = true): void {
             if(!isDef(this._pStateList)){
-                log("It`s impossible to print states. You must init parser in debug-mode");
+                LOG("It`s impossible to print states. You must init parser in debug-mode");
                 return;
             }
             var sMsg: string = "\n" + this.statesToString(isBaseOnly);
-            log(sMsg);
+            LOG(sMsg);
         }
 
         printState(iStateIndex: uint, isBaseOnly?: bool = true): void {
             if(!isDef(this._pStateList)){
-                log("It`s impossible to print states. You must init parser in debug-mode");
+                LOG("It`s impossible to print states. You must init parser in debug-mode");
                 return;
             }
             
             var pState:IState = this._pStateList[iStateIndex];
             if(!isDef(pState)){
-                log("Can not print stete with index: " + iStateIndex.toString());
+                LOG("Can not print stete with index: " + iStateIndex.toString());
                 return;
             }
             
             var sMsg: string = "\n" + pState.toString(isBaseOnly);
-            log(sMsg);
+            LOG(sMsg);
         }
 
         getGrammarSymbols(): StringMap{

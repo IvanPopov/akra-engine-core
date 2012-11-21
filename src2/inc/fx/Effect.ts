@@ -7,6 +7,8 @@
 #include "common.ts"
 #include "ILogger.ts"
 #include "fx/Instruction.ts"
+#include "fx/Variable.ts"
+#include "fx/Type.ts"
 
 module akra.fx {
 
@@ -223,7 +225,7 @@ module akra.fx {
 				pVariableMap = pScope.variableMap = <IAFXVariableMap>{};
 			}
 
-			var sVariableName: string = pVariable.name;
+			var sVariableName: string = pVariable.getName();
 
 			if(this.hasVariableInScope(sVariableName, iScope)){
 				return false;
@@ -246,7 +248,7 @@ module akra.fx {
 				pTypeMap = pScope.typeMap = <IAFXTypeMap>{};
 			}
 
-			var sTypeName: string = pType.name;
+			var sTypeName: string = pType.getName();
 
 			if(this.hasTypeInScope(sTypeName, iScope)){
 				return false;
@@ -269,7 +271,7 @@ module akra.fx {
 				pFunctionMap = pScope.functionMap = <IAFXFunctionMap>{};
 			}
 
-			var sFuncHash: string = pFunction.hash;
+			var sFuncHash: string = pFunction.getHash();
 
 			if(this.hasFunctionInScope(sFuncHash, iScope)){
 				return false;
@@ -508,9 +510,9 @@ module akra.fx {
 			this._pCurrentInstruction = this._pCurrentInstruction.parent;
 		}
 
-		private inline pushCommand(pInstruction: IAFXInstruction): void {
+		private inline pushCommand(pInstruction: IAFXInstruction, isSetParent?: bool = false): void {
 			if(!isNull(this._pCurrentInstruction)){
-				this._pCurrentInstruction.push(pInstruction);
+				this._pCurrentInstruction.push(pInstruction, isSetParent);
 			}
 		}
 
@@ -520,67 +522,207 @@ module akra.fx {
 			}	
 		}
 
+		private addVariable(pVariable: IAFXVariable): void {
+
+		}
+
+		private addVariableDecl(pVariable: IAFXVariable): void {
+
+        }
+
+
 		private addType(pType: IAFXType): void {
 			if(this.isSystemType(pType)){
-				error(EFFECT_REDEFINE_SYSTEM_TYPE, {typeName: pType.name});
+				this._error(EFFECT_REDEFINE_SYSTEM_TYPE, {typeName: pType.getName()});
 			}
 
 			var isTypeAdded: bool = this._pEffectScope.addType(pType);
 
 			if(!isTypeAdded){
-				error(EFFECT_REDEFINE_TYPE, {typeName: pType.name});
+				this._error(EFFECT_REDEFINE_TYPE, {typeName: pType.getName()});
 			}
 		}
 
-		private 
+		private addTypeDecl(pType: IAFXType): void {
+			//check
+			this.addType(pType);
+		}
 
-		private analyzeTypes(): void {
+		private identifyType(pNode: IParseNode): IAFXType {
+			return null;
+		}
+
+		private identifyUsage(pNode: IParseNode): IAFXKeywordInstruction;
+		private identifyUsage(sUsage: string): IAFXKeywordInstruction;
+		private identifyUsage(): IAFXKeywordInstruction {
+			return null;
+		}
+
+		private analyzeDecls(): void {
 			var pChildren: IParseNode[] = this._pParseTree.root.children;
-			var i: uint;
+			var i: uint;	
 
-			for(i = pChildren.length - 1; i >= 0; i--) {
-				if(pChildren[i].name === Effect._pGrammarSymbols["TypeDecl"]){
-					this.analyzeTypeDecl(pChildren[i]);
-				}
+			for(i = pChildren.length - 1; i >=0; i--){
+				this.analyzeDecl(pChildren[i]);
 			}
 		}
 
-		private preAnalyzeFunctions(): void {
-
+		private analyzeDecl(pNode: IParseNode): void {
+			switch (pNode.name) {
+		        case "VariableDecl":
+		            this.analyzeVariableDecl(pNode);
+		            break;
+		        case "TypeDecl":
+		            this.analyzeTypeDecl(pNode);
+		            break;
+		    //     case "FunctionDecl":
+		    //         this.analyzeFunctionDecl(pNode);
+		    //         break;
+		    //     case "VarStructDecl":
+		    //         this.analyzeVarStructDecl(pNode);
+		    //         break;
+		    //     case "TechniqueDecl":
+		    //         this.analyzeTechniqueDecl(pNode);
+		    //         break;
+		    //     case "UseDecl":
+		    //         this.analyzeUseDecl(pNode);
+		    //         break;
+		    //     case "ProvideDecl":
+		    //         this.analyzeProvideDecl(pNode);
+		    //         break;
+		    //     case "ImportDecl":
+		    //         this.analyzeImportDecl(pNode);
+		    //         break;
+		    }	
 		}
 
-		private preAnalyzeVariables(): void {
+		private analyzeVariableDecl(pNode: IParseNode): void {
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pVariableType: IAFXComplexType = null;
+        	var pVariable: IAFXVariable = null;
+        	var i: uint = 0;
 
-		}
+        	this.analyzeUsageType(pChildren[pChildren.length - 1], pVariableType);
 
-		private preAnalyzeTechniques(): void {
+        	for(i = pChildren.length - 2; i >= 1; i--){
+        		if(pChildren[i].name === "Variable") {
+        			pVariable = new Variable();
+        			pVariable.setType(pVariableType);
 
-		}
+        			this.analyzeVariable(pChildren[i], pVariable);
+        			this.addVariableDecl(pVariable);
+        		}
+        	}
+        }
+
+        private analyzeUsageType(pNode: IParseNode, pType: IAFXComplexType): void {
+        	var pTypeInstruction: TypeInstruction = new TypeInstruction();
+
+        	var pChildren: IParseNode[] = pNode.children;
+		    var i: uint = 0;
+
+		    this.newInstruction(pTypeInstruction);
+
+		    for (i = pChildren.length - 1; i >= 0; i--) {
+		        if (pChildren[i].name === "Type") {
+		        	this.analyzeType(pChildren[i]);
+		        }
+		        if (pChildren[i].name === "Usage") {
+		        	this.analyzeUsage(pChildren[i]);
+		        }
+		    }
+
+		    this.endInstruction();
+
+		    pType.initializeFromInstruction(pTypeInstruction);
+        }
+
+        private analyzeType(pNode: IParseNode): void {
+        	//pushCommand
+        }
+
+        private analyzeUsage(pNode: IParseNode): void {
+        	pNode = pNode.children[0];
+        	//this.pushCommand
+        }
+
+        private analyzeVariable(pNode: IParseNode, pVariable: IAFXVariable): void {
+
+        }
+
+
+
+
+
+		// private analyzeTypes(): void {
+		// 	var pChildren: IParseNode[] = this._pParseTree.root.children;
+		// 	var i: uint;
+
+		// 	for(i = pChildren.length - 1; i >= 0; i--) {
+		// 		if(pChildren[i].name === Effect._pGrammarSymbols["TypeDecl"]){
+		// 			this.analyzeTypeDecl(pChildren[i]);
+		// 		}
+		// 	}
+		// }
+
+		// private preAnalyzeFunctions(): void {
+ 
+		// }
+
+		// private preAnalyzeVariables(): void {
+
+		// }
+
+		// private preAnalyzeTechniques(): void {
+
+		// }
 
 		private analyzeTypeDecl(pNode: IParseNode): void {
 			this.setAnalyzedNode(pNode);
 
 			var pChildren: IParseNode[] = pNode.children;
-			var pType:IAFXType = null;
-			// = new Type();
 
-			// if(pChildren.length === 2) {
-			// 	pType.fromStruct(this.analyzeStructDecl(pChildren[1]));
-			// }
-			// else {
-			// 	error(EFFECT_DONT_SUPPORTED_TYPEDECL);
-			// }
-
-			this.addType(pType);
+ 			if(pChildren.length === 2) {
+				pType.initializeFromStruct(this.analyzeStructDecl(pChildren[1]));
+			}
+			else {
+				this._error(EFFECT_DONT_SUPPORTED_TYPEDECL);
+			}
 
 			pNode.isAnalyzed = true;
 		}
 
+        private analyzeStructDecl(pNode: IParseNode): void {
+        	var pType:IAFXType = new Type();
+        	var pStructInstruction: IAFXStructDeclInstruction = new StructDeclInstruction();
+        	var pStructName: IdInstruction = new IdInstruction();
+        	var pStructFields: StructFieldsInstruction = new StructFieldsInstruction();
 
-        private analyzeStructDecl(pNode: IParseNode): IAFXStruct {
-        	var pInstruction: StructDeclInstruction = new StructDeclInstruction();
-        	pInstruction.
-        	return null;
+        	var pChildren: IParseNode[] = pNode.children;
+        	var sName: string = pChildren[pChildren.length - 2].value;
+
+        	pStructName.setName(sName);
+
+        	this.newInstruction(pStructInstruction);
+        	
+        	this.pushCommand(pStructName, true);
+        	this.pushCommand(pStructFields, true);
+        	
+        	this.newInstruction(pStructFields);
+        	
+        	var i: uint = 0;
+        	for (i = pChildren.length - 4; i >= 1; i--) {
+		        if (pChildren[i].name === "VariableDecl"){
+		            this.analyzeVariableDecl(pChildren[i]);
+		        }
+		    }
+
+        	this.endInstruction();
+        	this.endInstruction();
+
+        	//TODO: AFX struct from StructDeclInstruction
+        	pType.initializeFromStruct(pStructInstruction);
+        	this.addTypeDecl(pType);
         }
 
 		private getNodeSourceLocation(pNode: IParseNode): {line: uint; column: uint;} {
