@@ -9,7 +9,7 @@ module akra.fx {
 		/**
 		 * If type is base or define by typedef this filed is null
 		 */
-		private _pDeclInstruction: IAFXStructDeclInstruction;
+		private _pDeclInstruction: IAFXTypeDeclInstruction;
 		private _pNameId: IAFXIdInstruction;
 		private _isBase: bool;
 		private _sHash: string;
@@ -29,8 +29,8 @@ module akra.fx {
 			this._sHash = "";
 		}
 
-		initializeFromStruct(pStruct: IAFXStructDeclInstruction): bool{
-			this._pDeclInstruction = pStruct;
+		initializeFromInstruction(pInstruction: IAFXTypeDeclInstruction): bool{
+			this._pDeclInstruction = pInstruction;
 			return true;
 		}
 
@@ -45,24 +45,29 @@ module akra.fx {
 		// private _pUsages: IAFXKeywordInstruction[];
 
 		getName(): string {
-			return this._pType.getName();
+			return "";
+			//this._pType.getName();
 		}
 
 		getId(): IAFXIdInstruction {
-			return this._pType.getId();
+			return null;
+			//this._pType.getId();
 		}
 
 		constructor(){
-			this._pType = null;
-			this._pUsages = null;
+			// this._pType = null;
+			// this._pUsages = null;
+			this._pInstruction = null;
 		}
 
 		getUsages(): IAFXKeywordInstruction[]{
-			return this._pUsages;
+			// return this._pUsages;
+			return null;
 		}
 
 		getType(): IAFXType{
-			return this._pType;
+			// return this._pType;
+			return null;
 		}
 
 		setType(pType: IAFXType): void {

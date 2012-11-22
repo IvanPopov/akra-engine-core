@@ -6,7 +6,7 @@
 
 module akra.fx {
 	export class Variable implements IAFXVariable {
-		private _pDeclInstruction: VarDeclInstruction;
+		private _pDeclInstruction: IAFXVariableDeclInstruction;
 
 		getName(): string {
 			return "var_name";
@@ -17,7 +17,7 @@ module akra.fx {
 		}
 
 		constructor(){
-			this._pDeclInstruction = new VarDeclInstruction();
+			this._pDeclInstruction = null;
 		}
 
 		setName(sName: string): void {
@@ -29,7 +29,7 @@ module akra.fx {
 		}
 
 		initializeFromInstruction(pInstruction: IAFXVariableDeclInstruction): void{
-			
+			this._pDeclInstruction = pInstruction;	
 		}
 	} 
 }

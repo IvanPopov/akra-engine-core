@@ -12,21 +12,6 @@ module akra {
     }
 
     export interface IAFXVariable extends IAFXObject {
-        // type: IAFXComplexType;
-        
-        // name: string;
-        // semantic: string;
-
-        // length: uint;
-        // size: uint;
-
-        // isArray(): bool;
-        
-        // isGlobal(): bool;
-        // isUniform(): bool;
-        // isForeign(): bool;
-        // isShared(): bool;
-        // isConst(): bool;
         setName(sName: string): void;
         setType(pType: IAFXComplexType): void;
         initializeFromInstruction(pInstruction: IAFXVariableDeclInstruction): void;
@@ -35,7 +20,7 @@ module akra {
 
     export interface IAFXType extends IAFXObject {
         isBase(): bool;
-        initializeFromStruct(pStruct: IAFXStructDeclInstruction): bool;
+        initializeFromInstruction(pInstruction: IAFXTypeDeclInstruction): bool;
     }
 
     export interface IAFXComplexType extends IAFXObject {

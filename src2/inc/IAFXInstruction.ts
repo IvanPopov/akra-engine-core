@@ -22,21 +22,49 @@ module akra {
     	operator: string;
     	instructions: IAFXInstruction[];
 
-    	/**
-    	 * Contain states of instruction
-    	 */
-    	stateMap: IAFXInstructionStateMap;
+    	// /**
+    	//  * Contain states of instruction
+    	//  */
+    	// stateMap: IAFXInstructionStateMap;
 
     	push(pInstruction: IAFXInstruction, isSetParent?: bool): void;
 
-    	changeState(sStateName: string, sValue: string): void;
-    	changeState(iStateIndex: int, sValue: string): void;
+    	// changeState(sStateName: string, sValue: string): void;
+    	// changeState(iStateIndex: int, sValue: string): void;
 
-    	stateChange(): void;
-    	isStateChange(): bool;
+    	// stateChange(): void;
+    	// isStateChange(): bool;
 
     	addRoutine(fnRoutine: IAFXInstructionRoutine, iPriority?: uint);
     	toString(): string;
+    }
+
+    export interface IAFXTypeDeclInstruction extends IAFXInstruction {
+        //variableType : IAFXVariableTypeInstruction;
+    }
+
+    export interface IAFXVariableTypeInstruction extends IAFXInstruction {
+        //type : IAFXTypeInstruction
+        //array: IAFXArrayInstruction
+        //pointer : IAFXPointerInstruction
+        addArrayIndex(): void;
+        addPointIndex(): void;
+        setVideoBuffer(): void;
+    }
+
+    export interface IAFXTypeInstruction extends IAFXInstruction {
+        //usage: IAFXKeywordInstruction[]
+        //id: IAFXIdInstruction
+    }
+
+    export interface IAFXStructDeclInstruction extends IAFXInstruction {
+        //id: IAFXIdInstruction
+        //structFields: IAFXStructInstruction
+    }
+
+    export interface IAFXBaseTypeInstruction extends IAFXInstruction {
+        //id: IAFXIdInstruction
+        //...
     }
 
     export interface IAFXIdInstruction extends IAFXInstruction {
@@ -51,12 +79,10 @@ module akra {
         setValue(sValue: string): void;
     }
 
-    export interface IAFXStructDeclInstruction extends IAFXInstruction {
 
-    }
 
     export interface IAFXVariableDeclInstruction extends IAFXInstruction {
-        
+        getVariableType(): IAFXVariableTypeInstruction;
     }
 }
 

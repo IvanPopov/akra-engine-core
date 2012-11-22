@@ -3,7 +3,6 @@
 
 #include "IAFXEffect.ts"
 #include "IParser.ts"
-#include "logger.ts"
 #include "common.ts"
 #include "ILogger.ts"
 #include "fx/Instruction.ts"
@@ -516,6 +515,13 @@ module akra.fx {
 			}
 		}
 
+		private inline pushAndSet(pInstruction: IAFXInstruction): void {
+			if(!isNull(this._pCurrentInstruction)){
+				this._pCurrentInstruction.push(pInstruction, true);
+			}
+			this.newInstruction(pInstruction);
+		}
+
 		private inline setOperator(sOperator: string): void {
 			if(!isNull(this._pCurrentInstruction)){
 				this._pCurrentInstruction.operator = sOperator;
@@ -602,26 +608,25 @@ module akra.fx {
         	var pVariable: IAFXVariable = null;
         	var i: uint = 0;
 
-        	this.analyzeUsageType(pChildren[pChildren.length - 1], pVariableType);
+        	var pTypeInstruction: IAFXTypeInstruction = new TypeInstruction();
+        	this.newInstruction(pTypeInstruction);
+        	this.analyzeUsageType(pChildren[pChildren.length - 1]);
+        	this.endInstruction();
 
         	for(i = pChildren.length - 2; i >= 1; i--){
         		if(pChildren[i].name === "Variable") {
-        			pVariable = new Variable();
-        			pVariable.setType(pVariableType);
+        	// 		pVariable = new Variable();
+        	// 		pVariable.setType(pVariableType);
 
-        			this.analyzeVariable(pChildren[i], pVariable);
-        			this.addVariableDecl(pVariable);
+        			this.analyzeVariable(pChildren[i], pTypeInstruction);
+        	// 		this.addVariableDecl(pVariable);
         		}
         	}
         }
 
-        private analyzeUsageType(pNode: IParseNode, pType: IAFXComplexType): void {
-        	var pTypeInstruction: TypeInstruction = new TypeInstruction();
-
+      	private analyzeUsageType(pNode: IParseNode): void {
         	var pChildren: IParseNode[] = pNode.children;
 		    var i: uint = 0;
-
-		    this.newInstruction(pTypeInstruction);
 
 		    for (i = pChildren.length - 1; i >= 0; i--) {
 		        if (pChildren[i].name === "Type") {
@@ -631,10 +636,6 @@ module akra.fx {
 		        	this.analyzeUsage(pChildren[i]);
 		        }
 		    }
-
-		    this.endInstruction();
-
-		    pType.initializeFromInstruction(pTypeInstruction);
         }
 
         private analyzeType(pNode: IParseNode): void {
@@ -646,7 +647,43 @@ module akra.fx {
         	//this.pushCommand
         }
 
-        private analyzeVariable(pNode: IParseNode, pVariable: IAFXVariable): void {
+        private analyzeVariable(pNode: IParseNode, pUsageType: IAFXTypeInstruction): void {
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	var pVarDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+        	var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+        	//init expr
+			
+        	pVarDecl.push(pVariableType);       	
+        	pVariableType.push(pUsageType);
+
+        	this.newInstruction(pVarDecl);
+
+        	this.endInstruction();
+
+        	var pVariable: IAFXVariable = new Variable();
+        	pVariable.initializeFromInstruction(pVarDecl);
+        	this.addVariableDecl(pVariable);
+        }
+
+        private analyzeVariableDim(pNode: IParseNode): void {
+			var pChildren: IParseNode[] = pNode.children;
+			var pVariableDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this._pCurrentInstruction;
+			var pVariableType: IAFXVariableTypeInstruction = pVariableDecl.getVariableType();
+
+			if(pChildren.length === 1) {
+				var pName: IAFXIdInstruction = new IdInstruction();
+				pName.setName(pChildren[0].value);
+				pVariableDecl.push(pName, true);
+			}
+			else if(pChildren.length === 3) {
+				pVariableType.addPointIndex();
+			}
+			// else if(pChildren.length === 4 && pChildren[0].name === "FromExpr"){
+			// 	
+			// }
+
+
 
         }
 
@@ -678,22 +715,34 @@ module akra.fx {
 		// }
 
 		private analyzeTypeDecl(pNode: IParseNode): void {
+			var pChildren: IParseNode[] = pNode.children;
 			this.setAnalyzedNode(pNode);
 
-			var pChildren: IParseNode[] = pNode.children;
+			var pTypeDeclInstruction: IAFXTypeDeclInstruction = new TypeDeclInstruction();
+			var pType: IAFXType = new Type();
+
+			this.newInstruction(pTypeDeclInstruction);
 
  			if(pChildren.length === 2) {
-				pType.initializeFromStruct(this.analyzeStructDecl(pChildren[1]));
+				this.analyzeStructDecl(pChildren[1]);
 			}
 			else {
 				this._error(EFFECT_DONT_SUPPORTED_TYPEDECL);
 			}
 
+			this.endInstruction();
+
+			this.pushCommand(pTypeDeclInstruction, true);
+			pType.initializeFromInstruction(pTypeDeclInstruction);
+
+			this.addTypeDecl(pType);
+
 			pNode.isAnalyzed = true;
 		}
 
         private analyzeStructDecl(pNode: IParseNode): void {
-        	var pType:IAFXType = new Type();
+        	var pVariableTypeInstruction: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+ 			var pTypeInstruction: IAFXTypeInstruction = new TypeInstruction();
         	var pStructInstruction: IAFXStructDeclInstruction = new StructDeclInstruction();
         	var pStructName: IdInstruction = new IdInstruction();
         	var pStructFields: StructFieldsInstruction = new StructFieldsInstruction();
@@ -703,10 +752,13 @@ module akra.fx {
 
         	pStructName.setName(sName);
 
-        	this.newInstruction(pStructInstruction);
+        	this.pushAndSet(pVariableTypeInstruction);
+        	this.pushAndSet(pTypeInstruction);
         	
-        	this.pushCommand(pStructName, true);
-        	this.pushCommand(pStructFields, true);
+        	this.newInstruction(pStructInstruction);
+
+        	pStructInstruction.push(pStructName, true);
+        	pStructInstruction.push(pStructFields, true);
         	
         	this.newInstruction(pStructFields);
         	
@@ -720,9 +772,10 @@ module akra.fx {
         	this.endInstruction();
         	this.endInstruction();
 
-        	//TODO: AFX struct from StructDeclInstruction
-        	pType.initializeFromStruct(pStructInstruction);
-        	this.addTypeDecl(pType);
+        	pTypeInstruction.push(pStructName, false);
+
+        	this.endInstruction();
+        	this.endInstruction();
         }
 
 		private getNodeSourceLocation(pNode: IParseNode): {line: uint; column: uint;} {

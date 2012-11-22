@@ -5,18 +5,10 @@
 
 module akra.fx {
 
-	// export interface IAFXInstructionRoutineMap {
-	// 	[priority: uint] : IAFXInstructionRoutine;
-	// }
-
 	export class Instruction implements IAFXInstruction{
 		protected _pParentInstruction: IAFXInstruction;
 		protected _sOperatorName: string;
 		protected _pInstructionList: IAFXInstruction[];
-		protected _pStateMap: IAFXInstructionStateMap;
-		// private _pRoutineList: IAFXInstructionRoutine[];
-		// private _pRoutineByPriorityMap: IAFXInstructionRoutineMap;
-		protected _isStateChange: bool;
 
 		get parent(): IAFXInstruction{
 			return this._pParentInstruction;
@@ -42,22 +34,10 @@ module akra.fx {
 			this._pInstructionList = pInstructionList;
 		}
 
-		get stateMap(): IAFXInstructionStateMap{
-			return this._pStateMap;
-		}
-
-		set stateMap(pStateMap: IAFXInstructionStateMap){
-			this._pStateMap = pStateMap;
-		}
-
 		constructor(){
 			this._pParentInstruction = null;
 			this._sOperatorName = null;
 			this._pInstructionList = null;
-			this._pStateMap = null;
-			// this._pRoutineList = null;
-			// this._pRoutineByPriorityMap = null;
-			this._isStateChange = false;
 		}
 
 		inline push(pInstruction: IAFXInstruction, isSetParent?: bool = false): void {
@@ -69,25 +49,6 @@ module akra.fx {
 			}
 		}
 
-		inline changeState(sStateName: string, sValue: string): void;
-    	inline changeState(iStateIndex: int, sValue: string): void;
-    	inline changeState(): void {
-    		if(isNull(this._pStateMap)){
-    			return;
-    		}
-
-    		this._pStateMap[<string>arguments[0]] = <string>arguments[1];
-    		this.stateChange();
-    	}
-
-    	inline stateChange(): void {
-    		this._isStateChange = true;
-    	}
-
-    	inline isStateChange(): bool {
-    		return this._isStateChange;
-    	}
-
     	addRoutine(fnRoutine: IAFXInstructionRoutine, iPriority?: uint): void {
     		//TODO
     	}
@@ -97,293 +58,293 @@ module akra.fx {
     	}
 	}
 
-	export interface IdInstructionStates extends IAFXInstructionStateMap{
-		name: string;
-		realName: string;
-		isUsed: bool;
-	}
-	export class IdInstruction extends Instruction implements IAFXIdInstruction {
-		protected _pStateMap: IdInstructionStates;
-
-		/**
-		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
-		 */
-		constructor() {
-			super();
-			this._pStateMap = <IdInstructionStates>{
-									name: "",
-									realName: "",
-									isUsed: false};
-		}
-
-		inline getName(): string{
-			return this._pStateMap.name;
-		}
-
-		inline getRealName(): string{
-			return this._pStateMap.realName;
-		}
-
-		inline setName(sName: string): void{
-			this._pStateMap.name = sName;
-		}
-
-		inline setRealName(sRealName: string): void{
-			this._pStateMap.realName = sRealName;
-		}
-
-		toString(): string {
-			this._isStateChange = false;
-			return this._pStateMap.realName;
-		}
-
-	}
-
-	export interface IntInstructionStates extends IAFXInstructionStateMap{
-		value: int;
-	}
 	export class IntInstruction extends Instruction {
-		protected _pStateMap: IntInstructionStates;
+		private _iValue: int;
 
 		/**
 		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
 		 */
 		constructor() {
 			super();
-			this._pStateMap = <IntInstructionStates>{value: 0};
+			this._iValue = 0;
 		}
 
 		inline setValue(iValue: int): void{
-			this._pStateMap.value = iValue;
+			this._iValue = iValue;
 		}
 
 		toString(): string {
-			return <string><any>this._pStateMap.value;
+			return <string><any>this._iValue;
 		}
 	}
 
-	export interface FloatInstructionStates extends IAFXInstructionStateMap{
-		value: float;
-	}
 	export class FloatInstruction extends Instruction {
-		protected _pStateMap: FloatInstructionStates;
-
+		private _fValue: float;
 		/**
 		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
 		 */
 		constructor() {
 			super();
-			this._pStateMap = <FloatInstructionStates>{value: 0.0};
+			this._fValue = 0.0;
 		}
 
 		inline setValue(fValue: float): void{
-			this._pStateMap.value = fValue;
+			this._fValue = fValue;
 		}
 
 		toString(): string {
-			return <string><any>this._pStateMap.value;
+			return <string><any>this._fValue;
 		}
 	}
 
-	export interface StringInstructionStates extends IAFXInstructionStateMap{
-		value: string;
-	}
 	export class StringInstruction extends Instruction {
-		protected _pStateMap: StringInstructionStates;
+		private _sValue: string;
 
 		/**
 		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
 		 */
 		constructor() {
 			super();
-			this._pStateMap = <StringInstructionStates>{value: ""};
+			this._sValue = "";
 		}
 
 		inline setValue(sValue: string): void{
-			this._pStateMap.value = sValue;
+			this._sValue = sValue;
 		}
 
 		toString(): string {
-			return this._pStateMap.value;
+			return this._sValue;
 		}
 	}
 
-	export interface KeywordInstructionStates extends IAFXInstructionStateMap{
-		value: string;
+	export class IdInstruction extends Instruction implements IAFXIdInstruction {
+		private _sName: string;
+		private _sRealName: string;
+
+		/**
+		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
+		 */
+		constructor() {
+			super();
+			this._sName = "";
+			this._sRealName = "";
+		}
+
+		inline getName(): string{
+			return this._sName;
+		}
+
+		inline getRealName(): string{
+			return this._sRealName;
+		}
+
+		inline setName(sName: string): void{
+			this._sName = sName;
+		}
+
+		inline setRealName(sRealName: string): void{
+			this._sRealName = sRealName;
+		}
+
+		toString(): string {
+			return this._sRealName;
+		}
+
 	}
+
 	export class KeywordInstruction extends Instruction implements IAFXKeywordInstruction {
-		protected _pStateMap: KeywordInstructionStates;
+		private _sValue: string;
 
 		/**
 		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
 		 */
 		constructor() {
 			super();
-			this._pStateMap = <KeywordInstructionStates>{value: ""};
+			this._sValue = "";
 		}
 
 		inline setValue(sValue: string): void{
-			this._pStateMap.value = sValue;
+			this._sValue = sValue;
 		}
 
 		toString(): string {
-			return this._pStateMap.value;
+			return this._sValue;
 		}
 	}
 
+	export class TypeDeclInstruction extends Instruction implements IAFXTypeDeclInstruction {
+		// EMPTY_OPERATOR VariableTypeInstruction
+		
+		constructor() {
+			super();
+		}	 
+	}
+
+	export class VariableTypeInstruction extends Instruction implements IAFXVariableTypeInstruction {
+		// EMPTY_OPERATOR TypeInstruction ArrayInstruction PointerInstruction
+		
+		constructor() {
+			super();
+		}	 
+
+		addArrayIndex(): void {
+
+		}
+
+		addPointIndex(): void {
+
+		}
+
+		setVideoBuffer(): void {
+			
+		}
+	}
+
+	export class TypeInstruction extends Instruction implements IAFXTypeInstruction {
+		// EMPTY_OPERATOR KeywordInstruction ... KeywordInstruction IdInstruction
+		
+		constructor() {
+			super();
+		}	 
+	}
+
+	export class BaseTypeInstruction extends Instruction implements IAFXBaseTypeInstruction {
+		// EMPTY_OPERATOR IdInstruction
+		
+		constructor() {
+			super();
+		}	 
+	}
 
 	export class StructDeclInstruction extends Instruction implements IAFXStructDeclInstruction {
-		/**
-		 * Represent struct typeName {[fields]};
-		 * EMPTY_OPERATOR IdInstruction StructFieldsInstruction
-		 */
-		constructor(){
+		// EMPTY_OPERATOR IdInstruction StructFieldsInstruction
+		
+		constructor() {
 			super();
-			this._pInstructionList = [];
-			this._pStateMap = <IAFXInstructionStateMap>{};
-		}
-
-		toString(): string {
-			var sCode: string = "";
-
-			sCode = "struct " + 
-					this._pInstructionList[0].toString() + " " + 
-					this._pInstructionList[1].toString() + ";";
-
-			return sCode;
-		}
+		}	 
 	}
 
 	export class StructFieldsInstruction extends Instruction {
-		/**
-		 * Represent {[fields]};
-		 * EMPTY_OPERATOR VarDeclInstruction ... VarDeclInstruction
-		 */
-		constructor(){
+		// EMPTY_OPERATOR VariableDeclInstruction ... VariableDeclInstruction
+		
+		constructor() {
 			super();
-			this._pInstructionList = [];
-			this._pStateMap = <IAFXInstructionStateMap>{};
-		}
-
-		toString(): string {
-			var sCode: string = "{";
-			var i: uint = 0;
-			var pInstructionList: IAFXInstruction[] = this._pInstructionList;
-
-			for(i = 0; i < pInstructionList.length; i++) {
-				sCode += pInstructionList[i].toString() + ";";
-			}
-
-			sCode += "}";
-
-			return sCode;
-		}
+		}	 
 	}
 
-	export class VarDeclInstruction extends Instruction implements IAFXVariableDeclInstruction {
+
+	export class VariableDeclInstruction extends Instruction implements IAFXVariableDeclInstruction {
 		/**
 		 * Represent type var_name [= init_expr]
 		 * EMPTY_OPERATOR TypeInstruction VariableInitInstruction
 		 */
+		constructor(){
+			super();
+		}
+
+		getVariableType(): IAFXVariableTypeInstruction {
+			return null;
+		}
+
 	}
 
 
-	export class TypeInstruction extends Instruction {
-		/**
-		 * Represent [usages] IdInstruction
-		 * EMPTY_OPERATOR KeywordInstruction ... KeywordInstruction IdInstruction
-		 */
-	}
+	// export class TypeInstruction extends Instruction {
+	// 	/**
+	// 	 * Represent [usages] IdInstruction
+	// 	 * EMPTY_OPERATOR KeywordInstruction ... KeywordInstruction IdInstruction
+	// 	 */
+	// }
 
-	export class VariableInitInstruction extends Instruction {
-		/**
-		 * Represent varname [ [someIndex] ][ = SomeExpr;]
-		 * ('=' || EMPTY_OPERATOR) VariableInstruction ExprInstruction
-		 */
-	}
+	// export class VariableInitInstruction extends Instruction {
+	// 	/**
+	// 	 * Represent varname [ [someIndex] ][ = SomeExpr;]
+	// 	 * ('=' || EMPTY_OPERATOR) VariableInstruction ExprInstruction
+	// 	 */
+	// }
 
-	export class VariableInstruction extends Instruction{
-		/**
-		 * Represent varname [ [someIndex] ]
-		 * EMPTY_OPERATOR IdInstruction IndexInstruction ... IndexInstruction
-		 */
-	}
-	export class IndexInstruction extends Instruction {
-		/**
-		 * Represent [ [someIndex] ]
-		 * EMPTY_OPERATOR ExprInstruction
-		 */
-	}
+	// export class VariableInstruction extends Instruction{
+	// 	/**
+	// 	 * Represent varname [ [someIndex] ]
+	// 	 * EMPTY_OPERATOR IdInstruction IndexInstruction ... IndexInstruction
+	// 	 */
+	// }
+	// export class IndexInstruction extends Instruction {
+	// 	/**
+	// 	 * Represent [ [someIndex] ]
+	// 	 * EMPTY_OPERATOR ExprInstruction
+	// 	 */
+	// }
 
-	export class ExprInstruction extends Instruction {
-		/**
-		 * Represent someExpr
-		 * EMPTY_OPERATOR [SomeOfExprassionInstruction]
-		 */
-	}
+	// export class ExprInstruction extends Instruction {
+	// 	/**
+	// 	 * Represent someExpr
+	// 	 * EMPTY_OPERATOR [SomeOfExprassionInstruction]
+	// 	 */
+	// }
 
-	export class PostfixIndexInstruction extends Instruction {
-		/**
-		 * Represent someExpr[someIndex]
-		 * [] Instruction ExprInstruction
-		 */
-	}
+	// export class PostfixIndexInstruction extends Instruction {
+	// 	/**
+	// 	 * Represent someExpr[someIndex]
+	// 	 * [] Instruction ExprInstruction
+	// 	 */
+	// }
 
-	export class PostfixPointInstruction extends Instruction {
-		/**
-		 * Represent someExpr.id
-		 * . Instruction IdInstruction
-		 */
-	}
+	// export class PostfixPointInstruction extends Instruction {
+	// 	*
+	// 	 * Represent someExpr.id
+	// 	 * . Instruction IdInstruction
+		 
+	// }
 
-	export class PostfixArithmeticInstruction extends Instruction {
-		/**
-		 * Represent someExpr ++
-		 * (-- | ++) Instruction
-		 */	
-	}
+	// export class PostfixArithmeticInstruction extends Instruction {
+	// 	/**
+	// 	 * Represent someExpr ++
+	// 	 * (-- | ++) Instruction
+	// 	 */	
+	// }
 
-	export class ArithmeticExprInstruction extends Instruction {
-		/**
-		 * Represent someExpr +,/,-,*,% someExpr
-		 * (+|-|*|/|%) Instruction Instruction
-		 */
-	}
+	// export class ArithmeticExprInstruction extends Instruction {
+	// 	/**
+	// 	 * Represent someExpr +,/,-,*,% someExpr
+	// 	 * (+|-|*|/|%) Instruction Instruction
+	// 	 */
+	// }
 
-	export class RelationExprInstruction extends Instruction {
-		/**
-		 * Represent someExpr <,>,>=,<=,!=,== someExpr
-		 * (<|>|<=|=>|!=|==) Instruction Instruction
-		 */
-	}
+	// export class RelationExprInstruction extends Instruction {
+	// 	/**
+	// 	 * Represent someExpr <,>,>=,<=,!=,== someExpr
+	// 	 * (<|>|<=|=>|!=|==) Instruction Instruction
+	// 	 */
+	// }
 
-	export class LogicalExprInstruction extends Instruction {
-		/**
-		 * Represent someExpr &&,|| someExpr
-		 * (&& | ||) Instruction Instruction
-		 */
-	}
+	// export class LogicalExprInstruction extends Instruction {
+	// 	/**
+	// 	 * Represent someExpr &&,|| someExpr
+	// 	 * (&& | ||) Instruction Instruction
+	// 	 */
+	// }
 
-	export class FunctionCallInstruction extends Instruction {
-		/**
-		 * Represent func([params])
-		 * call IdInstruction ExprInstruction ... ExprInstruction
-		 */	
-	}
+	// export class FunctionCallInstruction extends Instruction {
+	// 	/**
+	// 	 * Represent func([params])
+	// 	 * call IdInstruction ExprInstruction ... ExprInstruction
+	// 	 */	
+	// }
 
-	export class TypeCastInstruction extends Instruction {
-		/**
-		 * Represent (type)(Expr)
-		 * typeCast IdInstruction ExprInstruction
-		 */	
-	}
+	// export class TypeCastInstruction extends Instruction {
+	// 	/**
+	// 	 * Represent (type)(Expr)
+	// 	 * typeCast IdInstruction ExprInstruction
+	// 	 */	
+	// }
 
-	export class TypeConstructorInstruction extends Instruction {
-		/**
-		 * Represent type(Expr)
-		 * constructor IdInstruction ExprInstruction
-		 */	
-	}
+	// export class TypeConstructorInstruction extends Instruction {
+	// 	/**
+	// 	 * Represent type(Expr)
+	// 	 * constructor IdInstruction ExprInstruction
+	// 	 */	
+	// }
 
 
 }
