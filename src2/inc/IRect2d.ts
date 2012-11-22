@@ -29,11 +29,11 @@ module akra{
 		subSelf(fValue: float): IRect2d;
 		subSelf(v2fVec: IVec2): IRect2d;
 
-		divSelf(fValue: float): IRect2d;
-		divSelf(v2fVec: IVec2): IRect2d;
-
 		multSelf(fValue: float): IRect2d;
 		multSelf(v2fVec: IVec2): IRect2d;
+
+		divSelf(fValue: float): IRect2d;
+		divSelf(v2fVec: IVec2): IRect2d;
 
 		offset(v2fOffset: IVec2): IRect2d;
 		offset(fOffsetX: float, fOffsetY: float): IRect2d;
@@ -47,20 +47,24 @@ module akra{
 
 		resize(v2fSizes: IVec2): IRect2d;
 		resize(fSizeX: float, fSizeY: float): IRect2d;
+
 		resizeX(fSize: float): IRect2d;
 		resizeY(fSize: float): IRect2d;
 
 		resizeMax(v2fSpan: IVec2): IRect2d;
 		resizeMax(fSpanX: float, fSpanY: float): IRect2d;
+
 		resizeMaxX(fSpan: float): IRect2d;
 		resizeMaxY(fSpan: float): IRect2d;
 
 		resizeMin(v2fSpan: IVec2): IRect2d;
 		resizeMin(fSpanX: float, fSpanY: float): IRect2d;
+
 		resizeMinX(fSpan: float): IRect2d;
 		resizeMinY(fSpan: float): IRect2d;
 
 		unionPoint(v2fPoint: IVec2): IRect2d;
+		unionPoint(fX: float, fY: float): IRect2d;
 		unionRect(pRect: IRect2d): IRect2d;
 
 		negate(pDestination?: IRect2d): IRect2d;
@@ -87,6 +91,8 @@ module akra{
 		corner(iIndex: uint, v2fDestination?: IVec2): IVec2;
 
 		createBoundingCircle(pCircle?: ICircle): ICircle;
+
+		toString(): string;
 	};
 };
 
