@@ -13,6 +13,8 @@
 #include "Plane2d.ts"
 #include "Plane3d.ts"
 
+#include "Rect2d.ts"
+
 module akra.geometry{
 	export enum EVolumeClassifications{
 		NO_RELATION = 0,

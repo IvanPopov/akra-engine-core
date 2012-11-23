@@ -169,7 +169,7 @@ module akra.geometry{
 		};
 
 		signedDistance(v3fPoint: IVec3): float{
-			return this.distance + this.normal(v3fPoint);
+			return this.distance + this.normal.dot(v3fPoint);
 		};
 	};
 };
