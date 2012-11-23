@@ -20,7 +20,7 @@ module akra.core.pool {
 	}
 
 	export class ResourcePoolItem extends util.ReferenceCounter implements IResourcePoolItem {
-		private pManager: IResourcePoolManager;
+		//private pManager: IResourcePoolManager;
 		private pResourceCode: IResourceCode;
 		private pResourcePool: IResourcePool = null;
 		private iResourceHandle: int = 0;
@@ -53,10 +53,10 @@ module akra.core.pool {
 		inline get manager(): IResourcePoolManager { return this.pManager; }
 
 		/** Constructor of ResourcePoolItem class */
-		constructor (pManager: IResourcePoolManager) {
+		constructor (/*pManager: IResourcePoolManager*/) {
 			super();
 
-			this.pManager = pManager;
+			//this.pManager = pManager;
 			this.pResourceCode = new ResourceCode(0);
 			this.pCallbackFunctions = [];
 			this.pStateWatcher = [];
@@ -64,7 +64,17 @@ module akra.core.pool {
 		}
 
 		inline getEngine(): IEngine {
-			return this.pManager.getEngine();
+			var pManager: IResourcePoolManager = this.getManager();
+			
+			if (pManager) {
+				return pManager.getEngine();
+			}
+
+			return null;
+		}
+
+		inline getManager(): IResourcePoolManager {
+			return this.pResourcePool? this.pResourcePool.getManager(): null;
 		}
 
 		createResource(): bool {

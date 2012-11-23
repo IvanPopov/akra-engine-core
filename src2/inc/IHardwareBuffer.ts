@@ -1,11 +1,11 @@
 #ifndef IHARDWAREBUFFER_TS
 #define IHARDWAREBUFFER_TS
 
-#include "IHardwareObject.ts"
+#include "IBuffer.ts"
 
 module akra {
 
-	export enum EBufferFlags {
+	export enum EHardwareBufferFlags {
 		MANY_UPDATES = 0,
 		MANY_DRAWS,
 		READABLE,
@@ -14,21 +14,27 @@ module akra {
 		ALIGNMENT
 	}
 
-	export interface IHardwareBuffer extends IHardwareObject {
-		activate(): void;
-		deactivate(): void;
+	export interface IHardwareBuffer extends IBuffer {
+		clone(pSrc: IHardwareBuffer): bool;
 
-		setData(size: uint, usage: int): void;
-		setData(data: ArrayBufferView, usage: int): void;
-		setData(data: ArrayBuffer, usage: int): void;
+		isValid(): bool;
+		isDynamic(): bool;
+		isStatic(): bool;
+		isStream(): bool;
+		isReadable(): bool;
+		isRAMBufferPresent(): bool;
+		isSoftware(): bool;
 
-		setSubData(offset: uint, data: ArrayBufferView): void;
-		setSubData(offset: uint, data: ArrayBuffer): void;
+		getData(): ArrayBuffer;
+		getData(iOffset: uint, iSize: uint): ArrayBuffer;
+		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool;
 
-		getParameter(eParam: int): any;
+		getFlags(): int; 
+
+		destroy(): void;
+		create(iByteSize: uint, iFlags: int, pData: ArrayBuffer): bool;
+		resize(iSize: uint): bool;
 	}
-
 }
 
 #endif
-

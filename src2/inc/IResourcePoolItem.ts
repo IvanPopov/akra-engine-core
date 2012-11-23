@@ -46,6 +46,7 @@ module akra {
 		
 		/** Get current Engine. */
 		getEngine(): IEngine;
+		getManager(): IResourcePoolManager;
 
 		/** Инициализация ресурса, вызывается один раз. Виртуальная. */
 		createResource(): bool;

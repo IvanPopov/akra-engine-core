@@ -5,9 +5,11 @@
 #include "IEventProvider.ts"
 
 #define EMIT_UNICAST(event, call) \
-	this._pUnicastSlotMap.event call;
+	this._pUnicastSlotMap = this.._pUnicastSlotMap || this.getEventTable().findUnicastList(this._iGuid);\
+	(<any>this._pUnicastSlotMap).event call;
 #define EMIT_BROADCAST(event, call) \
-	var _broadcast: IEventSlot[] = this._pBroadcastSlotList.event; \
+	this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid);\
+	var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).event; \
 	var _recivier: any = this; \
 		for (var i = 0; i < _broadcast.length; ++ i) { \
 			_broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] call: _broadcast[i].listener call; \
@@ -36,8 +38,8 @@
 
 #define BEGIN_EVENT_TABLE(object) \
 	private _iGuid: uint = sid(); 																						\
-	private _pUnicastSlotMap: IEventSlotMap = this.getEventTable().findUnicastList(this._iGuid);						\
-	private _pBroadcastSlotList: IEventSlotListMap = this.getEventTable().findBroadcastList(this._iGuid);				\
+	private _pUnicastSlotMap: IEventSlotMap = null;						\
+	private _pBroadcastSlotList: IEventSlotListMap = null;				\
 	private static _pEvenetTable: IEventTable = new events.EventTable(); 												\
 																														\
 	inline getEventTable(): IEventTable {return object._pEvenetTable; } 												\
