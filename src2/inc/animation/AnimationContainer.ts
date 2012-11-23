@@ -16,9 +16,12 @@ module akra.animation {
 		private _pAnimation: IAnimationBase = null;
 		private _bReverse: bool = false;
 		
-		private _fTrueTime: float = 0;	//Время учитывающее циклы и прочее.
-		private _fRealTime: float = 0;	//реальное время на сцене
-		private _fTime: float = 0;		//время с учетом ускорений
+		//Время учитывающее циклы и прочее.
+		private _fTrueTime: float = 0;	
+		//реальное время на сцене
+		private _fRealTime: float = 0;	
+		//время с учетом ускорений
+		private _fTime: float = 0;		
 		private _bPause: bool = false;
 
 		//определена ли анимация до первого и после последнего кадров
@@ -26,6 +29,7 @@ module akra.animation {
 		private _bRightInfinity: bool = true;
 
 		constructor(pAnimation?: IAnimationBase){
+			super();
 			if (pAnimation) {
 				this.setAnimation(pAnimation);
 			}
@@ -51,7 +55,7 @@ module akra.animation {
 			this._fRealTime = fRealTime;
 		    this._fTime = 0;
 
-		    this.onplay(fTime);
+		    this.onplay(this._fTime);
 		}
 
 		stop(): void {
@@ -59,7 +63,7 @@ module akra.animation {
 		}
 
 		attach(pTarget: INode): void {
-			this._pAnimation.bind(pTarget);
+			this._pAnimation.attach(pTarget);
 			this.grab(this._pAnimation, true);
 		}
 
@@ -115,7 +119,7 @@ module akra.animation {
 
 		setSpeed(fSpeed: float): void {
 			this._fSpeed = fSpeed;
-			this._fDuration = this._pAnimation._fDuration / fSpeed;
+			this.duration = this._pAnimation.duration / fSpeed;
 			
 			this.onUpdateDuration();
 		}
@@ -168,9 +172,9 @@ module akra.animation {
 		    var fTime = this._fTime;
 
 		    if (this._bLoop) {
-		    	fTime = Math.mod(fTime, (this._pAnimation._fDuration));
+		    	fTime = math.mod(fTime, (this._pAnimation.duration));
 		    	if (this._bReverse) {
-		    		fTime = this._pAnimation._fDuration - fTime; 
+		    		fTime = this._pAnimation.duration - fTime; 
 		    	}
 		    }
 
@@ -184,7 +188,8 @@ module akra.animation {
 
 		    if (this._fRealTime !== fRealTime) {
 		    	this.time(fRealTime);
-		    	this.fire(a.Animation.EVT_ENTER_FRAME, fRealTime);
+
+		    	this.enterFrame(fRealTime);
 		    	//trace('--->', this.name);
 		    }
 
@@ -192,7 +197,7 @@ module akra.animation {
 		    	return null;
 		    }
 
-			if (!this._bRightInfinity && this._fRealTime > this._fDuration + this._fStartTime) {
+			if (!this._bRightInfinity && this._fRealTime > this.duration + this._fStartTime) {
 		    	return null;
 		    }    
 
@@ -204,6 +209,7 @@ module akra.animation {
 			BROADCAST(onplay, CALL(fTime));
 			BROADCAST(onstop, CALL(fTime));
 			BROADCAST(onUpdateDuration, CALL());
+			BROADCAST(enterFrame, CALL(fRealTime));
 		END_EVENT_TABLE();
 	} 
 }

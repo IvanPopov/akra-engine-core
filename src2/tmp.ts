@@ -11156,6 +11156,8 @@ module akra {
 
 
 
+
+
 module akra {
 	export interface IEventTable {} ;
 
@@ -14124,8 +14126,29 @@ module akra.animation {
 
 module akra {
 	export interface INode {} ;
+
+	export interface INodeMap{
+		[index: string]: INode;
+	}
+
 	export interface ISkeleton {
-		findJoint(sJoint: string): INode;
+		 totalBones: int;
+		 totalNodes: int;
+		 name: string;
+		 root: INode;
+
+		getEngine(): IEngine;
+		getRootJoint(): INode;
+		getRootJoints(): INode[];
+		getJointMap(): INodeMap;
+		getNodeList(): INode[];
+		addRootJoint(pJoint: INode): bool;
+		update(): bool;
+		findJoint(sName: string): INode;
+		findJointByName(sName: string): INode;
+		attachMesh(pMesh: IMesh): void;
+		detachMesh(): void;
+
 	}
 }
 
@@ -14134,9 +14157,151 @@ module akra {
 
 
 module akra.model {
+
 	export class Skeleton implements ISkeleton{
-		findJoint(sJoint: string): INode {
+		private _sName: string;
+		private _pEngine: IEngine;
+		private _pRootJoints: INode[] = [];
+		private _pJointList: INodeMap = null;
+		private _pNodeList: INode[]  = null;
+		private _pMeshNode = null;
+		private _iFlags: bool = false;
+
+		/**@inline*/  get totalBones(): int{
+			return Object.keys(this._pJointList).length;
+		}
+
+		/**@inline*/  get totalNodes(): int{
+			return this._pNodeList.length;
+		}
+
+		/**@inline*/  get name(): string{
+			return this._sName;
+		}
+
+		/**@inline*/  get root(): INode{
+			return this._pRootJoints[0] || null;
+		}
+
+		getEngine(): IEngine {
+			return this._pEngine;
+		}
+
+		getRootJoint(): INode {
+			return this.getRootJoints()[0];
+		}
+
+		getRootJoints(): INode[] {
+			return this._pRootJoints;
+		}
+
+		getJointMap(): INodeMap{
+			return this._pJointList;
+		}
+
+		getNodeList(): INode[]{
+			return this._pNodeList;
+		}
+
+		addRootJoint(pJoint: INode): bool {
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+
+/*FIX a. */
+
+/*debug_assert(pJoint instanceof a.Joint, 'node must be joint');*/
+
+
+		    var pRootJoints = this._pRootJoints;
+
+			for (var i = 0; i < pRootJoints.length; i++) {
+				if (pJoint.childOf(pRootJoints[i])) {
+					return false;
+				}
+				else if (pRootJoints[i].childOf(pJoint)) {
+					pRootJoints.splice(i, 1);
+				}
+			};
+
+			this._pRootJoints.push(pJoint);
+
+			return this.update();
+		}
+
+		update(): bool {
+			var pRootJoints = this._pRootJoints;
+		    var pJointList = this._pJointList = {};
+		    var pNodeList = this._pNodeList = [];
+//var pNotificationJoints = this._pNotificationJoints = [];
+
+		    function findNodes (pNode) {
+		    	var sJoint;
+
+		    	if (pNode) {
+			    	sJoint = pNode.boneName;
+
+			    	if (sJoint) {
+			    		debug_assert(!pJointList[sJoint],
+			    			'joint with name<' + sJoint + '> already exists in skeleton <' + this._sName + '>');
+			    		pJointList[sJoint] = pNode;
+			    	}
+
+			    	pNodeList.push(pNode);
+
+			    	findNodes(pNode.sibling());
+			    	findNodes(pNode.child());
+		    	}
+		    }
+
+		    for (var i = 0; i < pRootJoints.length; i++) {
+		    	findNodes(pRootJoints[i]);
+		    };
+
+// for (var sJoint in pJointList) {
+// 	var pJoint = pJointList[sJoint];
+
+//    	if (pJoint.sibling() == null && pJoint.child() == null) {
+//    		pNotificationJoints.push(pJoint);
+//    	}
+//    };    
+
+			return true;
+		}
+
+		findJoint(sName: string): INode {
+			return this._pJointList[sName];
+		}
+
+		findJointByName(sName: string): INode {
+			for (var s in this._pJointList) {
+				if (this._pJointList[s].name === sName) {
+					return this._pJointList[s];
+				}
+			}
+
 			return null;
+		}
+
+		attachMesh(pMesh: IMesh): void {
+/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+
+/*FIX a. , getEngine*/
+
+/*debug_assert(this.getEngine() === pMesh.getEngine(), 'mesh must be from same engine instance');
+
+		    if (this._pMeshNode == null) {
+		    	this._pMeshNode = new a.SceneModel(this.getEngine());
+		    	this._pMeshNode.create();
+		    	this._pMeshNode.setInheritance(a.Scene.k_inheritAll);
+		    	this._pMeshNode.attachToParent(this.root);
+		    }*/
+
+
+		    this._pMeshNode.name = this.name + "[mesh-container]";
+		    this._pMeshNode.addMesh(pMesh);
+		}
+
+		detachMesh(): void {
+//TODO: write detach method.
 		}
 	}
 }
@@ -14919,8 +15084,10 @@ module akra.animation {
 
 
 
+
+
+
 module akra {
-	export interface IAnimationBase {} ;
 	export interface IAnimationFrame {} ;
 
 	export interface IAnimationContainer extends IAnimationBase {
@@ -14963,6 +15130,11 @@ module akra {
 		time(fRealTime: float): void;
 
 		frame(sName: string, fRealTime: float): IAnimationFrame;
+
+		 onplay(fTime: float): void;
+		 onstop(fTime: float): void;
+		 onUpdateDuration(): void;
+		 enterFrame(fRealTime: float): void;
 	}
 }
 
@@ -14983,9 +15155,12 @@ module akra.animation {
 		private _pAnimation: IAnimationBase = null;
 		private _bReverse: bool = false;
 
-//Время учитывающее циклы и прочее.		private _fTrueTime: float = 0;
-//реальное время на сцене		private _fRealTime: float = 0;
-//время с учетом ускорений		private _fTime: float = 0;
+//Время учитывающее циклы и прочее.
+		private _fTrueTime: float = 0;
+//реальное время на сцене
+		private _fRealTime: float = 0;
+//время с учетом ускорений
+		private _fTime: float = 0;
 		private _bPause: bool = false;
 
 //определена ли анимация до первого и после последнего кадров
@@ -14993,6 +15168,7 @@ module akra.animation {
 		private _bRightInfinity: bool = true;
 
 		constructor(pAnimation?: IAnimationBase){
+			super();
 			if (pAnimation) {
 				this.setAnimation(pAnimation);
 			}
@@ -15018,7 +15194,7 @@ module akra.animation {
 			this._fRealTime = fRealTime;
 		    this._fTime = 0;
 
-		    this.onplay(fTime);
+		    this.onplay(this._fTime);
 		}
 
 		stop(): void {
@@ -15026,7 +15202,7 @@ module akra.animation {
 		}
 
 		attach(pTarget: INode): void {
-			this._pAnimation.bind(pTarget);
+			this._pAnimation.attach(pTarget);
 			this.grab(this._pAnimation, true);
 		}
 
@@ -15084,7 +15260,7 @@ module akra.animation {
 
 		setSpeed(fSpeed: float): void {
 			this._fSpeed = fSpeed;
-			this._fDuration = this._pAnimation._fDuration / fSpeed;
+			this.duration = this._pAnimation.duration / fSpeed;
 
 			this.onUpdateDuration();
 		}
@@ -15137,9 +15313,9 @@ module akra.animation {
 		    var fTime = this._fTime;
 
 		    if (this._bLoop) {
-		    	fTime = Math.mod(fTime, (this._pAnimation._fDuration));
+		    	fTime = math.mod(fTime, (this._pAnimation.duration));
 		    	if (this._bReverse) {
-		    		fTime = this._pAnimation._fDuration - fTime;
+		    		fTime = this._pAnimation.duration - fTime;
 		    	}
 		    }
 
@@ -15153,7 +15329,8 @@ module akra.animation {
 
 		    if (this._fRealTime !== fRealTime) {
 		    	this.time(fRealTime);
-		    	this.fire(a.Animation.EVT_ENTER_FRAME, fRealTime);
+
+		    	this.enterFrame(fRealTime);
 //trace('--->', this.name);
 		    }
 
@@ -15161,7 +15338,7 @@ module akra.animation {
 		    	return null;
 		    }
 
-			if (!this._bRightInfinity && this._fRealTime > this._fDuration + this._fStartTime) {
+			if (!this._bRightInfinity && this._fRealTime > this.duration + this._fStartTime) {
 		    	return null;
 		    }
 
@@ -15173,9 +15350,192 @@ module akra.animation {
 			onplay (fTime) : void { var broadcast: IEventSlot[] = (this.getEventTable()).broadcast[this._iGuid]["onplay"]; for (var i = 0; i < broadcast.length; ++ i) { broadcast[i].target? broadcast[i].target[broadcast[i].callback] (fTime) : broadcast[i].listener (fTime) ; } } ; ;
 			onstop (fTime) : void { var broadcast: IEventSlot[] = (this.getEventTable()).broadcast[this._iGuid]["onstop"]; for (var i = 0; i < broadcast.length; ++ i) { broadcast[i].target? broadcast[i].target[broadcast[i].callback] (fTime) : broadcast[i].listener (fTime) ; } } ; ;
 			onUpdateDuration () : void { var broadcast: IEventSlot[] = (this.getEventTable()).broadcast[this._iGuid]["onUpdateDuration"]; for (var i = 0; i < broadcast.length; ++ i) { broadcast[i].target? broadcast[i].target[broadcast[i].callback] () : broadcast[i].listener () ; } } ; ;
+			enterFrame (fRealTime) : void { var broadcast: IEventSlot[] = (this.getEventTable()).broadcast[this._iGuid]["enterFrame"]; for (var i = 0; i < broadcast.length; ++ i) { broadcast[i].target? broadcast[i].target[broadcast[i].callback] (fRealTime) : broadcast[i].listener (fRealTime) ; } } ; ;
 		;
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IAnimationBase {} ;
+	export interface IEngine {} ;
+	export interface INode {} ;
+
+	export interface IAnimationController{
+		 totalAnimations: int;
+		 active: IAnimationBase;
+
+		getEngine(): IEngine;
+		setOptions(eOptions): void;
+		addAnimation(pAnimation: IAnimationBase): bool;
+
+		removeAnimation(): bool;
+
+		findAnimation(pAnimation: string): IAnimationBase;
+		findAnimation(pAnimation: int): IAnimationBase;
+		findAnimation(pAnimation: IAnimationBase): IAnimationBase;
+
+		getAnimation(iAnim: int): IAnimationBase;
+
+		setAnimation(iAnimation: int, pAnimation: IAnimationBase): void;
+		bind(pTarget: INode): void;
+		play(pAnimation: IAnimationBase, fRealTime: float): bool;
+
+		update(fTime: float): void;
+	}
+}
+
+
+
+
+module akra.animation {
+	export class AnimationController implements IAnimationController {
+		private _pEngine: IEngine;
+		private _pAnimations: IAnimationBase[] = [];
+		private _eOptions = 0;
+	    private _pActiveAnimation: IAnimationBase = null;
+	    private _fnPlayAnimation: Function = null;
+
+	    /**@inline*/  get totalAnimations(): int{
+			return this._pAnimations.length;
+		}
+
+		/**@inline*/  get active(): IAnimationBase{
+			return this._pActiveAnimation;
+		}
+
+		constructor(pEngine: IEngine, eOptions){
+			this._pEngine = pEngine;
+
+			if (eOptions) {
+				this.setOptions(eOptions);
+			}
+		}
+
+		getEngine(): IEngine {
+			return this._pEngine;
+		}
+
+		setOptions(eOptions): void {
+
+		}
+
+		addAnimation(pAnimation: IAnimationBase): bool {
+			if (this.findAnimation(pAnimation.name)) {
+				warning('Animation with name <' + pAnimation.name + '> already exists in this controller');
+				return false;
+			}
+
+//trace('animation controller :: add animation >> ', pAnimation.name);
+
+			this._pAnimations.push(pAnimation);
+			this._pActiveAnimation = pAnimation;
+		}
+
+		removeAnimation(): bool {
+			var pAnimation = this.findAnimation(arguments[0]);
+		    var pAnimations = this._pAnimations;
+
+			for (var i = 0; i < pAnimations.length; ++ i) {
+				if (pAnimations[i] === pAnimation) {
+					pAnimations.splice(i, 1);
+					trace('animation controller :: remove animation >> ', pAnimation.name);
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		findAnimation(pAnimation: string): IAnimationBase;
+		findAnimation(pAnimation: int): IAnimationBase;
+		findAnimation(pAnimation: IAnimationBase): IAnimationBase;
+		findAnimation(pAnimation: any): IAnimationBase {
+			var pAnimations: IAnimationBase[] = this._pAnimations;
+		    var iAnimation: int;
+		    var sAnimation: string;
+
+			if (typeof arguments[0] === 'string') {
+				sAnimation = arguments[0];
+
+				for (var i = 0; i < pAnimations.length; ++ i) {
+					if (pAnimations[i].name === sAnimation) {
+						return pAnimations[i];
+					}
+				}
+
+				return null;
+			}
+
+			if (typeof arguments[0] === 'number') {
+				iAnimation = arguments[0];
+				return pAnimations[iAnimation] || null;
+			}
+
+			return arguments[0];
+		}
+
+		getAnimation(iAnim: int): IAnimationBase {
+			return this._pAnimations[iAnim];
+		}
+
+		setAnimation(iAnimation: int, pAnimation: IAnimationBase): void {
+			debug_assert(iAnimation < this._pAnimations.length, 'invalid animation slot');
+
+			this._pAnimations[iAnimation] = pAnimation;
+		}
+
+		bind(pTarget: INode): void {
+			var pAnimations: IAnimationBase[] = this._pAnimations;
+
+		    for (var i: int = 0; i < pAnimations.length; ++ i) {
+		        pAnimations[i].attach(pTarget);
+		    }
+		}
+
+		play(pAnimation: IAnimationBase, fRealTime: float): bool {
+			var pAnimationNext: IAnimationBase = this.findAnimation(arguments[0]);
+			var pAnimationPrev: IAnimationBase = this._pActiveAnimation;
+
+			if (pAnimationNext && pAnimationNext !== pAnimationPrev) {
+				if (this._fnPlayAnimation) {
+					this._fnPlayAnimation(pAnimationNext);
+				}
+//trace('controller::play(', pAnimationNext.name, ')', pAnimationNext);
+				if (pAnimationPrev) {
+					pAnimationPrev.stop(fRealTime);
+				}
+
+				pAnimationNext.play(fRealTime);
+
+				this._pActiveAnimation = pAnimationNext;
+
+				return true;
+			}
+
+			return false;
+		}
+
+		update(fTime: float): void {
+			if (this._pActiveAnimation) {
+				this._pActiveAnimation.apply(fTime);
+			}
+		}
+	}
+}
+
+
+
 
 
 

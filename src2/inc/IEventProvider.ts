@@ -1,6 +1,8 @@
 #ifndef IEVENTPROVIDER_TS
 #define IEVENTPROVIDER_TS
 
+#define signal
+
 module akra {
 	IFACE(IEventTable);
 

@@ -1,8 +1,9 @@
 #ifndef IANIMATIONCONTAINER_TS
 #define IANIMATIONCONTAINER_TS
 
+#include "IAnimationBase.ts"
+
 module akra {
-	IFACE(IAnimationBase);
 	IFACE(IAnimationFrame);
 
 	export interface IAnimationContainer extends IAnimationBase {
@@ -45,6 +46,11 @@ module akra {
 		time(fRealTime: float): void;
 
 		frame(sName: string, fRealTime: float): IAnimationFrame;
+
+		signal onplay(fTime: float): void;
+		signal onstop(fTime: float): void;
+		signal onUpdateDuration(): void;
+		signal enterFrame(fRealTime: float): void;
 	}
 }
 
