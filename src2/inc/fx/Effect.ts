@@ -14,11 +14,46 @@ module akra.fx {
 	//Errors
 	#define EFFECT_REDEFINE_SYSTEM_TYPE 2201
 	#define EFFECT_REDEFINE_TYPE 2202
-    #define EFFECT_DONT_SUPPORTED_TYPEDECL 2203
+    #define EFFECT_UNSUPPORTED_TYPEDECL 2203
+    #define EFFECT_UNSUPPORTED_EXPR 2204
+    #define EFFECT_UNKNOWN_VARNAME 2205
+    #define EFFECT_BAD_ARITHMETIC_OPERATION 2206
+    #define EFFECT_BAD_ARITHMETIC_ASSIGNMENT_OPERATION 2207
+    #define EFFECT_BAD_ASSIGNMENT_OPERATION 2208
+    #define EFFECT_BAD_RELATIONAL_OPERATION 2209
+    #define EFFECT_BAD_LOGICAL_OPERATION 2210
+    #define EFFECT_BAD_CONDITION_TYPE 2211
+    #define EFFECT_BAD_CONDITION_VALUE_TYPES 2212
 
-    akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
-    akra.logger.registerCode(EFFECT_REDEFINE_TYPE, "You trying to redefine type: {typeName}. In line: {line}. In column: {column}");
-    akra.logger.registerCode(EFFECT_DONT_SUPPORTED_TYPEDECL, "You try to use unssuported type declaration. We implement it soon. In line: {line}.");
+    akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, 
+    						 "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFECT_REDEFINE_TYPE, 
+    	 					 "You trying to redefine type: {typeName}. In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFECT_UNSUPPORTED_TYPEDECL, 
+    						 "You try to use unssuported type declaration. We implement it soon. In line: {line}.");
+    akra.logger.registerCode(EFFECT_UNSUPPORTED_EXPR, 
+    						 "You try to use unssuported expr: {exprName}. We implement it soon. In line: {line}.");
+    akra.logger.registerCode(EFFECT_UNKNOWN_VARNAME, 
+    						 "Unknown variable name: {varName}. In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFECT_BAD_ARITHMETIC_OPERATION, 
+    						 "Invalid arithmetic operation!. There no operator {operator} for left-type '{leftTypeName}' \
+    						 and right-type '{rightTypeName}'. In line: {line}.");
+    akra.logger.registerCode(EFFECT_BAD_ARITHMETIC_ASSIGNMENT_OPERATION, 
+    						 "Invalid arithmetic-assignment operation!. There no operator {operator} for left-type '{leftTypeName}' \
+    						 and right-type '{rightTypeName}'. In line: {line}.");
+    akra.logger.registerCode(EFFECT_BAD_ASSIGNMENT_OPERATION, 
+    						 "Invalid assignment operation!. It`s no possible to do assignment between left-type '{leftTypeName}' \
+    						 and right-type '{rightTypeName}'. In line: {line}.");
+    akra.logger.registerCode(EFFECT_BAD_RELATIONAL_OPERATION, 
+    						 "Invalid relational operation!. There no operator {operator} for left-type '{leftTypeName}' \
+    						 and right-type '{rightTypeName}'. In line: {line}.");
+    akra.logger.registerCode(EFFECT_BAD_LOGICAL_OPERATION, 
+    						 "Invalid logical operation!. In operator: {operator}. Cannot convert type '{typeName}' to 'bool'. In line: {line}.");
+    akra.logger.registerCode(EFFECT_BAD_CONDITION_TYPE, 
+    						 "Invalid conditional expression!. Cannot convert type '{typeName}' to 'bool'. In line: {line}.");
+    akra.logger.registerCode(EFFECT_BAD_CONDITION_VALUE_TYPES, 
+    						 "Invalid conditional expression!. Type '{leftTypeName}' and type '{rightTypeName}' are not equal. In line: {line}.");
+
 
 
     function sourceLocationToString(pLocation: ISourceLocation): string {
@@ -48,6 +83,11 @@ module akra.fx {
     export interface IEffectErrorInfo{
     	
     	typeName?: string;
+   		exprName?: string;
+   		varName?: string;
+   		operator?: string;
+   		leftTypeName?: string;
+   		rirgtTypeName?: string;
     	
     	line?: uint;
     	column?: uint;
@@ -435,6 +475,10 @@ module akra.fx {
 		clear(): void {
 		}
 
+		private inline getVariable(sName: string): IAFXVariable {
+			return this._pEffectScope.getVariable(sName);
+		}
+
 		private addSystemFunction(): void {
 
 		}
@@ -468,7 +512,7 @@ module akra.fx {
 			switch(eCode){
 				case EFFECT_REDEFINE_TYPE:
 				case EFFECT_REDEFINE_SYSTEM_TYPE:
-				case EFFECT_DONT_SUPPORTED_TYPEDECL:
+				case EFFECT_UNSUPPORTED_TYPEDECL:
 
 					pInfo.line = pLineColumn.line;
 					pInfo.column = pLineColumn.column;
@@ -501,12 +545,12 @@ module akra.fx {
 		}
 
 		private inline newInstruction(pInstruction: IAFXInstruction): void {
-			pInstruction.parent = this._pCurrentInstruction;
+			pInstruction.setParent(this._pCurrentInstruction);
 			this._pCurrentInstruction = pInstruction;
 		}
 
 		private inline endInstruction(): void {
-			this._pCurrentInstruction = this._pCurrentInstruction.parent;
+			this._pCurrentInstruction = this._pCurrentInstruction.getParent();
 		}
 
 		private inline pushCommand(pInstruction: IAFXInstruction, isSetParent?: bool = false): void {
@@ -524,7 +568,7 @@ module akra.fx {
 
 		private inline setOperator(sOperator: string): void {
 			if(!isNull(this._pCurrentInstruction)){
-				this._pCurrentInstruction.operator = sOperator;
+				this._pCurrentInstruction.setOperator(sOperator);
 			}	
 		}
 
@@ -652,12 +696,26 @@ module akra.fx {
 
         	var pVarDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
         	var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-        	//init expr
 			
         	pVarDecl.push(pVariableType);       	
         	pVariableType.push(pUsageType);
 
         	this.newInstruction(pVarDecl);
+
+        	this.analyzeVariableDim(pChildren[pChildren.length - 1]);
+        	
+        	var i: uint = 0;
+        	for(i = pChildren.length - 2; i >= 0; i--){
+        		if(pChildren[i].name === "Annotation"){
+        			this.analyzeAnnotation(pChildren[i]);
+        		}
+        		else if(pChildren[i].name === "Semantic"){
+        			this.analyzeSemantic(pChildren[i]);
+        		}
+        		else if(pChildren[i].name === "Initializer"){
+        			this.analyzeInitializer(pChildren[i]);
+        		}
+        	}
 
         	this.endInstruction();
 
@@ -669,26 +727,433 @@ module akra.fx {
         private analyzeVariableDim(pNode: IParseNode): void {
 			var pChildren: IParseNode[] = pNode.children;
 			var pVariableDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this._pCurrentInstruction;
-			var pVariableType: IAFXVariableTypeInstruction = pVariableDecl.getVariableType();
+			var pVariableType: IAFXVariableTypeInstruction = pVariableDecl.getType();
 
 			if(pChildren.length === 1) {
 				var pName: IAFXIdInstruction = new IdInstruction();
 				pName.setName(pChildren[0].value);
 				pVariableDecl.push(pName, true);
+				return;
 			}
-			else if(pChildren.length === 3) {
+			  
+			if(pChildren.length === 3) {
 				pVariableType.addPointIndex();
 			}
-			// else if(pChildren.length === 4 && pChildren[0].name === "FromExpr"){
-			// 	
-			// }
+			else if(pChildren.length === 4 && pChildren[0].name === "FromExpr"){
+				var pBuffer: IAFXIdInstruction = this.analyzeFromExpr(pChildren[0]);
+				pVariableType.setVideoBuffer(pBuffer);
+			}
+			else {
+				var pIndexExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
+				pVariableType.addArrayIndex(pIndexExpr);	
+			}
 
+			this.analyzeVariableDim(pChildren[pChildren.length - 1]);
+        }
 
+        private analyzeAnnotation(pNode:IParseNode): void {
 
         }
 
+        private analyzeSemantic(pNode:IParseNode): void {
+        	var sSemantic: string = pNode.children[0].value;
+			var pDecl: IAFXDeclInstruction = <IAFXDeclInstruction>this._pCurrentInstruction;
+			pDecl.setSemantic(sSemantic);	
+        }
 
+        private analyzeInitializer(pNode:IParseNode): void {        	
+        }
 
+        private analyzeFromExpr(pNode: IParseNode): IAFXIdInstruction {
+       		return null;	
+        }
+
+        private analyzeExpr(pNode: IParseNode): IAFXExprInstruction {
+        	this.setAnalyzedNode(pNode);
+        	var sName = pNode.name;
+        	
+        	switch(sName){
+        		case "ObjectExpr":
+        			return this.analyzeObjectExpr(pNode);
+        		case "ComplexExpr":
+        			return this.analyzeComplexExpr(pNode);
+        		case "PrimaryExpr":
+        			return this.analyzePrimaryExpr(pNode);
+        		case "PostfixExpr":
+        			return this.analyzePostfixExpr(pNode);
+        		case "UnaryExpr":
+        			return this.analyzeUnaryExpr(pNode);
+        		case "CastExpr":
+        			return this.analyzeCastExpr(pNode);
+        		case "ConditionalExpr":
+        			return this.analyzeConditionalExpr(pNode);
+        		case "MulExpr":
+		        case "AddExpr":
+		        	return this.analyzeArithmeticExpr(pNode);
+		        case "RelationalExpr":
+		        case "EqualityExpr":
+		        	return this.analyzeRelationExpr(pNode);
+		        case "AndExpr":
+		        case "OrExpr":
+		        	return this.analyzeLogicalExpr(pNode);
+		        case "AssignmentExpr":
+		        	return this.analyzeAssignmentExpr(pNode);
+		        case "T_NON_TYPE_ID":
+		        	return this.analyzeIdExpr(pNode);
+		        case "T_STRING":
+		        case "T_UINT":
+		        case "T_FLOAT":
+		        case "T_KW_TRUE":
+		        case "T_KW_FALSE":
+		        	return this.analyzeSimpleExpr(pNode);
+		       	case "MemExpr":
+		       		return this.analyzeMemExpr(pNode);
+		       	default:
+		       		this._error(EFFECT_UNSUPPORTED_EXPR, {exprName: sName});
+		       		break;
+        	}
+
+       		return null;	
+        }
+
+        private analyzeObjectExpr(pNode: IParseNode): IAFXExprInstruction {
+        	return null;
+        }
+
+        private analyzeComplexExpr(pNode: IParseNode): IAFXExprInstruction{
+        	return null;
+        }
+        
+        private analyzePrimaryExpr(pNode: IParseNode): IAFXExprInstruction{
+        	return null;
+        }
+        
+        private analyzePostfixExpr(pNode: IParseNode): IAFXExprInstruction{
+        	return null;
+        }
+        
+        private analyzeUnaryExpr(pNode: IParseNode): IAFXExprInstruction{
+        	return null;
+        }
+        
+        private analyzeCastExpr(pNode: IParseNode): IAFXExprInstruction{
+        	return null;
+        }
+        
+        private analyzeConditionalExpr(pNode: IParseNode): IAFXExprInstruction{
+        	this.setAnalyzedNode(pNode);
+        	
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pExpr: ConditionalExprInstruction = new ConditionalExprInstruction();
+        	var pConditionExpr: IAFXExprInstruction;
+        	var pTrueExpr: IAFXExprInstruction;
+        	var pFalseExpr: IAFXExprInstruction;
+        	var pConditionType: IAFXVariableTypeInstruction;
+			var pTrueExprType: IAFXVariableTypeInstruction;
+        	var pFalseExprType: IAFXVariableTypeInstruction;
+        	var pExprType: IAFXVariableTypeInstruction;
+        	var pBoolType: IAFXVariableTypeInstruction;
+
+        	pConditionExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
+        	pTrueExpr = this.analyzeExpr(pChildren[pChildren.length - 3]);
+        	pFalseExpr = this.analyzeExpr(pChildren[0]);
+
+        	pConditionType = pConditionExpr.getType();
+        	pTrueExprType = pTrueExpr.getType();
+        	pFalseExprType = pFalseExpr.getType();
+
+        	pBoolType = this.getSystemType("bool");
+
+        	if(!pConditionType.isEqual(pBoolType)){
+        		this._error(EFFECT_BAD_CONDITION_TYPE, { typeName: pConditionType.toString()});
+        		return null;
+        	}
+
+        	if(!pTrueExprType.isEqual(pFalseExprType)){
+        		this._error(EFFECT_BAD_CONDITION_VALUE_TYPES, { leftTypeName: pTrueExprType.toString(),
+        														rightTypeName: pFalseExprType.toString()});
+        		return null;
+        	}
+
+        	pExpr.setType(pTrueExprType);
+        	pExpr.push(pConditionExpr, true);
+        	pExpr.push(pTrueExpr, true);
+        	pExpr.push(pFalseExpr, true);
+
+        	return pExpr;
+        }
+        
+        private analyzeArithmeticExpr(pNode: IParseNode): IAFXExprInstruction{
+        	this.setAnalyzedNode(pNode);
+        	
+        	var pChildren: IParseNode[] = pNode.children;
+        	var sOperator: string = pNode.children[1].value;
+        	var pExpr: ArithmeticExprInstruction = new ArithmeticExprInstruction();
+        	var pLeftExpr: IAFXExprInstruction;
+        	var pRightExpr: IAFXExprInstruction;
+			var pLeftType: IAFXVariableTypeInstruction;
+        	var pRightType: IAFXVariableTypeInstruction;
+        	var pExprType: IAFXVariableTypeInstruction;
+        	
+        	pLeftExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
+        	pRightExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
+
+        	pLeftType = pLeftExpr.getType();
+        	pRightType = pRightExpr.getType();
+
+        	pExprType = this.checkArithmeticExprTypes(sOperator, pLeftType, pRightType);
+
+        	if(isNull(pExprType)){
+        		this._error(EFFECT_BAD_ARITHMETIC_OPERATION, { operator: sOperator,
+        													   leftTypeName: pLeftType.toString(),
+        													   rightTypeName: pRightType.toString()});
+        		return null;
+        	}
+
+        	pExpr.setOperator(sOperator);
+        	pExpr.setType(pExprType);
+        	pExpr.push(pLeftExpr, true);
+        	pExpr.push(pRightExpr, true);
+
+        	return pExpr;
+        }
+
+        private analyzeRelationExpr(pNode: IParseNode): IAFXExprInstruction{
+        	this.setAnalyzedNode(pNode);
+        	
+        	var pChildren: IParseNode[] = pNode.children;
+        	var sOperator: string = pNode.children[1].value;
+        	var pExpr: RelationalExprInstruction = new RelationalExprInstruction();
+        	var pLeftExpr: IAFXExprInstruction;
+        	var pRightExpr: IAFXExprInstruction;
+			var pLeftType: IAFXVariableTypeInstruction;
+        	var pRightType: IAFXVariableTypeInstruction;
+        	var pExprType: IAFXVariableTypeInstruction;
+        	
+        	pLeftExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
+        	pRightExpr = this.analyzeExpr(pChildren[0]);
+
+        	pLeftType = pLeftExpr.getType();
+        	pRightType = pRightExpr.getType();
+
+        	pExprType = this.checkRelationalExprTypes(sOperator, pLeftType, pRightType);
+
+        	if(isNull(pExprType)){
+        		this._error(EFFECT_BAD_RELATIONAL_OPERATION, { operator: sOperator,
+        													   leftTypeName: pLeftType.toString(),
+        													   rightTypeName: pRightType.toString()});
+        		return null;
+        	}
+
+        	pExpr.setOperator(sOperator);
+        	pExpr.setType(pExprType);
+        	pExpr.push(pLeftExpr, true);
+        	pExpr.push(pRightExpr, true);
+
+        	return pExpr;
+        }
+
+        private analyzeLogicalExpr(pNode: IParseNode): IAFXExprInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var sOperator: string = pNode.children[1].value;
+        	var pExpr: LogicalExprInstruction = new LogicalExprInstruction();
+        	var pLeftExpr: IAFXExprInstruction;
+        	var pRightExpr: IAFXExprInstruction;
+			var pLeftType: IAFXVariableTypeInstruction;
+        	var pRightType: IAFXVariableTypeInstruction;
+			var pBoolType: IAFXVariableTypeInstruction;
+
+        	pLeftExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
+        	pRightExpr = this.analyzeExpr(pChildren[0]);
+
+        	pLeftType = pLeftExpr.getType();
+        	pRightType = pRightExpr.getType();
+
+        	pBoolType = this.getSystemType("bool");
+
+        	if(!pLeftType.isEqual(pBoolType)){
+        		this._error(EFFECT_BAD_LOGICAL_OPERATION, { operator: sOperator,
+    													    typeName: pLeftType.toString()});
+        		return null;
+        	}
+        	if(!pRightType.isEqual(pBoolType)){
+        		this._error(EFFECT_BAD_LOGICAL_OPERATION, { operator: sOperator,
+    													    typeName: pRightType.toString()});
+        		return null;
+        	}
+
+        	pExpr.setOperator(sOperator);
+        	pExpr.setType(pBoolType);
+        	pExpr.push(pLeftExpr, true);
+        	pExpr.push(pRightExpr, true);
+
+        	return pExpr;        	
+        }
+
+        private analyzeAssignmentExpr(pNode: IParseNode): IAFXExprInstruction{
+        	this.setAnalyzedNode(pNode);
+        	
+        	var pChildren: IParseNode[] = pNode.children;
+        	var sOperator: string = pChildren[1].value;
+        	var pExpr: AssignmentExprInstruction = new AssignmentExprInstruction();
+        	var pLeftExpr: IAFXExprInstruction;
+        	var pRightExpr: IAFXExprInstruction;
+			var pLeftType: IAFXVariableTypeInstruction;
+        	var pRightType: IAFXVariableTypeInstruction;
+        	var pExprType: IAFXVariableTypeInstruction;
+
+        	pLeftExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
+        	pRightExpr = this.analyzeExpr(pChildren[0]);
+
+        	pLeftType = pLeftExpr.getType();
+        	pRightType = pRightExpr.getType();
+
+        	if(sOperator !== "="){
+        		pExprType = this.checkArithmeticExprTypes(sOperator, pLeftType, pRightType);	
+        	  	if(isNull(pExprType)){
+        			this._error(EFFECT_BAD_ARITHMETIC_ASSIGNMENT_OPERATION, { operator: sOperator,
+        													  			  	  leftTypeName: pLeftType.toString(),	
+        													  			  	  rightTypeName: pRightType.toString()});
+        		}
+        	}
+        	else {
+        		pExprType = pRightType;
+        	}
+
+        	pExprType = this.checkAssignmentExprTypes(pLeftType, pExprType);
+
+        	if(isNull(pExprType)){
+        		this._error(EFFECT_BAD_ASSIGNMENT_OPERATION, { leftTypeName: pLeftType.toString(),	
+        													   rightTypeName: pRightType.toString()});
+        	}
+
+        	pExpr.setOperator(sOperator);
+        	pExpr.setType(pExprType);
+        	pExpr.push(pLeftExpr, true);
+        	pExpr.push(pRightExpr, true);
+
+        	return pExpr;
+        }
+
+        private analyzeIdExpr(pNode: IParseNode): IAFXExprInstruction {
+        	this.setAnalyzedNode(pNode);
+        	
+        	var sName: string = pNode.value;
+        	var pVariable: IAFXVariable = this.getVariable(sName);
+
+        	if(isNull(pVariable)){
+        		this._error(EFFECT_UNKNOWN_VARNAME, {varName: sName});
+        		return null;
+        	}
+
+        	var pVarId: IdExprInstruction = new IdExprInstruction();
+        	pVarId.push(pVariable.getId());
+
+        	// this.pushCommand(pVarId, true);
+        	
+        	return pVarId;
+        }
+
+        private analyzeSimpleExpr(pNode: IParseNode): IAFXExprInstruction {
+        	this.setAnalyzedNode(pNode);
+        	
+        	var pInstruction: IAFXLiteralInstruction;
+        	var sName: string = pNode.name;
+        	var sValue: string = pNode.value;
+
+        	switch(sName) {
+        	 	case "T_UINT": 
+        	 		pInstruction = new IntInstruction();
+        	 		pInstruction.setValue(<int><any>sValue);
+        	 		break;
+        	 	case "T_FLOAT":
+        	 		pInstruction = new FloatInstruction();
+        	 		pInstruction.setValue(<float><any>sValue);
+        	 		break;
+        	 	case "T_STRING":
+        	 		pInstruction = new StringInstruction();
+        	 		pInstruction.setValue(sValue);
+        	 		break;
+        	 	case "T_KW_TRUE":
+        	 	case "T_KW_FALSE":
+        	 		pInstruction = new BoolInstruction();
+        	 		pInstruction.setValue(<bool><any>sValue);
+        	 		break;
+			}
+
+			// this.pushCommand(pInstruction, true);
+
+        	return pInstruction;
+        }
+
+        private analyzeMemExpr(pNode: IParseNode): IAFXExprInstruction{
+        	return null;
+        }
+
+        /**
+         * Проверят возможность использования арифметического оператора между двумя типами.
+         * Возращает тип получаемый в результате приминения опрератора, или, если применить его невозможно - null.
+         * 
+         * @sOperator {string} Один из операторов: + - * / %
+         * @pLeftType {IAFXVariableTypeInstruction} Тип левой части выражения
+         * @pRightType {IAFXVariableTypeInstruction} Тип правой части выражения
+         */
+        private checkArithmeticExprTypes(sOperator: string, 
+        								 pLeftType: IAFXVariableTypeInstruction, 
+        								 pRightType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
+
+        	switch(sOperator) {
+        		case "+":
+        		case "+=":
+        			break;
+        		case "-":
+        		case "-=":
+        			break;
+        		case "*":
+        		case "*=":
+        			break;
+        		case "/":
+        		case "/=":
+        			break;
+        		case "%":
+        		case "%=":
+        			break;
+        	}
+
+        	return null;
+        }
+
+        private checkAssignmentExprTypes(pLeftType: IAFXVariableTypeInstruction, 
+        								 pRightType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
+
+        	return null;
+        }
+
+        private checkRelationalExprTypes(sOperator: string, 
+        								 pLeftType: IAFXVariableTypeInstruction, 
+        								 pRightType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
+        
+        	switch(sOperator){
+        		case "<":
+        		case "<=":
+        			break;
+        		case ">":
+        		case ">=":
+        			break;
+        		case "==":
+        		case "!=":
+        			break;
+        	}
+
+        	return null;
+        }
+
+        private getSystemType(sTypeName: string): IAFXVariableTypeInstruction {
+        	//bool, string, float and others
+        	return null;
+        }
 
 
 		// private analyzeTypes(): void {
@@ -727,7 +1192,7 @@ module akra.fx {
 				this.analyzeStructDecl(pChildren[1]);
 			}
 			else {
-				this._error(EFFECT_DONT_SUPPORTED_TYPEDECL);
+				this._error(EFFECT_UNSUPPORTED_TYPEDECL);
 			}
 
 			this.endInstruction();

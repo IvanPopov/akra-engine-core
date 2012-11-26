@@ -17,10 +17,14 @@ module akra {
 	 * Operator and instructions may be empty.
 	 */
 	export interface IAFXInstruction {
-        parent: IAFXInstruction;
+        setParent(pParent: IAFXInstruction): void;
+        getParent(): IAFXInstruction;
 
-    	operator: string;
-    	instructions: IAFXInstruction[];
+        setOperator(sOperator: string): void;
+        getOperator(): string;
+
+        setInstructions(pInstructionList: IAFXInstruction[]): void;
+        getInstructions(): IAFXInstruction[];
 
     	// /**
     	//  * Contain states of instruction
@@ -39,17 +43,32 @@ module akra {
     	toString(): string;
     }
 
-    export interface IAFXTypeDeclInstruction extends IAFXInstruction {
-        //variableType : IAFXVariableTypeInstruction;
-    }
-
     export interface IAFXVariableTypeInstruction extends IAFXInstruction {
         //type : IAFXTypeInstruction
         //array: IAFXArrayInstruction
         //pointer : IAFXPointerInstruction
-        addArrayIndex(): void;
+        addArrayIndex(pExpr: IAFXExprInstruction): void;
         addPointIndex(): void;
-        setVideoBuffer(): void;
+        setVideoBuffer(pBuffer: IAFXIdInstruction): void;
+
+        isEqual(pType: IAFXVariableTypeInstruction): bool;
+    }
+
+    export interface IAFXTypedInstruction extends IAFXInstruction {
+        getType(): IAFXVariableTypeInstruction;
+        setType(pType: IAFXVariableTypeInstruction): void;
+    }
+
+    export interface IAFXDeclInstruction extends IAFXTypedInstruction {
+        setSemantic(sSemantic: string);
+    }
+
+    export interface IAFXTypeDeclInstruction extends IAFXDeclInstruction {
+    
+    }
+
+    export interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
+
     }
 
     export interface IAFXTypeInstruction extends IAFXInstruction {
@@ -80,10 +99,14 @@ module akra {
     }
 
 
+    export interface IAFXExprInstruction extends IAFXTypedInstruction {
 
-    export interface IAFXVariableDeclInstruction extends IAFXInstruction {
-        getVariableType(): IAFXVariableTypeInstruction;
     }
+
+    export interface IAFXLiteralInstruction extends IAFXExprInstruction {
+        setValue(pValue: any): void;
+    }
+
 }
 
 #endif

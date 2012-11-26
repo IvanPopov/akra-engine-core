@@ -28,6 +28,10 @@ module akra.fx {
 
 		}
 
+		getType(): IAFXVariableTypeInstruction {
+			return null;	
+		}
+
 		initializeFromInstruction(pInstruction: IAFXVariableDeclInstruction): void{
 			this._pDeclInstruction = pInstruction;	
 		}

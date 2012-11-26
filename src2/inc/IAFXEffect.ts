@@ -14,6 +14,8 @@ module akra {
     export interface IAFXVariable extends IAFXObject {
         setName(sName: string): void;
         setType(pType: IAFXComplexType): void;
+        getType(): IAFXVariableTypeInstruction;
+        
         initializeFromInstruction(pInstruction: IAFXVariableDeclInstruction): void;
 
     }
