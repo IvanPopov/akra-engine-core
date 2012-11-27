@@ -83,6 +83,10 @@ module akra.fx {
 		isEqual(pType: IAFXVariableTypeInstruction): bool {
 			return false;
 		}
+
+		isBase(): bool {
+			return false;
+		}
 	}
 
 	export class TypedInstruction extends Instruction implements IAFXTypedInstruction {
@@ -273,7 +277,7 @@ module akra.fx {
 		}
 	}
 
-	export class TypeInstruction extends Instruction implements IAFXTypeInstruction {
+	export class UsageTypeInstruction extends Instruction implements IAFXUsageTypeInstruction {
 		// EMPTY_OPERATOR KeywordInstruction ... KeywordInstruction IdInstruction
 		
 		constructor() {
@@ -383,6 +387,27 @@ module akra.fx {
 			super();
 			this._pInstructionList = [null, null, null];
 		}
+	}
+	/**
+	 * Represent (type) expr
+	 * EMPTY_OPERATOR VariableTypeInstruction Instruction
+	 */
+	export class CastExprInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null, null];
+		}	
+	}
+
+	/**
+	 * Represent + - ! ++ -- expr
+	 * (+|-|!|++|--|) VariableTypeInstruction Instruction
+	 */
+	export class UnaryExprInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null, null];
+		}	
 	}
 
 

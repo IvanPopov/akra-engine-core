@@ -52,6 +52,7 @@ module akra {
         setVideoBuffer(pBuffer: IAFXIdInstruction): void;
 
         isEqual(pType: IAFXVariableTypeInstruction): bool;
+        isBase(): bool;
     }
 
     export interface IAFXTypedInstruction extends IAFXInstruction {
@@ -71,7 +72,7 @@ module akra {
 
     }
 
-    export interface IAFXTypeInstruction extends IAFXInstruction {
+    export interface IAFXUsageTypeInstruction extends IAFXInstruction {
         //usage: IAFXKeywordInstruction[]
         //id: IAFXIdInstruction
     }

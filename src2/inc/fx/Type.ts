@@ -38,47 +38,6 @@ module akra.fx {
 			return this._isBase;
 		}
 	} 
-
-	export class ComplexType implements IAFXComplexType {
-		private _pInstruction: TypeInstruction;
-		// private _pType: IAFXType;
-		// private _pUsages: IAFXKeywordInstruction[];
-
-		getName(): string {
-			return "";
-			//this._pType.getName();
-		}
-
-		getId(): IAFXIdInstruction {
-			return null;
-			//this._pType.getId();
-		}
-
-		constructor(){
-			// this._pType = null;
-			// this._pUsages = null;
-			this._pInstruction = null;
-		}
-
-		getUsages(): IAFXKeywordInstruction[]{
-			// return this._pUsages;
-			return null;
-		}
-
-		getType(): IAFXType{
-			// return this._pType;
-			return null;
-		}
-
-		setType(pType: IAFXType): void {
-
-		}
-
-		setUsage(pUsage: IAFXKeywordInstruction) : void {
-
-		}
-
-	}
 }
 
 #endif

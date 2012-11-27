@@ -13,7 +13,7 @@ module akra {
 
     export interface IAFXVariable extends IAFXObject {
         setName(sName: string): void;
-        setType(pType: IAFXComplexType): void;
+        setType(pType: IAFXVariableTypeInstruction): void;
         getType(): IAFXVariableTypeInstruction;
         
         initializeFromInstruction(pInstruction: IAFXVariableDeclInstruction): void;
@@ -23,14 +23,6 @@ module akra {
     export interface IAFXType extends IAFXObject {
         isBase(): bool;
         initializeFromInstruction(pInstruction: IAFXTypeDeclInstruction): bool;
-    }
-
-    export interface IAFXComplexType extends IAFXObject {
-        getUsages(): IAFXKeywordInstruction[];
-        getType(): IAFXType;
-
-        setType(pType: IAFXType): void;
-        setUsage(pUsage: IAFXKeywordInstruction): void;
     }
 
     export interface IAFXFunction extends IAFXObject {

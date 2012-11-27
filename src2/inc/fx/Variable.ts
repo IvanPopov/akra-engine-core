@@ -24,7 +24,7 @@ module akra.fx {
 
 		}
 
-		setType(pType: IAFXComplexType): void {
+		setType(pType: IAFXVariableTypeInstruction): void {
 
 		}
 

@@ -24,6 +24,10 @@ module akra.fx {
     #define EFFECT_BAD_LOGICAL_OPERATION 2210
     #define EFFECT_BAD_CONDITION_TYPE 2211
     #define EFFECT_BAD_CONDITION_VALUE_TYPES 2212
+    #define EFFECT_BAD_CAST_TYPE_USAGE 2213
+    #define EFFECT_BAD_CAST_TYPE_NOT_BASE 2214
+    #define EFFECT_BAD_CAST_UNKNOWN_TYPE 2215
+    #define EFFECT_BAD_UNARY_OPERATION 2216
 
     akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, 
     						 "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
@@ -36,25 +40,39 @@ module akra.fx {
     akra.logger.registerCode(EFFECT_UNKNOWN_VARNAME, 
     						 "Unknown variable name: {varName}. In line: {line}. In column: {column}");
     akra.logger.registerCode(EFFECT_BAD_ARITHMETIC_OPERATION, 
-    						 "Invalid arithmetic operation!. There no operator {operator} for left-type '{leftTypeName}' \
+    						 "Invalid arithmetic operation!. There no operator '{operator}'\
+    						  for left-type '{leftTypeName}' \
     						 and right-type '{rightTypeName}'. In line: {line}.");
     akra.logger.registerCode(EFFECT_BAD_ARITHMETIC_ASSIGNMENT_OPERATION, 
-    						 "Invalid arithmetic-assignment operation!. There no operator {operator} for left-type '{leftTypeName}' \
+    						 "Invalid arithmetic-assignment operation!. \
+    						 There no operator {operator} for left-type '{leftTypeName}' \
     						 and right-type '{rightTypeName}'. In line: {line}.");
     akra.logger.registerCode(EFFECT_BAD_ASSIGNMENT_OPERATION, 
-    						 "Invalid assignment operation!. It`s no possible to do assignment between left-type '{leftTypeName}' \
+    						 "Invalid assignment operation!. It`s no possible to do assignment \
+    						 between left-type '{leftTypeName}' \
     						 and right-type '{rightTypeName}'. In line: {line}.");
     akra.logger.registerCode(EFFECT_BAD_RELATIONAL_OPERATION, 
-    						 "Invalid relational operation!. There no operator {operator} for left-type '{leftTypeName}' \
+    						 "Invalid relational operation!. There no operator {operator} \
+    						 for left-type '{leftTypeName}' \
     						 and right-type '{rightTypeName}'. In line: {line}.");
     akra.logger.registerCode(EFFECT_BAD_LOGICAL_OPERATION, 
-    						 "Invalid logical operation!. In operator: {operator}. Cannot convert type '{typeName}' to 'bool'. In line: {line}.");
+    						 "Invalid logical operation!. In operator: {operator}. \
+    						 Cannot convert type '{typeName}' to 'bool'. In line: {line}.");
     akra.logger.registerCode(EFFECT_BAD_CONDITION_TYPE, 
-    						 "Invalid conditional expression!. Cannot convert type '{typeName}' to 'bool'. In line: {line}.");
+    						 "Invalid conditional expression!. Cannot convert type '{typeName}' to 'bool'. \
+    						 In line: {line}.");
     akra.logger.registerCode(EFFECT_BAD_CONDITION_VALUE_TYPES, 
-    						 "Invalid conditional expression!. Type '{leftTypeName}' and type '{rightTypeName}' are not equal. In line: {line}.");
-
-
+    						 "Invalid conditional expression!. Type '{leftTypeName}' and type '{rightTypeName}'\
+    						  are not equal. In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_CAST_TYPE_USAGE, 
+    						 "Invalid type cast!. Bad type casting. Only base types without usages are supported. \
+    						 WebGL don`t support so casting. In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_CAST_TYPE_NOT_BASE, 
+    						 "Invalid type cast!. Bad type for casting '{typeName}'. \
+    						 WebGL support only base-type casting. In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_UNARY_OPERATION, 
+    						 "Invalid unary expression!. Bad type: '{typeName}' \
+    						 for operator '{opeator}'. In line: {line}.");
 
     function sourceLocationToString(pLocation: ISourceLocation): string {
         var sLocation:string = "[" + pLocation.file + ":" + pLocation.line.toString() + "]: ";
@@ -647,51 +665,50 @@ module akra.fx {
 		}
 
 		private analyzeVariableDecl(pNode: IParseNode): void {
-        	var pChildren: IParseNode[] = pNode.children;
-        	var pVariableType: IAFXComplexType = null;
-        	var pVariable: IAFXVariable = null;
-        	var i: uint = 0;
+			this.setAnalyzedNode(pNode);
 
-        	var pTypeInstruction: IAFXTypeInstruction = new TypeInstruction();
-        	this.newInstruction(pTypeInstruction);
-        	this.analyzeUsageType(pChildren[pChildren.length - 1]);
-        	this.endInstruction();
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pUsageType: IAFXUsageTypeInstruction;
+        	var i: uint = 0;
+        	
+        	pUsageType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
 
         	for(i = pChildren.length - 2; i >= 1; i--){
         		if(pChildren[i].name === "Variable") {
-        	// 		pVariable = new Variable();
-        	// 		pVariable.setType(pVariableType);
-
-        			this.analyzeVariable(pChildren[i], pTypeInstruction);
-        	// 		this.addVariableDecl(pVariable);
+        			this.analyzeVariable(pChildren[i], pUsageType);
         		}
         	}
         }
 
-      	private analyzeUsageType(pNode: IParseNode): void {
+      	private analyzeUsageType(pNode: IParseNode): IAFXUsageTypeInstruction {
         	var pChildren: IParseNode[] = pNode.children;
 		    var i: uint = 0;
+		    var pType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
 
 		    for (i = pChildren.length - 1; i >= 0; i--) {
 		        if (pChildren[i].name === "Type") {
-		        	this.analyzeType(pChildren[i]);
+		        	var pTypeName: IAFXIdInstruction = this.analyzeType(pChildren[i]);
+		        	pType.push(pTypeName, true);
 		        }
-		        if (pChildren[i].name === "Usage") {
-		        	this.analyzeUsage(pChildren[i]);
+		        else if (pChildren[i].name === "Usage") {
+		        	var pUsage: IAFXKeywordInstruction = this.analyzeUsage(pChildren[i]);
+		        	pType.push(pUsage, true);
 		        }
 		    }
+
+		    return pType;
         }
 
-        private analyzeType(pNode: IParseNode): void {
-        	//pushCommand
+        private analyzeType(pNode: IParseNode): IAFXIdInstruction {
+        	return null;
         }
 
-        private analyzeUsage(pNode: IParseNode): void {
+        private analyzeUsage(pNode: IParseNode): IAFXKeywordInstruction {
         	pNode = pNode.children[0];
-        	//this.pushCommand
+        	return null;
         }
 
-        private analyzeVariable(pNode: IParseNode, pUsageType: IAFXTypeInstruction): void {
+        private analyzeVariable(pNode: IParseNode, pUsageType: IAFXUsageTypeInstruction): void {
         	var pChildren: IParseNode[] = pNode.children;
 
         	var pVarDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
@@ -752,7 +769,6 @@ module akra.fx {
         }
 
         private analyzeAnnotation(pNode:IParseNode): void {
-
         }
 
         private analyzeSemantic(pNode:IParseNode): void {
@@ -833,11 +849,49 @@ module akra.fx {
         }
         
         private analyzeUnaryExpr(pNode: IParseNode): IAFXExprInstruction{
-        	return null;
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var sOperator: string = pChildren[1].value;
+        	var pExpr: UnaryExprInstruction = new UnaryExprInstruction();
+        	var pUnaryExpr: IAFXExprInstruction;
+        	var pExprType: IAFXVariableTypeInstruction;
+        	var pUnaryExprType: IAFXVariableTypeInstruction;
+
+        	pUnaryExpr = this.analyzeExpr(pChildren[0]);
+        	pUnaryExprType = pUnaryExpr.getType();
+
+        	pExprType = this.checkUnaryExprType(sOperator, pUnaryExprType);
+
+        	if(isNull(pExprType)){
+        		this._error(EFFECT_BAD_UNARY_OPERATION, { operator: sOperator,
+        												  tyepName: pUnaryExprType.toString()});
+        		return null;
+        	}
+
+        	pExpr.setOperator(sOperator);
+        	pExpr.setType(pExprType);
+        	pExpr.push(pUnaryExpr);
+
+        	return pExpr;
         }
         
         private analyzeCastExpr(pNode: IParseNode): IAFXExprInstruction{
-        	return null;
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pExpr: CastExprInstruction = new CastExprInstruction();
+        	var pExprType: IAFXVariableTypeInstruction;
+        	var pCastedExpr: IAFXExprInstruction;
+
+        	pExprType = this.analyzeConstTypeDim(pChildren[2]);
+        	pCastedExpr = this.analyzeExpr(pChildren[0]);
+
+        	pExpr.setType(pExprType);
+        	pExpr.push(pExprType);
+        	pExpr.push(pCastedExpr);
+
+        	return pExpr;
         }
         
         private analyzeConditionalExpr(pNode: IParseNode): IAFXExprInstruction{
@@ -1092,6 +1146,32 @@ module akra.fx {
         	return null;
         }
 
+        private analyzeConstTypeDim(pNode: IParseNode): IAFXVariableTypeInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	//var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+        	//var pType: TypeInstruction = new TypeInstruction();
+
+
+        	if(pChildren.length > 1) {
+        		this._error(EFFECT_BAD_CAST_TYPE_USAGE);
+        		return null;
+        	}
+
+        	var pTypeName: IAFXIdInstruction;
+        	var pType: IAFXVariableTypeInstruction;
+
+        	pTypeName = this.analyzeType(pChildren[0]);
+        	pType = this.generateVariableTypeFromId(pTypeName);
+        	
+        	if(!pType.isBase()){
+        		this._error(EFFECT_BAD_CAST_TYPE_NOT_BASE, { typeName: pType.toString()});
+        	}
+
+        	return pType;
+        }
+
         /**
          * Проверят возможность использования арифметического оператора между двумя типами.
          * Возращает тип получаемый в результате приминения опрератора, или, если применить его невозможно - null.
@@ -1150,8 +1230,30 @@ module akra.fx {
         	return null;
         }
 
+        private checkUnaryExprType(sOperator: string, pType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
+        	
+        	switch(sOperator){
+        		case "+":
+        			break;
+        		case "-":
+        			break;
+        		case "!":
+        			break;
+        		case "++":
+        			break;
+        		case "--":
+        			break;
+        	}
+
+        	return null;
+        }
+
         private getSystemType(sTypeName: string): IAFXVariableTypeInstruction {
         	//bool, string, float and others
+        	return null;
+        }
+
+        private generateVariableTypeFromId(pTypeName: IAFXIdInstruction): IAFXVariableTypeInstruction {
         	return null;
         }
 
@@ -1207,7 +1309,7 @@ module akra.fx {
 
         private analyzeStructDecl(pNode: IParseNode): void {
         	var pVariableTypeInstruction: IAFXVariableTypeInstruction = new VariableTypeInstruction();
- 			var pTypeInstruction: IAFXTypeInstruction = new TypeInstruction();
+ 			var pTypeInstruction: IAFXUsageTypeInstruction = new UsageTypeInstruction();
         	var pStructInstruction: IAFXStructDeclInstruction = new StructDeclInstruction();
         	var pStructName: IdInstruction = new IdInstruction();
         	var pStructFields: StructFieldsInstruction = new StructFieldsInstruction();
