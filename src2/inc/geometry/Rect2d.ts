@@ -420,6 +420,174 @@ module akra.geometry{
 
 			return this;
 		};
+
+		negate(pDestination?: IRect2d): IRect2d{
+			if(!isDef(pDestination)){
+				pDestination = this;
+			}
+
+			return this.set(-this.x1, -this.x0, -this.y1, -this.y0);
+		};
+
+		normalize(): IRect2d{
+			var fTmp: float;
+			if(this.x0 > this.x1){
+				fTmp = this.x0;
+				this.x0 = this.x1;
+				this.x1 = fTmp;
+			}
+			if(this.y0 > this.y1){
+				fTmp = this.y0;
+				this.y0 = this.y1;
+				this.y1 = fTmp;
+			}
+			return this;
+		};
+
+		inline isEqual(pRect: IRect2d): bool{
+			return 	this.x0 == pRect.x0 && this.x1 == pRect.x1 
+					&& this.y0 == pRect.y0 && this.y1 == pRect.y1;
+		};
+
+		inline isClear(): bool{
+			return this.x0 == 0. && this.x1 == 0. && this.y0 == 0. && this.y1 == 0.;
+		};
+
+		inline isValid(): bool{
+			return this.x0 <= this.x1 && this.y0 <= this.y1;
+		};
+
+		inline isPointInRect(v2fPoint: IVec2): bool{
+			var x: float = v2fPoint.x;
+			var y: float = v2fPoint.y;
+
+			return (this.x0 <= x && x <= this.x1) && (this.y0 <= y && y <= this.y1);
+		};
+
+		midPoint(v2fDestination?: IVec2): IVec2{
+			if(!isDef(v2fDestination)){
+				v2fDestination = new Vec2();
+			}
+
+			v2fDestination.x = (this.x0 + this.x1)*0.5;
+			v2fDestination.y = (this.y0 + this.y1)*0.5;
+
+			return v2fDestination;
+		};
+
+		inline midX(): float{
+			return (this.x0 + this.x1)*0.5;
+		};
+
+		inline midY(): float{
+			return (this.y0 + this.y1)*0.5;
+		};
+
+		size(v2fDestination?: IVec2): IVec2{
+			if(!isDef(v2fDestination)){
+				v2fDestination = new Vec2();
+			}
+
+			v2fDestination.x = this.x1 - this.x0;
+			v2fDestination.y = this.y1 - this.y0;
+
+			return v2fDestination;
+		};
+
+		inline sizeX(): float{
+			return this.x1 - this.x0;
+		};
+
+		inline sizeY(): float{
+			return this.y1 - this.y0;
+		};
+
+		minPoint(v2fDestination?: IVec2): IVec2{
+			if(!isDef(v2fDestination)){
+				v2fDestination = new Vec2();
+			}
+
+			v2fDestination.x = this.x0;
+			v2fDestination.y = this.y0;
+
+			return v2fDestination;
+		};
+
+		maxPoint(v2fDestination?: IVec2): IVec2{
+			if(!isDef(v2fDestination)){
+				v2fDestination = new Vec2();
+			}
+
+			v2fDestination.x = this.x1;
+			v2fDestination.y = this.y1;
+
+			return v2fDestination;
+		};
+
+		inline area(): float{
+			return (this.x1 - this.x0)*(this.y1 - this.y0);
+		};
+
+		/**
+		 * counter-clockwise
+		 * x0,y0 -> x1,y0 -> x1,y1 -> x0,y1;
+		 */
+
+		corner(iIndex: uint, v2fDestination?: IVec2): IVec2{
+			if(!isDef(v2fDestination)){
+				v2fDestination = new Vec2();
+			}
+
+			debug_assert(0 <= iIndex && iIndex < 4, "invalid index");
+
+			var x: float, y: float;
+
+			switch(iIndex){
+				case 0: 
+					x = this.x0;
+					y = this.y0;
+					break;
+				case 1:
+					x = this.x1;
+					y = this.y0;
+					break;
+				case 2:
+					x = this.x1;
+					y = this.y1;
+					break;
+				case 3:
+					x = this.x0;
+					y = this.y1;
+					break;
+			};
+
+			v2fDestination.x = x;
+			v2fDestination.y = y;
+
+			return v2fDestination;
+		};
+
+		createBoundingCircle(pCircle?: ICircle): ICircle{
+			if(!isDef(pCircle)){
+				pCircle = new Circle();
+			}
+
+			var fX0: float = this.x0, fX1: float = this.x1;
+			var fY0: float = this.y0, fY1: float = this.y1;
+
+			var fHalfSizeX: float = (fX1 - fX0)*0.5;
+			var fHalfSizeY: float = (fY1 - fY0)*0.5;
+
+			pCircle.set((fX0 + fX1)*0.5, (fY0 + fY1)*0.5,
+				math.sqrt(fHalfSizeX*fHalfSizeX + fHalfSizeY*fHalfSizeY));
+
+			return pCircle;
+		};
+
+		toString(): string{
+			return "(" + this.x0 + ", " + this.y0 + ") --> (" + 
+					this.x1 + ", " + this.y1 + ")";
+		};
 	};
 }
 

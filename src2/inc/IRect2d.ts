@@ -45,7 +45,7 @@ module akra{
 		expandX(fValue: float): IRect2d;
 		expandY(fValue: float): IRect2d;
 
-		resize(v2fSizes: IVec2): IRect2d;
+		resize(v2fSize: IVec2): IRect2d;
 		resize(fSizeX: float, fSizeY: float): IRect2d;
 
 		resizeX(fSize: float): IRect2d;

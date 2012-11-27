@@ -6110,6 +6110,13 @@ module akra {
 	export var Mat3 = math.Mat3;
 	export var Mat4 = math.Mat4;
 	export var Quat4 = math.Quat4;
+
+	export var vec2 = math.vec2;
+	export var vec3 = math.vec3;
+	export var vec4 = math.vec4;
+	export var quat4 = math.quat4;
+	export var mat3 = math.mat3;
+	export var mat4 = math.mat4;
 }
 
 
@@ -6133,8 +6140,8 @@ module akra {
 	export interface IVec2 {} ;
 
 	export interface IRay2d {
-		v2fPoint: IVec2;
-		v2fNormal: IVec2;
+		point: IVec2;
+		normal: IVec2;
 	};
 }
 
@@ -6142,12 +6149,12 @@ module akra {
 
 module akra.geometry{
 	export  class  Ray2d implements IRay2d{
-		v2fPoint: IVec2;
-		v2fNormal: IVec2;
+		point: IVec2;
+		normal: IVec2;
 
 		constructor(){
-			this.v2fPoint = new Vec2();
-			this.v2fNormal = new Vec2();
+			this.point = new Vec2();
+			this.normal = new Vec2();
 		};
 	};
 }
@@ -6168,8 +6175,8 @@ module akra {
 	export interface IVec3 {} ;
 
 	export interface IRay3d {
-		v3fPoint: IVec3;
-		v3fNormal: IVec3;
+		point: IVec3;
+		normal: IVec3;
 	};
 }
 
@@ -6177,12 +6184,12 @@ module akra {
 
 module akra.geometry{
 	export  class  Ray3d implements IRay3d{
-		v3fPoint: IVec3;
-		v3fNormal: IVec3;
+		point: IVec3;
+		normal: IVec3;
 
 		constructor(){
-			this.v3fPoint = new Vec3();
-			this.v3fNormal = new Vec3();
+			this.point = new Vec3();
+			this.normal = new Vec3();
 		};
 	};
 }
@@ -6204,8 +6211,8 @@ module akra {
 	export interface IRay2d {} ;
 
 	export interface ISegment2d{
-		pRay: IRay2d;
-		fDistance: float;
+		ray: IRay2d;
+		distance: float;
 
 		point: IVec2;
 		normal: IVec2;
@@ -6216,26 +6223,26 @@ module akra {
 
 module akra.geometry{
 	export class Segment2d implements ISegment2d{
-		pRay: IRay2d;
-		fDistance: float;
+		ray: IRay2d;
+		distance: float;
 
 		constructor(){
-			this.pRay = new Ray2d();
-			this.fDistance = 0.;
+			this.ray = new Ray2d();
+			this.distance = 0.;
 		};
 
 		get point(): IVec2{
-			return this.pRay.v2fPoint;
+			return this.ray.point;
 		};
 		set point(v2fPoint: IVec2){
-			this.pRay.v2fPoint.set(v2fPoint);
+			this.ray.point.set(v2fPoint);
 		};
 
 		get normal(): IVec2{
-			return this.pRay.v2fNormal;
+			return this.ray.normal;
 		};
 		set normal(v2fNormal: IVec2){
-			this.pRay.v2fNormal.set(v2fNormal);
+			this.ray.normal.set(v2fNormal);
 		};
 	};
 }
@@ -6256,8 +6263,8 @@ module akra {
 	export interface IRay3d {} ;
 
 	export interface ISegment3d{
-		pRay: IRay3d;
-		fDistance: float;
+		ray: IRay3d;
+		distance: float;
 
 		point: IVec3;
 		normal: IVec3;
@@ -6268,26 +6275,26 @@ module akra {
 
 module akra.geometry{
 	export class Segment3d implements ISegment3d{
-		pRay: IRay3d;
-		fDistance: float;
+		ray: IRay3d;
+		distance: float;
 
 		constructor(){
-			this.pRay = new Ray3d();
-			this.fDistance = 0.;
+			this.ray = new Ray3d();
+			this.distance = 0.;
 		};
 
 		get point(): IVec3{
-			return this.pRay.v3fPoint;
+			return this.ray.point;
 		};
 		set point(v3fPoint: IVec3){
-			this.pRay.v3fPoint.set(v3fPoint);
+			this.ray.point.set(v3fPoint);
 		};
 
 		get normal(): IVec3{
-			return this.pRay.v3fNormal;
+			return this.ray.normal;
 		};
 		set normal(v3fNormal: IVec3){
-			this.pRay.v3fNormal.set(v3fNormal);
+			this.ray.normal.set(v3fNormal);
 		};
 	};
 }
@@ -6310,9 +6317,10 @@ module akra {
 
 	export interface ICircle {
 
-		fRadius: float;
-		v2fCenter: IVec2;
+		radius: float;
+		center: IVec2;
 
+		set(): ICircle;
 		set(pCircle: ICircle): ICircle;
 		set(v2fCenter: IVec2, fRadius: float): ICircle;
 		set(fCenterX: float, fCenterY: float, fRadius: float): ICircle;
@@ -6333,8 +6341,8 @@ module akra {
 
 module akra.geometry{
 	export class Circle implements ICircle{
-		v2fCenter: IVec2;
-		fRadius: float;
+		center: IVec2;
+		radius: float;
 
 		constructor();
 		constructor(pCircle: ICircle);
@@ -6346,27 +6354,28 @@ module akra.geometry{
 			switch(nArgumentsLength){
 				case 1:
 					var pCircle: ICircle = arguments[0];
-					this.v2fCenter = new Vec2(pCircle.v2fCenter);
-					this.fRadius = pCircle.fRadius;
+					this.center = new Vec2(pCircle.center);
+					this.radius = pCircle.radius;
 					break;
 				case 2:
 					var v2fCenter: IVec2 = arguments[0];
 					var fRadius: float = arguments[1];
 
-					this.v2fCenter = new Vec2(v2fCenter);
-					this.fRadius = fRadius;
+					this.center = new Vec2(v2fCenter);
+					this.radius = fRadius;
 					break;
 				case 3:
-					this.v2fCenter = new Vec2(arguments[0], arguments[1]);
-					this.fRadius = arguments[2];
+					this.center = new Vec2(arguments[0], arguments[1]);
+					this.radius = arguments[2];
 					break;
 				default:
-					this.v2fCenter = new Vec2();
-					this.fRadius = 0.;
+					this.center = new Vec2();
+					this.radius = 0.;
 					break;
 			}
 		};
 
+		set(): ICircle;
 		set(pCircle: ICircle): ICircle;
 		set(v2fCenter: IVec2, fRadius: float): ICircle;
 		set(fCenterX: float, fCenterY: float, fRadius: float): ICircle;
@@ -6376,59 +6385,59 @@ module akra.geometry{
 			switch(nArgumentsLength){
 				case 1:
 					var pCircle: ICircle = arguments[0];
-					this.v2fCenter.set(pCircle.v2fCenter);
-					this.fRadius = pCircle.fRadius;
+					this.center.set(pCircle.center);
+					this.radius = pCircle.radius;
 					break;
 				case 2:
 					var v2fCenter: IVec2 = arguments[0];
 					var fRadius: float = arguments[1];
 
-					this.v2fCenter.set(v2fCenter);
-					this.fRadius = fRadius;
+					this.center.set(v2fCenter);
+					this.radius = fRadius;
 					break;
 				case 3:
-					this.v2fCenter.set(arguments[0], arguments[1]);
-					this.fRadius = arguments[2];
+					this.center.set(arguments[0], arguments[1]);
+					this.radius = arguments[2];
 					break;
 				default:
-					this.v2fCenter.set(0.);
-					this.fRadius = 0.;
+					this.center.set(0.);
+					this.radius = 0.;
 			}
 
 			return this;
 		};
 
 		/**@inline*/  clear(): ICircle{
-			this.v2fCenter.clear();
-			this.fRadius = 0.;
+			this.center.clear();
+			this.radius = 0.;
 
 			return this;
 		};
 
 		/**@inline*/  isEqual(pCircle: ICircle): bool{
-			return this.v2fCenter.isEqual(pCircle.v2fCenter) && (this.fRadius == pCircle.fRadius);
+			return this.center.isEqual(pCircle.center) && (this.radius == pCircle.radius);
 		};
 
 		/**@inline*/  isClear(): bool{
-			return this.v2fCenter.isClear() && (this.fRadius === 0.);
+			return this.center.isClear() && (this.radius === 0.);
 		};
 
 		/**@inline*/  isValid(): bool{
-			return (this.fRadius >= 0.);
+			return (this.radius >= 0.);
 		};
 
 		/**@inline*/  offset(v2fOffset: IVec2): ICircle{
-			this.v2fCenter.add(v2fOffset);
+			this.center.add(v2fOffset);
 			return this;
 		};
 
 		/**@inline*/  expand(fInc: float): ICircle{
-			this.fRadius += fInc;
+			this.radius += fInc;
 			return this;
 		};
 
 		/**@inline*/  normalize(): ICircle{
-			this.fRadius = math.abs(this.fRadius);
+			this.radius = math.abs(this.radius);
 			return this;
 		};
 	};
@@ -6452,12 +6461,13 @@ module akra {
 
 	export interface ISphere {
 
-		fRadius: float;
-		v3fCenter: IVec3;
+		center: IVec3;
+		radius: float;
 
 		circle: ICircle;
 		z: float;
 
+		set(): ISphere;
 		set(pSphere: ISphere): ISphere;
 		set(v3fCenter: IVec3, fRadius: float): ISphere;
 		set(fCenterX: float, fCenterY: float, fCenterZ: float, fRadius: float): ISphere;
@@ -6480,8 +6490,8 @@ module akra {
 
 module akra.geometry{
 	export class Sphere implements ISphere{
-		v3fCenter: IVec3;
-		fRadius: float;
+		center: IVec3;
+		radius: float;
 
 		constructor();
 		constructor(pSphere: ISphere);
@@ -6494,46 +6504,47 @@ module akra.geometry{
 				case 1:
 					var pSphere = arguments[0];
 
-					this.v3fCenter = new Vec3(pSphere.v3fCenter);
-					this.fRadius = pSphere.fRadius;
+					this.center = new Vec3(pSphere.v3fCenter);
+					this.radius = pSphere.fRadius;
 					break;
 				case 2:
 					var v3fCenter: IVec3 = arguments[0];
 					var fRadius: float = arguments[1];
 
-					this.v3fCenter = new Vec3(v3fCenter);
-					this.fRadius = fRadius;
+					this.center = new Vec3(v3fCenter);
+					this.radius = fRadius;
 					break;
 				case 4:
-					this.v3fCenter = new Vec3(arguments[0], arguments[1], arguments[2]);
-					this.fRadius = arguments[3];
+					this.center = new Vec3(arguments[0], arguments[1], arguments[2]);
+					this.radius = arguments[3];
 					break;
 				default:
-					this.v3fCenter = new Vec3();
-					this.fRadius = 0.;
+					this.center = new Vec3();
+					this.radius = 0.;
 					break;
 			}
 		};
 
 		get circle(): ICircle{
-			var v3fCenter: IVec3 = this.v3fCenter;
-			return new Circle(v3fCenter.x, v3fCenter.y, this.fRadius);
+			var v3fCenter: IVec3 = this.center;
+			return new Circle(v3fCenter.x, v3fCenter.y, this.radius);
 		};
 		set circle(pCircle: ICircle){
-			var v3fCenter: IVec3 = this.v3fCenter;
-			var v2fCircleCenter: IVec2 = pCircle.v2fCenter;
+			var v3fCenter: IVec3 = this.center;
+			var v2fCircleCenter: IVec2 = pCircle.center;
 			v3fCenter.x = v2fCircleCenter.x;
 			v3fCenter.y = v2fCircleCenter.y;
-			this.fRadius = pCircle.fRadius;
+			this.radius = pCircle.radius;
 		};
 
 		get z(): float{
-			return this.v3fCenter.z;
+			return this.center.z;
 		};
 		set z(fZ: float){
-			this.v3fCenter.z = fZ;
+			this.center.z = fZ;
 		};
 
+		set(): ISphere;
 		set(pSphere: ISphere): ISphere;
 		set(v3fCenter: IVec3, fRadius: float): ISphere;
 		set(fCenterX: float, fCenterY: float, fCenterZ: float, fRadius: float): ISphere;
@@ -6544,23 +6555,23 @@ module akra.geometry{
 				case 1:
 					var pSphere = arguments[0];
 
-					this.v3fCenter.set(pSphere.v3fCenter);
-					this.fRadius = pSphere.fRadius;
+					this.center.set(pSphere.center);
+					this.radius = pSphere.radius;
 					break;
 				case 2:
 					var v3fCenter: IVec3 = arguments[0];
 					var fRadius: float = arguments[1];
 
-					this.v3fCenter.set(v3fCenter);
-					this.fRadius = fRadius;
+					this.center.set(v3fCenter);
+					this.radius = fRadius;
 					break;
 				case 4:
-					this.v3fCenter.set(arguments[0], arguments[1], arguments[2]);
-					this.fRadius = arguments[3];
+					this.center.set(arguments[0], arguments[1], arguments[2]);
+					this.radius = arguments[3];
 					break;
 				default:
-					this.v3fCenter.set(0.);
-					this.fRadius = 0.;
+					this.center.set(0.);
+					this.radius = 0.;
 					break;
 			}
 
@@ -6568,42 +6579,1671 @@ module akra.geometry{
 		};
 
 		/**@inline*/  clear(): ISphere{
-			this.v3fCenter.clear();
-			this.fRadius = 0.;
+			this.center.clear();
+			this.radius = 0.;
 
 			return this;
 		};
 
 		/**@inline*/  isEqual(pSphere: ISphere): bool{
-			return this.v3fCenter.isEqual(pSphere.v3fCenter) && (this.fRadius == pSphere.fRadius);
+			return this.center.isEqual(pSphere.center) && (this.radius == pSphere.radius);
 		};
 
 		/**@inline*/  isClear(): bool{
-			return this.v3fCenter.isClear() && (this.fRadius === 0.);
+			return this.center.isClear() && (this.radius === 0.);
 		};
 
 		/**@inline*/  isValid(): bool{
-			return (this.fRadius >= 0.);
+			return (this.radius >= 0.);
 		};
 
 		/**@inline*/  offset(v3fOffset: IVec3): ISphere{
-			this.v3fCenter.add(v3fOffset);
+			this.center.add(v3fOffset);
 			return this;
 		};
 
 		/**@inline*/  expand(fInc: float): ISphere{
-			this.fRadius += fInc;
+			this.radius += fInc;
 			return this;
 		};
 
 		/**@inline*/  normalize(): ISphere{
-			this.fRadius = math.abs(this.fRadius);
+			this.radius = math.abs(this.radius);
 			return this;
 		};
 	};
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+module akra{
+
+	export interface IVec2 {} ;
+
+	export interface IPlane2d{
+		normal: IVec2;
+		distance: float;
+
+		set(): IPlane2d;
+		set(pPlane: IPlane2d): IPlane2d;
+		set(v2fNormal: IVec2, fDistance: float): IPlane2d;
+		set(v2fPoint1: IVec2, v2fPoint2: IVec2): IPlane2d;
+
+		normalize(): IPlane2d;
+
+		isEqual(pPlane: IPlane2d): bool;
+
+		projectPointToPlane(v2fPoint: IVec2, v2fDestination?: IVec2): IVec2;
+
+		solveForX(fY: float): float;
+		solveForY(fX: float): float;
+
+		signedDistance(v2fPoint): float;
+	}
+}
+
+
+
+module akra.geometry{
+	export class Plane2d implements IPlane2d{
+		normal: IVec2;
+		distance: float;
+
+		constructor();
+		constructor(pPlane: IPlane2d);
+		constructor(v2fNormal: IVec2, fDistance: float);
+		constructor(v2fPoint1: IVec2, v2fPoint2: IVec2);
+		constructor(v2fPoint1?, v2fPoint2?){
+
+			this.normal = new Vec2();
+			this.distance = 0.;
+
+			var nArgumentsLength = arguments.length;
+
+			switch(nArgumentsLength){
+				case 1:
+					this.set(arguments[0]);
+					break;
+				case 2:
+					this.set(arguments[0], arguments[1]);
+					break;
+				default:
+					break;
+			}
+		};
+
+		set(): IPlane2d;
+		set(pPlane: IPlane2d): IPlane2d;
+		set(v2fNormal: IVec2, fDistance: float): IPlane2d;
+		set(v2fPoint1: IVec2, v2fPoint2: IVec2): IPlane2d;
+		set(v2fPoint1?, v2fPoint2?): IPlane2d{
+			var nArgumentsLength: uint = arguments.length;
+
+			switch(nArgumentsLength){
+				case 1:
+					var pPlane: IPlane2d = arguments[0];
+
+					this.normal.set(pPlane.normal);
+					this.distance = pPlane.distance;
+					break;
+				case 2:
+					if(isFloat(arguments[1])){
+						this.normal.set(arguments[0]);
+						this.distance = arguments[1];
+					}
+					else{
+						var v2fLine: IVec2 = vec2(arguments[1]).subtract(arguments[0]);
+						var v2fNormal: IVec2 = this.normal;
+
+						v2fNormal.set(-v2fLine.y, v2fLine.x);
+						this.distance = -v2fNormal.dot(arguments[0]);
+					}
+					break;
+				default:
+					this.normal.clear();
+					this.distance = 0.;
+					break;
+			}
+
+			return this.normalize();
+		};
+
+		normalize(): IPlane2d{
+			var v2fNormal: IVec2 = this.normal;
+
+			var x: float = v2fNormal.x;
+			var y: float = v2fNormal.y
+
+			var fLength: float = math.sqrt(x*x + y*y);
+
+			if(fLength !== 0.){
+				var fInvLength: float = 1./fLength;
+
+				v2fNormal.x = x*fInvLength;
+				v2fNormal.y = y*fInvLength;
+
+				this.distance = this.distance*fInvLength;
+			}
+
+			return this;
+		};
+
+		/**@inline*/  isEqual(pPlane: IPlane2d): bool{
+			return this.normal.isEqual(pPlane.normal) && (this.distance == pPlane.distance);
+		};
+
+/*предполагается работа только с нормализованной плоскостью*/
+
+		projectPointToPlane(v2fPoint: IVec2, v2fDestination?: IVec2): IVec2{
+			if(!isDef(v2fDestination)){
+				v2fDestination = new Vec2();
+			}
+
+			var v2fNormal: IVec2 = this.normal;
+			var fDistance: float = this.distance + v2fNormal.dot(v2fPoint);
+
+			v2fDestination.x = v2fPoint.x - fDistance*v2fNormal.x;
+			v2fDestination.y = v2fPoint.y - fDistance*v2fNormal.y;
+
+			return v2fDestination;
+		};
+
+		solveForX(fY: float): float{
+/*Ax+By+d=0;
+			x=-(d+By)/A;*/
+
+
+			var v2fNormal: IVec2 = this.normal;
+
+			if(v2fNormal.x !== 0.){
+				return -(this.distance + v2fNormal.y*fY)/v2fNormal.x;
+			}
+			return 0.;
+		};
+
+		solveForY(fX: float): float{
+/*Ax+By+d=0;
+			y=-(d+Ax)/B;*/
+
+
+			var v2fNormal: IVec2 = this.normal;
+
+			if(v2fNormal.y !== 0.){
+				return -(this.distance + v2fNormal.x*fX)/v2fNormal.y;
+			}
+			return 0.;
+		};
+
+/*предполагается работа только с нормализованной плоскостью*/
+
+		/**@inline*/  signedDistance(v2fPoint: IVec2): float{
+			return this.distance + this.normal.dot(v2fPoint);
+		};
+	};
+}
+
+
+
+
+
+
+
+
+
+
+
+
+module akra{
+
+	export interface IVec3 {} ;
+
+	export interface IPlane3d{
+		normal: IVec3;
+		distance: float;
+
+		set(): IPlane3d;
+		set(pPlane: IPlane3d): IPlane3d;
+		set(v3fNormal: IVec3, fDistance: float): IPlane3d;
+		set(v3fPoint1: IVec3, v3fPoint2: IVec3, v3fPoint3: IVec3): IPlane3d;
+
+		normalize(): IPlane3d;
+
+		isEqual(pPlane: IPlane3d): bool;
+
+		projectPointToPlane(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3;
+
+		solveForX(fY: float, fZ: float): float;
+		solveForY(fX: float, fZ: float): float;
+		solveForZ(fX: float, fY: float): float;
+
+		signedDistance(v3fPoint: IVec3): float;
+	};
+}
+
+
+
+module akra.geometry{
+	export class Plane3d implements IPlane3d{
+		normal: IVec3;
+		distance: float;
+
+		constructor();
+		constructor(pPlane: IPlane3d);
+		constructor(v3fNormal: IVec3, fDistance: float);
+		constructor(v3fPoint1: IVec3, v3fPoint2: IVec3, v3fPoint3: IVec3);
+		constructor(v3fPoint1?, v3fPoint2?, v3fPoint3?){
+
+			this.normal = new Vec3();
+			this.distance = 0.;
+
+			var nArgumentsLength: uint = arguments.length;
+
+			switch(nArgumentsLength){
+				case 1:
+					this.set(arguments[0]);
+					break;
+				case 2:
+					this.set(arguments[0], arguments[1]);
+					break;
+				case 3:
+					this.set(arguments[0], arguments[1], arguments[2]);
+					break;
+				default:
+					break;
+			}
+		};
+
+		set(): IPlane3d;
+		set(pPlane: IPlane3d): IPlane3d;
+		set(v3fNormal: IVec3, fDistance: float): IPlane3d;
+		set(v3fPoint1: IVec3, v3fPoint2: IVec3, v3fPoint3: IVec3): IPlane3d;
+		set(v3fPoint1?, v3fPoint2?, v3fPoint3?): IPlane3d{
+			var nArgumentsLength: uint = arguments.length;
+
+			switch(nArgumentsLength){
+				case 1:
+					var pPlane: IPlane3d = arguments[0];
+
+					this.normal.set(pPlane.normal);
+					this.distance = pPlane.distance;
+					break;
+				case 2:
+					this.normal.set(arguments[0]);
+					this.distance = arguments[1];
+					break;
+				case 3:
+					var v3fPoint1: IVec3 = arguments[0];
+					var v3fPoint2: IVec3 = arguments[1];
+					var v3fPoint3: IVec3 = arguments[2];
+
+					var x1: float = v3fPoint2.x - v3fPoint1.x;
+					var y1: float = v3fPoint2.y - v3fPoint1.y;
+					var z1: float = v3fPoint2.z - v3fPoint1.z;
+
+					var x2: float = v3fPoint3.x - v3fPoint1.x;
+					var y2: float = v3fPoint3.y - v3fPoint1.y;
+					var z2: float = v3fPoint3.z - v3fPoint1.z;
+
+					var x: float = y1*z2 - y2*z1;
+					var y: float = z1*x2 - z2*x1;
+					var z: float = x1*y2 - x2*y1;
+
+					var fDistance: float = - (x*v3fPoint1.x + y*v3fPoint1.y + z*v3fPoint1.z);
+
+					if(fDistance > 0.){
+//нормаль смотрит в сторону нуля, а должна смотреть от нуля
+						fDistance = -fDistance;
+						x = -x;
+						y = -y;
+						z = -z;
+					}
+					this.distance = fDistance;
+					this.normal.set(x,y,z);
+
+					break;
+				default:
+					this.normal.clear();
+					this.distance = 0.;
+					break;
+			}
+
+			return this.normalize();
+		};
+
+		normalize(): IPlane3d{
+			var v3fNormal: IVec3 = this.normal;
+			var x: float = v3fNormal.x, y: float = v3fNormal.y, z: float = v3fNormal.z;
+
+			var fLength: float = math.sqrt(x*x + y*y + z*z);
+
+			if(fLength !== 0.){
+				var fInvLength = 1./fLength;
+
+				v3fNormal.x = x*fInvLength;
+				v3fNormal.y = y*fInvLength;
+				v3fNormal.z = z*fInvLength;
+
+				this.distance *= fInvLength;
+			}
+
+			return this;
+		};
+
+		isEqual(pPlane: IPlane3d): bool{
+			return this.normal.isEqual(pPlane.normal) && (this.distance == pPlane.distance);
+		};
+
+/*предполагается работа только с нормализованной плоскостью*/
+
+		projectPointToPlane(v3fPoint: IVec3, v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+				v3fDestination = new Vec3();
+			}
+
+			var v3fNormal: IVec3 = this.normal;
+			var fDistance: float = this.distance + v3fNormal.dot(v3fPoint);
+
+			v3fDestination.x = v3fPoint.x - fDistance*v3fNormal.x;
+			v3fDestination.y = v3fPoint.y - fDistance*v3fNormal.y;
+			v3fDestination.z = v3fPoint.z - fDistance*v3fNormal.z;
+
+			return v3fDestination;
+		};
+
+		solveForX(fY: float, fZ: float): float{
+/*Ax+By+Cz+D=0;
+			x = -(D+By+Cz)/A;*/
+
+
+			var v3fNormal: IVec3 = this.normal;
+
+			if(v3fNormal.x !== 0.){
+				return -(this.distance + v3fNormal.y*fY + v3fNormal.z*fZ)/v3fNormal.x;
+			}
+			return 0.;
+		};
+
+		solveForY(fX: float, fZ: float): float{
+/*Ax+By+Cz+D=0;
+			y = -(D+Ax+Cz)/B;*/
+
+
+			var v3fNormal: IVec3 = this.normal;
+
+			if(v3fNormal.y !== 0.){
+				return -(this.distance + v3fNormal.x*fX + v3fNormal.z*fZ)/v3fNormal.y;
+			}
+			return 0.;
+		};
+
+		solveForZ(fX: float, fY: float): float{
+/*Ax+By+Cz+D=0;
+			z = -(D+Ax+By)/C;*/
+
+
+			var v3fNormal: IVec3 = this.normal;
+
+			if(v3fNormal.z !== 0.){
+				return -(this.distance + v3fNormal.x*fX + v3fNormal.y*fY)/v3fNormal.z;
+			}
+
+			return 0.;
+		};
+
+		signedDistance(v3fPoint: IVec3): float{
+			return this.distance + this.normal.dot(v3fPoint);
+		};
+	};
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra{
+
+	export interface IVec2 {} ;
+	export interface ICircle {} ;
+
+	export interface IRect2d{
+		x0: float;
+		x1: float;
+		y0: float;
+		y1: float;
+
+		set(): IRect2d;
+		set(pRect: IRect2d): IRect2d;
+		set(v2fVec: IVec2): IRect2d;
+		set(fSizeX: float, fSizeY: float): IRect2d;
+		set(fX0: float, fX1: float, fY0: float, fY1: float): IRect2d;
+
+		setFloor(pRect: IRect2d): IRect2d;
+		setCeil(pRect: IRect2d): IRect2d;
+
+		clear(): IRect2d;
+
+		addSelf(fValue: float): IRect2d;
+		addSelf(v2fVec: IVec2): IRect2d;
+
+		subSelf(fValue: float): IRect2d;
+		subSelf(v2fVec: IVec2): IRect2d;
+
+		multSelf(fValue: float): IRect2d;
+		multSelf(v2fVec: IVec2): IRect2d;
+
+		divSelf(fValue: float): IRect2d;
+		divSelf(v2fVec: IVec2): IRect2d;
+
+		offset(v2fOffset: IVec2): IRect2d;
+		offset(fOffsetX: float, fOffsetY: float): IRect2d;
+
+		expand(fValue: float): IRect2d;
+		expand(v2fValue: IVec2): IRect2d;
+		expand(fValueX: float, fValueY: float): IRect2d;
+
+		expandX(fValue: float): IRect2d;
+		expandY(fValue: float): IRect2d;
+
+		resize(v2fSize: IVec2): IRect2d;
+		resize(fSizeX: float, fSizeY: float): IRect2d;
+
+		resizeX(fSize: float): IRect2d;
+		resizeY(fSize: float): IRect2d;
+
+		resizeMax(v2fSpan: IVec2): IRect2d;
+		resizeMax(fSpanX: float, fSpanY: float): IRect2d;
+
+		resizeMaxX(fSpan: float): IRect2d;
+		resizeMaxY(fSpan: float): IRect2d;
+
+		resizeMin(v2fSpan: IVec2): IRect2d;
+		resizeMin(fSpanX: float, fSpanY: float): IRect2d;
+
+		resizeMinX(fSpan: float): IRect2d;
+		resizeMinY(fSpan: float): IRect2d;
+
+		unionPoint(v2fPoint: IVec2): IRect2d;
+		unionPoint(fX: float, fY: float): IRect2d;
+		unionRect(pRect: IRect2d): IRect2d;
+
+		negate(pDestination?: IRect2d): IRect2d;
+		normalize(): IRect2d;
+
+		isEqual(pRect: IRect2d): bool;
+		isClear(): bool;
+		isValid(): bool;
+		isPointInRect(v2fPoint: IVec2): bool;
+
+		midPoint(v2fDestination?: IVec2): IVec2;
+		midX(): float;
+		midY(): float;
+
+		size(v2fDestination?: IVec2): IVec2;
+		sizeX(): float;
+		sizeY(): float;
+
+		minPoint(v2fDestination?: IVec2): IVec2;
+		maxPoint(v2fDestination?: IVec2): IVec2;
+
+		area(): float;
+
+		corner(iIndex: uint, v2fDestination?: IVec2): IVec2;
+
+		createBoundingCircle(pCircle?: ICircle): ICircle;
+
+		toString(): string;
+	};
+};
+
+
+
+module akra.geometry{
+	export class Rect2d implements IRect2d{
+		x0: float;
+		x1: float;
+		y0: float;
+		y1: float;
+
+		constructor();
+		constructor(pRect: IRect2d);
+		constructor(v2fVec: IVec2);
+		constructor(fSizeX: float, fSizeY: float);
+		constructor(fX0: float, fX1: float, fY0: float, fY1: float);
+		constructor(fX0?, fX1?, fY0?, fY1?){
+			var nArgumentsLength: uint = arguments.length;
+
+			switch(nArgumentsLength){
+				case 1:
+					this.set(arguments[0]);
+					break;
+				case 2:
+					this.set(arguments[0], arguments[1]);
+					break;
+				case 4:
+					this.set(arguments[0], arguments[1], arguments[2], arguments[3]);
+					break;
+				default:
+					this.x0 = this.x1 = this.y0 = this.y1 = 0.;
+					break;
+			}
+		};
+
+		set(): IRect2d;
+		set(pRect: IRect2d): IRect2d;
+		set(v2fVec: IVec2): IRect2d;
+		set(fSizeX: float, fSizeY: float): IRect2d;
+		set(fX0: float, fX1: float, fY0: float, fY1: float): IRect2d;
+		set(fX0?, fX1?, fY0?, fY1?): IRect2d{
+			var nArgumentsLength: uint = arguments.length;
+
+			switch(nArgumentsLength){
+				case 1:
+					if(arguments[0] instanceof Rect2d){
+						var pRect: IRect2d = arguments[0];
+
+						this.x0 = pRect.x0;
+						this.x1 = pRect.x1;
+						this.y0 = pRect.y0;
+						this.y1 = pRect.y1;
+					}
+					else{
+						var v2fSizes: IVec2 = arguments[0];
+
+						this.x1 = v2fSizes.x*0.5;
+						this.x0 = -this.x1;
+
+						this.y1 = v2fSizes.y*0.5;
+						this.y0 = -this.y1;
+					}
+					break;
+				case 2:
+					var fSizeX: float = arguments[0];
+					var fSizeY: float = arguments[1];
+
+					this.x1 = fSizeX*0.5;
+					this.x0 = -this.x1;
+
+					this.y1 = fSizeY*0.5;
+					this.y0 = -this.y1;
+					break;
+				case 4:
+					this.x0 = arguments[0];
+					this.x1 = arguments[1];
+					this.y0 = arguments[2];
+					this.y1 = arguments[3];
+					break;
+				default:
+					this.x0 = this.x1 = this.y0 = this.y1 = 0.;
+					break;
+			}
+
+			return this;
+		};
+
+		setFloor(pRect: IRect2d): IRect2d{
+			this.x0 = math.floor(pRect.x0);
+			this.x1 = math.floor(pRect.x1);
+			this.y0 = math.floor(pRect.y0);
+			this.y1 = math.floor(pRect.y1);
+
+			return this;
+		};
+
+		setCeil(pRect: IRect2d): IRect2d{
+			this.x0 = math.ceil(pRect.x0);
+			this.x1 = math.ceil(pRect.x1);
+			this.y0 = math.ceil(pRect.y0);
+			this.y1 = math.ceil(pRect.y1);
+
+			return this;
+		};
+
+		/**@inline*/  clear(): IRect2d{
+			this.x0 = this.x1 = this.y0 = this.y1 = 0.;
+			return this;
+		};
+
+		addSelf(fValue: float): IRect2d;
+		addSelf(v2fVec: IVec2): IRect2d;
+		addSelf(v2fVec?): IRect2d{
+			if(isFloat(arguments[0])){
+				var fValue: float = arguments[0];
+
+				this.x0 += fValue;
+				this.x1 += fValue;
+				this.y0 += fValue;
+				this.y1 += fValue;
+			}
+			else{
+				var v2fVec: IVec2 = arguments[0];
+
+				this.x0 += v2fVec.x;
+				this.x1 += v2fVec.x;
+
+				this.y0 += v2fVec.y;
+				this.y1 += v2fVec.y;
+			}
+
+			return this;
+		};
+
+		subSelf(fValue: float): IRect2d;
+		subSelf(v2fVec: IVec2): IRect2d;
+		subSelf(v2fVec?): IRect2d{
+			if(isFloat(arguments[0])){
+				var fValue: float = arguments[0];
+
+				this.x0 -= fValue;
+				this.x1 -= fValue;
+				this.y0 -= fValue;
+				this.y1 -= fValue;
+			}
+			else{
+				var v2fVec: IVec2 = arguments[0];
+
+				this.x0 -= v2fVec.x;
+				this.x1 -= v2fVec.x;
+
+				this.y0 -= v2fVec.y;
+				this.y1 -= v2fVec.y;
+			}
+
+			return this;
+		};
+
+		multSelf(fValue: float): IRect2d;
+		multSelf(v2fVec: IVec2): IRect2d;
+		multSelf(v2fVec?): IRect2d{
+			if(isFloat(arguments[0])){
+				var fValue: float = arguments[0];
+
+				this.x0 *= fValue;
+				this.x1 *= fValue;
+				this.y0 *= fValue;
+				this.y1 *= fValue;
+			}
+			else{
+				var v2fVec: IVec2 = arguments[0];
+
+				this.x0 *= v2fVec.x;
+				this.x1 *= v2fVec.x;
+
+				this.y0 *= v2fVec.y;
+				this.y1 *= v2fVec.y;
+			}
+
+			return this;
+		};
+
+		divSelf(fValue: float): IRect2d;
+		divSelf(v2fVec: IVec2): IRect2d;
+		divSelf(v2fVec?): IRect2d{
+			if(isFloat(arguments[0])){
+				var fValue: float = arguments[0];
+				debug_assert(fValue != 0.,"divide by zero error");
+
+				var fInvValue: float = 1./fValue;
+
+				this.x0 *= fInvValue;
+				this.x1 *= fInvValue;
+				this.y0 *= fInvValue;
+				this.y1 *= fInvValue;
+			}
+			else{
+				var v2fVec: IVec2 = arguments[0];
+
+				debug_assert(v2fVec.x != 0.,"divide by zero error");
+				debug_assert(v2fVec.y != 0.,"divide by zero error");
+
+				var fInvX: float = 1./v2fVec.x;
+				var fInvY: float = 1./v2fVec.y;
+
+				this.x0 *= fInvX;
+				this.x1 *= fInvX;
+
+				this.y0 *= fInvY;
+				this.y1 *= fInvY;
+			}
+
+			return this;
+		};
+
+		offset(v2fOffset: IVec2): IRect2d;
+		offset(fOffsetX: float, fOffsetY: float): IRect2d;
+		offset(fOffsetX?, fOffsetY?): IRect2d{
+			if(arguments.length === 1){
+				var v2fOffset: IVec2 = arguments[0];
+
+				this.x0 += v2fOffset.x;
+				this.x1 += v2fOffset.x;
+
+				this.y0 += v2fOffset.y;
+				this.y1 += v2fOffset.y;
+			}
+			else{
+				this.x0 += arguments[0];
+				this.x1 += arguments[0];
+
+				this.y0 += arguments[1];
+				this.y1 += arguments[1];
+			}
+
+			return this;
+		};
+
+		expand(fValue: float): IRect2d;
+		expand(v2fValue: IVec2): IRect2d;
+		expand(fValueX: float, fValueY: float): IRect2d;
+		expand(fValueX?, fValueY?): IRect2d{
+			if(arguments.length == 1){
+				if(isFloat(arguments[0])){
+					var fValue: float = arguments[0];
+
+					this.x0 -= fValue;
+					this.x1 += fValue;
+
+					this.y0 -= fValue;
+					this.y1 += fValue;
+				}
+				else{
+					var v2fValue: IVec2 = v2fValue;
+
+					this.x0 -= v2fValue.x;
+					this.x1 += v2fValue.x;
+
+					this.y0 -= v2fValue.y;
+					this.y1 += v2fValue.y;
+				}
+			}
+			else{
+//arguments.length == 2
+
+				this.x0 -= arguments[0];
+				this.x1 += arguments[0];
+
+				this.y0 -= arguments[1];
+				this.y1 += arguments[1];
+			}
+
+			return this;
+		};
+
+		expandX(fValue: float): IRect2d{
+			this.x0 -= fValue;
+			this.x1 += fValue;
+
+			return this;
+		};
+
+		expandY(fValue: float): IRect2d{
+			this.y0 -= fValue;
+			this.y1 += fValue;
+
+			return this;
+		};
+
+		resize(v2fSize: IVec2): IRect2d;
+		resize(fSizeX: float, fSizeY: float): IRect2d;
+		resize(fSizeX?, fSizeY?): IRect2d{
+			var fSizeX: float, fSizeY: float;
+
+			if(arguments.length == 1){
+				var v2fSize: IVec2 = arguments[0];
+
+				fSizeX = v2fSize.x;
+				fSizeY = v2fSize.y;
+			}
+			else{
+				fSizeX = arguments[0];
+				fSizeY = arguments[1];
+			}
+
+			this.x1 = (this.x0 + this.x1 + fSizeX)*0.5;
+			this.x0 = this.x1 - fSizeX;
+
+			this.y1 = (this.y0 + this.y1 + fSizeY)*0.5;
+			this.y0 = this.y1 - fSizeY;
+
+			return this;
+		};
+
+		/**@inline*/  resizeX(fSize: float): IRect2d{
+			this.x1 = (this.x0 + this.x1 + fSize)*0.5;
+			this.x0 = this.x1 - fSize;
+
+			return this;
+		};
+
+		/**@inline*/  resizeY(fSize: float): IRect2d{
+			this.y1 = (this.y0 + this.y1 + fSize)*0.5;
+			this.y0 = this.y1 - fSize;
+
+			return this;
+		};
+
+		resizeMax(v2fSpan: IVec2): IRect2d;
+		resizeMax(fSpanX: float, fSpanY: float): IRect2d;
+		resizeMax(fSpanX?, fSpanY?): IRect2d{
+			if(arguments.length == 1){
+				var v2fSpan: IVec2 = arguments[0];
+
+				this.x1 = this.x0 + v2fSpan.x;
+				this.y1 = this.y0 + v2fSpan.y;
+			}
+			else{
+				this.x1 = this.x0 + arguments[0];
+				this.y1 = this.y0 + arguments[1];
+			}
+
+			return this;
+		};
+
+		/**@inline*/  resizeMaxX(fSpan: float): IRect2d{
+			this.x1 = this.x0 + fSpan;
+			return this;
+		};
+
+		/**@inline*/  resizeMaxY(fSpan: float): IRect2d{
+			this.y1 = this.y0 + fSpan;
+			return this;
+		};
+
+		resizeMin(v2fSpan: IVec2): IRect2d;
+		resizeMin(fSpanX: float, fSpanY: float): IRect2d;
+		resizeMin(fSpanX?, fSpanY?): IRect2d{
+			if(arguments.length == 1){
+				var v2fSpan: IVec2 = arguments[0];
+
+				this.x0 = this.x1 - v2fSpan.x;
+				this.y0 = this.y1 - v2fSpan.y;
+			}
+			else{
+				this.x0 = this.x1 - arguments[0];
+				this.y0 = this.y1 - arguments[1];
+			}
+
+			return this;
+		};
+
+		/**@inline*/  resizeMinX(fSpan: float): IRect2d{
+			this.x0 = this.x1 - fSpan;
+			return this;
+		};
+
+		/**@inline*/  resizeMinY(fSpan: float): IRect2d{
+			this.y0 = this.y1 - fSpan;
+			return this;
+		};
+
+		unionPoint(v2fPoint: IVec2): IRect2d;
+		unionPoint(fX: float, fY: float): IRect2d;
+		unionPoint(fX?, fY?): IRect2d{
+			if(arguments.length == 1){
+				var v2fPoint: IVec2 = arguments[0];
+
+				this.x0 = math.min(this.x0, v2fPoint.x);
+				this.x1 = math.max(this.x1, v2fPoint.x);
+
+				this.y0 = math.min(this.y0, v2fPoint.y);
+				this.y1 = math.max(this.y1, v2fPoint.y);
+			}
+			else{
+				var fX: float = arguments[0];
+				var fY: float = arguments[1];
+
+				this.x0 = math.min(this.x0, fX);
+				this.x1 = math.max(this.x1, fX);
+
+				this.y0 = math.min(this.y0, fY);
+				this.y1 = math.max(this.y1, fY);
+			}
+
+			return this;
+		};
+
+		unionRect(pRect: IRect2d): IRect2d{
+			this.normalize();
+			pRect.normalize();
+
+			this.x0 = math.min(this.x0, pRect.x0);
+			this.x1 = math.max(this.x1, pRect.x1);
+
+			this.y0 = math.min(this.y0, pRect.y0);
+			this.y1 = math.max(this.y1, pRect.y1);
+
+			return this;
+		};
+
+		negate(pDestination?: IRect2d): IRect2d{
+			if(!isDef(pDestination)){
+				pDestination = this;
+			}
+
+			return this.set(-this.x1, -this.x0, -this.y1, -this.y0);
+		};
+
+		normalize(): IRect2d{
+			var fTmp: float;
+			if(this.x0 > this.x1){
+				fTmp = this.x0;
+				this.x0 = this.x1;
+				this.x1 = fTmp;
+			}
+			if(this.y0 > this.y1){
+				fTmp = this.y0;
+				this.y0 = this.y1;
+				this.y1 = fTmp;
+			}
+			return this;
+		};
+
+		/**@inline*/  isEqual(pRect: IRect2d): bool{
+			return 	this.x0 == pRect.x0 && this.x1 == pRect.x1
+					&& this.y0 == pRect.y0 && this.y1 == pRect.y1;
+		};
+
+		/**@inline*/  isClear(): bool{
+			return this.x0 == 0. && this.x1 == 0. && this.y0 == 0. && this.y1 == 0.;
+		};
+
+		/**@inline*/  isValid(): bool{
+			return this.x0 <= this.x1 && this.y0 <= this.y1;
+		};
+
+		/**@inline*/  isPointInRect(v2fPoint: IVec2): bool{
+			var x: float = v2fPoint.x;
+			var y: float = v2fPoint.y;
+
+			return (this.x0 <= x && x <= this.x1) && (this.y0 <= y && y <= this.y1);
+		};
+
+		midPoint(v2fDestination?: IVec2): IVec2{
+			if(!isDef(v2fDestination)){
+				v2fDestination = new Vec2();
+			}
+
+			v2fDestination.x = (this.x0 + this.x1)*0.5;
+			v2fDestination.y = (this.y0 + this.y1)*0.5;
+
+			return v2fDestination;
+		};
+
+		/**@inline*/  midX(): float{
+			return (this.x0 + this.x1)*0.5;
+		};
+
+		/**@inline*/  midY(): float{
+			return (this.y0 + this.y1)*0.5;
+		};
+
+		size(v2fDestination?: IVec2): IVec2{
+			if(!isDef(v2fDestination)){
+				v2fDestination = new Vec2();
+			}
+
+			v2fDestination.x = this.x1 - this.x0;
+			v2fDestination.y = this.y1 - this.y0;
+
+			return v2fDestination;
+		};
+
+		/**@inline*/  sizeX(): float{
+			return this.x1 - this.x0;
+		};
+
+		/**@inline*/  sizeY(): float{
+			return this.y1 - this.y0;
+		};
+
+		minPoint(v2fDestination?: IVec2): IVec2{
+			if(!isDef(v2fDestination)){
+				v2fDestination = new Vec2();
+			}
+
+			v2fDestination.x = this.x0;
+			v2fDestination.y = this.y0;
+
+			return v2fDestination;
+		};
+
+		maxPoint(v2fDestination?: IVec2): IVec2{
+			if(!isDef(v2fDestination)){
+				v2fDestination = new Vec2();
+			}
+
+			v2fDestination.x = this.x1;
+			v2fDestination.y = this.y1;
+
+			return v2fDestination;
+		};
+
+		/**@inline*/  area(): float{
+			return (this.x1 - this.x0)*(this.y1 - this.y0);
+		};
+
+/**
+		 * counter-clockwise
+		 * x0,y0 -> x1,y0 -> x1,y1 -> x0,y1;
+		 */
+
+
+		corner(iIndex: uint, v2fDestination?: IVec2): IVec2{
+			if(!isDef(v2fDestination)){
+				v2fDestination = new Vec2();
+			}
+
+			debug_assert(0 <= iIndex && iIndex < 4, "invalid index");
+
+			var x: float, y: float;
+
+			switch(iIndex){
+				case 0:
+					x = this.x0;
+					y = this.y0;
+					break;
+				case 1:
+					x = this.x1;
+					y = this.y0;
+					break;
+				case 2:
+					x = this.x1;
+					y = this.y1;
+					break;
+				case 3:
+					x = this.x0;
+					y = this.y1;
+					break;
+			};
+
+			v2fDestination.x = x;
+			v2fDestination.y = y;
+
+			return v2fDestination;
+		};
+
+		createBoundingCircle(pCircle?: ICircle): ICircle{
+			if(!isDef(pCircle)){
+				pCircle = new Circle();
+			}
+
+			var fX0: float = this.x0, fX1: float = this.x1;
+			var fY0: float = this.y0, fY1: float = this.y1;
+
+			var fHalfSizeX: float = (fX1 - fX0)*0.5;
+			var fHalfSizeY: float = (fY1 - fY0)*0.5;
+
+			pCircle.set((fX0 + fX1)*0.5, (fY0 + fY1)*0.5,
+				math.sqrt(fHalfSizeX*fHalfSizeX + fHalfSizeY*fHalfSizeY));
+
+			return pCircle;
+		};
+
+		toString(): string{
+			return "(" + this.x0 + ", " + this.y0 + ") --> (" +
+					this.x1 + ", " + this.y1 + ")";
+		};
+	};
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IRect2d {} ;
+	export interface IVec3 {} ;
+
+	export interface IRect3d {
+		x0: float;
+		x1: float;
+		y0: float;
+		y1: float;
+		z0: float;
+		z1: float;
+
+		rect2d: IRect2d;
+
+		set(): IRect3d;
+		set(pRect: IRect3d): IRect3d;
+		set(v3fVec: IVec3): IRect3d;
+		set(fSizeX: float, fSizeY: float, fSizeZ: float): IRect3d;
+		set(fX0: float, fX1: float, fY0: float,
+			fY1: float, fZ0: float, fZ1: float): IRect3d;
+
+		setFloor(pRect: IRect3d): IRect3d;
+		setCeil(pRect: IRect3d): IRect3d;
+
+		clear(): IRect3d;
+
+		addSelf(fValue: float): IRect3d;
+		addSelf(v3fVec: IVec3): IRect3d;
+
+		subSelf(fValue: float): IRect3d;
+		subSelf(v3fVec: IVec3): IRect3d;
+
+		multSelf(fValue: float): IRect3d;
+		multSelf(v3fVec: IVec3): IRect3d;
+
+		divSelf(fValue: float): IRect3d;
+		divSelf(v3fVec: IVec3): IRect3d;
+
+		offset(v3fOffset: IVec3): IRect3d;
+		offset(fOffsetX: float, fOffsetY: float, fOffsetZ: float): IRect3d;
+
+		expand(fValue: float): IRect3d;
+		expand(v3fVec: IVec3): IRect3d;
+		expand(fValueX: float, fValueY: float, fValueZ: float): IRect3d;
+
+		expandX(fValue: float): IRect3d;
+		expandY(fValue: float): IRect3d;
+		expandZ(fValue: float): IRect3d;
+
+		resize(v3fSize: IVec3): IRect3d;
+		resize(fSizeX: float, fSizeY: float, fSizeZ: float): IRect3d;
+
+		resizeX(fSize: float): IRect3d;
+		resizeY(fSize: float): IRect3d;
+		resizeZ(fSize: float): IRect3d;
+
+		resizeMax(v3fSpan: IVec3): IRect3d;
+		resizeMax(fSpanX: float, fSpanY: float, fSpanZ: float): IRect3d;
+
+		resizeMaxX(fSpan: float): IRect3d;
+		resizeMAxY(fSpan: float): IRect3d;
+		resizeMaxZ(fSpan: float): IRect3d;
+
+		resizeMin(v3fSpan: IVec3): IRect3d;
+		resizeMin(fSpanX: float, fSpanY: float, fSpanZ: float): IRect3d;
+
+		resizeMinX(fSpan: float): IRect3d;
+		resizeMinY(fSpan: float): IRect3d;
+		resizeMinZ(fSpan: float): IRect3d;
+
+		unionPoint(v3fPoint: IVec3): IRect3d;
+		unionPoint(fX: float, fY: float, fZ: float): IRect3d;
+		unionRect(pRect: IRect3d): IRect3d;
+
+		negate(pDestination?: IRect3d): IRect3d;
+		normalize(): IRect3d;
+
+		transform(m4fMatrix: IMat4): IRect3d;
+
+		isEqual(pRect: IRect3d): bool;
+		isClear(): bool;
+		isValid(): bool;
+		isPointInRect(v3fPoint: IVec3): bool;
+
+		midPoint(c3fDestination?: IVec3): IVec3;
+		midX(): float;
+		midY(): float;
+		midZ(): float;
+
+		size(v3fDestination: IVec3): IVec3;
+		sizeX(): float;
+		sizeY(): float;
+		sizeZ(): float;
+
+		minPoint(v3fDestination?: IVec3): IVec3;
+		maxPoint(v3fDestination?: IVec3): IVec3;
+
+		area(): float;
+
+		corner(iIndex: uint, v3fDestination?: IVec3): IVec3;
+
+		createBoundingSphere(): ISphere;
+
+		toString(): string;
+	}
+}
+
+
+
+module akra.geometry {
+    export class Rect3d implements IRect3d{
+    	x0: float;
+    	x1: float;
+		y0: float;
+		y1: float;
+		z0: float;
+		z1: float;
+
+		constructor();
+		constructor(pRect: IRect3d);
+		constructor(fSizeX: float, fSizeY: float, fSizeZ: float);
+		constructor(fX0: float, fX1: float, fY0: float,
+					fY1: float, fZ0: float, fZ1: float);
+		constructor(fX0?, fX1?, fY0?, fY1?, fZ0?, fZ1?){
+			var nArgumentsLength: uint = arguments.length;
+
+			switch(nArgumentsLength){
+				case 1:
+					this.set(arguments[0]);
+					break;
+				case 3:
+					this.set(arguments[0], arguments[1], arguments[2]);
+					break;
+				case 6:
+					this.set(arguments[0], arguments[1], arguments[2],
+							arguments[3], arguments[4], arguments[5]);
+					break;
+				default:
+					this.x0 = this.x1 = this.y0 = this.y1 = this.z0 = this.z1 = 0.;
+					break;
+			}
+		};
+
+		get rect2d(): IRect2d{
+			return new Rect2d(this.x0, this.x1, this.y0, this.y1);
+		};
+
+		set rect2d(pRect: IRect2d){
+			this.x0 = pRect.x0;
+			this.x1 = pRect.x1;
+			this.y0 = pRect.y0;
+			this.y1 = pRect.y1;
+		};
+
+		set(): IRect3d;
+		set(pRect: IRect3d): IRect3d;
+		set(v3fVec: IVec3): IRect3d;
+		set(fSizeX: float, fSizeY: float, fSizeZ: float): IRect3d;
+		set(fX0: float, fX1: float, fY0: float,
+			fY1: float, fZ0: float, fZ1: float): IRect3d;
+		set(fX0?, fX1?, fY0?, fY1?, fZ0?, fZ1?): IRect3d{
+			var nArgumentsLength: uint = arguments.length;
+
+			switch(nArgumentsLength){
+				case 1:
+					var pRect: IRect3d = arguments[0];
+
+					this.x0 = pRect.x0;
+					this.x1 = pRect.x1;
+					this.y0 = pRect.y0;
+					this.y1 = pRect.y1;
+					this.z0 = pRect.z0;
+					this.z1 = pRect.z1;
+					break;
+				case 3:
+					var fSizeX: float = arguments[0];
+					var fSizeY: float = arguments[1];
+					var fSizeZ: float = arguments[2];
+
+					this.x1 = fSizeX*0.5;
+					this.x0 = -this.x1;
+
+					this.y1 = fSizeY*0.5;
+					this.y0 = -this.y1;
+
+					this.z1 = fSizeZ*0.5;
+					this.z0 = -this.z1;
+					break;
+				case 6:
+					this.x0 = arguments[0];
+					this.x1 = arguments[1];
+
+					this.y0 = arguments[2];
+					this.y1 = arguments[3];
+
+					this.z0 = arguments[4];
+					this.z1 = arguments[5];
+					break;
+				default:
+					this.x0 = this.x1 = this.y0 = this.y1 = this.z0 = this.z1 = 0.;
+					break;
+			}
+			return this;
+		};
+
+		setFloor(pRect: IRect3d): IRect3d{
+			this.x0 = math.floor(pRect.x0);
+			this.x1 = math.floor(pRect.x1);
+			this.y0 = math.floor(pRect.y0);
+			this.y1 = math.floor(pRect.y1);
+			this.z0 = math.floor(pRect.z0);
+			this.z1 = math.floor(pRect.z1);
+
+			return this;
+		};
+
+		setCeil(pRect: IRect3d): IRect3d{
+			this.x0 = math.ceil(pRect.x0);
+			this.x1 = math.ceil(pRect.x1);
+			this.y0 = math.ceil(pRect.y0);
+			this.y1 = math.ceil(pRect.y1);
+			this.z0 = math.ceil(pRect.z0);
+			this.z1 = math.ceil(pRect.z1);
+
+			return this;
+		};
+
+		/**@inline*/  clear(): IRect3d{
+			this.x0 = this.x1 = this.y0 = this.y1 = this.z0 = this.z1 = 0.;
+			return this;
+		};
+
+		addSelf(fValue: float): IRect3d;
+		addSelf(v3fVec: IVec3): IRect3d;
+		addSelf(v3fVec?): IRect3d{
+			if(isFloat(arguments[0])){
+				var fValue: float = arguments[0];
+
+				this.x0 += fValue;
+				this.x1 += fValue;
+				this.y0 += fValue;
+				this.y1 += fValue;
+				this.z0 += fValue;
+				this.z1 += fValue;
+			}
+			else{
+				var v3fVec: IVec3 = arguments[0];
+
+				this.x0 += v3fVec.x;
+				this.x1 += v3fVec.x;
+
+				this.y0 += v3fVec.y;
+				this.y1 += v3fVec.y;
+
+				this.z0 += v3fVec.z;
+				this.z1 += v3fVec.z;
+			}
+
+			return this;
+		};
+
+
+		subSelf(fValue: float): IRect3d;
+		subSelf(v3fVec: IVec3): IRect3d;
+		subSelf(v3fVec?): IRect3d{
+			if(isFloat(fValue)){
+				var fValue: float = arguments[0];
+
+				this.x0 -= fValue;
+				this.x1 -= fValue;
+				this.y0 -= fValue;
+				this.y1 -= fValue;
+				this.z0 -= fValue;
+				this.z1 -= fValue;
+			}
+			else{
+				var v3fVec: IVec3 = arguments[0];
+
+				this.x0 -= v3fVec.x;
+				this.x1 -= v3fVec.x;
+
+				this.y0 -= v3fVec.y;
+				this.y1 -= v3fVec.y;
+
+				this.z0 -= v3fVec.z;
+				this.z1 -= v3fVec.z;
+			}
+
+			return this;
+		};
+
+		multSelf(fValue: float): IRect3d;
+		multSelf(v3fVec: IVec3): IRect3d;
+		multSelf(v3fVec?): IRect3d{
+			if(isFloat(arguments[0])){
+				var fValue: float = arguments[0];
+
+				this.x0 *= fValue;
+				this.x1 *= fValue;
+				this.y0 *= fValue;
+				this.y1 *= fValue;
+				this.z0 *= fValue;
+				this.z1 *= fValue;
+			}
+			else{
+				var v3fVec: IVec3 = arguments[0];
+
+				this.x0 *= v3fVec.x;
+				this.x1 *= v3fVec.x;
+
+				this.y0 *= v3fVec.y;
+				this.y1 *= v3fVec.y;
+
+				this.z0 *= v3fVec.z;
+				this.z1 *= v3fVec.z;
+			}
+
+			return this;
+		};
+
+		divSelf(fValue: float): IRect3d;
+		divSelf(v3fVec: IVec3): IRect3d;
+		divSelf(v3fVec?): IRect3d{
+			if(isFloat(arguments[0])){
+				var fValue: float = arguments[0];
+
+				debug_assert(fValue != 0.0, "divide by zero error");
+
+				var fInvValue: float = 1./fValue;
+
+				this.x0 *= fInvValue;
+				this.x1 *= fInvValue;
+				this.y0 *= fInvValue;
+				this.y1 *= fInvValue;
+				this.z0 *= fInvValue;
+				this.z1 *= fInvValue;
+			}
+			else{
+				var v3fVec: IVec3 = arguments[0];
+
+				debug_assert(v3fVec.x != 0.0, "divide by zero error");
+				debug_assert(v3fVec.y != 0.0, "divide by zero error");
+				debug_assert(v3fVec.z != 0.0, "divide by zero error");
+
+				var fInvX: float = 1./v3fVec.x;
+				var fInvY: float = 1./v3fVec.y;
+				var fInvZ: float = 1./v3fVec.z;
+
+				this.x0 *= fInvX;
+				this.x1 *= fInvX;
+
+				this.y0 *= fInvY;
+				this.y1 *= fInvY;
+
+				this.z0 *= fInvZ;
+				this.z1 *= fInvZ;
+			}
+
+			return this;
+		};
+
+		offset(v3fOffset: IVec3): IRect3d;
+		offset(fOffsetX: float, fOffsetY: float, fOffsetZ: float): IRect3d;
+		offset(fOffsetX?, fOffsetY?, fOffsetZ?): IRect3d{
+			if(arguments.length === 1){
+				var v3fOffset: IVec3 = arguments[0];
+
+				this.x0 += v3fOffset.x;
+				this.x1 += v3fOffset.x;
+
+				this.y0 += v3fOffset.y;
+				this.y1 += v3fOffset.y;
+
+				this.z0 += v3fOffset.z;
+				this.z1 += v3fOffset.z;
+			}
+			else{
+				this.x0 += arguments[0];
+				this.x1 += arguments[0];
+
+				this.y0 += arguments[1];
+				this.y1 += arguments[1];
+
+				this.z0 += arguments[2];
+				this.z1 += arguments[2];
+			}
+
+			return this;
+		};
+
+		expand(fValue: float): IRect3d;
+		expand(v3fVec: IVec3): IRect3d;
+		expand(fValueX: float, fValueY: float, fValueZ: float): IRect3d;
+		expand(fValueX?, fValueY?, fValueZ?): IRect3d{
+			if(arguments.length === 1){
+				if(isFloat(arguments[0])){
+					var fValue: float = arguments[0];
+
+					this.x0 -= fValue;
+					this.x1 += fValue;
+
+					this.y0 -= fValue;
+					this.y1 += fValue;
+
+					this.z0 -= fValue;
+					this.z1 += fValue;
+				}
+				else{
+					var v3fVec: IVec3 = arguments[0];
+
+					this.x0 -= v3fVec.x;
+					this.x1 += v3fVec.x;
+
+					this.y0 -= v3fVec.y;
+					this.y1 += v3fVec.y;
+
+					this.z0 -= v3fVec.z;
+					this.z1 += v3fVec.z;
+				}
+			}
+			else{
+//arguments.length === 3
+
+				this.x0 -= arguments[0];
+				this.x1 += arguments[0];
+
+				this.y0 -= arguments[1];
+				this.y1 += arguments[1];
+
+				this.z0 -= arguments[2];
+				this.z1 += arguments[2];
+			}
+
+			return this;
+		};
+
+		/**@inline*/  expandX(fValue: float): IRect3d{
+			this.x0 -= fValue;
+			this.x1 += fValue;
+
+			return this;
+		};
+
+		/**@inline*/  expandY(fValue: float): IRect3d{
+			this.y0 -= fValue;
+			this.y1 += fValue;
+
+			return this;
+		};
+
+		/**@inline*/  expandZ(fValue: float): IRect3d{
+			this.z0 -= fValue;
+			this.z1 += fValue;
+
+			return this;
+		};
+
+		resize(v3fSize: IVec3): IRect3d;
+		resize(fSizeX: float, fSizeY: float, fSizeZ: float): IRect3d;
+		resize(fSizeX?, fSizeY?, fSizeZ?): IRect3d{
+			var fSizeX: float, fSizeY: float, fSizeZ: float;
+
+			if(arguments.length === 1){
+				var v3fSize: IVec3 = arguments[0];
+
+				fSizeX = v3fSize.x;
+				fSizeY = v3fSize.y;
+				fSizeZ = v3fSize.z;
+			}
+			else{
+				fSizeX = arguments[0];
+				fSizeY = arguments[1];
+				fSizeZ = arguments[2];
+			}
+
+			this.x1 = (this.x0 + this.x1 + fSizeX)*0.5;
+			this.x0 = this.x1 - fSizeX;
+
+			this.y1 = (this.y0 + this.y1 + fSizeY)*0.5;
+			this.y0 = this.y1 - fSizeY;
+
+			this.z1 = (this.z0 + this.z1 + fSizeZ)*0.5;
+			this.z0 = this.z1 - fSizeZ;
+
+			return this;
+		};
+
+		/**@inline*/  resizeX(fSize: float): IRect3d{
+			this.x1 = (this.x0 + this.x1 + fSize)*0.5;
+			this.x0 = this.x1 - fSize;
+
+			return this;
+		};
+
+		/**@inline*/  resizeY(fSize: float): IRect3d{
+			this.y1 = (this.y0 + this.y1 + fSize)*0.5;
+			this.y0 = this.y1 - fSize;
+
+			return this;
+		};
+
+		/**@inline*/  resizeZ(fSize: float): IRect3d{
+			this.z1 = (this.z0 + this.z1 + fSize)*0.5;
+			this.z0 = this.z1 - fSize;
+
+			return this;
+		};
+    }
+}
+
+
+
+module akra.geometry{
+	export enum EVolumeClassifications{
+		NO_RELATION = 0,
+		EQUAL,
+		A_CONTAINS_B,
+		B_CONTAINS_A,
+		INTERSECTING
+	};
+
+	export enum EPlaneClassifications{
+		PLANE_FRONT = 0,
+		PLANE_BACK,
+		PLANE_INTERSECT
+	};
+};
 
 
 

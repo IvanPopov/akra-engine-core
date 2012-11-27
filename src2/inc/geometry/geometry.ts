@@ -14,6 +14,7 @@
 #include "Plane3d.ts"
 
 #include "Rect2d.ts"
+#include "Rect3d.ts"
 
 module akra.geometry{
 	export enum EVolumeClassifications{
