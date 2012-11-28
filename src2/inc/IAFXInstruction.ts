@@ -51,8 +51,14 @@ module akra {
         addPointIndex(): void;
         setVideoBuffer(pBuffer: IAFXIdInstruction): void;
 
+        getTypeByIndex(): IAFXVariableTypeInstruction;
+        getField(sFieldName: string, isCreateExpr: bool): IAFXIdExprInstruction;
+        getPointerType(): IAFXVariableTypeInstruction;
+
         isEqual(pType: IAFXVariableTypeInstruction): bool;
         isBase(): bool;
+        isArray(): bool;
+        isPointer(): bool;
     }
 
     export interface IAFXTypedInstruction extends IAFXInstruction {
@@ -101,6 +107,10 @@ module akra {
 
 
     export interface IAFXExprInstruction extends IAFXTypedInstruction {
+
+    }
+
+    export interface IAFXIdExprInstruction extends IAFXExprInstruction {
 
     }
 

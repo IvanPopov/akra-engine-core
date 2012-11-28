@@ -80,11 +80,31 @@ module akra.fx {
 			
 		}
 
+		getTypeByIndex(): IAFXVariableTypeInstruction {
+			return null;
+		}
+
+		getField(sFieldName: string, isCreateExpr: bool): IAFXIdExprInstruction {
+			return null;
+		}
+
+		getPointerType(): IAFXVariableTypeInstruction {
+			return null;
+		}
+
 		isEqual(pType: IAFXVariableTypeInstruction): bool {
 			return false;
 		}
 
 		isBase(): bool {
+			return false;
+		}
+
+		isArray(): bool {
+			return false;
+		}
+
+		isPointer(): bool {
 			return false;
 		}
 	}
@@ -319,7 +339,7 @@ module akra.fx {
 		}
 	}
 
-	export class IdExprInstruction extends ExprInstruction {
+	export class IdExprInstruction extends ExprInstruction implements IAFXIdExprInstruction {
 		constructor(){
 			super();
 			this._pInstructionList = [null];
@@ -410,6 +430,111 @@ module akra.fx {
 		}	
 	}
 
+	/**
+	 * Represent someExpr[someIndex]
+	 * EMPTY_OPERATOR Instruction ExprInstruction
+	 */
+	export class PostfixIndexInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null, null];
+		}	
+	}
+
+	/*
+	 * Represent someExpr.id
+	 * EMPTY_OPERATOR Instruction IdInstruction
+	 */
+	export class PostfixPointInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null, null];
+		}	
+	}
+
+	/**
+	 * Represent someExpr ++
+	 * (-- | ++) Instruction
+	 */	
+	export class PostfixArithmeticInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null];
+		}	
+	}
+
+	/**
+	 * Represent @ Expr
+	 * @ Instruction
+	 */
+	export class PrimaryExprInstruction extends ExprInstruction {
+		constructor() { 
+			super();
+			this._pInstructionList = [null];
+		}
+	}
+
+	/**
+	 * Represent (expr)
+	 * EMPTY_OPERATOR ExprInstruction
+	 */
+	export class ComplexExprInstruction extends ExprInstruction {
+		constructor(){
+			super();
+			this._pInstructionList = [null];
+		}
+	}
+
+	/**
+	 * Respresnt func(arg1,..., argn)
+	 * EMPTY_OPERATOR IdExprInstruction ExprInstruction ... ExprInstruction 
+	 */
+	export class FunctionCallInstruction extends ExprInstruction {
+		constructor() { 
+			super();
+			this._pInstructionList = [null];
+		}	
+	}
+
+	/**
+	 * Respresnt ctor(arg1,..., argn)
+	 * EMPTY_OPERATOR IdInstruction ExprInstruction ... ExprInstruction 
+	 */
+	export class ConstructorCallInstruction extends ExprInstruction {
+		constructor() { 
+			super();
+			this._pInstructionList = [null];
+		}	
+	}
+
+	/**
+	 * Represetn compile vs_func(...args)
+	 * compile IdExprInstruction ExprInstruction ... ExprInstruction
+	 */
+	export class CompileExprInstruction extends ExprInstruction{
+		constructor() { 
+			super();
+			this._pInstructionList = [null];
+		}	
+	}
+
+	/**
+	 * Represetn sampler_state { states }
+	 * sampler_state IdExprInstruction ExprInstruction ... ExprInstruction
+	 */
+	export class SamplerStateBlockInstruction extends ExprInstruction {
+		constructor() { 
+			super();
+			this._pInstructionList = [null];
+		}	
+	}
+
+	export class SamplerStateInstruction extends ExprInstruction {
+		constructor() { 
+			super();
+			this._pInstructionList = [null, null];
+		}	
+	}
 
 	// export class TypeInstruction extends Instruction {
 	// 	/**
@@ -445,26 +570,7 @@ module akra.fx {
 	// 	 */
 	// }
 
-	// export class PostfixIndexInstruction extends Instruction {
-	// 	/**
-	// 	 * Represent someExpr[someIndex]
-	// 	 * [] Instruction ExprInstruction
-	// 	 */
-	// }
-
-	// export class PostfixPointInstruction extends Instruction {
-	// 	*
-	// 	 * Represent someExpr.id
-	// 	 * . Instruction IdInstruction
-		 
-	// }
-
-	// export class PostfixArithmeticInstruction extends Instruction {
-	// 	/**
-	// 	 * Represent someExpr ++
-	// 	 * (-- | ++) Instruction
-	// 	 */	
-	// }
+	
 
 	// export class ArithmeticExprInstruction extends Instruction {
 	// 	/**

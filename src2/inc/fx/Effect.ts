@@ -28,6 +28,16 @@ module akra.fx {
     #define EFFECT_BAD_CAST_TYPE_NOT_BASE 2214
     #define EFFECT_BAD_CAST_UNKNOWN_TYPE 2215
     #define EFFECT_BAD_UNARY_OPERATION 2216
+    #define EFFECT_BAD_POSTIX_NOT_ARRAY 2217
+    #define EFFECT_BAD_POSTIX_NOT_INT_INDEX 2218
+    #define EFFECT_BAD_POSTIX_NOT_FIELD 2219
+    #define EFFECT_BAD_POSTIX_NOT_POINTER 2220
+    #define EFFECT_BAD_POSTIX_ARITHMETIC 2221
+    #define EFFECT_BAD_PRIMARY_NOT_POINT 2222
+    #define EFFECT_BAD_COMPLEX_NOT_FUNCTION 2223
+    #define EFFECT_BAD_COMPLEX_NOT_TYPE 2224
+    #define EFFECT_BAD_COMPLEX_NOT_CONSTRUCTOR 2225
+    #define EFFECT_BAD_COMPILE_NOT_FUNCTION 2226
 
     akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, 
     						 "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
@@ -73,6 +83,36 @@ module akra.fx {
 	akra.logger.registerCode(EFFECT_BAD_UNARY_OPERATION, 
     						 "Invalid unary expression!. Bad type: '{typeName}' \
     						 for operator '{opeator}'. In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_POSTIX_NOT_ARRAY, 
+    						 "Invalid postfix-array expression!. \
+    						 Type of expression is not array: '{typeName}'. In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_POSTIX_NOT_INT_INDEX, 
+    						 "Invalid postfix-array expression!. Bad type of index: '{typeName}'. \
+    						 Must be 'int'. In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_POSTIX_NOT_FIELD, 
+    						 "Invalid postfix-point expression!. Type '{typeName}' has no field '{fieldName}'. \
+    						 In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_POSTIX_NOT_POINTER, 
+    						 "Invalid postfix-point expression!. Type '{typeName}' is not pointer. \
+    						 In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_POSTIX_ARITHMETIC, 
+    						 "Invalid postfix-arithmetic expression!. Bad type '{typeName}' \
+    						 for operator {operator}. In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_PRIMARY_NOT_POINT, 
+    						 "Invalid primary expression!. Bad type '{typeName}'.\
+    						 It`s not pointer. In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_COMPLEX_NOT_FUNCTION, 
+    						 "Invalid function call expression!. Could not find function-signature \
+    						 with name {funcName} and so types. In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_COMPLEX_NOT_TYPE, 
+    						 "Invalid constructor call!. There are not so type. In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_COMPLEX_NOT_CONSTRUCTOR, 
+    						 "Invalid constructor call!. Could not find constructor-signature \
+    						 with name {typeName} and so types. In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_COMPILE_NOT_FUNCTION, 
+    						 "Invalid compile expression!. Could not find function-signature \
+    						 with name {funcName} and so types. In line: {line}.");
+
 
     function sourceLocationToString(pLocation: ISourceLocation): string {
         var sLocation:string = "[" + pLocation.file + ":" + pLocation.line.toString() + "]: ";
@@ -106,6 +146,8 @@ module akra.fx {
    		operator?: string;
    		leftTypeName?: string;
    		rirgtTypeName?: string;
+   		fieldName?: string;
+   		funcName?: string;
     	
     	line?: uint;
     	column?: uint;
@@ -590,6 +632,21 @@ module akra.fx {
 			}	
 		}
 
+		private findFunction(sFunctionName: string, 
+							 pArguments: IAFXExprInstruction[]): IAFXIdExprInstruction {
+			return null;
+		}
+
+		private findConstructor(pTypeName: IAFXIdInstruction, 
+							    pArguments: IAFXExprInstruction[]): IAFXVariableTypeInstruction {
+			return null;
+		}
+
+		private findShaderFunction(sFunctionName: string, 
+							 	   pArguments: IAFXExprInstruction[]): IAFXIdExprInstruction {
+			return null;
+		}
+
 		private addVariable(pVariable: IAFXVariable): void {
 
 		}
@@ -786,7 +843,7 @@ module akra.fx {
 
         private analyzeExpr(pNode: IParseNode): IAFXExprInstruction {
         	this.setAnalyzedNode(pNode);
-        	var sName = pNode.name;
+        	var sName: string = pNode.name;
         	
         	switch(sName){
         		case "ObjectExpr":
@@ -825,7 +882,7 @@ module akra.fx {
 		       	case "MemExpr":
 		       		return this.analyzeMemExpr(pNode);
 		       	default:
-		       		this._error(EFFECT_UNSUPPORTED_EXPR, {exprName: sName});
+		       		this._error(EFFECT_UNSUPPORTED_EXPR, { exprName: sName });
 		       		break;
         	}
 
@@ -833,18 +890,365 @@ module akra.fx {
         }
 
         private analyzeObjectExpr(pNode: IParseNode): IAFXExprInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var sName: string = pNode.children[pNode.children.length - 1].value;
+        	
+        	switch(sName){
+        		case "T_KW_COMPILE":
+        			return this.analyzeCompileExpr(pNode);
+        		case "T_KW_SAMPLER_STATE":
+        			return this.analyzeSamplerStateBlock(pNode);
+        	}
+        }
+
+        private analyzeCompileExpr(pNode: IParseNode): IAFXExprInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pExpr: CompileExprInstruction = new CompileExprInstruction();
+        	var pExprType: IAFXVariableTypeInstruction;
+        	var pArguments: IAFXExprInstruction[] = null;
+        	var sShaderFuncName: string = pChildren[pChildren.length - 2].value;
+        	var pShaderFunc: IAFXIdExprInstruction;
+        	var i: uint = 0;
+
+        	if(pChildren.length > 3){
+        		var pArgumentExpr: IAFXExprInstruction;
+
+        		pArguments = [];
+
+        		for(i = pChildren.length - 3; i > 0; i--) {
+        			if(pChildren[i].value !== ","){
+        				pArgumentExpr = this.analyzeExpr(pChildren[i]);
+        				pArguments.push(pArgumentExpr);
+        			}
+        		}	
+        	}
+
+        	pShaderFunc = this.findShaderFunction(sShaderFuncName, pArguments);
+
+        	if(isNull(pShaderFunc)){
+        		this._error(EFFECT_BAD_COMPILE_NOT_FUNCTION, { funcName: sShaderFuncName });
+        		return null;
+        	}
+
+        	pExprType = pShaderFunc.getType();
+
+        	pExpr.setType(pExprType);
+        	pExpr.setOperator("complile");
+        	pExpr.push(pShaderFunc, true);
+        	
+        	if(!isNull(pArguments)){
+        		for(i = 0; i < pArguments.length; i++) {
+        			pExpr.push(pArguments[i], true);
+        		}
+        	}
+
+        	return pExpr;
+        }
+
+        private analyzeSamplerStateBlock(pNode: IParseNode): IAFXExprInstruction {
+        	pNode = pNode.children[0];
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pExpr: SamplerStateBlockInstruction = new SamplerStateBlockInstruction();
+        	var pSamplerState: SamplerStateInstruction;
+        	var i: uint = 0;
+
+        	pExpr.setOperator("sample_state");
+
+        	for(i = pChildren.length - 2; i >= 1; i--){
+        		pSamplerState = this.analyzeSamplerState(pChildren[i]);
+        		pExpr.push(pSamplerState);
+        	}
+
+        	return pExpr;	
+        }
+
+        private analyzeSamplerState(pNode: IParseNode): SamplerStateInstruction {
         	return null;
         }
 
-        private analyzeComplexExpr(pNode: IParseNode): IAFXExprInstruction{
-        	return null;
+        private analyzeComplexExpr(pNode: IParseNode): IAFXExprInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var sFirstNodeName: string = pChildren[pChildren.length - 1].name;
+
+        	switch(sFirstNodeName){
+        		case "T_NON_TYPE_ID":
+        			return this.analyzeFunctionCallExpr(pNode);
+        		case "BaseType":
+        		case "T_TYPE_ID":
+        			return this.analyzeConstructorCallExpr(pNode);
+        		default:
+        			return this.analyzeSimpleComplexExpr(pNode);
+        	}
+        }
+
+        private analyzeFunctionCallExpr(pNode: IParseNode): IAFXExprInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pExpr: FunctionCallInstruction = new FunctionCallInstruction();
+        	var pExprType: IAFXVariableTypeInstruction;
+        	var pArguments: IAFXExprInstruction[] = null;
+        	var sFuncName: string = pChildren[pChildren.length - 1].value;
+        	var pFunction: IAFXIdExprInstruction;
+        	var i: uint = 0;
+
+        	if(pChildren.length > 3){        		
+        		var pArgumentExpr: IAFXExprInstruction;
+
+        		pArguments = [];
+
+        		for(i = pChildren.length - 3; i > 0; i--) {
+        			if(pChildren[i].value !== ","){
+        				pArgumentExpr = this.analyzeExpr(pChildren[i]);
+        				pArguments.push(pArgumentExpr);
+        			}
+        		}
+        	}
+
+        	pFunction = this.findFunction(sFuncName, pArguments);
+
+        	if(isNull(pFunction)){
+        		this._error(EFFECT_BAD_COMPLEX_NOT_FUNCTION, { funcName: sFuncName });
+        		return null;
+        	}
+
+        	pExprType = pFunction.getType();
+
+        	pExpr.setType(pExprType);
+        	pExpr.push(pFunction, true);
+        	
+        	if(!isNull(pArguments)){
+        		for(i = 0; i < pArguments.length; i++) {
+        			pExpr.push(pArguments[i], true);
+        		}
+        	}
+
+        	return pExpr;
         }
         
-        private analyzePrimaryExpr(pNode: IParseNode): IAFXExprInstruction{
-        	return null;
+        private analyzeConstructorCallExpr(pNode: IParseNode): IAFXExprInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pExpr: ConstructorCallInstruction = new ConstructorCallInstruction();
+        	var pExprType: IAFXVariableTypeInstruction;
+        	var pArguments: IAFXExprInstruction[] = null;
+        	var pTypeName: IAFXIdInstruction;
+        	var i: uint = 0;
+
+        	pTypeName = this.analyzeType(pChildren[pChildren.length - 1]);
+
+        	if(isNull(pTypeName)){
+        		this._error(EFFECT_BAD_COMPLEX_NOT_TYPE);
+        		return null;
+        	}
+
+        	if(pChildren.length > 3){        		
+        		var pArgumentExpr: IAFXExprInstruction;
+
+        		pArguments = [];
+
+        		for(i = pChildren.length - 3; i > 0; i--) {
+        			if(pChildren[i].value !== ","){
+        				pArgumentExpr = this.analyzeExpr(pChildren[i]);
+        				pArguments.push(pArgumentExpr);
+        			}
+        		}
+        	}
+
+        	pExprType = this.findConstructor(pTypeName, pArguments);
+
+        	if(isNull(pExprType)){
+        		this._error(EFFECT_BAD_COMPLEX_NOT_CONSTRUCTOR, { typeName: pTypeName.toString() });
+        		return null;
+        	}
+
+        	pExpr.setType(pExprType);
+        	pExpr.push(pTypeName);
+        	
+        	if(!isNull(pArguments)){
+        		for(i = 0; i < pArguments.length; i++) {
+        			pExpr.push(pArguments[i], true);
+        		}
+        	}
+
+        	return pExpr;
+        }
+
+        private analyzeSimpleComplexExpr(pNode: IParseNode): IAFXExprInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pExpr: ComplexExprInstruction = new ComplexExprInstruction();
+        	var pComplexExpr: IAFXExprInstruction;
+        	var pExprType: IAFXVariableTypeInstruction;
+
+        	pComplexExpr = this.analyzeExpr(pChildren[1]);
+        	pExprType = pComplexExpr.getType();
+
+        	pExpr.setType(pExprType);
+        	pExpr.push(pComplexExpr, true);
+
+        	return pExpr;
+        }
+
+        private analyzePrimaryExpr(pNode: IParseNode): IAFXExprInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pExpr: PrimaryExprInstruction = new PrimaryExprInstruction();
+        	var pPrimaryExpr: IAFXExprInstruction;
+        	var pExprType: IAFXVariableTypeInstruction;
+        	var pPrimaryExprType: IAFXVariableTypeInstruction;
+
+        	pPrimaryExpr = this.analyzeExpr(pChildren[0]);
+        	pPrimaryExprType = pPrimaryExpr.getType();
+
+        	pExprType = pPrimaryExprType.getPointerType();
+        	
+        	if(isNull(pExprType)){
+        		this._error(EFFECT_BAD_PRIMARY_NOT_POINT, { typeName: pPrimaryExprType.toString() });
+        		return null;
+        	}
+
+        	pExpr.setType(pExprType);
+        	pExpr.setOperator("@");
+        	pExpr.push(pPrimaryExpr, true);
+
+        	return pExpr;
         }
         
-        private analyzePostfixExpr(pNode: IParseNode): IAFXExprInstruction{
+        private analyzePostfixExpr(pNode: IParseNode): IAFXExprInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var sSymbol: string = pChildren[pChildren.length - 2].value;
+        	
+        	switch(sSymbol){
+        		case "[":
+        			return this.analyzePostfixIndex(pNode);
+        		case ".":
+        			return this.analyzePostfixPoint(pNode);
+        		case "++":
+        		case "--":
+        			return this.analyzePostfixArithmetic(pNode);
+        	}
+        }
+
+        private analyzePostfixIndex(pNode: IParseNode): IAFXExprInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pExpr: PostfixIndexInstruction = new PostfixIndexInstruction();
+        	var pPostfixExpr: IAFXExprInstruction;
+        	var pIndexExpr:IAFXExprInstruction;
+        	var pExprType: IAFXVariableTypeInstruction;
+        	var pPostfixExprType: IAFXVariableTypeInstruction;
+        	var pIndexExprType: IAFXVariableTypeInstruction;
+        	var pIntType: IAFXVariableTypeInstruction;
+
+        	pPostfixExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
+        	pPostfixExprType = pPostfixExpr.getType();
+
+        	if(!pPostfixExprType.isArray()){
+        		this._error(EFFECT_BAD_POSTIX_NOT_ARRAY, { typeName: pPostfixExprType.toString() });
+        		return null;
+        	}
+
+        	pIndexExpr = this.analyzeExpr(pChildren[pChildren.length - 3]);
+        	pIndexExprType = pIndexExpr.getType();
+
+        	pIntType = this.getSystemType("int");
+
+        	if(!pIndexExprType.isEqual(pIntType)){
+        		this._error(EFFECT_BAD_POSTIX_NOT_INT_INDEX, { typeName: pIndexExprType.toString() });
+        		return null;
+        	}
+
+        	pExprType = pPostfixExprType.getTypeByIndex();
+
+        	pExpr.setType(pExprType);
+        	pExpr.push(pPostfixExpr, true);
+        	pExpr.push(pIndexExpr, true);
+
+        	return pExpr;
+        }
+
+        private analyzePostfixPoint(pNode: IParseNode): IAFXExprInstruction {
+        	this.setAnalyzedNode(pNode);
+        	
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pExpr: PostfixPointInstruction = new PostfixPointInstruction();
+        	var pPostfixExpr: IAFXExprInstruction;
+        	var sFieldName: string;
+        	var pFieldNameExpr: IAFXIdExprInstruction;
+        	var pExprType: IAFXVariableTypeInstruction;
+        	var pPostfixExprType: IAFXVariableTypeInstruction;
+
+        	pPostfixExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
+        	pPostfixExprType = pPostfixExpr.getType();
+
+        	sFieldName = pChildren[pChildren.length - 3].value;
+
+        	pFieldNameExpr = pPostfixExprType.getField(sFieldName, true);
+
+        	if(isNull(pFieldNameExpr)){
+        		this._error(EFFECT_BAD_POSTIX_NOT_FIELD, { typeName: pPostfixExprType.toString(),
+        												   fieldName: sFieldName });
+        		return null;
+        	}
+
+        	pExprType = pFieldNameExpr.getType();
+
+        	if(pChildren.length === 4){
+        		if(!pExprType.isPointer()){
+        			this._error(EFFECT_BAD_POSTIX_NOT_POINTER, { typeName: pExprType.toString() });
+        			return null;
+        		}
+
+        		var pBuffer: IAFXIdInstruction = this.analyzeFromExpr(pChildren[0]);
+        		pExprType.setVideoBuffer(pBuffer);
+        	}
+
+        	pExpr.setType(pExprType);
+        	pExpr.push(pPostfixExpr, true);
+        	pExpr.push(pFieldNameExpr, true);
+
+        	return pExpr;
+        }
+
+        private analyzePostfixArithmetic(pNode: IParseNode): IAFXExprInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var sOperator: string = pChildren[0].value;
+        	var pExpr: PostfixArithmeticInstruction = new PostfixArithmeticInstruction();
+        	var pPostfixExpr: IAFXExprInstruction;
+        	var pExprType: IAFXVariableTypeInstruction;
+        	var pPostfixExprType: IAFXVariableTypeInstruction;
+
+        	pPostfixExpr = this.analyzeExpr(pChildren[1]);
+        	pPostfixExprType = pPostfixExpr.getType();
+
+        	pExprType = this.checkOneOperandExprType(sOperator, pPostfixExprType);
+
+        	if(isNull(pExprType)){
+        		this._error(EFFECT_BAD_POSTIX_ARITHMETIC, { operator: sOperator,
+        													typeName: pPostfixExprType.toString()});
+        		return null;
+        	}
+
+        	pExpr.setType(pExprType);
+        	pExpr.setOperator(sOperator);
+        	pExpr.push(pPostfixExpr, true);
+
         	return null;
         }
         
@@ -861,7 +1265,7 @@ module akra.fx {
         	pUnaryExpr = this.analyzeExpr(pChildren[0]);
         	pUnaryExprType = pUnaryExpr.getType();
 
-        	pExprType = this.checkUnaryExprType(sOperator, pUnaryExprType);
+        	pExprType = this.checkOneOperandExprType(sOperator, pUnaryExprType);
 
         	if(isNull(pExprType)){
         		this._error(EFFECT_BAD_UNARY_OPERATION, { operator: sOperator,
@@ -871,7 +1275,7 @@ module akra.fx {
 
         	pExpr.setOperator(sOperator);
         	pExpr.setType(pExprType);
-        	pExpr.push(pUnaryExpr);
+        	pExpr.push(pUnaryExpr, true);
 
         	return pExpr;
         }
@@ -888,8 +1292,8 @@ module akra.fx {
         	pCastedExpr = this.analyzeExpr(pChildren[0]);
 
         	pExpr.setType(pExprType);
-        	pExpr.push(pExprType);
-        	pExpr.push(pCastedExpr);
+        	pExpr.push(pExprType, true);
+        	pExpr.push(pCastedExpr, true);
 
         	return pExpr;
         }
@@ -955,7 +1359,7 @@ module akra.fx {
         	pLeftType = pLeftExpr.getType();
         	pRightType = pRightExpr.getType();
 
-        	pExprType = this.checkArithmeticExprTypes(sOperator, pLeftType, pRightType);
+        	pExprType = this.checkTwoOperandExprTypes(sOperator, pLeftType, pRightType);
 
         	if(isNull(pExprType)){
         		this._error(EFFECT_BAD_ARITHMETIC_OPERATION, { operator: sOperator,
@@ -990,7 +1394,7 @@ module akra.fx {
         	pLeftType = pLeftExpr.getType();
         	pRightType = pRightExpr.getType();
 
-        	pExprType = this.checkRelationalExprTypes(sOperator, pLeftType, pRightType);
+        	pExprType = this.checkTwoOperandExprTypes(sOperator, pLeftType, pRightType);
 
         	if(isNull(pExprType)){
         		this._error(EFFECT_BAD_RELATIONAL_OPERATION, { operator: sOperator,
@@ -1065,7 +1469,7 @@ module akra.fx {
         	pRightType = pRightExpr.getType();
 
         	if(sOperator !== "="){
-        		pExprType = this.checkArithmeticExprTypes(sOperator, pLeftType, pRightType);	
+        		pExprType = this.checkTwoOperandExprTypes(sOperator, pLeftType, pRightType);	
         	  	if(isNull(pExprType)){
         			this._error(EFFECT_BAD_ARITHMETIC_ASSIGNMENT_OPERATION, { operator: sOperator,
         													  			  	  leftTypeName: pLeftType.toString(),	
@@ -1076,7 +1480,7 @@ module akra.fx {
         		pExprType = pRightType;
         	}
 
-        	pExprType = this.checkAssignmentExprTypes(pLeftType, pExprType);
+        	pExprType = this.checkTwoOperandExprTypes("=", pLeftType, pExprType);
 
         	if(isNull(pExprType)){
         		this._error(EFFECT_BAD_ASSIGNMENT_OPERATION, { leftTypeName: pLeftType.toString(),	
@@ -1103,9 +1507,7 @@ module akra.fx {
         	}
 
         	var pVarId: IdExprInstruction = new IdExprInstruction();
-        	pVarId.push(pVariable.getId());
-
-        	// this.pushCommand(pVarId, true);
+        	pVarId.push(pVariable.getId(), false);
         	
         	return pVarId;
         }
@@ -1173,14 +1575,14 @@ module akra.fx {
         }
 
         /**
-         * Проверят возможность использования арифметического оператора между двумя типами.
+         * Проверят возможность использования оператора между двумя типами.
          * Возращает тип получаемый в результате приминения опрератора, или, если применить его невозможно - null.
          * 
-         * @sOperator {string} Один из операторов: + - * / %
+         * @sOperator {string} Один из операторов: + - * / % += -= *= /= %= = < > <= >= == != =
          * @pLeftType {IAFXVariableTypeInstruction} Тип левой части выражения
          * @pRightType {IAFXVariableTypeInstruction} Тип правой части выражения
          */
-        private checkArithmeticExprTypes(sOperator: string, 
+        private checkTwoOperandExprTypes(sOperator: string, 
         								 pLeftType: IAFXVariableTypeInstruction, 
         								 pRightType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
 
@@ -1200,22 +1602,6 @@ module akra.fx {
         		case "%":
         		case "%=":
         			break;
-        	}
-
-        	return null;
-        }
-
-        private checkAssignmentExprTypes(pLeftType: IAFXVariableTypeInstruction, 
-        								 pRightType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
-
-        	return null;
-        }
-
-        private checkRelationalExprTypes(sOperator: string, 
-        								 pLeftType: IAFXVariableTypeInstruction, 
-        								 pRightType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
-        
-        	switch(sOperator){
         		case "<":
         		case "<=":
         			break;
@@ -1225,14 +1611,24 @@ module akra.fx {
         		case "==":
         		case "!=":
         			break;
+        		case "=":
+        			break;
         	}
 
         	return null;
         }
 
-        private checkUnaryExprType(sOperator: string, pType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
-        	
-        	switch(sOperator){
+         /**
+         * Проверят возможность использования оператора к типу данных.
+         * Возращает тип получаемый в результате приминения опрератора, или, если применить его невозможно - null.
+         * 
+         * @sOperator {string} Один из операторов: + - ! ++ --
+         * @pLeftType {IAFXVariableTypeInstruction} Тип операнда
+         */
+        private checkOneOperandExprType(sOperator: string, 
+        								pType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
+
+        	switch(sOperator) {
         		case "+":
         			break;
         		case "-":
