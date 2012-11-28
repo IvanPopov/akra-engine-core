@@ -2,11 +2,16 @@
 #define IVIEWPORT_TS
 
 module akra {
+
+    IFACE(IRect2d);
+    IFACE(IColor);
+    IFACE(IRenderTarget);
+
     export interface IViewport extends IEventProvider {
-        left: flaot;
-        top: flaot;
-        width: flaot;
-        height: flaot;
+        left: float;
+        top: float;
+        width: float;
+        height: float;
 
         //in pixels
         actualLeft: uint;

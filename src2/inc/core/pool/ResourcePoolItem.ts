@@ -50,7 +50,7 @@ module akra.core.pool {
 			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.ALTERED);
 		}
 
-		inline get manager(): IResourcePoolManager { return this.pManager; }
+		inline get manager(): IResourcePoolManager { return this.getManager(); }
 
 		/** Constructor of ResourcePoolItem class */
 		constructor (/*pManager: IResourcePoolManager*/) {
@@ -74,7 +74,7 @@ module akra.core.pool {
 		}
 
 		inline getManager(): IResourcePoolManager {
-			return this.pResourcePool? this.pResourcePool.getManager(): null;
+			return this.pResourcePool? this.pResourcePool.manager: null;
 		}
 
 		createResource(): bool {

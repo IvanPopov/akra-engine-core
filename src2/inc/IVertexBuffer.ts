@@ -2,7 +2,7 @@
 #define IVERTEXBUFFER_TS
 
 #include "IHardwareBuffer.ts"
-#include "IResourcePoolItem.ts"
+#include "IRenderResource.ts"
 
 module akra {
 
@@ -16,7 +16,7 @@ module akra {
 		TYPE_TBO
 	};
 
-	export interface IVertexBuffer extends IHardwareBuffer, IResourcePoolItem {
+	export interface IVertexBuffer extends IHardwareBuffer, IRenderResource {
 
 		readonly type: EVertexBufferTypes; 
 

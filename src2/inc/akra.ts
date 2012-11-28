@@ -5,17 +5,21 @@
 
 #include "common.ts"
 
+
 #include "libs/libs.ts"
 #include "bf/bitflags.ts"
 #include "math/math.ts"
 
 #include "geometry/geometry.ts" 
 
+#include "PixelFormat.ts"
+
 #include "info/support/support.ts"
 #include "info/info.ts"
 
 #include "util/Logger.ts"
 #include "util/util.ts"
+#include "pixelUtil/pixelUtil.ts"
 //#include "util/test/testutils.ts"
 #include "io/ajax.ts"
 #include "io/files.ts"
@@ -65,5 +69,6 @@
 
 #include "display/Display2d.ts"
 #include "display/Display3d.ts"
+
 
 #endif

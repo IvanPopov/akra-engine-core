@@ -38,6 +38,15 @@
 #define ASSERT(...)         logger.setSourceLocation(__FILE__, __LINE__); \
                             logger.assert(__VA_ARGS__);
 
+#define dynamic_cast_f32_ptr(uint8_data, n) (new Float32Array(uint8_data.buffer, uint8_data.byteOffset, n))
+#define dynamic_cast_u16_ptr(uint8_data, n) (new Uint16Array(uint8_data.buffer, uint8_data.byteOffset, n))
+#define dynamic_cast_u32_ptr(uint8_data, n) (new Uint32Array(uint8_data.buffer, uint8_data.byteOffset, n))
+#define dynamic_cast_i8_ptr(uint8_data, n) (new Int8Array(uint8_data.buffer, uint8_data.byteOffset, n))
+#define dynamic_cast_i16_ptr(uint8_data, n) (new Int16Array(uint8_data.buffer, uint8_data.byteOffset, n))
+#define dynamic_cast_i32_ptr(uint8_data, n) (new Int32Array(uint8_data.buffer, uint8_data.byteOffset, n))
+
+
+
 module akra {
 
 #ifdef DEBUG
@@ -97,6 +106,8 @@ module akra {
 
     /** @inline */
     export var isDef = (x: any): bool =>  x !== undefined;
+    /** @inline */
+    export var isEmpty = (x: any): bool =>  x.length == 0;
 
     // Note that undefined == null.
     /** @inline */ 
@@ -124,13 +135,18 @@ module akra {
     /** @inline */
     export var isObject = (x: any): bool => {
         var type = typeOf(x);
-        return type == 'object' || type == 'array' || type == 'function';
+        return type == "object" || type == "array" || type == "function";
     };
 
     /** @inline */
     export var isArray = (x: any): bool => {
-        return typeOf(x) == 'array';
+        return typeOf(x) == "array";
     };    
+
+    export interface Pair {
+        first: any;
+        second: any;
+    };
 
     // if (!isDef(console.assert)) {
     //     console.assert = function (isOK?: bool, ...pParams: any[]): void {
@@ -384,6 +400,15 @@ module akra {
     export function now(): uint {
         return (new Date).getTime();
     }
+
+
+    
+    #define _memcpy(dst, src, size) memcpy(dst, 0, src, 0, size);
+    export inline function memcpy(pDst: ArrayBuffer, iDstOffset: uint, pSrc: ArrayBuffer, iSrcOffset: uint, nLength: uint) {
+      var dstU8 = new Uint8Array(pDst, iDstOffset, nLength);
+      var srcU8 = new Uint8Array(pSrc, iSrcOffset, nLength);
+      dstU8.set(srcU8);
+    };
 
     //export function 
 

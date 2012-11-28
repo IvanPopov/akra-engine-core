@@ -7,7 +7,7 @@ module akra {
 	IFACE(IHardwareObject);
 	
     export interface IRenderResource extends IResourcePoolItem {
-        getHardwareObject(): IHardwareObject;
+        //getHardwareObject(): IHardwareObject;
     };
 }
 

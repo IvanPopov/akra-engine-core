@@ -2,6 +2,7 @@
 #define ITEXTURE_TS
 
 #include "IRenderResource.ts"
+#include "PixelFormat.ts"
 
 module akra {
 
@@ -59,12 +60,10 @@ module akra {
     	width: uint;
         height: uint;
 
-        type: EImageTypes;
-        format: EImageFormats;
-
+        format: EPixelFormats;
 
         //number of color components per pixel. usually: 1, 3, 4
-        readonly componentsPerPixel: uint;
+        //readonly componentsPerPixel: uint;
         //readonly bytesPerPixel: uint;
 
         magFilter: ETextureFilters;
@@ -92,8 +91,7 @@ module akra {
             ppPixelBuffer?: ArrayBufferView,
             iMipMap?: uint,
             eFace?: ETextureTypes,
-            eFormat?: EImageFormats,
-            eType?: EImageTypes
+            eFormat?: EPixelFormats,
             ): ArrayBufferView;
         
         setPixels(
@@ -117,15 +115,14 @@ module akra {
         uploadImage(pImage: IImg): bool;
 
         resize(iWidth: uint, iHeight: uint): bool;
-        repack(iWidth: uint, iHeight: uint, eFormat?: EImageFormats, eType?: EImageTypes): bool;
+        repack(iWidth: uint, iHeight: uint, eFormat?: EPixelFormats): bool;
         extend(iWidth: uint, iHeight: uint, cColor: IColor);
 
         createTexture(
             iWidth?: uint, 
             iHeight?: uint, 
             iFlags?: int, 
-            eFormat?: EImageFormats, 
-            eType?: EImageTypes,
+            eFormat?: EPixelFormats, 
             pData?: ArrayBufferView): bool;
     }
 }

@@ -346,6 +346,14 @@ module akra.math {
 
 		return m;
 	}
+
+	export var isRealEqual = (a: float, b: float, tolerance: float = 1.19209e-007): bool => {
+        if (math.abs(b - a) <= tolerance)
+            return true;
+        else
+            return false;
+    }
+
 	/**
 	 * Наименьшее общее кратное
 	 * @inline

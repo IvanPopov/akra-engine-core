@@ -40,14 +40,8 @@ module akra.core {
 			return null;
 		}
 
-		getDefaultRenderer(): IRenderer {
-			var pDisplay: IDisplay3d = this.pDisplayManager.getDisplay3D();
-			
-			if (isNull(pDisplay)) {
-				return null;
-			}
-
-			return pDisplay.getRenderer();
+		getRenderer(): IRenderer {
+			return null;
 		}
 	
 

@@ -56,7 +56,7 @@ module akra.core.pool {
 		    }
 
 		    this.pResourceTypeMap = new Array();
-		    this.pWaiterResource = new pool.ResourcePoolItem(this);
+		    this.pWaiterResource = new pool.ResourcePoolItem(/*this*/);
 
             this.createDeviceResource();
     	}

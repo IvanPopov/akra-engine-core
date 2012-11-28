@@ -1,7 +1,22 @@
 #ifndef IRENDERSNAPSHOT_TS
 #define IRENDERSNAPSHOT_TS
 
+#include "ITexture.ts"
+
 module akra {
+
+	IFACE(IMaterial);
+	IFACE(IAFXSamplerState);
+	IFACE(IAFXForeign);
+	IFACE(IAFXPass);
+	IFACE(IRenderData);
+	IFACE(IRenderMethod);
+	IFACE(ITexture);
+	IFACE(IVertexBuffer);
+	IFACE(IVertexData);
+	IFACE(IBufferMap);
+
+
 	export interface IRenderEntry {
 		totalPasses: uint;
 		pass: uint;
@@ -38,10 +53,10 @@ module akra {
 		setSamplerStates(sName: string, pState: IAFXSamplerState, isSemantic?: bool): bool;
 		setSamplerStatesBySemantics(sName: string, eParam: ETextureParameters, eValue: any): bool;
 
-		setTexture(sName: string, pTexture: ITexture, isSemantic?: bool): bool
-		setTextureBySemantics(sName: string, pTexture: ITexture, isSemantic?: bool): bool
+		setTexture(sName: string, pTexture: ITexture, isSemantic?: bool): bool;
+		setTextureBySemantics(sName: string, pTexture: ITexture, isSemantic?: bool): bool;
 
-		setForeignVariable(sName: string, pData: ant): void;
+		setForeignVariable(sName: string, pData: any): void;
 		
 		applyVertexData(pData: IVertexData): void;
 		applyBufferMap(pBufferMap: IBufferMap): void;

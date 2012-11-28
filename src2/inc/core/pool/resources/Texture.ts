@@ -3,7 +3,9 @@
 
 #include "ITexture.ts"
 #include "IImg.ts"
+#include "IWebGLRenderer.ts"
 #include "../ResourcePoolItem.ts"
+#include "PixelFormat.ts"
 
 module akra.core.pool.resources {
 
@@ -24,9 +26,9 @@ module akra.core.pool.resources {
 
 	export class Texture extends ResourcePoolItem implements ITexture {
         protected _iFlags: int = 0;
-        // protected _iWidth: uint = 0;
-        // protected _iHeight: uint = 0;
-        // protected _eFormat: EImageFormats = EImageFormats.UNKNOWN;
+        protected _iWidth: uint = 0;
+        protected _iHeight: uint = 0;
+        protected _eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
         // protected _eType: EImageTypes = EImageTypes.UNSIGNED_BYTE;
 
         protected _pWebGLTexture: WebGLTexture = null;
@@ -38,14 +40,14 @@ module akra.core.pool.resources {
         constructor () {
             super();
 
-            this._pWebGLRenderer = <IWebGLRenderer>pManager.getEngine().getRenderer();
-            this._pWebGLContext = this._pWebGLRenderer.getContext();
+            this._pWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+            this._pWebGLContext = this._pWebGLRenderer._getContext();
 
-            this._pParams[ETextureParameters.minFilter] = ETextureFilters.NEAREST;
-            this._pParams[ETextureParameters.magFilter] = ETextureFilters.NEAREST;
+            this._pParams[ETextureParameters.MIN_FILTER] = ETextureFilters.NEAREST;
+            this._pParams[ETextureParameters.MAG_FILTER] = ETextureFilters.NEAREST;
 
-            this._pParams[ETextureParameters.wrapS] = ETextureWrapModes.CLAMP_TO_EDGE;            
-            this._pParams[ETextureParameters.wrapT] = ETextureWrapModes.CLAMP_TO_EDGE;            
+            this._pParams[ETextureParameters.WRAP_S] = ETextureWrapModes.CLAMP_TO_EDGE;            
+            this._pParams[ETextureParameters.WRAP_T] = ETextureWrapModes.CLAMP_TO_EDGE;            
         }
 
 		inline get width(): uint {
@@ -65,26 +67,13 @@ module akra.core.pool.resources {
             return this.resize(this._iWidth, iHeight);
         }
 
-        inline get type(): EImageTypes {
-        	return this._eType;
-        }
 
-        inline set type(eType: EImageTypes) {
-            this.repack(this._iWidth, this._iHeight, this.format, eType);
-        }
-
-        inline get format(): EImageFormats {
+        inline get format(): EPixelFormats {
         	return this._eFormat;
         }
 
-        inline set format(eFormat: EImageFormats) {
-            this.repack(this._iWidth, this._iHeight, eFormat, this.type);
-        }
-
-
-        //number of color components per pixel. usually: 1, 3, 4
-        inline get componentsPerPixel(): uint {
-        	return componentsPerPixel(this._eFormat);
+        inline set format(eFormat: EPixelFormats) {
+            this.repack(this._iWidth, this._iHeight, eFormat);
         }
 
         // inline get bytesPerPixel(): uint {
@@ -92,19 +81,19 @@ module akra.core.pool.resources {
         // }
 
         inline get magFilter(): ETextureFilters {
-        	return this._pParams[ETextureParameters.magFilter];
+        	return this._pParams[ETextureParameters.MAG_FILTER];
         }
 
         inline get minFilter(): ETextureFilters {
-        	return this._pParams[ETextureParameters.minFilter];
+        	return this._pParams[ETextureParameters.MIN_FILTER];
         }
 
         inline get wrapS(): ETextureWrapModes {
-        	return this._pParams[ETextureParameters.wrapS];
+        	return this._pParams[ETextureParameters.WRAP_S];
         }
 
         inline get wrapT(): ETextureWrapModes {
-        	return this._pParams[ETextureParameters.wrapT];
+        	return this._pParams[ETextureParameters.WRAP_T];
         }
 
         inline get target(): ETextureTypes {
@@ -128,7 +117,8 @@ module akra.core.pool.resources {
         }
         
         inline isCompressed(): bool {
-        	return (this._eFormat >= EImageFormats.RGB_DXT1 && this._eFormat <= EImageFormats.RGBA_DXT4);
+        	return (this._eFormat >= EPixelFormats.DXT1 && this._eFormat <= EPixelFormats.DXT5) || 
+                (this._eFormat >= EPixelFormats.PVRTC_RGB2 && this._eFormat <= EPixelFormats.PVRTC_RGBA4);
         }
 
         inline isValid(): bool {
@@ -166,8 +156,7 @@ module akra.core.pool.resources {
             ppPixelBuffer: ArrayBufferView = null,
             iMipMap: uint = 0,
             eFace: ETextureTypes = ETextureTypes.TEXTURE_2D,
-            eFormat: EImageFormats = EImageFormats.RGBA,
-            eType: EImageTypes = EImageTypes.UNSIGNED_BYTE
+            eFormat: EPixelFormats = EPixelFormats.BYTE_RGBA,
             ): ArrayBufferView {
         	
             var pRenderer: IWebGLRenderer = this._pWebGLRenderer;
@@ -189,20 +178,20 @@ module akra.core.pool.resources {
             }
 
             if (this.isTextureCube()) {
-                debug_assert(eFace >= EImageTypes.TEXTURE_CUBE_MAP_POSITIVE_X && 
-                    eFace <= TEXTURE_CUBE_MAP_NEGATIVE_Z, "invalid texture type");
+                debug_assert(eFace >= ETextureTypes.TEXTURE_CUBE_MAP_POSITIVE_X && 
+                    eFace <= ETextureTypes.TEXTURE_CUBE_MAP_NEGATIVE_Z, "invalid texture type");
             }
             else {
                 debug_assert(eFace == ETextureTypes.TEXTURE_2D, "тип текстуры 2D,а eFace выставлен");
             }
 
-            var pTextureRT: IRenderTexture = this.getRenderTarget(eFace, iMipMap);
+            //var pTextureRT: IRenderTexture = this.getRenderTarget(eFace, iMipMap);
 
-            if (!pTextureRT) {
-                return null;
-            }
+            // if (!pTextureRT) {
+            //     return null;
+            // }
 
-            return pTextureRT->readPixels(iX, iY, 0 || this._iWidth, 0 || this._iHeight, eFormat, eType, pPixelBuffer);
+            return null;//pTextureRT->readPixels(iX, iY, 0 || this._iWidth, 0 || this._iHeight, eFormat, eType, pPixelBuffer);
 
         }
 
@@ -216,7 +205,7 @@ module akra.core.pool.resources {
             eFace: ETextureTypes = ETextureTypes.TEXTURE_2D): bool {
         	
 
-
+            return false;
         }
 
         generateNormalMap(pHeightMap: IImg, iChannel?: uint, fAmplitude?: float): bool {
@@ -251,7 +240,7 @@ module akra.core.pool.resources {
         	return false;
         }
 
-        repack(iWidth: uint, iHeight: uint, eFormat?: EImageFormats, eType?: EImageTypes): bool {
+        repack(iWidth: uint, iHeight: uint, eFormat?: EPixelFormats): bool {
         	return false;
         }
 
@@ -263,8 +252,7 @@ module akra.core.pool.resources {
             iWidth?: uint, 
             iHeight?: uint, 
             iFlags?: int, 
-            eFormat?: EImageFormats, 
-            eType?: EImageTypes,
+            eFormat?: EPixelFormats, 
             pData?: ArrayBufferView): bool {
         	return false;
         }
