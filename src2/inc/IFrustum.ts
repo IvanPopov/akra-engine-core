@@ -20,7 +20,7 @@ module akra{
 		set(pFrustum: IFrustum): IFrustum;
 		set(pLeftPlane: IPlane3d, pRightPlane: IPlane3d,
 			pTopPlane: IPlane3d, pBottomPlane: IPlane3d,
-			pNearPlane: IPlane3d, pBottomPlane: IPlane3d);
+			pNearPlane: IPlane3d, pFarPlane: IPlane3d): IFrustum;
 
 		extractFromMatrix(m4fProjection: IMat4, m4fWorld?: IMat4): IFrustum;
 

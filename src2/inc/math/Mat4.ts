@@ -1293,6 +1293,39 @@ module akra.math {
 			return v4fDestination;
 		};
 
+		unproj(v3fScreen: IVec3, v4fDestination?: IVec4): IVec4{
+			if(!isDef(v4fDestination)){
+				v4fDestination = new Vec4();
+			}
+
+			var pData: Float32Array = this.data;
+
+			var x: float, y: float, z: float;
+
+			if(pData[__44] === 1.){
+				//orthogonal projection case
+				
+				z = (v3fScreen.z - pData[__34])/pData[__33];
+				y = (v3fScreen.y - pData[__24])/pData[__22];
+				x = (v3fScreen.x - pData[__14])/pData[__11];
+			}
+			else{
+				//pData[__43] === -1
+				//frustum case
+				
+				z = -pData[__34]/(pData[__33] + v3fScreen.z);
+			    y = -(v3fScreen.y + pData[__23])*z/pData[__22];
+			    x = -(v3fScreen.x + pData[__13])*z/pData[__11];
+			}
+
+			v4fDestination.x = x;
+			v4fDestination.y = y;
+			v4fDestination.z = z;
+			v4fDestination.w = 1.;
+
+			return v4fDestination;
+		};
+
 		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, m4fDestination?: IMat4): IMat4;
 		static fromYawPitchRoll(v3fAngles: IVec3, m4fDestination?: IMat4): IMat4;
 		static fromYawPitchRoll(fYaw?,fPitch?,fRoll?,m4fDestination?): IMat4{

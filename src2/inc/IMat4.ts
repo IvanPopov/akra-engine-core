@@ -114,6 +114,11 @@ module akra {
 		row(iRow: int, v4fDestination?: IVec4): IVec4;
 		column(iColumn: int, v4fDestination?: IVec4): IVec4;
 
+		/*v3fScreen - coordinates in screen space from -1 to 1
+		* returns vec4(wsCoord,1.), where wsCoord - coordinates in world space
+		* use with projection matrix only
+		*/
+		unproj(v3fScreen: IVec3, v4fDestination?: IVec4): IVec4;
 	};
 };
 

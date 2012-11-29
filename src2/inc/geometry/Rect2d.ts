@@ -426,7 +426,7 @@ module akra.geometry{
 				pDestination = this;
 			}
 
-			return this.set(-this.x1, -this.x0, -this.y1, -this.y0);
+			return pDestination.set(-this.x1, -this.x0, -this.y1, -this.y0);
 		};
 
 		normalize(): IRect2d{
@@ -540,30 +540,20 @@ module akra.geometry{
 
 			debug_assert(0 <= iIndex && iIndex < 4, "invalid index");
 
-			var x: float, y: float;
-
 			switch(iIndex){
-				case 0: 
-					x = this.x0;
-					y = this.y0;
+				case 0:
+					v2fDestination.set(this.x0, this.y0);
 					break;
 				case 1:
-					x = this.x1;
-					y = this.y0;
+					v2fDestination.set(this.x1, this.y0);
 					break;
 				case 2:
-					x = this.x1;
-					y = this.y1;
+					v2fDestination.set(this.x1, this.y1);
 					break;
 				case 3:
-					x = this.x0;
-					y = this.y1;
+					v2fDestination.set(this.x0, this.y1);
 					break;
 			};
-
-			v2fDestination.x = x;
-			v2fDestination.y = y;
-
 			return v2fDestination;
 		};
 

@@ -32,4 +32,6 @@ module akra.geometry{
 	};
 };
 
+#include "Frustum.ts"
+
 #endif

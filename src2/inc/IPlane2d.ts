@@ -14,6 +14,8 @@ module akra{
 		set(v2fNormal: IVec2, fDistance: float): IPlane2d;
 		set(v2fPoint1: IVec2, v2fPoint2: IVec2): IPlane2d;
 
+		clear(): IPlane2d;
+
 		normalize(): IPlane2d;
 
 		isEqual(pPlane: IPlane2d): bool;

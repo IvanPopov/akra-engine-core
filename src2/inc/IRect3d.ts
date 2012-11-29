@@ -62,7 +62,7 @@ module akra {
 		resizeMax(fSpanX: float, fSpanY: float, fSpanZ: float): IRect3d;
 
 		resizeMaxX(fSpan: float): IRect3d;
-		resizeMAxY(fSpan: float): IRect3d;
+		resizeMaxY(fSpan: float): IRect3d;
 		resizeMaxZ(fSpan: float): IRect3d;
 
 		resizeMin(v3fSpan: IVec3): IRect3d;
@@ -86,7 +86,7 @@ module akra {
 		isValid(): bool;
 		isPointInRect(v3fPoint: IVec3): bool;
 
-		midPoint(c3fDestination?: IVec3): IVec3;
+		midPoint(v3fDestination?: IVec3): IVec3;
 		midX(): float;
 		midY(): float;
 		midZ(): float;
@@ -99,11 +99,11 @@ module akra {
 		minPoint(v3fDestination?: IVec3): IVec3;
 		maxPoint(v3fDestination?: IVec3): IVec3;
 
-		area(): float;
+		volume(): float;
 
 		corner(iIndex: uint, v3fDestination?: IVec3): IVec3;
 
-		createBoundingSphere(): ISphere;
+		createBoundingSphere(pSphere?: ISphere): ISphere;
 
 		toString(): string;
 	}

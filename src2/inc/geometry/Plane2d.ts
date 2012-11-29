@@ -68,6 +68,12 @@ module akra.geometry{
 			return this.normalize();
 		};
 
+		inline clear(): IPlane2d{
+			this.normal.clear();
+			this.distance = 0.;
+			return this;
+		};
+
 		normalize(): IPlane2d{
 			var v2fNormal: IVec2 = this.normal;
 

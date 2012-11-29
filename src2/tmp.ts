@@ -1676,6 +1676,12 @@ module akra {
 		row(iRow: int, v4fDestination?: IVec4): IVec4;
 		column(iColumn: int, v4fDestination?: IVec4): IVec4;
 
+/*v3fScreen - coordinates in screen space from -1 to 1
+		* returns vec4(wsCoord,1.), where wsCoord - coordinates in world space
+		* use with projection matrix only
+		*/
+
+		unproj(v3fScreen: IVec3, v4fDestination?: IVec4): IVec4;
 	};
 };
 
@@ -4749,6 +4755,39 @@ module akra.math {
 			return v4fDestination;
 		};
 
+		unproj(v3fScreen: IVec3, v4fDestination?: IVec4): IVec4{
+			if(!isDef(v4fDestination)){
+				v4fDestination = new Vec4();
+			}
+
+			var pData: Float32Array = this.data;
+
+			var x: float, y: float, z: float;
+
+			if(pData[ 15 ] === 1.){
+//orthogonal projection case
+
+				z = (v3fScreen.z - pData[ 14 ])/pData[ 10 ];
+				y = (v3fScreen.y - pData[ 13 ])/pData[ 5 ];
+				x = (v3fScreen.x - pData[ 12 ])/pData[ 0 ];
+			}
+			else{
+//pData[__43] === -1
+//frustum case
+
+				z = -pData[ 14 ]/(pData[ 10 ] + v3fScreen.z);
+			    y = -(v3fScreen.y + pData[ 9 ])*z/pData[ 5 ];
+			    x = -(v3fScreen.x + pData[ 8 ])*z/pData[ 0 ];
+			}
+
+			v4fDestination.x = x;
+			v4fDestination.y = y;
+			v4fDestination.z = z;
+			v4fDestination.w = 1.;
+
+			return v4fDestination;
+		};
+
 		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, m4fDestination?: IMat4): IMat4;
 		static fromYawPitchRoll(v3fAngles: IVec3, m4fDestination?: IMat4): IMat4;
 		static fromYawPitchRoll(fYaw?,fPitch?,fRoll?,m4fDestination?): IMat4{
@@ -6639,6 +6678,8 @@ module akra{
 		set(v2fNormal: IVec2, fDistance: float): IPlane2d;
 		set(v2fPoint1: IVec2, v2fPoint2: IVec2): IPlane2d;
 
+		clear(): IPlane2d;
+
 		normalize(): IPlane2d;
 
 		isEqual(pPlane: IPlane2d): bool;
@@ -6716,6 +6757,12 @@ module akra.geometry{
 			}
 
 			return this.normalize();
+		};
+
+		/**@inline*/  clear(): IPlane2d{
+			this.normal.clear();
+			this.distance = 0.;
+			return this;
 		};
 
 		normalize(): IPlane2d{
@@ -6815,6 +6862,8 @@ module akra{
 		set(pPlane: IPlane3d): IPlane3d;
 		set(v3fNormal: IVec3, fDistance: float): IPlane3d;
 		set(v3fPoint1: IVec3, v3fPoint2: IVec3, v3fPoint3: IVec3): IPlane3d;
+
+		clear(): IPlane3d;
 
 		normalize(): IPlane3d;
 
@@ -6918,6 +6967,12 @@ module akra.geometry{
 			}
 
 			return this.normalize();
+		};
+
+		/**@inline*/  clear(): IPlane3d{
+			this.normal.clear();
+			this.distance = 0.;
+			return this;
 		};
 
 		normalize(): IPlane3d{
@@ -7537,7 +7592,7 @@ module akra.geometry{
 				pDestination = this;
 			}
 
-			return this.set(-this.x1, -this.x0, -this.y1, -this.y0);
+			return pDestination.set(-this.x1, -this.x0, -this.y1, -this.y0);
 		};
 
 		normalize(): IRect2d{
@@ -7652,30 +7707,20 @@ module akra.geometry{
 
 			debug_assert(0 <= iIndex && iIndex < 4, "invalid index");
 
-			var x: float, y: float;
-
 			switch(iIndex){
 				case 0:
-					x = this.x0;
-					y = this.y0;
+					v2fDestination.set(this.x0, this.y0);
 					break;
 				case 1:
-					x = this.x1;
-					y = this.y0;
+					v2fDestination.set(this.x1, this.y0);
 					break;
 				case 2:
-					x = this.x1;
-					y = this.y1;
+					v2fDestination.set(this.x1, this.y1);
 					break;
 				case 3:
-					x = this.x0;
-					y = this.y1;
+					v2fDestination.set(this.x0, this.y1);
 					break;
 			};
-
-			v2fDestination.x = x;
-			v2fDestination.y = y;
-
 			return v2fDestination;
 		};
 
@@ -7702,6 +7747,10 @@ module akra.geometry{
 		};
 	};
 }
+
+
+
+
 
 
 
@@ -7777,7 +7826,7 @@ module akra {
 		resizeMax(fSpanX: float, fSpanY: float, fSpanZ: float): IRect3d;
 
 		resizeMaxX(fSpan: float): IRect3d;
-		resizeMAxY(fSpan: float): IRect3d;
+		resizeMaxY(fSpan: float): IRect3d;
 		resizeMaxZ(fSpan: float): IRect3d;
 
 		resizeMin(v3fSpan: IVec3): IRect3d;
@@ -7801,7 +7850,7 @@ module akra {
 		isValid(): bool;
 		isPointInRect(v3fPoint: IVec3): bool;
 
-		midPoint(c3fDestination?: IVec3): IVec3;
+		midPoint(v3fDestination?: IVec3): IVec3;
 		midX(): float;
 		midY(): float;
 		midZ(): float;
@@ -7814,11 +7863,11 @@ module akra {
 		minPoint(v3fDestination?: IVec3): IVec3;
 		maxPoint(v3fDestination?: IVec3): IVec3;
 
-		area(): float;
+		volume(): float;
 
 		corner(iIndex: uint, v3fDestination?: IVec3): IVec3;
 
-		createBoundingSphere(): ISphere;
+		createBoundingSphere(pSphere?: ISphere): ISphere;
 
 		toString(): string;
 	}
@@ -8224,6 +8273,369 @@ module akra.geometry {
 
 			return this;
 		};
+
+		resizeMax(v3fSpan: IVec3): IRect3d;
+		resizeMax(fSpanX: float, fSpanY: float, fSpanZ: float): IRect3d;
+		resizeMax(fSpanX?, fSpanY?, fSpanZ?): IRect3d{
+			if(arguments.length === 1){
+				var v3fSpan: IVec3 = arguments[0];
+
+				this.x1 = this.x0 + v3fSpan.x;
+				this.y1 = this.y0 + v3fSpan.y;
+				this.z1 = this.z0 + v3fSpan.z;
+			}
+			else{
+//arguments.length === 3
+				this.x1 = this.x0 + arguments[0];
+				this.y1 = this.y0 + arguments[1];
+				this.z1 = this.z0 + arguments[2];
+			}
+
+			return this;
+		};
+
+		/**@inline*/  resizeMaxX(fSpan: float): IRect3d{
+			this.x1 = this.x0 + fSpan;
+			return this;
+		};
+
+		/**@inline*/  resizeMaxY(fSpan: float): IRect3d{
+			this.y1 = this.y0 + fSpan;
+			return this;
+		};
+
+		/**@inline*/  resizeMaxZ(fSpan: float): IRect3d{
+			this.z1 = this.z0 + fSpan;
+			return this;
+		};
+
+		resizeMin(v3fSpan: IVec3): IRect3d;
+		resizeMin(fSpanX: float, fSpanY: float, fSpanZ: float): IRect3d;
+		resizeMin(fSpanX?, fSpanY?, fSpanZ?): IRect3d{
+			if(arguments.length === 1){
+				var v3fSpan: IVec3 = arguments[0];
+
+				this.x0 = this.x1 - v3fSpan.x;
+				this.y0 = this.y1 - v3fSpan.y;
+				this.z0 = this.z1 - v3fSpan.z;
+			}
+			else{
+//arguments.length === 3
+				this.x0 = this.x1 - arguments[0];
+				this.y0 = this.y1 - arguments[1];
+				this.z0 = this.z1 - arguments[2];
+			}
+
+			return this;
+		};
+
+		/**@inline*/  resizeMinX(fSpan: float): IRect3d{
+			this.x0 = this.x1 - fSpan;
+			return this;
+		};
+
+		/**@inline*/  resizeMinY(fSpan: float): IRect3d{
+			this.y0 = this.y1 - fSpan;
+			return this;
+		};
+
+		/**@inline*/  resizeMinZ(fSpan: float): IRect3d{
+			this.z0 = this.z1 - fSpan;
+			return this;
+		};
+
+		unionPoint(v3fPoint: IVec3): IRect3d;
+		unionPoint(fX: float, fY: float, fZ: float): IRect3d;
+		unionPoint(fX?, fY?, fZ?): IRect3d{
+			if(arguments.length === 1){
+				var v3fPoint: IVec3 = arguments[0];
+
+				this.x0 = math.min(this.x0, v3fPoint.x);
+				this.x1 = math.max(this.x1, v3fPoint.x);
+
+				this.y0 = math.min(this.y0, v3fPoint.y);
+				this.y1 = math.max(this.y1, v3fPoint.y);
+
+				this.z0 = math.min(this.z0, v3fPoint.z);
+				this.z1 = math.max(this.z1, v3fPoint.z);
+			}
+			else{
+//arguments.length === 3
+
+				this.x0 = math.min(this.x0, arguments[0]);
+				this.x1 = math.max(this.x1, arguments[0]);
+
+				this.y0 = math.min(this.y0, arguments[1]);
+				this.y1 = math.max(this.y1, arguments[1]);
+
+				this.z0 = math.min(this.z0, arguments[2]);
+				this.z1 = math.max(this.z1, arguments[2]);
+			}
+
+			return this;
+		};
+
+		unionRect(pRect: IRect3d): IRect3d{
+			this.normalize();
+			pRect.normalize();
+
+			this.x0 = math.min(this.x0, pRect.x0);
+			this.x1 = math.max(this.x1, pRect.x1);
+
+			this.y0 = math.min(this.y0, pRect.y0);
+			this.y1 = math.max(this.y1, pRect.y1);
+
+			this.z0 = math.min(this.z0, pRect.z0);
+			this.z1 = math.max(this.z1, pRect.z1);
+
+			return this;
+		};
+
+		negate(pDestination?: IRect3d): IRect3d{
+			if(!isDef(pDestination)){
+				pDestination = this;
+			}
+
+			return pDestination.set(-this.x1, -this.x0,
+							 -this.y1, -this.y0,
+							 -this.z1, -this.z0);
+		};
+
+		normalize(): IRect3d{
+			var fTmp: float;
+			if(this.x0 > this.x1){
+				fTmp = this.x0;
+				this.x0 = this.x1;
+				this.x1 = fTmp;
+			}
+			if(this.y0 > this.y1){
+				fTmp = this.y0;
+				this.y0 = this.y1;
+				this.y1 = fTmp;
+			}
+			if(this.z0 > this.z1){
+				fTmp = this.z0;
+				this.z0 = this.z1;
+				this.z1 = fTmp;
+			}
+
+			return this;
+		};
+
+		transform(m4fMatrix: IMat4): IRect3d{
+			var a11: float = m4fMatrix[ 0 ], a12: float = m4fMatrix[ 4 ],
+				a13: float = m4fMatrix[ 8 ], a14: float = m4fMatrix[ 12 ];
+			var a21: float = m4fMatrix[ 1 ], a22: float = m4fMatrix[ 5 ],
+				a23: float = m4fMatrix[ 9 ], a24: float = m4fMatrix[ 13 ];
+			var a31: float = m4fMatrix[ 2 ], a32: float = m4fMatrix[ 6 ],
+				a33: float = m4fMatrix[ 10 ], a34: float = m4fMatrix[ 14 ];
+
+			var fX0: float = this.x0, fX1: float = this.x1;
+			var fY0: float = this.y0, fY1: float = this.y1;
+			var fZ0: float = this.z0, fZ1: float = this.z1;
+
+//base point
+
+			var fBaseX: float = a11*fX0 + a12*fY0 + a13*fZ0 + a14;
+			var fBaseY: float = a21*fX0 + a22*fY0 + a23*fZ0 + a24;
+			var fBaseZ: float = a31*fX0 + a32*fY0 + a33*fZ0 + a34;
+
+//new x vector
+
+			var fXNewX: float = a11*(fX1 - fX0);
+			var fXNewY: float = a21*(fX1 - fX0);
+			var fXNewZ: float = a31*(fX1 - fX0);
+
+//new y vector
+
+			var fYNewX: float = a12*(fY1 - fY0);
+			var fYNewY: float = a22*(fY1 - fY0);
+			var fYNewZ: float = a32*(fY1 - fY0);
+
+//new z vector
+
+			var fZNewX: float = a13*(fZ1 - fZ0);
+			var fZNewY: float = a23*(fZ1 - fZ0);
+			var fZNewZ: float = a33*(fZ1 - fZ0);
+
+			var fXMultX: float = (fXNewX > 0.) ? 1. : 0.;
+			var fYMultX: float = (fYNewX > 0.) ? 1. : 0.;
+			var fZMultX: float = (fZNewX > 0.) ? 1. : 0.;
+
+			var fXMultY: float = (fXNewY > 0.) ? 1. : 0.;
+			var fYMultY: float = (fYNewY > 0.) ? 1. : 0.;
+			var fZMultY: float = (fZNewY > 0.) ? 1. : 0.;
+
+			var fXMultZ: float = (fXNewZ > 0.) ? 1. : 0.;
+			var fYMultZ: float = (fYNewZ > 0.) ? 1. : 0.;
+			var fZMultZ: float = (fZNewZ > 0.) ? 1. : 0.;
+
+			this.x1 = fBaseX + fXMultX*fXNewX + fYMultX*fYNewX + fZMultX*fZNewX;
+			this.y1 = fBaseY + fXMultY*fXNewY + fYMultY*fYNewY + fZMultY*fZNewY;
+			this.z1 = fBaseZ + fXMultZ*fXNewZ + fYMultZ*fYNewZ + fZMultZ*fZNewZ;
+
+			this.x0 = fBaseX + (1. - fXMultX)*fXNewX + (1. - fYMultX)*fYNewX + (1. - fZMultX)*fZNewX;
+			this.y0 = fBaseY + (1. - fXMultY)*fXNewY + (1. - fYMultY)*fYNewY + (1. - fZMultY)*fZNewY;
+			this.z0 = fBaseZ + (1. - fXMultZ)*fXNewZ + (1. - fYMultZ)*fYNewZ + (1. - fZMultZ)*fZNewZ;
+
+			return this;
+		};
+
+		/**@inline*/  isEqual(pRect: IRect3d): bool{
+			return this.x0 == pRect.x0 && this.x1 == pRect.x1
+					&& this.y0 == pRect.y0 && this.y1 == pRect.y1
+					&& this.z0 == pRect.z0 && this.z1 == pRect.z1;
+		};
+
+		/**@inline*/  isClear(): bool{
+			return this.x0 == 0. && this.x1 == 0.
+					&& this.y0 == 0. && this.y1 == 0.
+					&& this.z0 == 0. && this.z1 == 0.;
+		};
+
+		/**@inline*/  isValid(): bool{
+			return this.x0 <= this.x1
+					&& this.y0 <= this.y1
+					&& this.z0 <= this.z1;
+		};
+
+		/**@inline*/  isPointInRect(v3fPoint: IVec3): bool{
+			var x: float = v3fPoint.x;
+			var y: float = v3fPoint.y;
+			var z: float = v3fPoint.z;
+
+			return (this.x0 <= x && x <= this.x1)
+					&& (this.y0 <= y && y <= this.y1)
+					&& (this.z0 <= z && z <= this.z1);
+		};
+
+		midPoint(v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+				v3fDestination = new Vec3();
+			}
+
+			return v3fDestination.set((this.x0 + this.x1)*0.5,
+									  (this.y0 + this.y1)*0.5,
+									  (this.z0 + this.z1)*0.5);
+		};
+
+		/**@inline*/  midX(): float{
+			return (this.x0 + this.x1)*0.5;
+		};
+
+		/**@inline*/  midY(): float{
+			return (this.y0 + this.y1)*0.5;
+		};
+
+		/**@inline*/  midZ(): float{
+			return (this.z0 + this.z1)*0.5;
+		}
+
+		size(v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+				v3fDestination = new Vec3();
+			}
+
+			return v3fDestination.set(this.x1 - this.x0, this.y1 - this.y0, this.z1 - this.z0);
+		};
+
+		/**@inline*/  sizeX(): float{
+			return this.x1 - this.x0;
+		};
+
+		/**@inline*/  sizeY(): float{
+			return this.y1 - this.y0;
+		};
+
+		/**@inline*/  sizeZ(): float{
+			return this.z1 - this.z0;
+		};
+
+		minPoint(v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+				v3fDestination = new Vec3();
+			}
+
+			return v3fDestination.set(this.x0, this.y0, this.z0);
+		};
+
+		maxPoint(v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+				v3fDestination = new Vec3();
+			}
+
+			return v3fDestination.set(this.x1, this.y1, this.z1);
+		};
+
+		/**@inline*/  volume(): float{
+			return (this.x1 - this.x0)*(this.y1 - this.y0)*(this.z1 - this.z0);
+		};
+
+/**
+		 * counter-clockwise and from bottom
+		 * x0,y0,z0 -> x1,y0,z0 -> x1,y1,z0 -> x0,y1,z0 ->
+		 * x0,y0,z1 -> x1,y0,z1 -> x1,y1,z1 -> x0,y1,z1
+		 */
+
+		corner(iIndex: uint, v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+				v3fDestination = new Vec3();
+			}
+
+			debug_assert(0 <= iIndex && iIndex < 8, "invalid index");
+
+			switch(iIndex){
+				case 0:
+					v3fDestination.set(this.x0, this.y0, this.z0);
+					break;
+				case 1:
+					v3fDestination.set(this.x1, this.y0, this.z0);
+					break;
+				case 2:
+					v3fDestination.set(this.x1, this.y1, this.z0);
+					break;
+				case 3:
+					v3fDestination.set(this.x0, this.y1, this.z0);
+					break;
+				case 4:
+					v3fDestination.set(this.x0, this.y0, this.z1);
+					break;
+				case 5:
+					v3fDestination.set(this.x1, this.y0, this.z1);
+					break;
+				case 6:
+					v3fDestination.set(this.x1, this.y1, this.z1);
+					break;
+				case 7:
+					v3fDestination.set(this.x0, this.y1, this.z1);
+					break;
+			}
+			return v3fDestination;
+		};
+
+		createBoundingSphere(pSphere?: ISphere): ISphere{
+			if(!isDef(pSphere)){
+				pSphere = new Sphere();
+			}
+
+			var fX0: float = this.x0, fX1: float = this.x1;
+			var fY0: float = this.y0, fY1: float = this.y1;
+			var fZ0: float = this.z0, fZ1: float = this.z1;
+
+			var fHalfSizeX: float = (fX1 - fX0)*0.5;
+			var fHalfSizeY: float = (fY1 - fY0)*0.5;
+			var fHalfSizeZ: float = (fZ1 - fZ0)*0.5;
+
+			pSphere.set((fX0 + fX1)*0.5, (fY0 + fY1)*0.5, (fZ0 + fZ1)*0.5,
+				math.sqrt(fHalfSizeX*fHalfSizeX + fHalfSizeY*fHalfSizeY + fHalfSizeZ*fHalfSizeZ));
+
+			return pSphere;
+		};
+
+		toString(): string{
+			return "(" + this.x0 + ", " + this.y0 + ", " + this.z0 + ") --> (" +
+					this.x1 + ", " + this.y1 + ", " + this.z1 +")";
+		};
     }
 }
 
@@ -8244,6 +8656,139 @@ module akra.geometry{
 		PLANE_INTERSECT
 	};
 };
+
+
+
+
+
+
+
+
+
+
+
+module akra{
+
+	export interface IMat4 {} ;
+	export interface IVec3 {} ;
+	export interface IRect3 {} ;
+	export interface ISphere {} ;
+
+	export interface IFrustum{
+		leftPlane: IPlane3d;
+		rightPlane: IPlane3d;
+		topPlane: IPlane3d;
+		bottomPlane: IPlane3d;
+		nearPlane: IPlane3d;
+		farPlane: IPlane3d;
+
+		set(): IFrustum;
+		set(pFrustum: IFrustum): IFrustum;
+		set(pLeftPlane: IPlane3d, pRightPlane: IPlane3d,
+			pTopPlane: IPlane3d, pBottomPlane: IPlane3d,
+			pNearPlane: IPlane3d, pFarPlane: IPlane3d): IFrustum;
+
+		extractFromMatrix(m4fProjection: IMat4, m4fWorld?: IMat4): IFrustum;
+
+		isEqual(pFrustum: IFrustum): bool;
+
+		testPoint(v3fPoint: IVec3): bool;
+		testRect(pRect: IRect3): bool;
+		testSphere(pSphere: ISphere): bool;
+
+	};
+};
+
+
+
+module akra.geometry{
+	class Frustum implements IFrustum{
+		leftPlane: IPlane3d;
+		rightPlane: IPlane3d;
+		topPlane: IPlane3d;
+		bottomPlane: IPlane3d;
+		nearPlane: IPlane3d;
+		farPlane: IPlane3d;
+
+		constructor();
+		constructor(pFrustum: IFrustum);
+		constructor(pLeftPlane: IPlane3d, pRightPlane: IPlane3d,
+					pTopPlane: IPlane3d, pBottomPlane: IPlane3d,
+					pNearPlane: IPlane3d, pFarPlane: IPlane3d);
+		constructor(pLeftPlane?,pRightPlane?,pTopPlane?,
+					pBottomPlane?, pNearPlane?, pFarPlane?){
+
+
+			this.leftPlane = new Plane3d();
+			this.rightPlane = new Plane3d();
+			this.topPlane = new Plane3d();
+			this.bottomPlane = new Plane3d();
+			this.nearPlane = new Plane3d();
+			this.farPlane = new Plane3d();
+
+			var nArgumentsLength: uint = arguments.length;
+
+			switch(nArgumentsLength){
+				case 1:
+					this.set(arguments[0]);
+					break;
+				case 6:
+					this.set(arguments[0], arguments[1], arguments[2],
+							 arguments[3], arguments[4], arguments[5]);
+					break;
+				default:
+					break;
+			}
+		};
+
+		set(): IFrustum;
+		set(pFrustum: IFrustum): IFrustum;
+		set(pLeftPlane: IPlane3d, pRightPlane: IPlane3d,
+			pTopPlane: IPlane3d, pBottomPlane: IPlane3d,
+			pNearPlane: IPlane3d, pFarPlane: IPlane3d): IFrustum;
+		set(pLeftPlane?, pRightPlane?, pTopPlane?,
+			pBottomPlane?, pNearPlane?, pFarPlane?): IFrustum{
+
+			var nArgumentsLength = arguments.length;
+
+			switch(nArgumentsLength){
+				case 1:
+					var pFrustum: IFrustum = arguments[0];
+
+					this.leftPlane.set(pFrustum.leftPlane);
+					this.rightPlane.set(pFrustum.rightPlane);
+					this.topPlane.set(pFrustum.topPlane);
+					this.bottomPlane.set(pFrustum.bottomPlane);
+					this.nearPlane.set(pFrustum.nearPlane);
+					this.farPlane.set(pFrustum.farPlane);
+					break;
+				case 6:
+					this.leftPlane.set(arguments[0]);
+					this.rightPlane.set(arguments[1]);
+					this.topPlane.set(arguments[2]);
+					this.bottomPlane.set(arguments[3]);
+					this.nearPlane.set(arguments[4]);
+					this.farPlane.set(arguments[5]);
+					break;
+				default:
+					this.leftPlane.clear();
+					this.rightPlane.clear();
+					this.topPlane.clear();
+					this.bottomPlane.clear();
+					this.nearPlane.clear();
+					this.farPlane.clear();
+					break;
+			}
+			return this;
+		};
+
+		extractFromMatrix(m4fProjection: IMat4, m4fWorld?: IMat4, pSearchRect?: IRect3d): IFrustum{
+
+		};
+	};
+}
+
+
 
 
 
