@@ -103,6 +103,15 @@ module akra {
         FLOAT32 = 3, /*32 bit float per component*/
         COUNT = 4    /*Number of pixel types*/
     };
+
+    export enum EFilters {
+        NEAREST,
+        LINEAR,
+        BILINEAR,
+        BOX,
+        TRIANGLE,
+        BICUBIC
+    };
 }
 
 #endif

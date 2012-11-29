@@ -7,9 +7,9 @@
 #include "pixelUtil.ts"
 #include "geometry/Box.ts"
 #include "util/Color.ts"
+#include "IImg.ts"
 
 module akra.pixelUtil {
-
 	export class PixelBox extends geometry.Box implements IPixelBox {
 		data: Uint8Array;
 		format: EPixelFormats;
@@ -100,6 +100,10 @@ module akra.pixelUtil {
 			var pixelSize: uint = pixelUtil.getNumElemBytes(this.format);
 	        var pixelOffset: uint = pixelSize * (z * this.slicePitch + y * this.rowPitch + x);
 	        pixelUtil.packColour(pColor, this.format, this.data.subarray(pixelOffset));
+		}
+
+		scale(pDest: IPixelBox, eFilter: EFilters = EFilters.BILINEAR): bool {
+			return false;
 		}
 	}
 

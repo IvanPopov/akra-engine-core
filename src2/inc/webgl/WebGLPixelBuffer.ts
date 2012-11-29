@@ -2,7 +2,8 @@
 #define WEBGLPIXELBUFFER_TS
 
 #include "IPixelBuffer.ts"
-#include "core/pool/resource/HardwareBuffer.ts"
+#include "core/pool/resources/HardwareBuffer.ts"
+#include "geometry/Box.ts"
 
 module akra.webgl {
 	export class WebGLPixelBuffer extends core.pool.resources.HardwareBuffer implements IPixelBuffer {
@@ -17,6 +18,11 @@ module akra.webgl {
 
 		protected _eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
 
+		//webgl specific
+		
+		protected _pBuffer: IPixelBox;
+		protected _iWEBGLInternalFormat: int;
+
 		inline get width(): uint { return this._iWidth; }
 		inline get height(): uint { return this._iHeight; }
 		inline get depth(): uint { return this._iDepth; }
@@ -25,37 +31,55 @@ module akra.webgl {
 
 
 		constructor () {
-
+			super();
 		}
+
+
+		//upload(download) data to(from) videocard.
+		protected upload(pData: IPixelBox, pDestBox: IBox): void {}
+		protected download(pData: IPixelBox): void {}
+
+		_bindToFramebuffer(pAttachment: any, iZOffset: uint): void {}
+		_getWEBGLFormat(): int { return this._iWEBGLInternalFormat; }
 
 		create(iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats, iFlags: int): bool;
 		create(iByteSize: uint, iFlags: int, pData: ArrayBuffer): bool;
 
 		create(iWidth: any, iHeight: any, iDepth: any, eFormat?: EPixelFormats, iFlags?: int): bool {
-
+			return false;
 		}
 
-		destroy(): void;
+		destroy(): void { 
+			this._pBuffer = null;
 
-		getData(): ArrayBuffer;
-		getData(iOffset: uint, iSize: uint): ArrayBuffer;
+			super.destroy();
+		}
+
+		getData(): Uint8Array;
+		getData(iOffset: uint, iSize: uint): Uint8Array;
+		getData(iOffset?: uint, iSize?: uint): Uint8Array {
+			return null;
+		}
+
+		setData(pData: Uint8Array, iOffset: uint, iSize: uint): bool;
 		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool;
+		setData(pData: any, iOffset: uint, iSize: uint): bool { return false; }
 
-		resize(iSize: uint): bool;
+		resize(iSize: uint): bool { return false; }
 
 		//=====
 
 		blit(pSource: IPixelBuffer, pSrcBox: IBox, pDestBox: IBox): bool;
 		blit(pSource: IPixelBuffer);
 		blit(pSource: IPixelBuffer, pSrcBox?: IBox, pDestBox?: IBox): bool {
-			if (arguments.length == 1) {x
+			if (arguments.length == 1) {
 				return this.blit(pSource, 
-		            new Box(0, 0, 0, pSource.width, pSource.height, pSource.depth), 
-		            new Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth)
+		            new geometry.Box(0, 0, 0, pSource.width, pSource.height, pSource.depth), 
+		            new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth)
 		        );
 			}
 			else {
-				if(pSource === this) {
+				if(pSource === <IPixelBuffer>this) {
 					ERROR("Source must not be the same object",
 		                "HardwarePixelBuffer::blit" ) ;
 				}
@@ -75,8 +99,8 @@ module akra.webgl {
 		        	pDstlock.height != pSrclock.height ||
 		        	pDstlock.depth != pSrclock.depth) {
 					// Scaling desired
-					//pSrclock.scale(pDstlock);
-					ERROR("TODO: blit() with scale in PixelBuffer:blit()");
+					pSrclock.scale(pDstlock);
+					//ERROR("TODO: blit() with scale in PixelBuffer:blit()");
 				}
 				else {
 					// No scaling needed
@@ -87,12 +111,25 @@ module akra.webgl {
 			}
 		}
 
-		blitFromMemory(pSource: IPixelBox, pDestBox?: IBox): bool;
-		blitToMemory(pSrcBox: IBox, pDest?: IPixelBuffer): bool;
+		blitFromMemory(pSource: IPixelBox, pDestBox?: IBox): bool {
+			return false;
+		}
 
-		getRenderTarget(): IRenderTarget;
+		blitToMemory(pSrcBox: IBox, pDest?: IPixelBuffer): bool {
+			return false;
+		}
 
-		getPixels(pDstBox: IBox): IPixelBox;
+		getRenderTarget(): IRenderTarget {
+			return null;
+		}
+
+		getPixels(pDstBox: IBox): IPixelBox {
+			if (this.isRAMBufferPresent()) {
+				if (this.isWritable()) {
+					
+				}
+			}
+		}
 	}
 }
 

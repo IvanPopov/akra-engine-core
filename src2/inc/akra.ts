@@ -70,5 +70,6 @@
 #include "display/Display2d.ts"
 #include "display/Display3d.ts"
 
+#include "webgl/WebGLPixelBuffer.ts"
 
 #endif
