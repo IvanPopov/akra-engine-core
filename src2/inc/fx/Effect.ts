@@ -38,6 +38,7 @@ module akra.fx {
     #define EFFECT_BAD_COMPLEX_NOT_TYPE 2224
     #define EFFECT_BAD_COMPLEX_NOT_CONSTRUCTOR 2225
     #define EFFECT_BAD_COMPILE_NOT_FUNCTION 2226
+    #define EFFECT_BAD_REDEFINE_FUNCTION 2227
 
     akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, 
     						 "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
@@ -112,6 +113,9 @@ module akra.fx {
 	akra.logger.registerCode(EFFECT_BAD_COMPILE_NOT_FUNCTION, 
     						 "Invalid compile expression!. Could not find function-signature \
     						 with name {funcName} and so types. In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_REDEFINE_FUNCTION, 
+    						 "You try to redefine function. With name {funcName}. In line: {line}.");
+
 
 
     function sourceLocationToString(pLocation: ISourceLocation): string {
@@ -647,8 +651,11 @@ module akra.fx {
 			return null;
 		}
 
-		private addVariable(pVariable: IAFXVariable): void {
+		private findFunctionByDef(pDef: FunctionDefInstruction): IAFXFunctionDeclInstruction {
+			return null;
+		}
 
+		private addVariable(pVariable: IAFXVariable): void {
 		}
 
 		private addVariableDecl(pVariable: IAFXVariable): void {
@@ -700,9 +707,9 @@ module akra.fx {
 		        case "TypeDecl":
 		            this.analyzeTypeDecl(pNode);
 		            break;
-		    //     case "FunctionDecl":
-		    //         this.analyzeFunctionDecl(pNode);
-		    //         break;
+		        case "FunctionDecl":
+		            this.analyzeFunctionDecl(pNode);
+		            break;
 		    //     case "VarStructDecl":
 		    //         this.analyzeVarStructDecl(pNode);
 		    //         break;
@@ -825,13 +832,15 @@ module akra.fx {
 			this.analyzeVariableDim(pChildren[pChildren.length - 1]);
         }
 
-        private analyzeAnnotation(pNode:IParseNode): void {
+        private analyzeAnnotation(pNode:IParseNode): AnnotationInstruction {
+        	return null;
         }
 
-        private analyzeSemantic(pNode:IParseNode): void {
+        private analyzeSemantic(pNode:IParseNode): string {
         	var sSemantic: string = pNode.children[0].value;
-			var pDecl: IAFXDeclInstruction = <IAFXDeclInstruction>this._pCurrentInstruction;
-			pDecl.setSemantic(sSemantic);	
+			// var pDecl: IAFXDeclInstruction = <IAFXDeclInstruction>this._pCurrentInstruction;
+			// pDecl.setSemantic(sSemantic);	
+			return sSemantic;
         }
 
         private analyzeInitializer(pNode:IParseNode): void {        	
@@ -1574,84 +1583,6 @@ module akra.fx {
         	return pType;
         }
 
-        /**
-         * Проверят возможность использования оператора между двумя типами.
-         * Возращает тип получаемый в результате приминения опрератора, или, если применить его невозможно - null.
-         * 
-         * @sOperator {string} Один из операторов: + - * / % += -= *= /= %= = < > <= >= == != =
-         * @pLeftType {IAFXVariableTypeInstruction} Тип левой части выражения
-         * @pRightType {IAFXVariableTypeInstruction} Тип правой части выражения
-         */
-        private checkTwoOperandExprTypes(sOperator: string, 
-        								 pLeftType: IAFXVariableTypeInstruction, 
-        								 pRightType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
-
-        	switch(sOperator) {
-        		case "+":
-        		case "+=":
-        			break;
-        		case "-":
-        		case "-=":
-        			break;
-        		case "*":
-        		case "*=":
-        			break;
-        		case "/":
-        		case "/=":
-        			break;
-        		case "%":
-        		case "%=":
-        			break;
-        		case "<":
-        		case "<=":
-        			break;
-        		case ">":
-        		case ">=":
-        			break;
-        		case "==":
-        		case "!=":
-        			break;
-        		case "=":
-        			break;
-        	}
-
-        	return null;
-        }
-
-         /**
-         * Проверят возможность использования оператора к типу данных.
-         * Возращает тип получаемый в результате приминения опрератора, или, если применить его невозможно - null.
-         * 
-         * @sOperator {string} Один из операторов: + - ! ++ --
-         * @pLeftType {IAFXVariableTypeInstruction} Тип операнда
-         */
-        private checkOneOperandExprType(sOperator: string, 
-        								pType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
-
-        	switch(sOperator) {
-        		case "+":
-        			break;
-        		case "-":
-        			break;
-        		case "!":
-        			break;
-        		case "++":
-        			break;
-        		case "--":
-        			break;
-        	}
-
-        	return null;
-        }
-
-        private getSystemType(sTypeName: string): IAFXVariableTypeInstruction {
-        	//bool, string, float and others
-        	return null;
-        }
-
-        private generateVariableTypeFromId(pTypeName: IAFXIdInstruction): IAFXVariableTypeInstruction {
-        	return null;
-        }
 
 
 		// private analyzeTypes(): void {
@@ -1739,6 +1670,164 @@ module akra.fx {
 
         	this.endInstruction();
         	this.endInstruction();
+        }
+
+        private analyzeFunctionDecl(pNode: IParseNode): IAFXFunctionDeclInstruction {
+        	this.setAnalyzedNode(pNode);
+        	
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pFunction: IAFXFunctionDeclInstruction = null;
+        	var pFunctionDef: FunctionDefInstruction = null;
+        	var pStmtBlock: StmtBlockInstruction = null;
+        	var pAnnotation: AnnotationInstruction = null;
+        	var sLastNodeValue: string = pChildren[0].value;
+
+        	pFunctionDef = this.analyzeFunctionDef(pChildren[pChildren.length - 1]);
+
+        	pFunction = this.findFunctionByDef(pFunctionDef);
+        	if(!isNull(pFunction) && pFunction.hasImplementation()){
+        		this._error(EFFECT_BAD_REDEFINE_FUNCTION, { funcName: pFunction.getNameId().toString() });
+        		return null;
+        	}
+
+        	if(isNull(pFunction)){
+        		pFunction = new FunctionDeclInstruction();
+        	}
+
+        	pFunction.push(pFunctionDef, true);
+
+        	this.newInstruction(pFunction);
+
+        	if(pChildren.length === 3) {
+        		this.analyzeAnnotation(pChildren[1]);
+        	}
+
+        	if(sLastNodeValue !== ";") {
+ 				pStmtBlock = this.analyzeStmtBlock(pChildren[0]);
+        	}
+
+        	pFunction.push(pFunctionDef, true);
+      		pFunction.push(pStmtBlock, true);
+
+      		this.endInstruction();
+
+      		return pFunction;
+        }
+
+        private analyzeFunctionDef(pNode: IParseNode): FunctionDefInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pFunctionDef: FunctionDefInstruction = new FunctionDefInstruction();
+        	var pReturnType: IAFXVariableTypeInstruction = null;
+        	var pUsageType: IAFXUsageTypeInstruction = null;
+        	var pFuncName: IAFXIdInstruction = null;
+        	var pArguments: IAFXVariableDeclInstruction[] = null;
+        	var sFuncName: string = pChildren[pChildren.length - 2].value;
+
+        	pUsageType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
+        	pReturnType = new VariableTypeInstruction();
+        	pReturnType.push(pUsageType, true);
+
+        	pFuncName = new IdInstruction();
+        	pFuncName.setName(sFuncName);
+
+        	pFunctionDef.push(pReturnType, true);
+        	pFunctionDef.push(pFuncName, true);
+
+        	if(pChildren.length === 4){
+        		var sSemantic: string = this.analyzeSemantic(pChildren[0]);
+        		pFunctionDef.setSemantic(sSemantic);
+        	}
+
+        	//this.analyzeParamList(pChildren[pChildren.length -3], pFunctionDef);
+
+        	return pFunctionDef;
+        }
+
+        private analyzeStmtBlock(pNode: IParseNode): StmtBlockInstruction {
+        	return null;
+        }
+
+
+
+        /**
+         * Проверят возможность использования оператора между двумя типами.
+         * Возращает тип получаемый в результате приминения опрератора, или, если применить его невозможно - null.
+         * 
+         * @sOperator {string} Один из операторов: + - * / % += -= *= /= %= = < > <= >= == != =
+         * @pLeftType {IAFXVariableTypeInstruction} Тип левой части выражения
+         * @pRightType {IAFXVariableTypeInstruction} Тип правой части выражения
+         */
+        private checkTwoOperandExprTypes(sOperator: string, 
+        								 pLeftType: IAFXVariableTypeInstruction, 
+        								 pRightType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
+
+        	switch(sOperator) {
+        		case "+":
+        		case "+=":
+        			break;
+        		case "-":
+        		case "-=":
+        			break;
+        		case "*":
+        		case "*=":
+        			break;
+        		case "/":
+        		case "/=":
+        			break;
+        		case "%":
+        		case "%=":
+        			break;
+        		case "<":
+        		case "<=":
+        			break;
+        		case ">":
+        		case ">=":
+        			break;
+        		case "==":
+        		case "!=":
+        			break;
+        		case "=":
+        			break;
+        	}
+
+        	return null;
+        }
+        
+         /**
+         * Проверят возможность использования оператора к типу данных.
+         * Возращает тип получаемый в результате приминения опрератора, или, если применить его невозможно - null.
+         * 
+         * @sOperator {string} Один из операторов: + - ! ++ --
+         * @pLeftType {IAFXVariableTypeInstruction} Тип операнда
+         */
+        private checkOneOperandExprType(sOperator: string, 
+        								pType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
+
+        	switch(sOperator) {
+        		case "+":
+        			break;
+        		case "-":
+        			break;
+        		case "!":
+        			break;
+        		case "++":
+        			break;
+        		case "--":
+        			break;
+        	}
+
+        	return null;
+        }
+
+        private getSystemType(sTypeName: string): IAFXVariableTypeInstruction {
+        	//bool, string, float and others
+        	return null;
+        }
+
+        private generateVariableTypeFromId(pTypeName: IAFXIdInstruction): IAFXVariableTypeInstruction {
+        	return null;
         }
 
 		private getNodeSourceLocation(pNode: IParseNode): {line: uint; column: uint;} {

@@ -68,6 +68,7 @@ module akra {
 
     export interface IAFXDeclInstruction extends IAFXTypedInstruction {
         setSemantic(sSemantic: string);
+        setAnnotation(pAnnotation: IAFXInstruction): void;
     }
 
     export interface IAFXTypeDeclInstruction extends IAFXDeclInstruction {
@@ -76,6 +77,11 @@ module akra {
 
     export interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
 
+    }
+
+    export interface IAFXFunctionDeclInstruction extends IAFXDeclInstruction {
+        getNameId(): IAFXIdInstruction;
+        hasImplementation(): bool;
     }
 
     export interface IAFXUsageTypeInstruction extends IAFXInstruction {

@@ -128,6 +128,7 @@ module akra.fx {
 
 	export class DeclInstruction extends TypedInstruction implements IAFXDeclInstruction {
 		protected _sSemantic: string;
+		protected _pAnnotation: AnnotationInstruction;
 
 		constructor(){
 			super();
@@ -136,6 +137,10 @@ module akra.fx {
 
 		setSemantic(sSemantic: string): void {
 			this._sSemantic = sSemantic;
+		}
+
+		setAnnotation(pAnnotation: IAFXInstruction): void {
+			this._pAnnotation = <AnnotationInstruction>pAnnotation;
 		}
 	}
 
@@ -293,6 +298,12 @@ module akra.fx {
 		 * EMPTY_OPERATOR VariableTypeInstruction IdInstruction InitExprInstruction
 		 */
 		constructor(){
+			super();
+		}
+	}
+
+	export class AnnotationInstruction extends Instruction {
+		constructor() {
 			super();
 		}
 	}
@@ -534,6 +545,43 @@ module akra.fx {
 			super();
 			this._pInstructionList = [null, null];
 		}	
+	}
+
+	/**
+	 * Represent type func(...args)[:Semantic] [<Annotation> {stmts}]
+	 * EMPTY_OPERTOR FunctionDefInstruction StmtBlockInstruction
+	 */
+	export class FunctionDeclInstruction extends DeclInstruction implements IAFXFunctionDeclInstruction {
+		constructor() { 
+			super();
+			this._pInstructionList = [null, null];
+		}	
+
+		getNameId(): IAFXIdInstruction {
+			return null;
+		}
+
+		hasImplementation(): bool {
+			return false;
+		}
+	}
+
+	/**
+	 * Represent type func(...args)[:Semantic]
+	 * EMPTY_OPERTOR VariableTypeInstruction IdInstruction VarDeclInstruction ... VarDeclInstruction
+	 */
+	export class FunctionDefInstruction extends DeclInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null, null];
+		}
+	}
+
+	export class StmtBlockInstruction extends Instruction {
+		constructor() {
+			super();
+			this._pInstructionList;
+		}
 	}
 
 	// export class TypeInstruction extends Instruction {
