@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #ifndef COMMON_TS
 #define COMMON_TS
 
@@ -53,14 +54,15 @@
 
 #endif
 
-#define dynamic_cast_f32_ptr(uint8_data, n) (new Float32Array(uint8_data.buffer, uint8_data.byteOffset, n))
-#define dynamic_cast_u16_ptr(uint8_data, n) (new Uint16Array(uint8_data.buffer, uint8_data.byteOffset, n))
-#define dynamic_cast_u32_ptr(uint8_data, n) (new Uint32Array(uint8_data.buffer, uint8_data.byteOffset, n))
-#define dynamic_cast_i8_ptr(uint8_data, n) (new Int8Array(uint8_data.buffer, uint8_data.byteOffset, n))
-#define dynamic_cast_i16_ptr(uint8_data, n) (new Int16Array(uint8_data.buffer, uint8_data.byteOffset, n))
-#define dynamic_cast_i32_ptr(uint8_data, n) (new Int32Array(uint8_data.buffer, uint8_data.byteOffset, n))
-
-
+#define ALLOCATE_STORAGE(sName, nCount)    \
+        static stackSize: uint = nCount;\
+        static stackPosition: int = 0;\
+        static stack: I ## sName[] = (function(): I ## sName[]{\
+                                    var pStack: I ## sName[] = new Array(sName.stackSize);\
+                                    for(var i:int = 0; i<sName.stackSize; i++){\
+                                        pStack[i] = new sName();\
+                                    }\
+                                    return pStack})();
 
 module akra {
 

@@ -7,6 +7,13 @@
 #include "IColor.ts"
 #include "PixelBox.ts"
 
+#define dynamic_cast_f32_ptr(uint8_data, n) (new Float32Array(uint8_data.buffer, uint8_data.byteOffset, n))
+#define dynamic_cast_u16_ptr(uint8_data, n) (new Uint16Array(uint8_data.buffer, uint8_data.byteOffset, n))
+#define dynamic_cast_u32_ptr(uint8_data, n) (new Uint32Array(uint8_data.buffer, uint8_data.byteOffset, n))
+#define dynamic_cast_i8_ptr(uint8_data, n) (new Int8Array(uint8_data.buffer, uint8_data.byteOffset, n))
+#define dynamic_cast_i16_ptr(uint8_data, n) (new Int16Array(uint8_data.buffer, uint8_data.byteOffset, n))
+#define dynamic_cast_i32_ptr(uint8_data, n) (new Int32Array(uint8_data.buffer, uint8_data.byteOffset, n))
+
 module akra {
 
 	export interface IPixelFormatDescription {
