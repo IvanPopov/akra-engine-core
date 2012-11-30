@@ -53,6 +53,7 @@
 #include "core/pool/resources/Img.ts"
 #include "core/pool/resources/RenderMethod.ts"
 #include "core/pool/resources/Model.ts"
+#include "core/pool/resources/MemoryBuffer.ts"
 
 #include "scene/Node.ts"
 #include "scene/SceneNode.ts"

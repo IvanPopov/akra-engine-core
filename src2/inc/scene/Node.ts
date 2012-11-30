@@ -185,7 +185,7 @@ module akra.scene {
 		                pWorldData[__13] = p11 * l13 + p12 * l23 + p13 * l33;
 		                pWorldData[__14] = pOrientData[__14];
 		                pWorldData[__21] = p21 * l11 + p22 * l21 + p23 * l31;
-		                pWorldData[__22 = p21 * l12 + p22 * l22 + p23 * l32];
+		                pWorldData[__22] = p21 * l12 + p22 * l22 + p23 * l32;
 		                pWorldData[__23] = p21 * l13 + p22 * l23 + p23 * l33;
 		                pWorldData[__24] = pOrientData[__24];
 		                pWorldData[__31] = p31 * l11 + p32 * l21 + p33 * l31;

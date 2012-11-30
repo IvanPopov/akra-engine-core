@@ -12,15 +12,17 @@ module akra.core.pool.resources {
 			return this._pData.byteLength;
 		}
 
-		create(iByteSize: uint, iFlags: int): bool {
+		create(iByteSize: uint, iFlags: int = EHardwareBufferFlags.DYNAMIC): bool {
 			
-			CLEAR_ANY(iFlags, 
+			CLEAR_ALL(iFlags, 
 				EHardwareBufferFlags.BACKUP_COPY | EHardwareBufferFlags.DISCARDABLE | 
 				EHardwareBufferFlags.ALIGNMENT);
 
-			super.create(iFlags | EHardwareBufferFlags.SOFTWARE);
+			var isCreated: bool = super.create(iFlags | EHardwareBufferFlags.SOFTWARE);
 
 			this._pData = new Uint8Array(iByteSize);
+
+			return isCreated;
 		}
 
 		destroy(): void {
@@ -33,7 +35,7 @@ module akra.core.pool.resources {
 		}
 
 		readData(ppDest: ArrayBufferView): bool;
-		readData(iOffset: uint, iSize?: uint, ppDest: ArrayBufferView): bool;
+		readData(iOffset: uint, iSize: uint, ppDest: ArrayBufferView): bool;
 		readData(iOffset: any, iSize?: any, ppDest?: any): bool { 
 			if (arguments.length < 3) {
 				ppDest = arguments[0];
@@ -45,9 +47,9 @@ module akra.core.pool.resources {
 			return true;
 		}
 
-		writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint): bool;
-		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint): bool;
-		writeData(pData: any, iOffset?: uint, iSize?: uint): bool { 
+		writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
+		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
+		writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool { 
 			ASSERT((iOffset + iSize) <= this.byteLength);
 
 			if (arguments.length < 3) {
@@ -55,7 +57,9 @@ module akra.core.pool.resources {
 				iSize = pData.byteLength;
 			}
 
-			memcpy(this._pData.buffer, 0, (<ArrayBufferView>ppDest).buffer, iOffset, iSize);
+			this.notifyAltered();
+
+			memcpy(this._pData.buffer, 0, (<ArrayBufferView>pData).buffer, iOffset, iSize);
 
 			return true;
 		}

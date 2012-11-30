@@ -275,7 +275,11 @@ function compileTest(sDir, sFile, sName, pData, sTestData) {
                   	<body>                               			\n\
                   		<h1 id=\"test_name\">Tests</h1>             \n\
                   		<script>" + sTestData + "</script>   		\n\
-                  		<script> akra.utils.test.run(); </script>   \n\
+                  		<script> 									\n\
+                  		if (akra && akra.utils && akra.utils.test) {\n\
+                  			akra.utils.test.run(); 					\n\
+                  		}											\n\
+                  		</script>   								\n\
                   	</body>                              			\n\
                   </html>";
 
@@ -401,7 +405,6 @@ function createTestData(sDir, sFile) {
             		path.extname(sFile) !== ".ts" && 
             		path.extname(sFile) !== ".nw" && 
             		path.basename(sFile) !== sTest + ".ts.html") {
-
             		pTestFiles.push({path: sFile, folder: false});
             	}
             }  
@@ -418,9 +421,11 @@ function createTestData(sDir, sFile) {
     
     				if (iTestQuitMutex == 0) {
     					iTestQuitMutex ++;
+    					//console.log(sDir, sTestMain, sTest, pTestFiles);
     					packTest(sDir, sTestMain, sTest, pTestFiles);
     				}
     				else {
+    					//console.log({dir: sDir, main: sTestMain, name: sTest, data: pTestFiles});
     					pTestQueue.push({dir: sDir, main: sTestMain, name: sTest, data: pTestFiles});
     				}
     			}

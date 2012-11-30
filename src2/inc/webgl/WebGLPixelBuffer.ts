@@ -45,7 +45,7 @@ module akra.webgl {
 		create(iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats, iFlags: int): bool;
 		create(iByteSize: uint, iFlags: int, pData: ArrayBuffer): bool;
 
-		create(iWidth: any, iHeight: any, iDepth: any, eFormat?: EPixelFormats, iFlags?: int): bool {
+		create(iWidth: any, iHeight?: any, iDepth?: any, eFormat?: EPixelFormats, iFlags?: int): bool {
 			return false;
 		}
 
@@ -124,11 +124,11 @@ module akra.webgl {
 		}
 
 		getPixels(pDstBox: IBox): IPixelBox {
-			if (this.isRAMBufferPresent()) {
-				if (this.isWritable()) {
-					
-				}
+			if (this.isBackupPresent()) {
+				
 			}
+
+			return null;
 		}
 	}
 }

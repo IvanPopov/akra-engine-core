@@ -27,7 +27,6 @@ module akra {
             */
 		DISCARDABLE = 0x40,
 
-
 		STATIC_READABLE = STATIC | READABLE,
 		DYNAMIC_DISCARDABLE = DYNAMIC | DISCARDABLE
 	}
@@ -59,8 +58,8 @@ module akra {
 		readData(ppDest: ArrayBufferView): bool;
 		readData(iOffset: uint, iSize: uint, ppDest: ArrayBufferView): bool;
 
-		writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint): bool;
-		writeData(pData: ArrayBuffer, iOffset?: uint, iSize?: uint): bool;
+		writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer?: bool): bool;
+		writeData(pData: ArrayBuffer, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer?: bool): bool;
 
 
 		copyData(pSrcBuffer: IHardwareBuffer, iSrcOffset: uint, 

@@ -21,7 +21,7 @@ module akra.core.pool.resources {
 		/** Lock byte size. */
 		protected _iLockSize: uint;
 
-		protected _pBackupCopy: IHardwareBuffer = null;
+		protected _pBackupCopy: HardwareBuffer = null;
 		protected _pBackupUpdated: bool = false;
 		protected _bIgnoreHardwareUpdate: bool = false;
 
@@ -64,6 +64,10 @@ module akra.core.pool.resources {
 			return TEST_ANY(this._iFlags, EHardwareBufferFlags.ALIGNMENT);
 		}
 
+		inline isLocked(): bool {
+			return this._isLocked;
+		}
+
 		
 		clone(pSrc: IHardwareBuffer): bool {
 			return false;
@@ -77,9 +81,9 @@ module akra.core.pool.resources {
 			return false; 
 		}
 
-		writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint): bool;
-		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint): bool;
-		writeData(pData: any, iOffset?: uint, iSize?: uint): bool { 
+		writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
+		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
+		writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool { 
 			return false;
 		}
 
@@ -87,6 +91,7 @@ module akra.core.pool.resources {
 			var pData: any = pSrcBuffer.lock(iSrcOffset, iSize);
 			this.writeData(pData, iDstOffset, iSize, bDiscardWholeBuffer);
 			pSrcBuffer.unlock();
+			return true;
 		}
 
 		create(iFlags: int): bool {
@@ -110,6 +115,8 @@ module akra.core.pool.resources {
 
 		destroy(): void {
 			this._iFlags = 0;
+			this.notifyDestroyed();
+			this.notifyUnloaded();
 		}
 
 		resize(iSize: uint): bool {
@@ -117,7 +124,8 @@ module akra.core.pool.resources {
 		}
 
 		lock(iLockFlags: int): any;
-		lock(iOffset: uint, iSize: uint, iLockFlags: int = ELockFlags.READABLE): any {
+		lock(iOffset: uint, iSize: uint, iLockFlags: int = EHardwareBufferFlags.READABLE): any;
+		lock(iOffset: uint, iSize?: any, iLockFlags: int = EHardwareBufferFlags.READABLE): any {
 			ASSERT(!this.isLocked(), "Cannot lock this buffer, it is already locked!");
 
 			if (arguments.length == 1) {
@@ -172,7 +180,8 @@ module akra.core.pool.resources {
 		restoreFromBackup(): bool {
 			if (this._pBackupCopy && this._pBackupUpdated && !this._bIgnoreHardwareUpdate) {
 	            // Do this manually to avoid locking problems
-	            var pBackupData: any = this._pBackupCopy.lockImpl(this._iLockStart, this._iLockSize);
+	            var pBackupData: any = this._pBackupCopy.lockImpl(this._iLockStart, 
+	            	this._iLockSize, ELockFlags.READ);
 				// Lock with discard if the whole buffer was locked, otherwise normal
 				var iLockFlags: int;
 
@@ -185,12 +194,16 @@ module akra.core.pool.resources {
 				
 	            var pRealData: any = this.lockImpl(this._iLockStart, this._iLockSize, iLockFlags);
 				// Copy backup to real
-	            this.copyBackupToRead(pRealData, pBackupData, iLockFlags);
+	            this.copyBackupToReadImpl(pRealData, pBackupData, iLockFlags);
 
 	            this.unlockImpl();
 	            this._pBackupCopy.unlockImpl();
 	            this._pBackupUpdated = false;
+
+	            return true;
 	        }
+
+	        return false;
 		}
 
 		createResource(): bool {
@@ -214,12 +227,7 @@ module akra.core.pool.resources {
 		    if (this.isResourceCreated()) {
 		        // disable the resource
 		        this.disableResource();
-
 		        this.destroy();
-
-		        this.notifyUnloaded();
-		        this.notifyDestroyed();
-
 		        return true;
 		    }
 

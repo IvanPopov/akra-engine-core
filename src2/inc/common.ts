@@ -21,6 +21,8 @@
 #define UNKNOWN_CODE 0
 #define UNKONWN_MESSAGE "Unknown code."
 
+#ifdef LOGGER_API
+
 #define LOG(...)            logger.setSourceLocation(__FILE__, __LINE__); \
                             logger.log(__VA_ARGS__);
 #define TRACE(...)          logger.setSourceLocation(__FILE__, __LINE__); \
@@ -37,6 +39,19 @@
                             logger.critical_error(__VA_ARGS__);
 #define ASSERT(...)         logger.setSourceLocation(__FILE__, __LINE__); \
                             logger.assert(__VA_ARGS__);
+
+#else
+
+#define LOG(...)
+#define TRACE(...)
+#define INFO(...)
+#define WARNING(...)
+#define ERROR(...)
+#define CRITICAL(...)
+#define CRITICAL_ERROR(...) 
+#define ASSERT(...)
+
+#endif
 
 #define dynamic_cast_f32_ptr(uint8_data, n) (new Float32Array(uint8_data.buffer, uint8_data.byteOffset, n))
 #define dynamic_cast_u16_ptr(uint8_data, n) (new Uint16Array(uint8_data.buffer, uint8_data.byteOffset, n))
@@ -421,5 +436,9 @@ module akra {
     (<any>window).storageInfo = (<any>window).storageInfo || (<any>window).webkitStorageInfo;
     Worker.prototype.postMessage = (<any>Worker).prototype.webkitPostMessage || Worker.prototype.postMessage;
 };
+
+#ifdef LOGGER_API
+#define "util/Logger.ts"
+#endif
 
 #endif
