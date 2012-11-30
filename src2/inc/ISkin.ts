@@ -3,6 +3,7 @@
 
 module akra {
 	IFACE(INode);
+	IFACE(IMesh);
 
 	export interface INodeMap{
 		[index: string]: INode;
@@ -35,6 +36,7 @@ module akra {
 		isReady(): bool;
 		getBoneTransforms();
 		isAffect(pData): bool;
+		attach(pData)
 
 	}
 }

@@ -3,6 +3,7 @@
 
 #include "ISkeleton.ts"
 #include "INode.ts"
+#include "scene/Joint.ts"
 
 module akra.model {
 
@@ -12,7 +13,7 @@ module akra.model {
 		private _pRootJoints: INode[] = [];
 		private _pJointList: INodeMap = null;
 		private _pNodeList: INode[]  = null;
-		private _pMeshNode = null;
+		private _pMeshNode: INode = null;
 		private _iFlags: bool = false;
 
 		inline get totalBones(): int{
@@ -52,9 +53,7 @@ module akra.model {
 		}
 
 		addRootJoint(pJoint: INode): bool {
-			/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-			/*FIX a. */
-			/*debug_assert(pJoint instanceof a.Joint, 'node must be joint');*/
+			debug_assert(pJoint instanceof scene.Joint, 'node must be joint');
 
 		    var pRootJoints = this._pRootJoints;
 
@@ -132,12 +131,12 @@ module akra.model {
 			/*debug_assert(this.getEngine() === pMesh.getEngine(), 'mesh must be from same engine instance');
 
 		    if (this._pMeshNode == null) {
-		    	this._pMeshNode = new a.SceneModel(this.getEngine());
+		    	this._pMeshNode = new scene.objects.SceneModel(this.getEngine());
 		    	this._pMeshNode.create();
 		    	this._pMeshNode.setInheritance(a.Scene.k_inheritAll);
 		    	this._pMeshNode.attachToParent(this.root);
-		    }*/
-
+		    }
+*/
 		    this._pMeshNode.name = this.name + "[mesh-container]";
 		    this._pMeshNode.addMesh(pMesh);
 		}
