@@ -1585,7 +1585,6 @@ module akra.util {
                 oldNextStateIndex: null,
                 newNextStateIndex: null,
                 grammarSymbol: null,
-                stateIndex: null,
                 newOperation: null,
                 oldOperation: null,
                 expectedSymbol: null,

@@ -128,7 +128,7 @@ module akra.fx {
 
 	export class DeclInstruction extends TypedInstruction implements IAFXDeclInstruction {
 		protected _sSemantic: string;
-		protected _pAnnotation: AnnotationInstruction;
+		protected _pAnnotation: IAFXAnnotationInstruction;
 
 		constructor(){
 			super();
@@ -139,8 +139,8 @@ module akra.fx {
 			this._sSemantic = sSemantic;
 		}
 
-		setAnnotation(pAnnotation: IAFXInstruction): void {
-			this._pAnnotation = <AnnotationInstruction>pAnnotation;
+		setAnnotation(pAnnotation: IAFXAnnotationInstruction): void {
+			this._pAnnotation = pAnnotation;
 		}
 	}
 
@@ -302,7 +302,7 @@ module akra.fx {
 		}
 	}
 
-	export class AnnotationInstruction extends Instruction {
+	export class AnnotationInstruction extends Instruction implements IAFXAnnotationInstruction {
 		constructor() {
 			super();
 		}
@@ -577,12 +577,44 @@ module akra.fx {
 		}
 	}
 
-	export class StmtBlockInstruction extends Instruction {
+	/**
+	 * Represent all kind of statements
+	 */
+	export class StmtInstruction extends Instruction  implements IAFXStmtInstruction {
 		constructor() {
 			super();
-			this._pInstructionList;
 		}
 	}
+
+	export class StmtBlockInstruction extends StmtInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null];
+		}
+	}
+
+	/**
+	 * Represent while(expr) stmt
+	 * while ExprInstruction StmtInstruction
+	 */
+	export class WhileStmtInstruction extends StmtInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null, null];
+		}
+	}
+
+	/**
+	 * Represent for(forInit forCond ForStep) stmt
+	 * while ExprInstruction StmtInstruction
+	 */
+	export class ForStmtInstruction extends StmtInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null, null, null, null];
+		}
+	}
+
 
 	// export class TypeInstruction extends Instruction {
 	// 	/**

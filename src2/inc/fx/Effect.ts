@@ -39,6 +39,7 @@ module akra.fx {
     #define EFFECT_BAD_COMPLEX_NOT_CONSTRUCTOR 2225
     #define EFFECT_BAD_COMPILE_NOT_FUNCTION 2226
     #define EFFECT_BAD_REDEFINE_FUNCTION 2227
+    #define EFFECT_BAD_WHILE_CONDITION 2228
 
     akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, 
     						 "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
@@ -115,6 +116,9 @@ module akra.fx {
     						 with name {funcName} and so types. In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_REDEFINE_FUNCTION, 
     						 "You try to redefine function. With name {funcName}. In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_WHILE_CONDITION, 
+							 "Bad type of while-condition. Must be 'bool' but it is '{typeName}'. \
+							 In line: {line}.")
 
 
 
@@ -702,7 +706,7 @@ module akra.fx {
 		private analyzeDecl(pNode: IParseNode): void {
 			switch (pNode.name) {
 		        case "VariableDecl":
-		            this.analyzeVariableDecl(pNode);
+		            this.analyzeVariableDecl(pNode, null);
 		            break;
 		        case "TypeDecl":
 		            this.analyzeTypeDecl(pNode);
@@ -728,18 +732,23 @@ module akra.fx {
 		    }	
 		}
 
-		private analyzeVariableDecl(pNode: IParseNode): void {
+		private analyzeVariableDecl(pNode: IParseNode, pInstruction?: IAFXInstruction = null): void {
 			this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
         	var pUsageType: IAFXUsageTypeInstruction;
+        	var pVariable: IAFXVariableDeclInstruction;
         	var i: uint = 0;
         	
         	pUsageType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
 
         	for(i = pChildren.length - 2; i >= 1; i--){
         		if(pChildren[i].name === "Variable") {
-        			this.analyzeVariable(pChildren[i], pUsageType);
+        			pVariable = this.analyzeVariable(pChildren[i], pUsageType);
+        			//this.addVariable();
+        			if(!isNull(pInstruction)){
+        				pInstruction.push(pVariable, true);
+        			}
         		}
         	}
         }
@@ -772,42 +781,45 @@ module akra.fx {
         	return null;
         }
 
-        private analyzeVariable(pNode: IParseNode, pUsageType: IAFXUsageTypeInstruction): void {
+        private analyzeVariable(pNode: IParseNode, pUsageType: IAFXUsageTypeInstruction): IAFXVariableDeclInstruction {
         	var pChildren: IParseNode[] = pNode.children;
 
         	var pVarDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
         	var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+        	var pAnnotation: IAFXAnnotationInstruction;
+        	var sSemantic: string;
+        	var pInitExpr: IAFXExprInstruction;
 			
         	pVarDecl.push(pVariableType);       	
         	pVariableType.push(pUsageType);
 
-        	this.newInstruction(pVarDecl);
-
-        	this.analyzeVariableDim(pChildren[pChildren.length - 1]);
+        	this.analyzeVariableDim(pChildren[pChildren.length - 1], pVarDecl);
         	
         	var i: uint = 0;
         	for(i = pChildren.length - 2; i >= 0; i--){
         		if(pChildren[i].name === "Annotation"){
-        			this.analyzeAnnotation(pChildren[i]);
+        			pAnnotation = this.analyzeAnnotation(pChildren[i]);
+        			pVarDecl.setAnnotation(pAnnotation);
         		}
         		else if(pChildren[i].name === "Semantic"){
-        			this.analyzeSemantic(pChildren[i]);
+        			sSemantic = this.analyzeSemantic(pChildren[i]);
+        			pVarDecl.setSemantic(sSemantic);
         		}
         		else if(pChildren[i].name === "Initializer"){
-        			this.analyzeInitializer(pChildren[i]);
+        			pInitExpr = this.analyzeInitializer(pChildren[i]);
+        			pVarDecl.push(pInitExpr, true);
         		}
         	}
 
-        	this.endInstruction();
+        	// var pVariable: IAFXVariable = new Variable();
+        	// pVariable.initializeFromInstruction(pVarDecl);
+        	// this.addVariableDecl(pVariable);
 
-        	var pVariable: IAFXVariable = new Variable();
-        	pVariable.initializeFromInstruction(pVarDecl);
-        	this.addVariableDecl(pVariable);
+        	return pVarDecl;
         }
 
-        private analyzeVariableDim(pNode: IParseNode): void {
+        private analyzeVariableDim(pNode: IParseNode, pVariableDecl: IAFXVariableDeclInstruction): void {
 			var pChildren: IParseNode[] = pNode.children;
-			var pVariableDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this._pCurrentInstruction;
 			var pVariableType: IAFXVariableTypeInstruction = pVariableDecl.getType();
 
 			if(pChildren.length === 1) {
@@ -829,10 +841,10 @@ module akra.fx {
 				pVariableType.addArrayIndex(pIndexExpr);	
 			}
 
-			this.analyzeVariableDim(pChildren[pChildren.length - 1]);
+			this.analyzeVariableDim(pChildren[pChildren.length - 1], pVariableDecl);
         }
 
-        private analyzeAnnotation(pNode:IParseNode): AnnotationInstruction {
+        private analyzeAnnotation(pNode:IParseNode): IAFXAnnotationInstruction {
         	return null;
         }
 
@@ -843,7 +855,8 @@ module akra.fx {
 			return sSemantic;
         }
 
-        private analyzeInitializer(pNode:IParseNode): void {        	
+        private analyzeInitializer(pNode:IParseNode): IAFXExprInstruction {     
+        	return null;   	
         }
 
         private analyzeFromExpr(pNode: IParseNode): IAFXIdInstruction {
@@ -1583,31 +1596,6 @@ module akra.fx {
         	return pType;
         }
 
-
-
-		// private analyzeTypes(): void {
-		// 	var pChildren: IParseNode[] = this._pParseTree.root.children;
-		// 	var i: uint;
-
-		// 	for(i = pChildren.length - 1; i >= 0; i--) {
-		// 		if(pChildren[i].name === Effect._pGrammarSymbols["TypeDecl"]){
-		// 			this.analyzeTypeDecl(pChildren[i]);
-		// 		}
-		// 	}
-		// }
-
-		// private preAnalyzeFunctions(): void {
- 
-		// }
-
-		// private preAnalyzeVariables(): void {
-
-		// }
-
-		// private preAnalyzeTechniques(): void {
-
-		// }
-
 		private analyzeTypeDecl(pNode: IParseNode): void {
 			var pChildren: IParseNode[] = pNode.children;
 			this.setAnalyzedNode(pNode);
@@ -1679,7 +1667,7 @@ module akra.fx {
         	var pFunction: IAFXFunctionDeclInstruction = null;
         	var pFunctionDef: FunctionDefInstruction = null;
         	var pStmtBlock: StmtBlockInstruction = null;
-        	var pAnnotation: AnnotationInstruction = null;
+        	var pAnnotation: IAFXAnnotationInstruction = null;
         	var sLastNodeValue: string = pChildren[0].value;
 
         	pFunctionDef = this.analyzeFunctionDef(pChildren[pChildren.length - 1]);
@@ -1699,7 +1687,8 @@ module akra.fx {
         	this.newInstruction(pFunction);
 
         	if(pChildren.length === 3) {
-        		this.analyzeAnnotation(pChildren[1]);
+        		pAnnotation = this.analyzeAnnotation(pChildren[1]);
+        		pFunction.setAnnotation(pAnnotation);
         	}
 
         	if(sLastNodeValue !== ";") {
@@ -1740,16 +1729,173 @@ module akra.fx {
         		pFunctionDef.setSemantic(sSemantic);
         	}
 
-        	//this.analyzeParamList(pChildren[pChildren.length -3], pFunctionDef);
+        	this.analyzeParamList(pChildren[pChildren.length - 3], pFunctionDef);
 
         	return pFunctionDef;
         }
 
         private analyzeStmtBlock(pNode: IParseNode): StmtBlockInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pStmtBlock: StmtBlockInstruction = new StmtBlockInstruction();
+        	var pStmt: IAFXStmtInstruction;
+        	var i: uint = 0;
+
+        	for(i = pChildren.length - 2; i > 0; i--){
+        		pStmt = this.analyzeStmt(pChildren[i]);
+        		if(isNull(pStmt)){
+        			pStmtBlock.push(pStmt);
+        		}
+        	} 
+
+        	return pStmtBlock;
+        }
+
+        private analyzeStmt(pNode:IParseNode): IAFXStmtInstruction{
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var sFirstNodeName: string = pChildren[pChildren.length - 1].name;
+
+        	switch(sFirstNodeName){
+        		case "SimpleStmt":
+        			return this.analyzeSimpleStmt(pChildren[0]);
+        		case "UseDecl":
+        			return this.analyzeUseDecl(pChildren[0]);
+        		case "while":
+        			return this.analyzeWhileStmt(pNode);
+        		case "for":
+        			return this.analyzeForStmt(pNode);
+        		case "if":
+        			return this.analyzeIfStmt(pNode);	
+        	}
+        }
+
+        private analyzeSimpleStmt(pNode: IParseNode): IAFXStmtInstruction{
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
         	return null;
         }
 
+        private analyzeUseDecl(pNode: IParseNode): IAFXStmtInstruction{
+        	this.setAnalyzedNode(pNode);
 
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	return null;
+        }
+
+        private analyzeWhileStmt(pNode: IParseNode): IAFXStmtInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var isNonIfStmt: bool = (pNode.name === "NonIfStmt") ? true : false;
+
+        	var pWhileStmt: WhileStmtInstruction = new WhileStmtInstruction();
+        	var pCondition: IAFXExprInstruction = this.analyzeExpr(pChildren[2]);
+        	var pConditionType: IAFXVariableTypeInstruction = pCondition.getType();
+        	var pBoolType: IAFXVariableTypeInstruction = this.getSystemType("bool");
+        	var pStmt: IAFXStmtInstruction;
+
+        	if(!pConditionType.isEqual(pBoolType)){
+        		this._error(EFFECT_BAD_WHILE_CONDITION, { typeName: pConditionType.toString() });
+        		return null;
+        	}
+
+        	if(isNonIfStmt){
+        		pStmt = this.analyzeNonIfStmt(pChildren[0]);
+        	}
+        	else {
+        		pStmt = this.analyzeStmt(pChildren[0]);
+        	}
+
+        	pWhileStmt.push(pCondition, true);
+        	pWhileStmt.push(pStmt, true);
+
+        	return pWhileStmt;
+        }
+
+        private analyzeForStmt(pNode: IParseNode): IAFXStmtInstruction {
+        	this.setAnalyzedNode(pNode);
+			
+			var pChildren: IParseNode[] = pNode.children;
+        	var isNonIfStmt: bool = (pNode.name === "NonIfStmt") ? true : false;
+
+        	
+
+        	return null;
+        }
+
+        private analyzeIfStmt(pNode: IParseNode): IAFXStmtInstruction{
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	return null;
+        }
+
+        private analyzeNonIfStmt(pNode: IParseNode): IAFXStmtInstruction{
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	return null;
+        }
+
+        private analyzeDoWhileStmt(pNode: IParseNode): IAFXStmtInstruction{
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	return null;
+        }
+        private analyzeParamList(pNode:IParseNode, pFunctionDef: FunctionDefInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pParameter: IAFXVariableDeclInstruction;
+
+        	var i: uint = 0;
+
+        	for (i = pChildren.length - 2; i >= 1; i--) {
+        		if (pChildren[i].name === "ParameterDecl") {
+		            pParameter = this.analyzeParameterDecl(pChildren[i]);
+		            pFunctionDef.push(pParameter, true);
+		        }	
+        	}
+        }
+
+        private analyzeParameterDecl(pNode: IParseNode): IAFXVariableDeclInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pType: IAFXUsageTypeInstruction;
+        	var pParameter: IAFXVariableDeclInstruction;
+
+        	pType = this.analyzeParamUsageType(pChildren[1]);
+        	pParameter = this.analyzeVariable(pChildren[0], pType);
+
+        	return pParameter;
+        }
+
+        private analyzeParamUsageType(pNode: IParseNode): IAFXUsageTypeInstruction {
+        	var pChildren: IParseNode[] = pNode.children;
+		    var i: uint = 0;
+		    var pType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
+
+		    for (i = pChildren.length - 1; i >= 0; i--) {
+		        if (pChildren[i].name === "Type") {
+		        	var pTypeName: IAFXIdInstruction = this.analyzeType(pChildren[i]);
+		        	pType.push(pTypeName, true);
+		        }
+		        else if (pChildren[i].name === "ParamUsage") {
+		        	var pUsage: IAFXKeywordInstruction = this.analyzeUsage(pChildren[i]);
+		        	pType.push(pUsage, true);
+		        }
+		    }
+
+		    return pType;
+        }
 
         /**
          * Проверят возможность использования оператора между двумя типами.
