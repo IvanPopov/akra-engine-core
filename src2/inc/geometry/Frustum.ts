@@ -5,7 +5,7 @@
 #include "IFrustum.ts"
 
 module akra.geometry{
-	class Frustum implements IFrustum{
+	export class Frustum implements IFrustum {
 		leftPlane: IPlane3d;
 		rightPlane: IPlane3d;
 		topPlane: IPlane3d;
@@ -13,13 +13,13 @@ module akra.geometry{
 		nearPlane: IPlane3d;
 		farPlane: IPlane3d;
 
-		constructor();
-		constructor(pFrustum: IFrustum);
-		constructor(pLeftPlane: IPlane3d, pRightPlane: IPlane3d,
+		constructor ();
+		constructor (pFrustum: IFrustum);
+		constructor (pLeftPlane: IPlane3d, pRightPlane: IPlane3d,
 					pTopPlane: IPlane3d, pBottomPlane: IPlane3d,
 					pNearPlane: IPlane3d, pFarPlane: IPlane3d);
-		constructor(pLeftPlane?,pRightPlane?,pTopPlane?,
-					pBottomPlane?, pNearPlane?, pFarPlane?){
+		constructor (pLeftPlane?,pRightPlane?,pTopPlane?,
+					pBottomPlane?, pNearPlane?, pFarPlane?) {
 
 
 			this.leftPlane = new Plane3d();
@@ -44,17 +44,25 @@ module akra.geometry{
 			}
 		};
 
+		isEqual(pFrustum: IFrustum): bool {
+			return false;
+		}
+
+		testPoint(v3fPoint: IVec3): bool { return false; }
+		testRect(pRect: IRect3): bool { return false; }
+		testSphere(pSphere: ISphere): bool  { return false; }
+
 		set(): IFrustum;
 		set(pFrustum: IFrustum): IFrustum;
 		set(pLeftPlane: IPlane3d, pRightPlane: IPlane3d,
 			pTopPlane: IPlane3d, pBottomPlane: IPlane3d,
 			pNearPlane: IPlane3d, pFarPlane: IPlane3d): IFrustum;
 		set(pLeftPlane?, pRightPlane?, pTopPlane?,
-			pBottomPlane?, pNearPlane?, pFarPlane?): IFrustum{
+			pBottomPlane?, pNearPlane?, pFarPlane?): IFrustum {
 
 			var nArgumentsLength = arguments.length;
 
-			switch(nArgumentsLength){
+			switch(nArgumentsLength) {
 				case 1:
 					var pFrustum: IFrustum = arguments[0];
 
@@ -82,11 +90,12 @@ module akra.geometry{
 					this.farPlane.clear();
 					break;
 			}
+
 			return this;
 		};
 
-		extractFromMatrix(m4fProjection: IMat4, m4fWorld?: IMat4, pSearchRect?: IRect3d): IFrustum{
-			
+		extractFromMatrix(m4fProjection: IMat4, m4fWorld?: IMat4, pSearchRect?: IRect3d): IFrustum {
+			return null;
 		};
 	};
 }

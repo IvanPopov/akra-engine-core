@@ -52,7 +52,7 @@ module akra.geometry{
 						this.distance = arguments[1];
 					}
 					else{
-						var v2fLine: IVec2 = vec2(arguments[1]).subtract(arguments[0]);
+						var v2fLine: IVec2 = vec2(<IVec2>arguments[1]).subtract(arguments[0]);
 						var v2fNormal: IVec2 = this.normal;
 
 						v2fNormal.set(-v2fLine.y, v2fLine.x);

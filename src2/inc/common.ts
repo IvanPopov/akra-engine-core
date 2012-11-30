@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #ifndef COMMON_TS
 #define COMMON_TS
 
@@ -55,6 +54,10 @@
 #endif
 
 #define ALLOCATE_STORAGE(sName, nCount)    \
+        static get stackCeil(): I ## sName { \
+            sName.stackPosition = sName.stackPosition === sName.stackSize - 1? 0: sName.stackPosition;\
+            return sName.stack[sName.stackPosition ++]; \
+        }\
         static stackSize: uint = nCount;\
         static stackPosition: int = 0;\
         static stack: I ## sName[] = (function(): I ## sName[]{\
