@@ -7,28 +7,8 @@
 #include "IQuat4.ts"
 
 module akra.math {
+
     export class Mat3 {
-    	/*var m3fMat;
-
-	    if(this === window  || this === window.AKRA){
-	        m3fMat = Mat3._pStorage[Mat3._iIndex++];
-	        if(Mat3._iIndex == Mat3._nStorageSize){
-	            Mat3._iIndex = 0;
-	        }        
-
-	        //clear
-	        if(arguments.length == 0){
-	            // var pData = m3fMat.pData;
-	            // pData.a11 = pData.a12 = pData.a13 = 
-	            // pData.a21 = pData.a22 = pData.a23 = 
-	            // pData.a31 = pData.a32 = pData.a33 = 0;
-	            return m3fMat;
-	        }
-	    }
-	    else{
-	        this.pData = new Float32Array(9);
-	        m3fMat = this;
-	    }*/
 
 	    data : Float32Array;
 
@@ -49,21 +29,38 @@ module akra.math {
 					fValue4?, fValue5?, fValue6?,
 					fValue7?, fValue8?, fValue9?){
 
-			this.data = new Float32Array(9);
 
 			var nArgumentsLength: uint = arguments.length;
+			var m3fMat: IMat3 = this;
 
-			if(nArgumentsLength == 1){
-		        this.set(arguments[0]);    
-		    }
-		    else if(nArgumentsLength == 3){
-		        this.set(arguments[0],arguments[1],arguments[2]);    
-		    }
-		    else if(nArgumentsLength == 9){
-		        this.set(arguments[0],arguments[1],arguments[2],
-                        arguments[3],arguments[4],arguments[5],
-                        arguments[6],arguments[7],arguments[8]);    
-		    }
+			// if (<any>this === window || <any>this === akra || <any>this === akra.math) {
+		 //        m3fMat = Mat3.stack[Mat3.stackPosition ++];
+
+		 //        if(Mat3.stackPosition == Mat3.stackSize){
+		 //            Mat3.stackPosition = 0;
+			// 	}
+		 //    }
+
+			m3fMat.data = m3fMat.data || new Float32Array(9);
+
+			switch (nArgumentsLength) {
+				case 0:
+					m3fMat; 
+					break;
+				case 1: 
+					m3fMat.set(arguments[0]); 
+					break;
+				case 3:
+					m3fMat.set(arguments[0],arguments[1],arguments[2]); 
+					break;
+				case 9:
+					 m3fMat.set(arguments[0],arguments[1],arguments[2],
+	                        arguments[3],arguments[4],arguments[5],
+	                        arguments[6],arguments[7],arguments[8]); 
+					 break;    
+			}
+
+			// return m3fMat;
 		};
 
 		set(): IMat3;

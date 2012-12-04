@@ -33,6 +33,21 @@ module akra {
 	IFACE(IVec3);
 	IFACE(IQuat4);
 
+	export interface IMat3Constructor {
+		();
+		(fValue: float);
+		(v3fVec: IVec3);
+		(m3fMat: IMat3);
+		(m4fMat: IMat4);
+		(pArray: float[]);
+		(fValue1: float, fValue2: float, fValue3: float);
+		(v3fVec1: IVec3, v3fVec2: IVec3, v3fVec3: IVec3);
+		(pArray1: float[], pArray2: float[], pArray3: float[]);
+		(fValue1: float, fValue2: float, fValue3: float,
+					fValue4: float, fValue5: float, fValue6: float,
+					fValue7: float, fValue8: float, fValue9: float);
+	}
+
 	export interface IMat3 {
 		data: Float32Array;
 

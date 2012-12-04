@@ -5,7 +5,7 @@
 #include "IVec3.ts"
 
 module akra.math {
-
+    
     export class Vec4 implements IVec4{
         x: float;
         y: float;
@@ -25,24 +25,35 @@ module akra.math {
         constructor(fValue1: float, fValue2: float, fValue3: float, fValue4: float);
         constructor(fValue1?, fValue2?, fValue3?, fValue4?){
             var nArgumentsLength: uint = arguments.length;
+            var v4fVec: IVec4 = this;
 
-            switch(nArgumentsLength){
+            // if (<any>this === window || <any>this === akra || <any>this === akra.math) {
+            //     v4fVec = Vec4.stack[Vec4.stackPosition ++];
+
+            //     if(Vec4.stackPosition == Vec4.stackSize){
+            //         Vec4.stackPosition = 0;
+            //     }
+            // }
+
+            switch(nArgumentsLength) {
                 case 1:
-                    this.set(arguments[0]);
+                    v4fVec.set(arguments[0]); 
                     break;
                 case 2:
-                    this.set(arguments[0],arguments[1]);
+                    v4fVec.set(arguments[0],arguments[1]); 
                     break;
                 case 3:
-                    this.set(arguments[0],arguments[1], arguments[2]);
+                    v4fVec.set(arguments[0],arguments[1], arguments[2]); 
                     break;
                 case 4:
-                    this.set(arguments[0],arguments[1], arguments[2], arguments[3]);
+                    v4fVec.set(arguments[0],arguments[1], arguments[2], arguments[3]); 
                     break;
                 default: 
-                    this.x = this.y = this.z = this.w = 0.;
+                    v4fVec.x = v4fVec.y = v4fVec.z = v4fVec.w = 0.;
                     break;
             }
+
+            // return v4fVec;
         };
 
         set(): IVec4;
@@ -351,6 +362,8 @@ module akra.math {
             return "[x: " + this.x + ", y: " + this.y 
                         + ", z: " + this.z + ", w: " + this.w + "]";
         };
+
+        ALLOCATE_STORAGE(Vec4,100)
     }
 }
 

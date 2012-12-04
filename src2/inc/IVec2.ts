@@ -2,6 +2,15 @@
 #define IVEC2_TS
 
 module akra {
+	
+	export interface IVec2Constructor {
+        ();
+        (fValue: float);
+        (v2fVec: IVec2);
+        (pArray: float[]);
+        (fValue1: float, fValue2: float);
+    }
+
 	export interface IVec2 {
 		x: float;
 		y: float;

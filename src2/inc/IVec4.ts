@@ -6,6 +6,21 @@ module akra {
 	IFACE(IVec2);
 	IFACE(IVec3);
 
+	export interface IVec4Constructor {
+        ();
+        (fValue: float);
+        (v4fVec: IVec4);
+        (pArray: float[]);
+        (fValue: float, v3fVec: IVec3);
+        (v2fVec1: IVec2, v2fVec2: IVec2);
+        (v3fVec: IVec3, fValue: float);
+        (fValue1: float, fValue2: float, v2fVec: IVec2);
+        (fValue1: float, v2fVec: IVec2, fValue2: float);
+        (v2fVec: IVec2 ,fValue1: float, fValue2: float);
+        (fValue1: float, fValue2: float, fValue3: float, fValue4: float);
+    }
+
+
 	export interface IVec4 {
 		x: float;
 		y: float;

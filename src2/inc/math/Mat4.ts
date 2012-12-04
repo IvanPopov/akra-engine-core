@@ -8,7 +8,7 @@
 #include "IQuat4.ts"
 
 module akra.math {
-    export class Mat4 implements IMat4{
+    export class Mat4 implements IMat4 {
     	data: Float32Array;
 
 		constructor();
@@ -34,40 +34,52 @@ module akra.math {
 					fValue5?, fValue6?, fValue7?, fValue8?,
 					fValue9?, fValue10?, fValue11?, fValue12?,
 					fValue13?, fValue14?, fValue15?, fValue16?){
-
+			
 			var nArgumentsLength: uint = arguments.length;
+			var m4fMat: IMat4 = this;
 
-			if(nArgumentsLength === 2){
+/*			if (<any>this === window || <any>this === akra || <any>this === akra.math) {
+		        m4fMat = Mat4.stack[Mat4.stackPosition ++];
+
+		        if(Mat4.stackPosition == Mat4.stackSize){
+		            Mat4.stackPosition = 0;
+				}
+		    }
+*/
+			if(nArgumentsLength === 0){
+		    	// return m4fMat;
+		    }
+			else if(nArgumentsLength === 2) {
 				if(isBoolean(arguments[1])){
 					if(arguments[1]){
-						this.data = arguments[0];
+						m4fMat.data = arguments[0];
 					}
 					else{
-						this.data = new Float32Array(16);
-						this.set(arguments[0]);			
+						m4fMat.data = m4fMat.data || new Float32Array(16);
+						m4fMat.set(arguments[0]);			
 					}
 				}
 				else{
-					this.data = new Float32Array(16);
-					this.set(<IMat3>arguments[0], <IVec3>arguments[1]);
+					m4fMat.data = m4fMat.data || new Float32Array(16);
+					m4fMat.set(<IMat3>arguments[0], <IVec3>arguments[1]);
 				}
 			}
 			else{
-				this.data = new Float32Array(16);
+				m4fMat.data = m4fMat.data || new Float32Array(16);
 
 				if(nArgumentsLength === 1){
 					if(arguments[0] instanceof Mat3){
-						this.set(<IMat3>arguments[0]);	
+						m4fMat.set(<IMat3>arguments[0]);	
 					}
 					else{
-						this.set(<IMat4>arguments[0]);	
+						m4fMat.set(<IMat4>arguments[0]);	
 					}
 				}
 				else if(nArgumentsLength === 4){
-					this.set(arguments[0],arguments[1],arguments[2],arguments[3]);
+					m4fMat.set(arguments[0],arguments[1],arguments[2],arguments[3]);
 				}
 				else if(nArgumentsLength === 16){
-					this.set(arguments[0], arguments[1], arguments[2], arguments[3],
+					m4fMat.set(arguments[0], arguments[1], arguments[2], arguments[3],
 							 arguments[4], arguments[5], arguments[6], arguments[7],
 							 arguments[8], arguments[9], arguments[10], arguments[11],
 							 arguments[12], arguments[13], arguments[14], arguments[15]);

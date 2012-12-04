@@ -7,6 +7,15 @@ module akra {
 	IFACE(IMat3);
 	IFACE(IMat4);
 
+	export interface IQuat4Constructor {
+		();
+    	(q4fQuat: IQuat4);
+    	(pArray: float[]);
+    	(fValue: float, fW: float);
+    	(v3fValue: IVec3, fW: float);
+    	(fX: float, fY: float, fZ: float, fW: float);
+	}
+
 	export interface IQuat4 {
 		x: float;
 		y: float;

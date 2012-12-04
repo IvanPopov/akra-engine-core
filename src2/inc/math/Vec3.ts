@@ -7,6 +7,8 @@
 #include "IMat4.ts"
 
 module akra.math {
+    
+
     export class Vec3 {
         x: float;
         y: float;
@@ -20,22 +22,33 @@ module akra.math {
         constructor(v2fVec: IVec2, fValue: float);
         constructor(fValue1: float, fValue2: float, fValue3: float);
         constructor(fValue1?, fValue2?, fValue3?){
-            var nArgumentsLength = arguments.length;
+            var nArgumentsLength: uint = arguments.length;
+            var v3fVec: IVec3 = this;
+
+            // if (<any>this === window || <any>this === akra || <any>this === akra.math) {
+            //     v3fVec = Vec3.stack[Vec3.stackPosition ++];
+
+            //     if(Vec3.stackPosition == Vec3.stackSize){
+            //         Vec3.stackPosition = 0;
+            //     }
+            // }
 
             switch(nArgumentsLength){
                 case 1:
-                    this.set(arguments[0]);
+                    v3fVec.set(arguments[0]); 
                     break;
                 case 2:
-                    this.set(arguments[0], arguments[1]);
+                    v3fVec.set(arguments[0], arguments[1]); 
                     break;
                 case 3: 
-                    this.set(arguments[0], arguments[1], arguments[2]);
+                    v3fVec.set(arguments[0], arguments[1], arguments[2]); 
                     break;
                 default:
-                    this.x = this.y = this.z = 0.;
+                    v3fVec.x = v3fVec.y = v3fVec.z = 0.;
                     break;
             }
+
+            // return v3fVec;
         };
 
         set(): IVec3;
@@ -345,6 +358,8 @@ module akra.math {
 
             return v3fDestination;
         };
+
+        ALLOCATE_STORAGE(Vec3,100)
 
         /*get xy(): Vec2  { return new Vec2(this.x, this.y); }
         get xz(): Vec2  { return new Vec2(this.x, this.z); }

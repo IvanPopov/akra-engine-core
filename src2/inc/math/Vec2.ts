@@ -4,6 +4,7 @@
 #include "IVec2.ts"
 
 module akra.math {
+    
     export class Vec2 implements IVec2{
         x: float = 0.;
         y: float = 0.;
@@ -15,18 +16,29 @@ module akra.math {
         constructor(fValue1: float, fValue2: float);
         constructor(fValue1?, fValue2?){
             var nArgumentsLength: uint = arguments.length;
+            var v2fVec: IVec2 = this;
+
+            // if (<any>this === window || <any>this === akra || <any>this === akra.math) {
+            //     v2fVec = Vec2.stack[Vec2.stackPosition ++];
+
+            //     if(Vec2.stackPosition == Vec2.stackSize){
+            //         Vec2.stackPosition = 0;
+            //     }
+            // }
 
             switch(nArgumentsLength){
                 case 1:
-                    this.set(arguments[0]);
+                    v2fVec.set(arguments[0]); 
                     break;
                 case 2:
-                    this.set(arguments[0], arguments[1]);
+                    v2fVec.set(arguments[0], arguments[1]); 
                     break;
                 default:
-                    this.x = this.y = 0.;
+                    v2fVec.x = v2fVec.y = 0.;
                     break;
             };
+
+            // return v2fVec;
         };
 
         set(): IVec2;
@@ -231,6 +243,8 @@ module akra.math {
         inline toString(): string{
             return "[x: " + this.x + ", y: " + this.y + "]";
         }
+
+        ALLOCATE_STORAGE(Vec2,100)
    }
 }
 
