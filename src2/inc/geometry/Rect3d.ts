@@ -18,7 +18,9 @@ module akra.geometry {
 
 		constructor();
 		constructor(pRect: IRect3d);
+		constructor(v3fSize: IVec3);
 		constructor(fSizeX: float, fSizeY: float, fSizeZ: float);
+		constructor(v3fMinPoint: IVec3, v3fMaxPoint: IVec3);
 		constructor(fX0: float, fX1: float, fY0: float,
 					fY1: float, fZ0: float, fZ1: float);
 		constructor(fX0?, fX1?, fY0?, fY1?, fZ0?, fZ1?){
@@ -27,6 +29,9 @@ module akra.geometry {
 			switch(nArgumentsLength){
 				case 1:
 					this.set(arguments[0]);
+					break;
+				case 2:
+					this.set(arguments[0], arguments[1]);
 					break;
 				case 3:
 					this.set(arguments[0], arguments[1], arguments[2]);
@@ -54,8 +59,9 @@ module akra.geometry {
 
 		set(): IRect3d;
 		set(pRect: IRect3d): IRect3d;
-		set(v3fVec: IVec3): IRect3d;
+		set(v3fSize: IVec3): IRect3d;
 		set(fSizeX: float, fSizeY: float, fSizeZ: float): IRect3d;
+		set(v3fMinPoint: IVec3, v3fMaxPoint: IVec3): IRect3d;
 		set(fX0: float, fX1: float, fY0: float,
 			fY1: float, fZ0: float, fZ1: float): IRect3d;
 		set(fX0?, fX1?, fY0?, fY1?, fZ0?, fZ1?): IRect3d{
@@ -63,14 +69,40 @@ module akra.geometry {
 
 			switch(nArgumentsLength){
 				case 1:
-					var pRect: IRect3d = arguments[0];
+					if(arguments[0] instanceof Rect3d){
+						var pRect: IRect3d = arguments[0];
 
-					this.x0 = pRect.x0;
-					this.x1 = pRect.x1;
-					this.y0 = pRect.y0;
-					this.y1 = pRect.y1;
-					this.z0 = pRect.z0;
-					this.z1 = pRect.z1;
+						this.x0 = pRect.x0;
+						this.x1 = pRect.x1;
+						this.y0 = pRect.y0;
+						this.y1 = pRect.y1;
+						this.z0 = pRect.z0;
+						this.z1 = pRect.z1;
+					}
+					else{
+						var v3fSize: IVec3 = arguments[0];
+
+						this.x1 = v3fSize.x*0.5;
+						this.x0 = -this.x1;
+
+						this.y1 = v3fSize.y*0.5;
+						this.y0 = -this.y1;
+
+						this.z1 = v3fSize.z*0.5;
+						this.z0 = -this.z1;
+					}
+					break;
+				case 2:
+					var v3fMinPoint: IVec3 = arguments[0];
+					var v3fMaxPoint: IVec3 = arguments[1];
+
+					this.x0 = v3fMinPoint.x;
+					this.y0 = v3fMinPoint.y;
+					this.z0 = v3fMinPoint.z;
+
+					this.x1 = v3fMaxPoint.x;
+					this.y1 = v3fMaxPoint.y;
+					this.z1 = v3fMaxPoint.z;
 					break;
 				case 3:
 					var fSizeX: float = arguments[0];

@@ -70,16 +70,7 @@ module akra.geometry{
 					var y: float = z1*x2 - z2*x1;
 					var z: float = x1*y2 - x2*y1;
 
-					var fDistance: float = - (x*v3fPoint1.x + y*v3fPoint1.y + z*v3fPoint1.z);
-
-					if(fDistance > 0.){
-						//нормаль смотрит в сторону нуля, а должна смотреть от нуля
-						fDistance = -fDistance;
-						x = -x;
-						y = -y;
-						z = -z;
-					}
-					this.distance = fDistance;
+					this.distance = -(x*v3fPoint1.x + y*v3fPoint1.y + z*v3fPoint1.z);
 					this.normal.set(x,y,z);
 
 					break;
