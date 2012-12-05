@@ -194,7 +194,7 @@ module akra.core.pool.resources {
 				
 	            var pRealData: any = this.lockImpl(this._iLockStart, this._iLockSize, iLockFlags);
 				// Copy backup to real
-	            this.copyBackupToReadImpl(pRealData, pBackupData, iLockFlags);
+	            this.copyBackupToRealImpl(pRealData, pBackupData, iLockFlags);
 
 	            this.unlockImpl();
 	            this._pBackupCopy.unlockImpl();
@@ -256,7 +256,7 @@ module akra.core.pool.resources {
 
 		}
 
-		protected copyBackupToReadImpl(pRealData: any, pBackupData: any, iLockFlags: int): void {
+		protected copyBackupToRealImpl(pRealData: any, pBackupData: any, iLockFlags: int): void {
 
 		}
 	}
