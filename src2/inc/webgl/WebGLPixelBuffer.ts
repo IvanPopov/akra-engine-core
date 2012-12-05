@@ -20,6 +20,10 @@ module akra.webgl {
 
 		//webgl specific
 		
+		protected _pCurrentLock: IPixelBox;
+		protected _pLockedBox: IBox;
+		protected _iCurrentLockFlags: int;
+		
 		protected _pBuffer: IPixelBox;
 		protected _iWEBGLInternalFormat: int;
 
@@ -55,17 +59,20 @@ module akra.webgl {
 			super.destroy();
 		}
 
-		getData(): Uint8Array;
-		getData(iOffset: uint, iSize: uint): Uint8Array;
-		getData(iOffset?: uint, iSize?: uint): Uint8Array {
-			return null;
+		readData(ppDest: ArrayBufferView): bool;
+		readData(iOffset: uint, iSize: uint, ppDest: ArrayBufferView): bool;
+		readData(): bool {
+			CRITICAL("Reading a byte range is not implemented. Use blitToMemory.");
+			return false;
 		}
 
-		setData(pData: Uint8Array, iOffset: uint, iSize: uint): bool;
-		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool;
-		setData(pData: any, iOffset: uint, iSize: uint): bool { return false; }
+		writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer?: bool): bool;
+		writeData(pData: ArrayBuffer, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer?: bool): bool;
+		writeData(): bool {
+			CRITICAL("Writing a byte range is not implemented. Use blitFromMemory.");
+			return false;
+		}
 
-		resize(iSize: uint): bool { return false; }
 
 		//=====
 
@@ -111,11 +118,22 @@ module akra.webgl {
 			}
 		}
 
-		blitFromMemory(pSource: IPixelBox, pDestBox?: IBox): bool {
+		blitFromMemory(pSource: IPixelBox): bool;
+		blitFromMemory(pSource: IPixelBox, pDestBox: IBox): bool {
+			if(arguments.length === 1) {
+				pDestBox = new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth);
+			}	
+
 			return false;
 		}
 
-		blitToMemory(pSrcBox: IBox, pDest?: IPixelBuffer): bool {
+		blitToMemory(pDest: IPixelBox):
+		blitToMemory(pSrcBox: IBox, pDest: IPixelBox): bool {
+			if(arguments.length === 1){
+				pDest = arguments[0];
+				pSrcBox = new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth);
+			}
+
 			return false;
 		}
 
@@ -123,13 +141,101 @@ module akra.webgl {
 			return null;
 		}
 
-		getPixels(pDstBox: IBox): IPixelBox {
-			if (this.isBackupPresent()) {
+		lock(iLockFlags: int): any;
+		lock(iOffset: uint, iSize: uint, iLockFlags: int = EHardwareBufferFlags.READABLE): any;
+		lock(pLockBox: IBox, iLockFlags: int = EHardwareBufferFlags.READABLE): IPixelBox;
+		lock(): any {
+			var pLockBox: IBox;
+			var iLockFlags: int;
+
+			if(isInt(arguments[0])){
+				var iOffset: uint;
+				var iSize: uint;
 				
+				if(arguments.length === 1){
+					iLockFlags === arguments[0];
+					iOffset = 0;
+					iSize = this.byteLength;
+				}
+				else {
+					iOffset = arguments[0];
+					iSize = arguments[1];
+					iLockFlags = (arguments.length === 3) ? arguments[2] : EHardwareBufferFlags.READABLE;
+				}
+				
+				ASSERT(!this.isLocked(), 
+					   "Cannot lock this buffer, it is already locked!");
+				ASSERT(iOffset === 0 && iSize === this.byteLength, 
+					  "Cannot lock memory region, most lock box or entire buffer");
+
+				pLockBox = new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth);
 			}
 
-			return null;
+			if(this.isBackupPresent()){
+				if (!TEST_ANY(iLockFlags, ELockFlags.WRITE)) {
+					// we have to assume a read / write lock so we use the shadow buffer
+					// and tag for sync on unlock()
+                    this._pBackupUpdated = true;
+                }	
+
+                this._pCurrentLock = (<WebGLPixelBuffer>(this._pBackupCopy)).lock(pLockBox, iLockFlags);
+			}
+			else {
+				this._pCurrentLock = this.lockImpl(pLockBox, iLockFlags);
+				this._isLocked = true;
+			}
+
+			return this._pCurrentLock;
 		}
+
+		protected allocateBuffer(): void {
+			if(!isNull(this._pBuffer.data)){
+				return;
+			}
+
+			this._pBuffer.data = new Uint8Array(this.byteLength);
+		}
+
+		protected freeBuffer(): void {
+			if(TEST_ANY(this._iFlags, EHardwareBufferFlags.STATIC)){
+				this._pBuffer.data = null;
+			}
+		}
+
+		protected lockImpl(iOffset: uint, iSize: uint, iLockFlags: int): any;
+		protected lockImpl(pLockBox: IBox, iLockFlags: int): IPixelBox;
+		protected lockImpl(): any {
+			if(arguments.length === 3){
+				CRITICAL("lockImpl(offset,length) is not valid for PixelBuffers and should never be called");
+			}
+
+			var pLockBox:IBox = arguments[0];
+			var iLockFlags: int = arguments[1];
+
+			this.allocateBuffer();
+
+			if(!TEST_ANY(iLockFlags, ELockFlags.DISCARD) &&
+			   TEST_ANY(this._iFlags, EHardwareBufferFlags.READABLE)){
+
+			   	this.download(this._pBuffer);
+			}
+
+			this._iCurrentLockFlags = iLockFlags;
+			this._pLockedBox = pLockBox;
+
+			return this._pBuffer.getSubBox(pLockBox);
+		}
+
+		protected unlockImpl(): void {
+			if (TEST_ANY(this._iCurrentLockFlags, ELockFlags.WRITE)) {
+	            // From buffer to card, only upload if was locked for writing
+	            upload(this._pCurrentLock, this._pLockedBox);
+	        }
+
+	        freeBuffer();
+		}
+
+
 	}
 }
 

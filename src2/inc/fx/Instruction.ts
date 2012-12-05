@@ -606,7 +606,7 @@ module akra.fx {
 
 	/**
 	 * Represent for(forInit forCond ForStep) stmt
-	 * while ExprInstruction StmtInstruction
+	 * for StmtInstruction ExprInstruction ExprInstruction StmtInstruction
 	 */
 	export class ForStmtInstruction extends StmtInstruction {
 		constructor() {
