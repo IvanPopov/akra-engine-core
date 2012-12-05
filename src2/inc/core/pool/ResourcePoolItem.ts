@@ -20,7 +20,7 @@ module akra.core.pool {
 	}
 
 	export class ResourcePoolItem extends util.ReferenceCounter implements IResourcePoolItem {
-		private pManager: IResourcePoolManager;
+		//private pManager: IResourcePoolManager;
 		private pResourceCode: IResourceCode;
 		private pResourcePool: IResourcePool = null;
 		private iResourceHandle: int = 0;
@@ -47,24 +47,34 @@ module akra.core.pool {
 		}
 
 		inline get alteredFlag(): bool {
-			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Altered);
+			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.ALTERED);
 		}
 
-		inline get manager(): IResourcePoolManager { return this.pManager; }
+		inline get manager(): IResourcePoolManager { return this.getManager(); }
 
 		/** Constructor of ResourcePoolItem class */
-		constructor (pManager: IResourcePoolManager) {
+		constructor (/*pManager: IResourcePoolManager*/) {
 			super();
 
-			this.pManager = pManager;
+			//this.pManager = pManager;
 			this.pResourceCode = new ResourceCode(0);
 			this.pCallbackFunctions = [];
 			this.pStateWatcher = [];
-			this.pCallbackSlots = genArray(null, <number>EResourceItemEvents.k_TotalResourceFlags);
+			this.pCallbackSlots = genArray(null, <number>EResourceItemEvents.TOTALRESOURCEFLAGS);
 		}
 
 		inline getEngine(): IEngine {
-			return this.pManager.getEngine();
+			var pManager: IResourcePoolManager = this.getManager();
+			
+			if (pManager) {
+				return pManager.getEngine();
+			}
+
+			return null;
+		}
+
+		inline getManager(): IResourcePoolManager {
+			return this.pResourcePool? this.pResourcePool.manager: null;
 		}
 
 		createResource(): bool {
@@ -162,7 +172,7 @@ module akra.core.pool {
 		    return true;
 		}
 
-		async(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool {
+		unsync(pResourceItem: IResourcePoolItem, eSignal: EResourceItemEvents, eSlot?: EResourceItemEvents): bool {
 			eSlot = isDef(eSlot)? eSlot: eSignal;
 		    eSlot = ResourcePoolItem.parseEvent(<number>eSlot);
 		    eSignal = ResourcePoolItem.parseEvent(<number>eSignal);
@@ -191,24 +201,24 @@ module akra.core.pool {
 
 
 		inline isResourceCreated(): bool {
-			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Created);
+			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.CREATED);
 		}
 
 		inline isResourceLoaded(): bool {
-			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Loaded);
+			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.LOADED);
 		}
 
 		inline isResourceDisabled(): bool {
-			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Disabled);
+			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.DISABLED);
 		}
 
 		inline isResourceAltered(): bool {
-			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.k_Altered );
+			return bf.testBit(this.iResourceFlags, <number>EResourceItemEvents.ALTERED );
 		}
 
 		setAlteredFlag(isOn: bool = true): bool {
 			//notify always, when altered called
-    		if (this.setResourceFlag(EResourceItemEvents.k_Altered, isOn) || isOn) {
+    		if (this.setResourceFlag(EResourceItemEvents.ALTERED, isOn) || isOn) {
     			isOn? this.altered(): this.saved();
     			return true;
     		}
@@ -243,38 +253,38 @@ module akra.core.pool {
 		    return iRefCount;
 		}
 		inline notifyCreated(): void {
-			if (this.setResourceFlag(EResourceItemEvents.k_Created, true)) {
+			if (this.setResourceFlag(EResourceItemEvents.CREATED, true)) {
 				this.created();
 			}
 		}
 
 		inline notifyDestroyed(): void {
-			if (this.setResourceFlag(EResourceItemEvents.k_Created, false)) {
+			if (this.setResourceFlag(EResourceItemEvents.CREATED, false)) {
 				this.destroyed();
 			}
 		}
 
 		inline notifyLoaded(): void {
 			this.setAlteredFlag(false);
-    		if (this.setResourceFlag(EResourceItemEvents.k_Loaded, true)) {
+    		if (this.setResourceFlag(EResourceItemEvents.LOADED, true)) {
     			this.loaded();
     		}
 		}
 
 		inline notifyUnloaded(): void {
-			if (this.setResourceFlag(EResourceItemEvents.k_Loaded, false)) {
+			if (this.setResourceFlag(EResourceItemEvents.LOADED, false)) {
 				this.unloaded();
 			}
 		}
 
 		inline notifyRestored(): void {
-			if (this.setResourceFlag(EResourceItemEvents.k_Disabled, false)) {
+			if (this.setResourceFlag(EResourceItemEvents.DISABLED, false)) {
 				this.restored();
 			}
 		}
 
 		inline notifyDisabled(): void {
-			if (this.setResourceFlag(EResourceItemEvents.k_Disabled, true)) {
+			if (this.setResourceFlag(EResourceItemEvents.DISABLED, true)) {
 				this.disabled();
 			}
 		}
@@ -336,11 +346,11 @@ module akra.core.pool {
 		    bf.setBit(this.iResourceFlags, iFlagBit, isSetting);
 
 		    if (iTempFlags != this.iResourceFlags) {
-		        // for (var i: int = 0; i < this.pCallbackFunctions.length; i++) {
-		        //     if (this.pCallbackFunctions[i]) {
-		        //         this.pCallbackFunctions[i].call(this, iFlagBit, this.iResourceFlags, isSetting);
-		        //     }
-		        // }
+		        for (var i: int = 0; i < this.pCallbackFunctions.length; i++) {
+		            if (this.pCallbackFunctions[i]) {
+		                this.pCallbackFunctions[i].call(this, iFlagBit, this.iResourceFlags, isSetting);
+		            }
+		        }
 		        return true;
 		    }
 
@@ -356,13 +366,13 @@ module akra.core.pool {
 
 		    switch (pEvent.toLowerCase()) {
 		        case 'loaded':
-		            return EResourceItemEvents.k_Loaded;
+		            return EResourceItemEvents.LOADED;
 		        case 'created':
-		            return EResourceItemEvents.k_Created;
+		            return EResourceItemEvents.CREATED;
 		        case 'disabled':
-		            return EResourceItemEvents.k_Disabled;
+		            return EResourceItemEvents.DISABLED;
 		        case 'altered':
-		            return EResourceItemEvents.k_Altered;
+		            return EResourceItemEvents.ALTERED;
 		        default:
 		            ERROR('Использовано неизвестное событие для ресурса.');
 		            return 0;
@@ -371,14 +381,14 @@ module akra.core.pool {
 
 
 		BEGIN_EVENT_TABLE(ResourcePoolItem);
-			BROADCAST(created, CALL());
-			BROADCAST(destroyed, CALL());
-			BROADCAST(loaded, CALL());
-			BROADCAST(unloaded, CALL());
-			BROADCAST(restored, CALL());
-			BROADCAST(disabled, CALL());
-			BROADCAST(altered, CALL());
-			BROADCAST(saved, CALL());
+			BROADCAST(created 	, VOID);
+			BROADCAST(destroyed , VOID);
+			BROADCAST(loaded 	, VOID);
+			BROADCAST(unloaded 	, VOID);
+			BROADCAST(restored 	, VOID);
+			BROADCAST(disabled 	, VOID);
+			BROADCAST(altered 	, VOID);
+			BROADCAST(saved 	, VOID);
 		END_EVENT_TABLE();
 	}
 

@@ -21,6 +21,8 @@
 #define UNKNOWN_CODE 0
 #define UNKONWN_MESSAGE "Unknown code."
 
+#ifdef LOGGER_API
+
 #define LOG(...)            logger.setSourceLocation(__FILE__, __LINE__); \
                             logger.log(__VA_ARGS__);
 #define TRACE(...)          logger.setSourceLocation(__FILE__, __LINE__); \
@@ -37,6 +39,33 @@
                             logger.critical_error(__VA_ARGS__);
 #define ASSERT(...)         logger.setSourceLocation(__FILE__, __LINE__); \
                             logger.assert(__VA_ARGS__);
+
+#else
+
+#define LOG(...)
+#define TRACE(...)
+#define INFO(...)
+#define WARNING(...)
+#define ERROR(...)
+#define CRITICAL(...)
+#define CRITICAL_ERROR(...) 
+#define ASSERT(...)
+
+#endif
+
+#define ALLOCATE_STORAGE(sName, nCount)    \
+        static get stackCeil(): I ## sName { \
+            sName.stackPosition = sName.stackPosition === sName.stackSize - 1? 0: sName.stackPosition;\
+            return sName.stack[sName.stackPosition ++]; \
+        }\
+        static stackSize: uint = nCount;\
+        static stackPosition: int = 0;\
+        static stack: I ## sName[] = (function(): I ## sName[]{\
+                                    var pStack: I ## sName[] = new Array(sName.stackSize);\
+                                    for(var i:int = 0; i<sName.stackSize; i++){\
+                                        pStack[i] = new sName();\
+                                    }\
+                                    return pStack})();
 
 module akra {
 
@@ -97,6 +126,8 @@ module akra {
 
     /** @inline */
     export var isDef = (x: any): bool =>  x !== undefined;
+    /** @inline */
+    export var isEmpty = (x: any): bool =>  x.length == 0;
 
     // Note that undefined == null.
     /** @inline */ 
@@ -124,13 +155,18 @@ module akra {
     /** @inline */
     export var isObject = (x: any): bool => {
         var type = typeOf(x);
-        return type == 'object' || type == 'array' || type == 'function';
+        return type == "object" || type == "array" || type == "function";
     };
 
     /** @inline */
     export var isArray = (x: any): bool => {
-        return typeOf(x) == 'array';
+        return typeOf(x) == "array";
     };    
+
+    export interface Pair {
+        first: any;
+        second: any;
+    };
 
     // if (!isDef(console.assert)) {
     //     console.assert = function (isOK?: bool, ...pParams: any[]): void {
@@ -385,6 +421,15 @@ module akra {
         return (new Date).getTime();
     }
 
+
+    
+    #define _memcpy(dst, src, size) memcpy(dst, 0, src, 0, size);
+    export inline function memcpy(pDst: ArrayBuffer, iDstOffset: uint, pSrc: ArrayBuffer, iSrcOffset: uint, nLength: uint) {
+      var dstU8 = new Uint8Array(pDst, iDstOffset, nLength);
+      var srcU8 = new Uint8Array(pSrc, iSrcOffset, nLength);
+      dstU8.set(srcU8);
+    };
+
     //export function 
 
 	(<any>window).URL = (<any>window).URL ? (<any>window).URL : (<any>window).webkitURL ? (<any>window).webkitURL : null;
@@ -396,5 +441,9 @@ module akra {
     (<any>window).storageInfo = (<any>window).storageInfo || (<any>window).webkitStorageInfo;
     Worker.prototype.postMessage = (<any>Worker).prototype.webkitPostMessage || Worker.prototype.postMessage;
 };
+
+#ifdef LOGGER_API
+#define "util/Logger.ts"
+#endif
 
 #endif

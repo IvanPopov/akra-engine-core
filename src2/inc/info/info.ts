@@ -7,6 +7,7 @@
 #include "util/ScreenInfo.ts"
 #include "util/DeviceInfo.ts"
 #include "util/ApiInfo.ts"
+#include "util/util.ts"
 
 module akra.info {
 	export function canvas(pCanvas: HTMLCanvasElement): ICanvasInfo;

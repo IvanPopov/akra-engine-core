@@ -13,7 +13,7 @@ module akra {
         getParticleManager(): IParticleManager;
         getResourceManager(): IResourcePoolManager;
 
-        getDefaultRenderer(): IRenderer;
+        getRenderer(): IRenderer;
 
         //start execution
         exec(): bool;

@@ -16,8 +16,8 @@ module akra.core.pool.resources {
 			return null;
 		}
 
-		constructor (pManager: IResourcePoolManager) {
-			super(pManager);
+		constructor (/*pManager: IResourcePoolManager*/) {
+			super(/*pManager*/);
 		}
 	}
 }

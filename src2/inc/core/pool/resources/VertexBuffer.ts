@@ -3,7 +3,7 @@
 
 #include "IVertexBuffer.ts"
 #include "data/VertexData.ts"
-#include "../ResourcePoolItem.ts"
+#include "HardwareBuffer.ts"
 
 module akra.core.pool.resources {
 	interface IBufferHole {
@@ -11,88 +11,17 @@ module akra.core.pool.resources {
 		end: uint;
 	}
 
-	export class VertexBuffer extends ResourcePoolItem implements IVertexBuffer {
-		protected _pBackupCopy: ArrayBuffer = null;
-		protected _iFlags: int = 0;
+	export class VertexBuffer extends HardwareBuffer implements IVertexBuffer {
 		protected _pVertexDataArray: IVertexData[] = [];
 		protected _iDataCounter: uint = 0;
 
 		inline get type(): EVertexBufferTypes { return EVertexBufferTypes.TYPE_UNKNOWN; }
 
-		inline get byteLength(): uint {
-			return 0;
-		}
-
-		inline get length(): uint {
-			return 0;
-		}
-
-		constructor (pManager: IResourcePoolManager) {
-			super(pManager);
+		constructor (/*pManager: IResourcePoolManager*/) {
+			super(/*pManager*/);
 
 		}
 
-		clone(pSrc: IGPUBuffer): bool {
-			var pBuffer: IVertexBuffer = <IVertexBuffer> pSrc;
-			
-			// destroy any local data
-			this.destroy();
-
-			return this.create(pBuffer.byteLength, pBuffer.getFlags(), pBuffer.getData());
-		}
-
-		isValid(): bool {
-			return false;
-		}
-
-		isDynamic(): bool {
-			return (TEST_BIT(this._iFlags, EGPUBufferFlags.MANY_UPDATES) && 
-    	   		TEST_BIT(this._iFlags, EGPUBufferFlags.MANY_DRAWS));
-		}
-
-		isStatic(): bool {
-			return ((!TEST_BIT(this._iFlags, EGPUBufferFlags.MANY_UPDATES)) && 
-				TEST_BIT(this._iFlags, EGPUBufferFlags.MANY_DRAWS));
-		}
-
-		isStream(): bool {
-			return (!TEST_BIT(this._iFlags, EGPUBufferFlags.MANY_UPDATES)) && 
-					(!TEST_BIT(this._iFlags, EGPUBufferFlags.MANY_DRAWS));
-		}
-
-		isReadable(): bool {
-			//Вроде как на данный момент нельхзя в вебЖл считывать буферы из видио памяти
-    		//(но нужно ли это вообще и есть ли смысл просто обратиться к локальной копии)
-			return TEST_BIT(this._iFlags, EGPUBufferFlags.READABLE);
-		}
-
-		isRAMBufferPresent(): bool {
-			return this._pBackupCopy != null;
-		}
-
-		isSoftware(): bool {
-			//на данный момент у нас нету понятия софтварной обработки и рендеренга
-    		return TEST_BIT(this._iFlags, EGPUBufferFlags.SOFTWARE);
-		}
-
-		isAlignment(): bool {
-			return TEST_BIT(this._iFlags, EGPUBufferFlags.ALIGNMENT);
-		}
-
-		getData(): ArrayBuffer;
-		getData(iOffset?: uint, iSize?: uint): ArrayBuffer {
-			return null;
-		}
-
-		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool {
-			return false;
-		}
-
-		inline getFlags(): int {
-			return this._iFlags;
-		}
-
-		
 		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;
 		getVertexData(iOffset: uint, iCount: uint, pDecl: IVertexDeclaration): IVertexData;
 		getVertexData(iOffset: uint, iCount: uint, pData: any): IVertexData {
@@ -100,6 +29,8 @@ module akra.core.pool.resources {
 			var pVertexData: IVertexData = new data.VertexData(this, this._iDataCounter ++, iOffset, iCount, pDecl);
 
 			this._pVertexDataArray.push(pVertexData);
+			this.notifyAltered();
+
 			return pVertexData;
 		}
 
@@ -189,7 +120,7 @@ module akra.core.pool.resources {
 				}
 				
 				for (i = 0; i < pHole.length; i++) {		
-					iAligStart = this.isAlignment() ?
+					iAligStart = this.isAligned() ?
 						math.alignUp(pHole[i].start, math.nok(iStride,4)):
 						math.alignUp(pHole[i].start, iStride);
 
@@ -198,12 +129,14 @@ module akra.core.pool.resources {
 							pVertexData = new data.VertexData(this, this._iDataCounter ++, iAligStart, iCount, pDeclData);
 							this._pVertexDataArray.push(pVertexData);
 							
+							this.notifyAltered();
 							return pVertexData;
 						}
 						else if(arguments.length == 3) {
 							((<any>ppVertexDataIn).constructor).call(ppVertexDataIn, this, iAligStart, iCount, pDeclData);
 							this._pVertexDataArray.push(ppVertexDataIn);
 							
+							this.notifyAltered();
 							return ppVertexDataIn;
 						}
 
@@ -220,7 +153,8 @@ module akra.core.pool.resources {
 		}
 
 		
-		freeVertexData(pVertexData: IVertexData): bool {
+		freeVertexData(): bool;
+		freeVertexData(pVertexData?: IVertexData): bool {
 			if(arguments.length == 0) {
 				for(var i: uint = 0; i < this._pVertexDataArray.length; i ++) {
 					this._pVertexDataArray[Number(i)].destroy();
@@ -232,6 +166,7 @@ module akra.core.pool.resources {
 				for(var i: uint = 0; i < this._pVertexDataArray.length; i ++) {
 					if(this._pVertexDataArray[i] == pVertexData) {
 						this._pVertexDataArray.splice(i, 1);
+						this.notifyAltered();
 						return true;
 					}
 				}
@@ -240,8 +175,10 @@ module akra.core.pool.resources {
 
 				return false;
 			}
-		}
 
+			this.notifyAltered();
+			return true;
+		}
 
 		allocateData(pElements: IVertexElement[], pData: ArrayBufferView): IVertexData;
 		allocateData(pDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
@@ -258,10 +195,6 @@ module akra.core.pool.resources {
 
 		    return pVertexData;
 		}
-
-		destroy(): void {}
-		create(iByteSize: uint, iFlags: int, pData: ArrayBuffer): bool { return false; }
-		resize(iSize: uint): bool { return false; }
 	}
 }
 

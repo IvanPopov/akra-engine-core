@@ -2,7 +2,7 @@
 #define DEVICEINFO_TS
 
 #include "IDeviceInfo.ts"
-#include "IImg.ts"
+//#include "IImg.ts"
 #include "Singleton.ts"
 
 module akra.util {
@@ -92,30 +92,30 @@ module akra.util {
 	        return pExtention;
 		}
 
-		checkFormat(pDevice: WebGLRenderingContext, eFormat: EImageFormats) {
-	        switch (eFormat) {
-	            case EImageFormats.RGB_DXT1:
-	            case EImageFormats.RGBA_DXT1:
-	            case EImageFormats.RGBA_DXT2:
-	            case EImageFormats.RGBA_DXT3:
-	            case EImageFormats.RGBA_DXT4:
-	            case EImageFormats.RGBA_DXT5:
-	                for (var i in pDevice) {
-	                    if (isNumber(pDevice[i]) && pDevice[i] == eFormat) {
-	                        return true;
-	                    }
-	                }
-	                return false;
-	            case EImageFormats.RGB8:
-	            case EImageFormats.RGBA8:
-	            case EImageFormats.RGBA4:
-	            case EImageFormats.RGB5_A1:
-	            case EImageFormats.RGB565:
-	                return true;
-	            default:
-	                return false;
-	        }
-	    }
+		// checkFormat(pDevice: WebGLRenderingContext, eFormat: EImageFormats) {
+	 //        switch (eFormat) {
+	 //            case EImageFormats.RGB_DXT1:
+	 //            case EImageFormats.RGBA_DXT1:
+	 //            case EImageFormats.RGBA_DXT2:
+	 //            case EImageFormats.RGBA_DXT3:
+	 //            case EImageFormats.RGBA_DXT4:
+	 //            case EImageFormats.RGBA_DXT5:
+	 //                for (var i in pDevice) {
+	 //                    if (isNumber(pDevice[i]) && pDevice[i] == eFormat) {
+	 //                        return true;
+	 //                    }
+	 //                }
+	 //                return false;
+	 //            case EImageFormats.RGB8:
+	 //            case EImageFormats.RGBA8:
+	 //            case EImageFormats.RGBA4:
+	 //            case EImageFormats.RGB5_A1:
+	 //            case EImageFormats.RGB565:
+	 //                return true;
+	 //            default:
+	 //                return false;
+	 //        }
+	 //    }
     }
 }
 

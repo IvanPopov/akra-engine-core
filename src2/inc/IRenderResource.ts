@@ -4,8 +4,10 @@
 #include "IResourcePoolItem.ts"
 
 module akra {
+	IFACE(IHardwareObject);
+	
     export interface IRenderResource extends IResourcePoolItem {
-        getHardwareObject(): WebGLObject;
+        //getHardwareObject(): IHardwareObject;
     };
 }
 

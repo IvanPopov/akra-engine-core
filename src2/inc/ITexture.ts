@@ -2,12 +2,13 @@
 #define ITEXTURE_TS
 
 #include "IRenderResource.ts"
+#include "PixelFormat.ts"
 
 module akra {
 
     IFACE(IImg);
 
-	export enum ETextureFilters {
+    export enum ETextureFilters {
         NEAREST = 0x2600,
         LINEAR = 0x2601,
         NEAREST_MIPMAP_NEAREST = 0x2700,
@@ -47,17 +48,23 @@ module akra {
         TEXTURE = 0x84C0
     };
 
+// export interface ITextureParameters {
+//     minFilter: ETextureFilters;
+//     magFilter: ETextureFilters;
+
+//     wrapS: ETextureWrapModes;
+//     wrapT: ETextureWrapModes;
+// }
+
     export interface ITexture extends IRenderResource {
     	width: uint;
         height: uint;
 
-        type: EImageTypes;
-        format: EImageFormats;
-
+        format: EPixelFormats;
 
         //number of color components per pixel. usually: 1, 3, 4
-        componentsPerPixel: uint;
-        bytesPerPixel: uint;
+        //readonly componentsPerPixel: uint;
+        //readonly bytesPerPixel: uint;
 
         magFilter: ETextureFilters;
         minFilter: ETextureFilters;
@@ -65,16 +72,16 @@ module akra {
         wrapS: ETextureWrapModes;
         wrapT: ETextureWrapModes;
 
-        target: ETextureTypes;
-        mipLevels: uint;
+        readonly target: ETextureTypes;
+        readonly mipLevels: uint;
 
         isTexture2D(): bool;
         isTextureCube(): bool;
         isCompressed(): bool;
+        isValid(): bool;
 
-        getParameter(): int;
-        setParameter(eParam: ETextureParameters, eValue: ETextureFilters): void;
-        setParameter(eParam: ETextureParameters, eValue: ETextureWrapModes): void;
+        setParameter(eParam: ETextureParameters, eValue: ETextureFilters): bool;
+        setParameter(eParam: ETextureParameters, eValue: ETextureWrapModes): bool;
         
         getPixels(
             iX?: uint, 
@@ -83,7 +90,10 @@ module akra {
             iHeight?: uint, 
             ppPixelBuffer?: ArrayBufferView,
             iMipMap?: uint,
-            eCubeFlag?: ETextureTypes): ArrayBufferView;
+            eFace?: ETextureTypes,
+            eFormat?: EPixelFormats,
+            ): ArrayBufferView;
+        
         setPixels(
             iX?: uint, 
             iY?: uint, 
@@ -91,7 +101,7 @@ module akra {
             iHeight?: uint, 
             pPixelBuffer?: ArrayBufferView,
             iMipMap?: uint,
-            eCubeFlag?: ETextureTypes): bool;
+            eFace?: ETextureTypes): bool;
 
         generateNormalMap(pHeightMap: IImg, iChannel?: uint, fAmplitude?: float): bool;
         generateNormalizationCubeMap(): bool;
@@ -105,26 +115,15 @@ module akra {
         uploadImage(pImage: IImg): bool;
 
         resize(iWidth: uint, iHeight: uint): bool;
-        repack(iWidth: uint, iHeight: uint, eFormat?: EImageFormats, eType?: EImageTypes): bool;
+        repack(iWidth: uint, iHeight: uint, eFormat?: EPixelFormats): bool;
         extend(iWidth: uint, iHeight: uint, cColor: IColor);
 
         createTexture(
             iWidth?: uint, 
             iHeight?: uint, 
             iFlags?: int, 
-            eFormat?: EImageFormats, 
-            eType?: EImageTypes,
+            eFormat?: EPixelFormats, 
             pData?: ArrayBufferView): bool;
-
-        //------------
-        // Эти вызовы надо убрать, так как пользователю не положено делать их самому,
-        // а соответственно их не должно быть в API, пусть рендерер, делает эти вещи.
-        
-        //bind()
-        //unbind()
-        //activate()
-        //getSlot()
-        //setSlot()
     }
 }
 

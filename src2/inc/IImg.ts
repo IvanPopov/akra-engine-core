@@ -2,49 +2,72 @@
 #define IIMG_TS
 
 #include "IResourcePoolItem.ts"
+#include "PixelFormat.ts"
 
 module akra {
-	 export enum EImageFormats {
-        RGB = 0x1907,
-        RGB8 = 0x1907,
-        BGR8 = 0x8060,
-        RGBA = 0x1908,
-        RGBA8 = 0x1908,
-        BGRA8 = 0x1909,
-        RGBA4 = 0x8056,
-        BGRA4 = 0x8059,
-        RGB5_A1 = 0x8057,
-        BGR5_A1 = 0x8058,
-        RGB565 = 0x8D62,
-        BGR565 = 0x8D63,
-        RGB_DXT1 = 0x83F0,
-        RGBA_DXT1 = 0x83F1,
-        RGBA_DXT2 = 0x83F4,
-        RGBA_DXT3 = 0x83F2,
-        RGBA_DXT4 = 0x83F5,
-        RGBA_DXT5 = 0x83F3,
-
-        DEPTH_COMPONENT = 0x1902,
-        ALPHA = 0x1906,
-        LUMINANCE = 0x1909,
-        LUMINANCE_ALPHA = 0x190A
-    };
-
-    export enum EImageShortFormats {
-        RGB = 0x1907,
-        RGBA = 0x1908
-    };
-
-    export enum EImageTypes {
-        UNSIGNED_BYTE = 0x1401,
-        UNSIGNED_SHORT_4_4_4_4 = 0x8033,
-        UNSIGNED_SHORT_5_5_5_1 = 0x8034,
-        UNSIGNED_SHORT_5_6_5 = 0x8363,
-        FLOAT = 0x1406
-    };
+	 
+	export enum EImageFlags {
+		COMPRESSED = 0x00000001,
+        CUBEMAP    = 0x00000002,
+        TEXTURE_3D = 0x00000004
+	};
 
     export interface IImg extends IResourcePoolItem {
+    	byteLength: uint;
     	
+    	width: uint;
+    	height: uint;
+    	depth: uint;
+
+    	numFaces: uint;
+    	numMipMaps: uint;
+    	format: EPixelFormats;
+
+
+    	set(pSrc: IImg): IImg;
+
+    	/** @param Destination image. If destination not specified, original image will be modified.*/
+    	flipY(pDest?: IImg): IImg;
+    	flipX(pDest?: IImg): IImg;
+
+    	loadFromMemory(pData: Uint8Array, iWidth: uint, iHeight: uint, eFormat: EPixelFormats): bool;
+    	loadFromMemory(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats): bool;
+
+    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, eFormat: EPixelFormats, nFaces?: uint, nMipMaps?: uint): bool;
+    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats, nFaces?: uint, nMipMaps?: uint): bool;
+
+    	load(sFilename: string);
+    	create(iWidth: uint, iHeight: uint, eFormat: EPixelFormats, iFlags: int): bool;
+    	create(iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats, iFlags: int): bool;
+
+    	convert(eFormat: EPixelFormats): bool;
+
+    	//Gets the physical width in bytes of each row of pixels.
+    	getRawSpan(): uint;
+    	getBPP(): uint;
+    	getFlags(): int;
+    	getData(): Uint8Array;
+
+    	hasFlag(eFlag: EImageFlags): bool;
+
+    	hasAlpha(): bool;
+    	isCompressed(): bool;
+    	isLumiance(): bool;
+
+    	freeMemory();
+
+    	getColorAt(x: uint, y: uint, z?:uint): IColor;
+    	setColorAt(pColor: IColorValue, x: uint, y: uint, z: uint): void;
+
+    	getPixels(nFace?: uint, iMipMap?: uint): IPixelBox;
+
+    	scale(pDest: IPixelBox, eFilter?: EFilters): bool;
+
+    	resize(iWidth: uint, iHeight: uint, eFilter?: EFilters): bool;
+
+    	generatePerlinNoise(fScale: float, iOctaves: int, fFalloff: float): void;
+    	randomChannelNoise(iChannel: int, iMinRange: int, iMaxRange: int): void;
+
     }
 
 }

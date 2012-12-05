@@ -237,25 +237,28 @@ module akra.data {
 			switch (arguments.length) {
 		        case 5:
 		            iStride = this.stride;
+		            pDataU8 = new Uint8Array(pData.buffer);
 		            if (iStride != iSize) {
 		                //FIXME: очень тормознутое место, крайне медленно работает...
-						if(pVertexBuffer.isRAMBufferPresent() && nCount > 1) {
-							pBackupBuf = new Uint8Array(this._pVertexBuffer.getData());
-							pDataU8 = new Uint8Array(pData.buffer);
+						if(pVertexBuffer.isBackupPresent() && nCount > 1) {
+							pBackupBuf = new Uint8Array(this._pVertexBuffer.byteLength);
+							this._pVertexBuffer.readData(pBackupBuf);
+
 							iOffsetBuffer = this.offset;
 
 							for (var i = nCountStart; i < nCount + nCountStart; i++) {
 								for(k = 0; k < iSize; k++) {
-									pBackupBuf[iStride * i + iOffset + iOffsetBuffer + k] = pDataU8[iSize * (i - nCountStart) + k];
+									pBackupBuf[iStride * i + iOffset + iOffsetBuffer + k] = 
+										pDataU8[iSize * (i - nCountStart) + k];
 								}
 							}
 
-							pVertexBuffer.setData(pBackupBuf.buffer, 0, pVertexBuffer.byteLength);
+							pVertexBuffer.writeData(pBackupBuf, 0, pVertexBuffer.byteLength);
 						}
 						else {
 							for (var i: uint = nCountStart; i < nCount + nCountStart; i++) {
-								pVertexBuffer.setData(
-										pData.buffer.slice(
+								pVertexBuffer.writeData(
+										/*pData.buffer.slice*/pDataU8.subarray(
 											iSize * (i - nCountStart),
 											iSize * (i - nCountStart) + iSize),
 										iStride * i + iOffset + this.offset,
@@ -264,7 +267,10 @@ module akra.data {
 						}
 		            }
 		            else {
-		                pVertexBuffer.setData(pData.buffer.slice(0, iStride * nCount), iOffset + this.offset,
+		                pVertexBuffer.writeData(
+		                	/*pData.buffer.slice*/
+		                	pDataU8.subarray(0, iStride * nCount), 
+		                	iOffset + this.offset,
 		                    iStride * nCount); 
 		            }
 		            return true;
@@ -289,7 +295,7 @@ module akra.data {
 		            nCountStart = nCountStart || 0;
 		            
 		            if (!nCount) {
-		                nCount = pData.buffer.byteLength / iSize;
+		                nCount = pData.byteLength / iSize;
 		            }
 
 		            return this.setData(pData, iOffset, iSize, nCountStart, nCount);
@@ -359,10 +365,9 @@ module akra.data {
 		            var pBufferData: Uint8Array = new Uint8Array(iSize * this.length);
 
 		            for (var i: int = iFrom; i < iCount; i++) {
-		                pBufferData.set(
-		                	new Uint8Array(
-		                		this._pVertexBuffer.getData(iStride * i + iOffset + this.offset, iSize)), 
-		                		i * iSize);
+		            	this._pVertexBuffer.readData(iStride * i + iOffset + this.offset, iSize, 
+		            		pBufferData.subarray(i * iSize, i * iSize + iSize));
+		                //pBufferData.set(new Uint8Array(), i * iSize);
 		            }
 
 		            return pBufferData.buffer;

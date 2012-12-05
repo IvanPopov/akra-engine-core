@@ -49,6 +49,23 @@ module akra {
 	IFACE(IMat3);
 	IFACE(IQuat4);
 
+	export interface IMat4Constructor {
+		();
+		(fValue: float);
+		(v4fVec: IVec4);
+		(m4fMat: IMat4);
+		(pArray: float[]);
+		(m3fMat: IMat3, v3fTranslation?: IVec3);
+		(pArray: Float32Array, bFlag: bool);
+		(fValue1: float, fValue2: float, fValue3: float, fValue4: float);
+		(v4fVec1: IVec4, v4fVec2: IVec4, v4fVec3: IVec4, v4fVec4: IVec4);
+		(pArray1: float[], pArray2: float[], pArray3: float[], pArray4: float[]);
+		(fValue1: float, fValue2: float, fValue3: float, fValue4: float,
+				fValue5: float, fValue6: float, fValue7: float, fValue8: float,
+				fValue9: float, fValue10: float, fValue11: float, fValue12: float,
+				fValue13: float, fValue14: float, fValue15: float, fValue16: float);
+	}
+
 	export interface IMat4 {
 		data: Float32Array;
 
@@ -80,6 +97,7 @@ module akra {
 		transpose(m4fDestination?: IMat4): IMat4;
 		determinant(): float;
 		inverse(m4fDestination?: IMat4): IMat4;
+		trace(): float;
 
 		isEqual(m4fMat: IMat4, fEps?: float): bool;
 		isDiagonal(fEps?: float): bool;
@@ -92,28 +110,32 @@ module akra {
 		rotateRight(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
 		rotateLeft(fAngle: float, v3fAxis: IVec3, m4fDestination?: IMat4): IMat4;
 
-		toInverseMat3(m3fDestination: IMat3): IMat3;
-
-		// rotateXRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-		// rotateXLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
-		// rotateYRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-		// rotateYLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
-		// rotateZRight(fAngle: float, m4fDestination?: IMat4): IMat4;
-		// rotateZLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+		//rotateXRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+		//rotateXLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+		//rotateYRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+		//rotateYLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
+		//rotateZRight(fAngle: float, m4fDestination?: IMat4): IMat4;
+		//rotateZLeft(fAngle: float, m4fDestination?: IMat4): IMat4;
 
 		setTranslation(v3fTranslation: IVec3): IMat4;
 		getTranslation(v3fTranslation?: IVec3): IVec3;
 		
-		// translateRight(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
-		// translateLeft(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
+		translateRight(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
+		translateLeft(v3fTranslation: IVec3, m4fDestination?: IMat4): IMat4;
 
 		scaleRight(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
 		scaleLeft(v3fScale: IVec3, m4fDestination?: IMat4): IMat4;
 
-		// decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): void;
+		decompose(q4fRotation: IQuat4, v3fScale: IVec3, v3fTranslation: IVec3): bool;
 
+		row(iRow: int, v4fDestination?: IVec4): IVec4;
+		column(iColumn: int, v4fDestination?: IVec4): IVec4;
 
-
+		/*v3fScreen - coordinates in screen space from -1 to 1
+		* returns vec4(wsCoord,1.), where wsCoord - coordinates in world space
+		* use with projection matrix only
+		*/
+		unproj(v3fScreen: IVec3, v4fDestination?: IVec4): IVec4;
 	};
 };
 

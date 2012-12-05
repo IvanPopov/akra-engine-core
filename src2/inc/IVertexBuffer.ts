@@ -1,8 +1,8 @@
 #ifndef IVERTEXBUFFER_TS
 #define IVERTEXBUFFER_TS
 
-#include "IGPUBuffer.ts"
-#include "IResourcePoolItem.ts"
+#include "IHardwareBuffer.ts"
+#include "IRenderResource.ts"
 
 module akra {
 
@@ -16,7 +16,7 @@ module akra {
 		TYPE_TBO
 	};
 
-	export interface IVertexBuffer extends IGPUBuffer, IResourcePoolItem {
+	export interface IVertexBuffer extends IHardwareBuffer, IRenderResource {
 
 		readonly type: EVertexBufferTypes; 
 
@@ -28,6 +28,7 @@ module akra {
 		getEmptyVertexData(iCount: uint, pSize: uint, ppVertexDataIn?: IVertexData): IVertexData;
 		
 		freeVertexData(pVertexData: IVertexData): bool;
+		freeVertexData(): bool;
 
 		allocateData(pElements: IVertexElement[], pData: ArrayBufferView): IVertexData;
 		allocateData(pDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
