@@ -21,7 +21,6 @@ module akra.geometry{
 		constructor(pLeftPlane?,pRightPlane?,pTopPlane?,
 					pBottomPlane?, pNearPlane?, pFarPlane?){
 
-
 			this.leftPlane = new Plane3d();
 			this.rightPlane = new Plane3d();
 			this.topPlane = new Plane3d();

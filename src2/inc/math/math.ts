@@ -25,6 +25,8 @@ module akra.math {
 	export var SQRT1_2: float 							= <float>Math.SQRT1_2;
 	export var SQRT2: float 							= <float>Math.SQRT2;
 	export var LN10: float 								= <float>Math.LN10;
+	export var POSITIVE_INFINITY: float                 = <float>Number.POSITIVE_INFINITY;
+	export var NEGATIVE_INFINITY: float                 = <float>Number.NEGATIVE_INFINITY;
 
 	export var FLOAT_PRECISION: float					= <float>(3.4e-8);
 	export var TWO_PI: float							= <float>(2.0*PI);
