@@ -1,13 +1,16 @@
 #ifndef IWEBGLRENDERER_TS
 #define IWEBGLRENDERER_TS
 
+#include "webgl/webgl.ts"
+
 module akra {
 
 	IFACE(ITexture);
 
 	export interface IWebGLRenderer extends IRenderer {
-		_bindTexture(pTexture: ITexture): void;
-		_getContext(): WebGLRenderingContext;
+		getWebGLContext(): WebGLRenderingContext;
+		bindWebGLBuffer(iType: int, pBuffer: WebGLBuffer): void;
+		bindWebGLTexture(iType: int, pTexture: WebGLTexture): void;
 	}
 }
 

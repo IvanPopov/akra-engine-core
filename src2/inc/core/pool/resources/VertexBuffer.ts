@@ -4,6 +4,7 @@
 #include "IVertexBuffer.ts"
 #include "data/VertexData.ts"
 #include "HardwareBuffer.ts"
+#include "MemoryBuffer.ts"
 
 module akra.core.pool.resources {
 	interface IBufferHole {
@@ -16,10 +17,32 @@ module akra.core.pool.resources {
 		protected _iDataCounter: uint = 0;
 
 		inline get type(): EVertexBufferTypes { return EVertexBufferTypes.TYPE_UNKNOWN; }
+		inline get length(): uint { return this._pVertexDataArray.length; }
 
 		constructor (/*pManager: IResourcePoolManager*/) {
 			super(/*pManager*/);
 
+		}
+
+		create(iByteSize: uint, iFlags?: uint, pData?: Uint8Array): bool;
+		create(iByteSize: uint, iFlags?: uint, pData?: ArrayBufferView): bool;
+		create(iByteSize: uint, iFlags?: uint, pData?: any): bool {
+			super.create(iFlags || 0);
+
+			if (TEST_ANY(iFlags, EHardwareBufferFlags.BACKUP_COPY)) {
+				this._pBackupCopy = new MemoryBuffer();
+				this._pBackupCopy.create(iByteSize);
+				this._pBackupCopy.writeData(pData, 0, iByteSize);
+			}
+
+			return true;
+		}
+
+		destroy(): void {
+			super.destroy();
+			
+			this._pBackupCopy.destroy();
+			this.freeVertexData();
 		}
 
 		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;
@@ -56,51 +79,51 @@ module akra.core.pool.resources {
 					
 					for(i = 0; i < pHole.length; i++) {
 						//Полностью попадает внутрь
-						if(pVertexData.offset > pHole[i].start && 
-							pVertexData.offset + pVertexData.byteLength < pHole[i].end) {
+						if(pVertexData.byteOffset > pHole[i].start && 
+							pVertexData.byteOffset + pVertexData.byteLength < pHole[i].end) {
 							iTemp = pHole[i].end;
-							pHole[i].end=pVertexData.offset;
-							pHole.splice(i + 1, 0, {start: pVertexData.offset + pVertexData.byteLength, end: iTemp});
+							pHole[i].end=pVertexData.byteOffset;
+							pHole.splice(i + 1, 0, {start: pVertexData.byteOffset + pVertexData.byteLength, end: iTemp});
 							i--;
 						}
-						else if(pVertexData.offset == pHole[i].start && 
-							pVertexData.offset + pVertexData.byteLength < pHole[i].end) {
-							pHole[i].start = pVertexData.offset + pVertexData.byteLength;
+						else if(pVertexData.byteOffset == pHole[i].start && 
+							pVertexData.byteOffset + pVertexData.byteLength < pHole[i].end) {
+							pHole[i].start = pVertexData.byteOffset + pVertexData.byteLength;
 						}
-						else if(pVertexData.offset > pHole[i].start && 
-							pVertexData.offset + pVertexData.byteLength == pHole[i].end) {
+						else if(pVertexData.byteOffset > pHole[i].start && 
+							pVertexData.byteOffset + pVertexData.byteLength == pHole[i].end) {
 							
 						}
-						else if(pVertexData.offset == pHole[i].start && 
+						else if(pVertexData.byteOffset == pHole[i].start && 
 							pVertexData.byteLength == (pHole[i].end - pHole[i].start)) {
 							pHole.splice(i, 1);		
 							i--;
 						}
 						//Перекрывает снизу
-						else if(pVertexData.offset < pHole[i].start &&
-							pVertexData.offset + pVertexData.byteLength > pHole[i].start && 
-							pVertexData.offset + pVertexData.byteLength < pHole[i].end) {
-							pHole[i].start = pVertexData.offset + pVertexData.byteLength;
+						else if(pVertexData.byteOffset < pHole[i].start &&
+							pVertexData.byteOffset + pVertexData.byteLength > pHole[i].start && 
+							pVertexData.byteOffset + pVertexData.byteLength < pHole[i].end) {
+							pHole[i].start = pVertexData.byteOffset + pVertexData.byteLength;
 						}
-						else if(pVertexData.offset < pHole[i].start &&
-							pVertexData.offset + pVertexData.byteLength > pHole[i].start && 
-							pVertexData.offset + pVertexData.byteLength == pHole[i].end) {
+						else if(pVertexData.byteOffset < pHole[i].start &&
+							pVertexData.byteOffset + pVertexData.byteLength > pHole[i].start && 
+							pVertexData.byteOffset + pVertexData.byteLength == pHole[i].end) {
 							pHole.splice(i,1);
 							i--;
 						}
 						//Перекрывается сверху
-						else if(pVertexData.offset + pVertexData.byteLength > pHole[i].end &&
-							pVertexData.offset > pHole[i].start && pVertexData.offset < pHole[i].end) {
-							pHole[i].end=pVertexData.offset;
+						else if(pVertexData.byteOffset + pVertexData.byteLength > pHole[i].end &&
+							pVertexData.byteOffset > pHole[i].start && pVertexData.byteOffset < pHole[i].end) {
+							pHole[i].end=pVertexData.byteOffset;
 						}
-						else if(pVertexData.offset + pVertexData.byteLength > pHole[i].end &&
-							pVertexData.offset == pHole[i].start && pVertexData.offset < pHole[i].end) {
+						else if(pVertexData.byteOffset + pVertexData.byteLength > pHole[i].end &&
+							pVertexData.byteOffset == pHole[i].start && pVertexData.byteOffset < pHole[i].end) {
 							pHole.splice(i,1);
 							i--;
 						}
 						//полнстью перекрывает
-						else if(pVertexData.offset < pHole[i].start && 
-							pVertexData.offset + pVertexData.byteLength > pHole[i].end) {
+						else if(pVertexData.byteOffset < pHole[i].start && 
+							pVertexData.byteOffset + pVertexData.byteLength > pHole[i].end) {
 							i--;
 						}			
 					}
@@ -195,6 +218,7 @@ module akra.core.pool.resources {
 
 		    return pVertexData;
 		}
+
 	}
 }
 

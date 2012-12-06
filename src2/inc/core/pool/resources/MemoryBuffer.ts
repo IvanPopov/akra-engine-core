@@ -30,6 +30,15 @@ module akra.core.pool.resources {
 			this._pData = null;
 		}
 
+		resize(iSize: uint): bool {
+			var pData: Uint8Array = new Uint8Array(iSize);
+			pData.set(this._pData);
+			this._pData = pData;
+			this.notifyAltered();
+
+			return true;
+		}
+
 		lockImpl(iOffset: uint, iLength: uint, iLockFlags: int): Uint8Array {
 			return this._pData.subarray(iOffset, iOffset + iLength);
 		}
@@ -57,9 +66,9 @@ module akra.core.pool.resources {
 				iSize = pData.byteLength;
 			}
 
-			this.notifyAltered();
 
 			memcpy(this._pData.buffer, 0, (<ArrayBufferView>pData).buffer, iOffset, iSize);
+			this.notifyAltered();
 
 			return true;
 		}

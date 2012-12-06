@@ -315,8 +315,6 @@ module akra.core.pool {
             this.pRenderMethodPool = new ResourcePool(this, resources.RenderMethod);
             this.pRenderMethodPool.initialize(16);
 
-            this.pVertexBufferPool = new ResourcePool(this, resources.VertexBufferVBO);
-            this.pVertexBufferPool.initialize(16);
 
             this.pIndexBufferPool = new ResourcePool(this, resources.IndexBuffer);
             this.pIndexBufferPool.initialize(16);
@@ -329,9 +327,16 @@ module akra.core.pool {
 
             this.pTexturePool = new ResourcePool(this, resources.Texture);
             this.pTexturePool.initialize(16);
+            
+#ifdef WEBGL
+            this.pVertexBufferPool = new ResourcePool(this, webgl.WebGLVertexBuffer);
+            this.pVertexBufferPool.initialize(16);
 
-            this.pVideoBufferPool = new ResourcePool(this, resources.VertexBufferTBO);
+            this.pVideoBufferPool = new ResourcePool(this, webgl.WebGLVertexTexture);
             this.pVideoBufferPool.initialize(16);
+#else
+            CRITICAL("Render system not specified");
+#endif
 
             this.pShaderProgramPool = new ResourcePool(this, resources.ShaderProgram);
             this.pShaderProgramPool.initialize(16);

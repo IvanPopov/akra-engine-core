@@ -520,6 +520,7 @@ module akra.math {
 
 		return m3fMat;
 	};
+
 	export var mat4: IMat4Constructor 	= function (fValue1?, fValue2?, fValue3?, fValue4?,
 					fValue5?, fValue6?, fValue7?, fValue8?,
 					fValue9?, fValue10?, fValue11?, fValue12?,
@@ -577,6 +578,19 @@ module akra.math {
 
 		return m4fMat;
 	};
+
+	export function calcPOTtextureSize (nPixels: uint): uint[] {
+	    var w: uint, h: uint;
+	    var n: uint = nPixels;
+
+
+	    w = Math.ceil(Math.log(n) / Math.LN2 / 2.0);
+	    h = Math.ceil(Math.log(n / Math.pow(2, w)) / Math.LN2);
+	    w = Math.pow(2, w);
+	    h = Math.pow(2, h);
+	    n = w * h * iElements;
+	    return [w, h, n];
+	}
 }
 
 module akra {

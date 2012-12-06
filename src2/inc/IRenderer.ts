@@ -170,7 +170,7 @@ module akra {
     	activateIndexBuffer(pBuffer: IIndexBuffer): bool;
     	activateProgram(pProgram: IShaderProgram): bool;
     	activateFrameBuffer(pFrameBuffer: IFrameBuffer): bool;
-    	deactivateFrameBuffer(pFrameBuffer: IFrameBuffer): bool;
+    	// deactivateFrameBuffer(pFrameBuffer: IFrameBuffer): bool;
 
     	getRenderResourceState(pResource: IRenderResource): int;
 

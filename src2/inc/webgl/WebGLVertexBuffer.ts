@@ -1,0 +1,242 @@
+#ifndef WEBGLVERTEXBUFFER_TS
+#define WEBGLVERTEXBUFFER_TS
+
+#include "IVertexData.ts"
+#include "IVertexDeclaration.ts"
+#include "IVertexBuffer.ts"
+#include "core/pool/resources/VertexBuffer.ts"
+#include "webgl.ts"
+
+#define WEBGL_VERTEX_BUFFER_MIN_SIZE 1024
+
+module akra.webgl {
+
+	function getWebGLUsage(iFlags: int): int {
+		if (TEST_ANY(iFlags, EHardwareBufferFlags.DYNAMIC)) {
+	        return GL_DYNAMIC_DRAW;
+	    }
+	    else if (TEST_ANY(iFlags, EHardwareBufferFlags.STREAM)) {
+	        return GL_STREAM_DRAW;
+	    }
+
+	    return GL_STATIC_DRAW;
+	}
+
+	export class WebGLVertexBuffer extends core.pool.resources.VertexBuffer implements IVertexBuffer {
+		protected _iByteSize: uint;
+
+		protected _pWebGLBuffer: WebGLBuffer;
+		protected _pWebGLContext: WebGLRenderingContext;
+
+		private _pLockData: Uint8Array = null;
+
+
+		inline get type(): EVertexBufferTypes { return EVertexBufferTypes.TYPE_VBO; }
+		inline get byteLength(): uint { return this._iByteSize; }
+
+		constructor (/*pManager: IResourcePoolManager*/) {
+			super(/*pManager*/);
+		}
+
+		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: Uint8Array = null): bool;
+		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: ArrayBufferView = null): bool;
+		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: any = null): bool {
+			
+			iByteSize = math.max(iByteSize, WEBGL_VERTEX_BUFFER_MIN_SIZE);
+
+			if (TEST_ANY(iFlags, EHardwareBufferFlags.READABLE)) {
+	            SET_ALL(iFlags, EHardwareBufferFlags.BACKUP_COPY);
+	        }
+
+			super.create(iByteSize, iFlags, pData);
+
+			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+		    var i: int;
+
+		    debug_assert(this._pWebGLBuffer == null, "webgl buffer already allocated");
+
+			this._iByteSize = iByteSize;
+		    this._iFlags = iFlags;
+		    this._pWebGLContext = pWebGLRenderer.getWebGLContext();
+
+		    debug_assert(this._pWebGLContext !== null, "cannot grab webgl context");
+
+		    //Софтварного рендеринга буфера у нас нет
+		    debug_assert(!this.isSoftware(), "no sftware rendering");
+
+		    //Если есть локальная копия то буфер можно читать
+		    if (this.isBackupPresent()) {
+		        SET_ALL(this._iTypeFlags, EHardwareBufferFlags.READABLE);
+		    }
+			
+			debug_assert(!pData || pData.byteLength <= iByteSize, 
+				"Размер переданного массива больше переданного размера буфера");
+			
+
+		    this._pWebGLBuffer = this._pWebGLContext.createBuffer();
+
+		    if (!this._pWebGLBuffer) {
+		        CRITICAL("Не удалось создать буфер");
+		        
+		        this.destroy();
+		        return false;
+		    }
+
+		    pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, this._pWebGLBuffer);
+		    this._pWebGLContext.bufferData(GL_ARRAY_BUFFER, this._iByteSize, this._eWebGLUsage);
+		    
+		    if (pData) {
+		        this._pWebGLContext.bufferSubData(
+		        	GL_ARRAY_BUFFER, 0, isArrayBuffer(pData)? pData: pData.buffer);
+		    }
+
+		    return true;
+		}
+
+		destroy(): void {
+			super.destroy();
+
+			this._pWebGLContext.deleteBuffer(this._pWebGLBuffer);
+
+			this._pWebGLBuffer = null;
+			this._pWebGLContext = null;
+			this._pWebGLRenderer = null;
+
+			this._iByteSize = 0;
+		}
+
+		readData(ppDest: ArrayBufferView): bool;
+		readData(iOffset: uint, iSize: uint, ppDest: ArrayBufferView): bool;
+		readData(iOffset: any, iSize?: any, ppDest?: any): bool { 
+			debug_assert(this._pWebGLBuffer, "Буффер еще не создан");
+
+		    if (!this.isBackupPresent()) {
+		    	return false;
+		    }
+			
+			if (arguments.length === 1) {
+				this._pBackupCopy.readData(arguments[0]);
+			}
+			else {
+				this._pBackupCopy.readData(iOffset, iSize, ppDest);
+			}
+
+		    return true;
+		}
+
+		writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
+		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
+		writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool { 
+			
+			debug_assert(this._pWebGLBuffer, "WebGL buffer not exists");
+		    
+		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+		    
+		    pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, this._pWebGLBuffer);
+			
+			debug_assert(pData.byteLength <= iSize, "Размер переданного массива больше переданного размера");
+			debug_assert(this.size >= iOffset + iSize, "Данные выйдут за предел буфера");
+
+			var pU8Data: Uint8Array = null;
+
+			if (isArrayBuffer(pData)) {
+				pU8Data = new Uint8Array(pData);
+			}
+			else {
+				pU8Data = new Uint8Array(pData.buffer, pData.byteOffset, pData.byteLength);
+			}
+
+			pU8Data = pU8Data.subarray(0, iSize);
+
+			this._pWebGLContext.bufferSubData(GL_ARRAY_BUFFER, iOffset, pU8Data);
+			
+			if (this.isBackupPresent()) {
+		        this._pBackupCopy.set(pU8Data, iOffset);
+		    }
+
+		    this.notifyAltered();
+
+			return true;
+		}
+
+		resize(iSize: uint): bool {
+			var eUsage: int;
+			var pData;
+			var iMax: int = 0;
+			var pVertexData: IVertexData;
+		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+			
+			if(this.isBackupPresent()) {
+				return false;		
+			}
+
+			if(iSize < this.byteLength) {
+				for(var k: int = 0; k < this._pVertexDataArray; ++ k) {
+					pVertexData = this._pVertexDataArray[k];
+
+					if(pVertexData.byteOffset + pVertexData.byteLength > iMax) {
+						iMax = pVertexData.byteOffset + pVertexData.byteLength;
+					}		
+				}	
+
+				debug_assert(iMax <= iSize,
+					"Уменьшение невозможно. Страая разметка не укладывается в новый размер");
+			}
+			
+			if(this._pWebGLContext.isBuffer(this._pWebGLBuffer)) {
+				this._pWebGLContext.deleteBuffer(this._pWebGLBuffer);
+			}		
+			
+			eUsage = getWebGLUsage(this._iFlags);
+
+		    this._pWebGLBuffer = this._pWebGLContext.createBuffer();
+
+		    if (!this._pWebGLBuffer) {
+		        CRITICAL("Не удалось создать буфер");
+		        
+		        this.destroy();
+		        return false;
+		    }
+
+
+		    pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, this._pWebGLBuffer);
+			this._pWebGLContext.bufferData(GL_ARRAY_BUFFER, iSize, eUsage);
+			
+			pData = new Uint8Array(this._iByteSize);
+			
+			if (this.readData(pData)) {
+				debug_warning("cannot read data from buffer");
+				return false;
+			}
+
+
+			this.writeData(pData, 0, this._iByteSize);
+			this._pBackupCopy.resize(iSize);
+			this._iByteSize = iSize;	
+
+			this.notifyAltered();
+			
+			return true;
+		}
+
+		protected lockImpl(iOffset: uint, iSize: uint, iLockFlags: int): any {
+	        var pRetData: Uint8Array = new Uint8Array(iSize);
+
+            this.readData(iOffset, iSize, pRetData);
+
+            this._pLockData = pRealData;
+
+	        return pRealData;
+		}
+
+		protected unlockImpl(): void {
+			this.writeData(this._pLockData, this._iLockStart, this._iLockSize);
+		}
+
+		protected copyBackupToRealImpl(pRealData: Uint8Array, pBackupData: Uint8Array, iLockFlags: int): void {
+			pRealData.set(pBackupData);
+		}
+	}
+}
+
+#endif

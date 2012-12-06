@@ -44,8 +44,6 @@
 
 
 #include "core/pool/resources/IndexBuffer.ts"
-#include "core/pool/resources/VertexBufferVBO.ts"
-#include "core/pool/resources/VertexBufferTBO.ts"
 #include "core/pool/resources/Texture.ts"
 #include "core/pool/resources/ShaderProgram.ts"
 #include "core/pool/resources/Component.ts"
@@ -73,7 +71,12 @@
 #include "display/Display2d.ts"
 #include "display/Display3d.ts"
 
+#ifdef WEBGL
+
 #include "webgl/WebGLPixelBuffer.ts"
+#include "webgl/WebGLVertexBuffer.ts"
+
+#endif
 
 #endif
 
