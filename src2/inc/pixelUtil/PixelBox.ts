@@ -11,7 +11,7 @@
 
 module akra.pixelUtil {
 	export class PixelBox extends geometry.Box implements IPixelBox {
-		data: Uint8Array = null;
+		data: Uint8Array;
 		format: EPixelFormats;
 		rowPitch: uint;
 		slicePitch: uint;

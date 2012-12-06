@@ -11,15 +11,19 @@ module akra {
 
 		readonly format: EPixelFormats;
 
+		create(iFlags: int): bool;
+		create(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats, iFlags: int): bool;
+
 		blit(pSource: IPixelBuffer, pSrcBox: IBox, pDestBox: IBox): bool;
 		blit(pSource: IPixelBuffer);
 
+		blitFromMemory(pSource: IPixelBox): bool;
 		blitFromMemory(pSource: IPixelBox, pDestBox?: IBox): bool;
-		blitToMemory(pSrcBox: IBox, pDest?: IPixelBuffer): bool;
+
+		blitToMemory(pDest: IPixelBox): bool;
+		blitToMemory(pSrcBox: IBox, pDest: IPixelBox): bool;
 
 		getRenderTarget(): IRenderTarget;
-
-		getPixels(pDstBox: IBox): IPixelBox;
 
 		lock(iLockFlags: int): any;
 		lock(iOffset: uint, iSize: uint, iLockFlags?: int): any;

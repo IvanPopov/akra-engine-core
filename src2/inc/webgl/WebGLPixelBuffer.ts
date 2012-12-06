@@ -4,6 +4,8 @@
 #include "IPixelBuffer.ts"
 #include "core/pool/resources/HardwareBuffer.ts"
 #include "geometry/Box.ts"
+#include "webgl/webgl.ts"
+#include "pixelUtil/PixelBox.ts"
 
 module akra.webgl {
 	export class WebGLPixelBuffer extends core.pool.resources.HardwareBuffer implements IPixelBuffer {
@@ -40,17 +42,44 @@ module akra.webgl {
 
 
 		//upload(download) data to(from) videocard.
-		protected upload(pData: IPixelBox, pDestBox: IBox): void {}
-		protected download(pData: IPixelBox): void {}
+		protected upload(pData: IPixelBox, pDestBox: IBox): void {
+			CRITICAL("Upload not possible for this pixelbuffer type");
+		}
+
+		protected download(pData: IPixelBox): void {
+			CRITICAL("Download not possible for this pixelbuffer type");
+		}
 
 		_bindToFramebuffer(pAttachment: any, iZOffset: uint): void {}
 		_getWEBGLFormat(): int { return this._iWEBGLInternalFormat; }
 
-		create(iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats, iFlags: int): bool;
-		create(iByteSize: uint, iFlags: int, pData: ArrayBuffer): bool;
+		create(iFlags: int): bool;
+		create(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats, iFlags: int): bool;
+		create(): bool {
+			if(arguments.length === 1) {
+				CRITICAL("Invalid number of arguments. For PixelBuffer it must be six");
+			}
+			var iWidth: int = arguments[0];
+			var iHeight: int = arguments[1];
+			var iDepth: int = arguments[2];
+			var eFormat: int = arguments[3];
+			var iFlags: int = arguments[4];
 
-		create(iWidth: any, iHeight?: any, iDepth?: any, eFormat?: EPixelFormats, iFlags?: int): bool {
-			return false;
+ 			super.create(iFlags);
+			
+			this._iWidth = iWidth;
+			this._iHeight = iHeight;
+			this._iDepth = iDepth;
+			this._eFormat = eFormat;
+
+			this._iRowPitch = iWidth;
+			this._iSlicePitch = iHeight * iWidth;
+			this.byteLength = iHeight * iWidth * akra.pixelUtil.getNumElemBytes(eFormat);
+
+			this._pBuffer = new pixelUtil.PixelBox(iWidth, iHeight, iDepth, eFormat);
+			this._iWEBGLInternalFormat = GL_NONE;
+
+			return true;
 		}
 
 		destroy(): void { 
@@ -76,65 +105,160 @@ module akra.webgl {
 
 		//=====
 
+		blit(pSource: IPixelBuffer): bool;
 		blit(pSource: IPixelBuffer, pSrcBox: IBox, pDestBox: IBox): bool;
-		blit(pSource: IPixelBuffer);
 		blit(pSource: IPixelBuffer, pSrcBox?: IBox, pDestBox?: IBox): bool {
 			if (arguments.length == 1) {
-				return this.blit(pSource, 
+				this.blit(pSource, 
 		            new geometry.Box(0, 0, 0, pSource.width, pSource.height, pSource.depth), 
 		            new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth)
 		        );
 			}
 			else {
 				if(pSource === <IPixelBuffer>this) {
-					ERROR("Source must not be the same object",
-		                "HardwarePixelBuffer::blit" ) ;
+					CRITICAL("Source must not be the same object") ;
 				}
 
-				const pSrclock: IPixelBox = pSource.getPixels(pSrcBox);
+				const pSrclock: IPixelBox = pSource.lock(pSrcBox, ELockFlags.READ);
 
-				//LockOptions method = HBL_NORMAL;
-				// if (pDestBox.left == 0 && pDestBox.top == 0 && pDestBox.front == 0 &&
-				//    pDestBox.right == this._iWidth && pDestBox.bottom == this._iHeight &&
-				//    pDestBox.back == this._iDepth);
+				var eLockMethod: ELockFlags = ELockFlags.NORMAL;
+				if (pDestBox.left === 0 && pDestBox.top === 0 && pDestBox.front === 0 &&
+				    pDestBox.right === this._iWidth && pDestBox.bottom === this._iHeight &&
+				    pDestBox.back === this._iDepth) {
 					// Entire buffer -- we can discard the previous contents
-					//method = HBL_DISCARD;
+					eLockMethod = ELockFlags.DISCARD;
+				}
 					
-				const pDstlock: IPixelBox = this.getPixels(pDestBox);
+				const pDstlock: IPixelBox = this.lock(pDestBox, eLockMethod);
 
-				if(pDstlock.width != pSrclock.width ||
-		        	pDstlock.height != pSrclock.height ||
-		        	pDstlock.depth != pSrclock.depth) {
+				if (pDstlock.width != pSrclock.width ||
+		            pDstlock.height != pSrclock.height ||
+		            pDstlock.depth != pSrclock.depth) {
 					// Scaling desired
 					pSrclock.scale(pDstlock);
-					//ERROR("TODO: blit() with scale in PixelBuffer:blit()");
 				}
 				else {
 					// No scaling needed
-					pixelUtil.bulkPixelConversion(pSrclock, pDstlock);
+					akra.pixelUtil.bulkPixelConversion(pSrclock, pDstlock);
 				}
+
+				this.unlock();
+				pSource.unlock();
 
 				return true;
 			}
 		}
 
 		blitFromMemory(pSource: IPixelBox): bool;
-		blitFromMemory(pSource: IPixelBox, pDestBox: IBox): bool {
+		blitFromMemory(pSource: IPixelBox, pDestBox: IBox): bool;
+		blitFromMemory(): bool {
+			var pSource: IPixelBox;
+			var pDestBox: IBox;
+
+			pSource = arguments[0];
+
 			if(arguments.length === 1) {
 				pDestBox = new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth);
+			}
+			else{
+				pDestBox = arguments[1];
 			}	
 
-			return false;
+			if (!this._pBuffer.contains(pDestBox)) {
+				CRITICAL("Destination box out of range");
+	        }
+
+	        var pScaledBox: IPixelBox;
+
+	        if (pSource.width != pDestBox.width ||
+	            pSource.height != pDestBox.height ||
+	            pSource.depth != pDestBox.depth) {
+	            // Scale to destination size.
+	            // This also does pixel format conversion if needed
+	            this.allocateBuffer();
+	            pScaledBox = this._pBuffer.getSubBox(pDestBox);
+	            pSource.scale(pScaledBox, EFilters.BILINEAR);
+	        }
+	        else if ((pSource.format != this._eFormat) ||
+	                 ((getWebGLOriginFormat(pSource.format) == 0) && (pSource.format != EPixelFormats.R8G8B8))) {
+	            // Extents match, but format is not accepted as valid source format for GL
+	            // do conversion in temporary buffer
+	            this.allocateBuffer();
+	            pScaledBox = this._pBuffer.getSubBox(pDestBox);
+	            pixelUtil.bulkPixelConversion(pSource, pScaledBox);
+	            
+	            if(this._eFormat === EPixelFormats.A4R4G4B4)
+	            {
+	                // ARGB->BGRA
+	                convertToWebGLformat(pScaledBox, pScaledBox);
+	            }
+	        }
+	        else {
+	            this.allocateBuffer();
+	            pScaledBox = pSource;
+
+	            if (pSource.format == EPixelFormats.R8G8B8) {
+	                pScaledBox.format = EPixelFormats.B8G8R8;
+	                pixelUtil.bulkPixelConversion(pSource, pScaledBox);
+	            }
+	        }
+
+	        this.upload(pScaledBox, pDestBox);
+	        this.freeBuffer();
+
+			return true;
 		}
 
-		blitToMemory(pDest: IPixelBox):
-		blitToMemory(pSrcBox: IBox, pDest: IPixelBox): bool {
+		blitToMemory(pDest: IPixelBox): bool;
+		blitToMemory(pSrcBox: IBox, pDest: IPixelBox): bool;
+		blitToMemory(): bool {
+			var pSrcBox: IBox;
+			var pDest: IPixelBox;
+
 			if(arguments.length === 1){
 				pDest = arguments[0];
 				pSrcBox = new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth);
 			}
+			else{
+				pSrcBox = arguments[0];
+				pDest = arguments[1];
+			} 
 
-			return false;
+			if (!this._pBuffer.contains(pSrcBox)) {
+				CRITICAL("source box out of range");
+	        }
+
+	        if (pSrcBox.left == 0 && pSrcBox.right == this._iWidth &&
+            	pSrcBox.top == 0 && pSrcBox.bottom == this._iHeight &&
+            	pSrcBox.front == 0 && pSrcBox.back == this._iDepth &&
+            	pDest.width == this._iWidth &&
+            	pDest.height == this._iHeight &&
+            	pDest.depth == this._iDepth &&
+            	getWebGLOriginFormat(pDest.format) != 0) {
+	            // The direct case: the user wants the entire texture in a format supported by GL
+	            // so we don't need an intermediate buffer
+	            this.download(pDest);
+	        }
+	        else {
+	            // Use buffer for intermediate copy
+	            this.allocateBuffer();
+	            // Download entire buffer
+	            this.download(this._pBuffer);
+
+	            if(pSrcBox.width != pDest.width ||
+	               pSrcBox.height != pDest.height ||
+	               pSrcBox.depth != pDest.depth) {
+	                // We need scaling
+	                this._pBuffer.getSubBox(pSrcBox).scale(pDest, EFilters.BILINEAR);
+	            }
+	            else {
+	                // Just copy the bit that we need
+	                pixelUtil.bulkPixelConversion(this._pBuffer.getSubBox(pSrcBox), pDest);
+	            }
+	            this.freeBuffer();
+	        }
+
+			return true;
 		}
 
 		getRenderTarget(): IRenderTarget {
@@ -229,11 +353,14 @@ module akra.webgl {
 		protected unlockImpl(): void {
 			if (TEST_ANY(this._iCurrentLockFlags, ELockFlags.WRITE)) {
 	            // From buffer to card, only upload if was locked for writing
-	            upload(this._pCurrentLock, this._pLockedBox);
+	            this.upload(this._pCurrentLock, this._pLockedBox);
 	        }
 
-	        freeBuffer();
+	        this.freeBuffer();
 		}
+
+
+
 
 
 	}
