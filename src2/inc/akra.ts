@@ -71,12 +71,5 @@
 #include "display/Display2d.ts"
 #include "display/Display3d.ts"
 
-#ifdef WEBGL
-
-#include "webgl/WebGLPixelBuffer.ts"
-#include "webgl/WebGLVertexBuffer.ts"
-
-#endif
-
 #endif
 

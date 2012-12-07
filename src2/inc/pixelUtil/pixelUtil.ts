@@ -675,16 +675,16 @@ module akra {
         ],
 	]);
 
-	inline function getDescriptionFor(eFmt: EPixelFormats): IPixelFormatDescription {
-        var ord: int = <int>eFmt;
-        ASSERT(ord>=0 && ord<EPixelFormats.TOTAL);
-
-        return pPixelFormats[ord];
-    }
-
     var _pColorValue: IColorValue = {r: 0., g: 0., b: 0., a: 1.};
 
 	export module pixelUtil {
+        export inline function getDescriptionFor(eFmt: EPixelFormats): IPixelFormatDescription {
+            var ord: int = <int>eFmt;
+            ASSERT(ord>=0 && ord<EPixelFormats.TOTAL);
+
+            return pPixelFormats[ord];
+        }
+
 		/** Returns the size in bytes of an element of the given pixel format.
          @return
                The size in bytes of an element. See Remarks.
@@ -704,6 +704,8 @@ module akra {
         export inline function getNumElemBits(eFormat: EPixelFormats): uint {
         	return getDescriptionFor(eFormat).elemBytes * 8;
         }
+
+
 
 		/** Returns the size in memory of a region with the given extents and pixel
 			format with consecutive memory layout.
@@ -900,6 +902,19 @@ module akra {
          */
         export inline function getComponentCount(eFmt: EPixelFormats): uint {
         	return getDescriptionFor(eFmt).componentCount;
+        }
+
+        export inline function getComponentTypeBits(eFormat: EPixelFormats): uint {
+            var eType: EPixelComponentTypes = getComponentType(eFormat);
+            
+            switch(eType) {
+                case EPixelComponentTypes.BYTE:      return 8;   /*Byte per component (8 bit fixed 0.0..1.0)*/
+                case EPixelComponentTypes.SHORT:     return 16;  /*Short per component (16 bit fixed 0.0..1.0))*/
+                case EPixelComponentTypes.FLOAT16:   return 16;  /*16 bit float per component*/
+                case EPixelComponentTypes.FLOAT32:   return 32;  /*32 bit float per component*/
+            }
+
+            return 0;
         }
 
         /** Gets the format from given name.

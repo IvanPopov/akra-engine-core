@@ -588,7 +588,7 @@ module akra.math {
 	    h = Math.ceil(Math.log(n / Math.pow(2, w)) / Math.LN2);
 	    w = Math.pow(2, w);
 	    h = Math.pow(2, h);
-	    n = w * h * iElements;
+	    n = w * h;
 	    return [w, h, n];
 	}
 }

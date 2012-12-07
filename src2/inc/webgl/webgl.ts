@@ -4,6 +4,8 @@
 #include "IPixelBox.ts"
 #include "PixelFormat.ts"
 #include "common.ts"
+#include "IHardwareBuffer.ts"
+
 /* ClearBufferMask */
 #define GL_DEPTH_BUFFER_BIT               0x00000100
 #define GL_STENCIL_BUFFER_BIT             0x00000400
@@ -522,7 +524,7 @@ module akra.webgl {
 	    alphaBits 						= pContext.getParameter(GL_ALPHA_BITS);
 	    multisampleType 				= pContext.getParameter(GL_SAMPLE_COVERAGE_VALUE);
 
-	    pSupportedExtensionList = pContext.getSupportedExtensions();
+	    pSupportedExtensionList 		= pContext.getSupportedExtensions();
 	})(createContext());
 
 	export function hasExtension(sExtName: string): bool {
@@ -533,6 +535,17 @@ module akra.webgl {
 			}
 		}
 		return false;
+	}
+
+	function getWebGLUsage(iFlags: int): int {
+		if (TEST_ANY(iFlags, EHardwareBufferFlags.DYNAMIC)) {
+	        return GL_DYNAMIC_DRAW;
+	    }
+	    else if (TEST_ANY(iFlags, EHardwareBufferFlags.STREAM)) {
+	        return GL_STREAM_DRAW;
+	    }
+
+	    return GL_STATIC_DRAW;
 	}
 
 	export function getWebGLOriginFormat(eFormat: EPixelFormats): int {

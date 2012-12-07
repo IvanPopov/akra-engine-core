@@ -1,0 +1,11 @@
+
+C:\WebServers\home\akra\www\akra-engine-core\src2\build>node make.js inc/akra.ts -o ./bin/akra.js --build ../ -t CORE 
+
+> preprocessing started (8952)
+
+preprocessing exited with code 0 (successful)
+preprocessed to:  ./bin/~tmp.ts
+
+> compilation started (8952)  
+
+compilation exited with code 1 (failed)

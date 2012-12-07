@@ -5,12 +5,22 @@
 
 module akra {
 
-	IFACE(ITexture);
-
 	export interface IWebGLRenderer extends IRenderer {
 		getWebGLContext(): WebGLRenderingContext;
-		bindWebGLBuffer(iType: int, pBuffer: WebGLBuffer): void;
-		bindWebGLTexture(iType: int, pTexture: WebGLTexture): void;
+		
+		/** Buffer Objects. */
+		bindWebGLBuffer(eTarget: uint, pBuffer: WebGLBuffer): void;
+		
+		/** Texture Objects. */
+		bindWebGLTexture(eTarget: uint, pTexture: WebGLTexture): void;
+		activateWebGLTexture(iSlot: int): void;
+
+		/** Framebuffer Objects */
+		createWebGLFramebuffer(): WebGLFramebuffer;
+		bindWebGLFramebuffer(eTarget: uint, pBuffer: WebGLFramebuffer): void;
+		deleteWebGLFramebuffer(pBuffer: WebGLFramebuffer): void;
+
+		useWebGLProgram(pProgram: WebGLProgram): void;
 	}
 }
 

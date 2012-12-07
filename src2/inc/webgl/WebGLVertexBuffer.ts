@@ -11,17 +11,6 @@
 
 module akra.webgl {
 
-	function getWebGLUsage(iFlags: int): int {
-		if (TEST_ANY(iFlags, EHardwareBufferFlags.DYNAMIC)) {
-	        return GL_DYNAMIC_DRAW;
-	    }
-	    else if (TEST_ANY(iFlags, EHardwareBufferFlags.STREAM)) {
-	        return GL_STREAM_DRAW;
-	    }
-
-	    return GL_STATIC_DRAW;
-	}
-
 	export class WebGLVertexBuffer extends core.pool.resources.VertexBuffer implements IVertexBuffer {
 		protected _iByteSize: uint;
 
@@ -73,7 +62,7 @@ module akra.webgl {
 				"Размер переданного массива больше переданного размера буфера");
 			
 
-		    this._pWebGLBuffer = this._pWebGLContext.createBuffer();
+		    this._pWebGLBuffer = pWebGLRenderer.createWebGLBuffer();
 
 		    if (!this._pWebGLBuffer) {
 		        CRITICAL("Не удалось создать буфер");
@@ -96,7 +85,9 @@ module akra.webgl {
 		destroy(): void {
 			super.destroy();
 
-			this._pWebGLContext.deleteBuffer(this._pWebGLBuffer);
+			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+
+			pWebGLRenderer.deleteWebGLBuffer(this._pWebGLBuffer);
 
 			this._pWebGLBuffer = null;
 			this._pWebGLContext = null;
@@ -161,7 +152,7 @@ module akra.webgl {
 
 		resize(iSize: uint): bool {
 			var eUsage: int;
-			var pData;
+			var pData: Uint8Array;
 			var iMax: int = 0;
 			var pVertexData: IVertexData;
 		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
@@ -184,12 +175,12 @@ module akra.webgl {
 			}
 			
 			if(this._pWebGLContext.isBuffer(this._pWebGLBuffer)) {
-				this._pWebGLContext.deleteBuffer(this._pWebGLBuffer);
+				pWebGLRenderer.deleteWebGLBuffer(this._pWebGLBuffer);
 			}		
 			
 			eUsage = getWebGLUsage(this._iFlags);
 
-		    this._pWebGLBuffer = this._pWebGLContext.createBuffer();
+		    this._pWebGLBuffer = pWebGLRenderer.createWebGLBuffer();
 
 		    if (!this._pWebGLBuffer) {
 		        CRITICAL("Не удалось создать буфер");

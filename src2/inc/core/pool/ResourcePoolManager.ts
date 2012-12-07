@@ -7,6 +7,14 @@
 #include "IResourcePoolItem.ts"
 #include "IResourceWatcherFunc.ts"
 
+#ifdef WEBGL
+
+#include "webgl/WebGLPixelBuffer.ts"
+#include "webgl/WebGLVertexBuffer.ts"
+#include "webgl/WebGLVertexTexture.ts"
+
+#endif
+
 module akra.core.pool {
 	//is this class really singleton??
     export class ResourcePoolManager implements IResourcePoolManager {
