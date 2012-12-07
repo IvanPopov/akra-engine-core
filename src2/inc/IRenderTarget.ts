@@ -1,6 +1,9 @@
 #ifndef IRENDERTARGET_TS
 #define IRENDERTARGET_TS
 
+#include "IDepthBuffer.ts"
+#include "IFrameStats.ts"
+
 module akra {
 	export enum EFramebuffer {
 		FRONT, 	
@@ -32,7 +35,7 @@ module akra {
 		signal viewportAdded(pViewport: IViewport): void;
 		signal viewportRemoved(pViewport: IViewport): void;
 
-		addViewport((pCamera: ICamera, iZIndex?: uint, fLeft?: float, fTop?: float, fWidth: float, fHeight: float): IViewport;
+		addViewport(pCamera: ICamera, iZIndex?: uint, fLeft?: float, fTop?: float, fWidth?: float, fHeight?: float): IViewport;
 		getViewport(iIndex: int): IViewport;
 		getViewportByZIndex(iZIndex: int): IViewport;
 		hasViewportByZIndex(iZIndex: int): bool;

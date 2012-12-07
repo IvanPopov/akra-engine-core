@@ -131,6 +131,7 @@
 #include "display/Display3d.ts"
 
 #include "webgl/WebGLPixelBuffer.ts"
+#include "webgl/WebGLTextureBuffer.ts"
 
 #endif
 

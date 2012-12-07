@@ -41,7 +41,7 @@ module akra.core.pool.resources {
             super();
 
             this._pWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
-            this._pWebGLContext = this._pWebGLRenderer._getContext();
+            this._pWebGLContext = this._pWebGLRenderer.getWebGLContext();
 
             this._pParams[ETextureParameters.MIN_FILTER] = ETextureFilters.NEAREST;
             this._pParams[ETextureParameters.MAG_FILTER] = ETextureFilters.NEAREST;
@@ -136,7 +136,7 @@ module akra.core.pool.resources {
 
             var eTarget: ETextureTypes = this.target;
 
-            this._pWebGLRenderer._bindTexture(this);
+            this._pWebGLRenderer.bindTexture(this);
             this._pWebGLContext.texParameteri(eTarget, eParam, eValue);
             this._pParams[eParam] = eValue;
 

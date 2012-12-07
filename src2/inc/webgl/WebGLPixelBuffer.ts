@@ -50,8 +50,13 @@ module akra.webgl {
 			CRITICAL("Download not possible for this pixelbuffer type");
 		}
 
-		_bindToFramebuffer(pAttachment: any, iZOffset: uint): void {}
-		_getWEBGLFormat(): int { return this._iWEBGLInternalFormat; }
+		_bindToFramebuffer(pAttachment: any, iZOffset: uint): void {
+			CRITICAL("Framebuffer bind not possible for this pixelbuffer type");
+		}
+
+		_getWEBGLFormat(): int { 
+			return this._iWEBGLInternalFormat; 
+		}
 
 		create(iFlags: int): bool;
 		create(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats, iFlags: int): bool;
@@ -109,7 +114,7 @@ module akra.webgl {
 		blit(pSource: IPixelBuffer, pSrcBox: IBox, pDestBox: IBox): bool;
 		blit(pSource: IPixelBuffer, pSrcBox?: IBox, pDestBox?: IBox): bool {
 			if (arguments.length == 1) {
-				this.blit(pSource, 
+				return this.blit(pSource, 
 		            new geometry.Box(0, 0, 0, pSource.width, pSource.height, pSource.depth), 
 		            new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth)
 		        );
@@ -159,6 +164,7 @@ module akra.webgl {
 
 			if(arguments.length === 1) {
 				pDestBox = new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth);
+				return this.blitFromMemory(pSource, pDestBox);
 			}
 			else{
 				pDestBox = arguments[1];
@@ -218,6 +224,7 @@ module akra.webgl {
 			if(arguments.length === 1){
 				pDest = arguments[0];
 				pSrcBox = new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth);
+				return this.blitToMemory(pSrcBox, pDest);
 			}
 			else{
 				pSrcBox = arguments[0];
