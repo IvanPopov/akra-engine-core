@@ -8,28 +8,6 @@
 
 module akra.math {
     export class Mat3 {
-    	/*var m3fMat;
-
-	    if(this === window  || this === window.AKRA){
-	        m3fMat = Mat3._pStorage[Mat3._iIndex++];
-	        if(Mat3._iIndex == Mat3._nStorageSize){
-	            Mat3._iIndex = 0;
-	        }        
-
-	        //clear
-	        if(arguments.length == 0){
-	            // var pData = m3fMat.pData;
-	            // pData.a11 = pData.a12 = pData.a13 = 
-	            // pData.a21 = pData.a22 = pData.a23 = 
-	            // pData.a31 = pData.a32 = pData.a33 = 0;
-	            return m3fMat;
-	        }
-	    }
-	    else{
-	        this.pData = new Float32Array(9);
-	        m3fMat = this;
-	    }*/
-
 	    data : Float32Array;
 
 	    constructor();
@@ -53,17 +31,21 @@ module akra.math {
 
 			var nArgumentsLength: uint = arguments.length;
 
-			if(nArgumentsLength == 1){
-		        this.set(arguments[0]);    
-		    }
-		    else if(nArgumentsLength == 3){
-		        this.set(arguments[0],arguments[1],arguments[2]);    
-		    }
-		    else if(nArgumentsLength == 9){
-		        this.set(arguments[0],arguments[1],arguments[2],
-                        arguments[3],arguments[4],arguments[5],
-                        arguments[6],arguments[7],arguments[8]);    
-		    }
+			switch(nArgumentsLength){
+				case 1:
+					this.set(arguments[0]);
+					break;
+				case 3:
+					this.set(arguments[0], arguments[1], arguments[2]);
+					break;
+				case 9:
+					this.set(arguments[0], arguments[1], arguments[2],
+							 arguments[3], arguments[4], arguments[5],
+							 arguments[6], arguments[7], arguments[8]);
+					break;
+				default:
+					break;
+			}
 		};
 
 		set(): IMat3;

@@ -53,22 +53,26 @@ module akra.math {
 			else{
 				this.data = new Float32Array(16);
 
-				if(nArgumentsLength === 1){
-					if(arguments[0] instanceof Mat3){
-						this.set(arguments[0],vec3(0.));	
-					}
-					else{
-						this.set(arguments[0]);	
-					}
-				}
-				else if(nArgumentsLength === 4){
-					this.set(arguments[0],arguments[1],arguments[2],arguments[3]);
-				}
-				else if(nArgumentsLength === 16){
-					this.set(arguments[0], arguments[1], arguments[2], arguments[3],
+				switch(nArgumentsLength){
+					case 1:
+						if(arguments[0] instanceof Mat3){
+							this.set(arguments[0],vec3(0.));	
+						}
+						else{
+							this.set(arguments[0]);	
+						}	
+						break;
+					case 4:
+						this.set(arguments[0],arguments[1],arguments[2],arguments[3]);
+						break;
+					case 16:
+						this.set(arguments[0], arguments[1], arguments[2], arguments[3],
 							 arguments[4], arguments[5], arguments[6], arguments[7],
 							 arguments[8], arguments[9], arguments[10], arguments[11],
 							 arguments[12], arguments[13], arguments[14], arguments[15]);
+						 break;
+					 default:
+					 	break;	
 				}
 			}
 		};

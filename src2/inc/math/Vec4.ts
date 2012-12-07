@@ -351,6 +351,8 @@ module akra.math {
             return "[x: " + this.x + ", y: " + this.y 
                         + ", z: " + this.z + ", w: " + this.w + "]";
         };
+
+        ALLOCATE_STORAGE(Vec4,100)
     }
 }
 

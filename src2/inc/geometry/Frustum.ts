@@ -2,6 +2,7 @@
 #define FRUSUTM_TS
 
 #include "geometry.ts"
+#include "classifications.ts"
 #include "IFrustum.ts"
 
 module akra.geometry{
@@ -178,12 +179,12 @@ module akra.geometry{
 		};
 
 		testRect(pRect: IRect3d): bool{
-			if(planeClassify_Rect3d_Plane(pRect, this.leftPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Rect3d_Plane(pRect, this.rightPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Rect3d_Plane(pRect, this.topPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Rect3d_Plane(pRect, this.bottomPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Rect3d_Plane(pRect, this.nearPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Rect3d_Plane(pRect, this.farPlane) == EPlaneClassifications.PLANE_FRONT){
+			if(planeClassifyRect3d(this.leftPlane, pRect) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifyRect3d(this.rightPlane, pRect) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifyRect3d(this.topPlane, pRect) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifyRect3d(this.bottomPlane, pRect) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifyRect3d(this.nearPlane, pRect) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifyRect3d(this.farPlane, pRect) == EPlaneClassifications.PLANE_FRONT){
 
 				return false;
 			}
@@ -191,12 +192,12 @@ module akra.geometry{
 		};
 
 		testSphere(pSphere: ISphere): bool{
-			if(	   planeClassify_Sphere_Plane(pSphere, this.leftPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Sphere_Plane(pSphere, this.rightPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Sphere_Plane(pSphere, this.topPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Sphere_Plane(pSphere, this.bottomPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Sphere_Plane(pSphere, this.nearPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Sphere_Plane(pSphere, this.farPlane) == EPlaneClassifications.PLANE_FRONT){
+			if(	   planeClassifySphere(this.leftPlane, pSphere) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifySphere(this.rightPlane, pSphere) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifySphere(this.topPlane, pSphere) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifySphere(this.bottomPlane, pSphere) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifySphere(this.nearPlane, pSphere) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifySphere(this.farPlane, pSphere) == EPlaneClassifications.PLANE_FRONT){
 
 				return false;
 			}

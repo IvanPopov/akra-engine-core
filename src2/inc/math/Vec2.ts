@@ -26,7 +26,7 @@ module akra.math {
                 default:
                     this.x = this.y = 0.;
                     break;
-            };
+            }
         };
 
         set(): IVec2;
@@ -230,7 +230,9 @@ module akra.math {
 
         inline toString(): string{
             return "[x: " + this.x + ", y: " + this.y + "]";
-        }
+        };
+
+        ALLOCATE_STORAGE(Vec2,100)
    }
 }
 

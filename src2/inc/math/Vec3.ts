@@ -19,7 +19,7 @@ module akra.math {
         constructor(v2fVec: IVec2, fValue: float);
         constructor(fValue1: float, fValue2: float, fValue3: float);
         constructor(fValue1?, fValue2?, fValue3?){
-            var nArgumentsLength = arguments.length;
+            var nArgumentsLength: uint = arguments.length;
 
             switch(nArgumentsLength){
                 case 1:
@@ -352,6 +352,8 @@ module akra.math {
         get zx(): Vec2  { return new Vec2(this.z, this.x); }
         get zy(): Vec2  { return new Vec2(this.z, this.y); }
         get xyz(): Vec3 { return new Vec3(this.x, this.y, this.z); }*/
+
+        ALLOCATE_STORAGE(Vec3,100)
     }
 }
 

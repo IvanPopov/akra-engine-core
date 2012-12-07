@@ -22,20 +22,20 @@ module akra.math {
     	constructor(fX?, fY?, fZ?, fW?){
     		var nArgumentsLength: uint = arguments.length;
 
-    		if(nArgumentsLength === 1){
-    			this.set(arguments[0]);
-    		}
-    		else if(nArgumentsLength === 2){
-    			this.set(arguments[0],arguments[1]);
-    		}
-    		else if(nArgumentsLength === 4){
-    			this.set(arguments[0], arguments[1], arguments[2], arguments[3]);
-    		}
-    		else{
-    			this.x = 0.;
-    			this.y = 0.;
-    			this.z = 0.;
-    			this.w = 1.;
+    		switch(nArgumentsLength){
+    			case 1:
+    				this.set(arguments[0]);
+    				break;
+				case 2:
+					this.set(arguments[0], arguments[1]);
+					break;
+				case 4:
+					this.set(arguments[0], arguments[1], arguments[2], arguments[3]);
+					break;
+				default:
+					this.x = this.y = this.z = 0.;
+					this.w = 1.;
+					break;
     		}
     	};
 

@@ -2,26 +2,8 @@
 #define INTERSECTION_TS
 
 module akra.geometry{
-	export enum EVolumeClassifications{
-		NO_RELATION = 0,
-		EQUAL,
-		A_CONTAINS_B,
-		B_CONTAINS_A,
-		INTERSECTING
-	};
 
-	export enum EPlaneClassifications{
-		/**
-		 * ax+by+cz+d=0
-		 * PLANE_FRONT - объект находится перед плоскостью, то есть по направлению нормали
-		 * PLANE_BACK - объект находится за плостостью, то есть против направления нормали
-		 */
-		PLANE_FRONT = 0,
-		PLANE_BACK,
-		PLANE_INTERSECT
-	};
-
-	export function intersect_Plane2d_Ray2d(pPlane: IPlane2d, pRay: IRay2d): bool{
+	export function intersectPlane2dRay2d(pPlane: IPlane2d, pRay: IRay2d): bool{
 		var fDistance: float = pPlane.signedDistance(pRay.point);
 		var fNdotV: float = pPlane.normal.dot(pRay.normal);
 
@@ -43,7 +25,7 @@ module akra.geometry{
 		}
 	};
 
-	export function intersect_Plane3d_Ray3d(pPlane: IPlane3d, pRay: IRay3d): bool{
+	export function intersectPlane3dRay3d(pPlane: IPlane3d, pRay: IRay3d): bool{
 		var fDistance: float = pPlane.signedDistance(pRay.point);
 		var fNdotV: float = pPlane.normal.dot(pRay.normal);
 
@@ -65,7 +47,7 @@ module akra.geometry{
 		}
 	};
 
-	export function intersect_Circle_Ray2d(pCircle: ICircle, pRay: IRay2d): bool{
+	export function intersectCircleRay2d(pCircle: ICircle, pRay: IRay2d): bool{
 		var v2fCenterToPoint: IVec2 = pRay.point.subtract(pCircle.center, vec2());
 
 		var v2fNormal: IVec2 = pRay.normal;
@@ -97,7 +79,7 @@ module akra.geometry{
 		}
 	};
 
-	export function intersect_Sphere_Ray3d(pSphere: ISphere, pRay: IRay3d): bool{
+	export function intersectSphereRay3d(pSphere: ISphere, pRay: IRay3d): bool{
 		var v3fCenterToPoint: IVec3 = pRay.point.subtract(pSphere.center, vec3());
 
 		var v3fNormal: IVec3 = pRay.normal;
@@ -129,7 +111,7 @@ module akra.geometry{
 		}
 	};
 
-	export function intersect_Rect2d_Ray2d(pRect: IRect2d, pRay: IRay2d): bool{
+	export function intersectRect2dRay2d(pRect: IRect2d, pRay: IRay2d): bool{
 		var v2fNormal: IVec2 = pRay.normal;
 		var v2fPoint: IVec2 = pRay.point;
 
@@ -172,7 +154,7 @@ module akra.geometry{
 		return true;
 	};
 
-	export function intersect_Rect3d_Ray3d(pRect: IRect3d, pRay: IRay3d): bool{
+	export function intersectRect3dRay3d(pRect: IRect3d, pRay: IRay3d): bool{
 		var v3fNormal: IVec3 = pRay.normal;
 		var v3fPoint: IVec3 = pRay.point;
 
@@ -226,7 +208,7 @@ module akra.geometry{
 		return true;
 	};
 
-	export function intersect_Circle_Circle(pCircle1: ICircle, pCircle2: ICircle): bool{
+	export function intersectCircleCircle(pCircle1: ICircle, pCircle2: ICircle): bool{
 		var v2fCenter1: IVec2 = pCircle1.center;
 		var v2fCenter2: IVec2 = pCircle2.center;
 
@@ -241,7 +223,7 @@ module akra.geometry{
 		return true;
 	};
 
-	export function intersect_Sphere_Sphere(pSphere1: ISphere, pSphere2: ISphere): bool{
+	export function intersectSphereSphere(pSphere1: ISphere, pSphere2: ISphere): bool{
 		var v3fCenter1: IVec3 = pSphere1.center;
 		var v3fCenter2: IVec3 = pSphere2.center;
 
@@ -257,7 +239,7 @@ module akra.geometry{
 		return true;
 	};
 
-	export function intersect_Rect2d_Circle(pRect: IRect2d, pCircle: ICircle){
+	export function intersectRect2dCircle(pRect: IRect2d, pCircle: ICircle){
 		var v2fCenter: IVec2 = pCircle.center;
 		var fOffsetX: float = 0., fOffsetY: float = 0.;
 		var nInside: uint = 0;
@@ -296,7 +278,7 @@ module akra.geometry{
 		return true;
 	};
 
-	export function intersect_Rect3d_Sphere(pRect: IRect3d, pSphere: ISphere){
+	export function intersectRect3dSphere(pRect: IRect3d, pSphere: ISphere){
 		var v3fCenter: IVec3 = pSphere.center;
 		var fOffsetX: float = 0., fOffsetY: float = 0., fOffsetZ: float = 0.;
 		var nInside: uint = 0;
@@ -345,7 +327,7 @@ module akra.geometry{
 		return true;
 	};
 
-	export function intersect_Rect2d_Rect2d(pRect1: IRect2d, pRect2: IRect2d, pResult?: IRect2d): bool{
+	export function intersectRect2dRect2d(pRect1: IRect2d, pRect2: IRect2d, pResult?: IRect2d): bool{
 		if(!isDef(pResult)){
 			var fX0: float = math.max(pRect1.x0, pRect2.x0);
 			var fX1: float = math.min(pRect1.x1, pRect2.x1);
@@ -369,7 +351,7 @@ module akra.geometry{
 		}
 	};
 
-	export function intersect_Rect3d_Rect3d(pRect1: IRect3d, pRect2: IRect3d, pResult?: IRect3d): bool{
+	export function intersectRect3dRect3d(pRect1: IRect3d, pRect2: IRect3d, pResult?: IRect3d): bool{
 		if(!isDef(pResult)){
 			var fX0: float = math.max(pRect1.x0, pRect2.x0);
 			var fX1: float = math.min(pRect1.x1, pRect2.x1);
@@ -417,10 +399,10 @@ module akra.geometry{
 
 		if(nArgumentsLength === 3){
 			if(arguments[2] instanceof Rect2d){
-				return intersect_Rect2d_Rect2d(arguments[0], arguments[1], arguments[2]);
+				return intersectRect2dRect2d(arguments[0], arguments[1], arguments[2]);
 			}
 			else{
-				return intersect_Rect3d_Rect3d(arguments[0], arguments[1], arguments[2]);
+				return intersectRect3dRect3d(arguments[0], arguments[1], arguments[2]);
 			}
 		}
 		else{
@@ -429,40 +411,48 @@ module akra.geometry{
 
 			if(pArg1 instanceof Ray2d){
 				if(pArg0 instanceof Plane2d){
-					return intersect_Plane2d_Ray2d(pArg0, pArg1);
+					return intersectPlane2dRay2d(pArg0, pArg1);
 				}
 				else if(pArg0 instanceof Circle){
-					return intersect_Circle_Ray2d(pArg0, pArg1);
+					return intersectCircleRay2d(pArg0, pArg1);
 				}
 				else{
-					return intersect_Rect2d_Ray2d(pArg0, pArg1);
+					return intersectRect2dRay2d(pArg0, pArg1);
 				}
 			}
 			else if(pArg1 instanceof Ray3d){
 				if(pArg0 instanceof Plane3d){
-					return intersect_Plane3d_Ray3d(pArg0, pArg1);
+					return intersectPlane3dRay3d(pArg0, pArg1);
 				}
 				else if(pArg0 instanceof Sphere){
-					return intersect_Sphere_Ray3d(pArg0, pArg1);
+					return intersectSphereRay3d(pArg0, pArg1);
 				}
 				else{
-					return intersect_Rect3d_Ray3d(pArg0, pArg1);
+					return intersectRect3dRay3d(pArg0, pArg1);
 				}
 			}
 			else if(pArg1 instanceof Circle){
 				if(pArg0 instanceof Circle){
-					return intersect_Circle_Circle(pArg0, pArg1);
+					return intersectCircleCircle(pArg0, pArg1);
 				}
 				else{
-					return intersect_Rect2d_Circle(pArg0, pArg1);
+					return intersectRect2dCircle(pArg0, pArg1);
+				}
+			}
+			else if(pArg1 instanceof Sphere){
+				if(pArg0 instanceof Sphere){
+					return intersectSphereSphere(pArg0, pArg1);
+				}
+				else{
+					return intersectRect3dSphere(pArg0, pArg1);
 				}
 			}
 			else{
-				if(pArg0 instanceof Sphere){
-					return intersect_Sphere_Sphere(pArg0, pArg1);
+				if(pArg0 instanceof Rect2d){
+					return intersectRect2dRect2d(pArg0, pArg1);
 				}
 				else{
-					return intersect_Rect3d_Sphere(pArg0, pArg1);
+					return intersectRect3dRect3d(pArg0, pArg1);
 				}
 			}
 		}

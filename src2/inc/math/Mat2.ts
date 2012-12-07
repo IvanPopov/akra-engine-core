@@ -1,4 +1,5 @@
-///<reference path="../akra.ts" />
+#ifndef MAT2_TS
+#define MAT2_TS
 
 module akra.math {
     export class Mat2 {
@@ -46,3 +47,5 @@ module akra.math {
         }
     }
 }
+
+#endif

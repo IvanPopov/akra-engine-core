@@ -19,5 +19,6 @@
 #include "Frustum.ts"
 
 #include "intersections.ts"
+#include "classifications.ts"
 
 #endif
