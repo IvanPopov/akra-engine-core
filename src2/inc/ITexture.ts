@@ -3,10 +3,25 @@
 
 #include "IRenderResource.ts"
 #include "PixelFormat.ts"
+#include "IHardwareBuffer.ts"
 
 module akra {
 
     IFACE(IImg);
+
+    export enum ETextureFlags {
+        STATIC = <int>EHardwareBufferFlags.STATIC,
+        DYNAMIC = <int>EHardwareBufferFlags.DYNAMIC,
+        READEBLE = <int>EHardwareBufferFlags.READABLE,
+        DYNAMIC_DISCARDABLE = <int>EHardwareBufferFlags.DYNAMIC_DISCARDABLE,
+        /// mipmaps will be automatically generated for this texture
+        AUTOMIPMAP = 0x100,
+        /// this texture will be a render target, i.e. used as a target for render to texture
+        /// setting this flag will ignore all other texture usages except AUTOMIPMAP
+        RENDERTARGET = 0x200,
+        /// default to automatic mipmap generation static textures
+        DEFAULT = AUTOMIPMAP | STATIC
+    }
 
     export enum ETextureFilters {
         NEAREST = 0x2600,

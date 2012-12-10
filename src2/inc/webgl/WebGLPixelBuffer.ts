@@ -27,7 +27,7 @@ module akra.webgl {
 		protected _iCurrentLockFlags: int;
 		
 		protected _pBuffer: IPixelBox;
-		protected _iWEBGLInternalFormat: int;
+		protected _iWebGLInternalFormat: int;
 
 		inline get width(): uint { return this._iWidth; }
 		inline get height(): uint { return this._iHeight; }
@@ -54,8 +54,8 @@ module akra.webgl {
 			CRITICAL("Framebuffer bind not possible for this pixelbuffer type");
 		}
 
-		_getWEBGLFormat(): int { 
-			return this._iWEBGLInternalFormat; 
+		_getWebGLFormat(): int { 
+			return this._iWebGLInternalFormat; 
 		}
 
 		create(iFlags: int): bool;
@@ -82,7 +82,7 @@ module akra.webgl {
 			this.byteLength = iHeight * iWidth * akra.pixelUtil.getNumElemBytes(eFormat);
 
 			this._pBuffer = new pixelUtil.PixelBox(iWidth, iHeight, iDepth, eFormat);
-			this._iWEBGLInternalFormat = GL_NONE;
+			this._iWebGLInternalFormat = GL_NONE;
 
 			return true;
 		}

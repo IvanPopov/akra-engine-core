@@ -26,14 +26,17 @@ module akra.pixelUtil {
 
 			if (arguments.length >= 4) {
 				super(0, 0, 0, <uint>iWidth, <uint>iHeight, <uint>iDepth);	
+				this.data = isDef(arguments[4]) ? (<Uint8Array>arguments[4]) : null;
+				this.format = <EPixelFormats>arguments[3];
 			}
 			else {
 				super(<IBox>arguments[0]);
+				this.data = <Uint8Array>arguments[2];
+				this.format = <EPixelFormats>arguments[1];
 			}
 			
 			
-			this.data = <Uint8Array>arguments[2];
-			this.format = <EPixelFormats>arguments[1];
+			
 
 			this.setConsecutive();
 		}

@@ -675,7 +675,7 @@ module akra.webgl {
 		}
 	}
 
-	export function getWebGLInternalFormat(eFormat: EPixelFormats, isHWGamma: bool): int {
+	export function getWebGLInternalFormat(eFormat: EPixelFormats, isHWGamma: bool = false): int {
         switch (eFormat) {
             case EPixelFormats.L8:
             case EPixelFormats.L16:
@@ -745,7 +745,7 @@ module akra.webgl {
         }
     }
 
-    export function getClosestWebGLInternalFormat(eFormat: EPixelFormats, isHWGamma: bool): int {
+    export function getClosestWebGLInternalFormat(eFormat: EPixelFormats, isHWGamma: bool = false): int {
         var iGLFormat = webgl.getWebGLInternalFormat(eFormat, isHWGamma);
         
         if (iGLFormat === GL_NONE) {

@@ -67,7 +67,6 @@ module akra.core.pool.resources {
 		inline isLocked(): bool {
 			return this._isLocked;
 		}
-
 		
 		clone(pSrc: IHardwareBuffer): bool {
 			return false;

@@ -51,6 +51,7 @@ module akra {
     	vertexBufferPool: IResourcePool;
     	videoBufferPool: IResourcePool;
     	indexBufferPool: IResourcePool;
+        textureBufferPool: IResourcePool;
     	renderMethodPool: IResourcePool;
     	modelPool: IResourcePool;
     	imagePool: IResourcePool;			
