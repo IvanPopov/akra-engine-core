@@ -203,6 +203,8 @@ module akra {
 
         debug(bValue?: bool, bTrace?: bool): bool;
         isDeviceLost(): bool;
+
+        disableAllTextureUnits(): void;
     }
 }
 

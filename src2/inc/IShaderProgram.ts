@@ -5,9 +5,9 @@ module akra {
     
 
     export interface IShaderProgram extends IRenderResource {
-    	create(csVertex?: string, csPixel?: string, bDeferredCompilation?: bool): bool;
-    	compile(): bool;
-    	isCompiled(): bool;
+    	create(csVertex?: string, csPixel?: string): bool;
+    	compile(csVertex?: string, csPixel?: string): bool;
+    	isLinked(): bool;
     	isValid(): bool;
     	isActive(): bool;
 

@@ -17,7 +17,6 @@ module akra.webgl {
 		protected _pWebGLTexture: WebGLTexture;
 		protected _eWebGLFormat: int;
 		protected _eWebGLType: int;
-		protected _pWebGLContext: WebGLRenderingContext;
 
 		protected _ePixelFormat: EPixelFormats = EPixelFormats.FLOAT32_RGBA;
 		//переменная нужна, чтобы проигнорировать обновление копии, обычно, это не требуется
@@ -52,6 +51,7 @@ module akra.webgl {
 
 			var pPOTSize: uint[] = math.calcPOTtextureSize(math.ceil(iByteSize / pixelUtil.getNumElemBytes(this._ePixelFormat)));
 			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 		    var i: int;
 
 		    iWidth = pPOTSize[0];
@@ -62,9 +62,8 @@ module akra.webgl {
 			this._iWidth = iWidth;
 			this._iHeight = iHeight;
 		    this._iFlags = iFlags;
-		    this._pWebGLContext = pWebGLRenderer.getWebGLContext();
 
-		    debug_assert(this._pWebGLContext !== null, "cannot grab webgl context");
+		    debug_assert(pWebGLContext !== null, "cannot grab webgl context");
 
 		    //Софтварного рендеринга буфера у нас нет
 		    debug_assert(!this.isSoftware(), "no sftware rendering");
@@ -77,7 +76,7 @@ module akra.webgl {
 			debug_assert(!pData || pData.byteLength <= iByteSize, 
 				"Размер переданного массива больше переданного размера буфера");
 			
-		    this._pWebGLTexture = this._pWebGLContext.createTexture();
+		    this._pWebGLTexture = pWebGLContext.createTexture();
 		    this._eWebGLFormat = getWebGLOriginFormat(this._ePixelFormat);
 		    this._eWebGLType = getWebGLOriginDataType(this._ePixelFormat);
 
@@ -99,9 +98,72 @@ module akra.webgl {
 		    }
 
 		    pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, this._pWebGLTexture);
-		    this._pWebGLContext.texImage2D(GL_TEXTURE_2D, 0, this._eWebGLFormat, 
+		    pWebGLContext.texImage2D(GL_TEXTURE_2D, 0, this._eWebGLFormat, 
 		    	this._iWidth, this._iHeight, 0,  this._eWebGLFormat, this._eWebGLType, pTextureData);
 		    
+
+		    var pWebGLProgram: IWebGLShaderProgram = this.getManager().shaderProgramPool.findResource("WEBGL_update_vertex_texture");
+
+	        if (isNull(pWebGLProgram)) {
+	        	pWebGLProgram = this.getManager().shaderProgramPool.createResource("WEBGL_update_vertex_texture");
+	        	pWebGLProgram.create(
+	        	"																									\n\
+	        	uniform sampler2D sourceTexture;																	\n\
+				attribute vec4  VALUE;																				\n\
+				attribute float INDEX;																				\n\
+				attribute float SHIFT;																				\n\
+				                      																				\n\
+				uniform vec2 size;																					\n\
+				varying vec4 color;																					\n\
+				                   																					\n\
+				void main(void){																					\n\
+				    vec4 value = VALUE;																				\n\
+				    float  serial = INDEX;																			\n\
+				                          																			\n\
+				    int shift = int(SHIFT);																			\n\
+				    if (shift != 0) {																				\n\
+				        color = texture2D(sourceTexture,                                        					\n\
+				            vec2((mod(serial, size.x) +.5 ) / size.x, (floor(serial / size.x) + .5) / size.y)		\n\
+				            );																						\n\
+																													\n\
+																													\n\
+				        if (shift == 1) {																			\n\
+				            color = vec4(color.r, value.gba);														\n\
+				        }																							\n\
+				        else if (shift == 2) {																		\n\
+				            color = vec4(color.rg, value.ba);														\n\
+				        }																							\n\
+				        else if (shift == 3) {																		\n\
+				            color = vec4(color.rgb, value.a);														\n\
+				        }																							\n\
+				        else if (shift == -1) {																		\n\
+				            color = vec4(value.r, color.gba);														\n\
+				        }																							\n\
+				        else if (shift == -2) {																		\n\
+				            color = vec4(value.rg, color.ba);														\n\
+				        }																							\n\
+				        else {																						\n\
+				            color = vec4(value.rgb, color.a);														\n\
+				        }																							\n\
+				    }																								\n\
+				    else {																							\n\
+				        color = value;																				\n\
+				    }																								\n\
+				    gl_Position = vec4(2. * (mod(serial, size.x) + .5) / size.x - 1.,								\n\
+				                    2. * (floor(serial / size.x)  + .5) / size.y - 1., 0., 1.);						\n\
+				}																									\n\
+				",
+				"									\n\
+				#ifdef GL_ES                        \n\
+				    precision highp float;          \n\
+				#endif								\n\
+				varying vec4 color;                 \n\
+				                                    \n\
+				void main(void) {                   \n\
+				    gl_FragColor = color;           \n\
+				}                                   \n\
+				");
+	        }
 
 		    return true;
 		}
@@ -109,10 +171,9 @@ module akra.webgl {
 		destroy(): void {
 			super.destroy();
 
-			this._pWebGLContext.deleteTexture(this._pWebGLTexture);
+			pWebGLContext.deleteTexture(this._pWebGLTexture);
 
 			this._pWebGLTexture = null;
-			this._pWebGLContext = null;
 			this._pWebGLRenderer = null;
 
 			this._iByteSize = 0;
@@ -155,6 +216,7 @@ module akra.webgl {
 		        nElements: uint;
 
 		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 		    var pDataU8: Uint8Array = pData;
 
@@ -254,75 +316,16 @@ module akra.webgl {
 		        var pShaderSource;
 		        var pWebGLFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
 		        var pWebGLProgram: IWebGLShaderProgram = this.getManager().shaderProgramPool.findResource("WEBGL_update_vertex_texture");
-		        var pWebGLContext: WebGLRenderingContext = this._pWebGLContext;
 		        var pValueBuffer: WebGlBuffer = pWebGLRenderer.createWebGLBuffer();
 		        var pMarkupBuffer: WebGlBuffer = pWebGLRenderer.createWebGLBuffer();
 
-		        if (isNull(pWebGLProgram)) {
-		        	pWebGLProgram = this.getManager().shaderProgramPool.createResource("WEBGL_update_vertex_texture");
-		        	pWebGLProgram.create(
-		        	"																									\n\
-		        	uniform sampler2D sourceTexture;																	\n\
-					attribute vec4  VALUE;																				\n\
-					attribute float INDEX;																				\n\
-					attribute float SHIFT;																				\n\
-					                      																				\n\
-					uniform vec2 size;																					\n\
-					varying vec4 color;																					\n\
-					                   																					\n\
-					void main(void){																					\n\
-					    vec4 value = VALUE;																				\n\
-					    float  serial = INDEX;																			\n\
-					                          																			\n\
-					    int shift = int(SHIFT);																			\n\
-					    if (shift != 0) {																				\n\
-					        color = texture2D(sourceTexture,                                        					\n\
-					            vec2((mod(serial, size.x) +.5 ) / size.x, (floor(serial / size.x) + .5) / size.y)		\n\
-					            );																						\n\
-																														\n\
-																														\n\
-					        if (shift == 1) {																			\n\
-					            color = vec4(color.r, value.gba);														\n\
-					        }																							\n\
-					        else if (shift == 2) {																		\n\
-					            color = vec4(color.rg, value.ba);														\n\
-					        }																							\n\
-					        else if (shift == 3) {																		\n\
-					            color = vec4(color.rgb, value.a);														\n\
-					        }																							\n\
-					        else if (shift == -1) {																		\n\
-					            color = vec4(value.r, color.gba);														\n\
-					        }																							\n\
-					        else if (shift == -2) {																		\n\
-					            color = vec4(value.rg, color.ba);														\n\
-					        }																							\n\
-					        else {																						\n\
-					            color = vec4(value.rgb, color.a);														\n\
-					        }																							\n\
-					    }																								\n\
-					    else {																							\n\
-					        color = value;																				\n\
-					    }																								\n\
-					    gl_Position = vec4(2. * (mod(serial, size.x) + .5) / size.x - 1.,								\n\
-					                    2. * (floor(serial / size.x)  + .5) / size.y - 1., 0., 1.);						\n\
-					}																									\n\
-					",
-					"									\n\
-					#ifdef GL_ES                        \n\
-					    precision highp float;          \n\
-					#endif								\n\
-					varying vec4 color;                 \n\
-					                                    \n\
-					void main(void) {                   \n\
-					    gl_FragColor = color;           \n\
-					}                                   \n\
-					");
-		        }
+		        debug_assert(isDef(pWebGLProgram), "cound not find WEBGL_update_vertex_texture program");
 
 		        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pWebGLFramebuffer);
 		        pWebGLRenderer.useWebGLProgram(pWebGLProgram.getWebGLProgram());
 
-		        
+		        //FIXME: set weblg states (GL_DEPTH_FUNC, GL_***)
+
 		        pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
 		        	GL_TEXTURE_2D, this._pWebGLTexture, 0);
 
@@ -338,11 +341,11 @@ module akra.webgl {
 		        pWebGLContext.uniform1i("sourceTexture", 0);
 	
 		        pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pValueBuffer);
-		        pWebGLContext.vertexAttribPointer(pWebGLProgram.getWebGLLocation("VALUE"), 4, GL_FLOAT, false, 0, 0);
+		        pWebGLContext.vertexAttribPointer(pWebGLProgram.getWebGLAttributeLocation("VALUE"), 4, GL_FLOAT, false, 0, 0);
 
 		        pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pMarkupBuffer);
-		        pWebGLContext.vertexAttribPointer(pWebGLProgram.getWebGLLocation("INDEX"), 1, GL_FLOAT, false, 8, 0);
-		        pWebGLContext.vertexAttribPointer(pWebGLProgram.getWebGLLocation("SHIFT"), 1, GL_FLOAT, false, 8, 4);
+		        pWebGLContext.vertexAttribPointer(pWebGLProgram.getWebGLAttributeLocation("INDEX"), 1, GL_FLOAT, false, 8, 0);
+		        pWebGLContext.vertexAttribPointer(pWebGLProgram.getWebGLAttributeLocation("SHIFT"), 1, GL_FLOAT, false, 8, 4);
 
 		        pWebGLContext.viewport(0, 0, this._iWidth, this._iHeight);
 		        pWebGLContext.drawArrays(0, 0, nPixels);
@@ -356,7 +359,6 @@ module akra.webgl {
 
 		        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, null);
 		        pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);
-
 		    }
 
 		    return true;
@@ -368,7 +370,8 @@ module akra.webgl {
 			var iMax: int = 0;
 			var pVertexData: IVertexData;
 		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
-			
+			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+
 			if(this.isBackupPresent()) {
 				return false;		
 			}
@@ -386,12 +389,12 @@ module akra.webgl {
 					"Уменьшение невозможно. Страая разметка не укладывается в новый размер");
 			}
 			
-			if(this._pWebGLContext.isTexture(this._pWebGLTexture)) {
-				this._pWebGLContext.deleteTexture(this._pWebGLTexture);
+			if(pWebGLContext.isTexture(this._pWebGLTexture)) {
+				pWebGLContext.deleteTexture(this._pWebGLTexture);
 			}		
 
 
-		    this._pWebGLTexture = this._pWebGLContext.createTexture();
+		    this._pWebGLTexture = pWebGLContext.createTexture();
 
 		    if (!this._pWebGLTexture) {
 		        CRITICAL("Не удалось создать текстуру");
@@ -426,7 +429,7 @@ module akra.webgl {
 
             pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, this._pWebGLTexture);
 
-            this._pWebGLContext.texSubImage2D(GL_TEXTURE_2D, 0, iX, iY, iW, iH, 
+            pWebGLContext.texSubImage2D(GL_TEXTURE_2D, 0, iX, iY, iW, iH, 
             	this._eWebGLFormat, this._eWebGLType, pData);
         };
 

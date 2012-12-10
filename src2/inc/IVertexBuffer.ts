@@ -11,9 +11,9 @@ module akra {
 	IFACE(IVertexDeclaration);
 
 	export enum EVertexBufferTypes {
-		TYPE_UNKNOWN,
-		TYPE_VBO,
-		TYPE_TBO
+		UNKNOWN,
+		VBO,
+		TBO
 	};
 
 	export interface IVertexBuffer extends IHardwareBuffer, IRenderResource {

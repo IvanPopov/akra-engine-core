@@ -15,7 +15,6 @@ module akra.webgl {
 		protected _iByteSize: uint;
 
 		protected _pWebGLBuffer: WebGLBuffer;
-		protected _pWebGLContext: WebGLRenderingContext;
 
 		private _pLockData: Uint8Array = null;
 
@@ -40,15 +39,16 @@ module akra.webgl {
 			super.create(iByteSize, iFlags, pData);
 
 			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 		    var i: int;
 
 		    debug_assert(this._pWebGLBuffer == null, "webgl buffer already allocated");
 
 			this._iByteSize = iByteSize;
 		    this._iFlags = iFlags;
-		    this._pWebGLContext = pWebGLRenderer.getWebGLContext();
+		    pWebGLContext = pWebGLRenderer.getWebGLContext();
 
-		    debug_assert(this._pWebGLContext !== null, "cannot grab webgl context");
+		    debug_assert(pWebGLContext !== null, "cannot grab webgl context");
 
 		    //Софтварного рендеринга буфера у нас нет
 		    debug_assert(!this.isSoftware(), "no sftware rendering");
@@ -72,10 +72,10 @@ module akra.webgl {
 		    }
 
 		    pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, this._pWebGLBuffer);
-		    this._pWebGLContext.bufferData(GL_ARRAY_BUFFER, this._iByteSize, this._eWebGLUsage);
+		    pWebGLContext.bufferData(GL_ARRAY_BUFFER, this._iByteSize, this._eWebGLUsage);
 		    
 		    if (pData) {
-		        this._pWebGLContext.bufferSubData(
+		        pWebGLContext.bufferSubData(
 		        	GL_ARRAY_BUFFER, 0, isArrayBuffer(pData)? pData: pData.buffer);
 		    }
 
@@ -90,7 +90,6 @@ module akra.webgl {
 			pWebGLRenderer.deleteWebGLBuffer(this._pWebGLBuffer);
 
 			this._pWebGLBuffer = null;
-			this._pWebGLContext = null;
 			this._pWebGLRenderer = null;
 
 			this._iByteSize = 0;
@@ -122,6 +121,7 @@ module akra.webgl {
 			debug_assert(this._pWebGLBuffer, "WebGL buffer not exists");
 		    
 		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 		    
 		    pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, this._pWebGLBuffer);
 			
@@ -139,7 +139,7 @@ module akra.webgl {
 
 			pU8Data = pU8Data.subarray(0, iSize);
 
-			this._pWebGLContext.bufferSubData(GL_ARRAY_BUFFER, iOffset, pU8Data);
+			pWebGLContext.bufferSubData(GL_ARRAY_BUFFER, iOffset, pU8Data);
 			
 			if (this.isBackupPresent()) {
 		        this._pBackupCopy.set(pU8Data, iOffset);
@@ -155,7 +155,9 @@ module akra.webgl {
 			var pData: Uint8Array;
 			var iMax: int = 0;
 			var pVertexData: IVertexData;
+
 		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 			
 			if(this.isBackupPresent()) {
 				return false;		
@@ -174,7 +176,7 @@ module akra.webgl {
 					"Уменьшение невозможно. Страая разметка не укладывается в новый размер");
 			}
 			
-			if(this._pWebGLContext.isBuffer(this._pWebGLBuffer)) {
+			if(pWebGLContext.isBuffer(this._pWebGLBuffer)) {
 				pWebGLRenderer.deleteWebGLBuffer(this._pWebGLBuffer);
 			}		
 			
@@ -191,7 +193,7 @@ module akra.webgl {
 
 
 		    pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, this._pWebGLBuffer);
-			this._pWebGLContext.bufferData(GL_ARRAY_BUFFER, iSize, eUsage);
+			pWebGLContext.bufferData(GL_ARRAY_BUFFER, iSize, eUsage);
 			
 			pData = new Uint8Array(this._iByteSize);
 			
@@ -208,6 +210,10 @@ module akra.webgl {
 			this.notifyAltered();
 			
 			return true;
+		}
+
+		inline getWebGLBuffer(): WebGLBuffer {
+			return this._pWebGLBuffer;
 		}
 
 		protected lockImpl(iOffset: uint, iSize: uint, iLockFlags: int): any {
