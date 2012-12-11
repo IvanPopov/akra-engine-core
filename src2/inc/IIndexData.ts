@@ -10,6 +10,7 @@ module akra {
 		readonly type: EDataTypes;
 		readonly length: uint;
 		readonly bytesPerIndex: uint;
+		readonly id;
 
 		getData(iOffset: int, iSize: int): ArrayBuffer;
 		setData(pData: ArrayBufferView, iOffset: int, iCount: uint): bool;
@@ -18,6 +19,7 @@ module akra {
 
 		getPrimitiveType(): EPrimitiveTypes;
 		getPrimitiveCount(): uint;
+		getBufferHandle(): int;
 	}
 }
 

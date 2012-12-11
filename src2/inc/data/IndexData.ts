@@ -12,7 +12,9 @@ module akra.data {
 		private _iLength: uint;
 		private _ePrimitiveType: EPrimitiveTypes;
 		private _eElementsType: EDataTypes;
+		private _iId: int;
 
+		inline get id(): uint { return this._iId; }
 		inline get type(): uint { return this._eElementsType; };
 		inline get length(): uint { return this._iLength; };
 		inline get bytesPerIndex(): uint { return getTypeSize(this._eElementsType); };
@@ -22,6 +24,7 @@ module akra.data {
 
 		constructor (
 			pIndexBuffer: IIndexBuffer, 
+			id: uint,
 			iOffset: int, 
 			iCount: int, 
 			ePrimitiveType: EPrimitiveTypes = EPrimitiveTypes.TRIANGLELIST, 
@@ -35,6 +38,7 @@ module akra.data {
 			this._pIndexBuffer = pIndexBuffer;
 			this._iOffset = iOffset;
 			this._iLength = iCount;
+			this._iId = id;
 
 			debug_assert(pIndexBuffer.byteLength >= this.byteLength + this.byteOffset, "out of buffer limits.");
 		}

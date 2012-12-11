@@ -334,6 +334,8 @@ module akra.webgl {
 
 		        debug_assert(isDef(pWebGLProgram), "cound not find WEBGL_update_vertex_texture program");
 
+		        pWebGLRenderer.disableAllWebGLVertexAttribs();
+
 		        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pWebGLFramebuffer);
 		        pWebGLRenderer.useWebGLProgram(pWebGLProgram.getWebGLProgram());
 

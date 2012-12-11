@@ -27,6 +27,8 @@ module akra {
 		useWebGLProgram(pProgram: WebGLProgram): void;
 		createWebGLProgram(): WebGLProgram;
 		deleteWebGLProgram(pProgram: WebGLProgram): void;
+
+		disableAllWebGLVertexAttribs(): void;
 	}
 }
 

@@ -43,6 +43,8 @@ module akra.core.pool.resources {
 			
 			this._pBackupCopy.destroy();
 			this.freeVertexData();
+
+			this._iDataCounter = 0;
 		}
 
 		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;
