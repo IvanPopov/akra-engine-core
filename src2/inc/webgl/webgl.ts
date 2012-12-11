@@ -886,6 +886,10 @@ module akra.webgl {
         }	
 	}
 
+	export function checkFBOAttachmentFormat(eFormat: EPixelFormats): bool {
+		return false;
+	}
+
 }
 
 #endif

@@ -316,8 +316,12 @@ module akra.webgl {
 			pWebGLContext.copyTexSubImage2D(this._eFaceTarget, this._iLevel, 0, 0, 0, 0, this._iWidth, this._iHeight);
 		}
 
-		_getTarget(): int {
+		inline _getTarget(): int {
 			return this._eTarget;
+		}
+
+		inline _getWebGLTexture(): WebGLTexture {
+			return this._pWebGLTexture;
 		}
 
 		blit(pSource: IPixelBuffer): bool;
@@ -351,7 +355,68 @@ module akra.webgl {
 	    // Source texture must be 1D, 2D or 3D
 	    // Supports compressed formats as both source and destination format, it will use the hardware DXT compressor
 	    // if available.
-	    blitFromTexture(pSource: WebGLTextureBuffer, pSrcBox?: IBox, pDestBox?: IBox): bool {
+	    blitFromTexture(pSource: WebGLTextureBuffer, pSrcBox: IBox, pDestBox: IBox): bool {
+	    	var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+
+			// pWebGLRenderer._disableTextureUnitsFrom(0);
+			pWebGLRenderer.activateWebGLTexture(0);
+
+			// Disable alpha, depth and scissor testing, disable blending, 
+        	// and disable culling
+        	pWebGLContext.disable(GL_DEPTH_TEST);
+	        pWebGLContext.disable(GL_SCISSOR_TEST);
+	        pWebGLContext.disable(GL_BLEND);
+	        pWebGLContext.disable(GL_CULL_FACE);
+
+	        // Set up source texture
+        	pWebGLRenderer.bindWebGLTexture(pSource._getTarget(), pSource._getWebGLTexture());
+
+        	// Set filtering modes depending on the dimensions and source
+	        if(pSrcBox.width === pDestBox.width &&
+	           pSrcBox.height === pDestBox.height &&
+	           pSrcBox.depth === pDestBox.depth) {
+	            // Dimensions match -- use nearest filtering (fastest and pixel correct)
+	            pWebGLContext.texParameteri(pSource._getTarget(), GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	            pWebGLContext.texParameteri(pSource._getTarget(), GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	        }
+	        else {
+	            // Dimensions don't match -- use bi or trilinear filtering depending on the
+	            // source texture.
+	            if(TEST_ANY(pSource.getFlags(), ETextureFlags.AUTOMIPMAP)) {
+	                // Automatic mipmaps, we can safely use trilinear filter which
+	                // brings greatly improved quality for minimisation.
+	                pWebGLContext.texParameteri(pSource._getTarget(), GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	                pWebGLContext.texParameteri(pSource._getTarget(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);    
+	            }
+	            else {
+	                // Manual mipmaps, stay safe with bilinear filtering so that no
+	                // intermipmap leakage occurs.
+	                pWebGLContext.texParameteri(pSource._getTarget(), GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	                pWebGLContext.texParameteri(pSource._getTarget(), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	            }
+	        }
+	        // Clamp to edge (fastest)
+	        pWebGLContext.texParameteri(pSource._getTarget(), GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	        pWebGLContext.texParameteri(pSource._getTarget(), GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	        //Store old binding so it can be restored later
+	        var pOldFramebuffer: WebGLFramebuffer = pWebGLContext.getParameter(GL_FRAMEBUFFER_BINDING);
+	        
+	        var pFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
+	        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pFramebuffer);
+
+	        var pTempWebGLTexture: WebGLTexture = null;
+
+	        if(!webgl.checkFBOAttachmentFormat(this._eFormat)){
+
+	        }
+	        else {
+	        	// We are going to bind directly, so set viewport to size and position of destination slice
+	        	pWebGLContext.viewport(pDestBox.left, pDestBox.top, pDestBox.width, pDestBox.height);	
+	        }
+	        
+
 
 	    	return true;
 	    } 
