@@ -48,6 +48,8 @@ module akra.core.pool.resources {
 		readData(iOffset: any, iSize?: any, ppDest?: any): bool { 
 			if (arguments.length < 3) {
 				ppDest = arguments[0];
+				iOffset = 0;
+				iSize = ppDest.byteLength;
 			}
 
 			ASSERT((iOffset + iSize) <= this.byteLength);

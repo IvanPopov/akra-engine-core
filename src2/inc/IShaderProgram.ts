@@ -3,6 +3,16 @@
 
 module akra {
     
+    IFACE(ISampler2d);
+    IFACE(IVertexData);
+    IFACE(ITexture);
+    IFACE(IMat2);
+    IFACE(IMat3);
+    IFACE(IMat4);
+    IFACE(IVec2);
+    IFACE(IVec3);
+    IFACE(IVec4);
+    IFACE(IQuat4);
 
     export interface IShaderProgram extends IRenderResource {
     	create(csVertex?: string, csPixel?: string): bool;
@@ -31,8 +41,9 @@ module akra {
 
     	setVec4i(sName: string, v4iValue: IVec4): void;
     	setVec4i(sName: string, x: int, y: int, z: int, w: int): void;
-    	
+#ifdef MAT2_TS    	
     	setMat2(sName: string, m2fValue: IMat2): void;
+#endif
     	setMat3(sName: string, m3fValue: IMat3): void;
     	setMat4(sName: string, m4fValue: IMat4): void;
 
@@ -47,14 +58,15 @@ module akra {
 
     	setVec4Array(sName: string, pValue: IVec4[]): void;
     	setVec4iArray(sName: string, pValue: IVec4[]): void;
-
+#ifdef MAT2_TS      
     	setMat2Array(sName: string, pValue: IMat2[]): void;
+#endif
     	setMat3Array(sName: string, pValue: IMat3[]): void;
     	setMat4Array(sName: string, pValue: IMat4[]): void;
 
     	setStruct(sName: string, pData: Object): void;
-    	setSampler2D(sName: string, pData: ISampler2D): void;
-    	setSampler2DToStruct(sName: string, pData: ISampler2D): void;
+    	setSampler2D(sName: string, pData: ISampler2d): void;
+    	setSampler2DToStruct(sName: string, pData: ISampler2d): void;
 
     	setTexture(sName: string, pData: ITexture): void;
 

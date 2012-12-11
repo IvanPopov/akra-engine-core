@@ -1,34 +1,55 @@
 #ifndef WEBGLSHADERPROGRAM_TS
-#ifndef WEBGLSHADERPROGRAM_TS
+#define WEBGLSHADERPROGRAM_TS
+
+#include "math/math.ts"
+#include "ISampler2d.ts"
+#include "core/pool/ResourcePoolItem.ts"
+#include "IShaderProgram.ts"
 
 #define CHECK_WEBGL_LOCATION(iLoc, sName)\
-	var iLoc: int = this._pWebGLUniformLocations[sName]; \
+	var iLoc: WebGLUniformLocation = this._pWebGLUniformLocations[sName]; \
 	if (!isDef(iLoc)) { \
 		return false; \
 	}
 
 module akra.webgl {
-	export WebGLShaderProgram extends ResourcePoolItem implements IWebGLShaderProgram {
+
+    export interface WebGLUniformLocationMap {
+        [index: string]: WebGLUniformLocation;
+    }
+
+	export class WebGLShaderProgram extends core.pool.ResourcePoolItem implements IShaderProgram {
 		protected _pWebGLProgram: WebGLProgram;
-		protected _pWebGLUniformLocations: IntMap;
+		protected _pWebGLUniformLocations: WebGLUniformLocationMap;
 		protected _pWebGLAttributeLocations: IntMap;
 
-		protected _pWebGLUniformsInfo: WebGLActiveInfo[];
 		protected _pWebGLAttributesInfo: WebGLActiveInfo[];
 
 		create(csVertex?: string, csPixel?: string): bool {
-			this._csGLSLVertex = csVertex;
-			this._csGLSLFragment = csPixel;
-
 			if (arguments.length > 0) {
-				this.compile(csVertex || GLSL_VS_SHADER_MIN, csPixel || GLSL_FS_SHADER_MIN);
+				return this.compile(csVertex || GLSL_VS_SHADER_MIN, csPixel || GLSL_FS_SHADER_MIN);
 			}
+
+            return false;
 		}
+
+        destroy(): void {
+            var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+
+            pWebGLRenderer.deleteWebGLProgram(this._pWebGLProgram);
+
+            this._pWebGLUniformLocations = null;
+            this._pWebGLAttributeLocations = null;
+            this._pWebGLAttributesInfo = null;
+
+            this.notifyDestroyed();
+            this.notifyDisabled();
+        }
 
     	compile(csVertex: string = GLSL_VS_SHADER_MIN, csPixel: string = GLSL_FS_SHADER_MIN): bool {
     		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
-			var pWebGLProgram: WebGLProgram = this._pWebGLProgram = pWebGLContext.createProgram();
+			var pWebGLProgram: WebGLProgram = this._pWebGLProgram = pWebGLRenderer.createWebGLProgram();
 
 			var pWebGLVs: WebGLShader = this.createWebGLShader(GL_VERTEX_SHADER, csVertex);
 			var pWebGLFs: WebGLShader = this.createWebGLShader(GL_FRAGMENT_SHADER, csPixel);
@@ -70,8 +91,8 @@ module akra.webgl {
 			this.obtainWebGLUniforms();
 			this.obtainWebGLAttributes();
 
-			this.notifyCreated();
-			this.notifyRestored();
+            this.notifyCreated();
+            this.notifyRestored();
 
 			return true;
     	}
@@ -111,15 +132,15 @@ module akra.webgl {
     	
     	setVec2(sName: string, v2fValue: IVec2): bool;
     	setVec2(sName: string, x: float, y: float): bool;
-    	setVec2(sName: string, x?, y?): bool {
+    	inline setVec2(sName: string, x?, y?): bool {
     		CHECK_WEBGL_LOCATION(iLoc, sName);
     		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
 
     		if (arguments.length == 2) {
-    			pDevice.uniform2f(iLoc, arguments[1].x, arguments[1].y);
+    			pWebGLContext.uniform2f(iLoc, arguments[1].x, arguments[1].y);
     		}
     		else {
-    			pDevice.uniform2f(iLoc, arguments[1], arguments[2]);
+    			pWebGLContext.uniform2f(iLoc, arguments[1], arguments[2]);
     		}
 
     		return true;
@@ -128,15 +149,15 @@ module akra.webgl {
     	
     	setVec2i(sName: string, v2iValue: IVec2): bool;
     	setVec2i(sName: string, x: int, y: int): bool;
-    	setVec2i(sName: string, x?, y?): bool {
+    	inline setVec2i(sName: string, x?, y?): bool {
     		CHECK_WEBGL_LOCATION(iLoc, sName);
     		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
 
     		if (arguments.length == 2) {
-    			pDevice.uniform2i(iLoc, arguments[1].x, arguments[1].y);
+    			pWebGLContext.uniform2i(iLoc, arguments[1].x, arguments[1].y);
     		}
     		else {
-    			pDevice.uniform2i(iLoc, arguments[1], arguments[2]);
+    			pWebGLContext.uniform2i(iLoc, arguments[1], arguments[2]);
     		}
 
     		return true;
@@ -144,15 +165,15 @@ module akra.webgl {
 
     	setVec3(sName: string, v3fValue: IVec3): bool;
     	setVec3(sName: string, x: float, y: float, z: float): bool;
-    	setVec3(sName: string, x?, y?, z?): bool {
+    	inline setVec3(sName: string, x?, y?, z?): bool {
     		CHECK_WEBGL_LOCATION(iLoc, sName);
     		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
 
     		if (arguments.length == 2) {
-    			pDevice.uniform3f(iLoc, arguments[1].x, arguments[1].y, arguments[1].z);
+    			pWebGLContext.uniform3f(iLoc, arguments[1].x, arguments[1].y, arguments[1].z);
     		}
     		else {
-    			pDevice.uniform3f(iLoc, arguments[1], arguments[2], arguments[3]);
+    			pWebGLContext.uniform3f(iLoc, arguments[1], arguments[2], arguments[3]);
     		}
 
     		return true;
@@ -160,15 +181,15 @@ module akra.webgl {
     	
     	setVec3i(sName: string, v3iValue: IVec3): bool;
     	setVec3i(sName: string, x: int, y: int, z: int): bool;
-    	setVec3i(sName: string, x?, y?, z?): bool {
+    	inline setVec3i(sName: string, x?, y?, z?): bool {
 			CHECK_WEBGL_LOCATION(iLoc, sName);
     		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
 
     		if (arguments.length == 2) {
-    			pDevice.uniform3i(iLoc, arguments[1].x, arguments[1].y, arguments[1].z);
+    			pWebGLContext.uniform3i(iLoc, arguments[1].x, arguments[1].y, arguments[1].z);
     		}
     		else {
-    			pDevice.uniform3i(iLoc, arguments[1], arguments[2], arguments[3]);
+    			pWebGLContext.uniform3i(iLoc, arguments[1], arguments[2], arguments[3]);
     		}
 
     		return true;
@@ -176,15 +197,15 @@ module akra.webgl {
 
     	setVec4(sName: string, v4fValue: IVec4): bool;
     	setVec4(sName: string, x: float, y: float, z: float, w: float): bool;
-    	setVec4(sName: string, x?, y?, z?, w?): bool {
+    	inline setVec4(sName: string, x?, y?, z?, w?): bool {
     		CHECK_WEBGL_LOCATION(iLoc, sName);
     		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
 
     		if (arguments.length == 2) {
-    			pDevice.uniform4f(iLoc, arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w);
+    			pWebGLContext.uniform4f(iLoc, arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w);
     		}
     		else {
-    			pDevice.uniform4f(iLoc, arguments[1], arguments[2], arguments[3], arguments[3]);
+    			pWebGLContext.uniform4f(iLoc, arguments[1], arguments[2], arguments[3], arguments[3]);
     		}
 
     		return true;
@@ -192,34 +213,35 @@ module akra.webgl {
 
     	setVec4i(sName: string, v4iValue: IVec4): bool;
     	setVec4i(sName: string, x: int, y: int, z: int, w: int): bool;
-    	setVec4i(sName: string, x?, y?, z?, w?): bool {
+    	inline setVec4i(sName: string, x?, y?, z?, w?): bool {
     		CHECK_WEBGL_LOCATION(iLoc, sName);
     		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
 
     		if (arguments.length == 2) {
-    			pDevice.uniform4i(iLoc, arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w);
+    			pWebGLContext.uniform4i(iLoc, arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w);
     		}
     		else {
-    			pDevice.uniform4i(iLoc, arguments[1], arguments[2], arguments[3], arguments[3]);
+    			pWebGLContext.uniform4i(iLoc, arguments[1], arguments[2], arguments[3], arguments[3]);
     		}
 
     		return true;
     	}
-    	
-    	setMat2(sName: string, m2fValue: IMat2): bool {
+#ifdef IMAT2_TS    	
+    	inline setMat2(sName: string, m2fValue: IMat2): bool {
     		CHECK_WEBGL_LOCATION(iLoc, sName);
     		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
 
-    		pDevice.uniformMatrix2fv(iLoc, false, m2fValue.data);
+    		pWebGLContext.uniformMatrix2fv(iLoc, false, m2fValue.data);
     		
     		return true;
     	}
+#endif        
 
-    	setMat3(sName: string, m3fValue: IMat3): bool {
+    	inline setMat3(sName: string, m3fValue: IMat3): bool {
     		CHECK_WEBGL_LOCATION(iLoc, sName);
     		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
 
-    		pDevice.uniformMatrix3fv(iLoc, false, m2fValue.data);
+    		pWebGLContext.uniformMatrix3fv(iLoc, false, m3fValue.data);
     		
     		return true;
     	}
@@ -228,87 +250,89 @@ module akra.webgl {
     		CHECK_WEBGL_LOCATION(iLoc, sName);
     		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
 
-    		pDevice.uniformMatrix4fv(iLoc, false, m2fValue.data);
+    		pWebGLContext.uniformMatrix4fv(iLoc, false, m4fValue.data);
     		
     		return true;
     	}
 
-    	setFloat32Array(sName: string, pValue: Float32Array): bool {
+    	inline setFloat32Array(sName: string, pValue: Float32Array): bool {
     		CHECK_WEBGL_LOCATION(iLoc, sName);
     		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
 
-    		pDevice.uniformMatrix1fv(iLoc, false, pValue);
+    		pWebGLContext.uniform1fv(iLoc, pValue);
     		
     		return true;
     	}
 
-    	setInt32Array(sName: string, pValue: Int32Array): bool {
+    	inline setInt32Array(sName: string, pValue: Int32Array): bool {
     		CHECK_WEBGL_LOCATION(iLoc, sName);
     		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
 
-    		pDevice.uniformMatrix1iv(iLoc, false, pValue);
+    		pWebGLContext.uniform1iv(iLoc, pValue);
     		
     		return true;
     	}
 
-    	setVec2Array(sName: string, pValue: IVec2[]): bool {
+    	inline setVec2Array(sName: string, pValue: IVec2[]): bool {
     		return false;
     	}
 
-    	setVec2iArray(sName: string, pValue: IVec2[]): bool {
+    	inline setVec2iArray(sName: string, pValue: IVec2[]): bool {
     		return false;
     	}
 
-    	setVec3Array(sName: string, pValue: IVec3[]): bool {
+    	inline setVec3Array(sName: string, pValue: IVec3[]): bool {
     		return false;
     	}
 
-    	setVec3iArray(sName: string, pValue: IVec3[]): bool {
+    	inline setVec3iArray(sName: string, pValue: IVec3[]): bool {
     		return false;
     	}
 
-    	setVec4Array(sName: string, pValue: IVec4[]): bool {
+    	inline setVec4Array(sName: string, pValue: IVec4[]): bool {
     		return false;
     	}
 
-    	setVec4iArray(sName: string, pValue: IVec4[]): bool {
+    	inline setVec4iArray(sName: string, pValue: IVec4[]): bool {
     		return false;
     	}
 
-    	setMat2Array(sName: string, pValue: IMat2[]): bool {
+#ifdef IMAT2_TS
+    	inline setMat2Array(sName: string, pValue: IMat2[]): bool {
+    		return false;
+    	}
+#endif
+
+    	inline setMat3Array(sName: string, pValue: IMat3[]): bool {
     		return false;
     	}
 
-    	setMat3Array(sName: string, pValue: IMat3[]): bool {
+    	inline setMat4Array(sName: string, pValue: IMat4[]): bool {
     		return false;
     	}
 
-    	setMat4Array(sName: string, pValue: IMat4[]): bool {
+    	inline setStruct(sName: string, pData: Object): bool {
     		return false;
     	}
 
-    	setStruct(sName: string, pData: Object): bool {
+    	inline setSampler2D(sName: string, pData: ISampler2d): bool {
     		return false;
     	}
 
-    	setSampler2D(sName: string, pData: ISampler2D): bool {
+    	inline setSampler2DToStruct(sName: string, pData: ISampler2d): bool {
     		return false;
     	}
 
-    	setSampler2DToStruct(sName: string, pData: ISampler2D): bool {
-    		return false;
-    	}
-
-    	setTexture(sName: string, pData: ITexture): bool {
+    	inline setTexture(sName: string, pData: ITexture): bool {
     		return false;
     	}
 
     	//applyVertexBuffer(sName: string, pBuffer: IVertexBuffer);
-    	applyVertexData(sName: string, pData: IVertexData): bool {
+    	inline applyVertexData(sName: string, pData: IVertexData): bool {
     		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
 
-    		var pVertexBuffer: IVertexBuffer = pData.buffer;
-    		var iStride: uint = pVertexData.stride;
+    		var pVertexBuffer: IVertexBuffer = <IVertexBuffer>pData.buffer;
+    		var iStride: uint = pData.stride;
 
     		if (pVertexBuffer.type !== EVertexBufferTypes.VBO) {
     			return false
@@ -318,18 +342,18 @@ module akra.webgl {
     		var pVertexElement: IVertexElement;
     		var iLoc: int;
 
-    		for (var i: int = 0; i < pDecl.length; ++ i) {
+    		for (var i: int = 0; i < pVertexDecl.length; ++ i) {
     			pVertexElement = pVertexDecl[i];
     			iLoc = this.getWebGLAttributeLocation(pVertexElement.usage);
 
-    			if (!iLoc < 0) {
+    			if (iLoc < 0) {
     				debug_warning("founded invalid GLSL attribute location(guid: %s): %s", 
     					this.getGuid(), 
     					pVertexElement.usage);
     				continue;
     			}
 
-    			pWebGLRenderer.bindWebGLBuffer(<WebGLVertexBuffer>pVertexBuffer.getWebGLBuffer());
+    			pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, (<WebGLVertexBuffer>pVertexBuffer).getWebGLBuffer());
     			pWebGLContext.vertexAttribPointer(iLoc, 
     											  pVertexElement.count,
     											  pVertexElement.type,
@@ -347,17 +371,17 @@ module akra.webgl {
     		return this._pWebGLAttributeLocations[sName] || -1;
     	}
 
-    	inline getWebGLUniformLocation(sName: string): int {
+    	inline getWebGLUniformLocation(sName: string): WebGLUniformLocation {
 #ifdef DEBUG
-			var iLoc: int = this._pWebGLUniformLocations[sName];
+			var iLoc: WebGLUniformLocation = this._pWebGLUniformLocations[sName];
 
 			if (!isDef(iLoc)) {
 				WARNING("could not find location for GLSL attribute(guid: %s): %s", this.getGuid(), sName);	
 			}
 
-			return -1;
+			return null;
 #else
-    		return this._pWebGLUniformLocations[sName] || -1;
+    		return this._pWebGLUniformLocations[sName] || null;
 #endif
     	}
 
@@ -384,41 +408,38 @@ module akra.webgl {
 				return null;
 			}
 
-			return pShader;
+			return pWebGLShader;
     	}
 
     	protected obtainWebGLUniforms(): void {
     		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
 
     		var nUniforms: uint = pWebGLContext.getProgramParameter(this._pWebGLProgram, GL_ACTIVE_UNIFORMS);
-    		var pUniformLocations: IntMap = {};
-    		var pUniformsInfo: WebGLActiveInfo[] = [];
-    		var iLoc: int;
+    		var pUniformLocations: WebGLUniformLocationMap = {};
+    		var iLoc: WebGLUniformLocation;
     		var pUniformInfo: WebGLActiveInfo;
 
     		for (var i: int = 0; i < nUniforms; ++ i) {
-    			pUniformInfo = pWebGLContext.getActiveAttrib(this._pWebGLProgram, i);
+    			pUniformInfo = pWebGLContext. getActiveUniform(this._pWebGLProgram, i);
 				iLoc = pWebGLContext.getUniformLocation(this._pWebGLProgram, pUniformInfo.name);
 				pUniformLocations[pUniformInfo.name] = iLoc;
-				pUniformsInfo[iLoc] = pUniformInfo;
     		}
 
     		this._pWebGLUniformLocations = pUniformLocations;
-    		this._pWebGLUniformsInfo = pUniformsInfo;
     	}
 
     	protected obtainWebGLAttributes(): void {
     		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
 
     		var nAttributes: uint = pWebGLContext.getProgramParameter(this._pWebGLProgram, GL_ACTIVE_ATTRIBUTES);
-    		var pAttributeLocations: IntMap = {};
+    		var pAttributeLocations: IntMap = <IntMap>{};
     		var pAttributesInfo: WebGLActiveInfo[] = [];
     		var iLoc: int;
     		var pAttributeInfo: WebGLActiveInfo;
 
     		for (var i: int = 0; i < nAttributes; ++ i) {
     			pAttributeInfo = pWebGLContext.getActiveAttrib(this._pWebGLProgram, i);
-				iLoc = pWebGLContext.getAttributeLocation(this._pWebGLProgram, pAttributeInfo.name);
+				iLoc = pWebGLContext.getAttribLocation(this._pWebGLProgram, pAttributeInfo.name);
 #ifdef DEBUG
 				if (iLoc < 0 || !isDef(iLoc)) {
 					WARNING("could not get GLSL attribute location(guid: %s): %s", this.getGuid(), pAttributeInfo.name);

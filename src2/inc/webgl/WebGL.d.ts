@@ -739,7 +739,7 @@ interface WEBGL_depth_texture {
 interface OES_element_index_uint {
 };
 
-interface WebGLVertexArrayObjectOES : WebGLObject {
+interface WebGLVertexArrayObjectOES extends WebGLObject {
 };
 
 interface OES_vertex_array_object {

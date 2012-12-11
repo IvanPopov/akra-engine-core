@@ -16,7 +16,7 @@ module akra.core.pool.resources {
 		protected _pVertexDataArray: IVertexData[] = [];
 		protected _iDataCounter: uint = 0;
 
-		inline get type(): EVertexBufferTypes { return EVertexBufferTypes.TYPE_UNKNOWN; }
+		inline get type(): EVertexBufferTypes { return EVertexBufferTypes.UNKNOWN; }
 		inline get length(): uint { return this._pVertexDataArray.length; }
 
 		constructor (/*pManager: IResourcePoolManager*/) {

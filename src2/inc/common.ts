@@ -411,6 +411,7 @@ module akra {
       dstU8.set(srcU8);
     };
 
+
     //export function 
 
 	(<any>window).URL = (<any>window).URL ? (<any>window).URL : (<any>window).webkitURL ? (<any>window).webkitURL : null;

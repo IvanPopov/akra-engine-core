@@ -19,7 +19,7 @@ module akra.webgl {
 		private _pLockData: Uint8Array = null;
 
 
-		inline get type(): EVertexBufferTypes { return EVertexBufferTypes.TYPE_VBO; }
+		inline get type(): EVertexBufferTypes { return EVertexBufferTypes.VBO; }
 		inline get byteLength(): uint { return this._iByteSize; }
 
 		constructor (/*pManager: IResourcePoolManager*/) {
@@ -55,7 +55,7 @@ module akra.webgl {
 
 		    //Если есть локальная копия то буфер можно читать
 		    if (this.isBackupPresent()) {
-		        SET_ALL(this._iTypeFlags, EHardwareBufferFlags.READABLE);
+		        SET_ALL(this._iFlags, EHardwareBufferFlags.READABLE);
 		    }
 			
 			debug_assert(!pData || pData.byteLength <= iByteSize, 
@@ -72,7 +72,7 @@ module akra.webgl {
 		    }
 
 		    pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, this._pWebGLBuffer);
-		    pWebGLContext.bufferData(GL_ARRAY_BUFFER, this._iByteSize, this._eWebGLUsage);
+		    pWebGLContext.bufferData(GL_ARRAY_BUFFER, this._iByteSize, getWebGLUsage(this._iFlags));
 		    
 		    if (pData) {
 		        pWebGLContext.bufferSubData(
@@ -90,8 +90,6 @@ module akra.webgl {
 			pWebGLRenderer.deleteWebGLBuffer(this._pWebGLBuffer);
 
 			this._pWebGLBuffer = null;
-			this._pWebGLRenderer = null;
-
 			this._iByteSize = 0;
 		}
 
@@ -142,7 +140,7 @@ module akra.webgl {
 			pWebGLContext.bufferSubData(GL_ARRAY_BUFFER, iOffset, pU8Data);
 			
 			if (this.isBackupPresent()) {
-		        this._pBackupCopy.set(pU8Data, iOffset);
+		        this._pBackupCopy.writeData(pU8Data, iOffset);
 		    }
 
 		    this.notifyAltered();
@@ -164,7 +162,7 @@ module akra.webgl {
 			}
 
 			if(iSize < this.byteLength) {
-				for(var k: int = 0; k < this._pVertexDataArray; ++ k) {
+				for(var k: int = 0; k < this._pVertexDataArray.length; ++ k) {
 					pVertexData = this._pVertexDataArray[k];
 
 					if(pVertexData.byteOffset + pVertexData.byteLength > iMax) {
@@ -221,9 +219,9 @@ module akra.webgl {
 
             this.readData(iOffset, iSize, pRetData);
 
-            this._pLockData = pRealData;
+            this._pLockData = pRetData;
 
-	        return pRealData;
+	        return pRetData;
 		}
 
 		protected unlockImpl(): void {

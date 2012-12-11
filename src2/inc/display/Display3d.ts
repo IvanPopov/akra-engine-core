@@ -89,7 +89,7 @@ module akra.display {
 			}
 
 			this.pDisplayManager = pDisplayManager;
-			this.pRenderer = new render.Renderer(this);
+			this.pRenderer = null;
 			this.pScene = new scene.Scene3d(this);
 			this.pBuilder = scene.SceneBuilder.getSingleton();
 
@@ -106,7 +106,7 @@ module akra.display {
 			var pRenderer: IRenderer = this.pRenderer;
 			var fnRender = (iTime: int): void => {
 				if (DEBUG) {
-					if (pRenderer.isDeviceLost()) {
+					if (pRenderer.isValid()) {
 						debug_error("Device lost");
 					}
 				}

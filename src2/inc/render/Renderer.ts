@@ -95,206 +95,219 @@ module  akra.render {
 
 		private pScreen: IMesh;
 
-		constructor (pDisplay: IDisplay3d) {
+		constructor () {
 
 		}
 
-		//// frendly for EffectResource
+		// //// frendly for EffectResource
 
-    	/** * Регистрация компонента эффекта. **/
-    	registerComponent(pComponent: IAFXComponent): bool {
-    		return false;
-    	}
+  //   	/** * Регистрация компонента эффекта. **/
+  //   	registerComponent(pComponent: IAFXComponent): bool {
+  //   		return false;
+  //   	}
 
-    	/** Активация компонента для эффект ресурса. */
-    	activateComponent(pEffectResource: IAFXEffect, iComponentHandle: int, nShift?: uint): bool {
-    		return false;
-    	}
+  //   	/** Активация компонента для эффект ресурса. */
+  //   	activateComponent(pEffectResource: IAFXEffect, iComponentHandle: int, nShift?: uint): bool {
+  //   		return false;
+  //   	}
 
-    	/** Деактивация компонента для эффект ресурса. */
-    	deactivateComponent(pEffectResource: IAFXEffect, iComponentHandle: int, nShift?: uint): bool {
-    		return false;
-    	}
+  //   	/** Деактивация компонента для эффект ресурса. */
+  //   	deactivateComponent(pEffectResource: IAFXEffect, iComponentHandle: int, nShift?: uint): bool {
+  //   		return false;
+  //   	}
 
-    	/** Get effect components number */
-    	getComponentCount(pEffectResource: IAFXEffect): uint {
-    		return 0;
-    	}
+  //   	/** Get effect components number */
+  //   	getComponentCount(pEffectResource: IAFXEffect): uint {
+  //   		return 0;
+  //   	}
 
-    	//// frendly for Snapshot
-    	push(pRenderObject: IRenderableObject, pSnapshot: IRenderSnapshot): bool {
-    		return false;
-    	}
+  //   	//// frendly for Snapshot
+  //   	push(pRenderObject: IRenderableObject, pSnapshot: IRenderSnapshot): bool {
+  //   		return false;
+  //   	}
 
-    	pop(): bool {
-    		return false;
-    	}
+  //   	pop(): bool {
+  //   		return false;
+  //   	}
 
-    	activatePass(pSnapshot: IRenderSnapshot, iPass: int): bool {
-    		return false;
-    	}
+  //   	activatePass(pSnapshot: IRenderSnapshot, iPass: int): bool {
+  //   		return false;
+  //   	}
 
-    	deactivatePass(pSnapshot: IRenderSnapshot): bool {
-    		return false;
-    	}
+  //   	deactivatePass(pSnapshot: IRenderSnapshot): bool {
+  //   		return false;
+  //   	}
 
-    	activateSceneObject(pSceneObject: ISceneObject): void {}
-    	deactivateSceneObject(): void{}
+  //   	activateSceneObject(pSceneObject: ISceneObject): void {}
+  //   	deactivateSceneObject(): void{}
 
-    	finishPass(iPass: int): bool{
-    		return false;
-    	}
+  //   	finishPass(iPass: int): bool{
+  //   		return false;
+  //   	}
 
-    	applyBufferMap(pMap: IBufferMap): bool {
-    		return false;
-    	}
-    	applyVertexData(pData: IVertexData, ePrimType: EPrimitiveTypes): bool {
-    		return false;
-    	}
+  //   	applyBufferMap(pMap: IBufferMap): bool {
+  //   		return false;
+  //   	}
+  //   	applyVertexData(pData: IVertexData, ePrimType: EPrimitiveTypes): bool {
+  //   		return false;
+  //   	}
 
-    	applyFrameBufferTexture(pTexture: ITexture, eAttachment: EAttachmentTypes, eTexTarget: ETextureTypes, iLevel?: uint): bool {
-    		return false;
-    	}
+  //   	applyFrameBufferTexture(pTexture: ITexture, eAttachment: EAttachmentTypes, eTexTarget: ETextureTypes, iLevel?: uint): bool {
+  //   		return false;
+  //   	}
 
-    	applySurfaceMaterial(pMaterial: ISurfaceMaterial): bool {
-    		return false;
-    	}
+  //   	applySurfaceMaterial(pMaterial: ISurfaceMaterial): bool {
+  //   		return false;
+  //   	}
 
-    	getUniformRealName(sName: string): string {
-    		return null;
-    	}
+  //   	getUniformRealName(sName: string): string {
+  //   		return null;
+  //   	}
 
-    	getTextureRealName(sName: string): string {
-    		return null;
-    	}
-    	getActiveProgram(): IShaderProgram {
-    		return null;
-    	}
-    	getActiveTexture(iSlot: uint): ITexture {
-    		return null;
-    	}
-    	getTextureSlot(pTexture: ITexture): uint {
-    		return 0;
-    	}
-    	getFrameBuffer(iFrameBuffer?: int): IFrameBuffer {
-    		return null;
-    	}
+  //   	getTextureRealName(sName: string): string {
+  //   		return null;
+  //   	}
+  //   	getActiveProgram(): IShaderProgram {
+  //   		return null;
+  //   	}
+  //   	getActiveTexture(iSlot: uint): ITexture {
+  //   		return null;
+  //   	}
+  //   	getTextureSlot(pTexture: ITexture): uint {
+  //   		return 0;
+  //   	}
+  //   	getFrameBuffer(iFrameBuffer?: int): IFrameBuffer {
+  //   		return null;
+  //   	}
 
-    	isUniformTypeBase(sRealName: string): bool {
-    		return false;
-    	}
+  //   	isUniformTypeBase(sRealName: string): bool {
+  //   		return false;
+  //   	}
 
-		totalPasses(pEffect: IAFXEffect): uint {
-			return 0;
-		}
+		// totalPasses(pEffect: IAFXEffect): uint {
+		// 	return 0;
+		// }
     	
-    	//frendly for ShaderProgram
+  //   	//frendly for ShaderProgram
 
-    	activateTexture(pTexture: ITexture): bool {
-    		return false;
-    	}
+  //   	activateTexture(pTexture: ITexture): bool {
+  //   		return false;
+  //   	}
 
-    	activateVertexBuffer(pBuffer: IVertexBuffer): bool {
-    		return false;
-    	}
+  //   	activateVertexBuffer(pBuffer: IVertexBuffer): bool {
+  //   		return false;
+  //   	}
     	
-    	activateIndexBuffer(pBuffer: IIndexBuffer): bool {
-    		return false;
-    	}
+  //   	activateIndexBuffer(pBuffer: IIndexBuffer): bool {
+  //   		return false;
+  //   	}
     	
-    	activateProgram(pProgram: IShaderProgram): bool {
-    		return false;
-    	}
+  //   	activateProgram(pProgram: IShaderProgram): bool {
+  //   		return false;
+  //   	}
     	
-    	activateFrameBuffer(pFrameBuffer: IFrameBuffer): bool {
-    		return false;
-    	}
+  //   	activateFrameBuffer(pFrameBuffer: IFrameBuffer): bool {
+  //   		return false;
+  //   	}
     	
-    	deactivateFrameBuffer(pFrameBuffer: IFrameBuffer): bool {
-    		return false;
-    	}
-    	
-
-    	getRenderResourceState(pResource: IRenderResource): int {
-    		return 0;
-    	}
+  //   	deactivateFrameBuffer(pFrameBuffer: IFrameBuffer): bool {
+  //   		return false;
+  //   	}
     	
 
-
-    	//// frendly for resources
-
-    	registerRenderResource(pResource: IRenderResource): void {
-    		return;
-    	}
-    	
-    	releaseRenderResource(pResource: IRenderResource): void {
-    		return;
-    	}
-    	
-        /** Регистрация нового эффект ресурса. */
-        registerEffect(pEffectResource: IAFXEffect): bool {
-    		return false;
-    	}
-    	
-
-    	//// frendly for Texture
-
-    	bindTexture(pTexture: ITexture): bool {
-    		return false;
-    	}
-    	
-    	unbindTexture(): bool {
-    		return false;
-    	}
+  //   	getRenderResourceState(pResource: IRenderResource): int {
+  //   		return 0;
+  //   	}
     	
 
 
-    	//// frendly for render queue
-    	render(pEntry: IRenderEntry): void {
-    		return;
-    	}
+  //   	//// frendly for resources
+
+  //   	registerRenderResource(pResource: IRenderResource): void {
+  //   		return;
+  //   	}
+    	
+  //   	releaseRenderResource(pResource: IRenderResource): void {
+  //   		return;
+  //   	}
+    	
+  //       /** Регистрация нового эффект ресурса. */
+  //       registerEffect(pEffectResource: IAFXEffect): bool {
+  //   		return false;
+  //   	}
+    	
+
+  //   	//// frendly for Texture
+
+  //   	bindTexture(pTexture: ITexture): bool {
+  //   		return false;
+  //   	}
+    	
+  //   	unbindTexture(): bool {
+  //   		return false;
+  //   	}
     	
 
 
-    	///public API
-    	findEffect(sName?: string): IAFXEffect {
-    		return null;
-    	}
+  //   	//// frendly for render queue
+  //   	render(pEntry: IRenderEntry): void {
+  //   		return;
+  //   	}
+    	
+
+
+  //   	///public API
+  //   	findEffect(sName?: string): IAFXEffect {
+  //   		return null;
+  //   	}
     	
 
     	
-    	clearScreen(eValue: EBufferMasks, c4Color: IColor): void {
-    		return;
-    	}
+  //   	clearScreen(eValue: EBufferMasks, c4Color: IColor): void {
+  //   		return;
+  //   	}
     	
-    	switchRenderStage(eType: ERenderStages): void {
-    		return;
-    	}
+  //   	switchRenderStage(eType: ERenderStages): void {
+  //   		return;
+  //   	}
     	
-    	processRenderStage(): bool {
+  //   	processRenderStage(): bool {
+  //   		return false;
+  //   	}
+    	
+  //   	updateScreen(): bool {
+  //   		return false;
+  //   	}
+    	
+  //       /** Load *.fx file or *.abf */
+  //       loadEffectFile(sFilename: string, isSync?: bool): bool {
+  //   		return false;
+  //   	}
+    	
+
+        debug(bValue?: bool): bool {
+    		return false;
+    	}
+
+        isDebug(): bool {
+            return false;
+        }
+
+        enableAPITrace(): bool {
+            return false;
+        }
+    	
+        isValid(): bool {
     		return false;
     	}
     	
-    	updateScreen(): bool {
-    		return false;
-    	}
-    	
-        /** Load *.fx file or *.abf */
-        loadEffectFile(sFilename: string, isSync?: bool): bool {
-    		return false;
-    	}
-    	
+        inline disableAllTextureUnits(): void {
+            this.disableTextureUnitsFrom(0);
+        }
 
-        debug(bValue?: bool, bTrace?: bool): bool {
-    		return false;
-    	}
-    	
-        isDeviceLost(): bool {
-    		return false;
-    	}
-    	
+        inline disableTextureUnitsFrom(iUnit: uint): void {
 
-
+        }
 	}
 };
 

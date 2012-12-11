@@ -12,6 +12,8 @@
 #include "webgl/WebGLPixelBuffer.ts"
 #include "webgl/WebGLVertexBuffer.ts"
 #include "webgl/WebGLVertexTexture.ts"
+#include "webgl/WebGLShaderProgram.ts"
+#include "webgl/WebGLIndexBuffer.ts"
 
 #endif
 
@@ -323,10 +325,6 @@ module akra.core.pool {
             this.pRenderMethodPool = new ResourcePool(this, resources.RenderMethod);
             this.pRenderMethodPool.initialize(16);
 
-
-            this.pIndexBufferPool = new ResourcePool(this, resources.IndexBuffer);
-            this.pIndexBufferPool.initialize(16);
-
             this.pModelPool = new ResourcePool(this, resources.Model);
             this.pModelPool.initialize(16);
 
@@ -337,17 +335,22 @@ module akra.core.pool {
             this.pTexturePool.initialize(16);
             
 #ifdef WEBGL
+
+            this.pIndexBufferPool = new ResourcePool(this, webgl.WebGLIndexBuffer);
+            this.pIndexBufferPool.initialize(16);
+            
             this.pVertexBufferPool = new ResourcePool(this, webgl.WebGLVertexBuffer);
             this.pVertexBufferPool.initialize(16);
 
             this.pVideoBufferPool = new ResourcePool(this, webgl.WebGLVertexTexture);
             this.pVideoBufferPool.initialize(16);
+            
+            this.pShaderProgramPool = new ResourcePool(this, webgl.WebGLShaderProgram);
+            this.pShaderProgramPool.initialize(16);
 #else
             CRITICAL("Render system not specified");
 #endif
 
-            this.pShaderProgramPool = new ResourcePool(this, resources.ShaderProgram);
-            this.pShaderProgramPool.initialize(16);
 
             this.pComponentPool = new ResourcePool(this, resources.Component);
             this.pComponentPool.initialize(16);

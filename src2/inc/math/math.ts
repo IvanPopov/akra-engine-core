@@ -597,7 +597,9 @@ module akra {
 	export var Vec2 = math.Vec2;
 	export var Vec3 = math.Vec3;
 	export var Vec4 = math.Vec4;
+#ifdef MAT2_TS	
 	export var Mat2 = math.Mat2;
+#endif	
 	export var Mat3 = math.Mat3;
 	export var Mat4 = math.Mat4;
 	export var Quat4 = math.Quat4;

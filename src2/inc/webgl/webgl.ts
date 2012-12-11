@@ -116,7 +116,7 @@ module akra.webgl {
 	    }
 
 
-	    pWebGLContext.pWebGLExtentionList = pWebGLExtentionList;
+	    (<any>pWebGLContext).pWebGLExtentionList = pWebGLExtentionList;
 	    pLoadedExtensionList = pWebGLExtentionList;
 
 	})(createContext());
@@ -131,7 +131,7 @@ module akra.webgl {
         return false;
 	}
 
-	function getWebGLUsage(iFlags: int): int {
+	export function getWebGLUsage(iFlags: int): int {
 		if (TEST_ANY(iFlags, EHardwareBufferFlags.DYNAMIC)) {
 	        return GL_DYNAMIC_DRAW;
 	    }
@@ -152,18 +152,18 @@ module akra.webgl {
                 return GL_LUMINANCE;
             
             case EPixelFormats.FLOAT16_RGB:
-            	return webgl.hasExtension(OES_texture_half_float) ? GL_RGB : 0;
+            	return webgl.hasExtension(OES_TEXTURE_HALF_FLOAT) ? GL_RGB : 0;
 
             case EPixelFormats.FLOAT16_RGBA:
-            	return webgl.hasExtension(OES_texture_half_float) ? GL_RGBA : 0;
+            	return webgl.hasExtension(OES_TEXTURE_HALF_FLOAT) ? GL_RGBA : 0;
 
            	case EPixelFormats.FLOAT16_R:
             case EPixelFormats.R8:
-                return webgl.hasExtension(EXT_texture_rg) ? GL_RED_EXT : 0;
+                return webgl.hasExtension(EXT_TEXTURE_RG) ? GL_RED_EXT : 0;
 
             case EPixelFormats.FLOAT16_GR:
             case EPixelFormats.RG8:
-                return webgl.hasExtension(EXT_texture_rg) ? GL_RG_EXT : 0;
+                return webgl.hasExtension(EXT_TEXTURE_RG) ? GL_RG_EXT : 0;
 
             case EPixelFormats.BYTE_LA:
             case EPixelFormats.SHORT_GR:
@@ -171,13 +171,13 @@ module akra.webgl {
 
             // PVRTC compressed formats
             case EPixelFormats.PVRTC_RGB2:
-                return webgl.hasExtension(WEBGL_compressed_texture_pvrtc) ? GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG : 0;
+                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_PVRTC) ? GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG : 0;
             case EPixelFormats.PVRTC_RGB4:
-                return webgl.hasExtension(WEBGL_compressed_texture_pvrtc) ? GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG : 0;
+                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_PVRTC) ? GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG : 0;
             case EPixelFormats.PVRTC_RGBA2:
-                return webgl.hasExtension(WEBGL_compressed_texture_pvrtc) ? GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG : 0;
+                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_PVRTC) ? GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG : 0;
             case EPixelFormats.PVRTC_RGBA4:
-                return webgl.hasExtension(WEBGL_compressed_texture_pvrtc) ? GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG : 0;
+                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_PVRTC) ? GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG : 0;
 
             case EPixelFormats.R5G6B5:
             case EPixelFormats.B5G6R5:
@@ -197,13 +197,13 @@ module akra.webgl {
                 return GL_RGBA;
 
             case EPixelFormats.DXT1:
-                return webgl.hasExtension(WEBGL_compressed_texture_s3tc) ? GL_COMPRESSED_RGBA_S3TC_DXT1_EXT : 0;
+                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_S3TC) ? GL_COMPRESSED_RGBA_S3TC_DXT1_EXT : 0;
 
             case EPixelFormats.DXT3:
-                return webgl.hasExtension(WEBGL_compressed_texture_s3tc) ? GL_COMPRESSED_RGBA_S3TC_DXT3_EXT : 0;
+                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_S3TC) ? GL_COMPRESSED_RGBA_S3TC_DXT3_EXT : 0;
 
             case EPixelFormats.DXT5:
-                return webgl.hasExtension(WEBGL_compressed_texture_s3tc) ? GL_COMPRESSED_RGBA_S3TC_DXT5_EXT : 0;
+                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_S3TC) ? GL_COMPRESSED_RGBA_S3TC_DXT5_EXT : 0;
 
             case EPixelFormats.FLOAT32_GR:
             case EPixelFormats.FLOAT32_R:
@@ -214,6 +214,9 @@ module akra.webgl {
              
 	}
 	
+	export function getWebGLOriginDataType(eFormat: EPixelFormats): int {
+		return 0;
+	}
 
 	export function convertToWebGLformat(pSource: IPixelBox, pDest: IPixelBox): void {
 	
