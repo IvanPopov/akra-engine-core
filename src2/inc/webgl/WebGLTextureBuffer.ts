@@ -359,8 +359,8 @@ module akra.webgl {
 	    	var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
-			// pWebGLRenderer._disableTextureUnitsFrom(0);
-			pWebGLRenderer.activateWebGLTexture(0);
+			pWebGLRenderer.disableTextureUnitsFrom(0);
+			pWebGLRenderer.activateWebGLTexture(GL_TEXTURE0);
 
 			// Disable alpha, depth and scissor testing, disable blending, 
         	// and disable culling
@@ -409,14 +409,123 @@ module akra.webgl {
 	        var pTempWebGLTexture: WebGLTexture = null;
 
 	        if(!webgl.checkFBOAttachmentFormat(this._eFormat)){
+	        	// If target format not directly supported, create intermediate texture
+	        	var iGLTempFormat: int = webgl.getClosestWebGLInternalFormat(webgl.getSupportedAlternative(this._eFormat));
+	        	
+	        	pTempWebGLTexture = pWebGLRenderer.createWebGLTexture();
+	        	pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pTempWebGLTexture);
+	        	// Allocate temporary texture of the size of the destination area
+	        	pWebGLContext.texImage2D(GL_TEXTURE_2D, 0, iGLTempFormat, 
+                         				 math.ceilingPowerOfTwo(pDestBox.width), 
+                         				 math.ceilingPowerOfTwo(pDestBox.height), 
+             				             0, GL_RGBA, GL_UNSIGNED_BYTE, null);
 
+	        	pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                      			   GL_TEXTURE_2D, pTempWebGLTexture, 0);
+	        	// Set viewport to size of destination slice
+	        	pWebGLContext.viewport(0, 0, pDestBox.width, pDestBox.height);
 	        }
 	        else {
 	        	// We are going to bind directly, so set viewport to size and position of destination slice
 	        	pWebGLContext.viewport(pDestBox.left, pDestBox.top, pDestBox.width, pDestBox.height);	
 	        }
-	        
 
+	        // Process each destination slice
+	        var iSlice: int = 0;
+	        for(iSlice = pDestBox.front; iSlice < pDestBox.back; ++iSlice) {
+	            if(isNull(pTempWebGLTexture)) {
+	                // Bind directly
+	                this._bindToFramebuffer(GL_COLOR_ATTACHMENT0, iSlice);
+	            }
+
+	            /// Calculate source texture coordinates
+	            var u1: float = <float>pSrcBox.left / <float>pSource.width;
+	            var v1: float = <float>pSrcBox.top / <float>pSource.height;
+	            var u2: float = <float>pSrcBox.right / <float>pSource.width;
+	            var v2: float = <float>pSrcBox.bottom / <float>pSource.height;
+	            /// Calculate source slice for this destination slice
+	            var w: float = <float>(iSlice - pDestBox.front) / <float>pDestBox.depth;
+	            /// Get slice # in source
+	            w = w * <float>pSrcBox.depth + pSrcBox.front;
+	            /// Normalise to texture coordinate in 0.0 .. 1.0
+	            w = (w + 0.5) / <float>pSource.depth;
+	            
+	            /// Finally we're ready to rumble	
+	            pWebGLRenderer.bindWebGLTexture(pSource._getTarget(), pSource._getWebGLTexture());
+	         	
+	            pWebGLContext.enable(pSource._getTarget());
+	            
+
+	            var pSquareVertices: Float32Array = new Float32Array([ -1.0, -1.0,
+												                		1.0, -1.0,
+												               		   -1.0,  1.0,
+												                		1.0,  1.0
+												            		 ]);
+	            var pTexCoords: Float32Array = new Float32Array([ u1, v1, w,
+													              u2, v1, w,
+													              u2, v2, w,
+													              u1, v2, w
+													            ]);
+
+				pWebGLRenderer.disableAllWebGLVertexAttribs();
+	            
+	            var iPosAttrIndex: int = 0;
+	            var iTexAttrIndex: int = 0;
+	            
+	            //Get shader programm
+
+	            var pPositionBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
+	            var pTexCoordsBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer(); 
+
+	            pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pPositionBuffer);
+		        pWebGLContext.bufferData(GL_ARRAY_BUFFER, pSquareVertices, GL_STREAM_DRAW);
+	            pWebGLContext.vertexAttribPointer(iPosAttrIndex, 2, GL_FLOAT, false, 0, 0);
+	            pWebGLContext.enableVertexAttribArray(iPosAttrIndex);
+
+	            pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pTexCoordsBuffer);
+		        pWebGLContext.bufferData(GL_ARRAY_BUFFER, pTexCoords, GL_STREAM_DRAW);
+	            pWebGLContext.vertexAttribPointer(iTexAttrIndex, 3, GL_FLOAT, false, 0, 0);
+	            pWebGLContext.enableVertexAttribArray(iTexAttrIndex);
+
+	            pWebGLContext.drawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	            pWebGLContext.disable(pSource._getTarget());
+
+	            pWebGLContext.disableVertexAttribArray(iPosAttrIndex);
+	            pWebGLContext.disableVertexAttribArray(iTexAttrIndex);
+	            
+	            if(!isNull(pTempWebGLTexture)) {
+	                // Copy temporary texture
+	                pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
+	                
+	                switch(this._eTarget) {
+	                    case GL_TEXTURE_2D:
+	                    case GL_TEXTURE_CUBE_MAP:
+	                        pWebGLContext.copyTexSubImage2D(this._eFaceTarget, this._iLevel, 
+	                                            			pDestBox.left, pDestBox.top, 
+	                                           				0, 0, pDestBox.width, pDestBox.height);
+	                        break;
+	                }
+	            }
+	        }
+	        
+	        // Finish up 
+	        if(!isNull(pTempWebGLTexture)) {
+	            // Generate mipmaps
+	            if(TEST_ANY(this._iFlags, ETextureFlags.AUTOMIPMAP)) {
+	                pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
+	                pWebGLContext.generateMipmap(this._eTarget);
+	            }
+	        }
+	        
+	        // Reset source texture to sane state
+	        pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
+	        
+	        // Detach texture from temporary framebuffer
+	        pWebGLContext.framebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+	                                  			  GL_RENDERBUFFER, null);
+	        // Restore old framebuffer
+	        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFramebuffer);
+	        pWebGLRenderer.deleteWebGLTexture(pTempWebGLTexture);
 
 	    	return true;
 	    } 
@@ -477,7 +586,7 @@ module akra.webgl {
 	        var iWebGLFormat:int = getClosestWebGLInternalFormat(pSource.format);
 	        var iWebGLDataType: int = getWebGLOriginDataType(pSource.format);
 
-	        pTempWebGLTexture = pWebGLContext.createTexture();
+	        pTempWebGLTexture = pWebGLRenderer.createWebGLTexture();
 
 	        if(isNull(pTempWebGLTexture)){
 	        	ERROR("Can not create WebGL texture");
@@ -505,7 +614,7 @@ module akra.webgl {
 	        //Delete temp data
 	        pTextureBufferPool.destroyResource(pTempTexBuffer);	        
 
-	        pWebGLContext.deleteTexture(pTempWebGLTexture);
+	        pWebGLRenderer.deleteWebGLTexture(pTempWebGLTexture);
 	        pTempWebGLTexture = null;
 	        pTempBoxTarget = null;
 

@@ -489,6 +489,40 @@ module akra.webgl {
 		return false;
 	}
 
+	export function getSupportedAlternative(eFormat: EPixelFormats): EPixelFormats {
+		if (checkFBOAttachmentFormat(eFormat)) {
+            return eFormat;
+        }
+
+        /// Find first alternative
+        var pct: EPixelComponentTypes = pixelUtil.getComponentType(eFormat);
+
+        switch (pct) {
+            case EPixelComponentTypes.BYTE:
+                eFormat = EPixelFormats.A8R8G8B8;
+                break;
+            case EPixelComponentTypes.SHORT:
+                eFormat = EPixelFormats.SHORT_RGBA;
+                break;
+            case EPixelComponentTypes.FLOAT16:
+                eFormat = EPixelFormats.FLOAT16_RGBA;
+                break;
+            case EPixelComponentTypes.FLOAT32:
+                eFormat = EPixelFormats.FLOAT32_RGBA;
+                break;
+            case EPixelComponentTypes.COUNT:
+            default:
+                break;
+        }
+
+        if (checkFBOAttachmentFormat(eFormat)){
+            return eFormat;
+        }
+
+        /// If none at all, return to default
+		return EPixelFormats.A8R8G8B8;
+	}
+
 }
 
 #endif
