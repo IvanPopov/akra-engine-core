@@ -11,6 +11,8 @@ module akra.math {
         y: float;
         z: float;
 
+        #include "VectorsGettersSetters/Vec3GettersSetters.ts"
+
         constructor();
         constructor(fValue: float);
         constructor(v3fVec: IVec3);

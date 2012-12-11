@@ -128,11 +128,11 @@ module akra.geometry{
 		}
 	};
 
-	function _planeClassify(pPlane: IPlane2d, pCircle: ICircle): EPlaneClassifications;
-	function _planeClassify(pPlane: IPlane3d, pSphere: ISphere): EPlaneClassifications;
-	function _planeClassify(pPlane: IPlane2d, pRect: IRect2d): EPlaneClassifications;
-	function _planeClassify(pPlane: IPlane3d, pRect: IRect3d): EPlaneClassifications;
-	function _planeClassify(pPlane?, pRect?): EPlaneClassifications{
+	export function planeClassify(pPlane: IPlane2d, pCircle: ICircle): EPlaneClassifications;
+	export function planeClassify(pPlane: IPlane3d, pSphere: ISphere): EPlaneClassifications;
+	export function planeClassify(pPlane: IPlane2d, pRect: IRect2d): EPlaneClassifications;
+	export function planeClassify(pPlane: IPlane3d, pRect: IRect3d): EPlaneClassifications;
+	export function planeClassify(pPlane?, pRect?): EPlaneClassifications{
 		var pArg0: any = arguments[0];
 		var pArg1: any = arguments[1];
 
@@ -153,8 +153,6 @@ module akra.geometry{
 			}
 		}
 	};
-
-	export var planeClassify = _planeClassify;
 
 	export function classifyRect2d(pRectA: IRect2d, pRectB: IRect2d): EVolumeClassifications{
 		var fRectAX0: float = pRectA.x0, fRectAX1: float = pRectA.x1;

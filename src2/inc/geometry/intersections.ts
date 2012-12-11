@@ -382,19 +382,19 @@ module akra.geometry{
 		}
 	};
 
-	function _intersect(pPlane: IPlane2d, pRay: IRay2d): bool;
-	function _intersect(pPlane: IPlane3d, pRay: IRay3d): bool;
-	function _intersect(pCircle: ICircle, pRay: IRay2d): bool;
-	function _intersect(pSphere: ISphere, pRay: IRay3d): bool;
-	function _intersect(pRect: IRect2d, pRay: IRay2d): bool;
-	function _intersect(pRect: IRect3d, pRay: IRay3d): bool;
-	function _intersect(pCircle1: ICircle, pCircle2: ICircle): bool;
-	function _intersect(pSphere1: ISphere, pSphere2: ISphere): bool;
-	function _intersect(pRect: IRect2d, pCircle: ICircle): bool;
-	function _intersect(pRect: IRect3d, pSphere: ISphere): bool;
-	function _intersect(pRect1: IRect2d, pRect2: IRect2d, pResult?: IRect2d): bool;
-	function _intersect(pRect1: IRect3d, pRect2: IRect3d, pResult?: IRect3d): bool;
-	function _intersect(pRect1?, pRect2?, pResult?): bool{
+	export function intersect(pPlane: IPlane2d, pRay: IRay2d): bool;
+	export function intersect(pPlane: IPlane3d, pRay: IRay3d): bool;
+	export function intersect(pCircle: ICircle, pRay: IRay2d): bool;
+	export function intersect(pSphere: ISphere, pRay: IRay3d): bool;
+	export function intersect(pRect: IRect2d, pRay: IRay2d): bool;
+	export function intersect(pRect: IRect3d, pRay: IRay3d): bool;
+	export function intersect(pCircle1: ICircle, pCircle2: ICircle): bool;
+	export function intersect(pSphere1: ISphere, pSphere2: ISphere): bool;
+	export function intersect(pRect: IRect2d, pCircle: ICircle): bool;
+	export function intersect(pRect: IRect3d, pSphere: ISphere): bool;
+	export function intersect(pRect1: IRect2d, pRect2: IRect2d, pResult?: IRect2d): bool;
+	export function intersect(pRect1: IRect3d, pRect2: IRect3d, pResult?: IRect3d): bool;
+	export function intersect(pRect1?, pRect2?, pResult?): bool{
 		var nArgumentsLength: uint = arguments.length;
 
 		if(nArgumentsLength === 3){
@@ -457,8 +457,6 @@ module akra.geometry{
 			}
 		}
 	};
-
-	export var intersect = _intersect;
 };
 
 #endif

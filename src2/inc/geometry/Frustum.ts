@@ -1,7 +1,11 @@
 #ifndef FRUSTUM_TS
 #define FRUSUTM_TS
 
-#include "geometry.ts"
+#include "../math/Mat4.ts"
+#include "../math/Vec3.ts"
+#include "Plane3d.ts"
+#include "Rect3d.ts"
+#include "Sphere.ts"
 #include "classifications.ts"
 #include "IFrustum.ts"
 

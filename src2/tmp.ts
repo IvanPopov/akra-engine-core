@@ -1236,6 +1236,20 @@ module akra {
 		x: float;
 		y: float;
 
+
+/*represents two-component vector from original vector*/
+
+xx: IVec2;
+/*represents two-component vector from original vector*/
+
+xy: IVec2;
+/*represents two-component vector from original vector*/
+
+yx: IVec2;
+/*represents two-component vector from original vector*/
+
+yy: IVec2;
+
 		set(): IVec2;
 		set(fValue: float): IVec2;
 		set(v2fVec: IVec2): IVec2;
@@ -1273,6 +1287,35 @@ module akra.math {
         x: float = 0.;
         y: float = 0.;
 
+
+get xx(): IVec2{
+	return vec2(this.x, this.x);
+};
+set xx(v2fVec: IVec2){
+	this.x = v2fVec.x; 	this.x = v2fVec.y;
+};
+
+get xy(): IVec2{
+	return vec2(this.x, this.y);
+};
+set xy(v2fVec: IVec2){
+	this.x = v2fVec.x; 	this.y = v2fVec.y;
+};
+
+get yx(): IVec2{
+	return vec2(this.y, this.x);
+};
+set yx(v2fVec: IVec2){
+	this.y = v2fVec.x; 	this.x = v2fVec.y;
+};
+
+get yy(): IVec2{
+	return vec2(this.y, this.y);
+};
+set yy(v2fVec: IVec2){
+	this.y = v2fVec.x; 	this.y = v2fVec.y;
+};
+
         constructor();
         constructor(fValue: float);
         constructor(v2fVec: IVec2);
@@ -1291,7 +1334,7 @@ module akra.math {
                 default:
                     this.x = this.y = 0.;
                     break;
-            };
+            }
         };
 
         set(): IVec2;
@@ -1495,7 +1538,9 @@ module akra.math {
 
         /**@inline*/  toString(): string{
             return "[x: " + this.x + ", y: " + this.y + "]";
-        }
+        };
+
+        static stackSize: uint = 100; static stackPosition: int = 0; static stack: IVec2 [] = (function(): IVec2 []{ var pStack: IVec2 [] = new Array(Vec2.stackSize); for(var i:int = 0; i<Vec2.stackSize; i++){ pStack[i] = new Vec2(); } return pStack})();
    }
 }
 
@@ -1519,6 +1564,117 @@ module akra {
 		x: float;
 		y: float;
 		z: float;
+
+
+/*represents two-component vector from original vector*/
+
+xx: IVec2;
+/*represents two-component vector from original vector*/
+
+xy: IVec2;
+/*represents two-component vector from original vector*/
+
+xz: IVec2;
+/*represents two-component vector from original vector*/
+
+yx: IVec2;
+/*represents two-component vector from original vector*/
+
+yy: IVec2;
+/*represents two-component vector from original vector*/
+
+yz: IVec2;
+/*represents two-component vector from original vector*/
+
+zx: IVec2;
+/*represents two-component vector from original vector*/
+
+zy: IVec2;
+/*represents two-component vector from original vector*/
+
+zz: IVec2;
+
+/*represents three-component vector from original vector*/
+
+xxx: IVec3;
+/*represents three-component vector from original vector*/
+
+xxy: IVec3;
+/*represents three-component vector from original vector*/
+
+xxz: IVec3;
+/*represents three-component vector from original vector*/
+
+xyx: IVec3;
+/*represents three-component vector from original vector*/
+
+xyy: IVec3;
+/*represents three-component vector from original vector*/
+
+xyz: IVec3;
+/*represents three-component vector from original vector*/
+
+xzx: IVec3;
+/*represents three-component vector from original vector*/
+
+xzy: IVec3;
+/*represents three-component vector from original vector*/
+
+xzz: IVec3;
+/*represents three-component vector from original vector*/
+
+yxx: IVec3;
+/*represents three-component vector from original vector*/
+
+yxy: IVec3;
+/*represents three-component vector from original vector*/
+
+yxz: IVec3;
+/*represents three-component vector from original vector*/
+
+yyx: IVec3;
+/*represents three-component vector from original vector*/
+
+yyy: IVec3;
+/*represents three-component vector from original vector*/
+
+yyz: IVec3;
+/*represents three-component vector from original vector*/
+
+yzx: IVec3;
+/*represents three-component vector from original vector*/
+
+yzy: IVec3;
+/*represents three-component vector from original vector*/
+
+yzz: IVec3;
+/*represents three-component vector from original vector*/
+
+zxx: IVec3;
+/*represents three-component vector from original vector*/
+
+zxy: IVec3;
+/*represents three-component vector from original vector*/
+
+zxz: IVec3;
+/*represents three-component vector from original vector*/
+
+zyx: IVec3;
+/*represents three-component vector from original vector*/
+
+zyy: IVec3;
+/*represents three-component vector from original vector*/
+
+zyz: IVec3;
+/*represents three-component vector from original vector*/
+
+zzx: IVec3;
+/*represents three-component vector from original vector*/
+
+zzy: IVec3;
+/*represents three-component vector from original vector*/
+
+zzz: IVec3;
 
 		set(): IVec3;
 		set(fValue: float): IVec3;
@@ -1693,6 +1849,260 @@ module akra.math {
         y: float;
         z: float;
 
+
+get xx(): IVec2{
+	return vec2(this.x, this.x);
+};
+set xx(v2fVec: IVec2){
+	this.x = v2fVec.x; 	this.x = v2fVec.y;
+};
+
+get xy(): IVec2{
+	return vec2(this.x, this.y);
+};
+set xy(v2fVec: IVec2){
+	this.x = v2fVec.x; 	this.y = v2fVec.y;
+};
+
+get xz(): IVec2{
+	return vec2(this.x, this.z);
+};
+set xz(v2fVec: IVec2){
+	this.x = v2fVec.x; 	this.z = v2fVec.y;
+};
+
+get yx(): IVec2{
+	return vec2(this.y, this.x);
+};
+set yx(v2fVec: IVec2){
+	this.y = v2fVec.x; 	this.x = v2fVec.y;
+};
+
+get yy(): IVec2{
+	return vec2(this.y, this.y);
+};
+set yy(v2fVec: IVec2){
+	this.y = v2fVec.x; 	this.y = v2fVec.y;
+};
+
+get yz(): IVec2{
+	return vec2(this.y, this.z);
+};
+set yz(v2fVec: IVec2){
+	this.y = v2fVec.x; 	this.z = v2fVec.y;
+};
+
+get zx(): IVec2{
+	return vec2(this.z, this.x);
+};
+set zx(v2fVec: IVec2){
+	this.z = v2fVec.x; 	this.x = v2fVec.y;
+};
+
+get zy(): IVec2{
+	return vec2(this.z, this.y);
+};
+set zy(v2fVec: IVec2){
+	this.z = v2fVec.x; 	this.y = v2fVec.y;
+};
+
+get zz(): IVec2{
+	return vec2(this.z, this.z);
+};
+set zz(v2fVec: IVec2){
+	this.z = v2fVec.x; 	this.z = v2fVec.y;
+};
+
+
+get xxx(): IVec3{
+	return vec3(this.x, this.x, this.x);
+};
+set xxx(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.x = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get xxy(): IVec3{
+	return vec3(this.x, this.x, this.y);
+};
+set xxy(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.x = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get xxz(): IVec3{
+	return vec3(this.x, this.x, this.z);
+};
+set xxz(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.x = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get xyx(): IVec3{
+	return vec3(this.x, this.y, this.x);
+};
+set xyx(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.y = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get xyy(): IVec3{
+	return vec3(this.x, this.y, this.y);
+};
+set xyy(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.y = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get xyz(): IVec3{
+	return vec3(this.x, this.y, this.z);
+};
+set xyz(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.y = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get xzx(): IVec3{
+	return vec3(this.x, this.z, this.x);
+};
+set xzx(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.z = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get xzy(): IVec3{
+	return vec3(this.x, this.z, this.y);
+};
+set xzy(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.z = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get xzz(): IVec3{
+	return vec3(this.x, this.z, this.z);
+};
+set xzz(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.z = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get yxx(): IVec3{
+	return vec3(this.y, this.x, this.x);
+};
+set yxx(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.x = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get yxy(): IVec3{
+	return vec3(this.y, this.x, this.y);
+};
+set yxy(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.x = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get yxz(): IVec3{
+	return vec3(this.y, this.x, this.z);
+};
+set yxz(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.x = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get yyx(): IVec3{
+	return vec3(this.y, this.y, this.x);
+};
+set yyx(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.y = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get yyy(): IVec3{
+	return vec3(this.y, this.y, this.y);
+};
+set yyy(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.y = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get yyz(): IVec3{
+	return vec3(this.y, this.y, this.z);
+};
+set yyz(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.y = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get yzx(): IVec3{
+	return vec3(this.y, this.z, this.x);
+};
+set yzx(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.z = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get yzy(): IVec3{
+	return vec3(this.y, this.z, this.y);
+};
+set yzy(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.z = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get yzz(): IVec3{
+	return vec3(this.y, this.z, this.z);
+};
+set yzz(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.z = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get zxx(): IVec3{
+	return vec3(this.z, this.x, this.x);
+};
+set zxx(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.x = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get zxy(): IVec3{
+	return vec3(this.z, this.x, this.y);
+};
+set zxy(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.x = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get zxz(): IVec3{
+	return vec3(this.z, this.x, this.z);
+};
+set zxz(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.x = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get zyx(): IVec3{
+	return vec3(this.z, this.y, this.x);
+};
+set zyx(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.y = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get zyy(): IVec3{
+	return vec3(this.z, this.y, this.y);
+};
+set zyy(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.y = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get zyz(): IVec3{
+	return vec3(this.z, this.y, this.z);
+};
+set zyz(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.y = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get zzx(): IVec3{
+	return vec3(this.z, this.z, this.x);
+};
+set zzx(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.z = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get zzy(): IVec3{
+	return vec3(this.z, this.z, this.y);
+};
+set zzy(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.z = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get zzz(): IVec3{
+	return vec3(this.z, this.z, this.z);
+};
+set zzz(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.z = v3fVec.y; 	this.z = v3fVec.z;
+};
+
         constructor();
         constructor(fValue: float);
         constructor(v3fVec: IVec3);
@@ -1701,7 +2111,7 @@ module akra.math {
         constructor(v2fVec: IVec2, fValue: float);
         constructor(fValue1: float, fValue2: float, fValue3: float);
         constructor(fValue1?, fValue2?, fValue3?){
-            var nArgumentsLength = arguments.length;
+            var nArgumentsLength: uint = arguments.length;
 
             switch(nArgumentsLength){
                 case 1:
@@ -2035,6 +2445,8 @@ module akra.math {
         get zy(): Vec2  { return new Vec2(this.z, this.y); }
         get xyz(): Vec3 { return new Vec3(this.x, this.y, this.z); }*/
 
+
+        static stackSize: uint = 100; static stackPosition: int = 0; static stack: IVec3 [] = (function(): IVec3 []{ var pStack: IVec3 [] = new Array(Vec3.stackSize); for(var i:int = 0; i<Vec3.stackSize; i++){ pStack[i] = new Vec3(); } return pStack})();
     }
 }
 
@@ -2055,6 +2467,2617 @@ module akra.math {
         y: float;
         z: float;
         w: float;
+
+
+get xx(): IVec2{
+	return vec2(this.x, this.x);
+};
+set xx(v2fVec: IVec2){
+	this.x = v2fVec.x; 	this.x = v2fVec.y;
+};
+
+get xy(): IVec2{
+	return vec2(this.x, this.y);
+};
+set xy(v2fVec: IVec2){
+	this.x = v2fVec.x; 	this.y = v2fVec.y;
+};
+
+get xz(): IVec2{
+	return vec2(this.x, this.z);
+};
+set xz(v2fVec: IVec2){
+	this.x = v2fVec.x; 	this.z = v2fVec.y;
+};
+
+get xw(): IVec2{
+	return vec2(this.x, this.w);
+};
+set xw(v2fVec: IVec2){
+	this.x = v2fVec.x; 	this.w = v2fVec.y;
+};
+
+get yx(): IVec2{
+	return vec2(this.y, this.x);
+};
+set yx(v2fVec: IVec2){
+	this.y = v2fVec.x; 	this.x = v2fVec.y;
+};
+
+get yy(): IVec2{
+	return vec2(this.y, this.y);
+};
+set yy(v2fVec: IVec2){
+	this.y = v2fVec.x; 	this.y = v2fVec.y;
+};
+
+get yz(): IVec2{
+	return vec2(this.y, this.z);
+};
+set yz(v2fVec: IVec2){
+	this.y = v2fVec.x; 	this.z = v2fVec.y;
+};
+
+get yw(): IVec2{
+	return vec2(this.y, this.w);
+};
+set yw(v2fVec: IVec2){
+	this.y = v2fVec.x; 	this.w = v2fVec.y;
+};
+
+get zx(): IVec2{
+	return vec2(this.z, this.x);
+};
+set zx(v2fVec: IVec2){
+	this.z = v2fVec.x; 	this.x = v2fVec.y;
+};
+
+get zy(): IVec2{
+	return vec2(this.z, this.y);
+};
+set zy(v2fVec: IVec2){
+	this.z = v2fVec.x; 	this.y = v2fVec.y;
+};
+
+get zz(): IVec2{
+	return vec2(this.z, this.z);
+};
+set zz(v2fVec: IVec2){
+	this.z = v2fVec.x; 	this.z = v2fVec.y;
+};
+
+get zw(): IVec2{
+	return vec2(this.z, this.w);
+};
+set zw(v2fVec: IVec2){
+	this.z = v2fVec.x; 	this.w = v2fVec.y;
+};
+
+get wx(): IVec2{
+	return vec2(this.w, this.x);
+};
+set wx(v2fVec: IVec2){
+	this.w = v2fVec.x; 	this.x = v2fVec.y;
+};
+
+get wy(): IVec2{
+	return vec2(this.w, this.y);
+};
+set wy(v2fVec: IVec2){
+	this.w = v2fVec.x; 	this.y = v2fVec.y;
+};
+
+get wz(): IVec2{
+	return vec2(this.w, this.z);
+};
+set wz(v2fVec: IVec2){
+	this.w = v2fVec.x; 	this.z = v2fVec.y;
+};
+
+get ww(): IVec2{
+	return vec2(this.w, this.w);
+};
+set ww(v2fVec: IVec2){
+	this.w = v2fVec.x; 	this.w = v2fVec.y;
+};
+
+
+get xxx(): IVec3{
+	return vec3(this.x, this.x, this.x);
+};
+set xxx(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.x = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get xxy(): IVec3{
+	return vec3(this.x, this.x, this.y);
+};
+set xxy(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.x = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get xxz(): IVec3{
+	return vec3(this.x, this.x, this.z);
+};
+set xxz(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.x = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get xxw(): IVec3{
+	return vec3(this.x, this.x, this.w);
+};
+set xxw(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.x = v3fVec.y; 	this.w = v3fVec.z;
+};
+
+get xyx(): IVec3{
+	return vec3(this.x, this.y, this.x);
+};
+set xyx(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.y = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get xyy(): IVec3{
+	return vec3(this.x, this.y, this.y);
+};
+set xyy(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.y = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get xyz(): IVec3{
+	return vec3(this.x, this.y, this.z);
+};
+set xyz(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.y = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get xyw(): IVec3{
+	return vec3(this.x, this.y, this.w);
+};
+set xyw(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.y = v3fVec.y; 	this.w = v3fVec.z;
+};
+
+get xzx(): IVec3{
+	return vec3(this.x, this.z, this.x);
+};
+set xzx(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.z = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get xzy(): IVec3{
+	return vec3(this.x, this.z, this.y);
+};
+set xzy(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.z = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get xzz(): IVec3{
+	return vec3(this.x, this.z, this.z);
+};
+set xzz(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.z = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get xzw(): IVec3{
+	return vec3(this.x, this.z, this.w);
+};
+set xzw(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.z = v3fVec.y; 	this.w = v3fVec.z;
+};
+
+get xwx(): IVec3{
+	return vec3(this.x, this.w, this.x);
+};
+set xwx(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.w = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get xwy(): IVec3{
+	return vec3(this.x, this.w, this.y);
+};
+set xwy(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.w = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get xwz(): IVec3{
+	return vec3(this.x, this.w, this.z);
+};
+set xwz(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.w = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get xww(): IVec3{
+	return vec3(this.x, this.w, this.w);
+};
+set xww(v3fVec: IVec3){
+	this.x = v3fVec.x; 	this.w = v3fVec.y; 	this.w = v3fVec.z;
+};
+
+get yxx(): IVec3{
+	return vec3(this.y, this.x, this.x);
+};
+set yxx(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.x = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get yxy(): IVec3{
+	return vec3(this.y, this.x, this.y);
+};
+set yxy(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.x = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get yxz(): IVec3{
+	return vec3(this.y, this.x, this.z);
+};
+set yxz(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.x = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get yxw(): IVec3{
+	return vec3(this.y, this.x, this.w);
+};
+set yxw(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.x = v3fVec.y; 	this.w = v3fVec.z;
+};
+
+get yyx(): IVec3{
+	return vec3(this.y, this.y, this.x);
+};
+set yyx(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.y = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get yyy(): IVec3{
+	return vec3(this.y, this.y, this.y);
+};
+set yyy(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.y = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get yyz(): IVec3{
+	return vec3(this.y, this.y, this.z);
+};
+set yyz(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.y = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get yyw(): IVec3{
+	return vec3(this.y, this.y, this.w);
+};
+set yyw(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.y = v3fVec.y; 	this.w = v3fVec.z;
+};
+
+get yzx(): IVec3{
+	return vec3(this.y, this.z, this.x);
+};
+set yzx(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.z = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get yzy(): IVec3{
+	return vec3(this.y, this.z, this.y);
+};
+set yzy(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.z = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get yzz(): IVec3{
+	return vec3(this.y, this.z, this.z);
+};
+set yzz(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.z = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get yzw(): IVec3{
+	return vec3(this.y, this.z, this.w);
+};
+set yzw(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.z = v3fVec.y; 	this.w = v3fVec.z;
+};
+
+get ywx(): IVec3{
+	return vec3(this.y, this.w, this.x);
+};
+set ywx(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.w = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get ywy(): IVec3{
+	return vec3(this.y, this.w, this.y);
+};
+set ywy(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.w = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get ywz(): IVec3{
+	return vec3(this.y, this.w, this.z);
+};
+set ywz(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.w = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get yww(): IVec3{
+	return vec3(this.y, this.w, this.w);
+};
+set yww(v3fVec: IVec3){
+	this.y = v3fVec.x; 	this.w = v3fVec.y; 	this.w = v3fVec.z;
+};
+
+get zxx(): IVec3{
+	return vec3(this.z, this.x, this.x);
+};
+set zxx(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.x = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get zxy(): IVec3{
+	return vec3(this.z, this.x, this.y);
+};
+set zxy(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.x = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get zxz(): IVec3{
+	return vec3(this.z, this.x, this.z);
+};
+set zxz(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.x = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get zxw(): IVec3{
+	return vec3(this.z, this.x, this.w);
+};
+set zxw(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.x = v3fVec.y; 	this.w = v3fVec.z;
+};
+
+get zyx(): IVec3{
+	return vec3(this.z, this.y, this.x);
+};
+set zyx(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.y = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get zyy(): IVec3{
+	return vec3(this.z, this.y, this.y);
+};
+set zyy(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.y = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get zyz(): IVec3{
+	return vec3(this.z, this.y, this.z);
+};
+set zyz(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.y = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get zyw(): IVec3{
+	return vec3(this.z, this.y, this.w);
+};
+set zyw(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.y = v3fVec.y; 	this.w = v3fVec.z;
+};
+
+get zzx(): IVec3{
+	return vec3(this.z, this.z, this.x);
+};
+set zzx(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.z = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get zzy(): IVec3{
+	return vec3(this.z, this.z, this.y);
+};
+set zzy(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.z = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get zzz(): IVec3{
+	return vec3(this.z, this.z, this.z);
+};
+set zzz(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.z = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get zzw(): IVec3{
+	return vec3(this.z, this.z, this.w);
+};
+set zzw(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.z = v3fVec.y; 	this.w = v3fVec.z;
+};
+
+get zwx(): IVec3{
+	return vec3(this.z, this.w, this.x);
+};
+set zwx(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.w = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get zwy(): IVec3{
+	return vec3(this.z, this.w, this.y);
+};
+set zwy(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.w = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get zwz(): IVec3{
+	return vec3(this.z, this.w, this.z);
+};
+set zwz(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.w = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get zww(): IVec3{
+	return vec3(this.z, this.w, this.w);
+};
+set zww(v3fVec: IVec3){
+	this.z = v3fVec.x; 	this.w = v3fVec.y; 	this.w = v3fVec.z;
+};
+
+get wxx(): IVec3{
+	return vec3(this.w, this.x, this.x);
+};
+set wxx(v3fVec: IVec3){
+	this.w = v3fVec.x; 	this.x = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get wxy(): IVec3{
+	return vec3(this.w, this.x, this.y);
+};
+set wxy(v3fVec: IVec3){
+	this.w = v3fVec.x; 	this.x = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get wxz(): IVec3{
+	return vec3(this.w, this.x, this.z);
+};
+set wxz(v3fVec: IVec3){
+	this.w = v3fVec.x; 	this.x = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get wxw(): IVec3{
+	return vec3(this.w, this.x, this.w);
+};
+set wxw(v3fVec: IVec3){
+	this.w = v3fVec.x; 	this.x = v3fVec.y; 	this.w = v3fVec.z;
+};
+
+get wyx(): IVec3{
+	return vec3(this.w, this.y, this.x);
+};
+set wyx(v3fVec: IVec3){
+	this.w = v3fVec.x; 	this.y = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get wyy(): IVec3{
+	return vec3(this.w, this.y, this.y);
+};
+set wyy(v3fVec: IVec3){
+	this.w = v3fVec.x; 	this.y = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get wyz(): IVec3{
+	return vec3(this.w, this.y, this.z);
+};
+set wyz(v3fVec: IVec3){
+	this.w = v3fVec.x; 	this.y = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get wyw(): IVec3{
+	return vec3(this.w, this.y, this.w);
+};
+set wyw(v3fVec: IVec3){
+	this.w = v3fVec.x; 	this.y = v3fVec.y; 	this.w = v3fVec.z;
+};
+
+get wzx(): IVec3{
+	return vec3(this.w, this.z, this.x);
+};
+set wzx(v3fVec: IVec3){
+	this.w = v3fVec.x; 	this.z = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get wzy(): IVec3{
+	return vec3(this.w, this.z, this.y);
+};
+set wzy(v3fVec: IVec3){
+	this.w = v3fVec.x; 	this.z = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get wzz(): IVec3{
+	return vec3(this.w, this.z, this.z);
+};
+set wzz(v3fVec: IVec3){
+	this.w = v3fVec.x; 	this.z = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get wzw(): IVec3{
+	return vec3(this.w, this.z, this.w);
+};
+set wzw(v3fVec: IVec3){
+	this.w = v3fVec.x; 	this.z = v3fVec.y; 	this.w = v3fVec.z;
+};
+
+get wwx(): IVec3{
+	return vec3(this.w, this.w, this.x);
+};
+set wwx(v3fVec: IVec3){
+	this.w = v3fVec.x; 	this.w = v3fVec.y; 	this.x = v3fVec.z;
+};
+
+get wwy(): IVec3{
+	return vec3(this.w, this.w, this.y);
+};
+set wwy(v3fVec: IVec3){
+	this.w = v3fVec.x; 	this.w = v3fVec.y; 	this.y = v3fVec.z;
+};
+
+get wwz(): IVec3{
+	return vec3(this.w, this.w, this.z);
+};
+set wwz(v3fVec: IVec3){
+	this.w = v3fVec.x; 	this.w = v3fVec.y; 	this.z = v3fVec.z;
+};
+
+get www(): IVec3{
+	return vec3(this.w, this.w, this.w);
+};
+set www(v3fVec: IVec3){
+	this.w = v3fVec.x; 	this.w = v3fVec.y; 	this.w = v3fVec.z;
+};
+
+
+get xxxx(): IVec4{
+	return vec4(this.x, this.x, this.x, this.x);
+};
+set xxxx(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.x = v4fVec.y;
+	this.x = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get xxxy(): IVec4{
+	return vec4(this.x, this.x, this.x, this.y);
+};
+set xxxy(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.x = v4fVec.y;
+	this.x = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get xxxz(): IVec4{
+	return vec4(this.x, this.x, this.x, this.z);
+};
+set xxxz(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.x = v4fVec.y;
+	this.x = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get xxxw(): IVec4{
+	return vec4(this.x, this.x, this.x, this.w);
+};
+set xxxw(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.x = v4fVec.y;
+	this.x = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get xxyx(): IVec4{
+	return vec4(this.x, this.x, this.y, this.x);
+};
+set xxyx(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.x = v4fVec.y;
+	this.y = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get xxyy(): IVec4{
+	return vec4(this.x, this.x, this.y, this.y);
+};
+set xxyy(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.x = v4fVec.y;
+	this.y = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get xxyz(): IVec4{
+	return vec4(this.x, this.x, this.y, this.z);
+};
+set xxyz(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.x = v4fVec.y;
+	this.y = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get xxyw(): IVec4{
+	return vec4(this.x, this.x, this.y, this.w);
+};
+set xxyw(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.x = v4fVec.y;
+	this.y = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get xxzx(): IVec4{
+	return vec4(this.x, this.x, this.z, this.x);
+};
+set xxzx(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.x = v4fVec.y;
+	this.z = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get xxzy(): IVec4{
+	return vec4(this.x, this.x, this.z, this.y);
+};
+set xxzy(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.x = v4fVec.y;
+	this.z = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get xxzz(): IVec4{
+	return vec4(this.x, this.x, this.z, this.z);
+};
+set xxzz(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.x = v4fVec.y;
+	this.z = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get xxzw(): IVec4{
+	return vec4(this.x, this.x, this.z, this.w);
+};
+set xxzw(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.x = v4fVec.y;
+	this.z = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get xxwx(): IVec4{
+	return vec4(this.x, this.x, this.w, this.x);
+};
+set xxwx(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.x = v4fVec.y;
+	this.w = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get xxwy(): IVec4{
+	return vec4(this.x, this.x, this.w, this.y);
+};
+set xxwy(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.x = v4fVec.y;
+	this.w = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get xxwz(): IVec4{
+	return vec4(this.x, this.x, this.w, this.z);
+};
+set xxwz(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.x = v4fVec.y;
+	this.w = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get xxww(): IVec4{
+	return vec4(this.x, this.x, this.w, this.w);
+};
+set xxww(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.x = v4fVec.y;
+	this.w = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get xyxx(): IVec4{
+	return vec4(this.x, this.y, this.x, this.x);
+};
+set xyxx(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.y = v4fVec.y;
+	this.x = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get xyxy(): IVec4{
+	return vec4(this.x, this.y, this.x, this.y);
+};
+set xyxy(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.y = v4fVec.y;
+	this.x = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get xyxz(): IVec4{
+	return vec4(this.x, this.y, this.x, this.z);
+};
+set xyxz(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.y = v4fVec.y;
+	this.x = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get xyxw(): IVec4{
+	return vec4(this.x, this.y, this.x, this.w);
+};
+set xyxw(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.y = v4fVec.y;
+	this.x = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get xyyx(): IVec4{
+	return vec4(this.x, this.y, this.y, this.x);
+};
+set xyyx(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.y = v4fVec.y;
+	this.y = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get xyyy(): IVec4{
+	return vec4(this.x, this.y, this.y, this.y);
+};
+set xyyy(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.y = v4fVec.y;
+	this.y = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get xyyz(): IVec4{
+	return vec4(this.x, this.y, this.y, this.z);
+};
+set xyyz(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.y = v4fVec.y;
+	this.y = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get xyyw(): IVec4{
+	return vec4(this.x, this.y, this.y, this.w);
+};
+set xyyw(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.y = v4fVec.y;
+	this.y = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get xyzx(): IVec4{
+	return vec4(this.x, this.y, this.z, this.x);
+};
+set xyzx(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.y = v4fVec.y;
+	this.z = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get xyzy(): IVec4{
+	return vec4(this.x, this.y, this.z, this.y);
+};
+set xyzy(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.y = v4fVec.y;
+	this.z = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get xyzz(): IVec4{
+	return vec4(this.x, this.y, this.z, this.z);
+};
+set xyzz(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.y = v4fVec.y;
+	this.z = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get xyzw(): IVec4{
+	return vec4(this.x, this.y, this.z, this.w);
+};
+set xyzw(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.y = v4fVec.y;
+	this.z = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get xywx(): IVec4{
+	return vec4(this.x, this.y, this.w, this.x);
+};
+set xywx(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.y = v4fVec.y;
+	this.w = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get xywy(): IVec4{
+	return vec4(this.x, this.y, this.w, this.y);
+};
+set xywy(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.y = v4fVec.y;
+	this.w = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get xywz(): IVec4{
+	return vec4(this.x, this.y, this.w, this.z);
+};
+set xywz(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.y = v4fVec.y;
+	this.w = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get xyww(): IVec4{
+	return vec4(this.x, this.y, this.w, this.w);
+};
+set xyww(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.y = v4fVec.y;
+	this.w = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get xzxx(): IVec4{
+	return vec4(this.x, this.z, this.x, this.x);
+};
+set xzxx(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.z = v4fVec.y;
+	this.x = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get xzxy(): IVec4{
+	return vec4(this.x, this.z, this.x, this.y);
+};
+set xzxy(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.z = v4fVec.y;
+	this.x = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get xzxz(): IVec4{
+	return vec4(this.x, this.z, this.x, this.z);
+};
+set xzxz(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.z = v4fVec.y;
+	this.x = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get xzxw(): IVec4{
+	return vec4(this.x, this.z, this.x, this.w);
+};
+set xzxw(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.z = v4fVec.y;
+	this.x = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get xzyx(): IVec4{
+	return vec4(this.x, this.z, this.y, this.x);
+};
+set xzyx(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.z = v4fVec.y;
+	this.y = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get xzyy(): IVec4{
+	return vec4(this.x, this.z, this.y, this.y);
+};
+set xzyy(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.z = v4fVec.y;
+	this.y = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get xzyz(): IVec4{
+	return vec4(this.x, this.z, this.y, this.z);
+};
+set xzyz(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.z = v4fVec.y;
+	this.y = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get xzyw(): IVec4{
+	return vec4(this.x, this.z, this.y, this.w);
+};
+set xzyw(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.z = v4fVec.y;
+	this.y = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get xzzx(): IVec4{
+	return vec4(this.x, this.z, this.z, this.x);
+};
+set xzzx(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.z = v4fVec.y;
+	this.z = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get xzzy(): IVec4{
+	return vec4(this.x, this.z, this.z, this.y);
+};
+set xzzy(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.z = v4fVec.y;
+	this.z = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get xzzz(): IVec4{
+	return vec4(this.x, this.z, this.z, this.z);
+};
+set xzzz(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.z = v4fVec.y;
+	this.z = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get xzzw(): IVec4{
+	return vec4(this.x, this.z, this.z, this.w);
+};
+set xzzw(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.z = v4fVec.y;
+	this.z = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get xzwx(): IVec4{
+	return vec4(this.x, this.z, this.w, this.x);
+};
+set xzwx(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.z = v4fVec.y;
+	this.w = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get xzwy(): IVec4{
+	return vec4(this.x, this.z, this.w, this.y);
+};
+set xzwy(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.z = v4fVec.y;
+	this.w = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get xzwz(): IVec4{
+	return vec4(this.x, this.z, this.w, this.z);
+};
+set xzwz(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.z = v4fVec.y;
+	this.w = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get xzww(): IVec4{
+	return vec4(this.x, this.z, this.w, this.w);
+};
+set xzww(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.z = v4fVec.y;
+	this.w = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get xwxx(): IVec4{
+	return vec4(this.x, this.w, this.x, this.x);
+};
+set xwxx(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.w = v4fVec.y;
+	this.x = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get xwxy(): IVec4{
+	return vec4(this.x, this.w, this.x, this.y);
+};
+set xwxy(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.w = v4fVec.y;
+	this.x = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get xwxz(): IVec4{
+	return vec4(this.x, this.w, this.x, this.z);
+};
+set xwxz(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.w = v4fVec.y;
+	this.x = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get xwxw(): IVec4{
+	return vec4(this.x, this.w, this.x, this.w);
+};
+set xwxw(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.w = v4fVec.y;
+	this.x = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get xwyx(): IVec4{
+	return vec4(this.x, this.w, this.y, this.x);
+};
+set xwyx(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.w = v4fVec.y;
+	this.y = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get xwyy(): IVec4{
+	return vec4(this.x, this.w, this.y, this.y);
+};
+set xwyy(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.w = v4fVec.y;
+	this.y = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get xwyz(): IVec4{
+	return vec4(this.x, this.w, this.y, this.z);
+};
+set xwyz(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.w = v4fVec.y;
+	this.y = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get xwyw(): IVec4{
+	return vec4(this.x, this.w, this.y, this.w);
+};
+set xwyw(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.w = v4fVec.y;
+	this.y = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get xwzx(): IVec4{
+	return vec4(this.x, this.w, this.z, this.x);
+};
+set xwzx(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.w = v4fVec.y;
+	this.z = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get xwzy(): IVec4{
+	return vec4(this.x, this.w, this.z, this.y);
+};
+set xwzy(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.w = v4fVec.y;
+	this.z = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get xwzz(): IVec4{
+	return vec4(this.x, this.w, this.z, this.z);
+};
+set xwzz(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.w = v4fVec.y;
+	this.z = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get xwzw(): IVec4{
+	return vec4(this.x, this.w, this.z, this.w);
+};
+set xwzw(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.w = v4fVec.y;
+	this.z = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get xwwx(): IVec4{
+	return vec4(this.x, this.w, this.w, this.x);
+};
+set xwwx(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.w = v4fVec.y;
+	this.w = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get xwwy(): IVec4{
+	return vec4(this.x, this.w, this.w, this.y);
+};
+set xwwy(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.w = v4fVec.y;
+	this.w = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get xwwz(): IVec4{
+	return vec4(this.x, this.w, this.w, this.z);
+};
+set xwwz(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.w = v4fVec.y;
+	this.w = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get xwww(): IVec4{
+	return vec4(this.x, this.w, this.w, this.w);
+};
+set xwww(v4fVec: IVec4){
+	this.x = v4fVec.x; 	this.w = v4fVec.y;
+	this.w = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get yxxx(): IVec4{
+	return vec4(this.y, this.x, this.x, this.x);
+};
+set yxxx(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.x = v4fVec.y;
+	this.x = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get yxxy(): IVec4{
+	return vec4(this.y, this.x, this.x, this.y);
+};
+set yxxy(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.x = v4fVec.y;
+	this.x = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get yxxz(): IVec4{
+	return vec4(this.y, this.x, this.x, this.z);
+};
+set yxxz(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.x = v4fVec.y;
+	this.x = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get yxxw(): IVec4{
+	return vec4(this.y, this.x, this.x, this.w);
+};
+set yxxw(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.x = v4fVec.y;
+	this.x = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get yxyx(): IVec4{
+	return vec4(this.y, this.x, this.y, this.x);
+};
+set yxyx(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.x = v4fVec.y;
+	this.y = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get yxyy(): IVec4{
+	return vec4(this.y, this.x, this.y, this.y);
+};
+set yxyy(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.x = v4fVec.y;
+	this.y = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get yxyz(): IVec4{
+	return vec4(this.y, this.x, this.y, this.z);
+};
+set yxyz(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.x = v4fVec.y;
+	this.y = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get yxyw(): IVec4{
+	return vec4(this.y, this.x, this.y, this.w);
+};
+set yxyw(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.x = v4fVec.y;
+	this.y = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get yxzx(): IVec4{
+	return vec4(this.y, this.x, this.z, this.x);
+};
+set yxzx(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.x = v4fVec.y;
+	this.z = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get yxzy(): IVec4{
+	return vec4(this.y, this.x, this.z, this.y);
+};
+set yxzy(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.x = v4fVec.y;
+	this.z = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get yxzz(): IVec4{
+	return vec4(this.y, this.x, this.z, this.z);
+};
+set yxzz(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.x = v4fVec.y;
+	this.z = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get yxzw(): IVec4{
+	return vec4(this.y, this.x, this.z, this.w);
+};
+set yxzw(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.x = v4fVec.y;
+	this.z = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get yxwx(): IVec4{
+	return vec4(this.y, this.x, this.w, this.x);
+};
+set yxwx(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.x = v4fVec.y;
+	this.w = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get yxwy(): IVec4{
+	return vec4(this.y, this.x, this.w, this.y);
+};
+set yxwy(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.x = v4fVec.y;
+	this.w = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get yxwz(): IVec4{
+	return vec4(this.y, this.x, this.w, this.z);
+};
+set yxwz(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.x = v4fVec.y;
+	this.w = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get yxww(): IVec4{
+	return vec4(this.y, this.x, this.w, this.w);
+};
+set yxww(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.x = v4fVec.y;
+	this.w = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get yyxx(): IVec4{
+	return vec4(this.y, this.y, this.x, this.x);
+};
+set yyxx(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.y = v4fVec.y;
+	this.x = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get yyxy(): IVec4{
+	return vec4(this.y, this.y, this.x, this.y);
+};
+set yyxy(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.y = v4fVec.y;
+	this.x = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get yyxz(): IVec4{
+	return vec4(this.y, this.y, this.x, this.z);
+};
+set yyxz(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.y = v4fVec.y;
+	this.x = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get yyxw(): IVec4{
+	return vec4(this.y, this.y, this.x, this.w);
+};
+set yyxw(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.y = v4fVec.y;
+	this.x = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get yyyx(): IVec4{
+	return vec4(this.y, this.y, this.y, this.x);
+};
+set yyyx(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.y = v4fVec.y;
+	this.y = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get yyyy(): IVec4{
+	return vec4(this.y, this.y, this.y, this.y);
+};
+set yyyy(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.y = v4fVec.y;
+	this.y = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get yyyz(): IVec4{
+	return vec4(this.y, this.y, this.y, this.z);
+};
+set yyyz(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.y = v4fVec.y;
+	this.y = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get yyyw(): IVec4{
+	return vec4(this.y, this.y, this.y, this.w);
+};
+set yyyw(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.y = v4fVec.y;
+	this.y = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get yyzx(): IVec4{
+	return vec4(this.y, this.y, this.z, this.x);
+};
+set yyzx(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.y = v4fVec.y;
+	this.z = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get yyzy(): IVec4{
+	return vec4(this.y, this.y, this.z, this.y);
+};
+set yyzy(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.y = v4fVec.y;
+	this.z = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get yyzz(): IVec4{
+	return vec4(this.y, this.y, this.z, this.z);
+};
+set yyzz(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.y = v4fVec.y;
+	this.z = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get yyzw(): IVec4{
+	return vec4(this.y, this.y, this.z, this.w);
+};
+set yyzw(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.y = v4fVec.y;
+	this.z = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get yywx(): IVec4{
+	return vec4(this.y, this.y, this.w, this.x);
+};
+set yywx(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.y = v4fVec.y;
+	this.w = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get yywy(): IVec4{
+	return vec4(this.y, this.y, this.w, this.y);
+};
+set yywy(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.y = v4fVec.y;
+	this.w = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get yywz(): IVec4{
+	return vec4(this.y, this.y, this.w, this.z);
+};
+set yywz(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.y = v4fVec.y;
+	this.w = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get yyww(): IVec4{
+	return vec4(this.y, this.y, this.w, this.w);
+};
+set yyww(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.y = v4fVec.y;
+	this.w = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get yzxx(): IVec4{
+	return vec4(this.y, this.z, this.x, this.x);
+};
+set yzxx(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.z = v4fVec.y;
+	this.x = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get yzxy(): IVec4{
+	return vec4(this.y, this.z, this.x, this.y);
+};
+set yzxy(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.z = v4fVec.y;
+	this.x = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get yzxz(): IVec4{
+	return vec4(this.y, this.z, this.x, this.z);
+};
+set yzxz(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.z = v4fVec.y;
+	this.x = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get yzxw(): IVec4{
+	return vec4(this.y, this.z, this.x, this.w);
+};
+set yzxw(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.z = v4fVec.y;
+	this.x = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get yzyx(): IVec4{
+	return vec4(this.y, this.z, this.y, this.x);
+};
+set yzyx(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.z = v4fVec.y;
+	this.y = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get yzyy(): IVec4{
+	return vec4(this.y, this.z, this.y, this.y);
+};
+set yzyy(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.z = v4fVec.y;
+	this.y = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get yzyz(): IVec4{
+	return vec4(this.y, this.z, this.y, this.z);
+};
+set yzyz(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.z = v4fVec.y;
+	this.y = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get yzyw(): IVec4{
+	return vec4(this.y, this.z, this.y, this.w);
+};
+set yzyw(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.z = v4fVec.y;
+	this.y = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get yzzx(): IVec4{
+	return vec4(this.y, this.z, this.z, this.x);
+};
+set yzzx(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.z = v4fVec.y;
+	this.z = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get yzzy(): IVec4{
+	return vec4(this.y, this.z, this.z, this.y);
+};
+set yzzy(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.z = v4fVec.y;
+	this.z = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get yzzz(): IVec4{
+	return vec4(this.y, this.z, this.z, this.z);
+};
+set yzzz(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.z = v4fVec.y;
+	this.z = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get yzzw(): IVec4{
+	return vec4(this.y, this.z, this.z, this.w);
+};
+set yzzw(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.z = v4fVec.y;
+	this.z = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get yzwx(): IVec4{
+	return vec4(this.y, this.z, this.w, this.x);
+};
+set yzwx(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.z = v4fVec.y;
+	this.w = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get yzwy(): IVec4{
+	return vec4(this.y, this.z, this.w, this.y);
+};
+set yzwy(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.z = v4fVec.y;
+	this.w = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get yzwz(): IVec4{
+	return vec4(this.y, this.z, this.w, this.z);
+};
+set yzwz(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.z = v4fVec.y;
+	this.w = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get yzww(): IVec4{
+	return vec4(this.y, this.z, this.w, this.w);
+};
+set yzww(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.z = v4fVec.y;
+	this.w = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get ywxx(): IVec4{
+	return vec4(this.y, this.w, this.x, this.x);
+};
+set ywxx(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.w = v4fVec.y;
+	this.x = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get ywxy(): IVec4{
+	return vec4(this.y, this.w, this.x, this.y);
+};
+set ywxy(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.w = v4fVec.y;
+	this.x = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get ywxz(): IVec4{
+	return vec4(this.y, this.w, this.x, this.z);
+};
+set ywxz(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.w = v4fVec.y;
+	this.x = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get ywxw(): IVec4{
+	return vec4(this.y, this.w, this.x, this.w);
+};
+set ywxw(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.w = v4fVec.y;
+	this.x = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get ywyx(): IVec4{
+	return vec4(this.y, this.w, this.y, this.x);
+};
+set ywyx(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.w = v4fVec.y;
+	this.y = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get ywyy(): IVec4{
+	return vec4(this.y, this.w, this.y, this.y);
+};
+set ywyy(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.w = v4fVec.y;
+	this.y = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get ywyz(): IVec4{
+	return vec4(this.y, this.w, this.y, this.z);
+};
+set ywyz(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.w = v4fVec.y;
+	this.y = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get ywyw(): IVec4{
+	return vec4(this.y, this.w, this.y, this.w);
+};
+set ywyw(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.w = v4fVec.y;
+	this.y = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get ywzx(): IVec4{
+	return vec4(this.y, this.w, this.z, this.x);
+};
+set ywzx(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.w = v4fVec.y;
+	this.z = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get ywzy(): IVec4{
+	return vec4(this.y, this.w, this.z, this.y);
+};
+set ywzy(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.w = v4fVec.y;
+	this.z = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get ywzz(): IVec4{
+	return vec4(this.y, this.w, this.z, this.z);
+};
+set ywzz(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.w = v4fVec.y;
+	this.z = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get ywzw(): IVec4{
+	return vec4(this.y, this.w, this.z, this.w);
+};
+set ywzw(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.w = v4fVec.y;
+	this.z = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get ywwx(): IVec4{
+	return vec4(this.y, this.w, this.w, this.x);
+};
+set ywwx(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.w = v4fVec.y;
+	this.w = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get ywwy(): IVec4{
+	return vec4(this.y, this.w, this.w, this.y);
+};
+set ywwy(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.w = v4fVec.y;
+	this.w = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get ywwz(): IVec4{
+	return vec4(this.y, this.w, this.w, this.z);
+};
+set ywwz(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.w = v4fVec.y;
+	this.w = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get ywww(): IVec4{
+	return vec4(this.y, this.w, this.w, this.w);
+};
+set ywww(v4fVec: IVec4){
+	this.y = v4fVec.x; 	this.w = v4fVec.y;
+	this.w = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get zxxx(): IVec4{
+	return vec4(this.z, this.x, this.x, this.x);
+};
+set zxxx(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.x = v4fVec.y;
+	this.x = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get zxxy(): IVec4{
+	return vec4(this.z, this.x, this.x, this.y);
+};
+set zxxy(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.x = v4fVec.y;
+	this.x = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get zxxz(): IVec4{
+	return vec4(this.z, this.x, this.x, this.z);
+};
+set zxxz(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.x = v4fVec.y;
+	this.x = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get zxxw(): IVec4{
+	return vec4(this.z, this.x, this.x, this.w);
+};
+set zxxw(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.x = v4fVec.y;
+	this.x = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get zxyx(): IVec4{
+	return vec4(this.z, this.x, this.y, this.x);
+};
+set zxyx(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.x = v4fVec.y;
+	this.y = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get zxyy(): IVec4{
+	return vec4(this.z, this.x, this.y, this.y);
+};
+set zxyy(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.x = v4fVec.y;
+	this.y = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get zxyz(): IVec4{
+	return vec4(this.z, this.x, this.y, this.z);
+};
+set zxyz(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.x = v4fVec.y;
+	this.y = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get zxyw(): IVec4{
+	return vec4(this.z, this.x, this.y, this.w);
+};
+set zxyw(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.x = v4fVec.y;
+	this.y = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get zxzx(): IVec4{
+	return vec4(this.z, this.x, this.z, this.x);
+};
+set zxzx(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.x = v4fVec.y;
+	this.z = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get zxzy(): IVec4{
+	return vec4(this.z, this.x, this.z, this.y);
+};
+set zxzy(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.x = v4fVec.y;
+	this.z = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get zxzz(): IVec4{
+	return vec4(this.z, this.x, this.z, this.z);
+};
+set zxzz(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.x = v4fVec.y;
+	this.z = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get zxzw(): IVec4{
+	return vec4(this.z, this.x, this.z, this.w);
+};
+set zxzw(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.x = v4fVec.y;
+	this.z = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get zxwx(): IVec4{
+	return vec4(this.z, this.x, this.w, this.x);
+};
+set zxwx(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.x = v4fVec.y;
+	this.w = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get zxwy(): IVec4{
+	return vec4(this.z, this.x, this.w, this.y);
+};
+set zxwy(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.x = v4fVec.y;
+	this.w = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get zxwz(): IVec4{
+	return vec4(this.z, this.x, this.w, this.z);
+};
+set zxwz(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.x = v4fVec.y;
+	this.w = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get zxww(): IVec4{
+	return vec4(this.z, this.x, this.w, this.w);
+};
+set zxww(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.x = v4fVec.y;
+	this.w = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get zyxx(): IVec4{
+	return vec4(this.z, this.y, this.x, this.x);
+};
+set zyxx(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.y = v4fVec.y;
+	this.x = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get zyxy(): IVec4{
+	return vec4(this.z, this.y, this.x, this.y);
+};
+set zyxy(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.y = v4fVec.y;
+	this.x = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get zyxz(): IVec4{
+	return vec4(this.z, this.y, this.x, this.z);
+};
+set zyxz(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.y = v4fVec.y;
+	this.x = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get zyxw(): IVec4{
+	return vec4(this.z, this.y, this.x, this.w);
+};
+set zyxw(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.y = v4fVec.y;
+	this.x = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get zyyx(): IVec4{
+	return vec4(this.z, this.y, this.y, this.x);
+};
+set zyyx(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.y = v4fVec.y;
+	this.y = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get zyyy(): IVec4{
+	return vec4(this.z, this.y, this.y, this.y);
+};
+set zyyy(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.y = v4fVec.y;
+	this.y = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get zyyz(): IVec4{
+	return vec4(this.z, this.y, this.y, this.z);
+};
+set zyyz(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.y = v4fVec.y;
+	this.y = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get zyyw(): IVec4{
+	return vec4(this.z, this.y, this.y, this.w);
+};
+set zyyw(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.y = v4fVec.y;
+	this.y = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get zyzx(): IVec4{
+	return vec4(this.z, this.y, this.z, this.x);
+};
+set zyzx(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.y = v4fVec.y;
+	this.z = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get zyzy(): IVec4{
+	return vec4(this.z, this.y, this.z, this.y);
+};
+set zyzy(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.y = v4fVec.y;
+	this.z = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get zyzz(): IVec4{
+	return vec4(this.z, this.y, this.z, this.z);
+};
+set zyzz(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.y = v4fVec.y;
+	this.z = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get zyzw(): IVec4{
+	return vec4(this.z, this.y, this.z, this.w);
+};
+set zyzw(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.y = v4fVec.y;
+	this.z = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get zywx(): IVec4{
+	return vec4(this.z, this.y, this.w, this.x);
+};
+set zywx(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.y = v4fVec.y;
+	this.w = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get zywy(): IVec4{
+	return vec4(this.z, this.y, this.w, this.y);
+};
+set zywy(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.y = v4fVec.y;
+	this.w = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get zywz(): IVec4{
+	return vec4(this.z, this.y, this.w, this.z);
+};
+set zywz(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.y = v4fVec.y;
+	this.w = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get zyww(): IVec4{
+	return vec4(this.z, this.y, this.w, this.w);
+};
+set zyww(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.y = v4fVec.y;
+	this.w = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get zzxx(): IVec4{
+	return vec4(this.z, this.z, this.x, this.x);
+};
+set zzxx(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.z = v4fVec.y;
+	this.x = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get zzxy(): IVec4{
+	return vec4(this.z, this.z, this.x, this.y);
+};
+set zzxy(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.z = v4fVec.y;
+	this.x = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get zzxz(): IVec4{
+	return vec4(this.z, this.z, this.x, this.z);
+};
+set zzxz(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.z = v4fVec.y;
+	this.x = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get zzxw(): IVec4{
+	return vec4(this.z, this.z, this.x, this.w);
+};
+set zzxw(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.z = v4fVec.y;
+	this.x = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get zzyx(): IVec4{
+	return vec4(this.z, this.z, this.y, this.x);
+};
+set zzyx(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.z = v4fVec.y;
+	this.y = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get zzyy(): IVec4{
+	return vec4(this.z, this.z, this.y, this.y);
+};
+set zzyy(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.z = v4fVec.y;
+	this.y = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get zzyz(): IVec4{
+	return vec4(this.z, this.z, this.y, this.z);
+};
+set zzyz(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.z = v4fVec.y;
+	this.y = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get zzyw(): IVec4{
+	return vec4(this.z, this.z, this.y, this.w);
+};
+set zzyw(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.z = v4fVec.y;
+	this.y = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get zzzx(): IVec4{
+	return vec4(this.z, this.z, this.z, this.x);
+};
+set zzzx(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.z = v4fVec.y;
+	this.z = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get zzzy(): IVec4{
+	return vec4(this.z, this.z, this.z, this.y);
+};
+set zzzy(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.z = v4fVec.y;
+	this.z = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get zzzz(): IVec4{
+	return vec4(this.z, this.z, this.z, this.z);
+};
+set zzzz(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.z = v4fVec.y;
+	this.z = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get zzzw(): IVec4{
+	return vec4(this.z, this.z, this.z, this.w);
+};
+set zzzw(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.z = v4fVec.y;
+	this.z = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get zzwx(): IVec4{
+	return vec4(this.z, this.z, this.w, this.x);
+};
+set zzwx(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.z = v4fVec.y;
+	this.w = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get zzwy(): IVec4{
+	return vec4(this.z, this.z, this.w, this.y);
+};
+set zzwy(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.z = v4fVec.y;
+	this.w = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get zzwz(): IVec4{
+	return vec4(this.z, this.z, this.w, this.z);
+};
+set zzwz(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.z = v4fVec.y;
+	this.w = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get zzww(): IVec4{
+	return vec4(this.z, this.z, this.w, this.w);
+};
+set zzww(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.z = v4fVec.y;
+	this.w = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get zwxx(): IVec4{
+	return vec4(this.z, this.w, this.x, this.x);
+};
+set zwxx(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.w = v4fVec.y;
+	this.x = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get zwxy(): IVec4{
+	return vec4(this.z, this.w, this.x, this.y);
+};
+set zwxy(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.w = v4fVec.y;
+	this.x = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get zwxz(): IVec4{
+	return vec4(this.z, this.w, this.x, this.z);
+};
+set zwxz(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.w = v4fVec.y;
+	this.x = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get zwxw(): IVec4{
+	return vec4(this.z, this.w, this.x, this.w);
+};
+set zwxw(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.w = v4fVec.y;
+	this.x = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get zwyx(): IVec4{
+	return vec4(this.z, this.w, this.y, this.x);
+};
+set zwyx(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.w = v4fVec.y;
+	this.y = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get zwyy(): IVec4{
+	return vec4(this.z, this.w, this.y, this.y);
+};
+set zwyy(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.w = v4fVec.y;
+	this.y = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get zwyz(): IVec4{
+	return vec4(this.z, this.w, this.y, this.z);
+};
+set zwyz(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.w = v4fVec.y;
+	this.y = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get zwyw(): IVec4{
+	return vec4(this.z, this.w, this.y, this.w);
+};
+set zwyw(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.w = v4fVec.y;
+	this.y = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get zwzx(): IVec4{
+	return vec4(this.z, this.w, this.z, this.x);
+};
+set zwzx(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.w = v4fVec.y;
+	this.z = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get zwzy(): IVec4{
+	return vec4(this.z, this.w, this.z, this.y);
+};
+set zwzy(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.w = v4fVec.y;
+	this.z = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get zwzz(): IVec4{
+	return vec4(this.z, this.w, this.z, this.z);
+};
+set zwzz(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.w = v4fVec.y;
+	this.z = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get zwzw(): IVec4{
+	return vec4(this.z, this.w, this.z, this.w);
+};
+set zwzw(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.w = v4fVec.y;
+	this.z = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get zwwx(): IVec4{
+	return vec4(this.z, this.w, this.w, this.x);
+};
+set zwwx(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.w = v4fVec.y;
+	this.w = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get zwwy(): IVec4{
+	return vec4(this.z, this.w, this.w, this.y);
+};
+set zwwy(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.w = v4fVec.y;
+	this.w = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get zwwz(): IVec4{
+	return vec4(this.z, this.w, this.w, this.z);
+};
+set zwwz(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.w = v4fVec.y;
+	this.w = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get zwww(): IVec4{
+	return vec4(this.z, this.w, this.w, this.w);
+};
+set zwww(v4fVec: IVec4){
+	this.z = v4fVec.x; 	this.w = v4fVec.y;
+	this.w = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get wxxx(): IVec4{
+	return vec4(this.w, this.x, this.x, this.x);
+};
+set wxxx(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.x = v4fVec.y;
+	this.x = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get wxxy(): IVec4{
+	return vec4(this.w, this.x, this.x, this.y);
+};
+set wxxy(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.x = v4fVec.y;
+	this.x = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get wxxz(): IVec4{
+	return vec4(this.w, this.x, this.x, this.z);
+};
+set wxxz(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.x = v4fVec.y;
+	this.x = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get wxxw(): IVec4{
+	return vec4(this.w, this.x, this.x, this.w);
+};
+set wxxw(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.x = v4fVec.y;
+	this.x = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get wxyx(): IVec4{
+	return vec4(this.w, this.x, this.y, this.x);
+};
+set wxyx(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.x = v4fVec.y;
+	this.y = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get wxyy(): IVec4{
+	return vec4(this.w, this.x, this.y, this.y);
+};
+set wxyy(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.x = v4fVec.y;
+	this.y = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get wxyz(): IVec4{
+	return vec4(this.w, this.x, this.y, this.z);
+};
+set wxyz(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.x = v4fVec.y;
+	this.y = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get wxyw(): IVec4{
+	return vec4(this.w, this.x, this.y, this.w);
+};
+set wxyw(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.x = v4fVec.y;
+	this.y = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get wxzx(): IVec4{
+	return vec4(this.w, this.x, this.z, this.x);
+};
+set wxzx(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.x = v4fVec.y;
+	this.z = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get wxzy(): IVec4{
+	return vec4(this.w, this.x, this.z, this.y);
+};
+set wxzy(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.x = v4fVec.y;
+	this.z = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get wxzz(): IVec4{
+	return vec4(this.w, this.x, this.z, this.z);
+};
+set wxzz(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.x = v4fVec.y;
+	this.z = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get wxzw(): IVec4{
+	return vec4(this.w, this.x, this.z, this.w);
+};
+set wxzw(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.x = v4fVec.y;
+	this.z = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get wxwx(): IVec4{
+	return vec4(this.w, this.x, this.w, this.x);
+};
+set wxwx(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.x = v4fVec.y;
+	this.w = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get wxwy(): IVec4{
+	return vec4(this.w, this.x, this.w, this.y);
+};
+set wxwy(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.x = v4fVec.y;
+	this.w = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get wxwz(): IVec4{
+	return vec4(this.w, this.x, this.w, this.z);
+};
+set wxwz(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.x = v4fVec.y;
+	this.w = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get wxww(): IVec4{
+	return vec4(this.w, this.x, this.w, this.w);
+};
+set wxww(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.x = v4fVec.y;
+	this.w = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get wyxx(): IVec4{
+	return vec4(this.w, this.y, this.x, this.x);
+};
+set wyxx(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.y = v4fVec.y;
+	this.x = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get wyxy(): IVec4{
+	return vec4(this.w, this.y, this.x, this.y);
+};
+set wyxy(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.y = v4fVec.y;
+	this.x = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get wyxz(): IVec4{
+	return vec4(this.w, this.y, this.x, this.z);
+};
+set wyxz(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.y = v4fVec.y;
+	this.x = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get wyxw(): IVec4{
+	return vec4(this.w, this.y, this.x, this.w);
+};
+set wyxw(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.y = v4fVec.y;
+	this.x = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get wyyx(): IVec4{
+	return vec4(this.w, this.y, this.y, this.x);
+};
+set wyyx(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.y = v4fVec.y;
+	this.y = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get wyyy(): IVec4{
+	return vec4(this.w, this.y, this.y, this.y);
+};
+set wyyy(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.y = v4fVec.y;
+	this.y = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get wyyz(): IVec4{
+	return vec4(this.w, this.y, this.y, this.z);
+};
+set wyyz(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.y = v4fVec.y;
+	this.y = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get wyyw(): IVec4{
+	return vec4(this.w, this.y, this.y, this.w);
+};
+set wyyw(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.y = v4fVec.y;
+	this.y = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get wyzx(): IVec4{
+	return vec4(this.w, this.y, this.z, this.x);
+};
+set wyzx(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.y = v4fVec.y;
+	this.z = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get wyzy(): IVec4{
+	return vec4(this.w, this.y, this.z, this.y);
+};
+set wyzy(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.y = v4fVec.y;
+	this.z = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get wyzz(): IVec4{
+	return vec4(this.w, this.y, this.z, this.z);
+};
+set wyzz(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.y = v4fVec.y;
+	this.z = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get wyzw(): IVec4{
+	return vec4(this.w, this.y, this.z, this.w);
+};
+set wyzw(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.y = v4fVec.y;
+	this.z = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get wywx(): IVec4{
+	return vec4(this.w, this.y, this.w, this.x);
+};
+set wywx(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.y = v4fVec.y;
+	this.w = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get wywy(): IVec4{
+	return vec4(this.w, this.y, this.w, this.y);
+};
+set wywy(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.y = v4fVec.y;
+	this.w = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get wywz(): IVec4{
+	return vec4(this.w, this.y, this.w, this.z);
+};
+set wywz(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.y = v4fVec.y;
+	this.w = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get wyww(): IVec4{
+	return vec4(this.w, this.y, this.w, this.w);
+};
+set wyww(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.y = v4fVec.y;
+	this.w = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get wzxx(): IVec4{
+	return vec4(this.w, this.z, this.x, this.x);
+};
+set wzxx(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.z = v4fVec.y;
+	this.x = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get wzxy(): IVec4{
+	return vec4(this.w, this.z, this.x, this.y);
+};
+set wzxy(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.z = v4fVec.y;
+	this.x = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get wzxz(): IVec4{
+	return vec4(this.w, this.z, this.x, this.z);
+};
+set wzxz(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.z = v4fVec.y;
+	this.x = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get wzxw(): IVec4{
+	return vec4(this.w, this.z, this.x, this.w);
+};
+set wzxw(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.z = v4fVec.y;
+	this.x = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get wzyx(): IVec4{
+	return vec4(this.w, this.z, this.y, this.x);
+};
+set wzyx(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.z = v4fVec.y;
+	this.y = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get wzyy(): IVec4{
+	return vec4(this.w, this.z, this.y, this.y);
+};
+set wzyy(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.z = v4fVec.y;
+	this.y = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get wzyz(): IVec4{
+	return vec4(this.w, this.z, this.y, this.z);
+};
+set wzyz(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.z = v4fVec.y;
+	this.y = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get wzyw(): IVec4{
+	return vec4(this.w, this.z, this.y, this.w);
+};
+set wzyw(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.z = v4fVec.y;
+	this.y = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get wzzx(): IVec4{
+	return vec4(this.w, this.z, this.z, this.x);
+};
+set wzzx(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.z = v4fVec.y;
+	this.z = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get wzzy(): IVec4{
+	return vec4(this.w, this.z, this.z, this.y);
+};
+set wzzy(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.z = v4fVec.y;
+	this.z = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get wzzz(): IVec4{
+	return vec4(this.w, this.z, this.z, this.z);
+};
+set wzzz(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.z = v4fVec.y;
+	this.z = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get wzzw(): IVec4{
+	return vec4(this.w, this.z, this.z, this.w);
+};
+set wzzw(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.z = v4fVec.y;
+	this.z = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get wzwx(): IVec4{
+	return vec4(this.w, this.z, this.w, this.x);
+};
+set wzwx(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.z = v4fVec.y;
+	this.w = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get wzwy(): IVec4{
+	return vec4(this.w, this.z, this.w, this.y);
+};
+set wzwy(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.z = v4fVec.y;
+	this.w = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get wzwz(): IVec4{
+	return vec4(this.w, this.z, this.w, this.z);
+};
+set wzwz(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.z = v4fVec.y;
+	this.w = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get wzww(): IVec4{
+	return vec4(this.w, this.z, this.w, this.w);
+};
+set wzww(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.z = v4fVec.y;
+	this.w = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get wwxx(): IVec4{
+	return vec4(this.w, this.w, this.x, this.x);
+};
+set wwxx(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.w = v4fVec.y;
+	this.x = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get wwxy(): IVec4{
+	return vec4(this.w, this.w, this.x, this.y);
+};
+set wwxy(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.w = v4fVec.y;
+	this.x = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get wwxz(): IVec4{
+	return vec4(this.w, this.w, this.x, this.z);
+};
+set wwxz(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.w = v4fVec.y;
+	this.x = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get wwxw(): IVec4{
+	return vec4(this.w, this.w, this.x, this.w);
+};
+set wwxw(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.w = v4fVec.y;
+	this.x = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get wwyx(): IVec4{
+	return vec4(this.w, this.w, this.y, this.x);
+};
+set wwyx(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.w = v4fVec.y;
+	this.y = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get wwyy(): IVec4{
+	return vec4(this.w, this.w, this.y, this.y);
+};
+set wwyy(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.w = v4fVec.y;
+	this.y = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get wwyz(): IVec4{
+	return vec4(this.w, this.w, this.y, this.z);
+};
+set wwyz(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.w = v4fVec.y;
+	this.y = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get wwyw(): IVec4{
+	return vec4(this.w, this.w, this.y, this.w);
+};
+set wwyw(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.w = v4fVec.y;
+	this.y = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get wwzx(): IVec4{
+	return vec4(this.w, this.w, this.z, this.x);
+};
+set wwzx(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.w = v4fVec.y;
+	this.z = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get wwzy(): IVec4{
+	return vec4(this.w, this.w, this.z, this.y);
+};
+set wwzy(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.w = v4fVec.y;
+	this.z = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get wwzz(): IVec4{
+	return vec4(this.w, this.w, this.z, this.z);
+};
+set wwzz(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.w = v4fVec.y;
+	this.z = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get wwzw(): IVec4{
+	return vec4(this.w, this.w, this.z, this.w);
+};
+set wwzw(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.w = v4fVec.y;
+	this.z = v4fVec.z; 	this.w = v4fVec.w;
+};
+
+get wwwx(): IVec4{
+	return vec4(this.w, this.w, this.w, this.x);
+};
+set wwwx(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.w = v4fVec.y;
+	this.w = v4fVec.z; 	this.x = v4fVec.w;
+};
+
+get wwwy(): IVec4{
+	return vec4(this.w, this.w, this.w, this.y);
+};
+set wwwy(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.w = v4fVec.y;
+	this.w = v4fVec.z; 	this.y = v4fVec.w;
+};
+
+get wwwz(): IVec4{
+	return vec4(this.w, this.w, this.w, this.z);
+};
+set wwwz(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.w = v4fVec.y;
+	this.w = v4fVec.z; 	this.z = v4fVec.w;
+};
+
+get wwww(): IVec4{
+	return vec4(this.w, this.w, this.w, this.w);
+};
+set wwww(v4fVec: IVec4){
+	this.w = v4fVec.x; 	this.w = v4fVec.y;
+	this.w = v4fVec.z; 	this.w = v4fVec.w;
+};
 
         constructor();
         constructor(fValue: float);
@@ -2395,13 +5418,16 @@ module akra.math {
             return "[x: " + this.x + ", y: " + this.y
                         + ", z: " + this.z + ", w: " + this.w + "]";
         };
+
+        static stackSize: uint = 100; static stackPosition: int = 0; static stack: IVec4 [] = (function(): IVec4 []{ var pStack: IVec4 [] = new Array(Vec4.stackSize); for(var i:int = 0; i<Vec4.stackSize; i++){ pStack[i] = new Vec4(); } return pStack})();
     }
 }
 
 
 
 
-///<reference path="../akra.ts" />
+
+
 
 module akra.math {
     export class Mat2 {
@@ -2449,6 +5475,8 @@ module akra.math {
         }
     }
 }
+
+
 
 
 
@@ -2589,29 +5617,6 @@ module akra {
 
 module akra.math {
     export class Mat3 {
-/*var m3fMat;
-
-	    if(this === window  || this === window.AKRA){
-	        m3fMat = Mat3._pStorage[Mat3._iIndex++];
-	        if(Mat3._iIndex == Mat3._nStorageSize){
-	            Mat3._iIndex = 0;
-	        }        
-
-	        //clear
-	        if(arguments.length == 0){
-	            // var pData = m3fMat.pData;
-	            // pData.a11 = pData.a12 = pData.a13 = 
-	            // pData.a21 = pData.a22 = pData.a23 = 
-	            // pData.a31 = pData.a32 = pData.a33 = 0;
-	            return m3fMat;
-	        }
-	    }
-	    else{
-	        this.pData = new Float32Array(9);
-	        m3fMat = this;
-	    }*/
-
-
 	    data : Float32Array;
 
 	    constructor();
@@ -2635,17 +5640,21 @@ module akra.math {
 
 			var nArgumentsLength: uint = arguments.length;
 
-			if(nArgumentsLength == 1){
-		        this.set(arguments[0]);
-		    }
-		    else if(nArgumentsLength == 3){
-		        this.set(arguments[0],arguments[1],arguments[2]);
-		    }
-		    else if(nArgumentsLength == 9){
-		        this.set(arguments[0],arguments[1],arguments[2],
-                        arguments[3],arguments[4],arguments[5],
-                        arguments[6],arguments[7],arguments[8]);
-		    }
+			switch(nArgumentsLength){
+				case 1:
+					this.set(arguments[0]);
+					break;
+				case 3:
+					this.set(arguments[0], arguments[1], arguments[2]);
+					break;
+				case 9:
+					this.set(arguments[0], arguments[1], arguments[2],
+							 arguments[3], arguments[4], arguments[5],
+							 arguments[6], arguments[7], arguments[8]);
+					break;
+				default:
+					break;
+			}
 		};
 
 		set(): IMat3;
@@ -3426,6 +6435,1018 @@ module akra {
 		z: float;
 		w: float;
 
+
+/*represents two-component vector from original vector*/
+
+xx: IVec2;
+/*represents two-component vector from original vector*/
+
+xy: IVec2;
+/*represents two-component vector from original vector*/
+
+xz: IVec2;
+/*represents two-component vector from original vector*/
+
+xw: IVec2;
+/*represents two-component vector from original vector*/
+
+yx: IVec2;
+/*represents two-component vector from original vector*/
+
+yy: IVec2;
+/*represents two-component vector from original vector*/
+
+yz: IVec2;
+/*represents two-component vector from original vector*/
+
+yw: IVec2;
+/*represents two-component vector from original vector*/
+
+zx: IVec2;
+/*represents two-component vector from original vector*/
+
+zy: IVec2;
+/*represents two-component vector from original vector*/
+
+zz: IVec2;
+/*represents two-component vector from original vector*/
+
+zw: IVec2;
+/*represents two-component vector from original vector*/
+
+wx: IVec2;
+/*represents two-component vector from original vector*/
+
+wy: IVec2;
+/*represents two-component vector from original vector*/
+
+wz: IVec2;
+/*represents two-component vector from original vector*/
+
+ww: IVec2;
+
+/*represents three-component vector from original vector*/
+
+xxx: IVec3;
+/*represents three-component vector from original vector*/
+
+xxy: IVec3;
+/*represents three-component vector from original vector*/
+
+xxz: IVec3;
+/*represents three-component vector from original vector*/
+
+xxw: IVec3;
+/*represents three-component vector from original vector*/
+
+xyx: IVec3;
+/*represents three-component vector from original vector*/
+
+xyy: IVec3;
+/*represents three-component vector from original vector*/
+
+xyz: IVec3;
+/*represents three-component vector from original vector*/
+
+xyw: IVec3;
+/*represents three-component vector from original vector*/
+
+xzx: IVec3;
+/*represents three-component vector from original vector*/
+
+xzy: IVec3;
+/*represents three-component vector from original vector*/
+
+xzz: IVec3;
+/*represents three-component vector from original vector*/
+
+xzw: IVec3;
+/*represents three-component vector from original vector*/
+
+xwx: IVec3;
+/*represents three-component vector from original vector*/
+
+xwy: IVec3;
+/*represents three-component vector from original vector*/
+
+xwz: IVec3;
+/*represents three-component vector from original vector*/
+
+xww: IVec3;
+/*represents three-component vector from original vector*/
+
+yxx: IVec3;
+/*represents three-component vector from original vector*/
+
+yxy: IVec3;
+/*represents three-component vector from original vector*/
+
+yxz: IVec3;
+/*represents three-component vector from original vector*/
+
+yxw: IVec3;
+/*represents three-component vector from original vector*/
+
+yyx: IVec3;
+/*represents three-component vector from original vector*/
+
+yyy: IVec3;
+/*represents three-component vector from original vector*/
+
+yyz: IVec3;
+/*represents three-component vector from original vector*/
+
+yyw: IVec3;
+/*represents three-component vector from original vector*/
+
+yzx: IVec3;
+/*represents three-component vector from original vector*/
+
+yzy: IVec3;
+/*represents three-component vector from original vector*/
+
+yzz: IVec3;
+/*represents three-component vector from original vector*/
+
+yzw: IVec3;
+/*represents three-component vector from original vector*/
+
+ywx: IVec3;
+/*represents three-component vector from original vector*/
+
+ywy: IVec3;
+/*represents three-component vector from original vector*/
+
+ywz: IVec3;
+/*represents three-component vector from original vector*/
+
+yww: IVec3;
+/*represents three-component vector from original vector*/
+
+zxx: IVec3;
+/*represents three-component vector from original vector*/
+
+zxy: IVec3;
+/*represents three-component vector from original vector*/
+
+zxz: IVec3;
+/*represents three-component vector from original vector*/
+
+zxw: IVec3;
+/*represents three-component vector from original vector*/
+
+zyx: IVec3;
+/*represents three-component vector from original vector*/
+
+zyy: IVec3;
+/*represents three-component vector from original vector*/
+
+zyz: IVec3;
+/*represents three-component vector from original vector*/
+
+zyw: IVec3;
+/*represents three-component vector from original vector*/
+
+zzx: IVec3;
+/*represents three-component vector from original vector*/
+
+zzy: IVec3;
+/*represents three-component vector from original vector*/
+
+zzz: IVec3;
+/*represents three-component vector from original vector*/
+
+zzw: IVec3;
+/*represents three-component vector from original vector*/
+
+zwx: IVec3;
+/*represents three-component vector from original vector*/
+
+zwy: IVec3;
+/*represents three-component vector from original vector*/
+
+zwz: IVec3;
+/*represents three-component vector from original vector*/
+
+zww: IVec3;
+/*represents three-component vector from original vector*/
+
+wxx: IVec3;
+/*represents three-component vector from original vector*/
+
+wxy: IVec3;
+/*represents three-component vector from original vector*/
+
+wxz: IVec3;
+/*represents three-component vector from original vector*/
+
+wxw: IVec3;
+/*represents three-component vector from original vector*/
+
+wyx: IVec3;
+/*represents three-component vector from original vector*/
+
+wyy: IVec3;
+/*represents three-component vector from original vector*/
+
+wyz: IVec3;
+/*represents three-component vector from original vector*/
+
+wyw: IVec3;
+/*represents three-component vector from original vector*/
+
+wzx: IVec3;
+/*represents three-component vector from original vector*/
+
+wzy: IVec3;
+/*represents three-component vector from original vector*/
+
+wzz: IVec3;
+/*represents three-component vector from original vector*/
+
+wzw: IVec3;
+/*represents three-component vector from original vector*/
+
+wwx: IVec3;
+/*represents three-component vector from original vector*/
+
+wwy: IVec3;
+/*represents three-component vector from original vector*/
+
+wwz: IVec3;
+/*represents three-component vector from original vector*/
+
+www: IVec3;
+
+/*represents four-component vector from original vector*/
+
+xxxx: IVec4;
+/*represents four-component vector from original vector*/
+
+xxxy: IVec4;
+/*represents four-component vector from original vector*/
+
+xxxz: IVec4;
+/*represents four-component vector from original vector*/
+
+xxxw: IVec4;
+/*represents four-component vector from original vector*/
+
+xxyx: IVec4;
+/*represents four-component vector from original vector*/
+
+xxyy: IVec4;
+/*represents four-component vector from original vector*/
+
+xxyz: IVec4;
+/*represents four-component vector from original vector*/
+
+xxyw: IVec4;
+/*represents four-component vector from original vector*/
+
+xxzx: IVec4;
+/*represents four-component vector from original vector*/
+
+xxzy: IVec4;
+/*represents four-component vector from original vector*/
+
+xxzz: IVec4;
+/*represents four-component vector from original vector*/
+
+xxzw: IVec4;
+/*represents four-component vector from original vector*/
+
+xxwx: IVec4;
+/*represents four-component vector from original vector*/
+
+xxwy: IVec4;
+/*represents four-component vector from original vector*/
+
+xxwz: IVec4;
+/*represents four-component vector from original vector*/
+
+xxww: IVec4;
+/*represents four-component vector from original vector*/
+
+xyxx: IVec4;
+/*represents four-component vector from original vector*/
+
+xyxy: IVec4;
+/*represents four-component vector from original vector*/
+
+xyxz: IVec4;
+/*represents four-component vector from original vector*/
+
+xyxw: IVec4;
+/*represents four-component vector from original vector*/
+
+xyyx: IVec4;
+/*represents four-component vector from original vector*/
+
+xyyy: IVec4;
+/*represents four-component vector from original vector*/
+
+xyyz: IVec4;
+/*represents four-component vector from original vector*/
+
+xyyw: IVec4;
+/*represents four-component vector from original vector*/
+
+xyzx: IVec4;
+/*represents four-component vector from original vector*/
+
+xyzy: IVec4;
+/*represents four-component vector from original vector*/
+
+xyzz: IVec4;
+/*represents four-component vector from original vector*/
+
+xyzw: IVec4;
+/*represents four-component vector from original vector*/
+
+xywx: IVec4;
+/*represents four-component vector from original vector*/
+
+xywy: IVec4;
+/*represents four-component vector from original vector*/
+
+xywz: IVec4;
+/*represents four-component vector from original vector*/
+
+xyww: IVec4;
+/*represents four-component vector from original vector*/
+
+xzxx: IVec4;
+/*represents four-component vector from original vector*/
+
+xzxy: IVec4;
+/*represents four-component vector from original vector*/
+
+xzxz: IVec4;
+/*represents four-component vector from original vector*/
+
+xzxw: IVec4;
+/*represents four-component vector from original vector*/
+
+xzyx: IVec4;
+/*represents four-component vector from original vector*/
+
+xzyy: IVec4;
+/*represents four-component vector from original vector*/
+
+xzyz: IVec4;
+/*represents four-component vector from original vector*/
+
+xzyw: IVec4;
+/*represents four-component vector from original vector*/
+
+xzzx: IVec4;
+/*represents four-component vector from original vector*/
+
+xzzy: IVec4;
+/*represents four-component vector from original vector*/
+
+xzzz: IVec4;
+/*represents four-component vector from original vector*/
+
+xzzw: IVec4;
+/*represents four-component vector from original vector*/
+
+xzwx: IVec4;
+/*represents four-component vector from original vector*/
+
+xzwy: IVec4;
+/*represents four-component vector from original vector*/
+
+xzwz: IVec4;
+/*represents four-component vector from original vector*/
+
+xzww: IVec4;
+/*represents four-component vector from original vector*/
+
+xwxx: IVec4;
+/*represents four-component vector from original vector*/
+
+xwxy: IVec4;
+/*represents four-component vector from original vector*/
+
+xwxz: IVec4;
+/*represents four-component vector from original vector*/
+
+xwxw: IVec4;
+/*represents four-component vector from original vector*/
+
+xwyx: IVec4;
+/*represents four-component vector from original vector*/
+
+xwyy: IVec4;
+/*represents four-component vector from original vector*/
+
+xwyz: IVec4;
+/*represents four-component vector from original vector*/
+
+xwyw: IVec4;
+/*represents four-component vector from original vector*/
+
+xwzx: IVec4;
+/*represents four-component vector from original vector*/
+
+xwzy: IVec4;
+/*represents four-component vector from original vector*/
+
+xwzz: IVec4;
+/*represents four-component vector from original vector*/
+
+xwzw: IVec4;
+/*represents four-component vector from original vector*/
+
+xwwx: IVec4;
+/*represents four-component vector from original vector*/
+
+xwwy: IVec4;
+/*represents four-component vector from original vector*/
+
+xwwz: IVec4;
+/*represents four-component vector from original vector*/
+
+xwww: IVec4;
+/*represents four-component vector from original vector*/
+
+yxxx: IVec4;
+/*represents four-component vector from original vector*/
+
+yxxy: IVec4;
+/*represents four-component vector from original vector*/
+
+yxxz: IVec4;
+/*represents four-component vector from original vector*/
+
+yxxw: IVec4;
+/*represents four-component vector from original vector*/
+
+yxyx: IVec4;
+/*represents four-component vector from original vector*/
+
+yxyy: IVec4;
+/*represents four-component vector from original vector*/
+
+yxyz: IVec4;
+/*represents four-component vector from original vector*/
+
+yxyw: IVec4;
+/*represents four-component vector from original vector*/
+
+yxzx: IVec4;
+/*represents four-component vector from original vector*/
+
+yxzy: IVec4;
+/*represents four-component vector from original vector*/
+
+yxzz: IVec4;
+/*represents four-component vector from original vector*/
+
+yxzw: IVec4;
+/*represents four-component vector from original vector*/
+
+yxwx: IVec4;
+/*represents four-component vector from original vector*/
+
+yxwy: IVec4;
+/*represents four-component vector from original vector*/
+
+yxwz: IVec4;
+/*represents four-component vector from original vector*/
+
+yxww: IVec4;
+/*represents four-component vector from original vector*/
+
+yyxx: IVec4;
+/*represents four-component vector from original vector*/
+
+yyxy: IVec4;
+/*represents four-component vector from original vector*/
+
+yyxz: IVec4;
+/*represents four-component vector from original vector*/
+
+yyxw: IVec4;
+/*represents four-component vector from original vector*/
+
+yyyx: IVec4;
+/*represents four-component vector from original vector*/
+
+yyyy: IVec4;
+/*represents four-component vector from original vector*/
+
+yyyz: IVec4;
+/*represents four-component vector from original vector*/
+
+yyyw: IVec4;
+/*represents four-component vector from original vector*/
+
+yyzx: IVec4;
+/*represents four-component vector from original vector*/
+
+yyzy: IVec4;
+/*represents four-component vector from original vector*/
+
+yyzz: IVec4;
+/*represents four-component vector from original vector*/
+
+yyzw: IVec4;
+/*represents four-component vector from original vector*/
+
+yywx: IVec4;
+/*represents four-component vector from original vector*/
+
+yywy: IVec4;
+/*represents four-component vector from original vector*/
+
+yywz: IVec4;
+/*represents four-component vector from original vector*/
+
+yyww: IVec4;
+/*represents four-component vector from original vector*/
+
+yzxx: IVec4;
+/*represents four-component vector from original vector*/
+
+yzxy: IVec4;
+/*represents four-component vector from original vector*/
+
+yzxz: IVec4;
+/*represents four-component vector from original vector*/
+
+yzxw: IVec4;
+/*represents four-component vector from original vector*/
+
+yzyx: IVec4;
+/*represents four-component vector from original vector*/
+
+yzyy: IVec4;
+/*represents four-component vector from original vector*/
+
+yzyz: IVec4;
+/*represents four-component vector from original vector*/
+
+yzyw: IVec4;
+/*represents four-component vector from original vector*/
+
+yzzx: IVec4;
+/*represents four-component vector from original vector*/
+
+yzzy: IVec4;
+/*represents four-component vector from original vector*/
+
+yzzz: IVec4;
+/*represents four-component vector from original vector*/
+
+yzzw: IVec4;
+/*represents four-component vector from original vector*/
+
+yzwx: IVec4;
+/*represents four-component vector from original vector*/
+
+yzwy: IVec4;
+/*represents four-component vector from original vector*/
+
+yzwz: IVec4;
+/*represents four-component vector from original vector*/
+
+yzww: IVec4;
+/*represents four-component vector from original vector*/
+
+ywxx: IVec4;
+/*represents four-component vector from original vector*/
+
+ywxy: IVec4;
+/*represents four-component vector from original vector*/
+
+ywxz: IVec4;
+/*represents four-component vector from original vector*/
+
+ywxw: IVec4;
+/*represents four-component vector from original vector*/
+
+ywyx: IVec4;
+/*represents four-component vector from original vector*/
+
+ywyy: IVec4;
+/*represents four-component vector from original vector*/
+
+ywyz: IVec4;
+/*represents four-component vector from original vector*/
+
+ywyw: IVec4;
+/*represents four-component vector from original vector*/
+
+ywzx: IVec4;
+/*represents four-component vector from original vector*/
+
+ywzy: IVec4;
+/*represents four-component vector from original vector*/
+
+ywzz: IVec4;
+/*represents four-component vector from original vector*/
+
+ywzw: IVec4;
+/*represents four-component vector from original vector*/
+
+ywwx: IVec4;
+/*represents four-component vector from original vector*/
+
+ywwy: IVec4;
+/*represents four-component vector from original vector*/
+
+ywwz: IVec4;
+/*represents four-component vector from original vector*/
+
+ywww: IVec4;
+/*represents four-component vector from original vector*/
+
+zxxx: IVec4;
+/*represents four-component vector from original vector*/
+
+zxxy: IVec4;
+/*represents four-component vector from original vector*/
+
+zxxz: IVec4;
+/*represents four-component vector from original vector*/
+
+zxxw: IVec4;
+/*represents four-component vector from original vector*/
+
+zxyx: IVec4;
+/*represents four-component vector from original vector*/
+
+zxyy: IVec4;
+/*represents four-component vector from original vector*/
+
+zxyz: IVec4;
+/*represents four-component vector from original vector*/
+
+zxyw: IVec4;
+/*represents four-component vector from original vector*/
+
+zxzx: IVec4;
+/*represents four-component vector from original vector*/
+
+zxzy: IVec4;
+/*represents four-component vector from original vector*/
+
+zxzz: IVec4;
+/*represents four-component vector from original vector*/
+
+zxzw: IVec4;
+/*represents four-component vector from original vector*/
+
+zxwx: IVec4;
+/*represents four-component vector from original vector*/
+
+zxwy: IVec4;
+/*represents four-component vector from original vector*/
+
+zxwz: IVec4;
+/*represents four-component vector from original vector*/
+
+zxww: IVec4;
+/*represents four-component vector from original vector*/
+
+zyxx: IVec4;
+/*represents four-component vector from original vector*/
+
+zyxy: IVec4;
+/*represents four-component vector from original vector*/
+
+zyxz: IVec4;
+/*represents four-component vector from original vector*/
+
+zyxw: IVec4;
+/*represents four-component vector from original vector*/
+
+zyyx: IVec4;
+/*represents four-component vector from original vector*/
+
+zyyy: IVec4;
+/*represents four-component vector from original vector*/
+
+zyyz: IVec4;
+/*represents four-component vector from original vector*/
+
+zyyw: IVec4;
+/*represents four-component vector from original vector*/
+
+zyzx: IVec4;
+/*represents four-component vector from original vector*/
+
+zyzy: IVec4;
+/*represents four-component vector from original vector*/
+
+zyzz: IVec4;
+/*represents four-component vector from original vector*/
+
+zyzw: IVec4;
+/*represents four-component vector from original vector*/
+
+zywx: IVec4;
+/*represents four-component vector from original vector*/
+
+zywy: IVec4;
+/*represents four-component vector from original vector*/
+
+zywz: IVec4;
+/*represents four-component vector from original vector*/
+
+zyww: IVec4;
+/*represents four-component vector from original vector*/
+
+zzxx: IVec4;
+/*represents four-component vector from original vector*/
+
+zzxy: IVec4;
+/*represents four-component vector from original vector*/
+
+zzxz: IVec4;
+/*represents four-component vector from original vector*/
+
+zzxw: IVec4;
+/*represents four-component vector from original vector*/
+
+zzyx: IVec4;
+/*represents four-component vector from original vector*/
+
+zzyy: IVec4;
+/*represents four-component vector from original vector*/
+
+zzyz: IVec4;
+/*represents four-component vector from original vector*/
+
+zzyw: IVec4;
+/*represents four-component vector from original vector*/
+
+zzzx: IVec4;
+/*represents four-component vector from original vector*/
+
+zzzy: IVec4;
+/*represents four-component vector from original vector*/
+
+zzzz: IVec4;
+/*represents four-component vector from original vector*/
+
+zzzw: IVec4;
+/*represents four-component vector from original vector*/
+
+zzwx: IVec4;
+/*represents four-component vector from original vector*/
+
+zzwy: IVec4;
+/*represents four-component vector from original vector*/
+
+zzwz: IVec4;
+/*represents four-component vector from original vector*/
+
+zzww: IVec4;
+/*represents four-component vector from original vector*/
+
+zwxx: IVec4;
+/*represents four-component vector from original vector*/
+
+zwxy: IVec4;
+/*represents four-component vector from original vector*/
+
+zwxz: IVec4;
+/*represents four-component vector from original vector*/
+
+zwxw: IVec4;
+/*represents four-component vector from original vector*/
+
+zwyx: IVec4;
+/*represents four-component vector from original vector*/
+
+zwyy: IVec4;
+/*represents four-component vector from original vector*/
+
+zwyz: IVec4;
+/*represents four-component vector from original vector*/
+
+zwyw: IVec4;
+/*represents four-component vector from original vector*/
+
+zwzx: IVec4;
+/*represents four-component vector from original vector*/
+
+zwzy: IVec4;
+/*represents four-component vector from original vector*/
+
+zwzz: IVec4;
+/*represents four-component vector from original vector*/
+
+zwzw: IVec4;
+/*represents four-component vector from original vector*/
+
+zwwx: IVec4;
+/*represents four-component vector from original vector*/
+
+zwwy: IVec4;
+/*represents four-component vector from original vector*/
+
+zwwz: IVec4;
+/*represents four-component vector from original vector*/
+
+zwww: IVec4;
+/*represents four-component vector from original vector*/
+
+wxxx: IVec4;
+/*represents four-component vector from original vector*/
+
+wxxy: IVec4;
+/*represents four-component vector from original vector*/
+
+wxxz: IVec4;
+/*represents four-component vector from original vector*/
+
+wxxw: IVec4;
+/*represents four-component vector from original vector*/
+
+wxyx: IVec4;
+/*represents four-component vector from original vector*/
+
+wxyy: IVec4;
+/*represents four-component vector from original vector*/
+
+wxyz: IVec4;
+/*represents four-component vector from original vector*/
+
+wxyw: IVec4;
+/*represents four-component vector from original vector*/
+
+wxzx: IVec4;
+/*represents four-component vector from original vector*/
+
+wxzy: IVec4;
+/*represents four-component vector from original vector*/
+
+wxzz: IVec4;
+/*represents four-component vector from original vector*/
+
+wxzw: IVec4;
+/*represents four-component vector from original vector*/
+
+wxwx: IVec4;
+/*represents four-component vector from original vector*/
+
+wxwy: IVec4;
+/*represents four-component vector from original vector*/
+
+wxwz: IVec4;
+/*represents four-component vector from original vector*/
+
+wxww: IVec4;
+/*represents four-component vector from original vector*/
+
+wyxx: IVec4;
+/*represents four-component vector from original vector*/
+
+wyxy: IVec4;
+/*represents four-component vector from original vector*/
+
+wyxz: IVec4;
+/*represents four-component vector from original vector*/
+
+wyxw: IVec4;
+/*represents four-component vector from original vector*/
+
+wyyx: IVec4;
+/*represents four-component vector from original vector*/
+
+wyyy: IVec4;
+/*represents four-component vector from original vector*/
+
+wyyz: IVec4;
+/*represents four-component vector from original vector*/
+
+wyyw: IVec4;
+/*represents four-component vector from original vector*/
+
+wyzx: IVec4;
+/*represents four-component vector from original vector*/
+
+wyzy: IVec4;
+/*represents four-component vector from original vector*/
+
+wyzz: IVec4;
+/*represents four-component vector from original vector*/
+
+wyzw: IVec4;
+/*represents four-component vector from original vector*/
+
+wywx: IVec4;
+/*represents four-component vector from original vector*/
+
+wywy: IVec4;
+/*represents four-component vector from original vector*/
+
+wywz: IVec4;
+/*represents four-component vector from original vector*/
+
+wyww: IVec4;
+/*represents four-component vector from original vector*/
+
+wzxx: IVec4;
+/*represents four-component vector from original vector*/
+
+wzxy: IVec4;
+/*represents four-component vector from original vector*/
+
+wzxz: IVec4;
+/*represents four-component vector from original vector*/
+
+wzxw: IVec4;
+/*represents four-component vector from original vector*/
+
+wzyx: IVec4;
+/*represents four-component vector from original vector*/
+
+wzyy: IVec4;
+/*represents four-component vector from original vector*/
+
+wzyz: IVec4;
+/*represents four-component vector from original vector*/
+
+wzyw: IVec4;
+/*represents four-component vector from original vector*/
+
+wzzx: IVec4;
+/*represents four-component vector from original vector*/
+
+wzzy: IVec4;
+/*represents four-component vector from original vector*/
+
+wzzz: IVec4;
+/*represents four-component vector from original vector*/
+
+wzzw: IVec4;
+/*represents four-component vector from original vector*/
+
+wzwx: IVec4;
+/*represents four-component vector from original vector*/
+
+wzwy: IVec4;
+/*represents four-component vector from original vector*/
+
+wzwz: IVec4;
+/*represents four-component vector from original vector*/
+
+wzww: IVec4;
+/*represents four-component vector from original vector*/
+
+wwxx: IVec4;
+/*represents four-component vector from original vector*/
+
+wwxy: IVec4;
+/*represents four-component vector from original vector*/
+
+wwxz: IVec4;
+/*represents four-component vector from original vector*/
+
+wwxw: IVec4;
+/*represents four-component vector from original vector*/
+
+wwyx: IVec4;
+/*represents four-component vector from original vector*/
+
+wwyy: IVec4;
+/*represents four-component vector from original vector*/
+
+wwyz: IVec4;
+/*represents four-component vector from original vector*/
+
+wwyw: IVec4;
+/*represents four-component vector from original vector*/
+
+wwzx: IVec4;
+/*represents four-component vector from original vector*/
+
+wwzy: IVec4;
+/*represents four-component vector from original vector*/
+
+wwzz: IVec4;
+/*represents four-component vector from original vector*/
+
+wwzw: IVec4;
+/*represents four-component vector from original vector*/
+
+wwwx: IVec4;
+/*represents four-component vector from original vector*/
+
+wwwy: IVec4;
+/*represents four-component vector from original vector*/
+
+wwwz: IVec4;
+/*represents four-component vector from original vector*/
+
+wwww: IVec4;
+
 		set(): IVec4;
 		set(fValue: float): IVec4;
 		set(v4fVec: IVec4): IVec4;
@@ -3511,22 +7532,26 @@ module akra.math {
 			else{
 				this.data = new Float32Array(16);
 
-				if(nArgumentsLength === 1){
-					if(arguments[0] instanceof Mat3){
-						this.set(arguments[0],vec3(0.));
-					}
-					else{
-						this.set(arguments[0]);
-					}
-				}
-				else if(nArgumentsLength === 4){
-					this.set(arguments[0],arguments[1],arguments[2],arguments[3]);
-				}
-				else if(nArgumentsLength === 16){
-					this.set(arguments[0], arguments[1], arguments[2], arguments[3],
+				switch(nArgumentsLength){
+					case 1:
+						if(arguments[0] instanceof Mat3){
+							this.set(arguments[0],vec3(0.));
+						}
+						else{
+							this.set(arguments[0]);
+						}
+						break;
+					case 4:
+						this.set(arguments[0],arguments[1],arguments[2],arguments[3]);
+						break;
+					case 16:
+						this.set(arguments[0], arguments[1], arguments[2], arguments[3],
 							 arguments[4], arguments[5], arguments[6], arguments[7],
 							 arguments[8], arguments[9], arguments[10], arguments[11],
 							 arguments[12], arguments[13], arguments[14], arguments[15]);
+						 break;
+					 default:
+					 	break;
 				}
 			}
 		};
@@ -5070,20 +9095,20 @@ module akra.math {
     	constructor(fX?, fY?, fZ?, fW?){
     		var nArgumentsLength: uint = arguments.length;
 
-    		if(nArgumentsLength === 1){
-    			this.set(arguments[0]);
-    		}
-    		else if(nArgumentsLength === 2){
-    			this.set(arguments[0],arguments[1]);
-    		}
-    		else if(nArgumentsLength === 4){
-    			this.set(arguments[0], arguments[1], arguments[2], arguments[3]);
-    		}
-    		else{
-    			this.x = 0.;
-    			this.y = 0.;
-    			this.z = 0.;
-    			this.w = 1.;
+    		switch(nArgumentsLength){
+    			case 1:
+    				this.set(arguments[0]);
+    				break;
+				case 2:
+					this.set(arguments[0], arguments[1]);
+					break;
+				case 4:
+					this.set(arguments[0], arguments[1], arguments[2], arguments[3]);
+					break;
+				default:
+					this.x = this.y = this.z = 0.;
+					this.w = 1.;
+					break;
     		}
     	};
 
@@ -6126,21 +10151,273 @@ module akra.math {
 // var pMat3Stack = new Array(100);
 // var iMat3StackIndex = 0;
 
-// function mat3 ();
-// function mat3 (fValue: float);
-// function mat3 (fValue?) {
-// 	var pStorage: IMat3[] = Mat3.stack;
-// 	var iIndex = Mat3.iIndex;
-// 	var nMax = Mat3.nMax;
-// }
 
 
-	export var vec2 = vec2;
-	export var vec3 = vec3;
-	export var vec4 = vec4;
-	export var quat4 = quat4;
-	export var mat3 = mat3;
-	export var mat4 = mat4;
+	export var isRealEqual = (a: float, b: float, tolerance: float = 1.19209e-007): bool => {
+        if (math.abs(b - a) <= tolerance)
+            return true;
+        else
+            return false;
+    }
+
+    export function vec2(): IVec2;
+    export function vec2(fValue: float): IVec2;
+    export function vec2(v2fVec: IVec2): IVec2;
+    export function vec2(pArray: float[]): IVec2;
+    export function vec2(fValue1: float, fValue2: float): IVec2;
+    export function vec2(fValue1?, fValue2?): IVec2{
+        var nArgumentsLength: uint = arguments.length;
+        var v2fVec: IVec2 = Vec2.stack[Vec2.stackPosition ++];
+
+        if(Vec2.stackPosition == Vec2.stackSize){
+            Vec2.stackPosition = 0;
+        }
+
+        switch(nArgumentsLength){
+            case 1:
+                v2fVec.set(arguments[0]);
+                break;
+            case 2:
+                v2fVec.set(arguments[0], arguments[1]);
+                break;
+            default:
+                v2fVec.x = v2fVec.y = 0.;
+                break;
+        }
+
+        return v2fVec;
+    };
+
+    export function vec3(): IVec3;
+    export function vec3(fValue: float): IVec3;
+    export function vec3(v3fVec: IVec3): IVec3;
+    export function vec3(pArray: float[]): IVec3;
+    export function vec3(fValue: float, v2fVec: IVec2): IVec3;
+    export function vec3(v2fVec: IVec2, fValue: float): IVec3;
+    export function vec3(fValue1: float, fValue2: float, fValue3: float): IVec3;
+    export function vec3(fValue1?, fValue2?, fValue3?): IVec3{
+        var nArgumentsLength: uint = arguments.length;
+        var v3fVec: IVec3 = Vec3.stack[Vec3.stackPosition ++];
+
+        if(Vec3.stackPosition == Vec3.stackSize){
+            Vec3.stackPosition = 0;
+        }
+
+        switch(nArgumentsLength){
+            case 1:
+                v3fVec.set(arguments[0]);
+                break;
+            case 2:
+                v3fVec.set(arguments[0], arguments[1]);
+                break;
+            case 3:
+                v3fVec.set(arguments[0], arguments[1], arguments[2]);
+                break;
+            default:
+                v3fVec.x = v3fVec.y = v3fVec.z = 0.;
+                break;
+        }
+
+        return v3fVec;
+    };
+
+    export function vec4(): IVec4;
+    export function vec4(fValue: float): IVec4;
+    export function vec4(v4fVec: IVec4): IVec4;
+    export function vec4(pArray: float[]): IVec4;
+    export function vec4(fValue: float, v3fVec: IVec3): IVec4;
+    export function vec4(v2fVec1: IVec2, v2fVec2: IVec2): IVec4;
+    export function vec4(v3fVec: IVec3, fValue: float): IVec4;
+    export function vec4(fValue1: float, fValue2: float, v2fVec: IVec2): IVec4;
+    export function vec4(fValue1: float, v2fVec: IVec2, fValue2: float): IVec4;
+    export function vec4(v2fVec: IVec2 ,fValue1: float, fValue2: float): IVec4;
+    export function vec4(fValue1: float, fValue2: float, fValue3: float, fValue4: float): IVec4;
+    export function vec4(fValue1?, fValue2?, fValue3?, fValue4?): IVec4{
+        var nArgumentsLength: uint = arguments.length;
+        var v4fVec: IVec4 = Vec4.stack[Vec4.stackPosition ++];
+
+        if(Vec4.stackPosition == Vec4.stackSize){
+            Vec4.stackPosition = 0;
+        }
+
+        switch(nArgumentsLength){
+            case 1:
+                v4fVec.set(arguments[0]);
+                break;
+            case 2:
+                v4fVec.set(arguments[0],arguments[1]);
+                break;
+            case 3:
+                v4fVec.set(arguments[0],arguments[1], arguments[2]);
+                break;
+            case 4:
+                v4fVec.set(arguments[0],arguments[1], arguments[2], arguments[3]);
+                break;
+            default:
+                v4fVec.x = v4fVec.y = v4fVec.z = v4fVec.w = 0.;
+                break;
+        }
+
+        return v4fVec;
+    };
+
+    export function quat4(): IQuat4;
+	export function quat4(q4fQuat: IQuat4): IQuat4;
+	export function quat4(pArray: float[]): IQuat4;
+	export function quat4(fValue: float, fW: float): IQuat4;
+	export function quat4(v3fValue: IVec3, fW: float): IQuat4;
+	export function quat4(fX: float, fY: float, fZ: float, fW: float): IQuat4;
+	export function quat4(fX?, fY?, fZ?, fW?): IQuat4{
+		var nArgumentsLength: uint = arguments.length;
+		var q4fQuat: IQuat4 = Quat4.stack[Quat4.stackPosition ++];
+
+		if(Quat4.stackPosition == Quat4.stackSize){
+            Quat4.stackPosition = 0;
+		}
+
+		switch(nArgumentsLength){
+			case 1:
+				q4fQuat.set(arguments[0]);
+				break;
+			case 2:
+				q4fQuat.set(arguments[0], arguments[1]);
+				break;
+			case 4:
+				q4fQuat.set(arguments[0], arguments[1], arguments[2], arguments[3]);
+				break;
+			default:
+				q4fQuat.x = q4fQuat.y = q4fQuat.z = 0.;
+				q4fQuat.w = 1.;
+				break;
+		}
+
+		return q4fQuat;
+	};
+
+	export function mat3(): IMat3;
+	export function mat3(fValue: float): IMat3;
+	export function mat3(v3fVec: IVec3): IMat3;
+	export function mat3(m3fMat: IMat3): IMat3;
+	export function mat3(m4fMat: IMat4): IMat3;
+	export function mat3(pArray: float[]): IMat3;
+	export function mat3(fValue1: float, fValue2: float, fValue3: float): IMat3;
+	export function mat3(v3fVec1: IVec3, v3fVec2: IVec3, v3fVec3: IVec3): IMat3;
+	export function mat3(pArray1: float[], pArray2: float[], pArray3: float[]): IMat3;
+	export function mat3(fValue1: float, fValue2: float, fValue3: float,
+				fValue4: float, fValue5: float, fValue6: float,
+				fValue7: float, fValue8: float, fValue9: float): IMat3;
+	export function mat3(fValue1?, fValue2?, fValue3?,
+				fValue4?, fValue5?, fValue6?,
+				fValue7?, fValue8?, fValue9?): IMat3{
+
+		var nArgumentsLength: uint = arguments.length;
+		var m3fMat: IMat3 = Mat3.stack[Mat3.stackPosition ++];
+
+        if(Mat3.stackPosition == Mat3.stackSize){
+            Mat3.stackPosition = 0;
+		}
+
+		switch(nArgumentsLength){
+			case 1:
+				m3fMat.set(arguments[0]);
+				break;
+			case 3:
+				m3fMat.set(arguments[0], arguments[1], arguments[2]);
+				break;
+			case 9:
+				m3fMat.set(arguments[0], arguments[1], arguments[2],
+						 arguments[3], arguments[4], arguments[5],
+						 arguments[6], arguments[7], arguments[8]);
+				break;
+			default:
+				m3fMat.set(0.);
+				break;
+		}
+
+		return m3fMat;
+	};
+
+	export function mat4(): IMat4;
+	export function mat4(fValue: float): IMat4;
+	export function mat4(v4fVec: IVec4): IMat4;
+	export function mat4(m3fMat: IMat3, v3fTranslation?: IVec3): IMat4;
+	export function mat4(m4fMat: IMat4): IMat4;
+	export function mat4(pArray: float[]): IMat4;
+	export function mat4(pArray: Float32Array, bFlag: bool): IMat4;
+	export function mat4(fValue1: float, fValue2: float,
+			fValue3: float, fValue4: float): IMat4;
+	export function mat4(v4fVec1: IVec4, v4fVec2: IVec4,
+			v4fVec3: IVec4, v4fVec4: IVec4): IMat4;
+	export function mat4(pArray1: float[], pArray2: float[],
+			pArray3: float[], pArray4: float[]): IMat4;
+	export function mat4(fValue1: float, fValue2: float, fValue3: float, fValue4: float,
+			fValue5: float, fValue6: float, fValue7: float, fValue8: float,
+			fValue9: float, fValue10: float, fValue11: float, fValue12: float,
+			fValue13: float, fValue14: float, fValue15: float, fValue16: float): IMat4;
+	export function mat4(fValue1?, fValue2?, fValue3?, fValue4?,
+				fValue5?, fValue6?, fValue7?, fValue8?,
+				fValue9?, fValue10?, fValue11?, fValue12?,
+				fValue13?, fValue14?, fValue15?, fValue16?): IMat4{
+
+		var nArgumentsLength: uint = arguments.length;
+		var m4fMat: IMat4 = Mat4.stack[Mat4.stackPosition ++];
+
+        if(Mat4.stackPosition == Mat4.stackSize){
+            Mat4.stackPosition = 0;
+		}
+
+		if(nArgumentsLength === 2){
+			if(isBoolean(arguments[1])){
+				if(arguments[1]){
+					m4fMat.data = arguments[0];
+				}
+				else{
+					m4fMat.set(arguments[0]);
+				}
+			}
+			else{
+				m4fMat.set(arguments[0], arguments[1]);
+			}
+		}
+		else{
+			switch(nArgumentsLength){
+				case 1:
+					if(arguments[0] instanceof Mat3){
+						m4fMat.set(arguments[0],vec3(0.));
+					}
+					else{
+						m4fMat.set(arguments[0]);
+					}
+					break;
+				case 4:
+					m4fMat.set(arguments[0],arguments[1],arguments[2],arguments[3]);
+					break;
+				case 16:
+					m4fMat.set(arguments[0], arguments[1], arguments[2], arguments[3],
+						 arguments[4], arguments[5], arguments[6], arguments[7],
+						 arguments[8], arguments[9], arguments[10], arguments[11],
+						 arguments[12], arguments[13], arguments[14], arguments[15]);
+					 break;
+				 default:
+				 	break;
+			}
+		}
+
+		return m4fMat;
+	};
+
+	export function calcPOTtextureSize (nPixels: uint): uint[] {
+	    var w: uint, h: uint;
+	    var n: uint = nPixels;
+
+
+	    w = Math.ceil(Math.log(n) / Math.LN2 / 2.0);
+	    h = Math.ceil(Math.log(n / Math.pow(2, w)) / Math.LN2);
+	    w = Math.pow(2, w);
+	    h = Math.pow(2, h);
+	    n = w * h;
+	    return [w, h, n];
+	}
 }
 
 module akra {
@@ -6670,6 +10947,7 @@ module akra.geometry{
 module akra{
 
 	export interface IVec2 {} ;
+	export interface ICircle {} ;
 
 	export interface IPlane2d{
 		normal: IVec2;
@@ -8677,6 +12955,249 @@ module akra.geometry {
 
 
 
+
+
+
+
+
+
+
+
+module akra.geometry{
+
+	export enum EVolumeClassifications{
+		NO_RELATION = 0,
+		EQUAL,
+		A_CONTAINS_B,
+		B_CONTAINS_A,
+		INTERSECTING
+	};
+
+	export enum EPlaneClassifications{
+/**
+		 * ax+by+cz+d=0
+		 * PLANE_FRONT - объект находится перед плоскостью, то есть по направлению нормали
+		 * PLANE_BACK - объект находится за плостостью, то есть против направления нормали
+		 */
+
+		PLANE_FRONT = 0,
+		PLANE_BACK,
+		PLANE_INTERSECT
+	};
+
+	export function planeClassifyCircle(pPlane: IPlane2d, pCircle: ICircle): EPlaneClassifications{
+		var fDistance: float = pPlane.signedDistance(pCircle.center);
+		var fRadius: float = pCircle.radius;
+
+		if(fDistance > fRadius){
+			return EPlaneClassifications.PLANE_FRONT;
+		}
+		else if(fDistance < -fRadius){
+			return EPlaneClassifications.PLANE_BACK;
+		}
+		else{
+			return EPlaneClassifications.PLANE_INTERSECT;
+		}
+	};
+
+	export function planeClassifySphere(pPlane: IPlane3d, pSphere: ISphere): EPlaneClassifications{
+		var fDistance: float = pPlane.signedDistance(pSphere.center);
+		var fRadius: float = pSphere.radius;
+
+		if(fDistance > fRadius){
+			return EPlaneClassifications.PLANE_FRONT;
+		}
+		else if(fDistance < -fRadius){
+			return EPlaneClassifications.PLANE_BACK;
+		}
+		else{
+			return EPlaneClassifications.PLANE_INTERSECT;
+		}
+	};
+
+	export function planeClassifyRect2d(pPlane: IPlane2d, pRect: IRect2d): EPlaneClassifications{
+		var v2fMinPoint: IVec2 = vec2();
+		var v2fMaxPoint: IVec2 = vec2();
+
+		var v2fNormal: IVec2 = pPlane.normal;
+
+		if(v2fNormal.x > 0.){
+			v2fMinPoint.x = pRect.x0;
+			v2fMaxPoint.x = pRect.x1;
+		}
+		else{
+			v2fMinPoint.x = pRect.x1;
+			v2fMaxPoint.x = pRect.x0;
+		}
+
+		if(v2fNormal.y > 0.){
+			v2fMinPoint.y = pRect.y0;
+			v2fMaxPoint.y = pRect.y1;
+		}
+		else{
+			v2fMinPoint.y = pRect.y1;
+			v2fMaxPoint.y = pRect.y0;
+		}
+
+		var fMinDistance: float = pPlane.signedDistance(v2fMinPoint);
+		var fMaxDistance: float = pPlane.signedDistance(v2fMaxPoint);
+
+		if(fMinDistance*fMaxDistance <= 0.){
+			return EPlaneClassifications.PLANE_INTERSECT;
+		}
+		else if (fMaxDistance < 0.){
+			return EPlaneClassifications.PLANE_BACK;
+		}
+		else{
+			return EPlaneClassifications.PLANE_FRONT;
+		}
+	};
+
+	export function planeClassifyRect3d(pPlane: IPlane3d, pRect: IRect3d): EPlaneClassifications{
+		var v3fMinPoint: IVec3 = vec3();
+		var v3fMaxPoint: IVec3 = vec3();
+
+		var v3fNormal: IVec3 = pPlane.normal;
+
+		if(v3fNormal.x > 0.){
+			v3fMinPoint.x = pRect.x0;
+			v3fMaxPoint.x = pRect.x1;
+		}
+		else{
+			v3fMinPoint.x = pRect.x1;
+			v3fMaxPoint.x = pRect.x0;
+		}
+
+		if(v3fNormal.y > 0.){
+			v3fMinPoint.y = pRect.y0;
+			v3fMaxPoint.y = pRect.y1;
+		}
+		else{
+			v3fMinPoint.y = pRect.y1;
+			v3fMaxPoint.y = pRect.y0;
+		}
+
+		var fMinDistance: float = pPlane.signedDistance(v3fMinPoint);
+		var fMaxDistance: float = pPlane.signedDistance(v3fMaxPoint);
+
+		if(fMinDistance*fMaxDistance <= 0.){
+			return EPlaneClassifications.PLANE_INTERSECT;
+		}
+		else if (fMaxDistance < 0.){
+			return EPlaneClassifications.PLANE_BACK;
+		}
+		else{
+			return EPlaneClassifications.PLANE_FRONT;
+		}
+	};
+
+	export function planeClassify(pPlane: IPlane2d, pCircle: ICircle): EPlaneClassifications;
+	export function planeClassify(pPlane: IPlane3d, pSphere: ISphere): EPlaneClassifications;
+	export function planeClassify(pPlane: IPlane2d, pRect: IRect2d): EPlaneClassifications;
+	export function planeClassify(pPlane: IPlane3d, pRect: IRect3d): EPlaneClassifications;
+	export function planeClassify(pPlane?, pRect?): EPlaneClassifications{
+		var pArg0: any = arguments[0];
+		var pArg1: any = arguments[1];
+
+		if(pArg0 instanceof Plane2d){
+			if(pArg1 instanceof Circle){
+				return planeClassifyCircle(pArg0, pArg1);
+			}
+			else{
+				return planeClassifyRect2d(pArg0, pArg1);
+			}
+		}
+		else{
+			if(pArg1 instanceof Sphere){
+				return planeClassifySphere(pArg0, pArg1);
+			}
+			else{
+				return planeClassifyRect3d(pArg0, pArg1);
+			}
+		}
+	};
+
+	export function classifyRect2d(pRectA: IRect2d, pRectB: IRect2d): EVolumeClassifications{
+		var fRectAX0: float = pRectA.x0, fRectAX1: float = pRectA.x1;
+		var fRectAY0: float = pRectA.y0, fRectAY1: float = pRectA.y1;
+
+		var fRectBX0: float = pRectB.x0, fRectBX1: float = pRectB.x1;
+		var fRectBY0: float = pRectB.y0, fRectBY1: float = pRectB.y1;
+
+		if((fRectAX1 < fRectBX0 || fRectBX1 < fRectAX0)
+			|| (fRectAY1 < fRectBY0 || fRectAY1 < fRectBY0)){
+
+			return EVolumeClassifications.NO_RELATION;
+		}
+
+		if((fRectAX0 == fRectBX0 && fRectAX1 == fRectBX1)
+			&& (fRectAY0 == fRectBY0 && fRectAY1 == fRectBY1)){
+
+			return EVolumeClassifications.EQUAL;
+		}
+
+		if((fRectAX0 <= fRectBX0 && fRectBX1 <= fRectAX1)
+			 && (fRectAY0 <= fRectBY0 && fRectBY1 <= fRectAY1)){
+
+			return EVolumeClassifications.A_CONTAINS_B;
+		}
+
+		if((fRectBX0 <= fRectAX0 && fRectAX1 <= fRectBX1)
+			&& (fRectBY0 <= fRectAY0 && fRectAY1 <= fRectBY1)){
+
+			return EVolumeClassifications.B_CONTAINS_A;
+		}
+
+		return EVolumeClassifications.INTERSECTING;
+	};
+
+	export function classifyRect3d(pRectA: IRect3d, pRectB: IRect3d): EVolumeClassifications{
+		var fRectAX0: float = pRectA.x0, fRectAX1: float = pRectA.x1;
+		var fRectAY0: float = pRectA.y0, fRectAY1: float = pRectA.y1;
+		var fRectAZ0: float = pRectA.z0, fRectAZ1: float = pRectA.z1;
+
+		var fRectBX0: float = pRectB.x0, fRectBX1: float = pRectB.x1;
+		var fRectBY0: float = pRectB.y0, fRectBY1: float = pRectB.y1;
+		var fRectBZ0: float = pRectB.z0, fRectBZ1: float = pRectB.z1;
+
+		if((fRectAX1 < fRectBX0 || fRectBX1 < fRectAX0)
+			|| (fRectAY1 < fRectBY0 || fRectAY1 < fRectBY0)
+			|| (fRectAZ1 < fRectBZ0 || fRectAZ1 < fRectBZ0)){
+
+			return EVolumeClassifications.NO_RELATION;
+		}
+
+		if((fRectAX0 == fRectBX0 && fRectAX1 == fRectBX1)
+			&& (fRectAY0 == fRectBY0 && fRectAY1 == fRectBY1)
+			&& (fRectAZ0 == fRectBZ0 && fRectAZ1 == fRectBZ1)){
+
+			return EVolumeClassifications.EQUAL;
+		}
+
+		if((fRectAX0 <= fRectBX0 && fRectBX1 <= fRectAX1)
+			 && (fRectAY0 <= fRectBY0 && fRectBY1 <= fRectAY1)
+			 && (fRectAZ0 <= fRectBZ0 && fRectBZ1 <= fRectAZ1)){
+
+			return EVolumeClassifications.A_CONTAINS_B;
+		}
+
+		if((fRectBX0 <= fRectAX0 && fRectAX1 <= fRectBX1)
+			&& (fRectBY0 <= fRectAY0 && fRectAY1 <= fRectBY1)
+			&& (fRectBZ0 <= fRectAZ0 && fRectAZ1 <= fRectBZ1)){
+
+			return EVolumeClassifications.B_CONTAINS_A;
+		}
+
+		return EVolumeClassifications.INTERSECTING;
+	};
+
+}
+
+
+
+
+
+
 module akra{
 
 	export interface IMat4 {} ;
@@ -8885,12 +13406,12 @@ module akra.geometry{
 		};
 
 		testRect(pRect: IRect3d): bool{
-			if(planeClassify_Rect3d_Plane(pRect, this.leftPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Rect3d_Plane(pRect, this.rightPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Rect3d_Plane(pRect, this.topPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Rect3d_Plane(pRect, this.bottomPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Rect3d_Plane(pRect, this.nearPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Rect3d_Plane(pRect, this.farPlane) == EPlaneClassifications.PLANE_FRONT){
+			if(planeClassifyRect3d(this.leftPlane, pRect) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifyRect3d(this.rightPlane, pRect) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifyRect3d(this.topPlane, pRect) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifyRect3d(this.bottomPlane, pRect) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifyRect3d(this.nearPlane, pRect) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifyRect3d(this.farPlane, pRect) == EPlaneClassifications.PLANE_FRONT){
 
 				return false;
 			}
@@ -8898,12 +13419,12 @@ module akra.geometry{
 		};
 
 		testSphere(pSphere: ISphere): bool{
-			if(	   planeClassify_Sphere_Plane(pSphere, this.leftPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Sphere_Plane(pSphere, this.rightPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Sphere_Plane(pSphere, this.topPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Sphere_Plane(pSphere, this.bottomPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Sphere_Plane(pSphere, this.nearPlane) == EPlaneClassifications.PLANE_FRONT
-				|| planeClassify_Sphere_Plane(pSphere, this.farPlane) == EPlaneClassifications.PLANE_FRONT){
+			if(	   planeClassifySphere(this.leftPlane, pSphere) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifySphere(this.rightPlane, pSphere) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifySphere(this.topPlane, pSphere) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifySphere(this.bottomPlane, pSphere) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifySphere(this.nearPlane, pSphere) == EPlaneClassifications.PLANE_FRONT
+				|| planeClassifySphere(this.farPlane, pSphere) == EPlaneClassifications.PLANE_FRONT){
 
 				return false;
 			}
@@ -8919,27 +13440,8 @@ module akra.geometry{
 
 
 module akra.geometry{
-	export enum EVolumeClassifications{
-		NO_RELATION = 0,
-		EQUAL,
-		A_CONTAINS_B,
-		B_CONTAINS_A,
-		INTERSECTING
-	};
 
-	export enum EPlaneClassifications{
-/**
-		 * ax+by+cz+d=0
-		 * PLANE_FRONT - объект находится перед плоскостью, то есть по направлению нормали
-		 * PLANE_BACK - объект находится за плостостью, то есть против направления нормали
-		 */
-
-		PLANE_FRONT = 0,
-		PLANE_BACK,
-		PLANE_INTERSECT
-	};
-
-	export function intersect_Plane2d_Ray2d(pPlane: IPlane2d, pRay: IRay2d): bool{
+	export function intersectPlane2dRay2d(pPlane: IPlane2d, pRay: IRay2d): bool{
 		var fDistance: float = pPlane.signedDistance(pRay.point);
 		var fNdotV: float = pPlane.normal.dot(pRay.normal);
 
@@ -8961,7 +13463,7 @@ module akra.geometry{
 		}
 	};
 
-	export function intersect_Plane3d_Ray3d(pPlane: IPlane3d, pRay: IRay3d): bool{
+	export function intersectPlane3dRay3d(pPlane: IPlane3d, pRay: IRay3d): bool{
 		var fDistance: float = pPlane.signedDistance(pRay.point);
 		var fNdotV: float = pPlane.normal.dot(pRay.normal);
 
@@ -8983,7 +13485,7 @@ module akra.geometry{
 		}
 	};
 
-	export function intersect_Circle_Ray2d(pCircle: ICircle, pRay: IRay2d): bool{
+	export function intersectCircleRay2d(pCircle: ICircle, pRay: IRay2d): bool{
 		var v2fCenterToPoint: IVec2 = pRay.point.subtract(pCircle.center, vec2());
 
 		var v2fNormal: IVec2 = pRay.normal;
@@ -9016,7 +13518,7 @@ module akra.geometry{
 		}
 	};
 
-	export function intersect_Sphere_Ray3d(pSphere: ISphere, pRay: IRay3d): bool{
+	export function intersectSphereRay3d(pSphere: ISphere, pRay: IRay3d): bool{
 		var v3fCenterToPoint: IVec3 = pRay.point.subtract(pSphere.center, vec3());
 
 		var v3fNormal: IVec3 = pRay.normal;
@@ -9049,7 +13551,7 @@ module akra.geometry{
 		}
 	};
 
-	export function intersect_Rect2d_Ray2d(pRect: IRect2d, pRay: IRay2d): bool{
+	export function intersectRect2dRay2d(pRect: IRect2d, pRay: IRay2d): bool{
 		var v2fNormal: IVec2 = pRay.normal;
 		var v2fPoint: IVec2 = pRay.point;
 
@@ -9092,7 +13594,7 @@ module akra.geometry{
 		return true;
 	};
 
-	export function intersect_Rect3d_Ray3d(pRect: IRect3d, pRay: IRay3d): bool{
+	export function intersectRect3dRay3d(pRect: IRect3d, pRay: IRay3d): bool{
 		var v3fNormal: IVec3 = pRay.normal;
 		var v3fPoint: IVec3 = pRay.point;
 
@@ -9146,7 +13648,7 @@ module akra.geometry{
 		return true;
 	};
 
-	export function intersect_Circle_Circle(pCircle1: ICircle, pCircle2: ICircle): bool{
+	export function intersectCircleCircle(pCircle1: ICircle, pCircle2: ICircle): bool{
 		var v2fCenter1: IVec2 = pCircle1.center;
 		var v2fCenter2: IVec2 = pCircle2.center;
 
@@ -9161,7 +13663,7 @@ module akra.geometry{
 		return true;
 	};
 
-	export function intersect_Sphere_Sphere(pSphere1: ISphere, pSphere2: ISphere): bool{
+	export function intersectSphereSphere(pSphere1: ISphere, pSphere2: ISphere): bool{
 		var v3fCenter1: IVec3 = pSphere1.center;
 		var v3fCenter2: IVec3 = pSphere2.center;
 
@@ -9177,7 +13679,7 @@ module akra.geometry{
 		return true;
 	};
 
-	export function intersect_Rect2d_Circle(pRect: IRect2d, pCircle: ICircle){
+	export function intersectRect2dCircle(pRect: IRect2d, pCircle: ICircle){
 		var v2fCenter: IVec2 = pCircle.center;
 		var fOffsetX: float = 0., fOffsetY: float = 0.;
 		var nInside: uint = 0;
@@ -9216,7 +13718,7 @@ module akra.geometry{
 		return true;
 	};
 
-	export function intersect_Rect3d_Sphere(pRect: IRect3d, pSphere: ISphere){
+	export function intersectRect3dSphere(pRect: IRect3d, pSphere: ISphere){
 		var v3fCenter: IVec3 = pSphere.center;
 		var fOffsetX: float = 0., fOffsetY: float = 0., fOffsetZ: float = 0.;
 		var nInside: uint = 0;
@@ -9265,7 +13767,7 @@ module akra.geometry{
 		return true;
 	};
 
-	export function intersect_Rect2d_Rect2d(pRect1: IRect2d, pRect2: IRect2d, pResult?: IRect2d): bool{
+	export function intersectRect2dRect2d(pRect1: IRect2d, pRect2: IRect2d, pResult?: IRect2d): bool{
 		if(!isDef(pResult)){
 			var fX0: float = math.max(pRect1.x0, pRect2.x0);
 			var fX1: float = math.min(pRect1.x1, pRect2.x1);
@@ -9289,7 +13791,7 @@ module akra.geometry{
 		}
 	};
 
-	export function intersect_Rect3d_Rect3d(pRect1: IRect3d, pRect2: IRect3d, pResult?: IRect3d): bool{
+	export function intersectRect3dRect3d(pRect1: IRect3d, pRect2: IRect3d, pResult?: IRect3d): bool{
 		if(!isDef(pResult)){
 			var fX0: float = math.max(pRect1.x0, pRect2.x0);
 			var fX1: float = math.min(pRect1.x1, pRect2.x1);
@@ -9320,27 +13822,27 @@ module akra.geometry{
 		}
 	};
 
-	function _intersect(pPlane: IPlane2d, pRay: IRay2d): bool;
-	function _intersect(pPlane: IPlane3d, pRay: IRay3d): bool;
-	function _intersect(pCircle: ICircle, pRay: IRay2d): bool;
-	function _intersect(pSphere: ISphere, pRay: IRay3d): bool;
-	function _intersect(pRect: IRect2d, pRay: IRay2d): bool;
-	function _intersect(pRect: IRect3d, pRay: IRay3d): bool;
-	function _intersect(pCircle1: ICircle, pCircle2: ICircle): bool;
-	function _intersect(pSphere1: ISphere, pSphere2: ISphere): bool;
-	function _intersect(pRect: IRect2d, pCircle: ICircle): bool;
-	function _intersect(pRect: IRect3d, pSphere: ISphere): bool;
-	function _intersect(pRect1: IRect2d, pRect2: IRect2d, pResult?: IRect2d): bool;
-	function _intersect(pRect1: IRect3d, pRect2: IRect3d, pResult?: IRect3d): bool;
-	function _intersect(pRect1?, pRect2?, pResult?): bool{
+	export function intersect(pPlane: IPlane2d, pRay: IRay2d): bool;
+	export function intersect(pPlane: IPlane3d, pRay: IRay3d): bool;
+	export function intersect(pCircle: ICircle, pRay: IRay2d): bool;
+	export function intersect(pSphere: ISphere, pRay: IRay3d): bool;
+	export function intersect(pRect: IRect2d, pRay: IRay2d): bool;
+	export function intersect(pRect: IRect3d, pRay: IRay3d): bool;
+	export function intersect(pCircle1: ICircle, pCircle2: ICircle): bool;
+	export function intersect(pSphere1: ISphere, pSphere2: ISphere): bool;
+	export function intersect(pRect: IRect2d, pCircle: ICircle): bool;
+	export function intersect(pRect: IRect3d, pSphere: ISphere): bool;
+	export function intersect(pRect1: IRect2d, pRect2: IRect2d, pResult?: IRect2d): bool;
+	export function intersect(pRect1: IRect3d, pRect2: IRect3d, pResult?: IRect3d): bool;
+	export function intersect(pRect1?, pRect2?, pResult?): bool{
 		var nArgumentsLength: uint = arguments.length;
 
 		if(nArgumentsLength === 3){
 			if(arguments[2] instanceof Rect2d){
-				return intersect_Rect2d_Rect2d(arguments[0], arguments[1], arguments[2]);
+				return intersectRect2dRect2d(arguments[0], arguments[1], arguments[2]);
 			}
 			else{
-				return intersect_Rect3d_Rect3d(arguments[0], arguments[1], arguments[2]);
+				return intersectRect3dRect3d(arguments[0], arguments[1], arguments[2]);
 			}
 		}
 		else{
@@ -9349,47 +13851,55 @@ module akra.geometry{
 
 			if(pArg1 instanceof Ray2d){
 				if(pArg0 instanceof Plane2d){
-					return intersect_Plane2d_Ray2d(pArg0, pArg1);
+					return intersectPlane2dRay2d(pArg0, pArg1);
 				}
 				else if(pArg0 instanceof Circle){
-					return intersect_Circle_Ray2d(pArg0, pArg1);
+					return intersectCircleRay2d(pArg0, pArg1);
 				}
 				else{
-					return intersect_Rect2d_Ray2d(pArg0, pArg1);
+					return intersectRect2dRay2d(pArg0, pArg1);
 				}
 			}
 			else if(pArg1 instanceof Ray3d){
 				if(pArg0 instanceof Plane3d){
-					return intersect_Plane3d_Ray3d(pArg0, pArg1);
+					return intersectPlane3dRay3d(pArg0, pArg1);
 				}
 				else if(pArg0 instanceof Sphere){
-					return intersect_Sphere_Ray3d(pArg0, pArg1);
+					return intersectSphereRay3d(pArg0, pArg1);
 				}
 				else{
-					return intersect_Rect3d_Ray3d(pArg0, pArg1);
+					return intersectRect3dRay3d(pArg0, pArg1);
 				}
 			}
 			else if(pArg1 instanceof Circle){
 				if(pArg0 instanceof Circle){
-					return intersect_Circle_Circle(pArg0, pArg1);
+					return intersectCircleCircle(pArg0, pArg1);
 				}
 				else{
-					return intersect_Rect2d_Circle(pArg0, pArg1);
+					return intersectRect2dCircle(pArg0, pArg1);
+				}
+			}
+			else if(pArg1 instanceof Sphere){
+				if(pArg0 instanceof Sphere){
+					return intersectSphereSphere(pArg0, pArg1);
+				}
+				else{
+					return intersectRect3dSphere(pArg0, pArg1);
 				}
 			}
 			else{
-				if(pArg0 instanceof Sphere){
-					return intersect_Sphere_Sphere(pArg0, pArg1);
+				if(pArg0 instanceof Rect2d){
+					return intersectRect2dRect2d(pArg0, pArg1);
 				}
 				else{
-					return intersect_Rect3d_Sphere(pArg0, pArg1);
+					return intersectRect3dRect3d(pArg0, pArg1);
 				}
 			}
 		}
 	};
-
-	export var intersect = _intersect;
 };
+
+
 
 
 

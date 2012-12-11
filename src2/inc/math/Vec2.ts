@@ -8,6 +8,8 @@ module akra.math {
         x: float = 0.;
         y: float = 0.;
 
+        #include "VectorsGettersSetters/Vec2GettersSetters.ts"
+
         constructor();
         constructor(fValue: float);
         constructor(v2fVec: IVec2);
