@@ -9,7 +9,6 @@
 module akra.math {
 
     export class Mat3 {
-
 	    data : Float32Array;
 
 	    constructor();
@@ -33,34 +32,21 @@ module akra.math {
 			var nArgumentsLength: uint = arguments.length;
 			var m3fMat: IMat3 = this;
 
-			// if (<any>this === window || <any>this === akra || <any>this === akra.math) {
-		 //        m3fMat = Mat3.stack[Mat3.stackPosition ++];
-
-		 //        if(Mat3.stackPosition == Mat3.stackSize){
-		 //            Mat3.stackPosition = 0;
-			// 	}
-		 //    }
-
-			m3fMat.data = m3fMat.data || new Float32Array(9);
-
-			switch (nArgumentsLength) {
-				case 0:
-					m3fMat; 
-					break;
-				case 1: 
-					m3fMat.set(arguments[0]); 
+			switch(nArgumentsLength){
+				case 1:
+					this.set(arguments[0]);
 					break;
 				case 3:
-					m3fMat.set(arguments[0],arguments[1],arguments[2]); 
+					this.set(arguments[0], arguments[1], arguments[2]);
 					break;
 				case 9:
-					 m3fMat.set(arguments[0],arguments[1],arguments[2],
-	                        arguments[3],arguments[4],arguments[5],
-	                        arguments[6],arguments[7],arguments[8]); 
-					 break;    
+					this.set(arguments[0], arguments[1], arguments[2],
+							 arguments[3], arguments[4], arguments[5],
+							 arguments[6], arguments[7], arguments[8]);
+					break;
+				default:
+					break;
 			}
-
-			// return m3fMat;
 		};
 
 		set(): IMat3;

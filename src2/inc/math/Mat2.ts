@@ -1,4 +1,3 @@
-///<reference path="../akra.ts" />
 
 // module akra.math {
 //     export class Mat2 {
@@ -41,8 +40,8 @@
 //                     pData[3] = f22;
 //                     break;
 //             }
-
 //             return this;
 //         }
 //     }
 // }
+

@@ -14,6 +14,8 @@ module akra.math {
         y: float;
         z: float;
 
+        #include "VectorsGettersSetters/Vec3GettersSetters.ts"
+
         constructor();
         constructor(fValue: float);
         constructor(v3fVec: IVec3);
@@ -23,32 +25,21 @@ module akra.math {
         constructor(fValue1: float, fValue2: float, fValue3: float);
         constructor(fValue1?, fValue2?, fValue3?){
             var nArgumentsLength: uint = arguments.length;
-            var v3fVec: IVec3 = this;
-
-            // if (<any>this === window || <any>this === akra || <any>this === akra.math) {
-            //     v3fVec = Vec3.stack[Vec3.stackPosition ++];
-
-            //     if(Vec3.stackPosition == Vec3.stackSize){
-            //         Vec3.stackPosition = 0;
-            //     }
-            // }
 
             switch(nArgumentsLength){
                 case 1:
-                    v3fVec.set(arguments[0]); 
+                    this.set(arguments[0]);
                     break;
                 case 2:
-                    v3fVec.set(arguments[0], arguments[1]); 
+                    this.set(arguments[0], arguments[1]);
                     break;
                 case 3: 
-                    v3fVec.set(arguments[0], arguments[1], arguments[2]); 
+                    this.set(arguments[0], arguments[1], arguments[2]);
                     break;
                 default:
-                    v3fVec.x = v3fVec.y = v3fVec.z = 0.;
+                    this.x = this.y = this.z = 0.;
                     break;
             }
-
-            // return v3fVec;
         };
 
         set(): IVec3;

@@ -18,8 +18,9 @@ module akra {
 
 		set(): IRect3d;
 		set(pRect: IRect3d): IRect3d;
-		set(v3fVec: IVec3): IRect3d;
+		set(v3fSize: IVec3): IRect3d;
 		set(fSizeX: float, fSizeY: float, fSizeZ: float): IRect3d;
+		set(v3fMinPoint: IVec3, v3fMaxPoint: IVec3): IRect3d;
 		set(fX0: float, fX1: float, fY0: float,
 			fY1: float, fZ0: float, fZ1: float): IRect3d;
 

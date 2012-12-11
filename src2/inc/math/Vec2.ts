@@ -9,6 +9,8 @@ module akra.math {
         x: float = 0.;
         y: float = 0.;
 
+        #include "VectorsGettersSetters/Vec2GettersSetters.ts"
+
         constructor();
         constructor(fValue: float);
         constructor(v2fVec: IVec2);
@@ -36,9 +38,7 @@ module akra.math {
                 default:
                     v2fVec.x = v2fVec.y = 0.;
                     break;
-            };
-
-            // return v2fVec;
+            }
         };
 
         set(): IVec2;
@@ -242,7 +242,7 @@ module akra.math {
 
         inline toString(): string{
             return "[x: " + this.x + ", y: " + this.y + "]";
-        }
+        };
 
         ALLOCATE_STORAGE(Vec2,100)
    }

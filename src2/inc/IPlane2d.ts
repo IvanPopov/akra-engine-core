@@ -4,6 +4,7 @@
 module akra{
 
 	IFACE(IVec2);
+	IFACE(ICircle);
 
 	export interface IPlane2d{
 		normal: IVec2;

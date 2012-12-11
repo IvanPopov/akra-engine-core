@@ -21,35 +21,22 @@ module akra.math {
     	constructor(fX: float, fY: float, fZ: float, fW: float);
     	constructor(fX?, fY?, fZ?, fW?){
     		var nArgumentsLength: uint = arguments.length;
-    		var q4fQuat: IQuat4 = this;
 
-			// if (<any>this === window || <any>this === akra || <any>this === akra.math) {
-		 //        q4fQuat = Quat4.stack[Quat4.stackPosition ++];
-
-		 //        if(Quat4.stackPosition == Quat4.stackSize){
-		 //            Quat4.stackPosition = 0;
-			// 	}
-		 //    }
-
-		    switch (nArgumentsLength) {
-		    	case 1:
-		    		q4fQuat.set(arguments[0]); 
-		    		break;
-		    	case 2:
-		    		q4fQuat.set(arguments[0],arguments[1]); 
-		    		break;
-		    	case 4:
-		    		q4fQuat.set(arguments[0], arguments[1], arguments[2], arguments[3]); 
-		    		break;
-		    	default:
-		    		q4fQuat.x = 0.;
-	    			q4fQuat.y = 0.;
-	    			q4fQuat.z = 0.;
-	    			q4fQuat.w = 1.;
-	    			break;
-		    }
-
-		    // return q4fQuat;
+    		switch(nArgumentsLength){
+    			case 1:
+    				this.set(arguments[0]);
+    				break;
+				case 2:
+					this.set(arguments[0], arguments[1]);
+					break;
+				case 4:
+					this.set(arguments[0], arguments[1], arguments[2], arguments[3]);
+					break;
+				default:
+					this.x = this.y = this.z = 0.;
+					this.w = 1.;
+					break;
+    		}
     	};
 
     	set(): IQuat4;

@@ -25,6 +25,8 @@ module akra.math {
 	export var SQRT1_2: float 							= <float>Math.SQRT1_2;
 	export var SQRT2: float 							= <float>Math.SQRT2;
 	export var LN10: float 								= <float>Math.LN10;
+	export var POSITIVE_INFINITY: float                 = <float>Number.POSITIVE_INFINITY;
+	export var NEGATIVE_INFINITY: float                 = <float>Number.NEGATIVE_INFINITY;
 
 	export var FLOAT_PRECISION: float					= <float>(3.4e-8);
 	export var TWO_PI: float							= <float>(2.0*PI);
@@ -374,50 +376,58 @@ module akra.math {
             return false;
     }
 
-	export var vec2: IVec2Constructor 	= function (fValue1?, fValue2?){
+    export function vec2(): IVec2;
+    export function vec2(fValue: float): IVec2;
+    export function vec2(v2fVec: IVec2): IVec2;
+    export function vec2(pArray: float[]): IVec2;
+    export function vec2(fValue1: float, fValue2: float): IVec2;
+    export function vec2(fValue1?, fValue2?): IVec2{
         var nArgumentsLength: uint = arguments.length;
-        var v2fVec: IVec2;
-
-
-        v2fVec = Vec2.stack[Vec2.stackPosition ++];
+        var v2fVec: IVec2 = Vec2.stack[Vec2.stackPosition ++];
 
         if(Vec2.stackPosition == Vec2.stackSize){
             Vec2.stackPosition = 0;
         }
-        
+
         switch(nArgumentsLength){
             case 1:
-                v2fVec.set(arguments[0]); 
+                v2fVec.set(arguments[0]);
                 break;
             case 2:
-                v2fVec.set(arguments[0], arguments[1]); 
+                v2fVec.set(arguments[0], arguments[1]);
                 break;
             default:
                 v2fVec.x = v2fVec.y = 0.;
                 break;
-        };
+        }
 
         return v2fVec;
     };
-	export var vec3: IVec3Constructor 	= function (fValue1?, fValue2?, fValue3?){
-        var nArgumentsLength: uint = arguments.length;
-        var v3fVec: IVec3;
 
-        v3fVec = Vec3.stack[Vec3.stackPosition ++];
+    export function vec3(): IVec3;
+    export function vec3(fValue: float): IVec3;
+    export function vec3(v3fVec: IVec3): IVec3;
+    export function vec3(pArray: float[]): IVec3;
+    export function vec3(fValue: float, v2fVec: IVec2): IVec3;
+    export function vec3(v2fVec: IVec2, fValue: float): IVec3;
+    export function vec3(fValue1: float, fValue2: float, fValue3: float): IVec3;
+    export function vec3(fValue1?, fValue2?, fValue3?): IVec3{
+        var nArgumentsLength: uint = arguments.length;
+        var v3fVec: IVec3 = Vec3.stack[Vec3.stackPosition ++];
 
         if(Vec3.stackPosition == Vec3.stackSize){
             Vec3.stackPosition = 0;
         }
-        
+
         switch(nArgumentsLength){
             case 1:
-                v3fVec.set(arguments[0]); 
+                v3fVec.set(arguments[0]);
                 break;
             case 2:
-                v3fVec.set(arguments[0], arguments[1]); 
+                v3fVec.set(arguments[0], arguments[1]);
                 break;
             case 3: 
-                v3fVec.set(arguments[0], arguments[1], arguments[2]); 
+                v3fVec.set(arguments[0], arguments[1], arguments[2]);
                 break;
             default:
                 v3fVec.x = v3fVec.y = v3fVec.z = 0.;
@@ -426,28 +436,38 @@ module akra.math {
 
         return v3fVec;
     };
-	export var vec4: IVec4Constructor 	= function (fValue1?, fValue2?, fValue3?, fValue4?) {
-        var nArgumentsLength: uint = arguments.length;
-        var v4fVec: IVec4;
 
-        v4fVec = Vec4.stack[Vec4.stackPosition ++];
+    export function vec4(): IVec4;
+    export function vec4(fValue: float): IVec4;
+    export function vec4(v4fVec: IVec4): IVec4;
+    export function vec4(pArray: float[]): IVec4;
+    export function vec4(fValue: float, v3fVec: IVec3): IVec4;
+    export function vec4(v2fVec1: IVec2, v2fVec2: IVec2): IVec4;
+    export function vec4(v3fVec: IVec3, fValue: float): IVec4;
+    export function vec4(fValue1: float, fValue2: float, v2fVec: IVec2): IVec4;
+    export function vec4(fValue1: float, v2fVec: IVec2, fValue2: float): IVec4;
+    export function vec4(v2fVec: IVec2 ,fValue1: float, fValue2: float): IVec4;
+    export function vec4(fValue1: float, fValue2: float, fValue3: float, fValue4: float): IVec4;
+    export function vec4(fValue1?, fValue2?, fValue3?, fValue4?): IVec4{
+        var nArgumentsLength: uint = arguments.length;
+        var v4fVec: IVec4 = Vec4.stack[Vec4.stackPosition ++];
 
         if(Vec4.stackPosition == Vec4.stackSize){
             Vec4.stackPosition = 0;
         }
 
-        switch(nArgumentsLength) {
+        switch(nArgumentsLength){
             case 1:
-                v4fVec.set(arguments[0]); 
+                v4fVec.set(arguments[0]);
                 break;
             case 2:
-                v4fVec.set(arguments[0],arguments[1]); 
+                v4fVec.set(arguments[0],arguments[1]);
                 break;
             case 3:
-                v4fVec.set(arguments[0],arguments[1], arguments[2]); 
+                v4fVec.set(arguments[0],arguments[1], arguments[2]);
                 break;
             case 4:
-                v4fVec.set(arguments[0],arguments[1], arguments[2], arguments[3]); 
+                v4fVec.set(arguments[0],arguments[1], arguments[2], arguments[3]);
                 break;
             default: 
                 v4fVec.x = v4fVec.y = v4fVec.z = v4fVec.w = 0.;
@@ -456,123 +476,146 @@ module akra.math {
 
         return v4fVec;
     };
-	export var quat4: IQuat4Constructor = function (fX?, fY?, fZ?, fW?){
+
+    export function quat4(): IQuat4;
+	export function quat4(q4fQuat: IQuat4): IQuat4;
+	export function quat4(pArray: float[]): IQuat4;
+	export function quat4(fValue: float, fW: float): IQuat4;
+	export function quat4(v3fValue: IVec3, fW: float): IQuat4;
+	export function quat4(fX: float, fY: float, fZ: float, fW: float): IQuat4;
+	export function quat4(fX?, fY?, fZ?, fW?): IQuat4{
 		var nArgumentsLength: uint = arguments.length;
-		var q4fQuat: IQuat4;
+		var q4fQuat: IQuat4 = Quat4.stack[Quat4.stackPosition ++];
 
-        q4fQuat = Quat4.stack[Quat4.stackPosition ++];
-
-        if(Quat4.stackPosition == Quat4.stackSize){
+		if(Quat4.stackPosition == Quat4.stackSize){
             Quat4.stackPosition = 0;
 		}
-	    
-	    switch (nArgumentsLength) {
-	    	case 1:
-	    		q4fQuat.set(arguments[0]); 
-	    		break;
-	    	case 2:
-	    		q4fQuat.set(arguments[0],arguments[1]); 
-	    		break;
-	    	case 4:
-	    		q4fQuat.set(arguments[0], arguments[1], arguments[2], arguments[3]); 
-	    		break;
-	    	default:
-	    		q4fQuat.x = 0.;
-    			q4fQuat.y = 0.;
-    			q4fQuat.z = 0.;
-    			q4fQuat.w = 1.;
-    			break;
-	    }
 
-	    return q4fQuat;
+		switch(nArgumentsLength){
+			case 1:
+				q4fQuat.set(arguments[0]);
+				break;
+			case 2:
+				q4fQuat.set(arguments[0], arguments[1]);
+				break;
+			case 4:
+				q4fQuat.set(arguments[0], arguments[1], arguments[2], arguments[3]);
+				break;
+			default:
+				q4fQuat.x = q4fQuat.y = q4fQuat.z = 0.;
+				q4fQuat.w = 1.;
+				break;
+		}
+
+		return q4fQuat;
 	};
-	export var mat3: IMat3Constructor 	= function (fValue1?, fValue2?, fValue3?,
-					fValue4?, fValue5?, fValue6?,
-					fValue7?, fValue8?, fValue9?){
+
+	export function mat3(): IMat3;
+	export function mat3(fValue: float): IMat3;
+	export function mat3(v3fVec: IVec3): IMat3;
+	export function mat3(m3fMat: IMat3): IMat3;
+	export function mat3(m4fMat: IMat4): IMat3;
+	export function mat3(pArray: float[]): IMat3;
+	export function mat3(fValue1: float, fValue2: float, fValue3: float): IMat3;
+	export function mat3(v3fVec1: IVec3, v3fVec2: IVec3, v3fVec3: IVec3): IMat3;
+	export function mat3(pArray1: float[], pArray2: float[], pArray3: float[]): IMat3;
+	export function mat3(fValue1: float, fValue2: float, fValue3: float,
+				fValue4: float, fValue5: float, fValue6: float,
+				fValue7: float, fValue8: float, fValue9: float): IMat3;
+	export function mat3(fValue1?, fValue2?, fValue3?,
+				fValue4?, fValue5?, fValue6?,
+				fValue7?, fValue8?, fValue9?): IMat3{
 
 		var nArgumentsLength: uint = arguments.length;
-		var m3fMat: IMat3;
-
-        m3fMat = Mat3.stack[Mat3.stackPosition ++];
+		var m3fMat: IMat3 = Mat3.stack[Mat3.stackPosition ++];
 
         if(Mat3.stackPosition == Mat3.stackSize){
             Mat3.stackPosition = 0;
 		}
 
-		m3fMat.data = m3fMat.data || new Float32Array(9);
-
-		switch (nArgumentsLength) {
-			case 0:
-				m3fMat; 
-				break;
-			case 1: 
-				m3fMat.set(arguments[0]); 
+		switch(nArgumentsLength){
+			case 1:
+				m3fMat.set(arguments[0]);
 				break;
 			case 3:
-				m3fMat.set(arguments[0],arguments[1],arguments[2]); 
+				m3fMat.set(arguments[0], arguments[1], arguments[2]);
 				break;
 			case 9:
-				 m3fMat.set(arguments[0],arguments[1],arguments[2],
-                        arguments[3],arguments[4],arguments[5],
-                        arguments[6],arguments[7],arguments[8]); 
-				 break;    
+				m3fMat.set(arguments[0], arguments[1], arguments[2],
+						 arguments[3], arguments[4], arguments[5],
+						 arguments[6], arguments[7], arguments[8]);
+				break;
+			default:
+				m3fMat.set(0.);
+				break;
 		}
 
 		return m3fMat;
 	};
 
-	export var mat4: IMat4Constructor 	= function (fValue1?, fValue2?, fValue3?, fValue4?,
-					fValue5?, fValue6?, fValue7?, fValue8?,
-					fValue9?, fValue10?, fValue11?, fValue12?,
-					fValue13?, fValue14?, fValue15?, fValue16?){
-			
-		var nArgumentsLength: uint = arguments.length;
-		var m4fMat: IMat4;
+	export function mat4(): IMat4;
+	export function mat4(fValue: float): IMat4;
+	export function mat4(v4fVec: IVec4): IMat4;
+	export function mat4(m3fMat: IMat3, v3fTranslation?: IVec3): IMat4;
+	export function mat4(m4fMat: IMat4): IMat4;
+	export function mat4(pArray: float[]): IMat4;
+	export function mat4(pArray: Float32Array, bFlag: bool): IMat4;
+	export function mat4(fValue1: float, fValue2: float,
+			fValue3: float, fValue4: float): IMat4;
+	export function mat4(v4fVec1: IVec4, v4fVec2: IVec4,
+			v4fVec3: IVec4, v4fVec4: IVec4): IMat4;
+	export function mat4(pArray1: float[], pArray2: float[],
+			pArray3: float[], pArray4: float[]): IMat4;
+	export function mat4(fValue1: float, fValue2: float, fValue3: float, fValue4: float,
+			fValue5: float, fValue6: float, fValue7: float, fValue8: float,
+			fValue9: float, fValue10: float, fValue11: float, fValue12: float,
+			fValue13: float, fValue14: float, fValue15: float, fValue16: float): IMat4;
+	export function mat4(fValue1?, fValue2?, fValue3?, fValue4?,
+				fValue5?, fValue6?, fValue7?, fValue8?,
+				fValue9?, fValue10?, fValue11?, fValue12?,
+				fValue13?, fValue14?, fValue15?, fValue16?): IMat4{
 
-        m4fMat = Mat4.stack[Mat4.stackPosition ++];
+		var nArgumentsLength: uint = arguments.length;
+		var m4fMat: IMat4 = Mat4.stack[Mat4.stackPosition ++];
 
         if(Mat4.stackPosition == Mat4.stackSize){
             Mat4.stackPosition = 0;
 		}
-	    
 
-		if(nArgumentsLength === 0){
-	    	return m4fMat;
-	    }
-		else if(nArgumentsLength === 2) {
+		if(nArgumentsLength === 2){
 			if(isBoolean(arguments[1])){
-				if (arguments[1]) {
+				if(arguments[1]){
 					m4fMat.data = arguments[0];
 				}
-				else {
-					m4fMat.data = m4fMat.data || new Float32Array(16);
+				else{
 					m4fMat.set(arguments[0]);			
 				}
 			}
-			else {
-				m4fMat.data = m4fMat.data || new Float32Array(16);
-				m4fMat.set(<IMat3>arguments[0], <IVec3>arguments[1]);
+			else{
+				m4fMat.set(arguments[0], arguments[1]);
 			}
 		}
-		else {
-			m4fMat.data = m4fMat.data || new Float32Array(16);
-
-			if(nArgumentsLength === 1){
-				if(arguments[0] instanceof Mat3){
-					m4fMat.set(<IMat3>arguments[0]);	
-				}
-				else{
-					m4fMat.set(<IMat4>arguments[0]);	
-				}
-			}
-			else if(nArgumentsLength === 4){
-				m4fMat.set(arguments[0],arguments[1],arguments[2],arguments[3]);
-			}
-			else if(nArgumentsLength === 16){
-				m4fMat.set(arguments[0], arguments[1], arguments[2], arguments[3],
+		else{
+			switch(nArgumentsLength){
+				case 1:
+					if(arguments[0] instanceof Mat3){
+						m4fMat.set(arguments[0],vec3(0.));	
+					}
+					else{
+						m4fMat.set(arguments[0]);	
+					}	
+					break;
+				case 4:
+					m4fMat.set(arguments[0],arguments[1],arguments[2],arguments[3]);
+					break;
+				case 16:
+					m4fMat.set(arguments[0], arguments[1], arguments[2], arguments[3],
 						 arguments[4], arguments[5], arguments[6], arguments[7],
 						 arguments[8], arguments[9], arguments[10], arguments[11],
 						 arguments[12], arguments[13], arguments[14], arguments[15]);
+					 break;
+				 default:
+				 	break;	
 			}
 		}
 

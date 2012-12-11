@@ -15,6 +15,8 @@ module akra {
 		x: float;
 		y: float;
 
+		#include "math/VectorsGettersSetters/IVec2GettersSetters.ts"
+
 		set(): IVec2;
 		set(fValue: float): IVec2;
 		set(v2fVec: IVec2): IVec2;

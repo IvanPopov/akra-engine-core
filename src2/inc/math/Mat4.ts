@@ -8,81 +8,70 @@
 #include "IQuat4.ts"
 
 module akra.math {
-    export class Mat4 implements IMat4 {
+    export class Mat4 implements IMat4{
     	data: Float32Array;
 
 		constructor();
-
 		constructor(fValue: float);
 		constructor(v4fVec: IVec4);
+		constructor(m3fMat: IMat3, v3fTranslation?: IVec3);
 		constructor(m4fMat: IMat4);
 		constructor(pArray: float[]);
-
-		constructor(m3fMat: IMat3, v3fTranslation?: IVec3);
 		constructor(pArray: Float32Array, bFlag: bool);
-
-		constructor(fValue1: float, fValue2: float, fValue3: float, fValue4: float);
-		constructor(v4fVec1: IVec4, v4fVec2: IVec4, v4fVec3: IVec4, v4fVec4: IVec4);
-		constructor(pArray1: float[], pArray2: float[], pArray3: float[], pArray4: float[]);
-
+		constructor(fValue1: float, fValue2: float,
+				fValue3: float, fValue4: float);
+		constructor(v4fVec1: IVec4, v4fVec2: IVec4,
+				v4fVec3: IVec4, v4fVec4: IVec4);
+		constructor(pArray1: float[], pArray2: float[],
+				pArray3: float[], pArray4: float[]);
 		constructor(fValue1: float, fValue2: float, fValue3: float, fValue4: float,
 				fValue5: float, fValue6: float, fValue7: float, fValue8: float,
 				fValue9: float, fValue10: float, fValue11: float, fValue12: float,
 				fValue13: float, fValue14: float, fValue15: float, fValue16: float);
-
 		constructor(fValue1?, fValue2?, fValue3?, fValue4?,
 					fValue5?, fValue6?, fValue7?, fValue8?,
 					fValue9?, fValue10?, fValue11?, fValue12?,
 					fValue13?, fValue14?, fValue15?, fValue16?){
-			
 			var nArgumentsLength: uint = arguments.length;
-			var m4fMat: IMat4 = this;
 
-/*			if (<any>this === window || <any>this === akra || <any>this === akra.math) {
-		        m4fMat = Mat4.stack[Mat4.stackPosition ++];
-
-		        if(Mat4.stackPosition == Mat4.stackSize){
-		            Mat4.stackPosition = 0;
-				}
-		    }
-*/
-			if(nArgumentsLength === 0){
-		    	// return m4fMat;
-		    }
-			else if(nArgumentsLength === 2) {
+			if(nArgumentsLength === 2){
 				if(isBoolean(arguments[1])){
 					if(arguments[1]){
-						m4fMat.data = arguments[0];
+						this.data = arguments[0];
 					}
 					else{
-						m4fMat.data = m4fMat.data || new Float32Array(16);
-						m4fMat.set(arguments[0]);			
+						this.data = new Float32Array(16);
+						this.set(arguments[0]);			
 					}
 				}
 				else{
-					m4fMat.data = m4fMat.data || new Float32Array(16);
-					m4fMat.set(<IMat3>arguments[0], <IVec3>arguments[1]);
+					this.data = new Float32Array(16);
+					this.set(arguments[0], arguments[1]);
 				}
 			}
 			else{
-				m4fMat.data = m4fMat.data || new Float32Array(16);
+				this.data = new Float32Array(16);
 
-				if(nArgumentsLength === 1){
-					if(arguments[0] instanceof Mat3){
-						m4fMat.set(<IMat3>arguments[0]);	
-					}
-					else{
-						m4fMat.set(<IMat4>arguments[0]);	
-					}
-				}
-				else if(nArgumentsLength === 4){
-					m4fMat.set(arguments[0],arguments[1],arguments[2],arguments[3]);
-				}
-				else if(nArgumentsLength === 16){
-					m4fMat.set(arguments[0], arguments[1], arguments[2], arguments[3],
+				switch(nArgumentsLength){
+					case 1:
+						if(arguments[0] instanceof Mat3){
+							this.set(arguments[0],vec3(0.));	
+						}
+						else{
+							this.set(arguments[0]);	
+						}	
+						break;
+					case 4:
+						this.set(arguments[0],arguments[1],arguments[2],arguments[3]);
+						break;
+					case 16:
+						this.set(arguments[0], arguments[1], arguments[2], arguments[3],
 							 arguments[4], arguments[5], arguments[6], arguments[7],
 							 arguments[8], arguments[9], arguments[10], arguments[11],
 							 arguments[12], arguments[13], arguments[14], arguments[15]);
+						 break;
+					 default:
+					 	break;	
 				}
 			}
 		};
@@ -244,8 +233,7 @@ module akra.math {
 				}
 			}
 			else if(nArgumentsLength == 2){
-
-				var pMatrixData: IMat3 = arguments[0];
+				var pMatrixData: Float32Array = arguments[0];
 				var v3fTranslation : IVec3 = arguments[1];
 
 				pData[__11] = pMatrixData[__a11];
