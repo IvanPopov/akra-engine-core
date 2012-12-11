@@ -2,10 +2,10 @@
 #define INDEXBUFFER_TS
 
 #include "IIndexBuffer.ts"
-#include "HardwareBuffer.ts"
+#include "core/pool/resources/HardwareBuffer.ts"
 
-module akra.core.pool.resources {
-	export class IndexBuffer extends HardwareBuffer implements IIndexBuffer {
+module akra.webgl {
+	export class WebGLIndexBuffer extends core.pool.resources.HardwareBuffer implements IIndexBuffer {
 
 		getIndexData: (iOffset: uint, iCount: uint, ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes) => IIndexData = null;
 		getEmptyIndexData: (iCount: uint, ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes) => IIndexData = null;

@@ -4,6 +4,7 @@
 #include "IEntity.ts"
 #include "IExplorerFunc.ts"
 
+
 module akra.util {
 	export class Entity extends ReferenceCounter implements IEntity {
 		protected _sName: string = null;

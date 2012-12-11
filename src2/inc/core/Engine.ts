@@ -7,23 +7,36 @@
 #include "IResourcePoolManager.ts"
 #include "IRenderer.ts"
 
+
+#ifdef WEBGL
+#include "webgl/WebGLRenderer.ts"
+#endif
+
 module akra.core {
 	export class Engine implements IEngine {
 
-		private pResourceManager: IResourcePoolManager = null;
-		private pDisplayManager: IDisplayManager = null;
-		private pParticleManager: IParticleManager = null;
+		private _pResourceManager: IResourcePoolManager;
+		private _pDisplayManager: IDisplayManager;
+		private _pParticleManager: IParticleManager;
+		private _pRenderer: IRenderer;
 
 		constructor () {
-			this.pResourceManager = new pool.ResourcePoolManager(this);
-			this.pDisplayManager = new DisplayManager(this);
+			this._pResourceManager = new pool.ResourcePoolManager(this);
+			this._pDisplayManager = new DisplayManager(this);
+			this._pParticleManager = null;
+
+#ifdef WEBGL
+			this._pRenderer = new webgl.WebGLRenderer();
+#else
+			CRITICAL("render system not specified");
+#endif
 
 
-			if (!this.pResourceManager.initialize()) {
+			if (!this._pResourceManager.initialize()) {
 				debug_error('cannot initialize ResourcePoolManager');
 			}
 
-			if (!this.pDisplayManager.initialize()) {
+			if (!this._pDisplayManager.initialize()) {
 				debug_error("cannot initialize DisplayManager");
 			}
 		}
@@ -41,12 +54,12 @@ module akra.core {
 		}
 
 		getRenderer(): IRenderer {
-			return null;
+			return this._pRenderer;
 		}
 	
 
 		exec(): bool {
-			return this.pDisplayManager.display();
+			return this._pDisplayManager.display();
 		}
 
 	}

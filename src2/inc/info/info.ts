@@ -5,7 +5,6 @@
 #include "IURI.ts"
 #include "util/BrowserInfo.ts"
 #include "util/ScreenInfo.ts"
-#include "util/DeviceInfo.ts"
 #include "util/ApiInfo.ts"
 #include "util/util.ts"
 
@@ -25,7 +24,6 @@ module akra.info {
 	export var browser: IBrowserInfo = new util.BrowserInfo;
 	export var api: IApiInfo = new util.ApiInfo;
 	export var screen: IScreenInfo = new util.ScreenInfo;
-	export var device: IDeviceInfo = new util.DeviceInfo;
 	export var uri: IURI = util.uri(document.location.href);
 
 	module is {

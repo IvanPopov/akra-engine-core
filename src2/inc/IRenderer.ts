@@ -133,76 +133,82 @@ module akra {
     	/** Деактивация компонента для эффект ресурса. */
     	//deactivateComponent(pEffectResource: IAFXEffect, iComponentHandle: int, nShift?: uint): bool;
     	/** Get effect components number */
-    	getComponentCount(pEffectResource: IAFXEffect): uint;
+    	// getComponentCount(pEffectResource: IAFXEffect): uint;
 
     	//// frendly for Snapshot
     	//push(pRenderObject: IRenderableObject, pSnapshot: IRenderSnapshot): bool;
     	//pop(): bool;
 
-    	activatePass(pSnapshot: IRenderSnapshot, iPass: int): bool;
-    	deactivatePass(pSnapshot: IRenderSnapshot): bool;
+    	// activatePass(pSnapshot: IRenderSnapshot, iPass: int): bool;
+    	// deactivatePass(pSnapshot: IRenderSnapshot): bool;
 
-    	activateSceneObject(pSceneObject: ISceneObject): void;
-    	deactivateSceneObject(): void;
+    	// activateSceneObject(pSceneObject: ISceneObject): void;
+    	// deactivateSceneObject(): void;
 
-    	finishPass(iPass: int): bool;
+    	// finishPass(iPass: int): bool;
 
-    	applyBufferMap(pMap: IBufferMap): bool;
-    	applyVertexData(pData: IVertexData, ePrimType: EPrimitiveTypes): bool;
-    	applyFrameBufferTexture(pTexture: ITexture, eAttachment: EAttachmentTypes, eTexTarget: ETextureTypes, iLevel?: uint): bool;
-    	applySurfaceMaterial(pMaterial: ISurfaceMaterial): bool;
+    	// applyBufferMap(pMap: IBufferMap): bool;
+    	// applyVertexData(pData: IVertexData, ePrimType: EPrimitiveTypes): bool;
+    	// applyFrameBufferTexture(pTexture: ITexture, eAttachment: EAttachmentTypes, eTexTarget: ETextureTypes, iLevel?: uint): bool;
+    	// applySurfaceMaterial(pMaterial: ISurfaceMaterial): bool;
 
-    	getUniformRealName(sName: string): string;
-    	getTextureRealName(sName: string): string;
-    	getActiveProgram(): IShaderProgram;
-    	getActiveTexture(iSlot: uint): ITexture;
-    	getTextureSlot(pTexture: ITexture): uint;
-    	getFrameBuffer(iFrameBuffer?: int): IFrameBuffer;
+  //   	getUniformRealName(sName: string): string;
+  //   	getTextureRealName(sName: string): string;
+  //   	getActiveProgram(): IShaderProgram;
+  //   	getActiveTexture(iSlot: uint): ITexture;
+  //   	getTextureSlot(pTexture: ITexture): uint;
+  //   	getFrameBuffer(iFrameBuffer?: int): IFrameBuffer;
 
-    	isUniformTypeBase(sRealName: string): bool;
+  //   	isUniformTypeBase(sRealName: string): bool;
 
-		totalPasses(pEffect: IAFXEffect): uint;
+		// totalPasses(pEffect: IAFXEffect): uint;
     	
     	//frendly for ShaderProgram
 
-    	activateTexture(pTexture: ITexture): bool;
-    	activateVertexBuffer(pBuffer: IVertexBuffer): bool;
-    	activateIndexBuffer(pBuffer: IIndexBuffer): bool;
-    	activateProgram(pProgram: IShaderProgram): bool;
-    	activateFrameBuffer(pFrameBuffer: IFrameBuffer): bool;
-    	deactivateFrameBuffer(pFrameBuffer: IFrameBuffer): bool;
+    	// activateTexture(pTexture: ITexture): bool;
+    	// activateVertexBuffer(pBuffer: IVertexBuffer): bool;
+    	// activateIndexBuffer(pBuffer: IIndexBuffer): bool;
+    	// activateProgram(pProgram: IShaderProgram): bool;
+    	// activateFrameBuffer(pFrameBuffer: IFrameBuffer): bool;
+    	// deactivateFrameBuffer(pFrameBuffer: IFrameBuffer): bool;
 
-    	getRenderResourceState(pResource: IRenderResource): int;
+    	// getRenderResourceState(pResource: IRenderResource): int;
 
 
     	//// frendly for resources
 
-    	registerRenderResource(pResource: IRenderResource): void;
-    	releaseRenderResource(pResource: IRenderResource): void;
+    	// registerRenderResource(pResource: IRenderResource): void;
+    	// releaseRenderResource(pResource: IRenderResource): void;
         /** Регистрация нового эффект ресурса. */
-        registerEffect(pEffectResource: IAFXEffect): bool;
+        // registerEffect(pEffectResource: IAFXEffect): bool;
 
     	//// frendly for Texture
 
-    	bindTexture(pTexture: ITexture): bool;
-    	unbindTexture(): bool;
+    	// bindTexture(pTexture: ITexture): bool;
+    	// unbindTexture(): bool;
 
 
     	//// frendly for render queue
-    	render(pEntry: IRenderEntry): void;
+    	// render(pEntry: IRenderEntry): void;
 
 
     	///public API
-    	findEffect(sName?: string): IAFXEffect;
-    	clearScreen(eValue: EBufferMasks, c4Color: IColor): void;
-    	switchRenderStage(eType: ERenderStages): void;
-    	processRenderStage(): bool;
-    	updateScreen(): bool;
+    	// findEffect(sName?: string): IAFXEffect;
+    	// clearScreen(eValue: EBufferMasks, c4Color: IColor): void;
+    	// switchRenderStage(eType: ERenderStages): void;
+    	// processRenderStage(): bool;
+    	// updateScreen(): bool;
         /** Load *.fx file or *.abf */
-        loadEffectFile(sFilename: string, isSync?: bool): bool;
+        // loadEffectFile(sFilename: string, isSync?: bool): bool;
 
-        debug(bValue?: bool, bTrace?: bool): bool;
-        isDeviceLost(): bool;
+        debug(bValue?: bool): bool;
+        enableAPITrace(): bool;
+        isDebug(): bool;
+
+        isValid(): bool;
+
+        disableAllTextureUnits(): void;
+        disableTextureUnitsFrom(iUnit: uint): void;
     }
 }
 

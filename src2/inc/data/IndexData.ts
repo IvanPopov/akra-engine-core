@@ -13,18 +13,12 @@ module akra.data {
 		private _ePrimitiveType: EPrimitiveTypes;
 		private _eElementsType: EDataTypes;
 
-		/** @inline */
-		get type(): uint { return this._eElementsType; };
-		/** @inline */
-		get length(): uint { return this._iLength; };
-		/** @inline */
-		get bytesPerIndex(): uint { return getTypeSize(this._eElementsType); };
-		/** @inline */
-		get offset(): uint { return this._iOffset; };
-		/** @inline */
-		get byteLength(): uint { return this._iLength * this.bytesPerIndex; };
-		/** @inline */
-		get buffer(): IIndexBuffer { return this._pIndexBuffer; };
+		inline get type(): uint { return this._eElementsType; };
+		inline get length(): uint { return this._iLength; };
+		inline get bytesPerIndex(): uint { return getTypeSize(this._eElementsType); };
+		inline get byteOffset(): uint { return this._iOffset; };
+		inline get byteLength(): uint { return this._iLength * this.bytesPerIndex; };
+		inline get buffer(): IIndexBuffer { return this._pIndexBuffer; };
 
 		constructor (
 			pIndexBuffer: IIndexBuffer, 
@@ -42,14 +36,14 @@ module akra.data {
 			this._iOffset = iOffset;
 			this._iLength = iCount;
 
-			debug_assert(pIndexBuffer.byteLength >= this.byteLength + this.offset, "out of buffer limits.");
+			debug_assert(pIndexBuffer.byteLength >= this.byteLength + this.byteOffset, "out of buffer limits.");
 		}
 
 
 		getData(iOffset: int, iSize: int): ArrayBuffer {
 			debug_assert(iOffset + iSize <= this.byteLength, "out of buffer limits");
 
-			return this._pIndexBuffer.getData(this.offset + iOffset, iSize);
+			return this._pIndexBuffer.getData(this.byteOffset + iOffset, iSize);
 		}
 
 		setData(pData: ArrayBufferView, iOffset: int, iCount: uint): bool {
@@ -57,7 +51,7 @@ module akra.data {
 			
 			return this._pIndexBuffer.setData(
 				pData.buffer, 
-				this.offset + iOffset * this.bytesPerIndex, 
+				this.byteOffset + iOffset * this.bytesPerIndex, 
 				iCount * this.bytesPerIndex);
 		}
 
@@ -69,13 +63,11 @@ module akra.data {
 			this._eElementsType = undefined;
 		}
 		
-		/** @inline */
-		getPrimitiveType(): EPrimitiveTypes {
+		inline getPrimitiveType(): EPrimitiveTypes {
 			return this._ePrimitiveType;
 		}
 
-		/** @inline */
-		getPrimitiveCount(iIndexCount?: uint): uint {
+		inline getPrimitiveCount(iIndexCount?: uint): uint {
 			switch (arguments.length) {
 		        case 0:
 		            // when no count is specified, use the total count of indices

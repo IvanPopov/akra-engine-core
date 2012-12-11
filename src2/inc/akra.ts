@@ -100,18 +100,13 @@
 #include "core/pool/ResourcePoolManager.ts"
 
 
-#include "core/pool/resources/IndexBuffer.ts"
-#include "core/pool/resources/VertexBufferVBO.ts"
-#include "core/pool/resources/VertexBufferTBO.ts"
 #include "core/pool/resources/Texture.ts"
-#include "core/pool/resources/ShaderProgram.ts"
 #include "core/pool/resources/Component.ts"
 #include "core/pool/resources/Effect.ts"
 #include "core/pool/resources/SurfaceMaterial.ts"
 #include "core/pool/resources/Img.ts"
 #include "core/pool/resources/RenderMethod.ts"
 #include "core/pool/resources/Model.ts"
-
 #include "core/pool/resources/MemoryBuffer.ts"
 
 #include "scene/Node.ts"

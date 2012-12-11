@@ -14,6 +14,7 @@
 #define struct class
 #define const var
 #define DEBUG DEBUG
+#define WEBGL 1
 
 
 #include "ILogger.ts"
@@ -158,6 +159,10 @@ module akra {
         return type == "object" || type == "array" || type == "function";
     };
 
+    export var isArrayBuffer = (x: any): bool => x instanceof ArrayBuffer;
+
+    export var isTypedArray = (x: any): bool => typeof x === "object" && typeof x.byteOffset === "number";
+
     /** @inline */
     export var isArray = (x: any): bool => {
         return typeOf(x) == "array";
@@ -216,30 +221,6 @@ module akra {
 
 #endif
 
-
-
-    function initDevice(pDevice: WebGLRenderingContext):WebGLRenderingContext {
-    	return pDevice;
-    }
-
-    export function createDevice(
-            pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas"), 
-            pOptions?: { antialias?: bool; }) {
-
-    	var pDevice: WebGLRenderingContext = null;
-		
-		try {
-			pDevice = pCanvas.getContext("webgl", pOptions) || 
-				pCanvas.getContext("experimental-webgl", pOptions);
-    	}
-		catch (e) {}
-
-		if (!pDevice) {
-			debug_warning("cannot get 3d device");
-		}
-
-		return initDevice(pDevice);
-    }
 
     export function genArray(pType: any, nSize: uint) {
         var tmp = new Array(nSize);
@@ -429,6 +410,7 @@ module akra {
       var srcU8 = new Uint8Array(pSrc, iSrcOffset, nLength);
       dstU8.set(srcU8);
     };
+
 
     //export function 
 

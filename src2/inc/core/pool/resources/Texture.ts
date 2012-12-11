@@ -136,7 +136,7 @@ module akra.core.pool.resources {
 
             var eTarget: ETextureTypes = this.target;
 
-            this._pWebGLRenderer.bindTexture(this);
+            this._pWebGLRenderer.bindWebGLTexture(eTarget, this);
             this._pWebGLContext.texParameteri(eTarget, eParam, eValue);
             this._pParams[eParam] = eValue;
 

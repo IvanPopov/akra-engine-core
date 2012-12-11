@@ -198,7 +198,7 @@ function compile() {
 	var argv = (  
 		pOptions.baseDir + "/tsc.js -c --target ES5  " + 
 		pOptions.baseDir + "/fixes.d.ts " + 
-		pOptions.baseDir + "/WebGL.d.ts " + 
+		//pOptions.baseDir + "/WebGL.d.ts " + 
 		pOptions.pathToTemp + " --out " + 
 		pOptions.outputFolder + "/" + pOptions.outputFile + "").split(' ');
 
