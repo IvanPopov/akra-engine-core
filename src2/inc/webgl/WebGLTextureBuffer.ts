@@ -109,7 +109,37 @@ module akra.webgl {
 	        //         Root::getSingleton().getRenderSystem()->attachRenderTarget(*mSliceTRT[zoffset]);
 	        //     }
 	        // }
-
+	        
+	        var pProgram: IShaderProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_blit_texture_buffer"); 
+	        
+	        if(isNull(pProgram)){
+	        	pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBGL_blit_texture_buffer");
+	        	pProgram.create(
+	        	"																									\n\
+	        	attribute vec2 POSITION;																			\n\
+				attribute vec3 TEXCOORD;																			\n\
+				                      																				\n\
+				varying vec3 texcoord;																				\n\
+				                   																					\n\
+				void main(void){																					\n\
+				    texcoord = TEXCOORD;																			\n\
+				    gl_Position = vec4(POSITION, 0., 1.);															\n\
+				}																									\n\
+				",
+				"													\n\
+				#ifdef GL_ES                        				\n\
+				    precision highp float;          				\n\
+				#endif												\n\
+				varying vec3 texcoord;              				\n\
+				uniform sampler2D uSampler;        					\n\
+																	\n\
+				void main(void) {  									\n\
+					vec4 color;										\n\
+					color = texture2D(uSampler, texcoord.xy);      	\n\
+				    gl_FragColor = color;           				\n\
+				}                                   				\n\
+				");
+	        }
 
 			return true;
 		}
@@ -201,6 +231,8 @@ module akra.webgl {
 	        }
 
 	        pWebGLContext.pixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+	        this.notifyAltered();
 		}
 
 		protected download(pData: IPixelBox): void {
@@ -430,6 +462,35 @@ module akra.webgl {
 	        	pWebGLContext.viewport(pDestBox.left, pDestBox.top, pDestBox.width, pDestBox.height);	
 	        }
 
+	        //Get WebGL program
+	        var pWebGLShaderProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_blit_texture_buffer"); 
+	        pWebGLRenderer.disableAllWebGLVertexAttribs();
+	        pWebGLRenderer.useWebGLProgram(pWebGLShaderProgram);
+
+	        var iPosAttrIndex: int = 0;
+	        var iTexAttrIndex: int = 0;
+
+	        iPosAttrIndex = pWebGLShaderProgram.getWebGLAttributeLocation("POSITION");
+	        iTexAttrIndex = pWebGLShaderProgram.getWebGLAttributeLocation("TEXCOORD");
+
+	        pWebGLContext.enableVertexAttribArray(iPosAttrIndex);
+	        pWebGLContext.enableVertexAttribArray(iTexAttrIndex);
+
+	        var pSquareVertices: Float32Array = new Float32Array([ -1.0, -1.0,
+											                		1.0, -1.0,
+											               		   -1.0,  1.0,
+											                		1.0,  1.0 ]);
+	        var pTexCoords: Float32Array = new Float32Array(12);
+
+	        var pPositionBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
+	        var pTexCoordsBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer(); 
+
+	        pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pPositionBuffer);
+	        pWebGLContext.bufferData(GL_ARRAY_BUFFER, pSquareVertices, GL_STREAM_DRAW);
+            pWebGLContext.vertexAttribPointer(iPosAttrIndex, 2, GL_FLOAT, false, 0, 0);
+
+            pWebGLShaderProgram.setInt("uSampler", 0);
+
 	        // Process each destination slice
 	        var iSlice: int = 0;
 	        for(iSlice = pDestBox.front; iSlice < pDestBox.back; ++iSlice) {
@@ -450,49 +511,35 @@ module akra.webgl {
 	            /// Normalise to texture coordinate in 0.0 .. 1.0
 	            w = (w + 0.5) / <float>pSource.depth;
 	            
+	            pTexCoords[0] = u1;
+	            pTexCoords[1] = v1;
+	            pTexCoords[2] = w;
+	            
+	            pTexCoords[3] = u2;
+	            pTexCoords[4] = v1;
+	            pTexCoords[5] = w;
+	            
+	            pTexCoords[6] = u2;
+	            pTexCoords[7] = v2;
+	            pTexCoords[8] = w;
+
+  	            pTexCoords[9]  = u1;
+	            pTexCoords[10] = v2;
+	            pTexCoords[11] = w;
+
 	            /// Finally we're ready to rumble	
 	            pWebGLRenderer.bindWebGLTexture(pSource._getTarget(), pSource._getWebGLTexture());
 	         	
 	            pWebGLContext.enable(pSource._getTarget());
 	            
-
-	            var pSquareVertices: Float32Array = new Float32Array([ -1.0, -1.0,
-												                		1.0, -1.0,
-												               		   -1.0,  1.0,
-												                		1.0,  1.0
-												            		 ]);
-	            var pTexCoords: Float32Array = new Float32Array([ u1, v1, w,
-													              u2, v1, w,
-													              u2, v2, w,
-													              u1, v2, w
-													            ]);
-
-				pWebGLRenderer.disableAllWebGLVertexAttribs();
-	            
-	            var iPosAttrIndex: int = 0;
-	            var iTexAttrIndex: int = 0;
-	            
-	            //Get shader programm
-
-	            var pPositionBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
-	            var pTexCoordsBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer(); 
-
-	            pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pPositionBuffer);
-		        pWebGLContext.bufferData(GL_ARRAY_BUFFER, pSquareVertices, GL_STREAM_DRAW);
-	            pWebGLContext.vertexAttribPointer(iPosAttrIndex, 2, GL_FLOAT, false, 0, 0);
-	            pWebGLContext.enableVertexAttribArray(iPosAttrIndex);
-
 	            pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pTexCoordsBuffer);
 		        pWebGLContext.bufferData(GL_ARRAY_BUFFER, pTexCoords, GL_STREAM_DRAW);
 	            pWebGLContext.vertexAttribPointer(iTexAttrIndex, 3, GL_FLOAT, false, 0, 0);
-	            pWebGLContext.enableVertexAttribArray(iTexAttrIndex);
 
 	            pWebGLContext.drawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	            pWebGLContext.disable(pSource._getTarget());
 
-	            pWebGLContext.disableVertexAttribArray(iPosAttrIndex);
-	            pWebGLContext.disableVertexAttribArray(iTexAttrIndex);
-	            
+
 	            if(!isNull(pTempWebGLTexture)) {
 	                // Copy temporary texture
 	                pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
@@ -507,6 +554,12 @@ module akra.webgl {
 	                }
 	            }
 	        }
+
+	        pWebGLContext.disableVertexAttribArray(iPosAttrIndex);
+	        pWebGLContext.disableVertexAttribArray(iTexAttrIndex);
+
+	        pWebGLRenderer.deleteWebGLBuffer(pPositionBuffer);
+	        pWebGLRenderer.deleteWebGLBuffer(pTexCoordsBuffer);
 	        
 	        // Finish up 
 	        if(!isNull(pTempWebGLTexture)) {
@@ -526,6 +579,9 @@ module akra.webgl {
 	        // Restore old framebuffer
 	        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFramebuffer);
 	        pWebGLRenderer.deleteWebGLTexture(pTempWebGLTexture);
+	        pWebGLRenderer.deleteWebGLFramebuffer(pFramebuffer);
+
+	        this.notifyAltered();
 
 	    	return true;
 	    } 

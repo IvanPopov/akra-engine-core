@@ -27,21 +27,26 @@ module akra.core.pool.resources {
 	export class Texture extends ResourcePoolItem implements ITexture {
         protected _iFlags: int = 0;
         protected _iWidth: uint = 0;
+        protected _iSrcWidth: uint = 0;
         protected _iHeight: uint = 0;
+        protected _iSrcHeight: uint = 0;
+        protected _iDepth: uint = 0;
+        protected _iSrcDepth: uint = 0;
         protected _eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
-        // protected _eType: EImageTypes = EImageTypes.UNSIGNED_BYTE;
+        protected _nMipLevels: uint = 0;
+        protected _eTextureType: ETextureTypes = ETextureTypes.TEXTURE_2D;
+        protected _iDesiredIntegerBitDepth: uint;
+        protected _iDesiredFloatBitDepth: uint;     
 
-        protected _pWebGLTexture: WebGLTexture = null;
-        protected _pParams: int[];
+        protected _eDesiredFormat: EPixelFormats;
+        protected _eSrcFormat: EPixelFormats;
 
-        protected _pWebGLRenderer: IWebGLRenderer;
-        protected _pWebGLContext: WebGLRenderingContext;
+        protected _pParams: IntMap = <IntMap>{};
+
+        protected _isInternalResourceCreated: bool = false;
 
         constructor () {
             super();
-
-            this._pWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
-            this._pWebGLContext = this._pWebGLRenderer.getWebGLContext();
 
             this._pParams[ETextureParameters.MIN_FILTER] = ETextureFilters.NEAREST;
             this._pParams[ETextureParameters.MAG_FILTER] = ETextureFilters.NEAREST;
@@ -55,65 +60,101 @@ module akra.core.pool.resources {
 		}
 
         inline set width(iWidth: uint) {
-            return this.resize(iWidth, this._iHeight);
+            this._iWidth = this._iSrcWidth = iWidth;
         }
-
 
         inline get height(): uint {
         	return this._iHeight;
         }
 
         inline set height(iHeight: uint) {
-            return this.resize(this._iWidth, iHeight);
+            this._iHeight = this._iSrcHeight = iHeight;
         }
 
+        inline get depth(): uint {
+            return this._iDepth;
+        }
+
+        inline set depth(iDepth: uint) {
+            this._iDepth = this._iSrcDepth = iDepth;
+        }
 
         inline get format(): EPixelFormats {
         	return this._eFormat;
         }
 
         inline set format(eFormat: EPixelFormats) {
-            this.repack(this._iWidth, this._iHeight, eFormat);
+            this._eFormat = eFormat;
+            this._eDesiredFormat = eFormat;
+            this._eSrcFormat = eFormat;
         }
 
-        // inline get bytesPerPixel(): uint {
-        // 	return bitsPerPixel(this._eFormat);
-        // }
-
-        inline get magFilter(): ETextureFilters {
-        	return this._pParams[ETextureParameters.MAG_FILTER];
+        inline get textureType(): ETextureTypes {
+            return this._eTextureType;
         }
 
-        inline get minFilter(): ETextureFilters {
-        	return this._pParams[ETextureParameters.MIN_FILTER];
-        }
-
-        inline get wrapS(): ETextureWrapModes {
-        	return this._pParams[ETextureParameters.WRAP_S];
-        }
-
-        inline get wrapT(): ETextureWrapModes {
-        	return this._pParams[ETextureParameters.WRAP_T];
-        }
-
-        inline get target(): ETextureTypes {
-        	return TEST_BIT(this._iFlags, ETextureFlags.CUBEMAP) ? ETextureTypes.TEXTURE_CUBE_MAP : ETextureTypes.TEXTURE_2D;
+        inline set textureType(eTextureType: ETextureTypes) {
+            this._eTextureType = eTextureType;
         }
 
         inline get mipLevels(): uint {
-        	if (TEST_BIT(this._iFlags, ETextureFlags.MIPMAPS)) {
-                return Math.ceil(Math.max(Math.log(this._iWidth) / Math.LN2, Math.log(this._iHeight) / Math.LN2)) + 1;
-            }
+            return this._nMipLevels;
+        }
 
-            return 1;
+        inline set mipLevels(nMipLevels: uint) {
+            this._nMipLevels = nMipLevels;
+        }
+
+        inline get desiredIntegerBitDepth(): uint {
+            return this._iDesiredIntegerBitDepth;
+        }
+
+        inline set desiredIntegerBitDepth(iDesiredIntegerBitDepth: uint) {
+            this._iDesiredIntegerBitDepth = iDesiredIntegerBitDepth;
+        }
+
+        inline get desiredFloatBitDepth(): uint {
+            return this._iDesiredFloatBitDepth;
+        }
+
+        inline set desiredFloatBitDepth(iDesiredFloatBitDepth: uint) {
+            this._iDesiredFloatBitDepth = iDesiredFloatBitDepth;
+        }
+
+        inline get srcWidth(): uint { 
+            return this._iSrcWidth;
+        }
+
+        inline get srcHeight(): uint {
+            return this._iSrcHeight;
+        }
+
+        inline get srcDepth(): uint {
+            return this._iSrcWidth;
+        }
+
+        inline get desiredFormat(): EPixelFormats {
+            return this._eDesiredFormat;
+        }
+
+        inline get srcFormat(): EPixelFormats {
+            return this._eSrcFormat;
+        }
+
+        inline getFlags(): int {
+            return this._iFlags;
+        }
+
+        inline setFlags(iFlags: int): void {
+            this._iFlags = iFlags;
         }
 
         inline isTexture2D(): bool {
-        	return !TEST_BIT(this._iFlags, ETextureFlags.CUBEMAP);
+        	return this._eTextureType === ETextureTypes.TEXTURE_2D;
         }
 
         inline isTextureCube(): bool {
-        	return TEST_BIT(this._iFlags, ETextureFlags.CUBEMAP);
+        	return this._eTextureType === ETextureTypes.TEXTURE_CUBE_MAP;
         }
         
         inline isCompressed(): bool {
@@ -122,9 +163,12 @@ module akra.core.pool.resources {
         }
 
         inline isValid(): bool {
-            return isDefAndNotNull(this._pWebGLTexture);
+            return isDefAndNotNull(this._isInternalResourceCreated);
         }
         
+        getBuffer(iFace?: uint, iMipmap?: uint): IPixelBuffer {
+            return null;
+        }
         
         setParameter(eParam: ETextureParameters, eValue: ETextureFilters): void;
         setParameter(eParam: ETextureParameters, eValue: ETextureWrapModes): void;
@@ -134,118 +178,17 @@ module akra.core.pool.resources {
                 return false;
             }
 
-            var eTarget: ETextureTypes = this.target;
-
-            this._pWebGLRenderer.bindWebGLTexture(eTarget, this);
-            this._pWebGLContext.texParameteri(eTarget, eParam, eValue);
             this._pParams[eParam] = eValue;
-
-
-            debug_assert(this._pWebGLContext.getTexParameter(eTarget, eParam) === eValue, 
-                "parameter not setuped correctly");
 
         	return true;
         }
-        
-        
-        getPixels(
-            iX: uint = 0, 
-            iY: uint = 0, 
-            iWidth: uint = 0, 
-            iHeight: uint = 0, 
-            ppPixelBuffer: ArrayBufferView = null,
-            iMipMap: uint = 0,
-            eFace: ETextureTypes = ETextureTypes.TEXTURE_2D,
-            eFormat: EPixelFormats = EPixelFormats.BYTE_RGBA,
-            ): ArrayBufferView {
-        	
-            var pRenderer: IWebGLRenderer = this._pWebGLRenderer;
-            var pContext: WebGLRenderingContext = this._pWebGLContext;
 
-            if (!this.isValid()) {
-                return null;
-            }
-
-            if ((!TEST_BIT(this._iFlags, ETextureFlags.MIPMAPS)) && iMipMap != 0) {
-                debug_error("Запрашивается уровень мип мапа, хотя текстура их не содрежит");
-                return null;
-            }
-
-
-            if (TEST_BIT(this._iFlags, ETextureFlags.MIPMAPS)) {
-                debug_assert(iMipMap < Math.ceil(Math.max(Math.log(this._iWidth) / Math.LN2, Math.log(this._iHeight) / Math.LN2)
-                                                     + 1), "Запрашивается уровень мип мапа, которого нет");
-            }
-
-            if (this.isTextureCube()) {
-                debug_assert(eFace >= ETextureTypes.TEXTURE_CUBE_MAP_POSITIVE_X && 
-                    eFace <= ETextureTypes.TEXTURE_CUBE_MAP_NEGATIVE_Z, "invalid texture type");
-            }
-            else {
-                debug_assert(eFace == ETextureTypes.TEXTURE_2D, "тип текстуры 2D,а eFace выставлен");
-            }
-
-            //var pTextureRT: IRenderTexture = this.getRenderTarget(eFace, iMipMap);
-
-            // if (!pTextureRT) {
-            //     return null;
-            // }
-
-            return null;//pTextureRT->readPixels(iX, iY, 0 || this._iWidth, 0 || this._iHeight, eFormat, eType, pPixelBuffer);
-
-        }
-
-        setPixels(
-            iX: uint = 0, 
-            iY: uint = 0, 
-            iWidth: uint = 0, 
-            iHeight: uint = 0, 
-            pPixelBuffer: ArrayBufferView = null,
-            iMipMap: uint = 0,
-            eFace: ETextureTypes = ETextureTypes.TEXTURE_2D): bool {
-        	
-
+        loadImage(pImage: IImg): bool{
             return false;
         }
 
-        generateNormalMap(pHeightMap: IImg, iChannel?: uint, fAmplitude?: float): bool {
-        	return false;
-        }
-
-        generateNormalizationCubeMap(): bool {
-        	return false;
-        }
-        
-        convertToNormalMap(iChannel: uint, iFlags: uint, fAmplitude: float): bool {
-        	return false;
-        }
-        
-        maskWithImage(pImage: IImg): bool {
-        	return false;
-        }
-
-        uploadCubeFace(pImage: IImg, eFace: ETextureTypes, isCopyAll?: bool): bool {
-        	return false;
-        }
-
-        uploadHTMLElement(pElement: HTMLElement): bool {
-        	return false;
-        }
-
-        uploadImage(pImage: IImg): bool {
-        	return false;
-        }
-
-        resize(iWidth: uint, iHeight: uint): bool {
-        	return false;
-        }
-
-        repack(iWidth: uint, iHeight: uint, eFormat?: EPixelFormats): bool {
-        	return false;
-        }
-
-        extend(iWidth: uint, iHeight: uint, cColor: IColor) {
-        	return false;
+        loadRawData(pData: ArrayBufferView, iWidth: uint, iHeight: uint, eFormat: EPixelFormats): bool{
+            return false;
         }
 
         createTexture(
