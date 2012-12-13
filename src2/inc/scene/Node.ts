@@ -20,19 +20,19 @@ module akra.scene {
      };
 
 	export class Node extends util.Entity implements INode {
-		private _m4fLocalMatrix: IMat4 = null;
-		private _m4fWorldMatrix: IMat4 = null;
-		private _m4fInverseWorldMatrix: IMat4 = null;
-		private _m3fNormalMatrix: IMat3 = null;
+		protected _m4fLocalMatrix: IMat4 = null;
+		protected _m4fWorldMatrix: IMat4 = null;
+		protected _m4fInverseWorldMatrix: IMat4 = null;
+		protected _m3fNormalMatrix: IMat3 = null;
 		
-		private _v3fWorldPosition: IVec3 = null;
+		protected _v3fWorldPosition: IVec3 = null;
 
-		private _qRotation: IQuat4 = null;
-		private _v3fTranslation: IVec3 = null;
-		private _v3fScale: IVec3 = null;
+		protected _qRotation: IQuat4 = null;
+		protected _v3fTranslation: IVec3 = null;
+		protected _v3fScale: IVec3 = null;
 		
-		private _iUpdateFlags: int = 0;
-		private _eInheritance: ENodeInheritance = ENodeInheritance.POSITION;
+		protected _iUpdateFlags: int = 0;
+		protected _eInheritance: ENodeInheritance = ENodeInheritance.POSITION;
 
 
 		inline get localOrientation(): IQuat4 { 

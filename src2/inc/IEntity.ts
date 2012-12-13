@@ -6,7 +6,7 @@ module akra {
 	IFACE(IExplorerFunc);
 	IFACE(IReferenceCounter);
 
-	export interface IEntity extends IReferenceCounter {
+	export interface IEntity extends IEventProvider, IReferenceCounter {
 		name: string;
 
 		parent: IEntity;
@@ -51,6 +51,9 @@ module akra {
 		relocateChildren(pParent: IEntity): void;
 
 		toString(isRecursive?: bool, iDepth?: int): string;
+
+		signal attached();
+		signal detached();
 	}
 
 }

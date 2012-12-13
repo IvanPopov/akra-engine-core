@@ -8,7 +8,7 @@ module akra {
 	IFACE(IResourcePoolManager);
 	IFACE(IRenderer);
 
-    export interface IEngine {
+    export interface IEngine extends IEventProvider {
         getDisplayManager(): IDisplayManager;
         getParticleManager(): IParticleManager;
         getResourceManager(): IResourcePoolManager;

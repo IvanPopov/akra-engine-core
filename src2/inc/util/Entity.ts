@@ -3,7 +3,7 @@
 
 #include "IEntity.ts"
 #include "IExplorerFunc.ts"
-
+#include "events/events.ts"
 
 module akra.util {
 	export class Entity extends ReferenceCounter implements IEntity {
@@ -334,6 +334,7 @@ module akra.util {
 		            this._pParent = pParent;
 		            this._pParent.addChild(this);
 		            this._pParent.addRef();
+		            this.attached();
 		            return true;
 		        }
 	    	}
@@ -352,7 +353,7 @@ module akra.util {
 
 		        this._pParent = null;
 		        // my world matrix is now my local matrix
-		        
+		        this.detached();
 		        return true;
 		    }
 
@@ -412,6 +413,11 @@ module akra.util {
 		    return null;
 #endif
 		}
+
+		BEGIN_EVENT_TABLE(Entity);
+			UNICAST(attached, VOID);
+			UNICAST(detached, VOID);
+		END_EVENT_TABLE();
 
 	}
 }

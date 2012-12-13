@@ -5,8 +5,10 @@
 #include "IEventProvider.ts"
 
 #define EMIT_UNICAST(event, call) \
-	this._pUnicastSlotMap = this.._pUnicastSlotMap || this.getEventTable().findUnicastList(this._iGuid);\
-	(<any>this._pUnicastSlotMap).event call;
+	var _recivier: any = this; \
+	this._pUnicastSlotMap = this._pUnicastSlotMap || this.getEventTable().findUnicastList(this._iGuid);\
+	var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).event;\
+	_unicast.target? _unicast.target[_unicast.callback] call: _unicast.listener call;
 #define EMIT_BROADCAST(event, call) \
 	this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid);\
 	var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).event; \
@@ -95,18 +97,24 @@ module akra.events {
 					return true;
 				}
 			}
+			debug_warning("cannot add destination for GUID <%s> with signal <%s>", iGuid, sSignal);
 			return false;
 		}
 
 		addListener(iGuid: int, sSignal: string, fnListener: Function, eType: EEventTypes = EEventTypes.BROADCAST): bool {
 			if (eType === EEventTypes.BROADCAST) {
 				this.findBroadcastSignalMap(iGuid, sSignal).push({target: null, callback: null, listener: fnListener});
+				return true;
 			}
 			else {
 				this.unicast[iGuid] = this.unicast[iGuid] || {};
-				this.unicast[iGuid][sSignal] = {target: null, callback: null, listener: fnListener};
+				if (!isDef(this.unicast[iGuid][sSignal])) {
+					this.unicast[iGuid][sSignal] = {target: null, callback: null, listener: fnListener};
+					return true;
+				}
 			}
-			return true;
+			debug_warning("cannot add listener for GUID <%s> with signal <%s>", iGuid, sSignal);
+			return false;
 		}
 
 		removeListener(iGuid: int, sSignal: string, fnListener: Function, eType: EEventTypes = EEventTypes.BROADCAST): bool {

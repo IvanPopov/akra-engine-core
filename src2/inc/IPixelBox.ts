@@ -5,6 +5,8 @@
 #include "IBox.ts"
 
 module akra {
+	IFACE(IColor);
+	
 	export interface IPixelBox extends IBox {
 		format: EPixelFormats;
 		data: Uint8Array;

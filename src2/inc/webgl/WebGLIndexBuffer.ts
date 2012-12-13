@@ -1,10 +1,8 @@
 #ifndef WEBGLINDEXBUFFER_TS
 #define WEBGLINDEXBUFFER_TS
 
-#include "IVertexData.ts"
-#include "IVertexDeclaration.ts"
-#include "IVertexBuffer.ts"
-#include "core/pool/resources/VertexBuffer.ts"
+#include "IIndexData.ts"
+#include "core/pool/resources/IndexBuffer.ts"
 #include "webgl.ts"
 
 #define WEBGL_INDEX_BUFFER_MIN_SIZE 1024
@@ -67,18 +65,18 @@ module akra.webgl {
 		    this._pWebGLBuffer = pWebGLRenderer.createWebGLBuffer();
 
 		    if (!this._pWebGLBuffer) {
-		        CRITICAL("Не удалось создать буфер");
+		        CRITICAL("cannot create WebGL index buffer");
 		        
 		        this.destroy();
 		        return false;
 		    }
 
-		    pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, this._pWebGLBuffer);
-		    pWebGLContext.bufferData(GL_ARRAY_BUFFER, this._iByteSize, getWebGLUsage(this._iFlags));
+		    pWebGLRenderer.bindWebGLBuffer(GL_ELEMENT_ARRAY_BUFFER, this._pWebGLBuffer);
+		    pWebGLContext.bufferData(GL_ELEMENT_ARRAY_BUFFER, this._iByteSize, getWebGLUsage(this._iFlags));
 		    
 		    if (pData) {
 		        pWebGLContext.bufferSubData(
-		        	GL_ARRAY_BUFFER, 0, isArrayBuffer(pData)? pData: pData.buffer);
+		        	GL_ELEMENT_ARRAY_BUFFER, 0, isArrayBuffer(pData)? pData: pData.buffer);
 		    }
 
 		    return true;
@@ -98,7 +96,7 @@ module akra.webgl {
 		readData(ppDest: ArrayBufferView): bool;
 		readData(iOffset: uint, iSize: uint, ppDest: ArrayBufferView): bool;
 		readData(iOffset: any, iSize?: any, ppDest?: any): bool { 
-			debug_assert(this._pWebGLBuffer, "Буффер еще не создан");
+			debug_assert(this._pWebGLBuffer, "WebGL buffer not exists");
 
 		    if (!this.isBackupPresent()) {
 		    	return false;
@@ -123,7 +121,7 @@ module akra.webgl {
 		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 		    
-		    pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, this._pWebGLBuffer);
+		    pWebGLRenderer.bindWebGLBuffer(GL_ELEMENT_ARRAY_BUFFER, this._pWebGLBuffer);
 			
 			debug_assert(pData.byteLength <= iSize, "Размер переданного массива больше переданного размера");
 			debug_assert(this.size >= iOffset + iSize, "Данные выйдут за предел буфера");
@@ -139,7 +137,7 @@ module akra.webgl {
 
 			pU8Data = pU8Data.subarray(0, iSize);
 
-			pWebGLContext.bufferSubData(GL_ARRAY_BUFFER, iOffset, pU8Data);
+			pWebGLContext.bufferSubData(GL_ELEMENT_ARRAY_BUFFER, iOffset, pU8Data);
 			
 			if (this.isBackupPresent()) {
 		        this._pBackupCopy.writeData(pU8Data, iOffset);
@@ -154,7 +152,7 @@ module akra.webgl {
 			var eUsage: int;
 			var pData: Uint8Array;
 			var iMax: int = 0;
-			var pVertexData: IVertexData;
+			var pIndexData: IIndexData;
 
 		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
@@ -164,11 +162,11 @@ module akra.webgl {
 			}
 
 			if(iSize < this.byteLength) {
-				for(var k: int = 0; k < this._pVertexDataArray.length; ++ k) {
-					pVertexData = this._pVertexDataArray[k];
+				for(var k: int = 0; k < this._pIndexDataArray.length; ++ k) {
+					pIndexData = this._pIndexDataArray[k];
 
-					if(pVertexData.byteOffset + pVertexData.byteLength > iMax) {
-						iMax = pVertexData.byteOffset + pVertexData.byteLength;
+					if(pIndexData.byteOffset + pIndexData.byteLength > iMax) {
+						iMax = pIndexData.byteOffset + pIndexData.byteLength;
 					}		
 				}	
 
@@ -185,15 +183,15 @@ module akra.webgl {
 		    this._pWebGLBuffer = pWebGLRenderer.createWebGLBuffer();
 
 		    if (!this._pWebGLBuffer) {
-		        CRITICAL("Не удалось создать буфер");
+		        CRITICAL("cannot create WebGL index buffer");
 		        
 		        this.destroy();
 		        return false;
 		    }
 
 
-		    pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, this._pWebGLBuffer);
-			pWebGLContext.bufferData(GL_ARRAY_BUFFER, iSize, eUsage);
+		    pWebGLRenderer.bindWebGLBuffer(GL_ELEMENT_ARRAY_BUFFER, this._pWebGLBuffer);
+			pWebGLContext.bufferData(GL_ELEMENT_ARRAY_BUFFER, iSize, eUsage);
 			
 			pData = new Uint8Array(this._iByteSize);
 			

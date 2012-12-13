@@ -46,15 +46,22 @@ module akra.data {
 
 		getData(iOffset: int, iSize: int): ArrayBuffer {
 			debug_assert(iOffset + iSize <= this.byteLength, "out of buffer limits");
+			var pBuffer: Uint8Array = new Uint8Array(iSize);
+			
+			if (this._pIndexBuffer.readData(this.byteOffset + iOffset, iSize, pBuffer)) {
+				return pBuffer.buffer;
+			}
 
-			return this._pIndexBuffer.getData(this.byteOffset + iOffset, iSize);
+			debug_error("cannot read data from index buffer");
+
+			return null;
 		}
 
-		setData(pData: ArrayBufferView, iOffset: int, iCount: uint): bool {
+		setData(pData: ArrayBufferView, iOffset: int = 0, iCount: uint = pData.byteLength / this.bytesPerIndex): bool {
 			debug_assert((iOffset + iCount) * this.bytesPerIndex <= this.byteLength, "out of buffer limits.");
 			
-			return this._pIndexBuffer.setData(
-				pData.buffer, 
+			return this._pIndexBuffer.writeData(
+				pData, 
 				this.byteOffset + iOffset * this.bytesPerIndex, 
 				iCount * this.bytesPerIndex);
 		}
@@ -93,6 +100,10 @@ module akra.data {
 		    }
 
 		    return 0;
+		}
+
+		inline getBufferHandle(): int {
+			return this._pIndexBuffer.resourceHandle;
 		}
 	}
 }

@@ -190,13 +190,13 @@ module akra.core.pool.resources {
 			else {
 				for(var i: uint = 0; i < this._pVertexDataArray.length; i ++) {
 					if(this._pVertexDataArray[i] == pVertexData) {
+						pVertexData.destroy();
+						
 						this._pVertexDataArray.splice(i, 1);
 						this.notifyAltered();
 						return true;
 					}
 				}
-
-				pVertexData.destroy();
 
 				return false;
 			}

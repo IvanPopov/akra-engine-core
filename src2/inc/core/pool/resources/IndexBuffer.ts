@@ -2,6 +2,7 @@
 #define INDEXBUFFER_TS
 
 #include "IIndexBuffer.ts"
+#include "IIndexData.ts"
 #include "HardwareBuffer.ts"
 #include "data/IndexData.ts"
 
@@ -39,7 +40,7 @@ module akra.core.pool.resources {
 			return true;
 		}
 
-		destroy(): bool {
+		destroy(): void {
 			super.destroy();
 			
 			this._pBackupCopy.destroy();
@@ -64,7 +65,7 @@ module akra.core.pool.resources {
 			//console.log(pHole[0].end);
 			for(var k: int = 0; k < this._pIndexDataArray.length; ++ k) {
 
-				pIndexData: IIndexData = this._pIndexDataArray[k];
+				pIndexData = this._pIndexDataArray[k];
 				
 				for (i = 0; i < pHole.length; i ++) {
 					//console.log("pHole:",pHole[i].start,pHole[i].end);
@@ -83,14 +84,14 @@ module akra.core.pool.resources {
 					else if(pIndexData.byteOffset > pHole[i].start && pIndexData.byteOffset + pIndexData.byteLength == pHole[i].end) {
 						
 					}
-					else if(pIndexData.byteOffset == pHole[i].start && pIndexData.byteLength == pHole[i].size) {
+					else if(pIndexData.byteOffset == pHole[i].start && pIndexData.byteLength == (pHole[i].end - pHole[i].start)) {
 						pHole.splice(i, 1);		
 						i--;
 					}
 					//Перекрывает снизу
 					else if(pIndexData.byteOffset<pHole[i].start &&
 						pIndexData.byteOffset + pIndexData.byteLength > pHole[i].start && pIndexData.byteOffset + pIndexData.byteLength < pHole[i].end) {
-						pHole.start = pIndexData.byteOffset + pIndexData.byteLength;
+						pHole[i].start = pIndexData.byteOffset + pIndexData.byteLength;
 					}
 					else if(pIndexData.byteOffset < pHole[i].start &&
 						pIndexData.byteOffset + pIndexData.byteLength > pHole[i].start && pIndexData.byteOffset + pIndexData.byteLength == pHole[i].end) {
@@ -100,7 +101,7 @@ module akra.core.pool.resources {
 					//Перекрывается сверху
 					else if(pIndexData.byteOffset + pIndexData.byteLength>pHole[i].end &&
 						pIndexData.byteOffset > pHole[i].start && pIndexData.byteOffset < pHole[i].end) {
-						pHole.end = pIndexData.byteOffset;
+						pHole[i].end = pIndexData.byteOffset;
 					}
 					else if(pIndexData.byteOffset + pIndexData.byteLength > pHole[i].end &&
 						pIndexData.byteOffset == pHole[i].start && pIndexData.byteOffset < pHole[i].end) {
@@ -129,17 +130,31 @@ module akra.core.pool.resources {
 			return null;
 		}
 
-		freeIndexData(pIndexData: IIndexData): bool {
-			for (var i: int = 0; i < this._pIndexDataArray.length; i ++) {
-				if(this._pIndexDataArray[i] == pIndexData) {
-					this._pIndexDataArray.splice(i,1);
-					return true;
+		freeIndexData(): bool;
+		freeIndexData(pIndexData?: IIndexData): bool {
+			if(arguments.length == 0) {
+				for(var i: uint = 0; i < this._pIndexDataArray.length; i ++) {
+					this._pIndexDataArray[Number(i)].destroy();
+				}	
+
+				this._pIndexDataArray = null;
+			}
+			else {
+				for (var i: int = 0; i < this._pIndexDataArray.length; i ++) {
+					if(this._pIndexDataArray[i] == pIndexData) {
+						pIndexData.destroy();
+
+						this._pIndexDataArray.splice(i,1);
+						this.notifyAltered();
+						return true;
+					}
 				}
+
+				return false;
 			}
 
-			pIndexData.destroy();
-			
-			return false;
+			this.notifyAltered();
+			return true;
 		}
 
 		allocateData(ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes, pData: ArrayBufferView): IIndexData {
@@ -149,7 +164,7 @@ module akra.core.pool.resources {
 		    debug_assert(iCount === math.floor(iCount), "data size should be a multiple of the vertex declaration");
 
 		    pIndexData = this.getEmptyIndexData(iCount, ePrimitiveType, eElementsType);
-		    pIndexData.writeData(pData);
+		    pIndexData.setData(pData);
 
 		    return pIndexData;
 		}

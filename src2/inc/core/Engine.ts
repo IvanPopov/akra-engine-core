@@ -20,6 +20,8 @@ module akra.core {
 		private _pParticleManager: IParticleManager;
 		private _pRenderer: IRenderer;
 
+		private _bExecuting: bool = true;
+
 		constructor () {
 			this._pResourceManager = new pool.ResourcePoolManager(this);
 			this._pDisplayManager = new DisplayManager(this);
@@ -42,7 +44,7 @@ module akra.core {
 		}
 
 		getDisplayManager(): IDisplayManager {
-			return null;
+			return this._pDisplayManager;
 		}
 
 		getParticleManager(): IParticleManager {
@@ -57,10 +59,51 @@ module akra.core {
 			return this._pRenderer;
 		}
 	
-
-		exec(): bool {
-			return this._pDisplayManager.display();
+		inline isExecuting(): bool {
+			return this._bExecuting;
 		}
+
+		exec(bValue: bool = true): void {
+			var pRenderer: IRenderer = this._pRenderer;
+			var pEngine: IEngine = this;
+
+			ASSERT(!isNull(pRenderer));
+
+	        pRenderer._initRenderTargets();
+
+	        // Clear event times
+			this.clearEventTimes();
+
+	        // Infinite loop, until broken out of by frame listeners
+	        // or break out by calling queueEndRendering()
+	        this._bExecuting = bValue;
+
+	        function render(): void { 
+	        	if (!pEngine.isExecuting() || !pEngine.renderOneFrame())
+	                return;
+
+	            requestAnimationFrame(render); 
+	        } 
+
+	        render();
+		}
+
+		renderOneFrame(fTimeSinceLastFrame: float): bool {
+			this.frameStarted();
+
+			if (!this.updateAllRenderTargets()) {
+				return false;
+			}
+
+			this.frameEnded();
+
+			return true;
+		}
+
+		BEGIN_EVENT_TABLE(Engine);
+			BROADCAST(frameStarted, VOID);
+			BROADCAST(frameEnded, VOID);
+		END_EVENT_TABLE();
 
 	}
 

@@ -88,6 +88,10 @@ module akra.webgl {
 		inline useWebGLProgram(pProgram: WebGLProgram): void {
 			this._pWebGLContext.useProgram(pProgram);
 		}
+
+		inline disableAllWebGLVertexAttribs(): void {
+			
+		}
 	}
 }
 

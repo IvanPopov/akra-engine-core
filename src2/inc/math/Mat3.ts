@@ -30,7 +30,6 @@ module akra.math {
 
 
 			var nArgumentsLength: uint = arguments.length;
-			var m3fMat: IMat3 = this;
 
 			switch(nArgumentsLength){
 				case 1:
@@ -65,6 +64,8 @@ module akra.math {
 		set(fValue1?, fValue2?, fValue3?,
 			fValue4?, fValue5?, fValue6?,
 			fValue7?, fValue8?, fValue9?): IMat3{
+		
+			this.data = this.data || new Float32Array(9);
 
 			var pData: Float32Array = this.data;
 
