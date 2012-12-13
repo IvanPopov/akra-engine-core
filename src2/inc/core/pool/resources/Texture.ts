@@ -9,15 +9,6 @@
 
 module akra.core.pool.resources {
 
-    export enum ETextureFlags {
-        DYNAMICTEXTURE = 0,
-        CUBEMAP,
-        MIPMAPS,
-        RENDERTARGET,
-        PALETIZED,
-        DINAMIC
-    }
-
     export enum ETextureForcedFormatFlags {
         FORCEMIPLEVELS = 0,
         FORCEFORMAT,
@@ -25,25 +16,27 @@ module akra.core.pool.resources {
     }
 
 	export class Texture extends ResourcePoolItem implements ITexture {
-        protected _iFlags: int = 0;
-        protected _iWidth: uint = 0;
+        protected _iFlags: int = ETextureFlags.DEFAULT;
+        protected _iWidth: uint = 512;
         protected _iSrcWidth: uint = 0;
-        protected _iHeight: uint = 0;
+        protected _iHeight: uint = 512;
         protected _iSrcHeight: uint = 0;
-        protected _iDepth: uint = 0;
+        protected _iDepth: uint = 1;
         protected _iSrcDepth: uint = 0;
         protected _eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
         protected _nMipLevels: uint = 0;
         protected _eTextureType: ETextureTypes = ETextureTypes.TEXTURE_2D;
-        protected _iDesiredIntegerBitDepth: uint;
-        protected _iDesiredFloatBitDepth: uint;     
+        protected _iDesiredIntegerBitDepth: uint = 0;
+        protected _iDesiredFloatBitDepth: uint = 0;     
 
-        protected _eDesiredFormat: EPixelFormats;
-        protected _eSrcFormat: EPixelFormats;
+        protected _eDesiredFormat: EPixelFormats = EPixelFormats.UNKNOWN;
+        protected _eSrcFormat: EPixelFormats = EPixelFormats.UNKNOWN;
 
         protected _pParams: IntMap = <IntMap>{};
 
         protected _isInternalResourceCreated: bool = false;
+
+        protected _iResourceSize: uint = 0;
 
         constructor () {
             super();
@@ -166,13 +159,24 @@ module akra.core.pool.resources {
             return isDefAndNotNull(this._isInternalResourceCreated);
         }
         
+        inline calculateSize(): uint {
+            return this.getNumFaces() * pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
+        }
+
+        inline getNumFaces(): uint {
+            return this._eTextureType === ETextureTypes.TEXTURE_CUBE_MAP ? 6 : 1;
+        }
+
+        inline getSize(): uint {
+            return this._iResourceSize;
+        }
+
         getBuffer(iFace?: uint, iMipmap?: uint): IPixelBuffer {
             return null;
         }
         
         setParameter(eParam: ETextureParameters, eValue: ETextureFilters): void;
         setParameter(eParam: ETextureParameters, eValue: ETextureWrapModes): void;
-
         setParameter(eParam: ETextureParameters, eValue: int): bool {
             if (!this.isValid()) {
                 return false;
@@ -183,12 +187,156 @@ module akra.core.pool.resources {
         	return true;
         }
 
-        loadImage(pImage: IImg): bool{
-            return false;
+        loadRawData(pStream: ArrayBufferView, iWidth: uint, iHeight: uint, eFormat: EPixelFormats): bool {
+            var pTempImg: IImg = <IImg>this.getManager().imagePool.findResource(".temp_image");
+
+            if(isNull(pTempImg)){
+                pTempImg = <IImg>this.getManager().imagePool.createResource(".temp_image");
+                //pTempImg.create();
+            }
+
+            pTempImg.loadRawData(<Uint8Array>pStream, iWidth, iHeight, eFormat);
+            var isLoaded: bool = this.loadImage(pTempImg);
+            this.getManager().imagePool.destroyResource(pTempImg);
+
+            return isLoaded;
         }
 
-        loadRawData(pData: ArrayBufferView, iWidth: uint, iHeight: uint, eFormat: EPixelFormats): bool{
-            return false;
+        loadImage(pImage: IImg): bool{
+            var isLoaded:bool = this._loadImages(pImage, true);
+            
+            if(isLoaded){
+                this.notifyLoaded();
+                return true;
+            }
+            else {
+                return false;
+            }
+        }        
+
+        _loadImages(pImageList: IImg[]): bool;
+        _loadImages(pImage: IImg, bOneImage: bool): bool;
+        _loadImages(): bool {
+            var pMainImage: IImg = null;
+            var pImageList: IImg[] = null;
+
+            if(arguments.length === 2) {
+                pMainImage = arguments[0];
+            }
+            else {
+                pImageList = arguments[0];
+                if(pImageList.length === 0) {
+                    CRITICAL("Cannot load empty list of images");
+                    return false;
+                }
+                pMainImage = pImageList[0];
+            }
+
+            this._iSrcWidth = this._iWidth = pMainImage.width;
+            this._iSrcHeight = this._iHeight = pMainImage.height;
+            this._iSrcDepth = this._iDepth = pMainImage.depth;
+
+            // Get source image format and adjust if required
+            this._eSrcFormat = pMainImage.format;
+
+            if (this._eDesiredFormat !== EPixelFormats.UNKNOWN) {
+                // If have desired format, use it
+                this._eFormat = this._eDesiredFormat;
+            }
+            else {
+                // Get the format according with desired bit depth
+                this._eFormat = pixelUtil.getFormatForBitDepths(this._eSrcFormat, this._iDesiredIntegerBitDepth, this._iDesiredFloatBitDepth);
+            }
+
+            // The custom mipmaps in the image have priority over everything
+            var iImageMips: uint = pMainImage.numMipMaps;
+
+            if(iImageMips > 0) {
+                this._nMipLevels = iImageMips;
+                // Disable flag for auto mip generation
+                CLEAR_ALL(this._iFlags, ETextureFlags.AUTOMIPMAP);
+            }
+            // Create the texture
+            this.createTexture();
+            // Check if we're loading one image with multiple faces
+            // or a vector of images representing the faces
+            var iFaces: uint = 0;
+            var isMultiImage: bool = false;
+
+            if(!isNull(pImageList) && pImageList.length > 1){
+                iFaces = pImageList.length;
+                isMultiImage = true;
+            }
+            else {
+                iFaces = pMainImage.numFaces;
+                isMultiImage = false;
+            }
+
+            // Check wether number of faces in images exceeds number of faces
+            // in this texture. If so, clamp it.
+            if(iFaces > this.getNumFaces()){
+                iFaces = this.getNumFaces();
+            }
+
+            // Main loading loop
+            // imageMips == 0 if the image has no custom mipmaps, otherwise contains the number of custom mips
+            var mip: uint = 0;
+            var i: uint = 0;
+            for(mip = 0; mip <= iImageMips; ++mip) {
+                for(i = 0; i < iFaces; ++i) {
+                    var pSrc: IPixelBox;
+
+                    if(isMultiImage){
+                        // Load from multiple images
+                        pSrc = pImageList[i].getPixels(0, mip);
+                    }
+                    else {
+                        // Load from faces of images[0] or main Image
+                        pSrc = pMainImage.getPixels(i, mip);
+                    }
+        
+                    // Sets to treated format in case is difference
+                    pSrc.format = this._eSrcFormat;
+                    // Destination: entire texture. blitFromMemory does the scaling to
+                    // a power of two for us when needed
+                    this.getBuffer(i, mip).blitFromMemory(pSrc);                    
+                }
+            }
+            // Update size (the final size, not including temp space)
+            this._iResourceSize = this.getNumFaces() * pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
+            return true;
+        }
+
+        convertToImage(pDestImage: IImg, bIncludeMipMaps: bool): void {
+            var iNumMips: uint = bIncludeMipMaps ? this._nMipLevels + 1 : 1;
+            var iDataSize: uint = pixelUtil.calculateSizeForImage(iNumMips, this._nMipLevels,
+                                                                  this._iWidth, this._iHeight, this._iDepth,
+                                                                  this._eFormat);
+
+            var pPixData: Uint8Array = new Uint8Array(iDataSize);
+            // if there are multiple faces and mipmaps we must pack them into the data
+            // faces, then mips
+            var pCurrentPixData: Uint8Array = pPixData;
+
+            var iFace: uint = 0;
+            var mip: uint = 0;
+
+            for (iFace = 0; iFace < this.getNumFaces(); ++iFace) {
+                for (mip = 0; mip < iNumMips; ++mip) {
+
+                    var iMipDataSize = pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
+
+                    var pPixBox: IPixelBox = new pixelUtil.PixelBox(this._iWidth, this._iHeight, this._iDepth, this._eFormat, pCurrentPixData);
+                    this.getBuffer(iFace, mip).blitToMemory(pPixBox);
+
+                    pCurrentPixData = pCurrentPixData.subarray(iMipDataSize);
+
+                }
+            }
+
+            // load, and tell Image to delete the memory when it's done.
+            pDestImage.loadDynamicImage(pPixData, this._iWidth, this._iHeight, this._iDepth, this._eFormat, true, 
+                this.getNumFaces(), iNumMips - 1);          
         }
 
         createTexture(
@@ -198,10 +346,6 @@ module akra.core.pool.resources {
             eFormat?: EPixelFormats, 
             pData?: ArrayBufferView): bool {
         	return false;
-        }
-
-        inline getHardwareObject(): WebGLObject {
-        	return null;
         }
 	}
 }

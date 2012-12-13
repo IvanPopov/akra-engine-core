@@ -36,6 +36,10 @@ module akra {
     	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, eFormat: EPixelFormats, nFaces?: uint, nMipMaps?: uint): bool;
     	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats, nFaces?: uint, nMipMaps?: uint): bool;
 
+        loadDynamicImage(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint,
+                         eFormat: EPixelFormats, bAutoDelete?: bool, 
+                         iNumFaces?: uint, iNumMipMaps?: uint): IImg;
+
     	load(sFilename: string);
     	create(iWidth: uint, iHeight: uint, eFormat: EPixelFormats, iFlags: int): bool;
     	create(iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats, iFlags: int): bool;
@@ -67,7 +71,6 @@ module akra {
 
     	generatePerlinNoise(fScale: float, iOctaves: int, fFalloff: float): void;
     	randomChannelNoise(iChannel: int, iMinRange: int, iMaxRange: int): void;
-
     }
 
 }

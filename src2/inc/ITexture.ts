@@ -92,12 +92,18 @@ module akra {
         readonly srcDepth: uint;
 
         setFlags(iTextureFlag: int): void;
-        getFlags(): int;       
+        getFlags(): int;   
+
+        calculateSize(): uint;
+        getNumFaces(): uint;
+        getSize(): uint; 
 
         isTexture2D(): bool;
         isTextureCube(): bool;
         isCompressed(): bool;
         isValid(): bool;
+
+        
 
         getBuffer(iFace?: uint, iMipmap?: uint): IPixelBuffer;     
 
@@ -106,6 +112,8 @@ module akra {
         
         loadImage(pImage: IImg): bool;
         loadRawData(pData: ArrayBufferView, iWidth: uint, iHeight: uint, eFormat: EPixelFormats): bool;
+
+        convertToImage(pDestImage: IImg, bIncludeMipMaps: bool): void;
 
         createTexture(iWidth?: uint, 
                       iHeight?: uint, 
