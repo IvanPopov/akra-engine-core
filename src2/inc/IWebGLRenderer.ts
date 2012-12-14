@@ -29,6 +29,10 @@ module akra {
 		deleteWebGLProgram(pProgram: WebGLProgram): void;
 
 		disableAllWebGLVertexAttribs(): void;
+
+		getError(): string {
+			return "context lost";
+		}
 	}
 }
 

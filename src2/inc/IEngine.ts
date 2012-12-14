@@ -15,8 +15,16 @@ module akra {
 
         getRenderer(): IRenderer;
 
-        //start execution
+        pause(): bool;
+        play(): bool;
+        
+        /** Render one frame. */
+        renderFrame(): bool;
+        
+        /** Start exucution(rendering loop). */
         exec(): bool;
+        /** Определяет, находитсяли Engine в цикле рендеринга */
+        isExecuting(): bool;
     };
 
     export var createEngine: () => IEngine;

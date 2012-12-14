@@ -20,7 +20,40 @@ module akra.core {
 		private _pParticleManager: IParticleManager;
 		private _pRenderer: IRenderer;
 
-		private _bExecuting: bool = true;
+		private fMillisecondsPerTick: float = 0.0333;
+
+		/** stop render loop?*/
+		private _pTimer: IUtilTimer;
+		private _iAppPausedCount: int = 0;
+
+		/**
+		 * Frame sync.
+		 */
+
+		/** is paused? */
+		private _isActive: bool = false;
+		/** frame rendering sync / render next frame? */
+		private _isFrameMoving: bool = true;
+		/** render only one frame */
+		private _isSingleStep: bool = true;
+		/** can we update scene? */
+		private _isFrameReady: bool = false;
+
+		/**
+		 * Time statistics
+		 */
+
+		/** current time */
+		private _fTime: float = 0.;
+		/** time elapsed since the last frame */
+		private _fElapsedTime: float = 0.;
+		/** time elapsed since the last rendered frame */
+		private _fUpdateTimeCount: float = 0.;
+		/** frame per second */
+		private _fFPS: float = 0.;
+		private _fLastTime: float = 0.;
+		private _nTotalFrames: uint = 0;
+		private _iFrames: uint = 0;
 
 		constructor () {
 			this._pResourceManager = new pool.ResourcePoolManager(this);
@@ -41,6 +74,9 @@ module akra.core {
 			if (!this._pDisplayManager.initialize()) {
 				debug_error("cannot initialize DisplayManager");
 			}
+
+			this._pTimer = util.UtilTimer.start();
+			this.paused(false);
 		}
 
 		getDisplayManager(): IDisplayManager {
@@ -60,12 +96,17 @@ module akra.core {
 		}
 	
 		inline isExecuting(): bool {
-			return this._bExecuting;
+			return this._isActive;
 		}
 
 		exec(bValue: bool = true): void {
 			var pRenderer: IRenderer = this._pRenderer;
 			var pEngine: IEngine = this;
+			var pCanvas: HTMLCanvasElement = null;
+
+#if WEBGL
+			pCanvas = (<IWebGLRenderer>pRenderer).getCanvas();
+#endif			
 
 			ASSERT(!isNull(pRenderer));
 
@@ -78,26 +119,137 @@ module akra.core {
 	        // or break out by calling queueEndRendering()
 	        this._bExecuting = bValue;
 
-	        function render(): void { 
-	        	if (!pEngine.isExecuting() || !pEngine.renderOneFrame())
+	        function render(iTime: uint): void { 
+#ifdef DEBUG
+				if (pRenderer.isValid()) {
+					ERROR(pRenderer.getError());
+				}
+#endif
+	        	if (!pEngine.isExecuting()) {
 	                return;
+	            }
 
-	            requestAnimationFrame(render); 
+	            if (!pEngine.renderFrame()) {
+	                debug_error("Engine::exec() error.");
+	                return;
+	            }
+
+	            requestAnimationFrame(render, pCanvas); 
 	        } 
 
 	        render();
 		}
 
-		renderOneFrame(fTimeSinceLastFrame: float): bool {
-			this.frameStarted();
+		renderFrame(): bool {
+			var fAppTime = this.pTimer.execCommand(EUtilTimerCommands.TIMER_GET_APP_TIME);
+		    var fElapsedAppTime = this.pTimer.execCommand(EUtilTimerCommands.TIMER_GET_ELAPSED_TIME);
 
-			if (!this.updateAllRenderTargets()) {
-				return false;
-			}
+		    if ((0 == fElapsedAppTime ) && this.isFrameMoving) {
+		        return true;
+		    }
 
-			this.frameEnded();
+		    // FrameMove (animate) the scene
+		    if (this.isFrameMoving || this.isSingleStep) {
+		        // Store the time for the app
+		        this.fTime = fAppTime;
+		        this.fElapsedTime = fElapsedAppTime;
 
+		        // Frame move the scene
+		        if (!this.frameMove()) {
+		            return false;
+		        }
+
+		        this.isSingleStep = false;
+		    }
+
+		    // Render the scene as normal
+		    if (!pRenderer.updateAllRenderTargets_()) {
+		    	return false;
+		    }
+
+		    if (this.isFrameReady) {
+		    	//notifyPreUpdateScene();
+		        //this.pScene.recursivePreUpdate();
+		    }
+
+		    this.updateStats();
 			return true;
+		}
+
+		play(): bool {
+			if (!this._isActive) { 
+				this._iAppPausedCount = 0;
+				this._isActive = true;
+
+				if (this._isFrameMoving) {
+		            this._pTimer.start();
+		        }
+	        }
+
+	        return this._isActive;
+		}
+
+		pause(isPause: bool = false): bool {
+			this._iAppPausedCount += ( isPause ? +1 : -1 );
+		    this._isActive = ( this._iAppPausedCount ? false : true );
+
+		    // Handle the first pause request (of many, nestable pause requests)
+		    if (isPause && ( 1 == this._iAppPausedCount )) {
+		        // Stop the scene from animating
+		        if (this._isFrameMoving) {
+		            this._pTimer.stop();
+		        }
+		    }
+
+		    if (0 == this._iAppPausedCount) {
+		        // Restart the timers
+		        if (this._isFrameMoving) {
+		            this._pTimer.start();
+		        }
+		    }
+
+		    return !this._isActive;
+		}
+
+		private frameMove(): bool {
+		    // add the real time elapsed to our
+		    // internal delay counter
+		    this.fUpdateTimeCount += this.fElapsedTime;
+		    // is there an update ready to happen?
+
+		    while (this.fUpdateTimeCount > this.fMillisecondsPerTick) {
+		        // update the scene
+		        
+		        //this.pScene.updateCamera();
+
+		        // if (!this.pScene.updateScene()) {
+		        //     return false;
+		        // }
+
+		        //notifyUpdateScene()
+		        //this.pScene.recursiveUpdate();
+		        this.isFrameReady = true;
+
+
+		        // subtract the time interval
+		        // emulated with each tick
+		        this.fUpdateTimeCount -= this.fMillisecondsPerTick;
+		    }
+		    return true;
+		}
+
+		private updateStats(): void {
+			var fTime = this.pTimer.execCommand(EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME);
+		    
+		    this.iFrames ++;
+		    this.nTotalFrames ++;
+
+		    // Update the scene stats once per second
+		    if (fTime - this.fLastTime > 1.0) {
+		        this.fFPS = <float>this.iFrames / (fTime - this.fLastTime);
+		        this.fLastTime = fTime;
+		        this.iFrames = 0;
+		    }
 		}
 
 		BEGIN_EVENT_TABLE(Engine);
