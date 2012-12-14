@@ -25,6 +25,7 @@ module akra.core.pool.resources {
         protected _iSrcDepth: uint = 0;
         protected _eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
         protected _nMipLevels: uint = 0;
+        protected _nRequestedMipLevels: uint = 0;
         protected _eTextureType: ETextureTypes = ETextureTypes.TEXTURE_2D;
         protected _iDesiredIntegerBitDepth: uint = 0;
         protected _iDesiredFloatBitDepth: uint = 0;     
@@ -35,6 +36,7 @@ module akra.core.pool.resources {
         protected _pParams: IntMap = <IntMap>{};
 
         protected _isInternalResourceCreated: bool = false;
+        protected _isMipmapsHardwareGenerated: bool = false;
 
         protected _iResourceSize: uint = 0;
 
@@ -252,12 +254,12 @@ module akra.core.pool.resources {
             var iImageMips: uint = pMainImage.numMipMaps;
 
             if(iImageMips > 0) {
-                this._nMipLevels = iImageMips;
+                this._nMipLevels = this._nRequestedMipLevels = iImageMips;
                 // Disable flag for auto mip generation
                 CLEAR_ALL(this._iFlags, ETextureFlags.AUTOMIPMAP);
             }
             // Create the texture
-            this.createTexture();
+            this.createInternalTexture();
             // Check if we're loading one image with multiple faces
             // or a vector of images representing the faces
             var iFaces: uint = 0;
@@ -339,13 +341,58 @@ module akra.core.pool.resources {
                 this.getNumFaces(), iNumMips - 1);          
         }
 
-        createTexture(
-            iWidth?: uint, 
-            iHeight?: uint, 
-            iFlags?: int, 
-            eFormat?: EPixelFormats, 
-            pData?: ArrayBufferView): bool {
+        copyToTexture(pTarget: ITexture): void {
+            if(pTarget.getNumFaces() !== this.getNumFaces()){
+                CRITICAL("Texture types must match");
+            }   
+
+            var nMipLevels: uint = Math.min(this._nMipLevels, pTarget.mipLevels);
+            if(TEST_ANY(this._iFlags, ETextureFlags.AUTOMIPMAP) || TEST_ANY(this.getFlags(), ETextureFlags.AUTOMIPMAP)){
+                nMipLevels = 0;
+            }
+
+            var iFace: uint = 0, mip: uint = 0;
+
+            for(iFace = 0; iFace < this.getNumFaces(); iFace++){
+                for(mip = 0; mip <= nMipLevels; mip++){
+                    pTarget.getBuffer(iFace, mip).blit(this.getBuffer(iFace, mip));
+                }
+            }
+        }
+
+        createInternalTexture(): bool {
+            if(!this._isInternalResourceCreated){
+                this.createInternalTextureImpl();
+                this._isInternalResourceCreated = true;
+                return true;
+            }
+
         	return false;
+        }
+
+        freeInternalTexture(): bool {
+            if(this._isInternalResourceCreated){
+                this.freeInternalTextureImpl();
+                this._isInternalResourceCreated = false;
+                return true;
+            }
+
+            return false;
+        }
+
+        getNativeFormat(eTextureType?: ETextureTypes = this._eTextureType,
+                        eFormat?: EPixelFormats = this._eFormat, 
+                        iFlags?: int = this._iFlags): EPixelFormats {
+
+            return null;
+        }
+
+        protected createInternalTextureImpl(): bool {
+            return false;
+        }
+
+        protected freeInternalTextureImpl(): bool {
+            return false;
         }
 	}
 }

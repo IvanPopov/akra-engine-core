@@ -115,11 +115,12 @@ module akra {
 
         convertToImage(pDestImage: IImg, bIncludeMipMaps: bool): void;
 
-        createTexture(iWidth?: uint, 
-                      iHeight?: uint, 
-                      iFlags?: int,
-                      eFormat?: EPixelFormats,
-                      pData?: ArrayBufferView): bool;
+        copyToTexture(pTarget: ITexture): void;
+
+        createInternalTexture(): bool;
+        freeInternalTexture(): bool;
+
+        getNativeFormat(eTextureType?: ETextureTypes, eFormat?: EPixelFormats, iFlags?: int): EPixelFormats;
     }
 }
 

@@ -99,6 +99,10 @@ module  akra.render {
 
 		}
 
+    hasCapability(eCapability: ERenderCapabilities): bool {
+      return false;
+    }
+
 		// //// frendly for EffectResource
 
   //   	/** * Регистрация компонента эффекта. **/
@@ -308,6 +312,8 @@ module  akra.render {
         inline disableTextureUnitsFrom(iUnit: uint): void {
 
         }
+
+        
 	}
 };
 

@@ -7,6 +7,7 @@
 #include "PixelFormat.ts"
 #include "common.ts"
 #include "IHardwareBuffer.ts"
+#include "ITexture.ts"
 
 #define GLSL_VS_SHADER_MIN "void main(void){gl_Position = vec4(0., 0., 0., 1.);}"
 #define GLSL_FS_SHADER_MIN "void main(void){}"

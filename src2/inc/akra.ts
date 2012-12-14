@@ -127,6 +127,7 @@
 
 #include "webgl/WebGLPixelBuffer.ts"
 #include "webgl/WebGLTextureBuffer.ts"
+#include "webgl/WebGLInternalTexture.ts"
 
 #endif
 
