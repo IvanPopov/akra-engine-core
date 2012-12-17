@@ -5,7 +5,9 @@
 #include "IPixelBuffer.ts"
 #include "webgl/webgl.ts"
 #include "IRenderer.ts"
+#include "IResourcePool.ts"
 #include "math/math.ts"
+#include "webgl/WebGLTextureBuffer.ts"
 
 module akra.webgl {
 	export class WebGLInternalTexture extends core.pool.resources.Texture {
@@ -156,8 +158,68 @@ module akra.webgl {
         }
 
         _createSurfaceList(): void {
+        	this._pSurfaceList = new Array();
 
+        	// For all faces and mipmaps, store surfaces as IPixelBuffer
+        	var bWantGeneratedMips: bool = TEST_ANY(this._iFlags, ETextureFlags.AUTOMIPMAP);
+
+        	// Do mipmapping in software? (uses GLU) For some cards, this is still needed. Of course,
+        	// only when mipmap generation is desired.
+        	var bDoSoftware: bool = bWantGeneratedMips && !this._isMipmapsHardwareGenerated && this._nMipLevels !== 0;
+
+        	var iFace: uint = 0;
+        	var mip: uint = 0;
+        	var pTextureBufferPool: IResourcePool = this.getManager().textureBufferPool;
+        	var sResourceName: string = this.findResourceName();
+
+        	for(iFace = 0; iFace < this._nMipLevels; iFace++) {
+        		var iWidth: uint = this._iWidth;
+        		var iHeight: uint = this._iHeight;
+
+        		for(mip = 0; mip <= this._nMipLevels; mip++) {
+        			var pBuf: WebGLTextureBuffer = <WebGLTextureBuffer>pTextureBufferPool.createResource(sResourceName + "_" + iFace + "_" + mip);
+        			pBuf.create(this.getWebGLTextureTarget(),
+        						this._pWebGLTexture,
+        						iWidth, iHeight,
+        						webgl.getClosestWebGLInternalFormat(this._eFormat),
+        						webgl.getWebGLOriginDataType(this._eFormat),
+        						iFace,
+        						mip,
+        						this._iFlags,
+        						bDoSoftware && mip === 0);	
+
+        			this._pSurfaceList.push(<IPixelBuffer>pBuf);
+
+        			//check error
+        			if(pBuf.width === 0 ||
+        			   pBuf.height === 0 ||
+        			   pBuf.depth === 0) {
+        				CRITICAL("Zero sized texture surface on texture " + sResourceName +
+                            	 " face " + iFace +
+                            	 " mipmap " + mip +
+                            	 ". The GL driver probably refused to create the texture.");
+        			}
+
+        		}
+        	}
         }
+
+        getBuffer(iFace?: uint = 1, iMipmap?: uint = 0): IPixelBuffer {
+            if (iFace >= this.getNumFaces()) {
+	            CRITICAL("Face index out of range");
+	        }
+
+	        if (iMipmap > this._nMipLevels) {
+	            CRITICAL("Mipmap index out of range");
+	        }
+
+	        var idx: uint = iFace * (this._nMipLevels + 1) + iMipmap;
+	        ASSERT(idx < this._pSurfaceList.length);
+	        
+	        return this._pSurfaceList[idx];
+        }
+
+
 
         getNativeFormat(eTextureType?: ETextureTypes = this._eTextureType,
                         eFormat?: EPixelFormats = this._eFormat, 
