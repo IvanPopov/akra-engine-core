@@ -8,6 +8,8 @@ module akra.scene {
 	export class SceneObject extends SceneNode implements ISceneObject {
 		constructor (pScene: IScene3d) {
 			super(pScene);
+
+			this.type = EEntityTypes.SCENE_OBJECT;
 		}
 	}
 }

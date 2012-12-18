@@ -9,6 +9,8 @@ module akra.scene.objects {
 	export class Camera extends SceneObject implements ICamera {
 		constructor (pScene: IScene3d) {
 			super(pScene);
+
+			this.type = EEntityTypes.CAMERA;
 		}
 	}
 }

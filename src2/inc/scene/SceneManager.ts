@@ -1,64 +1,59 @@
-#ifndef IDISPLAYMANAGER_TS
-#define IDISPLAYMANAGER_TS
+#ifndef SCENEMANAGER_TS
+#define SCENEMANAGER_TS
 
 #include "IEngine.ts"
-#include "IDisplayManager.ts"
-#include "IDisplay.ts"
-#include "IDisplay2d.ts"
-#include "IDisplay3d.ts"
+#include "ISceneManager.ts"
+#include "IScene.ts"
+#include "IScene2d.ts"
+#include "IScene3d.ts"
 
+#include "Scene3d.ts"
 
-module akra {
-    export class DisplayManager implements IDisplayManager {
+module akra.scene {
+    export class SceneManager implements ISceneManager {
         private pEngine: IEngine = null;
-        private pDisplayList: IDisplay[] = [];
+        private pSceneList: IScene[] = [];
         
 
         constructor (pEngine: IEngine) {
             this.pEngine = pEngine;
         }
 
-        createDisplay3D(): IDisplay3d;
-        createDisplay3D(pCanvas: HTMLCanvasElement): IDisplay3d;
-        createDisplay3D(sCanvas?: string): IDisplay3d {
-            var pDisplay: IDisplay3d = new display.Display3d(this, sCanvas);
-            this.pDisplayList.push(pDisplay);
+        createScene3D(): IScene3d {
+            var pScene: IScene3d = new Scene3d(this);
+            this.pSceneList.push(pScene);
 
-            return pDisplay;
+            return pScene;
         }
 
-        createDisplay2D(): IDisplay2d {
+        createScene2D(): IScene2d {
             return null;
         }
 
-        getDisplay3D(iDisplay: uint = 0): IDisplay3d {
-            var pDisplay: IDisplay = this.pDisplayList[iDisplay];
+        getScene3D(IScene: uint = 0): IScene3d {
+            var pScene: IScene = this.pSceneList[IScene];
             
-            if (pDisplay && pDisplay.type === EDisplayTypes.TYPE_3D) {
-                return <IDisplay3d>pDisplay;
+            if (pScene && pScene.type === ESceneTypes.TYPE_3D) {
+                return <IScene3d>pScene;
             }
 
             return null;
         }
 
-        getDisplay2D(iDisplay?: uint): IDisplay2d {
-            var pDisplay: IDisplay = this.pDisplayList[iDisplay];
+        getScene2D(IScene?: uint): IScene2d {
+            var pScene: IScene = this.pSceneList[IScene];
             
-            if (pDisplay && pDisplay.type === EDisplayTypes.TYPE_2D) {
-                return pDisplay;
+            if (pScene && pScene.type === ESceneTypes.TYPE_2D) {
+                return pScene;
             }
             
             return null;
         }
 
-        getDisplay(iDisplay?: uint, eType?: EDisplayTypes): IDisplay {
-            return this.pDisplayList[iDisplay] || null;
+        getScene(IScene?: uint, eType?: ESceneTypes): IScene {
+            return this.pSceneList[IScene] || null;
         }
 
-        //enable all display
-        display(): bool {
-            return false;
-        }
 
         initialize(): bool {
             //this.initText2Dlayer();

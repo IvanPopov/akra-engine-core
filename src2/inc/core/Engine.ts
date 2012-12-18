@@ -2,11 +2,15 @@
 #define ENGINE_TS
 
 #include "IEngine.ts"
-#include "IDisplayManager.ts"
+#include "ISceneManager.ts"
 #include "IParticleManager.ts"
 #include "IResourcePoolManager.ts"
 #include "IRenderer.ts"
+#include "IUtilTimer.ts"
 
+#include "pool/ResourcePoolManager.ts"
+#include "scene/SceneManager.ts"
+#include "util/UtilTimer.ts"
 
 #ifdef WEBGL
 #include "webgl/WebGLRenderer.ts"
@@ -16,19 +20,14 @@ module akra.core {
 	export class Engine implements IEngine {
 
 		private _pResourceManager: IResourcePoolManager;
-		private _pDisplayManager: IDisplayManager;
+		private _pSceneManager: ISceneManager;
 		private _pParticleManager: IParticleManager;
 		private _pRenderer: IRenderer;
-
-		private fMillisecondsPerTick: float = 0.0333;
 
 		/** stop render loop?*/
 		private _pTimer: IUtilTimer;
 		private _iAppPausedCount: int = 0;
 
-		/**
-		 * Frame sync.
-		 */
 
 		/** is paused? */
 		private _isActive: bool = false;
@@ -36,32 +35,16 @@ module akra.core {
 		private _isFrameMoving: bool = true;
 		/** render only one frame */
 		private _isSingleStep: bool = true;
-		/** can we update scene? */
-		private _isFrameReady: bool = false;
 
-		/**
-		 * Time statistics
-		 */
 
-		/** current time */
-		private _fTime: float = 0.;
-		/** time elapsed since the last frame */
-		private _fElapsedTime: float = 0.;
-		/** time elapsed since the last rendered frame */
-		private _fUpdateTimeCount: float = 0.;
-		/** frame per second */
-		private _fFPS: float = 0.;
-		private _fLastTime: float = 0.;
-		private _nTotalFrames: uint = 0;
-		private _iFrames: uint = 0;
 
 		constructor () {
 			this._pResourceManager = new pool.ResourcePoolManager(this);
-			this._pDisplayManager = new DisplayManager(this);
+			this._pSceneManager = new scene.SceneManager(this);
 			this._pParticleManager = null;
 
 #ifdef WEBGL
-			this._pRenderer = new webgl.WebGLRenderer();
+			this._pRenderer = new webgl.WebGLRenderer(this);
 #else
 			CRITICAL("render system not specified");
 #endif
@@ -71,16 +54,16 @@ module akra.core {
 				debug_error('cannot initialize ResourcePoolManager');
 			}
 
-			if (!this._pDisplayManager.initialize()) {
-				debug_error("cannot initialize DisplayManager");
+			if (!this._pSceneManager.initialize()) {
+				debug_error("cannot initialize SceneManager");
 			}
 
 			this._pTimer = util.UtilTimer.start();
-			this.paused(false);
+			this.pause(false);
 		}
 
-		getDisplayManager(): IDisplayManager {
-			return this._pDisplayManager;
+		getSceneManager(): ISceneManager {
+			return this._pSceneManager;
 		}
 
 		getParticleManager(): IParticleManager {
@@ -95,29 +78,26 @@ module akra.core {
 			return this._pRenderer;
 		}
 	
-		inline isExecuting(): bool {
+		inline isActive(): bool {
 			return this._isActive;
 		}
 
 		exec(bValue: bool = true): void {
 			var pRenderer: IRenderer = this._pRenderer;
 			var pEngine: IEngine = this;
-			var pCanvas: HTMLCanvasElement = null;
+			// var pCanvas: HTMLCanvasElement = null;
 
 #if WEBGL
-			pCanvas = (<IWebGLRenderer>pRenderer).getCanvas();
+			// pCanvas = (<IWebGLRenderer>pRenderer).getHTMLCanvas();
 #endif			
 
 			ASSERT(!isNull(pRenderer));
 
 	        pRenderer._initRenderTargets();
 
-	        // Clear event times
-			this.clearEventTimes();
-
 	        // Infinite loop, until broken out of by frame listeners
 	        // or break out by calling queueEndRendering()
-	        this._bExecuting = bValue;
+	        this._isActive = bValue;
 
 	        function render(iTime: uint): void { 
 #ifdef DEBUG
@@ -125,7 +105,7 @@ module akra.core {
 					ERROR(pRenderer.getError());
 				}
 #endif
-	        	if (!pEngine.isExecuting()) {
+	        	if (!pEngine.isActive()) {
 	                return;
 	            }
 
@@ -134,45 +114,34 @@ module akra.core {
 	                return;
 	            }
 
-	            requestAnimationFrame(render, pCanvas); 
+	            requestAnimationFrame(render/*, pCanvas*/); 
 	        } 
 
-	        render();
+	        render(0);
 		}
 
-		renderFrame(): bool {
-			var fAppTime = this.pTimer.execCommand(EUtilTimerCommands.TIMER_GET_APP_TIME);
-		    var fElapsedAppTime = this.pTimer.execCommand(EUtilTimerCommands.TIMER_GET_ELAPSED_TIME);
+		inline getTimer(): IUtilTimer { return this._pTimer; }
 
-		    if ((0 == fElapsedAppTime ) && this.isFrameMoving) {
+		renderFrame(): bool {
+		    var fElapsedAppTime: float 	= this._pTimer.elapsedTime;
+
+		    if (0. == fElapsedAppTime && this._isFrameMoving) {
 		        return true;
 		    }
 
 		    // FrameMove (animate) the scene
-		    if (this.isFrameMoving || this.isSingleStep) {
-		        // Store the time for the app
-		        this.fTime = fAppTime;
-		        this.fElapsedTime = fElapsedAppTime;
+		    if (this._isFrameMoving || this._isSingleStep) {
 
-		        // Frame move the scene
-		        if (!this.frameMove()) {
-		            return false;
-		        }
+		    	this.frameStarted();
 
-		        this.isSingleStep = false;
+		        // Render the scene as normal
+			    this._pRenderer._updateAllRenderTargets();
+
+			    this.frameEnded();
+
+		        this._isSingleStep = false;
 		    }
 
-		    // Render the scene as normal
-		    if (!pRenderer.updateAllRenderTargets_()) {
-		    	return false;
-		    }
-
-		    if (this.isFrameReady) {
-		    	//notifyPreUpdateScene();
-		        //this.pScene.recursivePreUpdate();
-		    }
-
-		    this.updateStats();
 			return true;
 		}
 
@@ -211,46 +180,6 @@ module akra.core {
 		    return !this._isActive;
 		}
 
-		private frameMove(): bool {
-		    // add the real time elapsed to our
-		    // internal delay counter
-		    this.fUpdateTimeCount += this.fElapsedTime;
-		    // is there an update ready to happen?
-
-		    while (this.fUpdateTimeCount > this.fMillisecondsPerTick) {
-		        // update the scene
-		        
-		        //this.pScene.updateCamera();
-
-		        // if (!this.pScene.updateScene()) {
-		        //     return false;
-		        // }
-
-		        //notifyUpdateScene()
-		        //this.pScene.recursiveUpdate();
-		        this.isFrameReady = true;
-
-
-		        // subtract the time interval
-		        // emulated with each tick
-		        this.fUpdateTimeCount -= this.fMillisecondsPerTick;
-		    }
-		    return true;
-		}
-
-		private updateStats(): void {
-			var fTime = this.pTimer.execCommand(EUtilTimerCommands.TIMER_GET_ABSOLUTE_TIME);
-		    
-		    this.iFrames ++;
-		    this.nTotalFrames ++;
-
-		    // Update the scene stats once per second
-		    if (fTime - this.fLastTime > 1.0) {
-		        this.fFPS = <float>this.iFrames / (fTime - this.fLastTime);
-		        this.fLastTime = fTime;
-		        this.iFrames = 0;
-		    }
-		}
 
 		BEGIN_EVENT_TABLE(Engine);
 			BROADCAST(frameStarted, VOID);

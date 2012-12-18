@@ -20,6 +20,7 @@ module akra {
     IFACE(IFrameBuffer);
     IFACE(IViewport);
     IFACE(IColor);
+    IFACE(IEngine);
 
 
 	//API SPECIFIFC CONSTANTS
@@ -124,6 +125,8 @@ module akra {
 	// }
 
     export interface IRenderer {
+        getEngine(): IEngine;
+
         debug(bValue?: bool): bool;
         enableAPITrace(): bool;
         
@@ -132,10 +135,17 @@ module akra {
 
         getError();
 
+        clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int): void;
+
         _disableAllTextureUnits(): void;
         _disableTextureUnitsFrom(iUnit: uint): void;
 
-        _updateAllRenderTargets(): bool;
+        _initRenderTargets(): void;
+        _updateAllRenderTargets(): void;
+
+        _setViewport(pViewport: IViewport): void;
+        _getViewport(): IViewport;
+
     }
 }
 

@@ -9,18 +9,42 @@
 
 module akra.webgl {
 	export class WebGLRenderer extends render.Renderer implements IWebGLRenderer {
+		private _pCanvas: HTMLCanvasElement;
+
 		private _pWebGLContext: WebGLRenderingContext;
 		private _pWebGLFramebufferList: WebGLFramebuffer[];
 
-		constructor () {
-			super();
+		constructor (pEngine: IEngine);
+		constructor (pEngine: IEngine, sCanvas: string);
+		constructor (pEngine: IEngine, pCanvas: HTMLCanvasElement);
+		constructor (pEngine: IEngine, pCanvas?: any) {
+			super(pEngine);
 
-			this._pWebGLContext = createContext();
+			if (isDef(pCanvas)) {
+				
+				//get HTMLCanvasElement by id
+				if (isString(pCanvas)) {
+					this._pCanvas = <HTMLCanvasElement>document.getElementById(pCanvas);
+				}
+				else {
+					this._pCanvas = <HTMLCanvasElement>pCanvas;
+				}
+			}
+			else {
+				this._pCanvas = <HTMLCanvasElement>document.createElement('canvas');
+			}
+
+			this._pWebGLContext = createContext(this._pCanvas);
 			this._pWebGLFramebufferList = new Array(WEBGL_MAX_FRAMEBUFFER_NUM);
+
 
 			for (var i: int = 0; i < this._pWebGLFramebufferList.length; ++ i) {
 				this._pWebGLFramebufferList[i] = this._pWebGLContext.createFramebuffer();
 			}
+		}
+
+		inline getHTMLCanvas(): HTMLCanvasElement {
+			return this._pCanvas;
 		}
 
 		inline getWebGLContext(): WebGLRenderingContext {

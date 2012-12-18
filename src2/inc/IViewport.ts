@@ -6,6 +6,7 @@ module akra {
     IFACE(IRect2d);
     IFACE(IColor);
     IFACE(IRenderTarget);
+    IFACE(ICamera);
 
     export interface IViewport extends IEventProvider {
         left: float;
@@ -22,9 +23,10 @@ module akra {
         zIndex: int;
 
         backgroundColor: IColor;
+        depthClear: float;
 
-        signal updateDimensions(pDimensions: IRect2d): void;
-        signal update(): void;
+        update(): void;
+        destroy(): void;
 
         clear(iBuffers?: uint, cColor?: IColor, iDepth?: float): void;
 
@@ -40,13 +42,19 @@ module akra {
         //iBuffers=FBT_COLOUR|FBT_DEPTH
         setClearEveryFrame(isClear: bool, iBuffers?: uint): void;
         getClearEveryFrame(): bool;
+        getClearBuffers(): uint;
 
         setAutoUpdated(bValue?: bool): void;
         isAutoUpdated(): bool;
 
         isUpdated(): bool;
-        clearUpdatedFlag(): void;
-        getNumRenderedFaces(): uint;
+        _clearUpdatedFlag(): void;
+
+        _getNumRenderedPolygons(): uint;
+        _updateDimensions(pDimensions: IRect2d): void;
+
+        signal viewportDimensionsChanged(): void;
+        signal viewportCameraChanged(): void;
     }
 }
 

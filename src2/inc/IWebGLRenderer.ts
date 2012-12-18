@@ -30,9 +30,7 @@ module akra {
 
 		disableAllWebGLVertexAttribs(): void;
 
-		getError(): string {
-			return "context lost";
-		}
+		getError(): string;
 	}
 }
 

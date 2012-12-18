@@ -3,13 +3,14 @@
 
 module akra {
 	
-	IFACE(IDisplayManager);
+	IFACE(ISceneManager);
 	IFACE(IParticleManager);
 	IFACE(IResourcePoolManager);
-	IFACE(IRenderer);
+    IFACE(IRenderer);
+	IFACE(IUtilTimer);
 
     export interface IEngine extends IEventProvider {
-        getDisplayManager(): IDisplayManager;
+        getSceneManager(): ISceneManager;
         getParticleManager(): IParticleManager;
         getResourceManager(): IResourcePoolManager;
 
@@ -22,9 +23,11 @@ module akra {
         renderFrame(): bool;
         
         /** Start exucution(rendering loop). */
-        exec(): bool;
+        exec(): void;
         /** Определяет, находитсяли Engine в цикле рендеринга */
-        isExecuting(): bool;
+        isActive(): bool;
+
+        getTimer(): IUtilTimer;
     };
 
     export var createEngine: () => IEngine;

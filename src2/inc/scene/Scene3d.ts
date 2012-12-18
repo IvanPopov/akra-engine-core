@@ -2,15 +2,19 @@
 #define SCENE3D_TS
 
 #include "IScene3d.ts"
-#include "IDisplay3d.ts"
+#include "ISceneManager.ts"
 #include "SceneNode.ts"
 #include "events/events.ts"
 
 module akra.scene {
 	export class Scene3d implements IScene3d {
 		protected _pRootNode: ISceneNode;
+		protected _pSceneManager: ISceneManager;
 
-		constructor (pDisplay: IDisplay3d) {
+		type: ESceneTypes = ESceneTypes.TYPE_3D;
+
+		constructor (pSceneManager: ISceneManager) {
+			this._pSceneManager = pSceneManager;
 			this._pRootNode = this.createSceneNode("root-node");
 			this._pRootNode.create();
 		}

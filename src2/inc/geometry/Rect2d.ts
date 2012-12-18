@@ -3,6 +3,7 @@
 
 #include "../math/Vec2.ts"
 #include "IRect2d.ts"
+#include "Circle.ts"
 
 module akra.geometry{
 	export class Rect2d implements IRect2d{
@@ -10,6 +11,11 @@ module akra.geometry{
 		x1: float;
 		y0: float;
 		y1: float;
+
+		inline get left(): float { return this.x0; }
+		inline get top(): float { return this.y0; }
+		inline get width(): float { return this.x1 - this.x0; }
+		inline get height(): float { return this.y1 - this.y0; }
 
 		constructor();
 		constructor(pRect: IRect2d);

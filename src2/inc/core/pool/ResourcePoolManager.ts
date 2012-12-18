@@ -7,9 +7,23 @@
 #include "IResourcePoolItem.ts"
 #include "IResourceWatcherFunc.ts"
 
+#include "bf/bitflags.ts"
+#include "ResourceCode.ts"
+#include "ResourcePool.ts"
+#include "DataPool.ts"
+
+#include "resources/RenderMethod.ts"
+#include "resources/SurfaceMaterial.ts"
+#include "resources/Model.ts"
+#include "resources/Effect.ts"
+#include "resources/Img.ts"
+#include "resources/Component.ts"
+
+
 #ifdef WEBGL
 
 #include "webgl/WebGLPixelBuffer.ts"
+#include "webgl/WebGLInternalTexture.ts"
 #include "webgl/WebGLVertexBuffer.ts"
 #include "webgl/WebGLVertexTexture.ts"
 #include "webgl/WebGLTextureBuffer.ts"
@@ -334,10 +348,10 @@ module akra.core.pool {
             this.pImagePool = new ResourcePool(this, resources.Img);
             this.pImagePool.initialize(16);
 
-            this.pTexturePool = new ResourcePool(this, resources.Texture);
+#ifdef WEBGL
+            this.pTexturePool = new ResourcePool(this, webgl.WebGLInternalTexture);
             this.pTexturePool.initialize(16);
             
-#ifdef WEBGL
             this.pIndexBufferPool = new ResourcePool(this, webgl.WebGLIndexBuffer);
             this.pIndexBufferPool.initialize(16);
             

@@ -12,6 +12,12 @@ module akra{
 		y0: float;
 		y1: float;
 
+		left: float;
+		top: float;
+
+		width: float;
+		height: float;
+
 		set(): IRect2d;
 		set(pRect: IRect2d): IRect2d;
 		set(v2fVec: IVec2): IRect2d;

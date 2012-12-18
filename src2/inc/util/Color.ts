@@ -368,6 +368,8 @@ module akra.util {
 
 			return pHsb;
 		}
+
+		static BLACK: IColor = new Color(0);
 	}
 }
 

@@ -291,6 +291,8 @@ module akra {
 //    export const MIN_REAL32: number = -3.4e38;    //-3.4e38
 //    export const TINY_REAL32: number = 1.5e-45;   //1.5e-45
 
+    export const DEFAULT_MATERIAL_NAME: string = "default";
+
     export enum EDataTypes {
         BYTE = 0x1400,
         UNSIGNED_BYTE = 0x1401,

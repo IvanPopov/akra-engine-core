@@ -26,11 +26,15 @@ module akra {
 		name: string;
 		width: uint;
 		height: uint;
+		
+
 		colorDepth: uint;
 
 		totalViewports: uint;
 
 		priority: int;
+
+		getRenderer(): IRenderer;
 
 		getDepthBuffer(): IDepthBuffer;
 
@@ -58,7 +62,7 @@ module akra {
 
 		getBestFrameTime(): float;
 		getWorstFrameTime(): float;
-		resetStatistics(): float;
+		resetStatistics(): void;
 
 
 		isActive(): bool;
@@ -72,9 +76,9 @@ module akra {
 		detachDepthBuffer(): void;
 
 		_beginUpdate(): void;
-		_updateViewport(iZIndex: int, bUpdateStatistics: bool = true): void;
-		_updateViewport(pViewport: IViewport, bUpdateStatistics: bool = true): void;
-		_updateAutoUpdatedViewports(bUpdateStatistics: bool = true): void;
+		_updateViewport(iZIndex: int, bUpdateStatistics?: bool): void;
+		_updateViewport(pViewport: IViewport, bUpdateStatistics?: bool): void;
+		_updateAutoUpdatedViewports(bUpdateStatistics?: bool): void;
 		_endUpdate(): void;
 
 		signal preUpdate(): void;

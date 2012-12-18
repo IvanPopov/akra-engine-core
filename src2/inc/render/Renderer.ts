@@ -24,6 +24,8 @@
 #include "IFrameBuffer.ts"
 #include "IViewport.ts"
 
+#include "render/RenderTarget.ts"
+
 module  akra.render {
 
 
@@ -50,14 +52,20 @@ module  akra.render {
 		RENDER_OBJECT_ID: 	"RENDER_OBJECT_ID"
 	}
 
+	export interface IRenderTargetPriorityMap {
+		[index: int]: IRenderTarget;
+	}
 
 	export class Renderer implements IRenderer {
 		private _pEngine: IEngine;
 		private _pRenderTargets: IRenderTarget[];
+		private _pPrioritisedRenderTargets: IRenderTargetPriorityMap;
 
 		constructor (pEngine: IEngine) {
 			this._pEngine = pEngine;
 		}
+
+		inline getEngine(): IEngine { return this. _pEngine; }
 
 		debug(bValue?: bool): bool {
 			return false;
@@ -79,6 +87,10 @@ module  akra.render {
 			return null;
 		}
 
+		clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int): void {
+
+		}
+
 		inline _disableAllTextureUnits(): void {
 			this._disableTextureUnitsFrom(0);
 		}
@@ -87,15 +99,30 @@ module  akra.render {
 
 		}
 
+		_initRenderTargets(): void {
+			// Init stats
+	        for(var i: int = 0; i < this._pRenderTargets.length; ++ i) {
+	            this._pRenderTargets[i].resetStatistics();
+	        }
+		}
+
 		_updateAllRenderTargets(): void {
 			var pTarget: IRenderTarget;
-			for (var i: int = 0, n: int = this._pRenderTargets.length; i < n; ++ i) {
-				pTarget = this._pRenderTargets[i];
+			for (var i in this._pPrioritisedRenderTargets) {
+				pTarget = this._pPrioritisedRenderTargets[i];
 
 				if (pTarget.isActive() && pTarget.isAutoUpdated()) {
 					pTarget.update();
 				}
 			}
+		}
+
+		_setViewport(pViewport: IViewport): void {
+
+		}
+
+		_getViewport(): IViewport {
+			return null;
 		}
 	}
 };

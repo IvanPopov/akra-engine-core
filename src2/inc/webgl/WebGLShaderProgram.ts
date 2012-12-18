@@ -55,7 +55,7 @@ module akra.webgl {
 			var pWebGLFs: WebGLShader = this.createWebGLShader(GL_FRAGMENT_SHADER, csPixel);
 
 			/** because, if not all units correctly activated, can obtained wronf link status */
-			pWebGLRenderer.disableAllTextureUnits();
+			pWebGLRenderer._disableAllTextureUnits();
 
 			pWebGLContext.attachShader(pWebGLProgram, pWebGLVs);
 			pWebGLContext.attachShader(pWebGLProgram, pWebGLFs);

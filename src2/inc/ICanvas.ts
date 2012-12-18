@@ -2,7 +2,7 @@
 #define IDISPLAY_TS
 
 module akra {
-	export enum EDisplayTypes {
+	export enum ECanvasTypes {
 		TYPE_UNKNOWN = -1,
 		TYPE_2D = 1,
 		TYPE_3D

@@ -17,6 +17,7 @@ module akra.scene {
 			super();
 
 			this.scene = pScene;
+			this.type = EEntityTypes.SCENE_NODE;
 		}
 
 		create(): bool {

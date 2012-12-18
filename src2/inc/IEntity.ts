@@ -6,12 +6,33 @@ module akra {
 	IFACE(IExplorerFunc);
 	IFACE(IReferenceCounter);
 
+	export enum  EEntityTypes {
+		UNKNOWN,
+		NODE,
+		
+		JOINT,
+
+		SCENE_NODE,
+		SCENE_OBJECT,
+
+		MODEL,
+		TERRAIN_SECTION,
+		TEXT3D,
+		SPRITE,
+		CAMERA,
+		EMITTER,
+
+		TOTAL
+	}
+
 	export interface IEntity extends IEventProvider, IReferenceCounter {
 		name: string;
 
 		parent: IEntity;
 		sibling: IEntity;
 		child: IEntity;
+
+		readonly type: EEntityTypes;
 
 		readonly depth: int;
 		readonly root: IEntity;

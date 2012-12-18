@@ -11,6 +11,7 @@ module akra.util {
 		protected _pParent: IEntity = null;
 		protected _pSibling: IEntity = null;
 		protected _pChild: IEntity = null;
+		protected _eType: EEntityTypes = EEntityTypes.UNKNOWN;
 
 		inline get name(): string { return this._sName; }
 		inline set name(sName: string) { this._sName = sName; }
@@ -23,6 +24,8 @@ module akra.util {
 
 		inline get child(): IEntity { return this._pChild; }
 		inline set child(pChild: IEntity) { this._pChild = pChild; }
+
+		inline get type(): EEntityTypes { return this._eType; }
 
 		get depth(): int {
 			var iDepth: int = -1;
