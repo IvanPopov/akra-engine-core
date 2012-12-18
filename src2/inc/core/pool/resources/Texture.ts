@@ -6,6 +6,7 @@
 #include "IWebGLRenderer.ts"
 #include "../ResourcePoolItem.ts"
 #include "PixelFormat.ts"
+#include "IColor.ts"
 
 module akra.core.pool.resources {
 
@@ -176,6 +177,36 @@ module akra.core.pool.resources {
         getBuffer(iFace?: uint, iMipmap?: uint): IPixelBuffer {
             return null;
         }
+
+        create(iWidth: uint, iHeight: uint, iDepth: uint, cFillColor?: IColor, 
+               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+        create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: Array, 
+               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+        create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: ArrayBufferView, 
+               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+        create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: any = null, 
+               iFlags?: int = 0, nMipLevels?: uint = 0, 
+               eTextureType?: ETextureTypes = ETextureTypes.TEXTURE_2D, 
+               eFormat?: EPixelFormats = EPixelFormats.R8G8B8): bool {
+
+            this._iWidth = iWidth;
+            this._iHeight = iHeight;
+            this._iDepth = iDepth;
+            this._iFlags = iFlags;
+            this._nMipLevels = nMipLevels;
+            this._eTextureType = eTextureType;
+            this._eFormat = eFormat;
+
+            if(isDef(pPixels.length)){
+                if(pPixels instanceof Array) {
+                    pPixels = new Uint8Array(pPixels);
+                }
+                return this.loadRawData(pPixels, iWidth, iHeight, eFormat);
+            }
+            else {
+                return this.createInternalTexture(pPixels);
+            }
+        }
         
         setParameter(eParam: ETextureParameters, eValue: ETextureFilters): void;
         setParameter(eParam: ETextureParameters, eValue: ETextureWrapModes): void;
@@ -204,17 +235,29 @@ module akra.core.pool.resources {
             return isLoaded;
         }
 
-        loadImage(pImage: IImg): bool{
+        loadImage(pImage: IImg): bool {
             var isLoaded:bool = this._loadImages(pImage, true);
             
-            if(isLoaded){
+            if(isLoaded) {
                 this.notifyLoaded();
                 return true;
             }
             else {
                 return false;
             }
-        }        
+        } 
+
+        loadImages(pImages: IImg[]): bool {
+            var isLoaded:bool = this._loadImages(pImages);
+
+            if(isLoaded) {
+                this.notifyLoaded();
+                return true;  
+            }
+            else{
+                return false;
+            }
+        }       
 
         _loadImages(pImageList: IImg[]): bool;
         _loadImages(pImage: IImg, bOneImage: bool): bool;
@@ -259,7 +302,7 @@ module akra.core.pool.resources {
                 CLEAR_ALL(this._iFlags, ETextureFlags.AUTOMIPMAP);
             }
             // Create the texture
-            this.createInternalTexture();
+            this.createInternalTexture(null);
             // Check if we're loading one image with multiple faces
             // or a vector of images representing the faces
             var iFaces: uint = 0;
@@ -360,10 +403,11 @@ module akra.core.pool.resources {
             }
         }
 
-        createInternalTexture(): bool {
-            if(!this._isInternalResourceCreated){
-                this.createInternalTextureImpl();
+        createInternalTexture(cFillColor?: IColor = null): bool {
+            if(!this._isInternalResourceCreated) {
+                this.createInternalTextureImpl(cFillColor);
                 this._isInternalResourceCreated = true;
+                this.notifyCreated();
                 return true;
             }
 
@@ -374,6 +418,7 @@ module akra.core.pool.resources {
             if(this._isInternalResourceCreated){
                 this.freeInternalTextureImpl();
                 this._isInternalResourceCreated = false;
+                this.notifyDestroyed();
                 return true;
             }
 
@@ -387,7 +432,7 @@ module akra.core.pool.resources {
             return null;
         }
 
-        protected createInternalTextureImpl(): bool {
+        protected createInternalTextureImpl(cFillColor?: IColor = null): bool {
             return false;
         }
 

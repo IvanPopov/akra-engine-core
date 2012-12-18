@@ -440,7 +440,7 @@ module akra.webgl {
 
 	        var pTempWebGLTexture: WebGLTexture = null;
 
-	        if(!webgl.checkFBOAttachmentFormat(this._eFormat)){
+	        if(!webgl.checkFBOAttachmentFormat(this._eFormat) || pSource === this){
 	        	// If target format not directly supported, create intermediate texture
 	        	var iGLTempFormat: int = webgl.getClosestWebGLInternalFormat(webgl.getSupportedAlternative(this._eFormat));
 	        	
@@ -541,17 +541,27 @@ module akra.webgl {
 
 
 	            if(!isNull(pTempWebGLTexture)) {
-	                // Copy temporary texture
-	                pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
-	                
-	                switch(this._eTarget) {
-	                    case GL_TEXTURE_2D:
-	                    case GL_TEXTURE_CUBE_MAP:
-	                        pWebGLContext.copyTexSubImage2D(this._eFaceTarget, this._iLevel, 
-	                                            			pDestBox.left, pDestBox.top, 
-	                                           				0, 0, pDestBox.width, pDestBox.height);
-	                        break;
-	                }
+	            	if(pSource === this) {
+	            		//set width, height and _pWebGLTexture
+	            		pWebGLRenderer.deleteWebGLTexture(this._pWebGLTexture);
+	            		
+	            		this._pWebGLTexture = pTempWebGLTexture;
+	            		this._iWidth = math.ceilingPowerOfTwo(pDestBox.width);
+	            		this._iHeight = math.ceilingPowerOfTwo(pDestBox.height);
+	            	}
+	            	else {
+		                // Copy temporary texture
+		                pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
+		                
+		                switch(this._eTarget) {
+		                    case GL_TEXTURE_2D:
+		                    case GL_TEXTURE_CUBE_MAP:
+		                        pWebGLContext.copyTexSubImage2D(this._eFaceTarget, this._iLevel, 
+		                                            			pDestBox.left, pDestBox.top, 
+		                                           				0, 0, pDestBox.width, pDestBox.height);
+		                        break;
+		                }
+	            	}
 	            }
 	        }
 
@@ -578,9 +588,12 @@ module akra.webgl {
 	                                  			  GL_RENDERBUFFER, null);
 	        // Restore old framebuffer
 	        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pOldFramebuffer);
-	        pWebGLRenderer.deleteWebGLTexture(pTempWebGLTexture);
+	        if(pSource !== this) {
+	        	pWebGLRenderer.deleteWebGLTexture(pTempWebGLTexture);
+	    	}
 	        pWebGLRenderer.deleteWebGLFramebuffer(pFramebuffer);
 
+	        pTempWebGLTexture = null;
 	        this.notifyAltered();
 
 	    	return true;
@@ -683,6 +696,18 @@ module akra.webgl {
 			ASSERT(TEST_ANY(this._iFlags, ETextureFlags.RENDERTARGET));
         	ASSERT(iZOffest < this._iDepth);
         	return this._pTRTList[iZOffest];
+		}
+
+		resize(iSize: uint): bool;
+		resize(iWidth: uint, iHeight?: uint): bool {
+			if(arguments.length === 1){
+				CRITICAL("resize with one parametr not available for WebGLTextureBuffer");
+				return false;
+			}
+			var pSrcBox: IBox = new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth);
+			var pDestBox: IBox = new geometry.Box(0, 0, 0, iWidth, iHeight, this._iDepth);
+			
+			return this.blitFromTexture(this, pSrcBox, pDestBox);
 		}
 
 	}

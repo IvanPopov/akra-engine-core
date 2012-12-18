@@ -85,7 +85,7 @@ module akra.core.pool {
 			return false;
 		}
 
-		disableResource(): bool{
+		disableResource(): bool {
 			return false;
 		}
 

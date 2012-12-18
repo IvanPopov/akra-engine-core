@@ -103,6 +103,12 @@ module akra {
         isCompressed(): bool;
         isValid(): bool;
 
+        create(iWidth: uint, iHeight: uint, iDepth: uint, pFillColor?: IColor, 
+               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+        create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: Array, 
+               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+        create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: ArrayBufferView, 
+               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
         
 
         getBuffer(iFace?: uint, iMipmap?: uint): IPixelBuffer;     
@@ -110,14 +116,15 @@ module akra {
         setParameter(eParam: ETextureParameters, eValue: ETextureFilters): bool;
         setParameter(eParam: ETextureParameters, eValue: ETextureWrapModes): bool;
         
-        loadImage(pImage: IImg): bool;
         loadRawData(pData: ArrayBufferView, iWidth: uint, iHeight: uint, eFormat: EPixelFormats): bool;
+        loadImage(pImage: IImg): bool;
+        loadImages(pImages: IImg[]): bool;
 
         convertToImage(pDestImage: IImg, bIncludeMipMaps: bool): void;
 
         copyToTexture(pTarget: ITexture): void;
 
-        createInternalTexture(): bool;
+        createInternalTexture(cFillColor?: IColor): bool;
         freeInternalTexture(): bool;
 
         getNativeFormat(eTextureType?: ETextureTypes, eFormat?: EPixelFormats, iFlags?: int): EPixelFormats;

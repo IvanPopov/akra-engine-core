@@ -8,10 +8,11 @@
 #include "IResourcePool.ts"
 #include "math/math.ts"
 #include "webgl/WebGLTextureBuffer.ts"
+#include "IColor.ts"
 
 module akra.webgl {
 	export class WebGLInternalTexture extends core.pool.resources.Texture {
-		private _pSurfaceList: IPixelBuffer[] = null;	
+		private _pSurfaceList: WebGLTextureBuffer[] = null;	
 		private _pWebGLTexture: WebGLTexture = null;
 
 		constructor () {
@@ -19,7 +20,7 @@ module akra.webgl {
         }
 
         getWebGLTextureTarget(): int {
-        	switch(this._eTextureType){
+        	switch(this._eTextureType) {
         		case ETextureTypes.TEXTURE:
         		case ETextureTypes.TEXTURE_2D:
         			return GL_TEXTURE_2D;
@@ -30,7 +31,12 @@ module akra.webgl {
         	}
         }	
 
-        protected createInternalTextureImpl(): bool {
+        protected createInternalTextureImpl(cFillColor?: IColor = null): bool {
+        	if(!isNull(cFillColor)){
+        		WARNING("Texture can create with filled only by default(black) color");
+        		//TODO: must implement filling by color
+        	}
+
         	var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
@@ -78,7 +84,7 @@ module akra.webgl {
 	        var iHeight: uint = this._iHeight;
 	        var iDepth: uint = this._iDepth;
 
-	        if (pixelUtil.isCompressed(this._eFormat)){
+	        if (pixelUtil.isCompressed(this._eFormat)) {
 	            // Compressed formats
 	            var iSize: uint = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this._eFormat);
 
@@ -157,6 +163,22 @@ module akra.webgl {
             return false;
         }
 
+        protected freeInternalTextureImpl(): bool {
+        	var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+
+			pWebGLRenderer.deleteWebGLTexture(this._pWebGLTexture);
+			this._pWebGLTexture = null;
+
+			for(var i: uint = 0; i < this._pSurfaceList.length; i++) {
+				this._pSurfaceList[i].release();
+			}
+
+			this._pSurfaceList = null;
+
+            return true;
+        }
+
         _createSurfaceList(): void {
         	this._pSurfaceList = new Array();
 
@@ -188,7 +210,7 @@ module akra.webgl {
         						this._iFlags,
         						bDoSoftware && mip === 0);	
 
-        			this._pSurfaceList.push(<IPixelBuffer>pBuf);
+        			this._pSurfaceList.push(pBuf);
 
         			//check error
         			if(pBuf.width === 0 ||
@@ -249,6 +271,12 @@ module akra.webgl {
 
 	        // Supported
 	        return eFormat;
+        }
+
+        createRenderTexture(): bool {
+            // Create the GL texture
+            // This already does everything necessary
+            return this.createInternalTexture();
         }
 
 	}
