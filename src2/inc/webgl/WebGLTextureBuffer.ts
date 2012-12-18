@@ -391,7 +391,7 @@ module akra.webgl {
 	    	var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
-			pWebGLRenderer.disableTextureUnitsFrom(0);
+			pWebGLRenderer._disableTextureUnitsFrom(0);
 			pWebGLRenderer.activateWebGLTexture(GL_TEXTURE0);
 
 			// Disable alpha, depth and scissor testing, disable blending, 
