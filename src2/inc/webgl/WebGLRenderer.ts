@@ -114,7 +114,13 @@ module akra.webgl {
 		}
 
 		inline disableAllWebGLVertexAttribs(): void {
-			
+
+			//TODO: check attrib array from last shader program
+			var i:uint = 0;
+			for(i = 0; i < 16; i++) {
+				this._pWebGLContext.disableVertexAttribArray(i);	
+			}
+		
 		}
 	}
 }

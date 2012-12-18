@@ -1510,6 +1510,22 @@ module akra {
 	            dstptr = dstptr.subarray(dstSliceSkipBytes);
 	        }
         }
+
+        export function calculateSizeForImage(nMipLevels: uint, nFaces: uint, 
+                                              iWidth: uint, iHeight: uint, iDepth: uint,
+                                              eFormat: EPixelFormats): uint {
+            var iSize: uint = 0;
+            var mip: uint = 0;
+            
+            for(mip = 0; mip <= nMipLevels; ++mip){
+                iSize += getMemorySize(iWidth, iHeight, iDepth, eFormat) * nFaces;
+                if(iWidth !== 1) iWidth /= 2;
+                if(iHeight !== 1) iHeight /= 2;
+                if(iDepth !== 1) iDepth /= 2;
+            }
+
+            return iSize;
+        }
 	}
 }
 

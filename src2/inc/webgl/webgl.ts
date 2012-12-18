@@ -7,8 +7,10 @@
 #include "PixelFormat.ts"
 #include "common.ts"
 #include "IHardwareBuffer.ts"
+
 #include "bf/bitflags.ts"
 #include "math/math.ts"
+
 
 #define GLSL_VS_SHADER_MIN "void main(void){gl_Position = vec4(0., 0., 0., 1.);}"
 #define GLSL_FS_SHADER_MIN "void main(void){}"
@@ -489,6 +491,40 @@ module akra.webgl {
 
 	export function checkFBOAttachmentFormat(eFormat: EPixelFormats): bool {
 		return false;
+	}
+
+	export function getSupportedAlternative(eFormat: EPixelFormats): EPixelFormats {
+		if (checkFBOAttachmentFormat(eFormat)) {
+            return eFormat;
+        }
+
+        /// Find first alternative
+        var pct: EPixelComponentTypes = pixelUtil.getComponentType(eFormat);
+
+        switch (pct) {
+            case EPixelComponentTypes.BYTE:
+                eFormat = EPixelFormats.A8R8G8B8;
+                break;
+            case EPixelComponentTypes.SHORT:
+                eFormat = EPixelFormats.SHORT_RGBA;
+                break;
+            case EPixelComponentTypes.FLOAT16:
+                eFormat = EPixelFormats.FLOAT16_RGBA;
+                break;
+            case EPixelComponentTypes.FLOAT32:
+                eFormat = EPixelFormats.FLOAT32_RGBA;
+                break;
+            case EPixelComponentTypes.COUNT:
+            default:
+                break;
+        }
+
+        if (checkFBOAttachmentFormat(eFormat)){
+            return eFormat;
+        }
+
+        /// If none at all, return to default
+		return EPixelFormats.A8R8G8B8;
 	}
 
 }

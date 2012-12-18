@@ -65,7 +65,13 @@ module  akra.render {
 			this._pEngine = pEngine;
 		}
 
+
 		inline getEngine(): IEngine { return this. _pEngine; }
+
+	    hasCapability(eCapability: ERenderCapabilities): bool {
+	      return false;
+	    }
+
 
 		debug(bValue?: bool): bool {
 			return false;

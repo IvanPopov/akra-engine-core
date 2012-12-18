@@ -4,6 +4,7 @@
 #include "IRenderResource.ts"
 #include "PixelFormat.ts"
 #include "IHardwareBuffer.ts"
+#include "IPixelBuffer.ts"
 
 module akra {
 
@@ -74,71 +75,59 @@ module akra {
     export interface ITexture extends IRenderResource {
     	width: uint;
         height: uint;
+        depth: uint;
 
         format: EPixelFormats;
+        mipLevels: uint;
 
-        //number of color components per pixel. usually: 1, 3, 4
-        //readonly componentsPerPixel: uint;
-        //readonly bytesPerPixel: uint;
+        textureType: ETextureTypes;
 
-        magFilter: ETextureFilters;
-        minFilter: ETextureFilters;
+        desiredIntegerBitDepth: uint;
+        desiredFloatBitDepth: uint;     
 
-        wrapS: ETextureWrapModes;
-        wrapT: ETextureWrapModes;
+        readonly desiredFormat: EPixelFormats;
+        readonly srcFormat: EPixelFormats;
+        readonly srcWidth: uint;
+        readonly srcHeight: uint;
+        readonly srcDepth: uint;
 
-        readonly target: ETextureTypes;
-        readonly mipLevels: uint;
+        setFlags(iTextureFlag: int): void;
+        getFlags(): int;   
+
+        calculateSize(): uint;
+        getNumFaces(): uint;
+        getSize(): uint; 
 
         isTexture2D(): bool;
         isTextureCube(): bool;
         isCompressed(): bool;
         isValid(): bool;
 
+        create(iWidth: uint, iHeight: uint, iDepth: uint, pFillColor?: IColor, 
+               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+        create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: Array, 
+               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+        create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: ArrayBufferView, 
+               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+        
+
+        getBuffer(iFace?: uint, iMipmap?: uint): IPixelBuffer;     
+
         setParameter(eParam: ETextureParameters, eValue: ETextureFilters): bool;
         setParameter(eParam: ETextureParameters, eValue: ETextureWrapModes): bool;
         
-        getPixels(
-            iX?: uint, 
-            iY?: uint, 
-            iWidth?: uint, 
-            iHeight?: uint, 
-            ppPixelBuffer?: ArrayBufferView,
-            iMipMap?: uint,
-            eFace?: ETextureTypes,
-            eFormat?: EPixelFormats,
-            ): ArrayBufferView;
-        
-        setPixels(
-            iX?: uint, 
-            iY?: uint, 
-            iWidth?: uint, 
-            iHeight?: uint, 
-            pPixelBuffer?: ArrayBufferView,
-            iMipMap?: uint,
-            eFace?: ETextureTypes): bool;
+        loadRawData(pData: ArrayBufferView, iWidth: uint, iHeight: uint, eFormat: EPixelFormats): bool;
+        loadImage(pImage: IImg): bool;
+        loadImages(pImages: IImg[]): bool;
 
-        generateNormalMap(pHeightMap: IImg, iChannel?: uint, fAmplitude?: float): bool;
-        generateNormalizationCubeMap(): bool;
-        
-        convertToNormalMap(iChannel: uint, iFlags: uint, fAmplitude: float): bool;
-        
-        maskWithImage(pImage: IImg): bool;
+        convertToImage(pDestImage: IImg, bIncludeMipMaps: bool): void;
 
-        uploadCubeFace(pImage: IImg, eFace: ETextureTypes, isCopyAll?: bool): bool;
-        uploadHTMLElement(pElement: HTMLElement): bool;
-        uploadImage(pImage: IImg): bool;
+        copyToTexture(pTarget: ITexture): void;
 
-        resize(iWidth: uint, iHeight: uint): bool;
-        repack(iWidth: uint, iHeight: uint, eFormat?: EPixelFormats): bool;
-        extend(iWidth: uint, iHeight: uint, cColor: IColor);
+        createInternalTexture(cFillColor?: IColor): bool;
+        freeInternalTexture(): bool;
 
-        createTexture(
-            iWidth?: uint, 
-            iHeight?: uint, 
-            iFlags?: int, 
-            eFormat?: EPixelFormats, 
-            pData?: ArrayBufferView): bool;
+        getNativeFormat(eTextureType?: ETextureTypes, eFormat?: EPixelFormats, iFlags?: int): EPixelFormats;
     }
 }
 

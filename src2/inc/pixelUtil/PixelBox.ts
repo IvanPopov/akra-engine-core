@@ -34,9 +34,6 @@ module akra.pixelUtil {
 				this.data = <Uint8Array>arguments[2];
 				this.format = <EPixelFormats>arguments[1];
 			}
-			
-			
-			
 
 			this.setConsecutive();
 		}

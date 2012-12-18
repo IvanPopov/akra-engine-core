@@ -165,6 +165,12 @@ module akra.core.pool.resources {
     		return false;
     	}
 
+        loadDynamicImage(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint,
+                         eFormat: EPixelFormats, bAutoDelete?: bool = false, 
+                         iNumFaces?: uint = 1, iNumMipMaps?: uint = 0): IImg {
+            return null;
+        }
+
     	load(sFilename: string): bool {
     		return false;
     	}
