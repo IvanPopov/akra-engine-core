@@ -262,6 +262,11 @@ module akra.core.pool.resources {
         _loadImages(pImageList: IImg[]): bool;
         _loadImages(pImage: IImg, bOneImage: bool): bool;
         _loadImages(): bool {
+            if(this.isResourceLoaded()){
+                WARNING("Yoy try to load texture when it already have been loaded. All texture data was destoyed.");
+                this.freeInternalTexture();
+            }
+
             var pMainImage: IImg = null;
             var pImageList: IImg[] = null;
 
