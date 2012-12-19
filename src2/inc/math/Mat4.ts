@@ -1296,13 +1296,15 @@ module akra.math {
 			return v4fDestination;
 		};
 
-		unproj(v3fScreen: IVec3, v4fDestination?: IVec4): IVec4{
+		unproj(v3fScreen: IVec3, v4fDestination?: IVec4): IVec4;
+		unproj(v4fScreen: IVec4, v4fDestination?: IVec4): IVec4;
+		unproj(v: any, v4fDestination?: IVec4): IVec4 {
 			if(!isDef(v4fDestination)){
 				v4fDestination = new Vec4();
 			}
 
 			var pData: Float32Array = this.data;
-
+			var v3fScreen: IVec3 = <IVec3>v;
 			var x: float, y: float, z: float;
 
 			if(pData[__44] === 1.){

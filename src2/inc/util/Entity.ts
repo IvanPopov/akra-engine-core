@@ -138,10 +138,6 @@ module akra.util {
 		    return iCount;
 		}
 
-
-		update(): void {}
-
-
 		recursiveUpdate(): void {
 			// update myself
 		    this.update();
@@ -385,6 +381,8 @@ module akra.util {
 		        }
 		    }
 		}
+
+		update(): void {}
 
 		toString(isRecursive: bool = false, iDepth: int = 0): string {
 #ifdef DEBUG

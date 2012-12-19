@@ -1,6 +1,10 @@
 #ifndef CLASSIFICATION_TS
 #define CLASSIFICATION_TS
 
+#include "Plane2d.ts"
+#include "Circle.ts"
+#include "Sphere.ts"
+
 module akra.geometry{
 
 	export enum EVolumeClassifications{

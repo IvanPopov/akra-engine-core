@@ -13,8 +13,10 @@
 #define protected
 #define struct class
 #define const var
+
 #define DEBUG DEBUG
 #define WEBGL 1
+#define LOGGER_API 1
 
 
 #include "ILogger.ts"
@@ -35,9 +37,9 @@
 #define ERROR(...)          logger.setSourceLocation(__FILE__, __LINE__); \
                             logger.error(__VA_ARGS__);
 #define CRITICAL(...)       logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.critical_error(__VA_ARGS__);
+                            logger.criticalError(__VA_ARGS__);
 #define CRITICAL_ERROR(...) logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.critical_error(__VA_ARGS__);
+                            logger.criticalError(__VA_ARGS__);
 #define ASSERT(...)         logger.setSourceLocation(__FILE__, __LINE__); \
                             logger.assert(__VA_ARGS__);
 
@@ -427,7 +429,7 @@ module akra {
 };
 
 #ifdef LOGGER_API
-#define "util/Logger.ts"
+#include "util/Logger.ts"
 #endif
 
 #endif

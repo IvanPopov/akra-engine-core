@@ -181,7 +181,7 @@ module akra.webgl {
 		readData(ppDest: ArrayBufferView): bool;
 		readData(iOffset: uint, iSize: uint, ppDest: ArrayBufferView): bool;
 		readData(iOffset: any, iSize?: any, ppDest?: any): bool { 
-			debug_assert(this._pWebGLBuffer, "Буффер еще не создан");
+			debug_assert(!isNull(this._pWebGLTexture), "Буффер еще не создан");
 
 		    if (!this.isBackupPresent()) {
 		    	return false;

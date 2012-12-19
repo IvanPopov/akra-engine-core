@@ -136,6 +136,7 @@ module akra {
 		* use with projection matrix only
 		*/
 		unproj(v3fScreen: IVec3, v4fDestination?: IVec4): IVec4;
+		unproj(v4fScreen: IVec4, v4fDestination?: IVec4): IVec4;
 	};
 };
 

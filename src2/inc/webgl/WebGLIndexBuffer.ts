@@ -96,7 +96,7 @@ module akra.webgl {
 		readData(ppDest: ArrayBufferView): bool;
 		readData(iOffset: uint, iSize: uint, ppDest: ArrayBufferView): bool;
 		readData(iOffset: any, iSize?: any, ppDest?: any): bool { 
-			debug_assert(this._pWebGLBuffer, "WebGL buffer not exists");
+			debug_assert(!isNull(this._pWebGLBuffer), "WebGL buffer not exists");
 
 		    if (!this.isBackupPresent()) {
 		    	return false;
@@ -116,7 +116,7 @@ module akra.webgl {
 		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
 		writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool { 
 			
-			debug_assert(this._pWebGLBuffer, "WebGL buffer not exists");
+			debug_assert(!isNull(this._pWebGLBuffer), "WebGL buffer not exists");
 		    
 		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
@@ -124,7 +124,7 @@ module akra.webgl {
 		    pWebGLRenderer.bindWebGLBuffer(GL_ELEMENT_ARRAY_BUFFER, this._pWebGLBuffer);
 			
 			debug_assert(pData.byteLength <= iSize, "Размер переданного массива больше переданного размера");
-			debug_assert(this.size >= iOffset + iSize, "Данные выйдут за предел буфера");
+			debug_assert(this.byteLength >= iOffset + iSize, "Данные выйдут за предел буфера");
 
 			var pU8Data: Uint8Array = null;
 

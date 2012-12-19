@@ -31,6 +31,8 @@ module akra {
 
 		signal nodeAttachment(pNode: ISceneNode);
 		signal nodeDetachment(pNode: ISceneNode);
+
+		_render(pCamera: ICamera, pViewport: IViewport): void;
 	}
 }
 

@@ -5,6 +5,7 @@
 #include "ISceneManager.ts"
 #include "SceneNode.ts"
 #include "events/events.ts"
+#include "objects/Camera.ts"
 
 module akra.scene {
 	export class Scene3d implements IScene3d {
@@ -50,8 +51,15 @@ module akra.scene {
 			return null;
 		}
 
-		createCamera(): ICamera {
-			return null;
+		createCamera(sName: string = null): ICamera {
+			var pCamera: ICamera = new objects.Camera(this);
+			
+			if (!pCamera.create()) {
+				ERROR("cannot create camera..");
+				return null;
+			}
+			
+			return <ICamera>this.setupNode(pCamera, sName);
 		}
 
 		createLightPoint(): ILightPoint {
@@ -68,6 +76,10 @@ module akra.scene {
 
 		createText3d(): IText3d {
 			return null;
+		}
+
+		_render(pCamera: ICamera, pViewport: IViewport): void {
+			
 		}
 
 		private setupNode(pNode: ISceneNode, sName: string = null): ISceneNode {

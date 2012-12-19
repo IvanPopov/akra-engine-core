@@ -152,9 +152,8 @@ module akra.render {
 				pViewport = <IViewport>arguments[0];
 			}
 
-			ASSERT(viewport->getTarget() == this &&
-				"RenderTarget::_updateViewport the requested viewport is "
-				"not bound to the rendertarget!");
+			ASSERT(pViewport.getTarget() == this, 
+				"RenderTarget::_updateViewport the requested viewport is not bound to the rendertarget!");
 
 			this.viewportPreUpdate(pViewport);
 

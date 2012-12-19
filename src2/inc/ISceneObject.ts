@@ -7,11 +7,22 @@ module akra {
 	IFACE(IRect3d);
 
     export interface ISceneObject extends ISceneNode {
-    	// worldBounds: IRect3d;
-    	// localBounds: IRect3d;
+    	worldBounds: IRect3d;
+    	
+    	readonly localBounds: IRect3d;
     	
 
-    	// getObjectFlags(): int;
+    	getObjectFlags(): int;
+
+    	accessLocalBounds(): IRect3d;
+    	isWorldBoundsNew(): bool;
+    	recalcWorldBounds(): void;
+
+    	prepareForRender(): void;
+    	render(): void;
+
+    	hasShadows(): bool;
+    	setShadows(bValue?: bool): void;
     }
 }
 
