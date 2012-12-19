@@ -15,19 +15,19 @@ module akra.webgl {
 		protected _iDepth: uint = 0;
 
 		// Pitches (offsets between rows and slices)
-		protected _iRowPitch: uint;
-		protected _iSlicePitch: uint;
+		protected _iRowPitch: uint = 0;
+		protected _iSlicePitch: uint = 0;
 
 		protected _eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
 
 		//webgl specific
 		
-		protected _pCurrentLock: IPixelBox;
-		protected _pLockedBox: IBox;
-		protected _iCurrentLockFlags: int;
+		protected _pCurrentLock: IPixelBox = null;
+		protected _pLockedBox: IBox = null;
+		protected _iCurrentLockFlags: int = 0;
 		
-		protected _pBuffer: IPixelBox;
-		protected _iWebGLInternalFormat: int;
+		protected _pBuffer: IPixelBox = null;
+		protected _iWebGLInternalFormat: int = 0;
 
 		inline get width(): uint { return this._iWidth; }
 		inline get height(): uint { return this._iHeight; }
@@ -50,7 +50,7 @@ module akra.webgl {
 			CRITICAL("Download not possible for this pixelbuffer type");
 		}
 
-		_bindToFramebuffer(pAttachment: any, iZOffset: uint): void {
+		_bindToFramebuffer(pAttachment: int, iZOffset: uint): void {
 			CRITICAL("Framebuffer bind not possible for this pixelbuffer type");
 		}
 
@@ -91,6 +91,12 @@ module akra.webgl {
 			this._pBuffer = null;
 
 			super.destroy();
+		}
+
+		destroyResource(): bool {
+			this.destroy();
+			this.notifyDestroyed();
+			return true;
 		}
 
 		readData(ppDest: ArrayBufferView): bool;

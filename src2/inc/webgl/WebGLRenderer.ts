@@ -100,6 +100,19 @@ module akra.webgl {
 			this._pWebGLFramebufferList.push(pBuffer);
 		}
 
+		/** Renderbuffer Objects */
+		inline createWebGLRenderbuffer(): WebGLRenderbuffer {
+			return this._pWebGLContext.createRenderbuffer();
+		}
+
+		inline bindWebGLRenderbuffer(eTarget: uint, pBuffer: WebGLRenderbuffer): void {
+			this._pWebGLContext.bindRenderbuffer(eTarget, pBuffer);
+		}
+
+		inline deleteWebGLRenderbuffer(pBuffer: WebGLRenderbuffer): void {
+			this._pWebGLContext.deleteRenderbuffer(pBuffer);
+		}
+
 
 		inline createWebGLProgram(): WebGLProgram {
 			return this._pWebGLContext.createProgram();

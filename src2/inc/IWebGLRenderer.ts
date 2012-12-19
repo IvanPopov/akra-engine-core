@@ -24,6 +24,11 @@ module akra {
 		bindWebGLFramebuffer(eTarget: uint, pBuffer: WebGLFramebuffer): void;
 		deleteWebGLFramebuffer(pBuffer: WebGLFramebuffer): void;
 
+		/** Renderbuffer Objects */
+		createWebGLRenderbuffer(): WebGLRenderbuffer;
+		bindWebGLRenderbuffer(eTarget: uint, pBuffer: WebGLRenderbuffer): void;
+		deleteWebGLRenderbuffer(pBuffer: WebGLRenderbuffer): void;
+
 		useWebGLProgram(pProgram: WebGLProgram): void;
 		createWebGLProgram(): WebGLProgram;
 		deleteWebGLProgram(pProgram: WebGLProgram): void;

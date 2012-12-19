@@ -23,6 +23,7 @@ interface Array {
     clear(): any[];
     swap(i: int, j: int): any[];
     insert(elements: any[]): any[];
+    find(pElement: any): bool;
 }
 
 interface Number {

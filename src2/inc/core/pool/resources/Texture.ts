@@ -207,6 +207,16 @@ module akra.core.pool.resources {
                 return this.createInternalTexture(pPixels);
             }
         }
+
+        destroy(): void {
+            this.freeInternalTexture();
+        }
+
+        destroyResource(): bool {
+            this.destroy();
+            this.notifyDestroyed();
+            return true;
+        }
         
         setParameter(eParam: ETextureParameters, eValue: ETextureFilters): void;
         setParameter(eParam: ETextureParameters, eValue: ETextureWrapModes): void;

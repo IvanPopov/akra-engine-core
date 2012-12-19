@@ -1257,10 +1257,15 @@ interface WEBGL_fbo_color_attachments {
 #define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT        0x83F3
 #define GL_RED_EXT                 				0x1903
 #define GL_RG_EXT                  				0x8227
-#define GL_R8_EXT                 					0x8229
+#define GL_R8_EXT                 				0x8229
 #define GL_RG8_EXT                 				0x822B
 
 #define GL_HALF_FLOAT_OES 						0x8D61
+#define GL_DEPTH_COMPONENT24_OES                0x81A6 
+#define GL_DEPTH_COMPONENT32_OES                0x81A7 
+#define GL_DEPTH24_STENCIL8_OES                 0x88F0 
+
+
 
 
 
@@ -1287,3 +1292,6 @@ interface WEBGL_fbo_color_attachments {
 
 //Future
 #define EXT_TEXTURE_RG "EXT_texture_rg"
+#define OES_DEPTH24 "OES_depth24"
+#define OES_DEPTH32 "OES_depth32"
+#define OES_PACKED_DEPTH_STENCIL "OES_packed_depth_stencil"

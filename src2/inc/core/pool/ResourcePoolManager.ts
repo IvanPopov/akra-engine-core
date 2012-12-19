@@ -29,6 +29,8 @@
 #include "webgl/WebGLTextureBuffer.ts"
 #include "webgl/WebGLShaderProgram.ts"
 #include "webgl/WebGLIndexBuffer.ts"
+#include "webgl/WebGLInternalRenderbuffer.ts"
+#include "webgl/WebGLDepthBuffer.ts"
 
 #endif
 
@@ -48,6 +50,8 @@ module akra.core.pool {
         private pShaderProgramPool: IResourcePool;
         private pComponentPool: IResourcePool;
         private pTextureBufferPool: IResourcePool;
+        private pRenderBufferPool: IResourcePool;
+        private pDepthBufferPool: IResourcePool;
 
     	/** Списки пулов по семействам ресурсов */
     	private pResourceFamilyList: IResourcePool[][] = null;
@@ -70,6 +74,8 @@ module akra.core.pool {
         get shaderProgramPool(): IResourcePool { return this.pShaderProgramPool; }
         get componentPool(): IResourcePool { return this.pComponentPool; }
         get textureBufferPool(): IResourcePool {return this.pTextureBufferPool; }
+        get renderBufferPool(): IResourcePool {return this.pRenderBufferPool; }
+        get depthBufferPool(): IResourcePool {return this.pDepthBufferPool; }
 
     	constructor(pEngine: IEngine) {
     		//super();
@@ -366,6 +372,12 @@ module akra.core.pool {
             
             this.pShaderProgramPool = new ResourcePool(this, webgl.WebGLShaderProgram);
             this.pShaderProgramPool.initialize(16);
+
+            this.pRenderBufferPool = new ResourcePool(this, webgl.WebGLInternalRenderBuffer);
+            this.pRenderBufferPool.initialize(16);
+
+            this.pDepthBufferPool = new ResourcePool(this, webgl.WebGLDepthBuffer);
+            this.pDepthBufferPool.initialize(16);
 #else
             CRITICAL("Render system not specified");
 #endif

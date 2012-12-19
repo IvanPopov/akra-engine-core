@@ -7,6 +7,8 @@ module akra {
 		width: uint;
 		height: uint;
 
+		create(iBitDepth: uint, iWidth: uint, iHeight: uint, bManual: bool): void;
+
 		isManual(): bool;
 		isCompatible(pTarget: IRenderTarget): bool;
 

@@ -39,8 +39,6 @@ module akra {
 		getDepthBuffer(): IDepthBuffer;
 
 		attachDepthBuffer(pBuffer: IDepthBuffer): bool;
-		detachDepthBuffer();
-
 
 		update(): void;
 		updateStats(): void;
