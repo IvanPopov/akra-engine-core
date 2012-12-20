@@ -406,6 +406,11 @@ module akra {
         return (new Date).getTime();
     }
 
+    var _pDefaultBuildScenario: IBuildScenario = null;
+
+    export inline getDefaultBuildScenario(): IBuildScenario {
+        return _pDefaultBuildScenario;
+    }
 
     
     #define _memcpy(dst, src, size) memcpy(dst, 0, src, 0, size);

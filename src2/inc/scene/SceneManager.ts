@@ -11,17 +11,58 @@
 
 module akra.scene {
     export class SceneManager implements ISceneManager {
-        private pEngine: IEngine = null;
-        private pSceneList: IScene[] = [];
+        private _pEngine: IEngine = null;
+        private _pSceneList: IScene[] = [];
+        private _pTimer: IUtilTimer;
+
+        private _fUpdateTimeCount: float = 0.;
         
 
         constructor (pEngine: IEngine) {
-            this.pEngine = pEngine;
+            this._pEngine = pEngine;
+            this._pTimer = pEngine.getTimer();
+        }
+
+        update(): void {
+            var isSceneUpdated: bool = false;
+            // add the real time elapsed to our
+            // internal delay counter
+            this._fUpdateTimeCount += this._pTimer.elapsedTime;
+            // is there an update ready to happen?
+            
+            var fUpdateTime: float = this._fUpdateTimeCount;
+
+            while (this.fUpdateTimeCount > a.fMillisecondsPerTick) {
+                // update the scene
+                this.notifyUpdateScene();
+
+                // subtract the time interval
+                // emulated with each tick
+                this.fUpdateTimeCount -= a.fMillisecondsPerTick;
+            }
+
+            if (fUpdateTime !== this._fUpdateTimeCount) {
+                this.notifyPreUpdateScene();
+            }
+        }
+
+        notifyUpdateScene(): void {
+            
+            // update the scene attached to the root node
+            for (var i = 0; i < this._pSceneList.length; ++ i) {
+                this._pSceneList[i].getRootNode().recursiveUpdate();
+            }
+        }
+
+        notifyPreUpdateScene(): void {
+            for (var i = 0; i < this._pSceneList.length; ++ i) {
+                this._pSceneList[i].getRootNode().recursivePreUpdate();
+            }
         }
 
         createScene3D(): IScene3d {
             var pScene: IScene3d = new Scene3d(this);
-            this.pSceneList.push(pScene);
+            this._pSceneList.push(pScene);
 
             return pScene;
         }
@@ -31,7 +72,7 @@ module akra.scene {
         }
 
         getScene3D(IScene: uint = 0): IScene3d {
-            var pScene: IScene = this.pSceneList[IScene];
+            var pScene: IScene = this._pSceneList[IScene];
             
             if (pScene && pScene.type === ESceneTypes.TYPE_3D) {
                 return <IScene3d>pScene;
@@ -41,7 +82,7 @@ module akra.scene {
         }
 
         getScene2D(IScene?: uint): IScene2d {
-            var pScene: IScene = this.pSceneList[IScene];
+            var pScene: IScene = this._pSceneList[IScene];
             
             if (pScene && pScene.type === ESceneTypes.TYPE_2D) {
                 return pScene;
@@ -51,7 +92,7 @@ module akra.scene {
         }
 
         getScene(IScene?: uint, eType?: ESceneTypes): IScene {
-            return this.pSceneList[IScene] || null;
+            return this._pSceneList[IScene] || null;
         }
 
 

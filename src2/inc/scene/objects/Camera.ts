@@ -1,6 +1,7 @@
 #ifndef CAMERA_TS
 #define CAMERA_TS
 
+#include "common.h"
 #include "IScene3d.ts"
 #include "ICamera.ts"
 #include "IViewport.ts"
@@ -54,6 +55,8 @@ module akra.scene.objects {
 		protected pFrustumVertices: IVec4[] = new Array(8);
 
 		protected _pLastViewport: IViewport = null;
+
+		protected _pRenderAlgo: IBuildScenario = getDefaultBuildScenario();
 
 
 		inline get viewMatrix(): IMat4 { return this._m4fView; }
@@ -644,10 +647,14 @@ module akra.scene.objects {
 			this.preRenderScene();
 
 			//render scene
-			this.scene._render(this, pViewport);
+			SceneBuilder.getSingleton().build(this._pRenderAlgo, this, pViewport)
 
 			//notify postrender scene
 			this.postRenderScene();
+    	}
+
+    	inline getRenderAlgo(): IBuildScenario {
+    		return this._pRenderAlgo;
     	}
 
     	_keepLastViewport(pViewport: IViewport): void { this._pLastViewport = pViewport; }

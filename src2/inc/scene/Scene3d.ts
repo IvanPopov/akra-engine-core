@@ -20,7 +20,7 @@ module akra.scene {
 			this._pRootNode.create();
 		}
 
-		getRootNode(): ISceneNode {
+		inline getRootNode(): ISceneNode {
 			return this._pRootNode;
 		}
 
