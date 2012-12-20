@@ -43,6 +43,8 @@ module akra {
 		update(): void;
 		updateStats(): void;
 
+		getCustomAttribute(sName: string): any;
+
 		addViewport(pCamera: ICamera, iZIndex?: uint, fLeft?: float, fTop?: float, fWidth?: float, fHeight?: float): IViewport;
 		getViewport(iIndex: int): IViewport;
 		getViewportByZIndex(iZIndex: int): IViewport;
@@ -61,7 +63,6 @@ module akra {
 		getBestFrameTime(): float;
 		getWorstFrameTime(): float;
 		resetStatistics(): void;
-
 
 		isActive(): bool;
 		setActive(isActive?: bool): void;

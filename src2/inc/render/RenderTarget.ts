@@ -296,6 +296,10 @@ module akra.render {
 			}
 		}
 
+		getCustomAttribute(sName: string): any {
+			return null;
+		}
+
 		getViewport(iIndex: uint): IViewport {
 			ASSERT(iIndex < this._pViewportList.length, "Index out of bounds");
 

@@ -33,11 +33,15 @@ module akra.webgl {
 		protected _iFace: uint;
 		protected _iLevel: int;
 		protected _bSoftwareMipmap: bool;
-		protected _pTRTList: IRenderTexture[];
+		protected _pRTTList: IRenderTexture[];
 
 
 		constructor () {
 			super();
+		}
+
+		_clearRTT(iZOffset: uint): void {
+			this._pRTTList[iZOffset] = null;
 		}
 
 		create(iFlags: int): bool;
@@ -695,7 +699,7 @@ module akra.webgl {
 		getRenderTarget(iZOffest?: int = 0): IRenderTarget {
 			ASSERT(TEST_ANY(this._iFlags, ETextureFlags.RENDERTARGET));
         	ASSERT(iZOffest < this._iDepth);
-        	return this._pTRTList[iZOffest];
+        	return this._pRTTList[iZOffest];
 		}
 
 		resize(iSize: uint): bool;

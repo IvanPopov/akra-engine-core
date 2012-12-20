@@ -3,6 +3,7 @@
 
 #include "core/pool/resources/DepthBuffer.ts"
 #include "webgl/WebGLInternalRenderBuffer.ts"
+#include "webgl/WebGLInternalFrameBuffer.ts"
 
 module akra.webgl {
 	export class WebGLDepthBuffer extends core.pool.resources.DepthBuffer {
@@ -21,10 +22,9 @@ module akra.webgl {
 				CRITICAL("Invalid number of arguments. For WebGLDepthBuffer it must be five");
 			}
 
-			super.create(0, iWidth, iHeight, isManual);
+			super.create(0, arguments[2], arguments[3], arguments[4]);
 			var pDepth: WebGLInternalRenderBuffer = arguments[0];
 			var pStencil: WebGLInternalRenderBuffer = arguments[1];
-
 
 			this._pDepthBuffer = pDepth;
 			this._pStencilBuffer = pStencil;

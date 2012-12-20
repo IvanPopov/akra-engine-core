@@ -58,6 +58,9 @@ module akra.webgl {
 			return this._iWebGLInternalFormat; 
 		}
 
+		_clearRTT(iZOffset: uint): void {
+		}
+
 		create(iFlags: int): bool;
 		create(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats, iFlags: int): bool;
 		create(): bool {
