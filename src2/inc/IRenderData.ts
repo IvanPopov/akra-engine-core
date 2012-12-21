@@ -3,6 +3,7 @@
 
 module akra {
     IFACE(IVertexBuffer);
+    IFACE(IReferenceCounter);
 	export enum ERenderDataTypes {
         ISOLATED = 0, /*<! положить данные в текстуру, и больше ничего не делать.*/
         INDEXED,      /*<! обычные даннае из текстуры, доступные по индексу.*/
@@ -25,12 +26,21 @@ module akra {
 		readonly buffer: IVertexBuffer;
 
         renderable(bValue: bool): void;
-        isRenderable(): bool;
+        //isRenderable(): bool;
+        /**
+         * Allocate data for rendering.
+         */
         allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, hasIndex: bool): int;
         allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, hasIndex: bool): int;
+        /**
+         * Specifies uses advanced index.
+         */
         useAdvancedIndex(): bool;
         useSingleIndex(): bool;
         useMultiIndex(): bool;
+        /**
+         * Remove data from this render data.
+         */
         releaseData(iDataLocation: int): void;
         allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
         allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
@@ -48,19 +58,11 @@ module akra {
         hasSemantics(sSemantics: string, bSearchComplete: bool): bool;
         getDataLocation(sSemantics: string): int;
         getIndices(): IBufferData;
-        getFlow(): IDataFlow;
-        getData(): IVertexData;
         getPrimitiveCount(): uint;
         index(iData: int, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
         draw(): bool;
         //applyMe(): bool;
         toString(): string;
-
-
-
-        "string"
-
-
 	}
 }
 

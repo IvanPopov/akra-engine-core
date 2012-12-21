@@ -2,16 +2,18 @@
 #define ISKIN_TS
 
 module akra {
+	IFACE(ISkeleton);
 	IFACE(INode);
 	IFACE(IMesh);
+	IFACE(IEngine);
 
 	export interface INodeMap{
 		[index: string]: INode;
 	}
 
-	export interface ISkeleton {
-		readonly buffer: int;
-		readonly data: int;
+	export interface ISkin {
+		readonly buffer;
+		readonly data;
 		readonly skeleton: ISkeleton;
 		readonly totalBones: int;
 
@@ -20,7 +22,7 @@ module akra {
 		getBoneOffsetMatrices(): INode[];
 		getBoneOffsetMatrix(): INodeMap;
 		hasSkeleton(): bool;
-		getSkeleton(): bool;
+		getSkeleton(): ISkeleton;
 		setSkeleton(pSkeleton: ISkeleton): bool;
 		attachToSceneTree(pRootNode): bool;
 		bind(sName: string): bool;

@@ -3,6 +3,8 @@
 
 module akra {
     IFACE(IVertexBuffer);
+    IFACE(IVertexDeclaration);
+    
 	export enum ERenderDataBufferOptions {
         VB_READABLE       = FLAG(EHardwareBufferFlags.BACKUP_COPY),
         RD_ADVANCED_INDEX = ERenderDataOptions.ADVANCED_INDEX,
@@ -21,7 +23,7 @@ module akra {
         getEngine(): IEngine;
         getOptions(): int;
         getData(): IVertexData;
-        allocateData(pDataDecl: IVertexDaclaration, pData: ArrayBufferView, isCommon?: bool): int;
+        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, isCommon?: bool): int;
         getDataLocation(sSemantics: string): int;
         getRenderData(iSubset: uint): IRenderData;
         getEmptyRenderData(ePrimType: EPrimitiveTypes, iOptions: int): IRenderData;

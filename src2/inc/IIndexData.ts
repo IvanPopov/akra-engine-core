@@ -18,6 +18,7 @@ module akra {
 
 		getPrimitiveType(): EPrimitiveTypes;
 		getPrimitiveCount(): uint;
+		drawElements();
 	}
 }
 

@@ -8092,6 +8092,620 @@ module akra.util {
 
 
 
+module akra {
+	export interface IReferenceCounter {} ;
+	export interface IVertexData {} ;
+	export interface IDataMapper {} ;
+	export interface IIndexData {} ;
+
+	export enum EDataFlowTypes {
+/*!< The data stream can be marked up its index.*/
+        MAPPABLE   = 1,
+/*!< The data stream cannot be marked up its index.*/
+        UNMAPPABLE = 0
+    };
+
+    export interface IDataFlow {
+    	flow:   int;
+        data:   IVertexData;
+        type:   EDataFlowTypes;
+        mapper: IDataMapper;
+    }
+
+    export interface IDataMapper {
+    	data: IVertexData;
+    	semantics: string;
+    	addition: int;
+    }
+
+	export interface IBufferMap extends IReferenceCounter{
+		primType: EPrimitiveTypes;
+		 primCount: uint;
+		index: IIndexData;
+		 limit: uint;
+		length: uint;
+		 startIndex: uint;
+		 size: uint;
+		 flows: IDataFlow[];
+		 mappers: IDataMapper[];
+		 offset: uint;
+
+		getFlow(iFlow: int, bComplete?: bool): IDataFlow;
+		reset(): void;
+		flow(iFlow: uint, pVertexData: IVertexData): int;
+		checkData(pData: IVertexData): bool;
+		mapping(iFlow: int, pMap: IVertexData, sSemantics: string, iAddition?: int): bool;
+		update(): bool;
+		clone(bWithMapping?: bool): IBufferMap;
+		toString(): string;
+
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IBuffer {
+//number of elements
+		 length: int;
+
+//size in bytes
+		 byteLength: int;
+
+
+	}
+}
+
+
+
+module akra {
+	export enum EGPUBufferFlags {
+		MANY_UPDATES = 0,
+		MANY_DRAWS,
+		READABLE,
+		RAM_BACKUP,
+		SOFTWARE,
+		ALIGNMENT
+	}
+
+	export interface IGPUBuffer extends IBuffer {
+		clone(pSrc: IGPUBuffer): bool;
+
+		isValid(): bool;
+		isDynamic(): bool;
+		isStatic(): bool;
+		isStream(): bool;
+		isReadable(): bool;
+		isRAMBufferPresent(): bool;
+		isSoftware(): bool;
+
+		getData(): ArrayBuffer;
+		getData(iOffset: uint, iSize: uint): ArrayBuffer;
+		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool;
+
+		getFlags(): int;
+
+		destroy(): void;
+		create(iByteSize: uint, iFlags: int, pData: ArrayBuffer): bool;
+		resize(iSize: uint): bool;
+	}
+}
+
+
+
+
+
+module akra {
+
+	export interface IVertexData {} ;
+	export interface IVertexElement {} ;
+	export interface IVertexDeclaration {} ;
+
+	export enum EVertexBufferTypes {
+		TYPE_UNKNOWN,
+		TYPE_VBO,
+		TYPE_TBO
+	};
+
+	export interface IVertexBuffer extends IGPUBuffer, IResourcePoolItem {
+
+		 type: EVertexBufferTypes;
+
+		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;
+		getVertexData(iOffset: uint, iCount: uint, pDecl: IVertexDeclaration): IVertexData;
+
+		getEmptyVertexData(iCount: uint, pElements: IVertexElement[], ppVertexDataIn?: IVertexData): IVertexData;
+		getEmptyVertexData(iCount: uint, pDecl: IVertexDeclaration, ppVertexDataIn?: IVertexData): IVertexData;
+		getEmptyVertexData(iCount: uint, pSize: uint, ppVertexDataIn?: IVertexData): IVertexData;
+
+		freeVertexData(pVertexData: IVertexData): bool;
+
+		allocateData(pElements: IVertexElement[], pData: ArrayBufferView): IVertexData;
+		allocateData(pDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
+	}
+}
+
+
+
+
+
+
+module akra {
+
+	export interface IDisplayManager {} ;
+	export interface IParticleManager {} ;
+	export interface IResourcePoolManager {} ;
+	export interface IRenderer {} ;
+
+    export interface IEngine {
+        getDisplayManager(): IDisplayManager;
+        getParticleManager(): IParticleManager;
+        getResourceManager(): IResourcePoolManager;
+
+        getDefaultRenderer(): IRenderer;
+
+//start execution
+        exec(): bool;
+    };
+
+    export var createEngine: () => IEngine;
+}
+
+
+
+
+
+
+module akra.model {
+
+	export class BufferMap implements IBufferMap extends ReferenceCounter{
+		private _pFlows: IDataFlow[] = null;
+		private _pMappers = null;
+		private _pIndex = null;
+		private _nLength: uint = 0;
+		private _ePrimitiveType: EPrimitiveTypes;
+		private _pCompleteFlows: IDataFlow[] = null;
+		private _nCompleteFlows: uint = 0;
+		private _nCompleteVideoBuffers: uint = 0;
+		private _pCompleteVideoBuffers: IVertexBuffer[] = null;
+		private _nUsedFlows: uint = 0;
+		private _pEngine: IEngine = null;
+		private _nStartIndex: uint = 0;
+		private _pBuffersCompatibleMap = null;
+
+		constructor(pEngine: IEngine){
+			super();
+			this._pEngine = pEngine;
+			this.reset();
+		}
+
+		/**@inline*/  get primType(): EPrimitiveTypes{
+			return this._pIndex ? this._pIndex.getPrimitiveType() : this._ePrimitiveType;
+		}
+
+		/**@inline*/  set primType(eType: EPrimitiveTypes){
+			this._ePrimitiveType = eType;
+		}
+
+		/**@inline*/  get primCount(): uint{
+			switch (this._ePrimitiveType) {
+	            case a.PRIMTYPE.TRIANGLELIST:
+	                return this.length / 3.;
+	            case a.PRIMTYPE.POINTLIST:
+	                return this.length;
+	            case a.PRIMTYPE.TRIANGLESTRIP:
+	        }
+
+	        return undefined;
+		}
+
+		/**@inline*/  get index(): IIndexData {
+			return this._pIndex;
+		}
+
+		/**@inline*/  set index(pIndexData: IIndexData) {
+			if (this._pIndex === pIndexData) {
+	            return;
+	        }
+	        this.draw = this.drawElements = pIndexData.drawElements;
+	        this._pIndex = pIndexData;
+	        this.update();
+		}
+
+		/**@inline*/  get limit(): uint {
+			return this._pFlows.length;
+		}
+
+		/**@inline*/  get length(): uint {
+			return (this._pIndex? this._pIndex.getCount(): this._nLength);
+		}
+
+		/**@inline*/  set length(nLength: uint) {
+			this._nLength = Math.min(this._nLength, nLength);
+		}
+
+		/**@inline*/  get startIndex(): uint {
+			return this._nStartIndex;
+		}
+
+		/**@inline*/  get size(): uint{
+			return this._nCompleteFlows;
+		}
+
+		/**@inline*/  get flows(): IDataFlow[] {
+			return this._pCompleteFlows;
+		}
+
+		/**@inline*/  get mappers(): IDataMapper[] {
+			return this._pMappers;
+		}
+
+		/**@inline*/  get offset(): uint {
+			return (this._pIndex? this._pIndex.getOffset(): 0);
+		}
+
+		draw() {
+
+		}
+
+		drawElements() {
+
+		}
+
+		getFlow(iFlow: int, bComplete?: bool): IDataFlow {
+			bComplete = ifndef(bComplete, true);
+
+		    if (typeof arguments[0] === 'string') {
+		        var nTotal: int;
+		        var pFlows: IDataFlow[];
+
+		        if (bComplete) {
+		            pFlows = this._pCompleteFlows;
+		            nTotal = this._nCompleteFlows;
+		        }
+		        else {
+		            pFlows = this._pFlows;
+		            nTotal = this._pFlows.length;
+		        }
+
+		        for (var i: int = 0; i < nTotal; ++ i) {
+		            if (!pFlows[i].pData) {
+		                continue;
+		            }
+		            if (pFlows[i].pData.hasSemantics(arguments[0])) {
+		                return pFlows[i];
+		            }
+		        }
+
+		        return null;
+		    }
+
+		    if (bComplete) {
+
+		        for (var i: int = 0, pFlows = this._pCompleteFlows; i < this._nCompleteFlows; ++ i) {
+		            if (pFlows[i].iFlow == iFlow) {
+		                return pFlows[i];
+		            }
+		        }
+
+		        return null;
+		    }
+
+		    return this._pFlows[iFlow];
+		}
+		reset(): void {
+			this._pIndex = null
+		    this._ePrimitiveType = a.PRIMTYPE.TRIANGLELIST;
+
+
+		    var nFlowLimit = Math.min(
+//a.info.graphics.maxVertexTextureImageUnits(pDevice),		        16,
+		        info.graphics.maxVertexAttributes
+		    );
+
+		    this._pMappers = [];
+		    this._pFlows = new Array(nFlowLimit);
+		    for (var i = 0; i < nFlowLimit; i++) {
+		        this._pFlows[i] = {
+		            iFlow: i,
+		            pData:  null,
+		            eType:  a.BufferMap.FT_UNMAPPABLE,
+		            pMapper:null
+		        };
+		    }
+
+		    this._nLength = MAX_INT32;
+		    this._pCompleteFlows = new Array(nFlowLimit);
+		    this._nCompleteFlows = 0;
+		    this._nStartIndex = MAX_INT32;
+		    this._pBuffersCompatibleMap = {};
+
+		    this._pCompleteVideoBuffers = new Array(nFlowLimit);
+		    this._nCompleteVideoBuffers = 0;
+		    this._nUsedFlows = 0;
+
+		    this.draw = this.drawArrays;
+		}
+
+		flow(iFlow: uint, pVertexData: IVertexData): int {
+			var pFlow: IDataFlow;
+
+		    if (arguments.length < 2) {
+		        pVertexData = arguments[0];
+		        iFlow = (this._nUsedFlows ++);
+		    }
+// trace(iFlow, '<<==', pVertexData.getVertexDeclaration().toString());
+// console.log((new Error).stack);
+		    pFlow = this._pFlows[iFlow];
+
+		    debug_assert(iFlow < this.limit,
+		        'Invalid strem. Maximum allowable number of stream ' + this.limit + '.');
+
+		    if (!pVertexData || pFlow.pData === pVertexData) {
+		        return -1;
+		    }
+
+		    if (pVertexData.buffer instanceof a.VertexBuffer) {
+		        pFlow.eType = a.BufferMap.FT_UNMAPPABLE;
+		        this.length = pVertexData.getCount();
+//this.startIndex = pVertexData.getStartIndex();
+		        debug_assert(this.checkData(pVertexData),
+		            'You can use several unmappable data flows from one buffer.');
+
+		        this._pushEtalon(pVertexData);
+		    }
+		    else {
+		        pFlow.eType = a.BufferMap.FT_MAPPABLE;
+		    }
+
+		    pFlow.pData = pVertexData;
+
+		    return this.update()? iFlow: -1;
+		}
+
+		checkData(pData: IVertexData): bool {
+			var pEtalon = this._pBuffersCompatibleMap[pData.resourceHandle()];
+		    if (!pEtalon || pEtalon.offset === pData.offset) {
+		        return true;
+		    }
+		    return false;
+		}
+
+		 findMapping(pMap, eSemantics, iAddition): IDataMapper {
+		    debug_assert(this.checkData(pMap), 'You can use several different maps from one buffer.');
+		    for (var i = 0, pMappers = this._pMappers, pExistsMap; i < pMappers.length; i++) {
+		        pExistsMap = pMappers[i].pData;
+		        if (pExistsMap === pMap) {
+//если уже заданные маппинг менял свой стартовый индекс(например при расширении)
+//то необходимо сменить стартовый индекс на новый
+		            if (pMappers[i].eSemantics === eSemantics && pMappers[i].iAddition == iAddition) {
+		                return pMappers[i];
+		            }
+		        }
+		        else {
+		            debug_assert(pExistsMap.getStartIndex() === pMap.getStartIndex(),
+		                'You can not use maps with different indexing');
+		        }
+		    }
+		    return null;
+		};
+
+
+		mapping(iFlow: int, pMap: IVertexData, sSemantics: string, iAddition?: int): bool {
+			iAddition = iAddition || 0;
+
+		    var pMapper: IDataMapper = this.findMapping(pMap, eSemantics, iAddition);
+		    var pFlow: IDataFlow     = this._pFlows[iFlow];
+
+		    debug_assert(pFlow.pData && pFlow.eType === a.BufferMap.FT_MAPPABLE,
+		        'Cannot mapping empty/unmappable flow.');
+		    debug_assert(pMap, 'Passed empty mapper.');
+
+		    if (!eSemantics) {
+		        eSemantics = pMap.getVertexDeclaration()[0].eUsage;
+		    }
+		    else if (pMap.hasSemantics(eSemantics) === false) {
+		        debug_error('Passed mapper does not have semantics: ' + eSemantics + '.');
+		        return false;
+		    }
+
+		    if (pMapper) {
+		        if (pFlow.pMapper === pMapper) {
+		            return pMapper.eSemantics === eSemantics &&
+		                pMapper.iAddition === iAddition? true: false;
+		        }
+		    }
+		    else {
+		        pMapper = {pData: pMap, eSemantics: eSemantics, iAddition: iAddition};
+
+		        this._pMappers.push(pMapper);
+		        this.length = pMap.getCount();
+//this.startIndex = pMap.getStartIndex();
+		        this._pushEtalon(pMap);
+		    }
+
+		    pFlow.pMapper = pMapper;
+
+		    return this.update();
+		}
+
+		_pushEtalon(pData: IVertexData): void {
+			this._pBuffersCompatibleMap[pData.resourceHandle()] = pData;
+		}
+
+		update(): bool {
+			var pFlows: IDataFlow[] = this._pFlows;
+		    var pFlow, pMapper;
+		    var isMappable: bool = false;
+		    var pCompleteFlows: IDataFlow[] = this._pCompleteFlows;
+		    var nCompleteFlows: int = 0;
+		    var pCompleteVideoBuffers: IVertexBuffer[] = this._pCompleteVideoBuffers;
+		    var nCompleteVideoBuffers: int = 0;
+		    var nUsedFlows: int = 0;
+		    var pVideoBuffer: IVertexBuffer;
+		    var isVideoBufferAdded: bool = false;
+		    var nStartIndex: int = MAX_INT32, nCurStartxIndex: int;
+
+		    for (var i: int = 0; i < pFlows.length; i++) {
+		        pFlow = pFlows[i];
+		        pMapper = pFlow.pMapper;
+		        isMappable = (pFlow.eType === a.BufferMap.FT_MAPPABLE);
+
+		        if (pFlow.pData) {
+		            nUsedFlows ++;
+		        }
+
+		        if (pFlow.pData === null || (isMappable && pMapper === null)) {
+		            continue;
+		        }
+
+		        pCompleteFlows[nCompleteFlows ++] = pFlow;
+
+		        if (isMappable) {
+		            nCurStartxIndex = pMapper.pData.getStartIndex();
+		            pVideoBuffer = pFlow.pData.buffer;
+		            for (var j = 0; j < nCompleteVideoBuffers; j++) {
+		                if (pCompleteVideoBuffers[j] === pVideoBuffer) {
+		                    isVideoBufferAdded = true;
+		                    break;
+		                }
+		            }
+		            if (!isVideoBufferAdded) {
+		                pCompleteVideoBuffers[nCompleteVideoBuffers ++] = pVideoBuffer;
+		            }
+		        }
+		        else {
+		            nCurStartxIndex = pFlow.pData.getStartIndex();
+		        }
+
+		        if (nStartIndex === MAX_INT32) {
+		            nStartIndex = nCurStartxIndex;
+		            continue;
+		        }
+
+		        debug_assert(nStartIndex == nCurStartxIndex,
+		            'You can not use a maps or unmappable buffers having different starting index.');
+		    }
+
+		    this._nStartIndex = nStartIndex;
+		    this._nCompleteFlows = nCompleteFlows;
+		    this._nCompleteVideoBuffers = nCompleteVideoBuffers;
+		    this._nUsedFlows = nUsedFlows;
+
+		    return true;
+		}
+		clone(bWithMapping?: bool): IBufferMap {
+			bWithMapping = ifndef(bWithMapping, true);
+
+		    var pMap: IBufferMap = new model.BufferMap(this._pEngine);
+		    for (var i = 0, pFlows = this._pFlows; i < pFlows.length; ++ i) {
+		        if (pFlows[i].pData === null) {
+		            continue;
+		        }
+
+		        if (pMap.flow(pFlows[i].iFlow, pFlows[i].pData) < 0) {
+		            pMap = null;
+		            return null;
+		        }
+
+		        if (!bWithMapping) {
+		            continue;
+		        }
+
+		        if (pFlows[i].pMapper) {
+	                pMap.mapping(pFlows[i].iFlow,
+	                pFlows[i].pMapper.pData,
+	                pFlows[i].pMapper.eSemantics,
+	                pFlows[i].pMapper.iAddition);
+		        }
+		    }
+
+		    return pMap;
+		}
+		toString(): string {
+			function _an(sValue: string, n: int, bBackward: bool) {
+		        sValue = String(sValue);
+		        bBackward = bBackward || false;
+
+		        if (sValue.length < n) {
+		            for (var i = 0, l = sValue.length; i < n - l; ++ i) {
+		                if (!bBackward) {
+		                    sValue += ' ';
+		                }
+		                else {
+		                    sValue = ' ' + sValue;
+		                }
+		            }
+		        }
+
+		        return sValue;
+		    }
+
+		    var s = '\n\n', t;
+		    s += '      Complete Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping  / Shift    : OFFSET |    Additional    \n';
+		    t  = '-------------------------:-----------------+---------------------:--------------------------:--------+------------------\n';
+// = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
+// = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
+		    s += t;
+
+		    for (var i: int = 0; i < this._nCompleteFlows; ++ i) {
+		        var pFlow: IDataFlow = this._pCompleteFlows[i];
+		        var pMapper: IDataMapper = pFlow.pMapper;
+		        var pVertexData: IVertexData = pFlow.pData;
+		        var pDecl:IVertexDeclaration = pVertexData.getVertexDeclaration();
+//trace(pMapper); window['pMapper'] = pMapper;
+		        s += '#' + _an(pFlow.iFlow, 2) + ' ' +
+		            _an('[ ' + (pDecl[0].eUsage !== a.DECLUSAGE.END? pDecl[0].eUsage: '<end>') + ' ]', 20) +
+		            ' : ' + _an(pDecl[0].iOffset, 6, true) + ' / ' + _an(pDecl[0].iSize, 6) +
+		            ' | ' +
+		            _an(pVertexData.resourceHandle(), 8, true) + ' / ' + _an(pVertexData.getOffset(), 8) +
+		            ' : ' +
+		            (pMapper? _an(pMapper.eSemantics, 15, true) + ' / ' + _an(pMapper.iAddition, 7) + ': ' +
+		                _an(pMapper.pData.getVertexDeclaration().element(pMapper.eSemantics).iOffset, 6) :
+		            _an('-----', 25) + ': ' + _an('-----', 6)) + ' |                  \n';
+
+
+		        for (var j = 1; j < pDecl.length; ++ j) {
+		            s += '    ' +
+		            _an('[ ' + (pDecl[j].eUsage !== a.DECLUSAGE.END? pDecl[j].eUsage: '<end>') + ' ]', 20) + ' : ' + _an(pDecl[j].iOffset, 6, true) + ' / ' + _an(pDecl[j].iSize, 6) +
+		                  ' |                     :                          :        |                  \n';
+		        }
+		        s += t;
+		    };
+		    s += '=================================================================\n';
+		    s += '      PRIMITIVE TYPE : ' + '0x' + this.primType.toString(16) + '\n';
+		    s += '     PRIMITIVE COUNT : ' + this.primCount + '\n';
+		    s += '         START INDEX : ' + this.startIndex + '\n';
+		    s += '              LENGTH : ' + this.length + '\n';
+		    s += '  USING INDEX BUFFER : ' + (this.index? 'TRUE': 'FALSE') + '\n';
+		    s += '=================================================================\n';
+
+		    return s + '\n\n';
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
 
 
 module akra {
@@ -8669,29 +9283,6 @@ module akra.core.pool {
 
 
 
-
-
-
-module akra {
-
-	export interface IDisplayManager {} ;
-	export interface IParticleManager {} ;
-	export interface IResourcePoolManager {} ;
-	export interface IRenderer {} ;
-
-    export interface IEngine {
-        getDisplayManager(): IDisplayManager;
-        getParticleManager(): IParticleManager;
-        getResourceManager(): IResourcePoolManager;
-
-        getDefaultRenderer(): IRenderer;
-
-//start execution
-        exec(): bool;
-    };
-
-    export var createEngine: () => IEngine;
-}
 
 
 
@@ -10552,60 +11143,6 @@ module akra.core.pool {
 
 
 
-module akra {
-	export interface IBuffer {
-//number of elements
-		 length: int;
-
-//size in bytes
-		 byteLength: int;
-
-
-	}
-}
-
-
-
-module akra {
-	export enum EGPUBufferFlags {
-		MANY_UPDATES = 0,
-		MANY_DRAWS,
-		READABLE,
-		RAM_BACKUP,
-		SOFTWARE,
-		ALIGNMENT
-	}
-
-	export interface IGPUBuffer extends IBuffer {
-		clone(pSrc: IGPUBuffer): bool;
-
-		isValid(): bool;
-		isDynamic(): bool;
-		isStatic(): bool;
-		isStream(): bool;
-		isReadable(): bool;
-		isRAMBufferPresent(): bool;
-		isSoftware(): bool;
-
-		getData(): ArrayBuffer;
-		getData(iOffset: uint, iSize: uint): ArrayBuffer;
-		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool;
-
-		getFlags(): int;
-
-		destroy(): void;
-		create(iByteSize: uint, iFlags: int, pData: ArrayBuffer): bool;
-		resize(iSize: uint): bool;
-	}
-}
-
-
-
-
-
-
-
-
 
 module akra {
     export interface IRenderResource extends IResourcePoolItem {
@@ -11010,44 +11547,6 @@ module akra {
 
 
 
-
-
-
-
-
-
-
-
-
-module akra {
-
-	export interface IVertexData {} ;
-	export interface IVertexElement {} ;
-	export interface IVertexDeclaration {} ;
-
-	export enum EVertexBufferTypes {
-		TYPE_UNKNOWN,
-		TYPE_VBO,
-		TYPE_TBO
-	};
-
-	export interface IVertexBuffer extends IGPUBuffer, IResourcePoolItem {
-
-		 type: EVertexBufferTypes;
-
-		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;
-		getVertexData(iOffset: uint, iCount: uint, pDecl: IVertexDeclaration): IVertexData;
-
-		getEmptyVertexData(iCount: uint, pElements: IVertexElement[], ppVertexDataIn?: IVertexData): IVertexData;
-		getEmptyVertexData(iCount: uint, pDecl: IVertexDeclaration, ppVertexDataIn?: IVertexData): IVertexData;
-		getEmptyVertexData(iCount: uint, pSize: uint, ppVertexDataIn?: IVertexData): IVertexData;
-
-		freeVertexData(pVertexData: IVertexData): bool;
-
-		allocateData(pElements: IVertexElement[], pData: ArrayBufferView): IVertexData;
-		allocateData(pDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
-	}
-}
 
 
 
@@ -12490,6 +12989,979 @@ module akra.core.pool.resources {
 
 
 
+module akra {
+    export interface IVertexBuffer {} ;
+    export interface IReferenceCounter {} ;
+	export enum ERenderDataTypes {
+/*<! положить данные в текстуру, и больше ничего не делать.*/
+        ISOLATED = 0,
+/*<! обычные даннае из текстуры, доступные по индексу.*/
+        INDEXED,
+/*<! данные по 2йному индексу.*/
+        I2I,
+/*<! непосредственно данные для атрибута.*/
+        DIRECT
+    };
+
+    export enum ERenderDataOptions {
+/*<! использовать индекс на индекс упаковку данных*/
+        ADVANCED_INDEX =  (1 << (0x10)) ,
+        SINGLE_INDEX   =  (1 << (0x11)) ,
+/*<! создать RenderData как классические данные, с данными только в аттрибутах, без использования видео буфферов.*/
+
+/*<! определяет, будет ли объект редерится*/
+        RENDERABLE     =  (1 << (0x12))
+    }
+
+    export interface IRenderDataType {
+        new (): IRenderData;
+    }
+
+	export interface IRenderData extends IReferenceCounter {
+		 buffer: IVertexBuffer;
+
+        renderable(bValue: bool): void;
+//isRenderable(): bool;
+/**
+         * Allocate data for rendering.
+         */
+
+        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, hasIndex: bool): int;
+        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, hasIndex: bool): int;
+/**
+         * Specifies uses advanced index.
+         */
+
+        useAdvancedIndex(): bool;
+        useSingleIndex(): bool;
+        useMultiIndex(): bool;
+/**
+         * Remove data from this render data.
+         */
+
+        releaseData(iDataLocation: int): void;
+        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
+        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
+        allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
+        allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
+        addIndexSet(usePreviousDataSet: bool, ePrimType:EPrimitiveTypes, sName: string): int;
+        addIndexSet(ePrimType:EPrimitiveTypes, sName: string): int;
+        getNumIndexSet(): int;
+        getIndexSetName(iSet: int): string;
+        selectIndexSet(iSet: int): bool;
+        getIndexSet(): int;
+        setRenderable(): bool;
+        setRenderable(iIndexSet: int, bValue: bool): bool;
+        isRenderable(iIndexSet?: int): bool;
+        hasSemantics(sSemantics: string, bSearchComplete: bool): bool;
+        getDataLocation(sSemantics: string): int;
+        getIndices(): IBufferData;
+        getPrimitiveCount(): uint;
+        index(iData: int, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
+        draw(): bool;
+//applyMe(): bool;
+        toString(): string;
+	}
+}
+
+
+
+module akra.core.pool.resources {
+
+	export class RenderData implements IRenderData extends ReferenceCounter {
+/**
+		 * Options.
+		 */
+
+		private _eOptions: int = 0;
+/**
+		 * Buffer, that create this class.
+		 */
+
+		private _pBuffer: IVertexBuffer = null;
+/**
+		 * ID of this data.
+		 */
+
+		private _iId: int = -1;
+/**
+		 * Buffer with indices.
+	     * If the data is the simplest mesh, with no more
+	     * than one index, the type will be IndexBuffer,
+	     * otherwise VertexBuffer.
+	     */
+
+		private _pIndexBuffer = null;
+/**
+		 * Buffer with attributes.
+		 */
+
+		private _pAttribBuffer: IVertexBuffer = null;
+/**
+	      * Data with indices.
+	      * If _pIndexBuffer has type IndexBuffer, indices data
+	      * has type IndexData, otherwise VertexData.
+	      */
+
+		private _pIndexData = null;
+/**
+	     * Data with attributes.
+	     */
+
+		private _pAttribData: IVertexData = null;
+/**
+	     * Buffer map for current index set.
+	     */
+
+		private _pMap = null;
+/**
+	     * Buffer maps of all index sets.
+	     */
+
+		private _pIndicesArray = [];
+/**
+	     * Current index set.
+	     */
+
+		private _iIndexSet: int = 0;
+		private _iRenderable: int = 1;
+
+
+		/**@inline*/  get buffer(): IVertexBuffer{
+			return this._pBuffer;
+		}
+
+		constructor(pBuffer){
+			this._pBuffer = pBuffer || null;
+		}
+
+/*Setup.*/
+
+		 setup(pBuffer: IVertexBuffer, iId: int, ePrimType: EPrimitiveTypes, eOptions: int): bool {
+			if (this._pBuffer === null && arguments.length < 2) {
+		        return false;
+		    }
+
+		    this.renderable(true);
+
+		    this._eOptions |= eOptions;
+		    this._pBuffer = pBuffer;
+		    this._iId = iId;
+
+//setup buffer map
+		    this._pMap = new a.BufferMap(pBuffer.getEngine());
+		    this._pMap.primType = ifndef(ePrimType, a.PRIMTYPE.TRIANGLELIST);
+		    this._pMap._pI2IDataCache = {};
+
+//setup default index set
+		    this._pIndicesArray.push({
+		                                 pMap        : this._pMap,
+		                                 pIndexData  : null,
+		                                 pAttribData : null,
+		                                 sName       : '.main'
+		                             });
+
+		    debug_assert(this.useSingleIndex() === false, 'single indexed data not implimented');
+
+		    return true;
+		}
+
+        renderable(bValue: bool): void {
+        	bValue ?  ((this._eOptions) |= (ERenderDataOptions.RENDERABLE)) :  ((this._eOptions) &= ~(ERenderDataOptions.RENDERABLE)) ;
+        }
+
+/*isRenderable(): bool {
+        	return this._eOptions & a.RenderData.RENDERABLE ? true : false;
+        }*/
+
+
+        private _allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, eType: ERenderDataTypes): int;
+        private _allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, eType: ERenderDataTypes): int;
+        private _allocateData(pDataDecl: IVertexDeclaration, pData: any, eType: ERenderDataTypes): int {
+        	if (eType === a.RenderData.DT_DIRECT) {
+		        return this.allocateAttribute(pDataDecl, pData);
+		    }
+
+		    var iFlow: int;
+		    var pVertexData: IVertexData = this._pBuffer._allocateData(pDataDecl, pData);
+		    var iOffset: int = pVertexData.getOffset();
+
+		    iFlow = this._addData(pVertexData, undefined, eType);
+
+		    if (iFlow < 0) {
+		        trace('invalid data', pDataDecl, pData);
+		        debug_assert('cannot allocate data for submesh');
+		        return -1;
+		    }
+
+		    return iOffset;
+        }
+
+/**
+		 * Add vertex data to this render data.
+		 */
+
+        private _addData(pVertexData: IVertexData, iFlow: int, eType: ERenderDataTypes): int {
+
+		    if ((arguments.length < 3 && this.useAdvancedIndex()) ||
+		        arguments[2] === a.RenderData.DT_I2I) {
+		        return this._registerData(pVertexData);
+		    }
+
+		    return (iFlow === undefined ? this._pMap.flow(pVertexData) :
+		            this._pMap.flow(iFlow, pVertexData));
+		}
+
+/**
+		 * Register data in this render.
+		 * Necessary for index to index mode, when data realy
+		 * not using in this render data for building final buffer map.
+		 */
+
+		private _registerData(pVertexData: IVertexData): int {
+		    'use strict';
+		    var iOffset: int = pVertexData.getOffset();
+		    var pDataDecl: IVertexDeclaration = pVertexData.getVertexDeclaration();
+
+//необходимо запоминать расположение данных, которые подаются,
+//т.к. иначе их потом нельзя будет найти среди других данных
+		    for (var i: int = 0; i < pDataDecl.length; i++) {
+		        this._pMap._pI2IDataCache[pDataDecl[i].eUsage] = iOffset;
+		    }
+		    ;
+
+		    return 0;
+		};
+
+/**
+		 * Allocate data for rendering.
+		 */
+
+        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, hasIndex: bool): int;
+        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, hasIndex: bool): int;
+        allocateData(pDataDecl: IVertexDeclaration, pData: any, hasIndex: bool): int{
+        	var eType: ERenderDataTypes = ERenderDataTypes.INDEXED;
+
+		    hasIndex = ifndef(hasIndex, true);
+
+		    if (!hasIndex || this.useSingleIndex()) {
+		        eType = a.RenderData.DT_DIRECT;
+		    }
+		    else if (this.useAdvancedIndex()) {
+		        eType = a.RenderData.DT_I2I;
+		    }
+
+		    return this._allocateData(pDataDecl, pData, eType);
+        }
+
+/**
+		 * Specifies uses advanced index.
+		 */
+
+        useAdvancedIndex(): bool {
+        	return (this._eOptions & a.RenderData.ADVANCED_INDEX) != 0;
+        }
+
+        useSingleIndex(): bool {
+        	return (this._eOptions & a.RenderData.SINGLE_INDEX) != 0;
+        }
+
+        useMultiIndex(): bool {
+        	return (this._eOptions & a.RenderData.SINGLE_INDEX) == 0;
+        }
+
+/**
+         * Remove data from this render data.
+         */
+
+        releaseData(iDataLocation: int): void {
+//TODO: release data.
+        }
+
+/**
+		 * Allocate attribute.
+		 * Attribute - data without index.
+		 */
+
+        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
+        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
+        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: any): bool {
+        	var pIndexData = this._pIndexData;
+		    var pAttribData: IVertexData = this._pAttribData;
+		    var pAttribBuffer: IVertexBuffer = this._pAttribBuffer;
+		    var pBuffer: IVertexBuffer = this._pBuffer;
+
+		    if (!pAttribData) {
+		        if (!pAttribBuffer) {
+		            pAttribBuffer = pBuffer.getEngine().displayManager()
+		                .vertexBufferPool().createResource('render_data_attrs_' + a.sid());
+		            pAttribBuffer.create(0,  (1 << (a.VBufferBase.RamBackupBit)) );
+		            this._pAttribBuffer = pAttribBuffer;
+		        }
+
+		        this._pAttribData = this._pAttribBuffer.allocateData(pAttrDecl, pData);
+		        this._pIndicesArray[this._iIndexSet].pAttribData = this._pAttribData;
+		        this._pMap.flow(this._pAttribData);
+		        return this._pAttribData !== null;
+		    }
+
+		    if (!pAttribData.extend(pAttrDecl, pData)) {
+		        trace('invalid data for allocation:', arguments);
+		        warning('cannot allocate attribute in data subset..');
+		        return false;
+		    }
+
+		    return true;
+        }
+
+/**
+		 * Allocate advanced index.
+		 */
+
+		 private _allocateAdvancedIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
+		 private _allocateAdvancedIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
+		 private _allocateAdvancedIndex(pAttrDecl: IVertexDeclaration, pData: any): bool {
+
+		    var pDecl = a.normalizeVertexDecl(pAttrDecl);
+		    var nCount: int = pData.byteLength / pDecl.iStride;
+//TODO: remove index dublicates
+		    var iIndLoc: int = this._allocateData(pAttrDecl, pData, a.RenderData.DT_INDEXED);
+		    var pI2IData: Float32Array = new Float32Array(nCount);
+		    var pI2IDecl = [];
+
+		    for (var i: int = 0; i < pDecl.length; i++) {
+		        pI2IDecl.push(VE_FLOAT('INDEX_' + pDecl[i].eUsage, 0));
+		    }
+		    ;
+
+		    for (var i: int = 0; i < pI2IData.length; i++) {
+		        pI2IData[i] = i;
+		    }
+		    ;
+
+		    if (!this._allocateIndex(pI2IDecl, pI2IData)) {
+		        this.releaseData(iIndLoc);
+		        pI2IData = null;
+		        pI2IDecl = null;
+		        warning('cannot allocate index for index in render data subset');
+		        return false;
+		    }
+
+		    return true;
+		};
+
+
+
+/**
+		 * Create IndexBuffer/IndexData for storage indices.
+		 */
+
+		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBuffer): bool;
+		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBufferView): bool;
+		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBufferView): bool{
+		    'use strict';
+
+		    if (!this._pIndexBuffer) {
+		        if (this.useMultiIndex()) {
+		            this._pIndexBuffer = this._pBuffer.getEngine().displayManager()
+		                .vertexBufferPool().createResource('subset_' + a.sid());
+		            this._pIndexBuffer.create(0,  (1 << (a.VBufferBase.RamBackupBit)) );
+		        }
+		        else {
+//TODO: add support for sinle indexed mesh.
+		        }
+		    }
+
+		    this._pIndexData = this._pIndexBuffer.allocateData(pAttrDecl, pData);
+		    this._pIndexData._iAdditionCache = {};
+		    this._pIndicesArray[this._iIndexSet].pIndexData = this._pIndexData;
+		    return this._pIndexData !== null;
+		};
+
+/**
+		 * Allocate index.
+		 */
+
+		private _allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
+		private _allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
+		private _allocateIndex(pAttrDecl: IVertexDeclaration, pData: any): bool {
+		    'use strict';
+
+		    var pIndexData = this._pIndexData;
+		    var pIndexBuffer = this._pIndexBuffer;
+		    var pBuffer: IVertexBuffer = this._pBuffer;
+
+		    Ifdef(__DEBUG)
+		    for (var i: int = 0; i < pAttrDecl.length; i++) {
+		        if (pAttrDecl[i].eType !== a.DTYPE.FLOAT) {
+		            return false;
+		        }
+		    }
+		    ;
+		    Endif();
+
+		    if (!this._pIndexData) {
+		        return this._createIndex(pAttrDecl, pData);
+		    }
+
+		    if (!this._pIndexData.extend(pAttrDecl, pData)) {
+		        trace('invalid data for allocation:', arguments);
+		        warning('cannot allocate index in data subset..');
+		        return false;
+		    }
+
+		    return true;
+		};
+
+/**
+		 * Allocate index.
+		 */
+
+		allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
+		allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
+		allocateIndex(pAttrDecl: IVertexDeclaration, pData: any): bool{
+			if (this.useAdvancedIndex()) {
+		        return this._allocateAdvancedIndex(pAttrDecl, pData);
+		    }
+		    return this._allocateIndex(pAttrDecl, pData);
+		}
+
+/**
+		 * Add new set of indices.
+		 */
+
+        addIndexSet(usePreviousDataSet: bool, ePrimType:EPrimitiveTypes, sName: string): int {
+        	usePreviousDataSet = ifndef(usePreviousDataSet, true);
+
+// if (this._pIndexData === null) {
+//     return false;
+// }
+
+
+        	if (usePreviousDataSet) {
+        	    this._pMap = this._pMap.clone(false);
+
+        	    if (!this._pMap) {
+        	        return -1;
+        	    }
+        	}
+        	else {
+        	    this._pMap = new a.BufferMap(this._pBuffer.getEngine());
+        	    this._pAttribData = null;
+        	}
+
+        	this._pMap.primType = ifndef(ePrimType, a.PRIMTYPE.TRIANGLELIST);
+        	this._pIndexData = null;
+        	this._iIndexSet = this._pIndicesArray.length;
+        	this._pIndicesArray.push({
+        	                             pMap        : this._pMap,
+        	                             pIndexData  : this._pIndexData,
+        	                             pAttribData : this._pAttribData,
+        	                             sName       : sName
+        	                         });
+
+        	return  this._iIndexSet;
+        }
+
+        getNumIndexSet(): int {
+        	return this._pIndicesArray.length;
+        }
+
+        getIndexSetName(iSet: int): string {
+        	iSet = ifndef(iSet, this._iIndexSet);
+        	return this._pIndicesArray[iSet].sName;
+        }
+
+/**
+         * Select set of indices.
+         */
+
+        selectIndexSet(iSet: int): bool {
+        	var pIndexSet = this._pIndicesArray[iSet];
+
+        	if (pIndexSet) {
+        	    this._pMap = pIndexSet.pMap;
+        	    this._pIndexData = pIndexSet.pIndexData;
+        	    this._pAttribData = pIndexSet.pAttribData;
+        	    this._iIndexSet = iSet;
+        	    return true;
+        	}
+
+        	return false;
+        }
+
+/**
+         * Get number of current index set.
+         */
+
+        getIndexSet(): int {
+        	return this._iIndexSet;
+        }
+
+        setRenderable(iIndexSet: int, bValue: bool): bool{
+        	iIndexSet = ifndef(iIndexSet, this.getIndexSet());
+        	bValue = ifndef(bValue, true);
+        	(bValue ? SET_BIT(this._iRenderable, iIndexSet) : ((this._iRenderable) &= ~ (1 << ((iIndexSet))) ) ) ;
+        	return true;
+        }
+
+        isRenderable(iIndexSet?: int): bool {
+        	iIndexSet = ifndef(iIndexSet, this.getIndexSet());
+        	return  ((this._iRenderable & (1 << (iIndexSet)) ) != 0) ;
+        }
+
+/**
+         * Check whether the semantics used in this data set.
+         */
+
+        hasSemantics(sSemantics: string, bSearchComplete: bool): bool {
+        	return this.getFlow(sSemantics, bSearchComplete) !== null;
+        }
+
+/**
+         * Get data location.
+         */
+
+        getDataLocation(sSemantics: string): int {
+        	var pData: IVertexData = this.getData(sSemantics);
+
+        	return pData ? pData.getOffset() : -1;
+        }
+
+/**
+         * Get indices that uses in current index set.
+         */
+
+        getIndices(): IBufferData {
+        	return this._pIndexData;
+        }
+
+/**
+         * Get data flow by semantics or data location.
+         */
+
+         getFlow(): IDataFlow {
+        	if (typeof arguments[0] === 'string') {
+		        return this._pMap.getFlow(arguments[0], arguments[1]);
+		    }
+
+		    for (var i: int = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++i) {
+		        var pFlow = pFlows[i];
+
+		        if (pFlow.pData && pFlow.pData.getOffset() === arguments[0]) {
+		            return pFlow;
+		        }
+		    }
+
+		    return null;
+        }
+
+/**
+         * Get data by semantics or location.
+         */
+
+         getData(): IVertexData {
+        	var pFlow: IDataFlow;
+
+        	if (this.useAdvancedIndex() && arguments.length < 2) {
+        	    if (typeof arguments[0] === 'string') {
+        	        return this.getData(this._pMap._pI2IDataCache[arguments[0]]);
+        	    }
+
+        	    return this._pBuffer.getData(arguments[0]);
+        	}
+
+        	if (typeof arguments[0] === 'string') {
+        	    for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++i) {
+        	        pFlow = pFlows[i];
+        	        if (pFlow.pData != null && pFlow.pData.hasSemantics(arguments[0])) {
+        	            return pFlow.pData;
+        	        }
+        	    }
+
+//this._pBuffer.getData(arguments[0]);        	    return null;
+        	}
+
+        	pFlow = this.getFlow(arguments[0]);
+        	return pFlow === null ? null : pFlow.pData;
+        }
+
+/**
+         * Get number of primitives for rendering.
+         */
+
+        getPrimitiveCount(): uint {
+        	return this._pMap.primCount;
+        }
+
+/**
+         * Setup index.
+         */
+
+        index(iData: int, sSemantics: string, useSame?: bool, iBeginWith?: int): bool {
+        	iBeginWith = iBeginWith || 0;
+        	useSame = useSame || false;
+
+        	var iFlow: int = -1;
+        	var iAddition: int, iRealAddition: int, iPrevAddition: int;
+        	var pFlow: IDataFlow;
+        	var pData: IVertexData, pRealData: IVertexData;
+        	var iIndexOffset: uint;
+        	var pIndexData = this._pIndexData;
+        	var sData: string;
+        	var iStride: int;
+//a.getTypeSize(a.DTYPE.FLOAT);        	var iTypeSize: int = 4;
+
+        	if (this.useAdvancedIndex()) {
+        	    pRealData = this.getData(iData);
+        	    iAddition = pRealData.getOffset();
+        	    iStride = pRealData.stride;
+//индекс, который подал юзер        	    pData = this.getData(eSemantics, true);
+
+        	    pData.applyModifier(eSemantics, function (pTypedData) {
+        	        for (var i: int = 0; i < pTypedData.length; i++) {
+        	            pTypedData[i] = (pTypedData[i] * iStride + iAddition) / iTypeSize;
+        	        }
+        	        ;
+        	    });
+
+        	    iData = pData.getOffset();
+        	    eSemantics = 'INDEX_' + eSemantics;
+        	}
+        	else if (typeof arguments[0] === 'string') {
+        	    if (arguments[0] === 'TEXCOORD') {
+        	        iData = 'TEXCOORD0';
+        	    }
+        	    iData = this.getDataLocation(iData);
+
+        	    debug_assert(iData >= 0, 'cannot find data with semantics: ' + arguments[0]);
+        	}
+
+        	pFlow = this.getFlow(iData);
+
+        	if (pFlow === null) {
+        	    return false;
+        	}
+
+        	iFlow = pFlow.iFlow;
+        	iIndexOffset = pIndexData._pVertexDeclaration.element(eSemantics).iOffset;
+        	pData = pIndexData.getTypedData(eSemantics);
+        	iAddition = iData;
+
+        	if (!pData) {
+        	    return false;
+        	}
+
+
+        	iStride = pFlow.pData.stride;
+
+        	if (pIndexData._iAdditionCache[iIndexOffset] !== iAddition) {
+        	    if (!useSame) {
+        	        iPrevAddition = pIndexData._iAdditionCache[iIndexOffset] || 0;
+        	        iRealAddition = iAddition - iPrevAddition;
+
+        	        for (var i = 0; i < pData.length; i++) {
+        	            pData[i] = (pData[i] * iStride + iRealAddition) / iTypeSize;
+        	        }
+        	        ;
+        	    }
+        	    else {
+        	        iRealAddition = iAddition;
+        	        for (var i = 0; i < pData.length; i++) {
+        	            pData[i] = (iBeginWith + iRealAddition) / iTypeSize;
+        	        }
+        	        ;
+        	    }
+
+//remeber addition, that we added to index.
+        	    pIndexData._iAdditionCache[iIndexOffset] = iAddition;
+
+        	    if (!pIndexData.setData(pData, eSemantics)) {
+        	        return false;
+        	    }
+        	}
+
+        	return this._pMap.mapping(iFlow, pIndexData, eSemantics);
+        }
+
+/**
+         * Draw this data.
+         */
+
+        draw(): bool {
+        	var isOK: bool = true;
+        	var bResult: bool;
+        	var i: int;
+        	for (i = 0; i < this._pIndicesArray.length; i++) {
+        	    if (this.isRenderable(i)) {
+        	        this._pBuffer._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pIndicesArray[i].pMap);
+        	        bResult = this._pIndicesArray[i].pMap.draw();
+//trace(this._pIndicesArray[i].pMap.toString());
+        	        isOK = isOK && bResult;
+        	    }
+        	}
+        	return isOK;
+        }
+
+//applyMe(): bool;
+
+        toString(): string {
+        	var s: string;
+        	s = 'RENDER DATA SUBSET: #' + this._iId + '\n';
+        	s += '        ATTRIBUTES: ' + (this._pAttribData ? 'TRUE' : 'FALSE') + '\n';
+        	s += '----------------------------------------------------------------\n';
+        	s += this._pMap.toString();
+
+        	return s;
+        }
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+    export interface IVertexBuffer {} ;
+    export interface IVertexDeclaration {} ;
+
+	export enum ERenderDataBufferOptions {
+        VB_READABLE       =  (1 << (EHardwareBufferFlags.BACKUP_COPY)) ,
+        RD_ADVANCED_INDEX = ERenderDataOptions.ADVANCED_INDEX,
+        RD_SINGLE_INDEX   = ERenderDataOptions.SINGLE_INDEX,
+        RD_RENDERABLE     = ERenderDataOptions.RENDERABLE
+    };
+
+    export interface IRenderDataType {
+        new (): IRenderData;
+    }
+
+	export interface IRenderDataCollection extends IHardwareBuffer, IResourcePoolItem{
+		 buffer: IVertexBuffer;
+        dataType: IRenderDataType;
+
+        getEngine(): IEngine;
+        getOptions(): int;
+        getData(): IVertexData;
+        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, isCommon?: bool): int;
+        getDataLocation(sSemantics: string): int;
+        getRenderData(iSubset: uint): IRenderData;
+        getEmptyRenderData(ePrimType: EPrimitiveTypes, iOptions: int): IRenderData;
+        draw(iSubset: uint): bool;
+        destroy(): void;
+	}
+}
+
+
+
+module akra.core.pool.resources {
+
+	export class RenderDataCollection implements IRenderDataCollection extends ReferenceCounter{
+		private _pDataBuffer = null;
+		private _pEngine: IEngine = null;
+		private _eDataOptions: int = 0;
+		private _pSubsetType = null;
+		private _pDataArray = [];
+
+		/**@inline*/  get buffer(): IVertexBuffer{
+			return this._pDataBuffer;
+		}
+
+		/**@inline*/  get dataType(): IRenderDataType{
+			return this._pSubsetType;
+		}
+
+		/**@inline*/  set dataType(pSubsetType: IRenderDataType){
+			debug_assert(this._pSubsetType === null, 'subset type already set.');
+        	this._pSubsetType = pSubsetType;
+		}
+
+        getEngine(): IEngine {
+        	return this._pEngine;
+        }
+
+        getOptions(): int {
+        	return this._eDataOptions;
+        }
+
+/**
+         * Find VertexData with given semantics/usage.
+         */
+
+        getData(): IVertexData {
+        	var pData: IVertexData[];
+
+        	if (this._pDataBuffer) {
+        	    pData = pData = this._pDataBuffer._pVertexDataArray;
+        	    if (typeof arguments[0] === 'string') {
+        	        for (var i = 0; i < pData.length; i++) {
+        	            if (pData[i].hasSemantics(arguments[0])) {
+        	                return pData[i];
+        	            }
+        	        };
+        	    }
+        	    else {
+        	        for (var i = 0; i < pData.length; i++) {
+        	            if (pData[i].getOffset() === arguments[0]) {
+        	                return pData[i];
+        	            }
+        	        };
+        	    }
+        	}
+
+        	return null;
+        }
+
+/**
+         * Положить данные в буфер.
+         */
+
+        private _allocateData(pVertexDecl: IVertexDeclaration, pData) {
+        	if (!this._pDataBuffer) {
+        	    this._createDataBuffer();
+        	}
+
+        	pVertexDecl = normalizeVertexDecl(pVertexDecl);
+        	var pVertexData: IVertexData;
+
+        	if ((arguments.length < 2) || (typeof arguments[1] === 'number') || pData === null) {
+        	    pVertexData = this._pDataBuffer.getEmptyVertexData(pData || 1, pVertexDecl);
+        	}
+        	else {
+        	    pVertexData = this._pDataBuffer.allocateData(pVertexDecl, pData);
+        	}
+
+        	debug_assert(pVertexData !== null, 'cannot allocate data:\n' + pVertexDecl.toString());
+        	return pVertexData;
+        }
+
+        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, isCommon?: bool): int {
+        	    isCommon = ifndef(isCommon, true);
+
+        	    var pVertexData: IVertexData;
+
+        	    pDataDecl = normalizeVertexDecl(pDataDecl);
+
+        	Ifdef (__DEBUG);
+
+        	    for (var i: int = 0; i < pDataDecl.length; i++) {
+        	        if (this.getData(pDataDecl[i].eUsage) !== null && pDataDecl[i].nCount !== 0) {
+        	            warning("data buffer already contains data with similar vertex decloration <" +
+        	                pDataDecl[i].eUsage + ">.");
+        	        }
+        	    };
+
+        	Endif ();
+
+        	    pVertexData = this._allocateData(pDataDecl, pData);
+
+        	    if (isCommon) {
+        	        for (var i: int = 0; i < this._pDataArray.length; ++ i) {
+        	            this._pDataArray[i]._addData(pVertexData);
+        	        }
+        	    }
+
+        	    return pVertexData.getOffset();
+        }
+
+        getDataLocation(sSemantics: string): int {
+        	if (this._pDataBuffer) {
+        	    var pDataList: IVertexData[] = this._pDataBuffer._pVertexDataArray;
+
+        	    for (var i: int = 0; i < pDataList.length; i++) {
+        	        if (pDataList[i].hasSemantics(sSemantics)) {
+        	            return pDataList[i].getOffset();
+        	        }
+        	    };
+        	}
+
+        	return -1;
+        }
+
+        private _createDataBuffer() {
+//TODO: add support for eOptions
+            var iVbOption: int = 0;
+            var iOptions: int = this._eDataOptions;
+
+            if (iOptions & a.RenderDataBuffer.VB_READABLE) {
+                (true ? SET_BIT(iVbOption, (1 << (a.VBufferBase.ReadableBit)) ) : ((iVbOption) &= ~ (1 << (((1 << (a.VBufferBase.ReadableBit)) ))) ) ) ;
+            }
+//trace('creating new video buffer for render data buffer ...');
+            this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource('render_data_buffer' + '_' + a.sid());
+            this._pDataBuffer.create(0, iVbOption);
+            this._pDataBuffer.addRef();
+            return this._pDataBuffer !== null;
+        };
+
+        getRenderData(iSubset: uint): IRenderData {
+        	return this._pDataArray[iSubset];
+        }
+
+        getEmptyRenderData(ePrimType: EPrimitiveTypes, iOptions: int): IRenderData {
+        	debug_assert(this._pSubsetType !== null, 'subset type not specified.');
+
+        	var iSubsetId: int = this._pDataArray.length;
+        	var pDataset = new this._pSubsetType(this._pEngine);
+
+        	eOptions |= this._eDataOptions;
+
+        	if (!pDataset.setup(this, iSubsetId, ePrimType, eOptions)) {
+        	    debug_error('cannot setup submesh...');
+        	}
+
+
+        	this._pDataArray.push(pDataset);
+
+        	return pDataset;
+        }
+
+        draw(iSubset: uint): bool {
+        	if (iSubset !== undefined) {
+        	    return this._pDataArray[iSubset].draw();
+        	}
+
+        	for (var i: int = 0; i < this._pDataArray.length; i++) {
+        	    this._pDataArray[i].draw();
+        	};
+
+        	return true;
+        }
+
+         setup(eOptions: int) {
+            this._eDataOptions = eOptions;
+            if (!this._pSubsetType) {
+                this._pSubsetType = a.RenderData;
+            }
+        };
+
+        destroy(): void {
+        	if (iSubset !== undefined) {
+        	    return this._pDataArray[iSubset].draw();
+        	}
+
+        	for (var i: int = 0; i < this._pDataArray.length; i++) {
+        	    this._pDataArray[i].draw();
+        	};
+
+        	return true;
+        }
+	}
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -13223,6 +14695,76 @@ module akra.scene {
 
 
 
+module akra {
+	export interface IEngine {} ;
+
+	export interface IJoint extends INode {
+		boneName: string;
+		getEngine(): IEngine;
+		create(): bool;
+		toString(isRecursive: bool, iDepth: int): string;
+	}
+}
+
+
+
+
+
+
+module akra.scene {
+	export class Joint extends Node implements IJoint {
+		private _sBone: string = null;
+		private _iUpdated: int = 0;
+		private _pEngine: IEngine = null;
+
+		/**@inline*/  get boneName(): string{
+			return this._sBone;
+		}
+
+		/**@inline*/  set boneName(sBone: string){
+			return this._sBone;
+		}
+
+		getEngine(): IEngine {
+			return this._pEngine;
+		}
+
+		create(): bool {
+			this._m4fLocalMatrix = new Mat4(1);
+			this._m4fWorldMatrix = new Mat4(1);
+
+			this._v3fWorldPosition  = new Vec3();
+			this._v3fTranslation    = new Vec3(0, 0, 0);
+			this._v3fScale          = new Vec3(1);
+			this._qRotation         = new Quat4(0, 1);
+
+
+//maybe custom
+			this.setInheritance(a.Scene.k_inheritAll);
+			return true;
+		}
+
+		toString(isRecursive: bool, iDepth: int): string {
+			isRecursive = isRecursive || false;
+
+			if (!isRecursive) {
+			    return "<joint" + (this._sName ? (' ' + this._sName) : "") + ">";
+			}
+
+			return Node.prototype.toString.call(this, isRecursive, iDepth);
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -13267,9 +14809,62 @@ module akra {
 
 
 
-module akra {
-	export interface IMesh {
 
+
+//#include "IHardwareBuffer.ts"
+module akra {
+    export interface IReferenceCounter {} ;
+    export interface ISkeleton {} ;
+    export interface ISphere {} ;
+	export enum EMeshOptions {
+        HB_READABLE = EHardwareBufferFlags.READABLE,
+        RD_ADVANCED_INDEX = ERenderDataFlags.ADVANCED_INDEX
+    };
+
+    export enum EMeshCloneOptions{
+/*<! copy only geometry*/
+        GEOMETRY_ONLY = 0x00,
+/*<! use shared geometry*/
+        SHARED_GEOMETRY = 0x01
+    };
+
+	export interface IMesh {
+         flexMaterials;
+         name: string;
+         data: IReferenceCounter;
+         buffer: IReferenceCounter;
+		skeleton: ISkeleton;
+
+        setSkeleton(pSkeleton: ISkeleton): void;
+        getOptions(): int;
+        getEngine(): IEngine;
+        drawSubset(iSubset: int): void;
+        draw(): void;
+        isReadyForRender(): bool;
+        setup(sName: string, eOptions: int, pDataBuffer: IReferenceCounter): bool;
+        createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions: int);
+        replaceFlexMaterials(pFlexMaterials): void;
+        freeSubset(sName: string): bool;
+        getFlexMaterial();
+        addFlexMaterial(sName: string, pMaterialData): bool;
+        setFlexMaterial(iMaterial: int): bool;
+        destroy(): void;
+        destructor(): void;
+        getSubset(): IMeshSubset;
+        setSkin(pSkin: ISkin): void;
+        clone(eCloneOptions: EMeshCloneOptions);
+        createAndShowSubBoundingBox(): void;
+        createAndShowSubBoundingSphere(): void;
+        createBoundingBox(): bool;
+        deleteBoundingBox(): bool;
+        getBoundingBox(): IRec3d;
+        showBoundingBox(): bool;
+        hideBoundingBox(): bool;
+        createBoundingSphere(): bool;
+        deleteBoundingSphere(): bool;
+        getBoundingSphere(): ISphere;
+        showBoundingSphere(): bool;
+        hideBoundingSphere(): bool;
 	}
 }
 
@@ -13298,15 +14893,6 @@ module akra {
 
 
 
-
-
-
-
-module akra {
-	export interface IBufferMap {
-
-	}
-}
 
 
 
@@ -13818,28 +15404,6 @@ module akra {
 
 
 
-
-
-
-
-module akra {
-	export interface IJoint extends INode {
-
-	}
-}
-
-
-
-
-module akra.scene {
-	export class Joint extends Node implements IJoint {
-
-	}
-}
-
-
-
-
 module akra.animation {
 	export interface IAnimationTargetMap{
 		[index: string]: IAnimationTarget;
@@ -14156,6 +15720,8 @@ module akra {
 
 
 
+
+
 module akra.model {
 
 	export class Skeleton implements ISkeleton{
@@ -14164,7 +15730,7 @@ module akra.model {
 		private _pRootJoints: INode[] = [];
 		private _pJointList: INodeMap = null;
 		private _pNodeList: INode[]  = null;
-		private _pMeshNode = null;
+		private _pMeshNode: INode = null;
 		private _iFlags: bool = false;
 
 		/**@inline*/  get totalBones(): int{
@@ -14204,12 +15770,7 @@ module akra.model {
 		}
 
 		addRootJoint(pJoint: INode): bool {
-/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-
-/*FIX a. */
-
-/*debug_assert(pJoint instanceof a.Joint, 'node must be joint');*/
-
+			debug_assert(pJoint instanceof scene.Joint, 'node must be joint');
 
 		    var pRootJoints = this._pRootJoints;
 
@@ -14289,12 +15850,12 @@ module akra.model {
 /*debug_assert(this.getEngine() === pMesh.getEngine(), 'mesh must be from same engine instance');
 
 		    if (this._pMeshNode == null) {
-		    	this._pMeshNode = new a.SceneModel(this.getEngine());
+		    	this._pMeshNode = new scene.objects.SceneModel(this.getEngine());
 		    	this._pMeshNode.create();
 		    	this._pMeshNode.setInheritance(a.Scene.k_inheritAll);
 		    	this._pMeshNode.attachToParent(this.root);
-		    }*/
-
+		    }
+*/
 
 		    this._pMeshNode.name = this.name + "[mesh-container]";
 		    this._pMeshNode.addMesh(pMesh);
@@ -15536,8 +17097,9 @@ module akra.animation {
 
 
 
-
-
+//#include "model/Skeleton.ts"
+//#include "model/Mesh.ts"
+//#include "model/Skin.ts"
 
 
 

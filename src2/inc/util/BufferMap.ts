@@ -2,31 +2,38 @@
 #define BUFFERMAP_TS
 
 #include "IBufferMap.ts"
+#include "IVertexBuffer.ts"
+#include "IEngine.ts"
+#include "core/pool/ReferenceCounter.ts"
 
 module akra.model {
 
 	export class BufferMap implements IBufferMap extends ReferenceCounter{
-		private _pFlows: IDataFlow[];
-		private _nLength: uint;
-		private _ePrimitiveType: EPrimitiveType;
-		private _pCompleteFlows: IDataFlow[];
-		private _nCompleteFlows: uint;
-		private _nCompleteVideoBuffers: uint;
-		private _pCompleteVideoBuffers;
-		private _nUsedFlows: uint;
-		private _nStartIndex: uint;
-		private _pBuffersCompatibleMap;
+		private _pFlows: IDataFlow[] = null;
+		private _pMappers = null;
+		private _pIndex = null;
+		private _nLength: uint = 0;
+		private _ePrimitiveType: EPrimitiveTypes;
+		private _pCompleteFlows: IDataFlow[] = null;
+		private _nCompleteFlows: uint = 0;
+		private _nCompleteVideoBuffers: uint = 0;
+		private _pCompleteVideoBuffers: IVertexBuffer[] = null;
+		private _nUsedFlows: uint = 0;
+		private _pEngine: IEngine = null;
+		private _nStartIndex: uint = 0;
+		private _pBuffersCompatibleMap = null;
 
 		constructor(pEngine: IEngine){
+			super();
 			this._pEngine = pEngine;
 			this.reset();
 		}
 
-		inline get primType(): EPrimitiveType{
+		inline get primType(): EPrimitiveTypes{
 			return this._pIndex ? this._pIndex.getPrimitiveType() : this._ePrimitiveType;
 		}
 
-		inline set primType(eType: EPrimitiveType){
+		inline set primType(eType: EPrimitiveTypes){
 			this._ePrimitiveType = eType;
 		}
 
@@ -85,6 +92,14 @@ module akra.model {
 
 		inline get offset(): uint {
 			return (this._pIndex? this._pIndex.getOffset(): 0);
+		}
+
+		draw() {
+
+		}
+
+		drawElements() {
+
 		}
 
 		getFlow(iFlow: int, bComplete?: bool): IDataFlow {
@@ -206,7 +221,7 @@ module akra.model {
 		    return false;
 		}
 
-		protected findMapping(pMap, eSemantics, iAddition) {
+		protected findMapping(pMap, eSemantics, iAddition): IDataMapper {
 		    debug_assert(this.checkData(pMap), 'You can use several different maps from one buffer.');
 		    for (var i = 0, pMappers = this._pMappers, pExistsMap; i < pMappers.length; i++) {
 		        pExistsMap = pMappers[i].pData;
@@ -227,11 +242,196 @@ module akra.model {
 
 
 		mapping(iFlow: int, pMap: IVertexData, sSemantics: string, iAddition?: int): bool {
+			iAddition = iAddition || 0;
 
+		    var pMapper: IDataMapper = this.findMapping(pMap, eSemantics, iAddition);
+		    var pFlow: IDataFlow     = this._pFlows[iFlow];
+
+		    debug_assert(pFlow.pData && pFlow.eType === a.BufferMap.FT_MAPPABLE,
+		        'Cannot mapping empty/unmappable flow.');
+		    debug_assert(pMap, 'Passed empty mapper.');
+
+		    if (!eSemantics) {
+		        eSemantics = pMap.getVertexDeclaration()[0].eUsage;
+		    }
+		    else if (pMap.hasSemantics(eSemantics) === false) {
+		        debug_error('Passed mapper does not have semantics: ' + eSemantics + '.');
+		        return false;
+		    }
+
+		    if (pMapper) {
+		        if (pFlow.pMapper === pMapper) {
+		            return pMapper.eSemantics === eSemantics &&
+		                pMapper.iAddition === iAddition? true: false;
+		        }
+		    }
+		    else {
+		        pMapper = {pData: pMap, eSemantics: eSemantics, iAddition: iAddition};
+
+		        this._pMappers.push(pMapper);
+		        this.length = pMap.getCount();
+		        //this.startIndex = pMap.getStartIndex();
+		        this._pushEtalon(pMap);
+		    }
+
+		    pFlow.pMapper = pMapper;
+
+		    return this.update();
 		}
-		update(): bool;
-		clone(bWithMapping?: bool): IBufferMap; 
-		toString(): string;
+
+		_pushEtalon(pData: IVertexData): void {
+			this._pBuffersCompatibleMap[pData.resourceHandle()] = pData;
+		}
+
+		update(): bool {
+			var pFlows: IDataFlow[] = this._pFlows;
+		    var pFlow, pMapper;
+		    var isMappable: bool = false;
+		    var pCompleteFlows: IDataFlow[] = this._pCompleteFlows;
+		    var nCompleteFlows: int = 0;
+		    var pCompleteVideoBuffers: IVertexBuffer[] = this._pCompleteVideoBuffers;
+		    var nCompleteVideoBuffers: int = 0;
+		    var nUsedFlows: int = 0;
+		    var pVideoBuffer: IVertexBuffer;
+		    var isVideoBufferAdded: bool = false;
+		    var nStartIndex: int = MAX_INT32, nCurStartxIndex: int;
+
+		    for (var i: int = 0; i < pFlows.length; i++) {
+		        pFlow = pFlows[i];
+		        pMapper = pFlow.pMapper;
+		        isMappable = (pFlow.eType === a.BufferMap.FT_MAPPABLE);
+		        
+		        if (pFlow.pData) {
+		            nUsedFlows ++;
+		        }
+
+		        if (pFlow.pData === null || (isMappable && pMapper === null)) {
+		            continue;
+		        }
+
+		        pCompleteFlows[nCompleteFlows ++] = pFlow;
+
+		        if (isMappable) {
+		            nCurStartxIndex = pMapper.pData.getStartIndex();
+		            pVideoBuffer = pFlow.pData.buffer;
+		            for (var j = 0; j < nCompleteVideoBuffers; j++) {
+		                if (pCompleteVideoBuffers[j] === pVideoBuffer) {
+		                    isVideoBufferAdded = true;
+		                    break;
+		                }
+		            }
+		            if (!isVideoBufferAdded) {
+		                pCompleteVideoBuffers[nCompleteVideoBuffers ++] = pVideoBuffer;
+		            }
+		        }
+		        else {
+		            nCurStartxIndex = pFlow.pData.getStartIndex();
+		        }
+
+		        if (nStartIndex === MAX_INT32) {
+		            nStartIndex = nCurStartxIndex;
+		            continue;
+		        }
+
+		        debug_assert(nStartIndex == nCurStartxIndex,
+		            'You can not use a maps or unmappable buffers having different starting index.');
+		    }
+
+		    this._nStartIndex = nStartIndex;
+		    this._nCompleteFlows = nCompleteFlows;
+		    this._nCompleteVideoBuffers = nCompleteVideoBuffers;
+		    this._nUsedFlows = nUsedFlows;
+
+		    return true;
+		}
+		clone(bWithMapping?: bool): IBufferMap {
+			bWithMapping = ifndef(bWithMapping, true);
+
+		    var pMap: IBufferMap = new model.BufferMap(this._pEngine);
+		    for (var i = 0, pFlows = this._pFlows; i < pFlows.length; ++ i) {
+		        if (pFlows[i].pData === null) {
+		            continue;
+		        }
+
+		        if (pMap.flow(pFlows[i].iFlow, pFlows[i].pData) < 0) {
+		            pMap = null;
+		            return null;
+		        }
+		        
+		        if (!bWithMapping) {
+		            continue;
+		        }
+
+		        if (pFlows[i].pMapper) {
+	                pMap.mapping(pFlows[i].iFlow, 
+	                pFlows[i].pMapper.pData, 
+	                pFlows[i].pMapper.eSemantics, 
+	                pFlows[i].pMapper.iAddition);
+		        }
+		    }
+
+		    return pMap;
+		} 
+		toString(): string {
+			function _an(sValue: string, n: int, bBackward: bool) {
+		        sValue = String(sValue);
+		        bBackward = bBackward || false;
+
+		        if (sValue.length < n) {
+		            for (var i = 0, l = sValue.length; i < n - l; ++ i) {
+		                if (!bBackward) {
+		                    sValue += ' ';
+		                }
+		                else {
+		                    sValue = ' ' + sValue;
+		                }
+		            }
+		        }
+
+		        return sValue;
+		    }
+
+		    var s = '\n\n', t;
+		    s += '      Complete Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping  / Shift    : OFFSET |    Additional    \n';
+		    t  = '-------------------------:-----------------+---------------------:--------------------------:--------+------------------\n';
+		    // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
+		    // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
+		    s += t;
+
+		    for (var i: int = 0; i < this._nCompleteFlows; ++ i) {
+		        var pFlow: IDataFlow = this._pCompleteFlows[i];
+		        var pMapper: IDataMapper = pFlow.pMapper;
+		        var pVertexData: IVertexData = pFlow.pData;
+		        var pDecl:IVertexDeclaration = pVertexData.getVertexDeclaration();
+		        //trace(pMapper); window['pMapper'] = pMapper;
+		        s += '#' + _an(pFlow.iFlow, 2) + ' ' + 
+		            _an('[ ' + (pDecl[0].eUsage !== a.DECLUSAGE.END? pDecl[0].eUsage: '<end>') + ' ]', 20) + 
+		            ' : ' + _an(pDecl[0].iOffset, 6, true) + ' / ' + _an(pDecl[0].iSize, 6) + 
+		            ' | ' + 
+		            _an(pVertexData.resourceHandle(), 8, true) + ' / ' + _an(pVertexData.getOffset(), 8) + 
+		            ' : ' + 
+		            (pMapper? _an(pMapper.eSemantics, 15, true) + ' / ' + _an(pMapper.iAddition, 7) + ': ' + 
+		                _an(pMapper.pData.getVertexDeclaration().element(pMapper.eSemantics).iOffset, 6) :
+		            _an('-----', 25) + ': ' + _an('-----', 6)) + ' |                  \n';
+		        
+
+		        for (var j = 1; j < pDecl.length; ++ j) {
+		            s += '    ' + 
+		            _an('[ ' + (pDecl[j].eUsage !== a.DECLUSAGE.END? pDecl[j].eUsage: '<end>') + ' ]', 20) + ' : ' + _an(pDecl[j].iOffset, 6, true) + ' / ' + _an(pDecl[j].iSize, 6) +  
+		                  ' |                     :                          :        |                  \n';
+		        }
+		        s += t;
+		    };
+		    s += '=================================================================\n';
+		    s += '      PRIMITIVE TYPE : ' + '0x' + this.primType.toString(16) + '\n';
+		    s += '     PRIMITIVE COUNT : ' + this.primCount + '\n';
+		    s += '         START INDEX : ' + this.startIndex + '\n';
+		    s += '              LENGTH : ' + this.length + '\n';
+		    s += '  USING INDEX BUFFER : ' + (this.index? 'TRUE': 'FALSE') + '\n';
+		    s += '=================================================================\n';
+
+		    return s + '\n\n';
+		}
 	}
 }
 

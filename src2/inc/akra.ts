@@ -14,6 +14,7 @@
 #include "info/info.ts"
 
 #include "util/util.ts"
+#include "util/BufferMap.ts"
 
 
 #include "controls/KeyMap.ts"
@@ -27,6 +28,7 @@
 
 
 #include "core/pool/ResourceCode.ts"
+#include "core/pool/ReferenceCounter.ts"
 #include "core/pool/DataPool.ts"
 #include "core/pool/ResourcePool.ts"
 #include "core/pool/ResourcePoolItem.ts"
@@ -44,6 +46,8 @@
 #include "core/pool/resources/Img.ts"
 #include "core/pool/resources/RenderMethod.ts"
 #include "core/pool/resources/Model.ts"
+#include "core/pool/resources/RenderData.ts"
+#include "core/pool/resources/RenderDataCollection.ts"
 
 #include "scene/Node.ts"
 #include "scene/SceneNode.ts"
@@ -51,6 +55,7 @@
 #include "scene/objects/Camera.ts"
 #include "scene/OcTree.ts"
 #include "scene/Scene3d.ts"
+#include "scene/Joint.ts"
 
 #include "render/Renderer.ts"
 #include "scene/SceneBuilder.ts"
@@ -63,7 +68,9 @@
 #include "animation/AnimationContainer.ts"
 #include "animation/AnimationController.ts"
 
-#include "model/Skeleton.ts"
+//#include "model/Skeleton.ts"
+//#include "model/Mesh.ts"
+//#include "model/Skin.ts"
 
 #include "core/Engine.ts"
 #include "core/DisplayManager.ts"

@@ -2,6 +2,11 @@
 #define IBUFFERMAP_TS
 
 module akra {
+	IFACE(IReferenceCounter);
+	IFACE(IVertexData);
+	IFACE(IDataMapper);
+	IFACE(IIndexData);
+
 	export enum EDataFlowTypes {
         MAPPABLE   = 1, /*!< The data stream can be marked up its index.*/
         UNMAPPABLE = 0  /*!< The data stream cannot be marked up its index.*/
@@ -11,7 +16,7 @@ module akra {
     	flow:   int;
         data:   IVertexData;
         type:   EDataFlowTypes;
-        mapper: IDataMapper
+        mapper: IDataMapper;
     }
 
     export interface IDataMapper {
@@ -21,7 +26,7 @@ module akra {
     }
 
 	export interface IBufferMap extends IReferenceCounter{
-		primType: EPrimitiveType;
+		primType: EPrimitiveTypes;
 		readonly primCount: uint;
 		index: IIndexData;
 		readonly limit: uint;
