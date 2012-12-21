@@ -2,14 +2,13 @@
 #define IRENDERTEXTURE_TS
 
 #include "IRenderTarget.ts"
+#include "IPixelBox.ts"
+#include "pixelUtil/pixelUtil.ts"
 
 module akra {
 	
-	IFACE(IPixelFormat);
-	IFACE(IPixelBox);
-
 	export interface IRenderTexture extends IRenderTarget {
-		copyContentsToMemory(pDest: IPixelBox, pBuffer: IFrameBuffer): void;
+		copyContentsToMemory(pDest: IPixelBox, pBuffer: EFramebuffer): void;
 		suggestPixelFormat(): EPixelFormats;
 	}
 }

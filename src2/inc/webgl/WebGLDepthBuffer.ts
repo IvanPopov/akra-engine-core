@@ -13,6 +13,14 @@ module akra.webgl {
 		constructor() {
 			super();
 		}
+		
+		inline get depthBuffer(): WebGLInternalRenderBuffer {
+			return this._pDepthBuffer;
+		}
+		
+		inline get stencilBuffer(): WebGLInternalRenderBuffer {
+			return this._pStencilBuffer;
+		}
 
 		create(iBitDepth: uint, iWidth: uint, iHeight: uint, bManual: bool): bool;
 		create(pDepth: WebGLInternalRenderBuffer, pStencil: WebGLInternalRenderBuffer,

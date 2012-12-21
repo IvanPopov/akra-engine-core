@@ -7,9 +7,10 @@
 #include "IRenderer.ts"
 #include "pixelUtil/pixelUtil.ts"
 #include "IPixelBox.ts"
+#include "IRenderTexture.ts"
 
 module akra.render {
-	export class RenderTexture extends RenderTarget {
+	export class RenderTexture extends RenderTarget implements IRenderTexture {
 		protected _pBuffer: IPixelBuffer = null;
 		protected _iZOffset: uint = 0;
 
