@@ -21,6 +21,7 @@ module akra {
     IFACE(IViewport);
     IFACE(IColor);
     IFACE(IEngine);
+    IFACE(ISequenceRenderTarget);
 
     #define CAPABILITYVALUE(category, value) ((category << (32 - 4)) | (1 << value))
 
@@ -249,6 +250,8 @@ module akra {
         getError();
 
         clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int): void;
+
+        createSequenceRenderTarget(sName?: string): ISequenceRenderTarget;
 
         _disableAllTextureUnits(): void;
         _disableTextureUnitsFrom(iUnit: uint): void;

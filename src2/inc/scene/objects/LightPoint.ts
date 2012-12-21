@@ -1,6 +1,10 @@
 #ifndef LIGHTPOINT_TS
 #define LIGHTPOINT_TS
 
+#include "ILightPoint.ts"
+#include "SceneNode.ts"
+#include "math/math.ts"
+
 module akra.scene.objects {
 	export struct LightParameters implements ILightParameters {
 		ambient: IColor = new Color;
@@ -10,12 +14,16 @@ module akra.scene.objects {
 	}
 
 	export class LightPoint extends SceneNode implements ILightPoint {
-		protected _bCastShadows: bool;
-		protected _isEnabled: bool;
-		protected _iMaxShadowResolution: uint;
-		protected _pLightParameters: ILightParameters;
+		protected _bCastShadows: bool = false;
+		protected _isEnabled: bool = true;
+		protected _iMaxShadowResolution: uint = 256;
+		protected _pLightParameters: ILightParameters = new LightParameters;
 
-		create(isShadowCaster: bool = true, iMaxShadowResolution: uint = 512): bool {
+		inline get params(): ILightParameters {
+			return this._pLightParameters;
+		}
+
+		create(isShadowCaster: bool = true, iMaxShadowResolution: uint = 256): bool {
 			var isOk: bool = super.create();
 
 			//активен ли источник
@@ -24,8 +32,6 @@ module akra.scene.objects {
 			this._bCastShadows = isShadowCaster;
 			//мкасимальный размер shadow текстуры
 			this._iMaxShadowResolution = math.ceilingPowerOfTwo(iMaxShadowResolution);
-
-			this._pLightParameters = new LightParameters;
 
 			return isOk;
 		}

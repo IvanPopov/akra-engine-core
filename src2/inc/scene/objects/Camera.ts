@@ -56,8 +56,6 @@ module akra.scene.objects {
 
 		protected _pLastViewport: IViewport = null;
 
-		protected _pRenderAlgo: IBuildScenario = getDefaultBuildScenario();
-
 
 		inline get viewMatrix(): IMat4 { return this._m4fView; }
     	
@@ -646,16 +644,22 @@ module akra.scene.objects {
 			//notify prerender scene
 			this.preRenderScene();
 
+			var pRenderer: IRenderer = this._getRenderer();
+
+			pRenderer._beginFrame(pViewport);
 			//render scene
-			SceneBuilder.getSingleton().build(this._pRenderAlgo, this, pViewport)
+			this.renderImpl(pViewport);
+
+			pRenderer._endFrame();
 
 			//notify postrender scene
 			this.postRenderScene();
     	}
 
-    	inline getRenderAlgo(): IBuildScenario {
-    		return this._pRenderAlgo;
+    	protected renderImpl(pViewport: IViewport): void {
+    		CRITICAL("NOT IMPLEMENTED");
     	}
+
 
     	_keepLastViewport(pViewport: IViewport): void { this._pLastViewport = pViewport; }
     	_getLastViewport(): IViewport { return this._pLastViewport; }

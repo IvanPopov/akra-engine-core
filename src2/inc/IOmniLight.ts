@@ -9,6 +9,10 @@ module akra {
 		currentOptimizedProjection: IMat4;
 
 		getShadowCaster(): IShadowCasterCube;
+		getDepthTexture(iFace: uint): ITexture;
+		getRenderTarget(iFace: uint): IRenderTarget;
+
+		getDepthTextureCube(): ITexture[];
 	}
 }
 

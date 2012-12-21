@@ -10,6 +10,12 @@ module akra {
 	    attenuation: IColor;
 	}
 
+	export enum ELightPointTypes {
+		UNKNOWN,
+		PROJECT,
+		OMNI_DIRECTIONAL
+	}
+
 	export interface ILightPoint extends ISceneNode {
 		type: ELightPointTypes;
 		params: ILightParameters;
