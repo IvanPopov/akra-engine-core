@@ -36,7 +36,7 @@ module akra.webgl {
 		}
 
 		getCustomAttribute(sName: string): any {
-			if(sName === "FBO"){
+			if(sName === "FBO") {
 				return this._pFrameBuffer;
 			}
 		}
