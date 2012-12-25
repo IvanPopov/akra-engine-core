@@ -1,14 +1,20 @@
-#ifndef DSCAMERA_TS
-#define DSCAMERA_TS
+#ifndef DSVIEWPORT_TS
+#define DSVIEWPORT_TS
 
 #define PREPARE_DEFERRED_SHADING_AFX 			"prepare_deferred_shading.afx"
 #define BASIC_DEFERRED_SHADING_AFX 				"base_deferred_shading.afx"
 #define LIGHTS_AND_SHADOWS_DEFERRED_SHADING_AFX "lights_and_shadows_deferred_shading.afx"
+#define SKYBOX_DEFERRED_SHADING_AFX 			"skybox_deferred_shading.afx"
+#define FXAA_DEFERRED_SHADING_AFX 				"fxaa_deferred_shading.afx"
 
 #define uniformOmni() UniformOmni.stackCeil
+#define uniformProject() UniformProject.stackCeil
+#define uniformProjectShadow() UniformProjectShadow.stackCeil
+#define uniformOmniShadow() UniformOmniShadow.stackCeil
+
 #define IShadowSampler ISampler2d
 
-module akra.scene.objects {
+module akra.render {
 
 	interface IUniform {
 
@@ -141,9 +147,12 @@ module akra.scene.objects {
         samplersProject: IShadowSampler[]
 	}
 
-	export class DSCamera extends Camera {
-		private _pDataTarget: ISequenceRenderTarget;
+	export class DSViewport extends Viewport implements IDSViewport  {
+		private _pDefferedColorTextures: ITexture[];
+		private _pDeferredDepthTexture: ITexture;
 		private _pDeferredView: IRenderableObject = null;
+		private _pDeferredSkyTexture: ITexture = null;
+
 		private _pLightingUnifoms: UniformMap = {
 	        omni           	: [],
 	        project        	: [],
@@ -154,76 +163,122 @@ module akra.scene.objects {
 	        samplersProject : []
 	    };
 
-		create(): bool {
-			if (!super.create()) {
-				return false;
-			}
+	    private _pLightPoints: ILightPoint[] = null;
 
-			var pEngine: IEngine = this.getEngine();
+		constructor() {
+			super();
 
-			var pDataTarget: IRenderTaregt = this._pDataTarget = 
-				pEngine.getRenderer().createSequenceRenderTarget("deferred_data");			
-
-			pDataTarget.addViewport(this);	
-
-			var pDefferedView: IRenderableObject = this._pDeferredView = new render.RenderableObject();
+			var pEngine: IEngine = this.getTarget().getRenderer().getEngine();
 			var pResMgr: IResourcePoolManager = this.getEngine().getResourceManager();
+			var pDeferredData: IRenderTarget = new Array(2);
+			var pDeferredTextures: ITexture[] = new Array(2);
+			var pDepthTexture: ITexture;
+			var pDefferedView: IRenderableObject = this._pDeferredView = new render.RenderableObject();
+			var iGuid: int = sid();
+			var iWidth: uint = math.ceilingPowerOfTwo(this.actualWidth);
+    		var iHeight: uint = math.ceilingPowerOfTwo(this.actualHeight);
+
+    		if (info.browser.name === 'Firefox') {
+		        iWidth = math.min(iWidth, 1024);
+		        iHeight = math.min(iHeight, 1024);
+		    }
+
+			pDepthTexture = this._pDeferredDepthTexture = pResMgr.createTexture("deferred-depth-texture-" + iGuid);
+			pDepthTexture.create(iWidth, iHeight, 1, 0, 0, 
+					ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH);
+
+			for (var i = 0; i < 2; ++ i) {
+				pDeferredTextures[i] = this._pDefferedColorTextures[i] = 
+					pResMgr.createTexture("deferred-color-texture-" + i + "-" +  iGuid);
+				pDeferredTextures[i].create(iWidth, iHeight, 1, 0, 0, 
+					ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
+
+				pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
+				pDeferredData[i].addViewport(this.getCamera(), "deferred_shading_pass_" + i);
+
+				pDeferredData[i].attachDepthTexture(pDepthTexture);
+			}
 
 			pResMgr.loadAFXEffect(PREPARE_DEFERRED_SHADING_AFX);
 			pResMgr.loadAFXEffect(BASIC_DEFERRED_SHADING_AFX);
 			pResMgr.loadAFXEffect(LIGHTS_AND_SHADOWS_DEFERRED_SHADING_AFX);
+			pResMgr.loadAFXEffect(SKYBOX_DEFERRED_SHADING_AFX);
+			pResMgr.loadAFXEffect(FXAA_DEFERRED_SHADING_AFX);
 
-			var pDSMethod: IRenderMethod  = pResMgr.createRenderMethod(".deferred_shading");
-			var pDSEffect: IEffect 		= pResMgr.createEffect(".deferred_shading");
+			var pDSMethod: IRenderMethod  	= pResMgr.createRenderMethod(".deferred_shading");
+			var pDSEffect: IEffect 			= pResMgr.createEffect(".deferred_shading");
 
-			pDSEffect.addCompoennt("akra.system.prepareForDeferredShading");
-			//сдвигаем эффект сборки на 2 пасса, чтобы получить трехпроходный эффект
-			pDSEffect.addCompoennt("akra.system.deferredShading", 2);
-			pDSEffect.addCompoennt("akra.system.omniLighting", 2);
-			pDSEffect.addCompoennt("akra.system.projectLighting", 2);
-			pDSEffect.addCompoennt("akra.system.omniShadowsLighting", 2);
-			pDSEffect.addCompoennt("akra.system.projectShadowsLighting", 2);
+			// pDSEffect.addCompoennt("akra.system.prepareForDeferredShading");
+			pDSEffect.addCompoennt("akra.system.deferredShading");
+			pDSEffect.addCompoennt("akra.system.omniLighting");
+			pDSEffect.addCompoennt("akra.system.projectLighting");
+			pDSEffect.addCompoennt("akra.system.omniShadowsLighting");
+			pDSEffect.addCompoennt("akra.system.projectShadowsLighting");
+			pDSEffect.addCompoennt("akra.system.skybox", 1);
 
 			pDSMethod.effect = pDSEffect;
 			pDefferedView.renderMethod = pDSMethod;
 
 			this.connect(pDefferedView, SIGNAL(passActivated), SLOT(_onPassActivation));
+		}
+
+		update (): bool {
+
+			this.prepareShadows();
+			this.prepareLighting();
+
+			this._pDeferredView.render();	
+		}
+
+		setSkybox(pSkyTexture: ITexture): bool {
+			if (pSkyTexture.textureType !== ETextureTypes.TEXTURE_CUBE_MAP) {
+				return null;
+			}
+
+			this._pDeferredSkyTexture = pSkyTexture;
 
 			return true;
 		}
 
-		renderImpl(pViewport: IViewport): bool {
-			this.prepareShadows(pCamera);
-			this.prepareLighting(pCamera);
-			this._pDeferredView.render();
+		setFXAA(bValue: bool = true): void {
+			var pEffect: IEffect = this._pDeferredView.renderMethod.effect;
+			
+			if (bValue) {
+				pEffect.addComponent("akra.system.fxaa", 2);
+			}
+			else {
+				pEffect.delComponent("akra.system.fxaa", 2);
+			}
 		}
 
-		prepareShadows(pCamera: ICamera): void {
-		    var pLights: ILightPoint[] = this.findLightSources(pCamera);
+		protected prepareShadows(): void {
+		    var pLights: ILightPoint[] = this.findLightSources();
+		    
 		    for (var i: int = 0; i < pLights.length; i++) {
 		        pLights[i].calculateShadows();
 		    }
 
-		    this.lightPoints = pLights;
+		    this._pLightPoints = pLights;
 		}
 
-		prepareLighting(pCamera: ICamera): void {
-			var pVisibleObjects: ISceneObject[] = this.findVisibleObjects(pCamera);
-			var pRenderable: IRenderableObject;
-
-			for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
-				pRenderable = pVisibleObjects[i].getRenderable();
-
-				if (pRenderable.switchRenderMethod(PREPARE_DEFERRED_RENDER_METHOD)) {
-					pRenderable.render();
-				}
-			}
+		protected prepareLighting(): void {
+			for (var i: int = 0; i < 2; ++ i) {
+				this._pDefferedColorTextures[i].getBuffer().getRenderTarget().update();
+			};
 		}
 
 		destroy(): void {
 			super.destroy();
+			
+			this._pDeferredDepthTexture.destroy();
+
+			this._pDefferedColorTextures[0].destroy();
+			this._pDefferedColorTextures[1].destroy();
+
 			this._pDeferredView.destroy();
 			this._pDeferredView = null;
+
+			this._pDeferredSkyTexture = null;
 		}
 
 
@@ -316,7 +371,7 @@ module akra.scene.objects {
 		        	pOmniLight = <IOmniLight>pLight;
 
 		            if (pLight.isShadowCaster()) {
-		                pUniformData = UniformOmniShadow.stackCeil;
+		                pUniformData = uniformOmniShadow();
 		                pUniformData.setLightData(pLight.params, v3fLightTransformPosition);
 		                
 		                var pDepthCube: ITexture[] 					= pOmniLight.getDepthTextureCube();
@@ -337,7 +392,7 @@ module akra.scene.objects {
 		                pUniforms.omniShadows.push(pUniformData);
 		            }
 		            else {
-		                pUniformData = UniformOmni.stackCeil;
+		                pUniformData = uniformOmni();
 		                pUniformData.setLightData(pLight.params, v3fLightTransformPosition);
 		                pUniforms.omni.push(pUniformData);
 		            }
@@ -346,7 +401,7 @@ module akra.scene.objects {
 		        	pProjectLight = <IProjectLight>pLight;
 
 		            if (pLight.isShadowCaster()) {
-		                pUniformData = uniformProjectShadow.stackCeil;
+		                pUniformData = uniformProjectShadow();
 		                pUniformData.setLightData(pLight.params, v3fLightTransformPosition);
 		                
 		                pShadowCaster = pLight.camera;
@@ -360,7 +415,7 @@ module akra.scene.objects {
 		                pUniforms.projectShadows.push(pUniformData);
 		            }
 		            else {
-		                pUniformData = UniformProject.stackCeil;
+		                pUniformData = uniformProject();
 		                pUniformData.setLightData(pLight.params, v3fLightTransformPosition);
 		                pShadowCaster = pLight.getShadowCaster();
 		                m4fShadow = pShadowCaster.projViewMatrix.multiply(pCamera.worldMatrix, mat4());

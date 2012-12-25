@@ -24,6 +24,8 @@
 #define UNKNOWN_CODE 0
 #define UNKONWN_MESSAGE "Unknown code."
 
+#define DEFAULT_NAME "default"
+
 #ifdef LOGGER_API
 
 #define LOG(...)            logger.setSourceLocation(__FILE__, __LINE__); \
@@ -293,7 +295,7 @@ module akra {
 //    export const MIN_REAL32: number = -3.4e38;    //-3.4e38
 //    export const TINY_REAL32: number = 1.5e-45;   //1.5e-45
 
-    export const DEFAULT_MATERIAL_NAME: string = "default";
+    export const DEFAULT_MATERIAL_NAME: string = DEFAULT_NAME;
 
     export enum EDataTypes {
         BYTE = 0x1400,

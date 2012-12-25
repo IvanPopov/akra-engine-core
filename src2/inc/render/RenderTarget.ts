@@ -5,6 +5,7 @@
 
 #include "IDepthBuffer.ts"
 #include "Viewport.ts"
+#include "DSViewport.ts"
 #include "events/events.ts"
 #include "IFrameStats.ts"
 
@@ -166,7 +167,9 @@ module akra.render {
 			this.viewportPostUpdate(pViewport);
 		}
 
-		addViewport(pCamera: ICamera, iZIndex: int = 0, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1.): IViewport {
+		addViewport(pCamera: ICamera, csRenderMethod: string = null, iZIndex: int = 0, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1.): IViewport;
+		addViewport(pCamera: ICamera, eType: int = -1, iZIndex: int = 0, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1.): IViewport;
+		addViewport(pCamera: ICamera, csRenderMethod: any = null, iZIndex: int = 0, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1.): IViewport {
 			var pViewport: IViewport = this._pViewportList[iZIndex];
 
 			if (isDefAndNotNull(pViewport)) {
@@ -174,7 +177,13 @@ module akra.render {
 					because a viewport exists with this Z-Order already.", this._sName, iZIndex, "RenderTarget::addViewport");
 			}
 
-			pViewport = new Viewport(pCamera, this, fLeft, fTop, fWidth, fHeight, iZIndex);
+			if (isNumber(arguments[1]) && <int>arguments[1] >= 0) {
+				pViewport = new DSViewport(pCamera, this, null, fLeft, fTop, fWidth, fHeight, iZIndex);
+			}
+			else {
+				pViewport = new Viewport(pCamera, this, isNumber(arguments[1])? null: csRenderMethod, 
+					fLeft, fTop, fWidth, fHeight, iZIndex);
+			}
 
 			this._pViewportList[iZIndex] = pViewport;
 

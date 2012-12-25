@@ -15,19 +15,6 @@ module akra.scene.objects {
 			this._pLightPoint = pLightPoint;
 			this._iFace = iFace;
 		}
-
-		renderImpl(): void {
-			var pVisibleObjects: ISceneObject[] = this.findVisibleObjects();
-			var pRenderable: IRenderableObject;
-
-			for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
-				pRenderable = pVisibleObjects[i].getRenderable();
-
-				if (pRenderable.switchRenderMethod("shadow_map")) {
-					pRenderable.render();
-				}
-			}
-		}
 	}
 }
 

@@ -644,20 +644,9 @@ module akra.scene.objects {
 			//notify prerender scene
 			this.preRenderScene();
 
-			var pRenderer: IRenderer = this._getRenderer();
-
-			pRenderer._beginFrame(pViewport);
-			//render scene
-			this.renderImpl(pViewport);
-
-			pRenderer._endFrame();
 
 			//notify postrender scene
 			this.postRenderScene();
-    	}
-
-    	protected renderImpl(pViewport: IViewport): void {
-    		CRITICAL("NOT IMPLEMENTED");
     	}
 
 
