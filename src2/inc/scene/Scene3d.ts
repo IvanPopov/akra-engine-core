@@ -11,6 +11,7 @@ module akra.scene {
 	export class Scene3d implements IScene3d {
 		protected _pRootNode: ISceneNode;
 		protected _pSceneManager: ISceneManager;
+		protected _pNodeList: ISceneNode[];
 
 		type: ESceneTypes = ESceneTypes.TYPE_3D;
 
@@ -18,6 +19,8 @@ module akra.scene {
 			this._pSceneManager = pSceneManager;
 			this._pRootNode = this.createSceneNode("root-node");
 			this._pRootNode.create();
+
+			this._pNodeList = [];
 		}
 
 		inline getRootNode(): ISceneNode {
@@ -78,6 +81,10 @@ module akra.scene {
 			return null;
 		}
 
+		inline getAllNodes(): ISceneNode[] {
+			return this._pNodeList;
+		}
+
 		_render(pCamera: ICamera, pViewport: IViewport): void {
 			
 		}
@@ -92,8 +99,27 @@ module akra.scene {
 		}
 
 		BEGIN_EVENT_TABLE(Scene3d);
-			BROADCAST(nodeAttachment, CALL(pNode));
-			BROADCAST(nodeDetachment, CALL(pNode));
+
+		nodeAttachment (pNode: ISceneNode): void {
+			this._pNodeList.push(pNode);
+			
+			EMIT_BROADCAST(nodeAttachment, CALL(pNode));
+		}
+
+		nodeDetachment (pNode: ISceneNode): void {
+
+			for (var i: int = 0; i < this._pNodeList.length; ++ i) {
+				if (pNode == this._pNodeList[i]) {
+					this._pNodeList.splice(i, 1);
+					break;
+				}
+			};
+
+			EMIT_BROADCAST(nodeDetachment, CALL(pNode));
+		}
+
+			// BROADCAST(nodeAttachment, CALL(pNode));
+			// BROADCAST(nodeDetachment, CALL(pNode));
 		END_EVENT_TABLE();
 	}
 }

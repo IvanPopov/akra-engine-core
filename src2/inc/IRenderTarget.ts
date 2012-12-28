@@ -65,6 +65,8 @@ module akra {
 		getWorstFrameTime(): float;
 		resetStatistics(): void;
 
+		
+
 
 		isActive(): bool;
 		setActive(isActive?: bool): void;
