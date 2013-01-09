@@ -2,6 +2,7 @@
 #define DSVIEWPORT_TS
 				
 #include "IDSViewport.ts"
+#include "Viewport.ts"
 #include "DSUniforms.ts"
 
 module akra.render {

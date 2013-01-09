@@ -6,12 +6,21 @@
 #include "SceneNode.ts"
 #include "events/events.ts"
 #include "objects/Camera.ts"
+#include "IDisplayList.ts"
+
+#define DEFAULT_DLIST DEFAULT_NAME
 
 module akra.scene {
+	export interface IDisplayListMap {
+		[key: string]: IDisplayList;
+	}
+
 	export class Scene3d implements IScene3d {
 		protected _pRootNode: ISceneNode;
 		protected _pSceneManager: ISceneManager;
 		protected _pNodeList: ISceneNode[];
+
+		protected _pDisplayListMap: IDisplayListMap = {};
 
 		type: ESceneTypes = ESceneTypes.TYPE_3D;
 
@@ -83,6 +92,33 @@ module akra.scene {
 
 		inline getAllNodes(): ISceneNode[] {
 			return this._pNodeList;
+		}
+
+		inline getDisplayList(csName: string = DEFAULT_DLIST): IDisplayList {
+			return this._pDisplayListMap[csName] || null;
+		}
+
+		inline addDisplayList(pList: IDisplayList, csName: string = DEFAULT_DLIST): void {
+			this._pDisplayListMap[csName] = pList;
+		}
+
+		inline delDisplayList(csName: string): bool {
+			if (this._pDisplayListMap[csName]) {
+				delete this._pDisplayListMap[csName];
+				return true;
+			}
+
+			return false;
+		}
+
+		_findObjects(pCamera: ICamera, csList: string = null): ISceneObject[] {
+			var pList: IDisplayList = this.getDisplayList(csList || DEFAULT_DLIST);
+
+			if (pList) {
+				return pList.findObjects(pCamera);
+			}
+
+			return null;
 		}
 
 		_render(pCamera: ICamera, pViewport: IViewport): void {

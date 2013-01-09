@@ -3,7 +3,7 @@
 
 module akra {
 	export interface IDisplayList extends IEventProvider {
-		findObjects(pCamera: ICamera): ISceneNode[];
+		findObjects(pCamera: ICamera): ISceneObject[];
 	}
 }
 

@@ -20,8 +20,8 @@ module akra.scene {
 
 		}
 
-		findObjects(): ISceneNode {
-			return this._pScene.getAllNodes();
+		findObjects(pCamera: ICamera): ISceneObject[] {
+			return null;
 		}
 
 		BEGIN_EVENT_TABLE();

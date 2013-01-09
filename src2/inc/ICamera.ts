@@ -60,6 +60,9 @@ module akra {
 
         getSceneBuilder(): ISceneBuilder;
 
+        //display via display list with name <csList>
+        display(csList?: string): ISceneNode[];
+
     	_renderScene(pViewport: IViewport): void;
     	_keepLastViewport(pViewport: IViewport): void;
     	_getLastViewport(): IViewport;

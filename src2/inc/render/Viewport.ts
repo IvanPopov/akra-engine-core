@@ -54,7 +54,6 @@ module akra.render {
 		protected _isAutoUpdated: bool = true;
 
 		protected _csDefaultRenderMethod: string = null;
-		protected _pDefaultDisplayList: IDisplayList = null;
 
 		inline get zIndex(): int {
 			return this._iZIndex;
@@ -232,23 +231,21 @@ module akra.render {
 		}
 
 		update(): void {
-			if (this._pCamera && this._pDefaultDisplayList) {
-				this.renderAsNormal(this._csDefaultRenderMethod, this._pCamera, this._pDefaultDisplayList);
+			if (this._pCamera) {
+				this.renderAsNormal(this._csDefaultRenderMethod, this._pCamera);
 			}
 		}
 
-		protected renderAsNormal(csMethod: string, pCamera: ICamera, pDisplayList: IDisplayList): void {
-				var pVisibleObjects: ISceneObject[] = pDisplayList.findObjects(pCamera);
+		protected renderAsNormal(csMethod: string, pCamera: ICamera): void {
+				var pVisibleObjects: ISceneObject[] = pCamera.display();
 				var pRenderable: IRenderableObject;
 
 				for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
 					pRenderable = pVisibleObjects[i].getRenderable();
 
-					if (!isNull(csMethod)) {
-						pRenderable.switchRenderMethod(csMethod);
+					if (!isNull(pRenderable)) {
+						pRenderable.render(csMethod);
 					}
-
-					pRenderable.render();
 				}
 		}
 

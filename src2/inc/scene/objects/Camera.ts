@@ -57,6 +57,9 @@ module akra.scene.objects {
 		protected _pLastViewport: IViewport = null;
 
 
+		// protected _pPrevObjects: ISceneNode[] = null;
+		// protected _p
+
 		inline get viewMatrix(): IMat4 { return this._m4fView; }
     	
     	inline get projectionMatrix(): IMat4 { return this._m4fRenderStageProj; }
@@ -103,9 +106,19 @@ module akra.scene.objects {
 
 				this.setProjParams(this._fFOV, this._fAspect, this._fNearPlane, this._fFarPlane);
 				this.recalcMatrices();
+
+				//register default display list
+				//if default display list not founded
+				if (isNull(this._pScene.getDisplayList())) {
+					//this._pScene.addDisplayList();
+				}
 			}
 
 			return isOK;
+		}
+
+		display(csList: string = null): ISceneObject[] {
+			return this._pScene._findNodes(this, csList);
 		}
 
 		setParameter(eParam: ECameraParameters, pValue: any): void {

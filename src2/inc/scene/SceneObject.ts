@@ -4,6 +4,7 @@
 #include "ISceneObject.ts"
 #include "SceneNode.ts"
 #include "geometry/Rect3d.ts"
+#include "IRenderableObject.ts"
 
 module akra.scene {
 
@@ -35,6 +36,10 @@ module akra.scene {
 			super(pScene);
 
 			this.type = EEntityTypes.SCENE_OBJECT;
+		}
+
+		inline getRenderable(): IRenderableObject {
+			return null;
 		}
 
 		accessLocalBounds(): IRect3d {
