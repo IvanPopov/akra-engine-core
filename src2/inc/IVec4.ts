@@ -5,6 +5,7 @@ module akra {
 
 	IFACE(IVec2);
 	IFACE(IVec3);
+	IFACE(IColorValue);
 
 	export interface IVec4Constructor {
         ();
@@ -32,6 +33,7 @@ module akra {
 		set(): IVec4;
 		set(fValue: float): IVec4;
 		set(v4fVec: IVec4): IVec4;
+		set(c4fColor: IColorValue): IVec4;
 		set(pArray: float[]): IVec4;
 		set(fValue: float, v3fVec: IVec3): IVec4;
 		set(v2fVec1: IVec2, v2fVec2: IVec2): IVec4;

@@ -59,14 +59,14 @@
 #endif
 
 #define ALLOCATE_STORAGE(sName, nCount)    \
-        static get stackCeil(): I ## sName { \
+        static get stackCeil(): /*I ## */sName { \
             sName.stackPosition = sName.stackPosition === sName.stackSize - 1? 0: sName.stackPosition;\
             return sName.stack[sName.stackPosition ++]; \
         }\
         static stackSize: uint = nCount;\
         static stackPosition: int = 0;\
-        static stack: I ## sName[] = (function(): I ## sName[]{\
-                                    var pStack: I ## sName[] = new Array(sName.stackSize);\
+        static stack: /*I ## */sName[] = (function(): /*I ## */sName[]{\
+                                    var pStack: /*I ## */sName[] = new Array(sName.stackSize);\
                                     for(var i:int = 0; i<sName.stackSize; i++){\
                                         pStack[i] = new sName();\
                                     }\
@@ -406,12 +406,6 @@ module akra {
 
     export function now(): uint {
         return (new Date).getTime();
-    }
-
-    var _pDefaultBuildScenario: IBuildScenario = null;
-
-    export inline getDefaultBuildScenario(): IBuildScenario {
-        return _pDefaultBuildScenario;
     }
 
     

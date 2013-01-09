@@ -139,7 +139,7 @@ module akra.scene {
 		nodeAttachment (pNode: ISceneNode): void {
 			this._pNodeList.push(pNode);
 			
-			EMIT_BROADCAST(nodeAttachment, CALL(pNode));
+			EMIT_BROADCAST(nodeAttachment, _CALL(pNode));
 		}
 
 		nodeDetachment (pNode: ISceneNode): void {
@@ -151,7 +151,7 @@ module akra.scene {
 				}
 			};
 
-			EMIT_BROADCAST(nodeDetachment, CALL(pNode));
+			EMIT_BROADCAST(nodeDetachment, _CALL(pNode));
 		}
 
 			// BROADCAST(nodeAttachment, CALL(pNode));

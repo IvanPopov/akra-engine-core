@@ -6,10 +6,14 @@
 module akra {
     IFACE(IReferenceCounter);
     IFACE(ISkeleton);
+    IFACE(IRect3d);
     IFACE(ISphere);
+    IFACE(IMeshSubset);
+    IFACE(ISkin);
+    
 	export enum EMeshOptions {
-        HB_READABLE = EHardwareBufferFlags.READABLE,
-        RD_ADVANCED_INDEX = ERenderDataFlags.ADVANCED_INDEX
+        HB_READABLE = <int>EHardwareBufferFlags.READABLE,
+        RD_ADVANCED_INDEX = <int>ERenderDataOptions.ADVANCED_INDEX
     };
 
     export enum EMeshCloneOptions{
@@ -32,11 +36,17 @@ module akra {
         isReadyForRender(): bool;
         setup(sName: string, eOptions: int, pDataBuffer: IReferenceCounter): bool;
         createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions: int);
-        replaceFlexMaterials(pFlexMaterials): void;
         freeSubset(sName: string): bool;
+
+        /** @deprecated */
+        replaceFlexMaterials(pFlexMaterials): void;
+        /** @deprecated */
         getFlexMaterial();
-        addFlexMaterial(sName: string, pMaterialData): bool;
+        /** @deprecated */
+        addFlexMaterial(sName: string, pMaterial: IMaterial): bool;
+        /** @deprecated */
         setFlexMaterial(iMaterial: int): bool;
+        
         destroy(): void;
         destructor(): void;
         getSubset(): IMeshSubset;
@@ -46,7 +56,7 @@ module akra {
         createAndShowSubBoundingSphere(): void;
         createBoundingBox(): bool;
         deleteBoundingBox(): bool;
-        getBoundingBox(): IRec3d;
+        getBoundingBox(): IRect3d;
         showBoundingBox(): bool;
         hideBoundingBox(): bool;
         createBoundingSphere(): bool;

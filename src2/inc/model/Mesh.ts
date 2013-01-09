@@ -10,6 +10,7 @@
 #include "IMaterial.ts"
 #include "IVertexData.ts"
 #include "IMeshSubset.ts"
+#include "ISkin.ts"
 
 module akra.model {
 

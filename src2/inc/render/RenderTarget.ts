@@ -5,7 +5,7 @@
 
 #include "IDepthBuffer.ts"
 #include "Viewport.ts"
-#include "DSViewport.ts"
+#include "DSViewport2.ts"
 #include "events/events.ts"
 #include "IFrameStats.ts"
 

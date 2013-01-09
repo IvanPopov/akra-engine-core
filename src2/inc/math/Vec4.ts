@@ -59,6 +59,7 @@ module akra.math {
         set(): IVec4;
         set(fValue: float): IVec4;
         set(v4fVec: IVec4): IVec4;
+        set(c4fColor: IColorValue): IVec4;
         set(pArray: float[]): IVec4;
         set(fValue: float, v3fVec: IVec3): IVec4;
         set(v2fVec1: IVec2, v2fVec2: IVec2): IVec4;
@@ -85,6 +86,13 @@ module akra.math {
                         this.y = v4fVec.y;
                         this.z = v4fVec.z;
                         this.w = v4fVec.w;
+                    }
+                    //color
+                    else if (isDef(arguments[0].r)) {
+                        this.x = arguments[0].r;
+                        this.y = arguments[0].g;
+                        this.z = arguments[0].b;
+                        this.w = arguments[0].a;
                     }
                     else{
                         //array

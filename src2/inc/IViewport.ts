@@ -8,7 +8,7 @@ module akra {
     IFACE(IRenderTarget);
     IFACE(ICamera);
 
-    export interface EViewportTypes {
+    export enum EViewportTypes {
         DEFAULT = -1,
         DSVIEWPORT = 1
     }

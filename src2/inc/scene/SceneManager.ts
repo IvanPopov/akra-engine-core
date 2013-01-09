@@ -16,6 +16,7 @@ module akra.scene {
         private _pTimer: IUtilTimer;
 
         private _fUpdateTimeCount: float = 0.;
+        private _fMillisecondsPerTick: float = 0.0333;
         
 
         constructor (pEngine: IEngine) {
@@ -32,13 +33,13 @@ module akra.scene {
             
             var fUpdateTime: float = this._fUpdateTimeCount;
 
-            while (this.fUpdateTimeCount > a.fMillisecondsPerTick) {
+            while (this._fUpdateTimeCount > this._fMillisecondsPerTick) {
                 // update the scene
                 this.notifyUpdateScene();
 
                 // subtract the time interval
                 // emulated with each tick
-                this.fUpdateTimeCount -= a.fMillisecondsPerTick;
+                this._fUpdateTimeCount -= this._fMillisecondsPerTick;
             }
 
             if (fUpdateTime !== this._fUpdateTimeCount) {
@@ -50,13 +51,25 @@ module akra.scene {
             
             // update the scene attached to the root node
             for (var i = 0; i < this._pSceneList.length; ++ i) {
-                this._pSceneList[i].getRootNode().recursiveUpdate();
+                var pScene: IScene = this._pSceneList[i];
+                
+                if (pScene.type != ESceneTypes.TYPE_3D) {
+                    continue;
+                }
+                
+                (<IScene3d>pScene).getRootNode().recursiveUpdate();
             }
         }
 
         notifyPreUpdateScene(): void {
             for (var i = 0; i < this._pSceneList.length; ++ i) {
-                this._pSceneList[i].getRootNode().recursivePreUpdate();
+                var pScene: IScene = this._pSceneList[i];
+                
+                if (pScene.type != ESceneTypes.TYPE_3D) {
+                    continue;
+                }
+                
+                (<IScene3d>pScene).getRootNode().recursivePreUpdate();
             }
         }
 

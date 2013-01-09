@@ -19,8 +19,8 @@ module akra {
         getScene(iScene?: uint, eType?: ESceneTypes): IScene;
 
         update(): void;
-        notufyUpdateScene(): void;
-        notufyPreUpdateScene(): void;
+        notifyUpdateScene(): void;
+        notifyPreUpdateScene(): void;
     }	
 }
 

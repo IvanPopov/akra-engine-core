@@ -76,7 +76,7 @@ module akra.render {
         inline set depthClear(fDepthClearValue: float) { this._fDepthClearValue = fDepthClearValue; }
 
 
-		constructor (pCamera: ICamera, csRenderMethod: string = null, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
+		constructor (pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			this._pTarget = pTarget;
 
 			this._fRelLeft = fLeft;
@@ -152,12 +152,7 @@ module akra.render {
 
 			if (pCamera) {
 				pCamera._keepLastViewport(this);
-				this._setDisplayList(DL_DEFAULT);
 			}
-        }
-
-        protected _setDisplayList(csListName: string): void {
-        	this._csDefaultRenderMethod = this._pCamera.scene.getDisplayList(csListName);
         }
 
         setDimensions(fLeft: float, fTop: float, fWidth: float, fHeight: float): bool;

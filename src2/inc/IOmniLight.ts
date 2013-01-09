@@ -1,5 +1,5 @@
 #ifndef IOMNILIGHT_TS
-#ifndef IOMNILIGHT_TS
+#define IOMNILIGHT_TS
 
 #include "ILightPoint.ts"
 

@@ -57,10 +57,6 @@ module akra {
 		toTranslationMatrix(m4fDestination?: IMat4);
 
 		vec3TransformCoord(m4fTransformation: IMat4, v3fDestination?: IVec3): IVec3;
-<<<<<<< HEAD
-=======
-
->>>>>>> typescript-animation
 	};
 };
 

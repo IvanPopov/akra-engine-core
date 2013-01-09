@@ -1,7 +1,7 @@
 #ifndef CAMERA_TS
 #define CAMERA_TS
 
-#include "common.h"
+#include "common.ts"
 #include "IScene3d.ts"
 #include "ICamera.ts"
 #include "IViewport.ts"
@@ -118,7 +118,7 @@ module akra.scene.objects {
 		}
 
 		display(csList: string = null): ISceneObject[] {
-			return this._pScene._findNodes(this, csList);
+			return this._pScene._findObjects(this, csList);
 		}
 
 		setParameter(eParam: ECameraParameters, pValue: any): void {

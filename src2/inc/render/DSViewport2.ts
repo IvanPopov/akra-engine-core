@@ -4,6 +4,14 @@
 #include "IDSViewport.ts"
 #include "Viewport.ts"
 #include "DSUniforms.ts"
+#include "IRenderTechnique.ts"
+#include "IRenderPass.ts"
+#include "ILightPoint.ts"
+#include "IOmniLight.ts"
+#include "IProjectLight.ts"
+#include "IShadowCaster.ts"
+#include "RenderableObject.ts"
+
 
 module akra.render {
 
@@ -25,13 +33,13 @@ module akra.render {
 
 	    private _pLightPoints: ILightPoint[] = null;
 
-		constructor() {
-			super();
+		constructor(pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
+			super(pCamera, pTarget, null, fLeft, fTop, fWidth, fHeight, iZIndex);
 
 			var pEngine: IEngine = this.getTarget().getRenderer().getEngine();
-			var pResMgr: IResourcePoolManager = this.getEngine().getResourceManager();
-			var pDeferredData: IRenderTarget = new Array(2);
-			var pDeferredTextures: ITexture[] = new Array(2);
+			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
+			var pDeferredData: IRenderTarget[] = <IRenderTarget[]>new Array(2);
+			var pDeferredTextures: ITexture[] = <ITexture[]>new Array(2);
 			var pDepthTexture: ITexture;
 			var pDefferedView: IRenderableObject = this._pDeferredView = new render.RenderableObject();
 			var iGuid: int = sid();
@@ -126,7 +134,7 @@ module akra.render {
 								var pPass: IRenderPass = pTechnique.getPass(k);
 								
 								if (isNull(pPass.getRenderTarget())) {
-									pPass.getData().blendWith("akra.system.prepareForDeferredShading.pass" + <string>j);
+									pPass.data.blend("akra.system.prepareForDeferredShading.pass" + <string>j);
 								}
 							}
 						}
@@ -214,7 +222,7 @@ module akra.render {
 				    pTechnique.setTextureBySemantics("SCENE_DEPTH_TEXTURE", pDepthTexture);
 
 					break;
-				case 1;
+				//case 1;
 			}
 		}
 

@@ -58,10 +58,8 @@ module akra {
     	lookAt(v3fFrom: IVec3, v3fCenter: IVec3, v3fUp?: IVec3);
     	lookAt(v3fCenter: IVec3, v3fUp?: IVec3);
 
-        getSceneBuilder(): ISceneBuilder;
-
         //display via display list with name <csList>
-        display(csList?: string): ISceneNode[];
+        display(csList?: string): ISceneObject[];
 
     	_renderScene(pViewport: IViewport): void;
     	_keepLastViewport(pViewport: IViewport): void;

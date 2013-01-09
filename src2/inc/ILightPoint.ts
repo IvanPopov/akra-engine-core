@@ -1,5 +1,5 @@
 #ifndef ILIGHTPOINT_TS
-#ifndef ILIGHTPOINT_TS
+#define ILIGHTPOINT_TS
 
 module akra {
 	export interface ILightParameters {
@@ -7,17 +7,15 @@ module akra {
 	    ambient: IColor;
 	    diffuse: IColor;
 	    specular: IColor;
-	    attenuation: IColor;
+	    attenuation: IVec3;
 	}
 
 	export enum ELightPointTypes {
-		UNKNOWN,
-		PROJECT,
+		PROJECT = 100,
 		OMNI_DIRECTIONAL
 	}
 
 	export interface ILightPoint extends ISceneNode {
-		type: ELightPointTypes;
 		params: ILightParameters;
 
 		isShadowCaster(): bool;

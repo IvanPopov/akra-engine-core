@@ -1,6 +1,8 @@
 #ifndef DSUNIFORMS_TS
 #define DSUNIFORMS_TS
 
+#include "ILightPoint.ts"
+
 #define uniformOmni() UniformOmni.stackCeil
 #define uniformProject() UniformProject.stackCeil
 #define uniformProjectShadow() UniformProjectShadow.stackCeil
@@ -18,7 +20,8 @@ module akra.render {
 		DIFFUSE: IVec4 = new Vec4();
 		AMBIENT: IVec4 = new Vec4();
 		SPECULAR: IVec4 = new Vec4();
-		POSITION: IVec4 = new Vec4();
+		POSITION: IVec3 = new Vec3();
+		ATTENUATION: IVec3 = new Vec3();
 
 		set(pLightParam: ILightParameters, v3fPosition: IVec3): LightData {
 		    
@@ -65,7 +68,7 @@ module akra.render {
 
 
 	export struct UniformProjectShadow implements IUniform {
-		LIGHT_DATA: LightData = new a.LightData();
+		LIGHT_DATA: LightData = new LightData();
 	    TO_LIGHT_SPACE: IMat4 = new Mat4();
 	    REAL_PROJECTION_MATRIX: IMat4 = new Mat4();
 	    OPTIMIZED_PROJECTION_MATRIX: IMat4 = new Mat4();
@@ -93,7 +96,7 @@ module akra.render {
 	}
 
 	export struct UniformOmniShadow implements IUniform {
-		LIGHT_DATA: LightData = new LightData();
+		LIGHT_DATA: LightData = new LightData;
 		TO_LIGHT_SPACE: IMat4[] = 
 		[
 			new Mat4, new Mat4, new Mat4, 
@@ -112,7 +115,7 @@ module akra.render {
 	        {"TEXTURE" : null}, {"TEXTURE" : null}, {"TEXTURE" : null}
 	    ];
 
-	    setLightData(pLightParam: LightData, v3fPosition: IVec3): UniformOmniShadow {
+	    setLightData(pLightParam: ILightParameters, v3fPosition: IVec3): UniformOmniShadow {
 		    this.LIGHT_DATA.set(pLightParam, v3fPosition);
 		    return this;
 		};
@@ -136,9 +139,9 @@ module akra.render {
         project: UniformProject[];
         omniShadows: UniformOmniShadow[];
         projectShadows: UniformProjectShadow[];
-        textures: ITexture[][],
-        samplersOmni: IShadowSampler[],
-        samplersProject: IShadowSampler[]
+        textures: ITexture[][];
+        samplersOmni: IShadowSampler[];
+        samplersProject: IShadowSampler[];
 	}
 }
 

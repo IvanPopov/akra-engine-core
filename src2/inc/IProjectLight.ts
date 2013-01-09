@@ -1,5 +1,5 @@
 #ifndef IPROJECTLIGHT_TS
-#ifndef IPROJECTLIGHT_TS
+#define IPROJECTLIGHT_TS
 
 #include "ILightPoint.ts"
 
