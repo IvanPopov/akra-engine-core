@@ -16,6 +16,7 @@ module akra {
         (fValue1: float, fValue2: float, fValue3: float);
     }
 
+
 	export interface IVec3 {
 		x: float;
 		y: float;
@@ -56,6 +57,10 @@ module akra {
 		toTranslationMatrix(m4fDestination?: IMat4);
 
 		vec3TransformCoord(m4fTransformation: IMat4, v3fDestination?: IVec3): IVec3;
+<<<<<<< HEAD
+=======
+
+>>>>>>> typescript-animation
 	};
 };
 

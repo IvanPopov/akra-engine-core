@@ -5,7 +5,7 @@
 #include "IVec3.ts"
 
 module akra.math {
-    
+
     export class Vec4 implements IVec4{
         x: float;
         y: float;
@@ -54,8 +54,6 @@ module akra.math {
                     v4fVec.x = v4fVec.y = v4fVec.z = v4fVec.w = 0.;
                     break;
             }
-
-            // return v4fVec;
         };
 
         set(): IVec4;
@@ -366,6 +364,7 @@ module akra.math {
         };
 
         ALLOCATE_STORAGE(Vec4,100)
+
     }
 }
 

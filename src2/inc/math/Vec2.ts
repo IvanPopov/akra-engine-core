@@ -4,10 +4,11 @@
 #include "IVec2.ts"
 
 module akra.math {
-    
+
     export class Vec2 implements IVec2{
         x: float = 0.;
         y: float = 0.;
+
 
         #include "VectorsGettersSetters/Vec2GettersSetters.ts"
 
@@ -18,6 +19,7 @@ module akra.math {
         constructor(fValue1: float, fValue2: float);
         constructor(fValue1?, fValue2?){
             var nArgumentsLength: uint = arguments.length;
+
             var v2fVec: IVec2 = this;
 
             // if (<any>this === window || <any>this === akra || <any>this === akra.math) {
@@ -39,6 +41,7 @@ module akra.math {
                     v2fVec.x = v2fVec.y = 0.;
                     break;
             }
+
         };
 
         set(): IVec2;
