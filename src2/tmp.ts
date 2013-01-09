@@ -8270,7 +8270,7 @@ module akra {
 
 module akra.model {
 
-	export class BufferMap implements IBufferMap extends ReferenceCounter{
+	export class BufferMap implements IBufferMap extends core.pool.ReferenceCounter{
 		private _pFlows: IDataFlow[] = null;
 		private _pMappers = null;
 		private _pIndex = null;
@@ -8301,11 +8301,11 @@ module akra.model {
 
 		/**@inline*/  get primCount(): uint{
 			switch (this._ePrimitiveType) {
-	            case a.PRIMTYPE.TRIANGLELIST:
+	            case EPrimitiveTypes.TRIANGLELIST:
 	                return this.length / 3.;
-	            case a.PRIMTYPE.POINTLIST:
+	            case EPrimitiveTypes.POINTLIST:
 	                return this.length;
-	            case a.PRIMTYPE.TRIANGLESTRIP:
+	            case EPrimitiveTypes.TRIANGLESTRIP:
 	        }
 
 	        return undefined;
@@ -8365,7 +8365,7 @@ module akra.model {
 		}
 
 		getFlow(iFlow: int, bComplete?: bool): IDataFlow {
-			bComplete = ifndef(bComplete, true);
+			bComplete = bComplete || true;
 
 		    if (typeof arguments[0] === 'string') {
 		        var nTotal: int;
@@ -8381,10 +8381,10 @@ module akra.model {
 		        }
 
 		        for (var i: int = 0; i < nTotal; ++ i) {
-		            if (!pFlows[i].pData) {
+		            if (!pFlows[i].data) {
 		                continue;
 		            }
-		            if (pFlows[i].pData.hasSemantics(arguments[0])) {
+		            if (pFlows[i].data.hasSemantics(arguments[0])) {
 		                return pFlows[i];
 		            }
 		        }
@@ -8395,7 +8395,7 @@ module akra.model {
 		    if (bComplete) {
 
 		        for (var i: int = 0, pFlows = this._pCompleteFlows; i < this._nCompleteFlows; ++ i) {
-		            if (pFlows[i].iFlow == iFlow) {
+		            if (pFlows[i].flow == iFlow) {
 		                return pFlows[i];
 		            }
 		        }
@@ -8407,7 +8407,7 @@ module akra.model {
 		}
 		reset(): void {
 			this._pIndex = null
-		    this._ePrimitiveType = a.PRIMTYPE.TRIANGLELIST;
+		    this._ePrimitiveType = EPrimitiveTypes.TRIANGLELIST;
 
 
 		    var nFlowLimit = Math.min(
@@ -8419,10 +8419,10 @@ module akra.model {
 		    this._pFlows = new Array(nFlowLimit);
 		    for (var i = 0; i < nFlowLimit; i++) {
 		        this._pFlows[i] = {
-		            iFlow: i,
-		            pData:  null,
-		            eType:  a.BufferMap.FT_UNMAPPABLE,
-		            pMapper:null
+		            flow: i,
+		            data:  null,
+		            type:  EDataFlowTypes.UNMAPPABLE,
+		            mapper:null
 		        };
 		    }
 
@@ -8453,12 +8453,12 @@ module akra.model {
 		    debug_assert(iFlow < this.limit,
 		        'Invalid strem. Maximum allowable number of stream ' + this.limit + '.');
 
-		    if (!pVertexData || pFlow.pData === pVertexData) {
+		    if (!pVertexData || pFlow.data === pVertexData) {
 		        return -1;
 		    }
 
-		    if (pVertexData.buffer instanceof a.VertexBuffer) {
-		        pFlow.eType = a.BufferMap.FT_UNMAPPABLE;
+		    if (pVertexData.buffer instanceof core.pool.resources.VertexBuffer) {
+		        pFlow.type = EDataFlowTypes.UNMAPPABLE;
 		        this.length = pVertexData.getCount();
 //this.startIndex = pVertexData.getStartIndex();
 		        debug_assert(this.checkData(pVertexData),
@@ -8467,10 +8467,10 @@ module akra.model {
 		        this._pushEtalon(pVertexData);
 		    }
 		    else {
-		        pFlow.eType = a.BufferMap.FT_MAPPABLE;
+		        pFlow.type = EDataFlowTypes.MAPPABLE;
 		    }
 
-		    pFlow.pData = pVertexData;
+		    pFlow.data = pVertexData;
 
 		    return this.update()? iFlow: -1;
 		}
@@ -8490,7 +8490,7 @@ module akra.model {
 		        if (pExistsMap === pMap) {
 //если уже заданные маппинг менял свой стартовый индекс(например при расширении)
 //то необходимо сменить стартовый индекс на новый
-		            if (pMappers[i].eSemantics === eSemantics && pMappers[i].iAddition == iAddition) {
+		            if (pMappers[i].semantics === eSemantics && pMappers[i].addition == iAddition) {
 		                return pMappers[i];
 		            }
 		        }
@@ -8503,15 +8503,15 @@ module akra.model {
 		};
 
 
-		mapping(iFlow: int, pMap: IVertexData, sSemantics: string, iAddition?: int): bool {
+		mapping(iFlow: int, pMap: IVertexData, eSemantics: string, iAddition?: int): bool {
 			iAddition = iAddition || 0;
 
 		    var pMapper: IDataMapper = this.findMapping(pMap, eSemantics, iAddition);
 		    var pFlow: IDataFlow     = this._pFlows[iFlow];
 
-		    debug_assert(pFlow.pData && pFlow.eType === a.BufferMap.FT_MAPPABLE,
+		    debug_assert(pFlow.data && pFlow.type === EDataFlowTypes.MAPPABLE,
 		        'Cannot mapping empty/unmappable flow.');
-		    debug_assert(pMap, 'Passed empty mapper.');
+		    debug_assert(isDef(pMap), 'Passed empty mapper.');
 
 		    if (!eSemantics) {
 		        eSemantics = pMap.getVertexDeclaration()[0].eUsage;
@@ -8522,13 +8522,13 @@ module akra.model {
 		    }
 
 		    if (pMapper) {
-		        if (pFlow.pMapper === pMapper) {
-		            return pMapper.eSemantics === eSemantics &&
-		                pMapper.iAddition === iAddition? true: false;
+		        if (pFlow.mapper === pMapper) {
+		            return pMapper.semantics === eSemantics &&
+		                pMapper.addition === iAddition? true: false;
 		        }
 		    }
 		    else {
-		        pMapper = {pData: pMap, eSemantics: eSemantics, iAddition: iAddition};
+		        pMapper = {data: pMap, semantics: eSemantics, addition: iAddition};
 
 		        this._pMappers.push(pMapper);
 		        this.length = pMap.getCount();
@@ -8536,7 +8536,7 @@ module akra.model {
 		        this._pushEtalon(pMap);
 		    }
 
-		    pFlow.pMapper = pMapper;
+		    pFlow.mapper = pMapper;
 
 		    return this.update();
 		}
@@ -8560,22 +8560,22 @@ module akra.model {
 
 		    for (var i: int = 0; i < pFlows.length; i++) {
 		        pFlow = pFlows[i];
-		        pMapper = pFlow.pMapper;
-		        isMappable = (pFlow.eType === a.BufferMap.FT_MAPPABLE);
+		        pMapper = pFlow.mapper;
+		        isMappable = (pFlow.type === EDataFlowTypes.MAPPABLE);
 
-		        if (pFlow.pData) {
+		        if (pFlow.data) {
 		            nUsedFlows ++;
 		        }
 
-		        if (pFlow.pData === null || (isMappable && pMapper === null)) {
+		        if (pFlow.data === null || (isMappable && pMapper === null)) {
 		            continue;
 		        }
 
 		        pCompleteFlows[nCompleteFlows ++] = pFlow;
 
 		        if (isMappable) {
-		            nCurStartxIndex = pMapper.pData.getStartIndex();
-		            pVideoBuffer = pFlow.pData.buffer;
+		            nCurStartxIndex = pMapper.data.getStartIndex();
+		            pVideoBuffer = pFlow.data.buffer;
 		            for (var j = 0; j < nCompleteVideoBuffers; j++) {
 		                if (pCompleteVideoBuffers[j] === pVideoBuffer) {
 		                    isVideoBufferAdded = true;
@@ -8587,7 +8587,7 @@ module akra.model {
 		            }
 		        }
 		        else {
-		            nCurStartxIndex = pFlow.pData.getStartIndex();
+		            nCurStartxIndex = pFlow.data.getStartIndex();
 		        }
 
 		        if (nStartIndex === MAX_INT32) {
@@ -8607,15 +8607,15 @@ module akra.model {
 		    return true;
 		}
 		clone(bWithMapping?: bool): IBufferMap {
-			bWithMapping = ifndef(bWithMapping, true);
+			bWithMapping = isDef(bWithMapping) ? bWithMapping : true;
 
-		    var pMap: IBufferMap = new model.BufferMap(this._pEngine);
+		    var pMap: IBufferMap = new BufferMap(this._pEngine);
 		    for (var i = 0, pFlows = this._pFlows; i < pFlows.length; ++ i) {
-		        if (pFlows[i].pData === null) {
+		        if (pFlows[i].data === null) {
 		            continue;
 		        }
 
-		        if (pMap.flow(pFlows[i].iFlow, pFlows[i].pData) < 0) {
+		        if (pMap.flow(pFlows[i].flow, pFlows[i].data) < 0) {
 		            pMap = null;
 		            return null;
 		        }
@@ -8624,18 +8624,18 @@ module akra.model {
 		            continue;
 		        }
 
-		        if (pFlows[i].pMapper) {
-	                pMap.mapping(pFlows[i].iFlow,
-	                pFlows[i].pMapper.pData,
-	                pFlows[i].pMapper.eSemantics,
-	                pFlows[i].pMapper.iAddition);
+		        if (pFlows[i].mapper) {
+	                pMap.mapping(pFlows[i].flow,
+	                pFlows[i].mapper.data,
+	                pFlows[i].mapper.semantics,
+	                pFlows[i].mapper.addition);
 		        }
 		    }
 
 		    return pMap;
 		}
 		toString(): string {
-			function _an(sValue: string, n: int, bBackward: bool) {
+			function _an(sValue, n: int, bBackward?: bool) {
 		        sValue = String(sValue);
 		        bBackward = bBackward || false;
 
@@ -8662,18 +8662,18 @@ module akra.model {
 
 		    for (var i: int = 0; i < this._nCompleteFlows; ++ i) {
 		        var pFlow: IDataFlow = this._pCompleteFlows[i];
-		        var pMapper: IDataMapper = pFlow.pMapper;
-		        var pVertexData: IVertexData = pFlow.pData;
+		        var pMapper: IDataMapper = pFlow.mapper;
+		        var pVertexData: IVertexData = pFlow.data;
 		        var pDecl:IVertexDeclaration = pVertexData.getVertexDeclaration();
 //trace(pMapper); window['pMapper'] = pMapper;
-		        s += '#' + _an(pFlow.iFlow, 2) + ' ' +
+		        s += '#' + _an(pFlow.flow, 2) + ' ' +
 		            _an('[ ' + (pDecl[0].eUsage !== a.DECLUSAGE.END? pDecl[0].eUsage: '<end>') + ' ]', 20) +
 		            ' : ' + _an(pDecl[0].iOffset, 6, true) + ' / ' + _an(pDecl[0].iSize, 6) +
 		            ' | ' +
 		            _an(pVertexData.resourceHandle(), 8, true) + ' / ' + _an(pVertexData.getOffset(), 8) +
 		            ' : ' +
-		            (pMapper? _an(pMapper.eSemantics, 15, true) + ' / ' + _an(pMapper.iAddition, 7) + ': ' +
-		                _an(pMapper.pData.getVertexDeclaration().element(pMapper.eSemantics).iOffset, 6) :
+		            (pMapper? _an(pMapper.semantics, 15, true) + ' / ' + _an(pMapper.addition, 7) + ': ' +
+		                _an(pMapper.data.getVertexDeclaration().element(pMapper.semantics).iOffset, 6) :
 		            _an('-----', 25) + ': ' + _an('-----', 6)) + ' |                  \n';
 
 
@@ -9059,6 +9059,8 @@ module akra {
 		hasSemantics(sSemantics: string): bool;
 		findElement(sSemantics: string, iCount?: uint): IVertexElement;
 		clone(): IVertexDeclaration;
+
+		element(sString: string);
 
 
 
@@ -11538,6 +11540,10 @@ module akra {
 		getTypedData(sUsage: string, iFrom?: int, iCount?: uint): ArrayBufferView;
 		getBufferHandle(): int;
 
+		getCount();
+		resourceHandle();
+		getOffset();
+
 		toString(): string;
 	}
 }
@@ -11776,6 +11782,16 @@ module akra.data {
 			}
 
 			debug_assert(pVertexBuffer.byteLength >= this.byteLength + this.offset, "vertex data out of array linits");
+		}
+
+		getCount(){
+
+		}
+		resourceHandle(){
+
+		}
+		getOffset(){
+
 		}
 
 

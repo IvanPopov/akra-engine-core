@@ -56,6 +56,16 @@ module akra.data {
 			debug_assert(pVertexBuffer.byteLength >= this.byteLength + this.offset, "vertex data out of array linits");
 		}
 
+		getCount(){
+			
+		}
+		resourceHandle(){
+
+		}
+		getOffset(){
+
+		}
+
 
 
 		getVertexDeclaration(): IVertexDeclaration {

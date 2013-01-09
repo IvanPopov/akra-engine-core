@@ -80,6 +80,8 @@ module akra {
 		findElement(sSemantics: string, iCount?: uint): IVertexElement;
 		clone(): IVertexDeclaration;
 
+		element(sString: string);
+
 
 
 		///DEBUG!!!

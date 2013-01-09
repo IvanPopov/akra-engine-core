@@ -37,6 +37,10 @@ module akra {
 
 		getTypedData(sUsage: string, iFrom?: int, iCount?: uint): ArrayBufferView;
 		getBufferHandle(): int;
+
+		getCount();
+		resourceHandle();
+		getOffset();
 		
 		toString(): string;
 	}
