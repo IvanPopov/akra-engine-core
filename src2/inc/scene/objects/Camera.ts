@@ -645,6 +645,8 @@ module akra.scene.objects {
 			this.preRenderScene();
 
 
+			pViewport.update();
+
 			//notify postrender scene
 			this.postRenderScene();
     	}
