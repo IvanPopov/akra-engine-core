@@ -4,23 +4,19 @@
 #include "render/RenderTexture.ts"
 #include "IRenderer.ts"
 #include "webgl/WebGLInternalFrameBuffer.ts"
+#include "webgl/WebGLPixelBuffer.ts"
 #include "IDepthBuffer.ts"
+#include "PixelFormat.ts"
 
 module akra.webgl {
-	export interface IWebGLSurfaceDesc {
-		buffer: IPixelBuffer;
-		zOffset: uint;
-		numSamples: uint;
-	}
-
 	export class WebGLRenderTexture extends render.RenderTexture {
 		protected _pFrameBuffer: WebGLInternalFrameBuffer = null;
 
-		constructor(pRenderer: IRenderer, pTarget: IWebGLSurfaceDesc){
-			super(pRenderer, pTarget.buffer, pTarget.zOffset);
+		constructor(pRenderer: IRenderer, pTarget: IPixelBuffer){
+			super(pRenderer, pTarget, 0);
 			this._pFrameBuffer = new WebGLInternalFrameBuffer(pRenderer);
 
-			this._pFrameBuffer.bindSurface(0, pTarget);
+			this._pFrameBuffer.bindSurface(GL_COLOR_ATTACHMENT0, pTarget);
 
 			this._iWidth = this._pFrameBuffer.width;
 			this._iHeight = this._pFrameBuffer.height;
@@ -54,6 +50,30 @@ module akra.webgl {
 			}
 
 			return bResult;
+		}
+
+		attachDepthPixelBuffer(pBuffer: IPixelBuffer): bool {
+			var bResult: bool = false;
+			
+			bResult = super.attachDepthPixelBuffer(pBuffer);
+			if(bResult) {
+				if(pBuffer.format !== EPixelFormats.DEPTH_BYTE){
+					this.detachDepthPixelBuffer();
+					return false;
+				}
+
+				this._pFrameBuffer.bindSurface(GL_DEPTH_ATTACHMENT, pBuffer);
+				(<WebGLPixelBuffer>pBuffer).addRef();
+			}
+
+			return bResult;
+
+		}
+
+		detachDepthPixelBuffer(): void {
+			this._pFrameBuffer.unbindSurface(GL_DEPTH_ATTACHMENT);
+			(<WebGLPixelBuffer>this._pDepthPixelBuffer).release();
+			super.detachDepthPixelBuffer();
 		}
 
 		detachDepthBuffer(): void {

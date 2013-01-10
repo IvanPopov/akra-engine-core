@@ -21,6 +21,7 @@ module akra {
     IFACE(IViewport);
     IFACE(IColor);
     IFACE(IEngine);
+    IFACE(IRenderTarget);
 
     #define CAPABILITYVALUE(category, value) ((category << (32 - 4)) | (1 << value))
 
@@ -260,6 +261,10 @@ module akra {
         _getViewport(): IViewport;
 
         hasCapability(eCapability: ERenderCapabilities): bool;
+
+        attachRenderTarget(pTarget: IRenderTarget): bool;
+        detachRenderTarget(pTarget: IRenderTarget): bool;
+        destroyRenderTarget(pTarget: IRenderTarget): void;
     }
 
 

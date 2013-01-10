@@ -673,6 +673,19 @@ module akra {
         0xFF0000, 0x00FF00, 0, 0,
         8, 0, 0, 0
         ],
+    //-----------------------------------------------------------------------
+        ["PF_DEPTH_BYTE",
+        /* Bytes per element */
+        1,
+        /* Flags */
+        EPixelFormatFlags.DEPTH,
+        /* Component type and count */
+        EPixelComponentTypes.BYTE, 1,
+        /* rbits, gbits, bbits, abits */
+        8, 0, 0, 0,
+        /* Masks and shifts */
+        0xFF, 0, 0, 0, 0, 0, 0, 0
+        ],
 	]);
 
     var _pColorValue: IColorValue = {r: 0., g: 0., b: 0., a: 1.};

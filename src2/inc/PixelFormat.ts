@@ -52,7 +52,8 @@ module akra {
         FLOAT16_GR = 35,       /*32-bit, 2-channel s10e5 floating point pixel format, 16-bit green, 16-bit red*/
         FLOAT32_GR = 36,       /*64-bit, 2-channel floating point pixel format, 32-bit green, 32-bit red*/ 
         
-        DEPTH = 29,            /*Depth texture format*/
+        DEPTH = 29,            /*Float Depth texture format*/
+        DEPTH_BYTE = 44,       /*Byte Depth texture format */
         
         SHORT_RGBA = 30,       /*64-bit pixel format, 16 bits for red, green, blue and alpha*/
         SHORT_GR = 34,         /*32-bit pixel format, 16-bit green, 16-bit red*/
@@ -65,7 +66,7 @@ module akra {
         
         R8 = 42,               /*8-bit pixel format, all bits red.*/
         RG8 = 43,              /*16-bit pixel format, 8 bits red, 8 bits green.*/
-        TOTAL = 44    
+        TOTAL = 45    
     };
 
     export interface PixelFormatList {

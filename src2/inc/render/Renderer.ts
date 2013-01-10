@@ -97,6 +97,36 @@ module  akra.render {
 
 		}
 
+ 		attachRenderTarget(pTarget: IRenderTarget): bool {
+ 			for(var i: uint = 0; i < this._pRenderTargets.length; i++){
+       			if(this._pRenderTargets[i] === pTarget){
+       				return false;
+       			}
+       		}
+
+ 			this._pRenderTargets.push(pTarget);
+ 			return true; 			
+ 		}
+
+        detachRenderTarget(pTarget: IRenderTarget): bool {
+       		for(var i: uint = 0; i < this._pRenderTargets.length; i++){
+       			if(this._pRenderTargets[i] === pTarget){
+       				this._pRenderTargets.splice(i, 1);
+       				return true;
+       			}
+       		}
+
+       		return false;
+        }
+
+        destroyRenderTarget(pTarget: IRenderTarget): void {
+        	var hasTarget: bool = this.detachRenderTarget(pTarget);
+        	if(hasTarget){
+        		pTarget.destroy();
+        		pTarget = null;
+        	}
+        }
+
 		inline _disableAllTextureUnits(): void {
 			this._disableTextureUnitsFrom(0);
 		}

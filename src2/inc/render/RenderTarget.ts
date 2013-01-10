@@ -7,6 +7,8 @@
 #include "Viewport.ts"
 #include "events/events.ts"
 #include "IFrameStats.ts"
+#include "IPixelBuffer.ts"
+#include "pixelUtil/pixelUtil.ts"
 
 /* Define the number of priority groups for the render system's render targets. */
 #ifndef NUM_RENDERTARGET_GROUPS
@@ -28,6 +30,7 @@ module akra.render {
 
 		protected _iColorDepth: int;
 		protected _pDepthBuffer: IDepthBuffer = null;
+		protected _pDepthPixelBuffer: IPixelBuffer = null;
 
 		protected _pFrameStats: IFrameStats;
 
@@ -98,6 +101,31 @@ module akra.render {
 			}
 
 			return isOk;
+		}
+
+		attachDepthPixelBuffer(pBuffer: IPixelBuffer): bool {
+
+			if(this._iWidth !== pBuffer.width ||
+			   this._iHeight !== pBuffer.height) {
+				return false;
+			}
+
+			var eFormat: EPixelFormats = pBuffer.format;
+			if(eFormat !== EPixelFormats.DEPTH ||
+			   eFormat !== EPixelFormats.DEPTH_BYTE){
+				return false;
+			}
+
+			this.detachDepthPixelBuffer();
+			this._pDepthPixelBuffer = pBuffer;
+
+			return true;
+		}
+
+		detachDepthPixelBuffer(): void {
+			if(this._pDepthPixelBuffer){
+				this._pDepthPixelBuffer = null;
+			}
 		}
 
 		detachDepthBuffer(): void {

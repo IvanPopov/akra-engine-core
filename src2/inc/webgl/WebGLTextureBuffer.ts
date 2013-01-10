@@ -7,6 +7,7 @@
 #include "pixelUtil/PixelBox.ts"
 #include "ITexture.ts"
 #include "IResourcePool.ts"
+#include "webgl/WebGLRenderer.ts"
 
 module akra.webgl {
 
@@ -27,14 +28,13 @@ module akra.webgl {
 	}
 
 	export class WebGLTextureBuffer extends WebGLPixelBuffer implements IPixelBuffer {
-		protected _eTarget: int;
-		protected _eFaceTarget: int; 
-		protected _pWebGLTexture: WebGLTexture;
-		protected _iFace: uint;
-		protected _iLevel: int;
-		protected _bSoftwareMipmap: bool;
-		protected _pRTTList: IRenderTexture[];
-
+		protected _eTarget: int = null;
+		protected _eFaceTarget: int = null; 
+		protected _pWebGLTexture: WebGLTexture = null;
+		protected _iFace: uint = 0;
+		protected _iLevel: int = 0;
+		protected _bSoftwareMipmap: bool = false;
+		protected _pRTTList: IRenderTexture[] = null;
 
 		constructor () {
 			super();
@@ -99,20 +99,15 @@ module akra.webgl {
 			}
 
 			// Is this a render target?
-	        // if (TEST_ANY(this._iFlags, ETextureFlags.RENDERTARGET)) {
-	        //     // Create render target for each slice
-	        //     mSliceTRT.reserve(mDepth);
-	        //     for(size_t zoffset=0; zoffset<mDepth; ++zoffset) {
-	        //         String name;
-	        //         name = "rtt/" + StringConverter::toString((size_t)this) + "/" + baseName;
-	        //         GLES2SurfaceDesc surface;
-	        //         surface.buffer = this;
-	        //         surface.zoffset = zoffset;
-	        //         RenderTexture *trt = GLES2RTTManager::getSingleton().createRenderTexture(name, surface, writeGamma, fsaa);
-	        //         mSliceTRT.push_back(trt);
-	        //         Root::getSingleton().getRenderSystem()->attachRenderTarget(*mSliceTRT[zoffset]);
-	        //     }
-	        // }
+	        if (TEST_ANY(this._iFlags, ETextureFlags.RENDERTARGET)) {
+	            // Create render target for each slice
+	            this._pRTTList = new WebGLRenderTexture[];
+	            for(var iZOffset: uint = 0; iZOffset < this._iDepth; ++iZOffset) {
+	                var pRenderTexture: WebGLRenderTexture = new WebGLRenderTexture(pWebGLRenderer, this);
+	                this._pRTTList.push(pRenderTexture);
+	                pWebGLRenderer.attachRenderTarget(pRenderTexture);
+	            }
+	        }
 	        
 	        var pProgram: IShaderProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_blit_texture_buffer"); 
 	        
@@ -149,15 +144,14 @@ module akra.webgl {
 		}
 
 		destroy(): void {  
-			// if (TEST_ANY(this._iFlags, ETextureFlags.RENDERTARGET))
-	        // {
-	        //     // Delete all render targets that are not yet deleted via _clearSliceRTT because the rendertarget
-	        //     // was deleted by the user.
-	        //     for (SliceTRT::const_iterator it = mSliceTRT.begin(); it != mSliceTRT.end(); ++it)
-	        //     {
-	        //         Root::getSingleton().getRenderSystem()->destroyRenderTarget((*it)->getName());
-	        //     }
-	        // }
+			if (TEST_ANY(this._iFlags, ETextureFlags.RENDERTARGET)) {
+	            // Delete all render targets that are not yet deleted via _clearSliceRTT because the rendertarget
+	            // was deleted by the user.
+	            var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+	            for (var i: uint = 0; i < this._pRTTList.length; i++) {
+	                pWebGLRenderer.destroyRenderTarget(this._pRTTList[i]);
+	            }
+	        }
     	}
 
 		//upload(download) data to(from) videocard.

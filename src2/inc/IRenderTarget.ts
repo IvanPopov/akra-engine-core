@@ -4,6 +4,7 @@
 #include "IDepthBuffer.ts"
 #include "IFrameStats.ts"
 #include "ICamera.ts"
+#include "IPixelBuffer.ts"
 
 module akra {
 	export enum EFramebuffer {
@@ -39,6 +40,9 @@ module akra {
 		getDepthBuffer(): IDepthBuffer;
 
 		attachDepthBuffer(pBuffer: IDepthBuffer): bool;
+		attachDepthPixelBuffer(pBuffer: IPixelBuffer): bool;
+
+		destroy(): void;
 
 		update(): void;
 		updateStats(): void;
@@ -73,6 +77,7 @@ module akra {
 		readPixels(ppDest?: IPixelBox, eFramebuffer?: EFramebuffer): IPixelBox;
 
 		detachDepthBuffer(): void;
+		detachDepthPixelBuffer(): void;                   
 
 		_beginUpdate(): void;
 		_updateViewport(iZIndex: int, bUpdateStatistics?: bool): void;
