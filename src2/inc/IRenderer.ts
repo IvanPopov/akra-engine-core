@@ -251,8 +251,6 @@ module akra {
 
         clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int): void;
 
-        createSequenceRenderTarget(sName?: string): ISequenceRenderTarget;
-
         _disableAllTextureUnits(): void;
         _disableTextureUnitsFrom(iUnit: uint): void;
 

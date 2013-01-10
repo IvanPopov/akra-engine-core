@@ -11,6 +11,7 @@ module akra {
 		bgra: uint;
 		abgr: uint;
 
+		set(cColor: IColorValue): IColor;
 		set(cColor: IColor): IColor;
 		set(r?: float, g?: float, b?: float, a?: float): IColor;
 		set(fGray: float, fAlpha: float): IColor;

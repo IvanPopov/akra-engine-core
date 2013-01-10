@@ -3,6 +3,8 @@
 
 #include "IRenderableObject.ts"
 #include "RenderTechnique.ts"
+#include "IRenderMethod.ts"
+
 #define DEFAULT_RM DEFAULT_NAME 
 #define DEFAULT_RT DEFAULT_NAME 
 
@@ -39,7 +41,7 @@ module akra.render {
 		_setup(pRenderer: IRenderer, csDefaultMethod: string = null): void {
 			this._pRenderer = pRenderer;
 
-			if (this.addRenderMethod(csDefaultMethod) < 0 || this.switchRenderMethod(0) === false) {
+			if (this.addRenderMethod(csDefaultMethod) || this.switchRenderMethod(null) === false) {
 				CRITICAL("cannot add & switch render method to default");
 			}
 		}
@@ -68,7 +70,7 @@ module akra.render {
 		addRenderMethod(csMethod: any, csName: string = DEFAULT_RM): bool {
 			var pTechnique: IRenderTechnique = new RenderTechnique;
 			var pRmgr: IResourcePoolManager = this.getRenderer().getEngine().getResourceManager();
-			var pMethod: IRenderMethod;
+			var pMethod: IRenderMethod = null;
 
 			if (isNull(csMethod)) {
 				return false;
@@ -82,19 +84,19 @@ module akra.render {
 		        }
 
 		        //adding empty, but NOT NULL effect & material
-		        pMethod.setMaterial();
-		        pMethod.setEffect();
+		        pMethod.surfaceMaterial = pRmgr.createSurfaceMaterial(csMethod + ".material." + this.getGuid());
+		        pMethod.effect = pRmgr.createEffect(csMethod + ".effect." + this.getGuid());
 		    }
 		    else {
 		    	pMethod = <IRenderMethod>arguments[0];
 		    }
 
 
-		    debug_assert(pMethod.getRenderer() === this.getRenderer(),
+		    debug_assert(pMethod.getManager().getEngine().getRenderer() === this._pRenderer,
 		                 "Render method should belong to the same engine instance that the renderable object.");
 
 		    pTechnique.setMethod(pMethod);
-		    pTechnique.name = csName || DEFAULT_RT;
+		    //pTechnique.name = csName || DEFAULT_RT;
 
 		    this._pTechniqueMap[csName || DEFAULT_RT] = pTechnique;
 
@@ -111,7 +113,7 @@ module akra.render {
 				sName = <string>csName;
 			}
 			else if (isDefAndNotNull(arguments[0])) {
-				sName = (<IRenderMethod>arguments[0]).name;
+				sName = (<IRenderMethod>arguments[0]).findResourceName();
 
 				if (!isDefAndNotNull(this._pTechniqueMap[sName])) {
 					if (!this.addRenderMethod(<IRenderMethod>arguments[0], sName)) {
@@ -140,9 +142,12 @@ module akra.render {
 
 		    return false;
 		}
+
+
 		
-		inline getRenderMethod(csName: string): IRenderMethod {
-			return this._pTechniqueMap[csName || DEFAULT_RT] || null;
+		inline getRenderMethod(csName: string = null): IRenderMethod {
+			var pTechnique: IRenderTechnique = this._pTechniqueMap[csName || DEFAULT_RT];
+			return pTechnique? pTechnique.getMethod(): null;
 		}
 
 		inline hasShadow(): bool {
@@ -154,12 +159,12 @@ module akra.render {
 		}
 
 		inline isReadyForRender(): bool {
-			this._pTechnique.isReady();
+			return this._pTechnique.isReady();
 		}
 
 		isAllMethodsLoaded(): bool {
 			for (var i in this._pTechniqueMap) {
-				var pMethod: IRenderMethod = this._pTechniqueMap[i];
+				var pMethod: IRenderMethod = this._pTechniqueMap[i].getMethod();
 
 				if (!isDefAndNotNull(pMethod) || !pMethod.isResourceLoaded()) {
 					return false;
@@ -171,9 +176,13 @@ module akra.render {
 
 
 		render(csMethod: string = null): void {
-			TODO("DRAW!!!!");
+			//TODO("DRAW!!!!");
+			ERROR("TODO(DRAW!!)");
 		}
 
+		getTechnique(sName: string = null): IRenderTechnique {
+			return this._pTechniqueMap[sName] || null;
+		}
 	}
 }
 

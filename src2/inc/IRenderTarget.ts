@@ -39,7 +39,9 @@ module akra {
 		getDepthBuffer(): IDepthBuffer;
 
 		attachDepthBuffer(pBuffer: IDepthBuffer): bool;
-		detachDepthBuffer();
+		detachDepthBuffer(): void;
+		attachDepthTexture(pTexture: ITexture): bool;
+		detachDepthTexture(): void;
 
 
 		update(): void;
@@ -75,8 +77,6 @@ module akra {
 		isPrimary(): bool;
 
 		readPixels(ppDest?: IPixelBox, eFramebuffer?: EFramebuffer): IPixelBox;
-
-		detachDepthBuffer(): void;
 
 		_beginUpdate(): void;
 		_updateViewport(iZIndex: int, bUpdateStatistics?: bool): void;

@@ -1,6 +1,8 @@
 #ifndef IRENDERABLEOBJECT_TS
 #define IRENDERABLEOBJECT_TS
 
+#include "IRenderTechnique.ts"
+
 module akra {
 	export interface IRenderableObject {
 		renderMethod: IRenderMethod;
@@ -14,17 +16,18 @@ module akra {
 
 		getGuid(): uint;
 		getRenderer(): IRenderer;
+		getTechnique(sName?: string): IRenderTechnique;
 
 		destroy(): void;
 
 		addRenderMethod(pMethod: IRenderMethod, csName?: string): bool;
 		addRenderMethod(csMethod: string, csName?: string): bool;
 		
-		findRenderMethod(csName: string): uint;
+		// findRenderMethod(csName: string): uint;
 		switchRenderMethod(csName: string): bool;
 		switchRenderMethod(pMethod: IRenderMethod): bool;
 		removeRenderMethod(csName: string): bool;
-		getRenderMethod(csName: string): IRenderMethod;
+		getRenderMethod(csName?: string): IRenderMethod;
 
 		hasShadow(): bool;
 		setShadow(bValue?: bool): void;

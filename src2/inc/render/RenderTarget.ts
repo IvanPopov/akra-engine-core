@@ -108,6 +108,14 @@ module akra.render {
 			}
 		}
 
+		attachDepthTexture(pTexture: ITexture): bool {
+			return false;
+		}
+
+		detachDepthTexture(): void {
+			
+		}
+
 		_detachDepthBuffer(): void {
 			this._pDepthBuffer = null;
 		}

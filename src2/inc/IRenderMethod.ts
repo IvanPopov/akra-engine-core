@@ -12,8 +12,7 @@ module akra {
 		effect: IEffect;
 		surfaceMaterial: ISurfaceMaterial;
 
-		isEqual(pRenderMethod: IRenderMethod): bool;
-
+		isEqual(pRenderMethod: IRenderMethod): bool;		
 	}
 }
 

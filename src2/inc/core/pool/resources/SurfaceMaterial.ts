@@ -3,6 +3,7 @@
 
 #include "ISurfaceMaterial.ts"
 #include "../ResourcePoolItem.ts"
+#include "material/Material.ts"
 
 module akra.core.pool.resources {
 	export class SurfaceMaterial extends ResourcePoolItem implements ISurfaceMaterial {
@@ -12,7 +13,7 @@ module akra.core.pool.resources {
 		protected _iTextureMatrixFlags: int = 0;
 		protected _pTextures: ITexture[] = new Array(SurfaceMaterial.MAX_TEXTURES_PER_SURFACE);
 		protected _pTexcoords: uint[] = new Array(SurfaceMaterial.MAX_TEXTURES_PER_SURFACE);
-		protected _pTextureMatrices: uint[] = new Array(SurfaceMaterial.MAX_TEXTURES_PER_SURFACE);
+		protected _pTextureMatrices: IMat4[] = new Array(SurfaceMaterial.MAX_TEXTURES_PER_SURFACE);
 
 
 
@@ -30,6 +31,7 @@ module akra.core.pool.resources {
     		}
     	}
 
+    	setTexture(iIndex: int, iTextureHandle: int, iTexcoord: int = 0): bool;
     	setTexture(iIndex: int, sTexture: string, iTexcoord: int = 0): bool;
     	setTexture(iIndex: int, pTexture: ITexture, iTexcoord: int = 0): bool;
     	setTexture(iIndex: int, pTexture: any, iTexcoord: int = 0): bool {
@@ -49,7 +51,8 @@ module akra.core.pool.resources {
 		            //realise first
         
 		            if (pTexture.release() == 0) {
-		            	pTexture.destroyResource();
+		            	this._pTextures[iIndex] = null;
+		            	//pTexture.destroyResource();
 		            }
 		            else {
 		            	debug_warning("cannot destroy resource...")
@@ -60,14 +63,14 @@ module akra.core.pool.resources {
 		        }
 
 
-		        this._pTextures[iIndex] = pRmgr.texturePool.loadResource(<string>arguments[0]);
+		        this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.loadResource(<string>arguments[0]);
 
 		        if (this._pTextures[iIndex]) {
 		            TRUE_BIT(this._iTextureFlags, iIndex);
 		            
 		            ++ this._nTotalTextures;
 
-		            this.connect(this._pTextures[iIndex], EResourceItemEvents.LOADED);
+		            this.sync(this._pTextures[iIndex], EResourceItemEvents.LOADED);
 		        }
 
 		        return true;
@@ -79,7 +82,8 @@ module akra.core.pool.resources {
 						// DisplayManager.texturePool().releaseResource(this._pTextures[iIndex]);
 		                
 		                if (this._pTextures[iIndex].release() == 0) {
-		                	this._pTextureMatrices[iIndex].destroyResource();
+		                	// this._pTextureMatrices[iIndex].destroyResource();
+		                	this._pTextures[iIndex] = null;
 		                }
 		                else {
 		                	debug_warning("cannot destroy resource...");
@@ -94,7 +98,7 @@ module akra.core.pool.resources {
 		            this._pTextures[iIndex].addRef();
 		            TRUE_BIT(this._iTextureFlags, iIndex);
 		            ++this._nTotalTextures;
-		            this.connect(this._pTextures[iIndex], EResourceItemEvents.LOADED);
+		            this.sync(this._pTextures[iIndex], EResourceItemEvents.LOADED);
 
 		            // var me = this;
 		            // trace('me get texture :)');
@@ -113,11 +117,12 @@ module akra.core.pool.resources {
 		    }
 		    //similar to [cPoolHandle texture]
 		    else if (isNumber(arguments[0])) {
-		        if (!this._pTexture[iIndex] || this._pTexture[iIndex].resourceHandle() != pTexture) {
-		            if (this._pTexture[iIndex]) {
-		                //TheGameHost.displayManager().texturePool().releaseResource(m_pTexture[index]);
-		                if (this._pTexture[iIndex].release() === 0) {
-		                	this._pTexture[iIndex].destroyResource();
+		        if (!this._pTextures[iIndex] || this._pTextures[iIndex].resourceHandle != <int>arguments[0]) {
+		            if (this._pTextures[iIndex]) {
+		                //TheGameHost.displayManager().texturePool().releaseResource(m_pTextures[index]);
+		                if (this._pTextures[iIndex].release() === 0) {
+		                	// this._pTextures[iIndex].destroyResource();
+		                	this._pTextures[iIndex] = null;
 		                }
 		                else {
 		                	debug_warning("cannot destroy resource...");
@@ -127,19 +132,19 @@ module akra.core.pool.resources {
 		                -- this._nTotalTextures;
 		            }
 
-		            this._pTexture[iIndex] = pDisplayManager.texturePool.getResource(pTexture);
+		            this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.getResource(<int>arguments[0]);
 
-		            if (this._pTexture[iIndex]) {
+		            if (this._pTextures[iIndex]) {
 		                TRUE_BIT(this._iTextureFlags, iIndex);
 		                ++ this._nTotalTextures;
-		                this.connect(this._pTexture[iIndex], EResourceItemEvents.LOADED);
+		                this.sync(this._pTextures[iIndex], EResourceItemEvents.LOADED);
 		            }
 		        }
 
 		        return true;
 		    }
 
-		    this._pTexcoord[iIndex] = iIndex;
+		    this._pTexcoords[iIndex] = iIndex;
 
 		    return false;
     	}
@@ -155,7 +160,7 @@ module akra.core.pool.resources {
 		        this._pTextureMatrices[iIndex] = new Mat4(m4fValue);
 		    }
 
-		    this._textureMatrixFlags.setBit(iIndex);
+		    TRUE_BIT(this._iTextureMatrixFlags, iIndex);
 		    return true;
     	}
     	
@@ -171,14 +176,14 @@ module akra.core.pool.resources {
 		        if ((this._pMaterial && this._pMaterial.isEqual(pSurfaceMaterial.material))
 		            || (pSurfaceMaterial.material === null)) {
 		            
-		            for (var i = 0; i < this._pTexture.length; i++) {
-		                if (this._pTexture[i] !== pSurfaceMaterial.texture[i]) {
+		            for (var i = 0; i < this._pTextures.length; i++) {
+		                if (this._pTextures[i] !== pSurfaceMaterial.texture[i]) {
 		                    return false;
 		                }
 		            };
 
-		            for (var i = 0; i< this._pTextureMatrices; ++ i) {
-		                for (var j = 0; j < this._pTextureMatrices[i].length; j++) {
+		            for (var i = 0; i< this._pTextureMatrices.length; ++ i) {
+		                for (var j = 0; j < this._pTextureMatrices[i].data.length; j++) {
 		                    if (this._pTextureMatrices[i].data[j] !== pSurfaceMaterial.textureMatrix[i].data[j]) {
 		                        return false;
 		                    }

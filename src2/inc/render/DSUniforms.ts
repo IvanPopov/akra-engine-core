@@ -139,7 +139,7 @@ module akra.render {
         project: UniformProject[];
         omniShadows: UniformOmniShadow[];
         projectShadows: UniformProjectShadow[];
-        textures: ITexture[][];
+        textures: ITexture[];
         samplersOmni: IShadowSampler[];
         samplersProject: IShadowSampler[];
 	}

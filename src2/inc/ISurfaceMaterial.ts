@@ -31,12 +31,14 @@ module akra {
 
 	
 
-    export interface ISurfaceMaterial {
+    export interface ISurfaceMaterial extends IResourcePoolItem {
     	totalTextures: uint;
     	material: IMaterial;
     	textureFlags: int;
     	textureMatrixFlags: int;
 
+        setTexture(iIndex: int, sTexture: string, iTexcoord?: int): bool;
+        setTexture(iIndex: int, iTextureHandle: int, iTexcoord?: int): bool;
     	setTexture(iIndex: int, pTexture: ITexture, iTexcoord?: int): bool;
     	setTextureMatrix(iIndex: int, m4fValue: IMat4): bool;
     	setMaterial(pMaterial: IMaterial): void;

@@ -332,6 +332,22 @@ module akra.core.pool {
 
         inline getEngine(): IEngine { return this.pEngine; }
 
+        createRenderMethod(sResourceName: string): IRenderMethod {
+            return <IRenderMethod>this.renderMethodPool.createResource(sResourceName);
+        }
+
+        createTexture(sResourceName: string): ITexture {
+            return <ITexture>this.texturePool.createResource(sResourceName);
+        }
+
+        createEffect(sResourceName: string): IEffect {
+            return <IEffect>this.effectPool.createResource(sResourceName);
+        }
+
+        createSurfaceMaterial(sResourceName: string): ISurfaceMaterial {
+            return <ISurfaceMaterial>this.surfaceMaterialPool.createResource(sResourceName);
+        }
+
         private createDeviceResource(): void {
             this.pSurfaceMaterialPool = new ResourcePool(this, resources.SurfaceMaterial);
             this.pSurfaceMaterialPool.initialize(16);

@@ -2,10 +2,15 @@
 #define RENDERTECHNIQUE_TS
 
 #include "IRenderTechnique.ts"
+#include "events/events.ts"
 
 module akra.render {
-	export class RenderTechnque implements IRenderTechnique {
+	export class RenderTechnique implements IRenderTechnique {
 		private _pMethod: IRenderMethod;
+
+		get modified(): uint {
+			return 0;
+		}
 
 		get totalPasses(): uint {
 			return 0;
@@ -32,9 +37,37 @@ module akra.render {
 			
 		}
 
+		setState(sName: string, pValue: any): void {
+
+		}
+
+		setForeign(sName: string, pValue: any): void {
+
+		}
+
+		setStruct(sName: string, pValue: any): void {
+
+		}
+
+		setTextureBySemantics(sName: string, pValue: any): void {
+
+		}
+
+		setShadowSamplerArray(sName: string, pValue: any): void {
+
+		}
+
+		setVec2BySemantic(sName: string, pValue: any): void {
+			
+		}
+
 		isReady(): bool {
 			return false;
 		}
+
+		BEGIN_EVENT_TABLE(RenderTechnique);
+			UNICAST(render, VOID);
+		END_EVENT_TABLE();
 	}
 }
 
