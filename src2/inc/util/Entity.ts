@@ -6,14 +6,14 @@
 #include "events/events.ts"
 
 module akra.util {
-	export enum EEntityStates {
+/*	export enum EEntityStates {
 		//обновился ли сам узел?
 		k_Updated = 0x01,
 		//есть ли среди потомков обновленные узлы
 		k_DescendantsUpdtated = 0x02,
 		//если ли обновленные узлы среди братьев или их потомках
 		k_SiblingsUpdated = 0x04
-	}
+	}*/
 
 	export class Entity extends ReferenceCounter implements IEntity {
 		protected _sName: string = null;
@@ -21,7 +21,7 @@ module akra.util {
 		protected _pSibling: IEntity = null;
 		protected _pChild: IEntity = null;
 		protected _eType: EEntityTypes = EEntityTypes.UNKNOWN;
-		protected _iStateFlags: int = 0;
+		// protected _iStateFlags: int = 0;
 
 		inline get name(): string { return this._sName; }
 		inline set name(sName: string) { this._sName = sName; }
@@ -148,29 +148,33 @@ module akra.util {
 		    return iCount;
 		}
 
-		inline isUpdated(): bool {
-			return TEST_BIT(this._iStateFlags, EEntityStates.k_Updated);
-		}
+		// inline isUpdated(): bool {
+		// 	return TEST_BIT(this._iStateFlags, EEntityStates.k_Updated);
+		// }
 
-		inline hasUpdatedSubNodes(): bool {
-			return TEST_BIT(this._iStateFlags, EEntityStates.k_DescendantsUpdtated);
-		}
+		// inline hasUpdatedSubNodes(): bool {
+		// 	return TEST_BIT(this._iStateFlags, EEntityStates.k_DescendantsUpdtated);
+		// }
 
 		recursiveUpdate(): bool {
+			var bUpdated: bool = false;
 			// update myself
 		    if (this.update()) {
-		    	SET_ALL(this._iStateFlags, EEntityStates.k_Updated);
+		    	// SET_ALL(this._iStateFlags, EEntityStates.k_Updated);
+		    	bUpdated = true;
 		    }
 		    // update my sibling
 		    if (this._pSibling && this._pSibling.recursiveUpdate()) {
-		        SET_ALL(this._iStateFlags, EEntityStates.k_SiblingsUpdated);
+		        // SET_ALL(this._iStateFlags, EEntityStates.k_SiblingsUpdated);
+		        bUpdated = true;
 		    }
 		    // update my child
 		    if (this._pChild && this._pChild.recursiveUpdate()) {
-		        SET_ALL(this._iStateFlags, EEntityStates.k_DescendantsUpdtated);
+		        // SET_ALL(this._iStateFlags, EEntityStates.k_DescendantsUpdtated);
+		        bUpdated = true;
 		    }
 
-		    return (this._iStateFlags != 0);
+		    return bUpdated;/* (this._iStateFlags != 0);*/
 		}
 
 		recursivePreUpdate(): void {
@@ -189,7 +193,7 @@ module akra.util {
 
 
 		prepareForUpdate(): void {
-			this._iStateFlags = 0;
+			//this._iStateFlags = 0;
 		};
 
 		/** Parent is not undef */

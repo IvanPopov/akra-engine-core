@@ -13,9 +13,10 @@ module akra.scene.objects {
 		k_NewProjectionMatrix = 0
 	}
 
-	export interface ICameraCache { 
-		[displayList: string]: ISceneObject[]; 
+	export interface ICameraCache {
+		[displayList: string]: ISceneObject[];
 	};
+
 
 	export class Camera extends SceneObject implements ICamera {
 		/** camera type */
@@ -60,7 +61,7 @@ module akra.scene.objects {
 
 		protected _pLastViewport: IViewport = null;
 
-		protected _pVisibleObjectsCache: ICameraCache = {}; 
+		protected _pCache: ICameraCache[] = [<ICameraCache>{}, <ICameraCache>{}]; 
 
 
 		// protected _pPrevObjects: ISceneNode[] = null;
@@ -123,11 +124,30 @@ module akra.scene.objects {
 			return isOK;
 		}
 
+		prepareForUpdate(): void {
+			super.prepareForUpdate();
+
+			this.swapCache();
+			this.clearCache();
+		}
+
+		inline private clearCache(): void {
+			for (var i in this._pCache[0]) {
+				this._pCache[0][i] = null;
+			}
+		}
+
+		inline private swapCache(): void {
+			//храним результаты текущего и предыдущего кадров.
+			this._pCache.swap(0, 1);
+		}
+
 		display(csList: string = null): ISceneObject[] {
-			var pResult: ISceneObject[] = this._pCulledObjects[csList];
+			var iCacheNode: int = this.scene.isUpdated()? 0: 1;
+			var pResult: ISceneObject[] = this._pCache[iCacheNode][csList];
 
 			if (!isDefAndNotNull(pResult)) {
-				pResult = this._pCulledObjects[csList] = this._pScene._findObjects(this, csList);
+				pResult = this._pCache[iCacheNode][csList] = this._pScene._findObjects(this, csList);
 			}
 
 			return pResult;

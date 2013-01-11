@@ -22,6 +22,8 @@ module akra {
 		updateScene(): bool;
 		recursiveUpdate(): void;
 
+		isUpdated(): bool;
+
 		createSceneNode(sName?: string): ISceneNode;
 		createSceneModel(): IModel;
 		createCamera(): ICamera;

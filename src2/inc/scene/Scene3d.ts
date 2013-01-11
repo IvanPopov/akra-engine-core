@@ -21,6 +21,7 @@ module akra.scene {
 		protected _pNodeList: ISceneNode[];
 
 		protected _pDisplayListMap: IDisplayListMap = {};
+		protected _isUpdated: bool = false;
 
 		type: ESceneTypes = ESceneTypes.TYPE_3D;
 
@@ -32,16 +33,21 @@ module akra.scene {
 			this._pNodeList = [];
 		}
 
+		inline isUpdated(): bool {
+			return this._isUpdated;
+		}
+
 		inline getRootNode(): ISceneNode {
 			return this._pRootNode;
 		}
 
 		recursivePreUpdate(): void {
+			this._isUpdated = false;
 			this._pRootNode.recursivePreUpdate();
 		}
 
 		recursiveUpdate(): void {
-			this._pRootNode.recursiveUpdate();
+			this._isUpdated = this._pRootNode.recursiveUpdate();
 		}
 
 		updateCamera(): bool {
@@ -114,7 +120,7 @@ module akra.scene {
 		_findObjects(pCamera: ICamera, csList: string = null): ISceneObject[] {
 			var pList: IDisplayList = this._pDisplayListMap[csList || DEFAULT_DLIST];
 
-			debug_assert(pList, "display list not founded.");
+			debug_assert(!isNull(pList), "display list not founded.");
 
 			return pList.findObjects(pCamera);
 		}
