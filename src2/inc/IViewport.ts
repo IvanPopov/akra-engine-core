@@ -8,6 +8,11 @@ module akra {
     IFACE(IRenderTarget);
     IFACE(ICamera);
 
+    export enum EViewportTypes {
+        DEFAULT = -1,
+        DSVIEWPORT = 1
+    }
+
     export interface IViewport extends IEventProvider {
         left: float;
         top: float;

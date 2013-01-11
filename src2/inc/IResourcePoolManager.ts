@@ -103,6 +103,12 @@ module akra {
     	disableDeviceResources(): bool;
 
         getEngine(): IEngine;
+
+        createRenderMethod(sResourceName: string): IRenderMethod;
+        createTexture(sResourceName: string): ITexture;
+        createSurfaceMaterial(sResourceName: string): ISurfaceMaterial;
+        createEffect(sResourceName: string): IEffect;
+
     }
 }
 

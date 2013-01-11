@@ -13,14 +13,18 @@
 #define protected
 #define struct class
 #define const var
+
 #define DEBUG DEBUG
 #define WEBGL 1
+#define LOGGER_API 1
 
 
 #include "ILogger.ts"
 
 #define UNKNOWN_CODE 0
 #define UNKONWN_MESSAGE "Unknown code."
+
+#define DEFAULT_NAME "default"
 
 #ifdef LOGGER_API
 
@@ -35,9 +39,9 @@
 #define ERROR(...)          logger.setSourceLocation(__FILE__, __LINE__); \
                             logger.error(__VA_ARGS__);
 #define CRITICAL(...)       logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.critical_error(__VA_ARGS__);
+                            logger.criticalError(__VA_ARGS__);
 #define CRITICAL_ERROR(...) logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.critical_error(__VA_ARGS__);
+                            logger.criticalError(__VA_ARGS__);
 #define ASSERT(...)         logger.setSourceLocation(__FILE__, __LINE__); \
                             logger.assert(__VA_ARGS__);
 
@@ -55,14 +59,14 @@
 #endif
 
 #define ALLOCATE_STORAGE(sName, nCount)    \
-        static get stackCeil(): I ## sName { \
+        static get stackCeil(): /*I ## */sName { \
             sName.stackPosition = sName.stackPosition === sName.stackSize - 1? 0: sName.stackPosition;\
             return sName.stack[sName.stackPosition ++]; \
         }\
         static stackSize: uint = nCount;\
         static stackPosition: int = 0;\
-        static stack: I ## sName[] = (function(): I ## sName[]{\
-                                    var pStack: I ## sName[] = new Array(sName.stackSize);\
+        static stack: /*I ## */sName[] = (function(): /*I ## */sName[]{\
+                                    var pStack: /*I ## */sName[] = new Array(sName.stackSize);\
                                     for(var i:int = 0; i<sName.stackSize; i++){\
                                         pStack[i] = new sName();\
                                     }\
@@ -291,7 +295,7 @@ module akra {
 //    export const MIN_REAL32: number = -3.4e38;    //-3.4e38
 //    export const TINY_REAL32: number = 1.5e-45;   //1.5e-45
 
-    export const DEFAULT_MATERIAL_NAME: string = "default";
+    export const DEFAULT_MATERIAL_NAME: string = DEFAULT_NAME;
 
     export enum EDataTypes {
         BYTE = 0x1400,
@@ -404,7 +408,6 @@ module akra {
         return (new Date).getTime();
     }
 
-
     
     #define _memcpy(dst, src, size) memcpy(dst, 0, src, 0, size);
     export inline function memcpy(pDst: ArrayBuffer, iDstOffset: uint, pSrc: ArrayBuffer, iSrcOffset: uint, nLength: uint) {
@@ -427,7 +430,7 @@ module akra {
 };
 
 #ifdef LOGGER_API
-#define "util/Logger.ts"
+#include "util/Logger.ts"
 #endif
 
 #endif

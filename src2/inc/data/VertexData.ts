@@ -58,6 +58,16 @@ module akra.data {
 				"vertex data out of array linits");
 		}
 
+		getCount(){
+			
+		}
+		resourceHandle(){
+
+		}
+		getOffset(){
+
+		}
+
 
 
 		getVertexDeclaration(): IVertexDeclaration {

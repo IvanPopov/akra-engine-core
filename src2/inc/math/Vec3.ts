@@ -1,13 +1,11 @@
 #ifndef VEC3_TS
 #define VEC3_TS
 
-
 #include "IVec2.ts"
 #include "IVec3.ts"
 #include "IMat4.ts"
 
 module akra.math {
-    
 
     export class Vec3 {
         x: float;
@@ -25,6 +23,7 @@ module akra.math {
         constructor(fValue1: float, fValue2: float, fValue3: float);
         constructor(fValue1?, fValue2?, fValue3?){
             var nArgumentsLength: uint = arguments.length;
+
 
             switch(nArgumentsLength){
                 case 1:
@@ -108,6 +107,7 @@ module akra.math {
             return this;
         };
 
+
         add(v3fVec: IVec3, v3fDestination?: IVec3): IVec3{
             if(!isDef(v3fDestination)){
                 v3fDestination = this;
@@ -119,6 +119,7 @@ module akra.math {
 
             return v3fDestination;
         };
+
 
         subtract(v3fVec: IVec3, v3fDestination?: IVec3): IVec3{
             if(!isDef(v3fDestination)){
@@ -135,6 +136,7 @@ module akra.math {
         inline dot(v3fVec: IVec3): float{
             return this.x*v3fVec.x + this.y*v3fVec.y + this.z*v3fVec.z;
         };
+
 
         cross(v3fVec: IVec3, v3fDestination?: IVec3): IVec3{
             if(!isDef(v3fDestination)){
@@ -170,6 +172,7 @@ module akra.math {
             }
             return true;
         };
+
 
         isClear(fEps: float = 0.): bool{
             if(fEps === 0.){

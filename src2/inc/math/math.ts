@@ -25,8 +25,10 @@ module akra.math {
 	export var SQRT1_2: float 							= <float>Math.SQRT1_2;
 	export var SQRT2: float 							= <float>Math.SQRT2;
 	export var LN10: float 								= <float>Math.LN10;
+
 	export var POSITIVE_INFINITY: float                 = <float>Number.POSITIVE_INFINITY;
 	export var NEGATIVE_INFINITY: float                 = <float>Number.NEGATIVE_INFINITY;
+
 
 	export var FLOAT_PRECISION: float					= <float>(3.4e-8);
 	export var TWO_PI: float							= <float>(2.0*PI);
@@ -367,8 +369,6 @@ module akra.math {
 	// var pMat3Stack = new Array(100);
 	// var iMat3StackIndex = 0;
 
-	
-
 	export var isRealEqual = (a: float, b: float, tolerance: float = 1.19209e-007): bool => {
         if (math.abs(b - a) <= tolerance)
             return true;
@@ -634,6 +634,7 @@ module akra.math {
 	    n = w * h;
 	    return [w, h, n];
 	}
+
 }
 
 module akra {

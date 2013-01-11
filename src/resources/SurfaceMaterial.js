@@ -181,7 +181,7 @@ SurfaceMaterial.prototype.isEqual = function (pSurfaceMaterial) {
                     }
                 };
             }
-
+            
             return true;
         }
     }

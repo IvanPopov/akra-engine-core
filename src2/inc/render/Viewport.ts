@@ -8,6 +8,7 @@
 #include "IFrameBuffer.ts"
 #include "events/events.ts"
 
+#define DL_DEFAULT DEFAULT_NAME;
 
 module akra.render {
 	export class Viewport implements IViewport {
@@ -34,7 +35,7 @@ module akra.render {
 
 		protected _iClearBuffers: int = EFrameBufferTypes.COLOR | EFrameBufferTypes.DEPTH;
 
-		protected _bUpdated: bool = false; 
+		protected _bUpdated: bool = false;
 
 		// protected _bShowOverlays: bool = true;
 
@@ -51,6 +52,8 @@ module akra.render {
 		// static _eDefaultOrientationMode: EOrientationModes;
 
 		protected _isAutoUpdated: bool = true;
+
+		protected _csDefaultRenderMethod: string = null;
 
 		inline get zIndex(): int {
 			return this._iZIndex;
@@ -73,8 +76,7 @@ module akra.render {
         inline set depthClear(fDepthClearValue: float) { this._fDepthClearValue = fDepthClearValue; }
 
 
-		constructor (pCamera: ICamera, pTarget: IRenderTarget, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
-			this._pCamera = pCamera;
+		constructor (pCamera: ICamera, pTarget: IRenderTarget, csRenderMethod: string = null, fLeft: float = 0., fTop: float = 0., fWidth: float = 1., fHeight: float = 1., iZIndex: int = 0) {
 			this._pTarget = pTarget;
 
 			this._fRelLeft = fLeft;
@@ -84,11 +86,11 @@ module akra.render {
 
 			this._iZIndex = iZIndex;
 
+			this._csDefaultRenderMethod = csRenderMethod;
+
 			this._updateDimensions();
 
-			if (pCamera) {
-				pCamera._keepLastViewport(this);
-			}
+			this._setCamera(pCamera);
 		}
 
 		destroy(): void {
@@ -132,19 +134,25 @@ module akra.render {
 				}
 			}
 
-			this._pCamera = pCamera;
 			if (this._pCamera) {
 				// update aspect ratio of new camera if needed.
 				if (!pCamera.isConstantAspect()) {
 					pCamera.aspect = (<float> this._iActWidth / <float> this._iActHeight);
 				}
-
-				pCamera._keepLastViewport(this);
 			}
 
+			this._setCamera(pCamera);
 			this.viewportCameraChanged();
 
 			return true;
+        }
+
+        protected _setCamera(pCamera: ICamera): void {
+			this._pCamera = pCamera;
+
+			if (pCamera) {
+				pCamera._keepLastViewport(this);
+			}
         }
 
         setDimensions(fLeft: float, fTop: float, fWidth: float, fHeight: float): bool;
@@ -219,9 +227,23 @@ module akra.render {
 
 		update(): void {
 			if (this._pCamera) {
-				this._pCamera._renderScene(this);
+				this.renderAsNormal(this._csDefaultRenderMethod, this._pCamera);
 			}
 		}
+
+		protected renderAsNormal(csMethod: string, pCamera: ICamera): void {
+				var pVisibleObjects: ISceneObject[] = pCamera.display();
+				var pRenderable: IRenderableObject;
+
+				for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
+					pRenderable = pVisibleObjects[i].getRenderable();
+
+					if (!isNull(pRenderable)) {
+						pRenderable.render(csMethod);
+					}
+				}
+		}
+
 
         inline isUpdated(): bool {
         	return this._bUpdated;

@@ -9,19 +9,29 @@ module akra {
 	IFACE(IMat4);
 	IFACE(IRect3d);
 	IFACE(IFrustum);
+    IFACE(ISceneBuilder);
 
 	export enum ECameraParameters {
-
+        CONST_ASPECT = 1
 	}
 
+    export enum ECameraTypes {
+        PERSPECTIVE,
+        ORTHO,
+        OFFSET_ORTHO
+    }
+
+
+
     export interface ICamera extends ISceneObject {
-    	viewMatrix: IMat4;
-    	projectionMatrix: IMat4;
-    	projViewMatrix: IMat4;
-    	internalProjectionMatrix: IMat4;
-    	internalViewProjMatrix: IMat4;
-    	targetPos: IVec3;
-    	fov: float;
+    	readonly viewMatrix: IMat4;
+    	readonly projectionMatrix: IMat4;
+    	readonly projViewMatrix: IMat4;
+    	readonly internalProjectionMatrix: IMat4;
+    	readonly internalViewProjMatrix: IMat4;
+    	readonly targetPos: IVec3;
+    	
+        fov: float;
     	aspect: float;
     	nearPlane: float;
     	farPlane: float;
@@ -32,7 +42,7 @@ module akra {
 
 
 
-    	setParameter(eParam: ECameraParameters, bValue: bool): void;
+    	setParameter(eParam: ECameraParameters, pValue: any): void;
     	isConstantAspect(): bool;
     	
     	setProjParams(fFOV: float, fAspect: float, fNearPlane: float, fFarPlane: float): void;
@@ -48,10 +58,14 @@ module akra {
     	lookAt(v3fFrom: IVec3, v3fCenter: IVec3, v3fUp?: IVec3);
     	lookAt(v3fCenter: IVec3, v3fUp?: IVec3);
 
+        //display via display list with name <csList>
+        display(csList?: string): ISceneObject[];
+
     	_renderScene(pViewport: IViewport): void;
     	_keepLastViewport(pViewport: IViewport): void;
     	_getLastViewport(): IViewport;
-    	_getNumRenderedFaces(): int;
+    	_getNumRenderedFaces(): uint;
+        _notifyRenderedFaces(nFaces: uint): void;
     }
 }
 

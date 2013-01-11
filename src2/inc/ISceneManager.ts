@@ -17,6 +17,10 @@ module akra {
         getScene3D(iScene?: uint): IScene3d;
         getScene2D(iScene?: uint): IScene2d;
         getScene(iScene?: uint, eType?: ESceneTypes): IScene;
+
+        update(): void;
+        notifyUpdateScene(): void;
+        notifyPreUpdateScene(): void;
     }	
 }
 

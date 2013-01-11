@@ -5,11 +5,22 @@
 #include "ISceneManager.ts"
 #include "SceneNode.ts"
 #include "events/events.ts"
+#include "objects/Camera.ts"
+#include "IDisplayList.ts"
+
+#define DEFAULT_DLIST DEFAULT_NAME
 
 module akra.scene {
+	export interface IDisplayListMap {
+		[key: string]: IDisplayList;
+	}
+
 	export class Scene3d implements IScene3d {
 		protected _pRootNode: ISceneNode;
 		protected _pSceneManager: ISceneManager;
+		protected _pNodeList: ISceneNode[];
+
+		protected _pDisplayListMap: IDisplayListMap = {};
 
 		type: ESceneTypes = ESceneTypes.TYPE_3D;
 
@@ -17,9 +28,11 @@ module akra.scene {
 			this._pSceneManager = pSceneManager;
 			this._pRootNode = this.createSceneNode("root-node");
 			this._pRootNode.create();
+
+			this._pNodeList = [];
 		}
 
-		getRootNode(): ISceneNode {
+		inline getRootNode(): ISceneNode {
 			return this._pRootNode;
 		}
 
@@ -50,8 +63,15 @@ module akra.scene {
 			return null;
 		}
 
-		createCamera(): ICamera {
-			return null;
+		createCamera(sName: string = null): ICamera {
+			var pCamera: ICamera = new objects.Camera(this);
+			
+			if (!pCamera.create()) {
+				ERROR("cannot create camera..");
+				return null;
+			}
+			
+			return <ICamera>this.setupNode(pCamera, sName);
 		}
 
 		createLightPoint(): ILightPoint {
@@ -70,6 +90,41 @@ module akra.scene {
 			return null;
 		}
 
+		inline getAllNodes(): ISceneNode[] {
+			return this._pNodeList;
+		}
+
+		inline getDisplayList(csName: string = DEFAULT_DLIST): IDisplayList {
+			return this._pDisplayListMap[csName] || null;
+		}
+
+		inline addDisplayList(pList: IDisplayList, csName: string = DEFAULT_DLIST): void {
+			this._pDisplayListMap[csName] = pList;
+		}
+
+		inline delDisplayList(csName: string): bool {
+			if (this._pDisplayListMap[csName]) {
+				delete this._pDisplayListMap[csName];
+				return true;
+			}
+
+			return false;
+		}
+
+		_findObjects(pCamera: ICamera, csList: string = null): ISceneObject[] {
+			var pList: IDisplayList = this.getDisplayList(csList || DEFAULT_DLIST);
+
+			if (pList) {
+				return pList.findObjects(pCamera);
+			}
+
+			return null;
+		}
+
+		_render(pCamera: ICamera, pViewport: IViewport): void {
+			
+		}
+
 		private setupNode(pNode: ISceneNode, sName: string = null): ISceneNode {
 			pNode.name = sName;
 
@@ -80,8 +135,27 @@ module akra.scene {
 		}
 
 		BEGIN_EVENT_TABLE(Scene3d);
-			BROADCAST(nodeAttachment, CALL(pNode));
-			BROADCAST(nodeDetachment, CALL(pNode));
+
+		nodeAttachment (pNode: ISceneNode): void {
+			this._pNodeList.push(pNode);
+			
+			EMIT_BROADCAST(nodeAttachment, _CALL(pNode));
+		}
+
+		nodeDetachment (pNode: ISceneNode): void {
+
+			for (var i: int = 0; i < this._pNodeList.length; ++ i) {
+				if (pNode == this._pNodeList[i]) {
+					this._pNodeList.splice(i, 1);
+					break;
+				}
+			};
+
+			EMIT_BROADCAST(nodeDetachment, _CALL(pNode));
+		}
+
+			// BROADCAST(nodeAttachment, CALL(pNode));
+			// BROADCAST(nodeDetachment, CALL(pNode));
 		END_EVENT_TABLE();
 	}
 }

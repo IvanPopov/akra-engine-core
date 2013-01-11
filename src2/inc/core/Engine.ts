@@ -33,8 +33,6 @@ module akra.core {
 		private _isActive: bool = false;
 		/** frame rendering sync / render next frame? */
 		private _isFrameMoving: bool = true;
-		/** render only one frame */
-		private _isSingleStep: bool = true;
 
 
 
@@ -130,17 +128,14 @@ module akra.core {
 		    }
 
 		    // FrameMove (animate) the scene
-		    if (this._isFrameMoving || this._isSingleStep) {
-
-		    	this.frameStarted();
-
-		        // Render the scene as normal
-			    this._pRenderer._updateAllRenderTargets();
-
-			    this.frameEnded();
-
-		        this._isSingleStep = false;
+		    if (this._isFrameMoving) {
+		    	this._pSceneManager.update();
 		    }
+
+	        // Render the scene as normal
+	    	this.frameStarted();
+		    this._pRenderer._updateAllRenderTargets();
+		    this.frameEnded();
 
 			return true;
 		}

@@ -6,6 +6,13 @@
 #include "IHardwareBuffer.ts"
 #include "IPixelBuffer.ts"
 
+#define POSITIVE_X 0
+#define NEGATIVE_X 1
+#define POSITIVE_Y 2
+#define NEGATIVE_Y 3
+#define POSITIVE_Z 4
+#define NEGATIVE_Z 5
+
 module akra {
 
     IFACE(IImg);

@@ -16,6 +16,7 @@ module akra {
         (fValue1: float, fValue2: float, fValue3: float);
     }
 
+
 	export interface IVec3 {
 		x: float;
 		y: float;

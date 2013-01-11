@@ -3,12 +3,25 @@
 
 module akra {
 	export interface IMaterial {
-		diffuse: any;
-		ambient: any;
-		specular: any;
-		emissive: any;
+		name: string;
+
+		diffuse: IColorValue;
+		ambient: IColorValue;
+		specular: IColorValue;
+		emissive: IColorValue;
 		shininess: float;
+
+		set(pMat: IMaterial): IMaterial;
+		isEqual(pMat: IMaterial): bool;
 	}
+
+	// export interface IMaterialEx extends IMaterial {
+	// 	reflective: 
+	// 	reflectivity
+	// 	transparent
+	// 	transparency
+	// 	indexofrefraction
+	// }
 }
 
 #endif

@@ -25,8 +25,10 @@
 		EMIT_UNICAST(event, call) \
 	}
 
-#define CALL(...)  (__VA_ARGS__), (_recivier, __VA_ARGS__)
-#define VOID  (), (_recivier)
+#define _CALL(...) (_recivier, __VA_ARGS__)
+#define CALL(...)  (__VA_ARGS__), _CALL(__VA_ARGS__)
+#define _VOID  (_recivier)
+#define VOID  (), _VOID
 #define SLOT(call) #call
 #define SIGNAL(call) #call
 /**event, signal, slot*/

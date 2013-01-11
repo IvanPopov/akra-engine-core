@@ -10,6 +10,7 @@ module akra {
 	IFACE(ISprite);
 	IFACE(IJoint);
 	IFACE(IText3d);
+	IFACE(IDisplayList);
 	
 
 
@@ -29,8 +30,16 @@ module akra {
 		createJoint(): IJoint;
 		createText3d(): IText3d;
 
+		getDisplayList(csName?: string): IDisplayList;
+		addDisplayList(pList: IDisplayList, csName?: string): void;
+		delDisplayList(csName: string): bool;
+
+		_findObjects(pCamera: ICamera, csList?: string): ISceneObject[];
+
 		signal nodeAttachment(pNode: ISceneNode);
 		signal nodeDetachment(pNode: ISceneNode);
+
+		_render(pCamera: ICamera, pViewport: IViewport): void;
 	}
 }
 

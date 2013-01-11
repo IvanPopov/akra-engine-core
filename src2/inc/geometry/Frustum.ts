@@ -48,13 +48,7 @@ module akra.geometry{
 			}
 		};
 
-		isEqual(pFrustum: IFrustum): bool {
-			return false;
-		}
 
-		testPoint(v3fPoint: IVec3): bool { return false; }
-		testRect(pRect: IRect3): bool { return false; }
-		testSphere(pSphere: ISphere): bool  { return false; }
 
 		set(): IFrustum;
 		set(pFrustum: IFrustum): IFrustum;

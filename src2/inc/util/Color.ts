@@ -110,6 +110,7 @@ module akra.util {
 		}
 
 		set(): IColor;
+		set(cColor: IColorValue): IColor;
 		set(cColor: IColor): IColor;
 		set(r: float, g: float, b: float, a: float): IColor;
 		set(r: float, g: float, b: float): IColor;
@@ -127,7 +128,7 @@ module akra.util {
 						this.a = 1.;
 					}
 					else {
-						var c: IColor = <IColor>arguments[0];
+						var c: IColorValue = <IColorValue>arguments[0];
 						this.r = c.r;
 						this.g = c.g;
 						this.b = c.b;
@@ -370,6 +371,12 @@ module akra.util {
 		}
 
 		static BLACK: IColor = new Color(0);
+		static isEqual(c1: IColorValue, c2: IColorValue): bool {
+			return 	c1.r === c2.r && 
+					c1.g === c2.g && 
+					c1.b === c2.b && 
+					c1.a === c2.a;
+		}
 	}
 }
 

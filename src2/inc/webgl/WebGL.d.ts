@@ -570,6 +570,7 @@ interface WebGLRenderingContext
 	getProgramParameter(program: WebGLProgram, pname: number): any;
 	getProgramInfoLog(program: WebGLProgram): string;
 	getRenderbufferParameter(target: number, pname: number): any;
+	getTranslatedShaderSource(shader: WebGLShader): string;
 	getShaderParameter(shader: WebGLShader, pname: number): any;
 	getShaderPrecisionFormat(shadertype: number, precisiontype: number): WebGLShaderPrecisionFormat;
 	getShaderInfoLog(shader: WebGLShader): string;

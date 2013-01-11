@@ -41,6 +41,11 @@ module akra {
 
 		attachDepthBuffer(pBuffer: IDepthBuffer): bool;
 		attachDepthPixelBuffer(pBuffer: IPixelBuffer): bool;
+		attachDepthTexture(pTexture: ITexture): bool;
+
+		detachDepthBuffer(): void;
+		detachDepthTexture(): void;
+		detachDepthPixelBuffer(): void;     
 
 		destroy(): void;
 
@@ -49,7 +54,9 @@ module akra {
 
 		getCustomAttribute(sName: string): any;
 
-		addViewport(pCamera: ICamera, iZIndex?: uint, fLeft?: float, fTop?: float, fWidth?: float, fHeight?: float): IViewport;
+		addViewport(pCamera: ICamera, csRenderMethod?: string, iZIndex?: uint, fLeft?: float, fTop?: float, fWidth?: float, fHeight?: float): IViewport;
+		addViewport(pCamera: ICamera, eType?: int, iZIndex?: uint, fLeft?: float, fTop?: float, fWidth?: float, fHeight?: float): IViewport;
+
 		getViewport(iIndex: int): IViewport;
 		getViewportByZIndex(iZIndex: int): IViewport;
 		hasViewportByZIndex(iZIndex: int): bool;
@@ -75,9 +82,6 @@ module akra {
 		isPrimary(): bool;
 
 		readPixels(ppDest?: IPixelBox, eFramebuffer?: EFramebuffer): IPixelBox;
-
-		detachDepthBuffer(): void;
-		detachDepthPixelBuffer(): void;                   
 
 		_beginUpdate(): void;
 		_updateViewport(iZIndex: int, bUpdateStatistics?: bool): void;
