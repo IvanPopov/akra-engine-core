@@ -62,18 +62,17 @@ module akra.scene {
 				FLAG(ESceneObjectFlags.k_NewLocalBounds) | FLAG(ESceneObjectFlags.k_NewWorldBounds));
 		}
 
-		update(): void {
+		update(): bool {
+			//если, обновится мировая матрица узла, то и AABB обновится 
 			super.update();
 			// do we need to update our local matrix?
-
 		    // derived classes update the local matrix
 		    // then call this base function to complete
 		    // the update
-		    this.recalcWorldBounds();
-		    this.worldBoundsUpdated();
+		    return this.recalcWorldBounds();
 		}
 
-		recalcWorldBounds(): void {
+		private recalcWorldBounds(): bool {
 			// nodes only get their bounds updated
 		    // as nessesary
 		    if (TEST_BIT(this._iObjectFlags, ESceneObjectFlags.k_NewLocalBounds)
@@ -92,7 +91,13 @@ module akra.scene {
 
 		        // set the flag that our bounding box has changed
 		        TRUE_BIT(this._iObjectFlags, ESceneObjectFlags.k_NewWorldBounds);
+		        
+		        // this.worldBoundsUpdated();
+		        
+		        return true;
 		    }
+
+		    return false;
 		}
 
 		prepareForRender(): void {}

@@ -7,8 +7,8 @@
 module akra.scene {
 	export class Joint extends Node implements IJoint {
 		private _sBone: string = null;
-		private _iUpdated: int = 0;
-		private _pEngine: IEngine = null;
+		// private _iUpdated: int = 0;
+		// private _pEngine: IEngine = null;
 
 		inline get boneName(): string{
 			return this._sBone;
@@ -18,9 +18,9 @@ module akra.scene {
 			return this._sBone;
 		}
 
-		getEngine(): IEngine {
-			return this._pEngine;
-		}
+		// getEngine(): IEngine {
+		// 	return this._pEngine;
+		// }
 
 		create(): bool {
 			this._m4fLocalMatrix = new Mat4(1);
@@ -37,7 +37,7 @@ module akra.scene {
 			return true;
 		}
 
-		toString(isRecursive: bool, iDepth: int): string {
+		toString(isRecursive: bool = false, iDepth: int = 0): string {
 			isRecursive = isRecursive || false;
 
 			if (!isRecursive) {

@@ -6,12 +6,22 @@
 #include "events/events.ts"
 
 module akra.util {
+	export enum EEntityStates {
+		//обновился ли сам узел?
+		k_Updated = 0x01,
+		//есть ли среди потомков обновленные узлы
+		k_DescendantsUpdtated = 0x02,
+		//если ли обновленные узлы среди братьев или их потомках
+		k_SiblingsUpdated = 0x04
+	}
+
 	export class Entity extends ReferenceCounter implements IEntity {
 		protected _sName: string = null;
 		protected _pParent: IEntity = null;
 		protected _pSibling: IEntity = null;
 		protected _pChild: IEntity = null;
 		protected _eType: EEntityTypes = EEntityTypes.UNKNOWN;
+		protected _iStateFlags: int = 0;
 
 		inline get name(): string { return this._sName; }
 		inline set name(sName: string) { this._sName = sName; }
@@ -138,17 +148,29 @@ module akra.util {
 		    return iCount;
 		}
 
-		recursiveUpdate(): void {
+		inline isUpdated(): bool {
+			return TEST_BIT(this._iStateFlags, EEntityStates.k_Updated);
+		}
+
+		inline hasUpdatedSubNodes(): bool {
+			return TEST_BIT(this._iStateFlags, EEntityStates.k_DescendantsUpdtated);
+		}
+
+		recursiveUpdate(): bool {
 			// update myself
-		    this.update();
+		    if (this.update()) {
+		    	SET_ALL(this._iStateFlags, EEntityStates.k_Updated);
+		    }
 		    // update my sibling
-		    if (this._pSibling) {
-		        this._pSibling.recursiveUpdate();
+		    if (this._pSibling && this._pSibling.recursiveUpdate()) {
+		        SET_ALL(this._iStateFlags, EEntityStates.k_SiblingsUpdated);
 		    }
 		    // update my child
-		    if (this._pChild) {
-		        this._pChild.recursiveUpdate();
+		    if (this._pChild && this._pChild.recursiveUpdate()) {
+		        SET_ALL(this._iStateFlags, EEntityStates.k_DescendantsUpdtated);
 		    }
+
+		    return (this._iStateFlags != 0);
 		}
 
 		recursivePreUpdate(): void {
@@ -166,7 +188,9 @@ module akra.util {
 		}
 
 
-		prepareForUpdate(): void {};
+		prepareForUpdate(): void {
+			this._iStateFlags = 0;
+		};
 
 		/** Parent is not undef */
 		inline hasParent(): bool {
@@ -382,7 +406,7 @@ module akra.util {
 		    }
 		}
 
-		update(): void {}
+		update(): bool { return false; }
 
 		toString(isRecursive: bool = false, iDepth: int = 0): string {
 #ifdef DEBUG

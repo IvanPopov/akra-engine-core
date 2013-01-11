@@ -57,7 +57,7 @@ module akra.scene {
                     continue;
                 }
                 
-                (<IScene3d>pScene).getRootNode().recursiveUpdate();
+                (<IScene3d>pScene).recursiveUpdate();
             }
         }
 
@@ -69,7 +69,7 @@ module akra.scene {
                     continue;
                 }
                 
-                (<IScene3d>pScene).getRootNode().recursivePreUpdate();
+                (<IScene3d>pScene).recursivePreUpdate();
             }
         }
 

@@ -46,8 +46,8 @@ module akra {
 		siblingCount(): uint;
 		childCount(): uint;
 
-		update(): void;
-		recursiveUpdate(): void;
+		update(): bool;
+		recursiveUpdate(): bool;
 		recursivePreUpdate(): void;
 		prepareForUpdate(): void;
 
@@ -58,6 +58,11 @@ module akra {
 		isASibling(pSibling: IEntity): bool;
 		isAChild(pChild: IEntity): bool;
 		isInFamily(pEntity: IEntity, bSearchEntireTree?: bool): bool;
+
+		//обновлен ли сам узел
+		// isUpdated(): bool;
+		//есть ли обновления среди потомков?
+		// hasUpdatedSubNodes(): bool;
 
 
 		addSibling(pSibling: IEntity): IEntity;

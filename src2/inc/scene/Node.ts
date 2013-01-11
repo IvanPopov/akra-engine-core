@@ -101,15 +101,16 @@ module akra.scene {
 		}
 		
 
-		update(): void {
+		update(): bool {
 			// derived classes update the local matrix
 		    // then call this base function to complete
 		    // the update
-		    this.recalcWorldMatrix();
+		    return this.recalcWorldMatrix();
 		}
 
 
 		prepareForUpdate(): void {
+			super.prepareForUpdate();
 			// clear the temporary flags
 			CLEAR_ALL(this._iUpdateFlags, FLAG(ENodeUpdateFlags.k_NewLocalMatrix) | 
         		FLAG(ENodeUpdateFlags.k_NewOrientation) | FLAG(ENodeUpdateFlags.k_NewWorldMatrix));
@@ -132,7 +133,7 @@ module akra.scene {
 			return TEST_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewLocalMatrix);
 		}
 
-		recalcWorldMatrix(): bool {
+		private recalcWorldMatrix(): bool {
 			var isParentMoved: bool = this._pParent && (<Node>this._pParent).isWorldMatrixNew();
 		    var isOrientModified: bool = TEST_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		    var isLocalModified: bool = TEST_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewLocalMatrix);

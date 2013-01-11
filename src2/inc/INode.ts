@@ -37,7 +37,7 @@ module akra {
 		isWorldMatrixNew(): bool;
 		isLocalMatrixNew(): bool;
 
-		recalcWorldMatrix(): bool;
+		//recalcWorldMatrix(): bool;
 
 		setPosition(v3fPosition: IVec3): void;
 		setPosition(fX: float, fY: float, fZ: float): void;

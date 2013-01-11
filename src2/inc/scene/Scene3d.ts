@@ -37,11 +37,11 @@ module akra.scene {
 		}
 
 		recursivePreUpdate(): void {
-
+			this._pRootNode.recursivePreUpdate();
 		}
 
 		recursiveUpdate(): void {
-
+			this._pRootNode.recursiveUpdate();
 		}
 
 		updateCamera(): bool {
@@ -112,13 +112,11 @@ module akra.scene {
 		}
 
 		_findObjects(pCamera: ICamera, csList: string = null): ISceneObject[] {
-			var pList: IDisplayList = this.getDisplayList(csList || DEFAULT_DLIST);
+			var pList: IDisplayList = this._pDisplayListMap[csList || DEFAULT_DLIST];
 
-			if (pList) {
-				return pList.findObjects(pCamera);
-			}
+			debug_assert(pList, "display list not founded.");
 
-			return null;
+			return pList.findObjects(pCamera);
 		}
 
 		_render(pCamera: ICamera, pViewport: IViewport): void {

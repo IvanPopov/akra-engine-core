@@ -6,9 +6,9 @@ module akra {
 	
 	export interface IJoint extends INode {
 		boneName: string;
-		getEngine(): IEngine;
+		// getEngine(): IEngine;
 		create(): bool;
-		toString(isRecursive: bool, iDepth: int): string;
+		// toString(isRecursive: bool, iDepth: int): string;
 	}
 }
 

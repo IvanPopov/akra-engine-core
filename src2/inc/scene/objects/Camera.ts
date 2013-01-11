@@ -13,6 +13,10 @@ module akra.scene.objects {
 		k_NewProjectionMatrix = 0
 	}
 
+	export interface ICameraCache { 
+		[displayList: string]: ISceneObject[]; 
+	};
+
 	export class Camera extends SceneObject implements ICamera {
 		/** camera type */
 		protected _eCameraType: ECameraTypes = ECameraTypes.PERSPECTIVE;
@@ -55,6 +59,8 @@ module akra.scene.objects {
 		protected pFrustumVertices: IVec4[] = new Array(8);
 
 		protected _pLastViewport: IViewport = null;
+
+		protected _pVisibleObjectsCache: ICameraCache = {}; 
 
 
 		// protected _pPrevObjects: ISceneNode[] = null;
@@ -118,7 +124,13 @@ module akra.scene.objects {
 		}
 
 		display(csList: string = null): ISceneObject[] {
-			return this._pScene._findObjects(this, csList);
+			var pResult: ISceneObject[] = this._pCulledObjects[csList];
+
+			if (!isDefAndNotNull(pResult)) {
+				pResult = this._pCulledObjects[csList] = this._pScene._findObjects(this, csList);
+			}
+
+			return pResult;
 		}
 
 		setParameter(eParam: ECameraParameters, pValue: any): void {
@@ -201,7 +213,7 @@ module akra.scene.objects {
 		    TRUE_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
     	}
 
-    	recalcMatrices(): void {
+    	private recalcMatrices(): void {
     		this._v3fTargetPos.set(
 	        this._m4fLocalMatrix.data[__13], 
 	        this._m4fLocalMatrix.data[__23],
@@ -236,8 +248,8 @@ module akra.scene.objects {
 		    // this.m4fBillboard.data[__34] = 0.0;
     	}
 
-    	update(): void {
-    		super.update();
+    	update(): bool {
+    		var isUpdated: bool = super.update();
 
 		    if(TEST_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix)){
 		        this.extractFrustumVertices();
@@ -251,6 +263,8 @@ module akra.scene.objects {
 		            // multiplied by the projection matrix
 		            this._m4fProj.multiply(this._m4fView, this._m4fRenderStageProjView);
 		        }
+
+		        isUpdated = true;
 		    }
 
 		    if (this.isWorldMatrixNew()) {
@@ -261,6 +275,8 @@ module akra.scene.objects {
 		        // multiplied by the projection matrix
 		        this._m4fProj.multiply(this._m4fView, this._m4fRenderStageProjView);
 		    }
+
+		    return isUpdated;
     	}
 
 		applyRenderStageBias(iStage: int): void {

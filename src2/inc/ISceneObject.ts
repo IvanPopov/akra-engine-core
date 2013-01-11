@@ -17,13 +17,15 @@ module akra {
 
     	accessLocalBounds(): IRect3d;
     	isWorldBoundsNew(): bool;
-    	recalcWorldBounds(): void;
+    	// recalcWorldBounds(): void;
 
     	prepareForRender(): void;
     	render(): void;
 
     	hasShadows(): bool;
     	setShadows(bValue?: bool): void;
+
+        signal worldBoundsUpdated(): void;
     }
 }
 

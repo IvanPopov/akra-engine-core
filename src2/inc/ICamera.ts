@@ -49,9 +49,8 @@ module akra {
     	setOrthoParams(fWidth: float, fHeight: float, fNearPlane: float, fFarPlane: float): void;
     	setOffsetOrthoParams(fMinX: float, fMaxX: float, fMinY: float, fMaxY: float, fNearPlane: float, fFarPlane: float): void;
 
-    	recalcMatrices(): void;
-
-    	update(): void;
+        //moved to private.
+    	// recalcMatrices(): void;
 
     	applyRenderStageBias(iStage: int): void;
 
