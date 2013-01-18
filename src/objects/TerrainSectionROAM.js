@@ -197,8 +197,8 @@ TerrainSectionROAM.prototype.recursiveTessellate=function(pTri, //вершина
 		if (!pTri.pLeftChild)
 		{
 
-			var fRatio = (pVTree[iIndex]*fScale)/(fMidDist+0.0001);
-			if (fRatio > fLimit)
+			var fRatio = (pVTree[iIndex]*fScale)/Math.pow(fMidDist+0.0001,fLimit);
+			if (fRatio > 1)
 			{
 				// subdivide this triangle
 				//console.log("split");
@@ -403,52 +403,6 @@ TerrainSectionROAM.prototype.buildTriangleList=function()
 	this._iTempTotalIndices=undefined;
 	this._iVertexID=undefined;
 	this._pTempIndexList=null;
-
-	/*var pCanvas=document.getElementById('canvasLOD');
-	var p2D=pCanvas.getContext("2d");
-	p2D.strokeStyle = "#f00"; //цвет линий
-	p2D.lineWidth = 1;
-	p2D.beginPath();
-	//console.log("Total ",pSec._iTotalIndices);
-
-	//console.log(this);
-	var pVerts=this.pVertsDebug;
-	var rect=this.getTerrainSystem().worldExtents();
-	var size=this.getTerrainSystem().worldSize();
-	for(var i=0;i<this._iTotalIndices;i+=3)
-	{
-
-
-		p2D.moveTo(	((pVerts[(this._pIndexList[i+0]*4-this._iVertexID)/32
-			*8+0]-rect.fX0)/size.x)*pCanvas.width,
-			((pVerts[(this._pIndexList[i+0]*4-this._iVertexID)/32
-				*8+1]-rect.fY0)/size.y)*pCanvas.height);
-		p2D.lineTo(	((pVerts[(this._pIndexList[i+1]*4-this._iVertexID)/32
-			*8+0]-rect.fX0)/size.x)*pCanvas.width,
-			((pVerts[(this._pIndexList[i+1]*4-this._iVertexID)/32
-				*8+1]-rect.fY0)/size.y)*pCanvas.height);
-		p2D.lineTo(	((pVerts[(this._pIndexList[i+2]*4-this._iVertexID)/32
-			*8+0]-rect.fX0)/size.x)*pCanvas.width,
-			((pVerts[(this._pIndexList[i+2]*4-this._iVertexID)/32
-				*8+1]-rect.fY0)/size.y)*pCanvas.height);
-		p2D.lineTo(	((pVerts[(this._pIndexList[i+0]*4-this._iVertexID)/32
-			*8+0]-rect.fX0)/size.x)*pCanvas.width,
-			((pVerts[(this._pIndexList[i+0]*4-this._iVertexID)/32
-				*8+1]-rect.fY0)/size.y)*pCanvas.height);
-	}
-	p2D.stroke();
-
-	p2D.strokeStyle = "#00f"; //цвет линий
-	p2D.lineWidth = 1;
-	p2D.beginPath();
-	p2D.lineTo(((this._pWorldRect.fX0-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY0-rect.fY0)/size.y)*pCanvas.height);
-	p2D.lineTo(((this._pWorldRect.fX1-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY0-rect.fY0)/size.y)*pCanvas.height);
-	p2D.lineTo(((this._pWorldRect.fX1-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY1-rect.fY0)/size.y)*pCanvas.height);
-	p2D.lineTo(((this._pWorldRect.fX0-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY1-rect.fY0)/size.y)*pCanvas.height);
-	p2D.lineTo(((this._pWorldRect.fX0-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY0-rect.fY0)/size.y)*pCanvas.height);
-	p2D.stroke();
-*/
-
 }
 
 
@@ -479,6 +433,7 @@ TerrainSectionROAM.prototype.recursiveBuildTriangleList=function(pTri,iPointBase
 	else if (this._iTempTotalIndices + 3 < this._iMaxIndices)
 	{
 		// add the local triangle to the index list
+		//20 = 5(элементов) * 4(бита)
 		this._pTempIndexList[this._iTempTotalIndices++]=((iPointRight+this._iStartIndex)*20+ this._iVertexID)/4;
 		this._pTempIndexList[this._iTempTotalIndices++]=((iPointLeft+this._iStartIndex)*20 + this._iVertexID)/4;
 		this._pTempIndexList[this._iTempTotalIndices++]=((iPointBase+this._iStartIndex)*20 + this._iVertexID)/4;

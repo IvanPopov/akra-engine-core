@@ -57,8 +57,8 @@ function Terrain(pEngine) {
 
     this._pMegaTexures = null; //отоброжаемые куски текстуры
 
-    this._fScale = 1.33;
-    this._fLimit = 0.03;
+    this._fScale = 0.02;
+    this._fLimit = 0.01;
 
     this._pDefaultRenderMethod = null;
     this._initSystemData();
@@ -178,7 +178,7 @@ Terrain.prototype.create = function (pRootNode, pMap, worldExtents, iShift, iShi
 
     this._v3fMapScale.x = this._v3fWorldSize.x / this._iTableWidth;
     this._v3fMapScale.y = this._v3fWorldSize.y / this._iTableHeight;
-    this._v3fMapScale.z = this._v3fWorldSize.z / 255.0;
+    this._v3fMapScale.z = this._v3fWorldSize.z;
 
 
     //Мегатекстурные параметры
@@ -307,27 +307,67 @@ Terrain.prototype.buildHeightAndNormalTables = function (pImageHightMap, pImageN
     var iMaxY = this._iTableHeight;
     var iMaxX = this._iTableWidth;
 
-    trace("Terraim Map Size ", iMaxX, iMaxY);
+    trace("Terrain HeightMap Size ", iMaxX, iMaxY);
 
-    var pColorData = new Uint8Array(4 * iMaxY * iMaxX);
+
     this._pHeightTable = new Array(iMaxX * iMaxY); //float
 
-
     var temp = new a.Texture(this._pEngine);
-//    var
 
     // first, build a table of heights
-    if (pImageHightMap.isResourceLoaded()) {
-        temp.uploadImage(pImageHightMap);
-        temp.resize(iMaxX, iMaxY);
+    if (pImageHightMap.isResourceLoaded())
+	{
+		var iBitPerComponents=pImageHightMap.getBitPerComponents(0)
 
-        temp.getPixelRGBA(0, 0, iMaxX, iMaxY, pColorData);
-        iComponents = temp.numElementsPerPixel;
-        for (i = 0; i < iMaxY * iMaxX; i++) {
-            fHeight = pColorData[i * iComponents + 0];
-            fHeight = (fHeight * this._v3fMapScale.z) + this._pWorldExtents.fZ0;
-            this._pHeightTable[i] = fHeight;
-        }
+		this._v3fMapScale.z = this._v3fWorldSize.z / Math.pow(2,iBitPerComponents);
+
+
+		if(iBitPerComponents>8&&pImageHightMap.getWidth()==iMaxX && pImageHightMap.getHeight()==iMaxY)
+		{
+
+			var pColor=new Uint32Array(4)
+			if(pImageHightMap.isLumiance())
+			{
+				for (i = 0; i < iMaxY * iMaxX; i++)
+				{
+					pImageHightMap.getPixelLA(i%pImageHightMap.getWidth(),Math.floor(i/pImageHightMap.getWidth()),pColor)
+					fHeight = pColor[0];
+					fHeight = (fHeight * this._v3fMapScale.z) + this._pWorldExtents.fZ0;
+					this._pHeightTable[i] = fHeight;
+				}
+
+
+			}
+			else
+			{
+				for (i = 0; i < iMaxY * iMaxX; i++)
+				{
+					pImageHightMap.getPixelRGBA(i%pImageHightMap.getWidth(),Math.floor(i/pImageHightMap.getWidth()),pColor)
+					fHeight = pColor[0];
+					fHeight = (fHeight * this._v3fMapScale.z) + this._pWorldExtents.fZ0;
+					this._pHeightTable[i] = fHeight;
+				}
+			}
+		}
+		else
+		{
+			if(iBitPerComponents>8)
+			{
+				warning("Потеря точности в карте высот из-за ресайза");
+			}
+
+			var pColorData = new Uint8Array(4 * iMaxY * iMaxX);
+			temp.uploadImage(pImageHightMap);
+			temp.resize(iMaxX, iMaxY);
+
+			temp.getPixelRGBA(0, 0, iMaxX, iMaxY, pColorData);
+			iComponents = temp.numElementsPerPixel;
+			for (i = 0; i < iMaxY * iMaxX; i++) {
+				fHeight = pColorData[i * iComponents + 0];
+				fHeight = (fHeight * this._v3fMapScale.z) + this._pWorldExtents.fZ0;
+				this._pHeightTable[i] = fHeight;
+			}
+		}
     }
     else {
         warning("Карта высот не загружена")
@@ -341,7 +381,6 @@ Terrain.prototype.buildHeightAndNormalTables = function (pImageHightMap, pImageN
     }
 
     this._pNormalMap = temp
-
 };
 
 /**
@@ -931,11 +970,11 @@ Terrain.prototype.readUserInput = function () {
     }
 
 
-    if (this._fLimit < 0.001) {
-        this._fLimit = 0.001;
+    if (this._fLimit < 0.0001) {
+        this._fLimit = 0.0001;
     }
-    if (this._fScale < 0.001) {
-        this._fScale = 0.001;
+    if (this._fScale < 0.0001) {
+        this._fScale = 0.0001;
     }
 
     document.getElementById('setinfo4').innerHTML = "fScale1 " + this._fScale;

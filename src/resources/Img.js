@@ -480,9 +480,164 @@ Img.prototype.getBlockBytes = function () {
     }
 }
 
-Img.prototype.getBitPerComponents = function () {
-    //TODO
-    return 0;
+Img.prototype.getBitPerComponents = function (nNumber) {
+
+	nNumber = nNumber || 0;
+    if(nNumber==0)
+	{
+		if (this._eFormat == a.IFORMAT.RGB_DXT1 || this._eFormat == a.IFORMAT.RGBA_DXT1
+			|| this._eFormat == a.IFORMAT.RGBA_DXT2 || this._eFormat == a.IFORMAT.RGBA_DXT3
+			|| this._eFormat == a.IFORMAT.RGBA_DXT4 || this._eFormat == a.IFORMAT.RGBA_DXT5) {
+			return 5;
+		}
+		else if (this._eFormat == a.IFORMAT.BGR8 || this._eFormat == a.IFORMAT.RGB8
+			|| this._eFormat == a.IFORMAT.RGBA8 || this._eFormat == a.IFORMAT.BGRA8) {
+			return 8;
+		}
+		else if (this._eFormat == a.IFORMAT.RGBA4 || this._eFormat == a.IFORMAT.BGRA4)
+		{
+			return 4;
+		}
+		else if (this._eFormat == a.IFORMAT.RGB5_A1 || this._eFormat == a.IFORMAT.BGR5_A1
+			|| this._eFormat == a.IFORMAT.RGB565 || this._eFormat == a.IFORMAT.BGR565)
+		{
+			return 5;
+		}
+		else if (this._eFormat == a.IFORMAT.L16)
+		{
+			return 16;
+		}
+		else if (this._eFormat == a.IFORMAT.L8)
+		{
+			return 8;
+		}
+		else {
+			debug_error("getBitPerComponents неизвестный формат");
+			return 0;
+		}
+	}
+	else if(nNumber==1)
+	{
+		if (this._eFormat == a.IFORMAT.RGB_DXT1 || this._eFormat == a.IFORMAT.RGBA_DXT1
+			|| this._eFormat == a.IFORMAT.RGBA_DXT2 || this._eFormat == a.IFORMAT.RGBA_DXT3
+			|| this._eFormat == a.IFORMAT.RGBA_DXT4 || this._eFormat == a.IFORMAT.RGBA_DXT5) {
+			return 6;
+		}
+		else if (this._eFormat == a.IFORMAT.BGR8 || this._eFormat == a.IFORMAT.RGB8
+			|| this._eFormat == a.IFORMAT.RGBA8 || this._eFormat == a.IFORMAT.BGRA8) {
+			return 8;
+		}
+		else if (this._eFormat == a.IFORMAT.RGBA4 || this._eFormat == a.IFORMAT.BGRA4)
+		{
+			return 4;
+		}
+		else if (this._eFormat == a.IFORMAT.RGB5_A1 || this._eFormat == a.IFORMAT.BGR5_A1)
+		{
+			return 5;
+		}
+		else if (this._eFormat == a.IFORMAT.RGB565 || this._eFormat == a.IFORMAT.BGR565)
+		{
+			return 6;
+		}
+		else if (this._eFormat == a.IFORMAT.L16)
+		{
+			return 0;
+		}
+		else if (this._eFormat == a.IFORMAT.L8)
+		{
+			return 0;
+		}
+		else {
+			debug_error("getBitPerComponents неизвестный формат");
+			return 0;
+		}
+	}
+	else if(nNumber==2)
+	{
+		if (this._eFormat == a.IFORMAT.RGB_DXT1 || this._eFormat == a.IFORMAT.RGBA_DXT1
+			|| this._eFormat == a.IFORMAT.RGBA_DXT2 || this._eFormat == a.IFORMAT.RGBA_DXT3
+			|| this._eFormat == a.IFORMAT.RGBA_DXT4 || this._eFormat == a.IFORMAT.RGBA_DXT5) {
+			return 5;
+		}
+		else if (this._eFormat == a.IFORMAT.BGR8 || this._eFormat == a.IFORMAT.RGB8
+			|| this._eFormat == a.IFORMAT.RGBA8 || this._eFormat == a.IFORMAT.BGRA8) {
+			return 8;
+		}
+		else if (this._eFormat == a.IFORMAT.RGBA4 || this._eFormat == a.IFORMAT.BGRA4)
+		{
+			return 4;
+		}
+		else if (this._eFormat == a.IFORMAT.RGB5_A1 || this._eFormat == a.IFORMAT.BGR5_A1)
+		{
+			return 5;
+		}
+		else if (this._eFormat == a.IFORMAT.RGB565 || this._eFormat == a.IFORMAT.BGR565)
+		{
+			return 5;
+		}
+		else if (this._eFormat == a.IFORMAT.L16)
+		{
+			return 0;
+		}
+		else if (this._eFormat == a.IFORMAT.L8)
+		{
+			return 0;
+		}
+		else {
+			debug_error("getBitPerComponents неизвестный формат");
+			return 0;
+		}
+	}
+	else if(nNumber==3)
+	{
+		if (this._eFormat == a.IFORMAT.RGB_DXT1)
+		{
+			return 0;
+		}
+		else if( this._eFormat == a.IFORMAT.RGBA_DXT1)
+		{
+			return 1;
+		}
+		else if(this._eFormat == a.IFORMAT.RGBA_DXT2 || this._eFormat == a.IFORMAT.RGBA_DXT3)
+		{
+			return 4;
+		}
+		else if(this._eFormat == a.IFORMAT.RGBA_DXT4 || this._eFormat == a.IFORMAT.RGBA_DXT5) {
+			return 8;
+		}
+		else if (this._eFormat == a.IFORMAT.BGR8 || this._eFormat == a.IFORMAT.RGB8)
+		{
+			return 0;
+		}
+		else if(this._eFormat == a.IFORMAT.RGBA8 || this._eFormat == a.IFORMAT.BGRA8) {
+			return 8;
+		}
+		else if (this._eFormat == a.IFORMAT.RGBA4 || this._eFormat == a.IFORMAT.BGRA4)
+		{
+			return 4;
+		}
+		else if (this._eFormat == a.IFORMAT.RGB5_A1 || this._eFormat == a.IFORMAT.BGR5_A1)
+		{
+			return 1;
+		}
+		else if (this._eFormat == a.IFORMAT.RGB565 || this._eFormat == a.IFORMAT.BGR565)
+		{
+			return 0;
+		}
+		else if (this._eFormat == a.IFORMAT.L16)
+		{
+			return 0;
+		}
+		else if (this._eFormat == a.IFORMAT.L8)
+		{
+			return 0;
+		}
+		else {
+			debug_error("getBitPerComponents неизвестный формат");
+			return 0;
+		}
+	}
+	return 0;
 }
 
 Img.prototype.getWidth = function (iMipLevel) {
@@ -1060,17 +1215,19 @@ Img.prototype.load = function (sFileName, fnCallBack) {
                 else if (header.ddspf.dwFlags & DDPF_LUMINANCE) {
                     if (header.ddspf.dwRGBBitCount == 16 && header.ddspf.dwRBitMask == 0x0000ffff &&
                         header.ddspf.dwGBitMask == 0x00000000 && header.ddspf.dwBBitMask == 0x00000000 &&
-                        header.ddspf.dwABitMask == 0x00000000) //DDSPF_R8G8B8
+                        header.ddspf.dwABitMask == 0x00000000)
                     {
                         me._eFormat = a.IFORMAT.L16;
                     }
-                    if (header.ddspf.dwRGBBitCount == 8 && header.ddspf.dwRBitMask == 0x000000ff &&
+                    else if (header.ddspf.dwRGBBitCount == 8 && header.ddspf.dwRBitMask == 0x000000ff &&
                         header.ddspf.dwGBitMask == 0x00000000 && header.ddspf.dwBBitMask == 0x00000000 &&
-                        header.ddspf.dwABitMask == 0x00000000) //DDSPF_R8G8B8
+                        header.ddspf.dwABitMask == 0x00000000)
                     {
                         me._eFormat = a.IFORMAT.L8;
                     }
-                    else {
+                    else
+					{
+
                         debug_error("Флаг DDPF_LUMINANCE стоит, а подходящего формата не найдено");
                     }
                 }

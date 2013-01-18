@@ -222,8 +222,8 @@ LightManager.prototype.applyLight = function () {
     pSubMesh.startRender();
     pSnapshot = pSubMesh._pActiveSnapshot;
     pSubMesh.activatePass(0);
-//    pRenderer.activateFrameBuffer(null);
-    pRenderer.activateFrameBuffer(pRenderer._pGlobalPostEffectFrameBuffer);
+    pRenderer.activateFrameBuffer(null);
+//    pRenderer.activateFrameBuffer(pRenderer._pGlobalPostEffectFrameBuffer);
     pRenderer.clearScreen(a.CLEAR.DEPTH_BUFFER_BIT | a.CLEAR.COLOR_BUFFER_BIT);
     // pRenderer.applyFrameBufferTexture(pRenderer._pGlobalPostEffectTexture);
 
@@ -258,8 +258,8 @@ LightManager.prototype.applyLight = function () {
     pSubMesh.deactivatePass();
 
 
-//    pSubMesh.finishRender();
-//    return true;
+    pSubMesh.finishRender();
+    return true;
 
     var isFXAA = this._pEngine.isFXAA;
     //Tempory skybox

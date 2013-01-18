@@ -198,6 +198,108 @@ TerrainROAM.prototype.addToTessellationQueue=function(pSection)
 	return false;
 }
 
+TerrainROAM.prototype.debugDraw = function(sCanvasName)
+{
+
+	//#####################################################################################
+	//Получение канваса
+	var pCanvas=document.getElementById(sCanvasName);
+	var p2D=pCanvas.getContext("2d");
+	p2D.fillStyle = "#fff"; // цвет фона
+	p2D.fillRect(0, 0, pCanvas.width, pCanvas.height);
+
+
+	//#####################################################################################
+	//Рисование треугольников
+
+	p2D.strokeStyle = "#f00"; //цвет линий
+	p2D.lineWidth = 1;
+	p2D.beginPath();
+
+	 //console.log("Total ",pSec._iTotalIndices);
+	 //console.log(this);
+
+	var pVerts=this._pVerts;
+	var rect=this.worldExtents();
+	var size=this.worldSize();
+
+
+	for(var i=0;i<this._iTotalIndices;i+=3)
+	{
+		  p2D.moveTo(	((pVerts[(this._pIndexList[i+0]*4-this._iVertexID)/20
+		 *5+0]-rect.fX0)/size.x)*pCanvas.width,
+		 ((pVerts[(this._pIndexList[i+0]*4-this._iVertexID)/20
+		 *5+1]-rect.fY0)/size.y)*pCanvas.height);
+		 p2D.lineTo(	((pVerts[(this._pIndexList[i+1]*4-this._iVertexID)/20
+		 *5+0]-rect.fX0)/size.x)*pCanvas.width,
+		 ((pVerts[(this._pIndexList[i+1]*4-this._iVertexID)/20
+		 *5+1]-rect.fY0)/size.y)*pCanvas.height);
+		 p2D.lineTo(	((pVerts[(this._pIndexList[i+2]*4-this._iVertexID)/20
+		 *5+0]-rect.fX0)/size.x)*pCanvas.width,
+		 ((pVerts[(this._pIndexList[i+2]*4-this._iVertexID)/20
+		 *5+1]-rect.fY0)/size.y)*pCanvas.height);
+		 p2D.lineTo(	((pVerts[(this._pIndexList[i+0]*4-this._iVertexID)/20
+		 *5+0]-rect.fX0)/size.x)*pCanvas.width,
+		 ((pVerts[(this._pIndexList[i+0]*4-this._iVertexID)/20
+		 *5+1]-rect.fY0)/size.y)*pCanvas.height);
+
+	}
+	p2D.stroke();
+
+	//Границы секции
+	/*
+	 p2D.strokeStyle = "#00f"; //цвет линий
+	 p2D.lineWidth = 1;
+	 p2D.beginPath();
+	 p2D.lineTo(((this._pWorldRect.fX0-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY0-rect.fY0)/size.y)*pCanvas.height);
+	 p2D.lineTo(((this._pWorldRect.fX1-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY0-rect.fY0)/size.y)*pCanvas.height);
+	 p2D.lineTo(((this._pWorldRect.fX1-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY1-rect.fY0)/size.y)*pCanvas.height);
+	 p2D.lineTo(((this._pWorldRect.fX0-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY1-rect.fY0)/size.y)*pCanvas.height);
+	 p2D.lineTo(((this._pWorldRect.fX0-rect.fX0)/size.x)*pCanvas.width,((this._pWorldRect.fY0-rect.fY0)/size.y)*pCanvas.height);
+	 p2D.stroke();
+	 */
+	//#####################################################################################
+
+
+	//положение камеры
+	var pCamera = this._pEngine.getActiveCamera();
+	var v3fCameraPosition=pCamera.worldPosition();
+	var pData = pCamera.worldMatrix().pData;
+	var pDir = new Vec2(-pData._13,-pData._23);
+	var fRad = pCamera.fov();
+	//var fNear = pCamera.nearPlane();
+	var fFar = pCamera.farPlane();
+	pDir.normalize();
+	pDir.scale(fFar/Math.abs(this.worldExtents().fX1-this.worldExtents().fX0));
+	var pDir1= new Vec2(pDir.x*Math.cos( fRad/2)-pDir.y*Math.sin( fRad/2),pDir.x*Math.sin( fRad/2)+pDir.y*Math.cos( fRad/2));
+	var pDir2= new Vec2(pDir.x*Math.cos(-fRad/2)-pDir.y*Math.sin(-fRad/2),pDir.x*Math.sin(-fRad/2)+pDir.y*Math.cos(-fRad/2));
+
+	//document.getElementById('setinfo0').innerHTML="fNear " + fNear;
+	document.getElementById('setinfo1').innerHTML="fFar "  + fFar;
+	//Вычисление текстурных координат над которыми находиться камера
+	var fX=(v3fCameraPosition.x-this.worldExtents().fX0)/Math.abs(this.worldExtents().fX1-this.worldExtents().fX0);
+	var fY=(v3fCameraPosition.y-this.worldExtents().fY0)/Math.abs(this.worldExtents().fY1-this.worldExtents().fY0);
+
+	//камера
+	p2D.beginPath();
+	p2D.strokeStyle = "#000"; //цвет линий
+	p2D.lineWidth = 3;
+	p2D.moveTo(fX*pCanvas.width,fY*pCanvas.height);
+	p2D.lineTo((fX+pDir1.x)*pCanvas.width,(fY+pDir1.y)*pCanvas.height);
+	p2D.lineTo((fX+pDir2.x)*pCanvas.width,(fY+pDir2.y)*pCanvas.height);
+	p2D.lineTo(fX*pCanvas.width,fY*pCanvas.height);
+	p2D.stroke();
+	p2D.beginPath();
+	p2D.arc(fX*pCanvas.width,fY*pCanvas.height, 5, 0, 2*Math.PI, false);
+	p2D.fillStyle = "#00f";
+	p2D.fill();
+	p2D.lineWidth = 1;
+	p2D.strokeStyle = "#00f";
+	p2D.stroke();
+	//секции
+
+}
+
 
 STATIC(TerrainROAM,_iTessellationQueueCountOld,undefined);
 STATIC(TerrainROAM,nCountRender,0);
@@ -211,66 +313,16 @@ TerrainROAM.prototype.prepareForRender = function()
 
 		if(((statics.nCountRender++)%30)==0)
 		{
-			/*
-			//#####################################################################################
-			var pCanvas=document.getElementById('canvasLOD');
-			var p2D=pCanvas.getContext("2d");
-			p2D.fillStyle = "#fff"; // цвет фона
-			p2D.fillRect(0, 0, pCanvas.width, pCanvas.height);
-
-
-			//#####################################################################################*/
-
-			var pCamera = this._pEngine.getActiveCamera();
-			var v3fCameraPosition=pCamera.worldPosition();
-			var fX=(v3fCameraPosition.x-this.worldExtents().fX0)/Math.abs(this.worldExtents().fX1-this.worldExtents().fX0);
-			var fY=(v3fCameraPosition.y-this.worldExtents().fY0)/Math.abs(this.worldExtents().fY1-this.worldExtents().fY0);
 
 			if(this._iTessellationQueueCount!=statics._iTessellationQueueCountOld)
 			{
 				this.processTessellationQueue();
 				statics._iTessellationQueueCountOld=this._iTessellationQueueCount;
+				document.getElementById('setinfo2').innerHTML="Max: "+ this._pNodePool.iMaxCount;
+				document.getElementById('setinfo3').innerHTML="Cur: "+ this._pNodePool.iNextTriNode;
 			}
 
-
-			/*//#####################################################################################
-			var pCamera = this._pEngine.getActiveCamera();
-			var v3fCameraPosition=pCamera.worldPosition();
-			var pData = pCamera.worldMatrix().pData;
-			var pDir = new Vec2(-pData._13,-pData._23);
-			var fRad = pCamera.fov();
-			//var fNear = pCamera.nearPlane();
-			var fFar = pCamera.farPlane();
-			pDir.normalize();
-			pDir.scale(fFar/Math.abs(this.worldExtents().fX1-this.worldExtents().fX0));
-			var pDir1= new Vec2(pDir.x*Math.cos( fRad/2)-pDir.y*Math.sin( fRad/2),pDir.x*Math.sin( fRad/2)+pDir.y*Math.cos( fRad/2));
-			var pDir2= new Vec2(pDir.x*Math.cos(-fRad/2)-pDir.y*Math.sin(-fRad/2),pDir.x*Math.sin(-fRad/2)+pDir.y*Math.cos(-fRad/2));
-
-			//document.getElementById('setinfo0').innerHTML="fNear " + fNear;
-			document.getElementById('setinfo1').innerHTML="fFar "  + fFar;
-			//Вычисление текстурных координат над которыми находиться камера
-			var fX=(v3fCameraPosition.x-this.worldExtents().fX0)/Math.abs(this.worldExtents().fX1-this.worldExtents().fX0);
-			var fY=(v3fCameraPosition.y-this.worldExtents().fY0)/Math.abs(this.worldExtents().fY1-this.worldExtents().fY0);
-
-			//камера
-			p2D.beginPath();
-			p2D.strokeStyle = "#000"; //цвет линий
-			p2D.lineWidth = 3;
-			p2D.moveTo(fX*pCanvas.width,fY*pCanvas.height);
-			p2D.lineTo((fX+pDir1.x)*pCanvas.width,(fY+pDir1.y)*pCanvas.height);
-			p2D.lineTo((fX+pDir2.x)*pCanvas.width,(fY+pDir2.y)*pCanvas.height);
-			p2D.lineTo(fX*pCanvas.width,fY*pCanvas.height);
-			p2D.stroke();
-			p2D.beginPath();
-			p2D.arc(fX*pCanvas.width,fY*pCanvas.height, 5, 0, 2*Math.PI, false);
-			p2D.fillStyle = "#00f";
-			p2D.fill();
-			p2D.lineWidth = 1;
-			p2D.strokeStyle = "#00f";
-			p2D.stroke();
-			//секции
-
-//#####################################################################################*/
+			this.debugDraw('canvasLOD');
 		}
 	}
 
@@ -344,6 +396,7 @@ TerrainROAM.prototype.processTessellationQueue=function()
 		//console.log("!!!!_iTotalIndices",this._iTotalIndices);
 		return;
 	}
+
 
 
 	this._pRenderData.setIndexLength(this._iTotalIndices);

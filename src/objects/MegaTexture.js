@@ -48,6 +48,8 @@ function MegaTexture(pEngine, pObject, sSurfaceTextures) {
     for (var i = 0; i < this._pTexures.length; i++) {
         this._pTexures[i] = new a.Texture(this._pEngine);
         this._pTexures[i].createTexture(this._iTextureWidth, this._iTextureHeight, undefined, this._eTextureType);
+		this._pTexures[i].applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
+		this._pTexures[i].applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
         if (i == 0) {
             this._pBuffer[i] = new Uint8Array(this._iTextureHeight * this._iTextureWidth *
                                               a.getIFormatNumElements(this._eTextureType));
@@ -64,10 +66,12 @@ function MegaTexture(pEngine, pObject, sSurfaceTextures) {
                                                   (this._iBlockSize * this._iBlockSize));
             this.setBufferMapNULL(this._pBufferMap[i]);
         }
-        this._pXY[i] = {iX : 0, iY : 0, isUpdated : true, isLoaded : false};//Координты буфера в основной текстуре, для простыты должны быть кратну размеру блока
+        this._pXY[i] = {iX : 0, iY : 0,//Координты буфера в основной текстуре, для простыты должны быть кратну размеру блока
+			iTexX:0, iTexY:0,   //Координаты мегатекстуры в текстуре
+			isUpdated : true, isLoaded : false};
     }
-
-    this._pRPC = new a.NET.RPC('ws://192.168.214.128');
+	console.log("!!!!!!!!!!!!!!!!!!!!===>>>>>");
+    this._pRPC = new a.NET.RPC('ws://192.168.194.128');
     this.getDataFromServer(0, 0, 0, this._iTextureWidth, this._iTextureHeight);
 }
 
@@ -275,8 +279,10 @@ MegaTexture.prototype.prepareForRender = function () {
             if (this._pXY[i].isLoaded == true &&
                 (this._pXY[i].isUpdated == true || statics.fTexCourdXOld != fTexCourdX ||
                  statics.fTexCourdYOld != fTexCourdY)) {
-                iTexInBufX = Math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2);
-                iTexInBufY = Math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
+                iTexInBufX = Math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2); //координаты угла мегатекстуре на текстуре
+                iTexInBufY = Math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2); //
+				this._pXY[i].iTexX=iTexInBufX/this.getWidthOrig(i);
+				this._pXY[i].iTexY=iTexInBufY/this.getHeightOrig(i);
                 iTexInBufX -= this._pXY[i].iX;
                 iTexInBufY -= this._pXY[i].iY;
 
@@ -429,19 +435,16 @@ MegaTexture.prototype.prepareForRender = function () {
 
 
 //Применение параметров для рендеринга, коготрые зависят от самого терраина
-MegaTexture.prototype.applyForRender = function () {
-//	this._pEngine.pDrawTerrainProgram.applyVector2('cameraCoordTerrain', this._v2fCameraCoord);
-//	for(var i=0;i<this._pTexures.length;i++)
-//	{
-//		this._pTexures[i].activate(2+i);
-//		this._pEngine.pDrawTerrainProgram.applyInt('textureTerrain'+i,2+i);
-//		this._pEngine.pDrawTerrainProgram.applyInt('textureTerrainIsLoaded'+i,this._pXY[i].isLoaded);
-//	}
-}
-
 MegaTexture.prototype.applyForRender = function (pSnapshot) {
     pSnapshot.setParameterBySemantic('CAMERA_COORD', this._v2fCameraCoord);
-    for (var i = 0; i < this._pTexures.length; i++) {
+    for (var i = 0; i < this._pTexures.length; i++)
+	{
+		pSnapshot.setParameter('textureCoord'+ i, [this._pXY[i].iTexX, this._pXY[i].iTexY])
+
+
+
+
+
         pSnapshot.setParameter('textureTerrainIsLoaded' + i, this._pXY[i].isLoaded);
         pSnapshot.applyTextureBySemantic("TEXTURE" + i, this._pTexures[i]);
     }
@@ -760,11 +763,11 @@ MegaTexture.prototype.getDataFromServer = function (iLevelTex, iOrigTexX, iOrigT
                  function ()
                  {
                  //trace('file not found... Load from server');*/
-                console.log("=>", me._sSurfaceTextures)
+                //console.log("=>", me._sSurfaceTextures)
                 me._pRPC.proc('getMegaTexture', me._sSurfaceTextures, me.getWidthOrig(iLev), me.getHeightOrig(iLev), iX,
                               iY, me._iBlockSize, me._iBlockSize, me._eTextureType,
                               function (pData) {
-                                  console.log("<=")
+                                  //console.log("<=")
                                   //console.log(pData);
                                   var pData8 = new Uint8Array(pData);
                                   //console.log(me._pBuffer[iLevelTex].length,iX-me._pXY[iLevelTex].iX,iY-me._pXY[iLevelTex].iY);
