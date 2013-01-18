@@ -58,7 +58,7 @@ module akra {
     	lookAt(v3fCenter: IVec3, v3fUp?: IVec3);
 
         //display via display list with name <csList>
-        display(csList?: string): ISceneObject[];
+        display(iList?: int): ISceneObject[];
 
     	_renderScene(pViewport: IViewport): void;
     	_keepLastViewport(pViewport: IViewport): void;

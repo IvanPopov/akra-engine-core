@@ -129,6 +129,10 @@ module akra.scene {
 		BEGIN_EVENT_TABLE(SceneObject);
 			UNICAST(worldBoundsUpdated, VOID);
 		END_EVENT_TABLE();
+
+		static inline isSceneObject(pEntity: IEntity): bool {
+			return pEntity.type >= EEntityTypes.SCENE_OBJECT && pEntity.type < EEntityTypes.OBJECTS_LIMIT;
+		}
 	}
 }
 

@@ -1,14 +1,14 @@
-#ifndef OCTREE_TS
-#define OCTREE_TS
+#ifndef LIGHTGRAPH_TS
+#define LIGHTGRAPH_TS
 
 #include "DisplayList.ts"
 
 module akra.scene {
-	export class OcTree extends DisplayList {
+	export class LightGraph extends DisplayList {
 		
 		constructor () {
 			super();
-			this.name = "OcTree";
+			this.name = "LightGraph";
 		}	
 
 		protected attachObject(pObject: ISceneObject): void {

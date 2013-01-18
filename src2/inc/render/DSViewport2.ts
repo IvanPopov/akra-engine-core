@@ -13,6 +13,7 @@
 #include "RenderableObject.ts"
 #include "info/info.ts"
 #include "IEffect.ts"
+#include "IScene3d.ts"
 
 module akra.render {
 
@@ -21,6 +22,8 @@ module akra.render {
 		private _pDeferredDepthTexture: ITexture;
 		private _pDeferredView: IRenderableObject = null;
 		private _pDeferredSkyTexture: ITexture = null;
+		//index of lighting display list
+		private _pLightDL: int; 
 
 		private _pLightingUnifoms: UniformMap = {
 	        omni           	: [],
@@ -98,7 +101,7 @@ module akra.render {
 			
 			this.prepareForDeferredShading();
 
-			var pLights: ILightPoint[] = <ILightPoint[]><any>this.getCamera().display("light");
+			var pLights: ILightPoint[] = <ILightPoint[]><any>this.getCamera().display(DL_LIGHTING);
 		    
 		    for (var i: int = 0; i < pLights.length; i++) {
 		        pLights[i]._calculateShadows();

@@ -2,7 +2,7 @@
 #define LIGHTPOINT_TS
 
 #include "ILightPoint.ts"
-#include "SceneNode.ts"
+#include "SceneObject.ts"
 #include "math/math.ts"
 
 module akra.scene.objects {
@@ -13,11 +13,12 @@ module akra.scene.objects {
 	    attenuation: IColor = new Color;
 	}
 
-	export class LightPoint extends SceneNode implements ILightPoint {
+	export class LightPoint extends SceneObject implements ILightPoint {
 		protected _bCastShadows: bool = false;
 		protected _isEnabled: bool = true;
 		protected _iMaxShadowResolution: uint = 256;
 		protected _pLightParameters: ILightParameters = new LightParameters;
+
 
 		inline get params(): ILightParameters {
 			return this._pLightParameters;
