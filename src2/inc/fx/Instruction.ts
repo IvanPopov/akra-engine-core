@@ -586,7 +586,22 @@ module akra.fx {
 		}
 	}
 
+	/**
+	 * Represent {stmts}
+	 * EMPTY_OPERATOR StmtInstruction ... StmtInstruction
+	 */
 	export class StmtBlockInstruction extends StmtInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [];
+		}
+	}
+
+	/**
+	 * Represent expr;
+	 * EMPTY_OPERTOR ExprInstruction 
+	 */
+	export class ExprStmtInstruction extends StmtInstruction {
 		constructor() {
 			super();
 			this._pInstructionList = [null];
@@ -594,8 +609,19 @@ module akra.fx {
 	}
 
 	/**
+	 * Reprsernt continue; break; discard;
+	 * (continue || break || discard) 
+	 */
+	export class BreakStmtInstruction extends StmtInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = null;
+		}
+	}
+
+	/**
 	 * Represent while(expr) stmt
-	 * while ExprInstruction StmtInstruction
+	 * ( while || do_while) ExprInstruction StmtInstruction
 	 */
 	export class WhileStmtInstruction extends StmtInstruction {
 		constructor() {
@@ -606,7 +632,7 @@ module akra.fx {
 
 	/**
 	 * Represent for(forInit forCond ForStep) stmt
-	 * while ExprInstruction StmtInstruction
+	 * for ExprInstruction or VarDeclInstruction ExprInstruction ExprInstruction StmtInstruction
 	 */
 	export class ForStmtInstruction extends StmtInstruction {
 		constructor() {
@@ -615,6 +641,50 @@ module akra.fx {
 		}
 	}
 
+	/**
+	 * Represent if(expr) stmt or if(expr) stmt else stmt
+	 * ( if || if_else ) Expr Stmt [Stmt]
+	 */
+	export class IfStmtInstruction extends StmtInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null, null, null];
+		}
+	}
+
+	/**
+	 * Represent TypeDecl or VariableDecl or VarStructDecl
+	 * EMPTY DeclInstruction
+	 */
+	export class DeclStmtInstruction extends StmtInstruction {
+		constructor () {
+			super();
+			this._pInstructionList = [null];
+		}
+	}
+
+	/**
+	 * Represent return expr;
+	 * return ExprInstruction
+	 */
+	export class ReturnStmtInstruction extends StmtInstruction {
+		constructor () {
+			super();
+			this._pInstructionList = [null];
+			this._sOperatorName = "return";
+		}
+	}
+
+	/**
+	 * Represent empty statement only semicolon ;
+	 * ;
+	 */
+	 export class SemicolonStmtInstruction extends StmtInstruction {
+	 	constructor() {
+	 		super();
+	 		this._pInstructionList = [];
+	 	}
+	 }
 
 	// export class TypeInstruction extends Instruction {
 	// 	/**

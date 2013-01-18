@@ -40,6 +40,9 @@ module akra.fx {
     #define EFFECT_BAD_COMPILE_NOT_FUNCTION 2226
     #define EFFECT_BAD_REDEFINE_FUNCTION 2227
     #define EFFECT_BAD_WHILE_CONDITION 2228
+    #define EFFECT_BAD_DO_WHILE_CONDITION 2229	
+    #define EFFECT_BAD_IF_CONDITION 2230
+
 
     akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, 
     						 "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
@@ -118,8 +121,13 @@ module akra.fx {
     						 "You try to redefine function. With name {funcName}. In line: {line}.");
 	akra.logger.registerCode(EFFECT_BAD_WHILE_CONDITION, 
 							 "Bad type of while-condition. Must be 'bool' but it is '{typeName}'. \
-							 In line: {line}.")
-
+							 In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_DO_WHILE_CONDITION, 
+							 "Bad type of do-while-condition. Must be 'bool' but it is '{typeName}'. \
+							 In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_IF_CONDITION, 
+							 "Bad type of if-condition. Must be 'bool' but it is '{typeName}'. \
+							 In line: {line}.");
 
 
     function sourceLocationToString(pLocation: ISourceLocation): string {
@@ -612,27 +620,27 @@ module akra.fx {
 			this._pEffectScope.endScope();
 		}
 
-		private inline newInstruction(pInstruction: IAFXInstruction): void {
-			pInstruction.setParent(this._pCurrentInstruction);
-			this._pCurrentInstruction = pInstruction;
-		}
+		// private inline newInstruction(pInstruction: IAFXInstruction): void {
+		// 	pInstruction.setParent(this._pCurrentInstruction);
+		// 	this._pCurrentInstruction = pInstruction;
+		// }
 
-		private inline endInstruction(): void {
-			this._pCurrentInstruction = this._pCurrentInstruction.getParent();
-		}
+		// private inline endInstruction(): void {
+		// 	this._pCurrentInstruction = this._pCurrentInstruction.getParent();
+		// }
 
-		private inline pushCommand(pInstruction: IAFXInstruction, isSetParent?: bool = false): void {
-			if(!isNull(this._pCurrentInstruction)){
-				this._pCurrentInstruction.push(pInstruction, isSetParent);
-			}
-		}
+		// private inline pushCommand(pInstruction: IAFXInstruction, isSetParent?: bool = false): void {
+		// 	if(!isNull(this._pCurrentInstruction)){
+		// 		this._pCurrentInstruction.push(pInstruction, isSetParent);
+		// 	}
+		// }
 
-		private inline pushAndSet(pInstruction: IAFXInstruction): void {
-			if(!isNull(this._pCurrentInstruction)){
-				this._pCurrentInstruction.push(pInstruction, true);
-			}
-			this.newInstruction(pInstruction);
-		}
+		// private inline pushAndSet(pInstruction: IAFXInstruction): void {
+		// 	if(!isNull(this._pCurrentInstruction)){
+		// 		this._pCurrentInstruction.push(pInstruction, true);
+		// 	}
+		// 	this.newInstruction(pInstruction);
+		// }
 
 		private inline setOperator(sOperator: string): void {
 			if(!isNull(this._pCurrentInstruction)){
@@ -745,7 +753,7 @@ module akra.fx {
         	for(i = pChildren.length - 2; i >= 1; i--){
         		if(pChildren[i].name === "Variable") {
         			pVariable = this.analyzeVariable(pChildren[i], pUsageType);
-        			//this.addVariable();
+
         			if(!isNull(pInstruction)){
         				pInstruction.push(pVariable, true);
         			}
@@ -811,6 +819,9 @@ module akra.fx {
         		}
         	}
 
+        	//TODO: Here must be additing to scope
+
+        	// this.addVariableDecl(pVarDecl);
         	// var pVariable: IAFXVariable = new Variable();
         	// pVariable.initializeFromInstruction(pVarDecl);
         	// this.addVariableDecl(pVariable);
@@ -1596,35 +1607,46 @@ module akra.fx {
         	return pType;
         }
 
-		private analyzeTypeDecl(pNode: IParseNode): void {
+		private analyzeTypeDecl(pNode: IParseNode, pParentInstruction: IAFXInstruction = null): IAFXTypeDeclInstruction {
 			var pChildren: IParseNode[] = pNode.children;
 			this.setAnalyzedNode(pNode);
 
 			var pTypeDeclInstruction: IAFXTypeDeclInstruction = new TypeDeclInstruction();
 			var pType: IAFXType = new Type();
 
-			this.newInstruction(pTypeDeclInstruction);
+			// this.newInstruction(pTypeDeclInstruction);
 
  			if(pChildren.length === 2) {
-				this.analyzeStructDecl(pChildren[1]);
+ 				var pVariableTypeInstruction: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+ 				var pTypeInstruction: IAFXUsageTypeInstruction = new UsageTypeInstruction();
+				var pStructInstruction: IAFXStructDeclInstruction = this.analyzeStructDecl(pChildren[1]);
+
+				pTypeDeclInstruction.push(pVariableTypeInstruction, true);
+				pVariableTypeInstruction.push(pTypeInstruction, true);
+				pStructInstruction.setParent(pTypeInstruction);
+				pTypeInstruction.push(pStructInstruction.getInstructions[0], false);				
 			}
 			else {
 				this._error(EFFECT_UNSUPPORTED_TYPEDECL);
 			}
 
-			this.endInstruction();
+			// this.endInstruction();
 
-			this.pushCommand(pTypeDeclInstruction, true);
+			// this.pushCommand(pTypeDeclInstruction, true);
 			pType.initializeFromInstruction(pTypeDeclInstruction);
 
 			this.addTypeDecl(pType);
 
 			pNode.isAnalyzed = true;
+
+			if(!isNull(pParentInstruction)){
+				pParentInstruction.push(pTypeDeclInstruction, true);
+			}
+
+			return pTypeDeclInstruction;
 		}
 
-        private analyzeStructDecl(pNode: IParseNode): void {
-        	var pVariableTypeInstruction: IAFXVariableTypeInstruction = new VariableTypeInstruction();
- 			var pTypeInstruction: IAFXUsageTypeInstruction = new UsageTypeInstruction();
+        private analyzeStructDecl(pNode: IParseNode): IAFXStructDeclInstruction {
         	var pStructInstruction: IAFXStructDeclInstruction = new StructDeclInstruction();
         	var pStructName: IdInstruction = new IdInstruction();
         	var pStructFields: StructFieldsInstruction = new StructFieldsInstruction();
@@ -1634,30 +1656,21 @@ module akra.fx {
 
         	pStructName.setName(sName);
 
-        	this.pushAndSet(pVariableTypeInstruction);
-        	this.pushAndSet(pTypeInstruction);
-        	
-        	this.newInstruction(pStructInstruction);
-
         	pStructInstruction.push(pStructName, true);
         	pStructInstruction.push(pStructFields, true);
         	
-        	this.newInstruction(pStructFields);
-        	
+        	this.newScope();
+
         	var i: uint = 0;
         	for (i = pChildren.length - 4; i >= 1; i--) {
 		        if (pChildren[i].name === "VariableDecl"){
-		            this.analyzeVariableDecl(pChildren[i]);
+		            this.analyzeVariableDecl(pChildren[i], pStructFields);
 		        }
 		    }
 
-        	this.endInstruction();
-        	this.endInstruction();
+		    this.endScope();
 
-        	pTypeInstruction.push(pStructName, false);
-
-        	this.endInstruction();
-        	this.endInstruction();
+        	return pStructInstruction;
         }
 
         private analyzeFunctionDecl(pNode: IParseNode): IAFXFunctionDeclInstruction {
@@ -1684,7 +1697,7 @@ module akra.fx {
 
         	pFunction.push(pFunctionDef, true);
 
-        	this.newInstruction(pFunction);
+        	//this.newInstruction(pFunction);
 
         	if(pChildren.length === 3) {
         		pAnnotation = this.analyzeAnnotation(pChildren[1]);
@@ -1692,13 +1705,13 @@ module akra.fx {
         	}
 
         	if(sLastNodeValue !== ";") {
- 				pStmtBlock = this.analyzeStmtBlock(pChildren[0]);
+ 				pStmtBlock = <StmtBlockInstruction>this.analyzeStmtBlock(pChildren[0]);
         	}
 
         	pFunction.push(pFunctionDef, true);
       		pFunction.push(pStmtBlock, true);
 
-      		this.endInstruction();
+      		// this.endInstruction();
 
       		return pFunction;
         }
@@ -1734,13 +1747,15 @@ module akra.fx {
         	return pFunctionDef;
         }
 
-        private analyzeStmtBlock(pNode: IParseNode): StmtBlockInstruction {
+        private analyzeStmtBlock(pNode: IParseNode): IAFXStmtInstruction {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
         	var pStmtBlock: StmtBlockInstruction = new StmtBlockInstruction();
         	var pStmt: IAFXStmtInstruction;
         	var i: uint = 0;
+
+        	this.newScope();
 
         	for(i = pChildren.length - 2; i > 0; i--){
         		pStmt = this.analyzeStmt(pChildren[i]);
@@ -1749,10 +1764,12 @@ module akra.fx {
         		}
         	} 
 
+        	this.endScope();
+
         	return pStmtBlock;
         }
 
-        private analyzeStmt(pNode:IParseNode): IAFXStmtInstruction{
+        private analyzeStmt(pNode:IParseNode): IAFXStmtInstruction {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
@@ -1763,11 +1780,11 @@ module akra.fx {
         			return this.analyzeSimpleStmt(pChildren[0]);
         		case "UseDecl":
         			return this.analyzeUseDecl(pChildren[0]);
-        		case "while":
+        		case "T_KW_WHILE":
         			return this.analyzeWhileStmt(pNode);
-        		case "for":
+        		case "T_KW_FOR":
         			return this.analyzeForStmt(pNode);
-        		case "if":
+        		case "T_KW_IF":
         			return this.analyzeIfStmt(pNode);	
         	}
         }
@@ -1776,9 +1793,97 @@ module akra.fx {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
+        	var sFirstNodeName: string = pChildren[pChildren.length - 1].name;
 
-        	return null;
+        	switch(sFirstNodeName){
+        		case "T_KW_RETURN":
+        			return this.analyzeReturnStmt(pNode);
+        		
+        		case "T_KW_DO":
+        			return this.analyzeWhileStmt(pNode);
+        		
+        		case "StmtBlock":
+        			return this.analyzeStmtBlock(pChildren[0]);
+        		
+        		case "T_KW_DISCARD":
+        		case "T_KW_BREAK":
+        		case "T_KW_CONTINUE":
+        			return this.analyzeBreakStmt(pNode);
+        		
+        		case "TypeDecl":
+        		case "VariableDecl":
+        		case "VarStructDecl":
+        			return this.analyzeDeclStmt(pChildren[0]);	
+
+        		default:
+        			if(pChildren.length === 2) {
+        				return this.analyzeExprStmt(pNode);
+        			}
+        			else {
+        				return (new SemicolonStmtInstruction());
+        			}
+        	}
         }
+
+        private analyzeReturnStmt(pNode: IParseNode): IAFXStmtInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pReturnStmtInstruction: ReturnStmtInstruction = new ReturnStmtInstruction();
+
+        	if(pChildren.length === 2) {
+        		var pExprInstruction: IAFXExprInstruction = this.analyzeExpr(pChildren[1]);
+        		pReturnStmtInstruction.push(pExprInstruction, true);
+        	}
+
+        	return pReturnStmtInstruction;
+        }
+
+        private analyzeBreakStmt(pNode: IParseNode): IAFXStmtInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pBreakStmtInstruction: BreakStmtInstruction = new BreakStmtInstruction();
+        	var sOperatorName: string = pChildren[1].value;
+
+        	pBreakStmtInstruction.setOperator(sOperatorName);
+
+        	return pBreakStmtInstruction;
+        }
+
+        private analyzeDeclStmt(pNode: IParseNode): IAFXStmtInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var sNodeName: string = pNode.name;
+        	var pDeclStmtInstruction: DeclStmtInstruction = new DeclStmtInstruction();
+
+        	switch(sNodeName){
+        		case "TypeDecl":
+        			this.analyzeTypeDecl(pNode, pDeclStmtInstruction);
+        			break;
+        		case "VariableDecl":
+        			this.analyzeVariableDecl(pNode, pDeclStmtInstruction);
+        			break;
+    			case "VarStructDecl":
+    				//TODO: add varstruct
+    				break;
+        	}
+        	
+        	return pDeclStmtInstruction;
+        }
+
+       	private analyzeExprStmt(pNode: IParseNode): IAFXStmtInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pExprStmtInstruction: ExprStmtInstruction = new ExprStmtInstruction();
+        	var pExprInstruction: IAFXExprInstruction = this.analyzeExpr(pChildren[1]);
+
+        	pExprStmtInstruction.push(pExprInstruction, true);
+
+        	return pExprStmtInstruction;
+        }	
 
         private analyzeUseDecl(pNode: IParseNode): IAFXStmtInstruction{
         	this.setAnalyzedNode(pNode);
@@ -1792,28 +1897,47 @@ module akra.fx {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
+        	var isDoWhile: bool = (pChildren[pChildren.length - 1].value === "do");
         	var isNonIfStmt: bool = (pNode.name === "NonIfStmt") ? true : false;
 
         	var pWhileStmt: WhileStmtInstruction = new WhileStmtInstruction();
-        	var pCondition: IAFXExprInstruction = this.analyzeExpr(pChildren[2]);
-        	var pConditionType: IAFXVariableTypeInstruction = pCondition.getType();
+        	var pCondition: IAFXExprInstruction = null;
+        	var pConditionType: IAFXVariableTypeInstruction = null;
         	var pBoolType: IAFXVariableTypeInstruction = this.getSystemType("bool");
-        	var pStmt: IAFXStmtInstruction;
+        	var pStmt: IAFXStmtInstruction = null;
 
-        	if(!pConditionType.isEqual(pBoolType)){
-        		this._error(EFFECT_BAD_WHILE_CONDITION, { typeName: pConditionType.toString() });
-        		return null;
-        	}
+        	if(isDoWhile) {
+        		pWhileStmt.setOperator("do_while");
+        		pCondition = this.analyzeExpr(pChildren[2]);
+        		pConditionType = pCondition.getType();
 
-        	if(isNonIfStmt){
-        		pStmt = this.analyzeNonIfStmt(pChildren[0]);
+        		if(!pConditionType.isEqual(pBoolType)){
+	        		this._error(EFFECT_BAD_DO_WHILE_CONDITION, { typeName: pConditionType.toString() });
+	        		return null;
+	        	}
+
+	        	pStmt = this.analyzeStmt(pChildren[0]);
         	}
         	else {
-        		pStmt = this.analyzeStmt(pChildren[0]);
-        	}
+        		pWhileStmt.setOperator("while");
+        		pCondition = this.analyzeExpr(pChildren[2]);
+        		pConditionType = pCondition.getType();
 
-        	pWhileStmt.push(pCondition, true);
-        	pWhileStmt.push(pStmt, true);
+        		if(!pConditionType.isEqual(pBoolType)){
+	        		this._error(EFFECT_BAD_WHILE_CONDITION, { typeName: pConditionType.toString() });
+	        		return null;
+	        	}
+
+	        	if(isNonIfStmt){
+	        		pStmt = this.analyzeNonIfStmt(pChildren[0]);
+	        	}
+	        	else {
+	        		pStmt = this.analyzeStmt(pChildren[0]);
+	        	}
+
+	        	pWhileStmt.push(pCondition, true);
+	        	pWhileStmt.push(pStmt, true);
+	        }
 
         	return pWhileStmt;
         }
@@ -1833,22 +1957,57 @@ module akra.fx {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
-        	return null;
+        	var isIfElse: bool = (pChildren.length === 7);
+
+        	var pIfStmtInstruction: IfStmtInstruction = new IfStmtInstruction();
+        	var pCondition: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
+        	var pConditionType: IAFXVariableTypeInstruction = pCondition.getType();
+        	var pBoolType: IAFXVariableTypeInstruction = this.getSystemType("bool");
+
+        	var pIfStmt: IAFXStmtInstruction = null;
+        	var pElseStmt: IAFXStmtInstruction = null;
+ 
+        	if(!pConditionType.isEqual(pBoolType)){
+        		this._error(EFFECT_BAD_IF_CONDITION, { typeName: pConditionType.toString() });
+        		return null;
+        	}
+
+        	pIfStmtInstruction.push(pCondition, true);
+
+        	if(isIfElse){
+        		pIfStmtInstruction.setOperator("if_else");
+        		pIfStmt = this.analyzeNonIfStmt(pChildren[2]);
+        		pElseStmt = this.analyzeStmt(pChildren[0]);
+
+        		pIfStmtInstruction.push(pIfStmt, true);
+        		pIfStmtInstruction.push(pElseStmt, true);
+        	}
+        	else {
+        		pIfStmtInstruction.setOperator("if");
+        		pIfStmt = this.analyzeNonIfStmt(pChildren[0]);
+
+        		pIfStmtInstruction.push(pIfStmt, true);
+        	}
+
+        	return pIfStmtInstruction;
         }
 
         private analyzeNonIfStmt(pNode: IParseNode): IAFXStmtInstruction{
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
-        	return null;
+        	var sFirstNodeName: string = pChildren[pChildren.length - 1].name;
+
+        	switch(sFirstNodeName){
+        		case "SimpleStmt":
+        			return this.analyzeSimpleStmt(pChildren[0]);
+        		case "T_KW_WHILE":
+        			return this.analyzeWhileStmt(pNode);
+        		case "T_KW_FOR":
+        			return this.analyzeForStmt(pNode);
+        	}
         }
 
-        private analyzeDoWhileStmt(pNode: IParseNode): IAFXStmtInstruction{
-        	this.setAnalyzedNode(pNode);
-
-        	var pChildren: IParseNode[] = pNode.children;
-        	return null;
-        }
         private analyzeParamList(pNode:IParseNode, pFunctionDef: FunctionDefInstruction): void {
         	this.setAnalyzedNode(pNode);
 
@@ -1896,6 +2055,8 @@ module akra.fx {
 
 		    return pType;
         }
+
+        
 
         /**
          * Проверят возможность использования оператора между двумя типами.
