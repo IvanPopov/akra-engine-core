@@ -14,6 +14,11 @@ module akra.fx {
 	//Errors
 	#define EFFECT_REDEFINE_SYSTEM_TYPE 2201
 	#define EFFECT_REDEFINE_TYPE 2202
+	#define EFFECT_REDEFINE_VARIABLE 2234
+    #define EFFECT_REDEFINE_SYSTEM_VARIABLE 2235
+    #define EFFECT_REDEFINE_FUNCTION 2236
+    #define EFFECT_REDEFINE_SYSTEM_FUNCTION 2237
+
     #define EFFECT_UNSUPPORTED_TYPEDECL 2203
     #define EFFECT_UNSUPPORTED_EXPR 2204
     #define EFFECT_UNKNOWN_VARNAME 2205
@@ -42,7 +47,13 @@ module akra.fx {
     #define EFFECT_BAD_WHILE_CONDITION 2228
     #define EFFECT_BAD_DO_WHILE_CONDITION 2229	
     #define EFFECT_BAD_IF_CONDITION 2230
-
+    #define EFFECT_BAD_FOR_INIT_EXPR 2231
+    #define EFFECT_BAD_FOR_INIT_EMPTY_ITERATOR 2232
+    #define EFFECT_BAD_FOR_COND_EMPTY 2233
+    #define EFFECT_BAD_FOR_COND_RELATION 2238
+    #define EFFECT_BAD_FOR_STEP_EMPTY 2239
+    #define EFFECT_BAD_FOR_STEP_OPERATOR 2240
+    #define EFFECT_BAD_FOR_STEP_EXPRESSION 2241
 
     akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, 
     						 "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
@@ -128,7 +139,37 @@ module akra.fx {
 	akra.logger.registerCode(EFFECT_BAD_IF_CONDITION, 
 							 "Bad type of if-condition. Must be 'bool' but it is '{typeName}'. \
 							 In line: {line}.");
-
+	akra.logger.registerCode(EFFECT_BAD_FOR_INIT_EXPR, 
+							 "Bad for-init expression. WebGL support only VariableDecl as for-init expression, \
+							 like \"int i = 0;\" or \"float i = 0.0;\". \
+							 In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_FOR_INIT_EMPTY_ITERATOR, 
+							 "Bad for-init expression. WebGL support only VariableDecl as for-init expression, \
+							 like \"int i = 0;\" or \"float i = 0.0;\". \
+							 In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_FOR_COND_EMPTY, 
+							 "Bad for-cond expression. WebGL does not support empty conditional expression in for-loop. \
+							 In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_FOR_COND_RELATION, 
+							 "Bad for-cond expression. WebGL support only relational expression for condition in for-loop. \
+							 In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_FOR_STEP_EMPTY, 
+							 "Bad for-step expression. WebGL does not support empty step expression. \
+							 In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_FOR_STEP_OPERATOR, 
+							 "Bad for-step expression. WebGL does not support operator '{operator}' in step expression. \
+							 In line: {line}.");
+	akra.logger.registerCode(EFFECT_BAD_FOR_STEP_EXPRESSION, 
+							 "Bad for-step expression. WebGL support only unary and assignment expression in for-step. \
+							 In line: {line}.");
+	akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_VARIABLE, 
+    						 "You trying to redefine system variable: {varName}. In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFECT_REDEFINE_VARIABLE, 
+    	 					 "You trying to redefine variable: {varName}. In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_FUNCTION, 
+    						 "You trying to redefine system function: {funcName}. In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFECT_REDEFINE_FUNCTION, 
+    	 					 "You trying to redefine function: {funcName}. In line: {line}. In column: {column}");
 
     function sourceLocationToString(pLocation: ISourceLocation): string {
         var sLocation:string = "[" + pLocation.file + ":" + pLocation.line.toString() + "]: ";
@@ -172,32 +213,32 @@ module akra.fx {
 	//End Errors
 
 
-
+	#define CHECK_INSTRUCTION(inst, stage) if(!inst.check(stage)) { this._errorFromInstruction(inst.getLastError()); }
 
 
 	#define GLOBAL_SCOPE 0
 
 
 
-	export interface IAFXVariableMap { 
-		[variableName: string] : IAFXVariable;
+	export interface IAFXVariableDeclMap { 
+		[variableName: string] : IAFXVariableDeclInstruction;
 	}
 	
-	export interface IAFXTypeMap {
-		[typeName: string] : IAFXType;
+	export interface IAFXTypeDeclMap {
+		[typeName: string] : IAFXTypeDeclInstruction;
 	}
 
-	export interface IAFXFunctionMap {
-		[functionHash: string] : IAFXFunction;
+	export interface IAFXFunctionDeclMap {
+		[functionHash: string] : IAFXFunctionDeclInstruction;
 	}
 
 	export interface IScope {
 		parent : IScope;
 		index: uint;
 
-		variableMap : IAFXVariableMap;
-		typeMap : IAFXTypeMap;
-		functionMap : IAFXFunctionMap;
+		variableMap : IAFXVariableDeclMap;
+		typeMap : IAFXTypeDeclMap;
+		functionMap : IAFXFunctionDeclMap;
 	}
 
 	export interface IScopeMap {
@@ -240,6 +281,14 @@ module akra.fx {
 			this._pScopeMap[this._iCurrentScope] = pNewScope;
 		}
 
+		resumeScope(): void {
+			if(this._nScope === 0) {
+				return;
+			}
+			
+			this._iCurrentScope = this._nScope - 1;
+		}
+
 		endScope(): void {
 			if(isNull(this._iCurrentScope)){
 				return;
@@ -256,7 +305,7 @@ module akra.fx {
 			}
 		}
 
-		getVariable(sVariableName: string, iScope?: uint = this._iCurrentScope): IAFXVariable {
+		getVariable(sVariableName: string, iScope?: uint = this._iCurrentScope): IAFXVariableDeclInstruction {
 			if(isNull(iScope)){
 				return null;
 			}
@@ -264,10 +313,10 @@ module akra.fx {
 			var pScope: IScope = this._pScopeMap[iScope];
 
 			while(!isNull(pScope)){
-				var pVariableMap: IAFXVariableMap = pScope.variableMap;
+				var pVariableMap: IAFXVariableDeclMap = pScope.variableMap;
 
 				if(!isNull(pVariableMap)){
-					var pVariable: IAFXVariable = pVariableMap[sVariableName];
+					var pVariable: IAFXVariableDeclInstruction = pVariableMap[sVariableName];
 
 					if(isDef(pVariable)){
 						return pVariable;
@@ -280,7 +329,7 @@ module akra.fx {
 			return null;
 		}
 
-		getType(sTypeName: string, iScope?: uint = this._iCurrentScope): IAFXType {
+		getType(sTypeName: string, iScope?: uint = this._iCurrentScope): IAFXTypeDeclInstruction {
 			if(isNull(iScope)){
 				return null;
 			}
@@ -288,10 +337,10 @@ module akra.fx {
 			var pScope: IScope = this._pScopeMap[iScope];
 
 			while(!isNull(pScope)){
-				var pTypeMap: IAFXTypeMap = pScope.typeMap;
+				var pTypeMap: IAFXTypeDeclMap = pScope.typeMap;
 
 				if(!isNull(pTypeMap)){
-					var pType: IAFXType = pTypeMap[sTypeName];
+					var pType: IAFXTypeDeclInstruction = pTypeMap[sTypeName];
 
 					if(isDef(pType)){
 						return pType;
@@ -304,7 +353,7 @@ module akra.fx {
 			return null;
 		}
 
-		getFunction(sFuncHash: string, iScope?: uint = GLOBAL_SCOPE): IAFXFunction {
+		getFunction(sFuncHash: string, iScope?: uint = GLOBAL_SCOPE): IAFXFunctionDeclInstruction {
 			if(isNull(iScope)){
 				return null;
 			}
@@ -312,10 +361,10 @@ module akra.fx {
 			var pScope: IScope = this._pScopeMap[iScope];
 
 			while(!isNull(pScope)){
-				var pFunctionMap: IAFXFunctionMap = pScope.functionMap;
+				var pFunctionMap: IAFXFunctionDeclMap = pScope.functionMap;
 
 				if(!isNull(pFunctionMap)){
-					var pFunction: IAFXFunction = pFunctionMap[sFuncHash];
+					var pFunction: IAFXFunctionDeclInstruction = pFunctionMap[sFuncHash];
 
 					if(isDef(pFunction)){
 						return pFunction;
@@ -328,16 +377,16 @@ module akra.fx {
 			return null;
 		}
 
-		addVariable(pVariable: IAFXVariable, iScope?: uint = this._iCurrentScope): bool {
+		addVariable(pVariable: IAFXVariableDeclInstruction, iScope?: uint = this._iCurrentScope): bool {
 			if(isNull(iScope)){
 				return false;
 			}
 
 			var pScope: IScope = this._pScopeMap[iScope];
-			var pVariableMap: IAFXVariableMap = pScope.variableMap;
+			var pVariableMap: IAFXVariableDeclMap = pScope.variableMap;
 
 			if(!isDef(pVariableMap)){
-				pVariableMap = pScope.variableMap = <IAFXVariableMap>{};
+				pVariableMap = pScope.variableMap = <IAFXVariableDeclMap>{};
 			}
 
 			var sVariableName: string = pVariable.getName();
@@ -351,16 +400,16 @@ module akra.fx {
 			return true;
 		}
 
-		addType(pType: IAFXType, iScope?: uint = this._iCurrentScope): bool {
+		addType(pType: IAFXTypeDeclInstruction, iScope?: uint = this._iCurrentScope): bool {
 			if(isNull(iScope)){
 				return false;
 			}
 
 			var pScope: IScope = this._pScopeMap[iScope];
-			var pTypeMap: IAFXTypeMap = pScope.typeMap;
+			var pTypeMap: IAFXTypeDeclMap = pScope.typeMap;
 
 			if(!isDef(pTypeMap)){
-				pTypeMap = pScope.typeMap = <IAFXTypeMap>{};
+				pTypeMap = pScope.typeMap = <IAFXTypeDeclMap>{};
 			}
 
 			var sTypeName: string = pType.getName();
@@ -374,16 +423,16 @@ module akra.fx {
 			return true;
 		}
 
-		addFunction(pFunction: IAFXFunction, iScope?: uint = GLOBAL_SCOPE): bool {
+		addFunction(pFunction: IAFXFunctionDeclInstruction, iScope?: uint = GLOBAL_SCOPE): bool {
 			if(isNull(iScope)){
 				return false;
 			}
 
 			var pScope: IScope = this._pScopeMap[iScope];
-			var pFunctionMap: IAFXFunctionMap = pScope.functionMap;
+			var pFunctionMap: IAFXFunctionDeclMap = pScope.functionMap;
 
 			if(!isDef(pFunctionMap)){
-				pFunctionMap = pScope.functionMap = <IAFXFunctionMap>{};
+				pFunctionMap = pScope.functionMap = <IAFXFunctionDeclMap>{};
 			}
 
 			var sFuncHash: string = pFunction.getHash();
@@ -405,10 +454,10 @@ module akra.fx {
 			var pScope: IScope = this._pScopeMap[iScope];
 
 			while(!isNull(pScope)){
-				var pVariableMap: IAFXVariableMap = pScope.variableMap;
+				var pVariableMap: IAFXVariableDeclMap = pScope.variableMap;
 
 				if(!isNull(pVariableMap)){
-					var pVariable: IAFXVariable = pVariableMap[sVariableName];
+					var pVariable: IAFXVariableDeclInstruction = pVariableMap[sVariableName];
 
 					if(isDef(pVariable)){
 						return true;
@@ -429,10 +478,10 @@ module akra.fx {
 			var pScope: IScope = this._pScopeMap[iScope];
 
 			while(!isNull(pScope)){
-				var pTypeMap: IAFXTypeMap = pScope.typeMap;
+				var pTypeMap: IAFXTypeDeclMap = pScope.typeMap;
 
 				if(!isNull(pTypeMap)){
-					var pType: IAFXType = pTypeMap[sTypeName];
+					var pType: IAFXTypeDeclInstruction = pTypeMap[sTypeName];
 
 					if(isDef(pType)){
 						return true;
@@ -453,10 +502,10 @@ module akra.fx {
 			var pScope: IScope = this._pScopeMap[iScope];
 
 			while(!isNull(pScope)){
-				var pFunctionMap: IAFXFunctionMap = pScope.functionMap;
+				var pFunctionMap: IAFXFunctionDeclMap = pScope.functionMap;
 
 				if(!isNull(pFunctionMap)){
-					var pFunction: IAFXFunction = pFunctionMap[sFuncHash];
+					var pFunction: IAFXFunctionDeclInstruction = pFunctionMap[sFuncHash];
 
 					if(isDef(pFunction)){
 						return true;
@@ -551,7 +600,7 @@ module akra.fx {
 		clear(): void {
 		}
 
-		private inline getVariable(sName: string): IAFXVariable {
+		private inline getVariable(sName: string): IAFXVariableDeclInstruction {
 			return this._pEffectScope.getVariable(sName);
 		}
 
@@ -567,16 +616,20 @@ module akra.fx {
 
 		}
 
-		private isSystemFunction(pFunction: IAFXFunction): bool {
+		private isSystemFunction(pFunction: IAFXFunctionDeclInstruction): bool {
 			return false;
 		}
 
-		private isSystemVariable(pVariable: IAFXVariable): bool {
+		private isSystemVariable(pVariable: IAFXVariableDeclInstruction): bool {
 			return false;
 		}
 
-		private isSystemType(pType: IAFXType): bool {
+		private isSystemType(pType: IAFXTypeDeclInstruction): bool {
 			return false;
+		}
+
+		private inline _errorFromInstruction(pError: IAFXInstructionError): void {
+			this._error(pError.code, pError.info);
 		}
 
 		private _error(eCode: uint, pInfo: IEffectErrorInfo = {}): void {
@@ -614,6 +667,10 @@ module akra.fx {
 
 		private inline newScope(): void {
 			this._pEffectScope.newScope();
+		}
+
+		private inline resumeScope(): void {
+			this._pEffectScope.resumeScope();
 		}
 
 		private inline endScope(): void {
@@ -667,30 +724,62 @@ module akra.fx {
 			return null;
 		}
 
-		private addVariable(pVariable: IAFXVariable): void {
-		}
+		// private addVariable(pVariable: IAFXVariable): void {
+		// }
 
-		private addVariableDecl(pVariable: IAFXVariable): void {
+		private addVariableDecl(pVariable: IAFXVariableDeclInstruction): void {
+			if(this.isSystemVariable(pVariable)){
+        		this._error(EFFECT_REDEFINE_SYSTEM_VARIABLE, {varName: pVariable.getName()});
+        	}
 
+        	var isVarAdded: bool = this._pEffectScope.addVariable(pVariable);
+
+        	if(!isVarAdded) {
+				this._error(EFFECT_REDEFINE_VARIABLE, {varName: pVariable.getName()});
+			}
+        }
+
+        private addTypeDecl(pType: IAFXTypeDeclInstruction): void {
+        	if(this.isSystemType(pType)){
+        		this._error(EFFECT_REDEFINE_SYSTEM_TYPE, {typeName: pType.getName()});
+        	}
+
+        	var isTypeAdded: bool = this._pEffectScope.addType(pType);
+
+        	if(!isTypeAdded) {
+				this._error(EFFECT_REDEFINE_TYPE, {typeName: pType.getName()});
+			}
+        }
+
+        private addFunctionDecl(pFunction: IAFXFunctionDeclInstruction): void {
+        	if(this.isSystemVariable(pFunction)){
+        		this._error(EFFECT_REDEFINE_SYSTEM_FUNCTION, {funcName: pFunction.getName()});
+        	}
+
+        	var isFunctionAdded: bool = this._pEffectScope.addFunction(pFunction);
+
+        	if(!isFunctionAdded) {
+				this._error(EFFECT_REDEFINE_FUNCTION, {funcName: pFunction.getName()});
+			}
         }
 
 
-		private addType(pType: IAFXType): void {
-			if(this.isSystemType(pType)){
-				this._error(EFFECT_REDEFINE_SYSTEM_TYPE, {typeName: pType.getName()});
-			}
+		// private addType(pType: IAFXType): void {
+		// 	if(this.isSystemType(pType)){
+		// 		this._error(EFFECT_REDEFINE_SYSTEM_TYPE, {typeName: pType.getName()});
+		// 	}
 
-			var isTypeAdded: bool = this._pEffectScope.addType(pType);
+		// 	var isTypeAdded: bool = this._pEffectScope.addType(pType);
 
-			if(!isTypeAdded){
-				this._error(EFFECT_REDEFINE_TYPE, {typeName: pType.getName()});
-			}
-		}
+		// 	if(!isTypeAdded){
+		// 		this._error(EFFECT_REDEFINE_TYPE, {typeName: pType.getName()});
+		// 	}
+		// }
 
-		private addTypeDecl(pType: IAFXType): void {
-			//check
-			this.addType(pType);
-		}
+		// private addTypeDecl(pType: IAFXType): void {
+		// 	//check
+		// 	this.addType(pType);
+		// }
 
 		private identifyType(pNode: IParseNode): IAFXType {
 			return null;
@@ -777,6 +866,8 @@ module akra.fx {
 		        }
 		    }
 
+		    CHECK_INSTRUCTION(pType, ECheckStage.CODE_TARGET_SUPPORT);
+
 		    return pType;
         }
 
@@ -819,6 +910,9 @@ module akra.fx {
         		}
         	}
 
+        	CHECK_INSTRUCTION(pVarDecl, ECheckStage.CODE_TARGET_SUPPORT);
+
+        	this.addVariableDecl(pVarDecl);
         	//TODO: Here must be additing to scope
 
         	// this.addVariableDecl(pVarDecl);
@@ -978,6 +1072,8 @@ module akra.fx {
         		}
         	}
 
+        	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
+
         	return pExpr;
         }
 
@@ -996,6 +1092,8 @@ module akra.fx {
         		pSamplerState = this.analyzeSamplerState(pChildren[i]);
         		pExpr.push(pSamplerState);
         	}
+
+        	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         	return pExpr;	
         }
@@ -1063,6 +1161,8 @@ module akra.fx {
         		}
         	}
 
+        	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
+
         	return pExpr;
         }
         
@@ -1112,6 +1212,8 @@ module akra.fx {
         		}
         	}
 
+        	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
+
         	return pExpr;
         }
 
@@ -1128,6 +1230,8 @@ module akra.fx {
 
         	pExpr.setType(pExprType);
         	pExpr.push(pComplexExpr, true);
+
+        	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         	return pExpr;
         }
@@ -1154,6 +1258,8 @@ module akra.fx {
         	pExpr.setType(pExprType);
         	pExpr.setOperator("@");
         	pExpr.push(pPrimaryExpr, true);
+
+        	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         	return pExpr;
         }
@@ -1211,6 +1317,8 @@ module akra.fx {
         	pExpr.push(pPostfixExpr, true);
         	pExpr.push(pIndexExpr, true);
 
+        	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
+
         	return pExpr;
         }
 
@@ -1254,6 +1362,8 @@ module akra.fx {
         	pExpr.push(pPostfixExpr, true);
         	pExpr.push(pFieldNameExpr, true);
 
+        	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
+
         	return pExpr;
         }
 
@@ -1281,6 +1391,8 @@ module akra.fx {
         	pExpr.setType(pExprType);
         	pExpr.setOperator(sOperator);
         	pExpr.push(pPostfixExpr, true);
+
+        	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         	return null;
         }
@@ -1310,6 +1422,8 @@ module akra.fx {
         	pExpr.setType(pExprType);
         	pExpr.push(pUnaryExpr, true);
 
+        	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
+
         	return pExpr;
         }
         
@@ -1327,6 +1441,8 @@ module akra.fx {
         	pExpr.setType(pExprType);
         	pExpr.push(pExprType, true);
         	pExpr.push(pCastedExpr, true);
+
+        	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         	return pExpr;
         }
@@ -1371,6 +1487,8 @@ module akra.fx {
         	pExpr.push(pTrueExpr, true);
         	pExpr.push(pFalseExpr, true);
 
+        	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
+
         	return pExpr;
         }
         
@@ -1406,6 +1524,8 @@ module akra.fx {
         	pExpr.push(pLeftExpr, true);
         	pExpr.push(pRightExpr, true);
 
+        	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
+
         	return pExpr;
         }
 
@@ -1440,6 +1560,8 @@ module akra.fx {
         	pExpr.setType(pExprType);
         	pExpr.push(pLeftExpr, true);
         	pExpr.push(pRightExpr, true);
+
+        	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         	return pExpr;
         }
@@ -1479,6 +1601,8 @@ module akra.fx {
         	pExpr.setType(pBoolType);
         	pExpr.push(pLeftExpr, true);
         	pExpr.push(pRightExpr, true);
+
+        	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
         	return pExpr;        	
         }
@@ -1525,6 +1649,8 @@ module akra.fx {
         	pExpr.push(pLeftExpr, true);
         	pExpr.push(pRightExpr, true);
 
+        	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
+
         	return pExpr;
         }
 
@@ -1532,7 +1658,7 @@ module akra.fx {
         	this.setAnalyzedNode(pNode);
         	
         	var sName: string = pNode.value;
-        	var pVariable: IAFXVariable = this.getVariable(sName);
+        	var pVariable: IAFXVariableDeclInstruction = this.getVariable(sName);
 
         	if(isNull(pVariable)){
         		this._error(EFFECT_UNKNOWN_VARNAME, {varName: sName});
@@ -1540,7 +1666,9 @@ module akra.fx {
         	}
 
         	var pVarId: IdExprInstruction = new IdExprInstruction();
-        	pVarId.push(pVariable.getId(), false);
+        	pVarId.push(pVariable.getNameId(), false);
+
+        	CHECK_INSTRUCTION(pVarId, ECheckStage.CODE_TARGET_SUPPORT);
         	
         	return pVarId;
         }
@@ -1604,6 +1732,8 @@ module akra.fx {
         		this._error(EFFECT_BAD_CAST_TYPE_NOT_BASE, { typeName: pType.toString()});
         	}
 
+        	CHECK_INSTRUCTION(pType, ECheckStage.CODE_TARGET_SUPPORT);
+
         	return pType;
         }
 
@@ -1633,9 +1763,11 @@ module akra.fx {
 			// this.endInstruction();
 
 			// this.pushCommand(pTypeDeclInstruction, true);
-			pType.initializeFromInstruction(pTypeDeclInstruction);
+			// pType.initializeFromInstruction(pTypeDeclInstruction);
 
-			this.addTypeDecl(pType);
+			CHECK_INSTRUCTION(pTypeDeclInstruction, ECheckStage.CODE_TARGET_SUPPORT);
+
+			this.addTypeDecl(pTypeDeclInstruction);
 
 			pNode.isAnalyzed = true;
 
@@ -1670,6 +1802,8 @@ module akra.fx {
 
 		    this.endScope();
 
+		    CHECK_INSTRUCTION(pStructInstruction, ECheckStage.CODE_TARGET_SUPPORT);
+
         	return pStructInstruction;
         }
 
@@ -1698,6 +1832,7 @@ module akra.fx {
         	pFunction.push(pFunctionDef, true);
 
         	//this.newInstruction(pFunction);
+        	this.resumeScope();
 
         	if(pChildren.length === 3) {
         		pAnnotation = this.analyzeAnnotation(pChildren[1]);
@@ -1706,12 +1841,16 @@ module akra.fx {
 
         	if(sLastNodeValue !== ";") {
  				pStmtBlock = <StmtBlockInstruction>this.analyzeStmtBlock(pChildren[0]);
+ 				pFunction.push(pStmtBlock, true);
         	}
 
-        	pFunction.push(pFunctionDef, true);
-      		pFunction.push(pStmtBlock, true);
+        	this.endScope();
 
       		// this.endInstruction();
+      		
+      		CHECK_INSTRUCTION(pFunction, ECheckStage.CODE_TARGET_SUPPORT);  
+
+      		this.addFunctionDecl(pFunction);  		
 
       		return pFunction;
         }
@@ -1742,7 +1881,13 @@ module akra.fx {
         		pFunctionDef.setSemantic(sSemantic);
         	}
 
+        	this.newScope();
+
         	this.analyzeParamList(pChildren[pChildren.length - 3], pFunctionDef);
+
+        	this.endScope();
+
+        	CHECK_INSTRUCTION(pFunctionDef, ECheckStage.CODE_TARGET_SUPPORT);    
 
         	return pFunctionDef;
         }
@@ -1765,6 +1910,8 @@ module akra.fx {
         	} 
 
         	this.endScope();
+
+        	CHECK_INSTRUCTION(pStmtBlock, ECheckStage.CODE_TARGET_SUPPORT);    
 
         	return pStmtBlock;
         }
@@ -1836,6 +1983,8 @@ module akra.fx {
         		pReturnStmtInstruction.push(pExprInstruction, true);
         	}
 
+        	CHECK_INSTRUCTION(pReturnStmtInstruction, ECheckStage.CODE_TARGET_SUPPORT);    
+
         	return pReturnStmtInstruction;
         }
 
@@ -1847,6 +1996,8 @@ module akra.fx {
         	var sOperatorName: string = pChildren[1].value;
 
         	pBreakStmtInstruction.setOperator(sOperatorName);
+
+        	CHECK_INSTRUCTION(pBreakStmtInstruction, ECheckStage.CODE_TARGET_SUPPORT);    
 
         	return pBreakStmtInstruction;
         }
@@ -1869,6 +2020,8 @@ module akra.fx {
     				//TODO: add varstruct
     				break;
         	}
+
+        	CHECK_INSTRUCTION(pDeclStmtInstruction, ECheckStage.CODE_TARGET_SUPPORT);    
         	
         	return pDeclStmtInstruction;
         }
@@ -1882,16 +2035,10 @@ module akra.fx {
 
         	pExprStmtInstruction.push(pExprInstruction, true);
 
+        	CHECK_INSTRUCTION(pExprStmtInstruction, ECheckStage.CODE_TARGET_SUPPORT);    
+
         	return pExprStmtInstruction;
         }	
-
-        private analyzeUseDecl(pNode: IParseNode): IAFXStmtInstruction{
-        	this.setAnalyzedNode(pNode);
-
-        	var pChildren: IParseNode[] = pNode.children;
-
-        	return null;
-        }
 
         private analyzeWhileStmt(pNode: IParseNode): IAFXStmtInstruction {
         	this.setAnalyzedNode(pNode);
@@ -1939,18 +2086,9 @@ module akra.fx {
 	        	pWhileStmt.push(pStmt, true);
 	        }
 
+	        CHECK_INSTRUCTION(pWhileStmt, ECheckStage.CODE_TARGET_SUPPORT);    
+
         	return pWhileStmt;
-        }
-
-        private analyzeForStmt(pNode: IParseNode): IAFXStmtInstruction {
-        	this.setAnalyzedNode(pNode);
-			
-			var pChildren: IParseNode[] = pNode.children;
-        	var isNonIfStmt: bool = (pNode.name === "NonIfStmt") ? true : false;
-
-        	
-
-        	return null;
         }
 
         private analyzeIfStmt(pNode: IParseNode): IAFXStmtInstruction{
@@ -1989,6 +2127,8 @@ module akra.fx {
         		pIfStmtInstruction.push(pIfStmt, true);
         	}
 
+        	CHECK_INSTRUCTION(pIfStmtInstruction, ECheckStage.CODE_TARGET_SUPPORT);    
+
         	return pIfStmtInstruction;
         }
 
@@ -2006,6 +2146,129 @@ module akra.fx {
         		case "T_KW_FOR":
         			return this.analyzeForStmt(pNode);
         	}
+        }
+
+        private analyzeForStmt(pNode: IParseNode): IAFXStmtInstruction {
+        	this.setAnalyzedNode(pNode);
+			
+			var pChildren: IParseNode[] = pNode.children;
+        	var isNonIfStmt: bool = (pNode.name === "NonIfStmt");
+        	var pForStmtInstruction: ForStmtInstruction = new ForStmtInstruction();
+        	var pStmt: IAFXStmtInstruction = null;
+
+			// if(pChildren.length !== 7){
+			// 	//Empty for-step
+			// 	this._error(EFFECT_BAD_FOR_STEP_EMPTY);
+			// 	return null;
+			// }
+
+        	this.newScope();
+
+        	this.analyzeForInit(pChildren[pChildren.length - 3], pForStmtInstruction);
+        	this.analyzeForCond(pChildren[pChildren.length - 4], pForStmtInstruction);
+        	
+        	if(pChildren.length === 7) {
+        		this.analyzeForStep(pChildren[2], pForStmtInstruction);
+        	}
+        	else {
+        		pForStmtInstruction.push(null);
+        	}
+        	
+        	
+        	if(isNonIfStmt) {
+        		pStmt = this.analyzeNonIfStmt(pChildren[0]);
+        	}
+        	else {
+        		pStmt = this.analyzeIfStmt(pChildren[0]);
+        	}
+
+        	pForStmtInstruction.push(pStmt, true);
+
+        	this.endScope();
+
+        	CHECK_INSTRUCTION(pForStmtInstruction, ECheckStage.CODE_TARGET_SUPPORT);    
+
+        	return pForStmtInstruction;
+        }
+
+        private analyzeForInit(pNode: IParseNode, pForStmtInstruction: ForStmtInstruction): void {
+        	this.setAnalyzedNode(pNode);
+			
+			var pChildren: IParseNode[] = pNode.children;
+			var sFirstNodeName: string = pChildren[pChildren.length - 1].name;
+
+			switch(sFirstNodeName){
+				case "VariableDecl":
+					this.analyzeVariableDecl(pChildren[0], pForStmtInstruction);
+					break;
+				case "Expr":
+					var pExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
+					pForStmtInstruction.push(pExpr, true);
+					break;
+				default:
+					// ForInit : ';'
+					//this._error(EFFECT_BAD_FOR_INIT_EMPTY_ITERATOR);
+					pForStmtInstruction.push(null);
+					break;
+			}
+
+        	return;
+        }
+
+        private analyzeForCond(pNode: IParseNode, pForStmtInstruction: ForStmtInstruction): void {
+        	this.setAnalyzedNode(pNode);
+			
+			var pChildren: IParseNode[] = pNode.children;
+
+			if(pChildren.length === 1){
+				pForStmtInstruction.push(null)
+				//this._error(EFFECT_BAD_FOR_COND_EMPTY);
+				return;
+			}
+
+			var pConditionExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[1]);
+
+			// if(pConditionExpr.getInstructionType() !== EAFXInstructionTypes.k_RelationalExprInstruction){
+			// 	this._error(EFFECT_BAD_FOR_COND_RELATION);
+			// 	return;
+			// }
+
+			pForStmtInstruction.push(pConditionExpr, true);
+			return;
+        }
+
+        private analyzeForStep(pNode: IParseNode, pForStmtInstruction: ForStmtInstruction): void {
+        	this.setAnalyzedNode(pNode);
+			
+			var pChildren: IParseNode[] = pNode.children;
+			var pStepExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
+
+			// if(pStepExpr.getInstructionType() === EAFXInstructionTypes.k_UnaryExprInstruction ||
+			//    pStepExpr.getInstructionType() === EAFXInstructionTypes.k_AssignmentExprInstruction){
+
+			// 	var sOperator: string = pStepExpr.getOperator();
+			// 	if (sOperator !== "++" && sOperator !== "--" &&
+			// 	    sOperator !== "+=" && sOperator !== "-=") {
+
+			// 		this._error(EFFECT_BAD_FOR_STEP_OPERATOR, {operator: sOperator});
+			// 	}
+			// }
+			// else {
+			// 	this._error(EFFECT_BAD_FOR_STEP_EXPRESSION);
+			// }
+
+			pForStmtInstruction.push(pStepExpr, true);
+
+        	return;
+        }
+       
+
+        private analyzeUseDecl(pNode: IParseNode): IAFXStmtInstruction{
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	return null;
         }
 
         private analyzeParamList(pNode:IParseNode, pFunctionDef: FunctionDefInstruction): void {
@@ -2052,6 +2315,8 @@ module akra.fx {
 		        	pType.push(pUsage, true);
 		        }
 		    }
+
+		    CHECK_INSTRUCTION(pType, ECheckStage.CODE_TARGET_SUPPORT);   
 
 		    return pType;
         }

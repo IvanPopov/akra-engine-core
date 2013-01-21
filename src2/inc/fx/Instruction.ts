@@ -4,35 +4,44 @@
 #include "IAFXInstruction.ts"
 
 module akra.fx {
-
 	export class Instruction implements IAFXInstruction{
-		protected _pParentInstruction: IAFXInstruction;
-		protected _sOperatorName: string;
-		protected _pInstructionList: IAFXInstruction[];
-		protected _nInstuctions: uint;
+		protected _pParentInstruction: IAFXInstruction = null;
+		protected _sOperatorName: string = null;
+		protected _pInstructionList: IAFXInstruction[] = null;
+		protected _nInstuctions: uint = 0;
+		protected readonly _eInstructionType: EAFXInstructionTypes = 0;
+		protected _pLastError: IAFXInstructionError = null;
 
-		getParent(): IAFXInstruction{
+		inline getParent(): IAFXInstruction{
 			return this._pParentInstruction;
 		}
 
-		setParent(pParentInstruction: IAFXInstruction): void {
+		inline setParent(pParentInstruction: IAFXInstruction): void {
 			this._pParentInstruction = pParentInstruction;
 		}
 
-		getOperator(): string {
+		inline getOperator(): string {
 			return this._sOperatorName;
 		}
 
-		setOperator(sOperator: string): void {
+		inline setOperator(sOperator: string): void {
 			this._sOperatorName = sOperator;
 		}
 
-		getInstructions(): IAFXInstruction[] {
+		inline getInstructions(): IAFXInstruction[] {
 			return this._pInstructionList;
 		}
 
-		setInstructions(pInstructionList: IAFXInstruction[]): void{
+		inline setInstructions(pInstructionList: IAFXInstruction[]): void{
 			this._pInstructionList = pInstructionList;
+		}
+
+		inline getInstructionType(): EAFXInstructionTypes {
+			return this._eInstructionType;
+		}
+
+		inline getLastError(): IAFXInstructionError {
+			return this._pLastError;
 		}
 
 		constructor(){
@@ -40,6 +49,8 @@ module akra.fx {
 			this._sOperatorName = null;
 			this._pInstructionList = null;
 			this._nInstuctions = 0;
+			this._eInstructionType = EAFXInstructionTypes.k_Instruction;
+			this._pLastError = {code: 0, info: null};
 		}
 
 		push(pInstruction: IAFXInstruction, isSetParent?: bool = false): void {
@@ -47,13 +58,27 @@ module akra.fx {
 				this._pInstructionList[this._nInstuctions] = pInstruction;
 				this._nInstuctions += 1;
 			}
-			if(isSetParent){
+			if(isSetParent &&  !isNull(pInstruction)){
 				pInstruction.setParent(this);
 			}
 		}
 
     	addRoutine(fnRoutine: IAFXInstructionRoutine, iPriority?: uint): void {
     		//TODO
+    	}
+
+    	/**
+    	 * Проверка валидности инструкции
+    	 */
+    	check(eStage: ECheckStage, pInfo: any = null): bool {
+    		return true;
+    	}
+
+    	/**
+    	 * Подготовка интсрукции к дальнейшему анализу
+    	 */
+    	prepare(): bool {
+    		return true;
     	}
 
     	toString(): string {
@@ -66,6 +91,7 @@ module akra.fx {
 		
 		constructor() {
 			super();
+			this._eInstructionType = EAFXInstructionTypes.k_VariableTypeInstruction;
 		}	 
 
 		addArrayIndex(pExpr: IAFXExprInstruction): void {
@@ -115,6 +141,7 @@ module akra.fx {
 		constructor(){
 			super();
 			this._pType = null;
+			this._eInstructionType = EAFXInstructionTypes.k_TypedInstruction;
 		}
 
 		getType(): IAFXVariableTypeInstruction {
@@ -133,6 +160,7 @@ module akra.fx {
 		constructor(){
 			super();
 			this._sSemantic = "";
+			this._eInstructionType = EAFXInstructionTypes.k_DeclInstruction;
 		}
 
 		setSemantic(sSemantic: string): void {
@@ -141,6 +169,14 @@ module akra.fx {
 
 		setAnnotation(pAnnotation: IAFXAnnotationInstruction): void {
 			this._pAnnotation = pAnnotation;
+		}
+
+		getName(): string {
+			return "";
+		}
+
+		getNameId(): IAFXIdInstruction {
+			return null;
 		}
 	}
 
@@ -154,6 +190,7 @@ module akra.fx {
 			super();
 			this._iValue = 0;
 			this._pType = IntInstruction._pIntType;
+			this._eInstructionType = EAFXInstructionTypes.k_IntInstruction;
 		}
 
 		inline setValue(iValue: int): void{
@@ -175,6 +212,7 @@ module akra.fx {
 			super();
 			this._fValue = 0.0;
 			this._pType = FloatInstruction._pFloatType;
+			this._eInstructionType = EAFXInstructionTypes.k_FloatInstruction;
 		}
 
 		inline setValue(fValue: float): void{
@@ -196,6 +234,7 @@ module akra.fx {
 			super();
 			this._bValue = true;
 			this._pType = BoolInstruction._pBoolType;
+			this._eInstructionType = EAFXInstructionTypes.k_BoolInstruction;
 		}
 
 		inline setValue(bValue: bool): void{
@@ -218,6 +257,7 @@ module akra.fx {
 			super();
 			this._sValue = "";
 			this._pType = StringInstruction._pStringType;
+			this._eInstructionType = EAFXInstructionTypes.k_StringInstruction;
 		}
 
 		inline setValue(sValue: string): void{
@@ -240,6 +280,7 @@ module akra.fx {
 			super();
 			this._sName = "";
 			this._sRealName = "";
+			this._eInstructionType = EAFXInstructionTypes.k_IdInstruction;
 		}
 
 		inline getName(): string{
@@ -273,6 +314,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._sValue = "";
+			this._eInstructionType = EAFXInstructionTypes.k_KeywordInstruction;
 		}
 
 		inline setValue(sValue: string): void {
@@ -289,6 +331,7 @@ module akra.fx {
 		
 		constructor() {
 			super();
+			this._eInstructionType = EAFXInstructionTypes.k_TypeDeclInstruction;
 		}	 
 	}
 
@@ -299,12 +342,14 @@ module akra.fx {
 		 */
 		constructor(){
 			super();
+			this._eInstructionType = EAFXInstructionTypes.k_VariableDeclInstruction;
 		}
 	}
 
 	export class AnnotationInstruction extends Instruction implements IAFXAnnotationInstruction {
 		constructor() {
 			super();
+			this._eInstructionType = EAFXInstructionTypes.k_AnnotationInstruction;
 		}
 	}
 
@@ -313,6 +358,7 @@ module akra.fx {
 		
 		constructor() {
 			super();
+			this._eInstructionType = EAFXInstructionTypes.k_UsageTypeInstruction;
 		}	 
 	}
 
@@ -321,6 +367,7 @@ module akra.fx {
 		
 		constructor() {
 			super();
+			this._eInstructionType = EAFXInstructionTypes.k_BaseTypeInstruction;
 		}	 
 	}
 
@@ -329,6 +376,7 @@ module akra.fx {
 		
 		constructor() {
 			super();
+			this._eInstructionType = EAFXInstructionTypes.k_StructDeclInstruction;
 		}	 
 	}
 
@@ -337,6 +385,7 @@ module akra.fx {
 		
 		constructor() {
 			super();
+			this._eInstructionType = EAFXInstructionTypes.k_StructFieldsInstruction;
 		}	 
 	}
 
@@ -347,6 +396,7 @@ module akra.fx {
 		 */
 		constructor(){
 			super();
+			this._eInstructionType = EAFXInstructionTypes.k_ExprInstruction;
 		}
 	}
 
@@ -354,6 +404,7 @@ module akra.fx {
 		constructor(){
 			super();
 			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_IdExprInstruction;
 		}
 
 		getType(): IAFXVariableTypeInstruction {
@@ -377,6 +428,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_ArithmeticExprInstruction;
 		}
 	}
 	/**
@@ -387,6 +439,7 @@ module akra.fx {
 		constructor(){
 			super();
 			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_AssignmentExprInstruction;
 		}
 	}
 	/**
@@ -397,6 +450,7 @@ module akra.fx {
 		constructor(){
 			super();
 			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_RelationalExprInstruction;
 		}
 	}
 	/**
@@ -407,6 +461,7 @@ module akra.fx {
 		constructor(){
 			super();
 			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_LogicalExprInstruction;
 		}
 	}
 	/**
@@ -417,6 +472,7 @@ module akra.fx {
 		constructor(){
 			super();
 			this._pInstructionList = [null, null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_ConditionalExprInstruction;
 		}
 	}
 	/**
@@ -427,17 +483,19 @@ module akra.fx {
 		constructor() {
 			super();
 			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_CastExprInstruction;
 		}	
 	}
 
 	/**
 	 * Represent + - ! ++ -- expr
-	 * (+|-|!|++|--|) VariableTypeInstruction Instruction
+	 * (+|-|!|++|--|) Instruction
 	 */
 	export class UnaryExprInstruction extends ExprInstruction {
 		constructor() {
 			super();
-			this._pInstructionList = [null, null];
+			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_UnaryExprInstruction;
 		}	
 	}
 
@@ -449,6 +507,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_PostfixIndexInstruction;
 		}	
 	}
 
@@ -460,6 +519,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_PostfixPointInstruction;
 		}	
 	}
 
@@ -471,6 +531,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_PostfixArithmeticInstruction;
 		}	
 	}
 
@@ -482,6 +543,7 @@ module akra.fx {
 		constructor() { 
 			super();
 			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_PrimaryExprInstruction;
 		}
 	}
 
@@ -493,6 +555,7 @@ module akra.fx {
 		constructor(){
 			super();
 			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_ComplexExprInstruction;
 		}
 	}
 
@@ -504,6 +567,7 @@ module akra.fx {
 		constructor() { 
 			super();
 			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_FunctionCallInstruction;
 		}	
 	}
 
@@ -515,6 +579,7 @@ module akra.fx {
 		constructor() { 
 			super();
 			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_ConstructorCallInstruction;
 		}	
 	}
 
@@ -526,6 +591,7 @@ module akra.fx {
 		constructor() { 
 			super();
 			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_CompileExprInstruction;
 		}	
 	}
 
@@ -537,6 +603,7 @@ module akra.fx {
 		constructor() { 
 			super();
 			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_SamplerStateBlockInstruction;
 		}	
 	}
 
@@ -544,6 +611,7 @@ module akra.fx {
 		constructor() { 
 			super();
 			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_SamplerStateInstruction;
 		}	
 	}
 
@@ -555,12 +623,17 @@ module akra.fx {
 		constructor() { 
 			super();
 			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_FunctionDeclInstruction;
 		}	
 
 		getNameId(): IAFXIdInstruction {
 			return null;
 		}
 
+		getHash(): string{
+			return "";
+		}
+		
 		hasImplementation(): bool {
 			return false;
 		}
@@ -574,6 +647,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_FunctionDefInstruction;
 		}
 	}
 
@@ -583,6 +657,7 @@ module akra.fx {
 	export class StmtInstruction extends Instruction  implements IAFXStmtInstruction {
 		constructor() {
 			super();
+			this._eInstructionType = EAFXInstructionTypes.k_StmtInstruction;
 		}
 	}
 
@@ -594,6 +669,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._pInstructionList = [];
+			this._eInstructionType = EAFXInstructionTypes.k_StmtBlockInstruction;
 		}
 	}
 
@@ -605,6 +681,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_ExprStmtInstruction;
 		}
 	}
 
@@ -616,6 +693,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._pInstructionList = null;
+			this._eInstructionType = EAFXInstructionTypes.k_BreakStmtInstruction;
 		}
 	}
 
@@ -627,6 +705,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_WhileStmtInstruction;
 		}
 	}
 
@@ -638,6 +717,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._pInstructionList = [null, null, null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_ForStmtInstruction;
 		}
 	}
 
@@ -649,6 +729,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._pInstructionList = [null, null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_IfStmtInstruction;
 		}
 	}
 
@@ -660,6 +741,7 @@ module akra.fx {
 		constructor () {
 			super();
 			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_DeclStmtInstruction;
 		}
 	}
 
@@ -672,6 +754,7 @@ module akra.fx {
 			super();
 			this._pInstructionList = [null];
 			this._sOperatorName = "return";
+			this._eInstructionType = EAFXInstructionTypes.k_ReturnStmtInstruction;
 		}
 	}
 
@@ -683,6 +766,7 @@ module akra.fx {
 	 	constructor() {
 	 		super();
 	 		this._pInstructionList = [];
+	 		this._eInstructionType = EAFXInstructionTypes.k_SemicolonStmtInstruction;
 	 	}
 	 }
 

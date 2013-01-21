@@ -5,12 +5,74 @@
 
 module akra {
 
-	export interface IAFXInstructionStateMap extends StringMap{
+    export enum EAFXInstructionTypes {
+        k_Instruction = 0,
+        k_VariableTypeInstruction,
+        k_TypedInstruction,
+        k_DeclInstruction,
+        k_IntInstruction,
+        k_FloatInstruction,
+        k_BoolInstruction,
+        k_StringInstruction,
+        k_IdInstruction,
+        k_KeywordInstruction,
+        k_TypeDeclInstruction,
+        k_VariableDeclInstruction,
+        k_AnnotationInstruction,
+        k_UsageTypeInstruction,
+        k_BaseTypeInstruction,
+        k_StructDeclInstruction,
+        k_StructFieldsInstruction,
+        k_ExprInstruction,
+        k_IdExprInstruction,
+        k_ArithmeticExprInstruction,
+        k_AssignmentExprInstruction,
+        k_RelationalExprInstruction,
+        k_LogicalExprInstruction,
+        k_ConditionalExprInstruction,
+        k_CastExprInstruction,
+        k_UnaryExprInstruction,
+        k_PostfixIndexInstruction,
+        k_PostfixPointInstruction,
+        k_PostfixArithmeticInstruction,
+        k_PrimaryExprInstruction,
+        k_ComplexExprInstruction,
+        k_FunctionCallInstruction,
+        k_ConstructorCallInstruction,
+        k_CompileExprInstruction,
+        k_SamplerStateBlockInstruction,
+        k_SamplerStateInstruction,
+        k_FunctionDeclInstruction,
+        k_FunctionDefInstruction,
+        k_StmtInstruction,
+        k_StmtBlockInstruction,
+        k_ExprStmtInstruction,
+        k_BreakStmtInstruction,
+        k_WhileStmtInstruction,
+        k_ForStmtInstruction,
+        k_IfStmtInstruction,
+        k_DeclStmtInstruction,
+        k_ReturnStmtInstruction,
+        k_SemicolonStmtInstruction
+    }
+
+    export enum ECheckStage {
+        CODE_TARGET_SUPPORT, /* Отсутсвуют конструкции не поддерживаемые языком назначения (GLSL) */ 
+        SELF_CONTAINED /* Код замкнут, нет не определенных функций, пассов, техник. Нет мертвых функций. */
+        // VALIDATION  /* Код не содерит синтаксиески неправильных выражений, то что не исчерпывается */ 
+    }
+	
+    export interface IAFXInstructionStateMap extends StringMap{
 	}
 
 	export interface IAFXInstructionRoutine {
 		(): void;
 	}
+
+    export interface IAFXInstructionError {
+        code: uint;
+        info: any;
+    }
 	/**
 	 * All opertion are represented by: 
 	 * operator : arg1 ... argn
@@ -25,6 +87,11 @@ module akra {
 
         setInstructions(pInstructionList: IAFXInstruction[]): void;
         getInstructions(): IAFXInstruction[];
+
+        getInstructionType(): EAFXInstructionTypes;
+
+        check(eStage: ECheckStage): bool;
+        getLastError(): IAFXInstructionError;
 
     	// /**
     	//  * Contain states of instruction
@@ -69,6 +136,8 @@ module akra {
     export interface IAFXDeclInstruction extends IAFXTypedInstruction {
         setSemantic(sSemantic: string);
         setAnnotation(pAnnotation: IAFXAnnotationInstruction): void;
+        getName(): string;
+        getNameId(): IAFXIdInstruction;
     }
 
     export interface IAFXTypeDeclInstruction extends IAFXDeclInstruction {
@@ -80,8 +149,9 @@ module akra {
     }
 
     export interface IAFXFunctionDeclInstruction extends IAFXDeclInstruction {
-        getNameId(): IAFXIdInstruction;
+        //getNameId(): IAFXIdInstruction;
         hasImplementation(): bool;
+        getHash(): string;
     }
 
     export interface IAFXUsageTypeInstruction extends IAFXInstruction {
