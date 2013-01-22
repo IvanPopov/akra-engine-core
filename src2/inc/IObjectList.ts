@@ -40,7 +40,7 @@ module akra {
 
 		swap(i: int, j: int): IObjectList;
 		add(list: IObjectList): IObjectList;
-		isEqual(list: IObjectList): IObjectList;
+		isEqual(list: IObjectList): bool;
 
 		clear(): IObjectList;
 	}

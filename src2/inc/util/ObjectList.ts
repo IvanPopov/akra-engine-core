@@ -13,6 +13,7 @@ module akra.util {
 
 	var pListItemPool: IObjectArray = new ObjectArray;
 
+
 	export class ObjectList implements IObjectList {
 		protected _pHead: IObjectListItem = null;
 		protected _pTail: IObjectListItem = null;
@@ -243,6 +244,14 @@ module akra.util {
 			pListItemPool.push(pItem);
 		};
 
+		inline private createItem(): IObjectListItem {
+			if (pListItemPool.length == 0) {
+				return {next: null, prev: null, data: null};
+			}
+
+			return <IObjectListItem>pListItemPool.pop();
+		}
+
 		fromArray(elements: any[], iOffset: uint = 0, iSize: uint = this._iLength): IObjectList{
 			iOffset = math.min(iOffset, this._iLength);
 
@@ -256,7 +265,7 @@ module akra.util {
 		insert(n:uint ,pData: any): IObjectList{
 			n = math.min(n, this._iLength);
 
-			var pNew: IObjectListItem = pListItemPool.pop();
+			var pNew: IObjectListItem = this.createItem();
 			pNew.data = pData;
 
 			var pItem: IObjectListItem = this.find(n-1);
@@ -281,6 +290,44 @@ module akra.util {
 
 			return this;
 		};
+
+		isEqual(pList: IObjectList): bool {
+			if (this._iLength == pList.length) {
+				if (this === pList) {
+					return true;
+				}
+
+				var l1: IObjectListItem = this.first;
+				var l2: IObjectListItem = pList.first;
+
+				for (var i: uint = 0; i < this._iLength; ++i) {
+					if (l1 != l2) {
+						return false;
+					}
+
+					l1 = this.next();
+					l2 = pList.next();
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+
+		clear(): IObjectList {
+			var pPrev: IObjectListItem;
+			var pNext: IObjectListItem = this.first;
+			
+			for (var i: uint = 0; i < this._iLength; ++ i) {
+				pPrev = pNext;
+				pNext = pList.next();
+
+				this.releaseItem(pPrev);
+			}
+		}
+
+		return this;
 	}
 }
 
