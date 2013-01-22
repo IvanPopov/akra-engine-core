@@ -2,6 +2,10 @@
 #define IOBJECTLIST_TS
 
 module akra {
+	export interface IListExplorerFunc {
+		(data: any): bool;
+		(data: any): void;
+	}
 	export interface IObjectList {
 		length: uint;
 		first: any;
@@ -43,6 +47,7 @@ module akra {
 		isEqual(list: IObjectList): bool;
 
 		clear(): IObjectList;
+		forEach(fn: IListExplorerFunc): void;
 	}
 }
 

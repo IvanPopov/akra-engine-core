@@ -325,9 +325,22 @@ module akra.util {
 
 				this.releaseItem(pPrev);
 			}
+
+			return this;
 		}
 
-		return this;
+		forEach(fn: IListExplorerFunc): void {
+			var pItem: IObjectListItem = this.first;
+
+			for (var i: uint = 0; i < this._iLength; ++ i) {
+				if (!fn(pItem)) {
+					return;
+				}
+
+				pItem = this.next();
+			}
+		}
+		
 	}
 }
 
