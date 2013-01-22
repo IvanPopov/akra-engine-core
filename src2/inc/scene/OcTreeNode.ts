@@ -24,16 +24,17 @@ module akra.scene {
 		/** Index in array of nodes in tree */
 		index: int = 0;
 		/** First SceneObject in this node */
-		firstMember: ISceneObject = null;
+		//firstMember: ISceneObject = null;
+		listOfMembers: IObjectList = new ObjectList();
 		/** Rect of node in real world */
 		nodeTrueRect: IRect3d = new geometry.Rect3d();
 		/** Link ro next node in tree */
-		forwardNodeLink: OcTreeNode = null;
+		forwardNodeLink: IOcTreeNode = null;
 		/** Link ro previous node in tree */
-		rearNodeLink: OcTreeNode = null;
+		rearNodeLink: IOcTreeNode = null;
 
 	    /**
-	     * Link ro parent node in tree
+	     * Link to parent node in tree
 	     * @type OcTreeNode
 	     * @private
 	     */
