@@ -4,6 +4,19 @@
 #include "IAFXInstruction.ts"
 
 module akra.fx {
+    export interface IdExprMap {
+        [index: string]: IAFXIdExprInstruction;
+    }
+
+    export interface VariableTypeMap {
+    	[index: string]: IAFXVariableTypeInstruction;
+    }
+
+    export interface TypeMap {
+    	[index: string]: IAFXTypeInstruction;
+    }
+
+
 	export class Instruction implements IAFXInstruction{
 		protected _pParentInstruction: IAFXInstruction = null;
 		protected _sOperatorName: string = null;
@@ -106,19 +119,7 @@ module akra.fx {
 			
 		}
 
-		getTypeByIndex(): IAFXVariableTypeInstruction {
-			return null;
-		}
-
-		getField(sFieldName: string, isCreateExpr: bool): IAFXIdExprInstruction {
-			return null;
-		}
-
-		getPointerType(): IAFXVariableTypeInstruction {
-			return null;
-		}
-
-		isEqual(pType: IAFXVariableTypeInstruction): bool {
+		isEqual(pType: IAFXTypeInstruction): bool {
 			return false;
 		}
 
@@ -132,6 +133,121 @@ module akra.fx {
 
 		isPointer(): bool {
 			return false;
+		}
+
+		hasField(sFieldName: string): bool {
+			return false;
+		}
+
+		getField(sFieldName: string, isCreateExpr: bool): IAFXIdExprInstruction {
+			return null;
+		}
+
+		getFieldType(sFieldName: string): IAFXVariableTypeInstruction {
+			return null;
+		}
+
+		getPointerType(): IAFXVariableTypeInstruction {
+			return null;
+		}
+
+		getSize(): uint {
+			return 1;
+		}
+
+		getLength(): uint {
+			return 0;
+		}
+
+		getArrayElementType(): IAFXVariableTypeInstruction {
+			return null;
+		}
+	}
+
+	export class SystemTypeInstruction extends Instruction implements IAFXTypeInstruction {
+		private _sName: string = "";
+		private _sRealName: string = "";
+		private _pElementType: IAFXVariableTypeInstruction = null;
+		private _iLength: uint = 1;
+		private _iSize: uint = null;
+		private _pFieldMap: IdExprMap = null;
+		private _isArray: bool = false;
+
+		constructor() {
+			super();
+			this._eInstructionType = EAFXInstructionTypes.k_SystemTypeInstruction;
+			this._pFieldMap = {};
+		}
+
+		inline setName(sName: string): void {
+			this._sName = sName;
+		}
+
+		inline setRealName(sRealName: string): void {
+			this._sRealName = sRealName;
+		}
+
+		inline setSize(iSize: uint): void {
+			this._iSize = iSize;
+		}
+
+		addIndex(pType: IAFXVariableTypeInstruction, iLength: uint): void {
+			this._pElementType = pType;
+			this._iLength = iLength;
+			this._iSize = iLength * pType.getSize();
+			this._isArray = true;
+		}
+
+		addField(sFieldName: string, pType: IAFXVariableTypeInstruction,
+				 sRealFieldName?: string = sFieldName): void {
+			
+			var pFieldId: IAFXIdInstruction = new IdInstruction();
+			pFieldId.setName(sFieldName);
+			pFieldId.setRealName(sRealFieldName);	
+
+			var pFieldIdExpr: IAFXIdExprInstruction = new IdExprInstruction();
+			pFieldIdExpr.push(pFieldId, true);
+			pFieldIdExpr.setType(pType);
+			pFieldIdExpr.setParent(this);
+
+			this._pFieldMap[sFieldName] = pFieldIdExpr;
+		}
+
+		inline isBase(): bool {
+			return true;
+		}
+
+		inline isArray(): bool {
+			return this._isArray;
+		}
+
+		isEqual(pType: IAFXTypeInstruction): bool {
+			return false;
+		}
+
+		//inline getNameId()
+		inline hasField(sFieldName: string): bool {
+			return isDef(this._pFieldMap[sFieldName]);
+		}
+
+		inline getField(sFieldName: string): IAFXIdExprInstruction {
+			return isDef(this._pFieldMap[sFieldName]) ? this._pFieldMap[sFieldName] : null;
+		}
+
+		inline getFieldType(sFieldName: string): IAFXTypeInstruction {
+			return isDef(this._pFieldMap[sFieldName]) ? this._pFieldMap[sFieldName].getType() : null;
+		}
+
+		inline getSize(): uint {
+			return this._iSize;
+		}
+
+		inline getArrayElementType(): IAFXVariableTypeInstruction {
+			return this._pElementType;
+		}
+
+		inline getLength(): uint {
+			return this._iLength;
 		}
 	}
 
@@ -354,7 +470,7 @@ module akra.fx {
 	}
 
 	export class UsageTypeInstruction extends Instruction implements IAFXUsageTypeInstruction {
-		// EMPTY_OPERATOR KeywordInstruction ... KeywordInstruction IdInstruction
+		// EMPTY_OPERATOR KeywordInstruction ... KeywordInstruction IAFXTypeInstruction
 		
 		constructor() {
 			super();

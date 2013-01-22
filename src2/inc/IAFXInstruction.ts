@@ -8,6 +8,7 @@ module akra {
     export enum EAFXInstructionTypes {
         k_Instruction = 0,
         k_VariableTypeInstruction,
+        k_SystemTypeInstruction,
         k_TypedInstruction,
         k_DeclInstruction,
         k_IntInstruction,
@@ -73,6 +74,7 @@ module akra {
         code: uint;
         info: any;
     }
+
 	/**
 	 * All opertion are represented by: 
 	 * operator : arg1 ... argn
@@ -110,22 +112,32 @@ module akra {
     	toString(): string;
     }
 
-    export interface IAFXVariableTypeInstruction extends IAFXInstruction {
-        //type : IAFXTypeInstruction
+    export interface IAFXTypeInstruction extends IAFXInstruction {
+        isBase(): bool;
+        isArray(): bool;
+        isEqual(pType: IAFXTypeInstruction): bool;
+
+        hasField(sFieldName: string): bool;
+        getField(sFieldName: string, isCreateExpr: bool): IAFXIdExprInstruction;
+        getFieldType(sFieldName: string): IAFXTypeInstruction;
+
+        getSize(): uint;
+
+        getLength(): uint;
+        getArrayElementType(): IAFXTypeInstruction;
+    }
+
+    export interface IAFXVariableTypeInstruction extends IAFXTypeInstruction {
+        //type : IAFXUsageTypeInstruction
         //array: IAFXArrayInstruction
         //pointer : IAFXPointerInstruction
         addArrayIndex(pExpr: IAFXExprInstruction): void;
-        addPointIndex(): void;
-        setVideoBuffer(pBuffer: IAFXIdInstruction): void;
 
-        getTypeByIndex(): IAFXVariableTypeInstruction;
-        getField(sFieldName: string, isCreateExpr: bool): IAFXIdExprInstruction;
-        getPointerType(): IAFXVariableTypeInstruction;
-
-        isEqual(pType: IAFXVariableTypeInstruction): bool;
-        isBase(): bool;
-        isArray(): bool;
         isPointer(): bool;
+
+        addPointIndex(): void;
+        getPointerType(): IAFXVariableTypeInstruction;
+        setVideoBuffer(pBuffer: IAFXIdInstruction): void;
     }
 
     export interface IAFXTypedInstruction extends IAFXInstruction {
@@ -156,7 +168,7 @@ module akra {
 
     export interface IAFXUsageTypeInstruction extends IAFXInstruction {
         //usage: IAFXKeywordInstruction[]
-        //id: IAFXIdInstruction
+        //type: IAFXTypeInstruction
     }
 
     export interface IAFXStructDeclInstruction extends IAFXInstruction {

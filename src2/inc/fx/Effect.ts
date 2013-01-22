@@ -534,15 +534,18 @@ module akra.fx {
 
 	export class Effect implements IAFXEffect {
 
-		private _pParseTree: IParseTree;
-		private _pAnalyzedNode: IParseNode;
+		private _pParseTree: IParseTree = null;
+		private _pAnalyzedNode: IParseNode = null;
 
-		private _pEffectScope: ProgramScope;
-		private _pCurrentInstruction: IAFXInstruction;
+		private _pEffectScope: ProgramScope = null;
+		private _pCurrentInstruction: IAFXInstruction = null;
 
-		private _pStatistics: IAFXEffectStats;
+		private _pStatistics: IAFXEffectStats = null;
 
-		private _sAnalyzedFileName: string;
+		private _sAnalyzedFileName: string = "";
+		private _pSystemTypes: TypeMap = null;
+
+		static pSystemTypes: TypeMap = null;
 
 		static private _pGrammarSymbols = akra.util.parser.getGrammarSymbols();
 
@@ -598,6 +601,57 @@ module akra.fx {
 		}
 
 		clear(): void {
+		}
+
+		private initSystemTypes(): void {
+			if(isNull(Effect.pSystemTypes)){
+
+			}
+
+			this._pSystemTypes = Effect.pSystemTypes;
+		}
+
+		private generateSystemType(sName: string, sRealName: string, 
+								   iSize: uint = 1, isArray: bool = false, 
+								   pElementType: IAFXVariableTypeInstruction = null, iLength: uint = 1
+								  ): IAFXTypeInstruction {
+
+			if(isDef(this._pSystemTypes[sName])){
+				return null;
+			}
+
+			var pSystemType: SystemTypeInstruction = new SystemTypeInstruction();
+
+			pSystemType.setName(sName);
+			pSystemType.setRealName(sRealName);
+			pSystemType.setSize(iSize);
+			if(isArray){
+				pSystemType.addIndex(pElementType, iLength);
+			}
+
+			return pSystemType;
+		}
+
+		private addSystemTypeScalar(){
+			this.generateSystemType("void", "void", 0);
+			this.generateSystemType("int", "int", 1);
+			this.generateSystemType("bool", "bool", 1);
+			this.generateSystemType("float", "float", 1);
+			this.generateSystemType("ptr", "float", 1);
+			this.generateSystemType("string", "", 0);
+			this.generateSystemType("texture", "", 0);
+			this.generateSystemType("sampler", "sampler2D", 1);
+			this.generateSystemType("sampler2D", "sampler2D", 1);
+			this.generateSystemType("samplerCUBE", "samplerCube", 1);
+			this.generateSystemType("video_buffer", "sampler2D", 1);
+		}
+		
+		private addSystemTypeVector(){
+			
+		}
+
+		private addSystemTypeMatrix(){
+			
 		}
 
 		private inline getVariable(sName: string): IAFXVariableDeclInstruction {
@@ -710,7 +764,7 @@ module akra.fx {
 			return null;
 		}
 
-		private findConstructor(pTypeName: IAFXIdInstruction, 
+		private findConstructor(pType: IAFXTypeInstruction, 
 							    pArguments: IAFXExprInstruction[]): IAFXVariableTypeInstruction {
 			return null;
 		}
@@ -857,8 +911,8 @@ module akra.fx {
 
 		    for (i = pChildren.length - 1; i >= 0; i--) {
 		        if (pChildren[i].name === "Type") {
-		        	var pTypeName: IAFXIdInstruction = this.analyzeType(pChildren[i]);
-		        	pType.push(pTypeName, true);
+		        	var pMainType: IAFXTypeInstruction = this.analyzeType(pChildren[i]);
+		        	pType.push(pMainType, true);
 		        }
 		        else if (pChildren[i].name === "Usage") {
 		        	var pUsage: IAFXKeywordInstruction = this.analyzeUsage(pChildren[i]);
@@ -871,7 +925,7 @@ module akra.fx {
 		    return pType;
         }
 
-        private analyzeType(pNode: IParseNode): IAFXIdInstruction {
+        private analyzeType(pNode: IParseNode): IAFXTypeInstruction {
         	return null;
         }
 
@@ -1173,12 +1227,12 @@ module akra.fx {
         	var pExpr: ConstructorCallInstruction = new ConstructorCallInstruction();
         	var pExprType: IAFXVariableTypeInstruction;
         	var pArguments: IAFXExprInstruction[] = null;
-        	var pTypeName: IAFXIdInstruction;
+        	var pConstructorType: IAFXTypeInstruction;
         	var i: uint = 0;
 
-        	pTypeName = this.analyzeType(pChildren[pChildren.length - 1]);
+        	pConstructorType = this.analyzeType(pChildren[pChildren.length - 1]);
 
-        	if(isNull(pTypeName)){
+        	if(isNull(pConstructorType)){
         		this._error(EFFECT_BAD_COMPLEX_NOT_TYPE);
         		return null;
         	}
@@ -1196,15 +1250,15 @@ module akra.fx {
         		}
         	}
 
-        	pExprType = this.findConstructor(pTypeName, pArguments);
+        	pExprType = this.findConstructor(pConstructorType, pArguments);
 
         	if(isNull(pExprType)){
-        		this._error(EFFECT_BAD_COMPLEX_NOT_CONSTRUCTOR, { typeName: pTypeName.toString() });
+        		this._error(EFFECT_BAD_COMPLEX_NOT_CONSTRUCTOR, { typeName: pConstructorType.toString() });
         		return null;
         	}
 
         	pExpr.setType(pExprType);
-        	pExpr.push(pTypeName);
+        	pExpr.push(pConstructorType);
         	
         	if(!isNull(pArguments)){
         		for(i = 0; i < pArguments.length; i++) {
@@ -1311,7 +1365,7 @@ module akra.fx {
         		return null;
         	}
 
-        	pExprType = pPostfixExprType.getTypeByIndex();
+        	pExprType = <IAFXVariableTypeInstruction>(pPostfixExprType.getArrayElementType());
 
         	pExpr.setType(pExprType);
         	pExpr.push(pPostfixExpr, true);
@@ -1722,11 +1776,11 @@ module akra.fx {
         		return null;
         	}
 
-        	var pTypeName: IAFXIdInstruction;
+        	//var pMainType: IAFXTypeInstruction;
         	var pType: IAFXVariableTypeInstruction;
 
-        	pTypeName = this.analyzeType(pChildren[0]);
-        	pType = this.generateVariableTypeFromId(pTypeName);
+        	pType = <IAFXVariableTypeInstruction>(this.analyzeType(pChildren[0]));
+        	//pType = pMainType;//this.generateVariableTypeFromId(pMainType);
         	
         	if(!pType.isBase()){
         		this._error(EFFECT_BAD_CAST_TYPE_NOT_BASE, { typeName: pType.toString()});
@@ -1742,7 +1796,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
 			var pTypeDeclInstruction: IAFXTypeDeclInstruction = new TypeDeclInstruction();
-			var pType: IAFXType = new Type();
+			// var pType: IAFXType = new Type();
 
 			// this.newInstruction(pTypeDeclInstruction);
 
@@ -2307,8 +2361,8 @@ module akra.fx {
 
 		    for (i = pChildren.length - 1; i >= 0; i--) {
 		        if (pChildren[i].name === "Type") {
-		        	var pTypeName: IAFXIdInstruction = this.analyzeType(pChildren[i]);
-		        	pType.push(pTypeName, true);
+		        	var pMainType: IAFXTypeInstruction = this.analyzeType(pChildren[i]);
+		        	pType.push(pMainType, true);
 		        }
 		        else if (pChildren[i].name === "ParamUsage") {
 		        	var pUsage: IAFXKeywordInstruction = this.analyzeUsage(pChildren[i]);
