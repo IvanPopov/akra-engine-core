@@ -59,6 +59,7 @@ module akra.util {
 		release(): IObjectArray {
 			this.clear(true);
 			this._pData.clear();
+			return this;
 		}
 
 		inline value(n: uint): any {
@@ -73,7 +74,7 @@ module akra.util {
 			}
 		}
 
-		insert(n: uint, pData: any): IObjectArray {
+		set(n: uint, pData: any): IObjectArray {
 			debug_assert(!this._bLock, "cannot clear. array is locked.");
 
 			var N: uint = n + 1;
@@ -92,7 +93,7 @@ module akra.util {
 		fromArray(pElements: any[], iOffset: uint = 0, iSize: uint = 0): IObjectArray {
 			debug_assert(!this._bLock, "cannot clear. array is locked.");
 
-			iSize = iSize > 0? math.min(iSize, pElements.length): pElements.length;
+			iSize = iSize > 0? iSize < pElements.length? iSize: pElements.length: pElements.length;
 
 			this.extend(iSize);
 
