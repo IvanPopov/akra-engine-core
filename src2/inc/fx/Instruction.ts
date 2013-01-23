@@ -16,6 +16,10 @@ module akra.fx {
     	[index: string]: IAFXTypeInstruction;
     }
 
+    export interface VariableDeclMap {
+    	[index: string]: IAFXVariableDeclInstruction;
+    }
+
 
 	export class Instruction implements IAFXInstruction{
 		protected _pParentInstruction: IAFXInstruction = null;
@@ -101,7 +105,8 @@ module akra.fx {
 
 	export class VariableTypeInstruction extends Instruction implements IAFXVariableTypeInstruction {
 		// EMPTY_OPERATOR TypeInstruction ArrayInstruction PointerInstruction
-		
+		protected _bWriteMode: bool = null;
+
 		constructor() {
 			super();
 			this._eInstructionType = EAFXInstructionTypes.k_VariableTypeInstruction;
@@ -131,8 +136,18 @@ module akra.fx {
 			return false;
 		}
 
+		isWrite(): bool {
+			if(!isNull(this._bWriteMode)){
+				return this._bWriteMode;
+			}
+		}
+
 		isPointer(): bool {
 			return false;
+		}
+
+		setWriteMode(isWrite: bool): void {
+			this._bWriteMode = isWrite;
 		}
 
 		hasField(sFieldName: string): bool {
@@ -146,7 +161,7 @@ module akra.fx {
 		getFieldType(sFieldName: string): IAFXVariableTypeInstruction {
 			return null;
 		}
-
+ 
 		getPointerType(): IAFXVariableTypeInstruction {
 			return null;
 		}
@@ -167,7 +182,7 @@ module akra.fx {
 	export class SystemTypeInstruction extends Instruction implements IAFXTypeInstruction {
 		private _sName: string = "";
 		private _sRealName: string = "";
-		private _pElementType: IAFXVariableTypeInstruction = null;
+		private _pElementType: IAFXTypeInstruction = null;
 		private _iLength: uint = 1;
 		private _iSize: uint = null;
 		private _pFieldMap: IdExprMap = null;
@@ -191,23 +206,31 @@ module akra.fx {
 			this._iSize = iSize;
 		}
 
-		addIndex(pType: IAFXVariableTypeInstruction, iLength: uint): void {
+		inline setWriteMode(isWrite: bool): void {
+		}
+
+		addIndex(pType: IAFXTypeInstruction, iLength: uint): void {
 			this._pElementType = pType;
 			this._iLength = iLength;
 			this._iSize = iLength * pType.getSize();
 			this._isArray = true;
 		}
 
-		addField(sFieldName: string, pType: IAFXVariableTypeInstruction,
+		addField(sFieldName: string, pType: IAFXTypeInstruction, isWrite?: bool = true,
 				 sRealFieldName?: string = sFieldName): void {
 			
+			var pFieldType: VariableTypeInstruction = new VariableTypeInstruction();
+			pFieldType.push(new UsageTypeInstruction(), true);
+			pFieldType.getInstructions()[0].push(pType, false);
+			pFieldType.setWriteMode(isWrite);
+
 			var pFieldId: IAFXIdInstruction = new IdInstruction();
 			pFieldId.setName(sFieldName);
 			pFieldId.setRealName(sRealFieldName);	
 
 			var pFieldIdExpr: IAFXIdExprInstruction = new IdExprInstruction();
 			pFieldIdExpr.push(pFieldId, true);
-			pFieldIdExpr.setType(pType);
+			pFieldIdExpr.setType(pFieldType);
 			pFieldIdExpr.setParent(this);
 
 			this._pFieldMap[sFieldName] = pFieldIdExpr;
@@ -219,6 +242,10 @@ module akra.fx {
 
 		inline isArray(): bool {
 			return this._isArray;
+		}
+
+		inline isWrite(): bool {
+			return true;
 		}
 
 		isEqual(pType: IAFXTypeInstruction): bool {
@@ -242,7 +269,7 @@ module akra.fx {
 			return this._iSize;
 		}
 
-		inline getArrayElementType(): IAFXVariableTypeInstruction {
+		inline getArrayElementType(): IAFXTypeInstruction {
 			return this._pElementType;
 		}
 
@@ -251,8 +278,79 @@ module akra.fx {
 		}
 	}
 
+	export class ComplexTypeInstruction extends Instruction implements IAFXTypeInstruction {
+		private _sName: string = "";
+		private _sRealName: string = "";
+		private _pFieldDeclMap: VariableDeclMap = null;
+		private _iSize: uint = null;
+		private _pFieldMap: IdExprMap = null;
+		
+		constructor() {
+			super();
+			this._eInstructionType = EAFXInstructionTypes.k_SystemTypeInstruction;
+			this._pFieldMap = {};
+			this._pFieldDeclMap = {};
+		}
+
+		inline setName(sName: string): void {
+			this._sName = sName;
+		}
+
+		inline setRealName(sRealName: string): void {
+			this._sRealName = sRealName;
+		}
+
+		inline setSize(iSize: uint): void {
+			this._iSize = iSize;
+		}
+
+		inline setWriteMode(isWrite: bool): void {
+		}
+
+		inline isBase(): bool {
+			return false;
+		}
+
+		inline isArray(): bool {
+			return false;
+		}
+
+		inline isWrite(): bool {
+			return true;
+		}
+
+		isEqual(pType: IAFXTypeInstruction): bool {
+			return false;
+		}
+
+		//inline getNameId()
+		inline hasField(sFieldName: string): bool {
+			return isDef(this._pFieldDeclMap[sFieldName]);
+		}
+
+		inline getField(sFieldName: string): IAFXIdExprInstruction {
+			return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldMap[sFieldName] : null;
+		}
+
+		inline getFieldType(sFieldName: string): IAFXTypeInstruction {
+			return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldMap[sFieldName].getType() : null;
+		}
+
+		inline getSize(): uint {
+			return this._iSize;
+		}
+
+		inline getArrayElementType(): IAFXTypeInstruction {
+			return null;
+		}
+
+		inline getLength(): uint {
+			return 0;
+		}
+	}
+
 	export class TypedInstruction extends Instruction implements IAFXTypedInstruction {
-		protected _pType: IAFXVariableTypeInstruction;
+		protected _pType: IAFXTypeInstruction;
 
 		constructor(){
 			super();
@@ -260,11 +358,11 @@ module akra.fx {
 			this._eInstructionType = EAFXInstructionTypes.k_TypedInstruction;
 		}
 
-		getType(): IAFXVariableTypeInstruction {
+		getType(): IAFXTypeInstruction {
 			return this._pType;
 		}
 
-		setType(pType: IAFXVariableTypeInstruction): void {
+		setType(pType: IAFXTypeInstruction): void {
 			this._pType = pType;
 		}
 	}
@@ -523,7 +621,7 @@ module akra.fx {
 			this._eInstructionType = EAFXInstructionTypes.k_IdExprInstruction;
 		}
 
-		getType(): IAFXVariableTypeInstruction {
+		getType(): IAFXTypeInstruction {
 			if(!isNull(this._pType)){
 				return this._pType;
 			}

@@ -115,7 +115,10 @@ module akra {
     export interface IAFXTypeInstruction extends IAFXInstruction {
         isBase(): bool;
         isArray(): bool;
+        isWrite(): bool;
         isEqual(pType: IAFXTypeInstruction): bool;
+
+        setWriteMode(isWrite: bool): void;
 
         hasField(sFieldName: string): bool;
         getField(sFieldName: string, isCreateExpr: bool): IAFXIdExprInstruction;
@@ -141,8 +144,8 @@ module akra {
     }
 
     export interface IAFXTypedInstruction extends IAFXInstruction {
-        getType(): IAFXVariableTypeInstruction;
-        setType(pType: IAFXVariableTypeInstruction): void;
+        getType(): IAFXTypeInstruction;
+        setType(pType: IAFXTypeInstruction): void;
     }
 
     export interface IAFXDeclInstruction extends IAFXTypedInstruction {

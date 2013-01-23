@@ -603,17 +603,59 @@ module akra.fx {
 		clear(): void {
 		}
 
+		private generateSuffixLiterals(pLiterals: string[], pOutput: BoolMap, iDepth?: uint = 0): void {
+			if(iDepth >= pLiterals.length){
+				return;
+			}
+
+			if(iDepth === 0){
+				for(var i:uint = 0; i < pLiterals.length; i++) {
+					pOutput[pLiterals[i]] = true;
+				}
+
+				iDepth = 1;
+			}
+
+			var pOutputKeys:string[] = Object.keys(pOutput);
+
+			for(var i:uint = 0; i < pLiterals.length; i++) {
+				for(var j:uint = 0; j < pOutputKeys.length; j++) {
+					if(pOutputKeys[j].indexOf(pLiterals[i]) !== -1){
+						pOutput[pOutputKeys[j] + pLiterals[i]] = false;
+					}
+					else {
+						pOutput[pOutputKeys[j] + pLiterals[i]] = (pOutput[pOutputKeys[j]] === false) ? false : true;
+					}
+				}
+			}
+			
+			iDepth++;
+
+			this.generateSuffixLiterals(pLiterals, pOutput, iDepth);
+		}
+
 		private initSystemTypes(): void {
 			if(isNull(Effect.pSystemTypes)){
-
+				this._pSystemTypes = Effect.pSystemTypes = {};
+				this.addSystemTypeScalar();
+				this.addSystemTypeVector();
+				this.addSystemTypeMatrix();
 			}
 
 			this._pSystemTypes = Effect.pSystemTypes;
 		}
 
+		private initSystemFunctions(): void {
+
+		}
+
+		private initSystemVariables(): void {
+
+		}
+
 		private generateSystemType(sName: string, sRealName: string, 
 								   iSize: uint = 1, isArray: bool = false, 
-								   pElementType: IAFXVariableTypeInstruction = null, iLength: uint = 1
+								   pElementType: IAFXTypeInstruction = null, iLength: uint = 1
 								  ): IAFXTypeInstruction {
 
 			if(isDef(this._pSystemTypes[sName])){
@@ -629,10 +671,12 @@ module akra.fx {
 				pSystemType.addIndex(pElementType, iLength);
 			}
 
+			this._pSystemTypes[sName] = pSystemType;
+
 			return pSystemType;
 		}
 
-		private addSystemTypeScalar(){
+		private addSystemTypeScalar(): void{
 			this.generateSystemType("void", "void", 0);
 			this.generateSystemType("int", "int", 1);
 			this.generateSystemType("bool", "bool", 1);
@@ -646,17 +690,153 @@ module akra.fx {
 			this.generateSystemType("video_buffer", "sampler2D", 1);
 		}
 		
-		private addSystemTypeVector(){
+		private addSystemTypeVector(): void {
+			var pXYSuffix: BoolMap = <BoolMap>{};
+			var pXYZSuffix: BoolMap = <BoolMap>{};
+			var pXYZWSuffix: BoolMap = <BoolMap>{};
 			
+			var pRGSuffix: BoolMap = <BoolMap>{};
+			var pRGBSuffix: BoolMap = <BoolMap>{};
+			var pRGBASuffix: BoolMap = <BoolMap>{};
+
+			var pSTSuffix: BoolMap = <BoolMap>{};
+			var pSTPSuffix: BoolMap = <BoolMap>{};
+			var pSTPQSuffix: BoolMap = <BoolMap>{};
+
+			this.generateSuffixLiterals(["x", "y"], pXYSuffix);
+			this.generateSuffixLiterals(["x", "y", "z"], pXYZSuffix);
+			this.generateSuffixLiterals(["x", "y", "z", "w"], pXYZWSuffix);
+			
+			this.generateSuffixLiterals(["r", "g"], pRGSuffix);
+			this.generateSuffixLiterals(["r", "g", "b"], pRGBSuffix);
+			this.generateSuffixLiterals(["r", "g", "b", "a"], pRGBASuffix);
+
+			this.generateSuffixLiterals(["s", "t"], pSTSuffix);
+			this.generateSuffixLiterals(["s", "t", "p"], pSTPSuffix);
+			this.generateSuffixLiterals(["s", "t", "q"], pSTPQSuffix);
+
+			var pFloat: IAFXTypeInstruction = this.getSystemType("float");
+			var pInt: IAFXTypeInstruction = this.getSystemType("int");
+			var pBool: IAFXTypeInstruction = this.getSystemType("bool");
+
+			var pFloat2: IAFXTypeInstruction = this.generateSystemType("float2", "vec2", 0, true, pFloat, 2);
+			var pFloat3: IAFXTypeInstruction = this.generateSystemType("float3", "vec3", 0, true, pFloat, 3);
+			var pFloat4: IAFXTypeInstruction = this.generateSystemType("float4", "vec3", 0, true, pFloat, 4);
+
+			var pInt2: IAFXTypeInstruction = this.generateSystemType("int2", "ivec2", 0, true, pInt, 2);
+			var pInt3: IAFXTypeInstruction = this.generateSystemType("int3", "ivec3", 0, true, pInt, 3);
+			var pInt4: IAFXTypeInstruction = this.generateSystemType("int4", "ivec3", 0, true, pInt, 4);
+
+			var pBool2: IAFXTypeInstruction = this.generateSystemType("bool2", "bvec2", 0, true, pBool, 2);
+			var pBool3: IAFXTypeInstruction = this.generateSystemType("bool3", "bvec3", 0, true, pBool, 3);
+			var pBool4: IAFXTypeInstruction = this.generateSystemType("bool4", "bvec3", 0, true, pBool, 4);
+
+			this.addFieldsToVectorFromSuffixObject(pXYSuffix, pFloat2, "float");
+			this.addFieldsToVectorFromSuffixObject(pRGSuffix, pFloat2, "float");
+			this.addFieldsToVectorFromSuffixObject(pSTSuffix, pFloat2, "float");
+
+			this.addFieldsToVectorFromSuffixObject(pXYZSuffix, pFloat3, "float");
+			this.addFieldsToVectorFromSuffixObject(pRGBSuffix, pFloat3, "float");
+			this.addFieldsToVectorFromSuffixObject(pSTPSuffix, pFloat3, "float");
+
+			this.addFieldsToVectorFromSuffixObject(pXYZWSuffix, pFloat4, "float");
+			this.addFieldsToVectorFromSuffixObject(pRGBASuffix, pFloat4, "float");
+			this.addFieldsToVectorFromSuffixObject(pSTPQSuffix, pFloat4, "float");
+
+			this.addFieldsToVectorFromSuffixObject(pXYSuffix, pInt2, "int");
+			this.addFieldsToVectorFromSuffixObject(pRGSuffix, pInt2, "int");
+			this.addFieldsToVectorFromSuffixObject(pSTSuffix, pInt2, "int");
+
+			this.addFieldsToVectorFromSuffixObject(pXYZSuffix, pInt3, "int");
+			this.addFieldsToVectorFromSuffixObject(pRGBSuffix, pInt3, "int");
+			this.addFieldsToVectorFromSuffixObject(pSTPSuffix, pInt3, "int");
+
+			this.addFieldsToVectorFromSuffixObject(pXYZWSuffix, pInt4, "int");
+			this.addFieldsToVectorFromSuffixObject(pRGBASuffix, pInt4, "int");
+			this.addFieldsToVectorFromSuffixObject(pSTPQSuffix, pInt4, "int");
+
+			this.addFieldsToVectorFromSuffixObject(pXYSuffix, pBool2, "bool");
+			this.addFieldsToVectorFromSuffixObject(pRGSuffix, pBool2, "bool");
+			this.addFieldsToVectorFromSuffixObject(pSTSuffix, pBool2, "bool");
+
+			this.addFieldsToVectorFromSuffixObject(pXYZSuffix, pBool3, "bool");
+			this.addFieldsToVectorFromSuffixObject(pRGBSuffix, pBool3, "bool");
+			this.addFieldsToVectorFromSuffixObject(pSTPSuffix, pBool3, "bool");
+
+			this.addFieldsToVectorFromSuffixObject(pXYZWSuffix, pBool4, "bool");
+			this.addFieldsToVectorFromSuffixObject(pRGBASuffix, pBool4, "bool");
+			this.addFieldsToVectorFromSuffixObject(pSTPQSuffix, pBool4, "bool");
 		}
 
-		private addSystemTypeMatrix(){
-			
+		private addSystemTypeMatrix(): void {
+			var pFloat2: IAFXTypeInstruction = this.getSystemType("float2");
+			var pFloat3: IAFXTypeInstruction = this.getSystemType("float3");
+			var pFloat4: IAFXTypeInstruction = this.getSystemType("float4");
+
+			var pInt2: IAFXTypeInstruction = this.getSystemType("int2");
+			var pInt3: IAFXTypeInstruction = this.getSystemType("int3");
+			var pInt4: IAFXTypeInstruction = this.getSystemType("int4");
+
+			var pBool2: IAFXTypeInstruction = this.getSystemType("bool2");
+			var pBool3: IAFXTypeInstruction = this.getSystemType("bool3");
+			var pBool4: IAFXTypeInstruction = this.getSystemType("bool4");
+
+			this.generateSystemType("float2x2", "mat2",   0, true, pFloat2, 2);
+			this.generateSystemType("float2x3", "mat2x3", 0, true, pFloat2, 3);
+			this.generateSystemType("float2x4", "mat2x4", 0, true, pFloat2, 4);
+
+			this.generateSystemType("float3x2", "mat3x2", 0, true, pFloat3, 2);
+			this.generateSystemType("float3x3", "mat3",   0, true, pFloat3, 3);
+			this.generateSystemType("float3x4", "mat3x4", 0, true, pFloat3, 4);
+
+			this.generateSystemType("float4x2", "mat4x2", 0, true, pFloat4, 2);
+			this.generateSystemType("float4x3", "mat4x3", 0, true, pFloat4, 3);
+			this.generateSystemType("float4x4", "mat4",   0, true, pFloat4, 4);
+
+			this.generateSystemType("int2x2", "imat2",   0, true, pInt2, 2);
+			this.generateSystemType("int2x3", "imat2x3", 0, true, pInt2, 3);
+			this.generateSystemType("int2x4", "imat2x4", 0, true, pInt2, 4);
+
+			this.generateSystemType("int3x2", "imat3x2", 0, true, pInt3, 2);
+			this.generateSystemType("int3x3", "imat3",   0, true, pInt3, 3);
+			this.generateSystemType("int3x4", "imat3x4", 0, true, pInt3, 4);
+
+			this.generateSystemType("int4x2", "imat4x2", 0, true, pInt4, 2);
+			this.generateSystemType("int4x3", "imat4x3", 0, true, pInt4, 3);
+			this.generateSystemType("int4x4", "imat4",   0, true, pInt4, 4);
+
+			this.generateSystemType("bool2x2", "bmat2",   0, true, pBool2, 2);
+			this.generateSystemType("bool2x3", "bmat2x3", 0, true, pBool2, 3);
+			this.generateSystemType("bool2x4", "bmat2x4", 0, true, pBool2, 4);
+
+			this.generateSystemType("bool3x2", "bmat3x2", 0, true, pBool3, 2);
+			this.generateSystemType("bool3x3", "bmat3",   0, true, pBool3, 3);
+			this.generateSystemType("bool3x4", "bmat3x4", 0, true, pBool3, 4);
+
+			this.generateSystemType("bool4x2", "bmat4x2", 0, true, pBool4, 2);
+			this.generateSystemType("bool4x3", "bmat4x3", 0, true, pBool4, 3);
+			this.generateSystemType("bool4x4", "bmat4",   0, true, pBool4, 4);
 		}
+
+		private addFieldsToVectorFromSuffixObject(pSuffixMap: BoolMap, pType: IAFXTypeInstruction, sBaseType: string) {
+			var sSuffix: string;
+
+			for(sSuffix in pSuffixMap){
+				var sFieldTypeName: string = sBaseType + ((sSuffix.length > 1) ? sSuffix.length.toString() : "");
+				var pFieldType: IAFXTypeInstruction = this.getSystemType(sFieldTypeName);
+
+				(<SystemTypeInstruction>pType).addField(sSuffix, pFieldType, pSuffixMap[sSuffix]);
+			}
+		} 
 
 		private inline getVariable(sName: string): IAFXVariableDeclInstruction {
 			return this._pEffectScope.getVariable(sName);
 		}
+
+		private getSystemType(sTypeName: string): IAFXTypeInstruction {
+        	//bool, string, float and others
+        	return isDef(this._pSystemTypes[sTypeName]) ? this._pSystemTypes[sTypeName] : null;
+        }
 
 		private addSystemFunction(): void {
 
@@ -979,7 +1159,7 @@ module akra.fx {
 
         private analyzeVariableDim(pNode: IParseNode, pVariableDecl: IAFXVariableDeclInstruction): void {
 			var pChildren: IParseNode[] = pNode.children;
-			var pVariableType: IAFXVariableTypeInstruction = pVariableDecl.getType();
+			var pVariableType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pVariableDecl.getType();
 
 			if(pChildren.length === 1) {
 				var pName: IAFXIdInstruction = new IdInstruction();
@@ -1114,7 +1294,7 @@ module akra.fx {
         		return null;
         	}
 
-        	pExprType = pShaderFunc.getType();
+        	pExprType = <IAFXVariableTypeInstruction>pShaderFunc.getType();
 
         	pExpr.setType(pExprType);
         	pExpr.setOperator("complile");
@@ -1204,7 +1384,7 @@ module akra.fx {
         		return null;
         	}
 
-        	pExprType = pFunction.getType();
+        	pExprType = <IAFXVariableTypeInstruction>pFunction.getType();
 
         	pExpr.setType(pExprType);
         	pExpr.push(pFunction, true);
@@ -1280,7 +1460,7 @@ module akra.fx {
         	var pExprType: IAFXVariableTypeInstruction;
 
         	pComplexExpr = this.analyzeExpr(pChildren[1]);
-        	pExprType = pComplexExpr.getType();
+        	pExprType = <IAFXVariableTypeInstruction>pComplexExpr.getType();
 
         	pExpr.setType(pExprType);
         	pExpr.push(pComplexExpr, true);
@@ -1300,7 +1480,7 @@ module akra.fx {
         	var pPrimaryExprType: IAFXVariableTypeInstruction;
 
         	pPrimaryExpr = this.analyzeExpr(pChildren[0]);
-        	pPrimaryExprType = pPrimaryExpr.getType();
+        	pPrimaryExprType = <IAFXVariableTypeInstruction>pPrimaryExpr.getType();
 
         	pExprType = pPrimaryExprType.getPointerType();
         	
@@ -1345,10 +1525,10 @@ module akra.fx {
         	var pExprType: IAFXVariableTypeInstruction;
         	var pPostfixExprType: IAFXVariableTypeInstruction;
         	var pIndexExprType: IAFXVariableTypeInstruction;
-        	var pIntType: IAFXVariableTypeInstruction;
+        	var pIntType: IAFXTypeInstruction;
 
         	pPostfixExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
-        	pPostfixExprType = pPostfixExpr.getType();
+        	pPostfixExprType = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
 
         	if(!pPostfixExprType.isArray()){
         		this._error(EFFECT_BAD_POSTIX_NOT_ARRAY, { typeName: pPostfixExprType.toString() });
@@ -1356,7 +1536,7 @@ module akra.fx {
         	}
 
         	pIndexExpr = this.analyzeExpr(pChildren[pChildren.length - 3]);
-        	pIndexExprType = pIndexExpr.getType();
+        	pIndexExprType = <IAFXVariableTypeInstruction>pIndexExpr.getType();
 
         	pIntType = this.getSystemType("int");
 
@@ -1388,7 +1568,7 @@ module akra.fx {
         	var pPostfixExprType: IAFXVariableTypeInstruction;
 
         	pPostfixExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
-        	pPostfixExprType = pPostfixExpr.getType();
+        	pPostfixExprType = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
 
         	sFieldName = pChildren[pChildren.length - 3].value;
 
@@ -1400,7 +1580,7 @@ module akra.fx {
         		return null;
         	}
 
-        	pExprType = pFieldNameExpr.getType();
+        	pExprType = <IAFXVariableTypeInstruction>pFieldNameExpr.getType();
 
         	if(pChildren.length === 4){
         		if(!pExprType.isPointer()){
@@ -1432,7 +1612,7 @@ module akra.fx {
         	var pPostfixExprType: IAFXVariableTypeInstruction;
 
         	pPostfixExpr = this.analyzeExpr(pChildren[1]);
-        	pPostfixExprType = pPostfixExpr.getType();
+        	pPostfixExprType = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
 
         	pExprType = this.checkOneOperandExprType(sOperator, pPostfixExprType);
 
@@ -1462,7 +1642,7 @@ module akra.fx {
         	var pUnaryExprType: IAFXVariableTypeInstruction;
 
         	pUnaryExpr = this.analyzeExpr(pChildren[0]);
-        	pUnaryExprType = pUnaryExpr.getType();
+        	pUnaryExprType = <IAFXVariableTypeInstruction>pUnaryExpr.getType();
 
         	pExprType = this.checkOneOperandExprType(sOperator, pUnaryExprType);
 
@@ -1513,15 +1693,15 @@ module akra.fx {
 			var pTrueExprType: IAFXVariableTypeInstruction;
         	var pFalseExprType: IAFXVariableTypeInstruction;
         	var pExprType: IAFXVariableTypeInstruction;
-        	var pBoolType: IAFXVariableTypeInstruction;
+        	var pBoolType: IAFXTypeInstruction;
 
         	pConditionExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
         	pTrueExpr = this.analyzeExpr(pChildren[pChildren.length - 3]);
         	pFalseExpr = this.analyzeExpr(pChildren[0]);
 
-        	pConditionType = pConditionExpr.getType();
-        	pTrueExprType = pTrueExpr.getType();
-        	pFalseExprType = pFalseExpr.getType();
+        	pConditionType = <IAFXVariableTypeInstruction>pConditionExpr.getType();
+        	pTrueExprType = <IAFXVariableTypeInstruction>pTrueExpr.getType();
+        	pFalseExprType = <IAFXVariableTypeInstruction>pFalseExpr.getType();
 
         	pBoolType = this.getSystemType("bool");
 
@@ -1561,8 +1741,8 @@ module akra.fx {
         	pLeftExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
         	pRightExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
 
-        	pLeftType = pLeftExpr.getType();
-        	pRightType = pRightExpr.getType();
+        	pLeftType = <IAFXVariableTypeInstruction>pLeftExpr.getType();
+        	pRightType = <IAFXVariableTypeInstruction>pRightExpr.getType();
 
         	pExprType = this.checkTwoOperandExprTypes(sOperator, pLeftType, pRightType);
 
@@ -1598,8 +1778,8 @@ module akra.fx {
         	pLeftExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
         	pRightExpr = this.analyzeExpr(pChildren[0]);
 
-        	pLeftType = pLeftExpr.getType();
-        	pRightType = pRightExpr.getType();
+        	pLeftType = <IAFXVariableTypeInstruction>pLeftExpr.getType();
+        	pRightType = <IAFXVariableTypeInstruction>pRightExpr.getType();
 
         	pExprType = this.checkTwoOperandExprTypes(sOperator, pLeftType, pRightType);
 
@@ -1630,13 +1810,13 @@ module akra.fx {
         	var pRightExpr: IAFXExprInstruction;
 			var pLeftType: IAFXVariableTypeInstruction;
         	var pRightType: IAFXVariableTypeInstruction;
-			var pBoolType: IAFXVariableTypeInstruction;
+			var pBoolType: IAFXTypeInstruction;
 
         	pLeftExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
         	pRightExpr = this.analyzeExpr(pChildren[0]);
 
-        	pLeftType = pLeftExpr.getType();
-        	pRightType = pRightExpr.getType();
+        	pLeftType = <IAFXVariableTypeInstruction>pLeftExpr.getType();
+        	pRightType = <IAFXVariableTypeInstruction>pRightExpr.getType();
 
         	pBoolType = this.getSystemType("bool");
 
@@ -1676,8 +1856,8 @@ module akra.fx {
         	pLeftExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
         	pRightExpr = this.analyzeExpr(pChildren[0]);
 
-        	pLeftType = pLeftExpr.getType();
-        	pRightType = pRightExpr.getType();
+        	pLeftType = <IAFXVariableTypeInstruction>pLeftExpr.getType();
+        	pRightType = <IAFXVariableTypeInstruction>pRightExpr.getType();
 
         	if(sOperator !== "="){
         		pExprType = this.checkTwoOperandExprTypes(sOperator, pLeftType, pRightType);	
@@ -2104,13 +2284,13 @@ module akra.fx {
         	var pWhileStmt: WhileStmtInstruction = new WhileStmtInstruction();
         	var pCondition: IAFXExprInstruction = null;
         	var pConditionType: IAFXVariableTypeInstruction = null;
-        	var pBoolType: IAFXVariableTypeInstruction = this.getSystemType("bool");
+        	var pBoolType: IAFXTypeInstruction = this.getSystemType("bool");
         	var pStmt: IAFXStmtInstruction = null;
 
         	if(isDoWhile) {
         		pWhileStmt.setOperator("do_while");
         		pCondition = this.analyzeExpr(pChildren[2]);
-        		pConditionType = pCondition.getType();
+        		pConditionType = <IAFXVariableTypeInstruction>pCondition.getType();
 
         		if(!pConditionType.isEqual(pBoolType)){
 	        		this._error(EFFECT_BAD_DO_WHILE_CONDITION, { typeName: pConditionType.toString() });
@@ -2122,7 +2302,7 @@ module akra.fx {
         	else {
         		pWhileStmt.setOperator("while");
         		pCondition = this.analyzeExpr(pChildren[2]);
-        		pConditionType = pCondition.getType();
+        		pConditionType = <IAFXVariableTypeInstruction>pCondition.getType();
 
         		if(!pConditionType.isEqual(pBoolType)){
 	        		this._error(EFFECT_BAD_WHILE_CONDITION, { typeName: pConditionType.toString() });
@@ -2153,8 +2333,8 @@ module akra.fx {
 
         	var pIfStmtInstruction: IfStmtInstruction = new IfStmtInstruction();
         	var pCondition: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
-        	var pConditionType: IAFXVariableTypeInstruction = pCondition.getType();
-        	var pBoolType: IAFXVariableTypeInstruction = this.getSystemType("bool");
+        	var pConditionType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pCondition.getType();
+        	var pBoolType: IAFXTypeInstruction = this.getSystemType("bool");
 
         	var pIfStmt: IAFXStmtInstruction = null;
         	var pElseStmt: IAFXStmtInstruction = null;
@@ -2444,11 +2624,6 @@ module akra.fx {
         			break;
         	}
 
-        	return null;
-        }
-
-        private getSystemType(sTypeName: string): IAFXVariableTypeInstruction {
-        	//bool, string, float and others
         	return null;
         }
 
