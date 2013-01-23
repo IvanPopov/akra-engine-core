@@ -11,7 +11,7 @@
 
 module akra.data {
 
-	export enum EVertexDataLimits {
+	enum EVertexDataLimits {
 		k_MaxElementsSize = 256
 	};
 

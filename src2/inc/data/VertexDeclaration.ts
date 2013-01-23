@@ -56,7 +56,7 @@ module akra.data {
 
 	//FIXME: typescript hack, to extends with Array
 	
-	var __extends = function (d, b) {
+	var __extends = __extends || function (d, b) {
 	    function __() { this.constructor = d; }
 	    __.prototype = b.prototype;
 	    d.prototype = new __();

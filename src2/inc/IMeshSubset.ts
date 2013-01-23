@@ -1,6 +1,8 @@
 #ifndef IMESHSUBSET_TS
 #define IMESHSUBSET_TS
 
+#include "IEventProvider.ts"
+
 module akra {
 	
 	IFACE (IRect3d);
@@ -8,7 +10,7 @@ module akra {
 	IFACE (ISkin);
 	IFACE (IRenderData);
 
-	export interface IMeshSubset {
+	export interface IMeshSubset extends IEventProvider, IRenderableObject {
 		name: string;
 
 		readonly mesh: IMesh;
@@ -45,7 +47,7 @@ module akra {
 		show(): void;
 		hide(): void;
 
-
+		destroy(): void;
 	}
 }
 

@@ -13,6 +13,7 @@ module akra.util {
 
 		constructor ();
 		constructor (cColor: IColor);
+		constructor (pData: ArrayBufferView);
 		constructor (r: float, g: float, b: float, a: float);
 		constructor (r: float, g: float, b: float);
 		constructor (fGray: float, fAlpha: float);
@@ -111,6 +112,7 @@ module akra.util {
 
 		set(): IColor;
 		set(cColor: IColorValue): IColor;
+		set(pData: ArrayBufferView): IColor;
 		set(cColor: IColor): IColor;
 		set(r: float, g: float, b: float, a: float): IColor;
 		set(r: float, g: float, b: float): IColor;
@@ -126,6 +128,13 @@ module akra.util {
 					if (isInt(arguments[0])) {
 						this.r = this.g = this.b = <uint>r;
 						this.a = 1.;
+					}
+					else if (isDef(arguments[0].buffer)) {
+						var c: ArrayBufferView = <ArrayBufferView>arguments[0];
+						this.r = c[0];
+						this.g = c[1];
+						this.b = c[2];
+						this.a = c[3];
 					}
 					else {
 						var c: IColorValue = <IColorValue>arguments[0];
