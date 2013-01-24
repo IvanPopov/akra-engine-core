@@ -1270,6 +1270,9 @@ module akra {
 	        rgba[2] = b;
 	        rgba[3] = a;
         }
+        
+
+
         /** Unpack a colour value from memory
         	@param r,g,b,a	The colour is returned here (as float)
         	@param pf		Pixelformat in which to read the colour
@@ -1405,9 +1408,7 @@ module akra {
 				dst = new PixelBox(iCount, 1, 1, <EPixelFormats>eDstFormat, <Uint8Array>pDest);
 			}
 
-        	ASSERT(src.width == dst.width &&
-			   src.height == dst.height &&
-			   src.depth == dst.depth);
+        	ASSERT(src.width == dst.width && src.height == dst.height && src.depth == dst.depth,"Size dest and src pictures is different");
 
 			// Check for compressed formats, we don't support decompression, compression or recoding
 			if(isCompressed(src.format) || isCompressed(dst.format)) {
@@ -1421,8 +1422,8 @@ module akra {
 						"PixelUtil::bulkPixelConversion");
 				}
 			}
-
-	        // The easy case
+	        
+            // The easy case
 	        if(src.format == dst.format) {
 	            // Everything consecutive?
 	            if(src.isConsecutive() && dst.isConsecutive())
@@ -1467,16 +1468,22 @@ module akra {
 
 	            return;
 	        }
+
+
+
 			// Converting to PF_X8R8G8B8 is exactly the same as converting to
 			// PF_A8R8G8B8. (same with PF_X8B8G8R8 and PF_A8B8G8R8)
-			if(dst.format == EPixelFormats.X8R8G8B8 || dst.format == EPixelFormats.X8B8G8R8) {
+			if(dst.format == EPixelFormats.X8R8G8B8 || dst.format == EPixelFormats.X8B8G8R8)
+            {
 				// Do the same conversion, with EPixelFormats.A8R8G8B8, which has a lot of
 				// optimized conversions
 				var tempdst: IPixelBox = dst;
-				tempdst.format = dst.format == EPixelFormats.X8R8G8B8 ? EPixelFormats.A8R8G8B8  :EPixelFormats.A8B8G8R8;
+				tempdst.format = (dst.format == EPixelFormats.X8R8G8B8) ? EPixelFormats.A8R8G8B8  :EPixelFormats.A8B8G8R8;
 				bulkPixelConversion(src, tempdst);
 				return;
 			}
+
+
 			// Converting from EPixelFormats.X8R8G8B8 is exactly the same as converting from
 			// EPixelFormats.A8R8G8B8, given that the destination format does not have alpha.
 			if((src.format == EPixelFormats.X8R8G8B8||src.format == EPixelFormats.X8B8G8R8) && !hasAlpha(dst.format)) {
