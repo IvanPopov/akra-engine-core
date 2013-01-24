@@ -9,10 +9,10 @@
 #define long number
 
 #define IFACE(IF) export interface IF {}
-#define readonly  
-#define protected
-#define struct class
-#define const var
+//#define readonly  
+//#define protected
+//#define struct class
+//#define const var
 
 #define DEBUG DEBUG
 #define WEBGL 1
@@ -428,6 +428,8 @@ module akra {
     (<any>window).storageInfo = (<any>window).storageInfo || (<any>window).webkitStorageInfo;
     Worker.prototype.postMessage = (<any>Worker).prototype.webkitPostMessage || Worker.prototype.postMessage;
 };
+
+#include "libs/libs.ts"
 
 #ifdef LOGGER_API
 #include "util/Logger.ts"

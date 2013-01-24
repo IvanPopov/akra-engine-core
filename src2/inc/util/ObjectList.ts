@@ -52,6 +52,12 @@ module akra.util {
 			return this.find(n).data;
 		};
 
+		constructor (pData?: any[]) {
+			if (arguments.length) {
+				this.fromArray(pData);
+			}
+		}
+
 		indexOf(pData: any, iFrom: uint = 0.): int{
 			var pItem: IObjectListItem = this.find(iFrom);
 

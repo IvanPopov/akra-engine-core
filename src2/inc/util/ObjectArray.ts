@@ -2,6 +2,7 @@
 #define OBJECTARRAY_TS
 
 #include "IObjectArray.ts"
+#include "common.ts"
 
 module akra.util {
 	export class ObjectArray implements IObjectArray {
@@ -13,15 +14,15 @@ module akra.util {
 			return this._iLength;
 		}
 
-		set length(n: uint) {
+		// set length(n: uint) {
 			
-			if (this._bLock) {
-				return;
-			}
+		// 	if (this._bLock) {
+		// 		return;
+		// 	}
 
-			this.extend(n);
-			this._iLength = n;
-		}
+		// 	this.extend(n);
+		// 	this._iLength = n;
+		// }
 
 		constructor (pElements?: any[]) {
 			if (arguments.length) {
@@ -101,6 +102,8 @@ module akra.util {
 				this._pData[i] = pElements[j];
 			}
 
+			this._iLength = i;
+
 			return this;
 		}
 
@@ -113,7 +116,7 @@ module akra.util {
 
 		inline pop(): any {
 			debug_assert(!this._bLock, "cannot clear. array is locked.");
-			return this._iLength > 0? this._pData[this._iLength --]: null;
+			return this._iLength > 0? this._pData[-- this._iLength]: null;
 		}
 
 		inline swap(i: uint, j: uint): IObjectArray {
