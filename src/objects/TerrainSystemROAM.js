@@ -1,7 +1,7 @@
 //Лод
 
 Enum([
-	MaxTriTreeNodes = (1024*64) //64k triangle nodes
+	MaxTriTreeNodes = (1024*512) //64k triangle nodes
 ], CONST, a.TerrainROAM);
 
 
@@ -329,6 +329,7 @@ TerrainROAM.prototype.prepareForRender = function()
 	return;
 }
 
+
 //Применение параметров для рендеринга, коготрые зависят от самого терраина
 TerrainROAM.prototype.render = function(pWorldMatrix)
 {
@@ -346,7 +347,10 @@ TerrainROAM.prototype.render = function(pWorldMatrix)
 //		this._pEngine.pDrawTerrainProgram.applyMatrix4('model_mat', pWorldMatrix);
 //		this._pEngine.pDrawTerrainProgram.applyMatrix4('proj_mat', pCamera.projectionMatrix());
 //		this._pEngine.pDrawTerrainProgram.applyMatrix4('view_mat', pCamera.viewMatrix());
-//		this._pRenderData.draw();
+		//console.log(this._pRenderData.toString())
+		//this._pRenderData.draw();
+
+
 	}
 };
 
@@ -398,9 +402,9 @@ TerrainROAM.prototype.processTessellationQueue=function()
 	}
 
 
-
 	this._pRenderData.setIndexLength(this._iTotalIndices);
 	this._pDataIndex.setData(this._pIndexList, 0, a.getTypeSize(a.DTYPE.FLOAT), 0, this._iTotalIndices);
+
 	this._iTotalIndicesOld=this._iTotalIndices;
 	this._iTotalIndicesMax=Math.max(this._iTotalIndicesMax,this._iTotalIndices);
 }

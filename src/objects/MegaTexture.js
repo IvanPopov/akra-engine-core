@@ -10,7 +10,7 @@ function MegaTexture(pEngine, pObject, sSurfaceTextures) {
     this._sSurfaceTextures = sSurfaceTextures;
 
     //Маскимальный размер стороны текстуры
-    this._iOriginalTextureMaxSize = 4096;
+    this._iOriginalTextureMaxSize = 8192;
     //this._iOriginalTextureMaxSize=32768;
 
     //Размер блока текстуры(минимальный размер выгружаемого куска текстуры)
@@ -70,8 +70,8 @@ function MegaTexture(pEngine, pObject, sSurfaceTextures) {
 			iTexX:0, iTexY:0,   //Координаты мегатекстуры в текстуре
 			isUpdated : true, isLoaded : false};
     }
-	console.log("!!!!!!!!!!!!!!!!!!!!===>>>>>");
-    this._pRPC = new a.NET.RPC('ws://192.168.194.128');
+	//console.log("!!!!!!!!!!!!!!!!!!!!===>>>>>");
+    this._pRPC = new a.NET.RPC('ws://192.168.194.132');
     this.getDataFromServer(0, 0, 0, this._iTextureWidth, this._iTextureHeight);
 }
 

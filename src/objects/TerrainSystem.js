@@ -57,8 +57,8 @@ function Terrain(pEngine) {
 
     this._pMegaTexures = null; //отоброжаемые куски текстуры
 
-    this._fScale = 0.02;
-    this._fLimit = 0.01;
+    this._fScale = 0.5;
+    this._fLimit = 1.0;
 
     this._pDefaultRenderMethod = null;
     this._initSystemData();
@@ -170,8 +170,8 @@ Terrain.prototype.create = function (pRootNode, pMap, worldExtents, iShift, iShi
     this._iSectorCountX = 1 << iShiftX;//this._iTableWidth >> this._iSectorShift;
     this._iSectorCountY = 1 << iShiftY;//this._iTableHeight >> this._iSectorShift;
 
-    this._iTableWidth = this._iSectorCountX * this._iSectorUnits;
-    this._iTableHeight = this._iSectorCountY * this._iSectorUnits;
+    this._iTableWidth = this._iSectorCountX * this._iSectorUnits + 1;
+    this._iTableHeight = this._iSectorCountY * this._iSectorUnits + 1;
 
 
     this._v2fSectorSize.set(this._v3fWorldSize.x / this._iSectorCountX, this._v3fWorldSize.y / this._iSectorCountY);
@@ -298,7 +298,7 @@ Terrain.prototype.setRenderMethod = function (pRenderMethod, name) {
  * @memberof Terrain
  * @param pTexture
  **/
-Terrain.prototype.buildHeightAndNormalTables = function (pImageHightMap, pImageNormalMap) {
+Terrain.prototype.buildHeightAndNormalTables = function (pImageHeightMap, pImageNormalMap) {
     var fHeight = 0;
     var iComponents = 4;
     this._pHeightTable = null;
@@ -315,22 +315,22 @@ Terrain.prototype.buildHeightAndNormalTables = function (pImageHightMap, pImageN
     var temp = new a.Texture(this._pEngine);
 
     // first, build a table of heights
-    if (pImageHightMap.isResourceLoaded())
+    if (pImageHeightMap.isResourceLoaded())
 	{
-		var iBitPerComponents=pImageHightMap.getBitPerComponents(0)
+		var iBitPerComponents=pImageHeightMap.getBitPerComponents(0)
 
 		this._v3fMapScale.z = this._v3fWorldSize.z / Math.pow(2,iBitPerComponents);
 
 
-		if(iBitPerComponents>8&&pImageHightMap.getWidth()==iMaxX && pImageHightMap.getHeight()==iMaxY)
+		if(iBitPerComponents>8&&pImageHeightMap.getWidth()==iMaxX && pImageHeightMap.getHeight()==iMaxY)
 		{
 
 			var pColor=new Uint32Array(4)
-			if(pImageHightMap.isLumiance())
+			if(pImageHeightMap.isLumiance())
 			{
 				for (i = 0; i < iMaxY * iMaxX; i++)
 				{
-					pImageHightMap.getPixelLA(i%pImageHightMap.getWidth(),Math.floor(i/pImageHightMap.getWidth()),pColor)
+					pImageHeightMap.getPixelLA(i%pImageHeightMap.getWidth(),Math.floor(i/pImageHeightMap.getWidth()),pColor)
 					fHeight = pColor[0];
 					fHeight = (fHeight * this._v3fMapScale.z) + this._pWorldExtents.fZ0;
 					this._pHeightTable[i] = fHeight;
@@ -342,7 +342,7 @@ Terrain.prototype.buildHeightAndNormalTables = function (pImageHightMap, pImageN
 			{
 				for (i = 0; i < iMaxY * iMaxX; i++)
 				{
-					pImageHightMap.getPixelRGBA(i%pImageHightMap.getWidth(),Math.floor(i/pImageHightMap.getWidth()),pColor)
+					pImageHeightMap.getPixelRGBA(i%pImageHeightMap.getWidth(),Math.floor(i/pImageHeightMap.getWidth()),pColor)
 					fHeight = pColor[0];
 					fHeight = (fHeight * this._v3fMapScale.z) + this._pWorldExtents.fZ0;
 					this._pHeightTable[i] = fHeight;
@@ -353,11 +353,12 @@ Terrain.prototype.buildHeightAndNormalTables = function (pImageHightMap, pImageN
 		{
 			if(iBitPerComponents>8)
 			{
-				warning("Потеря точности в карте высот из-за ресайза");
+				warning("Потеря точности в карте высот из-за ресайза("+pImageHeightMap.getWidth()+","+pImageHeightMap.getHeight()+")->("+
+					iMaxX+","+iMaxY+")");
 			}
 
 			var pColorData = new Uint8Array(4 * iMaxY * iMaxX);
-			temp.uploadImage(pImageHightMap);
+			temp.uploadImage(pImageHeightMap);
 			temp.resize(iMaxX, iMaxY);
 
 			temp.getPixelRGBA(0, 0, iMaxX, iMaxY, pColorData);
@@ -968,6 +969,15 @@ Terrain.prototype.readUserInput = function () {
     {
         this._fScale -= 0.0001;
     }
+
+	if (this._pEngine.pKeymap.isKeyPress(a.KEY.PAGEUP)) //*
+	{
+		this._fScale += 0.5;
+	}
+	else if (this._pEngine.pKeymap.isKeyPress(a.KEY.PAGEDOWN))  // /
+	{
+		this._fScale -= 0.5;
+	}
 
 
     if (this._fLimit < 0.0001) {
