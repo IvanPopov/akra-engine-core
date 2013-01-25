@@ -232,6 +232,66 @@ module akra.geometry{
 		return EVolumeClassifications.INTERSECTING;
 	};
 
+	export function classifyFrustumRect3d(pFrustum: IFrustum, pRect: IRect3d){
+		var kClassification: EPlaneClassifications;
+		var isIntersect: bool = false;
+
+		kClassification = planeClassifyRect3d(this.leftPlane, pRect);
+		if(kClassification == EPlaneClassifications.PLANE_FRONT){
+			return EVolumeClassifications.NO_RELATION;
+		}
+		else if(kClassification == EPlaneClassifications.PLANE_INTERSECT){
+			isIntersect = true;
+		}
+
+		kClassification = planeClassifyRect3d(this.rightPlane, pRect);
+		if(kClassification == EPlaneClassifications.PLANE_FRONT){
+			return EVolumeClassifications.NO_RELATION;
+		}
+		else if(kClassification == EPlaneClassifications.PLANE_INTERSECT){
+			isIntersect = true;
+		}
+
+		kClassification = planeClassifyRect3d(this.topPlane, pRect);
+		if(kClassification == EPlaneClassifications.PLANE_FRONT){
+			return EVolumeClassifications.NO_RELATION;
+		}
+		else if(kClassification == EPlaneClassifications.PLANE_INTERSECT){
+			isIntersect = true;
+		}
+
+		kClassification = planeClassifyRect3d(this.bottomPlane, pRect);
+		if(kClassification == EPlaneClassifications.PLANE_FRONT){
+			return EVolumeClassifications.NO_RELATION;
+		}
+		else if(kClassification == EPlaneClassifications.PLANE_INTERSECT){
+			isIntersect = true;
+		}
+
+		kClassification = planeClassifyRect3d(this.nearPlane, pRect);
+		if(kClassification == EPlaneClassifications.PLANE_FRONT){
+			return EVolumeClassifications.NO_RELATION;
+		}
+		else if(kClassification == EPlaneClassifications.PLANE_INTERSECT){
+			isIntersect = true;
+		}
+		
+		kClassification = planeClassifyRect3d(this.farPlane, pRect);
+		if(kClassification == EPlaneClassifications.PLANE_FRONT){
+			return EVolumeClassifications.NO_RELATION;
+		}
+		else if(kClassification == EPlaneClassifications.PLANE_INTERSECT){
+			isIntersect = true;
+		}
+		
+		if(isIntersect){
+			return EVolumeClassifications.INTERSECTING;
+		}
+		else{
+			return EVolumeClassifications.A_CONTAINS_B;
+		}
+	};
+
 }
 
 #endif
