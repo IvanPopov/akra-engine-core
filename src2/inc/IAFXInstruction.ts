@@ -9,6 +9,7 @@ module akra {
         k_Instruction = 0,
         k_VariableTypeInstruction,
         k_SystemTypeInstruction,
+        k_ComplexTypeInstruction,
         k_TypedInstruction,
         k_DeclInstruction,
         k_IntInstruction,
@@ -116,7 +117,17 @@ module akra {
         isBase(): bool;
         isArray(): bool;
         isWrite(): bool;
+        /**
+         * For using in AFXEffect
+         */
         isEqual(pType: IAFXTypeInstruction): bool;
+        /**
+         * For external using
+         */
+        isSimilar(pType: IAFXTypeInstruction): bool;
+
+        getHash(): string;
+        getStrongHash(): string ;
 
         setWriteMode(isWrite: bool): void;
 
@@ -134,6 +145,9 @@ module akra {
         //type : IAFXUsageTypeInstruction
         //array: IAFXArrayInstruction
         //pointer : IAFXPointerInstruction
+        pushVariableType(pVariableType: IAFXTypeInstruction): bool;
+        isolateType(): IAFXVariableTypeInstruction;
+        
         addArrayIndex(pExpr: IAFXExprInstruction): void;
 
         isPointer(): bool;
@@ -172,6 +186,7 @@ module akra {
     export interface IAFXUsageTypeInstruction extends IAFXInstruction {
         //usage: IAFXKeywordInstruction[]
         //type: IAFXTypeInstruction
+        getTypeInstruction(): IAFXTypeInstruction;
     }
 
     export interface IAFXStructDeclInstruction extends IAFXInstruction {
@@ -179,10 +194,10 @@ module akra {
         //structFields: IAFXStructInstruction
     }
 
-    export interface IAFXBaseTypeInstruction extends IAFXInstruction {
-        //id: IAFXIdInstruction
-        //...
-    }
+    // export interface IAFXBaseTypeInstruction extends IAFXInstruction {
+    //     //id: IAFXIdInstruction
+    //     //...
+    // }
 
     export interface IAFXIdInstruction extends IAFXInstruction {
         getName(): string;
@@ -198,7 +213,8 @@ module akra {
 
 
     export interface IAFXExprInstruction extends IAFXTypedInstruction {
-
+        evaluate(): bool;
+        simplify(): bool;
     }
 
     export interface IAFXIdExprInstruction extends IAFXExprInstruction {

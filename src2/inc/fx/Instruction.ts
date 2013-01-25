@@ -2,6 +2,7 @@
 #define AFXINSTRUCTION_TS
 
 #include "IAFXInstruction.ts"
+#include "fx/EffectErrors.ts"
 
 module akra.fx {
     export interface IdExprMap {
@@ -105,12 +106,37 @@ module akra.fx {
 
 	export class VariableTypeInstruction extends Instruction implements IAFXVariableTypeInstruction {
 		// EMPTY_OPERATOR TypeInstruction ArrayInstruction PointerInstruction
-		protected _bWriteMode: bool = null;
+		private _bWriteMode: bool = null;
+		private _sHash: string = "";
+		private _sStrongHash: string = "";
 
 		constructor() {
 			super();
 			this._eInstructionType = EAFXInstructionTypes.k_VariableTypeInstruction;
 		}	 
+
+		pushVariableType(pVariableType: IAFXTypeInstruction): bool {
+			if(this._nInstuctions > 0){
+				return false;
+			}
+			else {
+				var pUsageType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
+				pUsageType.push(pVariableType, false);
+
+				this.push(pUsageType, true);
+				return false;
+			}
+		}
+
+		isolateType(): IAFXVariableTypeInstruction {
+			var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+			var pUsageType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
+			
+			pVariableType.push(pUsageType, true);
+			pUsageType.push(this, false);
+
+			return pVariableType;
+		}
 
 		addArrayIndex(pExpr: IAFXExprInstruction): void {
 
@@ -125,6 +151,9 @@ module akra.fx {
 		}
 
 		isEqual(pType: IAFXTypeInstruction): bool {
+			if(this.isArray() || (pType.isArray && pType.getInstructionType() !=== EAFXInstructionTypes.k_SystemTypeInstruction)){
+				return false;
+			}
 			return false;
 		}
 
@@ -150,12 +179,46 @@ module akra.fx {
 			this._bWriteMode = isWrite;
 		}
 
+		getHash(): string {
+			if(this._sHash === ""){
+				this.calcHash();
+			}
+
+			return this._sHash;
+		}
+
+		getStrongHash(): string {
+			if(this._sStrongHash === "") {
+				this.calcStrongHash();
+			}
+
+			return this._sStrongHash;
+		}
+
 		hasField(sFieldName: string): bool {
 			return false;
 		}
 
 		getField(sFieldName: string, isCreateExpr: bool): IAFXIdExprInstruction {
-			return null;
+			var pUsageType: IAFXUsageTypeInstruction = <IAFXUsageTypeInstruction>this._pInstructionList[0];
+			var pSubType: IAFXTypeInstruction = pUsageType.getTypeInstruction();
+
+			var eSubTypeInstructionType: EAFXInstructionTypes = pSubType.getInstructionType();
+
+			var pFieldIdExpr: IAFXIdExprInstruction = null;
+
+			pFieldIdExpr = pSubType.getField(sFieldName, isCreateExpr);
+
+			switch(eSubTypeInstructionType){
+				case EAFXInstructionTypes.k_VariableTypeInstruction:
+				case EAFXInstructionTypes.k_ComplexTypeInstruction:
+					pFieldIdExpr.getType().setParent(this);
+					break;
+				case EAFXInstructionTypes.k_SystemTypeInstruction:
+					break;
+			}
+
+			return pFieldIdExpr;
 		}
 
 		getFieldType(sFieldName: string): IAFXVariableTypeInstruction {
@@ -176,6 +239,14 @@ module akra.fx {
 
 		getArrayElementType(): IAFXVariableTypeInstruction {
 			return null;
+		}
+
+		private calcHash(): void {
+
+		}
+
+		private calcStrongHash(): void {
+
 		}
 	}
 
@@ -252,12 +323,20 @@ module akra.fx {
 			return false;
 		}
 
+		inline getHash(): string {
+			return this._sName;
+		}
+
+		inline getStrongHash(): string {
+			return this._sName;
+		}
+
 		//inline getNameId()
 		inline hasField(sFieldName: string): bool {
 			return isDef(this._pFieldMap[sFieldName]);
 		}
 
-		inline getField(sFieldName: string): IAFXIdExprInstruction {
+		inline getField(sFieldName: string, isCreateExpr: bool): IAFXIdExprInstruction {
 			return isDef(this._pFieldMap[sFieldName]) ? this._pFieldMap[sFieldName] : null;
 		}
 
@@ -282,14 +361,30 @@ module akra.fx {
 		private _sName: string = "";
 		private _sRealName: string = "";
 		private _pFieldDeclMap: VariableDeclMap = null;
-		private _iSize: uint = null;
+		private _iSize: uint = 0;
 		private _pFieldMap: IdExprMap = null;
+		private _sHash: string = "";
+		private _sStrongHash: string = "";
+		private _pFields: VariableDeclInstruction[] = null;
 		
 		constructor() {
 			super();
-			this._eInstructionType = EAFXInstructionTypes.k_SystemTypeInstruction;
+			this._eInstructionType = EAFXInstructionTypes.k_ComplexTypeInstruction;
 			this._pFieldMap = {};
 			this._pFieldDeclMap = {};
+		}
+
+		addField(pVariable: IAFXVariableDeclInstruction): void {
+			var sVarName: string = pVariable.getName();
+			this._pFieldDeclMap[sVarName] = pVariable;
+
+			var pVarIdExpr: IAFXIdExprInstruction = new IdExprInstruction();
+			pVarIdExpr.push(pVariable.getNameId(), false);
+			pVarIdExpr.setType(pVariable.getType());
+
+			this._pFieldMap[sVarName] = pVarIdExpr;
+
+			this._iSize += pVariable.getType().getSize();
 		}
 
 		inline setName(sName: string): void {
@@ -323,17 +418,50 @@ module akra.fx {
 			return false;
 		}
 
+		getHash(): string {
+			if(this._sHash === ""){
+				this.calcHash();
+			}
+
+			return this._sHash;
+		}
+
+		getStrongHash(): string {
+			if(this._sStrongHash === ""){
+				this.calcStrongHash();
+			}
+
+			return this._sStrongHash;
+		}
+
 		//inline getNameId()
 		inline hasField(sFieldName: string): bool {
 			return isDef(this._pFieldDeclMap[sFieldName]);
 		}
 
-		inline getField(sFieldName: string): IAFXIdExprInstruction {
-			return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldMap[sFieldName] : null;
+		inline getField(sFieldName: string, isCreateExpr: bool): IAFXIdExprInstruction {
+			if(!isDef(this._pFieldDeclMap[sFieldName])){
+				return null;
+			}
+
+			if(isCreateExpr){
+				var pVariable: IAFXVariableDeclInstruction = this._pFieldDeclMap[sFieldName];
+				var pVarIdExpr: IAFXIdExprInstruction = new IdExprInstruction();
+				var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+				pVariableType.pushVariableType(pVariable.getType());
+
+				pVarIdExpr.push(pVariable.getNameId(), false);
+				pVarIdExpr.setType(pVariableType);
+
+				return pVarIdExpr;
+			}
+			else {
+				return this._pFieldMap[sFieldName];
+			}
 		}
 
 		inline getFieldType(sFieldName: string): IAFXTypeInstruction {
-			return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldMap[sFieldName].getType() : null;
+			return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldDeclMap[sFieldName].getType() : null;
 		}
 
 		inline getSize(): uint {
@@ -346,6 +474,39 @@ module akra.fx {
 
 		inline getLength(): uint {
 			return 0;
+		}
+
+		push(pFieldCollector: IAFXInstruction, isSetParent?: bool = true): void {
+			this._pFields = <VariableDeclInstruction[]>(pFieldCollector.getInstructions());
+
+			for(var i: uint = 0; i < this._pFields.length; i++){
+		    	this.addField(this._pFields[i]);
+		    	this._pFields[i].setParent(this);
+		    }
+		}
+
+		private calcHash(): void {
+			var sHash: string = "{";
+
+			for(var i:uint = 0; i < this._pFields.length; i++){
+				sHash += this._pFields[i].getType().getHash() + ";";
+			}
+
+			sHash += "}";
+
+			this._sHash = sHash;
+		}
+
+		private calcStrongHash(): void {
+			var sStrongHash: string = "{";
+
+			for(var i:uint = 0; i < this._pFields.length; i++){
+				sStrongHash += this._pFields[i].getType().getStrongHash() + ";";
+			}
+
+			sStrongHash += "}";
+
+			this._sStrongHash = sStrongHash;
 		}
 	}
 
@@ -573,35 +734,39 @@ module akra.fx {
 		constructor() {
 			super();
 			this._eInstructionType = EAFXInstructionTypes.k_UsageTypeInstruction;
-		}	 
+		}
+
+		inline getTypeInstruction(): IAFXTypeInstruction {
+			return <IAFXTypeInstruction>this._pInstructionList[this._pInstructionList.length - 1];
+		} 	 
 	}
 
-	export class BaseTypeInstruction extends Instruction implements IAFXBaseTypeInstruction {
-		// EMPTY_OPERATOR IdInstruction
+	// export class BaseTypeInstruction extends Instruction implements IAFXBaseTypeInstruction {
+	// 	// EMPTY_OPERATOR IdInstruction
 		
-		constructor() {
-			super();
-			this._eInstructionType = EAFXInstructionTypes.k_BaseTypeInstruction;
-		}	 
-	}
+	// 	constructor() {
+	// 		super();
+	// 		this._eInstructionType = EAFXInstructionTypes.k_BaseTypeInstruction;
+	// 	}	 
+	// }
 
-	export class StructDeclInstruction extends Instruction implements IAFXStructDeclInstruction {
-		// EMPTY_OPERATOR IdInstruction StructFieldsInstruction
+	// export class StructDeclInstruction extends Instruction implements IAFXStructDeclInstruction {
+	// 	// EMPTY_OPERATOR IdInstruction StructFieldsInstruction
 		
-		constructor() {
-			super();
-			this._eInstructionType = EAFXInstructionTypes.k_StructDeclInstruction;
-		}	 
-	}
+	// 	constructor() {
+	// 		super();
+	// 		this._eInstructionType = EAFXInstructionTypes.k_StructDeclInstruction;
+	// 	}	 
+	// }
 
-	export class StructFieldsInstruction extends Instruction {
-		// EMPTY_OPERATOR VariableDeclInstruction ... VariableDeclInstruction
+	// export class StructFieldsInstruction extends Instruction {
+	// 	// EMPTY_OPERATOR VariableDeclInstruction ... VariableDeclInstruction
 		
-		constructor() {
-			super();
-			this._eInstructionType = EAFXInstructionTypes.k_StructFieldsInstruction;
-		}	 
-	}
+	// 	constructor() {
+	// 		super();
+	// 		this._eInstructionType = EAFXInstructionTypes.k_StructFieldsInstruction;
+	// 	}	 
+	// }
 
 
 	export class ExprInstruction extends TypedInstruction implements IAFXExprInstruction {
@@ -611,6 +776,14 @@ module akra.fx {
 		constructor(){
 			super();
 			this._eInstructionType = EAFXInstructionTypes.k_ExprInstruction;
+		}
+
+		evaluate(): bool {
+			return false;
+		}
+
+		simplify(): bool {
+			return false;
 		}
 	}
 

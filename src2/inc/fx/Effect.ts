@@ -8,217 +8,20 @@
 #include "fx/Instruction.ts"
 #include "fx/Variable.ts"
 #include "fx/Type.ts"
+#include "fx/EffectErrors.ts"
 
 module akra.fx {
-
-	//Errors
-	#define EFFECT_REDEFINE_SYSTEM_TYPE 2201
-	#define EFFECT_REDEFINE_TYPE 2202
-	#define EFFECT_REDEFINE_VARIABLE 2234
-    #define EFFECT_REDEFINE_SYSTEM_VARIABLE 2235
-    #define EFFECT_REDEFINE_FUNCTION 2236
-    #define EFFECT_REDEFINE_SYSTEM_FUNCTION 2237
-
-    #define EFFECT_UNSUPPORTED_TYPEDECL 2203
-    #define EFFECT_UNSUPPORTED_EXPR 2204
-    #define EFFECT_UNKNOWN_VARNAME 2205
-    #define EFFECT_BAD_ARITHMETIC_OPERATION 2206
-    #define EFFECT_BAD_ARITHMETIC_ASSIGNMENT_OPERATION 2207
-    #define EFFECT_BAD_ASSIGNMENT_OPERATION 2208
-    #define EFFECT_BAD_RELATIONAL_OPERATION 2209
-    #define EFFECT_BAD_LOGICAL_OPERATION 2210
-    #define EFFECT_BAD_CONDITION_TYPE 2211
-    #define EFFECT_BAD_CONDITION_VALUE_TYPES 2212
-    #define EFFECT_BAD_CAST_TYPE_USAGE 2213
-    #define EFFECT_BAD_CAST_TYPE_NOT_BASE 2214
-    #define EFFECT_BAD_CAST_UNKNOWN_TYPE 2215
-    #define EFFECT_BAD_UNARY_OPERATION 2216
-    #define EFFECT_BAD_POSTIX_NOT_ARRAY 2217
-    #define EFFECT_BAD_POSTIX_NOT_INT_INDEX 2218
-    #define EFFECT_BAD_POSTIX_NOT_FIELD 2219
-    #define EFFECT_BAD_POSTIX_NOT_POINTER 2220
-    #define EFFECT_BAD_POSTIX_ARITHMETIC 2221
-    #define EFFECT_BAD_PRIMARY_NOT_POINT 2222
-    #define EFFECT_BAD_COMPLEX_NOT_FUNCTION 2223
-    #define EFFECT_BAD_COMPLEX_NOT_TYPE 2224
-    #define EFFECT_BAD_COMPLEX_NOT_CONSTRUCTOR 2225
-    #define EFFECT_BAD_COMPILE_NOT_FUNCTION 2226
-    #define EFFECT_BAD_REDEFINE_FUNCTION 2227
-    #define EFFECT_BAD_WHILE_CONDITION 2228
-    #define EFFECT_BAD_DO_WHILE_CONDITION 2229	
-    #define EFFECT_BAD_IF_CONDITION 2230
-    #define EFFECT_BAD_FOR_INIT_EXPR 2231
-    #define EFFECT_BAD_FOR_INIT_EMPTY_ITERATOR 2232
-    #define EFFECT_BAD_FOR_COND_EMPTY 2233
-    #define EFFECT_BAD_FOR_COND_RELATION 2238
-    #define EFFECT_BAD_FOR_STEP_EMPTY 2239
-    #define EFFECT_BAD_FOR_STEP_OPERATOR 2240
-    #define EFFECT_BAD_FOR_STEP_EXPRESSION 2241
-
-    akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, 
-    						 "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
-    akra.logger.registerCode(EFFECT_REDEFINE_TYPE, 
-    	 					 "You trying to redefine type: {typeName}. In line: {line}. In column: {column}");
-    akra.logger.registerCode(EFFECT_UNSUPPORTED_TYPEDECL, 
-    						 "You try to use unssuported type declaration. We implement it soon. In line: {line}.");
-    akra.logger.registerCode(EFFECT_UNSUPPORTED_EXPR, 
-    						 "You try to use unssuported expr: {exprName}. We implement it soon. In line: {line}.");
-    akra.logger.registerCode(EFFECT_UNKNOWN_VARNAME, 
-    						 "Unknown variable name: {varName}. In line: {line}. In column: {column}");
-    akra.logger.registerCode(EFFECT_BAD_ARITHMETIC_OPERATION, 
-    						 "Invalid arithmetic operation!. There no operator '{operator}'\
-    						  for left-type '{leftTypeName}' \
-    						 and right-type '{rightTypeName}'. In line: {line}.");
-    akra.logger.registerCode(EFFECT_BAD_ARITHMETIC_ASSIGNMENT_OPERATION, 
-    						 "Invalid arithmetic-assignment operation!. \
-    						 There no operator {operator} for left-type '{leftTypeName}' \
-    						 and right-type '{rightTypeName}'. In line: {line}.");
-    akra.logger.registerCode(EFFECT_BAD_ASSIGNMENT_OPERATION, 
-    						 "Invalid assignment operation!. It`s no possible to do assignment \
-    						 between left-type '{leftTypeName}' \
-    						 and right-type '{rightTypeName}'. In line: {line}.");
-    akra.logger.registerCode(EFFECT_BAD_RELATIONAL_OPERATION, 
-    						 "Invalid relational operation!. There no operator {operator} \
-    						 for left-type '{leftTypeName}' \
-    						 and right-type '{rightTypeName}'. In line: {line}.");
-    akra.logger.registerCode(EFFECT_BAD_LOGICAL_OPERATION, 
-    						 "Invalid logical operation!. In operator: {operator}. \
-    						 Cannot convert type '{typeName}' to 'bool'. In line: {line}.");
-    akra.logger.registerCode(EFFECT_BAD_CONDITION_TYPE, 
-    						 "Invalid conditional expression!. Cannot convert type '{typeName}' to 'bool'. \
-    						 In line: {line}.");
-    akra.logger.registerCode(EFFECT_BAD_CONDITION_VALUE_TYPES, 
-    						 "Invalid conditional expression!. Type '{leftTypeName}' and type '{rightTypeName}'\
-    						  are not equal. In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_CAST_TYPE_USAGE, 
-    						 "Invalid type cast!. Bad type casting. Only base types without usages are supported. \
-    						 WebGL don`t support so casting. In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_CAST_TYPE_NOT_BASE, 
-    						 "Invalid type cast!. Bad type for casting '{typeName}'. \
-    						 WebGL support only base-type casting. In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_UNARY_OPERATION, 
-    						 "Invalid unary expression!. Bad type: '{typeName}' \
-    						 for operator '{opeator}'. In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_POSTIX_NOT_ARRAY, 
-    						 "Invalid postfix-array expression!. \
-    						 Type of expression is not array: '{typeName}'. In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_POSTIX_NOT_INT_INDEX, 
-    						 "Invalid postfix-array expression!. Bad type of index: '{typeName}'. \
-    						 Must be 'int'. In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_POSTIX_NOT_FIELD, 
-    						 "Invalid postfix-point expression!. Type '{typeName}' has no field '{fieldName}'. \
-    						 In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_POSTIX_NOT_POINTER, 
-    						 "Invalid postfix-point expression!. Type '{typeName}' is not pointer. \
-    						 In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_POSTIX_ARITHMETIC, 
-    						 "Invalid postfix-arithmetic expression!. Bad type '{typeName}' \
-    						 for operator {operator}. In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_PRIMARY_NOT_POINT, 
-    						 "Invalid primary expression!. Bad type '{typeName}'.\
-    						 It`s not pointer. In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_COMPLEX_NOT_FUNCTION, 
-    						 "Invalid function call expression!. Could not find function-signature \
-    						 with name {funcName} and so types. In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_COMPLEX_NOT_TYPE, 
-    						 "Invalid constructor call!. There are not so type. In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_COMPLEX_NOT_CONSTRUCTOR, 
-    						 "Invalid constructor call!. Could not find constructor-signature \
-    						 with name {typeName} and so types. In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_COMPILE_NOT_FUNCTION, 
-    						 "Invalid compile expression!. Could not find function-signature \
-    						 with name {funcName} and so types. In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_REDEFINE_FUNCTION, 
-    						 "You try to redefine function. With name {funcName}. In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_WHILE_CONDITION, 
-							 "Bad type of while-condition. Must be 'bool' but it is '{typeName}'. \
-							 In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_DO_WHILE_CONDITION, 
-							 "Bad type of do-while-condition. Must be 'bool' but it is '{typeName}'. \
-							 In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_IF_CONDITION, 
-							 "Bad type of if-condition. Must be 'bool' but it is '{typeName}'. \
-							 In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_FOR_INIT_EXPR, 
-							 "Bad for-init expression. WebGL support only VariableDecl as for-init expression, \
-							 like \"int i = 0;\" or \"float i = 0.0;\". \
-							 In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_FOR_INIT_EMPTY_ITERATOR, 
-							 "Bad for-init expression. WebGL support only VariableDecl as for-init expression, \
-							 like \"int i = 0;\" or \"float i = 0.0;\". \
-							 In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_FOR_COND_EMPTY, 
-							 "Bad for-cond expression. WebGL does not support empty conditional expression in for-loop. \
-							 In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_FOR_COND_RELATION, 
-							 "Bad for-cond expression. WebGL support only relational expression for condition in for-loop. \
-							 In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_FOR_STEP_EMPTY, 
-							 "Bad for-step expression. WebGL does not support empty step expression. \
-							 In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_FOR_STEP_OPERATOR, 
-							 "Bad for-step expression. WebGL does not support operator '{operator}' in step expression. \
-							 In line: {line}.");
-	akra.logger.registerCode(EFFECT_BAD_FOR_STEP_EXPRESSION, 
-							 "Bad for-step expression. WebGL support only unary and assignment expression in for-step. \
-							 In line: {line}.");
-	akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_VARIABLE, 
-    						 "You trying to redefine system variable: {varName}. In line: {line}. In column: {column}");
-    akra.logger.registerCode(EFFECT_REDEFINE_VARIABLE, 
-    	 					 "You trying to redefine variable: {varName}. In line: {line}. In column: {column}");
-    akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_FUNCTION, 
-    						 "You trying to redefine system function: {funcName}. In line: {line}. In column: {column}");
-    akra.logger.registerCode(EFFECT_REDEFINE_FUNCTION, 
-    	 					 "You trying to redefine function: {funcName}. In line: {line}. In column: {column}");
-
-    function sourceLocationToString(pLocation: ISourceLocation): string {
-        var sLocation:string = "[" + pLocation.file + ":" + pLocation.line.toString() + "]: ";
-        return sLocation;
-    }
-
-    function syntaxErrorLogRoutine(pLogEntity: ILoggerEntity): void{
-        var sPosition:string = sourceLocationToString(pLogEntity.location);
-        var sError: string = "Code: " + pLogEntity.code.toString() + ". ";
-        var pParseMessage: string[] = pLogEntity.message.split(/\{(\w+)\}/);
-        var pInfo:any = pLogEntity.info;
-
-        for(var i = 0; i < pParseMessage.length; i++){
-            if(isDef(pInfo[pParseMessage[i]])){
-                pParseMessage[i] = <string><any>pInfo[pParseMessage[i]];
-            }
-        }
-
-        var sMessage = sPosition + sError + pParseMessage.join("");
-        
-        console["error"].call(console, sMessage);
-    }
-
-    akra.logger.setCodeFamilyRoutine("EffectSyntaxErrors", syntaxErrorLogRoutine, ELogLevel.ERROR);
-
-    export interface IEffectErrorInfo{
-    	
-    	typeName?: string;
-   		exprName?: string;
-   		varName?: string;
-   		operator?: string;
-   		leftTypeName?: string;
-   		rirgtTypeName?: string;
-   		fieldName?: string;
-   		funcName?: string;
-    	
-    	line?: uint;
-    	column?: uint;
-    }
-
-	//End Errors
-
 
 	#define CHECK_INSTRUCTION(inst, stage) if(!inst.check(stage)) { this._errorFromInstruction(inst.getLastError()); }
 
 
 	#define GLOBAL_SCOPE 0
 
-
+	export enum EScopeType{
+		k_Default,
+		k_Struct,
+		k_Annotation
+	}
 
 	export interface IAFXVariableDeclMap { 
 		[variableName: string] : IAFXVariableDeclInstruction;
@@ -235,6 +38,7 @@ module akra.fx {
 	export interface IScope {
 		parent : IScope;
 		index: uint;
+		type: EScopeType;
 
 		variableMap : IAFXVariableDeclMap;
 		typeMap : IAFXTypeDeclMap;
@@ -257,7 +61,7 @@ module akra.fx {
 			this._nScope = 0;
 		}
 
-		newScope(): void {
+		newScope(eType: EScopeType): void {
 			var isFirstScope: bool = false;
 			var pParentScope: IScope;
 
@@ -273,6 +77,7 @@ module akra.fx {
 			var pNewScope: IScope = <IScope> {
 										parent: pParentScope,
 										index: this._iCurrentScope,
+										type: eType,
 										variableMap: null,
 										typeMap: null,
 										functionMap: null
@@ -303,6 +108,10 @@ module akra.fx {
 			else {
 				this._iCurrentScope = pNewScope.index;
 			}
+		}
+
+		inline getScopeType(): EScopeType {
+			return this._pScopeMap[this._iCurrentScope].type;
 		}
 
 		getVariable(sVariableName: string, iScope?: uint = this._iCurrentScope): IAFXVariableDeclInstruction {
@@ -713,7 +522,7 @@ module akra.fx {
 
 			this.generateSuffixLiterals(["s", "t"], pSTSuffix);
 			this.generateSuffixLiterals(["s", "t", "p"], pSTPSuffix);
-			this.generateSuffixLiterals(["s", "t", "q"], pSTPQSuffix);
+			this.generateSuffixLiterals(["s", "t", "p", "q"], pSTPQSuffix);
 
 			var pFloat: IAFXTypeInstruction = this.getSystemType("float");
 			var pInt: IAFXTypeInstruction = this.getSystemType("int");
@@ -838,10 +647,6 @@ module akra.fx {
         	return isDef(this._pSystemTypes[sTypeName]) ? this._pSystemTypes[sTypeName] : null;
         }
 
-		private addSystemFunction(): void {
-
-		}
-
 		private addSystemVariable(): void {
 
 		}
@@ -899,8 +704,8 @@ module akra.fx {
 			return this._pAnalyzedNode;
 		} 
 
-		private inline newScope(): void {
-			this._pEffectScope.newScope();
+		private inline newScope(eScopeType?: EScopeType = EScopeType.k_Default): void {
+			this._pEffectScope.newScope(eScopeType);
 		}
 
 		private inline resumeScope(): void {
@@ -909,6 +714,10 @@ module akra.fx {
 
 		private inline endScope(): void {
 			this._pEffectScope.endScope();
+		}
+
+		private inline getScopeType(): EScopeType {
+			return this._pEffectScope.getScopeType();
 		}
 
 		// private inline newInstruction(pInstruction: IAFXInstruction): void {
@@ -969,7 +778,19 @@ module akra.fx {
         	var isVarAdded: bool = this._pEffectScope.addVariable(pVariable);
 
         	if(!isVarAdded) {
-				this._error(EFFECT_REDEFINE_VARIABLE, {varName: pVariable.getName()});
+        		var eScopeType: EScopeType = this.getScopeType();
+
+        		switch(eScopeType){
+        			case EScopeType.k_Default:
+        				this._error(EFFECT_REDEFINE_VARIABLE, {varName: pVariable.getName()});
+        				break;
+        			case EScopeType.k_Struct:
+        				this._error(EFFCCT_BAD_NEW_FIELD_FOR_STRUCT_NAME, {fieldName: pVariable.getName()});
+        				break;
+        			case EScopeType.k_Annotation:
+        				this._error(EFFCCT_BAD_NEW_ANNOTATION_VAR, {varName: pVariable.getName()});
+        				break;
+        		}
 			}
         }
 
@@ -1581,6 +1402,7 @@ module akra.fx {
         	}
 
         	pExprType = <IAFXVariableTypeInstruction>pFieldNameExpr.getType();
+        	pExprType.setParent(pPostfixExprType);
 
         	if(pChildren.length === 4){
         		if(!pExprType.isPointer()){
@@ -1981,14 +1803,8 @@ module akra.fx {
 			// this.newInstruction(pTypeDeclInstruction);
 
  			if(pChildren.length === 2) {
- 				var pVariableTypeInstruction: IAFXVariableTypeInstruction = new VariableTypeInstruction();
- 				var pTypeInstruction: IAFXUsageTypeInstruction = new UsageTypeInstruction();
-				var pStructInstruction: IAFXStructDeclInstruction = this.analyzeStructDecl(pChildren[1]);
-
-				pTypeDeclInstruction.push(pVariableTypeInstruction, true);
-				pVariableTypeInstruction.push(pTypeInstruction, true);
-				pStructInstruction.setParent(pTypeInstruction);
-				pTypeInstruction.push(pStructInstruction.getInstructions[0], false);				
+				var pStructInstruction: ComplexTypeInstruction = <ComplexTypeInstruction>this.analyzeStructDecl(pChildren[1]);
+				pTypeDeclInstruction.push(pStructInstruction, true);		
 			}
 			else {
 				this._error(EFFECT_UNSUPPORTED_TYPEDECL);
@@ -2012,33 +1828,31 @@ module akra.fx {
 			return pTypeDeclInstruction;
 		}
 
-        private analyzeStructDecl(pNode: IParseNode): IAFXStructDeclInstruction {
-        	var pStructInstruction: IAFXStructDeclInstruction = new StructDeclInstruction();
-        	var pStructName: IdInstruction = new IdInstruction();
-        	var pStructFields: StructFieldsInstruction = new StructFieldsInstruction();
+        private analyzeStructDecl(pNode: IParseNode): IAFXTypeInstruction {
+        	var pStruct: ComplexTypeInstruction = new ComplexTypeInstruction();
+        	var pFieldCollector: IAFXInstruction = new Instruction();
 
         	var pChildren: IParseNode[] = pNode.children;
         	var sName: string = pChildren[pChildren.length - 2].value;
 
-        	pStructName.setName(sName);
-
-        	pStructInstruction.push(pStructName, true);
-        	pStructInstruction.push(pStructFields, true);
+        	pStruct.setName(sName);
         	
-        	this.newScope();
+        	this.newScope(EScopeType.k_Struct);
 
         	var i: uint = 0;
         	for (i = pChildren.length - 4; i >= 1; i--) {
-		        if (pChildren[i].name === "VariableDecl"){
-		            this.analyzeVariableDecl(pChildren[i], pStructFields);
+		        if (pChildren[i].name === "VariableDecl") {
+		            this.analyzeVariableDecl(pChildren[i], pFieldCollector);
 		        }
 		    }
 
 		    this.endScope();
 
-		    CHECK_INSTRUCTION(pStructInstruction, ECheckStage.CODE_TARGET_SUPPORT);
+		    pStruct.push(pFieldCollector, true);
 
-        	return pStructInstruction;
+		    CHECK_INSTRUCTION(pStruct, ECheckStage.CODE_TARGET_SUPPORT);
+
+        	return pStruct;
         }
 
         private analyzeFunctionDecl(pNode: IParseNode): IAFXFunctionDeclInstruction {
