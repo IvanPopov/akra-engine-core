@@ -226,7 +226,8 @@ function compress(sFile) {
 		sFile + 
 		//" --warning_level=VERBOSE " + 
 		" --js_output_file " + sFile + ".min" + 
-		" --language_in=ECMASCRIPT5_STRICT"
+		" --language_in=ECMASCRIPT5_STRICT" + 
+		" --compilation_level=ADVANCED_OPTIMIZATIONS"
 		).split(" ");
 	
 	
