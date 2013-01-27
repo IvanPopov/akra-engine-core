@@ -3,7 +3,7 @@
 
 module akra {
 	export interface IListExplorerFunc {
-		(data: any): bool;
+		(data: any, index?: uint): bool;
 		//(data: any): void;
 	}
 
@@ -48,7 +48,9 @@ module akra {
 		/** Get index of element with given data */
 		indexOf(element: any, from?: uint): int;
 		/** Get sub list from this list */
-		mid(pos: uint, size: uint): IObjectList;
+		mid(pos?: uint, size?: uint): IObjectList;
+		/** slice from array */
+		slice(start?: uint, end?: uint): IObjectList;
 		/** Move element from <from> postion to <to> position.*/
 		move(from: uint, to: uint): IObjectList;
 

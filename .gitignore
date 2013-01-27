@@ -13,10 +13,10 @@ compiled/
 *.html
 *.bak
 *.dds
-*.zip
 *.rar
 *.back
 *.prev
+*.temp
 
 src/*.png
 src2/*.png

@@ -3,7 +3,7 @@
 
 #include "common.ts"
 
-module akra.utils.test {
+module akra.util.test {
 
 	var pTestCondList: ITestCond[] = [];
 

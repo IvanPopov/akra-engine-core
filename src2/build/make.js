@@ -306,6 +306,7 @@ function buildTests(sDir) {
 	if (sDir) {
 		pSubFolders = (sDir.split('/'));
 		if (pSubFolders[pSubFolders.length - 1].split(".").length > 1) {
+			//если мы хотим собрать конкретный тест а не все тесты в папке
 			sTestFile = pSubFolders.pop();
 			sDir = pSubFolders.join("/");
 		}
@@ -358,8 +359,8 @@ function compileTest(sDir, sFile, sName, pData, sTestData) {
                   		<h1 id=\"test_name\">Tests</h1>             \n\
                   		<script>" + sTestData + "</script>   		\n\
                   		<script> 									\n\
-                  		if (akra && akra.utils && akra.utils.test) {\n\
-                  			akra.utils.test.run(); 					\n\
+                  		if (akra && akra.util && akra.util.test) {\n\
+                  			akra.util.test.run(); 					\n\
                   		}											\n\
                   		</script>   								\n\
                   	</body>                              			\n\
@@ -476,7 +477,7 @@ function createTestData(sDir, sFile) {
 
 	fs.readdir(sDir, function(err, list) {
         if (err) throw (err);
-        
+
         list.forEach(function(sFile) {
         	sFile = sDir + "/" + sFile;
 
@@ -500,6 +501,10 @@ function createTestData(sDir, sFile) {
             	}
             }  
         });
+
+        if (iDepth == 0) {
+        	packTest(sDir, sTestMain, sTest, pTestFiles);
+        }
 
         pDirsForScan.forEach(function(sFile) {
         	scanDir(sFile, function (err, pFileList) {
@@ -551,8 +556,8 @@ function addTestDirectory(sTestDir, sTestFile) {
                 			if (path.basename(sFile) === pOptions.tempFile) {
                 				fs.unlinkSync(sFile);
                 			}
-                			else {
-                				console.log("\tfile: " + sFile + " --> " + createTestName(sFile) + ".nw");
+                			else if (sTestFile == null || path.basename(sFile) == path.basename(sTestFile)) {
+                				console.log("\tfile: " + sFile + " --> " + createTestName(sFile) + (pOptions.testsFormat.html? ".html": ".nw"));
                 				createTestData(sTestDir, sFile);
                 			}
                 		}

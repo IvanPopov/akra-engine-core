@@ -1,7 +1,7 @@
 #include "util/test/testutils.ts"
 #include "util/ObjectArray.ts"
 
-module akra.utils.test {
+module akra.util.test {
 	
 	var test_1 = () => {
 		shouldBeTrue("ObjectArray creation");
