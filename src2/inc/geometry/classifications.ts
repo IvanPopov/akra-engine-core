@@ -5,8 +5,7 @@
 #include "Circle.ts"
 #include "Sphere.ts"
 
-module akra.geometry{
-
+module akra{
 	export enum EVolumeClassifications{
 		NO_RELATION = 0,
 		EQUAL,
@@ -25,6 +24,9 @@ module akra.geometry{
 		PLANE_BACK,
 		PLANE_INTERSECT
 	};
+}
+
+module akra.geometry{
 
 	export function planeClassifyCircle(pPlane: IPlane2d, pCircle: ICircle): EPlaneClassifications{
 		var fDistance: float = pPlane.signedDistance(pCircle.center);

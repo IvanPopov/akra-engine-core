@@ -5,6 +5,7 @@
 #include "IRect3d.ts"
 #include "IVec3.ts"
 #include "geometry/Rect3d.ts"
+#include "util/ObjectList.ts"
 
 
 module akra.scene {
@@ -29,7 +30,7 @@ module akra.scene {
 		worldBounds: IRect3d;
 		
 		/** Link to previous node in tree */
-		rearNodeLink: OcTreeNode = null;
+		rearNodeLink: IOcTreeNode = null;
 
 		//eight links to possible children nodes;		
 		childrenList: IObjectList[];
@@ -37,12 +38,12 @@ module akra.scene {
 		//index - is xyz where x-left = 0, x-right = 1 etc.
 
 		constructor(pTree: IOcTree){
-			this.membersList = new ObjectList();
+			this.membersList = new util.ObjectList();
 			this.worldBounds = new geometry.Rect3d();
 
 			this.childrenList = new Array(8);
 			for(var i=0; i<8;i++){
-				childrenList[i] = new ObjectList();
+				this.childrenList[i] = new util.ObjectList();
 			}
 
 			this.tree = pTree;
@@ -51,27 +52,42 @@ module akra.scene {
 		/**
 		 * Add object in this node
 		 */
-		addMember(pMember: ISceneObject): void {
-			this.membersList.push(pMember);
+		addMember(pObject: ISceneObject): void {
+			this.membersList.push(pObject);
+			this.connect(pObject, SIGNAL(moved), SLOT(objectMoved), EEventTypes.UNICAST);
 		};
 
 		/**
 		 * Remove member object from node and release node if there are not members in it
 		 */
-		removeMember(pMember: ISceneObject): void {
-			var i:int = this.membersList.indexOf(pMember);
+		removeMember(pObject: ISceneObject): void {
+			var i:int = this.membersList.indexOf(pObject);
 
 			// make sure this is one of ours
-			debug_assert(i>=0, "error removing Oc tree pMember");
+			debug_assert(i>=0, "error removing Oc tree pObject");
 		    
 	    	if(i>=0){
 	    		this.membersList.takeAt(i);
+	    		this.disconnect(pObject, SIGNAL(moved), SLOT(objectMoved), EEventTypes.UNICAST);
 	    	}
 
 	    	if(this.membersList.length === 0){
 	    		this.tree.deleteNodeFromTree(this);
 	    	}
 		};
+
+		BEGIN_EVENT_TABLE(OcTreeNode);
+
+		objectMoved(pObject: ISceneObject){
+			var pNode: IOcTreeNode = this.tree.findTreeNode(pObject);
+
+			if(pNode !== this){
+				this.removeMember(pObject);
+				pNode.addMember(pObject);
+			}
+		};
+
+		END_EVENT_TABLE();
 
 		
 	};
@@ -83,11 +99,11 @@ module akra.scene {
 		constructor(pTree: IOcTree){
 			super(pTree);
 
-			var iTmp: int = 1 << this.pTree.depth;
+			var iTmp: int = (1 << this.tree.depth) - 1;
 
-			this._pBasicWorldBounds = new Rect3d(0, iTmp, 0, iTmp, 0, iTmp);
-		    this._pBasicWorldBounds.divSelf(this.tree._v3fWorldScale);
-		    this._pBasicWorldBounds.subSelf(this.tree._v3fWorldOffset);
+			this._pBasicWorldBounds = new geometry.Rect3d(0, iTmp, 0, iTmp, 0, iTmp);
+		    this._pBasicWorldBounds.divSelf(this.tree.worldScale);
+		    this._pBasicWorldBounds.subSelf(this.tree.worldOffset);
 		};
 
 		addMember(pMember: ISceneObject): void{
@@ -96,8 +112,17 @@ module akra.scene {
 	    	this._updateNodeBoundingBox();
 		};
 
-		removeMember(pMember: ISceneObject): void{
-			super.removeMember(pMember: ISceneObject);
+		removeMember(pObject: ISceneObject): void{
+			var i:int = this.membersList.indexOf(pObject);
+
+			// make sure this is one of ours
+			debug_assert(i>=0, "error removing Oc tree pObject");
+		    
+	    	if(i>=0){
+	    		this.membersList.takeAt(i);
+	    		this.disconnect(pObject, SIGNAL(moved), SLOT(objectMoved), EEventTypes.UNICAST);
+	    	}
+
 			//обновляем границы нода, критично, в том случае если объект выходит за границы нода, так как иначе отсекаться будет неправильно
 			this._updateNodeBoundingBox();
 		};

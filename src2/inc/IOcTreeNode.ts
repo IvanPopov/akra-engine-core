@@ -6,6 +6,7 @@ module akra {
 	IFACE(IOcTree);
 	IFACE(ISceneObject);
 	IFACE(IRect3d);
+	IFACE(IObjectList);
 	
 	export interface IOcTreeNode {
 		/** Parent tree */
@@ -13,25 +14,28 @@ module akra {
 		/** Level of node */
 		level: int;
 		/** Byte x-coord of node */
-		x: int;
-		/** Byte y-coord of node */
-		y: int;
-		/** Byte z-coord of node */
-		z: int;
+		// x: int;
+		// /** Byte y-coord of node */
+		// y: int;
+		// /** Byte z-coord of node */
+		// z: int;
 		/** Index in array of nodes in tree */
 		index: int;
 		/** First SceneObject in this node */
-		firstMember: ISceneObject;
+		membersList: IObjectList;
 		/** Rect of node in real world */
-		nodeTrueRect: IRect3d;
+		worldBounds: IRect3d;
 		/** Link ro next node in tree */
-		forwardNodeLink: OcTreeNode;
+		//forwardNodeLink: IOcTreeNode;
 		/** Link ro previous node in tree */
-		rearNodeLink: OcTreeNode;
+		rearNodeLink: IOcTreeNode;
 
-		addOrUpdateMember(pMember: ISceneObject): void;
+		//eight links to possible children nodes;		
+		childrenList: IObjectList[];
+
+		addMember(pMember: ISceneObject): void;
 		removeMember(pMember: ISceneObject): void;
-		nodeCoords(): void;
+		//nodeCoords(): void;
 	}
 }
 

@@ -1,6 +1,16 @@
 #ifndef INTERSECTION_TS
 #define INTERSECTION_TS
 
+#include "Ray2d.ts"
+#include "Ray3d.ts"
+#include "Plane2d.ts"
+#include "Plane3d.ts"
+#include "Circle.ts"
+#include "Sphere.ts"
+#include "Rect2d.ts"
+#include "Rect3d.ts"
+
+
 module akra.geometry{
 
 	export function intersectPlane2dRay2d(pPlane: IPlane2d, pRay: IRay2d): bool{

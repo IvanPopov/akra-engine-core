@@ -11,8 +11,6 @@ module akra.util {
 		data: any;
 	};
 
-	var pListItemPool: IObjectArray = new ObjectArray;
-
 
 	export class ObjectList implements IObjectList {
 		protected _pHead: IObjectListItem = null;
@@ -22,16 +20,20 @@ module akra.util {
 		protected _bLock: bool = false;
 
 
-		inline get length(): any{
+		inline get length(): uint {
 			return this._iLength;
 		};
 
-		inline get first(): any{
-			return this.value(0);
+		inline get first(): any {
+			return (this._pCurrent = this._pHead);
 		};
 
-		inline get last(): any{
-			return this.value(this._iLength - 1);
+		inline get last(): any {
+			return (this._pCurrent = this._pTail);
+		}
+
+		inline get current(): any {
+			return (this._pCurrent);
 		}
 
 		inline lock(): void {
@@ -50,6 +52,12 @@ module akra.util {
 			return this.find(n).data;
 		};
 
+		constructor (pData?: any[]) {
+			if (arguments.length) {
+				this.fromArray(pData);
+			}
+		}
+
 		indexOf(pData: any, iFrom: uint = 0.): int{
 			var pItem: IObjectListItem = this.find(iFrom);
 
@@ -63,10 +71,9 @@ module akra.util {
 		};
 
 		mid(iPos: uint = 0, iSize: uint = this._iLength): IObjectList{
+			iSize = Math.min(this._iLength - iPos, iSize);
 
-			iSize = math.min(this._iLength - iPos, iSize);
-
-			if(iPos > this._iLength-1){
+			if (iPos > this._iLength - 1) {
 				return null;
 			}
 
@@ -81,11 +88,16 @@ module akra.util {
 			return pNewList;
 		};
 
+		inline slice(iStart: uint = 0, iEnd: uint = Math.max(this._iLength - iStart, 0)): IObjectList {
+			return this.mid(iStart, iEnd - iStart);
+		}
+
 		inline move(iFrom: uint, iTo: uint): IObjectList{
 			return this.insert(iTo - 1, this.takeAt(iFrom));
 		};
 
 		inline replace(iPos: uint, pData: any): IObjectList{
+			debug_assert(!this.isLocked(), "list locked.");
 			this.find(iPos).data = pData;
 			return this;
 		};
@@ -94,10 +106,10 @@ module akra.util {
 		erase(begin: uint, end: uint): IObjectList;
 		erase(begin: uint, end?: uint): IObjectList{
 			if(arguments.length < 2){
-				this.takeAt(pos);
+				this.takeAt(<uint>arguments[0]);
 			}
 			else{
-				end = math.min(end, this._iLength);
+				end = Math.min(end, this._iLength);
 				for(var i: uint = begin; i < end; i++){
 					this.takeAt(i);
 				}
@@ -117,49 +129,60 @@ module akra.util {
 			this.removeAt(this.indexOf(pData));	
 		};
 
-		inline removeAll(pData: any): void{
+		inline removeAll(pData: any): uint {
 			var i: int;
+			var n: uint = this.length;
+
 			while((i = this.indexOf(pData)) >= 0){
 				this.removeAt(i);
 				i--;
 			}
-		};
 
-		swap(i: uint, j: uint): IObjectList{
-			i = math.min(i, this._iLength-1);
-			j = math.min(j, this._iLength-1);
+			return n;
+		}
 
-			if(i!=j){
-				var pItem1: IObjectList = this.find(i);
-				var pItem2: IObjectList = this.find(j);
+		swap(i: uint, j: uint): IObjectList {
+			debug_assert(!this.isLocked(), "list locked.");
+
+			i = Math.min(i, this._iLength-1);
+			j = Math.min(j, this._iLength-1);
+
+			if (i != j) {
+				var pItem1: IObjectListItem = this.find(i);
+				var pItem2: IObjectListItem = this.find(j);
 
 				var pTmp: any = pItem1.data;
+
 				pItem1.data = pItem2.data;
 				pItem2.data = pTmp;
 			}
 
 			return this;
-		};
+		}
 
 		add(pList: IObjectList): IObjectList{
 			pList.seek(0);
+
 			if(pList.length > 1){
 				this.push(pList.first());
 			}
+
 			for(var i: uint=1; i<pList.length; i++){
 				this.push(pList.next());
 			}
-		};
+
+			return this;
+		}
 
 		seek(n: int = 0): IObjectList {
 			var pElement: IObjectListItem;
 
-			n = math.min(n, this._iLength);
+			n = Math.min(n, this._iLength - 1);
 
 			if (n > this._iLength / 2) {
 				pElement = this._pTail;
 
-				for (m: uint = this._iLength - 1 - n; m > 0; -- m) {
+				for (var m: uint = this._iLength - 1 - n; m > 0; -- m) {
 					pElement = pElement.prev;
 				}				
 			}
@@ -185,36 +208,35 @@ module akra.util {
 		}
 
 		inline push(pElement: any): IObjectList{
-			return this.insert(this.nLength-1,pElement)
+			return this.insert(this._iLength, pElement)
 		};
 
 		inline takeAt(n: int): any{
+			debug_assert(!this.isLocked(), "list locked.");
 
-			if(n<0){
+			if(n < 0){
 				return null;
 			}
 
 			var pItem: IObjectListItem = this.find(n);
 
-			if(isNull(pItem.prev)){
+			if (isNull(pItem.prev)) {
 				this._pHead = pItem.next;
 			}
-			else{
+			else {
 				pItem.prev.next = pItem.next;
 			}
 
-			if(isNull(pItem.next)){
+			if (isNull(pItem.next)) {
 				this._pTail = pItem.prev;
 			}
-			else{
+			else {
 				pItem.next.prev = pItem.prev;
 			}
 
-			this.releaseItem(pItem);
+			this._iLength --;
 
-			this._iLength--;
-
-			return pItem.data;
+			return this.releaseItem(pItem);
 		};
 
 
@@ -235,58 +257,84 @@ module akra.util {
 		};
 
 		inline private find(n: uint): IObjectListItem{
-			this.seek(n);
-			return this._pCurrent;
+			if (n < this._iLength) {
+				return this.seek(n).current;
+			}
+
+			return null;
 		};
 
-		inline private releaseItem(pItem: IObjectListItem): void{
-			pItem.next = pItem.prev = pItem.data = null;
-			pListItemPool.push(pItem);
+		inline private releaseItem(pItem: IObjectListItem): any {
+			var pData: any = pItem.data;
+
+			pItem.next = null;
+			pItem.prev = null;
+			pItem.data = null;
+
+			ObjectList.listItemPool.push(pItem);
+
+			return pData;
 		};
 
 		inline private createItem(): IObjectListItem {
-			if (pListItemPool.length == 0) {
+			if (ObjectList.listItemPool.length == 0) {
 				return {next: null, prev: null, data: null};
 			}
 
-			return <IObjectListItem>pListItemPool.pop();
+			return <IObjectListItem>ObjectList.listItemPool.pop();
 		}
 
-		fromArray(elements: any[], iOffset: uint = 0, iSize: uint = this._iLength): IObjectList{
-			iOffset = math.min(iOffset, this._iLength);
+		fromArray(elements: any[], iOffset: uint = 0, iSize: uint = elements.length): IObjectList{
+			iOffset = Math.min(iOffset, this._iLength);
 
-			for(var i: uint=0; i<iSize; i++){
-				this.insert(iOffset+i, elements[i]);
+			for(var i: uint = 0; i < iSize; i++){
+				this.insert(iOffset + i, elements[i]);
 			}
 
 			return this;
 		}
 
-		insert(n:uint ,pData: any): IObjectList{
-			n = math.min(n, this._iLength);
+		insert(n: uint, pData: any): IObjectList{
+			debug_assert(!this.isLocked(), "list locked.");
 
 			var pNew: IObjectListItem = this.createItem();
+			var pItem: IObjectListItem;
+			
+			n = Math.min(n, this._iLength);
 			pNew.data = pData;
 
-			var pItem: IObjectListItem = this.find(n-1);
 
-			if(isNull(pItem.next)){
-				this._pTail = pNew;
-			}
-			else{
-				pNew.next = pItem.next;
-			}
+			if (n == 0) {
+				if (isNull(this._pHead)) {
+					this._pTail = pNew;
+				}
 
-			if(isNull(pItem)){
+				pNew.next = this._pHead;
 				this._pHead = pNew;
 			}
-			else{
-				pItem.next.prev = pNew;
-				pItem.next = pNew;
-				pNew.prev = pItem;
+			else {
+				pItem = this.find(n - 1);
+			
+				if(pItem == null) {
+					this._pHead = pNew;
+				}
+				else {
+
+					if (pItem.next == null) {
+						this._pTail = pNew;
+					}
+					else {
+						pNew.next = pItem.next;
+						pItem.next.prev = pNew;
+					}
+				
+					pItem.next = pNew;
+					pNew.prev = pItem;
+				}
 			}
 
-			this._iLength++;
+			this._iLength ++;
+			this._pCurrent = pNew;
 
 			return this;
 		};
@@ -316,30 +364,37 @@ module akra.util {
 		}
 
 		clear(): IObjectList {
+			debug_assert(!this.isLocked(), "list locked.");
+			
 			var pPrev: IObjectListItem;
-			var pNext: IObjectListItem = this.first;
+			var pNext: IObjectListItem;
+			
+			this._pCurrent = this._pHead;
 			
 			for (var i: uint = 0; i < this._iLength; ++ i) {
-				pPrev = pNext;
-				pNext = pList.next();
+				pPrev = this._pCurrent;
+				pNext = this._pCurrent = this._pCurrent.next;
 
 				this.releaseItem(pPrev);
 			}
+
+			this._pHead = this._pCurrent = this._pTail = null;
+			this._iLength = 0;
 
 			return this;
 		}
 
 		forEach(fn: IListExplorerFunc): void {
-			var pItem: IObjectListItem = this.first;
-
-			for (var i: uint = 0; i < this._iLength; ++ i) {
-				if (!fn(pItem)) {
+			var pItem: IObjectListItem = this._pHead;
+			var n: uint = 0;
+			do {
+				if (fn(pItem.data, n ++) === false) {
 					return;
 				}
-
-				pItem = this.next();
-			}
+			} while ((pItem = pItem.next));
 		}
+
+		static private listItemPool: IObjectArray = new ObjectArray;
 		
 	}
 }

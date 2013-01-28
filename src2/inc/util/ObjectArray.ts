@@ -2,6 +2,7 @@
 #define OBJECTARRAY_TS
 
 #include "IObjectArray.ts"
+#include "common.ts"
 
 module akra.util {
 	export class ObjectArray implements IObjectArray {
@@ -13,15 +14,15 @@ module akra.util {
 			return this._iLength;
 		}
 
-		set length(n: uint) {
+		// set length(n: uint) {
 			
-			if (this._bLock) {
-				return;
-			}
+		// 	if (this._bLock) {
+		// 		return;
+		// 	}
 
-			this.extend(n);
-			this._iLength = n;
-		}
+		// 	this.extend(n);
+		// 	this._iLength = n;
+		// }
 
 		constructor (pElements?: any[]) {
 			if (arguments.length) {
@@ -59,6 +60,7 @@ module akra.util {
 		release(): IObjectArray {
 			this.clear(true);
 			this._pData.clear();
+			return this;
 		}
 
 		inline value(n: uint): any {
@@ -73,7 +75,7 @@ module akra.util {
 			}
 		}
 
-		insert(n: uint, pData: any): IObjectArray {
+		set(n: uint, pData: any): IObjectArray {
 			debug_assert(!this._bLock, "cannot clear. array is locked.");
 
 			var N: uint = n + 1;
@@ -92,13 +94,15 @@ module akra.util {
 		fromArray(pElements: any[], iOffset: uint = 0, iSize: uint = 0): IObjectArray {
 			debug_assert(!this._bLock, "cannot clear. array is locked.");
 
-			iSize = iSize > 0? math.min(iSize, pElements.length): pElements.length;
+			iSize = iSize > 0? iSize < pElements.length? iSize: pElements.length: pElements.length;
 
 			this.extend(iSize);
 
 			for (var i: int = iOffset, j: int = 0; i < iSize; ++ i, ++ j) {
 				this._pData[i] = pElements[j];
 			}
+
+			this._iLength = i;
 
 			return this;
 		}
@@ -112,7 +116,7 @@ module akra.util {
 
 		inline pop(): any {
 			debug_assert(!this._bLock, "cannot clear. array is locked.");
-			return this._iLength > 0? this._pData[this._iLength --]: null;
+			return this._iLength > 0? this._pData[-- this._iLength]: null;
 		}
 
 		inline swap(i: uint, j: uint): IObjectArray {
