@@ -121,10 +121,6 @@ module akra {
          * For using in AFXEffect
          */
         isEqual(pType: IAFXTypeInstruction): bool;
-        /**
-         * For external using
-         */
-        isSimilar(pType: IAFXTypeInstruction): bool;
 
         getHash(): string;
         getStrongHash(): string ;
@@ -150,11 +146,24 @@ module akra {
         
         addArrayIndex(pExpr: IAFXExprInstruction): void;
 
-        isPointer(): bool;
+        hasUsage(sUsageName: string): bool;
 
+        isPointer(): bool;
         addPointIndex(): void;
         getPointerType(): IAFXVariableTypeInstruction;
         setVideoBuffer(pBuffer: IAFXIdInstruction): void;
+    }
+
+     export interface IAFXUsageTypeInstruction extends IAFXInstruction {
+        //usage: IAFXKeywordInstruction[]
+        //type: IAFXTypeInstruction
+        
+        getTypeInstruction(): IAFXTypeInstruction;
+        setTypeInstruction(pType: IAFXTypeInstruction): bool;
+
+        hasUsage(sUsage: string): bool;
+        addUsage(sUsage: string): bool;
+
     }
 
     export interface IAFXTypedInstruction extends IAFXInstruction {
@@ -183,12 +192,6 @@ module akra {
         getHash(): string;
     }
 
-    export interface IAFXUsageTypeInstruction extends IAFXInstruction {
-        //usage: IAFXKeywordInstruction[]
-        //type: IAFXTypeInstruction
-        getTypeInstruction(): IAFXTypeInstruction;
-    }
-
     export interface IAFXStructDeclInstruction extends IAFXInstruction {
         //id: IAFXIdInstruction
         //structFields: IAFXStructInstruction
@@ -209,6 +212,7 @@ module akra {
 
     export interface IAFXKeywordInstruction extends IAFXInstruction {
         setValue(sValue: string): void;
+        isValue(sTestValue: string): bool;
     }
 
 

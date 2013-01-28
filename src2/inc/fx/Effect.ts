@@ -913,11 +913,11 @@ module akra.fx {
 		    for (i = pChildren.length - 1; i >= 0; i--) {
 		        if (pChildren[i].name === "Type") {
 		        	var pMainType: IAFXTypeInstruction = this.analyzeType(pChildren[i]);
-		        	pType.push(pMainType, true);
+		        	pType.setTypeInstruction(pMainType);
 		        }
 		        else if (pChildren[i].name === "Usage") {
-		        	var pUsage: IAFXKeywordInstruction = this.analyzeUsage(pChildren[i]);
-		        	pType.push(pUsage, true);
+		        	var sUsage: string = this.analyzeUsage(pChildren[i]);
+		        	pType.addUsage(sUsage);
 		        }
 		    }
 
@@ -930,9 +930,9 @@ module akra.fx {
         	return null;
         }
 
-        private analyzeUsage(pNode: IParseNode): IAFXKeywordInstruction {
+        private analyzeUsage(pNode: IParseNode): string {
         	pNode = pNode.children[0];
-        	return null;
+        	return pNode.value;
         }
 
         private analyzeVariable(pNode: IParseNode, pUsageType: IAFXUsageTypeInstruction): IAFXVariableDeclInstruction {
@@ -2356,11 +2356,11 @@ module akra.fx {
 		    for (i = pChildren.length - 1; i >= 0; i--) {
 		        if (pChildren[i].name === "Type") {
 		        	var pMainType: IAFXTypeInstruction = this.analyzeType(pChildren[i]);
-		        	pType.push(pMainType, true);
+		        	pType.setTypeInstruction(pMainType);
 		        }
 		        else if (pChildren[i].name === "ParamUsage") {
-		        	var pUsage: IAFXKeywordInstruction = this.analyzeUsage(pChildren[i]);
-		        	pType.push(pUsage, true);
+		        	var sUsage: string = this.analyzeUsage(pChildren[i]);
+		        	pType.addUsage(sUsage);
 		        }
 		    }
 

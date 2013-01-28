@@ -21,6 +21,7 @@ module akra.fx {
     	[index: string]: IAFXVariableDeclInstruction;
     }
 
+    #define UNDEFINE_LENGTH 0xffffff
 
 	export class Instruction implements IAFXInstruction{
 		protected _pParentInstruction: IAFXInstruction = null;
@@ -109,6 +110,8 @@ module akra.fx {
 		private _bWriteMode: bool = null;
 		private _sHash: string = "";
 		private _sStrongHash: string = "";
+		private _isArray: bool = false;
+		private _isPointer: bool = false;
 
 		constructor() {
 			super();
@@ -151,28 +154,46 @@ module akra.fx {
 		}
 
 		isEqual(pType: IAFXTypeInstruction): bool {
-			if(this.isArray() || (pType.isArray && pType.getInstructionType() !=== EAFXInstructionTypes.k_SystemTypeInstruction)){
+			if (this.isArray() && pType.isArray() && 
+				pType.getInstructionType() !== EAFXInstructionTypes.k_SystemTypeInstruction &&
+				(this.getLength() !== pType.getLength() ||
+				 this.getLength() === UNDEFINE_LENGTH ||
+				 pType.getLength() === UNDEFINE_LENGTH)){
 				return false;
 			}
-			return false;
+
+			if(this.getHash() !== pType.getHash()){
+				return false;
+			}
+
+			return true;
 		}
 
-		isBase(): bool {
-			return false;
+		inline isBase(): bool {
+			return this.getSubType().isBase() && this._isArray === false;
 		}
 
-		isArray(): bool {
-			return false;
+		inline isArray(): bool {
+			return this._isArray || 
+				   (this.getSubType().isArray() && this.getSubType().isBase());
 		}
 
 		isWrite(): bool {
 			if(!isNull(this._bWriteMode)){
 				return this._bWriteMode;
 			}
+
+			//TODO: Set correct write mode
+			
+			this._bWriteMode = true;
+
+			return this._bWriteMode;
 		}
 
 		isPointer(): bool {
-			return false;
+			return this._isPointer || 
+				   (this.getSubType().getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction &&
+				   	(<IAFXVariableTypeInstruction>this.getSubType()).isPointer());
 		}
 
 		setWriteMode(isWrite: bool): void {
@@ -195,8 +216,16 @@ module akra.fx {
 			return this._sStrongHash;
 		}
 
+		inline getSubType(): IAFXTypeInstruction {
+			return (<IAFXUsageTypeInstruction>this._pInstructionList[0]).getTypeInstruction();
+		}
+
+		hasUsage(sUsage: string): bool {
+			return (<IAFXUsageTypeInstruction>this._pInstructionList[0]).hasUsage(sUsage);
+		}
+
 		hasField(sFieldName: string): bool {
-			return false;
+			return this.getSubType().hasField(sFieldName);
 		}
 
 		getField(sFieldName: string, isCreateExpr: bool): IAFXIdExprInstruction {
@@ -249,6 +278,52 @@ module akra.fx {
 
 		}
 	}
+
+	export class UsageTypeInstruction extends Instruction implements IAFXUsageTypeInstruction {
+		// EMPTY_OPERATOR KeywordInstruction ... KeywordInstruction IAFXTypeInstruction
+		
+		private _pUsageList: string[] = null;
+		private _pType: IAFXTypeInstruction = null;
+
+		constructor() {
+			super();
+			this._pUsageList = [];
+			this._eInstructionType = EAFXInstructionTypes.k_UsageTypeInstruction;
+		}
+
+		inline getTypeInstruction(): IAFXTypeInstruction {
+			return this._pType;
+		} 
+
+		setTypeInstruction(pType: IAFXTypeInstruction): bool {
+			//TODO: check compatibility test for type and usages 
+			this._pType = pType;
+			return true;
+		}
+
+		hasUsage(sUsage: string): bool {
+			for(var i: uint = 0; i < this._pUsageList.length; i++) {
+				if(this._pUsageList[i] === sUsage){
+					return true;
+				}
+			}
+
+			if(this._pType.getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction){
+				return (<IAFXVariableTypeInstruction>this._pType).hasUsage(sUsage);
+			}
+
+			return false;
+		}
+
+
+
+		addUsage(sUsage: string): bool {
+			//TODO: check compatibility test for usage and usage
+			this._pUsageList.push(sUsage);
+			return true;
+		}	
+	}
+
 
 	export class SystemTypeInstruction extends Instruction implements IAFXTypeInstruction {
 		private _sName: string = "";
@@ -320,7 +395,7 @@ module akra.fx {
 		}
 
 		isEqual(pType: IAFXTypeInstruction): bool {
-			return false;
+			return this.getHash() === pType.getHash();
 		}
 
 		inline getHash(): string {
@@ -415,7 +490,7 @@ module akra.fx {
 		}
 
 		isEqual(pType: IAFXTypeInstruction): bool {
-			return false;
+			return this.getHash() === pType.getHash();
 		}
 
 		getHash(): string {
@@ -528,7 +603,7 @@ module akra.fx {
 		}
 	}
 
-	export class DeclInstruction extends TypedInstruction implements IAFXDeclInstruction {
+	export class DeclInstruction extends ExprInstruction implements IAFXDeclInstruction {
 		protected _sSemantic: string;
 		protected _pAnnotation: IAFXAnnotationInstruction;
 
@@ -555,7 +630,7 @@ module akra.fx {
 		}
 	}
 
-	export class IntInstruction extends TypedInstruction implements IAFXLiteralInstruction {
+	export class IntInstruction extends ExprInstruction implements IAFXLiteralInstruction {
 		private _iValue: int;
 		static private _pIntType: IAFXVariableTypeInstruction = null;
 		/**
@@ -577,7 +652,7 @@ module akra.fx {
 		}
 	}
 
-	export class FloatInstruction extends TypedInstruction implements IAFXLiteralInstruction {
+	export class FloatInstruction extends ExprInstruction implements IAFXLiteralInstruction {
 		private _fValue: float;
 		static private _pFloatType: IAFXVariableTypeInstruction = null;
 		/**
@@ -599,7 +674,7 @@ module akra.fx {
 		}
 	}
 
-	export class BoolInstruction extends TypedInstruction implements IAFXLiteralInstruction {
+	export class BoolInstruction extends ExprInstruction implements IAFXLiteralInstruction {
 		private _bValue: bool;
 		static private _pBoolType: IAFXVariableTypeInstruction = null;
 		/**
@@ -621,7 +696,7 @@ module akra.fx {
 		}
 	}
 
-	export class StringInstruction extends TypedInstruction implements IAFXLiteralInstruction {
+	export class StringInstruction extends ExprInstruction implements IAFXLiteralInstruction {
 		private _sValue: string;
 		static private _pStringType: IAFXVariableTypeInstruction = null;
 
@@ -696,6 +771,10 @@ module akra.fx {
 			this._sValue = sValue;
 		}
 
+		inline isValue(sTestValue: string): bool {
+			return this._sValue === sTestValue;
+		}
+
 		toString(): string {
 			return this._sValue;
 		}
@@ -728,19 +807,7 @@ module akra.fx {
 		}
 	}
 
-	export class UsageTypeInstruction extends Instruction implements IAFXUsageTypeInstruction {
-		// EMPTY_OPERATOR KeywordInstruction ... KeywordInstruction IAFXTypeInstruction
-		
-		constructor() {
-			super();
-			this._eInstructionType = EAFXInstructionTypes.k_UsageTypeInstruction;
-		}
-
-		inline getTypeInstruction(): IAFXTypeInstruction {
-			return <IAFXTypeInstruction>this._pInstructionList[this._pInstructionList.length - 1];
-		} 	 
-	}
-
+	
 	// export class BaseTypeInstruction extends Instruction implements IAFXBaseTypeInstruction {
 	// 	// EMPTY_OPERATOR IdInstruction
 		
