@@ -8,6 +8,8 @@ module akra {
 	IFACE(IResourcePoolManager);
     IFACE(IRenderer);
 	IFACE(IUtilTimer);
+    IFACE(IMesh);
+    IFACE(IRenderDataCollection);
 
     export interface IEngine extends IEventProvider {
         getSceneManager(): ISceneManager;
@@ -28,6 +30,9 @@ module akra {
         isActive(): bool;
 
         getTimer(): IUtilTimer;
+
+        createMesh(): IMesh;
+        createRenderDataCollection(): IRenderDataCollection;
     };
 
     export var createEngine: () => IEngine;

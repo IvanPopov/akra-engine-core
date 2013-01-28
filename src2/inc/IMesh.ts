@@ -4,7 +4,7 @@
 #include "IRenderData.ts"
 //#include "IHardwareBuffer.ts"
 module akra {
-    IFACE(IReferenceCounter);
+    IFACE(IRenderDataCollection);
     IFACE(ISkeleton);
     IFACE(IRect3d);
     IFACE(ISphere);
@@ -22,19 +22,19 @@ module akra {
     };
 
 	export interface IMesh {
-        readonly flexMaterials;
+        readonly flexMaterials: IMaterial[];
         readonly name: string;
-        readonly data: IReferenceCounter;
-        readonly buffer: IReferenceCounter;
+        readonly data: IRenderDataCollection;
+        readonly buffer: IRenderDataCollection;
 		skeleton: ISkeleton;
 
         setSkeleton(pSkeleton: ISkeleton): void;
         getOptions(): int;
         getEngine(): IEngine;
-        drawSubset(iSubset: int): void;
-        draw(): void;
+        // drawSubset(iSubset: int): void;
+        // draw(): void;
         isReadyForRender(): bool;
-        setup(sName: string, eOptions: int, pDataBuffer: IReferenceCounter): bool;
+        setup(sName: string, eOptions: int, pDataBuffer?: IRenderDataCollection): bool;
         createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions: int);
         freeSubset(sName: string): bool;
 
@@ -49,7 +49,8 @@ module akra {
         
         destroy(): void;
         destructor(): void;
-        getSubset(): IMeshSubset;
+        getSubset(sMesh: string): IMeshSubset;
+        getSubset(i: uint): IMeshSubset;
         setSkin(pSkin: ISkin): void;
         clone(eCloneOptions: EMeshCloneOptions);
         createAndShowSubBoundingBox(): void;

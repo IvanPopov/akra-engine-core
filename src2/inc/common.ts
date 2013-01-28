@@ -23,6 +23,7 @@
 
 #define UNKNOWN_CODE 0
 #define UNKONWN_MESSAGE "Unknown code."
+#define UNKNOWN_NAME "unknown"
 
 #define DEFAULT_NAME "default"
 

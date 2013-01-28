@@ -2,11 +2,14 @@
 #define IVERTEXELEMENT_TS
 
 module akra {
-	export interface IVertexElement {
-		count: uint;
-		type: EDataTypes;
-		usage: string;
-		offset: int;
+	export interface IVertexElementInterface {
+		count: uint; 	
+		type: EDataTypes; 
+		usage: string; 
+		offset?: uint;
+	}
+
+	export interface IVertexElement extends IVertexElementInterface {
 		size: uint;
 		index: uint;
 		semantics: string;

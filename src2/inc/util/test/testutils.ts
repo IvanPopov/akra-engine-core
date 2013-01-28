@@ -109,6 +109,10 @@ module akra.util.test {
 	export function run(): void {
 		Test.run();
 	}
+
+	window.onload = function () {
+		run();
+	}
 }
 
 #endif

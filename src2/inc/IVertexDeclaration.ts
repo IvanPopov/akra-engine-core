@@ -71,8 +71,8 @@ module akra {
 		
 		//[index: number]: IVertexElement;
 
-		append(...pElement: IVertexElement[]): bool;
-		append(pElements: IVertexElement[]): bool;
+		append(...pElement: IVertexElementInterface[]): bool;
+		append(pElements: IVertexElementInterface[]): bool;
 
 		extend(pDecl: IVertexDeclaration): bool;
 
@@ -80,9 +80,9 @@ module akra {
 		findElement(sSemantics: string, iCount?: uint): IVertexElement;
 		clone(): IVertexDeclaration;
 
-		element(sString: string);
+		element(i: uint): IVertexElement;
 
-
+		_update(): bool;
 
 		///DEBUG!!!
 		toString(): string;

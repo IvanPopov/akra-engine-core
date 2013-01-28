@@ -2,6 +2,7 @@
 #define MATERIAL_TS
 
 #include "IMaterial.ts"
+#include "data/VertexDeclaration.ts"
 
 module akra.material {
 	export class Material implements IMaterial {
@@ -39,17 +40,17 @@ module akra.material {
 
 		protected _pData: IVertexData;
 
-		inline get diffuse(): IColor { return new Color(this._pData.getTypedData(DeclUsages.DIFFUSE, 0, 1)); }
-		inline get ambient(): IColor { return new Color(tthis._pData.getTypedData(DeclUsages.AMBIENT, 0, 1)); }
-		inline get specular(): IColor { return new Color(tthis._pData.getTypedData(DeclUsages.SPECULAR, 0, 1)); }
-		inline get emissive(): IColor { return new Color(tthis._pData.getTypedData(DeclUsages.EMISSIVE, 0, 1)); }
-		inline get shininess(): IColor { return new Color(tthis._pData.getTypedData(DeclUsages.SHININESS, 0, 1)); }
+		inline get diffuse(): IColorValue { return new Color(this._pData.getTypedData(DeclUsages.DIFFUSE, 0, 1)); }
+		inline get ambient(): IColorValue { return new Color(this._pData.getTypedData(DeclUsages.AMBIENT, 0, 1)); }
+		inline get specular(): IColorValue { return new Color(this._pData.getTypedData(DeclUsages.SPECULAR, 0, 1)); }
+		inline get emissive(): IColorValue { return new Color(this._pData.getTypedData(DeclUsages.EMISSIVE, 0, 1)); }
+		inline get shininess(): float { return this._pData.getTypedData(DeclUsages.SHININESS, 0, 1)[0]; }
 
-		inline set diffuse(pValue: IColor) { this._pData.setData(pValue.toFloat32Array(), DeclUsages.DIFFUSE); }
-		inline set ambient(pValue: IColor) { this._pData.setData(pValue.toFloat32Array(), DeclUsages.AMBIENT); }
-		inline set specular(pValue: IColor) { this._pData.setData(pValue.toFloat32Array(), DeclUsages.SPECULAR); }
-		inline set emissive(pValue: IColor) { this._pData.setData(pValue.toFloat32Array(), DeclUsages.EMISSIVE); }
-		inline set shininess(pValue: IColor) { this._pData.setData(pValue.toFloat32Array(), DeclUsages.SHININESS); }
+		inline set diffuse(pValue: IColorValue) { this._pData.setData(Color.toFloat32Array(pValue), DeclUsages.DIFFUSE); }
+		inline set ambient(pValue: IColorValue) { this._pData.setData(Color.toFloat32Array(pValue), DeclUsages.AMBIENT); }
+		inline set specular(pValue: IColorValue) { this._pData.setData(Color.toFloat32Array(pValue), DeclUsages.SPECULAR); }
+		inline set emissive(pValue: IColorValue) { this._pData.setData(Color.toFloat32Array(pValue), DeclUsages.EMISSIVE); }
+		inline set shininess(pValue: float) { this._pData.setData(new Float32Array([pValue]), DeclUsages.SHININESS); }
 
 		constructor (sName: string, pData: IVertexData) {
 			this._pData = pData;
@@ -68,16 +69,24 @@ module akra.material {
 			return this;
 
 		}
+
+		isEqual(pMat: IMaterial): bool {
+			return Color.isEqual(this.diffuse, pMat.diffuse) && 
+			Color.isEqual(this.ambient, pMat.ambient) && 
+			Color.isEqual(this.specular, pMat.specular) && 
+			Color.isEqual(this.emissive, pMat.emissive) && 
+				this.shininess === pMat.shininess;
+		}
 	}
 
-	export const VERTEX_DECL: IVertexDeclaration = new VertexDeclaration(
+	export const VERTEX_DECL: IVertexDeclaration = createVertexDeclaration(
 		[
-            {nCount: 17, 	eType: EDataTypes.FLOAT, eUsage: DeclUsages.MATERIAL 	},
-            {nCount: 4, 	eType: EDataTypes.FLOAT, eUsage: DeclUsages.DIFFUSE, iOffset: 0},
-            {nCount: 4, 	eType: EDataTypes.FLOAT, eUsage: DeclUsages.AMBIENT 	},
-            {nCount: 4, 	eType: EDataTypes.FLOAT, eUsage: DeclUsages.SPECULAR 	},
-            {nCount: 4, 	eType: EDataTypes.FLOAT, eUsage: DeclUsages.MISSIVE		},
-            {nCount: 1, 	eType: EDataTypes.FLOAT, eUsage: DeclUsages.SHININESS 	}
+            {count: 17, type: EDataTypes.FLOAT, usage: DeclUsages.MATERIAL 	},
+            {count: 4, 	type: EDataTypes.FLOAT, usage: DeclUsages.DIFFUSE, offset: 0},
+            {count: 4, 	type: EDataTypes.FLOAT, usage: DeclUsages.AMBIENT 	},
+            {count: 4, 	type: EDataTypes.FLOAT, usage: DeclUsages.SPECULAR 	},
+            {count: 4, 	type: EDataTypes.FLOAT, usage: DeclUsages.EMISSIVE	},
+            {count: 1, 	type: EDataTypes.FLOAT, usage: DeclUsages.SHININESS }
         ]);
 
 	export const DEFAULT: IMaterial = new Material;

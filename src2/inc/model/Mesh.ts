@@ -4,32 +4,43 @@
 #include "IMesh.ts"
 #include "IReferenceCounter.ts"
 #include "ISkeleton.ts"
-#include "IRec3d.ts"
+#include "IRect3d.ts"
 #include "ISphere.ts"
 #include "IEngine.ts"
 #include "IMaterial.ts"
 #include "IVertexData.ts"
 #include "IMeshSubset.ts"
 #include "ISkin.ts"
+#include "IRenderDataCollection.ts"
 
-#include "Material.ts"
+
+#include "MeshSubset.ts"
+#include "material/Material.ts"
+#include "util/ReferenceCounter.ts"
 
 module akra.model {
 
-	export class Mesh implements IMesh extends ReferenceCounter{
+	export class Mesh implements IMesh extends util.ReferenceCounter {
         private _sName: string;
         private _pFlexMaterials: IMaterial[] = null;
-        private _pBuffer: IReferenceCounter = null;
+        private _pBuffer: IRenderDataCollection = null;
         private _pEngine: IEngine;
         private _eOptions: int = 0;
-        private _pSkeleton: ISekelton = null;
-        private _pBoundingBox: IRec3d = null;
+        private _pSkeleton: ISkeleton = null;
+        private _pBoundingBox: IRect3d = null;
         private _pBoundingSphere: ISphere = null;
+        private _pSubMeshes: IMeshSubset[] = [];
 
-        constructor(pEngine: IEngine, eOptions: int, sName: string, pDataBuffer: IReferenceCounter){
+        constructor(pEngine: IEngine, eOptions: int, sName: string, pDataBuffer: IRenderDataCollection) {
+            super();
+
             this._sName = sName || null;
             this._pEngine = pEngine;
             this.setup(sName, eOptions, pDataBuffer);
+        }
+
+        inline get length(): uint {
+            return this._pSubMeshes.length;
         }
 
         inline get flexMaterials(): IMaterial[] {
@@ -40,15 +51,11 @@ module akra.model {
             return this._sName;
         }
 
-        inline get data(): IReferenceCounter{
+        inline get buffer(): IRenderDataCollection {
             return this._pBuffer;
         }
 
-        inline get buffer(): IReferenceCounter{
-            return this._pBuffer;
-        }
-
-        inline get skeleton(): ISekelton{
+        inline get skeleton(): ISkeleton {
             return this._pSkeleton;
         }
 
@@ -68,19 +75,19 @@ module akra.model {
             return this._pEngine;
         }
 
-        drawSubset(iSubset: int): void {
-            this._pBuffer.draw(iSubset);
-        }
+        // drawSubset(iSubset: int): void {
+        //     this._pBuffer.draw(iSubset);
+        // }
 
-        draw(): void {
-            for (var i: int = 0; i < this.length; i++) {
-                this[i].draw();
-            };
-        }
+        // draw(): void {
+        //     for (var i: int = 0; i < this.length; i++) {
+        //         this._pSubMeshes[i].draw();
+        //     };
+        // }
 
         isReadyForRender(): bool {
-            for (var i: int = 0; i < this.length; ++ i) {
-                if (!this[i].isReadyForRender()) {
+            for (var i: int = 0; i < this._pSubMeshes.length; ++ i) {
+                if (!this._pSubMeshes[i].isReadyForRender()) {
                     return false;
                 }
             }
@@ -88,40 +95,47 @@ module akra.model {
             return true;
         }
 
-        setup(sName: string, eOptions: int, pDataBuffer: IReferenceCounter): bool {
-            debug_assert(this._pBuffer === null, 'mesh already setuped.');
+        setup(sName: string, eOptions: int, pDataCollection?: IRenderDataCollection): bool {
+            debug_assert(this._pBuffer === null, "mesh already setuped.");
 
-            if (!pDataBuffer) {
-                this._pBuffer = new a.RenderDataBuffer(this._pEngine);
-                this._pBuffer.setup(eOptions);
+            if (isNull(pDataCollection)) {
+                this._pBuffer = this._pEngine.createRenderDataCollection();
+                this._pBuffer._setup(eOptions);
             }
             else {
-                debug_assert (pDataBuffer.getEngine() === this.getEngine(), 
-                    'you can not use a buffer with a different context');
+                debug_assert (pDataCollection.getEngine() === this.getEngine(), 
+                    "you can not use a buffer with a different context");
                 
-                this._pBuffer = pDataBuffer;
-                eOptions |= pDataBuffer.getOptions();
+                this._pBuffer = pDataCollection;
+                eOptions |= pDataCollection.getOptions();
             }
             
             this._pBuffer.addRef();
             this._eOptions = eOptions || 0;
-            this._sName = sName || 'unknown';
+            this._sName = sName || UNKNOWN_NAME;
 
             return true;
         }
 
-        createSubset(sName: , ePrimType: EPrimitiveTypes, eOptions: int) {
-            var pSubset, pSubMesh;
+        createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions: int): IMeshSubset {
+            var pData: IRenderData;
             //TODO: modify options and create options for data dactory.
-            pSubset = this._pBuffer.getEmptyRenderData(ePrimType, eOptions);
-            pSubset.addRef();
+            pData = this._pBuffer.getEmptyRenderData(ePrimType, eOptions);
+            pData.addRef();
 
-            if (!pSubset) {
+            if (isNull(pData)) {
                 return null;
             }
+            
+            return this.appendSubset(sName, pData);
+        }
 
-            pSubMesh = new MeshSubset(this, pSubset, sName);
-            this.push(pSubMesh);
+        appendSubset(sName: string, pData: IRenderData): IMeshSubset {
+            debug_assert(pData.buffer === this._pBuffer, "invalid data used");
+
+            var pSubMesh: IMeshSubset = new MeshSubset(this, pData, sName);
+            this._pSubMeshes.push(pSubMesh);
+
             return pSubMesh;
         }
 
@@ -156,7 +170,7 @@ module akra.model {
         }
 
         addFlexMaterial(sName: string, pMaterialData: IMaterial): bool {
-            var pMaterial: IFlexMaterial;
+            var pMaterial: IMaterial;
             var pMaterialId: int;
 
             debug_assert(arguments.length < 7, "only base material supported now...");
@@ -196,9 +210,9 @@ module akra.model {
         setFlexMaterial(iMaterial: int): bool {
             var bResult: bool = true;
             for (var i: int = 0; i < this.length; ++ i) {
-                if (!this[i].setFlexMaterial(iMaterial)) {
+                if (!this._pSubMeshes[i].setFlexMaterial(iMaterial)) {
                     warning('cannot set material<' + iMaterial + '> for mesh<' + this.name + 
-                        '> subset<' + this[i].name + '>');
+                        '> subset<' + this._pSubMeshes[i].name + '>');
                     bResult = false;
                 }
             }
@@ -208,6 +222,7 @@ module akra.model {
 
         destroy(): void {
             this._pFlexMaterials = null;
+            this._pSubMeshes = null;
             this._pBuffer.destroy(this);
         }
 
@@ -215,14 +230,16 @@ module akra.model {
             this.destroy();
         }
 
-        getSubset(): IMeshSubset {
-            if (typeof arguments[0] === 'number') {
-                return this[arguments[0]];
+        getSubset(sName: string): IMeshSubset;
+        getSubset(i: uint): IMeshSubset;
+        getSubset(i: any): IMeshSubset {
+            if (isInt(arguments[0])) {
+                return this._pSubMeshes[arguments[0]];
             }
             else {
                 for (var i = 0; i < this.length; ++ i) {
-                    if (this[i]._sName === arguments[0]) {
-                        return this[i];
+                    if (this._pSubMeshes[i].name === <string>arguments[0]) {
+                        return this._pSubMeshes[i];
                     }
                 }
             }
@@ -231,7 +248,7 @@ module akra.model {
 
         setSkin(pSkin: ISkin): void {
             for (var i = 0; i < this.length; ++ i) {
-                this[i].setSkin(pSkin);
+                this._pSubMeshes[i].setSkin(pSkin);
             };
         }
 
@@ -244,10 +261,9 @@ module akra.model {
                 pClone = new Mesh(this.getEngine(), this.getOptions(), this.name, this.data);
                 
                 for (var i = 0; i < this.length; ++ i) {
-                    pRenderData = this[i].data;
+                    pRenderData = this._pSubMeshes[i].data;
                     pRenderData.addRef();
-                    pSubMesh = new MeshSubset(this, pRenderData, this[i].name);
-                    pClone.push(pSubMesh);
+                    pClone.appendSubset(pRenderData, this._pSubMeshes[i].name);
                 }
 
                 pClone.replaceFlexMaterials(this.flexMaterials);
@@ -279,8 +295,7 @@ module akra.model {
         }
 
         createAndShowSubBoundingSphere(): void {
-            for(i=0;i<this.length;i++)
-            {
+            for(i=0;i<this.length;i++) {
                 pSubMesh=this.getSubset(i);
                 pSubMesh.createBoundingSphere();
                 pSubMesh.showBoundingSphere();
@@ -291,8 +306,8 @@ module akra.model {
         createBoundingBox(): bool {
             var pVertexData: IVertexData;
             var pSubMesh: IMeshSubset;
-            var pNewBoundingBox: IRec3d;
-            var pTempBoundingBox: IRec3d;
+            var pNewBoundingBox: IRect3d;
+            var pTempBoundingBox: IRect3d;
             var i: int;
 
             pNewBoundingBox = new geometry.Rect3d();
@@ -354,7 +369,7 @@ module akra.model {
             return true;
         }
 
-        getBoundingBox(): IRec3d {
+        getBoundingBox(): IRect3d {
             if (!this._pBoundingBox) {
                 this.createBoundingBox();
             }

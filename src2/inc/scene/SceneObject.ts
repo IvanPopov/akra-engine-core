@@ -19,6 +19,8 @@ module akra.scene {
 		protected _pWorldBounds: IRect3d = new geometry.Rect3d();
 		protected _hasShadows: bool = false;
 
+		inline get totalRenderable(): uint { return 0; }
+
 		inline get worldBounds(): IRect3d {
 			return this._pWorldBounds;
 		}
@@ -38,7 +40,7 @@ module akra.scene {
 			this.type = EEntityTypes.SCENE_OBJECT;
 		}
 
-		inline getRenderable(): IRenderableObject {
+		inline getRenderable(i?: uint): IRenderableObject {
 			return null;
 		}
 
@@ -100,8 +102,14 @@ module akra.scene {
 		    return false;
 		}
 
+		/**
+		 * @deprecated
+		 */
 		prepareForRender(): void {}
 
+		/**
+		 * @deprecated
+		 */
     	render(): void {
     		super.render();
     	}

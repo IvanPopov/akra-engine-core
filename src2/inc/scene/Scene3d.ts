@@ -7,8 +7,11 @@
 #include "events/events.ts"
 #include "objects/Camera.ts"
 #include "IDisplayList.ts"
-#include "OcTree.ts"
-#include "LightGraph.ts"
+// #include "OcTree.ts"
+// #include "LightGraph.ts"
+
+#include "SceneModel.ts"
+#include "Joint.ts"
 
 #define DEFAULT_DLIST DEFAULT_NAME
 
@@ -40,11 +43,11 @@ module akra.scene {
 			// this._pNodeList = [];
 			// this._pObjectList = [];
 
-			i = this.addDisplayList(new OcTree);
-			debug_assert(i == DL_DEFAULT, "invalid default list index");
+			// i = this.addDisplayList(new OcTree);
+			// debug_assert(i == DL_DEFAULT, "invalid default list index");
 
-			i = this.addDisplayList(new LightGraph);
-			debug_assert(i == DL_LIGHTING, "invalid lighting list index");
+			// i = this.addDisplayList(new LightGraph);
+			// debug_assert(i == DL_LIGHTING, "invalid lighting list index");
 
 		}
 
@@ -76,12 +79,14 @@ module akra.scene {
 
 		createSceneNode(sName: string = null): ISceneNode {
 			var pNode: ISceneNode = new SceneNode(this);
-			pNode.create();
+			//pNode.create();
 			return this.setupNode(pNode, sName);
 		}
 
-		createSceneModel(): IModel {
-			return null;
+		createSceneModel(sName: string): ISceneModel {
+			var pNode: ISceneModel = new SceneModel(this);
+			//pNode.create();
+			return this.setupNode(pNode, sName);
 		}
 
 		createCamera(sName: string = null): ICamera {
@@ -103,8 +108,8 @@ module akra.scene {
 			return null;
 		}
 
-		createJoint(): IJoint {
-			return null;
+		createJoint(sName: string): IJoint {
+			return this.setupNode(new Joint, sName);
 		}
 
 		createText3d(): IText3d {

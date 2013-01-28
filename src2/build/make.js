@@ -175,7 +175,8 @@ function preprocess() {
 		"-D inline=/**@inline*/",
 		"-D protected=/**@protected*/",
 		"-D const=/**@const*/var",
-		"-D struct=class"
+		"-D struct=class",
+		"-D readonly="
 		].join(" ");
 
 	if (pOptions.capability == null) {
@@ -359,12 +360,6 @@ function compileTest(sDir, sFile, sName, pData, sTestData) {
                   	<body>                               			\n\
                   		<h1 id=\"test_name\">Tests</h1>             \n\
                   		<script>" + sTestData + "</script>   		\n\
-                  		<script> 									\n\
-                  		if (akra && akra.util && akra.util.test) {\n\
-                  			akra.util.test.run(); 					\n\
-                  		}											\n\
-                  		</script>   								\n\
-                  	</body>                              			\n\
                   </html>";
 
     function writeOutput(sOutputFile, pData) {

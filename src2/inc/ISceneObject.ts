@@ -9,10 +9,11 @@ module akra {
     
     export interface ISceneObject extends ISceneNode {
     	worldBounds: IRect3d;
-    	
+    	totalRenderable: uint;
+
     	readonly localBounds: IRect3d;
     	
-        getRenderable(): IRenderableObject;
+        getRenderable(i?: uint): IRenderableObject;
     	getObjectFlags(): int;
 
     	accessLocalBounds(): IRect3d;

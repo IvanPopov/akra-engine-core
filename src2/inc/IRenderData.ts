@@ -2,8 +2,9 @@
 #define IRENDERDATA_TS
 
 module akra {
-    IFACE(IVertexBuffer);
     IFACE(IReferenceCounter);
+    IFACE(IRenderDataCollection);
+
 	export enum ERenderDataTypes {
         ISOLATED = 0, /*<! положить данные в текстуру, и больше ничего не делать.*/
         INDEXED,      /*<! обычные даннае из текстуры, доступные по индексу.*/
@@ -23,7 +24,7 @@ module akra {
     }
 
 	export interface IRenderData extends IReferenceCounter {
-		readonly buffer: IVertexBuffer;
+		readonly buffer: IRenderDataCollection;
 
         renderable(bValue: bool): void;
         //isRenderable(): bool;

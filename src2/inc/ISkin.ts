@@ -6,10 +6,11 @@ module akra {
 	IFACE(INode);
 	IFACE(IMesh);
 	IFACE(IEngine);
+	IFACE(INodeMap);
 
-	export interface INodeMap{
-		[index: string]: INode;
-	}
+	// export interface INodeMap {
+	// 	[index: string]: INode;
+	// }
 
 	export interface ISkin {
 		readonly buffer;
@@ -38,7 +39,7 @@ module akra {
 		isReady(): bool;
 		getBoneTransforms();
 		isAffect(pData): bool;
-		attach(pData)
+		attach(pData);
 
 	}
 }
