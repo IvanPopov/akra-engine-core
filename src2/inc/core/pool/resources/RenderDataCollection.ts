@@ -63,7 +63,7 @@ module akra.core.pool.resources {
         /**
          * Положить данные в буфер.
          */
-        private _allocateData(pVertexDecl: IVertexDeclaration, pData) {
+        _allocateData(pVertexDecl: IVertexDeclaration, pData) {
         	if (!this._pDataBuffer) {
         	    this._createDataBuffer();
         	}
@@ -182,15 +182,17 @@ module akra.core.pool.resources {
         };
 
         destroy(): void {
-        	if (iSubset !== undefined) {
-        	    return this._pDataArray[iSubset].draw();
-        	}
+        	this._pDataArray = null
+    
+            if (this._pDataBuffer) {
+                this._pDataBuffer.relese();
+                this._pDataBuffer.destroy();
+                this._pDataBuffer = null;
+            }
 
-        	for (var i: int = 0; i < this._pDataArray.length; i++) {
-        	    this._pDataArray[i].draw();
-        	};
-
-        	return true;
+            this._pEngine = null;
+            this._eDataOptions = 0;
+            this._pSubsetType = null;
         }
 	}
 }

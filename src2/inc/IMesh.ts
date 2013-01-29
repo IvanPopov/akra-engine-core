@@ -25,7 +25,9 @@ module akra {
         readonly flexMaterials: IMaterial[];
         readonly name: string;
         readonly data: IRenderDataCollection;
-        readonly buffer: IRenderDataCollection;
+        readonly boundingBox: IRect3d;
+        readonly boundingSphere: ISphere;
+
 		skeleton: ISkeleton;
 
         setSkeleton(pSkeleton: ISkeleton): void;
@@ -41,9 +43,10 @@ module akra {
         /** @deprecated */
         replaceFlexMaterials(pFlexMaterials): void;
         /** @deprecated */
-        getFlexMaterial();
+        getFlexMaterial(iMaterial: uint): IMaterial;
+        getFlexMaterial(sName: string): IMaterial;
         /** @deprecated */
-        addFlexMaterial(sName: string, pMaterial: IMaterial): bool;
+        addFlexMaterial(sName: string, pMaterial?: IMaterial): bool;
         /** @deprecated */
         setFlexMaterial(iMaterial: int): bool;
         
@@ -57,14 +60,15 @@ module akra {
         createAndShowSubBoundingSphere(): void;
         createBoundingBox(): bool;
         deleteBoundingBox(): bool;
-        getBoundingBox(): IRect3d;
+
         showBoundingBox(): bool;
         hideBoundingBox(): bool;
         createBoundingSphere(): bool;
         deleteBoundingSphere(): bool;
-        getBoundingSphere(): ISphere;
         showBoundingSphere(): bool;
         hideBoundingSphere(): bool;
+
+        appendSubset(sName: string, pData: IRenderData): IMeshSubset;
 	}
 }
 

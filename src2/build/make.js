@@ -7,7 +7,15 @@ var spawn 	= require('child_process').spawn;
 var md5 	= require('MD5');
 var stream  = require('stream');
 
-var BUFFER_SIZE = 5 * 1024 * 1024;
+function include(file) {
+	eval(fs.readFileSync(file, "utf-8"));
+}
+
+//include("optarg.js");
+
+//command line output buffer size
+//default is 5MB
+var BUFFER_SIZE = 5 * 1024 * 1024; 
 
 
 

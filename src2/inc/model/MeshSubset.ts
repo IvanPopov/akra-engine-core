@@ -9,6 +9,9 @@
 #include "ISphere.ts"
 #include "IVertexData.ts"
 
+#include "geometry/geometry.ts"
+#include "material/Material.ts"
+
 module akra.model {
 	export class MeshSubset extends render.RenderableObject implements IMeshSubset {
 		protected _pRenderData: IRenderData = null;
@@ -19,9 +22,15 @@ module akra.model {
 		protected _pBoundingSphere: ISphere = null;
 
 		inline get boundingBox(): IRect3d { return this._pBoundingBox; }
-		inline get boundingSphere(): IRect3d { return this._pBoundingSphere; }
+		inline get boundingSphere(): ISphere { return this._pBoundingSphere; }
+		inline get data(): IRenderData { return this._pRenderData; }
+		inline get skin(): ISkin { return this._pSkin; }
+		inline get name(): string { return this._sName; }
+		inline get mesh(): IMesh { return this._pMesh; }
+
 
 		constructor (pMesh: IMesh, pRenderData: IRenderData, sName: string = null) {
+			super(); 
 			this.setup(pMesh, pRenderData, sName);
 		}
 
@@ -32,7 +41,7 @@ module akra.model {
 			this._pRenderData = pRenderData;
 			this._sName = sName;
 
-			super.setup(pMesh.getEngine(), sName);
+			super._setup(pMesh.getEngine().getRenderer(), sName);
 		}
 
 		createBoundingBox(): bool {
@@ -40,7 +49,7 @@ module akra.model {
 			var pNewBoundingBox: IRect3d;
 
 			pNewBoundingBox = new geometry.Rect3d();
-			pVertexData = this.data.getData(DeclUsages.POSITION);
+			pVertexData = this.data._getData(DeclUsages.POSITION);
 
 			if(isNull(pVertexData))
 				return false;
@@ -92,11 +101,11 @@ module akra.model {
 
 		        //TODO: некорректно задавать так boundingBox, т.к. надо рендерится со своим рендер методом, а его никто не выбирает. 
 				pMaterial = this.getFlexMaterial(".MaterialBoundingBox");
-				pMaterial.emissive = new a.Color4f(0.0, 0.0, 1.0, 1.0);
-				pMaterial.diffuse  = new a.Color4f(0.0, 0.0, 1.0, 1.0);
+				pMaterial.emissive = new Color(0.0, 0.0, 1.0, 1.0);
+				pMaterial.diffuse  = new Color(0.0, 0.0, 1.0, 1.0);
 			}
 			else {
-				this.data.getData(DeclUsages.POSITION).setData(new Float32Array(pPoints),DeclUsages.POSITION);
+				this.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints),DeclUsages.POSITION);
 			}
 
 			this.data.setRenderable();
@@ -117,6 +126,245 @@ module akra.model {
 			}
 
 			return this.data.selectIndexSet(iCurrentIndexSet);
+		}
+
+		createBoundingSphere(): bool {
+			var pVertexData: IVertexData;
+			var pNewBoundingSphere: ISphere;
+
+			pNewBoundingSphere = new geometry.Sphere();
+			pVertexData = this.data._getData(DeclUsages.POSITION);
+
+			if(!pVertexData) {
+				return false;
+			}
+
+			if(!geometry.computeBoundingSphere(pVertexData, pNewBoundingSphere, false, this._pBoundingBox)) {
+				return false;
+			}
+
+			this._pBoundingSphere = pNewBoundingSphere;
+
+			return true;
+		}
+
+
+		deleteBoundingSphere(): bool {
+			this._pBoundingSphere = null;
+			return true;
+		}
+
+		
+
+		showBoundingSphere(): bool {
+			var pMaterial: IMaterial;
+			var iData: int;
+			var iCurrentIndexSet: int;
+			var pPoints: float[], pIndexes: uint[];
+
+			if(isNull(this._pBoundingSphere)) {
+				return false;
+			}
+
+			pPoints = new Array();
+			pIndexes = new Array();
+			geometry.computeDataForCascadeBoundingSphere(this._pBoundingSphere, pPoints, pIndexes);
+
+			iCurrentIndexSet=this.data.getIndexSet();
+			if(!this.data.selectIndexSet(".BoundingSphere")) {
+				this.data.addIndexSet(false, EPrimitiveTypes.LINELIST, ".BoundingSphere");
+
+				iData = this.data.allocateData([VE_FLOAT3(DeclUsages.POSITION)], new Float32Array(pPoints));
+
+				this.data.allocateIndex([VE_FLOAT(DeclUsages.INDEX0)], new Float32Array(pIndexes));
+				this.data.index(iData,DeclUsages.INDEX0);
+
+				this.applyFlexMaterial(".MaterialBoundingSphere");
+
+				pMaterial = this.getFlexMaterial(".MaterialBoundingSphere");
+				pMaterial.emissive = new Color(0.0, 0.0, 1.0, 1.0);
+				pMaterial.diffuse  = new Color(0.0, 0.0, 1.0, 1.0);
+			}
+			else {
+				this.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
+			}
+
+			this.data.setRenderable();
+			this.data.selectIndexSet(iCurrentIndexSet);
+
+			return true;
+		}
+
+		hideBoundingSphere(): bool{
+			var iCurrentIndexSet: int = this.data.getIndexSet();
+
+			if(!this.data.selectIndexSet(".BoundingSphere")) {
+				return false;
+			}
+			else {
+				this.data.setRenderable(this.data.getIndexSet(), false);
+			}
+
+			return this.data.selectIndexSet(iCurrentIndexSet);
+		}
+
+
+		computeNormals () {
+		    //TODO: calc normals
+		}
+
+		computeTangents () {
+		    //TODO: compute normals
+		}
+
+		computeBinormals () {
+		    //TODO: calc binormals
+		}
+
+		isSkinned() {
+		    return this._pSkin !== null;
+		}
+
+		getSkin() {
+		    return this._pSkin;
+		}
+
+		applyFlexMaterial(sMaterial: string, pMaterialData: IMaterial = null): bool {
+		    if (this._pMesh.addFlexMaterial(sMaterial, pMaterialData)) {
+		        return this.setFlexMaterial(sMaterial);
+		    }
+
+		    return false;
+		}
+
+		getFlexMaterial(iMaterial): IMaterial {
+		    return this._pMesh.getFlexMaterial(iMaterial);
+		}
+
+		hasFlexMaterial (): bool {
+		    return this._pRenderData.hasSemantics(DeclUsages.MATERIAL);
+		}
+
+		setFlexMaterial (iMaterial): bool {
+		    var pRenderData: IRenderData = this._pRenderData;
+		    var pIndexData: IBufferData = pRenderData.getIndices();
+		    var pMatFlow: IDataFlow = pRenderData._getFlow(DeclUsages.MATERIAL);
+		    var eSemantics: string = DeclUsages.INDEX10;
+		    var pIndexDecl: IVertexDeclaration, pFloatArray: Float32Array;
+		    var iMatFlow: int;
+		    var pMaterial: IMaterial = this._pMesh.getFlexMaterial(iMaterial);
+		    var iMat: int = (<material.FlexMaterial>pMaterial).data.getOffset();
+
+		    if (isNull(pMaterial)) {
+		        return false;
+		    }
+
+		    
+		    if (pMatFlow) {
+		        iMatFlow = pMatFlow.flow;
+		        eSemantics = pMatFlow.mapper.semantics;
+		        pIndexData = pMatFlow.mapper.data;
+
+		        pRenderData._addData((<material.FlexMaterial>pMaterial).data, iMatFlow);
+		        
+		        return pRenderData.index(iMat, eSemantics, true);
+		    }
+		  
+		    pIndexDecl = createVertexDeclaration([VE_FLOAT(eSemantics)]);
+		    pFloatArray = new Float32Array((<IVertexData>pIndexData).getCount());    
+		    iMatFlow = pRenderData._addData((<material.FlexMaterial>pMaterial).data);
+
+		    debug_assert(iMatFlow >= 0, "cannot add data flow with material for mesh subsset");
+
+		    if (!pRenderData.allocateIndex(pIndexDecl, pFloatArray)) {
+		        LOG("cannot allocate index for material!!!");
+		        return false;
+		    }
+
+		    return pRenderData.index(iMat, eSemantics, true);
+		}
+
+		draw () {
+		    'use strict';
+		    this._pRenderData.draw();
+		}
+
+		show() {
+		    this.data.renderable(true);
+		}
+
+		hide() {
+		    this.data.renderable(false);
+		}
+
+
+		//исходим из того, что данные скина 1:1 соотносятся с вершинами.
+		setSkin(pSkin: ISkin): bool {
+
+		    var pPosData: IVertexData;
+		    var pPositionFlow: IDataFlow;
+		    var pMetaData: Float32Array;
+		    //мета данные разметки
+		    var pInfMetaData: IVertexData;       
+		    //адресс мета данных во флотах
+		    var iInfMetaDataLoc: int;    
+		    //шаг мета данных во флотах
+		    var iInfMetaDataStride: int; 
+
+		    /*
+		     Получаем данные вершин, чтобы проложить в {W} компоненту адерсс мета информации,
+		     о влиянии на данную вершины.
+		     */
+
+		    //получаем поток данных с вершиными
+		    pPositionFlow = this.data._getFlow(DeclUsages.POSITION);
+		    debug_assert(isDefAndNotNull(pPositionFlow), "skin require position with indices in mesh subset");
+		    
+		    pPosData = pPositionFlow.data;
+
+		    //проверяем, что данные еще не подвязаны к другому Skin'у
+		    if (pPosData.hasSemantics(DeclUsages.BLENDMETA)) {
+		        //тоже самый skin?
+		        if (pSkin.isAffect(pPosData)) {
+		            this._pSkin = pSkin;
+		            return true;
+		        }
+
+		        debug_error("mesh subset already has another skin");
+		        return false;
+		    }
+
+		    //проверяем, что текущий подмеш пренадлежит мешу, на который натягивается skin,
+		    //или его клону.
+		    debug_assert(this.data.buffer == pSkin.data, 
+		        "can not bind to skin mesh subset that does not belong skin's mesh.")
+
+		    //подвязывем скин, к данным с вершинами текущего подмеша.
+		    //т.е. добавляем разметку в конец каждого пикселя
+		    pSkin.attach(pPosData);
+
+		    //получаем данные разметки
+		    pMetaData = <Float32Array>pPosData.getTypedData(DeclUsages.BLENDMETA);
+
+		    //если по каким то причинам нет разметки...
+		    debug_assert(isDefAndNotNull(pMetaData), "you must specify location for storage blending data");
+
+		    //выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
+		    pInfMetaData = pSkin.getInfluenceMetaData();
+		    iInfMetaDataLoc = pInfMetaData.getOffset() / EDataTypeSizes.BYTES_PER_FLOAT;
+		    iInfMetaDataStride = pInfMetaData.stride / EDataTypeSizes.BYTES_PER_FLOAT;
+
+		    for (var i: int = 0; i < pMetaData.length; ++ i) {
+		        pMetaData[i] = iInfMetaDataLoc + i * iInfMetaDataStride;
+		    }
+
+		    //обновляем адресса мета данных вершин
+		    pPosData.setData(pMetaData, DeclUsages.BLENDMETA);
+
+		    //trace(this.data.toString());
+		    this._pSkin = pSkin;
+
+		    return true;
 		}
 
 

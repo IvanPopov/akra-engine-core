@@ -34,6 +34,7 @@ module akra {
         destroy(): void;
 
         _setup(eOptions: int): void;
+        _allocateData(pVertexDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
 	}
 }
 

@@ -31,14 +31,7 @@ module akra.model {
         private _pBoundingSphere: ISphere = null;
         private _pSubMeshes: IMeshSubset[] = [];
 
-        constructor(pEngine: IEngine, eOptions: int, sName: string, pDataBuffer: IRenderDataCollection) {
-            super();
-
-            this._sName = sName || null;
-            this._pEngine = pEngine;
-            this.setup(sName, eOptions, pDataBuffer);
-        }
-
+        
         inline get length(): uint {
             return this._pSubMeshes.length;
         }
@@ -51,7 +44,7 @@ module akra.model {
             return this._sName;
         }
 
-        inline get buffer(): IRenderDataCollection {
+        inline get data(): IRenderDataCollection {
             return this._pBuffer;
         }
 
@@ -61,6 +54,14 @@ module akra.model {
 
         inline set skeleton(pSkeleton: ISkeleton){
             this._pSkeleton = pSkeleton;
+        }
+
+        constructor(pEngine: IEngine, eOptions: int, sName: string, pDataBuffer: IRenderDataCollection) {
+            super();
+
+            this._sName = sName || null;
+            this._pEngine = pEngine;
+            this.setup(sName, eOptions, pDataBuffer);
         }
 
         setSkeleton(pSkeleton: ISkeleton): void {
@@ -139,9 +140,9 @@ module akra.model {
             return pSubMesh;
         }
 
-        // replaceFlexMaterials(pFlexMaterials:): void {
-        //     this._pFlexMaterials = pFlexMaterials;
-        // }
+        replaceFlexMaterials(pFlexMaterials: IMaterial[]): void {
+            this._pFlexMaterials = pFlexMaterials;
+        }
 
         freeSubset(sName: string): bool {
             debug_error("Метод freeSubset не реализован");
@@ -169,7 +170,7 @@ module akra.model {
             return null;
         }
 
-        addFlexMaterial(sName: string, pMaterialData: IMaterial): bool {
+        addFlexMaterial(sName: string, pMaterialData: IMaterial = null): bool {
             var pMaterial: IMaterial;
             var pMaterialId: int;
 
@@ -182,7 +183,7 @@ module akra.model {
 
             if (pMaterial) {
                 if (pMaterialData) {
-                   pMaterial.value = pMaterialData; 
+                   pMaterial.set(pMaterialData); 
                 }
                 return true;
             }
@@ -201,8 +202,8 @@ module akra.model {
                 pMaterialData = new Material(material.DEFAULT)
             }
 
-            pMaterial.value = pMaterialData;   
-            pMaterial.id = pMaterialId;
+            pMaterial.set(pMaterialData);   
+            //pMaterial.id = pMaterialId;
             this._pFlexMaterials.push(pMaterial);
             return true;
         }
@@ -211,8 +212,8 @@ module akra.model {
             var bResult: bool = true;
             for (var i: int = 0; i < this.length; ++ i) {
                 if (!this._pSubMeshes[i].setFlexMaterial(iMaterial)) {
-                    warning('cannot set material<' + iMaterial + '> for mesh<' + this.name + 
-                        '> subset<' + this._pSubMeshes[i].name + '>');
+                    WARNING("cannot set material<" + iMaterial + "> for mesh<" + this.name + 
+                        "> subset<" + this._pSubMeshes[i].name + ">");
                     bResult = false;
                 }
             }
@@ -223,7 +224,7 @@ module akra.model {
         destroy(): void {
             this._pFlexMaterials = null;
             this._pSubMeshes = null;
-            this._pBuffer.destroy(this);
+            this._pBuffer.destroy(/*this*/);
         }
 
         destructor(): void {
@@ -257,13 +258,13 @@ module akra.model {
             var pRenderData: IReferenceCounter;
             var pSubMesh: IMeshSubset;
 
-            if (eCloneOptions & a.Mesh.SHARED_GEOMETRY) {
+            if (eCloneOptions & EMeshCloneOptions.SHARED_GEOMETRY) {
                 pClone = new Mesh(this.getEngine(), this.getOptions(), this.name, this.data);
                 
                 for (var i = 0; i < this.length; ++ i) {
                     pRenderData = this._pSubMeshes[i].data;
                     pRenderData.addRef();
-                    pClone.appendSubset(pRenderData, this._pSubMeshes[i].name);
+                    pClone.appendSubset(this._pSubMeshes[i].name, pRenderData);
                 }
 
                 pClone.replaceFlexMaterials(this.flexMaterials);
@@ -369,7 +370,7 @@ module akra.model {
             return true;
         }
 
-        getBoundingBox(): IRect3d {
+        inline get boundingBox(): IRect3d {
             if (!this._pBoundingBox) {
                 this.createBoundingBox();
             }
@@ -496,7 +497,7 @@ module akra.model {
             return true;
         }
 
-        getBoundingSphere(): ISphere {
+        inline get boundingSphere(): ISphere {
             return this._pBoundingSphere;
         }
 

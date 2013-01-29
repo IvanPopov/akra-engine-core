@@ -14,6 +14,12 @@ module akra.material {
 		emissive: IColor = new Color(.5);
 		shininess: float = 50.;
 
+		constructor (pMat?: IMaterial) {
+			if (isDefAndNotNull(pMat)) {
+				this.set(pMat);
+			}
+		}
+
 		set(pMat: IMaterial): IMaterial {
 			//this.name = pMat.name;
 
@@ -51,6 +57,8 @@ module akra.material {
 		inline set specular(pValue: IColorValue) { this._pData.setData(Color.toFloat32Array(pValue), DeclUsages.SPECULAR); }
 		inline set emissive(pValue: IColorValue) { this._pData.setData(Color.toFloat32Array(pValue), DeclUsages.EMISSIVE); }
 		inline set shininess(pValue: float) { this._pData.setData(new Float32Array([pValue]), DeclUsages.SHININESS); }
+
+		inline get data(): IVertexData { return this._pData; }
 
 		constructor (sName: string, pData: IVertexData) {
 			this._pData = pData;
