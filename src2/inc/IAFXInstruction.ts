@@ -121,6 +121,7 @@ module akra {
          * For using in AFXEffect
          */
         isEqual(pType: IAFXTypeInstruction): bool;
+        isConst(): bool;
 
         getHash(): string;
         getStrongHash(): string ;
@@ -219,6 +220,8 @@ module akra {
     export interface IAFXExprInstruction extends IAFXTypedInstruction {
         evaluate(): bool;
         simplify(): bool;
+        getEvalValue(): any;
+        isConst(): bool;
     }
 
     export interface IAFXIdExprInstruction extends IAFXExprInstruction {

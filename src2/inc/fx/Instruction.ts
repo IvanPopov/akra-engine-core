@@ -112,6 +112,9 @@ module akra.fx {
 		private _sStrongHash: string = "";
 		private _isArray: bool = false;
 		private _isPointer: bool = false;
+		private _isConst: bool = null;
+		private _iLength: uint = UNDEFINE_LENGTH;
+		private _pArrayIndexExpr: IAFXExprInstruction = null;
 
 		constructor() {
 			super();
@@ -153,6 +156,15 @@ module akra.fx {
 			
 		}
 
+		inline isBase(): bool {
+			return this.getSubType().isBase() && this._isArray === false;
+		}
+
+		inline isArray(): bool {
+			return this._isArray || 
+				   (this.getSubType().isArray() && this.getSubType().isBase());
+		}
+
 		isEqual(pType: IAFXTypeInstruction): bool {
 			if (this.isArray() && pType.isArray() && 
 				pType.getInstructionType() !== EAFXInstructionTypes.k_SystemTypeInstruction &&
@@ -169,13 +181,12 @@ module akra.fx {
 			return true;
 		}
 
-		inline isBase(): bool {
-			return this.getSubType().isBase() && this._isArray === false;
-		}
+		inline isConst(): bool {
+			if(isNull(this._isConst)){
+				this._isConst = (<IAFXUsageTypeInstruction>this._pInstructionList[0]).hasUsage("const");
+			}
 
-		inline isArray(): bool {
-			return this._isArray || 
-				   (this.getSubType().isArray() && this.getSubType().isBase());
+			return this._isConst;
 		}
 
 		isWrite(): bool {
@@ -263,7 +274,20 @@ module akra.fx {
 		}
 
 		getLength(): uint {
-			return 0;
+			if(!this.isArray()){
+				this._iLength = 0;
+				return 0;
+			}
+
+			if(this._iLength === UNDEFINE_LENGTH){
+				var isEval: bool = this._pArrayIndexExpr.evaluate();
+				
+				if(isEval) {
+					this._iLength = <uint>this._pArrayIndexExpr.getEvalValue();
+				}
+			}
+
+			return this._iLength;
 		}
 
 		getArrayElementType(): IAFXVariableTypeInstruction {
@@ -271,7 +295,24 @@ module akra.fx {
 		}
 
 		private calcHash(): void {
+			var sHash: string = this.getSubType().getHash();
+			
+			if(this.isArray()){
+				sHash += "[";
 
+				var iLength: uint = this.getLength();
+
+				if(iLength === UNDEFINE_LENGTH){
+					sHash += "undef"
+				}
+				else{
+					sHash += iLength.toString();
+				}
+
+				sHash += "]";
+			}
+
+			this._sHash = sHash;
 		}
 
 		private calcStrongHash(): void {
@@ -394,8 +435,12 @@ module akra.fx {
 			return true;
 		}
 
-		isEqual(pType: IAFXTypeInstruction): bool {
+		inline isEqual(pType: IAFXTypeInstruction): bool {
 			return this.getHash() === pType.getHash();
+		}
+
+		inline isConst(): bool {
+			return false;
 		}
 
 		inline getHash(): string {
@@ -489,8 +534,12 @@ module akra.fx {
 			return true;
 		}
 
-		isEqual(pType: IAFXTypeInstruction): bool {
+		inline isEqual(pType: IAFXTypeInstruction): bool {
 			return this.getHash() === pType.getHash();
+		}
+
+		inline isConst(): bool {
+			return false;
 		}
 
 		getHash(): string {
@@ -650,6 +699,10 @@ module akra.fx {
 		toString(): string {
 			return <string><any>this._iValue;
 		}
+
+		inline isConst(): bool {
+			return true;
+		}
 	}
 
 	export class FloatInstruction extends ExprInstruction implements IAFXLiteralInstruction {
@@ -671,6 +724,10 @@ module akra.fx {
 
 		toString(): string {
 			return <string><any>this._fValue;
+		}
+
+		inline isConst(): bool {
+			return true;
 		}
 	}
 
@@ -694,6 +751,10 @@ module akra.fx {
 		toString(): string {
 			return <string><any>this._bValue;
 		}
+
+		inline isConst(): bool {
+			return true;
+		}
 	}
 
 	export class StringInstruction extends ExprInstruction implements IAFXLiteralInstruction {
@@ -716,6 +777,10 @@ module akra.fx {
 
 		toString(): string {
 			return this._sValue;
+		}
+
+		inline isConst(): bool {
+			return true;
 		}
 	}
 
@@ -786,6 +851,10 @@ module akra.fx {
 		constructor() {
 			super();
 			this._eInstructionType = EAFXInstructionTypes.k_TypeDeclInstruction;
+		}
+
+		inline getType(): IAFXTypeInstruction {
+			return <IAFXTypeInstruction>this._pInstructionList[0];
 		}	 
 	}
 
@@ -852,6 +921,14 @@ module akra.fx {
 		simplify(): bool {
 			return false;
 		}
+
+		getEvalValue(): any {
+			return null;
+		}
+
+		isConst(): bool {
+			return false;
+		}
 	}
 
 	export class IdExprInstruction extends ExprInstruction implements IAFXIdExprInstruction {
@@ -870,6 +947,10 @@ module akra.fx {
 				this._pType = (<IAFXVariableDeclInstruction>pVar.getParent()).getType();
 				return this._pType;
 			}
+		}
+
+		isConst(): bool {
+			return this.getType().isConst();
 		}
 	}
 
@@ -1098,11 +1179,65 @@ module akra.fx {
 	 * EMPTY_OPERTOR VariableTypeInstruction IdInstruction VarDeclInstruction ... VarDeclInstruction
 	 */
 	export class FunctionDefInstruction extends DeclInstruction {
+		private _pParameterList: IAFXVariableDeclInstruction[] = null;
+		private _pReturnType: IAFXVariableTypeInstruction = null;
+		private _pFunctionName: IAFXIdInstruction = null;
+		//private _sHash: string = "";
+
 		constructor() {
 			super();
 			this._pInstructionList = [null, null];
+			this._pParameterList = [];
 			this._eInstructionType = EAFXInstructionTypes.k_FunctionDefInstruction;
 		}
+
+		inline setType(pType: IAFXTypeInstruction): void {
+			this.setReturnType(pType);
+		}
+
+		inline getType(): IAFXTypeInstruction {
+			return <IAFXTypeInstruction>this.getReturnType();
+		}
+
+		inline setReturnType(pReturnType: IAFXVariableTypeInstruction): bool {
+			this._pReturnType = pReturnType;
+			pReturnType.setParent(this);
+			return true;
+		}
+		inline getReturnType(): IAFXVariableTypeInstruction {
+			return this._pReturnType;
+		}
+
+		inline setFunctionName(pNameId: IAFXIdInstruction): bool {
+			this._pFunctionName = pNameId;
+			pNameId.setParent(this);
+			return true;
+		}
+
+		addParameter(pParameter: IAFXVariableDeclInstruction): bool {
+			this._pParameterList.push(pParameter);
+			pParameter.setParent(this);
+			return true;
+		}
+
+		// getHash(): string {
+		// 	if(this._sHash === "") {
+		// 		this.calcHash();
+		// 	}
+
+		// 	return this._sHash;
+		// }
+
+		// private calcHash(): void {
+		// 	var sHash: string = "";
+		// 	sHash = this._pFunctionName.getName();
+		// 	sHash += "(";
+			
+		// 	for(var i: uint = 0; i < this._pParameterList.length; i++){
+		// 		sHash += this._pParameterList[i]
+		// 	}
+
+		// }
 	}
 
 	/**

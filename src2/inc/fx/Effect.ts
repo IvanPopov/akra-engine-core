@@ -138,7 +138,18 @@ module akra.fx {
 			return null;
 		}
 
-		getType(sTypeName: string, iScope?: uint = this._iCurrentScope): IAFXTypeDeclInstruction {
+		getType(sTypeName: string, iScope?: uint = this._iCurrentScope): IAFXTypeInstruction {
+			var pTypeDecl: IAFXTypeDeclInstruction = this.getTypeDecl(sTypeName, iScope);
+			
+			if(!isNull(pTypeDecl)){
+				return pTypeDecl.getType();
+			}
+			else {
+				return null;
+			}
+		}
+
+		getTypeDecl(sTypeName: string, iScope?: uint = this._iCurrentScope): IAFXTypeDeclInstruction {
 			if(isNull(iScope)){
 				return null;
 			}
@@ -244,7 +255,7 @@ module akra.fx {
 				pFunctionMap = pScope.functionMap = <IAFXFunctionDeclMap>{};
 			}
 
-			var sFuncHash: string = pFunction.getHash();
+			var sFuncName: string = pFunction.getName();
 
 			if(this.hasFunctionInScope(sFuncHash, iScope)){
 				return false;
@@ -485,7 +496,7 @@ module akra.fx {
 			return pSystemType;
 		}
 
-		private addSystemTypeScalar(): void{
+		private addSystemTypeScalar(): void {
 			this.generateSystemType("void", "void", 0);
 			this.generateSystemType("int", "int", 1);
 			this.generateSystemType("bool", "bool", 1);
@@ -639,12 +650,20 @@ module akra.fx {
 		} 
 
 		private inline getVariable(sName: string): IAFXVariableDeclInstruction {
-			return this._pEffectScope.getVariable(sName);
+			return this.getSystemVariable(sName) || this._pEffectScope.getVariable(sName);
 		}
 
-		private getSystemType(sTypeName: string): IAFXTypeInstruction {
+		private getType(sTypeName: string): IAFXTypeInstruction {
+			return this.getSystemType(sTypeName) || this._pEffectScope.getType(sTypeName);
+		}
+
+		private inline getSystemType(sTypeName: string): IAFXTypeInstruction {
         	//bool, string, float and others
         	return isDef(this._pSystemTypes[sTypeName]) ? this._pSystemTypes[sTypeName] : null;
+        }
+
+        private inline getSystemVariable(sName: string): IAFXVariableDeclInstruction {
+        	return null;
         }
 
 		private addSystemVariable(): void {
@@ -1739,20 +1758,23 @@ module akra.fx {
         	switch(sName) {
         	 	case "T_UINT": 
         	 		pInstruction = new IntInstruction();
-        	 		pInstruction.setValue(<int><any>sValue);
+        	 		pInstruction.setValue((<int><any>sValue) * 1);
         	 		break;
         	 	case "T_FLOAT":
         	 		pInstruction = new FloatInstruction();
-        	 		pInstruction.setValue(<float><any>sValue);
+        	 		pInstruction.setValue((<float><any>sValue) * 1.0);
         	 		break;
         	 	case "T_STRING":
         	 		pInstruction = new StringInstruction();
         	 		pInstruction.setValue(sValue);
         	 		break;
         	 	case "T_KW_TRUE":
+        	 		pInstruction = new BoolInstruction();
+        	 		pInstruction.setValue(true);
+        	 		break;
         	 	case "T_KW_FALSE":
         	 		pInstruction = new BoolInstruction();
-        	 		pInstruction.setValue(<bool><any>sValue);
+        	 		pInstruction.setValue(false);
         	 		break;
 			}
 
@@ -1921,8 +1943,8 @@ module akra.fx {
         	pFuncName = new IdInstruction();
         	pFuncName.setName(sFuncName);
 
-        	pFunctionDef.push(pReturnType, true);
-        	pFunctionDef.push(pFuncName, true);
+        	pFunctionDef.setReturnType(pReturnType);
+        	pFunctionDef.setFunctionName(pFuncName);
 
         	if(pChildren.length === 4){
         		var sSemantic: string = this.analyzeSemantic(pChildren[0]);
@@ -1938,6 +1960,56 @@ module akra.fx {
         	CHECK_INSTRUCTION(pFunctionDef, ECheckStage.CODE_TARGET_SUPPORT);    
 
         	return pFunctionDef;
+        }
+
+        private analyzeParamList(pNode:IParseNode, pFunctionDef: FunctionDefInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pParameter: IAFXVariableDeclInstruction;
+
+        	var i: uint = 0;
+
+        	for (i = pChildren.length - 2; i >= 1; i--) {
+        		if (pChildren[i].name === "ParameterDecl") {
+		            pParameter = this.analyzeParameterDecl(pChildren[i]);
+		            pFunctionDef.addParameter(pParameter);
+		        }	
+        	}
+        }
+
+        private analyzeParameterDecl(pNode: IParseNode): IAFXVariableDeclInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pType: IAFXUsageTypeInstruction;
+        	var pParameter: IAFXVariableDeclInstruction;
+
+        	pType = this.analyzeParamUsageType(pChildren[1]);
+        	pParameter = this.analyzeVariable(pChildren[0], pType);
+
+        	return pParameter;
+        }
+
+        private analyzeParamUsageType(pNode: IParseNode): IAFXUsageTypeInstruction {
+        	var pChildren: IParseNode[] = pNode.children;
+		    var i: uint = 0;
+		    var pType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
+
+		    for (i = pChildren.length - 1; i >= 0; i--) {
+		        if (pChildren[i].name === "Type") {
+		        	var pMainType: IAFXTypeInstruction = this.analyzeType(pChildren[i]);
+		        	pType.setTypeInstruction(pMainType);
+		        }
+		        else if (pChildren[i].name === "ParamUsage") {
+		        	var sUsage: string = this.analyzeUsage(pChildren[i]);
+		        	pType.addUsage(sUsage);
+		        }
+		    }
+
+		    CHECK_INSTRUCTION(pType, ECheckStage.CODE_TARGET_SUPPORT);   
+
+		    return pType;
         }
 
         private analyzeStmtBlock(pNode: IParseNode): IAFXStmtInstruction {
@@ -2319,55 +2391,7 @@ module akra.fx {
         	return null;
         }
 
-        private analyzeParamList(pNode:IParseNode, pFunctionDef: FunctionDefInstruction): void {
-        	this.setAnalyzedNode(pNode);
-
-        	var pChildren: IParseNode[] = pNode.children;
-        	var pParameter: IAFXVariableDeclInstruction;
-
-        	var i: uint = 0;
-
-        	for (i = pChildren.length - 2; i >= 1; i--) {
-        		if (pChildren[i].name === "ParameterDecl") {
-		            pParameter = this.analyzeParameterDecl(pChildren[i]);
-		            pFunctionDef.push(pParameter, true);
-		        }	
-        	}
-        }
-
-        private analyzeParameterDecl(pNode: IParseNode): IAFXVariableDeclInstruction {
-        	this.setAnalyzedNode(pNode);
-
-        	var pChildren: IParseNode[] = pNode.children;
-        	var pType: IAFXUsageTypeInstruction;
-        	var pParameter: IAFXVariableDeclInstruction;
-
-        	pType = this.analyzeParamUsageType(pChildren[1]);
-        	pParameter = this.analyzeVariable(pChildren[0], pType);
-
-        	return pParameter;
-        }
-
-        private analyzeParamUsageType(pNode: IParseNode): IAFXUsageTypeInstruction {
-        	var pChildren: IParseNode[] = pNode.children;
-		    var i: uint = 0;
-		    var pType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
-
-		    for (i = pChildren.length - 1; i >= 0; i--) {
-		        if (pChildren[i].name === "Type") {
-		        	var pMainType: IAFXTypeInstruction = this.analyzeType(pChildren[i]);
-		        	pType.setTypeInstruction(pMainType);
-		        }
-		        else if (pChildren[i].name === "ParamUsage") {
-		        	var sUsage: string = this.analyzeUsage(pChildren[i]);
-		        	pType.addUsage(sUsage);
-		        }
-		    }
-
-		    CHECK_INSTRUCTION(pType, ECheckStage.CODE_TARGET_SUPPORT);   
-
-		    return pType;
-        }
+        
 
         
 
