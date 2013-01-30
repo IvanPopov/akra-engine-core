@@ -50,6 +50,8 @@ module akra.fx {
     #define EFFCCT_BAD_NEW_FIELD_FOR_STRUCT_NAME 2242
     #define EFFCCT_BAD_NEW_FIELD_FOR_STRUCT_SEMANTIC 2243
     #define EFFCCT_BAD_NEW_ANNOTATION_VAR 2244
+    #define EFFCCT_BAD_FUNCTION_PARAMETER_DEFENITION_NEED_DEFAULT 2245
+    #define EFFECT_BAD_CANNOT_CHOOSE_FUNCTION 2246
 
     akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, 
     						 "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
@@ -173,9 +175,15 @@ module akra.fx {
     	 					 "You trying to add field to struct with semantic '{semanticName}',\
     	 					  but struct already has this semantic.\
     	 					  In line: {line}. In column: {column}");
-     akra.logger.registerCode(EFFCCT_BAD_NEW_ANNOTATION_VAR, 
-    	 					 "Bad variable name '{varName}'. Annotation already has variable with that name.\
+    akra.logger.registerCode(EFFCCT_BAD_NEW_ANNOTATION_VAR, 
+       					     "Bad variable name '{varName}'. Annotation already has variable with that name.\
     	 					  In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFCCT_BAD_FUNCTION_PARAMETER_DEFENITION_NEED_DEFAULT,
+                             "Bad parameter '{varName}' in function '{funcName}'. Need default value.\
+                              In line: {line}. In column: {column}"); 
+    akra.logger.registerCode(EFFECT_BAD_CANNOT_CHOOSE_FUNCTION,
+                             "Bad function call. There are two or more call signatures for function '{funcName}'.\
+                              In line: {line}. In column: {column}"); 
 
     function sourceLocationToString(pLocation: ISourceLocation): string {
         var sLocation:string = "[" + pLocation.file + ":" + pLocation.line.toString() + "]: ";

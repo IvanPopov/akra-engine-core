@@ -31,8 +31,8 @@ module akra.fx {
 		[typeName: string] : IAFXTypeDeclInstruction;
 	}
 
-	export interface IAFXFunctionDeclMap {
-		[functionHash: string] : IAFXFunctionDeclInstruction;
+	export interface IAFXFunctionDeclListMap {
+		[functionName: string] : IAFXFunctionDeclInstruction[];
 	}
 
 	export interface IScope {
@@ -42,7 +42,7 @@ module akra.fx {
 
 		variableMap : IAFXVariableDeclMap;
 		typeMap : IAFXTypeDeclMap;
-		functionMap : IAFXFunctionDeclMap;
+		functionMap : IAFXFunctionDeclListMap;
 	}
 
 	export interface IScopeMap {
@@ -173,28 +173,62 @@ module akra.fx {
 			return null;
 		}
 
-		getFunction(sFuncHash: string, iScope?: uint = GLOBAL_SCOPE): IAFXFunctionDeclInstruction {
+		/**
+		 * get function by name and list of types
+		 * return null - if threre are not function; undefined - if there more then one function; function - if all ok
+		 */
+		getFunction(sFuncName: string, pArgumentTypes: IAFXTypedInstruction[], iScope?: uint = GLOBAL_SCOPE): IAFXFunctionDeclInstruction {
 			if(isNull(iScope)){
 				return null;
 			}
 
 			var pScope: IScope = this._pScopeMap[iScope];
+			var pFunction: IAFXFunctionDeclInstruction = null;
 
 			while(!isNull(pScope)){
-				var pFunctionMap: IAFXFunctionDeclMap = pScope.functionMap;
+				var pFunctionListMap: IAFXFunctionDeclListMap = pScope.functionMap;
 
-				if(!isNull(pFunctionMap)){
-					var pFunction: IAFXFunctionDeclInstruction = pFunctionMap[sFuncHash];
+				if(!isNull(pFunctionListMap)){
+					var pFunctionList: IAFXFunctionDeclInstruction[] = pFunctionListMap[sFuncName];
+					
+					if(isDef(pFunctionList)){
+						
+						for(var i: uint = 0; i < pFunctionList.length; i++){
+							var pTestedFunction: IAFXFunctionDeclInstruction  = pFunctionList[i];
+							var pTestedArguments: IAFXVariableDeclInstruction[] = pTestedFunction.getArguments();
 
-					if(isDef(pFunction)){
-						return pFunction;
+							if(pArgumentTypes.length > pTestedArguments.length ||
+							   pArgumentTypes.length < pTestedFunction.getNumNeededArguments()){
+								continue;
+							}
+
+							var isParamsEqual: bool = true;
+
+							for(var j: uint = 0; j < pArgumentTypes.length; j++){
+								isParamsEqual = false;
+
+								if(!pArgumentTypes[j].getType().isEqual(pTestedArguments[j].getType())){
+									break;
+								}
+
+								isParamsEqual = true;
+							}
+
+							if(isParamsEqual){
+								if(!isNull(pFunction)){
+									return undefined;
+								}
+								pFunction = pTestedFunction;
+							}
+						}	
 					}
+
 				}
 
 				pScope = pScope.parent;
 			}
-
-			return null;
+			
+			return pFunction;
 		}
 
 		addVariable(pVariable: IAFXVariableDeclInstruction, iScope?: uint = this._iCurrentScope): bool {
@@ -249,19 +283,23 @@ module akra.fx {
 			}
 
 			var pScope: IScope = this._pScopeMap[iScope];
-			var pFunctionMap: IAFXFunctionDeclMap = pScope.functionMap;
+			var pFunctionMap: IAFXFunctionDeclListMap = pScope.functionMap;
 
 			if(!isDef(pFunctionMap)){
-				pFunctionMap = pScope.functionMap = <IAFXFunctionDeclMap>{};
+				pFunctionMap = pScope.functionMap = <IAFXFunctionDeclListMap>{};
 			}
 
 			var sFuncName: string = pFunction.getName();
 
-			if(this.hasFunctionInScope(sFuncHash, iScope)){
+			if(this.hasFunctionInScope(pFunction, iScope)){
 				return false;
 			}
+			
+			if(!isDef(pFunctionMap[sFuncName])){
+				pFunctionMap[sFuncName] = [];
+			}
 
-			pFunctionMap[sFuncHash] = pFunction;
+			pFunctionMap[sFuncName].push(pFunction);
 
 			return true;
 		}
@@ -314,7 +352,7 @@ module akra.fx {
 			return false;
 		}
 
-		hasFunction(sFuncHash: string, iScope?: uint = GLOBAL_SCOPE): bool {
+		hasFunction(sFuncName: string, pArgumentTypes: IAFXTypedInstruction[], iScope?: uint = GLOBAL_SCOPE): bool {
 			if(isNull(iScope)){
 				return false;
 			}
@@ -322,14 +360,41 @@ module akra.fx {
 			var pScope: IScope = this._pScopeMap[iScope];
 
 			while(!isNull(pScope)){
-				var pFunctionMap: IAFXFunctionDeclMap = pScope.functionMap;
+				var pFunctionListMap: IAFXFunctionDeclListMap = pScope.functionMap;
 
-				if(!isNull(pFunctionMap)){
-					var pFunction: IAFXFunctionDeclInstruction = pFunctionMap[sFuncHash];
+				if(!isNull(pFunctionListMap)){
+					var pFunctionList: IAFXFunctionDeclInstruction[] = pFunctionListMap[sFuncName];
+					
+					if(isDef(pFunctionList)){
+						var pFunction: IAFXFunctionDeclInstruction = null;
+						
+						for(var i: uint = 0; i < pFunctionList.length; i++){
+							var pTestedFunction: IAFXFunctionDeclInstruction  = pFunctionList[i];
+							var pTestedArguments: IAFXVariableDeclInstruction[] = pTestedFunction.getArguments();
 
-					if(isDef(pFunction)){
-						return true;
+							if(pArgumentTypes.length > pTestedArguments.length ||
+							   pArgumentTypes.length < pTestedFunction.getNumNeededArguments()){
+								continue;
+							}
+
+							var isParamsEqual: bool = true;
+
+							for(var j: uint = 0; j < pArgumentTypes.length; j++){
+								isParamsEqual = false;
+
+								if(!pArgumentTypes[j].getType().isEqual(pTestedArguments[j].getType())){
+									break;
+								}
+
+								isParamsEqual = true;
+							}
+
+							if(isParamsEqual){
+								return true;
+							}
+						}	
 					}
+
 				}
 
 				pScope = pScope.parent;
@@ -346,8 +411,48 @@ module akra.fx {
 			return isDef(this._pScopeMap[iScope].typeMap[sTypeName]);
 		}
 
-		private inline hasFunctionInScope(sFuncHash: string, iScope: uint): bool {
-			return isDef(this._pScopeMap[iScope].functionMap[sFuncHash]);
+		private hasFunctionInScope(pFunction: IAFXFunctionDeclInstruction, iScope: uint): bool {
+			if(isNull(iScope)){
+				return false;
+			}
+
+			var pScope: IScope = this._pScopeMap[iScope];
+			var pFunctionListMap:IAFXFunctionDeclListMap = pScope.functionMap;
+			var pFunctionList: IAFXFunctionDeclInstruction[] = pFunctionListMap[pFunction.getName()];
+			
+			if(!isDef(pFunctionList)){
+				return false;
+			}
+
+			var pFunctionArguments: IAFXTypedInstruction[] = <IAFXTypedInstruction[]>pFunction.getArguments();
+			var hasFunction: bool = false;
+
+			for(var i: uint = 0; i < pFunctionList.length; i++){
+				var pTestedArguments: IAFXTypedInstruction[] = <IAFXTypedInstruction[]>pFunctionList[i].getArguments();
+			
+				if(pTestedArguments.length !== pFunctionArguments.length){
+					continue;
+				}
+
+				var isParamsEqual: bool = true;
+
+				for(var j: uint = 0; j < pFunctionArguments.length; j++){
+					isParamsEqual = false;
+
+					if(!pTestedArguments[j].getType().isEqual(pFunctionArguments[j].getType())){
+						break;
+					}
+
+					isParamsEqual = true;
+				}
+
+				if(isParamsEqual){
+					hasFunction = true;
+					break;
+				}
+			}
+
+			return hasFunction;
 		}
 
 	}
@@ -768,8 +873,12 @@ module akra.fx {
 		}
 
 		private findFunction(sFunctionName: string, 
-							 pArguments: IAFXExprInstruction[]): IAFXIdExprInstruction {
-			return null;
+							 pArguments: IAFXExprInstruction[]): IAFXFunctionDeclInstruction;
+		private findFunction(sFunctionName: string, 
+							 pArguments: IAFXVariableDeclInstruction[]): IAFXFunctionDeclInstruction;
+		private findFunction(sFunctionName: string, 
+							 pArguments: IAFXTypedInstruction[]): IAFXFunctionDeclInstruction {
+			return this._pEffectScope.getFunction(sFunctionName, pArguments);
 		}
 
 		private findConstructor(pType: IAFXTypeInstruction, 
@@ -783,7 +892,7 @@ module akra.fx {
 		}
 
 		private findFunctionByDef(pDef: FunctionDefInstruction): IAFXFunctionDeclInstruction {
-			return null;
+			return this.findFunction(pDef.getName(), pDef.getArguments());
 		}
 
 		// private addVariable(pVariable: IAFXVariable): void {
@@ -826,7 +935,7 @@ module akra.fx {
         }
 
         private addFunctionDecl(pFunction: IAFXFunctionDeclInstruction): void {
-        	if(this.isSystemVariable(pFunction)){
+        	if(this.isSystemFunction(pFunction)){
         		this._error(EFFECT_REDEFINE_SYSTEM_FUNCTION, {funcName: pFunction.getName()});
         	}
 
@@ -1201,7 +1310,8 @@ module akra.fx {
         	var pExprType: IAFXVariableTypeInstruction;
         	var pArguments: IAFXExprInstruction[] = null;
         	var sFuncName: string = pChildren[pChildren.length - 1].value;
-        	var pFunction: IAFXIdExprInstruction;
+        	var pFunction: IAFXFunctionDeclInstruction = null;
+        	var pFunctionId: IAFXIdExprInstruction = null;
         	var i: uint = 0;
 
         	if(pChildren.length > 3){        		
@@ -1224,15 +1334,30 @@ module akra.fx {
         		return null;
         	}
 
+        	if(!isDef(pFunction)){
+        		this._error(EFFECT_BAD_CANNOT_CHOOSE_FUNCTION, {funcName: sFuncName });
+        		return null;
+        	}
+
+        	pFunctionId = new IdExprInstruction();
+        	pFunctionId.push(pFunction.getNameId(), false);
+
         	pExprType = <IAFXVariableTypeInstruction>pFunction.getType();
 
         	pExpr.setType(pExprType);
-        	pExpr.push(pFunction, true);
+        	pExpr.push(pFunctionId, true);
         	
         	if(!isNull(pArguments)){
         		for(i = 0; i < pArguments.length; i++) {
         			pExpr.push(pArguments[i], true);
         		}
+
+        		var pFunctionArguments: IAFXVariableDeclInstruction[] = pFunction.getArguments();
+
+        		for(i = pArguments.length; i < pFunctionArguments.length; i++){
+        			pExpr.push(pFunctionArguments[i].getInitializeExpr(), false);
+        		}
+        		
         	}
 
         	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);

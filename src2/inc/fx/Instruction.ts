@@ -63,6 +63,11 @@ module akra.fx {
 			return this._pLastError;
 		}
 
+		inline setError(eCode: uint, pInfo: any): void {
+			this._pLastError.code = eCode;
+			this._pLastError.info = pInfo;
+		}
+
 		constructor(){
 			this._pParentInstruction = null;
 			this._sOperatorName = null;
@@ -867,6 +872,14 @@ module akra.fx {
 			super();
 			this._eInstructionType = EAFXInstructionTypes.k_VariableDeclInstruction;
 		}
+
+		hasInitializer(): bool {
+			return false;
+		}
+
+		getInitializeExpr(): IAFXExprInstruction {
+			return null;
+		}
 	}
 
 	export class AnnotationInstruction extends Instruction implements IAFXAnnotationInstruction {
@@ -876,6 +889,128 @@ module akra.fx {
 		}
 	}
 
+	/**
+	 * Represent type func(...args)[:Semantic] [<Annotation> {stmts}]
+	 * EMPTY_OPERTOR FunctionDefInstruction StmtBlockInstruction
+	 */
+	export class FunctionDeclInstruction extends DeclInstruction implements IAFXFunctionDeclInstruction {
+		constructor() { 
+			super();
+			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_FunctionDeclInstruction;
+		}	
+
+		getNameId(): IAFXIdInstruction {
+			return null;
+		}
+
+		getArguments(): IAFXVariableDeclInstruction[] {
+			return null;
+		}
+
+		getNumNeededArguments(): uint {
+			return 0;
+		}
+		
+		hasImplementation(): bool {
+			return false;
+		}
+	}
+
+	/**
+	 * Represent type func(...args)[:Semantic]
+	 * EMPTY_OPERTOR VariableTypeInstruction IdInstruction VarDeclInstruction ... VarDeclInstruction
+	 */
+	export class FunctionDefInstruction extends DeclInstruction {
+		private _pParameterList: IAFXVariableDeclInstruction[] = null;
+		private _pReturnType: IAFXVariableTypeInstruction = null;
+		private _pFunctionName: IAFXIdInstruction = null;
+		private _nParamsNeeded: uint = 0;
+
+		//private _sHash: string = "";
+
+		constructor() {
+			super();
+			this._pInstructionList = [null, null];
+			this._pParameterList = [];
+			this._eInstructionType = EAFXInstructionTypes.k_FunctionDefInstruction;
+		}
+
+		inline setType(pType: IAFXTypeInstruction): void {
+			this.setReturnType(<IAFXVariableTypeInstruction>pType);
+		}
+
+		inline getType(): IAFXTypeInstruction {
+			return <IAFXTypeInstruction>this.getReturnType();
+		}
+
+		inline setReturnType(pReturnType: IAFXVariableTypeInstruction): bool {
+			this._pReturnType = pReturnType;
+			pReturnType.setParent(this);
+			return true;
+		}
+		inline getReturnType(): IAFXVariableTypeInstruction {
+			return this._pReturnType;
+		}
+
+		inline setFunctionName(pNameId: IAFXIdInstruction): bool {
+			this._pFunctionName = pNameId;
+			pNameId.setParent(this);
+			return true;
+		}
+
+		inline getName(): string {
+			return this._pFunctionName.getName();
+		}
+
+		inline getNameId(): IAFXIdInstruction {
+			return this._pFunctionName;
+		}
+
+		inline getArguments(): IAFXVariableDeclInstruction[]{
+			return this._pParameterList;
+		}
+
+
+		addParameter(pParameter: IAFXVariableDeclInstruction): bool {
+			if (this._pParameterList.length > this._nParamsNeeded && 
+				!pParameter.hasInitializer()) {
+
+				this.setError(EFFCCT_BAD_FUNCTION_PARAMETER_DEFENITION_NEED_DEFAULT, 
+							  { funcName: this._pFunctionName.getName(),
+							  	varName: pParameter.getName() });
+				return false;
+			}
+
+			this._pParameterList.push(pParameter);
+			pParameter.setParent(this);
+
+			if(!pParameter.hasInitializer()){
+				this._nParamsNeeded++;
+			}
+
+			return true;
+		}
+
+		// getHash(): string {
+		// 	if(this._sHash === "") {
+		// 		this.calcHash();
+		// 	}
+
+		// 	return this._sHash;
+		// }
+
+		// private calcHash(): void {
+		// 	var sHash: string = "";
+		// 	sHash = this._pFunctionName.getName();
+		// 	sHash += "(";
+			
+		// 	for(var i: uint = 0; i < this._pParameterList.length; i++){
+		// 		sHash += this._pParameterList[i]
+		// 	}
+
+		// }
+	}
 	
 	// export class BaseTypeInstruction extends Instruction implements IAFXBaseTypeInstruction {
 	// 	// EMPTY_OPERATOR IdInstruction
@@ -1150,95 +1285,7 @@ module akra.fx {
 		}	
 	}
 
-	/**
-	 * Represent type func(...args)[:Semantic] [<Annotation> {stmts}]
-	 * EMPTY_OPERTOR FunctionDefInstruction StmtBlockInstruction
-	 */
-	export class FunctionDeclInstruction extends DeclInstruction implements IAFXFunctionDeclInstruction {
-		constructor() { 
-			super();
-			this._pInstructionList = [null, null];
-			this._eInstructionType = EAFXInstructionTypes.k_FunctionDeclInstruction;
-		}	
-
-		getNameId(): IAFXIdInstruction {
-			return null;
-		}
-
-		getHash(): string{
-			return "";
-		}
-		
-		hasImplementation(): bool {
-			return false;
-		}
-	}
-
-	/**
-	 * Represent type func(...args)[:Semantic]
-	 * EMPTY_OPERTOR VariableTypeInstruction IdInstruction VarDeclInstruction ... VarDeclInstruction
-	 */
-	export class FunctionDefInstruction extends DeclInstruction {
-		private _pParameterList: IAFXVariableDeclInstruction[] = null;
-		private _pReturnType: IAFXVariableTypeInstruction = null;
-		private _pFunctionName: IAFXIdInstruction = null;
-		//private _sHash: string = "";
-
-		constructor() {
-			super();
-			this._pInstructionList = [null, null];
-			this._pParameterList = [];
-			this._eInstructionType = EAFXInstructionTypes.k_FunctionDefInstruction;
-		}
-
-		inline setType(pType: IAFXTypeInstruction): void {
-			this.setReturnType(pType);
-		}
-
-		inline getType(): IAFXTypeInstruction {
-			return <IAFXTypeInstruction>this.getReturnType();
-		}
-
-		inline setReturnType(pReturnType: IAFXVariableTypeInstruction): bool {
-			this._pReturnType = pReturnType;
-			pReturnType.setParent(this);
-			return true;
-		}
-		inline getReturnType(): IAFXVariableTypeInstruction {
-			return this._pReturnType;
-		}
-
-		inline setFunctionName(pNameId: IAFXIdInstruction): bool {
-			this._pFunctionName = pNameId;
-			pNameId.setParent(this);
-			return true;
-		}
-
-		addParameter(pParameter: IAFXVariableDeclInstruction): bool {
-			this._pParameterList.push(pParameter);
-			pParameter.setParent(this);
-			return true;
-		}
-
-		// getHash(): string {
-		// 	if(this._sHash === "") {
-		// 		this.calcHash();
-		// 	}
-
-		// 	return this._sHash;
-		// }
-
-		// private calcHash(): void {
-		// 	var sHash: string = "";
-		// 	sHash = this._pFunctionName.getName();
-		// 	sHash += "(";
-			
-		// 	for(var i: uint = 0; i < this._pParameterList.length; i++){
-		// 		sHash += this._pParameterList[i]
-		// 	}
-
-		// }
-	}
+	
 
 	/**
 	 * Represent all kind of statements

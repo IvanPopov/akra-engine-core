@@ -95,6 +95,7 @@ module akra {
 
         check(eStage: ECheckStage): bool;
         getLastError(): IAFXInstructionError;
+        setError(eCode: uint, pInfo: any): void;
 
     	// /**
     	//  * Contain states of instruction
@@ -184,13 +185,15 @@ module akra {
     }
 
     export interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
-
+        hasInitializer(): bool;
+        getInitializeExpr(): IAFXExprInstruction;
     }
 
     export interface IAFXFunctionDeclInstruction extends IAFXDeclInstruction {
         //getNameId(): IAFXIdInstruction;
         hasImplementation(): bool;
-        getHash(): string;
+        getArguments(): IAFXVariableDeclInstruction[];
+        getNumNeededArguments(): uint;
     }
 
     export interface IAFXStructDeclInstruction extends IAFXInstruction {
