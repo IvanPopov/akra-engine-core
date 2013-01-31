@@ -2,28 +2,26 @@
 #define RENDERDATACOLLECTION_TS
 
 #include "IRenderDataCollection.ts"
+#include "IHardwareBuffer.ts"
+#include "RenderData.ts"
 
-module akra.core.pool.resources {
+module akra.render {
 
-	export class RenderDataCollection implements IRenderDataCollection extends ReferenceCounter{
+	export class RenderDataCollection implements IRenderDataCollection extends util.ReferenceCounter {
 		private _pDataBuffer = null;
 		private _pEngine: IEngine = null;
 		private _eDataOptions: int = 0;
-		private _pSubsetType = null;
 		private _pDataArray = [];
 
 		inline get buffer(): IVertexBuffer{
 			return this._pDataBuffer;
 		}
 
-		inline get dataType(): IRenderDataType{
-			return this._pSubsetType;
-		}
 
-		inline set dataType(pSubsetType: IRenderDataType){
-			debug_assert(this._pSubsetType === null, 'subset type already set.');
-        	this._pSubsetType = pSubsetType;
-		}
+        constructor (pEngine: IEngine) {
+            super();
+            this._pEngine = pEngine;
+        }
 
         getEngine(): IEngine {
         	return this._pEngine;
@@ -36,7 +34,9 @@ module akra.core.pool.resources {
         /**
          * Find VertexData with given semantics/usage.
          */
-        getData(): IVertexData {
+        getData(sUsage: string): IVertexData;
+        getData(iOffset: uint): IVertexData;
+        getData(a?): IVertexData {
         	var pData: IVertexData[];
 
         	if (this._pDataBuffer) {
@@ -130,11 +130,11 @@ module akra.core.pool.resources {
             var iVbOption: int = 0;
             var iOptions: int = this._eDataOptions;
 
-            if (iOptions & a.RenderDataBuffer.VB_READABLE) {
-                SET_BIT(iVbOption, FLAG(a.VBufferBase.ReadableBit), true);
+            if (iOptions & ERenderDataBufferOptions.VB_READABLE) {
+                SET_BIT(iVbOption, FLAG(EHardwareBufferFlags.READABLE), true);
             }
             //trace('creating new video buffer for render data buffer ...');
-            this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource('render_data_buffer' + '_' + a.sid());
+            this._pDataBuffer = this._pEngine.pDisplayManager.videoBufferPool().createResource("render_data_buffer" + "_" + sid());
             this._pDataBuffer.create(0, iVbOption);
             this._pDataBuffer.addRef();
             return this._pDataBuffer !== null;
@@ -145,10 +145,9 @@ module akra.core.pool.resources {
         }
 
         getEmptyRenderData(ePrimType: EPrimitiveTypes, iOptions: int): IRenderData {
-        	debug_assert(this._pSubsetType !== null, 'subset type not specified.');
 
         	var iSubsetId: int = this._pDataArray.length;
-        	var pDataset = new this._pSubsetType(this._pEngine);
+        	var pDataset = new RenderData(this._pEngine);
 
         	eOptions |= this._eDataOptions;
 
@@ -174,11 +173,8 @@ module akra.core.pool.resources {
         	return true;
         }
 
-        protected setup(eOptions: int) {
+        _setup(eOptions: int = 0) {
             this._eDataOptions = eOptions;
-            if (!this._pSubsetType) {
-                this._pSubsetType = a.RenderData;
-            }
         };
 
         destroy(): void {
@@ -192,7 +188,6 @@ module akra.core.pool.resources {
 
             this._pEngine = null;
             this._eDataOptions = 0;
-            this._pSubsetType = null;
         }
 	}
 }

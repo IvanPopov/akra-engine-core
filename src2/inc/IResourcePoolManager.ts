@@ -108,7 +108,7 @@ module akra {
         createTexture(sResourceName: string): ITexture;
         createSurfaceMaterial(sResourceName: string): ISurfaceMaterial;
         createEffect(sResourceName: string): IEffect;
-
+        createVertexBuffer(sResourceName: string): IVertexBuffer;
     }
 }
 

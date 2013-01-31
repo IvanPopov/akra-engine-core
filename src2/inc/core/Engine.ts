@@ -12,6 +12,13 @@
 #include "scene/SceneManager.ts"
 #include "util/UtilTimer.ts"
 
+//include sub creation classes.
+
+#include "render/RenderDataCollection.ts"
+#include "model/Mesh.ts"
+#include "util/BufferMap.ts"
+
+
 #ifdef WEBGL
 #include "webgl/WebGLRenderer.ts"
 #endif
@@ -173,6 +180,20 @@ module akra.core {
 		    }
 
 		    return !this._isActive;
+		}
+
+		createMesh(sName: string = null, eOptions: int = 0, pDataBuffer: IRenderDataCollection = null): IMesh {
+			return new model.Mesh(this, eOptions, sName, pDataBuffer);
+		}
+
+		createRenderDataCollection(iOptions: int = 0): IRenderDataCollection {
+			var pCollection: IRenderDataCollection = new render.RenderDataCollection(this);
+			pCollection._setup(iOptions);
+			return pCollection;
+		}
+
+		createBufferMap(): IBufferMap {
+			return new util.BufferMap(this);
 		}
 
 

@@ -4,16 +4,19 @@
 #include "IRenderData.ts"
 #include "IVertexData.ts"
 #include "IVertexElement.ts"
+#include "bf/bitflags.ts"
 
-module akra.core.pool.resources {
-	interface iIndexSet {
+module akra.render {
+	export interface IIndexSet {
 		sName: string;
 		pMap: IBufferMap;
 		pIndexData: IBufferData;
 		pAttribData: IVertexData;
+		pI2IDataCache: IntMap;
+		pAdditionCache: IntMap;
 	};
 
-	export class RenderData implements IRenderData extends ReferenceCounter {
+	export class RenderData implements IRenderData extends util.ReferenceCounter {
 		/**
 		 * Options.
 		 */
@@ -21,7 +24,7 @@ module akra.core.pool.resources {
 		/**
 		 * Buffer, that create this class.
 		 */
-		private _pBuffer: IVertexBuffer = null;
+		private _pBuffer: IRenderDataCollection = null;
 		/**
 		 * ID of this data.
 		 */
@@ -54,7 +57,7 @@ module akra.core.pool.resources {
 		/**
 	     * Buffer maps of all index sets.
 	     */
-		private _pIndicesArray: IIndexSet = [];
+		private _pIndicesArray: IIndexSet[] = [];
 		/**
 	     * Current index set.
 	     */
@@ -62,16 +65,21 @@ module akra.core.pool.resources {
 		private _iRenderable: int = 1;
 
 
-		inline get buffer(): IVertexBuffer{
+		inline get buffer(): IRenderDataCollection {
 			return this._pBuffer;
 		}
 
-		constructor(pBuffer){
-			this._pBuffer = pBuffer || null;
+		inline private get indexSet(): IIndexSet {
+			return this._pIndicesArray[this._iIndexSet];
+		}
+
+		constructor(pCollection: IRenderDataCollection = null) {
+			super();
+			this._pBuffer = pCollection;
 		}
 
 		/*Setup.*/
-		protected setup(pBuffer: IVertexBuffer, iId: int, ePrimType: EPrimitiveTypes = EPrimitiveTypes.TRIANGLELIST, eOptions: int = 0): bool {
+		protected setup(pCollection: IRenderDataCollection, iId: int, ePrimType: EPrimitiveTypes = EPrimitiveTypes.TRIANGLELIST, eOptions: int = 0): bool {
 			if (this._pBuffer === null && arguments.length < 2) {
 		        return false;
 		    }
@@ -79,23 +87,24 @@ module akra.core.pool.resources {
 		    this.renderable(true);
 
 		    this._eOptions |= eOptions;
-		    this._pBuffer = pBuffer;
+		    this._pBuffer = pCollection;
 		    this._iId = iId;
 
 		    //setup buffer map
-		    this._pMap = new a.BufferMap(pBuffer.getEngine());
+		    this._pMap = pCollection.getEngine().createBufferMap();
 		    this._pMap.primType = ePrimType;
-		    this._pMap._pI2IDataCache = {};
 
 		    //setup default index set
 		    this._pIndicesArray.push({
-		                                 pMap        : this._pMap,
-		                                 pIndexData  : null,
-		                                 pAttribData : null,
-		                                 sName       : ".main"
+		                                 sName       	: ".main",
+		                                 pMap        	: <IBufferMap>this._pMap,
+		                                 pIndexData  	: <IBufferData>null,
+		                                 pAttribData 	: <IVertexData>null,
+		                                 pI2IDataCache	: <IntMap>{},
+		                                 pAdditionCache : <IntMap>null
 		                             });
 
-		    debug_assert(this.useSingleIndex() === false, 'single indexed data not implimented');
+		    debug_assert(this.useSingleIndex() === false, "single indexed data not implimented");
 
 		    return true;
 		}
@@ -111,8 +120,8 @@ module akra.core.pool.resources {
         private _allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, eType: ERenderDataTypes): int;
         private _allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, eType: ERenderDataTypes): int; 
         private _allocateData(pDataDecl: IVertexDeclaration, pData: any, eType: ERenderDataTypes): int {
-        	if (eType === a.RenderData.DT_DIRECT) {
-		        return this.allocateAttribute(pDataDecl, pData);
+        	if (eType === ERenderDataTypes.DIRECT) {
+		        return this.allocateAttribute(pDataDecl, pData)? 0: -1;
 		    }
 
 		    var iFlow: int;
@@ -122,8 +131,8 @@ module akra.core.pool.resources {
 		    iFlow = this._addData(pVertexData, undefined, eType);
 
 		    if (iFlow < 0) {
-		        trace('invalid data', pDataDecl, pData);
-		        debug_assert('cannot allocate data for submesh');
+		        LOG("invalid data", pDataDecl, pData);
+		        debug_error("cannot allocate data for submesh");
 		        return -1;
 		    }
 
@@ -133,10 +142,10 @@ module akra.core.pool.resources {
         /**
 		 * Add vertex data to this render data.
 		 */
-        _addData(pVertexData: IVertexData, iFlow?: int, eType: ERenderDataTypes = ERenderDataTypes.TRIANGLELIST): int {
+        _addData(pVertexData: IVertexData, iFlow?: int, eType: ERenderDataTypes = ERenderDataTypes.DIRECT): int {
 
 		    if ((arguments.length < 3 && this.useAdvancedIndex()) ||
-		        arguments[2] === a.RenderData.DT_I2I) {
+		        arguments[2] === ERenderDataTypes.I2I) {
 		        return this._registerData(pVertexData);
 		    }
 
@@ -157,9 +166,9 @@ module akra.core.pool.resources {
 		    //необходимо запоминать расположение данных, которые подаются,
 		    //т.к. иначе их потом нельзя будет найти среди других данных
 		    for (var i: int = 0; i < pDataDecl.length; i++) {
-		        this._pMap._pI2IDataCache[pDataDecl[i].eUsage] = iOffset;
+		        this.indexSet.pI2IDataCache[pDataDecl[i].eUsage] = iOffset;
 		    }
-		    ;
+		    
 
 		    return 0;
 		};
@@ -176,10 +185,10 @@ module akra.core.pool.resources {
         	var eType: ERenderDataTypes = ERenderDataTypes.INDEXED;
 
 		    if (!hasIndex || this.useSingleIndex()) {
-		        eType = a.RenderData.DT_DIRECT;
+		        eType = ERenderDataTypes.DIRECT;
 		    }
 		    else if (this.useAdvancedIndex()) {
-		        eType = a.RenderData.DT_I2I;
+		        eType = ERenderDataTypes.I2I;
 		    }
 
 		    return this._allocateData(pDataDecl, pData, eType);
@@ -189,15 +198,15 @@ module akra.core.pool.resources {
 		 * Specifies uses advanced index.
 		 */
         useAdvancedIndex(): bool {
-        	return (this._eOptions & a.RenderData.ADVANCED_INDEX) != 0;
+        	return (this._eOptions & ERenderDataOptions.ADVANCED_INDEX) != 0;
         }
 
         useSingleIndex(): bool {
-        	return (this._eOptions & a.RenderData.SINGLE_INDEX) != 0;
+        	return (this._eOptions & ERenderDataOptions.SINGLE_INDEX) != 0;
         }
 
         useMultiIndex(): bool {
-        	return (this._eOptions & a.RenderData.SINGLE_INDEX) == 0;
+        	return (this._eOptions & ERenderDataOptions.SINGLE_INDEX) == 0;
         }
 
         /**
@@ -217,13 +226,12 @@ module akra.core.pool.resources {
         	var pIndexData = this._pIndexData;
 		    var pAttribData: IVertexData = this._pAttribData;
 		    var pAttribBuffer: IVertexBuffer = this._pAttribBuffer;
-		    var pBuffer: IVertexBuffer = this._pBuffer;
+		    var pBuffer: IRenderDataCollection = this._pBuffer;
 
 		    if (!pAttribData) {
 		        if (!pAttribBuffer) {
-		            pAttribBuffer = pBuffer.getEngine().displayManager()
-		                .vertexBufferPool().createResource('render_data_attrs_' + a.sid());
-		            pAttribBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
+		            pAttribBuffer = pBuffer.getEngine().getResourceManager().createVertexBuffer('render_data_attrs_' + sid());
+		            pAttribBuffer.create(EHardwareBufferFlags.BACKUP_COPY);
 		            this._pAttribBuffer = pAttribBuffer;
 		        }
 
@@ -234,8 +242,8 @@ module akra.core.pool.resources {
 		    }
 
 		    if (!pAttribData.extend(pAttrDecl, pData)) {
-		        trace('invalid data for allocation:', arguments);
-		        warning('cannot allocate attribute in data subset..');
+		        LOG('invalid data for allocation:', arguments);
+		        WARNING('cannot allocate attribute in data subset..');
 		        return false;
 		    }
 
@@ -245,16 +253,18 @@ module akra.core.pool.resources {
         /**
 		 * Allocate advanced index.
 		 */
+		 private _allocateAdvancedIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): bool; 
+		 private _allocateAdvancedIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): bool; 
 		 private _allocateAdvancedIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool; 
 		 private _allocateAdvancedIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool; 
-		 private _allocateAdvancedIndex(pAttrDecl: IVertexDeclaration, pData: any): bool {
+		 private _allocateAdvancedIndex(pAttrDecl: any, pData: any): bool {
 
-		    var pDecl = a.normalizeVertexDecl(pAttrDecl);
-		    var nCount: int = pData.byteLength / pDecl.iStride;
+		    var pDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pAttrDecl);
+		    var nCount: int = pData.byteLength / pDecl.stride;
 		    //TODO: remove index dublicates
-		    var iIndLoc: int = this._allocateData(pAttrDecl, pData, a.RenderData.DT_INDEXED);
+		    var iIndLoc: int = this._allocateData(pAttrDecl, pData, ERenderDataTypes.INDEXED);
 		    var pI2IData: Float32Array = new Float32Array(nCount);
-		    var pI2IDecl = [];
+		    var pI2IDecl: IVertexElementInterface[] = [];
 
 		    for (var i: int = 0; i < pDecl.length; i++) {
 		        pI2IDecl.push(VE_FLOAT('INDEX_' + pDecl[i].eUsage, 0));
@@ -270,7 +280,7 @@ module akra.core.pool.resources {
 		        this.releaseData(iIndLoc);
 		        pI2IData = null;
 		        pI2IDecl = null;
-		        warning('cannot allocate index for index in render data subset');
+		        WARNING('cannot allocate index for index in render data subset');
 		        return false;
 		    }
 
@@ -289,49 +299,50 @@ module akra.core.pool.resources {
 
 		    if (!this._pIndexBuffer) {
 		        if (this.useMultiIndex()) {
-		            this._pIndexBuffer = this._pBuffer.getEngine().displayManager()
-		                .vertexBufferPool().createResource('subset_' + a.sid());
-		            this._pIndexBuffer.create(0, FLAG(a.VBufferBase.RamBackupBit));
+		            this._pIndexBuffer = this._pBuffer.getEngine().getResourceManager().createVertexBuffer('subset_' + sid());
+		            this._pIndexBuffer.create(EHardwareBufferFlags.BACKUP_COPY);
 		        }
 		        else {
 		            //TODO: add support for sinle indexed mesh.
 		        }
 		    }
 
-		    this._pIndexData = this._pIndexBuffer.allocateData(pAttrDecl, pData);
-		    this._pIndexData._iAdditionCache = {};
-		    this._pIndicesArray[this._iIndexSet].pIndexData = this._pIndexData;
+		    this._pIndexData = (<IVertexBuffer>this._pIndexBuffer).allocateData(pAttrDecl, pData);
+		    this.indexSet.pIndexData = this._pIndexData;
+		    this.indexSet.pAdditionCache = <IntMap>{};
 		    return this._pIndexData !== null;
 		};
 
 		/**
 		 * Allocate index.
 		 */
+		private _allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): bool;
+		private _allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): bool;
 		private _allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
 		private _allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
-		private _allocateIndex(pAttrDecl: IVertexDeclaration, pData: any): bool {
+		private _allocateIndex(pDecl: any, pData: any): bool {
 		    'use strict';
 
-		    var pIndexData = this._pIndexData;
-		    var pIndexBuffer = this._pIndexBuffer;
-		    var pBuffer: IVertexBuffer = this._pBuffer;
+		    var pAttrDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]> pDecl);
+		    var pIndexData: IBufferData = this._pIndexData;
+		    var pIndexBuffer: IHardwareBuffer = this._pIndexBuffer;
+		    var pBuffer: IRenderDataCollection = this._pBuffer;
 
-		    Ifdef(__DEBUG)
+#ifdef DEBUG
 		    for (var i: int = 0; i < pAttrDecl.length; i++) {
-		        if (pAttrDecl[i].eType !== a.DTYPE.FLOAT) {
+		        if (pAttrDecl[i].eType !== EDataTypes.FLOAT) {
 		            return false;
 		        }
 		    }
-		    ;
-		    Endif();
+#endif
 
 		    if (!this._pIndexData) {
 		        return this._createIndex(pAttrDecl, pData);
 		    }
 
-		    if (!this._pIndexData.extend(pAttrDecl, pData)) {
-		        trace('invalid data for allocation:', arguments);
-		        warning('cannot allocate index in data subset..');
+		    if (!(<IVertexData>this._pIndexData).extend(pAttrDecl, pData)) {
+		        LOG('invalid data for allocation:', arguments);
+		        WARNING('cannot allocate index in data subset..');
 		        return false;
 		    }
 
@@ -371,7 +382,7 @@ module akra.core.pool.resources {
         	    }
         	}
         	else {
-        	    this._pMap = new a.BufferMap(this._pBuffer.getEngine());
+        	    this._pMap = this._pBuffer.getEngine().createBufferMap();
         	    this._pAttribData = null;
         	}
 
@@ -379,10 +390,12 @@ module akra.core.pool.resources {
         	this._pIndexData = null;
         	this._iIndexSet = this._pIndicesArray.length;
         	this._pIndicesArray.push({
-        	                             pMap        : this._pMap,
-        	                             pIndexData  : this._pIndexData,
-        	                             pAttribData : this._pAttribData,
-        	                             sName       : sName
+        	                             pMap        	: this._pMap,
+        	                             pIndexData  	: this._pIndexData,
+        	                             pAttribData 	: this._pAttribData,
+        	                             sName       	: sName,
+        	                             pI2IDataCache	: <IntMap> null,
+										 pAdditionCache	: <IntMap> null
         	                         });
 
         	return  this._iIndexSet;
@@ -474,15 +487,15 @@ module akra.core.pool.resources {
          */
         _getFlow(iDataLocation: int): IDataFlow;
         _getFlow(sSemantics: string, bSearchComplete?: bool): IDataFlow;
-        _getFlow(a?, b): IDataFlow {
+        _getFlow(a, b?): IDataFlow {
         	if (typeof arguments[0] === 'string') {
-		        return this._pMap._getFlow(arguments[0], arguments[1]);
+		        return this._pMap.getFlow(arguments[0], arguments[1]);
 		    }
 
-		    for (var i: int = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++i) {
-		        var pFlow = pFlows[i];
+		    for (var i: int = 0, n = this._pMap.limit; i < n; ++i) {
+		        var pFlow = this._pMap.getFlow(i, false);
 
-		        if (pFlow.pData && pFlow.pData.getOffset() === arguments[0]) {
+		        if (pFlow.data && pFlow.data.getOffset() === arguments[0]) {
 		            return pFlow;
 		        }
 		    }
@@ -500,17 +513,17 @@ module akra.core.pool.resources {
 
         	if (this.useAdvancedIndex() && arguments.length < 2) {
         	    if (typeof arguments[0] === 'string') {
-        	        return this._getData(this._pMap._pI2IDataCache[arguments[0]]);
+        	        return this._getData(this.indexSet.pI2IDataCache[arguments[0]]);
         	    }
 
-        	    return this._pBuffer._getData(arguments[0]);
+        	    return this._pBuffer.getData(<string>arguments[0]);
         	}
 
         	if (typeof arguments[0] === 'string') {
-        	    for (var i = 0, pFlows = this._pMap._pFlows, n = pFlows.length; i < n; ++i) {
-        	        pFlow = pFlows[i];
-        	        if (pFlow.pData != null && pFlow.pData.hasSemantics(arguments[0])) {
-        	            return pFlow.pData;
+        	    for (var i = 0, n = this._pMap.limit; i < n; ++i) {
+        	        pFlow = this._pMap.getFlow(i, false);
+        	        if (pFlow.data != null && pFlow.data.hasSemantics(arguments[0])) {
+        	            return pFlow.data;
         	        }
         	    }
 
@@ -518,7 +531,7 @@ module akra.core.pool.resources {
         	}
 
         	pFlow = this._getFlow(arguments[0]);
-        	return pFlow === null ? null : pFlow.pData;
+        	return pFlow === null ? null : pFlow.data;
         }
 
         /**
@@ -540,18 +553,18 @@ module akra.core.pool.resources {
         	var pFlow: IDataFlow;
         	var pData: IVertexData, pRealData: IVertexData;
         	var iIndexOffset: uint;
-        	var pIndexData = this._pIndexData;
+        	var pIndexData: IBufferData = this._pIndexData;
         	var sData: string;
         	var iStride: int;
-        	var iTypeSize: int = 4;//a.getTypeSize(a.DTYPE.FLOAT);
+        	var iTypeSize: int = 4;//a.getTypeSize(EDataTypes.FLOAT);
 
         	if (this.useAdvancedIndex()) {
         	    pRealData = this._getData(iData);
         	    iAddition = pRealData.getOffset();
         	    iStride = pRealData.stride;
-        	    pData = this._getData(eSemantics, true); //индекс, который подал юзер
+        	    pData = this._getData(sSemantics, true); //индекс, который подал юзер
 
-        	    pData.applyModifier(eSemantics, function (pTypedData) {
+        	    pData.applyModifier(sSemantics, function (pTypedData: Float32Array) {
         	        for (var i: int = 0; i < pTypedData.length; i++) {
         	            pTypedData[i] = (pTypedData[i] * iStride + iAddition) / iTypeSize;
         	        }
@@ -559,7 +572,7 @@ module akra.core.pool.resources {
         	    });
 
         	    iData = pData.getOffset();
-        	    eSemantics = 'INDEX_' + eSemantics;
+        	    sSemantics = 'INDEX_' + sSemantics;
         	}
         	else if (typeof arguments[0] === 'string') {
         	    if (arguments[0] === 'TEXCOORD') {
@@ -577,8 +590,8 @@ module akra.core.pool.resources {
         	}
 
         	iFlow = pFlow.iFlow;
-        	iIndexOffset = pIndexData._pVertexDeclaration.element(eSemantics).iOffset;
-        	pData = pIndexData.getTypedData(eSemantics);
+        	iIndexOffset = pIndexData._pVertexDeclaration.element(sSemantics).iOffset;
+        	pData = pIndexData.getTypedData(sSemantics);
         	iAddition = iData;
 
         	if (!pData) {
@@ -586,11 +599,11 @@ module akra.core.pool.resources {
         	}
 
 
-        	iStride = pFlow.pData.stride;
+        	iStride = pFlow.data.stride;
 
-        	if (pIndexData._iAdditionCache[iIndexOffset] !== iAddition) {
+        	if (this.indexSet.pAdditionCache[iIndexOffset] !== iAddition) {
         	    if (!useSame) {
-        	        iPrevAddition = pIndexData._iAdditionCache[iIndexOffset] || 0;
+        	        iPrevAddition = this.indexSet.pAdditionCache[iIndexOffset] || 0;
         	        iRealAddition = iAddition - iPrevAddition;
 
         	        for (var i = 0; i < pData.length; i++) {
@@ -607,14 +620,14 @@ module akra.core.pool.resources {
         	    }
 
         	    //remeber addition, that we added to index.
-        	    pIndexData._iAdditionCache[iIndexOffset] = iAddition;
+        	    this.indexSet.pAdditionCache[iIndexOffset] = iAddition;
 
-        	    if (!pIndexData.setData(pData, eSemantics)) {
+        	    if (!pIndexData.setData(pData, sSemantics)) {
         	        return false;
         	    }
         	}
 
-        	return this._pMap.mapping(iFlow, pIndexData, eSemantics);
+        	return this._pMap.mapping(iFlow, pIndexData, sSemantics);
         }
 
         /**
@@ -628,7 +641,7 @@ module akra.core.pool.resources {
         	    if (this.isRenderable(i)) {
         	        this._pBuffer._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pIndicesArray[i].pMap);
         	        bResult = this._pIndicesArray[i].pMap.draw();
-        	        //trace(this._pIndicesArray[i].pMap.toString());
+        	        //LOG(this._pIndicesArray[i].pMap.toString());
         	        isOK = isOK && bResult;
         	    }
         	}

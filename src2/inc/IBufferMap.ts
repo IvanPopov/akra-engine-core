@@ -39,7 +39,10 @@ module akra {
 
 		getFlow(iFlow: int, bComplete?: bool): IDataFlow;
 		reset(): void;
+
+		flow(pVertexData: IVertexData): int;
 		flow(iFlow: uint, pVertexData: IVertexData): int;
+
 		checkData(pData: IVertexData): bool;
 		mapping(iFlow: int, pMap: IVertexData, sSemantics: string, iAddition?: int): bool;
 		update(): bool;

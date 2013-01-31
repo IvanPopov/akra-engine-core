@@ -8,7 +8,7 @@
 
 module akra {
 	IFACE(ISceneNode);
-	IFACE(IModel);
+	IFACE(ISceneModel);
 	IFACE(ILightPoint);
 	IFACE(ISprite);
 	IFACE(IJoint);
@@ -30,12 +30,12 @@ module akra {
 		isUpdated(): bool;
 
 		createSceneNode(sName?: string): ISceneNode;
-		createSceneModel(): IModel;
-		createCamera(): ICamera;
-		createLightPoint(): ILightPoint;
-		createSprite(): ISprite;
-		createJoint(): IJoint;
-		createText3d(): IText3d;
+		createSceneModel(sName?: string): ISceneModel;
+		createCamera(sName?: string): ICamera;
+		createLightPoint(sName?: string): ILightPoint;
+		createSprite(sName?: string): ISprite;
+		createJoint(sName?: string): IJoint;
+		createText3d(sName?: string): IText3d;
 
 		getDisplayList(index: uint): IDisplayList;
 		getDisplayListByName(csName: string): int;

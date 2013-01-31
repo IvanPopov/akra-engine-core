@@ -10,6 +10,7 @@ module akra {
 	IFACE(IUtilTimer);
     IFACE(IMesh);
     IFACE(IRenderDataCollection);
+    IFACE(IBufferMap);
 
     export interface IEngine extends IEventProvider {
         getSceneManager(): ISceneManager;
@@ -31,8 +32,9 @@ module akra {
 
         getTimer(): IUtilTimer;
 
-        createMesh(): IMesh;
+        createMesh(sName?: string, eOptions?: int, pDataBuffer?: IRenderDataCollection): IMesh;
         createRenderDataCollection(): IRenderDataCollection;
+        createBufferMap(): IBufferMap;
     };
 
     export var createEngine: () => IEngine;

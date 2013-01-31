@@ -28,7 +28,7 @@ module akra {
 		/**
 		 * @see <bind_shape_matrix> in Collada.
 		 */
-		getBindMatrix(): INode;
+		getBindMatrix(): IMat4;
 
 		/**
 		 * Bone offset matrices.

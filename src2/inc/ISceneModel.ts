@@ -8,7 +8,7 @@ module akra {
 
 	export interface ISceneModel extends ISceneObject {
 		mesh: IMesh;
-
+		
 	}
 }
 

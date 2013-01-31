@@ -27,6 +27,7 @@ module akra {
         readonly data: IRenderDataCollection;
         readonly boundingBox: IRect3d;
         readonly boundingSphere: ISphere;
+        readonly length: uint; /*<! number of submeshes in. */
 
 		skeleton: ISkeleton;
 

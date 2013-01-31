@@ -49,11 +49,11 @@ module akra.model {
 			this._m4fBindMatrix.set(m4fMatrix);
 		}
 
-		getBindMatrix():INode {
+		getBindMatrix(): IMat4 {
 			return this.getRootJoints()[0];
 		}
 
-		getBoneOffsetMatrices(): INode[] {
+		getBoneOffsetMatrices(): IMat4[] {
 			var pBoneNames = this._pNodeNames;
 		    for (var i = 0; i < pBoneNames.length; i++) {
 		        if (pBoneNames[i] === sBoneName) {
@@ -64,7 +64,7 @@ module akra.model {
 		    return null;
 		}
 
-		getBoneOffsetMatrix(): INodeMap {
+		getBoneOffsetMatrix(): IMat4 {
 			var pBoneNames = this._pNodeNames;
 			for (var i = 0; i < pBoneNames.length; i++) {
 			    if (pBoneNames[i] === sBoneName) {

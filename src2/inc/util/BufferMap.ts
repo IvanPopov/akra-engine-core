@@ -6,7 +6,7 @@
 #include "IEngine.ts"
 #include "core/pool/ReferenceCounter.ts"
 
-module akra.model {
+module akra.util {
 
 	export class BufferMap implements IBufferMap extends ReferenceCounter{
 		private _pFlows: IDataFlow[] = null;
@@ -102,8 +102,7 @@ module akra.model {
 
 		}
 
-		getFlow(iFlow: int, bComplete?: bool): IDataFlow {
-			bComplete = bComplete || true;
+		getFlow(iFlow: int, bComplete: bool = true): IDataFlow {
 
 		    if (typeof arguments[0] === 'string') {
 		        var nTotal: int; 

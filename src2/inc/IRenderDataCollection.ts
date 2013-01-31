@@ -21,11 +21,11 @@ module akra {
 
 	export interface IRenderDataCollection extends IHardwareBuffer, IResourcePoolItem{
 		readonly buffer: IVertexBuffer;
-        dataType: IRenderDataType;
 
         getEngine(): IEngine;
         getOptions(): int;
-        getData(): IVertexData;
+        getData(sUsage: string): IVertexData;
+        getData(iOffset: uint): IVertexData;
         allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, isCommon?: bool): int;
         getDataLocation(sSemantics: string): int;
         getRenderData(iSubset: uint): IRenderData;
@@ -33,7 +33,7 @@ module akra {
         draw(iSubset: uint): bool;
         destroy(): void;
 
-        _setup(eOptions: int): void;
+        _setup(eOptions?: int): void;
         _allocateData(pVertexDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
 	}
 }

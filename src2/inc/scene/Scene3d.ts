@@ -83,10 +83,10 @@ module akra.scene {
 			return this.setupNode(pNode, sName);
 		}
 
-		createSceneModel(sName: string): ISceneModel {
+		createSceneModel(sName: string = null): ISceneModel {
 			var pNode: ISceneModel = new SceneModel(this);
 			//pNode.create();
-			return this.setupNode(pNode, sName);
+			return <ISceneModel>this.setupNode(pNode, sName);
 		}
 
 		createCamera(sName: string = null): ICamera {
@@ -100,19 +100,19 @@ module akra.scene {
 			return <ICamera>this.setupNode(pCamera, sName);
 		}
 
-		createLightPoint(): ILightPoint {
+		createLightPoint(sName: string = null): ILightPoint {
 			return null;
 		}
 
-		createSprite(): ISprite {
+		createSprite(sName: string = null): ISprite {
 			return null;
 		}
 
-		createJoint(sName: string): IJoint {
-			return this.setupNode(new Joint, sName);
+		createJoint(sName: string = null): IJoint {
+			return <IJoint>this.setupNode(new Joint(this), sName);
 		}
 
-		createText3d(): IText3d {
+		createText3d(sName: string = null): IText3d {
 			return null;
 		}
 

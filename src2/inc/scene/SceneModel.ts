@@ -3,9 +3,11 @@
 
 #include "ISceneModel.ts"
 #include "model/Mesh.ts"
+#include "SceneObject.ts"
 
-module akra {
-	export class SceneModel implements ISceneModel {
+
+module akra.scene {
+	export class SceneModel extends SceneObject implements ISceneModel {
 		mesh: IMesh = null;
 
 		inline get totalRenderable(): uint {

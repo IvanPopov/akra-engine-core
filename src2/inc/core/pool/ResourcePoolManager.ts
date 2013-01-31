@@ -354,6 +354,10 @@ module akra.core.pool {
             return <ISurfaceMaterial>this.surfaceMaterialPool.createResource(sResourceName);
         }
 
+        createVertexBuffer(sResourceName: string): IVertexBuffer {
+            return <IVertexBuffer>this.vertexBufferPool.createResource(sResourceName);
+        }
+
         private createDeviceResource(): void {
             this.pSurfaceMaterialPool = new ResourcePool(this, resources.SurfaceMaterial);
             this.pSurfaceMaterialPool.initialize(16);

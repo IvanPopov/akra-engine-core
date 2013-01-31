@@ -28,6 +28,8 @@ module akra {
 		offset(v3fOffset: IVec3): ISphere;
 		expand(fInc: float): ISphere;
 		normalize(): ISphere;
+
+		transform(m4fMatrix: IMat4): ISphere;
 	};
 };
 
