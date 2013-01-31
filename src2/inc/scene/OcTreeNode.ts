@@ -54,7 +54,8 @@ module akra.scene {
 		 */
 		addMember(pObject: ISceneObject): void {
 			this.membersList.push(pObject);
-			this.connect(pObject, SIGNAL(moved), SLOT(objectMoved), EEventTypes.UNICAST);
+			this.connect(pObject, SIGNAL(worldBoundsUpdated), SLOT(objectMoved), EEventTypes.UNICAST);
+			console.log(this.membersList);
 		};
 
 		/**
@@ -68,7 +69,7 @@ module akra.scene {
 		    
 	    	if(i>=0){
 	    		this.membersList.takeAt(i);
-	    		this.disconnect(pObject, SIGNAL(moved), SLOT(objectMoved), EEventTypes.UNICAST);
+	    		this.disconnect(pObject, SIGNAL(worldBoundsUpdated), SLOT(objectMoved), EEventTypes.UNICAST);
 	    	}
 
 	    	if(this.membersList.length === 0){
@@ -79,6 +80,7 @@ module akra.scene {
 		BEGIN_EVENT_TABLE(OcTreeNode);
 
 		objectMoved(pObject: ISceneObject){
+
 			var pNode: IOcTreeNode = this.tree.findTreeNode(pObject);
 
 			if(pNode !== this){
@@ -115,8 +117,10 @@ module akra.scene {
 		removeMember(pObject: ISceneObject): void{
 			var i:int = this.membersList.indexOf(pObject);
 
+			console.log(i)
+
 			// make sure this is one of ours
-			debug_assert(i>=0, "error removing Oc tree pObject");
+			debug_assert(i>=0, "error removing root node Oc tree pObject");
 		    
 	    	if(i>=0){
 	    		this.membersList.takeAt(i);
@@ -131,9 +135,9 @@ module akra.scene {
 		    var pNodeWorldBounds: IRect3d = this.worldBounds;
 		    pNodeWorldBounds.set(this._pBasicWorldBounds);
 		 
-		    var pObject: ISceneObject = this.membersList.first();
+		    var pObject: ISceneObject = this.membersList.first;
 		    while(isDefAndNotNull(pObject)){
-
+		    	console.warn(pObject,pObject.worldBounds);
 		    	pNodeWorldBounds.unionRect(pObject.worldBounds);
 
 		    	pObject = this.membersList.next();

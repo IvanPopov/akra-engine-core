@@ -40,11 +40,15 @@ module akra.scene {
 			// this._pNodeList = [];
 			// this._pObjectList = [];
 
-			i = this.addDisplayList(new OcTree);
-			debug_assert(i == DL_DEFAULT, "invalid default list index");
+			//TODO передача пользовательских параметров в OcTree
 
-			i = this.addDisplayList(new LightGraph);
-			debug_assert(i == DL_LIGHTING, "invalid lighting list index");
+			// i = this.addDisplayList(new OcTree);
+			// debug_assert(i == DL_DEFAULT, "invalid default list index");
+
+			//TODO передача пользовательских параметров в LightGraph
+
+			// i = this.addDisplayList(new LightGraph);
+			// debug_assert(i == DL_LIGHTING, "invalid lighting list index");
 
 		}
 
@@ -150,8 +154,8 @@ module akra.scene {
 		private setupNode(pNode: ISceneNode, sName: string = null): ISceneNode {
 			pNode.name = sName;
 
-			this.connect(pNode, SIGNAL(attached), SLOT(nodeAttachment), EEventTypes.UNICAST);
-			this.connect(pNode, SIGNAL(detached), SLOT(nodeDetachment), EEventTypes.UNICAST);
+			// this.connect(pNode, SIGNAL(attached), SLOT(nodeAttachment), EEventTypes.UNICAST);
+			// this.connect(pNode, SIGNAL(detached), SLOT(nodeDetachment), EEventTypes.UNICAST);
 
 			return pNode;
 		}
@@ -210,7 +214,7 @@ module akra.scene {
 			// if (SceneObject.isSceneObject(pNode)) {
 			// 	this._pObjectList.push(<ISceneObject>pNode);
 			// }
-			
+			console.warn("------>here");
 			EMIT_BROADCAST(nodeAttachment, _CALL(pNode));
 		}
 

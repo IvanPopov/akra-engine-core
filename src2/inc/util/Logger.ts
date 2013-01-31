@@ -36,7 +36,7 @@ module akra.util {
         [familyName: string]: ILogRoutineMap;
     }
 
-    export class Logger extends Singleton implements ILogger {
+    export class Logger /*extends Singleton*/ implements ILogger {
         private _eLogLevel: ELogLevel;
         private _pGeneralRoutineMap: ILogRoutineMap;
 
@@ -56,7 +56,7 @@ module akra.util {
         private _sUnknownMessage: string;
 
         constructor () {
-            super();
+            //super();
             
             this._eUnknownCode = 0;
             this._sUnknownMessage = "Unknown code";  
@@ -577,7 +577,7 @@ module akra.util {
         pArgs.unshift("Code: " + pLogEntity.code.toString());
         pArgs.unshift(sourceLocationToString(pLogEntity.location));
         
-        console["warning"].apply(console, pArgs);    
+        console["warn"].apply(console, pArgs);    
     }
 
     function errorRoutine(pLogEntity: ILoggerEntity): void{

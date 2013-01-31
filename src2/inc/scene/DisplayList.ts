@@ -5,13 +5,15 @@
 
 module akra.scene {
 	export class DisplayList implements IDisplayList {
-		protected _pScene: IScene3d;
-		protected _sName: string;
+		protected _pScene: IScene3d = null;
+		protected _sName: string = "";
 
 		inline get name(): string { return this._sName; }
 		inline set name(sName: string) { this._sName = sName; }
 
 		_onNodeAttachment(pScene: IScene3d, pNode: ISceneNode): void {
+			console.error("in node attachment");
+			console.log(SceneObject.isSceneObject(pNode));
 			if (SceneObject.isSceneObject(pNode)) {
 				this.attachObject(<ISceneObject>pNode);
 			}
@@ -32,7 +34,7 @@ module akra.scene {
 		}
 
 		_setup(pScene: IScene3d): void {
-			if (this._pScene) {
+			if (isDefAndNotNull(this._pScene)) {
 				CRITICAL("list movement from scene to another scene temprary unsupported!");
 			}
 
@@ -41,8 +43,10 @@ module akra.scene {
 			CONNECT(pScene, SIGNAL(nodeAttachment), this, SLOT(_onNodeAttachment));
 			CONNECT(pScene, SIGNAL(nodeDetachment), this, SLOT(_onNodeDetachment));
 
+			var me = this;
+
 			pScene.getRootNode().explore(function (pEntity: IEntity) {
-					this._onNodeAttachment(pScene, <ISceneNode>pEntity);
+					me._onNodeAttachment(pScene, <ISceneNode>pEntity);
 				});
 		}
 

@@ -35,7 +35,10 @@ module akra.scene {
 		constructor (pScene: IScene3d) {
 			super(pScene);
 
-			this.type = EEntityTypes.SCENE_OBJECT;
+			pScene.connect(this, SIGNAL(attached), SLOT(nodeAttachment), EEventTypes.UNICAST);
+			pScene.connect(this, SIGNAL(detached), SLOT(nodeDetachment), EEventTypes.UNICAST);
+			
+			this._eType = EEntityTypes.SCENE_OBJECT;
 		}
 
 		inline getRenderable(): IRenderableObject {
@@ -92,7 +95,7 @@ module akra.scene {
 		        // set the flag that our bounding box has changed
 		        TRUE_BIT(this._iObjectFlags, ESceneObjectFlags.k_NewWorldBounds);
 		        
-		        // this.worldBoundsUpdated();
+		        this.worldBoundsUpdated();
 		        
 		        return true;
 		    }

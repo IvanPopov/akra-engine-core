@@ -6,15 +6,20 @@
 
 #define EMIT_UNICAST(event, call) \
 	var _recivier: any = this; \
-	this._pUnicastSlotMap = this._pUnicastSlotMap || this.getEventTable().findUnicastList(this._iGuid);\
+	this._pUnicastSlotMap = /*this._pUnicastSlotMap || */this.getEventTable().findUnicastList(this._iGuid);\
 	var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).event;\
-	_unicast.target? _unicast.target[_unicast.callback] call: _unicast.listener call;
+	/*console.error(this.getEventTable());*/\
+	if(isDef(_unicast)){\
+		_unicast.target? _unicast.target[_unicast.callback] call: _unicast.listener call;\
+	}
 #define EMIT_BROADCAST(event, call) \
 	this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid);\
 	var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).event; \
 	var _recivier: any = this; \
-		for (var i = 0; i < _broadcast.length; ++ i) { \
-			_broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] call: _broadcast[i].listener call; \
+		if(isDef(_broadcast)){\
+			for (var i = 0; i < _broadcast.length; ++ i) { \
+				_broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] call: _broadcast[i].listener call; \
+			}\
 		} 
 #define _EVENT_BC(event, signal, call) \
 	event signal: void { \
@@ -41,7 +46,7 @@
 #define BIND(sender, signal, callback) sender.bind(signal, callback)
 
 #define BEGIN_EVENT_TABLE(object) \
-	private _iGuid: uint = sid(); 																						\
+	private _iGuid: uint = sid(); 										\
 	private _pUnicastSlotMap: IEventSlotMap = null;						\
 	private _pBroadcastSlotList: IEventSlotListMap = null;				\
 	private static _pEvenetTable: IEventTable = new events.EventTable(); 												\
@@ -49,6 +54,7 @@
 	inline getEventTable(): IEventTable {return object._pEvenetTable; } 												\
 	inline getGuid(): uint {return this._iGuid; } 																		\
 	inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
+		console.log(pSender,this,sSlot);\
 		return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType);					\
 	}; 																													\
 	inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
@@ -62,7 +68,6 @@
 	}
 #define END_EVENT_TABLE()
 
-
 module akra.events {
 	export class EventTable implements IEventTable {
 		broadcast: IEventSlotTable = <IEventSlotTable>{};
@@ -75,6 +80,8 @@ module akra.events {
 			}
 			else {
 				this.unicast[iGuid] = this.unicast[iGuid] || {};
+				//console.log(iGuid, sSignal, pTarget, sSlot, eType);
+				//console.warn(this.unicast);
 				if (!isDef(this.unicast[iGuid][sSignal])) {
 					this.unicast[iGuid][sSignal] = {target: pTarget, callback: sSlot, listener: null};
 					return true;
@@ -144,6 +151,8 @@ module akra.events {
 		}
 
 		findUnicastList(iGuid: int): IEventSlotMap {
+			//console.error(iGuid,this.unicast[iGuid]);
+
 			this.unicast[iGuid] = this.unicast[iGuid] || {};
 			return this.unicast[iGuid];
 		}

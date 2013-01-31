@@ -542,6 +542,7 @@ module akra.geometry {
 		};
 
 		unionRect(pRect: IRect3d): IRect3d{
+			console.log(this,pRect);
 			this.normalize();
 			pRect.normalize();
 

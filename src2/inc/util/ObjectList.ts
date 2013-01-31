@@ -25,15 +25,17 @@ module akra.util {
 		};
 
 		inline get first(): any {
-			return (this._pCurrent = this._pHead);
+			this._pCurrent = this._pHead;
+			return (isDefAndNotNull(this._pCurrent)) ? this._pCurrent.data : null;
 		};
 
 		inline get last(): any {
-			return (this._pCurrent = this._pTail);
+			this._pCurrent = this._pTail;
+			return (isDefAndNotNull(this._pCurrent)) ? this._pCurrent.data : null;
 		}
 
 		inline get current(): any {
-			return (this._pCurrent);
+			return (isDefAndNotNull(this._pCurrent)) ? this._pCurrent.data : null;
 		}
 
 		inline lock(): void {
@@ -60,6 +62,8 @@ module akra.util {
 
 		indexOf(pData: any, iFrom: uint = 0.): int{
 			var pItem: IObjectListItem = this.find(iFrom);
+
+			console.log(this, pData, iFrom, pItem);
 
 			for(var i: uint = iFrom; i<this._iLength; i++){
 				if(pItem.data === pData){
@@ -258,7 +262,7 @@ module akra.util {
 
 		inline private find(n: uint): IObjectListItem{
 			if (n < this._iLength) {
-				return this.seek(n).current;
+				return this.seek(n)._pCurrent;
 			}
 
 			return null;

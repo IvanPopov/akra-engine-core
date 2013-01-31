@@ -17,7 +17,7 @@ module akra {
 		readonly worldScale: IVec3;
 		readonly worldOffset: IVec3;
 
-		create(pWorldBoundingBox: IRect3d, iDepth: int, nNode: uint): void;
+		create(pWorldBoundingBox: IRect3d, iDepth: int, nNode?: uint): void;
 		isReady(): bool;
 		findTreeNode(pObject: ISceneObject): IOcTreeNode;
 		findTreeNodeByRect(iX0: int, iX1: int, iY0: int, iY1: int, iZ0: int, iZ1: int): IOcTreeNode;
