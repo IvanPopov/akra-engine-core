@@ -57,8 +57,7 @@ module akra {
         allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): bool;
         allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): bool;
         
-        addIndexSet(usePreviousDataSet: bool, ePrimType: EPrimitiveTypes, sName: string): int;
-        addIndexSet(ePrimType:EPrimitiveTypes, sName: string): int;
+        addIndexSet(usePreviousDataSet?: bool, ePrimType?: EPrimitiveTypes, sName?: string): int;
         
         getNumIndexSet(): int;
         getIndexSetName(iSet: int): string;
@@ -71,15 +70,18 @@ module akra {
         isRenderable(iIndexSet?: int): bool;
         hasSemantics(sSemantics: string, bSearchComplete?: bool): bool;
         
+        getDataLocation(iDataLocation: int): int;
         getDataLocation(sSemantics: string): int;
         getIndices(): IBufferData;
         getPrimitiveCount(): uint;
+        getAdvancedIndexData(sSemantics: string): IVertexData;
         
         index(iData: int, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
-        draw(): bool;
         //applyMe(): bool;
         toString(): string;
 
+        _draw(): void;
+        
         _getFlow(iDataLocation: int): IDataFlow;
         _getFlow(sSemantics: string, bSearchComplete?: bool): IDataFlow;
 
@@ -87,6 +89,11 @@ module akra {
         _getData(sSemanticsn: string, bSearchOnlyInCurrentMap?: bool): IVertexData;
 
         _addData(pVertexData: IVertexData, iFlow?: int, eType?: ERenderDataTypes): int;
+
+        _setup(pCollection: IRenderDataCollection, iId: int, ePrimType?: EPrimitiveTypes, eOptions?: int): bool;
+
+        //FIXME: hack for terrain, for force limitin drawing index length
+        _setIndexLength(iLength: uint);
 	}
 }
 

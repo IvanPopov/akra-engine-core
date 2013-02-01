@@ -109,6 +109,7 @@ module akra {
         createSurfaceMaterial(sResourceName: string): ISurfaceMaterial;
         createEffect(sResourceName: string): IEffect;
         createVertexBuffer(sResourceName: string): IVertexBuffer;
+        createVideoBuffer(sResourceName: string): IVertexBuffer;
     }
 }
 

@@ -78,32 +78,34 @@ module akra.data {
 			return this._ePrimitiveType;
 		}
 
-		inline getPrimitiveCount(iIndexCount?: uint): uint {
-			switch (arguments.length) {
-		        case 0:
-		            // when no count is specified, use the total count of indices
-		            return this.getPrimitiveCount(this.length);
-		        case 1:
-		            var iCount: uint = iIndexCount;
-
-		            switch (this._ePrimitiveType) {
-			            case EPrimitiveTypes.TRIANGLELIST:
-			                return iCount / 3.;
-			            case EPrimitiveTypes.POINTLIST:
-			                return iCount;
-			            case EPrimitiveTypes.TRIANGLESTRIP:
-			            case EPrimitiveTypes.TRIANGLEFAN:
-			            	return iCount / 3 - 2;
-			            default:
-			            	debug_error("todo: count for other types..");
-			        }
-		    }
-
-		    return 0;
+		inline getPrimitiveCount(iIndexCount: uint = this.length): uint {
+			return IndexData.getPrimitiveCount(this._ePrimitiveType, iIndexCount);
 		}
 
 		inline getBufferHandle(): int {
 			return this._pIndexBuffer.resourceHandle;
+		}
+
+		static getPrimitiveCount(eType: EPrimitiveTypes, nVertices: uint): uint {
+			switch (eType) {
+	            case EPrimitiveTypes.POINTLIST:
+	                return nVertices;
+	            case EPrimitiveTypes.LINELIST: 
+	            	return nVertices / 2;
+	            case EPrimitiveTypes.LINESTRIP: 
+	            	return nVertices - 1;
+	            case EPrimitiveTypes.LINELOOP:
+	            	return nVertices;
+	            case EPrimitiveTypes.TRIANGLELIST:
+	                return nVertices / 3;
+	            case EPrimitiveTypes.TRIANGLEFAN:
+	            case EPrimitiveTypes.TRIANGLESTRIP:
+	            	return nVertices - 2;
+	        }
+
+	        debug_error("unhandled case detected..");
+
+	        return 0;
 		}
 	}
 }

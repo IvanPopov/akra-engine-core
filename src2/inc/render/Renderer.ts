@@ -127,6 +127,11 @@ module  akra.render {
         	}
         }
 
+        getActiveProgram(): IShaderProgram {
+        	CRITICAL("Renderer::getActiveProgram() is uncompleted method!");
+        	return null;
+        }
+
 		inline _disableAllTextureUnits(): void {
 			this._disableTextureUnitsFrom(0);
 		}

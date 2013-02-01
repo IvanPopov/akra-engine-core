@@ -7,6 +7,8 @@ module akra {
     IFACE(IVertexBuffer);
     IFACE(IVertexDeclaration);
     IFACE(IRenderDataType);
+    IFACE(IBuffer);
+    IFACE(IReferenceCounter);
     
 	export enum ERenderDataBufferOptions {
         VB_READABLE       = FLAG(EHardwareBufferFlags.BACKUP_COPY),
@@ -19,22 +21,36 @@ module akra {
     //     new (): IRenderData;
     // }
 
-	export interface IRenderDataCollection extends IHardwareBuffer, IResourcePoolItem{
+	export interface IRenderDataCollection extends /*IHardwareBuffer*/IBuffer, IReferenceCounter {
 		readonly buffer: IVertexBuffer;
 
         getEngine(): IEngine;
         getOptions(): int;
+
         getData(sUsage: string): IVertexData;
         getData(iOffset: uint): IVertexData;
-        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, isCommon?: bool): int;
-        getDataLocation(sSemantics: string): int;
         getRenderData(iSubset: uint): IRenderData;
         getEmptyRenderData(ePrimType: EPrimitiveTypes, iOptions: int): IRenderData;
-        draw(iSubset: uint): bool;
+        getDataLocation(sSemantics: string): int;
+        
+        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, isCommon?: bool): int;
+        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, isCommon?: bool): int;
+        allocateData(pDeclData: IVertexElementInterface[], pData: ArrayBufferView, isCommon?: bool): int;
+        allocateData(pDeclData: IVertexElementInterface[], pData: ArrayBuffer, isCommon?: bool): int;
+        
         destroy(): void;
+        
+        _draw(): void;
+        _draw(iSubset: uint): void;
 
         _setup(eOptions?: int): void;
+        
+        _allocateData(pVertexDecl: IVertexDeclaration, iSize: uint): IVertexData;
         _allocateData(pVertexDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
+        _allocateData(pVertexDecl: IVertexDeclaration, pData: ArrayBuffer): IVertexData;
+        _allocateData(pDeclData: IVertexElementInterface[], iSize: uint): IVertexData;
+        _allocateData(pDeclData: IVertexElementInterface[], pData: ArrayBufferView): IVertexData;
+        _allocateData(pDeclData: IVertexElementInterface[], pData: ArrayBuffer): IVertexData;
 	}
 }
 

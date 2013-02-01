@@ -79,7 +79,7 @@ module akra.render {
 		}
 
 		/*Setup.*/
-		protected setup(pCollection: IRenderDataCollection, iId: int, ePrimType: EPrimitiveTypes = EPrimitiveTypes.TRIANGLELIST, eOptions: int = 0): bool {
+		_setup(pCollection: IRenderDataCollection, iId: int, ePrimType: EPrimitiveTypes = EPrimitiveTypes.TRIANGLELIST, eOptions: int = 0): bool {
 			if (this._pBuffer === null && arguments.length < 2) {
 		        return false;
 		    }
@@ -126,7 +126,7 @@ module akra.render {
 
 		    var iFlow: int;
 		    var pVertexData: IVertexData = this._pBuffer._allocateData(pDataDecl, pData);
-		    var iOffset: int = pVertexData.getOffset();
+		    var iOffset: int = pVertexData.byteLength;
 
 		    iFlow = this._addData(pVertexData, undefined, eType);
 
@@ -160,7 +160,7 @@ module akra.render {
 		 */
 		private _registerData(pVertexData: IVertexData): int {
 		    'use strict';
-		    var iOffset: int = pVertexData.getOffset();
+		    var iOffset: int = pVertexData.byteLength;
 		    var pDataDecl: IVertexDeclaration = pVertexData.getVertexDeclaration();
 
 		    //необходимо запоминать расположение данных, которые подаются,
@@ -364,6 +364,20 @@ module akra.render {
 		    return this._allocateIndex(pAttrDecl, pData);
 		}
 
+		_setIndexLength(iLength: uint): bool {
+			var bResult: bool = (<IVertexData>this._pIndexData).resize(iLength);
+			
+			if(bResult) {
+				this._pMap._length = iLength;
+			}
+
+			return bResult;
+		}
+
+		getAdvancedIndexData(sSemantics: string): IVertexData {
+			return this._getData(sSemantics, true);
+		}
+
 		/**
 		 * Add new set of indices.
 		 */
@@ -469,10 +483,12 @@ module akra.render {
         /**
          * Get data location.
          */
-        getDataLocation(sSemantics: string): int {
-        	var pData: IVertexData = this._getData(sSemantics);
+        getDataLocation(sSemantics: string): int;
+        getDataLocation(iDataLocation: int): int;
+        getDataLocation(sSemantics?): int {
+        	var pData: IVertexData = this._getData(<string>sSemantics);
 
-        	return pData ? pData.getOffset() : -1;
+        	return pData ? pData.byteLength : -1;
         }
 
         /**
@@ -495,7 +511,7 @@ module akra.render {
 		    for (var i: int = 0, n = this._pMap.limit; i < n; ++i) {
 		        var pFlow = this._pMap.getFlow(i, false);
 
-		        if (pFlow.data && pFlow.data.getOffset() === arguments[0]) {
+		        if (pFlow.data && pFlow.data.byteLength === arguments[0]) {
 		            return pFlow;
 		        }
 		    }
@@ -552,17 +568,19 @@ module akra.render {
         	var iAddition: int, iRealAddition: int, iPrevAddition: int;
         	var pFlow: IDataFlow;
         	var pData: IVertexData, pRealData: IVertexData;
+        	var pFloat32Array: Float32Array;
         	var iIndexOffset: uint;
         	var pIndexData: IBufferData = this._pIndexData;
         	var sData: string;
         	var iStride: int;
-        	var iTypeSize: int = 4;//a.getTypeSize(EDataTypes.FLOAT);
+        	var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
 
         	if (this.useAdvancedIndex()) {
         	    pRealData = this._getData(iData);
-        	    iAddition = pRealData.getOffset();
+        	    iAddition = pRealData.byteLength;
         	    iStride = pRealData.stride;
-        	    pData = this._getData(sSemantics, true); //индекс, который подал юзер
+        	    //индекс, который подал юзер
+        	    pData = this._getData(sSemantics, true); 
 
         	    pData.applyModifier(sSemantics, function (pTypedData: Float32Array) {
         	        for (var i: int = 0; i < pTypedData.length; i++) {
@@ -571,16 +589,18 @@ module akra.render {
         	        ;
         	    });
 
-        	    iData = pData.getOffset();
-        	    sSemantics = 'INDEX_' + sSemantics;
+        	    iData = pData.byteLength;
+        	    sSemantics = "INDEX_" + sSemantics;
         	}
-        	else if (typeof arguments[0] === 'string') {
-        	    if (arguments[0] === 'TEXCOORD') {
-        	        iData = 'TEXCOORD0';
+        	else if (isString(arguments[0])) {
+        	    if (arguments[0] === "TEXCOORD") {
+        	        iData = this.getDataLocation("TEXCOORD0");
         	    }
-        	    iData = this._getDataLocation(iData);
+        	    else {
+        	    	iData = this.getDataLocation(iData);
+        		}
 
-        	    debug_assert(iData >= 0, 'cannot find data with semantics: ' + arguments[0]);
+        	    debug_assert(iData >= 0, "cannot find data with semantics: " + arguments[0]);
         	}
 
         	pFlow = this._getFlow(iData);
@@ -589,12 +609,12 @@ module akra.render {
         	    return false;
         	}
 
-        	iFlow = pFlow.iFlow;
-        	iIndexOffset = pIndexData._pVertexDeclaration.element(sSemantics).iOffset;
-        	pData = pIndexData.getTypedData(sSemantics);
+        	iFlow = pFlow.flow;
+        	iIndexOffset = (<IVertexData>pIndexData).getVertexDeclaration().findElement(sSemantics).offset;
+        	pFloat32Array = <Float32Array>(<IVertexData>pIndexData).getTypedData(sSemantics);
         	iAddition = iData;
 
-        	if (!pData) {
+        	if (!pFloat32Array) {
         	    return false;
         	}
 
@@ -606,15 +626,15 @@ module akra.render {
         	        iPrevAddition = this.indexSet.pAdditionCache[iIndexOffset] || 0;
         	        iRealAddition = iAddition - iPrevAddition;
 
-        	        for (var i = 0; i < pData.length; i++) {
-        	            pData[i] = (pData[i] * iStride + iRealAddition) / iTypeSize;
+        	        for (var i = 0; i < pFloat32Array.length; i++) {
+        	            pFloat32Array[i] = (pFloat32Array[i] * iStride + iRealAddition) / iTypeSize;
         	        }
         	        ;
         	    }
         	    else {
         	        iRealAddition = iAddition;
-        	        for (var i = 0; i < pData.length; i++) {
-        	            pData[i] = (iBeginWith + iRealAddition) / iTypeSize;
+        	        for (var i = 0; i < pFloat32Array.length; i++) {
+        	            pFloat32Array[i] = (iBeginWith + iRealAddition) / iTypeSize;
         	        }
         	        ;
         	    }
@@ -622,30 +642,23 @@ module akra.render {
         	    //remeber addition, that we added to index.
         	    this.indexSet.pAdditionCache[iIndexOffset] = iAddition;
 
-        	    if (!pIndexData.setData(pData, sSemantics)) {
+        	    if (!(<IVertexData>pIndexData).setData(pFloat32Array, sSemantics)) {
         	        return false;
         	    }
         	}
 
-        	return this._pMap.mapping(iFlow, pIndexData, sSemantics);
+        	return this._pMap.mapping(iFlow, <IVertexData>pIndexData, sSemantics);
         }
 
         /**
          * Draw this data.
          */
-        draw(): bool {
-        	var isOK: bool = true;
-        	var bResult: bool;
-        	var i: int;
-        	for (i = 0; i < this._pIndicesArray.length; i++) {
+        _draw(): void {
+        	for (var i: int = 0; i < this._pIndicesArray.length; i++) {
         	    if (this.isRenderable(i)) {
-        	        this._pBuffer._pEngine.shaderManager().getActiveProgram().applyBufferMap(this._pIndicesArray[i].pMap);
-        	        bResult = this._pIndicesArray[i].pMap.draw();
-        	        //LOG(this._pIndicesArray[i].pMap.toString());
-        	        isOK = isOK && bResult;
+        	        this._pIndicesArray[i].pMap._draw();
         	    }
         	}
-        	return isOK;
         }
 
         //applyMe(): bool;

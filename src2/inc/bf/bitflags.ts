@@ -33,7 +33,7 @@
  */
 #define TRUE_BIT(value, bit) ((value) |= FLAG((bit)))
 
-#define SET_BIT(value, bit, setting) (setting ? SET_BIT(value, bit) : CLEAR_BIT(value, bit))
+#define SET_BIT(value, bit, setting) (setting ? TRUE_BIT(value, bit) : CLEAR_BIT(value, bit))
 
 
 /**

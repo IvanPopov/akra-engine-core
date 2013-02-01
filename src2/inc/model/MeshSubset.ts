@@ -253,7 +253,7 @@ module akra.model {
 		    var pIndexDecl: IVertexDeclaration, pFloatArray: Float32Array;
 		    var iMatFlow: int;
 		    var pMaterial: IMaterial = this._pMesh.getFlexMaterial(iMaterial);
-		    var iMat: int = (<material.FlexMaterial>pMaterial).data.getOffset();
+		    var iMat: int = (<material.FlexMaterial>pMaterial).data.byteOffset;
 
 		    if (isNull(pMaterial)) {
 		        return false;
@@ -271,7 +271,7 @@ module akra.model {
 		    }
 		  
 		    pIndexDecl = createVertexDeclaration([VE_FLOAT(eSemantics)]);
-		    pFloatArray = new Float32Array((<IVertexData>pIndexData).getCount());    
+		    pFloatArray = new Float32Array((<IVertexData>pIndexData).length);    
 		    iMatFlow = pRenderData._addData((<material.FlexMaterial>pMaterial).data);
 
 		    debug_assert(iMatFlow >= 0, "cannot add data flow with material for mesh subsset");
@@ -286,7 +286,7 @@ module akra.model {
 
 		draw () {
 		    'use strict';
-		    this._pRenderData.draw();
+		    this._pRenderData._draw();
 		}
 
 		show() {
@@ -351,7 +351,7 @@ module akra.model {
 
 		    //выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
 		    pInfMetaData = pSkin.getInfluenceMetaData();
-		    iInfMetaDataLoc = pInfMetaData.getOffset() / EDataTypeSizes.BYTES_PER_FLOAT;
+		    iInfMetaDataLoc = pInfMetaData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
 		    iInfMetaDataStride = pInfMetaData.stride / EDataTypeSizes.BYTES_PER_FLOAT;
 
 		    for (var i: int = 0; i < pMetaData.length; ++ i) {
