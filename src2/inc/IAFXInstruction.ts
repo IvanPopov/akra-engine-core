@@ -7,6 +7,7 @@ module akra {
 
     export enum EAFXInstructionTypes {
         k_Instruction = 0,
+        k_SimpleInstruction,
         k_VariableTypeInstruction,
         k_SystemTypeInstruction,
         k_ComplexTypeInstruction,
@@ -45,6 +46,7 @@ module akra {
         k_SamplerStateBlockInstruction,
         k_SamplerStateInstruction,
         k_FunctionDeclInstruction,
+        k_SystemFunctionInstruction,
         k_FunctionDefInstruction,
         k_StmtInstruction,
         k_StmtBlockInstruction,
@@ -112,6 +114,11 @@ module akra {
 
     	addRoutine(fnRoutine: IAFXInstructionRoutine, iPriority?: uint);
     	toString(): string;
+    }
+
+    export interface IAFXSimpleInstruction extends IAFXInstruction {
+        setValue(sValue: string): void;
+        isValue(sValue: string): bool;
     }
 
     export interface IAFXTypeInstruction extends IAFXInstruction {
@@ -194,6 +201,11 @@ module akra {
         hasImplementation(): bool;
         getArguments(): IAFXVariableDeclInstruction[];
         getNumNeededArguments(): uint;
+        getReturnType(): IAFXTypeInstruction;
+
+        closeArguments(pArguments: IAFXTypedInstruction[]): IAFXTypedInstruction[];
+        setFunctionDef(pFunctionDef: IAFXDeclInstruction);
+        setImplementation(pImplementation: IAFXStmtInstruction);
     }
 
     export interface IAFXStructDeclInstruction extends IAFXInstruction {

@@ -3,6 +3,7 @@
 
 #include "IAFXInstruction.ts"
 #include "fx/EffectErrors.ts"
+#include "fx/EffectUtil.ts"
 
 module akra.fx {
     export interface IdExprMap {
@@ -108,6 +109,30 @@ module akra.fx {
     	toString(): string {
     		return null;
     	}
+	}
+
+	export class SimpleInstruction extends Instruction implements IAFXSimpleInstruction{
+		private _sValue: string = "";
+		
+		constructor(sValue: string){
+			super();
+			this._pInstructionList = null;
+			this._eInstructionType = EAFXInstructionTypes.k_SimpleInstruction;
+
+			this._sValue = sValue;
+		}
+
+		inline setValue(sValue: string): void {
+			this._sValue = sValue;
+		}
+
+		inline isValue(sValue: string): bool {
+			return (this._sValue === sValue);
+		}
+
+		toString(): string{
+			return this._sValue;
+		}
 	}
 
 	export class VariableTypeInstruction extends Instruction implements IAFXVariableTypeInstruction {
@@ -894,11 +919,65 @@ module akra.fx {
 	 * EMPTY_OPERTOR FunctionDefInstruction StmtBlockInstruction
 	 */
 	export class FunctionDeclInstruction extends DeclInstruction implements IAFXFunctionDeclInstruction {
+		private _pFunctionDefenition: FunctionDefInstruction = null;
+		private _pImplementation: StmtBlockInstruction = null;
+
 		constructor() { 
 			super();
 			this._pInstructionList = [null, null];
 			this._eInstructionType = EAFXInstructionTypes.k_FunctionDeclInstruction;
 		}	
+
+		getNameId(): IAFXIdInstruction {
+			return this._pFunctionDefenition.getNameId();
+		}
+
+		getArguments(): IAFXVariableDeclInstruction[] {
+			return this._pFunctionDefenition.getArguments();
+		}
+
+		inline getNumNeededArguments(): uint {
+			return this._pFunctionDefenition.getNumNeededArguments();
+		}
+		
+		inline hasImplementation(): bool {
+			return !isNull(this._pImplementation);
+		}
+
+		inline getReturnType(): IAFXTypeInstruction {
+			return this._pFunctionDefenition.getReturnType();
+		}
+
+		closeArguments(pArguments: IAFXTypedInstruction[]): IAFXTypedInstruction[]{
+			return null;
+		}
+
+		setFunctionDef(pFunctionDef: IAFXDeclInstruction): void {
+			this._pFunctionDefenition = <FunctionDefInstruction>pFunctionDef;
+			this._pInstructionList[0] = pFunctionDef;
+			pFunctionDef.setParent(this);
+			this._nInstuctions = this._nInstuctions === 0 ? 1 : this._nInstuctions;
+		}
+
+		setImplementation(pImplementation: IAFXStmtInstruction): void {
+			this._pImplementation = <StmtBlockInstruction>pImplementation;
+			this._pInstructionList[1] = pImplementation;
+			pImplementation.setParent(pImplementation);
+			this._nInstuctions = 2;
+		}
+	}
+
+	export class SystemFunctionInstruction extends DeclInstruction implements IAFXFunctionDeclInstruction {
+	    private _pExprTranslator: ExprTemplateTranslator = null;
+
+		constructor(){
+			super();
+			this._eInstructionType = EAFXInstructionTypes.k_SystemFunctionInstruction;			
+		}
+
+		setExprTranslator(pExprTranslator: ExprTemplateTranslator){
+			this._pExprTranslator = pExprTranslator;
+		}
 
 		getNameId(): IAFXIdInstruction {
 			return null;
@@ -908,13 +987,28 @@ module akra.fx {
 			return null;
 		}
 
-		getNumNeededArguments(): uint {
-			return 0;
+		inline getNumNeededArguments(): uint {
+			return null;
 		}
 		
-		hasImplementation(): bool {
-			return false;
+		inline hasImplementation(): bool {
+			return true;
 		}
+
+		inline getReturnType(): IAFXTypeInstruction {
+			return null;
+		}
+
+		closeArguments(pArguments: IAFXTypedInstruction[]): IAFXTypedInstruction[]{
+			return null;
+		}
+
+		setFunctionDef(pFunctionDef: IAFXDeclInstruction): void {
+		}
+
+		setImplementation(pImplementation: IAFXStmtInstruction): void {
+		}
+
 	}
 
 	/**
@@ -969,6 +1063,10 @@ module akra.fx {
 
 		inline getArguments(): IAFXVariableDeclInstruction[]{
 			return this._pParameterList;
+		}
+
+		inline getNumNeededArguments(): uint{
+			return this._nParamsNeeded;
 		}
 
 

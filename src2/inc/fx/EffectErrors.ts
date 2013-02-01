@@ -52,6 +52,7 @@ module akra.fx {
     #define EFFCCT_BAD_NEW_ANNOTATION_VAR 2244
     #define EFFCCT_BAD_FUNCTION_PARAMETER_DEFENITION_NEED_DEFAULT 2245
     #define EFFECT_BAD_CANNOT_CHOOSE_FUNCTION 2246
+    #define EFFECT_BAD_FUNCTION_DEF_RETURN_TYPE 2247
 
     akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, 
     						 "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
@@ -183,6 +184,9 @@ module akra.fx {
                               In line: {line}. In column: {column}"); 
     akra.logger.registerCode(EFFECT_BAD_CANNOT_CHOOSE_FUNCTION,
                              "Bad function call. There are two or more call signatures for function '{funcName}'.\
+                              In line: {line}. In column: {column}"); 
+    akra.logger.registerCode(EFFECT_BAD_FUNCTION_DEF_RETURN_TYPE,
+                             "Bad function definition. There are two or more different retturn type signatures for function '{funcName}'.\
                               In line: {line}. In column: {column}"); 
 
     function sourceLocationToString(pLocation: ISourceLocation): string {

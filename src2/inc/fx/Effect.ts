@@ -9,6 +9,7 @@
 #include "fx/Variable.ts"
 #include "fx/Type.ts"
 #include "fx/EffectErrors.ts"
+#include "fx/EffectUtil.ts"
 
 module akra.fx {
 
@@ -16,6 +17,7 @@ module akra.fx {
 
 
 	#define GLOBAL_SCOPE 0
+	#define TEMPLATE_TYPE "template"
 
 	export enum EScopeType{
 		k_Default,
@@ -457,6 +459,14 @@ module akra.fx {
 
 	}
 
+	export interface SystemTypeMap {
+		[sTypeName: string]: SystemTypeInstruction;
+	}
+
+	export interface SystemFunctionMap {
+		[sFuncName: string]: SystemFunctionInstruction[];
+	}
+
 	export class Effect implements IAFXEffect {
 
 		private _pParseTree: IParseTree = null;
@@ -468,9 +478,11 @@ module akra.fx {
 		private _pStatistics: IAFXEffectStats = null;
 
 		private _sAnalyzedFileName: string = "";
-		private _pSystemTypes: TypeMap = null;
+		private _pSystemTypes: SystemTypeMap = null;
+		private _pSystemFunctions: SystemFunctionMap = null;
 
-		static pSystemTypes: TypeMap = null;
+		static pSystemTypes: SystemTypeMap = null;
+		static pSystemFunctions: SystemFunctionMap = null;
 
 		static private _pGrammarSymbols = akra.util.parser.getGrammarSymbols();
 
@@ -571,10 +583,124 @@ module akra.fx {
 		}
 
 		private initSystemFunctions(): void {
+			if(isNull(Effect.pSystemFunctions)){
+				this._pSystemFunctions = Effect.pSystemFunctions = {};
+				this.addSystemFunctions();
+			}
 
+			this._pSystemFunctions = Effect.pSystemFunctions;
 		}
 
 		private initSystemVariables(): void {
+
+		}
+
+		private addSystemFunctions(): void {
+			this.generateSystemFunction("dot", "dot($1,$2)", "float", [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("mul", "$1*$2", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "int", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("tex2D", "texture2D($1,$2)", "float4", ["sampler", "float2"], null);
+		    this.generateSystemFunction("texCUBE", "textureCube($1,$2)", "float4", ["sampler", "float3"], null);
+		    this.generateSystemFunction("texCUBE", "textureCube($1,$2)", "float4", ["samplerCUBE", "float3"], null);
+		    this.generateSystemFunction("mod", "mod($1,$2)", "float", ["float", "float"], null);
+		    this.generateSystemFunction("floor", "floor($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("ceil", "ceil($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("fract", "fract($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("abs", "abs($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("normalize", "normalize($1)", "float", [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("length", "length($1)", "float", [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("reflect", "reflect($1,$2)", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("max", "max($1,$2)", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("max", "max($1,$2)", TEMPLATE_TYPE, [TEMPLATE_TYPE, "float"], ["float2", "float3", "float4"]);
+
+		    this.generateSystemFunction("min", "min($1,$2)", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("min", "min($1,$2)", TEMPLATE_TYPE, [TEMPLATE_TYPE, "float"], ["float2", "float3", "float4"]);
+
+		    this.generateSystemFunction("clamp", "clamp($1,$2,$3)", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("clamp", "clamp($1,$2,$3)", TEMPLATE_TYPE, [TEMPLATE_TYPE, "float", "float"], ["float2", "float3", "float4"]);
+
+		    this.generateSystemFunction("pow", "pow($1,$2)", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("mod", "mod($1,$2)", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float2", "float3", "float4"]);
+		    this.generateSystemFunction("mod", "mod($1,$2)", TEMPLATE_TYPE, [TEMPLATE_TYPE, "float"], ["float2", "float3", "float4"]);
+		    this.generateSystemFunction("exp", "exp($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("exp2", "exp2($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("log", "log($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("log2", "log2($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("inversesqrt", "inversesqrt($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("sqrt", "sqrt($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("all", "all($1)", "bool", [TEMPLATE_TYPE], ["bool2", "bool3", "bool4"]);
+		    this.generateSystemFunction("lessThanEqual", "lessThanEqual($1,$2)", "bool2", [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float2", "int2"]);
+		    this.generateSystemFunction("lessThanEqual", "lessThanEqual($1,$2)", "bool3", [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float3", "int3"]);
+		    this.generateSystemFunction("lessThanEqual", "lessThanEqual($1,$2)", "bool4", [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float4", "int4"]);
+
+
+		    this.generateSystemFunction("radians", "radians($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("degrees", "degrees($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("sin", "sin($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("cos", "cos($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("tan", "tan($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("asin", "asin($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("acos", "acos($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("atan", "atan($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("atan", "atan($1, $2)", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+
+		}
+
+		private generateSystemFunction(sName: string, sTranslationExpr: string, 
+									   sReturnTypeName: string,
+									   pArgumentsTypes: string[],
+									   pTemplateTypes: string[]): void {
+
+			var pExprTranslator: ExprTemplateTranslator = new ExprTemplateTranslator("sTranslationExpr");
+			// var i, j;
+		 //    var pFunc;
+		 //    var pTypes;
+		 //    var sHash;
+		 //    if (pTemplate) {
+		 //        for (i = 0; i < pTemplate.length; i++) {
+		 //            pTypes = [];
+		 //            for (j = 0; j < pParamsType.length; j++) {
+		 //                if (pParamsType[j] === null) {
+		 //                    pTypes.push(this.constructor.pBaseTypes[pTemplate[i]]);
+		 //                }
+		 //                else {
+		 //                    pTypes.push(this.constructor.pBaseTypes[pParamsType[j]]);
+		 //                }
+		 //            }
+		 //            pFunc = new EffectFunction(sName, pGLSLExpr, pTypes);
+		 //            pFunc.pReturnType = pReturn ? this.constructor.pBaseTypes[pReturn] : this.constructor.pBaseTypes[pTemplate[i]];
+		 //            sHash = pFunc.calcHash();
+		 //            if (this.constructor.pBaseFunctionsHash[sHash]) {
+		 //                error("bad 193");
+		 //                return;
+		 //            }
+		 //            this.constructor.pBaseFunctionsHash[sHash] = pFunc;
+		 //            this.constructor.pBaseFunctionsName[sName].push(pFunc);
+		 //        }
+		 //        return;
+		 //    }
+		 //    if (!pReturn) {
+		 //        error("bad 194");
+		 //        return;
+		 //    }
+		 //    pTypes = [];
+		 //    for (j = 0; j < pParamsType.length; j++) {
+		 //        if (pParamsType[j] === null) {
+		 //            error("bad 195");
+		 //            return;
+		 //        }
+		 //        else {
+		 //            pTypes.push(this.constructor.pBaseTypes[pParamsType[j]]);
+		 //        }
+		 //    }
+		 //    pFunc = new EffectFunction(sName, pGLSLExpr, pTypes);
+		 //    pFunc.pReturnType = this.constructor.pBaseTypes[pReturn];
+		 //    sHash = pFunc.calcHash();
+		 //    if (this.constructor.pBaseFunctionsHash[sHash]) {
+		 //        error("bad 196");
+		 //        return;
+		 //    }
+		 //    this.constructor.pBaseFunctionsHash[sHash] = pFunc;
+		 //    this.constructor.pBaseFunctionsName[sName].push(pFunc);
 
 		}
 
@@ -2015,6 +2141,12 @@ module akra.fx {
         	pFunctionDef = this.analyzeFunctionDef(pChildren[pChildren.length - 1]);
 
         	pFunction = this.findFunctionByDef(pFunctionDef);
+
+        	if(!isDef(pFunction)){
+        		this._error(EFFECT_BAD_CANNOT_CHOOSE_FUNCTION, {funcName: pFunction.getNameId().toString() });
+        		return null;
+        	}
+
         	if(!isNull(pFunction) && pFunction.hasImplementation()){
         		this._error(EFFECT_BAD_REDEFINE_FUNCTION, { funcName: pFunction.getNameId().toString() });
         		return null;
@@ -2023,8 +2155,14 @@ module akra.fx {
         	if(isNull(pFunction)){
         		pFunction = new FunctionDeclInstruction();
         	}
+        	else {
+        		if(!pFunction.getReturnType().isEqual(pFunctionDef.getReturnType())){
+        			this._error(EFFECT_BAD_FUNCTION_DEF_RETURN_TYPE, {funcName: pFunction.getNameId().toString() });
+        			return null;
+        		}
+        	}
 
-        	pFunction.push(pFunctionDef, true);
+    		pFunction.setFunctionDef(<IAFXDeclInstruction>pFunctionDef);
 
         	//this.newInstruction(pFunction);
         	this.resumeScope();
@@ -2036,7 +2174,7 @@ module akra.fx {
 
         	if(sLastNodeValue !== ";") {
  				pStmtBlock = <StmtBlockInstruction>this.analyzeStmtBlock(pChildren[0]);
- 				pFunction.push(pStmtBlock, true);
+ 				pFunction.setImplementation(<IAFXStmtInstruction>pStmtBlock);
         	}
 
         	this.endScope();
