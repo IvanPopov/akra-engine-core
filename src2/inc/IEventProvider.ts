@@ -2,6 +2,7 @@
 #define IEVENTPROVIDER_TS
 
 #define signal 
+#define slot
 
 module akra {
 	IFACE(IEventTable);

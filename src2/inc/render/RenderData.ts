@@ -16,7 +16,7 @@ module akra.render {
 		pAdditionCache: IntMap;
 	};
 
-	export class RenderData implements IRenderData extends util.ReferenceCounter {
+	export class RenderData extends util.ReferenceCounter implements IRenderData {
 		/**
 		 * Options.
 		 */
@@ -78,101 +78,6 @@ module akra.render {
 			this._pBuffer = pCollection;
 		}
 
-		/*Setup.*/
-		_setup(pCollection: IRenderDataCollection, iId: int, ePrimType: EPrimitiveTypes = EPrimitiveTypes.TRIANGLELIST, eOptions: int = 0): bool {
-			if (this._pBuffer === null && arguments.length < 2) {
-		        return false;
-		    }
-
-		    this.renderable(true);
-
-		    this._eOptions |= eOptions;
-		    this._pBuffer = pCollection;
-		    this._iId = iId;
-
-		    //setup buffer map
-		    this._pMap = pCollection.getEngine().createBufferMap();
-		    this._pMap.primType = ePrimType;
-
-		    //setup default index set
-		    this._pIndicesArray.push({
-		                                 sName       	: ".main",
-		                                 pMap        	: <IBufferMap>this._pMap,
-		                                 pIndexData  	: <IBufferData>null,
-		                                 pAttribData 	: <IVertexData>null,
-		                                 pI2IDataCache	: <IntMap>{},
-		                                 pAdditionCache : <IntMap>null
-		                             });
-
-		    debug_assert(this.useSingleIndex() === false, "single indexed data not implimented");
-
-		    return true;
-		}
-
-        renderable(bValue: bool): void {
-        	bValue ? SET_ALL(this._eOptions, ERenderDataOptions.RENDERABLE): CLEAR_ALL(this._eOptions, ERenderDataOptions.RENDERABLE);
-        }
-
-        /*isRenderable(): bool {
-        	return this._eOptions & a.RenderData.RENDERABLE ? true : false;
-        }*/
-
-        private _allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, eType: ERenderDataTypes): int;
-        private _allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, eType: ERenderDataTypes): int; 
-        private _allocateData(pDataDecl: IVertexDeclaration, pData: any, eType: ERenderDataTypes): int {
-        	if (eType === ERenderDataTypes.DIRECT) {
-		        return this.allocateAttribute(pDataDecl, pData)? 0: -1;
-		    }
-
-		    var iFlow: int;
-		    var pVertexData: IVertexData = this._pBuffer._allocateData(pDataDecl, pData);
-		    var iOffset: int = pVertexData.byteLength;
-
-		    iFlow = this._addData(pVertexData, undefined, eType);
-
-		    if (iFlow < 0) {
-		        LOG("invalid data", pDataDecl, pData);
-		        debug_error("cannot allocate data for submesh");
-		        return -1;
-		    }
-
-		    return iOffset;
-        }
-
-        /**
-		 * Add vertex data to this render data.
-		 */
-        _addData(pVertexData: IVertexData, iFlow?: int, eType: ERenderDataTypes = ERenderDataTypes.DIRECT): int {
-
-		    if ((arguments.length < 3 && this.useAdvancedIndex()) ||
-		        arguments[2] === ERenderDataTypes.I2I) {
-		        return this._registerData(pVertexData);
-		    }
-
-		    return (!isDef(iFlow) ? this._pMap.flow(pVertexData) :
-		            this._pMap.flow(iFlow, pVertexData));
-		}
-
-		/**
-		 * Register data in this render.
-		 * Necessary for index to index mode, when data realy
-		 * not using in this render data for building final buffer map.
-		 */
-		private _registerData(pVertexData: IVertexData): int {
-		    'use strict';
-		    var iOffset: int = pVertexData.byteLength;
-		    var pDataDecl: IVertexDeclaration = pVertexData.getVertexDeclaration();
-
-		    //необходимо запоминать расположение данных, которые подаются,
-		    //т.к. иначе их потом нельзя будет найти среди других данных
-		    for (var i: int = 0; i < pDataDecl.length; i++) {
-		        this.indexSet.pI2IDataCache[pDataDecl[i].eUsage] = iOffset;
-		    }
-		    
-
-		    return 0;
-		};
-
 		/**
 		 * Allocate data for rendering.
 		 */
@@ -192,21 +97,6 @@ module akra.render {
 		    }
 
 		    return this._allocateData(pDataDecl, pData, eType);
-        }
-
-        /**
-		 * Specifies uses advanced index.
-		 */
-        useAdvancedIndex(): bool {
-        	return (this._eOptions & ERenderDataOptions.ADVANCED_INDEX) != 0;
-        }
-
-        useSingleIndex(): bool {
-        	return (this._eOptions & ERenderDataOptions.SINGLE_INDEX) != 0;
-        }
-
-        useMultiIndex(): bool {
-        	return (this._eOptions & ERenderDataOptions.SINGLE_INDEX) == 0;
         }
 
         /**
@@ -251,105 +141,6 @@ module akra.render {
         }
 
         /**
-		 * Allocate advanced index.
-		 */
-		 private _allocateAdvancedIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): bool; 
-		 private _allocateAdvancedIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): bool; 
-		 private _allocateAdvancedIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool; 
-		 private _allocateAdvancedIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool; 
-		 private _allocateAdvancedIndex(pAttrDecl: any, pData: any): bool {
-
-		    var pDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pAttrDecl);
-		    var nCount: int = pData.byteLength / pDecl.stride;
-		    //TODO: remove index dublicates
-		    var iIndLoc: int = this._allocateData(pAttrDecl, pData, ERenderDataTypes.INDEXED);
-		    var pI2IData: Float32Array = new Float32Array(nCount);
-		    var pI2IDecl: IVertexElementInterface[] = [];
-
-		    for (var i: int = 0; i < pDecl.length; i++) {
-		        pI2IDecl.push(VE_FLOAT('INDEX_' + pDecl[i].eUsage, 0));
-		    }
-		    ;
-
-		    for (var i: int = 0; i < pI2IData.length; i++) {
-		        pI2IData[i] = i;
-		    }
-		    ;
-
-		    if (!this._allocateIndex(pI2IDecl, pI2IData)) {
-		        this.releaseData(iIndLoc);
-		        pI2IData = null;
-		        pI2IDecl = null;
-		        WARNING('cannot allocate index for index in render data subset');
-		        return false;
-		    }
-
-		    return true;
-		};
-
-		
-
-        /**
-		 * Create IndexBuffer/IndexData for storage indices.
-		 */
-		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBuffer): bool;
-		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBufferView): bool;
-		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBufferView): bool{
-		    'use strict';
-
-		    if (!this._pIndexBuffer) {
-		        if (this.useMultiIndex()) {
-		            this._pIndexBuffer = this._pBuffer.getEngine().getResourceManager().createVertexBuffer('subset_' + sid());
-		            this._pIndexBuffer.create(EHardwareBufferFlags.BACKUP_COPY);
-		        }
-		        else {
-		            //TODO: add support for sinle indexed mesh.
-		        }
-		    }
-
-		    this._pIndexData = (<IVertexBuffer>this._pIndexBuffer).allocateData(pAttrDecl, pData);
-		    this.indexSet.pIndexData = this._pIndexData;
-		    this.indexSet.pAdditionCache = <IntMap>{};
-		    return this._pIndexData !== null;
-		};
-
-		/**
-		 * Allocate index.
-		 */
-		private _allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): bool;
-		private _allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): bool;
-		private _allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
-		private _allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
-		private _allocateIndex(pDecl: any, pData: any): bool {
-		    'use strict';
-
-		    var pAttrDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]> pDecl);
-		    var pIndexData: IBufferData = this._pIndexData;
-		    var pIndexBuffer: IHardwareBuffer = this._pIndexBuffer;
-		    var pBuffer: IRenderDataCollection = this._pBuffer;
-
-#ifdef DEBUG
-		    for (var i: int = 0; i < pAttrDecl.length; i++) {
-		        if (pAttrDecl[i].eType !== EDataTypes.FLOAT) {
-		            return false;
-		        }
-		    }
-#endif
-
-		    if (!this._pIndexData) {
-		        return this._createIndex(pAttrDecl, pData);
-		    }
-
-		    if (!(<IVertexData>this._pIndexData).extend(pAttrDecl, pData)) {
-		        LOG('invalid data for allocation:', arguments);
-		        WARNING('cannot allocate index in data subset..');
-		        return false;
-		    }
-
-		    return true;
-		};
-
-		/**
 		 * Allocate index.
 		 */
 		allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): bool;
@@ -364,17 +155,7 @@ module akra.render {
 		    return this._allocateIndex(pAttrDecl, pData);
 		}
 
-		_setIndexLength(iLength: uint): bool {
-			var bResult: bool = (<IVertexData>this._pIndexData).resize(iLength);
-			
-			if(bResult) {
-				this._pMap._length = iLength;
-			}
-
-			return bResult;
-		}
-
-		getAdvancedIndexData(sSemantics: string): IVertexData {
+				getAdvancedIndexData(sSemantics: string): IVertexData {
 			return this._getData(sSemantics, true);
 		}
 
@@ -464,13 +245,48 @@ module akra.render {
         	return this._iIndexSet;
         }
 
-        setRenderable(iIndexSet: int = this.getIndexSet(), bValue: bool = true): bool{
-        	SET_BIT(this._iRenderable, iIndexSet, bValue);
-        	return true;
+        /**
+		 * Specifies uses advanced index.
+		 */
+        useAdvancedIndex(): bool {
+        	return (this._eOptions & ERenderDataOptions.ADVANCED_INDEX) != 0;
         }
 
-        isRenderable(iIndexSet: int = this.getIndexSet()): bool {
-        	return TEST_BIT(this._iRenderable, iIndexSet);
+        useSingleIndex(): bool {
+        	return (this._eOptions & ERenderDataOptions.SINGLE_INDEX) != 0;
+        }
+
+        useMultiIndex(): bool {
+        	return (this._eOptions & ERenderDataOptions.SINGLE_INDEX) == 0;
+        }
+
+        setRenderable(bValue: bool): void;
+        setRenderable(iIndexSet: int, bValue: bool): void;
+        setRenderable(iIndexSet: any, bValue?: bool = true): void {
+        	if (arguments.length < 2) {
+        		//mark all render data as renderable or not
+        		if (<bool>arguments[0]) {
+        			SET_ALL(this._eOptions, ERenderDataOptions.RENDERABLE)
+        		}
+        		else {
+        			CLEAR_ALL(this._eOptions, ERenderDataOptions.RENDERABLE);
+        		}
+        	}
+
+        	//mark index set is renderable or not
+        	SET_BIT(this._iRenderable, <int>iIndexSet, bValue);
+        }
+
+        isRenderable(iIndexSet?: int): bool;
+        isRenderable(): bool;
+        isRenderable(iIndexSet?: int): bool {
+        	if (arguments.length > 0) {
+        		//is this index set renderable ?
+        		return TEST_BIT(this._iRenderable, iIndexSet);
+        	}
+
+        	//is this data renderable ?
+        	return this._eOptions & ERenderDataOptions.RENDERABLE ? true : false; 
         }
 
         /**
@@ -496,58 +312,6 @@ module akra.render {
          */
         getIndices(): IBufferData {
         	return this._pIndexData;
-        }
-
-        /**
-         * Get data flow by semantics or data location.
-         */
-        _getFlow(iDataLocation: int): IDataFlow;
-        _getFlow(sSemantics: string, bSearchComplete?: bool): IDataFlow;
-        _getFlow(a, b?): IDataFlow {
-        	if (typeof arguments[0] === 'string') {
-		        return this._pMap.getFlow(arguments[0], arguments[1]);
-		    }
-
-		    for (var i: int = 0, n = this._pMap.limit; i < n; ++i) {
-		        var pFlow = this._pMap.getFlow(i, false);
-
-		        if (pFlow.data && pFlow.data.byteLength === arguments[0]) {
-		            return pFlow;
-		        }
-		    }
-
-		    return null;
-        }
-
-        /**
-         * Get data by semantics or location.
-         */
-        _getData(iDataLocation: int, bSearchOnlyInCurrentMap?: bool): IVertexData;
-        _getData(sSemanticsn: string, bSearchOnlyInCurrentMap?: bool): IVertexData;
-        _getData(a, b?): IVertexData {
-        	var pFlow: IDataFlow;
-
-        	if (this.useAdvancedIndex() && arguments.length < 2) {
-        	    if (typeof arguments[0] === 'string') {
-        	        return this._getData(this.indexSet.pI2IDataCache[arguments[0]]);
-        	    }
-
-        	    return this._pBuffer.getData(<string>arguments[0]);
-        	}
-
-        	if (typeof arguments[0] === 'string') {
-        	    for (var i = 0, n = this._pMap.limit; i < n; ++i) {
-        	        pFlow = this._pMap.getFlow(i, false);
-        	        if (pFlow.data != null && pFlow.data.hasSemantics(arguments[0])) {
-        	            return pFlow.data;
-        	        }
-        	    }
-
-        	    return null;//this._pBuffer._getData(arguments[0]);
-        	}
-
-        	pFlow = this._getFlow(arguments[0]);
-        	return pFlow === null ? null : pFlow.data;
         }
 
         /**
@@ -649,6 +413,261 @@ module akra.render {
 
         	return this._pMap.mapping(iFlow, <IVertexData>pIndexData, sSemantics);
         }
+
+
+		/*Setup.*/
+		_setup(pCollection: IRenderDataCollection, iId: int, ePrimType: EPrimitiveTypes = EPrimitiveTypes.TRIANGLELIST, eOptions: int = 0): bool {
+			if (this._pBuffer === null && arguments.length < 2) {
+		        return false;
+		    }
+
+		    this.setRenderable(true);
+
+		    this._eOptions |= eOptions;
+		    this._pBuffer = pCollection;
+		    this._iId = iId;
+
+		    //setup buffer map
+		    this._pMap = pCollection.getEngine().createBufferMap();
+		    this._pMap.primType = ePrimType;
+
+		    //setup default index set
+		    this._pIndicesArray.push({
+		                                 sName       	: ".main",
+		                                 pMap        	: <IBufferMap>this._pMap,
+		                                 pIndexData  	: <IBufferData>null,
+		                                 pAttribData 	: <IVertexData>null,
+		                                 pI2IDataCache	: <IntMap>{},
+		                                 pAdditionCache : <IntMap>null
+		                             });
+
+		    debug_assert(this.useSingleIndex() === false, "single indexed data not implimented");
+
+		    return true;
+		}
+
+
+        private _allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, eType: ERenderDataTypes): int;
+        private _allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, eType: ERenderDataTypes): int; 
+        private _allocateData(pDataDecl: IVertexDeclaration, pData: any, eType: ERenderDataTypes): int {
+        	if (eType === ERenderDataTypes.DIRECT) {
+		        return this.allocateAttribute(pDataDecl, pData)? 0: -1;
+		    }
+
+		    var iFlow: int;
+		    var pVertexData: IVertexData = this._pBuffer._allocateData(pDataDecl, pData);
+		    var iOffset: int = pVertexData.byteLength;
+
+		    iFlow = this._addData(pVertexData, undefined, eType);
+
+		    if (iFlow < 0) {
+		        LOG("invalid data", pDataDecl, pData);
+		        debug_error("cannot allocate data for submesh");
+		        return -1;
+		    }
+
+		    return iOffset;
+        }
+
+        /**
+		 * Add vertex data to this render data.
+		 */
+        _addData(pVertexData: IVertexData, iFlow?: int, eType: ERenderDataTypes = ERenderDataTypes.DIRECT): int {
+
+		    if ((arguments.length < 3 && this.useAdvancedIndex()) ||
+		        arguments[2] === ERenderDataTypes.I2I) {
+		        return this._registerData(pVertexData);
+		    }
+
+		    return (!isDef(iFlow) ? this._pMap.flow(pVertexData) :
+		            this._pMap.flow(iFlow, pVertexData));
+		}
+
+		/**
+		 * Register data in this render.
+		 * Necessary for index to index mode, when data realy
+		 * not using in this render data for building final buffer map.
+		 */
+		private _registerData(pVertexData: IVertexData): int {
+		    'use strict';
+		    var iOffset: int = pVertexData.byteLength;
+		    var pDataDecl: IVertexDeclaration = pVertexData.getVertexDeclaration();
+
+		    //необходимо запоминать расположение данных, которые подаются,
+		    //т.к. иначе их потом нельзя будет найти среди других данных
+		    for (var i: int = 0; i < pDataDecl.length; i++) {
+		        this.indexSet.pI2IDataCache[pDataDecl[i].eUsage] = iOffset;
+		    }
+		    
+
+		    return 0;
+		};
+
+
+        /**
+		 * Allocate advanced index.
+		 */
+		 private _allocateAdvancedIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): bool; 
+		 private _allocateAdvancedIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): bool; 
+		 private _allocateAdvancedIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool; 
+		 private _allocateAdvancedIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool; 
+		 private _allocateAdvancedIndex(pAttrDecl: any, pData: any): bool {
+
+		    var pDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pAttrDecl);
+		    var nCount: int = pData.byteLength / pDecl.stride;
+		    //TODO: remove index dublicates
+		    var iIndLoc: int = this._allocateData(pAttrDecl, pData, ERenderDataTypes.INDEXED);
+		    var pI2IData: Float32Array = new Float32Array(nCount);
+		    var pI2IDecl: IVertexElementInterface[] = [];
+
+		    for (var i: int = 0; i < pDecl.length; i++) {
+		        pI2IDecl.push(VE_FLOAT('INDEX_' + pDecl[i].eUsage, 0));
+		    }
+		    ;
+
+		    for (var i: int = 0; i < pI2IData.length; i++) {
+		        pI2IData[i] = i;
+		    }
+		    ;
+
+		    if (!this._allocateIndex(pI2IDecl, pI2IData)) {
+		        this.releaseData(iIndLoc);
+		        pI2IData = null;
+		        pI2IDecl = null;
+		        WARNING('cannot allocate index for index in render data subset');
+		        return false;
+		    }
+
+		    return true;
+		};
+
+		
+
+        /**
+		 * Create IndexBuffer/IndexData for storage indices.
+		 */
+		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBuffer): bool;
+		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBufferView): bool;
+		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBufferView): bool{
+		    'use strict';
+
+		    if (!this._pIndexBuffer) {
+		        if (this.useMultiIndex()) {
+		            this._pIndexBuffer = this._pBuffer.getEngine().getResourceManager().createVertexBuffer('subset_' + sid());
+		            this._pIndexBuffer.create(EHardwareBufferFlags.BACKUP_COPY);
+		        }
+		        else {
+		            //TODO: add support for sinle indexed mesh.
+		        }
+		    }
+
+		    this._pIndexData = (<IVertexBuffer>this._pIndexBuffer).allocateData(pAttrDecl, pData);
+		    this.indexSet.pIndexData = this._pIndexData;
+		    this.indexSet.pAdditionCache = <IntMap>{};
+		    return this._pIndexData !== null;
+		};
+
+		/**
+		 * Allocate index.
+		 */
+		private _allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): bool;
+		private _allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): bool;
+		private _allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
+		private _allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
+		private _allocateIndex(pDecl: any, pData: any): bool {
+		    'use strict';
+
+		    var pAttrDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]> pDecl);
+		    var pIndexData: IBufferData = this._pIndexData;
+		    var pIndexBuffer: IHardwareBuffer = this._pIndexBuffer;
+		    var pBuffer: IRenderDataCollection = this._pBuffer;
+
+#ifdef DEBUG
+		    for (var i: int = 0; i < pAttrDecl.length; i++) {
+		        if (pAttrDecl[i].eType !== EDataTypes.FLOAT) {
+		            return false;
+		        }
+		    }
+#endif
+
+		    if (!this._pIndexData) {
+		        return this._createIndex(pAttrDecl, pData);
+		    }
+
+		    if (!(<IVertexData>this._pIndexData).extend(pAttrDecl, pData)) {
+		        LOG('invalid data for allocation:', arguments);
+		        WARNING('cannot allocate index in data subset..');
+		        return false;
+		    }
+
+		    return true;
+		};
+
+
+		_setIndexLength(iLength: uint): bool {
+			var bResult: bool = (<IVertexData>this._pIndexData).resize(iLength);
+			
+			if(bResult) {
+				this._pMap._length = iLength;
+			}
+
+			return bResult;
+		}
+
+
+        /**
+         * Get data flow by semantics or data location.
+         */
+        _getFlow(iDataLocation: int): IDataFlow;
+        _getFlow(sSemantics: string, bSearchComplete?: bool): IDataFlow;
+        _getFlow(a, b?): IDataFlow {
+        	if (typeof arguments[0] === 'string') {
+		        return this._pMap.getFlow(arguments[0], arguments[1]);
+		    }
+
+		    for (var i: int = 0, n = this._pMap.limit; i < n; ++i) {
+		        var pFlow = this._pMap.getFlow(i, false);
+
+		        if (pFlow.data && pFlow.data.byteLength === arguments[0]) {
+		            return pFlow;
+		        }
+		    }
+
+		    return null;
+        }
+
+        /**
+         * Get data by semantics or location.
+         */
+        _getData(iDataLocation: int, bSearchOnlyInCurrentMap?: bool): IVertexData;
+        _getData(sSemanticsn: string, bSearchOnlyInCurrentMap?: bool): IVertexData;
+        _getData(a, b?): IVertexData {
+        	var pFlow: IDataFlow;
+
+        	if (this.useAdvancedIndex() && arguments.length < 2) {
+        	    if (typeof arguments[0] === 'string') {
+        	        return this._getData(this.indexSet.pI2IDataCache[arguments[0]]);
+        	    }
+
+        	    return this._pBuffer.getData(<string>arguments[0]);
+        	}
+
+        	if (typeof arguments[0] === 'string') {
+        	    for (var i = 0, n = this._pMap.limit; i < n; ++i) {
+        	        pFlow = this._pMap.getFlow(i, false);
+        	        if (pFlow.data != null && pFlow.data.hasSemantics(arguments[0])) {
+        	            return pFlow.data;
+        	        }
+        	    }
+
+        	    return null;//this._pBuffer._getData(arguments[0]);
+        	}
+
+        	pFlow = this._getFlow(arguments[0]);
+        	return pFlow === null ? null : pFlow.data;
+        }
+
+        
 
         /**
          * Draw this data.

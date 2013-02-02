@@ -2,6 +2,7 @@
 #define IMESH_TS
 
 #include "IRenderData.ts"
+#include "IEventProvider.ts"
 //#include "IHardwareBuffer.ts"
 module akra {
     IFACE(IRenderDataCollection);
@@ -9,6 +10,8 @@ module akra {
     IFACE(IRect3d);
     IFACE(ISphere);
     IFACE(IMeshSubset);
+    IFACE(ISceneNode);
+    IFACE(ISceneModel);
     IFACE(ISkin);
     
 	export enum EMeshOptions {
@@ -21,25 +24,23 @@ module akra {
         SHARED_GEOMETRY = 0x01  /*<! use shared geometry*/
     };
 
-	export interface IMesh {
+	export interface IMesh extends IEventProvider {
         readonly flexMaterials: IMaterial[];
         readonly name: string;
         readonly data: IRenderDataCollection;
+        readonly length: uint; /*<! number of submeshes in. */
         readonly boundingBox: IRect3d;
         readonly boundingSphere: ISphere;
-        readonly length: uint; /*<! number of submeshes in. */
 
 		skeleton: ISkeleton;
 
-        setSkeleton(pSkeleton: ISkeleton): void;
+        
         getOptions(): int;
         getEngine(): IEngine;
-        // drawSubset(iSubset: int): void;
-        // draw(): void;
-        isReadyForRender(): bool;
-        setup(sName: string, eOptions: int, pDataBuffer?: IRenderDataCollection): bool;
-        createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions: int);
-        freeSubset(sName: string): bool;
+        
+        //setup(sName: string, eOptions: int, pDataBuffer?: IRenderDataCollection): bool;
+        destroy(): void;    
+        clone(iCloneOptions: int): IMesh;
 
         /** @deprecated */
         replaceFlexMaterials(pFlexMaterials): void;
@@ -51,25 +52,41 @@ module akra {
         /** @deprecated */
         setFlexMaterial(iMaterial: int): bool;
         
-        destroy(): void;
-        destructor(): void;
+        createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions: int);
+        freeSubset(sName: string): bool;
         getSubset(sMesh: string): IMeshSubset;
         getSubset(i: uint): IMeshSubset;
+        appendSubset(sName: string, pData: IRenderData): IMeshSubset;
+        
         setSkin(pSkin: ISkin): void;
-        clone(eCloneOptions: EMeshCloneOptions);
-        createAndShowSubBoundingBox(): void;
-        createAndShowSubBoundingSphere(): void;
+        setSkeleton(pSkeleton: ISkeleton): void;
+
         createBoundingBox(): bool;
         deleteBoundingBox(): bool;
-
         showBoundingBox(): bool;
         hideBoundingBox(): bool;
+        createAndShowSubBoundingBox(): void;
+
         createBoundingSphere(): bool;
         deleteBoundingSphere(): bool;
         showBoundingSphere(): bool;
         hideBoundingSphere(): bool;
+        createAndShowSubBoundingSphere(): void;
 
-        appendSubset(sName: string, pData: IRenderData): IMeshSubset;
+        /** TRUE if only one mesh subset has a shadow. */
+        hasShadow(): bool;
+        /** Add shadow for all subsets. */
+        setShadow(bValue?: bool): void;
+
+        isReadyForRender(): bool;
+
+        toSceneModel(pParent: ISceneNode, sName?: string): ISceneModel;
+
+        _drawSubset(iSubset: int): void;
+        _draw(): void;
+
+        /** notify, when one of substets added or removed shadow */
+        signal shadow(pSubset: IMeshSubset, bShadow: bool): void;
 	}
 }
 

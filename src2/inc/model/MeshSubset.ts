@@ -108,7 +108,7 @@ module akra.model {
 				this.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints),DeclUsages.POSITION);
 			}
 
-			this.data.setRenderable();
+			this.data.setRenderable(this.data.getIndexSet(), true);
 			this.data.selectIndexSet(iCurrentIndexSet);
 
 			return true;
@@ -170,7 +170,7 @@ module akra.model {
 			pIndexes = new Array();
 			geometry.computeDataForCascadeBoundingSphere(this._pBoundingSphere, pPoints, pIndexes);
 
-			iCurrentIndexSet=this.data.getIndexSet();
+			iCurrentIndexSet = this.data.getIndexSet();
 			if(!this.data.selectIndexSet(".BoundingSphere")) {
 				this.data.addIndexSet(false, EPrimitiveTypes.LINELIST, ".BoundingSphere");
 
@@ -189,7 +189,7 @@ module akra.model {
 				this.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
 			}
 
-			this.data.setRenderable();
+			this.data.setRenderable(this.data.getIndexSet(), true);
 			this.data.selectIndexSet(iCurrentIndexSet);
 
 			return true;
@@ -284,17 +284,16 @@ module akra.model {
 		    return pRenderData.index(iMat, eSemantics, true);
 		}
 
-		draw () {
-		    'use strict';
+		_draw (): void {
 		    this._pRenderData._draw();
 		}
 
-		show() {
-		    this.data.renderable(true);
+		show(): void {
+		    this.data.setRenderable(true);
 		}
 
-		hide() {
-		    this.data.renderable(false);
+		hide(): void {
+		    this.data.setRenderable(false);
 		}
 
 

@@ -12,11 +12,14 @@
 #include "IMeshSubset.ts"
 #include "ISkin.ts"
 #include "IRenderDataCollection.ts"
+#include "ISceneNode.ts"
+#include "ISceneModel.ts"
 
 
 #include "MeshSubset.ts"
 #include "material/Material.ts"
 #include "util/ReferenceCounter.ts"
+#include "events/events.ts"
 
 module akra.model {
 
@@ -30,7 +33,7 @@ module akra.model {
         private _pBoundingBox: IRect3d = null;
         private _pBoundingSphere: ISphere = null;
         private _pSubMeshes: IMeshSubset[] = [];
-
+        private _bShadow: bool = false;
         
         inline get length(): uint {
             return this._pSubMeshes.length;
@@ -56,6 +59,26 @@ module akra.model {
             this._pSkeleton = pSkeleton;
         }
 
+        inline get boundingBox(): IRect3d {
+            if (isNull(this._pBoundingBox)) {
+                if (!this.createBoundingBox()) {
+                    WARNING("could not compute bounding box fo mesh");
+                }
+            }
+
+            return this._pBoundingBox;
+        }
+
+        inline get boundingSphere(): ISphere {
+            if (isNull(this._pBoundingSphere)) {
+                if (!this.createBoundingSphere()) {
+                    WARNING("could not compute bounding sphere for mesh");
+                }
+            }
+
+            return this._pBoundingSphere;
+        }
+
         constructor(pEngine: IEngine, eOptions: int, sName: string, pDataBuffer: IRenderDataCollection) {
             super();
 
@@ -76,15 +99,15 @@ module akra.model {
             return this._pEngine;
         }
 
-        // drawSubset(iSubset: int): void {
-        //     this._pBuffer.draw(iSubset);
-        // }
+        _drawSubset(iSubset: int): void {
+            this._pBuffer._draw(iSubset);
+        }
 
-        // draw(): void {
-        //     for (var i: int = 0; i < this.length; i++) {
-        //         this._pSubMeshes[i].draw();
-        //     };
-        // }
+        _draw(): void {
+            for (var i: int = 0; i < this.length; i++) {
+                this._pSubMeshes[i]._draw();
+            };
+        }
 
         isReadyForRender(): bool {
             for (var i: int = 0; i < this._pSubMeshes.length; ++ i) {
@@ -96,7 +119,7 @@ module akra.model {
             return true;
         }
 
-        setup(sName: string, eOptions: int, pDataCollection?: IRenderDataCollection): bool {
+        private setup(sName: string, eOptions: int, pDataCollection?: IRenderDataCollection): bool {
             debug_assert(this._pBuffer === null, "mesh already setuped.");
 
             if (isNull(pDataCollection)) {
@@ -136,6 +159,8 @@ module akra.model {
 
             var pSubMesh: IMeshSubset = new MeshSubset(this, pData, sName);
             this._pSubMeshes.push(pSubMesh);
+
+            this.connect(pSubMesh, SIGNAL(shadow), SLOT(shadow), EEventTypes.UNICAST);
 
             return pSubMesh;
         }
@@ -227,10 +252,6 @@ module akra.model {
             this._pBuffer.destroy(/*this*/);
         }
 
-        destructor(): void {
-            this.destroy();
-        }
-
         getSubset(sName: string): IMeshSubset;
         getSubset(i: uint): IMeshSubset;
         getSubset(i: any): IMeshSubset {
@@ -253,12 +274,12 @@ module akra.model {
             };
         }
 
-        clone(eCloneOptions: EMeshCloneOptions) {
+        clone(iCloneOptions: int): IMesh {
             var pClone: IMesh = null;
             var pRenderData: IRenderData;
             var pSubMesh: IMeshSubset;
 
-            if (eCloneOptions & EMeshCloneOptions.SHARED_GEOMETRY) {
+            if (iCloneOptions & EMeshCloneOptions.SHARED_GEOMETRY) {
                 pClone = new Mesh(this.getEngine(), this.getOptions(), this.name, this.data);
                 
                 for (var i = 0; i < this.length; ++ i) {
@@ -275,7 +296,7 @@ module akra.model {
                 //TODO: clone mesh data.
             }
 
-            if (eCloneOptions & EMeshCloneOptions.GEOMETRY_ONLY) {
+            if (iCloneOptions & EMeshCloneOptions.GEOMETRY_ONLY) {
                 return pClone;
             }
             else {
@@ -369,14 +390,6 @@ module akra.model {
             return true;
         }
 
-        inline get boundingBox(): IRect3d {
-            if (!this._pBoundingBox) {
-                this.createBoundingBox();
-            }
-
-            return this._pBoundingBox;
-        }
-
         showBoundingBox(): bool {
             var pSubMesh: IMeshSubset;
             var pMaterial: IMaterial;
@@ -422,7 +435,7 @@ module akra.model {
                 pSubMesh.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints), DeclUsages.POSITION);
             }
 
-            pSubMesh.data.setRenderable();
+            pSubMesh.data.setRenderable(pSubMesh.data.getIndexSet(), true);
             return true;
         }
 
@@ -498,10 +511,6 @@ module akra.model {
             return true;
         }
 
-        inline get boundingSphere(): ISphere {
-            return this._pBoundingSphere;
-        }
-
         showBoundingSphere(): bool {
             var pSubMesh : IMeshSubset, pMaterial: IMaterial;
             var iData: int;
@@ -542,7 +551,7 @@ module akra.model {
                 pSubMesh.data._getData(DeclUsages.POSITION).setData(new Float32Array(pPoints),DeclUsages.POSITION);
             }
 
-            pSubMesh.data.setRenderable();
+            pSubMesh.data.setRenderable(pSubMesh.data.getIndexSet(), true);
             return true;
         }
 
@@ -559,6 +568,54 @@ module akra.model {
             return false;
             //return pSubMeshs.data.setRenderable(this.data.getIndexSet(),false);
         }
+
+        hasShadow(): bool {
+            
+            
+
+            return false;
+        }
+
+        setShadow(bValue: bool = true): void {
+            for (var i: int = 0; i < this._pSubMeshes.length; ++ i) {
+                this._pSubMeshes[i].setShadow(bValue);
+            }            
+        }
+
+        toSceneModel(pParent: ISceneNode, sName: string = null): ISceneModel {
+            if (isNull(pParent)) {
+                return null;
+            }
+
+            var pSceneModel: ISceneModel = pParent.scene.createSceneModel(sName);
+            
+            if (!pSceneModel.create()) {
+                return null;
+            }
+
+            pSceneModel.mesh = this;
+            pSceneModel.attachToParent(pParent);
+
+            return pSceneModel;
+        }
+
+        BEGIN_EVENT_TABLE(Mesh);
+            signal shadow(pSubMesh: IMeshSubset, bShadow: bool): void {
+
+                this._bShadow = bShadow;
+
+                if (!bShadow) {
+                    for (var i: int = 0; i < this._pSubMeshes.length; ++ i) {
+                        if (this._pSubMeshes[i].hasShadow()) {
+                            this._bShadow = true;
+                            break;
+                        }
+                    }
+                }
+                
+                EMIT_BROADCAST(shadow, _CALL(pSubMesh, bShadow));
+            }
+        END_EVENT_TABLE();
 
 	}
 }

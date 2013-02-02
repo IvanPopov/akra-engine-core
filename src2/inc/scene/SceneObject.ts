@@ -102,18 +102,6 @@ module akra.scene {
 		    return false;
 		}
 
-		/**
-		 * @deprecated
-		 */
-		prepareForRender(): void {}
-
-		/**
-		 * @deprecated
-		 */
-    	render(): void {
-    		super.render();
-    	}
-
     	hasShadows(): bool {
     		return this._hasShadows;
     	}
@@ -126,12 +114,16 @@ module akra.scene {
     		return this._iObjectFlags;
     	}
 
-    	toString(isRecursive: bool = true, iDepth: uint = 0): string {
+    	toString(isRecursive: bool = false, iDepth: uint = 0): string {
+#ifdef DEBUG
 			if (!isRecursive) {
 		        return "<scene_object" + (this._sName ? " " + this._sName : "") + ">";
 		    }
 
 		    return super.toString(isRecursive, iDepth);
+#else
+			return null;
+#endif
     	}
 
 		BEGIN_EVENT_TABLE(SceneObject);

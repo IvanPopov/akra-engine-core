@@ -20,9 +20,6 @@ module akra {
     	isWorldBoundsNew(): bool;
     	// recalcWorldBounds(): void;
 
-    	prepareForRender(): void;
-    	render(): void;
-
     	hasShadows(): bool;
     	setShadows(bValue?: bool): void;
 

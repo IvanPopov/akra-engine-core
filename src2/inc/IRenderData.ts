@@ -1,8 +1,10 @@
 #ifndef IRENDERDATA_TS
 #define IRENDERDATA_TS
 
+#include "IReferenceCounter.ts"
+#include "IEventProvider.ts"
+
 module akra {
-    IFACE(IReferenceCounter);
     IFACE(IRenderDataCollection);
     IFACE(IDataFlow);
     IFACE(IVertexDeclaration);
@@ -29,8 +31,6 @@ module akra {
 	export interface IRenderData extends IReferenceCounter {
 		readonly buffer: IRenderDataCollection;
 
-        renderable(bValue: bool): void;
-        //isRenderable(): bool;
         /**
          * Allocate data for rendering.
          */
@@ -38,12 +38,7 @@ module akra {
         allocateData(pDataDecl: IVertexElementInterface[], pData: ArrayBufferView, hasIndex?: bool): int;
         allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, hasIndex?: bool): int;
         allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, hasIndex?: bool): int;
-        /**
-         * Specifies uses advanced index.
-         */
-        useAdvancedIndex(): bool;
-        useSingleIndex(): bool;
-        useMultiIndex(): bool;
+
         /**
          * Remove data from this render data.
          */
@@ -58,16 +53,27 @@ module akra {
         allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): bool;
         
         addIndexSet(usePreviousDataSet?: bool, ePrimType?: EPrimitiveTypes, sName?: string): int;
-        
         getNumIndexSet(): int;
         getIndexSetName(iSet: int): string;
         selectIndexSet(iSet: int): bool;
         selectIndexSet(sName: string): bool;
         getIndexSet(): int;
+
+        /**
+         * Specifies uses advanced index.
+         */
+        useAdvancedIndex(): bool;
+        useSingleIndex(): bool;
+        useMultiIndex(): bool;
         
-        setRenderable(): bool;
-        setRenderable(iIndexSet: int, bValue: bool): bool;
-        isRenderable(iIndexSet?: int): bool;
+        /** mark index set as renderable */
+        setRenderable(iIndexSet: int, bValue: bool): void;
+        isRenderable(iIndexSet: int): bool;
+        
+        /** Mark this RenderData as renderable. */
+        isRenderable(): bool;
+        setRenderable(bValue: bool): void;
+
         hasSemantics(sSemantics: string, bSearchComplete?: bool): bool;
         
         getDataLocation(iDataLocation: int): int;
@@ -77,8 +83,11 @@ module akra {
         getAdvancedIndexData(sSemantics: string): IVertexData;
         
         index(iData: int, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
-        //applyMe(): bool;
+
+        
         toString(): string;
+
+        //applyMe(): bool;
 
         _draw(): void;
         

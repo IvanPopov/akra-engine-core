@@ -2,6 +2,7 @@
 #define IRENDERDATACOLLECTION_TS
 
 #include "IRenderData.ts"
+#include "IBuffer.ts"
 
 module akra {
     IFACE(IVertexBuffer);

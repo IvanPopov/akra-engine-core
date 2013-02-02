@@ -21,7 +21,6 @@ module akra {
 
 		createBoundingBox(): bool;
 		deleteBoundingBox(): bool;
-		
 		showBoundingBox(): bool;
 		hideBoundingBox(): bool;
 
@@ -40,9 +39,13 @@ module akra {
 
 		/** @deprecated */
 		applyFlexMaterial(csMaterial: string, pMaterial?: IMaterial): bool;
+		/** @deprecated */
 		getFlexMaterial(iMaterial: int): IMaterial;
+		/** @deprecated */
 		getFlexMaterial(csName: string): IMaterial;
+		/** @deprecated */
 		setFlexMaterial(iMaterial: int): bool;
+		/** @deprecated */
 		setFlexMaterial(csName: string): bool;
 
 		show(): void;
