@@ -44,7 +44,7 @@ module akra {
         _draw(): void;
         _draw(iSubset: uint): void;
 
-        _setup(eOptions?: int): void;
+        // _setup(eOptions?: int): void;
         
         _allocateData(pVertexDecl: IVertexDeclaration, iSize: uint): IVertexData;
         _allocateData(pVertexDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;

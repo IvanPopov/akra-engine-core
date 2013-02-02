@@ -123,8 +123,7 @@ module akra.model {
             debug_assert(this._pBuffer === null, "mesh already setuped.");
 
             if (isNull(pDataCollection)) {
-                this._pBuffer = this._pEngine.createRenderDataCollection();
-                this._pBuffer._setup(eOptions);
+                this._pBuffer = this._pEngine.createRenderDataCollection(eOptions);
             }
             else {
                 debug_assert (pDataCollection.getEngine() === this.getEngine(), 
@@ -569,11 +568,8 @@ module akra.model {
             //return pSubMeshs.data.setRenderable(this.data.getIndexSet(),false);
         }
 
-        hasShadow(): bool {
-            
-            
-
-            return false;
+        inline hasShadow(): bool {
+            return this._bShadow;
         }
 
         setShadow(bValue: bool = true): void {
@@ -612,7 +608,7 @@ module akra.model {
                         }
                     }
                 }
-                
+
                 EMIT_BROADCAST(shadow, _CALL(pSubMesh, bShadow));
             }
         END_EVENT_TABLE();

@@ -17,7 +17,7 @@
 #include "render/RenderDataCollection.ts"
 #include "model/Mesh.ts"
 #include "util/BufferMap.ts"
-
+#include "animation/AnimationController.ts"
 
 #ifdef WEBGL
 #include "webgl/WebGLRenderer.ts"
@@ -182,18 +182,20 @@ module akra.core {
 		    return !this._isActive;
 		}
 
-		createMesh(sName: string = null, eOptions: int = 0, pDataBuffer: IRenderDataCollection = null): IMesh {
+		inline createMesh(sName: string = null, eOptions: int = 0, pDataBuffer: IRenderDataCollection = null): IMesh {
 			return new model.Mesh(this, eOptions, sName, pDataBuffer);
 		}
 
-		createRenderDataCollection(iOptions: int = 0): IRenderDataCollection {
-			var pCollection: IRenderDataCollection = new render.RenderDataCollection(this);
-			pCollection._setup(iOptions);
-			return pCollection;
+		inline createRenderDataCollection(iOptions: int = 0): IRenderDataCollection {
+			return new render.RenderDataCollection(this, iOptions);
 		}
 
-		createBufferMap(): IBufferMap {
+		inline createBufferMap(): IBufferMap {
 			return new util.BufferMap(this);
+		}
+
+		inline createAnimationController(iOptions: int = 0): IAnimationController {
+			return new animation.AnimationController(this, iOptions);
 		}
 
 

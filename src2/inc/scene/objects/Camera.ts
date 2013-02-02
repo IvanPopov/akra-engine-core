@@ -167,7 +167,7 @@ module akra.scene.objects {
 
 
 
-		display(iList: uint = DL_DEFAULT): ISceneObject[] {
+		display(iList: uint = /*DL_DEFAULT*/0): ISceneObject[] {
 			var pObjects: ISceneObject[] = this._pDLTechniques[iList].findObjects(!this.isUpdated());
 
 			return pObjects;

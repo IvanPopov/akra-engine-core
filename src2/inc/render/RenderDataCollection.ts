@@ -26,9 +26,11 @@ module akra.render {
         }
 
 
-        constructor (pEngine: IEngine) {
+        constructor (pEngine: IEngine, iOptions: int = 0) {
             super();
             this._pEngine = pEngine;
+
+            this.setup(iOptions);
         }
 
         clone(pSrc: IRenderDataCollection): bool {
@@ -201,10 +203,6 @@ module akra.render {
         	};
         }
 
-        _setup(eOptions: int = 0) {
-            this._eDataOptions = eOptions;
-        };
-
         destroy(): void {
         	this._pDataArray = null
     
@@ -217,6 +215,10 @@ module akra.render {
             this._pEngine = null;
             this._eDataOptions = 0;
         }
+
+        private setup(eOptions: int = 0) {
+            this._eDataOptions = eOptions;
+        };
 
         // inline isValid(): bool { return true; }
         // inline isDynamic(): bool { return false; }
