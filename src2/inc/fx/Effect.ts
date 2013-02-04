@@ -10,454 +10,15 @@
 #include "fx/Type.ts"
 #include "fx/EffectErrors.ts"
 #include "fx/EffectUtil.ts"
+#include "IAFXComposer.ts"
 
 module akra.fx {
 
 	#define CHECK_INSTRUCTION(inst, stage) if(!inst.check(stage)) { this._errorFromInstruction(inst.getLastError()); }
 
 
-	#define GLOBAL_SCOPE 0
-	#define TEMPLATE_TYPE "template"
-
-	export enum EScopeType{
-		k_Default,
-		k_Struct,
-		k_Annotation
-	}
-
-	export interface IAFXVariableDeclMap { 
-		[variableName: string] : IAFXVariableDeclInstruction;
-	}
 	
-	export interface IAFXTypeDeclMap {
-		[typeName: string] : IAFXTypeDeclInstruction;
-	}
-
-	export interface IAFXFunctionDeclListMap {
-		[functionName: string] : IAFXFunctionDeclInstruction[];
-	}
-
-	export interface IScope {
-		parent : IScope;
-		index: uint;
-		type: EScopeType;
-
-		variableMap : IAFXVariableDeclMap;
-		typeMap : IAFXTypeDeclMap;
-		functionMap : IAFXFunctionDeclListMap;
-	}
-
-	export interface IScopeMap {
-		[scopeIndex: uint] : IScope;
-	}
-
-	export class ProgramScope {
-		
-		private _pScopeMap: IScopeMap; 
-		private _iCurrentScope: int;
-		private _nScope: uint;
-
-		constructor() {
-			this._pScopeMap = <IScopeMap>{};
-			this._iCurrentScope = null;
-			this._nScope = 0;
-		}
-
-		newScope(eType: EScopeType): void {
-			var isFirstScope: bool = false;
-			var pParentScope: IScope;
-
-			if(isNull(this._iCurrentScope)){
-				pParentScope = null;
-			}
-			else {
-				pParentScope = this._pScopeMap[this._iCurrentScope];
-			}
-
-			this._iCurrentScope = this._nScope++;
-
-			var pNewScope: IScope = <IScope> {
-										parent: pParentScope,
-										index: this._iCurrentScope,
-										type: eType,
-										variableMap: null,
-										typeMap: null,
-										functionMap: null
-									};	
-
-			this._pScopeMap[this._iCurrentScope] = pNewScope;
-		}
-
-		resumeScope(): void {
-			if(this._nScope === 0) {
-				return;
-			}
-			
-			this._iCurrentScope = this._nScope - 1;
-		}
-
-		endScope(): void {
-			if(isNull(this._iCurrentScope)){
-				return;
-			}
-
-			var pOldScope: IScope = this._pScopeMap[this._iCurrentScope];
-			var pNewScope: IScope = pOldScope.parent;
-
-			if(isNull(pNewScope)){
-				this._iCurrentScope = null;
-			}
-			else {
-				this._iCurrentScope = pNewScope.index;
-			}
-		}
-
-		inline getScopeType(): EScopeType {
-			return this._pScopeMap[this._iCurrentScope].type;
-		}
-
-		getVariable(sVariableName: string, iScope?: uint = this._iCurrentScope): IAFXVariableDeclInstruction {
-			if(isNull(iScope)){
-				return null;
-			}
-
-			var pScope: IScope = this._pScopeMap[iScope];
-
-			while(!isNull(pScope)){
-				var pVariableMap: IAFXVariableDeclMap = pScope.variableMap;
-
-				if(!isNull(pVariableMap)){
-					var pVariable: IAFXVariableDeclInstruction = pVariableMap[sVariableName];
-
-					if(isDef(pVariable)){
-						return pVariable;
-					}
-				}
-
-				pScope = pScope.parent;
-			}
-
-			return null;
-		}
-
-		getType(sTypeName: string, iScope?: uint = this._iCurrentScope): IAFXTypeInstruction {
-			var pTypeDecl: IAFXTypeDeclInstruction = this.getTypeDecl(sTypeName, iScope);
-			
-			if(!isNull(pTypeDecl)){
-				return pTypeDecl.getType();
-			}
-			else {
-				return null;
-			}
-		}
-
-		getTypeDecl(sTypeName: string, iScope?: uint = this._iCurrentScope): IAFXTypeDeclInstruction {
-			if(isNull(iScope)){
-				return null;
-			}
-
-			var pScope: IScope = this._pScopeMap[iScope];
-
-			while(!isNull(pScope)){
-				var pTypeMap: IAFXTypeDeclMap = pScope.typeMap;
-
-				if(!isNull(pTypeMap)){
-					var pType: IAFXTypeDeclInstruction = pTypeMap[sTypeName];
-
-					if(isDef(pType)){
-						return pType;
-					}
-				}
-
-				pScope = pScope.parent;
-			}
-
-			return null;
-		}
-
-		/**
-		 * get function by name and list of types
-		 * return null - if threre are not function; undefined - if there more then one function; function - if all ok
-		 */
-		getFunction(sFuncName: string, pArgumentTypes: IAFXTypedInstruction[], iScope?: uint = GLOBAL_SCOPE): IAFXFunctionDeclInstruction {
-			if(isNull(iScope)){
-				return null;
-			}
-
-			var pScope: IScope = this._pScopeMap[iScope];
-			var pFunction: IAFXFunctionDeclInstruction = null;
-
-			while(!isNull(pScope)){
-				var pFunctionListMap: IAFXFunctionDeclListMap = pScope.functionMap;
-
-				if(!isNull(pFunctionListMap)){
-					var pFunctionList: IAFXFunctionDeclInstruction[] = pFunctionListMap[sFuncName];
-					
-					if(isDef(pFunctionList)){
-						
-						for(var i: uint = 0; i < pFunctionList.length; i++){
-							var pTestedFunction: IAFXFunctionDeclInstruction  = pFunctionList[i];
-							var pTestedArguments: IAFXVariableDeclInstruction[] = pTestedFunction.getArguments();
-
-							if(pArgumentTypes.length > pTestedArguments.length ||
-							   pArgumentTypes.length < pTestedFunction.getNumNeededArguments()){
-								continue;
-							}
-
-							var isParamsEqual: bool = true;
-
-							for(var j: uint = 0; j < pArgumentTypes.length; j++){
-								isParamsEqual = false;
-
-								if(!pArgumentTypes[j].getType().isEqual(pTestedArguments[j].getType())){
-									break;
-								}
-
-								isParamsEqual = true;
-							}
-
-							if(isParamsEqual){
-								if(!isNull(pFunction)){
-									return undefined;
-								}
-								pFunction = pTestedFunction;
-							}
-						}	
-					}
-
-				}
-
-				pScope = pScope.parent;
-			}
-			
-			return pFunction;
-		}
-
-		addVariable(pVariable: IAFXVariableDeclInstruction, iScope?: uint = this._iCurrentScope): bool {
-			if(isNull(iScope)){
-				return false;
-			}
-
-			var pScope: IScope = this._pScopeMap[iScope];
-			var pVariableMap: IAFXVariableDeclMap = pScope.variableMap;
-
-			if(!isDef(pVariableMap)){
-				pVariableMap = pScope.variableMap = <IAFXVariableDeclMap>{};
-			}
-
-			var sVariableName: string = pVariable.getName();
-
-			if(this.hasVariableInScope(sVariableName, iScope)){
-				return false;
-			}
-
-			pVariableMap[sVariableName] = pVariable;
-
-			return true;
-		}
-
-		addType(pType: IAFXTypeDeclInstruction, iScope?: uint = this._iCurrentScope): bool {
-			if(isNull(iScope)){
-				return false;
-			}
-
-			var pScope: IScope = this._pScopeMap[iScope];
-			var pTypeMap: IAFXTypeDeclMap = pScope.typeMap;
-
-			if(!isDef(pTypeMap)){
-				pTypeMap = pScope.typeMap = <IAFXTypeDeclMap>{};
-			}
-
-			var sTypeName: string = pType.getName();
-
-			if(this.hasTypeInScope(sTypeName, iScope)){
-				return false;
-			}
-
-			pTypeMap[sTypeName] = pType;
-
-			return true;
-		}
-
-		addFunction(pFunction: IAFXFunctionDeclInstruction, iScope?: uint = GLOBAL_SCOPE): bool {
-			if(isNull(iScope)){
-				return false;
-			}
-
-			var pScope: IScope = this._pScopeMap[iScope];
-			var pFunctionMap: IAFXFunctionDeclListMap = pScope.functionMap;
-
-			if(!isDef(pFunctionMap)){
-				pFunctionMap = pScope.functionMap = <IAFXFunctionDeclListMap>{};
-			}
-
-			var sFuncName: string = pFunction.getName();
-
-			if(this.hasFunctionInScope(pFunction, iScope)){
-				return false;
-			}
-			
-			if(!isDef(pFunctionMap[sFuncName])){
-				pFunctionMap[sFuncName] = [];
-			}
-
-			pFunctionMap[sFuncName].push(pFunction);
-
-			return true;
-		}
-
-		hasVariable(sVariableName: string, iScope?: uint = this._iCurrentScope): bool {
-			if(isNull(iScope)){
-				return false;
-			}
-
-			var pScope: IScope = this._pScopeMap[iScope];
-
-			while(!isNull(pScope)){
-				var pVariableMap: IAFXVariableDeclMap = pScope.variableMap;
-
-				if(!isNull(pVariableMap)){
-					var pVariable: IAFXVariableDeclInstruction = pVariableMap[sVariableName];
-
-					if(isDef(pVariable)){
-						return true;
-					}
-				}
-
-				pScope = pScope.parent;
-			}
-
-			return false;
-		}
-
-		hasType(sTypeName: string, iScope?: uint = this._iCurrentScope): bool {
-			if(isNull(iScope)){
-				return false;
-			}
-
-			var pScope: IScope = this._pScopeMap[iScope];
-
-			while(!isNull(pScope)){
-				var pTypeMap: IAFXTypeDeclMap = pScope.typeMap;
-
-				if(!isNull(pTypeMap)){
-					var pType: IAFXTypeDeclInstruction = pTypeMap[sTypeName];
-
-					if(isDef(pType)){
-						return true;
-					}
-				}
-
-				pScope = pScope.parent;
-			}
-
-			return false;
-		}
-
-		hasFunction(sFuncName: string, pArgumentTypes: IAFXTypedInstruction[], iScope?: uint = GLOBAL_SCOPE): bool {
-			if(isNull(iScope)){
-				return false;
-			}
-
-			var pScope: IScope = this._pScopeMap[iScope];
-
-			while(!isNull(pScope)){
-				var pFunctionListMap: IAFXFunctionDeclListMap = pScope.functionMap;
-
-				if(!isNull(pFunctionListMap)){
-					var pFunctionList: IAFXFunctionDeclInstruction[] = pFunctionListMap[sFuncName];
-					
-					if(isDef(pFunctionList)){
-						var pFunction: IAFXFunctionDeclInstruction = null;
-						
-						for(var i: uint = 0; i < pFunctionList.length; i++){
-							var pTestedFunction: IAFXFunctionDeclInstruction  = pFunctionList[i];
-							var pTestedArguments: IAFXVariableDeclInstruction[] = pTestedFunction.getArguments();
-
-							if(pArgumentTypes.length > pTestedArguments.length ||
-							   pArgumentTypes.length < pTestedFunction.getNumNeededArguments()){
-								continue;
-							}
-
-							var isParamsEqual: bool = true;
-
-							for(var j: uint = 0; j < pArgumentTypes.length; j++){
-								isParamsEqual = false;
-
-								if(!pArgumentTypes[j].getType().isEqual(pTestedArguments[j].getType())){
-									break;
-								}
-
-								isParamsEqual = true;
-							}
-
-							if(isParamsEqual){
-								return true;
-							}
-						}	
-					}
-
-				}
-
-				pScope = pScope.parent;
-			}
-			
-			return false;
-		}
-
-		private inline hasVariableInScope(sVariableName: string, iScope: uint): bool {
-			return isDef(this._pScopeMap[iScope].variableMap[sVariableName]);
-		}
-
-		private inline hasTypeInScope(sTypeName: string, iScope: uint): bool {
-			return isDef(this._pScopeMap[iScope].typeMap[sTypeName]);
-		}
-
-		private hasFunctionInScope(pFunction: IAFXFunctionDeclInstruction, iScope: uint): bool {
-			if(isNull(iScope)){
-				return false;
-			}
-
-			var pScope: IScope = this._pScopeMap[iScope];
-			var pFunctionListMap:IAFXFunctionDeclListMap = pScope.functionMap;
-			var pFunctionList: IAFXFunctionDeclInstruction[] = pFunctionListMap[pFunction.getName()];
-			
-			if(!isDef(pFunctionList)){
-				return false;
-			}
-
-			var pFunctionArguments: IAFXTypedInstruction[] = <IAFXTypedInstruction[]>pFunction.getArguments();
-			var hasFunction: bool = false;
-
-			for(var i: uint = 0; i < pFunctionList.length; i++){
-				var pTestedArguments: IAFXTypedInstruction[] = <IAFXTypedInstruction[]>pFunctionList[i].getArguments();
-			
-				if(pTestedArguments.length !== pFunctionArguments.length){
-					continue;
-				}
-
-				var isParamsEqual: bool = true;
-
-				for(var j: uint = 0; j < pFunctionArguments.length; j++){
-					isParamsEqual = false;
-
-					if(!pTestedArguments[j].getType().isEqual(pFunctionArguments[j].getType())){
-						break;
-					}
-
-					isParamsEqual = true;
-				}
-
-				if(isParamsEqual){
-					hasFunction = true;
-					break;
-				}
-			}
-
-			return hasFunction;
-		}
-
-	}
+	#define TEMPLATE_TYPE "template"
 
 	export interface SystemTypeMap {
 		[sTypeName: string]: SystemTypeInstruction;
@@ -468,6 +29,7 @@ module akra.fx {
 	}
 
 	export class Effect implements IAFXEffect {
+		private _pComposer: IAFXComposer = null;
 
 		private _pParseTree: IParseTree = null;
 		private _pAnalyzedNode: IParseNode = null;
@@ -479,14 +41,17 @@ module akra.fx {
 
 		private _sAnalyzedFileName: string = "";
 		private _pSystemTypes: SystemTypeMap = null;
-		private _pSystemFunctions: SystemFunctionMap = null;
+		private _pSystemFunctionsMap: SystemFunctionMap = null;
+		private _pSystemFunctionHashMap: BoolMap = null;
 
 		static pSystemTypes: SystemTypeMap = null;
 		static pSystemFunctions: SystemFunctionMap = null;
 
 		static private _pGrammarSymbols = akra.util.parser.getGrammarSymbols();
 
-		constructor() {
+		constructor(pComposer: IAFXComposer) {
+			this._pComposer = pComposer;
+
 			this._pParseTree = null;
 			this._pAnalyzedNode = null;
 
@@ -584,11 +149,11 @@ module akra.fx {
 
 		private initSystemFunctions(): void {
 			if(isNull(Effect.pSystemFunctions)){
-				this._pSystemFunctions = Effect.pSystemFunctions = {};
+				this._pSystemFunctionsMap = Effect.pSystemFunctions = {};
 				this.addSystemFunctions();
 			}
 
-			this._pSystemFunctions = Effect.pSystemFunctions;
+			this._pSystemFunctionsMap = Effect.pSystemFunctions;
 		}
 
 		private initSystemVariables(): void {
@@ -596,6 +161,8 @@ module akra.fx {
 		}
 
 		private addSystemFunctions(): void {
+			this._pSystemFunctionHashMap = <BoolMap>{};
+
 			this.generateSystemFunction("dot", "dot($1,$2)", "float", [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
 		    this.generateSystemFunction("mul", "$1*$2", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "int", "float2", "float3", "float4"]);
 		    this.generateSystemFunction("tex2D", "texture2D($1,$2)", "float4", ["sampler", "float2"], null);
@@ -650,58 +217,82 @@ module akra.fx {
 									   pArgumentsTypes: string[],
 									   pTemplateTypes: string[]): void {
 
-			var pExprTranslator: ExprTemplateTranslator = new ExprTemplateTranslator("sTranslationExpr");
-			// var i, j;
-		 //    var pFunc;
-		 //    var pTypes;
-		 //    var sHash;
-		 //    if (pTemplate) {
-		 //        for (i = 0; i < pTemplate.length; i++) {
-		 //            pTypes = [];
-		 //            for (j = 0; j < pParamsType.length; j++) {
-		 //                if (pParamsType[j] === null) {
-		 //                    pTypes.push(this.constructor.pBaseTypes[pTemplate[i]]);
-		 //                }
-		 //                else {
-		 //                    pTypes.push(this.constructor.pBaseTypes[pParamsType[j]]);
-		 //                }
-		 //            }
-		 //            pFunc = new EffectFunction(sName, pGLSLExpr, pTypes);
-		 //            pFunc.pReturnType = pReturn ? this.constructor.pBaseTypes[pReturn] : this.constructor.pBaseTypes[pTemplate[i]];
-		 //            sHash = pFunc.calcHash();
-		 //            if (this.constructor.pBaseFunctionsHash[sHash]) {
-		 //                error("bad 193");
-		 //                return;
-		 //            }
-		 //            this.constructor.pBaseFunctionsHash[sHash] = pFunc;
-		 //            this.constructor.pBaseFunctionsName[sName].push(pFunc);
-		 //        }
-		 //        return;
-		 //    }
-		 //    if (!pReturn) {
-		 //        error("bad 194");
-		 //        return;
-		 //    }
-		 //    pTypes = [];
-		 //    for (j = 0; j < pParamsType.length; j++) {
-		 //        if (pParamsType[j] === null) {
-		 //            error("bad 195");
-		 //            return;
-		 //        }
-		 //        else {
-		 //            pTypes.push(this.constructor.pBaseTypes[pParamsType[j]]);
-		 //        }
-		 //    }
-		 //    pFunc = new EffectFunction(sName, pGLSLExpr, pTypes);
-		 //    pFunc.pReturnType = this.constructor.pBaseTypes[pReturn];
-		 //    sHash = pFunc.calcHash();
-		 //    if (this.constructor.pBaseFunctionsHash[sHash]) {
-		 //        error("bad 196");
-		 //        return;
-		 //    }
-		 //    this.constructor.pBaseFunctionsHash[sHash] = pFunc;
-		 //    this.constructor.pBaseFunctionsName[sName].push(pFunc);
+			var pExprTranslator: ExprTemplateTranslator = new ExprTemplateTranslator(sTranslationExpr);
+			var pSystemFunctions: SystemFunctionMap = this._pSystemFunctionsMap;
+			var pTypes: IAFXTypeInstruction[] = null;
+			var sFunctionHash: string = "";
+			var pReturnType: IAFXTypeInstruction = null;
+			var pFunction: SystemFunctionInstruction = null;
 
+			if(!isNull(pTemplateTypes)){
+				for(var i: uint = 0; i < pTemplateTypes.length; i++) {
+					pTypes = [];
+					sFunctionHash = sName + "(";
+					pReturnType = (sReturnTypeName === TEMPLATE_TYPE) ? 
+																this.getSystemType(pTemplateTypes[i]) : 
+																this.getSystemType(sReturnTypeName);
+
+					
+					for(var j: uint = 0; j < pArgumentsTypes.length; j++) {
+						if(pArgumentsTypes[j] === TEMPLATE_TYPE){
+							pTypes.push(this.getSystemType(pTemplateTypes[i]));
+							sFunctionHash += pTemplateTypes[i] + ",";
+						}
+						else{
+							pTypes.push(this.getSystemType(pArgumentsTypes[j]));
+							sFunctionHash += pArgumentsTypes[j] + ","
+						}
+					}						
+
+					sFunctionHash += ")";
+
+					if(this._pSystemFunctionHashMap[sFunctionHash]){
+						this._error(EFFECT_BAD_SYSTEM_FUNCTION_REDEFINE, {funcName: sFunctionHash});
+					}
+
+					pFunction = new SystemFunctionInstruction(sName, pReturnType, pExprTranslator, pTypes);
+				
+					if(!isDef(pSystemFunctions[sName])){
+						pSystemFunctions[sName] = [];
+					}
+
+					pSystemFunctions[sName].push(pFunction);
+				}
+			}
+			else{
+
+				if(sReturnTypeName === TEMPLATE_TYPE){
+					akra.logger.criticalError("Bad return type(TEMPLATE_TYPE) for system function '" + sName +  "'.");
+				}
+
+				pReturnType = this.getSystemType(sReturnTypeName);
+				pTypes = [];
+				sFunctionHash = sName + "(";
+
+				for(var i: uint = 0; i < pArgumentsTypes.length; i++){
+					if(pArgumentsTypes[i] === TEMPLATE_TYPE){
+						akra.logger.criticalError("Bad argument type(TEMPLATE_TYPE) for system function '" + sName +  "'.");
+					}
+					else{
+						pTypes.push(this.getSystemType(pArgumentsTypes[i]));
+						sFunctionHash += pArgumentsTypes[i] + ",";
+					}
+				}
+
+				sFunctionHash += ")";
+				
+				if(this._pSystemFunctionHashMap[sFunctionHash]){
+					this._error(EFFECT_BAD_SYSTEM_FUNCTION_REDEFINE, {funcName: sFunctionHash});
+				}
+
+				pFunction = new SystemFunctionInstruction(sName, pReturnType, pExprTranslator, pTypes);
+
+				if(!isDef(pSystemFunctions[sName])){
+					pSystemFunctions[sName] = [];
+				}
+
+				pSystemFunctions[sName].push(pFunction);
+			}
 		}
 
 		private generateSystemType(sName: string, sRealName: string, 
@@ -1004,7 +595,41 @@ module akra.fx {
 							 pArguments: IAFXVariableDeclInstruction[]): IAFXFunctionDeclInstruction;
 		private findFunction(sFunctionName: string, 
 							 pArguments: IAFXTypedInstruction[]): IAFXFunctionDeclInstruction {
-			return this._pEffectScope.getFunction(sFunctionName, pArguments);
+			return this.findSystemFunction(sFunctionName, pArguments) ||
+				   this._pEffectScope.getFunction(sFunctionName, pArguments);
+		}
+
+		private findSystemFunction(sFunctionName: string, 
+							 	   pArguments: IAFXTypedInstruction[]): IAFXFunctionDeclInstruction {
+			var pSystemFunctions: SystemFunctionInstruction[] = this._pSystemFunctionsMap[sFunctionName];
+
+			if(!isDef(pSystemFunctions)){
+				return null;
+			}
+
+			for(var i: uint = 0; i < pSystemFunctions.length; i++){
+				if(pArguments.length !== pSystemFunctions[i].getNumNeededArguments()){
+					continue;
+				}
+				
+				var pTestedArguments: IAFXTypedInstruction[] = pSystemFunctions[i].getArguments();
+
+				var isOk: bool = true;
+
+				for(var j: uint = 0; j < pArguments.length; j++){
+					isOk = false;
+
+					if(pArguments[j].getType().isEqual(pTestedArguments[j].getType())){
+						break;
+					}
+
+					isOk = true;
+				}
+
+				if(isOk){
+					return pSystemFunctions[i];
+				}
+			}
 		}
 
 		private findConstructor(pType: IAFXTypeInstruction, 
@@ -1090,16 +715,6 @@ module akra.fx {
 		// 	this.addType(pType);
 		// }
 
-		private identifyType(pNode: IParseNode): IAFXType {
-			return null;
-		}
-
-		private identifyUsage(pNode: IParseNode): IAFXKeywordInstruction;
-		private identifyUsage(sUsage: string): IAFXKeywordInstruction;
-		private identifyUsage(): IAFXKeywordInstruction {
-			return null;
-		}
-
 		private analyzeDecls(): void {
 			var pChildren: IParseNode[] = this._pParseTree.root.children;
 			var i: uint;	
@@ -1181,7 +796,49 @@ module akra.fx {
         }
 
         private analyzeType(pNode: IParseNode): IAFXTypeInstruction {
-        	return null;
+        	this.setAnalyzedNode(pNode);
+        	
+        	var pChildren: IParseNode[] = pNode.pChildren;
+        	var pType: IAFXTypedInstruction = null;
+
+        	switch(pNode.name){
+        		case "T_TYPE_ID":
+        			pType = this.getType(pNode.value);
+
+			        if (isNull(pType)) {
+			            this._error(EFFECT_BAD_TYPE_NAME_NOT_TYPE, { typeName: pNode.value });
+			        }
+			        break;
+
+			    case "Struct":
+			    	pType = this.analyzeStruct(pNode);
+			    	break;
+
+			   	case "T_KW_VOID":
+			   		pType = this.getSystemType("void");
+			   		break;
+
+			   	case "ScalarType":
+			   	case "ObjectType":
+			   		pType = this.getType(pChildren[pChildren.length - 1].value);
+
+			   		if (isNull(pType)) {
+			            this._error(EFFECT_BAD_TYPE_NAME_NOT_TYPE, { typeName: pChildren[pChildren.length - 1].value });
+			        }
+
+			       	break;
+
+			    case "VectorType":
+			    case "MatrixType":
+			    	this._error(EFFECT_BAD_TYPE_VECTOR_MATRIX);
+			    	break;
+
+			   	case "BaseType":
+			   	case "Type":
+			   		return this.analyzeType(pChildren[0]);
+        	}
+
+        	return pType;
         }
 
         private analyzeUsage(pNode: IParseNode): string {
@@ -1432,8 +1089,8 @@ module akra.fx {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
-        	var pExpr: FunctionCallInstruction = new FunctionCallInstruction();
-        	var pExprType: IAFXVariableTypeInstruction;
+        	var pExpr: IAFXExprInstruction = null;
+        	var pExprType: IAFXVariableTypeInstruction = null;
         	var pArguments: IAFXExprInstruction[] = null;
         	var sFuncName: string = pChildren[pChildren.length - 1].value;
         	var pFunction: IAFXFunctionDeclInstruction = null;
@@ -1465,25 +1122,39 @@ module akra.fx {
         		return null;
         	}
 
-        	pFunctionId = new IdExprInstruction();
-        	pFunctionId.push(pFunction.getNameId(), false);
+        	if(pFunction.getInstructionType() === EAFXInstructionTypes.k_FunctionDeclInstruction){
+        		var pFunctionCallExpr: FunctionCallInstruction = new FunctionCallInstruction();
+	        	
+	        	pFunctionId = new IdExprInstruction();
+	        	pFunctionId.push(pFunction.getNameId(), false);
 
-        	pExprType = <IAFXVariableTypeInstruction>pFunction.getType();
+	        	pExprType = <IAFXVariableTypeInstruction>pFunction.getType();
 
-        	pExpr.setType(pExprType);
-        	pExpr.push(pFunctionId, true);
-        	
-        	if(!isNull(pArguments)){
-        		for(i = 0; i < pArguments.length; i++) {
-        			pExpr.push(pArguments[i], true);
-        		}
+	        	pFunctionCallExpr.setType(pExprType);
+	        	pFunctionCallExpr.push(pFunctionId, true);
+	        	
+	        	if(!isNull(pArguments)){
+	        		for(i = 0; i < pArguments.length; i++) {
+	        			pFunctionCallExpr.push(pArguments[i], true);
+	        		}
 
-        		var pFunctionArguments: IAFXVariableDeclInstruction[] = pFunction.getArguments();
+	        		var pFunctionArguments: IAFXVariableDeclInstruction[] = (<FunctionDeclInstruction>pFunction).getArguments();
 
-        		for(i = pArguments.length; i < pFunctionArguments.length; i++){
-        			pExpr.push(pFunctionArguments[i].getInitializeExpr(), false);
-        		}
-        		
+	        		for(i = pArguments.length; i < pFunctionArguments.length; i++){
+	        			pFunctionCallExpr.push(pFunctionArguments[i].getInitializeExpr(), false);
+	        		}
+	        		
+	        	}
+
+	        	pExpr = pFunctionCallExpr;
+        	}
+        	else {
+        		var pSystemCallExpr: SystemCallInstruction = new SystemCallInstruction();
+
+        		pSystemCallExpr.setSystemCallFunction(pFunction);
+        		pSystemCallExpr.fillByArguments(pArguments);
+
+        		pExpr = pSystemCallExpr;
         	}
 
         	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);

@@ -928,6 +928,10 @@ module akra.fx {
 			this._eInstructionType = EAFXInstructionTypes.k_FunctionDeclInstruction;
 		}	
 
+		inline getType(): IAFXTypeInstruction {
+			return <IAFXTypeInstruction>this.getReturnType();
+		}
+
 		getNameId(): IAFXIdInstruction {
 			return this._pFunctionDefenition.getNameId();
 		}
@@ -948,10 +952,6 @@ module akra.fx {
 			return this._pFunctionDefenition.getReturnType();
 		}
 
-		closeArguments(pArguments: IAFXTypedInstruction[]): IAFXTypedInstruction[]{
-			return null;
-		}
-
 		setFunctionDef(pFunctionDef: IAFXDeclInstruction): void {
 			this._pFunctionDefenition = <FunctionDefInstruction>pFunctionDef;
 			this._pInstructionList[0] = pFunctionDef;
@@ -969,10 +969,36 @@ module akra.fx {
 
 	export class SystemFunctionInstruction extends DeclInstruction implements IAFXFunctionDeclInstruction {
 	    private _pExprTranslator: ExprTemplateTranslator = null;
+	    private _pName: IAFXIdInstruction = null;
+	    private _pReturnType: VariableTypeInstruction = null;
+	    private	_pArguments: IAFXTypedInstruction[] = null;
 
-		constructor(){
+		constructor(sName: string, pReturnType: IAFXTypeInstruction,
+					pExprTranslator: ExprTemplateTranslator,
+					pArgumentTypes: IAFXTypeInstruction[]) {
 			super();
-			this._eInstructionType = EAFXInstructionTypes.k_SystemFunctionInstruction;			
+
+			this._eInstructionType = EAFXInstructionTypes.k_SystemFunctionInstruction;	
+			
+			this._pName = new IdInstruction();
+			this._pName.setName(sName);
+			this._pName.setParent(this);
+
+			this._pReturnType = new VariableTypeInstruction();
+			this._pReturnType.pushVariableType(this._pReturnType);
+			this._pReturnType.setParent(this);
+
+			this._pArguments = [];
+
+			for(var i: uint = 0; i < pArgumentTypes.length; i++){
+				var pArgument: TypedInstruction = new TypedInstruction();
+				pArgument.setType(pArgumentTypes[i]);
+				pArgument.setParent(this);
+
+				this._pArguments.push(pArgument);
+			}
+
+			this._pExprTranslator = pExprTranslator;
 		}
 
 		setExprTranslator(pExprTranslator: ExprTemplateTranslator){
@@ -980,15 +1006,15 @@ module akra.fx {
 		}
 
 		getNameId(): IAFXIdInstruction {
-			return null;
+			return this._pName;
 		}
 
-		getArguments(): IAFXVariableDeclInstruction[] {
-			return null;
+		getArguments(): IAFXTypedInstruction[] {
+			return this._pArguments;
 		}
 
 		inline getNumNeededArguments(): uint {
-			return null;
+			return this._pArguments.length;
 		}
 		
 		inline hasImplementation(): bool {
@@ -996,11 +1022,11 @@ module akra.fx {
 		}
 
 		inline getReturnType(): IAFXTypeInstruction {
-			return null;
+			return this._pReturnType;
 		}
 
-		closeArguments(pArguments: IAFXTypedInstruction[]): IAFXTypedInstruction[]{
-			return null;
+		closeArguments(pArguments: IAFXInstruction[]): IAFXInstruction[]{
+			return this._pExprTranslator.toInstructionList(pArguments);
 		}
 
 		setFunctionDef(pFunctionDef: IAFXDeclInstruction): void {
@@ -1337,6 +1363,37 @@ module akra.fx {
 			this._pInstructionList = [null];
 			this._eInstructionType = EAFXInstructionTypes.k_FunctionCallInstruction;
 		}	
+	}
+
+	/**
+	 * Respresnt system_func(arg1,..., argn)
+	 * EMPTY_OPERATOR SimpleInstruction ... SimpleInstruction 
+	 */
+	export class SystemCallInstruction extends ExprInstruction {
+		private _pSystemFunction: SystemFunctionInstruction = null;
+
+		constructor() { 
+			super();
+			this._pInstructionList = null;
+			this._eInstructionType = EAFXInstructionTypes.k_SystemCallInstruction;
+		}
+
+		setSystemCallFunction(pFunction: IAFXFunctionDeclInstruction): void{
+			this._pSystemFunction = <SystemFunctionInstruction>pFunction;
+			this.setType(pFunction.getType());
+		}
+
+		setInstructions(pInstructionList: IAFXInstruction[]): void {
+			this._pInstructionList = pInstructionList;
+			for(var i: uint = 0; i < pInstructionList.length; i++){
+				pInstructionList[i].setParent(this);
+			}
+		}
+
+		fillByArguments(pArguments: IAFXInstruction[]): void{
+			this.setInstructions(this._pSystemFunction.closeArguments(pArguments));
+		}
+
 	}
 
 	/**

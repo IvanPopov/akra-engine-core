@@ -41,6 +41,7 @@ module akra {
         k_PrimaryExprInstruction,
         k_ComplexExprInstruction,
         k_FunctionCallInstruction,
+        k_SystemCallInstruction,
         k_ConstructorCallInstruction,
         k_CompileExprInstruction,
         k_SamplerStateBlockInstruction,
@@ -175,7 +176,7 @@ module akra {
 
     }
 
-    export interface IAFXTypedInstruction extends IAFXInstruction {
+    export interface IAFXTypedInstruction extends IAFXInstruction{
         getType(): IAFXTypeInstruction;
         setType(pType: IAFXTypeInstruction): void;
     }
@@ -199,11 +200,11 @@ module akra {
     export interface IAFXFunctionDeclInstruction extends IAFXDeclInstruction {
         //getNameId(): IAFXIdInstruction;
         hasImplementation(): bool;
-        getArguments(): IAFXVariableDeclInstruction[];
+        getArguments(): IAFXTypedInstruction[];
         getNumNeededArguments(): uint;
         getReturnType(): IAFXTypeInstruction;
 
-        closeArguments(pArguments: IAFXTypedInstruction[]): IAFXTypedInstruction[];
+        // closeArguments(pArguments: IAFXInstruction[]): IAFXTypedInstruction[];
         setFunctionDef(pFunctionDef: IAFXDeclInstruction);
         setImplementation(pImplementation: IAFXStmtInstruction);
     }

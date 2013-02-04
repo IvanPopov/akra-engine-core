@@ -53,6 +53,10 @@ module akra.fx {
     #define EFFCCT_BAD_FUNCTION_PARAMETER_DEFENITION_NEED_DEFAULT 2245
     #define EFFECT_BAD_CANNOT_CHOOSE_FUNCTION 2246
     #define EFFECT_BAD_FUNCTION_DEF_RETURN_TYPE 2247
+    #define EFFECT_BAD_SYSTEM_FUNCTION_REDEFINE 2248
+    #define EFFECT_BAD_SYSTEM_FUNCTION_RETURN_TYPE 2249
+    #define EFFECT_BAD_TYPE_NAME_NOT_TYPE 2250
+    #define EFFECT_BAD_TYPE_VECTOR_MATRIX 2251
 
     akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, 
     						 "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
@@ -188,6 +192,15 @@ module akra.fx {
     akra.logger.registerCode(EFFECT_BAD_FUNCTION_DEF_RETURN_TYPE,
                              "Bad function definition. There are two or more different retturn type signatures for function '{funcName}'.\
                               In line: {line}. In column: {column}"); 
+    akra.logger.registerCode(EFFECT_BAD_SYSTEM_FUNCTION_REDEFINE,
+                             "Bad system function '{funcName}'. Already have this function.");
+    akra.logger.registerCode(EFFECT_BAD_TYPE_NAME_NOT_TYPE,
+                             "Bad type. Could not find type with name '{typeName}'.\
+                              In line: {line}. In column: {column}"); 
+    akra.logger.registerCode(EFFECT_BAD_TYPE_VECTOR_MATRIX,
+                             "Bad type. We don`t support vector and matrix typename.\
+                              In line: {line}. In column: {column}"); 
+
 
     function sourceLocationToString(pLocation: ISourceLocation): string {
         var sLocation:string = "[" + pLocation.file + ":" + pLocation.line.toString() + "]: ";
