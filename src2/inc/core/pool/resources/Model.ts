@@ -160,12 +160,10 @@ module akra.core.pool.resources {
 		    
 		    if (util.pathinfo(sFilename).ext.toLowerCase() === "dae") {
 
-		        pOptions = pOptions || Model.DEFAULT_COLLADA_LOAD_OPTIONS;
-		        pOptions.file = sFilename;
+		        pOptions = pOptions;
 		        pOptions.model = this;
-		        pOptions.callback = fnCallback;
 
-		        collada.load(this.getEngine(), pOptions);
+		        Model.collada.load(sFilename, fnCallback, pOptions);
 		        return true;
 		    }
 
@@ -230,11 +228,7 @@ module akra.core.pool.resources {
     	inline _notifyFileLoad(): uint { return (++ this._nFilesToBeLoaded); }
     	inline _totalFiles(): uint { return this._nFilesToBeLoaded; }
 
-    	static DEFAULT_COLLADA_LOAD_OPTIONS: IColladaLoadOptions = 
-			<IColladaLoadOptions> {
-				drawJoints : false, 
-				wireframe : false
-			};
+		static collada: IColladaLoader = collada.createLoader();
 	}
 
 	

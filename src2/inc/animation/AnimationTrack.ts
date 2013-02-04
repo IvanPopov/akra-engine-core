@@ -169,7 +169,7 @@ module akra.animation {
 		}
 	}
 
-	export function createAnimationTrack(sName: string = null): IAnimationTrack {
+	export function createTrack(sName: string = null): IAnimationTrack {
 		return new AnimationTrack(sName);
 	}
 }

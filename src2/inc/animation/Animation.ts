@@ -6,6 +6,7 @@
 #include "IAnimationFrame.ts"
 #include "IAnimationTrack.ts"
 
+#include "AnimationBase.ts"
 
 module akra.animation {
 	class Animation implements IAnimation extends AnimationBase {

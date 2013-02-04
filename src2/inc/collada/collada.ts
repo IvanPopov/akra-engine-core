@@ -7,97 +7,24 @@
 #include "IMesh.ts"
 #include "IRenderDataCollection.ts"
 
-#include "IAnimationTrack.ts"
+#include "animation/AnimationTrack.ts"
+#include "animation/Animation.ts"
 
 #include "math/math.ts"
 #include "io/files.ts"
-
-// module akra {
-//     export interface ICollada {
-//         load(): void;
-//         parse(): bool;
-//     }
-// }
+#include "util/util.ts"
 
 module akra.collada {
-    // helper functions
     
-    function COLLADATranslateMatrix(pXML: Node): IMat4;
-    function COLLADARotateMatrix(pXML: Node): IMat4;
-    function COLLADAScaleMatrix(pXML: Node): IMat4;
-    function COLLADAData(pXML: Node): any;
-    function COLLADAGetSourceData(pXML: Node): string;
-
-    // common
-    // -----------------------------------------------------------
-    
-    function COLLADATransform(pXML: Node): IColladaTransform;
-    function COLLADANewParam(pXML: Node): IColladaNewParam;
-    function COLLADAAsset(pXML: Node): IColladaAsset;
-    function COLLADALibrary(pXML: Node, pTemplate: IColladaLibraryTemplate): IColladaEntry;
-
-    // geometry
-
-    function COLLADAAccessor(pXML: Node): IColladaAccessor;
-    function COLLADAInput(pXML: Node, iOffset?: int): IColladaInput;
-    function COLLADATechniqueCommon(pXML: Node): IColladaTechniqueCommon;
-    function COLLADASource(pXML: Node): IColladaSource;
-    function COLLADAVertices(pXML: Node): IColladaVertices;
-    function COLLADAJoints(pXML: Node): IColladaJoints;
-    function COLLADAPolygons(pXML: Node, sType: string): IColladaPolygons;
-    function COLLADAVertexWeights(pXML: Node): IColladaVertexWeights;
-    function COLLADAMesh(pXML: Node): IColladaMesh;
-    function COLLADAGeometrie(pXML: Node): IColladaGeometrie;
-    function COLLADASkin(pXML: Node): IColladaSkin;
-    function COLLADAController(pXML: Node): IColladaController;
-
-    // images
-    // 
-	function COLLADAImage(pXML: Node): IColladaImage;
-
-    // effects
-    
-    function COLLADASurface(pXML: Node): IColladaSurface;
-    function COLLADATexture(pXML: Node): IColladaTexture;
-    function COLLADASampler2D(pXML: Node): IColladaSampler2D;
-    function COLLADAPhong(pXML: Node): IColladaPhong;
-    function COLLADAEffectTechnique(pXML: Node): IColladaEffectTechnique;
-    function COLLADAProfileCommon(pXML: Node): IColladaProfileCommon;
-    function COLLADAEffect(pXML: Node): IColladaEffect;
-
-    //materials
-    
-    function COLLADAMaterial(pXML: Node): IColladaMaterial;
-
-    // scene
-
-    function COLLADANode(pXML: Node, iDepth?: uint): IColladaNode;
-    function COLLADAVisualScene(pXML: Node): IColladaVisualScene;
-    function COLLADABindMaterial(pXML: Node): IColladaBindMaterial;
-    function COLLADAInstanceEffect(pXML: Node): IColladaInstanceEffect;
-    function COLLADAInstanceController(pXML: Node): IColladaInstanceController;
-    function COLLADAInstanceGeometry(pXML: Node): IColladaInstanceGeometry;
-
-    // directly load <visual_scene> from <instance_visual_scene> from <scene>.
-    function COLLADAScene(pXML: Node): IColladaVisualScene;
-
-    // animation
-     
-    function COLLADAAnimationSampler(pXML: Node): IColladaAnimationSampler;
-    function COLLADAAnimationChannel(pXML: Node): IColladaAnimationChannel;
-    function COLLADAAnimation(pXML: Node): IColladaAnimation;
-
+    export function createLoader(pModel?: IModel): IColladaLoader;
 
 	 /* COMMON FUNCTIONS
      ------------------------------------------------------
      */
     
-     // collada mapping
-
-    function source(sUrl: string): IColladaEntry;
-    function link(sId: string, pTarget: IColladaEntry): void;
-    function target(sPath: string): IColladaTarget;
-
+    function getSupportedFormat(sSemantic: string): IColladaUnknownFormat[];
+    function calcFormatStride(pFormat: IColladaUnknownFormat[]): int;
+    
     // polygon index convertion
     
     function polygonToTriangles(pXML: Node, iStride: int): uint[];
@@ -137,44 +64,9 @@ module akra.collada {
 
     function findNode(pNodes: IColladaNode[], sNode?: string, fnNodeCallback?: (pNode: IColladaNode) => void): IColladaNode;
 
-    //animation 
     
-    function buildAnimationTrack(pChannel: IColladaAnimationChannel): IAnimationTrack;
-    function buildAnimationTrackList(pAnimationData: IColladaAnimation): IAnimationTrack[];
-    function buildAnimation(pAnimationData: IColladaAnimation): IAnimation;
-    function buildAnimations(pAnimations: IColladaAnimation[], pAnimationsList?: IAnimation[]): IAnimation[];
 
-    // common
-    
-    function buildAssetTransform(pNode: ISceneNode, pAsset: IColladaAsset): ISceneNode;
 
-    // materials & meshes
-    
-    function buildMaterials(pMesh: IMesh, pMeshNode: IColladaNode): IMesh;
-    function buildSkeleton(pSkeletonsList): ISkeleton;
-    function buildMesh(pMeshNode: IColladaNode): IMesh;
-    function buildSkinMesh(pSkinMeshNode: IColladaNode): IMesh;
-
-    function buildInstance(pInstances: IColladaInstance[], fnBuilder: (pNode: IColladaNode) => any, pSceneNode: ISceneNode, bAttach?: bool): any[];
-    function buildMeshes(pScene: IColladaVisualScene): IMesh[];
-
-    // scene
-    
-    function buildSceneNode(pNode: IColladaNode): ISceneNode;
-    function buildJointNode(pNode: IColladaNode): IJoint;
-    function buildNodes(pNodes: IColladaNode[], pParentNode?: ISceneNode): ISceneNode;
-    function buildScene(pScene: IColladaVisualScene, pAsset: IColladaAsset): ISceneNode[];
-
-    function buildInititalPose(pNodes: IColladaNode[], pSkeleton: ISkeleton): IAnimation;
-    function buildInitialPoses(pScene: IColladaVisualScene, pPoseSkeletons: ISkeleton[]): IAnimation[];
-
-    // additional
-    
-    function readLibraries(pXML: Node, pTemplates: IColladaLibraryTemplate[], ppLibraries: IColladaLibraryMap): void;
-
-    function emitError(sError: string, pOptions: IColladaLoadOptions): bool;
-    export function parse(sXMLData: string, pEngine: IEngine, pOptions: IColladaLoadOptions): bool;
-    export function load(pEngine: IEngine, pOptions: IColladaLoadOptions): void;
 
     // globals
 
@@ -249,220 +141,471 @@ module akra.collada {
         "string" : { type: Array, 			converter: string2StringArray	}
     };
 
-    var pSceneTemplate: IColladaLibraryTemplate[] = [
-        {lib : 'library_images', 		element : 'image', 			loader : COLLADAImage},
-        {lib : 'library_effects', 		element : 'effect', 		loader : COLLADAEffect},
-        {lib : 'library_materials', 	element : 'material', 		loader : COLLADAMaterial},
-        {lib : 'library_geometries', 	element : 'geometry', 		loader : COLLADAGeometrie},
-        {lib : 'library_controllers', 	element : 'controller', 	loader : COLLADAController},
-        {lib : 'library_visual_scenes', element : 'visual_scene', 	loader : COLLADAVisualScene}
-    ];
+  
 
-    var pAnimationTemplate: IColladaLibraryTemplate[] = [
-        {lib : 'library_animations', element : 'animation', loader : COLLADAAnimation}
-    ];
+    class ColladaLoader implements IColladaLoader {
 
-    // function buildSceneNode(pNode: IColladaNode): ISceneNode;
-    // function buildJointNode(pNode: IColladaNode): IJoint;
-    // function buildNodes(pNodes: IColladaNode[], pParentNode?: ISceneNode): ISceneNode;
-    // function buildScene(pScene: IColladaVisualScene, pAsset: IColladaAsset): ISceneNode[];
+        constructor (pModel?: IModel);
 
-    function buildInititalPose(pNodes: IColladaNode[], pSkeleton: ISkeleton): IAnimation {
-        var sPose: string = "Pose-" + sBasename + "-" + pSkeleton.name;
-        var pPose: IAnimation = animation.createAnimation(sPose);
-        var pNodeList: ISceneNode[] = pSkeleton.getNodeList();
-        var pNodeMap: ISceneNodeMap = {};
-        var pTrack: IAnimationTrack;
+        isValid(): bool;
+        setModel(pModel: IModel): void;
+        destroy(): void;
 
-        for (var i: int = 0; i < pNodeList.length; ++i) {
-            pNodeMap[pNodeList[i].name] = pNodeList[i];
+        parse(sXMLData: string, pOptions?: IColladaLoadOptions): bool;
+        load(sFilename: string, fnCallback?: IColladaLoadCallback, pOptions?: IColladaLoadOptions): void;
+
+        // helper functions
+    
+        private COLLADATranslateMatrix(pXML: Node): IMat4;
+        private COLLADARotateMatrix(pXML: Node): IMat4;
+        private COLLADAScaleMatrix(pXML: Node): IMat4;
+        private COLLADAData(pXML: Node): any;
+        private COLLADAGetSourceData(pXML: Node): string;
+
+        // common
+        // -----------------------------------------------------------
+        
+        private COLLADATransform(pXML: Node): IColladaTransform;
+        private COLLADANewParam(pXML: Node): IColladaNewParam;
+        private COLLADAAsset(pXML: Node): IColladaAsset;
+        private COLLADALibrary(pXML: Node, pTemplate: IColladaLibraryTemplate): IColladaLibrary;
+
+        // geometry
+
+        private COLLADAAccessor(pXML: Node): IColladaAccessor;
+        private COLLADAInput(pXML: Node, iOffset?: int): IColladaInput;
+        private COLLADATechniqueCommon(pXML: Node): IColladaTechniqueCommon;
+        private COLLADASource(pXML: Node): IColladaSource;
+        private COLLADAVertices(pXML: Node): IColladaVertices;
+        private COLLADAJoints(pXML: Node): IColladaJoints;
+        private COLLADAPolygons(pXML: Node, sType: string): IColladaPolygons;
+        private COLLADAVertexWeights(pXML: Node): IColladaVertexWeights;
+        private COLLADAMesh(pXML: Node): IColladaMesh;
+        private COLLADAGeometrie(pXML: Node): IColladaGeometrie;
+        private COLLADASkin(pXML: Node): IColladaSkin;
+        private COLLADAController(pXML: Node): IColladaController;
+
+        // images
+        // 
+        private COLLADAImage(pXML: Node): IColladaImage;
+
+        // effects
+        
+        private COLLADASurface(pXML: Node): IColladaSurface;
+        private COLLADATexture(pXML: Node): IColladaTexture;
+        private COLLADASampler2D(pXML: Node): IColladaSampler2D;
+        private COLLADAPhong(pXML: Node): IColladaPhong;
+        private COLLADAEffectTechnique(pXML: Node): IColladaEffectTechnique;
+        private COLLADAProfileCommon(pXML: Node): IColladaProfileCommon;
+        private COLLADAEffect(pXML: Node): IColladaEffect;
+
+        //materials
+        
+        private COLLADAMaterial(pXML: Node): IColladaMaterial;
+
+        // scene
+
+        private COLLADANode(pXML: Node, iDepth?: uint): IColladaNode;
+        private COLLADAVisualScene(pXML: Node): IColladaVisualScene;
+        private COLLADABindMaterial(pXML: Node): IColladaBindMaterial;
+        private COLLADAInstanceEffect(pXML: Node): IColladaInstanceEffect;
+        private COLLADAInstanceController(pXML: Node): IColladaInstanceController;
+        private COLLADAInstanceGeometry(pXML: Node): IColladaInstanceGeometry;
+
+        // directly load <visual_scene> from <instance_visual_scene> from <scene>.
+        private COLLADAScene(pXML: Node): IColladaVisualScene;
+
+        // animation
+         
+        private COLLADAAnimationSampler(pXML: Node): IColladaAnimationSampler;
+        private COLLADAAnimationChannel(pXML: Node): IColladaAnimationChannel;
+        private COLLADAAnimation(pXML: Node): IColladaAnimation;
+
+        
+         // collada mapping
+
+        private source(sUrl: string): IColladaEntry;
+        private link(sId: string, pTarget: IColladaEntry): void;
+        private target(sPath: string): IColladaTarget;
+
+        //animation 
+    
+        private buildAnimationTrack(pChannel: IColladaAnimationChannel): IAnimationTrack;
+        private buildAnimationTrackList(pAnimationData: IColladaAnimation): IAnimationTrack[];
+        private buildAnimation(pAnimationData: IColladaAnimation): IAnimation;
+        private buildAnimations(pAnimations: IColladaAnimation[], pAnimationsList?: IAnimation[]): IAnimation[];
+
+        // common
+        
+        private buildAssetTransform(pNode: ISceneNode, pAsset: IColladaAsset): ISceneNode;
+
+        // materials & meshes
+        
+        private buildMaterials(pMesh: IMesh, pMeshNode: IColladaNode): IMesh;
+        private buildSkeleton(pSkeletonsList: string[]): ISkeleton;
+        private buildMesh(pMeshNode: IColladaNode): IMesh;
+        private buildSkinMesh(pSkinMeshNode: IColladaNode): IMesh;
+
+        private buildInstance(pInstances: IColladaInstance[], fnBuilder: (pNode: IColladaNode) => any, pSceneNode: ISceneNode, bAttach?: bool): any[];
+        private buildMeshes(): IMesh[];
+
+        // scene
+        
+        private buildSceneNode(pNode: IColladaNode): ISceneNode;
+        private buildJointNode(pNode: IColladaNode): IJoint;
+        private buildNodes(pNodes: IColladaNode[], pParentNode?: ISceneNode): ISceneNode;
+        private buildScene(): ISceneNode[];
+
+        private buildInititalPose(pNodes: IColladaNode[], pSkeleton: ISkeleton): IAnimation;
+        private buildInitialPoses(pPoseSkeletons: ISkeleton[]): IAnimation[];
+
+        // additional
+
+        private setOptions(pUserOptions: IColladaLoadOptions): void;
+
+        private lock(): void;
+        private unlock(): void;
+        private isLocked(): bool;
+        private reset(): void;
+
+        private isVisualSceneLoaded(): bool;
+        private isSceneNeeded(): bool;
+        private isAnimationNeeded(): bool;
+        private isPoseExtractionNeeded(): bool;
+        private getSkeletonsOutput(): ISkeleton[];
+        private getVisualScene(): IColladaVisualScene;
+
+        private isLibraryLoaded(sLib: string): bool;
+        private getLibrary(sLib: string): IColladaLibrary;
+
+        private readLibraries(pXML: Node, pTemplates: IColladaLibraryTemplate[]): void;
+        private emitError(sError: string, fnCallback?: IColladaLoadCallback): void;
+
+        static DEFAULT_OPTIONS: IColladaLoadOptions = {
+            model           : null,
+            drawJoints      : false,
+            wireframe       : false,
+            sharedBuffer    : false,
+            animation       : { pose: true },
+            scene           : true,
+            extractPoses    : true,
+            skeletons       : null
+        };
+
+        private static SCENE_TEMPLATE: IColladaLibraryTemplate[] = [
+            {lib : 'library_images',        element : 'image',          loader : (<any>ColladaLoader.prototype).COLLADAImage},
+            {lib : 'library_effects',       element : 'effect',         loader : (<any>ColladaLoader.prototype).COLLADAEffect},
+            {lib : 'library_materials',     element : 'material',       loader : (<any>ColladaLoader.prototype).COLLADAMaterial},
+            {lib : 'library_geometries',    element : 'geometry',       loader : (<any>ColladaLoader.prototype).COLLADAGeometrie},
+            {lib : 'library_controllers',   element : 'controller',     loader : (<any>ColladaLoader.prototype).COLLADAController},
+            {lib : 'library_visual_scenes', element : 'visual_scene',   loader : (<any>ColladaLoader.prototype).COLLADAVisualScene}
+        ];
+
+        private static ANIMATION_TEMPLATE: IColladaLibraryTemplate[] = [
+            {lib : 'library_animations', element : 'animation', loader : (<any>ColladaLoader.prototype).COLLADAAnimation}
+        ];
+
+        //=======================================================================================
+        
+        private _pModel: IModel = null;
+        private _pOptions: IColladaLoadOptions = null;
+
+        private _pLinks: IColladaLinkMap = null;
+        private _pLib: IColladaLibraryMap = null;
+        private _pCache: IColladaCache = null;
+
+        private _pAsset: IColladaAsset = null;
+        private _pVisualScene: IColladaVisualScene = null;
+
+        private _sBasename: string = null;
+
+
+    
+        constructor (pModel: IModel = null) {
+            this.setModel(pModel);
         }
 
-        findNode(pNodes, null, function (pNode: IColladaNode) {
-            var sJoint: string = pNode.sid;
-            var sNodeId: string = pNode.id;
+        // function buildSceneNode(pNode: IColladaNode): ISceneNode;
+        // function buildJointNode(pNode: IColladaNode): IJoint;
+        // function buildNodes(pNodes: IColladaNode[], pParentNode?: ISceneNode): ISceneNode;
+        // function buildScene(pScene: IColladaVisualScene, pAsset: IColladaAsset): ISceneNode[];
 
-            if (!isDefAndNotNull(pNodeMap[sNodeId])) {
+        private buildInititalPose(pNodes: IColladaNode[], pSkeleton: ISkeleton): IAnimation {
+            var sPose: string = "Pose-" + this._sBasename + "-" + pSkeleton.name;
+            var pPose: IAnimation = animation.createAnimation(sPose);
+            var pNodeList: ISceneNode[] = pSkeleton.getNodeList();
+            var pNodeMap: ISceneNodeMap = {};
+            var pTrack: IAnimationTrack;
+
+            for (var i: int = 0; i < pNodeList.length; ++i) {
+                pNodeMap[pNodeList[i].name] = pNodeList[i];
+            }
+
+            findNode(pNodes, null, function (pNode: IColladaNode) {
+                var sJoint: string = pNode.sid;
+                var sNodeId: string = pNode.id;
+
+                if (!isDefAndNotNull(pNodeMap[sNodeId])) {
+                    return;
+                }
+
+                pTrack = animation.createTrack(sJoint);
+                pTrack.nodeName = sNodeId;
+                pTrack.keyFrame(0.0, pNode.m4fTransform);
+
+                pPose.push(pTrack);
+            });
+
+            // if (pModelResource && bExtractInitialPoses) {
+            //     pModelResource.addAnimation(pPose);
+            // }
+
+            return pPose;
+        }
+
+        private buildInitialPoses(pPoseSkeletons: ISkeleton[] = null): IAnimation[] {
+            pPoseSkeletons = pPoseSkeletons || this.getSkeletonsOutput();
+            var pScene: IColladaVisualScene = this.getVisualScene();
+
+            var pSkeleton: ISkeleton;
+            var pPoses: IAnimation[] = [];
+
+            for (var i: int = 0; i < pPoseSkeletons.length; ++i) {
+                pSkeleton = pPoseSkeletons[i];
+                // if (pSkeleton.name === "node-Bip001_Pelvis" || pSkeleton.name === "node-Bip001") {
+                //     trace('skipping <node-Bip001_Pelvis> skeletom ...', '[' + sBasename + ']');
+
+                //     trace(pSkeleton.getNodeList()[0].localMatrix().toQuat4().toYawPitchRoll(Vec3()).toString());
+
+                //     continue;
+                // }
+                pPoses.push(this.buildInititalPose(pScene.nodes, pSkeleton));
+            }
+
+            return pPoses;
+        }
+
+        private readLibraries(pXML: Node, pTemplates: IColladaLibraryTemplate[]): void {
+            var pLibraries: IColladaLibraryMap = this._pLib;
+            
+            for (var i: int = 0; i < pTemplates.length; i++) {
+                var sLib: string = pTemplates[i].lib;
+
+                pLibraries[sLib] = this.COLLADALibrary(firstChild(pXML, sLib), pTemplates[i]);
+            }
+        } 
+
+        private emitError(sError: string, fnCallback: IColladaLoadCallback = null): void {
+            if (isNull(fnCallback)) {
+                ERROR(sError);
+            }
+            else {
+                fnCallback(new Error(sError), null);
+            }
+        }
+
+        private setOptions(pOptions: IColladaLoadOptions): void {
+            if (isNull(pOptions)) {
+                pOptions = ColladaLoader.DEFAULT_OPTIONS;
+            }
+
+            for (var i in DEFAULT_OPTIONS) {
+                if (isDef(pOptions[i])) {
+                    continue;
+                }
+
+                pOptions[i] = DEFAULT_OPTIONS[i];
+            }
+
+            this.setModel(pOptions.model || null);
+            this._pOptions = pOptions;
+        }
+
+        private inline lock(): void {
+            this._bLock = true;
+        }
+
+        private inline unlock(): void {
+            this._bLock = false;
+        }
+
+        private inline isLocked(): bool {
+            return this._bLock;
+        }
+
+        private inline isVisualSceneLoaded(): bool {
+            return isDefAndNotNull(this._pVisualScene);
+        }
+
+        private inline getVisualScene(): IColladaVisualScene {
+            return this._pVisualScene;
+        }
+
+        private inline isSceneNeeded(): bool {
+            return this._pOptions.scene === true;
+        }
+
+        private inline getLibrary(sLib: string): IColladaLibrary {
+            return this._pLib[sLib] || null;
+        }
+
+        private inline isLibraryLoaded(sLib: string): bool {
+            return isDefAndNotNull(this._pLib[sLib]);
+        }
+
+        private reset(): void {
+            this._pOptions = null;
+            this._pLinks = {};
+            this._pLib = {};
+            this._pCache = { meshMap: {}, sharedBuffer: null };
+            this._sBasename = "unknown";
+        }
+
+        setModel(pModel: IModel): void {
+            if (!isNull(pModel)) {
+                this._pModel = pModel;
+            }
+        }
+
+        isValid(): bool {
+            return this._pModel != null;
+        }
+
+        destroy(): void {
+            CRITICAL('TODO: ColladaLoader::destroy()');
+        }
+
+        parse(sXMLData: string, pOptions: IColladaLoadOptions = null): bool {
+                
+            if (this.isLocked()) {
+                this.emitError("TODO: loader is busy!");
+                return false;
+            }
+
+            this.lock();
+            this.setOptions(pOptions);
+
+            if (isNull(sXMLData)) {
+                this.emitError("must be specified collada content.");
+                return false;
+            }
+
+            if (!this.isValid()) {
+                this.emitError("you must specify model, that will be loaded.");
+                return false;
+            }
+
+            var pParser: DOMParser = new DOMParser();
+            var pXMLDocument: Document = pParser.parseFromString(sXMLData, "application/xml");
+            var pXMLRoot: Node = pXMLDocument.getElementsByTagName("COLLADA")[0];
+
+            var m4fRootTransform: IMat4;
+            var pSkeletons: ISkeleton[], 
+                pSkeleton: ISkeleton;
+            var pPoses: IAnimation[];
+
+            var pSceneOutput: ISceneNode[] = null;
+            var pAnimationOutput: IAnimation[] = null;
+            var pMeshOutput: IMesh[] = null;
+            var pInitialPosesOutput: IAnimation[] = null;
+
+
+            this.readLibraries(pXMLRoot, ColladaLoader.SCENE_TEMPLATE);
+
+            this.COLLADAAsset(firstChild(pXMLRoot, "asset"));
+            this.COLLADAScene(firstChild(pXMLRoot, "scene"));
+
+            if (this.isVisualSceneLoaded() && this.isSceneNeeded()) {
+                pSceneOutput = this.buildScene();
+                pMeshOutput = this.buildMeshes();
+            }
+
+            if (this.isPoseExtractionNeeded()) {
+                pInitialPosesOutput = this.buildInitialPoses();
+            }
+
+            if (this.isAnimationNeeded()) {
+                this.readLibraries(pXMLRoot, ColladaLoader.ANIMATION_TEMPLATE);
+
+                if (this.isLibraryLoaded("library_animations")) {
+                    pAnimationOutput = 
+                        this.buildAnimations((<IColladaAnimation>this.getLibrary("library_animations")).animations);
+                }
+
+                //дополним анимации начальными позициями костей
+                if (this.isPoseExtractionNeeded()) {
+                    pSkeletons = this.getSkeletonsOutput() || [];
+
+                    /*
+     
+                    // добавим к начальным позам, те, в которых находятся меши
+                    // в момент выгрузки
+                    if (!isNull(pMeshOutput)) {
+                        for (var i = 0; i < pMeshOutput.length; ++ i) {
+                            pSkeletons.push(pMeshOutput[i].skeleton);
+                        }
+                    }
+                    else {
+                        //необхоимо для посчета ссылочной информации
+                        if (isNull(pSceneOutput)) {
+                            this.buildScene();
+                        }
+
+                        eachByTag(pXMLRoot, "skeleton", function (pXML: Node) {
+                            pSkeletons.push(this.buildSkeleton([stringData(pXML)]));
+                        });
+                    }
+
+                    */
+
+                    pPoses = this.buildInitialPoses(pSkeletons);
+
+                    for (var i: int = 0; i < pAnimationOutput.length; ++ i) {
+                        for (var j: int = 0; j < pPoses.length; ++ j) {
+                            pAnimationOutput[i].extend(pPoses[j]);
+                        }
+                    }
+                }
+            }
+
+            this.unlock();
+            this.reset();
+
+            return true;
+        }
+
+        load(sFilename: string, fnCallback: IColladaLoadCallback = null, pOptions: IColladaLoadOptions = null): void {
+
+
+            if (isNull(sFilename)) {
+                this.emitError("cannot parse collada content", fnCallback);
                 return;
             }
 
-            pTrack = animation.createAnimationTrack(sJoint);
-            pTrack.nodeName = sNodeId;
-            pTrack.keyFrame(0.0, pNode.m4fTransform);
-
-            pPose.push(pTrack);
-        });
-
-        // if (pModelResource && bExtractInitialPoses) {
-        //     pModelResource.addAnimation(pPose);
-        // }
-
-        return pPose;
-    }
-
-    function buildInitialPoses(pScene: IColladaVisualScene, pPoseSkeletons: ISkeleton[]): IAnimation[] {
-        var pSkeleton: ISkeleton;
-        var pPoses: IAnimation[] = [];
-
-        for (var i: int = 0; i < pPoseSkeletons.length; ++i) {
-            pSkeleton = pPoseSkeletons[i];
-            // if (pSkeleton.name === "node-Bip001_Pelvis" || pSkeleton.name === "node-Bip001") {
-            //     trace('skipping <node-Bip001_Pelvis> skeletom ...', '[' + sBasename + ']');
-
-            //     trace(pSkeleton.getNodeList()[0].localMatrix().toQuat4().toYawPitchRoll(Vec3()).toString());
-
-            //     continue;
-            // }
-            pPoses.push(buildInititalPose(pScene.nodes, pSkeleton));
-        }
-
-        return pPoses;
-    }
-
-    function readLibraries(pXML: Node, pTemplates: IColladaLibraryTemplate[], ppLibraries: IColladaLibraryMap): void {
-        for (var i: int = 0; i < pTemplates.length; i++) {
-            var sLib: string = pTemplates[i].lib;
-
-            ppLibraries[sLib] = COLLADALibrary(firstChild(pXML, sLib), pTemplates[i]);
-        }
-    } 
-
-    function emitError(sError: string, pOptions: IColladaLoadOptions): bool {
-        if (isNull(pOptions.callback)) {
-            ERROR(sError);
-        }
-        else {
-            pOptions.callback(new Error(sError), null);
-        }
-
-        return false;
-    }
-
-    export function parse(sXMLData: string, pEngine: IEngine, pOptions: IColladaLoadOptions): bool {
-        
-        var pLinks: IColladaLinkMap = {};
-        var pLib: IColladaLibraryMap = {};
-        var pCache: IColladaCache = {
-            meshMap: {},
-            sharedBuffer: null
-        };
-
-
-        if (isNull(sXMLData)) {
-            sXMLData = pOptions.content;
-
-            if (isDefAndNotNull(sXMLData)) {
-                return emitError("must be specified collada content.", pOptions);
-            }
-
-        }
-
-        if (isNull(pOptions.model)) {
-            return emitError("you must specify model, that will be loaded.", pOptions);
-        }
-
-        var pParser: DOMParser = new DOMParser();
-        var pXMLDocument: Document = pParser.parseFromString(sXMLData, "application/xml");
-        var pXMLRoot: Node = pXMLDocument.getElementsByTagName("COLLADA")[0];
-
-        var pAsset: IColladaAsset;
-        var m4fRootTransform: IMat4;
-        var pVisualScene: IColladaVisualScene;
-        var pSkeletons: ISkeleton[], 
-            pSkeleton: ISkeleton;
-        var pPoses: IAnimation[];
-
-        var pSceneOutput: ISceneNode[] = null;
-        var pAnimationOutput: IAnimation[] = null;
-        var pMeshOutput: IMesh[] = null;
-        var pInitialPosesOutput: IAnimation[] = null;
-
-
-        readLibraries(pXMLRoot, pSceneTemplate, pLib);
-
-        pAsset = COLLADAAsset(firstChild(pXMLRoot, "asset"));
-        pVisualScene = COLLADAScene(firstChild(pXMLRoot, "scene"));
-
-        if (!isNull(pVisualScene) && pOptions.scene === true) {
-            pSceneOutput = buildScene(pVisualScene, pAsset);
-            pMeshOutput = buildMeshes(pVisualScene);
-        }
-
-        if (pOptions.extractPoses === true) {
-            pInitialPosesOutput = buildInitialPoses(pVisualScene, pOptions.skeletons);
-        }
-
-        if (isDefAndNotNull(pOptions.animation)) {
-            readLibraries(pXMLRoot, pAnimationTemplate, pLib);
-
-            if (isDefAndNotNull(pLib["library_animations"])) {
-                pAnimationOutput = 
-                    buildAnimations((<IColladaAnimation>pLib['library_animations']).animations);
-            }
-
-            //дополним анимации начальными позициями костей
-            if (pOptions.extractPoses === true) {
-                pSkeletons = pOptions.skeletons || [];
-
-                /*
- 
-                // добавим к начальным позам, те, в которых находятся меши
-                // в момент выгрузки
-                if (!isNull(pMeshOutput)) {
-                    for (var i = 0; i < pMeshOutput.length; ++ i) {
-                        pSkeletons.push(pMeshOutput[i].skeleton);
-                    }
-                }
-                else {
-                    //необхоимо для посчета ссылочной информации
-                    if (isNull(pSceneOutput)) {
-                        buildScene(pVisualScene, pAsset);
-                    }
-
-                    eachByTag(pXMLRoot, "skeleton", function (pXML: Node) {
-                        pSkeletons.push(buildSkeleton([stringData(pXML)]));
-                    });
-                }
-
-                */
-
-                pPoses = buildInitialPoses(pVisualScene, pSkeletons);
-
-                for (var i: int = 0; i < pAnimationOutput.length; ++ i) {
-                    for (var j: int = 0; j < pPoses.length; ++ j) {
-                        pAnimationOutput[i].extend(pPoses[j]);
-                    }
-                }
-            }
-        }
-
-        if (!isNull(pOptions.callback)) {
-            pOptions.callback(null, pOptions.model);
-        }
-
-        return true;
-    }
-
-	export function load(pEngine: IEngine, pOptions: IColladaLoadOptions): void {
-
-        if (isNull(pOptions.file)) {
-            debug_assert(!isNull(pOptions.content), "must be specified file or xml content for loading.");
             
-            if (!this.parse(null, pEngine, pOptions)) {
-                emitError("cannot parse collada content", pOptions);
-            }
+
+            io.fopen(sFilename).read(function(pErr: Error, sContent: string) {
+                if (pErr) {
+                    this.emitError("could not read collada file: " + sFilename, fnCallback);
+                    return;
+                }
+
+                if (!this.parse(sContent, pOptions)) {
+                    this.emitError("cannot parse collada content", fnCallback);
+                    return;
+                }
+                
+                if (!isNull(fnCallback)) {
+                    fnCallback(null, this._pModel);
+                }
+            
+            });
         }
+    }
 
-        io.fopen(pOptions.file).read(function(pErr: Error, sContent: string) {
-            if (pErr) {
-                emitError("could not read collada file: " + pOptions.file, pOptions);
-            }
-
-            if (!this.parse(sContent, pEngine, pOptions)) {
-                emitError("cannot parse collada content", pOptions);
-            }
-        });
-	}
+    export function createLoader(pModel: IModel = null): IColladaLoader {
+        return new ColladaLoader(pModel);
+    }
 }
 
 #endif

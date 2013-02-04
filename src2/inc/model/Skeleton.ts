@@ -11,13 +11,13 @@ module akra.model {
 		private _sName: string;
 		private _pEngine: IEngine;
 		private _pRootJoints: IJoint[] = [];
-		private _pJointList: IJoint = null;
+		private _pJointMap: IJointMap = null;
 		private _pNodeList: ISceneNode[]  = null;
 		private _pMeshNode: ISceneNode = null;
 		private _iFlags: bool = false;
 
 		inline get totalBones(): int{
-			return Object.keys(this._pJointList).length;
+			return Object.keys(this._pJointMap).length;
 		}
 
 		inline get totalNodes(): int{
@@ -45,7 +45,7 @@ module akra.model {
 		}
 
 		getJointMap(): IJointMap {
-			return this._pJointList;
+			return this._pJointMap;
 		}
 
 		getNodeList(): ISceneNode[]{
@@ -73,7 +73,7 @@ module akra.model {
 
 		update(): bool {
 			var pRootJoints = this._pRootJoints;
-		    var pJointList = this._pJointList = {};
+		    var pJointList = this._pJointMap = <IJointMap>{};
 		    var pNodeList = this._pNodeList = [];
 		    //var pNotificationJoints = this._pNotificationJoints = [];
 
@@ -112,13 +112,13 @@ module akra.model {
 		}
 
 		findJoint(sName: string): IJoint {
-			return this._pJointList[sName];
+			return this._pJointMap[sName];
 		}
 
 		findJointByName(sName: string): IJoint {
-			for (var s in this._pJointList) {
-				if (this._pJointList[s].name === sName) {
-					return this._pJointList[s];
+			for (var s in this._pJointMap) {
+				if (this._pJointMap[s].name === sName) {
+					return this._pJointMap[s];
 				}
 			}
 
@@ -138,7 +138,7 @@ module akra.model {
 		    }
 */
 		    this._pMeshNode.name = this.name + "[mesh-container]";
-		    this._pMeshNode.addMesh(pMesh);
+		    this._pMeshNode.mesh = (pMesh);
 		}
 
 		detachMesh(): void {

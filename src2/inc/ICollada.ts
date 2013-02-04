@@ -10,6 +10,14 @@ module akra {
     // COLLADA LOAD OPTIONS
     //=============================================
 
+    export interface IColladaLoader {
+        setModel(pModel: IModel);
+        isValid(): bool;
+        destroy(): void;
+        parse(sXMLData: string, pOptions?: IColladaLoadOptions): bool;
+        load(sFilename: string, fnCallback?: IColladaLoadCallback, pOptions?: IColladaLoadOptions): void;
+    }
+
 	export interface IColladaLoadCallback {
 		(pErr: Error, pModel: IModel): void;
 	}
@@ -26,12 +34,7 @@ module akra {
 
 
 	export interface IColladaLoadOptions {
-    	callback: IColladaLoadCallback;
-
-    	file?: string;
-    	content?: string;
-    	model: IModel;
-
+        model?: IModel;
     	/** Add nodes, that visualize joints in animated models. */
     	drawJoints?: bool;
     	/** Convert all meshed to wireframe. */
@@ -45,7 +48,7 @@ module akra {
     	animation?: IColladaAnimationLoadOptions;
     	scene?: bool;
     	extractPoses?: bool;
-    	skeletons: ISkeleton[];
+    	skeletons?: ISkeleton[];
     }
 
     // xml
