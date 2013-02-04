@@ -6,21 +6,31 @@ module akra {
 	IFACE(IModel);
 	IFACE(IEngine);
 
+    //=============================================
+    // COLLADA LOAD OPTIONS
+    //=============================================
+
 	export interface IColladaLoadCallback {
-		(pModel: IModel): void;
+		(pErr: Error, pModel: IModel): void;
 	}
 
 	export interface IColladaAnimationLoadOptions {
-		load: bool;
 		pose?: bool;
 	}
 
+    export interface IColladaCache {
+        meshMap: IMeshMap;
+        sharedBuffer: IRenderDataCollection;
+    }
+
+
+
 	export interface IColladaLoadOptions {
-    	success: IColladaLoadCallback;
+    	callback: IColladaLoadCallback;
 
     	file?: string;
     	content?: string;
-    	modelResource: IModel;
+    	model: IModel;
 
     	/** Add nodes, that visualize joints in animated models. */
     	drawJoints?: bool;
@@ -38,20 +48,31 @@ module akra {
     	skeletons: ISkeleton[];
     }
 
+    // xml
+
+    export interface IXMLExplorer {
+        (pXML: Node, sName?: string): void;
+    }
 
     //----------------------
     
-    export interface IColladaNode {
+    export interface IColladaTarget {
+        value: number;
+        object?: IColladaEntry;
+    }
+
+    export interface IColladaEntry {
+        id?: string;
+    }
+
+    export interface IColladaLibrary extends IColladaEntry {
 
     }
 
-    export interface IColladaNodeLoader {
-    	(pNode: Node): IColladaNode;
+    export interface IColladaEntryLoader {
+        (pXML: Node): IColladaEntry;
     }
 
-    export interface IColladaLibrary {
-
-    }
 
     export interface IColladaUnknownFormat {
     	name: string[];
@@ -67,8 +88,13 @@ module akra {
     	(data: string, output: any[], from: int): uint;
     }
 
+    export interface IColladaConvertionTableRow {
+        type: any; 
+        converter: IColladaConverter;
+    }
+
     export interface IColladaConvertionTable {
-    	[type: string]: { type: any; converter: IColladaConverter; }
+    	[type: string]: IColladaConvertionTableRow;
     }
 
     export interface IColladaLinkMap {
@@ -80,53 +106,323 @@ module akra {
     }
 
     export interface IColladaLibraryTemplate {
-    	lib: string; 		/** library tag name.*/
-    	element: string;	/** element in liibrary. */
-    	loader: IColladaNodeLoader; /** loader function */
+    	lib: string; 		           /** library tag name.*/
+    	element: string;	           /** element in liibrary. */
+    	loader: IColladaEntryLoader;   /** loader function */
     }
 
-    //----
+    //=============================================
+    // COLLADA NODES / VISUAL SCENE AND COMMON
+    //=============================================
     
-    export interface IColladaImage extends IColladaNode {
-    	id: string;
-    	name: string;
-    	depth: int;
-    	data: any;
-    	path: string;
+    export interface IColladaUnit extends IColladaEntry {
+        name: string;
+        meter: float;
     }
 
-    export interface IColladaTechniqueValue extends IColladaNode {
+    export interface IColladaContributor extends IColladaEntry {
+        author: string;
+        authorTool: string;
+        comments: string;
+        copyright: string;
+        sourceData: any;
+    }
+
+    export interface IColladaAsset extends IColladaEntry {
+        unit: IColladaUnit;
+        upAxis: string;
+        title: string;
+        created: string;
+        modified: string;
+        contributor: IColladaContributor;
+    }
+
+    export interface IColladaInstance extends IColladaEntry {
+        url?: string;
+    }
+
+    export interface IColladaNewParam extends IColladaEntry {
+        sid: string;
+        annotate: string;
+        semantics: string;
+        modifier: string;
+        value: any;
+        type: string;
+    }
+
+    export interface IColladaNewParamMap {
+        [sid: string]: IColladaNewParam;
+    }
+
+    export interface IColladaParam extends IColladaEntry {
+        name: string;
+        type: string;
+    }
+    
+    export interface IColladaAccessor extends IColladaEntry {
+        data: IColladaEntry;
+        count: int;
+        stride: int;
+        params: IColladaParam[];
+    }
+
+
+    export interface IColladaTechniqueCommon extends IColladaEntry {
+        accessor: IColladaAccessor;
+    }
+
+
+    export interface IColladaSource extends IColladaEntry {
+        name: string;
+
+        array: Object;
+        techniqueCommon: IColladaTechniqueCommon;
+    }
+
+    export interface IColladaInput extends IColladaEntry {
+        semantics: string;
+        source: IColladaSource;
+        offset: int;
+        set: string;
+    }
+
+    export interface IColladaTransform extends IColladaEntry {
+        transform: string;
+        value: any;
+    }
+
+    export interface IColladaRotate extends IColladaTransform {
+        value: IVec4;
+    }
+
+    export interface IColladaTranslate extends IColladaTransform {
+        value: IVec3;
+    }
+
+    export interface IColladaScale extends IColladaTransform {
+        value: IVec3;
+    }
+
+    export interface IColladaMatrix extends IColladaTransform {
+        value: IMat4;
+    }
+
+    export interface IColladaVertices extends IColladaEntry {
+        inputs: { [semantics: string]: IColladaInput; };
+    }
+
+    export interface IColladaJoints extends IColladaEntry {
+        inputs: { 
+            [input: string]: IColladaInput; 
+        };
 
     }
 
-    export interface IColladaPhong extends IColladaNode, IMaterial {
+    export interface IColladaPolygons extends IColladaEntry {
+        name: string;
+
+        inputs: IColladaInput[];
+        p: uint[];
+        material: string;
+    }
+
+    export interface IColladaMesh extends IColladaEntry {
+        sources: IColladaSource[];
+        polygons: IColladaPolygons[];
+    }
+
+    export interface IColladaConvexMesh extends IColladaEntry {
+        //TODO: IColladaConvexMesh
+    }
+
+    export interface IColladaSpline extends IColladaEntry {
+        //TODO: IColladaSpline
+    }
+
+    export interface IColladaGeometrie extends IColladaEntry {
+        name: string;
+
+        mesh: IColladaMesh;
+        convexMesh: IColladaConvexMesh;
+        spline: IColladaSpline;
+    }
+
+    export interface IColladaMorph extends IColladaEntry {
+        //TODO: IColladaMorph
+    }
+
+    export interface IColladaVertexWeights extends IColladaEntry { 
+        count: int;
+        inputs: IColladaInput[];
+        weightInput: IColladaInput;
+        vcount: uint[];
+        v: int[];
+    }    
+
+    export interface IColladaSkin extends IColladaEntry {
+        shapeMatrix: IMat4;
+        sources: IColladaSource[];
+        geometry: IColladaGeometrie;
+        joints: IColladaJoints;
+        vertexWeights: IColladaVertexWeights;
+    }
+
+    export interface IColladaController extends IColladaEntry {
+        name: string;
+
+        skin: IColladaSkin;
+        morph: IColladaMorph;
+    }
+
+    export interface IColladaImage extends IColladaEntry {
+        name: string;
+        
+        depth: int;
+        data: any;
+        path: string;
+    }
+
+    //effects
+
+    export interface IColladaSurface extends IColladaEntry {
+        initFrom: string;
+    }
+
+    export interface IColladaSampler2D extends IColladaEntry {
+        param: IColladaNewParam;
+        wrapS: string;
+        wrapT: string;
+        minFilter: string;
+        mipFilter: string;
+        magFilter: string;
+    }
+
+    export interface IColladaTexture extends IColladaEntry {
+        texcoord: string;
+        sampler: IColladaSampler2D;
+        surface: IColladaSurface;
+        image: IColladaImage;
+    }
+    
+
+    export interface IColladaInstanceEffect extends IColladaInstance {
+        parameters: Object;
+        techniqueHint: StringMap;
+        effect: IColladaEffect;
+    }
+
+    export interface IColladaPhong extends IColladaEntry, IMaterial {
+        // diffuse: IColorValue;
+        // specular: IColorValue;
+        // ambient: IColorValue;
+        // emissive: IColorValue;
+        // shininess: float;
+    }
+
+    export interface IColladaEffectTechnique extends IColladaEntry {
+        sid: string;
+        type: string;
+        value: IColladaEntry;
+    }
+
+    export interface IColladaProfileCommon extends IColladaEntry {
+        technique: IColladaEffectTechnique;
+        newParam: IColladaNewParamMap;
+    }
+
+    export interface IColladaEffect extends IColladaEntry {
+        profileCommon: IColladaProfileCommon;
+    }
+
+    // materials
+
+    export interface IColladaMaterial extends IColladaEntry {
+        name: string;
+        
+        instanceEffect: IColladaInstanceEffect;
+    }
+
+
+
+    export interface IColladaTechniqueValue extends IColladaEntry {
 
     }
 
-    export interface IColladaEffectTechnique extends IColladaNode {
-    	sid: string;
-    	type: string;
-    	value: IColladaNode;
+    
+    export interface IColladaBindVertexInput extends IColladaEntry {
+        semantics: string;
+        inputSemantic: string;
+        inputSet: int;
     }
 
-    export interface IColladaNewParam extends IColladaNode {
-    	sid: string;
-    	annotate: string;
-    	semantics: string;
-    	modifier: string;
-    	value: any;
-    	type: string;
+    export interface IColladaInstanceMaterial extends IColladaInstance {
+        symbol: string;
+        target: string;
+        vertexInput: IColladaBindVertexInput;
+        material: IColladaMaterial;
     }
 
-    export interface IColladaProfileCommon extends IColladaNode {
-    	technique: IColladaEffectTechnique;
-    	newParam: { [name: string]: IColladaNewParam; }
+    export interface IColladaBindMaterial extends IColladaEntry {
+        [symbol: string]: IColladaInstanceMaterial;
     }
 
-    export interface IColladaEffect extends IColladaNode {
-    	id: string;
-    	profileCommon: IColladaProfileCommon;
+    export interface IColladaInstanceGeometry extends IColladaInstance {
+        geometry: IColladaGeometrie;
+        material: IColladaBindMaterial;
     }
+
+
+    export interface IColladaInstanceController extends IColladaInstance {
+        controller: IColladaController;
+        material: IColladaBindMaterial;
+        skeletons: string[];
+    }
+
+    export interface IColladaNode extends IColladaEntry {
+        sid: string;
+        name: string;
+        type: string;
+        layer: string;
+
+        transform: IMat4;
+        geometry: IColladaInstanceGeometry[];
+        controller: IColladaInstanceController[];
+
+        childNodes: IColladaNode[];
+        depth: int;
+        transforms: IColladaTransform[];
+
+        constructedNode: ISceneNode;
+    }
+
+    export interface IColladaVisualScene extends IColladaEntry {
+        name: string;
+
+        nodes: IColladaNode[];
+    }
+
+
+
+    /// animation
+    
+    export interface IColladaAnimationSampler extends IColladaEntry {
+
+    }
+
+    export interface IColladaAnimationChannel extends IColladaEntry {
+
+    }
+
+    export interface IColladaAnimation extends IColladaEntry {
+        name: string;
+
+        sources: IColladaSource[];
+        samplers: IColladaAnimationSampler[];
+        channel: IColladaAnimationChannel;
+
+        animations: IColladaAnimation[];
+    }
+
 
 }
 

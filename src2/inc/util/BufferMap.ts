@@ -14,7 +14,7 @@ module akra.util {
 		[handle: int]: IVertexData;
 	}
 
-	export class BufferMap implements IBufferMap extends ReferenceCounter{
+	class BufferMap implements IBufferMap extends ReferenceCounter{
 		private _pFlows: IDataFlow[] = null;
 		private _pMappers: IDataMapper[] = null;
 		private _pIndex: IIndexData = null;
@@ -458,6 +458,10 @@ module akra.util {
 
 		    return s + '\n\n';
 		}
+	}
+
+	export function createBufferMap(pEngine: IEngine): IBufferMap {
+		return new BufferMap(pEngine);
 	}
 }
 

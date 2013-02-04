@@ -23,7 +23,7 @@
 
 module akra.model {
 
-	export class Mesh implements IMesh extends util.ReferenceCounter {
+	class Mesh implements IMesh extends util.ReferenceCounter {
         private _sName: string;
         private _pFlexMaterials: IMaterial[] = null;
         private _pBuffer: IRenderDataCollection = null;
@@ -614,6 +614,10 @@ module akra.model {
         END_EVENT_TABLE();
 
 	}
+
+    export function createMesh(pEngine: IEngine, sName: string = null, eOptions: int = 0, pDataBuffer: IRenderDataCollection = null): IMesh {
+        return new Mesh(pEngine, eOptions, sName, pDataBuffer);
+    }
 }
 
 #endif

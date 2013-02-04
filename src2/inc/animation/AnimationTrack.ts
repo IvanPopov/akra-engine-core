@@ -10,11 +10,12 @@
 
 
 module akra.animation {
-	export class AnimationTrack implements IAnimationTrack{
-		private _sTarget: string;
+	class AnimationTrack implements IAnimationTrack {
+		private _sTarget: string = null;
 		private _pTarget: INode = null;
 		private _pKeyFrames: IAnimationFrame[] = [];
 		private _eInterpolationType: EAnimationInterpolations = EAnimationInterpolations.MATRIX_LINEAR;
+
 
 		inline get target(): INode{
 			return this._pTarget;
@@ -30,6 +31,10 @@ module akra.animation {
 
 		inline get duration(): float{
 			return this._pKeyFrames.last.fTime;
+		}
+
+		constructor (sTarget: string = null) {
+			this._sTarget = sTarget;
 		}
 
 		keyFrame(fTime: float, pMatrix: IMat4): bool {
@@ -162,7 +167,11 @@ module akra.animation {
 
 			return pFrame;
 		}
-	} 
+	}
+
+	export function createAnimationTrack(sName: string = null): IAnimationTrack {
+		return new AnimationTrack(sName);
+	}
 }
 
 #endif

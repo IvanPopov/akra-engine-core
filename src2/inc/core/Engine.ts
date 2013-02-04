@@ -183,19 +183,19 @@ module akra.core {
 		}
 
 		inline createMesh(sName: string = null, eOptions: int = 0, pDataBuffer: IRenderDataCollection = null): IMesh {
-			return new model.Mesh(this, eOptions, sName, pDataBuffer);
+			return model.createMesh(this, eOptions, sName, pDataBuffer);
 		}
 
 		inline createRenderDataCollection(iOptions: int = 0): IRenderDataCollection {
-			return new render.RenderDataCollection(this, iOptions);
+			return render.createRenderDataCollection(this, iOptions);
 		}
 
 		inline createBufferMap(): IBufferMap {
-			return new util.BufferMap(this);
+			return util.createBufferMap(this);
 		}
 
 		inline createAnimationController(iOptions: int = 0): IAnimationController {
-			return new animation.AnimationController(this, iOptions);
+			return animation.createAnimationController(this, iOptions);
 		}
 
 

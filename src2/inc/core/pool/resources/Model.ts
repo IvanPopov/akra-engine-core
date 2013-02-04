@@ -125,15 +125,25 @@ module akra.core.pool.resources {
 		    var fnSuccess: IColladaLoadCallback;
 		    var fnCallback: IColladaLoadCallback;
 
-		    fnCustomCallback = !isNull(pOptions) && !isNull(pOptions.success)? pOptions.success: null;
+		    fnCustomCallback = !isNull(pOptions) && !isNull(pOptions.callback)? pOptions.callback: null;
 
-		    fnCallback = function (model: IModel) {
-		        if (pModel.isResourceLoaded()) { pModel.setAlteredFlag(); }
-		        fnSuccess(pModel);
-		        if (!isNull(fnCustomCallback)) { fnCustomCallback(pModel); }
+		    fnCallback = function (pErr: Error, model: IModel) {
+		        if (pModel.isResourceLoaded()) { 
+		        	pModel.setAlteredFlag(); 
+		        }
+		        
+		        fnSuccess(pErr, pModel);
+		        
+		        if (!isNull(fnCustomCallback)) { 
+		        	fnCustomCallback(pErr, pModel); 
+		        }
 		    };
 
-		    fnSuccess = function (model: IModel) {
+		    fnSuccess = function (pErr: Error, model: IModel) {
+		    	if (pErr) {
+		    		ERROR(pErr.message);
+		    	}
+
 		        if (pModel._notifyFileLoaded() == 0) {
 		            if (isNull(fnCustomCallback)) {
 		                pModel.notifyLoaded();
@@ -152,10 +162,11 @@ module akra.core.pool.resources {
 
 		        pOptions = pOptions || Model.DEFAULT_COLLADA_LOAD_OPTIONS;
 		        pOptions.file = sFilename;
-		        pOptions.modelResource = this;
-		        pOptions.success = fnCallback;
+		        pOptions.model = this;
+		        pOptions.callback = fnCallback;
 
-		        return collada.load(this.getEngine(), pOptions);
+		        collada.load(this.getEngine(), pOptions);
+		        return true;
 		    }
 
 		    /*
@@ -170,7 +181,7 @@ module akra.core.pool.resources {
 		    }
 			*/
 		    
-		    fnSuccess(this);
+		    fnSuccess(null, this);
 		    return false;
     	}
 
@@ -180,7 +191,7 @@ module akra.core.pool.resources {
                                 scene             : false,
                                 extractPoses      : false,
                                 skeletons         : this._pSkeletonList,
-                                animation 		  : { load: true, pose: true}
+                                animation 		  : { pose: true }
                              });
     	}
 

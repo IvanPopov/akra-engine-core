@@ -24,6 +24,10 @@ module akra {
         SHARED_GEOMETRY = 0x01  /*<! use shared geometry*/
     };
 
+    export interface IMeshMap {
+        [name: string]: IMesh;
+    }
+
 	export interface IMesh extends IEventProvider {
         readonly flexMaterials: IMaterial[];
         readonly name: string;

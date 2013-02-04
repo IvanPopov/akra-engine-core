@@ -15,11 +15,15 @@ module akra.animation {
 
 	export class AnimationBase implements IAnimationBase {
 
-		private _pTargetMap: IAnimationTargetMap = {};
-    	private _pTargetList: IAnimationTarget[] = [];
+		protected _pTargetMap: IAnimationTargetMap = {};
+    	protected _pTargetList: IAnimationTarget[] = [];
 
     	protected _fDuration: float = 0.0;
-		private _sName: string;
+		protected _sName: string;
+
+		constructor () {
+			this._sName = ("animation-" + now() + "-" + this.getGuid());
+		}
 
 		inline get duration(): float{
 			return this._fDuration;

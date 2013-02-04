@@ -21,7 +21,7 @@ module akra {
 		getRootJoint(): IJoint;
 		getRootJoints(): IJoint[];
 		getJointMap(): IJointMap;
-		getNodeList(): INode[];
+		getNodeList(): ISceneNode[];
 		addRootJoint(pJoint: IJoint): bool;
 		update(): bool;
 		findJoint(sName: string): IJoint;

@@ -2,7 +2,7 @@
 #define SKELETON_TS
 
 #include "ISkeleton.ts"
-#include "INode.ts"
+#include "ISceneNode.ts"
 #include "scene/Joint.ts"
 
 module akra.model {
@@ -10,10 +10,10 @@ module akra.model {
 	export class Skeleton implements ISkeleton{
 		private _sName: string;
 		private _pEngine: IEngine;
-		private _pRootJoints: INode[] = [];
-		private _pJointList: INodeMap = null;
-		private _pNodeList: INode[]  = null;
-		private _pMeshNode: INode = null;
+		private _pRootJoints: IJoint[] = [];
+		private _pJointList: IJoint = null;
+		private _pNodeList: ISceneNode[]  = null;
+		private _pMeshNode: ISceneNode = null;
 		private _iFlags: bool = false;
 
 		inline get totalBones(): int{
@@ -28,7 +28,7 @@ module akra.model {
 			return this._sName;
 		}
 
-		inline get root(): INode{
+		inline get root(): ISceneNode {
 			return this._pRootJoints[0] || null;
 		}
 
@@ -36,23 +36,23 @@ module akra.model {
 			return this._pEngine;
 		}
 
-		getRootJoint(): INode {
+		getRootJoint(): ISceneNode {
 			return this.getRootJoints()[0];
 		}
 
-		getRootJoints(): INode[] {
+		getRootJoints(): ISceneNode[] {
 			return this._pRootJoints;
 		}
 
-		getJointMap(): INodeMap{
+		getJointMap(): IJointMap {
 			return this._pJointList;
 		}
 
-		getNodeList(): INode[]{
+		getNodeList(): ISceneNode[]{
 			return this._pNodeList;
 		}
 
-		addRootJoint(pJoint: INode): bool {
+		addRootJoint(pJoint: IJoint): bool {
 			debug_assert(pJoint instanceof scene.Joint, 'node must be joint');
 
 		    var pRootJoints = this._pRootJoints;
@@ -111,11 +111,11 @@ module akra.model {
 			return true;
 		}
 
-		findJoint(sName: string): INode {
+		findJoint(sName: string): IJoint {
 			return this._pJointList[sName];
 		}
 
-		findJointByName(sName: string): INode {
+		findJointByName(sName: string): IJoint {
 			for (var s in this._pJointList) {
 				if (this._pJointList[s].name === sName) {
 					return this._pJointList[s];

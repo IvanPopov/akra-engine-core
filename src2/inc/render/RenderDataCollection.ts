@@ -7,7 +7,7 @@
 
 module akra.render {
 
-	export class RenderDataCollection extends util.ReferenceCounter implements IRenderDataCollection {
+	class RenderDataCollection extends util.ReferenceCounter implements IRenderDataCollection {
 		private _pDataBuffer: IVertexBuffer = null;
 		private _pEngine: IEngine = null;
 		private _eDataOptions: int = 0;
@@ -228,6 +228,10 @@ module akra.render {
         // inline isBackupPresent(): bool { return true; }
 
 	}
+
+    export function createRenderDataCollection(pEngine: IEngine, iOptions: int = 0): IRenderDataCollection {
+        return new RenderDataCollection(pEngine, iOptions);
+    }
 }
 
 #endif

@@ -8,10 +8,14 @@
 
 
 module akra.animation {
-	export class Animation implements IAnimation extends AnimationBase {
+	class Animation implements IAnimation extends AnimationBase {
 
 		private _pTracks: IAnimationTrack[] = [];
     	
+    	constructor (sName: string = null) {
+    		super();
+    		this.name = sName;
+    	}
 
 		inline get totalTracks(): float{
 			return this._pTracks.length;
@@ -60,7 +64,11 @@ module akra.animation {
 				}
 			}
 		}
-	} 
+	}
+
+	export function createAnimation(sName: string = null): IAnimation {
+		return new Animation(sName);
+	}
 }
 
 #endif
