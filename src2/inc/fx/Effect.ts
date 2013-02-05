@@ -735,9 +735,9 @@ module akra.fx {
 		        case "FunctionDecl":
 		            this.analyzeFunctionDecl(pNode);
 		            break;
-		    //     case "VarStructDecl":
-		    //         this.analyzeVarStructDecl(pNode);
-		    //         break;
+		        case "VarStructDecl":
+		            this.analyzeVarStructDecl(pNode);
+		    	    break;
 		    //     case "TechniqueDecl":
 		    //         this.analyzeTechniqueDecl(pNode);
 		    //         break;
@@ -798,8 +798,8 @@ module akra.fx {
         private analyzeType(pNode: IParseNode): IAFXTypeInstruction {
         	this.setAnalyzedNode(pNode);
         	
-        	var pChildren: IParseNode[] = pNode.pChildren;
-        	var pType: IAFXTypedInstruction = null;
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pType: IAFXTypeInstruction = null;
 
         	switch(pNode.name){
         		case "T_TYPE_ID":
@@ -855,8 +855,8 @@ module akra.fx {
         	var sSemantic: string;
         	var pInitExpr: IAFXExprInstruction;
 			
-        	pVarDecl.push(pVariableType);       	
-        	pVariableType.push(pUsageType);
+        	pVarDecl.push(pVariableType, true);       	
+        	pVariableType.push(pUsageType, true);
 
         	this.analyzeVariableDim(pChildren[pChildren.length - 1], pVarDecl);
         	
@@ -1737,9 +1737,59 @@ module akra.fx {
         	return pType;
         }
 
-		private analyzeTypeDecl(pNode: IParseNode, pParentInstruction: IAFXInstruction = null): IAFXTypeDeclInstruction {
-			var pChildren: IParseNode[] = pNode.children;
+        private analyzeVarStructDecl(pNode: IParseNode, pInstruction?: IAFXInstruction = null): void {
 			this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pUsageType: IAFXUsageTypeInstruction = null;
+        	var pVariable: IAFXVariableDeclInstruction = null;
+        	var i: uint = 0;
+        	
+        	pUsageType = this.analyzeUsageStructDecl(pChildren[pChildren.length - 1]);
+
+        	for(i = pChildren.length - 2; i >= 1; i--){
+        		if(pChildren[i].name === "Variable") {
+        			pVariable = this.analyzeVariable(pChildren[i], pUsageType);
+
+        			if(!isNull(pInstruction)){
+        				pInstruction.push(pVariable, true);
+        			}
+        		}
+        	}
+        }
+
+        private analyzeUsageStructDecl(pNode: IParseNode): IAFXUsageTypeInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+		    var i: uint = 0;
+		    var pType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
+
+		    for (i = pChildren.length - 1; i >= 0; i--) {
+		        if (pChildren[i].name === "StructDecl") {
+		        	var pMainType: IAFXTypeInstruction = this.analyzeStructDecl(pChildren[i]);
+		        	pType.setTypeInstruction(pMainType);
+
+		        	var pTypeDecl: IAFXTypeDeclInstruction = new TypeDeclInstruction();
+		        	pTypeDecl.push(pMainType, true);
+
+		        	this.addTypeDecl(pTypeDecl); 
+		        }
+		        else if (pChildren[i].name === "Usage") {
+		        	var sUsage: string = this.analyzeUsage(pChildren[i]);
+		        	pType.addUsage(sUsage);
+		        }
+		    }
+
+		    CHECK_INSTRUCTION(pType, ECheckStage.CODE_TARGET_SUPPORT);
+
+		    return pType;
+        }
+
+		private analyzeTypeDecl(pNode: IParseNode, pParentInstruction: IAFXInstruction = null): IAFXTypeDeclInstruction {
+			this.setAnalyzedNode(pNode);
+			
+			var pChildren: IParseNode[] = pNode.children;
 
 			var pTypeDeclInstruction: IAFXTypeDeclInstruction = new TypeDeclInstruction();
 			// var pType: IAFXType = new Type();
@@ -1773,10 +1823,13 @@ module akra.fx {
 		}
 
         private analyzeStructDecl(pNode: IParseNode): IAFXTypeInstruction {
+        	this.setAnalyzedNode(pNode);
+			
+			var pChildren: IParseNode[] = pNode.children;
+
         	var pStruct: ComplexTypeInstruction = new ComplexTypeInstruction();
         	var pFieldCollector: IAFXInstruction = new Instruction();
 
-        	var pChildren: IParseNode[] = pNode.children;
         	var sName: string = pChildren[pChildren.length - 2].value;
 
         	pStruct.setName(sName);
@@ -1793,6 +1846,32 @@ module akra.fx {
 		    this.endScope();
 
 		    pStruct.push(pFieldCollector, true);
+
+		    CHECK_INSTRUCTION(pStruct, ECheckStage.CODE_TARGET_SUPPORT);
+
+        	return pStruct;
+        }
+
+        private analyzeStruct(pNode: IParseNode): IAFXTypeInstruction {
+        	this.setAnalyzedNode(pNode);
+			
+			var pChildren: IParseNode[] = pNode.children;
+
+        	var pStruct: ComplexTypeInstruction = new ComplexTypeInstruction();
+        	var pFieldCollector: IAFXInstruction = new Instruction();
+
+        	this.newScope(EScopeType.k_Struct);
+
+        	var i: uint = 0;
+        	for (i = pChildren.length - 4; i >= 1; i--) {
+		        if (pChildren[i].name === "VariableDecl") {
+		            this.analyzeVariableDecl(pChildren[i], pFieldCollector);
+		        }
+		    }
+
+		    this.endScope();
+
+		    pStruct.addFields(pFieldCollector, true);
 
 		    CHECK_INSTRUCTION(pStruct, ECheckStage.CODE_TARGET_SUPPORT);
 

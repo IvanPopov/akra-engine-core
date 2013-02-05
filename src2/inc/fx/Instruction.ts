@@ -31,6 +31,8 @@ module akra.fx {
 		protected _nInstuctions: uint = 0;
 		protected readonly _eInstructionType: EAFXInstructionTypes = 0;
 		protected _pLastError: IAFXInstructionError = null;
+		protected _iInstructionID: uint = 0;
+		private static _nInstructionCounter: uint = 0;
 
 		inline getParent(): IAFXInstruction{
 			return this._pParentInstruction;
@@ -60,6 +62,10 @@ module akra.fx {
 			return this._eInstructionType;
 		}
 
+		inline getInstructionID(): uint {
+			return this._iInstructionID;
+		}
+
 		inline getLastError(): IAFXInstructionError {
 			return this._pLastError;
 		}
@@ -70,6 +76,7 @@ module akra.fx {
 		}
 
 		constructor(){
+			this._iInstructionID = Instruction._nInstructionCounter++;
 			this._pParentInstruction = null;
 			this._sOperatorName = null;
 			this._pInstructionList = null;
@@ -108,6 +115,26 @@ module akra.fx {
 
     	toString(): string {
     		return null;
+    	}
+
+    	clone(pRelationMap?: InstructionMap = <InstructionMap>{}): IAFXInstruction {
+    		var pNewInstruction: IAFXInstruction = new this["constructor"]();
+    		var pParent: IAFXInstruction = this.getParent() || null;
+
+    		if(!isNull(pParent) && isDef(pRelationMap[pParent.getInstructionID()])){
+    			pParent = pRelationMap[pParent.getInstructionID()];
+    		}
+
+    		pNewInstruction.setParent(pParent);
+    		pRelationMap[this.getInstructionID()] = pNewInstruction;
+
+    		for(var i: uint = 0; i < this._pInstructionList.length; i++){
+    			pNewInstruction.push(this._pInstructionList[i].clone(pRelationMap));
+    		}
+
+    		pNewInstruction.setOperator(this.getOperator());
+
+    		return pNewInstruction;
     	}
 	}
 
@@ -322,6 +349,13 @@ module akra.fx {
 
 		getArrayElementType(): IAFXVariableTypeInstruction {
 			return null;
+		}
+
+		clone(pRelationMap?: InstructionMap): IAFXVariableTypeInstruction {
+			var pCloneType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+			pCloneType.pushVariableType(this);
+
+			return pCloneType;
 		}
 
 		private calcHash(): void {
@@ -630,7 +664,7 @@ module akra.fx {
 			return 0;
 		}
 
-		push(pFieldCollector: IAFXInstruction, isSetParent?: bool = true): void {
+		addFields(pFieldCollector: IAFXInstruction, isSetParent?: bool = true): void {
 			this._pFields = <VariableDeclInstruction[]>(pFieldCollector.getInstructions());
 
 			for(var i: uint = 0; i < this._pFields.length; i++){
@@ -680,6 +714,12 @@ module akra.fx {
 		setType(pType: IAFXTypeInstruction): void {
 			this._pType = pType;
 		}
+
+		clone(pRelationMap?: InstructionMap = <InstructionMap>{}): IAFXTypedInstruction {
+			var pClonedInstruction: IAFXTypedInstruction = <IAFXTypedInstruction>(super.clone(pRelationMap));
+			pClonedInstruction.setType(this._pType);
+			return pClonedInstruction;
+		}
 	}
 
 	export class DeclInstruction extends ExprInstruction implements IAFXDeclInstruction {
@@ -707,6 +747,13 @@ module akra.fx {
 		getNameId(): IAFXIdInstruction {
 			return null;
 		}
+
+		clone(pRelationMap?: InstructionMap = <InstructionMap>{}): IAFXDeclInstruction {
+			var pClonedInstruction: IAFXDeclInstruction = <IAFXDeclInstruction>(super.clone(pRelationMap));
+			pClonedInstruction.setSemantic(this._sSemantic);
+			pClonedInstruction.setAnnotation(this._pAnnotation);
+			return pClonedInstruction;
+		}
 	}
 
 	export class IntInstruction extends ExprInstruction implements IAFXLiteralInstruction {
@@ -732,6 +779,12 @@ module akra.fx {
 
 		inline isConst(): bool {
 			return true;
+		}
+
+		clone(pRelationMap?: InstructionMap): IAFXLiteralInstruction {
+			var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
+			pClonedInstruction.setValue(this._iValue);
+			return pClonedInstruction;
 		}
 	}
 
@@ -759,6 +812,12 @@ module akra.fx {
 		inline isConst(): bool {
 			return true;
 		}
+
+		clone(pRelationMap?: InstructionMap): IAFXLiteralInstruction {
+			var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
+			pClonedInstruction.setValue(this._fValue);
+			return pClonedInstruction;
+		}
 	}
 
 	export class BoolInstruction extends ExprInstruction implements IAFXLiteralInstruction {
@@ -784,6 +843,12 @@ module akra.fx {
 
 		inline isConst(): bool {
 			return true;
+		}
+
+		clone(pRelationMap?: InstructionMap): IAFXLiteralInstruction {
+			var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
+			pClonedInstruction.setValue(this._bValue);
+			return pClonedInstruction;
 		}
 	}
 
@@ -811,6 +876,12 @@ module akra.fx {
 
 		inline isConst(): bool {
 			return true;
+		}
+
+		clone(pRelationMap?: InstructionMap): IAFXLiteralInstruction {
+			var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
+			pClonedInstruction.setValue(this._sValue);
+			return pClonedInstruction;
 		}
 	}
 
@@ -846,6 +917,13 @@ module akra.fx {
 
 		toString(): string {
 			return this._sRealName;
+		}
+
+		clone(pRelationMap?: InstructionMap): IdInstruction {
+			var pClonedInstruction: IdInstruction = <IdInstruction>(super.clone(pRelationMap));
+			pClonedInstruction.setName(this._sName);
+			pClonedInstruction.setRealName(this._sRealName);
+			return pClonedInstruction;
 		}
 
 	}
@@ -921,6 +999,7 @@ module akra.fx {
 	export class FunctionDeclInstruction extends DeclInstruction implements IAFXFunctionDeclInstruction {
 		private _pFunctionDefenition: FunctionDefInstruction = null;
 		private _pImplementation: StmtBlockInstruction = null;
+		private _eFunctionType: EFunctionType = EFunctionType.k_Function;
 
 		constructor() { 
 			super();
@@ -965,6 +1044,28 @@ module akra.fx {
 			pImplementation.setParent(pImplementation);
 			this._nInstuctions = 2;
 		}
+
+		clone(pRelationMap?: InstructionMap = <InstructionMap>{}): IAFXFunctionDeclInstruction {
+			return <IAFXFunctionDeclInstruction>super.clone(pRelationMap);
+		}
+		
+		// cloneTo(eConvertTo: EFunctionType): ShaderFunctionInstruction {
+		// 	if(eConvertTo === EFunctionType.k_Function) {
+		// 		//nothing to do
+		// 	}
+
+
+		// 	return null;
+		// }
+	}
+
+	export class ShaderFunctionInstruction extends FunctionDeclInstruction {
+		constructor() {
+			super();
+			this._eInstructionType = EAFXInstructionTypes.k_ShaderFunctionInstruction;
+		}
+
+
 	}
 
 	export class SystemFunctionInstruction extends DeclInstruction implements IAFXFunctionDeclInstruction {
@@ -1116,6 +1217,18 @@ module akra.fx {
 			return true;
 		}
 
+		clone(): FunctionDefInstruction {
+			var pClonedDef: FunctionDefInstruction = new FunctionDefInstruction();
+
+			pClonedDef.setFunctionName(<IAFXIdInstruction>this._pFunctionName.clone());
+			pClonedDef.setReturnType(<IAFXVariableTypeInstruction>this.getReturnType().clone());
+
+			for(var i: uint = 0; i < this._pParameterList.length; i++){
+				pClonedDef.addParameter(<IAFXVariableDeclInstruction>this._pParameterList[i].clone());
+			}
+
+			return pClonedDef;
+		}
 		// getHash(): string {
 		// 	if(this._sHash === "") {
 		// 		this.calcHash();

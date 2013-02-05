@@ -47,6 +47,7 @@ module akra {
         k_SamplerStateBlockInstruction,
         k_SamplerStateInstruction,
         k_FunctionDeclInstruction,
+        k_ShaderFunctionInstruction,
         k_SystemFunctionInstruction,
         k_FunctionDefInstruction,
         k_StmtInstruction,
@@ -59,6 +60,13 @@ module akra {
         k_DeclStmtInstruction,
         k_ReturnStmtInstruction,
         k_SemicolonStmtInstruction
+    }
+
+    export enum EFunctionType{
+        k_Vertex,
+        k_Pixel,
+        k_Fragment = k_Pixel,
+        k_Function
     }
 
     export enum ECheckStage {
@@ -79,6 +87,10 @@ module akra {
         info: any;
     }
 
+    export interface InstructionMap {
+        [index: uint]: IAFXInstruction;
+    }
+
 	/**
 	 * All opertion are represented by: 
 	 * operator : arg1 ... argn
@@ -95,6 +107,7 @@ module akra {
         getInstructions(): IAFXInstruction[];
 
         getInstructionType(): EAFXInstructionTypes;
+        getInstructionID(): uint;
 
         check(eStage: ECheckStage): bool;
         getLastError(): IAFXInstructionError;
@@ -115,6 +128,7 @@ module akra {
 
     	addRoutine(fnRoutine: IAFXInstructionRoutine, iPriority?: uint);
     	toString(): string;
+        clone(pRelationMap?: InstructionMap): IAFXInstruction;
     }
 
     export interface IAFXSimpleInstruction extends IAFXInstruction {
