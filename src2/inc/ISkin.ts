@@ -17,13 +17,13 @@ module akra {
 	export interface ISkin {
 		readonly data: IRenderDataCollection;
 		readonly skeleton: ISkeleton;
-		readonly totalBones: int;
+		readonly totalBones: uint;
 
 		/**
 		 * Set binding matrix. 
 		 * @see <bind_shape_matrix> in Collada.
 		 */
-		setBindMatrix(m4fMatrix): IMat4;
+		setBindMatrix(m4fMatrix: IMat4): void;
 
 		/**
 		 * @see <bind_shape_matrix> in Collada.
@@ -36,23 +36,21 @@ module akra {
 		 */
 		getBoneOffsetMatrices(): IMat4[];
 		getBoneOffsetMatrix(sBoneName: string): IMat4;
-		setBoneOffsetMatrices(pMatrices: IMat4): void;
+		setBoneOffsetMatrices(pMatrices: IMat4[]): void;
 
-		hasSkeleton(): bool;
-		getSkeleton(): ISkeleton;
 		setSkeleton(pSkeleton: ISkeleton): bool;
 		
 		/**
 		 * Make a skin dependent on scene node whose names match the
 		 * names of the bones that affect the skin.
 		 */
-		attachToSceneTree(pRootNode): bool;
+		attachToScene(pRootNode: ISceneNode): bool;
 		
-		/**
-		 * Bind skin to skeleton or scene.
-		 */
-		bind(pSkeleton: ISkeleton): bool;
-		bind(pNode: ISceneNode): bool;
+		// /**
+		//  * Bind skin to skeleton or scene.
+		//  */
+		// bind(pSkeleton: ISkeleton): bool;
+		// bind(pNode: ISceneNode): bool;
 
 		/**
 		 * Set names of bones, that affect to skin.
@@ -81,7 +79,7 @@ module akra {
 		/**
 		 * Short way to call setWeights() && setIfluences();
 		 */
-		setVertexWeights(pInfluencesCount: uint[], pInfluences: Float32Array, pWeights: Float32Array);
+		setVertexWeights(pInfluencesCount: uint[], pInfluences: Float32Array, pWeights: Float32Array): bool;
 		
 		/**
 		 * Recalculate skin matrices and fill it to video memory.
@@ -106,8 +104,7 @@ module akra {
 		/**
 		 * Add skin info to data with vertices.
 		 */
-		attach(pData: IVertexData);
-
+		attach(pData: IVertexData): void;
 	}
 }
 

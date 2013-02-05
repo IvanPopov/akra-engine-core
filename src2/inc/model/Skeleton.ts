@@ -7,14 +7,14 @@
 
 module akra.model {
 
-	export class Skeleton implements ISkeleton{
+	class Skeleton implements ISkeleton{
 		private _sName: string;
-		private _pEngine: IEngine;
 		private _pRootJoints: IJoint[] = [];
 		private _pJointMap: IJointMap = null;
 		private _pNodeList: ISceneNode[]  = null;
-		private _pMeshNode: ISceneNode = null;
+		private _pMeshNode: ISceneModel = null;
 		private _iFlags: bool = false;
+
 
 		inline get totalBones(): int{
 			return Object.keys(this._pJointMap).length;
@@ -28,19 +28,19 @@ module akra.model {
 			return this._sName;
 		}
 
-		inline get root(): ISceneNode {
+		inline get root(): IJoint {
 			return this._pRootJoints[0] || null;
 		}
 
-		getEngine(): IEngine {
-			return this._pEngine;
+		constructor (sName: string = null) {
+			this._sName = sName;
 		}
 
-		getRootJoint(): ISceneNode {
+		getRootJoint(): IJoint {
 			return this.getRootJoints()[0];
 		}
 
-		getRootJoints(): ISceneNode[] {
+		getRootJoints(): IJoint[] {
 			return this._pRootJoints;
 		}
 
@@ -125,25 +125,30 @@ module akra.model {
 			return null;
 		}
 
-		attachMesh(pMesh: IMesh): void {
-			/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-			/*FIX a. , getEngine*/
-			/*debug_assert(this.getEngine() === pMesh.getEngine(), 'mesh must be from same engine instance');
+		attachMesh(pMesh: IMesh): bool {
+			if (isNull(this.root)) {
+				return false;
+			}
 
 		    if (this._pMeshNode == null) {
-		    	this._pMeshNode = new scene.objects.SceneModel(this.getEngine());
-		    	this._pMeshNode.create();
-		    	this._pMeshNode.setInheritance(a.Scene.k_inheritAll);
+		    	this._pMeshNode = this.root.scene.createModel();
+		    	this._pMeshNode.setInheritance(ENodeInheritance.ALL);
 		    	this._pMeshNode.attachToParent(this.root);
 		    }
-*/
+
 		    this._pMeshNode.name = this.name + "[mesh-container]";
 		    this._pMeshNode.mesh = (pMesh);
+
+		    return true;
 		}
 
 		detachMesh(): void {
 			//TODO: write detach method.
 		}
+	}
+
+	export function createSkeleton(sName: string = null): ISkeleton {
+		return new Skeleton(sName);
 	}
 }
 

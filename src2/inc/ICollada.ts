@@ -1,6 +1,8 @@
 #ifndef ICOLLADA_TS
 #define ICOLLADA_TS
 
+#include "IModel.ts"
+
 module akra {
 	IFACE(ISkeleton);
 	IFACE(IModel);
@@ -10,17 +12,11 @@ module akra {
     // COLLADA LOAD OPTIONS
     //=============================================
 
-    export interface IColladaLoader {
-        setModel(pModel: IModel);
-        isValid(): bool;
-        destroy(): void;
-        parse(sXMLData: string, pOptions?: IColladaLoadOptions): bool;
-        load(sFilename: string, fnCallback?: IColladaLoadCallback, pOptions?: IColladaLoadOptions): void;
+    export interface ICollada extends IModel {
+        //getAnimationController(): IAnimationController;
+        //getMesh(sName: string);
+        //getSkeleton();
     }
-
-	export interface IColladaLoadCallback {
-		(pErr: Error, pModel: IModel): void;
-	}
 
 	export interface IColladaAnimationLoadOptions {
 		pose?: bool;
@@ -34,7 +30,6 @@ module akra {
 
 
 	export interface IColladaLoadOptions {
-        model?: IModel;
     	/** Add nodes, that visualize joints in animated models. */
     	drawJoints?: bool;
     	/** Convert all meshed to wireframe. */
@@ -111,7 +106,7 @@ module akra {
     export interface IColladaLibraryTemplate {
     	lib: string; 		           /** library tag name.*/
     	element: string;	           /** element in liibrary. */
-    	loader: IColladaEntryLoader;   /** loader function */
+    	loader: string;                /** loader function */
     }
 
     //=============================================
@@ -187,6 +182,10 @@ module akra {
         source: IColladaSource;
         offset: int;
         set: string;
+
+        array?: any[];
+        arrayId?: string;
+        accessor?: IColladaAccessor;
     }
 
     export interface IColladaTransform extends IColladaEntry {

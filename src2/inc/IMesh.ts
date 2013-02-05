@@ -64,6 +64,7 @@ module akra {
         
         setSkin(pSkin: ISkin): void;
         setSkeleton(pSkeleton: ISkeleton): void;
+        createSkin(): ISkin;
 
         createBoundingBox(): bool;
         deleteBoundingBox(): bool;

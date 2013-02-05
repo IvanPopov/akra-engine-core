@@ -14,37 +14,42 @@ module akra {
 
 
     export interface IModel extends IResourcePoolItem {
-    	totalAnimations: uint;
-    	totalMeshes: uint;
-    	node: ISceneNode;
 
-    	getAnimation(iAnim: uint): IAnimationBase;
-    	setAnimation(iAnim: uint, pAnimation: IAnimationBase): void;
-    	addAnimation(pAnimation: IAnimationBase): void;
-
-    	getAnimationController(): IAnimationController;
-
-    	getMesh(iMesh: uint): IMesh;
-    	addMesh(pMesh: IMesh): void;
-
-    	addNode(pNode: ISceneNode): void;
-
-    	addSkeleton(pSkeleton: ISkeleton): void;
-    	
-    	addToScene(pScene: IScene3d): bool;
-
-    	getRootNodes(): ISceneNode[];
-
-    	loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): bool;
-    	loadAnimation(sFilename: string): bool;
-
-    	//instead old method: applyShadow();
-    	_setup(): bool;
-
-    	_notifyFileLoaded(): uint;
-    	_notifyFileLoad(): uint;
-    	_totalFiles(): uint;
+        loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): bool;
+        attachToScene(pNode: ISceneNode): bool;
     }
 }
 
 #endif
+
+    // totalAnimations: uint;
+    // totalMeshes: uint;
+    // node: ISceneNode;
+
+    // getAnimation(iAnim: uint): IAnimationBase;
+    // setAnimation(iAnim: uint, pAnimation: IAnimationBase): void;
+    // addAnimation(pAnimation: IAnimationBase): void;
+
+    // getAnimationController(): IAnimationController;
+
+    // getMesh(iMesh: uint): IMesh;
+    // addMesh(pMesh: IMesh): void;
+
+    // addNode(pNode: ISceneNode): void;
+
+    // addSkeleton(pSkeleton: ISkeleton): void;
+    
+    // addToScene(pScene: IScene3d): bool;
+ //    attachToScene(pNode: ISceneNode): bool;
+
+    // getRootNodes(): ISceneNode[];
+
+    // loadResource(sFilename?: string, pOptions?: IColladaLoadOptions, fnCallback?: (pModel: IModel) => void): bool;
+    // loadAnimation(sFilename: string): bool;
+
+    // //instead old method: applyShadow();
+    // _setup(): bool;
+
+    // _notifyFileLoaded(): uint;
+    // _notifyFileLoad(): uint;
+    // _totalFiles(): uint;

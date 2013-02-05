@@ -12,6 +12,7 @@ module akra {
     IFACE(IRenderDataCollection);
     IFACE(IBufferMap);
     IFACE(IAnimationController);
+    IFACE(ISkeleton);
 
     export interface IEngine extends IEventProvider {
         getSceneManager(): ISceneManager;
@@ -34,10 +35,13 @@ module akra {
         getTimer(): IUtilTimer;
 
         createMesh(sName?: string, eOptions?: int, pDataBuffer?: IRenderDataCollection): IMesh;
+
         createRenderDataCollection(iOptions?: int): IRenderDataCollection;
         createBufferMap(): IBufferMap;
 
         createAnimationController(iOptions?: int): IAnimationController;
+
+
     };
 
     export var createEngine: () => IEngine;

@@ -17,7 +17,6 @@ module akra {
 		readonly name: string;
 		readonly root: IJoint;
 
-		getEngine(): IEngine;
 		getRootJoint(): IJoint;
 		getRootJoints(): IJoint[];
 		getJointMap(): IJointMap;
@@ -26,7 +25,7 @@ module akra {
 		update(): bool;
 		findJoint(sName: string): IJoint;
 		findJointByName(sName: string): IJoint;
-		attachMesh(pMesh: IMesh): void;
+		attachMesh(pMesh: IMesh): bool;
 		detachMesh(): void;
 
 	}

@@ -2,7 +2,7 @@
 #define ANIMATION_TS
 
 #include "IAnimation.ts"
-#include "INode.ts"
+#include "ISceneNode.ts"
 #include "IAnimationFrame.ts"
 #include "IAnimationTrack.ts"
 
@@ -28,12 +28,12 @@ module akra.animation {
 			this.addTarget(pTrack.targetName);
 		}
 
-		attach(pTarget: INode): void {
+		attach(pTarget: ISceneNode): void {
 			var pPointer;
 		    var pTracks: IAnimationTrack[] = this._pTracks;
 			for (var i = 0; i < pTracks.length; ++ i) {
 				if (!pTracks[i].bind(pTarget)) {
-					trace('cannot bind animation track [', i, '] to joint <', pTracks[i].target, '>');
+					LOG("cannot bind animation track [", i, "] to joint <", pTracks[i].target, ">");
 				}
 				else {
 					pPointer = this.setTarget(pTracks[i].targetName, pTracks[i].target);

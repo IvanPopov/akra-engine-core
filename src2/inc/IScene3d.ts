@@ -29,8 +29,8 @@ module akra {
 
 		isUpdated(): bool;
 
-		createSceneNode(sName?: string): ISceneNode;
-		createSceneModel(sName?: string): ISceneModel;
+		createNode(sName?: string): ISceneNode;
+		createModel(sName?: string): ISceneModel;
 		createCamera(sName?: string): ICamera;
 		createLightPoint(sName?: string): ILightPoint;
 		createSprite(sName?: string): ISprite;

@@ -35,7 +35,7 @@ module akra.scene {
 
 		constructor (pSceneManager: ISceneManager) {
 			this._pSceneManager = pSceneManager;
-			this._pRootNode = this.createSceneNode("root-node");
+			this._pRootNode = this.createNode("root-node");
 			this._pRootNode.create();
 
 			var i: int;
@@ -77,15 +77,25 @@ module akra.scene {
 		}
 
 
-		createSceneNode(sName: string = null): ISceneNode {
+		createNode(sName: string = null): ISceneNode {
 			var pNode: ISceneNode = new SceneNode(this);
-			//pNode.create();
+			
+			if (!pNode.create()) {
+				ERROR("cannot create scene node..");
+				return null;
+			}
+
 			return this.setupNode(pNode, sName);
 		}
 
-		createSceneModel(sName: string = null): ISceneModel {
+		createModel(sName: string = null): ISceneModel {
 			var pNode: ISceneModel = new SceneModel(this);
-			//pNode.create();
+			
+			if (!pNode.create()) {
+				ERROR("cannot create model..");
+				return null;
+			}
+
 			return <ISceneModel>this.setupNode(pNode, sName);
 		}
 

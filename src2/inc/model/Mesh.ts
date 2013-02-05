@@ -15,6 +15,7 @@
 #include "ISceneNode.ts"
 #include "ISceneModel.ts"
 
+#include "Skin.ts"
 
 #include "MeshSubset.ts"
 #include "material/Material.ts"
@@ -271,6 +272,12 @@ module akra.model {
             for (var i = 0; i < this.length; ++ i) {
                 this._pSubMeshes[i].setSkin(pSkin);
             };
+        }
+
+        createSkin(): ISkin {
+            var pSkin: ISkin = createSkin(this);
+            this.setSkin(pSkin);
+            return pSkin;
         }
 
         clone(iCloneOptions: int): IMesh {
@@ -583,7 +590,7 @@ module akra.model {
                 return null;
             }
 
-            var pSceneModel: ISceneModel = pParent.scene.createSceneModel(sName);
+            var pSceneModel: ISceneModel = pParent.scene.createModel(sName);
             
             if (!pSceneModel.create()) {
                 return null;

@@ -12,6 +12,7 @@
 #include "IMesh.ts"
 #include "util/util.ts"
 #include "collada/collada.ts"
+#include "io/files.ts"
 
 module akra.core.pool.resources {
 	export class Model extends ResourcePoolItem implements IModel {
@@ -81,7 +82,7 @@ module akra.core.pool.resources {
     		this.notifyAltered();
     	}
     	
-    	addToScene(pScene: IScene3d): bool {
+    	attachToScene(pNode: ISceneNode): bool {
     		if (isNull(pScene)) {
     			return false;
     		}
@@ -91,7 +92,7 @@ module akra.core.pool.resources {
     		}
 
     		var pNodes: ISceneNode[] = this._pRootNodeList;
-    		var pRoot: ISceneNode = pScene.createSceneNode();
+    		var pRoot: ISceneNode = pNode.scene.createNode();
 
     		if (!pRoot.create()) {
     			return false;
@@ -99,7 +100,7 @@ module akra.core.pool.resources {
 
     		pRoot.setInheritance(ENodeInheritance.ALL);
     		
-    		if (!pRoot.attachToParent(pScene.getRootNode())) {
+    		if (!pRoot.attachToParent(pNode)) {
     			return false;
     		}
 
@@ -107,43 +108,45 @@ module akra.core.pool.resources {
     			pNodes[i].attachToParent(pRoot);
     		}
 
-    		this._pAnimController.bind(pRoot);
+    		if (isDefAndNotNull(this._pAnimController)) {
+    			this._pAnimController.bind(pRoot);
+    		}
+
     		this._pNode = pRoot;
 
     		return true;
+    	}
+
+    	addToScene(pScene: IScene3d): bool {
+    		return this.attachToScene(pScene.getRootNode());
     	}
 
     	inline getRootNodes(): ISceneNode[] {
     		return this._pRootNodeList;
     	}
 
-    	loadResource(sFilename: string = this.findResourceName(), pOptions: IColladaLoadOptions = null): bool {
+    	loadResource(sFilename: string = this.findResourceName(), pOptions: IColladaLoadOptions = null, 
+    		fnCustomCallback: (pModel: IModel) => void = null): bool {
 
 
 		    var pModel: IModel = this;
-		    var fnCustomCallback: IColladaLoadCallback;
-		    var fnSuccess: IColladaLoadCallback;
-		    var fnCallback: IColladaLoadCallback;
+		    var fnSuccess: Function;
+		    var fnCallback: Function;
 
-		    fnCustomCallback = !isNull(pOptions) && !isNull(pOptions.callback)? pOptions.callback: null;
 
-		    fnCallback = function (pErr: Error, model: IModel) {
+		    fnCallback = function (): void {
 		        if (pModel.isResourceLoaded()) { 
 		        	pModel.setAlteredFlag(); 
 		        }
 		        
-		        fnSuccess(pErr, pModel);
+		        fnSuccess();
 		        
 		        if (!isNull(fnCustomCallback)) { 
-		        	fnCustomCallback(pErr, pModel); 
+		        	fnCustomCallback(pModel); 
 		        }
 		    };
 
-		    fnSuccess = function (pErr: Error, model: IModel) {
-		    	if (pErr) {
-		    		ERROR(pErr.message);
-		    	}
-
+		    fnSuccess = function (): void {
 		        if (pModel._notifyFileLoaded() == 0) {
 		            if (isNull(fnCustomCallback)) {
 		                pModel.notifyLoaded();
@@ -160,10 +163,20 @@ module akra.core.pool.resources {
 		    
 		    if (util.pathinfo(sFilename).ext.toLowerCase() === "dae") {
 
-		        pOptions = pOptions;
-		        pOptions.model = this;
+		    	io.fopen(sFilename).read(function(pErr: Error, sContent: string): void {
+	                if (pErr) {
+	                    ERROR("could not read collada file: " + sFilename);
+	                    return;
+	                }
 
-		        Model.collada.load(sFilename, fnCallback, pOptions);
+	                if (!collada.load(this, sContent, pOptions)) {
+	                    ERROR("cannot parse collada content");
+	                    return;
+	                }
+	                
+	                fnCallback(null);
+	            });
+
 		        return true;
 		    }
 
@@ -179,7 +192,8 @@ module akra.core.pool.resources {
 		    }
 			*/
 		    
-		    fnSuccess(null, this);
+		    fnSuccess();
+
 		    return false;
     	}
 
@@ -227,8 +241,6 @@ module akra.core.pool.resources {
     	inline _notifyFileLoaded(): uint { return (-- this._nFilesToBeLoaded); }
     	inline _notifyFileLoad(): uint { return (++ this._nFilesToBeLoaded); }
     	inline _totalFiles(): uint { return this._nFilesToBeLoaded; }
-
-		static collada: IColladaLoader = collada.createLoader();
 	}
 
 	

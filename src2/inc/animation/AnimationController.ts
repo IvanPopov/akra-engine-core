@@ -101,7 +101,7 @@ module akra.animation {
 			this._pAnimations[iAnimation] = pAnimation;
 		}
 
-		bind(pTarget: INode): void {
+		bind(pTarget: ISceneNode): void {
 			var pAnimations: IAnimationBase[] = this._pAnimations;
 
 		    for (var i: int = 0; i < pAnimations.length; ++ i) {
@@ -138,6 +138,11 @@ module akra.animation {
 			}
 		}
 	} 
+
+
+	export function createController(pEngine: IEngine, iOptions: int): IAnimationController {
+		return new AnimationController(pEngine, iOptions);
+	}
 }
 
 #endif

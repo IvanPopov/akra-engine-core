@@ -12,6 +12,12 @@ module akra.scene {
 	export class SceneModel extends SceneObject implements ISceneModel {
 		private _pMesh: IMesh;
 
+		constructor (pScene: IScene3d) {
+			super(pScene);
+
+			this.type = EEntityTypes.MODEL;
+		}
+
 		inline get mesh(): IMesh {
 			return this._pMesh;
 		}
@@ -62,7 +68,11 @@ module akra.scene {
 #endif
 		};
 
-	}	
+	}
+
+	export inline function isModel(pEntity: IEntity): bool {
+		return pEntity.type === EEntityTypes.MODEL;
+	}
 }
 
 #endif

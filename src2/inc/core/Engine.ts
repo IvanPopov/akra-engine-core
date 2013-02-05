@@ -18,6 +18,7 @@
 #include "model/Mesh.ts"
 #include "util/BufferMap.ts"
 #include "animation/AnimationController.ts"
+#include "model/Skeleton.ts"
 
 #ifdef WEBGL
 #include "webgl/WebGLRenderer.ts"
@@ -183,7 +184,7 @@ module akra.core {
 		}
 
 		inline createMesh(sName: string = null, eOptions: int = 0, pDataBuffer: IRenderDataCollection = null): IMesh {
-			return model.createMesh(this, eOptions, sName, pDataBuffer);
+			return model.createMesh(this, sName, eOptions, pDataBuffer);
 		}
 
 		inline createRenderDataCollection(iOptions: int = 0): IRenderDataCollection {
@@ -195,9 +196,8 @@ module akra.core {
 		}
 
 		inline createAnimationController(iOptions: int = 0): IAnimationController {
-			return animation.createAnimationController(this, iOptions);
+			return animation.createController(this, iOptions);
 		}
-
 
 		BEGIN_EVENT_TABLE(Engine);
 			BROADCAST(frameStarted, VOID);
