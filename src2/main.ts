@@ -12,10 +12,13 @@ module akra {
 	debug_assert(i == DL_DEFAULT, "invalid default list index");
 
 	var pObject: ISceneObject = new scene.SceneObject(pScene3D);
-	pObject.accessLocalBounds().set(-100,100,-100,100,-100,100);
+	pObject.accessLocalBounds().set(-100,0,-100,0,-100,0);
+	console.log('----local bounds----->',pObject.localBounds, pObject.worldBounds,'<----world bounds----');
 	pObject.attachToParent(pScene3D.getRootNode());
 
 	pScene3D.recursiveUpdate();
+	
+	console.log('----local bounds----->',pObject.localBounds, pObject.worldBounds,'<----world bounds----');
 	
 	// i = pScene3D.addDisplayList(new scene.LightGraph());
 	// debug_assert(i == DL_LIGHTING, "invalid lighting list index");

@@ -139,7 +139,6 @@ module akra.scene {
 		    var isLocalModified: bool = TEST_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewLocalMatrix);
 
 		    if (isOrientModified || isParentMoved || isLocalModified) {
-
 		        var m4fLocal: IMat4 = this._m4fLocalMatrix;
 		        var m4fWorld: IMat4 = this._m4fWorldMatrix;
 		        var m4fParent: IMat4 = (<Node>this._pParent).worldMatrix;
@@ -156,6 +155,7 @@ module akra.scene {
 		        m4fOrient.scaleLeft(this._v3fScale);
 		        m4fOrient.multiply(m4fLocal); 
 
+		        console.error(m4fOrient.toString());
 
 		        if (this._pParent) {
 		            if (this._eInheritance === ENodeInheritance.ALL) {

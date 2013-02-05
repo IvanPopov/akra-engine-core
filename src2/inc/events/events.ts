@@ -54,11 +54,10 @@
 	inline getEventTable(): IEventTable {return object._pEvenetTable; } 												\
 	inline getGuid(): uint {return this._iGuid; } 																		\
 	inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
-		console.log(pSender,this,sSlot);\
 		return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType);					\
 	}; 																													\
 	inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
-		return this.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType);					\
+		return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType);					\
 	}																													\
 	inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { 									\
 		return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType);							\
@@ -106,7 +105,7 @@ module akra.events {
 					return true;
 				}
 			}
-			debug_warning("cannot add destination for GUID <%s> with signal <%s>", iGuid, sSignal);
+			debug_warning("cannot remove destination for GUID <%s> with signal <%s>", iGuid, sSignal);
 			return false;
 		}
 

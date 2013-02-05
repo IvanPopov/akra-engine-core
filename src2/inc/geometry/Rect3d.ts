@@ -590,12 +590,14 @@ module akra.geometry {
 		};
 
 		transform(m4fMatrix: IMat4): IRect3d{
-			var a11: float = m4fMatrix[__11], a12: float = m4fMatrix[__12],
-				a13: float = m4fMatrix[__13], a14: float = m4fMatrix[__14];
-			var a21: float = m4fMatrix[__21], a22: float = m4fMatrix[__22],
-				a23: float = m4fMatrix[__23], a24: float = m4fMatrix[__24];
-			var a31: float = m4fMatrix[__31], a32: float = m4fMatrix[__32],
-				a33: float = m4fMatrix[__33], a34: float = m4fMatrix[__34];
+			var pData: Float32Array = m4fMatrix.data;
+
+			var a11: float = pData[__11], a12: float = pData[__12],
+				a13: float = pData[__13], a14: float = pData[__14];
+			var a21: float = pData[__21], a22: float = pData[__22],
+				a23: float = pData[__23], a24: float = pData[__24];
+			var a31: float = pData[__31], a32: float = pData[__32],
+				a33: float = pData[__33], a34: float = pData[__34];
 
 			var fX0: float = this.x0, fX1: float = this.x1;
 			var fY0: float = this.y0, fY1: float = this.y1;

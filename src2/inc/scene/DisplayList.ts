@@ -12,8 +12,6 @@ module akra.scene {
 		inline set name(sName: string) { this._sName = sName; }
 
 		_onNodeAttachment(pScene: IScene3d, pNode: ISceneNode): void {
-			console.error("in node attachment");
-			console.log(SceneObject.isSceneObject(pNode));
 			if (SceneObject.isSceneObject(pNode)) {
 				this.attachObject(<ISceneObject>pNode);
 			}

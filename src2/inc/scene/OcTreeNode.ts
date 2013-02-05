@@ -80,9 +80,9 @@ module akra.scene {
 		BEGIN_EVENT_TABLE(OcTreeNode);
 
 		objectMoved(pObject: ISceneObject){
-
+			console.warn('object moving');
 			var pNode: IOcTreeNode = this.tree.findTreeNode(pObject);
-
+			console.error('-----before------>', this, pNode,'<-------arter------');
 			if(pNode !== this){
 				this.removeMember(pObject);
 				pNode.addMember(pObject);
@@ -101,7 +101,7 @@ module akra.scene {
 		constructor(pTree: IOcTree){
 			super(pTree);
 
-			var iTmp: int = (1 << this.tree.depth) - 1;
+			var iTmp: int = (1 << this.tree.depth);
 
 			this._pBasicWorldBounds = new geometry.Rect3d(0, iTmp, 0, iTmp, 0, iTmp);
 		    this._pBasicWorldBounds.divSelf(this.tree.worldScale);

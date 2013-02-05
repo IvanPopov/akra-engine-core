@@ -262,7 +262,8 @@ module akra.util {
 
 		inline private find(n: uint): IObjectListItem{
 			if (n < this._iLength) {
-				return this.seek(n)._pCurrent;
+				this.seek(n);
+				return this._pCurrent;
 			}
 
 			return null;

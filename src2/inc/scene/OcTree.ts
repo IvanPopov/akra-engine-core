@@ -13,7 +13,7 @@
 
 module akra.scene {
 	export enum EOcTreeConstants {
-	    k_MinimumTreeDepth = 1,
+	    k_MinimumTreeDepth = 0,
 	    k_MaximumTreeDepth = 10
     };
 
@@ -62,11 +62,11 @@ module akra.scene {
 		/**
 		 * Create
 		 */
-		create(pWorldBoundingBox: IRect3d, iDepth: int, nNode?: uint): void {
+		create(pWorldBoundingBox: IRect3d, iDepth: int, nNodes: uint = 64): void {
 
 		    var v3fTemp: IVec3 = vec3();
 		    var i: int = 0;
-		    var nodes: uint;
+		    
 		    
 		    debug_assert(!this.isReady(), "the Oc tree has already been created");
 		    debug_assert(iDepth >= EOcTreeConstants.k_MinimumTreeDepth 
@@ -102,9 +102,7 @@ module akra.scene {
 
 		    this._pFreeNodePool = new Array();
 
-		    nodes = (arguments.length == 3) ? nNode : 64;
-
-		    for (i = 0; i < nodes; ++i) {
+		    for (i = 0; i < nNodes; ++i) {
 		        this._pFreeNodePool.push(new OcTreeNode(this));
 		    }
 		}
@@ -141,10 +139,10 @@ module akra.scene {
 		    iY0 *= v3fWorldScale.y; iY1 *= v3fWorldScale.y;
 		    iZ0 *= v3fWorldScale.z; iZ1 *= v3fWorldScale.z;
 
-		    //floor it
-		    iX0 = iX0 << 0; iX1 = iX1 << 0;
-		    iY0 = iY0 << 0; iY1 = iY1 << 0;
-		    iZ0 = iZ0 << 0; iZ1 = iZ1 << 0;
+		    //round it
+		    iX0 = math.floor(iX0); iX1 = math.ceil(iX1);
+		    iY0 = math.floor(iY0); iY1 = math.ceil(iY1);
+		    iZ0 = math.floor(iZ0); iZ1 = math.ceil(iZ1);
 
 		    iX1 = (iX1 === iX0) ? iX0 + 1 : iX1;
 		    iY1 = (iY1 === iY0) ? iY0 + 1 : iY1;
@@ -161,6 +159,8 @@ module akra.scene {
 		    //iY1 = math.clamp(iY1, iY0 + 1, iMax2);
 		    //iZ1 = math.clamp(iZ1, iZ0 + 1, iMax2);
 
+		    console.error('zzzzzz', iX0, iX1, iY0, iY1, iZ0, iZ1);
+
 		    var pNode: IOcTreeNode = this.findTreeNodeByRect(iX0, iX1, iY0, iY1, iZ0, iZ1);
 
 		    return pNode;
@@ -171,7 +171,7 @@ module akra.scene {
 		 */
 		findTreeNodeByRect(iX0: int, iX1: int, iY0: int, iY1: int, iZ0: int, iZ1: int): IOcTreeNode {
 
-			var nMax: int = (1 << this._iDepth) - 1;
+			var nMax: int = (1 << this._iDepth);
 
 			if(iX0 < 0 || iX1 > nMax || iY0 < 0 || iY1 > nMax
 				|| iZ0 < 0 || iZ1 > nMax){
@@ -190,12 +190,29 @@ module akra.scene {
 
 		    var iPattern: int = math.max(iXPattern, math.max(iYPattern, iZPattern));
 
-		    iLevel = (iPattern != 0) ? iDepth - math.highestBitSet(iPattern) - 1 : 0;
+		    console.error(iXPattern, iYPattern, iZPattern)
+
+		    // iLevel = (iPattern != 0) ? iDepth - math.highestBitSet(iPattern) : 0;
+
+		    // console.warn(iLevel);
+		    ///////////////////////////
+		    iLevel = this._findNodeLevel(iX0, iX1, iY0, iY1, iZ0, iZ1);
+
+		    console.warn(iLevel);
+		    ///////////////////////////
+
+		    if(iLevel == 0){
+		    	return this._pHead;
+		    }
 
 		    var iComposedIndex: int;
 		    iComposedIndex = (iX0 >> (iDepth - iLevel)) << (2*iDepth + iLevel);
+		    console.log(iComposedIndex);
 		    iComposedIndex += (iY0 >> (iDepth - iLevel)) << (iDepth + iLevel);
+		    console.log(iComposedIndex);
 		    iComposedIndex += (iZ0 >> (iDepth - iLevel)) << (iLevel);
+
+		    console.log(iComposedIndex, iX0, iY0, iZ0);
 
 			var iWay: int;
 
@@ -268,6 +285,47 @@ module akra.scene {
 			}
 
 			return pNode;
+		};
+
+		private _findNodeLevel(iX0: int, iX1: int, iY0: int, iY1: int, iZ0: int, iZ1: int): int{
+			var iLengthX: int = iX1 - iX0;
+			var iLengthY: int = iY1 - iY0;
+			var iLengthZ: int = iZ1 - iZ0;
+
+			var iLength: int = math.max(iLengthX, math.max(iLengthY, iLengthZ));
+			//maximum possible level
+			var iLevel: int = this._iDepth - math.floor(math.log(iLength) / math.LN2);
+
+			while(iLevel > 0){
+				var iPitch: int = 1 << (this._iDepth - iLevel);
+				var iTest1: int, iTest2: int;
+
+				//first test for x then for y and z
+
+				var i;
+				for(i=0; i<3; i++){
+					iTest1 = math.floor(arguments[2*i] / iPitch);
+					iTest2 = math.floor(arguments[2*i + 1] / iPitch);
+
+					if(iTest1 != iTest2){
+						if((iTest1 + 1) == iTest2){
+							if((iX1%iPitch) != 0){
+								break;
+							}
+						}
+						else{
+							break;
+						}
+					}
+				}
+				if(i!=3){
+					iLevel--;
+				}
+				else{
+					break;
+				}
+			}
+			return iLevel;
 		};
 
 		/**
@@ -473,7 +531,6 @@ module akra.scene {
 		};
 
 		protected attachObject(pObject: ISceneObject): void {
-			console.error("we are here");
 			var pNode: IOcTreeNode = this.findTreeNode(pObject);
 			console.log(pNode);
 			pNode.addMember(pObject);
