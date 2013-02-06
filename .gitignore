@@ -31,7 +31,7 @@ compiled/*.js
 build/build.bat
 
 #src/node_modules/
-
+node_modules/
 
 #visual
 #*.config
