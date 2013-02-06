@@ -82,6 +82,7 @@ module akra {
         getPrimitiveCount(): uint;
         getAdvancedIndexData(sSemantics: string): IVertexData;
         
+        index(sData: string, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
         index(iData: int, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
 
         

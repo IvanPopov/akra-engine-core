@@ -3,6 +3,7 @@
 
 #include "IEventTable.ts"
 #include "IEventProvider.ts"
+#include "common.ts"
 
 #define EMIT_UNICAST(event, call) \
 	var _recivier: any = this; \

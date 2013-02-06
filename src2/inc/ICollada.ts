@@ -63,8 +63,16 @@ module akra {
         id?: string;
     }
 
-    export interface IColladaLibrary extends IColladaEntry {
+    export interface IColladaEntryMap {
+        [id: string]: IColladaEntry;
+    }
 
+    export interface IColladaLibrary extends IColladaEntry {
+        [element: string]: IColladaEntryMap;
+    }
+
+    export interface IColladaEffectLibrary extends IColladaLibrary {
+        effects: { [id: string]: IColladaEffect; };
     }
 
     export interface IColladaEntryLoader {
@@ -226,6 +234,8 @@ module akra {
         inputs: IColladaInput[];
         p: uint[];
         material: string;
+
+        type?: EPrimitiveTypes;
     }
 
     export interface IColladaMesh extends IColladaEntry {
@@ -313,12 +323,28 @@ module akra {
         effect: IColladaEffect;
     }
 
-    export interface IColladaPhong extends IColladaEntry, IMaterial {
-        // diffuse: IColorValue;
-        // specular: IColorValue;
-        // ambient: IColorValue;
-        // emissive: IColorValue;
-        // shininess: float;
+
+    export interface IColladaPhong extends IColladaEntry {
+        diffuse: IColorValue;
+        specular: IColorValue;
+        ambient: IColorValue;
+        emission: IColorValue;
+        shininess: float;
+        
+        reflective: IColorValue;
+        reflectivity: float;
+        transparent: IColorValue;
+        transparency: float;
+
+        indexOfRefraction: float;
+
+        //------------------
+        textures?: {
+            diffuse: IColladaTexture;
+            specular: IColladaTexture;
+            ambient: IColladaTexture;
+            emission: IColladaTexture;
+        }
     }
 
     export interface IColladaEffectTechnique extends IColladaEntry {

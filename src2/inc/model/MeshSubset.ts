@@ -237,14 +237,18 @@ module akra.model {
 		    return false;
 		}
 
+		getFlexMaterial(csName: string): IMaterial;
+		getFlexMaterial(iMaterial: int): IMaterial;
 		getFlexMaterial(iMaterial): IMaterial {
-		    return this._pMesh.getFlexMaterial(iMaterial);
+		    return this._pMesh.getFlexMaterial(<int>iMaterial);
 		}
 
 		hasFlexMaterial (): bool {
 		    return this._pRenderData.hasSemantics(DeclUsages.MATERIAL);
 		}
 
+		setFlexMaterial (iMaterial: int): bool;
+		setFlexMaterial (csName: string): bool;
 		setFlexMaterial (iMaterial): bool {
 		    var pRenderData: IRenderData = this._pRenderData;
 		    var pIndexData: IBufferData = pRenderData.getIndices();

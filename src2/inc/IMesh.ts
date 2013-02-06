@@ -50,13 +50,14 @@ module akra {
         replaceFlexMaterials(pFlexMaterials): void;
         /** @deprecated */
         getFlexMaterial(iMaterial: uint): IMaterial;
-        getFlexMaterial(sName: string): IMaterial;
+        getFlexMaterial(csName: string): IMaterial;
         /** @deprecated */
         addFlexMaterial(sName: string, pMaterial?: IMaterial): bool;
         /** @deprecated */
         setFlexMaterial(iMaterial: int): bool;
+        setFlexMaterial(csName: string): bool;
         
-        createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions: int);
+        createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions?: int);
         freeSubset(sName: string): bool;
         getSubset(sMesh: string): IMeshSubset;
         getSubset(i: uint): IMeshSubset;

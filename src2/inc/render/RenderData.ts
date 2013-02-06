@@ -324,10 +324,13 @@ module akra.render {
         /**
          * Setup index.
          */
-        index(iData: int, sSemantics: string, useSame?: bool, iBeginWith?: int): bool {
+        index(sData: string, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
+        index(iData: int, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
+        index(data: any, sSemantics: string, useSame?: bool, iBeginWith?: int): bool {
         	iBeginWith = iBeginWith || 0;
         	useSame = useSame || false;
 
+            var iData: int = <int>arguments[0];
         	var iFlow: int = -1;
         	var iAddition: int, iRealAddition: int, iPrevAddition: int;
         	var pFlow: IDataFlow;
@@ -340,7 +343,7 @@ module akra.render {
         	var iTypeSize: int = EDataTypeSizes.BYTES_PER_FLOAT;
 
         	if (this.useAdvancedIndex()) {
-        	    pRealData = this._getData(iData);
+        	    pRealData = this._getData(<string>arguments[0]);
         	    iAddition = pRealData.byteLength;
         	    iStride = pRealData.stride;
         	    //индекс, который подал юзер
@@ -361,7 +364,7 @@ module akra.render {
         	        iData = this.getDataLocation("TEXCOORD0");
         	    }
         	    else {
-        	    	iData = this.getDataLocation(iData);
+        	    	iData = this.getDataLocation(<string>arguments[0]);
         		}
 
         	    debug_assert(iData >= 0, "cannot find data with semantics: " + arguments[0]);

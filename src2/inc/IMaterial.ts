@@ -13,8 +13,8 @@ module akra {
 	export interface IMaterial extends IMaterialBase {
 		name: string;
 
-		set(pMat: IMaterial): IMaterial;
-		isEqual(pMat: IMaterial): bool;
+		set(pMat: IMaterialBase): IMaterial;
+		isEqual(pMat: IMaterialBase): bool;
 	}
 
 	// export interface IMaterialEx extends IMaterial {

@@ -577,7 +577,7 @@ module akra.util {
         pArgs.unshift("Code: " + pLogEntity.code.toString());
         pArgs.unshift(sourceLocationToString(pLogEntity.location));
         
-        console["warning"].apply(console, pArgs);    
+        console["warn"].apply(console, pArgs);    
     }
 
     function errorRoutine(pLogEntity: ILoggerEntity): void{

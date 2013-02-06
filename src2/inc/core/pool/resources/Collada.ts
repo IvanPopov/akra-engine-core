@@ -239,7 +239,7 @@ module akra.core.pool.resources {
 
         // materials & meshes
         
-        private buildMaterials(pMesh: IMesh, pMeshNode: IColladaNode): IMesh;
+        private buildMaterials(pMesh: IMesh, pGeometryInstance: IColladaInstanceGeometry): IMesh;
         private buildSkeleton(pSkeletonsList: string[]): ISkeleton;
         private buildMesh(pGeometryInstance: IColladaInstanceGeometry): IMesh;
         private buildSkinMesh(pControllerInstance: IColladaInstanceController): IMesh;
@@ -268,11 +268,17 @@ module akra.core.pool.resources {
         private setXMLRoot(pXML: Node): void;
         private getXMLRoot(): Node;
 
+        private findMesh(sName: string): IMesh;
+        private addMesh(pMesh: IMesh): void;
+
+        private sharedBuffer(pBuffer?: IRenderDataCollection): IRenderDataCollection;
+
         private isJointsVisualizationNeeded(): bool;
         private isVisualSceneLoaded(): bool;
         private isSceneNeeded(): bool;
         private isAnimationNeeded(): bool;
         private isPoseExtractionNeeded(): bool;
+        private isWireframeEnabled(): bool;
         private getSkeletonsOutput(): ISkeleton[];
         private getVisualScene(): IColladaVisualScene;
         private getAsset(): IColladaAsset;
@@ -331,6 +337,32 @@ module akra.core.pool.resources {
 
         }
 
+        private COLLADALibrary(pXML: Node, pTemplate: IColladaLibraryTemplate): IColladaLibrary {
+            if (isNull(pXML)) {
+                return null;
+            }
+
+            var pLib: IColladaLibrary = <IColladaLibrary>{};
+            var pData: IColladaEntry;
+
+            pLib[sTag] = {};
+
+            eachChild(pXML, function (pXMLData: Node, sName: string): void {
+                if (sTag !== sName) {
+                    return;
+                }
+
+                pData = (<IColladaEntryLoader>((<any>this)[pTemplate.loader]))(pXMLData);
+
+                if (isNull(pData)) {
+                    return;
+                }
+
+                pLib[sTag][attr(pXMLData, 'id')] = pData;
+            });
+
+            return pLib;
+        }
 
          // common
         
@@ -352,13 +384,229 @@ module akra.core.pool.resources {
             return pNode;   
         }
 
+
         // materials & meshes
         
-        // private buildMaterials(pMesh: IMesh, pMeshNode: IColladaNode): IMesh;
-        // private buildSkeleton(pSkeletonsList: string[]): ISkeleton;
-        // private buildMesh(pGeometryInstance: IColladaInstanceGeometry): IMesh {
+        private buildMaterials(pMesh: IMesh, pGeometryInstance: IColladaInstanceGeometry): IMesh {
+            var pMaterials: IColladaBindMaterial = pGeometryInstance.material;
+            var pEffects: IColladaEffectEffect = <IColladaEffectEffect>this.getLibrary("library_effects");
 
-        // }
+            if (isNull(pEffects)) {
+                return pMesh;
+            }
+
+            for (var sMaterial in pMaterials) {
+                var pMaterialInst: IColladaInstanceMaterial = pMaterials[sMaterial];
+                var pInputs: IColladaBindVertexInput = pMaterialInst.vertexInput;
+                // URL --> ID (#somebody ==> somebody)
+                var sEffectId: string = pMaterialInst.sUrl.substr(1);
+                var pEffect: IColladaEffect = pEffects.effect[sEffectId];
+                var pPhongMaterial: IColladaPhong = <IColladaPhong>pEffect.profileCommon.technique.value;
+                var pMaterial: IMaterial = material.create(sEffectId)
+
+                pMaterial.set(<IMaterialBase>pPhongMaterial);
+
+                for (var j: int = 0; j < pMesh.length; ++j) {
+                    var pSubMesh: IMeshSubset = pMesh[j];
+
+                    //if (pSubMesh.surfaceMaterial.findResourceName() === sMaterial) {
+                    if (pSubMesh.material.name === sMaterial) {
+                        //setup materials
+                        pSubMesh.material.set(pMaterial);
+                        //FIXME: remove flex material setup(needs only demo with flexmats..)
+                        // pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
+                        if (!pSubMesh.renderMethod.effect.isResourceLoaded()) {
+                            pSubMesh.renderMethod.effect.create();
+                        }
+
+                        pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
+                        pSubMesh.renderMethod.effect.addComponent("akra.system.prepareForDeferredShading");
+
+                        //setup textures
+                        for (var c in pMaterial.pTextures) {
+                            var pTextureObject = pMaterial.pTextures[c];
+                            var pInput = pInputs[pTextureObject.sParam];
+
+                            if (!pInput) {
+                                continue;
+                            }
+
+                            var sInputSemantics = pInputs[pTextureObject.sParam].sInputSemantic;
+                            var pColladaImage = pTextureObject.pTexture;
+                            var pSurfaceMaterial = pSubMesh.surfaceMaterial;
+
+                            var pTexture = pEngine.displayManager().texturePool().loadResource(
+                                pColladaImage.pImage.sImagePath);
+
+                            var pMatches = sInputSemantics.match(/^(.*?\w)(\d+)$/i);
+                            var iTexCoord = (pMatches ? pMatches[2] : 0);
+                            var iTexture = __ENUM__(SURFACEMATERIAL_TEXTURES)[c.toUpperCase()];
+
+                            if (iTexture === undefined) {
+                                continue;
+                            }
+
+                            pSurfaceMaterial.setTexture(iTexture, pTexture, iTexCoord);
+                        }
+                    }
+                }
+                //trace('try to apply mat:', pMaterial);
+            }
+
+            return pMesh;
+        }
+        
+        
+        private buildSkeleton(pSkeletonsList: string[]): ISkeleton {
+            var pSkeleton: ISkeleton = null;
+
+            pSkeleton = model.createSkeleton(pSkeletonsList[0]);
+
+            for (var i: int = 0; i < pSkeletonsList.length; ++i) {
+                var pJoint: IJoint = <IJoint>(<IColladaNode>this.source(pSkeletonsList[i])).constructedNode;
+
+                ERROR(scene.isJoint(pJoint), "skeleton node must be joint");
+
+                pSkeleton.addRootJoint(pJoint);
+            }
+
+            return pSkeleton;
+        }
+
+        private buildMesh(pGeometryInstance: IColladaInstanceGeometry): IMesh {
+            var pMesh: IMesh = null;
+            var pGeometry: IColladaGeometrie = pGeometryInstance.geometry;
+            var pNodeData: IColladaMesh = pGeometry.mesh;
+            var sMeshName: string = pGeometry.id;
+
+            if (isNull(pNodeData)) {
+                return null;
+            }
+
+            if ((pMesh = this.findMesh(sMeshName))) {
+                //mesh with same geometry data
+                return this.buildMaterials(
+                    pMesh.clone(EMeshCloneOptions.GEOMETRY_ONLY | EMeshCloneOptions.SHARED_GEOMETRY),
+                    pGeometryInstance);
+            }
+
+            var iBegin: int = now();
+
+            pMesh = this.getEngine().createMesh(
+                sMeshName,
+                <int>(EMeshOptions.HB_READABLE), /*|EMeshOptions.RD_ADVANCED_INDEX,  //0,//*/
+                this.sharedBuffer());    /*shared buffer, if supported*/
+
+            var pPolyGroup: IColladaPolygons[] = pNodeData.polygons;
+            var pMeshData: IRenderDataCollection = pMesh.data;
+
+            //creating subsets
+            for (var i: int = 0; i < pPolyGroup.length; ++i) {
+                pMesh.createSubset(
+                    "submesh-" + i, 
+                    this.isWireframeEnabled() ? EPrimitiveTypes.LINELIST : pPolyGroup[i].type);  /*EPrimitiveTypes.POINTLIST);*/
+            }
+
+            //filling data
+            for (var i: int = 0, pUsedSemantics: BoolMap = <BoolMap>{}; i < pPolyGroup.length; ++i) {
+                var pPolygons: IColladaPolygons = pPolyGroup[i];
+
+                for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
+                    var pInput: IColladaInput = pPolygons.inputs[j];
+                    var sSemantic: string = pInput.semantics;
+                    var pData: ArrayBufferView = <ArrayBufferView><any>pInput.array;
+                    var pDecl: IVertexElementInterface[];
+                    var pDataExt: Float32Array;
+
+                    //if (pMesh.buffer.getDataLocation(sSemantic) < 0) {
+                    if (!pUsedSemantics[sSemantic]) {
+                        pUsedSemantics[sSemantic] = true;
+
+                        switch (sSemantic) {
+                            case DeclUsages.POSITION:
+                            case DeclUsages.NORMAL:
+                                /*
+                                 Extend POSITION and NORMAL from {x,y,z} --> {x,y,z,w};
+                                 */
+
+                                pDataExt = new Float32Array((<Float32Array>pData).length / 3 * 4);
+
+                                for (var y = 0, n = 0,  m = 0, l = (<Float32Array>pData).length / 3; y < l; y++, n++) {
+                                    pDataExt[n++] = pData[m++];
+                                    pDataExt[n++] = pData[m++];
+                                    pDataExt[n++] = pData[m++];
+                                }
+
+                                pData = pDataExt;
+                                pDecl = [VE_FLOAT3(sSemantic), VE_END(16)];
+
+                                break;
+                            case DeclUsages.TEXCOORD:
+                            case DeclUsages.TEXCOORD1:
+                            case DeclUsages.TEXCOORD2:
+                            case DeclUsages.TEXCOORD3:
+                            case DeclUsages.TEXCOORD4:
+                            case DeclUsages.TEXCOORD5:
+                                //avoiding semantics collisions
+                                if(sSemantic === "TEXCOORD"){
+                                    sSemantic = "TEXCOORD0";
+                                }
+
+                                pDecl = [VE_CUSTOM(sSemantic, EDataTypes.FLOAT, pInput.accessor.stride)];
+                                break;
+                            default:
+                                ERROR("unsupported semantics used: " + sSemantic);
+                        }
+
+                        pMeshData.allocateData(pDecl, pData);
+                    }
+                }
+            }
+
+            //add indices to data
+            for (var i: int = 0; i < pPolyGroup.length; ++i) {
+                var pPolygons: IColladaPolygons = pPolyGroup[i];
+                var pSubMesh: IMeshSubset = pMesh.getSubset(i);
+                var pSubMeshData: IRenderData = pSubMesh.data;
+                var pDecl: IVertexElementInterface[] = new Array(pPolygons.inputs.length);
+                var iIndex: int = 0;
+                var pSurfaceMaterial: ISurfaceMaterial = null;
+                var pSurfacePool: IResourcePool = null;
+
+                for (var j: int = 0; j < pPolygons.inputs.length; ++j) {
+                    pDecl[j] = VE_FLOAT(DeclUsages.INDEX + (iIndex++));
+                }
+
+                pSubMeshData.allocateIndex(pDecl, new Float32Array(pPolygons.p));
+
+                for (var j: int = 0; j < pDecl.length; ++j) {
+                    var sSemantic: string = pPolygons.inputs[j].semantics;
+
+                    pSubMeshData.index(sSemantic, pDecl[j].usage);
+                }
+
+                // if (!pSubMesh.material) {
+                //     pSurfacePool = pEngine.getResourceManager().surfaceMaterialPool;
+                //     pSurfaceMaterial = pSurfacePool.findResource(pPolygons.material);
+
+                //     if (!pSurfaceMaterial) {
+                //         pSurfaceMaterial = pSurfacePool.createResource(pPolygons.material);
+                //     }
+
+                //     pSubMesh.surfaceMaterial = pSurfaceMaterial;
+                // }
+                
+                pSubMesh.material.name = pPolygons.material;
+            }
+
+            pMesh.addFlexMaterial("default");
+            pMesh.setFlexMaterial("default");
+
+            //adding all data to cahce data
+            this.addMesh(pMesh);
+
+            return this.buildMaterials(pMesh, pGeometryInstance);
+        }
 
         private buildSkinMesh(pControllerInstance: IColladaInstanceController): IMesh {
             var pController: IColladaController = pControllerInstance.controller;
@@ -668,6 +916,15 @@ module akra.core.pool.resources {
             return this._pXMLRoot;
         }
 
+        private findMesh(sName: string): IMesh {
+            return this._pCache.meshMap[sName] || null;
+        }
+
+        private addMesh(pMesh: IMesh): void {
+            this._pCache.meshMap[pMesh.name] = pMesh;
+            this.sharedBuffer(pMesh.data);
+        }
+
         private inline isJointsVisualizationNeeded(): bool {
             return this._pOptions.drawJoints === true;
         }
@@ -686,6 +943,10 @@ module akra.core.pool.resources {
 
         private inline isPoseExtractionNeeded(): bool {
             return this._pOptions.extractPoses === true;
+        }
+
+        private inline isWireframeEnabled(): bool {
+            return this._pOptions.wireframe === true;
         }
 
         private inline getSkeletonsOutput(): ISkeleton[] {

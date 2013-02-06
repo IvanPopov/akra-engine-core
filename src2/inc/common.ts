@@ -141,7 +141,7 @@ module akra {
 
     /** @inline */
     export var isNull = (x: any): bool =>  x === null;
-
+    
     /** @inline */
     export var isBoolean = (x: any): bool => typeof x === "boolean";
 

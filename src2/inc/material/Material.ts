@@ -14,13 +14,15 @@ module akra.material {
 		emissive: IColor = new Color(.5);
 		shininess: float = 50.;
 
-		constructor (pMat?: IMaterial) {
+		constructor (sName: string = null, pMat?: IMaterial) {
+			this.name = sName;
+
 			if (isDefAndNotNull(pMat)) {
 				this.set(pMat);
 			}
 		}
 
-		set(pMat: IMaterial): IMaterial {
+		set(pMat: IMaterialBase): IMaterial {
 			//this.name = pMat.name;
 
 			this.diffuse.set(pMat.diffuse);
@@ -32,7 +34,7 @@ module akra.material {
 			return this;
 		}
 
-		isEqual(pMat: IMaterial): bool {
+		isEqual(pMat: IMaterialBase): bool {
 			return Color.isEqual(this.diffuse, pMat.diffuse) && 
 			Color.isEqual(this.ambient, pMat.ambient) && 
 			Color.isEqual(this.specular, pMat.specular) && 
@@ -41,7 +43,7 @@ module akra.material {
 		}
 	}
 
-	export class FlexMaterial implements IMaterial {
+	class FlexMaterial implements IMaterial {
 		name: string = null;
 
 		protected _pData: IVertexData;
@@ -98,6 +100,14 @@ module akra.material {
         ]);
 
 	export const DEFAULT: IMaterial = new Material;
+
+	export function create(sName: string = null, pMat: IMaterial = null): IMaterial {
+		return new Material(sName, pMat);
+	}
+
+	export function _createFlex(sName: string, pData: IVertexData): IMaterial {
+		return new FlexMaterial(sName. pMat);
+	}
 }
 
 module akra {

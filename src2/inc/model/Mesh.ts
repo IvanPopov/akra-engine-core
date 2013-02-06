@@ -141,7 +141,7 @@ module akra.model {
             return true;
         }
 
-        createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions: int): IMeshSubset {
+        createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions: int = 0): IMeshSubset {
             var pData: IRenderData;
             //TODO: modify options and create options for data dactory.
             pData = this._pBuffer.getEmptyRenderData(ePrimType, eOptions);
@@ -218,13 +218,13 @@ module akra.model {
             }
 
             pMaterialId = this._pFlexMaterials.length;
-            pMaterial = new material.FlexMaterial(
+            pMaterial = material._createFlex(
                 sName, 
                 this._pBuffer._allocateData(material.VERTEX_DECL, null)
             );
 
             if (!pMaterialData) {
-                pMaterialData = new Material(material.DEFAULT)
+                pMaterialData = material.create(material.DEFAULT)
             }
 
             pMaterial.set(pMaterialData);   
@@ -233,10 +233,12 @@ module akra.model {
             return true;
         }
 
-        setFlexMaterial(iMaterial: int): bool {
+        setFlexMaterial(iMaterial: int): bool;
+        setFlexMaterial(csName: string): bool;
+        setFlexMaterial(iMaterial): bool {
             var bResult: bool = true;
             for (var i: int = 0; i < this.length; ++ i) {
-                if (!this._pSubMeshes[i].setFlexMaterial(iMaterial)) {
+                if (!this._pSubMeshes[i].setFlexMaterial(<int>iMaterial)) {
                     WARNING("cannot set material<" + iMaterial + "> for mesh<" + this.name + 
                         "> subset<" + this._pSubMeshes[i].name + ">");
                     bResult = false;
@@ -286,7 +288,7 @@ module akra.model {
             var pSubMesh: IMeshSubset;
 
             if (iCloneOptions & EMeshCloneOptions.SHARED_GEOMETRY) {
-                pClone = new Mesh(this.getEngine(), this.getOptions(), this.name, this.data);
+                pClone = this.getEngine().createMesh(this.name, this.getOptions(), this.data);
                 
                 for (var i = 0; i < this.length; ++ i) {
                     pRenderData = this._pSubMeshes[i].data;
