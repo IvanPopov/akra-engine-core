@@ -57,6 +57,7 @@ module akra.fx {
     #define EFFECT_BAD_SYSTEM_FUNCTION_RETURN_TYPE 2249
     #define EFFECT_BAD_TYPE_NAME_NOT_TYPE 2250
     #define EFFECT_BAD_TYPE_VECTOR_MATRIX 2251
+    #define EFFECT_BAD_TECHNIQUE_REDEFINE_NAME 2252
 
     akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, 
     						 "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
@@ -200,6 +201,9 @@ module akra.fx {
     akra.logger.registerCode(EFFECT_BAD_TYPE_VECTOR_MATRIX,
                              "Bad type. We don`t support vector and matrix typename.\
                               In line: {line}. In column: {column}"); 
+    akra.logger.registerCode(EFFECT_BAD_TECHNIQUE_REDEFINE_NAME,
+                             "Bad technique name '{techName}'. Effect already have technique with that name.\
+                              In line: {line}. In column: {column}"); 
 
 
     function sourceLocationToString(pLocation: ISourceLocation): string {
@@ -229,6 +233,7 @@ module akra.fx {
     export interface IEffectErrorInfo{
     	
     	typeName?: string;
+        techName?: string;
    		exprName?: string;
    		varName?: string;
    		operator?: string;

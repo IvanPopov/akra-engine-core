@@ -4,6 +4,7 @@
 #include "IAFXInstruction.ts"
 #include "fx/EffectErrors.ts"
 #include "fx/EffectUtil.ts"
+#include "IParser.ts"
 
 module akra.fx {
     export interface IdExprMap {
@@ -1000,6 +1001,9 @@ module akra.fx {
 		private _pFunctionDefenition: FunctionDefInstruction = null;
 		private _pImplementation: StmtBlockInstruction = null;
 		private _eFunctionType: EFunctionType = EFunctionType.k_Function;
+		private _pParseNode: IParseNode = null;
+		private _iScope: uint = 0;
+		private _eUsedAsShader: EFunctionType = EFunctionType.k_Function;
 
 		constructor() { 
 			super();
@@ -1024,11 +1028,27 @@ module akra.fx {
 		}
 		
 		inline hasImplementation(): bool {
-			return !isNull(this._pImplementation);
+			return !isNull(this._pImplementation) || !isNull(this._pParseNode);
 		}
 
 		inline getReturnType(): IAFXTypeInstruction {
 			return this._pFunctionDefenition.getReturnType();
+		}
+
+		inline setParseNode(pNode: IParseNode): void {
+			this._pParseNode = pNode;
+		}
+
+		inline setScope(iScope: uint): void {
+			this._iScope = iScope;
+		}
+
+		inline getParseNode(): IParseNode {
+			return this._pParseNode;
+		}
+
+		inline getScope(): uint {
+			return this._iScope;
 		}
 
 		setFunctionDef(pFunctionDef: IAFXDeclInstruction): void {
@@ -1043,10 +1063,16 @@ module akra.fx {
 			this._pInstructionList[1] = pImplementation;
 			pImplementation.setParent(pImplementation);
 			this._nInstuctions = 2;
+
+			this._pParseNode = null;
 		}
 
 		clone(pRelationMap?: InstructionMap = <InstructionMap>{}): IAFXFunctionDeclInstruction {
 			return <IAFXFunctionDeclInstruction>super.clone(pRelationMap);
+		}
+
+		_usedAsShader(eUsedType: EFunctionType): void {
+			this._eUsedAsShader = EFunctionType.k_Vertex;
 		}
 		
 		// cloneTo(eConvertTo: EFunctionType): ShaderFunctionInstruction {
@@ -1134,6 +1160,10 @@ module akra.fx {
 		}
 
 		setImplementation(pImplementation: IAFXStmtInstruction): void {
+		}
+
+		_usedAsShader(eUsedType: EFunctionType): void {
+			return;
 		}
 
 	}
@@ -1530,6 +1560,10 @@ module akra.fx {
 			super();
 			this._pInstructionList = [null];
 			this._eInstructionType = EAFXInstructionTypes.k_CompileExprInstruction;
+		}
+
+		inline getFunction(): IAFXFunctionDeclInstruction {
+			return <IAFXFunctionDeclInstruction>this._pInstructionList[0].getParent();
 		}	
 	}
 
@@ -1666,13 +1700,56 @@ module akra.fx {
 	 * Represent empty statement only semicolon ;
 	 * ;
 	 */
-	 export class SemicolonStmtInstruction extends StmtInstruction {
+	export class SemicolonStmtInstruction extends StmtInstruction {
 	 	constructor() {
 	 		super();
 	 		this._pInstructionList = [];
 	 		this._eInstructionType = EAFXInstructionTypes.k_SemicolonStmtInstruction;
 	 	}
-	 }
+	}
+
+	export class TechniqueInstruction extends DeclInstruction implements IAFXTechniqueInstruction {
+		private _sName: string = "";
+		private _hasComplexName: bool = false;
+		private _pParseNode: IParseNode = null;
+		private _pSharedVariableList: IAFXVariableDeclInstruction[] = null;
+
+		constructor() {
+			super();
+			this._pInstructionList = null;
+			this._eInstructionType = EAFXInstructionTypes.k_TechniqueInstruction;
+			this._pSharedVariableList = [];
+		}
+
+		setName(sName: string, isComplexName: bool): void {
+			this._sName = sName;
+			this._hasComplexName = isComplexName;
+		}
+
+		getName(): string {
+			return this._sName;
+		}
+
+        hasComplexName(): bool{
+        	return this._hasComplexName;
+        }
+
+        getSharedVariables(): IAFXVariableDeclInstruction[] {
+        	return this._pSharedVariableList;
+        }
+
+        _setParseNode(pNode: IParseNode): void{
+        	this._pParseNode = pNode;
+        }
+        
+        _getParseNode(): IParseNode{
+        	return this._pParseNode;
+        }
+
+		addPass(): void {
+
+		}
+	}
 
 	// export class TypeInstruction extends Instruction {
 	// 	/**

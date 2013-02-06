@@ -85,6 +85,14 @@ module akra.fx {
 			this._iCurrentScope = this._nScope - 1;
 		}
 
+		setScope(iScope: uint): void {
+			this._iCurrentScope = iScope;
+		}
+
+		getScope(): uint {
+			return this._iCurrentScope;
+		}
+
 		endScope(): void {
 			if(isNull(this._iCurrentScope)){
 				return;

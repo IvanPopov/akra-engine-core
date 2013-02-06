@@ -2,6 +2,7 @@
 #define IAFXINSTRUCTION_TS
 
 #include "common.ts"
+#include "IParser.ts"
 
 module akra {
 
@@ -59,7 +60,8 @@ module akra {
         k_IfStmtInstruction,
         k_DeclStmtInstruction,
         k_ReturnStmtInstruction,
-        k_SemicolonStmtInstruction
+        k_SemicolonStmtInstruction,
+        k_TechniqueInstruction
     }
 
     export enum EFunctionType{
@@ -219,8 +221,9 @@ module akra {
         getReturnType(): IAFXTypeInstruction;
 
         // closeArguments(pArguments: IAFXInstruction[]): IAFXTypedInstruction[];
-        setFunctionDef(pFunctionDef: IAFXDeclInstruction);
-        setImplementation(pImplementation: IAFXStmtInstruction);
+        setFunctionDef(pFunctionDef: IAFXDeclInstruction): void;
+        setImplementation(pImplementation: IAFXStmtInstruction): void;
+        _usedAsShader(eUsedType: EFunctionType): void;
     }
 
     export interface IAFXStructDeclInstruction extends IAFXInstruction {
@@ -268,6 +271,19 @@ module akra {
 
     export interface IAFXStmtInstruction extends IAFXInstruction{
         
+    }
+
+    export interface IAFXTechniqueInstruction extends IAFXDeclInstruction{
+        addPass(): void;
+
+        setName(sName: string, isComplexName: bool): void;
+        getName(): string;
+        hasComplexName(): bool;
+
+        getSharedVariables(): IAFXVariableDeclInstruction[];
+
+        _setParseNode(pNode: IParseNode): void;
+        _getParseNode(): IParseNode;
     }
 
 }

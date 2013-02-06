@@ -28,6 +28,10 @@ module akra.fx {
 		[sFuncName: string]: SystemFunctionInstruction[];
 	}
 
+	export interface TechniqueMap {
+		[sTechniqueName: string]: IAFXTechniqueInstruction;
+	}
+
 	export class Effect implements IAFXEffect {
 		private _pComposer: IAFXComposer = null;
 
@@ -43,6 +47,11 @@ module akra.fx {
 		private _pSystemTypes: SystemTypeMap = null;
 		private _pSystemFunctionsMap: SystemFunctionMap = null;
 		private _pSystemFunctionHashMap: BoolMap = null;
+
+		private _pFunctionWithImplementationList: IAFXFunctionDeclInstruction[] = null; 
+		
+		private _pTechniqueList: IAFXTechniqueInstruction[] = null;
+		private _pTechniqueMap: TechniqueMap = null;
 
 		static pSystemTypes: SystemTypeMap = null;
 		static pSystemFunctions: SystemFunctionMap = null;
@@ -60,6 +69,10 @@ module akra.fx {
 
 			this._pStatistics = null;
 			this._sAnalyzedFileName = "";
+
+			this._pFunctionWithImplementationList = [];
+			this._pTechniqueList = [];
+			this._pTechniqueMap = <TechniqueMap>{};
 		}
 
 		analyze(pTree: IParseTree): bool {
@@ -71,12 +84,21 @@ module akra.fx {
 
 			this.newScope();
 
+			this.analyzeGlobalTypeDecls();
+			this.analyzeFunctionDefinitions();
+			this.analyzeGlobalImports();
+			this.analyzeTechniqueImports();
+
+			this.analyzeVariableDecls();
+			this.analyzeFunctionDecls();
+			this.analyzeTechniques();
+
 			// this.analyzeTypes();
 			
 			// this.preAnalyzeFunctions();
 			// this.preAnalyzeVariables();
 			// this.preAnalyzeTechniques();
-			this.analyzeDecls();
+			// this.analyzeDecls();
 
 			// this.analyzeEffect();
 			// this.postAnalyzeEffect();
@@ -553,6 +575,14 @@ module akra.fx {
 			this._pEffectScope.resumeScope();
 		}
 
+		private inline getScope(): uint {
+			return this._pEffectScope.getScope();
+		}
+
+		private inline setScope(iScope: uint): void {
+			this._pEffectScope.setScope(iScope);
+		}
+
 		private inline endScope(): void {
 			this._pEffectScope.endScope();
 		}
@@ -638,7 +668,7 @@ module akra.fx {
 		}
 
 		private findShaderFunction(sFunctionName: string, 
-							 	   pArguments: IAFXExprInstruction[]): IAFXIdExprInstruction {
+							 	   pArguments: IAFXExprInstruction[]): IAFXFunctionDeclInstruction {
 			return null;
 		}
 
@@ -697,6 +727,89 @@ module akra.fx {
 			}
         }
 
+        private addTechnique(pTechnique: IAFXTechniqueInstruction): void {
+        	var sName: string = pTechnique.getName();
+        	
+        	if(isDef(this._pTechniqueMap[sName])){
+        		this._error(EFFECT_BAD_TECHNIQUE_REDEFINE_NAME, { techName: sName });
+        		return;
+        	}
+
+        	this._pTechniqueMap[sName] = pTechnique;
+        	this._pTechniqueList.push(pTechnique);
+        }
+
+
+
+        private analyzeGlobalTypeDecls(): void {
+        	var pChildren: IParseNode[] = this._pParseTree.root.children;
+			var i: uint = 0;	
+
+			for(i = pChildren.length - 1; i >=0; i--) {
+				if(pChildren[i].name === "TypeDecl") {
+					this.analyzeTypeDecl(pChildren[i]);
+				}
+			}
+        }
+
+        private analyzeFunctionDefinitions(): void {
+        	var pChildren: IParseNode[] = this._pParseTree.root.children;
+			var i: uint = 0;	
+
+			for(i = pChildren.length - 1; i >=0; i--) {
+				if(pChildren[i].name === "FunctionDecl") {
+					this.analyzeFunctionDeclOnlyDefinition(pChildren[i]);
+				}
+			}
+        }
+
+        private analyzeGlobalImports(): void {
+        	var pChildren: IParseNode[] = this._pParseTree.root.children;
+			var i: uint = 0;	
+
+			for(i = pChildren.length - 1; i >=0; i--) {
+				if(pChildren[i].name === "ImportDecl") {
+					this.analyzeImportDecl(pChildren[i]);
+				}
+			}
+        }
+
+        private analyzeTechniqueImports(): void {
+        	var pChildren: IParseNode[] = this._pParseTree.root.children;
+			var i: uint = 0;	
+
+			for(i = pChildren.length - 1; i >=0; i--) {
+				if(pChildren[i].name === "TechniqueDecl") {
+					this.analyzeTechniqueForImport(pChildren[i]);
+				}
+			}
+        }
+
+        private analyzeVariableDecls() : void {
+        	var pChildren: IParseNode[] = this._pParseTree.root.children;
+			var i: uint = 0;	
+
+			for(i = pChildren.length - 1; i >=0; i--) {
+				if(pChildren[i].name === "VariableDecl") {
+					this.analyzeVariableDecl(pChildren[i]);
+				}
+				else if(pChildren[i].name === "VarStructDecl"){
+					this.analyzeVarStructDecl(pChildren[i]);
+				}
+			}
+        }
+
+        private analyzeFunctionDecls(): void {
+        	for(var i: uint = 0; i < this._pFunctionWithImplementationList.length; i++) {
+        		this.resumeFunctionAnalysis(this._pFunctionWithImplementationList[i]);
+        	}
+        }
+
+        private analyzeTechniques(): void {
+        	for(var i: uint = 0; i < this._pTechniqueList.length; i++) {
+        		this.resumeTechniqueAnalysis(this._pTechniqueList[i]);
+        	}
+        }
 
 		// private addType(pType: IAFXType): void {
 		// 	if(this.isSystemType(pType)){
@@ -715,43 +828,43 @@ module akra.fx {
 		// 	this.addType(pType);
 		// }
 
-		private analyzeDecls(): void {
-			var pChildren: IParseNode[] = this._pParseTree.root.children;
-			var i: uint;	
+		// private analyzeDecls(): void {
+		// 	var pChildren: IParseNode[] = this._pParseTree.root.children;
+		// 	var i: uint;	
 
-			for(i = pChildren.length - 1; i >=0; i--){
-				this.analyzeDecl(pChildren[i]);
-			}
-		}
+		// 	for(i = pChildren.length - 1; i >=0; i--){
+		// 		this.analyzeDecl(pChildren[i]);
+		// 	}
+		// }
 
-		private analyzeDecl(pNode: IParseNode): void {
-			switch (pNode.name) {
-		        case "VariableDecl":
-		            this.analyzeVariableDecl(pNode, null);
-		            break;
-		        case "TypeDecl":
-		            this.analyzeTypeDecl(pNode);
-		            break;
-		        case "FunctionDecl":
-		            this.analyzeFunctionDecl(pNode);
-		            break;
-		        case "VarStructDecl":
-		            this.analyzeVarStructDecl(pNode);
-		    	    break;
-		    //     case "TechniqueDecl":
-		    //         this.analyzeTechniqueDecl(pNode);
-		    //         break;
-		    //     case "UseDecl":
-		    //         this.analyzeUseDecl(pNode);
-		    //         break;
-		    //     case "ProvideDecl":
-		    //         this.analyzeProvideDecl(pNode);
-		    //         break;
-		    //     case "ImportDecl":
-		    //         this.analyzeImportDecl(pNode);
-		    //         break;
-		    }	
-		}
+		// private analyzeDecl(pNode: IParseNode): void {
+		// 	switch (pNode.name) {
+		//         case "VariableDecl":
+		//             this.analyzeVariableDecl(pNode, null);
+		//             break;
+		//         case "TypeDecl":
+		//             this.analyzeTypeDecl(pNode);
+		//             break;
+		//         case "FunctionDecl":
+		//             this.analyzeFunctionDecl(pNode);
+		//             break;
+		//         case "VarStructDecl":
+		//             this.analyzeVarStructDecl(pNode);
+		//     	    break;
+		//         case "TechniqueDecl":
+		//             this.analyzeTechniqueDecl(pNode);
+		//             break;
+		//         case "UseDecl":
+		//             this.analyzeUseDecl(pNode);
+		//             break;
+		//         case "ProvideDecl":
+		//             this.analyzeProvideDecl(pNode);
+		//             break;
+		//         case "ImportDecl":
+		//             this.analyzeImportDecl(pNode);
+		//             break;
+		//     }	
+		// }
 
 		private analyzeVariableDecl(pNode: IParseNode, pInstruction?: IAFXInstruction = null): void {
 			this.setAnalyzedNode(pNode);
@@ -1003,7 +1116,7 @@ module akra.fx {
         	var pExprType: IAFXVariableTypeInstruction;
         	var pArguments: IAFXExprInstruction[] = null;
         	var sShaderFuncName: string = pChildren[pChildren.length - 2].value;
-        	var pShaderFunc: IAFXIdExprInstruction;
+        	var pShaderFunc: IAFXFunctionDeclInstruction = null;
         	var i: uint = 0;
 
         	if(pChildren.length > 3){
@@ -1030,7 +1143,7 @@ module akra.fx {
 
         	pExpr.setType(pExprType);
         	pExpr.setOperator("complile");
-        	pExpr.push(pShaderFunc, true);
+        	pExpr.push(pShaderFunc.getNameId(), false);
         	
         	if(!isNull(pArguments)){
         		for(i = 0; i < pArguments.length; i++) {
@@ -1878,19 +1991,20 @@ module akra.fx {
         	return pStruct;
         }
 
-        private analyzeFunctionDecl(pNode: IParseNode): IAFXFunctionDeclInstruction {
+        private analyzeFunctionDeclOnlyDefinition(pNode: IParseNode): IAFXFunctionDeclInstruction {
         	this.setAnalyzedNode(pNode);
         	
         	var pChildren: IParseNode[] = pNode.children;
-        	var pFunction: IAFXFunctionDeclInstruction = null;
+        	var pFunction: FunctionDeclInstruction = null;
         	var pFunctionDef: FunctionDefInstruction = null;
         	var pStmtBlock: StmtBlockInstruction = null;
         	var pAnnotation: IAFXAnnotationInstruction = null;
         	var sLastNodeValue: string = pChildren[0].value;
+        	var bNeedAddFunction: bool = false;
 
         	pFunctionDef = this.analyzeFunctionDef(pChildren[pChildren.length - 1]);
 
-        	pFunction = this.findFunctionByDef(pFunctionDef);
+        	pFunction = <FunctionDeclInstruction>this.findFunctionByDef(pFunctionDef);
 
         	if(!isDef(pFunction)){
         		this._error(EFFECT_BAD_CANNOT_CHOOSE_FUNCTION, {funcName: pFunction.getNameId().toString() });
@@ -1904,39 +2018,117 @@ module akra.fx {
 
         	if(isNull(pFunction)){
         		pFunction = new FunctionDeclInstruction();
+        		bNeedAddFunction = true;
         	}
         	else {
         		if(!pFunction.getReturnType().isEqual(pFunctionDef.getReturnType())){
         			this._error(EFFECT_BAD_FUNCTION_DEF_RETURN_TYPE, {funcName: pFunction.getNameId().toString() });
         			return null;
         		}
+
+        		bNeedAddFunction = false;
         	}
 
     		pFunction.setFunctionDef(<IAFXDeclInstruction>pFunctionDef);
+    		
+    		this.resumeScope();
 
-        	//this.newInstruction(pFunction);
-        	this.resumeScope();
-
-        	if(pChildren.length === 3) {
+    		if(pChildren.length === 3) {
         		pAnnotation = this.analyzeAnnotation(pChildren[1]);
         		pFunction.setAnnotation(pAnnotation);
         	}
 
         	if(sLastNodeValue !== ";") {
- 				pStmtBlock = <StmtBlockInstruction>this.analyzeStmtBlock(pChildren[0]);
- 				pFunction.setImplementation(<IAFXStmtInstruction>pStmtBlock);
+        		pFunction.setParseNode(pNode);
+        		pFunction.setScope(this.getScope());
+        		this._pFunctionWithImplementationList.push(pFunction);
         	}
 
         	this.endScope();
+        	
+        	if(bNeedAddFunction){
+        		this.addFunctionDecl(pFunction);
+       	 	}
 
-      		// this.endInstruction();
-      		
-      		CHECK_INSTRUCTION(pFunction, ECheckStage.CODE_TARGET_SUPPORT);  
-
-      		this.addFunctionDecl(pFunction);  		
-
-      		return pFunction;
         }
+
+        private resumeFunctionAnalysis(pAnalzedFunction: IAFXFunctionDeclInstruction): void {
+        	var pFunction: FunctionDeclInstruction = <FunctionDeclInstruction>pAnalzedFunction;
+        	var pNode: IParseNode = pFunction.getParseNode();
+
+        	this.setAnalyzedNode(pNode);
+        	this.setScope(pFunction.getScope());
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pStmtBlock: StmtBlockInstruction = null;
+
+        	pStmtBlock = <StmtBlockInstruction>this.analyzeStmtBlock(pChildren[0]);
+ 			pFunction.setImplementation(<IAFXStmtInstruction>pStmtBlock);
+
+ 			this.endScope();
+
+ 			CHECK_INSTRUCTION(pFunction, ECheckStage.CODE_TARGET_SUPPORT);  
+        }
+
+     //    private analyzeFunctionDecl(pNode: IParseNode): IAFXFunctionDeclInstruction {
+     //    	this.setAnalyzedNode(pNode);
+        	
+     //    	var pChildren: IParseNode[] = pNode.children;
+     //    	var pFunction: IAFXFunctionDeclInstruction = null;
+     //    	var pFunctionDef: FunctionDefInstruction = null;
+     //    	var pStmtBlock: StmtBlockInstruction = null;
+     //    	var pAnnotation: IAFXAnnotationInstruction = null;
+     //    	var sLastNodeValue: string = pChildren[0].value;
+
+     //    	pFunctionDef = this.analyzeFunctionDef(pChildren[pChildren.length - 1]);
+
+     //    	pFunction = this.findFunctionByDef(pFunctionDef);
+
+     //    	if(!isDef(pFunction)){
+     //    		this._error(EFFECT_BAD_CANNOT_CHOOSE_FUNCTION, {funcName: pFunction.getNameId().toString() });
+     //    		return null;
+     //    	}
+
+     //    	if(!isNull(pFunction) && pFunction.hasImplementation()){
+     //    		this._error(EFFECT_BAD_REDEFINE_FUNCTION, { funcName: pFunction.getNameId().toString() });
+     //    		return null;
+     //    	}
+
+     //    	if(isNull(pFunction)){
+     //    		pFunction = new FunctionDeclInstruction();
+     //    	}
+     //    	else {
+     //    		if(!pFunction.getReturnType().isEqual(pFunctionDef.getReturnType())){
+     //    			this._error(EFFECT_BAD_FUNCTION_DEF_RETURN_TYPE, {funcName: pFunction.getNameId().toString() });
+     //    			return null;
+     //    		}
+     //    	}
+
+    	// 	pFunction.setFunctionDef(<IAFXDeclInstruction>pFunctionDef);
+
+     //    	//this.newInstruction(pFunction);
+     //    	this.resumeScope();
+
+     //    	if(pChildren.length === 3) {
+     //    		pAnnotation = this.analyzeAnnotation(pChildren[1]);
+     //    		pFunction.setAnnotation(pAnnotation);
+     //    	}
+
+     //    	if(sLastNodeValue !== ";") {
+ 				// pStmtBlock = <StmtBlockInstruction>this.analyzeStmtBlock(pChildren[0]);
+ 				// pFunction.setImplementation(<IAFXStmtInstruction>pStmtBlock);
+     //    	}
+
+     //    	this.endScope();
+
+     //  		// this.endInstruction();
+      		
+     //  		CHECK_INSTRUCTION(pFunction, ECheckStage.CODE_TARGET_SUPPORT);  
+
+     //  		this.addFunctionDecl(pFunction);  		
+
+     //  		return pFunction;
+     //    }
 
         private analyzeFunctionDef(pNode: IParseNode): FunctionDefInstruction {
         	this.setAnalyzedNode(pNode);
@@ -2403,6 +2595,131 @@ module akra.fx {
 
         	return null;
         }
+
+        private analyzeTechniqueForImport(pNode: IParseNode): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pTechnique: IAFXTechniqueInstruction = new TechniqueInstruction();
+        	var sTechniqueName: string = this.analyzeComplexName(pChildren[pChildren.length - 2]);
+        	var isComplexName: bool = pChildren[pChildren.length - 2].children.length !== 1;
+
+        	pTechnique.setName(sTechniqueName, isComplexName);
+
+        	for (var i: uint = pChildren.length - 3; i >= 0; i--) {
+		        if (pChildren[i].name === "Annotation") {
+		            var pAnnotation: IAFXAnnotationInstruction = this.analyzeAnnotation(pChildren[i]);
+		            pTechnique.setAnnotation(pAnnotation);
+		        }
+		        else if (pChildren[i].name === "Semantic") {
+		            var sSemantic: string = this.analyzeSemantic(pChildren[i]);
+		            pTechnique.setSemantic(sSemantic);
+		        }
+		        else {
+	            	this.analyzeTechniqueBodyForImports(pChildren[i]);
+	       		}
+	    	}
+
+	    	this.addTechnique(pTechnique);
+	    	pTechnique._setParseNode(pNode);
+        }
+
+        private analyzeComplexName(pNode: IParseNode): string {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var sName: string = "";
+
+        	for(var i: uint = pChildren.length - 1; i >= 0; i--){
+        		sName += pChildren[i].value;
+        	}
+
+        	return sName;
+        }
+
+        private analyzeTechniqueBodyForImports(pNode: IParseNode): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	for (var i: uint = pChildren.length - 2; i >= 1; i--) {
+        		this.analyzePassDeclForImports(pChildren[i]);
+        	}
+        }
+
+        private analyzePassDeclForImports(pNode: IParseNode): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	if(pChildren[0].name === "ImportDecl"){
+        		this.analyzeImportDecl(pChildren[0]);
+        	}
+        	else if(pChildren.length > 1) {
+        		this.analyzePassStateBlockForShaders(pChildren[0]);
+        	}
+        }
+
+        private analyzePassStateBlockForShaders(pNode: IParseNode): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	for (var i: uint = pChildren.length - 2; i >= 1; i--) {
+		        this.analyzePassStateForShader(pChildren[i]);
+		    }
+        }
+
+        private analyzePassStateForShader(pNode: IParseNode): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	if(pChildren.length === 1){
+        		return;
+        	}
+
+        	var sType: string = pChildren[pChildren.length - 1].value.toUpperCase();
+        	var eShaderType: EFunctionType = EFunctionType.k_Vertex;
+
+        	if(sType === "VERTEXSHADER"){
+        		eShaderType = EFunctionType.k_Vertex
+        	}
+        	else if(sType === "PIXELSHADER"){
+        		eShaderType = EFunctionType.k_Pixel;
+        	}
+        	else {
+        		return;
+        	}
+
+        	var pStateExprNode: IParseNode = pChildren[pChildren.length - 3];
+        	var pExprNode: IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
+        	var pCompileExpr: CompileExprInstruction = <CompileExprInstruction>this.analyzeExpr(pExprNode);
+        	var pShaderFunc: IAFXFunctionDeclInstruction = pCompileExpr.getFunction();
+
+        	pShaderFunc._usedAsShader(eShaderType);
+        }
+
+        private resumeTechniqueAnalysis(pTechnique: IAFXTechniqueInstruction): void {
+        	var pNode: IParseNode = pTechnique._getParseNode();
+
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	//return null;
+        }
+
+        private analyzeImportDecl(pNode: IParseNode): any {
+        	return null;
+        }
+
+        private analyzeProvideDecl(pNode: IParseNode): any {
+        	return null;
+        }
+
+
+
 
         
 
