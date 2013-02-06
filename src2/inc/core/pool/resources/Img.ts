@@ -7,20 +7,19 @@
 module akra.core.pool.resources {
 		
 	export class Img extends ResourcePoolItem implements IImg {
-		protected _iWidth: uint = 0;
-		protected _iHeight: uint = 0;
-		protected _iDepth: uint = 0;
+		protected _iWidth:        uint          = 0;
+		protected _iHeight:       uint          = 0;
+		protected _iDepth:        uint          = 0;
 
-		protected _nMipMaps: uint = 0;
-		protected _iFlags: int = 0;
+		protected _nMipMaps:      uint          = 0;
+		protected _iFlags:        int           = 0;
 
-		protected _eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
+		protected _eFormat:       EPixelFormats = EPixelFormats.UNKNOWN;
 
-		protected _iPixelSize: uint;
-		protected _pBuffer: Uint8Array = null;
+		protected _pBuffer:       Uint8Array    = null;
 
 		inline get byteLength(): uint {
-			return 0;
+			return this._pBuffer.buffer.byteLength;
 		}
     	
     	inline get width(): uint {
@@ -112,11 +111,15 @@ module akra.core.pool.resources {
 			return false;
 		}
 
-		create(iWidth: uint, iHeight: uint, eFormat: EPixelFormats, iFlags: int): bool;
-    	create(iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats, iFlags: int): bool;
-    	create(iWidth: uint, iHeight: uint, iDepth?: any, eFormat?: any, iFlags?: any): bool {
-    		return false;
-    	}
+
+		create(iWidth: uint, iHeight: uint, iDepth: uint = 1, eFormat: EPixelFormats = EPixelFormats.BYTE_RGBA, bAutoDelete?: bool = false, 
+                         nFaces?: uint = 1, nMipMaps?: uint = 0): IImg 
+        {
+            var iSize : uint= this.calculateSize(nNumMipMaps, nNumFaces, iWidth, iHeight, iDepth, eFormat);            
+            var pBuffer : Uint8Array = new Uint8Array(iSize);
+            return loadDynamicImage(pBuffer, iWidth, iHeight, iDepth, eFormat, true, nFaces, nMipMaps);
+        }
+    	
 
 
     	freeMemory(): void {
@@ -153,27 +156,147 @@ module akra.core.pool.resources {
     		return this;
     	}
 
-    	loadFromMemory(pData: Uint8Array, iWidth: uint, iHeight: uint, eFormat: EPixelFormats): bool;
-    	loadFromMemory(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats): bool;
-    	loadFromMemory(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: any, eFormat?: any): bool {
-    		return false;
+        load(pCanvas: HTMLCanvasElement, fnCallBack: function): IImg;
+        load(sFileName: string, fnCallBack: function): IImg;
+        load(pData: Uint8Array, sType:string,  fnCallBack: function): IImg;
+
+    	load(pData: any, sType: any, fnCallBack: function): IImg 
+        {
+            var pMe:IImg=this;
+            if (pData instanceof HTMLCanvasElement) 
+            {
+                var pTempContext : CanvasRenderingContext2D = pData.getContext('2d');
+                if (!pTempContext) 
+                {
+                    if (sType) 
+                    {
+                        sType(false);
+                    }
+                    return this;
+                }
+
+                var pImageData : ImageData = pTempContext.getImageData(0, 0, pData.heigh, pData.heigh);               
+                
+                this.loadDynamicImage(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength),sFileName.width,sFileName.height,1,sFileName.height,EPixelFormats.BYTE_RGBA);
+            
+                if (sType) 
+                {
+                    sType(true);
+                }
+                return this;
+            }
+            else if (isString(pData))
+            {
+
+                var sExt : string = pathinfo(pData).ext
+                fopen(pData,"rb").onread=function(pData)
+                {
+                    pMe.load(pData,sExt,sType)
+                }
+
+                return this;
+            }
+            else
+            {
+                var pCodec:Codec;
+
+                if(sType)
+                {
+                    pCodec=Codec.getCodec(sType)
+                }
+
+                if(!pCodec)
+                {
+                    var iMagicLen:uint=Math.min(32,pData.buffer.byteLength)
+                    pCodec=Codec.getCodec(pData.buffer.slice(0,iMagicLen)
+                }
+
+                if(!pCodec)
+                {
+                    CRITICAL_ERROR(,"Unable to load image: Image format is unknown. Unable to identify codec. Check it or specify format explicitly.\n"+"Img.load");
+                    if (fnCallBack)
+                    {
+                        fnCallBack(false);
+                    }
+                    return this;
+                }
+
+                var pResult:DecodeResult=pCodec.decode(pData)
+
+                var pImageData:IImageData=pResult.second.getPointer()
+
+                this._iWidth=pImageData.width;
+                this._iHeight=pImageData.height;
+                this._iDepth=pImageData.depth;
+                this._nMipMaps=pImageData.numMipMaps;
+                this._iFlags=pImageData.getFlags();
+
+                this._eFormat=pImageData.format;
+                this._pBuffer=pImageData.first.getPtr()
+
+                if (fnCallBack)
+                {
+                    fnCallBack(true);
+                }
+
+                return this;
+            }
+
+    		
     	}
 
-    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, eFormat: EPixelFormats, nFaces?: uint, nMipMaps?: uint): bool;
-    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats, nFaces?: uint, nMipMaps?: uint): bool;
-    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: any, eFormat?: any, nFaces?: any, nMipMaps?: any): bool {
-    		return false;
-    	}
+    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint = 1, eFormat: EPixelFormats = EPixelFormats.BYTE_RGBA, bAutoDelete?: bool = false, 
+                         nFaces?: uint = 1, nMipMaps?: uint = 0): IImg 
+    	{
+            var iSize : uint= this.calculateSize(nNumMipMaps, nNumFaces, iWidth, iHeight, iDepth, eFormat);
+            
+            if (iSize != pData.buffer.byteLength)
+            {
+                CRITICAL_ERROR(,"Stream size does not match calculated image size\n"+"Img.loadRawData");
+            }
 
-        loadDynamicImage(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint,
-                         eFormat: EPixelFormats, bAutoDelete?: bool = false, 
-                         iNumFaces?: uint = 1, iNumMipMaps?: uint = 0): IImg {
-            return null;
+            var pBuffer : Uint8Array = new Uint8Array(iSize);
+            pBuffer.set(pData);
+
+            return loadDynamicImage(pBuffer, iWidth, iHeight, iDepth, eFormat, true, nFaces, nMipMaps);
+     	}
+
+        loadDynamicImage(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint = 1,
+                         eFormat: EPixelFormats = EPixelFormats.BYTE_RGBA, bAutoDelete?: bool = false, 
+                         nNumFaces?: uint = 1, nNumMipMaps?: uint = 0): IImg 
+        {
+            //size
+            this._iWidth=iWidth;
+            this._iHeight=iHeight;
+            this._iDepth=iDepth;
+
+            this._eFormat=eFormat;
+            this._nMipMaps=nNumMipMaps;
+            this._iFlags=0;
+
+            if (PixelUtil.isCompressed(this._eFormat))
+            {
+                this._iFlags |= EImageFlags.COMPRESSED;
+            }
+            if (this._iDepth != 1)
+            {
+                this._iFlags |= EImageFlags.TEXTURE_3D;
+            }
+
+            if(nNumFaces == 6)
+            {
+                this._iFlags |= EImageFlags.CUBEMAP;
+            }
+            else if(nNumFaces != 6 && numFaces != 1)
+            {
+                CRITICAL_ERROR(, "Number of faces currently must be 6 or 1.\n"+"Img.loadDynamicImage");
+            }
+
+            this._pBuffer=pData;
+            this._bAutoDelete=bAutoDelete
+
+            return this;
         }
-
-    	load(sFilename: string): bool {
-    		return false;
-    	}
 
     	convert(eFormat: EPixelFormats): bool {
     		return false;
@@ -181,44 +304,57 @@ module akra.core.pool.resources {
 
     	//Gets the physical width in bytes of each row of pixels.
     	getRawSpan(): uint {
-    		return 0;
+    		return this._iWidth*this.getPixelSize();
     	}
 
     	getBPP(): uint {
-    		return 0;
+    		return this.getPixelSize()* 8;
     	}
 
-    	getFlags(): int {
-    		return 0;
-    	}
+        getPixelSize: uint{
+            return PixelUtil.getNumElemBytes(this._eFormat);
+        }
+
 
     	getData(): Uint8Array {
-    		return null;
+    		return this._pBuffer;
     	}
 
-    	hasFlag(eFlag: EImageFlags): bool {
-    		return false;
+    	hasFlag(eFlag: EImageFlags): bool
+        {
+    		if(this._iFlags & eFlag)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
     	}
 
     	hasAlpha(): bool {
-    		return false;
+    		return PixelUtil.hasAlpha(this._eFormat);
     	}
 
     	isCompressed(): bool {
-    		return false;
+    		return return PixelUtil.isCompressed(this._eFormat);
     	}
 
     	isLumiance(): bool {
-    		return false;
+    		return return PixelUtil.isLumiance(this._eFormat);
     	}
 
 
-    	getColorAt(x: uint, y: uint, z?:uint): IColor {
-    		return null;
+    	getColorAt(x: uint, y: uint, z?:uint): IColor
+        {
+    		var pRval: ColourValue;
+            PixelUtil.unpackColour(pRval, this._eFormat, this._pBuffer.subarray(this.getPixelSize()* (z * this.iWidth * this.iHeight + this.iWidth * y + x),this.getPixelSize());
+            return pRval;
     	}
 
-    	setColorAt(pColor: IColorValue, x: uint, y: uint, z: uint): void {
-
+    	setColorAt(pColor: IColorValue, x: uint, y: uint, z: uint): void 
+        {
+             PixelUtil.packColour(pColor, this._eFormat,this._pBuffer.subarray(this.getPixelSize()* (z * this.iWidth * this.iHeight + this.iWidth * y + x),this.getPixelSize()))
     	}
 
     	getPixels(nFace?: uint, iMipMap?: uint): IPixelBox {
@@ -240,6 +376,21 @@ module akra.core.pool.resources {
     	randomChannelNoise(iChannel: int, iMinRange: int, iMaxRange: int): void {
 
     	}
+
+        static calculatedSize(nMipMaps: uint, nFaces: uint, iWidth: uint, iHeight: uint, iDepth: uint , eFormat: EPixelFormats): uint
+        {
+            var iSize:uint = 0;
+            var iMip:uint = 0;
+
+            for(iMip=0; iMip<=nMipMaps; iMip++)
+            {
+                iSize += PixelUtil.getMemorySize(iWidth, iHeight, iDepth, EPixelFormats)*nFaces; 
+                if(iWidth!=1) iWidth /= 2;
+                if(iHeight!=1) iHeight /= 2;
+                if(iDepth!=1) iDepth /= 2;
+            }
+            return iSize;
+        }
 	}
 }
 

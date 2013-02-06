@@ -68,7 +68,7 @@ Pipe.prototype.open = function (sAddr, fnCallback) {
 			return false;
 		}
 
-		pConnect = new WebSocket(pAddr.toString());
+		pConnect = new WebSocket(pAddr.toString(),["deflate-frame","soap","wamp"]);
 		
 		pConnect.onopen = fnCallback || function () {
 			trace('created pipe to: ' + pAddr.toString());

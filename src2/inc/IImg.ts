@@ -9,8 +9,17 @@ module akra {
 	export enum EImageFlags {
 		COMPRESSED = 0x00000001,
         CUBEMAP    = 0x00000002,
-        TEXTURE_3D = 0x00000004
+        TEXTURE_3D = 0x00000004,
 	};
+
+    export enum EImageCubeFlags(
+        POSITIVEX = 0x00000001,
+        NEGATIVEX = 0x00000002,            
+        POSITIVEY = 0x00000004,
+        NEGATIVEY = 0x00000008,
+        POSITIVEZ = 0x0000000c,
+        NEGATIVEZ = 0x000000010,
+        );
 
     export interface IImg extends IResourcePoolItem {
     	byteLength: uint;
@@ -23,24 +32,25 @@ module akra {
     	numMipMaps: uint;
     	format: EPixelFormats;
 
-
+        
     	set(pSrc: IImg): IImg;
 
     	/** @param Destination image. If destination not specified, original image will be modified.*/
     	flipY(pDest?: IImg): IImg;
     	flipX(pDest?: IImg): IImg;
 
-    	loadFromMemory(pData: Uint8Array, iWidth: uint, iHeight: uint, eFormat: EPixelFormats): bool;
-    	loadFromMemory(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats): bool;
 
-    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, eFormat: EPixelFormats, nFaces?: uint, nMipMaps?: uint): bool;
-    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats, nFaces?: uint, nMipMaps?: uint): bool;
+    	load(sFileName: string): IImg;
+    	load(pData: Uint8Array, sType:string): IImg;
 
-        loadDynamicImage(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint,
-                         eFormat: EPixelFormats, bAutoDelete?: bool, 
-                         iNumFaces?: uint, iNumMipMaps?: uint): IImg;
 
-    	load(sFilename: string);
+    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth?: uint, eFormat: EPixelFormats?, nFaces?: uint, nMipMaps?: uint): IImg;
+
+        loadDynamicImage(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth?: uint,
+                         eFormat: EPixelFormats?, bAutoDelete?: bool, 
+                         nFaces?: uint, nMipMaps?: uint): IImg;
+
+
     	create(iWidth: uint, iHeight: uint, eFormat: EPixelFormats, iFlags: int): bool;
     	create(iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats, iFlags: int): bool;
 
@@ -48,6 +58,7 @@ module akra {
 
     	//Gets the physical width in bytes of each row of pixels.
     	getRawSpan(): uint;
+        getPixelSize(): uint;
     	getBPP(): uint;
     	getFlags(): int;
     	getData(): Uint8Array;
