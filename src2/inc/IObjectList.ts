@@ -69,6 +69,8 @@ module akra {
 		takeFirst(): any;
 		/** Get data of last item and remove it. */
 		takeLast(): any;
+		/** Get data of current item and remove it. */
+		takeCurrent(): any;
 
 		/** Remove <n> item. */
 		removeAt(n: uint): void;

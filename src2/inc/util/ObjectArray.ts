@@ -69,6 +69,7 @@ module akra.util {
 
 		private extend(n: uint): void {
 			if (this._pData.length < n) {
+				// LOG("extending object array to > " + n);
 				for (var i: int = this._pData.length; i < n; ++ i) {
 					this._pData[i] = null;
 				}

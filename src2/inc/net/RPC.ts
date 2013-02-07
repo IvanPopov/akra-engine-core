@@ -6,26 +6,22 @@
 #include "Pipe.ts"
 #include "events/events.ts"
 #include "util/util.ts"
-
+#include "util/ObjectList.ts"
 
 module akra.net {
-
-    interface ICallback {
-        n: uint;
-        fn: Function;
-    }
 
     class RPC implements IRPC {
         protected _pPipe: IPipe = null;
 
         //стек вызововы, которые были отложены
-        protected _pDefferedCalls: IRPCRequest[] = [];
+        protected _pDefferedRequests: IObjectList = new ObjectList;
         //стек вызовов, ожидающих результата
-        protected _pCallbacks: ICallback[] = [];
+        //type: ObjectList<IRPCCallback>
+        protected _pCallbacks: IObjectList = new ObjectList;
         //число совершенных вызовов
         protected _nCalls: uint = 0;
         //rejoin timer
-        protected _iReconnect: int = -1;
+        // protected _iReconnect: int = -1;
 
         protected _pRemoteAPI: Object = {};
 
@@ -45,66 +41,80 @@ module akra.net {
         join(sAddr: string = null): void {
             var pPipe: IPipe = this._pPipe;
             var pRPC: IRPC = this;
-            var pDeffered: IRPCRequest[] = this._pDefferedCalls;
+            var pDeffered: IObjectList = this._pDefferedRequests;
 
             if (isNull(pPipe)) {
                 pPipe = net.createPipe();
-            }
-      
-            pPipe.bind(SIGNAL(message), 
-                function (pPipe: IPipe, pMessage: any, eType: EPipeDataTypes): void {
-                    if (eType !== EPipeDataTypes.BINARY) {
-                        pRPC.parse(JSON.parse(<string>pMessage));
+            
+                pPipe.bind(SIGNAL(message), 
+                    function (pPipe: IPipe, pMessage: any, eType: EPipeDataTypes): void {
+                        // LOG(pMessage);
+                        if (eType !== EPipeDataTypes.BINARY) {
+                            pRPC.parse(JSON.parse(<string>pMessage));
+                        }
+                        else {
+                            pRPC.parseBinary(new Uint8Array(pMessage));
+                        }
                     }
-                    else {
-                        pRPC.parseBinary(new Uint8Array(pMessage));
-                    }
-                }
-            );
+                );
 
-            pPipe.bind(SIGNAL(opened), 
-                function (pPipe: IPipe): void {
-                    //if we have unhandled call in deffered...
-                    if (pDeffered.length) {
-                        for (var i: int = 0; i < pDeffered.length; ++ i) {
-                            pPipe.write(pDeffered[i]);
-                        };
+                pPipe.bind(SIGNAL(opened), 
+                    function (pPipe: IPipe, pEvent: Event): void {
+                        //if we have unhandled call in deffered...
+                        if (pDeffered.length) {
+                            pDeffered.seek(0);
 
-                        pDeffered.clear();
-                    }
-
-                    pRPC.proc(RPC.PROC_LIST, 
-                        function (pList: string[]) {
-                            //TODO: FIX akra. prefix...
-                            if (!akra.isNull(pList) && akra.isArray(pList)) {
-
-                                for (var i: int = 0; i < pList.length; ++ i) {
-                                    (function (sMethod: string) {
-                                        pRPC.remote[sMethod] = function () {
-
-                                            var argv: string[] = [sMethod];
-
-                                            for (var j: int = 0; j < arguments.length; ++ j) {
-                                                argv.push(arguments[j]);
-                                            }
-
-                                            return pRPC.proc.apply(pRPC, argv);
-                                        }
-                                    })(String(pList[i]));
-                                }
+                            while(pDeffered.length > 0) {
+                                pPipe.write(pDeffered.current);
+                                pRPC._releaseRequest(<IRPCRequest>pDeffered.takeCurrent());
                             }
 
-                            this.joined();
+                            debug_assert(pDeffered.length === 0, "something going wrong. length is: " + pDeffered.length);
                         }
-                    );
-                }
-            );
 
-            pPipe.bind(SIGNAL(error), 
-                function(pPipe: IPipe, pError: Error): void {
-                    pRPC.rejoin();
-                }
-            );
+                        pRPC.proc(RPC.PROC_LIST, 
+                            function (pError: Error, pList: string[]) {
+                                if (!akra.isNull(pError)) {
+                                    CRITICAL("could not get proc. list");
+                                }
+                                //TODO: FIX akra. prefix...
+                                if (!akra.isNull(pList) && akra.isArray(pList)) {
+
+                                    for (var i: int = 0; i < pList.length; ++ i) {
+                                        (function (sMethod) {
+
+                                            pRPC.remote[sMethod] = function () {
+                                                var pArguments: string[] = [sMethod];
+
+                                                for (var j: int = 0; j < arguments.length; ++ j) {
+                                                    pArguments.push(arguments[j]);
+                                                }
+
+                                                return pRPC.proc.apply(pRPC, pArguments);
+                                            }
+                                        })(String(pList[i]));
+                                    }
+                                }
+
+                                pRPC.joined();
+                            }
+                        );
+                    }
+                );
+
+                pPipe.bind(SIGNAL(error), 
+                    function(pPipe: IPipe, pError: Error): void {
+                        ERROR("pipe error occured...");
+                        pRPC.rejoin();
+                    }
+                );
+
+                pPipe.bind(SIGNAL(closed),
+                    function (pPipe: IPipe, pEvent: CloseEvent): void {
+                        pRPC.rejoin();
+                    }
+                );
+            }
 
             pPipe.open(<string>sAddr);
 
@@ -113,29 +123,27 @@ module akra.net {
 
         rejoin(): void {
             var pRPC: IRPC = this;
-            clearTimeout(this._iReconnect);
+            // clearTimeout(this._iReconnect);
 
             if (this._pPipe.isOpened()) {
                 return;
             }
 
             if (this._pPipe.isClosed()) {
-                LOG("attempt to reconnecting...");
+                // LOG("attempt to reconnecting...");
+            
+                this.join();
             }
 
-            this.join();
-
-            this._iReconnect = setTimeout(
-                function (): void {
-                    pRPC.rejoin();
-                },
-                RPC.OPTIONS.RECONNECT_TIMEOUT
-            );
+            // this._iReconnect = setTimeout(
+            //     function (): void {
+            //         pRPC.rejoin();
+            //     },
+            //     RPC.OPTIONS.RECONNECT_TIMEOUT
+            // );
         }
 
         parse(pRes: IRPCResponse): void {
-            var pStack: ICallback[] = this._pCallbacks;
-
             if (!isDef(pRes.n)) {
                 debug_print(pRes);
                 WARNING("message droped, because seriial not recognized.");
@@ -154,16 +162,20 @@ module akra.net {
         }
 
         private response(nSerial: uint, eType: ERPCPacketTypes, pResult: any): void {
-            var pStack: ICallback[] = this._pCallbacks;
+            var pStack: IObjectList = this._pCallbacks;
 
             if (eType === ERPCPacketTypes.RESPONSE) {
-                for (var i: int = pStack.length - 1; i >= 0; -- i) {
-                    if (pStack[i].n === nSerial) {
-                        pStack[i].fn.call(this, pResult);
-                        pStack.splice(i, 1);
+                var pCallback: IRPCCallback = <IRPCCallback>pStack.last;
+                // WARNING("---------------->",nSerial,"<-----------------");
+                do {
+                    // LOG("#n: ", pCallback.n, " result: ", pResult);
+                    if (pCallback.n === nSerial) {
+                        pCallback.fn(null, pResult);
+                        this._releaseCallback(pStack.takeCurrent());
                         return;
                     }
-                }
+                } while (pCallback = pStack.prev());
+
 
                 WARNING("package droped, invalid serial: " + nSerial);
             }
@@ -179,50 +191,110 @@ module akra.net {
         }
 
         free() {
-            this._pDefferedCalls = [];
-            this._pCallbacks = [];
+            this._pDefferedRequests.clear();
+            this._pCallbacks.clear();
         }
 
         proc(...argv: any[]): bool {
        
-            var iCallback: int = arguments.length -1;
+            var IRPCCallback: int = arguments.length -1;
             var fnCallback: Function = 
-                isFunction(arguments[iCallback])? <Function>arguments[iCallback]: null;
+                isFunction(arguments[IRPCCallback])? <Function>arguments[IRPCCallback]: null;
             var nArg: uint = arguments.length - (fnCallback? 2: 1);
             var pArgv: any[] = new Array(nArg);
             var pPipe: IPipe = this._pPipe;
+            var pCallback: IRPCCallback;
+            var bResult: bool;
 
             for (var i = 0; i < nArg; ++ i) {
                 pArgv[i] = arguments[i + 1];
             }
 
-            var pProc: IRPCRequest = {
-                n: this._nCalls ++,
-                type: ERPCPacketTypes.REQUEST,
-                proc: String(arguments[0]),
-                argv: pArgv
-            }
+            var pProc: IRPCRequest = this._createRequest();
+
+            pProc.n     = this._nCalls ++;
+            pProc.type  = ERPCPacketTypes.REQUEST;
+            pProc.proc  = String(arguments[0]);
+            pProc.argv  = pArgv;
+
 
             if (!isNull(fnCallback)) {
-                this._pCallbacks.push({n: pProc.n, fn: fnCallback});
+                pCallback = <IRPCCallback>this._createCallback();
+                pCallback.n = pProc.n;
+                pCallback.fn = fnCallback;
             }
 
             if (isNull(pPipe) || !pPipe.isOpened()) {
-                this._pDefferedCalls.push(pProc);
+                if (this._pDefferedRequests.length <= RPC.OPTIONS.DEFFERED_CALLS_LIMIT) {
+                    this._pDefferedRequests.push(pProc);
+                    this._pCallbacks.push(pCallback);
+                }
+                else {
+                    pCallback.fn(RPC.ERRORS.STACK_SIZE_EXCEEDED);
+                    debug_warning(RPC.ERRORS.STACK_SIZE_EXCEEDED);
+                    
+                    this._releaseCallback(pCallback);
+                }
+                
                 return false;
             }
 
-            return pPipe.write(pProc);
+            this._pCallbacks.push(pCallback);
+
+            bResult = pPipe.write(pProc);
+
+            this._releaseRequest(pProc);
+
+            return bResult;
+        }
+
+        inline _releaseRequest(pReq: IRPCRequest): void {
+            pReq.n = 0;
+            pReq.proc = null;
+            pReq.argv = null;
+
+            RPC.requestPool.push(pReq);
+        };
+
+        inline _createRequest(): IRPCRequest {
+            if (RPC.requestPool.length == 0) {
+                // LOG("allocated rpc request");
+                return {n: 0, type: ERPCPacketTypes.REQUEST, proc: null, argv: null };
+            }
+
+            return <IRPCRequest>RPC.requestPool.pop();
+        }
+
+        inline _releaseCallback(pReq: IRPCCallback): void {
+            pReq.n = 0;
+            pReq.fn = null;
+
+            RPC.callbackPool.push(pReq);
+        };
+
+        inline _createCallback(): IRPCCallback {
+            if (RPC.callbackPool.length == 0) {
+                // LOG("allocated callback");
+                return { n: 0, fn: null};
+            }
+
+            return <IRPCCallback>RPC.callbackPool.pop();
         }
 
         BEGIN_EVENT_TABLE(RPC);
             BROADCAST(joined, VOID);
         END_EVENT_TABLE();
 
+        private static requestPool: IObjectArray = new ObjectArray;
+        private static callbackPool: IObjectArray = new ObjectArray;
+
         static OPTIONS = {
             DEFFERED_CALLS_LIMIT: 1024,
-            CALLBACKS_LIMIT     : 2048,
-            RECONNECT_TIMEOUT   : 5000
+            RECONNECT_TIMEOUT   : 1000
+        }
+
+        static ERRORS = {
+            STACK_SIZE_EXCEEDED: new Error("stack size exceeded")
         }
 
         //имя процедуры, для получения все поддерживаемых процедур

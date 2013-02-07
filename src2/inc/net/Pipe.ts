@@ -10,6 +10,9 @@ module akra.net {
 
 	interface IVirualDescriptor {
 		onmessage: (pMessage: any) => void;
+		onerror: (pErr: ErrorEvent) => void;
+		onclose: (pEvent: CloseEvent) => void;
+		onopen: (pEvent: Event) => void;
 	}
 
 	class Pipe implements IPipe {
@@ -17,6 +20,7 @@ module akra.net {
 		protected _nMesg: uint = 0; /** Number of sended messages.*/
 		protected _eType: EPipeTypes = EPipeTypes.UNKNOWN;
 		protected _pConnect: IVirualDescriptor = null;
+		protected _bSetupComplete: bool = false;
 
 		inline get uri(): IURI {
 			return util.uri(this._pAddr.toString());
@@ -63,16 +67,6 @@ module akra.net {
 
 				pSocket = new WebSocket(pAddr.toString());
 				
-				pSocket.onopen = function (): void {
-					LOG("created pipe to: " + pAddr.toString());
-
-					pPipe.opened();
-				}
-
-				pSocket.onerror = function (pErr: ErrorEvent): void {
-					WARNING("pipe error detected: " + pErr.message);
-					pPipe.error(pErr);
-				}
 
 				pSocket.binaryType = "arraybuffer";
 				eType = EPipeTypes.WEBSOCKET;
@@ -102,19 +96,49 @@ module akra.net {
 			}
 
 			if (!isNull(this._pConnect)) {
-				this._pConnect.onmessage = function (pMessage: any): void {
-					if (isArrayBuffer(pMessage.data)) {
-						pPipe.message(pMessage.data, EPipeDataTypes.BINARY);
-					}
-					else {
-						pPipe.message(pMessage.data, EPipeDataTypes.STRING);
-					}
-				}
+				this.setupConnect();
 
 				return true;
 			}
 
 			return false;
+		}
+
+		private setupConnect(): void {
+			var pConnect: IVirualDescriptor = this._pConnect;
+			var pPipe: IPipe = this;
+			var pAddr: IURI = this._pAddr;
+
+			if (this._bSetupComplete) {
+				return;
+			}
+
+			pConnect.onmessage = function (pMessage: any): void {
+				if (isArrayBuffer(pMessage.data)) {
+					pPipe.message(pMessage.data, EPipeDataTypes.BINARY);
+				}
+				else {
+					pPipe.message(pMessage.data, EPipeDataTypes.STRING);
+				}
+			}
+
+			pConnect.onopen = function (pEvent: Event): void {
+				LOG("created connect to: " + pAddr.toString());
+
+				pPipe.opened(pEvent);
+			}
+
+			pConnect.onerror = function (pErr: ErrorEvent): void {
+				WARNING("pipe error detected: " + pErr.message);
+				pPipe.error(pErr);
+			}
+
+			pConnect.onclose = function (pEvent: CloseEvent): void {
+				LOG("connection to " + pAddr.toString() + " closed");
+				pPipe.closed(pEvent);
+			}
+
+			this._bSetupComplete = true;
 		}
 
 		close(): void {
@@ -130,12 +154,13 @@ module akra.net {
 						pSocket.close();
 						break;
 					case EPipeTypes.WEBWORKER:
-						pWorker = <Worker>this._pConnect;
+						pWorker = <Worker><any>this._pConnect;
 						pWorker.terminate();
 				}
 			}
 
 			this._pConnect = null;
+			this._bSetupComplete = false;
 		}	
 
 		write(pValue: any): bool {
@@ -152,12 +177,11 @@ module akra.net {
 						if (isObject(pValue)) {
 							pValue = JSON.stringify(pValue);
 						}
-
 						pSocket.send(pValue);
 						return true;
 
 					case EPipeTypes.WEBWORKER:
-						pWorker = <Worker>this._pConnect;
+						pWorker = <Worker><any>this._pConnect;
 						
 						if (isDef(pValue.byteLength)) {
 							pWorker.postMessage(pValue, [pValue]);
@@ -176,20 +200,21 @@ module akra.net {
 		isClosed(): bool {
 			switch (this._eType) {
 				case EPipeTypes.WEBSOCKET:
-					return ((<WebSocket>this._pConnect).readyState === 3);
+					return ((<WebSocket>this._pConnect).readyState === WebSocket.CLOSED);
 			}
 
-			return !isNull(this._pConnect);
+			return isNull(this._pConnect);
 		}
 
 		isOpened(): bool {
 			switch (this._eType) {
 				case EPipeTypes.WEBSOCKET:
-					return (<WebSocket>this._pConnect).readyState === 1;
+					return (<WebSocket>this._pConnect).readyState === WebSocket.OPEN;
 			}
 
 			return !isNull(this._pConnect);
 		}
+
 
 		inline isCreated(): bool {
 			return !isNull(this._pConnect);
@@ -197,7 +222,7 @@ module akra.net {
 
 		BEGIN_EVENT_TABLE(Pipe);
 			BROADCAST(opened, VOID);
-			BROADCAST(closed, VOID);
+			BROADCAST(closed, CALL(ev));
 			BROADCAST(error, CALL(err));
 			BROADCAST(message, CALL(data, type));
 		END_EVENT_TABLE();

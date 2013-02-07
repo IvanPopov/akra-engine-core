@@ -119,8 +119,9 @@ wsServer.on('request', function(request) {
         if (message.type === 'utf8') {
             //trace('message from socket:', message.utf8Data);
 
-            request = JSON.parse(message.utf8Data);            
-            //trace(request);
+            request = JSON.parse(message.utf8Data);    
+           // if (request.argv)        
+           //  trace(">", request.argv[0]);
             var fnCall = function(response) {
 
     		    if (response instanceof Buffer) {
@@ -133,7 +134,7 @@ wsServer.on('request', function(request) {
     		        // }
     		    }
     		    else {
-                    //trace(response);
+                    //trace("<",response.res);
     			    connection.sendUTF(JSON.stringify(response));
     		    }
 		    }

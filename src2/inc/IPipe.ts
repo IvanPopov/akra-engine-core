@@ -32,9 +32,9 @@ module akra {
 		isCreated(): bool;
 		isClosed(): bool;
 
-		signal opened(): void;
+		signal opened(pEvent: Event): void;
 		signal error(pErr: ErrorEvent): void;
-		signal closed(): void;
+		signal closed(pEvent: CloseEvent): void;
 		signal message(pData: any, eType: EPipeDataTypes): void;
 	}
 }

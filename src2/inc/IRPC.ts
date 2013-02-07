@@ -10,6 +10,11 @@ module akra {
         RESPONSE
     }
 
+    export interface IRPCCallback {
+        n: uint;
+        fn: Function;
+    }
+
 	export interface IRPCPacket {
         n: uint;
         type: ERPCPacketTypes;
@@ -37,6 +42,10 @@ module akra {
 		parseBinary(pData: ArrayBuffer): void;
 
 		signal joined(): void;
+
+        _createRequest(): IRPCRequest;
+        _releaseRequest(pReq: IRPCRequest): void;
+
 	}
 }
 

@@ -15,16 +15,21 @@ module akra.util.test {
 				setInterval(function (): void {
 
 					var iSendTime: int = now();
-					pRpc.remote.echo(i, function (j: int): void {
-						
-						//if (i < 5) {
+			
+					(function (n) {
+						pRpc.remote.echo(n, function (pErr: Error, j: int): void {
+							if (!isNull(pErr)) {
+								WARNING(pErr.message);
+								return;
+							}
+
 							shouldBeTrue("ping: " + (now() - iSendTime) +" ms" + "[ echo: " + j + " ]");	
-							check(i == j);
-				//		}
-				
-						i ++;
-					})
-				}, 100);
+							check(n == j);
+					
+							
+						})
+					})(i ++);
+				}, 10);
 			}
 		);
 
