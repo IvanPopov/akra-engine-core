@@ -2,6 +2,8 @@
 #define IMATERIAL_TS
 
 module akra {
+	IFACE (IVertexData);
+
 	export interface IMaterialBase {
 		diffuse: IColorValue;
 		ambient: IColorValue;
@@ -15,6 +17,10 @@ module akra {
 
 		set(pMat: IMaterialBase): IMaterial;
 		isEqual(pMat: IMaterialBase): bool;
+	}
+
+	export interface IFlexMaterial extends IMaterial {
+		data: IVertexData;
 	}
 
 	// export interface IMaterialEx extends IMaterial {
