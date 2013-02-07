@@ -181,16 +181,14 @@ module akra.scene {
 
 			var iDepth: int = this._iDepth;
 
-			var iMidX: int, iMidY: int, iMidZ: int;
+			// var iMidX: int, iMidY: int, iMidZ: int;
 		    var iLevel: int;
 
-		    var iXPattern: int = iX0 ^ iX1;
-		    var iYPattern: int = iY0 ^ iY1;
-		    var iZPattern: int = iZ0 ^ iZ1;
+		 //    var iXPattern: int = iX0 ^ iX1;
+		 //    var iYPattern: int = iY0 ^ iY1;
+		 //    var iZPattern: int = iZ0 ^ iZ1;
 
-		    var iPattern: int = math.max(iXPattern, math.max(iYPattern, iZPattern));
-
-		    console.error(iXPattern, iYPattern, iZPattern)
+		 //    var iPattern: int = math.max(iXPattern, math.max(iYPattern, iZPattern));
 
 		    // iLevel = (iPattern != 0) ? iDepth - math.highestBitSet(iPattern) : 0;
 
@@ -206,13 +204,14 @@ module akra.scene {
 		    }
 
 		    var iComposedIndex: int;
-		    iComposedIndex = (iX0 >> (iDepth - iLevel)) << (2*iDepth + iLevel);
+		    var iShift: int = iDepth - iLevel;
+		    iComposedIndex = (iX0 >> (iDepth - iLevel)) << (2*iDepth + iShift);
 		    console.log(iComposedIndex);
-		    iComposedIndex += (iY0 >> (iDepth - iLevel)) << (iDepth + iLevel);
+		    iComposedIndex += (iY0 >> (iDepth - iLevel)) << (iDepth + iShift);
 		    console.log(iComposedIndex);
-		    iComposedIndex += (iZ0 >> (iDepth - iLevel)) << (iLevel);
+		    iComposedIndex += (iZ0 >> (iDepth - iLevel)) << (iShift);
 
-		    console.log(iComposedIndex, iX0, iY0, iZ0);
+		    //console.log(iComposedIndex, iX0, iY0, iZ0);
 
 			var iWay: int;
 
@@ -224,64 +223,128 @@ module akra.scene {
 		    var iX: int, iY: int, iZ: int;
 
 		    var i: int = 0;
-
+		    var zz: int = 0;
 			while(i < iLevel){
 
 				iTmpX = iX0; iTmpY = iY0; iTmpZ = iZ0;
 
-				iX = (iTmpX >> (iDepth - i)) & 1;
-		    	iY = (iTmpY >> (iDepth - i)) & 1;
-		    	iZ = (iTmpZ >> (iDepth - i)) & 1;
+				iX = (iTmpX >> (iDepth - i - 1)) & 1;
+		    	iY = (iTmpY >> (iDepth - i - 1)) & 1;
+		    	iZ = (iTmpZ >> (iDepth - i - 1)) & 1;
 
 				iWay = 4*iX + 2*iY + iZ;
 
+				console.log('iWay -------------->', iWay, '<--------------');
+
 				var pNodeList: IObjectList = pParentNode.childrenList[iWay];
+				console.log(pParentNode);
 
 				if(pNodeList.length === 0){
-					return this.getAndSetFreeNode(iLevel, iComposedIndex, pParentNode);
+					pNode = this.getAndSetFreeNode(iLevel, iComposedIndex, pParentNode);
+					pNodeList.push(pNode);
+					return pNode;
 				}
 
 				var iPosition: int = 0;
-				var pTestNode: IOcTreeNode = pNodeList.first();
+				var pTestNode: IOcTreeNode = pNodeList.first;
+
+				var iTestMask: int = (iDepth >= i + 2) ? 1 << (iDepth - i - 2) : 0;
+
+				var iMask: int  = (iTestMask << (2*iDepth)) + (iTestMask << iDepth) + iTestMask;
+				console.log('mask-------------->',iMask,'<-----------');
+
+				var pParentNodeOld: IOcTreeNode = pParentNode;
 
 				while(isDefAndNotNull(pTestNode)){
 
 					var iTest: int = pTestNode.index & iComposedIndex;
 
-					if(iTest === pTestNode.index){
+					console.log(pTestNode);
+					console.error('iLevel--->', iLevel,'iTest ------------>', iTest);
+					console.error('testNode index', pTestNode.index, 'composed index', iComposedIndex);
+
+					var iResult1: int = pTestNode.index & iMask;
+					var iResult2: int = iComposedIndex & iMask;
+
+					console.warn(iResult1, iResult2);
+
+					if(iResult1 === iResult2){
 						if(pTestNode.level === iLevel){
 							return pTestNode;
 						}
-						else{
+						else if(pTestNode.level < iLevel){
 							pParentNode = pTestNode;
 							i = pTestNode.level;
 							break;
 						}
-					}
-					else if(iTest === iComposedIndex){
-						if(pNode === null){
-							pNode = this.getAndSetFreeNode(iLevel, iComposedIndex, pParentNode);
-							i = iLevel;
+						else{
+							alert("" + <string><any>pTestNode.level + "  " + <string><any>iLevel);
+							if(pNode === null){
+								pNode = this.getAndSetFreeNode(iLevel, iComposedIndex, pParentNode);
+								pParentNode.childrenList[iWay].push(pNode);
+								i = iLevel;
+							}
+							
+							var iTestIndex: int = pTestNode.index;
+
+							iX = (iTestIndex >> (3*iDepth - i))&1;
+							iY = (iTestIndex >> (2*iDepth - i))&1;
+							iZ = (iTestIndex >> (iDepth - i))&1;
+
+							var iTestWay: int = 4*iX + 2*iY + iZ;
+
+							pNodeList.takeAt(iPosition);
+							pNodeList.seek(iPosition-1);
+							iPosition--;
+
+							pNode.childrenList[iTestWay].push(pTestNode);
+							pTestNode.rearNodeLink = pNode;
 						}
-						var iTestIndex: int = pTestNode.index;
-
-						iX = (iTestIndex >> (3*iDepth - i))&1;
-						iY = (iTestIndex >> (2*iDepth - i))&1;
-						iZ = (iTestIndex >> (iDepth - i))&1;
-
-						iWay = 4*iX + 2*iY + iZ;
-
-						pNodeList.takeAt(iPosition);
-						pNodeList.seek(iPosition-1);
-						iPosition--;
-
-						pNode[iWay].push(pTestNode);
-						pTestNode.rearNodeLink = pNode;
 					}
+
+					// if(iTest === pTestNode.index){
+					// 	if(pTestNode.level === iLevel){
+					// 		return pTestNode;
+					// 	}
+					// 	else if(pTestNode.level < iLevel){
+					// 		pParentNode = pTestNode;
+					// 		i = pTestNode.level;
+					// 		break;
+					// 	}
+					// 	console.log(pTestNode.level, iLevel,"<--------------------------");
+					// }
+					// if(iTest === iComposedIndex){
+						
+					// 	var iTestIndex: int = pTestNode.index;
+
+					// 	iX = (iTestIndex >> (3*iDepth - i))&1;
+					// 	iY = (iTestIndex >> (2*iDepth - i))&1;
+					// 	iZ = (iTestIndex >> (iDepth - i))&1;
+
+					// 	iWay = 4*iX + 2*iY + iZ;
+
+					// 	pNodeList.takeAt(iPosition);
+					// 	pNodeList.seek(iPosition-1);
+					// 	iPosition--;
+
+					// 	pNode.childrenList[iWay].push(pTestNode);
+					// 	pTestNode.rearNodeLink = pNode;
+					// }
 
 					pTestNode = pNodeList.next();
 					iPosition++;
 				}
+
+				if(pNode === null && pParentNodeOld === pParentNode){
+					pNode = this.getAndSetFreeNode(iLevel, iComposedIndex, pParentNode);
+					pParentNode.childrenList[iWay].push(pNode);
+					break;
+				}
+
+				if(zz>100){
+					break;
+				}
+				zz++;
 			}
 
 			return pNode;

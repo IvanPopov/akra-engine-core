@@ -63,9 +63,10 @@ module akra.scene {
 		 */
 		removeMember(pObject: ISceneObject): void {
 			var i:int = this.membersList.indexOf(pObject);
-
+			console.log('position in list ------------>',i);
+			
 			// make sure this is one of ours
-			debug_assert(i>=0, "error removing Oc tree pObject");
+			debug_assert(i>=0, "error removing member cannot find member");
 		    
 	    	if(i>=0){
 	    		this.membersList.takeAt(i);
@@ -117,10 +118,10 @@ module akra.scene {
 		removeMember(pObject: ISceneObject): void{
 			var i:int = this.membersList.indexOf(pObject);
 
-			console.log(i)
+			console.log('position in list ------------>',i);
 
 			// make sure this is one of ours
-			debug_assert(i>=0, "error removing root node Oc tree pObject");
+			debug_assert(i>=0, "error removing member cannot find member");
 		    
 	    	if(i>=0){
 	    		this.membersList.takeAt(i);
