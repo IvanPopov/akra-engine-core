@@ -1,6 +1,7 @@
 #ifndef OCTREE_TS
 #define OCTREE_TS
 
+#include "common.ts"
 #include "IOcTree.ts"
 #include "DisplayList.ts"
 #include "math/Vec3.ts"

@@ -2,6 +2,11 @@
 #define DISPLAYLIST_TS
 
 #include "IDisplayList.ts"
+#include "IScene3d.ts"
+#include "ISceneObject.ts"
+#include "ICamera.ts"
+#include "events/events.ts"
+#include "scene/SceneObject.ts"
 
 module akra.scene {
 	export class DisplayList implements IDisplayList {
@@ -12,13 +17,13 @@ module akra.scene {
 		inline set name(sName: string) { this._sName = sName; }
 
 		_onNodeAttachment(pScene: IScene3d, pNode: ISceneNode): void {
-			if (SceneObject.isSceneObject(pNode)) {
+			if (isSceneObject(pNode)) {
 				this.attachObject(<ISceneObject>pNode);
 			}
 		}
 
 		_onNodeDetachment(pScene: IScene3d, pNode: ISceneNode): void {
-			if (SceneObject.isSceneObject(pNode)) {
+			if (isSceneObject(pNode)) {
 				this.detachObject(<ISceneObject>pNode);
 			}
 		}

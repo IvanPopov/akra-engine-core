@@ -8,7 +8,7 @@
 #include "IFrameBuffer.ts"
 #include "events/events.ts"
 
-#define DL_DEFAULT DEFAULT_NAME;
+//#define DL_DEFAULT DEFAULT_NAME;
 
 module akra.render {
 	export class Viewport implements IViewport {

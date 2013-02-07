@@ -9,7 +9,7 @@
 #include "Sphere.ts"
 #include "Rect2d.ts"
 #include "Rect3d.ts"
-
+#include "math/math.ts"
 
 module akra.geometry{
 
