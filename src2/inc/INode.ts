@@ -19,6 +19,10 @@ module akra {
     	ALL
 	};
 
+	export interface INodeMap{
+		[index: string]: INode;
+	}
+
 	export interface INode extends IEntity {
 		localOrientation: IQuat4;
 		localPosition: IVec3;

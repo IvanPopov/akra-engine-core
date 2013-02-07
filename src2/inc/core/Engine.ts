@@ -12,6 +12,14 @@
 #include "scene/SceneManager.ts"
 #include "util/UtilTimer.ts"
 
+//include sub creation classes.
+
+#include "render/RenderDataCollection.ts"
+#include "model/Mesh.ts"
+#include "util/BufferMap.ts"
+#include "animation/AnimationController.ts"
+#include "model/Skeleton.ts"
+
 #ifdef WEBGL
 #include "webgl/WebGLRenderer.ts"
 #endif
@@ -175,6 +183,21 @@ module akra.core {
 		    return !this._isActive;
 		}
 
+		inline createMesh(sName: string = null, eOptions: int = 0, pDataBuffer: IRenderDataCollection = null): IMesh {
+			return model.createMesh(this, sName, eOptions, pDataBuffer);
+		}
+
+		inline createRenderDataCollection(iOptions: int = 0): IRenderDataCollection {
+			return render.createRenderDataCollection(this, iOptions);
+		}
+
+		inline createBufferMap(): IBufferMap {
+			return util.createBufferMap(this);
+		}
+
+		inline createAnimationController(iOptions: int = 0): IAnimationController {
+			return animation.createController(this, iOptions);
+		}
 
 		BEGIN_EVENT_TABLE(Engine);
 			BROADCAST(frameStarted, VOID);

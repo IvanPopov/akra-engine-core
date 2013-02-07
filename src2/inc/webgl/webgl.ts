@@ -278,6 +278,8 @@ module akra.webgl {
 		}
 	}
 
+
+
 	export function getWebGLInternalFormat(eFormat: EPixelFormats, isHWGamma: bool = false): int {
         switch (eFormat) {
             case EPixelFormats.L8:
@@ -346,6 +348,27 @@ module akra.webgl {
             default:
                 return 0;
         }
+    }
+
+    export function getWebGLPrimitiveType(eType: EPrimitiveTypes): int {
+        switch (eType) {
+            case EPrimitiveTypes.POINTLIST: 
+                return GL_POINTS;
+            case EPrimitiveTypes.LINELIST: 
+                return GL_LINES;
+            case EPrimitiveTypes.LINELOOP: 
+                return GL_LINE_LOOP;
+            case EPrimitiveTypes.LINESTRIP: 
+                return GL_LINE_STRIP;
+            case EPrimitiveTypes.TRIANGLELIST: 
+                return GL_TRIANGLES;
+            case EPrimitiveTypes.TRIANGLESTRIP: 
+                return GL_TRIANGLE_STRIP;
+            case EPrimitiveTypes.TRIANGLEFAN: 
+                return GL_TRIANGLE_FAN;
+        }
+
+        return GL_POINTS;
     }
 
     export function getClosestWebGLInternalFormat(eFormat: EPixelFormats, isHWGamma: bool = false): int {

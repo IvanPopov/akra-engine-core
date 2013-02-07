@@ -4,7 +4,7 @@
 module akra {
 	IFACE(IAnimationBase);
 	IFACE(IEngine);
-	IFACE(INode);
+	IFACE(ISceneNode);
 
 	export interface IAnimationController{
 		readonly totalAnimations: int;
@@ -23,7 +23,7 @@ module akra {
 		getAnimation(iAnim: int): IAnimationBase;
 
 		setAnimation(iAnimation: int, pAnimation: IAnimationBase): void;
-		bind(pTarget: INode): void;
+		bind(pTarget: ISceneNode): void;
 		play(pAnimation: IAnimationBase, fRealTime: float): bool;
 
 		update(fTime: float): void;

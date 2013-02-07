@@ -5,6 +5,7 @@
 #include "ISampler2d.ts"
 #include "core/pool/ResourcePoolItem.ts"
 #include "IShaderProgram.ts"
+#include "IBufferMap.ts"
 
 #define CHECK_WEBGL_LOCATION(iLoc, sName)\
 	var iLoc: WebGLUniformLocation = this._pWebGLUniformLocations[sName]; \
@@ -328,7 +329,7 @@ module akra.webgl {
     	}
 
     	//applyVertexBuffer(sName: string, pBuffer: IVertexBuffer);
-    	inline applyVertexData(sName: string, pData: IVertexData): bool {
+    	applyVertexData(sName: string, pData: IVertexData): bool {
     		GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext);
 
     		var pVertexBuffer: IVertexBuffer = <IVertexBuffer>pData.buffer;
@@ -365,6 +366,10 @@ module akra.webgl {
     		return true;
     	}
 
+
+        inline applyBufferMap(pMap: IBufferMap): void {
+            CRITICAL("WebGLShaderProgram::applyBufferMap() is uncompleted method!");
+        }
 
 
     	inline getWebGLAttributeLocation(sName: string): int {

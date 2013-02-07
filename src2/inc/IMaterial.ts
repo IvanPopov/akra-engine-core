@@ -2,17 +2,19 @@
 #define IMATERIAL_TS
 
 module akra {
-	export interface IMaterial {
-		name: string;
-
+	export interface IMaterialBase {
 		diffuse: IColorValue;
 		ambient: IColorValue;
 		specular: IColorValue;
 		emissive: IColorValue;
 		shininess: float;
+	}
 
-		set(pMat: IMaterial): IMaterial;
-		isEqual(pMat: IMaterial): bool;
+	export interface IMaterial extends IMaterialBase {
+		name: string;
+
+		set(pMat: IMaterialBase): IMaterial;
+		isEqual(pMat: IMaterialBase): bool;
 	}
 
 	// export interface IMaterialEx extends IMaterial {

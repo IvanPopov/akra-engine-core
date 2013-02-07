@@ -4,11 +4,11 @@
 module akra {
 	IFACE(IAnimationFrame);
 	IFACE(ISkeleton);
-	IFACE(INode);
+	IFACE(ISceneNode);
 	IFACE(IMat4);
 	export interface IAnimationTrack {
 		targetName: string;
-		readonly target: INode;
+		readonly target: ISceneNode;
 		readonly duration: float;
 
 		keyFrame(fTime: float, pMatrix: IMat4): bool;
@@ -16,7 +16,7 @@ module akra {
 		findKeyFrame(fTime: float): int;
 		bind(sJoint: string, pSkeleton: ISkeleton);
 		bind(pSkeleton: ISkeleton);
-		bind(pNode: INode);
+		bind(pNode: ISceneNode);
 		frame(fTime: float): IAnimationFrame;
 	}
 }

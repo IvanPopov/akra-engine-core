@@ -3,27 +3,29 @@
 
 module akra {
 	IFACE(INode);
+	IFACE(IJoint);
 
-	export interface INodeMap{
-		[index: string]: INode;
+	export interface IJointMap{
+		[index: string]: IJoint;
 	}
+
+
 
 	export interface ISkeleton {
 		readonly totalBones: int;
 		readonly totalNodes: int;
 		readonly name: string;
-		readonly root: INode;
+		readonly root: IJoint;
 
-		getEngine(): IEngine;
-		getRootJoint(): INode;
-		getRootJoints(): INode[];
-		getJointMap(): INodeMap;
-		getNodeList(): INode[];
-		addRootJoint(pJoint: INode): bool;
+		getRootJoint(): IJoint;
+		getRootJoints(): IJoint[];
+		getJointMap(): IJointMap;
+		getNodeList(): ISceneNode[];
+		addRootJoint(pJoint: IJoint): bool;
 		update(): bool;
-		findJoint(sName: string): INode;
-		findJointByName(sName: string): INode;
-		attachMesh(pMesh: IMesh): void;
+		findJoint(sName: string): IJoint;
+		findJointByName(sName: string): IJoint;
+		attachMesh(pMesh: IMesh): bool;
 		detachMesh(): void;
 
 	}

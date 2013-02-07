@@ -3,7 +3,7 @@
 
 #include "common.ts"
 
-module akra.utils.test {
+module akra.util.test {
 
 	var pTestCondList: ITestCond[] = [];
 
@@ -108,6 +108,10 @@ module akra.utils.test {
 
 	export function run(): void {
 		Test.run();
+	}
+
+	window.onload = function () {
+		run();
 	}
 }
 

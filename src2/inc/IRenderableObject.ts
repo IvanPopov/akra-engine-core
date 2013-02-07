@@ -2,17 +2,16 @@
 #define IRENDERABLEOBJECT_TS
 
 #include "IRenderTechnique.ts"
+#include "IEventProvider.ts"
 
 module akra {
-	export interface IRenderableObject {
+	export interface IRenderableObject extends IEventProvider {
 		renderMethod: IRenderMethod;
 		
 		readonly effect: IEffect;
 		readonly surfaceMaterial: ISurfaceMaterial;
 
 		readonly material: IMaterial;
-
-		_setup(pRenderer: IRenderer, csDefaultMethod?: string): void;
 
 		getGuid(): uint;
 		getRenderer(): IRenderer;
@@ -37,6 +36,12 @@ module akra {
 
 
 		render(csMethod?: string): void;
+
+		_setup(pRenderer: IRenderer, csDefaultMethod?: string): void;
+		_draw(): void;
+
+		/** Notify, when shadow added or removed. */
+		signal shadow(bValue: bool): void;
 	}
 }
 

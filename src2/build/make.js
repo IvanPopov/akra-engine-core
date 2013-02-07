@@ -7,7 +7,15 @@ var spawn 	= require('child_process').spawn;
 var md5 	= require('MD5');
 var stream  = require('stream');
 
-var BUFFER_SIZE = 5 * 1024 * 1024;
+function include(file) {
+	eval(fs.readFileSync(file, "utf-8"));
+}
+
+//include("optarg.js");
+
+//command line output buffer size
+//default is 5MB
+var BUFFER_SIZE = 5 * 1024 * 1024; 
 
 
 
@@ -26,7 +34,9 @@ function usage() {
 		'\n\t--test			[-c] < path/to/single/test > Specify test directory. ' + 
 		'\n\t--html			build tests as HTML. ' + 
 		'\n\t--nw			build tests as NW. ' + 
-		'\n\t--help			[-h] Print this text. '
+		'\n\t--help			[-h] Print this text. ' + 
+		'\n\t--ES6			activate ecmascript 5 capability.' + 
+		'\n\t--compress		compress output javascript.'
 	);
 	
 	process.exit(1);
@@ -39,8 +49,10 @@ var pOptions = {
 	buildDir: "./",			//dir from witch we build
 	tempFile: "~tmp.ts",		//temprorary file name
 	baseDir: __dirname,		//home dir for this script
+	capability: null,
 	testDir: null,
 	pathToTests: null,
+	compress: false,
 	files: [],
 	pathToTemp: null,
 	testsFormat: {nw: false, html: false}
@@ -93,6 +105,13 @@ function parseArguments() {
 		sArg = process.argv[i];
 
 		switch (sArg) {
+			case '--compress':
+			case '-z':
+				pOptions.compress = true;
+				break;
+			case '--ES6':
+				pOptions.capability = "ES6";
+				break;
 			case '--target':
 			case '-t':
 				sTarget = process.argv[++i].toUpperCase();
@@ -160,8 +179,25 @@ function verifyOptions() {
 function preprocess() {
 	console.log("\n> preprocessing started (" + this.process.pid + ")\n");
 
+	var capabilityMacro = [
+		"-D inline=/**@inline*/",
+		"-D protected=/**@protected*/",
+		"-D const=/**@const*/var",
+		"-D struct=class",
+		"-D readonly="
+		].join(" ");
+
+	if (pOptions.capability == null) {
+		capabilityMacro = "";
+		console.log("EcmaScript 6 capability mode: OFF");
+	}
+	else {
+		console.log("EcmaScript 6 capability mode: ON");
+	}
+
 	var cmd = pOptions.baseDir + "/mcpp";
-	var argv = ("-P -C -e utf8 -I " + "inc/ -j -+ -W 0 -k -D inline=/**@inline*/ " + pOptions.files.join(" ")).
+	var argv = ("-P -C -e utf8 -I " + "inc/ -j -+ -W 0 -k " + 
+		capabilityMacro + " " + pOptions.files.join(" ")).
 		split(" ");
 
 	var mcpp = spawn(cmd, argv, {maxBuffer: BUFFER_SIZE});
@@ -190,6 +226,36 @@ function preprocess() {
 	});
 }
 
+function compress(sFile) {
+
+	var cmd = "java";
+	var argv = (
+		"-jar " + 
+		pOptions.baseDir + "/compiler.jar " +
+		sFile + 
+		//" --warning_level=VERBOSE " + 
+		" --js_output_file " + sFile + ".min" + 
+		" --language_in=ECMASCRIPT5_STRICT" + 
+		" --compilation_level=ADVANCED_OPTIMIZATIONS"
+		).split(" ");
+	
+	
+	var closure = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE,  stdio: 'inherit' });
+
+	closure.on('exit', function (code) {
+		console.log('compression exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
+
+		if (code == 0) {
+		  	
+		  	console.log("compressed to: ", sFile);
+		}
+		else {
+			console.log("TODO: REMOVE TEMP COMPRESSED FILE >> ");
+		  	process.exit(1);
+		}
+	});
+}
+
 function compile() {
 	//console.log(this);
 	console.log("\n> compilation started (" + this.process.pid + ")  \n");
@@ -200,7 +266,8 @@ function compile() {
 		pOptions.baseDir + "/fixes.d.ts " + 
 		//pOptions.baseDir + "/WebGL.d.ts " + 
 		pOptions.pathToTemp + " --out " + 
-		pOptions.outputFolder + "/" + pOptions.outputFile + "").split(' ');
+		pOptions.outputFolder + "/" + pOptions.outputFile + 
+		(pOptions.compress? " --comments --jsdoc ": "") + " ").split(' ');
 
 	var node = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE,  stdio: 'inherit' });
 
@@ -208,14 +275,20 @@ function compile() {
 	  console.log('compilation exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
 
 	  if (code == 0) {
-	  	console.log("compiled to: ", pOptions.outputFolder + "/" + pOptions.outputFile);
+	  	var sOutputFile = pOptions.outputFolder + "/" + pOptions.outputFile;
+	  	console.log("compiled to: ", sOutputFile);
 
 		fs.unlink(pOptions.pathToTemp, function (err) {
 			if (err) {
 				throw err;
 			}
 
-			console.log("temp file: " + pOptions.pathToTemp + " removed.");
+			console.log("temp file: " + pOptions.pathToTemp + " removed.\n\n");
+			
+			if (pOptions.compress) {
+				compress(sOutputFile);
+			}
+			
 		});
 	  }
 	  else {
@@ -235,7 +308,24 @@ function buildCore() {
 
 //== tests
 
-function buildTests() {
+function buildTests(sDir) {
+	sDir = sDir || null;
+
+	var pSubFolders, sTestFile = null;
+
+	if (sDir) {
+		pSubFolders = (sDir.split('/'));
+		if (pSubFolders[pSubFolders.length - 1].split(".").length > 1) {
+			//если мы хотим собрать конкретный тест а не все тесты в папке
+			sTestFile = pSubFolders.pop();
+			sDir = pSubFolders.join("/");
+		}
+
+		if (sDir[sDir.length - 1] === "/") {
+			sDir = sDir.substr(0, sDir.length - 1);
+		}
+	}
+
 	fs.readdir(pOptions.pathToTests, function(err, list) {
         if (err) throw (err);
         
@@ -244,7 +334,10 @@ function buildTests() {
 
             fs.stat(sFile, function(err, stat) {
                 if (stat && stat.isDirectory()) {
-                	addTestDirectory(sFile);
+
+                	if (sDir == null || sDir == sFile) {
+                		addTestDirectory(sFile, sTestFile);
+                	}
                 }
             });
         });
@@ -275,12 +368,6 @@ function compileTest(sDir, sFile, sName, pData, sTestData) {
                   	<body>                               			\n\
                   		<h1 id=\"test_name\">Tests</h1>             \n\
                   		<script>" + sTestData + "</script>   		\n\
-                  		<script> 									\n\
-                  		if (akra && akra.utils && akra.utils.test) {\n\
-                  			akra.utils.test.run(); 					\n\
-                  		}											\n\
-                  		</script>   								\n\
-                  	</body>                              			\n\
                   </html>";
 
     function writeOutput(sOutputFile, pData) {
@@ -296,12 +383,15 @@ function compileTest(sDir, sFile, sName, pData, sTestData) {
 	        
 	        if (iTestQuitMutex >= 0) {
 		        var argv = pTestQueue.pop();
-		        packTest(argv.dir, argv.main, argv.name, argv.data);
-		        iTestQuitMutex --;
+		        
+		        if (argv) {
+			        packTest(argv.dir, argv.main, argv.name, argv.data);
+			        iTestQuitMutex --;
+			        return;
+		        }
 	        }
-	        else {
-	        	printTestResultTable();
-	        }
+
+	        printTestResultTable();
 	    });
     }
 
@@ -359,14 +449,20 @@ function packTest(sDir, sFile, sName, pData) {
 	var sTempFile = sFile + ".temp";
 
 	var cmd = "node";
-	var argv = (pOptions.baseDir + "/make.js -o " + sTempFile +" -t CORE " + sFile).split(" ");
+	var argv = (pOptions.baseDir + "/make.js -o " + sTempFile +" -t CORE " + 
+		(pOptions.capability? " --ES6 ": "") + 
+		(pOptions.compress? " --compress ": "") + sFile).split(" ");
 	var node = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE, stdio: 'inherit' });
 
 	node.on('exit', function (code) {
 		console.log("test " + sFile + " packed with code " + code);
 		if (code == 0) {
-			compileTest(sDir, sFile, sName, pData, fs.readFileSync(sTempFile, "utf8"));
+			compileTest(sDir, sFile, sName, pData, fs.readFileSync(sTempFile + (pOptions.compress? ".min": ""), "utf8"));
 			fs.unlinkSync(sTempFile)
+
+			if (pOptions.compress) {
+				fs.unlinkSync(sTempFile + ".min");
+			}
 		}
 		else {
 			pTestResults.push({file: sFile, name: sName, results: false});
@@ -385,7 +481,7 @@ function createTestData(sDir, sFile) {
 
 	fs.readdir(sDir, function(err, list) {
         if (err) throw (err);
-        
+
         list.forEach(function(sFile) {
         	sFile = sDir + "/" + sFile;
 
@@ -409,6 +505,10 @@ function createTestData(sDir, sFile) {
             	}
             }  
         });
+
+        if (iDepth == 0) {
+        	packTest(sDir, sTestMain, sTest, pTestFiles);
+        }
 
         pDirsForScan.forEach(function(sFile) {
         	scanDir(sFile, function (err, pFileList) {
@@ -434,8 +534,14 @@ function createTestData(sDir, sFile) {
     });
 }
 
-function addTestDirectory(sTestDir) {
+function addTestDirectory(sTestDir, sTestFile) {
+	sTestFile = sTestFile || null;
+
 	console.log("> test directory: " + sTestDir + " ");
+
+	if (sTestFile) {
+		console.log("> test file: " + sTestFile + " ");
+	}
 
 	fs.readdir(sTestDir, function(err, list) {
         if (err) throw (err);
@@ -454,8 +560,8 @@ function addTestDirectory(sTestDir) {
                 			if (path.basename(sFile) === pOptions.tempFile) {
                 				fs.unlinkSync(sFile);
                 			}
-                			else {
-                				console.log("\tfile: " + sFile + " --> " + createTestName(sFile) + ".nw");
+                			else if (sTestFile == null || path.basename(sFile) == path.basename(sTestFile)) {
+                				console.log("\tfile: " + sFile + " --> " + createTestName(sFile) + (pOptions.testsFormat.html? ".html": ".nw"));
                 				createTestData(sTestDir, sFile);
                 			}
                 		}
@@ -491,7 +597,7 @@ if (pOptions.target.core) {
 if (pOptions.target.tests) {
 	
 	if (pOptions.testDir) {
-		console.log("single test unsupported...");
+		console.log("single test used: " + pOptions.testDir);
 		//process.exit(1);
 	}
 
@@ -503,6 +609,6 @@ if (pOptions.target.tests) {
 	
 	console.log("\n> founded test dirs\n");
 
-	buildTests();
+	buildTests(pOptions.testDir);
 }
 

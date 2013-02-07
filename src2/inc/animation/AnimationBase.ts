@@ -2,7 +2,7 @@
 #define ANIMATIONBASE_TS
 
 #include "IAnimationBase.ts"
-#include "INode.ts"
+#include "ISceneNode.ts"
 #include "IAnimationFrame.ts"
 #include "IAnimationTrack.ts"
 #include "scene/Joint.ts"
@@ -15,11 +15,15 @@ module akra.animation {
 
 	export class AnimationBase implements IAnimationBase {
 
-		private _pTargetMap: IAnimationTargetMap = {};
-    	private _pTargetList: IAnimationTarget[] = [];
+		protected _pTargetMap: IAnimationTargetMap = {};
+    	protected _pTargetList: IAnimationTarget[] = [];
 
     	protected _fDuration: float = 0.0;
-		private _sName: string;
+		protected _sName: string;
+
+		constructor () {
+			this._sName = ("animation-" + now() + "-" + this.getGuid());
+		}
 
 		inline get duration(): float{
 			return this._fDuration;
@@ -46,7 +50,7 @@ module akra.animation {
 			this.onstop(fRealTime);
 		}
 		
-		attach(pTarget: INode): void {
+		attach(pTarget: ISceneNode): void {
 			debug_error("method AnimationBase::bind() must be overwritten.");
 		}
 		
@@ -56,7 +60,7 @@ module akra.animation {
 
 		apply(fRealTime: float): void {
 			var pTargetList: IAnimationTarget[] = this._pTargetList;
-		    var pTarget: INode;
+		    var pTarget: ISceneNode;
 		    var pFrame: IAnimationFrame;
 		    var pTransform;
 
@@ -74,7 +78,7 @@ module akra.animation {
 
 		}
 
-		addTarget(sName: string, pTarget: INode = null): IAnimationTarget {
+		addTarget(sName: string, pTarget: ISceneNode = null): IAnimationTarget {
 			//pTarget = pTarget || null;
 
 		    var pPointer: IAnimationTarget = this._pTargetMap[sName];
@@ -96,7 +100,7 @@ module akra.animation {
 			return pPointer;
 		}
 
-		setTarget(sName: string, pTarget: INode): IAnimationTarget {
+		setTarget(sName: string, pTarget: ISceneNode): IAnimationTarget {
 
 		    var pPointer: IAnimationTarget = this._pTargetMap[sName];
 			pPointer.target = pTarget;
@@ -126,9 +130,9 @@ module akra.animation {
 			return pTargetNames;
 		}
 
-		targetList(): INode[] {
+		targetList(): ISceneNode[] {
 			var pTargets: IAnimationTarget[] = this._pTargetList;
-			var pTargetList: INode[] = [];
+			var pTargetList: ISceneNode[] = [];
 
 			for (var i = 0; i < pTargets.length; ++ i) { 
 				pTargetList.push(pTargets[i].target);
@@ -142,8 +146,8 @@ module akra.animation {
 			var pJointList: IJoint[] = [];
 
 			for (var i = 0; i < pTargets.length; ++ i) { 
-				if (pTargets[i].target instanceof scene.Joint) {
-					pJointList.push(pTargets[i].target);
+				if (scene.isJoint(pTargets[i].target)) {
+					pJointList.push(<IJoint>pTargets[i].target);
 				}
 			}
 

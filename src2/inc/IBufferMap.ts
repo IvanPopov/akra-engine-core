@@ -27,26 +27,69 @@ module akra {
 
 	export interface IBufferMap extends IReferenceCounter{
 		primType: EPrimitiveTypes;
-		readonly primCount: uint;
 		index: IIndexData;
-		readonly limit: uint;
 		length: uint;
+
+		//FIXME: hack for terraing, for force limiting length of drawinf index.
+		/** writeonly */ _length: uint;
+		
+		/** Number of primitives. */
+		readonly primCount: uint;
+		/** Maximum flow available in buffer map. */
+		readonly limit: uint;
+		/** Start index for drawning. */
 		readonly startIndex: uint;
+		/** Number of completed flows. */
 		readonly size: uint;
+		/** Completed flows. */
 		readonly flows: IDataFlow[];
+		/** 
+		 * Mappers. 
+		 * @private
+		 */
 		readonly mappers: IDataMapper[];
+		/** 
+		 * Offset in bytes for drawing with global idnex. 
+		 * @deprecated
+		 */
 		readonly offset: uint;
 
+		/**
+		 * Find flow by semantics in.
+		 * @param sSemantics VertexElement usage or semantics.
+		 * @param {bool=} bComplete Find only in completed flows. Default is TRUE.
+		 */
+		getFlow(sSemantics: string, bComplete?: bool): IDataFlow;
 		getFlow(iFlow: int, bComplete?: bool): IDataFlow;
 		reset(): void;
+
+		/**
+		 * Add data to flow.
+		 */
+		flow(pVertexData: IVertexData): int;
 		flow(iFlow: uint, pVertexData: IVertexData): int;
-		checkData(pData: IVertexData): bool;
+		/**
+		 * Add index for flow.
+		 */
 		mapping(iFlow: int, pMap: IVertexData, sSemantics: string, iAddition?: int): bool;
+
+		/**
+		 * Check, Is pData already used as flow or mapper.
+		 */
+		checkData(pData: IVertexData): bool;
+
+		/**
+		 * Recals all statistics in buffer map.
+		 */
 		update(): bool;
+
 		clone(bWithMapping?: bool): IBufferMap; 
 		toString(): string;
 
-
+		/**
+		 * Draw buffer map.
+		 */
+		_draw(): void;
 	}
 }
 

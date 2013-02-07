@@ -63,8 +63,6 @@ module akra.util {
 		indexOf(pData: any, iFrom: uint = 0.): int{
 			var pItem: IObjectListItem = this.find(iFrom);
 
-			console.log(this, pData, iFrom, pItem);
-
 			for(var i: uint = iFrom; i<this._iLength; i++){
 				if(pItem.data === pData){
 					return i;
@@ -222,7 +220,10 @@ module akra.util {
 				return null;
 			}
 
-			var pItem: IObjectListItem = this.find(n);
+			return this.pullElement(this.find(n));
+		};
+
+		private pullElement(pItem: IObjectListItem): any {
 
 			if (isNull(pItem.prev)) {
 				this._pHead = pItem.next;
@@ -240,6 +241,13 @@ module akra.util {
 
 			this._iLength --;
 
+			if (isNull(pItem.next)) {
+				this._pCurrent = this._pTail;
+			}
+			else {
+				this._pCurrent = pItem.next;
+			}
+
 			return this.releaseItem(pItem);
 		};
 
@@ -248,9 +256,13 @@ module akra.util {
 			return this.takeAt(0);
 		};
 
-		inline takeLast(): any{
+		inline takeLast(): any {
 			return this.takeAt(this._iLength - 1);
 		};
+
+		inline takeCurrent(isPrev: bool = false): any {
+			return this.pullElement(this._pCurrent);
+		}
 
 		inline pop(): any{
 			return this.takeAt(this._iLength - 1);
@@ -283,9 +295,10 @@ module akra.util {
 
 		inline private createItem(): IObjectListItem {
 			if (ObjectList.listItemPool.length == 0) {
+				// LOG("allocated object list item");
 				return {next: null, prev: null, data: null};
 			}
-
+			// LOG("before pop <----------", this._iLength, this.first);
 			return <IObjectListItem>ObjectList.listItemPool.pop();
 		}
 
@@ -402,6 +415,10 @@ module akra.util {
 		static private listItemPool: IObjectArray = new ObjectArray;
 		
 	}
+}
+
+module akra {
+	export var ObjectList = util.ObjectList;
 }
 
 #endif

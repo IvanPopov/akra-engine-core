@@ -128,6 +128,12 @@ module akra.geometry{
 			this.radius = math.abs(this.radius);
 			return this;
 		};
+
+		transform(m4fMatrix: IMat4): ISphere {
+			CRITICAL("TODO: transform() for Sphere similar to Rect3d::transform();");
+
+			return this;
+		}
 	};
 }
 

@@ -47,10 +47,23 @@ module akra.scene {
 			super.destroy();
 		}
 
+		/**
+		 * @deprecated
+		 */
 		render(): void {
 
 		}
 
+		/**
+		 * @deprecated
+		 */
+		prepareForRender(): void {
+
+		}
+
+		/**
+		 * @deprecated
+		 */
 		recursiveRender(): void {
 			// render myself
 		    this.prepareForRender();
@@ -65,9 +78,6 @@ module akra.scene {
 		    }
 		}
 
-		prepareForRender(): void {
-
-		}
 
 		attachToParent(pParent: IEntity): bool {
 			if ((<ISceneNode>pParent).scene !== this._pScene) {

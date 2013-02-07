@@ -47,9 +47,14 @@ module akra.core.pool.resources {
 			this._iDataCounter = 0;
 		}
 
+		getVertexData(i: uint): IVertexData;
 		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;
 		getVertexData(iOffset: uint, iCount: uint, pDecl: IVertexDeclaration): IVertexData;
-		getVertexData(iOffset: uint, iCount: uint, pData: any): IVertexData {
+		getVertexData(iOffset: uint, iCount?: uint, pData?: any): IVertexData {
+			if (arguments.length < 2) {
+				return this._pVertexDataArray[<uint>arguments[0]];
+			}
+
 			var pDecl: IVertexDeclaration = createVertexDeclaration(pData);
 			var pVertexData: IVertexData = new data.VertexData(this, this._iDataCounter ++, iOffset, iCount, pDecl);
 
