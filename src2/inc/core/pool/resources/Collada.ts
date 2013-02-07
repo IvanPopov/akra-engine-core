@@ -286,6 +286,7 @@ module akra.core.pool.resources {
         private isLibraryLoaded(sLib: string): bool;
         private isLibraryExists(sLib: string): bool;
         private getLibrary(sLib: string): IColladaLibrary;
+        private getBasename(): string;
 
         private checkLibraries(pXML: Node, pTemplates: IColladaLibraryTemplate[]): void;
         private readLibraries(pXML: Node, pTemplates: IColladaLibraryTemplate[]): void;
@@ -344,10 +345,11 @@ module akra.core.pool.resources {
 
             var pLib: IColladaLibrary = <IColladaLibrary>{};
             var pData: IColladaEntry;
+            var sTag: string = pTemplate.element;
 
             pLib[sTag] = {};
 
-            eachChild(pXML, function (pXMLData: Node, sName: string): void {
+            eachChild(pXML, function (pXMLData: Node, sName?: string): void {
                 if (sTag !== sName) {
                     return;
                 }
@@ -362,6 +364,245 @@ module akra.core.pool.resources {
             });
 
             return pLib;
+        }
+
+        // collada mapping
+
+        // private source(sUrl: string): IColladaEntry;
+        // private link(sId: string, pTarget: IColladaEntry): void;
+        
+        //astroBoy_newSkeleton_root/rotateY.ANGLE
+        //pObject.source: IColladaEntry = astroBoy_newSkeleton_root
+        //pSource: IColladaTransform = source(astroBoy_newSkeleton_root/rotateY)
+        //pSource: IColladaTransform = {
+        //    sid: string;  //rotateY
+        //    value: IVec4; //<0 1 0 -4.56752>
+        //    name: string; //rotate
+        //  }
+        //
+        //sValue: string = "ANGLE"
+        //pObject.object: IColladaTransform = pSource;
+        //
+        private target(sPath: string): IColladaTarget {
+            var pObject: IColladaTarget = {value : null};
+            var pSource: IColladaTransform;
+            
+            var pMatches: string[];
+            var sValue: string;
+
+            var iPos: int;
+            var jPos: int = 0;
+
+            iPos = sPath.lastIndexOf('/');
+
+            if (iPos >= 0) {
+                pObject.source = this.source(sPath.substr(0, iPos));
+            }
+
+            iPos = sPath.lastIndexOf('.');
+
+            if (iPos < 0) {
+                iPos = sPath.indexOf('(');
+                jPos = -1;
+            }
+
+            if (iPos < 0) {
+                pObject.object = this.source(sPath);
+                return pObject;
+            }
+
+            pSource = <IColladaTransform>this.source(sPath.substr(0, iPos));
+            sValue = sPath.substr(iPos + jPos + 1);
+            pObject.object = pSource;
+
+            if (!pSource) {
+                return null;
+            }
+
+            switch (sValue) {
+                case "X":
+                    pObject.value = (<IVec4>pSource.value).x;
+                    break;
+                case "Y":
+                    pObject.value = (<IVec4>pSource.value).y;
+                    break;
+                case "Z":
+                    pObject.value = (<IVec4>pSource.value).z;
+                    break;
+                case "W":
+                    pObject.value = (<IVec4>pSource.value).w;
+                    break;
+                case "ANGLE":
+                    pObject.value = (<IVec4>pSource.value).w; //<rotate sid="rotateY">0 1 0 -4.56752</rotate>
+                    break;
+            }
+
+            if (isDefAndNotNull(pObject.value)) {
+                return pObject;
+            }
+
+            pMatches = sValue.match(/^\((\d+)\)$/);
+
+            if (pMatches) {
+                pObject.value = Number(pMatches[1]);
+            }
+
+            pMatches = sValue.match(/^\((\d+)\)\((\d+)\)$/)
+
+            if (pMatches) {
+                //trace(pMatches, '--->',  Number(pMatches[2]) * 4 + Number(pMatches[1]));
+                //pObject.value = Number(pMatches[2]) * 4 + Number(pMatches[1]);
+                pObject.value = Number(pMatches[1]) * 4 + Number(pMatches[2]);
+            }
+
+            debug_assert(isDefAndNotNull(pObject.value), "unsupported target value founded: " + sValue);
+
+            return pObject;
+        }
+
+        // //animation 
+    
+        private buildAnimationTrack(pChannel: IColladaAnimationChannel): IAnimationTrack {
+            var sNodeId: string = pChannel.target.source.id;
+            var sJoint: string = this.source(sNodeId).sid || null;
+            var pTrack: IAnimationTrack = null;
+            var pSampler: IColladaAnimationSampler = pChannel.sampler;
+
+            debug_assert(isDefAndNotNull(pSampler), "could not find sampler for animation channel");
+
+            var pInput: IColladaInput = pSampler.inputs["INPUT"];
+            var pOutput: IColladaInput = pSampler.inputs["OUTPUT"];
+            var pInterpolation: IColladaInput = pSampler.inputs["INTERPOLATION"];
+
+            var pTimeMarks: float[] = pInput.array;
+            var pOutputValues: float[] = pOutput.array;
+            var pFloatArray: Float32Array;
+
+            var pTransform: IColladaEntry = pChannel.target.object
+            var sTransform: string = pTransform.name;
+            var v4f: IVec4;
+            var pValue: any;
+            var nMatrices: uint;
+
+            // if (sJoint == null) {
+            //     warning('node\'s <' + pChannel.pTarget.pSource.id + '> "sid" attribute is null');
+            // }
+
+            switch (sTransform) {
+                case "translate":
+                    // pTrack = new a.AnimationTranslation(sJoint);
+
+                    // for (var i = 0, v3f = new Array(3), n; i < pTimeMarks.length; ++ i) {
+                    //     n = i * 3;
+                    //     v3f.X = pOutputValues[i * 3];
+                    //     v3f.Y = pOutputValues[i * 3 + 1];
+                    //     v3f.Z = pOutputValues[i * 3 + 2];
+                    //     pTrack.keyFrame(pTimeMarks[i], [v3f.X, v3f.Y, v3f.Z]);
+                    // };
+                    CRITICAL("TODO: implement animation translation");
+                    //TODO: implement animation translation
+                    break;
+                case "rotate":
+                    // v4f = pTransform.pValue;
+                    // pTrack = new a.AnimationRotation(sJoint, [v4f[1], v4f[2], v4f[3]]);
+
+                    // debug_assert(pOutput.pAccessor.iStride === 1, 
+                    //     "matrix modification supported only for one parameter modification");
+
+                    // for (var i = 0; i < pTimeMarks.length; ++ i) {
+                    //     pTrack.keyFrame(pTimeMarks[i], pOutputValues[i] / 180.0 * Math.PI);
+                    // };
+                    CRITICAL("TODO: implement animation rotation");
+                    //TODO: implement animation rotation
+                    break;
+                case "matrix":
+                    pValue = pChannel.target.value;
+                    if (isNull(pValue)) {
+                        pTrack = animation.createTrack(sJoint);
+                        nMatrices = pOutputValues.length / 16;
+                        pFloatArray = new Float32Array(pOutputValues);
+
+                        debug_assert(nMatrices % 1 === 0.0,
+                                     "incorrect output length of transformation data (" + pFloatArray.length + ")");
+
+                        for (var i: int = 0; i < nMatrices; i++) {
+                            pTrack.keyFrame(pTimeMarks[i],
+                                            (new Mat4(pFloatArray.subarray(i * 16, i * 16 + 16), true)).transpose());
+                        }
+       
+
+                        // i=0;
+                        // var m = (new Mat4(pFloatArray.subarray(i * 16, i * 16 + 16), true));
+                        // trace(sFilename,sNodeId,m.toString());
+                    }
+                    else {
+                        // pTrack = new a.AnimationMatrixModification(sJoint, pValue);
+
+                        // for (var i = 0; i < pTimeMarks.length; ++i) {
+                        //     pTrack.keyFrame(pTimeMarks[i], pOutputValues[i]);
+                        // }
+                        CRITICAL("TODO: implement animation matrix modification");
+                    }
+                    break;
+                default:
+                    debug_error("unsupported animation typed founeed: " + sTransform);
+            }
+
+            if (!isNull(pTrack)) {
+                pTrack.targetName = sNodeId;
+            }
+
+            return pTrack;
+        }
+        
+        private buildAnimationTrackList(pAnimationData: IColladaAnimation): IAnimationTrack[] {
+            var pSubAnimations: IColladaAnimation[] = pAnimationData.animations;
+            var pSubTracks: IAnimationTrack[];
+            var pTrackList: IAnimationTrack[] = [];
+            var pTrack: IAnimationTrack;
+            var pChannels: IColladaAnimationChannel[] = pAnimationData.channels;
+
+            for (var i: int = 0; i < pChannels.length; ++i) {
+                pTrack = this.buildAnimationTrack(pChannels[i]);
+                pTrackList.push(pTrack);
+            }
+
+
+            if (isDefAndNotNull(pSubAnimations)) {
+                for (var i: int = 0; i < pSubAnimations.length; ++i) {
+                    pSubTracks = this.buildAnimationTrackList(pSubAnimations[i]);
+                    pTrackList = pTrackList.concat(pSubTracks);
+                }
+            }
+
+            return pTrackList;
+        }
+        
+        private buildAnimation(pAnimationData: IColladaAnimation): IAnimation {
+
+            var pTracks: IAnimationTrack[] = this.buildAnimationTrackList(pAnimationData);
+            var sAnimation: string = /*pAnimationData.length ? pAnimationData[0].name :*/ null;
+            var pAnimation: IAnimation = animation.createAnimation(sAnimation || this.getBasename());
+
+            for (var i: int = 0; i < pTracks.length; i++) {
+                pAnimation.push(pTracks[i]);
+            }
+            
+            return pAnimation;
+        }
+
+        private buildAnimations(pAnimations: IColladaAnimation[], pAnimationsList: IAnimation[] = []): IAnimation[] {
+            if (isNull(pAnimations)) {
+                return null;
+            }
+
+            for (var i: int = 0; i < pAnimations.length; ++ i) {
+                var pAnimation: IAnimation = this.buildAnimation(pAnimations[i]);
+
+                pAnimationsList.push(pAnimation);
+            }
+
+            return pAnimationsList;
         }
 
          // common
@@ -389,7 +630,7 @@ module akra.core.pool.resources {
         
         private buildMaterials(pMesh: IMesh, pGeometryInstance: IColladaInstanceGeometry): IMesh {
             var pMaterials: IColladaBindMaterial = pGeometryInstance.material;
-            var pEffects: IColladaEffectEffect = <IColladaEffectEffect>this.getLibrary("library_effects");
+            var pEffects: IColladaEffectLibrary = <IColladaEffectLibrary>this.getLibrary("library_effects");
 
             if (isNull(pEffects)) {
                 return pMesh;
@@ -397,10 +638,10 @@ module akra.core.pool.resources {
 
             for (var sMaterial in pMaterials) {
                 var pMaterialInst: IColladaInstanceMaterial = pMaterials[sMaterial];
-                var pInputs: IColladaBindVertexInput = pMaterialInst.vertexInput;
+                var pInputMap: IColladaBindVertexInputMap = pMaterialInst.vertexInput;
                 // URL --> ID (#somebody ==> somebody)
-                var sEffectId: string = pMaterialInst.sUrl.substr(1);
-                var pEffect: IColladaEffect = pEffects.effect[sEffectId];
+                var sEffectId: string = pMaterialInst.url.substr(1);
+                var pEffect: IColladaEffect = pEffects.effects[sEffectId];
                 var pPhongMaterial: IColladaPhong = <IColladaPhong>pEffect.profileCommon.technique.value;
                 var pMaterial: IMaterial = material.create(sEffectId)
 
@@ -423,26 +664,27 @@ module akra.core.pool.resources {
                         pSubMesh.renderMethod.effect.addComponent("akra.system.prepareForDeferredShading");
 
                         //setup textures
-                        for (var c in pMaterial.pTextures) {
-                            var pTextureObject = pMaterial.pTextures[c];
-                            var pInput = pInputs[pTextureObject.sParam];
+                        for (var sTextureType in pPhongMaterial.textures) {
+                            var pColladaTexture: IColladaTexture = pPhongMaterial.textures[sTextureType];
+                            var pInput: IColladaBindVertexInput = pInputMap[pColladaTexture.texcoord];
 
-                            if (!pInput) {
+                            if (!isDefAndNotNull(pInput)) {
                                 continue;
                             }
 
-                            var sInputSemantics = pInputs[pTextureObject.sParam].sInputSemantic;
-                            var pColladaImage = pTextureObject.pTexture;
-                            var pSurfaceMaterial = pSubMesh.surfaceMaterial;
+                            var sInputSemantics: string = pInputMap[pColladaTexture.texcoord].inputSemantic;
+                            var pColladaImage: IColladaImage = pColladaTexture.image;
 
-                            var pTexture = pEngine.displayManager().texturePool().loadResource(
-                                pColladaImage.pImage.sImagePath);
+                            var pSurfaceMaterial: ISurfaceMaterial = pSubMesh.surfaceMaterial;
+                            var pTexture: ITexture = <ITexture>this.getManager().texturePool.loadResource(pColladaImage.path);
 
-                            var pMatches = sInputSemantics.match(/^(.*?\w)(\d+)$/i);
-                            var iTexCoord = (pMatches ? pMatches[2] : 0);
-                            var iTexture = __ENUM__(SURFACEMATERIAL_TEXTURES)[c.toUpperCase()];
+                            var pMatches: string[] = sInputSemantics.match(/^(.*?\w)(\d+)$/i);
+                            var iTexCoord: int = (pMatches ? parseInt(pMatches[2]) : 0);
 
-                            if (iTexture === undefined) {
+
+                            var iTexture = ESurfaceMaterialTextures[sTextureType.toUpperCase()];
+
+                            if (!isDef(iTexture)) {
                                 continue;
                             }
 
@@ -830,7 +1072,7 @@ module akra.core.pool.resources {
         }
 
         private buildInititalPose(pNodes: IColladaNode[], pSkeleton: ISkeleton): IAnimation {
-            var sPose: string = "Pose-" + this._sBasename + "-" + pSkeleton.name;
+            var sPose: string = "Pose-" + this.getBasename() + "-" + pSkeleton.name;
             var pPose: IAnimation = animation.createAnimation(sPose);
             var pNodeList: ISceneNode[] = pSkeleton.getNodeList();
             var pNodeMap: ISceneNodeMap = {};
@@ -971,6 +1213,10 @@ module akra.core.pool.resources {
 
         private inline getLibrary(sLib: string): IColladaLibrary {
             return this._pLib[sLib] || null;
+        }
+
+        private inline getBasename(): string {
+            return this._sBasename;
         }
 
         private readLibraries(pXML: Node, pTemplates: IColladaLibraryTemplate[]): void {

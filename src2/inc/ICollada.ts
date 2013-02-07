@@ -57,10 +57,13 @@ module akra {
     export interface IColladaTarget {
         value: number;
         object?: IColladaEntry;
+        source?: IColladaEntry;
     }
 
     export interface IColladaEntry {
         id?: string;
+        sid?: string;
+        name?: string;
     }
 
     export interface IColladaEntryMap {
@@ -222,9 +225,7 @@ module akra {
     }
 
     export interface IColladaJoints extends IColladaEntry {
-        inputs: { 
-            [input: string]: IColladaInput; 
-        };
+        inputs: { [input: string]: IColladaInput; };
 
     }
 
@@ -314,6 +315,8 @@ module akra {
         sampler: IColladaSampler2D;
         surface: IColladaSurface;
         image: IColladaImage;
+
+
     }
     
 
@@ -328,7 +331,7 @@ module akra {
         diffuse: IColorValue;
         specular: IColorValue;
         ambient: IColorValue;
-        emission: IColorValue;
+        emissive: IColorValue;
         shininess: float;
         
         reflective: IColorValue;
@@ -343,8 +346,8 @@ module akra {
             diffuse: IColladaTexture;
             specular: IColladaTexture;
             ambient: IColladaTexture;
-            emission: IColladaTexture;
-        }
+            emissive: IColladaTexture;
+        };
     }
 
     export interface IColladaEffectTechnique extends IColladaEntry {
@@ -383,10 +386,14 @@ module akra {
         inputSet: int;
     }
 
+    export interface IColladaBindVertexInputMap {
+        [semantics: string]: IColladaBindVertexInput;
+    }
+
     export interface IColladaInstanceMaterial extends IColladaInstance {
         symbol: string;
         target: string;
-        vertexInput: IColladaBindVertexInput;
+        vertexInput: IColladaBindVertexInputMap;
         material: IColladaMaterial;
     }
 
@@ -434,11 +441,13 @@ module akra {
     /// animation
     
     export interface IColladaAnimationSampler extends IColladaEntry {
-
+        inputs: { [semantics: string]: IColladaInput; };
     }
 
     export interface IColladaAnimationChannel extends IColladaEntry {
-
+        source: string;
+        target: IColladaTarget;
+        sampler: IColladaAnimationSampler;
     }
 
     export interface IColladaAnimation extends IColladaEntry {
@@ -446,7 +455,7 @@ module akra {
 
         sources: IColladaSource[];
         samplers: IColladaAnimationSampler[];
-        channel: IColladaAnimationChannel;
+        channels: IColladaAnimationChannel[];
 
         animations: IColladaAnimation[];
     }

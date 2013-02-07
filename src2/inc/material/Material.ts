@@ -43,7 +43,7 @@ module akra.material {
 		}
 	}
 
-	class FlexMaterial implements IMaterial {
+	class FlexMaterial implements IFlexMaterial {
 		name: string = null;
 
 		protected _pData: IVertexData;
@@ -106,7 +106,7 @@ module akra.material {
 	}
 
 	export function _createFlex(sName: string, pData: IVertexData): IMaterial {
-		return new FlexMaterial(sName. pMat);
+		return new FlexMaterial(sName, pData);
 	}
 }
 

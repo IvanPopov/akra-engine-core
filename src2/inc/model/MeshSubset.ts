@@ -257,7 +257,7 @@ module akra.model {
 		    var pIndexDecl: IVertexDeclaration, pFloatArray: Float32Array;
 		    var iMatFlow: int;
 		    var pMaterial: IMaterial = this._pMesh.getFlexMaterial(iMaterial);
-		    var iMat: int = (<material.FlexMaterial>pMaterial).data.byteOffset;
+		    var iMat: int = (<IFlexMaterial>pMaterial).data.byteOffset;
 
 		    if (isNull(pMaterial)) {
 		        return false;
@@ -269,14 +269,14 @@ module akra.model {
 		        eSemantics = pMatFlow.mapper.semantics;
 		        pIndexData = pMatFlow.mapper.data;
 
-		        pRenderData._addData((<material.FlexMaterial>pMaterial).data, iMatFlow);
+		        pRenderData._addData((<IFlexMaterial>pMaterial).data, iMatFlow);
 		        
 		        return pRenderData.index(iMat, eSemantics, true);
 		    }
 		  
 		    pIndexDecl = createVertexDeclaration([VE_FLOAT(eSemantics)]);
 		    pFloatArray = new Float32Array((<IVertexData>pIndexData).length);    
-		    iMatFlow = pRenderData._addData((<material.FlexMaterial>pMaterial).data);
+		    iMatFlow = pRenderData._addData((<IFlexMaterial>pMaterial).data);
 
 		    debug_assert(iMatFlow >= 0, "cannot add data flow with material for mesh subsset");
 

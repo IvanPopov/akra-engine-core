@@ -224,7 +224,7 @@ module akra.model {
             );
 
             if (!pMaterialData) {
-                pMaterialData = material.create(material.DEFAULT)
+                pMaterialData = material.create(null, material.DEFAULT)
             }
 
             pMaterial.set(pMaterialData);   
