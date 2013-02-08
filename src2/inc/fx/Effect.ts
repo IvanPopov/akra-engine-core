@@ -664,7 +664,11 @@ module akra.fx {
 
 		private findConstructor(pType: IAFXTypeInstruction, 
 							    pArguments: IAFXExprInstruction[]): IAFXVariableTypeInstruction {
-			return null;
+			
+			var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+			pVariableType.pushInVariableType(pType);
+
+			return pVariableType;
 		}
 
 		private findShaderFunction(sFunctionName: string, 
@@ -1017,10 +1021,15 @@ module akra.fx {
 				pVariableType.addPointIndex();
 			}
 			else if(pChildren.length === 4 && pChildren[0].name === "FromExpr"){
-				var pBuffer: IAFXIdInstruction = this.analyzeFromExpr(pChildren[0]);
+				var pBuffer: IAFXVariableDeclInstruction = this.analyzeFromExpr(pChildren[0]);
 				pVariableType.setVideoBuffer(pBuffer);
 			}
 			else {
+				if(pVariableType.isPointer()){
+					//TODO: add support for v[][10]
+					this._error(TEMP_EFFECT_BAD_ARRAY_OF_POINTERS);
+				}
+
 				var pIndexExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
 				pVariableType.addArrayIndex(pIndexExpr);	
 			}
@@ -1043,8 +1052,20 @@ module akra.fx {
         	return null;   	
         }
 
-        private analyzeFromExpr(pNode: IParseNode): IAFXIdInstruction {
-       		return null;	
+        private analyzeFromExpr(pNode: IParseNode): IAFXVariableDeclInstruction {
+        	this.setAnalyzedNode(pNode);
+        	
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pBuffer: IAFXVariableDeclInstruction = null;
+
+        	if(pChildren[1].name === "T_NON_TYPE_ID"){
+        		pBuffer = this.getVariable(pChildren[1].value);
+        	}
+        	else {
+        		pBuffer = (<MemExprInstruction>this.analyzeMemExpr(pChildren[1])).getBuffer();
+        	}
+
+        	return pBuffer;	
         }
 
         private analyzeExpr(pNode: IParseNode): IAFXExprInstruction {
@@ -1139,7 +1160,7 @@ module akra.fx {
         		return null;
         	}
 
-        	pExprType = <IAFXVariableTypeInstruction>pShaderFunc.getType();
+        	pExprType = (<IAFXVariableTypeInstruction>pShaderFunc.getType()).wrap();
 
         	pExpr.setType(pExprType);
         	pExpr.setOperator("complile");
@@ -1241,7 +1262,7 @@ module akra.fx {
 	        	pFunctionId = new IdExprInstruction();
 	        	pFunctionId.push(pFunction.getNameId(), false);
 
-	        	pExprType = <IAFXVariableTypeInstruction>pFunction.getType();
+	        	pExprType = (<IAFXVariableTypeInstruction>pFunction.getType()).wrap();
 
 	        	pFunctionCallExpr.setType(pExprType);
 	        	pFunctionCallExpr.push(pFunctionId, true);
@@ -1313,7 +1334,7 @@ module akra.fx {
         	}
 
         	pExpr.setType(pExprType);
-        	pExpr.push(pConstructorType);
+        	pExpr.push(pConstructorType, false);
         	
         	if(!isNull(pArguments)){
         		for(i = 0; i < pArguments.length; i++) {
@@ -1351,22 +1372,22 @@ module akra.fx {
         	var pChildren: IParseNode[] = pNode.children;
         	var pExpr: PrimaryExprInstruction = new PrimaryExprInstruction();
         	var pPrimaryExpr: IAFXExprInstruction;
-        	var pExprType: IAFXVariableTypeInstruction;
+        	var pPointer: IAFXVariableDeclInstruction = null;
         	var pPrimaryExprType: IAFXVariableTypeInstruction;
 
         	pPrimaryExpr = this.analyzeExpr(pChildren[0]);
         	pPrimaryExprType = <IAFXVariableTypeInstruction>pPrimaryExpr.getType();
 
-        	pExprType = pPrimaryExprType.getPointerType();
+        	pPointer = pPrimaryExprType.getPointer();
         	
-        	if(isNull(pExprType)){
+        	if(isNull(pPointer)){
         		this._error(EFFECT_BAD_PRIMARY_NOT_POINT, { typeName: pPrimaryExprType.toString() });
         		return null;
         	}
 
-        	pExpr.setType(pExprType);
+        	pExpr.setType(pPointer.getType());
         	pExpr.setOperator("@");
-        	pExpr.push(pPrimaryExpr, true);
+        	pExpr.push(pPointer, false);
 
         	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
@@ -1436,18 +1457,18 @@ module akra.fx {
         	
         	var pChildren: IParseNode[] = pNode.children;
         	var pExpr: PostfixPointInstruction = new PostfixPointInstruction();
-        	var pPostfixExpr: IAFXExprInstruction;
-        	var sFieldName: string;
-        	var pFieldNameExpr: IAFXIdExprInstruction;
-        	var pExprType: IAFXVariableTypeInstruction;
-        	var pPostfixExprType: IAFXVariableTypeInstruction;
+        	var pPostfixExpr: IAFXExprInstruction = null;
+        	var sFieldName: string = "";
+        	var pFieldNameExpr: IAFXIdExprInstruction = null;
+        	var pExprType: IAFXVariableTypeInstruction = null;
+        	var pPostfixExprType: IAFXVariableTypeInstruction = null;
 
         	pPostfixExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
         	pPostfixExprType = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
 
         	sFieldName = pChildren[pChildren.length - 3].value;
 
-        	pFieldNameExpr = pPostfixExprType.getField(sFieldName, true);
+        	pFieldNameExpr = pPostfixExprType.getField(sFieldName);
 
         	if(isNull(pFieldNameExpr)){
         		this._error(EFFECT_BAD_POSTIX_NOT_FIELD, { typeName: pPostfixExprType.toString(),
@@ -1456,7 +1477,6 @@ module akra.fx {
         	}
 
         	pExprType = <IAFXVariableTypeInstruction>pFieldNameExpr.getType();
-        	pExprType.setParent(pPostfixExprType);
 
         	if(pChildren.length === 4){
         		if(!pExprType.isPointer()){
@@ -1464,7 +1484,7 @@ module akra.fx {
         			return null;
         		}
 
-        		var pBuffer: IAFXIdInstruction = this.analyzeFromExpr(pChildren[0]);
+        		var pBuffer: IAFXVariableDeclInstruction = this.analyzeFromExpr(pChildren[0]);
         		pExprType.setVideoBuffer(pBuffer);
         	}
 
@@ -1818,8 +1838,29 @@ module akra.fx {
         	return pInstruction;
         }
 
-        private analyzeMemExpr(pNode: IParseNode): IAFXExprInstruction{
-        	return null;
+        private analyzeMemExpr(pNode: IParseNode): IAFXExprInstruction {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	var pMemExpr: MemExprInstruction = new MemExprInstruction();
+        	
+        	var pPostfixExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
+        	var pPostfixExprType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
+
+        	if(pPostfixExpr.getInstructionType() !== EAFXInstructionTypes.k_VariableTypeInstruction){
+        		this._error(EFFECT_BAD_MEMOF_ARGUMENT);
+        		return null;
+        	}
+
+        	var pBuffer: IAFXVariableDeclInstruction = pPostfixExprType.getVideoBuffer();
+        	
+        	if(isNull(pBuffer)){
+        		this._error(EFFECT_BAD_MEMOF_NO_BUFFER);
+        	}
+
+        	pMemExpr.setBuffer(pBuffer);
+
+        	return pMemExpr;
         }
 
         private analyzeConstTypeDim(pNode: IParseNode): IAFXVariableTypeInstruction {
@@ -2734,8 +2775,16 @@ module akra.fx {
          * @pRightType {IAFXVariableTypeInstruction} Тип правой части выражения
          */
         private checkTwoOperandExprTypes(sOperator: string, 
-        								 pLeftType: IAFXVariableTypeInstruction, 
-        								 pRightType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
+        								 pLeftType: IAFXTypeInstruction, 
+        								 pRightType: IAFXTypeInstruction): IAFXVariableTypeInstruction {
+
+        	var isCopmlexTypes: bool = pLeftType.isComplex() || pRightType.isComplex();
+
+        	if(isCopmlexTypes && sOperator !== "="){
+        		return null;
+        	}
+
+        	var pReturnType: IAFXVariableTypeInstruction = null;
 
         	switch(sOperator) {
         		case "+":
@@ -2763,10 +2812,13 @@ module akra.fx {
         		case "!=":
         			break;
         		case "=":
+        			if(pLeftType.isEqual(pRightType)){
+        				pReturnType = <IAFXVariableTypeInstruction>pLeftType;
+        			}
         			break;
         	}
 
-        	return null;
+        	return pReturnType;
         }
         
          /**
@@ -2792,10 +2844,6 @@ module akra.fx {
         			break;
         	}
 
-        	return null;
-        }
-
-        private generateVariableTypeFromId(pTypeName: IAFXIdInstruction): IAFXVariableTypeInstruction {
         	return null;
         }
 

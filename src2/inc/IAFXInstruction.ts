@@ -47,6 +47,7 @@ module akra {
         k_CompileExprInstruction,
         k_SamplerStateBlockInstruction,
         k_SamplerStateInstruction,
+        k_MemExprInstruction,
         k_FunctionDeclInstruction,
         k_ShaderFunctionInstruction,
         k_SystemFunctionInstruction,
@@ -75,6 +76,14 @@ module akra {
         CODE_TARGET_SUPPORT, /* Отсутсвуют конструкции не поддерживаемые языком назначения (GLSL) */ 
         SELF_CONTAINED /* Код замкнут, нет не определенных функций, пассов, техник. Нет мертвых функций. */
         // VALIDATION  /* Код не содерит синтаксиески неправильных выражений, то что не исчерпывается */ 
+    }
+
+    export enum EVarUsedMode {
+        k_Read,
+        k_Write,
+        k_ReadWrite,
+        k_Undefined,
+        k_Default = k_ReadWrite
     }
 	
     export interface IAFXInstructionStateMap extends StringMap{
@@ -141,7 +150,12 @@ module akra {
     export interface IAFXTypeInstruction extends IAFXInstruction {
         isBase(): bool;
         isArray(): bool;
-        isWrite(): bool;
+        isComplex(): bool;
+        isWritable(): bool;
+        isReadable(): bool;
+
+        _canWrite(isWritable: bool): void;
+        _canRead(isReadable: bool): void;
         /**
          * For using in AFXEffect
          */
@@ -151,11 +165,10 @@ module akra {
         getHash(): string;
         getStrongHash(): string ;
 
-        setWriteMode(isWrite: bool): void;
-
         hasField(sFieldName: string): bool;
-        getField(sFieldName: string, isCreateExpr: bool): IAFXIdExprInstruction;
+        getField(sFieldName: string, isCreateExpr?: bool): IAFXIdExprInstruction;
         getFieldType(sFieldName: string): IAFXTypeInstruction;
+        getFieldNameList(): string[];
 
         getSize(): uint;
 
@@ -167,7 +180,7 @@ module akra {
         //type : IAFXUsageTypeInstruction
         //array: IAFXArrayInstruction
         //pointer : IAFXPointerInstruction
-        pushVariableType(pVariableType: IAFXTypeInstruction): bool;
+        pushInVariableType(pVariableType: IAFXTypeInstruction): bool;
         isolateType(): IAFXVariableTypeInstruction;
         
         addArrayIndex(pExpr: IAFXExprInstruction): void;
@@ -175,9 +188,20 @@ module akra {
         hasUsage(sUsageName: string): bool;
 
         isPointer(): bool;
+        isPointIndex(): bool;
+
         addPointIndex(): void;
-        getPointerType(): IAFXVariableTypeInstruction;
-        setVideoBuffer(pBuffer: IAFXIdInstruction): void;
+        getPointDim(): uint;
+        getPointer(): IAFXVariableDeclInstruction;
+        setVideoBuffer(pBuffer: IAFXVariableDeclInstruction): void;
+        getVideoBuffer():IAFXVariableDeclInstruction;
+        hasVideoBuffer(): bool;
+        initializePointers(): void;
+
+
+        wrap(): IAFXVariableTypeInstruction;
+
+        _setNextPointer(pPointer: IAFXVariableDeclInstruction): void;
     }
 
      export interface IAFXUsageTypeInstruction extends IAFXInstruction {
@@ -211,6 +235,11 @@ module akra {
     export interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
         hasInitializer(): bool;
         getInitializeExpr(): IAFXExprInstruction;
+
+        getType(): IAFXVariableTypeInstruction;
+        setType(pType: IAFXVariableTypeInstruction): void;
+
+        setName(sName: string):void;
     }
 
     export interface IAFXFunctionDeclInstruction extends IAFXDeclInstruction {

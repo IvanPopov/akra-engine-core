@@ -58,6 +58,11 @@ module akra.fx {
     #define EFFECT_BAD_TYPE_NAME_NOT_TYPE 2250
     #define EFFECT_BAD_TYPE_VECTOR_MATRIX 2251
     #define EFFECT_BAD_TECHNIQUE_REDEFINE_NAME 2252
+    #define EFFECT_BAD_MEMOF_ARGUMENT 2253
+    #define EFFECT_BAD_MEMOF_NO_BUFFER 2254
+
+
+    #define TEMP_EFFECT_BAD_ARRAY_OF_POINTERS 2300
 
     akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, 
     						 "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
@@ -203,6 +208,18 @@ module akra.fx {
                               In line: {line}. In column: {column}"); 
     akra.logger.registerCode(EFFECT_BAD_TECHNIQUE_REDEFINE_NAME,
                              "Bad technique name '{techName}'. Effect already have technique with that name.\
+                              In line: {line}. In column: {column}"); 
+    akra.logger.registerCode(EFFECT_BAD_MEMOF_ARGUMENT,
+                             "Bad 'memof'-operator argument. Literal for its argument is bad idea.\
+                              In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFECT_BAD_MEMOF_NO_BUFFER,
+                             "Bad 'memof'-operator argument. No buffer for argument.\
+                              In line: {line}. In column: {column}");
+
+
+
+    akra.logger.registerCode(TEMP_EFFECT_BAD_ARRAY_OF_POINTERS,
+                             "We don`t support array of pinters now. Only pointe to array.\
                               In line: {line}. In column: {column}"); 
 
 
