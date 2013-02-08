@@ -49,7 +49,7 @@ module akra {
     // xml
 
     export interface IXMLExplorer {
-        (pXML: Node, sName?: string): void;
+        (pXML: Element, sName?: string): void;
     }
 
     //----------------------
@@ -79,7 +79,7 @@ module akra {
     }
 
     export interface IColladaEntryLoader {
-        (pXML: Node): IColladaEntry;
+        (pXML: Element): IColladaEntry;
     }
 
 
@@ -94,7 +94,7 @@ module akra {
     }
 
     export interface IColladaConverter {
-    	(data: string, output: any[], from: int): uint;
+    	(data: string, output: any[], from?: int): uint;
     }
 
     export interface IColladaConvertionTableRow {
@@ -120,10 +120,15 @@ module akra {
     	loader: string;                /** loader function */
     }
 
+
     //=============================================
     // COLLADA NODES / VISUAL SCENE AND COMMON
     //=============================================
-    
+
+    export interface IColladaArray extends IColladaEntry {
+        [i: uint]: any;
+    }    
+
     export interface IColladaUnit extends IColladaEntry {
         name: string;
         meter: float;
@@ -131,7 +136,7 @@ module akra {
 
     export interface IColladaContributor extends IColladaEntry {
         author: string;
-        authorTool: string;
+        authoringTool: string;
         comments: string;
         copyright: string;
         sourceData: any;
@@ -150,9 +155,14 @@ module akra {
         url?: string;
     }
 
+    export interface IColladaAnnotate extends IColladaEntry {
+        name: string;
+        value: string;
+    }
+
     export interface IColladaNewParam extends IColladaEntry {
         sid: string;
-        annotate: string;
+        annotate: IColladaAnnotate;
         semantics: string;
         modifier: string;
         value: any;
@@ -169,7 +179,7 @@ module akra {
     }
     
     export interface IColladaAccessor extends IColladaEntry {
-        data: IColladaEntry;
+        data: IColladaArray;
         count: int;
         stride: int;
         params: IColladaParam[];
@@ -195,12 +205,12 @@ module akra {
         set: string;
 
         array?: any[];
-        arrayId?: string;
+        //arrayId?: string;
         accessor?: IColladaAccessor;
     }
 
     export interface IColladaTransform extends IColladaEntry {
-        transform: string;
+        transform: string; /* transform name: rotate, translate, scale or matrix */
         value: any;
     }
 
@@ -290,9 +300,13 @@ module akra {
     export interface IColladaImage extends IColladaEntry {
         name: string;
         
-        depth: int;
         data: any;
         path: string;
+
+        format?: string;
+        depth?: int;
+        height?: int;
+        width?: int;
     }
 
     //effects
@@ -302,7 +316,7 @@ module akra {
     }
 
     export interface IColladaSampler2D extends IColladaEntry {
-        param: IColladaNewParam;
+        source: string;
         wrapS: string;
         wrapT: string;
         minFilter: string;
@@ -312,8 +326,8 @@ module akra {
 
     export interface IColladaTexture extends IColladaEntry {
         texcoord: string;
-        sampler: IColladaSampler2D;
-        surface: IColladaSurface;
+        sampler: IColladaNewParam;
+        surface: IColladaNewParam;
         image: IColladaImage;
 
 
@@ -445,7 +459,6 @@ module akra {
     }
 
     export interface IColladaAnimationChannel extends IColladaEntry {
-        source: string;
         target: IColladaTarget;
         sampler: IColladaAnimationSampler;
     }
