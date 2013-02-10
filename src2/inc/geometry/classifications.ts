@@ -238,7 +238,7 @@ module akra.geometry{
 		var kClassification: EPlaneClassifications;
 		var isIntersect: bool = false;
 
-		kClassification = planeClassifyRect3d(this.leftPlane, pRect);
+		kClassification = planeClassifyRect3d(pFrustum.leftPlane, pRect);
 		if(kClassification == EPlaneClassifications.PLANE_FRONT){
 			return EVolumeClassifications.NO_RELATION;
 		}
@@ -246,7 +246,7 @@ module akra.geometry{
 			isIntersect = true;
 		}
 
-		kClassification = planeClassifyRect3d(this.rightPlane, pRect);
+		kClassification = planeClassifyRect3d(pFrustum.rightPlane, pRect);
 		if(kClassification == EPlaneClassifications.PLANE_FRONT){
 			return EVolumeClassifications.NO_RELATION;
 		}
@@ -254,7 +254,7 @@ module akra.geometry{
 			isIntersect = true;
 		}
 
-		kClassification = planeClassifyRect3d(this.topPlane, pRect);
+		kClassification = planeClassifyRect3d(pFrustum.topPlane, pRect);
 		if(kClassification == EPlaneClassifications.PLANE_FRONT){
 			return EVolumeClassifications.NO_RELATION;
 		}
@@ -262,7 +262,7 @@ module akra.geometry{
 			isIntersect = true;
 		}
 
-		kClassification = planeClassifyRect3d(this.bottomPlane, pRect);
+		kClassification = planeClassifyRect3d(pFrustum.bottomPlane, pRect);
 		if(kClassification == EPlaneClassifications.PLANE_FRONT){
 			return EVolumeClassifications.NO_RELATION;
 		}
@@ -270,7 +270,7 @@ module akra.geometry{
 			isIntersect = true;
 		}
 
-		kClassification = planeClassifyRect3d(this.nearPlane, pRect);
+		kClassification = planeClassifyRect3d(pFrustum.nearPlane, pRect);
 		if(kClassification == EPlaneClassifications.PLANE_FRONT){
 			return EVolumeClassifications.NO_RELATION;
 		}
@@ -278,7 +278,7 @@ module akra.geometry{
 			isIntersect = true;
 		}
 		
-		kClassification = planeClassifyRect3d(this.farPlane, pRect);
+		kClassification = planeClassifyRect3d(pFrustum.farPlane, pRect);
 		if(kClassification == EPlaneClassifications.PLANE_FRONT){
 			return EVolumeClassifications.NO_RELATION;
 		}

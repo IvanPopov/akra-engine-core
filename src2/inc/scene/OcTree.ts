@@ -279,7 +279,7 @@ module akra.scene {
 							break;
 						}
 						else{
-							alert("" + <string><any>pTestNode.level + "  " + <string><any>iLevel);
+							//alert("" + <string><any>pTestNode.level + "  " + <string><any>iLevel);
 							if(pNode === null){
 								pNode = this.getAndSetFreeNode(iLevel, iComposedIndex, pParentNode);
 								pParentNode.childrenList[iWay].push(pNode);
@@ -373,7 +373,7 @@ module akra.scene {
 
 					if(iTest1 != iTest2){
 						if((iTest1 + 1) == iTest2){
-							if((iX1%iPitch) != 0){
+							if((arguments[2*i+1]%iPitch) != 0){
 								break;
 							}
 						}
@@ -404,7 +404,7 @@ module akra.scene {
 
 
 			var iDepth: int = this._iDepth;
-			var iMask: int = (1<<(this._iDepth + 1)) - 1;
+			var iMask: int = (1<<this._iDepth) - 1;
 			var iIndexX: int = (iComposedIndex >> (2*iDepth)) & iMask;
 			var iIndexY: int = (iComposedIndex >> (iDepth)) & iMask;
 			var iIndexZ: int = iComposedIndex & iMask;
@@ -476,9 +476,9 @@ module akra.scene {
 			for(var i=0;i<8;i++){
 				var pChildrens: IObjectList = pNode.childrenList[i];
 				while(pChildrens.length){
-					var pChildrenNode: IOcTreeNode = pChildrens.pop();
-					pChildrenNode.rearNodeLink = pParentNode;
-					pParentBranch.push(pChildrenNode);
+					var pChildNode: IOcTreeNode = pChildrens.pop();
+					pChildNode.rearNodeLink = pParentNode;
+					pParentBranch.push(pChildNode);
 				}
 			}
 
@@ -493,23 +493,23 @@ module akra.scene {
 		 * Test rect and frustum
 		 */
 		
-		buildSearchResults(pWorldRect: IRect3d, pOptionalFrustum?: IFrustum): IObjectArray{
+		buildSearchResults(pSearchRect: IRect3d, pOptionalFrustum?: IFrustum): IObjectArray{
 			var pResult: IObjectArray = new util.ObjectArray();
 			if(arguments.length === 1){
-				this._buildSearchResultsByRect(pWorldRect, this._pHead, pResult);
+				this._buildSearchResultsByRect(pSearchRect, this._pHead, pResult);
 			}
 			else{
-				this._buildSearchResultsByRectAndFrustum(pWorldRect, pOptionalFrustum,
+				this._buildSearchResultsByRectAndFrustum(pSearchRect, pOptionalFrustum,
 				 this._pHead, pResult);
 			}
 
 			return pResult;
 		};
 
-		protected _buildSearchResultsByRect(pWorldRect: IRect3d, pNode: IOcTreeNode, pResultList: IObjectArray){
+		protected _buildSearchResultsByRect(pSearchRect: IRect3d, pNode: IOcTreeNode, pResultList: IObjectArray){
 			var pNodeRect: IRect3d = pNode.worldBounds;
 
-			var kResult: EVolumeClassifications = geometry.classifyRect3d(pNodeRect, pWorldRect);
+			var kResult: EVolumeClassifications = geometry.classifyRect3d(pNodeRect, pSearchRect);
 
 			if(kResult == EVolumeClassifications.A_CONTAINS_B 
 				&& kResult == EVolumeClassifications.INTERSECTING){
@@ -519,7 +519,7 @@ module akra.scene {
 				var pMemberList: IObjectList = pNode.membersList;
 				var pObject: ISceneObject = pMemberList.first;
 				while(isDefAndNotNull(pObject)){
-					if(geometry.intersectRect3dRect3d(pWorldRect, pObject.worldBounds)){
+					if(geometry.intersectRect3dRect3d(pSearchRect, pObject.worldBounds)){
 						pResultList.push(pObject);
 					}
 					pObject = pMemberList.next();
@@ -527,11 +527,11 @@ module akra.scene {
 
 				for(var i:int = 0; i < 8; i++){
 					var pChildrenList: IObjectList = pNode.childrenList[i];
-					var pNode: IOcTreeNode = pChildrenList.first;
+					var pChildNode: IOcTreeNode = pChildrenList.first;
 
-					while(isDefAndNotNull(pNode)){
-						this._buildSearchResultsByRect(pWorldRect, pNode, pResultList);
-						pNode = pChildrenList.next();
+					while(isDefAndNotNull(pChildNode)){
+						this._buildSearchResultsByRect(pSearchRect, pChildNode, pResultList);
+						pChildNode = pChildrenList.next();
 					}
 				}
 			}
@@ -541,12 +541,14 @@ module akra.scene {
 			}
 		};
 
-		protected _buildSearchResultsByRectAndFrustum(pWorldRect: IRect3d, pOptionalFrustum: IFrustum,
+		protected _buildSearchResultsByRectAndFrustum(pSearchRect: IRect3d, pOptionalFrustum: IFrustum,
 			pNode: IOcTreeNode, pResultList: IObjectArray){
 
 			var pNodeRect: IRect3d = pNode.worldBounds;
 
-			if(geometry.intersectRect3dRect3d(pWorldRect, pNodeRect)){
+			console.log('node rect ---------------->', pNodeRect, '<------------------', pNode);
+
+			if(geometry.intersectRect3dRect3d(pSearchRect, pNodeRect)){
 				var kTestResult: int = geometry.classifyFrustumRect3d(pOptionalFrustum, pNodeRect);
 				if(kTestResult == EVolumeClassifications.A_CONTAINS_B){
 					//объект полностью попал	
@@ -554,6 +556,7 @@ module akra.scene {
 				}
 				else if(kTestResult == EVolumeClassifications.INTERSECTING){
 					//объект попал частично
+					console.warn(pNodeRect);
 					var pMemberList: IObjectList = pNode.membersList;
 					var pObject: ISceneObject = pMemberList.first;
 					while(isDefAndNotNull(pObject)){
@@ -565,10 +568,10 @@ module akra.scene {
 
 					for(var i:int = 0; i < 8; i++){
 						var pChildrenList: IObjectList = pNode.childrenList[i];
-						var pNode: IOcTreeNode = pChildrenList.first;
-						while(isDefAndNotNull(pNode)){
-							this._buildSearchResultsByRectAndFrustum(pWorldRect, pOptionalFrustum, pNode, pResultList);
-							pNode = pChildrenList.next();
+						var pChildNode: IOcTreeNode = pChildrenList.first;
+						while(isDefAndNotNull(pChildNode)){
+							this._buildSearchResultsByRectAndFrustum(pSearchRect, pOptionalFrustum, pChildNode, pResultList);
+							pChildNode = pChildrenList.next();
 						}
 					}
 				}
@@ -585,11 +588,11 @@ module akra.scene {
 
 			for(var i:int = 0; i < 8; i++){
 				var pChildrenList: IObjectList = pNode.childrenList[i];
-				var pNode: IOcTreeNode = pChildrenList.first;
+				var pChildNode: IOcTreeNode = pChildrenList.first;
 
-				while(isDefAndNotNull(pNode)){
-					this._includeAllTreeSubbranch(pNode, pResultList);
-					pNode = pChildrenList.next();
+				while(isDefAndNotNull(pChildNode)){
+					this._includeAllTreeSubbranch(pChildNode, pResultList);
+					pChildNode = pChildrenList.next();
 				}
 			}
 		};
@@ -598,12 +601,45 @@ module akra.scene {
 			var pNode: IOcTreeNode = this.findTreeNode(pObject);
 			console.log(pNode);
 			pNode.addMember(pObject);
-		}
+		};
 
 		protected detachObject(pObject: ISceneObject): void {
 			var pNode: IOcTreeNode = this.findTreeNode(pObject);
 			pNode.removeMember(pObject);
-		}
+		};
+
+		toSimpleObject(pNode?: IOcTreeNode = this._pHead): any{
+			
+			var pResult: any = {};
+			pResult.members = [];
+			pResult.childrens = new Array(8);
+			for(var i:int = 0; i < 8; i++){
+				pResult.childrens[i] = [];
+			}
+			pResult.level = pNode.level;
+			pResult.index = pNode.index;
+			pResult.worldBounds = pNode.worldBounds;
+			
+
+			var pMemberList: IObjectList = pNode.membersList;
+			var pObject: ISceneObject = pMemberList.first;
+			while(isDefAndNotNull(pObject)){
+				pResult.members.push(pObject.worldBounds);
+				pObject = pMemberList.next();
+			}
+
+			for(var i:int = 0; i < 8; i++){
+				var pList: IObjectList = pNode.childrenList[i];
+				var pChildNode: IOcTreeNode = pList.first;
+
+				while(isDefAndNotNull(pChildNode)){
+					pResult.childrens[i].push(this.toSimpleObject(pChildNode));
+					pChildNode = pList.next();
+				}
+			}
+
+			return pResult;
+		};
 
 		/**
 		 * Getter for OcTreeNode by level and x, y, z

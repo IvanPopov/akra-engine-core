@@ -23,7 +23,9 @@ module akra {
 		findTreeNodeByRect(iX0: int, iX1: int, iY0: int, iY1: int, iZ0: int, iZ1: int): IOcTreeNode;
 		getAndSetFreeNode(iLevel: int, iComposedIndex: int, pParentNode: IOcTreeNode): IOcTreeNode;
 		deleteNodeFromTree(pNode: IOcTreeNode): void;
-		buildSearchResults(pWorldRect: IRect3d, pOptionalFrustum?: IFrustum): IObjectArray;
+		buildSearchResults(pSearchRect: IRect3d, pOptionalFrustum?: IFrustum): IObjectArray;
+
+		toSimpleObject(pNode?: IOcTreeNode): any;
 
 		//getAndSetFreeNode(iLevel: int, iX: int, iY: int, iZ: int, iIndex: int): IOcTreeNode;
 		//getNodeFromLevelXYZ(iLevel: int, iIndex: int): IOcTreeNode;

@@ -107,6 +107,8 @@ module akra.scene {
 			this._pBasicWorldBounds = new geometry.Rect3d(0, iTmp, 0, iTmp, 0, iTmp);
 		    this._pBasicWorldBounds.divSelf(this.tree.worldScale);
 		    this._pBasicWorldBounds.subSelf(this.tree.worldOffset);
+
+		    this.worldBounds.set(this._pBasicWorldBounds);
 		};
 
 		addMember(pMember: ISceneObject): void{

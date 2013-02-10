@@ -15,43 +15,45 @@ module akra {
 	var i: int = pScene3D.addDisplayList(pOctree);
 	debug_assert(i == DL_DEFAULT, "invalid default list index");
 
-	var pObject: ISceneObject = new scene.SceneObject(pScene3D);
+	/*var pObject: ISceneObject = new scene.SceneObject(pScene3D);
+	pObject.create();
 	pObject.accessLocalBounds().set(0,100,0,100,0,100);
-	console.log('----local bounds----->',pObject.localBounds, pObject.worldBounds,'<----world bounds----');
 	pObject.attachToParent(pScene3D.getRootNode());
 
 	//pScene3D.recursiveUpdate();
 
 	var pObject2: ISceneObject = new scene.SceneObject(pScene3D);
+	pObject2.create();
 	pObject2.accessLocalBounds().set(0,200,0,200,0,200);
-	console.log('----local bounds----->',pObject2.localBounds, pObject2.worldBounds,'<----world bounds----');
 	pObject2.attachToParent(pScene3D.getRootNode());
 
 	var pObject3: ISceneObject = new scene.SceneObject(pScene3D);
+	pObject3.create();
 	pObject3.accessLocalBounds().set(250,400,250,400,250,400);
-	console.log('----local bounds----->',pObject3.localBounds, pObject3.worldBounds,'<----world bounds----');
 	pObject3.attachToParent(pScene3D.getRootNode());
 
 	var pObject4: ISceneObject = new scene.SceneObject(pScene3D);
-	pObject4.accessLocalBounds().set(375,450,375,450,375,450);
-	console.log('----local bounds----->',pObject4.localBounds, pObject4.worldBounds,'<----world bounds----');
-	pObject4.attachToParent(pScene3D.getRootNode());
+	pObject4.create();
+	pObject4.accessLocalBounds().set(375,450,375,450,-300,-250);
+	pObject4.attachToParent(pScene3D.getRootNode());*/
+
+	var pObject5: ISceneObject = new scene.SceneObject(pScene3D);
+	pObject5.create();
+	pObject5.accessLocalBounds().set(0,10,0,10,-300,-100);
+	pObject5.attachToParent(pScene3D.getRootNode());
 
 	pScene3D.recursiveUpdate();
-	
-	console.log('----local bounds----->',pObject.localBounds, pObject.worldBounds,'<----world bounds----');
-	console.log('----local bounds----->',pObject2.localBounds, pObject2.worldBounds,'<----world bounds----');
-	console.log('----local bounds----->',pObject3.localBounds, pObject3.worldBounds,'<----world bounds----');
-	console.log('----local bounds----->',pObject4.localBounds, pObject4.worldBounds,'<----world bounds----');
-	
-	// i = pScene3D.addDisplayList(new scene.LightGraph());
-	// debug_assert(i == DL_LIGHTING, "invalid lighting list index");
-	// console.log(pObject);
-	// console.log(pScene3D);
-	// console.log(pOctree);
-	//	console.log(util.Entity._pEvenetTable);
+
+	var pCamera: ICamera = new scene.objects.Camera(pScene3D);
+	pCamera.create();
+	pCamera.attachToParent(pScene3D.getRootNode());
+
+	pScene3D.recursiveUpdate();
+
+	var pResult: any = pOctree.buildSearchResults(pCamera.searchRect, pCamera.frustum);
+
 	console.log(pOctree);
-	console.log(pObject);
-	console.log(pObject2);
-	console.log(scene.SceneObject._pEvenetTable);
+	console.log(pOctree.toSimpleObject());
+	console.warn(pResult);
+	console.warn(pCamera.searchRect, pCamera.frustum);
 }
