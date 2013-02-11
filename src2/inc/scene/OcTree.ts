@@ -224,7 +224,6 @@ module akra.scene {
 		    var iX: int, iY: int, iZ: int;
 
 		    var i: int = 0;
-		    var zz: int = 0;
 			while(i < iLevel){
 
 				iTmpX = iX0; iTmpY = iY0; iTmpZ = iZ0;
@@ -287,10 +286,11 @@ module akra.scene {
 							}
 							
 							var iTestIndex: int = pTestNode.index;
+							var iShift = iDepth - i - 1;
 
-							iX = (iTestIndex >> (3*iDepth - i))&1;
-							iY = (iTestIndex >> (2*iDepth - i))&1;
-							iZ = (iTestIndex >> (iDepth - i))&1;
+							iX = (iTestIndex >> (2*iDepth + iShift))&1;
+							iY = (iTestIndex >> (iDepth + iShift))&1;
+							iZ = (iTestIndex >> iShift)&1;
 
 							var iTestWay: int = 4*iX + 2*iY + iZ;
 
@@ -303,35 +303,6 @@ module akra.scene {
 						}
 					}
 
-					// if(iTest === pTestNode.index){
-					// 	if(pTestNode.level === iLevel){
-					// 		return pTestNode;
-					// 	}
-					// 	else if(pTestNode.level < iLevel){
-					// 		pParentNode = pTestNode;
-					// 		i = pTestNode.level;
-					// 		break;
-					// 	}
-					// 	console.log(pTestNode.level, iLevel,"<--------------------------");
-					// }
-					// if(iTest === iComposedIndex){
-						
-					// 	var iTestIndex: int = pTestNode.index;
-
-					// 	iX = (iTestIndex >> (3*iDepth - i))&1;
-					// 	iY = (iTestIndex >> (2*iDepth - i))&1;
-					// 	iZ = (iTestIndex >> (iDepth - i))&1;
-
-					// 	iWay = 4*iX + 2*iY + iZ;
-
-					// 	pNodeList.takeAt(iPosition);
-					// 	pNodeList.seek(iPosition-1);
-					// 	iPosition--;
-
-					// 	pNode.childrenList[iWay].push(pTestNode);
-					// 	pTestNode.rearNodeLink = pNode;
-					// }
-
 					pTestNode = pNodeList.next();
 					iPosition++;
 				}
@@ -341,11 +312,6 @@ module akra.scene {
 					pParentNode.childrenList[iWay].push(pNode);
 					break;
 				}
-
-				if(zz>100){
-					break;
-				}
-				zz++;
 			}
 
 			return pNode;
@@ -451,24 +417,30 @@ module akra.scene {
 		 * Delete node from tree
 		 */
 		deleteNodeFromTree(pNode: IOcTreeNode): void {
-			
 			var pParentNode: IOcTreeNode = pNode.rearNodeLink;
+
+			console.error(pNode,pParentNode);
 
 			debug_assert(pNode.membersList.length == 0,"list members of node don't empty");
 
 			var iDepth: int = this._iDepth;
 			var iParentLevel: int = pParentNode.level;
 			var iIndex: int = pNode.index;
+			var iShift: int = iDepth - iParentLevel - 1;
 
-			var iX: int = (iIndex >> (3*iDepth - iParentLevel))&1;
-			var iY: int = (iIndex >> (2*iDepth - iParentLevel))&1;
-			var iZ: int = (iIndex >> (iDepth - iParentLevel))&1;
+			var iX: int = (iIndex >> (2*iDepth + iShift))&1;
+			var iY: int = (iIndex >> (iDepth + iShift))&1;
+			var iZ: int = (iIndex >> iShift)&1;
 
 			var iWay: int = 4*iX + 2*iY + iZ;
 
 			var pParentBranch: IObjectList = pParentNode.childrenList[iWay];
 
+			console.log('iWay ------------>', iWay);
+
 			var iNode: int = pParentBranch.indexOf(pNode);
+
+			debug_assert(iNode != -1, "can't remove node from parent, node not found");
 
 			//deleting node from parent list
 			pParentBranch.takeAt(iNode);
@@ -509,10 +481,10 @@ module akra.scene {
 		protected _buildSearchResultsByRect(pSearchRect: IRect3d, pNode: IOcTreeNode, pResultList: IObjectArray){
 			var pNodeRect: IRect3d = pNode.worldBounds;
 
-			var kResult: EVolumeClassifications = geometry.classifyRect3d(pNodeRect, pSearchRect);
+			var kResult: EVolumeClassifications = geometry.classifyRect3d(pSearchRect, pNodeRect);
 
-			if(kResult == EVolumeClassifications.A_CONTAINS_B 
-				&& kResult == EVolumeClassifications.INTERSECTING){
+			if(kResult == EVolumeClassifications.B_CONTAINS_A 
+				|| kResult == EVolumeClassifications.INTERSECTING){
 
 				//надо проводить дополнительные тесты
 				
@@ -546,8 +518,6 @@ module akra.scene {
 
 			var pNodeRect: IRect3d = pNode.worldBounds;
 
-			console.log('node rect ---------------->', pNodeRect, '<------------------', pNode);
-
 			if(geometry.intersectRect3dRect3d(pSearchRect, pNodeRect)){
 				var kTestResult: int = geometry.classifyFrustumRect3d(pOptionalFrustum, pNodeRect);
 				if(kTestResult == EVolumeClassifications.A_CONTAINS_B){
@@ -556,7 +526,6 @@ module akra.scene {
 				}
 				else if(kTestResult == EVolumeClassifications.INTERSECTING){
 					//объект попал частично
-					console.warn(pNodeRect);
 					var pMemberList: IObjectList = pNode.membersList;
 					var pObject: ISceneObject = pMemberList.first;
 					while(isDefAndNotNull(pObject)){
@@ -579,8 +548,9 @@ module akra.scene {
 		};
 
 		protected _includeAllTreeSubbranch(pNode: IOcTreeNode, pResultList: IObjectArray){
+			console.warn("----------------> including all subbranch <------------------");
 			var pMemberList: IObjectList = pNode.membersList;
-			var pObject: ISceneObject = pMemberList.first();
+			var pObject: ISceneObject = pMemberList.first;
 			while(isDefAndNotNull(pObject)){
 				pResultList.push(pObject);
 				pObject = pMemberList.next();

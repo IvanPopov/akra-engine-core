@@ -120,6 +120,15 @@ module akra.geometry{
 			v3fMaxPoint.y = pRect.y0;
 		}
 
+		if(v3fNormal.z > 0.){
+			v3fMinPoint.z = pRect.z0;
+			v3fMaxPoint.z = pRect.z1;
+		}
+		else{
+			v3fMinPoint.z = pRect.z1;
+			v3fMaxPoint.z = pRect.z0;
+		}
+
 		var fMinDistance: float = pPlane.signedDistance(v3fMinPoint);
 		var fMaxDistance: float = pPlane.signedDistance(v3fMaxPoint);
 

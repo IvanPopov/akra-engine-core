@@ -118,7 +118,7 @@ module akra.scene.objects {
 		constructor (pScene: IScene3d) {
 			super(pScene);
 
-			this.type = EEntityTypes.CAMERA;
+			this._eType = EEntityTypes.CAMERA;
 		}
 
 		create(): bool {

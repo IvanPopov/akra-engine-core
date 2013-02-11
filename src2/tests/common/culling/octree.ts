@@ -10,12 +10,12 @@ module akra {
 	var pScene3D: IScene3d = pSceneManager.createScene3D();
 
 	var pOctree: IOcTree = new scene.OcTree();
-	pOctree.create(new geometry.Rect3d(1000,1000,1000),3,100);
+	pOctree.create(new geometry.Rect3d(1000,1000,1000),5,100);
 
 	var i: int = pScene3D.addDisplayList(pOctree);
 	debug_assert(i == DL_DEFAULT, "invalid default list index");
 
-	/*var pObject: ISceneObject = new scene.SceneObject(pScene3D);
+	var pObject: ISceneObject = new scene.SceneObject(pScene3D);
 	pObject.create();
 	pObject.accessLocalBounds().set(0,100,0,100,0,100);
 	pObject.attachToParent(pScene3D.getRootNode());
@@ -24,18 +24,18 @@ module akra {
 
 	var pObject2: ISceneObject = new scene.SceneObject(pScene3D);
 	pObject2.create();
-	pObject2.accessLocalBounds().set(0,200,0,200,0,200);
+	pObject2.accessLocalBounds().set(0,10,0,10,-500,-400);
 	pObject2.attachToParent(pScene3D.getRootNode());
 
 	var pObject3: ISceneObject = new scene.SceneObject(pScene3D);
 	pObject3.create();
-	pObject3.accessLocalBounds().set(250,400,250,400,250,400);
+	pObject3.accessLocalBounds().set(0,10,0,10,-500,-475);
 	pObject3.attachToParent(pScene3D.getRootNode());
 
 	var pObject4: ISceneObject = new scene.SceneObject(pScene3D);
 	pObject4.create();
-	pObject4.accessLocalBounds().set(375,450,375,450,-300,-250);
-	pObject4.attachToParent(pScene3D.getRootNode());*/
+	pObject4.accessLocalBounds().set(0,10,0,10,-475,-450);
+	pObject4.attachToParent(pScene3D.getRootNode());
 
 	var pObject5: ISceneObject = new scene.SceneObject(pScene3D);
 	pObject5.create();
@@ -43,6 +43,7 @@ module akra {
 	pObject5.attachToParent(pScene3D.getRootNode());
 
 	pScene3D.recursiveUpdate();
+	//pScene3D.recursiveUpdate();
 
 	var pCamera: ICamera = new scene.objects.Camera(pScene3D);
 	pCamera.create();
@@ -55,5 +56,6 @@ module akra {
 	console.log(pOctree);
 	console.log(pOctree.toSimpleObject());
 	console.warn(pResult);
-	console.warn(pCamera.searchRect, pCamera.frustum);
+	//console.warn(pCamera.searchRect, pCamera.frustum);
+	//console.log(pCamera);
 }

@@ -83,7 +83,7 @@ module akra.scene {
 		objectMoved(pObject: ISceneObject){
 			console.warn('object moving');
 			var pNode: IOcTreeNode = this.tree.findTreeNode(pObject);
-			console.error('-----before------>', this, pNode,'<-------arter------');
+			//console.error('-----before------>', this, pNode,'<-------arter------');
 			if(pNode !== this){
 				this.removeMember(pObject);
 				pNode.addMember(pObject);
