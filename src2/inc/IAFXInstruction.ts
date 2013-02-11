@@ -98,8 +98,33 @@ module akra {
         info: any;
     }
 
-    export interface InstructionMap {
+    export interface IAFXInstructionMap {
         [index: uint]: IAFXInstruction;
+    }
+
+    export interface IAFXIdExprMap {
+        [index: string]: IAFXIdExprInstruction;
+    }
+
+    export interface IAFXVariableTypeMap {
+        [index: string]: IAFXVariableTypeInstruction;
+    }
+
+    export interface IAFXTypeMap {
+        [index: string]: IAFXTypeInstruction;
+    }
+
+    export interface IAFXVariableDeclMap {
+        [index: string]: IAFXVariableDeclInstruction;
+    }
+
+    export interface IAFXVarUsedModeMap {
+        [index: string]: EVarUsedMode;
+    }
+
+    export interface IAFXFunctionDeclMap {
+        [index: string]: IAFXFunctionDeclInstruction;
+        [index: uint]: IAFXFunctionDeclInstruction;
     }
 
 	/**
@@ -117,8 +142,8 @@ module akra {
         setInstructions(pInstructionList: IAFXInstruction[]): void;
         getInstructions(): IAFXInstruction[];
 
-        getInstructionType(): EAFXInstructionTypes;
-        getInstructionID(): uint;
+        _getInstructionType(): EAFXInstructionTypes;
+        _getInstructionID(): uint;
 
         check(eStage: ECheckStage): bool;
         getLastError(): IAFXInstructionError;
@@ -139,7 +164,7 @@ module akra {
 
     	addRoutine(fnRoutine: IAFXInstructionRoutine, iPriority?: uint);
     	toString(): string;
-        clone(pRelationMap?: InstructionMap): IAFXInstruction;
+        clone(pRelationMap?: IAFXInstructionMap): IAFXInstruction;
     }
 
     export interface IAFXSimpleInstruction extends IAFXInstruction {
@@ -150,6 +175,7 @@ module akra {
     export interface IAFXTypeInstruction extends IAFXInstruction {
         isBase(): bool;
         isArray(): bool;
+        isNotBaseArray(): bool;
         isComplex(): bool;
         isWritable(): bool;
         isReadable(): bool;
@@ -172,8 +198,12 @@ module akra {
 
         getSize(): uint;
 
+        getBaseType(): IAFXTypeInstruction;
+
         getLength(): uint;
         getArrayElementType(): IAFXTypeInstruction;
+
+        clone(pRelationMap?: IAFXInstructionMap): IAFXTypeInstruction;
     }
 
     export interface IAFXVariableTypeInstruction extends IAFXTypeInstruction {
@@ -200,8 +230,17 @@ module akra {
 
 
         wrap(): IAFXVariableTypeInstruction;
+        clone(pRelationMap?: IAFXInstructionMap): IAFXVariableTypeInstruction;
 
         _setNextPointer(pPointer: IAFXVariableDeclInstruction): void;
+        _containArray(): bool;
+        _containSampler(): bool;
+
+        _setCloneHash(sHash: string, sStrongHash: string): void;
+        _setCloneArrayIndex(pElementType: IAFXVariableTypeInstruction, 
+                            pIndexExpr: IAFXExprInstruction, iLength: uint): void;
+        _setClonePointeIndexes(nDim: uint, pPointerList: IAFXVariableDeclInstruction[]): void;
+        _setCloneFields(pFieldMap: IAFXIdExprMap): void;
     }
 
      export interface IAFXUsageTypeInstruction extends IAFXInstruction {
@@ -214,11 +253,14 @@ module akra {
         hasUsage(sUsage: string): bool;
         addUsage(sUsage: string): bool;
 
+        clone(pRelationMap?: IAFXInstructionMap): IAFXUsageTypeInstruction;
     }
 
     export interface IAFXTypedInstruction extends IAFXInstruction{
         getType(): IAFXTypeInstruction;
         setType(pType: IAFXTypeInstruction): void;
+
+        clone(pRelationMap?: IAFXInstructionMap): IAFXTypedInstruction;
     }
 
     export interface IAFXDeclInstruction extends IAFXTypedInstruction {
@@ -226,10 +268,12 @@ module akra {
         setAnnotation(pAnnotation: IAFXAnnotationInstruction): void;
         getName(): string;
         getNameId(): IAFXIdInstruction;
+
+        clone(pRelationMap?: IAFXInstructionMap): IAFXDeclInstruction;
     }
 
     export interface IAFXTypeDeclInstruction extends IAFXDeclInstruction {
-    
+        clone(pRelationMap?: IAFXInstructionMap): IAFXTypeDeclInstruction;
     }
 
     export interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
@@ -240,6 +284,8 @@ module akra {
         setType(pType: IAFXVariableTypeInstruction): void;
 
         setName(sName: string):void;
+
+        clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction;
     }
 
     export interface IAFXFunctionDeclInstruction extends IAFXDeclInstruction {
@@ -253,6 +299,10 @@ module akra {
         setFunctionDef(pFunctionDef: IAFXDeclInstruction): void;
         setImplementation(pImplementation: IAFXStmtInstruction): void;
         _usedAsShader(eUsedType: EFunctionType): void;
+
+        _addUsedFunction(pFunction: IAFXFunctionDeclInstruction): void;
+
+        clone(pRelationMap?: IAFXInstructionMap): IAFXFunctionDeclInstruction;
     }
 
     export interface IAFXStructDeclInstruction extends IAFXInstruction {
@@ -271,6 +321,8 @@ module akra {
 
         setName(sName: string): void;
         setRealName(sName: string): void;
+
+        clone(pRelationMap?: IAFXInstructionMap): IAFXIdInstruction;
     }
 
     export interface IAFXKeywordInstruction extends IAFXInstruction {
@@ -284,14 +336,17 @@ module akra {
         simplify(): bool;
         getEvalValue(): any;
         isConst(): bool;
+
+        clone(pRelationMap?: IAFXInstructionMap): IAFXExprInstruction;
     }
 
     export interface IAFXIdExprInstruction extends IAFXExprInstruction {
-
+        clone(pRelationMap?: IAFXInstructionMap): IAFXIdExprInstruction;
     }
 
     export interface IAFXLiteralInstruction extends IAFXExprInstruction {
         setValue(pValue: any): void;
+        clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction;
     }
 
     export interface IAFXAnnotationInstruction extends IAFXInstruction{

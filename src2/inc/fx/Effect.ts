@@ -40,6 +40,7 @@ module akra.fx {
 
 		private _pEffectScope: ProgramScope = null;
 		private _pCurrentInstruction: IAFXInstruction = null;
+		private _pCurrentFunction: IAFXFunctionDeclInstruction = null;
 
 		private _pStatistics: IAFXEffectStats = null;
 
@@ -501,7 +502,7 @@ module akra.fx {
 			return this.getSystemType(sTypeName) || this._pEffectScope.getType(sTypeName);
 		}
 
-		private inline getSystemType(sTypeName: string): IAFXTypeInstruction {
+		private inline getSystemType(sTypeName: string): SystemTypeInstruction {
         	//bool, string, float and others
         	return isDef(this._pSystemTypes[sTypeName]) ? this._pSystemTypes[sTypeName] : null;
         }
@@ -509,14 +510,6 @@ module akra.fx {
         private inline getSystemVariable(sName: string): IAFXVariableDeclInstruction {
         	return null;
         }
-
-		private addSystemVariable(): void {
-
-		}
-
-		private addSystemType(): void {
-
-		}
 
 		private isSystemFunction(pFunction: IAFXFunctionDeclInstruction): bool {
 			return false;
@@ -589,6 +582,14 @@ module akra.fx {
 
 		private inline getScopeType(): EScopeType {
 			return this._pEffectScope.getScopeType();
+		}
+
+		private inline setCurrentAnalyzedFunction(pFunction: IAFXFunctionDeclInstruction): void {
+			this._pCurrentFunction = pFunction;
+		}
+
+		private inline getCurrentAnalyzedFunction(): IAFXFunctionDeclInstruction {
+			return this._pCurrentFunction;
 		}
 
 		// private inline newInstruction(pInstruction: IAFXInstruction): void {
@@ -1256,7 +1257,7 @@ module akra.fx {
         		return null;
         	}
 
-        	if(pFunction.getInstructionType() === EAFXInstructionTypes.k_FunctionDeclInstruction){
+        	if(pFunction._getInstructionType() === EAFXInstructionTypes.k_FunctionDeclInstruction){
         		var pFunctionCallExpr: FunctionCallInstruction = new FunctionCallInstruction();
 	        	
 	        	pFunctionId = new IdExprInstruction();
@@ -1278,6 +1279,10 @@ module akra.fx {
 	        			pFunctionCallExpr.push(pFunctionArguments[i].getInitializeExpr(), false);
 	        		}
 	        		
+	        	}
+
+	        	if(!isNull(this.getCurrentAnalyzedFunction())){
+	        		this.getCurrentAnalyzedFunction()._addUsedFunction(pFunction);
 	        	}
 
 	        	pExpr = pFunctionCallExpr;
@@ -1847,7 +1852,7 @@ module akra.fx {
         	var pPostfixExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
         	var pPostfixExprType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
 
-        	if(pPostfixExpr.getInstructionType() !== EAFXInstructionTypes.k_VariableTypeInstruction){
+        	if(pPostfixExpr._getInstructionType() !== EAFXInstructionTypes.k_VariableTypeInstruction){
         		this._error(EFFECT_BAD_MEMOF_ARGUMENT);
         		return null;
         	}
@@ -2103,8 +2108,12 @@ module akra.fx {
         	var pChildren: IParseNode[] = pNode.children;
         	var pStmtBlock: StmtBlockInstruction = null;
 
+        	this.setCurrentAnalyzedFunction(pFunction);
+
         	pStmtBlock = <StmtBlockInstruction>this.analyzeStmtBlock(pChildren[0]);
  			pFunction.setImplementation(<IAFXStmtInstruction>pStmtBlock);
+
+ 			this.setCurrentAnalyzedFunction(null);
 
  			this.endScope();
 
@@ -2594,7 +2603,7 @@ module akra.fx {
 
 			var pConditionExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[1]);
 
-			// if(pConditionExpr.getInstructionType() !== EAFXInstructionTypes.k_RelationalExprInstruction){
+			// if(pConditionExpr._getInstructionType() !== EAFXInstructionTypes.k_RelationalExprInstruction){
 			// 	this._error(EFFECT_BAD_FOR_COND_RELATION);
 			// 	return;
 			// }
@@ -2609,8 +2618,8 @@ module akra.fx {
 			var pChildren: IParseNode[] = pNode.children;
 			var pStepExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
 
-			// if(pStepExpr.getInstructionType() === EAFXInstructionTypes.k_UnaryExprInstruction ||
-			//    pStepExpr.getInstructionType() === EAFXInstructionTypes.k_AssignmentExprInstruction){
+			// if(pStepExpr._getInstructionType() === EAFXInstructionTypes.k_UnaryExprInstruction ||
+			//    pStepExpr._getInstructionType() === EAFXInstructionTypes.k_AssignmentExprInstruction){
 
 			// 	var sOperator: string = pStepExpr.getOperator();
 			// 	if (sOperator !== "++" && sOperator !== "--" &&
@@ -2761,11 +2770,6 @@ module akra.fx {
 
 
 
-
-        
-
-        
-
         /**
          * Проверят возможность использования оператора между двумя типами.
          * Возращает тип получаемый в результате приминения опрератора, или, если применить его невозможно - null.
@@ -2775,53 +2779,106 @@ module akra.fx {
          * @pRightType {IAFXVariableTypeInstruction} Тип правой части выражения
          */
         private checkTwoOperandExprTypes(sOperator: string, 
-        								 pLeftType: IAFXTypeInstruction, 
-        								 pRightType: IAFXTypeInstruction): IAFXVariableTypeInstruction {
+        								 pLeftType: IAFXVariableTypeInstruction, 
+        								 pRightType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
 
-        	var isCopmlexTypes: bool = pLeftType.isComplex() || pRightType.isComplex();
+        	var isComplex: bool = pLeftType.isComplex() || pRightType.isComplex();
+			var isArray: bool = pLeftType.isNotBaseArray() || pRightType.isNotBaseArray();
+			var isSampler: bool = this.isSamplerType(pLeftType) || this.isSamplerType(pRightType);
+        	var pBoolType: IAFXVariableTypeInstruction = this.getSystemType("bool").getVariableType();
 
-        	if(isCopmlexTypes && sOperator !== "="){
+        	if(isArray || isSampler) {
+        		return null;
+        	}
+
+        	if(isComplex){
+        		if(sOperator === "=" && pLeftType.isEqual(pRightType)){
+        			return <IAFXVariableTypeInstruction>pLeftType;
+        		}
+        		else if(this.isEqualOperator(sOperator) && !pLeftType._containArray() && !pLeftType._containSampler()) {
+        			return pBoolType;
+        		}
+        		else {
+        			return null;
+        		}
+        	}
+
+        	if(sOperator === "%" || sOperator === "%=") {
         		return null;
         	}
 
         	var pReturnType: IAFXVariableTypeInstruction = null;
+        	var pLeftBaseType: IAFXVariableTypeInstruction = (<SystemTypeInstruction>pLeftType.getBaseType()).getVariableType();
+        	var pRightBaseType: IAFXVariableTypeInstruction = (<SystemTypeInstruction>pRightType.getBaseType()).getVariableType();
+        	
 
-        	switch(sOperator) {
-        		case "+":
-        		case "+=":
-        			break;
-        		case "-":
-        		case "-=":
-        			break;
-        		case "*":
-        		case "*=":
-        			break;
-        		case "/":
-        		case "/=":
-        			break;
-        		case "%":
-        		case "%=":
-        			break;
-        		case "<":
-        		case "<=":
-        			break;
-        		case ">":
-        		case ">=":
-        			break;
-        		case "==":
-        		case "!=":
-        			break;
-        		case "=":
-        			if(pLeftType.isEqual(pRightType)){
-        				pReturnType = <IAFXVariableTypeInstruction>pLeftType;
-        			}
-        			break;
+        	if(pLeftType.isConst() && this.isBadForConstOperator(sOperator)){
+        		return null;
         	}
 
-        	return pReturnType;
+        	if(pLeftType.isEqual(pRightType)){
+        		if(this.isArithmeticalOperator(sOperator)){
+        			if(!this.isMatrixType(pLeftType) || (sOperator !== "/" && sOperator !== "/=")){
+        				return pLeftBaseType;
+        			}
+        			else {
+        				return null;
+        			}
+        		}
+        		else if(this.isRelationalOperator(sOperator)){
+        			if(this.isScalarType(pLeftType)){
+        				return pBoolType;
+        			}
+        			else {
+        				return null;
+        			}
+        		}
+        		else if(this.isEqualOperator(sOperator)){
+        			return pBoolType;
+        		}
+        		else if(sOperator === "="){
+        			return pLeftBaseType;
+        		}
+        		else {
+        			return null;
+        		}
+
+        	}
+
+        	if(this.isArithmeticalOperator(sOperator)){
+        		if (this.isBoolBasedType(pLeftType) || this.isBoolBasedType(pRightType) ||
+        		    this.isFloatBasedType(pLeftType) !== this.isFloatBasedType(pRightType) ||
+        		    this.isIntBasedType(pLeftType) !== this.isIntBasedType(pRightType)) {
+        			return null;
+        		}
+
+        		if(this.isScalarType(pLeftType)){
+        			return pRightBaseType;
+        		}
+
+        		if(this.isScalarType(pRightType)){
+        			return pLeftType;
+        		}
+
+        		if(sOperator === "*" || sOperator === "*="){
+        			if(this.isMatrixType(pLeftType) && this.isVectorType(pRightType) &&
+        			   pLeftType.getLength() === pRightType.getLength()){
+        				return pRightBaseType;
+        			}
+        			else if(this.isMatrixType(pRightType) && this.isVectorType(pLeftType) &&
+        			   pLeftType.getLength() === pRightType.getLength()){
+        				return pLeftBaseType;
+        			}
+        			else {
+        				return null;
+        			}
+        		}
+        	}
+
+        	return null;
         }
-        
-         /**
+
+        /**
          * Проверят возможность использования оператора к типу данных.
          * Возращает тип получаемый в результате приминения опрератора, или, если применить его невозможно - null.
          * 
@@ -2831,21 +2888,127 @@ module akra.fx {
         private checkOneOperandExprType(sOperator: string, 
         								pType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
 
-        	switch(sOperator) {
-        		case "+":
-        			break;
-        		case "-":
-        			break;
-        		case "!":
-        			break;
-        		case "++":
-        			break;
-        		case "--":
-        			break;
+        	var isComplex: bool = pType.isComplex();
+			var isArray: bool = pType.isNotBaseArray();
+			var isSampler: bool = this.isSamplerType(pType);
+
+			if(isComplex || isArray || isSampler){
+				return null;
+			}
+
+        	if(sOperator === "!"){
+        		var pBoolType: IAFXVariableTypeInstruction = this.getSystemType("bool").getVariableType();
+        		
+        		if(pType.isEqual(pBoolType)){
+        			return pBoolType;
+        		}
+        		else{
+        			return null;
+        		}
+        	}
+        	else {
+        		if(this.isBoolBasedType(pType)){
+        			return null;
+        		}
+        		else{
+        			return (<SystemTypeInstruction>pType.getBaseType()).getVariableType();
+        		}
         	}
 
         	return null;
         }
+
+        private isBadForConstOperator(sOperator: string): bool {
+        	return sOperator === "+=" || sOperator === "-=" ||
+        		   sOperator === "*=" || sOperator === "/=" ||
+        		   sOperator === "%=" || sOperator === "="; 
+        }
+
+        private isArithmeticalOperator(sOperator: string): bool{
+        	return sOperator === "+" || sOperator === "+=" ||
+        		   sOperator === "-" || sOperator === "-=" ||
+        		   sOperator === "*" || sOperator === "*=" ||
+        		   sOperator === "/" || sOperator === "/=";
+        }
+
+        private isRelationalOperator(sOperator: string): bool {
+        	return sOperator === ">" || sOperator === ">=" ||
+        		   sOperator === "<" || sOperator === "<=";
+        }
+
+        private isEqualOperator(sOperator: string): bool {
+        	return sOperator === "==" || sOperator === "!=";
+        }
+
+        private isMatrixType(pType: IAFXTypeInstruction): bool {
+        	return pType.isEqual(this.getSystemType("float2x2")) ||
+        		   pType.isEqual(this.getSystemType("float3x3")) ||
+        		   pType.isEqual(this.getSystemType("float4x4")) ||
+        		   pType.isEqual(this.getSystemType("int2x2")) ||
+        		   pType.isEqual(this.getSystemType("int3x3")) ||
+        		   pType.isEqual(this.getSystemType("int4x4")) ||
+        		   pType.isEqual(this.getSystemType("bool2x2")) ||
+        		   pType.isEqual(this.getSystemType("bool3x3")) ||
+        		   pType.isEqual(this.getSystemType("bool4x4"));
+        }
+
+        private isVectorType(pType: IAFXTypeInstruction): bool {
+        	return pType.isEqual(this.getSystemType("float2")) ||
+        		   pType.isEqual(this.getSystemType("float3")) ||
+        		   pType.isEqual(this.getSystemType("float4")) ||
+        		   pType.isEqual(this.getSystemType("bool2")) ||
+        		   pType.isEqual(this.getSystemType("bool3")) ||
+        		   pType.isEqual(this.getSystemType("bool4")) ||
+        		   pType.isEqual(this.getSystemType("int2")) ||
+        		   pType.isEqual(this.getSystemType("int3")) ||
+        		   pType.isEqual(this.getSystemType("int4"));
+        }
+
+        private isScalarType(pType: IAFXTypeInstruction): bool {
+        	return pType.isEqual(this.getSystemType("bool")) ||
+        		   pType.isEqual(this.getSystemType("int")) ||
+        		   pType.isEqual(this.getSystemType("ptr")) ||
+        		   pType.isEqual(this.getSystemType("float"));
+        }
+
+        private isFloatBasedType(pType: IAFXTypeInstruction): bool {
+        	return pType.isEqual(this.getSystemType("float")) || 
+        		   pType.isEqual(this.getSystemType("float2")) || 
+        		   pType.isEqual(this.getSystemType("float3")) || 
+        		   pType.isEqual(this.getSystemType("float4")) ||
+        		   pType.isEqual(this.getSystemType("float2x2")) || 
+        		   pType.isEqual(this.getSystemType("float3x3")) || 
+        		   pType.isEqual(this.getSystemType("float4x4")) ||
+        		   pType.isEqual(this.getSystemType("ptr")); 
+        }
+
+        private isIntBasedType(pType: IAFXTypeInstruction): bool {
+        	return pType.isEqual(this.getSystemType("int")) || 
+        		   pType.isEqual(this.getSystemType("int2")) || 
+        		   pType.isEqual(this.getSystemType("int3")) || 
+        		   pType.isEqual(this.getSystemType("int4")) ||
+        		   pType.isEqual(this.getSystemType("int2x2")) || 
+        		   pType.isEqual(this.getSystemType("int3x3")) || 
+        		   pType.isEqual(this.getSystemType("int4x4"));
+        }
+
+        private isBoolBasedType(pType: IAFXTypeInstruction): bool {
+        	return pType.isEqual(this.getSystemType("bool")) || 
+        		   pType.isEqual(this.getSystemType("bool2")) || 
+        		   pType.isEqual(this.getSystemType("bool3")) || 
+        		   pType.isEqual(this.getSystemType("bool4")) ||
+        		   pType.isEqual(this.getSystemType("bool2x2")) || 
+        		   pType.isEqual(this.getSystemType("bool3x3")) || 
+        		   pType.isEqual(this.getSystemType("bool4x4"));
+        }
+
+        private isSamplerType(pType: IAFXTypeInstruction): bool {
+        	return pType.isEqual(this.getSystemType("sampler")) ||
+    		   	   pType.isEqual(this.getSystemType("sampler2D")) ||
+    		       pType.isEqual(this.getSystemType("samplerCUBE")) ||
+    		       pType.isEqual(this.getSystemType("video_buffer"));
+        }
+       
 
 		private getNodeSourceLocation(pNode: IParseNode): {line: uint; column: uint;} {
 			if(isDef(pNode.line)){
