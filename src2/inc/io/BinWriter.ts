@@ -48,9 +48,9 @@ module akra.io {
 		/**
 	     * Двумерный массив куда заносятся данные.
 	     * @private
-	     * @type Array
+	     * @type Uint8Array[]
 	     */
-	    private _pArrData = [];
+	    private _pArrData: Uint8Array[] = [];
 	    /**
 	     * Счетчик общего количества байт.
 	     * @private
