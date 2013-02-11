@@ -32,11 +32,15 @@ function usage() {
 		'\n\t--build		[-d] < path/to/build/directory > Specify build directory. ' + 
 		'\n\t--tests		[-s] < path/to/tests/folder > Specify tests directory. ' + 
 		'\n\t--test			[-c] < path/to/single/test > Specify test directory. ' + 
-		'\n\t--html			build tests as HTML. ' + 
-		'\n\t--nw			build tests as NW. ' + 
+		'\n\t--html			Build tests as HTML. ' + 
+		'\n\t--nw			Build tests as NW. ' + 
+		'\n\t--js			Build tests as JS. ' + 
 		'\n\t--help			[-h] Print this text. ' + 
-		'\n\t--ES6			activate ecmascript 5 capability.' + 
-		'\n\t--compress		compress output javascript.'
+		'\n\t--ES6			Activate ecmascript 5 capability.' + 
+		'\n\t--compress		Compress output javascript.' + 
+		'\n\t--debug		Debug build.' + 
+		'\n\t--no-debug		Release build.' + 
+		'\n\t--declaration	Generates corresponding .d.ts file.'
 	);
 	
 	process.exit(1);
@@ -54,8 +58,10 @@ var pOptions = {
 	pathToTests: null,
 	compress: false,
 	files: [],
+	debug: false,
 	pathToTemp: null,
-	testsFormat: {nw: false, html: false}
+	declaration: false,
+	testsFormat: {nw: false, html: false, js: false}
 };
 
 if (process.argv.length < 3) {
@@ -132,6 +138,18 @@ function parseArguments() {
 			case '--nw':
 				pOptions.testsFormat.nw = true;
 				break;
+			case '--js':
+				pOptions.testsFormat.js = true;
+				break;
+			case '--debug':
+				pOptions.debug = true;
+				break;
+			case '--no-debug':
+				pOptions.debug = false;
+				break;
+			case '--declaration':
+				pOptions.declaration = true;
+				break;
 			case '--tests':
 			case '-s':
 				readKey("pathToTests", ++ i);
@@ -148,6 +166,7 @@ function parseArguments() {
 			case '--build':
 				readKey("buildDir", ++ i);
 				break;
+
 			default:
 				if (sArg.charAt(0) == '-') {
 					console.log("unknown arguments detected: " + sArg, "\n");
@@ -167,25 +186,37 @@ function verifyOptions() {
 	pOptions.outputFile = path.basename(pOptions.outputFolder);
 	pOptions.outputFolder = path.dirname(pOptions.outputFolder);
 
-	if (pOptions.testsFormat.html == false && pOptions.testsFormat.nw == false) {
+	if (pOptions.testsFormat.html 	== false && 
+		pOptions.testsFormat.nw 	== false &&
+		pOptions.testsFormat.js 	== false) {
 		pOptions.testsFormat.nw = true;
 	}
 
 	if (pOptions.outputFile == null || pOptions.outputFile == "") {
-		pOptions.outputFile = pOptions.files[0] + ".out.js";
+		pOptions.outputFile = pOptions.files[0] + (pOptions.declaration? ".d.ts" : ".out.js");
 	}
 }
 
 function preprocess() {
 	console.log("\n> preprocessing started (" + this.process.pid + ")\n");
 
-	var capabilityMacro = [
+	var capabilityOptions = [
 		"-D inline=/**@inline*/",
 		"-D protected=/**@protected*/",
 		"-D const=/**@const*/var",
 		"-D struct=class",
 		"-D readonly="
-		].join(" ");
+		];
+
+	if (pOptions.debug) {
+		capabilityOptions.push("-D DEBUG=DEBUG");
+		console.log("Debug build.");
+	}
+	else {
+		console.log("Release build.")
+	}
+
+	var capabilityMacro = capabilityOptions.join(" ");
 
 	if (pOptions.capability == null) {
 		capabilityMacro = "";
@@ -236,7 +267,8 @@ function compress(sFile) {
 		//" --warning_level=VERBOSE " + 
 		" --js_output_file " + sFile + ".min" + 
 		" --language_in=ECMASCRIPT5_STRICT" + 
-		" --compilation_level=ADVANCED_OPTIMIZATIONS"
+		// " --compilation_level=ADVANCED_OPTIMIZATIONS" + 
+		""
 		).split(" ");
 	
 	
@@ -267,7 +299,9 @@ function compile() {
 		//pOptions.baseDir + "/WebGL.d.ts " + 
 		pOptions.pathToTemp + " --out " + 
 		pOptions.outputFolder + "/" + pOptions.outputFile + 
-		(pOptions.compress? " --comments --jsdoc ": "") + " ").split(' ');
+		// (pOptions.compress? " --comments --jsdoc ": "") + 
+		(pOptions.declaration? " --declaration ": "") +
+		" ").split(" ");
 
 	var node = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE,  stdio: 'inherit' });
 
@@ -358,7 +392,7 @@ function createTestName(sEntryFileName) {
 	return sFileName.substr(0, i);
 }
 
-function compileTest(sDir, sFile, sName, pData, sTestData) {
+function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 	var pArchive;
 	var sIndexHTML = "\n\
 				  <html>                           					\n\
@@ -395,7 +429,7 @@ function compileTest(sDir, sFile, sName, pData, sTestData) {
 	    });
     }
 
-    if (pOptions.testsFormat.nw) {
+    if (sFormat == "nw") {
 	   	pArchive = new zip();
 	    pArchive.add("index.html", new Buffer(sIndexHTML, "utf8"));
 	    pArchive.add("package.json", new Buffer(
@@ -427,9 +461,11 @@ function compileTest(sDir, sFile, sName, pData, sTestData) {
 			writeOutput(sDir + "/" + sName + ".nw", pArchive.toBuffer());
 		});
 	}
-	else 
-	if (pOptions.testsFormat.html) {
+	else if (sFormat == "html") {
 		writeOutput(sDir + "/" + sName + ".ts.html", sIndexHTML);
+	}
+	else if (sFormat == "js") {
+		writeOutput(sDir + "/" + sName + ".ts.js", sTestData);	
 	}
 }
 
@@ -451,13 +487,38 @@ function packTest(sDir, sFile, sName, pData) {
 	var cmd = "node";
 	var argv = (pOptions.baseDir + "/make.js -o " + sTempFile +" -t CORE " + 
 		(pOptions.capability? " --ES6 ": "") + 
-		(pOptions.compress? " --compress ": "") + sFile).split(" ");
+		(pOptions.compress? " --compress ": "") + 
+		(pOptions.declaration? " --declaration ": "") + 
+		(pOptions.debug? " --debug ": "") + 
+		sFile).split(" ");
 	var node = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE, stdio: 'inherit' });
 
 	node.on('exit', function (code) {
 		console.log("test " + sFile + " packed with code " + code);
 		if (code == 0) {
-			compileTest(sDir, sFile, sName, pData, fs.readFileSync(sTempFile + (pOptions.compress? ".min": ""), "utf8"));
+
+			var compileTestMacro = function (sFormat) {
+				compileTest(
+					sDir, 
+					sFile, 
+					sName, 
+					pData, 
+					fs.readFileSync(sTempFile + (pOptions.compress? ".min": ""), "utf8"), 
+					sFormat);
+			}
+			if (pOptions.testsFormat.nw) {
+				compileTestMacro("nw");
+			}
+
+			if (pOptions.testsFormat.html) {
+				compileTestMacro("html");
+			}
+
+			if (pOptions.testsFormat.js) {
+				compileTestMacro("js");
+			}
+
+
 			fs.unlinkSync(sTempFile)
 
 			if (pOptions.compress) {

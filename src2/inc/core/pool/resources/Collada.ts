@@ -386,9 +386,9 @@ module akra.core.pool.resources {
             var pAccess: IColladaAccessor = pTech.accessor;
             var isFormatSupported: bool;
 
-#ifndef DEBUG
+#ifdef DEBUG
             if (!(pAccess.stride <= nStride)) {
-                LOG(pAccess.iStride, "/", nStride);
+                LOG(pAccess.stride, "/", nStride);
             }
 #endif
 
