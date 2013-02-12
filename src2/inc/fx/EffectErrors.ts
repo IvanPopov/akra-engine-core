@@ -60,6 +60,12 @@ module akra.fx {
     #define EFFECT_BAD_TECHNIQUE_REDEFINE_NAME 2252
     #define EFFECT_BAD_MEMOF_ARGUMENT 2253
     #define EFFECT_BAD_MEMOF_NO_BUFFER 2254
+    #define EFFECT_BAD_FUNCTION_USAGE_RECURSION 2255
+    #define EFFECT_BAD_FUNCTION_USAGE_BLACKLIST 2256
+    #define EFFECT_BAD_FUNCTION_USAGE_VERTEX 2257
+    #define EFFECT_BAD_FUNCTION_USAGE_PIXEL 2258
+    #define EFFECT_BAD_FUNCTION_VERTEX_DEFENITION 2259
+    #define EFFECT_BAD_FUNCTION_PIXEL_DEFENITION 2260
 
 
     #define TEMP_EFFECT_BAD_ARRAY_OF_POINTERS 2300
@@ -215,6 +221,18 @@ module akra.fx {
     akra.logger.registerCode(EFFECT_BAD_MEMOF_NO_BUFFER,
                              "Bad 'memof'-operator argument. No buffer for argument.\
                               In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFECT_BAD_FUNCTION_USAGE_RECURSION,
+                             "Bad function '{funcDef}'. It is recursion.");
+    akra.logger.registerCode(EFFECT_BAD_FUNCTION_USAGE_BLACKLIST,
+                             "Bad function '{funcDef}'. It use bad-function with recursion.");
+    akra.logger.registerCode(EFFECT_BAD_FUNCTION_USAGE_VERTEX,
+                             "Bad function '{funcDef}'. Can not use in vertex-shader.");
+    akra.logger.registerCode(EFFECT_BAD_FUNCTION_USAGE_PIXEL,
+                             "Bad function '{funcDef}'. Can not use in pixel-shader.");
+    akra.logger.registerCode(EFFECT_BAD_FUNCTION_VERTEX_DEFENITION,
+                             "Bad function with defenition '{funcDef}'. Can not be used as vertex-shader.");
+    akra.logger.registerCode(EFFECT_BAD_FUNCTION_PIXEL_DEFENITION,
+                             "Bad function with defenition '{funcDef}'. Can not be used as pixel-shader.");
 
 
 
@@ -258,6 +276,7 @@ module akra.fx {
    		rirgtTypeName?: string;
    		fieldName?: string;
    		funcName?: string;
+        funcDef?: string;
    		semanticName?: string;
     	
     	line?: uint;

@@ -48,6 +48,7 @@ module akra.fx {
 		private _pSystemTypes: SystemTypeMap = null;
 		private _pSystemFunctionsMap: SystemFunctionMap = null;
 		private _pSystemFunctionHashMap: BoolMap = null;
+		private _pSystemVariables: IAFXVariableDeclMap = null;
 
 		private _pFunctionWithImplementationList: IAFXFunctionDeclInstruction[] = null; 
 		
@@ -56,6 +57,7 @@ module akra.fx {
 
 		static pSystemTypes: SystemTypeMap = null;
 		static pSystemFunctions: SystemFunctionMap = null;
+		static pSystemVariables: IAFXVariableDeclMap = null;
 
 		static private _pGrammarSymbols = akra.util.parser.getGrammarSymbols();
 
@@ -74,6 +76,10 @@ module akra.fx {
 			this._pFunctionWithImplementationList = [];
 			this._pTechniqueList = [];
 			this._pTechniqueMap = <TechniqueMap>{};
+
+			this.initSystemTypes();
+			this.initSystemFunctions();
+			this.initSystemVariables();
 		}
 
 		analyze(pTree: IParseTree): bool {
@@ -180,7 +186,47 @@ module akra.fx {
 		}
 
 		private initSystemVariables(): void {
+			if(isNull(Effect.pSystemVariables)){
+				this._pSystemVariables = Effect.pSystemVariables = {};
+				this.addSystemVariables();
+			}
 
+			this._pSystemVariables = Effect.pSystemVariables;
+		}
+
+		private addSystemVariables(): void {
+			this.generateSystemVariable("fragCoord", "gl_FragCoord", "float4", false, true, true);
+			this.generateSystemVariable("frontFacing", "gl_FrontFacing", "bool", false, true, true);
+			this.generateSystemVariable("pointCoord", "gl_PointCoord", "float2", false, true, true);
+		}
+
+		private generateSystemVariable(sName: string, sRealName: string, sTypeName: string, 
+									   isForVertex: bool, isForPixel: bool, isOnlyRead: bool): void {
+
+			if(isDef(this._pSystemVariables[sName])){
+				return;
+			}
+
+			var pVariableDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+			var pName: IAFXIdInstruction = new IdInstruction();
+			var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+
+			pName.setName(sName);
+			pName.setRealName(sRealName);
+			
+			pType.pushInVariableType(this.getSystemType(sTypeName));
+
+			if(isOnlyRead) {
+				pType._canWrite(false);
+			}
+
+			pVariableDecl._setForVertex(isForVertex);
+			pVariableDecl._setForPixel(isForPixel);
+
+			pVariableDecl.push(pName, true);
+			pVariableDecl.push(pType, true);
+
+			this._pSystemVariables[sName] = pVariableDecl;
 		}
 
 		private addSystemFunctions(): void {
@@ -188,9 +234,6 @@ module akra.fx {
 
 			this.generateSystemFunction("dot", "dot($1,$2)", "float", [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
 		    this.generateSystemFunction("mul", "$1*$2", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "int", "float2", "float3", "float4"]);
-		    this.generateSystemFunction("tex2D", "texture2D($1,$2)", "float4", ["sampler", "float2"], null);
-		    this.generateSystemFunction("texCUBE", "textureCube($1,$2)", "float4", ["sampler", "float3"], null);
-		    this.generateSystemFunction("texCUBE", "textureCube($1,$2)", "float4", ["samplerCUBE", "float3"], null);
 		    this.generateSystemFunction("mod", "mod($1,$2)", "float", ["float", "float"], null);
 		    this.generateSystemFunction("floor", "floor($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
 		    this.generateSystemFunction("ceil", "ceil($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
@@ -233,12 +276,39 @@ module akra.fx {
 		    this.generateSystemFunction("atan", "atan($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
 		    this.generateSystemFunction("atan", "atan($1, $2)", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
 
+		    this.generateSystemFunction("tex2D", "texture2D($1,$2)", "float4", ["sampler", "float2"], null);
+		    this.generateSystemFunction("tex2D", "texture2D($1,$2)", "float4", ["sampler2D", "float2"], null);
+		    this.generateSystemFunction("tex2DProj", "texture2DProj($1,$2)", "float4", ["sampler", "float3"], null);
+		    this.generateSystemFunction("tex2DProj", "texture2DProj($1,$2)", "float4", ["sampler2D", "float3"], null);
+		    this.generateSystemFunction("tex2DProj", "texture2DProj($1,$2)", "float4", ["sampler", "float4"], null);
+		    this.generateSystemFunction("tex2DProj", "texture2DProj($1,$2)", "float4", ["sampler2D", "float4"], null);
+		    this.generateSystemFunction("texCUBE", "textureCube($1,$2)", "float4", ["sampler", "float3"], null);
+		    this.generateSystemFunction("texCUBE", "textureCube($1,$2)", "float4", ["samplerCUBE", "float3"], null);
+
+		    this.generateSystemFunction("tex2D", "texture2D($1,$2,$3)", "float4", ["sampler", "float2", "float"], null, false, true);
+		    this.generateSystemFunction("tex2D", "texture2D($1,$2,$3)", "float4", ["sampler2D", "float2", "float"], null, false, true);
+		    this.generateSystemFunction("tex2DProj", "texture2DProj($1,$2,$3)", "float4", ["sampler", "float3", "float"], null, false, true);
+		    this.generateSystemFunction("tex2DProj", "texture2DProj($1,$2,$3)", "float4", ["sampler2D", "float3", "float"], null, false, true);
+		    this.generateSystemFunction("tex2DProj", "texture2DProj($1,$2,$3)", "float4", ["sampler", "float4", "float"], null, false, true);
+		    this.generateSystemFunction("tex2DProj", "texture2DProj($1,$2,$3)", "float4", ["sampler2D", "float4", "float"], null, false, true);
+		    this.generateSystemFunction("texCUBE", "textureCube($1,$2,$3)", "float4", ["sampler", "float3", "float"], null, false, true);
+		    this.generateSystemFunction("texCUBE", "textureCube($1,$2,$3)", "float4", ["samplerCUBE", "float3", "float"], null, false, true);
+
+		    this.generateSystemFunction("tex2DLod", "texture2DLod($1,$2,$3)", "float4", ["sampler", "float2", "float"], null, true, false);
+		    this.generateSystemFunction("tex2DLod", "texture2DLod($1,$2,$3)", "float4", ["sampler2D", "float2", "float"], null, true, false);
+		    this.generateSystemFunction("tex2DProjLod", "texture2DProjLod($1,$2,$3)", "float4", ["sampler", "float3", "float"], null, true, false);
+		    this.generateSystemFunction("tex2DProjLod", "texture2DProjLod($1,$2,$3)", "float4", ["sampler2D", "float3", "float"], null, true, false);
+		    this.generateSystemFunction("tex2DProjLod", "texture2DProjLod($1,$2,$3)", "float4", ["sampler", "float4", "float"], null, true, false);
+		    this.generateSystemFunction("tex2DProjLod", "texture2DProjLod($1,$2,$3)", "float4", ["sampler2D", "float4", "float"], null, true, false);
+		    this.generateSystemFunction("texCUBELod", "textureCubeLod($1,$2,$3)", "float4", ["sampler", "float3", "float"], null, true, false);
+		    this.generateSystemFunction("texCUBELod", "textureCubeLod($1,$2,$3)", "float4", ["samplerCUBE", "float3", "float"], null, true, false);
 		}
 
 		private generateSystemFunction(sName: string, sTranslationExpr: string, 
 									   sReturnTypeName: string,
 									   pArgumentsTypes: string[],
-									   pTemplateTypes: string[]): void {
+									   pTemplateTypes: string[], 
+									   isForVertex?: bool = true, isForPixel?: bool = true): void {
 
 			var pExprTranslator: ExprTemplateTranslator = new ExprTemplateTranslator(sTranslationExpr);
 			var pSystemFunctions: SystemFunctionMap = this._pSystemFunctionsMap;
@@ -279,10 +349,13 @@ module akra.fx {
 						pSystemFunctions[sName] = [];
 					}
 
+					pFunction._setForVertex(isForVertex);
+					pFunction._setForPixel(isForPixel);
+
 					pSystemFunctions[sName].push(pFunction);
 				}
 			}
-			else{
+			else {
 
 				if(sReturnTypeName === TEMPLATE_TYPE){
 					akra.logger.criticalError("Bad return type(TEMPLATE_TYPE) for system function '" + sName +  "'.");
@@ -309,6 +382,9 @@ module akra.fx {
 				}
 
 				pFunction = new SystemFunctionInstruction(sName, pReturnType, pExprTranslator, pTypes);
+
+				pFunction._setForVertex(isForVertex);
+				pFunction._setForPixel(isForPixel);
 
 				if(!isDef(pSystemFunctions[sName])){
 					pSystemFunctions[sName] = [];
@@ -808,6 +884,10 @@ module akra.fx {
         	for(var i: uint = 0; i < this._pFunctionWithImplementationList.length; i++) {
         		this.resumeFunctionAnalysis(this._pFunctionWithImplementationList[i]);
         	}
+
+        	this.checkFunctionsForRecursion();
+        	this.checkFunctionForCorrectUsage();
+        	this.generateShadersFromFunctions();
         }
 
         private analyzeTechniques(): void {
@@ -815,6 +895,149 @@ module akra.fx {
         		this.resumeTechniqueAnalysis(this._pTechniqueList[i]);
         	}
         }
+
+        private checkFunctionsForRecursion(): void {
+        	var pFunctionList: IAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
+        	var isNewAdd: bool = true;
+        	var isNewDelete: bool = true;
+
+        	while(isNewAdd || isNewDelete) {
+        		isNewAdd = false;
+        		isNewDelete = false;
+
+        		mainFor:
+        		for(var i: uint = 0; i < pFunctionList.length; i++){
+        			var pTestedFunction: IAFXFunctionDeclInstruction = pFunctionList[i];
+        			var pUsedFunctionList: IAFXFunctionDeclInstruction[] = pTestedFunction._getUsedFunctionList();
+
+        			if(!pTestedFunction._isUsed()){
+        				//WARNING("Unused function '" + pTestedFunction._getStringDef() + "'.");
+        				continue mainFor;
+        			}
+        			if(pTestedFunction._isBlackListFunction()){
+        				continue mainFor;
+        			}
+
+        			if(isNull(pUsedFunctionList)){
+        				continue mainFor;
+        			}
+
+        			for(var j: uint = 0; j < pUsedFunctionList.length; j++) {
+        				var pAddedUsedFunctionList: IAFXFunctionDeclInstruction[] = pUsedFunctionList[j]._getUsedFunctionList();
+        				
+        				if(isNull(pAddedUsedFunctionList)){
+        					continue mainFor;
+        				}
+
+        				for(var k: uint = 0; k < pAddedUsedFunctionList.length; k++) {
+        					var pAddedFunction: IAFXFunctionDeclInstruction = pAddedUsedFunctionList[k];
+
+        					if(pTestedFunction === pAddedFunction){
+        						pTestedFunction._addToBlackList();
+        						isNewDelete = true;
+        						this._error(EFFECT_BAD_FUNCTION_USAGE_RECURSION, { funcDef: pTestedFunction._getStringDef() });
+        						continue mainFor;
+        					}
+
+        					if(pAddedFunction._isBlackListFunction()){
+        						pTestedFunction._addToBlackList();
+        						this._error(EFFECT_BAD_FUNCTION_USAGE_BLACKLIST, { funcDef: pTestedFunction._getStringDef() });
+        						isNewDelete = true;
+        						continue mainFor;
+        					}
+
+        					if(pTestedFunction._addUsedFunction(pAddedFunction)){
+        						isNewAdd = true;
+        					}
+        				}
+        			} 
+        		}
+        	}
+        }
+
+        private checkFunctionForCorrectUsage(): void {
+        	var pFunctionList: IAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
+        	var isNewUsageSet: bool = true;
+        	var isNewDelete: bool = true;
+
+        	while(isNewUsageSet || isNewDelete){
+        		isNewUsageSet = false;
+        		isNewDelete = false;
+
+        		mainFor:
+        		for(var i: uint = 0; i < pFunctionList.length; i++) {
+        			var pTestedFunction: IAFXFunctionDeclInstruction = pFunctionList[i];
+        			var pUsedFunctionList: IAFXFunctionDeclInstruction[] = pTestedFunction._getUsedFunctionList();
+
+        			if(!pTestedFunction._isUsed()){
+        				//WARNING("Unused function '" + pTestedFunction._getStringDef() + "'.");
+        				continue mainFor;
+        			}
+        			if(pTestedFunction._isBlackListFunction()){
+        				continue mainFor;
+        			}
+
+        			if(!pTestedFunction._checkVertexUsage()){
+        				this._error(EFFECT_BAD_FUNCTION_USAGE_VERTEX, { funcDef: pTestedFunction._getStringDef() });
+        				pTestedFunction._addToBlackList();
+        				isNewDelete = true;
+        				continue mainFor;
+        			}
+
+        			if(!pTestedFunction._checkPixelUsage()){
+        				this._error(EFFECT_BAD_FUNCTION_USAGE_PIXEL, { funcDef: pTestedFunction._getStringDef() });
+        				pTestedFunction._addToBlackList();
+        				isNewDelete = true;
+        				continue mainFor;
+        			}
+
+        			if(isNull(pUsedFunctionList)){
+        				continue mainFor;
+        			}
+
+        			for(var j: uint = 0; j < pUsedFunctionList.length; j++) {
+        				var pUsedFunction: IAFXFunctionDeclInstruction = pUsedFunctionList[j];
+        				
+        				if(pTestedFunction._isUsedInVertex()){
+        					if(!pUsedFunction._isForVertex()){
+        						this._error(EFFECT_BAD_FUNCTION_USAGE_VERTEX, { funcDef: pTestedFunction._getStringDef() });
+		        				pTestedFunction._addToBlackList();
+		        				isNewDelete = true;
+		        				continue mainFor;
+        					}
+
+        					if(!pUsedFunction._isUsedInVertex()){
+	        					pUsedFunction._usedInVertex();        						
+        						isNewUsageSet = true;
+        					}
+
+        				}	
+
+        				if(pTestedFunction._isUsedInPixel()){
+        					if(!pUsedFunction._isForPixel()){
+        						this._error(EFFECT_BAD_FUNCTION_USAGE_PIXEL, { funcDef: pTestedFunction._getStringDef() });
+		        				pTestedFunction._addToBlackList();
+		        				isNewDelete = true;
+		        				continue mainFor;
+        					}
+
+        					if(!pUsedFunction._isUsedInPixel()){
+	        					pUsedFunction._usedInPixel();       				
+	        					isNewUsageSet = true;
+        					}
+        				}
+
+        			}
+        		}
+
+        	}
+        }	
+
+        private generateShadersFromFunctions(): void {
+        	var pFunctionList: IAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
+
+        }
+
 
 		// private addType(pType: IAFXType): void {
 		// 	if(this.isSystemType(pType)){
@@ -1257,6 +1480,16 @@ module akra.fx {
         		return null;
         	}
 
+        	if(!isNull(this.getCurrentAnalyzedFunction())){
+        		if(!pFunction._isForPixel()) {
+        			this.getCurrentAnalyzedFunction()._setForPixel(false);
+        		}
+
+        		if(!pFunction._isForVertex()) {
+        			this.getCurrentAnalyzedFunction()._setForVertex(false);
+        		}
+        	}
+
         	if(pFunction._getInstructionType() === EAFXInstructionTypes.k_FunctionDeclInstruction){
         		var pFunctionCallExpr: FunctionCallInstruction = new FunctionCallInstruction();
 	        	
@@ -1284,6 +1517,8 @@ module akra.fx {
 	        	if(!isNull(this.getCurrentAnalyzedFunction())){
 	        		this.getCurrentAnalyzedFunction()._addUsedFunction(pFunction);
 	        	}
+
+	        	pFunction._usedAs(EFunctionType.k_Function);
 
 	        	pExpr = pFunctionCallExpr;
         	}
@@ -1687,7 +1922,7 @@ module akra.fx {
         	if(isNull(pExprType)){
         		this._error(EFFECT_BAD_RELATIONAL_OPERATION, { operator: sOperator,
         													   leftTypeName: pLeftType.toString(),
-        													   rightTypeName: pRightType.toString()});
+        													   rightTypeName: pRightType.toString() });
         		return null;
         	}
 
@@ -1799,6 +2034,15 @@ module akra.fx {
         		this._error(EFFECT_UNKNOWN_VARNAME, {varName: sName});
         		return null;
         	}
+
+        	if(!isNull(this.getCurrentAnalyzedFunction())){
+        		if(!pVariable._isForPixel()){
+        			this.getCurrentAnalyzedFunction()._setForPixel(false);
+        		}
+        		if(!pVariable._isForVertex()){
+        			this.getCurrentAnalyzedFunction()._setForVertex(false);
+        		}
+        	}        	
 
         	var pVarId: IdExprInstruction = new IdExprInstruction();
         	pVarId.push(pVariable.getNameId(), false);
@@ -2372,6 +2616,10 @@ module akra.fx {
 
         	pBreakStmtInstruction.setOperator(sOperatorName);
 
+        	if(sOperatorName === "discard" && !isNull(this.getCurrentAnalyzedFunction())){
+        		this.getCurrentAnalyzedFunction()._setForVertex(false);	
+        	}
+
         	CHECK_INSTRUCTION(pBreakStmtInstruction, ECheckStage.CODE_TARGET_SUPPORT);    
 
         	return pBreakStmtInstruction;
@@ -2747,7 +2995,18 @@ module akra.fx {
         	var pCompileExpr: CompileExprInstruction = <CompileExprInstruction>this.analyzeExpr(pExprNode);
         	var pShaderFunc: IAFXFunctionDeclInstruction = pCompileExpr.getFunction();
 
-        	pShaderFunc._usedAsShader(eShaderType);
+        	if(eShaderType === EFunctionType.k_Vertex){
+        		if(!pShaderFunc._checkDefenitionForVertexUsage()){
+        			this._error(EFFECT_BAD_FUNCTION_VERTEX_DEFENITION, {funcDef: pShaderFunc._getStringDef()});
+        		}
+        	}
+        	else{
+        		if(!pShaderFunc._checkDefenitionForPixelUsage()){
+        			this._error(EFFECT_BAD_FUNCTION_PIXEL_DEFENITION, {funcDef: pShaderFunc._getStringDef()});
+        		}
+        	}
+
+        	pShaderFunc._usedAs(eShaderType);
         }
 
         private resumeTechniqueAnalysis(pTechnique: IAFXTechniqueInstruction): void {

@@ -192,6 +192,9 @@ module akra {
         getStrongHash(): string ;
 
         hasField(sFieldName: string): bool;
+        hasFileldWithSematic(sSemantic: string);
+        hasAllUniqueSemantics(): bool;
+        hasFieldWithoutSemantic(): bool;
         getField(sFieldName: string, isCreateExpr?: bool): IAFXIdExprInstruction;
         getFieldType(sFieldName: string): IAFXTypeInstruction;
         getFieldNameList(): string[];
@@ -268,6 +271,15 @@ module akra {
         setAnnotation(pAnnotation: IAFXAnnotationInstruction): void;
         getName(): string;
         getNameId(): IAFXIdInstruction;
+        getSemantic(): string;
+
+        _isForAll(): bool;
+        _isForPixel(): bool;
+        _isForVertex(): bool;
+
+        _setForAll(canUse: bool): void;
+        _setForPixel(canUse: bool): void;
+        _setForVertex(canUse: bool): void;
 
         clone(pRelationMap?: IAFXInstructionMap): IAFXDeclInstruction;
     }
@@ -298,11 +310,33 @@ module akra {
         // closeArguments(pArguments: IAFXInstruction[]): IAFXTypedInstruction[];
         setFunctionDef(pFunctionDef: IAFXDeclInstruction): void;
         setImplementation(pImplementation: IAFXStmtInstruction): void;
-        _usedAsShader(eUsedType: EFunctionType): void;
-
-        _addUsedFunction(pFunction: IAFXFunctionDeclInstruction): void;
 
         clone(pRelationMap?: IAFXInstructionMap): IAFXFunctionDeclInstruction;
+        
+        _usedAs(eUsedType: EFunctionType): void;
+        _isUsedAs(eUsedType: EFunctionType): bool;
+        _isUsedAsFunction(): bool;
+        _isUsedAsVertex(): bool;
+        _isUsedAsPixel(): bool;
+        _isUsed(): bool;
+        _usedInVertex(): void;
+        _usedInPixel(): void;
+        _isUsedInVertex(): bool;
+        _isUsedInPixel(): bool;
+        _checkVertexUsage(): bool;
+        _checkPixelUsage(): bool;
+
+        _checkDefenitionForVertexUsage(): bool;
+        _checkDefenitionForPixelUsage(): bool;
+
+        _addUsedFunction(pFunction: IAFXFunctionDeclInstruction): bool;
+        _getUsedFunctionList(): IAFXFunctionDeclInstruction[];
+        
+        _isBlackListFunction(): bool;
+        _addToBlackList(): void;
+        _getStringDef(): string;
+
+
     }
 
     export interface IAFXStructDeclInstruction extends IAFXInstruction {

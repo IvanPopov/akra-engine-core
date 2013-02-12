@@ -406,6 +406,30 @@ module akra.fx {
 			return this.getSubType().hasField(sFieldName);
 		}
 
+		hasFileldWithSematic(sSemantic: string): bool {
+			if(!this.isComplex()){
+				return false;
+			}
+
+			return this.getSubType().hasFileldWithSematic(sSemantic);
+		}
+
+		hasAllUniqueSemantics(): bool {
+			if(!this.isComplex()){
+				return false;
+			}
+
+			return this.getSubType().hasAllUniqueSemantics();	
+		}
+
+		hasFieldWithoutSemantic(): bool {
+			if(!this.isComplex()){
+				return false;
+			}
+
+			return this.getSubType().hasFieldWithoutSemantic();		
+		}
+
 		getField(sFieldName: string, isCreateExpr?: bool): IAFXIdExprInstruction {
 			if(!this.hasField(sFieldName)){
 				return null;
@@ -826,6 +850,18 @@ module akra.fx {
 			return isDef(this._pFieldIdMap[sFieldName]);
 		}
 
+		hasFileldWithSematic(sSemantic: string): bool {
+			return false;
+		}
+
+		hasAllUniqueSemantics(): bool {
+			return false;
+		}
+
+		hasFieldWithoutSemantic(): bool {
+			return false;	
+		}
+
 		inline getField(sFieldName: string, isCreateExpr?: bool): IAFXIdExprInstruction {
 			return isDef(this._pFieldIdMap[sFieldName]) ? this._pFieldIdMap[sFieldName] : null;
 		}
@@ -876,6 +912,10 @@ module akra.fx {
 		private _pFieldIdMap: IAFXIdExprMap = null;
 		private _pFieldDeclList: IAFXVariableDeclInstruction[] = null;
 		private _pFieldNameList: string[] = null;
+
+		private _pFieldDeclBySemanticMap: IAFXVariableDeclMap = null;
+		private _hasAllUniqueSemantics: bool = true;
+		private _hasFieldWithoutSemantic: bool = false;
 
 		private _isContainArray: bool = false;
 		private _isContainSampler: bool = false;
@@ -1004,6 +1044,28 @@ module akra.fx {
 		//inline getNameId()
 		inline hasField(sFieldName: string): bool {
 			return isDef(this._pFieldDeclMap[sFieldName]);
+		}
+
+		hasFileldWithSematic(sSemantic: string): bool {
+			if(isNull(this._pFieldDeclBySemanticMap)) {
+				this.analyzeSemantics();
+			}
+
+			return isDef(this._pFieldDeclBySemanticMap[sSemantic]);
+		}
+
+		hasAllUniqueSemantics(): bool {
+			if(isNull(this._pFieldDeclBySemanticMap)) {
+				this.analyzeSemantics();
+			}
+			return this._hasAllUniqueSemantics;
+		}
+
+		hasFieldWithoutSemantic(): bool {
+			if(isNull(this._pFieldDeclBySemanticMap)) {
+				this.analyzeSemantics();
+			}
+			return this._hasFieldWithoutSemantic;	
 		}
 
 		inline getField(sFieldName: string, isCreateExpr?: bool = true): IAFXIdExprInstruction {
@@ -1164,6 +1226,29 @@ module akra.fx {
 
 			this._sStrongHash = sStrongHash;
 		}
+
+		private analyzeSemantics(): void {
+			this._pFieldDeclBySemanticMap = <IAFXVariableDeclMap>{};
+
+			for(var i: uint = 0; i < this._pFieldDeclList.length; i++){
+				var pVar: IAFXVariableDeclInstruction = this._pFieldDeclList[i];
+				var sSemantic: string = pVar.getSemantic();
+
+				if(sSemantic === ""){
+					this._hasFieldWithoutSemantic = true;
+				}
+
+				if(isDef(this._pFieldDeclBySemanticMap[sSemantic])){
+					this._hasAllUniqueSemantics = false;
+				}
+
+				this._pFieldDeclBySemanticMap[sSemantic] = pVar;
+
+				this._hasFieldWithoutSemantic = this._hasFieldWithoutSemantic || pVar.getType().hasFieldWithoutSemantic();
+				this._hasAllUniqueSemantics = !(this._hasAllUniqueSemantics) ? false : pVar.getType().hasAllUniqueSemantics();
+			}
+
+		}
 	}
 
 	export class TypedInstruction extends Instruction implements IAFXTypedInstruction {
@@ -1191,12 +1276,13 @@ module akra.fx {
 	}
 
 	export class DeclInstruction extends TypedInstruction implements IAFXDeclInstruction {
-		protected _sSemantic: string;
-		protected _pAnnotation: IAFXAnnotationInstruction;
+		protected _sSemantic: string = "";
+		protected _pAnnotation: IAFXAnnotationInstruction = null;
+		protected _bForPixel: bool = true;
+		protected _bForVertex: bool = true;
 
 		constructor(){
 			super();
-			this._sSemantic = "";
 			this._eInstructionType = EAFXInstructionTypes.k_DeclInstruction;
 		}
 
@@ -1215,6 +1301,31 @@ module akra.fx {
 		getNameId(): IAFXIdInstruction {
 			return null;
 		}
+
+		inline getSemantic(): string {
+			return this._sSemantic;
+		}
+
+		inline _isForAll(): bool{
+			return this._bForVertex && this._bForPixel;
+		}
+        inline _isForPixel(): bool{
+        	return this._bForPixel;
+        }
+        inline _isForVertex(): bool{
+        	return this._bForVertex;
+        }
+
+        inline _setForAll(canUse: bool): void{
+        	this._bForVertex = canUse;
+        	this._bForPixel = canUse;
+        }
+        inline _setForPixel(canUse: bool): void{
+    	    this._bForPixel = canUse;
+    	}
+        inline _setForVertex(canUse: bool): void{
+        	this._bForVertex = canUse;
+        }
 
 		clone(pRelationMap?: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXDeclInstruction {
 			var pClonedInstruction: IAFXDeclInstruction = <IAFXDeclInstruction>(super.clone(pRelationMap));
@@ -1499,11 +1610,23 @@ module akra.fx {
 		private _pFunctionDefenition: FunctionDefInstruction = null;
 		private _pImplementation: StmtBlockInstruction = null;
 		private _eFunctionType: EFunctionType = EFunctionType.k_Function;
+		
+		private _bUsedAsFunction: bool = false;
+		private _bUsedAsVertex: bool = false;
+		private _bUsedAsPixel: bool = false;
+
+		private _bUsedInVertex: bool = false;
+		private _bUsedInPixel: bool = false;
+		
+		private _canUsedAsFunction: bool = false;
+		private _canUsedAsVertex: bool = false;
+		private _canUsedAsPixel: bool = false;
+		
 		private _pParseNode: IParseNode = null;
 		private _iScope: uint = 0;
-		private _eUsedAsShader: EFunctionType = EFunctionType.k_Function;
 		private _pUsedFunctionMap: IAFXFunctionDeclMap = null;
 		private _pUsedFunctionList: IAFXFunctionDeclInstruction[] = null;
+		private _isInBlackList: bool = false;
 
 		constructor() { 
 			super();
@@ -1575,11 +1698,82 @@ module akra.fx {
 			return <IAFXFunctionDeclInstruction>super.clone(pRelationMap);
 		}
 
-		_usedAsShader(eUsedType: EFunctionType): void {
-			this._eUsedAsShader = EFunctionType.k_Vertex;
+		_usedAs(eUsedType: EFunctionType): void {
+			switch(eUsedType){
+				case EFunctionType.k_Vertex:
+					this._bUsedInVertex = true;
+					this._bUsedAsVertex = true;
+					break;
+				case EFunctionType.k_Pixel:
+					this._bUsedInPixel = true;
+					this._bUsedAsPixel = true;
+					break;
+				case EFunctionType.k_Function:
+					this._bUsedAsFunction = true;
+					break;
+			}
 		}
 
-		_addUsedFunction(pFunction: IAFXFunctionDeclInstruction): void {
+		_isUsedAs(eUsedType: EFunctionType): bool {
+			switch(eUsedType){
+				case EFunctionType.k_Vertex:
+					return this._bUsedAsVertex;
+				case EFunctionType.k_Pixel:
+					return this._bUsedAsPixel;
+				case EFunctionType.k_Function:
+					return this._bUsedAsFunction;
+			}
+		}
+
+		_isUsedAsFunction(): bool {
+			return this._bUsedAsFunction;
+		}
+
+		_isUsedAsVertex(): bool {
+			return this._bUsedAsVertex;
+		}
+
+		_isUsedAsPixel(): bool {
+			return this._bUsedAsPixel;
+		}
+
+		_usedInVertex(): void {
+			this._bUsedInVertex = true;
+		}
+
+		_usedInPixel(): void {
+			this._bUsedInPixel = true;
+		}
+
+		_isUsedInVertex(): bool {
+			return this._bUsedInVertex;
+		}
+
+		_isUsedInPixel(): bool {
+			return this._bUsedInPixel;
+		}
+
+		_isUsed(): bool{
+			return this._bUsedAsFunction || this._bUsedAsVertex || this._bUsedAsPixel;
+		}
+
+		_checkVertexUsage(): bool {
+			return this._usedInVertex() ? this._isForVertex() : true;
+		}
+
+		_checkPixelUsage(): bool {
+			return this._usedInPixel() ? this._isForPixel() : true;
+		}
+
+		_checkDefenitionForVertexUsage(): bool {
+			return this._pFunctionDefenition._checkForVertexUsage();
+		}
+
+		_checkDefenitionForPixelUsage(): bool {
+			return this._pFunctionDefenition._checkForPixelUsage();
+		}
+
+		_addUsedFunction(pFunction: IAFXFunctionDeclInstruction): bool {
 			if(isNull(this._pUsedFunctionMap)){
 				this._pUsedFunctionMap = <IAFXFunctionDeclMap>{};
 				this._pUsedFunctionList = [];
@@ -1590,15 +1784,32 @@ module akra.fx {
 			if(!isDef(this._pUsedFunctionMap[iFuncId])){
 				this._pUsedFunctionMap[iFuncId] = pFunction;
 				this._pUsedFunctionList.push(pFunction);
+				return true;
 			}
+
+			return false;
+		}
+
+		_getUsedFunctionList(): IAFXFunctionDeclInstruction[] {
+			return this._pUsedFunctionList;
+		}
+
+		_isBlackListFunction(): bool {
+			return this._isInBlackList;
+		}
+
+		_addToBlackList(): void {
+			this._isInBlackList = true;
+		}
+
+		_getStringDef(): string {
+			return this._pFunctionDefenition._getStringDef();
 		}
 		
 		// cloneTo(eConvertTo: EFunctionType): ShaderFunctionInstruction {
 		// 	if(eConvertTo === EFunctionType.k_Function) {
 		// 		//nothing to do
 		// 	}
-
-
 		// 	return null;
 		// }
 	}
@@ -1680,16 +1891,82 @@ module akra.fx {
 		setImplementation(pImplementation: IAFXStmtInstruction): void {
 		}
 
-		_usedAsShader(eUsedType: EFunctionType): void {
-			return;
-		}
-
-		_addUsedFunction(pFunction: IAFXFunctionDeclInstruction): void {
-		}
-
 		inline clone(pRelationMap?: IAFXInstructionMap): SystemFunctionInstruction {
 			return this;
 		}
+		
+		_usedAs(eUsedType: EFunctionType): void {
+		}
+
+		_isUsedAs(eUsedType: EFunctionType): bool{
+			return true;
+		}
+
+		_isUsedAsFunction(): bool {
+			return true;
+		}
+
+		_isUsedAsVertex(): bool {
+			return true;
+		}
+
+		_isUsedAsPixel(): bool {
+			return true;
+		}
+
+		_usedInVertex(): void {
+		}
+
+		_usedInPixel(): void {
+		}
+
+		_isUsedInVertex(): bool {
+			return null;
+		}
+
+		_isUsedInPixel(): bool {
+			return null;
+		}
+
+		_isUsed(): bool{
+			return null;
+		}
+
+		_checkVertexUsage(): bool {
+			return this._isForVertex();
+		}
+
+		_checkPixelUsage(): bool {
+			return this._isForPixel();
+		}
+
+		_checkDefenitionForVertexUsage(): bool {
+			return false;
+		}
+
+		_checkDefenitionForPixelUsage(): bool {
+			return false;
+		}
+
+		_addUsedFunction(pFunction: IAFXFunctionDeclInstruction): bool{
+			return false;
+		}
+
+		_getUsedFunctionList(): IAFXFunctionDeclInstruction[] {
+			return null;
+		}
+
+		_isBlackListFunction(): bool {
+			return false;
+		}
+
+		_addToBlackList(): void {
+		}
+
+		_getStringDef(): string {
+			return "system_func";
+		}
+
 	}
 
 	/**
@@ -1701,6 +1978,7 @@ module akra.fx {
 		private _pReturnType: IAFXVariableTypeInstruction = null;
 		private _pFunctionName: IAFXIdInstruction = null;
 		private _nParamsNeeded: uint = 0;
+		private _sDefinition: string = "";
 
 		//private _sHash: string = "";
 
@@ -1782,6 +2060,31 @@ module akra.fx {
 			}
 
 			return pClone;
+		}
+
+		_getStringDef(): string {
+			if(this._sDefinition === ""){
+				this._sDefinition = this._pReturnType.getHash() + " " + this.getName() + "(";
+				
+				for(var i: uint = 0; i < this._pParameterList.length; i++){
+					this._sDefinition += this._pParameterList[i].getType().getHash() + ",";
+				}
+				
+				this._sDefinition += ")";
+			}
+
+			return this._sDefinition;
+		}
+
+		_checkForVertexUsage(): bool {
+			// if(this._pReturnType.hasFieldWithoutSemantic()){
+			// 	this._setForVertex(false);
+			// }
+			return false;
+		}
+
+		_checkForPixelUsage(): bool {
+			return false;
 		}
 		// getHash(): string {
 		// 	if(this._sHash === "") {
