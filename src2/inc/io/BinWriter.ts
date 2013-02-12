@@ -243,7 +243,7 @@ module akra.io {
 		    }
 
 		    if (iX == 8) {
-		        this._pArrData[this._pArrData.length] = arrTmpBuf;
+		        this._pArrData[this._pArrData.length] = <Uint8Array>arrTmpBuf;
 		    }
 		    else {
 		        this._pArrData[this._pArrData.length] = new Uint8Array(arrTmpBuf.buffer);

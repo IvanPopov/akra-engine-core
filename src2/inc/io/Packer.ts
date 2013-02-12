@@ -2,6 +2,7 @@
 #define PACKER_TS
 
 #include "IPacker.ts"
+#include "IPackerFormat.ts"
 #include "BinWriter.ts"
 
 module akra.io {
@@ -13,6 +14,7 @@ module akra.io {
 	interface IHash {
 		[type: string]: IHashCell;
 	}
+	
 
 	class Packer extends BinWriter implements IPacker {
 		protected _pHashTable: IHash = {};
@@ -32,7 +34,7 @@ module akra.io {
 		private addr(pObject: any, sType: string): int;
 		private nullPtr(): void;
 		private jump(iAddr: int): void;
-		private rollback(n: uint): Uint8Array[];
+		private rollback(n?: int): Uint8Array[];
 		private append(pData: Uint8Array[]): void;
 		private append(pData: ArrayBuffer): void;
 		private append(pData: Uint8Array): void;
@@ -44,7 +46,282 @@ module akra.io {
 		private header(): ArrayBuffer;
 
 		write(pObject: any, sType?: string, bHeader?: bool): bool;
+
+		private memof(pObject: any, iAddr: int, sType: string): void {
+			var pTable: IHash = this._pHashTable;
+		    var pCell: IHashCell = pTable[sType];
+
+		    if (!isDef(pCell)) {
+		        pCell = pTable[sType] = [];
+		    }
+
+		    pCell.push(pObject, iAddr);
+		}
+
+		private addr(pObject: any, sType: string): int {
+			var pTable: IHash = this._pHashTable;
+		    var iAddr: int;
+		    var pCell: IHashCell = pTable[sType];
+
+		    if (isDef(pCell)) {
+
+		        for (var i: int = 0, n: int = pCell.length / 2; i < n; ++ i) {
+		            var j = 2 * i;
+
+		            if (pCell[j] === pObject) {
+		                return <int>pCell[j + 1];
+		            }
+		        }
+		    }
+
+		    return -1;
+		}
+
+		private inline nullPtr(): void {
+			return this.uint32(MAX_UINT32);
+		}
+
+		private inline jump(iAddr: int): void {
+			this._iInitialAddr = iAddr;
+		}
+
+		private rollback(n: int = 1): Uint8Array[] {
+		    if (n === -1) {
+		        n = this._pArrData.length;
+		    }
+
+		    var pRollback: Uint8Array[] = new Array(n);
+		    var iRollbackLength: int = 0;
+
+		    for (var i: int = 0; i < n; ++ i) {
+		        pRollback[i] = this._pArrData.pop();
+		        iRollbackLength += pRollback[i].byteLength;
+		    }
+
+		    this._iCountData -= iRollbackLength;
+		    pRollback.byteLength = iRollbackLength;
+
+		    return pRollback;
+		}
+
+		private append(pData: any): void {
+			if (isArray(pData)) {
+		        for (var i: int = 0; i < (<Uint8Array[]>pData).length; ++ i) {
+		            this._pArrData.push((<Uint8Array[]>pData)[i]);
+		            this._iCountData += (<Uint8Array[]>pData)[i].byteLength;
+		        }
+		    }
+		    else{
+		        if (isArrayBuffer(pData)) {
+		            pData = new Uint8Array(pData);
+		        }
+		        this._pArrData.push(<Uint8Array>pData);
+		        this._iCountData += (<Uint8Array>pData).byteLength;
+		    }
+		}
+
+		private pushBlackList(pList: IBlackList): IPacker {
+		    this._pBlackListStack.push(this._pBlackList);
+		    
+		    var pBlackList: IBlackList = {};
+
+		    if (isDefAndNotNull(pList)) {
+		        for (var i in pList) {
+		            pBlackList[i] = pList[i];
+		        }
+		    }
+
+		    for (var i in this._pBlackList) {
+		        pBlackList[i] = this._pBlackList[i];
+		    }
+
+		    this._pBlackList = pBlackList;
+		    return this;
+		}
+
+		private inline popBlackList(): IPacker {
+			this._pBlackList = this._pBlackListStack.pop();
+		    return this;
+		}
+
+		private inline blackList(): IBlackList {
+			return this._pBlackList;
+		}
+
+		private inline isInBlacklist(sType: string): bool {
+			return isDef(this._pBlackList[sType]);
+		}
+
+		private writeData(pObject: any, sType: string): bool {
+			var pTemplate: IPackerTemplate = this.template;
+		    var pProperties: IPackerCodec = pTemplate.properties(sType);
+
+		    var fnWriter: Function = null;
+		    var pBaseClasses: string[];
+		    var pBlackList: IBlackList;
+		    var pMembers: IPackerCodec;
+
+		    this.pushBlackList(pProperties.blacklist);
+
+		    pBlackList = this.blackList();
+
+		    if (isDefAndNotNull(pBlackList) &&  isDef(pBlackList[sType])) {
+		        if (isNull(pBlackList[sType])) {
+		            return false;
+		        }
+		        else if (isFunction(pBlackList[sType])) {
+		            pObject = pBlackList[sType].call(this, pObject);
+		        }
+		    } 
+
+		    
+		    fnWriter = pProperties.write;
+		    
+		    if (!isNull(fnWriter)) {
+		         if (fnWriter.call(this, pObject) === false) {
+		            ERROR("cannot write type: " + sType);
+		        }
+
+		        this.popBlackList();
+		        return true;
+		    }
+
+		    debug_assert(pProperties, "unknown object <" + sType + "> type cannot be writed");
+
+		    pBaseClasses = pProperties.base;
+
+		    if (isDefAndNotNull(pBaseClasses)) {
+		        for (var i = 0; i < pBaseClasses.length; ++ i) {
+		            debug_assert(pBlackList[pBaseClasses[i]] === undefined, 
+		                "you cannot add to black list your parent classes");
+		            this.writeData(pObject, pBaseClasses[i]);
+		        }
+		    }
+
+		    pMembers = pProperties.members;
+
+		    if (isDefAndNotNull(pMembers)) {
+		        //writing structure
+		        for (var sName in pMembers) {
+		            //writing complex type of structure member
+		            if (isNUll(pMembers[sName]) || isString(pMembers[sName])) {
+		                this.write(pObject[sName], pMembers[sName]);
+		                continue;
+		            }
+		            //trace(sType, pObject, pMembers, sName, pProperties);
+		            if (isString(pMembers[sName].write)) {
+		                this.write(pObject[sName], pMembers[sName].write);
+		                continue;
+		            }
+		            else if (!pMembers[sName].write) {
+		                this.write(pObject[sName], null);
+		            }
+		            else {
+		                pMembers[sName].write.call(this, pObject);
+		            }
+		        }
+		    }
+		    
+		    this.popBlackList();
+		    return true;
+		}
+
+		private header(): ArrayBuffer {
+			var useHeader: bool = this.options["header"];
+			var pHeader: IPackerFormat;
+
+		    if (!useHeader) {
+		        return null;
+		    }
+
+		    var pWriter: IBinWriter = new BinWriter();
+
+		    if (useHeader) {
+		        //пишем данные шаблона
+		        pHeader = this.template.data();
+		    }
+		    
+		    pWriter.jump(8);
+		    pWriter.write(pHeader);
+
+		    return pWriter.data();
+		}
+
+		write(pObject: any, sType: string = null, bHeader: bool = true): bool {
+			var pProperties: IPackerCodec;
+		    var iAddr: int, iType: int;
+		    var pTemplate: IPackerTemplate = this.template;
+
+		    // this.setupHashTable();
+		    
+		    if (isNull(sType)) {
+		        sType = pTemplate.detectType(pObject);
+		    }
+
+		    if (!this.isInBlacklist(sType)) {    
+		        pProperties = pTemplate.properties(sType);
+		        iType = pTemplate.getTypeId(sType);
+		    }
+		    else {
+		        pObject = null;
+		    }
+
+		    if (isNull(pObject) || !isDef(pObject) || !isDef(iType)) {
+		        this.nullPtr();
+		        return false;
+		    }
+		   
+		    iAddr = this.addr(pObject, sType);
+
+		    if (iAddr < 0) {
+		        iAddr = 0;
+
+		        if (pHeader) {
+		            iAddr += pHeader.byteLength;
+		        }
+
+		        iAddr += this.byteLength + 4 + 4 + this.initialAddress;
+
+		        this.uint32(iAddr); 
+		        this.uint32(iType);
+
+		        if (pHeader) {
+		            this.append(pHeader);
+		        }
+
+		        if (this.writeData(pObject, sType)) {
+		            this.memof(pObject, iAddr, sType);
+		        }
+		        else {
+		            this.rollback(2);
+		            this.nullPtr();
+		        }
+		    }
+		    else {
+		        this.uint32(iAddr);
+		        this.uint32(iType);
+		    }
+
+		    return true;
+		}
 	}
+
+	export function dump(pObject, pOptions): ArrayBuffer {
+		var pPacker: IPacker = new Packer;
+    
+	    //FIXME: remove auto headering
+	    pOptions = pOptions || {};
+	    
+	    if (pOptions && pOptions.header === undefined) {
+	        pOptions['header'] = true;
+	    }   
+
+	    pPacker.setOptions(pOptions);
+	    pPacker.write(pObject, null, pPacker.header());
+
+	    return pPacker.data();
+	}
+	
 }
 
 #endif

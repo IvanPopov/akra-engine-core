@@ -1,7 +1,7 @@
 #include "util/test/testutils.ts"
 #include "io/files.ts"
 
-module akra.utils.test {
+module akra.util.test {
 	
 	var test_1 = () => {
 		shouldBeTrue("Threads support");

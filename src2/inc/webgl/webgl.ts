@@ -11,6 +11,8 @@
 #include "bf/bitflags.ts"
 #include "math/math.ts"
 
+#include "IRenderer.ts"
+#include "pixelUtil/pixelUtil.ts"
 
 #define GLSL_VS_SHADER_MIN "void main(void){gl_Position = vec4(0., 0., 0., 1.);}"
 #define GLSL_FS_SHADER_MIN "void main(void){}"

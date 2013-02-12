@@ -8,16 +8,13 @@
 #define double number
 #define long number
 
-#define IFACE(IF) export interface IF {}
-//#define readonly  
-//#define protected
-//#define struct class
-//#define const var
 
-// #define DEBUG DEBUG
 #define WEBGL 1
 #define LOGGER_API 1
+// #define CRYPTO_API 1
 
+
+#define IFACE(IF) export interface IF {}
 
 #include "ILogger.ts"
 
