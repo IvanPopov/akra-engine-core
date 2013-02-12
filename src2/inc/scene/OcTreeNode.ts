@@ -55,7 +55,7 @@ module akra.scene {
 		addMember(pObject: ISceneObject): void {
 			this.membersList.push(pObject);
 			this.connect(pObject, SIGNAL(worldBoundsUpdated), SLOT(objectMoved), EEventTypes.UNICAST);
-			console.log(this.membersList);
+			// console.log(this.membersList);
 		};
 
 		/**
@@ -63,7 +63,7 @@ module akra.scene {
 		 */
 		removeMember(pObject: ISceneObject): void {
 			var i:int = this.membersList.indexOf(pObject);
-			console.log('position in list ------------>',i);
+			// console.log('position in list ------------>',i);
 			
 			// make sure this is one of ours
 			debug_assert(i>=0, "error removing member cannot find member");
@@ -81,7 +81,7 @@ module akra.scene {
 		BEGIN_EVENT_TABLE(OcTreeNode);
 
 		objectMoved(pObject: ISceneObject){
-			console.warn('object moving');
+			// console.warn('object moving');
 			var pNode: IOcTreeNode = this.tree.findTreeNode(pObject);
 			//console.error('-----before------>', this, pNode,'<-------arter------');
 			if(pNode !== this){

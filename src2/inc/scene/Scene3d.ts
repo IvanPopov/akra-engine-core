@@ -229,7 +229,7 @@ module akra.scene {
 			// if (SceneObject.isSceneObject(pNode)) {
 			// 	this._pObjectList.push(<ISceneObject>pNode);
 			// }
-			console.warn("------>here");
+			// console.warn("------>here");
 			EMIT_BROADCAST(nodeAttachment, _CALL(pNode));
 		}
 
