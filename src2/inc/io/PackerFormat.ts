@@ -10,11 +10,11 @@ module akra.io {
 		return pCommonTemplate;
 	}
 
-	class PackerTemplate {
-		protected _pData: IPackerFormat = {};
+	export class PackerTemplate {
+		protected _pData: IPackerFormat = <IPackerFormat>{};
 		protected _nTypes: uint = 0;
-		protected _pNum2Tpl: StringMap = {};
-		protected _pTpl2Num: IntMap = {};
+		protected _pNum2Tpl: StringMap = <StringMap>{};
+		protected _pTpl2Num: IntMap = <IntMap>{};
 
 		constructor (pData?: IPackerFormat) {
 			if (isDef(pData)) {
@@ -35,8 +35,8 @@ module akra.io {
 		set(pFormat: IPackerFormat): void {
 			var iType: int;
 
-		    for (var i in pTemplate) {
-		        this._pData[i] = pTemplate[i];
+		    for (var i in pFormat) {
+		        this._pData[i] = pFormat[i];
 		        
 		        iType = this._nTypes ++;
 
@@ -185,13 +185,13 @@ module akra.io {
 		},
 
 		"Object": {
-			write: function (object) {
+			write: function (object: any) {
 				if (object instanceof Array) {
 					this.bool(true); 	//is array
-					this.uint32(object.length);
+					this.uint32((<any[]>object).length);
 
-					for (var i = 0; i < object.length; ++ i) {
-						this.write(object[i]);
+					for (var i = 0; i < (<any[]>object).length; ++ i) {
+						this.write((<any[]>object)[i]);
 					}
 				}
 				else {
@@ -230,13 +230,16 @@ module akra.io {
 		},
 
 		"Function": {
-			write: function (fn) {
-				this.string(fn.toString());
+			write: function (fn: Function): void {
+				var sFunc: string = String(fn.valueOf());
+				var sBody: string = sFunc.substr(sFunc.indexOf("{") + 1, sFunc.lastIndexOf("}") - sFunc.indexOf("{") - 1);
+				var pArgs: string[] = sFunc.substr(sFunc.indexOf("(") + 1, sFunc.indexOf(")") - sFunc.indexOf("(") - 1).match(/[$A-Z_][0-9A-Z_$]*/gi);
+				
+				this.stringArray(pArgs);
+				this.string(sBody);
 			},
-			read: function () {
-				var str = this.string();
-				eval("var fn = " + str + ";");
-				return fn;
+			read: function (): Function {
+				return new Function(this.stringArray(), this.string());
 			}
 		},
 		"MathType": {

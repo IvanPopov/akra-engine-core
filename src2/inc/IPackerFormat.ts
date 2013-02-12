@@ -2,6 +2,10 @@
 #define IPACKERFORMAT_TS
 
 module akra {
+	export interface IPackerBlacklist {
+		[type: string]: Function;
+	};
+
 	export interface IPackerCodec {
 		/**
 		 * Как читать данные кодека
@@ -25,7 +29,7 @@ module akra {
 		/**
 		 * Какой конструктор использовать, при воссоздании объекта
 		 */
-		ctor?: string;
+		ctor?: any;
 
 		/**
 		 * Есть ли базовые классы.
@@ -35,9 +39,7 @@ module akra {
 		/**
 		 * Какие типы данных, вложенные в этои, сохранять не надо
 		 */
-		blacklist?: {
-			[type: string]: bool;
-		};
+		blacklist?: IPackerBlacklist;
 	}
 
 	export interface IPackerFormat {

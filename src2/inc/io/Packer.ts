@@ -1,30 +1,27 @@
 #ifndef PACKER_TS
 #define PACKER_TS
 
+#include "common.ts"
 #include "IPacker.ts"
-#include "IPackerFormat.ts"
+#include "PackerFormat.ts"
 #include "BinWriter.ts"
 
 module akra.io {
 
-	interface IHashCell {
-		[i: int]: any;
-	}
 
 	interface IHash {
-		[type: string]: IHashCell;
+		[type: string]: any[];
 	}
 	
 
 	class Packer extends BinWriter implements IPacker {
 		protected _pHashTable: IHash = {};
-		protected _pBlackList: IBlackList = {};
-		protected _pBlackListStack: IBlackList[] = [];
+		protected _pBlackList: IPackerBlacklist = {};
+		protected _pBlackListStack: IPackerBlacklist[] = [];
 		protected _pTemplate: IPackerTemplate = getPackerTemplate();
 		protected _pOptions: IPackerOptions = null;
 		protected _iInitialAddr: int = 0;
 
-		inline get byteLength(): int { return this._iCountData; }
 		inline get template(): IPackerTemplate { return this._pTemplate; }
 		inline get initialAddress(): int { return this._iInitialAddr; }
 		inline get options(): IPackerOptions { return this._pOptions; }
@@ -33,23 +30,23 @@ module akra.io {
 		private memof(pObject: any, iAddr: int, sType: string): void;
 		private addr(pObject: any, sType: string): int;
 		private nullPtr(): void;
-		private jump(iAddr: int): void;
 		private rollback(n?: int): Uint8Array[];
 		private append(pData: Uint8Array[]): void;
 		private append(pData: ArrayBuffer): void;
 		private append(pData: Uint8Array): void;
-		private pushBlackList(pList: IBlackList): IPacker;
+		private pushBlackList(pList: IPackerBlacklist): IPacker;
 		private popBlackList(): IPacker;
-		private blackList(): IBlackList;
+		private blackList(): IPackerBlacklist;
 		private isInBlacklist(sType: string): bool;
 		private writeData(pObject: any, sType: string): bool;
 		private header(): ArrayBuffer;
 
-		write(pObject: any, sType?: string, bHeader?: bool): bool;
+		_jump(iAddr: int): void;
+		write(pObject: any, sType?: string): bool;
 
 		private memof(pObject: any, iAddr: int, sType: string): void {
 			var pTable: IHash = this._pHashTable;
-		    var pCell: IHashCell = pTable[sType];
+		    var pCell: any[] = pTable[sType];
 
 		    if (!isDef(pCell)) {
 		        pCell = pTable[sType] = [];
@@ -61,7 +58,7 @@ module akra.io {
 		private addr(pObject: any, sType: string): int {
 			var pTable: IHash = this._pHashTable;
 		    var iAddr: int;
-		    var pCell: IHashCell = pTable[sType];
+		    var pCell: any[] = pTable[sType];
 
 		    if (isDef(pCell)) {
 
@@ -81,7 +78,7 @@ module akra.io {
 			return this.uint32(MAX_UINT32);
 		}
 
-		private inline jump(iAddr: int): void {
+		inline _jump(iAddr: int): void {
 			this._iInitialAddr = iAddr;
 		}
 
@@ -99,7 +96,7 @@ module akra.io {
 		    }
 
 		    this._iCountData -= iRollbackLength;
-		    pRollback.byteLength = iRollbackLength;
+		    //pRollback.byteLength = iRollbackLength;
 
 		    return pRollback;
 		}
@@ -120,10 +117,10 @@ module akra.io {
 		    }
 		}
 
-		private pushBlackList(pList: IBlackList): IPacker {
+		private pushBlackList(pList: IPackerBlacklist): IPacker {
 		    this._pBlackListStack.push(this._pBlackList);
 		    
-		    var pBlackList: IBlackList = {};
+		    var pBlackList: IPackerBlacklist = {};
 
 		    if (isDefAndNotNull(pList)) {
 		        for (var i in pList) {
@@ -144,7 +141,7 @@ module akra.io {
 		    return this;
 		}
 
-		private inline blackList(): IBlackList {
+		private inline blackList(): IPackerBlacklist {
 			return this._pBlackList;
 		}
 
@@ -158,7 +155,7 @@ module akra.io {
 
 		    var fnWriter: Function = null;
 		    var pBaseClasses: string[];
-		    var pBlackList: IBlackList;
+		    var pBlackList: IPackerBlacklist;
 		    var pMembers: IPackerCodec;
 
 		    this.pushBlackList(pProperties.blacklist);
@@ -170,7 +167,7 @@ module akra.io {
 		            return false;
 		        }
 		        else if (isFunction(pBlackList[sType])) {
-		            pObject = pBlackList[sType].call(this, pObject);
+		            pObject = (<Function>pBlackList[sType]).call(this, pObject);
 		        }
 		    } 
 
@@ -204,7 +201,7 @@ module akra.io {
 		        //writing structure
 		        for (var sName in pMembers) {
 		            //writing complex type of structure member
-		            if (isNUll(pMembers[sName]) || isString(pMembers[sName])) {
+		            if (isNull(pMembers[sName]) || isString(pMembers[sName])) {
 		                this.write(pObject[sName], pMembers[sName]);
 		                continue;
 		            }
@@ -227,31 +224,32 @@ module akra.io {
 		}
 
 		private header(): ArrayBuffer {
-			var useHeader: bool = this.options["header"];
+			var useHeader: bool = this.options? this.options.header: false;
 			var pHeader: IPackerFormat;
 
 		    if (!useHeader) {
 		        return null;
 		    }
 
-		    var pWriter: IBinWriter = new BinWriter();
+		    var pPacker: Packer = new Packer;
 
 		    if (useHeader) {
 		        //пишем данные шаблона
 		        pHeader = this.template.data();
 		    }
 		    
-		    pWriter.jump(8);
-		    pWriter.write(pHeader);
+		    pPacker._jump(8);
+		    pPacker.write(pHeader);
 
-		    return pWriter.data();
+		    return pPacker.data();
 		}
 
-		write(pObject: any, sType: string = null, bHeader: bool = true): bool {
+		write(pObject: any, sType: string = null): bool {
 			var pProperties: IPackerCodec;
 		    var iAddr: int, iType: int;
 		    var pTemplate: IPackerTemplate = this.template;
-
+		    var pHeader: ArrayBuffer = this.header();
+		    
 		    // this.setupHashTable();
 		    
 		    if (isNull(sType)) {
@@ -306,18 +304,15 @@ module akra.io {
 		}
 	}
 
-	export function dump(pObject, pOptions): ArrayBuffer {
+	export function dump(pObject: any, pOptions: IPackerOptions = {}): ArrayBuffer {
 		var pPacker: IPacker = new Packer;
-    
-	    //FIXME: remove auto headering
-	    pOptions = pOptions || {};
 	    
-	    if (pOptions && pOptions.header === undefined) {
-	        pOptions['header'] = true;
+	    if (!isDef(pOptions.header)) {
+	        pOptions.header = true;
 	    }   
 
-	    pPacker.setOptions(pOptions);
-	    pPacker.write(pObject, null, pPacker.header());
+	    pPacker.options = pOptions;
+	    pPacker.write(pObject);
 
 	    return pPacker.data();
 	}

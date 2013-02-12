@@ -50,13 +50,13 @@ module akra.io {
 	     * @private
 	     * @type Uint8Array[]
 	     */
-	    private _pArrData: Uint8Array[] = [];
+	    protected _pArrData: Uint8Array[] = [];
 	    /**
 	     * Счетчик общего количества байт.
 	     * @private
 	     * @type int
 	     */
-	    private _iCountData: int = 0;
+	    protected _iCountData: int = 0;
 
 		inline get byteLength(): uint {
 			return this._iCountData;

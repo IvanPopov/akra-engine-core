@@ -1,13 +1,15 @@
 #ifndef UNPACKER_TS
 #define UNPACKER_TS
 
+#include "common.ts"
 #include "IUnPacker.ts"
-#include "IPackerFormat.ts"
+#include "PackerFormat.ts"
+#include "BinReader.ts"
 
 module akra.io {
 	class UnPacker extends BinReader implements IUnPacker {
-		protected _pHashTable: Object = {};
-		protected _pTemplate: IPakcerTemplate = getPackerTemplate();
+		protected _pHashTable: any[] = <any[]><any>{};
+		protected _pTemplate: IPackerTemplate = getPackerTemplate();
 		protected _pPositions: int[] = [];
 
 		// constructor (pBuffer: ArrayBuffer, iByteOffset?: uint, iByteLength?: uint);
@@ -22,7 +24,7 @@ module akra.io {
 		private extractHeader(iAddr: int): void;
 		private header(pData: IPackerFormat): void;
 		private readPtr(iAddr: int, sType: string, pObject?: any): any;
-		private read(): any;
+		
 
 		private inline pushPosition(iPosition: uint): void {
 			this._pPositions.push(this._iPosition);
@@ -37,8 +39,27 @@ module akra.io {
 			this._pHashTable[iAddr] = pObject;
 		}
 
-		private memread(iAddr: int): void {
+		private memread(iAddr: int): any {
 			return this._pHashTable[iAddr] || null;
+		}
+
+		private extractHeader(iAddr: int): void {
+			if (this._iPosition === 4) {
+		        if (iAddr !== 8) {
+		            this.pushPosition(8);
+		            this.header(<IPackerFormat>this.read());
+		            this.popPosition();
+		        }
+		    }
+		}
+
+		private header(pData: IPackerFormat): void {
+			if (isString(pData)) {
+		        WARNING("загрузка шаблонов извне не поддержвиаетя");
+		        return;
+		    }
+
+		    this.template = new PackerTemplate(pData);
 		}
 
 		private readPtr(iAddr: int, sType: string, pObject: any = null): any {
@@ -90,7 +111,7 @@ module akra.io {
 		    }
 		    
 		    if (!pObject) {
-		        if (isString(pCtpProperties.ctoror) || !isDefAndNotNull(pProperties.ctor)) {
+		        if (isString(pProperties.ctor) || !isDefAndNotNull(pProperties.ctor)) {
 		            eval("pObject = new " + (pProperties.ctor || sType) + ";");   
 		        }
 		        else {
@@ -135,6 +156,28 @@ module akra.io {
 
 		    return pObject;
 		}
+
+
+		read(): any {
+		    var iAddr: int = this.uint32();
+
+		    if (iAddr === MAX_UINT32) {
+		        return null;
+		    }
+
+		    var iType: int = this.uint32();
+		    var sType: string = this.template.getType(iType);
+		    
+		    return this.readPtr(iAddr, sType);
+		};
+	}
+
+	export function undump (pBuffer: any): any {
+	    if (!isDefAndNotNull(pBuffer)) {
+	        return null;
+	    }
+
+	    return (new UnPacker(pBuffer)).read();
 	}
 }
 
