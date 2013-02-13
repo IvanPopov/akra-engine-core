@@ -19,6 +19,10 @@ module akra {
     	ALL
 	};
 
+	export interface INodeMap{
+		[index: string]: INode;
+	}
+
 	export interface INode extends IEntity {
 		localOrientation: IQuat4;
 		localPosition: IVec3;
@@ -37,7 +41,7 @@ module akra {
 		isWorldMatrixNew(): bool;
 		isLocalMatrixNew(): bool;
 
-		recalcWorldMatrix(): bool;
+		//recalcWorldMatrix(): bool;
 
 		setPosition(v3fPosition: IVec3): void;
 		setPosition(fX: float, fY: float, fZ: float): void;

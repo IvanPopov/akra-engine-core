@@ -6,12 +6,33 @@ module akra {
 	IFACE(IExplorerFunc);
 	IFACE(IReferenceCounter);
 
-	export interface IEntity extends IReferenceCounter {
+	export enum  EEntityTypes {
+		UNKNOWN,
+		NODE,
+		
+		JOINT,
+
+		SCENE_NODE,
+		SCENE_OBJECT = 64,
+
+		MODEL,
+		TERRAIN_SECTION,
+		TEXT3D,
+		SPRITE,
+		CAMERA,
+		EMITTER,
+
+		OBJECTS_LIMIT = 128
+	}
+
+	export interface IEntity extends IEventProvider, IReferenceCounter {
 		name: string;
 
 		parent: IEntity;
 		sibling: IEntity;
 		child: IEntity;
+
+		readonly type: EEntityTypes;
 
 		readonly depth: int;
 		readonly root: IEntity;
@@ -25,8 +46,8 @@ module akra {
 		siblingCount(): uint;
 		childCount(): uint;
 
-		update(): void;
-		recursiveUpdate(): void;
+		update(): bool;
+		recursiveUpdate(): bool;
 		recursivePreUpdate(): void;
 		prepareForUpdate(): void;
 
@@ -37,6 +58,11 @@ module akra {
 		isASibling(pSibling: IEntity): bool;
 		isAChild(pChild: IEntity): bool;
 		isInFamily(pEntity: IEntity, bSearchEntireTree?: bool): bool;
+
+		//обновлен ли сам узел
+		isUpdated(): bool;
+		//есть ли обновления среди потомков?
+		hasUpdatedSubNodes(): bool;
 
 
 		addSibling(pSibling: IEntity): IEntity;
@@ -51,6 +77,9 @@ module akra {
 		relocateChildren(pParent: IEntity): void;
 
 		toString(isRecursive?: bool, iDepth?: int): string;
+
+		signal attached();
+		signal detached();
 	}
 
 }

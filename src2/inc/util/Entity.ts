@@ -3,13 +3,25 @@
 
 #include "IEntity.ts"
 #include "IExplorerFunc.ts"
+#include "events/events.ts"
 
 module akra.util {
+	export enum EEntityStates {
+		//обновился ли сам узел?
+		k_Updated = 0x01,
+		//есть ли среди потомков обновленные узлы
+		k_DescendantsUpdtated = 0x02,
+		//если ли обновленные узлы среди братьев или их потомках
+		k_SiblingsUpdated = 0x04
+	}
+
 	export class Entity extends ReferenceCounter implements IEntity {
 		protected _sName: string = null;
 		protected _pParent: IEntity = null;
 		protected _pSibling: IEntity = null;
 		protected _pChild: IEntity = null;
+		protected _eType: EEntityTypes = EEntityTypes.UNKNOWN;
+		protected _iStateFlags: int = 0;
 
 		inline get name(): string { return this._sName; }
 		inline set name(sName: string) { this._sName = sName; }
@@ -22,6 +34,8 @@ module akra.util {
 
 		inline get child(): IEntity { return this._pChild; }
 		inline set child(pChild: IEntity) { this._pChild = pChild; }
+
+		inline get type(): EEntityTypes { return this._eType; }
 
 		get depth(): int {
 			var iDepth: int = -1;
@@ -134,21 +148,33 @@ module akra.util {
 		    return iCount;
 		}
 
+		inline isUpdated(): bool {
+			return TEST_BIT(this._iStateFlags, EEntityStates.k_Updated);
+		}
 
-		update(): void {}
+		inline hasUpdatedSubNodes(): bool {
+			return TEST_BIT(this._iStateFlags, EEntityStates.k_DescendantsUpdtated);
+		}
 
-
-		recursiveUpdate(): void {
+		recursiveUpdate(): bool {
+			// var bUpdated: bool = false;
 			// update myself
-		    this.update();
+		    if (this.update()) {
+		    	SET_ALL(this._iStateFlags, EEntityStates.k_Updated);
+		    	// bUpdated = true;
+		    }
 		    // update my sibling
-		    if (this._pSibling) {
-		        this._pSibling.recursiveUpdate();
+		    if (this._pSibling && this._pSibling.recursiveUpdate()) {
+		        SET_ALL(this._iStateFlags, EEntityStates.k_SiblingsUpdated);
+		        // bUpdated = true;
 		    }
 		    // update my child
-		    if (this._pChild) {
-		        this._pChild.recursiveUpdate();
+		    if (this._pChild && this._pChild.recursiveUpdate()) {
+		        SET_ALL(this._iStateFlags, EEntityStates.k_DescendantsUpdtated);
+		        // bUpdated = true;
 		    }
+
+		    return (this._iStateFlags != 0);/*bUpdated*//* */
 		}
 
 		recursivePreUpdate(): void {
@@ -166,7 +192,9 @@ module akra.util {
 		}
 
 
-		prepareForUpdate(): void {};
+		prepareForUpdate(): void {
+			//this._iStateFlags = 0;
+		};
 
 		/** Parent is not undef */
 		inline hasParent(): bool {
@@ -333,6 +361,7 @@ module akra.util {
 		            this._pParent = pParent;
 		            this._pParent.addChild(this);
 		            this._pParent.addRef();
+		            this.attached();
 		            return true;
 		        }
 	    	}
@@ -351,7 +380,7 @@ module akra.util {
 
 		        this._pParent = null;
 		        // my world matrix is now my local matrix
-		        
+		        this.detached();
 		        return true;
 		    }
 
@@ -380,6 +409,8 @@ module akra.util {
 		        }
 		    }
 		}
+
+		update(): bool { return false; }
 
 		toString(isRecursive: bool = false, iDepth: int = 0): string {
 #ifdef DEBUG
@@ -411,6 +442,11 @@ module akra.util {
 		    return null;
 #endif
 		}
+
+		BEGIN_EVENT_TABLE(Entity);
+			UNICAST(attached, VOID);
+			UNICAST(detached, VOID);
+		END_EVENT_TABLE();
 
 	}
 }

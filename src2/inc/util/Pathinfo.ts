@@ -3,7 +3,7 @@
 
 #include "IPathinfo.ts"
 
-module akra {
+module akra.util {
 	export class Pathinfo implements IPathinfo {
 		private _sDirname: string = null;
 		private _sExtension: string = null;
@@ -38,6 +38,7 @@ module akra {
 	        }
 		}
 
+
 		constructor (pPath: IPathinfo);
 		constructor (sPath: string);
 		constructor (pPath?: any) {
@@ -45,6 +46,7 @@ module akra {
 				this.set(<string>pPath);
 			}
 		}
+
 
 		set(sPath: string): void;
 		set(pPath: IPathinfo): void;
@@ -69,11 +71,17 @@ module akra {
 
 		isAbsolute(): bool { return this._sDirname[0] === "/"; }
 
+
 		toString(): string {
 			return (this._sDirname ? this._sDirname + "/" : "") + (this.basename);
 		}
+
 	}
 	
+}
+
+module akra {
+	export var Pathinfo = util.Pathinfo;
 }
 
 #endif

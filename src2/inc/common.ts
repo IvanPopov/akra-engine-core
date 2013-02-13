@@ -8,35 +8,74 @@
 #define double number
 #define long number
 
-#define IFACE(IF) export interface IF {}
-#define readonly  
-#define protected
-#define struct class
-#define const var
-#define DEBUG DEBUG
 
+#define WEBGL 1
+#define LOGGER_API 1
+// #define CRYPTO_API 1
+
+
+#define IFACE(IF) export interface IF {}
 
 #include "ILogger.ts"
 
 #define UNKNOWN_CODE 0
 #define UNKONWN_MESSAGE "Unknown code."
+#define UNKNOWN_NAME "unknown"
 
-#define LOG(...)            logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.log(__VA_ARGS__);
-#define TRACE(...)          logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.log(__VA_ARGS__);
-#define INFO(...)           logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.info(__VA_ARGS__);
-#define WARNING(...)        logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.warning(__VA_ARGS__);
-#define ERROR(...)          logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.error(__VA_ARGS__);
-#define CRITICAL(...)       logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.critical_error(__VA_ARGS__);
-#define CRITICAL_ERROR(...) logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.critical_error(__VA_ARGS__);
-#define ASSERT(...)         logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.assert(__VA_ARGS__);
+#define DEFAULT_NAME "default"
+
+#ifdef LOGGER_API
+
+#ifdef DEBUG
+
+#define LOG(...)            logger.setSourceLocation(__FILE__, __LINE__); logger.log(__VA_ARGS__);
+#define TRACE(...)          logger.setSourceLocation(__FILE__, __LINE__); logger.log(__VA_ARGS__);
+#define INFO(...)           logger.setSourceLocation(__FILE__, __LINE__); logger.info(__VA_ARGS__);
+#define WARNING(...)        logger.setSourceLocation(__FILE__, __LINE__); logger.warning(__VA_ARGS__);
+#define ERROR(...)          logger.setSourceLocation(__FILE__, __LINE__); logger.error(__VA_ARGS__);
+#define CRITICAL(...)       logger.setSourceLocation(__FILE__, __LINE__); logger.criticalError(__VA_ARGS__);
+#define CRITICAL_ERROR(...) logger.setSourceLocation(__FILE__, __LINE__); logger.criticalError(__VA_ARGS__);
+#define ASSERT(...)         logger.setSourceLocation(__FILE__, __LINE__); logger.assert(__VA_ARGS__);
+
+#else
+
+#define LOG(...)            logger.log(__VA_ARGS__);
+#define TRACE(...)          logger.log(__VA_ARGS__);
+#define INFO(...)           logger.info(__VA_ARGS__);
+#define WARNING(...)        logger.warning(__VA_ARGS__);
+#define ERROR(...)          logger.error(__VA_ARGS__);
+#define CRITICAL(...)       logger.criticalError(__VA_ARGS__);
+#define CRITICAL_ERROR(...) logger.criticalError(__VA_ARGS__);
+#define ASSERT(...)         logger.assert(__VA_ARGS__);
+
+#endif
+
+#else
+
+#define LOG(...)
+#define TRACE(...)
+#define INFO(...)
+#define WARNING(...)
+#define ERROR(...)
+#define CRITICAL(...)
+#define CRITICAL_ERROR(...) 
+#define ASSERT(...)
+
+#endif
+
+#define ALLOCATE_STORAGE(sName, nCount)    \
+        static get stackCeil(): /*I ## */sName { \
+            sName.stackPosition = sName.stackPosition === sName.stackSize - 1? 0: sName.stackPosition;\
+            return sName.stack[sName.stackPosition ++]; \
+        }\
+        static stackSize: uint = nCount;\
+        static stackPosition: int = 0;\
+        static stack: /*I ## */sName[] = (function(): /*I ## */sName[]{\
+                                    var pStack: /*I ## */sName[] = new Array(sName.stackSize);\
+                                    for(var i:int = 0; i<sName.stackSize; i++){\
+                                        pStack[i] = new sName();\
+                                    }\
+                                    return pStack})();
 
 module akra {
 
@@ -97,6 +136,8 @@ module akra {
 
     /** @inline */
     export var isDef = (x: any): bool =>  x !== undefined;
+    /** @inline */
+    export var isEmpty = (x: any): bool =>  x.length == 0;
 
     // Note that undefined == null.
     /** @inline */ 
@@ -104,7 +145,7 @@ module akra {
 
     /** @inline */
     export var isNull = (x: any): bool =>  x === null;
-
+    
     /** @inline */
     export var isBoolean = (x: any): bool => typeof x === "boolean";
 
@@ -124,13 +165,22 @@ module akra {
     /** @inline */
     export var isObject = (x: any): bool => {
         var type = typeOf(x);
-        return type == 'object' || type == 'array' || type == 'function';
+        return type == "object" || type == "array" || type == "function";
     };
+
+    export var isArrayBuffer = (x: any): bool => x instanceof ArrayBuffer;
+
+    export var isTypedArray = (x: any): bool => typeof x === "object" && typeof x.byteOffset === "number";
 
     /** @inline */
     export var isArray = (x: any): bool => {
-        return typeOf(x) == 'array';
+        return typeOf(x) == "array";
     };    
+
+    export interface Pair {
+        first: any;
+        second: any;
+    };
 
     // if (!isDef(console.assert)) {
     //     console.assert = function (isOK?: bool, ...pParams: any[]): void {
@@ -180,30 +230,6 @@ module akra {
 
 #endif
 
-
-
-    function initDevice(pDevice: WebGLRenderingContext):WebGLRenderingContext {
-    	return pDevice;
-    }
-
-    export function createDevice(
-            pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas"), 
-            pOptions?: { antialias?: bool; }) {
-
-    	var pDevice: WebGLRenderingContext = null;
-		
-		try {
-			pDevice = pCanvas.getContext("webgl", pOptions) || 
-				pCanvas.getContext("experimental-webgl", pOptions);
-    	}
-		catch (e) {}
-
-		if (!pDevice) {
-			debug_warning("cannot get 3d device");
-		}
-
-		return initDevice(pDevice);
-    }
 
     export function genArray(pType: any, nSize: uint) {
         var tmp = new Array(nSize);
@@ -273,6 +299,8 @@ module akra {
 //    export const MAX_REAL32: number = 3.4e38;     //3.4e38
 //    export const MIN_REAL32: number = -3.4e38;    //-3.4e38
 //    export const TINY_REAL32: number = 1.5e-45;   //1.5e-45
+
+    export const DEFAULT_MATERIAL_NAME: string = DEFAULT_NAME;
 
     export enum EDataTypes {
         BYTE = 0x1400,
@@ -385,6 +413,15 @@ module akra {
         return (new Date).getTime();
     }
 
+    
+    #define _memcpy(dst, src, size) memcpy(dst, 0, src, 0, size);
+    export inline function memcpy(pDst: ArrayBuffer, iDstOffset: uint, pSrc: ArrayBuffer, iSrcOffset: uint, nLength: uint) {
+      var dstU8 = new Uint8Array(pDst, iDstOffset, nLength);
+      var srcU8 = new Uint8Array(pSrc, iSrcOffset, nLength);
+      dstU8.set(srcU8);
+    };
+
+
     //export function 
 
 	(<any>window).URL = (<any>window).URL ? (<any>window).URL : (<any>window).webkitURL ? (<any>window).webkitURL : null;
@@ -396,5 +433,11 @@ module akra {
     (<any>window).storageInfo = (<any>window).storageInfo || (<any>window).webkitStorageInfo;
     Worker.prototype.postMessage = (<any>Worker).prototype.webkitPostMessage || Worker.prototype.postMessage;
 };
+
+#include "libs/libs.ts"
+
+#ifdef LOGGER_API
+#include "util/Logger.ts"
+#endif
 
 #endif

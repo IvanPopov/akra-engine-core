@@ -4,7 +4,7 @@
 #include "common.ts"
 #include "ILogger.ts"
 #include "bf/bitflags.ts"
-#include "Singleton.ts"
+// #include "Singleton.ts"
 
 module akra.util {
  
@@ -36,7 +36,7 @@ module akra.util {
         [familyName: string]: ILogRoutineMap;
     }
 
-    export class Logger extends Singleton implements ILogger {
+    export class Logger/* extends Singleton*/ implements ILogger {
         private _eLogLevel: ELogLevel;
         private _pGeneralRoutineMap: ILogRoutineMap;
 
@@ -56,7 +56,7 @@ module akra.util {
         private _sUnknownMessage: string;
 
         constructor () {
-            super();
+            // super();
             
             this._eUnknownCode = 0;
             this._sUnknownMessage = "Unknown code";  
@@ -545,7 +545,7 @@ module akra.util {
 }
 
 module akra.util {
-    logger = new Logger();
+    export var logger: ILogger = new Logger();
 
     logger.init();
     logger.setUnknownCode(UNKNOWN_CODE, UNKONWN_MESSAGE);
@@ -577,7 +577,7 @@ module akra.util {
         pArgs.unshift("Code: " + pLogEntity.code.toString());
         pArgs.unshift(sourceLocationToString(pLogEntity.location));
         
-        console["warning"].apply(console, pArgs);    
+        console["warn"].apply(console, pArgs);    
     }
 
     function errorRoutine(pLogEntity: ILoggerEntity): void{
@@ -594,6 +594,10 @@ module akra.util {
     logger.setLogRoutine(logRoutine, ELogLevel.LOG | ELogLevel.INFORMATION);
     logger.setLogRoutine(warningRoutine, ELogLevel.WARNING);
     logger.setLogRoutine(errorRoutine, ELogLevel.ERROR | ELogLevel.CRITICAL);
+}
+
+module akra {
+    logger = util.logger;
 }
 
 

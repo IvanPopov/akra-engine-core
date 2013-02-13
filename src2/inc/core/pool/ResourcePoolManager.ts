@@ -7,6 +7,34 @@
 #include "IResourcePoolItem.ts"
 #include "IResourceWatcherFunc.ts"
 
+#include "bf/bitflags.ts"
+#include "ResourceCode.ts"
+#include "ResourcePool.ts"
+#include "DataPool.ts"
+
+#include "resources/RenderMethod.ts"
+#include "resources/SurfaceMaterial.ts"
+//#include "resources/Model.ts"
+#include "resources/Effect.ts"
+#include "resources/Img.ts"
+#include "resources/Component.ts"
+
+#include "resources/Collada.ts"
+
+#ifdef WEBGL
+
+#include "webgl/WebGLPixelBuffer.ts"
+#include "webgl/WebGLInternalTexture.ts"
+#include "webgl/WebGLVertexBuffer.ts"
+#include "webgl/WebGLVertexTexture.ts"
+#include "webgl/WebGLTextureBuffer.ts"
+#include "webgl/WebGLShaderProgram.ts"
+#include "webgl/WebGLIndexBuffer.ts"
+#include "webgl/WebGLInternalRenderbuffer.ts"
+#include "webgl/WebGLDepthBuffer.ts"
+
+#endif
+
 module akra.core.pool {
 	//is this class really singleton??
     export class ResourcePoolManager implements IResourcePoolManager {
@@ -16,12 +44,15 @@ module akra.core.pool {
         private pRenderMethodPool: IResourcePool;
         private pVertexBufferPool: IResourcePool;
         private pIndexBufferPool: IResourcePool;
-        private pModelPool: IResourcePool;
+        private pColladaPool: IResourcePool;
         private pImagePool: IResourcePool;
         private pTexturePool: IResourcePool;
         private pVideoBufferPool: IResourcePool;
         private pShaderProgramPool: IResourcePool;
         private pComponentPool: IResourcePool;
+        private pTextureBufferPool: IResourcePool;
+        private pRenderBufferPool: IResourcePool;
+        private pDepthBufferPool: IResourcePool;
 
     	/** Списки пулов по семействам ресурсов */
     	private pResourceFamilyList: IResourcePool[][] = null;
@@ -37,12 +68,15 @@ module akra.core.pool {
         get renderMethodPool(): IResourcePool { return this.pRenderMethodPool; }
         get vertexBufferPool(): IResourcePool { return this.pVertexBufferPool; }
         get indexBufferPool(): IResourcePool { return this.pIndexBufferPool; }
-        get modelPool(): IResourcePool { return this.pModelPool; }
+        get colladaPool(): IResourcePool { return this.pColladaPool; }
         get imagePool(): IResourcePool { return this.pImagePool; }
         get texturePool(): IResourcePool { return this.pTexturePool; }
         get videoBufferPool(): IResourcePool { return this.pVideoBufferPool; }
         get shaderProgramPool(): IResourcePool { return this.pShaderProgramPool; }
         get componentPool(): IResourcePool { return this.pComponentPool; }
+        get textureBufferPool(): IResourcePool {return this.pTextureBufferPool; }
+        get renderBufferPool(): IResourcePool {return this.pRenderBufferPool; }
+        get depthBufferPool(): IResourcePool {return this.pDepthBufferPool; }
 
     	constructor(pEngine: IEngine) {
     		//super();
@@ -56,7 +90,7 @@ module akra.core.pool {
 		    }
 
 		    this.pResourceTypeMap = new Array();
-		    this.pWaiterResource = new pool.ResourcePoolItem(this);
+		    this.pWaiterResource = new pool.ResourcePoolItem(/*this*/);
 
             this.createDeviceResource();
     	}
@@ -207,7 +241,7 @@ module akra.core.pool {
         monitorInitResources(fnMonitor: IResourceWatcherFunc): void {
             var me: IResourcePoolManager = this;
             
-            this.pWaiterResource.setStateWatcher(EResourceItemEvents.k_Loaded, function () {
+            this.pWaiterResource.setStateWatcher(EResourceItemEvents.LOADED, function () {
                 fnMonitor.apply(me, arguments);
             });
         }
@@ -219,7 +253,7 @@ module akra.core.pool {
             var pWaiterResouse: IResourcePoolItem = this.pWaiterResource;
 
             var fnResCallback = function (iFlagBit?: int, iResourceFlags?: int, isSetting?: bool) {
-                if (iFlagBit == <number>EResourceItemEvents.k_Loaded && isSetting) {
+                if (iFlagBit == <number>EResourceItemEvents.LOADED && isSetting) {
                     fnCallback();
                 }
             };
@@ -236,7 +270,7 @@ module akra.core.pool {
 
                         for (var i: int = 0; i < pResources.length; ++ i) {
                             pResource = pResources[i];
-                            pWaiterResouse.sync(pResource, EResourceItemEvents.k_Loaded);
+                            pWaiterResouse.sync(pResource, EResourceItemEvents.LOADED);
                         }
                     }
 
@@ -305,6 +339,54 @@ module akra.core.pool {
 
         inline getEngine(): IEngine { return this.pEngine; }
 
+        inline createRenderMethod(sResourceName: string): IRenderMethod {
+            return <IRenderMethod>this.renderMethodPool.createResource(sResourceName);
+        }
+
+        inline createTexture(sResourceName: string): ITexture {
+            return <ITexture>this.texturePool.createResource(sResourceName);
+        }
+
+        inline createEffect(sResourceName: string): IEffect {
+            return <IEffect>this.effectPool.createResource(sResourceName);
+        }
+
+        inline createSurfaceMaterial(sResourceName: string): ISurfaceMaterial {
+            return <ISurfaceMaterial>this.surfaceMaterialPool.createResource(sResourceName);
+        }
+
+        inline createVertexBuffer(sResourceName: string): IVertexBuffer {
+            return <IVertexBuffer>this.vertexBufferPool.createResource(sResourceName);
+        }
+
+        inline createVideoBuffer(sResourceName: string): IVertexBuffer {
+            return <IVertexBuffer>this.videoBufferPool.createResource(sResourceName);
+        }
+
+        inline createModel(sResourceName: string): IModel {
+            return <IModel>this.colladaPool.createResource(sResourceName);   
+        }
+
+        inline loadModel(sFilename: string, pOptions: any = null): IModel {
+            if (util.pathinfo(sFilename).ext.toLowerCase() === "dae") {
+                var pCollada: ICollada = <ICollada>this.colladaPool.findResource(sFilename);
+
+                if (isNull(pCollada)) {
+                    pCollada = <ICollada>this.colladaPool.createResource(sFilename);
+                }
+
+                if (!pCollada.isResourceLoaded()) {
+                    pCollada.loadResource(sFilename, pOptions);
+                }
+
+                return pCollada;
+            }
+
+            return null;
+        }
+
+
+
         private createDeviceResource(): void {
             this.pSurfaceMaterialPool = new ResourcePool(this, resources.SurfaceMaterial);
             this.pSurfaceMaterialPool.initialize(16);
@@ -315,26 +397,40 @@ module akra.core.pool {
             this.pRenderMethodPool = new ResourcePool(this, resources.RenderMethod);
             this.pRenderMethodPool.initialize(16);
 
-            this.pVertexBufferPool = new ResourcePool(this, resources.VertexBufferVBO);
-            this.pVertexBufferPool.initialize(16);
-
-            this.pIndexBufferPool = new ResourcePool(this, resources.IndexBuffer);
-            this.pIndexBufferPool.initialize(16);
-
-            this.pModelPool = new ResourcePool(this, resources.Model);
-            this.pModelPool.initialize(16);
+            this.pColladaPool = new ResourcePool(this, resources.Collada);
+            this.pColladaPool.initialize(0);
 
             this.pImagePool = new ResourcePool(this, resources.Img);
             this.pImagePool.initialize(16);
 
-            this.pTexturePool = new ResourcePool(this, resources.Texture);
+#ifdef WEBGL
+            this.pTexturePool = new ResourcePool(this, webgl.WebGLInternalTexture);
             this.pTexturePool.initialize(16);
+            
+            this.pIndexBufferPool = new ResourcePool(this, webgl.WebGLIndexBuffer);
+            this.pIndexBufferPool.initialize(16);
+            
+            this.pVertexBufferPool = new ResourcePool(this, webgl.WebGLVertexBuffer);
+            this.pVertexBufferPool.initialize(16);
 
-            this.pVideoBufferPool = new ResourcePool(this, resources.VertexBufferTBO);
+            this.pVideoBufferPool = new ResourcePool(this, webgl.WebGLVertexTexture);
             this.pVideoBufferPool.initialize(16);
 
-            this.pShaderProgramPool = new ResourcePool(this, resources.ShaderProgram);
+            this.pTextureBufferPool = new ResourcePool(this, webgl.WebGLTextureBuffer);
+            this.pTextureBufferPool.initialize(16);
+            
+            this.pShaderProgramPool = new ResourcePool(this, webgl.WebGLShaderProgram);
             this.pShaderProgramPool.initialize(16);
+
+            this.pRenderBufferPool = new ResourcePool(this, webgl.WebGLInternalRenderBuffer);
+            this.pRenderBufferPool.initialize(16);
+
+            this.pDepthBufferPool = new ResourcePool(this, webgl.WebGLDepthBuffer);
+            this.pDepthBufferPool.initialize(16);
+#else
+            CRITICAL("Render system not specified");
+#endif
+
 
             this.pComponentPool = new ResourcePool(this, resources.Component);
             this.pComponentPool.initialize(16);
@@ -362,7 +458,7 @@ module akra.core.pool {
                 new ResourceCode(
                     <number>EResourceFamilies.VIDEO_RESOURCE,
                     <number>EVideoResources.RENDERMETHOD_RESOURCE));
-            this.pModelPool.registerResourcePool(
+            this.pColladaPool.registerResourcePool(
                 new ResourceCode(
                     <number>EResourceFamilies.VIDEO_RESOURCE,
                     <number>EVideoResources.MODEL_RESOURCE));
@@ -396,7 +492,7 @@ module akra.core.pool {
             this.pIndexBufferPool.unregisterResourcePool();
             this.pEffectPool.unregisterResourcePool();
             this.pRenderMethodPool.unregisterResourcePool();
-            this.pModelPool.unregisterResourcePool();
+            this.pColladaPool.unregisterResourcePool();
             this.pImagePool.unregisterResourcePool();
             this.pSurfaceMaterialPool.unregisterResourcePool();
             this.pVideoBufferPool.unregisterResourcePool();

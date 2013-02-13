@@ -4,8 +4,15 @@
 #include "IResourcePoolItem.ts"
 
 module akra {
-	export interface IRenderMethod extends IResourcePoolItem {
+	
+	IFACE(IEffect);
+	IFACE(ISurfaceMaterial);
 
+	export interface IRenderMethod extends IResourcePoolItem {
+		effect: IEffect;
+		surfaceMaterial: ISurfaceMaterial;
+
+		isEqual(pRenderMethod: IRenderMethod): bool;		
 	}
 }
 

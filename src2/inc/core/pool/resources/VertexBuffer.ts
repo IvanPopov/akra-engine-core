@@ -3,7 +3,8 @@
 
 #include "IVertexBuffer.ts"
 #include "data/VertexData.ts"
-#include "../ResourcePoolItem.ts"
+#include "HardwareBuffer.ts"
+#include "MemoryBuffer.ts"
 
 module akra.core.pool.resources {
 	interface IBufferHole {
@@ -11,95 +12,55 @@ module akra.core.pool.resources {
 		end: uint;
 	}
 
-	export class VertexBuffer extends ResourcePoolItem implements IVertexBuffer {
-		protected _pBackupCopy: ArrayBuffer = null;
-		protected _iFlags: int = 0;
+	export class VertexBuffer extends HardwareBuffer implements IVertexBuffer {
 		protected _pVertexDataArray: IVertexData[] = [];
 		protected _iDataCounter: uint = 0;
 
-		inline get type(): EVertexBufferTypes { return EVertexBufferTypes.TYPE_UNKNOWN; }
+		inline get type(): EVertexBufferTypes { return EVertexBufferTypes.UNKNOWN; }
+		inline get length(): uint { return this._pVertexDataArray.length; }
 
-		inline get byteLength(): uint {
-			return 0;
-		}
-
-		inline get length(): uint {
-			return 0;
-		}
-
-		constructor (pManager: IResourcePoolManager) {
-			super(pManager);
+		constructor (/*pManager: IResourcePoolManager*/) {
+			super(/*pManager*/);
 
 		}
 
-		clone(pSrc: IGPUBuffer): bool {
-			var pBuffer: IVertexBuffer = <IVertexBuffer> pSrc;
+		create(iByteSize: uint, iFlags?: uint, pData?: Uint8Array): bool;
+		create(iByteSize: uint, iFlags?: uint, pData?: ArrayBufferView): bool;
+		create(iByteSize: uint, iFlags?: uint, pData?: any): bool {
+			super.create(iFlags || 0);
+
+			if (TEST_ANY(iFlags, EHardwareBufferFlags.BACKUP_COPY)) {
+				this._pBackupCopy = new MemoryBuffer();
+				this._pBackupCopy.create(iByteSize);
+				this._pBackupCopy.writeData(pData, 0, iByteSize);
+			}
+
+			return true;
+		}
+
+		destroy(): void {
+			super.destroy();
 			
-			// destroy any local data
-			this.destroy();
+			this._pBackupCopy.destroy();
+			this.freeVertexData();
 
-			return this.create(pBuffer.byteLength, pBuffer.getFlags(), pBuffer.getData());
+			this._iDataCounter = 0;
 		}
 
-		isValid(): bool {
-			return false;
-		}
-
-		isDynamic(): bool {
-			return (TEST_BIT(this._iFlags, EGPUBufferFlags.MANY_UPDATES) && 
-    	   		TEST_BIT(this._iFlags, EGPUBufferFlags.MANY_DRAWS));
-		}
-
-		isStatic(): bool {
-			return ((!TEST_BIT(this._iFlags, EGPUBufferFlags.MANY_UPDATES)) && 
-				TEST_BIT(this._iFlags, EGPUBufferFlags.MANY_DRAWS));
-		}
-
-		isStream(): bool {
-			return (!TEST_BIT(this._iFlags, EGPUBufferFlags.MANY_UPDATES)) && 
-					(!TEST_BIT(this._iFlags, EGPUBufferFlags.MANY_DRAWS));
-		}
-
-		isReadable(): bool {
-			//Вроде как на данный момент нельхзя в вебЖл считывать буферы из видио памяти
-    		//(но нужно ли это вообще и есть ли смысл просто обратиться к локальной копии)
-			return TEST_BIT(this._iFlags, EGPUBufferFlags.READABLE);
-		}
-
-		isRAMBufferPresent(): bool {
-			return this._pBackupCopy != null;
-		}
-
-		isSoftware(): bool {
-			//на данный момент у нас нету понятия софтварной обработки и рендеренга
-    		return TEST_BIT(this._iFlags, EGPUBufferFlags.SOFTWARE);
-		}
-
-		isAlignment(): bool {
-			return TEST_BIT(this._iFlags, EGPUBufferFlags.ALIGNMENT);
-		}
-
-		getData(): ArrayBuffer;
-		getData(iOffset?: uint, iSize?: uint): ArrayBuffer {
-			return null;
-		}
-
-		setData(pData: ArrayBuffer, iOffset: uint, iSize: uint): bool {
-			return false;
-		}
-
-		inline getFlags(): int {
-			return this._iFlags;
-		}
-
-		
+		getVertexData(i: uint): IVertexData;
 		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;
 		getVertexData(iOffset: uint, iCount: uint, pDecl: IVertexDeclaration): IVertexData;
-		getVertexData(iOffset: uint, iCount: uint, pData: any): IVertexData {
+		getVertexData(iOffset: uint, iCount?: uint, pData?: any): IVertexData {
+			if (arguments.length < 2) {
+				return this._pVertexDataArray[<uint>arguments[0]];
+			}
+
 			var pDecl: IVertexDeclaration = createVertexDeclaration(pData);
 			var pVertexData: IVertexData = new data.VertexData(this, this._iDataCounter ++, iOffset, iCount, pDecl);
 
 			this._pVertexDataArray.push(pVertexData);
+			this.notifyAltered();
+
 			return pVertexData;
 		}
 
@@ -125,51 +86,51 @@ module akra.core.pool.resources {
 					
 					for(i = 0; i < pHole.length; i++) {
 						//Полностью попадает внутрь
-						if(pVertexData.offset > pHole[i].start && 
-							pVertexData.offset + pVertexData.byteLength < pHole[i].end) {
+						if(pVertexData.byteOffset > pHole[i].start && 
+							pVertexData.byteOffset + pVertexData.byteLength < pHole[i].end) {
 							iTemp = pHole[i].end;
-							pHole[i].end=pVertexData.offset;
-							pHole.splice(i + 1, 0, {start: pVertexData.offset + pVertexData.byteLength, end: iTemp});
+							pHole[i].end=pVertexData.byteOffset;
+							pHole.splice(i + 1, 0, {start: pVertexData.byteOffset + pVertexData.byteLength, end: iTemp});
 							i--;
 						}
-						else if(pVertexData.offset == pHole[i].start && 
-							pVertexData.offset + pVertexData.byteLength < pHole[i].end) {
-							pHole[i].start = pVertexData.offset + pVertexData.byteLength;
+						else if(pVertexData.byteOffset == pHole[i].start && 
+							pVertexData.byteOffset + pVertexData.byteLength < pHole[i].end) {
+							pHole[i].start = pVertexData.byteOffset + pVertexData.byteLength;
 						}
-						else if(pVertexData.offset > pHole[i].start && 
-							pVertexData.offset + pVertexData.byteLength == pHole[i].end) {
+						else if(pVertexData.byteOffset > pHole[i].start && 
+							pVertexData.byteOffset + pVertexData.byteLength == pHole[i].end) {
 							
 						}
-						else if(pVertexData.offset == pHole[i].start && 
+						else if(pVertexData.byteOffset == pHole[i].start && 
 							pVertexData.byteLength == (pHole[i].end - pHole[i].start)) {
 							pHole.splice(i, 1);		
 							i--;
 						}
 						//Перекрывает снизу
-						else if(pVertexData.offset < pHole[i].start &&
-							pVertexData.offset + pVertexData.byteLength > pHole[i].start && 
-							pVertexData.offset + pVertexData.byteLength < pHole[i].end) {
-							pHole[i].start = pVertexData.offset + pVertexData.byteLength;
+						else if(pVertexData.byteOffset < pHole[i].start &&
+							pVertexData.byteOffset + pVertexData.byteLength > pHole[i].start && 
+							pVertexData.byteOffset + pVertexData.byteLength < pHole[i].end) {
+							pHole[i].start = pVertexData.byteOffset + pVertexData.byteLength;
 						}
-						else if(pVertexData.offset < pHole[i].start &&
-							pVertexData.offset + pVertexData.byteLength > pHole[i].start && 
-							pVertexData.offset + pVertexData.byteLength == pHole[i].end) {
+						else if(pVertexData.byteOffset < pHole[i].start &&
+							pVertexData.byteOffset + pVertexData.byteLength > pHole[i].start && 
+							pVertexData.byteOffset + pVertexData.byteLength == pHole[i].end) {
 							pHole.splice(i,1);
 							i--;
 						}
 						//Перекрывается сверху
-						else if(pVertexData.offset + pVertexData.byteLength > pHole[i].end &&
-							pVertexData.offset > pHole[i].start && pVertexData.offset < pHole[i].end) {
-							pHole[i].end=pVertexData.offset;
+						else if(pVertexData.byteOffset + pVertexData.byteLength > pHole[i].end &&
+							pVertexData.byteOffset > pHole[i].start && pVertexData.byteOffset < pHole[i].end) {
+							pHole[i].end=pVertexData.byteOffset;
 						}
-						else if(pVertexData.offset + pVertexData.byteLength > pHole[i].end &&
-							pVertexData.offset == pHole[i].start && pVertexData.offset < pHole[i].end) {
+						else if(pVertexData.byteOffset + pVertexData.byteLength > pHole[i].end &&
+							pVertexData.byteOffset == pHole[i].start && pVertexData.byteOffset < pHole[i].end) {
 							pHole.splice(i,1);
 							i--;
 						}
 						//полнстью перекрывает
-						else if(pVertexData.offset < pHole[i].start && 
-							pVertexData.offset + pVertexData.byteLength > pHole[i].end) {
+						else if(pVertexData.byteOffset < pHole[i].start && 
+							pVertexData.byteOffset + pVertexData.byteLength > pHole[i].end) {
 							i--;
 						}			
 					}
@@ -189,7 +150,7 @@ module akra.core.pool.resources {
 				}
 				
 				for (i = 0; i < pHole.length; i++) {		
-					iAligStart = this.isAlignment() ?
+					iAligStart = this.isAligned() ?
 						math.alignUp(pHole[i].start, math.nok(iStride,4)):
 						math.alignUp(pHole[i].start, iStride);
 
@@ -198,12 +159,14 @@ module akra.core.pool.resources {
 							pVertexData = new data.VertexData(this, this._iDataCounter ++, iAligStart, iCount, pDeclData);
 							this._pVertexDataArray.push(pVertexData);
 							
+							this.notifyAltered();
 							return pVertexData;
 						}
 						else if(arguments.length == 3) {
 							((<any>ppVertexDataIn).constructor).call(ppVertexDataIn, this, iAligStart, iCount, pDeclData);
 							this._pVertexDataArray.push(ppVertexDataIn);
 							
+							this.notifyAltered();
 							return ppVertexDataIn;
 						}
 
@@ -220,7 +183,8 @@ module akra.core.pool.resources {
 		}
 
 		
-		freeVertexData(pVertexData: IVertexData): bool {
+		freeVertexData(): bool;
+		freeVertexData(pVertexData?: IVertexData): bool {
 			if(arguments.length == 0) {
 				for(var i: uint = 0; i < this._pVertexDataArray.length; i ++) {
 					this._pVertexDataArray[Number(i)].destroy();
@@ -231,17 +195,20 @@ module akra.core.pool.resources {
 			else {
 				for(var i: uint = 0; i < this._pVertexDataArray.length; i ++) {
 					if(this._pVertexDataArray[i] == pVertexData) {
+						pVertexData.destroy();
+						
 						this._pVertexDataArray.splice(i, 1);
+						this.notifyAltered();
 						return true;
 					}
 				}
 
-				pVertexData.destroy();
-
 				return false;
 			}
-		}
 
+			this.notifyAltered();
+			return true;
+		}
 
 		allocateData(pElements: IVertexElement[], pData: ArrayBufferView): IVertexData;
 		allocateData(pDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
@@ -259,9 +226,6 @@ module akra.core.pool.resources {
 		    return pVertexData;
 		}
 
-		destroy(): void {}
-		create(iByteSize: uint, iFlags: int, pData: ArrayBuffer): bool { return false; }
-		resize(iSize: uint): bool { return false; }
 	}
 }
 

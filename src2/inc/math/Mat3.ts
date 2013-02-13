@@ -7,29 +7,8 @@
 #include "IQuat4.ts"
 
 module akra.math {
+
     export class Mat3 {
-    	/*var m3fMat;
-
-	    if(this === window  || this === window.AKRA){
-	        m3fMat = Mat3._pStorage[Mat3._iIndex++];
-	        if(Mat3._iIndex == Mat3._nStorageSize){
-	            Mat3._iIndex = 0;
-	        }        
-
-	        //clear
-	        if(arguments.length == 0){
-	            // var pData = m3fMat.pData;
-	            // pData.a11 = pData.a12 = pData.a13 = 
-	            // pData.a21 = pData.a22 = pData.a23 = 
-	            // pData.a31 = pData.a32 = pData.a33 = 0;
-	            return m3fMat;
-	        }
-	    }
-	    else{
-	        this.pData = new Float32Array(9);
-	        m3fMat = this;
-	    }*/
-
 	    data : Float32Array;
 
 	    constructor();
@@ -49,21 +28,24 @@ module akra.math {
 					fValue4?, fValue5?, fValue6?,
 					fValue7?, fValue8?, fValue9?){
 
-			this.data = new Float32Array(9);
 
 			var nArgumentsLength: uint = arguments.length;
 
-			if(nArgumentsLength == 1){
-		        this.set(arguments[0]);    
-		    }
-		    else if(nArgumentsLength == 3){
-		        this.set(arguments[0],arguments[1],arguments[2]);    
-		    }
-		    else if(nArgumentsLength == 9){
-		        this.set(arguments[0],arguments[1],arguments[2],
-                        arguments[3],arguments[4],arguments[5],
-                        arguments[6],arguments[7],arguments[8]);    
-		    }
+			switch(nArgumentsLength){
+				case 1:
+					this.set(arguments[0]);
+					break;
+				case 3:
+					this.set(arguments[0], arguments[1], arguments[2]);
+					break;
+				case 9:
+					this.set(arguments[0], arguments[1], arguments[2],
+							 arguments[3], arguments[4], arguments[5],
+							 arguments[6], arguments[7], arguments[8]);
+					break;
+				default:
+					break;
+			}
 		};
 
 		set(): IMat3;
@@ -82,6 +64,8 @@ module akra.math {
 		set(fValue1?, fValue2?, fValue3?,
 			fValue4?, fValue5?, fValue6?,
 			fValue7?, fValue8?, fValue9?): IMat3{
+		
+			this.data = this.data || new Float32Array(9);
 
 			var pData: Float32Array = this.data;
 
@@ -481,7 +465,7 @@ module akra.math {
 		    return m3fDestination;
 		};
 
-		isEqual(m3fMat: IMat3, fEps?: float = 0.): bool{
+		isEqual(m3fMat: IMat3, fEps: float = 0.): bool{
 			var pData1: Float32Array = this.data;
 		    var pData2: Float32Array = m3fMat.data;
 
@@ -516,7 +500,7 @@ module akra.math {
 		    return true;
 		};
 
-		isDiagonal(fEps?: float = 0.) : bool{
+		isDiagonal(fEps: float = 0.) : bool{
 			var pData: Float32Array = this.data;
 
 		    if(fEps == 0){
@@ -635,6 +619,119 @@ module akra.math {
 		               + pData[__a31] + ', ' + pData[__a32] + ', ' + pData[__a33] + ']';
 		};
 
+		decompose(q4fRotation: IQuat4, v3fScale: IVec3): bool{
+			//изначально предполагаем, что порядок умножения был rot * scale
+			var m3fRotScale: IMat3 = this;
+			var m3fRotScaleTransposed: IMat3 = this.transpose(mat3());
+			var isRotScale: bool = true; 
+
+		    //понадобятся если порядок умножения был другим
+		    var m3fScaleRot: IMat3, m3fScaleRotTransposed: IMat3;
+
+		    //было отражение или нет
+    		var scaleSign: int = (m3fRotScale.determinant() >= 0.) ? 1 : -1;
+
+    		var m3fResult: IMat3 = mat3();
+
+    		//first variant rot * scale
+		    // (rot * scale)T * (rot * scale) = 
+		    // scaleT * rotT * rot * scale = scaleT *rot^-1 * rot * scale = 
+		    // scaleT * scale
+		    m3fRotScaleTransposed.multiply(m3fRotScale, m3fResult);
+		   	if(!m3fResult.isDiagonal(1e-4)){
+		   		//предположение было неверным
+		   		isRotScale = false;
+		        //просто переобозначения чтобы не было путаницы
+		        m3fScaleRot = m3fRotScale;
+		        m3fScaleRotTransposed = m3fRotScaleTransposed;
+
+		        //second variant scale * rot
+		        // (scale * rot) * (scale * rot)T = 
+		        // scale * rot * rotT * scaleT = scale *rot * rot^-1 * scaleT = 
+		        // scale * scaleT
+
+		        m3fScaleRot.multiply(m3fScaleRotTransposed,m3fResult);
+		   	}
+
+		   	var pResultData: Float32Array = m3fResult.data;
+
+		   	var x: float = sqrt(pResultData[__a11]);
+		   	var y: float = sqrt(pResultData[__a22])*scaleSign;/*если было отражение, считается что оно было по y*/
+		   	var z: float = sqrt(pResultData[__a33]);
+
+		   	v3fScale.x = x;
+		   	v3fScale.y = y;
+		   	v3fScale.z = z;
+
+		   	var m3fInverseScale: IMat3 = mat3(1./x,1./y,1./z);
+
+		   	if(isRotScale){
+		   		m3fRotScale.multiply(m3fInverseScale,mat3()).toQuat4(q4fRotation);
+		   		return true;
+		   	}
+		   	else{
+		   		m3fInverseScale.multiply(m3fScaleRot,mat3()).toQuat4(q4fRotation);
+		   		debug_assert(false,"порядок умножения scale rot в данный момент не поддерживается");
+		   		return false;
+		   	}
+		};
+
+		row(iRow: int, v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+				v3fDestination = new Vec3();
+			}
+
+			var pData: Float32Array = this.data;
+
+			switch(iRow){
+				case 1:
+					v3fDestination.x = pData[__a11];
+					v3fDestination.y = pData[__a12];
+					v3fDestination.z = pData[__a13];
+					break;
+				case 2:
+					v3fDestination.x = pData[__a21];
+					v3fDestination.y = pData[__a22];
+					v3fDestination.z = pData[__a23];
+					break;
+				case 3:
+					v3fDestination.x = pData[__a31];
+					v3fDestination.y = pData[__a32];
+					v3fDestination.z = pData[__a33];
+					break;
+			}
+
+			return v3fDestination;
+		};
+
+		column(iColumn: int, v3fDestination?: IVec3): IVec3{
+			if(!isDef(v3fDestination)){
+				v3fDestination = new Vec3();
+			}
+
+			var pData: Float32Array = this.data;
+
+			switch(iColumn){
+				case 1:
+					v3fDestination.x = pData[__a11];
+					v3fDestination.y = pData[__a21];
+					v3fDestination.z = pData[__a31];
+					break;
+				case 2:
+					v3fDestination.x = pData[__a12];
+					v3fDestination.y = pData[__a22];
+					v3fDestination.z = pData[__a32];
+					break;
+				case 3:
+					v3fDestination.x = pData[__a13];
+					v3fDestination.y = pData[__a23];
+					v3fDestination.z = pData[__a33];
+					break;
+			}
+
+			return v3fDestination;
+		};
+
 		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, m3fDestination?: IMat3): IMat3;
 		static fromYawPitchRoll(v3fAngles: IVec3, m3fDestination?: IMat3): IMat3;
 		static fromYawPitchRoll(fYaw?,fPitch?,fRoll?,m3fDestination?): IMat3{
@@ -683,8 +780,8 @@ module akra.math {
 		static fromXYZ(fX?, fY?, fZ?, m3fDestination?) : IMat3{
 			if(arguments.length <= 2){
 				//Vec3 + m3fDestination
-				var v3fAngles: IVec3 = arguments[0];
-				return Mat3.fromYawPitchRoll(v3fAngles.y,v3fAngles.x,v3fAngles.z,arguments[1]);
+				var v3fVec: IVec3 = arguments[0];
+				return Mat3.fromYawPitchRoll(v3fVec.y,v3fVec.x,v3fVec.z,arguments[1]);
 			}
 			else{
 				//fX fY fZ m3fDestination
@@ -695,6 +792,8 @@ module akra.math {
 				return Mat3.fromYawPitchRoll(fY, fX, fZ, arguments[3]);
 			}
 		};
+
+		ALLOCATE_STORAGE(Mat3,100);
     };
 };
 

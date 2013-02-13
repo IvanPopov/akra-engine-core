@@ -13,6 +13,7 @@ module akra {
 	export interface IVertexData extends IBufferData, IBuffer, IEventProvider {
 		readonly stride: uint;
 		readonly startIndex: uint;
+		readonly id: int;
 
 		getVertexDeclaration(): IVertexDeclaration;
 		setVertexDeclaration(pDecl: IVertexDeclaration): bool;

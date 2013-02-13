@@ -3,6 +3,7 @@
 
 #include "IApiInfo.ts"
 #include "Singleton.ts"
+#include "webgl/WebGL.ts"
 
 module akra.util {
 	export class ApiInfo extends Singleton implements IApiInfo {

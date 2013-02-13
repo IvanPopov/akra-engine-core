@@ -20,19 +20,19 @@ module akra.scene {
      };
 
 	export class Node extends util.Entity implements INode {
-		private _m4fLocalMatrix: IMat4 = null;
-		private _m4fWorldMatrix: IMat4 = null;
-		private _m4fInverseWorldMatrix: IMat4 = null;
-		private _m3fNormalMatrix: IMat3 = null;
+		protected _m4fLocalMatrix: IMat4 = null;
+		protected _m4fWorldMatrix: IMat4 = null;
+		protected _m4fInverseWorldMatrix: IMat4 = null;
+		protected _m3fNormalMatrix: IMat3 = null;
 		
-		private _v3fWorldPosition: IVec3 = null;
+		protected _v3fWorldPosition: IVec3 = null;
 
-		private _qRotation: IQuat4 = null;
-		private _v3fTranslation: IVec3 = null;
-		private _v3fScale: IVec3 = null;
+		protected _qRotation: IQuat4 = null;
+		protected _v3fTranslation: IVec3 = null;
+		protected _v3fScale: IVec3 = null;
 		
-		private _iUpdateFlags: int = 0;
-		private _eInheritance: ENodeInheritance = ENodeInheritance.POSITION;
+		protected _iUpdateFlags: int = 0;
+		protected _eInheritance: ENodeInheritance = ENodeInheritance.POSITION;
 
 
 		inline get localOrientation(): IQuat4 { 
@@ -91,7 +91,9 @@ module akra.scene {
 
 		get normalMatrix(): IMat3 {
 			if (TEST_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildNormalMatrix)) {
-		        this._m4fWorldMatrix.toInverseMat3(this._m3fNormalMatrix).transpose();
+
+		        this._m4fWorldMatrix.toMat3(this._m3fNormalMatrix).inverse().transpose();
+		        
 		        CLEAR_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_RebuildNormalMatrix);
 		    }
 
@@ -99,15 +101,16 @@ module akra.scene {
 		}
 		
 
-		update(): void {
+		update(): bool {
 			// derived classes update the local matrix
 		    // then call this base function to complete
 		    // the update
-		    this.recalcWorldMatrix();
+		    return this.recalcWorldMatrix();
 		}
 
 
 		prepareForUpdate(): void {
+			super.prepareForUpdate();
 			// clear the temporary flags
 			CLEAR_ALL(this._iUpdateFlags, FLAG(ENodeUpdateFlags.k_NewLocalMatrix) | 
         		FLAG(ENodeUpdateFlags.k_NewOrientation) | FLAG(ENodeUpdateFlags.k_NewWorldMatrix));
@@ -130,7 +133,7 @@ module akra.scene {
 			return TEST_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewLocalMatrix);
 		}
 
-		recalcWorldMatrix(): bool {
+		private recalcWorldMatrix(): bool {
 			var isParentMoved: bool = this._pParent && (<Node>this._pParent).isWorldMatrixNew();
 		    var isOrientModified: bool = TEST_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewOrientation);
 		    var isLocalModified: bool = TEST_BIT(this._iUpdateFlags, ENodeUpdateFlags.k_NewLocalMatrix);
@@ -185,7 +188,7 @@ module akra.scene {
 		                pWorldData[__13] = p11 * l13 + p12 * l23 + p13 * l33;
 		                pWorldData[__14] = pOrientData[__14];
 		                pWorldData[__21] = p21 * l11 + p22 * l21 + p23 * l31;
-		                pWorldData[__22 = p21 * l12 + p22 * l22 + p23 * l32];
+		                pWorldData[__22] = p21 * l12 + p22 * l22 + p23 * l32;
 		                pWorldData[__23] = p21 * l13 + p22 * l23 + p23 * l33;
 		                pWorldData[__24] = pOrientData[__24];
 		                pWorldData[__31] = p31 * l11 + p32 * l21 + p33 * l31;

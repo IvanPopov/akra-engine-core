@@ -2,12 +2,36 @@
 #define ITEXTURE_TS
 
 #include "IRenderResource.ts"
+#include "PixelFormat.ts"
+#include "IHardwareBuffer.ts"
+#include "IPixelBuffer.ts"
+
+#define POSITIVE_X 0
+#define NEGATIVE_X 1
+#define POSITIVE_Y 2
+#define NEGATIVE_Y 3
+#define POSITIVE_Z 4
+#define NEGATIVE_Z 5
 
 module akra {
 
     IFACE(IImg);
 
-	export enum ETextureFilters {
+    export enum ETextureFlags {
+        STATIC = <int>EHardwareBufferFlags.STATIC,
+        DYNAMIC = <int>EHardwareBufferFlags.DYNAMIC,
+        READEBLE = <int>EHardwareBufferFlags.READABLE,
+        DYNAMIC_DISCARDABLE = <int>EHardwareBufferFlags.DYNAMIC_DISCARDABLE,
+        /// mipmaps will be automatically generated for this texture
+        AUTOMIPMAP = 0x100,
+        /// this texture will be a render target, i.e. used as a target for render to texture
+        /// setting this flag will ignore all other texture usages except AUTOMIPMAP
+        RENDERTARGET = 0x200,
+        /// default to automatic mipmap generation static textures
+        DEFAULT = AUTOMIPMAP | STATIC
+    }
+
+    export enum ETextureFilters {
         NEAREST = 0x2600,
         LINEAR = 0x2601,
         NEAREST_MIPMAP_NEAREST = 0x2700,
@@ -47,84 +71,70 @@ module akra {
         TEXTURE = 0x84C0
     };
 
+// export interface ITextureParameters {
+//     minFilter: ETextureFilters;
+//     magFilter: ETextureFilters;
+
+//     wrapS: ETextureWrapModes;
+//     wrapT: ETextureWrapModes;
+// }
+
     export interface ITexture extends IRenderResource {
     	width: uint;
         height: uint;
+        depth: uint;
 
-        type: EImageTypes;
-        format: EImageFormats;
-
-
-        //number of color components per pixel. usually: 1, 3, 4
-        componentsPerPixel: uint;
-        bytesPerPixel: uint;
-
-        magFilter: ETextureFilters;
-        minFilter: ETextureFilters;
-
-        wrapS: ETextureWrapModes;
-        wrapT: ETextureWrapModes;
-
-        target: ETextureTypes;
+        format: EPixelFormats;
         mipLevels: uint;
+
+        textureType: ETextureTypes;
+
+        desiredIntegerBitDepth: uint;
+        desiredFloatBitDepth: uint;     
+
+        readonly desiredFormat: EPixelFormats;
+        readonly srcFormat: EPixelFormats;
+        readonly srcWidth: uint;
+        readonly srcHeight: uint;
+        readonly srcDepth: uint;
+
+        setFlags(iTextureFlag: int): void;
+        getFlags(): int;   
+
+        calculateSize(): uint;
+        getNumFaces(): uint;
+        getSize(): uint; 
 
         isTexture2D(): bool;
         isTextureCube(): bool;
         isCompressed(): bool;
+        isValid(): bool;
 
-        getParameter(): int;
-        setParameter(eParam: ETextureParameters, eValue: ETextureFilters): void;
-        setParameter(eParam: ETextureParameters, eValue: ETextureWrapModes): void;
+        create(iWidth: uint, iHeight: uint, iDepth: uint, pFillColor?: IColor, 
+               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+        create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: Array, 
+               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+        create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: ArrayBufferView, 
+               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
         
-        getPixels(
-            iX?: uint, 
-            iY?: uint, 
-            iWidth?: uint, 
-            iHeight?: uint, 
-            ppPixelBuffer?: ArrayBufferView,
-            iMipMap?: uint,
-            eCubeFlag?: ETextureTypes): ArrayBufferView;
-        setPixels(
-            iX?: uint, 
-            iY?: uint, 
-            iWidth?: uint, 
-            iHeight?: uint, 
-            pPixelBuffer?: ArrayBufferView,
-            iMipMap?: uint,
-            eCubeFlag?: ETextureTypes): bool;
 
-        generateNormalMap(pHeightMap: IImg, iChannel?: uint, fAmplitude?: float): bool;
-        generateNormalizationCubeMap(): bool;
+        getBuffer(iFace?: uint, iMipmap?: uint): IPixelBuffer;     
+
+        setParameter(eParam: ETextureParameters, eValue: ETextureFilters): bool;
+        setParameter(eParam: ETextureParameters, eValue: ETextureWrapModes): bool;
         
-        convertToNormalMap(iChannel: uint, iFlags: uint, fAmplitude: float): bool;
-        
-        maskWithImage(pImage: IImg): bool;
+        loadRawData(pData: ArrayBufferView, iWidth: uint, iHeight: uint, eFormat: EPixelFormats): bool;
+        loadImage(pImage: IImg): bool;
+        loadImages(pImages: IImg[]): bool;
 
-        uploadCubeFace(pImage: IImg, eFace: ETextureTypes, isCopyAll?: bool): bool;
-        uploadHTMLElement(pElement: HTMLElement): bool;
-        uploadImage(pImage: IImg): bool;
+        convertToImage(pDestImage: IImg, bIncludeMipMaps: bool): void;
 
-        resize(iWidth: uint, iHeight: uint): bool;
-        repack(iWidth: uint, iHeight: uint, eFormat?: EImageFormats, eType?: EImageTypes): bool;
-        extend(iWidth: uint, iHeight: uint, cColor: IColor);
+        copyToTexture(pTarget: ITexture): void;
 
-        createTexture(
-            iWidth?: uint, 
-            iHeight?: uint, 
-            iFlags?: int, 
-            eFormat?: EImageFormats, 
-            eType?: EImageTypes,
-            pData?: ArrayBufferView): bool;
+        createInternalTexture(cFillColor?: IColor): bool;
+        freeInternalTexture(): bool;
 
-        //------------
-        // Эти вызовы надо убрать, так как пользователю не положено делать их самому,
-        // а соответственно их не должно быть в API, пусть рендерер, делает эти вещи.
-        
-        //bind()
-        //unbind()
-        //activate()
-        //getSlot()
-        //setSlot()
+        getNativeFormat(eTextureType?: ETextureTypes, eFormat?: EPixelFormats, iFlags?: int): EPixelFormats;
     }
 }
 

@@ -3,7 +3,7 @@
 #include "util/test/testutils.ts"
 #include "io/ajax.ts"
 
-module akra.utils.test {
+module akra.util.test {
 	
 	var test_1 = () => {
 		shouldBeTrue("Sync ajax request test");

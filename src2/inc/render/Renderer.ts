@@ -24,20 +24,21 @@
 #include "IFrameBuffer.ts"
 #include "IViewport.ts"
 
-module  akra.render {
+#include "render/RenderTarget.ts"
 
+module  akra.render {
 
 
 	export var SShaderPrefixes = {
 		k_Sampler    : "A_s_",
-	    k_Header     : "A_h_",
-	    k_Attribute  : "A_a_",
-	    k_Offset     : "A_o_",
-	    k_Texture    : "TEXTURE",
-	    k_Texcoord   : "TEXCOORD",
-	    k_Texmatrix  : "TEXMATRIX",
-	    k_Temp       : "TEMP_",
-	    k_BlendType  : "AUTO_BLEND_TYPE_"
+		k_Header     : "A_h_",
+		k_Attribute  : "A_a_",
+		k_Offset     : "A_o_",
+		k_Texture    : "TEXTURE",
+		k_Texcoord   : "TEXCOORD",
+		k_Texmatrix  : "TEXMATRIX",
+		k_Temp       : "TEMP_",
+		k_BlendType  : "AUTO_BLEND_TYPE_"
 	};
 
 	export var ZEROSAMPLER: int = 19;
@@ -51,250 +52,119 @@ module  akra.render {
 		RENDER_OBJECT_ID: 	"RENDER_OBJECT_ID"
 	}
 
-	interface IAFXComponentBlendMap {
-		[index: string]: IAFXComponentBlend;
-	};
-
-
-	interface IAFXPassBlendMap {
-		[index: string]: IAFXPassBlend;
-	};
-
-	interface IAFXEffectMap {
-		[index: string]: IAFXEffect;
-	};
-
-	interface IRenderResourceMap {
-		[index: number]: IRenderResource;
+	export interface IRenderTargetPriorityMap {
+		[index: int]: IRenderTarget;
 	}
 
 	export class Renderer implements IRenderer {
-		private pEngine: IEngine;
-		private pDevice: WebGLRenderingContext;
+		private _pEngine: IEngine;
+		private _pRenderTargets: IRenderTarget[];
+		private _pPrioritisedRenderTargets: IRenderTargetPriorityMap;
 
-		private nEffectFile: uint = 1;
-		private pEffectFileStack: IAFXEffect[] = [];
+		constructor (pEngine: IEngine) {
+			this._pEngine = pEngine;
+		}
 
-		private pComponentBlendMap: IAFXComponentBlendMap = {};
-		private pPassBlendMap: IAFXPassBlendMap = {};
-		private pEffectMap: IAFXEffectMap = {};
 
-		private pActiveSceneObject: ISceneObject = null;
-		private pActiveRenderObject: IRenderableObject = null;
+		inline getEngine(): IEngine { return this. _pEngine; }
 
-		// WHAT IS THIS???, WHY THIS NEED???
-		private pSceneObjectStack: ISceneObject[] = [];
-		private pPreRenderStateStack: IAFXPreRenderState[] = [];
-		private pPreRenderStateActive: IAFXPreRenderState = null;
-		private pPreRenderStatePool: IAFXPreRenderState[] = new Array(20);
+	    hasCapability(eCapability: ERenderCapabilities): bool {
+	      return false;
+	    }
 
-		private pCurrentViewport: IViewport;
-		//private pProgramsMap; //--> TO FAT SEARCH TREE
-		private pRenderResourceMap: IRenderResourceMap;
-		private pRenderResourceCounter: IntMap;
 
-		private pScreen: IMesh;
+		debug(bValue?: bool): bool {
+			return false;
+		}
 
-		constructor (pDisplay: IDisplay3d) {
+		enableAPITrace(): bool {
+			return false;
+		}
+		
+		isDebug(): bool {
+			return false;
+		}
+
+		isValid(): bool {
+			return false;
+		}
+
+		inline getError(): string {
+			return null;
+		}
+
+		clearFrameBuffer(iBuffer: int, cColor: IColor, iDepth: int): void {
 
 		}
 
-		//// frendly for EffectResource
+ 		attachRenderTarget(pTarget: IRenderTarget): bool {
+ 			for(var i: uint = 0; i < this._pRenderTargets.length; i++){
+       			if(this._pRenderTargets[i] === pTarget){
+       				return false;
+       			}
+       		}
 
-    	/** * Регистрация компонента эффекта. **/
-    	registerComponent(pComponent: IAFXComponent): bool {
-    		return false;
-    	}
+ 			this._pRenderTargets.push(pTarget);
+ 			return true; 			
+ 		}
 
-    	/** Активация компонента для эффект ресурса. */
-    	activateComponent(pEffectResource: IAFXEffect, iComponentHandle: int, nShift?: uint): bool {
-    		return false;
-    	}
+        detachRenderTarget(pTarget: IRenderTarget): bool {
+       		for(var i: uint = 0; i < this._pRenderTargets.length; i++){
+       			if(this._pRenderTargets[i] === pTarget){
+       				this._pRenderTargets.splice(i, 1);
+       				return true;
+       			}
+       		}
 
-    	/** Деактивация компонента для эффект ресурса. */
-    	deactivateComponent(pEffectResource: IAFXEffect, iComponentHandle: int, nShift?: uint): bool {
-    		return false;
-    	}
+       		return false;
+        }
 
-    	/** Get effect components number */
-    	getComponentCount(pEffectResource: IAFXEffect): uint {
-    		return 0;
-    	}
+        destroyRenderTarget(pTarget: IRenderTarget): void {
+        	var hasTarget: bool = this.detachRenderTarget(pTarget);
+        	if(hasTarget){
+        		pTarget.destroy();
+        		pTarget = null;
+        	}
+        }
 
-    	//// frendly for Snapshot
-    	push(pRenderObject: IRenderableObject, pSnapshot: IRenderSnapshot): bool {
-    		return false;
-    	}
+        getActiveProgram(): IShaderProgram {
+        	CRITICAL("Renderer::getActiveProgram() is uncompleted method!");
+        	return null;
+        }
 
-    	pop(): bool {
-    		return false;
-    	}
-
-    	activatePass(pSnapshot: IRenderSnapshot, iPass: int): bool {
-    		return false;
-    	}
-
-    	deactivatePass(pSnapshot: IRenderSnapshot): bool {
-    		return false;
-    	}
-
-    	activateSceneObject(pSceneObject: ISceneObject): void {}
-    	deactivateSceneObject(): void{}
-
-    	finishPass(iPass: int): bool{
-    		return false;
-    	}
-
-    	applyBufferMap(pMap: IBufferMap): bool {
-    		return false;
-    	}
-    	applyVertexData(pData: IVertexData, ePrimType: EPrimitiveTypes): bool {
-    		return false;
-    	}
-
-    	applyFrameBufferTexture(pTexture: ITexture, eAttachment: EAttachmentTypes, eTexTarget: ETextureTypes, iLevel?: uint): bool {
-    		return false;
-    	}
-
-    	applySurfaceMaterial(pMaterial: ISurfaceMaterial): bool {
-    		return false;
-    	}
-
-    	getUniformRealName(sName: string): string {
-    		return null;
-    	}
-
-    	getTextureRealName(sName: string): string {
-    		return null;
-    	}
-    	getActiveProgram(): IShaderProgram {
-    		return null;
-    	}
-    	getActiveTexture(iSlot: uint): ITexture {
-    		return null;
-    	}
-    	getTextureSlot(pTexture: ITexture): uint {
-    		return 0;
-    	}
-    	getFrameBuffer(iFrameBuffer?: int): IFrameBuffer {
-    		return null;
-    	}
-
-    	isUniformTypeBase(sRealName: string): bool {
-    		return false;
-    	}
-
-		totalPasses(pEffect: IAFXEffect): uint {
-			return 0;
+		inline _disableAllTextureUnits(): void {
+			this._disableTextureUnitsFrom(0);
 		}
-    	
-    	//frendly for ShaderProgram
 
-    	activateTexture(pTexture: ITexture): bool {
-    		return false;
-    	}
+		inline _disableTextureUnitsFrom(iUnit: uint): void {
 
-    	activateVertexBuffer(pBuffer: IVertexBuffer): bool {
-    		return false;
-    	}
-    	
-    	activateIndexBuffer(pBuffer: IIndexBuffer): bool {
-    		return false;
-    	}
-    	
-    	activateProgram(pProgram: IShaderProgram): bool {
-    		return false;
-    	}
-    	
-    	activateFrameBuffer(pFrameBuffer: IFrameBuffer): bool {
-    		return false;
-    	}
-    	
-    	deactivateFrameBuffer(pFrameBuffer: IFrameBuffer): bool {
-    		return false;
-    	}
-    	
+		}
 
-    	getRenderResourceState(pResource: IRenderResource): int {
-    		return 0;
-    	}
-    	
+		_initRenderTargets(): void {
+			// Init stats
+	        for(var i: int = 0; i < this._pRenderTargets.length; ++ i) {
+	            this._pRenderTargets[i].resetStatistics();
+	        }
+		}
 
+		_updateAllRenderTargets(): void {
+			var pTarget: IRenderTarget;
+			for (var i in this._pPrioritisedRenderTargets) {
+				pTarget = this._pPrioritisedRenderTargets[i];
 
-    	//// frendly for resources
+				if (pTarget.isActive() && pTarget.isAutoUpdated()) {
+					pTarget.update();
+				}
+			}
+		}
 
-    	registerRenderResource(pResource: IRenderResource): void {
-    		return;
-    	}
-    	
-    	releaseRenderResource(pResource: IRenderResource): void {
-    		return;
-    	}
-    	
-        /** Регистрация нового эффект ресурса. */
-        registerEffect(pEffectResource: IAFXEffect): bool {
-    		return false;
-    	}
-    	
+		_setViewport(pViewport: IViewport): void {
 
-    	//// frendly for Texture
+		}
 
-    	bindTexture(pTexture: ITexture): bool {
-    		return false;
-    	}
-    	
-    	unbindTexture(): bool {
-    		return false;
-    	}
-    	
-
-
-    	//// frendly for render queue
-    	render(pEntry: IRenderEntry): void {
-    		return;
-    	}
-    	
-
-
-    	///public API
-    	findEffect(sName?: string): IAFXEffect {
-    		return null;
-    	}
-    	
-
-    	
-    	clearScreen(eValue: EBufferMasks, c4Color: IColor): void {
-    		return;
-    	}
-    	
-    	switchRenderStage(eType: ERenderStages): void {
-    		return;
-    	}
-    	
-    	processRenderStage(): bool {
-    		return false;
-    	}
-    	
-    	updateScreen(): bool {
-    		return false;
-    	}
-    	
-        /** Load *.fx file or *.abf */
-        loadEffectFile(sFilename: string, isSync?: bool): bool {
-    		return false;
-    	}
-    	
-
-        debug(bValue?: bool, bTrace?: bool): bool {
-    		return false;
-    	}
-    	
-        isDeviceLost(): bool {
-    		return false;
-    	}
-    	
-
-
+		_getViewport(): IViewport {
+			return null;
+		}
 	}
 };
 

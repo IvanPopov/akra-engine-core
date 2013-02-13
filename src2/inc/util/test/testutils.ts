@@ -3,7 +3,7 @@
 
 #include "common.ts"
 
-module akra.utils.test {
+module akra.util.test {
 
 	var pTestCondList: ITestCond[] = [];
 
@@ -36,11 +36,49 @@ module akra.utils.test {
 		}
 	}
 
-	class TrueCond extends TestCond implements ITestCond {
-		constructor (sDescription: string) {
+	class ArrayCond extends TestCond implements ITestCond {
+		protected _pArr: any[];
+		constructor (sDescription: string, pArr: any[]) {
 			super(sDescription);
-		}
 
+			this._pArr = pArr;
+		}
+		verify(pArgv: any[]): bool {
+			var pArr: any[] = pArgv[0];
+
+			if (pArr.length != this._pArr.length) {
+				return false;
+			}
+
+			for (var i: int = 0; i < pArr.length; ++ i) {
+				if (pArr[i] != this._pArr[i]) {
+					return false;
+				}
+			};
+
+			return true;
+		}
+	}
+
+	class ValueCond extends TestCond implements ITestCond {
+		protected _pValue: any;
+		constructor (sDescription: string, pValue: any) {
+			super(sDescription);
+
+			this._pValue = pValue;
+		}
+		verify(pArgv: any[]): bool {
+
+			if (pArgv[0] == this._pValue) {
+				return true;
+			}
+
+			console.warn(">", pArgv[0], "!==", this._pValue);
+			return false;
+		}
+	}
+
+	class TrueCond extends TestCond implements ITestCond {
 		verify(pArgv: any[]): bool {
 			if (pArgv[0] === true) {
 				return true;
@@ -73,6 +111,7 @@ module akra.utils.test {
 
 	}
 
+
 	export function failed(): void {
 		var iTotal: int = pTestCondList.length;
 		for (var i: int = 0; i < iTotal; ++ i) {
@@ -82,6 +121,14 @@ module akra.utils.test {
 
 	export function shouldBeTrue(sDescription: string) {
 		addCond(new TrueCond(sDescription));
+	}
+
+	export function shouldBeArray(sDescription: string, pArr: any) {
+		addCond(new ArrayCond(sDescription, <any[]>pArr));
+	}
+
+	export function shouldBe (sDescription: string, pValue: any) {
+		addCond(new ValueCond(sDescription, pValue));
 	}
 
 	export interface ITestManifest {
@@ -108,6 +155,10 @@ module akra.utils.test {
 
 	export function run(): void {
 		Test.run();
+	}
+
+	window.onload = function () {
+		run();
 	}
 }
 
