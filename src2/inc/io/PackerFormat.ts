@@ -186,7 +186,7 @@ module akra.io {
 
 		"Object": {
 			write: function (object: any) {
-				if (object instanceof Array) {
+				if (isArray(object)) {
 					this.bool(true); 	//is array
 					this.uint32((<any[]>object).length);
 
@@ -204,11 +204,10 @@ module akra.io {
 				}
 			},
 			read: function (object) {
-				var is_array = this.bool();
 				var keys;
 				var n;
 
-				if (is_array) {
+				if (this.bool()) {
 					n = this.uint32();
 					object = object || new Array(n);
 
@@ -234,7 +233,15 @@ module akra.io {
 				var sFunc: string = String(fn.valueOf());
 				var sBody: string = sFunc.substr(sFunc.indexOf("{") + 1, sFunc.lastIndexOf("}") - sFunc.indexOf("{") - 1);
 				var pArgs: string[] = sFunc.substr(sFunc.indexOf("(") + 1, sFunc.indexOf(")") - sFunc.indexOf("(") - 1).match(/[$A-Z_][0-9A-Z_$]*/gi);
-				
+				//var sName: string = null;
+
+				//var pMatches: string[] = sFunc.match(/(function\s+)([_$a-zA-Z][_$a-zA-Z0-9]*)(?=\s*\()/gi);
+
+				// if (isDefAndNotNull(pMatches) && pMatches.length > 2) {
+				// 	sName = pMatches[2];
+				// }
+
+				//this.string(sName);
 				this.stringArray(pArgs);
 				this.string(sBody);
 			},
@@ -242,21 +249,6 @@ module akra.io {
 				return new Function(this.stringArray(), this.string());
 			}
 		},
-		"MathType": {
-			members: {
-				"pData": "Float32Array"	
-			}
-		},
-		"Mat4": "MathType",
-		"Vec4": "MathType",
-		"Vec3": "MathType",
-		"Vec2": "MathType",
-		"Quat4": "MathType",
-		
-		"Number": "Float32",
-		"Float"	: "Float32",
-		"Int"	: "Int32",
-		"Uint"	: "Uint32",
 		"Array"	: "Object"
 	});
 }
