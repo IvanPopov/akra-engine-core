@@ -59,8 +59,6 @@ module akra.fx {
 		static pSystemFunctions: SystemFunctionMap = null;
 		static pSystemVariables: IAFXVariableDeclMap = null;
 
-		static private _pGrammarSymbols = akra.util.parser.getGrammarSymbols();
-
 		constructor(pComposer: IAFXComposer) {
 			this._pComposer = pComposer;
 

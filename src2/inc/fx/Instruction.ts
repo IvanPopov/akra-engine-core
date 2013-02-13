@@ -191,6 +191,7 @@ module akra.fx {
 
 		constructor() {
 			super();
+			this._pInstructionList = [null];
 			this._eInstructionType = EAFXInstructionTypes.k_VariableTypeInstruction;
 		}	 
 
@@ -1275,6 +1276,36 @@ module akra.fx {
 		}
 	}
 
+	export class ExprInstruction extends TypedInstruction implements IAFXExprInstruction {
+		/**
+		 * Respresent all kind of instruction
+		 */
+		constructor(){
+			super();
+			this._eInstructionType = EAFXInstructionTypes.k_ExprInstruction;
+		}
+
+		evaluate(): bool {
+			return false;
+		}
+
+		simplify(): bool {
+			return false;
+		}
+
+		getEvalValue(): any {
+			return null;
+		}
+
+		isConst(): bool {
+			return false;
+		}
+
+		clone(pRelationMap?:IAFXInstructionMap): IAFXExprInstruction {
+			return <IAFXExprInstruction>super.clone(pRelationMap);
+		}
+	}
+
 	export class DeclInstruction extends TypedInstruction implements IAFXDeclInstruction {
 		protected _sSemantic: string = "";
 		protected _pAnnotation: IAFXAnnotationInstruction = null;
@@ -1554,6 +1585,7 @@ module akra.fx {
 		 */
 		constructor(){
 			super();
+			this._pInstructionList = [null, null, null];
 			this._eInstructionType = EAFXInstructionTypes.k_VariableDeclInstruction;
 		}
 
@@ -2243,37 +2275,6 @@ module akra.fx {
 	// 		this._eInstructionType = EAFXInstructionTypes.k_StructFieldsInstruction;
 	// 	}	 
 	// }
-
-
-	export class ExprInstruction extends TypedInstruction implements IAFXExprInstruction {
-		/**
-		 * Respresent all kind of instruction
-		 */
-		constructor(){
-			super();
-			this._eInstructionType = EAFXInstructionTypes.k_ExprInstruction;
-		}
-
-		evaluate(): bool {
-			return false;
-		}
-
-		simplify(): bool {
-			return false;
-		}
-
-		getEvalValue(): any {
-			return null;
-		}
-
-		isConst(): bool {
-			return false;
-		}
-
-		clone(pRelationMap?:IAFXInstructionMap): IAFXExprInstruction {
-			return <IAFXExprInstruction>super.clone(pRelationMap);
-		}
-	}
 
 	export class IdExprInstruction extends ExprInstruction implements IAFXIdExprInstruction {
 		constructor(){
