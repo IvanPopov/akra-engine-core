@@ -192,7 +192,7 @@ module akra {
         getStrongHash(): string ;
 
         hasField(sFieldName: string): bool;
-        hasFileldWithSematic(sSemantic: string);
+        hasFieldWithSematic(sSemantic: string);
         hasAllUniqueSemantics(): bool;
         hasFieldWithoutSemantic(): bool;
         getField(sFieldName: string, isCreateExpr?: bool): IAFXIdExprInstruction;

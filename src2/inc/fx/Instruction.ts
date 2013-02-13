@@ -406,12 +406,12 @@ module akra.fx {
 			return this.getSubType().hasField(sFieldName);
 		}
 
-		hasFileldWithSematic(sSemantic: string): bool {
+		hasFieldWithSematic(sSemantic: string): bool {
 			if(!this.isComplex()){
 				return false;
 			}
 
-			return this.getSubType().hasFileldWithSematic(sSemantic);
+			return this.getSubType().hasFieldWithSematic(sSemantic);
 		}
 
 		hasAllUniqueSemantics(): bool {
@@ -850,7 +850,7 @@ module akra.fx {
 			return isDef(this._pFieldIdMap[sFieldName]);
 		}
 
-		hasFileldWithSematic(sSemantic: string): bool {
+		hasFieldWithSematic(sSemantic: string): bool {
 			return false;
 		}
 
@@ -1046,7 +1046,7 @@ module akra.fx {
 			return isDef(this._pFieldDeclMap[sFieldName]);
 		}
 
-		hasFileldWithSematic(sSemantic: string): bool {
+		hasFieldWithSematic(sSemantic: string): bool {
 			if(isNull(this._pFieldDeclBySemanticMap)) {
 				this.analyzeSemantics();
 			}
@@ -1979,6 +1979,8 @@ module akra.fx {
 		private _pFunctionName: IAFXIdInstruction = null;
 		private _nParamsNeeded: uint = 0;
 		private _sDefinition: string = "";
+		private _isAnalyzedForVertexUsage: bool = false;
+		private _isAnalyzedForPixelUsage: bool = false;
 
 		//private _sHash: string = "";
 
@@ -2077,13 +2079,122 @@ module akra.fx {
 		}
 
 		_checkForVertexUsage(): bool {
-			// if(this._pReturnType.hasFieldWithoutSemantic()){
-			// 	this._setForVertex(false);
-			// }
-			return false;
+			if(this._isAnalyzedForVertexUsage){
+				return this._isForVertex();
+			}
+
+			this._isAnalyzedForVertexUsage = true;
+
+			var isGood: bool = true;
+			
+			isGood = this.checkReturnTypeForVertexUsage();
+			if(!isGood){
+				this._setForVertex(false);
+				return false;
+			}
+
+			isGood = this.checkArgumentsForVertexUsage();
+			if(!isGood){
+				this._setForVertex(false);
+				return false;
+			}
+
+			this._setForVertex(true);
+
+			return true;
 		}
 
 		_checkForPixelUsage(): bool {
+			if(this._isAnalyzedForPixelUsage){
+				return this._isForPixel();
+			}
+
+			this._isAnalyzedForPixelUsage = true;
+
+			var isGood: bool = true;
+			
+			isGood = this.checkReturnTypeForPixelUsage();
+			if(!isGood){
+				this._setForPixel(false);
+				return false;
+			}
+
+			isGood = this.checkArgumentsForPixelUsage();
+			if(!isGood){
+				this._setForPixel(false);
+				return false;
+			}
+
+			this._setForPixel(true);
+
+			return true;
+		}
+
+		private checkReturnTypeForVertexUsage(): bool {
+			var pReturnType: IAFXVariableTypeInstruction = this._pReturnType;
+			var isGood: bool = true;
+
+			if(pReturnType.isComplex()){
+				isGood = !pReturnType.hasFieldWithoutSemantic();
+				if(!isGood){
+					return false;
+				}
+
+				isGood = pReturnType.hasAllUniqueSemantics();
+				if(!isGood) {
+					return false;
+				}
+
+				isGood = pReturnType.hasFieldWithSematic("POSITION");
+				if(!isGood){
+					return false;
+				}
+
+				return true;
+			}
+			else {
+				isGood = pReturnType.isEqual(getEffectBaseType("float4"));
+				if(!isGood){
+					return false;
+				}
+
+				isGood = (this.getSemantic() === "POSITION");
+				if(!isGood){
+					return false;
+				}
+
+				return true;
+			}
+		}
+
+		private checkReturnTypeForPixelUsage(): bool {
+			var pReturnType: IAFXVariableTypeInstruction = this._pReturnType;
+			var isGood: bool = true;
+
+			isGood = pReturnType.isBase();
+			if(!isGood){
+				return false;
+			}
+
+			isGood = pReturnType.isEqual(getEffectBaseType("float4"));
+			if(!isGood){
+				return false;
+			}
+
+			isGood = this.getSemantic() === "COLOR";
+			if(!isGood){
+				return false;
+			}
+
+			return true;	
+		}
+
+		private checkArgumentsForVertexUsage(): bool {
+			
+			return false;
+		}
+
+		private checkArgumentsForPixelUsage(): bool {
 			return false;
 		}
 		// getHash(): string {
