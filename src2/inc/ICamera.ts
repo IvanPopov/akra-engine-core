@@ -10,6 +10,7 @@ module akra {
 	IFACE(IRect3d);
 	IFACE(IFrustum);
     IFACE(ISceneBuilder);
+    IFACE(IObjectArray);
 
 	export enum ECameraParameters {
         CONST_ASPECT = 1
@@ -58,7 +59,7 @@ module akra {
     	lookAt(v3fCenter: IVec3, v3fUp?: IVec3);
 
         //display via display list with name <csList>
-        display(iList?: int): ISceneObject[];
+        display(iList?: int): IObjectArray;
 
     	_renderScene(pViewport: IViewport): void;
     	_keepLastViewport(pViewport: IViewport): void;

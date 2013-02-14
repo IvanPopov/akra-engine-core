@@ -7,6 +7,7 @@
 #include "ICamera.ts"
 #include "events/events.ts"
 #include "scene/SceneObject.ts"
+#include "util/ObjectArray.ts"
 
 module akra.scene {
 	export class DisplayList implements IDisplayList {
@@ -17,6 +18,7 @@ module akra.scene {
 		inline set name(sName: string) { this._sName = sName; }
 
 		_onNodeAttachment(pScene: IScene3d, pNode: ISceneNode): void {
+			console.error('here', isSceneObject(pNode), pNode);
 			if (isSceneObject(pNode)) {
 				this.attachObject(<ISceneObject>pNode);
 			}
@@ -53,7 +55,7 @@ module akra.scene {
 				});
 		}
 
-		_findObjects(pCamera: ICamera, bQuickSearch: bool = true): ISceneObject[] {
+		_findObjects(pCamera: ICamera, bQuickSearch: bool = true): IObjectArray {
 			debug_error("pure virtual method");
 			return null;
 		}

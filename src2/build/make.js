@@ -359,6 +359,10 @@ function createTestName(sEntryFileName) {
 }
 
 function compileTest(sDir, sFile, sName, pData, sTestData) {
+	//FIXME: hack for events support
+	
+	sTestData = sTestData.replace(/eval\(\"this\.\_iGuid \|\| akra\.sid\(\)\"\)/g, "this._iGuid || akra.sid()");
+
 	var pArchive;
 	var sIndexHTML = "\n\
 				  <html>                           					\n\

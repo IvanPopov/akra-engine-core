@@ -7,14 +7,14 @@
 
 #define EMIT_UNICAST(event, call) \
 	var _recivier: any = this; \
-	this._pUnicastSlotMap = this._pUnicastSlotMap || this.getEventTable().findUnicastList(this.$iGuid);\
+	this._pUnicastSlotMap = this._pUnicastSlotMap || this.getEventTable().findUnicastList(this._iGuid);\
 	var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).event;\
 	/*console.error(this.getEventTable());*/\
 	if(isDef(_unicast)){\
 		_unicast.target? _unicast.target[_unicast.callback] call: _unicast.listener call;\
 	}
 #define EMIT_BROADCAST(event, call) \
-	this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this.$iGuid);\
+	this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid);\
 	var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).event; \
 	var _recivier: any = this; \
 		if(isDef(_broadcast)){\
@@ -47,13 +47,13 @@
 #define BIND(sender, signal, callback) sender.bind(signal, callback)
 
 #define BEGIN_EVENT_TABLE(object) \
-	private $iGuid: int = -1; 																						\
+	private _iGuid: int = eval("this._iGuid || akra.sid()");											\
 	private _pUnicastSlotMap: IEventSlotMap = null;						\
 	private _pBroadcastSlotList: IEventSlotListMap = null;				\
-	private static _pEvenetTable: IEventTable = new events.EventTable(); 												\
-																														\
-	inline getEventTable(): IEventTable {return object._pEvenetTable; } 												\
-	getGuid(): uint {return this.$iGuid < 0? (this.$iGuid = sid()): this.$iGuid; } 																		\
+	private static _pEventTable: IEventTable = new events.EventTable(); 							\
+																									\
+	inline getEventTable(): IEventTable {return object._pEventTable; } 												\
+	getGuid(): uint {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } 																		\
 	inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
 		return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType);					\
 	}; 																													\

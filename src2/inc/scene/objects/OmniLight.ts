@@ -21,12 +21,10 @@ module akra.scene.objects {
 			return this._m4fCurrentOptimizedProj;
 		}
 
-		inline get type(): ELightPointTypes {
-			return ELightPointTypes.OMNI_DIRECTIONAL;
-		}
-
 		constructor (pScene: IScene3d) {
 			super(pScene);
+
+			this._eType = EEntityTypes.LIGHT_OMNI_DIRECTIONAL;
 		}
 
 		create(isShadowCaster: bool = true): bool {

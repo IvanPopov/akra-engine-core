@@ -7,6 +7,7 @@
 #include "IViewport.ts"
 #include "../SceneObject.ts"
 #include "geometry/Frustum.ts"
+#include "util/ObjectArray.ts"
 
 module akra.scene.objects {
 	export enum ECameraFlags {
@@ -21,15 +22,15 @@ module akra.scene.objects {
 		list: IDisplayList;
 		camera: ICamera;
 
-		private _pPrevResult: ISceneObject[] = null;
+		private _pPrevResult: IObjectArray = null;
 
 		constructor (pList: IDisplayList, pCamera: ICamera) {
 			this.list = pList;
 			this.camera = pCamera;
 		}
 
-		inline findObjects(bQuickSearch: bool = false): ISceneObject[] {
-			var pResult: ISceneObject[] = this.list._findObjects(this.camera, 
+		inline findObjects(bQuickSearch: bool = false): IObjectArray {
+			var pResult: IObjectArray = this.list._findObjects(this.camera, 
 					bQuickSearch && isDefAndNotNull(this._pPrevResult));
 
 			if (isNull(this._pPrevResult)) {
@@ -165,8 +166,8 @@ module akra.scene.objects {
 
 
 
-		display(iList: uint = /*DL_DEFAULT*/0): ISceneObject[] {
-			var pObjects: ISceneObject[] = this._pDLTechniques[iList].findObjects(!this.isUpdated());
+		display(iList: uint = /*DL_DEFAULT*/0): IObjectArray {
+			var pObjects: IObjectArray = this._pDLTechniques[iList].findObjects(!this.isUpdated());
 
 			return pObjects;
 		}

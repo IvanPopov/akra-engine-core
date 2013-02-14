@@ -454,7 +454,7 @@ module akra.scene {
 		 * Test rect and frustum
 		 */
 		
-		buildSearchResults(pSearchRect: IRect3d, pOptionalFrustum?: IFrustum): IObjectArray{
+		_buildSearchResults(pSearchRect: IRect3d, pOptionalFrustum?: IFrustum): IObjectArray{
 			var pResult: IObjectArray = new util.ObjectArray();
 			if(arguments.length === 1){
 				this._buildSearchResultsByRect(pSearchRect, this._pHead, pResult);
@@ -558,6 +558,13 @@ module akra.scene {
 			}
 		};
 
+		_findObjects(pCamera: ICamera, bFastSearch: bool = false): IObjectArray{
+			//while we ignore second parametr
+			//don't have normal implementation
+			
+			return this._buildSearchResults(pCamera.searchRect, pCamera.frustum);
+		}
+
 		protected attachObject(pObject: ISceneObject): void {
 			var pNode: IOcTreeNode = this.findTreeNode(pObject);
 			// console.log(pNode);
@@ -569,7 +576,7 @@ module akra.scene {
 			pNode.removeMember(pObject);
 		};
 
-		toSimpleObject(pNode?: IOcTreeNode = this._pHead): any{
+		_toSimpleObject(pNode?: IOcTreeNode = this._pHead): any{
 			
 			var pResult: any = {};
 			pResult.members = [];
@@ -594,7 +601,7 @@ module akra.scene {
 				var pChildNode: IOcTreeNode = pList.first;
 
 				while(isDefAndNotNull(pChildNode)){
-					pResult.childrens[i].push(this.toSimpleObject(pChildNode));
+					pResult.childrens[i].push(this._toSimpleObject(pChildNode));
 					pChildNode = pList.next();
 				}
 			}

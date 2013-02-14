@@ -22,12 +22,9 @@ module akra.scene.objects {
 			return this._m4fCurrentOptimizedProj;
 		}
 
-		inline get type(): ELightPointTypes {
-			return ELightPointTypes.PROJECT;
-		}
-
 		constructor (pScene: IScene3d) {
 			super(pScene);
+			this._eType = EEntityTypes.LIGHT_PROJECT;
 		}
 
 		create(isShadowCaster: bool = true): bool {

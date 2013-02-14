@@ -12,11 +12,6 @@ module akra {
 	    attenuation: IVec3;
 	}
 
-	export enum ELightPointTypes {
-		PROJECT = 86,
-		OMNI_DIRECTIONAL
-	}
-
 	export interface ILightPoint extends ISceneObject {
 		params: ILightParameters;
 
