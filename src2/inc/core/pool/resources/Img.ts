@@ -12,7 +12,8 @@ module akra.core.pool.resources {
 		protected _iDepth:        uint          = 0;
 
 		protected _nMipMaps:      uint          = 0;
-		protected _iFlags:        int           = 0;
+		protected _iFlags:        uint          = 0;
+        protected _iCubeFlags:    uint          = 0;
 
 		protected _eFormat:       EPixelFormats = EPixelFormats.UNKNOWN;
 
@@ -34,13 +35,20 @@ module akra.core.pool.resources {
     		return this._iDepth;
     	}
 
-    	inline get numFaces(): uint {
-    		if (this.hasFlag(EImageFlags.CUBEMAP)) {
-    			return 6;
-    		}
-
-    		return 1;
-    	}
+    	inline get numFace():uint{
+            if (this._iFlags&CUBEMAP){
+                var nFace:uint=0;
+                for(var i:uint=0;i<32;i++)
+                {
+                    nFace++;
+                }
+                return nFace;
+            }
+            else
+            {
+                return 1;
+            }
+        }
 
     	inline get numMipMaps(): uint {
     		return this._nMipMaps;
@@ -229,7 +237,8 @@ module akra.core.pool.resources {
                 this._iHeight=pImageData.height;
                 this._iDepth=pImageData.depth;
                 this._nMipMaps=pImageData.numMipMaps;
-                this._iFlags=pImageData.getFlags();
+                this._iFlags=pImageData.flags;
+                this._iCubeFlags=pImageData.cubeFlags;
 
                 this._eFormat=pImageData.format;
                 this._pBuffer=pImageData.first.getPtr()
@@ -385,9 +394,9 @@ module akra.core.pool.resources {
             for(iMip=0; iMip<=nMipMaps; iMip++)
             {
                 iSize += PixelUtil.getMemorySize(iWidth, iHeight, iDepth, EPixelFormats)*nFaces; 
-                if(iWidth!=1) iWidth /= 2;
-                if(iHeight!=1) iHeight /= 2;
-                if(iDepth!=1) iDepth /= 2;
+                if(iWidth!=1) iWidth = Math.floor(iWidth/2);
+                if(iHeight!=1) iHeight = Math.floor(iHeight/2);
+                if(iDepth!=1) iDepth = Math.floor(iDepth/2);
             }
             return iSize;
         }

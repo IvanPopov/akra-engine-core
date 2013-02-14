@@ -10,6 +10,18 @@
 
 #define DDS_MAGIC 0x20534444
 
+
+//  DDS_header.dwFlags
+#define DDSD_CAPS 0x00000001
+#define DDSD_HEIGHT 0x00000002
+#define DDSD_WIDTH 0x00000004
+#define DDSD_PITCH 0x00000008
+#define DDSD_PIXELFORMAT 0x00001000
+#define DDSD_MIPMAPCOUNT 0x00020000
+#define DDSD_LINEARSIZE 0x00080000
+#define DDSD_DEPTH 0x00800000
+
+
 //  DDS_header.ddspf.dwFlags
 #define DDPF_ALPHAPIXELS 0x00000001
 #define DDPF_ALPHA 0x00000002
@@ -69,7 +81,37 @@
 
 module akra 
 {
+
+	interface IDDSPixelFormat{
+		ddspf.dwSize :uint;
+        ddspf.dwFlags :uint;
+        ddspf.dwFourCC :uint;
+        ddspf.dwRGBBitCount :uint;
+        ddspf.dwRBitMask :uint;
+        ddspf.dwGBitMask :uint;
+        ddspf.dwBBitMask :uint;
+        ddspf.dwABitMask :uint;
+	}
 	
+	interface IDDSHeader{
+		dwSize: uint;
+        dwFlags: uint;
+        dwHeight: uint;
+        dwWidth: uint;
+        dwPitchOrLinearSize: uint;
+        dwDepth: uint;
+        dwMipMapCount: uint;
+        dwReserved1: uint[11];
+
+        ddspf:IDDSPixelFormat;   
+
+        dwCaps : uint;
+        dwCaps2 : uint;
+        dwCaps3 : uint;
+        dwCaps4 : uint;
+        dwReserved2 : uint;
+	}
+
 	export class DDSCodec implements IDDSCodec
 	{
 		private _sType:String="dds";
@@ -138,7 +180,9 @@ module akra
              } DDS_HEADER;*/
 
     		var pDDSHeader:Uint32Array = new Uint32Array(pData, 4, 31);
-    		var pHeader:Object = {};
+
+    		var pHeader:IDDSHeader;
+
     		pHeader.dwSize = pDDSHeader[0];
             pHeader.dwFlags = pDDSHeader[1];
             pHeader.dwHeight = pDDSHeader[2];
@@ -146,7 +190,6 @@ module akra
             pHeader.dwPitchOrLinearSize = pDDSHeader[4];
             pHeader.dwDepth = pDDSHeader[5];
             pHeader.dwMipMapCount = pDDSHeader[6];
-            pHeader.dwReserved1 = [];
             pHeader.dwReserved1[0] = pDDSHeader[7];
             pHeader.dwReserved1[1] = pDDSHeader[8];
             pHeader.dwReserved1[2] = pDDSHeader[9];
@@ -158,7 +201,6 @@ module akra
             pHeader.dwReserved1[8] = pDDSHeader[15];
             pHeader.dwReserved1[9] = pDDSHeader[16];
             pHeader.dwReserved1[10] = pDDSHeader[17];
-            pHeader.ddspf = {};
             /*struct DDS_PIXELFORMAT {
              DWORD dwSize;
              DWORD dwFlags;
@@ -366,14 +408,12 @@ module akra
 			}
 			else
 			{
-				if (header.dwFlags & DDS_HEADER_FLAGS_LINEARSIZE) {
-                debug_error("У несжатой текстуры выставлен флаг DDS_HEADER_FLAGS_LINEARSIZE в заголовке");
+				if (pHeader.dwFlags & DDS_HEADER_FLAGS_LINEARSIZE) {
+                	CRITICAL_ERROR("У несжатой текстуры выставлен флаг DDS_HEADER_FLAGS_LINEARSIZE в заголовке");
             	}
 			}
 
 			imgData.format = eSourceFormat;
-			imgData.size= Img.calculateSize(pImgData.numMipMaps, nFaces, pImgData.width, 
-				pImgData.height, pImgData.depth, pImgData.format);
 			var pOutput:Uint8Array=new Uint8Array(imgData.size)
 			var iOutputOffset:uint=0;
 
@@ -396,20 +436,59 @@ module akra
 
 						}
 						iOffset+=iDXTSize;
+						iOutputOffset+=iDXTSize;
 
 					}
 					else
 					{
 						iDstPitch=iWidth*PixelUtil.getNumElemBytes(imgData.format);
-						var iSrcPitch:uint=iDstPitch;
-						//разобраться с выравниванием
+						var iSrcPitch:uint=0;
+						if (pHeader.dwFlags & DDSD_PITCH)
+						{
+							iSrcPitch = pHeader.dwPitchOrLinearSize / Math.max(1, iMip * 2);
+						}
+						else
+						{
+							// assume same as final pitch
+							iSrcPitch = iDstPitch;
+						}
+						if (iSrcPitch<iDstPitch)
+						{
+							WARNING(,"Странный размер питча у картинки")
+						}
+												
+						for (var z:uint = 0; z < pImgData.depth; z++)
+						{
+							for (var y:uint = 0; y < pImgData.height; y++)
+							{
+								
+								for(var a:uint=0;a<iDstPitch;a++)
+								{
+									pOutput[a+iOutputOffset]=pData[iOffset+a];
+								}
+								iOutputOffset = iOutputOffset + iDstPitch;
+								iOffset=iOffset+iSrcPitch;
+							}
+						}
 
 					}
+					if(iWidth!=1)
+					{
+						iWidth=Math.floor(iWidth/2);
+					}
+					if(iHeight!=1)
+					{
+						iHeight=Math.floor(iHeight/2);
+					}
+					if(iDepth!=1)
+					{
+						iDepth=Math.floor(iDepth/2);
+					}
 				}
-
 			}
-
+			return pOutput;
 		}
+
 
 
 	}

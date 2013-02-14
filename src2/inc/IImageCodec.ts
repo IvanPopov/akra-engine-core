@@ -23,6 +23,7 @@ module akra {
 		cubeFlags:uint;
 
 		format: ePixelFormat;
+		numFace: uint;
 
 	}
 }

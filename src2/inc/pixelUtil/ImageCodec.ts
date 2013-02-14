@@ -17,28 +17,17 @@ module akra {
 
 	export interface ImageData implements IImageData{
 		
-        protected _iHeight:uint;
-		protected _iWidth:uint;
-		protected _iDepth:uint;
-		protected _iSize:uint;
+        protected _iHeight:uint=0;
+		protected _iWidth:uint=0;
+		protected _iDepth:uint=1;
+		protected _iSize:uint=0;
         protected _iCubeFlags:uint;
 
-		protected _nNumMipMaps:uint;
-		protected _iFlags:uint;
+		protected _nNumMipMaps:uint=0;
+		protected _iFlags:uint=0;
 
-		protected _eFormat: EPixelFormat;
+		protected _eFormat: EPixelFormat=UNKNOWN;
 
-
-        constructor ()
-        {
-            this.height=0;
-            this.width=0;
-            this.depth=1;
-            this.size=0;
-            this.numMipMaps=0;
-            this.flags=0;
-            this.format=UNKNOWN;
-        }
 
 		inline get width(): uint {
 			return this._iWidth;
@@ -64,11 +53,8 @@ module akra {
 
 
     	inline get size(): uint {
-    		return this._iSize;
-    	}
-    	inline set size(iSize:uint): {
-    		this._iSize=iSize;
-    	}
+    		return = Img.calculateSize(this.numMipMaps, this.numFace, this.width, 
+                this.height, this.depth, this.format);
 
     	inline get numMipMaps(): uint 
     	{
@@ -103,6 +89,21 @@ module akra {
             this._iCubeFlags=iFlags;
         }
 
+        inline get numFace():uint{
+            if (this._iFlags&CUBEMAP)
+            {
+                var nFace:uint=0;
+                for(var i:uint=0;i<32;i++)
+                {
+                    nFace++;
+                }
+                return nFace;
+            }
+            else
+            {
+                return 1;
+            }
+        }
         dataType():string:
         {
              return "ImageData"
