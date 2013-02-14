@@ -62,7 +62,7 @@ var pOptions = {
 	pathToTests: null,
 	compress: false,
 	files: [],
-	debug: false,
+	debug: true,
 	pathToTemp: null,
 	declaration: false,
 	clean: false, //clean tests data instead build

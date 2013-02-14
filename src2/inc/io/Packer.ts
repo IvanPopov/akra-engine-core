@@ -183,13 +183,13 @@ module akra.io {
 		        return true;
 		    }
 
-		    debug_assert(pProperties, "unknown object <" + sType + "> type cannot be writed");
+		    debug_assert(isDefAndNotNull(pProperties), "unknown object <" + sType + "> type cannot be writed");
 
 		    pBaseClasses = pProperties.base;
 
 		    if (isDefAndNotNull(pBaseClasses)) {
 		        for (var i = 0; i < pBaseClasses.length; ++ i) {
-		            debug_assert(pBlackList[pBaseClasses[i]] === undefined, 
+		            debug_assert(!isDef(pBlackList[pBaseClasses[i]]), 
 		                "you cannot add to black list your parent classes");
 		            this.writeData(pObject, pBaseClasses[i]);
 		        }
@@ -259,6 +259,7 @@ module akra.io {
 		    if (!this.isInBlacklist(sType)) {    
 		        pProperties = pTemplate.properties(sType);
 		        iType = pTemplate.getTypeId(sType);
+		        LOG(iType, sType);
 		    }
 		    else {
 		        pObject = null;

@@ -186,6 +186,7 @@ module akra.io {
 
 		"Object": {
 			write: function (object: any) {
+
 				if (isArray(object)) {
 					this.bool(true); 	//is array
 					this.uint32((<any[]>object).length);
@@ -195,6 +196,7 @@ module akra.io {
 					}
 				}
 				else {
+
 					this.bool(false); 	//is not array
 					this.stringArray(Object.keys(object));
 
@@ -249,6 +251,10 @@ module akra.io {
 				return new Function(this.stringArray(), this.string());
 			}
 		},
+		"Number": "Float32",
+		"Float"	: "Float32",
+		"Int"	: "Int32",
+		"Uint"	: "Uint32",
 		"Array"	: "Object"
 	});
 }
