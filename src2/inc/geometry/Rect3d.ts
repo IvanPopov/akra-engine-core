@@ -7,6 +7,8 @@
 #include "Rect2d.ts"
 #include "IRect3d.ts"
 
+#define rect3d() Rect3d.stackCeil
+
 module akra.geometry {
     export class Rect3d implements IRect3d{
     	x0: float;
@@ -799,6 +801,8 @@ module akra.geometry {
 			return "(" + this.x0 + ", " + this.y0 + ", " + this.z0 + ") --> (" + 
 					this.x1 + ", " + this.y1 + ", " + this.z1 +")";
 		};
+
+		ALLOCATE_STORAGE(Rect3d, 128);
     }
 }
 

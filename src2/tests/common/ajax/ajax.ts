@@ -1,11 +1,9 @@
-"use strict";
-
-#include "util/test/testutils.ts"
+#include "util/testutils.ts"
 #include "io/ajax.ts"
 
-module akra.utils.test {
+module akra {
 	
-	var test_1 = () => {
+	test("Ajax API test", () => {
 		shouldBeTrue("Sync ajax request test");
 		shouldBeTrue("Async ajax request test");
 		shouldBeTrue("Async error test");
@@ -26,11 +24,5 @@ module akra.utils.test {
 				check(true);
 			}
 		});
-	}
-
-	new Test({
-		name: "Ajax API test",
-		main: test_1,
-		description: "Test ajax api"
-		});
+	});
 }

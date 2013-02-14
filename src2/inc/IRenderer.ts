@@ -265,6 +265,8 @@ module akra {
         attachRenderTarget(pTarget: IRenderTarget): bool;
         detachRenderTarget(pTarget: IRenderTarget): bool;
         destroyRenderTarget(pTarget: IRenderTarget): void;
+
+        getActiveProgram(): IShaderProgram;
     }
 
 

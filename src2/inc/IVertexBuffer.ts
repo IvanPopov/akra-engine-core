@@ -20,6 +20,7 @@ module akra {
 
 		readonly type: EVertexBufferTypes; 
 
+		getVertexData(i: uint): IVertexData;
 		getVertexData(iOffset: uint, iCount: uint, pElements: IVertexElement[]): IVertexData;
 		getVertexData(iOffset: uint, iCount: uint, pDecl: IVertexDeclaration): IVertexData;
 		

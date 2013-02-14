@@ -19,6 +19,8 @@ module akra.scene {
 		protected _pWorldBounds: IRect3d = new geometry.Rect3d();
 		protected _hasShadows: bool = false;
 
+		inline get totalRenderable(): uint { return 0; }
+
 		inline get worldBounds(): IRect3d {
 			return this._pWorldBounds;
 		}
@@ -38,7 +40,7 @@ module akra.scene {
 			this.type = EEntityTypes.SCENE_OBJECT;
 		}
 
-		inline getRenderable(): IRenderableObject {
+		inline getRenderable(i?: uint): IRenderableObject {
 			return null;
 		}
 
@@ -100,12 +102,6 @@ module akra.scene {
 		    return false;
 		}
 
-		prepareForRender(): void {}
-
-    	render(): void {
-    		super.render();
-    	}
-
     	hasShadows(): bool {
     		return this._hasShadows;
     	}
@@ -118,17 +114,25 @@ module akra.scene {
     		return this._iObjectFlags;
     	}
 
-    	toString(isRecursive: bool = true, iDepth: uint = 0): string {
+    	toString(isRecursive: bool = false, iDepth: uint = 0): string {
+#ifdef DEBUG
 			if (!isRecursive) {
 		        return "<scene_object" + (this._sName ? " " + this._sName : "") + ">";
 		    }
 
 		    return super.toString(isRecursive, iDepth);
+#else
+			return null;
+#endif
     	}
 
 		BEGIN_EVENT_TABLE(SceneObject);
 			UNICAST(worldBoundsUpdated, VOID);
 		END_EVENT_TABLE();
+	}
+
+	export inline function isSceneObject(pEntity: IEntity): bool {
+		return pEntity.type >= EEntityTypes.SCENE_OBJECT && pEntity.type < EEntityTypes.OBJECTS_LIMIT;
 	}
 }
 

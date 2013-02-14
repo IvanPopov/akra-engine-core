@@ -13,7 +13,7 @@ module akra {
 		JOINT,
 
 		SCENE_NODE,
-		SCENE_OBJECT,
+		SCENE_OBJECT = 64,
 
 		MODEL,
 		TERRAIN_SECTION,
@@ -22,7 +22,7 @@ module akra {
 		CAMERA,
 		EMITTER,
 
-		TOTAL
+		OBJECTS_LIMIT = 128
 	}
 
 	export interface IEntity extends IEventProvider, IReferenceCounter {
@@ -60,9 +60,9 @@ module akra {
 		isInFamily(pEntity: IEntity, bSearchEntireTree?: bool): bool;
 
 		//обновлен ли сам узел
-		// isUpdated(): bool;
+		isUpdated(): bool;
 		//есть ли обновления среди потомков?
-		// hasUpdatedSubNodes(): bool;
+		hasUpdatedSubNodes(): bool;
 
 
 		addSibling(pSibling: IEntity): IEntity;

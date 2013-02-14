@@ -5,18 +5,19 @@
 #include "model/Skeleton.ts"
 #include "animation/AnimationFrame.ts"
 #include "IScene.ts"
-#include "INode.ts"
+#include "ISceneNode.ts"
 #include "IMat4.ts"
 
 
 module akra.animation {
-	export class AnimationTrack implements IAnimationTrack{
-		private _sTarget: string;
-		private _pTarget: INode = null;
+	class AnimationTrack implements IAnimationTrack {
+		private _sTarget: string = null;
+		private _pTarget: ISceneNode = null;
 		private _pKeyFrames: IAnimationFrame[] = [];
 		private _eInterpolationType: EAnimationInterpolations = EAnimationInterpolations.MATRIX_LINEAR;
 
-		inline get target(): INode{
+
+		inline get target(): ISceneNode{
 			return this._pTarget;
 		}
 
@@ -30,6 +31,10 @@ module akra.animation {
 
 		inline get duration(): float{
 			return this._pKeyFrames.last.fTime;
+		}
+
+		constructor (sTarget: string = null) {
+			this._sTarget = sTarget;
 		}
 
 		keyFrame(fTime: float, pMatrix: IMat4): bool {
@@ -82,10 +87,10 @@ module akra.animation {
 
 		bind(sJoint: string, pSkeleton: ISkeleton): bool;
 		bind(pSkeleton: ISkeleton): bool;
-		bind(pNode: INode): bool;
+		bind(pNode: ISceneNode): bool;
 		bind(pJoint: any, pSkeleton?: any): bool {
-			var pNode: INode = null,
-				pRootNode: INode;
+			var pNode: ISceneNode = null,
+				pRootNode: ISceneNode;
 	
 			var sJoint: string;
 
@@ -99,7 +104,7 @@ module akra.animation {
 					break;
 				default:
 					//bind by <Skeleton skeleton>
-					if (arguments[0] instanceof model.Skeleton) {
+					if (!isDef(arguments[0].type)) {
 						
 						if (this._sTarget == null) {
 							return false;
@@ -109,9 +114,9 @@ module akra.animation {
 						pNode = (<ISkeleton>pSkeleton).findJoint(this._sTarget);
 					}
 					//bind by <Node node>
-					else if (arguments[0] instanceof scene.Node) {
-						pRootNode = <INode>arguments[0];
-						pNode = <INode>pRootNode.findEntity(this.targetName);
+					else {
+						pRootNode = <ISceneNode>arguments[0];
+						pNode = <ISceneNode>pRootNode.findEntity(this.targetName);
 					}
 			}
 			
@@ -162,7 +167,11 @@ module akra.animation {
 
 			return pFrame;
 		}
-	} 
+	}
+
+	export function createTrack(sName: string = null): IAnimationTrack {
+		return new AnimationTrack(sName);
+	}
 }
 
 #endif

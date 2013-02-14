@@ -3,9 +3,12 @@
 
 #include "IScene.ts"
 
+#define DL_DEFAULT 0
+#define DL_LIGHTING 1
+
 module akra {
 	IFACE(ISceneNode);
-	IFACE(IModel);
+	IFACE(ISceneModel);
 	IFACE(ILightPoint);
 	IFACE(ISprite);
 	IFACE(IJoint);
@@ -15,6 +18,8 @@ module akra {
 
 
 	export interface IScene3d extends IScene {
+		totalDL: uint;
+
 		getRootNode(): ISceneNode;
 
 		recursivePreUpdate(): void;
@@ -24,22 +29,24 @@ module akra {
 
 		isUpdated(): bool;
 
-		createSceneNode(sName?: string): ISceneNode;
-		createSceneModel(): IModel;
-		createCamera(): ICamera;
-		createLightPoint(): ILightPoint;
-		createSprite(): ISprite;
-		createJoint(): IJoint;
-		createText3d(): IText3d;
+		createNode(sName?: string): ISceneNode;
+		createModel(sName?: string): ISceneModel;
+		createCamera(sName?: string): ICamera;
+		createLightPoint(sName?: string): ILightPoint;
+		createSprite(sName?: string): ISprite;
+		createJoint(sName?: string): IJoint;
+		createText3d(sName?: string): IText3d;
 
-		getDisplayList(csName?: string): IDisplayList;
-		addDisplayList(pList: IDisplayList, csName?: string): void;
-		delDisplayList(csName: string): bool;
+		getDisplayList(index: uint): IDisplayList;
+		getDisplayListByName(csName: string): int;
+		addDisplayList(pList: IDisplayList): int;
+		delDisplayList(index: uint): bool;
+		
+		signal nodeAttachment(pNode: ISceneNode): void;
+		signal nodeDetachment(pNode: ISceneNode): void;
 
-		_findObjects(pCamera: ICamera, csList?: string): ISceneObject[];
-
-		signal nodeAttachment(pNode: ISceneNode);
-		signal nodeDetachment(pNode: ISceneNode);
+		signal displayListAdded(pList: IDisplayList, index: uint): void;
+		signal displayListRemoved(pList: IDisplayList, index: uint): void;
 
 		_render(pCamera: ICamera, pViewport: IViewport): void;
 	}

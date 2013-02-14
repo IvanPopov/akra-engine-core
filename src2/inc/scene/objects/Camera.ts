@@ -17,6 +17,28 @@ module akra.scene.objects {
 		[displayList: string]: ISceneObject[];
 	};
 
+	export class DLTechnique {
+		list: IDisplayList;
+		camera: ICamera;
+
+		private _pPrevResult: ISceneObject[] = null;
+
+		constructor (pList: IDisplayList, pCamera: ICamera) {
+			this.list = pList;
+			this.camera = pCamera;
+		}
+
+		inline findObjects(bQuickSearch: bool = false): ISceneObject[] {
+			var pResult: ISceneObject[] = this.list._findObjects(this.camera, 
+					bQuickSearch && isDefAndNotNull(this._pPrevResult));
+
+			if (isNull(this._pPrevResult)) {
+				this._pPrevResult = pResult;
+			}
+			
+			return this._pPrevResult;
+		}
+	}
 
 	export class Camera extends SceneObject implements ICamera {
 		/** camera type */
@@ -61,7 +83,7 @@ module akra.scene.objects {
 
 		protected _pLastViewport: IViewport = null;
 
-		protected _pCache: ICameraCache[] = [<ICameraCache>{}, <ICameraCache>{}]; 
+		protected _pDLTechniques: DLTechnique[] = [];
 
 
 		// protected _pPrevObjects: ISceneNode[] = null;
@@ -114,10 +136,17 @@ module akra.scene.objects {
 				this.setProjParams(this._fFOV, this._fAspect, this._fNearPlane, this._fFarPlane);
 				this.recalcMatrices();
 
-				//register default display list
-				//if default display list not founded
-				if (isNull(this._pScene.getDisplayList())) {
-					//this._pScene.addDisplayList();
+				var pScene: IScene3d = this._pScene;
+
+				this.connect(pScene, SIGNAL(displayListAdded), SLOT(_addDisplayList));
+				this.connect(pScene, SIGNAL(displayListRemoved), SLOT(_removeDisplayList));
+
+				for (var i: uint = 0; i < pScene.totalDL; ++ i) {
+					var pList: IDisplayList = pScene.getDisplayList(i);
+					
+					if (!isNull(pList)) {
+						this._addDisplayList(pScene, pList, i);
+					}
 				}
 			}
 
@@ -127,30 +156,21 @@ module akra.scene.objects {
 		prepareForUpdate(): void {
 			super.prepareForUpdate();
 
-			this.swapCache();
-			this.clearCache();
+			//reset culling cache for all display lists
+			// for (var i: int = 0; i < this._pDLTechniques.length; ++ i) {
+			// 	if (this._pDLTechniques[i] != null) {
+			// 		this._pDLTechniques.reset();
+			// 	}
+			// }
 		}
 
-		inline private clearCache(): void {
-			for (var i in this._pCache[0]) {
-				this._pCache[0][i] = null;
-			}
-		}
 
-		inline private swapCache(): void {
-			//храним результаты текущего и предыдущего кадров.
-			this._pCache.swap(0, 1);
-		}
 
-		display(csList: string = null): ISceneObject[] {
-			var iCacheNode: int = this.scene.isUpdated()? 0: 1;
-			var pResult: ISceneObject[] = this._pCache[iCacheNode][csList];
 
-			if (!isDefAndNotNull(pResult)) {
-				pResult = this._pCache[iCacheNode][csList] = this._pScene._findObjects(this, csList);
-			}
+		display(iList: uint = /*DL_DEFAULT*/0): ISceneObject[] {
+			var pObjects: ISceneObject[] = this._pDLTechniques[iList].findObjects(!this.isUpdated());
 
-			return pResult;
+			return pObjects;
 		}
 
 		setParameter(eParam: ECameraParameters, pValue: any): void {
@@ -713,6 +733,16 @@ module akra.scene.objects {
 
 		    return super.toString(isRecursive, iDepth);
     	}
+
+    	_addDisplayList(pScene: IScene3d, pList: IDisplayList, index: uint): void {
+    		this._pDLTechniques[index] = new DLTechnique(pList, this);
+    	}
+
+    	_removeDisplayList(pScene: IScene3d, pList: IDisplayList, index: uint): void {
+    		this._pDLTechniques[index] = null;
+    	}
+
+
 
     	BEGIN_EVENT_TABLE(Camera);
     		BROADCAST(preRenderScene, VOID);

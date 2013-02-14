@@ -1,5 +1,5 @@
 #ifndef FRUSTUM_TS
-#define FRUSUTM_TS
+#define FRUSTUM_TS
 
 #include "../math/Mat4.ts"
 #include "../math/Vec3.ts"

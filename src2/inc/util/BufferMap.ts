@@ -5,13 +5,19 @@
 #include "IVertexBuffer.ts"
 #include "IEngine.ts"
 #include "core/pool/ReferenceCounter.ts"
+#include "webgl/webgl.ts"
+#include "data/IndexData.ts"
+#include "IVertexDeclaration.ts"
 
-module akra.model {
+module akra.util {
+	export interface IBuffersCompatibleMap {
+		[handle: int]: IVertexData;
+	}
 
-	export class BufferMap implements IBufferMap extends ReferenceCounter{
+	class BufferMap implements IBufferMap extends ReferenceCounter{
 		private _pFlows: IDataFlow[] = null;
-		private _pMappers = null;
-		private _pIndex = null;
+		private _pMappers: IDataMapper[] = null;
+		private _pIndex: IIndexData = null;
 		private _nLength: uint = 0;
 		private _ePrimitiveType: EPrimitiveTypes;
 		private _pCompleteFlows: IDataFlow[] = null;
@@ -21,7 +27,7 @@ module akra.model {
 		private _nUsedFlows: uint = 0;
 		private _pEngine: IEngine = null;
 		private _nStartIndex: uint = 0;
-		private _pBuffersCompatibleMap = null;
+		private _pBuffersCompatibleMap: IBuffersCompatibleMap = null;
 
 		constructor(pEngine: IEngine){
 			super();
@@ -37,16 +43,8 @@ module akra.model {
 			this._ePrimitiveType = eType;
 		}
 
-		inline get primCount(): uint{
-			switch (this._ePrimitiveType) {
-	            case EPrimitiveTypes.TRIANGLELIST:
-	                return this.length / 3.;
-	            case EPrimitiveTypes.POINTLIST:
-	                return this.length;
-	            case EPrimitiveTypes.TRIANGLESTRIP:
-	        }
-
-	        return undefined;
+		inline get primCount(): uint {
+			return data.IndexData.getPrimitiveCount(this._ePrimitiveType, this.length);
 		}
 
 		inline get index(): IIndexData {
@@ -57,7 +55,7 @@ module akra.model {
 			if (this._pIndex === pIndexData) {
 	            return;
 	        }
-	        this.draw = this.drawElements = pIndexData.drawElements;
+
 	        this._pIndex = pIndexData;
 	        this.update();
 		}
@@ -67,11 +65,15 @@ module akra.model {
 		}
 
 		inline get length(): uint {
-			return (this._pIndex? this._pIndex.getCount(): this._nLength);
+			return (this._pIndex? this._pIndex.getPrimitiveCount(): this._nLength);
 		}
 
 		inline set length(nLength: uint) {
 			this._nLength = Math.min(this._nLength, nLength);
+		}
+
+		inline set _length(nLength: uint) {
+			this._nLength = nLength;
 		}
 
 		inline get startIndex(): uint {
@@ -91,21 +93,43 @@ module akra.model {
 		}
 
 		inline get offset(): uint {
-			return (this._pIndex? this._pIndex.getOffset(): 0);
+			return (this._pIndex? this._pIndex.byteOffset: 0);
 		}
 
-		draw() {
-
+		_draw(): void {
+			this._pEngine.getRenderer().getActiveProgram().applyBufferMap(this);
+			isNull(this._pIndex)? this.drawArrays(): this.drawElements();
 		}
 
-		drawElements() {
-
+		private inline drawArrays(): void {
+#ifdef WEBGL
+			(<IWebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawArrays(
+				webgl.getWebGLPrimitiveType(this._ePrimitiveType), 
+				this._nStartIndex, 
+				this._nLength);
+#else
+		CRITICAL("BufferMap::drawElements() unsupported for unknown API.");			
+#endif
 		}
 
-		getFlow(iFlow: int, bComplete?: bool): IDataFlow {
-			bComplete = bComplete || true;
+		private inline drawElements(): void {
+#ifdef WEBGL
+			(<IWebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawElements(
+				this.primCount, 
+				this._pIndex.getPrimitiveCount(), 
+				webgl.getWebGLPrimitiveType(this._ePrimitiveType), 
+				this._pIndex.byteOffset / 4); 
+			//FIXME: offset of drawElement() in Glintptr = long long = 32 byte???
+#else
+		CRITICAL("BufferMap::drawElements() unsupported for unknown API.");			
+#endif
+		}
 
-		    if (typeof arguments[0] === 'string') {
+		getFlow(sSemantics: string, bComplete: bool = true): IDataFlow;
+		getFlow(iFlow: int, bComplete: bool = true): IDataFlow;
+		getFlow(iFlow: any, bComplete: bool = true): IDataFlow {
+
+		    if (isString(arguments[0])) {
 		        var nTotal: int; 
 		        var pFlows: IDataFlow[];
 		        
@@ -143,15 +167,16 @@ module akra.model {
 
 		    return this._pFlows[iFlow];
 		}
+
 		reset(): void {
 			this._pIndex = null
 		    this._ePrimitiveType = EPrimitiveTypes.TRIANGLELIST;
 
 
-		    var nFlowLimit = Math.min(
-		        16,//a.info.graphics.maxVertexTextureImageUnits(pDevice),
-		        info.graphics.maxVertexAttributes
-		    );
+		    var nFlowLimit: uint = 16;
+#ifdef WEBGL
+			nFlowLimit = Math.min(16/*webgl.maxVertexTextureImageUnits*/, webgl.maxVertexAttributes);
+#endif
 
 		    this._pMappers = [];
 		    this._pFlows = new Array(nFlowLimit);
@@ -168,20 +193,21 @@ module akra.model {
 		    this._pCompleteFlows = new Array(nFlowLimit);
 		    this._nCompleteFlows = 0;
 		    this._nStartIndex = MAX_INT32;
-		    this._pBuffersCompatibleMap = {};
+		    this._pBuffersCompatibleMap = <IBuffersCompatibleMap>{};
 
 		    this._pCompleteVideoBuffers = new Array(nFlowLimit);
 		    this._nCompleteVideoBuffers = 0;
 		    this._nUsedFlows = 0;
-
-		    this.draw = this.drawArrays;
 		}
 
-		flow(iFlow: uint, pVertexData: IVertexData): int {
+		flow(pVertexData: IVertexData): int;
+		flow(iFlow: uint, pVertexData: IVertexData): int;
+		flow(iFlow, pData?): int {
 			var pFlow: IDataFlow;
+			var pVertexData: IVertexData;
 
 		    if (arguments.length < 2) {
-		        pVertexData = arguments[0];
+		        pVertexData = <IVertexData>arguments[0];
 		        iFlow = (this._nUsedFlows ++);
 		    }
 		    // trace(iFlow, '<<==', pVertexData.getVertexDeclaration().toString());
@@ -197,12 +223,12 @@ module akra.model {
 
 		    if (pVertexData.buffer instanceof core.pool.resources.VertexBuffer) {
 		        pFlow.type = EDataFlowTypes.UNMAPPABLE;
-		        this.length = pVertexData.getCount();
+		        this.length = pVertexData.length;
 		        //this.startIndex = pVertexData.getStartIndex();
 		        debug_assert(this.checkData(pVertexData),
 		            'You can use several unmappable data flows from one buffer.');
 
-		        this._pushEtalon(pVertexData);
+		        this.pushEtalon(pVertexData);
 		    }
 		    else {
 		        pFlow.type = EDataFlowTypes.MAPPABLE;
@@ -214,8 +240,8 @@ module akra.model {
 		}
 
 		checkData(pData: IVertexData): bool {
-			var pEtalon = this._pBuffersCompatibleMap[pData.resourceHandle()];
-		    if (!pEtalon || pEtalon.offset === pData.offset) {
+			var pEtalon = this._pBuffersCompatibleMap[pData.getBufferHandle()];
+		    if (!pEtalon || pEtalon.byteOffset === pData.byteOffset) {
 		        return true;
 		    }
 		    return false;
@@ -224,7 +250,7 @@ module akra.model {
 		protected findMapping(pMap, eSemantics, iAddition): IDataMapper {
 		    debug_assert(this.checkData(pMap), 'You can use several different maps from one buffer.');
 		    for (var i = 0, pMappers = this._pMappers, pExistsMap; i < pMappers.length; i++) {
-		        pExistsMap = pMappers[i].pData;
+		        pExistsMap = pMappers[i].data;
 		        if (pExistsMap === pMap) {
 		            //если уже заданные маппинг менял свой стартовый индекс(например при расширении)
 		            //то необходимо сменить стартовый индекс на новый
@@ -269,9 +295,9 @@ module akra.model {
 		        pMapper = {data: pMap, semantics: eSemantics, addition: iAddition};
 
 		        this._pMappers.push(pMapper);
-		        this.length = pMap.getCount();
+		        this.length = pMap.length;
 		        //this.startIndex = pMap.getStartIndex();
-		        this._pushEtalon(pMap);
+		        this.pushEtalon(pMap);
 		    }
 
 		    pFlow.mapper = pMapper;
@@ -279,8 +305,8 @@ module akra.model {
 		    return this.update();
 		}
 
-		_pushEtalon(pData: IVertexData): void {
-			this._pBuffersCompatibleMap[pData.resourceHandle()] = pData;
+		private pushEtalon(pData: IVertexData): void {
+			this._pBuffersCompatibleMap[pData.getBufferHandle()] = pData;
 		}
 
 		update(): bool {
@@ -402,28 +428,28 @@ module akra.model {
 		        var pFlow: IDataFlow = this._pCompleteFlows[i];
 		        var pMapper: IDataMapper = pFlow.mapper;
 		        var pVertexData: IVertexData = pFlow.data;
-		        var pDecl:IVertexDeclaration = pVertexData.getVertexDeclaration();
+		        var pDecl: IVertexDeclaration = pVertexData.getVertexDeclaration();
 		        //trace(pMapper); window['pMapper'] = pMapper;
 		        s += '#' + _an(pFlow.flow, 2) + ' ' + 
-		            _an('[ ' + (pDecl[0].eUsage !== a.DECLUSAGE.END? pDecl[0].eUsage: '<end>') + ' ]', 20) + 
-		            ' : ' + _an(pDecl[0].iOffset, 6, true) + ' / ' + _an(pDecl[0].iSize, 6) + 
+		            _an('[ ' + (pDecl.element(0).usage !== DeclUsages.END? pDecl.element(0).usage: '<end>') + ' ]', 20) + 
+		            ' : ' + _an(pDecl.element(0).offset, 6, true) + ' / ' + _an(pDecl.element(0).size, 6) + 
 		            ' | ' + 
-		            _an(pVertexData.resourceHandle(), 8, true) + ' / ' + _an(pVertexData.getOffset(), 8) + 
+		            _an(pVertexData.getBufferHandle(), 8, true) + ' / ' + _an(pVertexData.byteOffset, 8) + 
 		            ' : ' + 
 		            (pMapper? _an(pMapper.semantics, 15, true) + ' / ' + _an(pMapper.addition, 7) + ': ' + 
-		                _an(pMapper.data.getVertexDeclaration().element(pMapper.semantics).iOffset, 6) :
+		                _an(pMapper.data.getVertexDeclaration().findElement(pMapper.semantics).offset, 6) :
 		            _an('-----', 25) + ': ' + _an('-----', 6)) + ' |                  \n';
 		        
 
 		        for (var j = 1; j < pDecl.length; ++ j) {
 		            s += '    ' + 
-		            _an('[ ' + (pDecl[j].eUsage !== a.DECLUSAGE.END? pDecl[j].eUsage: '<end>') + ' ]', 20) + ' : ' + _an(pDecl[j].iOffset, 6, true) + ' / ' + _an(pDecl[j].iSize, 6) +  
+		            _an('[ ' + (pDecl.element(j).usage !== DeclUsages.END? pDecl.element(j).usage: '<end>') + ' ]', 20) + ' : ' + _an(pDecl[j].iOffset, 6, true) + ' / ' + _an(pDecl[j].iSize, 6) +  
 		                  ' |                     :                          :        |                  \n';
 		        }
 		        s += t;
 		    };
 		    s += '=================================================================\n';
-		    s += '      PRIMITIVE TYPE : ' + '0x' + this.primType.toString(16) + '\n';
+		    s += '      PRIMITIVE TYPE : ' + '0x' + Number(this.primType).toString(16) + '\n';
 		    s += '     PRIMITIVE COUNT : ' + this.primCount + '\n';
 		    s += '         START INDEX : ' + this.startIndex + '\n';
 		    s += '              LENGTH : ' + this.length + '\n';
@@ -432,6 +458,10 @@ module akra.model {
 
 		    return s + '\n\n';
 		}
+	}
+
+	export function createBufferMap(pEngine: IEngine): IBufferMap {
+		return new BufferMap(pEngine);
 	}
 }
 

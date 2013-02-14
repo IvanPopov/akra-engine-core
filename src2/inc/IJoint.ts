@@ -1,10 +1,12 @@
 #ifndef IJOINT_TS
 #define IJOINT_TS
 
+#include "ISceneNode.ts"
+
 module akra {
 	IFACE(IEngine);
 	
-	export interface IJoint extends INode {
+	export interface IJoint extends ISceneNode {
 		boneName: string;
 		// getEngine(): IEngine;
 		create(): bool;

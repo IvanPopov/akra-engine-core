@@ -21,29 +21,28 @@ module akra.animation {
 			return this._pActiveAnimation;
 		}
 
-		constructor(pEngine: IEngine, eOptions){
+		constructor(pEngine: IEngine, iOptions: int = 0){
 			this._pEngine = pEngine;
 
-			if (eOptions) {
-				this.setOptions(eOptions);
-			}
+			
+			this.setOptions(iOptions);
 		}
 
 		getEngine(): IEngine {
 			return this._pEngine;
 		}
 
-		setOptions(eOptions): void {
+		setOptions(iOptions: int): void {
 
 		}
 
 		addAnimation(pAnimation: IAnimationBase): bool {
 			if (this.findAnimation(pAnimation.name)) {
-				warning('Animation with name <' + pAnimation.name + '> already exists in this controller');
+				WARNING("Animation with name <" + pAnimation.name + "> already exists in this controller");
 				return false;
 			}
 
-			//trace('animation controller :: add animation >> ', pAnimation.name);
+			//LOG('animation controller :: add animation >> ', pAnimation.name);
 			
 			this._pAnimations.push(pAnimation);
 			this._pActiveAnimation = pAnimation;
@@ -56,7 +55,7 @@ module akra.animation {
 			for (var i = 0; i < pAnimations.length; ++ i) { 
 				if (pAnimations[i] === pAnimation) {
 					pAnimations.splice(i, 1);
-					trace('animation controller :: remove animation >> ', pAnimation.name);
+					LOG("animation controller :: remove animation >> ", pAnimation.name);
 					return true;
 				}
 			}
@@ -72,7 +71,7 @@ module akra.animation {
 		    var iAnimation: int;
 		    var sAnimation: string;
 
-			if (typeof arguments[0] === 'string') {
+			if (isString(arguments[0])) {
 				sAnimation = arguments[0];
 
 				for (var i = 0; i < pAnimations.length; ++ i) { 
@@ -102,7 +101,7 @@ module akra.animation {
 			this._pAnimations[iAnimation] = pAnimation;
 		}
 
-		bind(pTarget: INode): void {
+		bind(pTarget: ISceneNode): void {
 			var pAnimations: IAnimationBase[] = this._pAnimations;
 
 		    for (var i: int = 0; i < pAnimations.length; ++ i) {
@@ -118,7 +117,7 @@ module akra.animation {
 				if (this._fnPlayAnimation) {
 					this._fnPlayAnimation(pAnimationNext);
 				}
-				//trace('controller::play(', pAnimationNext.name, ')', pAnimationNext);
+				//LOG('controller::play(', pAnimationNext.name, ')', pAnimationNext);
 				if (pAnimationPrev) {
 					pAnimationPrev.stop(fRealTime);
 				}
@@ -139,6 +138,11 @@ module akra.animation {
 			}
 		}
 	} 
+
+
+	export function createController(pEngine: IEngine, iOptions: int): IAnimationController {
+		return new AnimationController(pEngine, iOptions);
+	}
 }
 
 #endif

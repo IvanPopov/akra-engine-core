@@ -2,7 +2,7 @@
 #define IANIMATION_TS
 
 module akra {
-	IFACE(INode);
+	IFACE(ISceneNode);
 	IFACE(IAnimationFrame);
 	IFACE(IAnimationTrack);
 
@@ -10,7 +10,7 @@ module akra {
 		readonly totalTracks: int;
 
 		push(pTrack: IAnimationTrack): void;
-		attach(pTarget: INode): void;
+		attach(pTarget: ISceneNode): void;
 
 		getTracks(): IAnimationTrack[];
 		

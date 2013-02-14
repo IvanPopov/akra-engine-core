@@ -1,6 +1,8 @@
 #ifndef ILIGHTPOINT_TS
 #define ILIGHTPOINT_TS
 
+#include "ISceneObject.ts"
+
 module akra {
 	export interface ILightParameters {
 		 //default parameters
@@ -11,11 +13,11 @@ module akra {
 	}
 
 	export enum ELightPointTypes {
-		PROJECT = 100,
+		PROJECT = 86,
 		OMNI_DIRECTIONAL
 	}
 
-	export interface ILightPoint extends ISceneNode {
+	export interface ILightPoint extends ISceneObject {
 		params: ILightParameters;
 
 		isShadowCaster(): bool;

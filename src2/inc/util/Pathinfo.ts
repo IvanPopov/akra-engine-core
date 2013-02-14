@@ -3,7 +3,7 @@
 
 #include "IPathinfo.ts"
 
-module akra {
+module akra.util {
 	export class Pathinfo implements IPathinfo {
 		private _sDirname: string = null;
 		private _sExtension: string = null;
@@ -78,6 +78,10 @@ module akra {
 
 	}
 	
+}
+
+module akra {
+	export var Pathinfo = util.Pathinfo;
 }
 
 #endif
