@@ -3,15 +3,17 @@
 
 #include "common.ts"
 
-module akra.util.test {
+module akra.util {
 
 	var pTestCondList: ITestCond[] = [];
+	var pTestList: ITestManifest[] = [];
+	var isPassed: bool;
 
 	function addCond(pCond: ITestCond): void {
 		pTestCondList.unshift(pCond);
 	}
 
-	export interface ITestCond {
+	interface ITestCond {
 		description: string;
 		toString(): string;
 		verify(pArgv: any[]): bool;
@@ -67,9 +69,10 @@ module akra.util.test {
 
 			this._pValue = pValue;
 		}
+
 		verify(pArgv: any[]): bool {
 
-			if (pArgv[0] == this._pValue) {
+			if (pArgv[0] === this._pValue) {
 				return true;
 			}
 
@@ -78,13 +81,7 @@ module akra.util.test {
 		}
 	}
 
-	class TrueCond extends TestCond implements ITestCond {
-		verify(pArgv: any[]): bool {
-			if (pArgv[0] === true) {
-				return true;
-			}
-		}
-	}
+
 
 	function output(sText: string): void {
 		document.body.innerHTML += sText;
@@ -92,21 +89,22 @@ module akra.util.test {
 
 	export function check(...pArgv: any[]): void {
 		var pTest: ITestCond = pTestCondList.pop();
-
+		var bResult: bool;
+		
 		if (!pTest) {
 			console.log((<any>(new Error)).stack);
 			console.warn("chech() without condition...");
 			return;
 		}
 
-		var bResult: bool = pTest.verify(pArgv);
-		
+		bResult = pTest.verify(pArgv);
+		isPassed = isPassed && bResult;
 
 		if (bResult) {
-			output("<pre><span style=\"color: green;\">[ PASS ] </span>" + pTest.toString() + "</pre>");
+			output("<pre style=\"margin: 0;\"><span style=\"color: green;\"><b>[ PASSED ]</b></span>" + pTest.toString() + "</pre>");
 		}
 		else {
-			output("<pre><span style=\"color: red;\">[ FAIL ] </span>" + pTest.toString() + "</pre>");
+			output("<pre style=\"margin: 0;\"><span style=\"color: red;\"><b>[ FAILED ]</b></span>" + pTest.toString() + "</pre>");
 		}
 
 	}
@@ -120,7 +118,11 @@ module akra.util.test {
 	}
 
 	export function shouldBeTrue(sDescription: string) {
-		addCond(new TrueCond(sDescription));
+		addCond(new ValueCond(sDescription, true));
+	}
+
+	export function shouldBeFalse(sDescription: string) {
+		addCond(new ValueCond(sDescription, false));
 	}
 
 	export function shouldBeArray(sDescription: string, pArr: any) {
@@ -133,33 +135,59 @@ module akra.util.test {
 
 	export interface ITestManifest {
 		name: string;
-		main: () => void;
 		description?: string;
+		entry?: () => void;
 	}
 
-	export class Test {
-		constructor (pManifest: ITestManifest) {
-			Test.pTestList.push(pManifest);
+	export function test(sDescription: string, fnWrapper: () => void);
+	export function test(pManifest: ITestManifest, fnWrapper: () => void);
+	export function test (manifest: any, fnWrapper: () => void) {
+		if (isString(manifest)) {
+			pTestList.push({
+				name: <string>arguments[0],
+				description: null,
+				entry: fnWrapper
+			});
 		}
-
-		static pTestList: ITestManifest[] = [];
-		static run(): void {
-			var pTestList = Test.pTestList;
-			for (var i: int = 0; i < pTestList.length; ++ i) {
-				var pTest: ITestManifest = pTestList[i];
-				document.getElementById('test_name').innerHTML = ("<h2>" + pTest.name || "" + "</h2><hr />");
-				pTest.main();
-			};
+		else {
+			var pManifest: ITestManifest = <ITestManifest>arguments[0];
+			pManifest.entry = fnWrapper;
+			pTestList.push(pManifest);
 		}
 	}
 
 	export function run(): void {
-		Test.run();
+		for (var i: int = 0; i < pTestList.length; ++ i) {
+			var pTest: ITestManifest = pTestList[i];
+			var iBegin: uint = now();
+
+			isPassed = true;
+			
+			output("<h3>" + pTest.name || "" + "</h3><hr />");
+			pTest.entry();
+
+			output(
+			"<pre>" +
+			"<hr align=\"left\" style=\"border: 0; background-color: gray; height: 1px; width: 500px;\"/><span style=\"color: gray;\">total time: " + (now() - iBegin) + " msec" + "</span>" + 
+			"<br /><b>" + (isPassed? "<span style=\"color: green\">TEST PASSED</span>": "<span style=\"color: red\">TEST FAILED</span>") + "</b>" +
+			"</pre>");
+
+		};
 	}
 
 	window.onload = function () {
 		run();
 	}
 }
+
+var test 			= akra.util.test;
+var failed 			= akra.util.failed;
+var shouldBe 		= akra.util.shouldBe;
+var shouldBeArray 	= akra.util.shouldBeArray;
+var shouldBeTrue 	= akra.util.shouldBeTrue;
+var shouldBeFalse 	= akra.util.shouldBeFalse;
+var check 			= akra.util.check;
+var ok = check;
+
 
 #endif

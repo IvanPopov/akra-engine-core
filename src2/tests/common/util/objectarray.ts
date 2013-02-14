@@ -1,9 +1,9 @@
 #include "util/test/testutils.ts"
 #include "util/ObjectArray.ts"
 
-module akra.util.test {
+module akra.util {
 	
-	var test_1 = () => {
+	test("ObjectArray Tests", () => {
 		shouldBeTrue("ObjectArray creation");
 		shouldBeTrue("ObjectArray length correct");
 		
@@ -31,11 +31,5 @@ module akra.util.test {
 
 		shouldBeTrue("length is 0 after cleaning");
 		check(0 == pArray.clear().length);
-	}
-
-	new Test({
-		name: "ObjectArray Tests",
-		main: test_1,
-		description: "Test all ObjectArray apis"
-		});
+	});
 }

@@ -1,13 +1,15 @@
 #include "io/BinReader.ts"
 #include "io/BinWriter.ts"
-#include "util/test/testutils.ts"
+#include "util/testutils.ts"
 #include "IPacker.ts"
 
-module akra.util.test {
+module akra {
 	
-	var test_1 = () => {
+	test("Bin Reader/Writer tests", () => {
+
 		var pWriter: IBinWriter = new io.BinWriter;
-		 var i8a 	= new Int8Array([-1, -2, -3, -4, -5, -6, -7, -8, 0, 8, 7, 6, 5, 4, 3, 2, 1]);
+		
+		var i8a 	= new Int8Array([-1, -2, -3, -4, -5, -6, -7, -8, 0, 8, 7, 6, 5, 4, 3, 2, 1]);
 	    var i16a 	= new Int16Array([-1, -2, -3, -4, -5, -6, -7, -8, 0, 8, 7, 6, 5, 4, 3, 2, 1]);
 	    var i32a 	= new Int32Array([-1, -2, -3, -4, -5, -6, -7, -8, 0, 8, 7, 6, 5, 4, 3, 2, 1]);
 
@@ -21,8 +23,8 @@ module akra.util.test {
 	    var sa 	= ["word 1", "word 2", "word 3"];
 
 
-		shouldBe("Is bool: TRUE", true);
-		shouldBe("Is bool: FALSE", false);
+		shouldBeTrue("Is bool: TRUE");
+		shouldBeFalse("Is bool: FALSE");
 		
 		shouldBe("Is uint: 8", 8);
 		shouldBe("Is uint: 16", 16);
@@ -104,24 +106,18 @@ module akra.util.test {
 	    check(pReader.string());
 	    check(pReader.string());
 
-	    check(pReader.int8Array())
-	    check(pReader.int16Array())
-	    check(pReader.int32Array())
+	    check(pReader.int8Array());
+	    check(pReader.int16Array());
+	    check(pReader.int32Array());
 
-	    check(pReader.uint8Array())
-	    check(pReader.uint16Array())
-	    check(pReader.uint32Array())
+	    check(pReader.uint8Array());
+	    check(pReader.uint16Array());
+	    check(pReader.uint32Array());
 
-	    check(pReader.float32Array())
-	    check(pReader.float64Array())
+	    check(pReader.float32Array());
+	    check(pReader.float64Array());
 
-	    check(pReader.stringArray())
+	    check(pReader.stringArray());
 		
-	}
-
-	new Test({
-		name: "Bin Reader/Writer tests",
-		main: test_1,
-		description: "Test bin reader/writer api."
-		});
+	});
 }

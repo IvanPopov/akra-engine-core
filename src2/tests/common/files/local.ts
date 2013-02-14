@@ -1,9 +1,9 @@
-#include "util/test/testutils.ts"
+#include "util/testutils.ts"
 #include "io/files.ts"
 
-module akra.util.test {
+module akra {
 	
-	var test_1 = () => {
+	test("Local file API Test", () => {
 		shouldBeTrue("Threads support");
 		shouldBeTrue("File creation");
 		shouldBeTrue("File openning");
@@ -35,11 +35,6 @@ module akra.util.test {
 			});
 		});
 		
-	}
+	});
 
-	new Test({
-		name: "Local file API Test",
-		main: test_1,
-		description: "Test all file apis"
-		});
 }

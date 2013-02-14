@@ -1,9 +1,9 @@
-#include "util/test/testutils.ts"
+#include "util/testutils.ts"
 #include "io/files.ts"
 
-module akra.util.test {
+module akra {
 	
-	var test_1 = () => {
+	test("Remote file API Test", () => {
 		shouldBeTrue("Threads support");
 		shouldBeTrue("File creation");
 		shouldBeTrue("Data should be \"text data\"");
@@ -19,11 +19,5 @@ module akra.util.test {
 			if (err) check(null);
 			else check(sData === "text data");
 		});
-	}
-
-	new Test({
-		name: "Remote file API Test",
-		main: test_1,
-		description: "Test all file apis"
-		});
+	});
 }

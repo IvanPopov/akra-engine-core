@@ -1,9 +1,9 @@
 #include "util/test/testutils.ts"
 #include "util/ObjectList.ts"
 
-module akra.util.test {
+module akra.util {
 	
-	var test_1 = () => {
+	test("ObjectList Tests", () => {
 
 		shouldBeTrue("ObjectArray creation");
 		shouldBeTrue("ObjectArray length correct");
@@ -70,11 +70,5 @@ module akra.util.test {
 
 			//console.log(i, ": ", pData, "(", pTpl[i], ")");
 		});
-	}
-
-	new Test({
-		name: "ObjectList Tests",
-		main: test_1,
-		description: "Test all ObjectList apis"
-		});
+	});
 }

@@ -201,7 +201,7 @@ function verifyOptions() {
 	if (pOptions.testsFormat.html 	== false && 
 		pOptions.testsFormat.nw 	== false &&
 		pOptions.testsFormat.js 	== false) {
-		pOptions.testsFormat.nw = true;
+		pOptions.testsFormat.html = true;
 	}
 
 	if (pOptions.outputFile == null || pOptions.outputFile == "") {
@@ -422,7 +422,6 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
                   		<title>" + sFile + "</title>   				\n\
                   	</head>                              			\n\
                   	<body>                               			\n\
-                  		<h1 id=\"test_name\">Tests</h1>             \n\
                   		<script>" + sTestData + "</script>   		\n\
                   </html>";
 

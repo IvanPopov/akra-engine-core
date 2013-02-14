@@ -1,11 +1,10 @@
 #include "io/Packer.ts"
 #include "io/UnPacker.ts"
-#include "util/test/testutils.ts"
+#include "util/testutils.ts"
 
-
-module akra.util.test {
+module akra {
 	
-	var test_1 = () => {
+	test("Packer/Unpacker tests", () => {
 		var f32a: Float32Array = new Float32Array([4, 3, 2, 1]);
 		var fnNoName: Function = function (b, c, a) {
 			return Math.pow((b + a) * c, 2);
@@ -33,11 +32,5 @@ module akra.util.test {
 		check(pCopy.value[0] === pCopy.value[1]);
 		LOG(pCopy);
 
-	};
-
-	new Test({
-		name: "Packer/Unpacker tests",
-		main: test_1,
-		description: "Test bin packer/unpacker api."
-		});
+	});
 }
