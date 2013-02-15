@@ -200,7 +200,8 @@ function verifyOptions() {
 	pOptions.outputFolder = path.dirname(pOptions.outputFolder);
 
 	if (!pOptions.includeDir) {
-		pOptions.includeDir = pOptions.buildDir + "inc/";
+		pOptions.includeDir = "inc/";//pOptions.buildDir + 
+		
 	}
 
 	if (pOptions.testsFormat.html 	== false && 
@@ -247,7 +248,7 @@ function preprocess() {
 	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -j -+ -W 0 -k " + 
 		capabilityMacro + " " + pOptions.files.join(" ")).
 		split(" ");
-
+	//console.log(argv.join(" "));
 	var mcpp = spawn(cmd, argv, {maxBuffer: BUFFER_SIZE});
 	var stdout = '';
 
@@ -424,7 +425,8 @@ function findDepends(sData) {
 
 function fetchDeps(sDir, pDeps) {
 	for (var i in pDeps) {
-		var sDep = path.normalize(pOptions.baseDir + "/" + pOptions.includeDir + pDeps[i]);
+		
+		var sDep = path.normalize( pOptions.includeDir + pDeps[i]);
 
 		// console.log(sDep);
 		var sDepContent = fs.readFileSync(sDep, "utf-8");
