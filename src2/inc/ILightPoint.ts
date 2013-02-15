@@ -12,20 +12,13 @@ module akra {
 	    attenuation: IVec3;
 	}
 
-	export enum ELightPointTypes {
-		PROJECT = 86,
-		OMNI_DIRECTIONAL
-	}
-
-	export interface ILightPoint extends ISceneObject {
+	export interface ILightPoint extends ISceneNode {
 		params: ILightParameters;
+		enabled: bool;
 
 		isShadowCaster(): bool;
 		setShadowCasting(bValue?: bool): void;
 
-		isEnabled(): bool;
-
-		setEnabled(bValue: bool): void;
 		_calculateShadows(): void;
 	}
 }

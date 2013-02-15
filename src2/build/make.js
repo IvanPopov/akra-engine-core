@@ -57,6 +57,7 @@ var pOptions = {
 	buildDir: "./",			//dir from witch we build
 	tempFile: "~tmp.ts",		//temprorary file name
 	baseDir: __dirname,		//home dir for this script
+	includeDir: null,
 	capability: null,
 	testDir: null,
 	pathToTests: null,
@@ -198,6 +199,10 @@ function verifyOptions() {
 	pOptions.outputFile = path.basename(pOptions.outputFolder);
 	pOptions.outputFolder = path.dirname(pOptions.outputFolder);
 
+	if (!pOptions.includeDir) {
+		pOptions.includeDir = pOptions.buildDir + "inc/";
+	}
+
 	if (pOptions.testsFormat.html 	== false && 
 		pOptions.testsFormat.nw 	== false &&
 		pOptions.testsFormat.js 	== false) {
@@ -239,7 +244,7 @@ function preprocess() {
 	}
 
 	var cmd = pOptions.baseDir + "/mcpp";
-	var argv = ("-P -C -e utf8 -I " + "inc/ -j -+ -W 0 -k " + 
+	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -j -+ -W 0 -k " + 
 		capabilityMacro + " " + pOptions.files.join(" ")).
 		split(" ");
 
@@ -404,7 +409,37 @@ function createTestName(sEntryFileName) {
 	return sFileName.substr(0, i);
 }
 
+function findDepends(sData) {
+	var pDepExp = /\/\/\/\s+@dep\s+(\w[\w\d\.\-\/]+)\s+/ig;
+	var pMatches = null;
+	var pDeps = [];
+
+	while (pMatches = pDepExp.exec(sData)) {
+		pDeps.push(pMatches[1]);
+	}
+
+	return pDeps;
+}
+
+function fetchDeps(sDir, pDeps) {
+	for (var i in pDeps) {
+		var sDep = path.normalize(pOptions.baseDir + "/" + pOptions.includeDir + pDeps[i]);
+
+		// console.log(sDep);
+		var sDepContent = fs.readFileSync(sDep, "utf-8");
+
+		fs.writeFileSync(sDir + "/" + path.basename(sDep), sDepContent, "utf-8");
+	}
+}
+
 function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
+	
+	//FIXME: hack for events support
+	sTestData = sTestData.replace(/eval\(\"this\.\_iGuid \|\| akra\.sid\(\)\"\)/g, "this._iGuid || akra.sid()");
+
+
+	fetchDeps(sDir, findDepends(sTestData));
+	
 
 	sTestData = "\n\n\n" + 
 		"/*---------------------------------------------\n" +
@@ -414,6 +449,7 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 		" * name: " + sName + "\n" +
 		" *--------------------------------------------*/\n\n\n" + 
 		sTestData;
+
 
 	var pArchive;
 	var sIndexHTML = "\n\
@@ -532,6 +568,7 @@ function packTest(sDir, sFile, sName, pData) {
 			}
 
 			if (pOptions.testsFormat.html) {
+				// compileTestMacro("js");
 				compileTestMacro("html");
 			}
 

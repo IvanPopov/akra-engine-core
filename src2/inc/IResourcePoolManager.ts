@@ -111,6 +111,7 @@ module akra {
         createVertexBuffer(sResourceName: string): IVertexBuffer;
         createVideoBuffer(sResourceName: string): IVertexBuffer;
         createModel(sResourceName: string): IModel;
+        loadModel(sFilename: string): IModel;
     }
 }
 

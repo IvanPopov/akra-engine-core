@@ -63,8 +63,6 @@ module akra.util {
 		indexOf(pData: any, iFrom: uint = 0.): int{
 			var pItem: IObjectListItem = this.find(iFrom);
 
-			// console.log(this, pData, iFrom, pItem);
-
 			for(var i: uint = iFrom; i<this._iLength; i++){
 				if(pItem.data === pData){
 					return i;
@@ -226,6 +224,7 @@ module akra.util {
 		};
 
 		private pullElement(pItem: IObjectListItem): any {
+
 			if (isNull(pItem.prev)) {
 				this._pHead = pItem.next;
 			}
@@ -250,7 +249,7 @@ module akra.util {
 			}
 
 			return this.releaseItem(pItem);
-		}
+		};
 
 
 		inline takeFirst(): any{

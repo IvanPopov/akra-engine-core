@@ -43,7 +43,7 @@ module akra.data {
 				pElements = <IVertexElementInterface[]><any>arguments[0];
 			}
 
-			for (var i = 0; i < pElements.length; ++ i) {
+			for (var i: int = 0; i < pElements.length; ++ i) {
 				iOffset = pElements[i].offset;
 
 				if (VertexElement.hasUnknownOffset(pElements[i])) {
@@ -55,13 +55,13 @@ module akra.data {
 						iOffset = 0;
 					}
 				}
-			}
 
-			this._pElements.push(new VertexElement(
-				pElements[i].count,
-	            pElements[i].type,
-	            pElements[i].usage,
-	            iOffset));
+				this._pElements.push(new VertexElement(
+					pElements[i].count,
+		            pElements[i].type,
+		            pElements[i].usage,
+		            iOffset));
+			}
 
 			return this._update();
 		}

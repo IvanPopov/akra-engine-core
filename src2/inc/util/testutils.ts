@@ -81,20 +81,19 @@ module akra.util {
 
 	class ValueCond extends TestCond implements ITestCond {
 		protected _pValue: any;
-		constructor (sDescription: string, pValue: any) {
+		protected _isNegate: bool;
+		constructor (sDescription: string, pValue: any, isNegate: bool = false) {
 			super(sDescription);
 
 			this._pValue = pValue;
+			this._isNegate = isNegate;
 		}
 
 		verify(pArgv: any[]): bool {
+			var bResult: bool = pArgv[0] === this._pValue;
 
-			if (pArgv[0] === this._pValue) {
-				return true;
-			}
-
-			console.warn(">", pArgv[0], "!==", this._pValue);
-			return false;
+			// console.warn(">", pArgv[0], "!==", this._pValue);
+			return this._isNegate? !bResult: bResult;
 		}
 	}
 
@@ -158,6 +157,10 @@ module akra.util {
 
 	export function shouldBe (sDescription: string, pValue: any) {
 		addCond(new ValueCond(sDescription, pValue));
+	}
+
+	export function shouldBeNotNull(sDescription: string) {
+		addCond(new ValueCond(sDescription, null, true));
 	}
 
 	export interface ITestManifest {
@@ -269,6 +272,7 @@ var shouldBe 		= akra.util.shouldBe;
 var shouldBeArray 	= akra.util.shouldBeArray;
 var shouldBeTrue 	= akra.util.shouldBeTrue;
 var shouldBeFalse 	= akra.util.shouldBeFalse;
+var shouldBeNotNull	= akra.util.shouldBeNotNull;
 var check 			= akra.util.check;
 var ok = check;
 

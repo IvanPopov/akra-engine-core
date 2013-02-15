@@ -5,7 +5,7 @@
 #include "IResourcePoolManager.ts"
 #include "ShadowCaster.ts"
 
-module akra.scene.objects {
+module akra.scene.light {
 	export class ProjectLight extends LightPoint implements IProjectLight {
 		protected _pDepthTexture: ITexture = null;
 		// protected _pColorTexture: ITexture = null;
@@ -22,12 +22,9 @@ module akra.scene.objects {
 			return this._m4fCurrentOptimizedProj;
 		}
 
-		inline get type(): ELightPointTypes {
-			return ELightPointTypes.PROJECT;
-		}
-
 		constructor (pScene: IScene3d) {
 			super(pScene);
+			this._eType = EEntityTypes.LIGHT_PROJECT;
 		}
 
 		create(isShadowCaster: bool = true): bool {
@@ -104,7 +101,7 @@ module akra.scene.objects {
 		}
 
 		_calculateShadows(): void {
-			if (!this.isEnabled() || !this.isShadowCaster()) {
+			if (!this._isEnabled || !this.isShadowCaster()) {
 				return;
 			}
 

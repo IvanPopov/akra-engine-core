@@ -5,8 +5,7 @@
 #include "Circle.ts"
 #include "Sphere.ts"
 
-module akra.geometry{
-
+module akra{
 	export enum EVolumeClassifications{
 		NO_RELATION = 0,
 		EQUAL,
@@ -25,6 +24,9 @@ module akra.geometry{
 		PLANE_BACK,
 		PLANE_INTERSECT
 	};
+}
+
+module akra.geometry{
 
 	export function planeClassifyCircle(pPlane: IPlane2d, pCircle: ICircle): EPlaneClassifications{
 		var fDistance: float = pPlane.signedDistance(pCircle.center);
@@ -116,6 +118,15 @@ module akra.geometry{
 		else{
 			v3fMinPoint.y = pRect.y1;
 			v3fMaxPoint.y = pRect.y0;
+		}
+
+		if(v3fNormal.z > 0.){
+			v3fMinPoint.z = pRect.z0;
+			v3fMaxPoint.z = pRect.z1;
+		}
+		else{
+			v3fMinPoint.z = pRect.z1;
+			v3fMaxPoint.z = pRect.z0;
 		}
 
 		var fMinDistance: float = pPlane.signedDistance(v3fMinPoint);
@@ -230,6 +241,66 @@ module akra.geometry{
 		}
 
 		return EVolumeClassifications.INTERSECTING;
+	};
+
+	export function classifyFrustumRect3d(pFrustum: IFrustum, pRect: IRect3d){
+		var kClassification: EPlaneClassifications;
+		var isIntersect: bool = false;
+
+		kClassification = planeClassifyRect3d(pFrustum.leftPlane, pRect);
+		if(kClassification == EPlaneClassifications.PLANE_FRONT){
+			return EVolumeClassifications.NO_RELATION;
+		}
+		else if(kClassification == EPlaneClassifications.PLANE_INTERSECT){
+			isIntersect = true;
+		}
+
+		kClassification = planeClassifyRect3d(pFrustum.rightPlane, pRect);
+		if(kClassification == EPlaneClassifications.PLANE_FRONT){
+			return EVolumeClassifications.NO_RELATION;
+		}
+		else if(kClassification == EPlaneClassifications.PLANE_INTERSECT){
+			isIntersect = true;
+		}
+
+		kClassification = planeClassifyRect3d(pFrustum.topPlane, pRect);
+		if(kClassification == EPlaneClassifications.PLANE_FRONT){
+			return EVolumeClassifications.NO_RELATION;
+		}
+		else if(kClassification == EPlaneClassifications.PLANE_INTERSECT){
+			isIntersect = true;
+		}
+
+		kClassification = planeClassifyRect3d(pFrustum.bottomPlane, pRect);
+		if(kClassification == EPlaneClassifications.PLANE_FRONT){
+			return EVolumeClassifications.NO_RELATION;
+		}
+		else if(kClassification == EPlaneClassifications.PLANE_INTERSECT){
+			isIntersect = true;
+		}
+
+		kClassification = planeClassifyRect3d(pFrustum.nearPlane, pRect);
+		if(kClassification == EPlaneClassifications.PLANE_FRONT){
+			return EVolumeClassifications.NO_RELATION;
+		}
+		else if(kClassification == EPlaneClassifications.PLANE_INTERSECT){
+			isIntersect = true;
+		}
+		
+		kClassification = planeClassifyRect3d(pFrustum.farPlane, pRect);
+		if(kClassification == EPlaneClassifications.PLANE_FRONT){
+			return EVolumeClassifications.NO_RELATION;
+		}
+		else if(kClassification == EPlaneClassifications.PLANE_INTERSECT){
+			isIntersect = true;
+		}
+		
+		if(isIntersect){
+			return EVolumeClassifications.INTERSECTING;
+		}
+		else{
+			return EVolumeClassifications.A_CONTAINS_B;
+		}
 	};
 
 }

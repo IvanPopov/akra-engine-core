@@ -7,6 +7,7 @@ module akra{
 	IFACE(IVec3);
 	IFACE(IRect3);
 	IFACE(ISphere);
+	IFACE(IRect3d);
 
 	export interface IFrustum{
 		leftPlane: IPlane3d;
@@ -22,7 +23,7 @@ module akra{
 			pTopPlane: IPlane3d, pBottomPlane: IPlane3d,
 			pNearPlane: IPlane3d, pFarPlane: IPlane3d): IFrustum;
 
-		extractFromMatrix(m4fProjection: IMat4, m4fWorld?: IMat4): IFrustum;
+		extractFromMatrix(m4fProjection: IMat4, m4fWorld?: IMat4, pSearchRect?: IRect3d): IFrustum;
 
 		isEqual(pFrustum: IFrustum): bool;
 

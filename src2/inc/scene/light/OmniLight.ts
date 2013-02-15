@@ -4,7 +4,7 @@
 #include "ITexture.ts"
 #include "ShadowCaster.ts"
 
-module akra.scene.objects {
+module akra.scene.light {
 	export class OmniLight extends LightPoint implements IOmniLight {
 		protected _pDepthTextureCube: ITexture[] = null;
 		// protected _pColorTexture: ITexture = null;
@@ -21,12 +21,10 @@ module akra.scene.objects {
 			return this._m4fCurrentOptimizedProj;
 		}
 
-		inline get type(): ELightPointTypes {
-			return ELightPointTypes.OMNI_DIRECTIONAL;
-		}
-
 		constructor (pScene: IScene3d) {
 			super(pScene);
+
+			this._eType = EEntityTypes.LIGHT_OMNI_DIRECTIONAL;
 		}
 
 		create(isShadowCaster: bool = true): bool {
