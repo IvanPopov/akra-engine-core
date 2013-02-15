@@ -77,7 +77,7 @@ module akra.core {
 		}
 
 		getResourceManager(): IResourcePoolManager {
-			return null;
+			return this._pResourceManager;
 		}
 
 		getRenderer(): IRenderer {

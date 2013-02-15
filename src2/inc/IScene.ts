@@ -2,6 +2,7 @@
 #define ISCENE_TS
 
 #include "IEventProvider.ts"
+#include "ISceneManager.ts"
 
 module akra {
 	export enum ESceneTypes {
@@ -11,6 +12,8 @@ module akra {
 
 	export interface IScene extends IEventProvider {
 		type: ESceneTypes;
+
+		getManager(): ISceneManager;
 	}
 }
 

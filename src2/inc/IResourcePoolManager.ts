@@ -63,7 +63,7 @@ module akra {
     	indexBufferPool: IResourcePool;
         textureBufferPool: IResourcePool;
     	renderMethodPool: IResourcePool;
-    	colladaPool: IResourcePool;
+    	// colladaPool: IResourcePool;
     	imagePool: IResourcePool;			
         //ex: private
     	shaderProgramPool: IResourcePool;		

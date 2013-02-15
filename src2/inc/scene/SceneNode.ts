@@ -16,8 +16,12 @@ module akra.scene {
 		constructor (pScene: IScene3d) {
 			super();
 
+			pScene.connect(this, SIGNAL(attached), SLOT(nodeAttachment), EEventTypes.UNICAST);
+			pScene.connect(this, SIGNAL(detached), SLOT(nodeDetachment), EEventTypes.UNICAST);
+
 			this.scene = pScene;
-			this.type = EEntityTypes.SCENE_NODE;
+
+			this._eType = EEntityTypes.SCENE_NODE;
 		}
 
 		create(): bool {
@@ -26,7 +30,7 @@ module akra.scene {
 			this._m4fLocalMatrix        = new Mat4(1);
 		    this._m4fWorldMatrix        = new Mat4(1);
 		    this._m4fInverseWorldMatrix = new Mat4(1);
-		    this._m3fNormalMatrix       = new Mat3;
+		    this._m3fNormalMatrix       = new Mat3(1);
 		    
 		    this._v3fWorldPosition  = new Vec3();
 

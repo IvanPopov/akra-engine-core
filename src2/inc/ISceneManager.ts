@@ -3,6 +3,7 @@
 
 #include "IManager.ts"
 #include "IScene.ts"
+#include "IEngine.ts"
 
 module akra {
 
@@ -13,6 +14,8 @@ module akra {
     export interface ISceneManager extends IManager {
         createScene3D(): IScene3d;
         createScene2D(): IScene2d;
+
+        getEngine(): IEngine;
 
         getScene3D(iScene?: uint): IScene3d;
         getScene2D(iScene?: uint): IScene2d;

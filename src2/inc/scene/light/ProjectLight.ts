@@ -3,9 +3,10 @@
 
 #include "ITexture.ts"
 #include "IResourcePoolManager.ts"
+#include "IRenderTarget.ts"
 #include "ShadowCaster.ts"
 
-module akra.scene.objects {
+module akra.scene.light {
 	export class ProjectLight extends LightPoint implements IProjectLight {
 		protected _pDepthTexture: ITexture = null;
 		// protected _pColorTexture: ITexture = null;
@@ -22,12 +23,9 @@ module akra.scene.objects {
 			return this._m4fCurrentOptimizedProj;
 		}
 
-		inline get type(): ELightPointTypes {
-			return ELightPointTypes.PROJECT;
-		}
-
 		constructor (pScene: IScene3d) {
 			super(pScene);
+			this._eType = EEntityTypes.LIGHT_PROJECT;
 		}
 
 		create(isShadowCaster: bool = true): bool {
@@ -44,8 +42,6 @@ module akra.scene.objects {
 			pCaster.setInheritance(ENodeInheritance.ALL);
 			pCaster.attachToParent(this);
 
-			pCaster.accessLocalMatrix().identity();
-
 			if (this.isShadowCaster()) {
 				this._m4fOptimizdeProj = new Mat4();
 			}
@@ -59,7 +55,7 @@ module akra.scene.objects {
 			return this._pDepthTexture;
 		}
 
-		inline getRenderTarget(): ITexture {
+		inline getRenderTarget(): IRenderTarget {
 			return this._pDepthTexture.getBuffer().getRenderTarget();
 		}
 
@@ -77,7 +73,7 @@ module akra.scene.objects {
 			var iSize: uint = this._iMaxShadowResolution;
 
 			if (this._pDepthTexture) {
-				this._pDepthTexture.destroy();
+				this._pDepthTexture.destroyResource();
 			}
 
 			var pDepthTexture: ITexture = this._pDepthTexture = 
@@ -104,7 +100,7 @@ module akra.scene.objects {
 		}
 
 		_calculateShadows(): void {
-			if (!this.isEnabled() || !this.isShadowCaster()) {
+			if (!this._isEnabled || !this.isShadowCaster()) {
 				return;
 			}
 

@@ -14,6 +14,7 @@
 #include "info/info.ts"
 #include "IEffect.ts"
 #include "IScene3d.ts"
+#include "util/ObjectArray.ts"
 
 module akra.render {
 
@@ -120,10 +121,10 @@ module akra.render {
 		}
 
 		prepareForDeferredShading(): void {
-			var pNodeList: ISceneObject[] = this.getCamera().display();
+			var pNodeList: IObjectArray = this.getCamera().display();
 
 			for (var i: int = 0; i < pNodeList.length; ++ i) {
-				var pRenderable: IRenderableObject = pNodeList[i].getRenderable();
+				var pRenderable: IRenderableObject = pNodeList.value(i).getRenderable();
 
 				if (pRenderable) {
 					for (var j: int = 0; j < 2; ++ j) {
@@ -271,7 +272,7 @@ module akra.render {
 		    for (i = 0; i < pLightPoints.length; i++) {
 		        pLight = pLightPoints[i];
 
-		        if (!pLight.isEnabled()) {
+		        if (!pLight.enabled) {
 		            continue;
 		        }
 		        
@@ -279,7 +280,7 @@ module akra.render {
 		        pCameraView.multiplyVec4(v4fLightPosition, v4fTemp)
 		        v3fLightTransformPosition.set(v4fTemp.x, v4fTemp.y, v4fTemp.z);
 
-		        if (pLight.type === <int>ELightPointTypes.OMNI_DIRECTIONAL) {
+		        if (pLight.type === <int>EEntityTypes.LIGHT_OMNI_DIRECTIONAL) {
 		        	
 		        	pOmniLight = <IOmniLight>pLight;
 
@@ -310,7 +311,7 @@ module akra.render {
 		                pUniforms.omni.push(<UniformOmni>pUniformData);
 		            }
 		        }
-		        else if (pLight.type === <int>ELightPointTypes.PROJECT) {
+		        else if (pLight.type === <int>EEntityTypes.LIGHT_PROJECT) {
 		        	pProjectLight = <IProjectLight>pLight;
 
 		            if (pLight.isShadowCaster()) {

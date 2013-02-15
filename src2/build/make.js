@@ -404,8 +404,11 @@ function createTestName(sEntryFileName) {
 	return sFileName.substr(0, i);
 }
 
+
 function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 
+	//FIXME: hack for events support
+	sTestData = sTestData.replace(/eval\(\"this\.\_iGuid \|\| akra\.sid\(\)\"\)/g, "this._iGuid || akra.sid()");
 	sTestData = "\n\n\n" + 
 		"/*---------------------------------------------\n" +
 		" * assembled at: " + (new Date) + "\n" +
@@ -414,6 +417,12 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 		" * name: " + sName + "\n" +
 		" *--------------------------------------------*/\n\n\n" + 
 		sTestData;
+
+
+	
+	
+	
+
 
 	var pArchive;
 	var sIndexHTML = "\n\

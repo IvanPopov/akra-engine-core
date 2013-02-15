@@ -3,6 +3,7 @@
 
 #include "IMaterial.ts"
 #include "data/VertexDeclaration.ts"
+#include "util/Color.ts"
 
 module akra.material {
 	export class Material implements IMaterial {
