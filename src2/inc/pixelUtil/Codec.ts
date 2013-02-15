@@ -1,95 +1,137 @@
 #ifndef CODEC_TS
 #define CODEC_TS
 
-#include "PixelFormat.ts"
-#include "bf/bitflags.ts"
-#include "math/math.ts"
-#include "IColor.ts"
-#include "PixelBox.ts"
+#include "ICodec.ts"
 
 module akra 
 {
+	export interface ICodecMap {
+        	[index: string]: ICodec;
+    	};
+
+
 	export class Codec implements ICodec
 	{
-		protected static _pMapCodecs: Array=new Array()
+		
 
-		static registerCodec(pCodec: Codec):void
+		private static _pMapCodecs: ICodecMap;
+
+		static registerCodec(pCodec: ICodec):void
 		{
-			if(!isDef(self._pMapCodecs[pCodec.getType()]))
+			if(!isDef(Codec._pMapCodecs[pCodec.getType()]))
 			{
-				self._pMapCodecs[pCodec.getType()]=getCodec(sExtension):Array;
+				Codec._pMapCodecs[pCodec.getType()]=pCodec;
 			}
 			else
 			{
-				CRITICAL_ERROR(,pCodec->getType() + " already has a registered codec. ");
+				CRITICAL_ERROR(pCodec.getType() + " already has a registered codec. ");
 			}
 		}
 
-		static isCodecRegistered(pCodec: Codec):boolean
+		static isCodecRegistered(pCodec: ICodec):bool
 		{
-			return isDef(self._pMapCodecs[pCodec.getType()]);
+			return isDef(Codec._pMapCodecs[pCodec.getType()]);
 		}
 
-		static unRegisterCodec(pCodec: Codec):void
+		static unRegisterCodec(pCodec: ICodec):void
 		{
-			delete self._pMapCodecs[pCodec.getType()];
+			delete Codec._pMapCodecs[pCodec.getType()];
 		}
 
-		static getExtension():Array
+		static getExtension():string[]
 		{
-			return self._pMapCodecs.slice(0,self._pMapCodecs.length)
+			var pExt:string[];
+			var sExt:string;
+			for(sExt in Codec._pMapCodecs)
+			{
+				pExt.push(sExt)
+			}
+			return pExt;
 		}
 
-
-		static getCodec(pMagicNumber: Uint8Array):Codec
+		static getCodec(sExt: string):ICodec;
+		static getCodec(pMagicNumber: Uint8Array):ICodec;
+		static getCodec(pMagicNumber: any):ICodec
 		{
-			var sExt: String;
+			var sExt: string;
 			if(isString(pMagicNumber))
 			{
-				if(isDef(self._pMapCodecs[pMagicNumber])
+				if(isDef(Codec._pMapCodecs[pMagicNumber]))
 				{
-					return self._pMapCodecs[pMagicNumber];
+					return Codec._pMapCodecs[pMagicNumber];
 				}
 				else
 				{
-					CRITICAL_ERROR(,"Can not find codec for "+pMagicNumber);
+					CRITICAL_ERROR("Can not find codec for "+pMagicNumber);
 					return null;
 				}
 			}
 			else
 			{
-				for(sExt in self._pMapCodecs)
+				for(sExt in Codec._pMapCodecs)
 				{
-					var sExt1:string=self._pMapCodecs[sExt].magicNumberToFileExt(pMagicNumber);
+					var sExt1:string=Codec._pMapCodecs[sExt].magicNumberToFileExt(pMagicNumber);
 					if(sExt1)
 					{
-						if(sExt1==self._pMapCodecs[sExt].getType())
+						if(sExt1==Codec._pMapCodecs[sExt].getType())
 						{
-							return self._pMapCodecs[sExt];
+							return Codec._pMapCodecs[sExt];
 						}
 						else
 						{
-							return this.getCodec(sExt1);
+							return Codec.getCodec(sExt1);
 						}
 
 					}
 				}
 			}
-
+			return null;
 		}
-		return null;
+		
 
 		magicNumberMatch(pMagicNumber: Uint8Array):bool
 		{
 			return !(this.magicNumberToFileExt(pMagicNumber).length==0); 
 		}
 
+		magicNumberToFileExt(pMagicNumber: Uint8Array):string
+		{
+			CRITICAL_ERROR("Codec.magicNumberToFileExt is virtual");
+			return null;
+		}
+
+		getType():string
+		{
+			CRITICAL_ERROR("Codec.getType is virtual");
+			return null;
+		}
+
+		getDataType():string
+		{
+			CRITICAL_ERROR("Codec.getDataType is virtual");
+			return null;
+		}
+
+		code(pInput:Uint8Array,pData:ICodecData):Uint8Array
+		{
+			CRITICAL_ERROR("Codec.code is virtual");
+			return null;
+		}
+		decode(pData:Uint8Array,pCodecData:ICodecData):Uint8Array
+		{
+			CRITICAL_ERROR("Codec.decode is virtual");
+			return null;
+		}
+
+
+
 	}
 
 	export class CodecData implements ICodecData
 	{
 
-		getDataType(): String{
+		inline get dataType(): string{
+			CRITICAL_ERROR("CodecData.dataType is virtual");
 			return "CodecData";
 		}
 	}

@@ -1,6 +1,8 @@
 #ifndef PIXELFORMAT_TS
 #define PIXELFORMAT_TS
 
+#include "common.ts"
+
 module akra {
 	export enum EPixelFormats {
         UNKNOWN = 0,          /*Unknown pixel format.*/

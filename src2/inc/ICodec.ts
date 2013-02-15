@@ -1,22 +1,16 @@
 #ifndef ICODEC_TS
 #define ICODEC_TS
 
+#include "common.ts"
+
 module akra {
 
 	export interface ICodec{
 
-		static registerCodec(pCodec: Codec):void;
-		static isCodecRegistered(pCodec: Codec):boolean;
-		static unRegisterCodec(pCodec: Codec):void;
-		static getExtension():Array;
-
-		static getCodec(pMagicNumber: Uint8Array):ICodec;
-		static getCodec(sExt: String):ICodec;
-
-		getType():String;
-		getDataType():String;
+		getType():string;
+		getDataType():string;
 		magicNumberMatch(pMagicNumber: Uint8Array):bool;
-		magicNumberToFileExt(pMagicNumber: Uint8Array):String;
+		magicNumberToFileExt(pMagicNumber: Uint8Array):string;
 
 		code(pInput:Uint8Array,pData:ICodecData):Uint8Array;
 		decode(pData:Uint8Array,pCodecData:ICodecData):Uint8Array;
@@ -26,7 +20,7 @@ module akra {
 	
 
 	export interface ICodecData{
-		dataType(): String;
+		dataType: string;
 	}
 
 }

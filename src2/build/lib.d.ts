@@ -401,6 +401,7 @@ declare var Array: {
 
 interface ArrayBuffer {
     byteLength: number;
+    slice(begin:number,end?:number):ArrayBuffer ;
 }
 declare var ArrayBuffer: {
     prototype: ArrayBuffer;
@@ -4242,7 +4243,7 @@ declare var Event: {
 
 interface ImageData {
     width: number;
-    data: number[];
+    data: Uint8Array;
     height: number;
 }
 declare var ImageData: {

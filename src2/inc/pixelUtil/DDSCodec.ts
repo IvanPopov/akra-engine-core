@@ -112,7 +112,7 @@ module akra
         dwReserved2 : uint;
 	}
 
-	export class DDSCodec implements IDDSCodec
+	export class DDSCodec extends ImageCodec implements IDDSCodec
 	{
 		private _sType:String="dds";
 		private static _pInstance:DDSCodec:

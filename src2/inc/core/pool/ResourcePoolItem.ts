@@ -1,6 +1,7 @@
 #ifndef RESOURCEPOOLITEM_TS
 #define RESOURCEPOOLITEM_TS
 
+#include "common.ts"
 #include "IEngine.ts"
 #include "IResourceCode.ts"
 #include "IResourcePool.ts"

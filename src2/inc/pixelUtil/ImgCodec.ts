@@ -1,21 +1,22 @@
-#ifndef IIMAGECODEC_TS
-#define IIMAGECODEC_TS
+#ifndef IMGCODEC_TS
+#define IMGCODEC_TS
 
-#include "IImageCodec.ts"
-#include "IImageData.ts"
+#include "IImgCodec.ts"
+#include "Codec.ts"
+#include "core/pool/resources/Img.ts"
 
 module akra {
 
 
-	export interface ImageCodec implements IImageCodec{
-		getDataType(): String
+	export class ImgCodec extends Codec implements IImgCodec{
+		getDataType(): string
         {
-            return "ImageData"
+            return "ImgData"
         }
 
 	}
 
-	export interface ImageData implements IImageData{
+	export class ImgData extends CodecData implements IImgData{
 		
         protected _iHeight:uint=0;
 		protected _iWidth:uint=0;
@@ -23,16 +24,16 @@ module akra {
 		protected _iSize:uint=0;
         protected _iCubeFlags:uint;
 
-		protected _nNumMipMaps:uint=0;
+		protected _nMipMaps:uint=0;
 		protected _iFlags:uint=0;
 
-		protected _eFormat: EPixelFormat=UNKNOWN;
+		protected _eFormat: EPixelFormats=EPixelFormats.UNKNOWN;
 
 
 		inline get width(): uint {
 			return this._iWidth;
 		}
-    	inline set width(iWidth:uint):{
+    	inline set width(iWidth:uint){
 			this._iWidth=iWidth;
 		}
 
@@ -40,28 +41,28 @@ module akra {
     	inline get height(): uint {
     		return this._iHeight;
     	}
-    	inline set height(iHeight:uint):{
+    	inline set height(iHeight:uint){
 			this._iHeight=iHeight;
 		}
 
     	inline get depth(): uint {
     		return this._iDepth;
     	}
-    	inline set depth(iDepth:uint):{
+    	inline set depth(iDepth:uint){
 			this._iDepth=iDepth;
 		}
 
 
     	inline get size(): uint {
-    		return = Img.calculateSize(this.numMipMaps, this.numFace, this.width, 
-                this.height, this.depth, this.format);
+    		return core.pool.resources.Img.calculateSize(this.numMipMaps, this.numFace, this.width, this.height, this.depth, this.format);
+        }
 
     	inline get numMipMaps(): uint 
     	{
     		return this._nMipMaps;
     	}
 
-    	inline set numMipMaps(nNumMipMaps:uint): {
+    	inline set numMipMaps(nNumMipMaps:uint) {
     		this._nMipMaps=nNumMipMaps;
     	}
 
@@ -69,7 +70,7 @@ module akra {
     		return this._eFormat;
     	}
 
-    	inline set format(ePixelFormat:EPixelFormats): {
+    	inline set format(ePixelFormat:EPixelFormats){
     		this._eFormat=ePixelFormat;
     	}
 
@@ -90,7 +91,7 @@ module akra {
         }
 
         inline get numFace():uint{
-            if (this._iFlags&CUBEMAP)
+            if (this._iFlags&EImageFlags.CUBEMAP)
             {
                 var nFace:uint=0;
                 for(var i:uint=0;i<32;i++)
@@ -104,9 +105,10 @@ module akra {
                 return 1;
             }
         }
-        dataType():string:
+
+        inline get dataType():string
         {
-             return "ImageData"
+             return "ImgData";
         }
 	}
 }
