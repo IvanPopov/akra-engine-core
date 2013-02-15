@@ -2,22 +2,30 @@
 #define LIGHTPOINT_TS
 
 #include "ILightPoint.ts"
-#include "SceneObject.ts"
+#include "scene/SceneObject.ts"
 #include "math/math.ts"
 
-module akra.scene.objects {
+module akra.scene.light {
 	export struct LightParameters implements ILightParameters {
 		ambient: IColor = new Color;
 	    diffuse: IColor = new Color;
 	    specular: IColor = new Color;
-	    attenuation: IColor = new Color;
+	    attenuation: IVec3 = new Vec3;
 	}
 
-	export class LightPoint extends SceneObject implements ILightPoint {
+	export class LightPoint extends SceneNode implements ILightPoint {
 		protected _bCastShadows: bool = false;
 		protected _isEnabled: bool = true;
 		protected _iMaxShadowResolution: uint = 256;
 		protected _pLightParameters: ILightParameters = new LightParameters;
+
+		inline get enabled(): bool{
+			return this._isEnabled;
+		};
+
+		inline set enabled(bValue: bool){
+			this._isEnabled = bValue;
+		}
 
 
 		inline get params(): ILightParameters {
@@ -37,10 +45,6 @@ module akra.scene.objects {
 			return isOk;
 		}
 
-		inline setEnabled(bValue: bool = true): bool {
-			this._isEnabled = true;
-		}
-
 		inline isShadowCaster(): bool {
 			return this._bCastShadows;
 		}
@@ -52,6 +56,10 @@ module akra.scene.objects {
 		_calculateShadows(): void {
 			CRITICAL("NOT IMPLEMENTED!");
 		}
+	}
+	export function isLightPoint(pNode: ISceneNode){
+		var eType: EEntityTypes = pNode.type;
+		return EEntityTypes.LIGHT_PROJECT <= eType && eType <= EEntityTypes.LIGHT_OMNI_DIRECTIONAL;
 	}
 }
 

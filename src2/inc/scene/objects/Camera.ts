@@ -41,7 +41,7 @@ module akra.scene.objects {
 		}
 	}
 
-	export class Camera extends SceneObject implements ICamera {
+	export class Camera extends SceneNode implements ICamera {
 		/** camera type */
 		protected _eCameraType: ECameraTypes = ECameraTypes.PERSPECTIVE;
 		/** camera options */

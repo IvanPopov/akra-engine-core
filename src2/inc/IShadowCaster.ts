@@ -3,8 +3,8 @@
 
 module akra {
 	export interface IShadowCaster extends ICamera {
-		lightPoint: ILightPoint;
-		face: uint;
+		readonly lightPoint: ILightPoint;
+		readonly face: uint;
 	}
 
 	export interface IShadowCasterCube {

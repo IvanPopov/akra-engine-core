@@ -24,7 +24,7 @@ module akra {
 
 
 
-    export interface ICamera extends ISceneObject {
+    export interface ICamera extends ISceneNode {
     	readonly viewMatrix: IMat4;
     	readonly projectionMatrix: IMat4;
     	readonly projViewMatrix: IMat4;

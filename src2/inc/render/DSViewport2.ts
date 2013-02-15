@@ -272,7 +272,7 @@ module akra.render {
 		    for (i = 0; i < pLightPoints.length; i++) {
 		        pLight = pLightPoints[i];
 
-		        if (!pLight.isEnabled()) {
+		        if (!pLight.enabled) {
 		            continue;
 		        }
 		        

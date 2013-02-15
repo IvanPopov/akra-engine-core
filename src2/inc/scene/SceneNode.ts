@@ -16,8 +16,8 @@ module akra.scene {
 		constructor (pScene: IScene3d) {
 			super();
 
-			// pScene.connect(this, SIGNAL(attached), SLOT(nodeAttachment), EEventTypes.UNICAST);
-			// pScene.connect(this, SIGNAL(detached), SLOT(nodeDetachment), EEventTypes.UNICAST);
+			pScene.connect(this, SIGNAL(attached), SLOT(nodeAttachment), EEventTypes.UNICAST);
+			pScene.connect(this, SIGNAL(detached), SLOT(nodeDetachment), EEventTypes.UNICAST);
 
 			this.scene = pScene;
 

@@ -4,7 +4,7 @@
 #include "ITexture.ts"
 #include "ShadowCaster.ts"
 
-module akra.scene.objects {
+module akra.scene.light {
 	export class OmniLight extends LightPoint implements IOmniLight {
 		protected _pDepthTextureCube: ITexture[] = null;
 		// protected _pColorTexture: ITexture = null;

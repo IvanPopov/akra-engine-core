@@ -1,13 +1,21 @@
 #ifndef SHADOWCASTER_TS
-#ifndef SHADOWCASTER_TS
+#define SHADOWCASTER_TS
 
-#include "Camera.ts"
 #include "IShadowCaster.ts"
+#include "scene/objects/Camera.ts"
 
-module akra.scene.objects {
-	export class ShadowCaster extends Camera implements IShadowCaster {
+module akra.scene.light {
+	export class ShadowCaster extends objects.Camera implements IShadowCaster {
 		protected _pLightPoint: ILightPoint;
 		protected _iFace: uint;
+
+		get lightPoint(): ILightPoint{
+			return this._pLightPoint;
+		};
+
+		get face(): uint{
+			return this._iFace;
+		};
 
 		constructor (pLightPoint: ILightPoint, iFace: uint = POSITIVE_X) {
 			super(pLightPoint.scene);

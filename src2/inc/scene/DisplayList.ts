@@ -18,23 +18,18 @@ module akra.scene {
 		inline set name(sName: string) { this._sName = sName; }
 
 		_onNodeAttachment(pScene: IScene3d, pNode: ISceneNode): void {
-			console.error('here', isSceneObject(pNode), pNode);
-			if (isSceneObject(pNode)) {
-				this.attachObject(<ISceneObject>pNode);
-			}
+			this.attachObject(pNode);
 		}
 
 		_onNodeDetachment(pScene: IScene3d, pNode: ISceneNode): void {
-			if (isSceneObject(pNode)) {
-				this.detachObject(<ISceneObject>pNode);
-			}
+			this.detachObject(pNode);
 		}
 
-		protected attachObject(pObject: ISceneObject): void {
+		protected attachObject(pNode: ISceneNode): void {
 			debug_error("pure virtual method DisplayList::attachObject()");
 		}
 
-		protected detachObject(pObject: ISceneObject): void {
+		protected detachObject(pNode: ISceneNode): void {
 			debug_error("pure virtual method DisplayList::detachObject()");
 		}
 

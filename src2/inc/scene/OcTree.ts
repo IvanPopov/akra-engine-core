@@ -565,15 +565,19 @@ module akra.scene {
 			return this._buildSearchResults(pCamera.searchRect, pCamera.frustum);
 		}
 
-		protected attachObject(pObject: ISceneObject): void {
-			var pNode: IOcTreeNode = this.findTreeNode(pObject);
-			// console.log(pNode);
-			pNode.addMember(pObject);
+		protected attachObject(pNode: ISceneNode): void {
+			console.error(pNode, isSceneObject(pNode));
+			if(isSceneObject(pNode)){
+				var pOcTreeNode: IOcTreeNode = this.findTreeNode(<ISceneObject>pNode);
+				pOcTreeNode.addMember(<ISceneObject>pNode);
+			}
 		};
 
-		protected detachObject(pObject: ISceneObject): void {
-			var pNode: IOcTreeNode = this.findTreeNode(pObject);
-			pNode.removeMember(pObject);
+		protected detachObject(pNode: ISceneNode): void {
+			if(isSceneObject(pNode)){
+				var pOcTreeNode: IOcTreeNode = this.findTreeNode(<ISceneObject>pNode);
+				pOcTreeNode.removeMember(<ISceneObject>pNode);
+			}
 		};
 
 		_toSimpleObject(pNode?: IOcTreeNode = this._pHead): any{

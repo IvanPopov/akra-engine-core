@@ -2,6 +2,8 @@
 // #include "ISceneManager.ts"
 // #include "core/Engine.ts"
 #include "scene/OcTree.ts"
+#include "scene/LightGraph.ts"
+#include "scene/light/ProjectLight.ts"
 #include "akra.ts"
 
 module akra {
@@ -14,6 +16,11 @@ module akra {
 
 	var i: int = pScene3D.addDisplayList(pOctree);
 	debug_assert(i == DL_DEFAULT, "invalid default list index");
+
+	var pLightGraph: ILightGraph = new scene.LightGraph();
+
+	i = pScene3D.addDisplayList(pLightGraph);
+	debug_assert(i == DL_LIGHTING, "invalid default list index");
 
 	// var pObject: ISceneObject = new scene.SceneObject(pScene3D);
 	// pObject.create();
@@ -50,6 +57,10 @@ module akra {
 	pCamera.attachToParent(pScene3D.getRootNode());
 
 	pScene3D.recursiveUpdate();
+
+	var pLight: IProjectLight = new scene.light.ProjectLight(pScene3D);
+	pLight.create();
+	pLight.attachToParent(pScene3D.getRootNode());
 
 	//var pResult: any = pOctree._buildSearchResults(pCamera.searchRect, pCamera.frustum);
 	var pResult: any = pCamera.display(DL_DEFAULT);
