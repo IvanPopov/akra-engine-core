@@ -4,7 +4,7 @@ var exec 	= require('child_process').exec;
 var zip 	= require("node-native-zip");
 var path 	= require('path');
 var spawn 	= require('child_process').spawn;
-var md5 	= require('MD5');
+//var md5 	= require('MD5');
 var stream  = require('stream');
 var prompt 	= require('prompt');
 
@@ -425,7 +425,7 @@ function findDepends(sData) {
 
 function fetchDeps(sDir, pDeps) {
 	for (var i in pDeps) {
-		
+
 		var sDep = path.normalize( pOptions.includeDir + pDeps[i]);
 
 		// console.log(sDep);
