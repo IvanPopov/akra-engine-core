@@ -99,6 +99,8 @@ module akra.webgl {
 
 	            debug_print("loaded WebGL extension: %1", pSupportedExtensionList[i]);
 
+                console.log(pWebGLExtension);
+
 	            for (var j in pWebGLExtension) {
 	                if (isFunction(pWebGLExtension[j])) {
 
@@ -263,6 +265,12 @@ module akra.webgl {
             case EPixelFormats.FLOAT32_RGB:
             case EPixelFormats.FLOAT32_RGBA:
                 return GL_FLOAT;
+
+            case EPixelFormats.DEPTH:
+                return GL_UNSIGNED_INT;
+            case EPixelFormats.DEPTH_BYTE:
+                return GL_UNSIGNED_BYTE;
+
             case EPixelFormats.DXT1:
             case EPixelFormats.DXT3:
             case EPixelFormats.DXT5:
@@ -323,6 +331,12 @@ module akra.webgl {
             case EPixelFormats.FLOAT32_GR:
             case EPixelFormats.RG8:
                 return webgl.hasExtension(EXT_TEXTURE_RG) ? GL_RED_EXT : 0;
+
+            //depth
+            case EPixelFormats.DEPTH:
+                return GL_DEPTH_COMPONENT;
+            case EPixelFormats.DEPTH_BYTE:
+                return GL_DEPTH_COMPONENT;
 
             case EPixelFormats.A4L4:
             case EPixelFormats.R3G3B2:

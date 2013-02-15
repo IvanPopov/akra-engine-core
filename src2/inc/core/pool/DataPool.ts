@@ -177,7 +177,7 @@ module akra.core.pool {
 		private bInitialized: bool = false;
 
 		/** Массив групп */
-		private pGroupList: PoolGroup[] = null;
+		private pGroupList: PoolGroup[] = [];
 
 		/** Общее число ячеек */
 		private iTotalMembers: uint = 0;

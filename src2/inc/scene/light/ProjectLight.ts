@@ -3,6 +3,7 @@
 
 #include "ITexture.ts"
 #include "IResourcePoolManager.ts"
+#include "IRenderTarget.ts"
 #include "ShadowCaster.ts"
 
 module akra.scene.light {
@@ -41,8 +42,6 @@ module akra.scene.light {
 			pCaster.setInheritance(ENodeInheritance.ALL);
 			pCaster.attachToParent(this);
 
-			pCaster.accessLocalMatrix().identity();
-
 			if (this.isShadowCaster()) {
 				this._m4fOptimizdeProj = new Mat4();
 			}
@@ -56,7 +55,7 @@ module akra.scene.light {
 			return this._pDepthTexture;
 		}
 
-		inline getRenderTarget(): ITexture {
+		inline getRenderTarget(): IRenderTarget {
 			return this._pDepthTexture.getBuffer().getRenderTarget();
 		}
 
@@ -74,7 +73,7 @@ module akra.scene.light {
 			var iSize: uint = this._iMaxShadowResolution;
 
 			if (this._pDepthTexture) {
-				this._pDepthTexture.destroy();
+				this._pDepthTexture.destroyResource();
 			}
 
 			var pDepthTexture: ITexture = this._pDepthTexture = 

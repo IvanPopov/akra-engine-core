@@ -208,12 +208,8 @@ module akra.core.pool.resources {
             }
         }
 
-        destroy(): void {
-            this.freeInternalTexture();
-        }
-
         destroyResource(): bool {
-            this.destroy();
+            this.freeInternalTexture();
             this.notifyDestroyed();
             return true;
         }
