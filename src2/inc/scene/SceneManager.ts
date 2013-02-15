@@ -24,6 +24,10 @@ module akra.scene {
             this._pTimer = pEngine.getTimer();
         }
 
+        getEngine(): IEngine{
+            return this._pEngine;
+        }
+
         update(): void {
             var isSceneUpdated: bool = false;
             // add the real time elapsed to our

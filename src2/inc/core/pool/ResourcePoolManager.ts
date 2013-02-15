@@ -366,7 +366,6 @@ module akra.core.pool {
 
         inline createModel(sResourceName: string): IModel {
             return <IModel>this.colladaPool.createResource(sResourceName);   
-            return null;
         }
 
         inline loadModel(sFilename: string, pOptions: any = null): IModel {
@@ -398,7 +397,6 @@ module akra.core.pool {
 
             this.pRenderMethodPool = new ResourcePool(this, resources.RenderMethod);
             this.pRenderMethodPool.initialize(16);
-
 
 
             this.pColladaPool = new ResourcePool(this, resources.Collada);

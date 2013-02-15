@@ -55,6 +55,10 @@ module akra.scene {
 
 		}
 
+		inline getManager(): ISceneManager{
+			return this._pSceneManager;
+		}
+
 		inline isUpdated(): bool {
 			return this._isUpdated;
 		}
