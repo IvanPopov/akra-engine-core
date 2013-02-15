@@ -84,8 +84,15 @@ module akra.scene {
             return null;
         }
 
-        getScene3D(IScene: uint = 0): IScene3d {
-            var pScene: IScene = this._pSceneList[IScene];
+        getScene3D(iScene: uint = 0): IScene3d {
+            var pScene: IScene;
+
+            if (iScene === 0 && this._pSceneList.length === 0) {
+                debug_print("creating default scene...");
+                this.createScene3D();
+            }
+
+            pScene = this._pSceneList[iScene];
             
             if (pScene && pScene.type === ESceneTypes.TYPE_3D) {
                 return <IScene3d>pScene;

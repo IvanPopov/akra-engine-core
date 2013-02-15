@@ -616,23 +616,23 @@ module akra.core.pool.resources {
         
         private COLLADATransform(pXML: Element, id?: string): IColladaTransform {
             var pTransform: IColladaTransform = {
-                sid   : attr(pXML, "sid"),
-                transform  : String(pXML.nodeName),
-                value : null
+                sid         : attr(pXML, "sid"),
+                transform   : String(pXML.nodeName),
+                value       : null
             };
 
             if (isString(id) && isDefAndNotNull(pTransform.sid)) {
                 this.link(id + "/" + pTransform.sid, pTransform);
             }
             else {
-                this.link(id + "/" + pTransform.name, pTransform);
+                this.link(id + "/" + pTransform.transform, pTransform);
             }
 
             var v4f: IVec4, 
                 m4f: IMat4;
             var pData: float[];
 
-            switch (pTransform.name) {
+            switch (pTransform.transform) {
                 case "rotate":
                     
                     pData = new Array(4);
@@ -661,7 +661,7 @@ module akra.core.pool.resources {
                     break;
 
                 default:
-                    ERROR("unsupported transform detected: " + pTransform.name);
+                    ERROR("unsupported transform detected: " + pTransform.transform);
             }
 
 
@@ -1643,7 +1643,7 @@ module akra.core.pool.resources {
             var pXMLData: Element = firstChild(pXML, "instance_visual_scene");
             var pScene: IColladaVisualScene = <IColladaVisualScene>this.source(attr(pXMLData, "url"));
 
-            if (isNull(pXMLData) || (pScene)) {
+            if (isNull(pXMLData) || isNull(pScene)) {
                 debug_warning("collada model: <" + this.getBasename() + "> has no visual scenes.");
             }
 

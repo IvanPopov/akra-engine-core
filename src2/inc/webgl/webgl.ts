@@ -48,6 +48,11 @@ module akra.webgl {
         var pWebGLExtentionList: Object = {};
         var pWebGLExtension: Object;
         
+        //test context not created yet
+        if (isNull(pSupportedExtensionList)) {
+            return pWebGLContext;
+        }
+
         for (var i: int = 0; i < pSupportedExtensionList.length; ++ i) {
             if (pWebGLExtension = pWebGLContext.getExtension(pSupportedExtensionList[i])) {
                 pWebGLExtentionList[pSupportedExtensionList[i]] = pWebGLExtension;

@@ -2,13 +2,17 @@
 #include "akra.ts"
 
 module akra {
-	var pEngine: IEngine = createEngine();
-	var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
-	var pCube: ICollada = pRmgr.loadModel("models/cube.dae");
-
-	test("Collada basic usage", () => {
+	asyncTest("Collada basic usage", () => {
 		shouldBeNotNull("Collada model must be laoded");
 
-		check(pCube);
+		var pEngine: IEngine = createEngine();
+		var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
+		var pCube: ICollada = pRmgr.loadModel("models/cube.dae");
+		var pScene: IScene3d = pEngine.getScene();
+
+		pCube.bind(SIGNAL(loaded), function (pCube: ICollada) {
+			check(pCube);
+			pCube.attachToScene(pScene.getRootNode());
+		});
 	});
 }

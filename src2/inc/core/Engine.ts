@@ -7,6 +7,7 @@
 #include "IResourcePoolManager.ts"
 #include "IRenderer.ts"
 #include "IUtilTimer.ts"
+#include "IScene3d.ts"
 
 #include "pool/ResourcePoolManager.ts"
 #include "scene/SceneManager.ts"
@@ -68,19 +69,23 @@ module akra.core {
 			this.pause(false);
 		}
 
-		getSceneManager(): ISceneManager {
+		inline getScene(): IScene3d {
+			return this._pSceneManager.getScene3D(0);
+		}
+
+		inline getSceneManager(): ISceneManager {
 			return this._pSceneManager;
 		}
 
-		getParticleManager(): IParticleManager {
+		inline getParticleManager(): IParticleManager {
 			return null;
 		}
 
-		getResourceManager(): IResourcePoolManager {
+		inline getResourceManager(): IResourcePoolManager {
 			return this._pResourceManager;
 		}
 
-		getRenderer(): IRenderer {
+		inline getRenderer(): IRenderer {
 			return this._pRenderer;
 		}
 	
