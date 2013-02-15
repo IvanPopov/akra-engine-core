@@ -11,7 +11,6 @@ module akra {
 
 	export interface IPacker extends IBinWriter {
 		template: IPackerTemplate;
-		options: IPackerOptions;
 
 		write(pData: any, sType?: string, bHeader?: bool): bool;
 	}

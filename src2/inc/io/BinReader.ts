@@ -88,12 +88,14 @@ module akra.io {
 		    }
 
 		    sString = sString.fromUTF8();
+		    // LOG("string:", sString);
 		    return sString;/*sString.substr(0, iStringLength);//sString;//*/
 		}
 
 		uint32(): uint {
 			var i: uint = this._pDataView.getUint32(this._iPosition, true);
 		    this._iPosition += 4;
+		    // LOG("uint32:", i);
 		    return i;
 		}
 
@@ -140,6 +142,7 @@ module akra.io {
 		float32(): float {
 			var f: float = this._pDataView.getFloat32(this._iPosition, true);
 		    this._iPosition += 4;
+		    // LOG("float32:", f);
 		    return f;
 		}
 
