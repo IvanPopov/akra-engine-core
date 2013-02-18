@@ -267,8 +267,10 @@ module akra.core.pool {
 
 		inline notifyLoaded(): void {
 			this.setAlteredFlag(false);
+			LOG("ResourcePoolItem::notifyLoaded();");
     		if (this.setResourceFlag(EResourceItemEvents.LOADED, true)) {
     			this.loaded();
+    			LOG("ResourcePoolItem::loaded();");
     		}
 		}
 

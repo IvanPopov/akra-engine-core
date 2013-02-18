@@ -4,64 +4,18 @@
 #include "IAnimationFrame.ts"
 #include "math/math.ts"
 
+#define AF_NUM 4 * 4096
+
 module akra.animation {
 	export class AnimationFrame implements IAnimationFrame{
-		private _fTime:   float = 0.0;
-		private _fWeight: float = 1.0;
+		private time: float 	= 0.0;
+		private weight: float 	= 1.0;
 
-		private _pMatrix: IMat4 = null;
+		private matrix: IMat4 	= null;
 		
-		private _qRotation:      IQuat4 = new Quat4;
-		private _v3fScale:       IVec3  = new Vec3;
-		private _v3fTranslation: IVec3  = new Vec3;
-
-		inline get time(): float{
-			return this._fTime;
-		}
-
-		inline set time(fValue: float){
-			this._fTime = fValue;
-		}
-
-		inline get weight(): float{
-			return this._fWeight;
-		}
-
-		inline set weight(fValue: float){
-			this._fWeight = fValue;
-		}
-
-		inline get matrix(): IMat4{
-			return this._pMatrix;
-		}
-
-		inline set matrix(pMatrix: IMat4){
-			this._pMatrix = pMatrix;
-		}
-
-		inline get rotation(): IQuat4{
-			return this._qRotation;
-		}
-
-		inline set rotation(qRotation: IQuat4){
-			this._qRotation = qRotation;
-		}
-
-		inline get scale(): IVec3{
-			return this._v3fScale;
-		}
-
-		inline set scale(v3fScale: IVec3){
-			this._v3fScale = v3fScale;
-		}
-
-		inline get translation(): IVec3{
-			return this._v3fTranslation;
-		}
-
-		inline set translation(v3fTranslation: IVec3){
-			this._v3fTranslation = v3fTranslation;
-		}
+		private rotation: IQuat4 	= new Quat4;
+		private scale: IVec3  		= new Vec3;
+		private translation: IVec3  = new Vec3;
 
 		constructor(fTime?: float, pMatrix?: IMat4, fWeight?: float) {
 			switch (arguments.length) {		
@@ -119,6 +73,12 @@ module akra.animation {
 			this.time = pFrame.time;
 			this.weight = pFrame.weight;
 		}
+
+		/**
+		 * Добавить данные к фрейму с их весом.
+		 * После данного метода фрейму потребуется нормализация!!!!
+		 */
+
 
 		add(pFrame: IAnimationFrame, isFirst: bool): IAnimationFrame {
 			var fWeight: float = pFrame.weight;
@@ -223,6 +183,8 @@ module akra.animation {
 				pResultData[i] = pEndData[i] * fBlend + pStartData[i] * fBlendInv;
 			};
 		}
+
+		ALLOCATE_STORAGE(AnimationFrame, AF_NUM);
 	} 
 
 	export function animationFrame(): IAnimationFrame {

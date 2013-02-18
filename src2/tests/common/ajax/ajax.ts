@@ -4,23 +4,29 @@
 module akra {
 	
 	test("Ajax API test", () => {
-		shouldBeTrue("Sync ajax request test");
-		shouldBeTrue("Async ajax request test");
-		shouldBeTrue("Async error test");
-		
-		check(io.ajax("data/data.txt").data === "test_data");
+		shouldBe("Sync ajax request test", "test_data");
+		check(io.ajax("data/data.txt").data);
+	});
+
+	asyncTest("Ajax async request", () => {
+		shouldBe("Async ajax request test", "test_data");
 
 		io.ajax(<IAjaxParams>{
 			url: "data/data.txt",
 			success: function (pData: string): void {
-				check(<string>pData === "test_data");
+				check(<string>pData);
+				run();
 			}
 		});
+	});
+
+	asyncTest("Ajax error test", () => {
+		shouldBeTrue("Async error test");
 
 		io.ajax({
 			url: "data/not_exists",
 			error: function () {
-				console.log(arguments);
+				LOG(arguments);
 				check(true);
 			}
 		});

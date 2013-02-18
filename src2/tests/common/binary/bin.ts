@@ -1,7 +1,8 @@
+#include "util/testutils.ts"
 #include "io/BinReader.ts"
 #include "io/BinWriter.ts"
-#include "util/testutils.ts"
-#include "IPacker.ts"
+#include "io/Packer.ts"
+#include "io/UnPacker.ts"
 
 module akra {
 	
@@ -119,5 +120,36 @@ module akra {
 
 	    check(pReader.stringArray());
 		
+	});
+
+	test("Packer/Unpacker tests", () => {
+		var f32a: Float32Array = new Float32Array([4, 3, 2, 1]);
+		var fnNoName: Function = function (b, c, a) {
+			return Math.pow((b + a) * c, 2);
+		};
+		
+		var pSub: Object = {
+			name: "sub",
+			a: [1, 2, 3, 4, 5],
+			fa: f32a,
+			fn: fnNoName
+		};
+
+		var pObject: Object = {
+			value: [pSub, pSub]
+		}
+
+		shouldBeArray("Must be " + f32a.toString(), f32a);
+		shouldBeTrue("Function packing");
+		shouldBeTrue("Object with circular links");
+
+
+		check(io.undump(io.dump(f32a)));
+		check((<Function>io.undump(io.dump(fnNoName)))(10, 20, 30) == fnNoName(10, 20, 30));
+		
+		var pCopy = io.undump(io.dump(pObject));
+
+		check(pCopy.value[0] === pCopy.value[1] && pCopy.value[0].fn(10, 20, 30) == fnNoName(10, 20 ,30));
+
 	});
 }

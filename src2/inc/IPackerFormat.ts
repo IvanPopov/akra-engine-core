@@ -17,29 +17,6 @@ module akra {
 		 * @type{String | (pData: any) => void}
 		 */
 		write?: any;
-
-		/**
-		 * Какие поля надо сохранять
-		 */
-		members?: { 
-			[field: string]: string;
-			[field: string]: IPackerCodec;
-		};
-
-		/**
-		 * Какой конструктор использовать, при воссоздании объекта
-		 */
-		ctor?: any;
-
-		/**
-		 * Есть ли базовые классы.
-		 */
-		base?: string[];
-
-		/**
-		 * Какие типы данных, вложенные в этои, сохранять не надо
-		 */
-		blacklist?: IPackerBlacklist;
 	}
 
 	export interface IPackerFormat {

@@ -83,6 +83,8 @@ module akra.io {
 
 		    str = String(str);
 		    
+		    // LOG("string: ", str);
+
 		    var sUTF8String: string = str.toUTF8();
 		    var iStrLen: int = sUTF8String.length;
 		    var arrUTF8string: Uint8Array = BinWriter.rawStringToBuffer(sUTF8String);
@@ -116,6 +118,8 @@ module akra.io {
 		    if (isNull(iValue)) {
 		        iValue = 0;
 		    }
+
+		    // LOG("uint" + iX + ": ", iValue);
 
 		    IS_NUMBER(iValue);
 
@@ -194,6 +198,7 @@ module akra.io {
 		 * @tparam bool bValue число.
 		 */
 		inline bool(bValue: bool): void {
+			// LOG(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> BOOL >>> ");
 		    this.uintX(bValue ? 1 : 0, 8);
 		}
 
@@ -219,6 +224,7 @@ module akra.io {
 		        iValue = 0;
 		    }
 
+		    // LOG("array uint", iX, ": ", iValue);
 		    
 		    IS_NUMBER(iValue)
 		    debug_assert(0 <= iValue && iValue <= Math.pow(2, iX), "Это значение не влезет в тип uint" + iX);
@@ -269,6 +275,8 @@ module akra.io {
 		    if (isNull(iValue)) {
 		        iValue = 0;
 		    }
+
+		    // LOG("int", iX, ": ", iValue);
 
 		    IS_NUMBER(iValue)
 		    debug_assert(-Math.pow(2, iX - 1) <= iValue && iValue <= Math.pow(2, iX - 1) - 1,
@@ -356,6 +364,8 @@ module akra.io {
 		        iValue = 0;
 		    }
 
+		    // LOG("array int", iX, ": ", iValue);
+
 		    IS_NUMBER(iValue)
 		    debug_assert(-Math.pow(2, iX - 1) <= iValue && iValue <= Math.pow(2, iX - 1) - 1,
 		                 "Это значение не влезет в тип int" + iX);
@@ -404,6 +414,8 @@ module akra.io {
 		    IS_NUMBER(fValue)
 		    //debug_assert(typeof(fValue) == 'number', "Не является числом");
 		    
+		    // LOG("float", iX, ": ", fValue);
+
 		    var arrTmpBuf: ArrayBufferView;
 
 		    switch (iX) {

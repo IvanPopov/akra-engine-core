@@ -20,7 +20,7 @@
 #include "resources/Img.ts"
 #include "resources/Component.ts"
 
-// #include "resources/Collada.ts"
+#include "resources/Collada.ts"
 
 #ifdef WEBGL
 
@@ -45,7 +45,7 @@ module akra.core.pool {
         private pRenderMethodPool: IResourcePool;
         private pVertexBufferPool: IResourcePool;
         private pIndexBufferPool: IResourcePool;
-        // private pColladaPool: IResourcePool;
+        private pColladaPool: IResourcePool;
         private pImagePool: IResourcePool;
         private pTexturePool: IResourcePool;
         private pVideoBufferPool: IResourcePool;
@@ -69,7 +69,7 @@ module akra.core.pool {
         get renderMethodPool(): IResourcePool { return this.pRenderMethodPool; }
         get vertexBufferPool(): IResourcePool { return this.pVertexBufferPool; }
         get indexBufferPool(): IResourcePool { return this.pIndexBufferPool; }
-        // get colladaPool(): IResourcePool { return this.pColladaPool; }
+        get colladaPool(): IResourcePool { return this.pColladaPool; }
         get imagePool(): IResourcePool { return this.pImagePool; }
         get texturePool(): IResourcePool { return this.pTexturePool; }
         get videoBufferPool(): IResourcePool { return this.pVideoBufferPool; }
@@ -365,8 +365,7 @@ module akra.core.pool {
         }
 
         inline createModel(sResourceName: string): IModel {
-            // return <IModel>this.colladaPool.createResource(sResourceName);   
-            return null;
+            return <IModel>this.colladaPool.createResource(sResourceName);   
         }
 
         inline createImg(sResourceName: string): IImg {
@@ -374,19 +373,19 @@ module akra.core.pool {
         }
 
         inline loadModel(sFilename: string, pOptions: any = null): IModel {
-            // if (util.pathinfo(sFilename).ext.toLowerCase() === "dae") {
-            //     var pCollada: ICollada = <ICollada>this.colladaPool.findResource(sFilename);
+            if (util.pathinfo(sFilename).ext.toLowerCase() === "dae") {
+                var pCollada: ICollada = <ICollada>this.colladaPool.findResource(sFilename);
 
-            //     if (isNull(pCollada)) {
-            //         pCollada = <ICollada>this.colladaPool.createResource(sFilename);
-            //     }
+                if (isNull(pCollada)) {
+                    pCollada = <ICollada>this.colladaPool.createResource(sFilename);
+                }
 
-            //     if (!pCollada.isResourceLoaded()) {
-            //         pCollada.loadResource(sFilename, pOptions);
-            //     }
+                if (!pCollada.isResourceLoaded()) {
+                    pCollada.loadResource(sFilename, <IColladaLoadOptions>pOptions);
+                }
 
-            //     return pCollada;
-            // }
+                return pCollada;
+            }
 
             return null;
         }
@@ -404,9 +403,8 @@ module akra.core.pool {
             this.pRenderMethodPool.initialize(16);
 
 
-
-            // this.pColladaPool = new ResourcePool(this, resources.Collada);
-            // this.pColladaPool.initialize(0);
+            this.pColladaPool = new ResourcePool(this, resources.Collada);
+            this.pColladaPool.initialize(0);
 
             this.pImagePool = new ResourcePool(this, resources.Img);
             this.pImagePool.initialize(16);
@@ -466,10 +464,10 @@ module akra.core.pool {
                 new ResourceCode(
                     <number>EResourceFamilies.VIDEO_RESOURCE,
                     <number>EVideoResources.RENDERMETHOD_RESOURCE));
-            // this.pColladaPool.registerResourcePool(
-            //     new ResourceCode(
-            //         <number>EResourceFamilies.VIDEO_RESOURCE,
-            //         <number>EVideoResources.MODEL_RESOURCE));
+            this.pColladaPool.registerResourcePool(
+                new ResourceCode(
+                    <number>EResourceFamilies.VIDEO_RESOURCE,
+                    <number>EVideoResources.MODEL_RESOURCE));
             this.pImagePool.registerResourcePool(
                 new ResourceCode(
                     <number>EResourceFamilies.VIDEO_RESOURCE,
@@ -500,7 +498,7 @@ module akra.core.pool {
             this.pIndexBufferPool.unregisterResourcePool();
             this.pEffectPool.unregisterResourcePool();
             this.pRenderMethodPool.unregisterResourcePool();
-            // this.pColladaPool.unregisterResourcePool();
+            this.pColladaPool.unregisterResourcePool();
             this.pImagePool.unregisterResourcePool();
             this.pSurfaceMaterialPool.unregisterResourcePool();
             this.pVideoBufferPool.unregisterResourcePool();

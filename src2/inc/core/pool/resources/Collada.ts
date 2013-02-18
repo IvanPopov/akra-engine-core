@@ -25,13 +25,6 @@ module akra.core.pool.resources {
     function getSupportedFormat(sSemantic: string): IColladaUnknownFormat[];
     function calcFormatStride(pFormat: IColladaUnknownFormat[]): int;
     
-    // polygon index convertion
-    
-    function polygonToTriangles(pXML: Element, iStride: int): uint[];
-    function polylistToTriangles(pXML: Element, iStride: int): uint[];
-    function trifanToTriangles(pXML: Element, iStride: int): uint[];
-    function tristripToTriangles(pXML: Element, iStride: int): uint[];
-    
     // data convertion
 
     function parseBool(sValue: string): bool;
@@ -52,13 +45,10 @@ module akra.core.pool.resources {
     function sortArrayByProperty(pData: any[], sProperty: string): any[];
 
     //xml
-    
-    function eachNode(pXMLList: NodeList, fnCallback: IXMLExplorer, nMax?: uint): void;
-    function eachChild(pXML: Element, fnCallback: IXMLExplorer): void;
-    function eachByTag(pXML: Element, sTag: string, fnCallback: IXMLExplorer, nMax?: uint): void;
-    function firstChild(pXML: Element, sTag?: string): Element;
+
     function stringData(pXML: Element): string;
     function attr(pXML: Element, sName: string): string;
+    function firstChild(pXML: Element, sTag?: string): Element;
 
     // Akra convertions functions
     // -------------------------------------------------------
@@ -93,6 +83,19 @@ module akra.core.pool.resources {
 
         parse(sXMLData: string, pOptions?: IColladaLoadOptions): bool;
         // load(sFilename: string, fnCallback?: IColladaLoadCallback, pOptions?: IColladaLoadOptions): void;
+
+        // polygon index convertion
+    
+        private polygonToTriangles(pXML: Element, iStride: int): uint[];
+        private polylistToTriangles(pXML: Element, iStride: int): uint[];
+        private trifanToTriangles(pXML: Element, iStride: int): uint[];
+        private tristripToTriangles(pXML: Element, iStride: int): uint[];
+
+        // xml    
+
+        private eachNode(pXMLList: NodeList, fnCallback: IXMLExplorer, nMax?: uint): void;
+        private eachChild(pXML: Element, fnCallback: IXMLExplorer): void;
+        private eachByTag(pXML: Element, sTag: string, fnCallback: IXMLExplorer, nMax?: uint): void;
 
         // helper functions
     
@@ -261,6 +264,18 @@ module akra.core.pool.resources {
             {lib : 'library_animations',    element : 'animation',      loader : "COLLADAAnimation"     }
         ];
 
+        private static COLLADA_MATERIAL_NAMES: string[] = [
+            "emission",
+            "ambient",
+            "diffuse",
+            "shininess",
+            "reflective",
+            "reflectivity",
+            "transparent",
+            "transparency",
+            "specular"
+        ];
+
         //=======================================================================================
         
         private _pModel: IModel = null;
@@ -284,6 +299,167 @@ module akra.core.pool.resources {
 
         }
 
+        // polygon index convertion
+    
+
+        private trifanToTriangles(pXML: Element, iStride: int): uint[] {
+            var pFans2Tri: uint[] = [0, 0, 0];
+            var pData: uint[] = [];
+            var tmp: uint[] = new Array(iStride), n;
+            var pIndexes: uint[] = [];
+
+            this.eachByTag(pXML, "p", function (pXMLData) {
+                n = string2IntArray(stringData(pXMLData), pData);
+                for (var i: int = 0; i < 3; i++) {
+                    retrieve(pData, tmp, iStride, i, 1);
+                    for (var j: int = 0; j < iStride; ++j) {
+                        pIndexes.push(tmp[j]);
+                    }
+                }
+
+                for (var i: int = 3, m = n / iStride; i < m; i++) {
+                    pFans2Tri[1] = i - 1;
+                    pFans2Tri[2] = i;
+                    for (var j: int = 0; j < pFans2Tri.length; ++j) {
+                        for (var k: int = 0; k < iStride; ++k) {
+                            pIndexes.push(pData[pFans2Tri[j] * iStride + k]);
+                        }
+                    }
+                }
+            });
+
+            return pIndexes;
+        }
+
+        private inline polygonToTriangles(pXML: Element, iStride: int): uint[] {
+            //TODO для невыпуклых многоугольников с самоперечечениями работать будет не верно
+            return this.trifanToTriangles(pXML, iStride);
+        }
+
+        private tristripToTriangles(pXML: Element, iStride: int): uint[] {
+            var pStrip2Tri: uint[] = [0, 0, 0];
+            var pData: uint[] = [];
+            var tmp: uint[] = new Array(iStride), n;
+            var pIndexes: uint[] = [];
+
+            this.eachByTag(pXML, "p", function (pXMLData) {
+                n = string2IntArray(stringData(pXMLData), pData);
+
+                for (var i: int = 0; i < 3; i++) {
+                    retrieve(pData, tmp, iStride, i, 1);
+                    for (var j: int = 0; j < iStride; ++j) {
+                        pIndexes.push(tmp[j]);
+                    }
+                }
+
+                for (var i: int = 3, m = n / iStride; i < m; i++) {
+                    pStrip2Tri[0] = i - 1;
+                    pStrip2Tri[1] = i - 2;
+                    pStrip2Tri[2] = i;
+                    for (var j: int = 0; j < pStrip2Tri.length; ++j) {
+                        for (var k: int = 0; k < iStride; ++k) {
+                            pIndexes.push(pData[pStrip2Tri[j] * iStride + k]);
+                        }
+                    }
+                }
+            });
+
+            return pIndexes;
+        }
+
+        private polylistToTriangles(pXML: Element, iStride: int): uint[] {
+            var pXMLvcount: Element = firstChild(pXML, "vcount");
+            var pXMLp: Element = firstChild(pXML, "p");
+            var pVcount: uint[] = new Array(parseInt(attr(pXML, "count")));
+            var pData: uint[], 
+                pIndexes: uint[];
+            var n: uint, h: int = 0;
+            var tmp = new Array(128);
+            var buf = new Array(256);
+            var pPoly2Tri = [0, 0, 0];
+
+            string2IntArray(stringData(pXMLvcount), pVcount);
+
+            var nElements: uint = 0, 
+                nTotalElement: uint = 0;
+
+            for (var i: int = 0; i < pVcount.length; i++) {
+                nElements += pVcount[i];
+                nTotalElement += (pVcount[i] - 2) * 3;
+            }
+
+            pIndexes = new Array(iStride * nTotalElement);
+            pData = new Array(iStride * nElements);
+
+            string2IntArray(stringData(pXMLp), pData);
+
+            for (var i: int = 0, m = 0; i < pVcount.length; i++) {
+                n = retrieve(pData, tmp, iStride, m, pVcount[i]);
+
+                for (var j: int = 0; j < 3; j++) {
+                    retrieve(tmp, buf, iStride, j, 1);
+                    for (var k: int = 0; k < iStride; ++k) {
+                        pIndexes[h++] = buf[k];
+                    }
+                }
+
+                for (var x: int = 3, t = n / iStride; x < t; x++) {
+                    pPoly2Tri[1] = x - 1;
+                    pPoly2Tri[2] = x;
+                    for (var j: int = 0; j < pPoly2Tri.length; ++j) {
+                        for (var k: int = 0; k < iStride; ++k) {
+                            pIndexes[h++] = pData[(m + pPoly2Tri[j]) * iStride + k];
+                        }
+                    }
+                }
+
+                m += pVcount[i];
+            }
+
+            return pIndexes;
+        } 
+
+        //xml
+    
+        private eachNode(pXMLList: NodeList, fnCallback: IXMLExplorer, nMax?: uint): void {
+            var n: int = pXMLList.length, i: int;
+            nMax = (isNumber(nMax) ? (nMax < n ? nMax : n) : n);
+
+            n = 0;
+            i = 0;
+
+            while (n < pXMLList.length) {
+                //skip text nodes
+                if (pXMLList[n ++].nodeType === Node.TEXT_NODE) {
+                    continue;
+                }
+
+                var pXMLData: Element = <Element>pXMLList[n - 1];
+                fnCallback.call(this, pXMLData, pXMLData.nodeName);
+
+                i ++;
+
+                if (nMax === i) {
+                    break;
+                }
+            }
+
+    //        for (var i = 0; i < nMax; i++) {
+    //            var pXMLData = pXMLList.item(i);
+    //            var sName = pXMLData.getNodeName();
+    //            fnCallback(pXMLData, sName);
+    //        }
+        }
+
+        private eachChild(pXML: Element, fnCallback: IXMLExplorer): void {
+            this.eachNode(pXML.childNodes, fnCallback);
+        }
+        
+        private inline eachByTag(pXML: Element, sTag: string, fnCallback: IXMLExplorer, nMax?: uint): void {
+            this.eachNode(pXML.getElementsByTagName(sTag), fnCallback, nMax);
+        }
+
+        
         // helper functions
     
         private COLLADATranslateMatrix(pXML: Element): IMat4 {
@@ -440,23 +616,23 @@ module akra.core.pool.resources {
         
         private COLLADATransform(pXML: Element, id?: string): IColladaTransform {
             var pTransform: IColladaTransform = {
-                sid   : attr(pXML, "sid"),
-                transform  : String(pXML.nodeName),
-                value : null
+                sid         : attr(pXML, "sid"),
+                transform   : String(pXML.nodeName),
+                value       : null
             };
 
             if (isString(id) && isDefAndNotNull(pTransform.sid)) {
                 this.link(id + "/" + pTransform.sid, pTransform);
             }
             else {
-                this.link(id + "/" + pTransform.name, pTransform);
+                this.link(id + "/" + pTransform.transform, pTransform);
             }
 
             var v4f: IVec4, 
                 m4f: IMat4;
             var pData: float[];
 
-            switch (pTransform.name) {
+            switch (pTransform.transform) {
                 case "rotate":
                     
                     pData = new Array(4);
@@ -485,7 +661,7 @@ module akra.core.pool.resources {
                     break;
 
                 default:
-                    ERROR("unsupported transform detected: " + pTransform.name);
+                    ERROR("unsupported transform detected: " + pTransform.transform);
             }
 
 
@@ -502,7 +678,7 @@ module akra.core.pool.resources {
                 type        : null
             };
 
-            eachChild(pXML, function (pXMLData: Element, sName?: string) {
+            this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
                 switch (sName) {
                     case "semantic":
                         pParam.semantics = stringData(pXMLData);
@@ -559,7 +735,7 @@ module akra.core.pool.resources {
                 }
             };
 
-            eachChild(pXML, function (pXMLNode: Element, sName?: string) {
+            this.eachChild(pXML, (pXMLNode: Element, sName?: string) => {
                 var sValue: string = stringData(pXMLNode);
 
                 switch (sName) {
@@ -594,7 +770,7 @@ module akra.core.pool.resources {
         }
 
         private COLLADALibrary(pXML: Element, pTemplate: IColladaLibraryTemplate): IColladaLibrary {
-            if (isNull(pXML)) {
+            if (!isDefAndNotNull(pXML)) {
                 return null;
             }
 
@@ -604,7 +780,7 @@ module akra.core.pool.resources {
 
             pLib[sTag] = {};
 
-            eachChild(pXML, function (pXMLData: Element, sName?: string): void {
+            this.eachChild(pXML, (pXMLData: Element, sName?: string): void => {
                 if (sTag !== sName) {
                     return;
                 }
@@ -633,7 +809,7 @@ module akra.core.pool.resources {
             };
 
 
-            eachChild(pXML, function (pXMLData: Element, sName?: string) {
+            this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
                 pAccessor.params.push({
                                           name : attr(pXMLData, "name"),
                                           type : attr(pXMLData, "type")
@@ -643,7 +819,8 @@ module akra.core.pool.resources {
             return pAccessor;
         }
         
-        private COLLADAInput(pXML: Element, iOffset?: int): IColladaInput {
+        //dangerous: the default offset is 0, but collada required this attribute
+        private COLLADAInput(pXML: Element, iOffset: int = 0): IColladaInput {
             var pInput: IColladaInput = {
                 semantics : attr(pXML, "semantic"),
                 source    : <IColladaSource>this.source(attr(pXML, "source")),
@@ -670,7 +847,7 @@ module akra.core.pool.resources {
                 accessor : null
             };
 
-            eachChild(pXML, function (pXMLData: Element, sName?: string) {
+            this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
                 switch (sName) {
                     case "accessor":
                         pTechniqueCommon.accessor = this.COLLADAAccessor(pXMLData);
@@ -691,7 +868,7 @@ module akra.core.pool.resources {
 
             this.link(pSource);
 
-            eachChild(pXML, function (pXMLData: Element, sName?: string) {
+            this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
                 var pColladaArray: IColladaArray;
                 var id: string;
 
@@ -724,7 +901,8 @@ module akra.core.pool.resources {
                 inputs  : {}
             };
 
-            eachByTag(pXML, "input", function (pXMLData) {
+
+            this.eachByTag(pXML, "input", function (pXMLData) {
                 var sSemantic: string = attr(pXMLData, "semantic");
                 pVertices.inputs[sSemantic] = this.COLLADAInput(pXMLData);
             });
@@ -732,6 +910,8 @@ module akra.core.pool.resources {
 
             debug_assert(isDefAndNotNull(pVertices.inputs["POSITION"]),
                          "semantics POSITION must be in the <vertices /> tag");
+
+            this.link(pVertices);
 
             return pVertices;
         }
@@ -745,7 +925,7 @@ module akra.core.pool.resources {
             var iCount: int;
             var pInvMatrixArray: Float32Array;
 
-            eachByTag(pXML, "input", function (pXMLData: Element) {
+            this.eachByTag(pXML, "input", (pXMLData: Element): void => {
                 switch (attr(pXMLData, "semantic")) {
                     case "JOINT":
                         pJoints.inputs["JOINT"] = this.COLLADAInput(pXMLData);
@@ -796,7 +976,7 @@ module akra.core.pool.resources {
             var iCount: int = parseInt(attr(pXML, "count"));
             var iStride: int;
 
-            eachByTag(pXML, "input", function (pXMLData) {
+            this.eachByTag(pXML, "input", (pXMLData: Element): void => {
                 pPolygons.inputs.push(this.COLLADAInput(pXMLData, iOffset));
                 iOffset ++;
             });
@@ -807,13 +987,13 @@ module akra.core.pool.resources {
 
             switch (sType) {
                 case "polylist":
-                    pPolygons.p = polylistToTriangles(pXML, iStride);
+                    pPolygons.p = this.polylistToTriangles(pXML, iStride);
                     break;
 
                 case "polygons":
-                    pPolygons.p = polygonToTriangles(pXML, iStride);
+                    pPolygons.p = this.polygonToTriangles(pXML, iStride);
 
-                    eachByTag(pXML, "ph", function (pXMLData) {
+                    this.eachByTag(pXML, "ph", (pXMLData: Element): void => {
                         debug_error("unsupported polygon[polygon] subtype founded: <ph>");
                     });
 
@@ -822,17 +1002,17 @@ module akra.core.pool.resources {
                 case "triangles":
                     pPolygons.p = new Array(3 * iCount * iStride);
 
-                    eachByTag(pXML, "p", function (pXMLData) {
+                    this.eachByTag(pXML, "p", (pXMLData: Element): void => {
                         n += string2IntArray(stringData(pXMLData), pPolygons.p, n);
                     });
 
                     break;
                 case "trifans":
-                    pPolygons.p = trifanToTriangles(pXML, iStride);
+                    pPolygons.p = this.trifanToTriangles(pXML, iStride);
                     break;
 
                 case "tristrips":
-                    pPolygons.p = tristripToTriangles(pXML, iStride);
+                    pPolygons.p = this.tristripToTriangles(pXML, iStride);
                     break;
 
                 default:
@@ -858,7 +1038,7 @@ module akra.core.pool.resources {
             var iOffset: int = 0;
             var pInput: IColladaInput;
 
-            eachByTag(pXML, "input", function (pXMLData: Element) {
+            this.eachByTag(pXML, "input", (pXMLData: Element): void => {
                 pInput = this.COLLADAInput(pXMLData, iOffset);
 
                 if (pInput.semantics === "WEIGHT") {
@@ -906,7 +1086,7 @@ module akra.core.pool.resources {
                 pVertices: IColladaVertices, 
                 pPos: IColladaInput;
 
-            eachChild(pXML, function (pXMLData: Element, sName?: string) {
+            this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
                 switch (sName) {
                     case "source":
                         pMesh.sources.push(this.COLLADASource(pXMLData));
@@ -931,7 +1111,7 @@ module akra.core.pool.resources {
                             if (pPolygons.inputs[i].semantics == "VERTEX") {
                                 if (pPolygons.inputs[i].source.id == pVertices.id) {
                                     pPos = pVertices.inputs["POSITION"];
-
+                                    
                                     pPolygons.inputs[i].source = pPos.source;
                                     pPolygons.inputs[i].semantics = pPos.semantics;
                                 }
@@ -986,7 +1166,7 @@ module akra.core.pool.resources {
             var pVertexWeights: IColladaVertexWeights, 
                 pInput: IColladaInput;
 
-            eachChild(pXML, function (pXMLData: Element, sName?: string) {
+            this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
                 switch (sName) {
                     case "source":
                         pSkin.sources.push(this.COLLADASource(pXMLData));
@@ -1145,35 +1325,34 @@ module akra.core.pool.resources {
             };
 
             var pXMLData: Element;
-            var pList: string[] = [
-                "emission",
-                "ambient",
-                "diffuse",
-                "shininess",
-                "reflective",
-                "reflectivity",
-                "transparent",
-                "transparency",
-                "specular"
-            ];
-
+            var pList: string[] = Collada.COLLADA_MATERIAL_NAMES;
 
             for (var i: int = 0; i < pList.length; i++) {
-                pXMLData = firstChild(pXML, pList[i]);
+                var csComponent: string = pList[i];
+                
+                pXMLData = firstChild(pXML, csComponent);
+                
+                //emission --> emissive
+                //emission does not exists in akra engine materials
+                
+                if (csComponent === "emission") {
+                    csComponent = "emissive";
+                }
+
                 if (pXMLData) {
-                    eachChild(pXMLData, function (pXMLData: Element, sName?: string) {
+                    this.eachChild(pXMLData, (pXMLData: Element, sName?: string) => {
                         
                         switch (sName) {
                             case "float":
-                                pMat[pList[i]] = <float>this.COLLADAData(pXMLData);
+                                pMat[csComponent] = <float>this.COLLADAData(pXMLData);
                                 break;
 
                             case "color":
-                                pMat[pList[i]].set(<IColorValue>this.COLLADAData(pXMLData));
+                                pMat[csComponent].set(<IColorValue>this.COLLADAData(pXMLData));
                                 break;
 
                             case "texture":
-                                pMat.textures[pList[i]] = this.COLLADATexture(pXMLData);
+                                pMat.textures[csComponent] = this.COLLADATexture(pXMLData);
                         }
                     });
 
@@ -1221,7 +1400,7 @@ module akra.core.pool.resources {
                 newParam  : {}
             };
 
-            eachByTag(pXML, "newparam", function (pXMLData: Element) {
+            this.eachByTag(pXML, "newparam", (pXMLData: Element): void => {
                 pProfile.newParam[attr(pXMLData, "sid")] = this.COLLADANewParam(pXMLData);
             })
 
@@ -1236,7 +1415,7 @@ module akra.core.pool.resources {
                 profileCommon  : null
             };
 
-            eachChild(pXML, function (pXMLData: Element, sName?: string) {
+            this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
                 switch (sName) {
                     case "profile_COMMON":
                         pEffect.profileCommon = this.COLLADAProfileCommon(pXMLData);
@@ -1295,7 +1474,7 @@ module akra.core.pool.resources {
 
             this.link(pNode);
 
-            eachChild(pXML, function (pXMLData: Element, sName?: string) {
+            this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
                 switch (sName) {
                     case "rotate":
                     case "matrix":
@@ -1339,7 +1518,7 @@ module akra.core.pool.resources {
 
             this.link(pScene);
 
-            eachChild(pXML, function (pXMLData: Element, sName?: string) {
+            this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
                 switch (sName) {
                     case "node":
                         pNode = this.COLLADANode(pXMLData);
@@ -1366,7 +1545,7 @@ module akra.core.pool.resources {
             var pSourceMat: IColladaMaterial = null;
             var pTech: Element = firstChild(pXML, "technique_common");
 
-            eachByTag(pTech, "instance_material", function (pInstMat: Element) {
+            this.eachByTag(pTech, "instance_material", (pInstMat: Element): void => {
 
                 pSourceMat = <IColladaMaterial>this.source(attr(pInstMat, "target"));
                 pMat = {
@@ -1377,7 +1556,7 @@ module akra.core.pool.resources {
                     vertexInput : <IColladaBindVertexInputMap>{}
                 };
 
-                eachByTag(pInstMat, "bind_vertex_input", function (pXMLVertexInput: Element) {
+                this.eachByTag(pInstMat, "bind_vertex_input", (pXMLVertexInput: Element): void => {
                     var sInputSemantic: string = attr(pXMLVertexInput, "input_semantic");
 
                     if (sInputSemantic !== "TEXCOORD") {
@@ -1421,12 +1600,12 @@ module akra.core.pool.resources {
 
             pInstance.effect = <IColladaEffect>this.source(attr(pXML, "url"));
 
-            eachByTag(pXML, "technique_hint", function (pXMLData) {
+            this.eachByTag(pXML, "technique_hint", (pXMLData: Element): void => {
                 pInstance.techniqueHint[attr(pXMLData, "platform")] = attr(pXMLData, "ref");
                 WARNING("<technique_hint /> used, but will be ignored!");
             });
 
-            eachByTag(pXML, "setparam", function (pXMLData) {
+            this.eachByTag(pXML, "setparam", (pXMLData: Element): void => {
                 //can be any type
                 pInstance.parameters[attr(pXMLData, "ref")] = <any>this.COLLADAData(pXMLData);
                 WARNING("<setparam /> used, but will be ignored!");
@@ -1442,7 +1621,7 @@ module akra.core.pool.resources {
                 skeletons  : []
             };
 
-            eachByTag(pXML, "skeleton", function (pXMLData: Element) {
+            this.eachByTag(pXML, "skeleton", (pXMLData: Element): void => {
                 //cut # symbol from skeleton name
                 pInst.skeletons.push(stringData(pXMLData).substr(1));
             });
@@ -1464,7 +1643,7 @@ module akra.core.pool.resources {
             var pXMLData: Element = firstChild(pXML, "instance_visual_scene");
             var pScene: IColladaVisualScene = <IColladaVisualScene>this.source(attr(pXMLData, "url"));
 
-            if (isNull(pXMLData) || (pScene)) {
+            if (isNull(pXMLData) || isNull(pScene)) {
                 debug_warning("collada model: <" + this.getBasename() + "> has no visual scenes.");
             }
 
@@ -1485,7 +1664,7 @@ module akra.core.pool.resources {
 
             this.link(pSampler);
 
-            eachByTag(pXML, "input", function (pXMLData) {
+            this.eachByTag(pXML, "input", (pXMLData: Element): void => {
                 sSemantic = attr(pXMLData, "semantic");
 
                 switch (sSemantic) {
@@ -1537,7 +1716,7 @@ module akra.core.pool.resources {
 
             this.link(pAnimation);
 
-            eachChild(pXML, function (pXMLData: Element, sName?: string) {
+            this.eachChild(pXML, (pXMLData: Element, sName?: string) => {
                 switch (sName) {
                     case "source":
                         pAnimation.sources.push(this.COLLADASource(pXMLData));
@@ -2551,7 +2730,7 @@ module akra.core.pool.resources {
                 }
 
                 pModel.notifyRestored();
-                
+           
                 if (pModel.parse(sXML, pOptions)) {
                     pModel.notifyLoaded();
                 }
@@ -2608,7 +2787,7 @@ module akra.core.pool.resources {
                             this.buildScene();
                         }
 
-                        eachByTag(pXMLRoot, "skeleton", function (pXML: Node) {
+                        this.eachByTag(pXMLRoot, "skeleton", function (pXML: Node) {
                             pSkeletons.push(this.buildSkeleton([stringData(pXML)]));
                         });
                     }
@@ -2782,125 +2961,6 @@ module akra.core.pool.resources {
         return iStride;
     }
     
-    // polygon index convertion
-    
-
-    function trifanToTriangles(pXML: Element, iStride: int): uint[] {
-        var pFans2Tri: uint[] = [0, 0, 0];
-        var pData: uint[] = [];
-        var tmp: uint[] = new Array(iStride), n;
-        var pIndexes: uint[] = [];
-
-        eachByTag(pXML, "p", function (pXMLData) {
-            n = string2IntArray(stringData(pXMLData), pData);
-            for (var i: int = 0; i < 3; i++) {
-                retrieve(pData, tmp, iStride, i, 1);
-                for (var j: int = 0; j < iStride; ++j) {
-                    pIndexes.push(tmp[j]);
-                }
-            }
-
-            for (var i: int = 3, m = n / iStride; i < m; i++) {
-                pFans2Tri[1] = i - 1;
-                pFans2Tri[2] = i;
-                for (var j: int = 0; j < pFans2Tri.length; ++j) {
-                    for (var k: int = 0; k < iStride; ++k) {
-                        pIndexes.push(pData[pFans2Tri[j] * iStride + k]);
-                    }
-                }
-            }
-        });
-        return pIndexes;
-    }
-
-    inline function polygonToTriangles(pXML: Element, iStride: int): uint[] {
-        //TODO для невыпуклых многоугольников с самоперечечениями работать будет не верно
-        return trifanToTriangles(pXML, iStride);
-    }
-
-    function tristripToTriangles(pXML: Element, iStride: int): uint[] {
-        var pStrip2Tri: uint[] = [0, 0, 0];
-        var pData: uint[] = [];
-        var tmp: uint[] = new Array(iStride), n;
-        var pIndexes: uint[] = [];
-
-        eachByTag(pXML, "p", function (pXMLData) {
-            n = string2IntArray(stringData(pXMLData), pData);
-
-            for (var i: int = 0; i < 3; i++) {
-                retrieve(pData, tmp, iStride, i, 1);
-                for (var j: int = 0; j < iStride; ++j) {
-                    pIndexes.push(tmp[j]);
-                }
-            }
-
-            for (var i: int = 3, m = n / iStride; i < m; i++) {
-                pStrip2Tri[0] = i - 1;
-                pStrip2Tri[1] = i - 2;
-                pStrip2Tri[2] = i;
-                for (var j: int = 0; j < pStrip2Tri.length; ++j) {
-                    for (var k: int = 0; k < iStride; ++k) {
-                        pIndexes.push(pData[pStrip2Tri[j] * iStride + k]);
-                    }
-                }
-            }
-        });
-
-        return pIndexes;
-    }
-
-    function polylistToTriangles(pXML: Element, iStride: int): uint[] {
-        var pXMLvcount: Element = firstChild(pXML, "vcount");
-        var pXMLp: Element = firstChild(pXML, "p");
-        var pVcount: uint[] = new Array(parseInt(attr(pXML, "count")));
-        var pData: uint[], 
-            pIndexes: uint[];
-        var n: uint, h: int = 0;
-        var tmp = new Array(128);
-        var buf = new Array(256);
-        var pPoly2Tri = [0, 0, 0];
-
-        string2IntArray(stringData(pXMLvcount), pVcount);
-
-        var nElements: uint = 0, 
-            nTotalElement: uint = 0;
-
-        for (var i: int = 0; i < pVcount.length; i++) {
-            nElements += pVcount[i];
-            nTotalElement += (pVcount[i] - 2) * 3;
-        }
-
-        pIndexes = new Array(iStride * nTotalElement);
-        pData = new Array(iStride * nElements);
-
-        string2IntArray(stringData(pXMLp), pData);
-
-        for (var i: int = 0, m = 0; i < pVcount.length; i++) {
-            n = retrieve(pData, tmp, iStride, m, pVcount[i]);
-
-            for (var j: int = 0; j < 3; j++) {
-                retrieve(tmp, buf, iStride, j, 1);
-                for (var k: int = 0; k < iStride; ++k) {
-                    pIndexes[h++] = buf[k];
-                }
-            }
-
-            for (var x: int = 3, t = n / iStride; x < t; x++) {
-                pPoly2Tri[1] = x - 1;
-                pPoly2Tri[2] = x;
-                for (var j: int = 0; j < pPoly2Tri.length; ++j) {
-                    for (var k: int = 0; k < iStride; ++k) {
-                        pIndexes[h++] = pData[(m + pPoly2Tri[j]) * iStride + k];
-                    }
-                }
-            }
-
-            m += pVcount[i];
-        }
-
-        return pIndexes;
-    } 
-    
 
     // data convertion
 
@@ -3023,57 +3083,6 @@ module akra.core.pool.resources {
         return pData;
     }
 
-    //xml
-    
-    function eachNode(pXMLList: NodeList, fnCallback: IXMLExplorer, nMax?: uint): void {
-        var n: int = pXMLList.length, i: int;
-        nMax = (isNumber(nMax) ? (nMax < n ? nMax : n) : n);
-
-        n = 0;
-        i = 0;
-
-        while (n < pXMLList.length) {
-            //skip text nodes
-            if (pXMLList[n ++].nodeType === Node.TEXT_NODE) {
-                continue;
-            }
-
-            var pXMLData: Element = <Element>pXMLList[n - 1];
-            fnCallback(pXMLData, pXMLData.nodeName);
-
-            i ++;
-
-            if (nMax === i) {
-                break;
-            }
-        }
-
-//        for (var i = 0; i < nMax; i++) {
-//            var pXMLData = pXMLList.item(i);
-//            var sName = pXMLData.getNodeName();
-//            fnCallback(pXMLData, sName);
-//        }
-    }
-
-    function eachChild(pXML: Element, fnCallback: IXMLExplorer): void {
-        eachNode(pXML.childNodes, fnCallback);
-    }
-    
-    inline function eachByTag(pXML: Element, sTag: string, fnCallback: IXMLExplorer, nMax?: uint): void {
-        eachNode(pXML.getElementsByTagName(sTag), fnCallback, nMax);
-    }
-
-    function firstChild(pXML: Element, sTag?: string): Element {
-        if (isString(sTag)) {
-            for (var i = 0; i < pXML.childNodes.length; i++) {
-                if (pXML.childNodes[i].nodeType === Node.ELEMENT_NODE) {
-                    return <Element>pXML.childNodes[i];
-                }
-            }
-        }
-
-        return <Element>pXML.getElementsByTagName(sTag)[0];
-    }
 
     inline function stringData(pXML: Element): string {
         return (isDefAndNotNull(pXML) ? pXML.textContent : null);
@@ -3083,6 +3092,21 @@ module akra.core.pool.resources {
          return pXML.getAttribute(sName);
 
     }
+
+    function firstChild(pXML: Element, sTag?: string): Element {
+        if (isString(sTag)) {
+            return <Element>pXML.getElementsByTagName(sTag)[0];
+        }
+
+        for (var i = 0; i < pXML.childNodes.length; i++) {
+            if (pXML.childNodes[i].nodeType === Node.ELEMENT_NODE) {
+                return <Element>pXML.childNodes[i];
+            }
+        }
+
+        return null;
+    }
+
 
     // Akra convertions functions
     // -------------------------------------------------------

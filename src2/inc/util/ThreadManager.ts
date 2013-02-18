@@ -1,6 +1,7 @@
 #ifndef THREADMANAGER_TS
 #define THREADMANAGER_TS
 
+#include "common.ts"
 #include "IThreadManager.ts"
 #include "IThread.ts"
 
@@ -36,10 +37,15 @@ module akra.util {
 				var pStats: IThreadStats;
 				var iNow: uint = now();
 
-				for (var i: int = 0; i < this._pStatsList.length; ++ i) {
+				for (var i: int = 0, n: int = this._pStatsList.length; i < n; ++ i) {
 					pStats = this._pStatsList[i];
 
 					if (pStats.releaseTime > 0 && iNow - pStats.releaseTime > TM_THREAD_MAX_IDLE_TIME * 1000) {
+						if (this.terminateThread(i)) {
+							LOG("thread with id - " + i + " terminated. (" + i + "/" +  n + ")");
+							return;
+						}
+
 						debug_warning("thread must be removed: " + i);
 					}
 				};
@@ -93,6 +99,22 @@ module akra.util {
 		    	ERROR("cannot occupy thread");
 		    	return null;
 		    }
+		}
+
+		terminateThread(iThread: int): bool {
+			var pStats: IThreadStats = this._pStatsList[iThread];
+			var pWorker: IThread = this._pWorkerList[iThread];
+
+			if (!isDefAndNotNull(pWorker) && pStats.status != EThreadStatuses.k_WorkerFree) {
+				return false;
+			}
+
+			(<Worker><any>pWorker).terminate();
+
+			this._pStatsList.splice(iThread);
+			this._pWorkerList.splice(iThread);
+
+			return true;
 		}
 
 		releaseThread(pThread: IThread): bool;

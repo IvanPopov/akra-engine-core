@@ -5,9 +5,26 @@
 
 module akra.util {
 
+	window.prompt = function (message?: string, defaul?: string): string {
+		console.warn("prompt > " + message);
+		return null;
+	}
+
+	window.alert = function(message?: string): void {
+		console.warn("alert > " + message);
+	}
+
+	window.confirm = function (message?: string): bool {
+		console.warn("confirm > " + message);
+		return false;
+	}
+
+
 	var pTestCondList: ITestCond[] = [];
 	var pTestList: ITestManifest[] = [];
 	var isPassed: bool;
+	var pTest: ITestManifest = null;
+	var iBegin: int;
 
 	function addCond(pCond: ITestCond): void {
 		pTestCondList.unshift(pCond);
@@ -64,20 +81,19 @@ module akra.util {
 
 	class ValueCond extends TestCond implements ITestCond {
 		protected _pValue: any;
-		constructor (sDescription: string, pValue: any) {
+		protected _isNegate: bool;
+		constructor (sDescription: string, pValue: any, isNegate: bool = false) {
 			super(sDescription);
 
 			this._pValue = pValue;
+			this._isNegate = isNegate;
 		}
 
 		verify(pArgv: any[]): bool {
+			var bResult: bool = pArgv[0] === this._pValue;
 
-			if (pArgv[0] === this._pValue) {
-				return true;
-			}
-
-			console.warn(">", pArgv[0], "!==", this._pValue);
-			return false;
+			// console.warn(">", pArgv[0], "!==", this._pValue);
+			return this._isNegate? !bResult: bResult;
 		}
 	}
 
@@ -101,20 +117,30 @@ module akra.util {
 		isPassed = isPassed && bResult;
 
 		if (bResult) {
-			output("<pre style=\"margin: 0;\"><span style=\"color: green;\"><b>[ PASSED ]</b></span>" + pTest.toString() + "</pre>");
+			output("<pre style=\"margin: 0; margin-left: 20px;\"><span style=\"color: green;\"><b>[ PASSED ]</b></span> " + pTest.toString() + "</pre>");
 		}
 		else {
-			output("<pre style=\"margin: 0;\"><span style=\"color: red;\"><b>[ FAILED ]</b></span>" + pTest.toString() + "</pre>");
+			output("<pre style=\"margin: 0; margin-left: 20px;\"><span style=\"color: red;\"><b>[ FAILED ]</b></span> " + pTest.toString() + "</pre>");
 		}
-
 	}
 
 
-	export function failed(): void {
+	export function failed(e?: Error): void {
+		if (isDef(e)) {
+			printError(e.message, <string>(<any>e).stack);
+		}
+
 		var iTotal: int = pTestCondList.length;
+		
 		for (var i: int = 0; i < iTotal; ++ i) {
 			check(false);
 		}
+		
+		isPassed = false;
+		pTest = null;
+		printResults();
+
+		run();
 	}
 
 	export function shouldBeTrue(sDescription: string) {
@@ -133,45 +159,103 @@ module akra.util {
 		addCond(new ValueCond(sDescription, pValue));
 	}
 
+	export function shouldBeNotNull(sDescription: string) {
+		addCond(new ValueCond(sDescription, null, true));
+	}
+
 	export interface ITestManifest {
 		name: string;
 		description?: string;
 		entry?: () => void;
+		async?: bool;
 	}
 
-	export function test(sDescription: string, fnWrapper: () => void);
-	export function test(pManifest: ITestManifest, fnWrapper: () => void);
-	export function test (manifest: any, fnWrapper: () => void) {
+	export function test(sDescription: string, fnWrapper: () => void, isAsync?: bool);
+	export function test(pManifest: ITestManifest, fnWrapper: () => void, isAsync?: bool);
+	export function test (manifest: any, fnWrapper: () => void, isAsync: bool = false) {
+		var pManifest: ITestManifest;
+
 		if (isString(manifest)) {
-			pTestList.push({
+			pManifest = {
 				name: <string>arguments[0],
 				description: null,
 				entry: fnWrapper
-			});
+			};
 		}
 		else {
-			var pManifest: ITestManifest = <ITestManifest>arguments[0];
+			pManifest = <ITestManifest>arguments[0];
 			pManifest.entry = fnWrapper;
-			pTestList.push(pManifest);
 		}
+
+		pManifest.async = isAsync;
+
+		pTestList.unshift(pManifest);
 	}
 
-	export function run(): void {
-		for (var i: int = 0; i < pTestList.length; ++ i) {
-			var pTest: ITestManifest = pTestList[i];
-			var iBegin: uint = now();
+	function printInfo (): void {
+		output("<h4 style=\"font-family: monospace;\">" + pTest.name || "" + "</h4>");
+	}
 
-			isPassed = true;
-			
-			output("<h3>" + pTest.name || "" + "</h3><hr />");
-			pTest.entry();
-
-			output(
-			"<pre>" +
+	function printResults(): void {
+		output(
+			"<pre style=\"margin-left: 20px;\">" +
 			"<hr align=\"left\" style=\"border: 0; background-color: gray; height: 1px; width: 500px;\"/><span style=\"color: gray;\">total time: " + (now() - iBegin) + " msec" + "</span>" + 
 			"<br /><b>" + (isPassed? "<span style=\"color: green\">TEST PASSED</span>": "<span style=\"color: red\">TEST FAILED</span>") + "</b>" +
 			"</pre>");
+	}
 
+	function printError(message: string, stack?: string): void {
+		message = "<b>" + message + "</b>";
+		
+		if (isDef(stack)) {
+			 message += "\n" + stack;
+		}
+
+		output(
+			"<pre style=\"margin-left: 20px;\">" +
+			"<span style=\"color: red; background-color: rgba(255, 0, 0, .1);\">" + message + "</span>" + 
+			"</pre>");
+	}
+
+	export function asyncTest (manifest: any, fnWrapper: () => void) {
+		test(manifest, fnWrapper, true);
+	}
+
+	export function run(): void {
+		//если вдруг остались тесты.
+		if (pTestCondList.length) {
+			failed();
+		}
+
+		//если предыдущий тест был асинхронным, значит он кончился и надо распечатать результаты
+		if (!isNull(pTest) && pTest.async == true) {
+			printResults();
+		}
+		
+		while (pTestList.length) {
+			//начинаем новый тест
+			pTest = pTestList.pop();
+			iBegin = now();
+			isPassed = true;
+			
+
+			printInfo();
+			//start test
+			
+			try {
+				pTest.entry();
+			} catch (e) {
+				failed(e);
+				return;
+			}
+
+			if (!pTest.async) {
+				printResults();
+				pTest = null;
+			}
+			else {
+				return;
+			}
 		};
 	}
 
@@ -181,13 +265,15 @@ module akra.util {
 }
 
 var test 			= akra.util.test;
+var asyncTest 		= akra.util.asyncTest;
 var failed 			= akra.util.failed;
+var run 			= akra.util.run;
 var shouldBe 		= akra.util.shouldBe;
 var shouldBeArray 	= akra.util.shouldBeArray;
 var shouldBeTrue 	= akra.util.shouldBeTrue;
 var shouldBeFalse 	= akra.util.shouldBeFalse;
+var shouldBeNotNull	= akra.util.shouldBeNotNull;
 var check 			= akra.util.check;
 var ok = check;
-
 
 #endif
