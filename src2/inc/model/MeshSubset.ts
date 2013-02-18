@@ -41,7 +41,7 @@ module akra.model {
 			this._pRenderData = pRenderData;
 			this._sName = sName;
 
-			super._setup(pMesh.getEngine().getRenderer(), sName);
+			super._setup(pMesh.getEngine().getRenderer());
 		}
 
 		createBoundingBox(): bool {

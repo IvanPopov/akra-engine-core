@@ -49,12 +49,6 @@ module akra.core.pool.resources {
     function stringData(pXML: Element): string;
     function attr(pXML: Element, sName: string): string;
     function firstChild(pXML: Element, sTag?: string): Element;
-
-    // Akra convertions functions
-    // -------------------------------------------------------
-
-    function findNode(pNodes: IColladaNode[], sNode?: string, fnNodeCallback?: (pNode: IColladaNode) => void): IColladaNode;
-
     
 
 
@@ -96,6 +90,11 @@ module akra.core.pool.resources {
         private eachNode(pXMLList: NodeList, fnCallback: IXMLExplorer, nMax?: uint): void;
         private eachChild(pXML: Element, fnCallback: IXMLExplorer): void;
         private eachByTag(pXML: Element, sTag: string, fnCallback: IXMLExplorer, nMax?: uint): void;
+
+        // Akra convertions functions
+
+        private findNode(pNodes: IColladaNode[], sNode?: string, fnNodeCallback?: (pNode: IColladaNode) => void): IColladaNode;
+
 
         // helper functions
     
@@ -459,6 +458,40 @@ module akra.core.pool.resources {
             this.eachNode(pXML.getElementsByTagName(sTag), fnCallback, nMax);
         }
 
+
+        // akra additional functions
+        
+        private findNode(pNodes: IColladaNode[], sNode: string = null, fnNodeCallback: (pNode: IColladaNode) => void = null): IColladaNode {
+            var pNode: IColladaNode = null;
+            var pRootJoint: IColladaNode = null;
+
+            for (var i = pNodes.length - 1; i >= 0; i--) {
+                pNode = pNodes[i];
+
+                if (pNode === null) {
+                    continue;
+                }
+
+                if (sNode && "#" + pNode.id === sNode) {
+                    return pNode;
+                }
+
+                if (!isNull(fnNodeCallback)) {
+                    fnNodeCallback.call(this, pNode);
+                }
+
+                if (pNode.childNodes) {
+                    pRootJoint = this.findNode(pNode.childNodes, sNode, fnNodeCallback);
+
+                    if (!isNull(pRootJoint)) {
+                        return pRootJoint;
+                    }
+                }
+            }
+
+            return null;
+        }
+
         
         // helper functions
     
@@ -766,7 +799,7 @@ module akra.core.pool.resources {
                 }
             });
 
-            return pAsset;
+            return this._pAsset = pAsset;
         }
 
         private COLLADALibrary(pXML: Element, pTemplate: IColladaLibraryTemplate): IColladaLibrary {
@@ -1647,7 +1680,7 @@ module akra.core.pool.resources {
                 debug_warning("collada model: <" + this.getBasename() + "> has no visual scenes.");
             }
 
-            return pScene;
+            return this._pVisualScene = pScene;
         }
 
         // animation
@@ -2344,7 +2377,7 @@ module akra.core.pool.resources {
             var pScene: IColladaVisualScene = this.getVisualScene();
             var pMeshes: IMesh[] = [];
 
-            findNode(pScene.nodes, null, function (pNode: IColladaNode) {
+            this.findNode(pScene.nodes, null, function (pNode: IColladaNode) {
                 var pModelNode: ISceneNode = pNode.constructedNode;
                 
                 if (isNull(pModelNode)) {
@@ -2494,7 +2527,7 @@ module akra.core.pool.resources {
                 pNodeMap[pNodeList[i].name] = pNodeList[i];
             }
 
-            findNode(pNodes, null, function (pNode: IColladaNode) {
+            this.findNode(pNodes, null, function (pNode: IColladaNode) {
                 var sJoint: string = pNode.sid;
                 var sNodeId: string = pNode.id;
 
@@ -2514,8 +2547,12 @@ module akra.core.pool.resources {
 
         private buildInitialPoses(pPoseSkeletons: ISkeleton[] = null): IAnimation[] {
             pPoseSkeletons = pPoseSkeletons || this.getSkeletonsOutput();
-            var pScene: IColladaVisualScene = this.getVisualScene();
 
+            if (isNull(pPoseSkeletons)) {
+                return null;
+            }
+
+            var pScene: IColladaVisualScene = this.getVisualScene();
             var pSkeleton: ISkeleton;
             var pPoses: IAnimation[] = [];
 
@@ -2540,8 +2577,13 @@ module akra.core.pool.resources {
         private buildComplete(): void {
             var pScene: IColladaVisualScene = this.getVisualScene();
             
+            if (isNull(pScene)) {
+                WARNING("build complete, but visual scene not parsed correctly!");
+                return;
+            }
+
             //release all links to constructed nodes
-            findNode(pScene.nodes, null, function (pNode: IColladaNode) {
+            this.findNode(pScene.nodes, null, function (pNode: IColladaNode) {
                 pNode.constructedNode = null;
             });
         }
@@ -2722,7 +2764,9 @@ module akra.core.pool.resources {
             var pModel: Collada = this;
 
             this.setFilename(sFilename);
+            
             this.notifyDisabled();
+            this.notifyUnloaded();
 
             io.fopen(sFilename).read(function (pErr: Error, sXML: string) {
                 if (!isNull(pErr)) {
@@ -3101,41 +3145,6 @@ module akra.core.pool.resources {
         for (var i = 0; i < pXML.childNodes.length; i++) {
             if (pXML.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 return <Element>pXML.childNodes[i];
-            }
-        }
-
-        return null;
-    }
-
-
-    // Akra convertions functions
-    // -------------------------------------------------------
-
-    function findNode(pNodes: IColladaNode[], sNode: string = null, fnNodeCallback: (pNode: IColladaNode) => void = null): IColladaNode {
-        var pNode: IColladaNode = null;
-        var pRootJoint: IColladaNode = null;
-
-        for (var i = pNodes.length - 1; i >= 0; i--) {
-            pNode = pNodes[i];
-
-            if (pNode === null) {
-                continue;
-            }
-
-            if (sNode && "#" + pNode.id === sNode) {
-                return pNode;
-            }
-
-            if (!isNull(fnNodeCallback)) {
-                fnNodeCallback(pNode);
-            }
-
-            if (pNode.childNodes) {
-                pRootJoint = findNode(pNode.childNodes, sNode, fnNodeCallback);
-
-                if (!isNull(pRootJoint)) {
-                    return pRootJoint;
-                }
             }
         }
 

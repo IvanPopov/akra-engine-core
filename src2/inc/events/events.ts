@@ -63,7 +63,7 @@
 	inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { 									\
 		return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType);							\
 	}																													\
-	inline unbind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool {									\
+	inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool {									\
 		return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType);							\
 	}
 #define END_EVENT_TABLE()
@@ -126,7 +126,7 @@ module akra.events {
 			return false;
 		}
 
-		removeListener(iGuid: int, sSignal: string, fnListener: Function, eType: EEventTypes = EEventTypes.BROADCAST): bool {
+		removeListener(iGuid: int, sSignal: string, fnListener?: Function, eType: EEventTypes = EEventTypes.BROADCAST): bool {
 			if (eType === EEventTypes.BROADCAST) {
 				var pList: IEventSlot[] = this.findBroadcastSignalMap(iGuid, sSignal);
 				for (var i: int = 0; i < pList.length; ++ i) {
