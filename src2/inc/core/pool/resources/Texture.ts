@@ -391,7 +391,7 @@ module akra.core.pool.resources {
             }
 
             // load, and tell Image to delete the memory when it's done.
-            pDestImage.loadDynamicImage(pPixData, this._iWidth, this._iHeight, this._iDepth, this._eFormat, true, 
+            pDestImage.loadDynamicImage(pPixData, this._iWidth, this._iHeight, this._iDepth, this._eFormat, 
                 this.getNumFaces(), iNumMips - 1);          
         }
 
