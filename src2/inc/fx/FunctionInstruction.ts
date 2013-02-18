@@ -228,6 +228,10 @@ module akra.fx {
 			return false;
 		}
 
+		_addUsedVariable(pVariable: IAFXVariableDeclInstruction): void {
+
+		}
+
 		_getUsedFunctionList(): IAFXFunctionDeclInstruction[] {
 			return this._pUsedFunctionList;
 		}
@@ -331,7 +335,7 @@ module akra.fx {
 			this._pExprTranslator = pExprTranslator;
 		}
 
-		setExprTranslator(pExprTranslator: ExprTemplateTranslator){
+		setExprTranslator(pExprTranslator: ExprTemplateTranslator): void {
 			this._pExprTranslator = pExprTranslator;
 		}
 
@@ -436,8 +440,12 @@ module akra.fx {
 
 		_notCanUsedAsFunction(): void{}
 
-		_addUsedFunction(pFunction: IAFXFunctionDeclInstruction): bool{
+		_addUsedFunction(pFunction: IAFXFunctionDeclInstruction): bool {
 			return false;
+		}
+
+		_addUsedVariable(pVariable: IAFXVariableDeclInstruction): void {
+
 		}
 
 		_getUsedFunctionList(): IAFXFunctionDeclInstruction[] {

@@ -344,6 +344,7 @@ module akra {
 
         _addUsedFunction(pFunction: IAFXFunctionDeclInstruction): bool;
         _getUsedFunctionList(): IAFXFunctionDeclInstruction[];
+        _addUsedVariable(pVariable: IAFXVariableDeclInstruction): void;
         
         _isBlackListFunction(): bool;
         _addToBlackList(): void;
