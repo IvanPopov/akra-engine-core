@@ -2045,6 +2045,12 @@ module akra.fx {
         	pLeftType = <IAFXVariableTypeInstruction>pLeftExpr.getType();
         	pRightType = <IAFXVariableTypeInstruction>pRightExpr.getType();
 
+        	if(!pLeftType._usedForWrite()){
+        		this._error(EFFECT_BAD_ASSIGNMENT_TYPE_FOR_WRITE);
+        		return null;
+        	}
+        	//pRightType._usedForRead();
+
         	if(sOperator !== "="){
         		pExprType = this.checkTwoOperandExprTypes(sOperator, pLeftType, pRightType);	
         	  	if(isNull(pExprType)){

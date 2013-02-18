@@ -72,6 +72,7 @@ module akra.fx {
     #define EFFECT_BAD_RETURN_TYPE_FOR_FUNCTION 2264
     #define EFFECT_BAD_FUNCTION_PARAMETER_USAGE 2265
     #define EFFECT_BAD_OUT_VARIABLE_IN_FUNCTION 2266
+    #define EFFECT_BAD_ASSIGNMENT_TYPE_FOR_WRITE 2267
 
 
     #define TEMP_EFFECT_BAD_ARRAY_OF_POINTERS 2300
@@ -256,6 +257,9 @@ module akra.fx {
                               In line: {line}. In column: {column}"); 
     akra.logger.registerCode(EFFECT_BAD_OUT_VARIABLE_IN_FUNCTION,
                              "Bad variable with name 'Out'. It is sytem for used like return variable in shaders.\
+                              In line: {line}. In column: {column}"); 
+    akra.logger.registerCode(EFFECT_BAD_ASSIGNMENT_TYPE_FOR_WRITE,
+                             "Variable type is not writable.\
                               In line: {line}. In column: {column}"); 
 
 

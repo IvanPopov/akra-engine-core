@@ -28,6 +28,9 @@ module akra.fx {
 		private _isWritable: bool = null;
 		private _isReadable: bool = null;
 
+		private _bUsedForWrite: bool = false;
+		private _bUsedForRead: bool = false;
+
 		private _sHash: string = "";
 		private _sStrongHash: string = "";
 		private _isArray: bool = false;
@@ -313,6 +316,24 @@ module akra.fx {
 		hasField(sFieldName: string): bool {
 			return this.getSubType().hasField(sFieldName);
 		}
+
+		_usedForWrite(): bool{
+			if(!this.isWritable()){
+				return false;
+			}
+
+			this._bUsedForWrite = true;
+			return true;
+		}
+
+        _usedForRead(): bool {
+        	if(!this.isReadable()){
+        		return false;
+        	}
+
+        	this._bUsedForRead = true;
+        	return true;
+        }
 
 		hasFieldWithSematic(sSemantic: string): bool {
 			if(!this.isComplex()){

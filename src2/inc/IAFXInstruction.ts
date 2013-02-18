@@ -182,6 +182,7 @@ module akra {
 
         _canWrite(isWritable: bool): void;
         _canRead(isReadable: bool): void;
+
         /**
          * For using in AFXEffect
          */
@@ -219,6 +220,9 @@ module akra {
         addArrayIndex(pExpr: IAFXExprInstruction): void;
 
         hasUsage(sUsageName: string): bool;
+
+        _usedForWrite(): bool;
+        _usedForRead(): bool;
 
         isPointer(): bool;
         isStrictPointer(): bool;

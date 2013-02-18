@@ -759,6 +759,14 @@ module akra.util {
             return pToken;
         }
 
+        inline _getIndex(): uint {
+            return this._iIndex;
+        }
+
+        inline _setSource(sSource: string): void {
+            this._sSource = sSource;
+        }
+
         private _error(eCode: uint, pToken: IToken): void {
             var pLocation: ISourceLocation = <ISourceLocation>{
                                                 file: this._pParser.getParseFileName(),
@@ -1294,7 +1302,7 @@ module akra.util {
         private _pRuleCreationModeMap: IntMap;
         private _eParseMode: EParseMode;
 
-        private _isSync: bool;
+        // private _isSync: bool;
 
         //Temp
 
@@ -1337,7 +1345,7 @@ module akra.util {
             this._pRuleCreationModeMap = null;
             this._eParseMode = EParseMode.k_AllNode;
 
-            this._isSync = false;
+            // this._isSync = false;
 
             this._pStatesTempMap = null;
             this._pBaseItemList = null;
@@ -1388,13 +1396,13 @@ module akra.util {
             }
         }
 
-        parse(sSource: string, isSync?: bool = true, fnFinishCallback?: IFinishFunc = null, pCaller?: any = null): EParserCode {
+        parse(sSource: string, fnFinishCallback?: IFinishFunc = null, pCaller?: any = null): EParserCode {
              try {
                 this.defaultInit();
                 this._sSource = sSource;
                 this._pLexer.init(sSource);
 
-                this._isSync = isSync;
+                //this._isSync = isSync;
 
                 this._fnFinishCallback = fnFinishCallback;
                 this._pCaller = pCaller;
@@ -1481,7 +1489,7 @@ module akra.util {
                     pTree.setRoot();
                     this._sFileName = "stdin";
                     if (!isNull(this._fnFinishCallback)) {
-                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok);
+                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok, this.getParseFileName());
                     }
                     return EParserCode.k_Ok;
                 }
@@ -1489,7 +1497,7 @@ module akra.util {
                     this._error(PARSER_SYNTAX_ERROR, pToken);
                     this._sFileName = "stdin";
                     if (!isNull(this._fnFinishCallback)) {
-                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error);
+                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error, this.getParseFileName());
                     }
                     return EParserCode.k_Error;
                 }
@@ -1547,6 +1555,22 @@ module akra.util {
             return this._pGrammarSymbols;
         }
 
+        inline getSyntaxTree(): IParseTree {
+            return this._pSyntaxTree;
+        }
+
+        inline _getLexer(): ILexer{
+            return this._pLexer;
+        }
+
+        inline _getSource(): string{
+            return this._sSource;
+        }
+
+        inline _setSource(sSource: string): void{
+            this._sSource = sSource;
+        }
+
         protected addAdditionalFunction(sFuncName: string, fnRuleFunction: IRuleFunction): void {
             if(isNull(this._pAdditionalFunctionsMap)){
                 this._pAdditionalFunctionsMap = <IRuleFunctionMap>{};
@@ -1568,10 +1592,6 @@ module akra.util {
             this._pTypeIdMap = <BoolMap>{};
 
             this._pSyntaxTree.setOptimizeMode(bf.testAll(this._eParseMode, EParseMode.k_Optimize));
-        }
-
-        protected inline getSyntaxTree(): IParseTree {
-            return this._pSyntaxTree;
         }
 
         private _error(eCode: uint, pErrorInfo: any): void {
@@ -2652,7 +2672,7 @@ module akra.util {
                     pTree.setRoot();
                     this._sFileName = "stdin";
                     if (isDef(this._fnFinishCallback)) {
-                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok);
+                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok, this.getParseFileName());
                     }
                     return EParserCode.k_Ok;
                 }
@@ -2660,7 +2680,7 @@ module akra.util {
                     this._error(PARSER_SYNTAX_ERROR, pToken);
                     this._sFileName = "stdin";
                     if (isDef(this._fnFinishCallback)) {
-                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error);
+                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error, this.getParseFileName());
                     }
                     return EParserCode.k_Error;
                 }
