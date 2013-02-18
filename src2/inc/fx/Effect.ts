@@ -5,9 +5,13 @@
 #include "IParser.ts"
 #include "common.ts"
 #include "ILogger.ts"
+#include "IAFXInstruction.ts"
 #include "fx/Instruction.ts"
-#include "fx/Variable.ts"
-#include "fx/Type.ts"
+#include "fx/TypeInstruction.ts"
+#include "fx/VariableInstruction.ts"
+#include "fx/FunctionInstruction.ts"
+#include "fx/ExprInstruction.ts"
+#include "fx/StmtInstruction.ts"
 #include "fx/EffectErrors.ts"
 #include "fx/EffectUtil.ts"
 #include "IAFXComposer.ts"
@@ -88,7 +92,7 @@ module akra.fx {
 			this._pStatistics = <IAFXEffectStats>{time: 0};
 
 			this.newScope();
-
+			this.analyzeGlobalUseDecls();
 			this.analyzeGlobalTypeDecls();
 			this.analyzeFunctionDefinitions();
 			this.analyzeGlobalImports();
@@ -130,6 +134,61 @@ module akra.fx {
 		}
 
 		clear(): void {
+		}
+
+		static getSystemType(sTypeName: string): SystemTypeInstruction {
+        	//bool, string, float and others
+        	return isDef(Effect.pSystemTypes[sTypeName]) ? Effect.pSystemTypes[sTypeName] : null;
+        }
+
+        static getSystemVariable(sName: string): IAFXVariableDeclInstruction {
+        	return isDef(Effect.pSystemVariables[sName]) ? Effect.pSystemVariables[sName] : null;
+        }
+
+        static findSystemFunction(sFunctionName: string, 
+							 	  pArguments: IAFXTypedInstruction[]): IAFXFunctionDeclInstruction {
+			var pSystemFunctions: SystemFunctionInstruction[] = Effect.pSystemFunctions[sFunctionName];
+
+			if(!isDef(pSystemFunctions)){
+				return null;
+			}
+
+			for(var i: uint = 0; i < pSystemFunctions.length; i++){
+				if(pArguments.length !== pSystemFunctions[i].getNumNeededArguments()){
+					continue;
+				}
+				
+				var pTestedArguments: IAFXTypedInstruction[] = pSystemFunctions[i].getArguments();
+
+				var isOk: bool = true;
+
+				for(var j: uint = 0; j < pArguments.length; j++){
+					isOk = false;
+
+					if(pArguments[j].getType().isEqual(pTestedArguments[j].getType())){
+						break;
+					}
+
+					isOk = true;
+				}
+
+				if(isOk){
+					return pSystemFunctions[i];
+				}
+			}
+		}
+
+		static createVideoBufferVariable(): IAFXVariableDeclInstruction {
+			var pBuffer: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+			var pBufferType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+			var pBufferName: IAFXIdInstruction = new IdInstruction();
+
+			pBufferType.pushInVariableType(Effect.getSystemType("video_buffer"));
+			
+			pBuffer.push(pBufferType, true);
+			pBuffer.push(pBufferName, true);
+
+			return pBuffer;
 		}
 
 		private generateSuffixLiterals(pLiterals: string[], pOutput: BoolMap, iDepth?: uint = 0): void {
@@ -212,7 +271,7 @@ module akra.fx {
 			pName.setName(sName);
 			pName.setRealName(sRealName);
 			
-			pType.pushInVariableType(this.getSystemType(sTypeName));
+			pType.pushInVariableType(Effect.getSystemType(sTypeName));
 
 			if(isOnlyRead) {
 				pType._canWrite(false);
@@ -320,17 +379,17 @@ module akra.fx {
 					pTypes = [];
 					sFunctionHash = sName + "(";
 					pReturnType = (sReturnTypeName === TEMPLATE_TYPE) ? 
-																this.getSystemType(pTemplateTypes[i]) : 
-																this.getSystemType(sReturnTypeName);
+																Effect.getSystemType(pTemplateTypes[i]) : 
+																Effect.getSystemType(sReturnTypeName);
 
 					
 					for(var j: uint = 0; j < pArgumentsTypes.length; j++) {
 						if(pArgumentsTypes[j] === TEMPLATE_TYPE){
-							pTypes.push(this.getSystemType(pTemplateTypes[i]));
+							pTypes.push(Effect.getSystemType(pTemplateTypes[i]));
 							sFunctionHash += pTemplateTypes[i] + ",";
 						}
 						else{
-							pTypes.push(this.getSystemType(pArgumentsTypes[j]));
+							pTypes.push(Effect.getSystemType(pArgumentsTypes[j]));
 							sFunctionHash += pArgumentsTypes[j] + ","
 						}
 					}						
@@ -359,7 +418,7 @@ module akra.fx {
 					akra.logger.criticalError("Bad return type(TEMPLATE_TYPE) for system function '" + sName +  "'.");
 				}
 
-				pReturnType = this.getSystemType(sReturnTypeName);
+				pReturnType = Effect.getSystemType(sReturnTypeName);
 				pTypes = [];
 				sFunctionHash = sName + "(";
 
@@ -368,7 +427,7 @@ module akra.fx {
 						akra.logger.criticalError("Bad argument type(TEMPLATE_TYPE) for system function '" + sName +  "'.");
 					}
 					else{
-						pTypes.push(this.getSystemType(pArgumentsTypes[i]));
+						pTypes.push(Effect.getSystemType(pArgumentsTypes[i]));
 						sFunctionHash += pArgumentsTypes[i] + ",";
 					}
 				}
@@ -454,9 +513,9 @@ module akra.fx {
 			this.generateSuffixLiterals(["s", "t", "p"], pSTPSuffix);
 			this.generateSuffixLiterals(["s", "t", "p", "q"], pSTPQSuffix);
 
-			var pFloat: IAFXTypeInstruction = this.getSystemType("float");
-			var pInt: IAFXTypeInstruction = this.getSystemType("int");
-			var pBool: IAFXTypeInstruction = this.getSystemType("bool");
+			var pFloat: IAFXTypeInstruction = Effect.getSystemType("float");
+			var pInt: IAFXTypeInstruction = Effect.getSystemType("int");
+			var pBool: IAFXTypeInstruction = Effect.getSystemType("bool");
 
 			var pFloat2: IAFXTypeInstruction = this.generateSystemType("float2", "vec2", 0, true, pFloat, 2);
 			var pFloat3: IAFXTypeInstruction = this.generateSystemType("float3", "vec3", 0, true, pFloat, 3);
@@ -508,17 +567,17 @@ module akra.fx {
 		}
 
 		private addSystemTypeMatrix(): void {
-			var pFloat2: IAFXTypeInstruction = this.getSystemType("float2");
-			var pFloat3: IAFXTypeInstruction = this.getSystemType("float3");
-			var pFloat4: IAFXTypeInstruction = this.getSystemType("float4");
+			var pFloat2: IAFXTypeInstruction = Effect.getSystemType("float2");
+			var pFloat3: IAFXTypeInstruction = Effect.getSystemType("float3");
+			var pFloat4: IAFXTypeInstruction = Effect.getSystemType("float4");
 
-			var pInt2: IAFXTypeInstruction = this.getSystemType("int2");
-			var pInt3: IAFXTypeInstruction = this.getSystemType("int3");
-			var pInt4: IAFXTypeInstruction = this.getSystemType("int4");
+			var pInt2: IAFXTypeInstruction = Effect.getSystemType("int2");
+			var pInt3: IAFXTypeInstruction = Effect.getSystemType("int3");
+			var pInt4: IAFXTypeInstruction = Effect.getSystemType("int4");
 
-			var pBool2: IAFXTypeInstruction = this.getSystemType("bool2");
-			var pBool3: IAFXTypeInstruction = this.getSystemType("bool3");
-			var pBool4: IAFXTypeInstruction = this.getSystemType("bool4");
+			var pBool2: IAFXTypeInstruction = Effect.getSystemType("bool2");
+			var pBool3: IAFXTypeInstruction = Effect.getSystemType("bool3");
+			var pBool4: IAFXTypeInstruction = Effect.getSystemType("bool4");
 
 			this.generateSystemType("float2x2", "mat2",   0, true, pFloat2, 2);
 			this.generateSystemType("float2x3", "mat2x3", 0, true, pFloat2, 3);
@@ -562,28 +621,19 @@ module akra.fx {
 
 			for(sSuffix in pSuffixMap){
 				var sFieldTypeName: string = sBaseType + ((sSuffix.length > 1) ? sSuffix.length.toString() : "");
-				var pFieldType: IAFXTypeInstruction = this.getSystemType(sFieldTypeName);
+				var pFieldType: IAFXTypeInstruction = Effect.getSystemType(sFieldTypeName);
 
 				(<SystemTypeInstruction>pType).addField(sSuffix, pFieldType, pSuffixMap[sSuffix]);
 			}
 		} 
 
 		private inline getVariable(sName: string): IAFXVariableDeclInstruction {
-			return this.getSystemVariable(sName) || this._pEffectScope.getVariable(sName);
+			return Effect.getSystemVariable(sName) || this._pEffectScope.getVariable(sName);
 		}
 
 		private getType(sTypeName: string): IAFXTypeInstruction {
-			return this.getSystemType(sTypeName) || this._pEffectScope.getType(sTypeName);
+			return Effect.getSystemType(sTypeName) || this._pEffectScope.getType(sTypeName);
 		}
-
-		private inline getSystemType(sTypeName: string): SystemTypeInstruction {
-        	//bool, string, float and others
-        	return isDef(this._pSystemTypes[sTypeName]) ? this._pSystemTypes[sTypeName] : null;
-        }
-
-        private inline getSystemVariable(sName: string): IAFXVariableDeclInstruction {
-        	return null;
-        }
 
 		private isSystemFunction(pFunction: IAFXFunctionDeclInstruction): bool {
 			return false;
@@ -633,6 +683,14 @@ module akra.fx {
 		private inline getAnalyzedNode(): IParseNode {
 			return this._pAnalyzedNode;
 		} 
+
+		private inline isStrictMode(): bool {
+			return this._pEffectScope.isStrictMode();
+		}
+
+		private inline setStrictModeOn(): void {
+			return this._pEffectScope.setStrictModeOn();
+		}
 
 		private inline newScope(eScopeType?: EScopeType = EScopeType.k_Default): void {
 			this._pEffectScope.newScope(eScopeType);
@@ -700,41 +758,8 @@ module akra.fx {
 							 pArguments: IAFXVariableDeclInstruction[]): IAFXFunctionDeclInstruction;
 		private findFunction(sFunctionName: string, 
 							 pArguments: IAFXTypedInstruction[]): IAFXFunctionDeclInstruction {
-			return this.findSystemFunction(sFunctionName, pArguments) ||
+			return Effect.findSystemFunction(sFunctionName, pArguments) ||
 				   this._pEffectScope.getFunction(sFunctionName, pArguments);
-		}
-
-		private findSystemFunction(sFunctionName: string, 
-							 	   pArguments: IAFXTypedInstruction[]): IAFXFunctionDeclInstruction {
-			var pSystemFunctions: SystemFunctionInstruction[] = this._pSystemFunctionsMap[sFunctionName];
-
-			if(!isDef(pSystemFunctions)){
-				return null;
-			}
-
-			for(var i: uint = 0; i < pSystemFunctions.length; i++){
-				if(pArguments.length !== pSystemFunctions[i].getNumNeededArguments()){
-					continue;
-				}
-				
-				var pTestedArguments: IAFXTypedInstruction[] = pSystemFunctions[i].getArguments();
-
-				var isOk: bool = true;
-
-				for(var j: uint = 0; j < pArguments.length; j++){
-					isOk = false;
-
-					if(pArguments[j].getType().isEqual(pTestedArguments[j].getType())){
-						break;
-					}
-
-					isOk = true;
-				}
-
-				if(isOk){
-					return pSystemFunctions[i];
-				}
-			}
 		}
 
 		private findConstructor(pType: IAFXTypeInstruction, 
@@ -748,7 +773,7 @@ module akra.fx {
 
 		private findShaderFunction(sFunctionName: string, 
 							 	   pArguments: IAFXExprInstruction[]): IAFXFunctionDeclInstruction {
-			return null;
+			return this._pEffectScope.getShaderFunction(sFunctionName, pArguments);
 		}
 
 		private findFunctionByDef(pDef: FunctionDefInstruction): IAFXFunctionDeclInstruction {
@@ -780,6 +805,13 @@ module akra.fx {
         				break;
         		}
 			}
+
+			if(pVariable.getName() === "Out" && !isNull(this.getCurrentAnalyzedFunction())){
+        		var isOk: bool = this.getCurrentAnalyzedFunction()._addOutVariable(pVariable);
+        		if(!isOk){
+        			this._error(EFFECT_BAD_OUT_VARIABLE_IN_FUNCTION);
+        		}
+        	}
         }
 
         private addTypeDecl(pType: IAFXTypeDeclInstruction): void {
@@ -819,6 +851,17 @@ module akra.fx {
         }
 
 
+
+        private analyzeGlobalUseDecls(): void {
+        	var pChildren: IParseNode[] = this._pParseTree.root.children;
+			var i: uint = 0;	
+
+			for(i = pChildren.length - 1; i >=0; i--) {
+				if(pChildren[i].name === "UseDecl") {
+					this.analyzeUseDecl(pChildren[i]);
+				}
+			}
+        } 
 
         private analyzeGlobalTypeDecls(): void {
         	var pChildren: IParseNode[] = this._pParseTree.root.children;
@@ -937,7 +980,8 @@ module akra.fx {
         						continue mainFor;
         					}
 
-        					if(pAddedFunction._isBlackListFunction()){
+        					if (pAddedFunction._isBlackListFunction() ||
+        						!pAddedFunction._canUsedAsFunction()){
         						pTestedFunction._addToBlackList();
         						this._error(EFFECT_BAD_FUNCTION_USAGE_BLACKLIST, { funcDef: pTestedFunction._getStringDef() });
         						isNewDelete = true;
@@ -1154,7 +1198,7 @@ module akra.fx {
 			    	break;
 
 			   	case "T_KW_VOID":
-			   		pType = this.getSystemType("void");
+			   		pType = Effect.getSystemType("void");
 			   		break;
 
 			   	case "ScalarType":
@@ -1218,6 +1262,7 @@ module akra.fx {
         	CHECK_INSTRUCTION(pVarDecl, ECheckStage.CODE_TARGET_SUPPORT);
 
         	this.addVariableDecl(pVarDecl);
+
         	//TODO: Here must be additing to scope
 
         	// this.addVariableDecl(pVarDecl);
@@ -1623,6 +1668,13 @@ module akra.fx {
         		return null;
         	}
 
+        	var pPointerVarType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pPrimaryExprType.getParent();
+        	if(!pPointerVarType.isStrictPointer()){
+        		this.getCurrentAnalyzedFunction()._setForPixel(false);
+        		this.getCurrentAnalyzedFunction()._notCanUsedAsFunction();
+        		pPointerVarType._setPointerToStrict();
+        	}
+
         	pExpr.setType(pPointer.getType());
         	pExpr.setOperator("@");
         	pExpr.push(pPointer, false);
@@ -1672,7 +1724,7 @@ module akra.fx {
         	pIndexExpr = this.analyzeExpr(pChildren[pChildren.length - 3]);
         	pIndexExprType = <IAFXVariableTypeInstruction>pIndexExpr.getType();
 
-        	pIntType = this.getSystemType("int");
+        	pIntType = Effect.getSystemType("int");
 
         	if(!pIndexExprType.isEqual(pIntType)){
         		this._error(EFFECT_BAD_POSTIX_NOT_INT_INDEX, { typeName: pIndexExprType.toString() });
@@ -1837,7 +1889,7 @@ module akra.fx {
         	pTrueExprType = <IAFXVariableTypeInstruction>pTrueExpr.getType();
         	pFalseExprType = <IAFXVariableTypeInstruction>pFalseExpr.getType();
 
-        	pBoolType = this.getSystemType("bool");
+        	pBoolType = Effect.getSystemType("bool");
 
         	if(!pConditionType.isEqual(pBoolType)){
         		this._error(EFFECT_BAD_CONDITION_TYPE, { typeName: pConditionType.toString()});
@@ -1952,7 +2004,7 @@ module akra.fx {
         	pLeftType = <IAFXVariableTypeInstruction>pLeftExpr.getType();
         	pRightType = <IAFXVariableTypeInstruction>pRightExpr.getType();
 
-        	pBoolType = this.getSystemType("bool");
+        	pBoolType = Effect.getSystemType("bool");
 
         	if(!pLeftType.isEqual(pBoolType)){
         		this._error(EFFECT_BAD_LOGICAL_OPERATION, { operator: sOperator,
@@ -2100,11 +2152,17 @@ module akra.fx {
         	}
 
         	var pBuffer: IAFXVariableDeclInstruction = pPostfixExprType.getVideoBuffer();
-        	
+
         	if(isNull(pBuffer)){
         		this._error(EFFECT_BAD_MEMOF_NO_BUFFER);
         	}
 
+        	if(!pPostfixExprType.isStrictPointer() && !isNull(this.getCurrentAnalyzedFunction())){
+        		this.getCurrentAnalyzedFunction()._setForPixel(false);
+        		this.getCurrentAnalyzedFunction()._notCanUsedAsFunction();
+        		pPostfixExprType._setPointerToStrict();
+        	}
+        
         	pMemExpr.setBuffer(pBuffer);
 
         	return pMemExpr;
@@ -2437,6 +2495,11 @@ module akra.fx {
         	pReturnType = new VariableTypeInstruction();
         	pReturnType.push(pUsageType, true);
 
+        	if(pReturnType.isPointer() || pReturnType._containSampler() || pReturnType._containPointer()){
+        		this._error(EFFECT_BAD_RETURN_TYPE_FOR_FUNCTION, { funcName: sFuncName });
+        		return null;
+        	}
+
         	pFuncName = new IdInstruction();
         	pFuncName.setName(sFuncName);
 
@@ -2470,7 +2533,7 @@ module akra.fx {
         	for (i = pChildren.length - 2; i >= 1; i--) {
         		if (pChildren[i].name === "ParameterDecl") {
 		            pParameter = this.analyzeParameterDecl(pChildren[i]);
-		            pFunctionDef.addParameter(pParameter);
+		            pFunctionDef.addParameter(pParameter, this.isStrictMode());
 		        }	
         	}
         }
@@ -2521,7 +2584,7 @@ module akra.fx {
 
         	for(i = pChildren.length - 2; i > 0; i--){
         		pStmt = this.analyzeStmt(pChildren[i]);
-        		if(isNull(pStmt)){
+        		if(!isNull(pStmt)){
         			pStmtBlock.push(pStmt);
         		}
         	} 
@@ -2543,7 +2606,8 @@ module akra.fx {
         		case "SimpleStmt":
         			return this.analyzeSimpleStmt(pChildren[0]);
         		case "UseDecl":
-        			return this.analyzeUseDecl(pChildren[0]);
+        			this.analyzeUseDecl(pChildren[0]);
+        			return null;
         		case "T_KW_WHILE":
         			return this.analyzeWhileStmt(pNode);
         		case "T_KW_FOR":
@@ -2595,8 +2659,30 @@ module akra.fx {
         	var pChildren: IParseNode[] = pNode.children;
         	var pReturnStmtInstruction: ReturnStmtInstruction = new ReturnStmtInstruction();
 
-        	if(pChildren.length === 2) {
+        	var pFunctionReturnType: IAFXVariableTypeInstruction = this.getCurrentAnalyzedFunction().getReturnType();
+        
+        	if(pFunctionReturnType.isEqual(Effect.getSystemType("void")) && pChildren.length === 3){
+        		this._error(EFFECT_BAD_RETURN_STMT_VOID);
+        		return null;
+        	}
+        	else if(!pFunctionReturnType.isEqual(Effect.getSystemType("void")) && pChildren.length === 2){
+        		this._error(EFFECT_BAD_RETURN_STMT_EMPTY);
+        		return null;
+        	}
+
+        	if(pChildren.length === 3) {
         		var pExprInstruction: IAFXExprInstruction = this.analyzeExpr(pChildren[1]);
+        		var pOutVar: IAFXVariableDeclInstruction = this.getCurrentAnalyzedFunction()._getOutVariable();
+        		
+        		if(!isNull(pOutVar) && pOutVar.getType() !== pExprInstruction.getType()){
+        			this._error(EFFECT_BAD_RETURN_STMT_NOT_EQUAL_TYPES);
+        			return null;
+        		}
+
+        		if(!pFunctionReturnType.isEqual(pExprInstruction.getType())){
+        			this._error(EFFECT_BAD_RETURN_STMT_NOT_EQUAL_TYPES);
+        			return null;
+        		}
         		pReturnStmtInstruction.push(pExprInstruction, true);
         	}
 
@@ -2671,7 +2757,7 @@ module akra.fx {
         	var pWhileStmt: WhileStmtInstruction = new WhileStmtInstruction();
         	var pCondition: IAFXExprInstruction = null;
         	var pConditionType: IAFXVariableTypeInstruction = null;
-        	var pBoolType: IAFXTypeInstruction = this.getSystemType("bool");
+        	var pBoolType: IAFXTypeInstruction = Effect.getSystemType("bool");
         	var pStmt: IAFXStmtInstruction = null;
 
         	if(isDoWhile) {
@@ -2721,7 +2807,7 @@ module akra.fx {
         	var pIfStmtInstruction: IfStmtInstruction = new IfStmtInstruction();
         	var pCondition: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
         	var pConditionType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pCondition.getType();
-        	var pBoolType: IAFXTypeInstruction = this.getSystemType("bool");
+        	var pBoolType: IAFXTypeInstruction = Effect.getSystemType("bool");
 
         	var pIfStmt: IAFXStmtInstruction = null;
         	var pElseStmt: IAFXStmtInstruction = null;
@@ -2884,12 +2970,9 @@ module akra.fx {
         }
        
 
-        private analyzeUseDecl(pNode: IParseNode): IAFXStmtInstruction{
+        private analyzeUseDecl(pNode: IParseNode): void {
         	this.setAnalyzedNode(pNode);
-
-        	var pChildren: IParseNode[] = pNode.children;
-
-        	return null;
+        	this.setStrictModeOn();
         }
 
         private analyzeTechniqueForImport(pNode: IParseNode): void {
@@ -3042,7 +3125,7 @@ module akra.fx {
         	var isComplex: bool = pLeftType.isComplex() || pRightType.isComplex();
 			var isArray: bool = pLeftType.isNotBaseArray() || pRightType.isNotBaseArray();
 			var isSampler: bool = this.isSamplerType(pLeftType) || this.isSamplerType(pRightType);
-        	var pBoolType: IAFXVariableTypeInstruction = this.getSystemType("bool").getVariableType();
+        	var pBoolType: IAFXVariableTypeInstruction = Effect.getSystemType("bool").getVariableType();
 
         	if(isArray || isSampler) {
         		return null;
@@ -3154,7 +3237,7 @@ module akra.fx {
 			}
 
         	if(sOperator === "!"){
-        		var pBoolType: IAFXVariableTypeInstruction = this.getSystemType("bool").getVariableType();
+        		var pBoolType: IAFXVariableTypeInstruction = Effect.getSystemType("bool").getVariableType();
         		
         		if(pType.isEqual(pBoolType)){
         			return pBoolType;
@@ -3198,72 +3281,72 @@ module akra.fx {
         }
 
         private isMatrixType(pType: IAFXTypeInstruction): bool {
-        	return pType.isEqual(this.getSystemType("float2x2")) ||
-        		   pType.isEqual(this.getSystemType("float3x3")) ||
-        		   pType.isEqual(this.getSystemType("float4x4")) ||
-        		   pType.isEqual(this.getSystemType("int2x2")) ||
-        		   pType.isEqual(this.getSystemType("int3x3")) ||
-        		   pType.isEqual(this.getSystemType("int4x4")) ||
-        		   pType.isEqual(this.getSystemType("bool2x2")) ||
-        		   pType.isEqual(this.getSystemType("bool3x3")) ||
-        		   pType.isEqual(this.getSystemType("bool4x4"));
+        	return pType.isEqual(Effect.getSystemType("float2x2")) ||
+        		   pType.isEqual(Effect.getSystemType("float3x3")) ||
+        		   pType.isEqual(Effect.getSystemType("float4x4")) ||
+        		   pType.isEqual(Effect.getSystemType("int2x2")) ||
+        		   pType.isEqual(Effect.getSystemType("int3x3")) ||
+        		   pType.isEqual(Effect.getSystemType("int4x4")) ||
+        		   pType.isEqual(Effect.getSystemType("bool2x2")) ||
+        		   pType.isEqual(Effect.getSystemType("bool3x3")) ||
+        		   pType.isEqual(Effect.getSystemType("bool4x4"));
         }
 
         private isVectorType(pType: IAFXTypeInstruction): bool {
-        	return pType.isEqual(this.getSystemType("float2")) ||
-        		   pType.isEqual(this.getSystemType("float3")) ||
-        		   pType.isEqual(this.getSystemType("float4")) ||
-        		   pType.isEqual(this.getSystemType("bool2")) ||
-        		   pType.isEqual(this.getSystemType("bool3")) ||
-        		   pType.isEqual(this.getSystemType("bool4")) ||
-        		   pType.isEqual(this.getSystemType("int2")) ||
-        		   pType.isEqual(this.getSystemType("int3")) ||
-        		   pType.isEqual(this.getSystemType("int4"));
+        	return pType.isEqual(Effect.getSystemType("float2")) ||
+        		   pType.isEqual(Effect.getSystemType("float3")) ||
+        		   pType.isEqual(Effect.getSystemType("float4")) ||
+        		   pType.isEqual(Effect.getSystemType("bool2")) ||
+        		   pType.isEqual(Effect.getSystemType("bool3")) ||
+        		   pType.isEqual(Effect.getSystemType("bool4")) ||
+        		   pType.isEqual(Effect.getSystemType("int2")) ||
+        		   pType.isEqual(Effect.getSystemType("int3")) ||
+        		   pType.isEqual(Effect.getSystemType("int4"));
         }
 
         private isScalarType(pType: IAFXTypeInstruction): bool {
-        	return pType.isEqual(this.getSystemType("bool")) ||
-        		   pType.isEqual(this.getSystemType("int")) ||
-        		   pType.isEqual(this.getSystemType("ptr")) ||
-        		   pType.isEqual(this.getSystemType("float"));
+        	return pType.isEqual(Effect.getSystemType("bool")) ||
+        		   pType.isEqual(Effect.getSystemType("int")) ||
+        		   pType.isEqual(Effect.getSystemType("ptr")) ||
+        		   pType.isEqual(Effect.getSystemType("float"));
         }
 
         private isFloatBasedType(pType: IAFXTypeInstruction): bool {
-        	return pType.isEqual(this.getSystemType("float")) || 
-        		   pType.isEqual(this.getSystemType("float2")) || 
-        		   pType.isEqual(this.getSystemType("float3")) || 
-        		   pType.isEqual(this.getSystemType("float4")) ||
-        		   pType.isEqual(this.getSystemType("float2x2")) || 
-        		   pType.isEqual(this.getSystemType("float3x3")) || 
-        		   pType.isEqual(this.getSystemType("float4x4")) ||
-        		   pType.isEqual(this.getSystemType("ptr")); 
+        	return pType.isEqual(Effect.getSystemType("float")) || 
+        		   pType.isEqual(Effect.getSystemType("float2")) || 
+        		   pType.isEqual(Effect.getSystemType("float3")) || 
+        		   pType.isEqual(Effect.getSystemType("float4")) ||
+        		   pType.isEqual(Effect.getSystemType("float2x2")) || 
+        		   pType.isEqual(Effect.getSystemType("float3x3")) || 
+        		   pType.isEqual(Effect.getSystemType("float4x4")) ||
+        		   pType.isEqual(Effect.getSystemType("ptr")); 
         }
 
         private isIntBasedType(pType: IAFXTypeInstruction): bool {
-        	return pType.isEqual(this.getSystemType("int")) || 
-        		   pType.isEqual(this.getSystemType("int2")) || 
-        		   pType.isEqual(this.getSystemType("int3")) || 
-        		   pType.isEqual(this.getSystemType("int4")) ||
-        		   pType.isEqual(this.getSystemType("int2x2")) || 
-        		   pType.isEqual(this.getSystemType("int3x3")) || 
-        		   pType.isEqual(this.getSystemType("int4x4"));
+        	return pType.isEqual(Effect.getSystemType("int")) || 
+        		   pType.isEqual(Effect.getSystemType("int2")) || 
+        		   pType.isEqual(Effect.getSystemType("int3")) || 
+        		   pType.isEqual(Effect.getSystemType("int4")) ||
+        		   pType.isEqual(Effect.getSystemType("int2x2")) || 
+        		   pType.isEqual(Effect.getSystemType("int3x3")) || 
+        		   pType.isEqual(Effect.getSystemType("int4x4"));
         }
 
         private isBoolBasedType(pType: IAFXTypeInstruction): bool {
-        	return pType.isEqual(this.getSystemType("bool")) || 
-        		   pType.isEqual(this.getSystemType("bool2")) || 
-        		   pType.isEqual(this.getSystemType("bool3")) || 
-        		   pType.isEqual(this.getSystemType("bool4")) ||
-        		   pType.isEqual(this.getSystemType("bool2x2")) || 
-        		   pType.isEqual(this.getSystemType("bool3x3")) || 
-        		   pType.isEqual(this.getSystemType("bool4x4"));
+        	return pType.isEqual(Effect.getSystemType("bool")) || 
+        		   pType.isEqual(Effect.getSystemType("bool2")) || 
+        		   pType.isEqual(Effect.getSystemType("bool3")) || 
+        		   pType.isEqual(Effect.getSystemType("bool4")) ||
+        		   pType.isEqual(Effect.getSystemType("bool2x2")) || 
+        		   pType.isEqual(Effect.getSystemType("bool3x3")) || 
+        		   pType.isEqual(Effect.getSystemType("bool4x4"));
         }
 
         private isSamplerType(pType: IAFXTypeInstruction): bool {
-        	return pType.isEqual(this.getSystemType("sampler")) ||
-    		   	   pType.isEqual(this.getSystemType("sampler2D")) ||
-    		       pType.isEqual(this.getSystemType("samplerCUBE")) ||
-    		       pType.isEqual(this.getSystemType("video_buffer"));
+        	return pType.isEqual(Effect.getSystemType("sampler")) ||
+    		   	   pType.isEqual(Effect.getSystemType("sampler2D")) ||
+    		       pType.isEqual(Effect.getSystemType("samplerCUBE")) ||
+    		       pType.isEqual(Effect.getSystemType("video_buffer"));
         }
        
 

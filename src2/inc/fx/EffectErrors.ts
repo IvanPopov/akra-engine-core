@@ -66,6 +66,12 @@ module akra.fx {
     #define EFFECT_BAD_FUNCTION_USAGE_PIXEL 2258
     #define EFFECT_BAD_FUNCTION_VERTEX_DEFENITION 2259
     #define EFFECT_BAD_FUNCTION_PIXEL_DEFENITION 2260
+    #define EFFECT_BAD_RETURN_STMT_VOID 2261
+    #define EFFECT_BAD_RETURN_STMT_EMPTY 2262
+    #define EFFECT_BAD_RETURN_STMT_NOT_EQUAL_TYPES 2263
+    #define EFFECT_BAD_RETURN_TYPE_FOR_FUNCTION 2264
+    #define EFFECT_BAD_FUNCTION_PARAMETER_USAGE 2265
+    #define EFFECT_BAD_OUT_VARIABLE_IN_FUNCTION 2266
 
 
     #define TEMP_EFFECT_BAD_ARRAY_OF_POINTERS 2300
@@ -233,6 +239,24 @@ module akra.fx {
                              "Bad function with defenition '{funcDef}'. Can not be used as vertex-shader.");
     akra.logger.registerCode(EFFECT_BAD_FUNCTION_PIXEL_DEFENITION,
                              "Bad function with defenition '{funcDef}'. Can not be used as pixel-shader.");
+    akra.logger.registerCode(EFFECT_BAD_RETURN_STMT_VOID,
+                             "Bad return stmt. You try to return something in void-function.\
+                              In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFECT_BAD_RETURN_STMT_EMPTY,
+                             "Bad return stmt. You can not call empty return in non-void-function.\
+                              In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFECT_BAD_RETURN_STMT_NOT_EQUAL_TYPES,
+                             "Bad return stmt. Types of return expression and return type of function are not equal.\
+                              In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFECT_BAD_RETURN_TYPE_FOR_FUNCTION,
+                             "Bad return type for '{funcName}'. Return type for function can not contain or be sampler/pointer.\
+                              In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFECT_BAD_FUNCTION_PARAMETER_USAGE,
+                             "Bad parameter '{varName}' in function '{funcName}'. Bad usage.\
+                              In line: {line}. In column: {column}"); 
+    akra.logger.registerCode(EFFECT_BAD_OUT_VARIABLE_IN_FUNCTION,
+                             "Bad variable with name 'Out'. It is sytem for used like return variable in shaders.\
+                              In line: {line}. In column: {column}"); 
 
 
 

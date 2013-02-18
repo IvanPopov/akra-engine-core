@@ -221,12 +221,16 @@ module akra {
         hasUsage(sUsageName: string): bool;
 
         isPointer(): bool;
+        isStrictPointer(): bool;
+        _setPointerToStrict(): void;
         isPointIndex(): bool;
 
-        addPointIndex(): void;
+        addPointIndex(isStrict?:bool): void;
+        _addPointIndexInDepth(): void;
         getPointDim(): uint;
         getPointer(): IAFXVariableDeclInstruction;
         setVideoBuffer(pBuffer: IAFXVariableDeclInstruction): void;
+        _setVideoBufferInDepth(): void;
         getVideoBuffer():IAFXVariableDeclInstruction;
         hasVideoBuffer(): bool;
         initializePointers(): void;
@@ -238,6 +242,7 @@ module akra {
         _setNextPointer(pPointer: IAFXVariableDeclInstruction): void;
         _containArray(): bool;
         _containSampler(): bool;
+        _containPointer(): bool;
 
         _setCloneHash(sHash: string, sStrongHash: string): void;
         _setCloneArrayIndex(pElementType: IAFXVariableTypeInstruction, 
@@ -295,6 +300,8 @@ module akra {
         getType(): IAFXVariableTypeInstruction;
         setType(pType: IAFXVariableTypeInstruction): void;
 
+        isUniform(): bool;
+
         setName(sName: string):void;
 
         clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction;
@@ -305,7 +312,7 @@ module akra {
         hasImplementation(): bool;
         getArguments(): IAFXTypedInstruction[];
         getNumNeededArguments(): uint;
-        getReturnType(): IAFXTypeInstruction;
+        getReturnType(): IAFXVariableTypeInstruction;
 
         // closeArguments(pArguments: IAFXInstruction[]): IAFXTypedInstruction[];
         setFunctionDef(pFunctionDef: IAFXDeclInstruction): void;
@@ -313,6 +320,9 @@ module akra {
 
         clone(pRelationMap?: IAFXInstructionMap): IAFXFunctionDeclInstruction;
         
+        _addOutVariable(pVariable: IAFXVariableDeclInstruction): bool;
+        _getOutVariable(): IAFXVariableDeclInstruction;
+
         _usedAs(eUsedType: EFunctionType): void;
         _isUsedAs(eUsedType: EFunctionType): bool;
         _isUsedAsFunction(): bool;
@@ -329,6 +339,9 @@ module akra {
         _checkDefenitionForVertexUsage(): bool;
         _checkDefenitionForPixelUsage(): bool;
 
+        _canUsedAsFunction(): bool;
+        _notCanUsedAsFunction(): void;
+
         _addUsedFunction(pFunction: IAFXFunctionDeclInstruction): bool;
         _getUsedFunctionList(): IAFXFunctionDeclInstruction[];
         
@@ -336,8 +349,10 @@ module akra {
         _addToBlackList(): void;
         _getStringDef(): string;
 
-
+        _convertToVertexShader(): IAFXFunctionDeclInstruction;
+        _convertToPixelShader(): IAFXFunctionDeclInstruction;
     }
+
 
     export interface IAFXStructDeclInstruction extends IAFXInstruction {
         //id: IAFXIdInstruction

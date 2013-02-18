@@ -30,6 +30,7 @@ module akra.fx {
 		parent : IScope;
 		index: uint;
 		type: EScopeType;
+		isStrictMode: bool;
 
 		variableMap : IAFXVariableDeclMap;
 		typeMap : IAFXTypeDeclMap;
@@ -52,6 +53,23 @@ module akra.fx {
 			this._nScope = 0;
 		}
 
+		isStrictMode(iScope?: uint = this._iCurrentScope): bool {
+			var pScope: IScope = this._pScopeMap[iScope];
+
+			while(!isNull(pScope)){
+				if(pScope.isStrictMode){
+					return true;
+				}
+
+				pScope = pScope.parent;
+			}
+
+		}
+
+		setStrictModeOn(iScope?: uint = this._iCurrentScope): void {
+			this._pScopeMap[iScope].isStrictMode = true;
+		}
+
 		newScope(eType: EScopeType): void {
 			var isFirstScope: bool = false;
 			var pParentScope: IScope;
@@ -69,6 +87,7 @@ module akra.fx {
 										parent: pParentScope,
 										index: this._iCurrentScope,
 										type: eType,
+										isStrictMode: false,
 										variableMap: null,
 										typeMap: null,
 										functionMap: null
@@ -211,6 +230,85 @@ module akra.fx {
 								}
 
 								isParamsEqual = true;
+							}
+
+							if(isParamsEqual){
+								if(!isNull(pFunction)){
+									return undefined;
+								}
+								pFunction = pTestedFunction;
+							}
+						}	
+					}
+
+				}
+
+				pScope = pScope.parent;
+			}
+			
+			return pFunction;
+		}
+
+		/**
+		 * get shader function by name and list of types
+		 * return null - if threre are not function; undefined - if there more then one function; function - if all ok
+		 */
+		getShaderFunction(sFuncName: string, pArgumentTypes: IAFXTypedInstruction[], iScope?: uint = GLOBAL_SCOPE): IAFXFunctionDeclInstruction {
+			if(isNull(iScope)){
+				return null;
+			}
+
+			var pScope: IScope = this._pScopeMap[iScope];
+			var pFunction: IAFXFunctionDeclInstruction = null;
+
+			while(!isNull(pScope)){
+				var pFunctionListMap: IAFXFunctionDeclListMap = pScope.functionMap;
+
+				if(!isNull(pFunctionListMap)){
+					var pFunctionList: IAFXFunctionDeclInstruction[] = pFunctionListMap[sFuncName];
+					
+					if(isDef(pFunctionList)){
+						
+						for(var i: uint = 0; i < pFunctionList.length; i++){
+							var pTestedFunction: IAFXFunctionDeclInstruction  = pFunctionList[i];
+							var pTestedArguments: IAFXVariableDeclInstruction[] = <IAFXVariableDeclInstruction[]>pTestedFunction.getArguments();
+
+							if(pArgumentTypes.length > pTestedArguments.length){
+								continue;
+							}
+
+							var isParamsEqual: bool = true;
+							var iArg: uint = 0;
+
+							if(pArgumentTypes.length === 0){
+								if(!isNull(pFunction)){
+									return undefined;
+								} 
+
+								pFunction = pTestedFunction;
+								continue;
+							}
+
+							for(var j: uint = 0; j < pTestedArguments.length; j++){
+								isParamsEqual = false;
+
+								if(iArg >= pArgumentTypes.length) {
+									if(pTestedArguments[j].isUniform()){
+										break;
+									}
+									else {
+										isParamsEqual = true;
+									}
+								}
+								else if(pTestedArguments[j].isUniform()){
+									if(!pArgumentTypes[iArg].getType().isEqual(pTestedArguments[j].getType())){
+										break;
+									}
+									else{
+										iArg++;
+										isParamsEqual = true;
+									}									
+								}
 							}
 
 							if(isParamsEqual){
