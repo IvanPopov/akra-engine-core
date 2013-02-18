@@ -186,8 +186,9 @@ module akra.io {
 
 		"Object": {
 			write: function (object: any) {
+
 				if (isArray(object)) {
-					this.bool(true); 	//is array
+					this.bool(true); 	/*is array*/
 					this.uint32((<any[]>object).length);
 
 					for (var i = 0; i < (<any[]>object).length; ++ i) {
@@ -195,7 +196,7 @@ module akra.io {
 					}
 				}
 				else {
-					this.bool(false); 	//is not array
+					this.bool(false); 	/*is not array*/
 					this.stringArray(Object.keys(object));
 
 					for (var key in object) {
@@ -203,11 +204,12 @@ module akra.io {
 					}
 				}
 			},
-			read: function (object) {
-				var keys;
-				var n;
+			read: function (object: any) {
+				var isArray: bool = this.bool();
+				var keys: string[];
+				var n: uint;
 
-				if (this.bool()) {
+				if (isArray) {
 					n = this.uint32();
 					object = object || new Array(n);
 
@@ -249,6 +251,10 @@ module akra.io {
 				return new Function(this.stringArray(), this.string());
 			}
 		},
+		"Number": "Float32",
+		"Float"	: "Float32",
+		"Int"	: "Int32",
+		"Uint"	: "Uint32",
 		"Array"	: "Object"
 	});
 }

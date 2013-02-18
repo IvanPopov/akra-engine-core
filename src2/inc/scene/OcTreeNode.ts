@@ -5,6 +5,7 @@
 #include "IRect3d.ts"
 #include "IVec3.ts"
 #include "geometry/Rect3d.ts"
+#include "util/ObjectList.ts"
 
 
 module akra.scene {
@@ -16,174 +17,137 @@ module akra.scene {
 		/** Level of node */
 		level: int = 0;
 		/** Byte x-coord of node */
-		x: int = 0;
+		//x: int = 0;
 		/** Byte y-coord of node */
-		y: int = 0;
+		//y: int = 0;
 		/** Byte z-coord of node */
-		z: int = 0;
+		//z: int = 0;
 		/** Index in array of nodes in tree */
 		index: int = 0;
 		/** First SceneObject in this node */
-		//firstMember: ISceneObject = null;
-		listOfMembers: IObjectList = new ObjectList();
+		membersList: IObjectList;
 		/** Rect of node in real world */
-		nodeTrueRect: IRect3d = new geometry.Rect3d();
-		/** Link ro next node in tree */
-		forwardNodeLink: IOcTreeNode = null;
-		/** Link ro previous node in tree */
+		worldBounds: IRect3d;
+		
+		/** Link to previous node in tree */
 		rearNodeLink: IOcTreeNode = null;
 
-	    /**
-	     * Link to parent node in tree
-	     * @type OcTreeNode
-	     * @private
-	     */
-	//    this.parentNode = null;
-	    /**
-	     * Link ro sibling node(nodes has same parent) in tree
-	     * @type OcTreeNode
-	     * @private
-	     */
-	//    this.siblingNode = null;
-	    /**
-	     * Link ro children node in tree
-	     * @type OcTreeNode
-	     * @private
-	     */
-	//    this.childrenNode = null;
+		//eight links to possible children nodes;		
+		childrenList: IObjectList[];
 
-		constructor (pTree: IOcTree);
-		// constructor (iLevel: int, iX: int, iY: int, iZ: int/*, nChildren: uint*/);
-		// constructor (iLevel, iX?, iY?, iZ?/*, nChildren?*/) {
-		constructor (pTree: IOcTree) {
+		//index - is xyz where x-left = 0, x-right = 1 etc.
+
+		constructor(pTree: IOcTree){
+			this.membersList = new util.ObjectList();
+			this.worldBounds = new geometry.Rect3d();
+
+			this.childrenList = new Array(8);
+			for(var i=0; i<8;i++){
+				this.childrenList[i] = new util.ObjectList();
+			}
 
 			this.tree = pTree;
 		}
 
 		/**
-		 * Add or update object in this node
+		 * Add object in this node
 		 */
-		addOrUpdateMember(pMember: ISceneObject): void {
-		    // is this node not already a pMember?
-		    if (pMember._pOcTreeNode != this) {
-		        // remove the pMember from it's previous Oc tree node (if any)
-		        if (pMember._pOcTreeNode) {
-		            pMember._pOcTreeNode.removeMember(pMember);
-		        }
-		        // account for the new addition
-		        if (!this.firstMember) {
-		            this.firstMember = [pMember];//pMember;
-		        }
-		        else {
-		            // prepend this pMember to our list
-		            // pMember._pRearTreeLink = null;
-		            // pMember._pForwardTreeLink = this.firstMember;
-		            // this.firstMember._pRearTreeLink = pMember;
-		         	this.firstMember.push(pMember);
-		            //this.firstMember = pMember;
-		        }
-		        pMember._pOcTreeNode = this;
-		    }
-		    //обновляем границы нода, критично, в том случае если объект выходит за границы нода, так как иначе отсекаться будет неправильно
-		    this.nodeCoords();
-		}
+		addMember(pObject: ISceneObject): void {
+			this.membersList.push(pObject);
+			this.connect(pObject, SIGNAL(worldBoundsUpdated), SLOT(objectMoved), EEventTypes.UNICAST);
+			// console.log(this.membersList);
+		};
 
 		/**
 		 * Remove member object from node and release node if there are not members in it
 		 */
-		removeMember(pMember: ISceneObject): void {
-		    // make sure this is one of ours
-		    debug_assert(pMember._pOcTreeNode == this, "error removing Oc tree pMember");
-		    // remove this pMember from it's chain
-		    if (pMember._pForwardTreeLink) {
-		        pMember._pForwardTreeLink._pRearTreeLink = pMember._pRearTreeLink;
+		removeMember(pObject: ISceneObject): void {
+			var i:int = this.membersList.indexOf(pObject);
+			// console.log('position in list ------------>',i);
+			
+			// make sure this is one of ours
+			debug_assert(i>=0, "error removing member cannot find member");
+		    
+	    	if(i>=0){
+	    		this.membersList.takeAt(i);
+	    		this.disconnect(pObject, SIGNAL(worldBoundsUpdated), SLOT(objectMoved), EEventTypes.UNICAST);
+	    	}
+
+	    	if(this.membersList.length === 0){
+	    		this.tree.deleteNodeFromTree(this);
+	    	}
+		};
+
+		BEGIN_EVENT_TABLE(OcTreeNode);
+
+		objectMoved(pObject: ISceneObject){
+			// console.warn('object moving');
+			var pNode: IOcTreeNode = this.tree.findTreeNode(pObject);
+			//console.error('-----before------>', this, pNode,'<-------arter------');
+			if(pNode !== this){
+				this.removeMember(pObject);
+				pNode.addMember(pObject);
+			}
+		};
+
+		END_EVENT_TABLE();
+
+		
+	};
+
+	export class OcTreeRootNode extends OcTreeNode implements IOcTreeNode{
+
+		protected _pBasicWorldBounds: IRect3d;
+
+		constructor(pTree: IOcTree){
+			super(pTree);
+
+			var iTmp: int = (1 << this.tree.depth);
+
+			this._pBasicWorldBounds = new geometry.Rect3d(0, iTmp, 0, iTmp, 0, iTmp);
+		    this._pBasicWorldBounds.divSelf(this.tree.worldScale);
+		    this._pBasicWorldBounds.subSelf(this.tree.worldOffset);
+
+		    this.worldBounds.set(this._pBasicWorldBounds);
+		};
+
+		addMember(pMember: ISceneObject): void{
+			super.addMember(pMember);
+			//обновляем границы нода, критично, в том случае если объект выходит за границы нода, так как иначе отсекаться будет неправильно
+	    	this._updateNodeBoundingBox();
+		};
+
+		removeMember(pObject: ISceneObject): void{
+			var i:int = this.membersList.indexOf(pObject);
+
+			console.log('position in list ------------>',i);
+
+			// make sure this is one of ours
+			debug_assert(i>=0, "error removing member cannot find member");
+		    
+	    	if(i>=0){
+	    		this.membersList.takeAt(i);
+	    		this.disconnect(pObject, SIGNAL(moved), SLOT(objectMoved), EEventTypes.UNICAST);
+	    	}
+
+			//обновляем границы нода, критично, в том случае если объект выходит за границы нода, так как иначе отсекаться будет неправильно
+			this._updateNodeBoundingBox();
+		};
+
+		protected _updateNodeBoundingBox(): void {
+		    var pNodeWorldBounds: IRect3d = this.worldBounds;
+		    pNodeWorldBounds.set(this._pBasicWorldBounds);
+		 
+		    var pObject: ISceneObject = this.membersList.first;
+		    while(isDefAndNotNull(pObject)){
+		    	console.warn(pObject,pObject.worldBounds);
+		    	pNodeWorldBounds.unionRect(pObject.worldBounds);
+
+		    	pObject = this.membersList.next();
 		    }
-		    if (pMember._pRearTreeLink) {
-		        pMember._pRearTreeLink._pForwardTreeLink = pMember._pForwardTreeLink;
-		    }
-		    // if this was our first pMember, advance our pointer to the next pMember
-		    if (this.firstMember == pMember) {
-		        this.firstMember = pMember._pForwardTreeLink;
-		    }
-		    // clear the former members links
-		    pMember._pRearTreeLink = null;
-		    pMember._pForwardTreeLink = null;
-		    pMember._pOcTreeNode = null;
-		    if (!this.firstMember) {
-		        pMember._pOcTree.deleteNodeFromTree(this);
-		    }
-		    else{
-		        //обновляем границы нода, критично, в том случае если объект выходит за границы нода, так как иначе отсекаться будет неправильно
-		        this.nodeCoords();
-		    }
-		}
-		/**
-		 * Calculate real rect(in world coords) of node
-		 */
-		nodeCoords(): void {
-		    var w: int = 1 << (10 - this.iLevel);
-
-		    var pNodeTrueRect: IRect3d = this.nodeTrueRect;
-
-		    pNodeTrueRect.fX0 = this.iX * w;
-		    pNodeTrueRect.fX1 = (this.iX + 1) * w;
-		    pNodeTrueRect.fY0 = this.iY * w;
-		    pNodeTrueRect.fY1 = (this.iY + 1) * w;
-		    pNodeTrueRect.fZ0 = this.iZ * w;
-		    pNodeTrueRect.fZ1 = (this.iZ + 1) * w;
-		    pNodeTrueRect.divSelf(this.tree._v3fWorldScale);
-		    pNodeTrueRect.subSelf(this.tree._v3fWorldOffset);
-
-		    var iLimit = (1 << this.iLevel) - 1;
-
-		    var iX = this.iX;
-		    var iY = this.iY;
-		    var iZ = this.iZ;
-
-		    if(iX == 0 || iX == iLimit 
-		        || iY == 0 || iY == iLimit
-		        || iZ == 0 || iZ == iLimit){
-
-		        //if iLevel = 0 than iLimit = 0;
-		        var pObject = null;
-		        for(pObject = this.firstMember; pObject; pObject = pObject._pForwardTreeLink){
-		            var pWorldRect: IRect3d = pObject.worldBounds();
-		            
-		            if(iX == 0){
-		                pNodeTrueRect.x0 = math.min(pNodeTrueRect.x0, pWorldRect.x0)
-		            }
-		            
-		            if(iX == iLimit){
-		                pNodeTrueRect.x1 = math.max(pNodeTrueRect.x1, pWorldRect.x1)    
-		            }
-
-		            if(iY == 0){
-		                pNodeTrueRect.y0 = math.min(pNodeTrueRect.y0, pWorldRect.y0)
-		            }
-		            
-		            if(iY == iLimit){
-		                pNodeTrueRect.y1 = math.max(pNodeTrueRect.y1, pWorldRect.y1)    
-		            }
-
-		            if(iZ == 0){
-		                pNodeTrueRect.z0 = math.min(pNodeTrueRect.z0, pWorldRect.z0)
-		            }
-		            
-		            if(iZ == iLimit){
-		                pNodeTrueRect.z1 = math.max(pNodeTrueRect.z1, pWorldRect.z1)    
-		            }
-		        }
-		    }
-		    /*
-		     this.nodeTrueRect.x0 = (this.nodeTrueRect.x0 + 1)<<0;
-		     this.nodeTrueRect.x1 = (this.nodeTrueRect.x1 + 1)<<0;
-		     this.nodeTrueRect.y0 = (this.nodeTrueRect.y0 + 1)<<0;
-		     this.nodeTrueRect.y1 = (this.nodeTrueRect.y1 + 1)<<0;
-		     this.nodeTrueRect.z0 = (this.nodeTrueRect.z0 + 1)<<0;
-		     this.nodeTrueRect.z1 = (this.nodeTrueRect.z1 + 1)<<0;
-		     */
 		};
 	}
 }
+
 
 #endif

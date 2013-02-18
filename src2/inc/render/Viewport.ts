@@ -7,8 +7,9 @@
 #include "geometry/Rect2d.ts"
 #include "IFrameBuffer.ts"
 #include "events/events.ts"
+#include "util/ObjectArray.ts"
 
-#define DL_DEFAULT DEFAULT_NAME;
+//#define DL_DEFAULT DEFAULT_NAME;
 
 module akra.render {
 	export class Viewport implements IViewport {
@@ -232,11 +233,11 @@ module akra.render {
 		}
 
 		protected renderAsNormal(csMethod: string, pCamera: ICamera): void {
-				var pVisibleObjects: ISceneObject[] = pCamera.display();
+				var pVisibleObjects: IObjectArray = pCamera.display();
 				var pRenderable: IRenderableObject;
 
 				for (var i: int = 0; i < pVisibleObjects.length; ++ i) {
-					pRenderable = pVisibleObjects[i].getRenderable();
+					pRenderable = pVisibleObjects.value(i).getRenderable();
 
 					if (!isNull(pRenderable)) {
 						pRenderable.render(csMethod);

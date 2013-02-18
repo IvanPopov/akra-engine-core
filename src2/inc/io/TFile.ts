@@ -8,6 +8,10 @@
 #include "math/math.ts"
 #include "util/ThreadManager.ts"
 
+/// @dep io/FileInterface.t.js
+/// @dep io/LocalFile.t.js
+/// @dep io/RemoteFile.t.js 
+
 #ifndef FTM_DEFAULT_LOCAL_THREAD
 #define FTM_DEFAULT_LOCAL_THREAD "LocalFile.t.js"
 #endif

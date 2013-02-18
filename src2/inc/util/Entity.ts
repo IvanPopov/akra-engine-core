@@ -4,6 +4,7 @@
 #include "IEntity.ts"
 #include "IExplorerFunc.ts"
 #include "events/events.ts"
+#include "util/ReferenceCounter.ts"
 
 module akra.util {
 	export enum EEntityStates {

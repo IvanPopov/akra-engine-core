@@ -56,7 +56,7 @@ module akra.util {
         private _sUnknownMessage: string;
 
         constructor () {
-            // super();
+            //super();
             
             this._eUnknownCode = 0;
             this._sUnknownMessage = "Unknown code";  

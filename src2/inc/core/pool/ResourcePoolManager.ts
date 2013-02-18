@@ -6,6 +6,7 @@
 #include "IResourcePool.ts"
 #include "IResourcePoolItem.ts"
 #include "IResourceWatcherFunc.ts"
+#include "IModel.ts"
 
 #include "bf/bitflags.ts"
 #include "ResourceCode.ts"
@@ -376,7 +377,7 @@ module akra.core.pool {
                 }
 
                 if (!pCollada.isResourceLoaded()) {
-                    pCollada.loadResource(sFilename, pOptions);
+                    pCollada.loadResource(sFilename, <IColladaLoadOptions>pOptions);
                 }
 
                 return pCollada;
@@ -396,6 +397,7 @@ module akra.core.pool {
 
             this.pRenderMethodPool = new ResourcePool(this, resources.RenderMethod);
             this.pRenderMethodPool.initialize(16);
+
 
             this.pColladaPool = new ResourcePool(this, resources.Collada);
             this.pColladaPool.initialize(0);

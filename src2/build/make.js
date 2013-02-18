@@ -4,7 +4,7 @@ var exec 	= require('child_process').exec;
 var zip 	= require("node-native-zip");
 var path 	= require('path');
 var spawn 	= require('child_process').spawn;
-var md5 	= require('MD5');
+//var md5 	= require('MD5');
 var stream  = require('stream');
 var prompt 	= require('prompt');
 
@@ -57,6 +57,7 @@ var pOptions = {
 	buildDir: "./",			//dir from witch we build
 	tempFile: "~tmp.ts",		//temprorary file name
 	baseDir: __dirname,		//home dir for this script
+	includeDir: null,
 	capability: null,
 	testDir: null,
 	pathToTests: null,
@@ -198,10 +199,15 @@ function verifyOptions() {
 	pOptions.outputFile = path.basename(pOptions.outputFolder);
 	pOptions.outputFolder = path.dirname(pOptions.outputFolder);
 
+	if (!pOptions.includeDir) {
+		pOptions.includeDir = "inc/";//pOptions.buildDir + 
+		
+	}
+
 	if (pOptions.testsFormat.html 	== false && 
 		pOptions.testsFormat.nw 	== false &&
 		pOptions.testsFormat.js 	== false) {
-		pOptions.testsFormat.nw = true;
+		pOptions.testsFormat.html = true;
 	}
 
 	if (pOptions.outputFile == null || pOptions.outputFile == "") {
@@ -239,10 +245,10 @@ function preprocess() {
 	}
 
 	var cmd = pOptions.baseDir + "/mcpp";
-	var argv = ("-P -C -e utf8 -I " + "inc/ -j -+ -W 0 -k " + 
+	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -j -+ -W 0 -k " + 
 		capabilityMacro + " " + pOptions.files.join(" ")).
 		split(" ");
-
+	//console.log(argv.join(" "));
 	var mcpp = spawn(cmd, argv, {maxBuffer: BUFFER_SIZE});
 	var stdout = '';
 
@@ -404,7 +410,39 @@ function createTestName(sEntryFileName) {
 	return sFileName.substr(0, i);
 }
 
+
+function findDepends(sData) {
+	var pDepExp = /\/\/\/\s+@dep\s+(\w[\w\d\.\-\/]+)\s+/ig;
+	var pMatches = null;
+	var pDeps = [];
+
+	while (pMatches = pDepExp.exec(sData)) {
+		pDeps.push(pMatches[1]);
+	}
+
+	return pDeps;
+}
+
+function fetchDeps(sDir, pDeps) {
+	for (var i in pDeps) {
+
+		var sDep = path.normalize( pOptions.includeDir + pDeps[i]);
+
+		// console.log(sDep);
+		var sDepContent = fs.readFileSync(sDep, "utf-8");
+
+		fs.writeFileSync(sDir + "/" + path.basename(sDep), sDepContent, "utf-8");
+	}
+}
+
 function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
+	
+	//FIXME: hack for events support
+	sTestData = sTestData.replace(/eval\(\"this\.\_iGuid \|\| akra\.sid\(\)\"\)/g, "this._iGuid || akra.sid()");
+
+
+	fetchDeps(sDir, findDepends(sTestData));
+	
 
 	sTestData = "\n\n\n" + 
 		"/*---------------------------------------------\n" +
@@ -415,6 +453,7 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 		" *--------------------------------------------*/\n\n\n" + 
 		sTestData;
 
+
 	var pArchive;
 	var sIndexHTML = "\n\
 				  <html>                           					\n\
@@ -422,7 +461,6 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
                   		<title>" + sFile + "</title>   				\n\
                   	</head>                              			\n\
                   	<body>                               			\n\
-                  		<h1 id=\"test_name\">Tests</h1>             \n\
                   		<script>" + sTestData + "</script>   		\n\
                   </html>";
 
@@ -533,6 +571,7 @@ function packTest(sDir, sFile, sName, pData) {
 			}
 
 			if (pOptions.testsFormat.html) {
+				// compileTestMacro("js");
 				compileTestMacro("html");
 			}
 

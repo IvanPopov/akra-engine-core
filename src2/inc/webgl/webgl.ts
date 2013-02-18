@@ -42,7 +42,50 @@ module akra.webgl {
 	export var hasNonPowerOf2Textures: bool = false;
 
 	var pSupportedExtensionList: string[] = null;
-	var pLoadedExtensionList: Object = null;
+	// var pLoadedExtensionList: Object = null;
+
+    function setupContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {
+        var pWebGLExtentionList: Object = {};
+        var pWebGLExtension: Object;
+        
+        //test context not created yet
+        if (isNull(pSupportedExtensionList)) {
+            return pWebGLContext;
+        }
+
+        for (var i: int = 0; i < pSupportedExtensionList.length; ++ i) {
+            if (pWebGLExtension = pWebGLContext.getExtension(pSupportedExtensionList[i])) {
+                pWebGLExtentionList[pSupportedExtensionList[i]] = pWebGLExtension;
+
+                debug_print("loaded WebGL extension: %1", pSupportedExtensionList[i]);
+
+                for (var j in pWebGLExtension) {
+                    if (isFunction(pWebGLExtension[j])) {
+
+                        pWebGLContext[j] = function () {
+                            pWebGLContext[j] = new Function(
+                                "var t = this.pWebGLExtentionList[" + pSupportedExtensionList[i] + "];" + 
+                                "t." + j + ".apply(t, arguments);");
+                        }
+
+                    }
+                    else {
+                        pWebGLContext[j] = pWebGLExtentionList[pSupportedExtensionList[i]][j];
+                    }
+                }
+            }
+            else {
+                WARNING("cannot load extension: %1", pSupportedExtensionList[i]);
+                pSupportedExtensionList.splice(i, 1);
+            }
+        }
+
+
+        (<any>pWebGLContext).pWebGLExtentionList = pWebGLExtentionList;
+        // pLoadedExtensionList = pWebGLExtentionList;
+         
+        return pWebGLContext;
+    }
 
     export function createContext(
             pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas"), 
@@ -56,11 +99,13 @@ module akra.webgl {
     	}
 		catch (e) {}
 
-		if (!pWebGLContext) {
-			debug_warning("cannot get 3d device");
+		if (isDefAndNotNull(pWebGLContext)) {
+            return setupContext(pWebGLContext);
 		}
-
-		return pWebGLContext;
+        
+        debug_warning("cannot get 3d device");
+        
+		return null;
     }
 
 	(function (pWebGLContext: WebGLRenderingContext): void {
@@ -92,39 +137,6 @@ module akra.webgl {
 #ifdef DEBUG	    
 	    pSupportedExtensionList.push(WEBGL_DEBUG_SHADERS, WEBGL_DEBUG_RENDERER_INFO);
 #endif
-	    var pWebGLExtentionList: Object = {};
-	    var pWebGLExtension: Object;
-	    
-	    for (var i: int = 0; i < pSupportedExtensionList.length; ++ i) {
-	        if (pWebGLExtension = pWebGLContext.getExtension(pSupportedExtensionList[i])) {
-	            pWebGLExtentionList[pSupportedExtensionList[i]] = pWebGLExtension;
-
-	            debug_print("loaded WebGL extension: %1", pSupportedExtensionList[i]);
-
-	            for (var j in pWebGLExtension) {
-	                if (isFunction(pWebGLExtension[j])) {
-
-	                    pWebGLContext[j] = function () {
-	                        pWebGLContext[j] = new Function(
-	                            "var t = this.pWebGLExtentionList[" + pSupportedExtensionList[i] + "];" + 
-	                            "t." + j + ".apply(t, arguments);");
-	                    }
-
-	                }
-	                else {
-	                    pWebGLContext[j] = pWebGLExtentionList[pSupportedExtensionList[i]][j];
-	                }
-	            }
-	        }
-	        else {
-	            WARNING("cannot load extension: %1", pSupportedExtensionList[i]);
-	            pSupportedExtensionList.splice(i, 1);
-	        }
-	    }
-
-
-	    (<any>pWebGLContext).pWebGLExtentionList = pWebGLExtentionList;
-	    pLoadedExtensionList = pWebGLExtentionList;
 
 	})(createContext());
 
@@ -265,6 +277,12 @@ module akra.webgl {
             case EPixelFormats.FLOAT32_RGB:
             case EPixelFormats.FLOAT32_RGBA:
                 return GL_FLOAT;
+
+            case EPixelFormats.DEPTH:
+                return GL_UNSIGNED_INT;
+            case EPixelFormats.DEPTH_BYTE:
+                return GL_UNSIGNED_BYTE;
+
             case EPixelFormats.DXT1:
             case EPixelFormats.DXT3:
             case EPixelFormats.DXT5:
@@ -325,6 +343,12 @@ module akra.webgl {
             case EPixelFormats.FLOAT32_GR:
             case EPixelFormats.RG8:
                 return webgl.hasExtension(EXT_TEXTURE_RG) ? GL_RED_EXT : 0;
+
+            //depth
+            case EPixelFormats.DEPTH:
+                return GL_DEPTH_COMPONENT;
+            case EPixelFormats.DEPTH_BYTE:
+                return GL_DEPTH_COMPONENT;
 
             case EPixelFormats.A4L4:
             case EPixelFormats.R3G3B2:

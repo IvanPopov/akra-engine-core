@@ -3,7 +3,8 @@
 
 #include "IRenderData.ts"
 #include "IEventProvider.ts"
-//#include "IHardwareBuffer.ts"
+#include "IHardwareBuffer.ts"
+
 module akra {
     IFACE(IRenderDataCollection);
     IFACE(ISkeleton);
