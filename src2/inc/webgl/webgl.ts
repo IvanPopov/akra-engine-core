@@ -99,8 +99,6 @@ module akra.webgl {
 
 	            debug_print("loaded WebGL extension: %1", pSupportedExtensionList[i]);
 
-                console.log(pWebGLExtension);
-
 	            for (var j in pWebGLExtension) {
 	                if (isFunction(pWebGLExtension[j])) {
 

@@ -25,12 +25,12 @@ module akra.scene.light {
 
 		inline set enabled(bValue: bool){
 			this._isEnabled = bValue;
-		}
+		};
 
 
 		inline get params(): ILightParameters {
 			return this._pLightParameters;
-		}
+		};
 
 		create(isShadowCaster: bool = true, iMaxShadowResolution: uint = 256): bool {
 			var isOk: bool = super.create();
@@ -43,19 +43,24 @@ module akra.scene.light {
 			this._iMaxShadowResolution = math.ceilingPowerOfTwo(iMaxShadowResolution);
 
 			return isOk;
-		}
+		};
 
-		inline isShadowCaster(): bool {
+		inline get isShadowCaster(): bool {
 			return this._bCastShadows;
-		}
+		};
 
-		inline setShadowCasting(bValue: bool = true): void {
+		inline set isShadowCaster(bValue: bool) {
 			this._bCastShadows = bValue;
-		}
+		};
+
+		_prepareForLighting(pCamera: ICamera): bool{
+			WARNING("pure virtual method");
+			return false;
+		};
 
 		_calculateShadows(): void {
 			CRITICAL("NOT IMPLEMENTED!");
-		}
+		};
 	}
 	export function isLightPoint(pNode: ISceneNode){
 		var eType: EEntityTypes = pNode.type;

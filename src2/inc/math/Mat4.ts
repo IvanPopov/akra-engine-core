@@ -506,7 +506,7 @@ module akra.math {
 
 		multiplyVec4(v4fVec: IVec4, v4fDestination?: IVec4): IVec4{
 			if(!isDef(v4fDestination)){
-				v4fDestination = new Vec4();
+				v4fDestination = v4fVec;
 			}
 
 			var pData: Float32Array = this.data;

@@ -17,12 +17,15 @@ module akra{
 		nearPlane: IPlane3d;
 		farPlane: IPlane3d;
 
+		readonly frustumVertices: IVec3[];
+
 		set(): IFrustum;
 		set(pFrustum: IFrustum): IFrustum;
 		set(pLeftPlane: IPlane3d, pRightPlane: IPlane3d,
 			pTopPlane: IPlane3d, pBottomPlane: IPlane3d,
 			pNearPlane: IPlane3d, pFarPlane: IPlane3d): IFrustum;
 
+		calculateFrustumVertices(): IVec3[];
 		extractFromMatrix(m4fProjection: IMat4, m4fWorld?: IMat4, pSearchRect?: IRect3d): IFrustum;
 
 		isEqual(pFrustum: IFrustum): bool;
@@ -30,7 +33,7 @@ module akra{
 		testPoint(v3fPoint: IVec3): bool;
 		testRect(pRect: IRect3): bool;
 		testSphere(pSphere: ISphere): bool;
-
+		testFrustum(pFrustum: IFrustum): bool;
 	};
 };
 

@@ -355,7 +355,7 @@ module akra.math {
 			var pData: Float32Array = this.data;
 		    
 	        if(!isDef(v3fDestination)){
-	            v3fDestination = new Vec3();
+	            v3fDestination = v3fVec;
 	        }
 
 	        var x: float = v3fVec.x, y: float = v3fVec.y, z: float = v3fVec.z;

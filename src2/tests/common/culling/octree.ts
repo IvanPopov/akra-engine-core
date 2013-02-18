@@ -62,6 +62,13 @@ module akra {
 	pLight.create();
 	pLight.attachToParent(pScene3D.getRootNode());
 
+	pLight.attachToParent(pObject5);
+	pLight.isShadowCaster = true;
+
+	pLight.localMatrix = Mat4.fromYawPitchRoll(0*math.PI/6,0.,0.);
+
+	pScene3D.recursiveUpdate();
+
 	//var pResult: any = pOctree._buildSearchResults(pCamera.searchRect, pCamera.frustum);
 	var pResult: any = pCamera.display(DL_DEFAULT);
 
@@ -70,4 +77,6 @@ module akra {
 	console.warn(pResult);
 	console.warn(pCamera);
 	console.log(scene.objects.Camera._pEventTable);
+
+	console.error(pCamera.display(DL_LIGHTING));
 }
