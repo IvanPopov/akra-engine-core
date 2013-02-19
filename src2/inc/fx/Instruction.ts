@@ -2,44 +2,86 @@
 #define AFXINSTRUCTION_TS
 
 #include "IAFXInstruction.ts"
+#include "fx/EffectErrors.ts"
+#include "fx/EffectUtil.ts"
+#include "IParser.ts"
+#include "fx/Effect.ts"
 
 module akra.fx {
+    export function getEffectBaseType(sTypeName: string): SystemTypeInstruction {
+    	return !isNull(Effect.pSystemTypes[sTypeName]) ? (Effect.pSystemTypes[sTypeName] || null) : null;
+    }
+
+    export function isSamplerType(pType: IAFXVariableTypeInstruction): bool {
+    	return pType.isEqual(getEffectBaseType("sampler")) ||
+    		   pType.isEqual(getEffectBaseType("sampler2D")) ||
+    		   pType.isEqual(getEffectBaseType("samplerCUBE")) ||
+    		   pType.isEqual(getEffectBaseType("video_buffer"));
+    }
+
+    #define UNDEFINE_LENGTH 0xffffff
+    #define UNDEFINE_SIZE 0xffffff
+    #define UNDEFINE_NAME "undef"
 
 	export class Instruction implements IAFXInstruction{
-		protected _pParentInstruction: IAFXInstruction;
-		protected _sOperatorName: string;
-		protected _pInstructionList: IAFXInstruction[];
-		protected _nInstuctions: uint;
+		protected _pParentInstruction: IAFXInstruction = null;
+		protected _sOperatorName: string = null;
+		protected _pInstructionList: IAFXInstruction[] = null;
+		protected _nInstuctions: uint = 0;
+		protected readonly _eInstructionType: EAFXInstructionTypes = 0;
+		protected _pLastError: IAFXInstructionError = null;
+		protected _iInstructionID: uint = 0;
+		private static _nInstructionCounter: uint = 0;
 
-		getParent(): IAFXInstruction{
+		inline getParent(): IAFXInstruction{
 			return this._pParentInstruction;
 		}
 
-		setParent(pParentInstruction: IAFXInstruction): void {
+		inline setParent(pParentInstruction: IAFXInstruction): void {
 			this._pParentInstruction = pParentInstruction;
 		}
 
-		getOperator(): string {
+		inline getOperator(): string {
 			return this._sOperatorName;
 		}
 
-		setOperator(sOperator: string): void {
+		inline setOperator(sOperator: string): void {
 			this._sOperatorName = sOperator;
 		}
 
-		getInstructions(): IAFXInstruction[] {
+		inline getInstructions(): IAFXInstruction[] {
 			return this._pInstructionList;
 		}
 
-		setInstructions(pInstructionList: IAFXInstruction[]): void{
+		inline setInstructions(pInstructionList: IAFXInstruction[]): void{
 			this._pInstructionList = pInstructionList;
 		}
 
+		inline _getInstructionType(): EAFXInstructionTypes {
+			return this._eInstructionType;
+		}
+
+		inline _getInstructionID(): uint {
+			return this._iInstructionID;
+		}
+
+		inline getLastError(): IAFXInstructionError {
+			return this._pLastError;
+		}
+
+		inline setError(eCode: uint, pInfo: any): void {
+			this._pLastError.code = eCode;
+			this._pLastError.info = pInfo;
+		}
+
 		constructor(){
+			this._iInstructionID = Instruction._nInstructionCounter++;
 			this._pParentInstruction = null;
 			this._sOperatorName = null;
 			this._pInstructionList = null;
 			this._nInstuctions = 0;
+			this._eInstructionType = EAFXInstructionTypes.k_Instruction;
+			this._pLastError = {code: 0, info: null};
 		}
 
 		push(pInstruction: IAFXInstruction, isSetParent?: bool = false): void {
@@ -47,7 +89,7 @@ module akra.fx {
 				this._pInstructionList[this._nInstuctions] = pInstruction;
 				this._nInstuctions += 1;
 			}
-			if(isSetParent){
+			if(isSetParent &&  !isNull(pInstruction)){
 				pInstruction.setParent(this);
 			}
 		}
@@ -56,83 +98,110 @@ module akra.fx {
     		//TODO
     	}
 
+    	/**
+    	 * Проверка валидности инструкции
+    	 */
+    	check(eStage: ECheckStage, pInfo: any = null): bool {
+    		return true;
+    	}
+
+    	/**
+    	 * Подготовка интсрукции к дальнейшему анализу
+    	 */
+    	prepare(): bool {
+    		return true;
+    	}
+
     	toString(): string {
     		return null;
     	}
+
+    	clone(pRelationMap?: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXInstruction {
+    		if(isDef(pRelationMap[this._getInstructionID()])){
+    			return pRelationMap[this._getInstructionID()];
+    		}
+
+    		var pNewInstruction: IAFXInstruction = new this["constructor"]();
+    		var pParent: IAFXInstruction = this.getParent() || null;
+
+    		if(!isNull(pParent) && isDef(pRelationMap[pParent._getInstructionID()])){
+    			pParent = pRelationMap[pParent._getInstructionID()];
+    		}
+
+    		pNewInstruction.setParent(pParent);
+    		pRelationMap[this._getInstructionID()] = pNewInstruction;
+
+    		for(var i: uint = 0; i < this._pInstructionList.length; i++){
+    			pNewInstruction.push(this._pInstructionList[i].clone(pRelationMap));
+    		}
+
+    		pNewInstruction.setOperator(this.getOperator());
+
+    		return pNewInstruction;
+    	}
 	}
 
-	export class VariableTypeInstruction extends Instruction implements IAFXVariableTypeInstruction {
-		// EMPTY_OPERATOR TypeInstruction ArrayInstruction PointerInstruction
+	export class SimpleInstruction extends Instruction implements IAFXSimpleInstruction{
+		private _sValue: string = "";
 		
-		constructor() {
+		constructor(sValue: string){
 			super();
-		}	 
+			this._pInstructionList = null;
+			this._eInstructionType = EAFXInstructionTypes.k_SimpleInstruction;
 
-		addArrayIndex(pExpr: IAFXExprInstruction): void {
-
+			this._sValue = sValue;
 		}
 
-		addPointIndex(): void {
-
+		inline setValue(sValue: string): void {
+			this._sValue = sValue;
 		}
 
-		setVideoBuffer(pBuffer: IAFXIdInstruction): void {
-			
+		inline isValue(sValue: string): bool {
+			return (this._sValue === sValue);
 		}
 
-		getTypeByIndex(): IAFXVariableTypeInstruction {
-			return null;
-		}
-
-		getField(sFieldName: string, isCreateExpr: bool): IAFXIdExprInstruction {
-			return null;
-		}
-
-		getPointerType(): IAFXVariableTypeInstruction {
-			return null;
-		}
-
-		isEqual(pType: IAFXVariableTypeInstruction): bool {
-			return false;
-		}
-
-		isBase(): bool {
-			return false;
-		}
-
-		isArray(): bool {
-			return false;
-		}
-
-		isPointer(): bool {
-			return false;
+		toString(): string{
+			return this._sValue;
 		}
 	}
+
+	
 
 	export class TypedInstruction extends Instruction implements IAFXTypedInstruction {
-		protected _pType: IAFXVariableTypeInstruction;
+		protected _pType: IAFXTypeInstruction;
 
 		constructor(){
 			super();
 			this._pType = null;
+			this._eInstructionType = EAFXInstructionTypes.k_TypedInstruction;
 		}
 
-		getType(): IAFXVariableTypeInstruction {
+		getType(): IAFXTypeInstruction {
 			return this._pType;
 		}
 
-		setType(pType: IAFXVariableTypeInstruction): void {
+		setType(pType: IAFXTypeInstruction): void {
 			this._pType = pType;
+		}
+
+		clone(pRelationMap?: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXTypedInstruction {
+			var pClonedInstruction: IAFXTypedInstruction = <IAFXTypedInstruction>(super.clone(pRelationMap));
+			pClonedInstruction.setType(this._pType.clone(pRelationMap));
+			return pClonedInstruction;
 		}
 	}
 
+	
+
 	export class DeclInstruction extends TypedInstruction implements IAFXDeclInstruction {
-		protected _sSemantic: string;
-		protected _pAnnotation: IAFXAnnotationInstruction;
+		protected _sSemantic: string = "";
+		protected _pAnnotation: IAFXAnnotationInstruction = null;
+		protected _bForPixel: bool = true;
+		protected _bForVertex: bool = true;
 
 		constructor(){
 			super();
-			this._sSemantic = "";
+			this._eInstructionType = EAFXInstructionTypes.k_DeclInstruction;
 		}
 
 		setSemantic(sSemantic: string): void {
@@ -142,92 +211,49 @@ module akra.fx {
 		setAnnotation(pAnnotation: IAFXAnnotationInstruction): void {
 			this._pAnnotation = pAnnotation;
 		}
-	}
 
-	export class IntInstruction extends TypedInstruction implements IAFXLiteralInstruction {
-		private _iValue: int;
-		static private _pIntType: IAFXVariableTypeInstruction = null;
-		/**
-		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
-		 */
-		constructor() {
-			super();
-			this._iValue = 0;
-			this._pType = IntInstruction._pIntType;
+		getName(): string {
+			return "";
 		}
 
-		inline setValue(iValue: int): void{
-			this._iValue = iValue;
+		getNameId(): IAFXIdInstruction {
+			return null;
 		}
 
-		toString(): string {
-			return <string><any>this._iValue;
-		}
-	}
-
-	export class FloatInstruction extends TypedInstruction implements IAFXLiteralInstruction {
-		private _fValue: float;
-		static private _pFloatType: IAFXVariableTypeInstruction = null;
-		/**
-		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
-		 */
-		constructor() {
-			super();
-			this._fValue = 0.0;
-			this._pType = FloatInstruction._pFloatType;
+		inline getSemantic(): string {
+			return this._sSemantic;
 		}
 
-		inline setValue(fValue: float): void{
-			this._fValue = fValue;
+		inline _isForAll(): bool{
+			return this._bForVertex && this._bForPixel;
 		}
+        inline _isForPixel(): bool{
+        	return this._bForPixel;
+        }
+        inline _isForVertex(): bool{
+        	return this._bForVertex;
+        }
 
-		toString(): string {
-			return <string><any>this._fValue;
+        inline _setForAll(canUse: bool): void{
+        	this._bForVertex = canUse;
+        	this._bForPixel = canUse;
+        }
+        inline _setForPixel(canUse: bool): void{
+    	    this._bForPixel = canUse;
+    	}
+        inline _setForVertex(canUse: bool): void{
+        	this._bForVertex = canUse;
+        }
+
+		clone(pRelationMap?: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXDeclInstruction {
+			var pClonedInstruction: IAFXDeclInstruction = <IAFXDeclInstruction>(super.clone(pRelationMap));
+			pClonedInstruction.setSemantic(this._sSemantic);
+			pClonedInstruction.setAnnotation(this._pAnnotation);
+			return pClonedInstruction;
 		}
 	}
 
-	export class BoolInstruction extends TypedInstruction implements IAFXLiteralInstruction {
-		private _bValue: bool;
-		static private _pBoolType: IAFXVariableTypeInstruction = null;
-		/**
-		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
-		 */
-		constructor() {
-			super();
-			this._bValue = true;
-			this._pType = BoolInstruction._pBoolType;
-		}
-
-		inline setValue(bValue: bool): void{
-			this._bValue = bValue;
-		}
-
-		toString(): string {
-			return <string><any>this._bValue;
-		}
-	}
-
-	export class StringInstruction extends TypedInstruction implements IAFXLiteralInstruction {
-		private _sValue: string;
-		static private _pStringType: IAFXVariableTypeInstruction = null;
-
-		/**
-		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
-		 */
-		constructor() {
-			super();
-			this._sValue = "";
-			this._pType = StringInstruction._pStringType;
-		}
-
-		inline setValue(sValue: string): void{
-			this._sValue = sValue;
-		}
-
-		toString(): string {
-			return this._sValue;
-		}
-	}
+	
 
 	export class IdInstruction extends Instruction implements IAFXIdInstruction {
 		private _sName: string;
@@ -240,6 +266,7 @@ module akra.fx {
 			super();
 			this._sName = "";
 			this._sRealName = "";
+			this._eInstructionType = EAFXInstructionTypes.k_IdInstruction;
 		}
 
 		inline getName(): string{
@@ -262,6 +289,13 @@ module akra.fx {
 			return this._sRealName;
 		}
 
+		clone(pRelationMap?: IAFXInstructionMap): IdInstruction {
+			var pClonedInstruction: IdInstruction = <IdInstruction>(super.clone(pRelationMap));
+			pClonedInstruction.setName(this._sName);
+			pClonedInstruction.setRealName(this._sRealName);
+			return pClonedInstruction;
+		}
+
 	}
 
 	export class KeywordInstruction extends Instruction implements IAFXKeywordInstruction {
@@ -273,10 +307,15 @@ module akra.fx {
 		constructor() {
 			super();
 			this._sValue = "";
+			this._eInstructionType = EAFXInstructionTypes.k_KeywordInstruction;
 		}
 
 		inline setValue(sValue: string): void {
 			this._sValue = sValue;
+		}
+
+		inline isValue(sTestValue: string): bool {
+			return this._sValue === sTestValue;
 		}
 
 		toString(): string {
@@ -284,337 +323,58 @@ module akra.fx {
 		}
 	}
 
-	export class TypeDeclInstruction extends DeclInstruction implements IAFXTypeDeclInstruction {
-		// EMPTY_OPERATOR VariableTypeInstruction
-		
-		constructor() {
-			super();
-		}	 
-	}
-
-	export class VariableDeclInstruction extends DeclInstruction implements IAFXVariableDeclInstruction {
-		/**
-		 * Represent type var_name [= init_expr]
-		 * EMPTY_OPERATOR VariableTypeInstruction IdInstruction InitExprInstruction
-		 */
-		constructor(){
-			super();
-		}
-	}
 
 	export class AnnotationInstruction extends Instruction implements IAFXAnnotationInstruction {
 		constructor() {
 			super();
+			this._eInstructionType = EAFXInstructionTypes.k_AnnotationInstruction;
 		}
 	}
 
-	export class UsageTypeInstruction extends Instruction implements IAFXUsageTypeInstruction {
-		// EMPTY_OPERATOR KeywordInstruction ... KeywordInstruction IdInstruction
-		
+	
+
+	export class TechniqueInstruction extends DeclInstruction implements IAFXTechniqueInstruction {
+		private _sName: string = "";
+		private _hasComplexName: bool = false;
+		private _pParseNode: IParseNode = null;
+		private _pSharedVariableList: IAFXVariableDeclInstruction[] = null;
+
 		constructor() {
 			super();
-		}	 
-	}
-
-	export class BaseTypeInstruction extends Instruction implements IAFXBaseTypeInstruction {
-		// EMPTY_OPERATOR IdInstruction
-		
-		constructor() {
-			super();
-		}	 
-	}
-
-	export class StructDeclInstruction extends Instruction implements IAFXStructDeclInstruction {
-		// EMPTY_OPERATOR IdInstruction StructFieldsInstruction
-		
-		constructor() {
-			super();
-		}	 
-	}
-
-	export class StructFieldsInstruction extends Instruction {
-		// EMPTY_OPERATOR VariableDeclInstruction ... VariableDeclInstruction
-		
-		constructor() {
-			super();
-		}	 
-	}
-
-
-	export class ExprInstruction extends TypedInstruction implements IAFXExprInstruction {
-		/**
-		 * Respresent all kind of instruction
-		 */
-		constructor(){
-			super();
-		}
-	}
-
-	export class IdExprInstruction extends ExprInstruction implements IAFXIdExprInstruction {
-		constructor(){
-			super();
-			this._pInstructionList = [null];
+			this._pInstructionList = null;
+			this._eInstructionType = EAFXInstructionTypes.k_TechniqueInstruction;
+			this._pSharedVariableList = [];
 		}
 
-		getType(): IAFXVariableTypeInstruction {
-			if(!isNull(this._pType)){
-				return this._pType;
-			}
-			else{
-				var pVar: IdInstruction = <IdInstruction>this._pInstructionList[0];
-				this._pType = (<IAFXVariableDeclInstruction>pVar.getParent()).getType();
-				return this._pType;
-			}
-		}
-	}
-
-	/**
- 	 * Represent someExpr + / - * % someExpr
- 	 * (+|-|*|/|%) Instruction Instruction
- 	 */
-	export class ArithmeticExprInstruction extends ExprInstruction {
-		
-		constructor() {
-			super();
-			this._pInstructionList = [null, null];
-		}
-	}
-	/**
- 	 * Represent someExpr = += -= /= *= %= someExpr
- 	 * (=|+=|-=|*=|/=|%=) Instruction Instruction
- 	 */
-	export class AssignmentExprInstruction extends ExprInstruction {
-		constructor(){
-			super();
-			this._pInstructionList = [null, null];
-		}
-	}
-	/**
- 	 * Represent someExpr == != < > <= >= someExpr
- 	 * (==|!=|<|>|<=|>=) Instruction Instruction
- 	 */
-	export class RelationalExprInstruction extends ExprInstruction {
-		constructor(){
-			super();
-			this._pInstructionList = [null, null];
-		}
-	}
-	/**
- 	 * Represent boolExpr && || boolExpr
- 	 * (&& | ||) Instruction Instruction
- 	 */
-	export class LogicalExprInstruction extends ExprInstruction {
-		constructor(){
-			super();
-			this._pInstructionList = [null, null];
-		}
-	}
-	/**
-	 * Represen boolExpr ? someExpr : someExpr
-	 * EMPTY_OPERATOR Instruction Instruction Instruction 
-	 */
-	export class ConditionalExprInstruction extends ExprInstruction {
-		constructor(){
-			super();
-			this._pInstructionList = [null, null, null];
-		}
-	}
-	/**
-	 * Represent (type) expr
-	 * EMPTY_OPERATOR VariableTypeInstruction Instruction
-	 */
-	export class CastExprInstruction extends ExprInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null, null];
-		}	
-	}
-
-	/**
-	 * Represent + - ! ++ -- expr
-	 * (+|-|!|++|--|) VariableTypeInstruction Instruction
-	 */
-	export class UnaryExprInstruction extends ExprInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null, null];
-		}	
-	}
-
-	/**
-	 * Represent someExpr[someIndex]
-	 * EMPTY_OPERATOR Instruction ExprInstruction
-	 */
-	export class PostfixIndexInstruction extends ExprInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null, null];
-		}	
-	}
-
-	/*
-	 * Represent someExpr.id
-	 * EMPTY_OPERATOR Instruction IdInstruction
-	 */
-	export class PostfixPointInstruction extends ExprInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null, null];
-		}	
-	}
-
-	/**
-	 * Represent someExpr ++
-	 * (-- | ++) Instruction
-	 */	
-	export class PostfixArithmeticInstruction extends ExprInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null];
-		}	
-	}
-
-	/**
-	 * Represent @ Expr
-	 * @ Instruction
-	 */
-	export class PrimaryExprInstruction extends ExprInstruction {
-		constructor() { 
-			super();
-			this._pInstructionList = [null];
-		}
-	}
-
-	/**
-	 * Represent (expr)
-	 * EMPTY_OPERATOR ExprInstruction
-	 */
-	export class ComplexExprInstruction extends ExprInstruction {
-		constructor(){
-			super();
-			this._pInstructionList = [null];
-		}
-	}
-
-	/**
-	 * Respresnt func(arg1,..., argn)
-	 * EMPTY_OPERATOR IdExprInstruction ExprInstruction ... ExprInstruction 
-	 */
-	export class FunctionCallInstruction extends ExprInstruction {
-		constructor() { 
-			super();
-			this._pInstructionList = [null];
-		}	
-	}
-
-	/**
-	 * Respresnt ctor(arg1,..., argn)
-	 * EMPTY_OPERATOR IdInstruction ExprInstruction ... ExprInstruction 
-	 */
-	export class ConstructorCallInstruction extends ExprInstruction {
-		constructor() { 
-			super();
-			this._pInstructionList = [null];
-		}	
-	}
-
-	/**
-	 * Represetn compile vs_func(...args)
-	 * compile IdExprInstruction ExprInstruction ... ExprInstruction
-	 */
-	export class CompileExprInstruction extends ExprInstruction{
-		constructor() { 
-			super();
-			this._pInstructionList = [null];
-		}	
-	}
-
-	/**
-	 * Represetn sampler_state { states }
-	 * sampler_state IdExprInstruction ExprInstruction ... ExprInstruction
-	 */
-	export class SamplerStateBlockInstruction extends ExprInstruction {
-		constructor() { 
-			super();
-			this._pInstructionList = [null];
-		}	
-	}
-
-	export class SamplerStateInstruction extends ExprInstruction {
-		constructor() { 
-			super();
-			this._pInstructionList = [null, null];
-		}	
-	}
-
-	/**
-	 * Represent type func(...args)[:Semantic] [<Annotation> {stmts}]
-	 * EMPTY_OPERTOR FunctionDefInstruction StmtBlockInstruction
-	 */
-	export class FunctionDeclInstruction extends DeclInstruction implements IAFXFunctionDeclInstruction {
-		constructor() { 
-			super();
-			this._pInstructionList = [null, null];
-		}	
-
-		getNameId(): IAFXIdInstruction {
-			return null;
+		setName(sName: string, isComplexName: bool): void {
+			this._sName = sName;
+			this._hasComplexName = isComplexName;
 		}
 
-		hasImplementation(): bool {
-			return false;
+		getName(): string {
+			return this._sName;
+		}
+
+        hasComplexName(): bool{
+        	return this._hasComplexName;
+        }
+
+        getSharedVariables(): IAFXVariableDeclInstruction[] {
+        	return this._pSharedVariableList;
+        }
+
+        _setParseNode(pNode: IParseNode): void{
+        	this._pParseNode = pNode;
+        }
+        
+        _getParseNode(): IParseNode{
+        	return this._pParseNode;
+        }
+
+		addPass(): void {
+
 		}
 	}
-
-	/**
-	 * Represent type func(...args)[:Semantic]
-	 * EMPTY_OPERTOR VariableTypeInstruction IdInstruction VarDeclInstruction ... VarDeclInstruction
-	 */
-	export class FunctionDefInstruction extends DeclInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null, null];
-		}
-	}
-
-	/**
-	 * Represent all kind of statements
-	 */
-	export class StmtInstruction extends Instruction  implements IAFXStmtInstruction {
-		constructor() {
-			super();
-		}
-	}
-
-	export class StmtBlockInstruction extends StmtInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null];
-		}
-	}
-
-	/**
-	 * Represent while(expr) stmt
-	 * while ExprInstruction StmtInstruction
-	 */
-	export class WhileStmtInstruction extends StmtInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null, null];
-		}
-	}
-
-	/**
-	 * Represent for(forInit forCond ForStep) stmt
-	 * for StmtInstruction ExprInstruction ExprInstruction StmtInstruction
-	 */
-	export class ForStmtInstruction extends StmtInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null, null, null, null];
-		}
-	}
-
 
 	// export class TypeInstruction extends Instruction {
 	// 	/**

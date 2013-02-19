@@ -77,7 +77,7 @@ module akra {
     }
 
     export interface IFinishFunc {
-        (eCode: EParserCode): void;
+        (eCode: EParserCode, sFileName: string): void;
     }
 
     export enum EOperationType {
@@ -135,6 +135,8 @@ module akra {
         init(sSource: string): void;
 
         getNextToken(): IToken;
+        _getIndex(): uint;
+        _setSource(sSource: string): void;
     }
 
     export interface IParser {
@@ -145,7 +147,7 @@ module akra {
 
         init(sGrammar: string, eMode?: EParseMode, eType?: EParserType): bool;
 
-        parse(sSource: string, isSync?: bool, fnFinishCallback?: IFinishFunc, pCaller?: any): EParserCode;
+        parse(sSource: string, fnFinishCallback?: IFinishFunc, pCaller?: any): EParserCode;
 
         setParseFileName(sFileName: string): void;
         getParseFileName(): string;
@@ -153,10 +155,16 @@ module akra {
         pause(): EParserCode;
         resume(): EParserCode;
 
+        getSyntaxTree(): IParseTree;
+
         printStates(isPrintOnlyBase?: bool): void;
         printState(iStateIndex: uint, isPrintOnlyBase?: bool): void; 
 
         getGrammarSymbols(): StringMap;
+
+        _getLexer(): ILexer;
+        _getSource(): string;
+        _setSource(sSource: string): void;
     }
 }
 
