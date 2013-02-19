@@ -1331,6 +1331,20 @@ module akra.math {
 			return v4fDestination;
 		};
 
+		unprojZ(fZ: float): float{
+			var pData: Float32Array = this.data;
+
+			if(pData[__44] === 1.){
+				//orthogonal projection case
+				return (fZ - pData[__34])/pData[__33];
+			}
+			else{
+				//pData[__43] === -1
+				//frustum case
+				return -pData[__34]/(pData[__33] + fZ);
+			}
+		};
+
 		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, m4fDestination?: IMat4): IMat4;
 		static fromYawPitchRoll(v3fAngles: IVec3, m4fDestination?: IMat4): IMat4;
 		static fromYawPitchRoll(fYaw?,fPitch?,fRoll?,m4fDestination?): IMat4{

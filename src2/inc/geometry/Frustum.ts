@@ -20,9 +20,6 @@ module akra.geometry{
 
 		_pFrustumVertices: IVec3[] = null;
 
-		static frustumPlanesKeys: string[] = ["leftPlane", "rightPlane", "topPlane",
-											  "bottomPlane", "nearPlane", "farPlane"];
-
 		constructor ();
 		constructor (pFrustum: IFrustum);
 		constructor (pLeftPlane: IPlane3d, pRightPlane: IPlane3d,
@@ -365,7 +362,10 @@ module akra.geometry{
 			}
 
 			return true;
-		}
+		};
+
+		static frustumPlanesKeys: string[] = ["leftPlane", "rightPlane", "topPlane",
+											  "bottomPlane", "nearPlane", "farPlane"];
 	};
 }
 

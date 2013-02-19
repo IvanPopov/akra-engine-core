@@ -16,25 +16,10 @@ module akra.scene.light {
 		// protected _pColorTexture: ITexture = null;
 		protected _pShadowCaster: IShadowCaster;
 
-		protected _m4fOptimizdeProj: IMat4 = null;
-		//protected _m4fCurrentOptimizedProj: IMat4 = null;
-
-		//list of frustum planes with which additional testing must be done.
-		//created just for prevent reallocation
-		static protected _pFrustumPlanes: IPlane3d[] = new Array(6);
-
 		constructor (pScene: IScene3d) {
 			super(pScene);
 			this._eType = EEntityTypes.LIGHT_PROJECT;
 		};
-
-		inline get optimizedProjection(): IMat4 {
-			return this._m4fOptimizdeProj;
-		};
-
-		/*inline get currentOptimizedProjection(): IMat4 {
-			return this._m4fCurrentOptimizedProj;
-		};*/
 
 		create(isShadowCaster: bool = true): bool {
 			var isOk: bool = super.create();
@@ -52,10 +37,6 @@ module akra.scene.light {
 			pCaster.setParameter(ECameraParameters.CONST_ASPECT, true);
 			pCaster.setInheritance(ENodeInheritance.ALL);
 			pCaster.attachToParent(this);
-
-			if (isShadowCaster) {
-				this._m4fOptimizdeProj = new Mat4();
-			}
 
 			this.initializeTextures();
 
@@ -158,64 +139,90 @@ module akra.scene.light {
 
 		protected _defineShadowInfluence(pCamera: ICamera): IObjectArray{
 			var pShadowCaster: IShadowCaster = this._pShadowCaster;
-			var pRawResult: IObjectArray = pShadowCaster.display(DL_DEFAULT);
+			var pCameraFrustum: IFrustum = pCamera.frustum;
 
 			var pResult: IObjectArray = pShadowCaster.affectedObjects;
 			pResult.clear();
 
-			var pFrustum: IFrustum = pCamera.frustum;
+			if(!pCameraFrustum.testFrustum(pShadowCaster.frustum)){
+				//frustums don't intersecting
+				return pResult;
+			}
+
+			var pRawResult: IObjectArray = pShadowCaster.display(DL_DEFAULT);
 
 			var v3fLightPosition: IVec3 = this.worldPosition;
-			var iAdditionalTestsLength: uint = 0;
 
 			var pTestArray: IPlane3d[] = ProjectLight._pFrustumPlanes;
 
-			//TODO: this list only optimizing shadow casting
-			// in worst case when frustums not intersecting 
-			//we cast shadows from all objects con clipping its by camera
+			//works only for projection and don't work for ortho projection
 
-			//create list for additional testing
+			if(pShadowCaster.projectionMatrix.data[__44] == 1){
+				//orthogonal projection
+				;
+			}
+			else{
+				//pShadowCaster.projectionMatrix.data[__43] == -1
+				//frustum projection
 
-			if(pFrustum.leftPlane.signedDistance(v3fLightPosition) <= 0.){
-				pTestArray[iAdditionalTestsLength++] = pFrustum.leftPlane;
-			}
-			if(pFrustum.rightPlane.signedDistance(v3fLightPosition) <= 0.){
-				pTestArray[iAdditionalTestsLength++] = pFrustum.rightPlane;
-			}
-			if(pFrustum.topPlane.signedDistance(v3fLightPosition) <= 0.){
-				pTestArray[iAdditionalTestsLength++] = pFrustum.topPlane;
-			}
-			if(pFrustum.bottomPlane.signedDistance(v3fLightPosition) <= 0.){
-				pTestArray[iAdditionalTestsLength++] = pFrustum.bottomPlane;
-			}
-			if(pFrustum.nearPlane.signedDistance(v3fLightPosition) <= 0.){
-				pTestArray[iAdditionalTestsLength++] = pFrustum.nearPlane;
-			}
-			if(pFrustum.farPlane.signedDistance(v3fLightPosition) <= 0.){
-				pTestArray[iAdditionalTestsLength++] = pFrustum.farPlane;
-			}
+				//create list for additional testing
+				var pFrustumPlanesKeys: string[] = geometry.Frustum.frustumPlanesKeys;
+				for(var i: int = 0; i<6; i++){
+					var sKey: string = pFrustumPlanesKeys[i];
 
+					var pPlane: IPlane3d = pCameraFrustum[sKey];
 
-			for(var i:int = 0; i<pRawResult.length; i++){
-				var pObject: ISceneObject = pRawResult.value(i);
+					var v3fNormal: IVec3 = pPlane.normal;
+					var fDistance: float = pPlane.distance;
 
-				var j:int = 0
-				for(j = 0; j<iAdditionalTestsLength; j++){
-					var pPlane: IPlane3d = pTestArray[j];
-
-					if(geometry.planeClassifyRect3d(pPlane, pObject.worldBounds) 
-							== EPlaneClassifications.PLANE_FRONT){
-						break;
+					if(pPlane.signedDistance(v3fLightPosition) <= 0){
+						fDistance = -v3fNormal.dot(v3fLightPosition);
 					}
+
+					pTestArray[i].set(v3fNormal, fDistance);
 				}
 
-				if(j == iAdditionalTestsLength){
-					pResult.push(pObject);
+				for(var i:int = 0; i<pRawResult.length; i++){
+					var pObject: ISceneObject = pRawResult.value(i);
+					var pWorldBounds: IRect3d = pObject.worldBounds;
+
+					//have object shadows?
+					if(pObject.hasShadows){
+						var j:int = 0
+						for(j = 0; j<6; j++){
+							var pPlane: IPlane3d = pTestArray[j];
+
+							if(geometry.planeClassifyRect3d(pPlane, pWorldBounds) 
+									== EPlaneClassifications.PLANE_FRONT){
+								break;
+							}
+						}
+
+						if(j == 6){
+							pResult.push(pObject);
+						}	
+					}
+					else{
+						if(pCameraFrustum.testRect(pWorldBounds)){
+							pResult.push(pObject);
+						}
+					}
+					
 				}
 			}
 
-			return pRawResult;
+			pShadowCaster._optimizeProjectionMatrix();
+
+			return pResult;
 		};
+
+		//list of frustum planes with which additional testing must be done.
+		//created just for prevent reallocation
+		static _pFrustumPlanes: IPlane3d[] = new Array(6);/*new geometry.Plane3d[];*/
+	}
+
+	for(var i:int = 0; i<6; i++){
+		ProjectLight._pFrustumPlanes[i] = new geometry.Plane3d();
 	}
 }
 

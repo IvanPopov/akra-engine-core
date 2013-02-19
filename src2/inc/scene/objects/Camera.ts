@@ -298,6 +298,8 @@ module akra.scene.objects {
 		        this._m4fProj.multiply(this._m4fView, this._m4fRenderStageProjView);
 
 		        isUpdated = true;
+		    
+		        CLEAR_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
 		    }
 
 		    return isUpdated;

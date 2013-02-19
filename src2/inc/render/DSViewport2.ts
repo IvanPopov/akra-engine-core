@@ -325,7 +325,7 @@ module akra.render {
 
 		                (<UniformProjectShadow>pUniformData).setSampler(sTexture);
 		                pUniforms.samplersProject.push((<UniformProjectShadow>pUniformData).SHADOW_SAMPLER);
-		                (<UniformProjectShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.projectionMatrix, pProjectLight.optimizedProjection);
+		                (<UniformProjectShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.projectionMatrix, pShadowCaster.optimizedProjection);
 		                pUniforms.projectShadows.push(<UniformProjectShadow>pUniformData);
 		            }
 		            else {
