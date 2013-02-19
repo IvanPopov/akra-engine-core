@@ -264,17 +264,17 @@ module akra.core {
 				deps: {
 						files: [
 							"effects/SystemEffects.afx",
-							"effects/prepareDeferredShading.afx",
-						    "effects/Plane.afx",
-						    "effects/mesh.afx",
-						    "effects/mesh_geometry.afx",
-						    "effects/mesh_texture.afx",
-						    "effects/TextureToScreen.afx",
-						    "effects/prepare_shadows.afx",
-						    "effects/deferredShading.afx",
-						    "effects/apply_lights_and_shadows.afx",
-						    "effects/fxaa.afx",
-						    "effects/skybox.afx"
+							// "effects/prepareDeferredShading.afx",
+						 //    "effects/Plane.afx",
+						 //    "effects/mesh.afx",
+						 //    "effects/mesh_geometry.afx",
+						 //    "effects/mesh_texture.afx",
+						 //    "effects/TextureToScreen.afx",
+						 //    "effects/prepare_shadows.afx",
+						 //    "effects/deferredShading.afx",
+						 //    "effects/apply_lights_and_shadows.afx",
+						 //    "effects/fxaa.afx",
+						 //    "effects/skybox.afx"
 						]
 					}
 			};

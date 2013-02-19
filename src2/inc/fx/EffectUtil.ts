@@ -336,7 +336,7 @@ module akra.fx {
 			var pScope: IScope = this._pScopeMap[iScope];
 			var pVariableMap: IAFXVariableDeclMap = pScope.variableMap;
 
-			if(!isDef(pVariableMap)){
+			if(isNull(pVariableMap)){
 				pVariableMap = pScope.variableMap = <IAFXVariableDeclMap>{};
 			}
 
@@ -359,7 +359,7 @@ module akra.fx {
 			var pScope: IScope = this._pScopeMap[iScope];
 			var pTypeMap: IAFXTypeDeclMap = pScope.typeMap;
 
-			if(!isDef(pTypeMap)){
+			if(isNull(pTypeMap)){
 				pTypeMap = pScope.typeMap = <IAFXTypeDeclMap>{};
 			}
 
@@ -382,7 +382,7 @@ module akra.fx {
 			var pScope: IScope = this._pScopeMap[iScope];
 			var pFunctionMap: IAFXFunctionDeclListMap = pScope.functionMap;
 
-			if(!isDef(pFunctionMap)){
+			if(isNull(pFunctionMap)){
 				pFunctionMap = pScope.functionMap = <IAFXFunctionDeclListMap>{};
 			}
 

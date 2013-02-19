@@ -4,7 +4,7 @@
 
 module akra {
 	test("Example creation test", () => {
-		var pEngine: IEngine = createEngine();
+		var pEngine: IEngine = createEngine({depsRoot: "../../../data"});
 		var pEffectDataPool: IResourcePool = pEngine.getResourceManager().effectDataPool;
 
 		var pEffectData: IResourcePoolItem = pEffectDataPool.createResource("test");

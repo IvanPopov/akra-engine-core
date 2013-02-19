@@ -495,7 +495,7 @@ module akra.fx {
 
 		constructor() {
 			super();
-			this._pInstructionList = [null, null];
+			this._pInstructionList = null;
 			this._pParameterList = [];
 			this._eInstructionType = EAFXInstructionTypes.k_FunctionDefInstruction;
 		}

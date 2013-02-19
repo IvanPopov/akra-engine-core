@@ -11,6 +11,7 @@ module akra.fx {
 		
 		constructor() {
 			super();
+			this._pInstructionList = [null];
 			this._eInstructionType = EAFXInstructionTypes.k_TypeDeclInstruction;
 		}
 
@@ -21,10 +22,15 @@ module akra.fx {
 		clone(pRelationMap?: IAFXInstructionMap): IAFXTypeDeclInstruction {
         	return <IAFXTypeDeclInstruction>super.clone(pRelationMap);
         }
+
+        inline getName(): string {
+        	return this.getType().getName();
+        }
 	}
 
 	export class VariableTypeInstruction extends Instruction implements IAFXVariableTypeInstruction {
 		// EMPTY_OPERATOR TypeInstruction ArrayInstruction PointerInstruction
+		private _sName: string = "";
 		private _isWritable: bool = null;
 		private _isReadable: bool = null;
 
@@ -56,6 +62,14 @@ module akra.fx {
 			this._pInstructionList = [null];
 			this._eInstructionType = EAFXInstructionTypes.k_VariableTypeInstruction;
 		}	 
+
+		setName(sName: string): void {
+			this._sName = sName;
+		}
+
+		getName(): string {
+			return this._sName;
+		}
 
 		pushInVariableType(pVariableType: IAFXTypeInstruction): bool {
 			if(this._nInstuctions > 0){
@@ -192,8 +206,7 @@ module akra.fx {
 		}
 
 		isEqual(pType: IAFXTypeInstruction): bool {
-			if (this.isArray() && pType.isArray() && 
-				pType._getInstructionType() !== EAFXInstructionTypes.k_SystemTypeInstruction &&
+			if (this.isNotBaseArray() && pType.isNotBaseArray() && 
 				(this.getLength() !== pType.getLength() ||
 				 this.getLength() === UNDEFINE_LENGTH ||
 				 pType.getLength() === UNDEFINE_LENGTH)){
@@ -442,7 +455,7 @@ module akra.fx {
 		}
 
 		getSize(): uint {
-			if(this._isArray){
+			if(this.isNotBaseArray()){
 				var iSize: uint = this._pArrayElementType.getSize();
 				if (this._iLength === UNDEFINE_LENGTH ||
 					iSize === UNDEFINE_SIZE){
@@ -458,7 +471,7 @@ module akra.fx {
 		}
 
 		getLength(): uint {
-			if(!this.isArray()){
+			if(!this.isNotBaseArray()){
 				this._iLength = 0;
 				return 0;
 			}
@@ -578,7 +591,7 @@ module akra.fx {
 		private calcHash(): void {
 			var sHash: string = this.getSubType().getHash();
 			
-			if(this.isArray()){
+			if(this.isNotBaseArray()){
 				sHash += "[";
 
 				var iLength: uint = this.getLength();
@@ -692,6 +705,10 @@ module akra.fx {
 
 		inline setSize(iSize: uint): void {
 			this._iSize = iSize;
+		}
+
+		inline getName(): string {
+			return this._sName;
 		}
 
 		addIndex(pType: IAFXTypeInstruction, iLength: uint): void {
@@ -853,6 +870,7 @@ module akra.fx {
 		
 		constructor() {
 			super();
+			this._pInstructionList = [];
 			this._eInstructionType = EAFXInstructionTypes.k_ComplexTypeInstruction;
 		}
 
@@ -909,6 +927,10 @@ module akra.fx {
 
 		inline setSize(iSize: uint): void {
 			this._iSize = iSize;
+		}
+
+		inline getName(): string {
+			return this._sName;
 		}
 
 		inline setWriteMode(isWrite: bool): void {
@@ -1184,7 +1206,9 @@ module akra.fx {
 				this._pFieldDeclBySemanticMap[sSemantic] = pVar;
 
 				this._hasFieldWithoutSemantic = this._hasFieldWithoutSemantic || pVar.getType().hasFieldWithoutSemantic();
-				this._hasAllUniqueSemantics = !(this._hasAllUniqueSemantics) ? false : pVar.getType().hasAllUniqueSemantics();
+				if(this._hasAllUniqueSemantics && pVar.getType().isComplex()){
+					this._hasAllUniqueSemantics = pVar.getType().hasAllUniqueSemantics();
+				}
 			}
 
 		}

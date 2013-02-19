@@ -141,6 +141,14 @@ module akra.fx {
     	}
 	}
 
+	export class InstructionCollector extends Instruction {
+		constructor(){
+			super();
+			this._pInstructionList = [];
+			this._eInstructionType = EAFXInstructionTypes.k_InstructionCollector;
+		}
+	}
+
 	export class SimpleInstruction extends Instruction implements IAFXSimpleInstruction{
 		private _sValue: string = "";
 		

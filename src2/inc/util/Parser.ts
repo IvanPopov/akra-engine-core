@@ -1485,30 +1485,30 @@ module akra.util {
                         isStop = true;
                     }
                 }
-                if (isPause) {
-                    return EParserCode.k_Pause;
-                }
-
-                if (!isError) {
-                    pTree.setRoot();
-                    this._sFileName = "stdin";
-                    if (!isNull(this._fnFinishCallback)) {
-                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok, this.getParseFileName());
-                    }
-                    return EParserCode.k_Ok;
-                }
-                else {
-                    this._error(PARSER_SYNTAX_ERROR, pToken);
-                    this._sFileName = "stdin";
-                    if (!isNull(this._fnFinishCallback)) {
-                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error, this.getParseFileName());
-                    }
-                    return EParserCode.k_Error;
-                }
-
             }
             catch (e) {
                 // debug_print(e.stack);
+                this._sFileName = "stdin";
+                return EParserCode.k_Error;
+            }
+
+            if (isPause) {
+                return EParserCode.k_Pause;
+            }
+
+            if (!isError) {
+                pTree.setRoot();
+                if (!isNull(this._fnFinishCallback)) {
+                    this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok, this.getParseFileName());
+                }
+                this._sFileName = "stdin";
+                return EParserCode.k_Ok;
+            }
+            else {
+                this._error(PARSER_SYNTAX_ERROR, pToken);
+                if (!isNull(this._fnFinishCallback)) {
+                    this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error, this.getParseFileName());
+                }
                 this._sFileName = "stdin";
                 return EParserCode.k_Error;
             }
@@ -2687,29 +2687,28 @@ module akra.util {
                         isStop = true;
                     }
                 }
-                if (isPause) {
-                    return EParserCode.k_Pause;
-                }
-
-                if (!isError) {
-                    pTree.setRoot();
-                    this._sFileName = "stdin";
-                    if (isDef(this._fnFinishCallback)) {
-                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok, this.getParseFileName());
-                    }
-                    return EParserCode.k_Ok;
-                }
-                else {
-                    this._error(PARSER_SYNTAX_ERROR, pToken);
-                    this._sFileName = "stdin";
-                    if (isDef(this._fnFinishCallback)) {
-                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error, this.getParseFileName());
-                    }
-                    return EParserCode.k_Error;
-                }
-
             }
             catch (e) {
+                this._sFileName = "stdin";
+                return EParserCode.k_Error;
+            }
+            if (isPause) {
+                return EParserCode.k_Pause;
+            }
+
+            if (!isError) {
+                pTree.setRoot();
+                if (isDef(this._fnFinishCallback)) {
+                    this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok, this.getParseFileName());
+                }
+                this._sFileName = "stdin";
+                return EParserCode.k_Ok;
+            }
+            else {
+                this._error(PARSER_SYNTAX_ERROR, pToken);
+                if (isDef(this._fnFinishCallback)) {
+                    this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error, this.getParseFileName());
+                }
                 this._sFileName = "stdin";
                 return EParserCode.k_Error;
             }

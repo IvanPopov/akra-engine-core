@@ -33,9 +33,9 @@ module akra.fx {
 #ifdef DEBUG
 		_loadEffectFromSyntaxTree(pTree: IParseTree, sFileName: string): void {
 			var pEffect: IAFXEffect = new fx.Effect(this);
-			LOG(pTree);
-			// pEffect.setAnalyzedFileName(sFileName);
-			// pEffect.analyze(pParseTree);
+			// LOG(sFileName, pTree);
+			pEffect.setAnalyzedFileName(sFileName);
+			pEffect.analyze(pTree);
 		}
 #endif
 

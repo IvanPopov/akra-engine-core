@@ -88,19 +88,29 @@ module akra.fx {
 			var pRootNode: IParseNode = pTree.root;
 			var iParseTime: uint = akra.now();
 
+			LOG(this);
 			this._pParseTree = pTree;
 			this._pStatistics = <IAFXEffectStats>{time: 0};
 
 			this.newScope();
+			LOG("ok");
 			this.analyzeGlobalUseDecls();
+			LOG("ok");
 			this.analyzeGlobalTypeDecls();
+			LOG("ok");
 			this.analyzeFunctionDefinitions();
+			LOG("ok");
 			this.analyzeGlobalImports();
+			LOG("ok");
 			this.analyzeTechniqueImports();
+			LOG("ok");
 
 			this.analyzeVariableDecls();
+			LOG("ok");
 			this.analyzeFunctionDecls();
+			LOG("ok");
 			this.analyzeTechniques();
+			LOG("ok");
 
 			// this.analyzeTypes();
 			
@@ -121,6 +131,8 @@ module akra.fx {
 			//Stats
 			iParseTime = akra.now() - iParseTime;
 			this._pStatistics.time = iParseTime;
+
+			LOG(this, iParseTime);
 			
 			return true;
 		}
@@ -519,15 +531,15 @@ module akra.fx {
 
 			var pFloat2: IAFXTypeInstruction = this.generateSystemType("float2", "vec2", 0, true, pFloat, 2);
 			var pFloat3: IAFXTypeInstruction = this.generateSystemType("float3", "vec3", 0, true, pFloat, 3);
-			var pFloat4: IAFXTypeInstruction = this.generateSystemType("float4", "vec3", 0, true, pFloat, 4);
+			var pFloat4: IAFXTypeInstruction = this.generateSystemType("float4", "vec4", 0, true, pFloat, 4);
 
 			var pInt2: IAFXTypeInstruction = this.generateSystemType("int2", "ivec2", 0, true, pInt, 2);
 			var pInt3: IAFXTypeInstruction = this.generateSystemType("int3", "ivec3", 0, true, pInt, 3);
-			var pInt4: IAFXTypeInstruction = this.generateSystemType("int4", "ivec3", 0, true, pInt, 4);
+			var pInt4: IAFXTypeInstruction = this.generateSystemType("int4", "ivec4", 0, true, pInt, 4);
 
 			var pBool2: IAFXTypeInstruction = this.generateSystemType("bool2", "bvec2", 0, true, pBool, 2);
 			var pBool3: IAFXTypeInstruction = this.generateSystemType("bool3", "bvec3", 0, true, pBool, 3);
-			var pBool4: IAFXTypeInstruction = this.generateSystemType("bool4", "bvec3", 0, true, pBool, 4);
+			var pBool4: IAFXTypeInstruction = this.generateSystemType("bool4", "bvec4", 0, true, pBool, 4);
 
 			this.addFieldsToVectorFromSuffixObject(pXYSuffix, pFloat2, "float");
 			this.addFieldsToVectorFromSuffixObject(pRGSuffix, pFloat2, "float");
@@ -1386,7 +1398,7 @@ module akra.fx {
         private analyzeObjectExpr(pNode: IParseNode): IAFXExprInstruction {
         	this.setAnalyzedNode(pNode);
 
-        	var sName: string = pNode.children[pNode.children.length - 1].value;
+        	var sName: string = pNode.children[pNode.children.length - 1].name;
         	
         	switch(sName){
         		case "T_KW_COMPILE":
@@ -1407,10 +1419,10 @@ module akra.fx {
         	var pShaderFunc: IAFXFunctionDeclInstruction = null;
         	var i: uint = 0;
 
-        	if(pChildren.length > 3){
-        		var pArgumentExpr: IAFXExprInstruction;
+        	pArguments = [];
 
-        		pArguments = [];
+        	if(pChildren.length > 4){
+        		var pArgumentExpr: IAFXExprInstruction;
 
         		for(i = pChildren.length - 3; i > 0; i--) {
         			if(pChildren[i].value !== ","){
@@ -2293,7 +2305,7 @@ module akra.fx {
 			var pChildren: IParseNode[] = pNode.children;
 
         	var pStruct: ComplexTypeInstruction = new ComplexTypeInstruction();
-        	var pFieldCollector: IAFXInstruction = new Instruction();
+        	var pFieldCollector: IAFXInstruction = new InstructionCollector();
 
         	var sName: string = pChildren[pChildren.length - 2].value;
 
@@ -2310,7 +2322,7 @@ module akra.fx {
 
 		    this.endScope();
 
-		    pStruct.push(pFieldCollector, true);
+		    pStruct.addFields(pFieldCollector, true);
 
 		    CHECK_INSTRUCTION(pStruct, ECheckStage.CODE_TARGET_SUPPORT);
 
@@ -2323,7 +2335,7 @@ module akra.fx {
 			var pChildren: IParseNode[] = pNode.children;
 
         	var pStruct: ComplexTypeInstruction = new ComplexTypeInstruction();
-        	var pFieldCollector: IAFXInstruction = new Instruction();
+        	var pFieldCollector: IAFXInstruction = new InstructionCollector();
 
         	this.newScope(EScopeType.k_Struct);
 

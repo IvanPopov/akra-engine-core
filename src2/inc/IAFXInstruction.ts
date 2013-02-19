@@ -8,6 +8,7 @@ module akra {
 
     export enum EAFXInstructionTypes {
         k_Instruction = 0,
+        k_InstructionCollector,
         k_SimpleInstruction,
         k_VariableTypeInstruction,
         k_SystemTypeInstruction,
@@ -173,6 +174,9 @@ module akra {
     }
 
     export interface IAFXTypeInstruction extends IAFXInstruction {
+        setName(sName: string): void;
+        getName(): string;
+
         isBase(): bool;
         isArray(): bool;
         isNotBaseArray(): bool;
