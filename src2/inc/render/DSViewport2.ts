@@ -284,7 +284,7 @@ module akra.render {
 		        	
 		        	pOmniLight = <IOmniLight>pLight;
 
-		            if (pLight.isShadowCaster()) {
+		            if (pLight.isShadowCaster) {
 		                pUniformData = uniformOmniShadow();
 		                (<UniformOmniShadow>pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
 		                
@@ -314,7 +314,7 @@ module akra.render {
 		        else if (pLight.type === <int>EEntityTypes.LIGHT_PROJECT) {
 		        	pProjectLight = <IProjectLight>pLight;
 
-		            if (pLight.isShadowCaster()) {
+		            if (pLight.isShadowCaster) {
 		                pUniformData = uniformProjectShadow();
 		                (<UniformProjectShadow>pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
 		                
@@ -325,7 +325,7 @@ module akra.render {
 
 		                (<UniformProjectShadow>pUniformData).setSampler(sTexture);
 		                pUniforms.samplersProject.push((<UniformProjectShadow>pUniformData).SHADOW_SAMPLER);
-		                (<UniformProjectShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.projectionMatrix, pProjectLight.optimizedProjection);
+		                (<UniformProjectShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.projectionMatrix, pShadowCaster.optimizedProjection);
 		                pUniforms.projectShadows.push(<UniformProjectShadow>pUniformData);
 		            }
 		            else {

@@ -563,7 +563,7 @@ module akra.scene {
 			//don't have normal implementation
 			
 			return this._buildSearchResults(pCamera.searchRect, pCamera.frustum);
-		}
+		};
 
 		protected attachObject(pNode: ISceneNode): void {
 			console.error(pNode, isSceneObject(pNode));

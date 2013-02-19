@@ -101,13 +101,13 @@ module akra.scene {
 		    return false;
 		}
 
-    	hasShadows(): bool {
+    	inline get hasShadows(): bool {
     		return this._hasShadows;
-    	}
+    	};
 
-    	setShadows(bValue: bool = true): void {
+    	inline set hasShadows(bValue: bool){
     		this._hasShadows = bValue;
-    	}
+    	};
 
     	getObjectFlags(): int {
     		return this._iObjectFlags;

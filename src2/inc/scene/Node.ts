@@ -155,7 +155,7 @@ module akra.scene {
 		        m4fOrient.scaleLeft(this._v3fScale);
 		        m4fOrient.multiply(m4fLocal); 
 
-		        console.error(m4fOrient.toString());
+		        //console.error(m4fOrient.toString());
 
 		        if (this._pParent) {
 		            if (this._eInheritance === ENodeInheritance.ALL) {

@@ -506,7 +506,7 @@ module akra.math {
 
 		multiplyVec4(v4fVec: IVec4, v4fDestination?: IVec4): IVec4{
 			if(!isDef(v4fDestination)){
-				v4fDestination = new Vec4();
+				v4fDestination = v4fVec;
 			}
 
 			var pData: Float32Array = this.data;
@@ -1329,6 +1329,20 @@ module akra.math {
 			v4fDestination.w = 1.;
 
 			return v4fDestination;
+		};
+
+		unprojZ(fZ: float): float{
+			var pData: Float32Array = this.data;
+
+			if(pData[__44] === 1.){
+				//orthogonal projection case
+				return (fZ - pData[__34])/pData[__33];
+			}
+			else{
+				//pData[__43] === -1
+				//frustum case
+				return -pData[__34]/(pData[__33] + fZ);
+			}
 		};
 
 		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, m4fDestination?: IMat4): IMat4;
