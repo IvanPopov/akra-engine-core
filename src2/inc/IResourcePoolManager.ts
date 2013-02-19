@@ -32,7 +32,8 @@ module akra {
 		IMAGE_RESOURCE,
 		SURFACEMATERIAL_RESOURCE,
 		SHADERPROGRAM_RESOURCE,
-		COMPONENT_RESOURCE,
+		COMPONENT_RESOURCE,   
+        EFFECTDATA_RESOURCE,
 		TOTAL_VIDEO_RESOURCES
 	};
 
@@ -61,6 +62,7 @@ module akra {
     	effectPool: IResourcePool;				
         //ex: private
     	componentPool: IResourcePool;			
+        effectDataPool: IResourcePool;
 
     	/** Регистрируется пул ресурсов опредленного типа в менеджере русурсов */
     	registerResourcePool(pCode: IResourceCode, pPool: IResourcePool): void;

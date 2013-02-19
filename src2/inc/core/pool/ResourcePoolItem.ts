@@ -347,6 +347,7 @@ module akra.core.pool {
 		    
 		    this.iResourceFlags = bf.setBit(this.iResourceFlags, iFlagBit, isSetting);
 		    // LOG("before !=", iFlagBit, "(" + EResourceItemEvents.LOADED + ")", iTempFlags, "==>", this.iResourceFlags);
+
 		    if (iTempFlags != this.iResourceFlags) {
 		    	// LOG("!+");
 		        for (var i: int = 0; i < this.pCallbackFunctions.length; i++) {

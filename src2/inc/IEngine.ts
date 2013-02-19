@@ -15,7 +15,7 @@ module akra {
     IFACE(ISkeleton);
     IFACE(IScene3d);
     IFACE(IDependens);
-
+    IFACE(IAFXComposer);
    
     export interface IEngineOptions {
         depsRoot?: string;
@@ -30,6 +30,8 @@ module akra {
         getResourceManager(): IResourcePoolManager;
 
         getRenderer(): IRenderer;
+
+        getComposer(): IAFXComposer;
 
         pause(): bool;
         play(): bool;

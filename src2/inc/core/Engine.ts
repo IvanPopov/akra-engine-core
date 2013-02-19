@@ -10,10 +10,12 @@
 #include "IRenderer.ts"
 #include "IUtilTimer.ts"
 #include "IScene3d.ts"
+#include "IAFXComposer.ts"
 
 #include "pool/ResourcePoolManager.ts"
 #include "scene/SceneManager.ts"
 #include "util/UtilTimer.ts"
+#include "fx/Composer.ts"
 
 //include sub creation classes.
 
@@ -35,6 +37,7 @@ module akra.core {
 		private _pSceneManager: ISceneManager;
 		private _pParticleManager: IParticleManager;
 		private _pRenderer: IRenderer;
+		private _pComposer: IAFXComposer;
 
 		/** stop render loop?*/
 		private _pTimer: IUtilTimer;
@@ -60,6 +63,7 @@ module akra.core {
 #else
 			CRITICAL("render system not specified");
 #endif
+			this._pComposer = new fx.Composer(this);
 
 
 			if (!this._pResourceManager.initialize()) {
@@ -123,6 +127,10 @@ module akra.core {
 
 		inline getRenderer(): IRenderer {
 			return this._pRenderer;
+		}
+
+		inline getComposer(): IAFXComposer {
+			return this._pComposer;
 		}
 	
 		inline isActive(): bool {
