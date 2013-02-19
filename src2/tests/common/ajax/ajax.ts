@@ -1,36 +1,34 @@
-"use strict";
-
-#include "util/test/testutils.ts"
+#include "util/testutils.ts"
 #include "io/ajax.ts"
 
-module akra.utils.test {
+module akra {
 	
-	var test_1 = () => {
-		shouldBeTrue("Sync ajax request test");
-		shouldBeTrue("Async ajax request test");
-		shouldBeTrue("Async error test");
-		
-		check(io.ajax("data/data.txt").data === "test_data");
+	test("Ajax API test", () => {
+		shouldBe("Sync ajax request test", "test_data");
+		check(io.ajax("data/data.txt").data);
+	});
+
+	asyncTest("Ajax async request", () => {
+		shouldBe("Async ajax request test", "test_data");
 
 		io.ajax(<IAjaxParams>{
 			url: "data/data.txt",
 			success: function (pData: string): void {
-				check(<string>pData === "test_data");
+				check(<string>pData);
+				run();
 			}
 		});
+	});
+
+	asyncTest("Ajax error test", () => {
+		shouldBeTrue("Async error test");
 
 		io.ajax({
 			url: "data/not_exists",
 			error: function () {
-				console.log(arguments);
+				LOG(arguments);
 				check(true);
 			}
 		});
-	}
-
-	new Test({
-		name: "Ajax API test",
-		main: test_1,
-		description: "Test ajax api"
-		});
+	});
 }

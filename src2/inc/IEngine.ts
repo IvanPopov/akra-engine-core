@@ -13,8 +13,18 @@ module akra {
     IFACE(IBufferMap);
     IFACE(IAnimationController);
     IFACE(ISkeleton);
+    IFACE(IScene3d);
+    IFACE(IDependens);
+
+   
+    export interface IEngineOptions {
+        depsRoot?: string;
+        deps?: IDependens;
+    }
 
     export interface IEngine extends IEventProvider {
+        getScene(): IScene3d;
+
         getSceneManager(): ISceneManager;
         getParticleManager(): IParticleManager;
         getResourceManager(): IResourcePoolManager;

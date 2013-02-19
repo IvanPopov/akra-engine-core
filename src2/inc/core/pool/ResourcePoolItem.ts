@@ -266,7 +266,9 @@ module akra.core.pool {
 
 		inline notifyLoaded(): void {
 			this.setAlteredFlag(false);
+			// LOG("ResourcePoolItem::notifyLoaded();");
     		if (this.setResourceFlag(EResourceItemEvents.LOADED, true)) {
+    			// LOG("ResourcePoolItem::loaded();");
     			this.loaded();
     		}
 		}
@@ -343,9 +345,10 @@ module akra.core.pool {
 		setResourceFlag(iFlagBit, isSetting: bool): bool {
 			var iTempFlags: int = this.iResourceFlags;
 		    
-		    bf.setBit(this.iResourceFlags, iFlagBit, isSetting);
-
+		    this.iResourceFlags = bf.setBit(this.iResourceFlags, iFlagBit, isSetting);
+		    // LOG("before !=", iFlagBit, "(" + EResourceItemEvents.LOADED + ")", iTempFlags, "==>", this.iResourceFlags);
 		    if (iTempFlags != this.iResourceFlags) {
+		    	// LOG("!+");
 		        for (var i: int = 0; i < this.pCallbackFunctions.length; i++) {
 		            if (this.pCallbackFunctions[i]) {
 		                this.pCallbackFunctions[i].call(this, iFlagBit, this.iResourceFlags, isSetting);

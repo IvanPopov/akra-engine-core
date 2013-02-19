@@ -11,6 +11,8 @@
 #include "bf/bitflags.ts"
 #include "math/math.ts"
 
+#include "IRenderer.ts"
+#include "pixelUtil/pixelUtil.ts"
 
 #define GLSL_VS_SHADER_MIN "void main(void){gl_Position = vec4(0., 0., 0., 1.);}"
 #define GLSL_FS_SHADER_MIN "void main(void){}"
@@ -40,7 +42,50 @@ module akra.webgl {
 	export var hasNonPowerOf2Textures: bool = false;
 
 	var pSupportedExtensionList: string[] = null;
-	var pLoadedExtensionList: Object = null;
+	// var pLoadedExtensionList: Object = null;
+
+    function setupContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {
+        var pWebGLExtentionList: Object = {};
+        var pWebGLExtension: Object;
+        
+        //test context not created yet
+        if (isNull(pSupportedExtensionList)) {
+            return pWebGLContext;
+        }
+
+        for (var i: int = 0; i < pSupportedExtensionList.length; ++ i) {
+            if (pWebGLExtension = pWebGLContext.getExtension(pSupportedExtensionList[i])) {
+                pWebGLExtentionList[pSupportedExtensionList[i]] = pWebGLExtension;
+
+                debug_print("loaded WebGL extension: %1", pSupportedExtensionList[i]);
+
+                for (var j in pWebGLExtension) {
+                    if (isFunction(pWebGLExtension[j])) {
+
+                        pWebGLContext[j] = function () {
+                            pWebGLContext[j] = new Function(
+                                "var t = this.pWebGLExtentionList[" + pSupportedExtensionList[i] + "];" + 
+                                "t." + j + ".apply(t, arguments);");
+                        }
+
+                    }
+                    else {
+                        pWebGLContext[j] = pWebGLExtentionList[pSupportedExtensionList[i]][j];
+                    }
+                }
+            }
+            else {
+                WARNING("cannot load extension: %1", pSupportedExtensionList[i]);
+                pSupportedExtensionList.splice(i, 1);
+            }
+        }
+
+
+        (<any>pWebGLContext).pWebGLExtentionList = pWebGLExtentionList;
+        // pLoadedExtensionList = pWebGLExtentionList;
+         
+        return pWebGLContext;
+    }
 
     export function createContext(
             pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas"), 
@@ -54,11 +99,13 @@ module akra.webgl {
     	}
 		catch (e) {}
 
-		if (!pWebGLContext) {
-			debug_warning("cannot get 3d device");
+		if (isDefAndNotNull(pWebGLContext)) {
+            return setupContext(pWebGLContext);
 		}
-
-		return pWebGLContext;
+        
+        debug_warning("cannot get 3d device");
+        
+		return null;
     }
 
 	(function (pWebGLContext: WebGLRenderingContext): void {
@@ -90,39 +137,6 @@ module akra.webgl {
 #ifdef DEBUG	    
 	    pSupportedExtensionList.push(WEBGL_DEBUG_SHADERS, WEBGL_DEBUG_RENDERER_INFO);
 #endif
-	    var pWebGLExtentionList: Object = {};
-	    var pWebGLExtension: Object;
-	    
-	    for (var i: int = 0; i < pSupportedExtensionList.length; ++ i) {
-	        if (pWebGLExtension = pWebGLContext.getExtension(pSupportedExtensionList[i])) {
-	            pWebGLExtentionList[pSupportedExtensionList[i]] = pWebGLExtension;
-
-	            debug_print("loaded WebGL extension: %1", pSupportedExtensionList[i]);
-
-	            for (var j in pWebGLExtension) {
-	                if (isFunction(pWebGLExtension[j])) {
-
-	                    pWebGLContext[j] = function () {
-	                        pWebGLContext[j] = new Function(
-	                            "var t = this.pWebGLExtentionList[" + pSupportedExtensionList[i] + "];" + 
-	                            "t." + j + ".apply(t, arguments);");
-	                    }
-
-	                }
-	                else {
-	                    pWebGLContext[j] = pWebGLExtentionList[pSupportedExtensionList[i]][j];
-	                }
-	            }
-	        }
-	        else {
-	            WARNING("cannot load extension: %1", pSupportedExtensionList[i]);
-	            pSupportedExtensionList.splice(i, 1);
-	        }
-	    }
-
-
-	    (<any>pWebGLContext).pWebGLExtentionList = pWebGLExtentionList;
-	    pLoadedExtensionList = pWebGLExtentionList;
 
 	})(createContext());
 

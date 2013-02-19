@@ -24,6 +24,8 @@
 #include "IFrameBuffer.ts"
 #include "IViewport.ts"
 
+#include "events/events.ts"
+
 #include "render/RenderTarget.ts"
 
 module  akra.render {
@@ -57,12 +59,16 @@ module  akra.render {
 	}
 
 	export class Renderer implements IRenderer {
-		private _pEngine: IEngine;
-		private _pRenderTargets: IRenderTarget[];
-		private _pPrioritisedRenderTargets: IRenderTargetPriorityMap;
+		protected _isActive: bool = false;
+		protected _pEngine: IEngine;
+		protected _pRenderTargets: IRenderTarget[];
+		protected _pPrioritisedRenderTargets: IRenderTargetPriorityMap;
 
 		constructor (pEngine: IEngine) {
 			this._pEngine = pEngine;
+
+			this.connect(pEngine, SIGNAL(active), SLOT(active));
+			this.connect(pEngine, SIGNAL(inactive), SLOT(inactive));
 		}
 
 
@@ -165,6 +171,18 @@ module  akra.render {
 		_getViewport(): IViewport {
 			return null;
 		}
+
+		BEGIN_EVENT_TABLE(Renderer);
+			signal active(pEngine: IEngine): void {
+				this._isActive = true;
+				EMIT_BROADCAST(active, _CALL(pEngine));
+			}
+
+			signal inactive(pEngine: IEngine): void {
+				this._isActive = false;
+				EMIT_BROADCAST(inactive, _CALL(pEngine));
+			}
+		END_EVENT_TABLE();
 	}
 };
 

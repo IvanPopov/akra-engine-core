@@ -53,7 +53,7 @@ module akra {
     	indexBufferPool: IResourcePool;
         textureBufferPool: IResourcePool;
     	renderMethodPool: IResourcePool;
-    	// colladaPool: IResourcePool;
+    	colladaPool: IResourcePool;
     	imagePool: IResourcePool;			
         //ex: private
     	shaderProgramPool: IResourcePool;		
@@ -111,6 +111,7 @@ module akra {
         createVertexBuffer(sResourceName: string): IVertexBuffer;
         createVideoBuffer(sResourceName: string): IVertexBuffer;
         createModel(sResourceName: string): IModel;
+        loadModel(sFilename: string, pOptions?: any): IModel;
     }
 }
 

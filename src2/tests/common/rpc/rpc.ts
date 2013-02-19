@@ -1,9 +1,9 @@
-#include "util/test/testutils.ts"
+#include "util/testutils.ts"
 #include "net/RPC.ts"
 
-module akra.util.test {
+module akra.util {
 	
-	var rpc_test = () => {
+	test("RPC tests", () => {
 		var pRpc: IRPC = net.createRpc();
 		var i: int = 0;
 		
@@ -32,13 +32,5 @@ module akra.util.test {
 				}, 10);
 			}
 		);
-
-
-	}
-
-	new Test({
-		name: "RPC tests",
-		main: rpc_test,
-		description: "Test all RPC apis"
-		});
+	});
 }

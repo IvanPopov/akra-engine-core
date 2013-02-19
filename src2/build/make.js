@@ -4,8 +4,9 @@ var exec 	= require('child_process').exec;
 var zip 	= require("node-native-zip");
 var path 	= require('path');
 var spawn 	= require('child_process').spawn;
-var md5 	= require('MD5');
+//var md5 	= require('MD5');
 var stream  = require('stream');
+var prompt 	= require('prompt');
 
 function include(file) {
 	eval(fs.readFileSync(file, "utf-8"));
@@ -16,7 +17,8 @@ function include(file) {
 //command line output buffer size
 //default is 5MB
 var BUFFER_SIZE = 5 * 1024 * 1024; 
-
+var pCleanFiles = [];
+var iTimeout = -1;
 
 
 function isDef(pObject) {
@@ -31,12 +33,18 @@ function usage() {
 		'\n\t--out		[-o] < path/to/output/[ folder | file ] > Specify output folder or file. ' + 
 		'\n\t--build		[-d] < path/to/build/directory > Specify build directory. ' + 
 		'\n\t--tests		[-s] < path/to/tests/folder > Specify tests directory. ' + 
-		'\n\t--test			[-c] < path/to/single/test > Specify test directory. ' + 
-		'\n\t--html			build tests as HTML. ' + 
-		'\n\t--nw			build tests as NW. ' + 
-		'\n\t--help			[-h] Print this text. ' + 
-		'\n\t--ES6			activate ecmascript 5 capability.' + 
-		'\n\t--compress		compress output javascript.'
+		'\n\t--test		[-c] < path/to/single/test > Specify test directory. ' + 
+		'\n\t--html			Build tests as HTML. ' + 
+		'\n\t--nw			Build tests as NW. ' + 
+		'\n\t--js			Build tests as JS. ' + 
+		'\n\t--help		[-h] Print this text. ' + 
+		'\n\t--ES6			Activate ecmascript 5 capability.' + 
+		'\n\t--compress		Compress output javascript.' + 
+		'\n\t--debug			Debug build.' + 
+		'\n\t--no-debug		Release build.' + 
+		'\n\t--clean			Clean tests data.' + 
+		'\n\t--list		[-l] List all available tests.' + 
+		'\n\t--declaration		Generates corresponding .d.ts file.'
 	);
 	
 	process.exit(1);
@@ -49,13 +57,18 @@ var pOptions = {
 	buildDir: "./",			//dir from witch we build
 	tempFile: "~tmp.ts",		//temprorary file name
 	baseDir: __dirname,		//home dir for this script
+	includeDir: null,
 	capability: null,
 	testDir: null,
 	pathToTests: null,
 	compress: false,
 	files: [],
+	debug: true,
 	pathToTemp: null,
-	testsFormat: {nw: false, html: false}
+	declaration: false,
+	clean: false, //clean tests data instead build
+	listOnly: false, //list available tests
+	testsFormat: {nw: false, html: false, js: false}
 };
 
 if (process.argv.length < 3) {
@@ -132,6 +145,21 @@ function parseArguments() {
 			case '--nw':
 				pOptions.testsFormat.nw = true;
 				break;
+			case '--js':
+				pOptions.testsFormat.js = true;
+				break;
+			case '--debug':
+				pOptions.debug = true;
+				break;
+			case '--no-debug':
+				pOptions.debug = false;
+				break;
+			case '--clean':
+				pOptions.clean = true;
+				break;
+			case '--declaration':
+				pOptions.declaration = true;
+				break;
 			case '--tests':
 			case '-s':
 				readKey("pathToTests", ++ i);
@@ -147,6 +175,10 @@ function parseArguments() {
 			case '-d':
 			case '--build':
 				readKey("buildDir", ++ i);
+				break;
+			case '-l':
+			case '--list':
+				pOptions.listOnly = true;
 				break;
 			default:
 				if (sArg.charAt(0) == '-') {
@@ -167,25 +199,42 @@ function verifyOptions() {
 	pOptions.outputFile = path.basename(pOptions.outputFolder);
 	pOptions.outputFolder = path.dirname(pOptions.outputFolder);
 
-	if (pOptions.testsFormat.html == false && pOptions.testsFormat.nw == false) {
-		pOptions.testsFormat.nw = true;
+	if (!pOptions.includeDir) {
+		pOptions.includeDir = "inc/";//pOptions.buildDir + 
+		
+	}
+
+	if (pOptions.testsFormat.html 	== false && 
+		pOptions.testsFormat.nw 	== false &&
+		pOptions.testsFormat.js 	== false) {
+		pOptions.testsFormat.html = true;
 	}
 
 	if (pOptions.outputFile == null || pOptions.outputFile == "") {
-		pOptions.outputFile = pOptions.files[0] + ".out.js";
+		pOptions.outputFile = pOptions.files[0] + (pOptions.declaration? ".d.ts" : ".out.js");
 	}
 }
 
 function preprocess() {
 	console.log("\n> preprocessing started (" + this.process.pid + ")\n");
 
-	var capabilityMacro = [
+	var capabilityOptions = [
 		"-D inline=/**@inline*/",
 		"-D protected=/**@protected*/",
 		"-D const=/**@const*/var",
 		"-D struct=class",
 		"-D readonly="
-		].join(" ");
+		];
+
+	if (pOptions.debug) {
+		capabilityOptions.push("-D DEBUG=DEBUG");
+		console.log("Debug build.");
+	}
+	else {
+		console.log("Release build.")
+	}
+
+	var capabilityMacro = capabilityOptions.join(" ");
 
 	if (pOptions.capability == null) {
 		capabilityMacro = "";
@@ -196,10 +245,10 @@ function preprocess() {
 	}
 
 	var cmd = pOptions.baseDir + "/mcpp";
-	var argv = ("-P -C -e utf8 -I " + "inc/ -j -+ -W 0 -k " + 
+	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -j -+ -W 0 -k " + 
 		capabilityMacro + " " + pOptions.files.join(" ")).
 		split(" ");
-
+	//console.log(argv.join(" "));
 	var mcpp = spawn(cmd, argv, {maxBuffer: BUFFER_SIZE});
 	var stdout = '';
 
@@ -236,7 +285,8 @@ function compress(sFile) {
 		//" --warning_level=VERBOSE " + 
 		" --js_output_file " + sFile + ".min" + 
 		" --language_in=ECMASCRIPT5_STRICT" + 
-		" --compilation_level=ADVANCED_OPTIMIZATIONS"
+		// " --compilation_level=ADVANCED_OPTIMIZATIONS" + 
+		""
 		).split(" ");
 	
 	
@@ -267,7 +317,9 @@ function compile() {
 		//pOptions.baseDir + "/WebGL.d.ts " + 
 		pOptions.pathToTemp + " --out " + 
 		pOptions.outputFolder + "/" + pOptions.outputFile + 
-		(pOptions.compress? " --comments --jsdoc ": "") + " ").split(' ');
+		// (pOptions.compress? " --comments --jsdoc ": "") + 
+		(pOptions.declaration? " --declaration ": "") +
+		" ").split(" ");
 
 	var node = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE,  stdio: 'inherit' });
 
@@ -279,7 +331,7 @@ function compile() {
 	  	console.log("compiled to: ", sOutputFile);
 
 		fs.unlink(pOptions.pathToTemp, function (err) {
-			if (err) {
+			if (err && fs.existsSync(pOptions.pathToTemp)) {
 				throw err;
 			}
 
@@ -358,10 +410,49 @@ function createTestName(sEntryFileName) {
 	return sFileName.substr(0, i);
 }
 
-function compileTest(sDir, sFile, sName, pData, sTestData) {
-	//FIXME: hack for events support
+
+function findDepends(sData) {
+	var pDepExp = /\/\/\/\s+@dep\s+(\w[\w\d\.\-\/]+)\s+/ig;
+	var pMatches = null;
+	var pDeps = [];
+
+	while (pMatches = pDepExp.exec(sData)) {
+		pDeps.push(pMatches[1]);
+	}
+
+	return pDeps;
+}
+
+function fetchDeps(sDir, pDeps) {
+	for (var i in pDeps) {
+
+		var sDep = path.normalize( pOptions.includeDir + pDeps[i]);
+
+		// console.log(sDep);
+		var sDepContent = fs.readFileSync(sDep, "utf-8");
+
+		fs.writeFileSync(sDir + "/" + path.basename(sDep), sDepContent, "utf-8");
+	}
+}
+
+function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 	
+	//FIXME: hack for events support
 	sTestData = sTestData.replace(/eval\(\"this\.\_iGuid \|\| akra\.sid\(\)\"\)/g, "this._iGuid || akra.sid()");
+
+
+	fetchDeps(sDir, findDepends(sTestData));
+	
+
+	sTestData = "\n\n\n" + 
+		"/*---------------------------------------------\n" +
+		" * assembled at: " + (new Date) + "\n" +
+		" * directory: " + sDir + "\n" +
+		" * file: " + sFile + "\n" +
+		" * name: " + sName + "\n" +
+		" *--------------------------------------------*/\n\n\n" + 
+		sTestData;
+
 
 	var pArchive;
 	var sIndexHTML = "\n\
@@ -370,7 +461,6 @@ function compileTest(sDir, sFile, sName, pData, sTestData) {
                   		<title>" + sFile + "</title>   				\n\
                   	</head>                              			\n\
                   	<body>                               			\n\
-                  		<h1 id=\"test_name\">Tests</h1>             \n\
                   		<script>" + sTestData + "</script>   		\n\
                   </html>";
 
@@ -399,7 +489,7 @@ function compileTest(sDir, sFile, sName, pData, sTestData) {
 	    });
     }
 
-    if (pOptions.testsFormat.nw) {
+    if (sFormat == "nw") {
 	   	pArchive = new zip();
 	    pArchive.add("index.html", new Buffer(sIndexHTML, "utf8"));
 	    pArchive.add("package.json", new Buffer(
@@ -431,9 +521,11 @@ function compileTest(sDir, sFile, sName, pData, sTestData) {
 			writeOutput(sDir + "/" + sName + ".nw", pArchive.toBuffer());
 		});
 	}
-	else 
-	if (pOptions.testsFormat.html) {
+	else if (sFormat == "html") {
 		writeOutput(sDir + "/" + sName + ".ts.html", sIndexHTML);
+	}
+	else if (sFormat == "js") {
+		writeOutput(sDir + "/" + sName + ".ts.js", sTestData);	
 	}
 }
 
@@ -455,13 +547,39 @@ function packTest(sDir, sFile, sName, pData) {
 	var cmd = "node";
 	var argv = (pOptions.baseDir + "/make.js -o " + sTempFile +" -t CORE " + 
 		(pOptions.capability? " --ES6 ": "") + 
-		(pOptions.compress? " --compress ": "") + sFile).split(" ");
+		(pOptions.compress? " --compress ": "") + 
+		(pOptions.declaration? " --declaration ": "") + 
+		(pOptions.debug? " --debug ": "") + 
+		sFile).split(" ");
 	var node = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE, stdio: 'inherit' });
 
 	node.on('exit', function (code) {
 		console.log("test " + sFile + " packed with code " + code);
 		if (code == 0) {
-			compileTest(sDir, sFile, sName, pData, fs.readFileSync(sTempFile + (pOptions.compress? ".min": ""), "utf8"));
+
+			var compileTestMacro = function (sFormat) {
+				compileTest(
+					sDir, 
+					sFile, 
+					sName, 
+					pData, 
+					fs.readFileSync(sTempFile + (pOptions.compress? ".min": ""), "utf8"), 
+					sFormat);
+			}
+			if (pOptions.testsFormat.nw) {
+				compileTestMacro("nw");
+			}
+
+			if (pOptions.testsFormat.html) {
+				// compileTestMacro("js");
+				compileTestMacro("html");
+			}
+
+			if (pOptions.testsFormat.js) {
+				compileTestMacro("js");
+			}
+
+
 			fs.unlinkSync(sTempFile)
 
 			if (pOptions.compress) {
@@ -496,45 +614,96 @@ function createTestData(sDir, sFile) {
             var stat = fs.statSync(sFile);
 
         	if (stat) {
-            	if (stat.isDirectory()) {
-            		iDepth ++;
-            		pDirsForScan.push(sFile);
-            		pTestFiles.push({path: sFile, folder: true});
+            	if (pOptions.clean == false) {
+	            	if (stat.isDirectory()) {
+	            		iDepth ++;
+	            		pDirsForScan.push(sFile);
+	            		pTestFiles.push({path: sFile, folder: true});
+	            	}
+	            	else if (
+	            		path.extname(sFile) !== ".ts" && 
+	            		path.extname(sFile) !== ".nw" && 
+	            		sFile.substr(-8) !== sTest + ".ts.html") {
+	            		pTestFiles.push({path: sFile, folder: false});
+	            	}
             	}
-            	else if (
-            		path.extname(sFile) !== ".ts" && 
-            		path.extname(sFile) !== ".nw" && 
-            		path.basename(sFile) !== sTest + ".ts.html") {
-            		pTestFiles.push({path: sFile, folder: false});
+            	else{
+            		if (!stat.isDirectory()) {
+	            		if (sFile.substr(-8) === ".ts.html" ||
+	            			sFile.substr(-3) === ".nw" ||
+	            			sFile.substr(-6) === ".ts.js") {
+	            			pCleanFiles.push(sFile);
+	            		}
+            		}
             	}
             }  
         });
 
-        if (iDepth == 0) {
-        	packTest(sDir, sTestMain, sTest, pTestFiles);
+		if (pOptions.clean) {
+
+			if (pCleanFiles.length == 0) {
+				console.log("Not found files for deletion.");
+			} 
+			else {
+				clearTimeout(iTimeout);
+				iTimeout = setTimeout(function () {
+					console.log("\n\nFile to be cleaned (" + pCleanFiles.length + "): ");
+				
+					for (var i in pCleanFiles) {
+						console.log("\t" + i + ". \"" + pCleanFiles[i] + "\"", "will be removed.");
+					}
+
+					prompt.get({
+				        name: 'yesno',
+				        message: 'Remove all? (y/n)',
+				        validator: /y[es]*|n[o]?/,
+				        warning: 'Must respond yes or no',
+				        default: 'no'
+				    }, function (err, result) {   
+				     
+						if (result.yesno.toLowerCase().substr(0, 1) === 'y') {
+							for (var i in pCleanFiles) {
+								try {
+									fs.unlinkSync(pCleanFiles[i]);
+								} catch (e) {
+									console.log("...")
+								}
+							}
+
+							console.log(pCleanFiles.length + " file(s) removed.");
+						}
+					  });
+				}, 30);
+			}
+		}
+		else {
+
+	        if (iDepth == 0) {
+	        	packTest(sDir, sTestMain, sTest, pTestFiles);
+	        }
+
+	        pDirsForScan.forEach(function(sFile) {
+	        	scanDir(sFile, function (err, pFileList) {
+	    			if (err) throw err;
+	    			pTestFiles = pTestFiles.concat(pFileList);
+
+	    			iDepth --;
+
+	    			if (iDepth === 0) {
+	    
+	    				if (iTestQuitMutex == 0) {
+	    					iTestQuitMutex ++;
+	    					//console.log(sDir, sTestMain, sTest, pTestFiles);
+	    					packTest(sDir, sTestMain, sTest, pTestFiles);
+	    				}
+	    				else {
+	    					//console.log({dir: sDir, main: sTestMain, name: sTest, data: pTestFiles});
+	    					pTestQueue.push({dir: sDir, main: sTestMain, name: sTest, data: pTestFiles});
+	    				}
+	    			}
+	    		}, true);
+	        })
         }
-
-        pDirsForScan.forEach(function(sFile) {
-        	scanDir(sFile, function (err, pFileList) {
-    			if (err) throw err;
-    			pTestFiles = pTestFiles.concat(pFileList);
-
-    			iDepth --;
-
-    			if (iDepth === 0) {
-    
-    				if (iTestQuitMutex == 0) {
-    					iTestQuitMutex ++;
-    					//console.log(sDir, sTestMain, sTest, pTestFiles);
-    					packTest(sDir, sTestMain, sTest, pTestFiles);
-    				}
-    				else {
-    					//console.log({dir: sDir, main: sTestMain, name: sTest, data: pTestFiles});
-    					pTestQueue.push({dir: sDir, main: sTestMain, name: sTest, data: pTestFiles});
-    				}
-    			}
-    		}, true);
-        })
     });
 }
 
@@ -555,21 +724,32 @@ function addTestDirectory(sTestDir, sTestFile) {
 
             fs.stat(sFile, function(err, stat) {
                 if (stat) {
-                	if (stat.isDirectory()) {
+                	if (stat.isDirectory() && pOptions.listOnly == false) {
                 		console.log("\tdir: " + sFile);
                 	}
                 	else {
                 		if (path.extname(sFile) === ".ts") {
                 			
+                			var sSpace = "";
+                			for (var i = sFile.length; i < 40; ++ i) {
+                				sSpace += " ";
+                			}
+
                 			if (path.basename(sFile) === pOptions.tempFile) {
                 				fs.unlinkSync(sFile);
                 			}
                 			else if (sTestFile == null || path.basename(sFile) == path.basename(sTestFile)) {
-                				console.log("\tfile: " + sFile + " --> " + createTestName(sFile) + (pOptions.testsFormat.html? ".html": ".nw"));
-                				createTestData(sTestDir, sFile);
+                				console.log("\tfile: " + sFile + sSpace + "=>   " + createTestName(sFile) + 
+                					(pOptions.testsFormat.html? 
+                						".html": 
+                						(pOptions.testsFormat.js? ".js": ".nw")
+                						));
+                				if (pOptions.listOnly == false) {
+                					createTestData(sTestDir, sFile);
+                				}
                 			}
                 		}
-                		else {
+                		else if (pOptions.listOnly == false) {
                 			console.log("\tfile: " + sFile);
                 		}
                 	}

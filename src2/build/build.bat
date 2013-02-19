@@ -1,2 +1,4 @@
-node make.js inc/akra.ts -o ./bin/akra.js --build ../ -t CORE --ES6
+@rem build.bat
+@echo off
+node make.js inc/akra.ts -o ./bin/akra.js --build ../ -t CORE --ES6 %*
 

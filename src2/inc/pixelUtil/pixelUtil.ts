@@ -1432,8 +1432,8 @@ module akra {
 	                return;
 	            }
 
-	            const srcPixelSize: uint = getNumElemBytes(src.format);
-	            const dstPixelSize: uint = getNumElemBytes(dst.format);
+	            var srcPixelSize: uint = getNumElemBytes(src.format);
+	            var dstPixelSize: uint = getNumElemBytes(dst.format);
 
 	            var srcptr: Uint8Array = src.data.subarray(
 	                (src.left + src.top * src.rowPitch + src.front * src.slicePitch) * srcPixelSize);
@@ -1441,13 +1441,13 @@ module akra {
 					+ (dst.left + dst.top * dst.rowPitch + dst.front * dst.slicePitch) * dstPixelSize);
 
 	            // Calculate pitches+skips in bytes
-	            const srcRowPitchBytes: uint = src.rowPitch * srcPixelSize;
-	            //const size_t srcRowSkipBytes = src.getRowSkip()*srcPixelSize;
-	            const srcSliceSkipBytes: uint = src.getSliceSkip() * srcPixelSize;
+	            var srcRowPitchBytes: uint = src.rowPitch * srcPixelSize;
+	            //var size_t srcRowSkipBytes = src.getRowSkip()*srcPixelSize;
+	            var srcSliceSkipBytes: uint = src.getSliceSkip() * srcPixelSize;
 
-	            const dstRowPitchBytes: uint = dst.rowPitch * dstPixelSize;
-	            //const size_t dstRowSkipBytes = dst.getRowSkip()*dstPixelSize;
-	            const dstSliceSkipBytes: uint = dst.getSliceSkip() * dstPixelSize;
+	            var dstRowPitchBytes: uint = dst.rowPitch * dstPixelSize;
+	            //var size_t dstRowSkipBytes = dst.getRowSkip()*dstPixelSize;
+	            var dstSliceSkipBytes: uint = dst.getSliceSkip() * dstPixelSize;
 
 	            // Otherwise, copy per row
 	            const rowSize: uint = src.width * srcPixelSize;
@@ -1488,8 +1488,8 @@ module akra {
 				return;
 			}
 
-	        const srcPixelSize: uint = getNumElemBytes(src.format);
-	        const dstPixelSize: uint = getNumElemBytes(dst.format);
+	        var srcPixelSize: uint = getNumElemBytes(src.format);
+	        var dstPixelSize: uint = getNumElemBytes(dst.format);
 
 	        var srcptr: Uint8Array = src.data.subarray(
 	            (src.left + src.top * src.rowPitch + src.front * src.slicePitch) * srcPixelSize);
@@ -1500,10 +1500,10 @@ module akra {
 			//uint8 *srcptr = static_cast<uint8*>(src.data), *dstptr = static_cast<uint8*>(dst.data);
 
 	        // Calculate pitches+skips in bytes
-	        const srcRowSkipBytes: uint = src.getRowSkip() * srcPixelSize;
-	        const srcSliceSkipBytes: uint = src.getSliceSkip() * srcPixelSize;
-	        const dstRowSkipBytes: uint = dst.getRowSkip() * dstPixelSize;
-	        const dstSliceSkipBytes: uint = dst.getSliceSkip() * dstPixelSize;
+	        var srcRowSkipBytes: uint = src.getRowSkip() * srcPixelSize;
+	        var srcSliceSkipBytes: uint = src.getSliceSkip() * srcPixelSize;
+	        var dstRowSkipBytes: uint = dst.getRowSkip() * dstPixelSize;
+	        var dstSliceSkipBytes: uint = dst.getSliceSkip() * dstPixelSize;
 
 	        // The brute force fallback
 	        // var r: float = 0, g: float = 0, b: float = 0, a: float = 1;

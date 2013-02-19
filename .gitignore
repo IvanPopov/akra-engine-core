@@ -30,7 +30,8 @@ src2/*.png
 compiled/*.js
 build/build.bat
 
-#src/node_modules/
+#src/*/node_modules
+#src2/inc/*/node_modules
 node_modules/
 
 #visual
@@ -47,6 +48,7 @@ src/*.htm
 src2/tmp.*
 #src2/*.htm
 src2/tmp.ts
+src2/tests/common/*/*.t.js
 
 obj/
 bin/

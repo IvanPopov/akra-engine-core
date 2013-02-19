@@ -1,9 +1,40 @@
-#include "util/test/testutils.ts"
+#include "util/testutils.ts"
+#include "util/ObjectArray.ts"
 #include "util/ObjectList.ts"
 
-module akra.util.test {
+module akra.util {
 	
-	var test_1 = () => {
+	test("ObjectArray Tests", () => {
+		shouldBeTrue("ObjectArray creation");
+		shouldBeTrue("ObjectArray length correct");
+		
+		var pTpl: uint[] = [1, 2, 3, 4, 5];
+		var pArray: IObjectArray = new ObjectArray(pTpl);
+
+		check(isDefAndNotNull(pArray));
+		check(pArray.length === pTpl.length);
+
+		for (var i = 0, n = pTpl.length; i < n; ++ i) {
+			var t: uint = pTpl.pop();
+			shouldBeTrue("poped element is: " + t);	
+			check(pArray.pop() == t);
+		}
+
+		shouldBeTrue("length is 0");	
+		check(pArray.length === pTpl.length);
+
+		for (var i: uint = 0; i < 5; ++ i) {
+			pArray.push(i);
+			pTpl.push(i);
+			shouldBeTrue("pushed element is: " + i);
+			check(pArray.value(i) === pTpl[i] && pTpl.length == pArray.length);
+		}
+
+		shouldBeTrue("length is 0 after cleaning");
+		check(0 == pArray.clear().length);
+	});
+	
+	test("ObjectList Tests", () => {
 
 		shouldBeTrue("ObjectArray creation");
 		shouldBeTrue("ObjectArray length correct");
@@ -70,11 +101,5 @@ module akra.util.test {
 
 			//console.log(i, ": ", pData, "(", pTpl[i], ")");
 		});
-	}
-
-	new Test({
-		name: "ObjectList Tests",
-		main: test_1,
-		description: "Test all ObjectList apis"
-		});
+	});
 }

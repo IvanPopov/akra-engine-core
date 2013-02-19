@@ -457,10 +457,10 @@ module akra.model {
 
 			//};
 		}
-
+#endif
 	}
 
-#endif
+
 
 	export function createSkin(pMesh: IMesh): ISkin {
 		return new Skin(pMesh);

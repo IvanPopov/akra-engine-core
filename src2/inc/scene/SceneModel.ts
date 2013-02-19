@@ -50,7 +50,7 @@ module akra.scene {
 			this._pMesh.setShadow(bValue);
 		}
 
-		toString(isRecursive: bool = false, iDepth: uint = 0) {
+		toString(isRecursive: bool = false, iDepth: uint = 0): string {
 #ifdef DEBUG
 		    if (!isRecursive) {
 		        var sData: string = "<model" + (this.name? " " + this.name: "") + "(" + String(isNull(this._pMesh)) + ")" +  '>';

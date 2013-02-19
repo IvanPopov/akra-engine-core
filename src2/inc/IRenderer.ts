@@ -1,6 +1,8 @@
 #ifndef IRENDERER_TS
 #define IRENDERER_TS
 
+#include "IEventProvider.ts"
+
 module akra {
 
     IFACE(IAFXComponent);
@@ -238,7 +240,7 @@ module akra {
     //  DEFAULT
     // }
 
-    export interface IRenderer {
+    export interface IRenderer extends IEventProvider {
         getEngine(): IEngine;
 
         debug(bValue?: bool): bool;
