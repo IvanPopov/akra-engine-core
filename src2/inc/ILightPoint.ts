@@ -20,6 +20,8 @@ module akra {
 
 		isShadowCaster: bool;
 
+		create(): bool;
+
 		//false if lighting not active 
 		//or it's effect don't seen
 		_prepareForLighting(pCamera: ICamera): bool;

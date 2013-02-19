@@ -16,15 +16,13 @@ module akra.scene.light {
 		// protected _pColorTexture: ITexture = null;
 		protected _pShadowCaster: IShadowCaster;
 
-		constructor (pScene: IScene3d) {
-			super(pScene);
+		constructor (pScene: IScene3d, isShadowCaster: bool = true, iMaxShadowResolution: uint = 256) {
+			super(pScene, isShadowCaster, iMaxShadowResolution);
 			this._eType = EEntityTypes.LIGHT_PROJECT;
 		};
 
-		create(isShadowCaster: bool = true): bool {
+		create(): bool {
 			var isOk: bool = super.create();
-
-			this.isShadowCaster = isShadowCaster;
 
 			this._pShadowCaster = new ShadowCaster(this);
 			var pCaster: IShadowCaster = this._pShadowCaster;
@@ -64,7 +62,7 @@ module akra.scene.light {
 			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
 			var iSize: uint = this._iMaxShadowResolution;
 
-			if (this._pDepthTexture) {
+			if (isNull(this._pDepthTexture)){
 				this._pDepthTexture.destroyResource();
 			}
 
@@ -92,7 +90,7 @@ module akra.scene.light {
 		};
 
 		_calculateShadows(): void {
-			if (!this._isEnabled || !this.isShadowCaster) {
+			if (!this.enabled || !this.isShadowCaster) {
 				return;
 			}
 
@@ -106,12 +104,10 @@ module akra.scene.light {
 			else{
 				if(!this.isShadowCaster){
 					var pResult: IObjectArray = this._defineLightingInfluence(pCamera);
-					console.warn(pResult);
 					return (pResult.length == 0) ? false : true;
 				}
 				else{
 					var pResult: IObjectArray = this._defineShadowInfluence(pCamera);
-					console.warn(pResult);
 					return (pResult.length == 0) ? false : true;
 				}
 			}
