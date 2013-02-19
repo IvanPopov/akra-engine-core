@@ -6,6 +6,8 @@
 #include "IEngine.ts"
 #include "io/files.ts"
 
+#include "util/EffectParser.ts"
+
 module akra.util {
 	export enum EDepsManagerStates {
 		IDLE,
@@ -63,43 +65,101 @@ module akra.util {
 			this.walk(pDeps, (pDeps: IDependens, i: int): void => {
 				var pFiles: string[] = pDeps.files;
 				switch (pathinfo(pFiles[i]).ext.toLowerCase()) {
-					case "dae":
-						if (!pRmgr.colladaPool.findResource(pFiles[i])) {
-							pRmgr.colladaPool.createResource(pFiles[i]);
-						}
+					case "afx":
+						// if (!pRmgr.effectDataPool.findResource(pFiles[i])) {
+						// 	pRmgr.effectDataPool.createResource(pFiles[i]);
+						// }
 						break;
 				}
 			});
 		}
 
 		private loadDeps(pDeps: IDependens, sRoot: string = null): void {
-			this.walk(pDeps, (pDeps: IDependens, i: int, iDepth?: uint): void => {
+			var pRmgr: IResourcePoolManager = this.getEngine().getResourceManager();
+			
+			//if got empty dependency.
+			if (!isArray(pDeps.files) || pDeps.files.length === 0) {
+				this._onDependencyLoad(pDeps);
+			}
+
+			//walk single deps level
+			this.walk({files: pDeps.files}, (pDep: IDependens, i: int, iDepth?: uint): void => {
 				if (iDepth === 0) {
 					this.normalizeDepsPaths(pDeps, sRoot);
 					this.createDepsResources(pDeps);
-
-					var pFiles: string[] = pDeps.files;
-
-					switch (pathinfo(pFiles[i]).ext.toLowerCase()) {
-						case "dae":
-								io.fopen(pFiles[i], "r").read((pErr: Error, sData: string): void => {
-									if (isDefAndNotNull(pErr)) {
-										ERROR(pErr);
-									}
-
-									LOG(sData);
-								});
-							break;
-						default:
-							WARNING("dependence " + pFiles[i] + " unknown, and will be skipped.");
-					}	
 				}
+
+				var pFiles: string[] = pDeps.files;
+				var pManager: DepsManager = this;
+				
+				switch (pathinfo(pFiles[i]).ext.toLowerCase()) {
+					case "gr":
+						io.fopen(pFiles[i], "r").read((pErr: Error, sData: string): void => {
+							if (!isNull(pErr)) {
+								pManager.error(pErr);
+							}
+
+							//WARNING: only for HLSL grammar files.
+							util.initAFXParser(sData);
+							pManager._onDependencyLoad(pDeps, i);
+						});	
+						break;
+
+					case "afx":
+							// pManager._handleResourceEventOnce(pRmgr.effectDataPool.loadResource(pFiles[i]), SIGNAL(loaded),
+							// 	(pItem: IResourcePoolItem): void => {
+							// 		pManager._onDependencyLoad(pDeps, i);
+							// 	}
+							// );
+						break;
+
+					default:
+						WARNING("dependence " + pFiles[i] + " unknown, and will be skipped.");
+				}	
 			});
+		}
+
+		_handleResourceEventOnce(pRsc: IResourcePoolItem, sSignal: string, fnHandler: (pItem: IResourcePoolItem) => void): void {
+			var fn: (pItem: IResourcePoolItem) => void;
+			
+			fn = (pItem: IResourcePoolItem): void => {
+				fnHandler(pItem);
+				pRsc.unbind(sSignal, fn);
+			}
+
+			pRsc.bind(sSignal, fn);
+		}
+
+		_onDependencyLoad(pDeps: IDependens, i?: int): void {
+			// debug_assert(isDefAndNotNull(pDeps.files) && isString(pDeps.files[i]), "something going wrong...");
+
+			if (isDef(i)) {
+				pDeps.files[i] = null;
+			}
+
+			for (var i: int = 0; i < pDeps.files.length; ++ i) {
+				if (!isNull(pDeps.files[i])) {
+					return;
+				}
+			};
+
+			if (isDefAndNotNull(pDeps.deps)) {
+				this.loadDeps(pDeps.deps);
+			}
+			else {
+				this.loaded();
+			}
 		}
 
 		BEGIN_EVENT_TABLE(DepsManager);
 			BROADCAST(loaded, VOID);
-			BROADCAST(error, CALL(pErr));
+			// BROADCAST(error, CALL(pErr));
+			
+			error(pErr: Error): void {
+				throw pErr;
+				EMIT_BROADCAST(error, _CALL(pErr));
+			}
+
 		END_EVENT_TABLE();
 	}
 

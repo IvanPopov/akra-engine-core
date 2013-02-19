@@ -242,6 +242,7 @@ module akra.core {
 		}
 
 		_depsLoaded(pLoader: IDepsManager): void {
+			alert("deps loaded!!!!!!!!!!!!!!!!!!!!!");
 			this._isDepsLoaded = true;
 		}
 
@@ -250,8 +251,7 @@ module akra.core {
 #ifdef DEBUG
 			{
 				files: [ 
-					// "grammars/HLSL.gr" 
-					"models/cube.dae" 
+					"grammars/HLSL.gr" 
 				],
 				deps: {
 						files: [

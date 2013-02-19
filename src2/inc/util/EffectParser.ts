@@ -90,7 +90,7 @@ module akra.util {
 
 	export var parser: EffectParser = new EffectParser();
 	
-	export function initParser(sGrammar?: string): void {
+	export function initAFXParser(sGrammar: string): void {
 		parser.init(sGrammar, akra.EParseMode.k_Add | 
 				    akra.EParseMode.k_Negate |
 					akra.EParseMode.k_Optimize |
