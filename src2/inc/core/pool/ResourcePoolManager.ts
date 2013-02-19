@@ -21,6 +21,7 @@
 #include "resources/Component.ts"
 
 #include "resources/Collada.ts"
+#include "resources/EffectData.ts"
 
 #ifdef WEBGL
 
@@ -35,6 +36,8 @@
 #include "webgl/WebGLDepthBuffer.ts"
 
 #endif
+
+
 
 module akra.core.pool {
 	//is this class really singleton??
@@ -54,6 +57,7 @@ module akra.core.pool {
         private pTextureBufferPool: IResourcePool;
         private pRenderBufferPool: IResourcePool;
         private pDepthBufferPool: IResourcePool;
+        private pEffectDataPool: IResourcePool;
 
     	/** Списки пулов по семействам ресурсов */
     	private pResourceFamilyList: IResourcePool[][] = null;
@@ -78,6 +82,7 @@ module akra.core.pool {
         get textureBufferPool(): IResourcePool {return this.pTextureBufferPool; }
         get renderBufferPool(): IResourcePool {return this.pRenderBufferPool; }
         get depthBufferPool(): IResourcePool {return this.pDepthBufferPool; }
+        get effectDataPool(): IResourcePool {return this.pEffectDataPool; }
 
     	constructor(pEngine: IEngine) {
     		//super();
@@ -432,6 +437,9 @@ module akra.core.pool {
 #else
             CRITICAL("Render system not specified");
 #endif
+            
+            this.pEffectDataPool = new ResourcePool(this, resources.EffectData);
+            this.pEffectDataPool.initialize(8);         
 
 
             this.pComponentPool = new ResourcePool(this, resources.Component);
@@ -484,6 +492,10 @@ module akra.core.pool {
                 new ResourceCode(
                     <number>EResourceFamilies.VIDEO_RESOURCE,
                     <number>EVideoResources.COMPONENT_RESOURCE));
+            this.pEffectDataPool.registerResourcePool(
+                new ResourceCode(
+                    <number>EResourceFamilies.VIDEO_RESOURCE,
+                    <number>EVideoResources.EFFECTDATA_RESOURCE));
         }
 
         private unregisterDeviceResources(): void {

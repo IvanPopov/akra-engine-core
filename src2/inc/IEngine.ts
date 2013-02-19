@@ -14,6 +14,7 @@ module akra {
     IFACE(IAnimationController);
     IFACE(ISkeleton);
     IFACE(IScene3d);
+    IFACE(IAFXComposer);
 
     export interface IEngine extends IEventProvider {
         getScene(): IScene3d;
@@ -23,6 +24,8 @@ module akra {
         getResourceManager(): IResourcePoolManager;
 
         getRenderer(): IRenderer;
+
+        getComposer(): IAFXComposer;
 
         pause(): bool;
         play(): bool;

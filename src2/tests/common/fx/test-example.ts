@@ -1,14 +1,17 @@
 #include "util/testutils.ts"
-#include "fx/Effect.ts"
-#include "AFXComposer.ts"
+#include "core/Engine.ts"
+#include "common.ts"
 
 module akra {
 	test("Example creation test", () => {
-		var pEffect: IAFXEffect = new fx.Effect(null);
+		var pEngine: IEngine = createEngine();
+		var pEffectDataPool: IResourcePool = pEngine.getResourceManager().effectDataPool;
 
-		shouldBeTrue("Creation test");
-		check(isDefAndNotNull(pEffect));
+		var pEffectData: IResourcePoolItem = pEffectDataPool.createResource("test");
+		
+		shouldBeTrue("Effec data create");
+		check(!isNull(pEffectData));
 
-		LOG(pEffect);
+		pEffectData.loadResource("data/SystemEffects.afx");
 	});
 }

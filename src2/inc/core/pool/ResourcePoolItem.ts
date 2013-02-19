@@ -345,7 +345,7 @@ module akra.core.pool {
 		setResourceFlag(iFlagBit, isSetting: bool): bool {
 			var iTempFlags: int = this.iResourceFlags;
 		    
-		    bf.setBit(this.iResourceFlags, iFlagBit, isSetting);
+		    this.iResourceFlags = bf.setBit(this.iResourceFlags, iFlagBit, isSetting);
 
 		    if (iTempFlags != this.iResourceFlags) {
 		        for (var i: int = 0; i < this.pCallbackFunctions.length; i++) {
