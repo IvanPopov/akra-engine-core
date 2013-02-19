@@ -243,8 +243,7 @@ module akra {
     export interface IRenderer extends IEventProvider {
         getEngine(): IEngine;
 
-        debug(bValue?: bool): bool;
-        enableAPITrace(): bool;
+        debug(bValue?: bool, useApiTrace?: bool): bool;
         
         isDebug(): bool;
         isValid(): bool;

@@ -14,6 +14,9 @@ module akra.webgl {
 		private _pWebGLContext: WebGLRenderingContext;
 		private _pWebGLFramebufferList: WebGLFramebuffer[];
 
+		//real context, if debug context used
+		private _pWebGLInternalContext: WebGLRenderingContext = null;
+
 		constructor (pEngine: IEngine);
 		constructor (pEngine: IEngine, sCanvas: string);
 		constructor (pEngine: IEngine, pCanvas: HTMLCanvasElement);
@@ -41,6 +44,42 @@ module akra.webgl {
 			for (var i: int = 0; i < this._pWebGLFramebufferList.length; ++ i) {
 				this._pWebGLFramebufferList[i] = this._pWebGLContext.createFramebuffer();
 			}
+		}
+
+		debug(bValue: bool = true, useApiTrace: bool = false): bool {
+			var pWebGLInternalContext: WebGLRenderingContext = this._pWebGLContext;
+
+			if (bValue) {
+				if (isDef(WebGLDebugUtils) && !isNull(pWebGLInternalContext)) {
+		            
+		            this._pWebGLContext = WebGLDebugUtils.makeDebugContext(pWebGLInternalContext, 
+		                (err: int, funcName: string, args: IArguments): void => {
+		                    throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
+		                },
+		                useApiTrace? 
+		                (funcName: string, args: IArguments): void => {   
+		                   LOG("gl." + funcName + "(" + WebGLDebugUtils.glFunctionArgsToString(funcName, args) + ")");   
+		                }: null);
+
+		            this._pWebGLInternalContext = pWebGLInternalContext;
+		            
+		            return true;
+		        }
+	        }
+	        else if (this.isDebug()) {
+	        	this._pWebGLContext = this._pWebGLInternalContext;
+	        	this._pWebGLInternalContext = null;
+
+	        	return true;
+	        }
+
+			return false;
+		}
+
+
+		
+		isDebug(): bool {
+			return !isNull(this._pWebGLInternalContext);
 		}
 
 		inline getHTMLCanvas(): HTMLCanvasElement {

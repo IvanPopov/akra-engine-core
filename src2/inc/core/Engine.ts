@@ -73,7 +73,7 @@ module akra.core {
 			this._pTimer = util.UtilTimer.start();
 			this.pause(false);
 
-			this.parseOptions(pOptions);
+			// this.parseOptions(pOptions);
 		}
 
 		private parseOptions(pOptions: IEngineOptions): void {

@@ -7,9 +7,13 @@
 #include "akra.ts"
 
 module akra {
-	var pEngine = createEngine();
+	var pEngine: IEngine = createEngine();
 	var pSceneManager: ISceneManager = pEngine.getSceneManager();
 	var pScene3D: IScene3d = pSceneManager.createScene3D();
+
+	if (pEngine.getRenderer().debug(true, true)) {
+		LOG("context debugging enabled");
+	}
 
 	var pOctree: IOcTree = new scene.OcTree();
 	pOctree.create(new geometry.Rect3d(1000,1000,1000),5,100);

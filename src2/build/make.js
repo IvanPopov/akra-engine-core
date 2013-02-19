@@ -44,6 +44,7 @@ function usage() {
 		'\n\t--no-debug		Release build.' + 
 		'\n\t--clean			Clean tests data.' + 
 		'\n\t--list		[-l] List all available tests.' + 
+		'\n\t--webgl-debug	[-w] Add webgl debug utils.' + 
 		'\n\t--declaration		Generates corresponding .d.ts file.'
 	);
 	
@@ -68,6 +69,7 @@ var pOptions = {
 	declaration: false,
 	clean: false, //clean tests data instead build
 	listOnly: false, //list available tests
+	webglDebug: false,
 	testsFormat: {nw: false, html: false, js: false}
 };
 
@@ -180,6 +182,10 @@ function parseArguments() {
 			case '--list':
 				pOptions.listOnly = true;
 				break;
+			case '--webgl-debug':
+			case '-w':
+				 pOptions.webglDebug = true;
+				 break;
 			default:
 				if (sArg.charAt(0) == '-') {
 					console.log("unknown arguments detected: " + sArg, "\n");
@@ -412,7 +418,7 @@ function createTestName(sEntryFileName) {
 
 
 function findDepends(sData) {
-	var pDepExp = /\/\/\/\s+@dep\s+(\w[\w\d\.\-\/]+)\s+/ig;
+	var pDepExp = /\/\/\/\s*@dep\s+([\w\d\.\-\/]+)\s*/ig;
 	var pMatches = null;
 	var pDeps = [];
 
@@ -428,7 +434,6 @@ function fetchDeps(sDir, pDeps) {
 
 		var sDep = path.normalize( pOptions.includeDir + pDeps[i]);
 
-		// console.log(sDep);
 		var sDepContent = fs.readFileSync(sDep, "utf-8");
 
 		fs.writeFileSync(sDir + "/" + path.basename(sDep), sDepContent, "utf-8");
@@ -440,10 +445,6 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 	//FIXME: hack for events support
 	sTestData = sTestData.replace(/eval\(\"this\.\_iGuid \|\| akra\.sid\(\)\"\)/g, "this._iGuid || akra.sid()");
 
-
-	fetchDeps(sDir, findDepends(sTestData));
-	
-
 	sTestData = "\n\n\n" + 
 		"/*---------------------------------------------\n" +
 		" * assembled at: " + (new Date) + "\n" +
@@ -453,16 +454,35 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 		" *--------------------------------------------*/\n\n\n" + 
 		sTestData;
 
+	var pAdditionalScripts = [];
+	var sAdditionalCode = "";
 
 	var pArchive;
-	var sIndexHTML = "\n\
+	var sIndexHTML;
+
+
+    if (pOptions.webglDebug) {
+    	pAdditionalScripts.push("webgl-debug.js");
+    	sTestData += "\n\n/// @dep ../build/webgl-debug.js \n"
+    }
+
+	for (var i in pAdditionalScripts) {
+		sAdditionalCode += "<script type=\"text/javascript\" src=\"" + pAdditionalScripts[i] + "\">" + 
+							"</script>";
+	}
+    
+    sIndexHTML = "\n\
 				  <html>                           					\n\
                   	<head>                               			\n\
                   		<title>" + sFile + "</title>   				\n\
                   	</head>                              			\n\
                   	<body>                               			\n\
+                  		" + sAdditionalCode + "				  		\n\
                   		<script>" + sTestData + "</script>   		\n\
                   </html>";
+    
+    
+    fetchDeps(sDir, findDepends(sTestData));
 
     function writeOutput(sOutputFile, pData) {
     	fs.writeFile(sOutputFile, pData, function (err) {
@@ -541,6 +561,10 @@ function packTest(sDir, sFile, sName, pData) {
 	console.log("### PACK TEST: " + sFile + "");
 	console.log("#########################################################");
 	console.log("\n");
+
+	
+	console.log("\nWebGL debug: " + (pOptions.webglDebug? "ON": "OFF"));
+	
 
 	var sTempFile = sFile + ".temp";
 

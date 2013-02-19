@@ -79,11 +79,7 @@ module  akra.render {
 	    }
 
 
-		debug(bValue?: bool): bool {
-			return false;
-		}
-
-		enableAPITrace(): bool {
+		debug(bValue?: bool, useApiTrace?: bool): bool {
 			return false;
 		}
 		
