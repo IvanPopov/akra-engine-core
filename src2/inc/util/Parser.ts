@@ -767,6 +767,10 @@ module akra.util {
             this._sSource = sSource;
         }
 
+        inline _setIndex(iIndex: uint): void {
+            this._iIndex = iIndex;
+        }
+
         private _error(eCode: uint, pToken: IToken): void {
             var pLocation: ISourceLocation = <ISourceLocation>{
                                                 file: this._pParser.getParseFileName(),
@@ -1559,17 +1563,36 @@ module akra.util {
             return this._pSyntaxTree;
         }
 
-        inline _getLexer(): ILexer{
-            return this._pLexer;
+        _saveState(): IParserState {
+            return {
+                source: this._sSource,
+                index: this._pLexer._getIndex(),
+                fileName: this._sFileName,
+                tree: this._pSyntaxTree,
+                types: this._pTypeIdMap,
+                stack: this._pStack,
+                token: this._pToken,
+                fnCallback: this._fnFinishCallback,
+                caller: this._pCaller  
+            };
         }
 
-        inline _getSource(): string{
-            return this._sSource;
+        _loadState(pState: IParserState): void {
+            this._sSource = pState.source;
+            this._iIndex = pState.index;
+            this._sFileName = pState.fileName;
+            this._pSyntaxTree = pState.tree;
+            this._pTypeIdMap = pState.types;
+            this._pStack = pState.stack;
+            this._pToken = pState.token;
+            this._fnFinishCallback = pState.fnCallback;
+            this._pCaller = pState.caller;
+
+            this._pLexer._setSource(pState.source);
+            this._pLexer._setIndex(pState.index);
         }
 
-        inline _setSource(sSource: string): void{
-            this._sSource = sSource;
-        }
+
 
         protected addAdditionalFunction(sFuncName: string, fnRuleFunction: IRuleFunction): void {
             if(isNull(this._pAdditionalFunctionsMap)){

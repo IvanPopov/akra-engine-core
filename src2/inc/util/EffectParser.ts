@@ -60,24 +60,25 @@ module akra.util {
 		private _includeCode(): EOperationType {
 			var pTree: IParseTree = this.getSyntaxTree();
 		    var pNode: IParseNode = pTree.getLastNode();
-		    var sFile: string = pNode.children[0].value;
-		    
+		    var sFile: string = pNode.value;
+		    sFile = sFile.substr(1, sFile.length - 2);
+
 		    if(this._pIncludedFilesMap[sFile]){
 		    	return EOperationType.k_Ok;
 		    }
 		    else {
+		    	var pParserState: IParserState = this._saveState();
 		    	var me: EffectParser = this;
 		    	var pFile: IFile = io.fopen(sFile, "r+t");
 
 		    	pFile.read(function(err, sData: string){
 		    		if(err){ ERROR("Can not read file"); }
 		    		else {
-		    			var index: uint = me._getLexer()._getIndex();
-		    			var sSource: string = me._getSource().substr(0, index) +
-		    								  sData + me._getSource().substr(index);
-		    			me._setSource(sSource);
-		    			me._getLexer()._setSource(sSource);
-		    			me._addIncludedFile(sFile)
+		    			pParserState.source = pParserState.source.substr(0, pParserState.index) +
+		    								  sData + pParserState.source.substr(pParserState.index);
+
+		    			me._loadState(pParserState);
+		    			me._addIncludedFile(sFile);
 		    			me.resume();
 		    		}
 		    	});

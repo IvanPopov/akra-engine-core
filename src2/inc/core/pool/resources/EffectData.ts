@@ -42,12 +42,17 @@ module akra.core.pool.resources {
 
 #ifdef DEBUG
 			var me: EffectData = this;
+
 			io.fopen(sFileName, "r+t").read(function(pErr: Error, sData: string){
 				if(!isNull(pErr)){
 					ERROR("Can not load .afx file: '" + sFileName + "'");
 				}
 				else {
+
 					util.parser.setParseFileName(sFileName);
+					if(sFileName === "../../../data/effects/prepareDeferredShading.afx"){
+						LOG(sFileName);
+					}
 					util.parser.parse(sData, me._initFromParsedEffect, me);
 				}
 			});
@@ -61,7 +66,7 @@ module akra.core.pool.resources {
 				return;
 			}
 			
-			var pSyntaxTree: IParseTree = util.parser.getSyntaxTree();
+			this._pSyntaxTree = util.parser.getSyntaxTree();
 			this.notifyLoaded();
 
 			var pComposer: IAFXComposer = this.getManager().getEngine().getComposer();

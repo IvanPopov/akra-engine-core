@@ -34,7 +34,9 @@ module akra.util {
 				return false;
 			}
 
-			this.loadDeps(pDeps, sRoot);
+			this.normalizeDepsPaths(pDeps, sRoot);
+			this.createDepsResources(pDeps);
+			this.loadDeps(pDeps);
 
 			return true;
 		}
@@ -66,29 +68,26 @@ module akra.util {
 				var pFiles: string[] = pDeps.files;
 				switch (pathinfo(pFiles[i]).ext.toLowerCase()) {
 					case "afx":
-						// if (!pRmgr.effectDataPool.findResource(pFiles[i])) {
-						// 	pRmgr.effectDataPool.createResource(pFiles[i]);
-						// }
+						if (!pRmgr.effectDataPool.findResource(pFiles[i])) {
+							LOG("effectDataPool.createResource(" + pFiles[i] + ")");
+							pRmgr.effectDataPool.createResource(pFiles[i]);
+						}
 						break;
 				}
 			});
 		}
 
-		private loadDeps(pDeps: IDependens, sRoot: string = null): void {
+		private loadDeps(pDeps: IDependens): void {
 			var pRmgr: IResourcePoolManager = this.getEngine().getResourceManager();
-			
+			var pRes: IResourcePoolItem;
+
 			//if got empty dependency.
 			if (!isArray(pDeps.files) || pDeps.files.length === 0) {
 				this._onDependencyLoad(pDeps);
 			}
 
 			//walk single deps level
-			this.walk({files: pDeps.files}, (pDep: IDependens, i: int, iDepth?: uint): void => {
-				if (iDepth === 0) {
-					this.normalizeDepsPaths(pDeps, sRoot);
-					this.createDepsResources(pDeps);
-				}
-
+			this.walk({files: pDeps.files}, (pDep: IDependens, i: int): void => {
 				var pFiles: string[] = pDeps.files;
 				var pManager: DepsManager = this;
 				
@@ -106,11 +105,20 @@ module akra.util {
 						break;
 
 					case "afx":
-							// pManager._handleResourceEventOnce(pRmgr.effectDataPool.loadResource(pFiles[i]), SIGNAL(loaded),
-							// 	(pItem: IResourcePoolItem): void => {
-							// 		pManager._onDependencyLoad(pDeps, i);
-							// 	}
-							// );
+							pRes = pRmgr.effectDataPool.findResource(pFiles[i]);
+							
+							if (pRes.loadResource(pFiles[i])) {
+								pManager._handleResourceEventOnce(pRes, SIGNAL(loaded),
+									(pItem: IResourcePoolItem): void => {
+										LOG("[ LOADED ]  effectDataPool.loadResource(" + pFiles[i] + ")");
+										pManager._onDependencyLoad(pDeps, i);
+									}
+								);
+							}
+							else {
+								this.error(new Error("could not laod resource: " + pFiles[i]));
+							}
+							
 						break;
 
 					default:
@@ -134,11 +142,13 @@ module akra.util {
 			// debug_assert(isDefAndNotNull(pDeps.files) && isString(pDeps.files[i]), "something going wrong...");
 
 			if (isDef(i)) {
+				LOG("loaded dependency: " + pDeps.files[i]);
 				pDeps.files[i] = null;
 			}
 
 			for (var i: int = 0; i < pDeps.files.length; ++ i) {
 				if (!isNull(pDeps.files[i])) {
+					LOG("waiting for > " + pDeps.files[i]);
 					return;
 				}
 			};

@@ -13,7 +13,7 @@ module akra {
 		pCube.bind(SIGNAL(loaded), function (pCube: ICollada) {
 			check(pCube);
 
-			pCube.attachToScene(pScene.getRootNode());
+			//pCube.attachToScene(pScene.getRootNode());
 
 			run();
 		});

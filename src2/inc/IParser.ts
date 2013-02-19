@@ -137,6 +137,19 @@ module akra {
         getNextToken(): IToken;
         _getIndex(): uint;
         _setSource(sSource: string): void;
+        _setIndex(iIndex: uint): void;
+    }
+
+    export interface IParserState {
+        source: string;
+        index: uint;
+        fileName: string;
+        tree: IParseTree;
+        types: BoolMap;
+        stack: uint[];
+        token: IToken;
+        fnCallback: IFinishFunc;
+        caller: any;
     }
 
     export interface IParser {
@@ -162,9 +175,27 @@ module akra {
 
         getGrammarSymbols(): StringMap;
 
-        _getLexer(): ILexer;
-        _getSource(): string;
-        _setSource(sSource: string): void;
+        _saveState(): IParserState;
+        _loadState(pState: IParserState): void;
+        
+        // _getLexer(): ILexer;
+        // _getSource(): string;
+        // _getIndex(): uint;
+        // _getTypeMap(): BoolMap;
+        // _getStack(): uint[];
+        // _getToken(): IToken;
+        // _getCallback(): IFinishFunc;
+        // _getCaller(): any;
+
+        // _setParserState(sSource: string,
+        //                 iIndex: uint,
+        //                 sFileName: string,
+        //                 pTree: IParseTree,
+        //                 pTypes: BoolMap,
+        //                 pStack: uint[],
+        //                 pToken: IToken,
+        //                 fnCallback: IFinishFunc,
+        //                 pCaller: any): void;
     }
 }
 
