@@ -5,7 +5,7 @@ module akra {
 	asyncTest("Collada basic usage", () => {
 		shouldBeNotNull("Collada model must be laoded");
 
-		var pEngine: IEngine = createEngine({depsRoot: "src2/data"});
+		var pEngine: IEngine = createEngine({depsRoot: "../../../data"});
 		var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
 		var pCube: ICollada = pRmgr.loadModel("models/cube.dae");
 		var pScene: IScene3d = pEngine.getScene();

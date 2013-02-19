@@ -51,6 +51,32 @@ module akra.core {
 
 
 		constructor (pOptions: IEngineOptions = null) {
+			this._pResourceManager = new pool.ResourcePoolManager(this);
+			this._pSceneManager = new scene.SceneManager(this);
+			this._pParticleManager = null;
+
+#ifdef WEBGL
+			this._pRenderer = new webgl.WebGLRenderer(this);
+#else
+			CRITICAL("render system not specified");
+#endif
+
+
+			if (!this._pResourceManager.initialize()) {
+				debug_error('cannot initialize ResourcePoolManager');
+			}
+
+			if (!this._pSceneManager.initialize()) {
+				debug_error("cannot initialize SceneManager");
+			}
+
+			this._pTimer = util.UtilTimer.start();
+			this.pause(false);
+
+			this.parseOptions(pOptions);
+		}
+
+		private parseOptions(pOptions: IEngineOptions): void {
 			//== Depends Managment ====================================
 			
 			var pDeps: IDependens = Engine.DEPS;
@@ -76,27 +102,6 @@ module akra.core {
 
 			//===========================================================
 
-			this._pResourceManager = new pool.ResourcePoolManager(this);
-			this._pSceneManager = new scene.SceneManager(this);
-			this._pParticleManager = null;
-
-#ifdef WEBGL
-			this._pRenderer = new webgl.WebGLRenderer(this);
-#else
-			CRITICAL("render system not specified");
-#endif
-
-
-			if (!this._pResourceManager.initialize()) {
-				debug_error('cannot initialize ResourcePoolManager');
-			}
-
-			if (!this._pSceneManager.initialize()) {
-				debug_error("cannot initialize SceneManager");
-			}
-
-			this._pTimer = util.UtilTimer.start();
-			this.pause(false);
 		}
 
 		inline getScene(): IScene3d {
@@ -240,27 +245,28 @@ module akra.core {
 			this._isDepsLoaded = true;
 		}
 
-		static DEPS_ROOT: string = "src2/data/";
+		static DEPS_ROOT: string = "";
 		static DEPS: IDependens = 
 #ifdef DEBUG
 			{
 				files: [ 
-					"grammars/HLSL.gr" 
+					// "grammars/HLSL.gr" 
+					"models/cube.dae" 
 				],
 				deps: {
 						files: [
-							"effects/SystemEffects.afx",
-						    "effects/Plane.afx",
-						    "effects/mesh.afx",
-						    "effects/mesh_geometry.afx",
-						    "effects/mesh_texture.afx",
-						    "effects/TextureToScreen.afx",
-						    "effects/prepare_shadows.afx",
-						    "effects/prepareDeferredShading.afx",
-						    "effects/deferredShading.afx",
-						    "effects/apply_lights_and_shadows.afx",
-						    "effects/fxaa.afx",
-						    "effects/skybox.afx"
+							// "effects/SystemEffects.afx",
+						 //    "effects/Plane.afx",
+						 //    "effects/mesh.afx",
+						 //    "effects/mesh_geometry.afx",
+						 //    "effects/mesh_texture.afx",
+						 //    "effects/TextureToScreen.afx",
+						 //    "effects/prepare_shadows.afx",
+						 //    "effects/prepareDeferredShading.afx",
+						 //    "effects/deferredShading.afx",
+						 //    "effects/apply_lights_and_shadows.afx",
+						 //    "effects/fxaa.afx",
+						 //    "effects/skybox.afx"
 						]
 					}
 			};

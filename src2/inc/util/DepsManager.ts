@@ -13,14 +13,14 @@ module akra.util {
 	}
 
 	class DepsManager implements IDepsManager {
-		protected _pDepsLevel: IDependens = null;
 		protected _eState: EDepsManagerStates = EDepsManagerStates.IDLE;
 		protected _pEngine: IEngine;
-		protected _sRoot: string = null;
 
 		constructor (pEngine: IEngine) {
 			this._pEngine = pEngine;
 		}
+
+		inline getEngine(): IEngine { return this._pEngine; }
 
 		load(pDeps: IDependens, sRoot: string = null): bool {
 			if (!isDefAndNotNull(pDeps)) {
@@ -32,37 +32,69 @@ module akra.util {
 				return false;
 			}
 
-			if (isDefAndNotNull(sRoot)) {
-				this._sRoot = sRoot;
-			}
+			this.loadDeps(pDeps, sRoot);
 
-			this.loadLevel(pDeps);
+			return true;
 		}
 
-		private loadLevel(pDeps: IDependens): void {
-			this._pDepsLevel = pDeps;
+		private walk(pDeps: IDependens, fn: (pDeps: IDependens, i: int, iDepth?: uint) => void, iDepth: uint = 0): void {
+			var pFiles: string[] = pDeps.files;
 
-			var pFiles: string[] = pDeps.files || (new string[]);
-
-			for (var i: int = 0; i < pFiles.length; ++ i) {
-				var pPath: IPathinfo = util.pathinfo(pFiles[i]);
-
-				switch (pPath.ext.toLowerCase()) {
-					case "gr":
-					case "afx":
-							io.fopen(this._sRoot + "/" + pPath.toString(), "r").read((pErr: Error, sData: string): void => {
-								if (isDefAndNotNull(pErr)) {
-									ERROR(pErr);
-								}
-
-								LOG(sData);
-							});
-						break;
-					default:
-						CRITICAL("хуевое расширение!");
-				}	
-				
+			if (isDefAndNotNull(pFiles)) {
+				//normilize pathes to deps
+				for (var i: int = 0; i < pFiles.length; ++ i) {
+					fn.call(this, pDeps, i, iDepth);
+				}
 			}
+
+			if (isDefAndNotNull(pDeps.deps)) {
+				this.walk(pDeps.deps, fn, ++ iDepth);
+			}
+		}
+
+		private normalizeDepsPaths(pDeps: IDependens, sRoot: string): void {
+			this.walk(pDeps, (pDeps: IDependens, i: int): void => {
+				pDeps.files[i] = (sRoot || "") + "/" + pDeps.files[i];
+			});
+		}
+
+		private createDepsResources(pDeps: IDependens): void {
+			var pRmgr: IResourcePoolManager = this.getEngine().getResourceManager();
+			this.walk(pDeps, (pDeps: IDependens, i: int): void => {
+				var pFiles: string[] = pDeps.files;
+				switch (pathinfo(pFiles[i]).ext.toLowerCase()) {
+					case "dae":
+						if (!pRmgr.colladaPool.findResource(pFiles[i])) {
+							pRmgr.colladaPool.createResource(pFiles[i]);
+						}
+						break;
+				}
+			});
+		}
+
+		private loadDeps(pDeps: IDependens, sRoot: string = null): void {
+			this.walk(pDeps, (pDeps: IDependens, i: int, iDepth?: uint): void => {
+				if (iDepth === 0) {
+					this.normalizeDepsPaths(pDeps, sRoot);
+					this.createDepsResources(pDeps);
+
+					var pFiles: string[] = pDeps.files;
+
+					switch (pathinfo(pFiles[i]).ext.toLowerCase()) {
+						case "dae":
+								io.fopen(pFiles[i], "r").read((pErr: Error, sData: string): void => {
+									if (isDefAndNotNull(pErr)) {
+										ERROR(pErr);
+									}
+
+									LOG(sData);
+								});
+							break;
+						default:
+							WARNING("dependence " + pFiles[i] + " unknown, and will be skipped.");
+					}	
+				}
+			});
 		}
 
 		BEGIN_EVENT_TABLE(DepsManager);
