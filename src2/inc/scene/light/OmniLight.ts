@@ -83,7 +83,9 @@ module akra.scene.light {
 	              0, 0, 0, 1
 	            ]);
 
-			this.initializeTextures();
+	        if (this.isShadowCaster) {
+				this.initializeTextures();
+			}
 
 			return isOk;
 		};
@@ -100,20 +102,29 @@ module akra.scene.light {
 			return this._pShadowCasterCube;
 		};
 
-		private initializeTextures(): void {
-			if (!this.isShadowCaster) {
-				return;
+		/**
+		 * overridden setter isShadow caster,
+		 * if depth textures don't created then create depth textures
+		 */
+		set isShadowCaster(bValue: bool){
+			this._bCastShadows = bValue;
+			if(bValue && isNull(this._pDepthTextureCube)){
+				this.initializeTextures();
 			}
+		};
 
+		protected initializeTextures(): void {
 			var pEngine: IEngine = this.scene.getManager().getEngine();
 			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
 			var iSize: uint = this._iMaxShadowResolution;
 
+			this._pDepthTextureCube = new Array(6);
+
 			for (var i: int = 0; i < 6; ++ i) {
 
-				if (this._pDepthTextureCube[i]) {
-					this._pDepthTextureCube[i].destroyResource();
-				}
+				// if (this._pDepthTextureCube[i]) {
+				// 	this._pDepthTextureCube[i].destroyResource();
+				// }
 
 				var pDepthTexture: ITexture = this._pDepthTextureCube[i] = 
 					pResMgr.createTexture("depth_texture_" + <string><any>(i) + "_" + <string><any>this.getGuid());

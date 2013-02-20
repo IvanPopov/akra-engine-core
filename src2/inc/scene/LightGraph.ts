@@ -17,11 +17,11 @@ module akra.scene {
 			this.name = "LightGraph";
 		};
 
-		_findObjects(pCamera: ICamera, bFastSearch: bool = false): IObjectArray{
+		_findObjects(pCamera: ICamera, 
+				pResultArray?: IObjectArray = new util.ObjectArray(),
+				bFastSearch: bool = false): IObjectArray{
 			//while we ignore second parametr
 			//don't have normal implementation
-			
-			var pResult: IObjectArray = new util.ObjectArray();
 
 			var pList: IObjectList = this._pLightPoints;
 
@@ -30,14 +30,14 @@ module akra.scene {
 			while(isDefAndNotNull(pLightPoint)){
 				
 				if(pLightPoint._prepareForLighting(pCamera)){
-					LOG("light point added");
-					pResult.push(pLightPoint);
+					// LOG("light point added");
+					pResultArray.push(pLightPoint);
 				}
 
 				pLightPoint = pList.next();
 			}
 
-			return pResult;
+			return pResultArray;
 		};
 
 		protected attachObject(pNode: ISceneNode): void {

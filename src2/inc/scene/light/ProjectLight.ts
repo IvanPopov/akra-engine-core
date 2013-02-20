@@ -36,7 +36,9 @@ module akra.scene.light {
 			pCaster.setInheritance(ENodeInheritance.ALL);
 			pCaster.attachToParent(this);
 
-			this.initializeTextures();
+			if (this.isShadowCaster) {
+				this.initializeTextures();
+			}
 
 			return isOk;
 		};
@@ -53,18 +55,25 @@ module akra.scene.light {
 			return this._pShadowCaster;
 		};
 
-		private initializeTextures(): void {
-			if (!this.isShadowCaster) {
-				return;
+		/**
+		 * overridden setter isShadow caster,
+		 * if depth texture don't created then create depth texture
+		 */
+		set isShadowCaster(bValue: bool){
+			this._bCastShadows = bValue;
+			if(bValue && isNull(this._pDepthTexture)){
+				this.initializeTextures();
 			}
+		};
 
+		protected initializeTextures(): void {
 			var pEngine: IEngine = this.scene.getManager().getEngine();
 			var pResMgr: IResourcePoolManager = pEngine.getResourceManager();
 			var iSize: uint = this._iMaxShadowResolution;
 
-			if (isNull(this._pDepthTexture)){
-				this._pDepthTexture.destroyResource();
-			}
+			// if (!isNull(this._pDepthTexture)){
+			// 	this._pDepthTexture.destroyResource();
+			// }
 
 			var pDepthTexture: ITexture = this._pDepthTexture = 
 				pResMgr.createTexture("depth_texture_" + this.getGuid());
@@ -147,22 +156,44 @@ module akra.scene.light {
 
 			var pRawResult: IObjectArray = pShadowCaster.display(DL_DEFAULT);
 
-			var v3fLightPosition: IVec3 = this.worldPosition;
 
 			var pTestArray: IPlane3d[] = ProjectLight._pFrustumPlanes;
+			var pFrustumPlanesKeys: string[] = geometry.Frustum.frustumPlanesKeys;
+			var nAdditionalTestLength: int = 0;
 
-			//works only for projection and don't work for ortho projection
-
-			if(pShadowCaster.projectionMatrix.data[__44] == 1){
+			if(pShadowCaster.projectionMatrix.isOrthogonalProjection()){
 				//orthogonal projection
-				;
+				//defining light sight direction;
+				
+				var pLightFrustumVertices: IVec3[] = pShadowCaster.frustum.frustumVertices;
+
+				var v3fDirection: IVec3 = vec3(0.);
+
+				for(var i: int = 0; i<8;i++){
+					v3fDirection.add(pLightFrustumVertices[i]);
+				}
+
+				v3fDirection.normalize();
+
+				for(var i: int = 0; i<6; i++){
+					var sKey: string = pFrustumPlanesKeys[i];
+
+					var pPlane: IPlane3d = pCameraFrustum[sKey];
+
+					if(v3fDirection.dot(pPlane.normal) >= 0.){
+						//adding plane
+						
+						pTestArray[nAdditionalTestLength].set(pPlane);
+						nAdditionalTestLength++;
+					}
+				}
 			}
 			else{
-				//pShadowCaster.projectionMatrix.data[__43] == -1
 				//frustum projection
 
 				//create list for additional testing
-				var pFrustumPlanesKeys: string[] = geometry.Frustum.frustumPlanesKeys;
+				var v3fLightPosition: IVec3 = this.worldPosition;
+
 				for(var i: int = 0; i<6; i++){
 					var sKey: string = pFrustumPlanesKeys[i];
 
@@ -176,35 +207,36 @@ module akra.scene.light {
 					}
 
 					pTestArray[i].set(v3fNormal, fDistance);
-				}
+				}				
+				nAdditionalTestLength = 6;
+			}
 
-				for(var i:int = 0; i<pRawResult.length; i++){
-					var pObject: ISceneObject = pRawResult.value(i);
-					var pWorldBounds: IRect3d = pObject.worldBounds;
+			for(var i:int = 0; i<pRawResult.length; i++){
+				var pObject: ISceneObject = pRawResult.value(i);
+				var pWorldBounds: IRect3d = pObject.worldBounds;
 
-					//have object shadows?
-					if(pObject.hasShadows){
-						var j:int = 0
-						for(j = 0; j<6; j++){
-							var pPlane: IPlane3d = pTestArray[j];
+				//have object shadows?
+				if(pObject.hasShadows){
+					var j:int = 0
+					for(j = 0; j<nAdditionalTestLength; j++){
+						var pPlane: IPlane3d = pTestArray[j];
 
-							if(geometry.planeClassifyRect3d(pPlane, pWorldBounds) 
-									== EPlaneClassifications.PLANE_FRONT){
-								break;
-							}
-						}
-
-						if(j == 6){
-							pResult.push(pObject);
-						}	
-					}
-					else{
-						if(pCameraFrustum.testRect(pWorldBounds)){
-							pResult.push(pObject);
+						if(geometry.planeClassifyRect3d(pPlane, pWorldBounds) 
+								== EPlaneClassifications.PLANE_FRONT){
+							break;
 						}
 					}
-					
+
+					if(j == nAdditionalTestLength){
+						pResult.push(pObject);
+					}	
 				}
+				else{
+					if(pCameraFrustum.testRect(pWorldBounds)){
+						pResult.push(pObject);
+					}
+				}
+				
 			}
 
 			pShadowCaster._optimizeProjectionMatrix();

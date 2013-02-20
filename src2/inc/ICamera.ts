@@ -41,8 +41,6 @@ module akra {
     	readonly searchRect: IRect3d;
     	readonly frustum: IFrustum;
 
-
-
     	setParameter(eParam: ECameraParameters, pValue: any): void;
     	isConstantAspect(): bool;
     	

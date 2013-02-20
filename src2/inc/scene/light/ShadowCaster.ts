@@ -163,12 +163,11 @@ module akra.scene.light {
 		    var fZNear: float = v4fTmp1.z;
 		    var fZFar: float = m4fProj.unprojZ(fZRes_Far);
 
-		    if(m4fProjData[__44] == 1){
+		    if(m4fProj.isOrthogonalProjection()){
 		    	//ortho-projection
 		    	Mat4.orthogonalProjectionAsymmetric(fXLeft, fXRight, fYBottom, fYTop, -fZNear, -fZFar, this._m4fOptimizedProj);
 		    }
 		    else{
-		    	//m4fProjData[__43] == -1
 		    	//frustum
 		    	Mat4.frustum(fXLeft, fXRight, fYBottom, fYTop, -fZNear, -fZFar, this._m4fOptimizedProj);
 			}

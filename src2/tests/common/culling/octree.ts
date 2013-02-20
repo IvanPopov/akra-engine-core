@@ -68,7 +68,7 @@ module akra {
 	pLight.attachToParent(pScene3D.getRootNode());
 
 	pLight.attachToParent(pObject5);
-	// pLight.isShadowCaster = true;
+	pLight.isShadowCaster = true;
 
 	pLight.localMatrix = Mat4.fromYawPitchRoll(0*math.PI/6,0.,0.);
 

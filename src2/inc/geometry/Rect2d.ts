@@ -259,7 +259,7 @@ module akra.geometry{
 					this.y1 += fValue;
 				}
 				else{
-					var v2fValue: IVec2 = v2fValue;
+					var v2fValue: IVec2 = arguments[0];
 
 					this.x0 -= v2fValue.x;
 					this.x1 += v2fValue.x;
