@@ -128,7 +128,7 @@ module akra.fx {
 			return this._pOutVariable;
 		}
 
-		_usedAs(eUsedType: EFunctionType): void {
+		_markUsedAs(eUsedType: EFunctionType): void {
 			switch(eUsedType){
 				case EFunctionType.k_Vertex:
 					this._bUsedInVertex = true;
@@ -167,11 +167,11 @@ module akra.fx {
 			return this._bUsedAsPixel;
 		}
 
-		_usedInVertex(): void {
+		_markUsedInVertex(): void {
 			this._bUsedInVertex = true;
 		}
 
-		_usedInPixel(): void {
+		_markUsedInPixel(): void {
 			this._bUsedInPixel = true;
 		}
 
@@ -188,11 +188,11 @@ module akra.fx {
 		}
 
 		_checkVertexUsage(): bool {
-			return this._usedInVertex() ? this._isForVertex() : true;
+			return this._isUsedInVertex() ? this._isForVertex() : true;
 		}
 
 		_checkPixelUsage(): bool {
-			return this._usedInPixel() ? this._isForPixel() : true;
+			return this._isUsedInPixel() ? this._isForPixel() : true;
 		}
 
 		_checkDefenitionForVertexUsage(): bool {
@@ -319,7 +319,7 @@ module akra.fx {
 			this._pName.setParent(this);
 
 			this._pReturnType = new VariableTypeInstruction();
-			this._pReturnType.pushInVariableType(this._pReturnType);
+			this._pReturnType.pushInVariableType(pReturnType);
 			this._pReturnType.setParent(this);
 
 			this._pArguments = [];
@@ -355,6 +355,10 @@ module akra.fx {
 			return true;
 		}
 
+		inline getType(): IAFXVariableTypeInstruction {
+			return this.getReturnType();
+		}
+
 		inline getReturnType(): IAFXVariableTypeInstruction {
 			return this._pReturnType;
 		}
@@ -381,7 +385,7 @@ module akra.fx {
 			return null;
 		}
 		
-		_usedAs(eUsedType: EFunctionType): void {
+		_markUsedAs(eUsedType: EFunctionType): void {
 		}
 
 		_isUsedAs(eUsedType: EFunctionType): bool{
@@ -400,10 +404,10 @@ module akra.fx {
 			return true;
 		}
 
-		_usedInVertex(): void {
+		_markUsedInVertex(): void {
 		}
 
-		_usedInPixel(): void {
+		_markUsedInPixel(): void {
 		}
 
 		_isUsedInVertex(): bool {

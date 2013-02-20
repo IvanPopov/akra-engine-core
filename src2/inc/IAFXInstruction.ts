@@ -218,45 +218,47 @@ module akra {
         //type : IAFXUsageTypeInstruction
         //array: IAFXArrayInstruction
         //pointer : IAFXPointerInstruction
-        pushInVariableType(pVariableType: IAFXTypeInstruction): bool;
-        isolateType(): IAFXVariableTypeInstruction;
-        
-        addArrayIndex(pExpr: IAFXExprInstruction): void;
-
-        hasUsage(sUsageName: string): bool;
-
-        _usedForWrite(): bool;
-        _usedForRead(): bool;
-
         isPointer(): bool;
         isStrictPointer(): bool;
-        _setPointerToStrict(): void;
         isPointIndex(): bool;
 
+        isFromVariableDecl(): bool;
+        isFromTypeDecl(): bool;
+
+        addArrayIndex(pExpr: IAFXExprInstruction): void;
+        hasUsage(sUsageName: string): bool;
+
+        pushInVariableType(pVariableType: IAFXTypeInstruction): bool;
+        isolateType(): IAFXVariableTypeInstruction;
+        wrap(): IAFXVariableTypeInstruction;
+        clone(pRelationMap?: IAFXInstructionMap): IAFXVariableTypeInstruction;
+
         addPointIndex(isStrict?:bool): void;
-        _addPointIndexInDepth(): void;
+        setVideoBuffer(pBuffer: IAFXVariableDeclInstruction): void;
         getPointDim(): uint;
         getPointer(): IAFXVariableDeclInstruction;
-        setVideoBuffer(pBuffer: IAFXVariableDeclInstruction): void;
-        _setVideoBufferInDepth(): void;
         getVideoBuffer():IAFXVariableDeclInstruction;
         hasVideoBuffer(): bool;
         initializePointers(): void;
 
+        _usedForWrite(): bool;
+        _usedForRead(): bool;
 
-        wrap(): IAFXVariableTypeInstruction;
-        clone(pRelationMap?: IAFXInstructionMap): IAFXVariableTypeInstruction;
-
-        _setNextPointer(pPointer: IAFXVariableDeclInstruction): void;
         _containArray(): bool;
         _containSampler(): bool;
         _containPointer(): bool;
+
+        _setPointerToStrict(): void;
+        _addPointIndexInDepth(): void;
+        _setVideoBufferInDepth(): void;
 
         _setCloneHash(sHash: string, sStrongHash: string): void;
         _setCloneArrayIndex(pElementType: IAFXVariableTypeInstruction, 
                             pIndexExpr: IAFXExprInstruction, iLength: uint): void;
         _setClonePointeIndexes(nDim: uint, pPointerList: IAFXVariableDeclInstruction[]): void;
-        _setCloneFields(pFieldMap: IAFXIdExprMap): void;
+        _setCloneFields(pFieldMap: IAFXIdExprMap): void;      
+
+        _setNextPointer(pPointer: IAFXVariableDeclInstruction): void; 
     }
 
      export interface IAFXUsageTypeInstruction extends IAFXInstruction {
@@ -264,7 +266,7 @@ module akra {
         //type: IAFXTypeInstruction
         
         getTypeInstruction(): IAFXTypeInstruction;
-        setTypeInstruction(pType: IAFXTypeInstruction): bool;
+        setTypeInstruction(pType: IAFXTypeInstruction, isSetParent?: bool): bool;
 
         hasUsage(sUsage: string): bool;
         addUsage(sUsage: string): bool;
@@ -331,14 +333,14 @@ module akra {
         _addOutVariable(pVariable: IAFXVariableDeclInstruction): bool;
         _getOutVariable(): IAFXVariableDeclInstruction;
 
-        _usedAs(eUsedType: EFunctionType): void;
+        _markUsedAs(eUsedType: EFunctionType): void;
         _isUsedAs(eUsedType: EFunctionType): bool;
         _isUsedAsFunction(): bool;
         _isUsedAsVertex(): bool;
         _isUsedAsPixel(): bool;
         _isUsed(): bool;
-        _usedInVertex(): void;
-        _usedInPixel(): void;
+        _markUsedInVertex(): void;
+        _markUsedInPixel(): void;
         _isUsedInVertex(): bool;
         _isUsedInPixel(): bool;
         _checkVertexUsage(): bool;

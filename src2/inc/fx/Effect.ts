@@ -177,7 +177,7 @@ module akra.fx {
 				for(var j: uint = 0; j < pArguments.length; j++){
 					isOk = false;
 
-					if(pArguments[j].getType().isEqual(pTestedArguments[j].getType())){
+					if(!pArguments[j].getType().isEqual(pTestedArguments[j].getType())){
 						break;
 					}
 
@@ -689,6 +689,10 @@ module akra.fx {
 		}
 
 		private inline setAnalyzedNode(pNode: IParseNode): void {
+			if(this._pAnalyzedNode !== pNode){
+				// debug_print("Analyze node: ", pNode); 
+				//.name + (pNode.value ?  " --> value: " + pNode.value + "." : "."));
+			}
 			this._pAnalyzedNode = pNode;
 		}
 
@@ -1061,7 +1065,7 @@ module akra.fx {
         					}
 
         					if(!pUsedFunction._isUsedInVertex()){
-	        					pUsedFunction._usedInVertex();        						
+	        					pUsedFunction._markUsedInVertex();        						
         						isNewUsageSet = true;
         					}
 
@@ -1076,7 +1080,7 @@ module akra.fx {
         					}
 
         					if(!pUsedFunction._isUsedInPixel()){
-	        					pUsedFunction._usedInPixel();       				
+	        					pUsedFunction._markUsedInPixel();       				
 	        					isNewUsageSet = true;
         					}
         				}
@@ -1085,6 +1089,8 @@ module akra.fx {
         		}
 
         	}
+
+        	return;
         }	
 
         private generateShadersFromFunctions(): void {
@@ -1170,6 +1176,8 @@ module akra.fx {
         }
 
       	private analyzeUsageType(pNode: IParseNode): IAFXUsageTypeInstruction {
+      		this.setAnalyzedNode(pNode);
+
         	var pChildren: IParseNode[] = pNode.children;
 		    var i: uint = 0;
 		    var pType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
@@ -1177,7 +1185,7 @@ module akra.fx {
 		    for (i = pChildren.length - 1; i >= 0; i--) {
 		        if (pChildren[i].name === "Type") {
 		        	var pMainType: IAFXTypeInstruction = this.analyzeType(pChildren[i]);
-		        	pType.setTypeInstruction(pMainType);
+		        	pType.setTypeInstruction(pMainType, false);
 		        }
 		        else if (pChildren[i].name === "Usage") {
 		        	var sUsage: string = this.analyzeUsage(pChildren[i]);
@@ -1237,11 +1245,15 @@ module akra.fx {
         }
 
         private analyzeUsage(pNode: IParseNode): string {
+        	this.setAnalyzedNode(pNode);
+      		
         	pNode = pNode.children[0];
         	return pNode.value;
         }
 
         private analyzeVariable(pNode: IParseNode, pUsageType: IAFXUsageTypeInstruction): IAFXVariableDeclInstruction {
+        	this.setAnalyzedNode(pNode);
+      		
         	var pChildren: IParseNode[] = pNode.children;
 
         	var pVarDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
@@ -1286,6 +1298,8 @@ module akra.fx {
         }
 
         private analyzeVariableDim(pNode: IParseNode, pVariableDecl: IAFXVariableDeclInstruction): void {
+			this.setAnalyzedNode(pNode);
+      		
 			var pChildren: IParseNode[] = pNode.children;
 			var pVariableType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pVariableDecl.getType();
 
@@ -1317,10 +1331,14 @@ module akra.fx {
         }
 
         private analyzeAnnotation(pNode:IParseNode): IAFXAnnotationInstruction {
+        	this.setAnalyzedNode(pNode);
+      		
         	return null;
         }
 
         private analyzeSemantic(pNode:IParseNode): string {
+        	this.setAnalyzedNode(pNode);
+      		
         	var sSemantic: string = pNode.children[0].value;
 			// var pDecl: IAFXDeclInstruction = <IAFXDeclInstruction>this._pCurrentInstruction;
 			// pDecl.setSemantic(sSemantic);	
@@ -1328,6 +1346,8 @@ module akra.fx {
         }
 
         private analyzeInitializer(pNode:IParseNode): IAFXExprInstruction {     
+        	this.setAnalyzedNode(pNode);
+      		
         	return null;   	
         }
 
@@ -1478,6 +1498,8 @@ module akra.fx {
         }
 
         private analyzeSamplerState(pNode: IParseNode): SamplerStateInstruction {
+        	this.setAnalyzedNode(pNode);
+      		
         	return null;
         }
 
@@ -1573,7 +1595,7 @@ module akra.fx {
 	        		this.getCurrentAnalyzedFunction()._addUsedFunction(pFunction);
 	        	}
 
-	        	pFunction._usedAs(EFunctionType.k_Function);
+	        	pFunction._markUsedAs(EFunctionType.k_Function);
 
 	        	pExpr = pFunctionCallExpr;
         	}
@@ -1596,9 +1618,9 @@ module akra.fx {
 
         	var pChildren: IParseNode[] = pNode.children;
         	var pExpr: ConstructorCallInstruction = new ConstructorCallInstruction();
-        	var pExprType: IAFXVariableTypeInstruction;
+        	var pExprType: IAFXVariableTypeInstruction = null;
         	var pArguments: IAFXExprInstruction[] = null;
-        	var pConstructorType: IAFXTypeInstruction;
+        	var pConstructorType: IAFXTypeInstruction = null;
         	var i: uint = 0;
 
         	pConstructorType = this.analyzeType(pChildren[pChildren.length - 1]);
@@ -1609,7 +1631,7 @@ module akra.fx {
         	}
 
         	if(pChildren.length > 3){        		
-        		var pArgumentExpr: IAFXExprInstruction;
+        		var pArgumentExpr: IAFXExprInstruction = null;
 
         		pArguments = [];
 
@@ -1930,14 +1952,14 @@ module akra.fx {
         	var pChildren: IParseNode[] = pNode.children;
         	var sOperator: string = pNode.children[1].value;
         	var pExpr: ArithmeticExprInstruction = new ArithmeticExprInstruction();
-        	var pLeftExpr: IAFXExprInstruction;
-        	var pRightExpr: IAFXExprInstruction;
-			var pLeftType: IAFXVariableTypeInstruction;
-        	var pRightType: IAFXVariableTypeInstruction;
-        	var pExprType: IAFXVariableTypeInstruction;
+        	var pLeftExpr: IAFXExprInstruction = null;
+        	var pRightExpr: IAFXExprInstruction = null;
+			var pLeftType: IAFXVariableTypeInstruction = null;
+        	var pRightType: IAFXVariableTypeInstruction = null;
+        	var pExprType: IAFXVariableTypeInstruction = null;
         	
         	pLeftExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
-        	pRightExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
+        	pRightExpr = this.analyzeExpr(pChildren[0]);
 
         	pLeftType = <IAFXVariableTypeInstruction>pLeftExpr.getType();
         	pRightType = <IAFXVariableTypeInstruction>pRightExpr.getType();
@@ -2245,7 +2267,7 @@ module akra.fx {
 		    for (i = pChildren.length - 1; i >= 0; i--) {
 		        if (pChildren[i].name === "StructDecl") {
 		        	var pMainType: IAFXTypeInstruction = this.analyzeStructDecl(pChildren[i]);
-		        	pType.setTypeInstruction(pMainType);
+		        	pType.setTypeInstruction(pMainType, false);
 
 		        	var pTypeDecl: IAFXTypeDeclInstruction = new TypeDeclInstruction();
 		        	pTypeDecl.push(pMainType, true);
@@ -2577,7 +2599,7 @@ module akra.fx {
 		    for (i = pChildren.length - 1; i >= 0; i--) {
 		        if (pChildren[i].name === "Type") {
 		        	var pMainType: IAFXTypeInstruction = this.analyzeType(pChildren[i]);
-		        	pType.setTypeInstruction(pMainType);
+		        	pType.setTypeInstruction(pMainType, false);
 		        }
 		        else if (pChildren[i].name === "ParamUsage") {
 		        	var sUsage: string = this.analyzeUsage(pChildren[i]);
@@ -3105,7 +3127,7 @@ module akra.fx {
         		}
         	}
 
-        	pShaderFunc._usedAs(eShaderType);
+        	pShaderFunc._markUsedAs(eShaderType);
         }
 
         private resumeTechniqueAnalysis(pTechnique: IAFXTechniqueInstruction): void {
@@ -3215,7 +3237,7 @@ module akra.fx {
         		}
 
         		if(this.isScalarType(pRightType)){
-        			return pLeftType;
+        			return pLeftBaseType;
         		}
 
         		if(sOperator === "*" || sOperator === "*="){

@@ -53,6 +53,10 @@ module akra.fx {
         	return (<IAFXIdInstruction>this._pInstructionList[1]).getName();
         }
 
+        getNameId(): IAFXIdInstruction {
+                return <IAFXIdInstruction>this._pInstructionList[1];
+        }
+
         isUniform(): bool {
         	return this.getType().hasUsage("uniform");
         }

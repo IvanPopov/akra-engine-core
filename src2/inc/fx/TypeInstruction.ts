@@ -77,7 +77,7 @@ module akra.fx {
 			}
 			else {
 				var pUsageType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
-				pUsageType.push(pVariableType, false);
+				pUsageType.setTypeInstruction(pVariableType, false);
 
 				this.push(pUsageType, true);
 				return false;
@@ -89,7 +89,7 @@ module akra.fx {
 			var pUsageType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
 			
 			pVariableType.push(pUsageType, true);
-			pUsageType.push(this, false);
+			pUsageType.setTypeInstruction(this, false);
 
 			return pVariableType;
 		}
@@ -257,6 +257,34 @@ module akra.fx {
 
 			return this._isReadable;
 		}
+
+		isFromVariableDecl(): bool {
+			var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+			if(eParentType === EAFXInstructionTypes.k_VariableDeclInstruction){
+				return true;
+			}
+			else if(eParentType === EAFXInstructionTypes.k_VariableTypeInstruction){
+				return (<IAFXVariableTypeInstruction>this.getParent()).isFromVariableDecl();
+			}
+			else {
+				return false;
+			}
+		}
+
+        isFromTypeDecl(): bool {
+        	var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+			if(eParentType === EAFXInstructionTypes.k_TypeDeclInstruction){
+				return true;
+			}
+			else if(eParentType === EAFXInstructionTypes.k_VariableTypeInstruction){
+				return (<IAFXVariableTypeInstruction>this.getParent()).isFromVariableDecl();
+			}
+			else {
+				return false;
+			}
+        }
 
 		inline _canWrite(isWritable: bool): void {
 			this._isWritable = isWritable;
@@ -634,9 +662,12 @@ module akra.fx {
 			return this._pType;
 		} 
 
-		setTypeInstruction(pType: IAFXTypeInstruction): bool {
+		setTypeInstruction(pType: IAFXTypeInstruction, isSetParent?: bool = false): bool {
 			//TODO: check compatibility test for type and usages 
 			this._pType = pType;
+			if(isSetParent) {
+				pType.setParent(this);
+			}
 			return true;
 		}
 
@@ -722,8 +753,7 @@ module akra.fx {
 				 sRealFieldName?: string = sFieldName): void {
 			
 			var pFieldType: VariableTypeInstruction = new VariableTypeInstruction();
-			pFieldType.push(new UsageTypeInstruction(), true);
-			pFieldType.getInstructions()[0].push(pType, false);
+			pFieldType.pushInVariableType(pType);
 			pFieldType._canWrite(isWrite);
 
 			var pFieldId: IAFXIdInstruction = new IdInstruction();
