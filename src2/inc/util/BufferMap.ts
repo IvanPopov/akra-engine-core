@@ -203,8 +203,8 @@ module akra.util {
 		flow(pVertexData: IVertexData): int;
 		flow(iFlow: uint, pVertexData: IVertexData): int;
 		flow(iFlow, pData?): int {
-			var pFlow: IDataFlow;
-			var pVertexData: IVertexData;
+			var pFlow: IDataFlow = null;
+			var pVertexData: IVertexData = null;
 
 		    if (arguments.length < 2) {
 		        pVertexData = <IVertexData>arguments[0];

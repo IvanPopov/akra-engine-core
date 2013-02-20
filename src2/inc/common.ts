@@ -400,8 +400,6 @@ module akra {
             default:
                 ERROR('unknown data/image type used');
         }
-
-        return 0;
     }
 
     

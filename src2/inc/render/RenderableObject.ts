@@ -102,7 +102,7 @@ module akra.render {
 		switchRenderMethod(csName: string): bool;
 		switchRenderMethod(csName: any): bool {
 			var pTechnique: IRenderTechnique;
-			var sName: string;
+			var sName: string = null;
 
 			if (isString(arguments[0])) {
 				sName = <string>csName;

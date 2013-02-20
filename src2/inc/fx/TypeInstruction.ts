@@ -534,7 +534,7 @@ module akra.fx {
 			}
 
 			if(!isNull(this._pFieldIdMap)){
-				var sFieldName: string;
+				var sFieldName: string = null;
 				var pCloneFieldMap: IAFXIdExprMap = <IAFXIdExprMap>{};
 
 				for(sFieldName in this._pFieldIdMap){

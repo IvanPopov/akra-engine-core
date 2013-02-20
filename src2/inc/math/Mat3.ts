@@ -583,7 +583,7 @@ module akra.math {
 		    }
 		    else if(fMax == y2){
 		    	//максимальная компонента берется положительной
-		        var y: float = Math.sqrt(y2); x
+		        var y: float = Math.sqrt(y2); 
 
 		        q4fDestination.x = (a21 + a12)/4/y;
 		        q4fDestination.y = y;
@@ -626,7 +626,7 @@ module akra.math {
 			var isRotScale: bool = true; 
 
 		    //понадобятся если порядок умножения был другим
-		    var m3fScaleRot: IMat3, m3fScaleRotTransposed: IMat3;
+		    var m3fScaleRot: IMat3 = null, m3fScaleRotTransposed: IMat3 = null;
 
 		    //было отражение или нет
     		var scaleSign: int = (m3fRotScale.determinant() >= 0.) ? 1 : -1;

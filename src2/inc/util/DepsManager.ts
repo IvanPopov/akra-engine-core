@@ -138,12 +138,12 @@ module akra.util {
 			pRsc.bind(sSignal, fn);
 		}
 
-		_onDependencyLoad(pDeps: IDependens, i?: int): void {
+		_onDependencyLoad(pDeps: IDependens, n?: int): void {
 			// debug_assert(isDefAndNotNull(pDeps.files) && isString(pDeps.files[i]), "something going wrong...");
 
-			if (isDef(i)) {
-				LOG("loaded dependency: " + pDeps.files[i]);
-				pDeps.files[i] = null;
+			if (isDef(n)) {
+				LOG("loaded dependency: " + pDeps.files[n]);
+				pDeps.files[n] = null;
 			}
 
 			for (var i: int = 0; i < pDeps.files.length; ++ i) {
@@ -166,7 +166,7 @@ module akra.util {
 			// BROADCAST(error, CALL(pErr));
 			
 			error(pErr: Error): void {
-				throw pErr;
+				if (true) throw pErr;
 				EMIT_BROADCAST(error, _CALL(pErr));
 			}
 

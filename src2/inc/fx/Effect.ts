@@ -617,7 +617,7 @@ module akra.fx {
 		}
 
 		private addFieldsToVectorFromSuffixObject(pSuffixMap: BoolMap, pType: IAFXTypeInstruction, sBaseType: string) {
-			var sSuffix: string;
+			var sSuffix: string = null;
 
 			for(sSuffix in pSuffixMap){
 				var sFieldTypeName: string = sBaseType + ((sSuffix.length > 1) ? sSuffix.length.toString() : "");
@@ -2111,7 +2111,7 @@ module akra.fx {
         private analyzeSimpleExpr(pNode: IParseNode): IAFXExprInstruction {
         	this.setAnalyzedNode(pNode);
         	
-        	var pInstruction: IAFXLiteralInstruction;
+        	var pInstruction: IAFXLiteralInstruction = null;
         	var sName: string = pNode.name;
         	var sValue: string = pNode.value;
 
@@ -3261,7 +3261,7 @@ module akra.fx {
         		}
         	}
 
-        	return null;
+        	//return null;
         }
 
         private isBadForConstOperator(sOperator: string): bool {

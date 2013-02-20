@@ -225,7 +225,7 @@ function preprocess() {
 	console.log("\n> preprocessing started (" + this.process.pid + ")\n");
 
 	var capabilityOptions = [
-		"-D inline=/**@inline*/",
+		//"-D inline=/**@inline*/",
 		"-D protected=/**@protected*/",
 		"-D const=/**@const*/var",
 		"-D struct=class",
@@ -254,7 +254,7 @@ function preprocess() {
 	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -j -+ -W 0 -k " + 
 		capabilityMacro + " " + pOptions.files.join(" ")).
 		split(" ");
-	//console.log(argv.join(" "));
+	console.log(cmd + " " + argv.join(" "));
 	var mcpp = spawn(cmd, argv, {maxBuffer: BUFFER_SIZE});
 	var stdout = '';
 
@@ -321,12 +321,13 @@ function compile() {
 		pOptions.baseDir + "/tsc.js -c --target ES5  " + 
 		pOptions.baseDir + "/fixes.d.ts " + 
 		//pOptions.baseDir + "/WebGL.d.ts " + 
-		pOptions.pathToTemp + " --out " + 
-		pOptions.outputFolder + "/" + pOptions.outputFile + 
+		pOptions.pathToTemp + " --out " +
+		pOptions.outputFolder + "/" + pOptions.outputFile +
+        " --cflowu --const " +
 		// (pOptions.compress? " --comments --jsdoc ": "") + 
 		(pOptions.declaration? " --declaration ": "") +
 		" ").split(" ");
-
+	console.log(cmd + " " + argv.join(" "));
 	var node = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE,  stdio: 'inherit' });
 
 	node.on('exit', function (code) {

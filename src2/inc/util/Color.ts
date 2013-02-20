@@ -343,7 +343,7 @@ module akra.util {
 			var delta: float = vMax - vMin;
 
 			var brightness: float = vMax;
-			var hue: float;
+			var hue: float = 0.;
 			var saturation: float;
 
 			if (math.isRealEqual(delta, 0.0, 1e-6)) {

@@ -414,6 +414,9 @@ module akra.webgl {
         }
     }
 
+    /**
+     * Convert GL format to EPixelFormat.
+     */
     export function getClosestAkraFormat(iGLFormat: int, iGLDataType: int): EPixelFormats {
         switch (iGLFormat) {
 
@@ -439,7 +442,7 @@ module akra.webgl {
 	                    return EPixelFormats.B5G6R5;
 	                default:
 	                    return EPixelFormats.R8G8B8;
-            	};
+            	}
             case GL_RGBA:
                 switch(iGLDataType) {
 	                case GL_UNSIGNED_SHORT_5_5_5_1:
@@ -470,7 +473,7 @@ module akra.webgl {
             default:
                 //TODO: not supported
                 return EPixelFormats.A8R8G8B8;
-        };
+        }
     }
 
     export function getMaxMipmaps(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats) : int {

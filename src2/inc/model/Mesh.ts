@@ -549,7 +549,8 @@ module akra.model {
                 pSubMesh.data.index(iData, DeclUsages.INDEX0);
 
                 // pSubMesh.applyFlexMaterial(".MaterialBoundingSphere");
-                pMaterial = pSubMesh.material;//pSubMesh.getFlexMaterial(".MaterialBoundingSphere");
+                // //pSubMesh.getFlexMaterial(".MaterialBoundingSphere");
+                pMaterial = pSubMesh.material;
                 pMaterial.emissive = new Color(1.0, 0.0, 0.0, 1.0);
                 pMaterial.diffuse  = new Color(1.0, 0.0, 0.0, 1.0);
                 pMaterial.ambient  = new Color(1.0, 0.0, 0.0, 1.0);

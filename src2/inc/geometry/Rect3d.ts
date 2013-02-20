@@ -197,7 +197,7 @@ module akra.geometry {
 		subSelf(fValue: float): IRect3d;
 		subSelf(v3fVec: IVec3): IRect3d;
 		subSelf(v3fVec?): IRect3d{
-			if(isFloat(fValue)){
+			if(isFloat(arguments[0])){
 				var fValue: float = arguments[0];
 
 				this.x0 -= fValue;

@@ -228,7 +228,7 @@ module akra.core.pool {
         findResource(pCode, sName): IResourcePoolItem {
             var pPool: IResourcePool = this.findResourcePool(pCode);
             var pResult: IResourcePoolItem = null;
-            var iHandle: int;
+            var iHandle: int = 0;
 
             if (isString(arguments[1])) {
                 iHandle = pPool.findResourceHandle(sName);
