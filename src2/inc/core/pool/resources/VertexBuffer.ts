@@ -21,12 +21,11 @@ module akra.core.pool.resources {
 
 		constructor (/*pManager: IResourcePoolManager*/) {
 			super(/*pManager*/);
-
 		}
 
-		create(iByteSize: uint, iFlags?: uint, pData?: Uint8Array): bool;
-		create(iByteSize: uint, iFlags?: uint, pData?: ArrayBufferView): bool;
-		create(iByteSize: uint, iFlags?: uint, pData?: any): bool {
+		// create(iByteSize: uint, iFlags?: uint, pData?: Uint8Array): bool;
+		create(iByteSize: uint, iFlags?: uint, pData?: ArrayBufferView): bool{
+		// create(iByteSize: uint, iFlags?: uint, pData?: any): bool {
 			super.create(iFlags || 0);
 
 			if (TEST_ANY(iFlags, EHardwareBufferFlags.BACKUP_COPY)) {
@@ -76,7 +75,7 @@ module akra.core.pool.resources {
 			var iTemp: int;
 			var iStride: int = 0;
 			var iAligStart: int;
-			
+
 			while(true) {
 				
 				pHole[0] = {start:0, end: this.byteLength};		
@@ -140,8 +139,7 @@ module akra.core.pool.resources {
 				pHole.sort((a: IBufferHole, b: IBufferHole): number => ((a.end - a.start) - (b.end - b.start))); 
 				
 				
-				
-				if(isInt(pDeclData)) {
+				if(!isInt(pDeclData)) {
 					pDecl = createVertexDeclaration(pDeclData);
 					iStride = pDecl.stride;	
 				}

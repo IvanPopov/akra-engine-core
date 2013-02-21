@@ -51,6 +51,7 @@ module akra.data {
 				this._iStride = <uint>pDecl;
 			}
 			else {
+				this._iStride = pDecl.stride;
 				this.setVertexDeclaration(pDecl);	
 			}
 

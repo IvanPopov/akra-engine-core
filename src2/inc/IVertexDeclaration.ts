@@ -1,6 +1,7 @@
 #ifndef IVERTEXDECLARATION_TS
 #define IVERTEXDECLARATION_TS
 
+#define UNKNOWN_OFFSET MAX_INT32
 
 module akra {
 
@@ -91,20 +92,20 @@ module akra {
 
 	
 
-	export function VE_CUSTOM(sUsage: string, eType: EDataTypes = EDataTypes.FLOAT, iCount: uint = 1, iOffset?: uint): IVertexElementInterface {
+	export function VE_CUSTOM(sUsage: string, eType: EDataTypes = EDataTypes.FLOAT, iCount: uint = 1, iOffset?: uint = UNKNOWN_OFFSET): IVertexElementInterface {
 		return {count: iCount, type: eType, usage: sUsage, offset: iOffset};
 	}
 
-	export function VE_FLOAT(sName: string, iOffset?: uint): IVertexElementInterface { return VE_CUSTOM(sName, EDataTypes.FLOAT, 1, iOffset); };
-	export function VE_FLOAT2(sName: string, iOffset: uint = 2): IVertexElementInterface { return VE_CUSTOM(sName, EDataTypes.FLOAT, 2, iOffset); };
-	export function VE_FLOAT3(sName: string, iOffset: uint = 3): IVertexElementInterface { return VE_CUSTOM(sName, EDataTypes.FLOAT, 3, iOffset); };
-	export function VE_FLOAT4(sName: string, iOffset: uint = 4): IVertexElementInterface { return VE_CUSTOM(sName, EDataTypes.FLOAT, 4, iOffset); };
-	export function VE_FLOAT4x4(sName: string, iOffset: uint = 16): IVertexElementInterface { return VE_CUSTOM(sName, EDataTypes.FLOAT, 16, iOffset); };
-	export function VE_VEC2(sName: string, iOffset: uint = 2): IVertexElementInterface { return VE_CUSTOM(sName, EDataTypes.FLOAT, 2, iOffset); };
-	export function VE_VEC3(sName: string, iOffset: uint = 3): IVertexElementInterface { return VE_CUSTOM(sName, EDataTypes.FLOAT, 3, iOffset); };
-	export function VE_VEC4(sName: string, iOffset: uint = 4): IVertexElementInterface { return VE_CUSTOM(sName, EDataTypes.FLOAT, 4, iOffset); };
-	export function VE_MAT4(sName: string, iOffset: uint = 16): IVertexElementInterface { return VE_CUSTOM(sName, EDataTypes.FLOAT, 16, iOffset); };
-	export function VE_INT(sName: string, iOffset: uint): IVertexElementInterface { return VE_CUSTOM(sName, EDataTypes.INT, 1, iOffset);};
+	export function VE_FLOAT(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 1, iOffset); };
+	export function VE_FLOAT2(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 2, iOffset); };
+	export function VE_FLOAT3(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 3, iOffset); };
+	export function VE_FLOAT4(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 4, iOffset); };
+	export function VE_FLOAT4x4(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 16, iOffset); };
+	export function VE_VEC2(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 2, iOffset); };
+	export function VE_VEC3(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 3, iOffset); };
+	export function VE_VEC4(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 4, iOffset); };
+	export function VE_MAT4(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.FLOAT, 16, iOffset); };
+	export function VE_INT(sUsage: string, iOffset: uint = UNKNOWN_OFFSET): IVertexElementInterface { return VE_CUSTOM(sUsage, EDataTypes.INT, 1, iOffset);};
 
 	export function VE_END(iOffset: uint = 0): IVertexElementInterface { return VE_CUSTOM(DeclUsages.END, EDataTypes.UNSIGNED_BYTE, 0, iOffset); };
 

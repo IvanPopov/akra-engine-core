@@ -58,18 +58,20 @@ module akra.core.pool.resources {
 			return true;
 		}
 
-		writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
-		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
-		writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool { 
-			ASSERT((iOffset + iSize) <= this.byteLength);
-
+		// writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
+		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool{
+		// writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool { 
+			
 			if (arguments.length < 3) {
 				iOffset = 0;
 				iSize = pData.byteLength;
 			}
+			
+			ASSERT((iOffset + iSize) <= this.byteLength);
 
-
-			memcpy(this._pData.buffer, 0, (<ArrayBufferView>pData).buffer, iOffset, iSize);
+			if(isDefAndNotNull(pData)){
+				memcpy(this._pData.buffer, 0, (<ArrayBufferView>pData).buffer, iOffset, iSize);
+			}
 			this.notifyAltered();
 
 			return true;

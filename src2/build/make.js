@@ -172,7 +172,8 @@ function parseArguments() {
 				break;
 			case '-o':
             case '--out':
-                readKey("outputFolder", ++ i);
+                readKey("outputFolder", ++i);
+                console.log(process.argv[i]);
                 break;
 			case '-d':
 			case '--build':
@@ -269,7 +270,7 @@ function preprocess() {
 
 	mcpp.on('exit', function (code) {
 	  console.log('preprocessing exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
-
+	  
 	  if (code == 0) {
 	  	pOptions.pathToTemp = pOptions.outputFolder + "/" + pOptions.tempFile;
 
@@ -313,7 +314,7 @@ function compress(sFile) {
 }
 
 function compile() {
-	//console.log(this);
+   
 	console.log("\n> compilation started (" + this.process.pid + ")  \n");
 
 	var cmd = "node";
@@ -327,14 +328,17 @@ function compile() {
 		// (pOptions.compress? " --comments --jsdoc ": "") + 
 		(pOptions.declaration? " --declaration ": "") +
 		" ").split(" ");
+
 	console.log(cmd + " " + argv.join(" "));
-	var node = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE,  stdio: 'inherit' });
+    
+	var node = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE, stdio: 'inherit' });
 
 	node.on('exit', function (code) {
 	  console.log('compilation exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
 
 	  if (code == 0) {
 	  	var sOutputFile = pOptions.outputFolder + "/" + pOptions.outputFile;
+
 	  	console.log("compiled to: ", sOutputFile);
 
 		fs.unlink(pOptions.pathToTemp, function (err) {
@@ -567,21 +571,25 @@ function packTest(sDir, sFile, sName, pData) {
 	console.log("\nWebGL debug: " + (pOptions.webglDebug? "ON": "OFF"));
 	
 
-	var sTempFile = sFile + ".temp";
+	var sTempFile = sFile + ".temp.js";
 
 	var cmd = "node";
+
 	var argv = (pOptions.baseDir + "/make.js -o " + sTempFile +" -t CORE " + 
 		(pOptions.capability? " --ES6 ": "") + 
 		(pOptions.compress? " --compress ": "") + 
 		(pOptions.declaration? " --declaration ": "") + 
 		(pOptions.debug? " --debug ": "") + 
 		sFile).split(" ");
+
+	console.log(cmd + " " + argv.join(" "));
+	
 	var node = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE, stdio: 'inherit' });
 
 	node.on('exit', function (code) {
-		console.log("test " + sFile + " packed with code " + code);
+	    console.log("test " + sFile + " packed with code " + code);
 		if (code == 0) {
-
+        
 			var compileTestMacro = function (sFormat) {
 				compileTest(
 					sDir, 
@@ -820,4 +828,3 @@ if (pOptions.target.tests) {
 
 	buildTests(pOptions.testDir);
 }
-

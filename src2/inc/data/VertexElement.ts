@@ -22,7 +22,7 @@ module akra.data {
 			eType: EDataTypes = EDataTypes.FLOAT, 
 			eUsage: string = DeclarationUsages.POSITION,
 			//mark invalid offset, for determine true offset in VertexDeclaration::_update();
-			iOffset: int = MAX_INT32) {
+			iOffset: int = UNKNOWN_OFFSET) {
 
 			this.count = nCount;
 			this.type = eType;
@@ -53,15 +53,15 @@ module akra.data {
 		    else {
 		        this.semantics = this.usage;
 		    }
-		}
+		};
 
 		clone(): IVertexElement {
 			return new VertexElement(this.count, this.type, this.usage, this.offset);
-		}
+		};
 
 		inline static hasUnknownOffset(pElement: IVertexElementInterface): bool {
-			return pElement.offset === MAX_INT32;
-		}
+			return pElement.offset === UNKNOWN_OFFSET;
+		};
 
 		toString(): string {
 #ifdef DEBUG
@@ -79,7 +79,8 @@ module akra.data {
 		        return s;
 		    }
 
-		    var s = "[ USAGE: " + _an(this.usage, 12) + ", OFFSET " + _an(this.offset, 4) + " ]";
+		    var s = "[ USAGE: " + _an(this.usage, 12) + ", OFFSET " + _an(this.offset, 4) 
+		    				+ ", SIZE " + _an(this.size, 4) +" ]";
 
 		    return s;
 #else

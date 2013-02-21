@@ -26,9 +26,9 @@ module akra.webgl {
 			super(/*pManager*/);
 		}
 
-		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: Uint8Array = null): bool;
-		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: ArrayBufferView = null): bool;
-		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: any = null): bool {
+		// create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: Uint8Array = null): bool;
+		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: ArrayBufferView = null): bool{
+		// create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: any = null): bool {
 			
 			iByteSize = math.max(iByteSize, WEBGL_VERTEX_BUFFER_MIN_SIZE);
 
@@ -134,7 +134,7 @@ module akra.webgl {
 			else {
 				pU8Data = new Uint8Array(pData.buffer, pData.byteOffset, pData.byteLength);
 			}
-
+			
 			pU8Data = pU8Data.subarray(0, iSize);
 
 			pWebGLContext.bufferSubData(GL_ARRAY_BUFFER, iOffset, pU8Data);
@@ -156,8 +156,8 @@ module akra.webgl {
 
 		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
-			
-			if(this.isBackupPresent()) {
+
+			if(!this.isBackupPresent()) {
 				return false;		
 			}
 
@@ -195,7 +195,7 @@ module akra.webgl {
 			
 			pData = new Uint8Array(this._iByteSize);
 			
-			if (this.readData(pData)) {
+			if (!this.readData(pData)) {
 				debug_warning("cannot read data from buffer");
 				return false;
 			}
