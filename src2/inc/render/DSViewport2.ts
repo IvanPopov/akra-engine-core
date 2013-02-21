@@ -289,8 +289,8 @@ module akra.render {
 		                (<UniformOmniShadow>pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
 		                
 		                var pDepthCube: ITexture[] 					= pOmniLight.getDepthTextureCube();
-		                var pShadowCasterCube: IShadowCasterCube 	= pOmniLight.getShadowCaster();
-		                var pOptimizedProjCube: IMat4[] 			= pOmniLight.optimizedProjectionCube;
+		                var pShadowCasterCube: IShadowCaster[] 	= pOmniLight.getShadowCaster();
+		                //var pOptimizedProjCube: IMat4[] 			= pOmniLight.optimizedProjectionCube;
 		                
 		                for (j = 0; j < 6; ++ j) {
 		                    pShadowCaster = pShadowCasterCube[j];
@@ -300,7 +300,7 @@ module akra.render {
 		                    
 		                    (<UniformOmniShadow>pUniformData).setSampler(sTexture, j);
 		                    pUniforms.samplersOmni.push((<UniformOmniShadow>pUniformData).SHADOW_SAMPLER[j]);
-		                    (<UniformOmniShadow>pUniformData).setMatrix(m4fToLightSpace,pOptimizedProjCube[j], j);
+		                    (<UniformOmniShadow>pUniformData).setMatrix(m4fToLightSpace,pShadowCasterCube[j].optimizedProjection, j);
 		                }
 
 		                pUniforms.omniShadows.push(<UniformOmniShadow>pUniformData);

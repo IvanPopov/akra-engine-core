@@ -8,7 +8,6 @@ module akra{
 	IFACE(IObjectArray);
 
 	export interface ILightGraph extends IDisplayList{
-		//_findObjects(pCamera: ICamera, bQuickSearch: bool): IObjectArray;
 	};
 };
 

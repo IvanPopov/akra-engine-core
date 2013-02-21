@@ -15,10 +15,6 @@ module akra {
 
 		_optimizeProjectionMatrix(): void;
 	}
-
-	export interface IShadowCasterCube {
-		[i: int]: IShadowCaster;
-	}
 }
 
 #endif

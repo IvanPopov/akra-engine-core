@@ -450,21 +450,22 @@ module akra.scene {
 		    this._pFreeNodePool.push(pNode);
 		};
 
-		/**
-		 * Test rect and frustum
-		 */
-		
-		_buildSearchResults(pSearchRect: IRect3d, pOptionalFrustum?: IFrustum): IObjectArray{
-			var pResult: IObjectArray = new util.ObjectArray();
-			if(arguments.length === 1){
-				this._buildSearchResultsByRect(pSearchRect, this._pHead, pResult);
+		_findObjects(pCamera: ICamera, 
+				pResultArray?: IObjectArray = new util.ObjectArray(),
+				bFastSearch: bool = false): IObjectArray{
+
+			//while we ignore second parametr
+			//don't have normal implementation
+
+			if(!isDef(pCamera.frustum)){
+				this._buildSearchResultsByRect(pCamera.searchRect, this._pHead, pResultArray);
 			}
 			else{
-				this._buildSearchResultsByRectAndFrustum(pSearchRect, pOptionalFrustum,
-				 this._pHead, pResult);
+				this._buildSearchResultsByRectAndFrustum(pCamera.searchRect, 
+									pCamera.frustum, this._pHead, pResultArray);
 			}
 
-			return pResult;
+			return pResultArray;
 		};
 
 		protected _buildSearchResultsByRect(pSearchRect: IRect3d, pNode: IOcTreeNode, pResultList: IObjectArray){
@@ -558,15 +559,8 @@ module akra.scene {
 			}
 		};
 
-		_findObjects(pCamera: ICamera, bFastSearch: bool = false): IObjectArray{
-			//while we ignore second parametr
-			//don't have normal implementation
-			
-			return this._buildSearchResults(pCamera.searchRect, pCamera.frustum);
-		};
-
 		protected attachObject(pNode: ISceneNode): void {
-			console.error(pNode, isSceneObject(pNode));
+			// console.error(pNode, isSceneObject(pNode));
 			if(isSceneObject(pNode)){
 				var pOcTreeNode: IOcTreeNode = this.findTreeNode(<ISceneObject>pNode);
 				pOcTreeNode.addMember(<ISceneObject>pNode);

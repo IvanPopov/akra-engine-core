@@ -24,8 +24,6 @@ module akra {
 		getAndSetFreeNode(iLevel: int, iComposedIndex: int, pParentNode: IOcTreeNode): IOcTreeNode;
 		deleteNodeFromTree(pNode: IOcTreeNode): void;
 
-		_buildSearchResults(pSearchRect: IRect3d, pOptionalFrustum?: IFrustum): IObjectArray;
-
 		//debug metod
 		_toSimpleObject(pNode?: IOcTreeNode): any;
 

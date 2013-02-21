@@ -1307,7 +1307,7 @@ module akra.math {
 			var v3fScreen: IVec3 = <IVec3>v;
 			var x: float, y: float, z: float;
 
-			if(pData[__44] === 1.){
+			if(this.isOrthogonalProjection()){
 				//orthogonal projection case
 				
 				z = (v3fScreen.z - pData[__34])/pData[__33];
@@ -1315,7 +1315,6 @@ module akra.math {
 				x = (v3fScreen.x - pData[__14])/pData[__11];
 			}
 			else{
-				//pData[__43] === -1
 				//frustum case
 				
 				z = -pData[__34]/(pData[__33] + v3fScreen.z);
@@ -1334,7 +1333,7 @@ module akra.math {
 		unprojZ(fZ: float): float{
 			var pData: Float32Array = this.data;
 
-			if(pData[__44] === 1.){
+			if(this.isOrthogonalProjection()){
 				//orthogonal projection case
 				return (fZ - pData[__34])/pData[__33];
 			}
@@ -1343,6 +1342,22 @@ module akra.math {
 				//frustum case
 				return -pData[__34]/(pData[__33] + fZ);
 			}
+		};
+
+		inline isOrthogonalProjection(): bool{
+			// var pData: Float32Array = this.data;
+
+			// if(pData[__44] === 1){
+			// 	//orthogonal projection
+			// 	return true;
+			// }
+			// else{
+			// 	//pData[__43] === -1
+			// 	//frustum projection
+			// 	return false;
+			// }
+			 
+			return ((this.data[__44] === 1) ? true : false);
 		};
 
 		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, m4fDestination?: IMat4): IMat4;
