@@ -31,6 +31,10 @@ module akra.fx {
 			return false;
 		}
 
+		getType(): IAFXVariableTypeInstruction{
+			return <IAFXVariableTypeInstruction>super.getType();
+		}
+
 		clone(pRelationMap?:IAFXInstructionMap): IAFXExprInstruction {
 			return <IAFXExprInstruction>super.clone(pRelationMap);
 		}
@@ -44,7 +48,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._iValue = 0;
-			this._pType = getEffectBaseType("int");
+			this._pType = getEffectBaseType("int").getVariableType();
 			this._eInstructionType = EAFXInstructionTypes.k_IntInstruction;
 		}
 
@@ -75,7 +79,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._fValue = 0.0;
-			this._pType = getEffectBaseType("float");
+			this._pType = getEffectBaseType("float").getVariableType();
 			this._eInstructionType = EAFXInstructionTypes.k_FloatInstruction;
 		}
 
@@ -107,7 +111,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._bValue = true;
-			this._pType = getEffectBaseType("bool");
+			this._pType = getEffectBaseType("bool").getVariableType();
 			this._eInstructionType = EAFXInstructionTypes.k_BoolInstruction;
 		}
 
@@ -140,7 +144,7 @@ module akra.fx {
 		constructor() {
 			super();
 			this._sValue = "";
-			this._pType = getEffectBaseType("string");
+			this._pType = getEffectBaseType("string").getVariableType();
 			this._eInstructionType = EAFXInstructionTypes.k_StringInstruction;
 		}
 
@@ -164,13 +168,15 @@ module akra.fx {
 	}
 
 	export class IdExprInstruction extends ExprInstruction implements IAFXIdExprInstruction {
+		private _pType: IAFXVariableTypeInstruction = null;
+		
 		constructor(){
 			super();
 			this._pInstructionList = [null];
 			this._eInstructionType = EAFXInstructionTypes.k_IdExprInstruction;
 		}
 
-		getType(): IAFXTypeInstruction {
+		getType(): IAFXVariableTypeInstruction {
 			if(!isNull(this._pType)){
 				return this._pType;
 			}

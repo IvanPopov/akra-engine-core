@@ -145,6 +145,8 @@ module akra {
 
         _getInstructionType(): EAFXInstructionTypes;
         _getInstructionID(): uint;
+        _getScope(): uint;
+        _setScope(iScope: uint): void;
 
         check(eStage: ECheckStage): bool;
         getLastError(): IAFXInstructionError;
@@ -181,11 +183,14 @@ module akra {
         isArray(): bool;
         isNotBaseArray(): bool;
         isComplex(): bool;
+
         isWritable(): bool;
         isReadable(): bool;
 
         _canWrite(isWritable: bool): void;
         _canRead(isReadable: bool): void;
+
+        // markAsUsed(): void;
 
         /**
          * For using in AFXEffect
@@ -224,6 +229,8 @@ module akra {
 
         isFromVariableDecl(): bool;
         isFromTypeDecl(): bool;
+        _getVarDeclName(): string;
+        _getTypeDeclName(): string;
 
         addArrayIndex(pExpr: IAFXExprInstruction): void;
         hasUsage(sUsageName: string): bool;
@@ -232,6 +239,7 @@ module akra {
         isolateType(): IAFXVariableTypeInstruction;
         wrap(): IAFXVariableTypeInstruction;
         clone(pRelationMap?: IAFXInstructionMap): IAFXVariableTypeInstruction;
+        blend(pVariableType?: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction;
 
         addPointIndex(isStrict?:bool): void;
         setVideoBuffer(pBuffer: IAFXVariableDeclInstruction): void;
@@ -241,8 +249,12 @@ module akra {
         hasVideoBuffer(): bool;
         initializePointers(): void;
 
-        _usedForWrite(): bool;
-        _usedForRead(): bool;
+        _markUsedForWrite(): bool;
+        _markUsedForRead(): bool;
+        /**
+         * VariableType are input parametr or it has been writing at once
+         */
+        _goodForRead(): bool;
 
         _containArray(): bool;
         _containSampler(): bool;
@@ -329,6 +341,8 @@ module akra {
         setImplementation(pImplementation: IAFXStmtInstruction): void;
 
         clone(pRelationMap?: IAFXInstructionMap): IAFXFunctionDeclInstruction;
+
+        addUsedVariableType(pType: IAFXVariableTypeInstruction, eUsedMode: EVarUsedMode): bool;
         
         _addOutVariable(pVariable: IAFXVariableDeclInstruction): bool;
         _getOutVariable(): IAFXVariableDeclInstruction;
@@ -396,7 +410,8 @@ module akra {
         simplify(): bool;
         getEvalValue(): any;
         isConst(): bool;
-
+        getType(): IAFXVariableTypeInstruction;
+        
         clone(pRelationMap?: IAFXInstructionMap): IAFXExprInstruction;
     }
 

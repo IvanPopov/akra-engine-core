@@ -21,6 +21,7 @@ module akra.fx {
 
     #define UNDEFINE_LENGTH 0xffffff
     #define UNDEFINE_SIZE 0xffffff
+    #define UNDEFINE_SCOPE 0xffffff
     #define UNDEFINE_NAME "undef"
 
 	export class Instruction implements IAFXInstruction{
@@ -31,6 +32,7 @@ module akra.fx {
 		protected readonly _eInstructionType: EAFXInstructionTypes = 0;
 		protected _pLastError: IAFXInstructionError = null;
 		protected _iInstructionID: uint = 0;
+		protected _iScope: uint = UNDEFINE_SCOPE;
 		private static _nInstructionCounter: uint = 0;
 
 		inline getParent(): IAFXInstruction{
@@ -64,6 +66,15 @@ module akra.fx {
 		inline _getInstructionID(): uint {
 			return this._iInstructionID;
 		}
+
+		_getScope(): uint {
+			return this._iScope !== UNDEFINE_SCOPE ? this._iScope : 
+						!isNull(this.getParent()) ? this.getParent()._getScope() : UNDEFINE_SCOPE;
+		}
+
+        inline _setScope(iScope: uint): void {
+        	this._iScope = iScope;
+        }
 
 		inline getLastError(): IAFXInstructionError {
 			return this._pLastError;

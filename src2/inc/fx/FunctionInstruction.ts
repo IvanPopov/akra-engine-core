@@ -18,14 +18,14 @@ module akra.fx {
 		protected _bUsedAsFunction: bool = false;
 		protected _bUsedAsVertex: bool = false;
 		protected _bUsedAsPixel: bool = false;
-
-		protected _bUsedInVertex: bool = false;
-		protected _bUsedInPixel: bool = false;
-		
 		protected _bCanUsedAsFunction: bool = true;
 
+		protected _bUsedInVertex: bool = false;
+		protected _bUsedInPixel: bool = false;		
+		
 		protected _pParseNode: IParseNode = null;
-		protected _iScope: uint = 0;
+		protected _iImplementationScope: uint = UNDEFINE_SCOPE;
+
 		protected _pUsedFunctionMap: IAFXFunctionDeclMap = null;
 		protected _pUsedFunctionList: IAFXFunctionDeclInstruction[] = null;
 		protected _isInBlackList: bool = false;
@@ -66,20 +66,20 @@ module akra.fx {
 			return this._pFunctionDefenition.getReturnType();
 		}
 
-		inline setParseNode(pNode: IParseNode): void {
+		inline _setImplementationScope(iScope: uint): void {
+			this._iImplementationScope = iScope;
+		}
+
+		inline _getImplementationScope(): uint {
+			return this._iImplementationScope;
+		}
+
+		inline _setParseNode(pNode: IParseNode): void {
 			this._pParseNode = pNode;
 		}
 
-		inline setScope(iScope: uint): void {
-			this._iScope = iScope;
-		}
-
-		inline getParseNode(): IParseNode {
+		inline _getParseNode(): IParseNode {
 			return this._pParseNode;
-		}
-
-		inline getScope(): uint {
-			return this._iScope;
 		}
 
 		setFunctionDef(pFunctionDef: IAFXDeclInstruction): void {
@@ -109,6 +109,42 @@ module akra.fx {
 			pClone._initAfterClone();
 
 			return pClone;
+		}
+
+		addUsedVariableType(pType: IAFXVariableTypeInstruction, eUsedMode: EVarUsedMode): bool {
+			if(pType._getInstructionType() !== EAFXInstructionTypes.k_VariableTypeInstruction){
+				LOG(pType);
+				return false;
+			}
+
+			if ((eUsedMode === EVarUsedMode.k_Read && !pType.isReadable()) ||
+				(eUsedMode === EVarUsedMode.k_Write && !pType.isWritable())){
+				return false;
+			}
+
+			if(pType.isFromVariableDecl()){
+				if(pType._getScope() > this._iImplementationScope) {
+					LOG("---> local variable : " + pType._getVarDeclName());
+				}
+				else if(pType._getScope() === this._iImplementationScope){
+					LOG("---> Parameter : " + pType._getVarDeclName());
+				}
+				else {
+					if(pType._getScope() !== 0){
+						ERROR("Wrong variable scope. : " + pType._getVarDeclName());
+					}
+					else{
+						LOG("---> global variable : " + pType._getVarDeclName());
+					}	
+				}
+			}
+			else if(pType.isFromTypeDecl()){
+				LOG("---> Type : " + pType._getTypeDeclName());
+			}
+			else {
+				LOG("---> something else", pType);
+			}
+			return true;
 		}
 
 		_addOutVariable(pVariable: IAFXVariableDeclInstruction): bool {
@@ -473,6 +509,10 @@ module akra.fx {
 
         _convertToPixelShader(): IAFXFunctionDeclInstruction {
         	return null;
+        }
+
+        addUsedVariableType(pType: IAFXVariableTypeInstruction, eUsedMode: EVarUsedMode): bool {
+        	return false;
         }
 
 	}

@@ -45,6 +45,9 @@ module akra.fx {
 		private _isPointIndex: bool = null;
 		private _isConst: bool = null;
 		private _iLength: uint = UNDEFINE_LENGTH;
+
+		private _isFromVariableDecl: bool = null;
+		private _isFromTypeDecl: bool = null;
 		
 		private _pArrayIndexExpr: IAFXExprInstruction = null;
 		private _pArrayElementType: IAFXVariableTypeInstruction = null;
@@ -259,30 +262,82 @@ module akra.fx {
 		}
 
 		isFromVariableDecl(): bool {
-			var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
-
-			if(eParentType === EAFXInstructionTypes.k_VariableDeclInstruction){
-				return true;
+			if(!isNull(this._isFromVariableDecl)){
+				return this._isFromVariableDecl;
 			}
-			else if(eParentType === EAFXInstructionTypes.k_VariableTypeInstruction){
-				return (<IAFXVariableTypeInstruction>this.getParent()).isFromVariableDecl();
+
+			if(isNull(this.getParent())){
+				this._isFromVariableDecl = false;
 			}
 			else {
-				return false;
+				var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+				if(eParentType === EAFXInstructionTypes.k_VariableDeclInstruction){
+					this._isFromVariableDecl = true;
+				}
+				else if(eParentType === EAFXInstructionTypes.k_VariableTypeInstruction){
+					this._isFromVariableDecl = (<IAFXVariableTypeInstruction>this.getParent()).isFromVariableDecl();
+				}
+				else {
+					this._isFromVariableDecl = false;
+				}
 			}
+
+			return this._isFromVariableDecl;
 		}
 
         isFromTypeDecl(): bool {
-        	var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
-
-			if(eParentType === EAFXInstructionTypes.k_TypeDeclInstruction){
-				return true;
+        	if(!isNull(this._isFromTypeDecl)){
+				return this._isFromTypeDecl;
 			}
-			else if(eParentType === EAFXInstructionTypes.k_VariableTypeInstruction){
-				return (<IAFXVariableTypeInstruction>this.getParent()).isFromVariableDecl();
+
+        	if(isNull(this.getParent())){
+				this._isFromTypeDecl = false;
 			}
 			else {
-				return false;
+	        	var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+				if(eParentType === EAFXInstructionTypes.k_TypeDeclInstruction){
+					this._isFromTypeDecl = true;
+				}
+				else if(eParentType === EAFXInstructionTypes.k_VariableTypeInstruction){
+					this._isFromTypeDecl = (<IAFXVariableTypeInstruction>this.getParent()).isFromVariableDecl();
+				}
+				else {
+					this._isFromTypeDecl = false;
+				}
+			}
+
+			return this._isFromTypeDecl;
+        }
+
+        _getVarDeclName(): string {
+        	if(!this.isFromVariableDecl()){
+        		return "";
+        	}
+
+        	var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+			if(eParentType === EAFXInstructionTypes.k_VariableDeclInstruction){
+				return (<IAFXVariableDeclInstruction>this.getParent()).getName();
+			}
+			else{
+				return (<IAFXVariableTypeInstruction>this.getParent())._getVarDeclName();
+			}
+        }
+
+        _getTypeDeclName(): string {
+        	if(!this.isFromVariableDecl()){
+        		return "";
+        	}
+
+        	var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+			if(eParentType === EAFXInstructionTypes.k_VariableDeclInstruction){
+				return (<IAFXTypeDeclInstruction>this.getParent()).getName();
+			}
+			else{
+				return (<IAFXVariableTypeInstruction>this.getParent())._getTypeDeclName();
 			}
         }
 
@@ -358,7 +413,7 @@ module akra.fx {
 			return this.getSubType().hasField(sFieldName);
 		}
 
-		_usedForWrite(): bool{
+		_markUsedForWrite(): bool{
 			if(!this.isWritable()){
 				return false;
 			}
@@ -367,13 +422,17 @@ module akra.fx {
 			return true;
 		}
 
-        _usedForRead(): bool {
+        _markUsedForRead(): bool {
         	if(!this.isReadable()){
         		return false;
         	}
 
         	this._bUsedForRead = true;
         	return true;
+        }
+
+        _goodForRead(): bool {
+        	return false;
         }
 
 		hasFieldWithSematic(sSemantic: string): bool {
@@ -586,6 +645,10 @@ module akra.fx {
 			}
 
 			return pClone;
+		}
+
+		blend(pVariableType?: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
+			return null;
 		}
 
 		inline _setNextPointer(pNextPointIndex: IAFXVariableDeclInstruction): void {

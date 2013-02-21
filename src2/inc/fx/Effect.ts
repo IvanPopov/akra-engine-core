@@ -689,10 +689,10 @@ module akra.fx {
 		}
 
 		private inline setAnalyzedNode(pNode: IParseNode): void {
-			if(this._pAnalyzedNode !== pNode){
-				// debug_print("Analyze node: ", pNode); 
-				//.name + (pNode.value ?  " --> value: " + pNode.value + "." : "."));
-			}
+			// if(this._pAnalyzedNode !== pNode){
+			// 	// debug_print("Analyze node: ", pNode); 
+			// 	//.name + (pNode.value ?  " --> value: " + pNode.value + "." : "."));
+			// }
 			this._pAnalyzedNode = pNode;
 		}
 
@@ -1531,6 +1531,7 @@ module akra.fx {
         	var pFunction: IAFXFunctionDeclInstruction = null;
         	var pFunctionId: IAFXIdExprInstruction = null;
         	var i: uint = 0;
+        	var pCurrentAnalyzedFunction: IAFXFunctionDeclInstruction = this.getCurrentAnalyzedFunction();
 
         	if(pChildren.length > 3){        		
         		var pArgumentExpr: IAFXExprInstruction;
@@ -1557,13 +1558,13 @@ module akra.fx {
         		return null;
         	}
 
-        	if(!isNull(this.getCurrentAnalyzedFunction())){
+        	if(!isNull(pCurrentAnalyzedFunction)){
         		if(!pFunction._isForPixel()) {
-        			this.getCurrentAnalyzedFunction()._setForPixel(false);
+        			pCurrentAnalyzedFunction._setForPixel(false);
         		}
 
         		if(!pFunction._isForVertex()) {
-        			this.getCurrentAnalyzedFunction()._setForVertex(false);
+        			pCurrentAnalyzedFunction._setForVertex(false);
         		}
         	}
 
@@ -1584,6 +1585,39 @@ module akra.fx {
 	        		}
 
 	        		var pFunctionArguments: IAFXVariableDeclInstruction[] = (<FunctionDeclInstruction>pFunction).getArguments();
+	        		if(!isNull(pCurrentAnalyzedFunction)){
+		        		for(i = 0; i < pArguments.length; i++){
+		        			var isOk: bool = false;
+
+		        			if(pFunctionArguments[i].getType().hasUsage("out")){
+		        				isOk = pCurrentAnalyzedFunction.addUsedVariableType(pArguments[i].getType(), EVarUsedMode.k_Write);
+		        				if(!isOk){
+		        					this._error(EFFECT_BAD_TYPE_FOR_WRITE);
+		        					return null;
+		        				}
+		        			}
+		        			else if(pFunctionArguments[i].getType().hasUsage("inout")){
+		        				isOk = pCurrentAnalyzedFunction.addUsedVariableType(pArguments[i].getType(), EVarUsedMode.k_Write);
+		        				if(!isOk){
+		        					this._error(EFFECT_BAD_TYPE_FOR_WRITE);
+		        					return null;
+		        				}
+
+		        				isOk = pCurrentAnalyzedFunction.addUsedVariableType(pArguments[i].getType(), EVarUsedMode.k_Read);
+		        				if(!isOk){
+		        					this._error(EFFECT_BAD_TYPE_FOR_READ);
+		        					return null;
+		        				}
+		        			}
+		        			else {
+		        				isOk = pCurrentAnalyzedFunction.addUsedVariableType(pArguments[i].getType(), EVarUsedMode.k_Read);
+		        				if(!isOk){
+		        					this._error(EFFECT_BAD_TYPE_FOR_READ);
+		        					return null;
+		        				}
+		        			}
+		        		}
+	        		}
 
 	        		for(i = pArguments.length; i < pFunctionArguments.length; i++){
 	        			pFunctionCallExpr.push(pFunctionArguments[i].getInitializeExpr(), false);
@@ -1591,8 +1625,8 @@ module akra.fx {
 	        		
 	        	}
 
-	        	if(!isNull(this.getCurrentAnalyzedFunction())){
-	        		this.getCurrentAnalyzedFunction()._addUsedFunction(pFunction);
+	        	if(!isNull(pCurrentAnalyzedFunction)){
+	        		pCurrentAnalyzedFunction._addUsedFunction(pFunction);
 	        	}
 
 	        	pFunction._markUsedAs(EFunctionType.k_Function);
@@ -1604,6 +1638,18 @@ module akra.fx {
 
         		pSystemCallExpr.setSystemCallFunction(pFunction);
         		pSystemCallExpr.fillByArguments(pArguments);
+
+        		if(!isNull(pCurrentAnalyzedFunction)){
+        			for(i = 0; i < pArguments.length; i++){
+        				var isOk: bool = false;
+        				
+        				isOk = pCurrentAnalyzedFunction.addUsedVariableType(pArguments[i].getType(), EVarUsedMode.k_Read);
+        				if(!isOk) {
+        					this._error(EFFECT_BAD_TYPE_FOR_READ);
+        					return null;
+        				}
+        			}
+        		}
 
         		pExpr = pSystemCallExpr;
         	}
@@ -1872,6 +1918,14 @@ module akra.fx {
         		return null;
         	}
 
+        	if(!isNull(this.getCurrentAnalyzedFunction())){
+        		this.getCurrentAnalyzedFunction().addUsedVariableType(pUnaryExprType, EVarUsedMode.k_Read);
+
+        		if(sOperator === "++" || sOperator === "--"){
+        			this.getCurrentAnalyzedFunction().addUsedVariableType(pUnaryExprType, EVarUsedMode.k_Write);
+        		}
+        	}
+
         	pExpr.setOperator(sOperator);
         	pExpr.setType(pExprType);
         	pExpr.push(pUnaryExpr, true);
@@ -1891,6 +1945,16 @@ module akra.fx {
 
         	pExprType = this.analyzeConstTypeDim(pChildren[2]);
         	pCastedExpr = this.analyzeExpr(pChildren[0]);
+
+        	if(!isNull(this.getCurrentAnalyzedFunction())){
+        		var isOk: bool = false;
+
+        		isOk = this.getCurrentAnalyzedFunction().addUsedVariableType(<IAFXVariableTypeInstruction>pCastedExpr.getType(), EVarUsedMode.k_Read);
+        		if(!isOk){
+        			this._error(EFFECT_BAD_TYPE_FOR_READ);
+        			return null;
+        		}
+        	}
 
         	pExpr.setType(pExprType);
         	pExpr.push(pExprType, true);
@@ -1936,6 +2000,28 @@ module akra.fx {
         		return null;
         	}
 
+        	if(!isNull(this.getCurrentAnalyzedFunction())){
+        		var isOk: bool = false;
+
+        		isOk = this.getCurrentAnalyzedFunction().addUsedVariableType(pConditionType, EVarUsedMode.k_Read);
+        		if(!isOk){
+        			this._error(EFFECT_BAD_TYPE_FOR_READ);
+        			return null;
+        		}
+
+        		isOk = this.getCurrentAnalyzedFunction().addUsedVariableType(pTrueExprType, EVarUsedMode.k_Read);
+        		if(!isOk){
+        			this._error(EFFECT_BAD_TYPE_FOR_READ);
+        			return null;
+        		}
+
+        		isOk = this.getCurrentAnalyzedFunction().addUsedVariableType(pFalseExprType, EVarUsedMode.k_Read);
+        		if(!isOk){
+        			this._error(EFFECT_BAD_TYPE_FOR_READ);
+        			return null;
+        		}
+        	}
+
         	pExpr.setType(pTrueExprType);
         	pExpr.push(pConditionExpr, true);
         	pExpr.push(pTrueExpr, true);
@@ -1973,6 +2059,22 @@ module akra.fx {
         		return null;
         	}
 
+        	if(!isNull(this.getCurrentAnalyzedFunction())){
+        		var isOk: bool = false;
+        		
+        		isOk = this.getCurrentAnalyzedFunction().addUsedVariableType(pLeftType, EVarUsedMode.k_Read);
+        		if(!isOk){
+        			this._error(EFFECT_BAD_TYPE_FOR_READ);
+        			return null;
+        		}
+
+        		isOk = this.getCurrentAnalyzedFunction().addUsedVariableType(pRightType, EVarUsedMode.k_Read);
+        		if(!isOk){
+        			this._error(EFFECT_BAD_TYPE_FOR_READ);
+        			return null;
+        		}
+        	}
+
         	pExpr.setOperator(sOperator);
         	pExpr.setType(pExprType);
         	pExpr.push(pLeftExpr, true);
@@ -2008,6 +2110,22 @@ module akra.fx {
         													   leftTypeName: pLeftType.toString(),
         													   rightTypeName: pRightType.toString() });
         		return null;
+        	}
+
+        	if(!isNull(this.getCurrentAnalyzedFunction())){
+        		var isOk: bool = false;
+
+        		isOk = this.getCurrentAnalyzedFunction().addUsedVariableType(pLeftType, EVarUsedMode.k_Read);
+        		if(!isOk){
+        			this._error(EFFECT_BAD_TYPE_FOR_READ);
+        			return null;
+        		}
+
+        		isOk = this.getCurrentAnalyzedFunction().addUsedVariableType(pRightType, EVarUsedMode.k_Read);
+        		if(!isOk){
+        			this._error(EFFECT_BAD_TYPE_FOR_READ);
+        			return null;
+        		}
         	}
 
         	pExpr.setOperator(sOperator);
@@ -2051,6 +2169,22 @@ module akra.fx {
         		return null;
         	}
 
+        	if(!isNull(this.getCurrentAnalyzedFunction())){
+        		var isOk: bool = false;
+
+        		isOk = this.getCurrentAnalyzedFunction().addUsedVariableType(pLeftType, EVarUsedMode.k_Read);
+        		if(!isOk){
+        			this._error(EFFECT_BAD_TYPE_FOR_READ);
+        			return null;
+        		}
+        		
+        		isOk = this.getCurrentAnalyzedFunction().addUsedVariableType(pRightType, EVarUsedMode.k_Read);
+        		if(!isOk){
+        			this._error(EFFECT_BAD_TYPE_FOR_READ);
+        			return null;
+        		}
+        	}
+
         	pExpr.setOperator(sOperator);
         	pExpr.setType(pBoolType);
         	pExpr.push(pLeftExpr, true);
@@ -2077,13 +2211,7 @@ module akra.fx {
         	pRightExpr = this.analyzeExpr(pChildren[0]);
 
         	pLeftType = <IAFXVariableTypeInstruction>pLeftExpr.getType();
-        	pRightType = <IAFXVariableTypeInstruction>pRightExpr.getType();
-
-        	if(!pLeftType._usedForWrite()){
-        		this._error(EFFECT_BAD_ASSIGNMENT_TYPE_FOR_WRITE);
-        		return null;
-        	}
-        	//pRightType._usedForRead();
+        	pRightType = <IAFXVariableTypeInstruction>pRightExpr.getType();	
 
         	if(sOperator !== "="){
         		pExprType = this.checkTwoOperandExprTypes(sOperator, pLeftType, pRightType);	
@@ -2103,6 +2231,22 @@ module akra.fx {
         		this._error(EFFECT_BAD_ASSIGNMENT_OPERATION, { leftTypeName: pLeftType.toString(),	
         													   rightTypeName: pRightType.toString()});
         	}
+
+        	if(!isNull(this.getCurrentAnalyzedFunction())){
+        		var isOk: bool = false;
+        		
+        		isOk = this.getCurrentAnalyzedFunction().addUsedVariableType(pLeftType, EVarUsedMode.k_Write);
+        		if(!isOk){
+        			this._error(EFFECT_BAD_TYPE_FOR_WRITE);
+        			return null;
+        		}
+
+        		isOk = this.getCurrentAnalyzedFunction().addUsedVariableType(pRightType, EVarUsedMode.k_Read);
+        		if(!isOk){
+        			this._error(EFFECT_BAD_TYPE_FOR_READ);
+        			return null;
+        		}
+        	} 
 
         	pExpr.setOperator(sOperator);
         	pExpr.setType(pExprType);
@@ -2425,8 +2569,8 @@ module akra.fx {
         	}
 
         	if(sLastNodeValue !== ";") {
-        		pFunction.setParseNode(pNode);
-        		pFunction.setScope(this.getScope());
+        		pFunction._setParseNode(pNode);
+        		pFunction._setImplementationScope(this.getScope());
         		this._pFunctionWithImplementationList.push(pFunction);
         	}
 
@@ -2440,15 +2584,17 @@ module akra.fx {
 
         private resumeFunctionAnalysis(pAnalzedFunction: IAFXFunctionDeclInstruction): void {
         	var pFunction: FunctionDeclInstruction = <FunctionDeclInstruction>pAnalzedFunction;
-        	var pNode: IParseNode = pFunction.getParseNode();
+        	var pNode: IParseNode = pFunction._getParseNode();
 
         	this.setAnalyzedNode(pNode);
-        	this.setScope(pFunction.getScope());
+        	this.setScope(pFunction._getImplementationScope());
 
         	var pChildren: IParseNode[] = pNode.children;
         	var pStmtBlock: StmtBlockInstruction = null;
 
         	this.setCurrentAnalyzedFunction(pFunction);
+
+        	LOG("-----Analyze function '" + pFunction.getName() + "'------");
 
         	pStmtBlock = <StmtBlockInstruction>this.analyzeStmtBlock(pChildren[0]);
  			pFunction.setImplementation(<IAFXStmtInstruction>pStmtBlock);
@@ -2573,6 +2719,7 @@ module akra.fx {
         	for (i = pChildren.length - 2; i >= 1; i--) {
         		if (pChildren[i].name === "ParameterDecl") {
 		            pParameter = this.analyzeParameterDecl(pChildren[i]);
+		            pParameter._setScope(this.getScope());
 		            pFunctionDef.addParameter(pParameter, this.isStrictMode());
 		        }	
         	}
@@ -2619,6 +2766,8 @@ module akra.fx {
         	var pStmtBlock: StmtBlockInstruction = new StmtBlockInstruction();
         	var pStmt: IAFXStmtInstruction;
         	var i: uint = 0;
+
+        	pStmtBlock._setScope(this.getScope());
 
         	this.newScope();
 

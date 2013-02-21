@@ -347,6 +347,7 @@ module akra.fx {
 			}
 
 			pVariableMap[sVariableName] = pVariable;
+			pVariable._setScope(iScope);
 
 			return true;
 		}
@@ -370,6 +371,7 @@ module akra.fx {
 			}
 
 			pTypeMap[sTypeName] = pType;
+			pType._setScope(iScope);
 
 			return true;
 		}
@@ -397,6 +399,7 @@ module akra.fx {
 			}
 
 			pFunctionMap[sFuncName].push(pFunction);
+			pFunction._setScope(iScope);
 
 			return true;
 		}
