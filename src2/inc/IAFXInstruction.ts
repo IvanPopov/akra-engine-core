@@ -176,114 +176,127 @@ module akra {
     }
 
     export interface IAFXTypeInstruction extends IAFXInstruction {
-        setName(sName: string): void;
-        getName(): string;
-
+        /**
+         * Simple tests
+         */
         isBase(): bool;
         isArray(): bool;
         isNotBaseArray(): bool;
         isComplex(): bool;
+        isEqual(pType: IAFXTypeInstruction): bool;
+        isConst(): bool;
 
         isWritable(): bool;
         isReadable(): bool;
 
+        /**
+         * Set private params
+         */
+        setName(sName: string): void;
         _canWrite(isWritable: bool): void;
         _canRead(isReadable: bool): void;
 
         // markAsUsed(): void;
-
+        
         /**
-         * For using in AFXEffect
+         * get type info
          */
-        isEqual(pType: IAFXTypeInstruction): bool;
-        isConst(): bool;
-
+        getName(): string;
         getHash(): string;
-        getStrongHash(): string ;
+        getStrongHash(): string;
+        getSize(): uint;
+        getBaseType(): IAFXTypeInstruction;
+        getLength(): uint;
+        getArrayElementType(): IAFXTypeInstruction;
+
+        // Fields
 
         hasField(sFieldName: string): bool;
         hasFieldWithSematic(sSemantic: string);
         hasAllUniqueSemantics(): bool;
         hasFieldWithoutSemantic(): bool;
-        getField(sFieldName: string, isCreateExpr?: bool): IAFXIdExprInstruction;
-        getFieldType(sFieldName: string): IAFXTypeInstruction;
+        
+        getField(sFieldName: string): IAFXVariableDeclInstruction;
+        getFieldType(sFieldName: string): IAFXVariableTypeInstruction;
         getFieldNameList(): string[];
 
-        getSize(): uint;
-
-        getBaseType(): IAFXTypeInstruction;
-
-        getLength(): uint;
-        getArrayElementType(): IAFXTypeInstruction;
-
+        /**
+         * System
+         */
         clone(pRelationMap?: IAFXInstructionMap): IAFXTypeInstruction;
     }
 
-    export interface IAFXVariableTypeInstruction extends IAFXTypeInstruction {
-        //type : IAFXUsageTypeInstruction
-        //array: IAFXArrayInstruction
-        //pointer : IAFXPointerInstruction
+    export interface IAFXVariableTypeInstruction extends IAFXTypeInstruction {       
+        /**
+         * Simple tests
+         */
         isPointer(): bool;
         isStrictPointer(): bool;
         isPointIndex(): bool;
 
         isFromVariableDecl(): bool;
         isFromTypeDecl(): bool;
-        _getVarDeclName(): string;
-        _getTypeDeclName(): string;
-
-        addArrayIndex(pExpr: IAFXExprInstruction): void;
-        hasUsage(sUsageName: string): bool;
-
-        pushInVariableType(pVariableType: IAFXTypeInstruction): bool;
-        isolateType(): IAFXVariableTypeInstruction;
-        wrap(): IAFXVariableTypeInstruction;
-        clone(pRelationMap?: IAFXInstructionMap): IAFXVariableTypeInstruction;
-        blend(pVariableType?: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction;
-
-        addPointIndex(isStrict?:bool): void;
-        setVideoBuffer(pBuffer: IAFXVariableDeclInstruction): void;
-        getPointDim(): uint;
-        getPointer(): IAFXVariableDeclInstruction;
-        getVideoBuffer():IAFXVariableDeclInstruction;
-        hasVideoBuffer(): bool;
-        initializePointers(): void;
-
-        _markUsedForWrite(): bool;
-        _markUsedForRead(): bool;
-        /**
-         * VariableType are input parametr or it has been writing at once
-         */
-        _goodForRead(): bool;
 
         _containArray(): bool;
         _containSampler(): bool;
         _containPointer(): bool;
 
+        _isTypeOfField(): bool;
+
+        /**
+         * set type info
+         */
+        _markUsedForWrite(): bool;
+        _markUsedForRead(): bool;
+        _goodForRead(): bool;
+
+        _markAsField(): void;
+
+        /**
+         * init api
+         */
+        pushType(pType: IAFXTypeInstruction): void;
+        addUsage(sUsage: string): void;
+        addArrayIndex(pExpr: IAFXExprInstruction): void;
+        addPointIndex(isStrict?:bool): void;
+        setVideoBuffer(pBuffer: IAFXVariableDeclInstruction): void;
+        initializePointers(): void;
+
         _setPointerToStrict(): void;
         _addPointIndexInDepth(): void;
         _setVideoBufferInDepth(): void;
+
+        /**
+         * Type info
+         */
+        getUsageList(): string[];
+        getSubType(): IAFXTypeInstruction;
+
+        hasUsage(sUsageName: string): bool;
+        hasVideoBuffer(): bool;
+
+        getPointDim(): uint;
+        getPointer(): IAFXVariableDeclInstruction;
+        getVideoBuffer():IAFXVariableDeclInstruction;
+        getFieldExpr(sFieldName: string): IAFXIdExprInstruction;
+
+        _getVarDeclName(): string;
+        _getTypeDeclName(): string;
+
+        /**
+         * System
+         */
+        wrap(): IAFXVariableTypeInstruction;
+        clone(pRelationMap?: IAFXInstructionMap): IAFXVariableTypeInstruction;
+        blend(pVariableType?: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction;
 
         _setCloneHash(sHash: string, sStrongHash: string): void;
         _setCloneArrayIndex(pElementType: IAFXVariableTypeInstruction, 
                             pIndexExpr: IAFXExprInstruction, iLength: uint): void;
         _setClonePointeIndexes(nDim: uint, pPointerList: IAFXVariableDeclInstruction[]): void;
-        _setCloneFields(pFieldMap: IAFXIdExprMap): void;      
+        _setCloneFields(pFieldMap: IAFXVariableDeclMap): void;      
 
         _setNextPointer(pPointer: IAFXVariableDeclInstruction): void; 
-    }
-
-     export interface IAFXUsageTypeInstruction extends IAFXInstruction {
-        //usage: IAFXKeywordInstruction[]
-        //type: IAFXTypeInstruction
-        
-        getTypeInstruction(): IAFXTypeInstruction;
-        setTypeInstruction(pType: IAFXTypeInstruction, isSetParent?: bool): bool;
-
-        hasUsage(sUsage: string): bool;
-        addUsage(sUsage: string): bool;
-
-        clone(pRelationMap?: IAFXInstructionMap): IAFXUsageTypeInstruction;
     }
 
     export interface IAFXTypedInstruction extends IAFXInstruction{
@@ -323,6 +336,7 @@ module akra {
         setType(pType: IAFXVariableTypeInstruction): void;
 
         isUniform(): bool;
+        isField(): bool;
 
         setName(sName: string):void;
 

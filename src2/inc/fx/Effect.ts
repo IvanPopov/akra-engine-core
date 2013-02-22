@@ -195,7 +195,7 @@ module akra.fx {
 			var pBufferType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 			var pBufferName: IAFXIdInstruction = new IdInstruction();
 
-			pBufferType.pushInVariableType(Effect.getSystemType("video_buffer"));
+			pBufferType.pushType(Effect.getSystemType("video_buffer"));
 			
 			pBuffer.push(pBufferType, true);
 			pBuffer.push(pBufferName, true);
@@ -283,7 +283,7 @@ module akra.fx {
 			pName.setName(sName);
 			pName.setRealName(sRealName);
 			
-			pType.pushInVariableType(Effect.getSystemType(sTypeName));
+			pType.pushType(Effect.getSystemType(sTypeName));
 
 			if(isOnlyRead) {
 				pType._canWrite(false);
@@ -782,7 +782,7 @@ module akra.fx {
 							    pArguments: IAFXExprInstruction[]): IAFXVariableTypeInstruction {
 			
 			var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-			pVariableType.pushInVariableType(pType);
+			pVariableType.pushType(pType);
 
 			return pVariableType;
 		}
@@ -1158,15 +1158,15 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
-        	var pUsageType: IAFXUsageTypeInstruction;
-        	var pVariable: IAFXVariableDeclInstruction;
+        	var pGeneralType: IAFXVariableTypeInstruction = null;
+        	var pVariable: IAFXVariableDeclInstruction = null;
         	var i: uint = 0;
         	
-        	pUsageType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
+        	pGeneralType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
 
         	for(i = pChildren.length - 2; i >= 1; i--){
         		if(pChildren[i].name === "Variable") {
-        			pVariable = this.analyzeVariable(pChildren[i], pUsageType);
+        			pVariable = this.analyzeVariable(pChildren[i], pGeneralType);
 
         			if(!isNull(pInstruction)){
         				pInstruction.push(pVariable, true);
@@ -1175,17 +1175,17 @@ module akra.fx {
         	}
         }
 
-      	private analyzeUsageType(pNode: IParseNode): IAFXUsageTypeInstruction {
+      	private analyzeUsageType(pNode: IParseNode): IAFXVariableTypeInstruction {
       		this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
 		    var i: uint = 0;
-		    var pType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
+		    var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 
 		    for (i = pChildren.length - 1; i >= 0; i--) {
 		        if (pChildren[i].name === "Type") {
 		        	var pMainType: IAFXTypeInstruction = this.analyzeType(pChildren[i]);
-		        	pType.setTypeInstruction(pMainType, false);
+		        	pType.pushType(pMainType);
 		        }
 		        else if (pChildren[i].name === "Usage") {
 		        	var sUsage: string = this.analyzeUsage(pChildren[i]);
@@ -1251,19 +1251,19 @@ module akra.fx {
         	return pNode.value;
         }
 
-        private analyzeVariable(pNode: IParseNode, pUsageType: IAFXUsageTypeInstruction): IAFXVariableDeclInstruction {
+        private analyzeVariable(pNode: IParseNode, pGeneralType: IAFXVariableTypeInstruction): IAFXVariableDeclInstruction {
         	this.setAnalyzedNode(pNode);
       		
         	var pChildren: IParseNode[] = pNode.children;
 
         	var pVarDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
         	var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-        	var pAnnotation: IAFXAnnotationInstruction;
-        	var sSemantic: string;
-        	var pInitExpr: IAFXExprInstruction;
+        	var pAnnotation: IAFXAnnotationInstruction = null;
+        	var sSemantic: string = "";
+        	var pInitExpr: IAFXExprInstruction = null;
 			
         	pVarDecl.push(pVariableType, true);       	
-        	pVariableType.push(pUsageType, true);
+        	pVariableType.pushType(pGeneralType);
 
         	this.analyzeVariableDim(pChildren[pChildren.length - 1], pVarDecl);
         	
@@ -1838,7 +1838,7 @@ module akra.fx {
 
         	sFieldName = pChildren[pChildren.length - 3].value;
 
-        	pFieldNameExpr = pPostfixExprType.getField(sFieldName);
+        	pFieldNameExpr = pPostfixExprType.getFieldExpr(sFieldName);
 
         	if(isNull(pFieldNameExpr)){
         		this._error(EFFECT_BAD_POSTIX_NOT_FIELD, { typeName: pPostfixExprType.toString(),
@@ -2384,7 +2384,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
-        	var pUsageType: IAFXUsageTypeInstruction = null;
+        	var pUsageType: IAFXVariableTypeInstruction = null;
         	var pVariable: IAFXVariableDeclInstruction = null;
         	var i: uint = 0;
         	
@@ -2401,17 +2401,17 @@ module akra.fx {
         	}
         }
 
-        private analyzeUsageStructDecl(pNode: IParseNode): IAFXUsageTypeInstruction {
+        private analyzeUsageStructDecl(pNode: IParseNode): IAFXVariableTypeInstruction {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
 		    var i: uint = 0;
-		    var pType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
+		    var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 
 		    for (i = pChildren.length - 1; i >= 0; i--) {
 		        if (pChildren[i].name === "StructDecl") {
 		        	var pMainType: IAFXTypeInstruction = this.analyzeStructDecl(pChildren[i]);
-		        	pType.setTypeInstruction(pMainType, false);
+		        	pType.pushType(pMainType);
 
 		        	var pTypeDecl: IAFXTypeDeclInstruction = new TypeDeclInstruction();
 		        	pTypeDecl.push(pMainType, true);
@@ -2672,15 +2672,12 @@ module akra.fx {
         	var pChildren: IParseNode[] = pNode.children;
         	var pFunctionDef: FunctionDefInstruction = new FunctionDefInstruction();
         	var pReturnType: IAFXVariableTypeInstruction = null;
-        	var pUsageType: IAFXUsageTypeInstruction = null;
         	var pFuncName: IAFXIdInstruction = null;
         	var pArguments: IAFXVariableDeclInstruction[] = null;
         	var sFuncName: string = pChildren[pChildren.length - 2].value;
 
-        	pUsageType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
-        	pReturnType = new VariableTypeInstruction();
-        	pReturnType.push(pUsageType, true);
-
+        	pReturnType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
+        	
         	if(pReturnType.isPointer() || pReturnType._containSampler() || pReturnType._containPointer()){
         		this._error(EFFECT_BAD_RETURN_TYPE_FOR_FUNCTION, { funcName: sFuncName });
         		return null;
@@ -2729,8 +2726,8 @@ module akra.fx {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
-        	var pType: IAFXUsageTypeInstruction;
-        	var pParameter: IAFXVariableDeclInstruction;
+        	var pType: IAFXVariableTypeInstruction = null;
+        	var pParameter: IAFXVariableDeclInstruction = null;
 
         	pType = this.analyzeParamUsageType(pChildren[1]);
         	pParameter = this.analyzeVariable(pChildren[0], pType);
@@ -2738,15 +2735,15 @@ module akra.fx {
         	return pParameter;
         }
 
-        private analyzeParamUsageType(pNode: IParseNode): IAFXUsageTypeInstruction {
+        private analyzeParamUsageType(pNode: IParseNode): IAFXVariableTypeInstruction {
         	var pChildren: IParseNode[] = pNode.children;
 		    var i: uint = 0;
-		    var pType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
+		    var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 
 		    for (i = pChildren.length - 1; i >= 0; i--) {
 		        if (pChildren[i].name === "Type") {
 		        	var pMainType: IAFXTypeInstruction = this.analyzeType(pChildren[i]);
-		        	pType.setTypeInstruction(pMainType, false);
+		        	pType.pushType(pMainType);
 		        }
 		        else if (pChildren[i].name === "ParamUsage") {
 		        	var sUsage: string = this.analyzeUsage(pChildren[i]);

@@ -124,25 +124,30 @@ module akra.fx {
 
 			if(pType.isFromVariableDecl()){
 				if(pType._getScope() > this._iImplementationScope) {
-					LOG("---> local variable : " + pType._getVarDeclName());
+					LOG("---> local variable : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
+						". Field: " + pType._isTypeOfField());
 				}
 				else if(pType._getScope() === this._iImplementationScope){
-					LOG("---> Parameter : " + pType._getVarDeclName());
+					LOG("---> Parameter : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
+						". Field: " + pType._isTypeOfField());
 				}
 				else {
 					if(pType._getScope() !== 0){
-						ERROR("Wrong variable scope. : " + pType._getVarDeclName());
+						ERROR("Wrong variable scope. : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
+							". Field: " + pType._isTypeOfField());
 					}
 					else{
-						LOG("---> global variable : " + pType._getVarDeclName());
+						LOG("---> global variable : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
+							". Field: " + pType._isTypeOfField());
 					}	
 				}
 			}
 			else if(pType.isFromTypeDecl()){
-				LOG("---> Type : " + pType._getTypeDeclName());
+				LOG("---> Type : " + pType._getTypeDeclName() + ". Base: " + pType.isBase() +
+					". Field: " + pType._isTypeOfField());
 			}
 			else {
-				LOG("---> something else", pType);
+				LOG("---> something else");
 			}
 			return true;
 		}
@@ -355,7 +360,7 @@ module akra.fx {
 			this._pName.setParent(this);
 
 			this._pReturnType = new VariableTypeInstruction();
-			this._pReturnType.pushInVariableType(pReturnType);
+			this._pReturnType.pushType(pReturnType);
 			this._pReturnType.setParent(this);
 
 			this._pArguments = [];

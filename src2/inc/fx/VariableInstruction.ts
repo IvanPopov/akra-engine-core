@@ -61,6 +61,21 @@ module akra.fx {
         	return this.getType().hasUsage("uniform");
         }
 
+        isField(): bool {
+            if(isNull(this.getParent())){
+                return false;
+            }
+
+            var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+            if (eParentType === EAFXInstructionTypes.k_VariableTypeInstruction ||
+                eParentType === EAFXInstructionTypes.k_ComplexTypeInstruction ||
+                eParentType === EAFXInstructionTypes.k_SystemTypeInstruction){
+                return true;
+            }
+
+            return false;
+        }
+
         clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction {
         	return <IAFXVariableDeclInstruction>super.clone(pRelationMap);
         }
