@@ -53,7 +53,7 @@ module akra.core.pool.resources {
 			}
 
 			ASSERT((iOffset + iSize) <= this.byteLength);
-			memcpy((<ArrayBufferView>ppDest).buffer, 0, this._pData.buffer, iOffset, iSize);
+			memcpy((<ArrayBufferView>ppDest).buffer, (<ArrayBufferView>ppDest).byteOffset, this._pData.buffer, iOffset, iSize);
 
 			return true;
 		}
@@ -62,15 +62,18 @@ module akra.core.pool.resources {
 		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool{
 		// writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool { 
 			
-			if (arguments.length < 3) {
-				iOffset = 0;
+			if(arguments.length < 3){
 				iSize = pData.byteLength;
 			}
-			
+
+			if (arguments.length < 2) {
+				iOffset = 0;
+			}
+
 			ASSERT((iOffset + iSize) <= this.byteLength);
 
 			if(isDefAndNotNull(pData)){
-				memcpy(this._pData.buffer, 0, (<ArrayBufferView>pData).buffer, iOffset, iSize);
+				memcpy(this._pData.buffer, iOffset, (<ArrayBufferView>pData).buffer, (<ArrayBufferView>pData).byteOffset, iSize);
 			}
 			this.notifyAltered();
 

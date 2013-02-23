@@ -225,6 +225,8 @@ module akra.data {
 		    return this.setData(pData, sUsage);
 		}
 
+		//FIX ME:
+		//если известно sUsage, зачем нужет iSize?
 		setData(pData: ArrayBufferView, iOffset: int, iSize?: uint, nCountStart?: uint, nCount?: uint): bool;
 		setData(pData: ArrayBufferView, sUsage?: string, iSize?: uint, nCountStart?: uint, nCount?: uint): bool;
 		setData(pData: ArrayBufferView, iOffset?: any, iSize?: uint, nCountStart?: uint, nCount?: uint): bool {
@@ -239,13 +241,17 @@ module akra.data {
 
 			switch (arguments.length) {
 		        case 5:
+		        	if(isString(arguments[1])){
+		        		iOffset = this._pVertexDeclaration.findElement(arguments[1]).offset;
+		        	}
+
 		            iStride = this.stride;
 		            pDataU8 = new Uint8Array(pData.buffer);
 		            if (iStride != iSize) {
 		                //FIXME: очень тормознутое место, крайне медленно работает...
 						if(pVertexBuffer.isBackupPresent() && nCount > 1) {
-							pBackupBuf = new Uint8Array(this._pVertexBuffer.byteLength);
-							this._pVertexBuffer.readData(pBackupBuf);
+							pBackupBuf = new Uint8Array(pVertexBuffer.byteLength);
+							pVertexBuffer.readData(pBackupBuf);
 
 							iOffsetBuffer = this.byteOffset;
 
@@ -259,17 +265,19 @@ module akra.data {
 							pVertexBuffer.writeData(pBackupBuf, 0, pVertexBuffer.byteLength);
 						}
 						else {
-							for (var i: uint = nCountStart; i < nCount + nCountStart; i++) {
+							for (var i: uint = 0; i < nCount; i++) {
+								var iCurrent: uint = i + nCountStart;
+
 								pVertexBuffer.writeData(
-										/*pData.buffer.slice*/pDataU8.subarray(
-											iSize * (i - nCountStart),
-											iSize * (i - nCountStart) + iSize),
-										iStride * i + iOffset + this.byteOffset,
+										/*pData.buffer.slice*/
+										pDataU8.subarray( iSize * i, iSize * (i + 1)),
+										iStride * iCurrent + iOffset + this.byteOffset,
 										iSize);
 							}
 						}
 		            }
 		            else {
+
 		                pVertexBuffer.writeData(
 		                	/*pData.buffer.slice*/
 		                	pDataU8.subarray(0, iStride * nCount), 
@@ -324,7 +332,7 @@ module akra.data {
 		                        pElement.offset,
 		                        pElement.size, 
 		                        arguments[2], 
-		                        arguments[3])
+		                        arguments[3]);
 		                }
 		                return false
 		            }
@@ -341,7 +349,7 @@ module akra.data {
 
 		            return false;
 		        case 1:
-		            return this.setData(pData, this._pVertexDeclaration[0].eUsage);
+		            return this.setData(pData, this._pVertexDeclaration.element(0).usage);
 		        default:
 		            return false;
 		    }
@@ -365,11 +373,11 @@ module akra.data {
 		            iCount = math.min(iCount, this._iLength);
 
 		            var iStride: uint = this.stride;
-		            var pBufferData: Uint8Array = new Uint8Array(iSize * this.length);
-
-		            for (var i: int = iFrom; i < iCount; i++) {
-		            	this._pVertexBuffer.readData(iStride * i + iOffset + this.byteOffset, iSize, 
-		            		pBufferData.subarray(i * iSize, i * iSize + iSize));
+		            var pBufferData: Uint8Array = new Uint8Array(iSize * iCount);
+	            	for (var i: int = 0; i < iCount; i++) {
+	            		var iCurrent: uint = iFrom + i;
+		            	this._pVertexBuffer.readData(iStride * iCurrent + iOffset + this.byteOffset, iSize, 
+		            		pBufferData.subarray(i * iSize, (i + 1) * iSize));
 		                //pBufferData.set(new Uint8Array(), i * iSize);
 		            }
 
@@ -382,13 +390,14 @@ module akra.data {
 		            if (isString("string")) {
 		                pElement = pDeclaration.findElement(arguments[0]);
 
-		                if (pElement) {
+		                if (isDefAndNotNull(pElement)) {
+
 		                    return this.getData(
 		                        pElement.offset,
 		                        pElement.size, 
 		                        arguments[1], 
 		                        arguments[2]
-		                        )
+		                        );
 		                }
 		                return null;
 		            }
@@ -403,8 +412,6 @@ module akra.data {
 		}
 
 		getTypedData(sUsage: string, iFrom?: int, iCount?: uint): ArrayBufferView {
-		    sUsage = sUsage || this._pVertexDeclaration[0].sUsage;
-
 		    var pVertexElement: IVertexElement = this._pVertexDeclaration.findElement(sUsage);
 
 		    if (pVertexElement) {
