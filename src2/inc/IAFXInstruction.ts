@@ -109,6 +109,7 @@ module akra {
 
     export interface IAFXVariableTypeMap {
         [index: string]: IAFXVariableTypeInstruction;
+        [index: uint]: IAFXVariableTypeInstruction;
     }
 
     export interface IAFXTypeMap {
@@ -128,6 +129,17 @@ module akra {
         [index: uint]: IAFXFunctionDeclInstruction;
     }
 
+    export interface IAFXTypeUseInfoContainer {
+        type: IAFXVariableTypeInstruction;
+        isRead: bool;
+        isWrite: bool;
+        numRead: uint;
+        numWrite: uint;
+    }
+
+    export interface IAFXTypeUseInfoMap {
+        [index: uint]: IAFXTypeUseInfoContainer;
+    }
 	/**
 	 * All opertion are represented by: 
 	 * operator : arg1 ... argn
@@ -150,7 +162,7 @@ module akra {
 
         check(eStage: ECheckStage): bool;
         getLastError(): IAFXInstructionError;
-        setError(eCode: uint, pInfo: any): void;
+        setError(eCode: uint, pInfo?: any): void;
 
     	// /**
     	//  * Contain states of instruction
@@ -237,20 +249,26 @@ module akra {
         isFromVariableDecl(): bool;
         isFromTypeDecl(): bool;
 
+        isUniform(): bool;
+        isGlobal(): bool;
+        isConst(): bool;
+        isShared(): bool;
+        isForeign(): bool;
+
         _containArray(): bool;
         _containSampler(): bool;
         _containPointer(): bool;
 
         _isTypeOfField(): bool;
 
-        /**
-         * set type info
-         */
-        _markUsedForWrite(): bool;
-        _markUsedForRead(): bool;
-        _goodForRead(): bool;
+        // /**
+        //  * set type info
+        //  */
+        // _markUsedForWrite(): bool;
+        // _markUsedForRead(): bool;
+        // _goodForRead(): bool;
 
-        _markAsField(): void;
+        // _markAsField(): void;
 
         /**
          * init api
@@ -280,6 +298,7 @@ module akra {
         getVideoBuffer():IAFXVariableDeclInstruction;
         getFieldExpr(sFieldName: string): IAFXIdExprInstruction;
 
+        _getFullName(): string;
         _getVarDeclName(): string;
         _getTypeDeclName(): string;
 
@@ -338,6 +357,8 @@ module akra {
         isUniform(): bool;
         isField(): bool;
 
+        _getFullName(): string;
+
         setName(sName: string):void;
 
         clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction;
@@ -390,8 +411,9 @@ module akra {
 
         _convertToVertexShader(): IAFXFunctionDeclInstruction;
         _convertToPixelShader(): IAFXFunctionDeclInstruction;
-    }
 
+        _generateInfoAboutUsedData(): void;
+    }
 
     export interface IAFXStructDeclInstruction extends IAFXInstruction {
         //id: IAFXIdInstruction
@@ -418,8 +440,11 @@ module akra {
         isValue(sTestValue: string): bool;
     }
 
+    export interface IAFXAnalyzedInstruction extends IAFXInstruction {
+        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap, eUsedMode?: EVarUsedMode): void;
+    }
 
-    export interface IAFXExprInstruction extends IAFXTypedInstruction {
+    export interface IAFXExprInstruction extends IAFXTypedInstruction, IAFXAnalyzedInstruction {
         evaluate(): bool;
         simplify(): bool;
         getEvalValue(): any;
@@ -442,8 +467,7 @@ module akra {
 
     }
 
-    export interface IAFXStmtInstruction extends IAFXInstruction{
-        
+    export interface IAFXStmtInstruction extends IAFXInstruction, IAFXAnalyzedInstruction{ 
     }
 
     export interface IAFXTechniqueInstruction extends IAFXDeclInstruction{

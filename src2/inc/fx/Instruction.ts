@@ -28,7 +28,7 @@ module akra.fx {
 		protected _pParentInstruction: IAFXInstruction = null;
 		protected _sOperatorName: string = null;
 		protected _pInstructionList: IAFXInstruction[] = null;
-		protected _nInstuctions: uint = 0;
+		protected _nInstructions: uint = 0;
 		protected readonly _eInstructionType: EAFXInstructionTypes = 0;
 		protected _pLastError: IAFXInstructionError = null;
 		protected _iInstructionID: uint = 0;
@@ -80,7 +80,7 @@ module akra.fx {
 			return this._pLastError;
 		}
 
-		inline setError(eCode: uint, pInfo: any): void {
+		inline setError(eCode: uint, pInfo?: any = null): void {
 			this._pLastError.code = eCode;
 			this._pLastError.info = pInfo;
 		}
@@ -90,15 +90,15 @@ module akra.fx {
 			this._pParentInstruction = null;
 			this._sOperatorName = null;
 			this._pInstructionList = null;
-			this._nInstuctions = 0;
+			this._nInstructions = 0;
 			this._eInstructionType = EAFXInstructionTypes.k_Instruction;
 			this._pLastError = {code: 0, info: null};
 		}
 
 		push(pInstruction: IAFXInstruction, isSetParent?: bool = false): void {
 			if(!isNull(this._pInstructionList)){
-				this._pInstructionList[this._nInstuctions] = pInstruction;
-				this._nInstuctions += 1;
+				this._pInstructionList[this._nInstructions] = pInstruction;
+				this._nInstructions += 1;
 			}
 			if(isSetParent &&  !isNull(pInstruction)){
 				pInstruction.setParent(this);

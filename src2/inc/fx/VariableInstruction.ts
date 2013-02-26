@@ -32,8 +32,8 @@ module akra.fx {
         	this._pInstructionList[0] = <IAFXVariableTypeInstruction>pType;
         	pType.setParent(this);
 
-        	if(this._nInstuctions === 0){
-        		this._nInstuctions = 1;
+        	if(this._nInstructions === 0){
+        		this._nInstructions = 1;
         	}
         }
 
@@ -44,8 +44,8 @@ module akra.fx {
 
         	this._pInstructionList[1] = <IAFXIdInstruction>pName;
 
-        	if(this._nInstuctions < 2) {
-        		this._nInstuctions = 2;
+        	if(this._nInstructions < 2) {
+        		this._nInstructions = 2;
         	}
         }
 
@@ -74,6 +74,24 @@ module akra.fx {
             }
 
             return false;
+        }
+
+        _getFullName(): string {
+            if(!this.isField()){
+                return this.getName();
+            }
+            else {
+                var sName: string = "";
+                var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+                if(eParentType === EAFXInstructionTypes.k_VariableTypeInstruction){
+                    sName = (<IAFXVariableTypeInstruction>this.getParent())._getFullName();    
+                }
+
+                sName += "." + this.getName();
+
+                return sName;
+            }
         }
 
         clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction {

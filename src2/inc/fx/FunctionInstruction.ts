@@ -86,14 +86,14 @@ module akra.fx {
 			this._pFunctionDefenition = <FunctionDefInstruction>pFunctionDef;
 			this._pInstructionList[0] = pFunctionDef;
 			pFunctionDef.setParent(this);
-			this._nInstuctions = this._nInstuctions === 0 ? 1 : this._nInstuctions;
+			this._nInstructions = this._nInstructions === 0 ? 1 : this._nInstructions;
 		}
 
 		setImplementation(pImplementation: IAFXStmtInstruction): void {
 			this._pImplementation = <StmtBlockInstruction>pImplementation;
 			this._pInstructionList[1] = pImplementation;
 			pImplementation.setParent(pImplementation);
-			this._nInstuctions = 2;
+			this._nInstructions = 2;
 
 			this._pParseNode = null;
 		}
@@ -117,8 +117,11 @@ module akra.fx {
 				return false;
 			}
 
-			if ((eUsedMode === EVarUsedMode.k_Read && !pType.isReadable()) ||
-				(eUsedMode === EVarUsedMode.k_Write && !pType.isWritable())){
+			var isRead: bool = eUsedMode === EVarUsedMode.k_Read;
+			var isWrite: bool = eUsedMode === EVarUsedMode.k_Write; 
+
+			if ((isRead && !pType.isReadable()) ||
+				(isWrite && !pType.isWritable())){
 				return false;
 			}
 
@@ -126,6 +129,12 @@ module akra.fx {
 				if(pType._getScope() > this._iImplementationScope) {
 					LOG("---> local variable : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
 						". Field: " + pType._isTypeOfField());
+					// if(isRead) {
+					// 	pType._markUsedForRead();
+					// }
+					// if(isWrite) {
+					// 	pType._markUsedForWrite();
+					// }
 				}
 				else if(pType._getScope() === this._iImplementationScope){
 					LOG("---> Parameter : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
@@ -334,6 +343,19 @@ module akra.fx {
         	this._pImplementation = <StmtBlockInstruction>this._pInstructionList[1];
         }
 
+        _generateInfoAboutUsedData(): void {
+        	var pUsedData: IAFXTypeUseInfoMap = <IAFXTypeUseInfoMap>{};
+        	this._pImplementation.addUsedData(pUsedData);
+
+        	for(var i in pUsedData){
+        		LOG(pUsedData[i].type._getFullName(), 
+        			pUsedData[i].isRead,
+        			pUsedData[i].isWrite,
+        			pUsedData[i].numRead,
+        			pUsedData[i].numWrite);
+        	}
+        }
+
 		// cloneTo(eConvertTo: EFunctionType): ShaderFunctionInstruction {
 		// 	if(eConvertTo === EFunctionType.k_Function) {
 		// 		//nothing to do
@@ -518,6 +540,10 @@ module akra.fx {
 
         addUsedVariableType(pType: IAFXVariableTypeInstruction, eUsedMode: EVarUsedMode): bool {
         	return false;
+        }
+
+        _generateInfoAboutUsedData(): void{
+
         }
 
 	}

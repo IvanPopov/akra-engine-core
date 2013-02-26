@@ -45,7 +45,11 @@ module akra.fx {
 		private _isPointer: bool = false;
 		private _isStrictPointer: bool = false;
 		private _isPointIndex: bool = null;
+		private _isUniform: bool = null;
+		private _isGlobal: bool = null;
 		private _isConst: bool = null;
+		private _isShared: bool = null;
+		private _isForeign: bool = null;
 		private _iLength: uint = UNDEFINE_LENGTH;
 
 		private _isFromVariableDecl: bool = null;
@@ -104,14 +108,6 @@ module akra.fx {
 			}
 
 			return true;
-		}
-
-		inline isConst(): bool {
-			if(isNull(this._isConst)){
-				this._isConst = this.hasUsage("const");
-			}
-
-			return this._isConst;
 		}
 
 		isWritable(): bool {
@@ -214,6 +210,46 @@ module akra.fx {
 			return this._isFromTypeDecl;
         }
 
+        isUniform(): bool {
+        	if(isNull(this._isUniform)){
+				this._isUniform = this.hasUsage("uniform");
+			}
+
+			return this._isUniform;
+        }
+
+        isGlobal(): bool {
+        	if(isNull(this._isGlobal)){
+				this._isGlobal = this._getScope() === 0;
+			}
+
+			return this._isGlobal;
+        }
+
+        isConst(): bool {
+			if(isNull(this._isConst)){
+				this._isConst = this.hasUsage("const");
+			}
+
+			return this._isConst;
+		}
+
+        isShared(): bool {
+        	if(isNull(this._isShared)){
+				this._isShared = this.hasUsage("shared");
+			}
+
+			return this._isShared;
+        }
+
+        isForeign(): bool {
+        	if(isNull(this._isForeign)){
+				this._isForeign = this.hasUsage("shared");
+			}
+
+			return this._isForeign;
+        }
+
 		_containArray(): bool{
 			return this.isBase() ? false : (<IAFXVariableTypeInstruction>this.getSubType())._containArray();
 		}
@@ -255,31 +291,31 @@ module akra.fx {
 			this._isReadable = isReadable;
 		}
 
-		inline _markAsField(): void{
-        	this._isField = true;
-        }
+		// inline _markAsField(): void{
+  //       	this._isField = true;
+  //       }
 
-        _markUsedForWrite(): bool{
-			if(!this.isWritable()){
-				return false;
-			}
+  //       _markUsedForWrite(): bool{
+		// 	if(!this.isWritable()){
+		// 		return false;
+		// 	}
 
-			this._bUsedForWrite = true;
-			return true;
-		}
+		// 	this._bUsedForWrite = true;
+		// 	return true;
+		// }
 
-        _markUsedForRead(): bool {
-        	if(!this.isReadable()){
-        		return false;
-        	}
+  //       _markUsedForRead(): bool {
+  //       	if(!this.isReadable()){
+  //       		return false;
+  //       	}
 
-        	this._bUsedForRead = true;
-        	return true;
-        }
+  //       	this._bUsedForRead = true;
+  //       	return true;
+  //       }
 
-        _goodForRead(): bool {
-        	return false;
-        }
+  //       _goodForRead(): bool {
+  //       	return false;
+  //       }
 
 		//-----------------------------------------------------------------//
 		//----------------------------INIT API-----------------------------//
@@ -649,6 +685,21 @@ module akra.fx {
 			pExpr.setType(pField.getType());
 
 			return pExpr;
+		}
+
+		_getFullName(): string {
+			if(!this.isFromVariableDecl()){
+				return "Not from variable decl";
+			}
+
+			var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+			if(eParentType === EAFXInstructionTypes.k_VariableDeclInstruction){
+				return (<IAFXVariableDeclInstruction>this.getParent())._getFullName();
+			}
+			else{
+				return (<IAFXVariableTypeInstruction>this.getParent())._getFullName();
+			}
 		}		
 
         _getVarDeclName(): string {
@@ -1125,7 +1176,7 @@ module akra.fx {
 			this._pFieldNameList.push(sVarName);
 
 			var pType: IAFXVariableTypeInstruction = pVariable.getType();
-			pType._markAsField();
+			//pType._markAsField();
 			
 			if(pType.isNotBaseArray() || pType._containArray()){
 				this._isContainArray = true;

@@ -33,10 +33,23 @@ module akra.fx {
 
 		getType(): IAFXVariableTypeInstruction{
 			return <IAFXVariableTypeInstruction>super.getType();
-		}
+		}	
 
 		clone(pRelationMap?:IAFXInstructionMap): IAFXExprInstruction {
 			return <IAFXExprInstruction>super.clone(pRelationMap);
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this.getInstructions();
+			
+			if(isNull(pInstructionList)){
+				return;
+			}
+
+			for(var i: uint = 0; i < this._nInstructions; i++){
+				pInstructionList[i].addUsedData(pUsedDataCollector, eUsedMode);
+			}
 		}
 	}
 
@@ -194,6 +207,38 @@ module akra.fx {
 		clone(pRelationMap?:IAFXInstructionMap): IAFXIdExprInstruction {
 			return <IAFXIdExprInstruction>super.clone(pRelationMap);
 		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			if(!this.getType().isFromVariableDecl) {
+				return;
+			}
+
+			var pInfo: IAFXTypeUseInfoContainer = null;
+			pInfo = pUsedDataCollector[this.getType()._getInstructionID()];
+
+			if(!isDef(pInfo)){
+				pInfo = <IAFXTypeUseInfoContainer>{
+					type: this.getType(),
+					isRead: false,
+					isWrite: false,
+					numRead: 0,
+					numWrite: 0
+				}
+
+				pUsedDataCollector[this.getType()._getInstructionID()] = pInfo;
+			}
+
+			if(eUsedMode !== EVarUsedMode.k_Write){
+				pInfo.isRead = true;
+				pInfo.numRead++;
+			}
+
+			if(eUsedMode === EVarUsedMode.k_Write || eUsedMode === EVarUsedMode.k_ReadWrite) {
+				pInfo.isWrite = true;
+				pInfo.numWrite++;
+			}
+		}
 	}
 
 	/**
@@ -201,11 +246,15 @@ module akra.fx {
  	 * (+|-|*|/|%) Instruction Instruction
  	 */
 	export class ArithmeticExprInstruction extends ExprInstruction {
-		
 		constructor() {
 			super();
 			this._pInstructionList = [null, null];
 			this._eInstructionType = EAFXInstructionTypes.k_ArithmeticExprInstruction;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
 		}
 	}
 	/**
@@ -218,6 +267,22 @@ module akra.fx {
 			this._pInstructionList = [null, null];
 			this._eInstructionType = EAFXInstructionTypes.k_AssignmentExprInstruction;
 		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var sOperator: string = this.getOperator();
+			var pSubExprLeft: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+			var pSubExprRight: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+			
+			if(eUsedMode === EVarUsedMode.k_Read || sOperator !== "="){
+				pSubExprLeft.addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
+			}
+			else {
+				pSubExprLeft.addUsedData(pUsedDataCollector, EVarUsedMode.k_Write);
+			}
+
+			pSubExprRight.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+		}
 	}
 	/**
  	 * Represent someExpr == != < > <= >= someExpr
@@ -228,6 +293,11 @@ module akra.fx {
 			super();
 			this._pInstructionList = [null, null];
 			this._eInstructionType = EAFXInstructionTypes.k_RelationalExprInstruction;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
 		}
 	}
 	/**
@@ -240,6 +310,11 @@ module akra.fx {
 			this._pInstructionList = [null, null];
 			this._eInstructionType = EAFXInstructionTypes.k_LogicalExprInstruction;
 		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+		}
 	}
 	/**
 	 * Represen boolExpr ? someExpr : someExpr
@@ -251,6 +326,11 @@ module akra.fx {
 			this._pInstructionList = [null, null, null];
 			this._eInstructionType = EAFXInstructionTypes.k_ConditionalExprInstruction;
 		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+		}
 	}
 	/**
 	 * Represent (type) expr
@@ -261,6 +341,14 @@ module akra.fx {
 			super();
 			this._pInstructionList = [null, null];
 			this._eInstructionType = EAFXInstructionTypes.k_CastExprInstruction;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+			pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+
+			// pUsedDataCollector[this.getType()._getInstructionID()] = this.getType();
 		}	
 	}
 
@@ -273,7 +361,16 @@ module akra.fx {
 			super();
 			this._pInstructionList = [null];
 			this._eInstructionType = EAFXInstructionTypes.k_UnaryExprInstruction;
-		}	
+		}
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			if(this.getOperator() === "++" || this.getOperator() === "--"){
+				(<IAFXExprInstruction>this.getInstructions()[0]).addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
+			}
+			else {
+				(<IAFXExprInstruction>this.getInstructions()[0]).addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+			}
+        }	
 	}
 
 	/**
@@ -285,7 +382,16 @@ module akra.fx {
 			super();
 			this._pInstructionList = [null, null];
 			this._eInstructionType = EAFXInstructionTypes.k_PostfixIndexInstruction;
-		}	
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+			var pIndex: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+
+			pSubExpr.addUsedData(pUsedDataCollector, eUsedMode);
+			pIndex.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+        }
 	}
 
 	/*
@@ -297,7 +403,16 @@ module akra.fx {
 			super();
 			this._pInstructionList = [null, null];
 			this._eInstructionType = EAFXInstructionTypes.k_PostfixPointInstruction;
-		}	
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+			var pPoint: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+			
+			pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Undefined);
+			pPoint.addUsedData(pUsedDataCollector, eUsedMode);
+        }	
 	}
 
 	/**
@@ -309,7 +424,13 @@ module akra.fx {
 			super();
 			this._pInstructionList = [null];
 			this._eInstructionType = EAFXInstructionTypes.k_PostfixArithmeticInstruction;
-		}	
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+			pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
+		}
 	}
 
 	/**
@@ -321,6 +442,12 @@ module akra.fx {
 			super();
 			this._pInstructionList = [null];
 			this._eInstructionType = EAFXInstructionTypes.k_PrimaryExprInstruction;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+			pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
 		}
 	}
 
@@ -334,6 +461,12 @@ module akra.fx {
 			this._pInstructionList = [null];
 			this._eInstructionType = EAFXInstructionTypes.k_ComplexExprInstruction;
 		}
+
+		// addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+  //                   eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+		// 	var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+		// 	pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+		// }
 	}
 
 	/**
@@ -345,7 +478,32 @@ module akra.fx {
 			super();
 			this._pInstructionList = [null];
 			this._eInstructionType = EAFXInstructionTypes.k_FunctionCallInstruction;
-		}	
+		}
+		
+		getFunction(): IAFXFunctionDeclInstruction{
+			return <IAFXFunctionDeclInstruction>(<IAFXIdExprInstruction>this._pInstructionList[0]).getType().getParent().getParent();
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pExprList: IAFXExprInstruction[] = <IAFXExprInstruction[]>this.getInstructions();
+			var pFunction: IAFXFunctionDeclInstruction = this.getFunction();
+			var pArguments: IAFXVariableDeclInstruction[] = <IAFXVariableDeclInstruction[]>pFunction.getArguments();
+
+			pExprList[0].addUsedData(pUsedDataCollector, eUsedMode);
+
+			for(var i:uint = 0; i < pArguments.length; i++){
+				if (pArguments[i].getType().hasUsage("out")){
+					pExprList[i+1].addUsedData(pUsedDataCollector, EVarUsedMode.k_Write);
+				}
+				else if(pArguments[i].getType().hasUsage("inout")){
+					pExprList[i+1].addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
+				}
+				else {
+					pExprList[i+1].addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+				}
+			}
+		}
 	}
 
 	/**
@@ -377,6 +535,16 @@ module akra.fx {
 			this.setInstructions(this._pSystemFunction.closeArguments(pArguments));
 		}
 
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this.getInstructions();
+			for(var i: uint = 0; i < this._nInstructions; i++){
+				if(pInstructionList[i]._getInstructionType() !== EAFXInstructionTypes.k_SimpleInstruction){
+					pInstructionList[i].addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+				}
+			}
+		}
+
 	}
 
 	/**
@@ -388,8 +556,16 @@ module akra.fx {
 			super();
 			this._pInstructionList = [null];
 			this._eInstructionType = EAFXInstructionTypes.k_ConstructorCallInstruction;
-		}	
-	}
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this.getInstructions();
+			for(var i: uint = 1; i < this._nInstructions; i++){
+				pInstructionList[i].addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+			}
+		}
+	}	
 
 	/**
 	 * Represetn compile vs_func(...args)
@@ -423,6 +599,27 @@ module akra.fx {
 		setBuffer(pBuffer: IAFXVariableDeclInstruction): void {
 			this._pBuffer = pBuffer;
 			this.setType(pBuffer.getType());
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+					eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pBufferType: IAFXVariableTypeInstruction = this.getBuffer().getType();
+			var pInfo: IAFXTypeUseInfoContainer = pUsedDataCollector[pBufferType._getInstructionID()];
+			
+			if(!isDef(pInfo)){
+				pInfo = <IAFXTypeUseInfoContainer>{
+					type: pBufferType,
+					isRead: false,
+					isWrite: false,
+					numRead: 0,
+					numWrite: 0
+				}
+
+				pUsedDataCollector[pBufferType._getInstructionID()] = pInfo;
+			}	
+			
+			pInfo.isRead = true;
+			pInfo.numRead++;
 		}
 	}
 	/**

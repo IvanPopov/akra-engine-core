@@ -1096,6 +1096,9 @@ module akra.fx {
         private generateShadersFromFunctions(): void {
         	var pFunctionList: IAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
 
+        	for(var i: uint = 0; i < pFunctionList.length; i++){
+        		pFunctionList[i]._generateInfoAboutUsedData();
+        	}
         }
 
 
@@ -1887,6 +1890,21 @@ module akra.fx {
         													typeName: pPostfixExprType.toString()});
         		return null;
         	}
+        	if(!isNull(this.getCurrentAnalyzedFunction())){
+        		var isOk: bool = false;
+
+        		isOk = this.getCurrentAnalyzedFunction().addUsedVariableType(pPostfixExprType, EVarUsedMode.k_Read);
+        		if(!isOk){
+        			this._error(EFFECT_BAD_TYPE_FOR_READ);
+        			return null;
+        		}
+
+        		isOk = this.getCurrentAnalyzedFunction().addUsedVariableType(pPostfixExprType, EVarUsedMode.k_Write);
+        		if(!isOk){
+        			this._error(EFFECT_BAD_TYPE_FOR_WRITE);
+        			return null;
+        		}
+        	}
 
         	pExpr.setType(pExprType);
         	pExpr.setOperator(sOperator);
@@ -1919,10 +1937,20 @@ module akra.fx {
         	}
 
         	if(!isNull(this.getCurrentAnalyzedFunction())){
-        		this.getCurrentAnalyzedFunction().addUsedVariableType(pUnaryExprType, EVarUsedMode.k_Read);
+        		var isOk: bool = false;
+
+        		isOk = this.getCurrentAnalyzedFunction().addUsedVariableType(pUnaryExprType, EVarUsedMode.k_Read);
+        		if(!isOk){
+        			this._error(EFFECT_BAD_TYPE_FOR_READ);
+        			return null;
+        		}
 
         		if(sOperator === "++" || sOperator === "--"){
-        			this.getCurrentAnalyzedFunction().addUsedVariableType(pUnaryExprType, EVarUsedMode.k_Write);
+        			isOk = this.getCurrentAnalyzedFunction().addUsedVariableType(pUnaryExprType, EVarUsedMode.k_Write);
+        			if(!isOk){
+	        			this._error(EFFECT_BAD_TYPE_FOR_WRITE);
+	        			return null;
+	        		}
         		}
         	}
 
@@ -2910,7 +2938,7 @@ module akra.fx {
         			this.analyzeVariableDecl(pNode, pDeclStmtInstruction);
         			break;
     			case "VarStructDecl":
-    				//TODO: add varstruct
+    				this.analyzeVarStructDecl(pNode,  pDeclStmtInstruction);
     				break;
         	}
 
@@ -3049,12 +3077,6 @@ module akra.fx {
         	var pForStmtInstruction: ForStmtInstruction = new ForStmtInstruction();
         	var pStmt: IAFXStmtInstruction = null;
 
-			// if(pChildren.length !== 7){
-			// 	//Empty for-step
-			// 	this._error(EFFECT_BAD_FOR_STEP_EMPTY);
-			// 	return null;
-			// }
-
         	this.newScope();
 
         	this.analyzeForInit(pChildren[pChildren.length - 3], pForStmtInstruction);
@@ -3100,7 +3122,6 @@ module akra.fx {
 					break;
 				default:
 					// ForInit : ';'
-					//this._error(EFFECT_BAD_FOR_INIT_EMPTY_ITERATOR);
 					pForStmtInstruction.push(null);
 					break;
 			}
@@ -3114,17 +3135,11 @@ module akra.fx {
 			var pChildren: IParseNode[] = pNode.children;
 
 			if(pChildren.length === 1){
-				pForStmtInstruction.push(null)
-				//this._error(EFFECT_BAD_FOR_COND_EMPTY);
+				pForStmtInstruction.push(null);
 				return;
 			}
 
 			var pConditionExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[1]);
-
-			// if(pConditionExpr._getInstructionType() !== EAFXInstructionTypes.k_RelationalExprInstruction){
-			// 	this._error(EFFECT_BAD_FOR_COND_RELATION);
-			// 	return;
-			// }
 
 			pForStmtInstruction.push(pConditionExpr, true);
 			return;
