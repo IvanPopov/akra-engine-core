@@ -280,8 +280,10 @@ module akra.data {
 
 		                pVertexBuffer.writeData(
 		                	/*pData.buffer.slice*/
-		                	pDataU8.subarray(0, iStride * nCount), 
-		                	iOffset + this.byteOffset,
+		                	//stride == size => iOffset = 0;
+		                	pDataU8.subarray(0 , 
+		                		iStride * nCount), 
+		                	/*iOffset + */this.byteOffset + iStride * nCountStart,
 		                    iStride * nCount); 
 		            }
 		            return true;
