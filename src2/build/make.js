@@ -20,6 +20,7 @@ var BUFFER_SIZE = 5 * 1024 * 1024;
 var pCleanFiles = [];
 var iTimeout = -1;
 
+var isWin = !!process.platform.match(/^win/);
 
 function isDef(pObject) {
 	return pObject != null;
@@ -38,7 +39,7 @@ function usage() {
 		'\n\t--nw			Build tests as NW. ' + 
 		'\n\t--js			Build tests as JS. ' + 
 		'\n\t--help		[-h] Print this text. ' + 
-		'\n\t--ES6			Activate ecmascript 5 capability.' + 
+		'\n\t--ES6			Activate ecmascript 6 capability.' + 
 		'\n\t--compress		Compress output javascript.' + 
 		'\n\t--debug			Debug build.' + 
 		'\n\t--no-debug		Release build.' + 
@@ -173,7 +174,6 @@ function parseArguments() {
 			case '-o':
             case '--out':
                 readKey("outputFolder", ++i);
-                console.log(process.argv[i]);
                 break;
 			case '-d':
 			case '--build':
@@ -193,15 +193,22 @@ function parseArguments() {
 					usage();
 				}
 
+				if (!sArg.length || sArg.match(/\s+/ig)) {
+					break;
+				}
+
 				pOptions.files.push(sArg);
 		}
 	};
 }
 
 function verifyOptions() {
-	path.normalize(pOptions.outputFile);
-	path.normalize(pOptions.outputFolder);
-	path.normalize(pOptions.buildDir);
+	if (pOptions.outputFile) {
+		pOptions.outputFile = path.normalize(pOptions.outputFile);
+	}
+	
+	pOptions.outputFolder = path.normalize(pOptions.outputFolder);
+	pOptions.buildDir = path.normalize(pOptions.buildDir);
 
 	pOptions.outputFile = path.basename(pOptions.outputFolder);
 	pOptions.outputFolder = path.dirname(pOptions.outputFolder);
@@ -217,9 +224,21 @@ function verifyOptions() {
 		pOptions.testsFormat.html = true;
 	}
 
+	// for (var i in pOptions.files) {
+	// 	pOptions.files[i] = (path.normalize(pOptions.buildDir + "/" + pOptions.files[i]));
+	// 	console.log(">>>>>", pOptions.files[i])
+	// }
+
 	if (pOptions.outputFile == null || pOptions.outputFile == "") {
 		pOptions.outputFile = pOptions.files[0] + (pOptions.declaration? ".d.ts" : ".out.js");
 	}
+}
+
+function pwd() {
+	var pwd = spawn("pwd");
+	pwd.stdout.on('data', function (data) {
+	  console.log('stdout: \n' + data);
+	});
 }
 
 function preprocess() {
@@ -251,11 +270,15 @@ function preprocess() {
 		console.log("EcmaScript 6 capability mode: ON");
 	}
 
-	var cmd = pOptions.baseDir + "/mcpp";
+	// pwd();
+
+	var cmd = (isWin? pOptions.baseDir + "/": "") + "mcpp";
 	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -j -+ -W 0 -k " + 
-		capabilityMacro + " " + pOptions.files.join(" ")).
-		split(" ");
+		capabilityMacro + " " + pOptions.files.join(" ")).split(" ");
+
+	console.log(pOptions.files);
 	console.log(cmd + " " + argv.join(" "));
+	
 	var mcpp = spawn(cmd, argv, {maxBuffer: BUFFER_SIZE});
 	var stdout = '';
 
@@ -324,12 +347,11 @@ function compile() {
 		//pOptions.baseDir + "/WebGL.d.ts " + 
 		pOptions.pathToTemp + " --out " +
 		pOptions.outputFolder + "/" + pOptions.outputFile +
-        " --cflowu --const " +
 		// (pOptions.compress? " --comments --jsdoc ": "") + 
 		(pOptions.declaration? " --declaration ": "") +
-		" ").split(" ");
+		" --cflowu --const").replace(/\s+/ig, " ").split(" ");
 
-	console.log(cmd + " " + argv.join(" "));
+	console.log((cmd + " " + argv.join(" ")));//.split(" ")
     
 	var node = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE, stdio: 'inherit' });
 

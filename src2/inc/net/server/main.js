@@ -8,7 +8,7 @@ var http 		= require('http');
 
 //setup global variables
 var WebSocketServer = websocket.server;
-var webSocketsServerPort = 1337;
+var webSocketsServerPort = 6112;
 
 //autoload all modules
 autoloader.autoload(__dirname + '/lib');
@@ -22,7 +22,7 @@ var server = http.createServer(function(request, response) {
     // we don't have to implement anything.
 });
 
-server.listen(1337, function() { 
+server.listen(webSocketsServerPort, function() { 
 	console.log((new Date()) + " Server is listening on port " + webSocketsServerPort); 
 });
 

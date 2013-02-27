@@ -203,7 +203,7 @@ module akra.net {
             var nArg: uint = arguments.length - (fnCallback? 2: 1);
             var pArgv: any[] = new Array(nArg);
             var pPipe: IPipe = this._pPipe;
-            var pCallback: IRPCCallback;
+            var pCallback: IRPCCallback = null;
             var bResult: bool;
 
             for (var i = 0; i < nArg; ++ i) {
