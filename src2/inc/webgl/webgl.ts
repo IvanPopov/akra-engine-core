@@ -224,6 +224,11 @@ module akra.webgl {
             case EPixelFormats.DXT5:
                 return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_S3TC) ? GL_COMPRESSED_RGBA_S3TC_DXT5_EXT : 0;
 
+            case EPixelFormats.FLOAT32_RGB:
+                return GL_RGB;
+            case EPixelFormats.FLOAT32_RGBA:
+                return GL_RGBA;
+
             case EPixelFormats.FLOAT32_GR:
             case EPixelFormats.FLOAT32_R:
 
@@ -350,13 +355,16 @@ module akra.webgl {
             case EPixelFormats.DEPTH_BYTE:
                 return GL_DEPTH_COMPONENT;
 
+            case EPixelFormats.FLOAT32_RGB:
+                return GL_RGB;
+            case EPixelFormats.FLOAT32_RGBA:
+                return GL_RGBA;
+
             case EPixelFormats.A4L4:
             case EPixelFormats.R3G3B2:
             case EPixelFormats.A2R10G10B10:
             case EPixelFormats.A2B10G10R10:
             case EPixelFormats.FLOAT16_RGBA:
-            case EPixelFormats.FLOAT32_RGB:
-            case EPixelFormats.FLOAT32_RGBA:
             case EPixelFormats.SHORT_RGBA:
             case EPixelFormats.SHORT_RGB:
             case EPixelFormats.SHORT_GR:

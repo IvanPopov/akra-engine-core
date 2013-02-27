@@ -15,7 +15,7 @@ module akra.webgl {
 		protected _iWidth: uint = 0;
 		protected _iHeight: uint = 0;
 
-		protected _pWebGLTexture: WebGLTexture;
+		protected _pWebGLTexture: WebGLTexture = null;
 		protected _eWebGLFormat: int;
 		protected _eWebGLType: int;
 
@@ -67,7 +67,7 @@ module akra.webgl {
 		    debug_assert(pWebGLContext !== null, "cannot grab webgl context");
 
 		    //Софтварного рендеринга буфера у нас нет
-		    debug_assert(!this.isSoftware(), "no sftware rendering");
+		    debug_assert(!this.isSoftware(), "no software rendering");
 
 		    //Если есть локальная копия то буфер можно читать
 		    if (this.isBackupPresent()) {
@@ -88,7 +88,7 @@ module akra.webgl {
 		        return false;
 		    }
 
-		    if (pData) {
+		    if (isDefAndNotNull(pData)) {
 		    	
 		    	if (pData.BYTES_PER_ELEMENT > 1) {
 		    		pDataU8 = new Uint8Array(pData, pData.byteOffset, pData.byteLength);
@@ -270,14 +270,15 @@ module akra.webgl {
 		        iXend = (iXend === 0 ? iWidth : iXend);
 
 		        //FIX THIS, move this function from here...
+		        var me = this;
 		        function updatePixelRect(iX: uint, iY: uint, iW: uint, iH: uint): void {
 		            iBeginElement = iEndElement;
 		            iEndElement = iW * iH * nElementsPerPix + iEndElement;
 
-		            pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, this._pWebGLTexture);
+		            pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, me._pWebGLTexture);
 
 		            pWebGLContext.texSubImage2D(GL_TEXTURE_2D, 0, iX, iY, iW, iH, 
-		            	this._eWebGLFormat, this._eWebGLType, pBufferData.subarray(iBeginElement, iEndElement));
+		            	me._eWebGLFormat, me._eWebGLType, pBufferData.subarray(iBeginElement, iEndElement));
 		        };
 
 		        if (iHeight === 1) {
@@ -299,6 +300,9 @@ module akra.webgl {
 		        var iRealSize: uint 	= nElements * iTypeSize;
 		        var pTempData: Uint8Array = <Uint8Array>this._pBackupCopy.lock(iRealOffset, iRealSize);
 		        //var iTotalSize: uint 	= iRealOffset + iRealSize;
+		        
+		        //FIX ME:
+		        this._pBackupCopy.unlock();
 
 		        this._bForceUpdateBackupCopy = false;
 

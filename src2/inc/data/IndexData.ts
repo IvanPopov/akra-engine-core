@@ -40,6 +40,9 @@ module akra.data {
 			this._iLength = iCount;
 			this._iId = id;
 
+			this._ePrimitiveType = ePrimitiveType;
+			this._eElementsType = eElementsType;
+
 			debug_assert(pIndexBuffer.byteLength >= this.byteLength + this.byteOffset, "out of buffer limits.");
 		}
 
@@ -55,7 +58,33 @@ module akra.data {
 			debug_error("cannot read data from index buffer");
 
 			return null;
-		}
+		};
+
+		getTypedData(iStart: int, iCount: int): ArrayBufferView{
+			debug_assert((iStart + iCount) <= this._iLength, "out of buffer limits");
+
+			var iTypeSize: uint = getTypeSize(this._eElementsType);
+
+			var iOffset: uint = iStart * iTypeSize;
+			var iSize: uint = iCount * iTypeSize;
+
+			var pBuffer: Uint8Array = new Uint8Array(iSize);
+
+			if (this._pIndexBuffer.readData(this.byteOffset + iOffset, iSize, pBuffer)){
+				switch(this._eElementsType){
+					case EDataTypes.UNSIGNED_BYTE: 
+						return pBuffer;
+					case EDataTypes.UNSIGNED_SHORT:
+						return new Uint16Array(pBuffer.buffer);
+					case EDataTypes.UNSIGNED_INT:
+						return new Uint32Array(pBuffer.buffer);
+					default:
+						return null;
+				}
+			}
+
+			return null;
+		};
 
 		setData(pData: ArrayBufferView, iOffset: int = 0, iCount: uint = pData.byteLength / this.bytesPerIndex): bool {
 			debug_assert((iOffset + iCount) * this.bytesPerIndex <= this.byteLength, "out of buffer limits.");

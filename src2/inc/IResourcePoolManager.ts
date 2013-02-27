@@ -112,6 +112,7 @@ module akra {
         createEffect(sResourceName: string): IEffect;
         createVertexBuffer(sResourceName: string): IVertexBuffer;
         createVideoBuffer(sResourceName: string): IVertexBuffer;
+        createIndexBuffer(sResourceName: string): IIndexBuffer;
         createModel(sResourceName: string): IModel;
         loadModel(sFilename: string, pOptions?: any): IModel;
     }

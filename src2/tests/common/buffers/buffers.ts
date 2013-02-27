@@ -5,6 +5,10 @@ module akra {
 	var pEngine: IEngine = createEngine();
 	var pResourcePool: IResourcePoolManager = pEngine.getResourceManager();
 
+	// if (pEngine.getRenderer().debug(true, true)) {
+	// 	LOG("context debugging enabled");
+	// }
+
 	test("VertexDeclaration tests", () =>{
 		var pVertexBuffer: IVertexBuffer = pResourcePool.createVertexBuffer('test-vertex-buffer' + <string>sid());
 		pVertexBuffer.create(0, <uint>EHardwareBufferFlags.BACKUP_COPY);	
@@ -191,9 +195,6 @@ module akra {
 		shouldBe("check POSITION offset", 0);
 		check(pDecl.findElement("POSITION").offset);
 
-		console.log(pDecl);
-		console.log(pDecl.toString());
-
 		var pData: IVertexData = pVertexBuffer.getEmptyVertexData(2,pDecl);
 
 		var pArray: Float32Array = new Float32Array([1,2,3,4,5,6]);
@@ -361,9 +362,6 @@ test("VideoBuffer tests<br/>" +
 		shouldBe("check POSITION offset", 0);
 		check(pDecl.findElement("POSITION").offset);
 
-		console.log(pDecl);
-		console.log(pDecl.toString());
-
 		var pData: IVertexData = pVideoBuffer.getEmptyVertexData(2,pDecl);
 
 		var pArray: Float32Array = new Float32Array([1,2,3,4,5,6]);
@@ -374,5 +372,33 @@ test("VideoBuffer tests<br/>" +
 		shouldBeArray("check data POSITION",pArray);
 		check(pData.getTypedData("POSITION"));
 
+	});
+
+	test("IndexBuffer tests", () => {
+		var pIndexBuffer: IIndexBuffer = pResourcePool.createIndexBuffer('test-index-buffer' + <string>sid());
+		pIndexBuffer.create(0, <uint>EHardwareBufferFlags.BACKUP_COPY);		
+
+		var pData: IIndexData = pIndexBuffer.getEmptyIndexData(10, EPrimitiveTypes.TRIANGLELIST, EDataTypes.UNSIGNED_SHORT);
+
+		shouldBeNotNull("try receive indexData");
+		check(pData);
+
+		shouldBeTrue("set data");
+		check(pData.setData(new Uint16Array([1,2,3,4])));
+
+		shouldBeArray("read data", new Uint16Array([1,2,3,4]));
+		check(new Uint16Array(pData.getData(0,8)));
+
+		shouldBeTrue("set data to element");
+		check(pData.setData(new Uint16Array([7]), 7));
+
+		shouldBeArray("read element", new Uint16Array([7]));
+		check(new Uint16Array(pData.getData(14, 2)))
+
+		shouldBeTrue("set data");
+		check(pData.setData(new Uint16Array([3,4]), 5));
+
+		shouldBeArray("read typed array", new Uint16Array([3,4]));
+		check(pData.getTypedData(5, 2));	
 	});
 }
