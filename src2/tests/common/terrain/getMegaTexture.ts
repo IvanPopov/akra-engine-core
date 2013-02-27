@@ -16,17 +16,15 @@ module akra {
 	asyncTest("get mega texture", () => {
 		pRpc.join("ws://localhost:6112");
 		pRpc.bind(SIGNAL(joined), (pRpc: IRPC) => {
-			pRpc.remote.echo(10, (err: Error, i: int) => {
-				if (isNull(err)) {
-					LOG(i, i === 10); 
-				}
-				else { 
-					throw err; 
-				}
-			});
-			// me._pRPC.proc('getMegaTexture', me._sSurfaceTextures, me.getWidthOrig(iLev), me.getHeightOrig(iLev), iX,
-   //                            iY, me._iBlockSize, me._iBlockSize, me._eTextureType,
-   //                            function (pData) {
+			pRpc.remote.getMegaTexture("", 32, 32, 0, 0, 32, 32, 0x1907/* RGB */,
+				(err: Error, pData: ArrayBuffer) => {
+					if (isNull(err)) {
+						LOG(pData); 
+					}
+					else { 
+						throw err; 
+					}
+				});
 		});
 	});
 }
