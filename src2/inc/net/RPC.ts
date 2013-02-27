@@ -21,7 +21,7 @@ module akra.net {
         //число совершенных вызовов
         protected _nCalls: uint = 0;
         //rejoin timer
-        // protected _iReconnect: int = -1;
+        protected _iReconnect: int = -1;
 
         protected _pRemoteAPI: Object = {};
 
@@ -123,7 +123,7 @@ module akra.net {
 
         rejoin(): void {
             var pRPC: IRPC = this;
-            // clearTimeout(this._iReconnect);
+            clearTimeout(this._iReconnect);
 
             if (this._pPipe.isOpened()) {
                 return;
@@ -132,15 +132,10 @@ module akra.net {
             if (this._pPipe.isClosed()) {
                 // LOG("attempt to reconnecting...");
             
-                this.join();
+                this._iReconnect = setTimeout(() => { 
+                    pRPC.join(); 
+                }, RPC.OPTIONS.RECONNECT_TIMEOUT);
             }
-
-            // this._iReconnect = setTimeout(
-            //     function (): void {
-            //         pRPC.rejoin();
-            //     },
-            //     RPC.OPTIONS.RECONNECT_TIMEOUT
-            // );
         }
 
         parse(pRes: IRPCResponse): void {
@@ -163,15 +158,20 @@ module akra.net {
 
         private response(nSerial: uint, eType: ERPCPacketTypes, pResult: any): void {
             var pStack: IObjectList = this._pCallbacks;
+            var fn: Function = null;
 
             if (eType === ERPCPacketTypes.RESPONSE) {
                 var pCallback: IRPCCallback = <IRPCCallback>pStack.last;
                 // WARNING("---------------->",nSerial,"<-----------------");
                 do {
-                    // LOG("#n: ", pCallback.n, " result: ", pResult);
+                    // LOG("#n: ", nSerial, " result: ", pResult);
                     if (pCallback.n === nSerial) {
-                        pCallback.fn(null, pResult);
+                        fn = pCallback.fn;
                         this._releaseCallback(pStack.takeCurrent());
+
+                        if (!isNull(fn)) {
+                            fn(null, pResult);
+                        }
                         return;
                     }
                 } while (pCallback = pStack.prev());
@@ -218,11 +218,11 @@ module akra.net {
             pProc.argv  = pArgv;
 
 
-            if (!isNull(fnCallback)) {
-                pCallback = <IRPCCallback>this._createCallback();
-                pCallback.n = pProc.n;
-                pCallback.fn = fnCallback;
-            }
+            //if (!isNull(fnCallback)) {
+            pCallback = <IRPCCallback>this._createCallback();
+            pCallback.n = pProc.n;
+            pCallback.fn = fnCallback;
+            //}
 
             if (isNull(pPipe) || !pPipe.isOpened()) {
                 if (this._pDefferedRequests.length <= RPC.OPTIONS.DEFFERED_CALLS_LIMIT) {
@@ -290,7 +290,7 @@ module akra.net {
 
         static OPTIONS = {
             DEFFERED_CALLS_LIMIT: 1024,
-            RECONNECT_TIMEOUT   : 1000
+            RECONNECT_TIMEOUT   : 2500
         }
 
         static ERRORS = {
