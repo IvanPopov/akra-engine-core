@@ -16,12 +16,12 @@ module akra.fx {
 			this._eInstructionType = EAFXInstructionTypes.k_VariableDeclInstruction;
 		}
 
-		hasInitializer(): bool {
-			return false;
+		inline hasInitializer(): bool {
+			return this._nInstructions === 3 && !isNull(this.getInitializeExpr());
 		}
 
-		getInitializeExpr(): IAFXExprInstruction {
-			return null;
+		inline getInitializeExpr(): IAFXInitExprInstruction {
+			return <IAFXInitExprInstruction>this.getInstructions()[2];
 		}
 
 		inline getType(): IAFXVariableTypeInstruction {

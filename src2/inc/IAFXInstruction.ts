@@ -46,6 +46,7 @@ module akra {
         k_SystemCallInstruction,
         k_ConstructorCallInstruction,
         k_CompileExprInstruction,
+        k_InitExprInstruction,
         k_SamplerStateBlockInstruction,
         k_SamplerStateInstruction,
         k_MemExprInstruction,
@@ -452,6 +453,10 @@ module akra {
         getType(): IAFXVariableTypeInstruction;
         
         clone(pRelationMap?: IAFXInstructionMap): IAFXExprInstruction;
+    }
+
+    export interface IAFXInitExprInstruction extends IAFXExprInstruction {
+        optimizeForVariableType(pType: IAFXVariableTypeInstruction): bool;
     }
 
     export interface IAFXIdExprInstruction extends IAFXExprInstruction {

@@ -74,7 +74,9 @@ module akra.fx {
     #define EFFECT_BAD_OUT_VARIABLE_IN_FUNCTION 2266
     #define EFFECT_BAD_TYPE_FOR_WRITE 2267
     #define EFFECT_BAD_TYPE_FOR_READ 2268
-
+    #define EFFECT_BAD_VARIABLE_INITIALIZER 2269
+    #define EFFECT_NOT_SUPPORT_STATE_INDEX 2270
+    #define EFFECT_BAD_TEXTURE_FOR_SAMLER 2271
 
     #define TEMP_EFFECT_BAD_ARRAY_OF_POINTERS 2300
 
@@ -265,7 +267,15 @@ module akra.fx {
     akra.logger.registerCode(EFFECT_BAD_TYPE_FOR_READ,
                              "Variable type is not readable. \
                               In line: {line}. In column: {column}"); 
-
+    akra.logger.registerCode(EFFECT_BAD_VARIABLE_INITIALIZER,
+                             "Bad init expr for variable '{varName}'. \
+                              In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFECT_NOT_SUPPORT_STATE_INDEX,
+                             "Don`t supported construction '[uint]' in sampler_state. \
+                              In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFECT_BAD_TEXTURE_FOR_SAMLER,
+                             "Incorrect texture setup for sampler. \
+                              In line: {line}. In column: {column}");
 
 
     akra.logger.registerCode(TEMP_EFFECT_BAD_ARRAY_OF_POINTERS,

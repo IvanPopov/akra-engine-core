@@ -622,24 +622,65 @@ module akra.fx {
 			pInfo.numRead++;
 		}
 	}
+
+	export class InitExprInstruction extends ExprInstruction implements IAFXInitExprInstruction {
+		private _pConstructorType: IAFXTypeInstruction = null;
+
+		constructor(){
+			super();
+			this._pInstructionList = [];
+			this._eInstructionType = EAFXInstructionTypes.k_InitExprInstruction;	
+		}
+
+		optimizeForVariableType(pType: IAFXVariableTypeInstruction): bool {
+			if(pType.isNotBaseArray()){
+				return false;
+			}
+
+			var pFirstInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+			
+			if (this._nInstructions === 1 && 
+				pFirstInstruction._getInstructionType() !== EAFXInstructionTypes.k_InitExprInstruction){
+				
+				if(pFirstInstruction.getType().isEqual(pType)){
+					return false;
+				}
+				else {
+					return true;
+				}
+			}
+			
+			var pInstructionList: IAFXInitExprInstruction[] = <IAFXInitExprInstruction[]>this.getInstructions();
+			var pFieldNameList: string[] = pType.getFieldNameList();
+
+			if(!pType.isArray() || pType.getLength() !== pInstructionList.length){
+				return false;
+			}
+
+			for(var i: uint = 0 ; i < pInstructionList.length; i++){
+				var pFieldType: IAFXVariableTypeInstruction = pType.getFieldType(pFieldNameList[i]);
+				if(pInstructionList[i].optimizeForVariableType(pFieldType));
+			}
+
+			this._pConstructorType = pType.getBaseType();
+			return true;
+		}
+	}
 	/**
 	 * Represetn sampler_state { states }
 	 * sampler_state IdExprInstruction ExprInstruction ... ExprInstruction
 	 */
 	export class SamplerStateBlockInstruction extends ExprInstruction {
+		
 		constructor() { 
 			super();
 			this._pInstructionList = [null];
 			this._eInstructionType = EAFXInstructionTypes.k_SamplerStateBlockInstruction;
 		}	
-	}
 
-	export class SamplerStateInstruction extends ExprInstruction {
-		constructor() { 
-			super();
-			this._pInstructionList = [null, null];
-			this._eInstructionType = EAFXInstructionTypes.k_SamplerStateInstruction;
-		}	
+		addState(sStateType: string, sStateValue: string): void{
+			return;
+		}
 	}
 }
 
