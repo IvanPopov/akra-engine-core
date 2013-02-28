@@ -11,6 +11,8 @@
 #include "bf/bitflags.ts"
 #include "math/math.ts"
 
+#include "IRenderer.ts"
+#include "pixelUtil/pixelUtil.ts"
 
 #define GLSL_VS_SHADER_MIN "void main(void){gl_Position = vec4(0., 0., 0., 1.);}"
 #define GLSL_FS_SHADER_MIN "void main(void){}"
@@ -40,7 +42,50 @@ module akra.webgl {
 	export var hasNonPowerOf2Textures: bool = false;
 
 	var pSupportedExtensionList: string[] = null;
-	var pLoadedExtensionList: Object = null;
+	// var pLoadedExtensionList: Object = null;
+
+    function setupContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {
+        var pWebGLExtentionList: Object = {};
+        var pWebGLExtension: Object;
+        
+        //test context not created yet
+        if (isNull(pSupportedExtensionList)) {
+            return pWebGLContext;
+        }
+
+        for (var i: int = 0; i < pSupportedExtensionList.length; ++ i) {
+            if (pWebGLExtension = pWebGLContext.getExtension(pSupportedExtensionList[i])) {
+                pWebGLExtentionList[pSupportedExtensionList[i]] = pWebGLExtension;
+
+                debug_print("loaded WebGL extension: %1", pSupportedExtensionList[i]);
+
+                for (var j in pWebGLExtension) {
+                    if (isFunction(pWebGLExtension[j])) {
+
+                        pWebGLContext[j] = function () {
+                            pWebGLContext[j] = new Function(
+                                "var t = this.pWebGLExtentionList[" + pSupportedExtensionList[i] + "];" + 
+                                "t." + j + ".apply(t, arguments);");
+                        }
+
+                    }
+                    else {
+                        pWebGLContext[j] = pWebGLExtentionList[pSupportedExtensionList[i]][j];
+                    }
+                }
+            }
+            else {
+                WARNING("cannot load extension: %1", pSupportedExtensionList[i]);
+                pSupportedExtensionList.splice(i, 1);
+            }
+        }
+
+
+        (<any>pWebGLContext).pWebGLExtentionList = pWebGLExtentionList;
+        // pLoadedExtensionList = pWebGLExtentionList;
+         
+        return pWebGLContext;
+    }
 
     export function createContext(
             pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas"), 
@@ -54,11 +99,13 @@ module akra.webgl {
     	}
 		catch (e) {}
 
-		if (!pWebGLContext) {
-			debug_warning("cannot get 3d device");
+		if (isDefAndNotNull(pWebGLContext)) {
+            return setupContext(pWebGLContext);
 		}
-
-		return pWebGLContext;
+        
+        debug_warning("cannot get 3d device");
+        
+		return null;
     }
 
 	(function (pWebGLContext: WebGLRenderingContext): void {
@@ -90,39 +137,6 @@ module akra.webgl {
 #ifdef DEBUG	    
 	    pSupportedExtensionList.push(WEBGL_DEBUG_SHADERS, WEBGL_DEBUG_RENDERER_INFO);
 #endif
-	    var pWebGLExtentionList: Object = {};
-	    var pWebGLExtension: Object;
-	    
-	    for (var i: int = 0; i < pSupportedExtensionList.length; ++ i) {
-	        if (pWebGLExtension = pWebGLContext.getExtension(pSupportedExtensionList[i])) {
-	            pWebGLExtentionList[pSupportedExtensionList[i]] = pWebGLExtension;
-
-	            debug_print("loaded WebGL extension: %1", pSupportedExtensionList[i]);
-
-	            for (var j in pWebGLExtension) {
-	                if (isFunction(pWebGLExtension[j])) {
-
-	                    pWebGLContext[j] = function () {
-	                        pWebGLContext[j] = new Function(
-	                            "var t = this.pWebGLExtentionList[" + pSupportedExtensionList[i] + "];" + 
-	                            "t." + j + ".apply(t, arguments);");
-	                    }
-
-	                }
-	                else {
-	                    pWebGLContext[j] = pWebGLExtentionList[pSupportedExtensionList[i]][j];
-	                }
-	            }
-	        }
-	        else {
-	            WARNING("cannot load extension: %1", pSupportedExtensionList[i]);
-	            pSupportedExtensionList.splice(i, 1);
-	        }
-	    }
-
-
-	    (<any>pWebGLContext).pWebGLExtentionList = pWebGLExtentionList;
-	    pLoadedExtensionList = pWebGLExtentionList;
 
 	})(createContext());
 
@@ -263,6 +277,12 @@ module akra.webgl {
             case EPixelFormats.FLOAT32_RGB:
             case EPixelFormats.FLOAT32_RGBA:
                 return GL_FLOAT;
+
+            case EPixelFormats.DEPTH:
+                return GL_UNSIGNED_INT;
+            case EPixelFormats.DEPTH_BYTE:
+                return GL_UNSIGNED_BYTE;
+
             case EPixelFormats.DXT1:
             case EPixelFormats.DXT3:
             case EPixelFormats.DXT5:
@@ -277,6 +297,8 @@ module akra.webgl {
                 return 0;
 		}
 	}
+
+
 
 	export function getWebGLInternalFormat(eFormat: EPixelFormats, isHWGamma: bool = false): int {
         switch (eFormat) {
@@ -322,6 +344,12 @@ module akra.webgl {
             case EPixelFormats.RG8:
                 return webgl.hasExtension(EXT_TEXTURE_RG) ? GL_RED_EXT : 0;
 
+            //depth
+            case EPixelFormats.DEPTH:
+                return GL_DEPTH_COMPONENT;
+            case EPixelFormats.DEPTH_BYTE:
+                return GL_DEPTH_COMPONENT;
+
             case EPixelFormats.A4L4:
             case EPixelFormats.R3G3B2:
             case EPixelFormats.A2R10G10B10:
@@ -348,6 +376,27 @@ module akra.webgl {
         }
     }
 
+    export function getWebGLPrimitiveType(eType: EPrimitiveTypes): int {
+        switch (eType) {
+            case EPrimitiveTypes.POINTLIST: 
+                return GL_POINTS;
+            case EPrimitiveTypes.LINELIST: 
+                return GL_LINES;
+            case EPrimitiveTypes.LINELOOP: 
+                return GL_LINE_LOOP;
+            case EPrimitiveTypes.LINESTRIP: 
+                return GL_LINE_STRIP;
+            case EPrimitiveTypes.TRIANGLELIST: 
+                return GL_TRIANGLES;
+            case EPrimitiveTypes.TRIANGLESTRIP: 
+                return GL_TRIANGLE_STRIP;
+            case EPrimitiveTypes.TRIANGLEFAN: 
+                return GL_TRIANGLE_FAN;
+        }
+
+        return GL_POINTS;
+    }
+
     export function getClosestWebGLInternalFormat(eFormat: EPixelFormats, isHWGamma: bool = false): int {
         var iGLFormat = webgl.getWebGLInternalFormat(eFormat, isHWGamma);
         
@@ -365,6 +414,9 @@ module akra.webgl {
         }
     }
 
+    /**
+     * Convert GL format to EPixelFormat.
+     */
     export function getClosestAkraFormat(iGLFormat: int, iGLDataType: int): EPixelFormats {
         switch (iGLFormat) {
 
@@ -390,7 +442,7 @@ module akra.webgl {
 	                    return EPixelFormats.B5G6R5;
 	                default:
 	                    return EPixelFormats.R8G8B8;
-            	};
+            	}
             case GL_RGBA:
                 switch(iGLDataType) {
 	                case GL_UNSIGNED_SHORT_5_5_5_1:
@@ -421,7 +473,7 @@ module akra.webgl {
             default:
                 //TODO: not supported
                 return EPixelFormats.A8R8G8B8;
-        };
+        }
     }
 
     export function getMaxMipmaps(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats) : int {

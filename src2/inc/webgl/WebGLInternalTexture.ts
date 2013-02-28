@@ -156,7 +156,6 @@ module akra.webgl {
 	        }
 
 	        this._createSurfaceList();
-
 	        // Get final internal format
         	this._eFormat = this.getBuffer(0,0).format;
 
@@ -194,9 +193,11 @@ module akra.webgl {
         	var pTextureBufferPool: IResourcePool = this.getManager().textureBufferPool;
         	var sResourceName: string = this.findResourceName();
 
-        	for(iFace = 0; iFace < this._nMipLevels; iFace++) {
+        	for(iFace = 0; iFace < this.getNumFaces(); iFace++) {
         		var iWidth: uint = this._iWidth;
         		var iHeight: uint = this._iHeight;
+
+
 
         		for(mip = 0; mip <= this._nMipLevels; mip++) {
         			var pBuf: WebGLTextureBuffer = <WebGLTextureBuffer>pTextureBufferPool.createResource(sResourceName + "_" + iFace + "_" + mip);
@@ -236,7 +237,7 @@ module akra.webgl {
 	        }
 
 	        var idx: uint = iFace * (this._nMipLevels + 1) + iMipmap;
-	        ASSERT(idx < this._pSurfaceList.length);
+	        ASSERT(idx < this._pSurfaceList.length,"smth");
 	        
 	        return this._pSurfaceList[idx];
         }

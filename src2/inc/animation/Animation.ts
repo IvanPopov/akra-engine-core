@@ -2,16 +2,21 @@
 #define ANIMATION_TS
 
 #include "IAnimation.ts"
-#include "INode.ts"
+#include "ISceneNode.ts"
 #include "IAnimationFrame.ts"
 #include "IAnimationTrack.ts"
 
+#include "AnimationBase.ts"
 
 module akra.animation {
-	export class Animation implements IAnimation extends AnimationBase {
+	class Animation implements IAnimation extends AnimationBase {
 
 		private _pTracks: IAnimationTrack[] = [];
     	
+    	constructor (sName: string = null) {
+    		super();
+    		this.name = sName;
+    	}
 
 		inline get totalTracks(): float{
 			return this._pTracks.length;
@@ -23,12 +28,12 @@ module akra.animation {
 			this.addTarget(pTrack.targetName);
 		}
 
-		attach(pTarget: INode): void {
+		attach(pTarget: ISceneNode): void {
 			var pPointer;
 		    var pTracks: IAnimationTrack[] = this._pTracks;
 			for (var i = 0; i < pTracks.length; ++ i) {
 				if (!pTracks[i].bind(pTarget)) {
-					trace('cannot bind animation track [', i, '] to joint <', pTracks[i].target, '>');
+					LOG("cannot bind animation track [", i, "] to joint <", pTracks[i].target, ">");
 				}
 				else {
 					pPointer = this.setTarget(pTracks[i].targetName, pTracks[i].target);
@@ -60,7 +65,11 @@ module akra.animation {
 				}
 			}
 		}
-	} 
+	}
+
+	export function createAnimation(sName: string = null): IAnimation {
+		return new Animation(sName);
+	}
 }
 
 #endif

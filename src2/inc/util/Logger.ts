@@ -4,7 +4,7 @@
 #include "common.ts"
 #include "ILogger.ts"
 #include "bf/bitflags.ts"
-#include "Singleton.ts"
+// #include "Singleton.ts"
 
 module akra.util {
  
@@ -36,7 +36,7 @@ module akra.util {
         [familyName: string]: ILogRoutineMap;
     }
 
-    export class Logger extends Singleton implements ILogger {
+    export class Logger/* extends Singleton*/ implements ILogger {
         private _eLogLevel: ELogLevel;
         private _pGeneralRoutineMap: ILogRoutineMap;
 
@@ -56,7 +56,7 @@ module akra.util {
         private _sUnknownMessage: string;
 
         constructor () {
-            super();
+            //super();
             
             this._eUnknownCode = 0;
             this._sUnknownMessage = "Unknown code";  
@@ -170,9 +170,9 @@ module akra.util {
         setCodeFamilyRoutine(eCodeFromFamily: uint, fnLogRoutine: ILogRoutineFunc, eLevel: ELogLevel): bool;
         setCodeFamilyRoutine(sFamilyName: string, fnLogRoutine: ILogRoutineFunc, eLevel: ELogLevel): bool;
         setCodeFamilyRoutine():bool {
-            var sFamilyName: string;
-            var fnLogRoutine: ILogRoutineFunc;
-            var eLevel:ELogLevel;
+            var sFamilyName: string = null;
+            var fnLogRoutine: ILogRoutineFunc = null;
+            var eLevel: ELogLevel = ELogLevel.LOG;
 
             if(isInt(arguments[0])){
                 sFamilyName = this.getFamilyName(arguments[0]);
@@ -454,9 +454,9 @@ module akra.util {
             return isInt(eCode);
         }
 
-        private prepareLogEntity(pEntity: ILoggerEntity): void;
-        private prepareLogEntity(eCode: uint, ...pArgs: any[]): void;
-        private prepareLogEntity(pArgs:any[]): ILoggerEntity;
+        private prepareLogEntity(pEntity: ILoggerEntity): ILoggerEntity;
+        private prepareLogEntity(eCode: uint, ...pArgs: any[]): ILoggerEntity;
+        private prepareLogEntity(...pArgs:any[]): ILoggerEntity;
         private prepareLogEntity(): ILoggerEntity{
             var eCode: uint = this._eUnknownCode;
             var sMessage:string = this._sUnknownMessage;
@@ -545,7 +545,7 @@ module akra.util {
 }
 
 module akra.util {
-    logger = new Logger();
+    export var logger: ILogger = new Logger();
 
     logger.init();
     logger.setUnknownCode(UNKNOWN_CODE, UNKONWN_MESSAGE);
@@ -577,7 +577,7 @@ module akra.util {
         pArgs.unshift("Code: " + pLogEntity.code.toString());
         pArgs.unshift(sourceLocationToString(pLogEntity.location));
         
-        console["warning"].apply(console, pArgs);    
+        console["warn"].apply(console, pArgs);    
     }
 
     function errorRoutine(pLogEntity: ILoggerEntity): void{
@@ -594,6 +594,10 @@ module akra.util {
     logger.setLogRoutine(logRoutine, ELogLevel.LOG | ELogLevel.INFORMATION);
     logger.setLogRoutine(warningRoutine, ELogLevel.WARNING);
     logger.setLogRoutine(errorRoutine, ELogLevel.ERROR | ELogLevel.CRITICAL);
+}
+
+module akra {
+    logger = util.logger;
 }
 
 

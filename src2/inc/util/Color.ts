@@ -137,11 +137,11 @@ module akra.util {
 						this.a = c[3];
 					}
 					else {
-						var c: IColorValue = <IColorValue>arguments[0];
-						this.r = c.r;
-						this.g = c.g;
-						this.b = c.b;
-						this.a = c.a;
+						var v: IColorValue = <IColorValue>arguments[0];
+						this.r = v.r;
+						this.g = v.g;
+						this.b = v.b;
+						this.a = v.a;
 					}
 					break;
 				case 2:
@@ -343,7 +343,7 @@ module akra.util {
 			var delta: float = vMax - vMin;
 
 			var brightness: float = vMax;
-			var hue: float;
+			var hue: float = 0.;
 			var saturation: float;
 
 			if (math.isRealEqual(delta, 0.0, 1e-6)) {
@@ -377,6 +377,17 @@ module akra.util {
 			pHsb[2] = brightness;
 
 			return pHsb;
+		}
+
+		static toFloat32Array(pValue: IColorValue): Float32Array {
+			var pArr: Float32Array = new Float32Array(4);
+			
+			pArr[0] = pValue.r;
+			pArr[1] = pValue.g;
+			pArr[2] = pValue.b;
+			pArr[3] = pValue.a;
+
+			return pArr;
 		}
 
 		static BLACK: IColor = new Color(0);

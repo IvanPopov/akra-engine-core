@@ -33,7 +33,7 @@
  */
 #define TRUE_BIT(value, bit) ((value) |= FLAG((bit)))
 
-#define SET_BIT(value, bit, setting) (setting ? SET_BIT(value, bit) : CLEAR_BIT(value, bit))
+#define SET_BIT(value, bit, setting) (setting ? TRUE_BIT(value, bit) : CLEAR_BIT(value, bit))
 
 
 /**
@@ -277,18 +277,21 @@ module akra.bf {
             return <uint>(s | (m >> 13));
         }
         else if (e == 0xff - (127 - 15)) {
-            if (m == 0) // Inf
+            // Inf
+            if (m == 0) 
             {
                 return <uint>(s | 0x7c00);
             } 
-            else    // NAN
+            // NAN
+            else    
             {
                 m >>= 13;
                 return <uint>(s | 0x7c00 | m | <int><any>(m == 0));
             }
         }
         else {
-            if (e > 30) // Overflow
+            // Overflow
+            if (e > 30) 
             {
                 return <uint>(s | 0x7c00);
             }

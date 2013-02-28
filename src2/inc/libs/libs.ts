@@ -2,18 +2,27 @@
 #define LIBS_TS
 
 #include "strings/utf8.ts"
+
+#ifdef CRYPTO_API
+
 #include "crypto/crc32.ts"
 #include "crypto/md5.ts"
 #include "crypto/sha-1.ts"
 
+#endif
+
 interface String {
     toUTF8(): string;
     fromUTF8(): string;
-    
+
+#ifdef CRYPTO_API
     md5(): string;
     sha1(): string;
     crc32(): string;
+#endif
+
     replaceAt(n: int, s: string);
+
 }
 
 interface Array {
@@ -48,6 +57,7 @@ module akra.libs {
         return utf8_decode(this);
     };
 
+#ifdef CRYPTO_API
     String.prototype.md5 = function () {
         return md5(this);
     };
@@ -59,6 +69,7 @@ module akra.libs {
     String.prototype.crc32 = function () {
         return crc32(this);
     };
+#endif
 
     String.prototype.replaceAt = function (n, chr) {
         return this.substr(0, n) + chr + this.substr(n + chr.length);

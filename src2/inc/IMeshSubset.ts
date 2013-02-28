@@ -16,16 +16,16 @@ module akra {
 		readonly mesh: IMesh;
 		readonly skin: ISkin;
 		readonly data: IRenderData;
+		readonly boundingBox: IRect3d;
+        readonly boundingSphere: ISphere;
 
 		createBoundingBox(): bool;
 		deleteBoundingBox(): bool;
-		getBoundingBox(): IRect3d;
 		showBoundingBox(): bool;
 		hideBoundingBox(): bool;
 
 		createBoundingSphere(): bool;
 		deleteBoundingSphere(): bool;
-		getBoundingSphere(): ISphere;
 		showBoundingSphere(): bool;
 		hideBoundingSphere(): bool;
 
@@ -38,10 +38,14 @@ module akra {
 		setSkin(pSkin: ISkin): bool;
 
 		/** @deprecated */
-		applyFlexMaterial(csMaterial: string, pMaterial: IMaterial): IMaterial;
+		applyFlexMaterial(csMaterial: string, pMaterial?: IMaterial): bool;
+		/** @deprecated */
 		getFlexMaterial(iMaterial: int): IMaterial;
+		/** @deprecated */
 		getFlexMaterial(csName: string): IMaterial;
+		/** @deprecated */
 		setFlexMaterial(iMaterial: int): bool;
+		/** @deprecated */
 		setFlexMaterial(csName: string): bool;
 
 		show(): void;

@@ -31,7 +31,7 @@ module akra.geometry {
 	export function computeBoundingSphereFast(pVertexData: IVertexData, pSphere: ISphere, pBoundingBox: IRect3d = null): bool;
 	export function computeBoundingSphereMinimal(pVertexData: IVertexData, pSphere: ISphere): bool;
 	export function computeGeneralizingSphere(pSphereA: ISphere, pSphereB: ISphere, pSphereDest?: ISphere): bool;
-	export function computeDataForCascadeBoundingSphere(pBoundingSphere: IRect3d, ppVertexes: float[], ppIndexes: uint[], fMinSize?: float): bool;
+	export function computeDataForCascadeBoundingSphere(pBoundingSphere: ISphere, ppVertexes: float[], ppIndexes: uint[], fMinSize?: float): bool;
 
 	/**
 	 * Computes a coordinate-axis oriented bounding box.
@@ -41,7 +41,7 @@ module akra.geometry {
 			fX1: float = 0, fY1: float = 0, fZ1: float = 0;
 		var fTemp: float, pTempData: Float32Array;
 		var i: int = 0;
-		var pVertexDeclaration: IVertexDeclaration, pVertexElement: IVertexElement, pData: ;
+		var pVertexDeclaration: IVertexDeclaration, pVertexElement: IVertexElement, pData: ArrayBuffer;
 		var nStride: uint, nCount: uint;
 
 
@@ -50,7 +50,7 @@ module akra.geometry {
 		if(isNull(pVertexDeclaration))
 			return false;
 
-		pVertexElement = pVertexDeclaration.element(DeclUsage.POSITION, 3);
+		pVertexElement = pVertexDeclaration.findElement(DeclUsages.POSITION, 3);
 
 		if(isNull(pVertexElement))
 			return false;
@@ -137,9 +137,9 @@ module akra.geometry {
 
 		for(i = 0; i < 8; i++) {
 			for(j = 0; j < 4; j++) {
-				for(k = 0; k < 3; k++) {
-					ppVertexes[i * 12 + j * 3 + k] = pPoints[i][j].pData[k];
-				}
+				ppVertexes[i * 12 + j * 3 + 0] = pPoints[i][j].x;
+				ppVertexes[i * 12 + j * 3 + 1] = pPoints[i][j].y;
+				ppVertexes[i * 12 + j * 3 + 2] = pPoints[i][j].z;
 			}
 		}
 
@@ -154,7 +154,7 @@ module akra.geometry {
 			28,29,28,30,28,31
 		];
 
-		for(i in pInd) {
+		for(var i: int = 0; i < pInd.length; ++ i) {
 			ppIndexes[i] = pInd[i];
 		}
 
@@ -181,12 +181,12 @@ module akra.geometry {
 
 	    if (fD < fR1 && fR1 > fR2) {
 	        pSphereDest.set(pSphereA);
-	        return;
+	        return false;
 	    }
 
 	    if (fD < fR2) {
 	        pSphereDest.set(pSphereB);
-	        return;
+	        return false;
 	    }
 
 	    var v3fN: IVec3 = new Vec3;
@@ -195,7 +195,9 @@ module akra.geometry {
 	    pSphereDest.radius = v3fD.add(v3fN.scale(fR1 + fR2)).length() / 2.0;
 
 	    var v3fTemp: IVec3 = v3fD;
-	    pSphereDest.v3fCenter = v3fC1.add(v3fC2, v3fTemp).add(v3fN.scale((fR1 - fR2) / (fR1 + fR2))).scale(.5);
+	    pSphereDest.center = v3fC1.add(v3fC2, v3fTemp).add(v3fN.scale((fR1 - fR2) / (fR1 + fR2))).scale(.5);
+
+	    return true;
 	}
 
 	/** расчет данных для отрисовки сферы */
@@ -215,9 +217,9 @@ module akra.geometry {
 			fTheta=-Math.PI+(i*fDelta);
 			for(j = 0; j <= nCount; j++) {
 				fAlpha = j * fDelta;
-				ppVertexes[(i*(nCount+1)+j)*3+0] = pBoundingSphere.v3fCenter.x + pBoundingSphere.radius * Math.sin(fTheta) * Math.cos(fAlpha);
-				ppVertexes[(i*(nCount+1)+j)*3+1] = pBoundingSphere.v3fCenter.y + pBoundingSphere.radius * Math.sin(fTheta) * Math.sin(fAlpha);
-				ppVertexes[(i*(nCount+1)+j)*3+2] = pBoundingSphere.v3fCenter.z + pBoundingSphere.radius * Math.cos(fTheta);
+				ppVertexes[(i*(nCount+1)+j)*3+0] = pBoundingSphere.center.x + pBoundingSphere.radius * Math.sin(fTheta) * Math.cos(fAlpha);
+				ppVertexes[(i*(nCount+1)+j)*3+1] = pBoundingSphere.center.y + pBoundingSphere.radius * Math.sin(fTheta) * Math.sin(fAlpha);
+				ppVertexes[(i*(nCount+1)+j)*3+2] = pBoundingSphere.center.z + pBoundingSphere.radius * Math.cos(fTheta);
 			}
 		}
 
@@ -276,14 +278,14 @@ module akra.geometry {
 		}
 
 
-		pVertexElement = pVertexDeclaration.element(Declusage.POSITION, 3);
+		pVertexElement = pVertexDeclaration.findElement(DeclUsages.POSITION, 3);
 
 		if(isNull(pVertexElement)) {
 			return false;
 		}
 
 		nCount = pVertexData.length;
-		nStride = pVertexElement.iSize;
+		nStride = pVertexElement.size;
 
 		pData = pVertexData.getData(pVertexElement.offset, pVertexElement.size);
 
@@ -348,13 +350,13 @@ module akra.geometry {
 			return false;
 		}
 
-		pVertexElement = pVertexDeclaration.element(Declusage.POSITION,3);
+		pVertexElement = pVertexDeclaration.findElement(DeclUsages.POSITION,3);
 		
 		if(isNull(pVertexElement))
 			return false;
 
 		nCount = pVertexData.length;
-		nStride = pVertexElement.iSize;
+		nStride = pVertexElement.size;
 
 		pData = pVertexData.getData(pVertexElement.offset, pVertexElement.size);
 		
@@ -425,11 +427,11 @@ module akra.geometry {
 	        fZ += points[i + 2];
 	    }
 
-	    var x: float = pSphere.v3fCenter.x = fX / points.length * 3;
-	    var y: float = pSphere.v3fCenter.y = fY / points.length * 3;
-	    var z: float = pSphere.v3fCenter.z = fZ / points.length * 3;
+	    var x: float = pSphere.center.x = fX / points.length * 3;
+	    var y: float = pSphere.center.y = fY / points.length * 3;
+	    var z: float = pSphere.center.z = fZ / points.length * 3;
 	    
-	    pSphere.fRadius = Math.sqrt((points[0] - x) * (points[0] - x) +
+	    pSphere.radius = Math.sqrt((points[0] - x) * (points[0] - x) +
 	                                    (points[1] - y) * (points[1] - y) +
 	                                    (points[2] - z) * (points[2] - z));
 	    return true;

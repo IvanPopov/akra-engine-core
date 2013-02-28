@@ -206,7 +206,7 @@ module akra.util {
             this._pExpected = <BoolMap>{};
 
             if (arguments.length === 3) {
-                var i: string;
+                var i: string = null;
                 for (i in <BoolMap>arguments[2]) {
                     this.addExpected(i);
                 }
@@ -221,7 +221,7 @@ module akra.util {
                 if (!(this._pRule === pItem.rule && this._iPos === pItem.position && this._iLength === (<IItem>pItem).length)) {
                     return false;
                 }
-                var i: string;
+                var i: string = null;
                 for (i in this._pExpected) {
                     if (!(<IItem>pItem).isExpected(i)) {
                         return false;
@@ -688,7 +688,7 @@ module akra.util {
         }
 
         getTerminalValueByName(sName: string): string{
-            var sValue: string;
+            var sValue: string = null;
             
             for(sValue in this._pPunctuatorsMap){
                 if(this._pPunctuatorsMap[sValue] === sName){
@@ -757,6 +757,18 @@ module akra.util {
                                 });
             }
             return pToken;
+        }
+
+        inline _getIndex(): uint {
+            return this._iIndex;
+        }
+
+        inline _setSource(sSource: string): void {
+            this._sSource = sSource;
+        }
+
+        inline _setIndex(iIndex: uint): void {
+            this._iIndex = iIndex;
         }
 
         private _error(eCode: uint, pToken: IToken): void {
@@ -889,7 +901,7 @@ module akra.util {
         private scanString(): IToken {
             var chFirst: string = this.currentChar();
             var sValue: string = chFirst;
-            var ch: string;
+            var ch: string = null;
             var chPrevious: string = chFirst;
             var isGoodFinish: bool = false;
             var iStart: uint = this._iColumnNumber;
@@ -1294,7 +1306,7 @@ module akra.util {
         private _pRuleCreationModeMap: IntMap;
         private _eParseMode: EParseMode;
 
-        private _isSync: bool;
+        // private _isSync: bool;
 
         //Temp
 
@@ -1337,7 +1349,7 @@ module akra.util {
             this._pRuleCreationModeMap = null;
             this._eParseMode = EParseMode.k_AllNode;
 
-            this._isSync = false;
+            // this._isSync = false;
 
             this._pStatesTempMap = null;
             this._pBaseItemList = null;
@@ -1388,13 +1400,13 @@ module akra.util {
             }
         }
 
-        parse(sSource: string, isSync?: bool = true, fnFinishCallback?: IFinishFunc = null, pCaller?: any = null): EParserCode {
+        parse(sSource: string, fnFinishCallback?: IFinishFunc = null, pCaller?: any = null): EParserCode {
              try {
                 this.defaultInit();
                 this._sSource = sSource;
                 this._pLexer.init(sSource);
 
-                this._isSync = isSync;
+                //this._isSync = isSync;
 
                 this._fnFinishCallback = fnFinishCallback;
                 this._pCaller = pCaller;
@@ -1481,7 +1493,7 @@ module akra.util {
                     pTree.setRoot();
                     this._sFileName = "stdin";
                     if (!isNull(this._fnFinishCallback)) {
-                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok);
+                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok, this.getParseFileName());
                     }
                     return EParserCode.k_Ok;
                 }
@@ -1489,7 +1501,7 @@ module akra.util {
                     this._error(PARSER_SYNTAX_ERROR, pToken);
                     this._sFileName = "stdin";
                     if (!isNull(this._fnFinishCallback)) {
-                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error);
+                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error, this.getParseFileName());
                     }
                     return EParserCode.k_Error;
                 }
@@ -1547,6 +1559,41 @@ module akra.util {
             return this._pGrammarSymbols;
         }
 
+        inline getSyntaxTree(): IParseTree {
+            return this._pSyntaxTree;
+        }
+
+        _saveState(): IParserState {
+            return {
+                source: this._sSource,
+                index: this._pLexer._getIndex(),
+                fileName: this._sFileName,
+                tree: this._pSyntaxTree,
+                types: this._pTypeIdMap,
+                stack: this._pStack,
+                token: this._pToken,
+                fnCallback: this._fnFinishCallback,
+                caller: this._pCaller  
+            };
+        }
+
+        _loadState(pState: IParserState): void {
+            this._sSource = pState.source;
+            this._iIndex = pState.index;
+            this._sFileName = pState.fileName;
+            this._pSyntaxTree = pState.tree;
+            this._pTypeIdMap = pState.types;
+            this._pStack = pState.stack;
+            this._pToken = pState.token;
+            this._fnFinishCallback = pState.fnCallback;
+            this._pCaller = pState.caller;
+
+            this._pLexer._setSource(pState.source);
+            this._pLexer._setIndex(pState.index);
+        }
+
+
+
         protected addAdditionalFunction(sFuncName: string, fnRuleFunction: IRuleFunction): void {
             if(isNull(this._pAdditionalFunctionsMap)){
                 this._pAdditionalFunctionsMap = <IRuleFunctionMap>{};
@@ -1568,10 +1615,6 @@ module akra.util {
             this._pTypeIdMap = <BoolMap>{};
 
             this._pSyntaxTree.setOptimizeMode(bf.testAll(this._eParseMode, EParseMode.k_Optimize));
-        }
-
-        protected inline getSyntaxTree(): IParseTree {
-            return this._pSyntaxTree;
         }
 
         private _error(eCode: uint, pErrorInfo: any): void {
@@ -1774,7 +1817,7 @@ module akra.util {
                 return this._pFirstTerminalsDMap[sSymbol];
             }
 
-            var i: string, j: uint, k: string;
+            var i: string = null, j: uint = 0, k: string = null;
             var pRulesMap: IRuleMap = this._pRulesDMap[sSymbol];
 
             var pTempRes: BoolMap = <BoolMap>{};
@@ -1835,7 +1878,7 @@ module akra.util {
                 return this._pFollowTerminalsDMap[sSymbol];
             }
 
-            var i: string, j: string, k: uint, l: uint, m: string;
+            var i: string = null, j: string = null, k: uint = 0, l: uint = 0, m: string = null;
             var pRulesDMap: IRuleDMap = this._pRulesDMap;
 
             var pTempRes: BoolMap;
@@ -1900,7 +1943,7 @@ module akra.util {
         }
 
         private firstTerminalForSet(pSet: string[], pExpected: BoolMap): BoolMap {
-            var i: uint, j: string;
+            var i: uint = 0, j: string = null;
 
             var pTempRes: BoolMap;
             var pRes: BoolMap = <BoolMap>{};
@@ -2160,7 +2203,7 @@ module akra.util {
 
         private closure_LR0(pState: IState): IState {
             var pItemList: IItem[] = pState.items;
-            var i: uint = 0, j: string;
+            var i: uint = 0, j: string = null;
             var sSymbol: string;
 
             for (i = 0; i < pItemList.length; i++) {
@@ -2178,7 +2221,7 @@ module akra.util {
 
         private closure_LR(pState: IState): IState {
             var pItemList: IItem[] = <IItem[]>(pState.items);
-            var i: uint = 0, j: string, k: string;
+            var i: uint = 0, j: string = null, k: string = null;
             var sSymbol: string;
             var pSymbols: BoolMap;
             var pTempSet: string[];
@@ -2301,7 +2344,7 @@ module akra.util {
             var pItemList: IItem[] = <IItem[]>pTestState.items;
             var pState: IState;
             var pItem: IItem;
-                var i: uint, j: uint, k: string;
+                var i: uint = 0, j: uint = 0, k: string = null;
 
             var nBaseItemTest = pTestState.numBaseItems;
             var nBaseItemX = pStateX.numBaseItems;
@@ -2329,7 +2372,7 @@ module akra.util {
         }
 
         private generateLinksExpected(): void {
-            var i: uint, j: string;
+            var i: uint = 0, j: string = null;
             var pStates: IState[] = this._pStateList;
 
             for (i = 0; i < pStates.length; i++) {
@@ -2342,8 +2385,8 @@ module akra.util {
         private expandExpected(): void {
             var pItemList: IItem[] = <IItem[]>this._pBaseItemList;
             var pTable: BoolDMap = this._pExpectedExtensionDMap;
-            var i: uint = 0, j: string;
-            var sSymbol: string;
+            var i: uint = 0, j: string = null;
+            var sSymbol: string = null;
             var isNewExpected: bool = false;
 
             pItemList[0].addExpected(END_SYMBOL);
@@ -2391,9 +2434,9 @@ module akra.util {
         private generateStates_LR0(): void {
             this.generateFirstState_LR0();
 
-            var i: uint;
+            var i: uint = 0;
             var pStateList: IState[] = this._pStateList;
-            var sSymbol: string;
+            var sSymbol: string = null;
             var pState: IState;
 
             for (i = 0; i < pStateList.length; i++) {
@@ -2412,9 +2455,9 @@ module akra.util {
             this._pFirstTerminalsDMap = <BoolDMap>{};
             this.generateFirstState_LR();
 
-            var i: uint;
+            var i: uint = 0;
             var pStateList: IState[] = this._pStateList;
-            var sSymbol: string;
+            var sSymbol: string = null;
             var pState: IState;
 
             for (i = 0; i < pStateList.length; i++) {
@@ -2461,7 +2504,7 @@ module akra.util {
         }
 
         private printExpectedTable(): string {
-            var i: string, j: string;
+            var i: string = null, j: string = null;
             var sMsg: string = "";
 
             for (i in this._pExpectedExtensionDMap) {
@@ -2480,7 +2523,7 @@ module akra.util {
         }
 
         private addReducing(pState: IState): void {
-            var i: uint, j: string;
+            var i: uint = 0, j: string = null;
             var pItemList: IItem[] = pState.items;
 
             for (i = 0; i < pItemList.length; i++) {
@@ -2501,7 +2544,7 @@ module akra.util {
         }
 
         private addShift(pState: IState) {
-            var i: string;
+            var i: string = null;
             var pStateMap: IStateMap = pState.nextStates;
 
             for (i in pStateMap) {
@@ -2525,7 +2568,7 @@ module akra.util {
 
             this._pSuccessOperation = <IOperation>{ type: EOperationType.k_Success };
 
-            var i: uint = 0, j: string, k: string;
+            var i: uint = 0, j: string = null, k: string = null;
 
             for (i = 0; i < pStateList.length; i++) {
                 this._pShiftOperationsMap[pStateList[i].index] = <IOperation>{
@@ -2652,7 +2695,7 @@ module akra.util {
                     pTree.setRoot();
                     this._sFileName = "stdin";
                     if (isDef(this._fnFinishCallback)) {
-                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok);
+                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok, this.getParseFileName());
                     }
                     return EParserCode.k_Ok;
                 }
@@ -2660,7 +2703,7 @@ module akra.util {
                     this._error(PARSER_SYNTAX_ERROR, pToken);
                     this._sFileName = "stdin";
                     if (isDef(this._fnFinishCallback)) {
-                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error);
+                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error, this.getParseFileName());
                     }
                     return EParserCode.k_Error;
                 }
@@ -2689,7 +2732,7 @@ module akra.util {
         }
 
         private operationToString(pOperation: IOperation): string{
-            var sOperation: string;
+            var sOperation: string = null;
 
             switch(pOperation.type){
                 case EOperationType.k_Shift:

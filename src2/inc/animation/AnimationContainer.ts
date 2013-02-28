@@ -62,7 +62,7 @@ module akra.animation {
 			this.onstop(this._fTime);
 		}
 
-		attach(pTarget: INode): void {
+		attach(pTarget: ISceneNode): void {
 			this._pAnimation.attach(pTarget);
 			this.grab(this._pAnimation, true);
 		}

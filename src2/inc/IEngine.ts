@@ -8,13 +8,30 @@ module akra {
 	IFACE(IResourcePoolManager);
     IFACE(IRenderer);
 	IFACE(IUtilTimer);
+    IFACE(IMesh);
+    IFACE(IRenderDataCollection);
+    IFACE(IBufferMap);
+    IFACE(IAnimationController);
+    IFACE(ISkeleton);
+    IFACE(IScene3d);
+    IFACE(IDependens);
+    IFACE(IAFXComposer);
+   
+    export interface IEngineOptions {
+        depsRoot?: string;
+        deps?: IDependens;
+    }
 
     export interface IEngine extends IEventProvider {
+        getScene(): IScene3d;
+
         getSceneManager(): ISceneManager;
         getParticleManager(): IParticleManager;
         getResourceManager(): IResourcePoolManager;
 
         getRenderer(): IRenderer;
+
+        getComposer(): IAFXComposer;
 
         pause(): bool;
         play(): bool;
@@ -28,6 +45,15 @@ module akra {
         isActive(): bool;
 
         getTimer(): IUtilTimer;
+
+        createMesh(sName?: string, eOptions?: int, pDataBuffer?: IRenderDataCollection): IMesh;
+
+        createRenderDataCollection(iOptions?: int): IRenderDataCollection;
+        createBufferMap(): IBufferMap;
+
+        createAnimationController(iOptions?: int): IAnimationController;
+
+
     };
 
     export var createEngine: () => IEngine;

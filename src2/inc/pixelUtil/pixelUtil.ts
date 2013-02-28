@@ -967,7 +967,7 @@ module akra {
         	// Collect format names sorted by length, it's required by BNF compiler
 	        // that similar tokens need longer ones comes first.
 	        
-	        var formatNames: Pair[];
+	        var formatNames: Pair[] = new Pair[];
 	        for (var i: uint = 0; i < EPixelFormats.TOTAL; ++i) {
 	            var ePf: EPixelFormats = <EPixelFormats>(i);
 	            if (!isAccessibleOnly || isAccessible(ePf))
@@ -1231,7 +1231,7 @@ module akra {
         */
         export function unpackColourUint(rgba: IColorIValue, ePf: EPixelFormats,  pSrc: Uint8Array): void {
         	const des: IPixelFormatDescription = getDescriptionFor(ePf);
-        	var r: uint, g: uint, b: uint, a: uint;
+        	var r: uint = 0, g: uint = 0, b: uint = 0, a: uint = 0;
   
 	        if(des.flags & EPixelFormatFlags.NATIVEENDIAN) {
 	            // Shortcut for integer formats unpacking
@@ -1277,7 +1277,7 @@ module akra {
         */
         export function unpackColourFloat(rgba: IColorValue, ePf: EPixelFormats,  pSrc: Uint8Array): void {
         	const des: IPixelFormatDescription = getDescriptionFor(ePf);
-        	var r: float, g: float, b: float, a: float;
+        	var r: float = 0., g: float = 0., b: float = 0., a: float = 0.;
 
 	        if(des.flags & EPixelFormatFlags.NATIVEENDIAN) {
 	            // Shortcut for integer formats unpacking
@@ -1397,8 +1397,8 @@ module akra {
         export function bulkPixelConversion(pSrc: IPixelBox, pDest: IPixelBox): void;
 
         export function bulkPixelConversion(pSrc: any, eSrcFormat: any, pDest?: any, eDstFormat?: any, iCount?: uint): void {
-        	var src: IPixelBox,
-        		dst: IPixelBox;
+        	var src: IPixelBox = null,
+        		dst: IPixelBox = null;
 
         	if (arguments.length > 2) {
 	        	src = new PixelBox(iCount, 1, 1, <EPixelFormats>eSrcFormat, <Uint8Array>pSrc);
@@ -1432,8 +1432,8 @@ module akra {
 	                return;
 	            }
 
-	            const srcPixelSize: uint = getNumElemBytes(src.format);
-	            const dstPixelSize: uint = getNumElemBytes(dst.format);
+	            var srcPixelSize: uint = getNumElemBytes(src.format);
+	            var dstPixelSize: uint = getNumElemBytes(dst.format);
 
 	            var srcptr: Uint8Array = src.data.subarray(
 	                (src.left + src.top * src.rowPitch + src.front * src.slicePitch) * srcPixelSize);
@@ -1441,13 +1441,13 @@ module akra {
 					+ (dst.left + dst.top * dst.rowPitch + dst.front * dst.slicePitch) * dstPixelSize);
 
 	            // Calculate pitches+skips in bytes
-	            const srcRowPitchBytes: uint = src.rowPitch * srcPixelSize;
-	            //const size_t srcRowSkipBytes = src.getRowSkip()*srcPixelSize;
-	            const srcSliceSkipBytes: uint = src.getSliceSkip() * srcPixelSize;
+	            var srcRowPitchBytes: uint = src.rowPitch * srcPixelSize;
+	            //var size_t srcRowSkipBytes = src.getRowSkip()*srcPixelSize;
+	            var srcSliceSkipBytes: uint = src.getSliceSkip() * srcPixelSize;
 
-	            const dstRowPitchBytes: uint = dst.rowPitch * dstPixelSize;
-	            //const size_t dstRowSkipBytes = dst.getRowSkip()*dstPixelSize;
-	            const dstSliceSkipBytes: uint = dst.getSliceSkip() * dstPixelSize;
+	            var dstRowPitchBytes: uint = dst.rowPitch * dstPixelSize;
+	            //var size_t dstRowSkipBytes = dst.getRowSkip()*dstPixelSize;
+	            var dstSliceSkipBytes: uint = dst.getSliceSkip() * dstPixelSize;
 
 	            // Otherwise, copy per row
 	            const rowSize: uint = src.width * srcPixelSize;
@@ -1488,8 +1488,8 @@ module akra {
 				return;
 			}
 
-	        const srcPixelSize: uint = getNumElemBytes(src.format);
-	        const dstPixelSize: uint = getNumElemBytes(dst.format);
+	        var srcPixelSize: uint = getNumElemBytes(src.format);
+	        var dstPixelSize: uint = getNumElemBytes(dst.format);
 
 	        var srcptr: Uint8Array = src.data.subarray(
 	            (src.left + src.top * src.rowPitch + src.front * src.slicePitch) * srcPixelSize);
@@ -1500,10 +1500,10 @@ module akra {
 			//uint8 *srcptr = static_cast<uint8*>(src.data), *dstptr = static_cast<uint8*>(dst.data);
 
 	        // Calculate pitches+skips in bytes
-	        const srcRowSkipBytes: uint = src.getRowSkip() * srcPixelSize;
-	        const srcSliceSkipBytes: uint = src.getSliceSkip() * srcPixelSize;
-	        const dstRowSkipBytes: uint = dst.getRowSkip() * dstPixelSize;
-	        const dstSliceSkipBytes: uint = dst.getSliceSkip() * dstPixelSize;
+	        var srcRowSkipBytes: uint = src.getRowSkip() * srcPixelSize;
+	        var srcSliceSkipBytes: uint = src.getSliceSkip() * srcPixelSize;
+	        var dstRowSkipBytes: uint = dst.getRowSkip() * dstPixelSize;
+	        var dstSliceSkipBytes: uint = dst.getSliceSkip() * dstPixelSize;
 
 	        // The brute force fallback
 	        // var r: float = 0, g: float = 0, b: float = 0, a: float = 1;

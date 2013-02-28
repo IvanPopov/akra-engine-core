@@ -285,8 +285,8 @@ module akra.webgl {
 		lock(iOffset: uint, iSize: uint, iLockFlags: int = EHardwareBufferFlags.READABLE): any;
 		lock(pLockBox: IBox, iLockFlags: int = EHardwareBufferFlags.READABLE): IPixelBox;
 		lock(): any {
-			var pLockBox: IBox;
-			var iLockFlags: int;
+			var pLockBox: IBox = null;
+			var iLockFlags: int = 0;
 
 			if(isInt(arguments[0])){
 				var iOffset: uint;

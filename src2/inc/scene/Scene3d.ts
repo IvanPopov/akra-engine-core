@@ -7,8 +7,11 @@
 #include "events/events.ts"
 #include "objects/Camera.ts"
 #include "IDisplayList.ts"
-#include "OcTree.ts"
-#include "LightGraph.ts"
+// #include "OcTree.ts"
+// #include "LightGraph.ts"
+
+#include "SceneModel.ts"
+#include "Joint.ts"
 
 #define DEFAULT_DLIST DEFAULT_NAME
 
@@ -32,7 +35,7 @@ module akra.scene {
 
 		constructor (pSceneManager: ISceneManager) {
 			this._pSceneManager = pSceneManager;
-			this._pRootNode = this.createSceneNode("root-node");
+			this._pRootNode = this.createNode("root-node");
 			this._pRootNode.create();
 
 			var i: int;
@@ -40,12 +43,20 @@ module akra.scene {
 			// this._pNodeList = [];
 			// this._pObjectList = [];
 
-			i = this.addDisplayList(new OcTree);
-			debug_assert(i == DL_DEFAULT, "invalid default list index");
+			//TODO передача пользовательских параметров в OcTree
 
-			i = this.addDisplayList(new LightGraph);
-			debug_assert(i == DL_LIGHTING, "invalid lighting list index");
+			// i = this.addDisplayList(new OcTree);
+			// debug_assert(i == DL_DEFAULT, "invalid default list index");
 
+			//TODO передача пользовательских параметров в LightGraph
+
+			// i = this.addDisplayList(new LightGraph);
+			// debug_assert(i == DL_LIGHTING, "invalid lighting list index");
+
+		}
+
+		inline getManager(): ISceneManager{
+			return this._pSceneManager;
 		}
 
 		inline isUpdated(): bool {
@@ -74,14 +85,26 @@ module akra.scene {
 		}
 
 
-		createSceneNode(sName: string = null): ISceneNode {
+		createNode(sName: string = null): ISceneNode {
 			var pNode: ISceneNode = new SceneNode(this);
-			pNode.create();
+			
+			if (!pNode.create()) {
+				ERROR("cannot create scene node..");
+				return null;
+			}
+
 			return this.setupNode(pNode, sName);
 		}
 
-		createSceneModel(): IModel {
-			return null;
+		createModel(sName: string = null): ISceneModel {
+			var pNode: ISceneModel = new SceneModel(this);
+			
+			if (!pNode.create()) {
+				ERROR("cannot create model..");
+				return null;
+			}
+
+			return <ISceneModel>this.setupNode(pNode, sName);
 		}
 
 		createCamera(sName: string = null): ICamera {
@@ -95,19 +118,19 @@ module akra.scene {
 			return <ICamera>this.setupNode(pCamera, sName);
 		}
 
-		createLightPoint(): ILightPoint {
+		createLightPoint(sName: string = null): ILightPoint {
 			return null;
 		}
 
-		createSprite(): ISprite {
+		createSprite(sName: string = null): ISprite {
 			return null;
 		}
 
-		createJoint(): IJoint {
-			return null;
+		createJoint(sName: string = null): IJoint {
+			return <IJoint>this.setupNode(new Joint(this), sName);
 		}
 
-		createText3d(): IText3d {
+		createText3d(sName: string = null): IText3d {
 			return null;
 		}
 
@@ -150,8 +173,8 @@ module akra.scene {
 		private setupNode(pNode: ISceneNode, sName: string = null): ISceneNode {
 			pNode.name = sName;
 
-			this.connect(pNode, SIGNAL(attached), SLOT(nodeAttachment), EEventTypes.UNICAST);
-			this.connect(pNode, SIGNAL(detached), SLOT(nodeDetachment), EEventTypes.UNICAST);
+			// this.connect(pNode, SIGNAL(attached), SLOT(nodeAttachment), EEventTypes.UNICAST);
+			// this.connect(pNode, SIGNAL(detached), SLOT(nodeDetachment), EEventTypes.UNICAST);
 
 			return pNode;
 		}
@@ -210,7 +233,7 @@ module akra.scene {
 			// if (SceneObject.isSceneObject(pNode)) {
 			// 	this._pObjectList.push(<ISceneObject>pNode);
 			// }
-			
+			// console.warn("------>here");
 			EMIT_BROADCAST(nodeAttachment, _CALL(pNode));
 		}
 

@@ -3,12 +3,18 @@
 
 #include "IJoint.ts"
 #include "IEngine.ts"
+#include "SceneNode.ts"
 
 module akra.scene {
-	export class Joint extends Node implements IJoint {
+	export class Joint extends SceneNode implements IJoint {
 		private _sBone: string = null;
 		// private _iUpdated: int = 0;
 		// private _pEngine: IEngine = null;
+
+		constructor (pScene: IScene3d) {
+			super(pScene);
+			this.type = EEntityTypes.JOINT;
+		}
 
 		inline get boneName(): string{
 			return this._sBone;
@@ -33,7 +39,7 @@ module akra.scene {
 
 
 			//maybe custom
-			this.setInheritance(a.Scene.k_inheritAll);
+			this.setInheritance(ENodeInheritance.ALL);
 			return true;
 		}
 
@@ -46,6 +52,10 @@ module akra.scene {
 
 			return Node.prototype.toString.call(this, isRecursive, iDepth);
 		}
+	}
+
+	export inline function isJoint(pEntity: IEntity): bool {
+		return pEntity.type == EEntityTypes.JOINT;
 	}
 }
 

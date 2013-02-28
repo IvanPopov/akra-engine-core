@@ -506,7 +506,7 @@ module akra.math {
 
 		multiplyVec4(v4fVec: IVec4, v4fDestination?: IVec4): IVec4{
 			if(!isDef(v4fDestination)){
-				v4fDestination = new Vec4();
+				v4fDestination = v4fVec;
 			}
 
 			var pData: Float32Array = this.data;
@@ -1307,7 +1307,7 @@ module akra.math {
 			var v3fScreen: IVec3 = <IVec3>v;
 			var x: float, y: float, z: float;
 
-			if(pData[__44] === 1.){
+			if(this.isOrthogonalProjection()){
 				//orthogonal projection case
 				
 				z = (v3fScreen.z - pData[__34])/pData[__33];
@@ -1315,7 +1315,6 @@ module akra.math {
 				x = (v3fScreen.x - pData[__14])/pData[__11];
 			}
 			else{
-				//pData[__43] === -1
 				//frustum case
 				
 				z = -pData[__34]/(pData[__33] + v3fScreen.z);
@@ -1329,6 +1328,36 @@ module akra.math {
 			v4fDestination.w = 1.;
 
 			return v4fDestination;
+		};
+
+		unprojZ(fZ: float): float{
+			var pData: Float32Array = this.data;
+
+			if(this.isOrthogonalProjection()){
+				//orthogonal projection case
+				return (fZ - pData[__34])/pData[__33];
+			}
+			else{
+				//pData[__43] === -1
+				//frustum case
+				return -pData[__34]/(pData[__33] + fZ);
+			}
+		};
+
+		inline isOrthogonalProjection(): bool{
+			// var pData: Float32Array = this.data;
+
+			// if(pData[__44] === 1){
+			// 	//orthogonal projection
+			// 	return true;
+			// }
+			// else{
+			// 	//pData[__43] === -1
+			// 	//frustum projection
+			// 	return false;
+			// }
+			 
+			return ((this.data[__44] === 1) ? true : false);
 		};
 
 		static fromYawPitchRoll(fYaw: float, fPitch: float, fRoll: float, m4fDestination?: IMat4): IMat4;

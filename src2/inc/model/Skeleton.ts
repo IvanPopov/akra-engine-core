@@ -2,22 +2,22 @@
 #define SKELETON_TS
 
 #include "ISkeleton.ts"
-#include "INode.ts"
+#include "ISceneNode.ts"
 #include "scene/Joint.ts"
 
 module akra.model {
 
-	export class Skeleton implements ISkeleton{
+	class Skeleton implements ISkeleton{
 		private _sName: string;
-		private _pEngine: IEngine;
-		private _pRootJoints: INode[] = [];
-		private _pJointList: INodeMap = null;
-		private _pNodeList: INode[]  = null;
-		private _pMeshNode: INode = null;
+		private _pRootJoints: IJoint[] = [];
+		private _pJointMap: IJointMap = null;
+		private _pNodeList: ISceneNode[]  = null;
+		private _pMeshNode: ISceneModel = null;
 		private _iFlags: bool = false;
 
+
 		inline get totalBones(): int{
-			return Object.keys(this._pJointList).length;
+			return Object.keys(this._pJointMap).length;
 		}
 
 		inline get totalNodes(): int{
@@ -28,31 +28,31 @@ module akra.model {
 			return this._sName;
 		}
 
-		inline get root(): INode{
+		inline get root(): IJoint {
 			return this._pRootJoints[0] || null;
 		}
 
-		getEngine(): IEngine {
-			return this._pEngine;
+		constructor (sName: string = null) {
+			this._sName = sName;
 		}
 
-		getRootJoint(): INode {
+		getRootJoint(): IJoint {
 			return this.getRootJoints()[0];
 		}
 
-		getRootJoints(): INode[] {
+		getRootJoints(): IJoint[] {
 			return this._pRootJoints;
 		}
 
-		getJointMap(): INodeMap{
-			return this._pJointList;
+		getJointMap(): IJointMap {
+			return this._pJointMap;
 		}
 
-		getNodeList(): INode[]{
+		getNodeList(): ISceneNode[]{
 			return this._pNodeList;
 		}
 
-		addRootJoint(pJoint: INode): bool {
+		addRootJoint(pJoint: IJoint): bool {
 			debug_assert(pJoint instanceof scene.Joint, 'node must be joint');
 
 		    var pRootJoints = this._pRootJoints;
@@ -73,7 +73,7 @@ module akra.model {
 
 		update(): bool {
 			var pRootJoints = this._pRootJoints;
-		    var pJointList = this._pJointList = {};
+		    var pJointList = this._pJointMap = <IJointMap>{};
 		    var pNodeList = this._pNodeList = [];
 		    //var pNotificationJoints = this._pNotificationJoints = [];
 
@@ -111,39 +111,44 @@ module akra.model {
 			return true;
 		}
 
-		findJoint(sName: string): INode {
-			return this._pJointList[sName];
+		findJoint(sName: string): IJoint {
+			return this._pJointMap[sName];
 		}
 
-		findJointByName(sName: string): INode {
-			for (var s in this._pJointList) {
-				if (this._pJointList[s].name === sName) {
-					return this._pJointList[s];
+		findJointByName(sName: string): IJoint {
+			for (var s in this._pJointMap) {
+				if (this._pJointMap[s].name === sName) {
+					return this._pJointMap[s];
 				}
 			}
 
 			return null;
 		}
 
-		attachMesh(pMesh: IMesh): void {
-			/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-			/*FIX a. , getEngine*/
-			/*debug_assert(this.getEngine() === pMesh.getEngine(), 'mesh must be from same engine instance');
+		attachMesh(pMesh: IMesh): bool {
+			if (isNull(this.root)) {
+				return false;
+			}
 
 		    if (this._pMeshNode == null) {
-		    	this._pMeshNode = new scene.objects.SceneModel(this.getEngine());
-		    	this._pMeshNode.create();
-		    	this._pMeshNode.setInheritance(a.Scene.k_inheritAll);
+		    	this._pMeshNode = this.root.scene.createModel();
+		    	this._pMeshNode.setInheritance(ENodeInheritance.ALL);
 		    	this._pMeshNode.attachToParent(this.root);
 		    }
-*/
+
 		    this._pMeshNode.name = this.name + "[mesh-container]";
-		    this._pMeshNode.addMesh(pMesh);
+		    this._pMeshNode.mesh = (pMesh);
+
+		    return true;
 		}
 
 		detachMesh(): void {
 			//TODO: write detach method.
 		}
+	}
+
+	export function createSkeleton(sName: string = null): ISkeleton {
+		return new Skeleton(sName);
 	}
 }
 

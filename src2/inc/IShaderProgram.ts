@@ -13,6 +13,7 @@ module akra {
     IFACE(IVec3);
     IFACE(IVec4);
     IFACE(IQuat4);
+    IFACE(IBufferMap);
 
     export interface IShaderProgram extends IRenderResource {
     	create(csVertex?: string, csPixel?: string): bool;
@@ -73,7 +74,7 @@ module akra {
     	//applyVertexBuffer(sName: string, pBuffer: IVertexBuffer);
     	applyVertexData(sName: string, pData: IVertexData): void;
 
-
+        applyBufferMap(pMap: IBufferMap): void;
     }
 }
 

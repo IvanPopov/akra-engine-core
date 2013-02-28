@@ -32,7 +32,7 @@ module akra {
 		addDestination(iGuid: int, sSignal: string, pTarget: IEventProvider, sSlot: string, eType?: EEventTypes): bool;
 		removeDestination(iGuid: int, sSignal: string, pTarget: IEventProvider, sSlot: string, eType?: EEventTypes): bool;
 		addListener(iGuid: int, sSignal: string, fnListener: Function, eType?: EEventTypes): bool;
-		removeListener(iGuid: int, sSignal: string, fnListener: Function, eType?: EEventTypes): bool;
+		removeListener(iGuid: int, sSignal: string, fnListener?: Function, eType?: EEventTypes): bool;
 
 		findUnicastList(iGuid: int): IEventSlotMap;
 		findBroadcastList(iGuid: int): IEventSlotListMap;

@@ -77,7 +77,7 @@ module akra {
     }
 
     export interface IFinishFunc {
-        (eCode: EParserCode): void;
+        (eCode: EParserCode, sFileName: string): void;
     }
 
     export enum EOperationType {
@@ -135,6 +135,21 @@ module akra {
         init(sSource: string): void;
 
         getNextToken(): IToken;
+        _getIndex(): uint;
+        _setSource(sSource: string): void;
+        _setIndex(iIndex: uint): void;
+    }
+
+    export interface IParserState {
+        source: string;
+        index: uint;
+        fileName: string;
+        tree: IParseTree;
+        types: BoolMap;
+        stack: uint[];
+        token: IToken;
+        fnCallback: IFinishFunc;
+        caller: any;
     }
 
     export interface IParser {
@@ -145,7 +160,7 @@ module akra {
 
         init(sGrammar: string, eMode?: EParseMode, eType?: EParserType): bool;
 
-        parse(sSource: string, isSync?: bool, fnFinishCallback?: IFinishFunc, pCaller?: any): EParserCode;
+        parse(sSource: string, fnFinishCallback?: IFinishFunc, pCaller?: any): EParserCode;
 
         setParseFileName(sFileName: string): void;
         getParseFileName(): string;
@@ -153,10 +168,34 @@ module akra {
         pause(): EParserCode;
         resume(): EParserCode;
 
+        getSyntaxTree(): IParseTree;
+
         printStates(isPrintOnlyBase?: bool): void;
         printState(iStateIndex: uint, isPrintOnlyBase?: bool): void; 
 
         getGrammarSymbols(): StringMap;
+
+        _saveState(): IParserState;
+        _loadState(pState: IParserState): void;
+        
+        // _getLexer(): ILexer;
+        // _getSource(): string;
+        // _getIndex(): uint;
+        // _getTypeMap(): BoolMap;
+        // _getStack(): uint[];
+        // _getToken(): IToken;
+        // _getCallback(): IFinishFunc;
+        // _getCaller(): any;
+
+        // _setParserState(sSource: string,
+        //                 iIndex: uint,
+        //                 sFileName: string,
+        //                 pTree: IParseTree,
+        //                 pTypes: BoolMap,
+        //                 pStack: uint[],
+        //                 pToken: IToken,
+        //                 fnCallback: IFinishFunc,
+        //                 pCaller: any): void;
     }
 }
 

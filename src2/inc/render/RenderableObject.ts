@@ -19,7 +19,6 @@ module akra.render {
 		protected _pTechnique: IRenderTechnique = null;
 		protected _pTechniqueMap: IRenderTechniqueMap = {};
 		protected _bShadow: bool = false;
-		protected _iGuid: uint = sid();
 
 		inline get renderMethod(): IRenderMethod {
 			return this._pTechnique.getMethod();
@@ -44,10 +43,6 @@ module akra.render {
 			if (this.addRenderMethod(csDefaultMethod) || this.switchRenderMethod(null) === false) {
 				CRITICAL("cannot add & switch render method to default");
 			}
-		}
-
-		inline getGuid(): uint {
-			return this._iGuid;
 		}
 
 		inline getRenderer(): IRenderer {
@@ -107,7 +102,7 @@ module akra.render {
 		switchRenderMethod(csName: string): bool;
 		switchRenderMethod(csName: any): bool {
 			var pTechnique: IRenderTechnique;
-			var sName: string;
+			var sName: string = null;
 
 			if (isString(arguments[0])) {
 				sName = <string>csName;
@@ -154,8 +149,11 @@ module akra.render {
 			return this._bShadow;
 		}
 
-		inline setShadow(bValue: bool = true): void {
-			this._bShadow = bValue;
+		setShadow(bValue: bool = true): void {
+			if (this._bShadow != bValue) {
+				this._bShadow = bValue;
+				this.shadow(bValue);
+			}
 		}
 
 		inline isReadyForRender(): bool {
@@ -183,6 +181,14 @@ module akra.render {
 		getTechnique(sName: string = null): IRenderTechnique {
 			return this._pTechniqueMap[sName] || null;
 		}
+
+		_draw(): void {
+			ERROR("RenderableObject::_draw() pure virtual method() isn't callable!!");
+		}
+
+		BEGIN_EVENT_TABLE(RenderableObject);
+			UNICAST(shadow, CALL(bValue));
+		END_EVENT_TABLE();
 	}
 }
 

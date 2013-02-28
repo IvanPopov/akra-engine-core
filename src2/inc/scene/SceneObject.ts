@@ -19,6 +19,8 @@ module akra.scene {
 		protected _pWorldBounds: IRect3d = new geometry.Rect3d();
 		protected _hasShadows: bool = false;
 
+		inline get totalRenderable(): uint { return 0; }
+
 		inline get worldBounds(): IRect3d {
 			return this._pWorldBounds;
 		}
@@ -34,11 +36,11 @@ module akra.scene {
 
 		constructor (pScene: IScene3d) {
 			super(pScene);
-
-			this.type = EEntityTypes.SCENE_OBJECT;
+			
+			this._eType = EEntityTypes.SCENE_OBJECT;
 		}
 
-		inline getRenderable(): IRenderableObject {
+		inline getRenderable(i?: uint): IRenderableObject {
 			return null;
 		}
 
@@ -86,13 +88,12 @@ module akra.scene {
 		            this._pWorldBounds.y1 = Math.max(this._pWorldBounds.y1, this._pWorldBounds.y0 + 0.01);
 		            this._pWorldBounds.z1 = Math.max(this._pWorldBounds.z1, this._pWorldBounds.z0 + 0.01);
 		        }
-
 		        this._pWorldBounds.transform(this.worldMatrix);
 
 		        // set the flag that our bounding box has changed
 		        TRUE_BIT(this._iObjectFlags, ESceneObjectFlags.k_NewWorldBounds);
 		        
-		        // this.worldBoundsUpdated();
+		        this.worldBoundsUpdated();
 		        
 		        return true;
 		    }
@@ -100,39 +101,37 @@ module akra.scene {
 		    return false;
 		}
 
-		prepareForRender(): void {}
-
-    	render(): void {
-    		super.render();
-    	}
-
-    	hasShadows(): bool {
+    	inline get hasShadows(): bool {
     		return this._hasShadows;
-    	}
+    	};
 
-    	setShadows(bValue: bool = true): void {
+    	inline set hasShadows(bValue: bool){
     		this._hasShadows = bValue;
-    	}
+    	};
 
     	getObjectFlags(): int {
     		return this._iObjectFlags;
     	}
 
-    	toString(isRecursive: bool = true, iDepth: uint = 0): string {
+    	toString(isRecursive: bool = false, iDepth: uint = 0): string {
+#ifdef DEBUG
 			if (!isRecursive) {
 		        return "<scene_object" + (this._sName ? " " + this._sName : "") + ">";
 		    }
 
 		    return super.toString(isRecursive, iDepth);
+#else
+			return null;
+#endif
     	}
 
 		BEGIN_EVENT_TABLE(SceneObject);
 			UNICAST(worldBoundsUpdated, VOID);
 		END_EVENT_TABLE();
+	}
 
-		static inline isSceneObject(pEntity: IEntity): bool {
-			return pEntity.type >= EEntityTypes.SCENE_OBJECT && pEntity.type < EEntityTypes.OBJECTS_LIMIT;
-		}
+	export inline function isSceneObject(pEntity: IEntity): bool {
+		return pEntity.type >= EEntityTypes.SCENE_OBJECT && pEntity.type < EEntityTypes.OBJECTS_LIMIT;
 	}
 }
 

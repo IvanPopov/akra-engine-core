@@ -137,6 +137,13 @@ module akra {
 		*/
 		unproj(v3fScreen: IVec3, v4fDestination?: IVec4): IVec4;
 		unproj(v4fScreen: IVec4, v4fDestination?: IVec4): IVec4;
+
+		unprojZ(fZ: float): float;
+
+		/**
+		 * use only this projection matrix otherwise result doesn't have any sense
+		 */
+		isOrthogonalProjection(): bool;
 	};
 };
 

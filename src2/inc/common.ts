@@ -8,42 +8,47 @@
 #define double number
 #define long number
 
-#define IFACE(IF) export interface IF {}
-#define readonly  
-#define protected
-#define struct class
-#define const var
 
-#define DEBUG DEBUG
 #define WEBGL 1
 #define LOGGER_API 1
+// #define CRYPTO_API 1
 
+
+#define IFACE(IF) export interface IF {}
 
 #include "ILogger.ts"
 
 #define UNKNOWN_CODE 0
 #define UNKONWN_MESSAGE "Unknown code."
+#define UNKNOWN_NAME "unknown"
 
 #define DEFAULT_NAME "default"
 
 #ifdef LOGGER_API
 
-#define LOG(...)            logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.log(__VA_ARGS__);
-#define TRACE(...)          logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.log(__VA_ARGS__);
-#define INFO(...)           logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.info(__VA_ARGS__);
-#define WARNING(...)        logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.warning(__VA_ARGS__);
-#define ERROR(...)          logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.error(__VA_ARGS__);
-#define CRITICAL(...)       logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.criticalError(__VA_ARGS__);
-#define CRITICAL_ERROR(...) logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.criticalError(__VA_ARGS__);
-#define ASSERT(...)         logger.setSourceLocation(__FILE__, __LINE__); \
-                            logger.assert(__VA_ARGS__);
+#ifdef DEBUG
+
+#define LOG(...)            logger.setSourceLocation(__FILE__, __LINE__); logger.log(__VA_ARGS__);
+#define TRACE(...)          logger.setSourceLocation(__FILE__, __LINE__); logger.log(__VA_ARGS__);
+#define INFO(...)           logger.setSourceLocation(__FILE__, __LINE__); logger.info(__VA_ARGS__);
+#define WARNING(...)        logger.setSourceLocation(__FILE__, __LINE__); logger.warning(__VA_ARGS__);
+#define ERROR(...)          logger.setSourceLocation(__FILE__, __LINE__); logger.error(__VA_ARGS__);
+#define CRITICAL(...)       logger.setSourceLocation(__FILE__, __LINE__); logger.criticalError(__VA_ARGS__);
+#define CRITICAL_ERROR(...) logger.setSourceLocation(__FILE__, __LINE__); logger.criticalError(__VA_ARGS__);
+#define ASSERT(...)         logger.setSourceLocation(__FILE__, __LINE__); logger.assert(__VA_ARGS__);
+
+#else
+
+#define LOG(...)            logger.log(__VA_ARGS__);
+#define TRACE(...)          logger.log(__VA_ARGS__);
+#define INFO(...)           logger.info(__VA_ARGS__);
+#define WARNING(...)        logger.warning(__VA_ARGS__);
+#define ERROR(...)          logger.error(__VA_ARGS__);
+#define CRITICAL(...)       logger.criticalError(__VA_ARGS__);
+#define CRITICAL_ERROR(...) logger.criticalError(__VA_ARGS__);
+#define ASSERT(...)         logger.assert(__VA_ARGS__);
+
+#endif
 
 #else
 
@@ -140,7 +145,7 @@ module akra {
 
     /** @inline */
     export var isNull = (x: any): bool =>  x === null;
-
+    
     /** @inline */
     export var isBoolean = (x: any): bool => typeof x === "boolean";
 
@@ -395,8 +400,6 @@ module akra {
             default:
                 ERROR('unknown data/image type used');
         }
-
-        return 0;
     }
 
     
@@ -428,6 +431,8 @@ module akra {
     (<any>window).storageInfo = (<any>window).storageInfo || (<any>window).webkitStorageInfo;
     Worker.prototype.postMessage = (<any>Worker).prototype.webkitPostMessage || Worker.prototype.postMessage;
 };
+
+#include "libs/libs.ts"
 
 #ifdef LOGGER_API
 #include "util/Logger.ts"

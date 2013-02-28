@@ -32,7 +32,8 @@ module akra {
 		IMAGE_RESOURCE,
 		SURFACEMATERIAL_RESOURCE,
 		SHADERPROGRAM_RESOURCE,
-		COMPONENT_RESOURCE,
+		COMPONENT_RESOURCE,   
+        EFFECTDATA_RESOURCE,
 		TOTAL_VIDEO_RESOURCES
 	};
 
@@ -53,7 +54,7 @@ module akra {
     	indexBufferPool: IResourcePool;
         textureBufferPool: IResourcePool;
     	renderMethodPool: IResourcePool;
-    	modelPool: IResourcePool;
+    	colladaPool: IResourcePool;
     	imagePool: IResourcePool;			
         //ex: private
     	shaderProgramPool: IResourcePool;		
@@ -61,6 +62,7 @@ module akra {
     	effectPool: IResourcePool;				
         //ex: private
     	componentPool: IResourcePool;			
+        effectDataPool: IResourcePool;
 
     	/** Регистрируется пул ресурсов опредленного типа в менеджере русурсов */
     	registerResourcePool(pCode: IResourceCode, pPool: IResourcePool): void;
@@ -108,7 +110,10 @@ module akra {
         createTexture(sResourceName: string): ITexture;
         createSurfaceMaterial(sResourceName: string): ISurfaceMaterial;
         createEffect(sResourceName: string): IEffect;
-
+        createVertexBuffer(sResourceName: string): IVertexBuffer;
+        createVideoBuffer(sResourceName: string): IVertexBuffer;
+        createModel(sResourceName: string): IModel;
+        loadModel(sFilename: string, pOptions?: any): IModel;
     }
 }
 

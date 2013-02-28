@@ -6,6 +6,7 @@
 #include "IResourcePool.ts"
 #include "IResourcePoolItem.ts"
 #include "IResourceWatcherFunc.ts"
+#include "IModel.ts"
 
 #include "bf/bitflags.ts"
 #include "ResourceCode.ts"
@@ -14,11 +15,13 @@
 
 #include "resources/RenderMethod.ts"
 #include "resources/SurfaceMaterial.ts"
-#include "resources/Model.ts"
+//#include "resources/Model.ts"
 #include "resources/Effect.ts"
 #include "resources/Img.ts"
 #include "resources/Component.ts"
 
+#include "resources/Collada.ts"
+#include "resources/EffectData.ts"
 
 #ifdef WEBGL
 
@@ -34,6 +37,8 @@
 
 #endif
 
+
+
 module akra.core.pool {
 	//is this class really singleton??
     export class ResourcePoolManager implements IResourcePoolManager {
@@ -43,7 +48,7 @@ module akra.core.pool {
         private pRenderMethodPool: IResourcePool;
         private pVertexBufferPool: IResourcePool;
         private pIndexBufferPool: IResourcePool;
-        private pModelPool: IResourcePool;
+        private pColladaPool: IResourcePool;
         private pImagePool: IResourcePool;
         private pTexturePool: IResourcePool;
         private pVideoBufferPool: IResourcePool;
@@ -52,6 +57,7 @@ module akra.core.pool {
         private pTextureBufferPool: IResourcePool;
         private pRenderBufferPool: IResourcePool;
         private pDepthBufferPool: IResourcePool;
+        private pEffectDataPool: IResourcePool;
 
     	/** Списки пулов по семействам ресурсов */
     	private pResourceFamilyList: IResourcePool[][] = null;
@@ -67,7 +73,7 @@ module akra.core.pool {
         get renderMethodPool(): IResourcePool { return this.pRenderMethodPool; }
         get vertexBufferPool(): IResourcePool { return this.pVertexBufferPool; }
         get indexBufferPool(): IResourcePool { return this.pIndexBufferPool; }
-        get modelPool(): IResourcePool { return this.pModelPool; }
+        get colladaPool(): IResourcePool { return this.pColladaPool; }
         get imagePool(): IResourcePool { return this.pImagePool; }
         get texturePool(): IResourcePool { return this.pTexturePool; }
         get videoBufferPool(): IResourcePool { return this.pVideoBufferPool; }
@@ -76,6 +82,7 @@ module akra.core.pool {
         get textureBufferPool(): IResourcePool {return this.pTextureBufferPool; }
         get renderBufferPool(): IResourcePool {return this.pRenderBufferPool; }
         get depthBufferPool(): IResourcePool {return this.pDepthBufferPool; }
+        get effectDataPool(): IResourcePool {return this.pEffectDataPool; }
 
     	constructor(pEngine: IEngine) {
     		//super();
@@ -221,7 +228,7 @@ module akra.core.pool {
         findResource(pCode, sName): IResourcePoolItem {
             var pPool: IResourcePool = this.findResourcePool(pCode);
             var pResult: IResourcePoolItem = null;
-            var iHandle: int;
+            var iHandle: int = 0;
 
             if (isString(arguments[1])) {
                 iHandle = pPool.findResourceHandle(sName);
@@ -338,21 +345,53 @@ module akra.core.pool {
 
         inline getEngine(): IEngine { return this.pEngine; }
 
-        createRenderMethod(sResourceName: string): IRenderMethod {
+        inline createRenderMethod(sResourceName: string): IRenderMethod {
             return <IRenderMethod>this.renderMethodPool.createResource(sResourceName);
         }
 
-        createTexture(sResourceName: string): ITexture {
+        inline createTexture(sResourceName: string): ITexture {
             return <ITexture>this.texturePool.createResource(sResourceName);
         }
 
-        createEffect(sResourceName: string): IEffect {
+        inline createEffect(sResourceName: string): IEffect {
             return <IEffect>this.effectPool.createResource(sResourceName);
         }
 
-        createSurfaceMaterial(sResourceName: string): ISurfaceMaterial {
+        inline createSurfaceMaterial(sResourceName: string): ISurfaceMaterial {
             return <ISurfaceMaterial>this.surfaceMaterialPool.createResource(sResourceName);
         }
+
+        inline createVertexBuffer(sResourceName: string): IVertexBuffer {
+            return <IVertexBuffer>this.vertexBufferPool.createResource(sResourceName);
+        }
+
+        inline createVideoBuffer(sResourceName: string): IVertexBuffer {
+            return <IVertexBuffer>this.videoBufferPool.createResource(sResourceName);
+        }
+
+        inline createModel(sResourceName: string): IModel {
+            return <IModel>this.colladaPool.createResource(sResourceName);   
+        }
+
+        inline loadModel(sFilename: string, pOptions: any = null): IModel {
+            if (util.pathinfo(sFilename).ext.toLowerCase() === "dae") {
+                var pCollada: ICollada = <ICollada>this.colladaPool.findResource(sFilename);
+
+                if (isNull(pCollada)) {
+                    pCollada = <ICollada>this.colladaPool.createResource(sFilename);
+                }
+
+                if (!pCollada.isResourceLoaded()) {
+                    pCollada.loadResource(sFilename, <IColladaLoadOptions>pOptions);
+                }
+
+                return pCollada;
+            }
+
+            return null;
+        }
+
+
 
         private createDeviceResource(): void {
             this.pSurfaceMaterialPool = new ResourcePool(this, resources.SurfaceMaterial);
@@ -364,8 +403,9 @@ module akra.core.pool {
             this.pRenderMethodPool = new ResourcePool(this, resources.RenderMethod);
             this.pRenderMethodPool.initialize(16);
 
-            this.pModelPool = new ResourcePool(this, resources.Model);
-            this.pModelPool.initialize(16);
+
+            this.pColladaPool = new ResourcePool(this, resources.Collada);
+            this.pColladaPool.initialize(0);
 
             this.pImagePool = new ResourcePool(this, resources.Img);
             this.pImagePool.initialize(16);
@@ -397,6 +437,9 @@ module akra.core.pool {
 #else
             CRITICAL("Render system not specified");
 #endif
+            
+            this.pEffectDataPool = new ResourcePool(this, resources.EffectData);
+            this.pEffectDataPool.initialize(8);         
 
 
             this.pComponentPool = new ResourcePool(this, resources.Component);
@@ -425,7 +468,7 @@ module akra.core.pool {
                 new ResourceCode(
                     <number>EResourceFamilies.VIDEO_RESOURCE,
                     <number>EVideoResources.RENDERMETHOD_RESOURCE));
-            this.pModelPool.registerResourcePool(
+            this.pColladaPool.registerResourcePool(
                 new ResourceCode(
                     <number>EResourceFamilies.VIDEO_RESOURCE,
                     <number>EVideoResources.MODEL_RESOURCE));
@@ -449,6 +492,10 @@ module akra.core.pool {
                 new ResourceCode(
                     <number>EResourceFamilies.VIDEO_RESOURCE,
                     <number>EVideoResources.COMPONENT_RESOURCE));
+            this.pEffectDataPool.registerResourcePool(
+                new ResourceCode(
+                    <number>EResourceFamilies.VIDEO_RESOURCE,
+                    <number>EVideoResources.EFFECTDATA_RESOURCE));
         }
 
         private unregisterDeviceResources(): void {
@@ -459,7 +506,7 @@ module akra.core.pool {
             this.pIndexBufferPool.unregisterResourcePool();
             this.pEffectPool.unregisterResourcePool();
             this.pRenderMethodPool.unregisterResourcePool();
-            this.pModelPool.unregisterResourcePool();
+            this.pColladaPool.unregisterResourcePool();
             this.pImagePool.unregisterResourcePool();
             this.pSurfaceMaterialPool.unregisterResourcePool();
             this.pVideoBufferPool.unregisterResourcePool();

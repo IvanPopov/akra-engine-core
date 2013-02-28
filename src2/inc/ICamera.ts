@@ -10,6 +10,7 @@ module akra {
 	IFACE(IRect3d);
 	IFACE(IFrustum);
     IFACE(ISceneBuilder);
+    IFACE(IObjectArray);
 
 	export enum ECameraParameters {
         CONST_ASPECT = 1
@@ -23,7 +24,7 @@ module akra {
 
 
 
-    export interface ICamera extends ISceneObject {
+    export interface ICamera extends ISceneNode {
     	readonly viewMatrix: IMat4;
     	readonly projectionMatrix: IMat4;
     	readonly projViewMatrix: IMat4;
@@ -39,8 +40,6 @@ module akra {
     	readonly viewDistance: float;
     	readonly searchRect: IRect3d;
     	readonly frustum: IFrustum;
-
-
 
     	setParameter(eParam: ECameraParameters, pValue: any): void;
     	isConstantAspect(): bool;
@@ -58,7 +57,7 @@ module akra {
     	lookAt(v3fCenter: IVec3, v3fUp?: IVec3);
 
         //display via display list with name <csList>
-        display(iList?: int): ISceneObject[];
+        display(iList?: int): IObjectArray;
 
     	_renderScene(pViewport: IViewport): void;
     	_keepLastViewport(pViewport: IViewport): void;

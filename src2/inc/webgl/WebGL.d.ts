@@ -830,6 +830,96 @@ interface WEBGL_fbo_color_attachments {
     MAX_COLOR_ATTACHMENTS: number;
 };
 
+// debug
+
+
+declare var WebGLDebugUtils: {
+	/**
+	 * Initializes this module. Safe to call more than once.
+	 *    you have more than one context it doesn't matter which one
+     *    you pass in, it is only used to pull out constants.
+	 */
+	init: (ctx: WebGLRenderingContext) => void;
+	/**
+	 * Returns true or false if value matches any WebGL enum
+	 */
+	mightBeEnum: (value: any) => bool;
+	/**
+	 * Gets an string version of an WebGL enum.
+	 *
+	 * Example:
+	 *   WebGLDebugUtil.init(ctx);
+	 *   var str = WebGLDebugUtil.glEnumToString(ctx.getError());
+	 *
+	 */
+	glEnumToString: (value: number) => string;
+	/**
+     * Converts the argument of a WebGL function to a string.
+     * Attempts to convert enum arguments to strings.
+     *
+     * Example:
+     *   WebGLDebugUtil.init(ctx);
+     *   var str = WebGLDebugUtil.glFunctionArgToString('bindTexture', 0, gl.TEXTURE_2D);
+     *
+     * would return 'TEXTURE_2D'
+     */
+    glFunctionArgToString: (functionName: string, argumentIndex: int, value: any) => string;
+	/**
+     * Converts the arguments of a WebGL function to a string.
+     * Attempts to convert enum arguments to strings.
+     */
+    glFunctionArgsToString: (functionName: string, args: IArguments) => string;
+	/**
+     * Given a WebGL context returns a wrapped context that calls
+     * gl.getError after every command and calls a function if the
+     * result is not NO_ERROR.
+     *
+     * You can supply your own function if you want. For example, if you'd like
+     * an exception thrown on any GL error you could do this
+     *
+     *    function throwOnGLError(err, funcName, args) {
+     *      throw WebGLDebugUtils.glEnumToString(err) +
+     *            " was caused by call to " + funcName;
+     *    };
+     *
+     *    ctx = WebGLDebugUtils.makeDebugContext(
+     *        canvas.getContext("webgl"), throwOnGLError);
+     */
+	makeDebugContext: (
+		ctx: WebGLRenderingContext, 
+		onErrorFunc?: (err: int, funcName: string, args: IArguments) => void, 
+		onFunc?: (funcName: string, args: IArguments) => void) => WebGLRenderingContext;
+
+	/**
+	 * Given a canvas element returns a wrapped canvas element that will
+	 * simulate lost context. The canvas returned adds the following functions.
+	 *
+	 * loseContext:
+	 *   simulates a lost context event.
+	 *
+	 * restoreContext:
+	 *   simulates the context being restored.
+	 *
+	 * lostContextInNCalls:
+	 *   loses the context after N gl calls.
+	 *
+	 * getNumCalls:
+	 *   tells you how many gl calls there have been so far.
+	 *
+	 * setRestoreTimeout:
+	 *   sets the number of milliseconds until the context is restored
+	 *   after it has been lost. Defaults to 0. Pass -1 to prevent
+	 *   automatic restoring.
+	 */
+	makeLostContextSimulatingCanvas: (canvas: HTMLCanvasElement) => HTMLCanvasElement;
+    /**
+     * Resets a context to the initial state.
+     */
+	resetToInitialState: (ctx: WebGLRenderingContext) => void;
+
+}
+
+
 /* ClearBufferMask */
 #define GL_DEPTH_BUFFER_BIT               0x00000100
 #define GL_STENCIL_BUFFER_BIT             0x00000400

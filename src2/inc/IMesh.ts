@@ -2,13 +2,17 @@
 #define IMESH_TS
 
 #include "IRenderData.ts"
-//#include "IHardwareBuffer.ts"
+#include "IEventProvider.ts"
+#include "IHardwareBuffer.ts"
+
 module akra {
-    IFACE(IReferenceCounter);
+    IFACE(IRenderDataCollection);
     IFACE(ISkeleton);
     IFACE(IRect3d);
     IFACE(ISphere);
     IFACE(IMeshSubset);
+    IFACE(ISceneNode);
+    IFACE(ISceneModel);
     IFACE(ISkin);
     
 	export enum EMeshOptions {
@@ -21,49 +25,75 @@ module akra {
         SHARED_GEOMETRY = 0x01  /*<! use shared geometry*/
     };
 
-	export interface IMesh {
-        readonly flexMaterials;
+    export interface IMeshMap {
+        [name: string]: IMesh;
+    }
+
+	export interface IMesh extends IEventProvider {
+        readonly flexMaterials: IMaterial[];
         readonly name: string;
-        readonly data: IReferenceCounter;
-        readonly buffer: IReferenceCounter;
+        readonly data: IRenderDataCollection;
+        readonly length: uint; /*<! number of submeshes in. */
+        readonly boundingBox: IRect3d;
+        readonly boundingSphere: ISphere;
+
 		skeleton: ISkeleton;
 
-        setSkeleton(pSkeleton: ISkeleton): void;
+        
         getOptions(): int;
         getEngine(): IEngine;
-        drawSubset(iSubset: int): void;
-        draw(): void;
-        isReadyForRender(): bool;
-        setup(sName: string, eOptions: int, pDataBuffer: IReferenceCounter): bool;
-        createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions: int);
-        freeSubset(sName: string): bool;
+        
+        //setup(sName: string, eOptions: int, pDataBuffer?: IRenderDataCollection): bool;
+        destroy(): void;    
+        clone(iCloneOptions: int): IMesh;
 
         /** @deprecated */
         replaceFlexMaterials(pFlexMaterials): void;
         /** @deprecated */
-        getFlexMaterial();
+        getFlexMaterial(iMaterial: uint): IMaterial;
+        getFlexMaterial(csName: string): IMaterial;
         /** @deprecated */
-        addFlexMaterial(sName: string, pMaterial: IMaterial): bool;
+        addFlexMaterial(sName: string, pMaterial?: IMaterial): bool;
         /** @deprecated */
         setFlexMaterial(iMaterial: int): bool;
+        setFlexMaterial(csName: string): bool;
         
-        destroy(): void;
-        destructor(): void;
-        getSubset(): IMeshSubset;
+        createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions?: int);
+        freeSubset(sName: string): bool;
+        getSubset(sMesh: string): IMeshSubset;
+        getSubset(i: uint): IMeshSubset;
+        appendSubset(sName: string, pData: IRenderData): IMeshSubset;
+        
         setSkin(pSkin: ISkin): void;
-        clone(eCloneOptions: EMeshCloneOptions);
-        createAndShowSubBoundingBox(): void;
-        createAndShowSubBoundingSphere(): void;
+        setSkeleton(pSkeleton: ISkeleton): void;
+        createSkin(): ISkin;
+
         createBoundingBox(): bool;
         deleteBoundingBox(): bool;
-        getBoundingBox(): IRect3d;
         showBoundingBox(): bool;
         hideBoundingBox(): bool;
+        createAndShowSubBoundingBox(): void;
+
         createBoundingSphere(): bool;
         deleteBoundingSphere(): bool;
-        getBoundingSphere(): ISphere;
         showBoundingSphere(): bool;
         hideBoundingSphere(): bool;
+        createAndShowSubBoundingSphere(): void;
+
+        /** TRUE if only one mesh subset has a shadow. */
+        hasShadow(): bool;
+        /** Add shadow for all subsets. */
+        setShadow(bValue?: bool): void;
+
+        isReadyForRender(): bool;
+
+        toSceneModel(pParent: ISceneNode, sName?: string): ISceneModel;
+
+        _drawSubset(iSubset: int): void;
+        _draw(): void;
+
+        /** notify, when one of substets added or removed shadow */
+        signal shadow(pSubset: IMeshSubset, bShadow: bool): void;
 	}
 }
 

@@ -32,9 +32,10 @@ module akra.util {
 
 	//string to array buffer
 	export var stoab = function (s: string): ArrayBuffer {
+		var len: uint = s.length;
 		var pCodeList: int[] = new Array(len);
 
-	    for (var i: int = 0, len = s.length; i < len; ++i) {
+	    for (var i: int = 0; i < len; ++i) {
 	        pCodeList[ i ] = s.charCodeAt(i); /*& 0xFF;*/
 	    }
 	    
