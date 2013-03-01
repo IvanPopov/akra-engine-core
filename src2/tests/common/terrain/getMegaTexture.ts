@@ -19,6 +19,8 @@ module akra {
 	const BLOCK_WIDTH = 32;
 	const BLOCK_HEIGHT = 32;
 
+	const iRes = 16;
+
 	var pDebugCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas");
 	var pDebugCtx: CanvasRenderingContext2D = <CanvasRenderingContext2D>((<any>pDebugCanvas).getContext("2d"));
 
@@ -51,13 +53,13 @@ module akra {
             p1 += 3;
 		}
 		
-		pDebugCtx.putImageData(pData, x, y);
+		pDebugCtx.putImageData(pData, x % 1024, y % 1024);
 		nBlocksLoaded ++;
 
 		if (nBlocksLoaded == nBlocksTotal) {
-			ok(true);
-			run();
-			pRpc.detach();
+			//ok(true);
+			//run();
+			//pRpc.detach();
 		}
 		else {
 			//console.log(nBlocksLoaded, "/", nBlocksTotal);
@@ -66,7 +68,7 @@ module akra {
 
 	export function getTextureFrom(x: uint, y: uint): void {
 		pRpc.proc("getMegaTexture", "main", 
-			IMG_WIDTH, IMG_HEIGHT, 					/* width, height */
+			IMG_WIDTH * iRes, IMG_HEIGHT * iRes, 	/* width, height */
 			x, y, 									/* x, y */
 			BLOCK_WIDTH, BLOCK_HEIGHT,				/* block size X, Y */ 
 			0x1907,									/* RGB */
@@ -84,19 +86,20 @@ module akra {
 	export function exploreWholeTexture(): void {
 		
 
-		if (x >= IMG_WIDTH) {
+		if (x >= IMG_WIDTH * iRes) {
 			x = 0;
 			y += BLOCK_HEIGHT;
 		}
 
-		if (y >= IMG_HEIGHT) {
+		if (y >= IMG_HEIGHT * iRes) {
 			y = 0;
 		}
-		else {
+	
 			getTextureFrom(x, y);
 			x += BLOCK_WIDTH;
-			exploreWholeTexture();
-		}
+			setTimeout(exploreWholeTexture, 1);
+			//exploreWholeTexture();
+		
 
 		
 	}

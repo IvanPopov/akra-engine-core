@@ -7,6 +7,7 @@ var spawn 	= require('child_process').spawn;
 //var md5 	= require('MD5');
 var stream  = require('stream');
 var prompt 	= require('prompt');
+var wrench  = require('wrench');
 
 function include(file) {
 	eval(fs.readFileSync(file, "utf-8"));
@@ -276,7 +277,7 @@ function preprocess() {
 	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -j -+ -W 0 -k " + 
 		capabilityMacro + " " + pOptions.files.join(" ")).split(" ");
 
-	console.log(pOptions.files);
+	//console.log(pOptions.files);
 	console.log(cmd + " " + argv.join(" "));
 	
 	var mcpp = spawn(cmd, argv, {maxBuffer: BUFFER_SIZE});
@@ -460,10 +461,18 @@ function fetchDeps(sDir, pDeps) {
 	for (var i in pDeps) {
 
 		var sDep = path.normalize( pOptions.includeDir + pDeps[i]);
+		var sDepContent;
+		var stat;
 
-		var sDepContent = fs.readFileSync(sDep, "utf-8");
-
-		fs.writeFileSync(sDir + "/" + path.basename(sDep), sDepContent, "utf-8");
+		if (fs.existsSync(sDep)) {
+			stat = fs.statSync(sDep);
+			if (stat.isDirectory()) {
+				wrench.copyDirSyncRecursive(sDep, sDir + "/" + path.basename(sDep));
+			}
+			else {
+				fs.writeFileSync(sDir + "/" + path.basename(sDep), fs.readFileSync(sDep, "utf-8"), "utf-8");
+			}
+		}
 	}
 }
 

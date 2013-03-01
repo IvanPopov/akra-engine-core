@@ -130,7 +130,7 @@ function processingStack() {
         }
 
         iArrayCanvasLen++;
-        pCanvasMG[sCanvasName] = new Canvas(pParam.iSizeX, pParam.iSizeY);
+        pCanvasMG[sCanvasName] = new Canvas(1024, 1024);//pParam.iSizeX, pParam.iSizeY
         pCa = pCanvasMG[sCanvasName];
         pCtx[sCanvasName] = pCa.getContext('2d');
         pCt = pCtx[sCanvasName];
@@ -147,13 +147,11 @@ function processingStack() {
         return;
     }
 
-    var src = path.normalize(__dirname + "/" + "../../../../tests/common/terrain/data/" + pParam.sName + "/" + pParam.iSizeX + "x" + pParam.iSizeY + "/diffuse/" + iImageNumberX + "_" + iImageNumberY + ".png");
+    var src = path.normalize(__dirname + "/../../data/" + pParam.sName + "/" + pParam.iSizeX + "x" + pParam.iSizeY + "/diffuse/" + iImageNumberX + "_" + iImageNumberY + ".png");
 
     pImgMG.onload = function () {
         //console.log("Succes!!!",src,iSizeX,iSizeY,x,y,width,height);
         pCt.drawImage(pImgMG, 0, 0);
-        
-        var data = pCt.getImageData(pParam.x, pParam.y, pParam.width, pParam.height).data;
         
         pParam.fnCallback(null, fetchCanvasData(pCt, pParam, nBytePerCount));
     }

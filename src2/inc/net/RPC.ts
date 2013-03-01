@@ -8,6 +8,9 @@
 #include "util/util.ts"
 #include "util/ObjectList.ts"
 
+/// @dep net/server/
+
+
 module akra.net {
 
     enum ERpcStates {
@@ -316,16 +319,21 @@ module akra.net {
             return bResult;
         }
 
+        inline _systemRoutine(): void {
+            this._removeExpiredCallbacks();
+        }
+
         _startSystemRoutine(): void {
             var pRPC: RPC = this;
 
             this._iSystemRoutine = setInterval(() => {
-                pRPC._removeExpiredCallbacks();
+                pRPC._systemRoutine();
             }, RPC.OPTIONS.SYSTEM_ROUTINE_INTERVAL);
         }
 
         _stopSystemRoutine(): void {
             clearInterval(this._iSystemRoutine);
+            this._systemRoutine();
         }
 
         _removeExpiredCallbacks(): void {
