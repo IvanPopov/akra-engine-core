@@ -1,5 +1,3 @@
-"use strict";
-
 //requirements
 var autoloader 	= require('autoloader');
 // var cluster 	= require('cluster');
@@ -33,18 +31,17 @@ var wsServer = new WebSocketServer({
 
 var request, response;
 
+/* common procedures */
+
 function echo(fnCallback, msg) {
-	fnCallback(msg);
+	fnCallback(null, msg);
 }
 
 function bufferTest(fnCallback) {
-    fnCallback(new Float32Array([100, 200, 300, 400, 500]));
+    fnCallback(null, new Uint8Array([1, 2, 4, 8, 16, 32, 64, 128]));
 }
 
-global['bufferTest'] = bufferTest;
-global['echo'] = echo;
-global['proc_list'] = function (fnCallback) {
-
+function procList(fnCallback) {
     var pList = Object.keys(global);
     var pRes = [];
 
@@ -54,53 +51,75 @@ global['proc_list'] = function (fnCallback) {
         }
     };
 
-    fnCallback(pRes);
-};
+    fnCallback(null, pRes);
+}
 
-function proc(req, fnCallback) {
-    if (req.type === RPC_TYPE_CALL) {
-    	if (!req.proc || !req.argv) {
-    		return false;
-    	}
+global["bufferTest"] = bufferTest;
+global["echo"] = echo;
+global["proc_list"] = procList;
+
+var pBuffer = null;
+var pHeader = null;
+var pData = null;
+var pJsonResponse = {n: 0, res: null, type: 0};
+
+function jsonResponse(n, res, type) {
+    pJsonResponse.n = n;
+    pJsonResponse.res = res;
+    pJsonResponse.type = type;
+    return pJsonResponse;
+}
+
+function jsonFailure(n, err) {
+    return jsonResponse(n, err? err.message: null, RPC_TYPE_FAILURE);
+}
+
+function proc(connection, req) {
+    if (req.type === RPC_TYPE_CALL && req.proc && req.argv) {
     	
     	var procedure = req.proc;
         var result = null;
 
     	if (global[procedure]) {
 
-    		var fnCall = function(result) {
-    			    if (result.byteLength) {
-        				if (!(result instanceof ArrayBuffer)) {
-        				    result = result.buffer;
-        				}
-        				
-        				var pBuffer = new Uint8Array(result.byteLength + 8);
-        				
-        				pBuffer.set(new Uint8Array((new Uint32Array([req.n])).buffer));
-        				pBuffer[4] = RPC_TYPE_RESPONSE;
-        				pBuffer.set(new Uint8Array(result), 8);
+    		var fnCall = function(err, result) {
+                if (err) {
+                    connection.sendUTF(JSON.stringify(jsonFailure(req.n, err)));
+                }
 
-        				// trace(pBuffer.buffer.byteLength);
-        				// trace(new Float32Array(pBuffer.buffer, 8, 4));
-        				fnCallback(new Buffer(pBuffer))
-    			    }
-                    else {
-    		    	    fnCallback({n: req.n, res: result, type: RPC_TYPE_RESPONSE});
+			    if (result && result.BYTES_PER_ELEMENT === 1) {
+                    //result must be Uint8Array
+
+                    var iResponseSize = result.byteLength + 8;
+
+                    if (pBuffer === null || (pBuffer && pBuffer.length < iResponseSize)) {
+                        pBuffer = new Buffer(iResponseSize);
+                        pHeader = new Uint32Array(pBuffer, 0, 2);
+                        pData = new Uint8Array(pBuffer, 8);
+
+                        console.log("allocated response buffer with size " + pBuffer.length + " bytes");
                     }
+
+
+                    pHeader[0] = req.n;
+                    pHeader[1] = RPC_TYPE_RESPONSE;
+
+    				pData.set(result);
+
+                    //slice() returns a new buffer which references the same memory as the old.
+    				connection.sendBytes(pBuffer.slice(0, iResponseSize)); 
+			    }
+                else {
+                    connection.sendUTF(JSON.stringify(jsonResponse(req.n, result, RPC_TYPE_RESPONSE)));
+                }
     		}
     		
             req.argv.unshift(fnCall);
-    	}
-    	else {
-        	//trace('procedure: ', procedure, 'not exists...');
-            fnCallback({n: req.n, type: RPC_TYPE_FAILURE})
-    	}
-
-        global[procedure].apply(null, req.argv)
+            global[procedure].apply(null, req.argv);
+        }
     }
-    else
-    {	
-	fnCallback({n: req.n, type: RPC_TYPE_FAILURE})
+    else {	
+       connection.sendUTF(JSON.stringify(jsonFailure(req.n, null)));
     }
 }
 
@@ -108,45 +127,19 @@ function proc(req, fnCallback) {
 wsServer.on('request', function(request) {
 	console.log((new Date()) + ' Connection from origin ' + request.origin + '.');
 
-
     var connection = request.accept(null, request.origin);
-
-    //trace(Object.keys(connection));
     // This is the most important callback for us, we'll handle
     // all messages from users here.
-    connection.on('message', function(message) 
-    {
+    connection.on('message', function(message) {
         if (message.type === 'utf8') {
-            //trace('message from socket:', message.utf8Data);
-
-            request = JSON.parse(message.utf8Data);    
-           // if (request.argv)        
-           //  trace(">", request.argv[0]);
-            var fnCall = function(response) {
-
-    		    if (response instanceof Buffer) {
-    		        // trace('send as binary >> ', response);
-    		        connection.sendBytes(response);    
-    		        // for (var i in connection) {
-    		        //     if (typeof connection[i] === 'function') {
-    		        //         trace(i);
-    		        //     }
-    		        // }
-    		    }
-    		    else {
-                    //trace("<",response.res);
-    			    connection.sendUTF(JSON.stringify(response));
-    		    }
-		    }
-
-	        proc(request, fnCall);
+	        proc(connection, JSON.parse(message.utf8Data));
         }
         else {
+            trace('received message from socket in wrong encoding');
             if (message.type === 'binary') {
                 trace(new Uint8Array(message.binaryData));
             }
             else {
-            	trace('received message from socket in wrong encoding');
                 trace(message);
             }
         }

@@ -200,7 +200,7 @@ module akra.net {
 		isClosed(): bool {
 			switch (this._eType) {
 				case EPipeTypes.WEBSOCKET:
-					return ((<WebSocket>this._pConnect).readyState === WebSocket.CLOSED);
+					return isNull(this._pConnect) || ((<WebSocket>this._pConnect).readyState === WebSocket.CLOSED);
 			}
 
 			return isNull(this._pConnect);
@@ -209,7 +209,7 @@ module akra.net {
 		isOpened(): bool {
 			switch (this._eType) {
 				case EPipeTypes.WEBSOCKET:
-					return (<WebSocket>this._pConnect).readyState === WebSocket.OPEN;
+					return !isNull(this._pConnect) && (<WebSocket>this._pConnect).readyState === WebSocket.OPEN;
 			}
 
 			return !isNull(this._pConnect);
