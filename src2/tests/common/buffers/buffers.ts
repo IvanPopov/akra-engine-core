@@ -401,4 +401,127 @@ test("VideoBuffer tests<br/>" +
 		shouldBeArray("read typed array", new Uint16Array([3,4]));
 		check(pData.getTypedData(5, 2));	
 	});
+
+	test("bufferMap test unmappable flow", () => {
+		var pMap: IBufferMap = util.createBufferMap(pEngine);
+
+		var pVertexBuffer: IVertexBuffer = pResourcePool.createVertexBuffer('test-vertex-buffer' + <string>sid());
+		pVertexBuffer.create(0, <uint>EHardwareBufferFlags.BACKUP_COPY);	
+
+		var pDecl: IVertexDeclaration = new data.VertexDeclaration();
+		var pVE: IVertexElementInterface = VE_FLOAT4("POSITION");
+
+		pDecl.append(pVE);
+
+		var pVertexData: IVertexData = pVertexBuffer.getEmptyVertexData(4,pDecl);
+
+		var pArr1: Float32Array = new Float32Array([1,2,3,4, 5,6,7,8, 9,10,11,12, 13,14,15,16]);
+
+		pVertexData.setData(pArr1, "POSITION");
+
+		var pIndexBuffer: IIndexBuffer = pResourcePool.createIndexBuffer('test-index-buffer' + <string>sid());
+		pIndexBuffer.create(0, <uint>EHardwareBufferFlags.BACKUP_COPY);		
+
+		var pIndexData: IIndexData = pIndexBuffer.getEmptyIndexData(15, EPrimitiveTypes.TRIANGLESTRIP, EDataTypes.UNSIGNED_SHORT);
+
+		var pArr2: Uint16Array = new Uint16Array([0,1,2 ,3,0,2, 1,3,0, 1,2,3, 0,2,3]);
+		pIndexData.setData(pArr2);
+
+		var iFlow: uint;
+
+		shouldBe("set vertexData from vertexBuffer, check flow", 0);
+		check(iFlow = pMap.flow(pVertexData));
+
+		pMap.index = pIndexData;
+
+		shouldBe("set indexData, test prim type", EPrimitiveTypes.TRIANGLESTRIP);
+		check(pMap.primType);
+
+		shouldBe("test primitive count", 13);
+		check(pMap.primCount);
+	});
+
+	test("bufferMap test mappable flow", () => {
+		var pMap: IBufferMap = util.createBufferMap(pEngine);
+
+		var pVideoBuffer: IVertexBuffer = pResourcePool.createVideoBuffer('test-video-buffer' + <string>sid());
+		pVideoBuffer.create(0, <uint>EHardwareBufferFlags.BACKUP_COPY);	
+
+		var pDecl1: IVertexDeclaration = new data.VertexDeclaration();
+		var pDecl2: IVertexDeclaration = new data.VertexDeclaration();
+		var pVE1: IVertexElementInterface = VE_FLOAT4("POSITION");
+		var pVE2: IVertexElementInterface = VE_FLOAT3("NORMAL");
+		var pVE3: IVertexElementInterface = VE_FLOAT3("BINORMAL");
+		var pVE4: IVertexElementInterface = VE_END(32);
+
+		pDecl1.append(pVE1);
+		pDecl2.append(pVE2, pVE3, pVE4);
+
+		var pVertexData1: IVertexData = pVideoBuffer.getEmptyVertexData(4,pDecl1);
+		var pVertexData2: IVertexData = pVideoBuffer.getEmptyVertexData(4,pDecl2);
+
+		var pArr1: Float32Array = new Float32Array([1,2,3,4, 5,6,7,8, 9,10,11,12, 13,14,15,16]);
+		var pArr2: Float32Array = new Float32Array([1,2,3, 4,5,6, 7,8,9, 10,11,12]);
+		var pArr3: Float32Array = new Float32Array([-1,-2,-3, -4,-5,-6, -7,-8,-9, -10,-11,-12]);
+
+		pVertexData1.setData(pArr1, "POSITION");
+
+		pVertexData2.setData(pArr2, "NORMAL");
+		pVertexData2.setData(pArr3, "BINORMAL");
+
+		var pMapBuffer: IVertexBuffer = pResourcePool.createVertexBuffer('test-vertex-buffer' + <string>sid());
+		pMapBuffer.create(0, <uint>EHardwareBufferFlags.BACKUP_COPY);	
+
+		var pDeclMap: IVertexDeclaration = new data.VertexDeclaration();
+		var pVE1Index: IVertexElementInterface = VE_CUSTOM("INDEX_POSITION", EDataTypes.UNSIGNED_SHORT, 6);
+		var pVE2Index: IVertexElementInterface = VE_CUSTOM("INDEX_NORMAL", EDataTypes.UNSIGNED_SHORT, 6);
+
+		pDeclMap.append(pVE1Index, pVE2Index);
+
+		var pIndex1: Uint16Array = new Uint16Array([1,2,3, 2,3,1]);
+		var pIndex2: Uint16Array = new Uint16Array([3,2,0, 0,1,3]);
+
+		var pMapData: IVertexData = pVideoBuffer.getEmptyVertexData(6,pDeclMap);
+		pMapData.setData(pIndex1, "INDEX_POSITION");
+		pMapData.setData(pIndex2, "INDEX_NORMAL");
+
+		var iFlow1: uint;
+		var iFlow2: uint;
+
+		shouldBe("set vertexData from videoBuffer, check flow", 0);
+		check(iFlow1 = pMap.flow(pVertexData1));
+
+		shouldBe("set vertexData from videoBuffer, check flow", 1);
+		check(iFlow2 = pMap.flow(pVertexData2));
+
+		shouldBeTrue("try mapping first vertexData");
+		check(pMap.mapping(iFlow1, pMapData, "INDEX_POSITION"));
+
+		shouldBeTrue("try mapping second vertexData");
+		check(pMap.mapping(iFlow2, pMapData, "INDEX_NORMAL"));
+
+		shouldBe("test primitive count", 2);
+		check(pMap.primCount);
+
+		pMap.primType = EPrimitiveTypes.TRIANGLEFAN;
+
+		shouldBe("change primitive type, check polygon count", 4);
+		check(pMap.primCount);
+
+		var pIndexBuffer: IIndexBuffer = pResourcePool.createIndexBuffer('test-index-buffer' + <string>sid());
+		pIndexBuffer.create(0, <uint>EHardwareBufferFlags.BACKUP_COPY);		
+
+		var pIndexData: IIndexData = pIndexBuffer.getEmptyIndexData(15, EPrimitiveTypes.POINTLIST, EDataTypes.UNSIGNED_SHORT);
+
+		var pIndexArr: Uint16Array = new Uint16Array([0,1,2 ,3,0,2, 1,3,0, 1,2,3, 0,2,3]);
+		pIndexData.setData(pIndexArr);
+
+		pMap.index = pIndexData;
+
+		shouldBe("set index, check primitive type", EPrimitiveTypes.POINTLIST);
+		check(pMap.primType);
+
+		shouldBe("check primitive count", 15);
+		check(pMap.primCount);
+	});
 }
