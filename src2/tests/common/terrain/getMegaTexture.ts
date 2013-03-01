@@ -53,13 +53,13 @@ module akra {
             p1 += 3;
 		}
 		
-		pDebugCtx.putImageData(pData, x % 1024, y % 1024);
+		pDebugCtx.putImageData(pData, x, y);
 		nBlocksLoaded ++;
 
 		if (nBlocksLoaded == nBlocksTotal) {
-			//ok(true);
-			//run();
-			//pRpc.detach();
+			ok(true);
+			run();
+			pRpc.detach();
 		}
 		else {
 			//console.log(nBlocksLoaded, "/", nBlocksTotal);
@@ -86,25 +86,21 @@ module akra {
 	export function exploreWholeTexture(): void {
 		
 
-		if (x >= IMG_WIDTH * iRes) {
+		if (x >= IMG_WIDTH) {
 			x = 0;
 			y += BLOCK_HEIGHT;
 		}
 
-		if (y >= IMG_HEIGHT * iRes) {
+		if (y >= IMG_HEIGHT) {
 			y = 0;
 		}
-	
+		else {
 			getTextureFrom(x, y);
 			x += BLOCK_WIDTH;
-			setTimeout(exploreWholeTexture, 1);
-			//exploreWholeTexture();
-		
-
-		
+			// setTimeout(exploreWholeTexture, 1);
+			exploreWholeTexture();
+		}
 	}
-
-	//var iTimer: int = -1;
 
 	asyncTest("fetch mega texture", () => {
 		shouldBeTrue("fetch whole texture");
