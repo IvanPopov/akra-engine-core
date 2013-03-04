@@ -36,6 +36,18 @@ module akra.fx {
             this._pInstructionList = [];
             this._eInstructionType = EAFXInstructionTypes.k_StmtBlockInstruction;
         }
+
+        toFinalCode(): string {
+            var sCode: string = "{" + "\n";
+            
+            for(var i: uint = 0; i < this._nInstructions; i++){
+                sCode += "\t" + this._pInstructionList[i].toFinalCode() + "\n";
+            }
+
+            sCode += "}";
+
+            return sCode;
+        }
     }
 
     /**
@@ -47,6 +59,10 @@ module akra.fx {
             super();
             this._pInstructionList = [null];
             this._eInstructionType = EAFXInstructionTypes.k_ExprStmtInstruction;
+        }
+
+        toFinalCode(): string {
+            return this.getInstructions()[0].toFinalCode() + ";";
         }
     }
 
@@ -60,6 +76,10 @@ module akra.fx {
             this._pInstructionList = null;
             this._eInstructionType = EAFXInstructionTypes.k_BreakStmtInstruction;
         }
+
+        toFinalCode(): string {
+            return this.getOperator() + ";";
+        }
     }
 
     /**
@@ -72,6 +92,24 @@ module akra.fx {
             this._pInstructionList = [null, null];
             this._eInstructionType = EAFXInstructionTypes.k_WhileStmtInstruction;
         }
+
+        toFinalCode(): string {
+            var sCode: string = "";
+            if(this.getOperator() === "while"){
+                sCode += "while(";
+                sCode += this.getInstructions()[0].toFinalCode();
+                sCode += ")";
+                sCode += this.getInstructions()[1].toFinalCode();
+            }
+            else{
+                sCode += "do";
+                sCode += this.getInstructions()[1].toFinalCode();
+                sCode += "while(";
+                sCode += this.getInstructions()[0].toFinalCode();
+                sCode += ");";
+            }
+            return sCode;
+        }
     }
 
     /**
@@ -83,6 +121,17 @@ module akra.fx {
             super();
             this._pInstructionList = [null, null, null, null];
             this._eInstructionType = EAFXInstructionTypes.k_ForStmtInstruction;
+        }
+
+        toFinalCode(): string {
+            var sCode: string = "for(";
+            
+            sCode += this.getInstructions()[0].toFinalCode() + ";";
+            sCode += this.getInstructions()[1].toFinalCode() + ";";
+            sCode += this.getInstructions()[2].toFinalCode() + ")";
+            sCode += this.getInstructions()[3].toFinalCode();
+
+            return sCode;
         }
 
         check(eStage: ECheckStage, pInfo: any = null): bool {
@@ -145,7 +194,8 @@ module akra.fx {
                 isRead: false,
                 isWrite: true,
                 numRead: 0,
-                numWrite: 1
+                numWrite: 1,
+                numUsed: 1
             };
 
             pForCondition.addUsedData(pUsedDataCollector, eUsedMode);
@@ -164,6 +214,24 @@ module akra.fx {
             this._pInstructionList = [null, null, null];
             this._eInstructionType = EAFXInstructionTypes.k_IfStmtInstruction;
         }
+
+        toFinalCode(): string {
+            var sCode: string = "";
+            if(this.getOperator() === "if"){
+                sCode += "if(";
+                sCode += this.getInstructions()[0].toFinalCode() + ")";
+                sCode += this.getInstructions()[1].toFinalCode();
+            }
+            else {
+                sCode += "if(";
+                sCode += this.getInstructions()[0].toFinalCode() + ") ";
+                sCode += this.getInstructions()[1].toFinalCode();
+                sCode += "else ";
+                sCode += this.getInstructions()[2].toFinalCode();
+            }
+
+            return sCode;
+        }
     }
 
     /**
@@ -175,6 +243,10 @@ module akra.fx {
             super();
             this._pInstructionList = [null];
             this._eInstructionType = EAFXInstructionTypes.k_DeclStmtInstruction;
+        }
+
+        toFinalCode(): string {
+            return this._pInstructionList[0].toFinalCode() + ";";
         }
 
         addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
@@ -196,7 +268,8 @@ module akra.fx {
                     isRead: false,
                     isWrite: true,
                     numRead: 0,
-                    numWrite: 1
+                    numWrite: 1,
+                    numUsed: 1
                 };
 
                 if(pVariableList[i].hasInitializer()){
@@ -218,6 +291,15 @@ module akra.fx {
             this._sOperatorName = "return";
             this._eInstructionType = EAFXInstructionTypes.k_ReturnStmtInstruction;
         }
+
+        toFinalCode(): string {
+            if(this._nInstructions > 0){
+                return "return " + this._pInstructionList[0].toFinalCode() + ";";
+            }
+            else {
+                return "return;";
+            }
+        }
     }
 
     /**
@@ -229,6 +311,10 @@ module akra.fx {
             super();
             this._pInstructionList = null;
             this._eInstructionType = EAFXInstructionTypes.k_SemicolonStmtInstruction;
+        }
+
+        toFinalCode(): string {
+            return ";";
         }
     }
 }

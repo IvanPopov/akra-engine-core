@@ -14,14 +14,6 @@ module akra.fx {
 		k_Annotation
 	}
 
-	export interface IAFXVariableDeclMap { 
-		[variableName: string] : IAFXVariableDeclInstruction;
-	}
-	
-	export interface IAFXTypeDeclMap {
-		[typeName: string] : IAFXTypeDeclInstruction;
-	}
-
 	export interface IAFXFunctionDeclListMap {
 		[functionName: string] : IAFXFunctionDeclInstruction[];
 	}

@@ -23,6 +23,10 @@ module akra.fx {
         	return <IAFXTypeDeclInstruction>super.clone(pRelationMap);
         }
 
+        toFinalCode(): string {
+			return this.getType()._toDeclString() + ";";
+		}
+
         inline getName(): string {
         	return this.getType().getName();
         }
@@ -74,6 +78,23 @@ module akra.fx {
 			this._eInstructionType = EAFXInstructionTypes.k_VariableTypeInstruction;
 		}	 
 
+		toFinalCode(): string {
+			var sCode: string = "";
+			if(!isNull(this._pUsageList)){
+				for(var i: uint = 0; i < this._pUsageList.length; i++){
+					sCode += this._pUsageList[i];
+				}
+			}
+
+			sCode += this.getSubType().toFinalCode();
+
+			return sCode;
+		}
+
+		_toDeclString(): string {
+			return this.getSubType()._toDeclString();
+		}
+
 		//-----------------------------------------------------------------//
 		//----------------------------SIMPLE TESTS-------------------------//
 		//-----------------------------------------------------------------//
@@ -115,7 +136,8 @@ module akra.fx {
 				return this._isWritable;
 			}
 
-			if(this.isArray() && !this.isBase()){
+			if ((this.isArray() && !this.isBase()) ||
+				this.isForeign() || this.isUniform()){
 				this._isWritable = false;
 			}
 			else {
@@ -371,7 +393,7 @@ module akra.fx {
 
 			this._pArrayIndexExpr = pExpr;
 
-			this._iLength = this._pArrayIndexExpr.evaluate() || UNDEFINE_LENGTH;
+			this._iLength = this._pArrayIndexExpr.evaluate() ? this._pArrayIndexExpr.getEvalValue() : UNDEFINE_LENGTH;
 
 			this._isArray = true;
 		}
@@ -732,6 +754,19 @@ module akra.fx {
 			}
         }
 
+        _getMainVariable(): IAFXVariableDeclInstruction{
+        	if(!this.isFromVariableDecl()){
+        		return null;
+        	}
+
+        	if(this._isTypeOfField()){
+        		return (<IAFXVariableTypeInstruction>this.getParent().getParent())._getMainVariable();
+        	}
+        	else {
+        		return (<IAFXVariableDeclInstruction>this.getParent());
+        	}
+        }
+
         //-----------------------------------------------------------------//
 		//----------------------------SYSTEM-------------------------------//
 		//-----------------------------------------------------------------//		
@@ -880,6 +915,14 @@ module akra.fx {
 			this._pWrapVariableType.pushType(this);
 		}
 
+		_toDeclString(): string {
+			return "";
+		}
+
+		toFinalCode(): string {
+			return this._sRealName;
+		}
+
 		//-----------------------------------------------------------------//
 		//----------------------------SIMPLE TESTS-------------------------//
 		//-----------------------------------------------------------------//
@@ -968,7 +1011,7 @@ module akra.fx {
 			pField.push(pFieldId, true);
 
 			if(isNull(this._pFieldMap)){
-				this._pFieldMap = {};
+				this._pFieldMap = <IAFXVariableDeclMap>{};
 			}
 
 			this._pFieldMap[sFieldName] = pField;
@@ -1080,6 +1123,22 @@ module akra.fx {
 			this._eInstructionType = EAFXInstructionTypes.k_ComplexTypeInstruction;
 		}
 
+		_toDeclString(): string {
+			var sCode: string = "struct " + this._sRealName + "{";
+			
+			for(var i: uint = 0; i < this._pFieldDeclList.length; i++){
+				sCode += "\t" + this._pFieldDeclList[i].toFinalCode() + ";\n";
+			}
+
+			sCode += "}";
+
+			return sCode;
+		}
+
+		toFinalCode(): string {
+			return this._sRealName;
+		}
+
 		//-----------------------------------------------------------------//
 		//----------------------------SIMPLE TESTS-------------------------//
 		//-----------------------------------------------------------------//
@@ -1134,6 +1193,7 @@ module akra.fx {
 
 		inline setName(sName: string): void {
 			this._sName = sName;
+			this._sRealName = sName + "R";
 		}
 
 		inline setRealName(sRealName: string): void {
@@ -1156,7 +1216,7 @@ module akra.fx {
 
 		addField(pVariable: IAFXVariableDeclInstruction): void {
 			if(isNull(this._pFieldDeclMap)){
-				this._pFieldDeclMap = {};
+				this._pFieldDeclMap = <IAFXVariableDeclMap>{};
 				this._pFieldNameList = [];
 			}
 
@@ -1274,7 +1334,7 @@ module akra.fx {
 		}
 
 		inline getBaseType(): IAFXTypeInstruction {
-			return null;
+			return this;
 		}
 
 		inline getArrayElementType(): IAFXTypeInstruction {

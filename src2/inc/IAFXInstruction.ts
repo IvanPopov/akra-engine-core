@@ -115,9 +115,16 @@ module akra {
 
     export interface IAFXTypeMap {
         [index: string]: IAFXTypeInstruction;
+        [index: uint]: IAFXTypeInstruction;
+    }
+
+    export interface IAFXTypeDeclMap {
+        [index: string] : IAFXTypeDeclInstruction;
+        [index: uint] : IAFXTypeDeclInstruction;
     }
 
     export interface IAFXVariableDeclMap {
+        [index: uint]: IAFXVariableDeclInstruction;
         [index: string]: IAFXVariableDeclInstruction;
     }
 
@@ -126,7 +133,7 @@ module akra {
     }
 
     export interface IAFXFunctionDeclMap {
-        [index: string]: IAFXFunctionDeclInstruction;
+        [index: string]: IAFXFunctionDeclInstruction; 
         [index: uint]: IAFXFunctionDeclInstruction;
     }
 
@@ -136,6 +143,7 @@ module akra {
         isWrite: bool;
         numRead: uint;
         numWrite: uint;
+        numUsed: uint;
     }
 
     export interface IAFXTypeUseInfoMap {
@@ -160,6 +168,7 @@ module akra {
         _getInstructionID(): uint;
         _getScope(): uint;
         _setScope(iScope: uint): void;
+        _isInGlobalScope(): bool;
 
         check(eStage: ECheckStage): bool;
         getLastError(): IAFXInstructionError;
@@ -180,6 +189,7 @@ module akra {
 
     	addRoutine(fnRoutine: IAFXInstructionRoutine, iPriority?: uint);
     	toString(): string;
+        toFinalCode(): string;
         clone(pRelationMap?: IAFXInstructionMap): IAFXInstruction;
     }
 
@@ -189,6 +199,7 @@ module akra {
     }
 
     export interface IAFXTypeInstruction extends IAFXInstruction {
+        _toDeclString(): string;
         /**
          * Simple tests
          */
@@ -288,6 +299,8 @@ module akra {
         /**
          * Type info
          */
+        getArrayElementType(): IAFXVariableTypeInstruction;
+
         getUsageList(): string[];
         getSubType(): IAFXTypeInstruction;
 
@@ -302,6 +315,7 @@ module akra {
         _getFullName(): string;
         _getVarDeclName(): string;
         _getTypeDeclName(): string;
+        _getMainVariable(): IAFXVariableDeclInstruction;
 
         /**
          * System
@@ -378,7 +392,7 @@ module akra {
 
         clone(pRelationMap?: IAFXInstructionMap): IAFXFunctionDeclInstruction;
 
-        addUsedVariableType(pType: IAFXVariableTypeInstruction, eUsedMode: EVarUsedMode): bool;
+        //addUsedVariableType(pType: IAFXVariableTypeInstruction, eUsedMode: EVarUsedMode): bool;
         
         _addOutVariable(pVariable: IAFXVariableDeclInstruction): bool;
         _getOutVariable(): IAFXVariableDeclInstruction;
@@ -414,6 +428,11 @@ module akra {
         _convertToPixelShader(): IAFXFunctionDeclInstruction;
 
         _generateInfoAboutUsedData(): void;
+        _getSharedVariableMap(): IAFXVariableDeclMap;
+        _getGlobalVariableMap(): IAFXVariableDeclMap;
+        _getUniformVariableMap(): IAFXVariableDeclMap;
+        _getForeignVariableMap(): IAFXVariableDeclMap;
+        _getUsedTypeMap(): IAFXTypeDeclMap;
     }
 
     export interface IAFXStructDeclInstruction extends IAFXInstruction {

@@ -76,6 +76,21 @@ module akra.fx {
             return false;
         }
 
+        toFinalCode(): string {
+            var sCode: string = this.getType().toFinalCode();
+            sCode += " " + this.getNameId().toFinalCode();
+            
+            if(this.getType().isNotBaseArray()){
+                sCode += "[" + this.getType().getLength() + "]";
+            }
+
+            if(this.hasInitializer() && !this.isUniform()){
+                sCode += "=" + this.getInitializeExpr().toFinalCode();
+            }
+
+            return sCode;
+        }
+
         _getFullName(): string {
             if(!this.isField()){
                 return this.getName();

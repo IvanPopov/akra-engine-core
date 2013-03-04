@@ -76,6 +76,10 @@ module akra.fx {
         	this._iScope = iScope;
         }
 
+        inline _isInGlobalScope(): bool{
+        	return this._getScope() === 0;
+        }
+
 		inline getLastError(): IAFXInstructionError {
 			return this._pLastError;
 		}
@@ -127,6 +131,10 @@ module akra.fx {
     		return null;
     	}
 
+    	toFinalCode(): string {
+    		return "";
+    	}
+
     	clone(pRelationMap?: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXInstruction {
     		if(isDef(pRelationMap[this._getInstructionID()])){
     			return pRelationMap[this._getInstructionID()];
@@ -158,6 +166,15 @@ module akra.fx {
 			this._pInstructionList = [];
 			this._eInstructionType = EAFXInstructionTypes.k_InstructionCollector;
 		}
+
+		toFinalCode(): string {
+    		var sCode: string = "";
+    		for(var i: uint = 0; i < this._nInstructions; i++){
+    			sCode += this.getInstructions()[i].toFinalCode();
+    		}
+
+    		return sCode;
+    	}
 	}
 
 	export class SimpleInstruction extends Instruction implements IAFXSimpleInstruction{
@@ -180,6 +197,10 @@ module akra.fx {
 		}
 
 		toString(): string{
+			return this._sValue;
+		}
+
+		toFinalCode(): string{
 			return this._sValue;
 		}
 	}
@@ -298,6 +319,7 @@ module akra.fx {
 
 		inline setName(sName: string): void{
 			this._sName = sName;
+			this._sRealName = sName + "R";
 		}
 
 		inline setRealName(sRealName: string): void{
@@ -305,6 +327,10 @@ module akra.fx {
 		}
 
 		toString(): string {
+			return this._sRealName;
+		}
+
+		toFinalCode(): string {
 			return this._sRealName;
 		}
 
@@ -338,6 +364,10 @@ module akra.fx {
 		}
 
 		toString(): string {
+			return this._sValue;
+		}
+
+		toFinalCode(): string{
 			return this._sValue;
 		}
 	}

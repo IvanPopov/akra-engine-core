@@ -145,7 +145,7 @@ module akra.fx {
 			this._sAnalyzedFileName = sFileName;
 		}
 
-		clear(): void {
+		clear(): void { 
 		}
 
 		static getSystemType(sTypeName: string): SystemTypeInstruction {
@@ -256,7 +256,7 @@ module akra.fx {
 
 		private initSystemVariables(): void {
 			if(isNull(Effect.pSystemVariables)){
-				this._pSystemVariables = Effect.pSystemVariables = {};
+				this._pSystemVariables = Effect.pSystemVariables = <IAFXVariableDeclMap>{};
 				this.addSystemVariables();
 			}
 
@@ -371,6 +371,8 @@ module akra.fx {
 		    this.generateSystemFunction("tex2DProjLod", "texture2DProjLod($1,$2,$3)", "float4", ["sampler2D", "float4", "float"], null, true, false);
 		    this.generateSystemFunction("texCUBELod", "textureCubeLod($1,$2,$3)", "float4", ["sampler", "float3", "float"], null, true, false);
 		    this.generateSystemFunction("texCUBELod", "textureCubeLod($1,$2,$3)", "float4", ["samplerCUBE", "float3", "float"], null, true, false);
+
+		    //Extracts
 		}
 
 		private generateSystemFunction(sName: string, sTranslationExpr: string, 
@@ -674,14 +676,11 @@ module akra.fx {
 			var pLineColumn: {line: uint; column: uint;} = this.getNodeSourceLocation(this.getAnalyzedNode());
 
 			switch(eCode){
-				case EFFECT_REDEFINE_TYPE:
-				case EFFECT_REDEFINE_SYSTEM_TYPE:
-				case EFFECT_UNSUPPORTED_TYPEDECL:
+				default:
+					pInfo.line = pLineColumn.line + 1;
+					pInfo.column = pLineColumn.column + 1;
 
-					pInfo.line = pLineColumn.line;
-					pInfo.column = pLineColumn.column;
-
-					pLocation.line = pLocation.line;
+					pLocation.line = pLineColumn.line + 1;
 
 					break;
 			}
@@ -926,6 +925,7 @@ module akra.fx {
 
         	this.checkFunctionsForRecursion();
         	this.checkFunctionForCorrectUsage();
+        	this.generateInfoAboutUsedData();
         	this.generateShadersFromFunctions();
         }
 
@@ -1075,11 +1075,21 @@ module akra.fx {
         	return;
         }	
 
+        private generateInfoAboutUsedData(): void {
+        	var pFunctionList: IAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
+
+        	for(var i: uint = 0; i < pFunctionList.length; i++){
+        		pFunctionList[i]._generateInfoAboutUsedData();
+        		LOG(pFunctionList[i].toFinalCode());
+        	}
+        }
+
         private generateShadersFromFunctions(): void {
         	var pFunctionList: IAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
 
         	for(var i: uint = 0; i < pFunctionList.length; i++){
         		pFunctionList[i]._generateInfoAboutUsedData();
+        		LOG(pFunctionList[i].toFinalCode());
         	}
         }
 
@@ -1288,7 +1298,7 @@ module akra.fx {
       			pInitExpr.push(this.analyzeExpr(pChildren[0]), true);
       		}
       		else {
-	      		for(var i: uint = pChildren.length - 2; i >=0; i++){
+	      		for(var i: uint = pChildren.length - 3; i >=1; i--){
 	      			if(pChildren[i].name === "InitExpr"){
 	      				pInitExpr.push(this.analyzeInitExpr(pChildren[i]), true);
 	      			}
@@ -1472,7 +1482,7 @@ module akra.fx {
       		}
 
       		var pStateExprNode: IParseNode = pChildren[pChildren.length - 3];
-      		var pSubStateExprNode: IParseNode = pStateExpr.children[pStateExpr.children.length - 1];
+      		var pSubStateExprNode: IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
       		var sStateType: string = pChildren[pChildren.length - 1].value.toUpperCase();
       		var sStateValue: string = "";
       		var isTexture: bool = false;
@@ -1485,11 +1495,11 @@ module akra.fx {
       		switch (sStateType) {
 		        case "TEXTURE":
 		            var pTexture: IAFXVariableDeclInstruction = null;
-	      			if(pStateExpr.children.length !== 3 || pSubStateExprNode.value === "{"){
+	      			if(pStateExprNode.children.length !== 3 || pSubStateExprNode.value === "{"){
 	      				this._error(EFFECT_BAD_TEXTURE_FOR_SAMLER);
 	      				return;
 	      			}
-	      			var sTextureName: string = pStateExpr.children[1].value;
+	      			var sTextureName: string = pStateExprNode.children[1].value;
 	      			if(isNull(sTextureName) || !this.hasVariable(sTextureName)){
 	      				this._error(EFFECT_BAD_TEXTURE_FOR_SAMLER);
 	      				return;
@@ -1784,7 +1794,7 @@ module akra.fx {
 
         	pExpr.setType(pPointer.getType());
         	pExpr.setOperator("@");
-        	pExpr.push(pPointer, false);
+        	pExpr.push(pPointer.getNameId(), false);
 
         	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 

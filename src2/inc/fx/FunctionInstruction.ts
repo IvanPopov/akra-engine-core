@@ -26,17 +26,43 @@ module akra.fx {
 		protected _pParseNode: IParseNode = null;
 		protected _iImplementationScope: uint = UNDEFINE_SCOPE;
 
-		protected _pUsedFunctionMap: IAFXFunctionDeclMap = null;
-		protected _pUsedFunctionList: IAFXFunctionDeclInstruction[] = null;
 		protected _isInBlackList: bool = false;
 
 		protected _pOutVariable: IAFXVariableDeclInstruction = null;
+
+		//Info about used data
+		protected _pUsedFunctionMap: IAFXFunctionDeclMap = null;
+		protected _pUsedFunctionList: IAFXFunctionDeclInstruction[] = null;
+
+		protected _pUsedVarTypeMap: IAFXTypeUseInfoMap = null;
+		
+		protected _pSharedVariableMap: IAFXVariableDeclMap = null;
+		protected _pGlobalVariableMap: IAFXVariableDeclMap = null;
+		protected _pUniformVariableMap: IAFXVariableDeclMap = null;
+		protected _pForeignVariableMap: IAFXVariableDeclMap = null;
+
+		// protected _pSharedVariableTypeList: IAFXVariableTypeInstruction[] = null;
+		// protected _pGlobalVariableTypeList: IAFXVariableTypeInstruction[] = null;
+		// protected _pUniformVariableTypeList: IAFXVariableTypeInstruction[] = null;
+		// protected _pForeignVariableTypeList: IAFXVariableTypeInstructionnt[] = null;
+
+		protected _pUsedTypeMap: IAFXTypeDeclMap = null;
+
 
 		constructor() { 
 			super();
 			this._pInstructionList = [null, null];
 			this._eInstructionType = EAFXInstructionTypes.k_FunctionDeclInstruction;
 		}	
+
+		toFinalCode(): string {
+			var sCode = "";
+
+			sCode += this._pFunctionDefenition.toFinalCode();
+			sCode += this._pImplementation.toFinalCode();
+
+			return sCode;
+		}
 
 		inline getType(): IAFXTypeInstruction {
 			return <IAFXTypeInstruction>this.getReturnType();
@@ -111,55 +137,55 @@ module akra.fx {
 			return pClone;
 		}
 
-		addUsedVariableType(pType: IAFXVariableTypeInstruction, eUsedMode: EVarUsedMode): bool {
-			if(pType._getInstructionType() !== EAFXInstructionTypes.k_VariableTypeInstruction){
-				LOG(pType);
-				return false;
-			}
+		// addUsedVariableType(pType: IAFXVariableTypeInstruction, eUsedMode: EVarUsedMode): bool {
+		// 	if(pType._getInstructionType() !== EAFXInstructionTypes.k_VariableTypeInstruction){
+		// 		LOG(pType);
+		// 		return false;
+		// 	}
 
-			var isRead: bool = eUsedMode === EVarUsedMode.k_Read;
-			var isWrite: bool = eUsedMode === EVarUsedMode.k_Write; 
+		// 	var isRead: bool = eUsedMode === EVarUsedMode.k_Read;
+		// 	var isWrite: bool = eUsedMode === EVarUsedMode.k_Write; 
 
-			if ((isRead && !pType.isReadable()) ||
-				(isWrite && !pType.isWritable())){
-				return false;
-			}
+		// 	if ((isRead && !pType.isReadable()) ||
+		// 		(isWrite && !pType.isWritable())){
+		// 		return false;
+		// 	}
 
-			if(pType.isFromVariableDecl()){
-				if(pType._getScope() > this._iImplementationScope) {
-					LOG("---> local variable : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
-						". Field: " + pType._isTypeOfField());
-					// if(isRead) {
-					// 	pType._markUsedForRead();
-					// }
-					// if(isWrite) {
-					// 	pType._markUsedForWrite();
-					// }
-				}
-				else if(pType._getScope() === this._iImplementationScope){
-					LOG("---> Parameter : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
-						". Field: " + pType._isTypeOfField());
-				}
-				else {
-					if(pType._getScope() !== 0){
-						ERROR("Wrong variable scope. : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
-							". Field: " + pType._isTypeOfField());
-					}
-					else{
-						LOG("---> global variable : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
-							". Field: " + pType._isTypeOfField());
-					}	
-				}
-			}
-			else if(pType.isFromTypeDecl()){
-				LOG("---> Type : " + pType._getTypeDeclName() + ". Base: " + pType.isBase() +
-					". Field: " + pType._isTypeOfField());
-			}
-			else {
-				LOG("---> something else");
-			}
-			return true;
-		}
+		// 	if(pType.isFromVariableDecl()){
+		// 		if(pType._getScope() > this._iImplementationScope) {
+		// 			LOG("---> local variable : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
+		// 				". Field: " + pType._isTypeOfField());
+		// 			// if(isRead) {
+		// 			// 	pType._markUsedForRead();
+		// 			// }
+		// 			// if(isWrite) {
+		// 			// 	pType._markUsedForWrite();
+		// 			// }
+		// 		}
+		// 		else if(pType._getScope() === this._iImplementationScope){
+		// 			LOG("---> Parameter : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
+		// 				". Field: " + pType._isTypeOfField());
+		// 		}
+		// 		else {
+		// 			if(pType._getScope() !== 0){
+		// 				ERROR("Wrong variable scope. : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
+		// 					". Field: " + pType._isTypeOfField());
+		// 			}
+		// 			else{
+		// 				LOG("---> global variable : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
+		// 					". Field: " + pType._isTypeOfField());
+		// 			}	
+		// 		}
+		// 	}
+		// 	else if(pType.isFromTypeDecl()){
+		// 		LOG("---> Type : " + pType._getTypeDeclName() + ". Base: " + pType.isBase() +
+		// 			". Field: " + pType._isTypeOfField());
+		// 	}
+		// 	else {
+		// 		LOG("---> something else");
+		// 	}
+		// 	return true;
+		// }
 
 		_addOutVariable(pVariable: IAFXVariableDeclInstruction): bool {
 			if(!isNull(this._pOutVariable)){
@@ -344,24 +370,144 @@ module akra.fx {
         }
 
         _generateInfoAboutUsedData(): void {
+        	if(!isNull(this._pUsedVarTypeMap)){
+        		return;
+        	}
+
         	var pUsedData: IAFXTypeUseInfoMap = <IAFXTypeUseInfoMap>{};
         	this._pImplementation.addUsedData(pUsedData);
 
-        	for(var i in pUsedData){
-        		LOG(pUsedData[i].type._getFullName(), 
-        			pUsedData[i].isRead,
-        			pUsedData[i].isWrite,
-        			pUsedData[i].numRead,
-        			pUsedData[i].numWrite);
+        	this._pUsedVarTypeMap = pUsedData;
+
+        	if(isNull(this._pUsedTypeMap)){
+        		this._pSharedVariableMap = <IAFXVariableDeclMap>{};
+				this._pGlobalVariableMap = <IAFXVariableDeclMap>{};
+				this._pUniformVariableMap = <IAFXVariableDeclMap>{};
+				this._pForeignVariableMap = <IAFXVariableDeclMap>{};
+				this._pUsedTypeMap = <IAFXTypeDeclMap>{};
+        	}
+
+        	this.addUsedTypeDecl(this.getReturnType().getBaseType());
+
+        	for(var i in pUsedData) {
+        		var pAnalyzedInfo: IAFXTypeUseInfoContainer = pUsedData[i];
+        		var pAnalyzedType: IAFXVariableTypeInstruction = pAnalyzedInfo.type;
+        		
+        		if(pAnalyzedType._isInGlobalScope()){
+        			this.addGlobalVariableType(pAnalyzedType, pAnalyzedInfo.isWrite, pAnalyzedInfo.isRead);
+        		}
+        		else {
+        			this.addUsedTypeDecl(pAnalyzedType.getBaseType());
+        		}
+        	}
+        	if(!isNull(this._pUsedFunctionList)){
+	        	for(var j: uint = 0; j < this._pUsedFunctionList.length; j++){
+	        		this.addUsedInfoFromFunction(this._pUsedFunctionList[j]);
+	        	}
         	}
         }
 
-		// cloneTo(eConvertTo: EFunctionType): ShaderFunctionInstruction {
-		// 	if(eConvertTo === EFunctionType.k_Function) {
-		// 		//nothing to do
-		// 	}
-		// 	return null;
-		// }
+        inline _getSharedVariableMap(): IAFXVariableDeclMap{
+        	return this._pSharedVariableMap;
+        }
+        
+        inline _getGlobalVariableMap(): IAFXVariableDeclMap{
+        	return this._pGlobalVariableMap;
+        }
+        
+        inline _getUniformVariableMap(): IAFXVariableDeclMap{
+        	return this._pUniformVariableMap;
+        }
+        
+        inline _getForeignVariableMap(): IAFXVariableDeclMap{
+        	return this._pForeignVariableMap;
+        }
+
+        inline _getUsedTypeMap(): IAFXTypeDeclMap{
+        	return this._pUsedTypeMap;
+        }
+
+        private addGlobalVariableType(pVariableType: IAFXVariableTypeInstruction, 
+        							  isWrite: bool, isRead: bool): void {
+        	if(!pVariableType.isFromVariableDecl()){
+        		return;
+        	}
+
+        	var pVariable: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>pVariableType.getParent();
+        	var pMainVariable: IAFXVariableDeclInstruction = pVariableType._getMainVariable();
+        	var iMainVar: uint = pMainVariable._getInstructionID();
+        	var iVar: uint = pVariable._getInstructionID();
+
+        	if(pMainVariable.getType().isShared()){
+        		this._pSharedVariableMap[iVar] = pVariable;
+        		this._pSharedVariableMap[iMainVar] = pMainVariable;
+        	}
+        	else if(pMainVariable.getType().isForeign()){
+        		this._pForeignVariableMap[iMainVar] = pMainVariable;
+        	}
+        	else if(isWrite){
+        		this._pGlobalVariableMap[iMainVar] = pMainVariable;
+        		if(isDefAndNotNull(this._pUniformVariableMap[iMainVar])){
+        			this._pUniformVariableMap[iMainVar] = null;
+        		}
+        	}
+        	else {
+        		if(!isDef(this._pGlobalVariableMap[iMainVar])){
+        			this._pUniformVariableMap[iMainVar] = pMainVariable;
+        		}
+        	}
+
+        	this.addUsedTypeDecl(pMainVariable.getType().getBaseType());
+        }
+
+        private addUsedTypeDecl(pType: IAFXTypeInstruction): void {
+        	if(pType.isBase() || isDef(this._pUsedTypeMap[pType._getInstructionID()])){
+        		return;
+        	}
+
+        	this._pUsedTypeMap[pType._getInstructionID()] = <IAFXTypeDeclInstruction>pType.getParent();
+        	
+        	var pFieldNameList: string[] = pType.getFieldNameList();
+
+        	for(var i: uint = 0; i < pFieldNameList.length; i++){
+        		this.addUsedTypeDecl(pType.getFieldType(pFieldNameList[i]).getBaseType());
+        	}
+        }
+
+        private addUsedInfoFromFunction(pFunction: IAFXFunctionDeclInstruction): void {
+        	pFunction._generateInfoAboutUsedData();
+    		var pSharedVarMap: IAFXVariableDeclMap = pFunction._getSharedVariableMap();
+    		var pForeignVarMap: IAFXVariableDeclMap = pFunction._getForeignVariableMap();
+    		var pGlobalVarMap: IAFXVariableDeclMap = pFunction._getGlobalVariableMap();
+    		var pUniformVarMap: IAFXVariableDeclMap = pFunction._getUniformVariableMap();
+    		var pUsedTypeMap: IAFXTypeDeclMap = pFunction._getUsedTypeMap();
+
+    		for(var j in pSharedVarMap){
+    			this._pSharedVariableMap[pSharedVarMap[j]._getInstructionID()] = pSharedVarMap[j];
+    		}
+
+    		for(var j in pForeignVarMap){
+    			this._pForeignVariableMap[pForeignVarMap[j]._getInstructionID()] = pForeignVarMap[j];
+    		}
+
+    		for(var j in pGlobalVarMap){
+    			this._pGlobalVariableMap[pGlobalVarMap[j]._getInstructionID()] = pGlobalVarMap[j];
+
+    			if(isDefAndNotNull(this._pUniformVariableMap[pGlobalVarMap[j]._getInstructionID()])){
+    				this._pUniformVariableMap[pGlobalVarMap[j]._getInstructionID()] = null;
+    			}
+    		}
+
+    		for(var j in pUniformVarMap){
+    			if(!isDef(this._pGlobalVariableMap[pUniformVarMap[j]._getInstructionID()])){
+    				this._pUniformVariableMap[pUniformVarMap[j]._getInstructionID()] = pUniformVarMap[j];
+    			}
+    		}
+
+    		for(var j in pUsedTypeMap){
+    			this._pUsedTypeMap[pUsedTypeMap[j]._getInstructionID()] = pUsedTypeMap[j];
+    		}
+        }
 	}
 
 	export class SystemFunctionInstruction extends DeclInstruction implements IAFXFunctionDeclInstruction {
@@ -546,6 +692,26 @@ module akra.fx {
 
         }
 
+        inline _getSharedVariableMap(): IAFXVariableDeclMap{
+			return null;
+        }
+        
+        inline _getGlobalVariableMap(): IAFXVariableDeclMap{
+        	return null;
+        }
+        
+        inline _getUniformVariableMap(): IAFXVariableDeclMap{
+        	return null;
+        }
+        
+        inline _getForeignVariableMap(): IAFXVariableDeclMap{
+        	return null;
+        }
+
+        inline _getUsedTypeMap(): IAFXTypeDeclMap{
+        	return null;
+        }
+
 	}
 
 	/**
@@ -573,6 +739,26 @@ module akra.fx {
 			this._pInstructionList = null;
 			this._pParameterList = [];
 			this._eInstructionType = EAFXInstructionTypes.k_FunctionDefInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+
+			sCode += this._pReturnType.toFinalCode();
+			sCode += " " + this._pFunctionName.toFinalCode();
+			sCode += "(";
+
+			for(var i: uint = 0; i < this._pParameterList.length; i++){
+				sCode += this._pParameterList[i].toFinalCode();
+				
+				if(i !== this._pParameterList.length - 1){
+					sCode += ",";
+				}
+			}
+
+			sCode += ")";
+
+			return sCode;
 		}
 
 		inline setType(pType: IAFXTypeInstruction): void {
