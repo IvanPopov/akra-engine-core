@@ -36,6 +36,31 @@ module akra.fx {
 		[sTechniqueName: string]: IAFXTechniqueInstruction;
 	}
 
+	export enum EExtractExprType {
+		k_Header,
+		
+		k_Float,
+		k_Int,
+		k_Bool,
+
+		k_Float2,
+		k_Int2,
+		k_Bool2,
+		
+		k_Float3,
+		k_Int3,
+		k_Bool3,
+
+		k_Float4,
+		k_Int4,
+		k_Bool4,
+
+		k_Float4x4,
+
+		k_Complex,
+		k_Undefined
+	}
+
 	export class Effect implements IAFXEffect {
 		private _pComposer: IAFXComposer = null;
 
@@ -500,6 +525,7 @@ module akra.fx {
 			this.generateSystemType("sampler2D", "sampler2D", 1);
 			this.generateSystemType("samplerCUBE", "samplerCube", 1);
 			this.generateSystemType("video_buffer", "sampler2D", 1);
+			this.generateSystemType("video_buffer_header", "", 0);
 		}
 		
 		private addSystemTypeVector(): void {
@@ -1085,12 +1111,12 @@ module akra.fx {
         }
 
         private generateShadersFromFunctions(): void {
-        	var pFunctionList: IAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
+        	// var pFunctionList: IAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
 
-        	for(var i: uint = 0; i < pFunctionList.length; i++){
-        		pFunctionList[i]._generateInfoAboutUsedData();
-        		LOG(pFunctionList[i].toFinalCode());
-        	}
+        	// for(var i: uint = 0; i < pFunctionList.length; i++){
+        	// 	pFunctionList[i]._generateInfoAboutUsedData();
+        	// 	LOG(pFunctionList[i].toFinalCode());
+        	// }
         }
 
 		private analyzeVariableDecl(pNode: IParseNode, pInstruction?: IAFXInstruction = null): void {
@@ -3432,6 +3458,18 @@ module akra.fx {
     		   	   pType.isEqual(Effect.getSystemType("sampler2D")) ||
     		       pType.isEqual(Effect.getSystemType("samplerCUBE")) ||
     		       pType.isEqual(Effect.getSystemType("video_buffer"));
+        }
+
+        /**
+         * Array of structs and pointers on array of struct are don`t support
+         */
+        private generateExtractExpr(pVarDecl: IAFXVariableDeclInstruction, iPadding: uint): IAFXStmtInstruction {
+        	var pExtractStmt: ExtractStmtInstruction = new ExtractStmtInstruction();
+        	pExtractStmt.generateStmt(pVarDecl, iPadding);
+        	
+        	CHECK_INSTRUCTION(pExtractStmt, ECheckStage.CODE_TARGET_SUPPORT);
+
+        	return pExtractStmt;
         }
        
 

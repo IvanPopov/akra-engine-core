@@ -77,6 +77,10 @@ module akra.fx {
     #define EFFECT_BAD_VARIABLE_INITIALIZER 2269
     #define EFFECT_NOT_SUPPORT_STATE_INDEX 2270
     #define EFFECT_BAD_TEXTURE_FOR_SAMLER 2271
+    #define EFFCET_CANNOT_CALCULATE_PADDINGS 2272
+    #define EFFECT_UNSUPPORTED_EXTRACT_BASE_TYPE 2273
+    #define EFFECT_BAD_EXTRACTING 2274
+
 
     #define TEMP_EFFECT_BAD_ARRAY_OF_POINTERS 2300
 
@@ -276,6 +280,13 @@ module akra.fx {
     akra.logger.registerCode(EFFECT_BAD_TEXTURE_FOR_SAMLER,
                              "Incorrect texture setup for sampler. \
                               In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFCET_CANNOT_CALCULATE_PADDINGS,
+                             "Can not calculate padding for type '{typeName}'.");
+    akra.logger.registerCode(EFFECT_UNSUPPORTED_EXTRACT_BASE_TYPE,
+                             "Can not extract type '{typeName}'.");
+    akra.logger.registerCode(EFFECT_BAD_EXTRACTING,
+                             "Bad extract exrpression.");
+
 
 
     akra.logger.registerCode(TEMP_EFFECT_BAD_ARRAY_OF_POINTERS,

@@ -995,6 +995,14 @@ module akra.fx {
 			return;
 		}
 	}
+
+	export class ExtractExprInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = null;
+			this._eInstructionType = EAFXInstructionTypes.k_ExtractExprInstruction;
+		}
+	}
 }
 
 #endif

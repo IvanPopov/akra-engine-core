@@ -49,6 +49,7 @@ module akra {
         k_InitExprInstruction,
         k_SamplerStateBlockInstruction,
         k_SamplerStateInstruction,
+        k_ExtractExprInstruction,
         k_MemExprInstruction,
         k_FunctionDeclInstruction,
         k_ShaderFunctionInstruction,
@@ -285,6 +286,7 @@ module akra {
         /**
          * init api
          */
+        setPadding(iPadding: uint): void;
         pushType(pType: IAFXTypeInstruction): void;
         addUsage(sUsage: string): void;
         addArrayIndex(pExpr: IAFXExprInstruction): void;
@@ -299,6 +301,7 @@ module akra {
         /**
          * Type info
          */
+        getPadding(): uint;
         getArrayElementType(): IAFXVariableTypeInstruction;
 
         getUsageList(): string[];
@@ -315,7 +318,13 @@ module akra {
         _getFullName(): string;
         _getVarDeclName(): string;
         _getTypeDeclName(): string;
+
+        _getParentVarDecl(): IAFXVariableDeclInstruction;
+        _getParentContainer(): IAFXVariableDeclInstruction;
         _getMainVariable(): IAFXVariableDeclInstruction;
+
+        _getUpPointer(): IAFXVariableDeclInstruction;
+        _getDownPointer(): IAFXVariableDeclInstruction;
 
         /**
          * System
@@ -330,7 +339,8 @@ module akra {
         _setClonePointeIndexes(nDim: uint, pPointerList: IAFXVariableDeclInstruction[]): void;
         _setCloneFields(pFieldMap: IAFXVariableDeclMap): void;      
 
-        _setNextPointer(pPointer: IAFXVariableDeclInstruction): void; 
+        _setUpDownPointers(pUpPointer: IAFXVariableDeclInstruction,
+                           pDownPointer: IAFXVariableDeclInstruction): void; 
     }
 
     export interface IAFXTypedInstruction extends IAFXInstruction{
@@ -371,8 +381,12 @@ module akra {
 
         isUniform(): bool;
         isField(): bool;
+        isVideoBuffer(): bool;
 
+        _getFullNameExpr(): IAFXExprInstruction;
         _getFullName(): string;
+        _getVideoBufferSampler(): IAFXVariableDeclInstruction;
+        _getVideoBufferHeader(): IAFXVariableDeclInstruction;
 
         setName(sName: string):void;
 

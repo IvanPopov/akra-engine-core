@@ -68,9 +68,11 @@ module akra.fx {
 		private _pUsedFieldMap: IAFXVarUsedModeMap = null;
 
 		private _pVideoBuffer: IAFXVariableDeclInstruction = null;
-		private _pNextPointIndex: IAFXVariableDeclInstruction = null;
+		private _pUpPointIndex: IAFXVariableDeclInstruction = null;
+		private _pDownPointIndex: IAFXVariableDeclInstruction = null;
 		private _nPointerDim: uint = 0;
 		private _pPointerList: IAFXVariableDeclInstruction[] = null;
+		private _iPadding: uint = UNDEFINE_PADDING;
 
 		constructor() {
 			super();
@@ -313,35 +315,12 @@ module akra.fx {
 			this._isReadable = isReadable;
 		}
 
-		// inline _markAsField(): void{
-  //       	this._isField = true;
-  //       }
-
-  //       _markUsedForWrite(): bool{
-		// 	if(!this.isWritable()){
-		// 		return false;
-		// 	}
-
-		// 	this._bUsedForWrite = true;
-		// 	return true;
-		// }
-
-  //       _markUsedForRead(): bool {
-  //       	if(!this.isReadable()){
-  //       		return false;
-  //       	}
-
-  //       	this._bUsedForRead = true;
-  //       	return true;
-  //       }
-
-  //       _goodForRead(): bool {
-  //       	return false;
-  //       }
-
 		//-----------------------------------------------------------------//
 		//----------------------------INIT API-----------------------------//
 		//-----------------------------------------------------------------//
+		inline setPadding(iPadding: uint): void { 
+			this._iPadding = iPadding;
+		}
 
 		pushType(pType: IAFXTypeInstruction): void {
 			var eType: EAFXInstructionTypes = pType._getInstructionType();
@@ -431,6 +410,7 @@ module akra.fx {
 
 		initializePointers(): void {
 			this._pPointerList = [];
+			var pDownPointer: IAFXVariableDeclInstruction = this._getParentVarDecl();
 
 			for(var i:uint = 0; i < this._nPointerDim; i++){
 				var pPointer: IAFXVariableDeclInstruction = new VariableDeclInstruction();
@@ -444,13 +424,15 @@ module akra.fx {
 				pPointerId.setName(UNDEFINE_NAME);
 
 				if(i > 0) {
-					(this._pPointerList[i - 1].getType())._setNextPointer(pPointer);
+					(this._pPointerList[i - 1].getType())._setUpDownPointers(pPointer, pDownPointer);
 				}
 
 				pPointer.setParent(this);
+
+				pDownPointer = pPointer;
 			}
 
-			this._pNextPointIndex = this._pPointerList[0];
+			this._pUpPointIndex = this._pPointerList[0];
 		}
 
 		_setPointerToStrict(): void {
@@ -513,6 +495,10 @@ module akra.fx {
 		}
 
 		getSize(): uint {
+			if(this.isPointer() || this.isPointIndex()){
+				return 1;
+			}
+
 			if(this.isNotBaseArray()){
 				var iSize: uint = this._pArrayElementType.getSize();
 				if (this._iLength === UNDEFINE_LENGTH ||
@@ -547,6 +533,10 @@ module akra.fx {
 			}
 
 			return this._iLength;
+		}
+
+		getPadding(): uint {
+			return this.isPointIndex() ? this._getDownPointer().getType().getPadding() : this._iPadding;
 		}
 
 		getArrayElementType(): IAFXVariableTypeInstruction {
@@ -614,7 +604,9 @@ module akra.fx {
 
 			var pFieldType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 			pFieldType.pushType(pSubField.getType());
-
+			if(!this.isBase()){
+				pFieldType.setPadding(pSubField.getType().getPadding());
+			}
 			pField.push(pFieldType, true);
 			pField.push(pSubField.getNameId(), false);
 
@@ -665,13 +657,14 @@ module akra.fx {
 		}
 
 		getPointer(): IAFXVariableDeclInstruction {
-			if(!this.isPointer() && !this.hasVideoBuffer() &&
+			if (!this.isFromVariableDecl() ||
+				!this.isPointer() || !this.hasVideoBuffer() ||
 				!this.isPointIndex()){
 				return null;
 			}
 
-			if(!isNull(this._pNextPointIndex)){
-				return this._pNextPointIndex;
+			if(!isNull(this._pUpPointIndex)){
+				return this._pUpPointIndex;
 			}
 
 			if(this.isPointIndex()){
@@ -680,7 +673,7 @@ module akra.fx {
 
 			this.initializePointers();
 
-			return this._pNextPointIndex;
+			return this._pUpPointIndex;
 		}
 
 		getPointDim(): uint {
@@ -754,6 +747,34 @@ module akra.fx {
 			}
         }
 
+        _getParentVarDecl(): IAFXVariableDeclInstruction {
+        	if(!this.isFromVariableDecl()){
+        		return null;
+        	}
+
+        	var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+        	
+        	if(eParentType === EAFXInstructionTypes.k_VariableDeclInstruction){
+        		return <IAFXVariableDeclInstruction>this.getParent();
+        	}
+        	else {
+        		return (<IAFXVariableTypeInstruction>this.getParent())._getParentVarDecl();
+        	}
+        }
+
+        _getParentContainer(): IAFXVariableDeclInstruction {
+        	if(!this.isFromVariableDecl() || !this._isTypeOfField()){
+        		return null;
+        	}
+        	
+        	var pContainerType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>this._getParentVarDecl().getParent();
+        	if(!pContainerType.isFromVariableDecl()){
+        		return null;
+        	}
+
+        	return pContainerType._getParentVarDecl();
+        }
+
         _getMainVariable(): IAFXVariableDeclInstruction{
         	if(!this.isFromVariableDecl()){
         		return null;
@@ -765,6 +786,14 @@ module akra.fx {
         	else {
         		return (<IAFXVariableDeclInstruction>this.getParent());
         	}
+        }
+
+        _getUpPointer(): IAFXVariableDeclInstruction {
+        	return this._pUpPointIndex;
+        }
+
+        _getDownPointer(): IAFXVariableDeclInstruction {
+        	return this._pDownPointIndex;
         }
 
         //-----------------------------------------------------------------//
@@ -802,6 +831,7 @@ module akra.fx {
 			pClone._canWrite(this._isWritable);
 			pClone._canRead(this._isReadable);
 			pClone._setCloneHash(this._sHash, this._sStrongHash);
+			pClone.setPadding(this.getPadding());
 			
 			if(this._isArray){
 				this._setCloneArrayIndex(this._pArrayElementType.clone(pRelationMap),
@@ -811,12 +841,14 @@ module akra.fx {
 
 			if(this._isPointer){
 				var pClonePointerList: IAFXVariableDeclInstruction[] = new Array(this._pPointerList.length);
-				
+				var pDownPointer: IAFXVariableDeclInstruction = pClone._getParentVarDecl();
+
 				for(var i: uint = 0; i < this._pPointerList.length; i++){
 					pClonePointerList[i] = this._pPointerList[i].clone(pRelationMap);
 					
 					if(i > 0) {
-						(pClonePointerList[i - 1].getType())._setNextPointer(pClonePointerList[i]);
+						(pClonePointerList[i - 1].getType())._setUpDownPointers(pClonePointerList[i], pDownPointer);
+						pDownPointer = pClonePointerList[i - 1];
 					}
 				}
 
@@ -858,15 +890,17 @@ module akra.fx {
         	this._isPointer = true;
         	this._nPointerDim = nDim;
         	this._pPointerList = pPointerList;
-        	this._pNextPointIndex = this._pPointerList[0];
+        	this._pUpPointIndex = this._pPointerList[0];
         }
 
         _setCloneFields(pFieldMap: IAFXVariableDeclMap): void {
         	this._pFieldMap = pFieldMap;
         }
 
-        inline _setNextPointer(pNextPointIndex: IAFXVariableDeclInstruction): void {
-			this._pNextPointIndex = pNextPointIndex;
+        inline _setUpDownPointers(pUpPointIndex: IAFXVariableDeclInstruction,
+        						  pDownPointIndex: IAFXVariableDeclInstruction ): void {
+			this._pUpPointIndex = pUpPointIndex;
+			this._pDownPointIndex = pDownPointIndex;
 		}
 
 		private calcHash(): void {
@@ -1258,6 +1292,8 @@ module akra.fx {
 		    	this.addField(this._pFieldDeclList[i]);
 		    	this._pFieldDeclList[i].setParent(this);
 		    }
+
+		    this.calculatePaddings();
 		}
 
 		//-----------------------------------------------------------------//
@@ -1470,6 +1506,23 @@ module akra.fx {
 				}
 			}
 
+		}
+
+		private calculatePaddings(): void {
+			var iPadding: uint = 0;
+
+			for(var i: uint = 0; i < this._pFieldDeclList.length; i++){
+				var pVarType: IAFXVariableTypeInstruction = this._pFieldDeclList[i].getType();
+				var iVarSize: uint = pVarType.getSize();
+
+				if(iVarSize === UNDEFINE_SIZE){
+					this.setError(EFFCET_CANNOT_CALCULATE_PADDINGS, {typeName: this.getName()});
+					return;
+				}
+
+				pVarType.setPadding(iPadding);
+				iPadding += iVarSize;
+			}
 		}
 	}
 }

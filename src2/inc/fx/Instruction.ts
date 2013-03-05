@@ -22,6 +22,7 @@ module akra.fx {
     #define UNDEFINE_LENGTH 0xffffff
     #define UNDEFINE_SIZE 0xffffff
     #define UNDEFINE_SCOPE 0xffffff
+    #define UNDEFINE_PADDING 0xffffff
     #define UNDEFINE_NAME "undef"
 
 	export class Instruction implements IAFXInstruction{
