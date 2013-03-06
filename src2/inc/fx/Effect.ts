@@ -36,31 +36,6 @@ module akra.fx {
 		[sTechniqueName: string]: IAFXTechniqueInstruction;
 	}
 
-	export enum EExtractExprType {
-		k_Header,
-		
-		k_Float,
-		k_Int,
-		k_Bool,
-
-		k_Float2,
-		k_Int2,
-		k_Bool2,
-		
-		k_Float3,
-		k_Int3,
-		k_Bool3,
-
-		k_Float4,
-		k_Int4,
-		k_Bool4,
-
-		k_Float4x4,
-
-		k_Complex,
-		k_Undefined
-	}
-
 	export class Effect implements IAFXEffect {
 		private _pComposer: IAFXComposer = null;
 
@@ -78,6 +53,8 @@ module akra.fx {
 		private _pSystemFunctionsMap: SystemFunctionMap = null;
 		private _pSystemFunctionHashMap: BoolMap = null;
 		private _pSystemVariables: IAFXVariableDeclMap = null;
+
+		private _pPointerForExtractionList: IAFXVariableDeclInstruction[] = null;
 
 		private _pFunctionWithImplementationList: IAFXFunctionDeclInstruction[] = null; 
 		
@@ -99,6 +76,8 @@ module akra.fx {
 
 			this._pStatistics = null;
 			this._sAnalyzedFileName = "";
+
+			this._pPointerForExtractionList = [];
 
 			this._pFunctionWithImplementationList = [];
 			this._pTechniqueList = [];
@@ -773,6 +752,18 @@ module akra.fx {
 			if(!isNull(this._pCurrentInstruction)){
 				this._pCurrentInstruction.setOperator(sOperator);
 			}	
+		}
+
+		private inline clearPointersForExtract(): void {
+			this._pPointerForExtractionList.length = 0;
+		}
+
+		private inline addPointerForExtract(pPointer: IAFXVariableDeclInstruction): void {
+			this._pPointerForExtractionList.push(pPointer);
+		}
+
+		private inline getPointerForExtractList(): IAFXVariableDeclInstruction[] {
+			return this._pPointerForExtractionList;
 		}
 
 		private findFunction(sFunctionName: string, 
@@ -1660,6 +1651,10 @@ module akra.fx {
 	        					this._error(EFFECT_BAD_TYPE_FOR_WRITE);
 	        					return null;
 	        				}
+
+	        				if(pArguments[i].getType().isEqual(Effect.getSystemType("ptr"))){
+	        					this.addPointerForExtract(pArguments[i].getType()._getParentVarDecl());
+	        				}
 	        			}
 	        			else if(pFunctionArguments[i].getType().hasUsage("inout")){
 	        				if(!pArguments[i].getType().isWritable()){
@@ -1670,6 +1665,10 @@ module akra.fx {
 							if(!pArguments[i].getType().isReadable()){
 	        					this._error(EFFECT_BAD_TYPE_FOR_READ);
 	        					return null;
+	        				}
+
+	        				if(pArguments[i].getType().isEqual(Effect.getSystemType("ptr"))){
+	        					this.addPointerForExtract(pArguments[i].getType()._getParentVarDecl());
 	        				}
 	        			}
 	        			else {
@@ -2687,6 +2686,8 @@ module akra.fx {
         		if(!isNull(pStmt)){
         			pStmtBlock.push(pStmt);
         		}
+
+        		this.addExtactionStmts(pStmtBlock);
         	} 
 
         	this.endScope();
@@ -3214,6 +3215,10 @@ module akra.fx {
         			return null;
         		}
 
+        		if(pLeftType.isEqual(Effect.getSystemType("ptr"))){
+					this.addPointerForExtract(pLeftType._getParentVarDecl());
+				}
+
         		if(!pRightType.isReadable()){
         			this._error(EFFECT_BAD_TYPE_FOR_READ);
         			return null;
@@ -3342,9 +3347,15 @@ module akra.fx {
        		}
 
 
-			if(sOperator === "++" || sOperator === "--" && !pType.isWritable()){
-				this._error(EFFECT_BAD_TYPE_FOR_WRITE);
-				return null;
+			if(sOperator === "++" || sOperator === "--"){
+				if(!pType.isWritable()){
+					this._error(EFFECT_BAD_TYPE_FOR_WRITE);
+					return null;
+				}
+
+				if(pType.isEqual(Effect.getSystemType("ptr"))){
+					this.addPointerForExtract(pType._getParentVarDecl());
+				}				
 			}
 
         	if(sOperator === "!"){
@@ -3460,23 +3471,90 @@ module akra.fx {
     		       pType.isEqual(Effect.getSystemType("video_buffer"));
         }
 
-
-        /**
-         * Array of structs and pointers on array of struct are don`t support
-         */
-        private generateExtractStmt(pVarDecl: IAFXVariableDeclInstruction, iPadding: uint): IAFXStmtInstruction {
-        	var pExtractStmt: ExtractStmtInstruction = new ExtractStmtInstruction();
-        	pExtractStmt.generateStmt(pVarDecl, iPadding);
+        private addExtactionStmts(pStmt: IAFXStmtInstruction): void {
+        	var pPointerList: IAFXVariableDeclInstruction[] = this.getPointerForExtractList();
         	
-        	CHECK_INSTRUCTION(pExtractStmt, ECheckStage.CODE_TARGET_SUPPORT);
+        	for(var i: uint = 0; i < pPointerList.length; i++) {
+        		this.generateExtractStmtFromPointer(pPointerList[i], pStmt);
+        	}
 
-        	return pExtractStmt;
+        	this.clearPointersForExtract();
         }
 
-        private addExtractStmts(pVarDecl: IAFXVariableDeclInstruction): IAFXStmtInstruction {
-        	var pStmtBlock: StmtBlockInstruction = new StmtBlockInstruction();
-        	
-        	return pStmtBlock;
+        private generateExtractStmtFromPointer(pPointer: IAFXVariableDeclInstruction, pParentStmt: IAFXStmtInstruction): IAFXStmtInstruction {
+        	var pPointerType: IAFXVariableTypeInstruction = pPointer.getType();
+        	var pWhatExtracted: IAFXVariableDeclInstruction = pPointerType._getDownPointer();
+        	var pWhatExtractedType: IAFXVariableTypeInstruction = null;
+
+        	while(!isNull(pWhatExtracted)){
+        		pWhatExtractedType = pWhatExtracted.getType();
+
+        		if(!pWhatExtractedType.isComplex()){
+        			var pSingleExtract: ExtractStmtInstruction = new ExtractStmtInstruction();
+        			pSingleExtract.generateStmtForBaseType(
+        									pWhatExtracted,
+        									pWhatExtractedType.getPointer(),
+        									pWhatExtractedType.getVideoBuffer(), 0);
+
+        			CHECK_INSTRUCTION(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT); 
+
+        			pParentStmt.push(pSingleExtract, true);
+        		}
+        		else {
+        			this.generateExtractStmtForComplexVar(
+        									pWhatExtracted, pParentStmt,
+        									pWhatExtractedType.getPointer(),
+        									pWhatExtractedType.getVideoBuffer(), 0);
+        		}
+
+        		pWhatExtracted = pWhatExtractedType._getDownPointer();
+        	}
+
+        	return pParentStmt;
+        }
+
+        private generateExtractStmtForComplexVar(pVarDecl: IAFXVariableDeclInstruction, 
+        										 pParentStmt: IAFXStmtInstruction,
+        										 pPointer: IAFXVariableDeclInstruction,
+        										 pBuffer: IAFXVariableDeclInstruction,
+        										 iPadding: uint): void {
+        	var pVarType: IAFXVariableTypeInstruction = pVarDecl.getType();
+        	var pFieldNameList: string[] = pVarType.getFieldNameList();
+        	var pField: IAFXVariableDeclInstruction = null;
+        	var pFieldType: IAFXVariableTypeInstruction = null;
+        	var pSingleExtract: ExtractStmtInstruction = null;
+
+        	for(var i: uint = 0; i < pFieldNameList.length; i++){
+        		pField = pVarType.getFieldIfExist(pFieldNameList[i]);
+
+        		if(isNull(pField)){
+        			continue;
+				}
+
+ 				pFieldType = pField.getType();
+
+ 				if(pFieldType.isPointer()){
+ 					var pFieldPointer: IAFXVariableDeclInstruction = pFieldType._getMainPointer();
+ 					pSingleExtract = new ExtractStmtInstruction();
+ 					pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), iPadding + pFieldType.getPadding());
+ 					
+ 					CHECK_INSTRUCTION(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT); 
+
+ 					pParentStmt.push(pSingleExtract, true);
+ 					this.generateExtractStmtFromPointer(pFieldPointer, pParentStmt);
+ 				}
+ 				else if(pVarType.isComplex()) {
+ 					this.generateExtractStmtForComplexVar(pField, pParentStmt, pPointer, pBuffer, iPadding + pFieldType.getPadding());
+ 				}
+ 				else {
+ 					pSingleExtract = new ExtractStmtInstruction();
+        			pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer, iPadding + pFieldType.getPadding());
+        			
+        			CHECK_INSTRUCTION(pSingleExtract, ECheckStage.CODE_TARGET_SUPPORT); 
+
+        			pParentStmt.push(pSingleExtract, true);
+ 				}
+ 	       	}        	
         }
        
 

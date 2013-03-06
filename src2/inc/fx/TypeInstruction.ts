@@ -63,11 +63,12 @@ module akra.fx {
 		private _pArrayIndexExpr: IAFXExprInstruction = null;
 		private _pArrayElementType: IAFXVariableTypeInstruction = null;
 
-		private _pFieldMap: IAFXVariableDeclMap = null;
+		private _pFieldDeclMap: IAFXVariableDeclMap = null;
 		private _pFieldIdMap: IAFXIdExprMap = null;
 		private _pUsedFieldMap: IAFXVarUsedModeMap = null;
 
 		private _pVideoBuffer: IAFXVariableDeclInstruction = null;
+		private _pMainPointIndex: IAFXVariableDeclInstruction = null;
 		private _pUpPointIndex: IAFXVariableDeclInstruction = null;
 		private _pDownPointIndex: IAFXVariableDeclInstruction = null;
 		private _nPointerDim: uint = 0;
@@ -591,12 +592,12 @@ module akra.fx {
 				return null;
 			}
 
-			if(isNull(this._pFieldMap)) {
-				this._pFieldMap = <IAFXVariableDeclMap>{};
+			if(isNull(this._pFieldDeclMap)) {
+				this._pFieldDeclMap = <IAFXVariableDeclMap>{};
 			}
 
-			if(isDef(this._pFieldMap[sFieldName])){
-				return this._pFieldMap[sFieldName];
+			if(isDef(this._pFieldDeclMap[sFieldName])){
+				return this._pFieldDeclMap[sFieldName];
 			}
 
 			var pField: IAFXVariableDeclInstruction = new VariableDeclInstruction();
@@ -612,7 +613,7 @@ module akra.fx {
 
 			pField.setParent(this);
 
-			this._pFieldMap[sFieldName] = pField;
+			this._pFieldDeclMap[sFieldName] = pField;
 			
 			return pField;
 		}
@@ -702,6 +703,15 @@ module akra.fx {
 			return pExpr;
 		}
 
+		getFieldIfExist(sFieldName: string): IAFXVariableDeclInstruction {
+			if(isNull(this._pFieldDeclMap) && isDef(this._pFieldDeclMap[sFieldName])){
+				return this._pFieldDeclMap[sFieldName];
+			}
+			else {
+				return null;
+			}
+		}
+
 		_getFullName(): string {
 			if(!this.isFromVariableDecl()){
 				return "Not from variable decl";
@@ -788,6 +798,19 @@ module akra.fx {
         	}
         }
 
+        _getMainPointer(): IAFXVariableDeclInstruction{
+        	if(isNull(this._pMainPointIndex)){
+        		if(isNull(this._getUpPointer())){
+        			this._pMainPointIndex = this._getParentVarDecl()
+        		}
+        		else{
+        			this._pMainPointIndex = this._getUpPointer().getType()._getMainPointer();
+        		}
+        	}
+
+        	return this._pMainPointIndex;
+        }
+
         _getUpPointer(): IAFXVariableDeclInstruction {
         	return this._pUpPointIndex;
         }
@@ -855,12 +878,12 @@ module akra.fx {
 				this._setClonePointeIndexes(this._nPointerDim, pClonePointerList);
 			}
 
-			if(!isNull(this._pFieldMap)){
+			if(!isNull(this._pFieldDeclMap)){
 				var sFieldName: string;
 				var pCloneFieldMap: IAFXVariableDeclMap= <IAFXVariableDeclMap>{};
 
-				for(sFieldName in this._pFieldMap){
-					pCloneFieldMap[sFieldName] = this._pFieldMap[sFieldName].clone(pRelationMap);
+				for(sFieldName in this._pFieldDeclMap){
+					pCloneFieldMap[sFieldName] = this._pFieldDeclMap[sFieldName].clone(pRelationMap);
 				}
 
 				this._setCloneFields(pCloneFieldMap);
@@ -894,7 +917,7 @@ module akra.fx {
         }
 
         _setCloneFields(pFieldMap: IAFXVariableDeclMap): void {
-        	this._pFieldMap = pFieldMap;
+        	this._pFieldDeclMap = pFieldMap;
         }
 
         inline _setUpDownPointers(pUpPointIndex: IAFXVariableDeclInstruction,
@@ -935,7 +958,7 @@ module akra.fx {
 		private _pElementType: IAFXTypeInstruction = null;
 		private _iLength: uint = 1;
 		private _iSize: uint = null;
-		private _pFieldMap: IAFXVariableDeclMap = null;
+		private _pFieldDeclMap: IAFXVariableDeclMap = null;
 		private _isArray: bool = false;
 		private _isWritable: bool = true;
 		private _isReadable: bool = true;
@@ -1044,11 +1067,11 @@ module akra.fx {
 			pField.push(pFieldType, true);
 			pField.push(pFieldId, true);
 
-			if(isNull(this._pFieldMap)){
-				this._pFieldMap = <IAFXVariableDeclMap>{};
+			if(isNull(this._pFieldDeclMap)){
+				this._pFieldDeclMap = <IAFXVariableDeclMap>{};
 			}
 
-			this._pFieldMap[sFieldName] = pField;
+			this._pFieldDeclMap[sFieldName] = pField;
 
 			if(isNull(this._pFieldNameList)){
 				this._pFieldNameList = [];
@@ -1094,7 +1117,7 @@ module akra.fx {
 		}
 
 		inline hasField(sFieldName: string): bool {
-			return isDef(this._pFieldMap[sFieldName]);
+			return isDef(this._pFieldDeclMap[sFieldName]);
 		}
 
 		hasFieldWithSematic(sSemantic: string): bool {
@@ -1110,11 +1133,11 @@ module akra.fx {
 		}
 
 		inline getField(sFieldName: string): IAFXVariableDeclInstruction {
-			return isDef(this._pFieldMap[sFieldName]) ? this._pFieldMap[sFieldName] : null;
+			return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldDeclMap[sFieldName] : null;
 		}
 
 		inline getFieldType(sFieldName: string): IAFXVariableTypeInstruction {
-			return isDef(this._pFieldMap[sFieldName]) ? this._pFieldMap[sFieldName].getType() : null;
+			return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldDeclMap[sFieldName].getType() : null;
 		}
 
 		inline getFieldNameList(): string[] {

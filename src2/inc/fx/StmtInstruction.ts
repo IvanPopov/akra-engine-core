@@ -304,16 +304,19 @@ module akra.fx {
 
     export class ExtractStmtInstruction extends ExprInstruction {
         private _pExtractInVar: IAFXVariableDeclInstruction = null;
-        private _pExtactInExpr: IAFXExprInstruction = null;
-        private _pExtractFrom: IAFXVariableDeclInstruction = null;
+        private _pExtractInExpr: IAFXExprInstruction = null;
+        private _pExtactExpr: ExtractExprInstruction = null;
 
         constructor() {
             super();
             this._pInstructionList = [];
-            this._eInstructionType = EAFXInstructionTypes.k_ExtractExprInstruction;
+            this._eInstructionType = EAFXInstructionTypes.k_ExtractStmtInstruction;
         } 
 
-        generateStmt(pVarDecl: IAFXVariableDeclInstruction, iPadding: uint): void {
+        generateStmtForBaseType(pVarDecl: IAFXVariableDeclInstruction, 
+                                pPointer: IAFXVariableDeclInstruction,
+                                pBuffer: IAFXVariableDeclInstruction,
+                                iPadding: uint): void {
             var pVarType: IAFXVariableTypeInstruction = pVarDecl.getType();
             var pVarNameExpr: IAFXExprInstruction = pVarDecl._getFullNameExpr();
             if(!pVarType.isBase() || isNull(pVarNameExpr) || pVarType.getSize() === UNDEFINE_SIZE) {
@@ -321,10 +324,10 @@ module akra.fx {
                 return;
             }
 
-            var pBuffer: IAFXVariableDeclInstruction = pVarType.getVideoBuffer();
+            // var pPointer: IAFXVariableDeclInstruction = isDef(pPointer) ? pPointer : pVarType.getPointer();
+            // var pBuffer: IAFXVariableDeclInstruction = isDef(pBuffer) ?  pBuffer : pVarType.getVideoBuffer();
             var pBufferSampler: IAFXVariableDeclInstruction = pBuffer._getVideoBufferSampler();
             var pBufferHeader: IAFXVariableDeclInstruction = pBuffer._getVideoBufferHeader();
-            var pPointer: IAFXVariableDeclInstruction = pVarType.getPointer();
 
             var isArray: bool = pVarType.isNotBaseArray();
             var iLength: uint = pVarType.getLength();
@@ -351,95 +354,55 @@ module akra.fx {
 
             
             if(isArray){
-                sCodeFragment = "[i]=(";
+                sCodeFragment = "[i]=";
             }
             else {
-                sCodeFragment = "=(";
-            }
-
-            var pExtractType: IAFXVariableTypeInstruction = isArray ? pVarType.getArrayElementType() : pVarType;
-            var bNeedSecondBracket: bool = false;
-
-            if (pExtractType.isEqual(Effect.getSystemType("float"))) {
-                sCodeFragment += ("A_extractFloat(");
-            }
-            else if (pExtractType.isEqual(Effect.getSystemType("bool"))){
-                sCodeFragment += ("bool(A_extractFloat(");
-                bNeedSecondBracket = true;
-            }
-            else if (pExtractType.isEqual(Effect.getSystemType("int"))) {
-                sCodeFragment += ("int(A_extractFloat(");
-                bNeedSecondBracket = true;
-            }
-            else if (pExtractType.isEqual(Effect.getSystemType("float2"))) {
-                sCodeFragment += ("A_extractVec2(");
-            }
-            else if (pExtractType.isEqual(Effect.getSystemType("float3"))) {
-                sCodeFragment += ("A_extractVec3(");
-            }
-            else if (pExtractType.isEqual(Effect.getSystemType("float4"))) {
-                sCodeFragment += ("A_extractVec4(");
-            }
-            else if (pExtractType.isEqual(Effect.getSystemType("int2"))) {
-                sCodeFragment += ("ivec2(A_extractVec2(");
-                bNeedSecondBracket = true;
-            }
-            else if (pExtractType.isEqual(Effect.getSystemType("int3"))) {
-                sCodeFragment += ("ivec3(A_extractVec3(");
-                bNeedSecondBracket = true;  
-            }
-            else if (pExtractType.isEqual(Effect.getSystemType("int4"))) {
-                sCodeFragment += ("ivec4(A_extractVec4(");
-                bNeedSecondBracket = true;
-            }
-            else if (pExtractType.isEqual(Effect.getSystemType("bool2"))) {
-                sCodeFragment += ("bvec2(A_extractVec2(");
-                bNeedSecondBracket = true;
-            }
-            else if (pExtractType.isEqual(Effect.getSystemType("bool3"))) {
-                sCodeFragment += ("bvec3(A_extractVec3(");
-                bNeedSecondBracket = true;
-            }
-            else if (pExtractType.isEqual(Effect.getSystemType("bool4"))) {
-                sCodeFragment += ("bvec4(A_extractVec4(");
-                bNeedSecondBracket = true;
-            }
-            else if (pExtractType.isEqual(Effect.getSystemType("float4x4"))) {
-                sCodeFragment += ("A_extractMat4(");
-            }
-            else {
-                this.setError(EFFECT_UNSUPPORTED_EXTRACT_BASE_TYPE, { typeName: pExtractType.getHash() });
+                sCodeFragment = "=";
             }
 
             this.push(new SimpleInstruction(sCodeFragment), true);
-            this.push(pBufferSampler.getNameId(), false);
-            this.push(new SimpleInstruction(","), true);
-            this.push(pBufferHeader.getNameId(), false);
-            this.push(new SimpleInstruction(","), true);
-            this.push(pPointer.getNameId());
+
+            var pExtractType: IAFXVariableTypeInstruction = isArray ? pVarType.getArrayElementType() : pVarType;
+            var pExtractExpr: ExtractExprInstruction = new ExtractExprInstruction();
+            var sPaddingExpr: string = "";
 
             if(iPadding > 0){
-                sCodeFragment = "+" + iPadding.toString() + ".0";
+                sPaddingExpr = iPadding.toString() + ".0";
             }
             else{
-                sCodeFragment = "";
+                sPaddingExpr = "";
             }
 
             if(isArray){
-                sCodeFragment += "+float(i*" + pExtractType.getSize().toString() + ")"; 
+                sPaddingExpr += "+float(i*" + pExtractType.getSize().toString() + ")"; 
             }
 
-            sCodeFragment += ")";
-            if(bNeedSecondBracket){
-                sCodeFragment += ")";
+            pExtractExpr.initExtractExpr(pExtractType, pPointer, pBuffer, sPaddingExpr);
+
+            if(!isNull(pExtractExpr.getLastError())){
+                this.setError(pExtractExpr.getLastError().code,pExtractExpr.getLastError().info);
+                return;
             }
-            sCodeFragment += ");";
+
+            this.push(pExtractExpr, true);
+
+            sCodeFragment = ";";
     
             if(isArray){
                 sCodeFragment += "}"
             }
 
             this.push(new SimpleInstruction(sCodeFragment), true);
+
+            this._pExtactExpr = pExtractExpr;
+            this._pExtractInVar = pVarDecl;
+            this._pExtractInExpr = pVarNameExpr;
+        }
+
+        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+            this._pExtractInExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Write);
+            this._pExtactExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
         }
     }
 

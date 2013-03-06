@@ -64,6 +64,7 @@ module akra {
         k_IfStmtInstruction,
         k_DeclStmtInstruction,
         k_ReturnStmtInstruction,
+        k_ExtractStmtInstruction,
         k_SemicolonStmtInstruction,
         k_TechniqueInstruction
     }
@@ -150,6 +151,29 @@ module akra {
     export interface IAFXTypeUseInfoMap {
         [index: uint]: IAFXTypeUseInfoContainer;
     }
+
+    export enum EExtractExprType {
+        k_Header,
+        
+        k_Float,
+        k_Int,
+        k_Bool,
+
+        k_Float2,
+        k_Int2,
+        k_Bool2,
+        
+        k_Float3,
+        k_Int3,
+        k_Bool3,
+
+        k_Float4,
+        k_Int4,
+        k_Bool4,
+
+        k_Float4x4
+    }
+
 	/**
 	 * All opertion are represented by: 
 	 * operator : arg1 ... argn
@@ -314,6 +338,7 @@ module akra {
         getPointer(): IAFXVariableDeclInstruction;
         getVideoBuffer():IAFXVariableDeclInstruction;
         getFieldExpr(sFieldName: string): IAFXIdExprInstruction;
+        getFieldIfExist(sFieldName: string): IAFXVariableDeclInstruction;
 
         _getFullName(): string;
         _getVarDeclName(): string;
@@ -323,6 +348,7 @@ module akra {
         _getParentContainer(): IAFXVariableDeclInstruction;
         _getMainVariable(): IAFXVariableDeclInstruction;
 
+        _getMainPointer(): IAFXVariableDeclInstruction;
         _getUpPointer(): IAFXVariableDeclInstruction;
         _getDownPointer(): IAFXVariableDeclInstruction;
 
@@ -382,6 +408,9 @@ module akra {
         isUniform(): bool;
         isField(): bool;
         isVideoBuffer(): bool;
+        
+        isDefinedByZero(): bool;
+        defineByZero(isDefine: bool): void;
 
         _getFullNameExpr(): IAFXExprInstruction;
         _getFullName(): string;

@@ -118,7 +118,12 @@ module akra.fx {
     	 * Проверка валидности инструкции
     	 */
     	check(eStage: ECheckStage, pInfo: any = null): bool {
-    		return true;
+    		if(!isNull(this._pLastError)){
+    			return false;
+    		}
+    		else {
+    			return true;
+    		}
     	}
 
     	/**

@@ -12,6 +12,7 @@ module akra.fx {
         private _pVideoBufferSampler: IAFXVariableDeclInstruction = null;
         private _pVideoBufferHeader: IAFXVariableDeclInstruction = null;
         private _pFullNameExpr: IAFXExprInstruction = null;
+        private _bDefineByZero: bool = false;
 
         /**
 		 * Represent type var_name [= init_expr]
@@ -89,6 +90,14 @@ module akra.fx {
             }
 
             return this._isVideoBuffer;
+        }
+
+        inline isDefinedByZero(): bool{
+            return this._bDefineByZero;
+        }
+
+        inline defineByZero(isDefine: bool): void {
+            this._bDefineByZero = isDefine;
         }
 
         toFinalCode(): string {
@@ -182,11 +191,14 @@ module akra.fx {
                 this._pVideoBufferHeader = new VariableDeclInstruction();
                 var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
                 var pId: IAFXIdInstruction = new IdInstruction();
+                var pExtarctExpr: ExtractExprInstruction = new ExtractExprInstruction();
 
                 pType.pushType(getEffectBaseType("video_buffer_header"));
+                pExtarctExpr.initExtractExpr(pType, null, this, "");
 
                 this._pVideoBufferHeader.push(pType, true);
                 this._pVideoBufferHeader.push(pId, true);
+                this._pVideoBufferHeader.push(pExtarctExpr, true);
             }
 
             return this._pVideoBufferHeader;
