@@ -179,3 +179,24 @@ interface Window {
     resolveLocalFileSystemURL (url: DOMString, successCallback: EntryCallback, errorCallback: ErrorCallback): void;
 };
 
+
+/***************************************************************
+ * Gamepad API
+ **************************************************************/
+
+ interface Gamepad {
+    id: string;
+    index: number;
+    timestamp: number;
+    axes: number[];
+    buttons: number[];
+}
+
+interface Navigator {
+    gamepads: Gamepad[];
+    getGamepads(): Gamepad[];
+}
+
+interface GamepadEvent extends Event {
+    gamepad: Gamepad;
+}

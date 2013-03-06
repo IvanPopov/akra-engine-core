@@ -132,70 +132,57 @@ module akra.math {
 
 	/**
 	 * Абсолютное значение числа
-	 * @inline
 	 */
 	export var absoluteValue = abs;
 	/**
 	 * Pow
-	 * @inline
 	 */ 
 	export var raiseToPower = pow;
 	/**
 	 * Число положительно?
-	 * @inline
 	 */
 	export var isPositive = (a: number) => (a >= 0);
 	/**
 	 * Число отрицательно?
-	 * @inline
 	 */
 	export var isNegative = (a: number) => (a < 0);
 	/**
 	 * Число одного знака?
-	 * @inline
 	 */
 	export var sameSigns = (a: number, b: number): bool => (isNegative(a) == isNegative(b));
 	/**
 	 * Копировать знак
-	 * @inline
 	 */
 	export var copySign = (a: number, b: number): number => (isNegative(b) ? -absoluteValue(a) : absoluteValue(a));
 	/**
 	 * Растояние между а и b меньше epsilon?
-	 * @inline
 	 */
 	export var deltaRangeTest = (a: number, b: number, epsilon: number = 0.0000001): bool => ((absoluteValue(a - b) < epsilon) ? true : false);
 	
 	/**
 	 * Ограничивает value интервалом [low,high]
-	 * @inline
 	 */
 	export var clamp = (value: number, low: number, high: number): number => max(low, min(value, high));
 	/**
 	 * Ограничивает value интервалом [0,+Infinity]
-	 * @inline
 	 */
 	export var clampPositive = (value: number): number => (value < 0 ? 0 : value);
 	/**
 	 * Ограничивает value интервалом [-Infinity,0]
-	 * @inline
 	 */
 	export var clampNegative = (value: number): number => (value > 0 ? 0 : value);
 	/**
 	 * Ограничивает value интервалом [-1,1]
-	 * @inline
 	 */
 	export var clampUnitSize = (value: number): number => clamp(value, -1, 1);
 	
 	
 	/**
 	 * Номер с права начиная от нуля, самого левого установленного бита
-	 * @inline
 	 */
 	export var highestBitSet = (value: number): uint => value == 0 ? (null) : (value < 0 ? 31 : ((log(value) / LN2) << 0));
 	/**
 	 * Номер с права начиная от нуля, самого правого установленного бита
-	 * @inline
 	 */
 	export var lowestBitSet = (value: uint): uint => {
 		var temp: uint;
@@ -215,12 +202,10 @@ module akra.math {
 
 	/**
 	 * Является ли число степенью двойки
-	 * @inline
 	 */
 	export var isPowerOfTwo = (value: uint): bool => (value > 0 && highestBitSet(value) == lowestBitSet(value));
 	/**
 	 * Округление до числа наиболее близкого к степени двойки
-	 * @inline
 	 */
 	export var nearestPowerOfTwo = (value: uint): uint => {
 		if (value <= 1) {
@@ -239,7 +224,6 @@ module akra.math {
 
 	/**
 	 * Округление до следующего числа являющегося к степени двойки
-	 * @inline
 	 */
 	export var ceilingPowerOfTwo = (value: uint): uint => {
 		if (value <= 1) {
@@ -253,7 +237,6 @@ module akra.math {
 	}
 	/**
 	 * Округление до предыдущего числа являющегося к степени двойки
-	 * @inline
 	 */
 	export var floorPowerOfTwo = (value: uint): uint => {
 		if (value <= 1) {
@@ -267,18 +250,15 @@ module akra.math {
 
 	/**
 	 * Деление по модулю
-	 * @inline
 	 */
 	export var modulus = (e: int, divisor: int): int => (e - floor(e / divisor) * divisor);
 	/**
 	 * 
-	 * @inline
 	 */
 	export var mod = modulus;
 
 	/**
 	 * Вырвнивание числа на alignment вверх
-	 * @inline
 	 */
 	export var alignUp = (value: int, alignment: int): int => {
 		var iRemainder: int = modulus(value, alignment);
@@ -292,7 +272,6 @@ module akra.math {
 
 	/**
 	 * Вырвнивание числа на alignment вниз
-	 * @inline
 	 */
 	export var alignDown = (value: int, alignment: int): int => {
 		var remainder: int = modulus(value, alignment);
@@ -305,39 +284,32 @@ module akra.math {
 
 	/**
 	 * пнвертировать число
-	 * @inline
 	 */
 	export var inverse = (a: number): number => 1. / a;
 	/**
 	 * log base 2
-	 * @inline
 	 */
 	export var log2 = (f: float): float => log(f) / LN2;
 	/**
 	 * Округлени числа с определенной точностью, где округляется до значащих чисел как 1/(2^precision)
-	 * @inline
 	 */
 	export var trimFloat = (f: float, precision: float): float => f;
 
 	/**
 	 * Перевод дробного в целое с усеением
-	 * @inline
 	 */
 	export var realToInt32_chop = (a: float): int => round(a);
 	/**
 	 * Перевод дробного в целое до меньшего
-	 * @inline
 	 */
 	export var realToInt32_floor = (a: float): int => floor(a);
 	/**
 	 * Перевод дробного в целое до большего
-	 * @inline
 	 */
 	export var realToInt32_ceil = (a: float): int => ceil(a);
 
 	/**
 	 * Наибольший общий делитель
-	 * @inline
 	 */
 	export var nod = (n: int, m: int): int => {
 		var p: int = n % m;
@@ -352,17 +324,14 @@ module akra.math {
 	}
 	/**
 	 * Наименьшее общее кратное
-	 * @inline
 	 */
 	export var nok = (n: int, m: int): int => abs(n * m) / nod(n , m);
 	/**
 	 * Greatest common devider
-	 * @inline
 	 */
 	export var gcd = nod;
 	/**
 	 * Least common multiple
-	 * @inline
 	 */
 	export var lcm = nok;
 

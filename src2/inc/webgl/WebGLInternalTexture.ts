@@ -37,7 +37,7 @@ module akra.webgl {
         		//TODO: must implement filling by color
         	}
 
-        	var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+        	var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
         	// Convert to nearest power-of-two size if required
@@ -163,7 +163,7 @@ module akra.webgl {
         }
 
         protected freeInternalTextureImpl(): bool {
-        	var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+        	var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			pWebGLRenderer.deleteWebGLTexture(this._pWebGLTexture);

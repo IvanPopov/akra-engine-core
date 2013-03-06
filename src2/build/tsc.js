@@ -4931,7 +4931,7 @@ var TypeScript;
             var n = argv.length;
             argMap[n] = pExpr;
             argv.push(pArg);
-            this.printArgumentsMap();
+            //this.printArgumentsMap();
         };
         InlineEngine.prototype.printArgumentsMap = function () {
             var s = "";

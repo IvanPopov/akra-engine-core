@@ -18,7 +18,7 @@
 #define GLSL_FS_SHADER_MIN "void main(void){}"
 
 #define GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext)\
-	var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();\
+	var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();\
 	var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 module akra.webgl {
@@ -41,8 +41,11 @@ module akra.webgl {
 	export var shaderVersion: float = 0;
 	export var hasNonPowerOf2Textures: bool = false;
 
+    var isSupported: bool = false;
 	var pSupportedExtensionList: string[] = null;
 	// var pLoadedExtensionList: Object = null;
+
+
 
     function setupContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {
         var pWebGLExtentionList: Object = {};
@@ -87,6 +90,8 @@ module akra.webgl {
         return pWebGLContext;
     }
 
+    export var isEnabled = (): bool => isSupported;
+
     export function createContext(
             pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas"), 
             pOptions?: { antialias?: bool; }): WebGLRenderingContext {
@@ -113,6 +118,8 @@ module akra.webgl {
 			return;
 		}
 
+
+
 		maxTextureSize 					= pWebGLContext.getParameter(GL_MAX_TEXTURE_SIZE);
 		maxCubeMapTextureSize 			= pWebGLContext.getParameter(GL_MAX_CUBE_MAP_TEXTURE_SIZE);
 		maxViewPortSize 				= pWebGLContext.getParameter(GL_MAX_VIEWPORT_DIMS);
@@ -137,6 +144,7 @@ module akra.webgl {
 #ifdef DEBUG	    
 	    pSupportedExtensionList.push(WEBGL_DEBUG_SHADERS, WEBGL_DEBUG_RENDERER_INFO);
 #endif
+        isSupported = true;
 
 	})(createContext());
 

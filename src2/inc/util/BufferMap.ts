@@ -5,9 +5,14 @@
 #include "IVertexBuffer.ts"
 #include "IEngine.ts"
 #include "core/pool/ReferenceCounter.ts"
-#include "webgl/webgl.ts"
+
 #include "data/IndexData.ts"
 #include "IVertexDeclaration.ts"
+
+#ifdef WEBGL
+	#include "webgl/webgl.ts"
+	#include "webgl/WebGLRenderer.ts"
+#endif
 
 module akra.util {
 	export interface IBuffersCompatibleMap {
@@ -103,7 +108,7 @@ module akra.util {
 
 		private inline drawArrays(): void {
 #ifdef WEBGL
-			(<IWebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawArrays(
+			(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawArrays(
 				webgl.getWebGLPrimitiveType(this._ePrimitiveType), 
 				this._nStartIndex, 
 				this._nLength);
@@ -114,7 +119,7 @@ module akra.util {
 
 		private inline drawElements(): void {
 #ifdef WEBGL
-			(<IWebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawElements(
+			(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawElements(
 				this.primCount, 
 				this._pIndex.getPrimitiveCount(), 
 				webgl.getWebGLPrimitiveType(this._ePrimitiveType), 

@@ -7,14 +7,14 @@
 
 #define EMIT_UNICAST(event, call) \
 	var _recivier: any = this; \
-	this._pUnicastSlotMap = this._pUnicastSlotMap || this.getEventTable().findUnicastList(this._iGuid);\
+	this._pUnicastSlotMap = this._pUnicastSlotMap || (<events.EventTable>this.getEventTable()).findUnicastList(this._iGuid);\
 	var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).event;\
 	/*console.error(this.getEventTable());*/\
 	if(isDef(_unicast)){\
 		_unicast.target? _unicast.target[_unicast.callback] call: _unicast.listener call;\
 	}
 #define EMIT_BROADCAST(event, call) \
-	this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid);\
+	this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid);\
 	var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).event; \
 	var _recivier: any = this; \
 		if(isDef(_broadcast)){\
@@ -55,10 +55,10 @@
 	inline getEventTable(): IEventTable {return object._pEventTable; } 												\
 	getGuid(): uint {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } 																		\
 	inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
-		return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType);					\
+		return (<events.EventProvider>pSender).getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType);					\
 	}; 																													\
 	inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
-		return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType);					\
+		return (<events.EventProvider>pSender).getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType);					\
 	}																													\
 	inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { 									\
 		return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType);							\
@@ -145,9 +145,8 @@ module akra.events {
 			return false;
 		}
 
-		findBroadcastList(iGuid: int): IEventSlotListMap {
-			this.broadcast[iGuid] = this.broadcast[iGuid] || {};
-			return this.broadcast[iGuid];
+		inline findBroadcastList(iGuid: int): IEventSlotListMap {
+			return (this.broadcast[iGuid] = this.broadcast[iGuid] || {});
 		}
 
 		findUnicastList(iGuid: int): IEventSlotMap {
@@ -164,6 +163,11 @@ module akra.events {
 		}
 
 		private
+	}
+
+	export class EventProvider implements IEventProvider {
+		BEGIN_EVENT_TABLE(EventProvider);
+		END_EVENT_TABLE();
 	}
 }
 

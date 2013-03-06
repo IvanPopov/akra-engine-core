@@ -25,6 +25,7 @@
 #include "animation/AnimationController.ts"
 #include "model/Skeleton.ts"
 #include "util/DepsManager.ts"
+#include "controls/GamepadMap.ts"
 
 #ifdef WEBGL
 #include "webgl/WebGLRenderer.ts"
@@ -50,6 +51,8 @@ module akra.core {
 		private _isFrameMoving: bool = true;
 		/** is all needed files loaded */
 		private _isDepsLoaded: bool = false;
+
+		private _pGamepads: IGamepadMap = null;
 
 
 
@@ -80,6 +83,29 @@ module akra.core {
 			// this.parseOptions(pOptions);
 		}
 
+		enableGamepads(): bool {
+			if (!isNull(this._pGamepads)) {
+				return true;
+			}
+
+			var pGamepads: IGamepadMap = controls.createGamepadMap();
+			
+			if (pGamepads.init()) {
+				this._pGamepads = pGamepads;
+				return true;
+			}
+			
+			return false;
+		}
+
+		getGamepads(): IGamepadMap {
+			if (this.enableGamepads()) {
+				return this._pGamepads;
+			}
+
+			return null;
+		}
+
 		private parseOptions(pOptions: IEngineOptions): void {
 			//== Depends Managment ====================================
 			
@@ -106,6 +132,9 @@ module akra.core {
 
 			//===========================================================
 
+			if (pOptions.gamepads === true) {
+				this.enableGamepads();
+			}
 		}
 
 		inline getScene(): IScene3d {
@@ -187,6 +216,7 @@ module akra.core {
 
 		    // FrameMove (animate) the scene
 		    if (this._isFrameMoving) {
+		    	this._pGamepads.update();
 		    	this._pSceneManager.update();
 		    }
 
