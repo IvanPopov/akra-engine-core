@@ -3460,16 +3460,23 @@ module akra.fx {
     		       pType.isEqual(Effect.getSystemType("video_buffer"));
         }
 
+
         /**
          * Array of structs and pointers on array of struct are don`t support
          */
-        private generateExtractExpr(pVarDecl: IAFXVariableDeclInstruction, iPadding: uint): IAFXStmtInstruction {
+        private generateExtractStmt(pVarDecl: IAFXVariableDeclInstruction, iPadding: uint): IAFXStmtInstruction {
         	var pExtractStmt: ExtractStmtInstruction = new ExtractStmtInstruction();
         	pExtractStmt.generateStmt(pVarDecl, iPadding);
         	
         	CHECK_INSTRUCTION(pExtractStmt, ECheckStage.CODE_TARGET_SUPPORT);
 
         	return pExtractStmt;
+        }
+
+        private addExtractStmts(pVarDecl: IAFXVariableDeclInstruction): IAFXStmtInstruction {
+        	var pStmtBlock: StmtBlockInstruction = new StmtBlockInstruction();
+        	
+        	return pStmtBlock;
         }
        
 

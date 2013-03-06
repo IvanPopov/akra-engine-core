@@ -441,11 +441,6 @@ module akra.fx {
 
             this.push(new SimpleInstruction(sCodeFragment), true);
         }
-
-
-        // pushText(sText: string): void {
-        //     this.push(new SimpleInstruction(sText), true);
-        // }
     }
 
     /**
