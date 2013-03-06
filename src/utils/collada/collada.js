@@ -64,6 +64,12 @@ function COLLADA(pEngine, pSettings) {
         {sName : 'Z', sType : 'float'}
     ];
 
+    var pSupportedColorFormat = [
+        {sName : 'R', sType : 'float'},
+        {sName : 'G', sType : 'float'},
+        {sName : 'B', sType : 'float'}
+    ];
+
     var pSupportedTextureFormat = [
         {sName : 'S', sType : 'float'},
         {sName : 'T', sType : 'float'},
@@ -177,13 +183,14 @@ function COLLADA(pEngine, pSettings) {
                 return pSupportedTangentFormat;
             case 'OUTPUT':
                 return pSupportedOutputFormat;
+            case 'COLOR':
+                return pSupportedColorFormat;
             case 'UV':
             case 'MORPH_WEIGHT':
             case 'MORPH_TARGET':
             case 'LINEAR_STEPS':
             case 'IMAGE':
             case 'CONTINUITY':
-            case 'COLOR':
                 return null;
         }
         debug_error('unknown semantics founded: ' + sSemantic);
@@ -1022,6 +1029,7 @@ function COLLADA(pEngine, pSettings) {
         for (var i in pAccess.pParam) {
             if (typeof pFormat[i].sName === 'string') {
                 if (pAccess.pParam[i].sName.toLowerCase() != pFormat[i].sName.toLowerCase()) {
+                    console.log("FORMAT NAME > ", pAccess.pParam[i].sName.toLowerCase(), pFormat[i].sName.toLowerCase());
                     fnUnsupportedFormatError();
                 }
             }
@@ -1041,6 +1049,7 @@ function COLLADA(pEngine, pSettings) {
 
             if (typeof pFormat[i].sType === 'string') {
                 if (pAccess.pParam[i].sType.toLowerCase() != pFormat[i].sType.toLowerCase()) {
+                    console.log("FORMAT TYPE > ", pAccess.pParam[i].sType.toLowerCase(), pFormat[i].sType.toLowerCase());
                     fnUnsupportedFormatError();
                 }
             }

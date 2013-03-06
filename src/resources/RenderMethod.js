@@ -498,6 +498,7 @@ RenderMethod.prototype.createResource = function() {
     // signal that the resource is now created,
     // but has not been enabled
     this.notifyCreated();
+    this.notifyLoaded();
     //this.notifyDisabled();
 
     return true;
