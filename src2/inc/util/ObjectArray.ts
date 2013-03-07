@@ -69,7 +69,7 @@ module akra.util {
 
 		private extend(n: uint): void {
 			if (this._pData.length < n) {
-				// LOG("extending object array to > " + n);
+				//LOG("extending object array to > " + n);
 				for (var i: int = this._pData.length; i < n; ++ i) {
 					this._pData[i] = null;
 				}
@@ -127,6 +127,18 @@ module akra.util {
 			this._pData.swap(i, j);
 
 			return this;
+		}
+
+		takeAt(iPos): any {
+			var pValue: any = this.value(iPos);
+			
+			for (var i = iPos + 1, j = iPos; i < this.length; ++ i, ++ j) {
+				this._pData[j] = this._pData[i];
+			}
+
+			this._iLength --;
+
+			return pValue;
 		}
 
 	}

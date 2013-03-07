@@ -8,5 +8,7 @@ module akra {
 	test("Gamepad", () => {
 		shouldBeNotNull("Is gamepad supported?");
 		ok(pGamepads);
+
+		pEngine.exec();
 	});
 }

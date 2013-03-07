@@ -53,12 +53,12 @@
 	private static _pEventTable: IEventTable = new events.EventTable(); 							\
 																									\
 	inline getEventTable(): IEventTable {return object._pEventTable; } 												\
-	getGuid(): uint {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } 																		\
+	getGuid(): uint {return this._iGuid; } 																		\
 	inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
-		return (<events.EventProvider>pSender).getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType);					\
+		return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType);					\
 	}; 																													\
 	inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
-		return (<events.EventProvider>pSender).getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType);					\
+		return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType);					\
 	}																													\
 	inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { 									\
 		return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType);							\
@@ -161,9 +161,8 @@ module akra.events {
 			this.broadcast[iGuid][sSignal] = this.broadcast[iGuid][sSignal] || [];
 			return this.broadcast[iGuid][sSignal];
 		}
-
-		private
 	}
+
 
 	export class EventProvider implements IEventProvider {
 		BEGIN_EVENT_TABLE(EventProvider);

@@ -4881,6 +4881,35 @@ var TypeScript;
                 arg: null
             };
         }
+        InlineEngine.prototype.normalizeModuleName = function (emitter, container) {
+            if (!this.isActive()) {
+                return container.name;
+            }
+            var origin = container;
+            var pGroupT = [];
+            var pGroupP = emitter.moduleDeclList;
+            while(container) {
+                pGroupT.push(container);
+                container = container.container;
+            }
+            pGroupT.length--;
+            pGroupT.reverse();
+            var s = "";
+            emitter.writeToOutput("/*checked (origin: " + origin.name + ")>>*/");
+            for(var i = 0; i < pGroupP.length; ++i) {
+                if (pGroupP[i].name.text != pGroupT[i].name) {
+                    for(var j = i; j < pGroupT.length; ++j) {
+                        s += pGroupT[j].name + (j != pGroupT.length - 1 ? "." : "");
+                    }
+                    return s;
+                }
+                if (i == pGroupT.length - 1) {
+                    return s + origin.name;
+                }
+                s += pGroupP[i].name.text + ".";
+            }
+            return origin.name;
+        };
         InlineEngine.prototype.begin = function (pFunc) {
             if (typeof pFunc === "undefined") { pFunc = null; }
             this.pDepthInfo.push([]);
@@ -4931,7 +4960,6 @@ var TypeScript;
             var n = argv.length;
             argMap[n] = pExpr;
             argv.push(pArg);
-            //this.printArgumentsMap();
         };
         InlineEngine.prototype.printArgumentsMap = function () {
             var s = "";
@@ -6102,7 +6130,8 @@ var TypeScript;
                                     if (TypeScript.hasFlag(sym.declModule.modFlags, 2048 /* IsDynamic */ )) {
                                         this.writeToOutput("exports.");
                                     } else {
-                                        this.writeToOutput(sym.container.name + ".");
+                                        var contName = this.inlineEngine.normalizeModuleName(this, sym.container);
+                                        this.writeToOutput(contName + ".");
                                     }
                                 }
                             } else {

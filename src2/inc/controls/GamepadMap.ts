@@ -3,6 +3,7 @@
 
 #include "IGamepadMap.ts"
 #include "info/info.ts"
+#include "util/ObjectArray.ts"
 
 #define TYPICAL_BUTTON_COUNT 16
 #define TYPICAL_AXIS_COUNT 4
@@ -10,9 +11,9 @@
 module akra.controls {
 	class GamepadMap implements IGamepadMap {
 		private _bTicking: bool = false;
-		private _pCollection: Gamepad[] = [];
-		private _pPrevRawGamepadTypes: string[];
-		private _pPrevTimestamps: long[];
+		private _pCollection: IObjectArray = new util.ObjectArray;
+		private _pPrevRawGamepadTypes: string[] = [null, null, null, null];
+		private _pPrevTimestamps: long[] = [0, 0, 0, 0];
 
 		init(): bool {
 
@@ -22,7 +23,7 @@ module akra.controls {
 	        }
 
 	        var pMap: GamepadMap = this;
-	        var pCollection: Gamepad[] = this._pCollection;
+	        var pCollection: IObjectArray = this._pCollection;
         
             window.addEventListener('MozGamepadConnected', (e: GamepadEvent) => {
             	pCollection.push(e.gamepad);
@@ -32,8 +33,8 @@ module akra.controls {
 
             window.addEventListener('MozGamepadDisconnected', (e: GamepadEvent) => {	
 		        for (var i: int = 0; i <pCollection.length; ++ i) {
-		            if (pCollection[i].index == e.gamepad.index) {
-		                pMap.disconnected(pCollection.splice(i, 1)[0]);
+		            if (<int>pCollection.value(i).index == e.gamepad.index) {
+		                pMap.disconnected(pCollection.takeAt(i));
 		                break;
 		            }
 		        }
@@ -73,13 +74,13 @@ module akra.controls {
 
     		if (!isNull(sID)) {
     			for (i = 0; i < this._pCollection.length; ++ i) {
-    				if (this._pCollection[i].id == sID) {
-    					return this._pCollection[i];
+    				if (this._pCollection.value(i).id == sID) {
+    					return this._pCollection.value(i);
     				}
     			}
     		}
 
-    		return this._pCollection[i];
+    		return this._pCollection.value(i);
     	}
 
 		inline _startPolling(): void {
@@ -104,8 +105,8 @@ module akra.controls {
 
 			this.pollGamepads();
 
-	        for (var i in this._pCollection) {
-	            var pGamepad: Gamepad = this._pCollection[i];
+	        for (var i = 0; i < this._pCollection.length; ++ i) {
+	            var pGamepad: Gamepad = this._pCollection.value(i);
 	            
 	            if (pGamepad.timestamp && (pGamepad.timestamp == this._pPrevTimestamps[i])) {
 	                continue;
@@ -118,9 +119,9 @@ module akra.controls {
 		private pollGamepads(): void {
 			var pRawGamepads: Gamepad[] = (navigator.getGamepads && navigator.getGamepads()) || navigator.gamepads;
 	        if (isDefAndNotNull(pRawGamepads)) {
-	        	debug_print("get raw gamepads");
+	        	//debug_print("get raw gamepads");
 
-	            this._pCollection = [];
+	            this._pCollection.clear();
 	            
 	            var isGamepadsChanged: bool = false;
 	            
@@ -131,6 +132,7 @@ module akra.controls {
 	                    this._pPrevRawGamepadTypes[i] = typeof pRawGamepads[i];
 	                    
 	                    if (isDefAndNotNull(pRawGamepads[i])) {
+	                   		debug_print("gamepad " + i + " updated: " + pRawGamepads[i].id);
 	                        this.updated(pRawGamepads[i]);
 	                    }
 	                }

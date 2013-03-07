@@ -166,6 +166,10 @@ module akra.core {
 			return this._isActive;
 		}
 
+		inline isDepsLoaded(): bool {
+			return this._isDepsLoaded;
+		}
+
 		exec(bValue: bool = true): void {
 			var pRenderer: IRenderer = this._pRenderer;
 			var pEngine: Engine = this;
@@ -190,7 +194,7 @@ module akra.core {
 					ERROR(pRenderer.getError());
 				}
 #endif
-	        	if (!pEngine.isActive()) {
+	        	if (!pEngine.isActive() && pEngine.isDepsLoaded()) {
 	                return;
 	            }
 
