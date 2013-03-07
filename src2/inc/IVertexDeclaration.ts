@@ -60,6 +60,10 @@ module akra {
 	    SPECULAR 	: "SPECULAR",
 	    EMISSIVE 	: "EMISSIVE",
 	    SHININESS 	: "SHININESS",
+
+	    //special semantic for video buffer
+	    TEXTURE_HEADER : "TEXTURE_HEADER",
+
 	    UNKNOWN 	: "UNKNOWN",
 	    END 		: "\a\n\r"
 	};

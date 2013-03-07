@@ -32,7 +32,14 @@ module akra.core.pool.resources {
 
 		resize(iSize: uint): bool {
 			var pData: Uint8Array = new Uint8Array(iSize);
-			pData.set(this._pData);
+
+			if(iSize >= this.byteLength){
+				pData.set(this._pData);
+			}
+			else{
+				pData.set(this._pData.subarray(0, iSize));
+			}
+			
 			this._pData = pData;
 			this.notifyAltered();
 

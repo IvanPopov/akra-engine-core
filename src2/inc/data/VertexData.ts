@@ -250,6 +250,7 @@ module akra.data {
 		            if (iStride != iSize) {
 		                //FIXME: очень тормознутое место, крайне медленно работает...
 						if(pVertexBuffer.isBackupPresent() && nCount > 1) {
+							console.log(pVertexBuffer.byteLength);
 							pBackupBuf = new Uint8Array(pVertexBuffer.byteLength);
 							pVertexBuffer.readData(pBackupBuf);
 

@@ -541,9 +541,9 @@ test("VideoBuffer tests<br/>" +
 			varying vec4 v4fResult;\n\
 			\n\
 			void main(void){\n\
-				vec2 v2fPosition1 = vec2(mod(position,textureSize1.x) + 0.5/textureSize1.x, floor(position/textureSize1.x) + 0.5/textureSize1.y);\n\
-				vec2 v2fPosition2 = vec2(mod(position,textureSize2.x) + 0.5/textureSize2.x, floor(position/textureSize2.x) + 0.5/textureSize2.y);\n\
-				vec2 v2fResultPosition = vec2(mod(position,resultTextureSize.x) + 0.5/resultTextureSize.x, floor(position/resultTextureSize.x) + 0.5/resultTextureSize.y);\n\
+				vec2 v2fPosition1 = vec2((mod(position,textureSize1.x) + 0.5)/textureSize1.x, (floor(position/textureSize1.x) + 0.5)/textureSize1.y);\n\
+				vec2 v2fPosition2 = vec2((mod(position,textureSize2.x) + 0.5)/textureSize2.x, (floor(position/textureSize2.x) + 0.5)/textureSize2.y);\n\
+				vec2 v2fResultPosition = vec2((mod(position,resultTextureSize.x) + 0.5)/resultTextureSize.x, (floor(position/resultTextureSize.x) + 0.5)/resultTextureSize.y);\n\
 				\n\
 				vec4 v4fColor1 = texture2D(texture1, v2fPosition1);\n\
 				vec4 v4fColor2 = texture2D(texture2, v2fPosition2);\n\
@@ -553,7 +553,7 @@ test("VideoBuffer tests<br/>" +
 				v4fResult.z = (v4fColor1.z == v4fColor2.z) ? 1. : 0.;\n\
 				v4fResult.w = (v4fColor1.w == v4fColor2.w) ? 1. : 0.;\n\
 				\n\
-				gl_PointSize = 20.;\n\
+				gl_PointSize = 1.;\n\
 				gl_Position = vec4(v2fResultPosition * 2. - 1., 0. ,1.);\n\
 			}\n\
 			";
@@ -566,7 +566,7 @@ test("VideoBuffer tests<br/>" +
 		   	varying vec4 v4fResult;\n\
 		   	\n\
 		   	void main(void){\n\
-		   		gl_FragColor = vec4(0.5);\n\
+		   		gl_FragColor = v4fResult;\n\
 		   	}\n\
 		   ";
 
@@ -650,6 +650,9 @@ test("VideoBuffer tests<br/>" +
 		pData2.setData(pArray1, 'POSITION');
 		pData2.setData(pArray2, 'NORMAL');
 
+		shouldBeTrue("try resize videobuffer");
+		check(pVideoBuffer2.resize(32628));
+
 		var pTexture1: any = (<any>pVideoBuffer1)._pWebGLTexture;
 		var pTexture2: any = (<any>pVideoBuffer2)._pWebGLTexture;
 
@@ -717,6 +720,19 @@ test("VideoBuffer tests<br/>" +
 
 		pContext.bindFramebuffer(pContext.FRAMEBUFFER, null);
 
-		console.log(pPixelsResult);
+		var iResult: uint = 0;
+
+		for(var i: uint = 2; i<iMaxIndex+2; i++){
+			var iIndex = 4*i;
+
+			iResult += (pPixelsResult[iIndex + 0] != 0) ? 1 : 0;
+			iResult += (pPixelsResult[iIndex + 1] != 0) ? 1 : 0;
+			iResult += (pPixelsResult[iIndex + 2] != 0) ? 1 : 0;
+			iResult += (pPixelsResult[iIndex + 3] != 0) ? 1 : 0;
+		}
+
+		shouldBe("test data in texture after resize", 4*iMaxIndex);
+		check(iResult);
+		
 	});
 }

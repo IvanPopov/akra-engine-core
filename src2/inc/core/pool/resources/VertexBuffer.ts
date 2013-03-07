@@ -208,7 +208,7 @@ module akra.core.pool.resources {
 			return true;
 		}
 
-		allocateData(pElements: IVertexElement[], pData: ArrayBufferView): IVertexData;
+		allocateData(pElements: IVertexElementInterface[], pData: ArrayBufferView): IVertexData;
 		allocateData(pDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
 		allocateData(pDeclData: any, pData: ArrayBufferView): IVertexData {
 			var pDecl: IVertexDeclaration = createVertexDeclaration(pDeclData);
