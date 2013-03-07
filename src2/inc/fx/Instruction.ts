@@ -32,6 +32,7 @@ module akra.fx {
 		protected _nInstructions: uint = 0;
 		protected readonly _eInstructionType: EAFXInstructionTypes = 0;
 		protected _pLastError: IAFXInstructionError = null;
+		protected _bErrorOccured: bool = false;
 		protected _iInstructionID: uint = 0;
 		protected _iScope: uint = UNDEFINE_SCOPE;
 		private static _nInstructionCounter: uint = 0;
@@ -88,6 +89,17 @@ module akra.fx {
 		inline setError(eCode: uint, pInfo?: any = null): void {
 			this._pLastError.code = eCode;
 			this._pLastError.info = pInfo;
+			this._bErrorOccured = true;
+		}
+
+		inline clearError(): void {
+			this._bErrorOccured = false;
+			this._pLastError.code = 0;
+			this._pLastError.info = null;
+		}
+
+		inline isErrorOccured(): bool {
+			return this._bErrorOccured;
 		}
 
 		constructor(){
@@ -118,7 +130,7 @@ module akra.fx {
     	 * Проверка валидности инструкции
     	 */
     	check(eStage: ECheckStage, pInfo: any = null): bool {
-    		if(!isNull(this._pLastError)){
+    		if(this._bErrorOccured){
     			return false;
     		}
     		else {

@@ -246,7 +246,14 @@ module akra.fx {
         }
 
         toFinalCode(): string {
-            return this._pInstructionList[0].toFinalCode() + ";";
+            var sCode: string = "";
+            var pVariableList: IAFXVariableDeclInstruction[] = <IAFXVariableDeclInstruction[]>this.getInstructions();
+
+            for(var i: uint = 0; i < this._nInstructions; i++){
+                sCode += pVariableList[i].toFinalCode() + ";\n";
+            }
+
+            return sCode + ";";
         }
 
         addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
@@ -319,7 +326,7 @@ module akra.fx {
                                 iPadding: uint): void {
             var pVarType: IAFXVariableTypeInstruction = pVarDecl.getType();
             var pVarNameExpr: IAFXExprInstruction = pVarDecl._getFullNameExpr();
-            if(!pVarType.isBase() || isNull(pVarNameExpr) || pVarType.getSize() === UNDEFINE_SIZE) {
+            if(pVarType.isComplex() || isNull(pVarNameExpr) || pVarType.getSize() === UNDEFINE_SIZE) {
                 this.setError(EFFECT_BAD_EXTRACTING);
                 return;
             }
@@ -344,12 +351,6 @@ module akra.fx {
                 this.push(new SimpleInstruction(sCodeFragment), true);
             }
 
-
-            if(isArray){
-                sCodeFragment = "}";
-                this.push(new SimpleInstruction(sCodeFragment), true);
-            }
-
             this.push(pVarNameExpr, false);
 
             
@@ -367,7 +368,7 @@ module akra.fx {
             var sPaddingExpr: string = "";
 
             if(iPadding > 0){
-                sPaddingExpr = iPadding.toString() + ".0";
+                sPaddingExpr = "+"+ iPadding.toString() + ".0";
             }
             else{
                 sPaddingExpr = "";
@@ -379,7 +380,7 @@ module akra.fx {
 
             pExtractExpr.initExtractExpr(pExtractType, pPointer, pBuffer, sPaddingExpr);
 
-            if(!isNull(pExtractExpr.getLastError())){
+            if(pExtractExpr.isErrorOccured()){
                 this.setError(pExtractExpr.getLastError().code,pExtractExpr.getLastError().info);
                 return;
             }
@@ -389,7 +390,7 @@ module akra.fx {
             sCodeFragment = ";";
     
             if(isArray){
-                sCodeFragment += "}"
+                sCodeFragment += "}";
             }
 
             this.push(new SimpleInstruction(sCodeFragment), true);
@@ -397,6 +398,16 @@ module akra.fx {
             this._pExtactExpr = pExtractExpr;
             this._pExtractInVar = pVarDecl;
             this._pExtractInExpr = pVarNameExpr;
+        }
+
+        toFinalCode(): string {
+            var sCode: string = "";
+
+            for(var i: uint = 0; i < this._nInstructions; i++){
+                sCode += this.getInstructions()[i].toFinalCode();
+            }
+
+            return sCode;
         }
 
         addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,

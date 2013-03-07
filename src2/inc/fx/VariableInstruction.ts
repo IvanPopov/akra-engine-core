@@ -13,6 +13,7 @@ module akra.fx {
         private _pVideoBufferHeader: IAFXVariableDeclInstruction = null;
         private _pFullNameExpr: IAFXExprInstruction = null;
         private _bDefineByZero: bool = false;
+        private _pSubDeclList: IAFXVariableDeclInstruction[] = null;
 
         /**
 		 * Represent type var_name [= init_expr]
@@ -84,12 +85,20 @@ module akra.fx {
             return false;
         }
 
+        inline isPointer(): bool {
+            return this.getType().isPointer();
+        }
+
         isVideoBuffer(): bool{
             if(isNull(this._isVideoBuffer)){
                 this._isVideoBuffer = this.getType().isEqual(getEffectBaseType("video_buffer"));
             }
 
             return this._isVideoBuffer;
+        }
+
+        inline getSubVarDecls(): IAFXVariableDeclInstruction[] {
+           return this.getType().getSubVarDecls();
         }
 
         inline isDefinedByZero(): bool{
@@ -135,10 +144,12 @@ module akra.fx {
                 if(isNull(pMainExpr)){
                     return null;
                 }
+                var pFieldExpr: IAFXExprInstruction = new IdExprInstruction();
+                pFieldExpr.push(this.getNameId(), false);
 
                 this._pFullNameExpr = new PostfixPointInstruction();
-                this._pFullNameExpr.push(pMainExpr, false);
-                this._pFullNameExpr.push(this.getNameId(), false);
+                this._pFullNameExpr.push(pMainExpr, false);                
+                this._pFullNameExpr.push(pFieldExpr, false);
                 this._pFullNameExpr.setType(this.getType());
             }
 
@@ -174,6 +185,7 @@ module akra.fx {
                 var pId: IAFXIdInstruction = new IdInstruction();
 
                 pType.pushType(getEffectBaseType("sampler2D"));
+                pId.setName(this.getName() + "_sampler");
 
                 this._pVideoBufferSampler.push(pType, true);
                 this._pVideoBufferSampler.push(pId, true);
@@ -194,6 +206,7 @@ module akra.fx {
                 var pExtarctExpr: ExtractExprInstruction = new ExtractExprInstruction();
 
                 pType.pushType(getEffectBaseType("video_buffer_header"));
+                pId.setName(this.getName() + "_header");
                 pExtarctExpr.initExtractExpr(pType, null, this, "");
 
                 this._pVideoBufferHeader.push(pType, true);

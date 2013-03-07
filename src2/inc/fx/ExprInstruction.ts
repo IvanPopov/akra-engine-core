@@ -639,8 +639,38 @@ module akra.fx {
 
 		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
                     eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
-			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
-			pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+			var pPointerType: IAFXVariableTypeInstruction = this.getType();
+			var pInfo: IAFXTypeUseInfoContainer = pUsedDataCollector[pPointerType._getInstructionID()];
+
+			if(!isDef(pInfo)){
+				pInfo = <IAFXTypeUseInfoContainer>{
+					type: pPointerType,
+					isRead: false,
+					isWrite: false,
+					numRead: 0,
+					numWrite: 0,
+					numUsed: 0
+				}
+
+				pUsedDataCollector[pPointerType._getInstructionID()] = pInfo;
+			}
+			
+			if(eUsedMode === EVarUsedMode.k_Read){
+				pInfo.isRead = true;
+				pInfo.numRead++;
+			}
+			else if(eUsedMode === EVarUsedMode.k_Write){
+				pInfo.isWrite = true;
+				pInfo.numWrite++;
+			}
+			else if(eUsedMode === EVarUsedMode.k_ReadWrite){
+				pInfo.isRead = true;
+				pInfo.isWrite = true;
+				pInfo.numRead++;
+				pInfo.numWrite++;
+			}
+			
+			pInfo.numUsed++;
 		}
 	}
 
@@ -1142,7 +1172,7 @@ module akra.fx {
 		toFinalCode(): string {
 			var sCode: string = "";
 
-			if(this._pBuffer.isDefinedByZero){
+			if(this._pBuffer.isDefinedByZero()){
 				switch(this._eExtractExprType){
 					case EExtractExprType.k_Header:
 						sCode = "A_TextureHeader(0.,0.,0.,0.)";
@@ -1193,12 +1223,12 @@ module akra.fx {
 						break;
 				}
 			}
-			else{
+			else {
 				sCode = this._sExtractFunction;
-				sCode += this._pBuffer._getVideoBufferSampler().toFinalCode();
-				sCode += "," + this._pBuffer._getVideoBufferHeader().toFinalCode();
+				sCode += this._pBuffer._getVideoBufferSampler().getNameId().toFinalCode();
+				sCode += "," + this._pBuffer._getVideoBufferHeader().getNameId().toFinalCode();
 				if(this._eExtractExprType !== EExtractExprType.k_Header){
-					sCode += "," + this._pPointer.getNameId().toFinalCode() + "+" + this._sPaddingExpr; 
+					sCode += "," + this._pPointer.getNameId().toFinalCode() + this._sPaddingExpr; 
 				}
 				sCode += ")";
 				if(this._bNeedSecondBracket){

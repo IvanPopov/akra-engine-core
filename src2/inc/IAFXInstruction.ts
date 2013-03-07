@@ -198,6 +198,8 @@ module akra {
         check(eStage: ECheckStage): bool;
         getLastError(): IAFXInstructionError;
         setError(eCode: uint, pInfo?: any): void;
+        clearError(): void;
+        isErrorOccured(): bool;
 
     	// /**
     	//  * Contain states of instruction
@@ -233,11 +235,15 @@ module akra {
         isNotBaseArray(): bool;
         isComplex(): bool;
         isEqual(pType: IAFXTypeInstruction): bool;
+        isStrongEqual(pType: IAFXTypeInstruction): bool;
         isConst(): bool;
 
         isWritable(): bool;
         isReadable(): bool;
 
+        _containArray(): bool;
+        _containSampler(): bool;
+        _containPointer(): bool;
         /**
          * Set private params
          */
@@ -340,6 +346,8 @@ module akra {
         getFieldExpr(sFieldName: string): IAFXIdExprInstruction;
         getFieldIfExist(sFieldName: string): IAFXVariableDeclInstruction;
 
+        getSubVarDecls(): IAFXVariableDeclInstruction[];
+
         _getFullName(): string;
         _getVarDeclName(): string;
         _getTypeDeclName(): string;
@@ -407,8 +415,11 @@ module akra {
 
         isUniform(): bool;
         isField(): bool;
+        isPointer(): bool;
         isVideoBuffer(): bool;
         
+        getSubVarDecls(): IAFXVariableDeclInstruction[];
+
         isDefinedByZero(): bool;
         defineByZero(isDefine: bool): void;
 

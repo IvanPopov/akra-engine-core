@@ -671,7 +671,7 @@ module akra.fx {
 		}
 
 		private inline _errorFromInstruction(pError: IAFXInstructionError): void {
-			this._error(pError.code, pError.info);
+			this._error(pError.code, isNull(pError.info) ? {} : pError.info);
 		}
 
 		private _error(eCode: uint, pInfo: IEffectErrorInfo = {}): void {
@@ -1126,6 +1126,15 @@ module akra.fx {
 
         			if(!isNull(pInstruction)){
         				pInstruction.push(pVariable, true);
+        				if(pInstruction._getInstructionType() === EAFXInstructionTypes.k_DeclStmtInstruction) {
+	        				var pVariableSubDecls: IAFXVariableDeclInstruction[] = pVariable.getSubVarDecls();
+	        				if(!isNull(pVariableSubDecls)){
+	        					LOG(pVariableSubDecls);
+		        				for(var j: uint = 0; j < pVariableSubDecls.length; j++) {
+		        					pInstruction.push(pVariableSubDecls[j], false);
+		        				}        				
+	        				}
+	        			}
         			}
         		}
         	}
@@ -1269,12 +1278,16 @@ module akra.fx {
 				pVariableDecl.push(pName, true);
 				return;
 			}
-			  
+			
+			this.analyzeVariableDim(pChildren[pChildren.length - 1], pVariableDecl);
+			
 			if(pChildren.length === 3) {
-				pVariableType.addPointIndex();
+				pVariableType.addPointIndex(true);
 			}
 			else if(pChildren.length === 4 && pChildren[0].name === "FromExpr"){
+
 				var pBuffer: IAFXVariableDeclInstruction = this.analyzeFromExpr(pChildren[0]);
+				pVariableType.addPointIndex(true);
 				pVariableType.setVideoBuffer(pBuffer);
 			}
 			else {
@@ -1286,8 +1299,6 @@ module akra.fx {
 				var pIndexExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
 				pVariableType.addArrayIndex(pIndexExpr);	
 			}
-
-			this.analyzeVariableDim(pChildren[pChildren.length - 1], pVariableDecl);
         }
 
         private analyzeAnnotation(pNode:IParseNode): IAFXAnnotationInstruction {
@@ -1652,7 +1663,7 @@ module akra.fx {
 	        					return null;
 	        				}
 
-	        				if(pArguments[i].getType().isEqual(Effect.getSystemType("ptr"))){
+	        				if(pArguments[i].getType().isStrongEqual(Effect.getSystemType("ptr"))){
 	        					this.addPointerForExtract(pArguments[i].getType()._getParentVarDecl());
 	        				}
 	        			}
@@ -1667,7 +1678,7 @@ module akra.fx {
 	        					return null;
 	        				}
 
-	        				if(pArguments[i].getType().isEqual(Effect.getSystemType("ptr"))){
+	        				if(pArguments[i].getType().isStrongEqual(Effect.getSystemType("ptr"))){
 	        					this.addPointerForExtract(pArguments[i].getType()._getParentVarDecl());
 	        				}
 	        			}
@@ -1806,15 +1817,15 @@ module akra.fx {
         	pPointer = pPrimaryExprType.getPointer();
         	
         	if(isNull(pPointer)){
-        		this._error(EFFECT_BAD_PRIMARY_NOT_POINT, { typeName: pPrimaryExprType.toString() });
+        		this._error(EFFECT_BAD_PRIMARY_NOT_POINT, { typeName: pPrimaryExprType.getHash() });
         		return null;
         	}
 
         	var pPointerVarType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pPrimaryExprType.getParent();
-        	if(!pPointerVarType.isStrictPointer()){
+        	if(!pPrimaryExprType.isStrictPointer()){
         		this.getCurrentAnalyzedFunction()._setForPixel(false);
         		this.getCurrentAnalyzedFunction()._notCanUsedAsFunction();
-        		pPointerVarType._setPointerToStrict();
+        		pPrimaryExprType._setPointerToStrict();
         	}
 
         	pExpr.setType(pPointer.getType());
@@ -2221,8 +2232,8 @@ module akra.fx {
         		pExprType = this.checkTwoOperandExprTypes(sOperator, pLeftType, pRightType);	
         	  	if(isNull(pExprType)){
         			this._error(EFFECT_BAD_ARITHMETIC_ASSIGNMENT_OPERATION, { operator: sOperator,
-        													  			  	  leftTypeName: pLeftType.toString(),	
-        													  			  	  rightTypeName: pRightType.toString()});
+        													  			  	  leftTypeName: pLeftType.getHash(),	
+        													  			  	  rightTypeName: pRightType.getHash()});
         		}
         	}
         	else {
@@ -2232,8 +2243,8 @@ module akra.fx {
         	pExprType = this.checkTwoOperandExprTypes("=", pLeftType, pExprType);
 
         	if(isNull(pExprType)){
-        		this._error(EFFECT_BAD_ASSIGNMENT_OPERATION, { leftTypeName: pLeftType.toString(),	
-        													   rightTypeName: pRightType.toString()});
+        		this._error(EFFECT_BAD_ASSIGNMENT_OPERATION, { leftTypeName: pLeftType.getHash(),	
+        													   rightTypeName: pRightType.getHash()});
         	}
 
         	pExpr.setOperator(sOperator);
@@ -3215,7 +3226,7 @@ module akra.fx {
         			return null;
         		}
 
-        		if(pLeftType.isEqual(Effect.getSystemType("ptr"))){
+        		if(pLeftType.isStrongEqual(Effect.getSystemType("ptr"))){
 					this.addPointerForExtract(pLeftType._getParentVarDecl());
 				}
 
@@ -3353,7 +3364,7 @@ module akra.fx {
 					return null;
 				}
 
-				if(pType.isEqual(Effect.getSystemType("ptr"))){
+				if(pType.isStrongEqual(Effect.getSystemType("ptr"))){
 					this.addPointerForExtract(pType._getParentVarDecl());
 				}				
 			}
@@ -3525,7 +3536,7 @@ module akra.fx {
         	var pSingleExtract: ExtractStmtInstruction = null;
 
         	for(var i: uint = 0; i < pFieldNameList.length; i++){
-        		pField = pVarType.getFieldIfExist(pFieldNameList[i]);
+        		pField = pVarType.getField(pFieldNameList[i]);
 
         		if(isNull(pField)){
         			continue;
@@ -3543,7 +3554,7 @@ module akra.fx {
  					pParentStmt.push(pSingleExtract, true);
  					this.generateExtractStmtFromPointer(pFieldPointer, pParentStmt);
  				}
- 				else if(pVarType.isComplex()) {
+ 				else if(pFieldType.isComplex()) {
  					this.generateExtractStmtForComplexVar(pField, pParentStmt, pPointer, pBuffer, iPadding + pFieldType.getPadding());
  				}
  				else {
