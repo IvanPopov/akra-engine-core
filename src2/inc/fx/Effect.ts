@@ -1102,12 +1102,20 @@ module akra.fx {
         }
 
         private generateShadersFromFunctions(): void {
-        	// var pFunctionList: IAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
+        	var pFunctionList: IAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
 
-        	// for(var i: uint = 0; i < pFunctionList.length; i++){
-        	// 	pFunctionList[i]._generateInfoAboutUsedData();
-        	// 	LOG(pFunctionList[i].toFinalCode());
-        	// }
+        	for(var i: uint = 0; i < pFunctionList.length; i++){
+        		var pShader: IAFXFunctionDeclInstruction = null;
+
+        		if(pFunctionList[i]._isUsedAsVertex()){
+        			LOG("Used as vertex: ", pFunctionList[i].getName());
+        			pShader = pFunctionList[i]._convertToVertexShader();
+        		}
+        		if(pFunctionList[i]._isUsedAsPixel()){
+        			LOG("Used as pixel: ", pFunctionList[i].getName());
+        			pShader = pFunctionList[i]._convertToPixelShader();
+        		}
+        	}
         }
 
 		private analyzeVariableDecl(pNode: IParseNode, pInstruction?: IAFXInstruction = null): void {
@@ -1129,7 +1137,6 @@ module akra.fx {
         				if(pInstruction._getInstructionType() === EAFXInstructionTypes.k_DeclStmtInstruction) {
 	        				var pVariableSubDecls: IAFXVariableDeclInstruction[] = pVariable.getSubVarDecls();
 	        				if(!isNull(pVariableSubDecls)){
-	        					LOG(pVariableSubDecls);
 		        				for(var j: uint = 0; j < pVariableSubDecls.length; j++) {
 		        					pInstruction.push(pVariableSubDecls[j], false);
 		        				}        				
@@ -3080,7 +3087,7 @@ module akra.fx {
 		            pTechnique.setSemantic(sSemantic);
 		        }
 		        else {
-	            	this.analyzeTechniqueBodyForImports(pChildren[i]);
+	            	this.analyzeTechniqueBodyForImports(pChildren[i], pTechnique);
 	       		}
 	    	}
 
@@ -3101,17 +3108,17 @@ module akra.fx {
         	return sName;
         }
 
-        private analyzeTechniqueBodyForImports(pNode: IParseNode): void {
+        private analyzeTechniqueBodyForImports(pNode: IParseNode, pTechnique: IAFXTechniqueInstruction): void {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
 
         	for (var i: uint = pChildren.length - 2; i >= 1; i--) {
-        		this.analyzePassDeclForImports(pChildren[i]);
+        		this.analyzePassDeclForImports(pChildren[i], pTechnique);
         	}
         }
 
-        private analyzePassDeclForImports(pNode: IParseNode): void {
+        private analyzePassDeclForImports(pNode: IParseNode, pTechnique: IAFXTechniqueInstruction): void {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
@@ -3120,26 +3127,37 @@ module akra.fx {
         		this.analyzeImportDecl(pChildren[0]);
         	}
         	else if(pChildren.length > 1) {
-        		this.analyzePassStateBlockForShaders(pChildren[0]);
+        		var pPass: IAFXPassInstruction = new PassInstruction();
+        		//TODO: add annotation and id
+        		this.analyzePassStateBlockForShaders(pChildren[0], pPass);
+
+        		pTechnique.addPass(pPass);
         	}
         }
 
-        private analyzePassStateBlockForShaders(pNode: IParseNode): void {
+        private analyzePassStateBlockForShaders(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
 
         	for (var i: uint = pChildren.length - 2; i >= 1; i--) {
-		        this.analyzePassStateForShader(pChildren[i]);
+		        this.analyzePassStateForShader(pChildren[i], pPass);
 		    }
         }
 
-        private analyzePassStateForShader(pNode: IParseNode): void {
+        private analyzePassStateForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
 
         	if(pChildren.length === 1){
+        		if(pChildren[0].value === "StateIf"){
+        			this.analyzePassStateIfForShader(pChildren[0], pPass);
+        		}
+        		else if(pChildren[0].value === "StateSwitch"){
+        			this.analyzePassStateSwitchForShader(pChildren[0], pPass);
+        		}
+        		
         		return;
         	}
 
@@ -3173,6 +3191,73 @@ module akra.fx {
         	}
 
         	pShaderFunc._markUsedAs(eShaderType);
+
+        	pPass._addFoundFunction(pNode, pShaderFunc, eShaderType);
+        }
+
+        private analyzePassStateIfForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	if (pChildren.length === 5){
+        		this.analyzePassStateBlockForShaders(pChildren[0], pPass);
+        	}
+        	else if(pChildren.length === 7 && pChildren[0].name === "PassStateBlock"){
+        		this.analyzePassStateBlockForShaders(pChildren[2], pPass);
+        		this.analyzePassStateBlockForShaders(pChildren[0], pPass);
+        	}
+        	else {
+        		this.analyzePassStateBlockForShaders(pChildren[2], pPass);
+        		this.analyzePassStateIfForShader(pChildren[0], pPass);
+        	}
+        }
+
+        private analyzePassStateSwitchForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	this.analyzePassCaseBlockForShader(pChildren[0], pPass);
+        }
+
+        private analyzePassCaseBlockForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	for(var i: uint = pChildren.length - 2; i >= 1; i--){
+        		if(pChildren[i].name === "CaseState"){
+        			this.analyzePassCaseStateForShader(pChildren[i], pPass);
+        		}
+        		else if(pChildren[i].name === "DefaultState"){
+        			this.analyzePassDefaultStateForShader(pChildren[i], pPass);
+        		}
+        	}
+        }
+
+        private analyzePassCaseStateForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	for(var i: uint = pChildren.length - 4; i >= 0; i--){
+        		if(pChildren[i].value === "PassState"){
+        			this.analyzePassStateForShader(pChildren[i], pPass);
+        		}
+        	}
+        }
+
+        private analyzePassDefaultStateForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	for(var i: uint = pChildren.length - 3; i >= 0; i--){
+        		if(pChildren[i].value === "PassState"){
+        			this.analyzePassStateForShader(pChildren[i], pPass);
+        		}
+        	}
         }
 
         private resumeTechniqueAnalysis(pTechnique: IAFXTechniqueInstruction): void {

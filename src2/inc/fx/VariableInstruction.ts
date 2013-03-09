@@ -14,6 +14,7 @@ module akra.fx {
         private _pFullNameExpr: IAFXExprInstruction = null;
         private _bDefineByZero: bool = false;
         private _pSubDeclList: IAFXVariableDeclInstruction[] = null;
+        private _bShaderOutput: bool = false;
 
         /**
 		 * Represent type var_name [= init_expr]
@@ -110,6 +111,10 @@ module akra.fx {
         }
 
         toFinalCode(): string {
+            if(this._isShaderOutput()){
+                return "";
+            }
+            
             var sCode: string = this.getType().toFinalCode();
             sCode += " " + this.getNameId().toFinalCode();
             
@@ -122,6 +127,14 @@ module akra.fx {
             }
 
             return sCode;
+        }
+
+        inline _markAsShaderOutput(isShaderOutput: bool): void {
+            this._bShaderOutput = isShaderOutput;
+        }
+        
+        inline _isShaderOutput(): bool {
+            return this._bShaderOutput;
         }
 
         _getFullNameExpr(): IAFXExprInstruction {

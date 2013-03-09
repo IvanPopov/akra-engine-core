@@ -82,7 +82,10 @@ module akra.fx {
     #define EFFECT_BAD_EXTRACTING 2274
 
 
+
     #define TEMP_EFFECT_BAD_ARRAY_OF_POINTERS 2300
+    #define TEMP_EFFECT_BAD_LOCAL_OF_SHADER_INPUT 2301
+    #define TEMP_EFFECT_BAD_LOCAL_OF_SHADER_OUTPUT 2302
 
     akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, 
     						 "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
@@ -292,6 +295,12 @@ module akra.fx {
     akra.logger.registerCode(TEMP_EFFECT_BAD_ARRAY_OF_POINTERS,
                              "We don`t support array of pinters now. Only pointe to array.\
                               In line: {line}. In column: {column}"); 
+    akra.logger.registerCode(TEMP_EFFECT_BAD_LOCAL_OF_SHADER_INPUT,
+                             "We don`t support using complex shader input like functions params.\
+                             Shader: '{funcName}'"); 
+    akra.logger.registerCode(TEMP_EFFECT_BAD_LOCAL_OF_SHADER_OUTPUT,
+                             "We don`t support using complex shader output like functions params.\
+                             Shader: '{funcName}'"); 
 
 
     function sourceLocationToString(pLocation: ISourceLocation): string {

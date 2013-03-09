@@ -234,7 +234,12 @@ module akra.fx {
 
 	export class IdExprInstruction extends ExprInstruction implements IAFXIdExprInstruction {
 		private _pType: IAFXVariableTypeInstruction = null;
-		
+		private _bToFinalCode: bool = true;
+
+		inline isVisible(): bool {
+			return this._pInstructionList[0].isVisible();
+		}
+
 		constructor(){
 			super();
 			this._pInstructionList = [null];
@@ -260,9 +265,17 @@ module akra.fx {
 			return false;
 		}
 
+		prepareFor(eUsedMode: EFunctionType): void {
+			if(!this.isVisible()){
+				this._bToFinalCode = false;
+			}
+		}
+
 		toFinalCode(): string {
 			var sCode: string = "";
-			sCode += this.getInstructions()[0].toFinalCode();
+			if(this._bToFinalCode){
+				sCode += this.getInstructions()[0].toFinalCode();
+			}
 			return sCode;			
 		}
 
@@ -566,17 +579,34 @@ module akra.fx {
 	 * EMPTY_OPERATOR Instruction IdInstruction
 	 */
 	export class PostfixPointInstruction extends ExprInstruction {
+		private _bToFinalFirst: bool = true;
+		private _bToFinalSecond: bool = true;
+
 		constructor() {
 			super();
 			this._pInstructionList = [null, null];
 			this._eInstructionType = EAFXInstructionTypes.k_PostfixPointInstruction;
 		}
 
+		prepareFor(eUsedMode: EFunctionType){
+			if(!this.getInstructions()[0].isVisible()){
+				this._bToFinalFirst = false;
+			}
+
+			if(!this.getInstructions()[1].isVisible()){
+				this._bToFinalSecond = false;
+			}
+
+			this.getInstructions()[0].prepareFor(eUsedMode);
+			this.getInstructions()[1].prepareFor(eUsedMode);
+		}
+
 		toFinalCode(): string {
 			var sCode: string = "";
 			
-			sCode += this.getInstructions()[0].toFinalCode();	
-			sCode += "." + this.getInstructions()[1].toFinalCode();
+			sCode += this._bToFinalFirst ? this.getInstructions()[0].toFinalCode() : "";	
+			sCode += this._bToFinalFirst ? "." : "";
+			sCode += this._bToFinalSecond ? this.getInstructions()[1].toFinalCode(): "";
 
 			return sCode;
 		}
@@ -769,6 +799,9 @@ module akra.fx {
 		toFinalCode(): string {
 			var sCode: string = "";
 
+			if(isNull(this.getInstructions())){
+				LOG(this);
+			}
 			for(var i: uint = 0; i < this.getInstructions().length; i++){
 				sCode += this.getInstructions()[i].toFinalCode();
 			}
@@ -801,6 +834,14 @@ module akra.fx {
 					pInstructionList[i].addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
 				}
 			}
+		}
+
+		clone(pRelationMap?: IAFXInstructionMap): SystemCallInstruction{
+			var pClone: SystemCallInstruction = <SystemCallInstruction>super.clone(pRelationMap);
+			
+			pClone.setSystemCallFunction(this._pSystemFunction);
+
+			return pClone;
 		}
 
 	}

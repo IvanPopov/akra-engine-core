@@ -187,6 +187,10 @@ module akra.fx {
         	return this.getSubType()._containSampler();
         }
 
+        _containComplexType(): bool {
+        	return this.getSubType()._containComplexType();
+        }
+
 		isPointer(): bool {
 			return this._isPointer || 
 				   (this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction &&
@@ -1125,6 +1129,10 @@ module akra.fx {
         	return false;
         }
 
+        _containComplexType(): bool {
+        	return false;
+        }
+
 		//-----------------------------------------------------------------//
 		//----------------------------SET BASE TYPE INFO-------------------//
 		//-----------------------------------------------------------------//
@@ -1282,6 +1290,7 @@ module akra.fx {
 		private _isContainArray: bool = false;
 		private _isContainSampler: bool = false;
 		private _isContainPointer: bool = false;
+		private _isContainComplexType: bool = false;
 		
 		constructor() {
 			super();
@@ -1357,6 +1366,10 @@ module akra.fx {
 			return this._isContainPointer;
 		}
 
+		inline _containComplexType(): bool {
+			return this._isContainComplexType;
+		}
+
 		//-----------------------------------------------------------------//
 		//----------------------------SET BASE TYPE INFO-------------------//
 		//-----------------------------------------------------------------//
@@ -1418,6 +1431,10 @@ module akra.fx {
 
 			if(pType.isPointer() || pType._containPointer()){
 				this._isContainPointer = true;
+			}
+
+			if(pType.isComplex()){
+				this._isContainComplexType = true;
 			}
 		}
 

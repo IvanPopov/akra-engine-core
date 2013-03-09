@@ -66,6 +66,7 @@ module akra {
         k_ReturnStmtInstruction,
         k_ExtractStmtInstruction,
         k_SemicolonStmtInstruction,
+        k_PassInstruction,
         k_TechniqueInstruction
     }
 
@@ -201,6 +202,11 @@ module akra {
         clearError(): void;
         isErrorOccured(): bool;
 
+        setVisible(isVisible: bool): void;
+        isVisible(): bool;
+
+        initEmptyInstructions(): void;
+
     	// /**
     	//  * Contain states of instruction
     	//  */
@@ -215,8 +221,11 @@ module akra {
     	// isStateChange(): bool;
 
     	addRoutine(fnRoutine: IAFXInstructionRoutine, iPriority?: uint);
+        prepareFor(eUsedType: EFunctionType): void;
+
     	toString(): string;
         toFinalCode(): string;
+
         clone(pRelationMap?: IAFXInstructionMap): IAFXInstruction;
     }
 
@@ -244,6 +253,7 @@ module akra {
         _containArray(): bool;
         _containSampler(): bool;
         _containPointer(): bool;
+        _containComplexType(): bool;
         /**
          * Set private params
          */
@@ -297,10 +307,6 @@ module akra {
         isConst(): bool;
         isShared(): bool;
         isForeign(): bool;
-
-        _containArray(): bool;
-        _containSampler(): bool;
-        _containPointer(): bool;
 
         _isTypeOfField(): bool;
 
@@ -423,6 +429,9 @@ module akra {
         isDefinedByZero(): bool;
         defineByZero(isDefine: bool): void;
 
+        _markAsShaderOutput(isShaderOutput: bool): void;
+        _isShaderOutput(): bool;
+
         _getFullNameExpr(): IAFXExprInstruction;
         _getFullName(): string;
         _getVideoBufferSampler(): IAFXVariableDeclInstruction;
@@ -439,6 +448,9 @@ module akra {
         getArguments(): IAFXTypedInstruction[];
         getNumNeededArguments(): uint;
         getReturnType(): IAFXVariableTypeInstruction;
+
+        _getVertexShader(): IAFXFunctionDeclInstruction;
+        _getPixelShader(): IAFXFunctionDeclInstruction;
 
         // closeArguments(pArguments: IAFXInstruction[]): IAFXTypedInstruction[];
         setFunctionDef(pFunctionDef: IAFXDeclInstruction): void;
@@ -480,6 +492,9 @@ module akra {
 
         _convertToVertexShader(): IAFXFunctionDeclInstruction;
         _convertToPixelShader(): IAFXFunctionDeclInstruction;
+
+        _prepareForVertex(): void;
+        _prepareForPixel(): void;
 
         _generateInfoAboutUsedData(): void;
         _getSharedVariableMap(): IAFXVariableDeclMap;
@@ -548,8 +563,14 @@ module akra {
     export interface IAFXStmtInstruction extends IAFXInstruction, IAFXAnalyzedInstruction{ 
     }
 
+    export interface IAFXPassInstruction extends IAFXDeclInstruction {
+        _addFoundFunction(pNode: IParseNode, pShader: IAFXFunctionDeclInstruction, eType: EFunctionType): void;
+        _getFoundedFunction(pNode: IParseNode): IAFXFunctionDeclInstruction;
+        _getFoundedFunctionType(pNode: IParseNode): EFunctionType;
+    }
+
     export interface IAFXTechniqueInstruction extends IAFXDeclInstruction{
-        addPass(): void;
+        addPass(pPass: IAFXPassInstruction): void;
 
         setName(sName: string, isComplexName: bool): void;
         getName(): string;

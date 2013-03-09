@@ -48,6 +48,9 @@ module akra.fx {
 
 		protected _pUsedTypeMap: IAFXTypeDeclMap = null;
 
+		protected _pVertexShader: IAFXFunctionDeclInstruction = null;
+		protected _pPixelShader: IAFXFunctionDeclInstruction = null;
+
 
 		constructor() { 
 			super();
@@ -131,61 +134,24 @@ module akra.fx {
 				pClone._setOutVariable(<IAFXVariableDeclInstruction>pRelationMap[this._pOutVariable._getInstructionID()]);
 			}
 
+			var pUsedVarTypeMap: IAFXTypeUseInfoMap = this.cloneVarTypeUsedMap(this._pUsedVarTypeMap, pRelationMap);
+			var pSharedVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pSharedVariableMap, pRelationMap);
+			var pGlobalVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pGlobalVariableMap, pRelationMap);
+			var pUniformVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pUniformVariableMap, pRelationMap);
+			var pForeignVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pForeignVariableMap, pRelationMap);
+			var pUsedTypeMap: IAFXTypeDeclMap = this.cloneTypeDeclMap(this._pUsedTypeMap, pRelationMap);
+
 			pClone._setUsedFunctions(this._pUsedFunctionMap, this._pUsedFunctionList);
+			pClone._setUsedVariableData(pUsedVarTypeMap, 
+										pSharedVariableMap,
+										pGlobalVariableMap,
+										pUniformVariableMap,
+										pForeignVariableMap,
+										pUsedTypeMap);
 			pClone._initAfterClone();
 
 			return pClone;
 		}
-
-		// addUsedVariableType(pType: IAFXVariableTypeInstruction, eUsedMode: EVarUsedMode): bool {
-		// 	if(pType._getInstructionType() !== EAFXInstructionTypes.k_VariableTypeInstruction){
-		// 		LOG(pType);
-		// 		return false;
-		// 	}
-
-		// 	var isRead: bool = eUsedMode === EVarUsedMode.k_Read;
-		// 	var isWrite: bool = eUsedMode === EVarUsedMode.k_Write; 
-
-		// 	if ((isRead && !pType.isReadable()) ||
-		// 		(isWrite && !pType.isWritable())){
-		// 		return false;
-		// 	}
-
-		// 	if(pType.isFromVariableDecl()){
-		// 		if(pType._getScope() > this._iImplementationScope) {
-		// 			LOG("---> local variable : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
-		// 				". Field: " + pType._isTypeOfField());
-		// 			// if(isRead) {
-		// 			// 	pType._markUsedForRead();
-		// 			// }
-		// 			// if(isWrite) {
-		// 			// 	pType._markUsedForWrite();
-		// 			// }
-		// 		}
-		// 		else if(pType._getScope() === this._iImplementationScope){
-		// 			LOG("---> Parameter : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
-		// 				". Field: " + pType._isTypeOfField());
-		// 		}
-		// 		else {
-		// 			if(pType._getScope() !== 0){
-		// 				ERROR("Wrong variable scope. : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
-		// 					". Field: " + pType._isTypeOfField());
-		// 			}
-		// 			else{
-		// 				LOG("---> global variable : " + pType._getVarDeclName() + ". Base: " + pType.isBase() +
-		// 					". Field: " + pType._isTypeOfField());
-		// 			}	
-		// 		}
-		// 	}
-		// 	else if(pType.isFromTypeDecl()){
-		// 		LOG("---> Type : " + pType._getTypeDeclName() + ". Base: " + pType.isBase() +
-		// 			". Field: " + pType._isTypeOfField());
-		// 	}
-		// 	else {
-		// 		LOG("---> something else");
-		// 	}
-		// 	return true;
-		// }
 
 		_addOutVariable(pVariable: IAFXVariableDeclInstruction): bool {
 			if(!isNull(this._pOutVariable)){
@@ -202,6 +168,14 @@ module akra.fx {
 
 		_getOutVariable(): IAFXVariableDeclInstruction{
 			return this._pOutVariable;
+		}
+
+		_getVertexShader(): IAFXFunctionDeclInstruction {
+			return this._pVertexShader;
+		}
+
+		_getPixelShader(): IAFXFunctionDeclInstruction {
+			return this._pPixelShader;
 		}
 
 		_markUsedAs(eUsedType: EFunctionType): void {
@@ -325,29 +299,102 @@ module akra.fx {
 		}
 		
 		_convertToVertexShader(): IAFXFunctionDeclInstruction {
+			var pShader: FunctionDeclInstruction = null;
+
 			if((!this._canUsedAsFunction() || !this._isUsedAsFunction()) &&
 			   (!this._checkPixelUsage())){
-			   	this._eFunctionType = EFunctionType.k_Vertex;
-			   	return this;
+			   	pShader = this;
+			}
+			else {
+				pShader = <FunctionDeclInstruction>this.clone();
 			}
 
-			var pShader: FunctionDeclInstruction = <FunctionDeclInstruction>this.clone();
-			pShader._setFunctionType(EFunctionType.k_Vertex);
+			pShader._prepareForVertex();
+			this._pVertexShader = pShader;
 
 			return pShader;
 		}
 
         _convertToPixelShader(): IAFXFunctionDeclInstruction {
+        	var pShader: FunctionDeclInstruction = null;
+
         	if((!this._canUsedAsFunction() || !this._isUsedAsFunction()) &&
 			   (!this._checkVertexUsage())){
-			   	this._eFunctionType = EFunctionType.k_Pixel;
-			   	return this;
+			   	pShader = this;
 			}
-
-        	var pShader: FunctionDeclInstruction = <FunctionDeclInstruction>this.clone();
-			pShader._setFunctionType(EFunctionType.k_Vertex);
+			else {
+				pShader = <FunctionDeclInstruction>this.clone();
+			}
+        	
+			pShader._prepareForPixel();
+			this._pPixelShader = pShader;
 
 			return pShader;
+        }
+
+        _prepareForVertex(): void {
+        	this._setFunctionType(EFunctionType.k_Vertex);
+
+        	var pShaderInputParamList: IAFXVariableDeclInstruction[] = this._pFunctionDefenition.getParameListForShaderInput();
+        	for(var i: uint = 0; i < pShaderInputParamList.length; i++){
+        		var pParamType: IAFXVariableTypeInstruction = pShaderInputParamList[i].getType();
+        		
+        		if (pParamType.isComplex() && 
+        			isDef(this._pUsedVarTypeMap[pParamType._getInstructionID()]) &&
+        			this._pUsedVarTypeMap[pParamType._getInstructionID()].isRead) {
+        				
+        				this.setError(TEMP_EFFECT_BAD_LOCAL_OF_SHADER_INPUT, { funcName: this.getName() });
+        				return;
+        		}
+        	}
+
+        	var pOutVariable: IAFXVariableDeclInstruction = this._getOutVariable();
+
+        	if(!isNull(pOutVariable)){
+        		if (isDef(this._pUsedVarTypeMap[pOutVariable.getType()._getInstructionID()]) &&
+        			this._pUsedVarTypeMap[pOutVariable.getType()._getInstructionID()].isRead) {
+
+        			this.setError(TEMP_EFFECT_BAD_LOCAL_OF_SHADER_OUTPUT, { funcName: this.getName() });
+        			return;
+        		}
+
+        		pOutVariable._markAsShaderOutput(true);
+        	}
+
+        	if(this._pFunctionDefenition.isComplexShaderInput()){
+        		pShaderInputParamList[0].setVisible(false);
+        	}
+
+        	this._pImplementation.prepareFor(EFunctionType.k_Vertex);
+        	this._pFunctionDefenition.markAsShaderDef(true);
+        	this.generatesVertexAttrubutes();
+        	this.generateVertexVaryings();
+        }
+
+        _prepareForPixel(): void {
+        	this._setFunctionType(EFunctionType.k_Pixel);
+
+        	var pShaderInputParamList: IAFXVariableDeclInstruction[] = this._pFunctionDefenition.getParameListForShaderInput();
+        	for(var i: uint = 0; i < pShaderInputParamList.length; i++){
+        		var pParamType: IAFXVariableTypeInstruction = pShaderInputParamList[i].getType();
+        		
+        		if (pParamType.isComplex() && 
+        			isDef(this._pUsedVarTypeMap[pParamType._getInstructionID()]) &&
+        			this._pUsedVarTypeMap[pParamType._getInstructionID()].isRead) {
+        				
+        				this.setError(TEMP_EFFECT_BAD_LOCAL_OF_SHADER_INPUT, { funcName: this.getName() });
+        				return;
+        		}
+        	}
+
+        	if(this._pFunctionDefenition.isComplexShaderInput()){
+        		pShaderInputParamList[0].setVisible(false);
+        	}
+
+        	this._pImplementation.prepareFor(EFunctionType.k_Pixel);
+        	this._pFunctionDefenition.markAsShaderDef(true);
+
+        	this.generatePixelVaryings();
         }
 
         _setOutVariable(pVar: IAFXVariableDeclInstruction): void {
@@ -358,6 +405,20 @@ module akra.fx {
         				  pUsedFunctionList: IAFXFunctionDeclInstruction[]): void {
         	this._pUsedFunctionMap = pUsedFunctionMap;
         	this._pUsedFunctionList = pUsedFunctionList;
+        }
+
+        _setUsedVariableData(pUsedVarTypeMap: IAFXTypeUseInfoMap, 
+							pSharedVariableMap: IAFXVariableDeclMap,
+							pGlobalVariableMap: IAFXVariableDeclMap,
+							pUniformVariableMap: IAFXVariableDeclMap,
+							pForeignVariableMap: IAFXVariableDeclMap,
+							pUsedTypeMap: IAFXTypeDeclMap): void {
+        	this._pUsedVarTypeMap = pUsedVarTypeMap;
+        	this._pSharedVariableMap = pSharedVariableMap;
+        	this._pGlobalVariableMap = pGlobalVariableMap;
+        	this._pUniformVariableMap = pUniformVariableMap;
+        	this._pForeignVariableMap = pForeignVariableMap;
+        	this._pUsedTypeMap = pUsedTypeMap;
         }
 
         _setFunctionType(eFunctionType: EFunctionType){
@@ -396,6 +457,9 @@ module akra.fx {
         		if(pAnalyzedType._isInGlobalScope()){
         			this.addGlobalVariableType(pAnalyzedType, pAnalyzedInfo.isWrite, pAnalyzedInfo.isRead);
         		}
+        		else if(pAnalyzedType.isUniform()){
+        			this.addUniformParameter(pAnalyzedType);
+        		}
         		else {
         			this.addUsedTypeDecl(pAnalyzedType.getBaseType());
         		}
@@ -427,13 +491,68 @@ module akra.fx {
         	return this._pUsedTypeMap;
         }
 
+        private generatesVertexAttrubutes(): void {
+
+        }
+        
+        private generateVertexVaryings(): void {
+
+        }
+
+        private generatePixelVaryings(): void {
+
+        }
+
+        private cloneVarTypeUsedMap(pMap: IAFXTypeUseInfoMap, pRelationMap: IAFXInstructionMap): IAFXTypeUseInfoMap{
+        	var pCloneMap: IAFXTypeUseInfoMap = <IAFXTypeUseInfoMap>{};
+        	
+        	for(var j in pMap){
+        		var pType: IAFXVariableTypeInstruction = isDef(pRelationMap[j]) ? pRelationMap[j] : pMap[j].type;
+    			var id: uint = pType._getInstructionID();
+    			pCloneMap[id] = {
+    				type: pType,
+    				isRead: pMap[j].isRead,
+					isWrite: pMap[j].isWrite,
+					numRead: pMap[j].numRead,
+					numWrite: pMap[j].numWrite,
+					numUsed: pMap[j].numUsed
+    			}
+        	}
+        	
+        	return pCloneMap;
+        }
+
+        private cloneVarDeclMap(pMap: IAFXVariableDeclMap, pRelationMap: IAFXInstructionMap): IAFXVariableDeclMap {
+        	var pCloneMap: IAFXVariableDeclMap = <IAFXVariableDeclMap>{};
+
+        	for(var i in pMap){
+        		var pVar: IAFXVariableDeclInstruction = isDef(pRelationMap[i]) ? pRelationMap[i] : pMap[i];
+        		var id: uint = pVar._getInstructionID();
+        		pCloneMap[id] = pVar;
+        	}
+
+        	return pCloneMap;
+        }
+
+        private cloneTypeDeclMap(pMap: IAFXTypeDeclMap, pRelationMap: IAFXInstructionMap): IAFXTypeDeclMap {
+        	var pCloneMap: IAFXTypeDeclMap = <IAFXVariableDeclMap>{};
+
+        	for(var i in pMap){
+        		var pVar: IAFXTypeDeclInstruction = (isDef(pRelationMap[i]) ? pRelationMap[i] : pMap[i]);
+        		var id: uint = pVar._getInstructionID();
+        		pCloneMap[id] = pVar;
+        	}
+
+        	return pCloneMap;
+        }
+
         private addGlobalVariableType(pVariableType: IAFXVariableTypeInstruction, 
         							  isWrite: bool, isRead: bool): void {
         	if(!pVariableType.isFromVariableDecl()){
         		return;
         	}
 
-        	var pVariable: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>pVariableType.getParent();
+        	var pVariable: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>pVariableType._getParentVarDecl();
         	var pMainVariable: IAFXVariableDeclInstruction = pVariableType._getMainVariable();
         	var iMainVar: uint = pMainVariable._getInstructionID();
         	var iVar: uint = pVariable._getInstructionID();
@@ -457,6 +576,18 @@ module akra.fx {
         		}
         	}
 
+        	this.addUsedTypeDecl(pMainVariable.getType().getBaseType());
+        }
+
+        private addUniformParameter(pType: IAFXVariableTypeInstruction): void {
+        	var pMainVariable: IAFXVariableDeclInstruction = pType._getMainVariable();
+        	var iMainVar: uint = pMainVariable._getInstructionID();
+        	
+        	if(isDef(this._pGlobalVariableMap[iMainVar])){
+        		debug_error("UNEXPECTED ERROR WITH UNIFORM_PARAMETER");
+        	}
+
+        	this._pUniformVariableMap[iMainVar] = pMainVariable;
         	this.addUsedTypeDecl(pMainVariable.getType().getBaseType());
         }
 
@@ -594,6 +725,14 @@ module akra.fx {
 			return null;
 		}
 		
+		_getVertexShader(): IAFXFunctionDeclInstruction{
+			return null;
+		}
+
+		_getPixelShader(): IAFXFunctionDeclInstruction{
+			return null;
+		}
+
 		_markUsedAs(eUsedType: EFunctionType): void {
 		}
 
@@ -684,6 +823,9 @@ module akra.fx {
         	return null;
         }
 
+        _prepareForVertex(): void{}
+        _prepareForPixel(): void{}
+
         addUsedVariableType(pType: IAFXVariableTypeInstruction, eUsedMode: EVarUsedMode): bool {
         	return false;
         }
@@ -732,6 +874,8 @@ module akra.fx {
 		private _isAnalyzedForPixelUsage: bool = false;
 		private _bCanUsedAsFunction: bool = true;
 
+		private _bShaderDef: bool = false;
+
 		//private _sHash: string = "";
 
 		constructor() {
@@ -744,19 +888,25 @@ module akra.fx {
 		toFinalCode(): string {
 			var sCode: string = "";
 
-			sCode += this._pReturnType.toFinalCode();
-			sCode += " " + this._pFunctionName.toFinalCode();
-			sCode += "(";
+			if(!this.isShaderDef()){
 
-			for(var i: uint = 0; i < this._pParameterList.length; i++){
-				sCode += this._pParameterList[i].toFinalCode();
-				
-				if(i !== this._pParameterList.length - 1){
-					sCode += ",";
+				sCode += this._pReturnType.toFinalCode();
+				sCode += " " + this._pFunctionName.toFinalCode();
+				sCode += "(";
+
+				for(var i: uint = 0; i < this._pParameterList.length; i++){
+					sCode += this._pParameterList[i].toFinalCode();
+					
+					if(i !== this._pParameterList.length - 1){
+						sCode += ",";
+					}
 				}
-			}
 
-			sCode += ")";
+				sCode += ")";
+			}
+			else {
+				sCode = "void " + this._pFunctionName.toFinalCode() + "()";
+			}
 
 			return sCode;
 		}
@@ -800,6 +950,13 @@ module akra.fx {
 			return this._nParamsNeeded;
 		}
 
+		inline markAsShaderDef(isShaderDef: bool): void {
+			this._bShaderDef = isShaderDef;
+		}
+
+		inline isShaderDef(): bool {
+			return this._bShaderDef;
+		}
 
 		addParameter(pParameter: IAFXVariableDeclInstruction, isStrictModeOn?: bool): bool {
 			if (this._pParameterList.length > this._nParamsNeeded && 
@@ -865,6 +1022,14 @@ module akra.fx {
 			return true;
 		}
 
+		inline getParameListForShaderInput(): IAFXVariableDeclInstruction[] {
+			return this._pParamListForShaderInput;
+		}
+
+		inline isComplexShaderInput(): bool {
+			return this._isComplexShaderInput;
+		}
+
 		clone(pRelationMap: IAFXInstructionMap = <IAFXInstructionMap>{}): FunctionDefInstruction {
 			var pClone: FunctionDefInstruction = <FunctionDefInstruction>super.clone(pRelationMap);
 
@@ -875,7 +1040,30 @@ module akra.fx {
 				pClone.addParameter(this._pParameterList[i].clone(pRelationMap));
 			}
 
+			var pShaderParams: IAFXVariableDeclInstruction[] = [];
+			for(var i: uint = 0; i < this._pParamListForShaderInput.length; i++){
+				pShaderParams.push(this._pParamListForShaderInput[i].clone(pRelationMap));
+			}
+
+			pClone._setShaderParams(pShaderParams, this._isComplexShaderInput);
+			pClone._setAnalyzedInfo(this._isAnalyzedForVertexUsage, 
+									this._isAnalyzedForPixelUsage,
+									this._bCanUsedAsFunction);
+
 			return pClone;
+		}
+
+		_setShaderParams(pParamList: IAFXVariableDeclInstruction[], isComplexInput: bool): void {
+			this._pParamListForShaderInput = pParamList;
+			this._isComplexShaderInput = isComplexInput;
+		}
+
+		_setAnalyzedInfo(isAnalyzedForVertexUsage: bool, 
+						 isAnalyzedForPixelUsage: bool,
+						 bCanUsedAsFunction: bool): void {
+			this._isAnalyzedForVertexUsage = isAnalyzedForVertexUsage;
+			this._isAnalyzedForPixelUsage = isAnalyzedForPixelUsage;
+			this._bCanUsedAsFunction = bCanUsedAsFunction;
 		}
 
 		_getStringDef(): string {
@@ -978,6 +1166,11 @@ module akra.fx {
 				}
 
 				isGood = !pReturnType._containPointer() && !pReturnType.isPointer();
+				if(!isGood){
+					return false;
+				}
+
+				isGood = !pReturnType._containComplexType();
 				if(!isGood){
 					return false;
 				}

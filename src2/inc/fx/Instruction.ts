@@ -37,6 +37,8 @@ module akra.fx {
 		protected _iScope: uint = UNDEFINE_SCOPE;
 		private static _nInstructionCounter: uint = 0;
 
+		private _isVisible: bool = true;
+
 		inline getParent(): IAFXInstruction{
 			return this._pParentInstruction;
 		}
@@ -102,6 +104,18 @@ module akra.fx {
 			return this._bErrorOccured;
 		}
 
+		inline setVisible(isVisible: bool): void {
+            this._isVisible = isVisible;
+        }
+
+        inline isVisible(): bool {
+            return this._isVisible;
+        }
+
+        inline initEmptyInstructions(): void {
+        	this._pInstructionList = [];
+        }
+
 		constructor(){
 			this._iInstructionID = Instruction._nInstructionCounter++;
 			this._pParentInstruction = null;
@@ -117,7 +131,7 @@ module akra.fx {
 				this._pInstructionList[this._nInstructions] = pInstruction;
 				this._nInstructions += 1;
 			}
-			if(isSetParent &&  !isNull(pInstruction)){
+			if(isSetParent && !isNull(pInstruction)){
 				pInstruction.setParent(this);
 			}
 		}
@@ -126,6 +140,13 @@ module akra.fx {
     		//TODO
     	}
 
+    	prepareFor(eUsedType: EFunctionType): void {
+    		if(!isNull(this._pInstructionList) && this._nInstructions > 0) {
+    			for(var i: uint = 0; i < this._nInstructions; i++){
+    				this._pInstructionList[i].prepareFor(eUsedType);
+    			}
+    		}
+    	}
     	/**
     	 * Проверка валидности инструкции
     	 */
@@ -168,7 +189,11 @@ module akra.fx {
     		pNewInstruction.setParent(pParent);
     		pRelationMap[this._getInstructionID()] = pNewInstruction;
 
-    		for(var i: uint = 0; i < this._pInstructionList.length; i++){
+    		if(!isNull(this._pInstructionList) && isNull(pNewInstruction.getInstructions())){
+    			pNewInstruction.initEmptyInstructions();
+    		}
+
+    		for(var i: uint = 0; i < this._nInstructions; i++){
     			pNewInstruction.push(this._pInstructionList[i].clone(pRelationMap));
     		}
 
@@ -221,6 +246,12 @@ module akra.fx {
 		toFinalCode(): string{
 			return this._sValue;
 		}
+
+		clone(pRelationMap?: IAFXInstructionMap): SimpleInstruction {
+			var pClone: SimpleInstruction = <SimpleInstruction>super.clone(pRelationMap);
+			pClone.setValue(this._sValue);
+			return pClone;
+		}
 	}
 
 	
@@ -244,7 +275,9 @@ module akra.fx {
 
 		clone(pRelationMap?: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXTypedInstruction {
 			var pClonedInstruction: IAFXTypedInstruction = <IAFXTypedInstruction>(super.clone(pRelationMap));
-			pClonedInstruction.setType(this._pType.clone(pRelationMap));
+			if(!isNull(this.getType())) {
+				pClonedInstruction.setType(this.getType().clone(pRelationMap));
+			}
 			return pClonedInstruction;
 		}
 	}
@@ -317,6 +350,9 @@ module akra.fx {
 		private _sName: string;
 		private _sRealName: string;
 
+		inline isVisible(): bool {
+			return this.getParent().isVisible();
+		}
 		/**
 		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
 		 */
@@ -398,6 +434,54 @@ module akra.fx {
 		}
 	}
 
+	export class PassInstruction extends DeclInstruction implements IAFXPassInstruction {
+		private _pTempNodeList: IParseNode[] = null;
+		private _pTempFoundedFuncList: IAFXFunctionDeclInstruction[] = null;
+		private _pTempFoundedFuncTypeList: EFunctionType[] = null;
+
+		constructor(){
+			super();
+			this._pInstructionList = null;
+			this._eInstructionType = EAFXInstructionTypes.k_PassInstruction;
+		}
+
+		_addFoundFunction(pNode: IParseNode, pShader: IAFXFunctionDeclInstruction, eType: EFunctionType): void{
+			if(isNull(this._pTempNodeList)){
+				this._pTempNodeList = [];
+				this._pTempFoundedFuncList = [];
+				this._pTempFoundedFuncTypeList = [];
+			}
+
+			this._pTempNodeList.push(pNode);
+			this._pTempFoundedFuncList.push(pShader);
+			this._pTempFoundedFuncTypeList.push(eType);
+		}
+
+		_getFoundedFunction(pNode: IParseNode): IAFXFunctionDeclInstruction {
+			if(isNull(this._pTempNodeList)){
+				return null;
+			}
+
+			for(var i: uint = 0; i < this._pTempNodeList.length; i++){
+				if(this._pTempNodeList[i] === pNode){
+					return this._pTempFoundedFuncList[i];
+				}
+			}
+		}
+
+		_getFoundedFunctionType(pNode: IParseNode): EFunctionType {
+			if(isNull(this._pTempNodeList)){
+				return null;
+			}
+
+			for(var i: uint = 0; i < this._pTempNodeList.length; i++){
+				if(this._pTempNodeList[i] === pNode){
+					return this._pTempFoundedFuncTypeList[i];
+				}
+			}
+		}
+	}
+
 	
 
 	export class TechniqueInstruction extends DeclInstruction implements IAFXTechniqueInstruction {
@@ -405,6 +489,7 @@ module akra.fx {
 		private _hasComplexName: bool = false;
 		private _pParseNode: IParseNode = null;
 		private _pSharedVariableList: IAFXVariableDeclInstruction[] = null;
+		private _pPassList: IAFXPassInstruction[] = null;
 
 		constructor() {
 			super();
@@ -438,8 +523,12 @@ module akra.fx {
         	return this._pParseNode;
         }
 
-		addPass(): void {
+		addPass(pPass: IAFXPassInstruction): void {
+			if(isNull(this._pPassList)){
+				this._pPassList = [];
+			}
 
+			this._pPassList.push(pPass);
 		}
 	}
 

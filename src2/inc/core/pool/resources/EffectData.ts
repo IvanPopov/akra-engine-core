@@ -50,9 +50,6 @@ module akra.core.pool.resources {
 				else {
 
 					util.parser.setParseFileName(sFileName);
-					if(sFileName === "../../../data/effects/prepareDeferredShading.afx"){
-						LOG(sFileName);
-					}
 					util.parser.parse(sData, me._initFromParsedEffect, me);
 				}
 			});
