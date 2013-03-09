@@ -26,6 +26,8 @@
 #include "model/Skeleton.ts"
 #include "util/DepsManager.ts"
 #include "controls/GamepadMap.ts"
+#include "controls/KeyMap.ts"
+
 
 #ifdef WEBGL
 #include "webgl/WebGLRenderer.ts"
@@ -80,7 +82,7 @@ module akra.core {
 			this._pTimer = util.UtilTimer.start();
 			this.pause(false);
 
-			// this.parseOptions(pOptions);
+			this.parseOptions(pOptions);
 		}
 
 		enableGamepads(): bool {
@@ -120,6 +122,10 @@ module akra.core {
 				if (isDefAndNotNull(pOptions.deps)) {
 					pDeps.files = pDeps.files.concat(pOptions.deps.files || []);
 				}
+
+				if (pOptions.gamepads === true) {
+					this.enableGamepads();
+				}
 			}
 
 			//get loaded signal
@@ -131,10 +137,6 @@ module akra.core {
 			}
 
 			//===========================================================
-
-			if (pOptions.gamepads === true) {
-				this.enableGamepads();
-			}
 		}
 
 		inline getScene(): IScene3d {
@@ -194,13 +196,11 @@ module akra.core {
 					ERROR(pRenderer.getError());
 				}
 #endif
-	        	if (!pEngine.isActive() && pEngine.isDepsLoaded()) {
-	                return;
-	            }
-
-	            if (!pEngine.renderFrame()) {
-	                debug_error("Engine::exec() error.");
-	                return;
+	        	if (pEngine.isActive() && pEngine.isDepsLoaded()) {
+					if (!pEngine.renderFrame()) {
+		                debug_error("Engine::exec() error.");
+		                return;
+		            }
 	            }
 
 	            requestAnimationFrame(render/*, pCanvas*/); 
@@ -220,7 +220,9 @@ module akra.core {
 
 		    // FrameMove (animate) the scene
 		    if (this._isFrameMoving) {
-		    	this._pGamepads.update();
+		    	if (!isNull(this._pGamepads)) {
+		    		this._pGamepads.update();
+		    	}
 		    	this._pSceneManager.update();
 		    }
 
@@ -284,11 +286,16 @@ module akra.core {
 		}
 
 		_depsLoaded(pLoader: IDepsManager): void {
-			alert("deps loaded!!!!!!!!!!!!!!!!!!!!!");
+			debug_print("[ALL DEPTS LOADED]");
 			this._isDepsLoaded = true;
 		}
 
-		static DEPS_ROOT: string = "";
+		static DEPS_ROOT: string = 
+#ifdef DEBUG
+			"/akra-engine-core/src2/data/";
+#else
+			"";
+#endif
 		static DEPS: IDependens = 
 #ifdef DEBUG
 			{

@@ -40,6 +40,8 @@ module akra {
 		captureMouse(pMouseTarget: Node): void;
 		captureKeyboard(pKeyboardTarget: Node): void;
 		capture(pTarget: Node): void;
+
+		update(): void;
 	}
 }
 

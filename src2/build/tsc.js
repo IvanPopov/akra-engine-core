@@ -1412,6 +1412,8 @@ var TypeScript;
             emitter.recordSourceMappingStart(this);
             if (this.nodeType != 13 /* Comma */  && binTokenId != undefined) {
                 var isPrinted = false;
+                var pGetterSymbol = null;
+                var pGetter = null;
                 var op1 = this.operand1;
                 if (this.operand1.nodeType === 19 /* Dot */  && (this.operand1).operand2.nodeType == 25 /* Name */ ) {
                     var id = (this.operand1).operand2;
@@ -1419,6 +1421,9 @@ var TypeScript;
                     if (TypeScript.isDefAndNotNull(id.sym) && id.sym.isAccessor()) {
                         var sym = (id.sym).setter;
                         var funcDecl = sym ? (sym.declAST) : null;
+                        pGetterSymbol = id.sym;
+                        pGetter = pGetterSymbol.declAST;
+                        pGetterSymbol.declAST = null;
                         if (!TypeScript.isNull(funcDecl) && funcDecl.isInline() && emitter.inlineEngine.inlineFunction(emitter, target, funcDecl, this.operand2)) {
                             isPrinted = true;
                         }
@@ -1426,6 +1431,9 @@ var TypeScript;
                 }
                 if (!isPrinted) {
                     emitter.emitJavascript(this.operand1, binTokenId, false);
+                    if (!TypeScript.isNull(pGetter)) {
+                        pGetterSymbol.declAST = pGetter;
+                    }
                     if (TypeScript.tokenTable[binTokenId].text == "instanceof") {
                         emitter.writeToOutput(" instanceof ");
                     } else if (TypeScript.tokenTable[binTokenId].text == "in") {
@@ -4866,6 +4874,24 @@ var TypeScript;
         EAccessorModes.SETTER = 1;
     })(TypeScript.EAccessorModes || (TypeScript.EAccessorModes = {}));
     var EAccessorModes = TypeScript.EAccessorModes;
+    var InlineTextWriter = (function () {
+        function InlineTextWriter() {
+            this.buffer = "";
+        }
+        InlineTextWriter.prototype.Write = function (str) {
+            this.buffer += str;
+        };
+        InlineTextWriter.prototype.WriteLine = function (str) {
+            this.Write(str + '\r\n');
+        };
+        InlineTextWriter.prototype.Close = function () {
+            this.Clear();
+        };
+        InlineTextWriter.prototype.Clear = function () {
+            this.buffer = "";
+        };
+        return InlineTextWriter;
+    })();    
     var InlineEngine = (function () {
         function InlineEngine() {
             this.contextMap = [];
@@ -4880,7 +4906,21 @@ var TypeScript;
                 n: 0,
                 arg: null
             };
+            this.outBuffer = new InlineTextWriter();
+            this.emitter = null;
         }
+        InlineEngine.prototype.grabImitterOutput = function (emitter) {
+            var pOut = emitter.outfile;
+            this.emitter = emitter;
+            emitter.outfile = this.outBuffer;
+            this.outBuffer = pOut;
+        };
+        InlineEngine.prototype.restoreImitterOutput = function () {
+            var pOut = this.emitter.outfile;
+            this.emitter.outfile = this.outBuffer;
+            this.outBuffer = pOut;
+            this.emitter = null;
+        };
         InlineEngine.prototype.normalizeModuleName = function (emitter, container) {
             if (!this.isActive()) {
                 return container.name;
@@ -4945,6 +4985,22 @@ var TypeScript;
         InlineEngine.prototype.isEnabled = function () {
             return this.bEnabled;
         };
+        InlineEngine.prototype.replaceArgumentByText = function (emitter, pExpr) {
+            if (this.emitter === null) {
+                this.grabImitterOutput(emitter);
+            }
+            var pWriter = (emitter.outfile);
+            var sCurrentData = pWriter.buffer;
+            var sResult;
+            pWriter.Clear();
+            emitter.emitJavascript(pExpr, 56 /* OpenParen */ , false);
+            sResult = pWriter.buffer;
+            pWriter.buffer = sCurrentData;
+            if (this.emitter !== null) {
+                this.restoreImitterOutput();
+            }
+            return new TypeScript.StringLiteral(sResult);
+        };
         InlineEngine.prototype.findArgIndex = function (pArg) {
             var argv = this.argv();
             for(var i = 0; i < argv.length; ++i) {
@@ -4954,11 +5010,11 @@ var TypeScript;
             }
             throw new Error("cannot find argument in inline argument map");
         };
-        InlineEngine.prototype.replaceArgument = function (pArg, pExpr) {
+        InlineEngine.prototype.replaceArgument = function (emitter, pArg, pExpr) {
             var argv = this.argv();
             var argMap = this.argumentsMap();
             var n = argv.length;
-            argMap[n] = pExpr;
+            argMap[n] = this.replaceArgumentByText(emitter, pExpr);
             argv.push(pArg);
         };
         InlineEngine.prototype.printArgumentsMap = function () {
@@ -5170,7 +5226,7 @@ var TypeScript;
             this.begin(funcDecl);
             var argv = funcDecl.arguments.members;
             for(var i = 0; i < argv.length; ++i) {
-                this.replaceArgument(argv[i], args[i] || new TypeScript.Identifier("undefined"));
+                this.replaceArgument(emitter, argv[i], args[i] || new TypeScript.Identifier("undefined"));
             }
             if (!TypeScript.isNull(type)) {
                 if (type.isClassInstance()) {

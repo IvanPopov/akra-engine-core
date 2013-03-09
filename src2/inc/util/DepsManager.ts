@@ -69,7 +69,7 @@ module akra.util {
 				switch (pathinfo(pFiles[i]).ext.toLowerCase()) {
 					case "afx":
 						if (!pRmgr.effectDataPool.findResource(pFiles[i])) {
-							LOG("effectDataPool.createResource(" + pFiles[i] + ")");
+							//LOG("effectDataPool.createResource(" + pFiles[i] + ")");
 							pRmgr.effectDataPool.createResource(pFiles[i]);
 						}
 						break;
@@ -110,7 +110,7 @@ module akra.util {
 							if (pRes.loadResource(pFiles[i])) {
 								pManager._handleResourceEventOnce(pRes, SIGNAL(loaded),
 									(pItem: IResourcePoolItem): void => {
-										LOG("[ LOADED ]  effectDataPool.loadResource(" + pFiles[i] + ")");
+										//LOG("[ LOADED ]  effectDataPool.loadResource(" + pFiles[i] + ")");
 										pManager._onDependencyLoad(pDeps, i);
 									}
 								);
@@ -148,7 +148,7 @@ module akra.util {
 
 			for (var i: int = 0; i < pDeps.files.length; ++ i) {
 				if (!isNull(pDeps.files[i])) {
-					LOG("waiting for > " + pDeps.files[i]);
+					//LOG("waiting for > " + pDeps.files[i]);
 					return;
 				}
 			};

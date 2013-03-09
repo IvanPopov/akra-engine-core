@@ -75,6 +75,7 @@ module akra.events {
 
 		addDestination(iGuid: int, sSignal: string, pTarget: IEventProvider, sSlot: string, eType: EEventTypes = EEventTypes.BROADCAST): bool {
 			if (eType === EEventTypes.BROADCAST) {
+				// console.log("add destination(", iGuid, "):: ", "target: ", pTarget, "slot: ", sSlot);
 				this.findBroadcastSignalMap(iGuid, sSignal).push({target: pTarget, callback: sSlot, listener: null});
 				return true;
 			}
@@ -112,6 +113,7 @@ module akra.events {
 
 		addListener(iGuid: int, sSignal: string, fnListener: Function, eType: EEventTypes = EEventTypes.BROADCAST): bool {
 			if (eType === EEventTypes.BROADCAST) {
+				// console.log("add listener(", iGuid, "):: ", "listener: ", fnListener, "signal: ", sSignal);
 				this.findBroadcastSignalMap(iGuid, sSignal).push({target: null, callback: null, listener: fnListener});
 				return true;
 			}

@@ -60,7 +60,7 @@ module akra.webgl {
             if (pWebGLExtension = pWebGLContext.getExtension(pSupportedExtensionList[i])) {
                 pWebGLExtentionList[pSupportedExtensionList[i]] = pWebGLExtension;
 
-                debug_print("loaded WebGL extension: %1", pSupportedExtensionList[i]);
+                debug_print("loaded WebGL extension: ", pSupportedExtensionList[i]);
 
                 for (var j in pWebGLExtension) {
                     if (isFunction(pWebGLExtension[j])) {
@@ -78,7 +78,7 @@ module akra.webgl {
                 }
             }
             else {
-                WARNING("cannot load extension: %1", pSupportedExtensionList[i]);
+                WARNING("cannot load extension: ", pSupportedExtensionList[i]);
                 pSupportedExtensionList.splice(i, 1);
             }
         }
@@ -142,7 +142,7 @@ module akra.webgl {
 	    pSupportedExtensionList 		= pWebGLContext.getSupportedExtensions();
 
 #ifdef DEBUG	    
-	    pSupportedExtensionList.push(WEBGL_DEBUG_SHADERS, WEBGL_DEBUG_RENDERER_INFO);
+	    //pSupportedExtensionList.push(WEBGL_DEBUG_SHADERS, WEBGL_DEBUG_RENDERER_INFO);
 #endif
         isSupported = true;
 
