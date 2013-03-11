@@ -334,12 +334,28 @@ module akra.fx {
 
 			var sVariableName: string = pVariable.getName();
 
-			if(this.hasVariableInScope(sVariableName, iScope)){
-				return false;
-			}
+			if(!pVariable.getType().isShared()){
+				if(this.hasVariableInScope(sVariableName, iScope)){
+					return false;
+				}
 
-			pVariableMap[sVariableName] = pVariable;
-			pVariable._setScope(iScope);
+				pVariableMap[sVariableName] = pVariable;
+				pVariable._setScope(iScope);
+			}
+			else {
+				if(!this.hasVariableInScope(sVariableName, iScope)){
+					pVariableMap[sVariableName] = pVariable;
+					pVariable._setScope(iScope);
+				}
+				else {
+					var pBlendVariable: IAFXVariableDeclInstruction = pVariableMap[sVariableName].blend(pVariable, EAFXBlendMode.k_Shared);
+					if(isNull(pBlendVariable)){
+						return false;
+					}
+					pVariableMap[sVariableName] = pBlendVariable;
+					pBlendVariable._setScope(iScope);
+				}				
+			}
 
 			return true;
 		}

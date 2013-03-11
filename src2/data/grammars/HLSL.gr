@@ -219,7 +219,7 @@ CaseBlock : '{' CaseStates DefaultState '}'
 CaseStates : CaseState --NN
 CaseStates : CaseStates CaseState
 
-CaseState : T_KW_CASE Dword ':' PassStates BreakOpt
+CaseState : T_KW_CASE AssignmentExpr ':' PassStates BreakOpt
 DefaultState : T_KW_DEFAULT ':' PassStates BreakOpt
 
 BreakOpt :  --NN

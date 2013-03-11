@@ -3,6 +3,7 @@
 
 #include "common.ts"
 #include "IParser.ts"
+#include "IAFXComponent.ts"
 
 module akra {
 
@@ -74,7 +75,8 @@ module akra {
         k_Vertex,
         k_Pixel,
         k_Fragment = k_Pixel,
-        k_Function
+        k_Function,
+        k_PassFunction
     }
 
     export enum ECheckStage {
@@ -173,6 +175,12 @@ module akra {
         k_Bool4,
 
         k_Float4x4
+    }
+
+    export enum EAFXBlendMode {
+        k_Shared,
+        k_Uniform,
+        k_Attribute
     }
 
 	/**
@@ -282,6 +290,7 @@ module akra {
         hasFieldWithoutSemantic(): bool;
         
         getField(sFieldName: string): IAFXVariableDeclInstruction;
+        getFieldBySemantic(sSemantic: string): IAFXVariableDeclInstruction;
         getFieldType(sFieldName: string): IAFXVariableTypeInstruction;
         getFieldNameList(): string[];
 
@@ -289,6 +298,7 @@ module akra {
          * System
          */
         clone(pRelationMap?: IAFXInstructionMap): IAFXTypeInstruction;
+        blend(pType: IAFXTypeInstruction, eMode: EAFXBlendMode): IAFXTypeInstruction;
     }
 
     export interface IAFXVariableTypeInstruction extends IAFXTypeInstruction {       
@@ -309,6 +319,7 @@ module akra {
         isForeign(): bool;
 
         _isTypeOfField(): bool;
+        _isUnverifiable(): bool;
 
         // /**
         //  * set type info
@@ -333,6 +344,7 @@ module akra {
         _setPointerToStrict(): void;
         _addPointIndexInDepth(): void;
         _setVideoBufferInDepth(): void;
+        _markAsUnverifiable(isUnverifiable: bool): void;
 
         /**
          * Type info
@@ -371,7 +383,7 @@ module akra {
          */
         wrap(): IAFXVariableTypeInstruction;
         clone(pRelationMap?: IAFXInstructionMap): IAFXVariableTypeInstruction;
-        blend(pVariableType?: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction;
+        blend(pVariableType: IAFXVariableTypeInstruction, eMode: EAFXBlendMode): IAFXVariableTypeInstruction;
 
         _setCloneHash(sHash: string, sStrongHash: string): void;
         _setCloneArrayIndex(pElementType: IAFXVariableTypeInstruction, 
@@ -440,6 +452,7 @@ module akra {
         setName(sName: string):void;
 
         clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction;
+        blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction;
     }
 
     export interface IAFXFunctionDeclInstruction extends IAFXDeclInstruction {
@@ -448,6 +461,8 @@ module akra {
         getArguments(): IAFXTypedInstruction[];
         getNumNeededArguments(): uint;
         getReturnType(): IAFXVariableTypeInstruction;
+        getFunctionType(): EFunctionType;
+        setFunctionType(eType: EFunctionType): void;
 
         _getVertexShader(): IAFXFunctionDeclInstruction;
         _getPixelShader(): IAFXFunctionDeclInstruction;
@@ -567,19 +582,48 @@ module akra {
         _addFoundFunction(pNode: IParseNode, pShader: IAFXFunctionDeclInstruction, eType: EFunctionType): void;
         _getFoundedFunction(pNode: IParseNode): IAFXFunctionDeclInstruction;
         _getFoundedFunctionType(pNode: IParseNode): EFunctionType;
+        _setParseNode(pNode: IParseNode): void;
+        _getParseNode(): IParseNode;
+        _markAsComplex(isComplex: bool): void;
+        _addCodeFragment(sCode: string): void;
+        
+        _getSharedVariableMapV(): IAFXVariableDeclMap;
+        _getGlobalVariableMapV(): IAFXVariableDeclMap;
+        _getUniformVariableMapV(): IAFXVariableDeclMap;
+        _getForeignVariableMapV(): IAFXVariableDeclMap;
+        _getUsedTypeMapV(): IAFXTypeDeclMap;
+
+        _getSharedVariableMapP(): IAFXVariableDeclMap;
+        _getGlobalVariableMapP(): IAFXVariableDeclMap;
+        _getUniformVariableMapP(): IAFXVariableDeclMap;
+        _getForeignVariableMapP(): IAFXVariableDeclMap;
+        _getUsedTypeMapP(): IAFXTypeDeclMap;
+
+        addShader(pShader: IAFXFunctionDeclInstruction): void;
+        setState(sType: string, sValue: string): void;
+        finalizePass(): void;
+
+        isComplexPass(): bool;
+        evaluate(pEngineStates: any, pForeigns: any, pUniforms: any): bool;
     }
 
     export interface IAFXTechniqueInstruction extends IAFXDeclInstruction{
-        addPass(pPass: IAFXPassInstruction): void;
-
         setName(sName: string, isComplexName: bool): void;
         getName(): string;
         hasComplexName(): bool;
 
-        getSharedVariables(): IAFXVariableDeclInstruction[];
+        addPass(pPass: IAFXPassInstruction): void;
+        getPassList(): IAFXPassInstruction[];
+        getPass(iPass: uint): IAFXPassInstruction;
+        totalPasses(): uint;
 
-        _setParseNode(pNode: IParseNode): void;
-        _getParseNode(): IParseNode;
+        getSharedVariablesForVertex(): IAFXVariableDeclInstruction[];
+        getSharedVariablesForPixel(): IAFXVariableDeclInstruction[];
+
+        addComponent(pComponent: IAFXComponent, iShift: int): void;
+
+        checkForCorrectImports(): bool;
+        finalizeTechnique(): void;
     }
 
 }

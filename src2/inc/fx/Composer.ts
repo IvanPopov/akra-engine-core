@@ -14,6 +14,8 @@
 
 #endif
 
+#include "IAFXComponent.ts"
+
 module akra.fx {
 	export class Composer implements IAFXComposer {
 		private _pEngine: IEngine = null;
@@ -22,8 +24,8 @@ module akra.fx {
 			this._pEngine = pEngine;
 		}
 
-		getImportTechnique(sModuleName: string): void {
-
+		getComponentByName(sComponentName: string): IAFXComponent {
+			return <IAFXComponent>this._pEngine.getResourceManager().componentPool.findResource(sComponentName);
 		}
 
 		inline getEngine(): IEngine {

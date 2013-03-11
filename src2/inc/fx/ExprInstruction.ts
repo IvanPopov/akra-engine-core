@@ -235,6 +235,8 @@ module akra.fx {
 	export class IdExprInstruction extends ExprInstruction implements IAFXIdExprInstruction {
 		private _pType: IAFXVariableTypeInstruction = null;
 		private _bToFinalCode: bool = true;
+		private _isInPassUnifoms: bool = false;
+		private _isInPassForeigns: bool = false;
 
 		inline isVisible(): bool {
 			return this._pInstructionList[0].isVisible();
@@ -269,12 +271,32 @@ module akra.fx {
 			if(!this.isVisible()){
 				this._bToFinalCode = false;
 			}
+
+			if(eUsedMode === EFunctionType.k_PassFunction){
+				var pVarDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this.getInstructions()[0].getParent();
+				if(!this.getType()._isUnverifiable() && isNull(pVarDecl.getParent())){
+					if(pVarDecl.getType().isForeign()){
+						this._isInPassForeigns = true;
+					}
+					else {
+						this._isInPassUnifoms = true;
+					}
+				}
+			}
 		}
 
 		toFinalCode(): string {
 			var sCode: string = "";
 			if(this._bToFinalCode){
-				sCode += this.getInstructions()[0].toFinalCode();
+				if(this._isInPassForeigns){
+					sCode += "foreigns[" + this.getInstructions()[0].toFinalCode() + "]";
+				}
+				else if(this._isInPassUnifoms){
+					sCode += "uniforms[" + this.getInstructions()[0].toFinalCode() + "]";
+				}
+				else {
+					sCode += this.getInstructions()[0].toFinalCode();
+				}
 			}
 			return sCode;			
 		}

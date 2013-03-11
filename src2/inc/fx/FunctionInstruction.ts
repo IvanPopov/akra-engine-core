@@ -95,6 +95,14 @@ module akra.fx {
 			return this._pFunctionDefenition.getReturnType();
 		}
 
+		inline getFunctionType(): EFunctionType {
+			return this._eFunctionType;
+		}
+
+		inline setFunctionType(eFunctionType: EFunctionType): void {
+        	this._eFunctionType = eFunctionType;
+        }
+
 		inline _setImplementationScope(iScope: uint): void {
 			this._iImplementationScope = iScope;
 		}
@@ -333,7 +341,7 @@ module akra.fx {
         }
 
         _prepareForVertex(): void {
-        	this._setFunctionType(EFunctionType.k_Vertex);
+        	this.setFunctionType(EFunctionType.k_Vertex);
 
         	var pShaderInputParamList: IAFXVariableDeclInstruction[] = this._pFunctionDefenition.getParameListForShaderInput();
         	for(var i: uint = 0; i < pShaderInputParamList.length; i++){
@@ -372,7 +380,7 @@ module akra.fx {
         }
 
         _prepareForPixel(): void {
-        	this._setFunctionType(EFunctionType.k_Pixel);
+        	this.setFunctionType(EFunctionType.k_Pixel);
 
         	var pShaderInputParamList: IAFXVariableDeclInstruction[] = this._pFunctionDefenition.getParameListForShaderInput();
         	for(var i: uint = 0; i < pShaderInputParamList.length; i++){
@@ -419,10 +427,6 @@ module akra.fx {
         	this._pUniformVariableMap = pUniformVariableMap;
         	this._pForeignVariableMap = pForeignVariableMap;
         	this._pUsedTypeMap = pUsedTypeMap;
-        }
-
-        _setFunctionType(eFunctionType: EFunctionType){
-        	this._eFunctionType = eFunctionType;
         }
 
         _initAfterClone(): void{
@@ -702,6 +706,13 @@ module akra.fx {
 		inline getReturnType(): IAFXVariableTypeInstruction {
 			return this._pReturnType;
 		}
+
+		inline getFunctionType(): EFunctionType {
+			return EFunctionType.k_Function;
+		}
+
+		inline setFunctionType(eFunctionType: EFunctionType): void {
+        }
 
 		closeArguments(pArguments: IAFXInstruction[]): IAFXInstruction[]{
 			return this._pExprTranslator.toInstructionList(pArguments);

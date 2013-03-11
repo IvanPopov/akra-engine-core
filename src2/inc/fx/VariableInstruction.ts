@@ -233,6 +233,26 @@ module akra.fx {
         clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction {
         	return <IAFXVariableDeclInstruction>super.clone(pRelationMap);
         }
+
+        blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction{
+            var pBlendType: IAFXVariableTypeInstruction = this.getType().blend(pVariableDecl.getType(), eMode);
+            
+            if(isNull(pBlendType)){
+                return null;
+            }
+
+            var pBlendVar: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+            var pId: IAFXIdInstruction = new IdInstruction();
+
+            pId.setName(this.getNameId().getName());
+            pId.setRealName(this.getNameId().getRealName());
+
+            pBlendVar.push(pBlendType, true);
+            pBlendVar.push(pId, true);
+
+            return pBlendVar;
+        }
+
 	}
 }
 

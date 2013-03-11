@@ -6,10 +6,11 @@
 #endif
 
 #include "IEngine.ts"
+#include "IAFXComponent.ts"
 
 module akra{
 	export interface IAFXComposer {
-		getImportTechnique(sModuleName: string): void;
+		getComponentByName(sComponentName: string): IAFXComponent;
 		getEngine(): IEngine;
 
 		#ifdef DEBUG

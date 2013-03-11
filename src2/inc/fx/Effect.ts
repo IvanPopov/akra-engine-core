@@ -15,6 +15,7 @@
 #include "fx/EffectErrors.ts"
 #include "fx/EffectUtil.ts"
 #include "IAFXComposer.ts"
+#include "IAFXComponent.ts"
 
 module akra.fx {
 
@@ -60,6 +61,13 @@ module akra.fx {
 		
 		private _pTechniqueList: IAFXTechniqueInstruction[] = null;
 		private _pTechniqueMap: TechniqueMap = null;
+
+		private _isAnalyzeInPass: bool = false;
+
+		private _sProvideNameSpace: string = "";
+
+		private _pGlobalComponentList: IAFXComponent[] = null;
+		private _pGlobalComponetShiftList: int[] = null;
 
 		static pSystemTypes: SystemTypeMap = null;
 		static pSystemFunctions: SystemFunctionMap = null;
@@ -271,6 +279,9 @@ module akra.fx {
 			this.generateSystemVariable("fragCoord", "gl_FragCoord", "float4", false, true, true);
 			this.generateSystemVariable("frontFacing", "gl_FrontFacing", "bool", false, true, true);
 			this.generateSystemVariable("pointCoord", "gl_PointCoord", "float2", false, true, true);
+
+			//Engine variable for passes
+			this.generatePassEngineVariable();
 		}
 
 		private generateSystemVariable(sName: string, sRealName: string, sTypeName: string, 
@@ -296,10 +307,27 @@ module akra.fx {
 			pVariableDecl._setForVertex(isForVertex);
 			pVariableDecl._setForPixel(isForPixel);
 
-			pVariableDecl.push(pName, true);
 			pVariableDecl.push(pType, true);
+			pVariableDecl.push(pName, true);
 
 			this._pSystemVariables[sName] = pVariableDecl;
+		}
+
+		private generatePassEngineVariable(): void {
+			var pVariableDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+			var pName: IAFXIdInstruction = new IdInstruction();
+			var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+
+			pType._canWrite(false);
+
+			pType._markAsUnverifiable(true);
+			pName.setName("engine");
+			pName.setRealName("engine");
+
+			pVariableDecl.push(pType, true);
+			pVariableDecl.push(pName, true);
+
+			this._pSystemVariables["engine"] = pVariableDecl;
 		}
 
 		private addSystemFunctions(): void {
@@ -748,6 +776,14 @@ module akra.fx {
 			return this._pCurrentFunction;
 		}
 
+		private inline isAnalzeInPass(): bool {
+			return this._isAnalyzeInPass;
+		}
+
+		private inline setAnalyzeInPass(isInPass: bool): void {
+			this._isAnalyzeInPass = isInPass;
+		}
+
 		private inline setOperator(sOperator: string): void {
 			if(!isNull(this._pCurrentInstruction)){
 				this._pCurrentInstruction.setOperator(sOperator);
@@ -864,6 +900,14 @@ module akra.fx {
         	this._pTechniqueList.push(pTechnique);
         }
 
+        private addExternalSharedVariable(pVariable: IAFXVariableDeclInstruction, eShaderType: EFunctionType): void {
+        	var isVarAdded: bool = this._pEffectScope.addVariable(pVariable);
+
+        	if(!isVarAdded) {
+   				this._error(EFFECT_CANNOT_ADD_SHARED_VARIABLE, {varName: pVariable.getName()});
+   				return;
+			}
+        }
 
 
         private analyzeGlobalUseDecls(): void {
@@ -905,7 +949,7 @@ module akra.fx {
 
 			for(i = pChildren.length - 1; i >=0; i--) {
 				if(pChildren[i].name === "ImportDecl") {
-					this.analyzeImportDecl(pChildren[i]);
+					this.analyzeImportDecl(pChildren[i], null);
 				}
 			}
         }
@@ -2270,6 +2314,11 @@ module akra.fx {
         	var sName: string = pNode.value;
         	var pVariable: IAFXVariableDeclInstruction = this.getVariable(sName);
 
+        	if(pVariable.getType()._isUnverifiable() && !this.isAnalzeInPass()){
+        		this._error(EFFECT_BAD_USE_OF_ENGINE_VARIABLE);
+        		return null;
+        	}
+
         	if(isNull(pVariable)){
         		this._error(EFFECT_UNKNOWN_VARNAME, {varName: sName});
         		return null;
@@ -3092,7 +3141,6 @@ module akra.fx {
 	    	}
 
 	    	this.addTechnique(pTechnique);
-	    	pTechnique._setParseNode(pNode);
         }
 
         private analyzeComplexName(pNode: IParseNode): string {
@@ -3124,13 +3172,15 @@ module akra.fx {
         	var pChildren: IParseNode[] = pNode.children;
 
         	if(pChildren[0].name === "ImportDecl"){
-        		this.analyzeImportDecl(pChildren[0]);
+        		this.analyzeImportDecl(pChildren[0], pTechnique);
         	}
         	else if(pChildren.length > 1) {
         		var pPass: IAFXPassInstruction = new PassInstruction();
         		//TODO: add annotation and id
         		this.analyzePassStateBlockForShaders(pChildren[0], pPass);
-
+        		
+        		pPass._setParseNode(pNode);
+        		
         		pTechnique.addPass(pPass);
         	}
         }
@@ -3151,6 +3201,8 @@ module akra.fx {
         	var pChildren: IParseNode[] = pNode.children;
 
         	if(pChildren.length === 1){
+        		pPass._markAsComplex(true);
+
         		if(pChildren[0].value === "StateIf"){
         			this.analyzePassStateIfForShader(pChildren[0], pPass);
         		}
@@ -3173,6 +3225,8 @@ module akra.fx {
         	else {
         		return;
         	}
+
+        	pNode.isAnalyzed = true;
 
         	var pStateExprNode: IParseNode = pChildren[pChildren.length - 3];
         	var pExprNode: IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
@@ -3261,21 +3315,363 @@ module akra.fx {
         }
 
         private resumeTechniqueAnalysis(pTechnique: IAFXTechniqueInstruction): void {
-        	var pNode: IParseNode = pTechnique._getParseNode();
+        	var pPassList: IAFXPassInstruction[] = pTechnique.getPassList();
+
+        	for(var i: uint = 0; i < pPassList.length; i++){
+        		this.resumePassAnalysis(pPassList[i]);
+        	}
+			
+			if(!pTechnique.checkForCorrectImports()){
+				this._error(EFFECT_BAD_TECHNIQUE_IMPORT, { techniqueName: pTechnique.getName() });
+				return;
+			}      
+
+			pTechnique.finalizeTechnique();  	
+        }
+
+        private resumePassAnalysis(pPass: IAFXPassInstruction): void {
+         	var pNode: IParseNode = pPass._getParseNode();
 
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
+        	
+        	this.setAnalyzeInPass(true);
+        	this.analyzePassStateBlock(pChildren[0], pPass);
+        	this.setAnalyzeInPass(false);
 
-        	//return null;
+        	pPass.finalizePass();
         }
 
-        private analyzeImportDecl(pNode: IParseNode): any {
-        	return null;
+        private analyzePassStateBlock(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	pPass._addCodeFragment("{");
+
+        	for (var i: uint = pChildren.length - 2; i >= 1; i--) {
+		        this.analyzePassState(pChildren[i], pPass);
+		    }
+
+		    pPass._addCodeFragment("}");
         }
 
-        private analyzeProvideDecl(pNode: IParseNode): any {
-        	return null;
+        private analyzePassState(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	if(pChildren.length === 1){
+        		if(pChildren[0].value === "StateIf"){
+        			this.analyzePassStateIf(pChildren[0], pPass);
+        		}
+        		else if(pChildren[0].value === "StateSwitch"){
+        			this.analyzePassStateSwitch(pChildren[0], pPass);
+        		}
+        		
+        		return;
+        	}
+
+        	if(pNode.isAnalyzed) {
+        		var pFunc: IAFXFunctionDeclInstruction = pPass._getFoundedFunction(pNode);
+        		var eShaderType: EFunctionType = pPass._getFoundedFunctionType(pNode);
+        		var pShader: IAFXFunctionDeclInstruction = null;
+
+	        	if(eShaderType === EFunctionType.k_Vertex){
+	        		pShader = pFunc._getVertexShader();
+	        	}
+	        	else {
+	        		pShader = pFunc._getPixelShader();
+	        	}
+
+	        	pPass.addShader(pShader);
+        	}
+        	else {
+        		var sType: string = pChildren[pChildren.length - 1].value.toUpperCase();
+        		var pStateExprNode: IParseNode = pChildren[pChildren.length - 3];
+        		var pExprNode: IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
+
+        		switch (sType) {
+			        case "ZENABLE":
+			        case "ZWRITEENABLE":
+			        case "SRCBLEND":
+			        case "DESTBLEND":
+			        case "CULLMODE":
+			        case "ZFUNC":
+			        case "DITHERENABLE":
+			        case "ALPHABLENDENABLE":
+			        case "ALPHATESTENABLE":
+			            break;
+
+			        default:
+			            WARNING("Unsupported render state type used: " + sType + ". WebGl...");
+			            return;
+			    }
+
+			    if (pExprNode.value === "{" || pExprNode.value === "<" ||
+			        isNull(pExprNode.value)) {
+			        WARNING("So pass state are incorrect");
+			        return;
+			    }
+
+			    var sValue: string = pExprNode.value.toUpperCase();
+			    switch (sType) {
+			        case "ALPHABLENDENABLE":
+			        case "ALPHATESTENABLE":
+			            WARNING("ALPHABLENDENABLE/ALPHATESTENABLE not supported in WebGL.");
+			            return;
+
+			        case "DITHERENABLE":
+			        case "ZENABLE":
+			        case "ZWRITEENABLE":
+			            switch (sValue) {
+			                case "TRUE":
+			                case "FALSE":
+			                    break;
+
+			                default:
+			                    WARNING("Unsupported render state ALPHABLENDENABLE/ZENABLE/ZWRITEENABLE/DITHERENABLE value used: "
+			                              + sValue + ".");
+								return;
+			            }
+			            break;
+
+			        case "SRCBLEND":
+			        case "DESTBLEND":
+			            switch (sValue) {
+			                case "ZERO":
+			                case "ONE":
+			                case "SRCCOLOR":
+			                case "INVSRCCOLOR":
+			                case "SRCALPHA":
+			                case "INVSRCALPHA":
+			                case "DESTALPHA":
+			                case "INVDESTALPHA":
+			                case "DESTCOLOR":
+			                case "INVDESTCOLOR":
+			                case "SRCALPHASAT":
+			                	break;
+
+			                default:
+			                    WARNING("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + ".");
+			                    return;
+			            }
+			            break;
+
+			        case "CULLMODE":
+			            switch (sValue) {
+			                case "NONE":
+			                case "CW":
+			                case "CCW":
+			                case "FRONT_AND_BACK":
+			                    break;
+			                default:
+			                    WARNING("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + ".");
+			                    return;
+			            }
+			            break;
+
+			        case "ZFUNC":
+			            switch (sValue) {
+			                case "NEVER":
+			                case "LESS":
+			                case "EQUAL":
+			                case "LESSEQUAL":
+			                case "GREATER":
+			                case "NOTEQUAL":
+			                case "GREATEREQUAL":
+			                case "ALWAYS":
+			                	break;
+			                default:
+			                    WARNING("Unsupported render state ZFUNC value used: " +
+			                          sValue + ".");
+			                   return;
+			            }
+			            break;
+			    }
+
+			    pPass.setState(sType, sValue);
+        	}
+        	
+        }
+
+        private analyzePassStateIf(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+      		
+        	var pIfExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
+        	pIfExpr.prepareFor(EFunctionType.k_PassFunction);
+
+        	pPass._addCodeFragment("if("+ pIfExpr.toFinalCode() + ")");
+
+        	this.analyzePassStateBlock(pChildren[pChildren.length - 5], pPass);
+
+        	if(pChildren.length > 5){
+        		pPass._addCodeFragment("else");
+
+        		if(pChildren[0].name === "PassStateBlock"){
+        			this.analyzePassStateBlock(pChildren[0], pPass);
+        		}
+        		else {
+        			pPass._addCodeFragment(" ");
+        			this.analyzePassStateIf(pChildren[0], pPass);
+        		}
+        	}
+        }
+
+        private analyzePassStateSwitch(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+        	
+        	var sCodeFragment: string = "switch";
+        	var pSwitchExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
+        	pSwitchExpr.prepareFor(EFunctionType.k_PassFunction);
+
+        	pPass._addCodeFragment("(" + pSwitchExpr.toFinalCode() + ")");
+
+        	this.analyzePassCaseBlock(pChildren[0], pPass);
+        }
+
+        private analyzePassCaseBlock(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	pPass._addCodeFragment("{");
+
+        	for(var i: uint = pChildren.length - 2; i >= 1; i--){
+        		if(pChildren[i].name === "CaseState"){
+        			this.analyzePassCaseState(pChildren[i], pPass);
+        		}
+        		else if(pChildren[i].name === "DefaultState"){
+        			this.analyzePassDefault(pChildren[i], pPass);
+        		}
+        	}
+
+        	pPass._addCodeFragment("}");
+        }
+
+        private analyzePassCaseState(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	var pCaseStateExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 2]);
+        	pCaseStateExpr.prepareFor(EFunctionType.k_PassFunction);
+
+        	pPass._addCodeFragment("case " + pCaseStateExpr.toFinalCode() + ": ");
+
+        	for(var i: uint = pChildren.length - 4; i >= 0; i--){
+        		if(pChildren[i].value === "PassState"){
+        			this.analyzePassStateForShader(pChildren[i], pPass);
+        		}
+        		else{
+        			pPass._addCodeFragment(pChildren[i].value);
+        		}
+        	}
+        }
+
+        private analyzePassDefault(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	pPass._addCodeFragment("default: ");
+
+        	for(var i: uint = pChildren.length - 3; i >= 0; i--){
+        		if(pChildren[i].value === "PassState"){
+        			this.analyzePassStateForShader(pChildren[i], pPass);
+        		}
+        		else {
+        			pPass._addCodeFragment(pChildren[i].value);
+        		}
+        	}
+        }
+
+        private analyzeImportDecl(pNode: IParseNode, pTechnique?: IAFXTechniqueInstruction = null): void {
+      		this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+		    var sComponentName: string = this.analyzeComplexName(pChildren[pChildren.length - 2]);
+		    var iShift: int = 0;
+
+		    if(pChildren[0].name === "ExtOpt"){
+		    	WARNING("We don`t suppor ext-commands for import");
+		    }
+		    if (pChildren.length !== 2) {
+		        iShift = this.analyzeShiftOpt(pChildren[0]);
+		    }
+		    
+		    var pComponent: IAFXComponent = this._pComposer.getComponentByName(sComponentName);
+		    if (!pComponent) {
+		        this._error(EFFECT_BAD_IMPORTED_COMPONENT_NOT_EXIST);
+		        return;
+		    }
+
+		    this.addComponent(pComponent, iShift, pTechnique);
+        }
+
+        private analyzeProvideDecl(pNode: IParseNode): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	if (pChildren.length === 2) {
+		        this._sProvideNameSpace = this.analyzeComplexName(pChildren[0]);
+		    }
+		    else {
+		        this._error(TEMP_EFFECT_UNSUPPORTED_PROVIDE_AS);
+		        return;
+		    }
+        }
+
+        private analyzeShiftOpt(pNode: IParseNode): int {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	var iShift: int = <int><any>(pChildren[0].value);
+		    
+		    if (pChildren.length === 2) {
+		        iShift *= 1;
+		    }
+		    else {
+		        iShift *= -1;
+		    }
+
+		    return iShift;
+        }
+
+        private addComponent(pComponent: IAFXComponent, iShift: int, pTechnique: IAFXTechniqueInstruction): void {
+        	if(!isNull(pTechnique)){
+        		pTechnique.addComponent(pComponent, iShift);
+        	}
+        	else {
+        		if(isNull(this._pGlobalComponentList)){
+        			this._pGlobalComponentList = [];
+        			this._pGlobalComponetShiftList = [];
+        		}
+
+        		this._pGlobalComponentList.push(pComponent);
+        		this._pGlobalComponetShiftList.push(iShift);
+        	}
+
+        	//TODO: add correct add of compnent, not global
+        	
+        	var pComponentTechnique: IAFXTechniqueInstruction = pComponent.getTechnique();
+        	var pSharedListV: IAFXVariableDeclInstruction[] = pComponentTechnique.getSharedVariablesForVertex();
+        	var pSharedListP: IAFXVariableDeclInstruction[] = pComponentTechnique.getSharedVariablesForPixel();
+
+        	for(var i: uint = 0; i < pSharedListV.length; i++){
+        		this.addExternalSharedVariable(pSharedListV[i], EFunctionType.k_Vertex);
+        	}
+
+        	for(var i: uint = 0; i < pSharedListP.length; i++){
+        		this.addExternalSharedVariable(pSharedListP[i], EFunctionType.k_Pixel);
+        	}
         }
 
 
@@ -3291,6 +3687,13 @@ module akra.fx {
         private checkTwoOperandExprTypes(sOperator: string, 
         								 pLeftType: IAFXVariableTypeInstruction, 
         								 pRightType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
+        	if(pLeftType._isUnverifiable()){
+        		return pLeftType;
+        	}
+
+        	if(pRightType._isUnverifiable()){
+        		return pRightType;
+        	}
 
         	var isComplex: bool = pLeftType.isComplex() || pRightType.isComplex();
 			var isArray: bool = pLeftType.isNotBaseArray() || pRightType.isNotBaseArray();
@@ -3428,6 +3831,10 @@ module akra.fx {
          */
         private checkOneOperandExprType(sOperator: string, 
         								pType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
+
+        	if(pType._isUnverifiable()){
+        		return pType;
+        	}
 
         	var isComplex: bool = pType.isComplex();
 			var isArray: bool = pType.isNotBaseArray();

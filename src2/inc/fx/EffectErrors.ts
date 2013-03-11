@@ -80,12 +80,17 @@ module akra.fx {
     #define EFFCET_CANNOT_CALCULATE_PADDINGS 2272
     #define EFFECT_UNSUPPORTED_EXTRACT_BASE_TYPE 2273
     #define EFFECT_BAD_EXTRACTING 2274
+    #define EFFECT_BAD_TECHNIQUE_IMPORT 2275
+    #define EFFECT_BAD_USE_OF_ENGINE_VARIABLE 2276
+    #define EFFECT_BAD_IMPORTED_COMPONENT_NOT_EXIST 2277
+    #define EFFECT_CANNOT_ADD_SHARED_VARIABLE 2278
 
 
 
     #define TEMP_EFFECT_BAD_ARRAY_OF_POINTERS 2300
     #define TEMP_EFFECT_BAD_LOCAL_OF_SHADER_INPUT 2301
     #define TEMP_EFFECT_BAD_LOCAL_OF_SHADER_OUTPUT 2302
+    #define TEMP_EFFECT_UNSUPPORTED_PROVIDE_AS 2303
 
     akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, 
     						 "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
@@ -289,6 +294,13 @@ module akra.fx {
                              "Can not extract type '{typeName}'.");
     akra.logger.registerCode(EFFECT_BAD_EXTRACTING,
                              "Bad extract exrpression.");
+    akra.logger.registerCode(EFFECT_BAD_TECHNIQUE_IMPORT,
+                             "Bad imports in technique '{techniqueName}'.");
+    akra.logger.registerCode(EFFECT_BAD_USE_OF_ENGINE_VARIABLE, 
+                             "You try use 'engine' variable in out of pass.\
+                             In line: {line}. In column: {column}.");
+    akra.logger.registerCode(EFFECT_BAD_IMPORTED_COMPONENT_NOT_EXIST, 
+                             "You try to import not exuisted component '{componentName}'");
 
 
 
@@ -301,6 +313,8 @@ module akra.fx {
     akra.logger.registerCode(TEMP_EFFECT_BAD_LOCAL_OF_SHADER_OUTPUT,
                              "We don`t support using complex shader output like functions params.\
                              Shader: '{funcName}'"); 
+    akra.logger.registerCode(TEMP_EFFECT_UNSUPPORTED_PROVIDE_AS,
+                             "We don`t support 'provide ... as' operator now.");
 
 
     function sourceLocationToString(pLocation: ISourceLocation): string {
@@ -340,6 +354,8 @@ module akra.fx {
    		funcName?: string;
         funcDef?: string;
    		semanticName?: string;
+        techniqueName?: string;
+        componentName?: string;
     	
     	line?: uint;
     	column?: uint;

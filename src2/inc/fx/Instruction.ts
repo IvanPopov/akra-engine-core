@@ -438,6 +438,30 @@ module akra.fx {
 		private _pTempNodeList: IParseNode[] = null;
 		private _pTempFoundedFuncList: IAFXFunctionDeclInstruction[] = null;
 		private _pTempFoundedFuncTypeList: EFunctionType[] = null;
+		private _pParseNode: IParseNode = null;
+		
+		private _sFunctionCode: string = "";
+
+		private _isComlexPass: bool = false;
+		private _pShadersMap: IAFXFunctionDeclMap = null;
+		private _fnPassFunction: {(engine: any, foreigtn: any, uniforms: any): void;} = null;
+
+		private _pVertexShader: IAFXFunctionDeclInstruction = null;
+		private _pPixelShader: IAFXFunctionDeclInstruction = null;
+		private _pPassStateMap: StringMap = null;
+
+
+		private _pSharedVariableMapV: IAFXVariableDeclMap = null;
+		private _pGlobalVariableMapV: IAFXVariableDeclMap = null;
+		private _pUniformVariableMapV: IAFXVariableDeclMap = null;
+		private _pForeignVariableMapV: IAFXVariableDeclMap = null;
+		private _pUsedTypeMapV: IAFXTypeDeclMap = null;
+
+		private _pSharedVariableMapP: IAFXVariableDeclMap = null;
+		private _pGlobalVariableMapP: IAFXVariableDeclMap = null;
+		private _pUniformVariableMapP: IAFXVariableDeclMap = null;
+		private _pForeignVariableMapP: IAFXVariableDeclMap = null;
+		private _pUsedTypeMapP: IAFXTypeDeclMap = null;
 
 		constructor(){
 			super();
@@ -467,6 +491,8 @@ module akra.fx {
 					return this._pTempFoundedFuncList[i];
 				}
 			}
+
+			return null;
 		}
 
 		_getFoundedFunctionType(pNode: IParseNode): EFunctionType {
@@ -479,7 +505,207 @@ module akra.fx {
 					return this._pTempFoundedFuncTypeList[i];
 				}
 			}
+
+			return null;
 		}
+
+		_setParseNode(pNode: IParseNode): void {
+        	this._pParseNode = pNode;
+        }
+        
+        _getParseNode(): IParseNode{
+        	return this._pParseNode;
+        }
+
+        _addCodeFragment(sCode: string): void {
+        	if(this.isComplexPass()){
+        		this._sFunctionCode += sCode;
+        	}
+        }
+
+        inline _markAsComplex(isComplex: bool): void{
+        	this._isComlexPass = isComplex;
+        }
+
+        inline _getSharedVariableMapV(): IAFXVariableDeclMap{
+        	return this._pSharedVariableMapV;
+        }
+        
+        inline _getGlobalVariableMapV(): IAFXVariableDeclMap{
+        	return this._pGlobalVariableMapV;
+        }
+        
+        inline _getUniformVariableMapV(): IAFXVariableDeclMap{
+        	return this._pUniformVariableMapV;
+        }
+        
+        inline _getForeignVariableMapV(): IAFXVariableDeclMap{
+        	return this._pForeignVariableMapV;
+        }
+
+        inline _getUsedTypeMapV(): IAFXTypeDeclMap{
+        	return this._pUsedTypeMapV;
+        }
+
+        inline _getSharedVariableMapP(): IAFXVariableDeclMap{
+        	return this._pSharedVariableMapP;
+        }
+        
+        inline _getGlobalVariableMapP(): IAFXVariableDeclMap{
+        	return this._pGlobalVariableMapP;
+        }
+        
+        inline _getUniformVariableMapP(): IAFXVariableDeclMap{
+        	return this._pUniformVariableMapP;
+        }
+        
+        inline _getForeignVariableMapP(): IAFXVariableDeclMap{
+        	return this._pForeignVariableMapP;
+        }
+
+        inline _getUsedTypeMapP(): IAFXTypeDeclMap{
+        	return this._pUsedTypeMapP;
+        }
+
+
+
+        inline isComplexPass(): bool {
+        	return this._isComlexPass;
+        }
+
+        addShader(pShader: IAFXFunctionDeclInstruction): void {
+        	var isVertex: bool = pShader.getFunctionType() === EFunctionType.k_Vertex;
+
+        	if(this.isComplexPass()){
+        		if(isNull(this._pShadersMap)){
+        			this._pShadersMap = <IAFXFunctionDeclMap>{};
+        		}
+        		var iShader: uint = pShader._getInstructionID();
+        		this._pShadersMap[iShader] = pShader;
+
+        		var sCode: string = isVertex ? "this._pVertexShader=" : "this._pPixelShader=";
+        		sCode += "this._pShadersMap["+ iShader.toString() +"];"
+        		this._addCodeFragment(sCode);
+        	}
+        	else {
+        		if(isVertex){
+        			this._pVertexShader = pShader;
+        		}
+        		else {
+        			this._pPixelShader = pShader;
+        		}
+        	}
+        }
+
+        setState(sType: string, sValue: string): void {
+        	if(isNull(this._pPassStateMap)){
+        		this._pPassStateMap = <StringMap>{};
+        	}
+
+        	if(this.isComplexPass()){
+        		this._addCodeFragment("this._pPassStateMap[" + sType + "]=" + sValue+ ";");
+        	}
+        	else {
+        		this._pPassStateMap[sType] = sValue;
+        	}
+        }
+
+        finalizePass(): void {
+        	if(this.isComplexPass()){
+        		this._fnPassFunction = <any>(new Function("engine", "foreigns", "uniforms", this._sFunctionCode));
+        	}
+
+        	this.generateInfoAboutUsedVaraibles();
+
+        	this._pTempNodeList = null;
+			this._pTempFoundedFuncList = null;
+			this._pTempFoundedFuncTypeList = null;
+			this._pParseNode= null;
+			this._sFunctionCode = "";
+        }
+
+        evaluate(pEngineStates: any, pForeigns: any, pUniforms: any): bool {
+        	if(this.isComplexPass()){
+        		this._pVertexShader = null;
+        		this._pPixelShader = null;
+
+        		this._fnPassFunction.call(this, pEngineStates, pForeigns, pUniforms);
+        	}
+
+        	return true;
+        }
+
+        private generateInfoAboutUsedVaraibles(): void {
+        	if(isNull(this._pSharedVariableMapV)){
+	        	this._pSharedVariableMapV = <IAFXVariableDeclMap>{};
+				this._pGlobalVariableMapV = <IAFXVariableDeclMap>{};
+				this._pUniformVariableMapV = <IAFXVariableDeclMap>{};
+				this._pForeignVariableMapV = <IAFXVariableDeclMap>{};
+				this._pUsedTypeMapV = <IAFXTypeDeclMap>{};
+
+				this._pSharedVariableMapP = <IAFXVariableDeclMap>{};
+				this._pGlobalVariableMapP = <IAFXVariableDeclMap>{};
+				this._pUniformVariableMapP = <IAFXVariableDeclMap>{};
+				this._pForeignVariableMapP = <IAFXVariableDeclMap>{};
+				this._pUsedTypeMapP = <IAFXTypeDeclMap>{};
+			}
+
+        	if(this.isComplexPass()){
+        		for(var i in this._pShadersMap){
+        			this.addInfoAbouUsedVariablesFromFunction(this._pShadersMap[i]);
+        		}
+        	}
+        	else {
+        		this.addInfoAbouUsedVariablesFromFunction(this._pVertexShader);
+        		this.addInfoAbouUsedVariablesFromFunction(this._pPixelShader);
+        	}
+        }
+
+        private addInfoAbouUsedVariablesFromFunction(pFunction: IAFXFunctionDeclInstruction): void {
+        	var pSharedVars: IAFXVariableDeclMap = pFunction._getSharedVariableMap();
+        	var pGlobalVars: IAFXVariableDeclMap = pFunction._getGlobalVariableMap();
+        	var pUniformVars: IAFXVariableDeclMap = pFunction._getUniformVariableMap();
+        	var pForeignVars: IAFXVariableDeclMap = pFunction._getForeignVariableMap();
+        	var pTypes: IAFXTypeDeclMap = pFunction._getUsedTypeMap();
+
+
+        	var pSharedVarsTo: IAFXVariableDeclMap = null;
+        	var pGlobalVarsTo: IAFXVariableDeclMap = null;
+        	var pUniformVarsTo: IAFXVariableDeclMap = null;
+        	var pForeignVarsTo: IAFXVariableDeclMap = null;
+        	var pTypesTo: IAFXTypeDeclMap = null;
+
+        	if(pFunction.getFunctionType() === EFunctionType.k_Vertex){
+        		pSharedVarsTo = this._pSharedVariableMapV;
+	        	pGlobalVarsTo = this._pGlobalVariableMapV;
+	        	pUniformVarsTo = this._pUniformVariableMapV;
+	        	pForeignVarsTo = this._pForeignVariableMapV;
+	        	pTypesTo = this._pUsedTypeMapV;
+        	}
+        	else {
+        		pSharedVarsTo = this._pSharedVariableMapP;
+	        	pGlobalVarsTo = this._pGlobalVariableMapP;
+	        	pUniformVarsTo = this._pUniformVariableMapP;
+	        	pForeignVarsTo = this._pForeignVariableMapP;
+	        	pTypesTo = this._pUsedTypeMapP;
+        	}
+
+        	for(var i in pSharedVars){
+        		pSharedVarsTo[i] = pSharedVars[i];
+        	}
+        	for(var i in pGlobalVars){
+        		pGlobalVarsTo[i] = pGlobalVars[i];
+        	}
+        	for(var i in pUniformVars){
+        		pUniformVarsTo[i] = pUniformVars[i];
+        	}
+        	for(var i in pForeignVars){
+        		pForeignVarsTo[i] = pForeignVars[i];
+        	}
+        	for(var i in pTypes){
+        		pTypesTo[i] = pTypes[i];
+        	}
+        }
 	}
 
 	
@@ -488,14 +714,16 @@ module akra.fx {
 		private _sName: string = "";
 		private _hasComplexName: bool = false;
 		private _pParseNode: IParseNode = null;
-		private _pSharedVariableList: IAFXVariableDeclInstruction[] = null;
+		private _pSharedVariableListV: IAFXVariableDeclInstruction[] = null;
+		private _pSharedVariableListP: IAFXVariableDeclInstruction[] = null;
 		private _pPassList: IAFXPassInstruction[] = null;
+		private _pComponentList: IAFXComponent[] = null;
+		private _pComponentShiftList: int[] = null;
 
 		constructor() {
 			super();
 			this._pInstructionList = null;
 			this._eInstructionType = EAFXInstructionTypes.k_TechniqueInstruction;
-			this._pSharedVariableList = [];
 		}
 
 		setName(sName: string, isComplexName: bool): void {
@@ -511,16 +739,12 @@ module akra.fx {
         	return this._hasComplexName;
         }
 
-        getSharedVariables(): IAFXVariableDeclInstruction[] {
-        	return this._pSharedVariableList;
+        getSharedVariablesForVertex(): IAFXVariableDeclInstruction[] {
+        	return this._pSharedVariableListV;
         }
 
-        _setParseNode(pNode: IParseNode): void{
-        	this._pParseNode = pNode;
-        }
-        
-        _getParseNode(): IParseNode{
-        	return this._pParseNode;
+        getSharedVariablesForPixel(): IAFXVariableDeclInstruction[] {
+        	return this._pSharedVariableListP;
         }
 
 		addPass(pPass: IAFXPassInstruction): void {
@@ -530,86 +754,74 @@ module akra.fx {
 
 			this._pPassList.push(pPass);
 		}
+
+		getPassList(): IAFXPassInstruction[]{
+			return this._pPassList;
+		}
+
+		getPass(iPass: uint): IAFXPassInstruction{
+			return iPass < this._pPassList.length ? this._pPassList[iPass] : null;
+		}
+
+		totalPasses(): uint {
+			return this._pPassList.length;
+		}
+
+		addComponent(pComponent: IAFXComponent, iShift: int): void{
+			if(!isNull(this._pComponentList)){
+				this._pComponentList = [];
+				this._pComponentShiftList = [];
+			}
+
+			this._pComponentList.push(pComponent);
+			this._pComponentShiftList.push(iShift);
+		}
+
+		checkForCorrectImports(): bool {
+			return true;
+		}
+
+		finalizeTechnique(): void {
+			this.generateListOfSharedVariables();
+		}
+
+		private generateListOfSharedVariables(): void {
+			this._pSharedVariableListV = [];
+			this._pSharedVariableListP = [];
+
+			for(var i: uint = 0; i < this._pPassList.length; i++){
+				var pSharedV: IAFXVariableDeclMap = this._pPassList[i]._getSharedVariableMapV();
+				var pSharedP: IAFXVariableDeclMap = this._pPassList[i]._getSharedVariableMapP();
+
+				for(var j in pSharedV){
+					this.addSharedVariable(pSharedV[j], EFunctionType.k_Vertex);
+				}
+
+				for(var j in pSharedP){
+					this.addSharedVariable(pSharedP[j], EFunctionType.k_Pixel);
+				}
+			}
+		}
+
+		private addSharedVariable(pVar: IAFXVariableDeclInstruction, eType: EFunctionType): void {
+			var pAddTo: IAFXVariableDeclInstruction[] = null;
+
+			if(eType === EFunctionType.k_Vertex){
+				pAddTo = this._pSharedVariableListV;
+			}
+			else {
+				pAddTo = this._pSharedVariableListP;
+			}
+
+			for(var i: uint = 0; i < pAddTo.length; i++) {
+				if(pAddTo[i] === pVar){
+					return;
+				}
+			}
+
+			pAddTo.push(pVar);
+		}
 	}
-
-	// export class TypeInstruction extends Instruction {
-	// 	/**
-	// 	 * Represent [usages] IdInstruction
-	// 	 * EMPTY_OPERATOR KeywordInstruction ... KeywordInstruction IdInstruction
-	// 	 */
-	// }
-
-	// export class VariableInitInstruction extends Instruction {
-	// 	/**
-	// 	 * Represent varname [ [someIndex] ][ = SomeExpr;]
-	// 	 * ('=' || EMPTY_OPERATOR) VariableInstruction ExprInstruction
-	// 	 */
-	// }
-
-	// export class VariableInstruction extends Instruction{
-	// 	/**
-	// 	 * Represent varname [ [someIndex] ]
-	// 	 * EMPTY_OPERATOR IdInstruction IndexInstruction ... IndexInstruction
-	// 	 */
-	// }
-	// export class IndexInstruction extends Instruction {
-	// 	/**
-	// 	 * Represent [ [someIndex] ]
-	// 	 * EMPTY_OPERATOR ExprInstruction
-	// 	 */
-	// }
-
-	// export class ExprInstruction extends Instruction {
-	// 	/**
-	// 	 * Represent someExpr
-	// 	 * EMPTY_OPERATOR [SomeOfExprassionInstruction]
-	// 	 */
-	// }
-
-	
-
-	// export class ArithmeticExprInstruction extends Instruction {
-	// 	/**
-	// 	 * Represent someExpr +,/,-,*,% someExpr
-	// 	 * (+|-|*|/|%) Instruction Instruction
-	// 	 */
-	// }
-
-	// export class RelationExprInstruction extends Instruction {
-	// 	/**
-	// 	 * Represent someExpr <,>,>=,<=,!=,== someExpr
-	// 	 * (<|>|<=|=>|!=|==) Instruction Instruction
-	// 	 */
-	// }
-
-	// export class LogicalExprInstruction extends Instruction {
-	// 	/**
-	// 	 * Represent someExpr &&,|| someExpr
-	// 	 * (&& | ||) Instruction Instruction
-	// 	 */
-	// }
-
-	// export class FunctionCallInstruction extends Instruction {
-	// 	/**
-	// 	 * Represent func([params])
-	// 	 * call IdInstruction ExprInstruction ... ExprInstruction
-	// 	 */	
-	// }
-
-	// export class TypeCastInstruction extends Instruction {
-	// 	/**
-	// 	 * Represent (type)(Expr)
-	// 	 * typeCast IdInstruction ExprInstruction
-	// 	 */	
-	// }
-
-	// export class TypeConstructorInstruction extends Instruction {
-	// 	/**
-	// 	 * Represent type(Expr)
-	// 	 * constructor IdInstruction ExprInstruction
-	// 	 */	
-	// }
-
 
 }
 

@@ -64,6 +64,7 @@ module akra.fx {
 		private _pArrayElementType: IAFXVariableTypeInstruction = null;
 
 		private _pFieldDeclMap: IAFXVariableDeclMap = null;
+		private _pFieldDeclBySemanticMap: IAFXVariableDeclMap = null;
 		private _pFieldIdMap: IAFXIdExprMap = null;
 		private _pUsedFieldMap: IAFXVarUsedModeMap = null;
 
@@ -76,6 +77,8 @@ module akra.fx {
 		private _iPadding: uint = UNDEFINE_PADDING;
 
 		private _pSubDeclList: IAFXVariableDeclInstruction[] = null;
+
+		private _bUnverifiable: bool = false;
 
 		constructor() {
 			super();
@@ -122,6 +125,10 @@ module akra.fx {
 		}
 
 		isEqual(pType: IAFXTypeInstruction): bool {
+			if(this._isUnverifiable()){
+				return true;
+			}
+
 			if (this.isNotBaseArray() && pType.isNotBaseArray() && 
 				(this.getLength() !== pType.getLength() ||
 				 this.getLength() === UNDEFINE_LENGTH ||
@@ -314,6 +321,10 @@ module akra.fx {
         	return false;
         }
 
+        inline _isUnverifiable(): bool {
+        	return this._bUnverifiable;
+        }
+
         //-----------------------------------------------------------------//
 		//----------------------------SET TYPE INFO------------------------//
 		//-----------------------------------------------------------------//
@@ -491,6 +502,10 @@ module akra.fx {
 			}
 		}
 
+		inline _markAsUnverifiable(isUnverifiable: bool): void {
+        	this._bUnverifiable = true;
+        }
+
 		//-----------------------------------------------------------------//
 		//----------------------------GET TYPE INFO------------------------//
 		//-----------------------------------------------------------------//	
@@ -564,6 +579,10 @@ module akra.fx {
 		}
 
 		getArrayElementType(): IAFXVariableTypeInstruction {
+			if(this._isUnverifiable){
+				return this;
+			}
+
 			if(!this.isArray()){
 				return null;
 			}
@@ -583,7 +602,7 @@ module akra.fx {
 		}
 
 		hasField(sFieldName: string): bool {
-			return this.getSubType().hasField(sFieldName);
+			return this._isUnverifiable() ? true : this.getSubType().hasField(sFieldName);
 		}
 
 		hasFieldWithSematic(sSemantic: string): bool {
@@ -624,7 +643,50 @@ module akra.fx {
 			}
 
 			var pField: IAFXVariableDeclInstruction = new VariableDeclInstruction();
-			var pSubField: IAFXVariableDeclInstruction = this.getSubType().getField(sFieldName);
+			
+			if(!this._isUnverifiable()){
+				var pSubField: IAFXVariableDeclInstruction = this.getSubType().getField(sFieldName);
+
+				var pFieldType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+				pFieldType.pushType(pSubField.getType());
+				if(!this.isBase()){
+					pFieldType.setPadding(pSubField.getType().getPadding());
+				}
+				pField.push(pFieldType, true);
+				pField.push(pSubField.getNameId(), false);
+			}
+			else {
+				var pFieldName: IAFXIdInstruction = new IdInstruction();
+
+				pFieldName.setName(sFieldName);
+				pFieldName.setRealName(sFieldName);
+
+				pField.push(this, false);
+				pField.push(pFieldName, true);
+			}
+
+			pField.setParent(this);
+
+			this._pFieldDeclMap[sFieldName] = pField;
+			
+			return pField;
+		}
+
+		inline getFieldBySemantic(sSemantic: string): IAFXVariableDeclInstruction {
+			if(this.hasFieldWithSematic(sSemantic)){
+				return null;
+			}
+
+			if(isNull(this._pFieldDeclBySemanticMap)) {
+				this._pFieldDeclBySemanticMap = <IAFXVariableDeclMap>{};
+			}
+
+			if(isDef(this._pFieldDeclBySemanticMap[sSemantic])){
+				return this._pFieldDeclBySemanticMap[sSemantic];
+			}
+
+			var pField: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+			var pSubField: IAFXVariableDeclInstruction = this.getSubType().getFieldBySemantic(sSemantic);
 
 			var pFieldType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 			pFieldType.pushType(pSubField.getType());
@@ -634,9 +696,10 @@ module akra.fx {
 			pField.push(pFieldType, true);
 			pField.push(pSubField.getNameId(), false);
 
+
 			pField.setParent(this);
 
-			this._pFieldDeclMap[sFieldName] = pField;
+			this._pFieldDeclBySemanticMap[sSemantic] = pField;
 			
 			return pField;
 		}
@@ -930,8 +993,35 @@ module akra.fx {
 			return pClone;
 		}
 
-		blend(pVariableType?: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
-			return null;
+		blend(pType: IAFXVariableTypeInstruction, eMode: EAFXBlendMode): IAFXVariableTypeInstruction {
+			if (this.isComplex() !== pType.isComplex() ||
+				(this.isNotBaseArray() !== pType.isNotBaseArray()) || 
+				(this.isPointer() !== pType.isPointer())) {
+				return null;
+			}
+
+			if (this.isNotBaseArray() || this.getLength() === UNDEFINE_LENGTH ||
+				this.getLength() !== pType.getLength()){
+				return null;
+			}
+
+			var pBlendBaseType: IAFXTypeInstruction = this.getBaseType().blend(pType.getBaseType(), eMode);
+			if(isNull(pBlendBaseType)){
+				return null;
+			}
+
+			var pBlendType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+			pBlendType.pushType(pBlendType);
+
+			if(this.isNotBaseArray()){
+				var iLength: uint = this.getLength();
+				var pLengthExpr: IntInstruction = new IntInstruction();
+				pLengthExpr.setValue(iLength);
+				pBlendType.addArrayIndex(pLengthExpr);
+			}
+
+			return pBlendType;
+
 		}
 
 		_setCloneHash(sHash: string, sStrongHash: string): void {
@@ -1253,6 +1343,10 @@ module akra.fx {
 			return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldDeclMap[sFieldName] : null;
 		}
 
+		inline getFieldBySemantic(sSemantic: string): IAFXVariableDeclInstruction {
+			return null;
+		}
+
 		inline getFieldType(sFieldName: string): IAFXVariableTypeInstruction {
 			return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldDeclMap[sFieldName].getType() : null;
 		}
@@ -1267,6 +1361,14 @@ module akra.fx {
 		
 		inline clone(pRelationMap?: IAFXInstructionMap): SystemTypeInstruction {
 			return this;
+		}
+
+		inline blend(pType: IAFXTypeInstruction, eMode: EAFXBlendMode): IAFXTypeInstruction {
+			if(this.isStrongEqual(pType)){
+				return this;
+			}
+
+			return null;
 		}
 	}
 
@@ -1500,11 +1602,19 @@ module akra.fx {
 		}
 
 		inline getField(sFieldName: string): IAFXVariableDeclInstruction {
-			if(!isDef(this._pFieldDeclMap[sFieldName])){
+			if(!this.hasField(sFieldName)){
 				return null;
 			}
 
 			return this._pFieldDeclMap[sFieldName];
+		}
+
+		getFieldBySemantic(sSemantic: string): IAFXVariableDeclInstruction {
+			if(!this.hasFieldWithSematic(sSemantic)){
+				return null;
+			}
+
+			return this._pFieldDeclBySemanticMap[sSemantic];
 		}
 
 		inline getFieldType(sFieldName: string): IAFXVariableTypeInstruction {
@@ -1570,6 +1680,49 @@ module akra.fx {
     		pClone.setSize(this._iSize);
     		
 			return pClone;
+		}
+
+		blend(pType: IAFXTypeInstruction, eMode: EAFXBlendMode): IAFXTypeInstruction {
+			if(eMode === EAFXBlendMode.k_Uniform || eMode === EAFXBlendMode.k_Attribute){
+				if(this.hasFieldWithoutSemantic() || pType.hasFieldWithoutSemantic()){
+					return null;
+				}
+			}
+
+			var pFieldList: IAFXVariableDeclInstruction[] = this._pFieldDeclList;
+			var pBlendType: ComplexTypeInstruction = new ComplexTypeInstruction();
+			var pRelationMap: IAFXInstructionMap = <IAFXInstructionMap>{};
+
+			for(var i: uint = 0; i < pFieldList.length; i++){
+				var pField: IAFXVariableDeclInstruction = pFieldList[i];
+				var pBlendField: IAFXVariableDeclInstruction = null;
+				var sFieldName: string = pField.getName();
+				var sFieldSemantic: string = pField.getSemantic();
+
+				if(eMode === EAFXBlendMode.k_Shared){
+					if(pType.hasField(sFieldName)){
+						pBlendField = pField.blend(pType.getField(sFieldName), eMode);
+					}
+					else {
+						pBlendField = pField.clone(pRelationMap);
+					}
+				}
+				else {
+					if(pType.hasFieldWithSematic(sFieldSemantic)){
+						pBlendField = pField.blend(pType.getFieldBySemantic(sFieldSemantic), eMode);
+						pBlendField.getNameId().setName(sFieldSemantic);
+					}
+					else {
+						pBlendField = pField.clone(pRelationMap);
+					}
+				}
+
+				if(isNull(pBlendField)){
+					return null;
+				}
+
+				pBlendType.addField(pBlendField);
+			}
 		}
 
 		_setCloneName(sName: string, sRealName: string): void {
