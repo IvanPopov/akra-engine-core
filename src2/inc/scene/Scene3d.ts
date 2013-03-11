@@ -27,7 +27,9 @@ module akra.scene {
 		protected _pDisplayListsCount: uint = 0;
 		protected _isUpdated: bool = false;
 
-		type: ESceneTypes = ESceneTypes.TYPE_3D;
+		inline get type(): ESceneTypes {
+			return ESceneTypes.TYPE_3D;
+		}
 
 		inline get totalDL(): uint {
 			return this._pDisplayListsCount;

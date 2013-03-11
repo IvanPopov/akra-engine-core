@@ -13,15 +13,13 @@ module akra.scene {
 		inline get scene(): IScene3d { return this._pScene; }
 		inline set scene(pScene: IScene3d) { this._pScene = pScene; }
 		
-		constructor (pScene: IScene3d) {
-			super();
+		constructor (pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_NODE) {
+			super(eType);
 
 			pScene.connect(this, SIGNAL(attached), SLOT(nodeAttachment), EEventTypes.UNICAST);
 			pScene.connect(this, SIGNAL(detached), SLOT(nodeDetachment), EEventTypes.UNICAST);
 
 			this.scene = pScene;
-
-			this._eType = EEntityTypes.SCENE_NODE;
 		}
 
 		create(): bool {

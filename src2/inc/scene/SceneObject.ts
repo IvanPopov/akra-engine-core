@@ -34,10 +34,8 @@ module akra.scene {
 		}
 
 
-		constructor (pScene: IScene3d) {
-			super(pScene);
-			
-			this._eType = EEntityTypes.SCENE_OBJECT;
+		constructor (pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_OBJECT) {
+			super(pScene, eType);
 		}
 
 		inline getRenderable(i?: uint): IRenderableObject {

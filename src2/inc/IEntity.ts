@@ -15,6 +15,7 @@ module akra {
 		SCENE_NODE,
 
 		CAMERA,
+		SHADOW_CASTER,
 
 		LIGHT_PROJECT = 37,
 		LIGHT_OMNI_DIRECTIONAL,
@@ -26,6 +27,10 @@ module akra {
 		TEXT3D,
 		SPRITE,
 		EMITTER,
+
+		UI_NODE = 100,
+		UI_HTMLNODE,
+		UI_DNDNODE,
 
 		OBJECTS_LIMIT = 128
 	}
@@ -42,7 +47,7 @@ module akra {
 		readonly depth: int;
 		readonly root: IEntity;
 
-		create(): bool;
+		//create(): bool;//moved to INode
 		destroy(): void;
 
 		findEntity(sName: string): IEntity;

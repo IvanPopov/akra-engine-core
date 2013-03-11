@@ -31,7 +31,7 @@ module akra.scene.light {
 		}
 
 		constructor (pLightPoint: ILightPoint, iFace: uint = POSITIVE_X) {
-			super(pLightPoint.scene);
+			super(pLightPoint.scene, EEntityTypes.SHADOW_CASTER);
 
 			this._pLightPoint = pLightPoint;
 			this._iFace = iFace;

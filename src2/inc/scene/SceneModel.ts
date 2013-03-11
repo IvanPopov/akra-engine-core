@@ -13,9 +13,7 @@ module akra.scene {
 		private _pMesh: IMesh;
 
 		constructor (pScene: IScene3d) {
-			super(pScene);
-
-			this.type = EEntityTypes.MODEL;
+			super(pScene, EEntityTypes.MODEL);
 		}
 
 		inline get mesh(): IMesh {
