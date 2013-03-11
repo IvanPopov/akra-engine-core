@@ -274,7 +274,8 @@ function preprocess() {
 	// pwd();
 
 	var cmd = (isWin? pOptions.baseDir + "/": "") + "mcpp";
-	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -j -+ -W 0 -k " + 
+	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -I " + 
+		pOptions.baseDir + "/definitions/ -j -+ -W 0 -k " + 
 		capabilityMacro + " " + pOptions.files.join(" ")).split(" ");
 
 	//console.log(pOptions.files);
@@ -344,7 +345,7 @@ function compile() {
 	var cmd = "node";
 	var argv = (  
 		pOptions.baseDir + "/tsc.js -c --target ES5  " + 
-		pOptions.baseDir + "/fixes.d.ts " + 
+		pOptions.baseDir + "/definitions/fixes.d.ts " +
 		//pOptions.baseDir + "/WebGL.d.ts " + 
 		pOptions.pathToTemp + " --out " +
 		pOptions.outputFolder + "/" + pOptions.outputFile +
@@ -445,8 +446,7 @@ function createTestName(sEntryFileName) {
 }
 
 
-function findDepends(sData) {
-	var pDepExp = /\/\/\/\s*@dep\s+([\w\d\.\-\/]+)\s*/ig;
+function findDepends(sData, pDepExp) {
 	var pMatches = null;
 	var pDeps = [];
 
@@ -490,8 +490,11 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 		" *--------------------------------------------*/\n\n\n" + 
 		sTestData;
 
-	var pAdditionalScripts = [];
+	var pAdditionalScripts = findDepends(sTestData, /\/\/\/\s*@script\s+([^\s]+)\s*/ig);
 	var sAdditionalCode = "";
+
+	var pAdditionalCSS = findDepends(sTestData, /\/\/\/\s*@css\s+([^\s]+)\s*/ig);
+	var sAdditionalCSS = "";
 
 	var pArchive;
 	var sIndexHTML;
@@ -502,15 +505,22 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
     	sTestData += "\n\n/// @dep ../build/webgl-debug.js \n"
     }
 
+
 	for (var i in pAdditionalScripts) {
 		sAdditionalCode += "<script type=\"text/javascript\" src=\"" + pAdditionalScripts[i] + "\">" + 
 							"</script>";
 	}
-    
+
+
+	for (var i in pAdditionalCSS) {
+		sAdditionalCSS += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + pAdditionalCSS[i] + "\">";
+	}
+
     sIndexHTML = "\n\
 				  <html>                           					\n\
                   	<head>                               			\n\
                   		<title>" + sFile + "</title>   				\n\
+                  		" + sAdditionalCSS + "						\n\
                   	</head>                              			\n\
                   	<body>                               			\n\
                   		" + sAdditionalCode + "				  		\n\
@@ -518,7 +528,10 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
                   </html>";
     
     
-    fetchDeps(sDir, findDepends(sTestData));
+
+
+    fetchDeps(sDir, findDepends(sTestData, /\/\/\/\s*@dep\s+([\w\d\.\-\/]+)\s*/ig));
+
 
     function writeOutput(sOutputFile, pData) {
     	fs.writeFile(sOutputFile, pData, function (err) {

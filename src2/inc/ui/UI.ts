@@ -6,19 +6,19 @@
 #include "common.ts"
 #include "HTMLNode.ts"
 #include "DNDNode.ts"
-#include "DOM.ts"
+#include "Component.ts"
+#include "Button.ts"
+#include "Label.ts"
+#include "Layout.ts"
 
 module akra.ui {
 	export class UI implements IUI {
 		protected _pManager: ISceneManager;
-		protected _pDOM: IDOM = null;
 
 		inline get type(): ESceneTypes { return ESceneTypes.TYPE_2D; }
-		inline get dom(): IDOM { return this._pDOM; }
 
 		constructor (pManager: ISceneManager = null) {
 			this._pManager = pManager;
-			this._pDOM = new DOM(this);
 		}
 
 		inline getManager(): ISceneManager {
@@ -26,11 +26,35 @@ module akra.ui {
 		}
 
 		createHTMLNode(pElement: HTMLElement): IUIHTMLNode {
-			return new ui.HTMLNode(this, pElement);
+			return new HTMLNode(this, pElement);
 		}
 
 		createDNDNode(pElement: HTMLElement): IUIDNDNode {
-			return new ui.DNDNode(this, pElement);
+			return new DNDNode(this, pElement);
+		}
+
+		createComponent(sName: string, pOptions?: IUIComponentOptions): IUIComponent {
+			switch (sName.toLowerCase()) {
+				case "component": 
+					return new Component(this, pOptions);
+				case "button":
+					return new Button(this, pOptions);
+				case "label":
+					return new Label(this, pOptions);
+			}
+
+			return null;
+		}
+
+		createLayout(eType: EUILayouts = EUILayouts.UNKNOWN): IUILayout {
+			switch (eType) {
+				case EUILayouts.HORIZONTAL:
+					return null;
+				case EUILayouts.VERTICAL;
+					return null;
+				default:
+					return new Layout(this);
+			}
 		}
 
 		BEGIN_EVENT_TABLE(UI);

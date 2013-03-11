@@ -1,6 +1,8 @@
 #ifndef IKEYMAP_TS
 #define IKEYMAP_TS
 
+#include "IPoint.ts"
+
 module akra {
 	export enum EKeyCodes {
 		BACKSPACE = 8,
@@ -31,9 +33,9 @@ module akra {
 		isKeyPress(iCode: int);
 		isKeyPress(eCode: EKeyCodes);
 
-		getMouse(): IVec2;
+		getMouse(): IPoint;
 		/*get offset from last frame*/
-		getMouseShift(): IVec2;
+		getMouseShift(): IOffset;
 		isMouseMoved(): bool;
 		isMousePress(): bool;
 

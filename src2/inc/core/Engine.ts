@@ -120,7 +120,7 @@ module akra.core {
 				sDepsRoot = pOptions.depsRoot || Engine.DEPS_ROOT;
 				//default deps has higher priority!
 				if (isDefAndNotNull(pOptions.deps)) {
-					pDeps.files = pDeps.files.concat(pOptions.deps.files || []);
+					Engine.depends(pOptions.deps);
 				}
 
 				if (pOptions.gamepads === true) {
@@ -290,6 +290,23 @@ module akra.core {
 			this._isDepsLoaded = true;
 		}
 
+		static depends(sData: string): void;
+		static depends(pData: IDependens): void;
+		static depends(pData): void {
+			var pDeps: IDependens = Engine.DEPS;
+
+			while (isDefAndNotNull(pDeps.files)) {
+				pDeps = pDeps.files;
+			}
+
+			if (isString(pData)) {
+				pDeps.files = [pData];
+			}
+			else {
+				pDeps.files = pData;
+			}
+		}
+
 		static DEPS_ROOT: string = 
 #ifdef DEBUG
 			"/akra-engine-core/src2/data/";
@@ -297,7 +314,6 @@ module akra.core {
 			"";
 #endif
 		static DEPS: IDependens = 
-#ifdef DEBUG
 			{
 				files: [ 
 					"grammars/HLSL.gr" 
@@ -318,10 +334,7 @@ module akra.core {
 						    "effects/skybox.afx"
 						]
 					}
-			};
-#else 
-		null;
-#endif			
+			};			
 
 		BEGIN_EVENT_TABLE(Engine);
 			BROADCAST(frameStarted, VOID);

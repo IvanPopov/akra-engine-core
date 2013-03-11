@@ -29,8 +29,13 @@ module akra {
 		EMITTER,
 
 		UI_NODE = 100,
-		UI_HTMLNODE,
-		UI_DNDNODE,
+		// UI_HTMLNODE,
+		// UI_DNDNODE,
+
+		// UI_COMPONENT,
+		// UI_BUTTON,
+		// UI_LABEL,
+		// UI_TREE,
 
 		OBJECTS_LIMIT = 128
 	}

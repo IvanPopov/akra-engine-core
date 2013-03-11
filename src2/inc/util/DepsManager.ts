@@ -34,7 +34,7 @@ module akra.util {
 				return false;
 			}
 
-			this.normalizeDepsPaths(pDeps, sRoot);
+			this.normalizeDepsPaths(pDeps, pDeps.root || sRoot);
 			this.createDepsResources(pDeps);
 			this.loadDeps(pDeps);
 
@@ -91,6 +91,19 @@ module akra.util {
 				var pFiles: string[] = pDeps.files;
 				var pManager: DepsManager = this;
 				
+				if (isDefAndNotNull(pDep.type)) {
+					if (pDep.type == "text" && isFunction(pDep.loader)) {
+						io.fopen(pFiles[i], "r").read((pErr: Error, sData: string): void => {
+							if (!isNull(pErr)) {
+								pManager.error(pErr);
+							}
+
+							pDep.loader(pDep, sData);
+							pManager._onDependencyLoad(pDeps, i);
+						});	
+					}
+				}
+
 				switch (pathinfo(pFiles[i]).ext.toLowerCase()) {
 					case "gr":
 						io.fopen(pFiles[i], "r").read((pErr: Error, sData: string): void => {

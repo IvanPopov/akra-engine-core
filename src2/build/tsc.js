@@ -1415,11 +1415,13 @@ var TypeScript;
                 var pGetterSymbol = null;
                 var pGetter = null;
                 var op1 = this.operand1;
+                var isSetter = false;
                 if (this.operand1.nodeType === 19 /* Dot */  && (this.operand1).operand2.nodeType == 25 /* Name */ ) {
                     var id = (this.operand1).operand2;
                     var target = (this.operand1);
                     if (TypeScript.isDefAndNotNull(id.sym) && id.sym.isAccessor()) {
-                        var sym = (id.sym).setter;
+                        var isSetter = binTokenId === TypeScript.TokenID.Equals;
+                        var sym = isSetter? (id.sym).setter: (id.sym).getter;
                         var funcDecl = sym ? (sym.declAST) : null;
                         pGetterSymbol = id.sym;
                         pGetter = pGetterSymbol.declAST;
@@ -1429,8 +1431,9 @@ var TypeScript;
                         }
                     }
                 }
-                if (!isPrinted) {
-                    emitter.emitJavascript(this.operand1, binTokenId, false);
+                if (!isPrinted || !isSetter) {
+                    if (!isPrinted) emitter.emitJavascript(this.operand1, binTokenId, false);
+
                     if (!TypeScript.isNull(pGetter)) {
                         pGetterSymbol.declAST = pGetter;
                     }
