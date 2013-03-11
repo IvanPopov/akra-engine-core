@@ -122,10 +122,15 @@ module akra.webgl {
 		    //create header
 		    this._pHeader = this.allocateData([VE_VEC2(DeclarationUsages.TEXTURE_HEADER)], this._header());
 
-		    var pProgram: IShaderProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_update_vertex_texture");
+
+		    /**
+		    * update program
+		    **/
+
+		    var pProgram: IShaderProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_vertex_texture_update");
 
 	        if (isNull(pProgram)) {
-	        	pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBGL_update_vertex_texture");
+	        	pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBGL_vertex_texture_update");
 	        	pProgram.create(
 	        	"																									\n\
 	        	uniform sampler2D sourceTexture;																	\n\
@@ -181,6 +186,50 @@ module akra.webgl {
 				                                    \n\
 				void main(void) {                   \n\
 				    gl_FragColor = color;           \n\
+				}                                   \n\
+				");
+	        }
+
+	        /**
+		    * resize program
+		    **/
+
+	        pProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_vertex_texture_resize");
+
+	        if (isNull(pProgram)) {
+	        	pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBGL_vertex_texture_resize");
+	        	pProgram.create(
+	        	"																									\n\
+	        	attribute float INDEX;																				\n\
+	        	uniform sampler2D sourceTexture;																	\n\
+				                      																				\n\
+				uniform vec2 v2fSrcTexSize;																			\n\
+				uniform vec2 v2fDstTexSize;																			\n\
+																													\n\
+				varying vec4 v4fValue;																				\n\
+				                   																					\n\
+				void main(void){																					\n\
+				    float  serial = INDEX;																			\n\
+					                       																			\n\
+				    vec2 v2fSrcPosition = vec2((mod(serial, v2fSrcTexSize.x) + 0.5)/v2fSrcTexSize.x,				\n\
+				    						   (floor(serial/v2fSrcTexSize.x) + 0.5)/v2fSrcTexSize.y);				\n\
+	        																										\n\
+	        		vec2 v2fDstPosition = vec2((mod(serial, v2fDstTexSize.x) + 0.5)/v2fDstTexSize.x,				\n\
+				    						   (floor(serial/v2fDstTexSize.x) + 0.5)/v2fDstTexSize.y);				\n\
+	        																										\n\
+	        		v4fValue = texture2D(sourceTexture, v2fSrcPosition);											\n\
+	        																										\n\
+	        		gl_Position = vec4(v2fDstPosition*2. - 1., 0., 1.);												\n\
+				}																									\n\
+				",
+				"									\n\
+				#ifdef GL_ES                        \n\
+				    precision highp float;          \n\
+				#endif								\n\
+				varying vec4 v4fValue;              \n\
+				                                    \n\
+				void main(void) {                   \n\
+				    gl_FragColor = v4fValue;        \n\
 				}                                   \n\
 				");
 	        }
@@ -347,15 +396,14 @@ module akra.webgl {
 		            pRealData[iLeftShift + i] = pBufferData[i];
 		        }		        
 
-		        var pShaderSource;
 		        var pWebGLFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
-		        var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_update_vertex_texture");
+		        var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_vertex_texture_update");
 		        
 		        var pValueBuffer: WebGLBuffer 		= pWebGLRenderer.createWebGLBuffer();
 		        var pMarkupIndexBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
 		        var pMarkupShiftBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
 
-		        debug_assert(isDef(pWebGLProgram), "cound not find WEBGL_update_vertex_texture program");
+		        debug_assert(isDef(pWebGLProgram), "cound not find WEBGL_vertex_texture_update program");
 
 		        pWebGLRenderer.disableAllWebGLVertexAttribs();
 
@@ -390,7 +438,7 @@ module akra.webgl {
 		        
 
 		        pWebGLContext.viewport(0, 0, this._iWidth, this._iHeight);
-		        pWebGLContext.drawArrays(0, 0, nPixels);
+		        pWebGLContext.drawArrays(GL_POINTS, 0, nPixels);
 		        pWebGLContext.flush();
 
 		        pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, null, 0);
