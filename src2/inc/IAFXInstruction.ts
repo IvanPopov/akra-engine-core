@@ -615,15 +615,25 @@ module akra {
         addPass(pPass: IAFXPassInstruction): void;
         getPassList(): IAFXPassInstruction[];
         getPass(iPass: uint): IAFXPassInstruction;
+
+        totalOwnPasses(): uint;
         totalPasses(): uint;
 
         getSharedVariablesForVertex(): IAFXVariableDeclInstruction[];
         getSharedVariablesForPixel(): IAFXVariableDeclInstruction[];
 
         addComponent(pComponent: IAFXComponent, iShift: int): void;
+        
+        getComponentList(): IAFXComponent[];
+        getComponentListShift(): int[];
+
+        getFullComponentList(): IAFXComponent[];
+        getFullComponentShiftList(): int[];
 
         checkForCorrectImports(): bool;
-        finalizeTechnique(): void;
+        finalizeTechnique(sProvideNameSpace: string, 
+                          pGloabalComponentList: IAFXComponent[],
+                          pGloabalComponentShiftList: int[]): void;
     }
 
 }

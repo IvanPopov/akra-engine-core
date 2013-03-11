@@ -302,7 +302,7 @@ module akra.fx {
 
         isForeign(): bool {
         	if(isNull(this._isForeign)){
-				this._isForeign = this.hasUsage("shared");
+				this._isForeign = this.hasUsage("foreign");
 			}
 
 			return this._isForeign;
@@ -359,7 +359,7 @@ module akra.fx {
 				var pVarType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pType;
 				if(!pVarType.isNotBaseArray() && !pVarType.isPointer()){
 					var pUsageList: string[] = pVarType.getUsageList();
-					if(!isNull(this._pUsageList)){
+					if(!isNull(pUsageList)){
 						for(var i: uint = 0; i < pUsageList.length; i++){
 							this.addUsage(pUsageList[i]);
 						}
@@ -579,7 +579,7 @@ module akra.fx {
 		}
 
 		getArrayElementType(): IAFXVariableTypeInstruction {
-			if(this._isUnverifiable){
+			if(this._isUnverifiable()){
 				return this;
 			}
 
@@ -732,7 +732,7 @@ module akra.fx {
 				}
 			}
 
-			if(this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction){
+			if(!isNull(this.getSubType()) && this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction){
 				return (<IAFXVariableTypeInstruction>this.getSubType()).hasUsage(sUsageName);
 			}
 
@@ -890,7 +890,7 @@ module akra.fx {
         		return (<IAFXVariableTypeInstruction>this.getParent().getParent())._getMainVariable();
         	}
         	else {
-        		return (<IAFXVariableDeclInstruction>this.getParent());
+        		return (<IAFXVariableDeclInstruction>this._getParentVarDecl());
         	}
         }
 
@@ -959,24 +959,27 @@ module akra.fx {
 			}
 
 			if(this._isPointer){
-				var pClonePointerList: IAFXVariableDeclInstruction[] = new Array(this._pPointerList.length);
-				var pDownPointer: IAFXVariableDeclInstruction = pClone._getParentVarDecl();
+				var pClonePointerList: IAFXVariableDeclInstruction[] = null;
+				if(!isNull(this._pPointerList)){
+					pClonePointerList = new Array(this._pPointerList.length);
+					var pDownPointer: IAFXVariableDeclInstruction = pClone._getParentVarDecl();
 
-				for(var i: uint = 0; i < this._pPointerList.length; i++){
-					pClonePointerList[i] = this._pPointerList[i].clone(pRelationMap);
-					
-					if(i > 0) {
-						(pClonePointerList[i - 1].getType())._setUpDownPointers(pClonePointerList[i], pDownPointer);
-						pDownPointer = pClonePointerList[i - 1];
+					for(var i: uint = 0; i < this._pPointerList.length; i++){
+						pClonePointerList[i] = this._pPointerList[i].clone(pRelationMap);
+						
+						if(i > 0) {
+							(pClonePointerList[i - 1].getType())._setUpDownPointers(pClonePointerList[i], pDownPointer);
+							pDownPointer = pClonePointerList[i - 1];
+						}
+						else{
+							pClonePointerList[0].getType()._setUpDownPointers(null, pDownPointer);
+						}
 					}
-					else{
-						pClonePointerList[0].getType()._setUpDownPointers(null, pDownPointer);
-					}
+
+					pClonePointerList[pClonePointerList.length - 1].getType()._setUpDownPointers(null, pDownPointer);
 				}
 
-				pClonePointerList[pClonePointerList.length - 1].getType()._setUpDownPointers(null, pDownPointer);
-
-				this._setClonePointeIndexes(this.getPointDim(), pClonePointerList);
+				this._setClonePointeIndexes(this.getPointDim(), pClonePointerList);				
 			}
 
 			if(!isNull(this._pFieldDeclMap)){
@@ -1011,7 +1014,7 @@ module akra.fx {
 			}
 
 			var pBlendType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-			pBlendType.pushType(pBlendType);
+			pBlendType.pushType(pBlendBaseType);
 
 			if(this.isNotBaseArray()){
 				var iLength: uint = this.getLength();
@@ -1041,7 +1044,9 @@ module akra.fx {
         	this._isPointer = true;
         	this._nPointDim = nDim;
         	this._pPointerList = pPointerList;
-        	this._pUpPointIndex = this._pPointerList[0];
+        	if(!isNull(this._pPointerList)){
+        		this._pUpPointIndex = this._pPointerList[0];
+        	}
         }
 
         _setCloneFields(pFieldMap: IAFXVariableDeclMap): void {
@@ -1710,7 +1715,9 @@ module akra.fx {
 				else {
 					if(pType.hasFieldWithSematic(sFieldSemantic)){
 						pBlendField = pField.blend(pType.getFieldBySemantic(sFieldSemantic), eMode);
-						pBlendField.getNameId().setName(sFieldSemantic);
+						if(!isNull(pBlendField)){
+							pBlendField.getNameId().setName(sFieldSemantic);
+						}						
 					}
 					else {
 						pBlendField = pField.clone(pRelationMap);
@@ -1723,6 +1730,8 @@ module akra.fx {
 
 				pBlendType.addField(pBlendField);
 			}
+
+			return pBlendType;
 		}
 
 		_setCloneName(sName: string, sRealName: string): void {

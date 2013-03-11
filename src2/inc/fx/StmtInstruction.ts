@@ -163,7 +163,8 @@ module akra.fx {
             }
 
             if(pInstructionList[2]._getInstructionType() === EAFXInstructionTypes.k_UnaryExprInstruction ||
-               pInstructionList[2]._getInstructionType() === EAFXInstructionTypes.k_AssignmentExprInstruction){
+               pInstructionList[2]._getInstructionType() === EAFXInstructionTypes.k_AssignmentExprInstruction ||
+               pInstructionList[2]._getInstructionType() === EAFXInstructionTypes.k_PostfixArithmeticInstruction){
                 
                 var sOperator: string = pInstructionList[2].getOperator();
                 if (sOperator !== "++" && sOperator !== "--" &&

@@ -47,6 +47,8 @@ module akra {
         getStats(): IAFXEffectStats;
 
         clear(): void;
+
+        getTechniqueList(): IAFXTechniqueInstruction[];
     }
 }
 

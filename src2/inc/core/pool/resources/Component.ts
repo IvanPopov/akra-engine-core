@@ -7,9 +7,14 @@
 module akra.core.pool.resources {
 	export class Component extends ResourcePoolItem implements IAFXComponent{
 		private _pTechnique: IAFXTechniqueInstruction = null;
+		private _pComposer: IAFXComposer = null;
 
 		constructor(){
 			super();
+		}
+
+		create(): void {
+			this._pComposer = this.manager.getEngine().getComposer();
 		}
 
 		inline getTechnique(): IAFXTechniqueInstruction {
@@ -18,6 +23,10 @@ module akra.core.pool.resources {
 
 		inline setTechnique(pTechnique: IAFXTechniqueInstruction): void {
 			this._pTechnique = pTechnique;
+		}
+
+		inline getName(): string {
+			return this._pTechnique.getName();
 		}
 	}
 }

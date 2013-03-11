@@ -16,6 +16,10 @@ module akra.render {
 			return 0;
 		}
 
+		get data(): IAFXComponentBlend {
+			return null;
+		}
+
 		constructor (pMethod: IRenderMethod = null) {
 			this._pMethod = pMethod;
 		}

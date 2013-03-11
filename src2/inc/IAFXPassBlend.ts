@@ -4,7 +4,7 @@
 
 module akra {
 	export interface IAFXPassBlend {
-		blend(csPass: string): void;
+		blend(csComponent: string, iPass: uint): bool;
 	}
 }
 

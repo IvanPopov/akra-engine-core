@@ -69,6 +69,8 @@ module akra.fx {
 		private _pGlobalComponentList: IAFXComponent[] = null;
 		private _pGlobalComponetShiftList: int[] = null;
 
+		private _pAddedTechniqueList: IAFXTechniqueInstruction[] = null;
+
 		static pSystemTypes: SystemTypeMap = null;
 		static pSystemFunctions: SystemFunctionMap = null;
 		static pSystemVariables: IAFXVariableDeclMap = null;
@@ -100,46 +102,53 @@ module akra.fx {
 			var pRootNode: IParseNode = pTree.root;
 			var iParseTime: uint = akra.now();
 
-			LOG(this);
+			// LOG(this);
+			
 			this._pParseTree = pTree;
 			this._pStatistics = <IAFXEffectStats>{time: 0};
 
-			this.newScope();
-			LOG("ok");
-			this.analyzeGlobalUseDecls();
-			LOG("ok");
-			this.analyzeGlobalTypeDecls();
-			LOG("ok");
-			this.analyzeFunctionDefinitions();
-			LOG("ok");
-			this.analyzeGlobalImports();
-			LOG("ok");
-			this.analyzeTechniqueImports();
-			LOG("ok");
+			try{
+				this.newScope();
+				// LOG("ok");
+				this.analyzeGlobalUseDecls();
+				// LOG("ok");
+				this.analyzeGlobalProvideDecls();
+				// LOG("ok");
+				this.analyzeGlobalTypeDecls();
+				// LOG("ok");
+				this.analyzeFunctionDefinitions();
+				// LOG("ok");
+				this.analyzeGlobalImports();
+				// LOG("ok");
+				this.analyzeTechniqueImports();
+				// LOG("ok");
 
-			this.analyzeVariableDecls();
-			LOG("ok");
-			this.analyzeFunctionDecls();
-			LOG("ok");
-			this.analyzeTechniques();
-			LOG("ok");
+				this.analyzeVariableDecls();
+				// LOG("ok");
+				this.analyzeFunctionDecls();
+				// LOG("ok");
+				this.analyzeTechniques();
+				// LOG("ok");
 
-			// this.analyzeTypes();
-			
-			// this.preAnalyzeFunctions();
-			// this.preAnalyzeVariables();
-			// this.preAnalyzeTechniques();
-			// this.analyzeDecls();
+				// this.analyzeTypes();
+				
+				// this.preAnalyzeFunctions();
+				// this.preAnalyzeVariables();
+				// this.preAnalyzeTechniques();
+				// this.analyzeDecls();
 
-			// this.analyzeEffect();
-			// this.postAnalyzeEffect();
-			// this.checkEffect();
+				// this.analyzeEffect();
+				// this.postAnalyzeEffect();
+				// this.checkEffect();
 
-			this.endScope();
+				this.endScope();
+			}
+			catch(e){
+				throw e;
+				LOG("Don`t analyze", e);
+				return false;
+			}
 
-
-			
-			
 			//Stats
 			iParseTime = akra.now() - iParseTime;
 			this._pStatistics.time = iParseTime;
@@ -158,6 +167,10 @@ module akra.fx {
 		}
 
 		clear(): void { 
+		}
+
+		inline getTechniqueList(): IAFXTechniqueInstruction[]{
+			return this._pTechniqueList;
 		}
 
 		static getSystemType(sTypeName: string): SystemTypeInstruction {
@@ -340,7 +353,7 @@ module akra.fx {
 		    this.generateSystemFunction("ceil", "ceil($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
 		    this.generateSystemFunction("fract", "fract($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
 		    this.generateSystemFunction("abs", "abs($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
-		    this.generateSystemFunction("normalize", "normalize($1)", "float", [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("normalize", "normalize($1)", TEMPLATE_TYPE, [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
 		    this.generateSystemFunction("length", "length($1)", "float", [TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
 		    this.generateSystemFunction("reflect", "reflect($1,$2)", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
 		    this.generateSystemFunction("max", "max($1,$2)", TEMPLATE_TYPE, [TEMPLATE_TYPE, TEMPLATE_TYPE], ["float", "float2", "float3", "float4"]);
@@ -921,6 +934,17 @@ module akra.fx {
 			}
         } 
 
+        private analyzeGlobalProvideDecls(): void {
+        	var pChildren: IParseNode[] = this._pParseTree.root.children;
+			var i: uint = 0;	
+
+			for(i = pChildren.length - 1; i >=0; i--) {
+				if(pChildren[i].name === "ProvideDecl") {
+					this.analyzeProvideDecl(pChildren[i]);
+				}
+			}
+        } 
+
         private analyzeGlobalTypeDecls(): void {
         	var pChildren: IParseNode[] = this._pParseTree.root.children;
 			var i: uint = 0;	
@@ -1141,7 +1165,6 @@ module akra.fx {
 
         	for(var i: uint = 0; i < pFunctionList.length; i++){
         		pFunctionList[i]._generateInfoAboutUsedData();
-        		LOG(pFunctionList[i].toFinalCode());
         	}
         }
 
@@ -1152,11 +1175,9 @@ module akra.fx {
         		var pShader: IAFXFunctionDeclInstruction = null;
 
         		if(pFunctionList[i]._isUsedAsVertex()){
-        			LOG("Used as vertex: ", pFunctionList[i].getName());
         			pShader = pFunctionList[i]._convertToVertexShader();
         		}
         		if(pFunctionList[i]._isUsedAsPixel()){
-        			LOG("Used as pixel: ", pFunctionList[i].getName());
         			pShader = pFunctionList[i]._convertToPixelShader();
         		}
         	}
@@ -1910,12 +1931,12 @@ module akra.fx {
 
         	var pChildren: IParseNode[] = pNode.children;
         	var pExpr: PostfixIndexInstruction = new PostfixIndexInstruction();
-        	var pPostfixExpr: IAFXExprInstruction;
-        	var pIndexExpr:IAFXExprInstruction;
-        	var pExprType: IAFXVariableTypeInstruction;
-        	var pPostfixExprType: IAFXVariableTypeInstruction;
-        	var pIndexExprType: IAFXVariableTypeInstruction;
-        	var pIntType: IAFXTypeInstruction;
+        	var pPostfixExpr: IAFXExprInstruction = null;
+        	var pIndexExpr:IAFXExprInstruction = null;
+        	var pExprType: IAFXVariableTypeInstruction = null;
+        	var pPostfixExprType: IAFXVariableTypeInstruction = null;
+        	var pIndexExprType: IAFXVariableTypeInstruction = null;
+        	var pIntType: IAFXTypeInstruction = null;
 
         	pPostfixExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
         	pPostfixExprType = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
@@ -2018,7 +2039,7 @@ module akra.fx {
 
         	CHECK_INSTRUCTION(pExpr, ECheckStage.CODE_TARGET_SUPPORT);
 
-        	return null;
+        	return pExpr;
         }
         
         private analyzeUnaryExpr(pNode: IParseNode): IAFXExprInstruction{
@@ -2350,7 +2371,7 @@ module akra.fx {
 
         	switch(sName) {
         	 	case "T_UINT": 
-        	 		pInstruction = new IntInstruction();
+    	 		pInstruction = new IntInstruction();
         	 		pInstruction.setValue((<int><any>sValue) * 1);
         	 		break;
         	 	case "T_FLOAT":
@@ -2383,7 +2404,7 @@ module akra.fx {
         	var pPostfixExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
         	var pPostfixExprType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
 
-        	if(pPostfixExpr._getInstructionType() !== EAFXInstructionTypes.k_VariableTypeInstruction){
+        	if(!pPostfixExprType.isFromVariableDecl()){
         		this._error(EFFECT_BAD_MEMOF_ARGUMENT);
         		return null;
         	}
@@ -2634,7 +2655,7 @@ module akra.fx {
 
         	this.setCurrentAnalyzedFunction(pFunction);
 
-        	LOG("-----Analyze function '" + pFunction.getName() + "'------");
+        	// LOG("-----Analyze function '" + pFunction.getName() + "'------");
 
         	pStmtBlock = <StmtBlockInstruction>this.analyzeStmtBlock(pChildren[0]);
  			pFunction.setImplementation(<IAFXStmtInstruction>pStmtBlock);
@@ -3048,7 +3069,7 @@ module akra.fx {
         		pStmt = this.analyzeNonIfStmt(pChildren[0]);
         	}
         	else {
-        		pStmt = this.analyzeIfStmt(pChildren[0]);
+        		pStmt = this.analyzeStmt(pChildren[0]);
         	}
 
         	pForStmtInstruction.push(pStmt, true);
@@ -3203,10 +3224,10 @@ module akra.fx {
         	if(pChildren.length === 1){
         		pPass._markAsComplex(true);
 
-        		if(pChildren[0].value === "StateIf"){
+        		if(pChildren[0].name === "StateIf"){
         			this.analyzePassStateIfForShader(pChildren[0], pPass);
         		}
-        		else if(pChildren[0].value === "StateSwitch"){
+        		else if(pChildren[0].name === "StateSwitch"){
         			this.analyzePassStateSwitchForShader(pChildren[0], pPass);
         		}
         		
@@ -3296,7 +3317,7 @@ module akra.fx {
         	var pChildren: IParseNode[] = pNode.children;
 
         	for(var i: uint = pChildren.length - 4; i >= 0; i--){
-        		if(pChildren[i].value === "PassState"){
+        		if(pChildren[i].name === "PassState"){
         			this.analyzePassStateForShader(pChildren[i], pPass);
         		}
         	}
@@ -3308,7 +3329,7 @@ module akra.fx {
         	var pChildren: IParseNode[] = pNode.children;
 
         	for(var i: uint = pChildren.length - 3; i >= 0; i--){
-        		if(pChildren[i].value === "PassState"){
+        		if(pChildren[i].name === "PassState"){
         			this.analyzePassStateForShader(pChildren[i], pPass);
         		}
         	}
@@ -3326,7 +3347,9 @@ module akra.fx {
 				return;
 			}      
 
-			pTechnique.finalizeTechnique();  	
+			pTechnique.finalizeTechnique(this._sProvideNameSpace, 
+										 this._pGlobalComponentList, 
+										 this._pGlobalComponetShiftList);  	
         }
 
         private resumePassAnalysis(pPass: IAFXPassInstruction): void {
@@ -3363,10 +3386,10 @@ module akra.fx {
         	var pChildren: IParseNode[] = pNode.children;
 
         	if(pChildren.length === 1){
-        		if(pChildren[0].value === "StateIf"){
+        		if(pChildren[0].name === "StateIf"){
         			this.analyzePassStateIf(pChildren[0], pPass);
         		}
-        		else if(pChildren[0].value === "StateSwitch"){
+        		else if(pChildren[0].name === "StateSwitch"){
         			this.analyzePassStateSwitch(pChildren[0], pPass);
         		}
         		
@@ -3565,7 +3588,7 @@ module akra.fx {
         	pPass._addCodeFragment("case " + pCaseStateExpr.toFinalCode() + ": ");
 
         	for(var i: uint = pChildren.length - 4; i >= 0; i--){
-        		if(pChildren[i].value === "PassState"){
+        		if(pChildren[i].name === "PassState"){
         			this.analyzePassStateForShader(pChildren[i], pPass);
         		}
         		else{
@@ -3582,7 +3605,7 @@ module akra.fx {
         	pPass._addCodeFragment("default: ");
 
         	for(var i: uint = pChildren.length - 3; i >= 0; i--){
-        		if(pChildren[i].value === "PassState"){
+        		if(pChildren[i].name === "PassState"){
         			this.analyzePassStateForShader(pChildren[i], pPass);
         		}
         		else {
@@ -3607,7 +3630,7 @@ module akra.fx {
 		    
 		    var pComponent: IAFXComponent = this._pComposer.getComponentByName(sComponentName);
 		    if (!pComponent) {
-		        this._error(EFFECT_BAD_IMPORTED_COMPONENT_NOT_EXIST);
+		        this._error(EFFECT_BAD_IMPORTED_COMPONENT_NOT_EXIST, { componentName: sComponentName });
 		        return;
 		    }
 
@@ -3662,6 +3685,10 @@ module akra.fx {
         	//TODO: add correct add of compnent, not global
         	
         	var pComponentTechnique: IAFXTechniqueInstruction = pComponent.getTechnique();
+        	if(this.isAddedTechnique(pComponentTechnique)){
+        		return;
+        	}
+
         	var pSharedListV: IAFXVariableDeclInstruction[] = pComponentTechnique.getSharedVariablesForVertex();
         	var pSharedListP: IAFXVariableDeclInstruction[] = pComponentTechnique.getSharedVariablesForPixel();
 
@@ -3672,6 +3699,26 @@ module akra.fx {
         	for(var i: uint = 0; i < pSharedListP.length; i++){
         		this.addExternalSharedVariable(pSharedListP[i], EFunctionType.k_Pixel);
         	}
+
+        	if(isNull(this._pAddedTechniqueList)){
+        		this._pAddedTechniqueList = [];
+        	}
+
+        	this._pAddedTechniqueList.push(pTechnique);
+        }
+
+        private isAddedTechnique(pTechnique: IAFXTechniqueInstruction): bool {
+        	if(isNull(this._pAddedTechniqueList)){
+        		return false;
+        	}
+
+        	for(var i: uint = 0; i < this._pAddedTechniqueList.length; i++){
+        		if(this._pAddedTechniqueList[i] === pTechnique){
+        			return true;
+        		}
+        	}
+
+        	return false;
         }
 
 
@@ -3858,7 +3905,9 @@ module akra.fx {
 
 				if(pType.isStrongEqual(Effect.getSystemType("ptr"))){
 					this.addPointerForExtract(pType._getParentVarDecl());
-				}				
+				}	
+
+				return pType;			
 			}
 
         	if(sOperator === "!"){

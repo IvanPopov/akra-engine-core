@@ -64,10 +64,12 @@ module akra.core.pool.resources {
 			}
 			
 			this._pSyntaxTree = util.parser.getSyntaxTree();
-			this.notifyLoaded();
 
 			var pComposer: IAFXComposer = this.getManager().getEngine().getComposer();
-			pComposer._loadEffectFromSyntaxTree(this._pSyntaxTree, sFileName);
+			if(pComposer._loadEffectFromSyntaxTree(this._pSyntaxTree, sFileName)){
+				this.notifyLoaded();
+			}
+
 		}
 #endif
 

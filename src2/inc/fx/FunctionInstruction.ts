@@ -310,7 +310,7 @@ module akra.fx {
 			var pShader: FunctionDeclInstruction = null;
 
 			if((!this._canUsedAsFunction() || !this._isUsedAsFunction()) &&
-			   (!this._checkPixelUsage())){
+			   (!this._isUsedInPixel())){
 			   	pShader = this;
 			}
 			else {
@@ -327,7 +327,7 @@ module akra.fx {
         	var pShader: FunctionDeclInstruction = null;
 
         	if((!this._canUsedAsFunction() || !this._isUsedAsFunction()) &&
-			   (!this._checkVertexUsage())){
+			   (!this._isUsedInVertex())){
 			   	pShader = this;
 			}
 			else {
@@ -531,8 +531,11 @@ module akra.fx {
 
         	for(var i in pMap){
         		var pVar: IAFXVariableDeclInstruction = isDef(pRelationMap[i]) ? pRelationMap[i] : pMap[i];
-        		var id: uint = pVar._getInstructionID();
-        		pCloneMap[id] = pVar;
+        		
+        		if(!isNull(pVar)){
+        			var id: uint = pVar._getInstructionID();
+        			pCloneMap[id] = pVar;
+        		}        		
         	}
 
         	return pCloneMap;
@@ -981,46 +984,45 @@ module akra.fx {
 
 			var pParameterType: IAFXVariableTypeInstruction = pParameter.getType();
 
-			if(isDef(isStrictModeOn)){
-				if(pParameterType.isPointer() || pParameterType._containPointer()){
-					if (pParameterType.hasUsage("uniform") ||
-						pParameterType.hasUsage("out") ||
-						pParameterType.hasUsage("inout")){
+			if (pParameterType.isPointer() || pParameterType._containPointer()){
+				if (pParameterType.hasUsage("uniform") ||
+					pParameterType.hasUsage("out") ||
+					pParameterType.hasUsage("inout")){
 
-						this.setError(EFFECT_BAD_FUNCTION_PARAMETER_USAGE, 
-								  	  { funcName: this._pFunctionName.getName(),
-								  	varName: pParameter.getName() });
-						return false;
-					}
-
-					this._isAnalyzedForVertexUsage = false;
-					this._isAnalyzedForPixelUsage = true;
-
-					this._setForPixel(false);
-					this._bCanUsedAsFunction = false;
-					pParameterType._setVideoBufferInDepth();
+					this.setError(EFFECT_BAD_FUNCTION_PARAMETER_USAGE, 
+							  	  { funcName: this._pFunctionName.getName(),
+							  	varName: pParameter.getName() });
+					return false;
 				}
-				else if(!isStrictModeOn){
 
-					if (pParameterType.isComplex() &&
-					    !pParameterType.hasFieldWithoutSemantic() &&
-						pParameterType.hasAllUniqueSemantics()){
-						
-						if (pParameter.getSemantic() === "" &&
-							pParameterType.hasFieldWithSematic("POSITION")){
+				this._isAnalyzedForVertexUsage = false;
+				this._isAnalyzedForPixelUsage = true;
 
-							pParameterType._addPointIndexInDepth();
-						}
-						else {
-							pParameterType.addPointIndex(false);
-							pParameterType._setVideoBufferInDepth();
-						}
+				this._setForPixel(false);
+				this._bCanUsedAsFunction = false;
+				pParameterType._setVideoBufferInDepth();
+			}
+			else if(!isStrictModeOn){
+
+				if (pParameterType.isComplex() &&
+				    !pParameterType.hasFieldWithoutSemantic() &&
+					pParameterType.hasAllUniqueSemantics()){
+					
+					if (pParameter.getSemantic() === "" &&
+						pParameterType.hasAllUniqueSemantics() &&
+						!pParameterType.hasFieldWithoutSemantic()){
+
+						pParameterType._addPointIndexInDepth();
 					}
-					else if(pParameter.getSemantic() !== ""){
+					else {
 						pParameterType.addPointIndex(false);
-						pParameterType._setVideoBufferInDepth();	
-					}				
+						pParameterType._setVideoBufferInDepth();
+					}
 				}
+				else if(pParameter.getSemantic() !== ""){
+					pParameterType.addPointIndex(false);
+					pParameterType._setVideoBufferInDepth();	
+				}				
 			}
 
 			this._pParameterList.push(pParameter);
@@ -1166,10 +1168,10 @@ module akra.fx {
 					return false;
 				}
 
-				isGood = pReturnType.hasFieldWithSematic("POSITION");
-				if(!isGood){
-					return false;
-				}
+				// isGood = pReturnType.hasFieldWithSematic("POSITION");
+				// if(!isGood){
+				// 	return false;
+				// }
 
 				isGood = !pReturnType._containSampler();
 				if(!isGood){

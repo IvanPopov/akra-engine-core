@@ -656,8 +656,12 @@ module akra.fx {
         		}
         	}
         	else {
-        		this.addInfoAbouUsedVariablesFromFunction(this._pVertexShader);
-        		this.addInfoAbouUsedVariablesFromFunction(this._pPixelShader);
+        		if(!isNull(this._pVertexShader)){
+        			this.addInfoAbouUsedVariablesFromFunction(this._pVertexShader);
+        		}
+        		if(!isNull(this._pPixelShader)){
+        			this.addInfoAbouUsedVariablesFromFunction(this._pPixelShader);
+        		}
         	}
         }
 
@@ -691,19 +695,29 @@ module akra.fx {
         	}
 
         	for(var i in pSharedVars){
-        		pSharedVarsTo[i] = pSharedVars[i];
+        		if(!isNull(pSharedVars[i]) && !pSharedVars[i].isField()){
+        			pSharedVarsTo[i] = pSharedVars[i];
+        		}
         	}
         	for(var i in pGlobalVars){
-        		pGlobalVarsTo[i] = pGlobalVars[i];
+        		if(!isNull(pGlobalVars[i])){
+        			pGlobalVarsTo[i] = pGlobalVars[i];
+        		}
         	}
         	for(var i in pUniformVars){
-        		pUniformVarsTo[i] = pUniformVars[i];
+        		if(!isNull(pUniformVars[i])){
+        			pUniformVarsTo[i] = pUniformVars[i];
+        		}
         	}
         	for(var i in pForeignVars){
-        		pForeignVarsTo[i] = pForeignVars[i];
+        		if(!isNull(pForeignVars[i])){
+        			pForeignVarsTo[i] = pForeignVars[i];
+        		}
         	}
         	for(var i in pTypes){
-        		pTypesTo[i] = pTypes[i];
+        		if(!isNull(pTypes[i])){
+        			pTypesTo[i] = pTypes[i];
+        		}
         	}
         }
 	}
@@ -719,6 +733,9 @@ module akra.fx {
 		private _pPassList: IAFXPassInstruction[] = null;
 		private _pComponentList: IAFXComponent[] = null;
 		private _pComponentShiftList: int[] = null;
+		private _pFullComponentList: IAFXComponent[] = null;
+		private _pFullComponentShiftList: int[] = null;
+		private _nTotalPasses: uint = 0;
 
 		constructor() {
 			super();
@@ -763,12 +780,16 @@ module akra.fx {
 			return iPass < this._pPassList.length ? this._pPassList[iPass] : null;
 		}
 
-		totalPasses(): uint {
+		totalOwnPasses(): uint{
 			return this._pPassList.length;
 		}
 
+        totalPasses(): uint{
+        	return this._nTotalPasses;
+        } 
+
 		addComponent(pComponent: IAFXComponent, iShift: int): void{
-			if(!isNull(this._pComponentList)){
+			if(isNull(this._pComponentList)){
 				this._pComponentList = [];
 				this._pComponentShiftList = [];
 			}
@@ -777,12 +798,47 @@ module akra.fx {
 			this._pComponentShiftList.push(iShift);
 		}
 
+		inline getComponentList(): IAFXComponent[]{
+			return this._pComponentList;
+		}
+
+        inline getComponentListShift(): int[]{
+        	return this._pComponentShiftList;
+        }
+
+        getFullComponentList(): IAFXComponent[]{
+        	return this._pFullComponentList;
+        }
+
+        getFullComponentShiftList(): int[]{
+        	return this._pFullComponentShiftList;
+        }
+
 		checkForCorrectImports(): bool {
 			return true;
 		}
 
-		finalizeTechnique(): void {
+		finalizeTechnique(sProvideNameSpace: string, 
+                          pGloabalComponentList: IAFXComponent[],
+                          pGloabalComponentShiftList: uint[]): void {
 			this.generateListOfSharedVariables();
+
+			if(!this.hasComplexName() && sProvideNameSpace !== ""){
+				this._sName = sProvideNameSpace + "." + this._sName;
+			}
+
+			if(!isNull(pGloabalComponentList)){
+				if(!isNull(this._pComponentList)){
+					this._pComponentList = pGloabalComponentList.concat(this._pComponentList);
+					this._pComponentShiftList = pGloabalComponentShiftList.concat(this._pComponentShiftList);
+				}
+				else {
+					this._pComponentList = pGloabalComponentList.concat();
+					this._pComponentShiftList = pGloabalComponentShiftList.concat();
+				}
+			}
+
+			this.generateFullListOfComponent();
 		}
 
 		private generateListOfSharedVariables(): void {
@@ -820,6 +876,38 @@ module akra.fx {
 			}
 
 			pAddTo.push(pVar);
+		}
+
+		private generateFullListOfComponent(): void {
+			this._nTotalPasses = this.totalOwnPasses();
+
+			if(isNull(this._pComponentList)){
+				return;
+			}
+
+			this._pFullComponentList = [];
+			this._pFullComponentShiftList = [];
+
+			for(var i: uint = 0; i < this._pComponentList.length; i++){
+				var pTechnique: IAFXTechniqueInstruction = this._pComponentList[i].getTechnique();
+				var iMainShift: int = this._pComponentShiftList[i];
+				var pAddComponentList: IAFXComponent[] = pTechnique.getFullComponentList();
+				var pAddComponentShiftList: int[] = pTechnique.getFullComponentShiftList();
+
+				if(!isNull(pAddComponentList)){
+					for(var j: uint = 0; j < pAddComponentList.length; i++){
+						this._pFullComponentList.push(pAddComponentList[j]);
+						this._pFullComponentShiftList.push(pAddComponentShiftList[j] + iMainShift);
+					}
+				}
+
+				this._pFullComponentList.push(this._pComponentList[i]);
+				this._pFullComponentShiftList.push(iMainShift);
+
+				if(this._nTotalPasses < iMainShift + pTechnique.totalPasses()) {
+					this._nTotalPasses = iMainShift + pTechnique.totalPasses();
+				}
+			}
 		}
 	}
 

@@ -12,6 +12,6 @@ module akra {
 		shouldBeTrue("Effec data create");
 		check(!isNull(pEffectData));
 
-		pEffectData.loadResource("data/SystemEffects.afx");
+		// pEffectData.loadResource("data/SystemEffects.afx");
 	});
 }

@@ -56,6 +56,7 @@ module akra.fx {
 				pScope = pScope.parent;
 			}
 
+			return false;
 		}
 
 		setStrictModeOn(iScope?: uint = this._iCurrentScope): void {
