@@ -34,6 +34,10 @@ module akra.fx {
 			return <IAFXInitExprInstruction>this.getInstructions()[2];
 		}
 
+        getDefaultValue(): any {
+            return null;
+        }
+
 		inline getType(): IAFXVariableTypeInstruction {
 			return <IAFXVariableTypeInstruction>this._pInstructionList[0];
 		}
@@ -61,6 +65,10 @@ module akra.fx {
 
         inline getName(): string {
         	return (<IAFXIdInstruction>this._pInstructionList[1]).getName();
+        }
+
+        inline getRealName(): string {
+            return (<IAFXIdInstruction>this._pInstructionList[1]).getRealName();
         }
 
         inline getNameId(): IAFXIdInstruction {
@@ -96,6 +104,10 @@ module akra.fx {
             }
 
             return this._isVideoBuffer;
+        }
+
+        inline isSampler(): bool {
+            return this.getType().isSampler();
         }
 
         inline getSubVarDecls(): IAFXVariableDeclInstruction[] {

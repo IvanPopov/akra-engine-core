@@ -28,6 +28,10 @@ module akra.core.pool.resources {
 		inline getName(): string {
 			return this._pTechnique.getName();
 		}
+
+		inline getHash(iShift: int): string {
+			return this.getName() + ">>" + iShift.toString();
+		}
 	}
 }
 

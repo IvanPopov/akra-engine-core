@@ -307,6 +307,10 @@ module akra.fx {
 			return "";
 		}
 
+		getRealName(): string {
+			return "";
+		}
+
 		getNameId(): IAFXIdInstruction {
 			return null;
 		}
@@ -455,13 +459,20 @@ module akra.fx {
 		private _pGlobalVariableMapV: IAFXVariableDeclMap = null;
 		private _pUniformVariableMapV: IAFXVariableDeclMap = null;
 		private _pForeignVariableMapV: IAFXVariableDeclMap = null;
+		private _pTextureVariableMapV: IAFXVariableDeclMap = null;
 		private _pUsedTypeMapV: IAFXTypeDeclMap = null;
 
 		private _pSharedVariableMapP: IAFXVariableDeclMap = null;
 		private _pGlobalVariableMapP: IAFXVariableDeclMap = null;
 		private _pUniformVariableMapP: IAFXVariableDeclMap = null;
 		private _pForeignVariableMapP: IAFXVariableDeclMap = null;
+		private _pTextureVariableMapP: IAFXVariableDeclMap = null;
 		private _pUsedTypeMapP: IAFXTypeDeclMap = null;
+
+		private _pFullUniformVariableMap: IAFXVariableDeclMap = null;
+		private _pFullForeignVariableMap: IAFXVariableDeclMap = null;
+		private _pFullTextureVariableMap: IAFXVariableDeclMap = null;
+
 
 		constructor(){
 			super();
@@ -543,6 +554,10 @@ module akra.fx {
         	return this._pForeignVariableMapV;
         }
 
+        inline _getTextureVariableMapV(): IAFXVariableDeclMap{
+        	return this._pTextureVariableMapV;
+        }
+
         inline _getUsedTypeMapV(): IAFXTypeDeclMap{
         	return this._pUsedTypeMapV;
         }
@@ -563,10 +578,25 @@ module akra.fx {
         	return this._pForeignVariableMapP;
         }
 
+        inline _getTextureVariableMapP(): IAFXVariableDeclMap{
+        	return this._pTextureVariableMapP;
+        }
+
         inline _getUsedTypeMapP(): IAFXTypeDeclMap{
         	return this._pUsedTypeMapP;
         }
 
+        inline _getFullUniformMap(): IAFXVariableDeclMap {
+        	return this._pFullUniformVariableMap;
+        }
+
+        inline _getFullForeignMap(): IAFXVariableDeclMap {
+        	return this._pFullForeignVariableMap;
+        }
+
+        inline _getFullTextureMap(): IAFXVariableDeclMap {
+        	return this._pFullTextureVariableMap;
+        }
 
 
         inline isComplexPass(): bool {
@@ -641,13 +671,19 @@ module akra.fx {
 				this._pGlobalVariableMapV = <IAFXVariableDeclMap>{};
 				this._pUniformVariableMapV = <IAFXVariableDeclMap>{};
 				this._pForeignVariableMapV = <IAFXVariableDeclMap>{};
+				this._pTextureVariableMapV = <IAFXVariableDeclMap>{};
 				this._pUsedTypeMapV = <IAFXTypeDeclMap>{};
 
 				this._pSharedVariableMapP = <IAFXVariableDeclMap>{};
 				this._pGlobalVariableMapP = <IAFXVariableDeclMap>{};
 				this._pUniformVariableMapP = <IAFXVariableDeclMap>{};
 				this._pForeignVariableMapP = <IAFXVariableDeclMap>{};
+				this._pTextureVariableMapP = <IAFXVariableDeclMap>{};
 				this._pUsedTypeMapP = <IAFXTypeDeclMap>{};
+
+				this._pFullUniformVariableMap = <IAFXVariableDeclMap>{};
+				this._pFullForeignVariableMap = <IAFXVariableDeclMap>{};
+				this._pFullTextureVariableMap = <IAFXVariableDeclMap>{};
 			}
 
         	if(this.isComplexPass()){
@@ -670,6 +706,7 @@ module akra.fx {
         	var pGlobalVars: IAFXVariableDeclMap = pFunction._getGlobalVariableMap();
         	var pUniformVars: IAFXVariableDeclMap = pFunction._getUniformVariableMap();
         	var pForeignVars: IAFXVariableDeclMap = pFunction._getForeignVariableMap();
+        	var pTextureVars: IAFXVariableDeclMap = pFunction._getTextureVariableMap();
         	var pTypes: IAFXTypeDeclMap = pFunction._getUsedTypeMap();
 
 
@@ -677,6 +714,7 @@ module akra.fx {
         	var pGlobalVarsTo: IAFXVariableDeclMap = null;
         	var pUniformVarsTo: IAFXVariableDeclMap = null;
         	var pForeignVarsTo: IAFXVariableDeclMap = null;
+        	var pTextureVarsTo: IAFXVariableDeclMap = null;
         	var pTypesTo: IAFXTypeDeclMap = null;
 
         	if(pFunction.getFunctionType() === EFunctionType.k_Vertex){
@@ -684,6 +722,7 @@ module akra.fx {
 	        	pGlobalVarsTo = this._pGlobalVariableMapV;
 	        	pUniformVarsTo = this._pUniformVariableMapV;
 	        	pForeignVarsTo = this._pForeignVariableMapV;
+	        	pTextureVarsTo = this._pTextureVariableMapV;
 	        	pTypesTo = this._pUsedTypeMapV;
         	}
         	else {
@@ -691,6 +730,7 @@ module akra.fx {
 	        	pGlobalVarsTo = this._pGlobalVariableMapP;
 	        	pUniformVarsTo = this._pUniformVariableMapP;
 	        	pForeignVarsTo = this._pForeignVariableMapP;
+	        	pTextureVarsTo = this._pTextureVariableMapP;
 	        	pTypesTo = this._pUsedTypeMapP;
         	}
 
@@ -707,11 +747,19 @@ module akra.fx {
         	for(var i in pUniformVars){
         		if(!isNull(pUniformVars[i])){
         			pUniformVarsTo[i] = pUniformVars[i];
+        			this._pFullUniformVariableMap[i] = pUniformVars[i];
         		}
         	}
         	for(var i in pForeignVars){
         		if(!isNull(pForeignVars[i])){
         			pForeignVarsTo[i] = pForeignVars[i];
+        			this._pFullForeignVariableMap[i] = pForeignVars[i];
+        		}
+        	}
+        	for(var i in pTextureVars){
+        		if(!isNull(pTextureVars[i])){
+        			pTextureVarsTo[i] = pTextureVars[i];
+        			this._pFullTextureVariableMap[i] = pTextureVars[i];
         		}
         	}
         	for(var i in pTypes){

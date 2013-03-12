@@ -17,6 +17,11 @@ module akra {
 		[index: string]: IAFXComponentBlend; 
 	}
 
+	export interface IAFXComponentMap {
+		[index: uint]: IAFXComponent;
+		[index: string]: IAFXComponent;
+	}
+
 	export interface IAFXComposer {
 		getComponentByName(sComponentName: string): IAFXComponent;
 		getEngine(): IEngine;

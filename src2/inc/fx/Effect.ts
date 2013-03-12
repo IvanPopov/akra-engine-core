@@ -1591,6 +1591,7 @@ module akra.fx {
         		this._error(EFFECT_BAD_TEXTURE_FOR_SAMLER);
   				return;
         	}
+        	var pTexture: IAFXVariableDeclInstruction = null;
 
       		switch (sStateType) {
 		        case "TEXTURE":
@@ -1605,6 +1606,7 @@ module akra.fx {
 	      				return;
 	      			}
 
+	      			pTexture = this.getVariable(sTextureName);
 	      			sStateValue = sTextureName;
 		            break;
 		        
@@ -1643,7 +1645,12 @@ module akra.fx {
 		            return;
 		    }
 
-		    pSamplerStates.addState(sStateType, sStateValue);
+		    if(sStateType !== "TEXTURE") {
+		    	pSamplerStates.addState(sStateType, sStateValue);
+		    }
+		    else {
+		    	pSamplerStates.setTexture(pTexture);
+		    }
         }
 
         private analyzeComplexExpr(pNode: IParseNode): IAFXExprInstruction {

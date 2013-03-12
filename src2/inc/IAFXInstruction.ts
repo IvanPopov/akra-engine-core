@@ -255,6 +255,8 @@ module akra {
         isStrongEqual(pType: IAFXTypeInstruction): bool;
         isConst(): bool;
 
+        isSampler(): bool;
+
         isWritable(): bool;
         isReadable(): bool;
 
@@ -406,6 +408,7 @@ module akra {
         setSemantic(sSemantic: string);
         setAnnotation(pAnnotation: IAFXAnnotationInstruction): void;
         getName(): string;
+        getRealName(): string;
         getNameId(): IAFXIdInstruction;
         getSemantic(): string;
 
@@ -426,7 +429,9 @@ module akra {
 
     export interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
         hasInitializer(): bool;
-        getInitializeExpr(): IAFXExprInstruction;
+        getInitializeExpr(): IAFXInitExprInstruction;
+
+        getDefaultValue(): any;
 
         getType(): IAFXVariableTypeInstruction;
         setType(pType: IAFXVariableTypeInstruction): void;
@@ -435,6 +440,7 @@ module akra {
         isField(): bool;
         isPointer(): bool;
         isVideoBuffer(): bool;
+        isSampler(): bool;
         
         getSubVarDecls(): IAFXVariableDeclInstruction[];
 
@@ -516,6 +522,7 @@ module akra {
         _getGlobalVariableMap(): IAFXVariableDeclMap;
         _getUniformVariableMap(): IAFXVariableDeclMap;
         _getForeignVariableMap(): IAFXVariableDeclMap;
+        _getTextureVariableMap(): IAFXVariableDeclMap;
         _getUsedTypeMap(): IAFXTypeDeclMap;
     }
 
@@ -591,13 +598,19 @@ module akra {
         _getGlobalVariableMapV(): IAFXVariableDeclMap;
         _getUniformVariableMapV(): IAFXVariableDeclMap;
         _getForeignVariableMapV(): IAFXVariableDeclMap;
+        _getTextureVariableMapV(): IAFXVariableDeclMap;
         _getUsedTypeMapV(): IAFXTypeDeclMap;
 
         _getSharedVariableMapP(): IAFXVariableDeclMap;
         _getGlobalVariableMapP(): IAFXVariableDeclMap;
         _getUniformVariableMapP(): IAFXVariableDeclMap;
         _getForeignVariableMapP(): IAFXVariableDeclMap;
+        _getTextureVariableMapP(): IAFXVariableDeclMap;
         _getUsedTypeMapP(): IAFXTypeDeclMap;
+
+        _getFullUniformMap(): IAFXVariableDeclMap;
+        _getFullForeignMap(): IAFXVariableDeclMap;
+        _getFullTextureMap(): IAFXVariableDeclMap;
 
         addShader(pShader: IAFXFunctionDeclInstruction): void;
         setState(sType: string, sValue: string): void;

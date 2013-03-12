@@ -1074,18 +1074,33 @@ module akra.fx {
 	}
 	/**
 	 * Represetn sampler_state { states }
-	 * sampler_state IdExprInstruction ExprInstruction ... ExprInstruction
 	 */
 	export class SamplerStateBlockInstruction extends ExprInstruction {
+		private _pTexture: IAFXVariableDeclInstruction = null;
+		private _pSamplerParams: any = null;
 
 		constructor() { 
 			super();
-			this._pInstructionList = [null];
+			this._pInstructionList = null;
 			this._eInstructionType = EAFXInstructionTypes.k_SamplerStateBlockInstruction;
 		}	
 
 		addState(sStateType: string, sStateValue: string): void{
+			if(isNull(this._pSamplerParams)){
+				this._pSamplerParams = {};
+			}
+
+			this._pSamplerParams[sStateType] = sStateValue;
+
 			return;
+		}
+
+		setTexture(pTexture: IAFXVariableDeclInstruction): void {
+			this._pTexture = pTexture;
+		}
+
+		inline getTexture(): IAFXVariableDeclInstruction {
+			return this._pTexture;
 		}
 	}
 

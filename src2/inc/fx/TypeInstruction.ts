@@ -151,6 +151,10 @@ module akra.fx {
 			return true;
 		}
 
+		isSampler(): bool {
+			return this.getSubType().isSampler();
+		}
+		
 		isWritable(): bool {
 			if(!isNull(this._isWritable)){
 				return this._isWritable;
@@ -1204,6 +1208,13 @@ module akra.fx {
 			return false;
 		}
 
+		isSampler(): bool{
+			return this.getName() === "sampler" ||
+				   this.getName() === "sampler2D" ||
+				   this.getName() === "samplerCUBE";
+		}
+
+
 		inline isWritable(): bool {
 			return this._isWritable;
 		}
@@ -1450,6 +1461,10 @@ module akra.fx {
 		}
 
 		inline isConst(): bool {
+			return false;
+		}
+
+		isSampler(): bool{
 			return false;
 		}
 
