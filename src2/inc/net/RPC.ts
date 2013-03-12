@@ -398,9 +398,8 @@ module akra.net {
             return <IRPCCallback>RPC.callbackPool.pop();
         }
 
-        BEGIN_EVENT_TABLE(RPC);
-            BROADCAST(joined, VOID);
-        END_EVENT_TABLE();
+        CREATE_EVENT_TABLE(RPC);
+        BROADCAST(joined, VOID);
 
         private static requestPool: IObjectArray = new ObjectArray;
         private static callbackPool: IObjectArray = new ObjectArray;

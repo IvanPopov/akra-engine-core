@@ -65,9 +65,8 @@ module akra.render {
 			return false;
 		}
 
-		BEGIN_EVENT_TABLE(RenderTechnique);
-			UNICAST(render, VOID);
-		END_EVENT_TABLE();
+		CREATE_EVENT_TABLE(RenderTechnique);
+		UNICAST(render, VOID);
 	}
 }
 

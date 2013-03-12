@@ -168,17 +168,17 @@ module  akra.render {
 			return null;
 		}
 
-		BEGIN_EVENT_TABLE(Renderer);
-			signal active(pEngine: IEngine): void {
-				this._isActive = true;
-				EMIT_BROADCAST(active, _CALL(pEngine));
-			}
+		CREATE_EVENT_TABLE(Renderer);
+		signal active(pEngine: IEngine): void {
+			this._isActive = true;
+			EMIT_BROADCAST(active, _CALL(pEngine));
+		}
 
-			signal inactive(pEngine: IEngine): void {
-				this._isActive = false;
-				EMIT_BROADCAST(inactive, _CALL(pEngine));
-			}
-		END_EVENT_TABLE();
+		signal inactive(pEngine: IEngine): void {
+			this._isActive = false;
+			EMIT_BROADCAST(inactive, _CALL(pEngine));
+		}
+		
 	}
 };
 

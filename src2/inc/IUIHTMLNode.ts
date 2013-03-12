@@ -13,6 +13,7 @@ module akra {
 		getHTMLElement(): HTMLElement;
 
 		isFocused(): bool;
+		isRendered(): bool;
 
 		signal click(e: IUIEvent): void;
 		signal dblclick(e: IUIEvent): void;

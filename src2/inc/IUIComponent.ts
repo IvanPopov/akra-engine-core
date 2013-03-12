@@ -16,11 +16,16 @@ module akra {
 		renderTo?: any;
 		//string like parent/window/document or array [x, y, w, h]
 		dragZone?: any;
+
+		//string/EUILayouts
+		layout?: any;
+
+		generic?: string;
 	}
 
 	export enum EUIComponents {
 		UNKNOWN,
-		
+
 		BUTTON,
 		LABEL,
 		TREE,
@@ -32,6 +37,14 @@ module akra {
 
 	export interface IUIComponent extends IUIDNDNode {
 		readonly componentType: EUIComponents;
+		readonly genericType: string;
+
+		readonly layout: IUILayout;
+
+		isGeneric(): bool;
+
+		setLayout(eType: EUILayouts): bool;
+		setLayout(sType: string): bool;
 	}
 }
 

@@ -9,8 +9,8 @@ module akra.ui {
 		inline get text(): string { return this.$element.html(); }
 		inline set text(x: string) { this.$element.html(x); }
 
-		constructor (ui, pOptions: IUIComponentOptions = null, eType: EUIComponents = EUIComponents.BUTTON) {
-			super(ui, pOptions, eType, $("<button />"));
+		constructor (ui, options?, eType: EUIComponents = EUIComponents.BUTTON) {
+			super(ui, options, eType, $("<button />"));
 		}
 
 		protected inline label(): string {

@@ -605,23 +605,22 @@ module akra.model {
             return pSceneModel;
         }
 
-        BEGIN_EVENT_TABLE(Mesh);
-            signal shadow(pSubMesh: IMeshSubset, bShadow: bool): void {
+        CREATE_EVENT_TABLE(Mesh);
+        signal shadow(pSubMesh: IMeshSubset, bShadow: bool): void {
 
-                this._bShadow = bShadow;
+            this._bShadow = bShadow;
 
-                if (!bShadow) {
-                    for (var i: int = 0; i < this._pSubMeshes.length; ++ i) {
-                        if (this._pSubMeshes[i].hasShadow()) {
-                            this._bShadow = true;
-                            break;
-                        }
+            if (!bShadow) {
+                for (var i: int = 0; i < this._pSubMeshes.length; ++ i) {
+                    if (this._pSubMeshes[i].hasShadow()) {
+                        this._bShadow = true;
+                        break;
                     }
                 }
-
-                EMIT_BROADCAST(shadow, _CALL(pSubMesh, bShadow));
             }
-        END_EVENT_TABLE();
+
+            EMIT_BROADCAST(shadow, _CALL(pSubMesh, bShadow));
+        }
 
 	}
 

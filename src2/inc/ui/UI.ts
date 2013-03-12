@@ -10,6 +10,11 @@
 #include "Button.ts"
 #include "Label.ts"
 #include "Layout.ts"
+#include "Horizontal.ts"
+#include "Vertical.ts"
+#include "Slider.ts"
+#include "Checkbox.ts"
+#include "CheckboxList.ts"
 
 module akra.ui {
 	export class UI implements IUI {
@@ -41,24 +46,35 @@ module akra.ui {
 					return new Button(this, pOptions);
 				case "label":
 					return new Label(this, pOptions);
+				case "slider":
+					return new Slider(this, pOptions);
+				case "checkbox":
+					return new Checkbox(this, pOptions);
+				case "checkboxlist":
+					return new CheckboxList(this, pOptions);
+				default: 
+					pOptions = pOptions || {};
+					pOptions.generic = sName;
+					return new Component(this, pOptions);
 			}
-
-			return null;
 		}
 
-		createLayout(eType: EUILayouts = EUILayouts.UNKNOWN): IUILayout {
-			switch (eType) {
+		createLayout(eType: EUILayouts = EUILayouts.UNKNOWN): IUILayout;
+		createLayout(sType: string = null): IUILayout;
+		createLayout(type = null): IUILayout {
+			switch (type) {
+				case "horizontal":
 				case EUILayouts.HORIZONTAL:
-					return null;
-				case EUILayouts.VERTICAL;
-					return null;
+					return new Horizontal(this);
+				case "vertical":
+				case EUILayouts.VERTICAL:
+					return new Vertical(this);
 				default:
 					return new Layout(this);
 			}
 		}
 
-		BEGIN_EVENT_TABLE(UI);
-		END_EVENT_TABLE();
+		CREATE_EVENT_TABLE(UI);
 	}
 }
 

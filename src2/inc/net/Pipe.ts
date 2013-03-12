@@ -220,12 +220,11 @@ module akra.net {
 			return !isNull(this._pConnect);
 		}
 
-		BEGIN_EVENT_TABLE(Pipe);
-			BROADCAST(opened, VOID);
-			BROADCAST(closed, CALL(ev));
-			BROADCAST(error, CALL(err));
-			BROADCAST(message, CALL(data, type));
-		END_EVENT_TABLE();
+		CREATE_EVENT_TABLE(Pipe);
+		BROADCAST(opened, VOID);
+		BROADCAST(closed, CALL(ev));
+		BROADCAST(error, CALL(err));
+		BROADCAST(message, CALL(data, type));
 	}
 
 	export function createPipe(sAddr: string = null): IPipe {

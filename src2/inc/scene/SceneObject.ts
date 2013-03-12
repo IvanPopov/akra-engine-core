@@ -123,9 +123,7 @@ module akra.scene {
 #endif
     	}
 
-		BEGIN_EVENT_TABLE(SceneObject);
-			UNICAST(worldBoundsUpdated, VOID);
-		END_EVENT_TABLE();
+		UNICAST(worldBoundsUpdated, VOID);
 	}
 
 	export inline function isSceneObject(pEntity: IEntity): bool {

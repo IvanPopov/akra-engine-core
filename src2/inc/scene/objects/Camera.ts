@@ -401,10 +401,8 @@ module akra.scene.objects {
     		this._pDLResultStorage[index] = null;
     	};
 
-    	BEGIN_EVENT_TABLE(Camera);
-    		BROADCAST(preRenderScene, VOID);
-    		BROADCAST(postRenderScene, VOID);
-    	END_EVENT_TABLE();
+		BROADCAST(preRenderScene, VOID);
+		BROADCAST(postRenderScene, VOID);
 	}
 
 	export inline function isCamera(pNode: IEntity): bool {

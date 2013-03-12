@@ -296,7 +296,7 @@ module akra.core {
 			var pDeps: IDependens = Engine.DEPS;
 
 			while (isDefAndNotNull(pDeps.files)) {
-				pDeps = pDeps.files;
+				pDeps = pDeps.deps;
 			}
 
 			if (isString(pData)) {
@@ -336,23 +336,22 @@ module akra.core {
 					}
 			};			
 
-		BEGIN_EVENT_TABLE(Engine);
-			BROADCAST(frameStarted, VOID);
-			BROADCAST(frameEnded, VOID);
-			
-			signal inactive(): void {
-				this._isActive = false;
-				EMIT_BROADCAST(inactive, _VOID);
-			}
+		CREATE_EVENT_TABLE(Engine);
+		BROADCAST(frameStarted, VOID);
+		BROADCAST(frameEnded, VOID);
+		
+		signal inactive(): void {
+			this._isActive = false;
+			EMIT_BROADCAST(inactive, _VOID);
+		}
 
-			signal active(): void {
-				this._isActive = true;
-				EMIT_BROADCAST(active, _VOID);
-			}
+		signal active(): void {
+			this._isActive = true;
+			EMIT_BROADCAST(active, _VOID);
+		}
 			
-			// BROADCAST(inactive, VOID);
-			// BROADCAST(active, VOID);
-		END_EVENT_TABLE();
+		// BROADCAST(inactive, VOID);
+		// BROADCAST(active, VOID);
 
 	}
 

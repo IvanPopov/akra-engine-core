@@ -28,7 +28,7 @@ module akra.ui {
 		constructor (parent, eNodeType: EUINodeTypes = EUINodeTypes.UNKNOWN) {
 			super(EEntityTypes.UI_NODE);
 
-			this._pUI = parent instanceof UI? <IUI>parent: (<IUINode>arguments[0]).ui;
+			this._pUI = parent instanceof UI? <IUI>parent: (<IUINode>parent).ui;
 			this._eNodeType = eNodeType;
 
 			if (parent instanceof Node) {
@@ -57,23 +57,22 @@ module akra.ui {
 		}
 
 		renderTarget(): JQuery {
-			if (!isNull(this.child) && isLayout(<IUINode>this.child)) {
-				return (<IUINode>this.child).renderTarget();
-			}
-
 			var pTarget: IUINode = this.findRenderTarget();
-
 			return isNull(pTarget)? null: pTarget.renderTarget();
 		}
 
-		setLayout(eType: EUILayout = EUILayout.UNKNOWN): void {
-			var pLayout: IUILayout = this.ui.createLayout(eType);
+		addChild(pChild: IEntity): IEntity {
+			if (this.child) {
+				var pRightSibling: IEntity = this.child.rightSibling;	
 
-			if (isLayout(<IUINode>this.child)) {
-				ERROR("//TODO: LAYOUT");
+				if (pRightSibling) {
+					pRightSibling.sibling = pChild;	
+					this.childAdded(pChild);	
+					return pChild;
+				}
 			}
 
-			pLayout.attachToParent(this);
+    		return super.addChild(pChild); 
 		}
 
 		protected findRenderTarget(): IUINode {
@@ -91,25 +90,30 @@ module akra.ui {
 			return null;
 		}
 
-		protected label(): string {
-			return null;
-		}
+	}
 
-		protected className(): string {
-			return "component-" + (this.label() || "").toLowerCase();
-		}
+	export function isUI(parent: IUINode): bool;
+	export function isUI(parent: IUI): bool;
+	export function isUI(parent): bool {
+		return parent instanceof UI;
+	}
+
+	export function getUI(parent: IUINode): IUI;
+	export function getUI(parent: IUI): IUI;
+	export function getUI(parent): IUI {
+		return isUI(parent)? <IUI>parent: (<IUINode>parent).ui;
 	}
 
 	export inline function isUINode(pEntity: IEntity): bool {
-		return pEntity.type === EEntityTypes.UI_NODE;
+		return !isNull(pEntity) && pEntity.type === EEntityTypes.UI_NODE;
 	}
 
-	export inline function isLayout(pNode: IUINode): bool {
-		return pNode.nodeType === EUINodeTypes.LAYOUT;
+	export inline function isLayout(pEntity: IEntity): bool {
+		return isUINode(pEntity) && (<IUINode>pEntity).nodeType === EUINodeTypes.LAYOUT;
 	}
 
-	export inline function containsHTMLElement(pNode: IUINode): bool {
-		return true;
+	export inline function containsHTMLElement(pEntity: IEntity): bool {
+		return isUINode(pEntity) && (<IUINode>pEntity).nodeType >= EUINodeTypes.HTML;
 	}
 }
 

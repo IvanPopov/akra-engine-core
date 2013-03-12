@@ -479,7 +479,7 @@ function fetchDeps(sDir, pDeps) {
 function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 	
 	//FIXME: hack for events support
-	sTestData = sTestData.replace(/eval\(\"this\.\_iGuid \|\| akra\.sid\(\)\"\)/g, "this._iGuid || akra.sid()");
+	//sTestData = sTestData.replace(/eval\(\"this\.\_iGuid \|\| akra\.sid\(\)\"\)/g, "this._iGuid || akra.sid()");
 
 	sTestData = "\n\n\n" + 
 		"/*---------------------------------------------\n" +

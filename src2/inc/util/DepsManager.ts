@@ -174,16 +174,14 @@ module akra.util {
 			}
 		}
 
-		BEGIN_EVENT_TABLE(DepsManager);
-			BROADCAST(loaded, VOID);
-			// BROADCAST(error, CALL(pErr));
-			
-			error(pErr: Error): void {
-				if (true) throw pErr;
-				EMIT_BROADCAST(error, _CALL(pErr));
-			}
-
-		END_EVENT_TABLE();
+		CREATE_EVENT_TABLE(DepsManager);
+		BROADCAST(loaded, VOID);
+		// BROADCAST(error, CALL(pErr));
+		
+		error(pErr: Error): void {
+			if (true) throw pErr;
+			EMIT_BROADCAST(error, _CALL(pErr));
+		}
 	}
 
 	export function createDepsManager(pEngine: IEngine): IDepsManager {

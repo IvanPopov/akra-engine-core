@@ -46,7 +46,7 @@
 .component-button{
 	display: inline-block;
 	border: 1px solid #CCC;
-	border-radius: 5px;
+	//border-radius: 5px;
 	padding: 2px 8px;
 	text-shadow: 0 1px 0 #ffffff;
 	font-size: 12px;
@@ -65,35 +65,42 @@
 
 /* Slider */
 .component-slider{
-	border-radius: 6px;
+	//border-radius: 10px;
 	border: 1px solid #bbb;
-	cursor: pointer;
+	width: 100%;
+	height: 20px;
 	.gradient (#d0d0d0, #dfdfdf, #d6d6d6);
 	.slider-progres{
+		position: relative;
 		border-radius: 5px 0px 0px 5px;
 		height: 100%;
 		width: 0;
 		.gradient (#5393c5, #6facd5, #5393c5);
 	}
 	.slider-text{
+		position: relative;
 		white-space:nowrap;
 		overflow: hidden;
 		font-size: 10px;
-		height: 100%;
+		//height: 100%;
 		width: 100%;
-		position: relative;
 		top: -12px;
 		//z-index: 5;
 		opacity: 0.75;
 		font-family: monospace;
 		font-weight: bold;
 	}
-	.slider-pin{
-		border-radius: 5px;
+	.component-pin{
+		//border-radius: 10px;
+		cursor: pointer;
 		height: 100%;
+		width: 20px;
 		.gradient (#ffffff, #f1f1f1, #eee);
 		&:hover{
 			.gradient (#f6f6f6, #e0e0e0, #dfdfdf);
+		}
+		&.ui-draggable-dragging {
+			.gradient (#5393c5, #6facd5, #3373A5);
 		}
 	}
 }
@@ -103,11 +110,13 @@
 .component-checkbox{
 	display: inline-block;
 	border: 1px solid #CCC;
-	border-radius: 5px;
+	//border-radius: 5px;
 	padding: 2px 8px;
 	text-shadow: 0 1px 0 #ffffff;
 	color: #222222;
 	cursor: pointer;
+	min-height: 10px;
+	//min-width: 20px;
 	.gradient (#ffffff, #f1f1f1, #eeeeee);
 	&:hover{
 		.gradient (#f6f6f6, #e0e0e0, #dfdfdf);

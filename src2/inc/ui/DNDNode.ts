@@ -10,21 +10,25 @@ module akra.ui {
 
 	export class DNDNode extends HTMLNode implements IUIDNDNode {
 
-		constructor (pUI: IUI, pElement: HTMLElement, eNodeType: EUINodeTypes = EUINodeTypes.DND) {
-			super(pUI, pElement, eNodeType);
+		constructor (parent, element?, eNodeType: EUINodeTypes = EUINodeTypes.DND) {
+			super(getUI(parent), element, eNodeType);
 
 			var pNode: DNDNode = this;
 
 			this.$element.draggable({
 				start: (e: Event) => { return pNode.dragStart(e); },
 				stop: (e: Event) => { return pNode.dragStop(e); },
-				drag: (e: Event) => { return pNode.dragMove(e); }
-			}).draggable("disable");;
+				drag: (e: Event) => { return pNode.move(e); }
+			}).draggable("disable");
+
+			if (!isUI(parent)) {
+				this.attachToParent(<Node>parent);
+			}
 		}
 
 		
 		inline isDraggable(): bool {
-			return !this.$element.draggable( "option","disabled");
+			return !this.$element.draggable("option", "disabled");
 		}
 
 
@@ -32,12 +36,19 @@ module akra.ui {
 			this.$element.draggable("option", "disabled", !bValue);
 		}
 
-		
-		BEGIN_EVENT_TABLE(DNDNode);
-			BROADCAST(dragStart, CALL(e));
-			BROADCAST(dragStop, CALL(e));
-			BROADCAST(dragMove, CALL(e));
-		END_EVENT_TABLE();
+		attachToParent(pParent: IUINode): bool {
+			var isAttached: bool = super.attachToParent(pParent);
+
+			if (!isNull(this.parent) && isDefAndNotNull(this.$element)) {
+				this.$element.draggable("option", "containment", "parent");
+			}
+
+			return isAttached;
+		}
+
+		BROADCAST(dragStart, CALL(e));
+		BROADCAST(dragStop, CALL(e));
+		BROADCAST(move, CALL(e))
 	}
 }
 

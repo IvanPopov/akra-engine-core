@@ -46,14 +46,14 @@
 #define CONNECT(sender, signal, recivier, slot) recivier.connect(sender, signal, slot)
 #define BIND(sender, signal, callback) sender.bind(signal, callback)
 
-#define BEGIN_EVENT_TABLE(object) \
-	private _iGuid: int = eval("this._iGuid || akra.sid()");											\
-	private _pUnicastSlotMap: IEventSlotMap = null;						\
-	private _pBroadcastSlotList: IEventSlotListMap = null;				\
-	private static _pEventTable: IEventTable = new events.EventTable(); 							\
+#define CREATE_EVENT_TABLE(object) \
+	protected _iGuid: int = sid();											\
+	protected _pUnicastSlotMap: IEventSlotMap = null;						\
+	protected _pBroadcastSlotList: IEventSlotListMap = null;				\
+	protected static _pEventTable: IEventTable = new events.EventTable(); 							\
 																									\
-	inline getEventTable(): IEventTable {return object._pEventTable; } 												\
-	getGuid(): uint {return this._iGuid; } 																		\
+	getEventTable(): IEventTable {return object._pEventTable; } 									\
+	inline getGuid(): uint {return this._iGuid; } 																		\
 	inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
 		return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType);					\
 	}; 																													\
@@ -66,7 +66,7 @@
 	inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool {									\
 		return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType);							\
 	}
-#define END_EVENT_TABLE()
+//#define END_EVENT_TABLE()
 
 module akra.events {
 	export class EventTable implements IEventTable {
@@ -76,6 +76,7 @@ module akra.events {
 		addDestination(iGuid: int, sSignal: string, pTarget: IEventProvider, sSlot: string, eType: EEventTypes = EEventTypes.BROADCAST): bool {
 			if (eType === EEventTypes.BROADCAST) {
 				// console.log("add destination(", iGuid, "):: ", "target: ", pTarget, "slot: ", sSlot);
+				//TODO: проверить, что объект уже добавлен с этим колбеом
 				this.findBroadcastSignalMap(iGuid, sSignal).push({target: pTarget, callback: sSlot, listener: null});
 				return true;
 			}
@@ -167,8 +168,7 @@ module akra.events {
 
 
 	export class EventProvider implements IEventProvider {
-		BEGIN_EVENT_TABLE(EventProvider);
-		END_EVENT_TABLE();
+		CREATE_EVENT_TABLE(EventProvider);
 	}
 }
 

@@ -10,16 +10,14 @@ module akra.ui {
 		public $element: JQuery = null;
 
 
-		constructor (pParent: IUINode, pElement: HTMLElement, eNodeType?: EUINodeTypes);
-		constructor (pParent: IUINode, pElement: JQuery, eNodeType?: EUINodeTypes);
-		constructor (pUI: IUI, pElement: HTMLElement, eNodeType?: EUINodeTypes);
-		constructor (pUI: IUI, pElement: JQuery, eNodeType?: EUINodeTypes);
-		constructor (parent, pElement?, eNodeType: EUINodeTypes = EUINodeTypes.HTML) {
-			super(parent, eNodeType);
+		constructor (parent, pElement?: HTMLElement, eNodeType?: EUINodeTypes);
+		constructor (parent, $element?: JQuery, eNodeType?: EUINodeTypes);
+		constructor (parent, pElement = null, eNodeType: EUINodeTypes = EUINodeTypes.HTML) {
+			super(getUI(parent), eNodeType);
 
 			var pNode: HTMLNode = this;
 
-			this.$element = $(pElement);
+			this.$element = $(pElement || "<div />");
 			this.$element.bind(HTMLNode.EVENTS.join(' '), (e: Event) => {
 				if (HTMLNode.EVENTS.indexOf(e.type) == -1) {
 					return;
@@ -27,9 +25,13 @@ module akra.ui {
 
 		     	return (<any>this)[e.type](e);
 			});
+
+			if (!isUI(parent)) {
+				this.attachToParent(<Node>parent);
+			}
 		}
 
-		inline renderTarget(): JQuery {
+		renderTarget(): JQuery {
 			return this.$element;
 		}
 
@@ -53,52 +55,69 @@ module akra.ui {
 				if (to instanceof Node) {
 					$to = (<IUINode>to).renderTarget();
 
-					this.attachToParent(<IUINode>to);
+					if (this.parent != <IUINode>to) {
+						return this.attachToParent(<IUINode>to);
+					}
 				}
 				else {
 					$to = $(to)
 				}
 			}
 
-			$to.append(this.renderTarget());
+			//trace($to, this.self());
+			$to.append(this.self());
 
 			this.rendered();
 
 			return true;
 		}
 
-		inline isFocused(): bool {
-			return this.$element.is(":focus");
+		attachToParent(pParent: IUINode): bool {
+			if (super.attachToParent(pParent)) {
+				this.render(pParent);
+				return true;
+			}
+			return false;
+		}
+
+		isFocused(): bool {
+			return !isNull(this.$element) && this.$element.is(":focus");
+		}
+
+		isRendered(): bool {
+			//console.log((<any>new Error).stack)
+			return !isNull(this.$element) && this.$element.parent().length > 0;
 		}
 
 		valueOf(): JQuery {
 			return this.$element;
 		}
 
-	
-		BEGIN_EVENT_TABLE(HTMLNode);
 
-			BROADCAST(click, CALL(e));
-			BROADCAST(dblclick, CALL(e));
-			
-			BROADCAST(mousemove, CALL(e));
-			BROADCAST(mouseup, CALL(e));
-			BROADCAST(mousedown, CALL(e));
-			BROADCAST(mouseover, CALL(e));
-			BROADCAST(mouseout, CALL(e));
-			
-			BROADCAST(focusin, CALL(e));
-			BROADCAST(focusout, CALL(e));
-			
-			BROADCAST(blur, CALL(e));
-			BROADCAST(change, CALL(e));
+		protected self(): JQuery {
+			return this.$element;
+		}
 
-			BROADCAST(keydown, CALL(e));
-			BROADCAST(keyup, CALL(e));
+		BROADCAST(click, CALL(e));
+		BROADCAST(dblclick, CALL(e));
+		
+		BROADCAST(mousemove, CALL(e));
+		BROADCAST(mouseup, CALL(e));
+		BROADCAST(mousedown, CALL(e));
+		BROADCAST(mouseover, CALL(e));
+		BROADCAST(mouseout, CALL(e));
+		
+		BROADCAST(focusin, CALL(e));
+		BROADCAST(focusout, CALL(e));
+		
+		BROADCAST(blur, CALL(e));
+		BROADCAST(change, CALL(e));
 
-			BROADCAST(rendered, VOID);
+		BROADCAST(keydown, CALL(e));
+		BROADCAST(keyup, CALL(e));
 
-		END_EVENT_TABLE();
+		BROADCAST(rendered, VOID);
+
 
 		static EVENTS: string[] = [
 			"click",

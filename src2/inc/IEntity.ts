@@ -47,6 +47,8 @@ module akra {
 		sibling: IEntity;
 		child: IEntity;
 
+		readonly rightSibling: IEntity;
+
 		readonly type: EEntityTypes;
 
 		readonly depth: int;
@@ -93,8 +95,11 @@ module akra {
 
 		toString(isRecursive?: bool, iDepth?: int): string;
 
-		signal attached();
-		signal detached();
+		signal attached(): void;
+		signal detached(): void;
+
+		signal childAdded(pChild: IEntity): void;
+		signal childRemoved(pChild: IEntity): void;
 	}
 
 }

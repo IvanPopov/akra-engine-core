@@ -4,6 +4,7 @@
 #include "IEntity.ts"
 #include "IPoint.ts"
 #include "IOffset.ts"
+#include "IUILayout.ts"
 
 module akra {
 	IFACE(IUI);
@@ -29,8 +30,6 @@ module akra {
 
 		recursiveRender(): void;
 		renderTarget(): JQuery;
-
-		setLayout()
 	}
 }
 

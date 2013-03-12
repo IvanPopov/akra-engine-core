@@ -9,6 +9,8 @@
 #define long number
 
 
+//#define trace(...) console.log(__VA_ARGS__)
+
 #define WEBGL 1
 #define LOGGER_API 1
 // #define CRYPTO_API 1
@@ -83,6 +85,10 @@ module akra {
     export var DEBUG: bool = true;
 #else
     export var DEBUG: bool = false;
+#endif
+
+#ifdef DEBUG
+#define callStack() ((<any>new Error).stack.split("\n").slice(1).join("\n"))
 #endif
 
     export var logger: ILogger;

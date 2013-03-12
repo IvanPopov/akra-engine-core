@@ -13,14 +13,14 @@ module akra.ui {
 		inline get text(): string { return this.$text.html(); }
 		inline set text(x: string) { this.$text.html(x); }
 
-		constructor (ui, pOptions: IUIComponentOptions = null, eType: EUIComponents = EUIComponents.LABEL) {
-			super(ui, pOptions, eType);
+		constructor (ui, options?, eType: EUIComponents = EUIComponents.LABEL) {
+			super(ui, options, eType);
 
 			this.$text = this.$element.find(".label-text");
 			this.$input = this.$element.find(".label-input");
 		}
 
-		protected inline label(): string {
+		protected label(): string {
 			return "Label";
 		}
 
@@ -57,9 +57,7 @@ module akra.ui {
 			super.focusout(e);
 		}
 
-		BEGIN_EVENT_TABLE(Label);
-			BROADCAST(changed, CALL(value));
-		END_EVENT_TABLE();
+		BROADCAST(changed, CALL(value));
 	}
 }
 

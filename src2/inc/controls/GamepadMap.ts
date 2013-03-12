@@ -148,11 +148,10 @@ module akra.controls {
 	        }
 		}
 
-		BEGIN_EVENT_TABLE(GamepadMap);
-			BROADCAST(connected, CALL(pGamepad));
-			BROADCAST(disconnected, CALL(pGamepad));
-			BROADCAST(updated, CALL(pGamepad));
-		END_EVENT_TABLE();
+		CREATE_EVENT_TABLE(GamepadMap);
+		BROADCAST(connected, CALL(pGamepad));
+		BROADCAST(disconnected, CALL(pGamepad));
+		BROADCAST(updated, CALL(pGamepad));
 	}
 
 	export function createGamepadMap(): IGamepadMap {

@@ -27,45 +27,38 @@ module akra.ui {
 
 	export class Component extends DNDNode implements IUIComponent {
 		protected _eComponentType: EUIComponents;
+		protected _sGenericType: string = null;
 
 		inline get componentType(): EUIComponents { return this._eComponentType; }
+		inline get genericType(): string { return this._sGenericType; }
 
-		constructor (pParent: IUINode, pOptions?: IUIComponentOptions, eType?: EUIComponents, $el?: JQuery);
-		constructor (pUI: IUI, pOptions?: IUIComponentOptions, eType?: EUIComponents, $el?: JQuery);
-		constructor (parent, pOptions: IUIComponentOptions = null, 
-			eType: EUIComponents = EUIComponents.UNKNOWN, $el: JQuery = $("<div />")) {
-			super(parent, $el.get(), EUINodeTypes.COMPONENT);
+		inline get name(): string { return this._sName; }
+		inline set name(sName: string) {
+			this.$element.attr("name", sName);
+			this._sName = sName;
+		}
 
+		get layout(): IUILayout { return isLayout(<IUINode>this.child)? <IUILayout>this.child: null; }
+
+		constructor (parent, sName?: string, eType?: EUIComponents, $el?: JQuery);
+		constructor (parent, pOptions?: IUIComponentOptions, eType?: EUIComponents, $el?: JQuery);
+		constructor (parent, options?, eType: EUIComponents = EUIComponents.UNKNOWN, $el?: JQuery) {
+			super(parent, $el, EUINodeTypes.COMPONENT);
+
+			var pOptions: IUIComponentOptions = isString(options)? { name: <string>options }: options;
+			
 			this._eComponentType = eType;
 			this.applyOptions(pOptions);
+			
 			this.$element.addClass(this.computeStyle());
 
-			var sTemplate: string = TEMPLATES[this.label()];
+			var sTemplate: string = TEMPLATES[this.genericType || this.label()];
 
 			if (isDefAndNotNull(sTemplate)) { 
 				this.$element.html(sTemplate);
 
-				var pComponents: any[] = [];
-				var $element: JQuery = this.$element;
-
-				repeat:
-				while (!isNull($element)) {
-					var $elements: JQuery = null;
-
-					$elements = $element.children();
-					for (var i = 0; i < $elements.length; ++ i) {
-						if ($($elements[i]).prop("tagName") !== "component") {
-							$element = $($elements[i]);
-							continue repeat;
-						}
-						else {
-							pComponents.push($element);
-						}
-					}
-
-					break;
-				}
-
+				var pComponents: JQuery[] = Component.extractComponents(this.$element);
+			
 				for (var i: int = 0; i < pComponents.length; i ++) {
 					var $component: JQuery = $(pComponents[i]);
 					var sCompName: string = $component.attr("name");
@@ -74,7 +67,7 @@ module akra.ui {
 					var sTempTpl: string = TEMPLATES[sCompName] || "";
 
 					TEMPLATES[sCompName] = sTempTpl + $component.html();
-					
+
 					var pComp: Component = <Component>this.ui.createComponent(sCompName);
 					pComp.attachToParent(this);
 					
@@ -101,12 +94,12 @@ module akra.ui {
 					var sLayoutType: string = $layout.attr("type");
 					var sAlign: string= $layout.attr("align");
 
-					var pLayout: IUIComponent = this.ui.createComponent(sLayoutName);
+					var pLayout: IUIComponent = this.ui.createLayout(sLayoutName);
 
 					$layout.before(pLayout.renderTarget());
 					$layout.remove();
 
-					pLayout.render(null);
+					pLayout.render();
 
 					if (isDefAndNotNull(sAlign)) {
 						pLayout.align(sAlign);
@@ -114,23 +107,9 @@ module akra.ui {
 				}	
 			}
 
-			if (pOptions.show === true || !isNull(this.parent)) {
+			if ((pOptions && !!pOptions.show) || !isNull(this.parent)) {
 				this.render();
 			}
-		}
-
-		// inline renderTarget(): JQuery {
-
-		// }	
-
-		attachToParent(pParent: IUINode): bool {
-			if (!super.attachToParent(pParent)) {
-				return false;
-			}
-
-			this.render(pParent);
-
-			return true;
 		}
 
 		destroy(): void {
@@ -139,8 +118,70 @@ module akra.ui {
 			super.destroy();
 		}
 
+		inline isGeneric(): bool {
+			return !isNull(this._sGenericType);
+		}
+
+		renderTarget(): JQuery {
+			// if (isLayout(<IUINode>this.child) && (<IUIHTMLNode>this.child).isRendered()) {
+			// 	return (<IUINode>this.child).renderTarget();
+			// }
+
+			return this.$element;
+		}
+
+		setLayout(eType: EUILayouts): bool;
+		setLayout(sType: string): bool;
+		setLayout(type): bool {
+			var eType: EUILayouts = EUILayouts.UNKNOWN;
+
+			if (isString(type)) {
+				switch ((<string>type).toLowerCase()) {
+					case "horizontal":
+						eType = EUILayouts.HORIZONTAL;
+						break;
+					case "vertical":
+						eType = EUILayouts.VERTICAL;
+						break;
+				}
+			}
+			else {
+				eType = <EUILayouts>type;
+			}
+			
+			var pLayout: IUILayout = this.ui.createLayout(eType);
+
+			if (isLayout(<IUINode>this.child)) {
+				ERROR("//TODO: LAYOUT");
+			}
+
+			this.relocateChildren(pLayout);
+
+			return pLayout.render(this);
+		}
+
+		attachToParent(pParent: IUINode): bool {
+			if (isComponent(pParent) && isLayout(pParent.child)) {
+				pParent = <IUINode>pParent.child;
+			}
+
+			return super.attachToParent(pParent);
+		}
+
 		protected computeStyle(): string {
-			return isNull(super.label())? this.className(): super.className() + " " + this.className();
+			if (this.isGeneric()) {
+				return Component.className(this.label()) +  " " + Component.className(this.genericType);
+			}
+
+			var pClassReference: any = (<any>this).constructor.prototype;
+			var sStyle: string = "";
+
+			while (pClassReference !== Component.prototype["__proto__"]) {
+				sStyle = Component.className(pClassReference.label()) + " " + sStyle;
+				pClassReference = pClassReference["__proto__"];
+			}
+
+			return sStyle;
 		}
 
 		protected label(): string {
@@ -148,7 +189,7 @@ module akra.ui {
 		}
 
 		protected applyOptions(pOptions: IUIComponentOptions): void {
-			if (isNull(pOptions)) {
+			if (!isDefAndNotNull(pOptions)) {
 				return;
 			}
 
@@ -176,6 +217,14 @@ module akra.ui {
 		    	this.setDraggable(pOptions.draggable);
 		    }
 
+		    if (isDefAndNotNull(pOptions.layout)) {
+		    	this.setLayout(pOptions.layout);
+		    }
+
+		    if (isString(pOptions.generic)) {
+		    	this._sGenericType = <string>pOptions.generic;
+		    }
+
 		 //    if (isDefAndNotNull(pOptions.renderTo)) {
 			// 	this.$renderTo = Component.determRenderTarget(pOptions.renderTo);
 			// }
@@ -184,10 +233,49 @@ module akra.ui {
 				$element.draggable("option", "containment", pOptions.dragZone);
 			}
 		}
+
+		static extractComponents($element: JQuery, pComponents: JQuery[] = []): JQuery[] {
+			var $elements: JQuery = $element.children();
+
+			for (var i: int = 0; i < $elements.length; ++ i) {
+				$element = $($elements[i]);
+
+				if ($element.prop("tagName").toLowerCase() !== "component") {
+					Component.extractComponents($element, pComponents);
+				}
+				else {
+					pComponents.push($element);
+				}
+			}
+
+			return pComponents;
+		}
+
+		static className(sComponent: string): string {
+			if (isNull(sComponent)) {
+				return "";
+			}
+
+			if (sComponent == "Component") {
+				return "component";
+			}
+
+			return "component-" + sComponent.toLowerCase();
+		}
+
 	}
 
+	export function isComponent(pEntity: IEntity, eComponent?: EUIComponents): bool {
+		if (!isUINode(pEntity) || (<IUINode>pEntity).nodeType !== EUINodeTypes.COMPONENT) {
+			return false;
+		}
 
+		if (arguments.length > 1) {
+			return (<IUIComponent>pEntity).componentType === eComponent;
+		}
 
+		return true;
+	}
 }
 
 #endif
