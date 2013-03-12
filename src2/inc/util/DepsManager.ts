@@ -170,18 +170,20 @@ module akra.util {
 				this.loadDeps(pDeps.deps);
 			}
 			else {
-				this.loaded();
+				this.loaded(pDeps);
 			}
 		}
 
+
 		CREATE_EVENT_TABLE(DepsManager);
-		BROADCAST(loaded, VOID);
+		BROADCAST(loaded, CALL(deps));
 		// BROADCAST(error, CALL(pErr));
 		
 		error(pErr: Error): void {
 			if (true) throw pErr;
 			EMIT_BROADCAST(error, _CALL(pErr));
 		}
+
 	}
 
 	export function createDepsManager(pEngine: IEngine): IDepsManager {

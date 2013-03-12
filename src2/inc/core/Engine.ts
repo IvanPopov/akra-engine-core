@@ -285,9 +285,11 @@ module akra.core {
 			return animation.createController(this, iOptions);
 		}
 
-		_depsLoaded(pLoader: IDepsManager): void {
+		_depsLoaded(pLoader: IDepsManager, pDeps: IDependens): void {
 			debug_print("[ALL DEPTS LOADED]");
 			this._isDepsLoaded = true;
+
+			this.depsLoaded(pDeps);
 		}
 
 		static depends(sData: string): void;
@@ -321,24 +323,30 @@ module akra.core {
 				deps: {
 						files: [
 							"effects/SystemEffects.afx",
-							"effects/prepareDeferredShading.afx",
 						    "effects/Plane.afx",
-						    "effects/mesh.afx",
-						    "effects/mesh_geometry.afx",
-						    "effects/mesh_texture.afx",
-						    "effects/TextureToScreen.afx",
-						    "effects/prepare_shadows.afx",
-						    "effects/deferredShading.afx",
-						    "effects/apply_lights_and_shadows.afx",
 						    "effects/fxaa.afx",
-						    "effects/skybox.afx"
-						]
+						    "effects/skybox.afx",
+						    "effects/mesh.afx", 
+						    "effects/TextureToScreen.afx",
+						    "effects/mesh_geometry.afx",
+						    "effects/prepare_shadows.afx",						    
+						    "effects/prepareDeferredShading.afx"
+						],
+						deps: {
+							files: [
+								"effects/mesh_texture.afx",
+								"effects/deferredShading.afx",
+								"effects/apply_lights_and_shadows.afx"
+							]
+						}
 					}
 			};			
+
 
 		CREATE_EVENT_TABLE(Engine);
 		BROADCAST(frameStarted, VOID);
 		BROADCAST(frameEnded, VOID);
+		BROADCAST(depsLoaded, CALL(deps));
 		
 		signal inactive(): void {
 			this._isActive = false;

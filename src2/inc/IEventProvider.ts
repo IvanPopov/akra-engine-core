@@ -5,6 +5,7 @@
 #define slot
 
 #include "common.ts"
+#include "IUnique.ts"
 
 module akra {
 	IFACE(IEventTable);
@@ -14,8 +15,7 @@ module akra {
 		UNICAST
 	};
 
-	export interface IEventProvider {
-		getGuid(): uint;
+	export interface IEventProvider extends IUnique {
 		getEventTable(): IEventTable;
 		connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool;
 		disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool;																												\

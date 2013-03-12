@@ -144,7 +144,7 @@ module akra.render {
 								var pPass: IRenderPass = pTechnique.getPass(k);
 								
 								if (isNull(pPass.getRenderTarget())) {
-									pPass.data.blend("akra.system.prepareForDeferredShading.pass" + j);
+									pPass.data.blend("akra.system.prepareForDeferredShading", j);
 								}
 							}
 						}

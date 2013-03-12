@@ -4,6 +4,7 @@
 #include "IEventTable.ts"
 #include "IEventProvider.ts"
 #include "common.ts"
+#include "util/unique.ts"
 
 #define EMIT_UNICAST(event, call) \
 	var _recivier: any = this; \
@@ -46,14 +47,14 @@
 #define CONNECT(sender, signal, recivier, slot) recivier.connect(sender, signal, slot)
 #define BIND(sender, signal, callback) sender.bind(signal, callback)
 
+
 #define CREATE_EVENT_TABLE(object) \
-	protected _iGuid: int = sid();											\
+	UNIQUE()										\
 	protected _pUnicastSlotMap: IEventSlotMap = null;						\
 	protected _pBroadcastSlotList: IEventSlotListMap = null;				\
 	protected static _pEventTable: IEventTable = new events.EventTable(); 							\
 																									\
-	getEventTable(): IEventTable {return object._pEventTable; } 									\
-	inline getGuid(): uint {return this._iGuid; } 																		\
+	getEventTable(): IEventTable { return object._pEventTable; } 												\
 	inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
 		return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType);					\
 	}; 																													\
