@@ -29,8 +29,13 @@ module akra.core.pool.resources {
 			return this._pTechnique.getName();
 		}
 
-		inline getHash(iShift: int): string {
-			return this.getName() + ">>" + iShift.toString();
+		inline getTotalPasses(): uint {
+			return this._pTechnique.totalOwnPasses();
+		}
+
+		inline getHash(iShift: int, iPass: uint): string {
+			return this.getName() + ">>" + iShift.toString() + 
+				   ">>" + (iPass === ALL_PASSES ? "ALL" : iPass.toString());
 		}
 	}
 }

@@ -34,10 +34,10 @@ module akra.core.pool.resources {
 		replicable(bValue: bool): void {return;}
 		miscible(bValue: bool): void {return;}
 
-		addComponent(iComponentHandle: int, iShift?: int, isSet?: bool): bool;
-		addComponent(pComponent: IAFXComponent, iShift?: int, isSet?: bool): bool;
-		addComponent(sComponent: string, iShift?: int, isSet?: bool): bool;
-		addComponent(pComponent: any, iShift?: int = 0, isSet?: bool = true): bool {
+		addComponent(iComponentHandle: int, iShift?: int, iPass?: uint, isSet?: bool): bool;
+		addComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint, isSet?: bool): bool;
+		addComponent(sComponent: string, iShift?: int, iPass?: uint, isSet?: bool): bool;
+		addComponent(pComponent: any, iShift?: int = 0, iPass?: uint = ALL_PASSES, isSet?: bool = true): bool {
 			var pComponentPool: IResourcePool = this.manager.componentPool;
 
 			if(isInt(pComponent)) {
@@ -53,13 +53,13 @@ module akra.core.pool.resources {
 			}
 
 			if(isSet){
-				if(!this._pComposer.addComponentToEffect(this, <IAFXComponent>pComponent, iShift)){
+				if(!this._pComposer.addComponentToEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
 					debug_error("Can not add component '" + <IAFXComponent>pComponent.findResourceName() + "'");
 					return false;
 				}
 			}
 			else {
-				if(!this._pComposer.removeComponentFromEffect(this, <IAFXComponent>pComponent, iShift)){
+				if(!this._pComposer.removeComponentFromEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
 					debug_error("Can not delete component '" + <IAFXComponent>pComponent.findResourceName() + "'");
 					return false;
 				}
@@ -77,11 +77,11 @@ module akra.core.pool.resources {
 			return true;
 		}
 
-		delComponent(iComponentHandle: int, iShift?: int): bool;
-		delComponent(sComponent: string, iShift?: int): bool;
-		delComponent(pComponent: IAFXComponent, iShift?: int): bool;
-		delComponent(pComponent: any, iShift?: int = 0): bool {
-			return this.addComponent(pComponent, iShift, false);
+		delComponent(iComponentHandle: int, iShift?: int, iPass?: uint): bool;
+		delComponent(sComponent: string, iShift?: int, iPass?: uint): bool;
+		delComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): bool;
+		delComponent(pComponent: any, iShift?: int = 0, iPass?: uint = ALL_PASSES): bool {
+			return this.addComponent(pComponent, iShift, iPass, false);
 		}
 
 		findParameter(pParam: any, iPass?: uint): any {return null;}

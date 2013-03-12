@@ -12,7 +12,8 @@ module akra {
 		setTechnique(pTechnique: IAFXTechniqueInstruction): void;
 
 		getName(): string;
-		getHash(iShift: int): string;
+		getTotalPasses(): uint;
+		getHash(iShift: int, iPass: uint): string;
 
 	}
 }

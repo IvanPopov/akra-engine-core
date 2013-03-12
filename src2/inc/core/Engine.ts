@@ -285,9 +285,11 @@ module akra.core {
 			return animation.createController(this, iOptions);
 		}
 
-		_depsLoaded(pLoader: IDepsManager): void {
+		_depsLoaded(pLoader: IDepsManager, pDeps: IDependens): void {
 			debug_print("[ALL DEPTS LOADED]");
 			this._isDepsLoaded = true;
+
+			this.depsLoaded(pDeps);
 		}
 
 		static depends(sData: string): void;
@@ -296,7 +298,7 @@ module akra.core {
 			var pDeps: IDependens = Engine.DEPS;
 
 			while (isDefAndNotNull(pDeps.files)) {
-				pDeps = pDeps.files;
+				pDeps = pDeps.deps;
 			}
 
 			if (isString(pData)) {
@@ -343,6 +345,7 @@ module akra.core {
 		BEGIN_EVENT_TABLE(Engine);
 			BROADCAST(frameStarted, VOID);
 			BROADCAST(frameEnded, VOID);
+			BROADCAST(depsLoaded, CALL(deps));
 			
 			signal inactive(): void {
 				this._isActive = false;

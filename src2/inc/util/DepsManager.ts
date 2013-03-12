@@ -170,12 +170,12 @@ module akra.util {
 				this.loadDeps(pDeps.deps);
 			}
 			else {
-				this.loaded();
+				this.loaded(pDeps);
 			}
 		}
 
 		BEGIN_EVENT_TABLE(DepsManager);
-			BROADCAST(loaded, VOID);
+			BROADCAST(loaded, CALL(deps));
 			// BROADCAST(error, CALL(pErr));
 			
 			error(pErr: Error): void {

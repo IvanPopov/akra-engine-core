@@ -4,6 +4,7 @@
 #include "IEventTable.ts"
 #include "IEventProvider.ts"
 #include "common.ts"
+#include "util/unique.ts"
 
 #define EMIT_UNICAST(event, call) \
 	var _recivier: any = this; \
@@ -47,13 +48,12 @@
 #define BIND(sender, signal, callback) sender.bind(signal, callback)
 
 #define BEGIN_EVENT_TABLE(object) \
-	private _iGuid: int = eval("this._iGuid || akra.sid()");											\
+	UNIQUE()										\
 	private _pUnicastSlotMap: IEventSlotMap = null;						\
 	private _pBroadcastSlotList: IEventSlotListMap = null;				\
 	private static _pEventTable: IEventTable = new events.EventTable(); 							\
 																									\
 	inline getEventTable(): IEventTable {return object._pEventTable; } 												\
-	getGuid(): uint {return this._iGuid; } 																		\
 	inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
 		return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType);					\
 	}; 																													\

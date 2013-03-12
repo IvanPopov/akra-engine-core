@@ -144,9 +144,11 @@ module akra.fx {
 				this.endScope();
 			}
 			catch(e){
+#ifdef DEBUG
 				throw e;
-				LOG("Don`t analyze", e);
+#else
 				return false;
+#endif
 			}
 
 			//Stats
@@ -1328,13 +1330,6 @@ module akra.fx {
 
         	this.addVariableDecl(pVarDecl);
 
-        	//TODO: Here must be additing to scope
-
-        	// this.addVariableDecl(pVarDecl);
-        	// var pVariable: IAFXVariable = new Variable();
-        	// pVariable.initializeFromInstruction(pVarDecl);
-        	// this.addVariableDecl(pVariable);
-
         	return pVarDecl;
         }
 
@@ -1610,13 +1605,14 @@ module akra.fx {
 	      			sStateValue = sTextureName;
 		            break;
 		        
-		        case "ADDRESSU": //WRAP_S
-		        case "ADDRESSV": //WRAP_T
+		        case "ADDRESSU": /* WRAP_S */
+		        case "ADDRESSV": /* WRAP_T */
 		        	sStateValue = pSubStateExprNode.value.toUpperCase();
 		        	switch (sStateValue) {
 		                case "WRAP":
 		                case "CLAMP":
 		                case "MIRROR":
+		                	break;
 		                default:
 		                    WARNING("Webgl don`t support this wrapmode: " + sStateValue);
 		                    return;

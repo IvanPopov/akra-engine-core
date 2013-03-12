@@ -5,6 +5,8 @@
 #include "IParser.ts"
 #endif
 
+#define ALL_PASSES 0xffffff
+
 #include "IEngine.ts"
 #include "IAFXComponent.ts"
 #include "IEffect.ts"
@@ -30,8 +32,8 @@ module akra {
 		
 		getComponentCountForEffect(pEffectResource: IEffect): uint;
 		getTotalPassesForEffect(pEffectResource: IEffect): uint;
-		addComponentToEffect(pEffectResource: IEffect, pComponent: IAFXComponent, iShift: int): bool;
-		removeComponentFromEffect(pEffectResource: IEffect, pComponent: IAFXComponent, iShift: int): bool;
+		addComponentToEffect(pEffectResource: IEffect, pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
+		removeComponentFromEffect(pEffectResource: IEffect, pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
 
 		//API for load components/AFXEffects
 		

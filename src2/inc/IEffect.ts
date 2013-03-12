@@ -18,13 +18,13 @@ module akra {
 		replicable(bValue: bool): void;
 		miscible(bValue: bool): void;
 
-		addComponent(iComponentHandle: int, iShift?: int, isSet?: bool): bool;
-		addComponent(pComponent: IAFXComponent, iShift?: int, isSet?: bool): bool;
-		addComponent(sComponent: string, iShift?: int, isSet?: bool): bool;
+		addComponent(iComponentHandle: int, iShift?: int, iPass?: uint, isSet?: bool): bool;
+		addComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint, isSet?: bool): bool;
+		addComponent(sComponent: string, iShift?: int, iPass?: uint, isSet?: bool): bool;
 
-		delComponent(iComponentHandle: int, iShift?: int): bool;
-		delComponent(sComponent: string, iShift?: int): bool;
-		delComponent(pComponent: IAFXComponent, iShift?: int): bool;
+		delComponent(iComponentHandle: int, iShift?: int, iPass?: uint): bool;
+		delComponent(sComponent: string, iShift?: int, iPass?: uint): bool;
+		delComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): bool;
 
 		findParameter(pParam: any, iPass?: uint): any;
 	}

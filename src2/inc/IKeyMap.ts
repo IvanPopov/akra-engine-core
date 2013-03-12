@@ -2,6 +2,7 @@
 #define IKEYMAP_TS
 
 #include "IPoint.ts"
+#include "IOffset.ts"
 
 module akra {
 	export enum EKeyCodes {
