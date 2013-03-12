@@ -525,95 +525,94 @@ test("VideoBuffer tests<br/>" +
 		check(pMap.primCount);
 	});
 
-	test("resize buffers",() => {
-		var pContext: WebGLRenderingContext = (<any>pEngine.getRenderer())._pWebGLContext;
+	var pContext: WebGLRenderingContext = (<any>pEngine.getRenderer())._pWebGLContext;
 
-		var sVertexShader: string = 
-		   "attribute float position;\n\
-		   	\n\
-			uniform sampler2D texture1;\n\
-			uniform sampler2D texture2;\n\
+	var sVertexShader: string = 
+	   "attribute float position;\n\
+	   	\n\
+		uniform sampler2D texture1;\n\
+		uniform sampler2D texture2;\n\
+		\n\
+		uniform vec2 textureSize1;\n\
+		uniform vec2 textureSize2;\n\
+		uniform vec2 resultTextureSize;\n\
+		\n\
+		varying vec4 v4fResult;\n\
+		\n\
+		void main(void){\n\
+			vec2 v2fPosition1 = vec2((mod(position,textureSize1.x) + 0.5)/textureSize1.x, (floor(position/textureSize1.x) + 0.5)/textureSize1.y);\n\
+			vec2 v2fPosition2 = vec2((mod(position,textureSize2.x) + 0.5)/textureSize2.x, (floor(position/textureSize2.x) + 0.5)/textureSize2.y);\n\
+			vec2 v2fResultPosition = vec2((mod(position,resultTextureSize.x) + 0.5)/resultTextureSize.x, (floor(position/resultTextureSize.x) + 0.5)/resultTextureSize.y);\n\
 			\n\
-			uniform vec2 textureSize1;\n\
-			uniform vec2 textureSize2;\n\
-			uniform vec2 resultTextureSize;\n\
+			vec4 v4fColor1 = texture2D(texture1, v2fPosition1);\n\
+			vec4 v4fColor2 = texture2D(texture2, v2fPosition2);\n\
 			\n\
-			varying vec4 v4fResult;\n\
+			v4fResult.x = (v4fColor1.x == v4fColor2.x) ? 1. : 0.;\n\
+			v4fResult.y = (v4fColor1.y == v4fColor2.y) ? 1. : 0.;\n\
+			v4fResult.z = (v4fColor1.z == v4fColor2.z) ? 1. : 0.;\n\
+			v4fResult.w = (v4fColor1.w == v4fColor2.w) ? 1. : 0.;\n\
 			\n\
-			void main(void){\n\
-				vec2 v2fPosition1 = vec2((mod(position,textureSize1.x) + 0.5)/textureSize1.x, (floor(position/textureSize1.x) + 0.5)/textureSize1.y);\n\
-				vec2 v2fPosition2 = vec2((mod(position,textureSize2.x) + 0.5)/textureSize2.x, (floor(position/textureSize2.x) + 0.5)/textureSize2.y);\n\
-				vec2 v2fResultPosition = vec2((mod(position,resultTextureSize.x) + 0.5)/resultTextureSize.x, (floor(position/resultTextureSize.x) + 0.5)/resultTextureSize.y);\n\
-				\n\
-				vec4 v4fColor1 = texture2D(texture1, v2fPosition1);\n\
-				vec4 v4fColor2 = texture2D(texture2, v2fPosition2);\n\
-				\n\
-				v4fResult.x = (v4fColor1.x == v4fColor2.x) ? 1. : 0.;\n\
-				v4fResult.y = (v4fColor1.y == v4fColor2.y) ? 1. : 0.;\n\
-				v4fResult.z = (v4fColor1.z == v4fColor2.z) ? 1. : 0.;\n\
-				v4fResult.w = (v4fColor1.w == v4fColor2.w) ? 1. : 0.;\n\
-				\n\
-				gl_PointSize = 1.;\n\
-				gl_Position = vec4(v2fResultPosition * 2. - 1., 0. ,1.);\n\
-			}\n\
-			";
+			gl_PointSize = 1.;\n\
+			gl_Position = vec4(v2fResultPosition * 2. - 1., 0. ,1.);\n\
+		}\n\
+		";
 
-		var sFragmentShader: string = 
-		   "#ifdef GL_ES                        				\n\
-		   		precision highp float;\n\
-		   	#endif\n\
-		   	\n\
-		   	varying vec4 v4fResult;\n\
-		   	\n\
-		   	void main(void){\n\
-		   		gl_FragColor = v4fResult;\n\
-		   	}\n\
-		   ";
+	var sFragmentShader: string = 
+	   "#ifdef GL_ES                        				\n\
+	   		precision highp float;\n\
+	   	#endif\n\
+	   	\n\
+	   	varying vec4 v4fResult;\n\
+	   	\n\
+	   	void main(void){\n\
+	   		gl_FragColor = v4fResult;\n\
+	   	}\n\
+	   ";
 
-		var pVertexShader = pContext.createShader(pContext.VERTEX_SHADER);
+	var pVertexShader = pContext.createShader(pContext.VERTEX_SHADER);
 
-		pContext.shaderSource(pVertexShader, sVertexShader);
-        pContext.compileShader(pVertexShader);
+	pContext.shaderSource(pVertexShader, sVertexShader);
+    pContext.compileShader(pVertexShader);
 
-        if(!pContext.getShaderParameter(pVertexShader, pContext.COMPILE_STATUS)){
-        	alert(pContext.getShaderInfoLog(pVertexShader));
-        	CRITICAL("can not compile vertex shader");
-        }
+    if(!pContext.getShaderParameter(pVertexShader, pContext.COMPILE_STATUS)){
+    	alert(pContext.getShaderInfoLog(pVertexShader));
+    	CRITICAL("can not compile vertex shader");
+    }
 
-		var pFragmentShader = pContext.createShader(pContext.FRAGMENT_SHADER);
+	var pFragmentShader = pContext.createShader(pContext.FRAGMENT_SHADER);
 
-		pContext.shaderSource(pFragmentShader, sFragmentShader);
-        pContext.compileShader(pFragmentShader);
+	pContext.shaderSource(pFragmentShader, sFragmentShader);
+    pContext.compileShader(pFragmentShader);
 
-        if(!pContext.getShaderParameter(pFragmentShader, pContext.COMPILE_STATUS)){
-        	alert(pContext.getShaderInfoLog(pFragmentShader));
-        	CRITICAL("can not compile fragment shader");
-        }
+    if(!pContext.getShaderParameter(pFragmentShader, pContext.COMPILE_STATUS)){
+    	alert(pContext.getShaderInfoLog(pFragmentShader));
+    	CRITICAL("can not compile fragment shader");
+    }
 
 
-        var pPerPixelTextureComparison: any = pContext.createProgram();
+    var pPerPixelTextureComparison: any = pContext.createProgram();
 
-        pContext.attachShader(pPerPixelTextureComparison, pVertexShader);
-        pContext.attachShader(pPerPixelTextureComparison, pFragmentShader);
-        pContext.linkProgram(pPerPixelTextureComparison);
+    pContext.attachShader(pPerPixelTextureComparison, pVertexShader);
+    pContext.attachShader(pPerPixelTextureComparison, pFragmentShader);
+    pContext.linkProgram(pPerPixelTextureComparison);
 
-        if (!pContext.getProgramParameter(pPerPixelTextureComparison, pContext.LINK_STATUS)) {
-            CRITICAL("Could not initialise shaders");
-        }
+    if (!pContext.getProgramParameter(pPerPixelTextureComparison, pContext.LINK_STATUS)) {
+        CRITICAL("Could not initialise shaders");
+    }
 
-        pContext.useProgram(pPerPixelTextureComparison);
+    pContext.useProgram(pPerPixelTextureComparison);
 
-        pPerPixelTextureComparison.position = pContext.getAttribLocation(pPerPixelTextureComparison, "position");
-        pContext.enableVertexAttribArray(pPerPixelTextureComparison.position);
+    pPerPixelTextureComparison.position = pContext.getAttribLocation(pPerPixelTextureComparison, "position");
+    pContext.enableVertexAttribArray(pPerPixelTextureComparison.position);
 
-        pPerPixelTextureComparison.texture1 = pContext.getUniformLocation(pPerPixelTextureComparison, "texture1");
-        pPerPixelTextureComparison.texture2 = pContext.getUniformLocation(pPerPixelTextureComparison, "texture2");
+    pPerPixelTextureComparison.texture1 = pContext.getUniformLocation(pPerPixelTextureComparison, "texture1");
+    pPerPixelTextureComparison.texture2 = pContext.getUniformLocation(pPerPixelTextureComparison, "texture2");
 
-        pPerPixelTextureComparison.textureSize1 = pContext.getUniformLocation(pPerPixelTextureComparison, "textureSize1");
-        pPerPixelTextureComparison.textureSize2 = pContext.getUniformLocation(pPerPixelTextureComparison, "textureSize2");
-        pPerPixelTextureComparison.resultTextureSize = pContext.getUniformLocation(pPerPixelTextureComparison, "resultTextureSize");
+    pPerPixelTextureComparison.textureSize1 = pContext.getUniformLocation(pPerPixelTextureComparison, "textureSize1");
+    pPerPixelTextureComparison.textureSize2 = pContext.getUniformLocation(pPerPixelTextureComparison, "textureSize2");
+    pPerPixelTextureComparison.resultTextureSize = pContext.getUniformLocation(pPerPixelTextureComparison, "resultTextureSize");
 
-        /////////////////////////////
+	test("resize videobuffers with backup copy",() => {
 
         var pVideoBuffer1: IVertexBuffer = pResourcePool.createVideoBuffer('test-video-buffer' + <string>sid());
 		pVideoBuffer1.create(0, <uint>EHardwareBufferFlags.BACKUP_COPY);	
@@ -664,6 +663,8 @@ test("VideoBuffer tests<br/>" +
 			pIndex[i] = i+2; /*texture header*/
 		};
 
+		pContext.useProgram(pPerPixelTextureComparison);
+
 		var pDrawBuffer = pContext.createBuffer();
 		pContext.bindBuffer(pContext.ARRAY_BUFFER, pDrawBuffer);
 		pContext.bufferData(pContext.ARRAY_BUFFER, pIndex, pContext.STATIC_DRAW);
@@ -696,6 +697,133 @@ test("VideoBuffer tests<br/>" +
 		pContext.activeTexture(pContext.TEXTURE2);
 		pContext.bindTexture(pContext.TEXTURE_2D, pTexture2);
 
+		pContext.enableVertexAttribArray(pPerPixelTextureComparison.position);
+		pContext.vertexAttribPointer(pPerPixelTextureComparison.position, 1, pContext.FLOAT, false, 0, 0);
+
+		pContext.uniform1i(pPerPixelTextureComparison.texture1, 1);
+		pContext.uniform1i(pPerPixelTextureComparison.texture2, 2);
+
+		pContext.uniform2f(pPerPixelTextureComparison.textureSize1, (<any>pVideoBuffer1)._iWidth, (<any>pVideoBuffer1)._iHeight);
+		pContext.uniform2f(pPerPixelTextureComparison.textureSize2, (<any>pVideoBuffer2)._iWidth, (<any>pVideoBuffer2)._iHeight);
+		pContext.uniform2f(pPerPixelTextureComparison.resultTextureSize, iTestSizeX, iTestSizeY);
+
+		pContext.viewport(0, 0, iTestSizeX, iTestSizeY);
+
+		pContext.bindFramebuffer(pContext.FRAMEBUFFER, pFrameBuffer);
+
+		pContext.drawArrays(pContext.POINTS,0,iMaxIndex);
+
+		pContext.flush();
+		pContext.finish();
+
+		var pPixelsResult: Uint8Array = new Uint8Array(iTestSizeX*iTestSizeY * 4);
+
+		pContext.readPixels(0,0, iTestSizeX, iTestSizeY, pContext.RGBA, pContext.UNSIGNED_BYTE, pPixelsResult);
+
+		pContext.bindFramebuffer(pContext.FRAMEBUFFER, null);
+
+		var iResult: uint = 0;
+
+		for(var i: uint = 2; i<iMaxIndex+2; i++){
+			var iIndex = 4*i;
+
+			iResult += (pPixelsResult[iIndex + 0] != 0) ? 1 : 0;
+			iResult += (pPixelsResult[iIndex + 1] != 0) ? 1 : 0;
+			iResult += (pPixelsResult[iIndex + 2] != 0) ? 1 : 0;
+			iResult += (pPixelsResult[iIndex + 3] != 0) ? 1 : 0;
+		}
+
+		shouldBe("test data in texture after resize", 4*iMaxIndex);
+		check(iResult);
+		
+	});
+
+	test("resize videobuffers without backup copy",() => {
+
+        var pVideoBuffer1: IVertexBuffer = pResourcePool.createVideoBuffer('test-video-buffer' + <string>sid());
+		pVideoBuffer1.create(0, <uint>EHardwareBufferFlags.BACKUP_COPY);	
+
+		var pVideoBuffer2: IVertexBuffer = pResourcePool.createVideoBuffer('test-video-buffer' + <string>sid());
+		pVideoBuffer2.create(0, <uint>EHardwareBufferFlags.STATIC);	
+
+		var pDecl: IVertexDeclaration = new data.VertexDeclaration();
+
+		var pVE: IVertexElementInterface = VE_FLOAT4("POSITION");
+		var pVE: IVertexElementInterface = VE_FLOAT2("NORMAL");
+
+		pDecl.append(pVE);
+
+		var pData1: IVertexData = pVideoBuffer1.getEmptyVertexData(50,pDecl);
+		var pData2: IVertexData = pVideoBuffer2.getEmptyVertexData(50,pDecl);
+
+		var pArray1: Float32Array = new Float32Array(200);
+		var pArray2: Float32Array = new Float32Array(100);
+
+		for(var i:int = 0; i< 50 ;i++){
+			pArray1[4*i+0] = math.random()*20 - 10.;
+			pArray1[4*i+1] = math.random()*20 - 10.;
+			pArray1[4*i+2] = math.random()*20 - 10.;
+			pArray1[4*i+3] = math.random()*20 - 10.;
+
+			pArray2[2*i+0] = math.random()*20 - 10.;
+			pArray2[2*i+1] = math.random()*20 - 10.;
+		}
+
+		pData1.setData(pArray1, 'POSITION');
+		pData1.setData(pArray2, 'NORMAL');
+
+		pData2.setData(pArray1, 'POSITION');
+		pData2.setData(pArray2, 'NORMAL');
+
+		shouldBeTrue("try resize videobuffer");
+		check(pVideoBuffer2.resize(32628));
+
+		var pTexture1: any = (<any>pVideoBuffer1)._pWebGLTexture;
+		var pTexture2: any = (<any>pVideoBuffer2)._pWebGLTexture;
+
+		var iMaxIndex: int = math.ceil(50*pDecl.stride/4/4);/*4 - float; 4 - pixel */
+
+		var pIndex = new Float32Array(iMaxIndex);
+
+		for(var i:int = 0; i < iMaxIndex; i++){
+			pIndex[i] = i+2; /*texture header*/
+		};
+
+		pContext.useProgram(pPerPixelTextureComparison);
+
+		var pDrawBuffer = pContext.createBuffer();
+		pContext.bindBuffer(pContext.ARRAY_BUFFER, pDrawBuffer);
+		pContext.bufferData(pContext.ARRAY_BUFFER, pIndex, pContext.STATIC_DRAW);
+
+		var pTestTextureSize: uint[] = math.calcPOTtextureSize(iMaxIndex + 2);
+
+		var iTestSizeX: uint = pTestTextureSize[0];
+		var iTestSizeY: uint = pTestTextureSize[1];
+
+		pContext.activeTexture(pContext.TEXTURE0);
+
+		var pResultTexture = pContext.createTexture();
+		pContext.bindTexture(pContext.TEXTURE_2D, pResultTexture);
+		pContext.texImage2D(pContext.TEXTURE_2D, 0, pContext.RGBA,iTestSizeX, iTestSizeY, 0, pContext.RGBA, pContext.UNSIGNED_BYTE, null);
+		pContext.texParameterf(pContext.TEXTURE_2D, pContext.TEXTURE_MAG_FILTER, pContext.LINEAR);
+	    pContext.texParameterf(pContext.TEXTURE_2D, pContext.TEXTURE_MIN_FILTER, pContext.LINEAR);
+	    pContext.texParameterf(pContext.TEXTURE_2D, pContext.TEXTURE_WRAP_S, pContext.CLAMP_TO_EDGE);
+	    pContext.texParameterf(pContext.TEXTURE_2D, pContext.TEXTURE_WRAP_T, pContext.CLAMP_TO_EDGE);
+
+		var pFrameBuffer = pContext.createFramebuffer();
+		pContext.bindFramebuffer(pContext.FRAMEBUFFER, pFrameBuffer);
+		pContext.framebufferTexture2D(pContext.FRAMEBUFFER, pContext.COLOR_ATTACHMENT0, pContext.TEXTURE_2D, pResultTexture, 0);
+
+		pContext.activeTexture(pContext.TEXTURE0);
+		pContext.bindTexture(pContext.TEXTURE_2D, pResultTexture);
+
+		pContext.activeTexture(pContext.TEXTURE1);
+		pContext.bindTexture(pContext.TEXTURE_2D, pTexture1);
+
+		pContext.activeTexture(pContext.TEXTURE2);
+		pContext.bindTexture(pContext.TEXTURE_2D, pTexture2);
+
+		pContext.enableVertexAttribArray(pPerPixelTextureComparison.position);
 		pContext.vertexAttribPointer(pPerPixelTextureComparison.position, 1, pContext.FLOAT, false, 0, 0);
 
 		pContext.uniform1i(pPerPixelTextureComparison.texture1, 1);
