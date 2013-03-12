@@ -25,6 +25,9 @@
 #include "animation/AnimationController.ts"
 #include "model/Skeleton.ts"
 #include "util/DepsManager.ts"
+#include "controls/GamepadMap.ts"
+#include "controls/KeyMap.ts"
+
 
 #ifdef WEBGL
 #include "webgl/WebGLRenderer.ts"
@@ -50,6 +53,8 @@ module akra.core {
 		private _isFrameMoving: bool = true;
 		/** is all needed files loaded */
 		private _isDepsLoaded: bool = false;
+
+		private _pGamepads: IGamepadMap = null;
 
 
 
@@ -80,6 +85,29 @@ module akra.core {
 			this.parseOptions(pOptions);
 		}
 
+		enableGamepads(): bool {
+			if (!isNull(this._pGamepads)) {
+				return true;
+			}
+
+			var pGamepads: IGamepadMap = controls.createGamepadMap();
+			
+			if (pGamepads.init()) {
+				this._pGamepads = pGamepads;
+				return true;
+			}
+			
+			return false;
+		}
+
+		getGamepads(): IGamepadMap {
+			if (this.enableGamepads()) {
+				return this._pGamepads;
+			}
+
+			return null;
+		}
+
 		private parseOptions(pOptions: IEngineOptions): void {
 			//== Depends Managment ====================================
 			
@@ -92,7 +120,11 @@ module akra.core {
 				sDepsRoot = pOptions.depsRoot || Engine.DEPS_ROOT;
 				//default deps has higher priority!
 				if (isDefAndNotNull(pOptions.deps)) {
-					pDeps.files = pDeps.files.concat(pOptions.deps.files || []);
+					Engine.depends(pOptions.deps);
+				}
+
+				if (pOptions.gamepads === true) {
+					this.enableGamepads();
 				}
 			}
 
@@ -105,7 +137,6 @@ module akra.core {
 			}
 
 			//===========================================================
-
 		}
 
 		inline getScene(): IScene3d {
@@ -137,6 +168,10 @@ module akra.core {
 			return this._isActive;
 		}
 
+		inline isDepsLoaded(): bool {
+			return this._isDepsLoaded;
+		}
+
 		exec(bValue: bool = true): void {
 			var pRenderer: IRenderer = this._pRenderer;
 			var pEngine: Engine = this;
@@ -161,13 +196,11 @@ module akra.core {
 					ERROR(pRenderer.getError());
 				}
 #endif
-	        	if (!pEngine.isActive()) {
-	                return;
-	            }
-
-	            if (!pEngine.renderFrame()) {
-	                debug_error("Engine::exec() error.");
-	                return;
+	        	if (pEngine.isActive() && pEngine.isDepsLoaded()) {
+					if (!pEngine.renderFrame()) {
+		                debug_error("Engine::exec() error.");
+		                return;
+		            }
 	            }
 
 	            requestAnimationFrame(render/*, pCanvas*/); 
@@ -187,6 +220,9 @@ module akra.core {
 
 		    // FrameMove (animate) the scene
 		    if (this._isFrameMoving) {
+		    	if (!isNull(this._pGamepads)) {
+		    		this._pGamepads.update();
+		    	}
 		    	this._pSceneManager.update();
 		    }
 
@@ -250,13 +286,34 @@ module akra.core {
 		}
 
 		_depsLoaded(pLoader: IDepsManager): void {
-			alert("deps loaded!!!!!!!!!!!!!!!!!!!!!");
+			debug_print("[ALL DEPTS LOADED]");
 			this._isDepsLoaded = true;
 		}
 
-		static DEPS_ROOT: string = "";
-		static DEPS: IDependens = 
+		static depends(sData: string): void;
+		static depends(pData: IDependens): void;
+		static depends(pData): void {
+			var pDeps: IDependens = Engine.DEPS;
+
+			while (isDefAndNotNull(pDeps.files)) {
+				pDeps = pDeps.files;
+			}
+
+			if (isString(pData)) {
+				pDeps.files = [pData];
+			}
+			else {
+				pDeps.files = pData;
+			}
+		}
+
+		static DEPS_ROOT: string = 
 #ifdef DEBUG
+			"/akra-engine-core/src2/data/";
+#else
+			"";
+#endif
+		static DEPS: IDependens = 
 			{
 				files: [ 
 					"grammars/HLSL.gr" 
@@ -281,10 +338,7 @@ module akra.core {
 							]
 						}
 					}
-			};
-#else 
-		null;
-#endif			
+			};			
 
 		BEGIN_EVENT_TABLE(Engine);
 			BROADCAST(frameStarted, VOID);

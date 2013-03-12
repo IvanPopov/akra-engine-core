@@ -400,8 +400,6 @@ module akra {
             default:
                 ERROR('unknown data/image type used');
         }
-
-        return 0;
     }
 
     
@@ -431,6 +429,9 @@ module akra {
 		(<any>window).mozRequestAnimationFrame;
 	(<any>window).WebSocket = (<any>window).WebSocket || (<any>window).MozWebSocket;
     (<any>window).storageInfo = (<any>window).storageInfo || (<any>window).webkitStorageInfo;
+    (<any>navigator).gamepads = (<any>navigator).gamepads || (<any>navigator).webkitGamepads;
+    (<any>navigator).getGamepads = (<any>navigator).getGamepads || (<any>navigator).webkitGetGamepads;
+
     Worker.prototype.postMessage = (<any>Worker).prototype.webkitPostMessage || Worker.prototype.postMessage;
 };
 

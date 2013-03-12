@@ -2,17 +2,19 @@
 #define WEBGLRENDERER_TS
 
 #include "WebGL.ts"
-#include "IWebGLRenderer.ts"
 #include "render/Renderer.ts"
 
 #define WEBGL_MAX_FRAMEBUFFER_NUM 32
 
 module akra.webgl {
-	export class WebGLRenderer extends render.Renderer implements IWebGLRenderer {
+	export class WebGLRenderer extends render.Renderer {
 		private _pCanvas: HTMLCanvasElement;
 
 		private _pWebGLContext: WebGLRenderingContext;
 		private _pWebGLFramebufferList: WebGLFramebuffer[];
+
+		//real context, if debug context used
+		private _pWebGLInternalContext: WebGLRenderingContext = null;
 
 		constructor (pEngine: IEngine);
 		constructor (pEngine: IEngine, sCanvas: string);
@@ -41,6 +43,42 @@ module akra.webgl {
 			for (var i: int = 0; i < this._pWebGLFramebufferList.length; ++ i) {
 				this._pWebGLFramebufferList[i] = this._pWebGLContext.createFramebuffer();
 			}
+		}
+
+		debug(bValue: bool = true, useApiTrace: bool = false): bool {
+			var pWebGLInternalContext: WebGLRenderingContext = this._pWebGLContext;
+
+			if (bValue) {
+				if (isDef(WebGLDebugUtils) && !isNull(pWebGLInternalContext)) {
+		            
+		            this._pWebGLContext = WebGLDebugUtils.makeDebugContext(pWebGLInternalContext, 
+		                (err: int, funcName: string, args: IArguments): void => {
+		                    throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
+		                },
+		                useApiTrace? 
+		                (funcName: string, args: IArguments): void => {   
+		                   LOG("gl." + funcName + "(" + WebGLDebugUtils.glFunctionArgsToString(funcName, args) + ")");   
+		                }: null);
+
+		            this._pWebGLInternalContext = pWebGLInternalContext;
+		            
+		            return true;
+		        }
+	        }
+	        else if (this.isDebug()) {
+	        	this._pWebGLContext = this._pWebGLInternalContext;
+	        	this._pWebGLInternalContext = null;
+
+	        	return true;
+	        }
+
+			return false;
+		}
+
+
+		
+		isDebug(): bool {
+			return !isNull(this._pWebGLInternalContext);
 		}
 
 		inline getHTMLCanvas(): HTMLCanvasElement {
@@ -126,7 +164,7 @@ module akra.webgl {
 			this._pWebGLContext.useProgram(pProgram);
 		}
 
-		inline disableAllWebGLVertexAttribs(): void {
+		disableAllWebGLVertexAttribs(): void {
 
 			//TODO: check attrib array from last shader program
 			var i:uint = 0;

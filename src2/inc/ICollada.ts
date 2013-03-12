@@ -474,6 +474,22 @@ module akra {
     }
 
 
+    export interface IColladaScene {
+
+    }
+
+    export interface IColladaFile {
+        asset?: IColladaAsset;
+
+        libEffects: IColladaEffectLibrary;
+        libMaterials: IColladaLibrary;
+        libGeometries: IColladaLibrary;
+        libVisualScenes: IColladaLibrary;
+
+        scene: IColladaScene;
+    }
+
+
 }
 
 #endif

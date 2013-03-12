@@ -51,7 +51,7 @@ module akra.webgl {
 			super.create(iByteSize, iFlags, pData);
 
 			var pPOTSize: uint[] = math.calcPOTtextureSize(math.ceil(iByteSize / pixelUtil.getNumElemBytes(this._ePixelFormat)));
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 		    var i: int;
 
@@ -172,7 +172,7 @@ module akra.webgl {
 		destroy(): void {
 			super.destroy();
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			pWebGLRenderer.deleteWebGLTexture(this._pWebGLTexture);
 
 			this._pWebGLTexture = null;
@@ -214,7 +214,7 @@ module akra.webgl {
 		        nPixels: uint, 		/*число пикселей*/
 		        nElements: uint;
 
-		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+		    var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 		    var pDataU8: Uint8Array = pData;
@@ -390,7 +390,7 @@ module akra.webgl {
 			var pData: Uint8Array;
 			var iMax: int = 0;
 			var pVertexData: IVertexData;
-		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+		    var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			if(this.isBackupPresent()) {

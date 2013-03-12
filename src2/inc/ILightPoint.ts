@@ -1,9 +1,11 @@
 #ifndef ILIGHTPOINT_TS
 #define ILIGHTPOINT_TS
 
-#include "ISceneObject.ts"
-
 module akra {
+
+	IFACE(ISceneNode);
+	IFACE(ICamera);
+
 	export interface ILightParameters {
 		 //default parameters
 	    ambient: IColor;
@@ -16,8 +18,13 @@ module akra {
 		params: ILightParameters;
 		enabled: bool;
 
-		isShadowCaster(): bool;
-		setShadowCasting(bValue?: bool): void;
+		isShadowCaster: bool;
+
+		create(): bool;
+
+		//false if lighting not active 
+		//or it's effect don't seen
+		_prepareForLighting(pCamera: ICamera): bool;
 
 		_calculateShadows(): void;
 	}

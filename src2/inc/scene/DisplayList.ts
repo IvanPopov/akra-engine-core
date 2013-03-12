@@ -50,7 +50,7 @@ module akra.scene {
 				});
 		}
 
-		_findObjects(pCamera: ICamera, bQuickSearch: bool = true): IObjectArray {
+		_findObjects(pCamera: ICamera, pResultArray?: IObjectArray, bQuickSearch?: bool = false): IObjectArray {
 			debug_error("pure virtual method");
 			return null;
 		}

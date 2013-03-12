@@ -40,7 +40,7 @@ module akra.core.pool.resources {
 		                 "invalid texture slot");
 
 		    var pRmgr: IResourcePoolManager = this.getManager();
-		    var pTexture: ITexture;
+		    var pTexture: ITexture = null;
 
 		    this._pTexcoords[iIndex] = iTexcoord;
 		    

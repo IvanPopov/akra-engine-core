@@ -4,12 +4,17 @@
 #include "scene/OcTree.ts"
 #include "scene/LightGraph.ts"
 #include "scene/light/ProjectLight.ts"
+#include "scene/light/OmniLight.ts"
 #include "akra.ts"
 
 module akra {
-	var pEngine = createEngine();
+	var pEngine: IEngine = createEngine();
 	var pSceneManager: ISceneManager = pEngine.getSceneManager();
 	var pScene3D: IScene3d = pSceneManager.createScene3D();
+
+	// if (pEngine.getRenderer().debug(true, true)) {
+	// 	LOG("context debugging enabled");
+	// }
 
 	var pOctree: IOcTree = new scene.OcTree();
 	pOctree.create(new geometry.Rect3d(1000,1000,1000),5,100);
@@ -58,9 +63,16 @@ module akra {
 
 	pScene3D.recursiveUpdate();
 
-	var pLight: IProjectLight = new scene.light.ProjectLight(pScene3D);
+	var pLight: IOmniLight = new scene.light.OmniLight(pScene3D, false, 512);
 	pLight.create();
 	pLight.attachToParent(pScene3D.getRootNode());
+
+	pLight.attachToParent(pObject5);
+	pLight.isShadowCaster = true;
+
+	pLight.localMatrix = Mat4.fromYawPitchRoll(0*math.PI/6,0.,0.);
+
+	pScene3D.recursiveUpdate();
 
 	//var pResult: any = pOctree._buildSearchResults(pCamera.searchRect, pCamera.frustum);
 	var pResult: any = pCamera.display(DL_DEFAULT);
@@ -70,4 +82,6 @@ module akra {
 	console.warn(pResult);
 	console.warn(pCamera);
 	console.log(scene.objects.Camera._pEventTable);
+
+	console.error(pCamera.display(DL_LIGHTING));
 }

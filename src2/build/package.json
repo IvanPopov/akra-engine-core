@@ -14,6 +14,7 @@
 	},
 	"devDependencies": {
 		"node-native-zip": "latest",
-		"prompt": "latest"
+		"prompt": "latest",
+		"wrench": "latest"
 	}
 }

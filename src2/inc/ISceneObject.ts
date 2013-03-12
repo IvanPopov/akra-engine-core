@@ -10,6 +10,7 @@ module akra {
     export interface ISceneObject extends ISceneNode {
     	worldBounds: IRect3d;
     	totalRenderable: uint;
+        hasShadows: bool;
 
     	readonly localBounds: IRect3d;
     	
@@ -19,9 +20,6 @@ module akra {
     	accessLocalBounds(): IRect3d;
     	isWorldBoundsNew(): bool;
     	// recalcWorldBounds(): void;
-
-    	hasShadows(): bool;
-    	setShadows(bValue?: bool): void;
 
         signal worldBoundsUpdated(): void;
     }

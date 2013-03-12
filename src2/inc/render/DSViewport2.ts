@@ -284,13 +284,13 @@ module akra.render {
 		        	
 		        	pOmniLight = <IOmniLight>pLight;
 
-		            if (pLight.isShadowCaster()) {
+		            if (pLight.isShadowCaster) {
 		                pUniformData = uniformOmniShadow();
 		                (<UniformOmniShadow>pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
 		                
 		                var pDepthCube: ITexture[] 					= pOmniLight.getDepthTextureCube();
-		                var pShadowCasterCube: IShadowCasterCube 	= pOmniLight.getShadowCaster();
-		                var pOptimizedProjCube: IMat4[] 			= pOmniLight.optimizedProjectionCube;
+		                var pShadowCasterCube: IShadowCaster[] 	= pOmniLight.getShadowCaster();
+		                //var pOptimizedProjCube: IMat4[] 			= pOmniLight.optimizedProjectionCube;
 		                
 		                for (j = 0; j < 6; ++ j) {
 		                    pShadowCaster = pShadowCasterCube[j];
@@ -300,7 +300,7 @@ module akra.render {
 		                    
 		                    (<UniformOmniShadow>pUniformData).setSampler(sTexture, j);
 		                    pUniforms.samplersOmni.push((<UniformOmniShadow>pUniformData).SHADOW_SAMPLER[j]);
-		                    (<UniformOmniShadow>pUniformData).setMatrix(m4fToLightSpace,pOptimizedProjCube[j], j);
+		                    (<UniformOmniShadow>pUniformData).setMatrix(m4fToLightSpace,pShadowCasterCube[j].optimizedProjection, j);
 		                }
 
 		                pUniforms.omniShadows.push(<UniformOmniShadow>pUniformData);
@@ -314,7 +314,7 @@ module akra.render {
 		        else if (pLight.type === <int>EEntityTypes.LIGHT_PROJECT) {
 		        	pProjectLight = <IProjectLight>pLight;
 
-		            if (pLight.isShadowCaster()) {
+		            if (pLight.isShadowCaster) {
 		                pUniformData = uniformProjectShadow();
 		                (<UniformProjectShadow>pUniformData).setLightData(pLight.params, v3fLightTransformPosition);
 		                
@@ -325,7 +325,7 @@ module akra.render {
 
 		                (<UniformProjectShadow>pUniformData).setSampler(sTexture);
 		                pUniforms.samplersProject.push((<UniformProjectShadow>pUniformData).SHADOW_SAMPLER);
-		                (<UniformProjectShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.projectionMatrix, pProjectLight.optimizedProjection);
+		                (<UniformProjectShadow>pUniformData).setMatrix(m4fToLightSpace, pShadowCaster.projectionMatrix, pShadowCaster.optimizedProjection);
 		                pUniforms.projectShadows.push(<UniformProjectShadow>pUniformData);
 		            }
 		            else {

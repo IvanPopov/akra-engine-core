@@ -987,7 +987,7 @@ module akra.fx {
 			}
 
 			if(!isNull(this._pFieldDeclMap)){
-				var sFieldName: string;
+				var sFieldName: string = "";
 				var pCloneFieldMap: IAFXVariableDeclMap= <IAFXVariableDeclMap>{};
 
 				for(sFieldName in this._pFieldDeclMap){

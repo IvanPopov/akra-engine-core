@@ -12,8 +12,7 @@ module akra.scene {
 		// private _pEngine: IEngine = null;
 
 		constructor (pScene: IScene3d) {
-			super(pScene);
-			this.type = EEntityTypes.JOINT;
+			super(pScene, EEntityTypes.JOINT);
 		}
 
 		inline get boneName(): string{

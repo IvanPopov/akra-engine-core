@@ -967,7 +967,7 @@ module akra {
         	// Collect format names sorted by length, it's required by BNF compiler
 	        // that similar tokens need longer ones comes first.
 	        
-	        var formatNames: Pair[];
+	        var formatNames: Pair[] = new Pair[];
 	        for (var i: uint = 0; i < EPixelFormats.TOTAL; ++i) {
 	            var ePf: EPixelFormats = <EPixelFormats>(i);
 	            if (!isAccessibleOnly || isAccessible(ePf))
@@ -1231,7 +1231,7 @@ module akra {
         */
         export function unpackColourUint(rgba: IColorIValue, ePf: EPixelFormats,  pSrc: Uint8Array): void {
         	const des: IPixelFormatDescription = getDescriptionFor(ePf);
-        	var r: uint, g: uint, b: uint, a: uint;
+        	var r: uint = 0, g: uint = 0, b: uint = 0, a: uint = 0;
   
 	        if(des.flags & EPixelFormatFlags.NATIVEENDIAN) {
 	            // Shortcut for integer formats unpacking
@@ -1277,7 +1277,7 @@ module akra {
         */
         export function unpackColourFloat(rgba: IColorValue, ePf: EPixelFormats,  pSrc: Uint8Array): void {
         	const des: IPixelFormatDescription = getDescriptionFor(ePf);
-        	var r: float, g: float, b: float, a: float;
+        	var r: float = 0., g: float = 0., b: float = 0., a: float = 0.;
 
 	        if(des.flags & EPixelFormatFlags.NATIVEENDIAN) {
 	            // Shortcut for integer formats unpacking
@@ -1397,8 +1397,8 @@ module akra {
         export function bulkPixelConversion(pSrc: IPixelBox, pDest: IPixelBox): void;
 
         export function bulkPixelConversion(pSrc: any, eSrcFormat: any, pDest?: any, eDstFormat?: any, iCount?: uint): void {
-        	var src: IPixelBox,
-        		dst: IPixelBox;
+        	var src: IPixelBox = null,
+        		dst: IPixelBox = null;
 
         	if (arguments.length > 2) {
 	        	src = new PixelBox(iCount, 1, 1, <EPixelFormats>eSrcFormat, <Uint8Array>pSrc);

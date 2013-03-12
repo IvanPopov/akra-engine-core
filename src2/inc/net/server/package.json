@@ -12,6 +12,7 @@
 	"devDependencies": {
 		"autoloader": "latest",
 		"websocket": "latest",
-		"cluster": "latest"
+		"cluster": "latest",
+		"canvas": "latest"
 	}
 }

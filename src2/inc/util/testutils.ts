@@ -99,9 +99,15 @@ module akra.util {
 
 
 
+	// function output(sText: string): void {
+	// 	document.body.innerHTML += sText;
+	// }
+
 	function output(sText: string): void {
-		document.body.innerHTML += sText;
-	}
+        var pElement = document.createElement("div");
+        pElement.innerHTML = sText;
+        document.body.appendChild(pElement);
+    }
 
 	export function check(...pArgv: any[]): void {
 		var pTest: ITestCond = pTestCondList.pop();

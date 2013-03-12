@@ -8,7 +8,19 @@
 #include "util/util.ts"
 #include "util/ObjectList.ts"
 
+/// @dep net/server/
+
+
 module akra.net {
+
+    enum ERpcStates {
+        //not connected
+        k_Deteached, 
+        //connected, and connection must be established
+        k_Joined,
+        //must be closed
+        k_Closing
+    }
 
     class RPC implements IRPC {
         protected _pPipe: IPipe = null;
@@ -21,13 +33,18 @@ module akra.net {
         //число совершенных вызовов
         protected _nCalls: uint = 0;
         //rejoin timer
-        // protected _iReconnect: int = -1;
+        protected _iReconnect: int = -1;
 
         protected _pRemoteAPI: Object = {};
 
         //контекст, у которого будут вызываться методы
         //при получении REQUEST запросов со стороны сервера
         protected _pContext: any = null;
+
+        protected _eState: ERpcStates = ERpcStates.k_Deteached;
+
+        //timer for system routine
+        protected _iSystemRoutine: int = -1;
 
         inline get remote(): any { return this._pRemoteAPI; }
 
@@ -40,7 +57,7 @@ module akra.net {
 
         join(sAddr: string = null): void {
             var pPipe: IPipe = this._pPipe;
-            var pRPC: IRPC = this;
+            var pRPC: RPC = this;
             var pDeffered: IObjectList = this._pDefferedRequests;
 
             if (isNull(pPipe)) {
@@ -53,13 +70,16 @@ module akra.net {
                             pRPC.parse(JSON.parse(<string>pMessage));
                         }
                         else {
-                            pRPC.parseBinary(new Uint8Array(pMessage));
+                            pRPC.parseBinary(<ArrayBuffer>pMessage);
                         }
                     }
                 );
 
                 pPipe.bind(SIGNAL(opened), 
                     function (pPipe: IPipe, pEvent: Event): void {
+                        
+                        pRPC._startSystemRoutine();
+
                         //if we have unhandled call in deffered...
                         if (pDeffered.length) {
                             pDeffered.seek(0);
@@ -105,12 +125,13 @@ module akra.net {
                 pPipe.bind(SIGNAL(error), 
                     function(pPipe: IPipe, pError: Error): void {
                         ERROR("pipe error occured...");
-                        pRPC.rejoin();
+                        //pRPC.rejoin();
                     }
                 );
 
                 pPipe.bind(SIGNAL(closed),
                     function (pPipe: IPipe, pEvent: CloseEvent): void {
+                        pRPC._stopSystemRoutine();
                         pRPC.rejoin();
                     }
                 );
@@ -119,28 +140,34 @@ module akra.net {
             pPipe.open(<string>sAddr);
 
             this._pPipe = pPipe;
+            this._eState = ERpcStates.k_Joined;
         }
 
         rejoin(): void {
             var pRPC: IRPC = this;
-            // clearTimeout(this._iReconnect);
 
+            clearTimeout(this._iReconnect);
+
+            //rejoin not needed, because pipe already connected
             if (this._pPipe.isOpened()) {
+                this._eState = ERpcStates.k_Joined;
+                return;
+            }
+
+            //rejoin not needed, because we want close connection
+            if (this._eState == ERpcStates.k_Closing) {
+                this._eState = ERpcStates.k_Deteached;
                 return;
             }
 
             if (this._pPipe.isClosed()) {
-                // LOG("attempt to reconnecting...");
+                //callbacks that will not be called, because connection was lost 
+                this.freeCallbacks();
             
-                this.join();
+                this._iReconnect = setTimeout(() => { 
+                    pRPC.join(); 
+                }, RPC.OPTIONS.RECONNECT_TIMEOUT);
             }
-
-            // this._iReconnect = setTimeout(
-            //     function (): void {
-            //         pRPC.rejoin();
-            //     },
-            //     RPC.OPTIONS.RECONNECT_TIMEOUT
-            // );
         }
 
         parse(pRes: IRPCResponse): void {
@@ -152,10 +179,13 @@ module akra.net {
             this.response(pRes.n, pRes.type, pRes.res);
         }
 
-        parseBinary(pBuffer: Uint8Array): void {
-            var pRes: Uint8Array = pBuffer;
-            var nMsg: uint = (new Uint32Array(pBuffer.subarray(0, 4).buffer, 0, 4))[0];
-            var eType: ERPCPacketTypes = <ERPCPacketTypes>pBuffer[4];
+
+        parseBinary(pBuffer: ArrayBuffer): void {
+
+            var pHeader: Uint32Array = new Uint32Array(pBuffer, 0, 2);
+            var nMsg: uint = pHeader[0];
+            var eType: ERPCPacketTypes = <ERPCPacketTypes>pHeader[1];
+
             var pResult: Uint8Array = new Uint8Array(pBuffer, 8);
 
             this.response(nMsg, eType, pResult);
@@ -163,15 +193,20 @@ module akra.net {
 
         private response(nSerial: uint, eType: ERPCPacketTypes, pResult: any): void {
             var pStack: IObjectList = this._pCallbacks;
+            var fn: Function = null;
 
             if (eType === ERPCPacketTypes.RESPONSE) {
                 var pCallback: IRPCCallback = <IRPCCallback>pStack.last;
                 // WARNING("---------------->",nSerial,"<-----------------");
                 do {
-                    // LOG("#n: ", pCallback.n, " result: ", pResult);
+                    // LOG("#n: ", nSerial, " result: ", pResult);
                     if (pCallback.n === nSerial) {
-                        pCallback.fn(null, pResult);
+                        fn = pCallback.fn;
                         this._releaseCallback(pStack.takeCurrent());
+
+                        if (!isNull(fn)) {
+                            fn(null, pResult);
+                        }
                         return;
                     }
                 } while (pCallback = pStack.prev());
@@ -184,15 +219,52 @@ module akra.net {
             }
             else if (eType === ERPCPacketTypes.FAILURE) {
                 ERROR("detected FAILURE on " + nSerial + " package");
+                debug_print(pResult);
             }
             else {
                 ERROR("unsupported response type detected: " + eType);
             }
         }
 
-        free() {
-            this._pDefferedRequests.clear();
-            this._pCallbacks.clear();
+        private freeRequests(): void {
+            var pStack: IObjectList = this._pDefferedRequests;
+            var pReq: IRPCRequest = <IRPCRequest>pStack.first;
+            
+            if (pReq) {
+                do {
+                    this._releaseRequest(pReq);
+                } while (pReq = pStack.next());
+
+                pStack.clear();
+            }
+        }
+
+        private freeCallbacks(): void {
+            var pStack: IObjectList = this._pCallbacks;
+            var pCallback: IRPCCallback = <IRPCCallback>pStack.first;
+            
+            if (pCallback) {
+                do {
+                    this._releaseCallback(pCallback);
+                } while (pCallback = pStack.next());
+
+                pStack.clear();
+            }
+        }
+
+        free(): void {
+            this.freeRequests();
+            this.freeCallbacks();
+        }
+
+        detach(): void {
+            this._eState = ERpcStates.k_Closing;
+
+            if (!isNull(this._pPipe) && this._pPipe.isOpened()) {
+                this._pPipe.close();
+            }
+
+            this.free();
         }
 
         proc(...argv: any[]): bool {
@@ -203,7 +275,7 @@ module akra.net {
             var nArg: uint = arguments.length - (fnCallback? 2: 1);
             var pArgv: any[] = new Array(nArg);
             var pPipe: IPipe = this._pPipe;
-            var pCallback: IRPCCallback;
+            var pCallback: IRPCCallback = null;
             var bResult: bool;
 
             for (var i = 0; i < nArg; ++ i) {
@@ -217,12 +289,10 @@ module akra.net {
             pProc.proc  = String(arguments[0]);
             pProc.argv  = pArgv;
 
-
-            if (!isNull(fnCallback)) {
-                pCallback = <IRPCCallback>this._createCallback();
-                pCallback.n = pProc.n;
-                pCallback.fn = fnCallback;
-            }
+            pCallback = <IRPCCallback>this._createCallback();
+            pCallback.n = pProc.n;
+            pCallback.fn = fnCallback;
+            pCallback.timestamp = now();
 
             if (isNull(pPipe) || !pPipe.isOpened()) {
                 if (this._pDefferedRequests.length <= RPC.OPTIONS.DEFFERED_CALLS_LIMIT) {
@@ -234,6 +304,7 @@ module akra.net {
                     debug_warning(RPC.ERRORS.STACK_SIZE_EXCEEDED);
                     
                     this._releaseCallback(pCallback);
+                    this._releaseRequest(pProc);
                 }
                 
                 return false;
@@ -248,7 +319,52 @@ module akra.net {
             return bResult;
         }
 
-        inline _releaseRequest(pReq: IRPCRequest): void {
+        inline _systemRoutine(): void {
+            this._removeExpiredCallbacks();
+        }
+
+        _startSystemRoutine(): void {
+            var pRPC: RPC = this;
+
+            this._iSystemRoutine = setInterval(() => {
+                pRPC._systemRoutine();
+            }, RPC.OPTIONS.SYSTEM_ROUTINE_INTERVAL);
+        }
+
+        _stopSystemRoutine(): void {
+            clearInterval(this._iSystemRoutine);
+            this._systemRoutine();
+        }
+
+        _removeExpiredCallbacks(): void {
+            // LOG("remove expired callbacks routine...");
+            
+            var pCallbacks: IObjectList = this._pCallbacks;
+            var pCallback: IRPCCallback = <IRPCCallback>pCallbacks.first;
+            var iNow: int = now();
+            var fn: Function = null;
+
+            while(!isNull(pCallback)) {
+                
+                //LOG(isDefAndNotNull((<any>pCallbacks)._pCurrent), pCallback.n, "(" + (iNow - pCallback.timestamp) + " ms )");
+                
+                if ((iNow - pCallback.timestamp) >= RPC.OPTIONS.CALLBACK_LIFETIME) {
+                    fn = pCallback.fn;
+                    this._releaseCallback(<IRPCCallback>pCallbacks.takeCurrent());
+
+                    pCallback = pCallbacks.current;
+
+                    if (!isNull(fn)) {
+                        fn(RPC.ERRORS.CALLBACK_LIFETIME_EXPIRED, null);
+                    }
+                }
+                else {
+                    pCallback = <IRPCCallback>pCallbacks.next();
+                }
+            }
+        }
+
+        _releaseRequest(pReq: IRPCRequest): void {
             pReq.n = 0;
             pReq.proc = null;
             pReq.argv = null;
@@ -256,7 +372,7 @@ module akra.net {
             RPC.requestPool.push(pReq);
         };
 
-        inline _createRequest(): IRPCRequest {
+        _createRequest(): IRPCRequest {
             if (RPC.requestPool.length == 0) {
                 // LOG("allocated rpc request");
                 return {n: 0, type: ERPCPacketTypes.REQUEST, proc: null, argv: null };
@@ -265,17 +381,18 @@ module akra.net {
             return <IRPCRequest>RPC.requestPool.pop();
         }
 
-        inline _releaseCallback(pReq: IRPCCallback): void {
-            pReq.n = 0;
-            pReq.fn = null;
+        _releaseCallback(pCallback: IRPCCallback): void {
+            pCallback.n = 0;
+            pCallback.fn = null;
+            pCallback.timestamp = 0;
 
-            RPC.callbackPool.push(pReq);
+            RPC.callbackPool.push(pCallback);
         };
 
-        inline _createCallback(): IRPCCallback {
+        _createCallback(): IRPCCallback {
             if (RPC.callbackPool.length == 0) {
                 // LOG("allocated callback");
-                return { n: 0, fn: null};
+                return { n: 0, fn: null, timestamp: 0 };
             }
 
             return <IRPCCallback>RPC.callbackPool.pop();
@@ -289,12 +406,15 @@ module akra.net {
         private static callbackPool: IObjectArray = new ObjectArray;
 
         static OPTIONS = {
-            DEFFERED_CALLS_LIMIT: 1024,
-            RECONNECT_TIMEOUT   : 1000
+            DEFFERED_CALLS_LIMIT        : 1024,
+            RECONNECT_TIMEOUT           : 2500,
+            SYSTEM_ROUTINE_INTERVAL     : 10000,
+            CALLBACK_LIFETIME           : 5000
         }
 
         static ERRORS = {
-            STACK_SIZE_EXCEEDED: new Error("stack size exceeded")
+            STACK_SIZE_EXCEEDED: new Error("stack size exceeded"),
+            CALLBACK_LIFETIME_EXPIRED: new Error("procedure life time expired")
         }
 
         //имя процедуры, для получения все поддерживаемых процедур

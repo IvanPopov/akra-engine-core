@@ -34,7 +34,7 @@ module akra.util {
 				return false;
 			}
 
-			this.normalizeDepsPaths(pDeps, sRoot);
+			this.normalizeDepsPaths(pDeps, pDeps.root || sRoot);
 			this.createDepsResources(pDeps);
 			this.loadDeps(pDeps);
 
@@ -69,7 +69,7 @@ module akra.util {
 				switch (pathinfo(pFiles[i]).ext.toLowerCase()) {
 					case "afx":
 						if (!pRmgr.effectDataPool.findResource(pFiles[i])) {
-							LOG("effectDataPool.createResource(" + pFiles[i] + ")");
+							//LOG("effectDataPool.createResource(" + pFiles[i] + ")");
 							pRmgr.effectDataPool.createResource(pFiles[i]);
 						}
 						break;
@@ -91,6 +91,19 @@ module akra.util {
 				var pFiles: string[] = pDeps.files;
 				var pManager: DepsManager = this;
 				
+				if (isDefAndNotNull(pDep.type)) {
+					if (pDep.type == "text" && isFunction(pDep.loader)) {
+						io.fopen(pFiles[i], "r").read((pErr: Error, sData: string): void => {
+							if (!isNull(pErr)) {
+								pManager.error(pErr);
+							}
+
+							pDep.loader(pDep, sData);
+							pManager._onDependencyLoad(pDeps, i);
+						});	
+					}
+				}
+
 				switch (pathinfo(pFiles[i]).ext.toLowerCase()) {
 					case "gr":
 						io.fopen(pFiles[i], "r").read((pErr: Error, sData: string): void => {
@@ -110,7 +123,7 @@ module akra.util {
 							if (pRes.loadResource(pFiles[i])) {
 								pManager._handleResourceEventOnce(pRes, SIGNAL(loaded),
 									(pItem: IResourcePoolItem): void => {
-										LOG("[ LOADED ]  effectDataPool.loadResource(" + pFiles[i] + ")");
+										//LOG("[ LOADED ]  effectDataPool.loadResource(" + pFiles[i] + ")");
 										pManager._onDependencyLoad(pDeps, i);
 									}
 								);
@@ -138,17 +151,17 @@ module akra.util {
 			pRsc.bind(sSignal, fn);
 		}
 
-		_onDependencyLoad(pDeps: IDependens, i?: int): void {
+		_onDependencyLoad(pDeps: IDependens, n?: int): void {
 			// debug_assert(isDefAndNotNull(pDeps.files) && isString(pDeps.files[i]), "something going wrong...");
 
-			if (isDef(i)) {
-				LOG("loaded dependency: " + pDeps.files[i]);
-				pDeps.files[i] = null;
+			if (isDef(n)) {
+				LOG("loaded dependency: " + pDeps.files[n]);
+				pDeps.files[n] = null;
 			}
 
 			for (var i: int = 0; i < pDeps.files.length; ++ i) {
 				if (!isNull(pDeps.files[i])) {
-					LOG("waiting for > " + pDeps.files[i]);
+					//LOG("waiting for > " + pDeps.files[i]);
 					return;
 				}
 			};
@@ -166,7 +179,7 @@ module akra.util {
 			// BROADCAST(error, CALL(pErr));
 			
 			error(pErr: Error): void {
-				throw pErr;
+				if (true) throw pErr;
 				EMIT_BROADCAST(error, _CALL(pErr));
 			}
 

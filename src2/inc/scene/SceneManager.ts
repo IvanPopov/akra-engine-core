@@ -13,7 +13,6 @@ module akra.scene {
     export class SceneManager implements ISceneManager {
         private _pEngine: IEngine = null;
         private _pSceneList: IScene[] = [];
-        private _pTimer: IUtilTimer;
 
         private _fUpdateTimeCount: float = 0.;
         private _fMillisecondsPerTick: float = 0.0333;
@@ -21,7 +20,6 @@ module akra.scene {
 
         constructor (pEngine: IEngine) {
             this._pEngine = pEngine;
-            this._pTimer = pEngine.getTimer();
         }
 
         getEngine(): IEngine{
@@ -32,7 +30,7 @@ module akra.scene {
             var isSceneUpdated: bool = false;
             // add the real time elapsed to our
             // internal delay counter
-            this._fUpdateTimeCount += this._pTimer.elapsedTime;
+            this._fUpdateTimeCount += this._pEngine.getTimer().elapsedTime;
             // is there an update ready to happen?
             
             var fUpdateTime: float = this._fUpdateTimeCount;

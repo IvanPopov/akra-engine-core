@@ -18,6 +18,8 @@ module akra.geometry{
 		nearPlane: IPlane3d;
 		farPlane: IPlane3d;
 
+		_pFrustumVertices: IVec3[] = null;
+
 		constructor ();
 		constructor (pFrustum: IFrustum);
 		constructor (pLeftPlane: IPlane3d, pRightPlane: IPlane3d,
@@ -48,7 +50,9 @@ module akra.geometry{
 			}
 		};
 
-
+		get frustumVertices(): IVec3[]{
+			return this._pFrustumVertices;
+		};
 
 		set(): IFrustum;
 		set(pFrustum: IFrustum): IFrustum;
@@ -92,7 +96,102 @@ module akra.geometry{
 			return this;
 		};
 
+		calculateFrustumVertices(): IVec3[]{
+			if(this._pFrustumVertices == null){
+				this._pFrustumVertices = new Array(8);
+
+				for(var i:int = 0; i < 8; i++){
+					this._pFrustumVertices[i] = new Vec3();
+				}
+			}
+
+			var v3fLeftNormal: IVec3 = this.leftPlane.normal;
+			var v3fRightNormal: IVec3 = this.rightPlane.normal;
+			var v3fTopNormal: IVec3 = this.topPlane.normal;
+			var v3fBottomNormal: IVec3 = this.bottomPlane.normal;
+			var v3fNearNormal: IVec3 = this.nearPlane.normal;
+			var v3fFarNormal: IVec3 = this.farPlane.normal;
+
+			var fLeft: float = -this.leftPlane.distance;
+			var fRight: float = -this.rightPlane.distance;
+			var fTop: float = -this.topPlane.distance;
+			var fBottom: float = -this.bottomPlane.distance;
+			var fNear: float = -this.nearPlane.distance;
+			var fFar: float = -this.farPlane.distance;
+
+			var m3fTemp: IMat3 = mat3();
+			var pFrustumVertices: IVec3[] = this._pFrustumVertices;
+
+			//first left-bottom-near
+			pFrustumVertices[0].set(fLeft, fBottom, fNear);
+			m3fTemp.set(v3fLeftNormal.x, v3fBottomNormal.x, v3fNearNormal.x, /*first colomn, not row*/
+						v3fLeftNormal.y, v3fBottomNormal.y, v3fNearNormal.y,
+						v3fLeftNormal.z, v3fBottomNormal.z, v3fNearNormal.z);
+			m3fTemp.inverse().multiplyVec3(pFrustumVertices[0]);
+
+			//second right-bottom-near
+			pFrustumVertices[1].set(fRight, fBottom, fNear);
+			m3fTemp.set(v3fRightNormal.x, v3fBottomNormal.x, v3fNearNormal.x, /*first colomn, not row*/
+						v3fRightNormal.y, v3fBottomNormal.y, v3fNearNormal.y,
+						v3fRightNormal.z, v3fBottomNormal.z, v3fNearNormal.z);
+			m3fTemp.inverse().multiplyVec3(pFrustumVertices[1]);
+
+			//third left-top-near
+			pFrustumVertices[2].set(fLeft, fTop, fNear);
+			m3fTemp.set(v3fLeftNormal.x, v3fTopNormal.x, v3fNearNormal.x, /*first colomn, not row*/
+						v3fLeftNormal.y, v3fTopNormal.y, v3fNearNormal.y,
+						v3fLeftNormal.z, v3fTopNormal.z, v3fNearNormal.z);
+			m3fTemp.inverse().multiplyVec3(pFrustumVertices[2]);
+
+			//forth right-top-near
+			pFrustumVertices[3].set(fRight, fTop, fNear);
+			m3fTemp.set(v3fRightNormal.x, v3fTopNormal.x, v3fNearNormal.x, /*first colomn, not row*/
+						v3fRightNormal.y, v3fTopNormal.y, v3fNearNormal.y,
+						v3fRightNormal.z, v3fTopNormal.z, v3fNearNormal.z);
+			m3fTemp.inverse().multiplyVec3(pFrustumVertices[3]);
+
+			//fifth left-bottom-far
+			pFrustumVertices[4].set(fLeft, fBottom, fFar);
+			m3fTemp.set(v3fLeftNormal.x, v3fBottomNormal.x, v3fFarNormal.x, /*first colomn, not row*/
+						v3fLeftNormal.y, v3fBottomNormal.y, v3fFarNormal.y,
+						v3fLeftNormal.z, v3fBottomNormal.z, v3fFarNormal.z);
+			m3fTemp.inverse().multiplyVec3(pFrustumVertices[4]);
+
+			//sixth right-bottom-far
+			pFrustumVertices[5].set(fRight, fBottom, fFar);
+			m3fTemp.set(v3fRightNormal.x, v3fBottomNormal.x, v3fFarNormal.x, /*first colomn, not row*/
+						v3fRightNormal.y, v3fBottomNormal.y, v3fFarNormal.y,
+						v3fRightNormal.z, v3fBottomNormal.z, v3fFarNormal.z);
+			m3fTemp.inverse().multiplyVec3(pFrustumVertices[5]);
+
+			//seventh left-top-far
+			pFrustumVertices[6].set(fLeft, fTop, fFar);
+			m3fTemp.set(v3fLeftNormal.x, v3fTopNormal.x, v3fFarNormal.x, /*first colomn, not row*/
+						v3fLeftNormal.y, v3fTopNormal.y, v3fFarNormal.y,
+						v3fLeftNormal.z, v3fTopNormal.z, v3fFarNormal.z);
+			m3fTemp.inverse().multiplyVec3(pFrustumVertices[6]);
+
+			//eighth right-top-far
+			pFrustumVertices[7].set(fRight, fTop, fFar);
+			m3fTemp.set(v3fRightNormal.x, v3fTopNormal.x, v3fFarNormal.x, /*first colomn, not row*/
+						v3fRightNormal.y, v3fTopNormal.y, v3fFarNormal.y,
+						v3fRightNormal.z, v3fTopNormal.z, v3fFarNormal.z);
+			m3fTemp.inverse().multiplyVec3(pFrustumVertices[7]);
+
+			return pFrustumVertices;
+		};
+
 		extractFromMatrix(m4fProjection: IMat4, m4fWorld?: IMat4, pSearchRect?: IRect3d): IFrustum{
+
+			if(this._pFrustumVertices == null){
+				this._pFrustumVertices = new Array(8);
+
+				for(var i:int = 0; i < 8; i++){
+					this._pFrustumVertices[i] = new Vec3();
+				}
+			}
+
+			var pFrustumVertices: IVec3[] = this._pFrustumVertices;
 
 			var v4fLeftBottomNear: IVec4 = vec4();
 			var v4fRightBottomNear: IVec4 = vec4();
@@ -115,26 +214,26 @@ module akra.geometry{
 		    m4fProjection.unproj(vec3(1,1,1), v4fRightTopFar);
 
 		    if(isDef(m4fWorld)){
-		    	m4fWorld.multiplyVec4(v4fLeftBottomNear, v4fLeftBottomNear);
-		    	m4fWorld.multiplyVec4(v4fRightBottomNear, v4fRightBottomNear);
-		    	m4fWorld.multiplyVec4(v4fLeftTopNear, v4fLeftTopNear);
-		    	m4fWorld.multiplyVec4(v4fRightTopNear, v4fRightTopNear);
+		    	m4fWorld.multiplyVec4(v4fLeftBottomNear);
+		    	m4fWorld.multiplyVec4(v4fRightBottomNear);
+		    	m4fWorld.multiplyVec4(v4fLeftTopNear);
+		    	m4fWorld.multiplyVec4(v4fRightTopNear);
 
-		    	m4fWorld.multiplyVec4(v4fLeftBottomFar, v4fLeftBottomFar);
-		    	m4fWorld.multiplyVec4(v4fRightBottomFar, v4fRightBottomFar);
-		    	m4fWorld.multiplyVec4(v4fLeftTopFar, v4fLeftTopFar);
-		    	m4fWorld.multiplyVec4(v4fRightTopFar, v4fRightTopFar);
+		    	m4fWorld.multiplyVec4(v4fLeftBottomFar);
+		    	m4fWorld.multiplyVec4(v4fRightBottomFar);
+		    	m4fWorld.multiplyVec4(v4fLeftTopFar);
+		    	m4fWorld.multiplyVec4(v4fRightTopFar);
 		    }
 
-		    var v3fLeftBottomNear: IVec3 = v4fLeftBottomNear.xyz;
-		    var v3fRightBottomNear: IVec3 = v4fRightBottomNear.xyz;
-		    var v3fLeftTopNear: IVec3 = v4fLeftTopNear.xyz;
-		    var v3fRightTopNear: IVec3 = v4fRightTopNear.xyz;
+		    var v3fLeftBottomNear: IVec3 = pFrustumVertices[0].set(v4fLeftBottomNear.xyz);
+		    var v3fRightBottomNear: IVec3 = pFrustumVertices[1].set(v4fRightBottomNear.xyz);
+		    var v3fLeftTopNear: IVec3 = pFrustumVertices[2].set(v4fLeftTopNear.xyz);
+		    var v3fRightTopNear: IVec3 = pFrustumVertices[3].set(v4fRightTopNear.xyz);
 
-		    var v3fLeftBottomFar: IVec3 = v4fLeftBottomFar.xyz;
-		    var v3fRightBottomFar: IVec3 = v4fRightBottomFar.xyz;
-		    var v3fLeftTopFar: IVec3 = v4fLeftTopFar.xyz;
-		    var v3fRightTopFar: IVec3 = v4fRightTopFar.xyz;
+		    var v3fLeftBottomFar: IVec3 = pFrustumVertices[4].set(v4fLeftBottomFar.xyz);
+		    var v3fRightBottomFar: IVec3 = pFrustumVertices[5].set(v4fRightBottomFar.xyz);
+		    var v3fLeftTopFar: IVec3 = pFrustumVertices[6].set(v4fLeftTopFar.xyz);
+		    var v3fRightTopFar: IVec3 = pFrustumVertices[7].set(v4fRightTopFar.xyz);
 
 		    //filling search rectangle
 
@@ -210,6 +309,63 @@ module akra.geometry{
 			}
 			return true;
 		};
+
+		testFrustum(pFrustum: IFrustum): bool{
+			
+			var pFrustumVertices1: IVec3[] = this.frustumVertices;
+			var pFrustumVertices2: IVec3[] = pFrustum.frustumVertices;
+
+			if(pFrustumVertices1 == null){
+				pFrustumVertices1 = this.calculateFrustumVertices();
+			}
+			if(pFrustumVertices2 == null){
+				pFrustumVertices2 = pFrustum.calculateFrustumVertices();
+			}
+
+			var pFrustumPlanes: string[] = Frustum.frustumPlanesKeys;
+
+			var nTest: uint;
+
+			for(var i: int = 0; i < 6; i++){
+				var pPlane: IPlane3d = this[pFrustumPlanes[i]];
+
+				nTest = 0;
+
+				for(var j: int = 0; j < 8; j++){
+					if(pPlane.signedDistance(pFrustumVertices2[j]) > 0){
+						nTest++;
+					}
+				}
+
+				if(nTest == 8){
+					//frustums don't intersecting
+					return false;
+				}
+			}
+
+			//second batch of test for minimizing possible error
+			for(var i: int = 0; i < 6; i++){
+				var pPlane: IPlane3d = pFrustum[pFrustumPlanes[i]];
+
+				nTest = 0;
+
+				for(var j: int = 0; j < 8; j++){
+					if(pPlane.signedDistance(pFrustumVertices1[j]) > 0){
+						nTest++;
+					}
+				}
+
+				if(nTest == 8){
+					//frustums don't intersecting
+					return false;
+				}
+			}
+
+			return true;
+		};
+
+		static frustumPlanesKeys: string[] = ["leftPlane", "rightPlane", "topPlane",
+											  "bottomPlane", "nearPlane", "farPlane"];
 	};
 }
 

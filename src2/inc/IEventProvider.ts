@@ -4,6 +4,8 @@
 #define signal 
 #define slot
 
+#include "common.ts"
+
 module akra {
 	IFACE(IEventTable);
 

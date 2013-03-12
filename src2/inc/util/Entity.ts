@@ -38,6 +38,11 @@ module akra.util {
 
 		inline get type(): EEntityTypes { return this._eType; }
 
+		constructor (eType: EEntityTypes) {
+			super();
+			this._eType = eType;
+		}
+
 		get depth(): int {
 			var iDepth: int = -1;
 	        for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent, ++ iDepth){};
@@ -50,9 +55,6 @@ module akra.util {
 		}
 
 
-		create(): bool {
-			return true;
-		}
 
 		destroy(): void {
 			// destroy anything attached to this node

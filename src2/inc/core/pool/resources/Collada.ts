@@ -580,7 +580,7 @@ module akra.core.pool.resources {
                     debug_error("unsupported COLLADA data type <" + sName + " />");
             }
 
-            return null;
+            //return null;
         }
         
         private COLLADAGetSourceData(pSource: IColladaSource, pFormat: IColladaUnknownFormat[]): IColladaArray {
@@ -1593,7 +1593,7 @@ module akra.core.pool.resources {
                     var sInputSemantic: string = attr(pXMLVertexInput, "input_semantic");
 
                     if (sInputSemantic !== "TEXCOORD") {
-                        ERROR("unsupported vertex input semantics founded: " + sSemantic);
+                        ERROR("unsupported vertex input semantics founded: " + sInputSemantic);
                     }
 
 

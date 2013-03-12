@@ -127,7 +127,7 @@ module akra.io {
 		        return pData;
 		    }
 
-		    return null;
+		    //return null;
 		}
 
 		private update(fnCallback: Function): void {

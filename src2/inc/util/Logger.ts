@@ -170,9 +170,9 @@ module akra.util {
         setCodeFamilyRoutine(eCodeFromFamily: uint, fnLogRoutine: ILogRoutineFunc, eLevel: ELogLevel): bool;
         setCodeFamilyRoutine(sFamilyName: string, fnLogRoutine: ILogRoutineFunc, eLevel: ELogLevel): bool;
         setCodeFamilyRoutine():bool {
-            var sFamilyName: string;
-            var fnLogRoutine: ILogRoutineFunc;
-            var eLevel:ELogLevel;
+            var sFamilyName: string = null;
+            var fnLogRoutine: ILogRoutineFunc = null;
+            var eLevel: ELogLevel = ELogLevel.LOG;
 
             if(isInt(arguments[0])){
                 sFamilyName = this.getFamilyName(arguments[0]);
@@ -454,9 +454,9 @@ module akra.util {
             return isInt(eCode);
         }
 
-        private prepareLogEntity(pEntity: ILoggerEntity): void;
-        private prepareLogEntity(eCode: uint, ...pArgs: any[]): void;
-        private prepareLogEntity(pArgs:any[]): ILoggerEntity;
+        private prepareLogEntity(pEntity: ILoggerEntity): ILoggerEntity;
+        private prepareLogEntity(eCode: uint, ...pArgs: any[]): ILoggerEntity;
+        private prepareLogEntity(...pArgs:any[]): ILoggerEntity;
         private prepareLogEntity(): ILoggerEntity{
             var eCode: uint = this._eUnknownCode;
             var sMessage:string = this._sUnknownMessage;

@@ -29,8 +29,8 @@ module akra.scene.objects {
 			this.camera = pCamera;
 		}
 
-		inline findObjects(bQuickSearch: bool = false): IObjectArray {
-			var pResult: IObjectArray = this.list._findObjects(this.camera, 
+		inline findObjects(pResultArray: IObjectArray, bQuickSearch: bool = false): IObjectArray {
+			var pResult: IObjectArray = this.list._findObjects(this.camera, pResultArray,
 					bQuickSearch && isDefAndNotNull(this._pPrevResult));
 
 			if (isNull(this._pPrevResult)) {
@@ -83,7 +83,7 @@ module akra.scene.objects {
 		protected _pLastViewport: IViewport = null;
 
 		protected _pDLTechniques: DLTechnique[] = [];
-
+		protected _pDLResultStorage: IObjectArray[] = [];
 
 		// protected _pPrevObjects: ISceneNode[] = null;
 		// protected _p
@@ -117,10 +117,9 @@ module akra.scene.objects {
     	inline get frustum(): IFrustum { return this._pFrustum; }
 
 		constructor (pScene: IScene3d) {
-			super(pScene);
+			super(pScene, EEntityTypes.CAMERA);
 
-			this._eType = EEntityTypes.CAMERA;
-		}
+		};
 
 		create(): bool {
 			var isOK: bool = super.create();
@@ -150,7 +149,7 @@ module akra.scene.objects {
 			}
 
 			return isOK;
-		}
+		};
 
 		prepareForUpdate(): void {
 			super.prepareForUpdate();
@@ -167,7 +166,8 @@ module akra.scene.objects {
 
 
 		display(iList: uint = /*DL_DEFAULT*/0): IObjectArray {
-			var pObjects: IObjectArray = this._pDLTechniques[iList].findObjects(!this.isUpdated());
+			var pObjects: IObjectArray = this._pDLTechniques[iList].
+								findObjects(this._pDLResultStorage[iList], !this.isUpdated());
 
 			return pObjects;
 		}
@@ -298,6 +298,8 @@ module akra.scene.objects {
 		        this._m4fProj.multiply(this._m4fView, this._m4fRenderStageProjView);
 
 		        isUpdated = true;
+		    
+		        CLEAR_BIT(this._iUpdateProjectionFlags, ECameraFlags.k_NewProjectionMatrix);
 		    }
 
 		    return isUpdated;
@@ -373,7 +375,7 @@ module akra.scene.objects {
 
 			//notify postrender scene
 			this.postRenderScene();
-    	}
+    	};
 
 
     	_keepLastViewport(pViewport: IViewport): void { this._pLastViewport = pViewport; }
@@ -387,22 +389,26 @@ module akra.scene.objects {
 		    }
 
 		    return super.toString(isRecursive, iDepth);
-    	}
+    	};
 
     	_addDisplayList(pScene: IScene3d, pList: IDisplayList, index: uint): void {
     		this._pDLTechniques[index] = new DLTechnique(pList, this);
-    	}
+    		this._pDLResultStorage[index] = new util.ObjectArray();
+    	};
 
     	_removeDisplayList(pScene: IScene3d, pList: IDisplayList, index: uint): void {
     		this._pDLTechniques[index] = null;
-    	}
-
-
+    		this._pDLResultStorage[index] = null;
+    	};
 
     	BEGIN_EVENT_TABLE(Camera);
     		BROADCAST(preRenderScene, VOID);
     		BROADCAST(postRenderScene, VOID);
     	END_EVENT_TABLE();
+	}
+
+	export inline function isCamera(pNode: IEntity): bool {
+		return pNode.type >= EEntityTypes.CAMERA && pNode.type <= EEntityTypes.SHADOW_CASTER;
 	}
 }
 

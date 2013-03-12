@@ -38,6 +38,8 @@ module akra {
 		release(): IObjectArray;
 		/** Swap elements in array */
 		swap(i: int, j: int): IObjectArray;
+
+		takeAt(iPos): any;
 	}
 }
 

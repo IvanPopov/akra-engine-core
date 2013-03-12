@@ -16,10 +16,12 @@ module akra {
     IFACE(IScene3d);
     IFACE(IDependens);
     IFACE(IAFXComposer);
+    IFACE(IGamepadMap);
    
     export interface IEngineOptions {
         depsRoot?: string;
         deps?: IDependens;
+        gamepads?: bool;
     }
 
     export interface IEngine extends IEventProvider {
@@ -44,16 +46,16 @@ module akra {
         /** Определяет, находитсяли Engine в цикле рендеринга */
         isActive(): bool;
 
+
         getTimer(): IUtilTimer;
 
-        createMesh(sName?: string, eOptions?: int, pDataBuffer?: IRenderDataCollection): IMesh;
+        enableGamepads(): bool;
+        getGamepads(): IGamepadMap;
 
+        createMesh(sName?: string, eOptions?: int, pDataBuffer?: IRenderDataCollection): IMesh;
         createRenderDataCollection(iOptions?: int): IRenderDataCollection;
         createBufferMap(): IBufferMap;
-
         createAnimationController(iOptions?: int): IAnimationController;
-
-
     };
 
     export var createEngine: () => IEngine;

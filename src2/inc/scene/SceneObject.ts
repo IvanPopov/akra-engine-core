@@ -34,10 +34,8 @@ module akra.scene {
 		}
 
 
-		constructor (pScene: IScene3d) {
-			super(pScene);
-			
-			this._eType = EEntityTypes.SCENE_OBJECT;
+		constructor (pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_OBJECT) {
+			super(pScene, eType);
 		}
 
 		inline getRenderable(i?: uint): IRenderableObject {
@@ -101,13 +99,13 @@ module akra.scene {
 		    return false;
 		}
 
-    	hasShadows(): bool {
+    	inline get hasShadows(): bool {
     		return this._hasShadows;
-    	}
+    	};
 
-    	setShadows(bValue: bool = true): void {
+    	inline set hasShadows(bValue: bool){
     		this._hasShadows = bValue;
-    	}
+    	};
 
     	getObjectFlags(): int {
     		return this._iObjectFlags;

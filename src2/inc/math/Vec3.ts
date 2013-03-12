@@ -354,14 +354,6 @@ module akra.math {
         };
 
         ALLOCATE_STORAGE(Vec3,100)
-
-        /*get xy(): Vec2  { return new Vec2(this.x, this.y); }
-        get xz(): Vec2  { return new Vec2(this.x, this.z); }
-        get yx(): Vec2  { return new Vec2(this.y, this.x); }
-        get yz(): Vec2  { return new Vec2(this.y, this.z); }
-        get zx(): Vec2  { return new Vec2(this.z, this.x); }
-        get zy(): Vec2  { return new Vec2(this.z, this.y); }
-        get xyz(): Vec3 { return new Vec3(this.x, this.y, this.z); }*/
     }
 }
 

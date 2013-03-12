@@ -61,7 +61,7 @@ module  akra.render {
 	export class Renderer implements IRenderer {
 		protected _isActive: bool = false;
 		protected _pEngine: IEngine;
-		protected _pRenderTargets: IRenderTarget[];
+		protected _pRenderTargets: IRenderTarget[] = [];
 		protected _pPrioritisedRenderTargets: IRenderTargetPriorityMap;
 
 		constructor (pEngine: IEngine) {
@@ -79,11 +79,7 @@ module  akra.render {
 	    }
 
 
-		debug(bValue?: bool): bool {
-			return false;
-		}
-
-		enableAPITrace(): bool {
+		debug(bValue?: bool, useApiTrace?: bool): bool {
 			return false;
 		}
 		

@@ -66,7 +66,7 @@ module akra.core.pool {
     	/** Ресурс для ожидания остальных */
     	private pWaiterResource: IResourcePoolItem = null;
 
-        private pEngine: IEngine;
+        private pEngine: Engine;
 
         get surfaceMaterialPool(): IResourcePool { return this.pSurfaceMaterialPool; }
         get effectPool(): IResourcePool { return this.pEffectPool; }
@@ -87,7 +87,7 @@ module akra.core.pool {
     	constructor(pEngine: IEngine) {
     		//super();
 
-            this.pEngine = pEngine;
+            this.pEngine = <Engine>pEngine;
 
     		this.pResourceFamilyList = new Array(EResourceFamilies.TOTAL_RESOURCE_FAMILIES);
 
@@ -228,7 +228,7 @@ module akra.core.pool {
         findResource(pCode, sName): IResourcePoolItem {
             var pPool: IResourcePool = this.findResourcePool(pCode);
             var pResult: IResourcePoolItem = null;
-            var iHandle: int;
+            var iHandle: int = 0;
 
             if (isString(arguments[1])) {
                 iHandle = pPool.findResourceHandle(sName);
@@ -343,7 +343,7 @@ module akra.core.pool {
             return true;
         }
 
-        inline getEngine(): IEngine { return this.pEngine; }
+        inline getEngine(): Engine { return this.pEngine; }
 
         inline createRenderMethod(sResourceName: string): IRenderMethod {
             return <IRenderMethod>this.renderMethodPool.createResource(sResourceName);

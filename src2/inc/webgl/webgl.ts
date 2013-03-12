@@ -18,7 +18,7 @@
 #define GLSL_FS_SHADER_MIN "void main(void){}"
 
 #define GET_RPI_WEBGL_RENDERER_CONTEXT(pWebGLRenderer, pWebGLContext)\
-	var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();\
+	var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();\
 	var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 module akra.webgl {
@@ -41,8 +41,11 @@ module akra.webgl {
 	export var shaderVersion: float = 0;
 	export var hasNonPowerOf2Textures: bool = false;
 
+    var isSupported: bool = false;
 	var pSupportedExtensionList: string[] = null;
 	// var pLoadedExtensionList: Object = null;
+
+
 
     function setupContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {
         var pWebGLExtentionList: Object = {};
@@ -57,7 +60,7 @@ module akra.webgl {
             if (pWebGLExtension = pWebGLContext.getExtension(pSupportedExtensionList[i])) {
                 pWebGLExtentionList[pSupportedExtensionList[i]] = pWebGLExtension;
 
-                debug_print("loaded WebGL extension: %1", pSupportedExtensionList[i]);
+                debug_print("loaded WebGL extension: ", pSupportedExtensionList[i]);
 
                 for (var j in pWebGLExtension) {
                     if (isFunction(pWebGLExtension[j])) {
@@ -75,7 +78,7 @@ module akra.webgl {
                 }
             }
             else {
-                WARNING("cannot load extension: %1", pSupportedExtensionList[i]);
+                WARNING("cannot load extension: ", pSupportedExtensionList[i]);
                 pSupportedExtensionList.splice(i, 1);
             }
         }
@@ -86,6 +89,8 @@ module akra.webgl {
          
         return pWebGLContext;
     }
+
+    export var isEnabled = (): bool => isSupported;
 
     export function createContext(
             pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas"), 
@@ -113,6 +118,8 @@ module akra.webgl {
 			return;
 		}
 
+
+
 		maxTextureSize 					= pWebGLContext.getParameter(GL_MAX_TEXTURE_SIZE);
 		maxCubeMapTextureSize 			= pWebGLContext.getParameter(GL_MAX_CUBE_MAP_TEXTURE_SIZE);
 		maxViewPortSize 				= pWebGLContext.getParameter(GL_MAX_VIEWPORT_DIMS);
@@ -135,8 +142,9 @@ module akra.webgl {
 	    pSupportedExtensionList 		= pWebGLContext.getSupportedExtensions();
 
 #ifdef DEBUG	    
-	    pSupportedExtensionList.push(WEBGL_DEBUG_SHADERS, WEBGL_DEBUG_RENDERER_INFO);
+	    //pSupportedExtensionList.push(WEBGL_DEBUG_SHADERS, WEBGL_DEBUG_RENDERER_INFO);
 #endif
+        isSupported = true;
 
 	})(createContext());
 
@@ -414,6 +422,9 @@ module akra.webgl {
         }
     }
 
+    /**
+     * Convert GL format to EPixelFormat.
+     */
     export function getClosestAkraFormat(iGLFormat: int, iGLDataType: int): EPixelFormats {
         switch (iGLFormat) {
 
@@ -439,7 +450,7 @@ module akra.webgl {
 	                    return EPixelFormats.B5G6R5;
 	                default:
 	                    return EPixelFormats.R8G8B8;
-            	};
+            	}
             case GL_RGBA:
                 switch(iGLDataType) {
 	                case GL_UNSIGNED_SHORT_5_5_5_1:
@@ -470,7 +481,7 @@ module akra.webgl {
             default:
                 //TODO: not supported
                 return EPixelFormats.A8R8G8B8;
-        };
+        }
     }
 
     export function getMaxMipmaps(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats) : int {
