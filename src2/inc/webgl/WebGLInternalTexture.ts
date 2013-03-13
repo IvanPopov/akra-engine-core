@@ -27,7 +27,7 @@ module akra.webgl {
         		case ETextureTypes.TEXTURE_CUBE_MAP:
         			return GL_TEXTURE_CUBE_MAP;
         		default:
-        			return 0;;
+        			return 0;
         	}
         }	
 
@@ -86,7 +86,7 @@ module akra.webgl {
                 return false;
             }
             var iWebGLTarget: int = this._getWebGLTextureTarget();
-            var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+            var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
             var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
             pWebGLRenderer.bindWebGLTexture(iWebGLTarget, this._pWebGLTexture);
             pWebGLContext.texParameteri(iWebGLTarget, this._getWebGLTextureParameter(eParam), this._getWebGLTextureParameterValue(eValue));
@@ -97,7 +97,7 @@ module akra.webgl {
                 return false;
             }
             var iWebGLTarget: int = this._getWebGLTextureTarget();
-            var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+            var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
             var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
             pWebGLRenderer.bindWebGLTexture(iWebGLTarget, this._pWebGLTexture);
             pWebGLContext.texParameteri(iWebGLTarget, this._getWebGLTextureParameter(eParam), this._getWebGLTextureParameterValue(eValue));
@@ -109,7 +109,7 @@ module akra.webgl {
                 return 0;
             }
             var iWebGLTarget: int = this._getWebGLTextureTarget();
-            var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+            var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
             var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
             pWebGLRenderer.bindWebGLTexture(iWebGLTarget, this._pWebGLTexture);
             return pWebGLContext.getTexParameter(iWebGLTarget, this._getWebGLTextureParameter(eParam));           
@@ -120,7 +120,7 @@ module akra.webgl {
                 return 0;
             }
             var iWebGLTarget: int = this._getWebGLTextureTarget();
-            var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+            var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
             var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
             pWebGLRenderer.bindWebGLTexture(iWebGLTarget, this._pWebGLTexture);
             return pWebGLContext.getTexParameter(iWebGLTarget, this._getWebGLTextureParameter(eParam));         
@@ -136,7 +136,7 @@ module akra.webgl {
         	}
 
             
-        	var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+        	var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
             
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 

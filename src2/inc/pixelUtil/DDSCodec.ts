@@ -464,12 +464,11 @@ module akra
 
 				for(var iMip:uint=0;iMip<=pImgData.numMipMaps;iMip++)
 				{
-					var iDstPitch:uint;
 					
 					if(pixelUtil.isCompressed(pImgData.format))
 					{
 						var iDXTSize:uint=pixelUtil.getMemorySize(iWidth, iHeight, iDepth, pImgData.format);
-						for(var a:uint=0;a<iDstPitch;a++)
+						for(var a:uint=0;a<iDXTSize;a++)
 						{
 							pOutput[a+iOutputOffset]=pData[iOffset+a];
 
@@ -480,7 +479,7 @@ module akra
 					}
 					else
 					{
-						iDstPitch=iWidth*pixelUtil.getNumElemBytes(pImgData.format);
+						var iDstPitch:uint=iWidth*pixelUtil.getNumElemBytes(pImgData.format);
 						var iSrcPitch:uint=0;
 						if (pHeader.dwFlags & DDSD_PITCH)
 						{

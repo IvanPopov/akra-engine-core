@@ -41,8 +41,8 @@ module akra
 
 		static getExtension():string[]
 		{
-			var pExt:string[];
-			var sExt:string;
+			var pExt:string[]=<string[]>Array();
+			var sExt:string="";
 			for(sExt in Codec._pMapCodecs)
 			{
 				pExt.push(sExt)
@@ -54,7 +54,7 @@ module akra
 		static getCodec(pMagicNumber: Uint8Array):ICodec;
 		static getCodec(pMagicNumber: any):ICodec
 		{
-			var sExt: string;
+			var sExt: string="";
 			if(isString(pMagicNumber))
 			{
 				if(isDef(Codec._pMapCodecs[pMagicNumber]))

@@ -57,7 +57,7 @@ module akra.terrain {
 	    private _pMapDataFor: Uint8Array  = null;
 	    private _pMapDataNULL: Uint8Array = null;
 
-	    private _pRPC: IRPC = new net.RPC('ws://192.168.194.132');
+	    private _pRPC: IRPC = null;
 
 	    private _fTexCourdXOld: float = undefined;
 	    private _fTexCourdYOld: float = undefined;
@@ -116,6 +116,10 @@ module akra.terrain {
     				iTexX:0, iTexY:0,   /*Координаты мегатекстуры в текстуре*/
     				isUpdated : true, isLoaded : false};
     	    }
+
+
+    	    this._pRPC=net.createRpc();
+    	    this._pRPC.join('ws://192.168.194.132');
 	    	this.getDataFromServer(0, 0, 0, this._iTextureWidth, this._iTextureHeight);
 	    }
 

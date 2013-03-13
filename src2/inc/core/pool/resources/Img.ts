@@ -263,7 +263,7 @@ module akra.core.pool.resources {
             }
             else
             {
-                var pCodec:ICodec;
+                var pCodec:ICodec=undefined;
 
                 if(sType)
                 {

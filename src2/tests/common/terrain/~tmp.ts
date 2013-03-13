@@ -14,6 +14,8 @@
 
 
 
+//#define trace(...) console.log(__VA_ARGS__)
+
 
 
 // #define CRYPTO_API 1
@@ -143,6 +145,10 @@ module akra {
 
 
     export var  DEBUG : bool = true;
+
+
+
+
 
 
     export var logger: ILogger;
@@ -465,7 +471,7 @@ module akra {
             case EDataTypes.FLOAT:
                 return 4;
             default:
-                logger.setSourceLocation( "common.ts" , 401 ); logger.error('unknown data/image type used'); ;
+                logger.setSourceLocation( "common.ts" , 407 ); logger.error('unknown data/image type used'); ;
         }
     }
 
@@ -496,6 +502,9 @@ module akra {
 		(<any>window).mozRequestAnimationFrame;
 	(<any>window).WebSocket = (<any>window).WebSocket || (<any>window).MozWebSocket;
     (<any>window).storageInfo = (<any>window).storageInfo || (<any>window).webkitStorageInfo;
+    (<any>navigator).gamepads = (<any>navigator).gamepads || (<any>navigator).webkitGamepads;
+    (<any>navigator).getGamepads = (<any>navigator).getGamepads || (<any>navigator).webkitGetGamepads;
+
     Worker.prototype.postMessage = (<any>Worker).prototype.webkitPostMessage || Worker.prototype.postMessage;
 };
 
@@ -980,7 +989,7 @@ module akra.bf {
      */
 
     export inline function fixedToFloat(value:  number , bits:  number ):  number  {
-        return < number >value/< number >((1<<bits)-1);
+        return < number >(value&((1<<bits)-1))/< number >((1<<bits)-1);
     }
 
 /**
@@ -1023,7 +1032,7 @@ module akra.bf {
             case 3:
                 return pSrc[0] | pSrc[1]<<8 | pSrc[2]<<16;
             case 4:
-                return pSrc[0] | pSrc[1]<<8 | pSrc[2]<<16 | pSrc[3]<<32;
+                return (pSrc[0]) | (pSrc[1]<<8) | (pSrc[2]<<16) | (pSrc[3]<<24);
         }
         return 0;
     }
@@ -1754,10 +1763,12 @@ module akra {
     export interface IScene3d {} ;
     export interface IDependens {} ;
     export interface IAFXComposer {} ;
+    export interface IGamepadMap {} ;
 
     export interface IEngineOptions {
         depsRoot?: string;
         deps?: IDependens;
+        gamepads?: bool;
     }
 
     export interface IEngine extends IEventProvider {
@@ -1785,16 +1796,16 @@ module akra {
 
         isActive(): bool;
 
+
         getTimer(): IUtilTimer;
 
-        createMesh(sName?: string, eOptions?:  number , pDataBuffer?: IRenderDataCollection): IMesh;
+        enableGamepads(): bool;
+        getGamepads(): IGamepadMap;
 
+        createMesh(sName?: string, eOptions?:  number , pDataBuffer?: IRenderDataCollection): IMesh;
         createRenderDataCollection(iOptions?:  number ): IRenderDataCollection;
         createBufferMap(): IBufferMap;
-
         createAnimationController(iOptions?:  number ): IAnimationController;
-
-
     };
 
     export var createEngine: () => IEngine;
@@ -1829,6 +1840,20 @@ module akra {
 
 
 
+
+
+
+
+
+
+module akra {
+	export interface IUnique {
+		getGuid():  number ;
+	}
+}
+
+
+
 module akra {
 	export interface IEventTable {} ;
 
@@ -1837,8 +1862,7 @@ module akra {
 		UNICAST
 	};
 
-	export interface IEventProvider {
-		getGuid():  number ;
+	export interface IEventProvider extends IUnique {
 		getEventTable(): IEventTable;
 		connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool;
 		disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool;																														bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool;																															unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool;
@@ -1911,6 +1935,7 @@ module akra {
 
 
 
+
 module akra {
 
     export interface IEngine {} ;
@@ -1918,6 +1943,15 @@ module akra {
     export interface IResourcePool {} ;
     export interface IResourceWatcherFunc {} ;
     export interface IResourcePoolItem {} ;
+    export interface IRenderMethod {} ;
+    export interface ITexture {} ;
+    export interface IVertexBuffer {} ;
+    export interface IModel {} ;
+    export interface ISurfaceMaterial {} ;
+    export interface IEffect {} ;
+
+
+
 
 /** Семейства ресурсов */
 
@@ -2031,7 +2065,10 @@ module akra {
         createVertexBuffer(sResourceName: string): IVertexBuffer;
         createVideoBuffer(sResourceName: string): IVertexBuffer;
         createModel(sResourceName: string): IModel;
+
+        createImg(sResourceName: string): IImg;
         loadModel(sFilename: string, pOptions?: any): IModel;
+
     }
 }
 
@@ -2623,88 +2660,11 @@ module akra {
 
 
 
-module akra{
-	export interface IAFXComposer {
-		getImportTechnique(sModuleName: string): void;
-		getEngine(): IEngine;
-
-
-		_loadEffectFromSyntaxTree(pTree: IParseTree, sFileName: string): void;
-
-		_loadEffectFromBinary(pData: Uint8Array, sFileName: string): void;
-	}
-}
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-
-        export interface IEngine {} ;
-        export interface IResourceCode {} ;
-        export interface IResourcePoolItem {} ;
-        export interface IResourcePoolManager {} ;
-
-        export interface IResourcePool extends IEventProvider {
-                iFourcc:  number ;
-                 manager: IResourcePoolManager;
-
-/** Добавление данного пула в менеджер ресурсво по его коду */
-
-                registerResourcePool(pCode: IResourceCode): void;
-/** Удаление данного пула в менеджер ресурсво по его коду */
-
-                unregisterResourcePool(): void;
-/** По имени ресурса возвращает его хендл */
-
-                findResourceHandle(sName: string):  number ;
-/** По хендлу ресурва возвращает его имя */
-
-                findResourceName(iHandle:  number ): string;
-
-/** set resource name */
-
-                setResourceName(iHandle:  number , sName: string): void;
-
-                initialize(iGrowSize:  number ): void;
-                destroy(): void;
-                clean(): void;
-
-                destroyAll(): void;
-                restoreAll(): void;
-                disableAll(): void;
-
-                isInitialized(): bool;
-
-//callbackDestroy(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
-//callbackDisable(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
-//callbackRestore(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
-//callbackClean(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
-
-                createResource(sResourceName: string): IResourcePoolItem;
-                loadResource(sResourceName: string): IResourcePoolItem;
-                saveResource(pResource: IResourcePoolItem): bool;
-                destroyResource(pResource: IResourcePoolItem): void;
-
-                findResource(sName: string): IResourcePoolItem;
-                getResource(iHandle:  number ): IResourcePoolItem;
-                getResources(): IResourcePoolItem[];
-
-                 createdResource(pResource: IResourcePoolItem): void;
-        }
-}
 
 
 
@@ -2820,7 +2780,7 @@ module akra {
 
 		restoreResource(): bool;
 
-/** Загрузка ресурса из файла, или null при использовании имени ресурса. Виртуальная. */
+/** Загрузка ре��урса из файла, или null при использовании имени ресурса. Виртуальная. */
 
 		loadResource(sFilename?: string): bool;
 /** Сохранение ресурса в файл, или null при использовании имени ресурса. */
@@ -2920,6 +2880,889 @@ module akra {
 		new (pManager: IResourcePoolManager): IResourcePoolItem;
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+    export enum EAFXInstructionTypes {
+        k_Instruction = 0,
+        k_InstructionCollector,
+        k_SimpleInstruction,
+        k_VariableTypeInstruction,
+        k_SystemTypeInstruction,
+        k_ComplexTypeInstruction,
+        k_TypedInstruction,
+        k_DeclInstruction,
+        k_IntInstruction,
+        k_FloatInstruction,
+        k_BoolInstruction,
+        k_StringInstruction,
+        k_IdInstruction,
+        k_KeywordInstruction,
+        k_TypeDeclInstruction,
+        k_VariableDeclInstruction,
+        k_AnnotationInstruction,
+        k_UsageTypeInstruction,
+        k_BaseTypeInstruction,
+        k_StructDeclInstruction,
+        k_StructFieldsInstruction,
+        k_ExprInstruction,
+        k_IdExprInstruction,
+        k_ArithmeticExprInstruction,
+        k_AssignmentExprInstruction,
+        k_RelationalExprInstruction,
+        k_LogicalExprInstruction,
+        k_ConditionalExprInstruction,
+        k_CastExprInstruction,
+        k_UnaryExprInstruction,
+        k_PostfixIndexInstruction,
+        k_PostfixPointInstruction,
+        k_PostfixArithmeticInstruction,
+        k_PrimaryExprInstruction,
+        k_ComplexExprInstruction,
+        k_FunctionCallInstruction,
+        k_SystemCallInstruction,
+        k_ConstructorCallInstruction,
+        k_CompileExprInstruction,
+        k_InitExprInstruction,
+        k_SamplerStateBlockInstruction,
+        k_SamplerStateInstruction,
+        k_ExtractExprInstruction,
+        k_MemExprInstruction,
+        k_FunctionDeclInstruction,
+        k_ShaderFunctionInstruction,
+        k_SystemFunctionInstruction,
+        k_FunctionDefInstruction,
+        k_StmtInstruction,
+        k_StmtBlockInstruction,
+        k_ExprStmtInstruction,
+        k_BreakStmtInstruction,
+        k_WhileStmtInstruction,
+        k_ForStmtInstruction,
+        k_IfStmtInstruction,
+        k_DeclStmtInstruction,
+        k_ReturnStmtInstruction,
+        k_ExtractStmtInstruction,
+        k_SemicolonStmtInstruction,
+        k_PassInstruction,
+        k_TechniqueInstruction
+    }
+
+    export enum EFunctionType{
+        k_Vertex,
+        k_Pixel,
+        k_Fragment = k_Pixel,
+        k_Function,
+        k_PassFunction
+    }
+
+    export enum ECheckStage {
+/* Отсутсвуют конструкции не поддерживаемые языком назначения (GLSL) */
+        CODE_TARGET_SUPPORT,
+/* Код замкнут, нет не определенных функций, пассов, техник. Нет мертвых функций. */
+        SELF_CONTAINED
+// VALIDATION  /* Код не содерит синтаксиески неправильных выражений, то что не исчерпывается */ 
+    }
+
+    export enum EVarUsedMode {
+        k_Read,
+        k_Write,
+        k_ReadWrite,
+        k_Undefined,
+        k_Default = k_ReadWrite
+    }
+
+    export interface IAFXInstructionStateMap extends StringMap{
+	}
+
+	export interface IAFXInstructionRoutine {
+		(): void;
+	}
+
+    export interface IAFXInstructionError {
+        code:  number ;
+        info: any;
+    }
+
+    export interface IAFXInstructionMap {
+        [index:  number ]: IAFXInstruction;
+    }
+
+    export interface IAFXIdExprMap {
+        [index: string]: IAFXIdExprInstruction;
+    }
+
+    export interface IAFXVariableTypeMap {
+        [index: string]: IAFXVariableTypeInstruction;
+        [index:  number ]: IAFXVariableTypeInstruction;
+    }
+
+    export interface IAFXTypeMap {
+        [index: string]: IAFXTypeInstruction;
+        [index:  number ]: IAFXTypeInstruction;
+    }
+
+    export interface IAFXTypeDeclMap {
+        [index: string] : IAFXTypeDeclInstruction;
+        [index:  number ] : IAFXTypeDeclInstruction;
+    }
+
+    export interface IAFXVariableDeclMap {
+        [index:  number ]: IAFXVariableDeclInstruction;
+        [index: string]: IAFXVariableDeclInstruction;
+    }
+
+    export interface IAFXVarUsedModeMap {
+        [index: string]: EVarUsedMode;
+    }
+
+    export interface IAFXFunctionDeclMap {
+        [index: string]: IAFXFunctionDeclInstruction;
+        [index:  number ]: IAFXFunctionDeclInstruction;
+    }
+
+    export interface IAFXTypeUseInfoContainer {
+        type: IAFXVariableTypeInstruction;
+        isRead: bool;
+        isWrite: bool;
+        numRead:  number ;
+        numWrite:  number ;
+        numUsed:  number ;
+    }
+
+    export interface IAFXTypeUseInfoMap {
+        [index:  number ]: IAFXTypeUseInfoContainer;
+    }
+
+    export enum EExtractExprType {
+        k_Header,
+
+        k_Float,
+        k_Int,
+        k_Bool,
+
+        k_Float2,
+        k_Int2,
+        k_Bool2,
+
+        k_Float3,
+        k_Int3,
+        k_Bool3,
+
+        k_Float4,
+        k_Int4,
+        k_Bool4,
+
+        k_Float4x4
+    }
+
+    export enum EAFXBlendMode {
+        k_Shared,
+        k_Uniform,
+        k_Attribute
+    }
+
+/**
+	 * All opertion are represented by: 
+	 * operator : arg1 ... argn
+	 * Operator and instructions may be empty.
+	 */
+
+	export interface IAFXInstruction {
+        setParent(pParent: IAFXInstruction): void;
+        getParent(): IAFXInstruction;
+
+        setOperator(sOperator: string): void;
+        getOperator(): string;
+
+        setInstructions(pInstructionList: IAFXInstruction[]): void;
+        getInstructions(): IAFXInstruction[];
+
+        _getInstructionType(): EAFXInstructionTypes;
+        _getInstructionID():  number ;
+        _getScope():  number ;
+        _setScope(iScope:  number ): void;
+        _isInGlobalScope(): bool;
+
+        check(eStage: ECheckStage): bool;
+        getLastError(): IAFXInstructionError;
+        setError(eCode:  number , pInfo?: any): void;
+        clearError(): void;
+        isErrorOccured(): bool;
+
+        setVisible(isVisible: bool): void;
+        isVisible(): bool;
+
+        initEmptyInstructions(): void;
+
+// /**
+//  * Contain states of instruction
+//  */
+// stateMap: IAFXInstructionStateMap;
+
+    	push(pInstruction: IAFXInstruction, isSetParent?: bool): void;
+
+// changeState(sStateName: string, sValue: string): void;
+// changeState(iStateIndex: int, sValue: string): void;
+
+// stateChange(): void;
+// isStateChange(): bool;
+
+    	addRoutine(fnRoutine: IAFXInstructionRoutine, iPriority?:  number );
+        prepareFor(eUsedType: EFunctionType): void;
+
+    	toString(): string;
+        toFinalCode(): string;
+
+        clone(pRelationMap?: IAFXInstructionMap): IAFXInstruction;
+    }
+
+    export interface IAFXSimpleInstruction extends IAFXInstruction {
+        setValue(sValue: string): void;
+        isValue(sValue: string): bool;
+    }
+
+    export interface IAFXTypeInstruction extends IAFXInstruction {
+        _toDeclString(): string;
+/**
+         * Simple tests
+         */
+
+        isBase(): bool;
+        isArray(): bool;
+        isNotBaseArray(): bool;
+        isComplex(): bool;
+        isEqual(pType: IAFXTypeInstruction): bool;
+        isStrongEqual(pType: IAFXTypeInstruction): bool;
+        isConst(): bool;
+
+        isSampler(): bool;
+
+        isWritable(): bool;
+        isReadable(): bool;
+
+        _containArray(): bool;
+        _containSampler(): bool;
+        _containPointer(): bool;
+        _containComplexType(): bool;
+/**
+         * Set private params
+         */
+
+        setName(sName: string): void;
+        _canWrite(isWritable: bool): void;
+        _canRead(isReadable: bool): void;
+
+// markAsUsed(): void;
+
+/**
+         * get type info
+         */
+
+        getName(): string;
+        getHash(): string;
+        getStrongHash(): string;
+        getSize():  number ;
+        getBaseType(): IAFXTypeInstruction;
+        getLength():  number ;
+        getArrayElementType(): IAFXTypeInstruction;
+
+// Fields
+
+        hasField(sFieldName: string): bool;
+        hasFieldWithSematic(sSemantic: string);
+        hasAllUniqueSemantics(): bool;
+        hasFieldWithoutSemantic(): bool;
+
+        getField(sFieldName: string): IAFXVariableDeclInstruction;
+        getFieldBySemantic(sSemantic: string): IAFXVariableDeclInstruction;
+        getFieldType(sFieldName: string): IAFXVariableTypeInstruction;
+        getFieldNameList(): string[];
+
+/**
+         * System
+         */
+
+        clone(pRelationMap?: IAFXInstructionMap): IAFXTypeInstruction;
+        blend(pType: IAFXTypeInstruction, eMode: EAFXBlendMode): IAFXTypeInstruction;
+    }
+
+    export interface IAFXVariableTypeInstruction extends IAFXTypeInstruction {
+/**
+         * Simple tests
+         */
+
+        isPointer(): bool;
+        isStrictPointer(): bool;
+        isPointIndex(): bool;
+
+        isFromVariableDecl(): bool;
+        isFromTypeDecl(): bool;
+
+        isUniform(): bool;
+        isGlobal(): bool;
+        isConst(): bool;
+        isShared(): bool;
+        isForeign(): bool;
+
+        _isTypeOfField(): bool;
+        _isUnverifiable(): bool;
+
+// /**
+//  * set type info
+//  */
+// _markUsedForWrite(): bool;
+// _markUsedForRead(): bool;
+// _goodForRead(): bool;
+
+// _markAsField(): void;
+
+/**
+         * init api
+         */
+
+        setPadding(iPadding:  number ): void;
+        pushType(pType: IAFXTypeInstruction): void;
+        addUsage(sUsage: string): void;
+        addArrayIndex(pExpr: IAFXExprInstruction): void;
+        addPointIndex(isStrict?:bool): void;
+        setVideoBuffer(pBuffer: IAFXVariableDeclInstruction): void;
+        initializePointers(): void;
+
+        _setPointerToStrict(): void;
+        _addPointIndexInDepth(): void;
+        _setVideoBufferInDepth(): void;
+        _markAsUnverifiable(isUnverifiable: bool): void;
+
+/**
+         * Type info
+         */
+
+        getPadding():  number ;
+        getArrayElementType(): IAFXVariableTypeInstruction;
+
+        getUsageList(): string[];
+        getSubType(): IAFXTypeInstruction;
+
+        hasUsage(sUsageName: string): bool;
+        hasVideoBuffer(): bool;
+
+        getPointDim():  number ;
+        getPointer(): IAFXVariableDeclInstruction;
+        getVideoBuffer():IAFXVariableDeclInstruction;
+        getFieldExpr(sFieldName: string): IAFXIdExprInstruction;
+        getFieldIfExist(sFieldName: string): IAFXVariableDeclInstruction;
+
+        getSubVarDecls(): IAFXVariableDeclInstruction[];
+
+        _getFullName(): string;
+        _getVarDeclName(): string;
+        _getTypeDeclName(): string;
+
+        _getParentVarDecl(): IAFXVariableDeclInstruction;
+        _getParentContainer(): IAFXVariableDeclInstruction;
+        _getMainVariable(): IAFXVariableDeclInstruction;
+
+        _getMainPointer(): IAFXVariableDeclInstruction;
+        _getUpPointer(): IAFXVariableDeclInstruction;
+        _getDownPointer(): IAFXVariableDeclInstruction;
+
+/**
+         * System
+         */
+
+        wrap(): IAFXVariableTypeInstruction;
+        clone(pRelationMap?: IAFXInstructionMap): IAFXVariableTypeInstruction;
+        blend(pVariableType: IAFXVariableTypeInstruction, eMode: EAFXBlendMode): IAFXVariableTypeInstruction;
+
+        _setCloneHash(sHash: string, sStrongHash: string): void;
+        _setCloneArrayIndex(pElementType: IAFXVariableTypeInstruction,
+                            pIndexExpr: IAFXExprInstruction, iLength:  number ): void;
+        _setClonePointeIndexes(nDim:  number , pPointerList: IAFXVariableDeclInstruction[]): void;
+        _setCloneFields(pFieldMap: IAFXVariableDeclMap): void;
+
+        _setUpDownPointers(pUpPointer: IAFXVariableDeclInstruction,
+                           pDownPointer: IAFXVariableDeclInstruction): void;
+    }
+
+    export interface IAFXTypedInstruction extends IAFXInstruction{
+        getType(): IAFXTypeInstruction;
+        setType(pType: IAFXTypeInstruction): void;
+
+        clone(pRelationMap?: IAFXInstructionMap): IAFXTypedInstruction;
+    }
+
+    export interface IAFXDeclInstruction extends IAFXTypedInstruction {
+        setSemantic(sSemantic: string);
+        setAnnotation(pAnnotation: IAFXAnnotationInstruction): void;
+        getName(): string;
+        getRealName(): string;
+        getNameId(): IAFXIdInstruction;
+        getSemantic(): string;
+
+        _isForAll(): bool;
+        _isForPixel(): bool;
+        _isForVertex(): bool;
+
+        _setForAll(canUse: bool): void;
+        _setForPixel(canUse: bool): void;
+        _setForVertex(canUse: bool): void;
+
+        clone(pRelationMap?: IAFXInstructionMap): IAFXDeclInstruction;
+    }
+
+    export interface IAFXTypeDeclInstruction extends IAFXDeclInstruction {
+        clone(pRelationMap?: IAFXInstructionMap): IAFXTypeDeclInstruction;
+    }
+
+    export interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
+        hasInitializer(): bool;
+        getInitializeExpr(): IAFXInitExprInstruction;
+
+        getDefaultValue(): any;
+
+        getType(): IAFXVariableTypeInstruction;
+        setType(pType: IAFXVariableTypeInstruction): void;
+
+        isUniform(): bool;
+        isField(): bool;
+        isPointer(): bool;
+        isVideoBuffer(): bool;
+        isSampler(): bool;
+
+        getSubVarDecls(): IAFXVariableDeclInstruction[];
+
+        isDefinedByZero(): bool;
+        defineByZero(isDefine: bool): void;
+
+        _markAsShaderOutput(isShaderOutput: bool): void;
+        _isShaderOutput(): bool;
+
+        _getFullNameExpr(): IAFXExprInstruction;
+        _getFullName(): string;
+        _getVideoBufferSampler(): IAFXVariableDeclInstruction;
+        _getVideoBufferHeader(): IAFXVariableDeclInstruction;
+
+        setName(sName: string):void;
+
+        clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction;
+        blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction;
+    }
+
+    export interface IAFXFunctionDeclInstruction extends IAFXDeclInstruction {
+//getNameId(): IAFXIdInstruction;
+        hasImplementation(): bool;
+        getArguments(): IAFXTypedInstruction[];
+        getNumNeededArguments():  number ;
+        getReturnType(): IAFXVariableTypeInstruction;
+        getFunctionType(): EFunctionType;
+        setFunctionType(eType: EFunctionType): void;
+
+        _getVertexShader(): IAFXFunctionDeclInstruction;
+        _getPixelShader(): IAFXFunctionDeclInstruction;
+
+// closeArguments(pArguments: IAFXInstruction[]): IAFXTypedInstruction[];
+        setFunctionDef(pFunctionDef: IAFXDeclInstruction): void;
+        setImplementation(pImplementation: IAFXStmtInstruction): void;
+
+        clone(pRelationMap?: IAFXInstructionMap): IAFXFunctionDeclInstruction;
+
+//addUsedVariableType(pType: IAFXVariableTypeInstruction, eUsedMode: EVarUsedMode): bool;
+
+        _addOutVariable(pVariable: IAFXVariableDeclInstruction): bool;
+        _getOutVariable(): IAFXVariableDeclInstruction;
+
+        _markUsedAs(eUsedType: EFunctionType): void;
+        _isUsedAs(eUsedType: EFunctionType): bool;
+        _isUsedAsFunction(): bool;
+        _isUsedAsVertex(): bool;
+        _isUsedAsPixel(): bool;
+        _isUsed(): bool;
+        _markUsedInVertex(): void;
+        _markUsedInPixel(): void;
+        _isUsedInVertex(): bool;
+        _isUsedInPixel(): bool;
+        _checkVertexUsage(): bool;
+        _checkPixelUsage(): bool;
+
+        _checkDefenitionForVertexUsage(): bool;
+        _checkDefenitionForPixelUsage(): bool;
+
+        _canUsedAsFunction(): bool;
+        _notCanUsedAsFunction(): void;
+
+        _addUsedFunction(pFunction: IAFXFunctionDeclInstruction): bool;
+        _getUsedFunctionList(): IAFXFunctionDeclInstruction[];
+        _addUsedVariable(pVariable: IAFXVariableDeclInstruction): void;
+
+        _isBlackListFunction(): bool;
+        _addToBlackList(): void;
+        _getStringDef(): string;
+
+        _convertToVertexShader(): IAFXFunctionDeclInstruction;
+        _convertToPixelShader(): IAFXFunctionDeclInstruction;
+
+        _prepareForVertex(): void;
+        _prepareForPixel(): void;
+
+        _generateInfoAboutUsedData(): void;
+        _getSharedVariableMap(): IAFXVariableDeclMap;
+        _getGlobalVariableMap(): IAFXVariableDeclMap;
+        _getUniformVariableMap(): IAFXVariableDeclMap;
+        _getForeignVariableMap(): IAFXVariableDeclMap;
+        _getTextureVariableMap(): IAFXVariableDeclMap;
+        _getUsedTypeMap(): IAFXTypeDeclMap;
+    }
+
+    export interface IAFXStructDeclInstruction extends IAFXInstruction {
+//id: IAFXIdInstruction
+//structFields: IAFXStructInstruction
+    }
+
+// export interface IAFXBaseTypeInstruction extends IAFXInstruction {
+//     //id: IAFXIdInstruction
+//     //...
+// }
+
+    export interface IAFXIdInstruction extends IAFXInstruction {
+        getName(): string;
+        getRealName(): string;
+
+        setName(sName: string): void;
+        setRealName(sName: string): void;
+
+        clone(pRelationMap?: IAFXInstructionMap): IAFXIdInstruction;
+    }
+
+    export interface IAFXKeywordInstruction extends IAFXInstruction {
+        setValue(sValue: string): void;
+        isValue(sTestValue: string): bool;
+    }
+
+    export interface IAFXAnalyzedInstruction extends IAFXInstruction {
+        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap, eUsedMode?: EVarUsedMode): void;
+    }
+
+    export interface IAFXExprInstruction extends IAFXTypedInstruction, IAFXAnalyzedInstruction {
+        evaluate(): bool;
+        simplify(): bool;
+        getEvalValue(): any;
+        isConst(): bool;
+        getType(): IAFXVariableTypeInstruction;
+
+        clone(pRelationMap?: IAFXInstructionMap): IAFXExprInstruction;
+    }
+
+    export interface IAFXInitExprInstruction extends IAFXExprInstruction {
+        optimizeForVariableType(pType: IAFXVariableTypeInstruction): bool;
+    }
+
+    export interface IAFXIdExprInstruction extends IAFXExprInstruction {
+        clone(pRelationMap?: IAFXInstructionMap): IAFXIdExprInstruction;
+    }
+
+    export interface IAFXLiteralInstruction extends IAFXExprInstruction {
+        setValue(pValue: any): void;
+        clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction;
+    }
+
+    export interface IAFXAnnotationInstruction extends IAFXInstruction{
+
+    }
+
+    export interface IAFXStmtInstruction extends IAFXInstruction, IAFXAnalyzedInstruction{
+    }
+
+    export interface IAFXPassInstruction extends IAFXDeclInstruction {
+        _addFoundFunction(pNode: IParseNode, pShader: IAFXFunctionDeclInstruction, eType: EFunctionType): void;
+        _getFoundedFunction(pNode: IParseNode): IAFXFunctionDeclInstruction;
+        _getFoundedFunctionType(pNode: IParseNode): EFunctionType;
+        _setParseNode(pNode: IParseNode): void;
+        _getParseNode(): IParseNode;
+        _markAsComplex(isComplex: bool): void;
+        _addCodeFragment(sCode: string): void;
+
+        _getSharedVariableMapV(): IAFXVariableDeclMap;
+        _getGlobalVariableMapV(): IAFXVariableDeclMap;
+        _getUniformVariableMapV(): IAFXVariableDeclMap;
+        _getForeignVariableMapV(): IAFXVariableDeclMap;
+        _getTextureVariableMapV(): IAFXVariableDeclMap;
+        _getUsedTypeMapV(): IAFXTypeDeclMap;
+
+        _getSharedVariableMapP(): IAFXVariableDeclMap;
+        _getGlobalVariableMapP(): IAFXVariableDeclMap;
+        _getUniformVariableMapP(): IAFXVariableDeclMap;
+        _getForeignVariableMapP(): IAFXVariableDeclMap;
+        _getTextureVariableMapP(): IAFXVariableDeclMap;
+        _getUsedTypeMapP(): IAFXTypeDeclMap;
+
+        _getFullUniformMap(): IAFXVariableDeclMap;
+        _getFullForeignMap(): IAFXVariableDeclMap;
+        _getFullTextureMap(): IAFXVariableDeclMap;
+
+        addShader(pShader: IAFXFunctionDeclInstruction): void;
+        setState(sType: string, sValue: string): void;
+        finalizePass(): void;
+
+        isComplexPass(): bool;
+        evaluate(pEngineStates: any, pForeigns: any, pUniforms: any): bool;
+    }
+
+    export interface IAFXTechniqueInstruction extends IAFXDeclInstruction{
+        setName(sName: string, isComplexName: bool): void;
+        getName(): string;
+        hasComplexName(): bool;
+
+        addPass(pPass: IAFXPassInstruction): void;
+        getPassList(): IAFXPassInstruction[];
+        getPass(iPass:  number ): IAFXPassInstruction;
+
+        totalOwnPasses():  number ;
+        totalPasses():  number ;
+
+        getSharedVariablesForVertex(): IAFXVariableDeclInstruction[];
+        getSharedVariablesForPixel(): IAFXVariableDeclInstruction[];
+
+        addComponent(pComponent: IAFXComponent, iShift:  number ): void;
+
+        getComponentList(): IAFXComponent[];
+        getComponentListShift():  number [];
+
+        getFullComponentList(): IAFXComponent[];
+        getFullComponentShiftList():  number [];
+
+        checkForCorrectImports(): bool;
+        finalizeTechnique(sProvideNameSpace: string,
+                          pGloabalComponentList: IAFXComponent[],
+                          pGloabalComponentShiftList:  number []): void;
+    }
+
+}
+
+
+
+module akra {
+	export interface IAFXComponent extends IResourcePoolItem {
+		create(): void;
+
+		getTechnique(): IAFXTechniqueInstruction;
+		setTechnique(pTechnique: IAFXTechniqueInstruction): void;
+
+		getName(): string;
+		getTotalPasses():  number ;
+		getHash(iShift:  number , iPass:  number ): string;
+
+	}
+}
+
+
+
+
+
+
+module akra {
+
+	export interface IAFXComponent {} ;
+
+	export interface IEffect extends IResourcePoolItem {
+		totalComponents:  number ;
+		totalPasses:  number ;
+
+		isEqual(pEffect: IEffect): bool;
+		isReplicated(): bool;
+		isMixid(): bool;
+		isParameterUsed(pParam: any, iPass?:  number ): bool;
+
+		create(): void;
+		replicable(bValue: bool): void;
+		miscible(bValue: bool): void;
+
+		addComponent(iComponentHandle:  number , iShift?:  number , iPass?:  number , isSet?: bool): bool;
+		addComponent(pComponent: IAFXComponent, iShift?:  number , iPass?:  number , isSet?: bool): bool;
+		addComponent(sComponent: string, iShift?:  number , iPass?:  number , isSet?: bool): bool;
+
+		delComponent(iComponentHandle:  number , iShift?:  number , iPass?:  number ): bool;
+		delComponent(sComponent: string, iShift?:  number , iPass?:  number ): bool;
+		delComponent(pComponent: IAFXComponent, iShift?:  number , iPass?:  number ): bool;
+
+		findParameter(pParam: any, iPass?:  number ): any;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IAFXShaderInputBlend {
+		uniformNameToReal: StringMap;
+		uniformByRealName: IAFXVariableDeclMap;
+		uniformDefaultValue: any;
+
+		textureNameToReal: StringMap;
+		textureByRealName: any;
+
+		foreignByName: IAFXVariableDeclMap;
+
+		uniformNameList: string[];
+		uniformRealNameList: string[];
+
+		textureNameList: string[];
+		textureRealNameList: string[];
+
+		foreignNameList: string[];
+
+		addDataFromPass(pPass: IAFXPassInstruction): void;
+		generateKeys(): void;
+	}
+
+	export interface IAFXComponentBlend {
+		isReadyToUse(): bool;
+
+		getComponentCount():  number ;
+		getTotalPasses():  number ;
+		getHash(): string;
+
+		containComponentWithShift(pComponent: IAFXComponent, iShift:  number , iPass:  number );
+		containComponentHash(sComponentHash: string): bool;
+
+		addComponent(pComponent: IAFXComponent, iShift:  number , iPass:  number ): void;
+		removeComponent(pComponent: IAFXComponent, iShift:  number , iPass:  number ): void;
+
+		finalizeBlend(): bool;
+
+		clone(): IAFXComponentBlend;
+		_setDataForClone(pComponentList: IAFXComponent[],
+						 pComponentShiftList:  number [],
+						 pComponentPassNumnerList:  number [],
+						 pComponentCountMap: IntMap,
+						 nShiftMin:  number , nShiftMax:  number ): void;
+	}
+}
+
+
+
+module akra {
+
+	export interface IAFXComponentBlendMap {
+		[index:  number ]: IAFXComponentBlend;
+		[index: string]: IAFXComponentBlend;
+	}
+
+	export interface IAFXComponentMap {
+		[index:  number ]: IAFXComponent;
+		[index: string]: IAFXComponent;
+	}
+
+	export interface IAFXComposer {
+		getComponentByName(sComponentName: string): IAFXComponent;
+		getEngine(): IEngine;
+
+//API for Effect-resource
+
+		getComponentCountForEffect(pEffectResource: IEffect):  number ;
+		getTotalPassesForEffect(pEffectResource: IEffect):  number ;
+		addComponentToEffect(pEffectResource: IEffect, pComponent: IAFXComponent, iShift:  number , iPass:  number ): bool;
+		removeComponentFromEffect(pEffectResource: IEffect, pComponent: IAFXComponent, iShift:  number , iPass:  number ): bool;
+
+//API for load components/AFXEffects
+
+
+		_loadEffectFromSyntaxTree(pTree: IParseTree, sFileName: string): bool;
+
+		_loadEffectFromBinary(pData: Uint8Array, sFileName: string): bool;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+        export interface IEngine {} ;
+        export interface IResourceCode {} ;
+        export interface IResourcePoolItem {} ;
+        export interface IResourcePoolManager {} ;
+
+        export interface IResourcePool extends IEventProvider {
+                iFourcc:  number ;
+                 manager: IResourcePoolManager;
+
+/** Добавление данного пула в менеджер ресурсво по его коду */
+
+                registerResourcePool(pCode: IResourceCode): void;
+/** Удаление данного пула в менеджер ресурсво по его коду */
+
+                unregisterResourcePool(): void;
+/** По имени ресурса возвращает его хендл */
+
+                findResourceHandle(sName: string):  number ;
+/** По хендлу ресурва возвращает его имя */
+
+                findResourceName(iHandle:  number ): string;
+
+/** set resource name */
+
+                setResourceName(iHandle:  number , sName: string): void;
+
+                initialize(iGrowSize:  number ): void;
+                destroy(): void;
+                clean(): void;
+
+                destroyAll(): void;
+                restoreAll(): void;
+                disableAll(): void;
+
+                isInitialized(): bool;
+
+//callbackDestroy(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
+//callbackDisable(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
+//callbackRestore(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
+//callbackClean(pPool: IDataPool, iHandle: int, pResource: IResourcePoolItem): void;
+
+                createResource(sResourceName: string): IResourcePoolItem;
+                loadResource(sResourceName: string): IResourcePoolItem;
+                saveResource(pResource: IResourcePoolItem): bool;
+                destroyResource(pResource: IResourcePoolItem): void;
+
+                findResource(sName: string): IResourcePoolItem;
+                getResource(iHandle:  number ): IResourcePoolItem;
+                getResources(): IResourcePoolItem[];
+
+                 createdResource(pResource: IResourcePoolItem): void;
+        }
+}
+
+
 
 
 
@@ -3458,6 +4301,22 @@ module akra {
     }
 
 
+    export interface IColladaScene {
+
+    }
+
+    export interface IColladaFile {
+        asset?: IColladaAsset;
+
+        libEffects: IColladaEffectLibrary;
+        libMaterials: IColladaLibrary;
+        libGeometries: IColladaLibrary;
+        libVisualScenes: IColladaLibrary;
+
+        scene: IColladaScene;
+    }
+
+
 }
 
 
@@ -3804,6 +4663,16 @@ module akra {
 
 
 
+
+
+
+
+
+
+
+
+
+
 /*console.error(this.getEventTable());*/
 
 
@@ -3829,6 +4698,7 @@ module akra {
 
 
 
+//#define END_EVENT_TABLE()
 
 module akra.events {
 	export class EventTable implements IEventTable {
@@ -3837,6 +4707,8 @@ module akra.events {
 
 		addDestination(iGuid:  number , sSignal: string, pTarget: IEventProvider, sSlot: string, eType: EEventTypes = EEventTypes.BROADCAST): bool {
 			if (eType === EEventTypes.BROADCAST) {
+// console.log("add destination(", iGuid, "):: ", "target: ", pTarget, "slot: ", sSlot);
+//TODO: проверить, что объект уже добавлен с этим колбеом
 				this.findBroadcastSignalMap(iGuid, sSignal).push({target: pTarget, callback: sSlot, listener: null});
 				return true;
 			}
@@ -3868,12 +4740,13 @@ module akra.events {
 					return true;
 				}
 			}
-			logger.setSourceLocation( "events/events.ts" , 109 ); logger.warning("cannot remove destination for GUID <%s> with signal <%s>", iGuid, sSignal); ;
+			logger.setSourceLocation( "events/events.ts" , 112 ); logger.warning("cannot remove destination for GUID <%s> with signal <%s>", iGuid, sSignal); ;
 			return false;
 		}
 
 		addListener(iGuid:  number , sSignal: string, fnListener: Function, eType: EEventTypes = EEventTypes.BROADCAST): bool {
 			if (eType === EEventTypes.BROADCAST) {
+// console.log("add listener(", iGuid, "):: ", "listener: ", fnListener, "signal: ", sSignal);
 				this.findBroadcastSignalMap(iGuid, sSignal).push({target: null, callback: null, listener: fnListener});
 				return true;
 			}
@@ -3884,7 +4757,7 @@ module akra.events {
 					return true;
 				}
 			}
-			logger.setSourceLocation( "events/events.ts" , 125 ); logger.warning("cannot add listener for GUID <%s> with signal <%s>", iGuid, sSignal); ;
+			logger.setSourceLocation( "events/events.ts" , 129 ); logger.warning("cannot add listener for GUID <%s> with signal <%s>", iGuid, sSignal); ;
 			return false;
 		}
 
@@ -3907,9 +4780,8 @@ module akra.events {
 			return false;
 		}
 
-		findBroadcastList(iGuid:  number ): IEventSlotListMap {
-			this.broadcast[iGuid] = this.broadcast[iGuid] || {};
-			return this.broadcast[iGuid];
+		inline findBroadcastList(iGuid:  number ): IEventSlotListMap {
+			return (this.broadcast[iGuid] = this.broadcast[iGuid] || {});
 		}
 
 		findUnicastList(iGuid:  number ): IEventSlotMap {
@@ -3924,8 +4796,11 @@ module akra.events {
 			this.broadcast[iGuid][sSignal] = this.broadcast[iGuid][sSignal] || [];
 			return this.broadcast[iGuid][sSignal];
 		}
+	}
 
-		private
+
+	export class EventProvider implements IEventProvider {
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return EventProvider._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
 	}
 }
 
@@ -4207,9 +5082,9 @@ module akra.core.pool {
             }
         }
 
-        private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return ResourcePool._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-            createdResource (pResource): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).createdResource; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pResource) : _broadcast[i].listener (_recivier, pResource) ; } } } ; ;
-        ;
+        /**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return ResourcePool._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+        createdResource (pResource): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).createdResource; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pResource) : _broadcast[i].listener (_recivier, pResource) ; } } } ; ;
+
     }
 }
 
@@ -4723,6 +5598,8 @@ module akra {
 
 
 
+
+
 module akra {
 	export interface IResourceNotifyRoutineFunc {
 		(iFlagBit?:  number , iResourceFlags?:  number , isSet?: bool): void;
@@ -4802,8 +5679,8 @@ module akra.core.pool {
 			return null;
 		}
 
-		inline getManager(): IResourcePoolManager {
-			return this.pResourcePool? this.pResourcePool.manager: null;
+		inline getManager(): ResourcePoolManager {
+			return <ResourcePoolManager>(<ResourcePool>this.pResourcePool).manager;
 		}
 
 		createResource(): bool {
@@ -5110,22 +5987,21 @@ module akra.core.pool {
 		        case 'altered':
 		            return EResourceItemEvents.ALTERED;
 		        default:
-		            logger.setSourceLocation( "../ResourcePoolItem.ts" , 381 ); logger.error('Использовано неизвестное событие для ресурса.'); ;
+		            logger.setSourceLocation( "../ResourcePoolItem.ts" , 382 ); logger.error('Использовано неизвестное событие для ресурса.'); ;
 		            return 0;
 		    }
 		}
 
 
-		private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return ResourcePoolItem._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-			created (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).created; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
-			destroyed (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).destroyed; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
-			loaded (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).loaded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
-			unloaded (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).unloaded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
-			restored (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).restored; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
-			disabled (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).disabled; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
-			altered (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).altered; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
-			saved (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).saved; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
-		;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return ResourcePoolItem._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		created (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).created; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+		destroyed (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).destroyed; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+		loaded (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).loaded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+		unloaded (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).unloaded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+		restored (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).restored; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+		disabled (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).disabled; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+		altered (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).altered; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+		saved (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).saved; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
 	}
 
 }
@@ -6522,66 +7398,92 @@ module akra.core.pool.resources {
 
 
 
-module akra {
-
-	export interface IAFXComponent {} ;
-
-	export interface IEffect extends IResourcePoolItem {
-		totalComponents:  number ;
-		totalPasses:  number ;
-
-		isEqual(pEffect: IEffect): bool;
-		isReplicated(): bool;
-		isMixid(): bool;
-		isParameterUsed(pParam: any, iPass?:  number ): bool;
-
-		create(): void;
-		replicable(bValue: bool): void;
-		miscible(bValue: bool): void;
-
-		getComponent(i:  number ): IAFXComponent;
-		addComponent(iComponentHandle:  number , nShift?:  number , isSet?: bool): bool;
-		addComponent(pComponent: IAFXComponent, nShift?:  number , isSet?: bool): bool;
-		addComponent(sComponent: string, nShift?:  number , isSet?: bool): bool;
-		delComponent(iComponentHandle:  number , nShift?:  number , isSet?: bool): bool;
-		delComponent(sComponent: string, nShift?:  number , isSet?: bool): bool;
-		delComponent(pComponent: IAFXComponent, nShift?:  number , isSet?: bool): bool;
-
-		findParameter(pParam: any, iPass?:  number ): any;
-	}
-}
-
-
 
 
 
 module akra.core.pool.resources {
 	export class Effect implements IEffect extends ResourcePoolItem {
-		totalComponents:  number ;
-		totalPasses:  number ;
+		private _pComposer: IAFXComposer = null;
+
+
+		get totalComponents():  number {
+			return this._pComposer.getComponentCountForEffect(this);
+		}
+
+		get totalPasses():  number {
+			return this._pComposer.getTotalPassesForEffect(this);
+		}
+
+		 constructor () {
+            super();
+        }
 
 		isEqual(pEffect: IEffect): bool {return false;}
 		isReplicated(): bool {return false;}
 		isMixid(): bool {return false;}
 		isParameterUsed(pParam: any, iPass?:  number ): bool {return false;}
 
-		create(): void {return;}
+		create(): void {
+			this._pComposer = this.manager.getEngine().getComposer();
+		}
+
 		replicable(bValue: bool): void {return;}
 		miscible(bValue: bool): void {return;}
 
-		getComponent(i:  number ): IAFXComponent {return null;}
-		addComponent(iComponentHandle:  number , nShift?:  number , isSet?: bool): bool;
-		addComponent(pComponent: IAFXComponent, nShift?:  number , isSet?: bool): bool;
-		addComponent(sComponent: string, nShift?:  number , isSet?: bool): bool;
-		addComponent(sComponent: any, nShift?:  number , isSet?: bool): bool  {return false;}
-		delComponent(iComponentHandle:  number , nShift?:  number , isSet?: bool): bool;
-		delComponent(sComponent: string, nShift?:  number , isSet?: bool): bool;
-		delComponent(pComponent: IAFXComponent, nShift?:  number , isSet?: bool): bool;
-		delComponent(pComponent: any, nShift?:  number , isSet?: bool): bool {return false;}
+		addComponent(iComponentHandle:  number , iShift?:  number , iPass?:  number , isSet?: bool): bool;
+		addComponent(pComponent: IAFXComponent, iShift?:  number , iPass?:  number , isSet?: bool): bool;
+		addComponent(sComponent: string, iShift?:  number , iPass?:  number , isSet?: bool): bool;
+		addComponent(pComponent: any, iShift?:  number  = 0, iPass?:  number  =  0xffffff , isSet?: bool = true): bool {
+			var pComponentPool: IResourcePool = this.manager.componentPool;
+
+			if(isInt(pComponent)) {
+				pComponent = pComponentPool.getResource(< number >pComponent);
+			}
+			else if(isString(pComponent)){
+				pComponent = pComponentPool.findResource(<string>pComponent);
+			}
+
+			if(!isDef(pComponent) || isNull(pComponent)){
+				logger.setSourceLocation( "resources/Effect.ts" , 51 ); logger.error("Bad component for add/delete."); ;
+				return false;
+			}
+
+			if(isSet){
+				if(!this._pComposer.addComponentToEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
+					logger.setSourceLocation( "resources/Effect.ts" , 57 ); logger.error("Can not add component '" + <IAFXComponent>pComponent.findResourceName() + "'"); ;
+					return false;
+				}
+			}
+			else {
+				if(!this._pComposer.removeComponentFromEffect(this, <IAFXComponent>pComponent, iShift, iPass)){
+					logger.setSourceLocation( "resources/Effect.ts" , 63 ); logger.error("Can not delete component '" + <IAFXComponent>pComponent.findResourceName() + "'"); ;
+					return false;
+				}
+			}
+
+			this.notifyAltered();
+
+		    if (this.totalComponents === 1 && isSet) {
+		        this.notifyRestored();
+		    }
+		    else if (this.totalComponents === 0 && !isSet) {
+		        this.notifyDisabled();
+		    }
+
+			return true;
+		}
+
+		delComponent(iComponentHandle:  number , iShift?:  number , iPass?:  number ): bool;
+		delComponent(sComponent: string, iShift?:  number , iPass?:  number ): bool;
+		delComponent(pComponent: IAFXComponent, iShift?:  number , iPass?:  number ): bool;
+		delComponent(pComponent: any, iShift?:  number  = 0, iPass?:  number  =  0xffffff ): bool {
+			return this.addComponent(pComponent, iShift, iPass, false);
+		}
 
 		findParameter(pParam: any, iPass?:  number ): any {return null;}
 	}
 }
+
 
 
 
@@ -6654,6 +7556,9 @@ module akra {
 /*4 byte pixel format, 1 byte for red, 1 byte for green, 1 byte for blue, and one byte for alpha*/
         BYTE_RGBA = R8G8B8A8,
 
+        BYTE_ABGR = A8B8G8R8,
+        BYTE_ARGB = A8R8G8B8,
+
 /*32-bit pixel format, 2 bits for alpha, 10 bits for red, green and blue.*/
         A2R10G10B10 = 15,
 /*32-bit pixel format, 10 bits for blue, green and red, 2 bits for alpha.*/
@@ -6688,9 +7593,16 @@ module akra {
         FLOAT32_GR = 36,
 
 /*Float Depth texture format*/
-        DEPTH = 29,
+        FLOAT32_DEPTH = 29,
+        DEPTH8 = 44,
 /*Byte Depth texture format */
-        DEPTH_BYTE = 44,
+        BYTE_DEPTH = DEPTH8,
+
+        DEPTH16 = 45,
+        SHORT_DEPTH = DEPTH16,
+        DEPTH32 = 46,
+        DEPTH24STENCIL8=47,
+
 
 /*64-bit pixel format, 16 bits for red, green, blue and alpha*/
         SHORT_RGBA = 30,
@@ -6712,7 +7624,7 @@ module akra {
         R8 = 42,
 /*16-bit pixel format, 8 bits red, 8 bits green.*/
         RG8 = 43,
-        TOTAL = 45
+        TOTAL = 48
     };
 
     export interface PixelFormatList {
@@ -6739,7 +7651,8 @@ module akra {
         NATIVEENDIAN    = 0x00000010,
 // This is an intensity format instead of a RGB one. The luminance
 // replaces R,G and B. (but not A)
-        LUMINANCE       = 0x00000020
+        LUMINANCE       = 0x00000020,
+        STENCIL         = 0x00000040
     }
 
 /** Pixel component format */
@@ -6750,12 +7663,13 @@ module akra {
         BYTE = 0,
 /*Short per component (16 bit fixed 0.0..1.0))*/
         SHORT = 1,
+        INT = 2,
 /*16 bit float per component*/
-        FLOAT16 = 2,
+        FLOAT16 = 3,
 /*32 bit float per component*/
-        FLOAT32 = 3,
+        FLOAT32 = 4,
 /*Number of pixel types*/
-        COUNT = 4
+        COUNT = 5
     };
 
     export enum EFilters {
@@ -6770,13 +7684,86 @@ module akra {
 
 
 
-module akra {
 
-	export enum EImageFlags {
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IBox {
+		width:  number ;
+		height:  number ;
+		depth:  number ;
+
+		left:  number ;
+		top:  number ;
+		right:  number ;
+		bottom:  number ;
+		front:  number ;
+		back:  number ;
+
+		contains(pDest: IBox): bool;
+	}
+}
+
+
+
+
+module akra {
+	export interface IColor {} ;
+
+	export interface IPixelBox extends IBox {
+		format: EPixelFormats;
+		data: Uint8Array;
+		rowPitch:  number ;
+		slicePitch:  number ;
+
+		setConsecutive(): void;
+
+		getRowSkip():  number ;
+		getSliceSkip():  number ;
+
+		isConsecutive(): bool;
+		getConsecutiveSize():  number ;
+
+		getSubBox(pDest: IBox): IPixelBox;
+		getColorAt(x:  number , y:  number , z?:  number ): IColor;
+		setColorAt(pColor: IColor, x:  number , y:  number , z?:  number ): void;
+
+		scale(pDest: IPixelBox, eFilter?: EFilters): bool;
+	}
+}
+
+
+
+
+module akra
+{
+
+
+
+    export enum EImageFlags {
 		COMPRESSED = 0x00000001,
         CUBEMAP    = 0x00000002,
-        TEXTURE_3D = 0x00000004
+        TEXTURE_3D = 0x00000004,
 	};
+
+    export enum EImageCubeFlags{
+        POSITIVE_X = 0x00000001,
+        NEGATIVE_X = 0x00000002,
+        POSITIVE_Y = 0x00000004,
+        NEGATIVE_Y = 0x00000008,
+        POSITIVE_Z = 0x0000000c,
+        NEGATIVE_Z = 0x000000010,
+        };
 
     export interface IImg extends IResourcePoolItem {
     	byteLength:  number ;
@@ -6789,6 +7776,9 @@ module akra {
     	numMipMaps:  number ;
     	format: EPixelFormats;
 
+        flags:  number ;
+        cubeFlags: number ;
+
 
     	set(pSrc: IImg): IImg;
 
@@ -6797,38 +7787,38 @@ module akra {
     	flipY(pDest?: IImg): IImg;
     	flipX(pDest?: IImg): IImg;
 
-    	loadFromMemory(pData: Uint8Array, iWidth:  number , iHeight:  number , eFormat: EPixelFormats): bool;
-    	loadFromMemory(pData: Uint8Array, iWidth:  number , iHeight:  number , iDepth:  number , eFormat: EPixelFormats): bool;
 
-    	loadRawData(pData: Uint8Array, iWidth:  number , iHeight:  number , eFormat: EPixelFormats, nFaces?:  number , nMipMaps?:  number ): bool;
-    	loadRawData(pData: Uint8Array, iWidth:  number , iHeight:  number , iDepth:  number , eFormat: EPixelFormats, nFaces?:  number , nMipMaps?:  number ): bool;
+    	load(sFileName: string,  fnCallBack?: Function): IImg;
+    	load(pData: Uint8Array, sType:string,  fnCallBack?: Function): IImg;
+        load(pCanvas: HTMLCanvasElement, fnCallBack?: Function): IImg;
 
-        loadDynamicImage(pData: Uint8Array, iWidth:  number , iHeight:  number , iDepth:  number ,
-                         eFormat: EPixelFormats, bAutoDelete?: bool,
-                         iNumFaces?:  number , iNumMipMaps?:  number ): IImg;
 
-    	load(sFilename: string);
-    	create(iWidth:  number , iHeight:  number , eFormat: EPixelFormats, iFlags:  number ): bool;
-    	create(iWidth:  number , iHeight:  number , iDepth:  number , eFormat: EPixelFormats, iFlags:  number ): bool;
+    	loadRawData(pData: Uint8Array, iWidth:  number , iHeight:  number , iDepth?:  number , eFormat?: EPixelFormats, nFaces?:  number , nMipMaps?:  number ): IImg;
+
+        loadDynamicImage(pData: Uint8Array, iWidth:  number , iHeight:  number , iDepth?:  number ,
+                         eFormat?: EPixelFormats, nFaces?:  number , nMipMaps?:  number ): IImg;
+
+
+    	create(iWidth:  number , iHeight:  number , iDepth:  number , eFormat: EPixelFormats, nFaces:  number , nMipMaps:  number ): IImg ;
 
     	convert(eFormat: EPixelFormats): bool;
 
 //Gets the physical width in bytes of each row of pixels.
     	getRawSpan():  number ;
+        getPixelSize():  number ;
     	getBPP():  number ;
-    	getFlags():  number ;
     	getData(): Uint8Array;
 
     	hasFlag(eFlag: EImageFlags): bool;
 
     	hasAlpha(): bool;
     	isCompressed(): bool;
-    	isLumiance(): bool;
+    	isLuminance(): bool;
 
     	freeMemory();
 
     	getColorAt(pColor: IColor, x:  number , y:  number , z?: number ): IColor;
-    	setColorAt(pColor: IColorValue, x:  number , y:  number , z:  number ): void;
+    	setColorAt(pColor: IColor, x:  number , y:  number , z?:  number ): void;
 
     	getPixels(nFace?:  number , iMipMap?:  number ): IPixelBox;
 
@@ -6846,245 +7836,439 @@ module akra {
 
 
 
-module akra.core.pool.resources {
 
-	export class Img extends ResourcePoolItem implements IImg {
-		/**@protected*/  _iWidth:  number  = 0;
-		/**@protected*/  _iHeight:  number  = 0;
-		/**@protected*/  _iDepth:  number  = 0;
 
-		/**@protected*/  _nMipMaps:  number  = 0;
-		/**@protected*/  _iFlags:  number  = 0;
 
-		/**@protected*/  _eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
 
-		/**@protected*/  _iPixelSize:  number ;
-		/**@protected*/  _pBuffer: Uint8Array = null;
 
-		inline get byteLength():  number  {
-			return 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IPathinfo {
+		path: string;
+		dirname: string;
+		filename: string;
+		ext: string;
+		basename: string;
+
+
+		set(sPath: string): void;
+		set(pPath: IPathinfo): void;
+		isAbsolute(): bool;
+
+		toString(): string;
+	}
+
+}
+
+
+
+module akra.util {
+	export class Pathinfo implements IPathinfo {
+		private _sDirname: string = null;
+		private _sExtension: string = null;
+		private _sFilename: string = null;
+
+		inline get path(): string { return this.toString(); }
+		inline set path(sPath: string) { this.set(sPath); }
+
+		inline get dirname(): string { return this._sDirname; }
+		inline set dirname(sDirname: string) { this._sDirname = sDirname; }
+
+		inline get filename(): string { return this._sFilename; }
+		inline set filename(sFilename: string) { this._sFilename = sFilename; }
+
+		inline get ext(): string { return this._sExtension; }
+		inline set ext(sExtension: string) { this._sExtension = sExtension; }
+
+		inline get basename(): string {
+			return (this._sFilename ? this._sFilename + (this._sExtension ? "." + this._sExtension : "") : "");
 		}
 
-    	inline get width():  number  {
-    		return this._iWidth;
-    	}
+		inline set basename(sBasename: string) {
+			var nPos:  number  = sBasename.lastIndexOf(".");
 
-    	inline get height():  number  {
-    		return this._iHeight;
-    	}
-
-    	inline get depth():  number  {
-    		return this._iDepth;
-    	}
-
-    	inline get numFaces():  number  {
-    		if (this.hasFlag(EImageFlags.CUBEMAP)) {
-    			return 6;
-    		}
-
-    		return 1;
-    	}
-
-    	inline get numMipMaps():  number  {
-    		return this._nMipMaps;
-    	}
-
-    	inline get format(): EPixelFormats {
-    		return this._eFormat;
-    	}
-
-		constructor () {
-			super();
+	        if (nPos < 0) {
+	            this._sFilename = sBasename.substr(0);
+	            this._sExtension = null;
+	        }
+	        else {
+	            this._sFilename = sBasename.substr(0, nPos);
+	            this._sExtension = sBasename.substr(nPos + 1);
+	        }
 		}
 
-		createResource(): bool {
-// innitialize the resource (called once)
-		    logger.setSourceLocation( "resources/Img.ts" , 61 ); logger.assert(!this.isResourceCreated(), "The resource has already been created.");
-                                                            ;
 
-// signal that the resource is now created,
-// but has not been enabled
-		    this.notifyCreated();
-		    this.notifyDisabled();
-
-		    return true;
+		constructor (pPath: IPathinfo);
+		constructor (sPath: string);
+		constructor (pPath?: any) {
+			if (isDef(pPath)) {
+				this.set(<string>pPath);
+			}
 		}
 
-		destroyResource(): bool {
-// destroy the resource
-//
-// we permit redundant calls to destroy, so there are no asserts here
-//
-		    if (this.isResourceCreated()) {
-// disable the resource
-		        this.disableResource();
 
-		        this.freeMemory();
+		set(sPath: string): void;
+		set(pPath: IPathinfo): void;
+		set(sPath?: any) {
+			if (isString(sPath)) {
+		        var pParts: string[] = sPath.replace('\\', '/').split('/');
 
-		        this.notifyUnloaded();
-		        this.notifyDestroyed();
+		        this.basename = pParts.pop();
 
-		        return (true);
+		        this._sDirname = pParts.join('/');
 		    }
-
-		    return (false);
+		    else if (sPath instanceof Pathinfo) {
+		        this._sDirname = sPath.dirname;
+		        this._sFilename = sPath.filename;
+		        this._sExtension = sPath.ext;
+		    }
+		    else {
+//critical_error
+		        logger.setSourceLocation( "Pathinfo.ts" , 68 ); logger.error("Unexpected data type was used."); ;
+		    }
 		}
 
-		restoreResource(): bool {
-			logger.setSourceLocation( "resources/Img.ts" , 93 ); logger.assert(this.isResourceCreated(), "The resource has not been created.");
-                                                        ;
+		isAbsolute(): bool { return this._sDirname[0] === "/"; }
 
-		    this.notifyRestored();
-		    return true;
+
+		toString(): string {
+			return (this._sDirname ? this._sDirname + "/" : "") + (this.basename);
 		}
 
-		disableResource(): bool {
-			logger.setSourceLocation( "resources/Img.ts" , 101 ); logger.assert(this.isResourceCreated(), "The resource has not been created.");
-                                                      ;
+	}
 
-		    this.notifyDisabled();
-		    return true;
+}
+
+module akra {
+	export var Pathinfo = util.Pathinfo;
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IURI {
+		scheme: string;
+		userinfo: string;
+		host: string;
+		port:  number ;
+		path: string;
+		query: string;
+		fragment: string;
+		urn: string;
+		url: string;
+		authority: string;
+		protocol: string;
+
+		toString(): string;
+	}
+}
+
+
+
+module akra.util {
+	export class URI implements IURI {
+		private sScheme: string = null;
+		private sUserinfo: string = null;
+		private sHost: string = null;
+		private nPort:  number  = 0;
+		private sPath: string = null;
+		private sQuery: string = null;
+		private sFragment: string = null;
+
+		get urn(): string {
+			return (this.sPath ? this.sPath : "") +
+			(this.sQuery ? '?' + this.sQuery : "") +
+			(this.sFragment ? '#' + this.sFragment : "");
 		}
 
-		loadResource(sFilename?: string): bool {
-			return false;
+		get url(): string {
+			return (this.sScheme ? this.sScheme : "") + this.authority;
 		}
 
-		saveResource(sFilename?: string): bool {
-			return false;
+		get authority(): string {
+			return (this.sHost ? '//' + (this.sUserinfo ? this.sUserinfo + '@' : "") +
+				this.sHost + (this.nPort ? ':' + this.nPort : "") : "");
 		}
 
-		create(iWidth:  number , iHeight:  number , eFormat: EPixelFormats, iFlags:  number ): bool;
-    	create(iWidth:  number , iHeight:  number , iDepth:  number , eFormat: EPixelFormats, iFlags:  number ): bool;
-    	create(iWidth:  number , iHeight:  number , iDepth?: any, eFormat?: any, iFlags?: any): bool {
-    		return false;
-    	}
+		inline get scheme(): string {
+			return this.sScheme;
+		}
+
+		get protocol(): string {
+			if (!this.sScheme) {
+				return this.sScheme;
+			}
+
+			return (this.sScheme.substr(0, this.sScheme.lastIndexOf(':')));
+		}
+
+		inline get userinfo(): string {
+			return this.sUserinfo;
+		}
+
+		inline get host(): string {
+			return this.sHost;
+		}
+
+		inline get port():  number  {
+			return this.nPort;
+		}
+
+		inline set port(iPort:  number ) {
+			this.nPort = iPort;
+		}
+
+		inline get path(): string {
+			return this.sPath;
+		}
+
+		inline get query(): string {
+			return this.sQuery;
+		}
+
+		inline get fragment(): string {
+			return this.sFragment;
+		}
 
 
-    	freeMemory(): void {
-    		this._iWidth = 0;
-    		this._iHeight = 0;
-    		this._iDepth = 0;
-    		this._pBuffer = null;
-    	}
+		constructor (pUri: URI);
+		constructor (sUri: string);
+		constructor (pUri?) {
+			if (pUri) {
+				this.set(pUri);
+			}
+		}
 
-    	set(pSrc: IImg): IImg {
-    		this.freeMemory();
+		set(pUri: URI);
+		set(sUri: string);
+		set(pData?): URI {
+			if (isString(pData)) {
+				var pUri:RegExpExecArray = URI.uriExp.exec(<string>pData);
 
-    		this._iWidth = pSrc.width;
-    		this._iHeight = pSrc.height;
-    		this._iDepth = pSrc.depth;
-    		this._eFormat = pSrc.format;
+				logger.setSourceLocation( "URI.ts" , 86 ); logger.assert(pUri !== null, 'Invalid URI format used.\nused uri: ' + pData); ;
 
-    		this._iFlags = pSrc.getFlags();
-    		this._iPixelSize = math.ceil(pSrc.getBPP() / 8);
+				if (!pUri) {
+					return null;
+				}
 
-    		this._nMipMaps = pSrc.numMipMaps;
+				this.sScheme = pUri[1] || null;
+				this.sUserinfo = pUri[2] || null;
+				this.sHost = pUri[3] || null;
+				this.nPort = parseInt(pUri[4]) || null;
+				this.sPath = pUri[5] || pUri[6] || null;
+				this.sQuery = pUri[7] || null;
+				this.sFragment = pUri[8] || null;
 
-    		this._pBuffer = new Uint8Array(pSrc.getData());
+				return this;
 
-    		return this;
-    	}
+			}
+			else if (pData instanceof URI) {
+				return this.set(pData.toString());
+			}
+
+			logger.setSourceLocation( "URI.ts" , 107 ); logger.error('Unexpected data type was used.'); ;
+
+			return null;
+		}
+
+		toString(): string {
+			return this.url + this.urn;
+		}
+
+//------------------------------------------------------------------//
+//----- Validate a URI -----//
+//------------------------------------------------------------------//
+//- The different parts are kept in their own groups and can be recombined
+//  depending on the scheme:
+//  - http as $1://$3:$4$5?$7#$8
+//  - ftp as $1://$2@$3:$4$5
+//  - mailto as $1:$6?$7
+//- groups are as follows:
+//  1   == scheme
+//  2   == userinfo
+//  3   == host
+//  4   == port
+//  5,6 == path (5 if it has an authority, 6 if it doesn't)
+//  7   == query
+//  8   == fragment
 
 
-    	flipY(pDest?: IImg): IImg {
-    		return this;
-    	}
+		static private uriExp:RegExp = new RegExp("^([a-z0-9+.-]+:)?(?:\\/\\/(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(\\/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?|(\\/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})*(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?)(?:\\?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?$", "i");
 
-    	flipX(pDest?: IImg): IImg {
-    		return this;
-    	}
+/*
+		 composed as follows:
+		 ^
+		 ([a-z0-9+.-]+):							#scheme
+		 (?:
+		 //							#it has an authority:
+		 (?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?	#userinfo
+		 ((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)		#host
+		 (?::(\d*))?						#port
+		 (/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?	#path
+		 |
+		 #it doesn't have an authority:
+		 (/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?	#path
+		 )
+		 (?:
+		 \?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*)	#query string
+		 )?
+		 (?:
+		 #((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*)	#fragment
+		 )?
+		 $
+		 */
 
-    	loadFromMemory(pData: Uint8Array, iWidth:  number , iHeight:  number , eFormat: EPixelFormats): bool;
-    	loadFromMemory(pData: Uint8Array, iWidth:  number , iHeight:  number , iDepth:  number , eFormat: EPixelFormats): bool;
-    	loadFromMemory(pData: Uint8Array, iWidth:  number , iHeight:  number , iDepth: any, eFormat?: any): bool {
-    		return false;
-    	}
+	}
+}
 
-    	loadRawData(pData: Uint8Array, iWidth:  number , iHeight:  number , eFormat: EPixelFormats, nFaces?:  number , nMipMaps?:  number ): bool;
-    	loadRawData(pData: Uint8Array, iWidth:  number , iHeight:  number , iDepth:  number , eFormat: EPixelFormats, nFaces?:  number , nMipMaps?:  number ): bool;
-    	loadRawData(pData: Uint8Array, iWidth:  number , iHeight:  number , iDepth: any, eFormat?: any, nFaces?: any, nMipMaps?: any): bool {
-    		return false;
-    	}
 
-        loadDynamicImage(pData: Uint8Array, iWidth:  number , iHeight:  number , iDepth:  number ,
-                         eFormat: EPixelFormats, bAutoDelete?: bool = false,
-                         iNumFaces?:  number  = 1, iNumMipMaps?:  number  = 0): IImg {
-            return null;
+
+// #include "ReferenceCounter.ts"
+// #include "Singleton.ts"
+
+// #include "BrowserInfo.ts"
+// #include "ApiInfo.ts"
+// #include "ScreenInfo.ts"
+// #include "DeviceInfo.ts"
+
+// #include "UtilTimer.ts"
+
+// #include "Entity.ts"
+
+// #include "ThreadManager.ts"
+
+module akra.util {
+
+	export var uri = (sUri:string): IURI => new util.URI(sUri);
+
+// export var pathinfo: (sPath: string) => IPathinfo;
+// export var pathinfo: (pPath: IPathinfo) => IPathinfo;
+	export var pathinfo: (pPath?) => IPathinfo;
+
+	pathinfo = function (pPath?): IPathinfo {
+		return new Pathinfo(pPath);
+	}
+
+//string to array buffer
+	export var stoab = function (s: string): ArrayBuffer {
+		var len:  number  = s.length;
+		var pCodeList:  number [] = new Array(len);
+
+	    for (var i:  number  = 0; i < len; ++i) {
+/*& 0xFF;*/
+	        pCodeList[ i ] = s.charCodeAt(i);
+	    }
+
+	    return (new Uint8Array(pCodeList)).buffer;
+	}
+
+	export var abtos = function (pBuf: ArrayBuffer): string {
+		var pData: Uint8Array = new Uint8Array(pBuf);
+	    var s: string = "";
+
+	    for (var n:  number  = 0; n < pData.length; ++ n) {
+	        s += String.fromCharCode(pData[n]);
+	    }
+
+	    return s;
+	}
+
+
+	export function abtota(pBuffer: ArrayBuffer, eType: EDataTypes): ArrayBufferView {
+        switch (eType) {
+            case EDataTypes.FLOAT:
+                return new Float32Array(pBuffer);
+            case EDataTypes.SHORT:
+                return new Int16Array(pBuffer);
+            case EDataTypes.UNSIGNED_SHORT:
+                return new Uint16Array(pBuffer);
+            case EDataTypes.INT:
+                return new Int32Array(pBuffer);
+            case EDataTypes.UNSIGNED_INT:
+                return new Uint32Array(pBuffer);
+            case EDataTypes.BYTE:
+                return new Int8Array(pBuffer);
+            default:
+            case EDataTypes.UNSIGNED_BYTE:
+                return new Uint8Array(pBuffer);
         }
-
-    	load(sFilename: string): bool {
-    		return false;
-    	}
-
-    	convert(eFormat: EPixelFormats): bool {
-    		return false;
-    	}
-
-//Gets the physical width in bytes of each row of pixels.
-    	getRawSpan():  number  {
-    		return 0;
-    	}
-
-    	getBPP():  number  {
-    		return 0;
-    	}
-
-    	getFlags():  number  {
-    		return 0;
-    	}
-
-    	getData(): Uint8Array {
-    		return null;
-    	}
-
-    	hasFlag(eFlag: EImageFlags): bool {
-    		return false;
-    	}
-
-    	hasAlpha(): bool {
-    		return false;
-    	}
-
-    	isCompressed(): bool {
-    		return false;
-    	}
-
-    	isLumiance(): bool {
-    		return false;
-    	}
+    }
 
 
-    	getColorAt(pColor: IColor, x:  number , y:  number , z?: number ): IColor {
-    		return null;
-    	}
+	export function parseJSON(sJSON: string): Object {
+		return eval('(' + sJSON + ')');
+	};
 
-    	setColorAt(pColor: IColorValue, x:  number , y:  number , z:  number ): void {
+/**
+	 * Преобразование html-сформированного текста
+	 * в dom.
+	 */
 
-    	}
+	export function parseHTML(sHTML: string, useDocFragment: bool = true): any {
+	    var pDivEl: HTMLDivElement = <HTMLDivElement>document.createElement('div');
+	    var pDocFrag: DocumentFragment;
 
-    	getPixels(nFace?:  number , iMipMap?:  number ): IPixelBox {
-    		return null;
-    	}
+	    pDivEl.innerHTML = sHTML;
 
-    	scale(pDest: IPixelBox, eFilter?: EFilters): bool {
-    		return null;
-    	}
+	    if (!useDocFragment) {
+	        return pDivEl.childNodes;
+	    }
 
-    	resize(iWidth:  number , iHeight:  number , eFilter?: EFilters): bool {
-    		return null;
-    	}
+	    pDocFrag = document.createDocumentFragment();
 
-    	generatePerlinNoise(fScale:  number , iOctaves:  number , fFalloff:  number ): void {
+	    for (var i = 0, len:  number  = pDivEl.childNodes.length; i < len; ++ i) {
+	        if (!isDef(pDivEl.childNodes[i])) {
+	            continue;
+	        }
 
-    	}
+	        pDocFrag.appendChild(pDivEl.childNodes[i]);
+	    }
 
-    	randomChannelNoise(iChannel:  number , iMinRange:  number , iMaxRange:  number ): void {
+	    return pDocFrag;
+	};
 
-    	}
-	}
 }
 
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface ICanvasInfo {
+		width:  number ;
+		height:  number ;
+		id: string;
+	}
+}
 
 
 
@@ -7098,18 +8282,10 @@ module akra.core.pool.resources {
 
 
 module akra {
-	export interface IAFXComponent extends IResourcePoolItem {
-
-	}
-}
-
-
-
-
-
-module akra.core.pool.resources {
-	export class Component extends ResourcePoolItem implements IAFXComponent{
-
+	export interface IBrowserInfo {
+		name: string;
+		version: string;
+		os: string;
 	}
 }
 
@@ -7118,13 +8294,196 @@ module akra.core.pool.resources {
 
 
 
+module akra.util {
+	export class Singleton {
+		constructor () {
+			var _constructor = (<any>this).constructor;
+
+			logger.setSourceLocation( "Singleton.ts" , 10 ); logger.assert(!isDef(_constructor._pInstance), 'Singleton class may be created only one time.');
+                                                    ;
+
+			_constructor._pInstance = this;
+		}
+	}
+}
 
 
 
 
+module akra.util {
+	export interface IBrowserData {
+		string: string;
+		subString: string;
+		identity: string;
+		versionSearch?: string;
+		prop?: string;
+	}
 
+	export class BrowserInfo extends Singleton implements IBrowserInfo {
+		private sBrowser: string = null;
+		private sVersion: string = null;
+		private sOS: string = null;
+		private sVersionSearch: string = null;
 
+		get name(): string {
+			return this.sBrowser;
+		}
 
+		get version(): string {
+			return this.sVersion;
+		}
+
+		get os(): string {
+			return this.sOS;
+		}
+
+		private init(): void {
+			this.sBrowser = this.searchString(BrowserInfo.dataBrowser) || "An unknown browser";
+			this.sVersion = this.searchVersion(navigator.userAgent)
+								|| this.searchVersion(navigator.appVersion)
+				|| "an unknown version";
+			this.sOS = this.searchString(BrowserInfo.dataOS) || "an unknown OS";
+		}
+
+		private searchString(pDataBrowser: IBrowserData[]): string {
+			for (var i: number  = 0; i < pDataBrowser.length; i++) {
+				var sData:string = pDataBrowser[i].string;
+				var dataProp:string = pDataBrowser[i].prop;
+
+				this.sVersionSearch = pDataBrowser[i].versionSearch || pDataBrowser[i].identity;
+
+				if (sData) {
+					if (sData.indexOf(pDataBrowser[i].subString) != -1) {
+						return pDataBrowser[i].identity;
+					}
+				}
+				else if (dataProp) {
+					return pDataBrowser[i].identity;
+				}
+			}
+			return null;
+		}
+
+		private searchVersion(sData: string): string {
+			var iStartIndex: number  = sData.indexOf(this.sVersionSearch);
+
+			if (iStartIndex == -1) {
+				return null;
+			}
+
+			iStartIndex = sData.indexOf('/', iStartIndex + 1);
+
+			if (iStartIndex == -1) {
+				return null;
+			}
+
+			var iEndIndex: number  = sData.indexOf(' ', iStartIndex + 1);
+
+			if (iEndIndex == -1) {
+				iEndIndex = sData.indexOf(';', iStartIndex + 1);
+				if (iEndIndex == -1) {
+					return null;
+				}
+				return sData.slice(iStartIndex + 1);
+			}
+
+			return sData.slice((iStartIndex + 1), iEndIndex);
+		}
+
+		static private dataBrowser: IBrowserData[] = [
+			{
+				string: navigator.userAgent,
+				subString: "Chrome",
+				identity: "Chrome"
+			},
+			{
+				string: navigator.userAgent,
+				subString: "OmniWeb",
+				versionSearch: "OmniWeb/",
+				identity: "OmniWeb"
+			},
+			{
+				string: navigator.vendor,
+				subString: "Apple",
+				identity: "Safari",
+				versionSearch: "Version"
+			},
+			{
+				prop: window.opera,
+				identity: "Opera",
+				versionSearch: "Version"
+			},
+			{
+				string: navigator.vendor,
+				subString: "iCab",
+				identity: "iCab"
+			},
+			{
+				string: navigator.vendor,
+				subString: "KDE",
+				identity: "Konqueror"
+			},
+			{
+				string: navigator.userAgent,
+				subString: "Firefox",
+				identity: "Firefox"
+			},
+			{
+				string: navigator.vendor,
+				subString: "Camino",
+				identity: "Camino"
+			},
+			{
+// for newer Netscapes (6+)
+				string: navigator.userAgent,
+				subString: "Netscape",
+				identity: "Netscape"
+			},
+			{
+				string: navigator.userAgent,
+				subString: "MSIE",
+				identity: "Explorer",
+				versionSearch: "MSIE"
+			},
+			{
+				string: navigator.userAgent,
+				subString: "Gecko",
+				identity: "Mozilla",
+				versionSearch: "rv"
+			},
+			{
+// for older Netscapes (4-)
+				string: navigator.userAgent,
+				subString: "Mozilla",
+				identity: "Netscape",
+				versionSearch: "Mozilla"
+			}
+		];
+
+		static private dataOS: IBrowserData[] = [
+			{
+				string    : navigator.platform,
+				subString : "Win",
+				identity  : "Windows"
+			},
+			{
+				string    : navigator.platform,
+				subString : "Mac",
+				identity  : "Mac"
+			},
+			{
+				string    : navigator.userAgent,
+				subString : "iPhone",
+				identity  : "iPhone/iPod"
+			},
+			{
+				string    : navigator.platform,
+				subString : "Linux",
+				identity  : "Linux"
+			}
+		];
+	}
+}
 
 
 
@@ -7137,119 +8496,1617 @@ module akra.core.pool.resources {
 
 
 module akra {
-    export interface IRenderDataCollection {} ;
-    export interface IDataFlow {} ;
-    export interface IVertexDeclaration {} ;
-    export interface IVertexData {} ;
-
-	export enum ERenderDataTypes {
-/*<! положить данные в текстуру, и больше ничего не делать.*/
-        ISOLATED = 0,
-/*<! обычные даннае из текстуры, доступные по индексу.*/
-        INDEXED,
-/*<! данные по 2йному индексу.*/
-        I2I,
-/*<! непосредственно данные для атрибута.*/
-        DIRECT
-    };
-
-    export enum ERenderDataOptions {
-/*<! использовать индекс на индекс упаковку данных*/
-        ADVANCED_INDEX =  (1 << (0x10)) ,
-        SINGLE_INDEX   =  (1 << (0x11)) ,
-/*<! создать RenderData как классические данные, с данными только в аттрибутах, без использования видео буфферов.*/
-
-/*<! определяет, будет ли объект редерится*/
-        RENDERABLE     =  (1 << (0x12))
-    }
-
-    export interface IRenderDataType {
-        new (): IRenderData;
-    }
-
-	export interface IRenderData extends IReferenceCounter {
-		 buffer: IRenderDataCollection;
-
-/**
-         * Allocate data for rendering.
-         */
-
-        allocateData(pDataDecl: IVertexElementInterface[], pData: ArrayBuffer, hasIndex?: bool):  number ;
-        allocateData(pDataDecl: IVertexElementInterface[], pData: ArrayBufferView, hasIndex?: bool):  number ;
-        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, hasIndex?: bool):  number ;
-        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, hasIndex?: bool):  number ;
-
-/**
-         * Remove data from this render data.
-         */
-
-        releaseData(iDataLocation:  number ): void;
-
-        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
-        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
-
-        allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
-        allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
-        allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): bool;
-        allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): bool;
-
-        addIndexSet(usePreviousDataSet?: bool, ePrimType?: EPrimitiveTypes, sName?: string):  number ;
-        getNumIndexSet():  number ;
-        getIndexSetName(iSet:  number ): string;
-        selectIndexSet(iSet:  number ): bool;
-        selectIndexSet(sName: string): bool;
-        getIndexSet():  number ;
-
-/**
-         * Specifies uses advanced index.
-         */
-
-        useAdvancedIndex(): bool;
-        useSingleIndex(): bool;
-        useMultiIndex(): bool;
-
-/** mark index set as renderable */
-
-        setRenderable(iIndexSet:  number , bValue: bool): void;
-        isRenderable(iIndexSet:  number ): bool;
-
-/** Mark this RenderData as renderable. */
-
-        isRenderable(): bool;
-        setRenderable(bValue: bool): void;
-
-        hasSemantics(sSemantics: string, bSearchComplete?: bool): bool;
-
-        getDataLocation(iDataLocation:  number ):  number ;
-        getDataLocation(sSemantics: string):  number ;
-        getIndices(): IBufferData;
-        getPrimitiveCount():  number ;
-        getAdvancedIndexData(sSemantics: string): IVertexData;
-
-        index(sData: string, sSemantics: string, useSame?: bool, iBeginWith?:  number ): bool;
-        index(iData:  number , sSemantics: string, useSame?: bool, iBeginWith?:  number ): bool;
-
-
-        toString(): string;
-
-//applyMe(): bool;
-
-        _draw(): void;
-
-        _getFlow(iDataLocation:  number ): IDataFlow;
-        _getFlow(sSemantics: string, bSearchComplete?: bool): IDataFlow;
-
-        _getData(iDataLocation:  number , bSearchOnlyInCurrentMap?: bool): IVertexData;
-        _getData(sSemanticsn: string, bSearchOnlyInCurrentMap?: bool): IVertexData;
-
-        _addData(pVertexData: IVertexData, iFlow?:  number , eType?: ERenderDataTypes):  number ;
-
-        _setup(pCollection: IRenderDataCollection, iId:  number , ePrimType?: EPrimitiveTypes, eOptions?:  number ): bool;
-
-//FIXME: hack for terrain, for force limitin drawing index length
-        _setIndexLength(iLength:  number );
+	export interface IScreenInfo {
+		width:  number ;
+		height:  number ;
+		aspect:  number ;
+		pixelDepth:  number ;
+		colorDepth:  number ;
 	}
 }
+
+
+
+module akra.util {
+	export class ScreenInfo implements IScreenInfo {
+		get width():  number  {
+			return screen.width;
+		}
+
+		get height():  number  {
+			return screen.height;
+		}
+
+		get aspect():  number  {
+			return screen.width / screen.height;
+		}
+
+		get pixelDepth():  number  {
+			return screen.pixelDepth;
+		}
+
+		get colorDepth():  number  {
+			return screen.colorDepth;
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IApiInfo {
+		gamepad: bool;
+		webGL: bool;
+		webAudio: bool;
+		file: bool;
+		fileSystem: bool;
+		webWorker: bool;
+		transferableObjects: bool;
+		localStorage: bool;
+		webSocket: bool;
+	}
+}
+
+
+
+
+
+
+
+
+
+// see: http://www.khronos.org/registry/webgl/specs/latest/
+
+interface WebGLObject
+{
+};
+
+interface WebGLBuffer extends WebGLObject
+{
+};
+
+interface WebGLFramebuffer extends WebGLObject
+{
+};
+
+interface WebGLProgram extends WebGLObject
+{
+};
+
+interface WebGLRenderbuffer extends WebGLObject
+{
+};
+
+interface WebGLShader extends WebGLObject
+{
+};
+
+interface WebGLTexture extends WebGLObject
+{
+};
+
+interface WebGLUniformLocation
+{
+};
+
+interface WebGLActiveInfo
+{
+	size: number;
+	type: number;
+	name: string;
+};
+
+interface WebGLShaderPrecisionFormat
+{
+	rangeMin: number;
+	rangeMax: number;
+	precision: number;
+};
+
+
+interface WebGLContextAttributes
+{
+	alpha?: bool;
+	depth?: bool;
+	stencil?: bool;
+	antialias?: bool;
+	premultipliedAlpha?: bool;
+	preserveDrawingBuffer?: bool;
+};
+
+interface WebGLRenderingContext
+{
+/* ClearBufferMask */
+
+	DEPTH_BUFFER_BIT: number;
+	STENCIL_BUFFER_BIT: number;
+	COLOR_BUFFER_BIT: number;
+
+/* BeginMode */
+
+	POINTS: number;
+	LINES: number;
+	LINE_LOOP: number;
+	LINE_STRIP: number;
+	TRIANGLES: number;
+	TRIANGLE_STRIP: number;
+	TRIANGLE_FAN: number;
+
+/* AlphaFunction (not supported in ES20) */
+
+/*      NEVER */
+
+/*      LESS */
+
+/*      EQUAL */
+
+/*      LEQUAL */
+
+/*      GREATER */
+
+/*      NOTEQUAL */
+
+/*      GEQUAL */
+
+/*      ALWAYS */
+
+
+/* BlendingFactorDest */
+
+	ZERO: number;
+	ONE: number;
+	SRC_COLOR: number;
+	ONE_MINUS_SRC_COLOR: number;
+	SRC_ALPHA: number;
+	ONE_MINUS_SRC_ALPHA: number;
+	DST_ALPHA: number;
+	ONE_MINUS_DST_ALPHA: number;
+
+/* BlendingFactorSrc */
+
+/*      ZERO */
+
+/*      ONE */
+
+	DST_COLOR: number;
+	ONE_MINUS_DST_COLOR: number;
+	SRC_ALPHA_SATURATE: number;
+/*      SRC_ALPHA */
+
+/*      ONE_MINUS_SRC_ALPHA */
+
+/*      DST_ALPHA */
+
+/*      ONE_MINUS_DST_ALPHA */
+
+
+/* BlendEquationSeparate */
+
+	FUNC_ADD: number;
+	BLEND_EQUATION: number;
+	BLEND_EQUATION_RGB: number;
+	BLEND_EQUATION_ALPHA: number;
+
+/* BlendSubtract */
+
+	FUNC_SUBTRACT: number;
+	FUNC_REVERSE_SUBTRACT: number;
+
+/* Separate Blend Functions */
+
+	BLEND_DST_RGB: number;
+	BLEND_SRC_RGB: number;
+	BLEND_DST_ALPHA: number;
+	BLEND_SRC_ALPHA: number;
+	CONSTANT_COLOR: number;
+	ONE_MINUS_CONSTANT_COLOR: number;
+	CONSTANT_ALPHA: number;
+	ONE_MINUS_CONSTANT_ALPHA: number;
+	BLEND_COLOR: number;
+
+/* Buffer Objects */
+
+	ARRAY_BUFFER: number;
+	ELEMENT_ARRAY_BUFFER: number;
+	ARRAY_BUFFER_BINDING: number;
+	ELEMENT_ARRAY_BUFFER_BINDING: number;
+
+	STREAM_DRAW: number;
+	STATIC_DRAW: number;
+	DYNAMIC_DRAW: number;
+
+	BUFFER_SIZE: number;
+	BUFFER_USAGE: number;
+
+	CURRENT_VERTEX_ATTRIB: number;
+
+/* CullFaceMode */
+
+	FRONT: number;
+	BACK: number;
+	FRONT_AND_BACK: number;
+
+/* DepthFunction */
+
+/*      NEVER */
+
+/*      LESS */
+
+/*      EQUAL */
+
+/*      LEQUAL */
+
+/*      GREATER */
+
+/*      NOTEQUAL */
+
+/*      GEQUAL */
+
+/*      ALWAYS */
+
+
+/* EnableCap */
+
+/* TEXTURE_2D */
+
+	CULL_FACE: number;
+	BLEND: number;
+	DITHER: number;
+	STENCIL_TEST: number;
+	DEPTH_TEST: number;
+	SCISSOR_TEST: number;
+	POLYGON_OFFSET_FILL: number;
+	SAMPLE_ALPHA_TO_COVERAGE: number;
+	SAMPLE_COVERAGE: number;
+
+/* ErrorCode */
+
+	NO_ERROR: number;
+	INVALID_ENUM: number;
+	INVALID_VALUE: number;
+	INVALID_OPERATION: number;
+	OUT_OF_MEMORY: number;
+
+/* FrontFaceDirection */
+
+	CW: number;
+	CCW: number;
+
+/* GetPName */
+
+	LINE_WIDTH: number;
+	ALIASED_POINT_SIZE_RANGE: number;
+	ALIASED_LINE_WIDTH_RANGE: number;
+	CULL_FACE_MODE: number;
+	FRONT_FACE: number;
+	DEPTH_RANGE: number;
+	DEPTH_WRITEMASK: number;
+	DEPTH_CLEAR_VALUE: number;
+	DEPTH_FUNC: number;
+	STENCIL_CLEAR_VALUE: number;
+	STENCIL_FUNC: number;
+	STENCIL_FAIL: number;
+	STENCIL_PASS_DEPTH_FAIL: number;
+	STENCIL_PASS_DEPTH_PASS: number;
+	STENCIL_REF: number;
+	STENCIL_VALUE_MASK: number;
+	STENCIL_WRITEMASK: number;
+	STENCIL_BACK_FUNC: number;
+	STENCIL_BACK_FAIL: number;
+	STENCIL_BACK_PASS_DEPTH_FAIL: number;
+	STENCIL_BACK_PASS_DEPTH_PASS: number;
+	STENCIL_BACK_REF: number;
+	STENCIL_BACK_VALUE_MASK: number;
+	STENCIL_BACK_WRITEMASK: number;
+	VIEWPORT: number;
+	SCISSOR_BOX: number;
+/*      SCISSOR_TEST */
+
+	COLOR_CLEAR_VALUE: number;
+	COLOR_WRITEMASK: number;
+	UNPACK_ALIGNMENT: number;
+	PACK_ALIGNMENT: number;
+	MAX_TEXTURE_SIZE: number;
+	MAX_VIEWPORT_DIMS: number;
+	SUBPIXEL_BITS: number;
+	RED_BITS: number;
+	GREEN_BITS: number;
+	BLUE_BITS: number;
+	ALPHA_BITS: number;
+	DEPTH_BITS: number;
+	STENCIL_BITS: number;
+	POLYGON_OFFSET_UNITS: number;
+/*      POLYGON_OFFSET_FILL */
+
+	POLYGON_OFFSET_FACTOR: number;
+	TEXTURE_BINDING_2D: number;
+	SAMPLE_BUFFERS: number;
+	SAMPLES: number;
+	SAMPLE_COVERAGE_VALUE: number;
+	SAMPLE_COVERAGE_INVERT: number;
+
+/* GetTextureParameter */
+
+/*      TEXTURE_MAG_FILTER */
+
+/*      TEXTURE_MIN_FILTER */
+
+/*      TEXTURE_WRAP_S */
+
+/*      TEXTURE_WRAP_T */
+
+
+	COMPRESSED_TEXTURE_FORMATS: number;
+
+/* HintMode */
+
+	DONT_CARE: number;
+	FASTEST: number;
+	NICEST: number;
+
+/* HintTarget */
+
+	GENERATE_MIPMAP_HINT: number;
+
+/* DataType */
+
+	BYTE: number;
+	UNSIGNED_BYTE: number;
+	SHORT: number;
+	UNSIGNED_SHORT: number;
+	INT: number;
+	UNSIGNED_INT: number;
+	FLOAT: number;
+
+/* PixelFormat */
+
+	DEPTH_COMPONENT: number;
+	ALPHA: number;
+	RGB: number;
+	RGBA: number;
+	LUMINANCE: number;
+	LUMINANCE_ALPHA: number;
+
+/* PixelType */
+
+/*      UNSIGNED_BYTE */
+
+	UNSIGNED_SHORT_4_4_4_4: number;
+	UNSIGNED_SHORT_5_5_5_1: number;
+	UNSIGNED_SHORT_5_6_5: number;
+
+/* Shaders */
+
+	FRAGMENT_SHADER: number;
+	VERTEX_SHADER: number;
+	MAX_VERTEX_ATTRIBS: number;
+	MAX_VERTEX_UNIFORM_VECTORS: number;
+	MAX_VARYING_VECTORS: number;
+	MAX_COMBINED_TEXTURE_IMAGE_UNITS: number;
+	MAX_VERTEX_TEXTURE_IMAGE_UNITS: number;
+	MAX_TEXTURE_IMAGE_UNITS: number;
+	MAX_FRAGMENT_UNIFORM_VECTORS: number;
+	SHADER_TYPE: number;
+	DELETE_STATUS: number;
+	LINK_STATUS: number;
+	VALIDATE_STATUS: number;
+	ATTACHED_SHADERS: number;
+	ACTIVE_UNIFORMS: number;
+	ACTIVE_ATTRIBUTES: number;
+	SHADING_LANGUAGE_VERSION: number;
+	CURRENT_PROGRAM: number;
+
+/* StencilFunction */
+
+	NEVER: number;
+	LESS: number;
+	EQUAL: number;
+	LEQUAL: number;
+	GREATER: number;
+	NOTEQUAL: number;
+	GEQUAL: number;
+	ALWAYS: number;
+
+/* StencilOp */
+
+/*      ZERO */
+
+	KEEP: number;
+	REPLACE: number;
+	INCR: number;
+	DECR: number;
+	INVERT: number;
+	INCR_WRAP: number;
+	DECR_WRAP: number;
+
+/* StringName */
+
+	VENDOR: number;
+	RENDERER: number;
+	VERSION: number;
+
+/* TextureMagFilter */
+
+	NEAREST: number;
+	LINEAR: number;
+
+/* TextureMinFilter */
+
+/*      NEAREST */
+
+/*      LINEAR */
+
+	NEAREST_MIPMAP_NEAREST: number;
+	LINEAR_MIPMAP_NEAREST: number;
+	NEAREST_MIPMAP_LINEAR: number;
+	LINEAR_MIPMAP_LINEAR: number;
+
+/* TextureParameterName */
+
+	TEXTURE_MAG_FILTER: number;
+	TEXTURE_MIN_FILTER: number;
+	TEXTURE_WRAP_S: number;
+	TEXTURE_WRAP_T: number;
+
+/* TextureTarget */
+
+	TEXTURE_2D: number;
+	TEXTURE: number;
+
+	TEXTURE_CUBE_MAP: number;
+	TEXTURE_BINDING_CUBE_MAP: number;
+	TEXTURE_CUBE_MAP_POSITIVE_X: number;
+	TEXTURE_CUBE_MAP_NEGATIVE_X: number;
+	TEXTURE_CUBE_MAP_POSITIVE_Y: number;
+	TEXTURE_CUBE_MAP_NEGATIVE_Y: number;
+	TEXTURE_CUBE_MAP_POSITIVE_Z: number;
+	TEXTURE_CUBE_MAP_NEGATIVE_Z: number;
+	MAX_CUBE_MAP_TEXTURE_SIZE: number;
+
+/* TextureUnit */
+
+	TEXTURE0: number;
+	TEXTURE1: number;
+	TEXTURE2: number;
+	TEXTURE3: number;
+	TEXTURE4: number;
+	TEXTURE5: number;
+	TEXTURE6: number;
+	TEXTURE7: number;
+	TEXTURE8: number;
+	TEXTURE9: number;
+	TEXTURE10: number;
+	TEXTURE11: number;
+	TEXTURE12: number;
+	TEXTURE13: number;
+	TEXTURE14: number;
+	TEXTURE15: number;
+	TEXTURE16: number;
+	TEXTURE17: number;
+	TEXTURE18: number;
+	TEXTURE19: number;
+	TEXTURE20: number;
+	TEXTURE21: number;
+	TEXTURE22: number;
+	TEXTURE23: number;
+	TEXTURE24: number;
+	TEXTURE25: number;
+	TEXTURE26: number;
+	TEXTURE27: number;
+	TEXTURE28: number;
+	TEXTURE29: number;
+	TEXTURE30: number;
+	TEXTURE31: number;
+	ACTIVE_TEXTURE: number;
+
+/* TextureWrapMode */
+
+	REPEAT: number;
+	CLAMP_TO_EDGE: number;
+	MIRRORED_REPEAT: number;
+
+/* Uniform Types */
+
+	FLOAT_VEC2: number;
+	FLOAT_VEC3: number;
+	FLOAT_VEC4: number;
+	INT_VEC2: number;
+	INT_VEC3: number;
+	INT_VEC4: number;
+	BOOL: number;
+	BOOL_VEC2: number;
+	BOOL_VEC3: number;
+	BOOL_VEC4: number;
+	FLOAT_MAT2: number;
+	FLOAT_MAT3: number;
+	FLOAT_MAT4: number;
+	SAMPLER_2D: number;
+	SAMPLER_CUBE: number;
+
+/* Vertex Arrays */
+
+	VERTEX_ATTRIB_ARRAY_ENABLED: number;
+	VERTEX_ATTRIB_ARRAY_SIZE: number;
+	VERTEX_ATTRIB_ARRAY_STRIDE: number;
+	VERTEX_ATTRIB_ARRAY_TYPE: number;
+	VERTEX_ATTRIB_ARRAY_NORMALIZED: number;
+	VERTEX_ATTRIB_ARRAY_POINTER: number;
+	VERTEX_ATTRIB_ARRAY_BUFFER_BINDING: number;
+
+/* Shader Source */
+
+	COMPILE_STATUS: number;
+
+/* Shader Precision-Specified Types */
+
+	LOW_FLOAT: number;
+	MEDIUM_FLOAT: number;
+	HIGH_FLOAT: number;
+	LOW_INT: number;
+	MEDIUM_INT: number;
+	HIGH_INT: number;
+
+/* Framebuffer Object. */
+
+	FRAMEBUFFER: number;
+	RENDERBUFFER: number;
+
+	RGBA4: number;
+	RGB5_A1: number;
+	RGB565: number;
+	DEPTH_COMPONENT16: number;
+	STENCIL_INDEX: number;
+	STENCIL_INDEX8: number;
+	DEPTH_STENCIL: number;
+
+	RENDERBUFFER_WIDTH: number;
+	RENDERBUFFER_HEIGHT: number;
+	RENDERBUFFER_INTERNAL_FORMAT: number;
+	RENDERBUFFER_RED_SIZE: number;
+	RENDERBUFFER_GREEN_SIZE: number;
+	RENDERBUFFER_BLUE_SIZE: number;
+	RENDERBUFFER_ALPHA_SIZE: number;
+	RENDERBUFFER_DEPTH_SIZE: number;
+	RENDERBUFFER_STENCIL_SIZE: number;
+
+	FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE: number;
+	FRAMEBUFFER_ATTACHMENT_OBJECT_NAME: number;
+	FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL: number;
+	FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE: number;
+
+	COLOR_ATTACHMENT0: number;
+	DEPTH_ATTACHMENT: number;
+	STENCIL_ATTACHMENT: number;
+	DEPTH_STENCIL_ATTACHMENT: number;
+
+	NONE: number;
+
+	FRAMEBUFFER_COMPLETE: number;
+	FRAMEBUFFER_INCOMPLETE_ATTACHMENT: number;
+	FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: number;
+	FRAMEBUFFER_INCOMPLETE_DIMENSIONS: number;
+	FRAMEBUFFER_UNSUPPORTED: number;
+
+	FRAMEBUFFER_BINDING: number;
+	RENDERBUFFER_BINDING: number;
+	MAX_RENDERBUFFER_SIZE: number;
+
+	INVALID_FRAMEBUFFER_OPERATION: number;
+
+/* WebGL-specific enums */
+
+	UNPACK_FLIP_Y_WEBGL: number;
+	UNPACK_PREMULTIPLY_ALPHA_WEBGL: number;
+	CONTEXT_LOST_WEBGL: number;
+	UNPACK_COLORSPACE_CONVERSION_WEBGL: number;
+	BROWSER_DEFAULT_WEBGL: number;
+
+
+
+
+	canvas: HTMLCanvasElement;
+	drawingBufferWidth: number;
+	drawingBufferHeight: number;
+
+	getContextAttributes(): WebGLContextAttributes;
+	isContextLost(): bool;
+
+	getSupportedExtensions(): string[];
+	getExtension(name: string): any;
+
+	activeTexture(texture: number): void;
+	attachShader(program: WebGLProgram, shader: WebGLShader): void;
+	bindAttribLocation(program: WebGLProgram, index: number, name: string): void;
+	bindBuffer(target: number, buffer: WebGLBuffer): void;
+	bindFramebuffer(target: number, framebuffer: WebGLFramebuffer): void;
+	bindRenderbuffer(target: number, renderbuffer: WebGLRenderbuffer): void;
+	bindTexture(target: number, texture: WebGLTexture): void;
+	blendColor(red: number, green: number, blue: number, alpha: number): void;
+	blendEquation(mode: number): void;
+	blendEquationSeparate(modeRGB: number, modeAlpha: number): void;
+	blendFunc(sfactor: number, dfactor: number): void;
+	blendFuncSeparate(srcRGB: number, dstRGB: number, srcAlpha: number, dstAlpha: number): void;
+
+	bufferData(target: number, size: number, usage: number): void;
+	bufferData(target: number, data: ArrayBufferView, usage: number): void;
+	bufferData(target: number, data: ArrayBuffer, usage: number): void;
+	bufferSubData(target: number, offset: number, data: ArrayBufferView): void;
+	bufferSubData(target: number, offset: number, data: ArrayBuffer): void;
+
+	checkFramebufferStatus(target: number): number;
+	clear(mask: number): void;
+	clearColor(red: number, green: number, blue: number, alpha: number): void;
+	clearDepth(depth: number): void;
+	clearStencil(s: number): void;
+	colorMask(red: bool, green: bool, blue: bool, alpha: bool): void;
+	compileShader(shader: WebGLShader): void;
+
+	compressedTexImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, data: ArrayBufferView): void;
+	compressedTexSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, data: ArrayBufferView): void;
+
+	copyTexImage2D(target: number, level: number, internalformat: number, x: number, y: number, width: number, height: number, border: number): void;
+	copyTexSubImage2D(target: number, level: number, xoffset: number, yoffset: number, x: number, y: number, width: number, height: number): void;
+
+	createBuffer(): WebGLBuffer;
+	createFramebuffer(): WebGLFramebuffer;
+	createProgram(): WebGLProgram;
+	createRenderbuffer(): WebGLRenderbuffer;
+	createShader(type: number): WebGLShader;
+	createTexture(): WebGLTexture;
+
+	cullFace(mode: number): void;
+
+	deleteBuffer(buffer: WebGLBuffer): void;
+	deleteFramebuffer(framebuffer: WebGLFramebuffer): void;
+	deleteProgram(program: WebGLProgram): void;
+	deleteRenderbuffer(renderbuffer: WebGLRenderbuffer): void;
+	deleteShader(shader: WebGLShader): void;
+	deleteTexture(texture: WebGLTexture): void;
+
+	depthFunc(func: number): void;
+	depthMask(flag: bool): void;
+	depthRange(zNear: number, zFar: number): void;
+	detachShader(program: WebGLProgram, shader: WebGLShader): void;
+	disable(cap: number): void;
+	disableVertexAttribArray(index: number): void;
+	drawArrays(mode: number, first: number, count: number): void;
+	drawElements(mode: number, count: number, type: number, offset: number): void;
+
+	enable(cap: number): void;
+	enableVertexAttribArray(index: number): void;
+	finish(): void;
+	flush(): void;
+	framebufferRenderbuffer(target: number, attachment: number, renderbuffertarget: number, renderbuffer: WebGLRenderbuffer): void;
+	framebufferTexture2D(target: number, attachment: number, textarget: number, texture: WebGLTexture, level: number): void;
+	frontFace(mode: number): void;
+
+	generateMipmap(target: number): void;
+
+	getActiveAttrib(program: WebGLProgram, index: number): WebGLActiveInfo;
+	getActiveUniform(program: WebGLProgram, index: number): WebGLActiveInfo;
+	getAttachedShaders(program: WebGLProgram): WebGLShader[];
+
+	getAttribLocation(program: WebGLProgram, name: string): number;
+
+	getBufferParameter(target: number, pname: number): any;
+	getParameter(pname: number): any;
+
+	getError(): number;
+
+	getFramebufferAttachmentParameter(target: number, attachment: number, pname: number): any;
+	getProgramParameter(program: WebGLProgram, pname: number): any;
+	getProgramInfoLog(program: WebGLProgram): string;
+	getRenderbufferParameter(target: number, pname: number): any;
+	getTranslatedShaderSource(shader: WebGLShader): string;
+	getShaderParameter(shader: WebGLShader, pname: number): any;
+	getShaderPrecisionFormat(shadertype: number, precisiontype: number): WebGLShaderPrecisionFormat;
+	getShaderInfoLog(shader: WebGLShader): string;
+
+	getShaderSource(shader: WebGLShader): string;
+
+	getTexParameter(target: number, pname: number): any;
+
+	getUniform(program: WebGLProgram, location: WebGLUniformLocation): any;
+
+	getUniformLocation(program: WebGLProgram, name: string): WebGLUniformLocation;
+
+	getVertexAttrib(index: number, pname: number): any;
+
+	getVertexAttribOffset(index: number, pname: number): number;
+
+	hint(target: number, mode: number): void;
+	isBuffer(buffer: WebGLBuffer): bool;
+	isEnabled(cap: number): bool;
+	isFramebuffer(framebuffer: WebGLFramebuffer): bool;
+	isProgram(program: WebGLProgram): bool;
+	isRenderbuffer(renderbuffer: WebGLRenderbuffer): bool;
+	isShader(shader: WebGLShader): bool;
+	isTexture(texture: WebGLTexture): bool;
+	lineWidth(width: number): void;
+	linkProgram(program: WebGLProgram): void;
+	pixelStorei(pname: number, param: number): void;
+	polygonOffset(factor: number, units: number): void;
+
+	readPixels(x: number, y: number, width: number, height: number, format: number, type: number, pixels: ArrayBufferView): void;
+
+	renderbufferStorage(target: number, internalformat: number, width: number, height: number): void;
+	sampleCoverage(value: number, invert: bool): void;
+	scissor(x: number, y: number, width: number, height: number): void;
+
+	shaderSource(shader: WebGLShader, source: string): void;
+
+	stencilFunc(func: number, ref: number, mask: number): void;
+	stencilFuncSeparate(face: number, func: number, ref: number, mask: number): void;
+	stencilMask(mask: number): void;
+	stencilMaskSeparate(face: number, mask: number): void;
+	stencilOp(fail: number, zfail: number, zpass: number): void;
+	stencilOpSeparate(face: number, fail: number, zfail: number, zpass: number): void;
+
+	texImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, format: number, type: number, pixels: ArrayBufferView): void;
+	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, pixels: ImageData): void;
+// May throw DOMException	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, image: HTMLImageElement): void;
+// May throw DOMException	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, canvas: HTMLCanvasElement): void;
+// May throw DOMException	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, video: HTMLVideoElement): void;
+
+	texParameterf(target: number, pname: number, param: number): void;
+	texParameteri(target: number, pname: number, param: number): void;
+
+	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, type: number, pixels: ArrayBufferView): void;
+	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, pixels: ImageData): void;
+// May throw DOMException	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, image: HTMLImageElement): void;
+// May throw DOMException	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, canvas: HTMLCanvasElement): void;
+// May throw DOMException	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, video: HTMLVideoElement): void;
+
+	uniform1f(location: WebGLUniformLocation, x: number): void;
+	uniform1fv(location: WebGLUniformLocation, v: Float32Array): void;
+	uniform1fv(location: WebGLUniformLocation, v: number[]): void;
+	uniform1i(location: WebGLUniformLocation, x: number): void;
+	uniform1iv(location: WebGLUniformLocation, v: Int32Array): void;
+	uniform1iv(location: WebGLUniformLocation, v: number[]): void;
+	uniform2f(location: WebGLUniformLocation, x: number, y: number): void;
+	uniform2fv(location: WebGLUniformLocation, v: Float32Array): void;
+	uniform2fv(location: WebGLUniformLocation, v: number[]): void;
+	uniform2i(location: WebGLUniformLocation, x: number, y: number): void;
+	uniform2iv(location: WebGLUniformLocation, v: Int32Array): void;
+	uniform2iv(location: WebGLUniformLocation, v: number[]): void;
+	uniform3f(location: WebGLUniformLocation, x: number, y: number, z: number): void;
+	uniform3fv(location: WebGLUniformLocation, v: Float32Array): void;
+	uniform3fv(location: WebGLUniformLocation, v: number[]): void;
+	uniform3i(location: WebGLUniformLocation, x: number, y: number, z: number): void;
+	uniform3iv(location: WebGLUniformLocation, v: Int32Array): void;
+	uniform3iv(location: WebGLUniformLocation, v: number[]): void;
+	uniform4f(location: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
+	uniform4fv(location: WebGLUniformLocation, v: Float32Array): void;
+	uniform4fv(location: WebGLUniformLocation, v: number[]): void;
+	uniform4i(location: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
+	uniform4iv(location: WebGLUniformLocation, v: Int32Array): void;
+	uniform4iv(location: WebGLUniformLocation, v: number[]): void;
+
+	uniformMatrix2fv(location: WebGLUniformLocation, transpose: bool, value: Float32Array): void;
+	uniformMatrix2fv(location: WebGLUniformLocation, transpose: bool, value: number[]): void;
+	uniformMatrix3fv(location: WebGLUniformLocation, transpose: bool, value: Float32Array): void;
+	uniformMatrix3fv(location: WebGLUniformLocation, transpose: bool, value: number[]): void;
+	uniformMatrix4fv(location: WebGLUniformLocation, transpose: bool, value: Float32Array): void;
+	uniformMatrix4fv(location: WebGLUniformLocation, transpose: bool, value: number[]): void;
+
+	useProgram(program: WebGLProgram): void;
+	validateProgram(program: WebGLProgram): void;
+
+	vertexAttrib1f(indx: number, x: number): void;
+	vertexAttrib1fv(indx: number, values: Float32Array): void;
+	vertexAttrib1fv(indx: number, value: number[]): void;
+	vertexAttrib2f(indx: number, x: number, y: number): void;
+	vertexAttrib2fv(indx: number, values: Float32Array): void;
+	vertexAttrib2fv(indx: number, value: number[]): void;
+	vertexAttrib3f(indx: number, x: number, y: number, z: number): void;
+	vertexAttrib3fv(indx: number, values: Float32Array): void;
+	vertexAttrib3fv(indx: number, value: number[]): void;
+	vertexAttrib4f(indx: number, x: number, y: number, z: number, w: number): void;
+	vertexAttrib4fv(indx: number, values: Float32Array): void;
+	vertexAttrib4fv(indx: number, value: number[]): void;
+	vertexAttribPointer(indx: number, size: number, type: number, normalized: bool, stride: number, offset: number): void;
+
+	viewport(x: number, y: number, width: number, height: number): void;
+};
+
+interface CanvasRenderingContext {
+
+}
+
+interface WebGLRenderingContext extends CanvasRenderingContext {
+
+}
+
+
+
+declare var WebGLRenderingContext: {
+    prototype: WebGLRenderingContext;
+    new(): WebGLRenderingContext;
+}
+
+interface HTMLCanvasElement extends HTMLElement {
+    getContext(contextId: string, args: WebGLContextAttributes): WebGLRenderingContext;
+}
+
+interface WEBGL_debug_shaders {
+      getTranslatedShaderSource(shader: WebGLShader): DOMString;
+};
+
+interface WEBGL_debug_renderer_info {
+    UNMASKED_VENDOR_WEBGL: number;
+    UNMASKED_RENDERER_WEBGL: number;
+};
+
+interface WEBGL_compressed_texture_pvrtc {
+/* Compressed Texture Formats */
+
+    COMPRESSED_RGB_PVRTC_4BPPV1_IMG: number;
+    COMPRESSED_RGB_PVRTC_2BPPV1_IMG: number;
+    COMPRESSED_RGBA_PVRTC_4BPPV1_IMG: number;
+    COMPRESSED_RGBA_PVRTC_2BPPV1_IMG: number;
+};
+
+interface WEBGL_compressed_texture_atc {
+/* Compressed Texture Formats */
+
+    COMPRESSED_RGB_ATC_WEBGL: number;
+    COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL: number;
+    COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL: number;
+};
+
+interface WEBGL_compressed_texture_s3tc {
+/* Compressed Texture Formats */
+
+    COMPRESSED_RGB_S3TC_DXT1_EXT : number;
+    COMPRESSED_RGBA_S3TC_DXT1_EXT: number;
+    COMPRESSED_RGBA_S3TC_DXT3_EXT: number;
+    COMPRESSED_RGBA_S3TC_DXT5_EXT: number;
+};
+
+interface WEBGL_depth_texture {
+  UNSIGNED_INT_24_8_WEBGL: number;
+};
+
+interface OES_element_index_uint {
+};
+
+interface WebGLVertexArrayObjectOES extends WebGLObject {
+};
+
+interface OES_vertex_array_object {
+    VERTEX_ARRAY_BINDING_OES: number;
+
+    createVertexArrayOES(): WebGLVertexArrayObjectOES;
+    deleteVertexArrayOES(arrayObject: WebGLVertexArrayObjectOES): void;
+    isVertexArrayOES(arrayObject: WebGLVertexArrayObjectOES): bool;
+    bindVertexArrayOES(arrayObject: WebGLVertexArrayObjectOES): void;
+};
+
+interface OES_standard_derivatives {
+    FRAGMENT_SHADER_DERIVATIVE_HINT_OES: number;
+};
+
+interface OES_texture_half_float {
+ 	HALF_FLOAT_OES: number;
+};
+
+interface OES_texture_float {
+};
+
+interface WEBGL_lose_context {
+      loseContext(): void;
+      restoreContext(): void;
+};
+
+interface WEBGL_multiple_render_targets {
+    COLOR_ATTACHMENT0_WEBGL: number;
+    COLOR_ATTACHMENT1_WEBGL: number;
+    COLOR_ATTACHMENT2_WEBGL: number;
+    COLOR_ATTACHMENT3_WEBGL: number;
+    COLOR_ATTACHMENT4_WEBGL: number;
+    COLOR_ATTACHMENT5_WEBGL: number;
+    COLOR_ATTACHMENT6_WEBGL: number;
+    COLOR_ATTACHMENT7_WEBGL: number;
+    COLOR_ATTACHMENT8_WEBGL: number;
+    COLOR_ATTACHMENT9_WEBGL: number;
+    COLOR_ATTACHMENT10_WEBGL: number;
+    COLOR_ATTACHMENT11_WEBGL: number;
+    COLOR_ATTACHMENT12_WEBGL: number;
+    COLOR_ATTACHMENT13_WEBGL: number;
+    COLOR_ATTACHMENT14_WEBGL: number;
+    COLOR_ATTACHMENT15_WEBGL: number;
+
+    DRAW_BUFFER0_WEBGL: number;
+    DRAW_BUFFER1_WEBGL: number;
+    DRAW_BUFFER2_WEBGL: number;
+    DRAW_BUFFER3_WEBGL: number;
+    DRAW_BUFFER4_WEBGL: number;
+    DRAW_BUFFER5_WEBGL: number;
+    DRAW_BUFFER6_WEBGL: number;
+    DRAW_BUFFER7_WEBGL: number;
+    DRAW_BUFFER8_WEBGL: number;
+    DRAW_BUFFER9_WEBGL: number;
+    DRAW_BUFFER10_WEBGL: number;
+    DRAW_BUFFER11_WEBGL: number;
+    DRAW_BUFFER12_WEBGL: number;
+    DRAW_BUFFER13_WEBGL: number;
+    DRAW_BUFFER14_WEBGL: number;
+    DRAW_BUFFER15_WEBGL: number;
+
+    MAX_COLOR_ATTACHMENTS_WEBGL: number;
+    MAX_DRAW_BUFFERS_WEBGL: number;
+
+    drawBuffersWEBGL(buffers: number[]): void;
+};
+
+interface WEBGL_fbo_color_attachments {
+    COLOR_ATTACHMENT0: number;
+    COLOR_ATTACHMENT1: number;
+    COLOR_ATTACHMENT2: number;
+    COLOR_ATTACHMENT3: number;
+    COLOR_ATTACHMENT4: number;
+    COLOR_ATTACHMENT5: number;
+    COLOR_ATTACHMENT6: number;
+    COLOR_ATTACHMENT7: number;
+    COLOR_ATTACHMENT8: number;
+    COLOR_ATTACHMENT9: number;
+    COLOR_ATTACHMENT10: number;
+    COLOR_ATTACHMENT11: number;
+    COLOR_ATTACHMENT12: number;
+    COLOR_ATTACHMENT13: number;
+    COLOR_ATTACHMENT14: number;
+    COLOR_ATTACHMENT15: number;
+
+    MAX_COLOR_ATTACHMENTS: number;
+};
+
+// debug
+
+
+declare var WebGLDebugUtils: {
+/**
+	 * Initializes this module. Safe to call more than once.
+	 *    you have more than one context it doesn't matter which one
+     *    you pass in, it is only used to pull out constants.
+	 */
+
+	init: (ctx: WebGLRenderingContext) => void;
+/**
+	 * Returns true or false if value matches any WebGL enum
+	 */
+
+	mightBeEnum: (value: any) => bool;
+/**
+	 * Gets an string version of an WebGL enum.
+	 *
+	 * Example:
+	 *   WebGLDebugUtil.init(ctx);
+	 *   var str = WebGLDebugUtil.glEnumToString(ctx.getError());
+	 *
+	 */
+
+	glEnumToString: (value: number) => string;
+/**
+     * Converts the argument of a WebGL function to a string.
+     * Attempts to convert enum arguments to strings.
+     *
+     * Example:
+     *   WebGLDebugUtil.init(ctx);
+     *   var str = WebGLDebugUtil.glFunctionArgToString('bindTexture', 0, gl.TEXTURE_2D);
+     *
+     * would return 'TEXTURE_2D'
+     */
+
+    glFunctionArgToString: (functionName: string, argumentIndex:  number , value: any) => string;
+/**
+     * Converts the arguments of a WebGL function to a string.
+     * Attempts to convert enum arguments to strings.
+     */
+
+    glFunctionArgsToString: (functionName: string, args: IArguments) => string;
+/**
+     * Given a WebGL context returns a wrapped context that calls
+     * gl.getError after every command and calls a function if the
+     * result is not NO_ERROR.
+     *
+     * You can supply your own function if you want. For example, if you'd like
+     * an exception thrown on any GL error you could do this
+     *
+     *    function throwOnGLError(err, funcName, args) {
+     *      throw WebGLDebugUtils.glEnumToString(err) +
+     *            " was caused by call to " + funcName;
+     *    };
+     *
+     *    ctx = WebGLDebugUtils.makeDebugContext(
+     *        canvas.getContext("webgl"), throwOnGLError);
+     */
+
+	makeDebugContext: (
+		ctx: WebGLRenderingContext,
+		onErrorFunc?: (err:  number , funcName: string, args: IArguments) => void,
+		onFunc?: (funcName: string, args: IArguments) => void) => WebGLRenderingContext;
+
+/**
+	 * Given a canvas element returns a wrapped canvas element that will
+	 * simulate lost context. The canvas returned adds the following functions.
+	 *
+	 * loseContext:
+	 *   simulates a lost context event.
+	 *
+	 * restoreContext:
+	 *   simulates the context being restored.
+	 *
+	 * lostContextInNCalls:
+	 *   loses the context after N gl calls.
+	 *
+	 * getNumCalls:
+	 *   tells you how many gl calls there have been so far.
+	 *
+	 * setRestoreTimeout:
+	 *   sets the number of milliseconds until the context is restored
+	 *   after it has been lost. Defaults to 0. Pass -1 to prevent
+	 *   automatic restoring.
+	 */
+
+	makeLostContextSimulatingCanvas: (canvas: HTMLCanvasElement) => HTMLCanvasElement;
+/**
+     * Resets a context to the initial state.
+     */
+
+	resetToInitialState: (ctx: WebGLRenderingContext) => void;
+
+}
+
+
+/* ClearBufferMask */
+
+
+
+
+
+/* BeginMode */
+
+
+
+
+
+
+
+
+
+/* AlphaFunction (not supported in ES20) */
+
+/*      NEVER */
+
+/*      LESS */
+
+/*      EQUAL */
+
+/*      LEQUAL */
+
+/*      GREATER */
+
+/*      NOTEQUAL */
+
+/*      GEQUAL */
+
+/*      ALWAYS */
+
+
+/* BlendingFactorDest */
+
+
+
+
+
+
+
+
+
+
+/* BlendingFactorSrc */
+
+/*      ZERO */
+
+/*      ONE */
+
+
+
+
+/*      SRC_ALPHA */
+
+/*      ONE_MINUS_SRC_ALPHA */
+
+/*      DST_ALPHA */
+
+/*      ONE_MINUS_DST_ALPHA */
+
+
+/* BlendEquationSeparate */
+
+
+
+/* same as BLEND_EQUATION */
+
+
+
+/* BlendSubtract */
+
+
+
+
+/* Separate Blend Functions */
+
+
+
+
+
+
+
+
+
+
+
+/* Buffer Objects */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* CullFaceMode */
+
+
+
+
+
+/* DepthFunction */
+
+/*      NEVER */
+
+/*      LESS */
+
+/*      EQUAL */
+
+/*      LEQUAL */
+
+/*      GREATER */
+
+/*      NOTEQUAL */
+
+/*      GEQUAL */
+
+/*      ALWAYS */
+
+
+/* EnableCap */
+
+/* TEXTURE_2D */
+
+
+
+
+
+
+
+
+
+
+
+/* ErrorCode */
+
+
+
+
+
+
+
+/* FrontFaceDirection */
+
+
+
+
+/* GetPName */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*      SCISSOR_TEST */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*      POLYGON_OFFSET_FILL */
+
+
+
+
+
+
+
+
+/* GetTextureParameter */
+
+/*      TEXTURE_MAG_FILTER */
+
+/*      TEXTURE_MIN_FILTER */
+
+/*      TEXTURE_WRAP_S */
+
+/*      TEXTURE_WRAP_T */
+
+
+
+
+/* HintMode */
+
+
+
+
+
+/* HintTarget */
+
+
+
+/* DataType */
+
+
+
+
+
+
+
+
+
+
+
+/* PixelFormat */
+
+
+
+
+
+
+
+
+
+
+/* PixelType */
+
+/*      UNSIGNED_BYTE */
+
+
+
+
+
+/* Shaders */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* StencilFunction */
+
+
+
+
+
+
+
+
+
+
+/* StencilOp */
+
+/*      ZERO */
+
+
+
+
+
+
+
+
+
+/* StringName */
+
+
+
+
+
+/* TextureMagFilter */
+
+
+
+
+/* TextureMinFilter */
+
+/*      NEAREST */
+
+/*      LINEAR */
+
+
+
+
+
+
+/* TextureParameterName */
+
+
+
+
+
+
+/* TextureTarget */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* TextureUnit */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* TextureWrapMode */
+
+
+
+
+
+/* Uniform Types */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Vertex Arrays */
+
+
+
+
+
+
+
+
+
+/* Shader Source */
+
+
+
+/* Shader Precision-Specified Types */
+
+
+
+
+
+
+
+
+/* Framebuffer Object. */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* WebGL-specific enums */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//WebGL Extensions 
+
+
+
+
+
+
+
+
+
+
+//draft
+
+
+
+
+
+
+
+
+
+//Future
+
+
+
+
+
+
+
+
 
 
 
@@ -7335,7 +10192,7 @@ module akra {
 		readData(iOffset:  number , iSize:  number , ppDest: ArrayBufferView): bool;
 
 		writeData(pData: Uint8Array, iOffset?:  number , iSize?:  number , bDiscardWholeBuffer?: bool): bool;
-		writeData(pData: ArrayBuffer, iOffset?:  number , iSize?:  number , bDiscardWholeBuffer?: bool): bool;
+		writeData(pData: ArrayBufferView, iOffset?:  number , iSize?:  number , bDiscardWholeBuffer?: bool): bool;
 
 
 		copyData(pSrcBuffer: IHardwareBuffer, iSrcOffset:  number ,
@@ -7358,969 +10215,6 @@ module akra {
 }
 
 
-
-module akra {
-    export interface IRenderDataCollection {} ;
-    export interface ISkeleton {} ;
-    export interface IRect3d {} ;
-    export interface ISphere {} ;
-    export interface IMeshSubset {} ;
-    export interface ISceneNode {} ;
-    export interface ISceneModel {} ;
-    export interface ISkin {} ;
-
-	export enum EMeshOptions {
-        HB_READABLE = < number >EHardwareBufferFlags.READABLE,
-        RD_ADVANCED_INDEX = < number >ERenderDataOptions.ADVANCED_INDEX
-    };
-
-    export enum EMeshCloneOptions{
-/*<! copy only geometry*/
-        GEOMETRY_ONLY = 0x00,
-/*<! use shared geometry*/
-        SHARED_GEOMETRY = 0x01
-    };
-
-    export interface IMeshMap {
-        [name: string]: IMesh;
-    }
-
-	export interface IMesh extends IEventProvider {
-         flexMaterials: IMaterial[];
-         name: string;
-         data: IRenderDataCollection;
-/*<! number of submeshes in. */
-         length:  number ;
-         boundingBox: IRect3d;
-         boundingSphere: ISphere;
-
-		skeleton: ISkeleton;
-
-
-        getOptions():  number ;
-        getEngine(): IEngine;
-
-//setup(sName: string, eOptions: int, pDataBuffer?: IRenderDataCollection): bool;
-        destroy(): void;
-        clone(iCloneOptions:  number ): IMesh;
-
-/** @deprecated */
-
-        replaceFlexMaterials(pFlexMaterials): void;
-/** @deprecated */
-
-        getFlexMaterial(iMaterial:  number ): IMaterial;
-        getFlexMaterial(csName: string): IMaterial;
-/** @deprecated */
-
-        addFlexMaterial(sName: string, pMaterial?: IMaterial): bool;
-/** @deprecated */
-
-        setFlexMaterial(iMaterial:  number ): bool;
-        setFlexMaterial(csName: string): bool;
-
-        createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions?:  number );
-        freeSubset(sName: string): bool;
-        getSubset(sMesh: string): IMeshSubset;
-        getSubset(i:  number ): IMeshSubset;
-        appendSubset(sName: string, pData: IRenderData): IMeshSubset;
-
-        setSkin(pSkin: ISkin): void;
-        setSkeleton(pSkeleton: ISkeleton): void;
-        createSkin(): ISkin;
-
-        createBoundingBox(): bool;
-        deleteBoundingBox(): bool;
-        showBoundingBox(): bool;
-        hideBoundingBox(): bool;
-        createAndShowSubBoundingBox(): void;
-
-        createBoundingSphere(): bool;
-        deleteBoundingSphere(): bool;
-        showBoundingSphere(): bool;
-        hideBoundingSphere(): bool;
-        createAndShowSubBoundingSphere(): void;
-
-/** TRUE if only one mesh subset has a shadow. */
-
-        hasShadow(): bool;
-/** Add shadow for all subsets. */
-
-        setShadow(bValue?: bool): void;
-
-        isReadyForRender(): bool;
-
-        toSceneModel(pParent: ISceneNode, sName?: string): ISceneModel;
-
-        _drawSubset(iSubset:  number ): void;
-        _draw(): void;
-
-/** notify, when one of substets added or removed shadow */
-
-         shadow(pSubset: IMeshSubset, bShadow: bool): void;
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-    export interface IVertexBuffer {} ;
-    export interface IVertexDeclaration {} ;
-    export interface IRenderDataType {} ;
-    export interface IBuffer {} ;
-    export interface IReferenceCounter {} ;
-
-	export enum ERenderDataBufferOptions {
-        VB_READABLE       =  (1 << (EHardwareBufferFlags.BACKUP_COPY)) ,
-        RD_ADVANCED_INDEX = < number >ERenderDataOptions.ADVANCED_INDEX,
-        RD_SINGLE_INDEX   = < number >ERenderDataOptions.SINGLE_INDEX,
-        RD_RENDERABLE     = < number >ERenderDataOptions.RENDERABLE
-    };
-
-// export interface IRenderDataType {
-//     new (): IRenderData;
-// }
-
-/*IHardwareBuffer*/
-	export interface IRenderDataCollection extends                    IBuffer, IReferenceCounter {
-		 buffer: IVertexBuffer;
-
-        getEngine(): IEngine;
-        getOptions():  number ;
-
-        getData(sUsage: string): IVertexData;
-        getData(iOffset:  number ): IVertexData;
-        getRenderData(iSubset:  number ): IRenderData;
-        getEmptyRenderData(ePrimType: EPrimitiveTypes, eOptions: ERenderDataBufferOptions): IRenderData;
-        getDataLocation(sSemantics: string):  number ;
-
-        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, isCommon?: bool):  number ;
-        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, isCommon?: bool):  number ;
-        allocateData(pDeclData: IVertexElementInterface[], pData: ArrayBufferView, isCommon?: bool):  number ;
-        allocateData(pDeclData: IVertexElementInterface[], pData: ArrayBuffer, isCommon?: bool):  number ;
-
-        destroy(): void;
-
-        _draw(): void;
-        _draw(iSubset:  number ): void;
-
-// _setup(eOptions?: int): void;
-
-        _allocateData(pVertexDecl: IVertexDeclaration, iSize:  number ): IVertexData;
-        _allocateData(pVertexDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
-        _allocateData(pVertexDecl: IVertexDeclaration, pData: ArrayBuffer): IVertexData;
-        _allocateData(pDeclData: IVertexElementInterface[], iSize:  number ): IVertexData;
-        _allocateData(pDeclData: IVertexElementInterface[], pData: ArrayBufferView): IVertexData;
-        _allocateData(pDeclData: IVertexElementInterface[], pData: ArrayBuffer): IVertexData;
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface IAnimationFrame {} ;
-	export interface ISkeleton {} ;
-	export interface ISceneNode {} ;
-	export interface IMat4 {} ;
-	export interface IAnimationTrack {
-		targetName: string;
-		 target: ISceneNode;
-		 duration:  number ;
-
-		keyFrame(fTime:  number , pMatrix: IMat4): bool;
-		getKeyFrame(iFrame:  number ): IAnimationFrame;
-		findKeyFrame(fTime:  number ):  number ;
-		bind(sJoint: string, pSkeleton: ISkeleton);
-		bind(pSkeleton: ISkeleton);
-		bind(pNode: ISceneNode);
-		frame(fTime:  number ): IAnimationFrame;
-	}
-}
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface INode {} ;
-	export interface IJoint {} ;
-
-	export interface IJointMap{
-		[index: string]: IJoint;
-	}
-
-
-
-	export interface ISkeleton {
-		 totalBones:  number ;
-		 totalNodes:  number ;
-		 name: string;
-		 root: IJoint;
-
-		getRootJoint(): IJoint;
-		getRootJoints(): IJoint[];
-		getJointMap(): IJointMap;
-		getNodeList(): ISceneNode[];
-		addRootJoint(pJoint: IJoint): bool;
-		update(): bool;
-		findJoint(sName: string): IJoint;
-		findJointByName(sName: string): IJoint;
-		attachMesh(pMesh: IMesh): bool;
-		detachMesh(): void;
-
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-
-	export interface IExplorerFunc {} ;
-	export interface IReferenceCounter {} ;
-
-	export enum  EEntityTypes {
-		UNKNOWN,
-		NODE,
-
-		JOINT,
-
-		SCENE_NODE,
-
-		CAMERA,
-
-		LIGHT_PROJECT = 37,
-		LIGHT_OMNI_DIRECTIONAL,
-
-		SCENE_OBJECT = 64,
-
-		MODEL,
-		TERRAIN_SECTION,
-		TEXT3D,
-		SPRITE,
-		EMITTER,
-
-		OBJECTS_LIMIT = 128
-	}
-
-	export interface IEntity extends IEventProvider, IReferenceCounter {
-		name: string;
-
-		parent: IEntity;
-		sibling: IEntity;
-		child: IEntity;
-
-		 type: EEntityTypes;
-
-		 depth:  number ;
-		 root: IEntity;
-
-		create(): bool;
-		destroy(): void;
-
-		findEntity(sName: string): IEntity;
-		explore(fn: IExplorerFunc): void;
-		childOf(pParent: IEntity): bool;
-		siblingCount():  number ;
-		childCount():  number ;
-
-		update(): bool;
-		recursiveUpdate(): bool;
-		recursivePreUpdate(): void;
-		prepareForUpdate(): void;
-
-		hasParent(): bool;
-		hasChild(): bool;
-		hasSibling(): bool;
-
-		isASibling(pSibling: IEntity): bool;
-		isAChild(pChild: IEntity): bool;
-		isInFamily(pEntity: IEntity, bSearchEntireTree?: bool): bool;
-
-//обновлен ли сам узел
-		isUpdated(): bool;
-//есть ли обновления среди потомков?
-		hasUpdatedSubNodes(): bool;
-
-
-		addSibling(pSibling: IEntity): IEntity;
-		addChild(pChild: IEntity): IEntity;
-		removeChild(pChild: IEntity): IEntity;
-		removeAllChildren(): void;
-
-		attachToParent(pParent: IEntity): bool;
-		detachFromParent(): bool;
-
-		promoteChildren(): void;
-		relocateChildren(pParent: IEntity): void;
-
-		toString(isRecursive?: bool, iDepth?:  number ): string;
-
-		 attached();
-		 detached();
-	}
-
-}
-
-
-
-module akra {
-
-	export interface IVec3 {} ;
-	export interface IMat3 {} ;
-	export interface IMat4 {} ;
-	export interface IQuat4 {} ;
-
-	export enum ENodeInheritance {
-//inheritance only position
-		POSITION = 0,
-//inheritance rotation and scale only
-        ROTSCALE,
-//inheritance all
-    	ALL
-	};
-
-	export interface INodeMap{
-		[index: string]: INode;
-	}
-
-	export interface INode extends IEntity {
-		localOrientation: IQuat4;
-		localPosition: IVec3;
-		localScale: IVec3;
-		localMatrix: IMat4;
-
-		 worldMatrix: IMat4;
-		 worldPosition: IVec3;
-
-		 inverseWorldMatrix: IMat4;
-		 normalMatrix: IMat3;
-
-		setInheritance(eInheritance: ENodeInheritance);
-		getInheritance(): ENodeInheritance;
-
-		isWorldMatrixNew(): bool;
-		isLocalMatrixNew(): bool;
-
-//recalcWorldMatrix(): bool;
-
-		setPosition(v3fPosition: IVec3): void;
-		setPosition(fX:  number , fY:  number , fZ:  number ): void;
-
-		addPosition(v3fPosition: IVec3): void;
-		addPosition(fX:  number , fY:  number , fZ:  number ): void;
-		addRelPosition(v3fPosition: IVec3): void;
-		addRelPosition(fX:  number , fY:  number , fZ:  number ): void;
-
-		setRotationByMatrix(m3fRotation: IMat3): void;
-		setRotationByMatrix(m4fRotation: IMat4): void;
-		setRotationByAxisAngle(v3fAxis: IVec3, fAngle:  number ): void;
-		setRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void;
-		setRotationByEulerAngles(fYaw:  number , fPitch:  number , fRoll:  number ): void;
-		setRotationByXYZAxis(fX:  number , fY:  number , fZ:  number ): void;
-		setRotation(q4fRotation: IQuat4): void;
-
-		addRelRotationByMatrix(m4fRotation: IMat4): void;
-		addRelRotationByMatrix(m3fRotation: IMat3): void;
-		addRelRotationByAxisAngle(v3fAxis: IVec3, fAngle:  number ): void;
-		addRelRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void;
-		addRelRotationByEulerAngles(fYaw:  number , fPitch:  number , fRoll:  number ): void;
-		addRelRotationByXYZAxis(fX:  number , fY:  number , fZ:  number ): void;
-		addRelRotation(q4fRotation: IQuat4): void;
-
-		addRotationByMatrix(m4fRotation: IMat4): void;
-		addRotationByMatrix(m3fRotation: IMat3): void;
-		addRotationByAxisAngle(v3fAxis: IVec3, fAngle:  number ): void;
-		addRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void;
-		addRotationByEulerAngles(fYaw:  number , fPitch:  number , fRoll:  number ): void;
-		addRotationByXYZAxis(fX:  number , fY:  number , fZ:  number ): void;
-		addRotation(q4fRotation: IQuat4): void;
-
-		scale(fScale:  number ): void;
-		scale(fX:  number , fY:  number , fZ:  number ): void;
-	}
-}
-
-
-
-module akra {
-    export interface ISceneNodeMap {
-        [index: string]: ISceneNode;
-    }
-
-    export interface ISceneNode extends INode {
-    	scene: IScene3d;
-
-/** @deprecated */
-
-    	render(): void;
-/** @deprecated */
-
-    	prepareForRender(): void;
-/** @deprecated */
-
-    	recursiveRender(): void;
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface IEngine {} ;
-
-	export interface IJoint extends ISceneNode {
-		boneName: string;
-// getEngine(): IEngine;
-		create(): bool;
-// toString(isRecursive: bool, iDepth: int): string;
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-
-	export interface IEntity {} ;
-
-	export interface IExplorerFunc {
-		(pEntity: IEntity): bool;
-	}
-}
-
-
-
-
-
-
-
-module akra.util {
-	export enum EEntityStates {
-//обновился ли сам узел?
-		k_Updated = 0x01,
-//есть ли среди потомков обновленные узлы
-		k_DescendantsUpdtated = 0x02,
-//если ли обновленные узлы среди братьев или их потомках
-		k_SiblingsUpdated = 0x04
-	}
-
-	export class Entity extends ReferenceCounter implements IEntity {
-		/**@protected*/  _sName: string = null;
-		/**@protected*/  _pParent: IEntity = null;
-		/**@protected*/  _pSibling: IEntity = null;
-		/**@protected*/  _pChild: IEntity = null;
-		/**@protected*/  _eType: EEntityTypes = EEntityTypes.UNKNOWN;
-		/**@protected*/  _iStateFlags:  number  = 0;
-
-		inline get name(): string { return this._sName; }
-		inline set name(sName: string) { this._sName = sName; }
-
-		inline get parent(): IEntity { return this._pParent; }
-		inline set parent(pParent: IEntity) { this.attachToParent(pParent); }
-
-		inline get sibling(): IEntity { return this._pSibling; }
-		inline set sibling(pSibling: IEntity) { this._pSibling = pSibling; }
-
-		inline get child(): IEntity { return this._pChild; }
-		inline set child(pChild: IEntity) { this._pChild = pChild; }
-
-		inline get type(): EEntityTypes { return this._eType; }
-
-		get depth():  number  {
-			var iDepth:  number  = -1;
-	        for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent, ++ iDepth){};
-	        return iDepth;
-		}
-
-		get root(): IEntity {
-	        for (var pEntity: IEntity = this, iDepth:  number  = -1; pEntity.parent; pEntity = pEntity.parent, ++ iDepth){};
-	        return pEntity;
-		}
-
-
-		create(): bool {
-			return true;
-		}
-
-		destroy(): void {
-// destroy anything attached to this node
-//	destroySceneObject();
-// promote any children up to our parent
-		    this.promoteChildren();
-// now remove ourselves from our parent
-		    this.detachFromParent();
-// we should now be removed from the tree, and have no dependants
-		    logger.setSourceLocation( "util/Entity.ts" , 65 ); logger.assert(this.referenceCount() == 0, "Attempting to delete a scene node which is still in use"); ;
-		    logger.setSourceLocation( "util/Entity.ts" , 66 ); logger.assert(this._pSibling == null, "Failure Destroying Node"); ;
-		    logger.setSourceLocation( "util/Entity.ts" , 67 ); logger.assert(this._pChild == null, "Failure Destroying Node"); ;
-		}
-
-		findEntity(sName: string): IEntity {
-			 var pEntity: IEntity = null;
-
-		    if (this._sName === sName) {
-		        return this;
-		    }
-
-		    if (this._pSibling) {
-		        pEntity = this._pSibling.findEntity(sName);
-		    }
-
-		    if (pEntity == null && this._pChild) {
-		        pEntity = this._pChild.findEntity(sName);
-		    }
-
-		    return pEntity;
-		}
-
-		explore(fn: IExplorerFunc): void {
-			if (fn(this) === false) {
-		        return;
-		    }
-
-		    if (this._pSibling) {
-		        this._pSibling.explore(fn);
-		    }
-
-		    if (this._pChild) {
-		        this._pChild.explore(fn);
-		    }
-		}
-
-
-		childOf(pParent: IEntity): bool {
-			for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent) {
-		        if (pEntity.parent === pParent) {
-		            return true;
-		        }
-		    }
-
-		    return false;
-		}
-
-
-/**
-		 * Returns the current number of siblings of this object.
-		 */
-
-		siblingCount():  number  {
-			var iCount:  number  = 0;
-
-		    if (this._pParent) {
-		        var pNextSibling = this._pParent.child;
-		        if (pNextSibling) {
-		            while (pNextSibling) {
-		                pNextSibling = pNextSibling.sibling;
-		                ++ iCount;
-		            }
-		        }
-		    }
-
-		    return iCount;
-		}
-
-
-/**
-		 * Returns the current number of children of this object
-		 */
-
-		childCount():  number  {
-			var iCount:  number  = 0;
-
-		    var pNextChild: IEntity = this.child;
-
-		    if (pNextChild) {
-		        ++ iCount;
-		        while (pNextChild) {
-		            pNextChild = pNextChild.sibling;
-		            ++ iCount;
-		        }
-		    }
-		    return iCount;
-		}
-
-		inline isUpdated(): bool {
-			return  ((this._iStateFlags & (1 << (EEntityStates.k_Updated)) ) != 0) ;
-		}
-
-		inline hasUpdatedSubNodes(): bool {
-			return  ((this._iStateFlags & (1 << (EEntityStates.k_DescendantsUpdtated)) ) != 0) ;
-		}
-
-		recursiveUpdate(): bool {
-// var bUpdated: bool = false;
-// update myself
-		    if (this.update()) {
-		    	((this._iStateFlags) |= (EEntityStates.k_Updated)) ;
-// bUpdated = true;
-		    }
-// update my sibling
-		    if (this._pSibling && this._pSibling.recursiveUpdate()) {
-		        ((this._iStateFlags) |= (EEntityStates.k_SiblingsUpdated)) ;
-// bUpdated = true;
-		    }
-// update my child
-		    if (this._pChild && this._pChild.recursiveUpdate()) {
-		        ((this._iStateFlags) |= (EEntityStates.k_DescendantsUpdtated)) ;
-// bUpdated = true;
-		    }
-
-/*bUpdated*/
-/* */
-		    return (this._iStateFlags != 0);
-		}
-
-		recursivePreUpdate(): void {
-// clear the flags from the previous update
-		    this.prepareForUpdate();
-
-// update my sibling
-		    if (this._pSibling) {
-		        this._pSibling.recursivePreUpdate();
-		    }
-// update my child
-		    if (this._pChild) {
-		        this._pChild.recursivePreUpdate();
-		    }
-		}
-
-
-		prepareForUpdate(): void {
-//this._iStateFlags = 0;
-		};
-
-/** Parent is not undef */
-
-		inline hasParent(): bool {
-		    return isDefAndNotNull(this._pParent);
-		}
-
-/** Child is not undef*/
-
-		inline hasChild(): bool {
-		    return isDefAndNotNull(this._pChild);
-		}
-
-/** Sibling is not undef */
-
-		inline hasSibling(): bool {
-			return isDefAndNotNull(this._pSibling);
-		}
-
-/**
-		 * Checks to see if the provided item is a sibling of this object
-		 */
-
-		isASibling(pSibling: IEntity): bool {
-			if (!pSibling) {
-		        return false;
-		    }
-// if the sibling we are looking for is me, or my FirstSibling, return true
-		    if (this == pSibling || this._pSibling == pSibling) {
-		        return true;
-		    }
-// if we have a sibling, continue searching
-		    if (this._pSibling) {
-		        return this._pSibling.isASibling(pSibling);
-		    }
-// it's not us, and we have no sibling to check. This is not a sibling of ours.
-		    return false;
-		}
-
-/** Checks to see if the provided item is a child of this object. (one branch depth only) */
-
-		isAChild(pChild: IEntity): bool {
-			if (!pChild) {
-		        return (false);
-		    }
-// if the sibling we are looking for is my FirstChild return true
-		    if (this._pChild == pChild) {
-		        return (true);
-		    }
-// if we have a child, continue searching
-		    if (this._pChild) {
-		        return (this._pChild.isASibling(pChild));
-		    }
-// it's not us, and we have no child to check. This is not a sibling of ours.
-		    return (false);
-		}
-
-/**
-		 * Checks to see if the provided item is a child or sibling of this object. If SearchEntireTree
-		 * is TRUE, the check is done recursivly through all siblings and children. SearchEntireTree
-		 * is FALSE by default.
-		 */
-
-		isInFamily(pEntity: IEntity, bSearchEntireTree?: bool): bool {
-			if (!pEntity) {
-		        return (false);
-		    }
-// if the model we are looking for is me or my immediate family, return true
-		    if (this == pEntity || this._pChild == pEntity || this._pSibling == pEntity) {
-		        return (true);
-		    }
-// if not set to seach entire tree, just check my siblings and kids
-		    if (!bSearchEntireTree) {
-		        if (this.isASibling(pEntity)) {
-		            return (true);
-		        }
-		        if (this._pChild && this._pChild.isASibling(pEntity)) {
-		            return (true);
-		        }
-		    }
-// seach entire Tree!!!
-		    else {
-		        if (this._pSibling && this._pSibling.isInFamily(pEntity, bSearchEntireTree)) {
-		            return (true);
-		        }
-
-		        if (this._pChild && this._pChild.isInFamily(pEntity, bSearchEntireTree)) {
-		            return (true);
-		        }
-		    }
-
-		    return (false);
-		}
-
-/**
-		 * Adds the provided ModelSpace object to the descendant list of this object. The provided
-		 * ModelSpace object is removed from any parent it may already belong to.
-		 */
-
-		addSibling(pSibling: IEntity): IEntity {
-			if (pSibling) {
-// replace objects current sibling pointer with this new one
-		        pSibling.sibling = this._pSibling;
-		        this.sibling = pSibling;
-		    }
-
-		    return pSibling;
-		}
-
-/**
-		 * Adds the provided ModelSpace object to the descendant list of this object. The provided
-		 * ModelSpace object is removed from any parent it may already belong to.
-		 */
-
-		addChild(pChild: IEntity): IEntity {
-			if (pChild) {
-// Replace the new child's sibling pointer with our old first child.
-		        pChild.sibling = this._pChild;
-// the new child becomes our first child pointer.
-		        this._pChild = pChild;
-    		}
-
-    		return pChild;
-		}
-
-/**
-		 * Removes a specified child object from this parent object. If the child is not the
-		 * FirstChild of this object, all of the Children are searched to find the object to remove.
-		 */
-
-		removeChild(pChild: IEntity): IEntity {
-			if (this._pChild && pChild) {
-		        if (this._pChild == pChild) {
-		            this._pChild = pChild.sibling;
-		            pChild.sibling  = null;
-		        }
-		        else {
-		            var pTempNode: IEntity = this._pChild;
-// keep searching until we find the node who's sibling is our target
-// or we reach the end of the sibling chain
-		            while (pTempNode && (pTempNode.sibling != pChild)) {
-		                pTempNode = pTempNode.sibling;
-		            }
-// if we found the proper item, set it's FirstSibling to be the FirstSibling of the child
-// we are removing
-		            if (pTempNode) {
-		                pTempNode.sibling = pChild.sibling;
-		                pChild.sibling = null;
-		            }
-		        }
-	    	}
-
-	    	return pChild;
-		}
-
-/** Removes all Children from this parent object */
-
-		removeAllChildren(): void {
-// keep removing children until end of chain is reached
-		    while (!isNull(this._pChild)) {
-		        var pNextSibling = this._pChild.sibling;
-		        this._pChild.detachFromParent();
-		        this._pChild = pNextSibling;
-		    }
-		}
-
-/** Attaches this object ot a new parent. Same as calling the parent's addChild() routine. */
-
-		attachToParent(pParent: IEntity): bool {
-			if (pParent != this._pParent) {
-
-		        this.detachFromParent();
-
-		        if (pParent) {
-		            this._pParent = pParent;
-		            this._pParent.addChild(this);
-		            this._pParent.addRef();
-		            this.attached();
-		            return true;
-		        }
-	    	}
-
-	    	return false;
-		}
-
-		detachFromParent(): bool {
-// tell our current parent to release us
-		    if (this._pParent) {
-		        this._pParent.removeChild(this);
-//TODO: разобраться что за херня!!!!
-		        if (this._pParent) {
-		            this._pParent.release();
-		        }
-
-		        this._pParent = null;
-// my world matrix is now my local matrix
-		        this.detached();
-		        return true;
-		    }
-
-		    return false;
-		}
-
-/**
-		 * Attaches this object's children to it's parent, promoting them up the tree
-		 */
-
-		promoteChildren(): void {
-// Do I have any children to promote?
-		    while (!isNull(this._pChild)) {
-		        var pNextSibling: IEntity = this._pChild.sibling;
-		        this._pChild.attachToParent(this._pParent);
-		        this._pChild = pNextSibling;
-		    }
-		}
-
-		relocateChildren(pParent: IEntity): void {
-			if (pParent != this) {
-// Do I have any children to relocate?
-		        while (!isNull(this._pChild)) {
-		            var pNextSibling: IEntity = this._pChild.sibling;
-		            this._pChild.attachToParent(pParent);
-		            this._pChild = pNextSibling;
-		        }
-		    }
-		}
-
-		update(): bool { return false; }
-
-		toString(isRecursive: bool = false, iDepth:  number  = 0): string {
-
-		    if (!isRecursive) {
-		        return '<entity' + (this._sName? ' ' + this._sName: "") + '>';
-		    }
-
-		    var pSibling: IEntity = this.sibling;
-		    var pChild: IEntity = this.child;
-		    var s: string = "";
-
-		    for (var i = 0; i < iDepth; ++ i) {
-		        s += ':  ';
-		    }
-
-		    s += '+----[depth: ' + this.depth + ']' + this.toString() + '\n';
-
-		    if (pChild) {
-		        s += pChild.toString(true, iDepth + 1);
-		    }
-
-		    if (pSibling) {
-		        s += pSibling.toString(true, iDepth);
-		    }
-
-		    return s;
-
-
-		}
-
-		private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return Entity._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-			attached (): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || this.getEventTable().findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).attached; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier) : _unicast.listener (_recivier) ; } } ; ;
-			detached (): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || this.getEventTable().findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).detached; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier) : _unicast.listener (_recivier) ; } } ; ;
-		;
-
-	}
-}
 
 
 
@@ -17005,8 +18899,11 @@ module akra.math {
 
 
 
-module akra.math {
 
+
+
+
+module akra.math {
 //
 // BASIC MATH AND UNIT CONVERSION CONSTANTS
 //
@@ -17054,7 +18951,17 @@ module akra.math {
 	export var DEGREE_RATIO:  number 						= < number >(PI_DIV_180);
 	export var RADIAN_RATIO:  number 						= < number >(PI_OVER_180);
 	export var GRAVITY_CONSTANT:  number  					= 9.81;
+}
 
+
+
+
+
+
+
+
+
+module akra.math {
 //
 // MATH AND UNIT CONVERSION FUNCTION PROTOTYPES
 //
@@ -17135,68 +19042,57 @@ module akra.math {
 
 /**
 	 * Абсолютное значение числа
-	 * @inline
 	 */
 
 	export var absoluteValue = abs;
 /**
 	 * Pow
-	 * @inline
 	 */
 
 	export var raiseToPower = pow;
 /**
 	 * Число положительно?
-	 * @inline
 	 */
 
 	export var isPositive = (a: number) => (a >= 0);
 /**
 	 * Число отрицательно?
-	 * @inline
 	 */
 
 	export var isNegative = (a: number) => (a < 0);
 /**
 	 * Число одного знака?
-	 * @inline
 	 */
 
 	export var sameSigns = (a: number, b: number): bool => (isNegative(a) == isNegative(b));
 /**
 	 * Копировать знак
-	 * @inline
 	 */
 
 	export var copySign = (a: number, b: number): number => (isNegative(b) ? -absoluteValue(a) : absoluteValue(a));
 /**
 	 * Растояние между а и b меньше epsilon?
-	 * @inline
 	 */
 
 	export var deltaRangeTest = (a: number, b: number, epsilon: number = 0.0000001): bool => ((absoluteValue(a - b) < epsilon) ? true : false);
 
 /**
 	 * Ограничивает value интервалом [low,high]
-	 * @inline
 	 */
 
 	export var clamp = (value: number, low: number, high: number): number => max(low, min(value, high));
 /**
 	 * Ограничивает value интервалом [0,+Infinity]
-	 * @inline
 	 */
 
 	export var clampPositive = (value: number): number => (value < 0 ? 0 : value);
 /**
 	 * Ограничивает value интервалом [-Infinity,0]
-	 * @inline
 	 */
 
 	export var clampNegative = (value: number): number => (value > 0 ? 0 : value);
 /**
 	 * Ограничивает value интервалом [-1,1]
-	 * @inline
 	 */
 
 	export var clampUnitSize = (value: number): number => clamp(value, -1, 1);
@@ -17204,13 +19100,11 @@ module akra.math {
 
 /**
 	 * Номер с права начиная от нуля, самого левого установленного бита
-	 * @inline
 	 */
 
 	export var highestBitSet = (value: number):  number  => value == 0 ? (null) : (value < 0 ? 31 : ((log(value) / LN2) << 0));
 /**
 	 * Номер с права начиная от нуля, самого правого установленного бита
-	 * @inline
 	 */
 
 	export var lowestBitSet = (value:  number ):  number  => {
@@ -17231,13 +19125,11 @@ module akra.math {
 
 /**
 	 * Является ли число степенью двойки
-	 * @inline
 	 */
 
 	export var isPowerOfTwo = (value:  number ): bool => (value > 0 && highestBitSet(value) == lowestBitSet(value));
 /**
 	 * Округление до числа наиболее близкого к степени двойки
-	 * @inline
 	 */
 
 	export var nearestPowerOfTwo = (value:  number ):  number  => {
@@ -17257,7 +19149,6 @@ module akra.math {
 
 /**
 	 * Округление до следующего числа являющегося к степени двойки
-	 * @inline
 	 */
 
 	export var ceilingPowerOfTwo = (value:  number ):  number  => {
@@ -17272,7 +19163,6 @@ module akra.math {
 	}
 /**
 	 * Округление до предыдущего числа являющегося к степени двойки
-	 * @inline
 	 */
 
 	export var floorPowerOfTwo = (value:  number ):  number  => {
@@ -17287,20 +19177,17 @@ module akra.math {
 
 /**
 	 * Деление по модулю
-	 * @inline
 	 */
 
 	export var modulus = (e:  number , divisor:  number ):  number  => (e - floor(e / divisor) * divisor);
 /**
 	 * 
-	 * @inline
 	 */
 
 	export var mod = modulus;
 
 /**
 	 * Вырвнивание числа на alignment вверх
-	 * @inline
 	 */
 
 	export var alignUp = (value:  number , alignment:  number ):  number  => {
@@ -17315,7 +19202,6 @@ module akra.math {
 
 /**
 	 * Вырвнивание числа на alignment вниз
-	 * @inline
 	 */
 
 	export var alignDown = (value:  number , alignment:  number ):  number  => {
@@ -17329,45 +19215,38 @@ module akra.math {
 
 /**
 	 * пнвертировать число
-	 * @inline
 	 */
 
 	export var inverse = (a: number): number => 1. / a;
 /**
 	 * log base 2
-	 * @inline
 	 */
 
 	export var log2 = (f:  number ):  number  => log(f) / LN2;
 /**
 	 * Округлени числа с определенной точностью, где округляется до значащих чисел как 1/(2^precision)
-	 * @inline
 	 */
 
 	export var trimFloat = (f:  number , precision:  number ):  number  => f;
 
 /**
 	 * Перевод дробного в целое с усеением
-	 * @inline
 	 */
 
 	export var realToInt32_chop = (a:  number ):  number  => round(a);
 /**
 	 * Перевод дробного в целое до меньшего
-	 * @inline
 	 */
 
 	export var realToInt32_floor = (a:  number ):  number  => floor(a);
 /**
 	 * Перевод дробного в целое до большего
-	 * @inline
 	 */
 
 	export var realToInt32_ceil = (a:  number ):  number  => ceil(a);
 
 /**
 	 * Наибольший общий делитель
-	 * @inline
 	 */
 
 	export var nod = (n:  number , m:  number ):  number  => {
@@ -17383,19 +19262,16 @@ module akra.math {
 	}
 /**
 	 * Наименьшее общее кратное
-	 * @inline
 	 */
 
 	export var nok = (n:  number , m:  number ):  number  => abs(n * m) / nod(n , m);
 /**
 	 * Greatest common devider
-	 * @inline
 	 */
 
 	export var gcd = nod;
 /**
 	 * Least common multiple
-	 * @inline
 	 */
 
 	export var lcm = nok;
@@ -17409,6 +19285,24 @@ module akra.math {
         else
             return false;
     }
+
+    export function calcPOTtextureSize (nPixels:  number ):  number [] {
+	    var w:  number , h:  number ;
+	    var n:  number  = nPixels;
+
+
+	    w = Math.ceil(Math.log(n) / Math.LN2 / 2.0);
+	    h = Math.ceil(Math.log(n / Math.pow(2, w)) / Math.LN2);
+	    w = Math.pow(2, w);
+	    h = Math.pow(2, h);
+	    n = w * h;
+	    return [w, h, n];
+	}
+}
+
+
+
+module akra.math {
 
     export function vec2(): IVec2;
     export function vec2(fValue:  number ): IVec2;
@@ -17656,19 +19550,6 @@ module akra.math {
 		return m4fMat;
 	};
 
-	export function calcPOTtextureSize (nPixels:  number ):  number [] {
-	    var w:  number , h:  number ;
-	    var n:  number  = nPixels;
-
-
-	    w = Math.ceil(Math.log(n) / Math.LN2 / 2.0);
-	    h = Math.ceil(Math.log(n / Math.pow(2, w)) / Math.LN2);
-	    w = Math.pow(2, w);
-	    h = Math.pow(2, h);
-	    n = w * h;
-	    return [w, h, n];
-	}
-
 }
 
 module akra {
@@ -17687,3816 +19568,6 @@ module akra {
 	export var mat3 = math.mat3;
 	export var mat4 = math.mat4;
 }
-
-
-
-module akra.scene {
-
-	export enum ENodeUpdateFlags {
-		k_SetForDestruction = 0,
-//if changed scale, otation or position
-		k_NewOrientation,
-// k_NewTranslation,
-// k_NewScale,
-		k_NewWorldMatrix,
-		k_NewLocalMatrix,
-		k_RebuildInverseWorldMatrix,
-		k_RebuildNormalMatrix,
-     };
-
-	export class Node extends util.Entity implements INode {
-		/**@protected*/  _m4fLocalMatrix: IMat4 = null;
-		/**@protected*/  _m4fWorldMatrix: IMat4 = null;
-		/**@protected*/  _m4fInverseWorldMatrix: IMat4 = null;
-		/**@protected*/  _m3fNormalMatrix: IMat3 = null;
-
-		/**@protected*/  _v3fWorldPosition: IVec3 = null;
-
-		/**@protected*/  _qRotation: IQuat4 = null;
-		/**@protected*/  _v3fTranslation: IVec3 = null;
-		/**@protected*/  _v3fScale: IVec3 = null;
-
-		/**@protected*/  _iUpdateFlags:  number  = 0;
-		/**@protected*/  _eInheritance: ENodeInheritance = ENodeInheritance.POSITION;
-
-
-		inline get localOrientation(): IQuat4 {
-			return this._qRotation;
-		}
-
-		inline set localOrientation(qOrient: IQuat4) {
-			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
-			this._qRotation.set(qOrient);
-		}
-
-		inline get localPosition(): IVec3 {
-			return this._v3fTranslation;
-		}
-
-		inline set localPosition(v3fPosition: IVec3) {
-			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
-			this._v3fTranslation.set(v3fPosition);
-		}
-
-		inline get localScale(): IVec3 {
-			return this._v3fScale;
-		}
-
-		inline set localScale(v3fScale: IVec3) {
-			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
-			this._v3fScale.set(v3fScale);
-		}
-
-		inline get localMatrix(): IMat4 {
-			return this._m4fLocalMatrix;
-		}
-
-		inline set localMatrix(m4fLocalMatrix: IMat4) {
-			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewLocalMatrix))) ) ;
-			this._m4fLocalMatrix.set(m4fLocalMatrix);
-		}
-
-
-		inline get worldMatrix(): IMat4 {
-			return this._m4fWorldMatrix;
-		}
-
-		inline get worldPosition(): IVec3 {
-			return this._v3fWorldPosition;
-		}
-
-		get inverseWorldMatrix(): IMat4 {
-			if ( ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_RebuildInverseWorldMatrix)) ) != 0) ) {
-		        this._m4fWorldMatrix.inverse(this._m4fInverseWorldMatrix);
-		        ((this._iUpdateFlags) &= ~ (1 << ((ENodeUpdateFlags.k_RebuildInverseWorldMatrix))) ) ;
-		    }
-
-			return this._m4fInverseWorldMatrix;
-		}
-
-		get normalMatrix(): IMat3 {
-			if ( ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_RebuildNormalMatrix)) ) != 0) ) {
-
-		        this._m4fWorldMatrix.toMat3(this._m3fNormalMatrix).inverse().transpose();
-
-		        ((this._iUpdateFlags) &= ~ (1 << ((ENodeUpdateFlags.k_RebuildNormalMatrix))) ) ;
-		    }
-
-			return this._m3fNormalMatrix;
-		}
-
-
-		update(): bool {
-// derived classes update the local matrix
-// then call this base function to complete
-// the update
-		    return this.recalcWorldMatrix();
-		}
-
-
-		prepareForUpdate(): void {
-			super.prepareForUpdate();
-// clear the temporary flags
-			((this._iUpdateFlags) &= ~( (1 << (ENodeUpdateFlags.k_NewLocalMatrix)) | (1 << (ENodeUpdateFlags.k_NewOrientation)) | (1 << (ENodeUpdateFlags.k_NewWorldMatrix)) ))
-                                                                                            ;
-		}
-
-
-		inline setInheritance(eInheritance: ENodeInheritance) {
-			this._eInheritance = eInheritance;
-		}
-
-		inline getInheritance(): ENodeInheritance {
-			return this._eInheritance;
-		}
-
-		inline isWorldMatrixNew(): bool {
-			return  ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_NewWorldMatrix)) ) != 0) ;
-		}
-
-		inline isLocalMatrixNew(): bool {
-			return  ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_NewLocalMatrix)) ) != 0) ;
-		}
-
-		private recalcWorldMatrix(): bool {
-			var isParentMoved: bool = this._pParent && (<Node>this._pParent).isWorldMatrixNew();
-		    var isOrientModified: bool =  ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_NewOrientation)) ) != 0) ;
-		    var isLocalModified: bool =  ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_NewLocalMatrix)) ) != 0) ;
-
-		    if (isOrientModified || isParentMoved || isLocalModified) {
-		        var m4fLocal: IMat4 = this._m4fLocalMatrix;
-		        var m4fWorld: IMat4 = this._m4fWorldMatrix;
-		        var m4fParent: IMat4 = (<Node>this._pParent).worldMatrix;
-		        var m4fOrient: IMat4 = Node._m4fTemp;
-		        var v3fTemp: IVec3 = Node._v3fTemp;
-
-		        var pWorldData: Float32Array = m4fWorld.data;
-		        var pParentData: Float32Array = m4fParent.data;
-		        var pOrientData: Float32Array = m4fOrient.data;
-
-		        this._qRotation.toMat4(m4fOrient);
-
-		        m4fOrient.setTranslation(this._v3fTranslation);
-		        m4fOrient.scaleLeft(this._v3fScale);
-		        m4fOrient.multiply(m4fLocal);
-
-//console.error(m4fOrient.toString());
-
-		        if (this._pParent) {
-		            if (this._eInheritance === ENodeInheritance.ALL) {
-		                m4fParent.multiply(m4fOrient, m4fWorld);
-		            }
-		            else if (this._eInheritance === ENodeInheritance.POSITION) {
-		                m4fWorld.set(m4fOrient);
-
-		                pWorldData[ 12 ] = pParentData[ 12 ] + pOrientData[ 12 ];
-		                pWorldData[ 13 ] = pParentData[ 13 ] + pOrientData[ 13 ];
-		                pWorldData[ 14 ] = pParentData[ 14 ] + pOrientData[ 14 ];
-		            }
-		            else if (this._eInheritance === ENodeInheritance.ROTSCALE) {
-		                var p11 = pParentData[ 0 ], p12 = pParentData[ 4 ],
-		                    p13 = pParentData[ 8 ];
-		                var p21 = pParentData[ 1 ], p22 = pParentData[ 5 ],
-		                    p23 = pParentData[ 9 ];
-		                var p31 = pParentData[ 2 ], p32 = pParentData[ 6 ],
-		                    p33 = pParentData[ 10 ];
-
-		                var l11 = pOrientData[ 0 ], l12 = pOrientData[ 4 ],
-		                    l13 = pOrientData[ 8 ];
-		                var l21 = pOrientData[ 1 ], l22 = pOrientData[ 5 ],
-		                    l23 = pOrientData[ 9 ];
-		                var l31 = pOrientData[ 2 ], l32 = pOrientData[ 6 ],
-		                    l33 = pOrientData[ 10 ];
-
-		                pWorldData[ 0 ] = p11 * l11 + p12 * l21 + p13 * l31;
-		                pWorldData[ 4 ] = p11 * l12 + p12 * l22 + p13 * l32;
-		                pWorldData[ 8 ] = p11 * l13 + p12 * l23 + p13 * l33;
-		                pWorldData[ 12 ] = pOrientData[ 12 ];
-		                pWorldData[ 1 ] = p21 * l11 + p22 * l21 + p23 * l31;
-		                pWorldData[ 5 ] = p21 * l12 + p22 * l22 + p23 * l32;
-		                pWorldData[ 9 ] = p21 * l13 + p22 * l23 + p23 * l33;
-		                pWorldData[ 13 ] = pOrientData[ 13 ];
-		                pWorldData[ 2 ] = p31 * l11 + p32 * l21 + p33 * l31;
-		                pWorldData[ 6 ] = p31 * l12 + p32 * l22 + p33 * l32;
-		                pWorldData[ 10 ] = p31 * l13 + p32 * l23 + p33 * l33;
-		                pWorldData[ 14 ] = pOrientData[ 14 ];
-
-		                pWorldData[ 3 ] = pOrientData[ 3 ];
-		                pWorldData[ 7 ] = pOrientData[ 7 ];
-		                pWorldData[ 11 ] = pOrientData[ 11 ];
-		                pWorldData[ 15 ] = pOrientData[ 15 ];
-		            }
-		        }
-		        else {
-		            m4fWorld.set(m4fOrient);
-		        }
-
-		        this._v3fWorldPosition.x = pWorldData[ 12 ];
-		        this._v3fWorldPosition.y = pWorldData[ 13 ];
-		        this._v3fWorldPosition.z = pWorldData[ 14 ];
-
-// set the flag that our world matrix has changed
-		        ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewWorldMatrix))) ) ;
-// and it's inverse & vectors are out of date
-		        ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_RebuildInverseWorldMatrix))) ) ;
-		        ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_RebuildNormalMatrix))) ) ;
-
-		        return true;
-		    }
-
-		    return false;
-		}
-
-		setPosition(v3fPosition: IVec3): void;
-		setPosition(fX:  number , fY:  number , fZ:  number ): void;
-		setPosition(fX?: any, fY?: any, fZ?: any): void {
-			var pPos: IVec3 = arguments.length === 1? arguments[0]: vec3(fX, fY, fZ);
-		    var v3fTranslation: IVec3 = this._v3fTranslation;
-
-		    v3fTranslation.set(pPos);
-
-		    ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
-		}
-
-		addPosition(v3fPosition: IVec3): void;
-		addPosition(fX:  number , fY:  number , fZ:  number ): void;
-		addPosition(fX?: any, fY?: any, fZ?: any): void {
-			var pPos: IVec3 = arguments.length === 1? arguments[0]: vec3(fX, fY, fZ);
-		    var v3fTranslation: IVec3 = this._v3fTranslation;
-
-		    v3fTranslation.add(pPos);
-
-		    ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
-		}
-
-		addRelPosition(v3fPosition: IVec3): void;
-		addRelPosition(fX:  number , fY:  number , fZ:  number ): void;
-		addRelPosition(fX?: any, fY?: any, fZ?: any): void {
-			var pPos: IVec3 = arguments.length === 1? arguments[0]: vec3(fX, fY, fZ);
-		    var v3fTranslation: IVec3 = this._v3fTranslation;
-
-		    this._qRotation.multiplyVec3(pPos);
-    		v3fTranslation.add(pPos);
-
-		    ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
-		}
-
-		setRotationByMatrix(m3fRotation: IMat3): void;
-		setRotationByMatrix(m4fRotation: IMat4): void;
-		setRotationByMatrix(matrix: any): void {
-			matrix.toQuat4(this._qRotation);
-			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
-		}
-
-		setRotationByAxisAngle(v3fAxis: IVec3, fAngle:  number ): void {
-			Quat4.fromAxisAngle(v3fAxis, fAngle, this._qRotation);
-			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
-		}
-
-		setRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
-			Quat4.fromForwardUp(v3fForward, v3fUp, this._qRotation);
-			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
-		}
-
-		setRotationByEulerAngles(fYaw:  number , fPitch:  number , fRoll:  number ): void {
-			Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, this._qRotation);
-			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
-		}
-
-		setRotationByXYZAxis(fX:  number , fY:  number , fZ:  number ): void {
-			Quat4.fromYawPitchRoll(fY, fX, fZ, this._qRotation);
-			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
-		}
-
-		setRotation(q4fRotation: IQuat4): void {
-			this._qRotation.set(q4fRotation);
-			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
-		}
-
-		addRelRotationByMatrix(m3fRotation: IMat3): void;
-		addRelRotationByMatrix(m4fRotation: IMat4): void;
-		addRelRotationByMatrix(matrix: any): void {
-			this.addRelRotation(arguments[0].toQuat4(Node._q4fTemp));
-		}
-
-		addRelRotationByAxisAngle(v3fAxis: IVec3, fAngle:  number ): void {
-			this.addRelRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp));
-		}
-
-		addRelRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
-			this.addRelRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp));
-		}
-
-		addRelRotationByEulerAngles(fYaw:  number , fPitch:  number , fRoll:  number ): void {
-			this.addRelRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp));
-		}
-
-		addRelRotationByXYZAxis(fX:  number , fY:  number , fZ:  number ): void {
-			this.addRelRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp));
-		}
-
-		addRelRotation(q4fRotation: IQuat4): void {
-			this._qRotation.multiply(q4fRotation);
-			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
-		}
-
-		addRotationByMatrix(m3fRotation: IMat3): void;
-		addRotationByMatrix(m4fRotation: IMat4): void;
-		addRotationByMatrix(matrix: any): void {
-			this.addRotation(arguments[0].toQuat4(Node._q4fTemp));
-		}
-
-		addRotationByAxisAngle(v3fAxis: IVec3, fAngle:  number ): void {
-			this.addRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp));
-		}
-
-		addRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
-			this.addRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp));
-		}
-
-		addRotationByEulerAngles(fYaw:  number , fPitch:  number , fRoll:  number ): void {
-			this.addRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp));
-		}
-
-		addRotationByXYZAxis(fX:  number , fY:  number , fZ:  number ): void {
-			this.addRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp));
-		}
-
-		addRotation(q4fRotation: IQuat4): void {
-			q4fRotation.multiplyVec3(this._v3fTranslation);
-    		q4fRotation.multiply(this._qRotation, this._qRotation);
-    		((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
-		}
-
-
-		scale(fScale:  number ): void;
-		scale(fX:  number , fY:  number , fZ:  number ): void;
-		scale(fX: any, fY?: any, fZ?: any): void {
-			var pScale: IVec3 = arguments.length === 1? arguments[0]: vec3(fX);
-		    var v3fScale: IVec3 = this._v3fScale;
-
-		    v3fScale.scale(pScale);
-
-		    ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
-		}
-
-
-
-		attachToParent(pParent: IEntity): bool {
-			if (super.attachToParent(pParent)) {
-// adjust my local matrix to be relative to this new parent
-	            var m4fInvertedParentMatrix: IMat4 = mat4();
-	            (<Node>this._pParent)._m4fWorldMatrix.inverse(m4fInvertedParentMatrix);
-	            return true;
-			}
-
-			return false;
-		}
-
-		detachFromParent(): bool {
-			if (super.detachFromParent()) {
-				this._m4fWorldMatrix.identity();
-				return true;
-			}
-
-			return false;
-		}
-
-		toString(isRecursive: bool = false, iDepth:  number  = 0): string {
-
-
-		    if (!isRecursive) {
-		        return '<node' + (this.name? " " + this.name: "") + '>';
-		    }
-
-		    var pSibling: IEntity = this.sibling;
-		    var pChild: IEntity = this.child;
-		    var s = "";
-
-		    for (var i = 0; i < iDepth; ++ i) {
-		        s += ':  ';
-		    }
-
-		    s += '+----[depth: ' + this.depth + ']' + this.toString() + '\n';
-
-		    if (pChild) {
-		        s += pChild.toString(true, iDepth + 1);
-		    }
-
-		    if (pSibling) {
-		        s += pSibling.toString(true, iDepth);
-		    }
-
-		    return s;
-
-		};
-
-		private static _v3fTemp: IVec3 = vec3();
-		private static _v4fTemp: IVec4 = vec4();
-		private static _m3fTemp: IMat3 = mat3();
-		private static _m4fTemp: IMat4 = mat4();
-		private static _q4fTemp: IQuat4 = quat4();
-	}
-}
-
-
-
-module akra.scene {
-	export class SceneNode extends Node implements ISceneNode {
-		/**@protected*/  _pScene: IScene3d = null;
-
-		inline get scene(): IScene3d { return this._pScene; }
-		inline set scene(pScene: IScene3d) { this._pScene = pScene; }
-
-		constructor (pScene: IScene3d) {
-			super();
-
-			pScene.connect(this,  "attached" ,  "nodeAttachment" , EEventTypes.UNICAST);
-			pScene.connect(this,  "detached" ,  "nodeDetachment" , EEventTypes.UNICAST);
-
-			this.scene = pScene;
-
-			this._eType = EEntityTypes.SCENE_NODE;
-		}
-
-		create(): bool {
-			super.create();
-
-			this._m4fLocalMatrix        = new Mat4(1);
-		    this._m4fWorldMatrix        = new Mat4(1);
-		    this._m4fInverseWorldMatrix = new Mat4(1);
-		    this._m3fNormalMatrix       = new Mat3(1);
-
-		    this._v3fWorldPosition  = new Vec3();
-
-		    this._v3fTranslation    = new Vec3(0);
-		    this._v3fScale          = new Vec3(1);
-		    this._qRotation         = new Quat4(0, 1);
-
-		    return true;
-		}
-
-		destroy(): void {
-			super.destroy();
-		}
-
-/**
-		 * @deprecated
-		 */
-
-		render(): void {
-
-		}
-
-/**
-		 * @deprecated
-		 */
-
-		prepareForRender(): void {
-
-		}
-
-/**
-		 * @deprecated
-		 */
-
-		recursiveRender(): void {
-// render myself
-		    this.prepareForRender();
-		    this.render();
-// render my sibling
-		    if (this.sibling) {
-		        (<ISceneNode>(this.sibling)).recursiveRender();
-		    }
-// render my child
-		    if (this.child) {
-		        (<ISceneNode>(this.child)).recursiveRender();
-		    }
-		}
-
-
-		attachToParent(pParent: IEntity): bool {
-			if ((<ISceneNode>pParent).scene !== this._pScene) {
-				logger.setSourceLocation( "SceneNode.ts" , 82 ); logger.warning("transfer of the scene node between trees scene - forbidden"); ;
-				return false;
-			}
-
-			return super.attachToParent(pParent);
-		}
-
-		toString(isRecursive: bool = false, iDepth:  number  = 0): string {
-			if (!isRecursive) {
-		        return "<scene_node" + (this.name? " " + this.name: "") + ">";
-		    }
-
-		    return super.toString(isRecursive, iDepth);
-		}
-
-	}
-}
-
-
-
-module akra.scene {
-	export class Joint extends SceneNode implements IJoint {
-		private _sBone: string = null;
-// private _iUpdated: int = 0;
-// private _pEngine: IEngine = null;
-
-		constructor (pScene: IScene3d) {
-			super(pScene);
-			this.type = EEntityTypes.JOINT;
-		}
-
-		inline get boneName(): string{
-			return this._sBone;
-		}
-
-		inline set boneName(sBone: string){
-			return this._sBone;
-		}
-
-// getEngine(): IEngine {
-// 	return this._pEngine;
-// }
-
-		create(): bool {
-			this._m4fLocalMatrix = new Mat4(1);
-			this._m4fWorldMatrix = new Mat4(1);
-
-			this._v3fWorldPosition  = new Vec3();
-			this._v3fTranslation    = new Vec3(0, 0, 0);
-			this._v3fScale          = new Vec3(1);
-			this._qRotation         = new Quat4(0, 1);
-
-
-//maybe custom
-			this.setInheritance(ENodeInheritance.ALL);
-			return true;
-		}
-
-		toString(isRecursive: bool = false, iDepth:  number  = 0): string {
-			isRecursive = isRecursive || false;
-
-			if (!isRecursive) {
-			    return "<joint" + (this._sName ? (' ' + this._sName) : "") + ">";
-			}
-
-			return Node.prototype.toString.call(this, isRecursive, iDepth);
-		}
-	}
-
-	export inline function isJoint(pEntity: IEntity): bool {
-		return pEntity.type == EEntityTypes.JOINT;
-	}
-}
-
-
-
-module akra.model {
-
-	class Skeleton implements ISkeleton{
-		private _sName: string;
-		private _pRootJoints: IJoint[] = [];
-		private _pJointMap: IJointMap = null;
-		private _pNodeList: ISceneNode[]  = null;
-		private _pMeshNode: ISceneModel = null;
-		private _iFlags: bool = false;
-
-
-		inline get totalBones():  number {
-			return Object.keys(this._pJointMap).length;
-		}
-
-		inline get totalNodes():  number {
-			return this._pNodeList.length;
-		}
-
-		inline get name(): string{
-			return this._sName;
-		}
-
-		inline get root(): IJoint {
-			return this._pRootJoints[0] || null;
-		}
-
-		constructor (sName: string = null) {
-			this._sName = sName;
-		}
-
-		getRootJoint(): IJoint {
-			return this.getRootJoints()[0];
-		}
-
-		getRootJoints(): IJoint[] {
-			return this._pRootJoints;
-		}
-
-		getJointMap(): IJointMap {
-			return this._pJointMap;
-		}
-
-		getNodeList(): ISceneNode[]{
-			return this._pNodeList;
-		}
-
-		addRootJoint(pJoint: IJoint): bool {
-			logger.setSourceLocation( "model/Skeleton.ts" , 56 ); logger.assert(pJoint instanceof scene.Joint, 'node must be joint'); ;
-
-		    var pRootJoints = this._pRootJoints;
-
-			for (var i = 0; i < pRootJoints.length; i++) {
-				if (pJoint.childOf(pRootJoints[i])) {
-					return false;
-				}
-				else if (pRootJoints[i].childOf(pJoint)) {
-					pRootJoints.splice(i, 1);
-				}
-			};
-
-			this._pRootJoints.push(pJoint);
-
-			return this.update();
-		}
-
-		update(): bool {
-			var pRootJoints = this._pRootJoints;
-		    var pJointList = this._pJointMap = <IJointMap>{};
-		    var pNodeList = this._pNodeList = [];
-//var pNotificationJoints = this._pNotificationJoints = [];
-
-		    function findNodes (pNode) {
-		    	var sJoint;
-
-		    	if (pNode) {
-			    	sJoint = pNode.boneName;
-
-			    	if (sJoint) {
-			    		logger.setSourceLocation( "model/Skeleton.ts" , 88 ); logger.assert(!pJointList[sJoint], 'joint with name<' + sJoint + '> already exists in skeleton <' + this._sName + '>');
-                                                                                             ;
-			    		pJointList[sJoint] = pNode;
-			    	}
-
-			    	pNodeList.push(pNode);
-
-			    	findNodes(pNode.sibling());
-			    	findNodes(pNode.child());
-		    	}
-		    }
-
-		    for (var i = 0; i < pRootJoints.length; i++) {
-		    	findNodes(pRootJoints[i]);
-		    };
-
-// for (var sJoint in pJointList) {
-// 	var pJoint = pJointList[sJoint];
-
-//    	if (pJoint.sibling() == null && pJoint.child() == null) {
-//    		pNotificationJoints.push(pJoint);
-//    	}
-//    };    
-
-			return true;
-		}
-
-		findJoint(sName: string): IJoint {
-			return this._pJointMap[sName];
-		}
-
-		findJointByName(sName: string): IJoint {
-			for (var s in this._pJointMap) {
-				if (this._pJointMap[s].name === sName) {
-					return this._pJointMap[s];
-				}
-			}
-
-			return null;
-		}
-
-		attachMesh(pMesh: IMesh): bool {
-			if (isNull(this.root)) {
-				return false;
-			}
-
-		    if (this._pMeshNode == null) {
-		    	this._pMeshNode = this.root.scene.createModel();
-		    	this._pMeshNode.setInheritance(ENodeInheritance.ALL);
-		    	this._pMeshNode.attachToParent(this.root);
-		    }
-
-		    this._pMeshNode.name = this.name + "[mesh-container]";
-		    this._pMeshNode.mesh = (pMesh);
-
-		    return true;
-		}
-
-		detachMesh(): void {
-//TODO: write detach method.
-		}
-	}
-
-	export function createSkeleton(sName: string = null): ISkeleton {
-		return new Skeleton(sName);
-	}
-}
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface IMat4 {} ;
-	export interface IQuat4 {} ;
-	export interface IVec3 {} ;
-	export interface IAnimationFrame {} ;
-	export enum EAnimationInterpolations {
-		MATRIX_LINEAR,
-		LINEAR
-	}
-
-	export interface IAnimationFrame {
-		time:  number ;
-		weight:  number ;
-
-		matrix: IMat4;
-
-		rotation: IQuat4;
-		scale: IVec3;
-		translation: IVec3;
-
-		toMatrix(): IMat4;
-		toMatrixFromMatrix(): IMat4;
-
-		reset(): IAnimationFrame;
-		set(pFrame: IAnimationFrame): void;
-
-		add(pFrame: IAnimationFrame, isFirst: bool): IAnimationFrame;
-		addMatrix(pFrame: IAnimationFrame): IAnimationFrame;
-
-		mult(fScalar:  number ): IAnimationFrame;
-
-		normilize(): IAnimationFrame;
-		normilizeMatrix(): IAnimationFrame;
-
-		interpolate(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend:  number ): void;
-		interpolateMatrix(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend:  number ): void;
-	}
-}
-
-
-
-
-
-
-
-module akra.animation {
-	export class AnimationFrame implements IAnimationFrame{
-		private time:  number  	= 0.0;
-		private weight:  number  	= 1.0;
-
-		private matrix: IMat4 	= null;
-
-		private rotation: IQuat4 	= new Quat4;
-		private scale: IVec3  		= new Vec3;
-		private translation: IVec3  = new Vec3;
-
-		constructor(fTime?:  number , pMatrix?: IMat4, fWeight?:  number ) {
-			switch (arguments.length) {
-				case 0:
-					this.matrix = new Mat4;
-					return;
-				case 3:
-					this.weight = fWeight;
-				case 2:
-					this.matrix = pMatrix;
-				case 1:
-					this.time = fTime;
-			};
-
-			this.matrix.decompose(this.rotation, this.scale, this.translation);
-		}
-
-		toMatrix(): IMat4{
-			return this.rotation.toMat4(this.matrix)
-				.setTranslation(this.translation).scaleRight(this.scale);
-		}
-
-		toMatrixFromMatrix(): IMat4 {
-			return this.matrix;
-		}
-
-		reset(): IAnimationFrame {
-			this.weight = 0.0;
-			this.time = 0.0;
-
-			var pData = this.matrix.data;
-			pData[ 0 ] = pData[ 4 ] = pData[ 8 ] = pData[ 12 ] =
-			pData[ 1 ] = pData[ 5 ] = pData[ 9 ] = pData[ 13 ] =
-			pData[ 2 ] = pData[ 6 ] = pData[ 10 ] = pData[ 14 ] =
-			pData[ 3 ] = pData[ 7 ] = pData[ 11 ] = pData[ 15 ] = 0;
-
-			this.rotation.x = this.rotation.y = this.rotation.z = 0;
-			this.rotation.w = 1.0;
-
-			this.translation.x = this.translation.y = this.translation.z = 0;
-
-			this.scale.x = this.scale.y = this.scale.z = 0;
-
-			return this;
-		}
-
-		set(pFrame: IAnimationFrame): void {
-//FIXME: расписать побыстрее
-			this.matrix.set(pFrame.matrix);
-
-			this.rotation.set(pFrame.rotation);
-			this.scale.set(pFrame.scale);
-			this.translation.set(pFrame.translation);
-
-			this.time = pFrame.time;
-			this.weight = pFrame.weight;
-		}
-
-/**
-		 * Добавить данные к фрейму с их весом.
-		 * После данного метода фрейму потребуется нормализация!!!!
-		 */
-
-
-
-		add(pFrame: IAnimationFrame, isFirst: bool): IAnimationFrame {
-			var fWeight:  number  = pFrame.weight;
-
-			this.scale.x += pFrame.scale.x * fWeight;
-			this.scale.y += pFrame.scale.y * fWeight;
-			this.scale.z += pFrame.scale.z * fWeight;
-
-			this.translation.x += pFrame.translation.x * fWeight;
-			this.translation.y += pFrame.translation.y * fWeight;
-			this.translation.z += pFrame.translation.z * fWeight;
-
-			this.weight += fWeight;
-
-			if (!isFirst) {
-				this.rotation.smix(pFrame.rotation, fWeight / this.weight);
-			}
-			else {
-				this.rotation.set(pFrame.rotation);
-			}
-
-			return this;
-		}
-
-		addMatrix(pFrame: IAnimationFrame): IAnimationFrame {
-			var pMatData = pFrame.matrix.data;
-			var fWeight:  number  = pFrame.weight;
-			var pResData = this.matrix.data;
-
-			for (var i = 0; i < 16; ++ i) {
-				pResData[i] += pMatData[i] * fWeight;
-			}
-
-			this.weight += fWeight;
-			return this;
-		}
-
-		mult(fScalar:  number ): IAnimationFrame{
-			this.weight *= fScalar;
-			return this;
-		}
-
-		normilize(): IAnimationFrame{
-			var fScalar:  number  = 1.0 / this.weight;
-
-		    this.scale.x *= fScalar;
-		    this.scale.y *= fScalar;
-		    this.scale.z *= fScalar;
-
-		    this.translation.x *= fScalar;
-		    this.translation.y *= fScalar;
-		    this.translation.z *= fScalar;
-
-			return this;
-		}
-
-		normilizeMatrix(): IAnimationFrame{
-			var fScalar:  number  = 1.0 / this.weight;
-		    var pData = this.matrix.data;
-
-		    pData[ 0 ] *= fScalar;
-		    pData[ 4 ] *= fScalar;
-		    pData[ 8 ] *= fScalar;
-		    pData[ 12 ] *= fScalar;
-
-			pData[ 1 ] *= fScalar;
-		    pData[ 5 ] *= fScalar;
-		    pData[ 9 ] *= fScalar;
-		    pData[ 13 ] *= fScalar;
-
-			pData[ 2 ] *= fScalar;
-		    pData[ 6 ] *= fScalar;
-		    pData[ 10 ] *= fScalar;
-		    pData[ 14 ] *= fScalar;
-
-			pData[ 3 ] *= fScalar;
-		    pData[ 7 ] *= fScalar;
-		    pData[ 11 ] *= fScalar;
-		    pData[ 15 ] *= fScalar;
-
-			return this;
-		}
-
-		interpolate(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend:  number ): void {
-			var pResultData = this.matrix.data;
-			var pStartData = pStartFrame.matrix.data;
-			var pEndData = pEndFrame.matrix.data;
-			var fBlendInv = 1. - fBlend;
-
-			for (var i = 0; i < 16; i++) {
-				pResultData[i] = pEndData[i] * fBlend + pStartData[i] * fBlendInv;
-			};
-		}
-
-		interpolateMatrix(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend:  number ): void {
-			var pResultData = this.matrix.data;
-			var pStartData = pStartFrame.matrix.data;
-			var pEndData = pEndFrame.matrix.data;
-			var fBlendInv:  number  = 1. - fBlend;
-
-			for (var i = 0; i < 16; i++) {
-				pResultData[i] = pEndData[i] * fBlend + pStartData[i] * fBlendInv;
-			};
-		}
-
-		static get stackCeil(): AnimationFrame { AnimationFrame.stackPosition = AnimationFrame.stackPosition === AnimationFrame.stackSize - 1? 0: AnimationFrame.stackPosition; return AnimationFrame.stack[AnimationFrame.stackPosition ++]; } static stackSize: number = 4 * 4096 ; static stackPosition: number = 0; static stack: AnimationFrame[] = (function(): AnimationFrame[]{ var pStack: AnimationFrame[] = new Array(AnimationFrame.stackSize); for(var i: number = 0; i<AnimationFrame.stackSize; i++){ pStack[i] = new AnimationFrame(); } return pStack})(); ;
-	}
-
-	export function animationFrame(): IAnimationFrame {
-		return null;
-	}
-}
-
-
-
-
-
-
-
-
-
-
-module akra.animation {
-	class AnimationTrack implements IAnimationTrack {
-		private _sTarget: string = null;
-		private _pTarget: ISceneNode = null;
-		private _pKeyFrames: IAnimationFrame[] = [];
-		private _eInterpolationType: EAnimationInterpolations = EAnimationInterpolations.MATRIX_LINEAR;
-
-
-		inline get target(): ISceneNode{
-			return this._pTarget;
-		}
-
-		inline get targetName(): string{
-			return this._sTarget;
-		}
-
-		inline set targetName(sValue: string){
-			this._sTarget = sValue;
-		}
-
-		inline get duration():  number {
-			return this._pKeyFrames.last.fTime;
-		}
-
-		constructor (sTarget: string = null) {
-			this._sTarget = sTarget;
-		}
-
-		keyFrame(fTime:  number , pMatrix: IMat4): bool {
-			var pFrame: IAnimationFrame;
-		    var iFrame:  number ;
-
-		    var pKeyFrames: IAnimationFrame[] = this._pKeyFrames;
-		  	var nTotalFrames:  number  = pKeyFrames.length;
-
-		  	if (arguments.length > 1) {
-		  		pFrame = new animation.AnimationFrame(fTime, pMatrix);
-		  	}
-		    else {
-		    	pFrame = arguments[0];
-		    }
-
-		    if (nTotalFrames && (iFrame = this.findKeyFrame(pFrame.time)) >= 0) {
-				pKeyFrames.splice(iFrame, 0, pFrame);
-			}
-			else {
-				pKeyFrames.push(pFrame);
-			}
-
-			return true;
-		}
-
-		getKeyFrame(iFrame:  number ): IAnimationFrame {
-			logger.setSourceLocation( "animation/AnimationTrack.ts" , 65 ); logger.assert(iFrame < this._pKeyFrames.length, 'iFrame must be less then number of total jey frames.'); ;
-
-			return this._pKeyFrames[iFrame];
-		}
-
-		findKeyFrame(fTime:  number ):  number  {
-			var pKeyFrames: IAnimationFrame[] = this._pKeyFrames;
-		    var nTotalFrames:  number              = pKeyFrames.length;
-
-			if (pKeyFrames[nTotalFrames - 1].time == fTime) {
-				return nTotalFrames - 1;
-			}
-			else {
-				for (var i:  number  = nTotalFrames - 1; i >= 0; i--) {
-					if (pKeyFrames[i].time > fTime && pKeyFrames[i - 1].time <= fTime) {
-						return i - 1;
-					}
-				}
-			}
-
-			return -1;
-		}
-
-		bind(sJoint: string, pSkeleton: ISkeleton): bool;
-		bind(pSkeleton: ISkeleton): bool;
-		bind(pNode: ISceneNode): bool;
-		bind(pJoint: any, pSkeleton?: any): bool {
-			var pNode: ISceneNode = null,
-				pRootNode: ISceneNode;
-
-			var sJoint: string;
-
-			switch (arguments.length) {
-				case 2:
-//bind by pair <String joint, Skeleton skeleton>
-					sJoint = <string>pJoint;
-
-					this._sTarget = sJoint;
-					pNode = (<ISkeleton>pSkeleton).findJoint(sJoint);
-					break;
-				default:
-//bind by <Skeleton skeleton>
-					if (!isDef(arguments[0].type)) {
-
-						if (this._sTarget == null) {
-							return false;
-						}
-
-						pSkeleton = <ISkeleton>arguments[0];
-						pNode = (<ISkeleton>pSkeleton).findJoint(this._sTarget);
-					}
-//bind by <Node node>
-					else {
-						pRootNode = <ISceneNode>arguments[0];
-						pNode = <ISceneNode>pRootNode.findEntity(this.targetName);
-					}
-			}
-
-			this._pTarget = pNode;
-
-			return isDefAndNotNull(pNode);
-		}
-
-		frame(fTime:  number ): IAnimationFrame {
-			var iKey1:  number  = 0, iKey2:  number  = 0;
-			var fScalar:  number ;
-			var fTimeDiff:  number ;
-
-			var pKeys:  IAnimationFrame[] = this._pKeyFrames
-			var nKeys:   number  = pKeys.length;
-			var pFrame: IAnimationFrame = animation.animationFrame();
-
-			logger.setSourceLocation( "animation/AnimationTrack.ts" , 137 ); logger.assert(nKeys > 0, 'no frames :('); ;
-
-			if (nKeys === 1) {
-				pFrame.set(pKeys[0]);
-			}
-			else {
-//TODO: реализовать существенно более эффективный поиск кадра.
-				for (var i:  number  = 0; i < nKeys; i ++) {
-			    	if (fTime >= this._pKeyFrames[i].time) {
-			            iKey1 = i;
-			        }
-			    }
-
-			    iKey2 = (iKey1 >= (nKeys - 1))? iKey1 : iKey1 + 1;
-
-			    fTimeDiff = pKeys[iKey2].time - pKeys[iKey1].time;
-
-			    if (!fTimeDiff)
-			        fTimeDiff = 1;
-
-				fScalar = (fTime - pKeys[iKey1].time) / fTimeDiff;
-
-				pFrame.interpolate(
-					this._pKeyFrames[iKey1],
-					this._pKeyFrames[iKey2],
-					fScalar);
-			}
-
-			pFrame.time = fTime;
-			pFrame.weight = 1.0;
-
-			return pFrame;
-		}
-	}
-
-	export function createTrack(sName: string = null): IAnimationTrack {
-		return new AnimationTrack(sName);
-	}
-}
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface ISceneNode {} ;
-	export interface IAnimationFrame {} ;
-	export interface IAnimationTrack {} ;
-
-	export interface IAnimation extends IAnimationBase {
-		 totalTracks:  number ;
-
-		push(pTrack: IAnimationTrack): void;
-		attach(pTarget: ISceneNode): void;
-
-		getTracks(): IAnimationTrack[];
-
-		frame(sName: string, fTime:  number ): IAnimationFrame;
-		extend(pAnimation: IAnimation): void;
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface ISceneNode {} ;
-	export interface IJoint {} ;
-	export interface IAnimationFrame {} ;
-	export interface IAnimationTrack {} ;
-
-	export interface IAnimationTarget{
-		target: ISceneNode;
-		index:  number ;
-		name: string;
-		track?: IAnimationTrack;
-	}
-
-	export interface IAnimationBase extends IEventProvider {
-		duration:  number ;
-		name: string;
-
-
-		play(fRealTime:  number ): void;
-		stop(fRealTime:  number ): void;
-
-		attach(pTarget: ISceneNode): void;
-
-		frame(sName: string, fRealTime:  number ): IAnimationFrame;
-		apply(fRealTime:  number ): void;
-
-		addTarget(sName: string, pTarget: ISceneNode): IAnimationTarget;
-		setTarget(sName: string, pTarget: ISceneNode): IAnimationTarget;
-		getTarget(sTargetName: string): IAnimationTarget;
-		getTargetList(): IAnimationTarget[];
-		getTargetByName(sName: string): IAnimationTarget;
-		targetNames(): string[];
-		targetList(): ISceneNode[];
-		jointList(): IJoint[];
-		grab(pAnimationBase: IAnimationBase, bRewrite?: bool): void;
-
-		createAnimationMask(): FloatMap;
-
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-module akra.animation {
-	export interface IAnimationTargetMap{
-		[index: string]: IAnimationTarget;
-	}
-
-	export class AnimationBase implements IAnimationBase {
-
-		/**@protected*/  _pTargetMap: IAnimationTargetMap = {};
-    	/**@protected*/  _pTargetList: IAnimationTarget[] = [];
-
-    	/**@protected*/  _fDuration:  number  = 0.0;
-		/**@protected*/  _sName: string;
-
-		constructor () {
-			this._sName = ("animation-" + now() + "-" + this.getGuid());
-		}
-
-		inline get duration():  number {
-			return this._fDuration;
-		}
-
-		inline set duration(fValue:  number ){
-			this._fDuration = fValue;
-		}
-
-		inline get name(): string{
-			return this._sName;
-		};
-
-		inline set name(sName: string){
-			this._sName = sName;
-		};
-
-
-		play(fRealTime:  number ): void {
-			this.onplay(fRealTime);
-		}
-
-		stop(fRealTime:  number ): void {
-			this.onstop(fRealTime);
-		}
-
-		attach(pTarget: ISceneNode): void {
-			logger.setSourceLocation( "AnimationBase.ts" , 54 ); logger.error("method AnimationBase::bind() must be overwritten."); ;
-		}
-
-		frame(sName: string, fRealTime:  number ): IAnimationFrame {
-			return null;
-		}
-
-		apply(fRealTime:  number ): void {
-			var pTargetList: IAnimationTarget[] = this._pTargetList;
-		    var pTarget: ISceneNode;
-		    var pFrame: IAnimationFrame;
-		    var pTransform;
-
-			for (var i = 0; i < pTargetList.length; ++ i) {
-				pFrame = this.frame(pTargetList[i].name, fRealTime);
-				pTarget = pTargetList[i].target;
-
-				if (!pFrame || !pTarget) {
-					continue;
-				}
-
-				pTransform = pFrame.toMatrix();
-				pTarget.localMatrix.set(pTransform);
-			};
-
-		}
-
-		addTarget(sName: string, pTarget: ISceneNode = null): IAnimationTarget {
-//pTarget = pTarget || null;
-
-		    var pPointer: IAnimationTarget = this._pTargetMap[sName];
-
-		    if (pPointer) {
-		    	pPointer.target = pTarget || pPointer.target || null;
-		    	return pPointer;
-		    }
-
-		    pPointer = {
-				target: pTarget,
-				index: this._pTargetList.length,
-				name: sName
-			};
-
-		    this._pTargetList.push(pPointer);
-			this._pTargetMap[sName] = pPointer;
-
-			return pPointer;
-		}
-
-		setTarget(sName: string, pTarget: ISceneNode): IAnimationTarget {
-
-		    var pPointer: IAnimationTarget = this._pTargetMap[sName];
-			pPointer.target = pTarget;
-			return pPointer;
-		}
-
-		getTarget(sTargetName: string): IAnimationTarget {
-			return this._pTargetMap[sTargetName];
-		}
-
-		inline getTargetList(): IAnimationTarget[] {
-			return this._pTargetList;
-		}
-
-		inline getTargetByName(sName: string): IAnimationTarget {
-			return this._pTargetMap[sName];
-		}
-
-		targetNames(): string[] {
-			var pTargets: IAnimationTarget[] = this._pTargetList;
-			var pTargetNames: string[] = [];
-
-			for (var i = 0; i < pTargets.length; ++ i) {
-				pTargetNames.push(pTargets[i].name);
-			}
-
-			return pTargetNames;
-		}
-
-		targetList(): ISceneNode[] {
-			var pTargets: IAnimationTarget[] = this._pTargetList;
-			var pTargetList: ISceneNode[] = [];
-
-			for (var i = 0; i < pTargets.length; ++ i) {
-				pTargetList.push(pTargets[i].target);
-			}
-
-			return pTargetList;
-		}
-
-		jointList(): IJoint[] {
-			var pTargets: IAnimationTarget[] = this._pTargetList;
-			var pJointList: IJoint[] = [];
-
-			for (var i = 0; i < pTargets.length; ++ i) {
-				if (scene.isJoint(pTargets[i].target)) {
-					pJointList.push(<IJoint>pTargets[i].target);
-				}
-			}
-
-			return pJointList;
-		}
-
-		grab(pAnimationBase: IAnimationBase, bRewrite: bool = true): void{
-
-		    var pAdoptTargets: IAnimationTarget[] = pAnimationBase.getTargetList();
-
-			for (var i = 0; i < pAdoptTargets.length; ++ i) {
-
-				if (!pAdoptTargets[i].target) {
-//warning('cannot grab target <' + pAdoptTargets[i].name + '>, becaus "target" is null');
-					continue;
-				}
-
-				if (bRewrite || !this.getTarget(pAdoptTargets[i].name)) {
-					this.addTarget(pAdoptTargets[i].name, pAdoptTargets[i].target);
-				}
-			};
-		}
-
-		createAnimationMask(): FloatMap {
-			var pTargets: string[] = this.targetNames();
-		    var pMask: FloatMap = <FloatMap>{};
-
-		    for (var i = 0; i < pTargets.length; ++ i) {
-		    	pMask[pTargets[i]] = 1.0;
-		    }
-
-		    return pMask;
-		}
-
-		private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return AnimationBase._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-			onplay (fRealTime): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).onplay; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, fRealTime) : _broadcast[i].listener (_recivier, fRealTime) ; } } } ; ;
-			onstop (fRealTime): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).onstop; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, fRealTime) : _broadcast[i].listener (_recivier, fRealTime) ; } } } ; ;
-		;
-	}
-}
-
-
-
-module akra.animation {
-	class Animation implements IAnimation extends AnimationBase {
-
-		private _pTracks: IAnimationTrack[] = [];
-
-    	constructor (sName: string = null) {
-    		super();
-    		this.name = sName;
-    	}
-
-		inline get totalTracks():  number {
-			return this._pTracks.length;
-		}
-
-		push(pTrack: IAnimationTrack): void {
-			this._pTracks.push(pTrack);
-			this._fDuration = Math.max(this._fDuration, pTrack.duration);
-			this.addTarget(pTrack.targetName);
-		}
-
-		attach(pTarget: ISceneNode): void {
-			var pPointer;
-		    var pTracks: IAnimationTrack[] = this._pTracks;
-			for (var i = 0; i < pTracks.length; ++ i) {
-				if (!pTracks[i].bind(pTarget)) {
-					logger.setSourceLocation( "animation/Animation.ts" , 36 ); logger.log("cannot bind animation track [", i, "] to joint <", pTracks[i].target, ">"); ;
-				}
-				else {
-					pPointer = this.setTarget(pTracks[i].targetName, pTracks[i].target);
-					pPointer.track = pTracks[i];
-				}
-			};
-		}
-
-		getTracks(): IAnimationTrack[] {
-			return this._pTracks;
-		}
-
-		frame(sName: string, fTime:  number ): IAnimationFrame {
-			var pPointer: IAnimationTarget = this.getTargetByName(sName);
-
-		    if (!pPointer || !pPointer.track) {
-		    	return null;
-		    }
-
-			return pPointer.track.frame(math.clamp(fTime, 0, this._fDuration));
-		}
-
-		extend(pAnimation: IAnimation): void {
-			var pTracks: IAnimationTrack[] = pAnimation.getTracks();
-
-			for (var i = 0; i < pTracks.length; ++ i) {
-				if (!this.getTarget(pTracks[i].targetName)) {
-					this.push(pTracks[i]);
-				}
-			}
-		}
-	}
-
-	export function createAnimation(sName: string = null): IAnimation {
-		return new Animation(sName);
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface IPathinfo {
-		path: string;
-		dirname: string;
-		filename: string;
-		ext: string;
-		basename: string;
-
-
-		set(sPath: string): void;
-		set(pPath: IPathinfo): void;
-		isAbsolute(): bool;
-
-		toString(): string;
-	}
-
-}
-
-
-
-module akra.util {
-	export class Pathinfo implements IPathinfo {
-		private _sDirname: string = null;
-		private _sExtension: string = null;
-		private _sFilename: string = null;
-
-		inline get path(): string { return this.toString(); }
-		inline set path(sPath: string) { this.set(sPath); }
-
-		inline get dirname(): string { return this._sDirname; }
-		inline set dirname(sDirname: string) { this._sDirname = sDirname; }
-
-		inline get filename(): string { return this._sFilename; }
-		inline set filename(sFilename: string) { this._sFilename = sFilename; }
-
-		inline get ext(): string { return this._sExtension; }
-		inline set ext(sExtension: string) { this._sExtension = sExtension; }
-
-		inline get basename(): string {
-			return (this._sFilename ? this._sFilename + (this._sExtension ? "." + this._sExtension : "") : "");
-		}
-
-		inline set basename(sBasename: string) {
-			var nPos:  number  = sBasename.lastIndexOf(".");
-
-	        if (nPos < 0) {
-	            this._sFilename = sBasename.substr(0);
-	            this._sExtension = null;
-	        }
-	        else {
-	            this._sFilename = sBasename.substr(0, nPos);
-	            this._sExtension = sBasename.substr(nPos + 1);
-	        }
-		}
-
-
-		constructor (pPath: IPathinfo);
-		constructor (sPath: string);
-		constructor (pPath?: any) {
-			if (isDef(pPath)) {
-				this.set(<string>pPath);
-			}
-		}
-
-
-		set(sPath: string): void;
-		set(pPath: IPathinfo): void;
-		set(sPath?: any) {
-			if (isString(sPath)) {
-		        var pParts: string[] = sPath.replace('\\', '/').split('/');
-
-		        this.basename = pParts.pop();
-
-		        this._sDirname = pParts.join('/');
-		    }
-		    else if (sPath instanceof Pathinfo) {
-		        this._sDirname = sPath.dirname;
-		        this._sFilename = sPath.filename;
-		        this._sExtension = sPath.ext;
-		    }
-		    else {
-//critical_error
-		        logger.setSourceLocation( "Pathinfo.ts" , 68 ); logger.error("Unexpected data type was used."); ;
-		    }
-		}
-
-		isAbsolute(): bool { return this._sDirname[0] === "/"; }
-
-
-		toString(): string {
-			return (this._sDirname ? this._sDirname + "/" : "") + (this.basename);
-		}
-
-	}
-
-}
-
-module akra {
-	export var Pathinfo = util.Pathinfo;
-}
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface IURI {
-		scheme: string;
-		userinfo: string;
-		host: string;
-		port:  number ;
-		path: string;
-		query: string;
-		fragment: string;
-		urn: string;
-		url: string;
-		authority: string;
-		protocol: string;
-
-		toString(): string;
-	}
-}
-
-
-
-module akra.util {
-	export class URI implements IURI {
-		private sScheme: string = null;
-		private sUserinfo: string = null;
-		private sHost: string = null;
-		private nPort:  number  = 0;
-		private sPath: string = null;
-		private sQuery: string = null;
-		private sFragment: string = null;
-
-		get urn(): string {
-			return (this.sPath ? this.sPath : "") +
-			(this.sQuery ? '?' + this.sQuery : "") +
-			(this.sFragment ? '#' + this.sFragment : "");
-		}
-
-		get url(): string {
-			return (this.sScheme ? this.sScheme : "") + this.authority;
-		}
-
-		get authority(): string {
-			return (this.sHost ? '//' + (this.sUserinfo ? this.sUserinfo + '@' : "") +
-				this.sHost + (this.nPort ? ':' + this.nPort : "") : "");
-		}
-
-		inline get scheme(): string {
-			return this.sScheme;
-		}
-
-		get protocol(): string {
-			if (!this.sScheme) {
-				return this.sScheme;
-			}
-
-			return (this.sScheme.substr(0, this.sScheme.lastIndexOf(':')));
-		}
-
-		inline get userinfo(): string {
-			return this.sUserinfo;
-		}
-
-		inline get host(): string {
-			return this.sHost;
-		}
-
-		inline get port():  number  {
-			return this.nPort;
-		}
-
-		inline set port(iPort:  number ) {
-			this.nPort = iPort;
-		}
-
-		inline get path(): string {
-			return this.sPath;
-		}
-
-		inline get query(): string {
-			return this.sQuery;
-		}
-
-		inline get fragment(): string {
-			return this.sFragment;
-		}
-
-
-		constructor (pUri: URI);
-		constructor (sUri: string);
-		constructor (pUri?) {
-			if (pUri) {
-				this.set(pUri);
-			}
-		}
-
-		set(pUri: URI);
-		set(sUri: string);
-		set(pData?): URI {
-			if (isString(pData)) {
-				var pUri:RegExpExecArray = URI.uriExp.exec(<string>pData);
-
-				logger.setSourceLocation( "URI.ts" , 86 ); logger.assert(pUri !== null, 'Invalid URI format used.\nused uri: ' + pData); ;
-
-				if (!pUri) {
-					return null;
-				}
-
-				this.sScheme = pUri[1] || null;
-				this.sUserinfo = pUri[2] || null;
-				this.sHost = pUri[3] || null;
-				this.nPort = parseInt(pUri[4]) || null;
-				this.sPath = pUri[5] || pUri[6] || null;
-				this.sQuery = pUri[7] || null;
-				this.sFragment = pUri[8] || null;
-
-				return this;
-
-			}
-			else if (pData instanceof URI) {
-				return this.set(pData.toString());
-			}
-
-			logger.setSourceLocation( "URI.ts" , 107 ); logger.error('Unexpected data type was used.'); ;
-
-			return null;
-		}
-
-		toString(): string {
-			return this.url + this.urn;
-		}
-
-//------------------------------------------------------------------//
-//----- Validate a URI -----//
-//------------------------------------------------------------------//
-//- The different parts are kept in their own groups and can be recombined
-//  depending on the scheme:
-//  - http as $1://$3:$4$5?$7#$8
-//  - ftp as $1://$2@$3:$4$5
-//  - mailto as $1:$6?$7
-//- groups are as follows:
-//  1   == scheme
-//  2   == userinfo
-//  3   == host
-//  4   == port
-//  5,6 == path (5 if it has an authority, 6 if it doesn't)
-//  7   == query
-//  8   == fragment
-
-
-		static private uriExp:RegExp = new RegExp("^([a-z0-9+.-]+:)?(?:\\/\\/(?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)(?::(\\d*))?(\\/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?|(\\/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})*(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?)(?:\\?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?(?:#((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*))?$", "i");
-
-/*
-		 composed as follows:
-		 ^
-		 ([a-z0-9+.-]+):							#scheme
-		 (?:
-		 //							#it has an authority:
-		 (?:((?:[a-z0-9-._~!$&'()*+,;=:]|%[0-9A-F]{2})*)@)?	#userinfo
-		 ((?:[a-z0-9-._~!$&'()*+,;=]|%[0-9A-F]{2})*)		#host
-		 (?::(\d*))?						#port
-		 (/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?	#path
-		 |
-		 #it doesn't have an authority:
-		 (/?(?:[a-z0-9-._~!$&'()*+,;=:@]|%[0-9A-F]{2})+(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)?	#path
-		 )
-		 (?:
-		 \?((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*)	#query string
-		 )?
-		 (?:
-		 #((?:[a-z0-9-._~!$&'()*+,;=:/?@]|%[0-9A-F]{2})*)	#fragment
-		 )?
-		 $
-		 */
-
-	}
-}
-
-
-
-// #include "ReferenceCounter.ts"
-// #include "Singleton.ts"
-
-// #include "BrowserInfo.ts"
-// #include "ApiInfo.ts"
-// #include "ScreenInfo.ts"
-// #include "DeviceInfo.ts"
-
-// #include "UtilTimer.ts"
-
-// #include "Entity.ts"
-
-// #include "ThreadManager.ts"
-
-module akra.util {
-
-	export var uri = (sUri:string): IURI => new util.URI(sUri);
-
-// export var pathinfo: (sPath: string) => IPathinfo;
-// export var pathinfo: (pPath: IPathinfo) => IPathinfo;
-	export var pathinfo: (pPath?) => IPathinfo;
-
-	pathinfo = function (pPath?): IPathinfo {
-		return new Pathinfo(pPath);
-	}
-
-//string to array buffer
-	export var stoab = function (s: string): ArrayBuffer {
-		var len:  number  = s.length;
-		var pCodeList:  number [] = new Array(len);
-
-	    for (var i:  number  = 0; i < len; ++i) {
-/*& 0xFF;*/
-	        pCodeList[ i ] = s.charCodeAt(i);
-	    }
-
-	    return (new Uint8Array(pCodeList)).buffer;
-	}
-
-	export var abtos = function (pBuf: ArrayBuffer): string {
-		var pData: Uint8Array = new Uint8Array(pBuf);
-	    var s: string = "";
-
-	    for (var n:  number  = 0; n < pData.length; ++ n) {
-	        s += String.fromCharCode(pData[n]);
-	    }
-
-	    return s;
-	}
-
-
-	export function abtota(pBuffer: ArrayBuffer, eType: EDataTypes): ArrayBufferView {
-        switch (eType) {
-            case EDataTypes.FLOAT:
-                return new Float32Array(pBuffer);
-            case EDataTypes.SHORT:
-                return new Int16Array(pBuffer);
-            case EDataTypes.UNSIGNED_SHORT:
-                return new Uint16Array(pBuffer);
-            case EDataTypes.INT:
-                return new Int32Array(pBuffer);
-            case EDataTypes.UNSIGNED_INT:
-                return new Uint32Array(pBuffer);
-            case EDataTypes.BYTE:
-                return new Int8Array(pBuffer);
-            default:
-            case EDataTypes.UNSIGNED_BYTE:
-                return new Uint8Array(pBuffer);
-        }
-    }
-
-
-	export function parseJSON(sJSON: string): Object {
-		return eval('(' + sJSON + ')');
-	};
-
-/**
-	 * Преобразование html-сформированного текста
-	 * в dom.
-	 */
-
-	export function parseHTML(sHTML: string, useDocFragment: bool = true): any {
-	    var pDivEl: HTMLDivElement = <HTMLDivElement>document.createElement('div');
-	    var pDocFrag: DocumentFragment;
-
-	    pDivEl.innerHTML = sHTML;
-
-	    if (!useDocFragment) {
-	        return pDivEl.childNodes;
-	    }
-
-	    pDocFrag = document.createDocumentFragment();
-
-	    for (var i = 0, len:  number  = pDivEl.childNodes.length; i < len; ++ i) {
-	        if (!isDef(pDivEl.childNodes[i])) {
-	            continue;
-	        }
-
-	        pDocFrag.appendChild(pDivEl.childNodes[i]);
-	    }
-
-	    return pDocFrag;
-	};
-
-}
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface ICanvasInfo {
-		width:  number ;
-		height:  number ;
-		id: string;
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface IBrowserInfo {
-		name: string;
-		version: string;
-		os: string;
-	}
-}
-
-
-
-
-
-
-module akra.util {
-	export class Singleton {
-		constructor () {
-			var _constructor = (<any>this).constructor;
-
-			logger.setSourceLocation( "Singleton.ts" , 10 ); logger.assert(!isDef(_constructor._pInstance), 'Singleton class may be created only one time.');
-                                                    ;
-
-			_constructor._pInstance = this;
-		}
-	}
-}
-
-
-
-
-module akra.util {
-	export interface IBrowserData {
-		string: string;
-		subString: string;
-		identity: string;
-		versionSearch?: string;
-		prop?: string;
-	}
-
-	export class BrowserInfo extends Singleton implements IBrowserInfo {
-		private sBrowser: string = null;
-		private sVersion: string = null;
-		private sOS: string = null;
-		private sVersionSearch: string = null;
-
-		get name(): string {
-			return this.sBrowser;
-		}
-
-		get version(): string {
-			return this.sVersion;
-		}
-
-		get os(): string {
-			return this.sOS;
-		}
-
-		private init(): void {
-			this.sBrowser = this.searchString(BrowserInfo.dataBrowser) || "An unknown browser";
-			this.sVersion = this.searchVersion(navigator.userAgent)
-								|| this.searchVersion(navigator.appVersion)
-				|| "an unknown version";
-			this.sOS = this.searchString(BrowserInfo.dataOS) || "an unknown OS";
-		}
-
-		private searchString(pDataBrowser: IBrowserData[]): string {
-			for (var i: number  = 0; i < pDataBrowser.length; i++) {
-				var sData:string = pDataBrowser[i].string;
-				var dataProp:string = pDataBrowser[i].prop;
-
-				this.sVersionSearch = pDataBrowser[i].versionSearch || pDataBrowser[i].identity;
-
-				if (sData) {
-					if (sData.indexOf(pDataBrowser[i].subString) != -1) {
-						return pDataBrowser[i].identity;
-					}
-				}
-				else if (dataProp) {
-					return pDataBrowser[i].identity;
-				}
-			}
-			return null;
-		}
-
-		private searchVersion(sData: string): string {
-			var iStartIndex: number  = sData.indexOf(this.sVersionSearch);
-
-			if (iStartIndex == -1) {
-				return null;
-			}
-
-			iStartIndex = sData.indexOf('/', iStartIndex + 1);
-
-			if (iStartIndex == -1) {
-				return null;
-			}
-
-			var iEndIndex: number  = sData.indexOf(' ', iStartIndex + 1);
-
-			if (iEndIndex == -1) {
-				iEndIndex = sData.indexOf(';', iStartIndex + 1);
-				if (iEndIndex == -1) {
-					return null;
-				}
-				return sData.slice(iStartIndex + 1);
-			}
-
-			return sData.slice((iStartIndex + 1), iEndIndex);
-		}
-
-		static private dataBrowser: IBrowserData[] = [
-			{
-				string: navigator.userAgent,
-				subString: "Chrome",
-				identity: "Chrome"
-			},
-			{
-				string: navigator.userAgent,
-				subString: "OmniWeb",
-				versionSearch: "OmniWeb/",
-				identity: "OmniWeb"
-			},
-			{
-				string: navigator.vendor,
-				subString: "Apple",
-				identity: "Safari",
-				versionSearch: "Version"
-			},
-			{
-				prop: window.opera,
-				identity: "Opera",
-				versionSearch: "Version"
-			},
-			{
-				string: navigator.vendor,
-				subString: "iCab",
-				identity: "iCab"
-			},
-			{
-				string: navigator.vendor,
-				subString: "KDE",
-				identity: "Konqueror"
-			},
-			{
-				string: navigator.userAgent,
-				subString: "Firefox",
-				identity: "Firefox"
-			},
-			{
-				string: navigator.vendor,
-				subString: "Camino",
-				identity: "Camino"
-			},
-			{
-// for newer Netscapes (6+)
-				string: navigator.userAgent,
-				subString: "Netscape",
-				identity: "Netscape"
-			},
-			{
-				string: navigator.userAgent,
-				subString: "MSIE",
-				identity: "Explorer",
-				versionSearch: "MSIE"
-			},
-			{
-				string: navigator.userAgent,
-				subString: "Gecko",
-				identity: "Mozilla",
-				versionSearch: "rv"
-			},
-			{
-// for older Netscapes (4-)
-				string: navigator.userAgent,
-				subString: "Mozilla",
-				identity: "Netscape",
-				versionSearch: "Mozilla"
-			}
-		];
-
-		static private dataOS: IBrowserData[] = [
-			{
-				string    : navigator.platform,
-				subString : "Win",
-				identity  : "Windows"
-			},
-			{
-				string    : navigator.platform,
-				subString : "Mac",
-				identity  : "Mac"
-			},
-			{
-				string    : navigator.userAgent,
-				subString : "iPhone",
-				identity  : "iPhone/iPod"
-			},
-			{
-				string    : navigator.platform,
-				subString : "Linux",
-				identity  : "Linux"
-			}
-		];
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface IScreenInfo {
-		width:  number ;
-		height:  number ;
-		aspect:  number ;
-		pixelDepth:  number ;
-		colorDepth:  number ;
-	}
-}
-
-
-
-module akra.util {
-	export class ScreenInfo implements IScreenInfo {
-		get width():  number  {
-			return screen.width;
-		}
-
-		get height():  number  {
-			return screen.height;
-		}
-
-		get aspect():  number  {
-			return screen.width / screen.height;
-		}
-
-		get pixelDepth():  number  {
-			return screen.pixelDepth;
-		}
-
-		get colorDepth():  number  {
-			return screen.colorDepth;
-		}
-	}
-}
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface IApiInfo {
-		webGL: bool;
-		webAudio: bool;
-		file: bool;
-		fileSystem: bool;
-		webWorker: bool;
-		transferableObjects: bool;
-		localStorage: bool;
-		webSocket: bool;
-	}
-}
-
-
-
-
-
-
-
-
-
-// see: http://www.khronos.org/registry/webgl/specs/latest/
-
-interface WebGLObject
-{
-};
-
-interface WebGLBuffer extends WebGLObject
-{
-};
-
-interface WebGLFramebuffer extends WebGLObject
-{
-};
-
-interface WebGLProgram extends WebGLObject
-{
-};
-
-interface WebGLRenderbuffer extends WebGLObject
-{
-};
-
-interface WebGLShader extends WebGLObject
-{
-};
-
-interface WebGLTexture extends WebGLObject
-{
-};
-
-interface WebGLUniformLocation
-{
-};
-
-interface WebGLActiveInfo
-{
-	size: number;
-	type: number;
-	name: string;
-};
-
-interface WebGLShaderPrecisionFormat
-{
-	rangeMin: number;
-	rangeMax: number;
-	precision: number;
-};
-
-
-interface WebGLContextAttributes
-{
-	alpha?: bool;
-	depth?: bool;
-	stencil?: bool;
-	antialias?: bool;
-	premultipliedAlpha?: bool;
-	preserveDrawingBuffer?: bool;
-};
-
-interface WebGLRenderingContext
-{
-/* ClearBufferMask */
-
-	DEPTH_BUFFER_BIT: number;
-	STENCIL_BUFFER_BIT: number;
-	COLOR_BUFFER_BIT: number;
-
-/* BeginMode */
-
-	POINTS: number;
-	LINES: number;
-	LINE_LOOP: number;
-	LINE_STRIP: number;
-	TRIANGLES: number;
-	TRIANGLE_STRIP: number;
-	TRIANGLE_FAN: number;
-
-/* AlphaFunction (not supported in ES20) */
-
-/*      NEVER */
-
-/*      LESS */
-
-/*      EQUAL */
-
-/*      LEQUAL */
-
-/*      GREATER */
-
-/*      NOTEQUAL */
-
-/*      GEQUAL */
-
-/*      ALWAYS */
-
-
-/* BlendingFactorDest */
-
-	ZERO: number;
-	ONE: number;
-	SRC_COLOR: number;
-	ONE_MINUS_SRC_COLOR: number;
-	SRC_ALPHA: number;
-	ONE_MINUS_SRC_ALPHA: number;
-	DST_ALPHA: number;
-	ONE_MINUS_DST_ALPHA: number;
-
-/* BlendingFactorSrc */
-
-/*      ZERO */
-
-/*      ONE */
-
-	DST_COLOR: number;
-	ONE_MINUS_DST_COLOR: number;
-	SRC_ALPHA_SATURATE: number;
-/*      SRC_ALPHA */
-
-/*      ONE_MINUS_SRC_ALPHA */
-
-/*      DST_ALPHA */
-
-/*      ONE_MINUS_DST_ALPHA */
-
-
-/* BlendEquationSeparate */
-
-	FUNC_ADD: number;
-	BLEND_EQUATION: number;
-	BLEND_EQUATION_RGB: number;
-	BLEND_EQUATION_ALPHA: number;
-
-/* BlendSubtract */
-
-	FUNC_SUBTRACT: number;
-	FUNC_REVERSE_SUBTRACT: number;
-
-/* Separate Blend Functions */
-
-	BLEND_DST_RGB: number;
-	BLEND_SRC_RGB: number;
-	BLEND_DST_ALPHA: number;
-	BLEND_SRC_ALPHA: number;
-	CONSTANT_COLOR: number;
-	ONE_MINUS_CONSTANT_COLOR: number;
-	CONSTANT_ALPHA: number;
-	ONE_MINUS_CONSTANT_ALPHA: number;
-	BLEND_COLOR: number;
-
-/* Buffer Objects */
-
-	ARRAY_BUFFER: number;
-	ELEMENT_ARRAY_BUFFER: number;
-	ARRAY_BUFFER_BINDING: number;
-	ELEMENT_ARRAY_BUFFER_BINDING: number;
-
-	STREAM_DRAW: number;
-	STATIC_DRAW: number;
-	DYNAMIC_DRAW: number;
-
-	BUFFER_SIZE: number;
-	BUFFER_USAGE: number;
-
-	CURRENT_VERTEX_ATTRIB: number;
-
-/* CullFaceMode */
-
-	FRONT: number;
-	BACK: number;
-	FRONT_AND_BACK: number;
-
-/* DepthFunction */
-
-/*      NEVER */
-
-/*      LESS */
-
-/*      EQUAL */
-
-/*      LEQUAL */
-
-/*      GREATER */
-
-/*      NOTEQUAL */
-
-/*      GEQUAL */
-
-/*      ALWAYS */
-
-
-/* EnableCap */
-
-/* TEXTURE_2D */
-
-	CULL_FACE: number;
-	BLEND: number;
-	DITHER: number;
-	STENCIL_TEST: number;
-	DEPTH_TEST: number;
-	SCISSOR_TEST: number;
-	POLYGON_OFFSET_FILL: number;
-	SAMPLE_ALPHA_TO_COVERAGE: number;
-	SAMPLE_COVERAGE: number;
-
-/* ErrorCode */
-
-	NO_ERROR: number;
-	INVALID_ENUM: number;
-	INVALID_VALUE: number;
-	INVALID_OPERATION: number;
-	OUT_OF_MEMORY: number;
-
-/* FrontFaceDirection */
-
-	CW: number;
-	CCW: number;
-
-/* GetPName */
-
-	LINE_WIDTH: number;
-	ALIASED_POINT_SIZE_RANGE: number;
-	ALIASED_LINE_WIDTH_RANGE: number;
-	CULL_FACE_MODE: number;
-	FRONT_FACE: number;
-	DEPTH_RANGE: number;
-	DEPTH_WRITEMASK: number;
-	DEPTH_CLEAR_VALUE: number;
-	DEPTH_FUNC: number;
-	STENCIL_CLEAR_VALUE: number;
-	STENCIL_FUNC: number;
-	STENCIL_FAIL: number;
-	STENCIL_PASS_DEPTH_FAIL: number;
-	STENCIL_PASS_DEPTH_PASS: number;
-	STENCIL_REF: number;
-	STENCIL_VALUE_MASK: number;
-	STENCIL_WRITEMASK: number;
-	STENCIL_BACK_FUNC: number;
-	STENCIL_BACK_FAIL: number;
-	STENCIL_BACK_PASS_DEPTH_FAIL: number;
-	STENCIL_BACK_PASS_DEPTH_PASS: number;
-	STENCIL_BACK_REF: number;
-	STENCIL_BACK_VALUE_MASK: number;
-	STENCIL_BACK_WRITEMASK: number;
-	VIEWPORT: number;
-	SCISSOR_BOX: number;
-/*      SCISSOR_TEST */
-
-	COLOR_CLEAR_VALUE: number;
-	COLOR_WRITEMASK: number;
-	UNPACK_ALIGNMENT: number;
-	PACK_ALIGNMENT: number;
-	MAX_TEXTURE_SIZE: number;
-	MAX_VIEWPORT_DIMS: number;
-	SUBPIXEL_BITS: number;
-	RED_BITS: number;
-	GREEN_BITS: number;
-	BLUE_BITS: number;
-	ALPHA_BITS: number;
-	DEPTH_BITS: number;
-	STENCIL_BITS: number;
-	POLYGON_OFFSET_UNITS: number;
-/*      POLYGON_OFFSET_FILL */
-
-	POLYGON_OFFSET_FACTOR: number;
-	TEXTURE_BINDING_2D: number;
-	SAMPLE_BUFFERS: number;
-	SAMPLES: number;
-	SAMPLE_COVERAGE_VALUE: number;
-	SAMPLE_COVERAGE_INVERT: number;
-
-/* GetTextureParameter */
-
-/*      TEXTURE_MAG_FILTER */
-
-/*      TEXTURE_MIN_FILTER */
-
-/*      TEXTURE_WRAP_S */
-
-/*      TEXTURE_WRAP_T */
-
-
-	COMPRESSED_TEXTURE_FORMATS: number;
-
-/* HintMode */
-
-	DONT_CARE: number;
-	FASTEST: number;
-	NICEST: number;
-
-/* HintTarget */
-
-	GENERATE_MIPMAP_HINT: number;
-
-/* DataType */
-
-	BYTE: number;
-	UNSIGNED_BYTE: number;
-	SHORT: number;
-	UNSIGNED_SHORT: number;
-	INT: number;
-	UNSIGNED_INT: number;
-	FLOAT: number;
-
-/* PixelFormat */
-
-	DEPTH_COMPONENT: number;
-	ALPHA: number;
-	RGB: number;
-	RGBA: number;
-	LUMINANCE: number;
-	LUMINANCE_ALPHA: number;
-
-/* PixelType */
-
-/*      UNSIGNED_BYTE */
-
-	UNSIGNED_SHORT_4_4_4_4: number;
-	UNSIGNED_SHORT_5_5_5_1: number;
-	UNSIGNED_SHORT_5_6_5: number;
-
-/* Shaders */
-
-	FRAGMENT_SHADER: number;
-	VERTEX_SHADER: number;
-	MAX_VERTEX_ATTRIBS: number;
-	MAX_VERTEX_UNIFORM_VECTORS: number;
-	MAX_VARYING_VECTORS: number;
-	MAX_COMBINED_TEXTURE_IMAGE_UNITS: number;
-	MAX_VERTEX_TEXTURE_IMAGE_UNITS: number;
-	MAX_TEXTURE_IMAGE_UNITS: number;
-	MAX_FRAGMENT_UNIFORM_VECTORS: number;
-	SHADER_TYPE: number;
-	DELETE_STATUS: number;
-	LINK_STATUS: number;
-	VALIDATE_STATUS: number;
-	ATTACHED_SHADERS: number;
-	ACTIVE_UNIFORMS: number;
-	ACTIVE_ATTRIBUTES: number;
-	SHADING_LANGUAGE_VERSION: number;
-	CURRENT_PROGRAM: number;
-
-/* StencilFunction */
-
-	NEVER: number;
-	LESS: number;
-	EQUAL: number;
-	LEQUAL: number;
-	GREATER: number;
-	NOTEQUAL: number;
-	GEQUAL: number;
-	ALWAYS: number;
-
-/* StencilOp */
-
-/*      ZERO */
-
-	KEEP: number;
-	REPLACE: number;
-	INCR: number;
-	DECR: number;
-	INVERT: number;
-	INCR_WRAP: number;
-	DECR_WRAP: number;
-
-/* StringName */
-
-	VENDOR: number;
-	RENDERER: number;
-	VERSION: number;
-
-/* TextureMagFilter */
-
-	NEAREST: number;
-	LINEAR: number;
-
-/* TextureMinFilter */
-
-/*      NEAREST */
-
-/*      LINEAR */
-
-	NEAREST_MIPMAP_NEAREST: number;
-	LINEAR_MIPMAP_NEAREST: number;
-	NEAREST_MIPMAP_LINEAR: number;
-	LINEAR_MIPMAP_LINEAR: number;
-
-/* TextureParameterName */
-
-	TEXTURE_MAG_FILTER: number;
-	TEXTURE_MIN_FILTER: number;
-	TEXTURE_WRAP_S: number;
-	TEXTURE_WRAP_T: number;
-
-/* TextureTarget */
-
-	TEXTURE_2D: number;
-	TEXTURE: number;
-
-	TEXTURE_CUBE_MAP: number;
-	TEXTURE_BINDING_CUBE_MAP: number;
-	TEXTURE_CUBE_MAP_POSITIVE_X: number;
-	TEXTURE_CUBE_MAP_NEGATIVE_X: number;
-	TEXTURE_CUBE_MAP_POSITIVE_Y: number;
-	TEXTURE_CUBE_MAP_NEGATIVE_Y: number;
-	TEXTURE_CUBE_MAP_POSITIVE_Z: number;
-	TEXTURE_CUBE_MAP_NEGATIVE_Z: number;
-	MAX_CUBE_MAP_TEXTURE_SIZE: number;
-
-/* TextureUnit */
-
-	TEXTURE0: number;
-	TEXTURE1: number;
-	TEXTURE2: number;
-	TEXTURE3: number;
-	TEXTURE4: number;
-	TEXTURE5: number;
-	TEXTURE6: number;
-	TEXTURE7: number;
-	TEXTURE8: number;
-	TEXTURE9: number;
-	TEXTURE10: number;
-	TEXTURE11: number;
-	TEXTURE12: number;
-	TEXTURE13: number;
-	TEXTURE14: number;
-	TEXTURE15: number;
-	TEXTURE16: number;
-	TEXTURE17: number;
-	TEXTURE18: number;
-	TEXTURE19: number;
-	TEXTURE20: number;
-	TEXTURE21: number;
-	TEXTURE22: number;
-	TEXTURE23: number;
-	TEXTURE24: number;
-	TEXTURE25: number;
-	TEXTURE26: number;
-	TEXTURE27: number;
-	TEXTURE28: number;
-	TEXTURE29: number;
-	TEXTURE30: number;
-	TEXTURE31: number;
-	ACTIVE_TEXTURE: number;
-
-/* TextureWrapMode */
-
-	REPEAT: number;
-	CLAMP_TO_EDGE: number;
-	MIRRORED_REPEAT: number;
-
-/* Uniform Types */
-
-	FLOAT_VEC2: number;
-	FLOAT_VEC3: number;
-	FLOAT_VEC4: number;
-	INT_VEC2: number;
-	INT_VEC3: number;
-	INT_VEC4: number;
-	BOOL: number;
-	BOOL_VEC2: number;
-	BOOL_VEC3: number;
-	BOOL_VEC4: number;
-	FLOAT_MAT2: number;
-	FLOAT_MAT3: number;
-	FLOAT_MAT4: number;
-	SAMPLER_2D: number;
-	SAMPLER_CUBE: number;
-
-/* Vertex Arrays */
-
-	VERTEX_ATTRIB_ARRAY_ENABLED: number;
-	VERTEX_ATTRIB_ARRAY_SIZE: number;
-	VERTEX_ATTRIB_ARRAY_STRIDE: number;
-	VERTEX_ATTRIB_ARRAY_TYPE: number;
-	VERTEX_ATTRIB_ARRAY_NORMALIZED: number;
-	VERTEX_ATTRIB_ARRAY_POINTER: number;
-	VERTEX_ATTRIB_ARRAY_BUFFER_BINDING: number;
-
-/* Shader Source */
-
-	COMPILE_STATUS: number;
-
-/* Shader Precision-Specified Types */
-
-	LOW_FLOAT: number;
-	MEDIUM_FLOAT: number;
-	HIGH_FLOAT: number;
-	LOW_INT: number;
-	MEDIUM_INT: number;
-	HIGH_INT: number;
-
-/* Framebuffer Object. */
-
-	FRAMEBUFFER: number;
-	RENDERBUFFER: number;
-
-	RGBA4: number;
-	RGB5_A1: number;
-	RGB565: number;
-	DEPTH_COMPONENT16: number;
-	STENCIL_INDEX: number;
-	STENCIL_INDEX8: number;
-	DEPTH_STENCIL: number;
-
-	RENDERBUFFER_WIDTH: number;
-	RENDERBUFFER_HEIGHT: number;
-	RENDERBUFFER_INTERNAL_FORMAT: number;
-	RENDERBUFFER_RED_SIZE: number;
-	RENDERBUFFER_GREEN_SIZE: number;
-	RENDERBUFFER_BLUE_SIZE: number;
-	RENDERBUFFER_ALPHA_SIZE: number;
-	RENDERBUFFER_DEPTH_SIZE: number;
-	RENDERBUFFER_STENCIL_SIZE: number;
-
-	FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE: number;
-	FRAMEBUFFER_ATTACHMENT_OBJECT_NAME: number;
-	FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL: number;
-	FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE: number;
-
-	COLOR_ATTACHMENT0: number;
-	DEPTH_ATTACHMENT: number;
-	STENCIL_ATTACHMENT: number;
-	DEPTH_STENCIL_ATTACHMENT: number;
-
-	NONE: number;
-
-	FRAMEBUFFER_COMPLETE: number;
-	FRAMEBUFFER_INCOMPLETE_ATTACHMENT: number;
-	FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: number;
-	FRAMEBUFFER_INCOMPLETE_DIMENSIONS: number;
-	FRAMEBUFFER_UNSUPPORTED: number;
-
-	FRAMEBUFFER_BINDING: number;
-	RENDERBUFFER_BINDING: number;
-	MAX_RENDERBUFFER_SIZE: number;
-
-	INVALID_FRAMEBUFFER_OPERATION: number;
-
-/* WebGL-specific enums */
-
-	UNPACK_FLIP_Y_WEBGL: number;
-	UNPACK_PREMULTIPLY_ALPHA_WEBGL: number;
-	CONTEXT_LOST_WEBGL: number;
-	UNPACK_COLORSPACE_CONVERSION_WEBGL: number;
-	BROWSER_DEFAULT_WEBGL: number;
-
-
-
-
-	canvas: HTMLCanvasElement;
-	drawingBufferWidth: number;
-	drawingBufferHeight: number;
-
-	getContextAttributes(): WebGLContextAttributes;
-	isContextLost(): bool;
-
-	getSupportedExtensions(): string[];
-	getExtension(name: string): any;
-
-	activeTexture(texture: number): void;
-	attachShader(program: WebGLProgram, shader: WebGLShader): void;
-	bindAttribLocation(program: WebGLProgram, index: number, name: string): void;
-	bindBuffer(target: number, buffer: WebGLBuffer): void;
-	bindFramebuffer(target: number, framebuffer: WebGLFramebuffer): void;
-	bindRenderbuffer(target: number, renderbuffer: WebGLRenderbuffer): void;
-	bindTexture(target: number, texture: WebGLTexture): void;
-	blendColor(red: number, green: number, blue: number, alpha: number): void;
-	blendEquation(mode: number): void;
-	blendEquationSeparate(modeRGB: number, modeAlpha: number): void;
-	blendFunc(sfactor: number, dfactor: number): void;
-	blendFuncSeparate(srcRGB: number, dstRGB: number, srcAlpha: number, dstAlpha: number): void;
-
-	bufferData(target: number, size: number, usage: number): void;
-	bufferData(target: number, data: ArrayBufferView, usage: number): void;
-	bufferData(target: number, data: ArrayBuffer, usage: number): void;
-	bufferSubData(target: number, offset: number, data: ArrayBufferView): void;
-	bufferSubData(target: number, offset: number, data: ArrayBuffer): void;
-
-	checkFramebufferStatus(target: number): number;
-	clear(mask: number): void;
-	clearColor(red: number, green: number, blue: number, alpha: number): void;
-	clearDepth(depth: number): void;
-	clearStencil(s: number): void;
-	colorMask(red: bool, green: bool, blue: bool, alpha: bool): void;
-	compileShader(shader: WebGLShader): void;
-
-	compressedTexImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, data: ArrayBufferView): void;
-	compressedTexSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, data: ArrayBufferView): void;
-
-	copyTexImage2D(target: number, level: number, internalformat: number, x: number, y: number, width: number, height: number, border: number): void;
-	copyTexSubImage2D(target: number, level: number, xoffset: number, yoffset: number, x: number, y: number, width: number, height: number): void;
-
-	createBuffer(): WebGLBuffer;
-	createFramebuffer(): WebGLFramebuffer;
-	createProgram(): WebGLProgram;
-	createRenderbuffer(): WebGLRenderbuffer;
-	createShader(type: number): WebGLShader;
-	createTexture(): WebGLTexture;
-
-	cullFace(mode: number): void;
-
-	deleteBuffer(buffer: WebGLBuffer): void;
-	deleteFramebuffer(framebuffer: WebGLFramebuffer): void;
-	deleteProgram(program: WebGLProgram): void;
-	deleteRenderbuffer(renderbuffer: WebGLRenderbuffer): void;
-	deleteShader(shader: WebGLShader): void;
-	deleteTexture(texture: WebGLTexture): void;
-
-	depthFunc(func: number): void;
-	depthMask(flag: bool): void;
-	depthRange(zNear: number, zFar: number): void;
-	detachShader(program: WebGLProgram, shader: WebGLShader): void;
-	disable(cap: number): void;
-	disableVertexAttribArray(index: number): void;
-	drawArrays(mode: number, first: number, count: number): void;
-	drawElements(mode: number, count: number, type: number, offset: number): void;
-
-	enable(cap: number): void;
-	enableVertexAttribArray(index: number): void;
-	finish(): void;
-	flush(): void;
-	framebufferRenderbuffer(target: number, attachment: number, renderbuffertarget: number, renderbuffer: WebGLRenderbuffer): void;
-	framebufferTexture2D(target: number, attachment: number, textarget: number, texture: WebGLTexture, level: number): void;
-	frontFace(mode: number): void;
-
-	generateMipmap(target: number): void;
-
-	getActiveAttrib(program: WebGLProgram, index: number): WebGLActiveInfo;
-	getActiveUniform(program: WebGLProgram, index: number): WebGLActiveInfo;
-	getAttachedShaders(program: WebGLProgram): WebGLShader[];
-
-	getAttribLocation(program: WebGLProgram, name: string): number;
-
-	getBufferParameter(target: number, pname: number): any;
-	getParameter(pname: number): any;
-
-	getError(): number;
-
-	getFramebufferAttachmentParameter(target: number, attachment: number, pname: number): any;
-	getProgramParameter(program: WebGLProgram, pname: number): any;
-	getProgramInfoLog(program: WebGLProgram): string;
-	getRenderbufferParameter(target: number, pname: number): any;
-	getTranslatedShaderSource(shader: WebGLShader): string;
-	getShaderParameter(shader: WebGLShader, pname: number): any;
-	getShaderPrecisionFormat(shadertype: number, precisiontype: number): WebGLShaderPrecisionFormat;
-	getShaderInfoLog(shader: WebGLShader): string;
-
-	getShaderSource(shader: WebGLShader): string;
-
-	getTexParameter(target: number, pname: number): any;
-
-	getUniform(program: WebGLProgram, location: WebGLUniformLocation): any;
-
-	getUniformLocation(program: WebGLProgram, name: string): WebGLUniformLocation;
-
-	getVertexAttrib(index: number, pname: number): any;
-
-	getVertexAttribOffset(index: number, pname: number): number;
-
-	hint(target: number, mode: number): void;
-	isBuffer(buffer: WebGLBuffer): bool;
-	isEnabled(cap: number): bool;
-	isFramebuffer(framebuffer: WebGLFramebuffer): bool;
-	isProgram(program: WebGLProgram): bool;
-	isRenderbuffer(renderbuffer: WebGLRenderbuffer): bool;
-	isShader(shader: WebGLShader): bool;
-	isTexture(texture: WebGLTexture): bool;
-	lineWidth(width: number): void;
-	linkProgram(program: WebGLProgram): void;
-	pixelStorei(pname: number, param: number): void;
-	polygonOffset(factor: number, units: number): void;
-
-	readPixels(x: number, y: number, width: number, height: number, format: number, type: number, pixels: ArrayBufferView): void;
-
-	renderbufferStorage(target: number, internalformat: number, width: number, height: number): void;
-	sampleCoverage(value: number, invert: bool): void;
-	scissor(x: number, y: number, width: number, height: number): void;
-
-	shaderSource(shader: WebGLShader, source: string): void;
-
-	stencilFunc(func: number, ref: number, mask: number): void;
-	stencilFuncSeparate(face: number, func: number, ref: number, mask: number): void;
-	stencilMask(mask: number): void;
-	stencilMaskSeparate(face: number, mask: number): void;
-	stencilOp(fail: number, zfail: number, zpass: number): void;
-	stencilOpSeparate(face: number, fail: number, zfail: number, zpass: number): void;
-
-	texImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, format: number, type: number, pixels: ArrayBufferView): void;
-	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, pixels: ImageData): void;
-// May throw DOMException	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, image: HTMLImageElement): void;
-// May throw DOMException	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, canvas: HTMLCanvasElement): void;
-// May throw DOMException	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, video: HTMLVideoElement): void;
-
-	texParameterf(target: number, pname: number, param: number): void;
-	texParameteri(target: number, pname: number, param: number): void;
-
-	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, type: number, pixels: ArrayBufferView): void;
-	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, pixels: ImageData): void;
-// May throw DOMException	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, image: HTMLImageElement): void;
-// May throw DOMException	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, canvas: HTMLCanvasElement): void;
-// May throw DOMException	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, video: HTMLVideoElement): void;
-
-	uniform1f(location: WebGLUniformLocation, x: number): void;
-	uniform1fv(location: WebGLUniformLocation, v: Float32Array): void;
-	uniform1fv(location: WebGLUniformLocation, v: number[]): void;
-	uniform1i(location: WebGLUniformLocation, x: number): void;
-	uniform1iv(location: WebGLUniformLocation, v: Int32Array): void;
-	uniform1iv(location: WebGLUniformLocation, v: number[]): void;
-	uniform2f(location: WebGLUniformLocation, x: number, y: number): void;
-	uniform2fv(location: WebGLUniformLocation, v: Float32Array): void;
-	uniform2fv(location: WebGLUniformLocation, v: number[]): void;
-	uniform2i(location: WebGLUniformLocation, x: number, y: number): void;
-	uniform2iv(location: WebGLUniformLocation, v: Int32Array): void;
-	uniform2iv(location: WebGLUniformLocation, v: number[]): void;
-	uniform3f(location: WebGLUniformLocation, x: number, y: number, z: number): void;
-	uniform3fv(location: WebGLUniformLocation, v: Float32Array): void;
-	uniform3fv(location: WebGLUniformLocation, v: number[]): void;
-	uniform3i(location: WebGLUniformLocation, x: number, y: number, z: number): void;
-	uniform3iv(location: WebGLUniformLocation, v: Int32Array): void;
-	uniform3iv(location: WebGLUniformLocation, v: number[]): void;
-	uniform4f(location: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
-	uniform4fv(location: WebGLUniformLocation, v: Float32Array): void;
-	uniform4fv(location: WebGLUniformLocation, v: number[]): void;
-	uniform4i(location: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
-	uniform4iv(location: WebGLUniformLocation, v: Int32Array): void;
-	uniform4iv(location: WebGLUniformLocation, v: number[]): void;
-
-	uniformMatrix2fv(location: WebGLUniformLocation, transpose: bool, value: Float32Array): void;
-	uniformMatrix2fv(location: WebGLUniformLocation, transpose: bool, value: number[]): void;
-	uniformMatrix3fv(location: WebGLUniformLocation, transpose: bool, value: Float32Array): void;
-	uniformMatrix3fv(location: WebGLUniformLocation, transpose: bool, value: number[]): void;
-	uniformMatrix4fv(location: WebGLUniformLocation, transpose: bool, value: Float32Array): void;
-	uniformMatrix4fv(location: WebGLUniformLocation, transpose: bool, value: number[]): void;
-
-	useProgram(program: WebGLProgram): void;
-	validateProgram(program: WebGLProgram): void;
-
-	vertexAttrib1f(indx: number, x: number): void;
-	vertexAttrib1fv(indx: number, values: Float32Array): void;
-	vertexAttrib1fv(indx: number, value: number[]): void;
-	vertexAttrib2f(indx: number, x: number, y: number): void;
-	vertexAttrib2fv(indx: number, values: Float32Array): void;
-	vertexAttrib2fv(indx: number, value: number[]): void;
-	vertexAttrib3f(indx: number, x: number, y: number, z: number): void;
-	vertexAttrib3fv(indx: number, values: Float32Array): void;
-	vertexAttrib3fv(indx: number, value: number[]): void;
-	vertexAttrib4f(indx: number, x: number, y: number, z: number, w: number): void;
-	vertexAttrib4fv(indx: number, values: Float32Array): void;
-	vertexAttrib4fv(indx: number, value: number[]): void;
-	vertexAttribPointer(indx: number, size: number, type: number, normalized: bool, stride: number, offset: number): void;
-
-	viewport(x: number, y: number, width: number, height: number): void;
-};
-
-interface CanvasRenderingContext {
-
-}
-
-interface WebGLRenderingContext extends CanvasRenderingContext {
-
-}
-
-
-
-declare var WebGLRenderingContext: {
-    prototype: WebGLRenderingContext;
-    new(): WebGLRenderingContext;
-}
-
-interface HTMLCanvasElement extends HTMLElement {
-    getContext(contextId: string, args: WebGLContextAttributes): WebGLRenderingContext;
-}
-
-interface WEBGL_debug_shaders {
-      getTranslatedShaderSource(shader: WebGLShader): DOMString;
-};
-
-interface WEBGL_debug_renderer_info {
-    UNMASKED_VENDOR_WEBGL: number;
-    UNMASKED_RENDERER_WEBGL: number;
-};
-
-interface WEBGL_compressed_texture_pvrtc {
-/* Compressed Texture Formats */
-
-    COMPRESSED_RGB_PVRTC_4BPPV1_IMG: number;
-    COMPRESSED_RGB_PVRTC_2BPPV1_IMG: number;
-    COMPRESSED_RGBA_PVRTC_4BPPV1_IMG: number;
-    COMPRESSED_RGBA_PVRTC_2BPPV1_IMG: number;
-};
-
-interface WEBGL_compressed_texture_atc {
-/* Compressed Texture Formats */
-
-    COMPRESSED_RGB_ATC_WEBGL: number;
-    COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL: number;
-    COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL: number;
-};
-
-interface WEBGL_compressed_texture_s3tc {
-/* Compressed Texture Formats */
-
-    COMPRESSED_RGB_S3TC_DXT1_EXT : number;
-    COMPRESSED_RGBA_S3TC_DXT1_EXT: number;
-    COMPRESSED_RGBA_S3TC_DXT3_EXT: number;
-    COMPRESSED_RGBA_S3TC_DXT5_EXT: number;
-};
-
-interface WEBGL_depth_texture {
-  UNSIGNED_INT_24_8_WEBGL: number;
-};
-
-interface OES_element_index_uint {
-};
-
-interface WebGLVertexArrayObjectOES extends WebGLObject {
-};
-
-interface OES_vertex_array_object {
-    VERTEX_ARRAY_BINDING_OES: number;
-
-    createVertexArrayOES(): WebGLVertexArrayObjectOES;
-    deleteVertexArrayOES(arrayObject: WebGLVertexArrayObjectOES): void;
-    isVertexArrayOES(arrayObject: WebGLVertexArrayObjectOES): bool;
-    bindVertexArrayOES(arrayObject: WebGLVertexArrayObjectOES): void;
-};
-
-interface OES_standard_derivatives {
-    FRAGMENT_SHADER_DERIVATIVE_HINT_OES: number;
-};
-
-interface OES_texture_half_float {
- 	HALF_FLOAT_OES: number;
-};
-
-interface OES_texture_float {
-};
-
-interface WEBGL_lose_context {
-      loseContext(): void;
-      restoreContext(): void;
-};
-
-interface WEBGL_multiple_render_targets {
-    COLOR_ATTACHMENT0_WEBGL: number;
-    COLOR_ATTACHMENT1_WEBGL: number;
-    COLOR_ATTACHMENT2_WEBGL: number;
-    COLOR_ATTACHMENT3_WEBGL: number;
-    COLOR_ATTACHMENT4_WEBGL: number;
-    COLOR_ATTACHMENT5_WEBGL: number;
-    COLOR_ATTACHMENT6_WEBGL: number;
-    COLOR_ATTACHMENT7_WEBGL: number;
-    COLOR_ATTACHMENT8_WEBGL: number;
-    COLOR_ATTACHMENT9_WEBGL: number;
-    COLOR_ATTACHMENT10_WEBGL: number;
-    COLOR_ATTACHMENT11_WEBGL: number;
-    COLOR_ATTACHMENT12_WEBGL: number;
-    COLOR_ATTACHMENT13_WEBGL: number;
-    COLOR_ATTACHMENT14_WEBGL: number;
-    COLOR_ATTACHMENT15_WEBGL: number;
-
-    DRAW_BUFFER0_WEBGL: number;
-    DRAW_BUFFER1_WEBGL: number;
-    DRAW_BUFFER2_WEBGL: number;
-    DRAW_BUFFER3_WEBGL: number;
-    DRAW_BUFFER4_WEBGL: number;
-    DRAW_BUFFER5_WEBGL: number;
-    DRAW_BUFFER6_WEBGL: number;
-    DRAW_BUFFER7_WEBGL: number;
-    DRAW_BUFFER8_WEBGL: number;
-    DRAW_BUFFER9_WEBGL: number;
-    DRAW_BUFFER10_WEBGL: number;
-    DRAW_BUFFER11_WEBGL: number;
-    DRAW_BUFFER12_WEBGL: number;
-    DRAW_BUFFER13_WEBGL: number;
-    DRAW_BUFFER14_WEBGL: number;
-    DRAW_BUFFER15_WEBGL: number;
-
-    MAX_COLOR_ATTACHMENTS_WEBGL: number;
-    MAX_DRAW_BUFFERS_WEBGL: number;
-
-    drawBuffersWEBGL(buffers: number[]): void;
-};
-
-interface WEBGL_fbo_color_attachments {
-    COLOR_ATTACHMENT0: number;
-    COLOR_ATTACHMENT1: number;
-    COLOR_ATTACHMENT2: number;
-    COLOR_ATTACHMENT3: number;
-    COLOR_ATTACHMENT4: number;
-    COLOR_ATTACHMENT5: number;
-    COLOR_ATTACHMENT6: number;
-    COLOR_ATTACHMENT7: number;
-    COLOR_ATTACHMENT8: number;
-    COLOR_ATTACHMENT9: number;
-    COLOR_ATTACHMENT10: number;
-    COLOR_ATTACHMENT11: number;
-    COLOR_ATTACHMENT12: number;
-    COLOR_ATTACHMENT13: number;
-    COLOR_ATTACHMENT14: number;
-    COLOR_ATTACHMENT15: number;
-
-    MAX_COLOR_ATTACHMENTS: number;
-};
-
-// debug
-
-
-declare var WebGLDebugUtils: {
-/**
-	 * Initializes this module. Safe to call more than once.
-	 *    you have more than one context it doesn't matter which one
-     *    you pass in, it is only used to pull out constants.
-	 */
-
-	init: (ctx: WebGLRenderingContext) => void;
-/**
-	 * Returns true or false if value matches any WebGL enum
-	 */
-
-	mightBeEnum: (value: any) => bool;
-/**
-	 * Gets an string version of an WebGL enum.
-	 *
-	 * Example:
-	 *   WebGLDebugUtil.init(ctx);
-	 *   var str = WebGLDebugUtil.glEnumToString(ctx.getError());
-	 *
-	 */
-
-	glEnumToString: (value: number) => string;
-/**
-     * Converts the argument of a WebGL function to a string.
-     * Attempts to convert enum arguments to strings.
-     *
-     * Example:
-     *   WebGLDebugUtil.init(ctx);
-     *   var str = WebGLDebugUtil.glFunctionArgToString('bindTexture', 0, gl.TEXTURE_2D);
-     *
-     * would return 'TEXTURE_2D'
-     */
-
-    glFunctionArgToString: (functionName: string, argumentIndex:  number , value: any) => string;
-/**
-     * Converts the arguments of a WebGL function to a string.
-     * Attempts to convert enum arguments to strings.
-     */
-
-    glFunctionArgsToString: (functionName: string, args: IArguments) => string;
-/**
-     * Given a WebGL context returns a wrapped context that calls
-     * gl.getError after every command and calls a function if the
-     * result is not NO_ERROR.
-     *
-     * You can supply your own function if you want. For example, if you'd like
-     * an exception thrown on any GL error you could do this
-     *
-     *    function throwOnGLError(err, funcName, args) {
-     *      throw WebGLDebugUtils.glEnumToString(err) +
-     *            " was caused by call to " + funcName;
-     *    };
-     *
-     *    ctx = WebGLDebugUtils.makeDebugContext(
-     *        canvas.getContext("webgl"), throwOnGLError);
-     */
-
-	makeDebugContext: (
-		ctx: WebGLRenderingContext,
-		onErrorFunc?: (err:  number , funcName: string, args: IArguments) => void,
-		onFunc?: (funcName: string, args: IArguments) => void) => WebGLRenderingContext;
-
-/**
-	 * Given a canvas element returns a wrapped canvas element that will
-	 * simulate lost context. The canvas returned adds the following functions.
-	 *
-	 * loseContext:
-	 *   simulates a lost context event.
-	 *
-	 * restoreContext:
-	 *   simulates the context being restored.
-	 *
-	 * lostContextInNCalls:
-	 *   loses the context after N gl calls.
-	 *
-	 * getNumCalls:
-	 *   tells you how many gl calls there have been so far.
-	 *
-	 * setRestoreTimeout:
-	 *   sets the number of milliseconds until the context is restored
-	 *   after it has been lost. Defaults to 0. Pass -1 to prevent
-	 *   automatic restoring.
-	 */
-
-	makeLostContextSimulatingCanvas: (canvas: HTMLCanvasElement) => HTMLCanvasElement;
-/**
-     * Resets a context to the initial state.
-     */
-
-	resetToInitialState: (ctx: WebGLRenderingContext) => void;
-
-}
-
-
-/* ClearBufferMask */
-
-
-
-
-
-/* BeginMode */
-
-
-
-
-
-
-
-
-
-/* AlphaFunction (not supported in ES20) */
-
-/*      NEVER */
-
-/*      LESS */
-
-/*      EQUAL */
-
-/*      LEQUAL */
-
-/*      GREATER */
-
-/*      NOTEQUAL */
-
-/*      GEQUAL */
-
-/*      ALWAYS */
-
-
-/* BlendingFactorDest */
-
-
-
-
-
-
-
-
-
-
-/* BlendingFactorSrc */
-
-/*      ZERO */
-
-/*      ONE */
-
-
-
-
-/*      SRC_ALPHA */
-
-/*      ONE_MINUS_SRC_ALPHA */
-
-/*      DST_ALPHA */
-
-/*      ONE_MINUS_DST_ALPHA */
-
-
-/* BlendEquationSeparate */
-
-
-
-/* same as BLEND_EQUATION */
-
-
-
-/* BlendSubtract */
-
-
-
-
-/* Separate Blend Functions */
-
-
-
-
-
-
-
-
-
-
-
-/* Buffer Objects */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* CullFaceMode */
-
-
-
-
-
-/* DepthFunction */
-
-/*      NEVER */
-
-/*      LESS */
-
-/*      EQUAL */
-
-/*      LEQUAL */
-
-/*      GREATER */
-
-/*      NOTEQUAL */
-
-/*      GEQUAL */
-
-/*      ALWAYS */
-
-
-/* EnableCap */
-
-/* TEXTURE_2D */
-
-
-
-
-
-
-
-
-
-
-
-/* ErrorCode */
-
-
-
-
-
-
-
-/* FrontFaceDirection */
-
-
-
-
-/* GetPName */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*      SCISSOR_TEST */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*      POLYGON_OFFSET_FILL */
-
-
-
-
-
-
-
-
-/* GetTextureParameter */
-
-/*      TEXTURE_MAG_FILTER */
-
-/*      TEXTURE_MIN_FILTER */
-
-/*      TEXTURE_WRAP_S */
-
-/*      TEXTURE_WRAP_T */
-
-
-
-
-/* HintMode */
-
-
-
-
-
-/* HintTarget */
-
-
-
-/* DataType */
-
-
-
-
-
-
-
-
-
-
-/* PixelFormat */
-
-
-
-
-
-
-
-
-
-
-/* PixelType */
-
-/*      UNSIGNED_BYTE */
-
-
-
-
-
-/* Shaders */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* StencilFunction */
-
-
-
-
-
-
-
-
-
-
-/* StencilOp */
-
-/*      ZERO */
-
-
-
-
-
-
-
-
-
-/* StringName */
-
-
-
-
-
-/* TextureMagFilter */
-
-
-
-
-/* TextureMinFilter */
-
-/*      NEAREST */
-
-/*      LINEAR */
-
-
-
-
-
-
-/* TextureParameterName */
-
-
-
-
-
-
-/* TextureTarget */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* TextureUnit */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* TextureWrapMode */
-
-
-
-
-
-/* Uniform Types */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Vertex Arrays */
-
-
-
-
-
-
-
-
-
-/* Shader Source */
-
-
-
-/* Shader Precision-Specified Types */
-
-
-
-
-
-
-
-
-/* Framebuffer Object. */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* WebGL-specific enums */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//WebGL Extensions 
-
-
-
-
-
-
-
-
-
-
-//draft
-
-
-
-
-
-
-
-
-
-//Future
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-	export interface IBox {
-		width:  number ;
-		height:  number ;
-		depth:  number ;
-
-		left:  number ;
-		top:  number ;
-		right:  number ;
-		bottom:  number ;
-		front:  number ;
-		back:  number ;
-
-		contains(pDest: IBox): bool;
-	}
-}
-
-
-
-
-module akra {
-	export interface IColor {} ;
-
-	export interface IPixelBox extends IBox {
-		format: EPixelFormats;
-		data: Uint8Array;
-		rowPitch:  number ;
-		slicePitch:  number ;
-
-		setConsecutive(): void;
-
-		getRowSkip():  number ;
-		getSliceSkip():  number ;
-
-		isConsecutive(): bool;
-		getConsecutiveSize():  number ;
-
-		getSubBox(pDest: IBox): IPixelBox;
-		getColorAt(x:  number , y:  number , z?:  number ): IColor;
-		setColorAt(pColor: IColor, x:  number , y:  number , z?:  number ): void;
-
-		scale(pDest: IPixelBox, eFilter?: EFilters): bool;
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -21667,7 +19738,9 @@ module akra.pixelUtil {
 			}
 
 			if(!this.contains(pDest))
-				logger.setSourceLocation( "PixelBox.ts" , 69 ); logger.error("Bounds out of range", "PixelBox::getSubVolume"); ;
+			{
+				logger.setSourceLocation( "PixelBox.ts" , 70 ); logger.error("Bounds out of range", "PixelBox::getSubVolume"); ;
+			}
 
 			var elemSize:  number  = pixelUtil.getNumElemBytes(this.format);
 // Calculate new data origin
@@ -21814,7 +19887,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//1-----------------------------------------------------------------------
         ["PF_L8",
 /* Bytes per element */
 
@@ -21832,7 +19905,7 @@ module akra {
 
         0xFF, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//2-----------------------------------------------------------------------
         ["PF_L16",
 /* Bytes per element */
 
@@ -21850,7 +19923,7 @@ module akra {
 
         0xFFFF, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//3-----------------------------------------------------------------------
         ["PF_A8",
 /* Bytes per element */
 
@@ -21868,7 +19941,7 @@ module akra {
 
         0, 0, 0, 0xFF, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//4-----------------------------------------------------------------------
         ["PF_A4L4",
 /* Bytes per element */
 
@@ -21886,7 +19959,7 @@ module akra {
 
         0x0F, 0, 0, 0xF0, 0, 0, 0, 4
         ],
-//-----------------------------------------------------------------------
+//5-----------------------------------------------------------------------
         ["PF_BYTE_LA",
 /* Bytes per element */
 
@@ -21904,7 +19977,7 @@ module akra {
 
         0,0,0,0,0,0,0,0
         ],
-//-----------------------------------------------------------------------
+//6-----------------------------------------------------------------------
         ["PF_R5G6B5",
 /* Bytes per element */
 
@@ -21923,7 +19996,7 @@ module akra {
         0xF800, 0x07E0, 0x001F, 0,
         11, 5, 0, 0
         ],
-//-----------------------------------------------------------------------
+//7-----------------------------------------------------------------------
 		["PF_B5G6R5",
 /* Bytes per element */
 
@@ -21942,7 +20015,7 @@ module akra {
         0x001F, 0x07E0, 0xF800, 0,
         0, 5, 11, 0
         ],
-//-----------------------------------------------------------------------
+//8-----------------------------------------------------------------------
         ["PF_A4R4G4B4",
 /* Bytes per element */
 
@@ -21961,7 +20034,7 @@ module akra {
         0x0F00, 0x00F0, 0x000F, 0xF000,
         8, 4, 0, 12
         ],
-//-----------------------------------------------------------------------
+//9-----------------------------------------------------------------------
         ["PF_A1R5G5B5",
 /* Bytes per element */
 
@@ -21980,7 +20053,7 @@ module akra {
         0x7C00, 0x03E0, 0x001F, 0x8000,
         10, 5, 0, 15,
         ],
-//-----------------------------------------------------------------------
+//10-----------------------------------------------------------------------
         ["PF_R8G8B8",
 /* Bytes per element */
 
@@ -21999,7 +20072,7 @@ module akra {
         0xFF0000, 0x00FF00, 0x0000FF, 0,
         16, 8, 0, 0
         ],
-//-----------------------------------------------------------------------
+//11-----------------------------------------------------------------------
         ["PF_B8G8R8",
 /* Bytes per element */
 
@@ -22018,7 +20091,7 @@ module akra {
         0x0000FF, 0x00FF00, 0xFF0000, 0,
         0, 8, 16, 0
         ],
-//-----------------------------------------------------------------------
+//12-----------------------------------------------------------------------
         ["PF_A8R8G8B8",
 /* Bytes per element */
 
@@ -22037,7 +20110,7 @@ module akra {
         0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000,
         16, 8, 0, 24
         ],
-//-----------------------------------------------------------------------
+//13-----------------------------------------------------------------------
         ["PF_A8B8G8R8",
 /* Bytes per element */
 
@@ -22056,7 +20129,7 @@ module akra {
         0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000,
         0, 8, 16, 24,
         ],
-//-----------------------------------------------------------------------
+//14-----------------------------------------------------------------------
         ["PF_B8G8R8A8",
 /* Bytes per element */
 
@@ -22075,7 +20148,7 @@ module akra {
         0x0000FF00, 0x00FF0000, 0xFF000000, 0x000000FF,
         8, 16, 24, 0
         ],
-//-----------------------------------------------------------------------
+//15-----------------------------------------------------------------------
         ["PF_A2R10G10B10",
 /* Bytes per element */
 
@@ -22094,7 +20167,7 @@ module akra {
         0x3FF00000, 0x000FFC00, 0x000003FF, 0xC0000000,
         20, 10, 0, 30
         ],
-//-----------------------------------------------------------------------
+//16-----------------------------------------------------------------------
         ["PF_A2B10G10R10",
 /* Bytes per element */
 
@@ -22113,7 +20186,7 @@ module akra {
         0x000003FF, 0x000FFC00, 0x3FF00000, 0xC0000000,
         0, 10, 20, 30
         ],
-//-----------------------------------------------------------------------
+//17-----------------------------------------------------------------------
         ["PF_DXT1",
 /* Bytes per element */
 
@@ -22131,7 +20204,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//18-----------------------------------------------------------------------
         ["PF_DXT2",
 /* Bytes per element */
 
@@ -22149,7 +20222,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//19-----------------------------------------------------------------------
         ["PF_DXT3",
 /* Bytes per element */
 
@@ -22167,7 +20240,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//20-----------------------------------------------------------------------
         ["PF_DXT4",
 /* Bytes per element */
 
@@ -22185,7 +20258,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//21-----------------------------------------------------------------------
         ["PF_DXT5",
 /* Bytes per element */
 
@@ -22203,7 +20276,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//22-----------------------------------------------------------------------
         ["PF_FLOAT16_RGB",
 /* Bytes per element */
 
@@ -22221,7 +20294,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//23-----------------------------------------------------------------------
         ["PF_FLOAT16_RGBA",
 /* Bytes per element */
 
@@ -22239,7 +20312,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//24-----------------------------------------------------------------------
         ["PF_FLOAT32_RGB",
 /* Bytes per element */
 
@@ -22257,7 +20330,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//25-----------------------------------------------------------------------
         ["PF_FLOAT32_RGBA",
 /* Bytes per element */
 
@@ -22275,7 +20348,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//26-----------------------------------------------------------------------
         ["PF_X8R8G8B8",
 /* Bytes per element */
 
@@ -22294,7 +20367,7 @@ module akra {
         0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000,
         16, 8, 0, 24
         ],
-//-----------------------------------------------------------------------
+//27-----------------------------------------------------------------------
         ["PF_X8B8G8R8",
 /* Bytes per element */
 
@@ -22313,7 +20386,7 @@ module akra {
         0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000,
         0, 8, 16, 24
         ],
-//-----------------------------------------------------------------------
+//28-----------------------------------------------------------------------
         ["PF_R8G8B8A8",
 /* Bytes per element */
 
@@ -22332,8 +20405,8 @@ module akra {
         0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF,
         24, 16, 8, 0
         ],
-//-----------------------------------------------------------------------
-		["PF_DEPTH",
+//29-----------------------------------------------------------------------
+		["PF_FLOAT32_DEPTH",
 /* Bytes per element */
 
         4,
@@ -22350,7 +20423,7 @@ module akra {
 
 		0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//30-----------------------------------------------------------------------
 		["PF_SHORT_RGBA",
 /* Bytes per element */
 
@@ -22368,7 +20441,7 @@ module akra {
 
 		0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//31-----------------------------------------------------------------------
         ["PF_R3G3B2",
 /* Bytes per element */
 
@@ -22387,7 +20460,7 @@ module akra {
         0xE0, 0x1C, 0x03, 0,
         5, 2, 0, 0
         ],
-//-----------------------------------------------------------------------
+//32-----------------------------------------------------------------------
         ["PF_FLOAT16_R",
 /* Bytes per element */
 
@@ -22405,7 +20478,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//33-----------------------------------------------------------------------
         ["PF_FLOAT32_R",
 /* Bytes per element */
 
@@ -22423,7 +20496,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//34-----------------------------------------------------------------------
         ["PF_SHORT_GR",
 /* Bytes per element */
 
@@ -22442,7 +20515,7 @@ module akra {
         0x0000FFFF, 0xFFFF0000, 0, 0,
 		0, 16, 0, 0
         ],
-//-----------------------------------------------------------------------
+//35-----------------------------------------------------------------------
         ["PF_FLOAT16_GR",
 /* Bytes per element */
 
@@ -22460,7 +20533,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//36-----------------------------------------------------------------------
         ["PF_FLOAT32_GR",
 /* Bytes per element */
 
@@ -22478,7 +20551,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//37-----------------------------------------------------------------------
 		["PF_SHORT_RGB",
 /* Bytes per element */
 
@@ -22496,7 +20569,7 @@ module akra {
 
 		0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//38-----------------------------------------------------------------------
 		["PF_PVRTC_RGB2",
 /* Bytes per element */
 
@@ -22514,7 +20587,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//39-----------------------------------------------------------------------
 		["PF_PVRTC_RGBA2",
 /* Bytes per element */
 
@@ -22532,7 +20605,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//40-----------------------------------------------------------------------
 		["PF_PVRTC_RGB4",
 /* Bytes per element */
 
@@ -22550,7 +20623,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//41-----------------------------------------------------------------------
 		["PF_PVRTC_RGBA4",
 /* Bytes per element */
 
@@ -22568,7 +20641,7 @@ module akra {
 
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//42-----------------------------------------------------------------------
         ["PF_R8",
 /* Bytes per element */
 
@@ -22587,7 +20660,7 @@ module akra {
         0xFF0000, 0, 0, 0,
         0, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//43-----------------------------------------------------------------------
         ["PF_RG8",
 /* Bytes per element */
 
@@ -22606,7 +20679,7 @@ module akra {
         0xFF0000, 0x00FF00, 0, 0,
         8, 0, 0, 0
         ],
-//-----------------------------------------------------------------------
+//44-----------------------------------------------------------------------
         ["PF_DEPTH_BYTE",
 /* Bytes per element */
 
@@ -22624,6 +20697,61 @@ module akra {
 
         0xFF, 0, 0, 0, 0, 0, 0, 0
         ],
+//45-----------------------------------------------------------------------    
+        ["PF_DEPTH_SHORT",
+/* Bytes per element */
+
+        2,
+/* Flags */
+
+        EPixelFormatFlags.DEPTH,
+/* Component type and count */
+
+        EPixelComponentTypes.SHORT, 1,
+/* rbits, gbits, bbits, abits */
+
+        16, 0, 0, 0,
+/* Masks and shifts */
+
+        0xFFFF, 0, 0, 0, 0, 0, 0, 0
+        ],
+//46-----------------------------------------------------------------------    
+        ["PF_DEPTH_INT",
+/* Bytes per element */
+
+        4,
+/* Flags */
+
+        EPixelFormatFlags.DEPTH,
+/* Component type and count */
+
+        EPixelComponentTypes.INT, 1,
+/* rbits, gbits, bbits, abits */
+
+        32, 0, 0, 0,
+/* Masks and shifts */
+
+        0xFFFFFFFF, 0, 0, 0, 0, 0, 0, 0
+        ],
+//47-----------------------------------------------------------------------   
+        ["PF_DEPTH24STENCIL8",
+/* Bytes per element */
+
+        4,
+/* Flags */
+
+        EPixelFormatFlags.DEPTH|EPixelFormatFlags.STENCIL,
+/* Component type and count */
+
+        EPixelComponentTypes.INT, 1,
+/* rbits, gbits, bbits, abits */
+
+        24, 8, 0, 0,
+/* Masks and shifts */
+
+        0x00FFFFFF, 0xFF000000, 0, 0,
+        0, 24, 0, 0
+        ],
 	]);
 
     var _pColorValue: IColorValue = {r: 0., g: 0., b: 0., a: 1.};
@@ -22631,7 +20759,7 @@ module akra {
 	export module pixelUtil {
         export inline function getDescriptionFor(eFmt: EPixelFormats): IPixelFormatDescription {
             var ord:  number  = < number >eFmt;
-            logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 696 ); logger.assert(ord>=0 && ord<EPixelFormats.TOTAL); ;
+            logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 736 ); logger.assert(ord>=0 && ord<EPixelFormats.TOTAL,"getDescriptionFor:"+ord); ;
 
             return pPixelFormats[ord];
         }
@@ -22696,14 +20824,14 @@ module akra {
 // Basically, 32 bytes is the minimum texture size.  Smaller textures are padded up to 32 bytes
 	                case EPixelFormats.PVRTC_RGB2:
 	                case EPixelFormats.PVRTC_RGBA2:
-						logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 758 ); logger.assert(iDepth == 1); ;
+						logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 798 ); logger.assert(iDepth == 1); ;
 	                    return (math.max(< number >iWidth, 16) * math.max(< number >iHeight, 8) * 2 + 7) / 8;
 	                case EPixelFormats.PVRTC_RGB4:
 	                case EPixelFormats.PVRTC_RGBA4:
-						logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 762 ); logger.assert(iDepth == 1); ;
+						logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 802 ); logger.assert(iDepth == 1); ;
 	                    return (math.max(< number >iWidth, 8) * math.max(< number >iHeight, 8) * 4 + 7) / 8;
 					default:
-						logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 765 ); logger.error("Invalid compressed pixel format", "PixelUtil::getMemorySize"); ;
+						logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 805 ); logger.error("Invalid compressed pixel format", "PixelUtil::getMemorySize"); ;
 				}
 			}
 			else {
@@ -22962,7 +21090,8 @@ module akra {
         */
 
         export function getFormatForBitDepths(eFmt: EPixelFormats, iIntegerBits:  number , iFloatBits:  number ): EPixelFormats {
-        	switch (iIntegerBits) {
+        	switch (iIntegerBits)
+            {
 	        case 16:
 	            switch (eFmt) {
 	            case EPixelFormats.R8G8B8:
@@ -23169,7 +21298,7 @@ module akra {
 					break;
 	            default:
 // Not yet supported
-	                logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 1208 ); logger.error("pack to "+ getFormatName(ePf)+" not implemented", "PixelUtil::packColour");
+	                logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 1249 ); logger.error("pack to "+ getFormatName(ePf)+" not implemented", "PixelUtil::packColour");
                                              ;
 	                break;
 	            }
@@ -23237,6 +21366,9 @@ module akra {
 	        rgba[2] = b;
 	        rgba[3] = a;
         }
+
+
+
 /** Unpack a colour value from memory
         	@param r,g,b,a	The colour is returned here (as float)
         	@param pf		Pixelformat in which to read the colour
@@ -23250,19 +21382,25 @@ module akra {
 	        if(des.flags & EPixelFormatFlags.NATIVEENDIAN) {
 // Shortcut for integer formats unpacking
 	            /**@const*/var  value:  number  = bf.intRead(pSrc, des.elemBytes);
-	            if(des.flags & EPixelFormatFlags.LUMINANCE) {
+
+
+	            if(des.flags & EPixelFormatFlags.LUMINANCE)
+                {
 // Luminance format -- only rbits used
 	                r = g = b = bf.fixedToFloat(
-	                    (value & des.rmask)>>des.rshift, des.rbits);
+	                    (value & des.rmask)>>>des.rshift, des.rbits);
 	            }
 	            else {
-	                r = bf.fixedToFloat((value & des.rmask) >> des.rshift, des.rbits);
-	                g = bf.fixedToFloat((value & des.gmask) >> des.gshift, des.gbits);
-	                b = bf.fixedToFloat((value & des.bmask) >> des.bshift, des.bbits);
+	                r = bf.fixedToFloat((value & des.rmask) >>> des.rshift, des.rbits);
+	                g = bf.fixedToFloat((value & des.gmask) >>> des.gshift, des.gbits);
+	                b = bf.fixedToFloat((value & des.bmask) >>> des.bshift, des.bbits);
+
 	            }
 
-	            if (des.flags & EPixelFormatFlags.HASALPHA) {
-	                a = bf.fixedToFloat((value & des.amask) >> des.ashift, des.abits);
+	            if (des.flags & EPixelFormatFlags.HASALPHA)
+                {
+
+	                a = bf.fixedToFloat((value & des.amask) >>> des.ashift, des.abits);
 	            }
 	            else {
 // No alpha, default a component to full	                a = 1.0;
@@ -23330,7 +21468,7 @@ module akra {
 					break;
 	            default:
 // Not yet supported
-	                logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 1367 ); logger.error("unpack from "+ getFormatName(ePf) +" not implemented", "PixelUtil::unpackColour");
+	                logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 1417 ); logger.error("unpack from "+ getFormatName(ePf) +" not implemented", "PixelUtil::unpackColour");
                                                ;
 	                break;
 	            }
@@ -23340,6 +21478,7 @@ module akra {
 	        rgba.g = g;
 	        rgba.b = b;
 	        rgba.a = a;
+
         }
 
 /** Convert consecutive pixels from one format to another. No dithering or filtering is being done. 
@@ -23373,9 +21512,13 @@ module akra {
 	        	src = new PixelBox(iCount, 1, 1, <EPixelFormats>eSrcFormat, <Uint8Array>pSrc);
 				dst = new PixelBox(iCount, 1, 1, <EPixelFormats>eDstFormat, <Uint8Array>pDest);
 			}
+            else
+            {
+                src=pSrc;
+                dst=pDest;
+            }
 
-        	logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 1410 ); logger.assert(src.width == dst.width && src.height == dst.height && src.depth == dst.depth);
-                             ;
+        	logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 1464 ); logger.assert(src.width == dst.width && src.height == dst.height && src.depth == dst.depth,"Size dest and src pictures is different"); ;
 
 // Check for compressed formats, we don't support decompression, compression or recoding
 			if(isCompressed(src.format) || isCompressed(dst.format)) {
@@ -23385,7 +21528,7 @@ module akra {
 					return;
 				}
 				else {
-					logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 1421 ); logger.error("This method can not be used to compress or decompress images", "PixelUtil::bulkPixelConversion");
+					logger.setSourceLocation( "pixelUtil/pixelUtil.ts" , 1475 ); logger.error("This method can not be used to compress or decompress images", "PixelUtil::bulkPixelConversion");
                                        ;
 				}
 			}
@@ -23435,16 +21578,22 @@ module akra {
 
 	            return;
 	        }
+
+
+
 // Converting to PF_X8R8G8B8 is exactly the same as converting to
 // PF_A8R8G8B8. (same with PF_X8B8G8R8 and PF_A8B8G8R8)
-			if(dst.format == EPixelFormats.X8R8G8B8 || dst.format == EPixelFormats.X8B8G8R8) {
+			if(dst.format == EPixelFormats.X8R8G8B8 || dst.format == EPixelFormats.X8B8G8R8)
+            {
 // Do the same conversion, with EPixelFormats.A8R8G8B8, which has a lot of
 // optimized conversions
 				var tempdst: IPixelBox = dst;
-				tempdst.format = dst.format == EPixelFormats.X8R8G8B8 ? EPixelFormats.A8R8G8B8  :EPixelFormats.A8B8G8R8;
+				tempdst.format = (dst.format == EPixelFormats.X8R8G8B8) ? EPixelFormats.A8R8G8B8  :EPixelFormats.A8B8G8R8;
 				bulkPixelConversion(src, tempdst);
 				return;
 			}
+
+
 // Converting from EPixelFormats.X8R8G8B8 is exactly the same as converting from
 // EPixelFormats.A8R8G8B8, given that the destination format does not have alpha.
 			if((src.format == EPixelFormats.X8R8G8B8||src.format == EPixelFormats.X8B8G8R8) && !hasAlpha(dst.format)) {
@@ -23537,8 +21686,11 @@ module akra.webgl {
 	export var shaderVersion:  number  = 0;
 	export var hasNonPowerOf2Textures: bool = false;
 
+    var isSupported: bool = false;
 	var pSupportedExtensionList: string[] = null;
 // var pLoadedExtensionList: Object = null;
+
+
 
     function setupContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {
         var pWebGLExtentionList: Object = {};
@@ -23553,7 +21705,7 @@ module akra.webgl {
             if (pWebGLExtension = pWebGLContext.getExtension(pSupportedExtensionList[i])) {
                 pWebGLExtentionList[pSupportedExtensionList[i]] = pWebGLExtension;
 
-                logger.setSourceLocation( "webgl/WebGL.ts" , 60 ); logger.log("loaded WebGL extension: %1", pSupportedExtensionList[i]); ;
+                logger.setSourceLocation( "webgl/WebGL.ts" , 63 ); logger.log("loaded WebGL extension: ", pSupportedExtensionList[i]); ;
 
                 for (var j in pWebGLExtension) {
                     if (isFunction(pWebGLExtension[j])) {
@@ -23571,7 +21723,7 @@ module akra.webgl {
                 }
             }
             else {
-                logger.setSourceLocation( "webgl/WebGL.ts" , 78 ); logger.warning("cannot load extension: %1", pSupportedExtensionList[i]); ;
+                logger.setSourceLocation( "webgl/WebGL.ts" , 81 ); logger.warning("cannot load extension: ", pSupportedExtensionList[i]); ;
                 pSupportedExtensionList.splice(i, 1);
             }
         }
@@ -23582,6 +21734,8 @@ module akra.webgl {
 
         return pWebGLContext;
     }
+
+    export var isEnabled = (): bool => isSupported;
 
     export function createContext(
             pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.createElement("canvas"),
@@ -23599,7 +21753,7 @@ module akra.webgl {
             return setupContext(pWebGLContext);
 		}
 
-        logger.setSourceLocation( "webgl/WebGL.ts" , 106 ); logger.warning("cannot get 3d device"); ;
+        logger.setSourceLocation( "webgl/WebGL.ts" , 111 ); logger.warning("cannot get 3d device"); ;
 
 		return null;
     }
@@ -23608,6 +21762,8 @@ module akra.webgl {
 		if (!pWebGLContext) {
 			return;
 		}
+
+
 
 		maxTextureSize 					= pWebGLContext.getParameter( 0x0D33 );
 		maxCubeMapTextureSize 			= pWebGLContext.getParameter( 0x851C );
@@ -23631,8 +21787,9 @@ module akra.webgl {
 	    pSupportedExtensionList 		= pWebGLContext.getSupportedExtensions();
 
 
-	    pSupportedExtensionList.push( "WEBGL_debug_shaders" ,  "WEBGL_debug_renderer_info" );
+//pSupportedExtensionList.push(WEBGL_DEBUG_SHADERS, WEBGL_DEBUG_RENDERER_INFO);
 
+        isSupported = true;
 
 	})(createContext());
 
@@ -23657,218 +21814,282 @@ module akra.webgl {
 	    return  0x88E4 ;
 	}
 
-	export function getWebGLOriginFormat(eFormat: EPixelFormats):  number  {
-		switch(eFormat){
-			case EPixelFormats.A8:
-                return  0x1906 ;
 
-            case EPixelFormats.L8:
-            case EPixelFormats.L16:
-                return  0x1909 ;
-
-            case EPixelFormats.FLOAT16_RGB:
-            	return webgl.hasExtension( "OES_texture_half_float" ) ?  0x1907  : 0;
-
-            case EPixelFormats.FLOAT16_RGBA:
-            	return webgl.hasExtension( "OES_texture_half_float" ) ?  0x1908  : 0;
-
-           	case EPixelFormats.FLOAT16_R:
-            case EPixelFormats.R8:
-                return webgl.hasExtension( "EXT_texture_rg" ) ?  0x1903  : 0;
-
-            case EPixelFormats.FLOAT16_GR:
-            case EPixelFormats.RG8:
-                return webgl.hasExtension( "EXT_texture_rg" ) ?  0x8227  : 0;
-
-            case EPixelFormats.BYTE_LA:
-            case EPixelFormats.SHORT_GR:
-                return  0x190A ;
-
-// PVRTC compressed formats
-            case EPixelFormats.PVRTC_RGB2:
-                return webgl.hasExtension( "WEBGL_compressed_texture_pvrtc" ) ?  0x8C01  : 0;
-            case EPixelFormats.PVRTC_RGB4:
-                return webgl.hasExtension( "WEBGL_compressed_texture_pvrtc" ) ?  0x8C00  : 0;
-            case EPixelFormats.PVRTC_RGBA2:
-                return webgl.hasExtension( "WEBGL_compressed_texture_pvrtc" ) ?  0x8C03  : 0;
-            case EPixelFormats.PVRTC_RGBA4:
-                return webgl.hasExtension( "WEBGL_compressed_texture_pvrtc" ) ?  0x8C02  : 0;
-
-            case EPixelFormats.R5G6B5:
-            case EPixelFormats.B5G6R5:
-            case EPixelFormats.R8G8B8:
-            case EPixelFormats.B8G8R8:
-                return  0x1907 ;
-
-            case EPixelFormats.A1R5G5B5:
-                return  0x80E1 ;
-
-            case EPixelFormats.A4R4G4B4:
-            case EPixelFormats.X8R8G8B8:
-            case EPixelFormats.A8R8G8B8:
-            case EPixelFormats.B8G8R8A8:
-            case EPixelFormats.X8B8G8R8:
-            case EPixelFormats.A8B8G8R8:
-                return  0x1908 ;
-
-            case EPixelFormats.DXT1:
-                return webgl.hasExtension( "WEBGL_compressed_texture_s3tc" ) ?  0x83F1  : 0;
-
-            case EPixelFormats.DXT3:
-                return webgl.hasExtension( "WEBGL_compressed_texture_s3tc" ) ?  0x83F2  : 0;
-
-            case EPixelFormats.DXT5:
-                return webgl.hasExtension( "WEBGL_compressed_texture_s3tc" ) ?  0x83F3  : 0;
-
-            case EPixelFormats.FLOAT32_GR:
-            case EPixelFormats.FLOAT32_R:
-
-            default:
-                return 0;
-        }
-
-	}
-
-	export function getWebGLOriginDataType(eFormat: EPixelFormats):  number  {
-		switch(eFormat){
-			case EPixelFormats.A8:
-            case EPixelFormats.L8:
-            case EPixelFormats.L16:
-            case EPixelFormats.R8G8B8:
-            case EPixelFormats.B8G8R8:
-            case EPixelFormats.BYTE_LA:
-                return  0x1401 ;
-            case EPixelFormats.R5G6B5:
-            case EPixelFormats.B5G6R5:
-                return  0x8363 ;
-            case EPixelFormats.A4R4G4B4:
-				return  0x8033 ;
-            case EPixelFormats.A1R5G5B5:
-                return  0x8034 ;
-
-            case EPixelFormats.X8B8G8R8:
-            case EPixelFormats.A8B8G8R8:
-                return  0x8367 ;
-            case EPixelFormats.X8R8G8B8:
-            case EPixelFormats.A8B8G8R8:
-            case EPixelFormats.A8R8G8B8:
-                return  0x8367 ;
-            case EPixelFormats.B8G8R8A8:
-                return  0x1401 ;
-            case EPixelFormats.R8G8B8A8:
-                return  0x1401 ;
-
-            case EPixelFormats.FLOAT16_R:
-            case EPixelFormats.FLOAT16_GR:
-            case EPixelFormats.FLOAT16_RGB:
-            case EPixelFormats.FLOAT16_RGBA:
-                return webgl.hasExtension( "OES_texture_half_float" ) ?  0x8D61  : 0;
-
-            case EPixelFormats.R8:
-            case EPixelFormats.RG8:
-                return webgl.hasExtension( "EXT_texture_rg" ) ?  0x1401  : 0;
-
-            case EPixelFormats.FLOAT32_R:
-            case EPixelFormats.FLOAT32_GR:
-            case EPixelFormats.FLOAT32_RGB:
-            case EPixelFormats.FLOAT32_RGBA:
-                return  0x1406 ;
-
-            case EPixelFormats.DEPTH:
-                return  0x1405 ;
-            case EPixelFormats.DEPTH_BYTE:
-                return  0x1401 ;
-
-            case EPixelFormats.DXT1:
-            case EPixelFormats.DXT3:
-            case EPixelFormats.DXT5:
-            case EPixelFormats.R3G3B2:
-            case EPixelFormats.A2R10G10B10:
-            case EPixelFormats.A2B10G10R10:
-            case EPixelFormats.SHORT_RGBA:
-            case EPixelFormats.SHORT_RGB:
-            case EPixelFormats.SHORT_GR:
-// TODO not supported
-            default:
-                return 0;
-		}
-	}
-
-
-
-	export function getWebGLInternalFormat(eFormat: EPixelFormats, isHWGamma: bool = false):  number  {
-        switch (eFormat) {
-            case EPixelFormats.L8:
+	export function getWebGLFormat(eFormat: EPixelFormats):  number  {
+		switch(eFormat)
+        {
+			case EPixelFormats.L8:
             case EPixelFormats.L16:
                 return  0x1909 ;
 
             case EPixelFormats.A8:
                 return  0x1906 ;
 
+            case EPixelFormats.A4L4:
             case EPixelFormats.BYTE_LA:
                 return  0x190A ;
 
-            case EPixelFormats.PVRTC_RGB2:
-                return webgl.hasExtension( "WEBGL_compressed_texture_pvrtc" ) ?  0x8C01  : 0;
-            case EPixelFormats.PVRTC_RGB4:
-                return webgl.hasExtension( "WEBGL_compressed_texture_pvrtc" ) ?  0x8C00  : 0;
-            case EPixelFormats.PVRTC_RGBA2:
-                return webgl.hasExtension( "WEBGL_compressed_texture_pvrtc" ) ?  0x8C03  : 0;
-            case EPixelFormats.PVRTC_RGBA4:
-                return webgl.hasExtension( "WEBGL_compressed_texture_pvrtc" ) ?  0x8C02  : 0;
-
-            case EPixelFormats.X8B8G8R8:
-            case EPixelFormats.X8R8G8B8:
-			case EPixelFormats.A8B8G8R8:
-            case EPixelFormats.A8R8G8B8:
-            case EPixelFormats.B8G8R8A8:
-            case EPixelFormats.A1R5G5B5:
-            case EPixelFormats.A4R4G4B4:
-                return  0x1908 ;
             case EPixelFormats.R5G6B5:
+                return 0;
             case EPixelFormats.B5G6R5:
+                return  0x1907 ;
+            case EPixelFormats.R3G3B2:
+                return 0;
+            case EPixelFormats.A4R4G4B4:
+            case EPixelFormats.A1R5G5B5:
+                return  0x1908 ;
+
             case EPixelFormats.R8G8B8:
+                return 0;
             case EPixelFormats.B8G8R8:
                 return  0x1907 ;
+            case EPixelFormats.A8R8G8B8:
+                return 0;
+            case EPixelFormats.A8B8G8R8:
+                return  0x1908 ;
+            case EPixelFormats.B8G8R8A8:
+            case EPixelFormats.R8G8B8A8:
+            case EPixelFormats.X8R8G8B8:
+                return 0;
+            case EPixelFormats.X8B8G8R8:
+               return  0x1908 ;
 
+            case EPixelFormats.A2R10G10B10:
+                return 0;
+            case EPixelFormats.A2B10G10R10:
+                return  0x1908 ;
+
+            case EPixelFormats.DXT1:
+                return  0x83F1 ;
+            case EPixelFormats.DXT2:
+                return 0;
+            case EPixelFormats.DXT3:
+                return  0x83F2 ;
+            case EPixelFormats.DXT4:
+                return 0;
+            case EPixelFormats.DXT5:
+                return  0x83F3 ;
             case EPixelFormats.FLOAT16_R:
+                return 0;
+            case EPixelFormats.FLOAT16_RGB:
+                return  0x1907 ;
+            case EPixelFormats.FLOAT16_RGBA:
+                 return  0x1908 ;
             case EPixelFormats.FLOAT32_R:
-            case EPixelFormats.R8:
-                return webgl.hasExtension( "EXT_texture_rg" ) ?  0x1903  : 0;
+                return 0;
+            case EPixelFormats.FLOAT32_RGB:
+                return  0x1907 ;
+            case EPixelFormats.FLOAT32_RGBA:
+                return  0x1908 ;
             case EPixelFormats.FLOAT16_GR:
             case EPixelFormats.FLOAT32_GR:
-            case EPixelFormats.RG8:
-                return webgl.hasExtension( "EXT_texture_rg" ) ?  0x1903  : 0;
+                return 0;
 
-//depth
-            case EPixelFormats.DEPTH:
-                return  0x1902 ;
-            case EPixelFormats.DEPTH_BYTE:
+            case EPixelFormats.FLOAT32_DEPTH:
+            case EPixelFormats.DEPTH32:
+            case EPixelFormats.DEPTH16:
+            case EPixelFormats.DEPTH8:
                 return  0x1902 ;
 
-            case EPixelFormats.A4L4:
-            case EPixelFormats.R3G3B2:
-            case EPixelFormats.A2R10G10B10:
-            case EPixelFormats.A2B10G10R10:
-            case EPixelFormats.FLOAT16_RGBA:
-            case EPixelFormats.FLOAT32_RGB:
-            case EPixelFormats.FLOAT32_RGBA:
+            case EPixelFormats.DEPTH24STENCIL8:
+                return  0x84F9 ;
+
             case EPixelFormats.SHORT_RGBA:
-            case EPixelFormats.SHORT_RGB:
+                return  0x1908 ;
             case EPixelFormats.SHORT_GR:
+                return 0;
+            case EPixelFormats.SHORT_RGB:
+                return  0x1907 ;
 
-			case EPixelFormats.DXT1:
-				if (!isHWGamma)
-					return webgl.hasExtension( "WEBGL_compressed_texture_s3tc" ) ?  0x83F1  : 0;
-            case EPixelFormats.DXT3:
-				if (!isHWGamma)
-	                return webgl.hasExtension( "WEBGL_compressed_texture_s3tc" ) ?  0x83F2  : 0;
-            case EPixelFormats.DXT5:
-				if (!isHWGamma)
-	                return webgl.hasExtension( "WEBGL_compressed_texture_s3tc" ) ?  0x83F2  : 0;
+            case EPixelFormats.PVRTC_RGB2:
+                return  0x8C01
+            case EPixelFormats.PVRTC_RGBA2:
+                return  0x8C03
+            case EPixelFormats.PVRTC_RGB4:
+                return  0x8C00
+            case EPixelFormats.PVRTC_RGBA4:
+                return  0x8C02 ;
+
+
+            case EPixelFormats.R8:
+            case EPixelFormats.RG8:
+                return 0;
 
             default:
+                logger.setSourceLocation( "webgl/WebGL.ts" , 274 ); logger.criticalError("getWebGLFormat unknown format"); ;
                 return 0;
+        }
+
+	}
+
+    export function isWebGLFormatSupport(eFormat: EPixelFormats):bool
+    {
+        switch(eFormat)
+        {
+            case EPixelFormats.DXT1:
+            case EPixelFormats.DXT3:
+            case EPixelFormats.DXT5:
+                return webgl.hasExtension( "WEBGL_compressed_texture_s3tc" );
+            case EPixelFormats.PVRTC_RGB2:
+            case EPixelFormats.PVRTC_RGBA2:
+            case EPixelFormats.PVRTC_RGB4:
+            case EPixelFormats.PVRTC_RGBA4:
+                return webgl.hasExtension( "WEBGL_compressed_texture_pvrtc" );
+            case EPixelFormats.DEPTH32:
+            case EPixelFormats.DEPTH16:
+            case EPixelFormats.DEPTH24STENCIL8:
+                return webgl.hasExtension( "WEBGL_depth_texture" );
+            case EPixelFormats.DEPTH32:
+            case EPixelFormats.DEPTH16:
+            case EPixelFormats.DEPTH24STENCIL8:
+                return webgl.hasExtension( "WEBGL_depth_texture" );
+            case EPixelFormats.FLOAT16_RGB:
+            case EPixelFormats.FLOAT16_RGBA:
+                 return webgl.hasExtension( "OES_texture_half_float" );
+            case EPixelFormats.FLOAT32_RGB:
+            case EPixelFormats.FLOAT32_RGBA:
+                 return webgl.hasExtension( "OES_texture_float" );
+
+        }
+
+        if(getWebGLFormat(eFormat)&&getWebGLDataType(eFormat))
+        {
+            switch(eFormat)
+            {
+                case EPixelFormats.FLOAT32_DEPTH:
+                case EPixelFormats.L16:
+                    return false;
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+
+	export function getWebGLDataType(eFormat: EPixelFormats):  number  {
+		switch(eFormat)
+        {
+            case EPixelFormats.L8:
+                return  0x1401 ;
+            case EPixelFormats.L16:
+                return  0x1403 ;
+
+            case EPixelFormats.A8:
+                return  0x1401 ;
+
+            case EPixelFormats.A4L4:
+                return 0;
+            case EPixelFormats.BYTE_LA:
+                return  0x1401 ;
+
+            case EPixelFormats.R5G6B5:
+            case EPixelFormats.B5G6R5:
+                return  0x8363 ;
+            case EPixelFormats.R3G3B2:
+                return 0;
+            case EPixelFormats.A4R4G4B4:
+                return  0x8033 ;
+            case EPixelFormats.A1R5G5B5:
+                return  0x8034 ;
+
+            case EPixelFormats.R8G8B8:
+            case EPixelFormats.B8G8R8:
+            case EPixelFormats.A8R8G8B8:
+            case EPixelFormats.A8B8G8R8:
+            case EPixelFormats.B8G8R8A8:
+            case EPixelFormats.R8G8B8A8:
+            case EPixelFormats.X8R8G8B8:
+            case EPixelFormats.X8B8G8R8:
+               return  0x1401 ;
+
+            case EPixelFormats.A2R10G10B10:
+                return 0;
+            case EPixelFormats.A2B10G10R10:
+                return 0;
+
+            case EPixelFormats.DXT1:
+            case EPixelFormats.DXT2:
+            case EPixelFormats.DXT3:
+            case EPixelFormats.DXT4:
+            case EPixelFormats.DXT5:
+                return 0;
+
+            case EPixelFormats.FLOAT16_R:
+            case EPixelFormats.FLOAT16_RGB:
+            case EPixelFormats.FLOAT16_RGBA:
+                 return  0x8D61 ;
+            case EPixelFormats.FLOAT32_R:
+            case EPixelFormats.FLOAT32_RGB:
+            case EPixelFormats.FLOAT32_RGBA:
+            case EPixelFormats.FLOAT16_GR:
+            case EPixelFormats.FLOAT32_GR:
+                return  0x1406 ;
+
+            case EPixelFormats.FLOAT32_DEPTH:
+                return  0x1406 ;
+
+            case EPixelFormats.DEPTH8:
+                return  0x1401 ;
+            case EPixelFormats.DEPTH16:
+                return  0x1403 ;
+            case EPixelFormats.DEPTH32:
+                return  0x1405 ;
+            case EPixelFormats.DEPTH24STENCIL8:
+                return  0x8367 ;
+
+            case EPixelFormats.SHORT_RGBA:
+            case EPixelFormats.SHORT_GR:
+            case EPixelFormats.SHORT_RGB:
+               return  0x1403 ;
+
+            case EPixelFormats.PVRTC_RGB2:
+            case EPixelFormats.PVRTC_RGBA2:
+            case EPixelFormats.PVRTC_RGB4:
+            case EPixelFormats.PVRTC_RGBA4:
+                return 0;
+
+            case EPixelFormats.R8:
+            case EPixelFormats.RG8:
+                return  0x1401 ;
+
+            default:
+                logger.setSourceLocation( "webgl/WebGL.ts" , 412 ); logger.criticalError("getWebGLFormat unknown format"); ;
+                return 0;
+        }
+	}
+
+
+
+	export function getWebGLInternalFormat(eFormat: EPixelFormats):  number
+    {
+        if(!pixelUtil.isCompressed(eFormat))
+        {
+            return getWebGLFormat(eFormat);
+        }
+        else
+        {
+            switch(eFormat)
+            {
+                case EPixelFormats.DXT1:
+                    return  0x83F1 ;
+                case EPixelFormats.DXT2:
+                    return 0;
+                case EPixelFormats.DXT3:
+                    return  0x83F2 ;
+                case EPixelFormats.DXT4:
+                    return 0;
+                case EPixelFormats.DXT5:
+                    return  0x83F3 ;
+                case EPixelFormats.PVRTC_RGB2:
+                    return  0x8C01
+                case EPixelFormats.PVRTC_RGBA2:
+                    return  0x8C03
+                case EPixelFormats.PVRTC_RGB4:
+                    return  0x8C00
+                case EPixelFormats.PVRTC_RGBA4:
+                    return  0x8C02 ;
+            }
         }
     }
 
@@ -23893,10 +22114,12 @@ module akra.webgl {
         return  0x0000 ;
     }
 
-    export function getClosestWebGLInternalFormat(eFormat: EPixelFormats, isHWGamma: bool = false):  number  {
-        var iGLFormat = webgl.getWebGLInternalFormat(eFormat, isHWGamma);
+//не знаю что делает эта функция
+    export function getClosestWebGLInternalFormat(eFormat: EPixelFormats, isHWGamma?: bool = false):  number  {
+        var iGLFormat: number  = webgl.getWebGLInternalFormat(eFormat);
 
-        if (iGLFormat ===  0 ) {
+        if (iGLFormat ===  0 )
+        {
             if (isHWGamma) {
 // TODO not supported
                 return 0;
@@ -23905,7 +22128,8 @@ module akra.webgl {
                 return  0x1908 ;
             }
         }
-        else {
+        else
+        {
             return iGLFormat;
         }
     }
@@ -23975,11 +22199,21 @@ module akra.webgl {
 
     export function getMaxMipmaps(iWidth:  number , iHeight:  number , iDepth:  number , eFormat: EPixelFormats) :  number  {
 		var iCount:  number  = 0;
-        if((iWidth > 0) && (iHeight > 0)) {
+        if((iWidth > 0) && (iHeight > 0))
+        {
             do {
-                if(iWidth>1)		iWidth = iWidth/2;
-                if(iHeight>1)		iHeight = iHeight/2;
-                if(iDepth>1)		iDepth = iDepth/2;
+                if(iWidth>1)
+                {
+                    iWidth = iWidth>>>1;
+                }
+                if(iHeight>1)
+                {
+                    iHeight = iHeight>>>1;
+                }
+                if(iDepth>1)
+                {
+                    iDepth = iDepth>>>1;
+                }
 /*
                  NOT needed, compressed formats will have mipmaps up to 1x1
                  if(PixelUtil::isValidExtent(width, height, depth, format))
@@ -24091,13 +22325,10 @@ module akra.util {
 		private bTransferableObjects: bool = false;
 		private bLocalStorage: bool = false;
 		private bWebSocket: bool = false;
+		private bGamepad: bool = false;
 
-		get webGL(): bool {
-			if (!this.bWebGL) {
-				this.bWebGL = ((<any>window).WebGLRenderingContext || this.checkWebGL() ? true : false);
-			}
-
-			return this.bWebGL;
+		inline get webGL(): bool {
+			return webgl.isEnabled();
 		}
 
 		get transferableObjects(): bool {
@@ -24108,28 +22339,32 @@ module akra.util {
 			return this.bTransferableObjects;
 		}
 
-		get file(): bool {
+		inline get file(): bool {
 			return this.bFile;
 		}
 
-		get fileSystem(): bool {
+		inline get fileSystem(): bool {
 			return this.bFileSystem;
 		}
 
-		get webAudio(): bool {
+		inline get webAudio(): bool {
 			return this.bWebAudio;
 		}
 
-		get webWorker(): bool {
+		inline get webWorker(): bool {
 			return this.bWebWorker;
 		}
 
-		get localStorage(): bool {
+		inline get localStorage(): bool {
 			return this.bLocalStorage;
 		}
 
-		get webSocket(): bool {
+		inline get webSocket(): bool {
 			return this.bWebSocket;
+		}
+
+		inline get gamepad(): bool {
+			return this.bGamepad;
 		}
 
 		constructor () {
@@ -24143,24 +22378,7 @@ module akra.util {
 			this.bWebWorker = isDef((<any>window).Worker);
 			this.bLocalStorage = isDef((<any>window).localStorage);
 			this.bWebSocket = isDef((<any>window).WebSocket);
-		}
-
-		private checkWebGL(): bool {
-			var pCanvas: HTMLCanvasElement;
-			var pDevice: WebGLRenderingContext;
-
-			try {
-				pCanvas = <HTMLCanvasElement> document.createElement('canvas');
-				pDevice = pCanvas.getContext('webgl', {}) ||
-                       		pCanvas.getContext('experimental-webgl', {});
-
-                if (pDevice) {
-                	return true;
-                }
-			}
-			catch (e) {}
-
-			return false;
+			this.bGamepad = !! (<any>navigator).webkitGetGamepads || !! (<any>navigator).webkitGamepads || (navigator.userAgent.indexOf('Firefox/') != -1);
 		}
 
 		private chechTransferableObjects(): bool {
@@ -24174,7 +22392,7 @@ module akra.util {
 		        pWorker.postMessage(pBuffer, [pBuffer]);
 		    }
 		    catch (e) {
-		        logger.setSourceLocation( "util/ApiInfo.ts" , 101 ); logger.log('transferable objects not supported in your browser...'); ;
+		        logger.setSourceLocation( "util/ApiInfo.ts" , 85 ); logger.log('transferable objects not supported in your browser...'); ;
 		    }
 
 		    pWorker.terminate();
@@ -25802,6 +24020,3529 @@ module akra.io {
 
 	export var fopen = _fopen;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface ICodec{
+
+		getType():string;
+		getDataType():string;
+		magicNumberMatch(pMagicNumber: Uint8Array):bool;
+		magicNumberToFileExt(pMagicNumber: Uint8Array):string;
+
+		code(pInput:Uint8Array,pData:ICodecData):Uint8Array;
+		decode(pData:Uint8Array,pCodecData:ICodecData):Uint8Array;
+
+
+	}
+
+
+	export interface ICodecData{
+		dataType: string;
+	}
+
+}
+
+
+
+
+
+module akra {
+
+
+	export interface IImgCodec extends ICodec{
+	}
+
+	export interface IImgData extends ICodecData{
+		height:  number ;
+		width: number ;
+		depth: number ;
+		size: number ;
+
+		numMipMaps: number ;
+		flags:  number ;
+		cubeFlags: number ;
+
+		format: EPixelFormats;
+		numFace:  number ;
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra
+{
+	export interface ICodecMap {
+        	[index: string]: ICodec;
+    	};
+
+
+	export class Codec implements ICodec
+	{
+
+
+		private static _pMapCodecs: ICodecMap =<ICodecMap>{};
+
+		static registerCodec(pCodec: ICodec):void
+		{
+
+			if(!isDef(Codec._pMapCodecs[pCodec.getType()]))
+			{
+				Codec._pMapCodecs[pCodec.getType()]=pCodec;
+			}
+			else
+			{
+				logger.setSourceLocation( "Codec.ts" , 28 ); logger.criticalError(pCodec.getType() + " already has a registered codec. "); ;
+			}
+		}
+
+		static isCodecRegistered(pCodec: ICodec):bool
+		{
+			return isDef(Codec._pMapCodecs[pCodec.getType()]);
+		}
+
+		static unRegisterCodec(pCodec: ICodec):void
+		{
+			delete Codec._pMapCodecs[pCodec.getType()];
+		}
+
+		static getExtension():string[]
+		{
+			var pExt:string[]=<string[]>Array();
+			var sExt:string="";
+			for(sExt in Codec._pMapCodecs)
+			{
+				pExt.push(sExt)
+			}
+			return pExt;
+		}
+
+		static getCodec(sExt: string):ICodec;
+		static getCodec(pMagicNumber: Uint8Array):ICodec;
+		static getCodec(pMagicNumber: any):ICodec
+		{
+			var sExt: string="";
+			if(isString(pMagicNumber))
+			{
+				if(isDef(Codec._pMapCodecs[pMagicNumber]))
+				{
+					return Codec._pMapCodecs[pMagicNumber];
+				}
+				else
+				{
+					logger.setSourceLocation( "Codec.ts" , 66 ); logger.criticalError("Can not find codec for "+pMagicNumber); ;
+					return null;
+				}
+			}
+			else
+			{
+				for(sExt in Codec._pMapCodecs)
+				{
+					var sExt1:string=Codec._pMapCodecs[sExt].magicNumberToFileExt(pMagicNumber);
+					if(sExt1)
+					{
+						if(sExt1==Codec._pMapCodecs[sExt].getType())
+						{
+							return Codec._pMapCodecs[sExt];
+						}
+						else
+						{
+							return Codec.getCodec(sExt1);
+						}
+
+					}
+				}
+			}
+			return null;
+		}
+
+
+		magicNumberMatch(pMagicNumber: Uint8Array):bool
+		{
+			return !(this.magicNumberToFileExt(pMagicNumber).length==0);
+		}
+
+		magicNumberToFileExt(pMagicNumber: Uint8Array):string
+		{
+			logger.setSourceLocation( "Codec.ts" , 100 ); logger.criticalError("Codec.magicNumberToFileExt is virtual"); ;
+			return null;
+		}
+
+		getType():string
+		{
+			logger.setSourceLocation( "Codec.ts" , 106 ); logger.criticalError("Codec.getType is virtual"); ;
+			return null;
+		}
+
+		getDataType():string
+		{
+			logger.setSourceLocation( "Codec.ts" , 112 ); logger.criticalError("Codec.getDataType is virtual"); ;
+			return null;
+		}
+
+		code(pInput:Uint8Array,pData:ICodecData):Uint8Array
+		{
+			logger.setSourceLocation( "Codec.ts" , 118 ); logger.criticalError("Codec.code is virtual"); ;
+			return null;
+		}
+		decode(pData:Uint8Array,pCodecData:ICodecData):Uint8Array
+		{
+			logger.setSourceLocation( "Codec.ts" , 123 ); logger.criticalError("Codec.decode is virtual"); ;
+			return null;
+		}
+
+
+
+	}
+
+	export class CodecData implements ICodecData
+	{
+
+		inline get dataType(): string{
+			logger.setSourceLocation( "Codec.ts" , 135 ); logger.criticalError("CodecData.dataType is virtual"); ;
+			return "CodecData";
+		}
+	}
+
+}
+
+
+
+
+
+
+
+module akra {
+
+
+	export class ImgCodec extends Codec implements IImgCodec{
+		getDataType(): string
+        {
+            return "ImgData"
+        }
+
+	}
+
+	export class ImgData extends CodecData implements IImgData{
+
+        /**@protected*/  _iHeight: number =0;
+		/**@protected*/  _iWidth: number =0;
+		/**@protected*/  _iDepth: number =1;
+		/**@protected*/  _iSize: number =0;
+        /**@protected*/  _iCubeFlags: number ;
+
+		/**@protected*/  _nMipMaps: number =0;
+		/**@protected*/  _iFlags: number =0;
+
+		/**@protected*/  _eFormat: EPixelFormats=EPixelFormats.UNKNOWN;
+
+
+		inline get width():  number  {
+			return this._iWidth;
+		}
+    	inline set width(iWidth: number ){
+			this._iWidth=iWidth;
+		}
+
+
+    	inline get height():  number  {
+    		return this._iHeight;
+    	}
+    	inline set height(iHeight: number ){
+			this._iHeight=iHeight;
+		}
+
+    	inline get depth():  number  {
+    		return this._iDepth;
+    	}
+    	inline set depth(iDepth: number ){
+			this._iDepth=iDepth;
+		}
+
+
+    	inline get size():  number  {
+    		return core.pool.resources.Img.calculateSize(this.numMipMaps, this.numFace, this.width, this.height, this.depth, this.format);
+        }
+
+    	inline get numMipMaps():  number
+    	{
+    		return this._nMipMaps;
+    	}
+
+    	inline set numMipMaps(nNumMipMaps: number ) {
+    		this._nMipMaps=nNumMipMaps;
+    	}
+
+    	inline get format(): EPixelFormats {
+    		return this._eFormat;
+    	}
+
+    	inline set format(ePixelFormat:EPixelFormats){
+    		this._eFormat=ePixelFormat;
+    	}
+
+        inline get flags():  number  {
+            return this._iFlags;
+        }
+
+        inline set flags(iFlags: number ){
+            this._iFlags=iFlags;
+        }
+
+        inline get cubeFlags():  number  {
+            return this._iCubeFlags;
+        }
+
+        inline set cubeFlags(iFlags: number ){
+            this._iCubeFlags=iFlags;
+        }
+
+        inline get numFace(): number {
+            if (this._iFlags&EImageFlags.CUBEMAP)
+            {
+                var nFace: number =0;
+                for(var i: number =0;i<32;i++)
+                {
+                    nFace++;
+                }
+                return nFace;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+
+        inline get dataType():string
+        {
+             return "ImgData";
+        }
+	}
+}
+
+
+
+
+
+
+
+
+module akra.core.pool.resources {
+
+	export class Img extends ResourcePoolItem implements IImg {
+		/**@protected*/  _iWidth:         number           = 0;
+		/**@protected*/  _iHeight:        number           = 0;
+		/**@protected*/  _iDepth:         number           = 0;
+
+		/**@protected*/  _nMipMaps:       number           = 0;
+		/**@protected*/  _iFlags:         number           = 0;
+        /**@protected*/  _iCubeFlags:     number           = 0;
+
+		/**@protected*/  _eFormat:       EPixelFormats = EPixelFormats.UNKNOWN;
+
+		/**@protected*/  _pBuffer:       Uint8Array    = null;
+
+        inline get byteLength():  number  {
+			return this._pBuffer.buffer.byteLength;
+		}
+
+    	inline get width():  number  {
+    		return this._iWidth;
+    	}
+
+    	inline get height():  number  {
+    		return this._iHeight;
+    	}
+
+    	inline get depth():  number  {
+    		return this._iDepth;
+    	}
+
+    	inline get numFaces(): number {
+            if (this._iFlags&EImageFlags.CUBEMAP){
+                var nFace: number =0;
+                for(var i: number =0;i<32;i++)
+                {
+                    nFace++;
+                }
+                return nFace;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+
+    	inline get numMipMaps():  number  {
+    		return this._nMipMaps;
+    	}
+
+    	inline get format(): EPixelFormats {
+    		return this._eFormat;
+    	}
+
+         inline get flags():  number  {
+            return this._iFlags;
+        }
+
+        inline get cubeFlags():  number  {
+            return this._iCubeFlags;
+        }
+
+		constructor () {
+			super();
+		}
+
+		createResource(): bool {
+// innitialize the resource (called once)
+		    logger.setSourceLocation( "resources/Img.ts" , 81 ); logger.assert(!this.isResourceCreated(), "The resource has already been created.");
+                                                            ;
+
+// signal that the resource is now created,
+// but has not been enabled
+		    this.notifyCreated();
+		    this.notifyDisabled();
+
+		    return true;
+		}
+
+		destroyResource(): bool {
+// destroy the resource
+//
+// we permit redundant calls to destroy, so there are no asserts here
+//
+		    if (this.isResourceCreated()) {
+// disable the resource
+		        this.disableResource();
+
+		        this.freeMemory();
+
+		        this.notifyUnloaded();
+		        this.notifyDestroyed();
+
+		        return (true);
+		    }
+
+		    return (false);
+		}
+
+		restoreResource(): bool {
+			logger.setSourceLocation( "resources/Img.ts" , 113 ); logger.assert(this.isResourceCreated(), "The resource has not been created.");
+                                                        ;
+
+		    this.notifyRestored();
+		    return true;
+		}
+
+		disableResource(): bool {
+			logger.setSourceLocation( "resources/Img.ts" , 121 ); logger.assert(this.isResourceCreated(), "The resource has not been created.");
+                                                      ;
+
+		    this.notifyDisabled();
+		    return true;
+		}
+
+		loadResource(sFilename?: string): bool {
+			return false;
+		}
+
+		saveResource(sFilename?: string): bool {
+			return false;
+		}
+
+
+		create(iWidth:  number , iHeight:  number , iDepth?:  number  = 1, eFormat?: EPixelFormats = EPixelFormats.BYTE_ABGR,
+                         nFaces?:  number  = 1, nMipMaps?:  number  = 0): IImg
+        {
+            var iSize :  number = Img.calculateSize(nMipMaps, nFaces, iWidth, iHeight, iDepth, eFormat);
+            var pBuffer : Uint8Array = new Uint8Array(iSize);
+            return this.loadDynamicImage(pBuffer, iWidth, iHeight, iDepth, eFormat, nFaces, nMipMaps);
+        }
+
+
+
+    	freeMemory(): void {
+    		this._iWidth = 0;
+    		this._iHeight = 0;
+    		this._iDepth = 0;
+    		this._pBuffer = null;
+    	}
+
+    	set(pSrc: IImg): IImg {
+    		this.freeMemory();
+
+    		this._iWidth = pSrc.width;
+    		this._iHeight = pSrc.height;
+    		this._iDepth = pSrc.depth;
+    		this._eFormat = pSrc.format;
+
+    		this._iFlags = pSrc.flags;
+
+    		this._nMipMaps = pSrc.numMipMaps;
+
+    		this._pBuffer = new Uint8Array(pSrc.getData());
+
+    		return this;
+    	}
+
+
+    	flipY(pDest?: IImg): IImg {
+    		return this;
+    	}
+
+    	flipX(pDest?: IImg): IImg {
+    		return this;
+    	}
+
+        load(sFileName: string,  fnCallBack?: Function): IImg;
+        load(pData: Uint8Array, sType:string,  fnCallBack?: Function): IImg;
+        load(pCanvas: HTMLCanvasElement, fnCallBack?: Function): IImg;
+
+
+    	load(pData: any, sType?: any, fnCallBack?: Function): IImg
+        {
+            var pMe:IImg=this;
+
+            if (pData instanceof HTMLCanvasElement)
+            {
+                var pTempContext : CanvasRenderingContext2D = pData.getContext('2d');
+                if (!pTempContext)
+                {
+                    if (isDefAndNotNull(sType))
+                    {
+                        sType(false);
+                    }
+                    return this;
+                }
+
+                var pImageData : ImageData = pTempContext.getImageData(0, 0, pData.width, pData.height);
+
+                this.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)),pData.width,pData.height);
+
+                if (isDefAndNotNull(sType))
+                {
+                    sType(true);
+                }
+                return this;
+            }
+            else if (isString(pData))
+            {
+
+                var sExt : string = (new Pathinfo(pData)).ext;
+                if(sExt=="png" || sExt=="jpg" || sExt=="jpeg" || sExt=="gif" || sExt=="bmp")
+                {
+                    var pImg:HTMLImageElement=new Image();
+
+                    pImg.onload = function()
+                    {
+                        var pTempCanvas: HTMLCanvasElement=<HTMLCanvasElement>document.createElement("canvas");
+                        pTempCanvas.width=pImg.width;
+                        pTempCanvas.height=pImg.height;
+                        var pTempContext : CanvasRenderingContext2D=<CanvasRenderingContext2D>((<any>pTempCanvas).getContext("2d"));
+                        pTempContext.drawImage(pImg,0,0);
+                        var pImageData : ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);
+
+                        pMe.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)),pImg.width, pImg.height,1,EPixelFormats.BYTE_ABGR);
+
+                        if (isDefAndNotNull(sType))
+                        {
+                            sType(true);
+                        }
+
+                    }
+                    pImg.onerror=function()
+                    {
+                        if (isDefAndNotNull(sType))
+                        {
+                            sType(false);
+                        }
+                    }
+                    pImg.onabort=function()
+                    {
+                        if (isDefAndNotNull(sType))
+                        {
+                            sType(false);
+                        }
+                    }
+                    pImg.src = pData;
+
+                }
+                else
+                {
+
+                    io.fopen(pData,"rb").onread=function(pError:Error,pDataInFile:ArrayBuffer)
+                    {
+
+                        pMe.load(new Uint8Array(pDataInFile),sExt,sType);
+                    }
+                }
+
+                return this;
+            }
+            else
+            {
+                var pCodec:ICodec=undefined;
+
+                if(sType)
+                {
+                    pCodec=Codec.getCodec(sType);
+                }
+
+                if(!pCodec)
+                {
+                    var iMagicLen: number =Math.min(32,pData.buffer.byteLength);
+                    pCodec=Codec.getCodec(pData.buffer.slice(0,iMagicLen));
+                }
+
+                if(!pCodec)
+                {
+                    logger.setSourceLocation( "resources/Img.ts" , 281 ); logger.criticalError("Unable to load image: Image format is unknown. Unable to identify codec. Check it or specify format explicitly.\n"+"Img.load"); ;
+                    if (fnCallBack)
+                    {
+                        fnCallBack(false);
+                    }
+                    return this;
+                }
+
+
+
+                var pImgData:IImgData=new ImgData();
+
+                this._pBuffer=pCodec.decode(pData,pImgData);
+
+                this._iWidth=pImgData.width;
+                this._iHeight=pImgData.height;
+                this._iDepth=pImgData.depth;
+                this._nMipMaps=pImgData.numMipMaps;
+                this._iFlags=pImgData.flags;
+                this._iCubeFlags=pImgData.cubeFlags;
+
+                this._eFormat=pImgData.format;
+
+                if (fnCallBack)
+                {
+                    fnCallBack(true);
+                }
+
+                return this;
+            }
+
+
+    	}
+
+    	loadRawData(pData: Uint8Array, iWidth:  number , iHeight:  number , iDepth:  number  = 1, eFormat: EPixelFormats = EPixelFormats.BYTE_BGR,
+                         nFaces?:  number  = 1, nMipMaps?:  number  = 0): IImg
+    	{
+            var iSize :  number = Img.calculateSize(nMipMaps, nFaces, iWidth, iHeight, iDepth, eFormat);
+
+            if (iSize != pData.buffer.byteLength)
+            {
+                logger.setSourceLocation( "resources/Img.ts" , 322 ); logger.criticalError("Stream size does not match calculated image size\n"+"Img.loadRawData"); ;
+            }
+
+            var pBuffer : Uint8Array = new Uint8Array(iSize);
+
+            pBuffer.set(pData);
+
+            return this.loadDynamicImage(pBuffer, iWidth, iHeight, iDepth, eFormat, nFaces, nMipMaps);
+     	}
+
+        loadDynamicImage(pData: Uint8Array, iWidth:  number , iHeight:  number , iDepth?:  number  = 1,
+                         eFormat?: EPixelFormats = EPixelFormats.BYTE_BGR, nFaces?:  number  = 1, nMipMaps?:  number  = 0): IImg
+        {
+//size
+            this._iWidth=iWidth;
+            this._iHeight=iHeight;
+            this._iDepth=iDepth;
+
+            this._eFormat=eFormat;
+            this._nMipMaps=nMipMaps;
+            this._iFlags=0;
+
+            if (pixelUtil.isCompressed(this._eFormat))
+            {
+                this._iFlags |= EImageFlags.COMPRESSED;
+            }
+            if (this._iDepth != 1)
+            {
+                this._iFlags |= EImageFlags.TEXTURE_3D;
+            }
+
+            if(nFaces == 6)
+            {
+                this._iFlags |= EImageFlags.CUBEMAP;
+            }
+
+            if(nFaces != 6 && nFaces != 1)
+            {
+                logger.setSourceLocation( "resources/Img.ts" , 360 ); logger.criticalError("Number of faces currently must be 6 or 1.\n"+"Img.loadDynamicImage"); ;
+            }
+
+            this._pBuffer=pData;
+            return this;
+        }
+
+    	convert(eFormat: EPixelFormats): bool {
+    		return false;
+    	}
+
+//Gets the physical width in bytes of each row of pixels.
+    	getRawSpan():  number  {
+    		return this._iWidth*this.getPixelSize();
+    	}
+
+    	getBPP():  number  {
+    		return this.getPixelSize()* 8;
+    	}
+
+        getPixelSize():  number {
+            return pixelUtil.getNumElemBytes(this._eFormat);
+        }
+
+
+
+    	getData(): Uint8Array {
+    		return this._pBuffer;
+    	}
+
+    	hasFlag(eFlag: EImageFlags): bool
+        {
+    		if(this._iFlags & eFlag)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+    	}
+
+    	hasAlpha(): bool {
+    		return pixelUtil.hasAlpha(this._eFormat);
+    	}
+
+    	isCompressed(): bool {
+    		return  pixelUtil.isCompressed(this._eFormat);
+    	}
+
+    	isLuminance(): bool {
+    		return pixelUtil.isLuminance(this._eFormat);
+    	}
+
+
+
+    	getColorAt(pColor:IColor, x: number , y:  number , z?: number =0): IColor
+        {
+            var iStart: number =this.getPixelSize()* (z * this._iWidth * this._iHeight + this._iWidth * y + x);
+    		pixelUtil.unpackColour(pColor, this._eFormat, this._pBuffer.subarray(iStart,iStart+this.getPixelSize()));
+            return pColor;
+    	}
+
+    	setColorAt(pColor: IColor, x:  number , y:  number , z?:  number =0): void
+        {
+            var iStart: number =this.getPixelSize()* (z * this._iWidth * this._iHeight + this._iWidth * y + x);
+            pixelUtil.packColour(pColor, this._eFormat,this._pBuffer.subarray(iStart,iStart+this.getPixelSize()));
+    	}
+
+    	getPixels(iFace?:  number , iMipMap?:  number ): IPixelBox
+        {
+
+// Image data is arranged as:
+// face 0, top level (mip 0)
+// face 0, mip 1
+// face 0, mip 2
+// face 1, top level (mip 0)
+// face 1, mip 1
+// face 1, mip 2
+// etc
+
+            if(iMipMap > this.numMipMaps){
+                logger.setSourceLocation( "resources/Img.ts" , 442 ); logger.warning("Mipmap index out of range"); ;
+                return null;
+            }
+
+            if(iFace >= this.numFaces){
+                logger.setSourceLocation( "resources/Img.ts" , 447 ); logger.warning("Face index out of range"); ;
+                return null;
+            }
+
+// Calculate mipmap offset and size
+            var pData:Uint8Array = this.getData();
+
+
+// Base offset is number of full faces
+            var iWidth:  number  = this._iWidth;
+            var iHeight:  number  = this._iHeight;
+            var iDepth:  number  = this._iDepth;
+
+
+// Figure out the offsets 
+            var iFullFaceSize:  number  = 0;
+            var iFinalFaceSize:  number  = 0;
+            var iFinalWidth:  number  = 0;
+            var iFinalHeight:  number  = 0 ;
+            var iFinalDepth:  number  = 0;
+            var iMipSize: number =0;
+            var iOffset: number  = 0;
+
+            for(var iMip: number =0; iMip <= this.numMipMaps; ++iMip)
+            {
+                if (iMip == iMipMap)
+                {
+                    iFinalFaceSize = iFullFaceSize;
+                    iFinalWidth = iWidth;
+                    iFinalHeight = iHeight;
+                    iFinalDepth = iDepth;
+                    iMipSize = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this.format);
+                }
+                iFullFaceSize += pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this.format);
+
+/// Half size in each dimension
+                if(iWidth!=1) iWidth /= 2;
+                if(iHeight!=1) iHeight /= 2;
+                if(iDepth!=1) iDepth /= 2;
+            }
+// Advance pointer by number of full faces, plus mip offset into
+            iOffset += iFace * iFullFaceSize;
+            iOffset += iFinalFaceSize;
+
+// Return subface as pixelbox
+            var pSrc:IPixelBox=new pixelUtil.PixelBox(iFinalWidth, iFinalHeight, iFinalDepth, this.format, pData.subarray(iOffset,iOffset+iMipSize));
+            return pSrc;
+    	}
+
+    	scale(pDest: IPixelBox, eFilter?: EFilters): bool {
+    		return null;
+    	}
+
+    	resize(iWidth:  number , iHeight:  number , eFilter?: EFilters): bool {
+    		return null;
+    	}
+
+    	generatePerlinNoise(fScale:  number , iOctaves:  number , fFalloff:  number ): void {
+
+    	}
+
+    	randomChannelNoise(iChannel:  number , iMinRange:  number , iMaxRange:  number ): void {
+
+    	}
+
+        static calculateSize(nMipMaps:  number , nFaces:  number , iWidth:  number , iHeight:  number , iDepth:  number  , eFormat: EPixelFormats):  number
+        {
+            var iSize: number  = 0;
+            var iMip: number  = 0;
+
+            for(iMip=0; iMip<=nMipMaps; iMip++)
+            {
+                iSize += pixelUtil.getMemorySize(iWidth, iHeight, iDepth, eFormat)*nFaces;
+                if(iWidth!=1) iWidth = Math.floor(iWidth/2);
+                if(iHeight!=1) iHeight = Math.floor(iHeight/2);
+                if(iDepth!=1) iDepth = Math.floor(iDepth/2);
+            }
+            return iSize;
+        }
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+module akra.core.pool.resources {
+	export class Component extends ResourcePoolItem implements IAFXComponent{
+		private _pTechnique: IAFXTechniqueInstruction = null;
+		private _pComposer: IAFXComposer = null;
+
+		constructor(){
+			super();
+		}
+
+		create(): void {
+			this._pComposer = this.manager.getEngine().getComposer();
+		}
+
+		inline getTechnique(): IAFXTechniqueInstruction {
+			return this._pTechnique;
+		}
+
+		inline setTechnique(pTechnique: IAFXTechniqueInstruction): void {
+			this._pTechnique = pTechnique;
+		}
+
+		inline getName(): string {
+			return this._pTechnique.getName();
+		}
+
+		inline getTotalPasses():  number  {
+			return this._pTechnique.totalOwnPasses();
+		}
+
+		inline getHash(iShift:  number , iPass:  number ): string {
+			return this.getName() + ">>" + iShift.toString() +
+				   ">>" + (iPass ===  0xffffff  ? "ALL" : iPass.toString());
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+    export interface IRenderDataCollection {} ;
+    export interface IDataFlow {} ;
+    export interface IVertexDeclaration {} ;
+    export interface IVertexData {} ;
+
+	export enum ERenderDataTypes {
+/*<! положить данные в текстуру, и больше ничего не делать.*/
+        ISOLATED = 0,
+/*<! обычные даннае из текстуры, доступные по индексу.*/
+        INDEXED,
+/*<! данные по 2йному индексу.*/
+        I2I,
+/*<! непосредственно данные для атрибута.*/
+        DIRECT
+    };
+
+    export enum ERenderDataOptions {
+/*<! использовать индекс на индекс упаковку да��ных*/
+        ADVANCED_INDEX =  (1 << (0x10)) ,
+        SINGLE_INDEX   =  (1 << (0x11)) ,
+/*<! создать RenderData как классические данные, с данными только в аттрибутах, без использования видео буфферов.*/
+
+/*<! определяет, будет ли объект редерится*/
+        RENDERABLE     =  (1 << (0x12))
+    }
+
+    export interface IRenderDataType {
+        new (): IRenderData;
+    }
+
+	export interface IRenderData extends IReferenceCounter {
+		 buffer: IRenderDataCollection;
+
+/**
+         * Allocate data for rendering.
+         */
+
+        allocateData(pDataDecl: IVertexElementInterface[], pData: ArrayBuffer, hasIndex?: bool):  number ;
+        allocateData(pDataDecl: IVertexElementInterface[], pData: ArrayBufferView, hasIndex?: bool):  number ;
+        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, hasIndex?: bool):  number ;
+        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, hasIndex?: bool):  number ;
+
+/**
+         * Remove data from this render data.
+         */
+
+        releaseData(iDataLocation:  number ): void;
+
+        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
+        allocateAttribute(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
+
+        allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBuffer): bool;
+        allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
+        allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBuffer): bool;
+        allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): bool;
+
+        addIndexSet(usePreviousDataSet?: bool, ePrimType?: EPrimitiveTypes, sName?: string):  number ;
+        getNumIndexSet():  number ;
+        getIndexSetName(iSet:  number ): string;
+        selectIndexSet(iSet:  number ): bool;
+        selectIndexSet(sName: string): bool;
+        getIndexSet():  number ;
+
+/**
+         * Specifies uses advanced index.
+         */
+
+        useAdvancedIndex(): bool;
+        useSingleIndex(): bool;
+        useMultiIndex(): bool;
+
+/** mark index set as renderable */
+
+        setRenderable(iIndexSet:  number , bValue: bool): void;
+        isRenderable(iIndexSet:  number ): bool;
+
+/** Mark this RenderData as renderable. */
+
+        isRenderable(): bool;
+        setRenderable(bValue: bool): void;
+
+        hasSemantics(sSemantics: string, bSearchComplete?: bool): bool;
+
+        getDataLocation(iDataLocation:  number ):  number ;
+        getDataLocation(sSemantics: string):  number ;
+        getIndices(): IBufferData;
+        getPrimitiveCount():  number ;
+        getAdvancedIndexData(sSemantics: string): IVertexData;
+
+        index(sData: string, sSemantics: string, useSame?: bool, iBeginWith?:  number ): bool;
+        index(iData:  number , sSemantics: string, useSame?: bool, iBeginWith?:  number ): bool;
+
+
+        toString(): string;
+
+//applyMe(): bool;
+
+        _draw(): void;
+
+        _getFlow(iDataLocation:  number ): IDataFlow;
+        _getFlow(sSemantics: string, bSearchComplete?: bool): IDataFlow;
+
+        _getData(iDataLocation:  number , bSearchOnlyInCurrentMap?: bool): IVertexData;
+        _getData(sSemanticsn: string, bSearchOnlyInCurrentMap?: bool): IVertexData;
+
+        _addData(pVertexData: IVertexData, iFlow?:  number , eType?: ERenderDataTypes):  number ;
+
+        _setup(pCollection: IRenderDataCollection, iId:  number , ePrimType?: EPrimitiveTypes, eOptions?:  number ): bool;
+
+//FIXME: hack for terrain, for force limitin drawing index length
+        _setIndexLength(iLength:  number );
+	}
+}
+
+
+
+
+
+
+
+module akra {
+    export interface IRenderDataCollection {} ;
+    export interface ISkeleton {} ;
+    export interface IRect3d {} ;
+    export interface ISphere {} ;
+    export interface IMeshSubset {} ;
+    export interface ISceneNode {} ;
+    export interface ISceneModel {} ;
+    export interface ISkin {} ;
+
+	export enum EMeshOptions {
+        HB_READABLE = < number >EHardwareBufferFlags.READABLE,
+        RD_ADVANCED_INDEX = < number >ERenderDataOptions.ADVANCED_INDEX
+    };
+
+    export enum EMeshCloneOptions{
+/*<! copy only geometry*/
+        GEOMETRY_ONLY = 0x00,
+/*<! use shared geometry*/
+        SHARED_GEOMETRY = 0x01
+    };
+
+    export interface IMeshMap {
+        [name: string]: IMesh;
+    }
+
+	export interface IMesh extends IEventProvider {
+         flexMaterials: IMaterial[];
+         name: string;
+         data: IRenderDataCollection;
+/*<! number of submeshes in. */
+         length:  number ;
+         boundingBox: IRect3d;
+         boundingSphere: ISphere;
+
+		skeleton: ISkeleton;
+
+
+        getOptions():  number ;
+        getEngine(): IEngine;
+
+//setup(sName: string, eOptions: int, pDataBuffer?: IRenderDataCollection): bool;
+        destroy(): void;
+        clone(iCloneOptions:  number ): IMesh;
+
+/** @deprecated */
+
+        replaceFlexMaterials(pFlexMaterials): void;
+/** @deprecated */
+
+        getFlexMaterial(iMaterial:  number ): IMaterial;
+        getFlexMaterial(csName: string): IMaterial;
+/** @deprecated */
+
+        addFlexMaterial(sName: string, pMaterial?: IMaterial): bool;
+/** @deprecated */
+
+        setFlexMaterial(iMaterial:  number ): bool;
+        setFlexMaterial(csName: string): bool;
+
+        createSubset(sName: string, ePrimType: EPrimitiveTypes, eOptions?:  number );
+        freeSubset(sName: string): bool;
+        getSubset(sMesh: string): IMeshSubset;
+        getSubset(i:  number ): IMeshSubset;
+        appendSubset(sName: string, pData: IRenderData): IMeshSubset;
+
+        setSkin(pSkin: ISkin): void;
+        setSkeleton(pSkeleton: ISkeleton): void;
+        createSkin(): ISkin;
+
+        createBoundingBox(): bool;
+        deleteBoundingBox(): bool;
+        showBoundingBox(): bool;
+        hideBoundingBox(): bool;
+        createAndShowSubBoundingBox(): void;
+
+        createBoundingSphere(): bool;
+        deleteBoundingSphere(): bool;
+        showBoundingSphere(): bool;
+        hideBoundingSphere(): bool;
+        createAndShowSubBoundingSphere(): void;
+
+/** TRUE if only one mesh subset has a shadow. */
+
+        hasShadow(): bool;
+/** Add shadow for all subsets. */
+
+        setShadow(bValue?: bool): void;
+
+        isReadyForRender(): bool;
+
+        toSceneModel(pParent: ISceneNode, sName?: string): ISceneModel;
+
+        _drawSubset(iSubset:  number ): void;
+        _draw(): void;
+
+/** notify, when one of substets added or removed shadow */
+
+         shadow(pSubset: IMeshSubset, bShadow: bool): void;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+    export interface IVertexBuffer {} ;
+    export interface IVertexDeclaration {} ;
+    export interface IRenderDataType {} ;
+    export interface IBuffer {} ;
+    export interface IReferenceCounter {} ;
+
+	export enum ERenderDataBufferOptions {
+        VB_READABLE       =  (1 << (EHardwareBufferFlags.BACKUP_COPY)) ,
+        RD_ADVANCED_INDEX = < number >ERenderDataOptions.ADVANCED_INDEX,
+        RD_SINGLE_INDEX   = < number >ERenderDataOptions.SINGLE_INDEX,
+        RD_RENDERABLE     = < number >ERenderDataOptions.RENDERABLE
+    };
+
+// export interface IRenderDataType {
+//     new (): IRenderData;
+// }
+
+/*IHardwareBuffer*/
+	export interface IRenderDataCollection extends                    IBuffer, IReferenceCounter {
+		 buffer: IVertexBuffer;
+
+        getEngine(): IEngine;
+        getOptions():  number ;
+
+        getData(sUsage: string): IVertexData;
+        getData(iOffset:  number ): IVertexData;
+        getRenderData(iSubset:  number ): IRenderData;
+        getEmptyRenderData(ePrimType: EPrimitiveTypes, eOptions: ERenderDataBufferOptions): IRenderData;
+        getDataLocation(sSemantics: string):  number ;
+
+        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, isCommon?: bool):  number ;
+        allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, isCommon?: bool):  number ;
+        allocateData(pDeclData: IVertexElementInterface[], pData: ArrayBufferView, isCommon?: bool):  number ;
+        allocateData(pDeclData: IVertexElementInterface[], pData: ArrayBuffer, isCommon?: bool):  number ;
+
+        destroy(): void;
+
+        _draw(): void;
+        _draw(iSubset:  number ): void;
+
+// _setup(eOptions?: int): void;
+
+        _allocateData(pVertexDecl: IVertexDeclaration, iSize:  number ): IVertexData;
+        _allocateData(pVertexDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
+        _allocateData(pVertexDecl: IVertexDeclaration, pData: ArrayBuffer): IVertexData;
+        _allocateData(pDeclData: IVertexElementInterface[], iSize:  number ): IVertexData;
+        _allocateData(pDeclData: IVertexElementInterface[], pData: ArrayBufferView): IVertexData;
+        _allocateData(pDeclData: IVertexElementInterface[], pData: ArrayBuffer): IVertexData;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IAnimationFrame {} ;
+	export interface ISkeleton {} ;
+	export interface ISceneNode {} ;
+	export interface IMat4 {} ;
+	export interface IAnimationTrack {
+		targetName: string;
+		 target: ISceneNode;
+		 duration:  number ;
+
+		keyFrame(fTime:  number , pMatrix: IMat4): bool;
+		getKeyFrame(iFrame:  number ): IAnimationFrame;
+		findKeyFrame(fTime:  number ):  number ;
+		bind(sJoint: string, pSkeleton: ISkeleton);
+		bind(pSkeleton: ISkeleton);
+		bind(pNode: ISceneNode);
+		frame(fTime:  number ): IAnimationFrame;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface INode {} ;
+	export interface IJoint {} ;
+
+	export interface IJointMap{
+		[index: string]: IJoint;
+	}
+
+
+
+	export interface ISkeleton {
+		 totalBones:  number ;
+		 totalNodes:  number ;
+		 name: string;
+		 root: IJoint;
+
+		getRootJoint(): IJoint;
+		getRootJoints(): IJoint[];
+		getJointMap(): IJointMap;
+		getNodeList(): ISceneNode[];
+		addRootJoint(pJoint: IJoint): bool;
+		update(): bool;
+		findJoint(sName: string): IJoint;
+		findJointByName(sName: string): IJoint;
+		attachMesh(pMesh: IMesh): bool;
+		detachMesh(): void;
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IExplorerFunc {} ;
+	export interface IReferenceCounter {} ;
+
+	export enum  EEntityTypes {
+		UNKNOWN,
+		NODE,
+
+		JOINT,
+
+		SCENE_NODE,
+
+		CAMERA,
+		SHADOW_CASTER,
+
+		LIGHT_PROJECT = 37,
+		LIGHT_OMNI_DIRECTIONAL,
+
+		SCENE_OBJECT = 64,
+
+		MODEL,
+		TERRAIN_SECTION,
+		TEXT3D,
+		SPRITE,
+		EMITTER,
+
+		UI_NODE = 100,
+// UI_HTMLNODE,
+// UI_DNDNODE,
+
+// UI_COMPONENT,
+// UI_BUTTON,
+// UI_LABEL,
+// UI_TREE,
+
+		OBJECTS_LIMIT = 128
+	}
+
+	export interface IEntity extends IEventProvider, IReferenceCounter {
+		name: string;
+
+		parent: IEntity;
+		sibling: IEntity;
+		child: IEntity;
+
+		 rightSibling: IEntity;
+
+		 type: EEntityTypes;
+
+		 depth:  number ;
+		 root: IEntity;
+
+//create(): bool;//moved to INode
+		destroy(): void;
+
+		findEntity(sName: string): IEntity;
+		explore(fn: IExplorerFunc): void;
+		childOf(pParent: IEntity): bool;
+		siblingCount():  number ;
+		childCount():  number ;
+
+		update(): bool;
+		recursiveUpdate(): bool;
+		recursivePreUpdate(): void;
+		prepareForUpdate(): void;
+
+		hasParent(): bool;
+		hasChild(): bool;
+		hasSibling(): bool;
+
+		isASibling(pSibling: IEntity): bool;
+		isAChild(pChild: IEntity): bool;
+		isInFamily(pEntity: IEntity, bSearchEntireTree?: bool): bool;
+
+//обновлен ли сам узел
+		isUpdated(): bool;
+//есть ли обновления среди потомков?
+		hasUpdatedSubNodes(): bool;
+
+
+		addSibling(pSibling: IEntity): IEntity;
+		addChild(pChild: IEntity): IEntity;
+		removeChild(pChild: IEntity): IEntity;
+		removeAllChildren(): void;
+
+		attachToParent(pParent: IEntity): bool;
+		detachFromParent(): bool;
+
+		promoteChildren(): void;
+		relocateChildren(pParent: IEntity): void;
+
+		toString(isRecursive?: bool, iDepth?:  number ): string;
+
+		 attached(): void;
+		 detached(): void;
+
+		 childAdded(pChild: IEntity): void;
+		 childRemoved(pChild: IEntity): void;
+	}
+
+}
+
+
+
+module akra {
+
+	export interface IVec3 {} ;
+	export interface IMat3 {} ;
+	export interface IMat4 {} ;
+	export interface IQuat4 {} ;
+
+	export enum ENodeInheritance {
+//inheritance only position
+		POSITION = 0,
+//inheritance rotation and scale only
+        ROTSCALE,
+//inheritance all
+    	ALL
+	};
+
+	export interface INodeMap{
+		[index: string]: INode;
+	}
+
+	export interface INode extends IEntity {
+		localOrientation: IQuat4;
+		localPosition: IVec3;
+		localScale: IVec3;
+		localMatrix: IMat4;
+
+		 worldMatrix: IMat4;
+		 worldPosition: IVec3;
+
+		 inverseWorldMatrix: IMat4;
+		 normalMatrix: IMat3;
+
+		create(): bool;
+
+		setInheritance(eInheritance: ENodeInheritance);
+		getInheritance(): ENodeInheritance;
+
+		isWorldMatrixNew(): bool;
+		isLocalMatrixNew(): bool;
+
+//recalcWorldMatrix(): bool;
+
+		setPosition(v3fPosition: IVec3): void;
+		setPosition(fX:  number , fY:  number , fZ:  number ): void;
+
+		addPosition(v3fPosition: IVec3): void;
+		addPosition(fX:  number , fY:  number , fZ:  number ): void;
+		addRelPosition(v3fPosition: IVec3): void;
+		addRelPosition(fX:  number , fY:  number , fZ:  number ): void;
+
+		setRotationByMatrix(m3fRotation: IMat3): void;
+		setRotationByMatrix(m4fRotation: IMat4): void;
+		setRotationByAxisAngle(v3fAxis: IVec3, fAngle:  number ): void;
+		setRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void;
+		setRotationByEulerAngles(fYaw:  number , fPitch:  number , fRoll:  number ): void;
+		setRotationByXYZAxis(fX:  number , fY:  number , fZ:  number ): void;
+		setRotation(q4fRotation: IQuat4): void;
+
+		addRelRotationByMatrix(m4fRotation: IMat4): void;
+		addRelRotationByMatrix(m3fRotation: IMat3): void;
+		addRelRotationByAxisAngle(v3fAxis: IVec3, fAngle:  number ): void;
+		addRelRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void;
+		addRelRotationByEulerAngles(fYaw:  number , fPitch:  number , fRoll:  number ): void;
+		addRelRotationByXYZAxis(fX:  number , fY:  number , fZ:  number ): void;
+		addRelRotation(q4fRotation: IQuat4): void;
+
+		addRotationByMatrix(m4fRotation: IMat4): void;
+		addRotationByMatrix(m3fRotation: IMat3): void;
+		addRotationByAxisAngle(v3fAxis: IVec3, fAngle:  number ): void;
+		addRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void;
+		addRotationByEulerAngles(fYaw:  number , fPitch:  number , fRoll:  number ): void;
+		addRotationByXYZAxis(fX:  number , fY:  number , fZ:  number ): void;
+		addRotation(q4fRotation: IQuat4): void;
+
+		scale(fScale:  number ): void;
+		scale(fX:  number , fY:  number , fZ:  number ): void;
+	}
+}
+
+
+
+module akra {
+    export interface ISceneNodeMap {
+        [index: string]: ISceneNode;
+    }
+
+    export interface ISceneNode extends INode {
+    	scene: IScene3d;
+
+/** @deprecated */
+
+    	render(): void;
+/** @deprecated */
+
+    	prepareForRender(): void;
+/** @deprecated */
+
+    	recursiveRender(): void;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IEngine {} ;
+
+	export interface IJoint extends ISceneNode {
+		boneName: string;
+// getEngine(): IEngine;
+		create(): bool;
+// toString(isRecursive: bool, iDepth: int): string;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export interface IEntity {} ;
+
+	export interface IExplorerFunc {
+		(pEntity: IEntity): bool;
+	}
+}
+
+
+
+
+
+
+
+module akra.util {
+	export enum EEntityStates {
+//обновился ли сам узел?
+		k_Updated = 0x01,
+//есть ли среди потомков обновленные узлы
+		k_DescendantsUpdtated = 0x02,
+//если ли обновленные узлы среди братьев или их потомках
+		k_SiblingsUpdated = 0x04
+	}
+
+	export class Entity extends ReferenceCounter implements IEntity {
+		/**@protected*/  _sName: string = null;
+		/**@protected*/  _pParent: IEntity = null;
+		/**@protected*/  _pSibling: IEntity = null;
+		/**@protected*/  _pChild: IEntity = null;
+		/**@protected*/  _eType: EEntityTypes = EEntityTypes.UNKNOWN;
+		/**@protected*/  _iStateFlags:  number  = 0;
+
+		inline get name(): string { return this._sName; }
+		inline set name(sName: string) { this._sName = sName; }
+
+		inline get parent(): IEntity { return this._pParent; }
+		inline set parent(pParent: IEntity) { this.attachToParent(pParent); }
+
+		inline get sibling(): IEntity { return this._pSibling; }
+		inline set sibling(pSibling: IEntity) { this._pSibling = pSibling; }
+
+		inline get child(): IEntity { return this._pChild; }
+		inline set child(pChild: IEntity) { this._pChild = pChild; }
+
+		inline get type(): EEntityTypes { return this._eType; }
+
+		get rightSibling(): IEntity {
+			var pSibling: IEntity = this.sibling;
+
+			if (pSibling) {
+				while (pSibling.sibling) {
+					pSibling = pSibling.sibling;
+				}
+
+				return pSibling;
+			}
+
+			return this;
+		}
+
+		constructor (eType: EEntityTypes) {
+			super();
+			this._eType = eType;
+		}
+
+		get depth():  number  {
+			var iDepth:  number  = -1;
+	        for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent, ++ iDepth){};
+	        return iDepth;
+		}
+
+		get root(): IEntity {
+	        for (var pEntity: IEntity = this, iDepth:  number  = -1; pEntity.parent; pEntity = pEntity.parent, ++ iDepth){};
+	        return pEntity;
+		}
+
+
+
+		destroy(): void {
+// destroy anything attached to this node
+//	destroySceneObject();
+// promote any children up to our parent
+		    this.promoteChildren();
+// now remove ourselves from our parent
+		    this.detachFromParent();
+// we should now be removed from the tree, and have no dependants
+		    logger.setSourceLocation( "util/Entity.ts" , 81 ); logger.assert(this.referenceCount() == 0, "Attempting to delete a scene node which is still in use"); ;
+		    logger.setSourceLocation( "util/Entity.ts" , 82 ); logger.assert(this._pSibling == null, "Failure Destroying Node"); ;
+		    logger.setSourceLocation( "util/Entity.ts" , 83 ); logger.assert(this._pChild == null, "Failure Destroying Node"); ;
+		}
+
+		findEntity(sName: string): IEntity {
+			 var pEntity: IEntity = null;
+
+		    if (this._sName === sName) {
+		        return this;
+		    }
+
+		    if (this._pSibling) {
+		        pEntity = this._pSibling.findEntity(sName);
+		    }
+
+		    if (pEntity == null && this._pChild) {
+		        pEntity = this._pChild.findEntity(sName);
+		    }
+
+		    return pEntity;
+		}
+
+		explore(fn: IExplorerFunc): void {
+			if (fn(this) === false) {
+		        return;
+		    }
+
+		    if (this._pSibling) {
+		        this._pSibling.explore(fn);
+		    }
+
+		    if (this._pChild) {
+		        this._pChild.explore(fn);
+		    }
+		}
+
+
+		childOf(pParent: IEntity): bool {
+			for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent) {
+		        if (pEntity.parent === pParent) {
+		            return true;
+		        }
+		    }
+
+		    return false;
+		}
+
+
+/**
+		 * Returns the current number of siblings of this object.
+		 */
+
+		siblingCount():  number  {
+			var iCount:  number  = 0;
+
+		    if (this._pParent) {
+		        var pNextSibling = this._pParent.child;
+		        if (pNextSibling) {
+		            while (pNextSibling) {
+		                pNextSibling = pNextSibling.sibling;
+		                ++ iCount;
+		            }
+		        }
+		    }
+
+		    return iCount;
+		}
+
+
+/**
+		 * Returns the current number of children of this object
+		 */
+
+		childCount():  number  {
+			var iCount:  number  = 0;
+
+		    var pNextChild: IEntity = this.child;
+
+		    if (pNextChild) {
+		        ++ iCount;
+		        while (pNextChild) {
+		            pNextChild = pNextChild.sibling;
+		            ++ iCount;
+		        }
+		    }
+		    return iCount;
+		}
+
+		inline isUpdated(): bool {
+			return  ((this._iStateFlags & (1 << (EEntityStates.k_Updated)) ) != 0) ;
+		}
+
+		inline hasUpdatedSubNodes(): bool {
+			return  ((this._iStateFlags & (1 << (EEntityStates.k_DescendantsUpdtated)) ) != 0) ;
+		}
+
+		recursiveUpdate(): bool {
+// var bUpdated: bool = false;
+// update myself
+		    if (this.update()) {
+		    	((this._iStateFlags) |= (EEntityStates.k_Updated)) ;
+// bUpdated = true;
+		    }
+// update my sibling
+		    if (this._pSibling && this._pSibling.recursiveUpdate()) {
+		        ((this._iStateFlags) |= (EEntityStates.k_SiblingsUpdated)) ;
+// bUpdated = true;
+		    }
+// update my child
+		    if (this._pChild && this._pChild.recursiveUpdate()) {
+		        ((this._iStateFlags) |= (EEntityStates.k_DescendantsUpdtated)) ;
+// bUpdated = true;
+		    }
+
+/*bUpdated*/
+/* */
+		    return (this._iStateFlags != 0);
+		}
+
+		recursivePreUpdate(): void {
+// clear the flags from the previous update
+		    this.prepareForUpdate();
+
+// update my sibling
+		    if (this._pSibling) {
+		        this._pSibling.recursivePreUpdate();
+		    }
+// update my child
+		    if (this._pChild) {
+		        this._pChild.recursivePreUpdate();
+		    }
+		}
+
+
+		prepareForUpdate(): void {
+//this._iStateFlags = 0;
+		};
+
+/** Parent is not undef */
+
+		inline hasParent(): bool {
+		    return isDefAndNotNull(this._pParent);
+		}
+
+/** Child is not undef*/
+
+		inline hasChild(): bool {
+		    return isDefAndNotNull(this._pChild);
+		}
+
+/** Sibling is not undef */
+
+		inline hasSibling(): bool {
+			return isDefAndNotNull(this._pSibling);
+		}
+
+/**
+		 * Checks to see if the provided item is a sibling of this object
+		 */
+
+		isASibling(pSibling: IEntity): bool {
+			if (!pSibling) {
+		        return false;
+		    }
+// if the sibling we are looking for is me, or my FirstSibling, return true
+		    if (this == pSibling || this._pSibling == pSibling) {
+		        return true;
+		    }
+// if we have a sibling, continue searching
+		    if (this._pSibling) {
+		        return this._pSibling.isASibling(pSibling);
+		    }
+// it's not us, and we have no sibling to check. This is not a sibling of ours.
+		    return false;
+		}
+
+/** Checks to see if the provided item is a child of this object. (one branch depth only) */
+
+		isAChild(pChild: IEntity): bool {
+			if (!pChild) {
+		        return (false);
+		    }
+// if the sibling we are looking for is my FirstChild return true
+		    if (this._pChild == pChild) {
+		        return (true);
+		    }
+// if we have a child, continue searching
+		    if (this._pChild) {
+		        return (this._pChild.isASibling(pChild));
+		    }
+// it's not us, and we have no child to check. This is not a sibling of ours.
+		    return (false);
+		}
+
+/**
+		 * Checks to see if the provided item is a child or sibling of this object. If SearchEntireTree
+		 * is TRUE, the check is done recursivly through all siblings and children. SearchEntireTree
+		 * is FALSE by default.
+		 */
+
+		isInFamily(pEntity: IEntity, bSearchEntireTree?: bool): bool {
+			if (!pEntity) {
+		        return (false);
+		    }
+// if the model we are looking for is me or my immediate family, return true
+		    if (this == pEntity || this._pChild == pEntity || this._pSibling == pEntity) {
+		        return (true);
+		    }
+// if not set to seach entire tree, just check my siblings and kids
+		    if (!bSearchEntireTree) {
+		        if (this.isASibling(pEntity)) {
+		            return (true);
+		        }
+		        if (this._pChild && this._pChild.isASibling(pEntity)) {
+		            return (true);
+		        }
+		    }
+// seach entire Tree!!!
+		    else {
+		        if (this._pSibling && this._pSibling.isInFamily(pEntity, bSearchEntireTree)) {
+		            return (true);
+		        }
+
+		        if (this._pChild && this._pChild.isInFamily(pEntity, bSearchEntireTree)) {
+		            return (true);
+		        }
+		    }
+
+		    return (false);
+		}
+
+/**
+		 * Adds the provided ModelSpace object to the descendant list of this object. The provided
+		 * ModelSpace object is removed from any parent it may already belong to.
+		 */
+
+		addSibling(pSibling: IEntity): IEntity {
+			if (pSibling) {
+// replace objects current sibling pointer with this new one
+		        pSibling.sibling = this._pSibling;
+		        this.sibling = pSibling;
+		    }
+
+		    return pSibling;
+		}
+
+/**
+		 * Adds the provided ModelSpace object to the descendant list of this object. The provided
+		 * ModelSpace object is removed from any parent it may already belong to.
+		 */
+
+		addChild(pChild: IEntity): IEntity {
+			if (pChild) {
+// Replace the new child's sibling pointer with our old first child.
+		        pChild.sibling = this._pChild;
+// the new child becomes our first child pointer.
+		        this._pChild = pChild;
+		        this.childAdded(pChild);
+    		}
+
+    		return pChild;
+		}
+
+/**
+		 * Removes a specified child object from this parent object. If the child is not the
+		 * FirstChild of this object, all of the Children are searched to find the object to remove.
+		 */
+
+		removeChild(pChild: IEntity): IEntity {
+			if (this._pChild && pChild) {
+		        if (this._pChild == pChild) {
+		            this._pChild = pChild.sibling;
+		            pChild.sibling  = null;
+		        }
+		        else {
+		            var pTempNode: IEntity = this._pChild;
+// keep searching until we find the node who's sibling is our target
+// or we reach the end of the sibling chain
+		            while (pTempNode && (pTempNode.sibling != pChild)) {
+		                pTempNode = pTempNode.sibling;
+		            }
+// if we found the proper item, set it's FirstSibling to be the FirstSibling of the child
+// we are removing
+		            if (pTempNode) {
+		                pTempNode.sibling = pChild.sibling;
+		                pChild.sibling = null;
+		            }
+		        }
+
+		        this.childRemoved(pChild);
+	    	}
+
+	    	return pChild;
+		}
+
+/** Removes all Children from this parent object */
+
+		removeAllChildren(): void {
+// keep removing children until end of chain is reached
+		    while (!isNull(this._pChild)) {
+		        var pNextSibling = this._pChild.sibling;
+		        this._pChild.detachFromParent();
+		        this._pChild = pNextSibling;
+		    }
+		}
+
+/** Attaches this object ot a new parent. Same as calling the parent's addChild() routine. */
+
+		attachToParent(pParent: IEntity): bool {
+
+			var pParentPrev: IEntity = this._pParent;
+
+			if (pParent != this._pParent) {
+
+		        this.detachFromParent();
+
+		        if (pParent) {
+		            if (pParent.addChild(this)) {
+			            this._pParent = pParent;
+			            this._pParent.addRef();
+			            this.attached();
+		            	return true;
+		            }
+
+		            return this.attachToParent(pParentPrev);
+		        }
+	    	}
+
+	    	return false;
+		}
+
+		detachFromParent(): bool {
+// tell our current parent to release us
+		    if (this._pParent) {
+		        this._pParent.removeChild(this);
+//TODO: разобраться что за херня!!!!
+		        if (this._pParent) {
+		            this._pParent.release();
+		        }
+
+		        this._pParent = null;
+// my world matrix is now my local matrix
+		        this.detached();
+		        return true;
+		    }
+
+		    return false;
+		}
+
+/**
+		 * Attaches this object's children to it's parent, promoting them up the tree
+		 */
+
+		promoteChildren(): void {
+// Do I have any children to promote?
+		    while (!isNull(this._pChild)) {
+		        var pNextSibling: IEntity = this._pChild.sibling;
+		        this._pChild.attachToParent(this._pParent);
+		        this._pChild = pNextSibling;
+		    }
+		}
+
+		relocateChildren(pParent: IEntity): void {
+			if (pParent != this) {
+// Do I have any children to relocate?
+		        while (!isNull(this._pChild)) {
+		            var pNextSibling: IEntity = this._pChild.sibling;
+		            this._pChild.attachToParent(pParent);
+		            this._pChild = pNextSibling;
+		        }
+		    }
+		}
+
+		update(): bool { return false; }
+
+		toString(isRecursive: bool = false, iDepth:  number  = 0): string {
+
+		    if (!isRecursive) {
+		        return '<entity' + (this._sName? ' ' + this._sName: "") + '>';
+		    }
+
+		    var pSibling: IEntity = this.sibling;
+		    var pChild: IEntity = this.child;
+		    var s: string = "";
+
+		    for (var i = 0; i < iDepth; ++ i) {
+		        s += ':  ';
+		    }
+
+		    s += '+----[depth: ' + this.depth + ']' + this.toString() + '\n';
+
+		    if (pChild) {
+		        s += pChild.toString(true, iDepth + 1);
+		    }
+
+		    if (pSibling) {
+		        s += pSibling.toString(true, iDepth);
+		    }
+
+		    return s;
+
+
+		}
+
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return Entity._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+
+		attached (): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || (<events.EventTable>this.getEventTable()).findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).attached; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier) : _unicast.listener (_recivier) ; } } ; ;
+		detached (): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || (<events.EventTable>this.getEventTable()).findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).detached; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier) : _unicast.listener (_recivier) ; } } ; ;
+		childAdded (child): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || (<events.EventTable>this.getEventTable()).findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).childAdded; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier, child) : _unicast.listener (_recivier, child) ; } } ; ;
+		childRemoved (child): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || (<events.EventTable>this.getEventTable()).findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).childRemoved; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier, child) : _unicast.listener (_recivier, child) ; } } ; ;
+	}
+}
+
+
+
+
+
+
+module akra.scene {
+
+	export enum ENodeUpdateFlags {
+		k_SetForDestruction = 0,
+//if changed scale, otation or position
+		k_NewOrientation,
+// k_NewTranslation,
+// k_NewScale,
+		k_NewWorldMatrix,
+		k_NewLocalMatrix,
+		k_RebuildInverseWorldMatrix,
+		k_RebuildNormalMatrix,
+     };
+
+	export class Node extends util.Entity implements INode {
+		/**@protected*/  _m4fLocalMatrix: IMat4 = null;
+		/**@protected*/  _m4fWorldMatrix: IMat4 = null;
+		/**@protected*/  _m4fInverseWorldMatrix: IMat4 = null;
+		/**@protected*/  _m3fNormalMatrix: IMat3 = null;
+
+		/**@protected*/  _v3fWorldPosition: IVec3 = null;
+
+		/**@protected*/  _qRotation: IQuat4 = null;
+		/**@protected*/  _v3fTranslation: IVec3 = null;
+		/**@protected*/  _v3fScale: IVec3 = null;
+
+		/**@protected*/  _iUpdateFlags:  number  = 0;
+		/**@protected*/  _eInheritance: ENodeInheritance = ENodeInheritance.POSITION;
+
+		create(): bool {
+			return true;
+		}
+
+
+		inline get localOrientation(): IQuat4 {
+			return this._qRotation;
+		}
+
+		inline set localOrientation(qOrient: IQuat4) {
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+			this._qRotation.set(qOrient);
+		}
+
+		inline get localPosition(): IVec3 {
+			return this._v3fTranslation;
+		}
+
+		inline set localPosition(v3fPosition: IVec3) {
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+			this._v3fTranslation.set(v3fPosition);
+		}
+
+		inline get localScale(): IVec3 {
+			return this._v3fScale;
+		}
+
+		inline set localScale(v3fScale: IVec3) {
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+			this._v3fScale.set(v3fScale);
+		}
+
+		inline get localMatrix(): IMat4 {
+			return this._m4fLocalMatrix;
+		}
+
+		inline set localMatrix(m4fLocalMatrix: IMat4) {
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewLocalMatrix))) ) ;
+			this._m4fLocalMatrix.set(m4fLocalMatrix);
+		}
+
+
+		inline get worldMatrix(): IMat4 {
+			return this._m4fWorldMatrix;
+		}
+
+		inline get worldPosition(): IVec3 {
+			return this._v3fWorldPosition;
+		}
+
+		get inverseWorldMatrix(): IMat4 {
+			if ( ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_RebuildInverseWorldMatrix)) ) != 0) ) {
+		        this._m4fWorldMatrix.inverse(this._m4fInverseWorldMatrix);
+		        ((this._iUpdateFlags) &= ~ (1 << ((ENodeUpdateFlags.k_RebuildInverseWorldMatrix))) ) ;
+		    }
+
+			return this._m4fInverseWorldMatrix;
+		}
+
+		get normalMatrix(): IMat3 {
+			if ( ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_RebuildNormalMatrix)) ) != 0) ) {
+
+		        this._m4fWorldMatrix.toMat3(this._m3fNormalMatrix).inverse().transpose();
+
+		        ((this._iUpdateFlags) &= ~ (1 << ((ENodeUpdateFlags.k_RebuildNormalMatrix))) ) ;
+		    }
+
+			return this._m3fNormalMatrix;
+		}
+
+
+		update(): bool {
+// derived classes update the local matrix
+// then call this base function to complete
+// the update
+		    return this.recalcWorldMatrix();
+		}
+
+
+		prepareForUpdate(): void {
+			super.prepareForUpdate();
+// clear the temporary flags
+			((this._iUpdateFlags) &= ~( (1 << (ENodeUpdateFlags.k_NewLocalMatrix)) | (1 << (ENodeUpdateFlags.k_NewOrientation)) | (1 << (ENodeUpdateFlags.k_NewWorldMatrix)) ))
+                                                                                            ;
+		}
+
+
+		inline setInheritance(eInheritance: ENodeInheritance) {
+			this._eInheritance = eInheritance;
+		}
+
+		inline getInheritance(): ENodeInheritance {
+			return this._eInheritance;
+		}
+
+		inline isWorldMatrixNew(): bool {
+			return  ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_NewWorldMatrix)) ) != 0) ;
+		}
+
+		inline isLocalMatrixNew(): bool {
+			return  ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_NewLocalMatrix)) ) != 0) ;
+		}
+
+		private recalcWorldMatrix(): bool {
+			var isParentMoved: bool = this._pParent && (<Node>this._pParent).isWorldMatrixNew();
+		    var isOrientModified: bool =  ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_NewOrientation)) ) != 0) ;
+		    var isLocalModified: bool =  ((this._iUpdateFlags & (1 << (ENodeUpdateFlags.k_NewLocalMatrix)) ) != 0) ;
+
+		    if (isOrientModified || isParentMoved || isLocalModified) {
+		        var m4fLocal: IMat4 = this._m4fLocalMatrix;
+		        var m4fWorld: IMat4 = this._m4fWorldMatrix;
+		        var m4fParent: IMat4 = (<Node>this._pParent).worldMatrix;
+		        var m4fOrient: IMat4 = Node._m4fTemp;
+		        var v3fTemp: IVec3 = Node._v3fTemp;
+
+		        var pWorldData: Float32Array = m4fWorld.data;
+		        var pParentData: Float32Array = m4fParent.data;
+		        var pOrientData: Float32Array = m4fOrient.data;
+
+		        this._qRotation.toMat4(m4fOrient);
+
+		        m4fOrient.setTranslation(this._v3fTranslation);
+		        m4fOrient.scaleLeft(this._v3fScale);
+		        m4fOrient.multiply(m4fLocal);
+
+//console.error(m4fOrient.toString());
+
+		        if (this._pParent) {
+		            if (this._eInheritance === ENodeInheritance.ALL) {
+		                m4fParent.multiply(m4fOrient, m4fWorld);
+		            }
+		            else if (this._eInheritance === ENodeInheritance.POSITION) {
+		                m4fWorld.set(m4fOrient);
+
+		                pWorldData[ 12 ] = pParentData[ 12 ] + pOrientData[ 12 ];
+		                pWorldData[ 13 ] = pParentData[ 13 ] + pOrientData[ 13 ];
+		                pWorldData[ 14 ] = pParentData[ 14 ] + pOrientData[ 14 ];
+		            }
+		            else if (this._eInheritance === ENodeInheritance.ROTSCALE) {
+		                var p11 = pParentData[ 0 ], p12 = pParentData[ 4 ],
+		                    p13 = pParentData[ 8 ];
+		                var p21 = pParentData[ 1 ], p22 = pParentData[ 5 ],
+		                    p23 = pParentData[ 9 ];
+		                var p31 = pParentData[ 2 ], p32 = pParentData[ 6 ],
+		                    p33 = pParentData[ 10 ];
+
+		                var l11 = pOrientData[ 0 ], l12 = pOrientData[ 4 ],
+		                    l13 = pOrientData[ 8 ];
+		                var l21 = pOrientData[ 1 ], l22 = pOrientData[ 5 ],
+		                    l23 = pOrientData[ 9 ];
+		                var l31 = pOrientData[ 2 ], l32 = pOrientData[ 6 ],
+		                    l33 = pOrientData[ 10 ];
+
+		                pWorldData[ 0 ] = p11 * l11 + p12 * l21 + p13 * l31;
+		                pWorldData[ 4 ] = p11 * l12 + p12 * l22 + p13 * l32;
+		                pWorldData[ 8 ] = p11 * l13 + p12 * l23 + p13 * l33;
+		                pWorldData[ 12 ] = pOrientData[ 12 ];
+		                pWorldData[ 1 ] = p21 * l11 + p22 * l21 + p23 * l31;
+		                pWorldData[ 5 ] = p21 * l12 + p22 * l22 + p23 * l32;
+		                pWorldData[ 9 ] = p21 * l13 + p22 * l23 + p23 * l33;
+		                pWorldData[ 13 ] = pOrientData[ 13 ];
+		                pWorldData[ 2 ] = p31 * l11 + p32 * l21 + p33 * l31;
+		                pWorldData[ 6 ] = p31 * l12 + p32 * l22 + p33 * l32;
+		                pWorldData[ 10 ] = p31 * l13 + p32 * l23 + p33 * l33;
+		                pWorldData[ 14 ] = pOrientData[ 14 ];
+
+		                pWorldData[ 3 ] = pOrientData[ 3 ];
+		                pWorldData[ 7 ] = pOrientData[ 7 ];
+		                pWorldData[ 11 ] = pOrientData[ 11 ];
+		                pWorldData[ 15 ] = pOrientData[ 15 ];
+		            }
+		        }
+		        else {
+		            m4fWorld.set(m4fOrient);
+		        }
+
+		        this._v3fWorldPosition.x = pWorldData[ 12 ];
+		        this._v3fWorldPosition.y = pWorldData[ 13 ];
+		        this._v3fWorldPosition.z = pWorldData[ 14 ];
+
+// set the flag that our world matrix has changed
+		        ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewWorldMatrix))) ) ;
+// and it's inverse & vectors are out of date
+		        ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_RebuildInverseWorldMatrix))) ) ;
+		        ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_RebuildNormalMatrix))) ) ;
+
+		        return true;
+		    }
+
+		    return false;
+		}
+
+		setPosition(v3fPosition: IVec3): void;
+		setPosition(fX:  number , fY:  number , fZ:  number ): void;
+		setPosition(fX?: any, fY?: any, fZ?: any): void {
+			var pPos: IVec3 = arguments.length === 1? arguments[0]: vec3(fX, fY, fZ);
+		    var v3fTranslation: IVec3 = this._v3fTranslation;
+
+		    v3fTranslation.set(pPos);
+
+		    ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		addPosition(v3fPosition: IVec3): void;
+		addPosition(fX:  number , fY:  number , fZ:  number ): void;
+		addPosition(fX?: any, fY?: any, fZ?: any): void {
+			var pPos: IVec3 = arguments.length === 1? arguments[0]: vec3(fX, fY, fZ);
+		    var v3fTranslation: IVec3 = this._v3fTranslation;
+
+		    v3fTranslation.add(pPos);
+
+		    ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		addRelPosition(v3fPosition: IVec3): void;
+		addRelPosition(fX:  number , fY:  number , fZ:  number ): void;
+		addRelPosition(fX?: any, fY?: any, fZ?: any): void {
+			var pPos: IVec3 = arguments.length === 1? arguments[0]: vec3(fX, fY, fZ);
+		    var v3fTranslation: IVec3 = this._v3fTranslation;
+
+		    this._qRotation.multiplyVec3(pPos);
+    		v3fTranslation.add(pPos);
+
+		    ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		setRotationByMatrix(m3fRotation: IMat3): void;
+		setRotationByMatrix(m4fRotation: IMat4): void;
+		setRotationByMatrix(matrix: any): void {
+			matrix.toQuat4(this._qRotation);
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		setRotationByAxisAngle(v3fAxis: IVec3, fAngle:  number ): void {
+			Quat4.fromAxisAngle(v3fAxis, fAngle, this._qRotation);
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		setRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
+			Quat4.fromForwardUp(v3fForward, v3fUp, this._qRotation);
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		setRotationByEulerAngles(fYaw:  number , fPitch:  number , fRoll:  number ): void {
+			Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, this._qRotation);
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		setRotationByXYZAxis(fX:  number , fY:  number , fZ:  number ): void {
+			Quat4.fromYawPitchRoll(fY, fX, fZ, this._qRotation);
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		setRotation(q4fRotation: IQuat4): void {
+			this._qRotation.set(q4fRotation);
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		addRelRotationByMatrix(m3fRotation: IMat3): void;
+		addRelRotationByMatrix(m4fRotation: IMat4): void;
+		addRelRotationByMatrix(matrix: any): void {
+			this.addRelRotation(arguments[0].toQuat4(Node._q4fTemp));
+		}
+
+		addRelRotationByAxisAngle(v3fAxis: IVec3, fAngle:  number ): void {
+			this.addRelRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp));
+		}
+
+		addRelRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
+			this.addRelRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp));
+		}
+
+		addRelRotationByEulerAngles(fYaw:  number , fPitch:  number , fRoll:  number ): void {
+			this.addRelRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp));
+		}
+
+		addRelRotationByXYZAxis(fX:  number , fY:  number , fZ:  number ): void {
+			this.addRelRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp));
+		}
+
+		addRelRotation(q4fRotation: IQuat4): void {
+			this._qRotation.multiply(q4fRotation);
+			((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+		addRotationByMatrix(m3fRotation: IMat3): void;
+		addRotationByMatrix(m4fRotation: IMat4): void;
+		addRotationByMatrix(matrix: any): void {
+			this.addRotation(arguments[0].toQuat4(Node._q4fTemp));
+		}
+
+		addRotationByAxisAngle(v3fAxis: IVec3, fAngle:  number ): void {
+			this.addRotation(Quat4.fromAxisAngle(v3fAxis, fAngle, Node._q4fTemp));
+		}
+
+		addRotationByForwardUp(v3fForward: IVec3, v3fUp: IVec3): void {
+			this.addRotation(Quat4.fromForwardUp(v3fForward, v3fUp, Node._q4fTemp));
+		}
+
+		addRotationByEulerAngles(fYaw:  number , fPitch:  number , fRoll:  number ): void {
+			this.addRotation(Quat4.fromYawPitchRoll(fYaw, fPitch, fRoll, Node._q4fTemp));
+		}
+
+		addRotationByXYZAxis(fX:  number , fY:  number , fZ:  number ): void {
+			this.addRotation(Quat4.fromYawPitchRoll(fY, fX, fZ, Node._q4fTemp));
+		}
+
+		addRotation(q4fRotation: IQuat4): void {
+			q4fRotation.multiplyVec3(this._v3fTranslation);
+    		q4fRotation.multiply(this._qRotation, this._qRotation);
+    		((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+
+		scale(fScale:  number ): void;
+		scale(fX:  number , fY:  number , fZ:  number ): void;
+		scale(fX: any, fY?: any, fZ?: any): void {
+			var pScale: IVec3 = arguments.length === 1? arguments[0]: vec3(fX);
+		    var v3fScale: IVec3 = this._v3fScale;
+
+		    v3fScale.scale(pScale);
+
+		    ((this._iUpdateFlags) |= (1 << ((ENodeUpdateFlags.k_NewOrientation))) ) ;
+		}
+
+
+
+		attachToParent(pParent: IEntity): bool {
+			if (super.attachToParent(pParent)) {
+// adjust my local matrix to be relative to this new parent
+	            var m4fInvertedParentMatrix: IMat4 = mat4();
+	            (<Node>this._pParent)._m4fWorldMatrix.inverse(m4fInvertedParentMatrix);
+	            return true;
+			}
+
+			return false;
+		}
+
+		detachFromParent(): bool {
+			if (super.detachFromParent()) {
+				this._m4fWorldMatrix.identity();
+				return true;
+			}
+
+			return false;
+		}
+
+		toString(isRecursive: bool = false, iDepth:  number  = 0): string {
+
+
+		    if (!isRecursive) {
+		        return '<node' + (this.name? " " + this.name: "") + '>';
+		    }
+
+		    var pSibling: IEntity = this.sibling;
+		    var pChild: IEntity = this.child;
+		    var s = "";
+
+		    for (var i = 0; i < iDepth; ++ i) {
+		        s += ':  ';
+		    }
+
+		    s += '+----[depth: ' + this.depth + ']' + this.toString() + '\n';
+
+		    if (pChild) {
+		        s += pChild.toString(true, iDepth + 1);
+		    }
+
+		    if (pSibling) {
+		        s += pSibling.toString(true, iDepth);
+		    }
+
+		    return s;
+
+		};
+
+		private static _v3fTemp: IVec3 = vec3();
+		private static _v4fTemp: IVec4 = vec4();
+		private static _m3fTemp: IMat3 = mat3();
+		private static _m4fTemp: IMat4 = mat4();
+		private static _q4fTemp: IQuat4 = quat4();
+	}
+}
+
+
+
+module akra.scene {
+	export class SceneNode extends Node implements ISceneNode {
+		/**@protected*/  _pScene: IScene3d = null;
+
+		inline get scene(): IScene3d { return this._pScene; }
+		inline set scene(pScene: IScene3d) { this._pScene = pScene; }
+
+		constructor (pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_NODE) {
+			super(eType);
+
+			pScene.connect(this,  "attached" ,  "nodeAttachment" , EEventTypes.UNICAST);
+			pScene.connect(this,  "detached" ,  "nodeDetachment" , EEventTypes.UNICAST);
+
+			this.scene = pScene;
+		}
+
+		create(): bool {
+			super.create();
+
+			this._m4fLocalMatrix        = new Mat4(1);
+		    this._m4fWorldMatrix        = new Mat4(1);
+		    this._m4fInverseWorldMatrix = new Mat4(1);
+		    this._m3fNormalMatrix       = new Mat3(1);
+
+		    this._v3fWorldPosition  = new Vec3();
+
+		    this._v3fTranslation    = new Vec3(0);
+		    this._v3fScale          = new Vec3(1);
+		    this._qRotation         = new Quat4(0, 1);
+
+		    return true;
+		}
+
+		destroy(): void {
+			super.destroy();
+		}
+
+/**
+		 * @deprecated
+		 */
+
+		render(): void {
+
+		}
+
+/**
+		 * @deprecated
+		 */
+
+		prepareForRender(): void {
+
+		}
+
+/**
+		 * @deprecated
+		 */
+
+		recursiveRender(): void {
+// render myself
+		    this.prepareForRender();
+		    this.render();
+// render my sibling
+		    if (this.sibling) {
+		        (<ISceneNode>(this.sibling)).recursiveRender();
+		    }
+// render my child
+		    if (this.child) {
+		        (<ISceneNode>(this.child)).recursiveRender();
+		    }
+		}
+
+
+		attachToParent(pParent: IEntity): bool {
+			if ((<ISceneNode>pParent).scene !== this._pScene) {
+				logger.setSourceLocation( "SceneNode.ts" , 80 ); logger.warning("transfer of the scene node between trees scene - forbidden"); ;
+				return false;
+			}
+
+			return super.attachToParent(pParent);
+		}
+
+		toString(isRecursive: bool = false, iDepth:  number  = 0): string {
+			if (!isRecursive) {
+		        return "<scene_node" + (this.name? " " + this.name: "") + ">";
+		    }
+
+		    return super.toString(isRecursive, iDepth);
+		}
+
+	}
+}
+
+
+
+module akra.scene {
+	export class Joint extends SceneNode implements IJoint {
+		private _sBone: string = null;
+// private _iUpdated: int = 0;
+// private _pEngine: IEngine = null;
+
+		constructor (pScene: IScene3d) {
+			super(pScene, EEntityTypes.JOINT);
+		}
+
+		inline get boneName(): string{
+			return this._sBone;
+		}
+
+		inline set boneName(sBone: string){
+			return this._sBone;
+		}
+
+// getEngine(): IEngine {
+// 	return this._pEngine;
+// }
+
+		create(): bool {
+			this._m4fLocalMatrix = new Mat4(1);
+			this._m4fWorldMatrix = new Mat4(1);
+
+			this._v3fWorldPosition  = new Vec3();
+			this._v3fTranslation    = new Vec3(0, 0, 0);
+			this._v3fScale          = new Vec3(1);
+			this._qRotation         = new Quat4(0, 1);
+
+
+//maybe custom
+			this.setInheritance(ENodeInheritance.ALL);
+			return true;
+		}
+
+		toString(isRecursive: bool = false, iDepth:  number  = 0): string {
+			isRecursive = isRecursive || false;
+
+			if (!isRecursive) {
+			    return "<joint" + (this._sName ? (' ' + this._sName) : "") + ">";
+			}
+
+			return Node.prototype.toString.call(this, isRecursive, iDepth);
+		}
+	}
+
+	export inline function isJoint(pEntity: IEntity): bool {
+		return pEntity.type == EEntityTypes.JOINT;
+	}
+}
+
+
+
+module akra.model {
+
+	class Skeleton implements ISkeleton{
+		private _sName: string;
+		private _pRootJoints: IJoint[] = [];
+		private _pJointMap: IJointMap = null;
+		private _pNodeList: ISceneNode[]  = null;
+		private _pMeshNode: ISceneModel = null;
+		private _iFlags: bool = false;
+
+
+		inline get totalBones():  number {
+			return Object.keys(this._pJointMap).length;
+		}
+
+		inline get totalNodes():  number {
+			return this._pNodeList.length;
+		}
+
+		inline get name(): string{
+			return this._sName;
+		}
+
+		inline get root(): IJoint {
+			return this._pRootJoints[0] || null;
+		}
+
+		constructor (sName: string = null) {
+			this._sName = sName;
+		}
+
+		getRootJoint(): IJoint {
+			return this.getRootJoints()[0];
+		}
+
+		getRootJoints(): IJoint[] {
+			return this._pRootJoints;
+		}
+
+		getJointMap(): IJointMap {
+			return this._pJointMap;
+		}
+
+		getNodeList(): ISceneNode[]{
+			return this._pNodeList;
+		}
+
+		addRootJoint(pJoint: IJoint): bool {
+			logger.setSourceLocation( "model/Skeleton.ts" , 56 ); logger.assert(pJoint instanceof scene.Joint, 'node must be joint'); ;
+
+		    var pRootJoints = this._pRootJoints;
+
+			for (var i = 0; i < pRootJoints.length; i++) {
+				if (pJoint.childOf(pRootJoints[i])) {
+					return false;
+				}
+				else if (pRootJoints[i].childOf(pJoint)) {
+					pRootJoints.splice(i, 1);
+				}
+			};
+
+			this._pRootJoints.push(pJoint);
+
+			return this.update();
+		}
+
+		update(): bool {
+			var pRootJoints = this._pRootJoints;
+		    var pJointList = this._pJointMap = <IJointMap>{};
+		    var pNodeList = this._pNodeList = [];
+//var pNotificationJoints = this._pNotificationJoints = [];
+
+		    function findNodes (pNode) {
+		    	var sJoint;
+
+		    	if (pNode) {
+			    	sJoint = pNode.boneName;
+
+			    	if (sJoint) {
+			    		logger.setSourceLocation( "model/Skeleton.ts" , 88 ); logger.assert(!pJointList[sJoint], 'joint with name<' + sJoint + '> already exists in skeleton <' + this._sName + '>');
+                                                                                             ;
+			    		pJointList[sJoint] = pNode;
+			    	}
+
+			    	pNodeList.push(pNode);
+
+			    	findNodes(pNode.sibling());
+			    	findNodes(pNode.child());
+		    	}
+		    }
+
+		    for (var i = 0; i < pRootJoints.length; i++) {
+		    	findNodes(pRootJoints[i]);
+		    };
+
+// for (var sJoint in pJointList) {
+// 	var pJoint = pJointList[sJoint];
+
+//    	if (pJoint.sibling() == null && pJoint.child() == null) {
+//    		pNotificationJoints.push(pJoint);
+//    	}
+//    };    
+
+			return true;
+		}
+
+		findJoint(sName: string): IJoint {
+			return this._pJointMap[sName];
+		}
+
+		findJointByName(sName: string): IJoint {
+			for (var s in this._pJointMap) {
+				if (this._pJointMap[s].name === sName) {
+					return this._pJointMap[s];
+				}
+			}
+
+			return null;
+		}
+
+		attachMesh(pMesh: IMesh): bool {
+			if (isNull(this.root)) {
+				return false;
+			}
+
+		    if (this._pMeshNode == null) {
+		    	this._pMeshNode = this.root.scene.createModel();
+		    	this._pMeshNode.setInheritance(ENodeInheritance.ALL);
+		    	this._pMeshNode.attachToParent(this.root);
+		    }
+
+		    this._pMeshNode.name = this.name + "[mesh-container]";
+		    this._pMeshNode.mesh = (pMesh);
+
+		    return true;
+		}
+
+		detachMesh(): void {
+//TODO: write detach method.
+		}
+	}
+
+	export function createSkeleton(sName: string = null): ISkeleton {
+		return new Skeleton(sName);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IMat4 {} ;
+	export interface IQuat4 {} ;
+	export interface IVec3 {} ;
+	export interface IAnimationFrame {} ;
+	export enum EAnimationInterpolations {
+		MATRIX_LINEAR,
+		LINEAR
+	}
+
+	export interface IAnimationFrame {
+		time:  number ;
+		weight:  number ;
+
+		matrix: IMat4;
+
+		rotation: IQuat4;
+		scale: IVec3;
+		translation: IVec3;
+
+		toMatrix(): IMat4;
+		toMatrixFromMatrix(): IMat4;
+
+		reset(): IAnimationFrame;
+		set(pFrame: IAnimationFrame): void;
+
+		add(pFrame: IAnimationFrame, isFirst: bool): IAnimationFrame;
+		addMatrix(pFrame: IAnimationFrame): IAnimationFrame;
+
+		mult(fScalar:  number ): IAnimationFrame;
+
+		normilize(): IAnimationFrame;
+		normilizeMatrix(): IAnimationFrame;
+
+		interpolate(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend:  number ): void;
+		interpolateMatrix(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend:  number ): void;
+	}
+}
+
+
+
+
+
+
+
+module akra.animation {
+	export class AnimationFrame implements IAnimationFrame{
+		private time:  number  	= 0.0;
+		private weight:  number  	= 1.0;
+
+		private matrix: IMat4 	= null;
+
+		private rotation: IQuat4 	= new Quat4;
+		private scale: IVec3  		= new Vec3;
+		private translation: IVec3  = new Vec3;
+
+		constructor(fTime?:  number , pMatrix?: IMat4, fWeight?:  number ) {
+			switch (arguments.length) {
+				case 0:
+					this.matrix = new Mat4;
+					return;
+				case 3:
+					this.weight = fWeight;
+				case 2:
+					this.matrix = pMatrix;
+				case 1:
+					this.time = fTime;
+			};
+
+			this.matrix.decompose(this.rotation, this.scale, this.translation);
+		}
+
+		toMatrix(): IMat4{
+			return this.rotation.toMat4(this.matrix)
+				.setTranslation(this.translation).scaleRight(this.scale);
+		}
+
+		toMatrixFromMatrix(): IMat4 {
+			return this.matrix;
+		}
+
+		reset(): IAnimationFrame {
+			this.weight = 0.0;
+			this.time = 0.0;
+
+			var pData = this.matrix.data;
+			pData[ 0 ] = pData[ 4 ] = pData[ 8 ] = pData[ 12 ] =
+			pData[ 1 ] = pData[ 5 ] = pData[ 9 ] = pData[ 13 ] =
+			pData[ 2 ] = pData[ 6 ] = pData[ 10 ] = pData[ 14 ] =
+			pData[ 3 ] = pData[ 7 ] = pData[ 11 ] = pData[ 15 ] = 0;
+
+			this.rotation.x = this.rotation.y = this.rotation.z = 0;
+			this.rotation.w = 1.0;
+
+			this.translation.x = this.translation.y = this.translation.z = 0;
+
+			this.scale.x = this.scale.y = this.scale.z = 0;
+
+			return this;
+		}
+
+		set(pFrame: IAnimationFrame): void {
+//FIXME: расписать побыстрее
+			this.matrix.set(pFrame.matrix);
+
+			this.rotation.set(pFrame.rotation);
+			this.scale.set(pFrame.scale);
+			this.translation.set(pFrame.translation);
+
+			this.time = pFrame.time;
+			this.weight = pFrame.weight;
+		}
+
+/**
+		 * Добавить данные к фрейму с их весом.
+		 * После данного метода фрейму потребуется нормализация!!!!
+		 */
+
+
+
+		add(pFrame: IAnimationFrame, isFirst: bool): IAnimationFrame {
+			var fWeight:  number  = pFrame.weight;
+
+			this.scale.x += pFrame.scale.x * fWeight;
+			this.scale.y += pFrame.scale.y * fWeight;
+			this.scale.z += pFrame.scale.z * fWeight;
+
+			this.translation.x += pFrame.translation.x * fWeight;
+			this.translation.y += pFrame.translation.y * fWeight;
+			this.translation.z += pFrame.translation.z * fWeight;
+
+			this.weight += fWeight;
+
+			if (!isFirst) {
+				this.rotation.smix(pFrame.rotation, fWeight / this.weight);
+			}
+			else {
+				this.rotation.set(pFrame.rotation);
+			}
+
+			return this;
+		}
+
+		addMatrix(pFrame: IAnimationFrame): IAnimationFrame {
+			var pMatData = pFrame.matrix.data;
+			var fWeight:  number  = pFrame.weight;
+			var pResData = this.matrix.data;
+
+			for (var i = 0; i < 16; ++ i) {
+				pResData[i] += pMatData[i] * fWeight;
+			}
+
+			this.weight += fWeight;
+			return this;
+		}
+
+		mult(fScalar:  number ): IAnimationFrame{
+			this.weight *= fScalar;
+			return this;
+		}
+
+		normilize(): IAnimationFrame{
+			var fScalar:  number  = 1.0 / this.weight;
+
+		    this.scale.x *= fScalar;
+		    this.scale.y *= fScalar;
+		    this.scale.z *= fScalar;
+
+		    this.translation.x *= fScalar;
+		    this.translation.y *= fScalar;
+		    this.translation.z *= fScalar;
+
+			return this;
+		}
+
+		normilizeMatrix(): IAnimationFrame{
+			var fScalar:  number  = 1.0 / this.weight;
+		    var pData = this.matrix.data;
+
+		    pData[ 0 ] *= fScalar;
+		    pData[ 4 ] *= fScalar;
+		    pData[ 8 ] *= fScalar;
+		    pData[ 12 ] *= fScalar;
+
+			pData[ 1 ] *= fScalar;
+		    pData[ 5 ] *= fScalar;
+		    pData[ 9 ] *= fScalar;
+		    pData[ 13 ] *= fScalar;
+
+			pData[ 2 ] *= fScalar;
+		    pData[ 6 ] *= fScalar;
+		    pData[ 10 ] *= fScalar;
+		    pData[ 14 ] *= fScalar;
+
+			pData[ 3 ] *= fScalar;
+		    pData[ 7 ] *= fScalar;
+		    pData[ 11 ] *= fScalar;
+		    pData[ 15 ] *= fScalar;
+
+			return this;
+		}
+
+		interpolate(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend:  number ): void {
+			var pResultData = this.matrix.data;
+			var pStartData = pStartFrame.matrix.data;
+			var pEndData = pEndFrame.matrix.data;
+			var fBlendInv = 1. - fBlend;
+
+			for (var i = 0; i < 16; i++) {
+				pResultData[i] = pEndData[i] * fBlend + pStartData[i] * fBlendInv;
+			};
+		}
+
+		interpolateMatrix(pStartFrame: IAnimationFrame, pEndFrame: IAnimationFrame, fBlend:  number ): void {
+			var pResultData = this.matrix.data;
+			var pStartData = pStartFrame.matrix.data;
+			var pEndData = pEndFrame.matrix.data;
+			var fBlendInv:  number  = 1. - fBlend;
+
+			for (var i = 0; i < 16; i++) {
+				pResultData[i] = pEndData[i] * fBlend + pStartData[i] * fBlendInv;
+			};
+		}
+
+		static get stackCeil(): AnimationFrame { AnimationFrame.stackPosition = AnimationFrame.stackPosition === AnimationFrame.stackSize - 1? 0: AnimationFrame.stackPosition; return AnimationFrame.stack[AnimationFrame.stackPosition ++]; } static stackSize: number = 4 * 4096 ; static stackPosition: number = 0; static stack: AnimationFrame[] = (function(): AnimationFrame[]{ var pStack: AnimationFrame[] = new Array(AnimationFrame.stackSize); for(var i: number = 0; i<AnimationFrame.stackSize; i++){ pStack[i] = new AnimationFrame(); } return pStack})(); ;
+	}
+
+	export function animationFrame(): IAnimationFrame {
+		return null;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra.animation {
+	class AnimationTrack implements IAnimationTrack {
+		private _sTarget: string = null;
+		private _pTarget: ISceneNode = null;
+		private _pKeyFrames: IAnimationFrame[] = [];
+		private _eInterpolationType: EAnimationInterpolations = EAnimationInterpolations.MATRIX_LINEAR;
+
+
+		inline get target(): ISceneNode{
+			return this._pTarget;
+		}
+
+		inline get targetName(): string{
+			return this._sTarget;
+		}
+
+		inline set targetName(sValue: string){
+			this._sTarget = sValue;
+		}
+
+		inline get duration():  number {
+			return this._pKeyFrames.last.fTime;
+		}
+
+		constructor (sTarget: string = null) {
+			this._sTarget = sTarget;
+		}
+
+		keyFrame(fTime:  number , pMatrix: IMat4): bool {
+			var pFrame: IAnimationFrame;
+		    var iFrame:  number ;
+
+		    var pKeyFrames: IAnimationFrame[] = this._pKeyFrames;
+		  	var nTotalFrames:  number  = pKeyFrames.length;
+
+		  	if (arguments.length > 1) {
+		  		pFrame = new animation.AnimationFrame(fTime, pMatrix);
+		  	}
+		    else {
+		    	pFrame = arguments[0];
+		    }
+
+		    if (nTotalFrames && (iFrame = this.findKeyFrame(pFrame.time)) >= 0) {
+				pKeyFrames.splice(iFrame, 0, pFrame);
+			}
+			else {
+				pKeyFrames.push(pFrame);
+			}
+
+			return true;
+		}
+
+		getKeyFrame(iFrame:  number ): IAnimationFrame {
+			logger.setSourceLocation( "animation/AnimationTrack.ts" , 65 ); logger.assert(iFrame < this._pKeyFrames.length, 'iFrame must be less then number of total jey frames.'); ;
+
+			return this._pKeyFrames[iFrame];
+		}
+
+		findKeyFrame(fTime:  number ):  number  {
+			var pKeyFrames: IAnimationFrame[] = this._pKeyFrames;
+		    var nTotalFrames:  number              = pKeyFrames.length;
+
+			if (pKeyFrames[nTotalFrames - 1].time == fTime) {
+				return nTotalFrames - 1;
+			}
+			else {
+				for (var i:  number  = nTotalFrames - 1; i >= 0; i--) {
+					if (pKeyFrames[i].time > fTime && pKeyFrames[i - 1].time <= fTime) {
+						return i - 1;
+					}
+				}
+			}
+
+			return -1;
+		}
+
+		bind(sJoint: string, pSkeleton: ISkeleton): bool;
+		bind(pSkeleton: ISkeleton): bool;
+		bind(pNode: ISceneNode): bool;
+		bind(pJoint: any, pSkeleton?: any): bool {
+			var pNode: ISceneNode = null,
+				pRootNode: ISceneNode;
+
+			var sJoint: string;
+
+			switch (arguments.length) {
+				case 2:
+//bind by pair <String joint, Skeleton skeleton>
+					sJoint = <string>pJoint;
+
+					this._sTarget = sJoint;
+					pNode = (<ISkeleton>pSkeleton).findJoint(sJoint);
+					break;
+				default:
+//bind by <Skeleton skeleton>
+					if (!isDef(arguments[0].type)) {
+
+						if (this._sTarget == null) {
+							return false;
+						}
+
+						pSkeleton = <ISkeleton>arguments[0];
+						pNode = (<ISkeleton>pSkeleton).findJoint(this._sTarget);
+					}
+//bind by <Node node>
+					else {
+						pRootNode = <ISceneNode>arguments[0];
+						pNode = <ISceneNode>pRootNode.findEntity(this.targetName);
+					}
+			}
+
+			this._pTarget = pNode;
+
+			return isDefAndNotNull(pNode);
+		}
+
+		frame(fTime:  number ): IAnimationFrame {
+			var iKey1:  number  = 0, iKey2:  number  = 0;
+			var fScalar:  number ;
+			var fTimeDiff:  number ;
+
+			var pKeys:  IAnimationFrame[] = this._pKeyFrames
+			var nKeys:   number  = pKeys.length;
+			var pFrame: IAnimationFrame = animation.animationFrame();
+
+			logger.setSourceLocation( "animation/AnimationTrack.ts" , 137 ); logger.assert(nKeys > 0, 'no frames :('); ;
+
+			if (nKeys === 1) {
+				pFrame.set(pKeys[0]);
+			}
+			else {
+//TODO: реализовать существенно более эффективный поиск кадра.
+				for (var i:  number  = 0; i < nKeys; i ++) {
+			    	if (fTime >= this._pKeyFrames[i].time) {
+			            iKey1 = i;
+			        }
+			    }
+
+			    iKey2 = (iKey1 >= (nKeys - 1))? iKey1 : iKey1 + 1;
+
+			    fTimeDiff = pKeys[iKey2].time - pKeys[iKey1].time;
+
+			    if (!fTimeDiff)
+			        fTimeDiff = 1;
+
+				fScalar = (fTime - pKeys[iKey1].time) / fTimeDiff;
+
+				pFrame.interpolate(
+					this._pKeyFrames[iKey1],
+					this._pKeyFrames[iKey2],
+					fScalar);
+			}
+
+			pFrame.time = fTime;
+			pFrame.weight = 1.0;
+
+			return pFrame;
+		}
+	}
+
+	export function createTrack(sName: string = null): IAnimationTrack {
+		return new AnimationTrack(sName);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface ISceneNode {} ;
+	export interface IAnimationFrame {} ;
+	export interface IAnimationTrack {} ;
+
+	export interface IAnimation extends IAnimationBase {
+		 totalTracks:  number ;
+
+		push(pTrack: IAnimationTrack): void;
+		attach(pTarget: ISceneNode): void;
+
+		getTracks(): IAnimationTrack[];
+
+		frame(sName: string, fTime:  number ): IAnimationFrame;
+		extend(pAnimation: IAnimation): void;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface ISceneNode {} ;
+	export interface IJoint {} ;
+	export interface IAnimationFrame {} ;
+	export interface IAnimationTrack {} ;
+
+	export interface IAnimationTarget{
+		target: ISceneNode;
+		index:  number ;
+		name: string;
+		track?: IAnimationTrack;
+	}
+
+	export interface IAnimationBase extends IEventProvider {
+		duration:  number ;
+		name: string;
+
+
+		play(fRealTime:  number ): void;
+		stop(fRealTime:  number ): void;
+
+		attach(pTarget: ISceneNode): void;
+
+		frame(sName: string, fRealTime:  number ): IAnimationFrame;
+		apply(fRealTime:  number ): void;
+
+		addTarget(sName: string, pTarget: ISceneNode): IAnimationTarget;
+		setTarget(sName: string, pTarget: ISceneNode): IAnimationTarget;
+		getTarget(sTargetName: string): IAnimationTarget;
+		getTargetList(): IAnimationTarget[];
+		getTargetByName(sName: string): IAnimationTarget;
+		targetNames(): string[];
+		targetList(): ISceneNode[];
+		jointList(): IJoint[];
+		grab(pAnimationBase: IAnimationBase, bRewrite?: bool): void;
+
+		createAnimationMask(): FloatMap;
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+module akra.animation {
+	export interface IAnimationTargetMap{
+		[index: string]: IAnimationTarget;
+	}
+
+	export class AnimationBase implements IAnimationBase {
+
+		/**@protected*/  _pTargetMap: IAnimationTargetMap = {};
+    	/**@protected*/  _pTargetList: IAnimationTarget[] = [];
+
+    	/**@protected*/  _fDuration:  number  = 0.0;
+		/**@protected*/  _sName: string;
+
+		constructor () {
+			this._sName = ("animation-" + now() + "-" + this.getGuid());
+		}
+
+		inline get duration():  number {
+			return this._fDuration;
+		}
+
+		inline set duration(fValue:  number ){
+			this._fDuration = fValue;
+		}
+
+		inline get name(): string{
+			return this._sName;
+		};
+
+		inline set name(sName: string){
+			this._sName = sName;
+		};
+
+
+		play(fRealTime:  number ): void {
+			this.onplay(fRealTime);
+		}
+
+		stop(fRealTime:  number ): void {
+			this.onstop(fRealTime);
+		}
+
+		attach(pTarget: ISceneNode): void {
+			logger.setSourceLocation( "AnimationBase.ts" , 54 ); logger.error("method AnimationBase::bind() must be overwritten."); ;
+		}
+
+		frame(sName: string, fRealTime:  number ): IAnimationFrame {
+			return null;
+		}
+
+		apply(fRealTime:  number ): void {
+			var pTargetList: IAnimationTarget[] = this._pTargetList;
+		    var pTarget: ISceneNode;
+		    var pFrame: IAnimationFrame;
+		    var pTransform;
+
+			for (var i = 0; i < pTargetList.length; ++ i) {
+				pFrame = this.frame(pTargetList[i].name, fRealTime);
+				pTarget = pTargetList[i].target;
+
+				if (!pFrame || !pTarget) {
+					continue;
+				}
+
+				pTransform = pFrame.toMatrix();
+				pTarget.localMatrix.set(pTransform);
+			};
+
+		}
+
+		addTarget(sName: string, pTarget: ISceneNode = null): IAnimationTarget {
+//pTarget = pTarget || null;
+
+		    var pPointer: IAnimationTarget = this._pTargetMap[sName];
+
+		    if (pPointer) {
+		    	pPointer.target = pTarget || pPointer.target || null;
+		    	return pPointer;
+		    }
+
+		    pPointer = {
+				target: pTarget,
+				index: this._pTargetList.length,
+				name: sName
+			};
+
+		    this._pTargetList.push(pPointer);
+			this._pTargetMap[sName] = pPointer;
+
+			return pPointer;
+		}
+
+		setTarget(sName: string, pTarget: ISceneNode): IAnimationTarget {
+
+		    var pPointer: IAnimationTarget = this._pTargetMap[sName];
+			pPointer.target = pTarget;
+			return pPointer;
+		}
+
+		getTarget(sTargetName: string): IAnimationTarget {
+			return this._pTargetMap[sTargetName];
+		}
+
+		inline getTargetList(): IAnimationTarget[] {
+			return this._pTargetList;
+		}
+
+		inline getTargetByName(sName: string): IAnimationTarget {
+			return this._pTargetMap[sName];
+		}
+
+		targetNames(): string[] {
+			var pTargets: IAnimationTarget[] = this._pTargetList;
+			var pTargetNames: string[] = [];
+
+			for (var i = 0; i < pTargets.length; ++ i) {
+				pTargetNames.push(pTargets[i].name);
+			}
+
+			return pTargetNames;
+		}
+
+		targetList(): ISceneNode[] {
+			var pTargets: IAnimationTarget[] = this._pTargetList;
+			var pTargetList: ISceneNode[] = [];
+
+			for (var i = 0; i < pTargets.length; ++ i) {
+				pTargetList.push(pTargets[i].target);
+			}
+
+			return pTargetList;
+		}
+
+		jointList(): IJoint[] {
+			var pTargets: IAnimationTarget[] = this._pTargetList;
+			var pJointList: IJoint[] = [];
+
+			for (var i = 0; i < pTargets.length; ++ i) {
+				if (scene.isJoint(pTargets[i].target)) {
+					pJointList.push(<IJoint>pTargets[i].target);
+				}
+			}
+
+			return pJointList;
+		}
+
+		grab(pAnimationBase: IAnimationBase, bRewrite: bool = true): void{
+
+		    var pAdoptTargets: IAnimationTarget[] = pAnimationBase.getTargetList();
+
+			for (var i = 0; i < pAdoptTargets.length; ++ i) {
+
+				if (!pAdoptTargets[i].target) {
+//warning('cannot grab target <' + pAdoptTargets[i].name + '>, becaus "target" is null');
+					continue;
+				}
+
+				if (bRewrite || !this.getTarget(pAdoptTargets[i].name)) {
+					this.addTarget(pAdoptTargets[i].name, pAdoptTargets[i].target);
+				}
+			};
+		}
+
+		createAnimationMask(): FloatMap {
+			var pTargets: string[] = this.targetNames();
+		    var pMask: FloatMap = <FloatMap>{};
+
+		    for (var i = 0; i < pTargets.length; ++ i) {
+		    	pMask[pTargets[i]] = 1.0;
+		    }
+
+		    return pMask;
+		}
+
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return AnimationBase._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		onplay (fRealTime): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).onplay; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, fRealTime) : _broadcast[i].listener (_recivier, fRealTime) ; } } } ; ;
+		onstop (fRealTime): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).onstop; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, fRealTime) : _broadcast[i].listener (_recivier, fRealTime) ; } } } ; ;
+	}
+}
+
+
+
+module akra.animation {
+	class Animation implements IAnimation extends AnimationBase {
+
+		private _pTracks: IAnimationTrack[] = [];
+
+    	constructor (sName: string = null) {
+    		super();
+    		this.name = sName;
+    	}
+
+		inline get totalTracks():  number {
+			return this._pTracks.length;
+		}
+
+		push(pTrack: IAnimationTrack): void {
+			this._pTracks.push(pTrack);
+			this._fDuration = Math.max(this._fDuration, pTrack.duration);
+			this.addTarget(pTrack.targetName);
+		}
+
+		attach(pTarget: ISceneNode): void {
+			var pPointer;
+		    var pTracks: IAnimationTrack[] = this._pTracks;
+			for (var i = 0; i < pTracks.length; ++ i) {
+				if (!pTracks[i].bind(pTarget)) {
+					logger.setSourceLocation( "animation/Animation.ts" , 36 ); logger.log("cannot bind animation track [", i, "] to joint <", pTracks[i].target, ">"); ;
+				}
+				else {
+					pPointer = this.setTarget(pTracks[i].targetName, pTracks[i].target);
+					pPointer.track = pTracks[i];
+				}
+			};
+		}
+
+		getTracks(): IAnimationTrack[] {
+			return this._pTracks;
+		}
+
+		frame(sName: string, fTime:  number ): IAnimationFrame {
+			var pPointer: IAnimationTarget = this.getTargetByName(sName);
+
+		    if (!pPointer || !pPointer.track) {
+		    	return null;
+		    }
+
+			return pPointer.track.frame(math.clamp(fTime, 0, this._fDuration));
+		}
+
+		extend(pAnimation: IAnimation): void {
+			var pTracks: IAnimationTrack[] = pAnimation.getTracks();
+
+			for (var i = 0; i < pTracks.length; ++ i) {
+				if (!this.getTarget(pTracks[i].targetName)) {
+					this.push(pTracks[i]);
+				}
+			}
+		}
+	}
+
+	export function createAnimation(sName: string = null): IAnimation {
+		return new Animation(sName);
+	}
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -30476,30 +32217,30 @@ module akra.util {
                         isStop = true;
                     }
                 }
-                if (isPause) {
-                    return EParserCode.k_Pause;
-                }
-
-                if (!isError) {
-                    pTree.setRoot();
-                    this._sFileName = "stdin";
-                    if (!isNull(this._fnFinishCallback)) {
-                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok, this.getParseFileName());
-                    }
-                    return EParserCode.k_Ok;
-                }
-                else {
-                    this._error( 2051 , pToken);
-                    this._sFileName = "stdin";
-                    if (!isNull(this._fnFinishCallback)) {
-                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error, this.getParseFileName());
-                    }
-                    return EParserCode.k_Error;
-                }
-
             }
             catch (e) {
 // debug_print(e.stack);
+                this._sFileName = "stdin";
+                return EParserCode.k_Error;
+            }
+
+            if (isPause) {
+                return EParserCode.k_Pause;
+            }
+
+            if (!isError) {
+                pTree.setRoot();
+                if (!isNull(this._fnFinishCallback)) {
+                    this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok, this.getParseFileName());
+                }
+                this._sFileName = "stdin";
+                return EParserCode.k_Ok;
+            }
+            else {
+                this._error( 2051 , pToken);
+                if (!isNull(this._fnFinishCallback)) {
+                    this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error, this.getParseFileName());
+                }
                 this._sFileName = "stdin";
                 return EParserCode.k_Error;
             }
@@ -31678,29 +33419,28 @@ module akra.util {
                         isStop = true;
                     }
                 }
-                if (isPause) {
-                    return EParserCode.k_Pause;
-                }
-
-                if (!isError) {
-                    pTree.setRoot();
-                    this._sFileName = "stdin";
-                    if (isDef(this._fnFinishCallback)) {
-                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok, this.getParseFileName());
-                    }
-                    return EParserCode.k_Ok;
-                }
-                else {
-                    this._error( 2051 , pToken);
-                    this._sFileName = "stdin";
-                    if (isDef(this._fnFinishCallback)) {
-                        this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error, this.getParseFileName());
-                    }
-                    return EParserCode.k_Error;
-                }
-
             }
             catch (e) {
+                this._sFileName = "stdin";
+                return EParserCode.k_Error;
+            }
+            if (isPause) {
+                return EParserCode.k_Pause;
+            }
+
+            if (!isError) {
+                pTree.setRoot();
+                if (isDef(this._fnFinishCallback)) {
+                    this._fnFinishCallback.call(this._pCaller, EParserCode.k_Ok, this.getParseFileName());
+                }
+                this._sFileName = "stdin";
+                return EParserCode.k_Ok;
+            }
+            else {
+                this._error( 2051 , pToken);
+                if (isDef(this._fnFinishCallback)) {
+                    this._fnFinishCallback.call(this._pCaller, EParserCode.k_Error, this.getParseFileName());
+                }
                 this._sFileName = "stdin";
                 return EParserCode.k_Error;
             }
@@ -31850,6 +33590,17 @@ module akra.util {
 		    }
 		}
 
+		_saveState(): IParserState {
+			var pState: IParserState = super._saveState();
+			pState["includeFiles"] = this._pIncludedFilesMap;
+			return pState;
+		}
+
+		_loadState(pState: IParserState): void {
+			super._loadState(pState);
+			this._pIncludedFilesMap = <BoolMap>pState["includeFiles"];
+		}
+
 	}
 
 	export var parser: EffectParser = new EffectParser();
@@ -31903,9 +33654,6 @@ module akra.core.pool.resources {
 				else {
 
 					util.parser.setParseFileName(sFileName);
-					if(sFileName === "../../../data/effects/prepareDeferredShading.afx"){
-						logger.setSourceLocation( "resources/EffectData.ts" , 54 ); logger.log(sFileName); ;
-					}
 					util.parser.parse(sData, me._initFromParsedEffect, me);
 				}
 			});
@@ -31920,10 +33668,12 @@ module akra.core.pool.resources {
 			}
 
 			this._pSyntaxTree = util.parser.getSyntaxTree();
-			this.notifyLoaded();
 
 			var pComposer: IAFXComposer = this.getManager().getEngine().getComposer();
-			pComposer._loadEffectFromSyntaxTree(this._pSyntaxTree, sFileName);
+			if(pComposer._loadEffectFromSyntaxTree(this._pSyntaxTree, sFileName)){
+				this.notifyLoaded();
+			}
+
 		}
 
 
@@ -31952,6 +33702,8 @@ module akra.core.pool.resources {
 
 
 module akra {
+	export interface IRenderTarget {} ;
+
 	export interface IPixelBuffer extends IHardwareBuffer {
 		 width:  number ;
 		 height:  number ;
@@ -32070,6 +33822,7 @@ module akra.core.pool.resources {
 
 		writeData(pData: Uint8Array, iOffset?:  number , iSize?:  number , bDiscardWholeBuffer: bool = false): bool;
 		writeData(pData: ArrayBufferView, iOffset?:  number , iSize?:  number , bDiscardWholeBuffer: bool = false): bool;
+
 		writeData(pData: any, iOffset?:  number , iSize?:  number , bDiscardWholeBuffer: bool = false): bool {
 			return false;
 		}
@@ -32113,7 +33866,7 @@ module akra.core.pool.resources {
 		lock(iLockFlags:  number ): any;
 		lock(iOffset:  number , iSize:  number , iLockFlags:  number  = EHardwareBufferFlags.READABLE): any;
 		lock(iOffset:  number , iSize?: any, iLockFlags:  number  = EHardwareBufferFlags.READABLE): any {
-			logger.setSourceLocation( "core/pool/resources/HardwareBuffer.ts" , 128 ); logger.assert(!this.isLocked(), "Cannot lock this buffer, it is already locked!"); ;
+			logger.setSourceLocation( "core/pool/resources/HardwareBuffer.ts" , 129 ); logger.assert(!this.isLocked(), "Cannot lock this buffer, it is already locked!"); ;
 
 			if (arguments.length == 1) {
 				iLockFlags = < number >arguments[0];
@@ -32124,7 +33877,7 @@ module akra.core.pool.resources {
 			var pResult: any = null;
 
 			if ((iOffset + iSize) > this.byteLength) {
-				logger.setSourceLocation( "core/pool/resources/HardwareBuffer.ts" , 139 ); logger.error("Lock request out of bounds.", "HardwareBuffer::lock"); ;
+				logger.setSourceLocation( "core/pool/resources/HardwareBuffer.ts" , 140 ); logger.error("Lock request out of bounds.", "HardwareBuffer::lock"); ;
 			}
 			else if (this.isBackupPresent()) {
 				if (! (((iLockFlags) & (ELockFlags.WRITE)) != 0) ) {
@@ -32148,7 +33901,7 @@ module akra.core.pool.resources {
 		}
 
 		unlock(): void {
-			logger.setSourceLocation( "core/pool/resources/HardwareBuffer.ts" , 163 ); logger.assert(this.isLocked(), "Cannot unlock this buffer, it is not locked!"); ;
+			logger.setSourceLocation( "core/pool/resources/HardwareBuffer.ts" , 164 ); logger.assert(this.isLocked(), "Cannot unlock this buffer, it is not locked!"); ;
 
 // If we used the shadow buffer this time...
             if (this._pBackupCopy && this._pBackupCopy.isLocked()) {
@@ -32195,7 +33948,7 @@ module akra.core.pool.resources {
 
 		createResource(): bool {
 // innitialize the resource (called once)
-		    logger.setSourceLocation( "core/pool/resources/HardwareBuffer.ts" , 211 ); logger.assert(!this.isResourceCreated(), "The resource has already been created.");
+		    logger.setSourceLocation( "core/pool/resources/HardwareBuffer.ts" , 212 ); logger.assert(!this.isResourceCreated(), "The resource has already been created.");
                                                             ;
 
 // signal that the resource is now created,
@@ -32222,14 +33975,14 @@ module akra.core.pool.resources {
 		}
 
 		restoreResource(): bool {
-		    logger.setSourceLocation( "core/pool/resources/HardwareBuffer.ts" , 237 ); logger.assert(this.isResourceCreated(), "The resource has not been created."); ;
+		    logger.setSourceLocation( "core/pool/resources/HardwareBuffer.ts" , 238 ); logger.assert(this.isResourceCreated(), "The resource has not been created."); ;
 
 		    this.notifyRestored();
 		    return true;
 		}
 
 		disableResource (): bool {
-		    logger.setSourceLocation( "core/pool/resources/HardwareBuffer.ts" , 244 ); logger.assert(this.isResourceCreated(), "The resource has not been created."); ;
+		    logger.setSourceLocation( "core/pool/resources/HardwareBuffer.ts" , 245 ); logger.assert(this.isResourceCreated(), "The resource has not been created."); ;
 
 		    this.notifyDisabled();
 		    return true;
@@ -32445,11 +34198,12 @@ module akra.webgl {
 	            pSource.scale(pScaledBox, EFilters.BILINEAR);
 	        }
 	        else if ((pSource.format != this._eFormat) ||
-	                 ((getWebGLOriginFormat(pSource.format) == 0) && (pSource.format != EPixelFormats.R8G8B8))) {
+	                 ((getWebGLFormat(pSource.format) == 0) && (pSource.format != EPixelFormats.R8G8B8))) {
 // Extents match, but format is not accepted as valid source format for GL
 // do conversion in temporary buffer
 	            this.allocateBuffer();
 	            pScaledBox = this._pBuffer.getSubBox(pDestBox);
+
 	            pixelUtil.bulkPixelConversion(pSource, pScaledBox);
 
 	            if(this._eFormat === EPixelFormats.A4R4G4B4)
@@ -32462,8 +34216,10 @@ module akra.webgl {
 	            this.allocateBuffer();
 	            pScaledBox = pSource;
 
-	            if (pSource.format == EPixelFormats.R8G8B8) {
+	            if (pSource.format == EPixelFormats.R8G8B8)
+	            {
 	                pScaledBox.format = EPixelFormats.B8G8R8;
+
 	                pixelUtil.bulkPixelConversion(pSource, pScaledBox);
 	            }
 	        }
@@ -32491,7 +34247,7 @@ module akra.webgl {
 			}
 
 			if (!this._pBuffer.contains(pSrcBox)) {
-				logger.setSourceLocation( "webgl/WebGLPixelBuffer.ts" , 244 ); logger.criticalError("source box out of range"); ;
+				logger.setSourceLocation( "webgl/WebGLPixelBuffer.ts" , 247 ); logger.criticalError("source box out of range"); ;
 	        }
 
 	        if (pSrcBox.left == 0 && pSrcBox.right == this._iWidth &&
@@ -32500,7 +34256,7 @@ module akra.webgl {
             	pDest.width == this._iWidth &&
             	pDest.height == this._iHeight &&
             	pDest.depth == this._iDepth &&
-            	getWebGLOriginFormat(pDest.format) != 0) {
+            	getWebGLFormat(pDest.format) != 0) {
 // The direct case: the user wants the entire texture in a format supported by GL
 // so we don't need an intermediate buffer
 	            this.download(pDest);
@@ -32553,9 +34309,9 @@ module akra.webgl {
 					iLockFlags = (arguments.length === 3) ? arguments[2] : EHardwareBufferFlags.READABLE;
 				}
 
-				logger.setSourceLocation( "webgl/WebGLPixelBuffer.ts" , 307 ); logger.assert(!this.isLocked(), "Cannot lock this buffer, it is already locked!");
+				logger.setSourceLocation( "webgl/WebGLPixelBuffer.ts" , 310 ); logger.assert(!this.isLocked(), "Cannot lock this buffer, it is already locked!");
                                                          ;
-				logger.setSourceLocation( "webgl/WebGLPixelBuffer.ts" , 309 ); logger.assert(iOffset === 0 && iSize === this.byteLength, "Cannot lock memory region, most lock box or entire buffer");
+				logger.setSourceLocation( "webgl/WebGLPixelBuffer.ts" , 312 ); logger.assert(iOffset === 0 && iSize === this.byteLength, "Cannot lock memory region, most lock box or entire buffer");
                                                                    ;
 
 				pLockBox = new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth);
@@ -32596,7 +34352,7 @@ module akra.webgl {
 		/**@protected*/  lockImpl(pLockBox: IBox, iLockFlags:  number ): IPixelBox;
 		/**@protected*/  lockImpl(): any {
 			if(arguments.length === 3){
-				logger.setSourceLocation( "webgl/WebGLPixelBuffer.ts" , 349 ); logger.criticalError("lockImpl(offset,length) is not valid for PixelBuffers and should never be called"); ;
+				logger.setSourceLocation( "webgl/WebGLPixelBuffer.ts" , 352 ); logger.criticalError("lockImpl(offset,length) is not valid for PixelBuffers and should never be called"); ;
 			}
 
 			var pLockBox:IBox = arguments[0];
@@ -32652,6 +34408,7 @@ module akra.webgl {
 
 
 
+
 module akra {
 	export interface IHardwareObject {} ;
 
@@ -32659,9 +34416,6 @@ module akra {
 //getHardwareObject(): IHardwareObject;
     };
 }
-
-
-
 
 
 
@@ -32690,7 +34444,7 @@ module akra {
 /// setting this flag will ignore all other texture usages except AUTOMIPMAP
         RENDERTARGET = 0x200,
 /// default to automatic mipmap generation static textures
-        DEFAULT = AUTOMIPMAP | STATIC
+        DEFAULT = STATIC
     }
 
     export enum ETextureFilters {
@@ -32717,20 +34471,29 @@ module akra {
 
     export enum ETextureTypes {
         TEXTURE_2D = 0x0DE1,
-        TEXTURE = 0x1702,
         TEXTURE_CUBE_MAP = 0x8513,
-        TEXTURE_BINDING_CUBE_MAP = 0x8514,
-        TEXTURE_CUBE_MAP_POSITIVE_X = 0x8515,
-        TEXTURE_CUBE_MAP_NEGATIVE_X = 0x8516,
-        TEXTURE_CUBE_MAP_POSITIVE_Y = 0x8517,
-        TEXTURE_CUBE_MAP_NEGATIVE_Y = 0x8518,
-        TEXTURE_CUBE_MAP_POSITIVE_Z = 0x8519,
-        TEXTURE_CUBE_MAP_NEGATIVE_Z = 0x851A,
-        MAX_CUBE_MAP_TEXTURE_SIZE = 0x851C
     };
 
+    export enum ECubeFace{
+        POSITIVE_X = 0,
+        NEGATIVE_X = 1,
+        POSITIVE_Y = 2,
+        NEGATIVE_Y = 3,
+        POSITIVE_Z = 4,
+        NEGATIVE_Z = 5,
+        };
+
+    export enum ETextureCubeFlags{
+        POSITIVE_X = 0x00000001,
+        NEGATIVE_X = 0x00000002,
+        POSITIVE_Y = 0x00000004,
+        NEGATIVE_Y = 0x00000008,
+        POSITIVE_Z = 0x0000000c,
+        NEGATIVE_Z = 0x000000010,
+        };
+
     export enum ETextureUnits {
-        TEXTURE = 0x84C0
+        TEXTURE0 = 0x84C0
     };
 
 // export interface ITextureParameters {
@@ -32751,14 +34514,14 @@ module akra {
 
         textureType: ETextureTypes;
 
-        desiredIntegerBitDepth:  number ;
-        desiredFloatBitDepth:  number ;
+//desiredIntegerBitDepth: uint;
+//desiredFloatBitDepth: uint;     
 
-         desiredFormat: EPixelFormats;
-         srcFormat: EPixelFormats;
-         srcWidth:  number ;
-         srcHeight:  number ;
-         srcDepth:  number ;
+//readonly desiredFormat: EPixelFormats;
+//readonly srcFormat: EPixelFormats;
+//readonly srcWidth: uint;
+//readonly srcHeight: uint;
+//readonly srcDepth: uint;
 
         setFlags(iTextureFlag:  number ): void;
         getFlags():  number ;
@@ -32772,18 +34535,21 @@ module akra {
         isCompressed(): bool;
         isValid(): bool;
 
-        create(iWidth:  number , iHeight:  number , iDepth:  number , pFillColor?: IColor,
-               iFlags?:  number , nMipLevels?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
-        create(iWidth:  number , iHeight:  number , iDepth:  number , pPixels?: Array,
-               iFlags?:  number , nMipLevels?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
-        create(iWidth:  number , iHeight:  number , iDepth:  number , pPixels?: ArrayBufferView,
-               iFlags?:  number , nMipLevels?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+        create(iWidth:  number , iHeight:  number , iDepth:  number , cFillColor?: IColor,
+               eFlags?: ETextureFlags, nMipLevels?:  number , nFaces?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
 
+        create(iWidth:  number , iHeight:  number , iDepth:  number , pPixels?: Array,
+               eFlags?: ETextureFlags, nMipLevels?:  number , nFaces?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+
+        create(iWidth:  number , iHeight:  number , iDepth:  number , pPixels?: ArrayBufferView,
+               eFlags?: ETextureFlags, nMipLevels?:  number , nFaces?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
 
         getBuffer(iFace?:  number , iMipmap?:  number ): IPixelBuffer;
 
-        setParameter(eParam: ETextureParameters, eValue: ETextureFilters): bool;
-        setParameter(eParam: ETextureParameters, eValue: ETextureWrapModes): bool;
+        setFilter(eParam: ETextureParameters, eValue: ETextureFilters): bool;
+        setWrapMode(eParam: ETextureParameters, eValue: ETextureWrapModes): bool;
+        getFilter(eParam: ETextureParameters): ETextureFilters;
+        getWrapMode(eParam: ETextureParameters): ETextureWrapModes;
 
         loadRawData(pData: ArrayBufferView, iWidth:  number , iHeight:  number , eFormat: EPixelFormats): bool;
         loadImage(pImage: IImg): bool;
@@ -32796,63 +34562,10 @@ module akra {
         createInternalTexture(cFillColor?: IColor): bool;
         freeInternalTexture(): bool;
 
-        getNativeFormat(eTextureType?: ETextureTypes, eFormat?: EPixelFormats, iFlags?:  number ): EPixelFormats;
-
-/*Этот метод будет добавлен*/
-
-        setPixelRGBA(i1:  number , i2:  number , iTextureWidth:  number , iTextureHeight:  number , pBuffer: Uint8Array): void;
     }
 }
 
 
-
-
-
-
-
-
-
-
-
-module akra {
-
-	export interface IWebGLRenderer extends IRenderer {
-		getWebGLContext(): WebGLRenderingContext;
-
-/** Buffer Objects. */
-
-		bindWebGLBuffer(eTarget:  number , pBuffer: WebGLBuffer): void;
-		createWebGLBuffer(): WebGLBuffer;
-		deleteWebGLBuffer(pBuffer: WebGLBuffer): void;
-
-/** Texture Objects. */
-
-		bindWebGLTexture(eTarget:  number , pTexture: WebGLTexture): void;
-		activateWebGLTexture(iSlot:  number ): void;
-		createWebGLTexture(): WebGLTexture;
-		deleteWebGLTexture(pTexture: WebGLTexture): void;
-
-/** Framebuffer Objects */
-
-		createWebGLFramebuffer(): WebGLFramebuffer;
-		bindWebGLFramebuffer(eTarget:  number , pBuffer: WebGLFramebuffer): void;
-		deleteWebGLFramebuffer(pBuffer: WebGLFramebuffer): void;
-
-/** Renderbuffer Objects */
-
-		createWebGLRenderbuffer(): WebGLRenderbuffer;
-		bindWebGLRenderbuffer(eTarget:  number , pBuffer: WebGLRenderbuffer): void;
-		deleteWebGLRenderbuffer(pBuffer: WebGLRenderbuffer): void;
-
-		useWebGLProgram(pProgram: WebGLProgram): void;
-		createWebGLProgram(): WebGLProgram;
-		deleteWebGLProgram(pProgram: WebGLProgram): void;
-
-		disableAllWebGLVertexAttribs(): void;
-
-		getError(): string;
-	}
-}
 
 
 
@@ -32872,130 +34585,99 @@ module akra.core.pool.resources {
 
 	export class Texture extends ResourcePoolItem implements ITexture {
         /**@protected*/  _iFlags:  number  = ETextureFlags.DEFAULT;
+
         /**@protected*/  _iWidth:  number  = 512;
-        /**@protected*/  _iSrcWidth:  number  = 0;
         /**@protected*/  _iHeight:  number  = 512;
-        /**@protected*/  _iSrcHeight:  number  = 0;
         /**@protected*/  _iDepth:  number  = 1;
-        /**@protected*/  _iSrcDepth:  number  = 0;
+
         /**@protected*/  _eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
+
         /**@protected*/  _nMipLevels:  number  = 0;
         /**@protected*/  _nRequestedMipLevels:  number  = 0;
-        /**@protected*/  _eTextureType: ETextureTypes = ETextureTypes.TEXTURE_2D;
-        /**@protected*/  _iDesiredIntegerBitDepth:  number  = 0;
-        /**@protected*/  _iDesiredFloatBitDepth:  number  = 0;
 
-        /**@protected*/  _eDesiredFormat: EPixelFormats = EPixelFormats.UNKNOWN;
-        /**@protected*/  _eSrcFormat: EPixelFormats = EPixelFormats.UNKNOWN;
+        /**@protected*/  _eTextureType: ETextureTypes = ETextureTypes.TEXTURE_2D;
 
         /**@protected*/  _pParams: IntMap = <IntMap>{};
 
         /**@protected*/  _isInternalResourceCreated: bool = false;
         /**@protected*/  _isMipmapsHardwareGenerated: bool = false;
 
-        /**@protected*/  _iResourceSize:  number  = 0;
-
         constructor () {
             super();
-
-            this._pParams[ETextureParameters.MIN_FILTER] = ETextureFilters.NEAREST;
-            this._pParams[ETextureParameters.MAG_FILTER] = ETextureFilters.NEAREST;
-
-            this._pParams[ETextureParameters.WRAP_S] = ETextureWrapModes.CLAMP_TO_EDGE;
-            this._pParams[ETextureParameters.WRAP_T] = ETextureWrapModes.CLAMP_TO_EDGE;
         }
 
 		inline get width():  number  {
 			return this._iWidth;
 		}
 
-        inline set width(iWidth:  number ) {
-            this._iWidth = this._iSrcWidth = iWidth;
-        }
+//inline set width(iWidth: uint) {
+//    this._iWidth = this._iSrcWidth = iWidth;
+//}
 
         inline get height():  number  {
         	return this._iHeight;
         }
 
-        inline set height(iHeight:  number ) {
-            this._iHeight = this._iSrcHeight = iHeight;
-        }
+//inline set height(iHeight: uint) {
+//    this._iHeight = this._iSrcHeight = iHeight;
+//}
 
         inline get depth():  number  {
             return this._iDepth;
         }
 
-        inline set depth(iDepth:  number ) {
-            this._iDepth = this._iSrcDepth = iDepth;
-        }
+//inline set depth(iDepth: uint) {
+//    this._iDepth = this._iSrcDepth = iDepth;
+//}
 
         inline get format(): EPixelFormats {
         	return this._eFormat;
         }
 
-        inline set format(eFormat: EPixelFormats) {
-            this._eFormat = eFormat;
-            this._eDesiredFormat = eFormat;
-            this._eSrcFormat = eFormat;
-        }
+//inline set format(eFormat: EPixelFormats) {
+//    this._eFormat = eFormat;
+//    this._eDesiredFormat = eFormat;
+//    this._eSrcFormat = eFormat;
+//}
 
         inline get textureType(): ETextureTypes {
             return this._eTextureType;
         }
 
-        inline set textureType(eTextureType: ETextureTypes) {
-            this._eTextureType = eTextureType;
-        }
+//inline set textureType(eTextureType: ETextureTypes) {
+//    this._eTextureType = eTextureType;
+//}
 
         inline get mipLevels():  number  {
             return this._nMipLevels;
         }
 
-        inline set mipLevels(nMipLevels:  number ) {
-            this._nMipLevels = nMipLevels;
-        }
+//inline set mipLevels(nMipLevels: uint) {
+//    this._nMipLevels = nMipLevels;
+//}
 
-        inline get desiredIntegerBitDepth():  number  {
+/*inline get desiredIntegerBitDepth(): uint {
             return this._iDesiredIntegerBitDepth;
         }
 
-        inline set desiredIntegerBitDepth(iDesiredIntegerBitDepth:  number ) {
+        inline set desiredIntegerBitDepth(iDesiredIntegerBitDepth: uint) {
             this._iDesiredIntegerBitDepth = iDesiredIntegerBitDepth;
         }
 
-        inline get desiredFloatBitDepth():  number  {
+        inline get desiredFloatBitDepth(): uint {
             return this._iDesiredFloatBitDepth;
         }
 
-        inline set desiredFloatBitDepth(iDesiredFloatBitDepth:  number ) {
+        inline set desiredFloatBitDepth(iDesiredFloatBitDepth: uint) {
             this._iDesiredFloatBitDepth = iDesiredFloatBitDepth;
-        }
+        }*/
 
-        inline get srcWidth():  number  {
-            return this._iSrcWidth;
-        }
-
-        inline get srcHeight():  number  {
-            return this._iSrcHeight;
-        }
-
-        inline get srcDepth():  number  {
-            return this._iSrcWidth;
-        }
-
-        inline get desiredFormat(): EPixelFormats {
-            return this._eDesiredFormat;
-        }
-
-        inline get srcFormat(): EPixelFormats {
-            return this._eSrcFormat;
-        }
 
         inline getFlags():  number  {
             return this._iFlags;
         }
 
-        inline setFlags(iFlags:  number ): void {
+        inline setFlags(iFlags: ETextureFlags): void {
             this._iFlags = iFlags;
         }
 
@@ -33025,7 +34707,7 @@ module akra.core.pool.resources {
         }
 
         inline getSize():  number  {
-            return this._iResourceSize;
+            return this.getNumFaces() * pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
         }
 
         getBuffer(iFace?:  number , iMipmap?:  number ): IPixelBuffer {
@@ -33033,31 +34715,52 @@ module akra.core.pool.resources {
         }
 
         create(iWidth:  number , iHeight:  number , iDepth:  number , cFillColor?: IColor,
-               iFlags?:  number , nMipLevels?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+               eFlags?: ETextureFlags, nMipLevels?:  number , nFaces?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+
         create(iWidth:  number , iHeight:  number , iDepth:  number , pPixels?: Array,
-               iFlags?:  number , nMipLevels?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+               eFlags?: ETextureFlags, nMipLevels?:  number , nFaces?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+
         create(iWidth:  number , iHeight:  number , iDepth:  number , pPixels?: ArrayBufferView,
-               iFlags?:  number , nMipLevels?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
-        create(iWidth:  number , iHeight:  number , iDepth:  number , pPixels?: any = null,
-               iFlags?:  number  = 0, nMipLevels?:  number  = 0,
+               eFlags?: ETextureFlags, nMipLevels?:  number , nFaces?:  number , eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+
+        create(iWidth:  number , iHeight:  number , iDepth?:  number  = 1, pPixels?: any = null,
+               eFlags?: ETextureFlags = ETextureFlags.DEFAULT, nMipLevels?:  number  = 0, nFaces?:  number  = 0,
                eTextureType?: ETextureTypes = ETextureTypes.TEXTURE_2D,
-               eFormat?: EPixelFormats = EPixelFormats.R8G8B8): bool {
+               eFormat?: EPixelFormats = EPixelFormats.B8G8R8): bool {
+
+
+            if(eTextureType!=ETextureTypes.TEXTURE_2D && eTextureType!=ETextureTypes.TEXTURE_CUBE_MAP)
+            {
+                logger.setSourceLocation( "core/pool/resources/Texture.ts" , 165 ); logger.criticalError("Заданный тип текстуры не поддреживается"); ;
+                return false;
+            }
+
+            this.textureType=eTextureType;
 
             this._iWidth = iWidth;
             this._iHeight = iHeight;
             this._iDepth = iDepth;
-            this._iFlags = iFlags;
+
+            this._iFlags = eFlags;
             this._nMipLevels = nMipLevels;
-            this._eTextureType = eTextureType;
+
             this._eFormat = eFormat;
 
-            if(isDef(pPixels.length)){
-                if(pPixels instanceof Array) {
-                    pPixels = new Uint8Array(pPixels);
-                }
-                return this.loadRawData(pPixels, iWidth, iHeight, eFormat);
+            if(isNull(pPixels))
+            {
+                return this.loadRawData(null, iWidth, iHeight,iDepth,eFormat,nFaces,nMipLevels);
             }
-            else {
+            else if(isArray(pPixels))
+            {
+                pPixels = new Uint8Array(pPixels);
+                return this.loadRawData(pPixels, iWidth, iHeight,iDepth,eFormat,nFaces,nMipLevels);
+            }
+            else if(isTypedArray(pPixels))
+            {
+                return this.loadRawData(pPixels, iWidth, iHeight,iDepth,eFormat,nFaces,nMipLevels);
+            }
+            else
+            {
                 return this.createInternalTexture(pPixels);
             }
         }
@@ -33068,37 +34771,95 @@ module akra.core.pool.resources {
             return true;
         }
 
-        setParameter(eParam: ETextureParameters, eValue: ETextureFilters): void;
-        setParameter(eParam: ETextureParameters, eValue: ETextureWrapModes): void;
-        setParameter(eParam: ETextureParameters, eValue:  number ): bool {
+        setFilter(eParam: ETextureParameters, eValue: ETextureFilters): bool
+        {
             if (!this.isValid()) {
                 return false;
             }
 
             this._pParams[eParam] = eValue;
-
-        	return true;
+            return this._setFilterInternalTexture(eParam,eValue);
         }
 
-        loadRawData(pStream: ArrayBufferView, iWidth:  number , iHeight:  number , eFormat: EPixelFormats): bool {
-            var pTempImg: IImg = <IImg>this.getManager().imagePool.findResource(".temp_image");
-
-            if(isNull(pTempImg)){
-                pTempImg = <IImg>this.getManager().imagePool.createResource(".temp_image");
-//pTempImg.create();
+        setWrapMode(eParam: ETextureParameters, eValue: ETextureWrapModes): bool
+        {
+            if (!this.isValid()) {
+                return false;
             }
 
-            pTempImg.loadRawData(<Uint8Array>pStream, iWidth, iHeight, eFormat);
+            this._pParams[eParam] = eValue;
+            return this._setWrapModeInternalTexture(eParam,eValue);
+        }
+
+        getFilter(eParam: ETextureParameters): ETextureFilters
+        {
+            if (!this.isValid()) {
+                return 0;
+            }
+            var iValue:any=this._pParams[eParam];
+            if(!isDefAndNotNull(iValue))
+            {
+                iValue=this._getFilterInternalTexture(eParam);
+                this._pParams[eParam]=iValue;
+            }
+            return iValue;
+        }
+
+        getWrapMode(eParam: ETextureParameters): ETextureWrapModes
+        {
+            if (!this.isValid()) {
+                return 0;
+            }
+            var iValue:any=this._pParams[eParam];
+            if(!isDefAndNotNull(iValue))
+            {
+                iValue=this._getWrapModeInternalTexture(eParam);
+                this._pParams[eParam]=iValue;
+            }
+            return iValue;
+        }
+
+        /**@protected*/  _setFilterInternalTexture(eParam: ETextureParameters, eValue: ETextureFilters): bool{
+            logger.setSourceLocation( "core/pool/resources/Texture.ts" , 254 ); logger.criticalError("virual"); ;
+            return false;
+        }
+        /**@protected*/  _setWrapModeInternalTexture(eParam: ETextureParameters, eValue: ETextureWrapModes): bool{
+            logger.setSourceLocation( "core/pool/resources/Texture.ts" , 258 ); logger.criticalError("virual"); ;
+            return false;
+        }
+
+        /**@protected*/  _getFilterInternalTexture(eParam: ETextureParameters): ETextureFilters{
+            logger.setSourceLocation( "core/pool/resources/Texture.ts" , 263 ); logger.criticalError("virual"); ;
+            return 0;
+        }
+        /**@protected*/  _getWrapModeInternalTexture(eParam: ETextureParameters): ETextureWrapModes{
+            logger.setSourceLocation( "core/pool/resources/Texture.ts" , 267 ); logger.criticalError("virual"); ;
+            return 0;
+        }
+
+
+        loadRawData(pData: Uint8Array, iWidth:  number , iHeight:  number , iDepth:  number  = 1, eFormat: EPixelFormats = EPixelFormats.BYTE_BGR,
+                         nFaces?:  number  = 1, nMipMaps?:  number  = 0)
+        {
+            var pTempImg: IImg = <IImg>this.getManager().imagePool.findResource(".texture.temp_image");
+
+            if(isNull(pTempImg)){
+                pTempImg = <IImg>this.getManager().imagePool.createResource(".texture.temp_image");
+            }
+
+            pTempImg.loadRawData(pData, iWidth, iHeight,iDepth,eFormat,nFaces,nMipMaps);
             var isLoaded: bool = this.loadImage(pTempImg);
             this.getManager().imagePool.destroyResource(pTempImg);
 
             return isLoaded;
         }
 
-        loadImage(pImage: IImg): bool {
-            var isLoaded:bool = this._loadImages(pImage, true);
+        loadImage(pImage: IImg): bool
+        {
+            var isLoaded:bool = this._loadImages(pImage);
 
-            if(isLoaded) {
+            if(isLoaded)
+            {
                 this.notifyLoaded();
                 return true;
             }
@@ -33107,7 +34868,8 @@ module akra.core.pool.resources {
             }
         }
 
-        loadImages(pImages: IImg[]): bool {
+        loadImages(pImages: IImg[]): bool
+        {
             var isLoaded:bool = this._loadImages(pImages);
 
             if(isLoaded) {
@@ -33120,76 +34882,123 @@ module akra.core.pool.resources {
         }
 
         _loadImages(pImageList: IImg[]): bool;
-        _loadImages(pImage: IImg, bOneImage: bool): bool;
-        _loadImages(): bool {
+        _loadImages(pImage: IImg): bool;
+
+        _loadImages(pImage:any): bool
+        {
+
+
+
+
             if(this.isResourceLoaded()){
-                logger.setSourceLocation( "core/pool/resources/Texture.ts" , 272 ); logger.warning("Yoy try to load texture when it already have been loaded. All texture data was destoyed."); ;
+                logger.setSourceLocation( "core/pool/resources/Texture.ts" , 325 ); logger.warning("Yoy try to load texture when it already have been loaded. All texture data was destoyed."); ;
                 this.freeInternalTexture();
             }
 
             var pMainImage: IImg = null;
             var pImageList: IImg[] = null;
 
-            if(arguments.length === 2) {
-                pMainImage = arguments[0];
+            if(!isArray(pImage))
+            {
+                pMainImage = pImage;
+                pImageList = new Array(0);
+                pImageList[0]=pMainImage;
             }
-            else {
+            else
+            {
                 pImageList = arguments[0];
                 if(pImageList.length === 0) {
-                    logger.setSourceLocation( "core/pool/resources/Texture.ts" , 285 ); logger.criticalError("Cannot load empty list of images"); ;
+                    logger.setSourceLocation( "core/pool/resources/Texture.ts" , 342 ); logger.criticalError("Cannot load empty list of images"); ;
                     return false;
                 }
                 pMainImage = pImageList[0];
             }
 
-            this._iSrcWidth = this._iWidth = pMainImage.width;
-            this._iSrcHeight = this._iHeight = pMainImage.height;
-            this._iSrcDepth = this._iDepth = pMainImage.depth;
+
+
+            this._iWidth = pMainImage.width;
+            this._iHeight = pMainImage.height;
+            this._iDepth = pMainImage.depth;
 
 // Get source image format and adjust if required
-            this._eSrcFormat = pMainImage.format;
 
-            if (this._eDesiredFormat !== EPixelFormats.UNKNOWN) {
-// If have desired format, use it
-                this._eFormat = this._eDesiredFormat;
+            if(webgl.isWebGLFormatSupport(pMainImage.format))
+            {
+                this._eFormat = pMainImage.format;
             }
-            else {
-// Get the format according with desired bit depth
-                this._eFormat = pixelUtil.getFormatForBitDepths(this._eSrcFormat, this._iDesiredIntegerBitDepth, this._iDesiredFloatBitDepth);
+            else
+            {
+                logger.setSourceLocation( "core/pool/resources/Texture.ts" , 362 ); logger.criticalError("Format not support"); ;
+                if(pMainImage.convert(EPixelFormats.B8G8R8A8))
+                {
+                    this._eFormat = pMainImage.format;
+                }
+                else
+                {
+                    logger.setSourceLocation( "core/pool/resources/Texture.ts" , 369 ); logger.criticalError("Format not convert"); ;
+                }
             }
+
+            for(i=1;i<pImageList.length;i++)
+            {
+                if(!pImageList[i].convert(pMainImage.format))
+                {
+                    logger.setSourceLocation( "core/pool/resources/Texture.ts" , 377 ); logger.criticalError("Format not support and not convert"); ;
+                }
+            }
+
 
 // The custom mipmaps in the image have priority over everything
             var iImageMips:  number  = pMainImage.numMipMaps;
 
-            if(iImageMips > 0) {
-                this._nMipLevels = this._nRequestedMipLevels = iImageMips;
+            if(iImageMips==(math.ceil(math.max(math.log(this._iWidth) / Math.LN2,
+                                                                 math.log(this._iHeight) / Math.LN2)))) {
+                this._nMipLevels=iImageMips;
 // Disable flag for auto mip generation
                 ((this._iFlags) &= ~(ETextureFlags.AUTOMIPMAP)) ;
             }
+            else
+            {
+                this._nMipLevels=0;
+
+            }
+
 // Create the texture
+
             this.createInternalTexture(null);
+
+
 // Check if we're loading one image with multiple faces
 // or a vector of images representing the faces
             var iFaces:  number  = 0;
-            var isMultiImage: bool = false;
+            var isMultiImage:bool =false;
 
-            if(!isNull(pImageList) && pImageList.length > 1){
-                iFaces = pImageList.length;
+            if(pImageList.length == 6)
+            {
+                iFaces = 6;
                 isMultiImage = true;
             }
-            else {
-                iFaces = pMainImage.numFaces;
+            else if(pMainImage.numFaces==6)
+            {
+                iFaces = 6;
+                isMultiImage = false;
+            }
+            else
+            {
+                iFaces = 1;
                 isMultiImage = false;
             }
 
 // Check wether number of faces in images exceeds number of faces
 // in this texture. If so, clamp it.
-            if(iFaces > this.getNumFaces()){
+            if(iFaces > this.getNumFaces())
+            {
                 iFaces = this.getNumFaces();
             }
 
 // Main loading loop
 // imageMips == 0 if the image has no custom mipmaps, otherwise contains the number of custom mips
+
             var mip:  number  = 0;
             var i:  number  = 0;
             for(mip = 0; mip <= iImageMips; ++mip) {
@@ -33199,25 +35008,29 @@ module akra.core.pool.resources {
                     if(isMultiImage){
 // Load from multiple images
                         pSrc = pImageList[i].getPixels(0, mip);
+                        console.log(mip,i);
                     }
                     else {
 // Load from faces of images[0] or main Image
                         pSrc = pMainImage.getPixels(i, mip);
                     }
 
-// Sets to treated format in case is difference
-                    pSrc.format = this._eSrcFormat;
 // Destination: entire texture. blitFromMemory does the scaling to
 // a power of two for us when needed
+//console.log(pSrc);
+//console.log(this.getBuffer(i, mip));
+
+
                     this.getBuffer(i, mip).blitFromMemory(pSrc);
                 }
             }
-// Update size (the final size, not including temp space)
-            this._iResourceSize = this.getNumFaces() * pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
+
             return true;
         }
 
-        convertToImage(pDestImage: IImg, bIncludeMipMaps: bool): void {
+        convertToImage(pDestImage: IImg, bIncludeMipMaps: bool): void
+        {
+            logger.setSourceLocation( "core/pool/resources/Texture.ts" , 464 ); logger.criticalError("!!!нехуй");
             var iNumMips:  number  = bIncludeMipMaps ? this._nMipLevels + 1 : 1;
             var iDataSize:  number  = pixelUtil.calculateSizeForImage(iNumMips, this._nMipLevels,
                                                                   this._iWidth, this._iHeight, this._iDepth,
@@ -33245,13 +35058,14 @@ module akra.core.pool.resources {
             }
 
 // load, and tell Image to delete the memory when it's done.
-            pDestImage.loadDynamicImage(pPixData, this._iWidth, this._iHeight, this._iDepth, this._eFormat, true,
+            pDestImage.loadDynamicImage(pPixData, this._iWidth, this._iHeight, this._iDepth, this._eFormat,
                 this.getNumFaces(), iNumMips - 1);
         }
 
         copyToTexture(pTarget: ITexture): void {
+            logger.setSourceLocation( "core/pool/resources/Texture.ts" , 497 ); logger.criticalError("!!!нехуй");
             if(pTarget.getNumFaces() !== this.getNumFaces()){
-                logger.setSourceLocation( "core/pool/resources/Texture.ts" , 400 ); logger.criticalError("Texture types must match"); ;
+                logger.setSourceLocation( "core/pool/resources/Texture.ts" , 499 ); logger.criticalError("Texture types must match"); ;
             }
 
             var nMipLevels:  number  = Math.min(this._nMipLevels, pTarget.mipLevels);
@@ -33268,9 +35082,13 @@ module akra.core.pool.resources {
             }
         }
 
-        createInternalTexture(cFillColor?: IColor = null): bool {
-            if(!this._isInternalResourceCreated) {
-                this.createInternalTextureImpl(cFillColor);
+        createInternalTexture(cFillColor?: IColor = null): bool
+        {
+
+            if(!this._isInternalResourceCreated)
+            {
+
+                this._createInternalTextureImpl(cFillColor);
                 this._isInternalResourceCreated = true;
                 this.notifyCreated();
                 return true;
@@ -33290,14 +35108,7 @@ module akra.core.pool.resources {
             return false;
         }
 
-        getNativeFormat(eTextureType?: ETextureTypes = this._eTextureType,
-                        eFormat?: EPixelFormats = this._eFormat,
-                        iFlags?:  number  = this._iFlags): EPixelFormats {
-
-            return null;
-        }
-
-        /**@protected*/  createInternalTextureImpl(cFillColor?: IColor = null): bool {
+        /**@protected*/  _createInternalTextureImpl(cFillColor?: IColor = null): bool {
             return false;
         }
 
@@ -33621,450 +35432,6 @@ module akra {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-module akra {
-
-    export enum EAFXInstructionTypes {
-        k_Instruction = 0,
-        k_SimpleInstruction,
-        k_VariableTypeInstruction,
-        k_SystemTypeInstruction,
-        k_ComplexTypeInstruction,
-        k_TypedInstruction,
-        k_DeclInstruction,
-        k_IntInstruction,
-        k_FloatInstruction,
-        k_BoolInstruction,
-        k_StringInstruction,
-        k_IdInstruction,
-        k_KeywordInstruction,
-        k_TypeDeclInstruction,
-        k_VariableDeclInstruction,
-        k_AnnotationInstruction,
-        k_UsageTypeInstruction,
-        k_BaseTypeInstruction,
-        k_StructDeclInstruction,
-        k_StructFieldsInstruction,
-        k_ExprInstruction,
-        k_IdExprInstruction,
-        k_ArithmeticExprInstruction,
-        k_AssignmentExprInstruction,
-        k_RelationalExprInstruction,
-        k_LogicalExprInstruction,
-        k_ConditionalExprInstruction,
-        k_CastExprInstruction,
-        k_UnaryExprInstruction,
-        k_PostfixIndexInstruction,
-        k_PostfixPointInstruction,
-        k_PostfixArithmeticInstruction,
-        k_PrimaryExprInstruction,
-        k_ComplexExprInstruction,
-        k_FunctionCallInstruction,
-        k_SystemCallInstruction,
-        k_ConstructorCallInstruction,
-        k_CompileExprInstruction,
-        k_SamplerStateBlockInstruction,
-        k_SamplerStateInstruction,
-        k_MemExprInstruction,
-        k_FunctionDeclInstruction,
-        k_ShaderFunctionInstruction,
-        k_SystemFunctionInstruction,
-        k_FunctionDefInstruction,
-        k_StmtInstruction,
-        k_StmtBlockInstruction,
-        k_ExprStmtInstruction,
-        k_BreakStmtInstruction,
-        k_WhileStmtInstruction,
-        k_ForStmtInstruction,
-        k_IfStmtInstruction,
-        k_DeclStmtInstruction,
-        k_ReturnStmtInstruction,
-        k_SemicolonStmtInstruction,
-        k_TechniqueInstruction
-    }
-
-    export enum EFunctionType{
-        k_Vertex,
-        k_Pixel,
-        k_Fragment = k_Pixel,
-        k_Function
-    }
-
-    export enum ECheckStage {
-/* Отсутсвуют конструкции не поддерживаемые языком назначения (GLSL) */
-        CODE_TARGET_SUPPORT,
-/* Код замкнут, нет не определенных функций, пассов, техник. Нет мертвых функций. */
-        SELF_CONTAINED
-// VALIDATION  /* Код не содерит синтаксиески неправильных выражений, то что не исчерпывается */ 
-    }
-
-    export enum EVarUsedMode {
-        k_Read,
-        k_Write,
-        k_ReadWrite,
-        k_Undefined,
-        k_Default = k_ReadWrite
-    }
-
-    export interface IAFXInstructionStateMap extends StringMap{
-	}
-
-	export interface IAFXInstructionRoutine {
-		(): void;
-	}
-
-    export interface IAFXInstructionError {
-        code:  number ;
-        info: any;
-    }
-
-    export interface IAFXInstructionMap {
-        [index:  number ]: IAFXInstruction;
-    }
-
-    export interface IAFXIdExprMap {
-        [index: string]: IAFXIdExprInstruction;
-    }
-
-    export interface IAFXVariableTypeMap {
-        [index: string]: IAFXVariableTypeInstruction;
-    }
-
-    export interface IAFXTypeMap {
-        [index: string]: IAFXTypeInstruction;
-    }
-
-    export interface IAFXVariableDeclMap {
-        [index: string]: IAFXVariableDeclInstruction;
-    }
-
-    export interface IAFXVarUsedModeMap {
-        [index: string]: EVarUsedMode;
-    }
-
-    export interface IAFXFunctionDeclMap {
-        [index: string]: IAFXFunctionDeclInstruction;
-        [index:  number ]: IAFXFunctionDeclInstruction;
-    }
-
-/**
-	 * All opertion are represented by: 
-	 * operator : arg1 ... argn
-	 * Operator and instructions may be empty.
-	 */
-
-	export interface IAFXInstruction {
-        setParent(pParent: IAFXInstruction): void;
-        getParent(): IAFXInstruction;
-
-        setOperator(sOperator: string): void;
-        getOperator(): string;
-
-        setInstructions(pInstructionList: IAFXInstruction[]): void;
-        getInstructions(): IAFXInstruction[];
-
-        _getInstructionType(): EAFXInstructionTypes;
-        _getInstructionID():  number ;
-
-        check(eStage: ECheckStage): bool;
-        getLastError(): IAFXInstructionError;
-        setError(eCode:  number , pInfo: any): void;
-
-// /**
-//  * Contain states of instruction
-//  */
-// stateMap: IAFXInstructionStateMap;
-
-    	push(pInstruction: IAFXInstruction, isSetParent?: bool): void;
-
-// changeState(sStateName: string, sValue: string): void;
-// changeState(iStateIndex: int, sValue: string): void;
-
-// stateChange(): void;
-// isStateChange(): bool;
-
-    	addRoutine(fnRoutine: IAFXInstructionRoutine, iPriority?:  number );
-    	toString(): string;
-        clone(pRelationMap?: IAFXInstructionMap): IAFXInstruction;
-    }
-
-    export interface IAFXSimpleInstruction extends IAFXInstruction {
-        setValue(sValue: string): void;
-        isValue(sValue: string): bool;
-    }
-
-    export interface IAFXTypeInstruction extends IAFXInstruction {
-        isBase(): bool;
-        isArray(): bool;
-        isNotBaseArray(): bool;
-        isComplex(): bool;
-        isWritable(): bool;
-        isReadable(): bool;
-
-        _canWrite(isWritable: bool): void;
-        _canRead(isReadable: bool): void;
-
-/**
-         * For using in AFXEffect
-         */
-
-        isEqual(pType: IAFXTypeInstruction): bool;
-        isConst(): bool;
-
-        getHash(): string;
-        getStrongHash(): string ;
-
-        hasField(sFieldName: string): bool;
-        hasFieldWithSematic(sSemantic: string);
-        hasAllUniqueSemantics(): bool;
-        hasFieldWithoutSemantic(): bool;
-        getField(sFieldName: string, isCreateExpr?: bool): IAFXIdExprInstruction;
-        getFieldType(sFieldName: string): IAFXTypeInstruction;
-        getFieldNameList(): string[];
-
-        getSize():  number ;
-
-        getBaseType(): IAFXTypeInstruction;
-
-        getLength():  number ;
-        getArrayElementType(): IAFXTypeInstruction;
-
-        clone(pRelationMap?: IAFXInstructionMap): IAFXTypeInstruction;
-    }
-
-    export interface IAFXVariableTypeInstruction extends IAFXTypeInstruction {
-//type : IAFXUsageTypeInstruction
-//array: IAFXArrayInstruction
-//pointer : IAFXPointerInstruction
-        pushInVariableType(pVariableType: IAFXTypeInstruction): bool;
-        isolateType(): IAFXVariableTypeInstruction;
-
-        addArrayIndex(pExpr: IAFXExprInstruction): void;
-
-        hasUsage(sUsageName: string): bool;
-
-        _usedForWrite(): bool;
-        _usedForRead(): bool;
-
-        isPointer(): bool;
-        isStrictPointer(): bool;
-        _setPointerToStrict(): void;
-        isPointIndex(): bool;
-
-        addPointIndex(isStrict?:bool): void;
-        _addPointIndexInDepth(): void;
-        getPointDim():  number ;
-        getPointer(): IAFXVariableDeclInstruction;
-        setVideoBuffer(pBuffer: IAFXVariableDeclInstruction): void;
-        _setVideoBufferInDepth(): void;
-        getVideoBuffer():IAFXVariableDeclInstruction;
-        hasVideoBuffer(): bool;
-        initializePointers(): void;
-
-
-        wrap(): IAFXVariableTypeInstruction;
-        clone(pRelationMap?: IAFXInstructionMap): IAFXVariableTypeInstruction;
-
-        _setNextPointer(pPointer: IAFXVariableDeclInstruction): void;
-        _containArray(): bool;
-        _containSampler(): bool;
-        _containPointer(): bool;
-
-        _setCloneHash(sHash: string, sStrongHash: string): void;
-        _setCloneArrayIndex(pElementType: IAFXVariableTypeInstruction,
-                            pIndexExpr: IAFXExprInstruction, iLength:  number ): void;
-        _setClonePointeIndexes(nDim:  number , pPointerList: IAFXVariableDeclInstruction[]): void;
-        _setCloneFields(pFieldMap: IAFXIdExprMap): void;
-    }
-
-     export interface IAFXUsageTypeInstruction extends IAFXInstruction {
-//usage: IAFXKeywordInstruction[]
-//type: IAFXTypeInstruction
-
-        getTypeInstruction(): IAFXTypeInstruction;
-        setTypeInstruction(pType: IAFXTypeInstruction): bool;
-
-        hasUsage(sUsage: string): bool;
-        addUsage(sUsage: string): bool;
-
-        clone(pRelationMap?: IAFXInstructionMap): IAFXUsageTypeInstruction;
-    }
-
-    export interface IAFXTypedInstruction extends IAFXInstruction{
-        getType(): IAFXTypeInstruction;
-        setType(pType: IAFXTypeInstruction): void;
-
-        clone(pRelationMap?: IAFXInstructionMap): IAFXTypedInstruction;
-    }
-
-    export interface IAFXDeclInstruction extends IAFXTypedInstruction {
-        setSemantic(sSemantic: string);
-        setAnnotation(pAnnotation: IAFXAnnotationInstruction): void;
-        getName(): string;
-        getNameId(): IAFXIdInstruction;
-        getSemantic(): string;
-
-        _isForAll(): bool;
-        _isForPixel(): bool;
-        _isForVertex(): bool;
-
-        _setForAll(canUse: bool): void;
-        _setForPixel(canUse: bool): void;
-        _setForVertex(canUse: bool): void;
-
-        clone(pRelationMap?: IAFXInstructionMap): IAFXDeclInstruction;
-    }
-
-    export interface IAFXTypeDeclInstruction extends IAFXDeclInstruction {
-        clone(pRelationMap?: IAFXInstructionMap): IAFXTypeDeclInstruction;
-    }
-
-    export interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
-        hasInitializer(): bool;
-        getInitializeExpr(): IAFXExprInstruction;
-
-        getType(): IAFXVariableTypeInstruction;
-        setType(pType: IAFXVariableTypeInstruction): void;
-
-        isUniform(): bool;
-
-        setName(sName: string):void;
-
-        clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction;
-    }
-
-    export interface IAFXFunctionDeclInstruction extends IAFXDeclInstruction {
-//getNameId(): IAFXIdInstruction;
-        hasImplementation(): bool;
-        getArguments(): IAFXTypedInstruction[];
-        getNumNeededArguments():  number ;
-        getReturnType(): IAFXVariableTypeInstruction;
-
-// closeArguments(pArguments: IAFXInstruction[]): IAFXTypedInstruction[];
-        setFunctionDef(pFunctionDef: IAFXDeclInstruction): void;
-        setImplementation(pImplementation: IAFXStmtInstruction): void;
-
-        clone(pRelationMap?: IAFXInstructionMap): IAFXFunctionDeclInstruction;
-
-        _addOutVariable(pVariable: IAFXVariableDeclInstruction): bool;
-        _getOutVariable(): IAFXVariableDeclInstruction;
-
-        _usedAs(eUsedType: EFunctionType): void;
-        _isUsedAs(eUsedType: EFunctionType): bool;
-        _isUsedAsFunction(): bool;
-        _isUsedAsVertex(): bool;
-        _isUsedAsPixel(): bool;
-        _isUsed(): bool;
-        _usedInVertex(): void;
-        _usedInPixel(): void;
-        _isUsedInVertex(): bool;
-        _isUsedInPixel(): bool;
-        _checkVertexUsage(): bool;
-        _checkPixelUsage(): bool;
-
-        _checkDefenitionForVertexUsage(): bool;
-        _checkDefenitionForPixelUsage(): bool;
-
-        _canUsedAsFunction(): bool;
-        _notCanUsedAsFunction(): void;
-
-        _addUsedFunction(pFunction: IAFXFunctionDeclInstruction): bool;
-        _getUsedFunctionList(): IAFXFunctionDeclInstruction[];
-        _addUsedVariable(pVariable: IAFXVariableDeclInstruction): void;
-
-        _isBlackListFunction(): bool;
-        _addToBlackList(): void;
-        _getStringDef(): string;
-
-        _convertToVertexShader(): IAFXFunctionDeclInstruction;
-        _convertToPixelShader(): IAFXFunctionDeclInstruction;
-    }
-
-
-    export interface IAFXStructDeclInstruction extends IAFXInstruction {
-//id: IAFXIdInstruction
-//structFields: IAFXStructInstruction
-    }
-
-// export interface IAFXBaseTypeInstruction extends IAFXInstruction {
-//     //id: IAFXIdInstruction
-//     //...
-// }
-
-    export interface IAFXIdInstruction extends IAFXInstruction {
-        getName(): string;
-        getRealName(): string;
-
-        setName(sName: string): void;
-        setRealName(sName: string): void;
-
-        clone(pRelationMap?: IAFXInstructionMap): IAFXIdInstruction;
-    }
-
-    export interface IAFXKeywordInstruction extends IAFXInstruction {
-        setValue(sValue: string): void;
-        isValue(sTestValue: string): bool;
-    }
-
-
-    export interface IAFXExprInstruction extends IAFXTypedInstruction {
-        evaluate(): bool;
-        simplify(): bool;
-        getEvalValue(): any;
-        isConst(): bool;
-
-        clone(pRelationMap?: IAFXInstructionMap): IAFXExprInstruction;
-    }
-
-    export interface IAFXIdExprInstruction extends IAFXExprInstruction {
-        clone(pRelationMap?: IAFXInstructionMap): IAFXIdExprInstruction;
-    }
-
-    export interface IAFXLiteralInstruction extends IAFXExprInstruction {
-        setValue(pValue: any): void;
-        clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction;
-    }
-
-    export interface IAFXAnnotationInstruction extends IAFXInstruction{
-
-    }
-
-    export interface IAFXStmtInstruction extends IAFXInstruction{
-
-    }
-
-    export interface IAFXTechniqueInstruction extends IAFXDeclInstruction{
-        addPass(): void;
-
-        setName(sName: string, isComplexName: bool): void;
-        getName(): string;
-        hasComplexName(): bool;
-
-        getSharedVariables(): IAFXVariableDeclInstruction[];
-
-        _setParseNode(pNode: IParseNode): void;
-        _getParseNode(): IParseNode;
-    }
-
-}
-
-
-
 module akra {
 
     export interface IAFXObject{
@@ -34108,6 +35475,8 @@ module akra {
         getStats(): IAFXEffectStats;
 
         clear(): void;
+
+        getTechniqueList(): IAFXTechniqueInstruction[];
     }
 }
 
@@ -34142,21 +35511,10 @@ module akra {
 
 
 
-module akra {
-	export interface IAFXComponentBlend {
-
-	}
-}
-
-
-
-
-
-
 
 module akra {
 	export interface IAFXPassBlend {
-		blend(csPass: string): void;
+		blend(csComponent: string, iPass:  number ): bool;
 	}
 }
 
@@ -34177,10 +35535,12 @@ module akra {
 module akra {
 	export interface IRenderPass {} ;
 	export interface IRenderMethod {} ;
+	export interface IAFXComponentBlend {} ;
 
 	export interface IRenderTechnique extends IEventProvider {
 		 totalPasses:  number ;
 		 modified:  number ;
+		 data: IAFXComponentBlend;
 
 		destroy(): void;
 
@@ -35672,6 +37032,8 @@ module akra {
 /** Swap elements in array */
 
 		swap(i:  number , j:  number ): IObjectArray;
+
+		takeAt(iPos): any;
 	}
 }
 
@@ -35744,7 +37106,7 @@ module akra.util {
 
 		private extend(n:  number ): void {
 			if (this._pData.length < n) {
-// LOG("extending object array to > " + n);
+//LOG("extending object array to > " + n);
 				for (var i:  number  = this._pData.length; i < n; ++ i) {
 					this._pData[i] = null;
 				}
@@ -35802,6 +37164,18 @@ module akra.util {
 			this._pData.swap(i, j);
 
 			return this;
+		}
+
+		takeAt(iPos): any {
+			var pValue: any = this.value(iPos);
+
+			for (var i = iPos + 1, j = iPos; i < this.length; ++ i, ++ j) {
+				this._pData[j] = this._pData[i];
+			}
+
+			this._iLength --;
+
+			return pValue;
 		}
 
 	}
@@ -36062,10 +37436,9 @@ module akra.render {
         	return this._pCamera? this._pCamera._getNumRenderedFaces(): 0;
         }
 
-        private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return Viewport._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-        	viewportDimensionsChanged (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).viewportDimensionsChanged; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
-        	viewportCameraChanged (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).viewportCameraChanged; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
-        ;
+        /**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return Viewport._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+    	viewportDimensionsChanged (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).viewportDimensionsChanged; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+    	viewportCameraChanged (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).viewportCameraChanged; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
 	}
 }
 
@@ -36277,11 +37650,14 @@ module akra.render {
 
 
 
+
+
+
 module akra {
 	export interface IAFXPassBlend {} ;
 	export interface IRenderTarget {} ;
 
-	export interface IRenderPass {
+	export interface IRenderPass extends IUnique {
 		data: IAFXPassBlend;
 
 		getRenderTarget(): IRenderTarget;
@@ -36388,6 +37764,10 @@ module akra.render {
 			return 0;
 		}
 
+		get data(): IAFXComponentBlend {
+			return null;
+		}
+
 		constructor (pMethod: IRenderMethod = null) {
 			this._pMethod = pMethod;
 		}
@@ -36437,9 +37817,8 @@ module akra.render {
 			return false;
 		}
 
-		private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return RenderTechnique._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-			render (): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || this.getEventTable().findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).render; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier) : _unicast.listener (_recivier) ; } } ; ;
-		;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return RenderTechnique._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		render (): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || (<events.EventTable>this.getEventTable()).findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).render; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier) : _unicast.listener (_recivier) ; } } ; ;
 	}
 }
 
@@ -36628,9 +38007,8 @@ module akra.render {
 			logger.setSourceLocation( "RenderableObject.ts" , 186 ); logger.error("RenderableObject::_draw() pure virtual method() isn't callable!!"); ;
 		}
 
-		private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return RenderableObject._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-			shadow (bValue): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || this.getEventTable().findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).shadow; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier, bValue) : _unicast.listener (_recivier, bValue) ; } } ; ;
-		;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return RenderableObject._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		shadow (bValue): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || (<events.EventTable>this.getEventTable()).findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).shadow; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier, bValue) : _unicast.listener (_recivier, bValue) ; } } ; ;
 	}
 }
 
@@ -36685,13 +38063,13 @@ module akra.render {
 		    }
 
 			pDepthTexture = this._pDeferredDepthTexture = pResMgr.createTexture("deferred-depth-texture-" + iGuid);
-			pDepthTexture.create(iWidth, iHeight, 1, null, 0, 0,
-					ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH);
+			pDepthTexture.create(iWidth, iHeight, 1, null, 0, 0, 0,
+					ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_DEPTH);
 
 			for (var i = 0; i < 2; ++ i) {
 				pDeferredTextures[i] = this._pDefferedColorTextures[i] =
 					pResMgr.createTexture("deferred-color-texture-" + i + "-" +  iGuid);
-				pDeferredTextures[i].create(iWidth, iHeight, 1, null, 0, 0,
+				pDeferredTextures[i].create(iWidth, iHeight, 1, null, 0, 0,0,
 					ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
 
 				pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
@@ -36772,7 +38150,7 @@ module akra.render {
 								var pPass: IRenderPass = pTechnique.getPass(k);
 
 								if (isNull(pPass.getRenderTarget())) {
-									pPass.data.blend("akra.system.prepareForDeferredShading.pass" + j);
+									pPass.data.blend("akra.system.prepareForDeferredShading", j);
 								}
 							}
 						}
@@ -37084,8 +38462,8 @@ module akra.render {
 			}
 
 			var eFormat: EPixelFormats = pBuffer.format;
-			if(eFormat !== EPixelFormats.DEPTH ||
-			   eFormat !== EPixelFormats.DEPTH_BYTE){
+			if(eFormat !== EPixelFormats.FLOAT32_DEPTH ||
+			   eFormat !== EPixelFormats.DEPTH8){
 				return false;
 			}
 
@@ -37398,16 +38776,16 @@ module akra.render {
 			this._endUpdate();
 		}
 
-		private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return RenderTarget._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-			preUpdate (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).preUpdate; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
-			viewportPreUpdate (pViewport): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).viewportPreUpdate; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pViewport) : _broadcast[i].listener (_recivier, pViewport) ; } } } ; ;
-			viewportPostUpdate (pViewport): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).viewportPostUpdate; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pViewport) : _broadcast[i].listener (_recivier, pViewport) ; } } } ; ;
-			viewportAdded (pViewport): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).viewportAdded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pViewport) : _broadcast[i].listener (_recivier, pViewport) ; } } } ; ;
-			viewportRemoved (pViewport): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).viewportRemoved; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pViewport) : _broadcast[i].listener (_recivier, pViewport) ; } } } ; ;
-			postUpdate (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).postUpdate; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return RenderTarget._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
 
-			cameraRemoved (pCamera): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).cameraRemoved; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pCamera) : _broadcast[i].listener (_recivier, pCamera) ; } } } ; ;
-		;
+		preUpdate (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).preUpdate; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+		viewportPreUpdate (pViewport): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).viewportPreUpdate; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pViewport) : _broadcast[i].listener (_recivier, pViewport) ; } } } ; ;
+		viewportPostUpdate (pViewport): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).viewportPostUpdate; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pViewport) : _broadcast[i].listener (_recivier, pViewport) ; } } } ; ;
+		viewportAdded (pViewport): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).viewportAdded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pViewport) : _broadcast[i].listener (_recivier, pViewport) ; } } } ; ;
+		viewportRemoved (pViewport): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).viewportRemoved; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pViewport) : _broadcast[i].listener (_recivier, pViewport) ; } } } ; ;
+		postUpdate (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).postUpdate; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ;
+
+		cameraRemoved (pCamera): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).cameraRemoved; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pCamera) : _broadcast[i].listener (_recivier, pCamera) ; } } } ; ;
 	}
 }
 
@@ -37446,7 +38824,7 @@ module  akra.render {
 	export class Renderer implements IRenderer {
 		/**@protected*/  _isActive: bool = false;
 		/**@protected*/  _pEngine: IEngine;
-		/**@protected*/  _pRenderTargets: IRenderTarget[];
+		/**@protected*/  _pRenderTargets: IRenderTarget[] = [];
 		/**@protected*/  _pPrioritisedRenderTargets: IRenderTargetPriorityMap;
 
 		constructor (pEngine: IEngine) {
@@ -37553,17 +38931,17 @@ module  akra.render {
 			return null;
 		}
 
-		private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return Renderer._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-			 active(pEngine: IEngine): void {
-				this._isActive = true;
-				this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).active; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pEngine) : _broadcast[i].listener (_recivier, pEngine) ; } } ;
-			}
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return Renderer._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		 active(pEngine: IEngine): void {
+			this._isActive = true;
+			this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).active; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pEngine) : _broadcast[i].listener (_recivier, pEngine) ; } } ;
+		}
 
-			 inactive(pEngine: IEngine): void {
-				this._isActive = false;
-				this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).inactive; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pEngine) : _broadcast[i].listener (_recivier, pEngine) ; } } ;
-			}
-		;
+		 inactive(pEngine: IEngine): void {
+			this._isActive = false;
+			this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).inactive; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pEngine) : _broadcast[i].listener (_recivier, pEngine) ; } } ;
+		}
+
 	}
 };
 
@@ -37572,7 +38950,7 @@ module  akra.render {
 
 
 module akra.webgl {
-	export class WebGLRenderer extends render.Renderer implements IWebGLRenderer {
+	export class WebGLRenderer extends render.Renderer {
 		private _pCanvas: HTMLCanvasElement;
 
 		private _pWebGLContext: WebGLRenderingContext;
@@ -37622,7 +39000,7 @@ module akra.webgl {
 		                },
 		                useApiTrace?
 		                (funcName: string, args: IArguments): void => {
-		                   logger.setSourceLocation( "webgl/WebGLRenderer.ts" , 61 ); logger.log("gl." + funcName + "(" + WebGLDebugUtils.glFunctionArgsToString(funcName, args) + ")"); ;
+		                   logger.setSourceLocation( "WebGLRenderer.ts" , 60 ); logger.log("gl." + funcName + "(" + WebGLDebugUtils.glFunctionArgsToString(funcName, args) + ")"); ;
 		                }: null);
 
 		            this._pWebGLInternalContext = pWebGLInternalContext;
@@ -37692,7 +39070,7 @@ module akra.webgl {
 		inline createWebGLFramebuffer(): WebGLFramebuffer {
 
 			if (this._pWebGLFramebufferList.length === 0) {
-				logger.setSourceLocation( "webgl/WebGLRenderer.ts" , 128 ); logger.criticalError("WebGL framebuffer limit exidit"); ;
+				logger.setSourceLocation( "WebGLRenderer.ts" , 127 ); logger.criticalError("WebGL framebuffer limit exidit"); ;
 			}
 
 			return this._pWebGLFramebufferList.pop();
@@ -37733,7 +39111,7 @@ module akra.webgl {
 			this._pWebGLContext.useProgram(pProgram);
 		}
 
-		inline disableAllWebGLVertexAttribs(): void {
+		disableAllWebGLVertexAttribs(): void {
 
 //TODO: check attrib array from last shader program
 			var i: number  = 0;
@@ -37744,6 +39122,14 @@ module akra.webgl {
 		}
 	}
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -37804,7 +39190,7 @@ module akra.webgl {
 			var iFlags:  number  = arguments[8];
 			var bSoftwareMipmap: bool = arguments[9];
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 
 			pWebGLRenderer.bindWebGLTexture(eTarget, pTexture);
 
@@ -37826,6 +39212,7 @@ module akra.webgl {
 
 			this._iWebGLInternalFormat = iInternalFormat;
 			this._eFormat = webgl.getClosestAkraFormat(iInternalFormat, iFormat);
+
 
 			this._iRowPitch = this._iWidth;
 			this._iSlicePitch = this._iHeight * this._iWidth;
@@ -37865,7 +39252,7 @@ module akra.webgl {
 			if ( (((this._iFlags) & (ETextureFlags.RENDERTARGET)) != 0) ) {
 // Delete all render targets that are not yet deleted via _clearSliceRTT because the rendertarget
 // was deleted by the user.
-	            var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+	            var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 	            for (var i:  number  = 0; i < this._pRTTList.length; i++) {
 	                pWebGLRenderer.destroyRenderTarget(this._pRTTList[i]);
 	            }
@@ -37874,14 +39261,14 @@ module akra.webgl {
 
 //upload(download) data to(from) videocard.
 		/**@protected*/  upload(pData: IPixelBox, pDestBox: IBox): void {
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
 
 			if(pixelUtil.isCompressed(pData.format)) {
 				if(pData.format !== this._eFormat || !pData.isConsecutive()){
-					logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 166 ); logger.criticalError("Compressed images must be consecutive, in the source format"); ;
+					logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 167 ); logger.criticalError("Compressed images must be consecutive, in the source format"); ;
 				}
 
 				var iWebGLFormat:  number  = webgl.getClosestWebGLInternalFormat(this._eFormat);
@@ -37906,12 +39293,12 @@ module akra.webgl {
 			else if(this._bSoftwareMipmap) {
 				if (pData.width !== pData.rowPitch) {
 // TODO
-	                logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 191 ); logger.criticalError("Unsupported texture format"); ;
+	                logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 192 ); logger.criticalError("Unsupported texture format"); ;
 	            }
 
 	            if (pData.height * pData.width !== pData.slicePitch) {
 // TODO
-	                logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 196 ); logger.criticalError("Unsupported texture format"); ;
+	                logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 197 ); logger.criticalError("Unsupported texture format"); ;
 	            }
 
 	            pWebGLContext.pixelStorei( 0x0CF5 , 1);
@@ -37920,12 +39307,12 @@ module akra.webgl {
 			else {
 				if(pData.width !== pData.rowPitch) {
 // TODO
-	                logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 205 ); logger.criticalError("Unsupported texture format"); ;
+	                logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 206 ); logger.criticalError("Unsupported texture format"); ;
 	            }
 
 	            if(pData.height * pData.width !== pData.slicePitch) {
 // TODO
-	                logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 210 ); logger.criticalError("Unsupported texture format"); ;
+	                logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 211 ); logger.criticalError("Unsupported texture format"); ;
 	            }
 
 	            if ((pData.width * pixelUtil.getNumElemBytes(pData.format)) & 3) {
@@ -37937,8 +39324,8 @@ module akra.webgl {
 	                            			this._iLevel,
 	                            			pDestBox.left, pDestBox.top,
 	                            			pDestBox.width, pDestBox.height,
-	                            			webgl.getWebGLOriginFormat(pData.format),
-	                            			webgl.getWebGLOriginDataType(pData.format),
+	                            			webgl.getWebGLFormat(pData.format),
+	                            			webgl.getWebGLDataType(pData.format),
 	                            			pData.data);
 	        }
 
@@ -37981,7 +39368,7 @@ module akra.webgl {
 //     // Restore defaults
 //     glPixelStorei(GL_PACK_ALIGNMENT, 4);
 // }
-			logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 266 ); logger.criticalError("Downloading texture buffers is not supported by OpenGL ES"); ;
+			logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 267 ); logger.criticalError("Downloading texture buffers is not supported by OpenGL ES"); ;
 		}
 
 		/**@protected*/  buildMipmaps(pData: IPixelBox): void {
@@ -38008,12 +39395,12 @@ module akra.webgl {
 	        iLevel = (iLogW > iLogH ? iLogW : iLogH);
 
 	        var mip:  number  = 0;
-	        var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+	        var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 	        for (mip = 0; mip <= iLevel; mip++) {
-	           	var iWebGLFormat:  number  = webgl.getWebGLOriginFormat(pScaled.format);
-	            var iWebGLDataType:  number  = webgl.getWebGLOriginDataType(pScaled.format);
+	           	var iWebGLFormat:  number  = webgl.getWebGLFormat(pScaled.format);
+	            var iWebGLDataType:  number  = webgl.getWebGLDataType(pScaled.format);
 
 	            pWebGLContext.texImage2D(this._eFaceTarget,
 	            						 mip,
@@ -38050,14 +39437,14 @@ module akra.webgl {
 		}
 
 		_bindToFramebuffer(iAttachment:  number , iZOffset:  number ): void {
-			logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 335 ); logger.assert(iZOffset < this._iDepth); ;
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 336 ); logger.assert(iZOffset < this._iDepth); ;
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 			pWebGLContext.framebufferTexture2D( 0x8D40 , iAttachment, this._eFaceTarget, this._pWebGLTexture, this._iLevel);
 		}
 
 		_copyFromFramebuffer(iZOffset:  number ): void {
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
@@ -38104,7 +39491,7 @@ module akra.webgl {
 // Supports compressed formats as both source and destination format, it will use the hardware DXT compressor
 // if available.
 	    blitFromTexture(pSource: WebGLTextureBuffer, pSrcBox: IBox, pDestBox: IBox): bool {
-	    	var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+	    	var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			pWebGLRenderer._disableTextureUnitsFrom(0);
@@ -38341,12 +39728,12 @@ module akra.webgl {
 	        }
 
 	        if(!this._pBuffer.contains(pDestBox)) {
-	            logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 626 ); logger.criticalError("Destination box out of range"); ;
+	            logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 627 ); logger.criticalError("Destination box out of range"); ;
 	        }
 
 		    var pSource: IPixelBox;
 // First, convert the srcbox to a OpenGL compatible pixel format
-	        if(getWebGLOriginFormat(pSourceOrigin.format) === 0){
+	        if(getWebGLFormat(pSourceOrigin.format) === 0){
 // Convert to buffer internal format
 	        	var iSizeInBytes:  number  = pixelUtil.getMemorySize(pSourceOrigin.width, pSourceOrigin.height,
 	        													pSourceOrigin.depth, this._eFormat);
@@ -38360,7 +39747,7 @@ module akra.webgl {
 	        	pSource = pSourceOrigin;
 	        }
 
-	        var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+	        var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 // Create temporary texture to store source data
@@ -38369,12 +39756,12 @@ module akra.webgl {
 	        var iWidth:  number  = math.ceilingPowerOfTwo(pSource.width);
 	        var iHeight:  number  = math.ceilingPowerOfTwo(pSource.height);
 	        var iWebGLFormat: number  = getClosestWebGLInternalFormat(pSource.format);
-	        var iWebGLDataType:  number  = getWebGLOriginDataType(pSource.format);
+	        var iWebGLDataType:  number  = getWebGLDataType(pSource.format);
 
 	        pTempWebGLTexture = pWebGLRenderer.createWebGLTexture();
 
 	        if(isNull(pTempWebGLTexture)){
-	        	logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 659 ); logger.error("Can not create WebGL texture"); ;
+	        	logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 660 ); logger.error("Can not create WebGL texture"); ;
 	        	return false;
 	        }
 
@@ -38409,15 +39796,15 @@ module akra.webgl {
 		getRenderTarget(): IRenderTarget;
 		getRenderTarget(iZOffest:  number ): IRenderTarget;
 		getRenderTarget(iZOffest?:  number  = 0): IRenderTarget {
-			logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 694 ); logger.assert( (((this._iFlags) & (ETextureFlags.RENDERTARGET)) != 0) ); ;
-        	logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 695 ); logger.assert(iZOffest < this._iDepth); ;
+			logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 695 ); logger.assert( (((this._iFlags) & (ETextureFlags.RENDERTARGET)) != 0) ); ;
+        	logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 696 ); logger.assert(iZOffest < this._iDepth); ;
         	return this._pRTTList[iZOffest];
 		}
 
 		resize(iSize:  number ): bool;
 		resize(iWidth:  number , iHeight?:  number ): bool {
 			if(arguments.length === 1){
-				logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 702 ); logger.criticalError("resize with one parametr not available for WebGLTextureBuffer"); ;
+				logger.setSourceLocation( "webgl/WebGLTextureBuffer.ts" , 703 ); logger.criticalError("resize with one parametr not available for WebGLTextureBuffer"); ;
 				return false;
 			}
 			var pSrcBox: IBox = new geometry.Box(0, 0, 0, this._iWidth, this._iHeight, this._iDepth);
@@ -38442,9 +39829,8 @@ module akra.webgl {
             super();
         }
 
-        getWebGLTextureTarget():  number  {
+        private _getWebGLTextureTarget():  number  {
         	switch(this._eTextureType) {
-        		case ETextureTypes.TEXTURE:
         		case ETextureTypes.TEXTURE_2D:
         			return  0x0DE1 ;
         		case ETextureTypes.TEXTURE_CUBE_MAP:
@@ -38454,60 +39840,208 @@ module akra.webgl {
         	}
         }
 
-        /**@protected*/  createInternalTextureImpl(cFillColor?: IColor = null): bool {
-        	if(!isNull(cFillColor)){
-        		logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 36 ); logger.warning("Texture can create with filled only by default(black) color"); ;
+        private _getWebGLTextureParameter(eParam: ETextureParameters): number
+        {
+        	switch(eParam) {
+        		case ETextureParameters.MAG_FILTER:
+        			return  0x2800 ;
+        		case ETextureParameters.MIN_FILTER:
+        			return  0x2801 ;
+        		case ETextureParameters.WRAP_S:
+        			return  0x2802 ;
+        		case ETextureParameters.WRAP_T:
+        			return  0x2803 ;
+        		default:
+        			return 0;
+        	}
+        }
+
+
+        private _getWebGLTextureParameterValue(eValue: ETextureFilters): number ;
+        private _getWebGLTextureParameterValue(eValue: ETextureWrapModes): number ;
+        private _getWebGLTextureParameterValue(eValue: any): number
+        {
+        	switch(eValue) {
+        		case ETextureFilters.NEAREST:
+        			return  0x2600 ;
+        		case ETextureFilters.LINEAR:
+        			return  0x2601 ;
+        		case ETextureFilters.NEAREST_MIPMAP_NEAREST:
+        			return  0x2700 ;
+        		case ETextureFilters.LINEAR_MIPMAP_NEAREST:
+        			return  0x2701 ;
+        		case ETextureFilters.NEAREST_MIPMAP_LINEAR:
+        			return  0x2702 ;
+        		case ETextureFilters.LINEAR_MIPMAP_LINEAR:
+        			return  0x2703 ;
+
+
+        		case ETextureWrapModes.REPEAT:
+        			return  0x2901 ;
+        		case ETextureWrapModes.CLAMP_TO_EDGE:
+        			return  0x812F ;
+        		case ETextureWrapModes.MIRRORED_REPEAT:
+        			return  0x8370 ;
+        		default:
+        			return 0;
+        	}
+        }
+
+
+
+
+        /**@protected*/  _setFilterInternalTexture(eParam: ETextureParameters, eValue: ETextureFilters): bool{
+             if (!this.isValid()) {
+                return false;
+            }
+            var iWebGLTarget:  number  = this._getWebGLTextureTarget();
+            var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
+            var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+            pWebGLRenderer.bindWebGLTexture(iWebGLTarget, this._pWebGLTexture);
+            pWebGLContext.texParameteri(iWebGLTarget, this._getWebGLTextureParameter(eParam), this._getWebGLTextureParameterValue(eValue));
+            return true;
+        }
+        /**@protected*/  _setWrapModeInternalTexture(eParam: ETextureParameters, eValue: ETextureWrapModes): bool{
+             if (!this.isValid()) {
+                return false;
+            }
+            var iWebGLTarget:  number  = this._getWebGLTextureTarget();
+            var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
+            var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+            pWebGLRenderer.bindWebGLTexture(iWebGLTarget, this._pWebGLTexture);
+            pWebGLContext.texParameteri(iWebGLTarget, this._getWebGLTextureParameter(eParam), this._getWebGLTextureParameterValue(eValue));
+            return true;
+        }
+
+        /**@protected*/  _getFilterInternalTexture(eParam: ETextureParameters): ETextureFilters{
+            if (!this.isValid()) {
+                return 0;
+            }
+            var iWebGLTarget:  number  = this._getWebGLTextureTarget();
+            var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
+            var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+            pWebGLRenderer.bindWebGLTexture(iWebGLTarget, this._pWebGLTexture);
+            return pWebGLContext.getTexParameter(iWebGLTarget, this._getWebGLTextureParameter(eParam));
+        }
+
+        /**@protected*/  _getWrapModeInternalTexture(eParam: ETextureParameters): ETextureWrapModes{
+            if (!this.isValid()) {
+                return 0;
+            }
+            var iWebGLTarget:  number  = this._getWebGLTextureTarget();
+            var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
+            var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
+            pWebGLRenderer.bindWebGLTexture(iWebGLTarget, this._pWebGLTexture);
+            return pWebGLContext.getTexParameter(iWebGLTarget, this._getWebGLTextureParameter(eParam));
+        }
+
+
+        /**@protected*/  _createInternalTextureImpl(cFillColor?: IColor = null): bool
+        {
+        	if(!isNull(cFillColor))
+        	{
+        		logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 134 ); logger.warning("Texture can create with filled only by default(black) color"); ;
 //TODO: must implement filling by color
         	}
 
-        	var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+
+        	var pWebGLRenderer: webgl.WebGLRenderer = <webgl.WebGLRenderer>this.getManager().getEngine().getRenderer();
+
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
+
+            if(this._eTextureType==ETextureTypes.TEXTURE_2D)
+            {
+                if(this._iWidth>webgl.maxTextureSize)
+                {
+                	logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 148 ); logger.warning("Заданная ширина не поддерживается("+this._iWidth+")"); ;
+                	this._iWidth=webgl.maxTextureSize;
+                }
+                if(this._iHeight>webgl.maxTextureSize)
+                {
+                    logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 153 ); logger.warning("Заданная высота не поддерживается("+this._iHeight+")"); ;
+                    this._iHeight=webgl.maxTextureSize;
+
+                }
+            }
+            else if( this._eTextureType==ETextureTypes.TEXTURE_CUBE_MAP)
+            {
+                if(this._iWidth>webgl.maxCubeMapTextureSize)
+                {
+                	logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 162 ); logger.warning("Заданная ширина не поддерживается("+this._iWidth+")"); ;
+                	this._iWidth=webgl.maxCubeMapTextureSize;
+                }
+                if(this._iHeight>webgl.maxCubeMapTextureSize)
+                {
+                    logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 167 ); logger.warning("Заданная высота не поддерживается("+this._iHeight+")"); ;
+                    this._iHeight=webgl.maxCubeMapTextureSize;
+
+                }
+            }
+
+            if(this._iWidth==0)
+            {
+            	logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 175 ); logger.warning("Заданная ширина не поддерживается("+this._iWidth+")"); ;
+                this._iWidth=1;
+
+            }
+            if(this._iHeight==0)
+            {
+                logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 181 ); logger.warning("Заданная высота не поддерживается("+this._iHeight+")"); ;
+                this._iHeight=1;
+
+            }
+
+
+            if(this._iDepth!=1)
+            {
+            	this._iDepth=1;
+                logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 190 ); logger.warning("Трехмерные текстуры не поддерживаются, сброс глубины в 1"); ;
+            }
+
+
+            if(!webgl.isWebGLFormatSupport(this._eFormat))
+            {
+                logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 196 ); logger.warning("Данный тип текстуры не поддерживается"); ;
+                this._eFormat=EPixelFormats.A8B8G8R8;
+            }
+
+
+            if (this._nMipLevels!=0 && this._nMipLevels!=webgl.getMaxMipmaps(this._iWidth, this._iHeight, this._iDepth, this._eFormat))
+            {
+                logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 203 ); logger.warning("Нехватает мипмапов, сброс в 0"); ;
+                this._nMipLevels=0;
+            }
+
+
 // Convert to nearest power-of-two size if required
-	        this._iWidth = math.ceilingPowerOfTwo(this._iWidth);
-	        this._iHeight = math.ceilingPowerOfTwo(this._iHeight);
-	        this._iDepth = math.ceilingPowerOfTwo(this._iDepth);
+//this._iWidth = math.ceilingPowerOfTwo(this._iWidth);
+//this._iHeight = math.ceilingPowerOfTwo(this._iHeight);
+//this._iDepth = math.ceilingPowerOfTwo(this._iDepth);
 
-// Adjust format if required
-	        this._eFormat = this.getNativeFormat(this._eTextureType, this._eFormat, this._iFlags);
 
-// Check requested number of mipmaps
-	        var nMaxMips = webgl.getMaxMipmaps(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
-
-	        if(pixelUtil.isCompressed(this._eFormat) && (this._nMipLevels === 0)){
-	            this._nRequestedMipLevels = 0;
-	        }
-
-	        this._nMipLevels = this._nRequestedMipLevels;
-
-	        if (this._nMipLevels > nMaxMips) {
-	            this._nMipLevels = nMaxMips;
-	        }
-
-	        var iWebGLTarget:  number  = this.getWebGLTextureTarget();
+            var iWebGLTarget:  number  = this._getWebGLTextureTarget();
 
 	        this._pWebGLTexture = pWebGLRenderer.createWebGLTexture();
+
 	        pWebGLRenderer.bindWebGLTexture(iWebGLTarget, this._pWebGLTexture);
 
 	        this._isMipmapsHardwareGenerated = pWebGLRenderer.hasCapability(ERenderCapabilities.AUTOMIPMAP);
 
 // Set some misc default parameters, these can of course be changed later
-	        pWebGLContext.texParameteri(iWebGLTarget,
-	                        0x2801 ,  0x2600 );
-	        pWebGLContext.texParameteri(iWebGLTarget,
-	                        0x2800 ,  0x2600 );
-	        pWebGLContext.texParameteri(iWebGLTarget,
-	                        0x2802 ,  0x812F );
-	        pWebGLContext.texParameteri(iWebGLTarget,
-	                        0x2803 ,  0x812F );
+	        this.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.NEAREST);
+	        this.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.NEAREST);
+	        this.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
+	        this.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
 
-	        var iWebGLFormat:  number  = webgl.getClosestWebGLInternalFormat(this._eFormat);
-	        var iWebGLDataType:  number  = webgl.getWebGLOriginDataType(this._eFormat);
+	        var iWebGLFormat:  number  = webgl.getWebGLFormat(this._eFormat);
+	        var iWebGLDataType:  number  = webgl.getWebGLDataType(this._eFormat);
 	        var iWidth:  number  = this._iWidth;
 	        var iHeight:  number  = this._iHeight;
 	        var iDepth:  number  = this._iDepth;
 
-	        if (pixelUtil.isCompressed(this._eFormat)) {
+	        if (pixelUtil.isCompressed(this._eFormat))
+	        {
 // Compressed formats
 	            var iSize:  number  = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this._eFormat);
 
@@ -38516,26 +40050,26 @@ module akra.webgl {
 // Run through this process for every mipmap to pregenerate mipmap pyramid
 
 //TODO: можем мы можем подать просто null, надо проверить
-	            var pTmpData: Uint8Array = new Uint8Array(iSize);
-	            var pEmptyData: Uint8Array;
-	            var mip:  number  = 0;
+//var pTmpData: Uint8Array = new Uint8Array(iSize);
+//var pEmptyData: Uint8Array;
+//var mip: uint = 0;
 
 	            for (mip = 0; mip <= this._nMipLevels; mip++) {
-	                iSize = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this._eFormat);
+//iSize = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this._eFormat);
 
-	                pEmptyData = pTmpData.subarray(0, iSize);
+//pEmptyData = pTmpData.subarray(0, iSize);
 
-					switch(this._eTextureType){
-						case ETextureTypes.TEXTURE:
+					switch(this._eTextureType)
+                    {
 						case ETextureTypes.TEXTURE_2D:
 	                        pWebGLContext.compressedTexImage2D( 0x0DE1 , mip, iWebGLFormat,
-	                        								   iWidth, iHeight, 0, pTmpData);
+	                        								   iWidth, iHeight, 0, null);
 	                        break;
 						case ETextureTypes.TEXTURE_CUBE_MAP:
 							var iFace:  number  = 0;
 							for(iFace = 0; iFace < 6; iFace++) {
 								pWebGLContext.compressedTexImage2D( 0x8515  + iFace, mip, iWebGLFormat,
-																   iWidth, iHeight, 0, pTmpData);
+																   iWidth, iHeight, 0, null);
 							}
 							break;
 	                    default:
@@ -38547,8 +40081,8 @@ module akra.webgl {
 	                if(iDepth > 1) iDepth = iDepth / 2;
 
 	            }
-	            pTmpData = null;
-	            pEmptyData = null;
+//pTmpData = null;
+//pEmptyData = null;
 	        }
 	        else {
 	        	var mip:  number  = 0;
@@ -38556,7 +40090,6 @@ module akra.webgl {
 	            for (mip = 0; mip <= this._nMipLevels; mip++) {
 // Normal formats
 					switch(this._eTextureType){
-						case ETextureTypes.TEXTURE:
 						case ETextureTypes.TEXTURE_2D:
 	                        pWebGLContext.texImage2D( 0x0DE1 , mip, iWebGLFormat,
 	                                     			 iWidth, iHeight, 0, iWebGLFormat, iWebGLDataType, null);
@@ -38577,16 +40110,13 @@ module akra.webgl {
 	                if(iDepth > 1) iDepth = iDepth / 2;
 	            }
 	        }
-
 	        this._createSurfaceList();
-// Get final internal format
-        	this._eFormat = this.getBuffer(0,0).format;
 
-            return false;
+            return true;
         }
 
         /**@protected*/  freeInternalTextureImpl(): bool {
-        	var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+        	var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			pWebGLRenderer.deleteWebGLTexture(this._pWebGLTexture);
@@ -38601,7 +40131,7 @@ module akra.webgl {
             return true;
         }
 
-        _createSurfaceList(): void {
+        private _createSurfaceList(): void {
         	this._pSurfaceList = new Array();
 
 // For all faces and mipmaps, store surfaces as IPixelBuffer
@@ -38624,11 +40154,13 @@ module akra.webgl {
 
         		for(mip = 0; mip <= this._nMipLevels; mip++) {
         			var pBuf: WebGLTextureBuffer = <WebGLTextureBuffer>pTextureBufferPool.createResource(sResourceName + "_" + iFace + "_" + mip);
-        			pBuf.create(this.getWebGLTextureTarget(),
+
+
+                    pBuf.create(this._getWebGLTextureTarget(),
         						this._pWebGLTexture,
         						iWidth, iHeight,
         						webgl.getClosestWebGLInternalFormat(this._eFormat),
-        						webgl.getWebGLOriginDataType(this._eFormat),
+        						webgl.getWebGLDataType(this._eFormat),
         						iFace,
         						mip,
         						this._iFlags,
@@ -38640,7 +40172,7 @@ module akra.webgl {
         			if(pBuf.width === 0 ||
         			   pBuf.height === 0 ||
         			   pBuf.depth === 0) {
-        				logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 223 ); logger.criticalError("Zero sized texture surface on texture " + sResourceName + " face " + iFace + " mipmap " + mip + ". The GL driver probably refused to create the texture.");
+        				logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 369 ); logger.criticalError("Zero sized texture surface on texture " + sResourceName + " face " + iFace + " mipmap " + mip + ". The GL driver probably refused to create the texture.");
                                                                                         ;
         			}
 
@@ -38650,50 +40182,19 @@ module akra.webgl {
 
         getBuffer(iFace?:  number  = 1, iMipmap?:  number  = 0): IPixelBuffer {
             if (iFace >= this.getNumFaces()) {
-	            logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 232 ); logger.criticalError("Face index out of range"); ;
+	            logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 378 ); logger.criticalError("Face index out of range"); ;
 	        }
 
 	        if (iMipmap > this._nMipLevels) {
-	            logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 236 ); logger.criticalError("Mipmap index out of range"); ;
+	            logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 382 ); logger.criticalError("Mipmap index out of range"); ;
 	        }
 
 	        var idx:  number  = iFace * (this._nMipLevels + 1) + iMipmap;
-	        logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 240 ); logger.assert(idx < this._pSurfaceList.length,"smth"); ;
+	        logger.setSourceLocation( "webgl/WebGLInternalTexture.ts" , 386 ); logger.assert(idx < this._pSurfaceList.length,"smth"); ;
 
 	        return this._pSurfaceList[idx];
         }
 
-
-
-        getNativeFormat(eTextureType?: ETextureTypes = this._eTextureType,
-                        eFormat?: EPixelFormats = this._eFormat,
-                        iFlags?:  number  = this._iFlags): EPixelFormats {
-
-        	var pRenderer: IRenderer = this.getManager().getEngine().getRenderer();
-
-			if (pixelUtil.isCompressed(eFormat) &&
-            	!pRenderer.hasCapability(ERenderCapabilities.TEXTURE_COMPRESSION_DXT) &&
-            	!pRenderer.hasCapability(ERenderCapabilities.TEXTURE_COMPRESSION_PVRTC)) {
-
-	            return EPixelFormats.A8R8G8B8;
-	        }
-// if floating point textures not supported, revert to PF_A8R8G8B8
-	        if (pixelUtil.isFloatingPoint(eFormat) &&
-	            pRenderer.hasCapability(ERenderCapabilities.TEXTURE_FLOAT)) {
-
-	            return EPixelFormats.A8R8G8B8;
-	        }
-
-// Check if this is a valid rendertarget format
-	        if ( (((iFlags) & (ETextureFlags.RENDERTARGET)) != 0) ) {
-/// Get closest supported alternative
-/// If mFormat is supported it's returned
-	            return webgl.getSupportedAlternative(eFormat);
-	        }
-
-// Supported
-	        return eFormat;
-        }
 
         createRenderTexture(): bool {
 // Create the GL texture
@@ -39183,18 +40684,8 @@ module akra.data {
 
 
 
-		private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return VertexData._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-			relocation (pTarget, iFrom, iTo): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).relocation; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pTarget, iFrom, iTo) : _broadcast[i].listener (_recivier, pTarget, iFrom, iTo) ; } } } ; ;
-		;
-
-
-// BEGIN_EVENT_TABLE(VertexData);
-
-// relocation(pTarget: IVertexData, iFrom: uint, iTo: uint): void {
-// 	EMIT_BROADCAST(relocation, CALL(pTarget, iFrom, iTo));
-// }
-
-// END_EVENT_TABLE();
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return VertexData._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		relocation (pTarget, iFrom, iTo): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).relocation; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pTarget, iFrom, iTo) : _broadcast[i].listener (_recivier, pTarget, iFrom, iTo) ; } } } ; ;
 	}
 
 }
@@ -39546,7 +41037,7 @@ module akra.webgl {
 
 			super.create(iByteSize, iFlags, pData);
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 		    var i:  number ;
 
@@ -39584,7 +41075,7 @@ module akra.webgl {
 
 		    if (pData) {
 		        pWebGLContext.bufferSubData(
-		        	0x8892 , 0, isArrayBuffer(pData)? pData: pData.buffer);
+		        	0x8892 , 0, isArrayBuffer(pData)? <ArrayBuffer>pData: (<Uint8Array>pData).buffer);
 		    }
 
 		    return true;
@@ -39593,7 +41084,7 @@ module akra.webgl {
 		destroy(): void {
 			super.destroy();
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 
 			pWebGLRenderer.deleteWebGLBuffer(this._pWebGLBuffer);
 
@@ -39626,7 +41117,7 @@ module akra.webgl {
 
 			logger.setSourceLocation( "webgl/WebGLVertexBuffer.ts" , 119 ); logger.assert(!isNull(this._pWebGLBuffer), "WebGL buffer not exists"); ;
 
-		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+		    var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 		    pWebGLRenderer.bindWebGLBuffer( 0x8892 , this._pWebGLBuffer);
@@ -39662,7 +41153,7 @@ module akra.webgl {
 			var iMax:  number  = 0;
 			var pVertexData: IVertexData;
 
-		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+		    var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			if(this.isBackupPresent()) {
@@ -39806,7 +41297,7 @@ module akra.webgl {
 		}
 
         destroy(): void {
-            var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+            var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 
             pWebGLRenderer.deleteWebGLProgram(this._pWebGLProgram);
 
@@ -39819,7 +41310,7 @@ module akra.webgl {
         }
 
     	compile(csVertex: string =  "void main(void){gl_Position = vec4(0., 0., 0., 1.);}" , csPixel: string =  "void main(void){}" ): bool {
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 			var pWebGLProgram: WebGLProgram = this._pWebGLProgram = pWebGLRenderer.createWebGLProgram();
 
@@ -39870,33 +41361,33 @@ module akra.webgl {
     	}
 
     	isLinked(): bool {
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
     		return isDefAndNotNull(this._pWebGLProgram) &&
     			<bool>pWebGLContext.getProgramParameter(this._pWebGLProgram,  0x8B82 );
     	}
 
     	isValid(): bool {
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
     		return isDefAndNotNull(this._pWebGLProgram) &&
     			<bool>pWebGLContext.getProgramParameter(this._pWebGLProgram,  0x8B83 );
     	}
 
     	isActive(): bool {
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
     		return (isDefAndNotNull(this._pWebGLProgram) &&
     			<WebGLProgram>pWebGLContext.getParameter( 0x8B8D ) === this._pWebGLProgram);
     	}
 
     	setFloat(sName: string, fValue:  number ): bool {
     		var iLoc: WebGLUniformLocation = this._pWebGLUniformLocations[sName]; if (!isDef(iLoc)) { return false; } ;
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
     		pWebGLContext.uniform1f(iLoc, fValue);
     		return true;
     	}
 
     	setInt(sName: string, iValue:  number ): bool {
     		var iLoc: WebGLUniformLocation = this._pWebGLUniformLocations[sName]; if (!isDef(iLoc)) { return false; } ;
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
     		pWebGLContext.uniform1i(iLoc, iValue);
 
     		return true;
@@ -39906,7 +41397,7 @@ module akra.webgl {
     	setVec2(sName: string, x:  number , y:  number ): bool;
     	inline setVec2(sName: string, x?, y?): bool {
     		var iLoc: WebGLUniformLocation = this._pWebGLUniformLocations[sName]; if (!isDef(iLoc)) { return false; } ;
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
 
     		if (arguments.length == 2) {
     			pWebGLContext.uniform2f(iLoc, arguments[1].x, arguments[1].y);
@@ -39923,7 +41414,7 @@ module akra.webgl {
     	setVec2i(sName: string, x:  number , y:  number ): bool;
     	inline setVec2i(sName: string, x?, y?): bool {
     		var iLoc: WebGLUniformLocation = this._pWebGLUniformLocations[sName]; if (!isDef(iLoc)) { return false; } ;
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
 
     		if (arguments.length == 2) {
     			pWebGLContext.uniform2i(iLoc, arguments[1].x, arguments[1].y);
@@ -39939,7 +41430,7 @@ module akra.webgl {
     	setVec3(sName: string, x:  number , y:  number , z:  number ): bool;
     	inline setVec3(sName: string, x?, y?, z?): bool {
     		var iLoc: WebGLUniformLocation = this._pWebGLUniformLocations[sName]; if (!isDef(iLoc)) { return false; } ;
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
 
     		if (arguments.length == 2) {
     			pWebGLContext.uniform3f(iLoc, arguments[1].x, arguments[1].y, arguments[1].z);
@@ -39955,7 +41446,7 @@ module akra.webgl {
     	setVec3i(sName: string, x:  number , y:  number , z:  number ): bool;
     	inline setVec3i(sName: string, x?, y?, z?): bool {
 			var iLoc: WebGLUniformLocation = this._pWebGLUniformLocations[sName]; if (!isDef(iLoc)) { return false; } ;
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
 
     		if (arguments.length == 2) {
     			pWebGLContext.uniform3i(iLoc, arguments[1].x, arguments[1].y, arguments[1].z);
@@ -39971,7 +41462,7 @@ module akra.webgl {
     	setVec4(sName: string, x:  number , y:  number , z:  number , w:  number ): bool;
     	inline setVec4(sName: string, x?, y?, z?, w?): bool {
     		var iLoc: WebGLUniformLocation = this._pWebGLUniformLocations[sName]; if (!isDef(iLoc)) { return false; } ;
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
 
     		if (arguments.length == 2) {
     			pWebGLContext.uniform4f(iLoc, arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w);
@@ -39987,7 +41478,7 @@ module akra.webgl {
     	setVec4i(sName: string, x:  number , y:  number , z:  number , w:  number ): bool;
     	inline setVec4i(sName: string, x?, y?, z?, w?): bool {
     		var iLoc: WebGLUniformLocation = this._pWebGLUniformLocations[sName]; if (!isDef(iLoc)) { return false; } ;
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
 
     		if (arguments.length == 2) {
     			pWebGLContext.uniform4i(iLoc, arguments[1].x, arguments[1].y, arguments[1].z, arguments[1].w);
@@ -40002,7 +41493,7 @@ module akra.webgl {
 
     	inline setMat3(sName: string, m3fValue: IMat3): bool {
     		var iLoc: WebGLUniformLocation = this._pWebGLUniformLocations[sName]; if (!isDef(iLoc)) { return false; } ;
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
 
     		pWebGLContext.uniformMatrix3fv(iLoc, false, m3fValue.data);
 
@@ -40011,7 +41502,7 @@ module akra.webgl {
 
     	setMat4(sName: string, m4fValue: IMat4): bool {
     		var iLoc: WebGLUniformLocation = this._pWebGLUniformLocations[sName]; if (!isDef(iLoc)) { return false; } ;
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
 
     		pWebGLContext.uniformMatrix4fv(iLoc, false, m4fValue.data);
 
@@ -40020,7 +41511,7 @@ module akra.webgl {
 
     	inline setFloat32Array(sName: string, pValue: Float32Array): bool {
     		var iLoc: WebGLUniformLocation = this._pWebGLUniformLocations[sName]; if (!isDef(iLoc)) { return false; } ;
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
 
     		pWebGLContext.uniform1fv(iLoc, pValue);
 
@@ -40029,7 +41520,7 @@ module akra.webgl {
 
     	inline setInt32Array(sName: string, pValue: Int32Array): bool {
     		var iLoc: WebGLUniformLocation = this._pWebGLUniformLocations[sName]; if (!isDef(iLoc)) { return false; } ;
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
 
     		pWebGLContext.uniform1iv(iLoc, pValue);
 
@@ -40088,7 +41579,7 @@ module akra.webgl {
 
 //applyVertexBuffer(sName: string, pBuffer: IVertexBuffer);
     	applyVertexData(sName: string, pData: IVertexData): bool {
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
 
     		var pVertexBuffer: IVertexBuffer = <IVertexBuffer>pData.buffer;
     		var iStride:  number  = pData.stride;
@@ -40150,7 +41641,7 @@ module akra.webgl {
     	}
 
     	/**@protected*/  createWebGLShader(eType:  number , csCode: string): WebGLShader {
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 			var pWebGLShader: WebGLShader = pWebGLContext.createShader(eType);
 
@@ -40172,7 +41663,7 @@ module akra.webgl {
     	}
 
     	/**@protected*/  obtainWebGLUniforms(): void {
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
 
     		var nUniforms:  number  = pWebGLContext.getProgramParameter(this._pWebGLProgram,  0x8B86 );
     		var pUniformLocations: WebGLUniformLocationMap = {};
@@ -40189,7 +41680,7 @@ module akra.webgl {
     	}
 
     	/**@protected*/  obtainWebGLAttributes(): void {
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer(); var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext(); ;
 
     		var nAttributes:  number  = pWebGLContext.getProgramParameter(this._pWebGLProgram,  0x8B89 );
     		var pAttributeLocations: IntMap = <IntMap>{};
@@ -40263,7 +41754,7 @@ module akra.webgl {
 			super.create(iByteSize, iFlags, pData);
 
 			var pPOTSize:  number [] = math.calcPOTtextureSize(math.ceil(iByteSize / pixelUtil.getNumElemBytes(this._ePixelFormat)));
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 		    var i:  number ;
 
@@ -40290,8 +41781,8 @@ module akra.webgl {
                                                                                                                          ;
 
 		    this._pWebGLTexture = pWebGLRenderer.createWebGLTexture();
-		    this._eWebGLFormat = getWebGLOriginFormat(this._ePixelFormat);
-		    this._eWebGLType = getWebGLOriginDataType(this._ePixelFormat);
+		    this._eWebGLFormat = getWebGLFormat(this._ePixelFormat);
+		    this._eWebGLType = getWebGLDataType(this._ePixelFormat);
 
 		    if (!this._pWebGLTexture) {
 		        logger.setSourceLocation( "webgl/WebGLVertexTexture.ts" , 85 ); logger.criticalError("Не удалось создать буфер"); ;
@@ -40330,7 +41821,7 @@ module akra.webgl {
 		destroy(): void {
 			super.destroy();
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			pWebGLRenderer.deleteWebGLTexture(this._pWebGLTexture);
 
 			this._pWebGLTexture = null;
@@ -40382,7 +41873,7 @@ module akra.webgl {
 		        nPixels:  number ,
 		        nElements:  number ;
 
-		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+		    var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 		    var pDataU8: Uint8Array = pData;
@@ -40558,7 +42049,7 @@ module akra.webgl {
 			var pData: Uint8Array;
 			var iMax:  number  = 0;
 			var pVertexData: IVertexData;
-		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+		    var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			if(this.isBackupPresent()) {
@@ -41005,7 +42496,7 @@ module akra.webgl {
 
 			super.create(iByteSize, iFlags, pData);
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 		    var i:  number ;
 
@@ -41043,7 +42534,7 @@ module akra.webgl {
 
 		    if (pData) {
 		        pWebGLContext.bufferSubData(
-		        	0x8893 , 0, isArrayBuffer(pData)? pData: pData.buffer);
+		        	0x8893 , 0,  <ArrayBufferView>(isArrayBuffer(pData) ?pData: (pData).buffer ));
 		    }
 
 		    return true;
@@ -41052,7 +42543,7 @@ module akra.webgl {
 		destroy(): void {
 			super.destroy();
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 
 			pWebGLRenderer.deleteWebGLBuffer(this._pWebGLBuffer);
 
@@ -41079,13 +42570,13 @@ module akra.webgl {
 		    return true;
 		}
 
-		writeData(pData: Uint8Array, iOffset?:  number , iSize?:  number , bDiscardWholeBuffer: bool = false): bool;
-		writeData(pData: ArrayBufferView, iOffset?:  number , iSize?:  number , bDiscardWholeBuffer: bool = false): bool;
-		writeData(pData: any, iOffset?:  number , iSize?:  number , bDiscardWholeBuffer: bool = false): bool {
+		writeData(pData: Uint8Array, iOffset?:  number , iSize?:  number , bDiscardWholeBuffer?: bool = false): bool;
+		writeData(pData: ArrayBufferView, iOffset?:  number , iSize?:  number , bDiscardWholeBuffer?: bool = false): bool;
+		writeData(pData: any, iOffset?:  number , iSize?:  number , bDiscardWholeBuffer?: bool = false): bool {
 
 			logger.setSourceLocation( "webgl/WebGLIndexBuffer.ts" , 119 ); logger.assert(!isNull(this._pWebGLBuffer), "WebGL buffer not exists"); ;
 
-		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+		    var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 		    pWebGLRenderer.bindWebGLBuffer( 0x8893 , this._pWebGLBuffer);
@@ -41121,7 +42612,7 @@ module akra.webgl {
 			var iMax:  number  = 0;
 			var pIndexData: IIndexData;
 
-		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+		    var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			if(this.isBackupPresent()) {
@@ -41233,7 +42724,7 @@ module akra.webgl {
 			var iHeight:  number  = arguments[2];
 			var bCreateStorage: bool = arguments[3];
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			super.create(iWidth, iHeight, 1, webgl.getClosestAkraFormat(iWebGLFormat, EPixelFormats.A8R8G8B8), 0);
@@ -41253,7 +42744,7 @@ module akra.webgl {
 
 		destroy(): void {
 			super.destroy();
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 
 			pWebGLRenderer.deleteWebGLRenderbuffer(this._pWebGLRenderbuffer);
 			this._pWebGLRenderbuffer = null;
@@ -41262,7 +42753,7 @@ module akra.webgl {
 		_bindToFramebuffer(iAttachment:  number , iZOffset:  number ): void {
 			logger.setSourceLocation( "webgl/WebGLInternalRenderbuffer.ts" , 55 ); logger.assert(iZOffset < this._iDepth); ;
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			pWebGLContext.framebufferRenderbuffer( 0x8D40 , iAttachment,  0x8D41 , this._pWebGLRenderbuffer);
@@ -41507,7 +42998,7 @@ module akra.webgl {
 
 			bResult = super.attachDepthPixelBuffer(pBuffer);
 			if(bResult) {
-				if(pBuffer.format !== EPixelFormats.DEPTH_BYTE){
+				if(pBuffer.format !== EPixelFormats.DEPTH8){
 					this.detachDepthPixelBuffer();
 					return false;
 				}
@@ -41856,7 +43347,7 @@ module akra.core.pool {
 
     	private pWaiterResource: IResourcePoolItem = null;
 
-        private pEngine: IEngine;
+        private pEngine: Engine;
 
         get surfaceMaterialPool(): IResourcePool { return this.pSurfaceMaterialPool; }
         get effectPool(): IResourcePool { return this.pEffectPool; }
@@ -41877,7 +43368,7 @@ module akra.core.pool {
     	constructor(pEngine: IEngine) {
 //super();
 
-            this.pEngine = pEngine;
+            this.pEngine = <Engine>pEngine;
 
     		this.pResourceFamilyList = new Array(EResourceFamilies.TOTAL_RESOURCE_FAMILIES);
 
@@ -42134,7 +43625,7 @@ module akra.core.pool {
             return true;
         }
 
-        inline getEngine(): IEngine { return this.pEngine; }
+        inline getEngine(): Engine { return this.pEngine; }
 
         inline createRenderMethod(sResourceName: string): IRenderMethod {
             return <IRenderMethod>this.renderMethodPool.createResource(sResourceName);
@@ -42162,6 +43653,10 @@ module akra.core.pool {
 
         inline createModel(sResourceName: string): IModel {
             return <IModel>this.colladaPool.createResource(sResourceName);
+        }
+
+        inline createImg(sResourceName: string): IImg {
+            return <IImg>this.imagePool.createResource(sResourceName);
         }
 
         inline loadModel(sFilename: string, pOptions: any = null): IModel {
@@ -42236,7 +43731,7 @@ module akra.core.pool {
         }
 
         private registerDeviceResources(): void {
-            logger.setSourceLocation( "pool/ResourcePoolManager.ts" , 450 ); logger.log("Registering Video Device Resources\n"); ;
+            logger.setSourceLocation( "pool/ResourcePoolManager.ts" , 454 ); logger.log("Registering Video Device Resources\n"); ;
             this.pTexturePool.registerResourcePool(
                 new ResourceCode(
                     <number>EResourceFamilies.VIDEO_RESOURCE,
@@ -42288,7 +43783,7 @@ module akra.core.pool {
         }
 
         private unregisterDeviceResources(): void {
-            logger.setSourceLocation( "pool/ResourcePoolManager.ts" , 502 ); logger.log("Unregistering Video Device Resources"); ;
+            logger.setSourceLocation( "pool/ResourcePoolManager.ts" , 506 ); logger.log("Unregistering Video Device Resources"); ;
 
             this.pTexturePool.unregisterResourcePool();
             this.pVertexBufferPool.unregisterResourcePool();
@@ -42310,6 +43805,9 @@ module akra.core.pool {
 	    ];
     }
 }
+
+
+
 
 
 
@@ -43507,10 +45005,8 @@ module akra.scene {
 		}
 
 
-		constructor (pScene: IScene3d) {
-			super(pScene);
-
-			this._eType = EEntityTypes.SCENE_OBJECT;
+		constructor (pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_OBJECT) {
+			super(pScene, eType);
 		}
 
 		inline getRenderable(i?:  number ): IRenderableObject {
@@ -43596,9 +45092,7 @@ module akra.scene {
 
     	}
 
-		private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return SceneObject._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-			worldBoundsUpdated (): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || this.getEventTable().findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).worldBoundsUpdated; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier) : _unicast.listener (_recivier) ; } } ; ;
-		;
+		worldBoundsUpdated (): void { var _recivier: any = this; this._pUnicastSlotMap = this._pUnicastSlotMap || (<events.EventTable>this.getEventTable()).findUnicastList(this._iGuid); var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).worldBoundsUpdated; if(isDef(_unicast)){ _unicast.target? _unicast.target[_unicast.callback] (_recivier) : _unicast.listener (_recivier) ; } } ; ;
 	}
 
 	export inline function isSceneObject(pEntity: IEntity): bool {
@@ -44861,9 +46355,8 @@ module akra.scene.objects {
     	inline get frustum(): IFrustum { return this._pFrustum; }
 
 		constructor (pScene: IScene3d) {
-			super(pScene);
+			super(pScene, EEntityTypes.CAMERA);
 
-			this._eType = EEntityTypes.CAMERA;
 		};
 
 		create(): bool {
@@ -44950,7 +46443,7 @@ module akra.scene.objects {
     	}
 
     	setOrthoParams(fWidth:  number , fHeight:  number , fNearPlane:  number , fFarPlane:  number ): void {
-		    logger.setSourceLocation( "objects/Camera.ts" , 208 ); logger.criticalError("TODO: setOrthoParams();"); ;
+		    logger.setSourceLocation( "objects/Camera.ts" , 207 ); logger.criticalError("TODO: setOrthoParams();"); ;
 /*
 		    
 		    this._fWidth = fWidth;
@@ -45150,10 +46643,12 @@ module akra.scene.objects {
     		this._pDLResultStorage[index] = null;
     	};
 
-    	private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return Camera._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-    		preRenderScene (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).preRenderScene; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
-    		postRenderScene (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).postRenderScene; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
-    	;
+		preRenderScene (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).preRenderScene; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+		postRenderScene (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).postRenderScene; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+	}
+
+	export inline function isCamera(pNode: IEntity): bool {
+		return pNode.type >= EEntityTypes.CAMERA && pNode.type <= EEntityTypes.SHADOW_CASTER;
 	}
 }
 
@@ -47378,7 +48873,7 @@ module akra.model {
 //если по каким то причинам нет разметки...
 		    logger.setSourceLocation( "MeshSubset.ts" , 353 ); logger.assert(isDefAndNotNull(pMetaData), "you must specify location for storage blending data"); ;
 
-//выставляем разметку мета данных в��ршин, так чтобы они адрессовали сразу на данные
+//выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
 		    pInfMetaData = pSkin.getInfluenceMetaData();
 		    iInfMetaDataLoc = pInfMetaData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
 		    iInfMetaDataStride = pInfMetaData.stride / EDataTypeSizes.BYTES_PER_FLOAT;
@@ -47395,10 +48890,6 @@ module akra.model {
 
 		    return true;
 		}
-
-
-		private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return MeshSubset._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-		;
 	}
 }
 
@@ -47996,23 +49487,22 @@ module akra.model {
             return pSceneModel;
         }
 
-        private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return Mesh._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-             shadow(pSubMesh: IMeshSubset, bShadow: bool): void {
+        /**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return Mesh._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+         shadow(pSubMesh: IMeshSubset, bShadow: bool): void {
 
-                this._bShadow = bShadow;
+            this._bShadow = bShadow;
 
-                if (!bShadow) {
-                    for (var i:  number  = 0; i < this._pSubMeshes.length; ++ i) {
-                        if (this._pSubMeshes[i].hasShadow()) {
-                            this._bShadow = true;
-                            break;
-                        }
+            if (!bShadow) {
+                for (var i:  number  = 0; i < this._pSubMeshes.length; ++ i) {
+                    if (this._pSubMeshes[i].hasShadow()) {
+                        this._bShadow = true;
+                        break;
                     }
                 }
-
-                this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).shadow; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pSubMesh, bShadow) : _broadcast[i].listener (_recivier, pSubMesh, bShadow) ; } } ;
             }
-        ;
+
+            this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).shadow; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pSubMesh, bShadow) : _broadcast[i].listener (_recivier, pSubMesh, bShadow) ; } } ;
+        }
 
 	}
 
@@ -48035,9 +49525,7 @@ module akra.scene {
 		private _pMesh: IMesh;
 
 		constructor (pScene: IScene3d) {
-			super(pScene);
-
-			this.type = EEntityTypes.MODEL;
+			super(pScene, EEntityTypes.MODEL);
 		}
 
 		inline get mesh(): IMesh {
@@ -48113,7 +49601,9 @@ module akra.scene {
 		/**@protected*/  _pDisplayListsCount:  number  = 0;
 		/**@protected*/  _isUpdated: bool = false;
 
-		type: ESceneTypes = ESceneTypes.TYPE_3D;
+		inline get type(): ESceneTypes {
+			return ESceneTypes.TYPE_3D;
+		}
 
 		inline get totalDL():  number  {
 			return this._pDisplayListsCount;
@@ -48175,7 +49665,7 @@ module akra.scene {
 			var pNode: ISceneNode = new SceneNode(this);
 
 			if (!pNode.create()) {
-				logger.setSourceLocation( "Scene3d.ts" , 92 ); logger.error("cannot create scene node.."); ;
+				logger.setSourceLocation( "Scene3d.ts" , 94 ); logger.error("cannot create scene node.."); ;
 				return null;
 			}
 
@@ -48186,7 +49676,7 @@ module akra.scene {
 			var pNode: ISceneModel = new SceneModel(this);
 
 			if (!pNode.create()) {
-				logger.setSourceLocation( "Scene3d.ts" , 103 ); logger.error("cannot create model.."); ;
+				logger.setSourceLocation( "Scene3d.ts" , 105 ); logger.error("cannot create model.."); ;
 				return null;
 			}
 
@@ -48197,7 +49687,7 @@ module akra.scene {
 			var pCamera: ICamera = new objects.Camera(this);
 
 			if (!pCamera.create()) {
-				logger.setSourceLocation( "Scene3d.ts" , 114 ); logger.error("cannot create camera.."); ;
+				logger.setSourceLocation( "Scene3d.ts" , 116 ); logger.error("cannot create camera.."); ;
 				return null;
 			}
 
@@ -48229,7 +49719,7 @@ module akra.scene {
 // }
 
 		inline getDisplayList(i:  number ): IDisplayList {
-			logger.setSourceLocation( "Scene3d.ts" , 146 ); logger.assert(isDefAndNotNull(this._pDisplayLists[i]), "display list not defined"); ;
+			logger.setSourceLocation( "Scene3d.ts" , 148 ); logger.assert(isDefAndNotNull(this._pDisplayLists[i]), "display list not defined"); ;
 			return this._pDisplayLists[i];
 		}
 
@@ -48283,7 +49773,7 @@ module akra.scene {
 		}
 
 		inline addDisplayList(pList: IDisplayList):  number  {
-			logger.setSourceLocation( "Scene3d.ts" , 201 ); logger.assert(isDefAndNotNull(this.getDisplayListByName(pList.name)), "DL with name <" + pList.name + "> already exists");
+			logger.setSourceLocation( "Scene3d.ts" , 203 ); logger.assert(isDefAndNotNull(this.getDisplayListByName(pList.name)), "DL with name <" + pList.name + "> already exists");
                                                        ;
 
 
@@ -48311,7 +49801,7 @@ module akra.scene {
 			return iIndex;
 		}
 
-		private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return Scene3d._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return Scene3d._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
 
 		nodeAttachment (pNode: ISceneNode): void {
 // this._pNodeList.push(pNode);
@@ -48320,7 +49810,7 @@ module akra.scene {
 // 	this._pObjectList.push(<ISceneObject>pNode);
 // }
 // console.warn("------>here");
-			this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).nodeAttachment; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pNode) : _broadcast[i].listener (_recivier, pNode) ; } } ;
+			this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).nodeAttachment; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pNode) : _broadcast[i].listener (_recivier, pNode) ; } } ;
 		}
 
 		nodeDetachment (pNode: ISceneNode): void {
@@ -48342,16 +49832,15 @@ module akra.scene {
 // }
 
 
-			this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).nodeDetachment; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pNode) : _broadcast[i].listener (_recivier, pNode) ; } } ;
+			this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).nodeDetachment; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pNode) : _broadcast[i].listener (_recivier, pNode) ; } } ;
 		}
 
 
-		displayListAdded (list, index): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).displayListAdded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, list, index) : _broadcast[i].listener (_recivier, list, index) ; } } } ; ;
-		displayListRemoved (list, index): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).displayListRemoved; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, list, index) : _broadcast[i].listener (_recivier, list, index) ; } } } ; ;
+		displayListAdded (list, index): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).displayListAdded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, list, index) : _broadcast[i].listener (_recivier, list, index) ; } } } ; ;
+		displayListRemoved (list, index): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).displayListRemoved; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, list, index) : _broadcast[i].listener (_recivier, list, index) ; } } } ; ;
 
 // BROADCAST(nodeAttachment, CALL(pNode));
 // BROADCAST(nodeDetachment, CALL(pNode));
-		;
 	}
 }
 
@@ -48361,7 +49850,6 @@ module akra.scene {
     export class SceneManager implements ISceneManager {
         private _pEngine: IEngine = null;
         private _pSceneList: IScene[] = [];
-        private _pTimer: IUtilTimer;
 
         private _fUpdateTimeCount:  number  = 0.;
         private _fMillisecondsPerTick:  number  = 0.0333;
@@ -48369,7 +49857,6 @@ module akra.scene {
 
         constructor (pEngine: IEngine) {
             this._pEngine = pEngine;
-            this._pTimer = pEngine.getTimer();
         }
 
         getEngine(): IEngine{
@@ -48380,7 +49867,7 @@ module akra.scene {
             var isSceneUpdated: bool = false;
 // add the real time elapsed to our
 // internal delay counter
-            this._fUpdateTimeCount += this._pTimer.elapsedTime;
+            this._fUpdateTimeCount += this._pEngine.getTimer().elapsedTime;
 // is there an update ready to happen?
 
             var fUpdateTime:  number  = this._fUpdateTimeCount;
@@ -48440,7 +49927,7 @@ module akra.scene {
             var pScene: IScene;
 
             if (iScene === 0 && this._pSceneList.length === 0) {
-                logger.setSourceLocation( "scene/SceneManager.ts" , 95 ); logger.log("creating default scene..."); ;
+                logger.setSourceLocation( "scene/SceneManager.ts" , 93 ); logger.log("creating default scene..."); ;
                 this.createScene3D();
             }
 
@@ -48645,8 +50132,8 @@ module akra.util {
 		        fTime = iTime / this.fTicksPerSec;
 		        return  fTime;
 		    }
-
-// Invalid command specified		    return -1;
+// Invalid command specified
+		    return -1;
         }
 
         static start(): UtilTimer {
@@ -48731,6 +50218,21 @@ module akra.util {
 
 module akra.fx {
 //Errors
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -48932,12 +50434,38 @@ module akra.fx {
     akra.logger.registerCode( 2266 ,
                              "Bad variable with name 'Out'. It is sytem for used like return variable in shaders.                              In line: {line}. In column: {column}");
     akra.logger.registerCode( 2267 ,
-                             "Variable type is not writable.                              In line: {line}. In column: {column}");
+                             "Variable type is not writable.                               In line: {line}. In column: {column}");
+    akra.logger.registerCode( 2268 ,
+                             "Variable type is not readable.                               In line: {line}. In column: {column}");
+    akra.logger.registerCode( 2269 ,
+                             "Bad init expr for variable '{varName}'.                               In line: {line}. In column: {column}");
+    akra.logger.registerCode( 2270 ,
+                             "Don`t supported construction '[uint]' in sampler_state.                               In line: {line}. In column: {column}");
+    akra.logger.registerCode( 2271 ,
+                             "Incorrect texture setup for sampler.                               In line: {line}. In column: {column}");
+    akra.logger.registerCode( 2272 ,
+                             "Can not calculate padding for type '{typeName}'.");
+    akra.logger.registerCode( 2273 ,
+                             "Can not extract type '{typeName}'.");
+    akra.logger.registerCode( 2274 ,
+                             "Bad extract exrpression.");
+    akra.logger.registerCode( 2275 ,
+                             "Bad imports in technique '{techniqueName}'.");
+    akra.logger.registerCode( 2276 ,
+                             "You try use 'engine' variable in out of pass.                             In line: {line}. In column: {column}.");
+    akra.logger.registerCode( 2277 ,
+                             "You try to import not exuisted component '{componentName}'");
 
 
 
     akra.logger.registerCode( 2300 ,
                              "We don`t support array of pinters now. Only pointe to array.                              In line: {line}. In column: {column}");
+    akra.logger.registerCode( 2301 ,
+                             "We don`t support using complex shader input like functions params.                             Shader: '{funcName}'");
+    akra.logger.registerCode( 2302 ,
+                             "We don`t support using complex shader output like functions params.                             Shader: '{funcName}'");
+    akra.logger.registerCode( 2303 ,
+                             "We don`t support 'provide ... as' operator now.");
 
 
     function sourceLocationToString(pLocation: ISourceLocation): string {
@@ -48977,6 +50505,8 @@ module akra.fx {
    		funcName?: string;
         funcDef?: string;
    		semanticName?: string;
+        techniqueName?: string;
+        componentName?: string;
 
     	line?:  number ;
     	column?:  number ;
@@ -49002,14 +50532,6 @@ module akra.fx {
 		k_Default,
 		k_Struct,
 		k_Annotation
-	}
-
-	export interface IAFXVariableDeclMap {
-		[variableName: string] : IAFXVariableDeclInstruction;
-	}
-
-	export interface IAFXTypeDeclMap {
-		[typeName: string] : IAFXTypeDeclInstruction;
 	}
 
 	export interface IAFXFunctionDeclListMap {
@@ -49054,6 +50576,7 @@ module akra.fx {
 				pScope = pScope.parent;
 			}
 
+			return false;
 		}
 
 		setStrictModeOn(iScope?:  number  = this._iCurrentScope): void {
@@ -49328,17 +50851,34 @@ module akra.fx {
 			var pScope: IScope = this._pScopeMap[iScope];
 			var pVariableMap: IAFXVariableDeclMap = pScope.variableMap;
 
-			if(!isDef(pVariableMap)){
+			if(isNull(pVariableMap)){
 				pVariableMap = pScope.variableMap = <IAFXVariableDeclMap>{};
 			}
 
 			var sVariableName: string = pVariable.getName();
 
-			if(this.hasVariableInScope(sVariableName, iScope)){
-				return false;
-			}
+			if(!pVariable.getType().isShared()){
+				if(this.hasVariableInScope(sVariableName, iScope)){
+					return false;
+				}
 
-			pVariableMap[sVariableName] = pVariable;
+				pVariableMap[sVariableName] = pVariable;
+				pVariable._setScope(iScope);
+			}
+			else {
+				if(!this.hasVariableInScope(sVariableName, iScope)){
+					pVariableMap[sVariableName] = pVariable;
+					pVariable._setScope(iScope);
+				}
+				else {
+					var pBlendVariable: IAFXVariableDeclInstruction = pVariableMap[sVariableName].blend(pVariable, EAFXBlendMode.k_Shared);
+					if(isNull(pBlendVariable)){
+						return false;
+					}
+					pVariableMap[sVariableName] = pBlendVariable;
+					pBlendVariable._setScope(iScope);
+				}
+			}
 
 			return true;
 		}
@@ -49351,7 +50891,7 @@ module akra.fx {
 			var pScope: IScope = this._pScopeMap[iScope];
 			var pTypeMap: IAFXTypeDeclMap = pScope.typeMap;
 
-			if(!isDef(pTypeMap)){
+			if(isNull(pTypeMap)){
 				pTypeMap = pScope.typeMap = <IAFXTypeDeclMap>{};
 			}
 
@@ -49362,6 +50902,7 @@ module akra.fx {
 			}
 
 			pTypeMap[sTypeName] = pType;
+			pType._setScope(iScope);
 
 			return true;
 		}
@@ -49374,7 +50915,7 @@ module akra.fx {
 			var pScope: IScope = this._pScopeMap[iScope];
 			var pFunctionMap: IAFXFunctionDeclListMap = pScope.functionMap;
 
-			if(!isDef(pFunctionMap)){
+			if(isNull(pFunctionMap)){
 				pFunctionMap = pScope.functionMap = <IAFXFunctionDeclListMap>{};
 			}
 
@@ -49389,6 +50930,7 @@ module akra.fx {
 			}
 
 			pFunctionMap[sFuncName].push(pFunction);
+			pFunction._setScope(iScope);
 
 			return true;
 		}
@@ -49611,15 +51153,21 @@ module akra.fx {
 
 
 
+
+
 	export class Instruction implements IAFXInstruction{
 		/**@protected*/  _pParentInstruction: IAFXInstruction = null;
 		/**@protected*/  _sOperatorName: string = null;
 		/**@protected*/  _pInstructionList: IAFXInstruction[] = null;
-		/**@protected*/  _nInstuctions:  number  = 0;
+		/**@protected*/  _nInstructions:  number  = 0;
 		/**@protected*/    _eInstructionType: EAFXInstructionTypes = 0;
 		/**@protected*/  _pLastError: IAFXInstructionError = null;
+		/**@protected*/  _bErrorOccured: bool = false;
 		/**@protected*/  _iInstructionID:  number  = 0;
+		/**@protected*/  _iScope:  number  =  0xffffff ;
 		private static _nInstructionCounter:  number  = 0;
+
+		private _isVisible: bool = true;
 
 		inline getParent(): IAFXInstruction{
 			return this._pParentInstruction;
@@ -49653,31 +51201,67 @@ module akra.fx {
 			return this._iInstructionID;
 		}
 
+		_getScope():  number  {
+			return this._iScope !==  0xffffff  ? this._iScope :
+						!isNull(this.getParent()) ? this.getParent()._getScope() :  0xffffff ;
+		}
+
+        inline _setScope(iScope:  number ): void {
+        	this._iScope = iScope;
+        }
+
+        inline _isInGlobalScope(): bool{
+        	return this._getScope() === 0;
+        }
+
 		inline getLastError(): IAFXInstructionError {
 			return this._pLastError;
 		}
 
-		inline setError(eCode:  number , pInfo: any): void {
+		inline setError(eCode:  number , pInfo?: any = null): void {
 			this._pLastError.code = eCode;
 			this._pLastError.info = pInfo;
+			this._bErrorOccured = true;
 		}
+
+		inline clearError(): void {
+			this._bErrorOccured = false;
+			this._pLastError.code = 0;
+			this._pLastError.info = null;
+		}
+
+		inline isErrorOccured(): bool {
+			return this._bErrorOccured;
+		}
+
+		inline setVisible(isVisible: bool): void {
+            this._isVisible = isVisible;
+        }
+
+        inline isVisible(): bool {
+            return this._isVisible;
+        }
+
+        inline initEmptyInstructions(): void {
+        	this._pInstructionList = [];
+        }
 
 		constructor(){
 			this._iInstructionID = Instruction._nInstructionCounter++;
 			this._pParentInstruction = null;
 			this._sOperatorName = null;
 			this._pInstructionList = null;
-			this._nInstuctions = 0;
+			this._nInstructions = 0;
 			this._eInstructionType = EAFXInstructionTypes.k_Instruction;
 			this._pLastError = {code: 0, info: null};
 		}
 
 		push(pInstruction: IAFXInstruction, isSetParent?: bool = false): void {
 			if(!isNull(this._pInstructionList)){
-				this._pInstructionList[this._nInstuctions] = pInstruction;
-				this._nInstuctions += 1;
+				this._pInstructionList[this._nInstructions] = pInstruction;
+				this._nInstructions += 1;
 			}
-			if(isSetParent &&  !isNull(pInstruction)){
+			if(isSetParent && !isNull(pInstruction)){
 				pInstruction.setParent(this);
 			}
 		}
@@ -49686,12 +51270,24 @@ module akra.fx {
 //TODO
     	}
 
+    	prepareFor(eUsedType: EFunctionType): void {
+    		if(!isNull(this._pInstructionList) && this._nInstructions > 0) {
+    			for(var i:  number  = 0; i < this._nInstructions; i++){
+    				this._pInstructionList[i].prepareFor(eUsedType);
+    			}
+    		}
+    	}
 /**
     	 * Проверка валидности инструкции
     	 */
 
     	check(eStage: ECheckStage, pInfo: any = null): bool {
-    		return true;
+    		if(this._bErrorOccured){
+    			return false;
+    		}
+    		else {
+    			return true;
+    		}
     	}
 
 /**
@@ -49704,6 +51300,10 @@ module akra.fx {
 
     	toString(): string {
     		return null;
+    	}
+
+    	toFinalCode(): string {
+    		return "";
     	}
 
     	clone(pRelationMap?: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXInstruction {
@@ -49721,13 +51321,34 @@ module akra.fx {
     		pNewInstruction.setParent(pParent);
     		pRelationMap[this._getInstructionID()] = pNewInstruction;
 
-    		for(var i:  number  = 0; i < this._pInstructionList.length; i++){
+    		if(!isNull(this._pInstructionList) && isNull(pNewInstruction.getInstructions())){
+    			pNewInstruction.initEmptyInstructions();
+    		}
+
+    		for(var i:  number  = 0; i < this._nInstructions; i++){
     			pNewInstruction.push(this._pInstructionList[i].clone(pRelationMap));
     		}
 
     		pNewInstruction.setOperator(this.getOperator());
 
     		return pNewInstruction;
+    	}
+	}
+
+	export class InstructionCollector extends Instruction {
+		constructor(){
+			super();
+			this._pInstructionList = [];
+			this._eInstructionType = EAFXInstructionTypes.k_InstructionCollector;
+		}
+
+		toFinalCode(): string {
+    		var sCode: string = "";
+    		for(var i:  number  = 0; i < this._nInstructions; i++){
+    			sCode += this.getInstructions()[i].toFinalCode();
+    		}
+
+    		return sCode;
     	}
 	}
 
@@ -49753,6 +51374,16 @@ module akra.fx {
 		toString(): string{
 			return this._sValue;
 		}
+
+		toFinalCode(): string{
+			return this._sValue;
+		}
+
+		clone(pRelationMap?: IAFXInstructionMap): SimpleInstruction {
+			var pClone: SimpleInstruction = <SimpleInstruction>super.clone(pRelationMap);
+			pClone.setValue(this._sValue);
+			return pClone;
+		}
 	}
 
 
@@ -49776,7 +51407,9 @@ module akra.fx {
 
 		clone(pRelationMap?: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXTypedInstruction {
 			var pClonedInstruction: IAFXTypedInstruction = <IAFXTypedInstruction>(super.clone(pRelationMap));
-			pClonedInstruction.setType(this._pType.clone(pRelationMap));
+			if(!isNull(this.getType())) {
+				pClonedInstruction.setType(this.getType().clone(pRelationMap));
+			}
 			return pClonedInstruction;
 		}
 	}
@@ -49803,6 +51436,10 @@ module akra.fx {
 		}
 
 		getName(): string {
+			return "";
+		}
+
+		getRealName(): string {
 			return "";
 		}
 
@@ -49849,6 +51486,9 @@ module akra.fx {
 		private _sName: string;
 		private _sRealName: string;
 
+		inline isVisible(): bool {
+			return this.getParent().isVisible();
+		}
 /**
 		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
 		 */
@@ -49870,6 +51510,7 @@ module akra.fx {
 
 		inline setName(sName: string): void{
 			this._sName = sName;
+			this._sRealName = sName + "R";
 		}
 
 		inline setRealName(sRealName: string): void{
@@ -49877,6 +51518,10 @@ module akra.fx {
 		}
 
 		toString(): string {
+			return this._sRealName;
+		}
+
+		toFinalCode(): string {
 			return this._sRealName;
 		}
 
@@ -49913,6 +51558,10 @@ module akra.fx {
 		toString(): string {
 			return this._sValue;
 		}
+
+		toFinalCode(): string{
+			return this._sValue;
+		}
 	}
 
 
@@ -49923,19 +51572,357 @@ module akra.fx {
 		}
 	}
 
+	export class PassInstruction extends DeclInstruction implements IAFXPassInstruction {
+		private _pTempNodeList: IParseNode[] = null;
+		private _pTempFoundedFuncList: IAFXFunctionDeclInstruction[] = null;
+		private _pTempFoundedFuncTypeList: EFunctionType[] = null;
+		private _pParseNode: IParseNode = null;
+
+		private _sFunctionCode: string = "";
+
+		private _isComlexPass: bool = false;
+		private _pShadersMap: IAFXFunctionDeclMap = null;
+		private _fnPassFunction: {(engine: any, foreigtn: any, uniforms: any): void;} = null;
+
+		private _pVertexShader: IAFXFunctionDeclInstruction = null;
+		private _pPixelShader: IAFXFunctionDeclInstruction = null;
+		private _pPassStateMap: StringMap = null;
+
+
+		private _pSharedVariableMapV: IAFXVariableDeclMap = null;
+		private _pGlobalVariableMapV: IAFXVariableDeclMap = null;
+		private _pUniformVariableMapV: IAFXVariableDeclMap = null;
+		private _pForeignVariableMapV: IAFXVariableDeclMap = null;
+		private _pTextureVariableMapV: IAFXVariableDeclMap = null;
+		private _pUsedTypeMapV: IAFXTypeDeclMap = null;
+
+		private _pSharedVariableMapP: IAFXVariableDeclMap = null;
+		private _pGlobalVariableMapP: IAFXVariableDeclMap = null;
+		private _pUniformVariableMapP: IAFXVariableDeclMap = null;
+		private _pForeignVariableMapP: IAFXVariableDeclMap = null;
+		private _pTextureVariableMapP: IAFXVariableDeclMap = null;
+		private _pUsedTypeMapP: IAFXTypeDeclMap = null;
+
+		private _pFullUniformVariableMap: IAFXVariableDeclMap = null;
+		private _pFullForeignVariableMap: IAFXVariableDeclMap = null;
+		private _pFullTextureVariableMap: IAFXVariableDeclMap = null;
+
+
+		constructor(){
+			super();
+			this._pInstructionList = null;
+			this._eInstructionType = EAFXInstructionTypes.k_PassInstruction;
+		}
+
+		_addFoundFunction(pNode: IParseNode, pShader: IAFXFunctionDeclInstruction, eType: EFunctionType): void{
+			if(isNull(this._pTempNodeList)){
+				this._pTempNodeList = [];
+				this._pTempFoundedFuncList = [];
+				this._pTempFoundedFuncTypeList = [];
+			}
+
+			this._pTempNodeList.push(pNode);
+			this._pTempFoundedFuncList.push(pShader);
+			this._pTempFoundedFuncTypeList.push(eType);
+		}
+
+		_getFoundedFunction(pNode: IParseNode): IAFXFunctionDeclInstruction {
+			if(isNull(this._pTempNodeList)){
+				return null;
+			}
+
+			for(var i:  number  = 0; i < this._pTempNodeList.length; i++){
+				if(this._pTempNodeList[i] === pNode){
+					return this._pTempFoundedFuncList[i];
+				}
+			}
+
+			return null;
+		}
+
+		_getFoundedFunctionType(pNode: IParseNode): EFunctionType {
+			if(isNull(this._pTempNodeList)){
+				return null;
+			}
+
+			for(var i:  number  = 0; i < this._pTempNodeList.length; i++){
+				if(this._pTempNodeList[i] === pNode){
+					return this._pTempFoundedFuncTypeList[i];
+				}
+			}
+
+			return null;
+		}
+
+		_setParseNode(pNode: IParseNode): void {
+        	this._pParseNode = pNode;
+        }
+
+        _getParseNode(): IParseNode{
+        	return this._pParseNode;
+        }
+
+        _addCodeFragment(sCode: string): void {
+        	if(this.isComplexPass()){
+        		this._sFunctionCode += sCode;
+        	}
+        }
+
+        inline _markAsComplex(isComplex: bool): void{
+        	this._isComlexPass = isComplex;
+        }
+
+        inline _getSharedVariableMapV(): IAFXVariableDeclMap{
+        	return this._pSharedVariableMapV;
+        }
+
+        inline _getGlobalVariableMapV(): IAFXVariableDeclMap{
+        	return this._pGlobalVariableMapV;
+        }
+
+        inline _getUniformVariableMapV(): IAFXVariableDeclMap{
+        	return this._pUniformVariableMapV;
+        }
+
+        inline _getForeignVariableMapV(): IAFXVariableDeclMap{
+        	return this._pForeignVariableMapV;
+        }
+
+        inline _getTextureVariableMapV(): IAFXVariableDeclMap{
+        	return this._pTextureVariableMapV;
+        }
+
+        inline _getUsedTypeMapV(): IAFXTypeDeclMap{
+        	return this._pUsedTypeMapV;
+        }
+
+        inline _getSharedVariableMapP(): IAFXVariableDeclMap{
+        	return this._pSharedVariableMapP;
+        }
+
+        inline _getGlobalVariableMapP(): IAFXVariableDeclMap{
+        	return this._pGlobalVariableMapP;
+        }
+
+        inline _getUniformVariableMapP(): IAFXVariableDeclMap{
+        	return this._pUniformVariableMapP;
+        }
+
+        inline _getForeignVariableMapP(): IAFXVariableDeclMap{
+        	return this._pForeignVariableMapP;
+        }
+
+        inline _getTextureVariableMapP(): IAFXVariableDeclMap{
+        	return this._pTextureVariableMapP;
+        }
+
+        inline _getUsedTypeMapP(): IAFXTypeDeclMap{
+        	return this._pUsedTypeMapP;
+        }
+
+        inline _getFullUniformMap(): IAFXVariableDeclMap {
+        	return this._pFullUniformVariableMap;
+        }
+
+        inline _getFullForeignMap(): IAFXVariableDeclMap {
+        	return this._pFullForeignVariableMap;
+        }
+
+        inline _getFullTextureMap(): IAFXVariableDeclMap {
+        	return this._pFullTextureVariableMap;
+        }
+
+
+        inline isComplexPass(): bool {
+        	return this._isComlexPass;
+        }
+
+        addShader(pShader: IAFXFunctionDeclInstruction): void {
+        	var isVertex: bool = pShader.getFunctionType() === EFunctionType.k_Vertex;
+
+        	if(this.isComplexPass()){
+        		if(isNull(this._pShadersMap)){
+        			this._pShadersMap = <IAFXFunctionDeclMap>{};
+        		}
+        		var iShader:  number  = pShader._getInstructionID();
+        		this._pShadersMap[iShader] = pShader;
+
+        		var sCode: string = isVertex ? "this._pVertexShader=" : "this._pPixelShader=";
+        		sCode += "this._pShadersMap["+ iShader.toString() +"];"
+        		this._addCodeFragment(sCode);
+        	}
+        	else {
+        		if(isVertex){
+        			this._pVertexShader = pShader;
+        		}
+        		else {
+        			this._pPixelShader = pShader;
+        		}
+        	}
+        }
+
+        setState(sType: string, sValue: string): void {
+        	if(isNull(this._pPassStateMap)){
+        		this._pPassStateMap = <StringMap>{};
+        	}
+
+        	if(this.isComplexPass()){
+        		this._addCodeFragment("this._pPassStateMap[" + sType + "]=" + sValue+ ";");
+        	}
+        	else {
+        		this._pPassStateMap[sType] = sValue;
+        	}
+        }
+
+        finalizePass(): void {
+        	if(this.isComplexPass()){
+        		this._fnPassFunction = <any>(new Function("engine", "foreigns", "uniforms", this._sFunctionCode));
+        	}
+
+        	this.generateInfoAboutUsedVaraibles();
+
+        	this._pTempNodeList = null;
+			this._pTempFoundedFuncList = null;
+			this._pTempFoundedFuncTypeList = null;
+			this._pParseNode= null;
+			this._sFunctionCode = "";
+        }
+
+        evaluate(pEngineStates: any, pForeigns: any, pUniforms: any): bool {
+        	if(this.isComplexPass()){
+        		this._pVertexShader = null;
+        		this._pPixelShader = null;
+
+        		this._fnPassFunction.call(this, pEngineStates, pForeigns, pUniforms);
+        	}
+
+        	return true;
+        }
+
+        private generateInfoAboutUsedVaraibles(): void {
+        	if(isNull(this._pSharedVariableMapV)){
+	        	this._pSharedVariableMapV = <IAFXVariableDeclMap>{};
+				this._pGlobalVariableMapV = <IAFXVariableDeclMap>{};
+				this._pUniformVariableMapV = <IAFXVariableDeclMap>{};
+				this._pForeignVariableMapV = <IAFXVariableDeclMap>{};
+				this._pTextureVariableMapV = <IAFXVariableDeclMap>{};
+				this._pUsedTypeMapV = <IAFXTypeDeclMap>{};
+
+				this._pSharedVariableMapP = <IAFXVariableDeclMap>{};
+				this._pGlobalVariableMapP = <IAFXVariableDeclMap>{};
+				this._pUniformVariableMapP = <IAFXVariableDeclMap>{};
+				this._pForeignVariableMapP = <IAFXVariableDeclMap>{};
+				this._pTextureVariableMapP = <IAFXVariableDeclMap>{};
+				this._pUsedTypeMapP = <IAFXTypeDeclMap>{};
+
+				this._pFullUniformVariableMap = <IAFXVariableDeclMap>{};
+				this._pFullForeignVariableMap = <IAFXVariableDeclMap>{};
+				this._pFullTextureVariableMap = <IAFXVariableDeclMap>{};
+			}
+
+        	if(this.isComplexPass()){
+        		for(var i in this._pShadersMap){
+        			this.addInfoAbouUsedVariablesFromFunction(this._pShadersMap[i]);
+        		}
+        	}
+        	else {
+        		if(!isNull(this._pVertexShader)){
+        			this.addInfoAbouUsedVariablesFromFunction(this._pVertexShader);
+        		}
+        		if(!isNull(this._pPixelShader)){
+        			this.addInfoAbouUsedVariablesFromFunction(this._pPixelShader);
+        		}
+        	}
+        }
+
+        private addInfoAbouUsedVariablesFromFunction(pFunction: IAFXFunctionDeclInstruction): void {
+        	var pSharedVars: IAFXVariableDeclMap = pFunction._getSharedVariableMap();
+        	var pGlobalVars: IAFXVariableDeclMap = pFunction._getGlobalVariableMap();
+        	var pUniformVars: IAFXVariableDeclMap = pFunction._getUniformVariableMap();
+        	var pForeignVars: IAFXVariableDeclMap = pFunction._getForeignVariableMap();
+        	var pTextureVars: IAFXVariableDeclMap = pFunction._getTextureVariableMap();
+        	var pTypes: IAFXTypeDeclMap = pFunction._getUsedTypeMap();
+
+
+        	var pSharedVarsTo: IAFXVariableDeclMap = null;
+        	var pGlobalVarsTo: IAFXVariableDeclMap = null;
+        	var pUniformVarsTo: IAFXVariableDeclMap = null;
+        	var pForeignVarsTo: IAFXVariableDeclMap = null;
+        	var pTextureVarsTo: IAFXVariableDeclMap = null;
+        	var pTypesTo: IAFXTypeDeclMap = null;
+
+        	if(pFunction.getFunctionType() === EFunctionType.k_Vertex){
+        		pSharedVarsTo = this._pSharedVariableMapV;
+	        	pGlobalVarsTo = this._pGlobalVariableMapV;
+	        	pUniformVarsTo = this._pUniformVariableMapV;
+	        	pForeignVarsTo = this._pForeignVariableMapV;
+	        	pTextureVarsTo = this._pTextureVariableMapV;
+	        	pTypesTo = this._pUsedTypeMapV;
+        	}
+        	else {
+        		pSharedVarsTo = this._pSharedVariableMapP;
+	        	pGlobalVarsTo = this._pGlobalVariableMapP;
+	        	pUniformVarsTo = this._pUniformVariableMapP;
+	        	pForeignVarsTo = this._pForeignVariableMapP;
+	        	pTextureVarsTo = this._pTextureVariableMapP;
+	        	pTypesTo = this._pUsedTypeMapP;
+        	}
+
+        	for(var i in pSharedVars){
+        		if(!isNull(pSharedVars[i]) && !pSharedVars[i].isField()){
+        			pSharedVarsTo[i] = pSharedVars[i];
+        		}
+        	}
+        	for(var i in pGlobalVars){
+        		if(!isNull(pGlobalVars[i])){
+        			pGlobalVarsTo[i] = pGlobalVars[i];
+        		}
+        	}
+        	for(var i in pUniformVars){
+        		if(!isNull(pUniformVars[i])){
+        			pUniformVarsTo[i] = pUniformVars[i];
+        			this._pFullUniformVariableMap[i] = pUniformVars[i];
+        		}
+        	}
+        	for(var i in pForeignVars){
+        		if(!isNull(pForeignVars[i])){
+        			pForeignVarsTo[i] = pForeignVars[i];
+        			this._pFullForeignVariableMap[i] = pForeignVars[i];
+        		}
+        	}
+        	for(var i in pTextureVars){
+        		if(!isNull(pTextureVars[i])){
+        			pTextureVarsTo[i] = pTextureVars[i];
+        			this._pFullTextureVariableMap[i] = pTextureVars[i];
+        		}
+        	}
+        	for(var i in pTypes){
+        		if(!isNull(pTypes[i])){
+        			pTypesTo[i] = pTypes[i];
+        		}
+        	}
+        }
+	}
+
 
 
 	export class TechniqueInstruction extends DeclInstruction implements IAFXTechniqueInstruction {
 		private _sName: string = "";
 		private _hasComplexName: bool = false;
 		private _pParseNode: IParseNode = null;
-		private _pSharedVariableList: IAFXVariableDeclInstruction[] = null;
+		private _pSharedVariableListV: IAFXVariableDeclInstruction[] = null;
+		private _pSharedVariableListP: IAFXVariableDeclInstruction[] = null;
+		private _pPassList: IAFXPassInstruction[] = null;
+		private _pComponentList: IAFXComponent[] = null;
+		private _pComponentShiftList:  number [] = null;
+		private _pFullComponentList: IAFXComponent[] = null;
+		private _pFullComponentShiftList:  number [] = null;
+		private _nTotalPasses:  number  = 0;
 
 		constructor() {
 			super();
 			this._pInstructionList = null;
 			this._eInstructionType = EAFXInstructionTypes.k_TechniqueInstruction;
-			this._pSharedVariableList = [];
 		}
 
 		setName(sName: string, isComplexName: bool): void {
@@ -49951,101 +51938,160 @@ module akra.fx {
         	return this._hasComplexName;
         }
 
-        getSharedVariables(): IAFXVariableDeclInstruction[] {
-        	return this._pSharedVariableList;
+        getSharedVariablesForVertex(): IAFXVariableDeclInstruction[] {
+        	return this._pSharedVariableListV;
         }
 
-        _setParseNode(pNode: IParseNode): void{
-        	this._pParseNode = pNode;
+        getSharedVariablesForPixel(): IAFXVariableDeclInstruction[] {
+        	return this._pSharedVariableListP;
         }
 
-        _getParseNode(): IParseNode{
-        	return this._pParseNode;
+		addPass(pPass: IAFXPassInstruction): void {
+			if(isNull(this._pPassList)){
+				this._pPassList = [];
+			}
+
+			this._pPassList.push(pPass);
+		}
+
+		getPassList(): IAFXPassInstruction[]{
+			return this._pPassList;
+		}
+
+		getPass(iPass:  number ): IAFXPassInstruction{
+			return iPass < this._pPassList.length ? this._pPassList[iPass] : null;
+		}
+
+		totalOwnPasses():  number {
+			return this._pPassList.length;
+		}
+
+        totalPasses():  number {
+        	return this._nTotalPasses;
         }
 
-		addPass(): void {
+		addComponent(pComponent: IAFXComponent, iShift:  number ): void{
+			if(isNull(this._pComponentList)){
+				this._pComponentList = [];
+				this._pComponentShiftList = [];
+			}
 
+			this._pComponentList.push(pComponent);
+			this._pComponentShiftList.push(iShift);
+		}
+
+		inline getComponentList(): IAFXComponent[]{
+			return this._pComponentList;
+		}
+
+        inline getComponentListShift():  number []{
+        	return this._pComponentShiftList;
+        }
+
+        getFullComponentList(): IAFXComponent[]{
+        	return this._pFullComponentList;
+        }
+
+        getFullComponentShiftList():  number []{
+        	return this._pFullComponentShiftList;
+        }
+
+		checkForCorrectImports(): bool {
+			return true;
+		}
+
+		finalizeTechnique(sProvideNameSpace: string,
+                          pGloabalComponentList: IAFXComponent[],
+                          pGloabalComponentShiftList:  number []): void {
+			this.generateListOfSharedVariables();
+
+			if(!this.hasComplexName() && sProvideNameSpace !== ""){
+				this._sName = sProvideNameSpace + "." + this._sName;
+			}
+
+			if(!isNull(pGloabalComponentList)){
+				if(!isNull(this._pComponentList)){
+					this._pComponentList = pGloabalComponentList.concat(this._pComponentList);
+					this._pComponentShiftList = pGloabalComponentShiftList.concat(this._pComponentShiftList);
+				}
+				else {
+					this._pComponentList = pGloabalComponentList.concat();
+					this._pComponentShiftList = pGloabalComponentShiftList.concat();
+				}
+			}
+
+			this.generateFullListOfComponent();
+		}
+
+		private generateListOfSharedVariables(): void {
+			this._pSharedVariableListV = [];
+			this._pSharedVariableListP = [];
+
+			for(var i:  number  = 0; i < this._pPassList.length; i++){
+				var pSharedV: IAFXVariableDeclMap = this._pPassList[i]._getSharedVariableMapV();
+				var pSharedP: IAFXVariableDeclMap = this._pPassList[i]._getSharedVariableMapP();
+
+				for(var j in pSharedV){
+					this.addSharedVariable(pSharedV[j], EFunctionType.k_Vertex);
+				}
+
+				for(var j in pSharedP){
+					this.addSharedVariable(pSharedP[j], EFunctionType.k_Pixel);
+				}
+			}
+		}
+
+		private addSharedVariable(pVar: IAFXVariableDeclInstruction, eType: EFunctionType): void {
+			var pAddTo: IAFXVariableDeclInstruction[] = null;
+
+			if(eType === EFunctionType.k_Vertex){
+				pAddTo = this._pSharedVariableListV;
+			}
+			else {
+				pAddTo = this._pSharedVariableListP;
+			}
+
+			for(var i:  number  = 0; i < pAddTo.length; i++) {
+				if(pAddTo[i] === pVar){
+					return;
+				}
+			}
+
+			pAddTo.push(pVar);
+		}
+
+		private generateFullListOfComponent(): void {
+			this._nTotalPasses = this.totalOwnPasses();
+
+			if(isNull(this._pComponentList)){
+				return;
+			}
+
+			this._pFullComponentList = [];
+			this._pFullComponentShiftList = [];
+
+			for(var i:  number  = 0; i < this._pComponentList.length; i++){
+				var pTechnique: IAFXTechniqueInstruction = this._pComponentList[i].getTechnique();
+				var iMainShift:  number  = this._pComponentShiftList[i];
+				var pAddComponentList: IAFXComponent[] = pTechnique.getFullComponentList();
+				var pAddComponentShiftList:  number [] = pTechnique.getFullComponentShiftList();
+
+				if(!isNull(pAddComponentList)){
+					for(var j:  number  = 0; j < pAddComponentList.length; i++){
+						this._pFullComponentList.push(pAddComponentList[j]);
+						this._pFullComponentShiftList.push(pAddComponentShiftList[j] + iMainShift);
+					}
+				}
+
+				this._pFullComponentList.push(this._pComponentList[i]);
+				this._pFullComponentShiftList.push(iMainShift);
+
+				if(this._nTotalPasses < iMainShift + pTechnique.totalPasses()) {
+					this._nTotalPasses = iMainShift + pTechnique.totalPasses();
+				}
+			}
 		}
 	}
-
-// export class TypeInstruction extends Instruction {
-// 	/**
-// 	 * Represent [usages] IdInstruction
-// 	 * EMPTY_OPERATOR KeywordInstruction ... KeywordInstruction IdInstruction
-// 	 */
-// }
-
-// export class VariableInitInstruction extends Instruction {
-// 	/**
-// 	 * Represent varname [ [someIndex] ][ = SomeExpr;]
-// 	 * ('=' || EMPTY_OPERATOR) VariableInstruction ExprInstruction
-// 	 */
-// }
-
-// export class VariableInstruction extends Instruction{
-// 	/**
-// 	 * Represent varname [ [someIndex] ]
-// 	 * EMPTY_OPERATOR IdInstruction IndexInstruction ... IndexInstruction
-// 	 */
-// }
-// export class IndexInstruction extends Instruction {
-// 	/**
-// 	 * Represent [ [someIndex] ]
-// 	 * EMPTY_OPERATOR ExprInstruction
-// 	 */
-// }
-
-// export class ExprInstruction extends Instruction {
-// 	/**
-// 	 * Represent someExpr
-// 	 * EMPTY_OPERATOR [SomeOfExprassionInstruction]
-// 	 */
-// }
-
-
-
-// export class ArithmeticExprInstruction extends Instruction {
-// 	/**
-// 	 * Represent someExpr +,/,-,*,% someExpr
-// 	 * (+|-|*|/|%) Instruction Instruction
-// 	 */
-// }
-
-// export class RelationExprInstruction extends Instruction {
-// 	/**
-// 	 * Represent someExpr <,>,>=,<=,!=,== someExpr
-// 	 * (<|>|<=|=>|!=|==) Instruction Instruction
-// 	 */
-// }
-
-// export class LogicalExprInstruction extends Instruction {
-// 	/**
-// 	 * Represent someExpr &&,|| someExpr
-// 	 * (&& | ||) Instruction Instruction
-// 	 */
-// }
-
-// export class FunctionCallInstruction extends Instruction {
-// 	/**
-// 	 * Represent func([params])
-// 	 * call IdInstruction ExprInstruction ... ExprInstruction
-// 	 */	
-// }
-
-// export class TypeCastInstruction extends Instruction {
-// 	/**
-// 	 * Represent (type)(Expr)
-// 	 * typeCast IdInstruction ExprInstruction
-// 	 */	
-// }
-
-// export class TypeConstructorInstruction extends Instruction {
-// 	/**
-// 	 * Represent type(Expr)
-// 	 * constructor IdInstruction ExprInstruction
-// 	 */	
-// }
-
 
 }
 
@@ -50067,6 +52113,7 @@ module akra.fx {
 
 		constructor() {
 			super();
+			this._pInstructionList = [null];
 			this._eInstructionType = EAFXInstructionTypes.k_TypeDeclInstruction;
 		}
 
@@ -50077,10 +52124,21 @@ module akra.fx {
 		clone(pRelationMap?: IAFXInstructionMap): IAFXTypeDeclInstruction {
         	return <IAFXTypeDeclInstruction>super.clone(pRelationMap);
         }
+
+        toFinalCode(): string {
+			return this.getType()._toDeclString() + ";";
+		}
+
+        inline getName(): string {
+        	return this.getType().getName();
+        }
 	}
 
 	export class VariableTypeInstruction extends Instruction implements IAFXVariableTypeInstruction {
-// EMPTY_OPERATOR TypeInstruction ArrayInstruction PointerInstruction
+		private _pSubType: IAFXTypeInstruction = null;
+		private _pUsageList: string[] = null;
+
+		private _sName: string = "";
 		private _isWritable: bool = null;
 		private _isReadable: bool = null;
 
@@ -50093,96 +52151,375 @@ module akra.fx {
 		private _isPointer: bool = false;
 		private _isStrictPointer: bool = false;
 		private _isPointIndex: bool = null;
+		private _isUniform: bool = null;
+		private _isGlobal: bool = null;
 		private _isConst: bool = null;
+		private _isShared: bool = null;
+		private _isForeign: bool = null;
 		private _iLength:  number  =  0xffffff ;
+
+		private _isFromVariableDecl: bool = null;
+		private _isFromTypeDecl: bool = null;
+		private _isField: bool = false;
 
 		private _pArrayIndexExpr: IAFXExprInstruction = null;
 		private _pArrayElementType: IAFXVariableTypeInstruction = null;
 
+		private _pFieldDeclMap: IAFXVariableDeclMap = null;
+		private _pFieldDeclBySemanticMap: IAFXVariableDeclMap = null;
 		private _pFieldIdMap: IAFXIdExprMap = null;
 		private _pUsedFieldMap: IAFXVarUsedModeMap = null;
 
 		private _pVideoBuffer: IAFXVariableDeclInstruction = null;
-		private _pNextPointIndex: IAFXVariableDeclInstruction = null;
-		private _nPointerDim:  number  = 0;
+		private _pMainPointIndex: IAFXVariableDeclInstruction = null;
+		private _pUpPointIndex: IAFXVariableDeclInstruction = null;
+		private _pDownPointIndex: IAFXVariableDeclInstruction = null;
+		private _nPointDim:  number  = 0;
 		private _pPointerList: IAFXVariableDeclInstruction[] = null;
+		private _iPadding:  number  =  0xffffff ;
+
+		private _pSubDeclList: IAFXVariableDeclInstruction[] = null;
+
+		private _bUnverifiable: bool = false;
 
 		constructor() {
 			super();
-			this._pInstructionList = [null];
+			this._pInstructionList = null;
 			this._eInstructionType = EAFXInstructionTypes.k_VariableTypeInstruction;
 		}
 
-		pushInVariableType(pVariableType: IAFXTypeInstruction): bool {
-			if(this._nInstuctions > 0){
-				return false;
+		toFinalCode(): string {
+			var sCode: string = "";
+			if(!isNull(this._pUsageList)){
+				for(var i:  number  = 0; i < this._pUsageList.length; i++){
+					sCode += this._pUsageList[i];
+				}
 			}
-			else {
-				var pUsageType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
-				pUsageType.push(pVariableType, false);
 
-				this.push(pUsageType, true);
-				return false;
-			}
+			sCode += this.getSubType().toFinalCode();
+
+			return sCode;
 		}
 
-		isolateType(): IAFXVariableTypeInstruction {
-			var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-			var pUsageType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
+		_toDeclString(): string {
+			return this.getSubType()._toDeclString();
+		}
 
-			pVariableType.push(pUsageType, true);
-			pUsageType.push(this, false);
+//-----------------------------------------------------------------//
+//----------------------------SIMPLE TESTS-------------------------//
+//-----------------------------------------------------------------//
 
-			return pVariableType;
+		inline isBase(): bool {
+			return this.getSubType().isBase() && this._isArray === false;
+		}
+
+		inline isArray(): bool {
+			return this._isArray ||
+				   (this.getSubType().isArray());
+		}
+
+		inline isNotBaseArray(): bool {
+			return this._isArray || (this.getSubType().isNotBaseArray());
+		}
+
+		inline isComplex(): bool {
+			return this.getSubType().isComplex();
+		}
+
+		isEqual(pType: IAFXTypeInstruction): bool {
+			if(this._isUnverifiable()){
+				return true;
+			}
+
+			if (this.isNotBaseArray() && pType.isNotBaseArray() &&
+				(this.getLength() !== pType.getLength() ||
+				 this.getLength() ===  0xffffff  ||
+				 pType.getLength() ===  0xffffff )){
+				return false;
+			}
+
+			if(this.getHash() !== pType.getHash()){
+				return false;
+			}
+
+			return true;
+		}
+
+		isStrongEqual(pType: IAFXTypeInstruction): bool {
+			if(!this.isEqual(pType) || this.getStrongHash() !== pType.getStrongHash()){
+				return false;
+			}
+
+			return true;
+		}
+
+		isSampler(): bool {
+			return this.getSubType().isSampler();
+		}
+
+		isWritable(): bool {
+			if(!isNull(this._isWritable)){
+				return this._isWritable;
+			}
+
+			if ((this.isArray() && !this.isBase()) ||
+				this.isForeign() || this.isUniform()){
+				this._isWritable = false;
+			}
+			else {
+				this._isWritable = this.getSubType().isWritable();
+			}
+
+			return this._isWritable;
+		}
+
+		isReadable(): bool {
+			if(!isNull(this._isReadable)){
+				return this._isReadable;
+			}
+
+			if(this.hasUsage("out")){
+				this._isReadable = false;
+			}
+			else{
+				this._isReadable = this.getSubType().isReadable();
+			}
+
+			return this._isReadable;
+		}
+
+		_containArray(): bool {
+			return this.getSubType()._containArray();
+		}
+
+        _containSampler(): bool {
+        	return this.getSubType()._containSampler();
+        }
+
+        _containPointer(): bool {
+        	return this.getSubType()._containSampler();
+        }
+
+        _containComplexType(): bool {
+        	return this.getSubType()._containComplexType();
+        }
+
+		isPointer(): bool {
+			return this._isPointer ||
+				   (this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction &&
+				   	(<IAFXVariableTypeInstruction>this.getSubType()).isPointer());
+		}
+
+		isStrictPointer(): bool {
+			return this._isStrictPointer ||
+					(this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction &&
+				   	(<IAFXVariableTypeInstruction>this.getSubType()).isStrictPointer());
+		}
+
+		isPointIndex(): bool{
+			if(isNull(this._isPointIndex)){
+				this._isPointIndex = this.isStrongEqual(getEffectBaseType("ptr"));
+			}
+
+			return this._isPointIndex;
+		}
+
+		isFromVariableDecl(): bool {
+			if(!isNull(this._isFromVariableDecl)){
+				return this._isFromVariableDecl;
+			}
+
+			if(isNull(this.getParent())){
+				this._isFromVariableDecl = false;
+			}
+			else {
+				var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+				if(eParentType === EAFXInstructionTypes.k_VariableDeclInstruction){
+					this._isFromVariableDecl = true;
+				}
+				else if(eParentType === EAFXInstructionTypes.k_VariableTypeInstruction){
+					this._isFromVariableDecl = (<IAFXVariableTypeInstruction>this.getParent()).isFromVariableDecl();
+				}
+				else {
+					this._isFromVariableDecl = false;
+				}
+			}
+
+			return this._isFromVariableDecl;
+		}
+
+        isFromTypeDecl(): bool {
+        	if(!isNull(this._isFromTypeDecl)){
+				return this._isFromTypeDecl;
+			}
+
+        	if(isNull(this.getParent())){
+				this._isFromTypeDecl = false;
+			}
+			else {
+	        	var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+				if(eParentType === EAFXInstructionTypes.k_TypeDeclInstruction){
+					this._isFromTypeDecl = true;
+				}
+				else if(eParentType === EAFXInstructionTypes.k_VariableTypeInstruction){
+					this._isFromTypeDecl = (<IAFXVariableTypeInstruction>this.getParent()).isFromVariableDecl();
+				}
+				else {
+					this._isFromTypeDecl = false;
+				}
+			}
+
+			return this._isFromTypeDecl;
+        }
+
+        isUniform(): bool {
+        	if(isNull(this._isUniform)){
+				this._isUniform = this.hasUsage("uniform");
+			}
+
+			return this._isUniform;
+        }
+
+        isGlobal(): bool {
+        	if(isNull(this._isGlobal)){
+				this._isGlobal = this._getScope() === 0;
+			}
+
+			return this._isGlobal;
+        }
+
+        isConst(): bool {
+			if(isNull(this._isConst)){
+				this._isConst = this.hasUsage("const");
+			}
+
+			return this._isConst;
+		}
+
+        isShared(): bool {
+        	if(isNull(this._isShared)){
+				this._isShared = this.hasUsage("shared");
+			}
+
+			return this._isShared;
+        }
+
+        isForeign(): bool {
+        	if(isNull(this._isForeign)){
+				this._isForeign = this.hasUsage("foreign");
+			}
+
+			return this._isForeign;
+        }
+
+        _isTypeOfField(): bool {
+        	if(isNull(this.getParent())){
+        		return false;
+        	}
+
+        	if(this.getParent()._getInstructionType() === EAFXInstructionTypes.k_VariableDeclInstruction){
+        		var pParentDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this.getParent();
+        		return pParentDecl.isField();
+        	}
+
+        	return false;
+        }
+
+        inline _isUnverifiable(): bool {
+        	return this._bUnverifiable;
+        }
+
+//-----------------------------------------------------------------//
+//----------------------------SET TYPE INFO------------------------//
+//-----------------------------------------------------------------//
+
+		setName(sName: string): void {
+			this._sName = sName;
+		}
+
+		inline _canWrite(isWritable: bool): void {
+			this._isWritable = isWritable;
+		}
+
+		inline _canRead(isReadable: bool): void {
+			this._isReadable = isReadable;
+		}
+
+//-----------------------------------------------------------------//
+//----------------------------INIT API-----------------------------//
+//-----------------------------------------------------------------//
+		inline setPadding(iPadding:  number ): void {
+			this._iPadding = iPadding;
+		}
+
+		pushType(pType: IAFXTypeInstruction): void {
+			var eType: EAFXInstructionTypes = pType._getInstructionType();
+
+			if (eType === EAFXInstructionTypes.k_SystemTypeInstruction ||
+				eType === EAFXInstructionTypes.k_ComplexTypeInstruction){
+				this._pSubType = pType;
+			}
+			else {
+				var pVarType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pType;
+				if(!pVarType.isNotBaseArray() && !pVarType.isPointer()){
+					var pUsageList: string[] = pVarType.getUsageList();
+					if(!isNull(pUsageList)){
+						for(var i:  number  = 0; i < pUsageList.length; i++){
+							this.addUsage(pUsageList[i]);
+						}
+					}
+
+					this._pSubType = pVarType.getSubType();
+				}
+				else{
+					this._pSubType = pType;
+				}
+			}
+
+		}
+
+		addUsage(sUsage: string): void {
+			if(isNull(this._pUsageList)){
+				this._pUsageList = [];
+			}
+
+			if(!this.hasUsage(sUsage)){
+				this._pUsageList.push(sUsage);
+			}
 		}
 
 		addArrayIndex(pExpr: IAFXExprInstruction): void {
 //TODO: add support for v[][10]
 
 			this._pArrayElementType = new VariableTypeInstruction();
-			this._pArrayElementType.push(this._pInstructionList[0], false);
+			this._pArrayElementType.pushType(this.getSubType());
+			if(!isNull(this._pUsageList)){
+				for(var i:  number  = 0; i < this._pUsageList.length; i++){
+					this._pArrayElementType.addUsage(this._pUsageList[i]);
+				}
+			}
 			this._pArrayElementType.setParent(this);
 
 			this._pArrayIndexExpr = pExpr;
 
-			this._iLength = this._pArrayIndexExpr.evaluate() ||  0xffffff ;
+			this._iLength = this._pArrayIndexExpr.evaluate() ? this._pArrayIndexExpr.getEvalValue() :  0xffffff ;
 
 			this._isArray = true;
 		}
 
 		addPointIndex(isStrict?: bool = true): void {
-			this._nPointerDim++;
+			this._nPointDim++;
 			this._isPointer = true;
 			if(isStrict){
 				this._isStrictPointer = true;
 			}
 		}
 
-		_addPointIndexInDepth(): void {
-			if(!this.isComplex()){
-				return;
-			}
-
-			var pFieldNameList: string[] = this.getFieldNameList();
-
-			for(var i:  number  = 0; i < pFieldNameList.length; i++){
-				var pFieldType: IAFXVariableTypeInstruction = this.getFieldType(pFieldNameList[i]);
-				if(!pFieldType.isPointer()){
-					pFieldType.addPointIndex(false);
-					pFieldType._setVideoBufferInDepth();
-				}
-			}
-		}
-
-		getPointDim():  number  {
-			return this._nPointerDim ||
-				   (this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction) ?
-				   (<IAFXVariableTypeInstruction>this.getSubType()).getPointDim() : 0;
-		}
-
 		setVideoBuffer(pBuffer: IAFXVariableDeclInstruction): void {
 			if(this.isPointIndex()){
-				(<IAFXVariableTypeInstruction>this._pParentInstruction).setVideoBuffer(pBuffer);
+				(<IAFXVariableDeclInstruction>this.getParent().getParent()).getType().setVideoBuffer(pBuffer);
 				return;
 			}
 
@@ -50203,6 +52540,59 @@ module akra.fx {
 			}
 		}
 
+		initializePointers(): void {
+			this._pPointerList = [];
+			var pDownPointer: IAFXVariableDeclInstruction = this._getParentVarDecl();
+
+			for(var i: number  = 0; i < this.getPointDim(); i++){
+				var pPointer: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+				var pPointerType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+				var pPointerId: IAFXIdInstruction = new IdInstruction();
+
+				pPointer.push(pPointerType, true);
+				pPointer.push(pPointerId, true);
+
+				pPointerType.pushType(getEffectBaseType("ptr"));
+				pPointerId.setName( "undef" );
+				pPointerId.setName(this._getParentVarDecl().getName() + "_pointer_" + i.toString());
+
+				if(i > 0) {
+					(this._pPointerList[i - 1].getType())._setUpDownPointers(pPointer, pDownPointer);
+					pDownPointer = this._pPointerList[i - 1];
+				}
+				else{
+					pPointerType._setUpDownPointers(null, pDownPointer);
+				}
+
+				pPointer.setParent(this._getParentVarDecl());
+				this._pPointerList.push(pPointer);
+			}
+
+			this._pPointerList[this._pPointerList.length - 1].getType()._setUpDownPointers(null, pDownPointer);
+			this._pUpPointIndex = this._pPointerList[0];
+			this._pMainPointIndex = this._pPointerList[this._pPointerList.length - 1];
+		}
+
+		_setPointerToStrict(): void {
+			this._isStrictPointer = true;
+		}
+
+		_addPointIndexInDepth(): void {
+			if(!this.isComplex()){
+				return;
+			}
+
+			var pFieldNameList: string[] = this.getFieldNameList();
+
+			for(var i:  number  = 0; i < pFieldNameList.length; i++){
+				var pFieldType: IAFXVariableTypeInstruction = this.getFieldType(pFieldNameList[i]);
+				if(!pFieldType.isPointer()){
+					pFieldType.addPointIndex(false);
+					pFieldType._setVideoBufferInDepth();
+				}
+			}
+		}
+
 		_setVideoBufferInDepth(): void {
 			if(this.isPointer()){
 				this.setVideoBuffer(Effect.createVideoBufferVariable());
@@ -50218,131 +52608,16 @@ module akra.fx {
 			}
 		}
 
-		getVideoBuffer(): IAFXVariableDeclInstruction {
-			if(this.isPointIndex()) {
-				return (<IAFXVariableTypeInstruction>this._pParentInstruction).getVideoBuffer();
-			}
-
-			return this._pVideoBuffer;
-		}
-
-		hasVideoBuffer(): bool {
-			return !isNull(this.getVideoBuffer());
-		}
-
-		inline isBase(): bool {
-			return this.getSubType().isBase() && this._isArray === false;
-		}
-
-		inline isArray(): bool {
-			return this._isArray ||
-				   (this.getSubType().isArray());
-		}
-
-		inline isNotBaseArray(): bool {
-			return this._isArray || (this.getSubType().isNotBaseArray());
-		}
-
-		inline isComplex(): bool {
-			return this.getSubType().isComplex();
-		}
-
-		isEqual(pType: IAFXTypeInstruction): bool {
-			if (this.isArray() && pType.isArray() &&
-				pType._getInstructionType() !== EAFXInstructionTypes.k_SystemTypeInstruction &&
-				(this.getLength() !== pType.getLength() ||
-				 this.getLength() ===  0xffffff  ||
-				 pType.getLength() ===  0xffffff )){
-				return false;
-			}
-
-			if(this.getHash() !== pType.getHash()){
-				return false;
-			}
-
-			return true;
-		}
-
-		inline isConst(): bool {
-			if(isNull(this._isConst)){
-				this._isConst = (<IAFXUsageTypeInstruction>this._pInstructionList[0]).hasUsage("const");
-			}
-
-			return this._isConst;
-		}
-
-		isWritable(): bool {
-			if(!isNull(this._isWritable)){
-				return this._isWritable;
-			}
-
-			if(this.isArray() && !this.isBase()){
-				this._isWritable = false;
-			}
-			else {
-				this._isWritable = this.getSubType().isWritable();
-			}
-
-			return this._isWritable;
-		}
-
-		isReadable(): bool {
-			if(!isNull(this._isReadable)){
-				return this._isReadable;
-			}
-
-			if(this.getUsageType().hasUsage("out")){
-				this._isReadable = false;
-			}
-			else{
-				this._isReadable = this.getSubType().isReadable();
-			}
-
-			return this._isReadable;
-		}
-
-		inline _canWrite(isWritable: bool): void {
-			this._isWritable = isWritable;
-		}
-
-		inline _canRead(isReadable: bool): void {
-			this._isReadable = isReadable;
-		}
-
-		_containArray(): bool{
-			return this.isBase() ? false : (<IAFXVariableTypeInstruction>this.getSubType())._containArray();
-		}
-
-        _containSampler(): bool{
-        	return this.isBase() ? false : (<IAFXVariableTypeInstruction>this.getSubType())._containSampler();
+		inline _markAsUnverifiable(isUnverifiable: bool): void {
+        	this._bUnverifiable = true;
         }
 
-        _containPointer(): bool{
-        	return this.isBase() ? false : (<IAFXVariableTypeInstruction>this.getSubType())._containSampler();
-        }
+//-----------------------------------------------------------------//
+//----------------------------GET TYPE INFO------------------------//
+//-----------------------------------------------------------------//	
 
-		isPointer(): bool {
-			return this._isPointer ||
-				   (this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction &&
-				   	(<IAFXVariableTypeInstruction>this.getSubType()).isPointer());
-		}
-
-		isStrictPointer(): bool {
-			return this._isStrictPointer ||
-					(this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction &&
-				   	(<IAFXVariableTypeInstruction>this.getSubType()).isStrictPointer());
-		}
-
-		_setPointerToStrict(): void {
-			this._isStrictPointer = true;
-		}
-
-		isPointIndex(): bool{
-			if(isNull(this._isPointIndex)){
-				this._isPointIndex = this.isEqual(getEffectBaseType("ptr"));
-			}
-
-			return this._isPointIndex;
+		getName(): string {
+			return this._sName;
 		}
 
 		getHash(): string {
@@ -50361,35 +52636,80 @@ module akra.fx {
 			return this._sStrongHash;
 		}
 
-		inline getSubType(): IAFXTypeInstruction {
-			return (<IAFXUsageTypeInstruction>this._pInstructionList[0]).getTypeInstruction();
+		getSize():  number  {
+			if(this.isPointer() || this.isPointIndex()){
+				return 1;
+			}
+
+			if(this._isArray){
+				var iSize:  number  = this._pArrayElementType.getSize();
+				if (this._iLength ===  0xffffff  ||
+					iSize ===  0xffffff ){
+					return  0xffffff ;
+				}
+				else{
+					return iSize * this._iLength;
+				}
+			}
+			else {
+				return this.getSubType().getSize();
+			}
 		}
 
-		hasUsage(sUsage: string): bool {
-			return (<IAFXUsageTypeInstruction>this._pInstructionList[0]).hasUsage(sUsage);
+		getBaseType(): IAFXTypeInstruction{
+ 			return this.getSubType().getBaseType();
+ 		}
+
+		getLength():  number  {
+			if(!this.isNotBaseArray()){
+				this._iLength = 0;
+				return 0;
+			}
+
+			if(this.isNotBaseArray() && !this._isArray){
+				this._iLength = this.getSubType().getLength();
+			}
+			else if(this._iLength ===  0xffffff ){
+				var isEval: bool = this._pArrayIndexExpr.evaluate();
+
+				if(isEval) {
+					this._iLength = < number >this._pArrayIndexExpr.getEvalValue();
+				}
+			}
+
+			return this._iLength;
+		}
+
+		getPadding():  number  {
+			return this.isPointIndex() ? this._getDownPointer().getType().getPadding() : this._iPadding;
+		}
+
+		getArrayElementType(): IAFXVariableTypeInstruction {
+			if(this._isUnverifiable()){
+				return this;
+			}
+
+			if(!this.isArray()){
+				return null;
+			}
+
+			if(isNull(this._pArrayElementType)){
+				this._pArrayElementType = new VariableTypeInstruction();
+				this._pArrayElementType.pushType(this.getSubType().getArrayElementType());
+				if(!isNull(this._pUsageList)){
+					for(var i:  number  = 0; i <  this._pUsageList.length; i++){
+						this._pArrayElementType.addUsage(this._pUsageList[i]);
+					}
+				}
+				this._pArrayElementType.setParent(this);
+			}
+
+			return this._pArrayElementType;
 		}
 
 		hasField(sFieldName: string): bool {
-			return this.getSubType().hasField(sFieldName);
+			return this._isUnverifiable() ? true : this.getSubType().hasField(sFieldName);
 		}
-
-		_usedForWrite(): bool{
-			if(!this.isWritable()){
-				return false;
-			}
-
-			this._bUsedForWrite = true;
-			return true;
-		}
-
-        _usedForRead(): bool {
-        	if(!this.isReadable()){
-        		return false;
-        	}
-
-        	this._bUsedForRead = true;
-        	return true;
-        }
 
 		hasFieldWithSematic(sSemantic: string): bool {
 			if(!this.isComplex()){
@@ -50415,53 +52735,134 @@ module akra.fx {
 			return this.getSubType().hasFieldWithoutSemantic();
 		}
 
-		getField(sFieldName: string, isCreateExpr?: bool): IAFXIdExprInstruction {
+		getField(sFieldName: string): IAFXVariableDeclInstruction {
 			if(!this.hasField(sFieldName)){
 				return null;
 			}
 
-			if(isNull(this._pFieldIdMap)) {
-				this._pFieldIdMap = <IAFXIdExprMap>{};
+			if(isNull(this._pFieldDeclMap)) {
+				this._pFieldDeclMap = <IAFXVariableDeclMap>{};
 			}
 
-			if(isDef(this._pFieldIdMap[sFieldName])){
-				return this._pFieldIdMap[sFieldName];
+			if(isDef(this._pFieldDeclMap[sFieldName])){
+				return this._pFieldDeclMap[sFieldName];
 			}
 
-			var pUsageType: IAFXUsageTypeInstruction = <IAFXUsageTypeInstruction>this._pInstructionList[0];
-			var pSubType: IAFXTypeInstruction = pUsageType.getTypeInstruction();
-			var pFieldIdExpr: IAFXIdExprInstruction = pSubType.getField(sFieldName);
+			var pField: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+
+			if(!this._isUnverifiable()){
+				var pSubField: IAFXVariableDeclInstruction = this.getSubType().getField(sFieldName);
+
+				var pFieldType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+				pFieldType.pushType(pSubField.getType());
+				if(!this.isBase()){
+					pFieldType.setPadding(pSubField.getType().getPadding());
+				}
+				pField.push(pFieldType, true);
+				pField.push(pSubField.getNameId(), false);
+			}
+			else {
+				var pFieldName: IAFXIdInstruction = new IdInstruction();
+
+				pFieldName.setName(sFieldName);
+				pFieldName.setRealName(sFieldName);
+
+				pField.push(this, false);
+				pField.push(pFieldName, true);
+			}
+
+			pField.setParent(this);
+
+			this._pFieldDeclMap[sFieldName] = pField;
+
+			return pField;
+		}
+
+		inline getFieldBySemantic(sSemantic: string): IAFXVariableDeclInstruction {
+			if(this.hasFieldWithSematic(sSemantic)){
+				return null;
+			}
+
+			if(isNull(this._pFieldDeclBySemanticMap)) {
+				this._pFieldDeclBySemanticMap = <IAFXVariableDeclMap>{};
+			}
+
+			if(isDef(this._pFieldDeclBySemanticMap[sSemantic])){
+				return this._pFieldDeclBySemanticMap[sSemantic];
+			}
+
+			var pField: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+			var pSubField: IAFXVariableDeclInstruction = this.getSubType().getFieldBySemantic(sSemantic);
 
 			var pFieldType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-			pFieldType.pushInVariableType(pFieldIdExpr.getType());
-			pFieldType.setParent(this);
+			pFieldType.pushType(pSubField.getType());
+			if(!this.isBase()){
+				pFieldType.setPadding(pSubField.getType().getPadding());
+			}
+			pField.push(pFieldType, true);
+			pField.push(pSubField.getNameId(), false);
 
-			pFieldIdExpr.setType(pFieldType);
-			this._pFieldIdMap[sFieldName] = pFieldIdExpr;
 
-			return pFieldIdExpr;
+			pField.setParent(this);
+
+			this._pFieldDeclBySemanticMap[sSemantic] = pField;
+
+			return pField;
 		}
 
 		getFieldType(sFieldName: string): IAFXVariableTypeInstruction {
-			return <IAFXVariableTypeInstruction>this.getField(sFieldName, false).getType();
+			return <IAFXVariableTypeInstruction>this.getField(sFieldName).getType();
 		}
 
  		getFieldNameList(): string[] {
  			return this.getSubType().getFieldNameList();
  		}
 
- 		getBaseType(): IAFXTypeInstruction{
- 			return this.getSubType().getBaseType();
+
+ 		inline getUsageList(): string[] {
+ 			return this._pUsageList;
  		}
 
+		inline getSubType(): IAFXTypeInstruction {
+			return this._pSubType;
+		}
+
+		hasUsage(sUsageName: string): bool {
+			if(isNull(this._pUsageList)){
+				return false;
+			}
+
+			for(var i:  number  = 0; i < this._pUsageList.length; i++){
+				if(this._pUsageList[i] === sUsageName){
+					return true;
+				}
+			}
+
+			if(!isNull(this.getSubType()) && this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction){
+				return (<IAFXVariableTypeInstruction>this.getSubType()).hasUsage(sUsageName);
+			}
+
+			return false;
+		}
+
+		hasVideoBuffer(): bool {
+			return !isNull(this.getVideoBuffer());
+		}
+
+		getPointDim():  number  {
+			return this._nPointDim ||
+				   ((this.getSubType()._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction) ?
+				   (<IAFXVariableTypeInstruction>this.getSubType()).getPointDim() : 0);
+		}
+
 		getPointer(): IAFXVariableDeclInstruction {
-			if(!this.isPointer() && !this.hasVideoBuffer() &&
-				!this.isPointIndex()){
+			if (!this.isFromVariableDecl() ||
+				!(this.isPointer() || this.isPointIndex()) || !this.hasVideoBuffer()){
 				return null;
 			}
 
-			if(!isNull(this._pNextPointIndex)){
-				return this._pNextPointIndex;
+			if(!isNull(this._pUpPointIndex)){
+				return this._pUpPointIndex;
 			}
 
 			if(this.isPointIndex()){
@@ -50470,83 +52871,163 @@ module akra.fx {
 
 			this.initializePointers();
 
-			return this._pNextPointIndex;
+			return this._pUpPointIndex;
 		}
 
-		initializePointers(): void {
-			this._pPointerList = [];
-
-			for(var i: number  = 0; i < this._nPointerDim; i++){
-				var pPointer: IAFXVariableDeclInstruction = new VariableDeclInstruction();
-				var pPointerType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-				var pPointerId: IAFXIdInstruction = new IdInstruction();
-
-				pPointer.push(pPointerType, true);
-				pPointer.push(pPointerId, true);
-
-				pPointerType.pushInVariableType(getEffectBaseType("ptr"));
-				pPointerId.setName( "undef" );
-
-				if(i > 0) {
-					(this._pPointerList[i - 1].getType())._setNextPointer(pPointer);
-				}
-
-				pPointer.setParent(this);
+		getVideoBuffer(): IAFXVariableDeclInstruction {
+			if(this.isPointIndex()) {
+				return (<IAFXVariableDeclInstruction>this.getParent().getParent()).getType().getVideoBuffer();
 			}
 
-			this._pNextPointIndex = this._pPointerList[0];
+			return this._pVideoBuffer;
 		}
 
-		getSize():  number  {
-			if(this._isArray){
-				var iSize:  number  = this._pArrayElementType.getSize();
-				if (this._iLength ===  0xffffff  ||
-					iSize ===  0xffffff ){
-					return  0xffffff ;
-				}
-				else{
-					return iSize * this._iLength;
-				}
+		getFieldExpr(sFieldName: string): IAFXIdExprInstruction {
+			if(!this.hasField(sFieldName)){
+				return null;
+			}
+			var pField: IAFXVariableDeclInstruction = this.getField(sFieldName);
+			var pExpr: IAFXIdExprInstruction = new IdExprInstruction();
+			pExpr.push(pField.getNameId(), false);
+			pExpr.setType(pField.getType());
+
+			return pExpr;
+		}
+
+		getFieldIfExist(sFieldName: string): IAFXVariableDeclInstruction {
+			if(isNull(this._pFieldDeclMap) && isDef(this._pFieldDeclMap[sFieldName])){
+				return this._pFieldDeclMap[sFieldName];
 			}
 			else {
-				return this.getSubType().getSize();
+				return null;
 			}
 		}
 
-		getLength():  number  {
-			if(!this.isArray()){
-				this._iLength = 0;
-				return 0;
-			}
-
-			if(this._iLength ===  0xffffff ){
-				var isEval: bool = this._pArrayIndexExpr.evaluate();
-
-				if(isEval) {
-					this._iLength = < number >this._pArrayIndexExpr.getEvalValue();
-				}
-			}
-
-			return this._iLength;
-		}
-
-		getArrayElementType(): IAFXVariableTypeInstruction {
-			if(!this.isArray()){
+		getSubVarDecls(): IAFXVariableDeclInstruction[] {
+			if(!this.isComplex() && !this.isPointer()){
 				return null;
 			}
 
-			if(isNull(this._pArrayElementType)){
-				this._pArrayElementType = new VariableTypeInstruction();
-				this._pArrayElementType.pushInVariableType(this.getSubType().getArrayElementType());
-				this._pArrayElementType.setParent(this);
+			if(isNull(this._pSubDeclList)){
+				this.generateSubDeclList();
+			}
+			return this._pSubDeclList;
+		}
+
+		_getFullName(): string {
+			if(!this.isFromVariableDecl()){
+				return "Not from variable decl";
 			}
 
-			return this._pArrayElementType;
+			var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+			if(eParentType === EAFXInstructionTypes.k_VariableDeclInstruction){
+				return (<IAFXVariableDeclInstruction>this.getParent())._getFullName();
+			}
+			else{
+				return (<IAFXVariableTypeInstruction>this.getParent())._getFullName();
+			}
 		}
+
+        _getVarDeclName(): string {
+        	if(!this.isFromVariableDecl()){
+        		return "";
+        	}
+
+        	var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+			if(eParentType === EAFXInstructionTypes.k_VariableDeclInstruction){
+				return (<IAFXVariableDeclInstruction>this.getParent()).getName();
+			}
+			else{
+				return (<IAFXVariableTypeInstruction>this.getParent())._getVarDeclName();
+			}
+        }
+
+        _getTypeDeclName(): string {
+        	if(!this.isFromVariableDecl()){
+        		return "";
+        	}
+
+        	var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+			if(eParentType === EAFXInstructionTypes.k_VariableDeclInstruction){
+				return (<IAFXTypeDeclInstruction>this.getParent()).getName();
+			}
+			else{
+				return (<IAFXVariableTypeInstruction>this.getParent())._getTypeDeclName();
+			}
+        }
+
+        _getParentVarDecl(): IAFXVariableDeclInstruction {
+        	if(!this.isFromVariableDecl()){
+        		return null;
+        	}
+
+        	var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+        	if(eParentType === EAFXInstructionTypes.k_VariableDeclInstruction){
+        		return <IAFXVariableDeclInstruction>this.getParent();
+        	}
+        	else {
+        		return (<IAFXVariableTypeInstruction>this.getParent())._getParentVarDecl();
+        	}
+        }
+
+        _getParentContainer(): IAFXVariableDeclInstruction {
+        	if(!this.isFromVariableDecl() || !this._isTypeOfField()){
+        		return null;
+        	}
+
+        	var pContainerType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>this._getParentVarDecl().getParent();
+        	if(!pContainerType.isFromVariableDecl()){
+        		return null;
+        	}
+
+        	return pContainerType._getParentVarDecl();
+        }
+
+        _getMainVariable(): IAFXVariableDeclInstruction{
+        	if(!this.isFromVariableDecl()){
+        		return null;
+        	}
+
+        	if(this._isTypeOfField()){
+        		return (<IAFXVariableTypeInstruction>this.getParent().getParent())._getMainVariable();
+        	}
+        	else {
+        		return (<IAFXVariableDeclInstruction>this._getParentVarDecl());
+        	}
+        }
+
+        _getMainPointer(): IAFXVariableDeclInstruction{
+        	if(isNull(this._pMainPointIndex)){
+        		if(isNull(this.getPointer())){
+        			this._pMainPointIndex = this._getParentVarDecl()
+        		}
+        		else{
+        			this._pMainPointIndex = this._getUpPointer().getType()._getMainPointer();
+        		}
+        	}
+
+        	return this._pMainPointIndex;
+        }
+
+        _getUpPointer(): IAFXVariableDeclInstruction {
+        	return this._pUpPointIndex;
+        }
+
+        _getDownPointer(): IAFXVariableDeclInstruction {
+        	return this._pDownPointIndex;
+        }
+
+//-----------------------------------------------------------------//
+//----------------------------SYSTEM-------------------------------//
+//-----------------------------------------------------------------//		
 
 		wrap(): IAFXVariableTypeInstruction {
 			var pCloneType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-			pCloneType.pushInVariableType(this);
+			pCloneType.pushType(this);
 
 			return pCloneType;
 		}
@@ -50565,9 +53046,17 @@ module akra.fx {
 
 			var pClone: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>super.clone(pRelationMap);
 
+			pClone.pushType(this._pSubType.clone(pRelationMap));
+			if(!isNull(this._pUsageList)){
+				for(var i:  number  = 0; i < this._pUsageList.length; i++){
+					pClone.addUsage(this._pUsageList[i]);
+				}
+			}
+
 			pClone._canWrite(this._isWritable);
 			pClone._canRead(this._isReadable);
 			pClone._setCloneHash(this._sHash, this._sStrongHash);
+			pClone.setPadding(this.getPadding());
 
 			if(this._isArray){
 				this._setCloneArrayIndex(this._pArrayElementType.clone(pRelationMap),
@@ -50576,25 +53065,35 @@ module akra.fx {
 			}
 
 			if(this._isPointer){
-				var pClonePointerList: IAFXVariableDeclInstruction[] = new Array(this._pPointerList.length);
+				var pClonePointerList: IAFXVariableDeclInstruction[] = null;
+				if(!isNull(this._pPointerList)){
+					pClonePointerList = new Array(this._pPointerList.length);
+					var pDownPointer: IAFXVariableDeclInstruction = pClone._getParentVarDecl();
 
-				for(var i:  number  = 0; i < this._pPointerList.length; i++){
-					pClonePointerList[i] = this._pPointerList[i].clone(pRelationMap);
+					for(var i:  number  = 0; i < this._pPointerList.length; i++){
+						pClonePointerList[i] = this._pPointerList[i].clone(pRelationMap);
 
-					if(i > 0) {
-						(pClonePointerList[i - 1].getType())._setNextPointer(pClonePointerList[i]);
+						if(i > 0) {
+							(pClonePointerList[i - 1].getType())._setUpDownPointers(pClonePointerList[i], pDownPointer);
+							pDownPointer = pClonePointerList[i - 1];
+						}
+						else{
+							pClonePointerList[0].getType()._setUpDownPointers(null, pDownPointer);
+						}
 					}
+
+					pClonePointerList[pClonePointerList.length - 1].getType()._setUpDownPointers(null, pDownPointer);
 				}
 
-				this._setClonePointeIndexes(this._nPointerDim, pClonePointerList);
+				this._setClonePointeIndexes(this.getPointDim(), pClonePointerList);
 			}
 
-			if(!isNull(this._pFieldIdMap)){
-				var sFieldName: string = null;
-				var pCloneFieldMap: IAFXIdExprMap = <IAFXIdExprMap>{};
+			if(!isNull(this._pFieldDeclMap)){
+				var sFieldName: string = "";
+				var pCloneFieldMap: IAFXVariableDeclMap= <IAFXVariableDeclMap>{};
 
-				for(sFieldName in this._pFieldIdMap){
-					pCloneFieldMap[sFieldName] = this._pFieldIdMap[sFieldName].clone(pRelationMap);
+				for(sFieldName in this._pFieldDeclMap){
+					pCloneFieldMap[sFieldName] = this._pFieldDeclMap[sFieldName].clone(pRelationMap);
 				}
 
 				this._setCloneFields(pCloneFieldMap);
@@ -50603,8 +53102,35 @@ module akra.fx {
 			return pClone;
 		}
 
-		inline _setNextPointer(pNextPointIndex: IAFXVariableDeclInstruction): void {
-			this._pNextPointIndex = pNextPointIndex;
+		blend(pType: IAFXVariableTypeInstruction, eMode: EAFXBlendMode): IAFXVariableTypeInstruction {
+			if (this.isComplex() !== pType.isComplex() ||
+				(this.isNotBaseArray() !== pType.isNotBaseArray()) ||
+				(this.isPointer() !== pType.isPointer())) {
+				return null;
+			}
+
+			if (this.isNotBaseArray() || this.getLength() ===  0xffffff  ||
+				this.getLength() !== pType.getLength()){
+				return null;
+			}
+
+			var pBlendBaseType: IAFXTypeInstruction = this.getBaseType().blend(pType.getBaseType(), eMode);
+			if(isNull(pBlendBaseType)){
+				return null;
+			}
+
+			var pBlendType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+			pBlendType.pushType(pBlendBaseType);
+
+			if(this.isNotBaseArray()){
+				var iLength:  number  = this.getLength();
+				var pLengthExpr: IntInstruction = new IntInstruction();
+				pLengthExpr.setValue(iLength);
+				pBlendType.addArrayIndex(pLengthExpr);
+			}
+
+			return pBlendType;
+
 		}
 
 		_setCloneHash(sHash: string, sStrongHash: string): void {
@@ -50622,19 +53148,27 @@ module akra.fx {
 
         _setClonePointeIndexes(nDim:  number , pPointerList: IAFXVariableDeclInstruction[]): void {
         	this._isPointer = true;
-        	this._nPointerDim = nDim;
+        	this._nPointDim = nDim;
         	this._pPointerList = pPointerList;
-        	this._pNextPointIndex = this._pPointerList[0];
+        	if(!isNull(this._pPointerList)){
+        		this._pUpPointIndex = this._pPointerList[0];
+        	}
         }
 
-        _setCloneFields(pFieldMap: IAFXIdExprMap): void {
-        	this._pFieldIdMap = pFieldMap;
+        _setCloneFields(pFieldMap: IAFXVariableDeclMap): void {
+        	this._pFieldDeclMap = pFieldMap;
         }
+
+        inline _setUpDownPointers(pUpPointIndex: IAFXVariableDeclInstruction,
+        						  pDownPointIndex: IAFXVariableDeclInstruction ): void {
+			this._pUpPointIndex = pUpPointIndex;
+			this._pDownPointIndex = pDownPointIndex;
+		}
 
 		private calcHash(): void {
 			var sHash: string = this.getSubType().getHash();
 
-			if(this.isArray()){
+			if(this._isArray){
 				sHash += "[";
 
 				var iLength:  number  = this.getLength();
@@ -50653,69 +53187,68 @@ module akra.fx {
 		}
 
 		private calcStrongHash(): void {
+			var sStrongHash: string = this.getSubType().getStrongHash();
 
-		}
+			if(this._isArray){
+				sStrongHash += "[";
 
-		private inline getUsageType(): IAFXUsageTypeInstruction {
-			return <IAFXUsageTypeInstruction>this._pInstructionList[0];
-		}
-	}
+				var iLength:  number  = this.getLength();
 
-	export class UsageTypeInstruction extends Instruction implements IAFXUsageTypeInstruction {
-// EMPTY_OPERATOR KeywordInstruction ... KeywordInstruction IAFXTypeInstruction
+				if(iLength ===  0xffffff ){
+					sStrongHash += "undef"
+				}
+				else{
+					sStrongHash += iLength.toString();
+				}
 
-		private _pUsageList: string[] = null;
-		private _pType: IAFXTypeInstruction = null;
-
-		constructor() {
-			super();
-			this._pUsageList = [];
-			this._eInstructionType = EAFXInstructionTypes.k_UsageTypeInstruction;
-		}
-
-		inline getTypeInstruction(): IAFXTypeInstruction {
-			return this._pType;
-		}
-
-		setTypeInstruction(pType: IAFXTypeInstruction): bool {
-//TODO: check compatibility test for type and usages 
-			this._pType = pType;
-			return true;
-		}
-
-		hasUsage(sUsage: string): bool {
-			for(var i:  number  = 0; i < this._pUsageList.length; i++) {
-				if(this._pUsageList[i] === sUsage){
-					return true;
+				sStrongHash += "]";
+			}
+			if(this.isPointer()){
+				for(var i:  number  = 0; i < this.getPointDim(); i++){
+					sStrongHash = "@" + sStrongHash;
 				}
 			}
 
-			if(this._pType._getInstructionType() === EAFXInstructionTypes.k_VariableTypeInstruction){
-				return (<IAFXVariableTypeInstruction>this._pType).hasUsage(sUsage);
-			}
 
-			return false;
+			this._sStrongHash = sStrongHash;
 		}
 
-		addUsage(sUsage: string): bool {
-//TODO: check compatibility test for usage and usage
-			this._pUsageList.push(sUsage);
-			return true;
-		}
-
-		clone(pRelationMap?: IAFXInstructionMap = <IAFXInstructionMap>{}): IAFXUsageTypeInstruction{
-			var pClone: IAFXUsageTypeInstruction = <IAFXUsageTypeInstruction>super.clone(pRelationMap);
-
-			for(var i:  number  = 0; i < this._pUsageList.length; i++){
-				pClone.addUsage(this._pUsageList[i]);
+		private generateSubDeclList(): void {
+			if(!this.isComplex() && !this.isPointer()){
+				return;
 			}
 
-			pClone.setTypeInstruction(this._pType.clone(pRelationMap));
+			var pDeclList: IAFXVariableDeclInstruction[] = [];
+			var i:  number  = 0;
 
-			return pClone;
+			if(this.isPointer()){
+				if(isNull(this._getUpPointer())){
+					this.initializePointers();
+				}
+
+				for(i = 0; i < this._pPointerList.length; i++){
+					pDeclList.push(this._pPointerList[i]);
+				}
+			}
+
+			if(this.isComplex()){
+				var pFieldNameList: string[] = this.getFieldNameList();
+
+				for(i = 0; i < pFieldNameList.length; i++){
+					var pField: IAFXVariableDeclInstruction = this.getField(pFieldNameList[i]);
+					var pFieldSubDeclList: IAFXVariableDeclInstruction[] = pField.getSubVarDecls();
+
+					if(!isNull(pFieldSubDeclList)){
+						for(var j:  number  = 0; j < pFieldSubDeclList.length; j++){
+							pDeclList.push(pFieldSubDeclList[j]);
+						}
+					}
+				}
+			}
+
+			this._pSubDeclList = pDeclList;
 		}
 	}
-
 
 	export class SystemTypeInstruction extends Instruction implements IAFXTypeInstruction {
 		private _sName: string = "";
@@ -50723,7 +53256,7 @@ module akra.fx {
 		private _pElementType: IAFXTypeInstruction = null;
 		private _iLength:  number  = 1;
 		private _iSize:  number  = null;
-		private _pFieldIdMap: IAFXIdExprMap = null;
+		private _pFieldDeclMap: IAFXVariableDeclMap = null;
 		private _isArray: bool = false;
 		private _isWritable: bool = true;
 		private _isReadable: bool = true;
@@ -50733,55 +53266,21 @@ module akra.fx {
 		constructor() {
 			super();
 			this._eInstructionType = EAFXInstructionTypes.k_SystemTypeInstruction;
-			this._pFieldIdMap = {};
 			this._pWrapVariableType = new VariableTypeInstruction();
-			this._pWrapVariableType.pushInVariableType(this);
+			this._pWrapVariableType.pushType(this);
 		}
 
-		inline setName(sName: string): void {
-			this._sName = sName;
+		_toDeclString(): string {
+			return "";
 		}
 
-		inline setRealName(sRealName: string): void {
-			this._sRealName = sRealName;
+		toFinalCode(): string {
+			return this._sRealName;
 		}
 
-		inline setSize(iSize:  number ): void {
-			this._iSize = iSize;
-		}
-
-		addIndex(pType: IAFXTypeInstruction, iLength:  number ): void {
-			this._pElementType = pType;
-			this._iLength = iLength;
-			this._iSize = iLength * pType.getSize();
-			this._isArray = true;
-		}
-
-		addField(sFieldName: string, pType: IAFXTypeInstruction, isWrite?: bool = true,
-				 sRealFieldName?: string = sFieldName): void {
-
-			var pFieldType: VariableTypeInstruction = new VariableTypeInstruction();
-			pFieldType.push(new UsageTypeInstruction(), true);
-			pFieldType.getInstructions()[0].push(pType, false);
-			pFieldType._canWrite(isWrite);
-
-			var pFieldId: IAFXIdInstruction = new IdInstruction();
-			pFieldId.setName(sFieldName);
-			pFieldId.setRealName(sRealFieldName);
-
-			var pFieldIdExpr: IAFXIdExprInstruction = new IdExprInstruction();
-			pFieldIdExpr.push(pFieldId, true);
-			pFieldIdExpr.setType(pFieldType);
-			pFieldIdExpr.setParent(this);
-
-			this._pFieldIdMap[sFieldName] = pFieldIdExpr;
-
-			if(isNull(this._pFieldNameList)){
-				this._pFieldNameList = [];
-			}
-
-			this._pFieldNameList.push(sFieldName);
-		}
+//-----------------------------------------------------------------//
+//----------------------------SIMPLE TESTS-------------------------//
+//-----------------------------------------------------------------//
 
 		inline isBase(): bool {
 			return true;
@@ -50803,9 +53302,20 @@ module akra.fx {
 			return this.getHash() === pType.getHash();
 		}
 
+		inline isStrongEqual(pType: IAFXTypeInstruction): bool{
+			return this.getStrongHash() === pType.getStrongHash();
+		}
+
 		inline isConst(): bool {
 			return false;
 		}
+
+		isSampler(): bool{
+			return this.getName() === "sampler" ||
+				   this.getName() === "sampler2D" ||
+				   this.getName() === "samplerCUBE";
+		}
+
 
 		inline isWritable(): bool {
 			return this._isWritable;
@@ -50813,6 +53323,38 @@ module akra.fx {
 
 		inline isReadable(): bool {
 			return this._isReadable;
+		}
+
+		_containArray(): bool {
+			return false;
+		}
+
+        _containSampler(): bool {
+        	return false;
+        }
+
+        _containPointer(): bool {
+        	return false;
+        }
+
+        _containComplexType(): bool {
+        	return false;
+        }
+
+//-----------------------------------------------------------------//
+//----------------------------SET BASE TYPE INFO-------------------//
+//-----------------------------------------------------------------//
+
+		inline setName(sName: string): void {
+			this._sName = sName;
+		}
+
+		inline setRealName(sRealName: string): void {
+			this._sRealName = sRealName;
+		}
+
+		inline setSize(iSize:  number ): void {
+			this._iSize = iSize;
 		}
 
 		inline _canWrite(isWritable: bool): void {
@@ -50823,41 +53365,60 @@ module akra.fx {
 			this._isReadable = isReadable;
 		}
 
-		inline getHash(): string {
+//-----------------------------------------------------------------//
+//---------------------------INIT API------------------------------//
+//-----------------------------------------------------------------//
+
+		addIndex(pType: IAFXTypeInstruction, iLength:  number ): void {
+			this._pElementType = pType;
+			this._iLength = iLength;
+			this._iSize = iLength * pType.getSize();
+			this._isArray = true;
+		}
+
+		addField(sFieldName: string, pType: IAFXTypeInstruction, isWrite?: bool = true,
+				 sRealFieldName?: string = sFieldName): void {
+
+			var pField: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+			var pFieldType: VariableTypeInstruction = new VariableTypeInstruction();
+			var pFieldId: IAFXIdInstruction = new IdInstruction();
+
+			pFieldType.pushType(pType);
+			pFieldType._canWrite(isWrite);
+
+			pFieldId.setName(sFieldName);
+			pFieldId.setRealName(sRealFieldName);
+
+			pField.push(pFieldType, true);
+			pField.push(pFieldId, true);
+
+			if(isNull(this._pFieldDeclMap)){
+				this._pFieldDeclMap = <IAFXVariableDeclMap>{};
+			}
+
+			this._pFieldDeclMap[sFieldName] = pField;
+
+			if(isNull(this._pFieldNameList)){
+				this._pFieldNameList = [];
+			}
+
+			this._pFieldNameList.push(sFieldName);
+		}
+
+//-----------------------------------------------------------------//
+//----------------------------GET TYPE INFO------------------------//
+//-----------------------------------------------------------------//
+
+		inline getName(): string {
 			return this._sName;
+		}
+
+		inline getHash(): string {
+			return this._sRealName;
 		}
 
 		inline getStrongHash(): string {
 			return this._sName;
-		}
-
-//inline getNameId()
-		inline hasField(sFieldName: string): bool {
-			return isDef(this._pFieldIdMap[sFieldName]);
-		}
-
-		hasFieldWithSematic(sSemantic: string): bool {
-			return false;
-		}
-
-		hasAllUniqueSemantics(): bool {
-			return false;
-		}
-
-		hasFieldWithoutSemantic(): bool {
-			return false;
-		}
-
-		inline getField(sFieldName: string, isCreateExpr?: bool): IAFXIdExprInstruction {
-			return isDef(this._pFieldIdMap[sFieldName]) ? this._pFieldIdMap[sFieldName] : null;
-		}
-
-		inline getFieldType(sFieldName: string): IAFXTypeInstruction {
-			return isDef(this._pFieldIdMap[sFieldName]) ? this._pFieldIdMap[sFieldName].getType() : null;
-		}
-
-		inline getFieldNameList(): string[] {
-			return this._pFieldNameList;
 		}
 
 		inline getSize():  number  {
@@ -50880,8 +53441,52 @@ module akra.fx {
 			return this._iLength;
 		}
 
+		inline hasField(sFieldName: string): bool {
+			return isDef(this._pFieldDeclMap[sFieldName]);
+		}
+
+		hasFieldWithSematic(sSemantic: string): bool {
+			return false;
+		}
+
+		hasAllUniqueSemantics(): bool {
+			return false;
+		}
+
+		hasFieldWithoutSemantic(): bool {
+			return false;
+		}
+
+		inline getField(sFieldName: string): IAFXVariableDeclInstruction {
+			return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldDeclMap[sFieldName] : null;
+		}
+
+		inline getFieldBySemantic(sSemantic: string): IAFXVariableDeclInstruction {
+			return null;
+		}
+
+		inline getFieldType(sFieldName: string): IAFXVariableTypeInstruction {
+			return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldDeclMap[sFieldName].getType() : null;
+		}
+
+		inline getFieldNameList(): string[] {
+			return this._pFieldNameList;
+		}
+
+//-----------------------------------------------------------------//
+//----------------------------SYSTEM-------------------------------//
+//-----------------------------------------------------------------//
+
 		inline clone(pRelationMap?: IAFXInstructionMap): SystemTypeInstruction {
 			return this;
+		}
+
+		inline blend(pType: IAFXTypeInstruction, eMode: EAFXBlendMode): IAFXTypeInstruction {
+			if(this.isStrongEqual(pType)){
+				return this;
+			}
+
+			return null;
 		}
 	}
 
@@ -50895,7 +53500,6 @@ module akra.fx {
 		private _iSize:  number  = 0;
 
 		private _pFieldDeclMap: IAFXVariableDeclMap = null;
-		private _pFieldIdMap: IAFXIdExprMap = null;
 		private _pFieldDeclList: IAFXVariableDeclInstruction[] = null;
 		private _pFieldNameList: string[] = null;
 
@@ -50906,69 +53510,33 @@ module akra.fx {
 		private _isContainArray: bool = false;
 		private _isContainSampler: bool = false;
 		private _isContainPointer: bool = false;
+		private _isContainComplexType: bool = false;
 
 		constructor() {
 			super();
+			this._pInstructionList = null;
 			this._eInstructionType = EAFXInstructionTypes.k_ComplexTypeInstruction;
 		}
 
-		addField(pVariable: IAFXVariableDeclInstruction): void {
-			if(isNull(this._pFieldIdMap)){
-				this._pFieldIdMap = {};
-				this._pFieldDeclMap = {};
-				this._pFieldNameList = [];
+		_toDeclString(): string {
+			var sCode: string = "struct " + this._sRealName + "{";
+
+			for(var i:  number  = 0; i < this._pFieldDeclList.length; i++){
+				sCode += "\t" + this._pFieldDeclList[i].toFinalCode() + ";\n";
 			}
 
-			var sVarName: string = pVariable.getName();
-			this._pFieldDeclMap[sVarName] = pVariable;
+			sCode += "}";
 
-			var pVarIdExpr: IAFXIdExprInstruction = new IdExprInstruction();
-			pVarIdExpr.push(pVariable.getNameId(), false);
-			pVarIdExpr.setType(pVariable.getType());
-
-			this._pFieldIdMap[sVarName] = pVarIdExpr;
-
-			if(this._iSize !==  0xffffff ){
-				var iSize:  number  = pVariable.getType().getSize();
-				if(iSize !==  0xffffff ){
-					this._iSize += iSize;
-				}
-				else{
-					this._iSize =  0xffffff ;
-				}
-			}
-
-			this._pFieldNameList.push(sVarName);
-
-			var pType: IAFXVariableTypeInstruction = pVariable.getType();
-
-			if(pType.isNotBaseArray() || pType._containArray()){
-				this._isContainArray = true;
-			}
-
-			if(isSamplerType(pType) || pType._containSampler()){
-				this._isContainSampler = true;
-			}
-
-			if(pType.isPointer() || pType._containPointer()){
-				this._isContainPointer = true;
-			}
+			return sCode;
 		}
 
-		inline setName(sName: string): void {
-			this._sName = sName;
+		toFinalCode(): string {
+			return this._sRealName;
 		}
 
-		inline setRealName(sRealName: string): void {
-			this._sRealName = sRealName;
-		}
-
-		inline setSize(iSize:  number ): void {
-			this._iSize = iSize;
-		}
-
-		inline setWriteMode(isWrite: bool): void {
-		}
+//-----------------------------------------------------------------//
+//----------------------------SIMPLE TESTS-------------------------//
+//-----------------------------------------------------------------//
 
 		inline isBase(): bool {
 			return false;
@@ -50984,6 +53552,22 @@ module akra.fx {
 
 		inline isComplex(): bool {
 			return true;
+		}
+
+		inline isEqual(pType: IAFXTypeInstruction): bool {
+			return this.getHash() === pType.getHash();
+		}
+
+		inline isStrongEqual(pType: IAFXTypeInstruction): bool {
+			return this.getStrongHash() === pType.getStrongHash();
+		}
+
+		inline isConst(): bool {
+			return false;
+		}
+
+		isSampler(): bool{
+			return false;
 		}
 
 		inline isWritable(): bool {
@@ -51006,18 +53590,95 @@ module akra.fx {
 			return this._isContainPointer;
 		}
 
-		inline _canWrite(): void {
+		inline _containComplexType(): bool {
+			return this._isContainComplexType;
 		}
 
-		inline _canRead(): void {
+//-----------------------------------------------------------------//
+//----------------------------SET BASE TYPE INFO-------------------//
+//-----------------------------------------------------------------//
+
+		inline setName(sName: string): void {
+			this._sName = sName;
+			this._sRealName = sName + "R";
 		}
 
-		inline isEqual(pType: IAFXTypeInstruction): bool {
-			return this.getHash() === pType.getHash();
+		inline setRealName(sRealName: string): void {
+			this._sRealName = sRealName;
 		}
 
-		inline isConst(): bool {
-			return false;
+		inline setSize(iSize:  number ): void {
+			this._iSize = iSize;
+		}
+
+		inline _canWrite(isWritable: bool): void {
+		}
+
+		inline _canRead(isWritable: bool): void {
+		}
+
+//-----------------------------------------------------------------//
+//----------------------------INIT API-----------------------------//
+//-----------------------------------------------------------------//
+
+		addField(pVariable: IAFXVariableDeclInstruction): void {
+			if(isNull(this._pFieldDeclMap)){
+				this._pFieldDeclMap = <IAFXVariableDeclMap>{};
+				this._pFieldNameList = [];
+			}
+
+			var sVarName: string = pVariable.getName();
+			this._pFieldDeclMap[sVarName] = pVariable;
+
+			if(this._iSize !==  0xffffff ){
+				var iSize:  number  = pVariable.getType().getSize();
+				if(iSize !==  0xffffff ){
+					this._iSize += iSize;
+				}
+				else{
+					this._iSize =  0xffffff ;
+				}
+			}
+
+			this._pFieldNameList.push(sVarName);
+
+			var pType: IAFXVariableTypeInstruction = pVariable.getType();
+//pType._markAsField();
+
+			if(pType.isNotBaseArray() || pType._containArray()){
+				this._isContainArray = true;
+			}
+
+			if(isSamplerType(pType) || pType._containSampler()){
+				this._isContainSampler = true;
+			}
+
+			if(pType.isPointer() || pType._containPointer()){
+				this._isContainPointer = true;
+			}
+
+			if(pType.isComplex()){
+				this._isContainComplexType = true;
+			}
+		}
+
+		addFields(pFieldCollector: IAFXInstruction, isSetParent?: bool = true): void {
+			this._pFieldDeclList = <IAFXVariableDeclInstruction[]>(pFieldCollector.getInstructions());
+
+			for(var i:  number  = 0; i < this._pFieldDeclList.length; i++){
+		    	this.addField(this._pFieldDeclList[i]);
+		    	this._pFieldDeclList[i].setParent(this);
+		    }
+
+		    this.calculatePaddings();
+		}
+
+//-----------------------------------------------------------------//
+//----------------------------GET TYPE INFO------------------------//
+//-----------------------------------------------------------------//
+
+		inline getName(): string {
+			return this._sName;
 		}
 
 		getHash(): string {
@@ -51036,7 +53697,6 @@ module akra.fx {
 			return this._sStrongHash;
 		}
 
-//inline getNameId()
 		inline hasField(sFieldName: string): bool {
 			return isDef(this._pFieldDeclMap[sFieldName]);
 		}
@@ -51063,28 +53723,23 @@ module akra.fx {
 			return this._hasFieldWithoutSemantic;
 		}
 
-		inline getField(sFieldName: string, isCreateExpr?: bool = true): IAFXIdExprInstruction {
-			if(!isDef(this._pFieldDeclMap[sFieldName])){
+		inline getField(sFieldName: string): IAFXVariableDeclInstruction {
+			if(!this.hasField(sFieldName)){
 				return null;
 			}
 
-// if(isCreateExpr) {
-// 	var pVariable: IAFXVariableDeclInstruction = this._pFieldDeclMap[sFieldName];
-// 	var pVarIdExpr: IAFXIdExprInstruction = new IdExprInstruction();
-// 	var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-// 	pVariableType.pushInVariableType(pVariable.getType());
-
-// 	pVarIdExpr.push(pVariable.getNameId(), false);
-// 	pVarIdExpr.setType(pVariableType);
-
-// 	return pVarIdExpr;
-// }
-// else {
-			return this._pFieldIdMap[sFieldName];
-// }
+			return this._pFieldDeclMap[sFieldName];
 		}
 
-		inline getFieldType(sFieldName: string): IAFXTypeInstruction {
+		getFieldBySemantic(sSemantic: string): IAFXVariableDeclInstruction {
+			if(!this.hasFieldWithSematic(sSemantic)){
+				return null;
+			}
+
+			return this._pFieldDeclBySemanticMap[sSemantic];
+		}
+
+		inline getFieldType(sFieldName: string): IAFXVariableTypeInstruction {
 			return isDef(this._pFieldDeclMap[sFieldName]) ? this._pFieldDeclMap[sFieldName].getType() : null;
 		}
 
@@ -51100,7 +53755,7 @@ module akra.fx {
 		}
 
 		inline getBaseType(): IAFXTypeInstruction {
-			return null;
+			return this;
 		}
 
 		inline getArrayElementType(): IAFXTypeInstruction {
@@ -51111,14 +53766,9 @@ module akra.fx {
 			return 0;
 		}
 
-		addFields(pFieldCollector: IAFXInstruction, isSetParent?: bool = true): void {
-			this._pFieldDeclList = <IAFXVariableDeclInstruction[]>(pFieldCollector.getInstructions());
-
-			for(var i:  number  = 0; i < this._pFieldDeclList.length; i++){
-		    	this.addField(this._pFieldDeclList[i]);
-		    	this._pFieldDeclList[i].setParent(this);
-		    }
-		}
+//-----------------------------------------------------------------//
+//----------------------------SYSTEM-------------------------------//
+//-----------------------------------------------------------------//
 
 		inline clone(pRelationMap?: IAFXInstructionMap = <IAFXInstructionMap>{}): ComplexTypeInstruction {
 			if(this._pParentInstruction === null ||
@@ -51137,7 +53787,6 @@ module akra.fx {
     		var pFieldDeclList: IAFXVariableDeclInstruction[] = new Array(this._pFieldDeclList.length);
     		var pFieldNameList: string[] = new Array(this._pFieldNameList.length);
     		var pFieldDeclMap: IAFXVariableDeclMap = <IAFXVariableDeclMap>{};
-    		var pFieldIdMap: IAFXIdExprMap = <IAFXIdExprMap>{};
 
     		for(var i:  number  = 0; i < this._pFieldDeclList.length; i++){
     			var pCloneVar: IAFXVariableDeclInstruction = this._pFieldDeclList[i].clone(pRelationMap);
@@ -51146,14 +53795,60 @@ module akra.fx {
     			pFieldDeclList[i] = pCloneVar;
     			pFieldNameList[i] = sVarName;
     			pFieldDeclMap[sVarName] = pCloneVar;
-    			pFieldIdMap[sVarName] = this._pFieldIdMap[sVarName].clone(pRelationMap);
     		}
 
     		pClone._setCloneFields(pFieldDeclList, pFieldNameList,
-				   				   pFieldDeclMap, pFieldIdMap);
+				   				   pFieldDeclMap);
     		pClone.setSize(this._iSize);
 
 			return pClone;
+		}
+
+		blend(pType: IAFXTypeInstruction, eMode: EAFXBlendMode): IAFXTypeInstruction {
+			if(eMode === EAFXBlendMode.k_Uniform || eMode === EAFXBlendMode.k_Attribute){
+				if(this.hasFieldWithoutSemantic() || pType.hasFieldWithoutSemantic()){
+					return null;
+				}
+			}
+
+			var pFieldList: IAFXVariableDeclInstruction[] = this._pFieldDeclList;
+			var pBlendType: ComplexTypeInstruction = new ComplexTypeInstruction();
+			var pRelationMap: IAFXInstructionMap = <IAFXInstructionMap>{};
+
+			for(var i:  number  = 0; i < pFieldList.length; i++){
+				var pField: IAFXVariableDeclInstruction = pFieldList[i];
+				var pBlendField: IAFXVariableDeclInstruction = null;
+				var sFieldName: string = pField.getName();
+				var sFieldSemantic: string = pField.getSemantic();
+
+				if(eMode === EAFXBlendMode.k_Shared){
+					if(pType.hasField(sFieldName)){
+						pBlendField = pField.blend(pType.getField(sFieldName), eMode);
+					}
+					else {
+						pBlendField = pField.clone(pRelationMap);
+					}
+				}
+				else {
+					if(pType.hasFieldWithSematic(sFieldSemantic)){
+						pBlendField = pField.blend(pType.getFieldBySemantic(sFieldSemantic), eMode);
+						if(!isNull(pBlendField)){
+							pBlendField.getNameId().setName(sFieldSemantic);
+						}
+					}
+					else {
+						pBlendField = pField.clone(pRelationMap);
+					}
+				}
+
+				if(isNull(pBlendField)){
+					return null;
+				}
+
+				pBlendType.addField(pBlendField);
+			}
+
+			return pBlendType;
 		}
 
 		_setCloneName(sName: string, sRealName: string): void {
@@ -51172,13 +53867,11 @@ module akra.fx {
 		}
 
 		_setCloneFields(pFieldDeclList: IAFXVariableDeclInstruction[], pFieldNameList: string[],
-				   		pFieldDeclMap: IAFXVariableDeclMap, pFieldIdMap: IAFXIdExprMap): void{
+				   		pFieldDeclMap: IAFXVariableDeclMap): void{
 			this._pFieldDeclList = pFieldDeclList;
 			this._pFieldNameList = pFieldNameList;
 			this._pFieldDeclMap = pFieldDeclMap;
-			this._pFieldIdMap = pFieldIdMap;
 		}
-
 
 		_calcSize():  number  {
 			var iSize:  number  = 0;
@@ -51240,9 +53933,28 @@ module akra.fx {
 				this._pFieldDeclBySemanticMap[sSemantic] = pVar;
 
 				this._hasFieldWithoutSemantic = this._hasFieldWithoutSemantic || pVar.getType().hasFieldWithoutSemantic();
-				this._hasAllUniqueSemantics = !(this._hasAllUniqueSemantics) ? false : pVar.getType().hasAllUniqueSemantics();
+				if(this._hasAllUniqueSemantics && pVar.getType().isComplex()){
+					this._hasAllUniqueSemantics = pVar.getType().hasAllUniqueSemantics();
+				}
 			}
 
+		}
+
+		private calculatePaddings(): void {
+			var iPadding:  number  = 0;
+
+			for(var i:  number  = 0; i < this._pFieldDeclList.length; i++){
+				var pVarType: IAFXVariableTypeInstruction = this._pFieldDeclList[i].getType();
+				var iVarSize:  number  = pVarType.getSize();
+
+				if(iVarSize ===  0xffffff ){
+					this.setError( 2272 , {typeName: this.getName()});
+					return;
+				}
+
+				pVarType.setPadding(iPadding);
+				iPadding += iVarSize;
+			}
 		}
 	}
 }
@@ -51257,8 +53969,1387 @@ module akra.fx {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+module akra.fx {
+	export class ExprInstruction extends TypedInstruction implements IAFXExprInstruction {
+		/**@protected*/  _pLastEvalResult: any = null;
+
+/**
+		 * Respresent all kind of instruction
+		 */
+
+		constructor(){
+			super();
+			this._eInstructionType = EAFXInstructionTypes.k_ExprInstruction;
+		}
+
+		evaluate(): bool {
+			return false;
+		}
+
+		simplify(): bool {
+			return false;
+		}
+
+		getEvalValue(): any {
+			return this._pLastEvalResult;
+		}
+
+		isConst(): bool {
+			return false;
+		}
+
+		getType(): IAFXVariableTypeInstruction{
+			return <IAFXVariableTypeInstruction>super.getType();
+		}
+
+		clone(pRelationMap?:IAFXInstructionMap): IAFXExprInstruction {
+			return <IAFXExprInstruction>super.clone(pRelationMap);
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this.getInstructions();
+
+			if(isNull(pInstructionList)){
+				return;
+			}
+
+			for(var i:  number  = 0; i < this._nInstructions; i++){
+				pInstructionList[i].addUsedData(pUsedDataCollector, eUsedMode);
+			}
+		}
+	}
+
+	export class IntInstruction extends ExprInstruction implements IAFXLiteralInstruction {
+		private _iValue:  number ;
+/**
+		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
+		 */
+
+		constructor() {
+			super();
+			this._iValue = 0;
+			this._pType = getEffectBaseType("int").getVariableType();
+			this._eInstructionType = EAFXInstructionTypes.k_IntInstruction;
+		}
+
+		inline setValue(iValue:  number ): void{
+			this._iValue = iValue;
+		}
+
+		toString(): string {
+			return <string><any>this._iValue;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+			sCode += this._iValue.toString();
+			return sCode;
+		}
+
+		evaluate(): bool {
+			this._pLastEvalResult = this._iValue;
+			return true;
+		}
+
+		inline isConst(): bool {
+			return true;
+		}
+
+		clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
+			var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
+			pClonedInstruction.setValue(this._iValue);
+			return pClonedInstruction;
+		}
+	}
+
+	export class FloatInstruction extends ExprInstruction implements IAFXLiteralInstruction {
+		private _fValue:  number ;
+/**
+		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
+		 */
+
+		constructor() {
+			super();
+			this._fValue = 0.0;
+			this._pType = getEffectBaseType("float").getVariableType();
+			this._eInstructionType = EAFXInstructionTypes.k_FloatInstruction;
+		}
+
+		inline setValue(fValue:  number ): void{
+			this._fValue = fValue;
+		}
+
+		toString(): string {
+			return <string><any>this._fValue;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+			sCode += this._fValue.toString();
+			if(this._fValue % 1 === 0){
+				sCode += ".";
+			}
+			return sCode;
+		}
+
+		evaluate(): bool {
+			this._pLastEvalResult = this._fValue;
+			return true;
+		}
+
+		inline isConst(): bool {
+			return true;
+		}
+
+		clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
+			var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
+			pClonedInstruction.setValue(this._fValue);
+			return pClonedInstruction;
+		}
+	}
+
+	export class BoolInstruction extends ExprInstruction implements IAFXLiteralInstruction {
+		private _bValue: bool;
+		static private _pBoolType: IAFXVariableTypeInstruction = null;
+/**
+		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
+		 */
+
+		constructor() {
+			super();
+			this._bValue = true;
+			this._pType = getEffectBaseType("bool").getVariableType();
+			this._eInstructionType = EAFXInstructionTypes.k_BoolInstruction;
+		}
+
+		inline setValue(bValue: bool): void{
+			this._bValue = bValue;
+		}
+
+		toString(): string {
+			return <string><any>this._bValue;
+		}
+
+		toFinalCode(): string {
+			if(this._bValue){
+				return "true";
+			}
+			else {
+				return "false";
+			}
+		}
+
+		evaluate(): bool {
+			this._pLastEvalResult = this._bValue;
+			return true;
+		}
+
+		inline isConst(): bool {
+			return true;
+		}
+
+		clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
+			var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
+			pClonedInstruction.setValue(this._bValue);
+			return pClonedInstruction;
+		}
+	}
+
+	export class StringInstruction extends ExprInstruction implements IAFXLiteralInstruction {
+		private _sValue: string;
+		static private _pStringType: IAFXVariableTypeInstruction = null;
+
+/**
+		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
+		 */
+
+		constructor() {
+			super();
+			this._sValue = "";
+			this._pType = getEffectBaseType("string").getVariableType();
+			this._eInstructionType = EAFXInstructionTypes.k_StringInstruction;
+		}
+
+		inline setValue(sValue: string): void{
+			this._sValue = sValue;
+		}
+
+		toString(): string {
+			return this._sValue;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+			sCode += this._sValue;
+			return sCode;
+		}
+
+		evaluate(): bool {
+			this._pLastEvalResult = this._sValue;
+			return true;
+		}
+
+		inline isConst(): bool {
+			return true;
+		}
+
+		clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
+			var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
+			pClonedInstruction.setValue(this._sValue);
+			return pClonedInstruction;
+		}
+	}
+
+	export class IdExprInstruction extends ExprInstruction implements IAFXIdExprInstruction {
+		private _pType: IAFXVariableTypeInstruction = null;
+		private _bToFinalCode: bool = true;
+		private _isInPassUnifoms: bool = false;
+		private _isInPassForeigns: bool = false;
+
+		inline isVisible(): bool {
+			return this._pInstructionList[0].isVisible();
+		}
+
+		constructor(){
+			super();
+			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_IdExprInstruction;
+		}
+
+		getType(): IAFXVariableTypeInstruction {
+			if(!isNull(this._pType)){
+				return this._pType;
+			}
+			else{
+				var pVar: IdInstruction = <IdInstruction>this._pInstructionList[0];
+				this._pType = (<IAFXVariableDeclInstruction>pVar.getParent()).getType();
+				return this._pType;
+			}
+		}
+
+		isConst(): bool {
+			return this.getType().isConst();
+		}
+
+		evaluate(): bool {
+			return false;
+		}
+
+		prepareFor(eUsedMode: EFunctionType): void {
+			if(!this.isVisible()){
+				this._bToFinalCode = false;
+			}
+
+			if(eUsedMode === EFunctionType.k_PassFunction){
+				var pVarDecl: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this.getInstructions()[0].getParent();
+				if(!this.getType()._isUnverifiable() && isNull(pVarDecl.getParent())){
+					if(pVarDecl.getType().isForeign()){
+						this._isInPassForeigns = true;
+					}
+					else {
+						this._isInPassUnifoms = true;
+					}
+				}
+			}
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+			if(this._bToFinalCode){
+				if(this._isInPassForeigns){
+					sCode += "foreigns[" + this.getInstructions()[0].toFinalCode() + "]";
+				}
+				else if(this._isInPassUnifoms){
+					sCode += "uniforms[" + this.getInstructions()[0].toFinalCode() + "]";
+				}
+				else {
+					sCode += this.getInstructions()[0].toFinalCode();
+				}
+			}
+			return sCode;
+		}
+
+		clone(pRelationMap?:IAFXInstructionMap): IAFXIdExprInstruction {
+			return <IAFXIdExprInstruction>super.clone(pRelationMap);
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			if(!this.getType().isFromVariableDecl()) {
+				return;
+			}
+
+			var pInfo: IAFXTypeUseInfoContainer = null;
+			pInfo = pUsedDataCollector[this.getType()._getInstructionID()];
+
+			if(!isDef(pInfo)){
+				pInfo = <IAFXTypeUseInfoContainer>{
+					type: this.getType(),
+					isRead: false,
+					isWrite: false,
+					numRead: 0,
+					numWrite: 0,
+					numUsed: 0
+				}
+
+				pUsedDataCollector[this.getType()._getInstructionID()] = pInfo;
+			}
+
+			if(eUsedMode !== EVarUsedMode.k_Write && eUsedMode !== EVarUsedMode.k_Undefined){
+				pInfo.isRead = true;
+				pInfo.numRead++;
+			}
+
+			if(eUsedMode === EVarUsedMode.k_Write || eUsedMode === EVarUsedMode.k_ReadWrite) {
+				pInfo.isWrite = true;
+				pInfo.numWrite++;
+			}
+
+			pInfo.numUsed++;
+		}
+	}
+
+/**
+ 	 * Represent someExpr + / - * % someExpr
+ 	 * (+|-|*|/|%) Instruction Instruction
+ 	 */
+
+	export class ArithmeticExprInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_ArithmeticExprInstruction;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+		}
+
+		evaluate(): bool {
+			var pOperands: IAFXExprInstruction[] = <IAFXExprInstruction[]>this.getInstructions();
+			var pValL: any = pOperands[0].evaluate() ? pOperands[0].getEvalValue() : null;
+			var pValR: any = pOperands[1].evaluate() ? pOperands[1].getEvalValue() : null;
+
+			if(isNull(pValL) || isNull(pValR)){
+				return false;
+			}
+
+			try{
+				switch(this.getOperator()){
+					case "+":
+						this._pLastEvalResult = pValL + pValR;
+						break;
+					case "-":
+						this._pLastEvalResult = pValL - pValR;
+						break;
+					case "*":
+						this._pLastEvalResult = pValL * pValR;
+						break;
+					case "/":
+						this._pLastEvalResult = pValL / pValR;
+						break;
+					case "%":
+						this._pLastEvalResult = pValL % pValR;
+						break;
+				}
+				return true;
+			}
+			catch(e){
+				return false;
+			}
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+			sCode += this.getInstructions()[0].toFinalCode();
+			sCode += this.getOperator();
+			sCode += this.getInstructions()[1].toFinalCode();
+			return sCode;
+		}
+	}
+/**
+ 	 * Represent someExpr = += -= /= *= %= someExpr
+ 	 * (=|+=|-=|*=|/=|%=) Instruction Instruction
+ 	 */
+
+	export class AssignmentExprInstruction extends ExprInstruction {
+		constructor(){
+			super();
+			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_AssignmentExprInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+			sCode += this.getInstructions()[0].toFinalCode();
+			sCode += this.getOperator();
+			sCode += this.getInstructions()[1].toFinalCode();
+			return sCode;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var sOperator: string = this.getOperator();
+			var pSubExprLeft: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+			var pSubExprRight: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+
+			if(eUsedMode === EVarUsedMode.k_Read || sOperator !== "="){
+				pSubExprLeft.addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
+			}
+			else {
+				pSubExprLeft.addUsedData(pUsedDataCollector, EVarUsedMode.k_Write);
+			}
+
+			pSubExprRight.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+		}
+	}
+/**
+ 	 * Represent someExpr == != < > <= >= someExpr
+ 	 * (==|!=|<|>|<=|>=) Instruction Instruction
+ 	 */
+
+	export class RelationalExprInstruction extends ExprInstruction {
+		constructor(){
+			super();
+			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_RelationalExprInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+			sCode += this.getInstructions()[0].toFinalCode();
+			sCode += this.getOperator();
+			sCode += this.getInstructions()[1].toFinalCode();
+			return sCode;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+		}
+	}
+/**
+ 	 * Represent boolExpr && || boolExpr
+ 	 * (&& | ||) Instruction Instruction
+ 	 */
+
+	export class LogicalExprInstruction extends ExprInstruction {
+		constructor(){
+			super();
+			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_LogicalExprInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+			sCode += this.getInstructions()[0].toFinalCode();
+			sCode += this.getOperator();
+			sCode += this.getInstructions()[1].toFinalCode();
+			return sCode;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+		}
+	}
+/**
+	 * Represen boolExpr ? someExpr : someExpr
+	 * EMPTY_OPERATOR Instruction Instruction Instruction 
+	 */
+
+	export class ConditionalExprInstruction extends ExprInstruction {
+		constructor(){
+			super();
+			this._pInstructionList = [null, null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_ConditionalExprInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+			sCode += this.getInstructions()[0].toFinalCode();
+			sCode += "?";
+			sCode += this.getInstructions()[1].toFinalCode();
+			sCode += ":";
+			sCode += this.getInstructions()[2].toFinalCode();
+			return sCode;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			super.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+		}
+	}
+/**
+	 * Represent (type) expr
+	 * EMPTY_OPERATOR VariableTypeInstruction Instruction
+	 */
+
+	export class CastExprInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_CastExprInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+			sCode += this.getInstructions()[0].toFinalCode();
+			sCode += "(";
+			sCode += this.getInstructions()[1].toFinalCode();
+			sCode += ")";
+			return sCode;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+			pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+
+// pUsedDataCollector[this.getType()._getInstructionID()] = this.getType();
+		}
+	}
+
+/**
+	 * Represent + - ! ++ -- expr
+	 * (+|-|!|++|--|) Instruction
+	 */
+
+	export class UnaryExprInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_UnaryExprInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+			sCode += this.getOperator();
+			sCode += this.getInstructions()[0].toFinalCode();
+			return sCode;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			if(this.getOperator() === "++" || this.getOperator() === "--"){
+				(<IAFXExprInstruction>this.getInstructions()[0]).addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
+			}
+			else {
+				(<IAFXExprInstruction>this.getInstructions()[0]).addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+			}
+        }
+	}
+
+/**
+	 * Represent someExpr[someIndex]
+	 * EMPTY_OPERATOR Instruction ExprInstruction
+	 */
+
+	export class PostfixIndexInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_PostfixIndexInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+
+			sCode += this.getInstructions()[0].toFinalCode();
+			sCode += "[" + this.getInstructions()[1].toFinalCode() + "]";
+
+			return sCode;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+			var pIndex: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+
+			pSubExpr.addUsedData(pUsedDataCollector, eUsedMode);
+			pIndex.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+        }
+	}
+
+/*
+	 * Represent someExpr.id
+	 * EMPTY_OPERATOR Instruction IdInstruction
+	 */
+
+	export class PostfixPointInstruction extends ExprInstruction {
+		private _bToFinalFirst: bool = true;
+		private _bToFinalSecond: bool = true;
+
+		constructor() {
+			super();
+			this._pInstructionList = [null, null];
+			this._eInstructionType = EAFXInstructionTypes.k_PostfixPointInstruction;
+		}
+
+		prepareFor(eUsedMode: EFunctionType){
+			if(!this.getInstructions()[0].isVisible()){
+				this._bToFinalFirst = false;
+			}
+
+			if(!this.getInstructions()[1].isVisible()){
+				this._bToFinalSecond = false;
+			}
+
+			this.getInstructions()[0].prepareFor(eUsedMode);
+			this.getInstructions()[1].prepareFor(eUsedMode);
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+
+			sCode += this._bToFinalFirst ? this.getInstructions()[0].toFinalCode() : "";
+			sCode += this._bToFinalFirst ? "." : "";
+			sCode += this._bToFinalSecond ? this.getInstructions()[1].toFinalCode(): "";
+
+			return sCode;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+			var pPoint: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+
+			pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Undefined);
+			pPoint.addUsedData(pUsedDataCollector, eUsedMode);
+        }
+	}
+
+/**
+	 * Represent someExpr ++
+	 * (-- | ++) Instruction
+	 */
+
+	export class PostfixArithmeticInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_PostfixArithmeticInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+
+			sCode += this.getInstructions()[0].toFinalCode();
+			sCode += this.getOperator();
+
+			return sCode;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+			pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
+		}
+	}
+
+/**
+	 * Represent @ Expr
+	 * @ Instruction
+	 */
+
+	export class PrimaryExprInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_PrimaryExprInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+
+			sCode += this.getInstructions()[0].toFinalCode();
+
+			return sCode;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pPointerType: IAFXVariableTypeInstruction = this.getType();
+			var pInfo: IAFXTypeUseInfoContainer = pUsedDataCollector[pPointerType._getInstructionID()];
+
+			if(!isDef(pInfo)){
+				pInfo = <IAFXTypeUseInfoContainer>{
+					type: pPointerType,
+					isRead: false,
+					isWrite: false,
+					numRead: 0,
+					numWrite: 0,
+					numUsed: 0
+				}
+
+				pUsedDataCollector[pPointerType._getInstructionID()] = pInfo;
+			}
+
+			if(eUsedMode === EVarUsedMode.k_Read){
+				pInfo.isRead = true;
+				pInfo.numRead++;
+			}
+			else if(eUsedMode === EVarUsedMode.k_Write){
+				pInfo.isWrite = true;
+				pInfo.numWrite++;
+			}
+			else if(eUsedMode === EVarUsedMode.k_ReadWrite){
+				pInfo.isRead = true;
+				pInfo.isWrite = true;
+				pInfo.numRead++;
+				pInfo.numWrite++;
+			}
+
+			pInfo.numUsed++;
+		}
+	}
+
+/**
+	 * Represent (expr)
+	 * EMPTY_OPERATOR ExprInstruction
+	 */
+
+	export class ComplexExprInstruction extends ExprInstruction {
+		constructor(){
+			super();
+			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_ComplexExprInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+
+			sCode += "(" + this.getInstructions()[0].toFinalCode() + ")";
+
+			return sCode;
+		}
+
+// addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+//                   eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+// 	var pSubExpr: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+// 	pSubExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+// }
+	}
+
+/**
+	 * Respresnt func(arg1,..., argn)
+	 * EMPTY_OPERATOR IdExprInstruction ExprInstruction ... ExprInstruction 
+	 */
+
+	export class FunctionCallInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_FunctionCallInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+
+			sCode += this.getInstructions()[0].toFinalCode();
+			sCode += "(";
+			for(var i:  number  = 1; i < this._nInstructions; i++){
+				sCode += this.getInstructions()[1].toFinalCode();
+				if(i !== this._nInstructions - 1){
+					sCode +=","
+				}
+			}
+			sCode += ")"
+
+			return sCode;
+		}
+
+		getFunction(): IAFXFunctionDeclInstruction{
+			return <IAFXFunctionDeclInstruction>(<IAFXIdExprInstruction>this._pInstructionList[0]).getType().getParent().getParent();
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pExprList: IAFXExprInstruction[] = <IAFXExprInstruction[]>this.getInstructions();
+			var pFunction: IAFXFunctionDeclInstruction = this.getFunction();
+			var pArguments: IAFXVariableDeclInstruction[] = <IAFXVariableDeclInstruction[]>pFunction.getArguments();
+
+			pExprList[0].addUsedData(pUsedDataCollector, eUsedMode);
+
+			for(var i: number  = 0; i < pArguments.length; i++){
+				if (pArguments[i].getType().hasUsage("out")){
+					pExprList[i+1].addUsedData(pUsedDataCollector, EVarUsedMode.k_Write);
+				}
+				else if(pArguments[i].getType().hasUsage("inout")){
+					pExprList[i+1].addUsedData(pUsedDataCollector, EVarUsedMode.k_ReadWrite);
+				}
+				else {
+					pExprList[i+1].addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+				}
+			}
+		}
+	}
+
+/**
+	 * Respresnt system_func(arg1,..., argn)
+	 * EMPTY_OPERATOR SimpleInstruction ... SimpleInstruction 
+	 */
+
+	export class SystemCallInstruction extends ExprInstruction {
+		private _pSystemFunction: SystemFunctionInstruction = null;
+
+		constructor() {
+			super();
+			this._pInstructionList = null;
+			this._eInstructionType = EAFXInstructionTypes.k_SystemCallInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+
+			if(isNull(this.getInstructions())){
+				logger.setSourceLocation( "fx/ExprInstruction.ts" , 825 ); logger.log(this); ;
+			}
+			for(var i:  number  = 0; i < this.getInstructions().length; i++){
+				sCode += this.getInstructions()[i].toFinalCode();
+			}
+
+			return sCode;
+		}
+
+		setSystemCallFunction(pFunction: IAFXFunctionDeclInstruction): void{
+			this._pSystemFunction = <SystemFunctionInstruction>pFunction;
+			this.setType(pFunction.getType());
+		}
+
+		setInstructions(pInstructionList: IAFXInstruction[]): void {
+			this._pInstructionList = pInstructionList;
+			this._nInstructions = pInstructionList.length;
+			for(var i:  number  = 0; i < pInstructionList.length; i++){
+				pInstructionList[i].setParent(this);
+			}
+		}
+
+		fillByArguments(pArguments: IAFXInstruction[]): void{
+			this.setInstructions(this._pSystemFunction.closeArguments(pArguments));
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this.getInstructions();
+			for(var i:  number  = 0; i < this._nInstructions; i++){
+				if(pInstructionList[i]._getInstructionType() !== EAFXInstructionTypes.k_SimpleInstruction){
+					pInstructionList[i].addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+				}
+			}
+		}
+
+		clone(pRelationMap?: IAFXInstructionMap): SystemCallInstruction{
+			var pClone: SystemCallInstruction = <SystemCallInstruction>super.clone(pRelationMap);
+
+			pClone.setSystemCallFunction(this._pSystemFunction);
+
+			return pClone;
+		}
+
+	}
+
+/**
+	 * Respresnt ctor(arg1,..., argn)
+	 * EMPTY_OPERATOR IdInstruction ExprInstruction ... ExprInstruction 
+	 */
+
+	export class ConstructorCallInstruction extends ExprInstruction {
+		constructor() {
+			super();
+			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_ConstructorCallInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+
+			sCode += this.getInstructions()[0].toFinalCode();
+			sCode += "(";
+
+			for(var i:  number  = 1; i < this._nInstructions; i++){
+				sCode += this.getInstructions()[i].toFinalCode();
+
+				if(i !== this._nInstructions - 1){
+					sCode += ",";
+				}
+			}
+
+			sCode += ")";
+
+			return sCode;
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this.getInstructions();
+			for(var i:  number  = 1; i < this._nInstructions; i++){
+				pInstructionList[i].addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+			}
+		}
+	}
+
+/**
+	 * Represetn compile vs_func(...args)
+	 * compile IdExprInstruction ExprInstruction ... ExprInstruction
+	 */
+
+	export class CompileExprInstruction extends ExprInstruction{
+		constructor() {
+			super();
+			this._pInstructionList = [null];
+			this._eInstructionType = EAFXInstructionTypes.k_CompileExprInstruction;
+		}
+
+		inline getFunction(): IAFXFunctionDeclInstruction {
+			return <IAFXFunctionDeclInstruction>this._pInstructionList[0].getParent().getParent();
+		}
+	}
+
+	export class MemExprInstruction extends ExprInstruction {
+		private _pBuffer: IAFXVariableDeclInstruction = null;
+
+		constructor() {
+			super();
+			this._pInstructionList = null;
+			this._eInstructionType = EAFXInstructionTypes.k_MemExprInstruction;
+		}
+
+		getBuffer(): IAFXVariableDeclInstruction{
+			return this._pBuffer;
+		}
+
+		setBuffer(pBuffer: IAFXVariableDeclInstruction): void {
+			this._pBuffer = pBuffer;
+			this.setType(pBuffer.getType());
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+					eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pBufferType: IAFXVariableTypeInstruction = this.getBuffer().getType();
+			var pInfo: IAFXTypeUseInfoContainer = pUsedDataCollector[pBufferType._getInstructionID()];
+
+			if(!isDef(pInfo)){
+				pInfo = <IAFXTypeUseInfoContainer>{
+					type: pBufferType,
+					isRead: false,
+					isWrite: false,
+					numRead: 0,
+					numWrite: 0,
+					numUsed: 0
+				}
+
+				pUsedDataCollector[pBufferType._getInstructionID()] = pInfo;
+			}
+			if(eUsedMode !== EVarUsedMode.k_Undefined){
+				pInfo.isRead = true;
+				pInfo.numRead++;
+			}
+
+			pInfo.numUsed++;
+		}
+	}
+
+	export class InitExprInstruction extends ExprInstruction implements IAFXInitExprInstruction {
+		private _pConstructorType: IAFXTypeInstruction = null;
+
+		constructor(){
+			super();
+			this._pInstructionList = [];
+			this._eInstructionType = EAFXInstructionTypes.k_InitExprInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+
+			if(!isNull(this._pConstructorType)) {
+				sCode += this._pConstructorType.toFinalCode();
+			}
+			sCode += "(";
+
+			for(var i:  number  = 0; i < this._nInstructions; i++){
+				sCode += this.getInstructions()[i].toFinalCode();
+
+				if(i !== this._nInstructions - 1){
+					sCode += ",";
+				}
+			}
+
+			sCode += ")";
+
+			return sCode;
+		}
+
+		optimizeForVariableType(pType: IAFXVariableTypeInstruction): bool {
+			if ((pType.isNotBaseArray() && pType._getScope() === 0) ||
+				(pType.isArray() && this._nInstructions > 1)){
+				if (pType.getLength() ===  0xffffff  ||
+					this._nInstructions !== pType.getLength()){
+					return false;
+				}
+
+				var pArrayElementType: IAFXVariableTypeInstruction = pType.getArrayElementType();
+				var pTestedInstruction: IAFXExprInstruction = null;
+				var isOk: bool = false;
+
+				for(var i:  number  = 0; i < this._nInstructions; i++){
+					pTestedInstruction = (<IAFXExprInstruction>this.getInstructions()[i]);
+					if(pTestedInstruction._getInstructionType() === EAFXInstructionTypes.k_InitExprInstruction){
+						isOk = (<IAFXInitExprInstruction>pTestedInstruction).optimizeForVariableType(pArrayElementType);
+						if(!isOk){
+							return false;
+						}
+					}
+					else {
+						if(isSamplerType(pArrayElementType)){
+							if(pTestedInstruction._getInstructionType() !== EAFXInstructionTypes.k_SamplerStateBlockInstruction){
+								return false;
+							}
+						}
+						else {
+							isOk = pTestedInstruction.getType().isEqual(pArrayElementType);
+							if(!isOk){
+								return false;
+							}
+						}
+					}
+				}
+
+				this._pConstructorType = pType.getBaseType();
+				return true;
+			}
+			else {
+
+				var pFirstInstruction: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[0];
+
+				if (this._nInstructions === 1 &&
+					pFirstInstruction._getInstructionType() !== EAFXInstructionTypes.k_InitExprInstruction){
+
+					if(isSamplerType(pType)){
+						if(pFirstInstruction._getInstructionType() === EAFXInstructionTypes.k_SamplerStateBlockInstruction){
+							return true;
+						}
+						else {
+							return false;
+						}
+					}
+
+					if(pFirstInstruction.getType().isEqual(pType)){
+						return true;
+					}
+					else {
+						return false;
+					}
+				}
+
+				var pInstructionList: IAFXInitExprInstruction[] = <IAFXInitExprInstruction[]>this.getInstructions();
+				var pFieldNameList: string[] = pType.getFieldNameList();
+
+				for(var i:  number  = 0 ; i < pInstructionList.length; i++){
+					var pFieldType: IAFXVariableTypeInstruction = pType.getFieldType(pFieldNameList[i]);
+					if(pInstructionList[i].optimizeForVariableType(pFieldType));
+				}
+
+				this._pConstructorType = pType.getBaseType();
+				return true;
+			}
+		}
+	}
+/**
+	 * Represetn sampler_state { states }
+	 */
+
+	export class SamplerStateBlockInstruction extends ExprInstruction {
+		private _pTexture: IAFXVariableDeclInstruction = null;
+		private _pSamplerParams: any = null;
+
+		constructor() {
+			super();
+			this._pInstructionList = null;
+			this._eInstructionType = EAFXInstructionTypes.k_SamplerStateBlockInstruction;
+		}
+
+		addState(sStateType: string, sStateValue: string): void{
+			if(isNull(this._pSamplerParams)){
+				this._pSamplerParams = {};
+			}
+
+			this._pSamplerParams[sStateType] = sStateValue;
+
+			return;
+		}
+
+		setTexture(pTexture: IAFXVariableDeclInstruction): void {
+			this._pTexture = pTexture;
+		}
+
+		inline getTexture(): IAFXVariableDeclInstruction {
+			return this._pTexture;
+		}
+	}
+
+
+	export class ExtractExprInstruction extends ExprInstruction {
+		private _eExtractExprType: EExtractExprType = 0;
+		private _pPointer: IAFXVariableDeclInstruction = null;
+        private _pBuffer: IAFXVariableDeclInstruction = null;
+        private _sPaddingExpr: string = "";
+
+        private _sExtractFunction: string = "";
+        private _bNeedSecondBracket: bool = false;
+
+		constructor(){
+			super();
+			this._pInstructionList = null;
+			this._eInstructionType = EAFXInstructionTypes.k_ExtractExprInstruction;
+		}
+
+		initExtractExpr(pExtractType: IAFXVariableTypeInstruction,
+					    pPointer: IAFXVariableDeclInstruction,
+					    pBuffer: IAFXVariableDeclInstruction,
+					    sPaddingExpr: string): void {
+
+			this._pPointer = pPointer;
+			this._pBuffer = pBuffer;
+			this._sPaddingExpr = sPaddingExpr;
+			this.setType(pExtractType);
+
+            if (pExtractType.isEqual(Effect.getSystemType("float"))) {
+            	this._eExtractExprType = EExtractExprType.k_Float;
+                this._sExtractFunction += "A_extractFloat(";
+            }
+            else if(pExtractType.isEqual(Effect.getSystemType("ptr"))){
+                this._eExtractExprType = EExtractExprType.k_Float;
+                this._sExtractFunction += "A_extractFloat(";
+            }
+            else if(pExtractType.isEqual(Effect.getSystemType("video_buffer_header"))){
+            	this._eExtractExprType = EExtractExprType.k_Header;
+            	this._sExtractFunction += "A_extractTextureHeader(";
+            }
+            else if (pExtractType.isEqual(Effect.getSystemType("bool"))){
+                this._eExtractExprType = EExtractExprType.k_Bool;
+                this._sExtractFunction += "bool(A_extractFloat(";
+                this._bNeedSecondBracket = true;
+            }
+            else if (pExtractType.isEqual(Effect.getSystemType("int"))) {
+            	this._eExtractExprType = EExtractExprType.k_Int;
+                this._sExtractFunction += ("int(A_extractFloat(");
+                this._bNeedSecondBracket = true;
+            }
+            else if (pExtractType.isEqual(Effect.getSystemType("float2"))) {
+            	this._eExtractExprType = EExtractExprType.k_Float2;
+                this._sExtractFunction += ("A_extractVec2(");
+            }
+            else if (pExtractType.isEqual(Effect.getSystemType("float3"))) {
+            	this._eExtractExprType = EExtractExprType.k_Float3;
+                this._sExtractFunction += ("A_extractVec3(");
+            }
+            else if (pExtractType.isEqual(Effect.getSystemType("float4"))) {
+            	this._eExtractExprType = EExtractExprType.k_Float4;
+                this._sExtractFunction += ("A_extractVec4(");
+            }
+            else if (pExtractType.isEqual(Effect.getSystemType("int2"))) {
+            	this._eExtractExprType = EExtractExprType.k_Int2;
+                this._sExtractFunction += ("ivec2(A_extractVec2(");
+                this._bNeedSecondBracket = true;
+            }
+            else if (pExtractType.isEqual(Effect.getSystemType("int3"))) {
+            	this._eExtractExprType = EExtractExprType.k_Int3;
+                this._sExtractFunction += ("ivec3(A_extractVec3(");
+                this._bNeedSecondBracket = true;
+            }
+            else if (pExtractType.isEqual(Effect.getSystemType("int4"))) {
+            	this._eExtractExprType = EExtractExprType.k_Int4;
+                this._sExtractFunction += ("ivec4(A_extractVec4(");
+                this._bNeedSecondBracket = true;
+            }
+            else if (pExtractType.isEqual(Effect.getSystemType("bool2"))) {
+            	this._eExtractExprType = EExtractExprType.k_Bool2;
+                this._sExtractFunction += ("bvec2(A_extractVec2(");
+                this._bNeedSecondBracket = true;
+            }
+            else if (pExtractType.isEqual(Effect.getSystemType("bool3"))) {
+            	this._eExtractExprType = EExtractExprType.k_Bool3;
+                this._sExtractFunction += ("bvec3(A_extractVec3(");
+                this._bNeedSecondBracket = true;
+            }
+            else if (pExtractType.isEqual(Effect.getSystemType("bool4"))) {
+            	this._eExtractExprType = EExtractExprType.k_Bool4;
+                this._sExtractFunction += ("bvec4(A_extractVec4(");
+                this._bNeedSecondBracket = true;
+            }
+            else if (pExtractType.isEqual(Effect.getSystemType("float4x4"))) {
+            	this._eExtractExprType = EExtractExprType.k_Float4x4;
+                this._sExtractFunction += ("A_extractMat4(");
+            }
+            else {
+                this.setError( 2273 , { typeName: pExtractType.getHash() });
+            }
+		}
+
+		addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+			var pPointerType: IAFXVariableTypeInstruction = this._pPointer.getType();
+			var pBufferType: IAFXVariableTypeInstruction = this._pBuffer.getType();
+
+			var pInfo: IAFXTypeUseInfoContainer = pUsedDataCollector[pPointerType._getInstructionID()];
+
+			if(!isDef(pInfo)){
+				pInfo = <IAFXTypeUseInfoContainer>{
+					type: pPointerType,
+					isRead: false,
+					isWrite: false,
+					numRead: 0,
+					numWrite: 0,
+					numUsed: 0
+				}
+
+				pUsedDataCollector[pPointerType._getInstructionID()] = pInfo;
+			}
+
+			pInfo.isRead = true;
+			pInfo.numRead++;
+			pInfo.numUsed++;
+
+			pInfo = pUsedDataCollector[pBufferType._getInstructionID()];
+
+			if(!isDef(pInfo)){
+				pInfo = <IAFXTypeUseInfoContainer>{
+					type: pBufferType,
+					isRead: false,
+					isWrite: false,
+					numRead: 0,
+					numWrite: 0,
+					numUsed: 0
+				}
+
+				pUsedDataCollector[pBufferType._getInstructionID()] = pInfo;
+			}
+
+			pInfo.isRead = true;
+			pInfo.numRead++;
+			pInfo.numUsed++;
+        }
+
+		toFinalCode(): string {
+			var sCode: string = "";
+
+			if(this._pBuffer.isDefinedByZero()){
+				switch(this._eExtractExprType){
+					case EExtractExprType.k_Header:
+						sCode = "A_TextureHeader(0.,0.,0.,0.)";
+						break;
+
+					case EExtractExprType.k_Float:
+						sCode = "0.";
+						break;
+					case EExtractExprType.k_Int:
+						sCode = "0";
+						break;
+					case EExtractExprType.k_Bool:
+						sCode = "false";
+						break;
+
+					case EExtractExprType.k_Float2:
+						sCode = "vec2(0.)";
+						break;
+					case EExtractExprType.k_Int2:
+						sCode = "ivec2(0)";
+						break;
+					case EExtractExprType.k_Bool2:
+						sCode = "bvec2(false)";
+						break;
+
+					case EExtractExprType.k_Float3:
+						sCode = "vec3(0.)";
+						break;
+					case EExtractExprType.k_Int3:
+						sCode = "ivec3(0)";
+						break;
+					case EExtractExprType.k_Bool3:
+						sCode = "bvec3(false)";
+						break;
+
+					case EExtractExprType.k_Float4:
+						sCode = "vec4(0.)";
+						break;
+					case EExtractExprType.k_Int4:
+						sCode = "ivec4(0)";
+						break;
+					case EExtractExprType.k_Bool4:
+						sCode = "bvec4(false)";
+						break;
+
+					case EExtractExprType.k_Float4x4:
+						sCode = "mat4(0.)";
+						break;
+				}
+			}
+			else {
+				sCode = this._sExtractFunction;
+				sCode += this._pBuffer._getVideoBufferSampler().getNameId().toFinalCode();
+				sCode += "," + this._pBuffer._getVideoBufferHeader().getNameId().toFinalCode();
+				if(this._eExtractExprType !== EExtractExprType.k_Header){
+					sCode += "," + this._pPointer.getNameId().toFinalCode() + this._sPaddingExpr;
+				}
+				sCode += ")";
+				if(this._bNeedSecondBracket){
+					sCode += ")";
+				}
+			}
+
+			return sCode;
+		}
+
+		clone(pRelationMap?: IAFXInstructionMap): ExtractExprInstruction {
+			var pClone: ExtractExprInstruction = <ExtractExprInstruction>super.clone(pRelationMap);
+			pClone._setCloneParams(this._pPointer.clone(pRelationMap), this._pBuffer, this._eExtractExprType,
+								   this._sPaddingExpr, this._sExtractFunction, this._bNeedSecondBracket);
+			return pClone;
+		}
+
+		_setCloneParams(pPointer: IAFXVariableDeclInstruction,
+						pBuffer: IAFXVariableDeclInstruction,
+						eExtractExprType: EExtractExprType,
+						sPaddingExpr: string,
+						sExtractFunction: string,
+						bNeedSecondBracket: bool): void {
+			this._pPointer = pPointer;
+			this._pBuffer = pBuffer;
+			this._eExtractExprType = eExtractExprType;
+			this._sPaddingExpr = sPaddingExpr;
+			this._sExtractFunction = sExtractFunction;
+			this._bNeedSecondBracket = bNeedSecondBracket;
+		}
+	}
+}
+
+
+
 module akra.fx {
 	export class VariableDeclInstruction extends DeclInstruction implements IAFXVariableDeclInstruction {
+		private _isVideoBuffer: bool = null;
+        private _pVideoBufferSampler: IAFXVariableDeclInstruction = null;
+        private _pVideoBufferHeader: IAFXVariableDeclInstruction = null;
+        private _pFullNameExpr: IAFXExprInstruction = null;
+        private _bDefineByZero: bool = false;
+        private _pSubDeclList: IAFXVariableDeclInstruction[] = null;
+        private _bShaderOutput: bool = false;
+
 /**
 		 * Represent type var_name [= init_expr]
 		 * EMPTY_OPERATOR VariableTypeInstruction IdInstruction InitExprInstruction
@@ -51270,13 +55361,17 @@ module akra.fx {
 			this._eInstructionType = EAFXInstructionTypes.k_VariableDeclInstruction;
 		}
 
-		hasInitializer(): bool {
-			return false;
+		inline hasInitializer(): bool {
+			return this._nInstructions === 3 && !isNull(this.getInitializeExpr());
 		}
 
-		getInitializeExpr(): IAFXExprInstruction {
-			return null;
+		inline getInitializeExpr(): IAFXInitExprInstruction {
+			return <IAFXInitExprInstruction>this.getInstructions()[2];
 		}
+
+        getDefaultValue(): any {
+            return null;
+        }
 
 		inline getType(): IAFXVariableTypeInstruction {
 			return <IAFXVariableTypeInstruction>this._pInstructionList[0];
@@ -51286,8 +55381,8 @@ module akra.fx {
         	this._pInstructionList[0] = <IAFXVariableTypeInstruction>pType;
         	pType.setParent(this);
 
-        	if(this._nInstuctions === 0){
-        		this._nInstuctions = 1;
+        	if(this._nInstructions === 0){
+        		this._nInstructions = 1;
         	}
         }
 
@@ -51298,22 +55393,213 @@ module akra.fx {
 
         	this._pInstructionList[1] = <IAFXIdInstruction>pName;
 
-        	if(this._nInstuctions < 2) {
-        		this._nInstuctions = 2;
+        	if(this._nInstructions < 2) {
+        		this._nInstructions = 2;
         	}
         }
 
-        getName(): string {
+        inline getName(): string {
         	return (<IAFXIdInstruction>this._pInstructionList[1]).getName();
         }
 
-        isUniform(): bool {
+        inline getRealName(): string {
+            return (<IAFXIdInstruction>this._pInstructionList[1]).getRealName();
+        }
+
+        inline getNameId(): IAFXIdInstruction {
+                return <IAFXIdInstruction>this._pInstructionList[1];
+        }
+
+        inline isUniform(): bool {
         	return this.getType().hasUsage("uniform");
+        }
+
+        isField(): bool {
+            if(isNull(this.getParent())){
+                return false;
+            }
+
+            var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+            if (eParentType === EAFXInstructionTypes.k_VariableTypeInstruction ||
+                eParentType === EAFXInstructionTypes.k_ComplexTypeInstruction ||
+                eParentType === EAFXInstructionTypes.k_SystemTypeInstruction){
+                return true;
+            }
+
+            return false;
+        }
+
+        inline isPointer(): bool {
+            return this.getType().isPointer();
+        }
+
+        isVideoBuffer(): bool{
+            if(isNull(this._isVideoBuffer)){
+                this._isVideoBuffer = this.getType().isEqual(getEffectBaseType("video_buffer"));
+            }
+
+            return this._isVideoBuffer;
+        }
+
+        inline isSampler(): bool {
+            return this.getType().isSampler();
+        }
+
+        inline getSubVarDecls(): IAFXVariableDeclInstruction[] {
+           return this.getType().getSubVarDecls();
+        }
+
+        inline isDefinedByZero(): bool{
+            return this._bDefineByZero;
+        }
+
+        inline defineByZero(isDefine: bool): void {
+            this._bDefineByZero = isDefine;
+        }
+
+        toFinalCode(): string {
+            if(this._isShaderOutput()){
+                return "";
+            }
+
+            var sCode: string = this.getType().toFinalCode();
+            sCode += " " + this.getNameId().toFinalCode();
+
+            if(this.getType().isNotBaseArray()){
+                sCode += "[" + this.getType().getLength() + "]";
+            }
+
+            if(this.hasInitializer() && !this.isUniform()){
+                sCode += "=" + this.getInitializeExpr().toFinalCode();
+            }
+
+            return sCode;
+        }
+
+        inline _markAsShaderOutput(isShaderOutput: bool): void {
+            this._bShaderOutput = isShaderOutput;
+        }
+
+        inline _isShaderOutput(): bool {
+            return this._bShaderOutput;
+        }
+
+        _getFullNameExpr(): IAFXExprInstruction {
+            if(!isNull(this._pFullNameExpr)){
+                return this._pFullNameExpr;
+            }
+
+            if(!this.isField()){
+                this._pFullNameExpr = new IdExprInstruction();
+                this._pFullNameExpr.push(this.getNameId(), false);
+            }
+            else {
+                var pMainVar: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this.getType()._getParentContainer();
+
+                if(isNull(pMainVar)){
+                    return null;
+                }
+
+                var pMainExpr: IAFXExprInstruction = pMainVar._getFullNameExpr();
+                if(isNull(pMainExpr)){
+                    return null;
+                }
+                var pFieldExpr: IAFXExprInstruction = new IdExprInstruction();
+                pFieldExpr.push(this.getNameId(), false);
+
+                this._pFullNameExpr = new PostfixPointInstruction();
+                this._pFullNameExpr.push(pMainExpr, false);
+                this._pFullNameExpr.push(pFieldExpr, false);
+                this._pFullNameExpr.setType(this.getType());
+            }
+
+            return this._pFullNameExpr;
+        }
+
+        _getFullName(): string {
+            if(!this.isField()){
+                return this.getName();
+            }
+            else {
+                var sName: string = "";
+                var eParentType: EAFXInstructionTypes = this.getParent()._getInstructionType();
+
+                if(eParentType === EAFXInstructionTypes.k_VariableTypeInstruction){
+                    sName = (<IAFXVariableTypeInstruction>this.getParent())._getFullName();
+                }
+
+                sName += "." + this.getName();
+
+                return sName;
+            }
+        }
+
+        _getVideoBufferSampler(): IAFXVariableDeclInstruction {
+            if(!this.isVideoBuffer()){
+                return null;
+            }
+
+            if(isNull(this._pVideoBufferSampler)){
+                this._pVideoBufferSampler = new VariableDeclInstruction();
+                var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+                var pId: IAFXIdInstruction = new IdInstruction();
+
+                pType.pushType(getEffectBaseType("sampler2D"));
+                pId.setName(this.getName() + "_sampler");
+
+                this._pVideoBufferSampler.push(pType, true);
+                this._pVideoBufferSampler.push(pId, true);
+            }
+
+            return this._pVideoBufferSampler;
+        }
+
+        _getVideoBufferHeader(): IAFXVariableDeclInstruction {
+            if(!this.isVideoBuffer()){
+                return null;
+            }
+
+            if(isNull(this._pVideoBufferHeader)){
+                this._pVideoBufferHeader = new VariableDeclInstruction();
+                var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+                var pId: IAFXIdInstruction = new IdInstruction();
+                var pExtarctExpr: ExtractExprInstruction = new ExtractExprInstruction();
+
+                pType.pushType(getEffectBaseType("video_buffer_header"));
+                pId.setName(this.getName() + "_header");
+                pExtarctExpr.initExtractExpr(pType, null, this, "");
+
+                this._pVideoBufferHeader.push(pType, true);
+                this._pVideoBufferHeader.push(pId, true);
+                this._pVideoBufferHeader.push(pExtarctExpr, true);
+            }
+
+            return this._pVideoBufferHeader;
         }
 
         clone(pRelationMap?: IAFXInstructionMap): IAFXVariableDeclInstruction {
         	return <IAFXVariableDeclInstruction>super.clone(pRelationMap);
         }
+
+        blend(pVariableDecl: IAFXVariableDeclInstruction, eMode: EAFXBlendMode): IAFXVariableDeclInstruction{
+            var pBlendType: IAFXVariableTypeInstruction = this.getType().blend(pVariableDecl.getType(), eMode);
+
+            if(isNull(pBlendType)){
+                return null;
+            }
+
+            var pBlendVar: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+            var pId: IAFXIdInstruction = new IdInstruction();
+
+            pId.setName(this.getNameId().getName());
+            pId.setRealName(this.getNameId().getRealName());
+
+            pBlendVar.push(pBlendType, true);
+            pBlendVar.push(pId, true);
+
+            return pBlendVar;
+        }
+
 	}
 }
 
@@ -51345,6 +55631,17 @@ module akra.fx {
             super();
             this._eInstructionType = EAFXInstructionTypes.k_StmtInstruction;
         }
+
+        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+            var pInstructionList: IAFXAnalyzedInstruction[] = <IAFXAnalyzedInstruction[]>this.getInstructions();
+
+            if(!isNull(pUsedDataCollector)){
+                for(var i:  number  = 0; i < this._nInstructions; i++){
+                    pInstructionList[i].addUsedData(pUsedDataCollector, eUsedMode);
+                }
+            }
+        }
     }
 
 /**
@@ -51357,6 +55654,18 @@ module akra.fx {
             super();
             this._pInstructionList = [];
             this._eInstructionType = EAFXInstructionTypes.k_StmtBlockInstruction;
+        }
+
+        toFinalCode(): string {
+            var sCode: string = "{" + "\n";
+
+            for(var i:  number  = 0; i < this._nInstructions; i++){
+                sCode += "\t" + this._pInstructionList[i].toFinalCode() + "\n";
+            }
+
+            sCode += "}";
+
+            return sCode;
         }
     }
 
@@ -51371,6 +55680,10 @@ module akra.fx {
             this._pInstructionList = [null];
             this._eInstructionType = EAFXInstructionTypes.k_ExprStmtInstruction;
         }
+
+        toFinalCode(): string {
+            return this.getInstructions()[0].toFinalCode() + ";";
+        }
     }
 
 /**
@@ -51383,6 +55696,10 @@ module akra.fx {
             super();
             this._pInstructionList = null;
             this._eInstructionType = EAFXInstructionTypes.k_BreakStmtInstruction;
+        }
+
+        toFinalCode(): string {
+            return this.getOperator() + ";";
         }
     }
 
@@ -51397,6 +55714,24 @@ module akra.fx {
             this._pInstructionList = [null, null];
             this._eInstructionType = EAFXInstructionTypes.k_WhileStmtInstruction;
         }
+
+        toFinalCode(): string {
+            var sCode: string = "";
+            if(this.getOperator() === "while"){
+                sCode += "while(";
+                sCode += this.getInstructions()[0].toFinalCode();
+                sCode += ")";
+                sCode += this.getInstructions()[1].toFinalCode();
+            }
+            else{
+                sCode += "do";
+                sCode += this.getInstructions()[1].toFinalCode();
+                sCode += "while(";
+                sCode += this.getInstructions()[0].toFinalCode();
+                sCode += ");";
+            }
+            return sCode;
+        }
     }
 
 /**
@@ -51409,6 +55744,87 @@ module akra.fx {
             super();
             this._pInstructionList = [null, null, null, null];
             this._eInstructionType = EAFXInstructionTypes.k_ForStmtInstruction;
+        }
+
+        toFinalCode(): string {
+            var sCode: string = "for(";
+
+            sCode += this.getInstructions()[0].toFinalCode() + ";";
+            sCode += this.getInstructions()[1].toFinalCode() + ";";
+            sCode += this.getInstructions()[2].toFinalCode() + ")";
+            sCode += this.getInstructions()[3].toFinalCode();
+
+            return sCode;
+        }
+
+        check(eStage: ECheckStage, pInfo: any = null): bool {
+            var pInstructionList: IAFXInstruction[] = this.getInstructions();
+
+            if(this._nInstructions !== 4){
+                this.setError( 2239 );
+                return false;
+            }
+
+            if(isNull(pInstructionList[0])){
+                this.setError( 2232 );
+                return false;
+            }
+
+            if(pInstructionList[0]._getInstructionType() !== EAFXInstructionTypes.k_VariableDeclInstruction){
+                this.setError( 2231 );
+                return false;
+            }
+
+            if(isNull(pInstructionList[1])){
+                this.setError( 2233 );
+                return false;
+            }
+
+            if(pInstructionList[1]._getInstructionType() !== EAFXInstructionTypes.k_RelationalExprInstruction){
+                this.setError( 2238 );
+                return false;
+            }
+
+            if(pInstructionList[2]._getInstructionType() === EAFXInstructionTypes.k_UnaryExprInstruction ||
+               pInstructionList[2]._getInstructionType() === EAFXInstructionTypes.k_AssignmentExprInstruction ||
+               pInstructionList[2]._getInstructionType() === EAFXInstructionTypes.k_PostfixArithmeticInstruction){
+
+                var sOperator: string = pInstructionList[2].getOperator();
+                if (sOperator !== "++" && sOperator !== "--" &&
+                    sOperator !== "+=" && sOperator !== "-=") {
+                    this.setError( 2240 , {operator: sOperator});
+                    return false;
+                }
+            }
+            else {
+                this.setError( 2241 );
+                return false;
+            }
+
+            return true;
+        }
+
+        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+            var pForInit: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>this.getInstructions()[0];
+            var pForCondition: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[1];
+            var pForStep: IAFXExprInstruction = <IAFXExprInstruction>this.getInstructions()[2];
+            var pForStmt: IAFXStmtInstruction = <IAFXStmtInstruction>this.getInstructions()[3];
+
+            var pIteratorType: IAFXVariableTypeInstruction = pForInit.getType();
+
+            pUsedDataCollector[pIteratorType._getInstructionID()] = <IAFXTypeUseInfoContainer>{
+                type: pIteratorType,
+                isRead: false,
+                isWrite: true,
+                numRead: 0,
+                numWrite: 1,
+                numUsed: 1
+            };
+
+            pForCondition.addUsedData(pUsedDataCollector, eUsedMode);
+            pForStep.addUsedData(pUsedDataCollector, eUsedMode);
+            pForStmt.addUsedData(pUsedDataCollector, eUsedMode);
         }
     }
 
@@ -51423,6 +55839,24 @@ module akra.fx {
             this._pInstructionList = [null, null, null];
             this._eInstructionType = EAFXInstructionTypes.k_IfStmtInstruction;
         }
+
+        toFinalCode(): string {
+            var sCode: string = "";
+            if(this.getOperator() === "if"){
+                sCode += "if(";
+                sCode += this.getInstructions()[0].toFinalCode() + ")";
+                sCode += this.getInstructions()[1].toFinalCode();
+            }
+            else {
+                sCode += "if(";
+                sCode += this.getInstructions()[0].toFinalCode() + ") ";
+                sCode += this.getInstructions()[1].toFinalCode();
+                sCode += "else ";
+                sCode += this.getInstructions()[2].toFinalCode();
+            }
+
+            return sCode;
+        }
     }
 
 /**
@@ -51436,6 +55870,47 @@ module akra.fx {
             this._pInstructionList = [null];
             this._eInstructionType = EAFXInstructionTypes.k_DeclStmtInstruction;
         }
+
+        toFinalCode(): string {
+            var sCode: string = "";
+            var pVariableList: IAFXVariableDeclInstruction[] = <IAFXVariableDeclInstruction[]>this.getInstructions();
+
+            for(var i:  number  = 0; i < this._nInstructions; i++){
+                sCode += pVariableList[i].toFinalCode() + ";\n";
+            }
+
+            return sCode;
+        }
+
+        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+            if(isNull(this.getInstructions()) || this._nInstructions === 0) {
+                return;
+            }
+
+            if(this.getInstructions()[0]._getInstructionType() === EAFXInstructionTypes.k_TypeDeclInstruction){
+                return;
+            }
+
+            var pVariableList: IAFXVariableDeclInstruction[] = <IAFXVariableDeclInstruction[]>this.getInstructions();
+            for(var i:  number  = 0; i < this._nInstructions; i++){
+                var pVarType: IAFXVariableTypeInstruction = pVariableList[i].getType();
+
+                pUsedDataCollector[pVarType._getInstructionID()] = <IAFXTypeUseInfoContainer>{
+                    type: pVarType,
+                    isRead: false,
+                    isWrite: true,
+                    numRead: 0,
+                    numWrite: 1,
+                    numUsed: 1
+                };
+
+                if(pVariableList[i].hasInitializer()){
+                    pVariableList[i].getInitializeExpr().addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
+                }
+            }
+        }
+
     }
 
 /**
@@ -51444,11 +55919,166 @@ module akra.fx {
      */
 
     export class ReturnStmtInstruction extends StmtInstruction {
+        private _pPreparedCode: string = "";
+        private _isPositionReturn: bool = false;
+        private _isColorReturn: bool = false;
+        private _isOnlyReturn: bool = false;
+
         constructor () {
             super();
             this._pInstructionList = [null];
             this._sOperatorName = "return";
             this._eInstructionType = EAFXInstructionTypes.k_ReturnStmtInstruction;
+        }
+
+        prepareFor(eUsedMode: EFunctionType): void {
+            var pReturn: IAFXTypedInstruction = <IAFXTypedInstruction>this.getInstructions()[0];
+            if(isNull(pReturn)){
+                return;
+            }
+
+            if(eUsedMode === EFunctionType.k_Vertex){
+                if(pReturn.getType().isBase()){
+                    this._isPositionReturn = true;
+                }
+                else {
+                    this._isOnlyReturn = true;
+                }
+            }
+            else if(eUsedMode === EFunctionType.k_Pixel){
+                this._isColorReturn = true;
+            }
+
+            for(var i:  number  = 0; i < this._nInstructions; i++){
+                this._pInstructionList[i].prepareFor(eUsedMode);
+            }
+        }
+
+        toFinalCode(): string {
+            if(this._isPositionReturn){
+                return "Out.POSITION=" + this._pInstructionList[0].toFinalCode() + ";";
+            }
+            if(this._isColorReturn){
+                return "gl_FragColor=" + this._pInstructionList[0].toFinalCode() + ";";
+            }
+            if(this._isOnlyReturn){
+                return "return;"
+            }
+
+            if(this._nInstructions > 0){
+                return "return " + this._pInstructionList[0].toFinalCode() + ";";
+            }
+            else {
+                return "return;";
+            }
+        }
+    }
+
+    export class ExtractStmtInstruction extends ExprInstruction {
+        private _pExtractInVar: IAFXVariableDeclInstruction = null;
+        private _pExtractInExpr: IAFXExprInstruction = null;
+        private _pExtactExpr: ExtractExprInstruction = null;
+
+        constructor() {
+            super();
+            this._pInstructionList = [];
+            this._eInstructionType = EAFXInstructionTypes.k_ExtractStmtInstruction;
+        }
+
+        generateStmtForBaseType(pVarDecl: IAFXVariableDeclInstruction,
+                                pPointer: IAFXVariableDeclInstruction,
+                                pBuffer: IAFXVariableDeclInstruction,
+                                iPadding:  number ): void {
+            var pVarType: IAFXVariableTypeInstruction = pVarDecl.getType();
+            var pVarNameExpr: IAFXExprInstruction = pVarDecl._getFullNameExpr();
+            if(pVarType.isComplex() || isNull(pVarNameExpr) || pVarType.getSize() ===  0xffffff ) {
+                this.setError( 2274 );
+                return;
+            }
+
+// var pPointer: IAFXVariableDeclInstruction = isDef(pPointer) ? pPointer : pVarType.getPointer();
+// var pBuffer: IAFXVariableDeclInstruction = isDef(pBuffer) ?  pBuffer : pVarType.getVideoBuffer();
+            var pBufferSampler: IAFXVariableDeclInstruction = pBuffer._getVideoBufferSampler();
+            var pBufferHeader: IAFXVariableDeclInstruction = pBuffer._getVideoBufferHeader();
+
+            var isArray: bool = pVarType.isNotBaseArray();
+            var iLength:  number  = pVarType.getLength();
+            var sCodeFragment: string = "";
+            var pExtractType: IAFXVariableTypeInstruction = isArray ? pVarType.getArrayElementType() : pVarType;
+
+            if(isArray){
+                if(iLength ===  0xffffff ){
+                    this.setError( 2274 );
+                    return;
+                }
+
+                sCodeFragment = "for(int i=0;i<" + iLength.toString() + ";i++){";
+                this.push(new SimpleInstruction(sCodeFragment), true);
+            }
+
+            this.push(pVarNameExpr, false);
+
+
+            if(isArray){
+                sCodeFragment = "[i]=";
+            }
+            else {
+                sCodeFragment = "=";
+            }
+
+            this.push(new SimpleInstruction(sCodeFragment), true);
+
+            var pExtractType: IAFXVariableTypeInstruction = isArray ? pVarType.getArrayElementType() : pVarType;
+            var pExtractExpr: ExtractExprInstruction = new ExtractExprInstruction();
+            var sPaddingExpr: string = "";
+
+            if(iPadding > 0){
+                sPaddingExpr = "+"+ iPadding.toString() + ".0";
+            }
+            else{
+                sPaddingExpr = "";
+            }
+
+            if(isArray){
+                sPaddingExpr += "+float(i*" + pExtractType.getSize().toString() + ")";
+            }
+
+            pExtractExpr.initExtractExpr(pExtractType, pPointer, pBuffer, sPaddingExpr);
+
+            if(pExtractExpr.isErrorOccured()){
+                this.setError(pExtractExpr.getLastError().code,pExtractExpr.getLastError().info);
+                return;
+            }
+
+            this.push(pExtractExpr, true);
+
+            sCodeFragment = ";";
+
+            if(isArray){
+                sCodeFragment += "}";
+            }
+
+            this.push(new SimpleInstruction(sCodeFragment), true);
+
+            this._pExtactExpr = pExtractExpr;
+            this._pExtractInVar = pVarDecl;
+            this._pExtractInExpr = pVarNameExpr;
+        }
+
+        toFinalCode(): string {
+            var sCode: string = "";
+
+            for(var i:  number  = 0; i < this._nInstructions; i++){
+                sCode += this.getInstructions()[i].toFinalCode();
+            }
+
+            return sCode;
+        }
+
+        addUsedData(pUsedDataCollector: IAFXTypeUseInfoMap,
+                    eUsedMode?: EVarUsedMode = EVarUsedMode.k_Undefined): void {
+            this._pExtractInExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Write);
+            this._pExtactExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
         }
     }
 
@@ -51460,8 +56090,12 @@ module akra.fx {
     export class SemicolonStmtInstruction extends StmtInstruction {
         constructor() {
             super();
-            this._pInstructionList = [];
+            this._pInstructionList = null;
             this._eInstructionType = EAFXInstructionTypes.k_SemicolonStmtInstruction;
+        }
+
+        toFinalCode(): string {
+            return ";";
         }
     }
 }
@@ -51482,24 +56116,54 @@ module akra.fx {
 		/**@protected*/  _bUsedAsFunction: bool = false;
 		/**@protected*/  _bUsedAsVertex: bool = false;
 		/**@protected*/  _bUsedAsPixel: bool = false;
+		/**@protected*/  _bCanUsedAsFunction: bool = true;
 
 		/**@protected*/  _bUsedInVertex: bool = false;
 		/**@protected*/  _bUsedInPixel: bool = false;
 
-		/**@protected*/  _bCanUsedAsFunction: bool = true;
-
 		/**@protected*/  _pParseNode: IParseNode = null;
-		/**@protected*/  _iScope:  number  = 0;
-		/**@protected*/  _pUsedFunctionMap: IAFXFunctionDeclMap = null;
-		/**@protected*/  _pUsedFunctionList: IAFXFunctionDeclInstruction[] = null;
+		/**@protected*/  _iImplementationScope:  number  =  0xffffff ;
+
 		/**@protected*/  _isInBlackList: bool = false;
 
 		/**@protected*/  _pOutVariable: IAFXVariableDeclInstruction = null;
+
+//Info about used data
+		/**@protected*/  _pUsedFunctionMap: IAFXFunctionDeclMap = null;
+		/**@protected*/  _pUsedFunctionList: IAFXFunctionDeclInstruction[] = null;
+
+		/**@protected*/  _pUsedVarTypeMap: IAFXTypeUseInfoMap = null;
+
+		/**@protected*/  _pSharedVariableMap: IAFXVariableDeclMap = null;
+		/**@protected*/  _pGlobalVariableMap: IAFXVariableDeclMap = null;
+		/**@protected*/  _pUniformVariableMap: IAFXVariableDeclMap = null;
+		/**@protected*/  _pForeignVariableMap: IAFXVariableDeclMap = null;
+		/**@protected*/  _pTextureVariableMap: IAFXVariableDeclMap = null;
+
+// protected _pSharedVariableTypeList: IAFXVariableTypeInstruction[] = null;
+// protected _pGlobalVariableTypeList: IAFXVariableTypeInstruction[] = null;
+// protected _pUniformVariableTypeList: IAFXVariableTypeInstruction[] = null;
+// protected _pForeignVariableTypeList: IAFXVariableTypeInstructionnt[] = null;
+
+		/**@protected*/  _pUsedTypeMap: IAFXTypeDeclMap = null;
+
+		/**@protected*/  _pVertexShader: IAFXFunctionDeclInstruction = null;
+		/**@protected*/  _pPixelShader: IAFXFunctionDeclInstruction = null;
+
 
 		constructor() {
 			super();
 			this._pInstructionList = [null, null];
 			this._eInstructionType = EAFXInstructionTypes.k_FunctionDeclInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode = "";
+
+			sCode += this._pFunctionDefenition.toFinalCode();
+			sCode += this._pImplementation.toFinalCode();
+
+			return sCode;
 		}
 
 		inline getType(): IAFXTypeInstruction {
@@ -51530,34 +56194,42 @@ module akra.fx {
 			return this._pFunctionDefenition.getReturnType();
 		}
 
-		inline setParseNode(pNode: IParseNode): void {
+		inline getFunctionType(): EFunctionType {
+			return this._eFunctionType;
+		}
+
+		inline setFunctionType(eFunctionType: EFunctionType): void {
+        	this._eFunctionType = eFunctionType;
+        }
+
+		inline _setImplementationScope(iScope:  number ): void {
+			this._iImplementationScope = iScope;
+		}
+
+		inline _getImplementationScope():  number  {
+			return this._iImplementationScope;
+		}
+
+		inline _setParseNode(pNode: IParseNode): void {
 			this._pParseNode = pNode;
 		}
 
-		inline setScope(iScope:  number ): void {
-			this._iScope = iScope;
-		}
-
-		inline getParseNode(): IParseNode {
+		inline _getParseNode(): IParseNode {
 			return this._pParseNode;
-		}
-
-		inline getScope():  number  {
-			return this._iScope;
 		}
 
 		setFunctionDef(pFunctionDef: IAFXDeclInstruction): void {
 			this._pFunctionDefenition = <FunctionDefInstruction>pFunctionDef;
 			this._pInstructionList[0] = pFunctionDef;
 			pFunctionDef.setParent(this);
-			this._nInstuctions = this._nInstuctions === 0 ? 1 : this._nInstuctions;
+			this._nInstructions = this._nInstructions === 0 ? 1 : this._nInstructions;
 		}
 
 		setImplementation(pImplementation: IAFXStmtInstruction): void {
 			this._pImplementation = <StmtBlockInstruction>pImplementation;
 			this._pInstructionList[1] = pImplementation;
 			pImplementation.setParent(pImplementation);
-			this._nInstuctions = 2;
+			this._nInstructions = 2;
 
 			this._pParseNode = null;
 		}
@@ -51569,7 +56241,22 @@ module akra.fx {
 				pClone._setOutVariable(<IAFXVariableDeclInstruction>pRelationMap[this._pOutVariable._getInstructionID()]);
 			}
 
+			var pUsedVarTypeMap: IAFXTypeUseInfoMap = this.cloneVarTypeUsedMap(this._pUsedVarTypeMap, pRelationMap);
+			var pSharedVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pSharedVariableMap, pRelationMap);
+			var pGlobalVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pGlobalVariableMap, pRelationMap);
+			var pUniformVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pUniformVariableMap, pRelationMap);
+			var pForeignVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pForeignVariableMap, pRelationMap);
+			var pTextureVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pTextureVariableMap, pRelationMap);
+			var pUsedTypeMap: IAFXTypeDeclMap = this.cloneTypeDeclMap(this._pUsedTypeMap, pRelationMap);
+
 			pClone._setUsedFunctions(this._pUsedFunctionMap, this._pUsedFunctionList);
+			pClone._setUsedVariableData(pUsedVarTypeMap,
+										pSharedVariableMap,
+										pGlobalVariableMap,
+										pUniformVariableMap,
+										pForeignVariableMap,
+										pTextureVariableMap,
+										pUsedTypeMap);
 			pClone._initAfterClone();
 
 			return pClone;
@@ -51592,7 +56279,15 @@ module akra.fx {
 			return this._pOutVariable;
 		}
 
-		_usedAs(eUsedType: EFunctionType): void {
+		_getVertexShader(): IAFXFunctionDeclInstruction {
+			return this._pVertexShader;
+		}
+
+		_getPixelShader(): IAFXFunctionDeclInstruction {
+			return this._pPixelShader;
+		}
+
+		_markUsedAs(eUsedType: EFunctionType): void {
 			switch(eUsedType){
 				case EFunctionType.k_Vertex:
 					this._bUsedInVertex = true;
@@ -51631,11 +56326,11 @@ module akra.fx {
 			return this._bUsedAsPixel;
 		}
 
-		_usedInVertex(): void {
+		_markUsedInVertex(): void {
 			this._bUsedInVertex = true;
 		}
 
-		_usedInPixel(): void {
+		_markUsedInPixel(): void {
 			this._bUsedInPixel = true;
 		}
 
@@ -51652,11 +56347,11 @@ module akra.fx {
 		}
 
 		_checkVertexUsage(): bool {
-			return this._usedInVertex() ? this._isForVertex() : true;
+			return this._isUsedInVertex() ? this._isForVertex() : true;
 		}
 
 		_checkPixelUsage(): bool {
-			return this._usedInPixel() ? this._isForPixel() : true;
+			return this._isUsedInPixel() ? this._isForPixel() : true;
 		}
 
 		_checkDefenitionForVertexUsage(): bool {
@@ -51713,29 +56408,102 @@ module akra.fx {
 		}
 
 		_convertToVertexShader(): IAFXFunctionDeclInstruction {
+			var pShader: FunctionDeclInstruction = null;
+
 			if((!this._canUsedAsFunction() || !this._isUsedAsFunction()) &&
-			   (!this._checkPixelUsage())){
-			   	this._eFunctionType = EFunctionType.k_Vertex;
-			   	return this;
+			   (!this._isUsedInPixel())){
+			   	pShader = this;
+			}
+			else {
+				pShader = <FunctionDeclInstruction>this.clone();
 			}
 
-			var pShader: FunctionDeclInstruction = <FunctionDeclInstruction>this.clone();
-			pShader._setFunctionType(EFunctionType.k_Vertex);
+			pShader._prepareForVertex();
+			this._pVertexShader = pShader;
 
 			return pShader;
 		}
 
         _convertToPixelShader(): IAFXFunctionDeclInstruction {
+        	var pShader: FunctionDeclInstruction = null;
+
         	if((!this._canUsedAsFunction() || !this._isUsedAsFunction()) &&
-			   (!this._checkVertexUsage())){
-			   	this._eFunctionType = EFunctionType.k_Pixel;
-			   	return this;
+			   (!this._isUsedInVertex())){
+			   	pShader = this;
+			}
+			else {
+				pShader = <FunctionDeclInstruction>this.clone();
 			}
 
-        	var pShader: FunctionDeclInstruction = <FunctionDeclInstruction>this.clone();
-			pShader._setFunctionType(EFunctionType.k_Vertex);
+			pShader._prepareForPixel();
+			this._pPixelShader = pShader;
 
 			return pShader;
+        }
+
+        _prepareForVertex(): void {
+        	this.setFunctionType(EFunctionType.k_Vertex);
+
+        	var pShaderInputParamList: IAFXVariableDeclInstruction[] = this._pFunctionDefenition.getParameListForShaderInput();
+        	for(var i:  number  = 0; i < pShaderInputParamList.length; i++){
+        		var pParamType: IAFXVariableTypeInstruction = pShaderInputParamList[i].getType();
+
+        		if (pParamType.isComplex() &&
+        			isDef(this._pUsedVarTypeMap[pParamType._getInstructionID()]) &&
+        			this._pUsedVarTypeMap[pParamType._getInstructionID()].isRead) {
+
+        				this.setError( 2301 , { funcName: this.getName() });
+        				return;
+        		}
+        	}
+
+        	var pOutVariable: IAFXVariableDeclInstruction = this._getOutVariable();
+
+        	if(!isNull(pOutVariable)){
+        		if (isDef(this._pUsedVarTypeMap[pOutVariable.getType()._getInstructionID()]) &&
+        			this._pUsedVarTypeMap[pOutVariable.getType()._getInstructionID()].isRead) {
+
+        			this.setError( 2302 , { funcName: this.getName() });
+        			return;
+        		}
+
+        		pOutVariable._markAsShaderOutput(true);
+        	}
+
+        	if(this._pFunctionDefenition.isComplexShaderInput()){
+        		pShaderInputParamList[0].setVisible(false);
+        	}
+
+        	this._pImplementation.prepareFor(EFunctionType.k_Vertex);
+        	this._pFunctionDefenition.markAsShaderDef(true);
+        	this.generatesVertexAttrubutes();
+        	this.generateVertexVaryings();
+        }
+
+        _prepareForPixel(): void {
+        	this.setFunctionType(EFunctionType.k_Pixel);
+
+        	var pShaderInputParamList: IAFXVariableDeclInstruction[] = this._pFunctionDefenition.getParameListForShaderInput();
+        	for(var i:  number  = 0; i < pShaderInputParamList.length; i++){
+        		var pParamType: IAFXVariableTypeInstruction = pShaderInputParamList[i].getType();
+
+        		if (pParamType.isComplex() &&
+        			isDef(this._pUsedVarTypeMap[pParamType._getInstructionID()]) &&
+        			this._pUsedVarTypeMap[pParamType._getInstructionID()].isRead) {
+
+        				this.setError( 2301 , { funcName: this.getName() });
+        				return;
+        		}
+        	}
+
+        	if(this._pFunctionDefenition.isComplexShaderInput()){
+        		pShaderInputParamList[0].setVisible(false);
+        	}
+
+        	this._pImplementation.prepareFor(EFunctionType.k_Pixel);
+        	this._pFunctionDefenition.markAsShaderDef(true);
+
+        	this.generatePixelVaryings();
         }
 
         _setOutVariable(pVar: IAFXVariableDeclInstruction): void {
@@ -51748,8 +56516,20 @@ module akra.fx {
         	this._pUsedFunctionList = pUsedFunctionList;
         }
 
-        _setFunctionType(eFunctionType: EFunctionType){
-        	this._eFunctionType = eFunctionType;
+        _setUsedVariableData(pUsedVarTypeMap: IAFXTypeUseInfoMap,
+							pSharedVariableMap: IAFXVariableDeclMap,
+							pGlobalVariableMap: IAFXVariableDeclMap,
+							pUniformVariableMap: IAFXVariableDeclMap,
+							pForeignVariableMap: IAFXVariableDeclMap,
+							pTextureVariableMap: IAFXVariableDeclMap,
+							pUsedTypeMap: IAFXTypeDeclMap): void {
+        	this._pUsedVarTypeMap = pUsedVarTypeMap;
+        	this._pSharedVariableMap = pSharedVariableMap;
+        	this._pGlobalVariableMap = pGlobalVariableMap;
+        	this._pUniformVariableMap = pUniformVariableMap;
+        	this._pForeignVariableMap = pForeignVariableMap;
+        	this._pTextureVariableMap = pTextureVariableMap;
+        	this._pUsedTypeMap = pUsedTypeMap;
         }
 
         _initAfterClone(): void{
@@ -51757,12 +56537,251 @@ module akra.fx {
         	this._pImplementation = <StmtBlockInstruction>this._pInstructionList[1];
         }
 
-// cloneTo(eConvertTo: EFunctionType): ShaderFunctionInstruction {
-// 	if(eConvertTo === EFunctionType.k_Function) {
-// 		//nothing to do
-// 	}
-// 	return null;
-// }
+        _generateInfoAboutUsedData(): void {
+        	if(!isNull(this._pUsedVarTypeMap)){
+        		return;
+        	}
+
+        	var pUsedData: IAFXTypeUseInfoMap = <IAFXTypeUseInfoMap>{};
+        	this._pImplementation.addUsedData(pUsedData);
+
+        	this._pUsedVarTypeMap = pUsedData;
+
+        	if(isNull(this._pUsedTypeMap)){
+        		this._pSharedVariableMap = <IAFXVariableDeclMap>{};
+				this._pGlobalVariableMap = <IAFXVariableDeclMap>{};
+				this._pUniformVariableMap = <IAFXVariableDeclMap>{};
+				this._pForeignVariableMap = <IAFXVariableDeclMap>{};
+				this._pTextureVariableMap = <IAFXVariableDeclMap>{};
+				this._pUsedTypeMap = <IAFXTypeDeclMap>{};
+        	}
+
+        	this.addUsedTypeDecl(this.getReturnType().getBaseType());
+
+        	for(var i in pUsedData) {
+        		var pAnalyzedInfo: IAFXTypeUseInfoContainer = pUsedData[i];
+        		var pAnalyzedType: IAFXVariableTypeInstruction = pAnalyzedInfo.type;
+
+        		if(pAnalyzedType._isInGlobalScope()){
+        			this.addGlobalVariableType(pAnalyzedType, pAnalyzedInfo.isWrite, pAnalyzedInfo.isRead);
+        		}
+        		else if(pAnalyzedType.isUniform()){
+        			this.addUniformParameter(pAnalyzedType);
+        		}
+        		else {
+        			this.addUsedTypeDecl(pAnalyzedType.getBaseType());
+        		}
+        	}
+        	if(!isNull(this._pUsedFunctionList)){
+	        	for(var j:  number  = 0; j < this._pUsedFunctionList.length; j++){
+	        		this.addUsedInfoFromFunction(this._pUsedFunctionList[j]);
+	        	}
+        	}
+        }
+
+        inline _getSharedVariableMap(): IAFXVariableDeclMap{
+        	return this._pSharedVariableMap;
+        }
+
+        inline _getGlobalVariableMap(): IAFXVariableDeclMap{
+        	return this._pGlobalVariableMap;
+        }
+
+        inline _getUniformVariableMap(): IAFXVariableDeclMap{
+        	return this._pUniformVariableMap;
+        }
+
+        inline _getForeignVariableMap(): IAFXVariableDeclMap{
+        	return this._pForeignVariableMap;
+        }
+
+        inline _getTextureVariableMap(): IAFXVariableDeclMap{
+        	return this._pTextureVariableMap;
+        }
+
+        inline _getUsedTypeMap(): IAFXTypeDeclMap{
+        	return this._pUsedTypeMap;
+        }
+
+        private generatesVertexAttrubutes(): void {
+
+        }
+
+        private generateVertexVaryings(): void {
+
+        }
+
+        private generatePixelVaryings(): void {
+
+        }
+
+        private cloneVarTypeUsedMap(pMap: IAFXTypeUseInfoMap, pRelationMap: IAFXInstructionMap): IAFXTypeUseInfoMap{
+        	var pCloneMap: IAFXTypeUseInfoMap = <IAFXTypeUseInfoMap>{};
+
+        	for(var j in pMap){
+        		var pType: IAFXVariableTypeInstruction = isDef(pRelationMap[j]) ? pRelationMap[j] : pMap[j].type;
+    			var id:  number  = pType._getInstructionID();
+    			pCloneMap[id] = {
+    				type: pType,
+    				isRead: pMap[j].isRead,
+					isWrite: pMap[j].isWrite,
+					numRead: pMap[j].numRead,
+					numWrite: pMap[j].numWrite,
+					numUsed: pMap[j].numUsed
+    			}
+        	}
+
+        	return pCloneMap;
+        }
+
+        private cloneVarDeclMap(pMap: IAFXVariableDeclMap, pRelationMap: IAFXInstructionMap): IAFXVariableDeclMap {
+        	var pCloneMap: IAFXVariableDeclMap = <IAFXVariableDeclMap>{};
+
+        	for(var i in pMap){
+        		var pVar: IAFXVariableDeclInstruction = isDef(pRelationMap[i]) ? pRelationMap[i] : pMap[i];
+
+        		if(!isNull(pVar)){
+        			var id:  number  = pVar._getInstructionID();
+        			pCloneMap[id] = pVar;
+        		}
+        	}
+
+        	return pCloneMap;
+        }
+
+        private cloneTypeDeclMap(pMap: IAFXTypeDeclMap, pRelationMap: IAFXInstructionMap): IAFXTypeDeclMap {
+        	var pCloneMap: IAFXTypeDeclMap = <IAFXVariableDeclMap>{};
+
+        	for(var i in pMap){
+        		var pVar: IAFXTypeDeclInstruction = (isDef(pRelationMap[i]) ? pRelationMap[i] : pMap[i]);
+        		var id:  number  = pVar._getInstructionID();
+        		pCloneMap[id] = pVar;
+        	}
+
+        	return pCloneMap;
+        }
+
+        private addGlobalVariableType(pVariableType: IAFXVariableTypeInstruction,
+        							  isWrite: bool, isRead: bool): void {
+        	if(!pVariableType.isFromVariableDecl()){
+        		return;
+        	}
+
+        	var pVariable: IAFXVariableDeclInstruction = <IAFXVariableDeclInstruction>pVariableType._getParentVarDecl();
+        	var pMainVariable: IAFXVariableDeclInstruction = pVariableType._getMainVariable();
+        	var iMainVar:  number  = pMainVariable._getInstructionID();
+        	var iVar:  number  = pVariable._getInstructionID();
+
+        	if(pMainVariable.getType().isShared()){
+        		this._pSharedVariableMap[iVar] = pVariable;
+        		this._pSharedVariableMap[iMainVar] = pMainVariable;
+        	}
+        	else if(pMainVariable.getType().isForeign()){
+        		this._pForeignVariableMap[iMainVar] = pMainVariable;
+        	}
+        	else if(isWrite){
+        		this._pGlobalVariableMap[iMainVar] = pMainVariable;
+        		if(isDefAndNotNull(this._pUniformVariableMap[iMainVar])){
+        			this._pUniformVariableMap[iMainVar] = null;
+        		}
+        	}
+        	else {
+        		if(!isDef(this._pGlobalVariableMap[iMainVar])){
+        			this._pUniformVariableMap[iMainVar] = pMainVariable;
+        		}
+        	}
+
+        	if(pVariable.isSampler() && pVariable.hasInitializer()){
+        		var pInitExpr: IAFXInitExprInstruction = pVariable.getInitializeExpr();
+        		var pTexture: IAFXVariableDeclInstruction = null;
+        		var pSamplerStates: SamplerStateBlockInstruction = null;
+
+        		if(pVariableType.isArray()){
+        			var pList: IAFXInitExprInstruction[] = <IAFXInitExprInstruction[]>pInitExpr.getInstructions();
+        			for(var i:  number  = 0; i < pList.length; i++){
+        				pSamplerStates = <SamplerStateBlockInstruction>pList[i].getInstructions()[0];
+        				pTexture = pSamplerStates.getTexture();
+
+        				this._pTextureVariableMap[pTexture._getInstructionID()] = pTexture;
+        			}
+        		}
+        		else {
+        			pSamplerStates = <SamplerStateBlockInstruction>pInitExpr.getInstructions()[0];
+        			pTexture = pSamplerStates.getTexture();
+
+        			this._pTextureVariableMap[pTexture._getInstructionID()] = pTexture;
+        		}
+        	}
+
+        	this.addUsedTypeDecl(pMainVariable.getType().getBaseType());
+        }
+
+        private addUniformParameter(pType: IAFXVariableTypeInstruction): void {
+        	var pMainVariable: IAFXVariableDeclInstruction = pType._getMainVariable();
+        	var iMainVar:  number  = pMainVariable._getInstructionID();
+
+        	if(isDef(this._pGlobalVariableMap[iMainVar])){
+        		logger.setSourceLocation( "fx/FunctionInstruction.ts" , 626 ); logger.error("UNEXPECTED ERROR WITH UNIFORM_PARAMETER"); ;
+        	}
+
+        	this._pUniformVariableMap[iMainVar] = pMainVariable;
+        	this.addUsedTypeDecl(pMainVariable.getType().getBaseType());
+        }
+
+        private addUsedTypeDecl(pType: IAFXTypeInstruction): void {
+        	if(pType.isBase() || isDef(this._pUsedTypeMap[pType._getInstructionID()])){
+        		return;
+        	}
+
+        	this._pUsedTypeMap[pType._getInstructionID()] = <IAFXTypeDeclInstruction>pType.getParent();
+
+        	var pFieldNameList: string[] = pType.getFieldNameList();
+
+        	for(var i:  number  = 0; i < pFieldNameList.length; i++){
+        		this.addUsedTypeDecl(pType.getFieldType(pFieldNameList[i]).getBaseType());
+        	}
+        }
+
+        private addUsedInfoFromFunction(pFunction: IAFXFunctionDeclInstruction): void {
+        	pFunction._generateInfoAboutUsedData();
+
+    		var pSharedVarMap: IAFXVariableDeclMap = pFunction._getSharedVariableMap();
+    		var pGlobalVarMap: IAFXVariableDeclMap = pFunction._getGlobalVariableMap();
+    		var pUniformVarMap: IAFXVariableDeclMap = pFunction._getUniformVariableMap();
+    		var pForeignVarMap: IAFXVariableDeclMap = pFunction._getForeignVariableMap();
+    		var pTextureVarMap: IAFXVariableDeclMap = pFunction._getTextureVariableMap();
+    		var pUsedTypeMap: IAFXTypeDeclMap = pFunction._getUsedTypeMap();
+
+    		for(var j in pSharedVarMap){
+    			this._pSharedVariableMap[pSharedVarMap[j]._getInstructionID()] = pSharedVarMap[j];
+    		}
+
+    		for(var j in pForeignVarMap){
+    			this._pForeignVariableMap[pForeignVarMap[j]._getInstructionID()] = pForeignVarMap[j];
+    		}
+
+    		for(var j in pTextureVarMap){
+    			this._pTextureVariableMap[pTextureVarMap[j]._getInstructionID()] = pTextureVarMap[j];
+    		}
+
+    		for(var j in pGlobalVarMap){
+    			this._pGlobalVariableMap[pGlobalVarMap[j]._getInstructionID()] = pGlobalVarMap[j];
+
+    			if(isDefAndNotNull(this._pUniformVariableMap[pGlobalVarMap[j]._getInstructionID()])){
+    				this._pUniformVariableMap[pGlobalVarMap[j]._getInstructionID()] = null;
+    			}
+    		}
+
+    		for(var j in pUniformVarMap){
+    			if(!isDef(this._pGlobalVariableMap[pUniformVarMap[j]._getInstructionID()])){
+    				this._pUniformVariableMap[pUniformVarMap[j]._getInstructionID()] = pUniformVarMap[j];
+    			}
+    		}
+
+    		for(var j in pUsedTypeMap){
+    			this._pUsedTypeMap[pUsedTypeMap[j]._getInstructionID()] = pUsedTypeMap[j];
+    		}
+        }
 	}
 
 	export class SystemFunctionInstruction extends DeclInstruction implements IAFXFunctionDeclInstruction {
@@ -51783,7 +56802,7 @@ module akra.fx {
 			this._pName.setParent(this);
 
 			this._pReturnType = new VariableTypeInstruction();
-			this._pReturnType.pushInVariableType(this._pReturnType);
+			this._pReturnType.pushType(pReturnType);
 			this._pReturnType.setParent(this);
 
 			this._pArguments = [];
@@ -51819,9 +56838,20 @@ module akra.fx {
 			return true;
 		}
 
+		inline getType(): IAFXVariableTypeInstruction {
+			return this.getReturnType();
+		}
+
 		inline getReturnType(): IAFXVariableTypeInstruction {
 			return this._pReturnType;
 		}
+
+		inline getFunctionType(): EFunctionType {
+			return EFunctionType.k_Function;
+		}
+
+		inline setFunctionType(eFunctionType: EFunctionType): void {
+        }
 
 		closeArguments(pArguments: IAFXInstruction[]): IAFXInstruction[]{
 			return this._pExprTranslator.toInstructionList(pArguments);
@@ -51845,7 +56875,15 @@ module akra.fx {
 			return null;
 		}
 
-		_usedAs(eUsedType: EFunctionType): void {
+		_getVertexShader(): IAFXFunctionDeclInstruction{
+			return null;
+		}
+
+		_getPixelShader(): IAFXFunctionDeclInstruction{
+			return null;
+		}
+
+		_markUsedAs(eUsedType: EFunctionType): void {
 		}
 
 		_isUsedAs(eUsedType: EFunctionType): bool{
@@ -51864,10 +56902,10 @@ module akra.fx {
 			return true;
 		}
 
-		_usedInVertex(): void {
+		_markUsedInVertex(): void {
 		}
 
-		_usedInPixel(): void {
+		_markUsedInPixel(): void {
 		}
 
 		_isUsedInVertex(): bool {
@@ -51935,6 +56973,42 @@ module akra.fx {
         	return null;
         }
 
+        _prepareForVertex(): void{}
+        _prepareForPixel(): void{}
+
+        addUsedVariableType(pType: IAFXVariableTypeInstruction, eUsedMode: EVarUsedMode): bool {
+        	return false;
+        }
+
+        _generateInfoAboutUsedData(): void{
+
+        }
+
+        inline _getSharedVariableMap(): IAFXVariableDeclMap{
+			return null;
+        }
+
+        inline _getGlobalVariableMap(): IAFXVariableDeclMap{
+        	return null;
+        }
+
+        inline _getUniformVariableMap(): IAFXVariableDeclMap{
+        	return null;
+        }
+
+        inline _getForeignVariableMap(): IAFXVariableDeclMap{
+        	return null;
+        }
+
+        inline _getTextureVariableMap(): IAFXVariableDeclMap{
+        	return null;
+        }
+
+
+        inline _getUsedTypeMap(): IAFXTypeDeclMap{
+        	return null;
+        }
+
 	}
 
 /**
@@ -51956,13 +57030,41 @@ module akra.fx {
 		private _isAnalyzedForPixelUsage: bool = false;
 		private _bCanUsedAsFunction: bool = true;
 
+		private _bShaderDef: bool = false;
+
 //private _sHash: string = "";
 
 		constructor() {
 			super();
-			this._pInstructionList = [null, null];
+			this._pInstructionList = null;
 			this._pParameterList = [];
 			this._eInstructionType = EAFXInstructionTypes.k_FunctionDefInstruction;
+		}
+
+		toFinalCode(): string {
+			var sCode: string = "";
+
+			if(!this.isShaderDef()){
+
+				sCode += this._pReturnType.toFinalCode();
+				sCode += " " + this._pFunctionName.toFinalCode();
+				sCode += "(";
+
+				for(var i:  number  = 0; i < this._pParameterList.length; i++){
+					sCode += this._pParameterList[i].toFinalCode();
+
+					if(i !== this._pParameterList.length - 1){
+						sCode += ",";
+					}
+				}
+
+				sCode += ")";
+			}
+			else {
+				sCode = "void " + this._pFunctionName.toFinalCode() + "()";
+			}
+
+			return sCode;
 		}
 
 		inline setType(pType: IAFXTypeInstruction): void {
@@ -52004,6 +57106,13 @@ module akra.fx {
 			return this._nParamsNeeded;
 		}
 
+		inline markAsShaderDef(isShaderDef: bool): void {
+			this._bShaderDef = isShaderDef;
+		}
+
+		inline isShaderDef(): bool {
+			return this._bShaderDef;
+		}
 
 		addParameter(pParameter: IAFXVariableDeclInstruction, isStrictModeOn?: bool): bool {
 			if (this._pParameterList.length > this._nParamsNeeded &&
@@ -52017,45 +57126,44 @@ module akra.fx {
 
 			var pParameterType: IAFXVariableTypeInstruction = pParameter.getType();
 
-			if(isDef(isStrictModeOn)){
-				if(pParameterType.isPointer() || pParameterType._containPointer()){
-					if (pParameterType.hasUsage("uniform") ||
-						pParameterType.hasUsage("out") ||
-						pParameterType.hasUsage("inout")){
+			if (pParameterType.isPointer() || pParameterType._containPointer()){
+				if (pParameterType.hasUsage("uniform") ||
+					pParameterType.hasUsage("out") ||
+					pParameterType.hasUsage("inout")){
 
-						this.setError( 2265 ,
-								  	  { funcName: this._pFunctionName.getName(),
-								  	varName: pParameter.getName() });
-						return false;
-					}
-
-					this._isAnalyzedForVertexUsage = false;
-					this._isAnalyzedForPixelUsage = true;
-
-					this._setForPixel(false);
-					this._bCanUsedAsFunction = false;
-					pParameterType._setVideoBufferInDepth();
+					this.setError( 2265 ,
+							  	  { funcName: this._pFunctionName.getName(),
+							  	varName: pParameter.getName() });
+					return false;
 				}
-				else if(!isStrictModeOn){
 
-					if (pParameterType.isComplex() &&
-					    !pParameterType.hasFieldWithoutSemantic() &&
-						pParameterType.hasAllUniqueSemantics()){
+				this._isAnalyzedForVertexUsage = false;
+				this._isAnalyzedForPixelUsage = true;
 
-						if (pParameter.getSemantic() === "" &&
-							pParameterType.hasFieldWithSematic("POSITION")){
+				this._setForPixel(false);
+				this._bCanUsedAsFunction = false;
+				pParameterType._setVideoBufferInDepth();
+			}
+			else if(!isStrictModeOn){
 
-							pParameterType._addPointIndexInDepth();
-						}
-						else {
-							pParameterType.addPointIndex(false);
-							pParameterType._setVideoBufferInDepth();
-						}
+				if (pParameterType.isComplex() &&
+				    !pParameterType.hasFieldWithoutSemantic() &&
+					pParameterType.hasAllUniqueSemantics()){
+
+					if (pParameter.getSemantic() === "" &&
+						pParameterType.hasAllUniqueSemantics() &&
+						!pParameterType.hasFieldWithoutSemantic()){
+
+						pParameterType._addPointIndexInDepth();
 					}
-					else if(pParameter.getSemantic() !== ""){
+					else {
 						pParameterType.addPointIndex(false);
 						pParameterType._setVideoBufferInDepth();
 					}
+				}
+				else if(pParameter.getSemantic() !== ""){
+					pParameterType.addPointIndex(false);
+					pParameterType._setVideoBufferInDepth();
 				}
 			}
 
@@ -52069,6 +57177,14 @@ module akra.fx {
 			return true;
 		}
 
+		inline getParameListForShaderInput(): IAFXVariableDeclInstruction[] {
+			return this._pParamListForShaderInput;
+		}
+
+		inline isComplexShaderInput(): bool {
+			return this._isComplexShaderInput;
+		}
+
 		clone(pRelationMap: IAFXInstructionMap = <IAFXInstructionMap>{}): FunctionDefInstruction {
 			var pClone: FunctionDefInstruction = <FunctionDefInstruction>super.clone(pRelationMap);
 
@@ -52079,7 +57195,30 @@ module akra.fx {
 				pClone.addParameter(this._pParameterList[i].clone(pRelationMap));
 			}
 
+			var pShaderParams: IAFXVariableDeclInstruction[] = [];
+			for(var i:  number  = 0; i < this._pParamListForShaderInput.length; i++){
+				pShaderParams.push(this._pParamListForShaderInput[i].clone(pRelationMap));
+			}
+
+			pClone._setShaderParams(pShaderParams, this._isComplexShaderInput);
+			pClone._setAnalyzedInfo(this._isAnalyzedForVertexUsage,
+									this._isAnalyzedForPixelUsage,
+									this._bCanUsedAsFunction);
+
 			return pClone;
+		}
+
+		_setShaderParams(pParamList: IAFXVariableDeclInstruction[], isComplexInput: bool): void {
+			this._pParamListForShaderInput = pParamList;
+			this._isComplexShaderInput = isComplexInput;
+		}
+
+		_setAnalyzedInfo(isAnalyzedForVertexUsage: bool,
+						 isAnalyzedForPixelUsage: bool,
+						 bCanUsedAsFunction: bool): void {
+			this._isAnalyzedForVertexUsage = isAnalyzedForVertexUsage;
+			this._isAnalyzedForPixelUsage = isAnalyzedForPixelUsage;
+			this._bCanUsedAsFunction = bCanUsedAsFunction;
 		}
 
 		_getStringDef(): string {
@@ -52171,10 +57310,10 @@ module akra.fx {
 					return false;
 				}
 
-				isGood = pReturnType.hasFieldWithSematic("POSITION");
-				if(!isGood){
-					return false;
-				}
+// isGood = pReturnType.hasFieldWithSematic("POSITION");
+// if(!isGood){
+// 	return false;
+// }
 
 				isGood = !pReturnType._containSampler();
 				if(!isGood){
@@ -52182,6 +57321,11 @@ module akra.fx {
 				}
 
 				isGood = !pReturnType._containPointer() && !pReturnType.isPointer();
+				if(!isGood){
+					return false;
+				}
+
+				isGood = !pReturnType._containComplexType();
 				if(!isGood){
 					return false;
 				}
@@ -52407,471 +57551,6 @@ module akra.fx {
 
 
 
-module akra.fx {
-	export class ExprInstruction extends TypedInstruction implements IAFXExprInstruction {
-/**
-		 * Respresent all kind of instruction
-		 */
-
-		constructor(){
-			super();
-			this._eInstructionType = EAFXInstructionTypes.k_ExprInstruction;
-		}
-
-		evaluate(): bool {
-			return false;
-		}
-
-		simplify(): bool {
-			return false;
-		}
-
-		getEvalValue(): any {
-			return null;
-		}
-
-		isConst(): bool {
-			return false;
-		}
-
-		clone(pRelationMap?:IAFXInstructionMap): IAFXExprInstruction {
-			return <IAFXExprInstruction>super.clone(pRelationMap);
-		}
-	}
-
-	export class IntInstruction extends ExprInstruction implements IAFXLiteralInstruction {
-		private _iValue:  number ;
-/**
-		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
-		 */
-
-		constructor() {
-			super();
-			this._iValue = 0;
-			this._pType = getEffectBaseType("int");
-			this._eInstructionType = EAFXInstructionTypes.k_IntInstruction;
-		}
-
-		inline setValue(iValue:  number ): void{
-			this._iValue = iValue;
-		}
-
-		toString(): string {
-			return <string><any>this._iValue;
-		}
-
-		inline isConst(): bool {
-			return true;
-		}
-
-		clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
-			var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
-			pClonedInstruction.setValue(this._iValue);
-			return pClonedInstruction;
-		}
-	}
-
-	export class FloatInstruction extends ExprInstruction implements IAFXLiteralInstruction {
-		private _fValue:  number ;
-/**
-		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
-		 */
-
-		constructor() {
-			super();
-			this._fValue = 0.0;
-			this._pType = getEffectBaseType("float");
-			this._eInstructionType = EAFXInstructionTypes.k_FloatInstruction;
-		}
-
-		inline setValue(fValue:  number ): void{
-			this._fValue = fValue;
-		}
-
-		toString(): string {
-			return <string><any>this._fValue;
-		}
-
-		inline isConst(): bool {
-			return true;
-		}
-
-		clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
-			var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
-			pClonedInstruction.setValue(this._fValue);
-			return pClonedInstruction;
-		}
-	}
-
-	export class BoolInstruction extends ExprInstruction implements IAFXLiteralInstruction {
-		private _bValue: bool;
-		static private _pBoolType: IAFXVariableTypeInstruction = null;
-/**
-		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
-		 */
-
-		constructor() {
-			super();
-			this._bValue = true;
-			this._pType = getEffectBaseType("bool");
-			this._eInstructionType = EAFXInstructionTypes.k_BoolInstruction;
-		}
-
-		inline setValue(bValue: bool): void{
-			this._bValue = bValue;
-		}
-
-		toString(): string {
-			return <string><any>this._bValue;
-		}
-
-		inline isConst(): bool {
-			return true;
-		}
-
-		clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
-			var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
-			pClonedInstruction.setValue(this._bValue);
-			return pClonedInstruction;
-		}
-	}
-
-	export class StringInstruction extends ExprInstruction implements IAFXLiteralInstruction {
-		private _sValue: string;
-		static private _pStringType: IAFXVariableTypeInstruction = null;
-
-/**
-		 * EMPTY_OPERATOR EMPTY_ARGUMENTS
-		 */
-
-		constructor() {
-			super();
-			this._sValue = "";
-			this._pType = getEffectBaseType("string");
-			this._eInstructionType = EAFXInstructionTypes.k_StringInstruction;
-		}
-
-		inline setValue(sValue: string): void{
-			this._sValue = sValue;
-		}
-
-		toString(): string {
-			return this._sValue;
-		}
-
-		inline isConst(): bool {
-			return true;
-		}
-
-		clone(pRelationMap?: IAFXInstructionMap): IAFXLiteralInstruction {
-			var pClonedInstruction: IAFXLiteralInstruction = <IAFXLiteralInstruction>(super.clone(pRelationMap));
-			pClonedInstruction.setValue(this._sValue);
-			return pClonedInstruction;
-		}
-	}
-
-	export class IdExprInstruction extends ExprInstruction implements IAFXIdExprInstruction {
-		constructor(){
-			super();
-			this._pInstructionList = [null];
-			this._eInstructionType = EAFXInstructionTypes.k_IdExprInstruction;
-		}
-
-		getType(): IAFXTypeInstruction {
-			if(!isNull(this._pType)){
-				return this._pType;
-			}
-			else{
-				var pVar: IdInstruction = <IdInstruction>this._pInstructionList[0];
-				this._pType = (<IAFXVariableDeclInstruction>pVar.getParent()).getType();
-				return this._pType;
-			}
-		}
-
-		isConst(): bool {
-			return this.getType().isConst();
-		}
-
-		clone(pRelationMap?:IAFXInstructionMap): IAFXIdExprInstruction {
-			return <IAFXIdExprInstruction>super.clone(pRelationMap);
-		}
-	}
-
-/**
- 	 * Represent someExpr + / - * % someExpr
- 	 * (+|-|*|/|%) Instruction Instruction
- 	 */
-
-	export class ArithmeticExprInstruction extends ExprInstruction {
-
-		constructor() {
-			super();
-			this._pInstructionList = [null, null];
-			this._eInstructionType = EAFXInstructionTypes.k_ArithmeticExprInstruction;
-		}
-	}
-/**
- 	 * Represent someExpr = += -= /= *= %= someExpr
- 	 * (=|+=|-=|*=|/=|%=) Instruction Instruction
- 	 */
-
-	export class AssignmentExprInstruction extends ExprInstruction {
-		constructor(){
-			super();
-			this._pInstructionList = [null, null];
-			this._eInstructionType = EAFXInstructionTypes.k_AssignmentExprInstruction;
-		}
-	}
-/**
- 	 * Represent someExpr == != < > <= >= someExpr
- 	 * (==|!=|<|>|<=|>=) Instruction Instruction
- 	 */
-
-	export class RelationalExprInstruction extends ExprInstruction {
-		constructor(){
-			super();
-			this._pInstructionList = [null, null];
-			this._eInstructionType = EAFXInstructionTypes.k_RelationalExprInstruction;
-		}
-	}
-/**
- 	 * Represent boolExpr && || boolExpr
- 	 * (&& | ||) Instruction Instruction
- 	 */
-
-	export class LogicalExprInstruction extends ExprInstruction {
-		constructor(){
-			super();
-			this._pInstructionList = [null, null];
-			this._eInstructionType = EAFXInstructionTypes.k_LogicalExprInstruction;
-		}
-	}
-/**
-	 * Represen boolExpr ? someExpr : someExpr
-	 * EMPTY_OPERATOR Instruction Instruction Instruction 
-	 */
-
-	export class ConditionalExprInstruction extends ExprInstruction {
-		constructor(){
-			super();
-			this._pInstructionList = [null, null, null];
-			this._eInstructionType = EAFXInstructionTypes.k_ConditionalExprInstruction;
-		}
-	}
-/**
-	 * Represent (type) expr
-	 * EMPTY_OPERATOR VariableTypeInstruction Instruction
-	 */
-
-	export class CastExprInstruction extends ExprInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null, null];
-			this._eInstructionType = EAFXInstructionTypes.k_CastExprInstruction;
-		}
-	}
-
-/**
-	 * Represent + - ! ++ -- expr
-	 * (+|-|!|++|--|) Instruction
-	 */
-
-	export class UnaryExprInstruction extends ExprInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null];
-			this._eInstructionType = EAFXInstructionTypes.k_UnaryExprInstruction;
-		}
-	}
-
-/**
-	 * Represent someExpr[someIndex]
-	 * EMPTY_OPERATOR Instruction ExprInstruction
-	 */
-
-	export class PostfixIndexInstruction extends ExprInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null, null];
-			this._eInstructionType = EAFXInstructionTypes.k_PostfixIndexInstruction;
-		}
-	}
-
-/*
-	 * Represent someExpr.id
-	 * EMPTY_OPERATOR Instruction IdInstruction
-	 */
-
-	export class PostfixPointInstruction extends ExprInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null, null];
-			this._eInstructionType = EAFXInstructionTypes.k_PostfixPointInstruction;
-		}
-	}
-
-/**
-	 * Represent someExpr ++
-	 * (-- | ++) Instruction
-	 */
-
-	export class PostfixArithmeticInstruction extends ExprInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null];
-			this._eInstructionType = EAFXInstructionTypes.k_PostfixArithmeticInstruction;
-		}
-	}
-
-/**
-	 * Represent @ Expr
-	 * @ Instruction
-	 */
-
-	export class PrimaryExprInstruction extends ExprInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null];
-			this._eInstructionType = EAFXInstructionTypes.k_PrimaryExprInstruction;
-		}
-	}
-
-/**
-	 * Represent (expr)
-	 * EMPTY_OPERATOR ExprInstruction
-	 */
-
-	export class ComplexExprInstruction extends ExprInstruction {
-		constructor(){
-			super();
-			this._pInstructionList = [null];
-			this._eInstructionType = EAFXInstructionTypes.k_ComplexExprInstruction;
-		}
-	}
-
-/**
-	 * Respresnt func(arg1,..., argn)
-	 * EMPTY_OPERATOR IdExprInstruction ExprInstruction ... ExprInstruction 
-	 */
-
-	export class FunctionCallInstruction extends ExprInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null];
-			this._eInstructionType = EAFXInstructionTypes.k_FunctionCallInstruction;
-		}
-	}
-
-/**
-	 * Respresnt system_func(arg1,..., argn)
-	 * EMPTY_OPERATOR SimpleInstruction ... SimpleInstruction 
-	 */
-
-	export class SystemCallInstruction extends ExprInstruction {
-		private _pSystemFunction: SystemFunctionInstruction = null;
-
-		constructor() {
-			super();
-			this._pInstructionList = null;
-			this._eInstructionType = EAFXInstructionTypes.k_SystemCallInstruction;
-		}
-
-		setSystemCallFunction(pFunction: IAFXFunctionDeclInstruction): void{
-			this._pSystemFunction = <SystemFunctionInstruction>pFunction;
-			this.setType(pFunction.getType());
-		}
-
-		setInstructions(pInstructionList: IAFXInstruction[]): void {
-			this._pInstructionList = pInstructionList;
-			for(var i:  number  = 0; i < pInstructionList.length; i++){
-				pInstructionList[i].setParent(this);
-			}
-		}
-
-		fillByArguments(pArguments: IAFXInstruction[]): void{
-			this.setInstructions(this._pSystemFunction.closeArguments(pArguments));
-		}
-
-	}
-
-/**
-	 * Respresnt ctor(arg1,..., argn)
-	 * EMPTY_OPERATOR IdInstruction ExprInstruction ... ExprInstruction 
-	 */
-
-	export class ConstructorCallInstruction extends ExprInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null];
-			this._eInstructionType = EAFXInstructionTypes.k_ConstructorCallInstruction;
-		}
-	}
-
-/**
-	 * Represetn compile vs_func(...args)
-	 * compile IdExprInstruction ExprInstruction ... ExprInstruction
-	 */
-
-	export class CompileExprInstruction extends ExprInstruction{
-		constructor() {
-			super();
-			this._pInstructionList = [null];
-			this._eInstructionType = EAFXInstructionTypes.k_CompileExprInstruction;
-		}
-
-		inline getFunction(): IAFXFunctionDeclInstruction {
-			return <IAFXFunctionDeclInstruction>this._pInstructionList[0].getParent();
-		}
-	}
-
-	export class MemExprInstruction extends ExprInstruction {
-		private _pBuffer: IAFXVariableDeclInstruction = null;
-
-		constructor() {
-			super();
-			this._pInstructionList = null;
-			this._eInstructionType = EAFXInstructionTypes.k_MemExprInstruction;
-		}
-
-		getBuffer(): IAFXVariableDeclInstruction{
-			return this._pBuffer;
-		}
-
-		setBuffer(pBuffer: IAFXVariableDeclInstruction): void {
-			this._pBuffer = pBuffer;
-			this.setType(pBuffer.getType());
-		}
-	}
-/**
-	 * Represetn sampler_state { states }
-	 * sampler_state IdExprInstruction ExprInstruction ... ExprInstruction
-	 */
-
-	export class SamplerStateBlockInstruction extends ExprInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null];
-			this._eInstructionType = EAFXInstructionTypes.k_SamplerStateBlockInstruction;
-		}
-	}
-
-	export class SamplerStateInstruction extends ExprInstruction {
-		constructor() {
-			super();
-			this._pInstructionList = [null, null];
-			this._eInstructionType = EAFXInstructionTypes.k_SamplerStateInstruction;
-		}
-	}
-}
-
-
-
-
-
-
-
-
-
 
 
 module akra.fx {
@@ -52912,10 +57591,21 @@ module akra.fx {
 		private _pSystemFunctionHashMap: BoolMap = null;
 		private _pSystemVariables: IAFXVariableDeclMap = null;
 
+		private _pPointerForExtractionList: IAFXVariableDeclInstruction[] = null;
+
 		private _pFunctionWithImplementationList: IAFXFunctionDeclInstruction[] = null;
 
 		private _pTechniqueList: IAFXTechniqueInstruction[] = null;
 		private _pTechniqueMap: TechniqueMap = null;
+
+		private _isAnalyzeInPass: bool = false;
+
+		private _sProvideNameSpace: string = "";
+
+		private _pGlobalComponentList: IAFXComponent[] = null;
+		private _pGlobalComponetShiftList:  number [] = null;
+
+		private _pAddedTechniqueList: IAFXTechniqueInstruction[] = null;
 
 		static pSystemTypes: SystemTypeMap = null;
 		static pSystemFunctions: SystemFunctionMap = null;
@@ -52933,6 +57623,8 @@ module akra.fx {
 			this._pStatistics = null;
 			this._sAnalyzedFileName = "";
 
+			this._pPointerForExtractionList = [];
+
 			this._pFunctionWithImplementationList = [];
 			this._pTechniqueList = [];
 			this._pTechniqueMap = <TechniqueMap>{};
@@ -52946,19 +57638,33 @@ module akra.fx {
 			var pRootNode: IParseNode = pTree.root;
 			var iParseTime:  number  = akra.now();
 
+// LOG(this);
+
 			this._pParseTree = pTree;
 			this._pStatistics = <IAFXEffectStats>{time: 0};
 
-			this.newScope();
-			this.analyzeGlobalUseDecls();
-			this.analyzeGlobalTypeDecls();
-			this.analyzeFunctionDefinitions();
-			this.analyzeGlobalImports();
-			this.analyzeTechniqueImports();
+			try{
+				this.newScope();
+// LOG("ok");
+				this.analyzeGlobalUseDecls();
+// LOG("ok");
+				this.analyzeGlobalProvideDecls();
+// LOG("ok");
+				this.analyzeGlobalTypeDecls();
+// LOG("ok");
+				this.analyzeFunctionDefinitions();
+// LOG("ok");
+				this.analyzeGlobalImports();
+// LOG("ok");
+				this.analyzeTechniqueImports();
+// LOG("ok");
 
-			this.analyzeVariableDecls();
-			this.analyzeFunctionDecls();
-			this.analyzeTechniques();
+				this.analyzeVariableDecls();
+// LOG("ok");
+				this.analyzeFunctionDecls();
+// LOG("ok");
+				this.analyzeTechniques();
+// LOG("ok");
 
 // this.analyzeTypes();
 
@@ -52971,14 +57677,19 @@ module akra.fx {
 // this.postAnalyzeEffect();
 // this.checkEffect();
 
-			this.endScope();
+				this.endScope();
+			}
+			catch(e){
 
+				throw e;
 
-
+			}
 
 //Stats
 			iParseTime = akra.now() - iParseTime;
 			this._pStatistics.time = iParseTime;
+
+			logger.setSourceLocation( "fx/Effect.ts" , 158 ); logger.log(this, iParseTime); ;
 
 			return true;
 		}
@@ -52992,6 +57703,10 @@ module akra.fx {
 		}
 
 		clear(): void {
+		}
+
+		inline getTechniqueList(): IAFXTechniqueInstruction[]{
+			return this._pTechniqueList;
 		}
 
 		static getSystemType(sTypeName: string): SystemTypeInstruction {
@@ -53023,7 +57738,7 @@ module akra.fx {
 				for(var j:  number  = 0; j < pArguments.length; j++){
 					isOk = false;
 
-					if(pArguments[j].getType().isEqual(pTestedArguments[j].getType())){
+					if(!pArguments[j].getType().isEqual(pTestedArguments[j].getType())){
 						break;
 					}
 
@@ -53041,7 +57756,7 @@ module akra.fx {
 			var pBufferType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 			var pBufferName: IAFXIdInstruction = new IdInstruction();
 
-			pBufferType.pushInVariableType(Effect.getSystemType("video_buffer"));
+			pBufferType.pushType(Effect.getSystemType("video_buffer"));
 
 			pBuffer.push(pBufferType, true);
 			pBuffer.push(pBufferName, true);
@@ -53102,7 +57817,7 @@ module akra.fx {
 
 		private initSystemVariables(): void {
 			if(isNull(Effect.pSystemVariables)){
-				this._pSystemVariables = Effect.pSystemVariables = {};
+				this._pSystemVariables = Effect.pSystemVariables = <IAFXVariableDeclMap>{};
 				this.addSystemVariables();
 			}
 
@@ -53113,6 +57828,9 @@ module akra.fx {
 			this.generateSystemVariable("fragCoord", "gl_FragCoord", "float4", false, true, true);
 			this.generateSystemVariable("frontFacing", "gl_FrontFacing", "bool", false, true, true);
 			this.generateSystemVariable("pointCoord", "gl_PointCoord", "float2", false, true, true);
+
+//Engine variable for passes
+			this.generatePassEngineVariable();
 		}
 
 		private generateSystemVariable(sName: string, sRealName: string, sTypeName: string,
@@ -53129,7 +57847,7 @@ module akra.fx {
 			pName.setName(sName);
 			pName.setRealName(sRealName);
 
-			pType.pushInVariableType(Effect.getSystemType(sTypeName));
+			pType.pushType(Effect.getSystemType(sTypeName));
 
 			if(isOnlyRead) {
 				pType._canWrite(false);
@@ -53138,10 +57856,27 @@ module akra.fx {
 			pVariableDecl._setForVertex(isForVertex);
 			pVariableDecl._setForPixel(isForPixel);
 
-			pVariableDecl.push(pName, true);
 			pVariableDecl.push(pType, true);
+			pVariableDecl.push(pName, true);
 
 			this._pSystemVariables[sName] = pVariableDecl;
+		}
+
+		private generatePassEngineVariable(): void {
+			var pVariableDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
+			var pName: IAFXIdInstruction = new IdInstruction();
+			var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
+
+			pType._canWrite(false);
+
+			pType._markAsUnverifiable(true);
+			pName.setName("engine");
+			pName.setRealName("engine");
+
+			pVariableDecl.push(pType, true);
+			pVariableDecl.push(pName, true);
+
+			this._pSystemVariables["engine"] = pVariableDecl;
 		}
 
 		private addSystemFunctions(): void {
@@ -53154,7 +57889,7 @@ module akra.fx {
 		    this.generateSystemFunction("ceil", "ceil($1)",  "template" , [ "template" ], ["float", "float2", "float3", "float4"]);
 		    this.generateSystemFunction("fract", "fract($1)",  "template" , [ "template" ], ["float", "float2", "float3", "float4"]);
 		    this.generateSystemFunction("abs", "abs($1)",  "template" , [ "template" ], ["float", "float2", "float3", "float4"]);
-		    this.generateSystemFunction("normalize", "normalize($1)", "float", [ "template" ], ["float", "float2", "float3", "float4"]);
+		    this.generateSystemFunction("normalize", "normalize($1)",  "template" , [ "template" ], ["float", "float2", "float3", "float4"]);
 		    this.generateSystemFunction("length", "length($1)", "float", [ "template" ], ["float", "float2", "float3", "float4"]);
 		    this.generateSystemFunction("reflect", "reflect($1,$2)",  "template" , [ "template" ,  "template" ], ["float", "float2", "float3", "float4"]);
 		    this.generateSystemFunction("max", "max($1,$2)",  "template" , [ "template" ,  "template" ], ["float", "float2", "float3", "float4"]);
@@ -53217,6 +57952,8 @@ module akra.fx {
 		    this.generateSystemFunction("tex2DProjLod", "texture2DProjLod($1,$2,$3)", "float4", ["sampler2D", "float4", "float"], null, true, false);
 		    this.generateSystemFunction("texCUBELod", "textureCubeLod($1,$2,$3)", "float4", ["sampler", "float3", "float"], null, true, false);
 		    this.generateSystemFunction("texCUBELod", "textureCubeLod($1,$2,$3)", "float4", ["samplerCUBE", "float3", "float"], null, true, false);
+
+//Extracts
 		}
 
 		private generateSystemFunction(sName: string, sTranslationExpr: string,
@@ -53344,6 +58081,7 @@ module akra.fx {
 			this.generateSystemType("sampler2D", "sampler2D", 1);
 			this.generateSystemType("samplerCUBE", "samplerCube", 1);
 			this.generateSystemType("video_buffer", "sampler2D", 1);
+			this.generateSystemType("video_buffer_header", "", 0);
 		}
 
 		private addSystemTypeVector(): void {
@@ -53377,15 +58115,15 @@ module akra.fx {
 
 			var pFloat2: IAFXTypeInstruction = this.generateSystemType("float2", "vec2", 0, true, pFloat, 2);
 			var pFloat3: IAFXTypeInstruction = this.generateSystemType("float3", "vec3", 0, true, pFloat, 3);
-			var pFloat4: IAFXTypeInstruction = this.generateSystemType("float4", "vec3", 0, true, pFloat, 4);
+			var pFloat4: IAFXTypeInstruction = this.generateSystemType("float4", "vec4", 0, true, pFloat, 4);
 
 			var pInt2: IAFXTypeInstruction = this.generateSystemType("int2", "ivec2", 0, true, pInt, 2);
 			var pInt3: IAFXTypeInstruction = this.generateSystemType("int3", "ivec3", 0, true, pInt, 3);
-			var pInt4: IAFXTypeInstruction = this.generateSystemType("int4", "ivec3", 0, true, pInt, 4);
+			var pInt4: IAFXTypeInstruction = this.generateSystemType("int4", "ivec4", 0, true, pInt, 4);
 
 			var pBool2: IAFXTypeInstruction = this.generateSystemType("bool2", "bvec2", 0, true, pBool, 2);
 			var pBool3: IAFXTypeInstruction = this.generateSystemType("bool3", "bvec3", 0, true, pBool, 3);
-			var pBool4: IAFXTypeInstruction = this.generateSystemType("bool4", "bvec3", 0, true, pBool, 4);
+			var pBool4: IAFXTypeInstruction = this.generateSystemType("bool4", "bvec4", 0, true, pBool, 4);
 
 			this.addFieldsToVectorFromSuffixObject(pXYSuffix, pFloat2, "float");
 			this.addFieldsToVectorFromSuffixObject(pRGSuffix, pFloat2, "float");
@@ -53489,6 +58227,10 @@ module akra.fx {
 			return Effect.getSystemVariable(sName) || this._pEffectScope.getVariable(sName);
 		}
 
+		private inline hasVariable(sName: string): bool {
+			return this._pEffectScope.hasVariable(sName);
+		}
+
 		private getType(sTypeName: string): IAFXTypeInstruction {
 			return Effect.getSystemType(sTypeName) || this._pEffectScope.getType(sTypeName);
 		}
@@ -53506,7 +58248,7 @@ module akra.fx {
 		}
 
 		private inline _errorFromInstruction(pError: IAFXInstructionError): void {
-			this._error(pError.code, pError.info);
+			this._error(pError.code, isNull(pError.info) ? {} : pError.info);
 		}
 
 		private _error(eCode:  number , pInfo: IEffectErrorInfo = {}): void {
@@ -53516,14 +58258,11 @@ module akra.fx {
 			var pLineColumn: {line:  number ; column:  number ;} = this.getNodeSourceLocation(this.getAnalyzedNode());
 
 			switch(eCode){
-				case  2202 :
-				case  2201 :
-				case  2203 :
+				default:
+					pInfo.line = pLineColumn.line + 1;
+					pInfo.column = pLineColumn.column + 1;
 
-					pInfo.line = pLineColumn.line;
-					pInfo.column = pLineColumn.column;
-
-					pLocation.line = pLocation.line;
+					pLocation.line = pLineColumn.line + 1;
 
 					break;
 			}
@@ -53535,6 +58274,10 @@ module akra.fx {
 		}
 
 		private inline setAnalyzedNode(pNode: IParseNode): void {
+// if(this._pAnalyzedNode !== pNode){
+// 	// debug_print("Analyze node: ", pNode); 
+// 	//.name + (pNode.value ?  " --> value: " + pNode.value + "." : "."));
+// }
 			this._pAnalyzedNode = pNode;
 		}
 
@@ -53582,32 +58325,30 @@ module akra.fx {
 			return this._pCurrentFunction;
 		}
 
-// private inline newInstruction(pInstruction: IAFXInstruction): void {
-// 	pInstruction.setParent(this._pCurrentInstruction);
-// 	this._pCurrentInstruction = pInstruction;
-// }
+		private inline isAnalzeInPass(): bool {
+			return this._isAnalyzeInPass;
+		}
 
-// private inline endInstruction(): void {
-// 	this._pCurrentInstruction = this._pCurrentInstruction.getParent();
-// }
-
-// private inline pushCommand(pInstruction: IAFXInstruction, isSetParent?: bool = false): void {
-// 	if(!isNull(this._pCurrentInstruction)){
-// 		this._pCurrentInstruction.push(pInstruction, isSetParent);
-// 	}
-// }
-
-// private inline pushAndSet(pInstruction: IAFXInstruction): void {
-// 	if(!isNull(this._pCurrentInstruction)){
-// 		this._pCurrentInstruction.push(pInstruction, true);
-// 	}
-// 	this.newInstruction(pInstruction);
-// }
+		private inline setAnalyzeInPass(isInPass: bool): void {
+			this._isAnalyzeInPass = isInPass;
+		}
 
 		private inline setOperator(sOperator: string): void {
 			if(!isNull(this._pCurrentInstruction)){
 				this._pCurrentInstruction.setOperator(sOperator);
 			}
+		}
+
+		private inline clearPointersForExtract(): void {
+			this._pPointerForExtractionList.length = 0;
+		}
+
+		private inline addPointerForExtract(pPointer: IAFXVariableDeclInstruction): void {
+			this._pPointerForExtractionList.push(pPointer);
+		}
+
+		private inline getPointerForExtractList(): IAFXVariableDeclInstruction[] {
+			return this._pPointerForExtractionList;
 		}
 
 		private findFunction(sFunctionName: string,
@@ -53624,7 +58365,7 @@ module akra.fx {
 							    pArguments: IAFXExprInstruction[]): IAFXVariableTypeInstruction {
 
 			var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-			pVariableType.pushInVariableType(pType);
+			pVariableType.pushType(pType);
 
 			return pVariableType;
 		}
@@ -53708,6 +58449,14 @@ module akra.fx {
         	this._pTechniqueList.push(pTechnique);
         }
 
+        private addExternalSharedVariable(pVariable: IAFXVariableDeclInstruction, eShaderType: EFunctionType): void {
+        	var isVarAdded: bool = this._pEffectScope.addVariable(pVariable);
+
+        	if(!isVarAdded) {
+   				this._error( 2278 , {varName: pVariable.getName()});
+   				return;
+			}
+        }
 
 
         private analyzeGlobalUseDecls(): void {
@@ -53717,6 +58466,17 @@ module akra.fx {
 			for(i = pChildren.length - 1; i >=0; i--) {
 				if(pChildren[i].name === "UseDecl") {
 					this.analyzeUseDecl(pChildren[i]);
+				}
+			}
+        }
+
+        private analyzeGlobalProvideDecls(): void {
+        	var pChildren: IParseNode[] = this._pParseTree.root.children;
+			var i:  number  = 0;
+
+			for(i = pChildren.length - 1; i >=0; i--) {
+				if(pChildren[i].name === "ProvideDecl") {
+					this.analyzeProvideDecl(pChildren[i]);
 				}
 			}
         }
@@ -53749,7 +58509,7 @@ module akra.fx {
 
 			for(i = pChildren.length - 1; i >=0; i--) {
 				if(pChildren[i].name === "ImportDecl") {
-					this.analyzeImportDecl(pChildren[i]);
+					this.analyzeImportDecl(pChildren[i], null);
 				}
 			}
         }
@@ -53786,6 +58546,7 @@ module akra.fx {
 
         	this.checkFunctionsForRecursion();
         	this.checkFunctionForCorrectUsage();
+        	this.generateInfoAboutUsedData();
         	this.generateShadersFromFunctions();
         }
 
@@ -53907,7 +58668,7 @@ module akra.fx {
         					}
 
         					if(!pUsedFunction._isUsedInVertex()){
-	        					pUsedFunction._usedInVertex();
+	        					pUsedFunction._markUsedInVertex();
         						isNewUsageSet = true;
         					}
 
@@ -53922,7 +58683,7 @@ module akra.fx {
         					}
 
         					if(!pUsedFunction._isUsedInPixel()){
-	        					pUsedFunction._usedInPixel();
+	        					pUsedFunction._markUsedInPixel();
 	        					isNewUsageSet = true;
         					}
         				}
@@ -53931,99 +58692,73 @@ module akra.fx {
         		}
 
         	}
+
+        	return;
+        }
+
+        private generateInfoAboutUsedData(): void {
+        	var pFunctionList: IAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
+
+        	for(var i:  number  = 0; i < pFunctionList.length; i++){
+        		pFunctionList[i]._generateInfoAboutUsedData();
+        	}
         }
 
         private generateShadersFromFunctions(): void {
         	var pFunctionList: IAFXFunctionDeclInstruction[] = this._pFunctionWithImplementationList;
 
+        	for(var i:  number  = 0; i < pFunctionList.length; i++){
+        		var pShader: IAFXFunctionDeclInstruction = null;
+
+        		if(pFunctionList[i]._isUsedAsVertex()){
+        			pShader = pFunctionList[i]._convertToVertexShader();
+        		}
+        		if(pFunctionList[i]._isUsedAsPixel()){
+        			pShader = pFunctionList[i]._convertToPixelShader();
+        		}
+        	}
         }
-
-
-// private addType(pType: IAFXType): void {
-// 	if(this.isSystemType(pType)){
-// 		this._error(EFFECT_REDEFINE_SYSTEM_TYPE, {typeName: pType.getName()});
-// 	}
-
-// 	var isTypeAdded: bool = this._pEffectScope.addType(pType);
-
-// 	if(!isTypeAdded){
-// 		this._error(EFFECT_REDEFINE_TYPE, {typeName: pType.getName()});
-// 	}
-// }
-
-// private addTypeDecl(pType: IAFXType): void {
-// 	//check
-// 	this.addType(pType);
-// }
-
-// private analyzeDecls(): void {
-// 	var pChildren: IParseNode[] = this._pParseTree.root.children;
-// 	var i: uint;	
-
-// 	for(i = pChildren.length - 1; i >=0; i--){
-// 		this.analyzeDecl(pChildren[i]);
-// 	}
-// }
-
-// private analyzeDecl(pNode: IParseNode): void {
-// 	switch (pNode.name) {
-//         case "VariableDecl":
-//             this.analyzeVariableDecl(pNode, null);
-//             break;
-//         case "TypeDecl":
-//             this.analyzeTypeDecl(pNode);
-//             break;
-//         case "FunctionDecl":
-//             this.analyzeFunctionDecl(pNode);
-//             break;
-//         case "VarStructDecl":
-//             this.analyzeVarStructDecl(pNode);
-//     	    break;
-//         case "TechniqueDecl":
-//             this.analyzeTechniqueDecl(pNode);
-//             break;
-//         case "UseDecl":
-//             this.analyzeUseDecl(pNode);
-//             break;
-//         case "ProvideDecl":
-//             this.analyzeProvideDecl(pNode);
-//             break;
-//         case "ImportDecl":
-//             this.analyzeImportDecl(pNode);
-//             break;
-//     }	
-// }
 
 		private analyzeVariableDecl(pNode: IParseNode, pInstruction?: IAFXInstruction = null): void {
 			this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
-        	var pUsageType: IAFXUsageTypeInstruction;
-        	var pVariable: IAFXVariableDeclInstruction;
+        	var pGeneralType: IAFXVariableTypeInstruction = null;
+        	var pVariable: IAFXVariableDeclInstruction = null;
         	var i:  number  = 0;
 
-        	pUsageType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
+        	pGeneralType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
 
         	for(i = pChildren.length - 2; i >= 1; i--){
         		if(pChildren[i].name === "Variable") {
-        			pVariable = this.analyzeVariable(pChildren[i], pUsageType);
+        			pVariable = this.analyzeVariable(pChildren[i], pGeneralType);
 
         			if(!isNull(pInstruction)){
         				pInstruction.push(pVariable, true);
+        				if(pInstruction._getInstructionType() === EAFXInstructionTypes.k_DeclStmtInstruction) {
+	        				var pVariableSubDecls: IAFXVariableDeclInstruction[] = pVariable.getSubVarDecls();
+	        				if(!isNull(pVariableSubDecls)){
+		        				for(var j:  number  = 0; j < pVariableSubDecls.length; j++) {
+		        					pInstruction.push(pVariableSubDecls[j], false);
+		        				}
+	        				}
+	        			}
         			}
         		}
         	}
         }
 
-      	private analyzeUsageType(pNode: IParseNode): IAFXUsageTypeInstruction {
+      	private analyzeUsageType(pNode: IParseNode): IAFXVariableTypeInstruction {
+      		this.setAnalyzedNode(pNode);
+
         	var pChildren: IParseNode[] = pNode.children;
 		    var i:  number  = 0;
-		    var pType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
+		    var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 
 		    for (i = pChildren.length - 1; i >= 0; i--) {
 		        if (pChildren[i].name === "Type") {
 		        	var pMainType: IAFXTypeInstruction = this.analyzeType(pChildren[i]);
-		        	pType.setTypeInstruction(pMainType);
+		        	pType.pushType(pMainType);
 		        }
 		        else if (pChildren[i].name === "Usage") {
 		        	var sUsage: string = this.analyzeUsage(pChildren[i]);
@@ -54083,21 +58818,25 @@ module akra.fx {
         }
 
         private analyzeUsage(pNode: IParseNode): string {
+        	this.setAnalyzedNode(pNode);
+
         	pNode = pNode.children[0];
         	return pNode.value;
         }
 
-        private analyzeVariable(pNode: IParseNode, pUsageType: IAFXUsageTypeInstruction): IAFXVariableDeclInstruction {
+        private analyzeVariable(pNode: IParseNode, pGeneralType: IAFXVariableTypeInstruction): IAFXVariableDeclInstruction {
+        	this.setAnalyzedNode(pNode);
+
         	var pChildren: IParseNode[] = pNode.children;
 
         	var pVarDecl: IAFXVariableDeclInstruction = new VariableDeclInstruction();
         	var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-        	var pAnnotation: IAFXAnnotationInstruction;
-        	var sSemantic: string;
-        	var pInitExpr: IAFXExprInstruction;
+        	var pAnnotation: IAFXAnnotationInstruction = null;
+        	var sSemantic: string = "";
+        	var pInitExpr: IAFXInitExprInstruction = null;
 
         	pVarDecl.push(pVariableType, true);
-        	pVariableType.push(pUsageType, true);
+        	pVariableType.pushType(pGeneralType);
 
         	this.analyzeVariableDim(pChildren[pChildren.length - 1], pVarDecl);
 
@@ -54113,6 +58852,10 @@ module akra.fx {
         		}
         		else if(pChildren[i].name === "Initializer"){
         			pInitExpr = this.analyzeInitializer(pChildren[i]);
+        			if(!pInitExpr.optimizeForVariableType(pVariableType)){
+        				this._error( 2269 , { varName: pVarDecl.getName() });
+        				return null;
+        			}
         			pVarDecl.push(pInitExpr, true);
         		}
         	}
@@ -54121,17 +58864,12 @@ module akra.fx {
 
         	this.addVariableDecl(pVarDecl);
 
-//TODO: Here must be additing to scope
-
-// this.addVariableDecl(pVarDecl);
-// var pVariable: IAFXVariable = new Variable();
-// pVariable.initializeFromInstruction(pVarDecl);
-// this.addVariableDecl(pVariable);
-
         	return pVarDecl;
         }
 
         private analyzeVariableDim(pNode: IParseNode, pVariableDecl: IAFXVariableDeclInstruction): void {
+			this.setAnalyzedNode(pNode);
+
 			var pChildren: IParseNode[] = pNode.children;
 			var pVariableType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pVariableDecl.getType();
 
@@ -54142,11 +58880,15 @@ module akra.fx {
 				return;
 			}
 
+			this.analyzeVariableDim(pChildren[pChildren.length - 1], pVariableDecl);
+
 			if(pChildren.length === 3) {
-				pVariableType.addPointIndex();
+				pVariableType.addPointIndex(true);
 			}
 			else if(pChildren.length === 4 && pChildren[0].name === "FromExpr"){
+
 				var pBuffer: IAFXVariableDeclInstruction = this.analyzeFromExpr(pChildren[0]);
+				pVariableType.addPointIndex(true);
 				pVariableType.setVideoBuffer(pBuffer);
 			}
 			else {
@@ -54158,23 +58900,41 @@ module akra.fx {
 				var pIndexExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
 				pVariableType.addArrayIndex(pIndexExpr);
 			}
-
-			this.analyzeVariableDim(pChildren[pChildren.length - 1], pVariableDecl);
         }
 
         private analyzeAnnotation(pNode:IParseNode): IAFXAnnotationInstruction {
+        	this.setAnalyzedNode(pNode);
+
         	return null;
         }
 
         private analyzeSemantic(pNode:IParseNode): string {
+        	this.setAnalyzedNode(pNode);
+
         	var sSemantic: string = pNode.children[0].value;
 // var pDecl: IAFXDeclInstruction = <IAFXDeclInstruction>this._pCurrentInstruction;
 // pDecl.setSemantic(sSemantic);	
 			return sSemantic;
         }
 
-        private analyzeInitializer(pNode:IParseNode): IAFXExprInstruction {
-        	return null;
+        private analyzeInitializer(pNode:IParseNode): IAFXInitExprInstruction {
+        	this.setAnalyzedNode(pNode);
+
+      		var pChildren: IParseNode[] = pNode.children;
+      		var pInitExpr: IAFXInitExprInstruction = new InitExprInstruction();
+
+      		if(pChildren.length === 2){
+      			pInitExpr.push(this.analyzeExpr(pChildren[0]), true);
+      		}
+      		else {
+	      		for(var i:  number  = pChildren.length - 3; i >=1; i--){
+	      			if(pChildren[i].name === "InitExpr"){
+	      				pInitExpr.push(this.analyzeInitExpr(pChildren[i]), true);
+	      			}
+	      		}
+	      	}
+
+      		return pInitExpr;
         }
 
         private analyzeFromExpr(pNode: IParseNode): IAFXVariableDeclInstruction {
@@ -54192,6 +58952,26 @@ module akra.fx {
 
         	return pBuffer;
         }
+
+        private analyzeInitExpr(pNode:IParseNode): IAFXInitExprInstruction {
+        	this.setAnalyzedNode(pNode);
+
+      		var pChildren: IParseNode[] = pNode.children;
+      		var pInitExpr: IAFXInitExprInstruction = new InitExprInstruction();
+
+      		if(pChildren.length === 1){
+      			pInitExpr.push(this.analyzeExpr(pChildren[0]), true);
+      		}
+      		else{
+      			for(var i:  number  = 0; i < pChildren.length; i++){
+      				if(pChildren[i].name === "InitExpr"){
+      					pInitExpr.push(this.analyzeInitExpr(pChildren[i]), true);
+      				}
+      			}
+      		}
+
+      		return pInitExpr;
+      	}
 
         private analyzeExpr(pNode: IParseNode): IAFXExprInstruction {
         	this.setAnalyzedNode(pNode);
@@ -54244,7 +59024,7 @@ module akra.fx {
         private analyzeObjectExpr(pNode: IParseNode): IAFXExprInstruction {
         	this.setAnalyzedNode(pNode);
 
-        	var sName: string = pNode.children[pNode.children.length - 1].value;
+        	var sName: string = pNode.children[pNode.children.length - 1].name;
 
         	switch(sName){
         		case "T_KW_COMPILE":
@@ -54265,10 +59045,10 @@ module akra.fx {
         	var pShaderFunc: IAFXFunctionDeclInstruction = null;
         	var i:  number  = 0;
 
-        	if(pChildren.length > 3){
-        		var pArgumentExpr: IAFXExprInstruction;
+        	pArguments = [];
 
-        		pArguments = [];
+        	if(pChildren.length > 4){
+        		var pArgumentExpr: IAFXExprInstruction;
 
         		for(i = pChildren.length - 3; i > 0; i--) {
         			if(pChildren[i].value !== ","){
@@ -54308,14 +59088,12 @@ module akra.fx {
 
         	var pChildren: IParseNode[] = pNode.children;
         	var pExpr: SamplerStateBlockInstruction = new SamplerStateBlockInstruction();
-        	var pSamplerState: SamplerStateInstruction;
         	var i:  number  = 0;
 
         	pExpr.setOperator("sample_state");
 
         	for(i = pChildren.length - 2; i >= 1; i--){
-        		pSamplerState = this.analyzeSamplerState(pChildren[i]);
-        		pExpr.push(pSamplerState);
+        		this.analyzeSamplerState(pChildren[i], pExpr);
         	}
 
         	if(!pExpr.check(ECheckStage.CODE_TARGET_SUPPORT)) { this._errorFromInstruction(pExpr.getLastError()); } ;
@@ -54323,8 +59101,88 @@ module akra.fx {
         	return pExpr;
         }
 
-        private analyzeSamplerState(pNode: IParseNode): SamplerStateInstruction {
-        	return null;
+        private analyzeSamplerState(pNode: IParseNode, pSamplerStates: SamplerStateBlockInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+      		var pChildren: IParseNode[] = pNode.children;
+      		if(pChildren[pChildren.length - 2].name === "StateIndex"){
+      			this._error( 2270 );
+      			return;
+      		}
+
+      		var pStateExprNode: IParseNode = pChildren[pChildren.length - 3];
+      		var pSubStateExprNode: IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
+      		var sStateType: string = pChildren[pChildren.length - 1].value.toUpperCase();
+      		var sStateValue: string = "";
+      		var isTexture: bool = false;
+
+      		if(isNull(pSubStateExprNode.value)){
+        		this._error( 2271 );
+  				return;
+        	}
+        	var pTexture: IAFXVariableDeclInstruction = null;
+
+      		switch (sStateType) {
+		        case "TEXTURE":
+		            var pTexture: IAFXVariableDeclInstruction = null;
+	      			if(pStateExprNode.children.length !== 3 || pSubStateExprNode.value === "{"){
+	      				this._error( 2271 );
+	      				return;
+	      			}
+	      			var sTextureName: string = pStateExprNode.children[1].value;
+	      			if(isNull(sTextureName) || !this.hasVariable(sTextureName)){
+	      				this._error( 2271 );
+	      				return;
+	      			}
+
+	      			pTexture = this.getVariable(sTextureName);
+	      			sStateValue = sTextureName;
+		            break;
+
+/* WRAP_S */
+		        case "ADDRESSU":
+/* WRAP_T */
+		        case "ADDRESSV":
+		        	sStateValue = pSubStateExprNode.value.toUpperCase();
+		        	switch (sStateValue) {
+		                case "WRAP":
+		                case "CLAMP":
+		                case "MIRROR":
+		                	break;
+		                default:
+		                    logger.setSourceLocation( "fx/Effect.ts" , 1617 ); logger.warning("Webgl don`t support this wrapmode: " + sStateValue); ;
+		                    return;
+		            }
+		            break;
+
+		        case "MAGFILTER":
+		        case "MINFILTER":
+		        	sStateValue = pSubStateExprNode.value.toUpperCase();
+		        	switch (sStateValue) {
+		                case "NEAREST":
+		                case "LINEAR":
+		                case "NEAREST_MIPMAP_NEAREST":
+		                case "LINEAR_MIPMAP_NEAREST":
+		                case "NEAREST_MIPMAP_LINEAR":
+		                case "LINEAR_MIPMAP_LINEAR":
+		                    break;
+		                default:
+		                    logger.setSourceLocation( "fx/Effect.ts" , 1634 ); logger.warning("Webgl don`t support this texture filter: " + sStateValue); ;
+		                    return;
+		            }
+            		break;
+
+		        default:
+		            logger.setSourceLocation( "fx/Effect.ts" , 1640 ); logger.warning("Don`t support this texture param: " + sStateType); ;
+		            return;
+		    }
+
+		    if(sStateType !== "TEXTURE") {
+		    	pSamplerStates.addState(sStateType, sStateValue);
+		    }
+		    else {
+		    	pSamplerStates.setTexture(pTexture);
+		    }
         }
 
         private analyzeComplexExpr(pNode: IParseNode): IAFXExprInstruction {
@@ -54355,6 +59213,7 @@ module akra.fx {
         	var pFunction: IAFXFunctionDeclInstruction = null;
         	var pFunctionId: IAFXIdExprInstruction = null;
         	var i:  number  = 0;
+        	var pCurrentAnalyzedFunction: IAFXFunctionDeclInstruction = this.getCurrentAnalyzedFunction();
 
         	if(pChildren.length > 3){
         		var pArgumentExpr: IAFXExprInstruction;
@@ -54381,13 +59240,13 @@ module akra.fx {
         		return null;
         	}
 
-        	if(!isNull(this.getCurrentAnalyzedFunction())){
+        	if(!isNull(pCurrentAnalyzedFunction)){
         		if(!pFunction._isForPixel()) {
-        			this.getCurrentAnalyzedFunction()._setForPixel(false);
+        			pCurrentAnalyzedFunction._setForPixel(false);
         		}
 
         		if(!pFunction._isForVertex()) {
-        			this.getCurrentAnalyzedFunction()._setForVertex(false);
+        			pCurrentAnalyzedFunction._setForVertex(false);
         		}
         	}
 
@@ -54408,6 +59267,39 @@ module akra.fx {
 	        		}
 
 	        		var pFunctionArguments: IAFXVariableDeclInstruction[] = (<FunctionDeclInstruction>pFunction).getArguments();
+		        	for(i = 0; i < pArguments.length; i++){
+	        			if(pFunctionArguments[i].getType().hasUsage("out")){
+	        				if(!pArguments[i].getType().isWritable()){
+	        					this._error( 2267 );
+	        					return null;
+	        				}
+
+	        				if(pArguments[i].getType().isStrongEqual(Effect.getSystemType("ptr"))){
+	        					this.addPointerForExtract(pArguments[i].getType()._getParentVarDecl());
+	        				}
+	        			}
+	        			else if(pFunctionArguments[i].getType().hasUsage("inout")){
+	        				if(!pArguments[i].getType().isWritable()){
+	        					this._error( 2267 );
+	        					return null;
+	        				}
+
+							if(!pArguments[i].getType().isReadable()){
+	        					this._error( 2268 );
+	        					return null;
+	        				}
+
+	        				if(pArguments[i].getType().isStrongEqual(Effect.getSystemType("ptr"))){
+	        					this.addPointerForExtract(pArguments[i].getType()._getParentVarDecl());
+	        				}
+	        			}
+	        			else {
+	        				if(!pArguments[i].getType().isReadable()){
+	        					this._error( 2268 );
+	        					return null;
+	        				}
+	        			}
+	        		}
 
 	        		for(i = pArguments.length; i < pFunctionArguments.length; i++){
 	        			pFunctionCallExpr.push(pFunctionArguments[i].getInitializeExpr(), false);
@@ -54415,11 +59307,11 @@ module akra.fx {
 
 	        	}
 
-	        	if(!isNull(this.getCurrentAnalyzedFunction())){
-	        		this.getCurrentAnalyzedFunction()._addUsedFunction(pFunction);
+	        	if(!isNull(pCurrentAnalyzedFunction)){
+	        		pCurrentAnalyzedFunction._addUsedFunction(pFunction);
 	        	}
 
-	        	pFunction._usedAs(EFunctionType.k_Function);
+	        	pFunction._markUsedAs(EFunctionType.k_Function);
 
 	        	pExpr = pFunctionCallExpr;
         	}
@@ -54428,6 +59320,15 @@ module akra.fx {
 
         		pSystemCallExpr.setSystemCallFunction(pFunction);
         		pSystemCallExpr.fillByArguments(pArguments);
+
+        		if(!isNull(pCurrentAnalyzedFunction)){
+        			for(i = 0; i < pArguments.length; i++){
+        				if(!pArguments[i].getType().isReadable()) {
+        					this._error( 2268 );
+        					return null;
+        				}
+        			}
+        		}
 
         		pExpr = pSystemCallExpr;
         	}
@@ -54442,9 +59343,9 @@ module akra.fx {
 
         	var pChildren: IParseNode[] = pNode.children;
         	var pExpr: ConstructorCallInstruction = new ConstructorCallInstruction();
-        	var pExprType: IAFXVariableTypeInstruction;
+        	var pExprType: IAFXVariableTypeInstruction = null;
         	var pArguments: IAFXExprInstruction[] = null;
-        	var pConstructorType: IAFXTypeInstruction;
+        	var pConstructorType: IAFXTypeInstruction = null;
         	var i:  number  = 0;
 
         	pConstructorType = this.analyzeType(pChildren[pChildren.length - 1]);
@@ -54455,7 +59356,7 @@ module akra.fx {
         	}
 
         	if(pChildren.length > 3){
-        		var pArgumentExpr: IAFXExprInstruction;
+        		var pArgumentExpr: IAFXExprInstruction = null;
 
         		pArguments = [];
 
@@ -54479,6 +59380,11 @@ module akra.fx {
 
         	if(!isNull(pArguments)){
         		for(i = 0; i < pArguments.length; i++) {
+        			if(!pArguments[i].getType().isReadable()){
+        				this._error( 2268 );
+        				return null;
+        			}
+
         			pExpr.push(pArguments[i], true);
         		}
         	}
@@ -54522,20 +59428,20 @@ module akra.fx {
         	pPointer = pPrimaryExprType.getPointer();
 
         	if(isNull(pPointer)){
-        		this._error( 2222 , { typeName: pPrimaryExprType.toString() });
+        		this._error( 2222 , { typeName: pPrimaryExprType.getHash() });
         		return null;
         	}
 
         	var pPointerVarType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pPrimaryExprType.getParent();
-        	if(!pPointerVarType.isStrictPointer()){
+        	if(!pPrimaryExprType.isStrictPointer()){
         		this.getCurrentAnalyzedFunction()._setForPixel(false);
         		this.getCurrentAnalyzedFunction()._notCanUsedAsFunction();
-        		pPointerVarType._setPointerToStrict();
+        		pPrimaryExprType._setPointerToStrict();
         	}
 
         	pExpr.setType(pPointer.getType());
         	pExpr.setOperator("@");
-        	pExpr.push(pPointer, false);
+        	pExpr.push(pPointer.getNameId(), false);
 
         	if(!pExpr.check(ECheckStage.CODE_TARGET_SUPPORT)) { this._errorFromInstruction(pExpr.getLastError()); } ;
 
@@ -54564,12 +59470,12 @@ module akra.fx {
 
         	var pChildren: IParseNode[] = pNode.children;
         	var pExpr: PostfixIndexInstruction = new PostfixIndexInstruction();
-        	var pPostfixExpr: IAFXExprInstruction;
-        	var pIndexExpr:IAFXExprInstruction;
-        	var pExprType: IAFXVariableTypeInstruction;
-        	var pPostfixExprType: IAFXVariableTypeInstruction;
-        	var pIndexExprType: IAFXVariableTypeInstruction;
-        	var pIntType: IAFXTypeInstruction;
+        	var pPostfixExpr: IAFXExprInstruction = null;
+        	var pIndexExpr:IAFXExprInstruction = null;
+        	var pExprType: IAFXVariableTypeInstruction = null;
+        	var pPostfixExprType: IAFXVariableTypeInstruction = null;
+        	var pIndexExprType: IAFXVariableTypeInstruction = null;
+        	var pIntType: IAFXTypeInstruction = null;
 
         	pPostfixExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
         	pPostfixExprType = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
@@ -54616,7 +59522,7 @@ module akra.fx {
 
         	sFieldName = pChildren[pChildren.length - 3].value;
 
-        	pFieldNameExpr = pPostfixExprType.getField(sFieldName);
+        	pFieldNameExpr = pPostfixExprType.getFieldExpr(sFieldName);
 
         	if(isNull(pFieldNameExpr)){
         		this._error( 2219 , { typeName: pPostfixExprType.toString(),
@@ -54672,7 +59578,7 @@ module akra.fx {
 
         	if(!pExpr.check(ECheckStage.CODE_TARGET_SUPPORT)) { this._errorFromInstruction(pExpr.getLastError()); } ;
 
-        	return null;
+        	return pExpr;
         }
 
         private analyzeUnaryExpr(pNode: IParseNode): IAFXExprInstruction{
@@ -54715,6 +59621,11 @@ module akra.fx {
 
         	pExprType = this.analyzeConstTypeDim(pChildren[2]);
         	pCastedExpr = this.analyzeExpr(pChildren[0]);
+
+        	if(!(<IAFXVariableTypeInstruction>pCastedExpr.getType()).isReadable()){
+        		this._error( 2268 );
+        		return null;
+        	}
 
         	pExpr.setType(pExprType);
         	pExpr.push(pExprType, true);
@@ -54760,6 +59671,21 @@ module akra.fx {
         		return null;
         	}
 
+        	if(!pConditionType.isReadable()){
+        		this._error( 2268 );
+        		return null;
+        	}
+
+        	if(!pTrueExprType.isReadable()){
+        		this._error( 2268 );
+        		return null;
+        	}
+
+        	if(!pFalseExprType.isReadable()){
+        		this._error( 2268 );
+        		return null;
+        	}
+
         	pExpr.setType(pTrueExprType);
         	pExpr.push(pConditionExpr, true);
         	pExpr.push(pTrueExpr, true);
@@ -54776,14 +59702,14 @@ module akra.fx {
         	var pChildren: IParseNode[] = pNode.children;
         	var sOperator: string = pNode.children[1].value;
         	var pExpr: ArithmeticExprInstruction = new ArithmeticExprInstruction();
-        	var pLeftExpr: IAFXExprInstruction;
-        	var pRightExpr: IAFXExprInstruction;
-			var pLeftType: IAFXVariableTypeInstruction;
-        	var pRightType: IAFXVariableTypeInstruction;
-        	var pExprType: IAFXVariableTypeInstruction;
+        	var pLeftExpr: IAFXExprInstruction = null;
+        	var pRightExpr: IAFXExprInstruction = null;
+			var pLeftType: IAFXVariableTypeInstruction = null;
+        	var pRightType: IAFXVariableTypeInstruction = null;
+        	var pExprType: IAFXVariableTypeInstruction = null;
 
         	pLeftExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
-        	pRightExpr = this.analyzeExpr(pChildren[pChildren.length - 1]);
+        	pRightExpr = this.analyzeExpr(pChildren[0]);
 
         	pLeftType = <IAFXVariableTypeInstruction>pLeftExpr.getType();
         	pRightType = <IAFXVariableTypeInstruction>pRightExpr.getType();
@@ -54875,6 +59801,16 @@ module akra.fx {
         		return null;
         	}
 
+        	if(!pLeftType.isReadable()){
+        		this._error( 2268 );
+        		return null;
+        	}
+
+        	if(!pRightType.isReadable()){
+        		this._error( 2268 );
+        		return null;
+        	}
+
         	pExpr.setOperator(sOperator);
         	pExpr.setType(pBoolType);
         	pExpr.push(pLeftExpr, true);
@@ -54903,18 +59839,12 @@ module akra.fx {
         	pLeftType = <IAFXVariableTypeInstruction>pLeftExpr.getType();
         	pRightType = <IAFXVariableTypeInstruction>pRightExpr.getType();
 
-        	if(!pLeftType._usedForWrite()){
-        		this._error( 2267 );
-        		return null;
-        	}
-//pRightType._usedForRead();
-
         	if(sOperator !== "="){
         		pExprType = this.checkTwoOperandExprTypes(sOperator, pLeftType, pRightType);
         	  	if(isNull(pExprType)){
         			this._error( 2207 , { operator: sOperator,
-        													  			  	  leftTypeName: pLeftType.toString(),
-        													  			  	  rightTypeName: pRightType.toString()});
+        													  			  	  leftTypeName: pLeftType.getHash(),
+        													  			  	  rightTypeName: pRightType.getHash()});
         		}
         	}
         	else {
@@ -54924,8 +59854,8 @@ module akra.fx {
         	pExprType = this.checkTwoOperandExprTypes("=", pLeftType, pExprType);
 
         	if(isNull(pExprType)){
-        		this._error( 2208 , { leftTypeName: pLeftType.toString(),
-        													   rightTypeName: pRightType.toString()});
+        		this._error( 2208 , { leftTypeName: pLeftType.getHash(),
+        													   rightTypeName: pRightType.getHash()});
         	}
 
         	pExpr.setOperator(sOperator);
@@ -54943,6 +59873,11 @@ module akra.fx {
 
         	var sName: string = pNode.value;
         	var pVariable: IAFXVariableDeclInstruction = this.getVariable(sName);
+
+        	if(pVariable.getType()._isUnverifiable() && !this.isAnalzeInPass()){
+        		this._error( 2276 );
+        		return null;
+        	}
 
         	if(isNull(pVariable)){
         		this._error( 2205 , {varName: sName});
@@ -54975,7 +59910,7 @@ module akra.fx {
 
         	switch(sName) {
         	 	case "T_UINT":
-        	 		pInstruction = new IntInstruction();
+    	 		pInstruction = new IntInstruction();
         	 		pInstruction.setValue((< number ><any>sValue) * 1);
         	 		break;
         	 	case "T_FLOAT":
@@ -54996,8 +59931,6 @@ module akra.fx {
         	 		break;
 			}
 
-// this.pushCommand(pInstruction, true);
-
         	return pInstruction;
         }
 
@@ -55010,7 +59943,7 @@ module akra.fx {
         	var pPostfixExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
         	var pPostfixExprType: IAFXVariableTypeInstruction = <IAFXVariableTypeInstruction>pPostfixExpr.getType();
 
-        	if(pPostfixExpr._getInstructionType() !== EAFXInstructionTypes.k_VariableTypeInstruction){
+        	if(!pPostfixExprType.isFromVariableDecl()){
         		this._error( 2253 );
         		return null;
         	}
@@ -55036,20 +59969,15 @@ module akra.fx {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
-//var pVariableType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
-//var pType: TypeInstruction = new TypeInstruction();
-
 
         	if(pChildren.length > 1) {
         		this._error( 2213 );
         		return null;
         	}
 
-//var pMainType: IAFXTypeInstruction;
         	var pType: IAFXVariableTypeInstruction;
 
         	pType = <IAFXVariableTypeInstruction>(this.analyzeType(pChildren[0]));
-//pType = pMainType;//this.generateVariableTypeFromId(pMainType);
 
         	if(!pType.isBase()){
         		this._error( 2214 , { typeName: pType.toString()});
@@ -55064,7 +59992,7 @@ module akra.fx {
 			this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
-        	var pUsageType: IAFXUsageTypeInstruction = null;
+        	var pUsageType: IAFXVariableTypeInstruction = null;
         	var pVariable: IAFXVariableDeclInstruction = null;
         	var i:  number  = 0;
 
@@ -55081,17 +60009,17 @@ module akra.fx {
         	}
         }
 
-        private analyzeUsageStructDecl(pNode: IParseNode): IAFXUsageTypeInstruction {
+        private analyzeUsageStructDecl(pNode: IParseNode): IAFXVariableTypeInstruction {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
 		    var i:  number  = 0;
-		    var pType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
+		    var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 
 		    for (i = pChildren.length - 1; i >= 0; i--) {
 		        if (pChildren[i].name === "StructDecl") {
 		        	var pMainType: IAFXTypeInstruction = this.analyzeStructDecl(pChildren[i]);
-		        	pType.setTypeInstruction(pMainType);
+		        	pType.pushType(pMainType);
 
 		        	var pTypeDecl: IAFXTypeDeclInstruction = new TypeDeclInstruction();
 		        	pTypeDecl.push(pMainType, true);
@@ -55115,9 +60043,6 @@ module akra.fx {
 			var pChildren: IParseNode[] = pNode.children;
 
 			var pTypeDeclInstruction: IAFXTypeDeclInstruction = new TypeDeclInstruction();
-// var pType: IAFXType = new Type();
-
-// this.newInstruction(pTypeDeclInstruction);
 
  			if(pChildren.length === 2) {
 				var pStructInstruction: ComplexTypeInstruction = <ComplexTypeInstruction>this.analyzeStructDecl(pChildren[1]);
@@ -55126,11 +60051,6 @@ module akra.fx {
 			else {
 				this._error( 2203 );
 			}
-
-// this.endInstruction();
-
-// this.pushCommand(pTypeDeclInstruction, true);
-// pType.initializeFromInstruction(pTypeDeclInstruction);
 
 			if(!pTypeDeclInstruction.check(ECheckStage.CODE_TARGET_SUPPORT)) { this._errorFromInstruction(pTypeDeclInstruction.getLastError()); } ;
 
@@ -55151,7 +60071,7 @@ module akra.fx {
 			var pChildren: IParseNode[] = pNode.children;
 
         	var pStruct: ComplexTypeInstruction = new ComplexTypeInstruction();
-        	var pFieldCollector: IAFXInstruction = new Instruction();
+        	var pFieldCollector: IAFXInstruction = new InstructionCollector();
 
         	var sName: string = pChildren[pChildren.length - 2].value;
 
@@ -55168,7 +60088,7 @@ module akra.fx {
 
 		    this.endScope();
 
-		    pStruct.push(pFieldCollector, true);
+		    pStruct.addFields(pFieldCollector, true);
 
 		    if(!pStruct.check(ECheckStage.CODE_TARGET_SUPPORT)) { this._errorFromInstruction(pStruct.getLastError()); } ;
 
@@ -55181,7 +60101,7 @@ module akra.fx {
 			var pChildren: IParseNode[] = pNode.children;
 
         	var pStruct: ComplexTypeInstruction = new ComplexTypeInstruction();
-        	var pFieldCollector: IAFXInstruction = new Instruction();
+        	var pFieldCollector: IAFXInstruction = new InstructionCollector();
 
         	this.newScope(EScopeType.k_Struct);
 
@@ -55249,8 +60169,8 @@ module akra.fx {
         	}
 
         	if(sLastNodeValue !== ";") {
-        		pFunction.setParseNode(pNode);
-        		pFunction.setScope(this.getScope());
+        		pFunction._setParseNode(pNode);
+        		pFunction._setImplementationScope(this.getScope());
         		this._pFunctionWithImplementationList.push(pFunction);
         	}
 
@@ -55264,15 +60184,17 @@ module akra.fx {
 
         private resumeFunctionAnalysis(pAnalzedFunction: IAFXFunctionDeclInstruction): void {
         	var pFunction: FunctionDeclInstruction = <FunctionDeclInstruction>pAnalzedFunction;
-        	var pNode: IParseNode = pFunction.getParseNode();
+        	var pNode: IParseNode = pFunction._getParseNode();
 
         	this.setAnalyzedNode(pNode);
-        	this.setScope(pFunction.getScope());
+        	this.setScope(pFunction._getImplementationScope());
 
         	var pChildren: IParseNode[] = pNode.children;
         	var pStmtBlock: StmtBlockInstruction = null;
 
         	this.setCurrentAnalyzedFunction(pFunction);
+
+// LOG("-----Analyze function '" + pFunction.getName() + "'------");
 
         	pStmtBlock = <StmtBlockInstruction>this.analyzeStmtBlock(pChildren[0]);
  			pFunction.setImplementation(<IAFXStmtInstruction>pStmtBlock);
@@ -55284,80 +60206,17 @@ module akra.fx {
  			if(!pFunction.check(ECheckStage.CODE_TARGET_SUPPORT)) { this._errorFromInstruction(pFunction.getLastError()); } ;
         }
 
-//    private analyzeFunctionDecl(pNode: IParseNode): IAFXFunctionDeclInstruction {
-//    	this.setAnalyzedNode(pNode);
-
-//    	var pChildren: IParseNode[] = pNode.children;
-//    	var pFunction: IAFXFunctionDeclInstruction = null;
-//    	var pFunctionDef: FunctionDefInstruction = null;
-//    	var pStmtBlock: StmtBlockInstruction = null;
-//    	var pAnnotation: IAFXAnnotationInstruction = null;
-//    	var sLastNodeValue: string = pChildren[0].value;
-
-//    	pFunctionDef = this.analyzeFunctionDef(pChildren[pChildren.length - 1]);
-
-//    	pFunction = this.findFunctionByDef(pFunctionDef);
-
-//    	if(!isDef(pFunction)){
-//    		this._error(EFFECT_BAD_CANNOT_CHOOSE_FUNCTION, {funcName: pFunction.getNameId().toString() });
-//    		return null;
-//    	}
-
-//    	if(!isNull(pFunction) && pFunction.hasImplementation()){
-//    		this._error(EFFECT_BAD_REDEFINE_FUNCTION, { funcName: pFunction.getNameId().toString() });
-//    		return null;
-//    	}
-
-//    	if(isNull(pFunction)){
-//    		pFunction = new FunctionDeclInstruction();
-//    	}
-//    	else {
-//    		if(!pFunction.getReturnType().isEqual(pFunctionDef.getReturnType())){
-//    			this._error(EFFECT_BAD_FUNCTION_DEF_RETURN_TYPE, {funcName: pFunction.getNameId().toString() });
-//    			return null;
-//    		}
-//    	}
-
-// 	pFunction.setFunctionDef(<IAFXDeclInstruction>pFunctionDef);
-
-//    	//this.newInstruction(pFunction);
-//    	this.resumeScope();
-
-//    	if(pChildren.length === 3) {
-//    		pAnnotation = this.analyzeAnnotation(pChildren[1]);
-//    		pFunction.setAnnotation(pAnnotation);
-//    	}
-
-//    	if(sLastNodeValue !== ";") {
-// pStmtBlock = <StmtBlockInstruction>this.analyzeStmtBlock(pChildren[0]);
-// pFunction.setImplementation(<IAFXStmtInstruction>pStmtBlock);
-//    	}
-
-//    	this.endScope();
-
-//  		// this.endInstruction();
-
-//  		CHECK_INSTRUCTION(pFunction, ECheckStage.CODE_TARGET_SUPPORT);  
-
-//  		this.addFunctionDecl(pFunction);  		
-
-//  		return pFunction;
-//    }
-
         private analyzeFunctionDef(pNode: IParseNode): FunctionDefInstruction {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
         	var pFunctionDef: FunctionDefInstruction = new FunctionDefInstruction();
         	var pReturnType: IAFXVariableTypeInstruction = null;
-        	var pUsageType: IAFXUsageTypeInstruction = null;
         	var pFuncName: IAFXIdInstruction = null;
         	var pArguments: IAFXVariableDeclInstruction[] = null;
         	var sFuncName: string = pChildren[pChildren.length - 2].value;
 
-        	pUsageType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
-        	pReturnType = new VariableTypeInstruction();
-        	pReturnType.push(pUsageType, true);
+        	pReturnType = this.analyzeUsageType(pChildren[pChildren.length - 1]);
 
         	if(pReturnType.isPointer() || pReturnType._containSampler() || pReturnType._containPointer()){
         		this._error( 2264 , { funcName: sFuncName });
@@ -55397,6 +60256,7 @@ module akra.fx {
         	for (i = pChildren.length - 2; i >= 1; i--) {
         		if (pChildren[i].name === "ParameterDecl") {
 		            pParameter = this.analyzeParameterDecl(pChildren[i]);
+		            pParameter._setScope(this.getScope());
 		            pFunctionDef.addParameter(pParameter, this.isStrictMode());
 		        }
         	}
@@ -55406,8 +60266,8 @@ module akra.fx {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
-        	var pType: IAFXUsageTypeInstruction;
-        	var pParameter: IAFXVariableDeclInstruction;
+        	var pType: IAFXVariableTypeInstruction = null;
+        	var pParameter: IAFXVariableDeclInstruction = null;
 
         	pType = this.analyzeParamUsageType(pChildren[1]);
         	pParameter = this.analyzeVariable(pChildren[0], pType);
@@ -55415,15 +60275,15 @@ module akra.fx {
         	return pParameter;
         }
 
-        private analyzeParamUsageType(pNode: IParseNode): IAFXUsageTypeInstruction {
+        private analyzeParamUsageType(pNode: IParseNode): IAFXVariableTypeInstruction {
         	var pChildren: IParseNode[] = pNode.children;
 		    var i:  number  = 0;
-		    var pType: IAFXUsageTypeInstruction = new UsageTypeInstruction();
+		    var pType: IAFXVariableTypeInstruction = new VariableTypeInstruction();
 
 		    for (i = pChildren.length - 1; i >= 0; i--) {
 		        if (pChildren[i].name === "Type") {
 		        	var pMainType: IAFXTypeInstruction = this.analyzeType(pChildren[i]);
-		        	pType.setTypeInstruction(pMainType);
+		        	pType.pushType(pMainType);
 		        }
 		        else if (pChildren[i].name === "ParamUsage") {
 		        	var sUsage: string = this.analyzeUsage(pChildren[i]);
@@ -55444,6 +60304,8 @@ module akra.fx {
         	var pStmt: IAFXStmtInstruction;
         	var i:  number  = 0;
 
+        	pStmtBlock._setScope(this.getScope());
+
         	this.newScope();
 
         	for(i = pChildren.length - 2; i > 0; i--){
@@ -55451,6 +60313,8 @@ module akra.fx {
         		if(!isNull(pStmt)){
         			pStmtBlock.push(pStmt);
         		}
+
+        		this.addExtactionStmts(pStmtBlock);
         	}
 
         	this.endScope();
@@ -55588,7 +60452,7 @@ module akra.fx {
         			this.analyzeVariableDecl(pNode, pDeclStmtInstruction);
         			break;
     			case "VarStructDecl":
-//TODO: add varstruct
+    				this.analyzeVarStructDecl(pNode,  pDeclStmtInstruction);
     				break;
         	}
 
@@ -55727,12 +60591,6 @@ module akra.fx {
         	var pForStmtInstruction: ForStmtInstruction = new ForStmtInstruction();
         	var pStmt: IAFXStmtInstruction = null;
 
-// if(pChildren.length !== 7){
-// 	//Empty for-step
-// 	this._error(EFFECT_BAD_FOR_STEP_EMPTY);
-// 	return null;
-// }
-
         	this.newScope();
 
         	this.analyzeForInit(pChildren[pChildren.length - 3], pForStmtInstruction);
@@ -55750,7 +60608,7 @@ module akra.fx {
         		pStmt = this.analyzeNonIfStmt(pChildren[0]);
         	}
         	else {
-        		pStmt = this.analyzeIfStmt(pChildren[0]);
+        		pStmt = this.analyzeStmt(pChildren[0]);
         	}
 
         	pForStmtInstruction.push(pStmt, true);
@@ -55778,7 +60636,6 @@ module akra.fx {
 					break;
 				default:
 // ForInit : ';'
-//this._error(EFFECT_BAD_FOR_INIT_EMPTY_ITERATOR);
 					pForStmtInstruction.push(null);
 					break;
 			}
@@ -55792,17 +60649,11 @@ module akra.fx {
 			var pChildren: IParseNode[] = pNode.children;
 
 			if(pChildren.length === 1){
-				pForStmtInstruction.push(null)
-//this._error(EFFECT_BAD_FOR_COND_EMPTY);
+				pForStmtInstruction.push(null);
 				return;
 			}
 
 			var pConditionExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[1]);
-
-// if(pConditionExpr._getInstructionType() !== EAFXInstructionTypes.k_RelationalExprInstruction){
-// 	this._error(EFFECT_BAD_FOR_COND_RELATION);
-// 	return;
-// }
 
 			pForStmtInstruction.push(pConditionExpr, true);
 			return;
@@ -55813,20 +60664,6 @@ module akra.fx {
 
 			var pChildren: IParseNode[] = pNode.children;
 			var pStepExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[0]);
-
-// if(pStepExpr._getInstructionType() === EAFXInstructionTypes.k_UnaryExprInstruction ||
-//    pStepExpr._getInstructionType() === EAFXInstructionTypes.k_AssignmentExprInstruction){
-
-// 	var sOperator: string = pStepExpr.getOperator();
-// 	if (sOperator !== "++" && sOperator !== "--" &&
-// 	    sOperator !== "+=" && sOperator !== "-=") {
-
-// 		this._error(EFFECT_BAD_FOR_STEP_OPERATOR, {operator: sOperator});
-// 	}
-// }
-// else {
-// 	this._error(EFFECT_BAD_FOR_STEP_EXPRESSION);
-// }
 
 			pForStmtInstruction.push(pStepExpr, true);
 
@@ -55859,12 +60696,11 @@ module akra.fx {
 		            pTechnique.setSemantic(sSemantic);
 		        }
 		        else {
-	            	this.analyzeTechniqueBodyForImports(pChildren[i]);
+	            	this.analyzeTechniqueBodyForImports(pChildren[i], pTechnique);
 	       		}
 	    	}
 
 	    	this.addTechnique(pTechnique);
-	    	pTechnique._setParseNode(pNode);
         }
 
         private analyzeComplexName(pNode: IParseNode): string {
@@ -55880,45 +60716,60 @@ module akra.fx {
         	return sName;
         }
 
-        private analyzeTechniqueBodyForImports(pNode: IParseNode): void {
+        private analyzeTechniqueBodyForImports(pNode: IParseNode, pTechnique: IAFXTechniqueInstruction): void {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
 
         	for (var i:  number  = pChildren.length - 2; i >= 1; i--) {
-        		this.analyzePassDeclForImports(pChildren[i]);
+        		this.analyzePassDeclForImports(pChildren[i], pTechnique);
         	}
         }
 
-        private analyzePassDeclForImports(pNode: IParseNode): void {
+        private analyzePassDeclForImports(pNode: IParseNode, pTechnique: IAFXTechniqueInstruction): void {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
 
         	if(pChildren[0].name === "ImportDecl"){
-        		this.analyzeImportDecl(pChildren[0]);
+        		this.analyzeImportDecl(pChildren[0], pTechnique);
         	}
         	else if(pChildren.length > 1) {
-        		this.analyzePassStateBlockForShaders(pChildren[0]);
+        		var pPass: IAFXPassInstruction = new PassInstruction();
+//TODO: add annotation and id
+        		this.analyzePassStateBlockForShaders(pChildren[0], pPass);
+
+        		pPass._setParseNode(pNode);
+
+        		pTechnique.addPass(pPass);
         	}
         }
 
-        private analyzePassStateBlockForShaders(pNode: IParseNode): void {
+        private analyzePassStateBlockForShaders(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
 
         	for (var i:  number  = pChildren.length - 2; i >= 1; i--) {
-		        this.analyzePassStateForShader(pChildren[i]);
+		        this.analyzePassStateForShader(pChildren[i], pPass);
 		    }
         }
 
-        private analyzePassStateForShader(pNode: IParseNode): void {
+        private analyzePassStateForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
 
         	if(pChildren.length === 1){
+        		pPass._markAsComplex(true);
+
+        		if(pChildren[0].name === "StateIf"){
+        			this.analyzePassStateIfForShader(pChildren[0], pPass);
+        		}
+        		else if(pChildren[0].name === "StateSwitch"){
+        			this.analyzePassStateSwitchForShader(pChildren[0], pPass);
+        		}
+
         		return;
         	}
 
@@ -55934,6 +60785,8 @@ module akra.fx {
         	else {
         		return;
         	}
+
+        	pNode.isAnalyzed = true;
 
         	var pStateExprNode: IParseNode = pChildren[pChildren.length - 3];
         	var pExprNode: IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
@@ -55951,25 +60804,460 @@ module akra.fx {
         		}
         	}
 
-        	pShaderFunc._usedAs(eShaderType);
+        	pShaderFunc._markUsedAs(eShaderType);
+
+        	pPass._addFoundFunction(pNode, pShaderFunc, eShaderType);
+        }
+
+        private analyzePassStateIfForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	if (pChildren.length === 5){
+        		this.analyzePassStateBlockForShaders(pChildren[0], pPass);
+        	}
+        	else if(pChildren.length === 7 && pChildren[0].name === "PassStateBlock"){
+        		this.analyzePassStateBlockForShaders(pChildren[2], pPass);
+        		this.analyzePassStateBlockForShaders(pChildren[0], pPass);
+        	}
+        	else {
+        		this.analyzePassStateBlockForShaders(pChildren[2], pPass);
+        		this.analyzePassStateIfForShader(pChildren[0], pPass);
+        	}
+        }
+
+        private analyzePassStateSwitchForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	this.analyzePassCaseBlockForShader(pChildren[0], pPass);
+        }
+
+        private analyzePassCaseBlockForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	for(var i:  number  = pChildren.length - 2; i >= 1; i--){
+        		if(pChildren[i].name === "CaseState"){
+        			this.analyzePassCaseStateForShader(pChildren[i], pPass);
+        		}
+        		else if(pChildren[i].name === "DefaultState"){
+        			this.analyzePassDefaultStateForShader(pChildren[i], pPass);
+        		}
+        	}
+        }
+
+        private analyzePassCaseStateForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	for(var i:  number  = pChildren.length - 4; i >= 0; i--){
+        		if(pChildren[i].name === "PassState"){
+        			this.analyzePassStateForShader(pChildren[i], pPass);
+        		}
+        	}
+        }
+
+        private analyzePassDefaultStateForShader(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	for(var i:  number  = pChildren.length - 3; i >= 0; i--){
+        		if(pChildren[i].name === "PassState"){
+        			this.analyzePassStateForShader(pChildren[i], pPass);
+        		}
+        	}
         }
 
         private resumeTechniqueAnalysis(pTechnique: IAFXTechniqueInstruction): void {
-        	var pNode: IParseNode = pTechnique._getParseNode();
+        	var pPassList: IAFXPassInstruction[] = pTechnique.getPassList();
+
+        	for(var i:  number  = 0; i < pPassList.length; i++){
+        		this.resumePassAnalysis(pPassList[i]);
+        	}
+
+			if(!pTechnique.checkForCorrectImports()){
+				this._error( 2275 , { techniqueName: pTechnique.getName() });
+				return;
+			}
+
+			pTechnique.finalizeTechnique(this._sProvideNameSpace,
+										 this._pGlobalComponentList,
+										 this._pGlobalComponetShiftList);
+        }
+
+        private resumePassAnalysis(pPass: IAFXPassInstruction): void {
+         	var pNode: IParseNode = pPass._getParseNode();
 
         	this.setAnalyzedNode(pNode);
 
         	var pChildren: IParseNode[] = pNode.children;
 
-//return null;
+        	this.setAnalyzeInPass(true);
+        	this.analyzePassStateBlock(pChildren[0], pPass);
+        	this.setAnalyzeInPass(false);
+
+        	pPass.finalizePass();
         }
 
-        private analyzeImportDecl(pNode: IParseNode): any {
-        	return null;
+        private analyzePassStateBlock(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	pPass._addCodeFragment("{");
+
+        	for (var i:  number  = pChildren.length - 2; i >= 1; i--) {
+		        this.analyzePassState(pChildren[i], pPass);
+		    }
+
+		    pPass._addCodeFragment("}");
         }
 
-        private analyzeProvideDecl(pNode: IParseNode): any {
-        	return null;
+        private analyzePassState(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	if(pChildren.length === 1){
+        		if(pChildren[0].name === "StateIf"){
+        			this.analyzePassStateIf(pChildren[0], pPass);
+        		}
+        		else if(pChildren[0].name === "StateSwitch"){
+        			this.analyzePassStateSwitch(pChildren[0], pPass);
+        		}
+
+        		return;
+        	}
+
+        	if(pNode.isAnalyzed) {
+        		var pFunc: IAFXFunctionDeclInstruction = pPass._getFoundedFunction(pNode);
+        		var eShaderType: EFunctionType = pPass._getFoundedFunctionType(pNode);
+        		var pShader: IAFXFunctionDeclInstruction = null;
+
+	        	if(eShaderType === EFunctionType.k_Vertex){
+	        		pShader = pFunc._getVertexShader();
+	        	}
+	        	else {
+	        		pShader = pFunc._getPixelShader();
+	        	}
+
+	        	pPass.addShader(pShader);
+        	}
+        	else {
+        		var sType: string = pChildren[pChildren.length - 1].value.toUpperCase();
+        		var pStateExprNode: IParseNode = pChildren[pChildren.length - 3];
+        		var pExprNode: IParseNode = pStateExprNode.children[pStateExprNode.children.length - 1];
+
+        		switch (sType) {
+			        case "ZENABLE":
+			        case "ZWRITEENABLE":
+			        case "SRCBLEND":
+			        case "DESTBLEND":
+			        case "CULLMODE":
+			        case "ZFUNC":
+			        case "DITHERENABLE":
+			        case "ALPHABLENDENABLE":
+			        case "ALPHATESTENABLE":
+			            break;
+
+			        default:
+			            logger.setSourceLocation( "fx/Effect.ts" , 3434 ); logger.warning("Unsupported render state type used: " + sType + ". WebGl..."); ;
+			            return;
+			    }
+
+			    if (pExprNode.value === "{" || pExprNode.value === "<" ||
+			        isNull(pExprNode.value)) {
+			        logger.setSourceLocation( "fx/Effect.ts" , 3440 ); logger.warning("So pass state are incorrect"); ;
+			        return;
+			    }
+
+			    var sValue: string = pExprNode.value.toUpperCase();
+			    switch (sType) {
+			        case "ALPHABLENDENABLE":
+			        case "ALPHATESTENABLE":
+			            logger.setSourceLocation( "fx/Effect.ts" , 3448 ); logger.warning("ALPHABLENDENABLE/ALPHATESTENABLE not supported in WebGL."); ;
+			            return;
+
+			        case "DITHERENABLE":
+			        case "ZENABLE":
+			        case "ZWRITEENABLE":
+			            switch (sValue) {
+			                case "TRUE":
+			                case "FALSE":
+			                    break;
+
+			                default:
+			                    logger.setSourceLocation( "fx/Effect.ts" , 3461 ); logger.warning("Unsupported render state ALPHABLENDENABLE/ZENABLE/ZWRITEENABLE/DITHERENABLE value used: " + sValue + ".");
+                                                ;
+								return;
+			            }
+			            break;
+
+			        case "SRCBLEND":
+			        case "DESTBLEND":
+			            switch (sValue) {
+			                case "ZERO":
+			                case "ONE":
+			                case "SRCCOLOR":
+			                case "INVSRCCOLOR":
+			                case "SRCALPHA":
+			                case "INVSRCALPHA":
+			                case "DESTALPHA":
+			                case "INVDESTALPHA":
+			                case "DESTCOLOR":
+			                case "INVDESTCOLOR":
+			                case "SRCALPHASAT":
+			                	break;
+
+			                default:
+			                    logger.setSourceLocation( "fx/Effect.ts" , 3483 ); logger.warning("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + "."); ;
+			                    return;
+			            }
+			            break;
+
+			        case "CULLMODE":
+			            switch (sValue) {
+			                case "NONE":
+			                case "CW":
+			                case "CCW":
+			                case "FRONT_AND_BACK":
+			                    break;
+			                default:
+			                    logger.setSourceLocation( "fx/Effect.ts" , 3496 ); logger.warning("Unsupported render state SRCBLEND/DESTBLEND value used: " + sValue + "."); ;
+			                    return;
+			            }
+			            break;
+
+			        case "ZFUNC":
+			            switch (sValue) {
+			                case "NEVER":
+			                case "LESS":
+			                case "EQUAL":
+			                case "LESSEQUAL":
+			                case "GREATER":
+			                case "NOTEQUAL":
+			                case "GREATEREQUAL":
+			                case "ALWAYS":
+			                	break;
+			                default:
+			                    logger.setSourceLocation( "fx/Effect.ts" , 3514 ); logger.warning("Unsupported render state ZFUNC value used: " + sValue + ".");
+                                          ;
+			                   return;
+			            }
+			            break;
+			    }
+
+			    pPass.setState(sType, sValue);
+        	}
+
+        }
+
+        private analyzePassStateIf(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	var pIfExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
+        	pIfExpr.prepareFor(EFunctionType.k_PassFunction);
+
+        	pPass._addCodeFragment("if("+ pIfExpr.toFinalCode() + ")");
+
+        	this.analyzePassStateBlock(pChildren[pChildren.length - 5], pPass);
+
+        	if(pChildren.length > 5){
+        		pPass._addCodeFragment("else");
+
+        		if(pChildren[0].name === "PassStateBlock"){
+        			this.analyzePassStateBlock(pChildren[0], pPass);
+        		}
+        		else {
+        			pPass._addCodeFragment(" ");
+        			this.analyzePassStateIf(pChildren[0], pPass);
+        		}
+        	}
+        }
+
+        private analyzePassStateSwitch(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	var sCodeFragment: string = "switch";
+        	var pSwitchExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 3]);
+        	pSwitchExpr.prepareFor(EFunctionType.k_PassFunction);
+
+        	pPass._addCodeFragment("(" + pSwitchExpr.toFinalCode() + ")");
+
+        	this.analyzePassCaseBlock(pChildren[0], pPass);
+        }
+
+        private analyzePassCaseBlock(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	pPass._addCodeFragment("{");
+
+        	for(var i:  number  = pChildren.length - 2; i >= 1; i--){
+        		if(pChildren[i].name === "CaseState"){
+        			this.analyzePassCaseState(pChildren[i], pPass);
+        		}
+        		else if(pChildren[i].name === "DefaultState"){
+        			this.analyzePassDefault(pChildren[i], pPass);
+        		}
+        	}
+
+        	pPass._addCodeFragment("}");
+        }
+
+        private analyzePassCaseState(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	var pCaseStateExpr: IAFXExprInstruction = this.analyzeExpr(pChildren[pChildren.length - 2]);
+        	pCaseStateExpr.prepareFor(EFunctionType.k_PassFunction);
+
+        	pPass._addCodeFragment("case " + pCaseStateExpr.toFinalCode() + ": ");
+
+        	for(var i:  number  = pChildren.length - 4; i >= 0; i--){
+        		if(pChildren[i].name === "PassState"){
+        			this.analyzePassStateForShader(pChildren[i], pPass);
+        		}
+        		else{
+        			pPass._addCodeFragment(pChildren[i].value);
+        		}
+        	}
+        }
+
+        private analyzePassDefault(pNode: IParseNode, pPass: IAFXPassInstruction): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	pPass._addCodeFragment("default: ");
+
+        	for(var i:  number  = pChildren.length - 3; i >= 0; i--){
+        		if(pChildren[i].name === "PassState"){
+        			this.analyzePassStateForShader(pChildren[i], pPass);
+        		}
+        		else {
+        			pPass._addCodeFragment(pChildren[i].value);
+        		}
+        	}
+        }
+
+        private analyzeImportDecl(pNode: IParseNode, pTechnique?: IAFXTechniqueInstruction = null): void {
+      		this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+		    var sComponentName: string = this.analyzeComplexName(pChildren[pChildren.length - 2]);
+		    var iShift:  number  = 0;
+
+		    if(pChildren[0].name === "ExtOpt"){
+		    	logger.setSourceLocation( "fx/Effect.ts" , 3628 ); logger.warning("We don`t suppor ext-commands for import"); ;
+		    }
+		    if (pChildren.length !== 2) {
+		        iShift = this.analyzeShiftOpt(pChildren[0]);
+		    }
+
+		    var pComponent: IAFXComponent = this._pComposer.getComponentByName(sComponentName);
+		    if (!pComponent) {
+		        this._error( 2277 , { componentName: sComponentName });
+		        return;
+		    }
+
+		    this.addComponent(pComponent, iShift, pTechnique);
+        }
+
+        private analyzeProvideDecl(pNode: IParseNode): void {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	if (pChildren.length === 2) {
+		        this._sProvideNameSpace = this.analyzeComplexName(pChildren[0]);
+		    }
+		    else {
+		        this._error( 2303 );
+		        return;
+		    }
+        }
+
+        private analyzeShiftOpt(pNode: IParseNode):  number  {
+        	this.setAnalyzedNode(pNode);
+
+        	var pChildren: IParseNode[] = pNode.children;
+
+        	var iShift:  number  = < number ><any>(pChildren[0].value);
+
+		    if (pChildren.length === 2) {
+		        iShift *= 1;
+		    }
+		    else {
+		        iShift *= -1;
+		    }
+
+		    return iShift;
+        }
+
+        private addComponent(pComponent: IAFXComponent, iShift:  number , pTechnique: IAFXTechniqueInstruction): void {
+        	if(!isNull(pTechnique)){
+        		pTechnique.addComponent(pComponent, iShift);
+        	}
+        	else {
+        		if(isNull(this._pGlobalComponentList)){
+        			this._pGlobalComponentList = [];
+        			this._pGlobalComponetShiftList = [];
+        		}
+
+        		this._pGlobalComponentList.push(pComponent);
+        		this._pGlobalComponetShiftList.push(iShift);
+        	}
+
+//TODO: add correct add of compnent, not global
+
+        	var pComponentTechnique: IAFXTechniqueInstruction = pComponent.getTechnique();
+        	if(this.isAddedTechnique(pComponentTechnique)){
+        		return;
+        	}
+
+        	var pSharedListV: IAFXVariableDeclInstruction[] = pComponentTechnique.getSharedVariablesForVertex();
+        	var pSharedListP: IAFXVariableDeclInstruction[] = pComponentTechnique.getSharedVariablesForPixel();
+
+        	for(var i:  number  = 0; i < pSharedListV.length; i++){
+        		this.addExternalSharedVariable(pSharedListV[i], EFunctionType.k_Vertex);
+        	}
+
+        	for(var i:  number  = 0; i < pSharedListP.length; i++){
+        		this.addExternalSharedVariable(pSharedListP[i], EFunctionType.k_Pixel);
+        	}
+
+        	if(isNull(this._pAddedTechniqueList)){
+        		this._pAddedTechniqueList = [];
+        	}
+
+        	this._pAddedTechniqueList.push(pTechnique);
+        }
+
+        private isAddedTechnique(pTechnique: IAFXTechniqueInstruction): bool {
+        	if(isNull(this._pAddedTechniqueList)){
+        		return false;
+        	}
+
+        	for(var i:  number  = 0; i < this._pAddedTechniqueList.length; i++){
+        		if(this._pAddedTechniqueList[i] === pTechnique){
+        			return true;
+        		}
+        	}
+
+        	return false;
         }
 
 
@@ -55986,6 +61274,13 @@ module akra.fx {
         private checkTwoOperandExprTypes(sOperator: string,
         								 pLeftType: IAFXVariableTypeInstruction,
         								 pRightType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
+        	if(pLeftType._isUnverifiable()){
+        		return pLeftType;
+        	}
+
+        	if(pRightType._isUnverifiable()){
+        		return pRightType;
+        	}
 
         	var isComplex: bool = pLeftType.isComplex() || pRightType.isComplex();
 			var isArray: bool = pLeftType.isNotBaseArray() || pRightType.isNotBaseArray();
@@ -55994,6 +61289,41 @@ module akra.fx {
 
         	if(isArray || isSampler) {
         		return null;
+        	}
+
+        	if(sOperator === "%" || sOperator === "%=") {
+        		return null;
+        	}
+
+        	if(this.isAssignmentOperator(sOperator)){
+        		if(!pLeftType.isWritable()){
+        			this._error( 2267 );
+        			return null;
+        		}
+
+        		if(pLeftType.isStrongEqual(Effect.getSystemType("ptr"))){
+					this.addPointerForExtract(pLeftType._getParentVarDecl());
+				}
+
+        		if(!pRightType.isReadable()){
+        			this._error( 2268 );
+        			return null;
+        		}
+
+        		if(sOperator !== "=" && !pLeftType.isReadable()){
+        			this._error( 2268 )
+        		}
+        	}
+        	else {
+        		if(!pLeftType.isReadable()){
+        			this._error( 2268 );
+        			return null;
+        		}
+
+        		if(!pRightType.isReadable()){
+        			this._error( 2268 );
+        			return null;
+        		}
         	}
 
         	if(isComplex){
@@ -56008,16 +61338,12 @@ module akra.fx {
         		}
         	}
 
-        	if(sOperator === "%" || sOperator === "%=") {
-        		return null;
-        	}
-
         	var pReturnType: IAFXVariableTypeInstruction = null;
         	var pLeftBaseType: IAFXVariableTypeInstruction = (<SystemTypeInstruction>pLeftType.getBaseType()).getVariableType();
         	var pRightBaseType: IAFXVariableTypeInstruction = (<SystemTypeInstruction>pRightType.getBaseType()).getVariableType();
 
 
-        	if(pLeftType.isConst() && this.isBadForConstOperator(sOperator)){
+        	if(pLeftType.isConst() && this.isAssignmentOperator(sOperator)){
         		return null;
         	}
 
@@ -56062,7 +61388,7 @@ module akra.fx {
         		}
 
         		if(this.isScalarType(pRightType)){
-        			return pLeftType;
+        			return pLeftBaseType;
         		}
 
         		if(sOperator === "*" || sOperator === "*="){
@@ -56094,12 +61420,35 @@ module akra.fx {
         private checkOneOperandExprType(sOperator: string,
         								pType: IAFXVariableTypeInstruction): IAFXVariableTypeInstruction {
 
+        	if(pType._isUnverifiable()){
+        		return pType;
+        	}
+
         	var isComplex: bool = pType.isComplex();
 			var isArray: bool = pType.isNotBaseArray();
 			var isSampler: bool = this.isSamplerType(pType);
 
 			if(isComplex || isArray || isSampler){
 				return null;
+			}
+
+			if(!pType.isReadable()){
+       			this._error( 2268 );
+       			return null;
+       		}
+
+
+			if(sOperator === "++" || sOperator === "--"){
+				if(!pType.isWritable()){
+					this._error( 2267 );
+					return null;
+				}
+
+				if(pType.isStrongEqual(Effect.getSystemType("ptr"))){
+					this.addPointerForExtract(pType._getParentVarDecl());
+				}
+
+				return pType;
 			}
 
         	if(sOperator === "!"){
@@ -56124,7 +61473,7 @@ module akra.fx {
 //return null;
         }
 
-        private isBadForConstOperator(sOperator: string): bool {
+        private isAssignmentOperator(sOperator: string): bool {
         	return sOperator === "+=" || sOperator === "-=" ||
         		   sOperator === "*=" || sOperator === "/=" ||
         		   sOperator === "%=" || sOperator === "=";
@@ -56215,6 +61564,92 @@ module akra.fx {
     		       pType.isEqual(Effect.getSystemType("video_buffer"));
         }
 
+        private addExtactionStmts(pStmt: IAFXStmtInstruction): void {
+        	var pPointerList: IAFXVariableDeclInstruction[] = this.getPointerForExtractList();
+
+        	for(var i:  number  = 0; i < pPointerList.length; i++) {
+        		this.generateExtractStmtFromPointer(pPointerList[i], pStmt);
+        	}
+
+        	this.clearPointersForExtract();
+        }
+
+        private generateExtractStmtFromPointer(pPointer: IAFXVariableDeclInstruction, pParentStmt: IAFXStmtInstruction): IAFXStmtInstruction {
+        	var pPointerType: IAFXVariableTypeInstruction = pPointer.getType();
+        	var pWhatExtracted: IAFXVariableDeclInstruction = pPointerType._getDownPointer();
+        	var pWhatExtractedType: IAFXVariableTypeInstruction = null;
+
+        	while(!isNull(pWhatExtracted)){
+        		pWhatExtractedType = pWhatExtracted.getType();
+
+        		if(!pWhatExtractedType.isComplex()){
+        			var pSingleExtract: ExtractStmtInstruction = new ExtractStmtInstruction();
+        			pSingleExtract.generateStmtForBaseType(
+        									pWhatExtracted,
+        									pWhatExtractedType.getPointer(),
+        									pWhatExtractedType.getVideoBuffer(), 0);
+
+        			if(!pSingleExtract.check(ECheckStage.CODE_TARGET_SUPPORT)) { this._errorFromInstruction(pSingleExtract.getLastError()); } ;
+
+        			pParentStmt.push(pSingleExtract, true);
+        		}
+        		else {
+        			this.generateExtractStmtForComplexVar(
+        									pWhatExtracted, pParentStmt,
+        									pWhatExtractedType.getPointer(),
+        									pWhatExtractedType.getVideoBuffer(), 0);
+        		}
+
+        		pWhatExtracted = pWhatExtractedType._getDownPointer();
+        	}
+
+        	return pParentStmt;
+        }
+
+        private generateExtractStmtForComplexVar(pVarDecl: IAFXVariableDeclInstruction,
+        										 pParentStmt: IAFXStmtInstruction,
+        										 pPointer: IAFXVariableDeclInstruction,
+        										 pBuffer: IAFXVariableDeclInstruction,
+        										 iPadding:  number ): void {
+        	var pVarType: IAFXVariableTypeInstruction = pVarDecl.getType();
+        	var pFieldNameList: string[] = pVarType.getFieldNameList();
+        	var pField: IAFXVariableDeclInstruction = null;
+        	var pFieldType: IAFXVariableTypeInstruction = null;
+        	var pSingleExtract: ExtractStmtInstruction = null;
+
+        	for(var i:  number  = 0; i < pFieldNameList.length; i++){
+        		pField = pVarType.getField(pFieldNameList[i]);
+
+        		if(isNull(pField)){
+        			continue;
+				}
+
+ 				pFieldType = pField.getType();
+
+ 				if(pFieldType.isPointer()){
+ 					var pFieldPointer: IAFXVariableDeclInstruction = pFieldType._getMainPointer();
+ 					pSingleExtract = new ExtractStmtInstruction();
+ 					pSingleExtract.generateStmtForBaseType(pFieldPointer, pPointer, pFieldType.getVideoBuffer(), iPadding + pFieldType.getPadding());
+
+ 					if(!pSingleExtract.check(ECheckStage.CODE_TARGET_SUPPORT)) { this._errorFromInstruction(pSingleExtract.getLastError()); } ;
+
+ 					pParentStmt.push(pSingleExtract, true);
+ 					this.generateExtractStmtFromPointer(pFieldPointer, pParentStmt);
+ 				}
+ 				else if(pFieldType.isComplex()) {
+ 					this.generateExtractStmtForComplexVar(pField, pParentStmt, pPointer, pBuffer, iPadding + pFieldType.getPadding());
+ 				}
+ 				else {
+ 					pSingleExtract = new ExtractStmtInstruction();
+        			pSingleExtract.generateStmtForBaseType(pField, pPointer, pBuffer, iPadding + pFieldType.getPadding());
+
+        			if(!pSingleExtract.check(ECheckStage.CODE_TARGET_SUPPORT)) { this._errorFromInstruction(pSingleExtract.getLastError()); } ;
+
+        			pParentStmt.push(pSingleExtract, true);
+ 				}
+ 	       	}
+        }
+
 
 		private getNodeSourceLocation(pNode: IParseNode): {line:  number ; column:  number ;} {
 			if(isDef(pNode.line)){
@@ -56240,36 +61675,1267 @@ module akra.fx {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra.fx {
+	export class ComponentBlend implements IAFXComponentBlend {
+		private _pComposer: IAFXComposer = null;
+
+		private _isReady: bool = false;
+		private _sHash: string = "";
+		private _bNeedToUpdateHash: bool = false;
+
+		private _pComponentCountMap: IntMap = null;
+
+		private _pComponentList: IAFXComponent[] = null;
+		private _pComponentShiftList:  number [] = null;
+		private _pComponentPassNumberList:  number [] = null;
+
+		private _iShiftMin:  number  = 0;
+		private _iShiftMax:  number  = 0;
+
+		private _pPassesDList: IAFXPassInstruction[][] = null;
+		private _pShaderInputVarBlend: ShaderInputBlend[] = null;
+
+		constructor(pComposer: IAFXComposer){
+			this._pComposer = pComposer;
+
+			this._pComponentCountMap = <IntMap>{};
+
+			this._pComponentList = [];
+			this._pComponentShiftList = [];
+			this._pComponentPassNumberList = [];
+		}
+
+		inline isReadyToUse(): bool {
+			return this._isReady;
+		}
+
+		inline getComponentCount():  number  {
+			return this._pComponentList.length;
+		}
+
+		inline getTotalPasses():  number  {
+			return !isNull(this._pPassesDList) ? this._pPassesDList.length : 0;
+		}
+
+		getHash(): string {
+			if(this._bNeedToUpdateHash){
+				this._sHash = this.calcHash();
+				this._bNeedToUpdateHash = false;
+			}
+
+			return this._sHash;
+		}
+
+		inline containComponentWithShift(pComponent: IAFXComponent, iShift:  number , iPass:  number ): bool {
+			return this.containComponentHash(pComponent.getHash(iShift, iPass));
+		}
+
+		inline containComponentHash(sComponentHash: string): bool {
+			return isDef(this._pComponentCountMap[sComponentHash]) && this._pComponentCountMap[sComponentHash] > 0;
+		}
+
+		addComponent(pComponent: IAFXComponent, iShift:  number , iPass:  number ): void {
+			var sComponentHash: string = pComponent.getHash(iShift, iPass);
+			var iPassCount:  number  = pComponent.getTotalPasses();
+
+			if(iPass ===  0xffffff ) {
+				if(!this.containComponentHash(sComponentHash)){
+					this._pComponentCountMap[sComponentHash] = 0;
+				}
+
+				this._pComponentCountMap[sComponentHash]++;
+
+				for(var i:  number  = 0; i < iPassCount; i++){
+					this.addComponent(pComponent, iShift + i, i);
+				}
+
+				return;
+			}
+			else if(iPass < 0 || iPass >= iPassCount){
+				return;
+			}
+
+			var sComponentHash: string = pComponent.getHash(iShift, iPass);
+
+			if(this.containComponentHash(sComponentHash)){
+				this._pComponentCountMap[sComponentHash]++;
+				this._bNeedToUpdateHash = true;
+
+				logger.setSourceLocation( "fx/ComponentBlend.ts" , 94 ); logger.warning("You try to add already used component '" + sComponentHash + "' in blend."); ;
+				return;
+			}
+
+
+			if(iShift < this._iShiftMin){
+				this._iShiftMin = iShift;
+			}
+
+			if(iShift > this._iShiftMax){
+				this._iShiftMax = iShift;
+			}
+
+			this._pComponentCountMap[sComponentHash] = 1;
+			this._pComponentList.push(pComponent);
+			this._pComponentShiftList.push(iShift);
+			this._pComponentPassNumberList.push(iPass);
+
+			this._isReady = false;
+			this._bNeedToUpdateHash = true;
+
+		}
+
+		removeComponent(pComponent: IAFXComponent, iShift:  number , iPass:  number ): void {
+			var sComponentHash: string = pComponent.getHash(iShift, iPass);
+			var iPassCount:  number  = pComponent.getTotalPasses();
+
+			if(!this.containComponentHash(sComponentHash)){
+				logger.setSourceLocation( "fx/ComponentBlend.ts" , 122 ); logger.warning("You try to remove not used component '" + sComponentHash + "' from blend."); ;
+				return;
+			}
+
+			if(iPass ===  0xffffff ) {
+				this._pComponentCountMap[sComponentHash]--;
+
+				for(var i:  number  = 0; i < iPassCount; i++){
+					this.removeComponent(pComponent, iShift + i, i);
+				}
+
+				return;
+			}
+			else if(iPass < 0 || iPass >= iPassCount){
+				return;
+			}
+
+			if(this._pComponentCountMap[sComponentHash] > 1){
+				this._pComponentCountMap[sComponentHash]--;
+				this._bNeedToUpdateHash = true;
+
+				logger.setSourceLocation( "fx/ComponentBlend.ts" , 143 ); logger.warning("You try to remove component '" + sComponentHash + "' from blend. But it used more then 1 time."); ;
+				return;
+			}
+
+			this._pComponentCountMap[sComponentHash] = 0;
+
+			for(var i:  number  = 0; i < this._pComponentList.length; i++){
+				if (this._pComponentList[i] === pComponent &&
+					this._pComponentShiftList[i] === iShift &&
+					this._pComponentPassNumberList[i] === iPass) {
+
+					this._pComponentList.splice(i, 1);
+					this._pComponentShiftList.splice(i, 1);
+					this._pComponentPassNumberList.splice(i, 1);
+					break;
+				}
+			}
+
+			if(this._iShiftMin === iShift && this._iShiftMax === iShift){
+				this._iShiftMax = 0;
+				this._iShiftMin = 0;
+
+				for(var i:  number  = 0; i < this._pComponentShiftList.length; i++){
+					if(this._pComponentShiftList[i] < this._iShiftMin){
+						this._iShiftMin = this._pComponentShiftList[i];
+					}
+
+					if(this._pComponentShiftList[i] > this._iShiftMax){
+						this._iShiftMax = this._pComponentShiftList[i];
+					}
+				}
+			}
+
+			this._isReady = false;
+			this._bNeedToUpdateHash = true;
+		}
+
+		finalizeBlend(): bool {
+			if(this._isReady){
+				return true;
+			}
+
+			this._pPassesDList = [];
+			this._pShaderInputVarBlend = [];
+
+			for(var i:  number  = 0; i < this._pComponentList.length; i++){
+				var pComponentTechnique: IAFXTechniqueInstruction = this._pComponentList[i].getTechnique();
+				var iShift:  number  = this._pComponentShiftList[i] - this._iShiftMin;
+				var iPass:  number  = this._pComponentPassNumberList[i];
+
+				var pPass: IAFXPassInstruction = pComponentTechnique.getPass(iPass);
+
+				if(!isDef(this._pPassesDList[iShift])) {
+					this._pPassesDList[iShift] = [];
+					this._pShaderInputVarBlend[iShift] = new ShaderInputBlend();
+				}
+
+				this._pPassesDList[iShift].push(pPass);
+				this._pShaderInputVarBlend[iShift].addDataFromPass(pPass);
+			}
+
+			for(var i:  number  = 0; i < this._pShaderInputVarBlend.length; i++){
+				this._pShaderInputVarBlend[i].generateKeys();
+			}
+
+			this._isReady = true;
+
+			return true;
+		}
+
+		clone(): IAFXComponentBlend {
+			var pClone: IAFXComponentBlend = new ComponentBlend(this._pComposer);
+
+			pClone._setDataForClone(this._pComponentList,
+									this._pComponentShiftList,
+									this._pComponentPassNumberList,
+									this._pComponentCountMap,
+									this._iShiftMin, this._iShiftMax);
+			return pClone;
+		}
+
+		_setDataForClone(pComponentList: IAFXComponent[],
+						 pComponentShiftList:  number [],
+						 pComponentPassNumnerList:  number [],
+						 pComponentCountMap: IntMap,
+						 iShiftMin:  number , iShiftMax:  number ): void {
+
+			for(var i:  number  = 0; i < pComponentList.length; i++){
+				this._pComponentList.push(pComponentList[i]);
+				this._pComponentShiftList.push(pComponentShiftList[i]);
+				this._pComponentPassNumberList.push(pComponentPassNumnerList[i]);
+
+				var sComponentHash: string = pComponentList[i].getHash(pComponentShiftList[i], pComponentPassNumnerList[i]);
+
+				this._pComponentCountMap[sComponentHash] = pComponentCountMap[sComponentHash];
+			}
+
+			this._iShiftMin = iShiftMin;
+			this._iShiftMax = iShiftMax;
+			this._bNeedToUpdateHash = true;
+		}
+
+		private calcHash(): string {
+			var sHash: string = "";
+
+			for(var i:  number  = 0; i < this._pComponentList.length; i++){
+				var sComponentHash: string = this._pComponentList[i].getHash(this._pComponentShiftList[i],
+																			 this._pComponentPassNumberList[i]);
+				sHash += sComponentHash + ":" + this._pComponentCountMap[sComponentHash].toString() + ":";
+			}
+
+			return sHash;
+		}
+	}
+
+	export class ShaderInputBlend implements IAFXShaderInputBlend {
+		private _pUniformNameToRealMap: StringMap = null;
+		private _pUniformByRealNameMap: IAFXVariableDeclMap = null;
+		private _pUniformDefaultValueMap: any = null;
+
+		private _pTextureNameToRealMap: StringMap = null;
+		private _pTextureByRealNameMap: IAFXVariableDeclMap = null;
+
+		private _pForeignByNameMap: IAFXVariableDeclMap = null;
+
+
+		private _pUniformRealNameList: string[] = null;
+		private _pUniformNameList: string[] = null;
+
+		private _pTextureRealNameList: string[] = null;
+		private _pTextureNameList: string[] = null;
+
+		private _pForeignNameList: string[] = null;
+
+		inline get uniformNameToReal(): StringMap{
+			return this._pUniformNameToRealMap;
+		}
+
+		inline get uniformByRealName(): IAFXVariableDeclMap{
+			return this._pUniformByRealNameMap;
+		}
+
+		inline get uniformDefaultValue(): any {
+			return this._pUniformDefaultValueMap;
+		}
+
+		inline get textureNameToReal(): StringMap {
+			return this._pTextureNameToRealMap;
+		}
+
+		inline get textureByRealName(): IAFXVariableDeclMap {
+			return this._pTextureByRealNameMap;
+		}
+
+		inline get foreignByName(): IAFXVariableDeclMap {
+			return this._pForeignByNameMap;
+		}
+
+		inline get uniformNameList(): string[] {
+			return this._pUniformNameList;
+		}
+
+		inline get uniformRealNameList(): string[] {
+			return this._pUniformRealNameList;
+		}
+
+		inline get textureNameList(): string[] {
+			return this._pTextureNameList;
+		}
+
+		inline get textureRealNameList(): string[] {
+			return this._pTextureRealNameList;
+		}
+
+		inline get foreignNameList(): string[] {
+			return this._pForeignNameList;
+		}
+
+		constructor() {
+			this._pUniformNameToRealMap = <StringMap>{};
+			this._pUniformByRealNameMap = <IAFXVariableDeclMap>{};
+			this._pUniformDefaultValueMap = <any>{};
+
+			this._pTextureNameToRealMap = <StringMap>{};
+			this._pTextureByRealNameMap = <IAFXVariableDeclMap><any>{
+				TEXTURE0  : null,
+                TEXTURE1  : null,
+                TEXTURE2  : null,
+                TEXTURE3  : null,
+                TEXTURE4  : null,
+                TEXTURE5  : null,
+                TEXTURE6  : null,
+                TEXTURE7  : null,
+                TEXTURE8  : null,
+                TEXTURE9  : null,
+                TEXTURE10 : null,
+                TEXTURE11 : null,
+                TEXTURE12 : null,
+                TEXTURE13 : null,
+                TEXTURE14 : null,
+                TEXTURE15 : null
+			};
+
+			this._pForeignByNameMap = <IAFXVariableDeclMap>{};
+		}
+
+		addDataFromPass(pPass: IAFXPassInstruction): void {
+			var pUniformMap: IAFXVariableDeclMap = pPass._getFullUniformMap();
+			var pForeignMap: IAFXVariableDeclMap = pPass._getFullForeignMap();
+			var pTextureMap: IAFXVariableDeclMap = pPass._getFullTextureMap();
+
+			var pVar: IAFXVariableDeclInstruction = null;
+
+			for(var i in pForeignMap){
+				pVar = pForeignMap[i];
+
+				this._pForeignByNameMap[pVar.getName()] = pVar;
+			}
+
+			for(var i in pTextureMap){
+				pVar = pTextureMap[i];
+
+				this._pTextureNameToRealMap[pVar.getName()] = pVar.getRealName();
+				this._pTextureByRealNameMap[pVar.getRealName()] = pVar;
+			}
+
+			for(var i in pUniformMap){
+				pVar = pUniformMap[i];
+
+				this.addUniformVariable(pVar, "", "");
+			}
+
+		}
+
+		generateKeys(): void {
+			this._pUniformNameList = Object.keys(this._pUniformNameToRealMap);
+			this._pUniformRealNameList = Object.keys(this._pUniformByRealNameMap);
+
+			this._pTextureNameList = Object.keys(this._pTextureNameToRealMap);
+			this._pTextureRealNameList = Object.keys(this._pTextureByRealNameMap);
+
+			this._pForeignNameList = Object.keys(this._pForeignByNameMap);
+		}
+
+		private addUniformVariable(pVariable: IAFXVariableDeclInstruction,
+								   sPrevName: string, sPrevRealName: string): void {
+			var sName: string = "";
+			var sRealName: string = "";
+
+			if(sPrevName !== ""){
+				sName = sPrevName + "." + pVariable.getName();
+			}
+			else {
+				sName = pVariable.getName();
+			}
+
+			if(sPrevRealName !== ""){
+				sRealName = sPrevRealName + "." + pVariable.getRealName();
+			}
+			else {
+				sRealName = pVariable.getRealName();
+			}
+
+			var pHasVar: IAFXVariableDeclInstruction = this._pUniformByRealNameMap[sRealName];
+
+			if(isDef(pHasVar) && !pHasVar.getType().isEqual(pVariable.getType())){
+				logger.setSourceLocation( "fx/ComponentBlend.ts" , 409 ); logger.warning("You used uniforms with the same real-names. Now we don`t work very well with that."); ;
+				return;
+			}
+
+			var pVariableType: IAFXVariableTypeInstruction = pVariable.getType();
+
+			if(!pVariableType.isComplex()){
+				this._pUniformNameToRealMap[sName] = sRealName;
+				this._pUniformByRealNameMap[sRealName] = pVariable;
+				this._pUniformDefaultValueMap[sRealName] = pVariable.getDefaultValue();
+			}
+			else {
+				var pFieldNameList: string[] = pVariableType.getFieldNameList();
+
+				for(var i:  number  = 0; i < pFieldNameList.length; i++){
+					this.addUniformVariable(pVariableType.getField(pFieldNameList[i]), sName, sRealName);
+				}
+			}
+		}
+
+	}
+}
+
+
+
 module akra.fx {
 	export class Composer implements IAFXComposer {
 		private _pEngine: IEngine = null;
 
+		private _pEffectResourceToComponentBlendMap: IAFXComponentBlendMap = null;
+		private _pComponentBlendByHashMap: IAFXComponentBlendMap = null;
+
 		constructor(pEngine: IEngine){
 			this._pEngine = pEngine;
+
+			this._pEffectResourceToComponentBlendMap = <IAFXComponentBlendMap>{};
+			this._pComponentBlendByHashMap = <IAFXComponentBlendMap>{};
 		}
 
-		getImportTechnique(sModuleName: string): void {
-
+		getComponentByName(sComponentName: string): IAFXComponent {
+			return <IAFXComponent>this._pEngine.getResourceManager().componentPool.findResource(sComponentName);
 		}
 
 		inline getEngine(): IEngine {
 			return this._pEngine;
 		}
 
+//-----------------------------------------------------------------------------//
+//-----------------------------API for Effect-resource-------------------------//
+//-----------------------------------------------------------------------------//
 
-		_loadEffectFromSyntaxTree(pTree: IParseTree, sFileName: string): void {
-			var pEffect: IAFXEffect = new fx.Effect(this);
-			logger.setSourceLocation( "fx/Composer.ts" , 36 ); logger.log(pTree); ;
-// pEffect.setAnalyzedFileName(sFileName);
-// pEffect.analyze(pParseTree);
+		getComponentCountForEffect(pEffectResource: IEffect):  number  {
+			var id:  number  = pEffectResource.resourceHandle;
+
+			if(isDef(this._pEffectResourceToComponentBlendMap[id])) {
+				return this._pEffectResourceToComponentBlendMap[id].getComponentCount();
+			}
+			else {
+				return 0;
+			}
+		}
+
+		getTotalPassesForEffect(pEffectResource: IEffect):  number  {
+			var id:  number  = pEffectResource.resourceHandle;
+
+			if(isDef(this._pEffectResourceToComponentBlendMap[id])) {
+				return this._pEffectResourceToComponentBlendMap[id].getTotalPasses();
+			}
+			else {
+				return 0;
+			}
+		}
+
+		addComponentToEffect(pEffectResource: IEffect, pComponent: IAFXComponent, iShift:  number , iPass:  number ): bool {
+			var id:  number  = pEffectResource.resourceHandle;
+			var pCurrentBlend: IAFXComponentBlend = null;
+
+			if(isDef(this._pEffectResourceToComponentBlendMap[id])){
+				pCurrentBlend = this._pEffectResourceToComponentBlendMap[id];
+			}
+
+			var pNewBlend: IAFXComponentBlend = this.addComponentToBlend(pCurrentBlend, pComponent, iShift, iPass);
+			if(isNull(pNewBlend)){
+				return false;
+			}
+
+			this._pEffectResourceToComponentBlendMap[id] = pNewBlend;
+			return true;
+		}
+
+		removeComponentFromEffect(pEffectResource: IEffect, pComponent: IAFXComponent, iShift:  number , iPass:  number ): bool {
+			var id:  number  = pEffectResource.resourceHandle;
+			var pCurrentBlend: IAFXComponentBlend = null;
+
+			if(isDef(this._pEffectResourceToComponentBlendMap[id])){
+				pCurrentBlend = this._pEffectResourceToComponentBlendMap[id];
+			}
+
+			var pNewBlend: IAFXComponentBlend = this.removeComponentFromBlend(pCurrentBlend, pComponent, iShift, iPass);
+			if(isNull(pNewBlend)){
+				return false;
+			}
+
+			this._pEffectResourceToComponentBlendMap[id] = pNewBlend;
+			return true;
 		}
 
 
-		_loadEffectFromBinary(pData: Uint8Array, sFileName: string): void {
+//-----------------------------------------------------------------------------//
+//-----------------------API for load components/AFXEffects--------------------//
+//-----------------------------------------------------------------------------//
 
+
+		_loadEffectFromSyntaxTree(pTree: IParseTree, sFileName: string): bool {
+			var pEffect: IAFXEffect = new fx.Effect(this);
+// LOG(sFileName, pTree);
+			pEffect.setAnalyzedFileName(sFileName);
+// LOG("\n\n\n-------------------------Try to analyze '" + sFileName + "'-------------");
+			var isOk: bool = pEffect.analyze(pTree);
+
+			if(isOk){
+// LOG("------ANALYZE IS GOOD '" + sFileName + "'.")
+				var pTechniqueList: IAFXTechniqueInstruction[] = pEffect.getTechniqueList();
+
+				for(var i:  number  = 0; i < pTechniqueList.length; i++){
+					isOk = this.initComponent(pTechniqueList[i]);
+					if(!isOk){
+						logger.setSourceLocation( "fx/Composer.ts" , 122 ); logger.warning("Cannot initialize fx-component from technique '" + pTechniqueList[i].getName() + "'."); ;
+						return false;
+					}
+				}
+			}
+			else {
+				logger.setSourceLocation( "fx/Composer.ts" , 128 ); logger.warning("Error are occured during analyze of effect file '" + sFileName + "'."); ;
+				return false;
+			}
+
+			return true;
+		}
+
+
+		_loadEffectFromBinary(pData: Uint8Array, sFileName: string): bool {
+			return false;
+		}
+
+		private initComponent(pTechnique: IAFXTechniqueInstruction): bool {
+			var sTechniqueName: string = pTechnique.getName();
+			var pComponentPool: IResourcePool = this._pEngine.getResourceManager().componentPool;
+
+			if(!isNull(pComponentPool.findResource(sTechniqueName))){
+				return false;
+			}
+
+			var pComponent: IAFXComponent = <IAFXComponent>pComponentPool.createResource(sTechniqueName);
+			pComponent.create();
+			pComponent.setTechnique(pTechnique);
+
+			return true;
+		}
+
+		private addComponentToBlend(pComponentBlend: IAFXComponentBlend,
+									pComponent: IAFXComponent, iShift:  number , iPass:  number ): IAFXComponentBlend {
+
+			var pNewBlend: IAFXComponentBlend = null;
+
+			if(isNull(pComponentBlend)){
+				pNewBlend = new ComponentBlend(this);
+			}
+			else {
+				pNewBlend = pComponentBlend.clone();
+			}
+
+			var pTechnique: IAFXTechniqueInstruction = pComponent.getTechnique();
+			var pTechComponentList: IAFXComponent[] = pTechnique.getFullComponentList();
+			var pTechComponentShiftList:  number [] = pTechnique.getFullComponentShiftList();
+
+			if(iPass ===  0xffffff ) {
+				if(!isNull(pTechComponentList)){
+					for(var i:  number  = 0; i < pTechComponentList.length; i++){
+						pNewBlend.addComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift,  0xffffff );
+					}
+				}
+
+				pNewBlend.addComponent(pComponent, iShift,  0xffffff );
+			}
+			else {
+				if(!isNull(pTechComponentList)){
+					for(var i:  number  = 0; i < pTechComponentList.length; i++){
+						pNewBlend.addComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, iPass - pTechComponentShiftList[i]);
+					}
+				}
+
+				pNewBlend.addComponent(pComponent, iShift, iPass);
+			}
+
+			var sNewBlendHash: string = pNewBlend.getHash();
+
+			if(isDef(this._pComponentBlendByHashMap[sNewBlendHash])){
+				return this._pComponentBlendByHashMap[sNewBlendHash];
+			}
+			else {
+				if(!this.registerComponentBlend(pNewBlend)){
+					return null;
+				}
+
+				return pNewBlend;
+			}
+		}
+
+		private removeComponentFromBlend(pComponentBlend: IAFXComponentBlend,
+										 pComponent: IAFXComponent, iShift:  number , iPass:  number ): IAFXComponentBlend {
+			if(isNull(pComponentBlend)){
+				logger.setSourceLocation( "fx/Composer.ts" , 208 ); logger.warning("You try to remove component '" + pComponent.getName() + "' with shift " + iShift.toString() + "from empty blend.");
+                                                                ;
+				return null;
+			}
+
+			var sComponentHash: string = pComponent.getHash(iShift, iPass);
+
+			if(!pComponentBlend.containComponentHash(sComponentHash)){
+				logger.setSourceLocation( "fx/Composer.ts" , 216 ); logger.warning("You try to remove component '" + pComponent.getName() + "' with shift " + iShift.toString() + "from blend that not contain it.");
+                                                                              ;
+				return null;
+			}
+
+			var pNewBlend: IAFXComponentBlend = pComponentBlend.clone();
+
+			var pTechnique: IAFXTechniqueInstruction = pComponent.getTechnique();
+			var pTechComponentList: IAFXComponent[] = pTechnique.getFullComponentList();
+			var pTechComponentShiftList:  number [] = pTechnique.getFullComponentShiftList();
+
+			if(iPass ===  0xffffff ) {
+				if(!isNull(pTechComponentList)){
+					for(var i:  number  = 0; i < pTechComponentList.length; i++){
+						pNewBlend.removeComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift,  0xffffff );
+					}
+				}
+
+				pNewBlend.removeComponent(pComponent, iShift,  0xffffff );
+			}
+			else {
+				if(!isNull(pTechComponentList)){
+					for(var i:  number  = 0; i < pTechComponentList.length; i++){
+						pNewBlend.removeComponent(pTechComponentList[i], pTechComponentShiftList[i] + iShift, iPass - pTechComponentShiftList[i]);
+					}
+				}
+
+				pNewBlend.removeComponent(pComponent, iShift, iPass);
+			}
+
+			var sNewBlendHash: string = pNewBlend.getHash();
+
+			if(isDef(this._pComponentBlendByHashMap[sNewBlendHash])){
+				return this._pComponentBlendByHashMap[sNewBlendHash];
+			}
+			else {
+				if(!this.registerComponentBlend(pNewBlend)){
+					return null;
+				}
+
+				return pNewBlend;
+			}
+		}
+
+		private registerComponentBlend(pComponentBlend: IAFXComponentBlend): bool {
+			var sHash: string = pComponentBlend.getHash();
+
+			if(isDef(this._pComponentBlendByHashMap[sHash])){
+				return false;
+			}
+
+			this._pComponentBlendByHashMap[sHash] = pComponentBlend;
+			return true;
 		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+
+	export interface IDDSCodec extends IImgCodec{
+
+	}
+
+
+}
+
+
+
+
+
+
+
+
+
+//  DDS_header.dwFlags
+
+
+
+
+
+
+
+
+
+
+//  DDS_header.ddspf.dwFlags
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//  DDS_header.dwCaps2
+
+
+
+
+
+
+
+
+
+//DDS_header10.dwMiscFlag
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//  DD_Sheader.ddspf.dwFourCC
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra
+{
+
+	interface IDDSPixelFormat{
+		dwSize : number ;
+        dwFlags : number ;
+        dwFourCC : number ;
+        dwRGBBitCount : number ;
+        dwRBitMask : number ;
+        dwGBitMask : number ;
+        dwBBitMask : number ;
+        dwABitMask : number ;
+	}
+
+	interface IDDSHeader{
+		dwSize:  number ;
+        dwFlags:  number ;
+        dwHeight:  number ;
+        dwWidth:  number ;
+        dwPitchOrLinearSize:  number ;
+        dwDepth:  number ;
+        dwMipMapCount:  number ;
+/*Count 11*/
+        dwReserved1:  number [];
+
+        ddspf:IDDSPixelFormat;
+
+        dwCaps :  number ;
+        dwCaps2 :  number ;
+        dwCaps3 :  number ;
+        dwCaps4 :  number ;
+        dwReserved2 :  number ;
+	}
+
+	interface IDDSHeaderDXT10{
+		dxgiFormat:  number ;
+		resourceDimension: number ;
+		miscFlag: number ;
+		arraySize: number ;
+		reserved: number ;
+	}
+
+
+	export class DDSCodec extends ImgCodec implements IDDSCodec
+	{
+		private _sType:string="dds";
+		private static _pInstance:IDDSCodec=null;
+
+		magicNumberToFileExt(pMagicNumber: Uint8Array):string
+		{
+			var dwMagic4: number  = (new Uint32Array(pMagicNumber.buffer, 0, 1))[0];
+			if( 0x20534444 ==dwMagic4)
+			{
+				return "dds";
+			}
+
+			return null;
+		}
+
+/// Static method to startup and register the DDS codec
+		static startup():void
+		{
+			if(!isDefAndNotNull(this._pInstance))
+			{
+				logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 164 ); logger.log("DDS codec registering"); ;
+				this._pInstance=new DDSCodec();
+				Codec.registerCodec(this._pInstance);
+			}
+		}
+/// Static method to shutdown and unregister the DDS codec
+		static shutdown():void
+		{
+			if(isDef(this._pInstance))
+			{
+				Codec.unRegisterCodec(this._pInstance);
+				this._pInstance=undefined;
+			}
+		}
+
+		getType():string
+    	{
+        	return this._sType;
+    	}
+
+    	decode(pData: Uint8Array, pImgData: IImgData):Uint8Array
+    	{
+    		var iOffset: number =0;
+    		var dwMagic4: number  = (new Uint32Array(pData.buffer, 0, 1))[0];
+    		if(dwMagic4!= 0x20534444 )
+    		{
+    			logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 190 ); logger.criticalError("This is not a DDS file! DDSCodec.decode"); ;
+    		}
+//Считываем dds header
+/*typedef struct {
+             DWORD           dwSize;
+             DWORD           dwFlags;
+             DWORD           dwHeight;
+             DWORD           dwWidth;
+             DWORD           dwPitchOrLinearSize;
+             DWORD           dwDepth;
+             DWORD           dwMipMapCount;
+             DWORD           dwReserved1[11];
+             DDS_PIXELFORMAT ddspf;
+             DWORD           dwCaps;
+             DWORD           dwCaps2;
+             DWORD           dwCaps3;
+             DWORD           dwCaps4;
+             DWORD           dwReserved2;
+             } DDS_HEADER;*/
+
+
+    		var pDDSHeader:Uint32Array = new Uint32Array(pData.buffer, 4, 31);
+
+    		var pHeader:IDDSHeader=<IDDSHeader>{};
+
+    		pHeader.dwSize = pDDSHeader[0];
+            pHeader.dwFlags = pDDSHeader[1];
+            pHeader.dwHeight = pDDSHeader[2];
+            pHeader.dwWidth = pDDSHeader[3];
+            pHeader.dwPitchOrLinearSize = pDDSHeader[4];
+            pHeader.dwDepth = pDDSHeader[5];
+            pHeader.dwMipMapCount = pDDSHeader[6];
+            pHeader.dwReserved1=[];
+            pHeader.dwReserved1[0] = pDDSHeader[7];
+            pHeader.dwReserved1[1] = pDDSHeader[8];
+            pHeader.dwReserved1[2] = pDDSHeader[9];
+            pHeader.dwReserved1[3] = pDDSHeader[10];
+            pHeader.dwReserved1[4] = pDDSHeader[11];
+            pHeader.dwReserved1[5] = pDDSHeader[12];
+            pHeader.dwReserved1[6] = pDDSHeader[13];
+            pHeader.dwReserved1[7] = pDDSHeader[14];
+            pHeader.dwReserved1[8] = pDDSHeader[15];
+            pHeader.dwReserved1[9] = pDDSHeader[16];
+            pHeader.dwReserved1[10] = pDDSHeader[17];
+/*struct DDS_PIXELFORMAT {
+             DWORD dwSize;
+             DWORD dwFlags;
+             DWORD dwFourCC;
+             DWORD dwRGBBitCount;
+             DWORD dwRBitMask;
+             DWORD dwGBitMask;
+             DWORD dwBBitMask;
+             DWORD dwABitMask;
+             };*/
+
+            pHeader.ddspf=<IDDSPixelFormat>{};
+            pHeader.ddspf.dwSize = pDDSHeader[18];
+            pHeader.ddspf.dwFlags = pDDSHeader[19];
+            pHeader.ddspf.dwFourCC = pDDSHeader[20];
+            pHeader.ddspf.dwRGBBitCount = pDDSHeader[21];
+            pHeader.ddspf.dwRBitMask = pDDSHeader[22];
+            pHeader.ddspf.dwGBitMask = pDDSHeader[23];
+            pHeader.ddspf.dwBBitMask = pDDSHeader[24];
+            pHeader.ddspf.dwABitMask = pDDSHeader[25];
+            pHeader.dwCaps = pDDSHeader[26];
+            pHeader.dwCaps2 = pDDSHeader[27];
+            pHeader.dwCaps3 = pDDSHeader[28];
+            pHeader.dwCaps4 = pDDSHeader[29];
+            pHeader.dwReserved2 = pDDSHeader[30];
+            iOffset += 128;
+            if (pHeader.dwSize != 124) {
+                    logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 259 ); logger.error("Размер заголовка DDS всегда должэен равняться 124"); ;
+            }
+            if(pHeader.ddspf.dwSize!= 32){
+            	logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 262 ); logger.error("Размер DDS_PIXELFORMAT всегда должен равняться 32"); ;
+            }
+            if (!(pHeader.dwFlags &  0x00000001 )) {
+                logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 265 ); logger.error("Флаг DDSD_CAPS в заголовке DDS всегда должен быть"); ;
+            }
+            if (!(pHeader.dwFlags &  0x00000002 )) {
+                logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 268 ); logger.error("Флаг DDSD_HEIGHT в заголовке DDS всегда должен быть"); ;
+            }
+            if (!(pHeader.dwFlags &  0x00000004 )) {
+                logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 271 ); logger.error("Флаг DDSD_WIDTH в заголовке DDS всегда должен быть"); ;
+            }
+            if (!(pHeader.dwFlags &  0x00001000 )) {
+                logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 274 ); logger.error("Флаг DDSD_PIXELFORMAT в заголовке DDS всегда должен быть"); ;
+            }
+
+            pImgData.width=pHeader.dwWidth;
+            pImgData.height=pHeader.dwHeight;
+            pImgData.depth=1;
+            var nFace: number =1;
+
+            if (pHeader.dwFlags &  0x00020000 ) {
+                pImgData.numMipMaps = pHeader.dwMipMapCount;
+                if ((pHeader.dwWidth >>> (pHeader.dwMipMapCount - 1)) != 1 || (pHeader.dwHeight >>> (pHeader.dwMipMapCount - 1)) != 1) {
+                logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 286 ); logger.warning("Количество мипмапов не такое чтобы уменьшить размер картинки до 1x1" + pHeader.dwMipMapCount + "," + pHeader.dwWidth + "x" + pHeader.dwHeight + ")");
+                                                                                                           ;
+
+            	}
+            }
+            else{
+                pImgData.numMipMaps = 0;
+            }
+
+
+            pImgData.flags=0;
+
+            if (pHeader.dwCaps2 &  0x200 )
+			{
+				pImgData.flags |=  EImageFlags.CUBEMAP;
+				nFace=0;
+                if (pHeader.dwCaps2 &  0x400 ) {
+                    nFace++;
+                    pImgData.cubeFlags|=EImageCubeFlags.POSITIVE_X;
+                }
+                if (pHeader.dwCaps2 &  0x800 ) {
+                    nFace++;
+                    pImgData.cubeFlags|=EImageCubeFlags.NEGATIVE_X;
+                }
+                if (pHeader.dwCaps2 &  0x1000 ) {
+                    nFace++;
+                    pImgData.cubeFlags|=EImageCubeFlags.POSITIVE_Y;
+                }
+                if (pHeader.dwCaps2 &  0x2000 ) {
+                    nFace++;
+                    pImgData.cubeFlags|=EImageCubeFlags.NEGATIVE_Y;
+                }
+                if (pHeader.dwCaps2 &  0x4000 ) {
+                    nFace++;
+                    pImgData.cubeFlags|=EImageCubeFlags.POSITIVE_Z;
+                }
+                if (pHeader.dwCaps2 &  0x8000 ) {
+                    nFace++;
+                    pImgData.cubeFlags|=EImageCubeFlags.NEGATIVE_Z;
+                }
+
+                if(nFace==0){
+                	logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 327 ); logger.warning("Выставлен фдлаг с кубической текстурой, а самих текстур нету"); ;
+                }
+			}
+
+			if (pHeader.dwCaps2 &  0x200000 )
+			{
+				pImgData.flags|=EImageFlags.TEXTURE_3D;
+				pImgData.depth= pHeader.dwDepth;
+			}
+
+			var eSourceFormat:EPixelFormats=EPixelFormats.UNKNOWN;
+
+			if (pHeader.ddspf.dwFlags &  0x00000004 ) {
+				if (pHeader.ddspf.dwFourCC ==  0x31545844 ) {
+				    eSourceFormat = EPixelFormats.DXT1;
+				}
+				else if (pHeader.ddspf.dwFourCC ==  0x32545844 ) {
+				    eSourceFormat = EPixelFormats.DXT1;
+				}
+				else if (pHeader.ddspf.dwFourCC ==  0x33545844 ) {
+				    eSourceFormat = EPixelFormats.DXT3;
+				}
+				else if (pHeader.ddspf.dwFourCC ==  0x34545844 ) {
+				    eSourceFormat = EPixelFormats.DXT4;
+				}
+				else if (pHeader.ddspf.dwFourCC ==  0x35545844 ) {
+				    eSourceFormat = EPixelFormats.DXT5;
+				}
+				else if (pHeader.ddspf.dwFourCC ==  0x30315844 ) {
+				    var pDDS10Header:Uint32Array = new Uint32Array(pData.buffer, 128, 5);
+				    var header10:IDDSHeaderDXT10 = <IDDSHeaderDXT10>{};
+				    header10.dxgiFormat = pDDS10Header[0];
+				    header10.resourceDimension = pDDS10Header[1];
+				    header10.miscFlag = pDDS10Header[2];
+				    header10.arraySize = pDDS10Header[3];
+				    header10.reserved = pDDS10Header[4];
+
+				    logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 364 ); logger.criticalError("Формат D3DFMT_DX10 не поддерживается"); ;
+/*console.log("dxgiFormat",header10.dxgiFormat);
+				     console.log("resourceDimension",header10.resourceDimension);					
+				     nCubeMap=1;
+				     if(header10.miscFlag&RESOURCE_MISC_TEXTURECUBE)
+				     {
+				     nCubeMap=header10.arraySize;
+				     }
+
+				     if(nCubeMap!=6)
+				     {
+				     warning("Количество частей кубической текстуру не равно 6",nCubeMap);						
+				     }*/
+
+				    iOffset += 20;
+				}
+				else if(pHeader.ddspf.dwFourCC ==  0x0000006F )
+				{
+					eSourceFormat=EPixelFormats.FLOAT16_R;
+				}
+				else if(pHeader.ddspf.dwFourCC ==  0x00000070 )
+				{
+					eSourceFormat=EPixelFormats.FLOAT16_GR;
+				}
+				else if(pHeader.ddspf.dwFourCC ==  0x00000071 )
+				{
+					eSourceFormat=EPixelFormats.FLOAT16_RGBA;
+				}
+				else if(pHeader.ddspf.dwFourCC ==  0x00000072 )
+				{
+					eSourceFormat=EPixelFormats.FLOAT32_R;
+				}
+				else if(pHeader.ddspf.dwFourCC ==  0x00000073 )
+				{
+					eSourceFormat=EPixelFormats.FLOAT32_GR;
+				}
+				else if(pHeader.ddspf.dwFourCC ==  0x00000074 )
+				{
+					eSourceFormat=EPixelFormats.FLOAT32_RGBA;
+				}
+				else {
+				    logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 404 ); logger.criticalError("Флаг DDPF_FOURCC стоит, а подходящего dwFourCC нет"); ;
+				}
+			}
+			else if(pHeader.ddspf.dwFlags &  0x00000040 )
+			{
+				var iAMask=pHeader.ddspf.dwFlags &  0x00000001  ? pHeader.ddspf.dwABitMask:0;
+				var ePF:EPixelFormats;
+				for (ePF= EPixelFormats.UNKNOWN + 1; ePF < EPixelFormats.TOTAL; ePF++)
+				{
+
+					if (pixelUtil.getNumElemBits(ePF) == pHeader.ddspf.dwRGBBitCount)
+					{
+						var pTestMasks: number []=pixelUtil.getBitMasks(ePF);
+						var pTestBits: number []=pixelUtil.getBitDepths(ePF);
+
+						if (pTestMasks[0] == pHeader.ddspf.dwRBitMask && pTestMasks[1] == pHeader.ddspf.dwGBitMask &&
+							pTestMasks[2] == pHeader.ddspf.dwBBitMask &&
+// for alpha, deal with 'X8' formats by checking bit counts
+							(pTestMasks[3] == iAMask || (iAMask == 0 && pTestBits[3] == 0)))
+						{
+							break;
+						}
+					}
+
+				}
+				if(ePF==EPixelFormats.TOTAL)
+				{
+					logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 431 ); logger.criticalError("Cannot determine pixel format. DDSCodec.decode"); ;
+				}
+				else
+				{
+					eSourceFormat=ePF;
+				}
+			}
+
+
+
+			if (pixelUtil.isCompressed(eSourceFormat))
+			{
+				pImgData.flags |= EImageFlags.COMPRESSED;
+				if (!(pHeader.dwFlags &  0x00080000 )) {
+                    logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 445 ); logger.criticalError("У сжатой текстуры не выставлен флаг DDS_HEADER_FLAGS_LINEARSIZE в заголовке"); ;
+                }
+			}
+			else
+			{
+				if (pHeader.dwFlags &  0x00080000 ) {
+                	logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 451 ); logger.criticalError("У несжатой текстуры выставлен флаг DDS_HEADER_FLAGS_LINEARSIZE в заголовке"); ;
+            	}
+			}
+
+			pImgData.format = eSourceFormat;
+			var pOutput:Uint8Array=new Uint8Array(pImgData.size)
+			var iOutputOffset: number =0;
+
+			for(var i: number =0;i<nFace;i++)
+			{
+				var iWidth: number =pImgData.width;
+				var iHeight: number =pImgData.height;
+				var iDepth: number =pImgData.depth;
+
+				for(var iMip: number =0;iMip<=pImgData.numMipMaps;iMip++)
+				{
+
+					if(pixelUtil.isCompressed(pImgData.format))
+					{
+						var iDXTSize: number =pixelUtil.getMemorySize(iWidth, iHeight, iDepth, pImgData.format);
+						for(var a: number =0;a<iDXTSize;a++)
+						{
+							pOutput[a+iOutputOffset]=pData[iOffset+a];
+
+						}
+						iOffset+=iDXTSize;
+						iOutputOffset+=iDXTSize;
+
+					}
+					else
+					{
+						var iDstPitch: number =iWidth*pixelUtil.getNumElemBytes(pImgData.format);
+						var iSrcPitch: number =0;
+						if (pHeader.dwFlags &  0x00000008 )
+						{
+							iSrcPitch = pHeader.dwPitchOrLinearSize / Math.max(1, iMip * 2);
+						}
+						else
+						{
+// assume same as final pitch
+							iSrcPitch = iDstPitch;
+						}
+						if (iSrcPitch<iDstPitch)
+						{
+							logger.setSourceLocation( "pixelUtil/DDSCodec.ts" , 495 ); logger.warning("Странный размер питча у картинки");
+						}
+
+						for (var z: number  = 0; z < pImgData.depth; z++)
+						{
+							for (var y: number  = 0; y < pImgData.height; y++)
+							{
+
+								for(var a: number =0;a<iDstPitch;a++)
+								{
+									pOutput[a+iOutputOffset]=pData[iOffset+a];
+								}
+								iOutputOffset = iOutputOffset + iDstPitch;
+								iOffset=iOffset+iSrcPitch;
+							}
+						}
+
+					}
+					if(iWidth!=1)
+					{
+						iWidth=Math.floor(iWidth/2);
+					}
+					if(iHeight!=1)
+					{
+						iHeight=Math.floor(iHeight/2);
+					}
+					if(iDepth!=1)
+					{
+						iDepth=Math.floor(iDepth/2);
+					}
+				}
+			}
+			return pOutput;
+		}
+
+
+
+	}
+
+
+
+
+
+}
+
+
 
 
 
@@ -56843,12 +63509,12 @@ module akra.render {
 		    for (var i:  number  = 0; i < pDecl.length; i++) {
 		        pI2IDecl.push(VE_FLOAT('INDEX_' + pDecl[i].eUsage, 0));
 		    }
-		    ;
+
 
 		    for (var i:  number  = 0; i < pI2IData.length; i++) {
 		        pI2IData[i] = i;
 		    }
-		    ;
+
 
 		    if (!this._allocateIndex(pI2IDecl, pI2IData)) {
 		        this.releaseData(iIndLoc);
@@ -56869,7 +63535,7 @@ module akra.render {
 
 		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBuffer): bool;
 		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBufferView): bool;
-		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBufferView): bool{
+		private _createIndex(pAttrDecl: IVertexDeclaration, pData:any): bool{
 		    'use strict';
 
 		    if (!this._pIndexBuffer) {
@@ -57274,6 +63940,12 @@ module akra.render {
 
 
 
+
+
+
+
+
+
 module akra.util {
 	export interface IBuffersCompatibleMap {
 		[handle:  number ]: IVertexData;
@@ -57368,7 +64040,7 @@ module akra.util {
 
 		private inline drawArrays(): void {
 
-			(<IWebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawArrays(
+			(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawArrays(
 				webgl.getWebGLPrimitiveType(this._ePrimitiveType),
 				this._nStartIndex,
 				this._nLength);
@@ -57377,7 +64049,7 @@ module akra.util {
 
 		private inline drawElements(): void {
 
-			(<IWebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawElements(
+			(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawElements(
 				this.primCount,
 				this._pIndex.getPrimitiveCount(),
 				webgl.getWebGLPrimitiveType(this._ePrimitiveType),
@@ -57476,7 +64148,7 @@ module akra.util {
 // console.log((new Error).stack);
 		    pFlow = this._pFlows[iFlow];
 
-		    logger.setSourceLocation( "util/BufferMap.ts" , 218 ); logger.assert(iFlow < this.limit, 'Invalid strem. Maximum allowable number of stream ' + this.limit + '.');
+		    logger.setSourceLocation( "util/BufferMap.ts" , 223 ); logger.assert(iFlow < this.limit, 'Invalid strem. Maximum allowable number of stream ' + this.limit + '.');
                                                                                   ;
 
 		    if (!pVertexData || pFlow.data === pVertexData) {
@@ -57487,7 +64159,7 @@ module akra.util {
 		        pFlow.type = EDataFlowTypes.UNMAPPABLE;
 		        this.length = pVertexData.length;
 //this.startIndex = pVertexData.getStartIndex();
-		        logger.setSourceLocation( "util/BufferMap.ts" , 229 ); logger.assert(this.checkData(pVertexData), 'You can use several unmappable data flows from one buffer.');
+		        logger.setSourceLocation( "util/BufferMap.ts" , 234 ); logger.assert(this.checkData(pVertexData), 'You can use several unmappable data flows from one buffer.');
                                                                            ;
 
 		        this.pushEtalon(pVertexData);
@@ -57510,18 +64182,18 @@ module akra.util {
 		}
 
 		/**@protected*/  findMapping(pMap, eSemantics, iAddition): IDataMapper {
-		    logger.setSourceLocation( "util/BufferMap.ts" , 251 ); logger.assert(this.checkData(pMap), 'You can use several different maps from one buffer.'); ;
+		    logger.setSourceLocation( "util/BufferMap.ts" , 256 ); logger.assert(this.checkData(pMap), 'You can use several different maps from one buffer.'); ;
 		    for (var i = 0, pMappers = this._pMappers, pExistsMap; i < pMappers.length; i++) {
 		        pExistsMap = pMappers[i].data;
 		        if (pExistsMap === pMap) {
-//если уже заданные маппинг менял свой стартовый индекс(наприм��р при расширении)
+//если уже заданные маппинг менял свой стартовый индекс(например при расширении)
 //то необходимо сменить стартовый индекс на новый
 		            if (pMappers[i].semantics === eSemantics && pMappers[i].addition == iAddition) {
 		                return pMappers[i];
 		            }
 		        }
 		        else {
-		            logger.setSourceLocation( "util/BufferMap.ts" , 263 ); logger.assert(pExistsMap.getStartIndex() === pMap.getStartIndex(), 'You can not use maps with different indexing');
+		            logger.setSourceLocation( "util/BufferMap.ts" , 268 ); logger.assert(pExistsMap.getStartIndex() === pMap.getStartIndex(), 'You can not use maps with different indexing');
                                                                  ;
 		        }
 		    }
@@ -57535,15 +64207,15 @@ module akra.util {
 		    var pMapper: IDataMapper = this.findMapping(pMap, eSemantics, iAddition);
 		    var pFlow: IDataFlow     = this._pFlows[iFlow];
 
-		    logger.setSourceLocation( "util/BufferMap.ts" , 277 ); logger.assert(pFlow.data && pFlow.type === EDataFlowTypes.MAPPABLE, 'Cannot mapping empty/unmappable flow.');
+		    logger.setSourceLocation( "util/BufferMap.ts" , 282 ); logger.assert(pFlow.data && pFlow.type === EDataFlowTypes.MAPPABLE, 'Cannot mapping empty/unmappable flow.');
                                                   ;
-		    logger.setSourceLocation( "util/BufferMap.ts" , 278 ); logger.assert(isDef(pMap), 'Passed empty mapper.'); ;
+		    logger.setSourceLocation( "util/BufferMap.ts" , 283 ); logger.assert(isDef(pMap), 'Passed empty mapper.'); ;
 
 		    if (!eSemantics) {
 		        eSemantics = pMap.getVertexDeclaration()[0].eUsage;
 		    }
 		    else if (pMap.hasSemantics(eSemantics) === false) {
-		        logger.setSourceLocation( "util/BufferMap.ts" , 284 ); logger.error('Passed mapper does not have semantics: ' + eSemantics + '.'); ;
+		        logger.setSourceLocation( "util/BufferMap.ts" , 289 ); logger.error('Passed mapper does not have semantics: ' + eSemantics + '.'); ;
 		        return false;
 		    }
 
@@ -57621,7 +64293,7 @@ module akra.util {
 		            continue;
 		        }
 
-		        logger.setSourceLocation( "util/BufferMap.ts" , 363 ); logger.assert(nStartIndex == nCurStartxIndex, 'You can not use a maps or unmappable buffers having different starting index.');
+		        logger.setSourceLocation( "util/BufferMap.ts" , 368 ); logger.assert(nStartIndex == nCurStartxIndex, 'You can not use a maps or unmappable buffers having different starting index.');
                                                                                               ;
 		    }
 
@@ -57930,6 +64602,9 @@ module akra {
 	 export interface IDependens {
         files?: string[];
         deps?: IDependens;
+        root?: string;
+        type?: string;
+        loader?: (dep: IDependens, ...data: any[]) => void;
     }
 
     export interface IDepsManager extends IEventProvider {
@@ -57972,7 +64647,7 @@ module akra.util {
 				return false;
 			}
 
-			this.normalizeDepsPaths(pDeps, sRoot);
+			this.normalizeDepsPaths(pDeps, pDeps.root || sRoot);
 			this.createDepsResources(pDeps);
 			this.loadDeps(pDeps);
 
@@ -58007,7 +64682,7 @@ module akra.util {
 				switch (pathinfo(pFiles[i]).ext.toLowerCase()) {
 					case "afx":
 						if (!pRmgr.effectDataPool.findResource(pFiles[i])) {
-							logger.setSourceLocation( "util/DepsManager.ts" , 72 ); logger.log("effectDataPool.createResource(" + pFiles[i] + ")"); ;
+//LOG("effectDataPool.createResource(" + pFiles[i] + ")");
 							pRmgr.effectDataPool.createResource(pFiles[i]);
 						}
 						break;
@@ -58029,6 +64704,19 @@ module akra.util {
 				var pFiles: string[] = pDeps.files;
 				var pManager: DepsManager = this;
 
+				if (isDefAndNotNull(pDep.type)) {
+					if (pDep.type == "text" && isFunction(pDep.loader)) {
+						io.fopen(pFiles[i], "r").read((pErr: Error, sData: string): void => {
+							if (!isNull(pErr)) {
+								pManager.error(pErr);
+							}
+
+							pDep.loader(pDep, sData);
+							pManager._onDependencyLoad(pDeps, i);
+						});
+					}
+				}
+
 				switch (pathinfo(pFiles[i]).ext.toLowerCase()) {
 					case "gr":
 						io.fopen(pFiles[i], "r").read((pErr: Error, sData: string): void => {
@@ -58048,7 +64736,7 @@ module akra.util {
 							if (pRes.loadResource(pFiles[i])) {
 								pManager._handleResourceEventOnce(pRes,  "loaded" ,
 									(pItem: IResourcePoolItem): void => {
-										logger.setSourceLocation( "util/DepsManager.ts" , 113 ); logger.log("[ LOADED ]  effectDataPool.loadResource(" + pFiles[i] + ")"); ;
+//LOG("[ LOADED ]  effectDataPool.loadResource(" + pFiles[i] + ")");
 										pManager._onDependencyLoad(pDeps, i);
 									}
 								);
@@ -58060,7 +64748,7 @@ module akra.util {
 						break;
 
 					default:
-						logger.setSourceLocation( "util/DepsManager.ts" , 125 ); logger.warning("dependence " + pFiles[i] + " unknown, and will be skipped."); ;
+						logger.setSourceLocation( "util/DepsManager.ts" , 138 ); logger.warning("dependence " + pFiles[i] + " unknown, and will be skipped."); ;
 				}
 			});
 		}
@@ -58080,13 +64768,13 @@ module akra.util {
 // debug_assert(isDefAndNotNull(pDeps.files) && isString(pDeps.files[i]), "something going wrong...");
 
 			if (isDef(n)) {
-				logger.setSourceLocation( "util/DepsManager.ts" , 145 ); logger.log("loaded dependency: " + pDeps.files[n]); ;
+				logger.setSourceLocation( "util/DepsManager.ts" , 158 ); logger.log("loaded dependency: " + pDeps.files[n]); ;
 				pDeps.files[n] = null;
 			}
 
 			for (var i:  number  = 0; i < pDeps.files.length; ++ i) {
 				if (!isNull(pDeps.files[i])) {
-					logger.setSourceLocation( "util/DepsManager.ts" , 151 ); logger.log("waiting for > " + pDeps.files[i]); ;
+//LOG("waiting for > " + pDeps.files[i]);
 					return;
 				}
 			};
@@ -58095,27 +64783,480 @@ module akra.util {
 				this.loadDeps(pDeps.deps);
 			}
 			else {
-				this.loaded();
+				this.loaded(pDeps);
 			}
 		}
 
-		private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return DepsManager._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-			loaded (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).loaded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return DepsManager._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		loaded (deps): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).loaded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, deps) : _broadcast[i].listener (_recivier, deps) ; } } } ; ;
 // BROADCAST(error, CALL(pErr));
 
-			error(pErr: Error): void {
-				if (true) throw pErr;
-				this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).error; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pErr) : _broadcast[i].listener (_recivier, pErr) ; } } ;
-			}
+		error(pErr: Error): void {
+			if (true) throw pErr;
+			this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).error; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pErr) : _broadcast[i].listener (_recivier, pErr) ; } } ;
+		}
 
-		;
 	}
 
 	export function createDepsManager(pEngine: IEngine): IDepsManager {
-		logger.setSourceLocation( "util/DepsManager.ts" , 177 ); logger.assert(isDefAndNotNull(pEngine)); ;
+		logger.setSourceLocation( "util/DepsManager.ts" , 190 ); logger.assert(isDefAndNotNull(pEngine)); ;
 		return new DepsManager(pEngine);
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+
+	export enum EGamepadCodes {
+/*Face (main) buttons*/
+		FACE_1 = 0,
+	    FACE_2 = 1,
+	    FACE_3 = 2,
+	    FACE_4 = 3,
+/*Top shoulder buttons*/
+	    LEFT_SHOULDER = 4,
+	    RIGHT_SHOULDER = 5,
+/*Bottom shoulder buttons*/
+	    LEFT_SHOULDER_BOTTOM = 6,
+	    RIGHT_SHOULDER_BOTTOM = 7,
+	    SELECT = 8,
+	    START = 9,
+/*Analogue sticks (if depressible)*/
+	    LEFT_ANALOGUE_STICK = 10,
+	    RIGHT_ANALOGUE_STICK = 11,
+/*Directional (discrete) pad*/
+	    PAD_TOP = 12,
+	    PAD_BOTTOM = 13,
+	    PAD_LEFT = 14,
+	    PAD_RIGHT = 15
+	}
+
+	export enum EGamepadAxis {
+		LEFT_ANALOGUE_HOR = 0,
+	    LEFT_ANALOGUE_VERT = 1,
+	    RIGHT_ANALOGUE_HOR = 2,
+	    RIGHT_ANALOGUE_VERT = 3
+	}
+
+    export interface IGamepadMap extends IEventProvider {
+    	init(): bool;
+    	update(): void;
+    	isActive(): bool;
+
+
+    	find(sID?: string): Gamepad;
+    	find(i?:  number ): Gamepad;
+
+    	 connected(pGamepad: Gamepad): void;
+    	 disconnected(pGamepad: Gamepad): void;
+    	 updated(pGamepad: Gamepad): void;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+module akra.controls {
+	class GamepadMap implements IGamepadMap {
+		private _bTicking: bool = false;
+		private _pCollection: IObjectArray = new util.ObjectArray;
+		private _pPrevRawGamepadTypes: string[] = [null, null, null, null];
+		private _pPrevTimestamps:  number [] = [0, 0, 0, 0];
+
+		init(): bool {
+
+			if (!info.api.gamepad) {
+	            logger.setSourceLocation( "controls/GamepadMap.ts" , 21 ); logger.warning("Gamepad API is unsupported."); ;
+	            return false;
+	        }
+
+	        var pMap: GamepadMap = this;
+	        var pCollection: IObjectArray = this._pCollection;
+
+            window.addEventListener('MozGamepadConnected', (e: GamepadEvent) => {
+            	pCollection.push(e.gamepad);
+			    pMap.connected(e.gamepad);
+			    pMap._startPolling();
+            }, false);
+
+            window.addEventListener('MozGamepadDisconnected', (e: GamepadEvent) => {
+		        for (var i:  number  = 0; i <pCollection.length; ++ i) {
+		            if (< number >pCollection.value(i).index == e.gamepad.index) {
+		                pMap.disconnected(pCollection.takeAt(i));
+		                break;
+		            }
+		        }
+
+		        if (pCollection.length == 0) {
+		            pMap._stopPolling();
+		        }
+            }, false);
+
+            if ( !! navigator.gamepads || !! navigator.getGamepads) {
+                this._startPolling();
+                return true;
+            }
+
+            return false;
+		}
+
+		inline isActive(): bool {
+			return this._bTicking;
+		}
+
+
+		find(sID?: string): Gamepad;
+    	find(i?:  number ): Gamepad;
+    	find(id?): Gamepad {
+    		var sID: string = null;
+    		var i:  number  = 0;
+
+    		if (arguments.length) {
+    			if (isString(arguments[0])) {
+    				sID = <string>arguments[0];
+    			}
+    			else if (isInt(arguments[0])) {
+    				i = < number >arguments[0];
+    			}
+    		}
+
+    		if (!isNull(sID)) {
+    			for (i = 0; i < this._pCollection.length; ++ i) {
+    				if (this._pCollection.value(i).id == sID) {
+    					return this._pCollection.value(i);
+    				}
+    			}
+    		}
+
+    		return this._pCollection.value(i);
+    	}
+
+		inline _startPolling(): void {
+			 if (!this._bTicking) {
+	            this._bTicking = true;
+	            this.update();
+	        }
+		}
+
+		inline _stopPolling(): void {
+			this._bTicking = false;
+		}
+
+		inline update(): void {
+			this.pollStatus();
+		}
+
+		private pollStatus(): void {
+			if (!this._bTicking) {
+				return;
+			}
+
+			this.pollGamepads();
+
+	        for (var i = 0; i < this._pCollection.length; ++ i) {
+	            var pGamepad: Gamepad = this._pCollection.value(i);
+
+	            if (pGamepad.timestamp && (pGamepad.timestamp == this._pPrevTimestamps[i])) {
+	                continue;
+	            }
+
+	            this._pPrevTimestamps[i] = pGamepad.timestamp;
+	        }
+		}
+
+		private pollGamepads(): void {
+			var pRawGamepads: Gamepad[] = (navigator.getGamepads && navigator.getGamepads()) || navigator.gamepads;
+	        if (isDefAndNotNull(pRawGamepads)) {
+//debug_print("get raw gamepads");
+
+	            this._pCollection.clear();
+
+	            var isGamepadsChanged: bool = false;
+
+	            for (var i:  number  = 0; i < pRawGamepads.length; i++) {
+	                if (typeof pRawGamepads[i] != this._pPrevRawGamepadTypes[i]) {
+
+	                    isGamepadsChanged = true;
+	                    this._pPrevRawGamepadTypes[i] = typeof pRawGamepads[i];
+
+	                    if (isDefAndNotNull(pRawGamepads[i])) {
+	                   		logger.setSourceLocation( "controls/GamepadMap.ts" , 135 ); logger.log("gamepad " + i + " updated: " + pRawGamepads[i].id); ;
+	                        this.updated(pRawGamepads[i]);
+	                    }
+	                }
+
+	                if (isDefAndNotNull(pRawGamepads[i])) {
+	                    this._pCollection.push(pRawGamepads[i]);
+	                }
+	            }
+
+//if (isGamepadsChanged) {
+//todo: collection changed...
+//}
+	        }
+		}
+
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return GamepadMap._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		connected (pGamepad): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).connected; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pGamepad) : _broadcast[i].listener (_recivier, pGamepad) ; } } } ; ;
+		disconnected (pGamepad): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).disconnected; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pGamepad) : _broadcast[i].listener (_recivier, pGamepad) ; } } } ; ;
+		updated (pGamepad): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).updated; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, pGamepad) : _broadcast[i].listener (_recivier, pGamepad) ; } } } ; ;
+	}
+
+	export function createGamepadMap(): IGamepadMap {
+		return new GamepadMap;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module akra {
+	export interface IPoint {
+		x:  number ;
+		y:  number ;
+	}
+}
+
+
+
+
+
+
+module akra {
+	export interface IOffset {
+		x:  number ;
+		y:  number ;
+	}
+}
+
+
+
+module akra {
+	export enum EKeyCodes {
+		BACKSPACE = 8,
+        TAB = 9,
+		ENTER = 13,
+		SHIFT = 16, CTRL, ALT,
+		PAUSE = 19, BREAK = 19,
+		CAPSLOCK = 20,
+		ESCAPE = 27,
+		SPACE = 32,
+		PAGEUP = 33, PAGEDOWN,
+		END = 35, HOME,
+		LEFT = 37, UP, RIGHT, DOWN,
+		INSERT = 45, DELETE,
+		N0 = 48, N1, N2, N3, N4, N5, N6, N7, N8, N9,
+		A = 65, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
+		LEFTWINDOWKEY = 91, RIGHTWINDOWKEY, SELECTKEY,
+		NUMPAD0 = 96, NUMPAD1, NUMPAD2, NUMPAD3, NUMPAD4, NUMPAD5, NUMPAD6, NUMPAD7, NUMPAD8, NUMPAD9,
+		MULTIPLY = 106, ADD, SUBTRACT = 109, DECIMALPOINT, DIVIDE,
+		F1 = 112, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
+		NUMLOCK = 144, SCROLLLOCK,
+		SEMICOLON = 186, EQUALSIGN, COMMA, DASH, PERIOD, FORWARDSLASH, GRAVEACCENT,
+		OPENBRACKET = 219, BACKSLASH, CLOSEBRACKET, SINGLEQUOTE,
+		TOTAL = 256
+	}
+
+	export interface IKeyMap {
+		isKeyPress(iCode:  number );
+		isKeyPress(eCode: EKeyCodes);
+
+		getMouse(): IPoint;
+/*get offset from last frame*/
+
+		getMouseShift(): IOffset;
+		isMouseMoved(): bool;
+		isMousePress(): bool;
+
+		captureMouse(pMouseTarget: Node): void;
+		captureKeyboard(pKeyboardTarget: Node): void;
+		capture(pTarget: Node): void;
+
+		update(): void;
+	}
+}
+
+
+
+module akra.controls {
+	class KeyMap implements IKeyMap {
+		private _pMap: bool[] = new Array(256);
+
+		private _bAlt: bool = false;
+		private _bCtrl: bool = false;
+		private _bShift: bool = false;
+
+		private _bMouseDown: bool = false;
+		private _v2iMousePosition: IVec2 = new Vec2;
+		private _v2iMousePrevPosition: IVec2 = new Vec2;
+		private _v2iMouseShift: IVec2 = new Vec2;
+
+		constructor(pTarget?: HTMLElement) {
+			for (var i = EKeyCodes.TOTAL; i--;) {
+		        this._pMap[i] = false;
+		    }
+
+		    if (isDefAndNotNull(pTarget)) {
+		    	this.capture(pTarget);
+		    }
+		}
+
+		capture(pTarget: HTMLElement): void {
+			this.captureMouse(pTarget);
+			this.captureKeyboard(pTarget);
+		}
+
+		captureMouse(pTarget: HTMLElement): void {
+			var pKeys: KeyMap = this;
+		    var fn: EventListener = function (e: Event) {
+		        pKeys.dispatch(<MouseEvent>e);
+		    };
+
+		    if (pTarget.addEventListener) {
+		        pTarget.addEventListener("mousemove", fn, true);
+		        pTarget.addEventListener("mouseup", fn, true);
+		        pTarget.addEventListener("mousedown", fn, true);
+		    }
+		    else if (pTarget.attachEvent) {
+		        pTarget.attachEvent("onmousemove", fn);
+		        pTarget.attachEvent("onmouseup", fn);
+		        pTarget.attachEvent("onmousedown", fn);
+		    }
+		    else {
+		        pTarget.onmousemove = pTarget.onmouseup = pTarget.onmousedown = fn;
+		    }
+		}
+
+		captureKeyboard(pTarget: HTMLElement): void {
+			var pKeys: KeyMap = this;
+		    var fn: EventListener = function (e: Event) {
+		        pKeys.dispatch(<MouseEvent>e);
+		    };
+
+		    if (pTarget.addEventListener) {
+		        pTarget.addEventListener("keydown", fn, false);
+        		pTarget.addEventListener("keyup", fn, false);
+		    }
+		    else if (pTarget.attachEvent) {
+		        pTarget.attachEvent("onkeydown", fn);
+        		pTarget.attachEvent("onkeyup", fn);
+		    }
+		    else {
+		        pTarget.onkeydown = pTarget.onkeyup = fn;
+		    }
+		}
+
+		dispatch(e: MouseEvent = <MouseEvent><any>window.event): void {
+		    var iCode:  number  = (<KeyboardEvent><any>e).keyCode;
+
+		    if (e.type == "keydown") {
+
+		        this._pMap[iCode] = true;
+
+		        if (e.altKey) {
+		            this._bAlt = true;
+		        }
+		        if (e.ctrlKey) {
+		            this._bCtrl = true;
+		        }
+		        if (e.shiftKey) {
+		            this._bShift = true;
+		        }
+// if (e.altKey || e.ctrlKey || e.shiftKey) {
+//     this._pMap.splice(0);
+// }
+		    }
+		    else if (e.type == "keyup") {
+		        this._pMap[iCode] = false;
+
+		        if(iCode == EKeyCodes.ALT){
+		            this._bAlt = false;
+		        }
+		        if(iCode == EKeyCodes.CTRL){
+		            this._bCtrl = false;
+		        }
+		        if(iCode == EKeyCodes.SHIFT){
+		            this._bShift = false;
+		        }
+		    }
+
+		    if (e.type == "mousemove") {
+		        this._v2iMousePosition.x = (<MouseEvent>e).pageX;
+		        this._v2iMousePosition.y = (<MouseEvent>e).pageY;
+		    }
+		    else if (e.type == "mouseup") {
+		        this._bMouseDown = false;
+		    }
+		    else if (e.type == "mousedown") {
+		        this._bMouseDown = true;
+		    }
+		}
+
+	    isKeyPress(iCode:  number );
+		isKeyPress(eCode: EKeyCodes);
+
+		inline isKeyPress(iCode:  number ) {
+			return this._pMap[iCode];
+		}
+
+		inline getMouse(): IVec2 {
+			return this._v2iMousePosition;
+		}
+
+		inline getMouseShift(): IVec2 {
+			return this._v2iMouseShift.set(
+				this._v2iMousePosition.x - this._v2iMousePrevPosition.x,
+				this._v2iMousePosition.y - this._v2iMousePrevPosition.y);
+		}
+
+		isMouseMoved(): bool {
+			return this._v2iMousePosition.x != this._v2iMousePrevPosition.x ||
+					this._v2iMousePosition.y != this._v2iMousePrevPosition.y;
+		}
+
+		isMousePress(): bool {
+			return this._bMouseDown;
+		}
+
+		update(): void {
+			this._v2iMousePrevPosition.set(this._v2iMousePosition);
+		}
+	}
+
+	export function createKeymap(target?: HTMLElement): IKeyMap {
+		return new KeyMap(target);
+	}
+}
+
+
 
 
 
@@ -58149,11 +65290,21 @@ module akra.core {
 
 		private _isDepsLoaded: bool = false;
 
+		private _pGamepads: IGamepadMap = null;
+
 
 
 		constructor (pOptions: IEngineOptions = null) {
 			this._pResourceManager = new pool.ResourcePoolManager(this);
+			if (!this._pResourceManager.initialize()) {
+				logger.setSourceLocation( "core/Engine.ts" , 67 ); logger.error('cannot initialize ResourcePoolManager'); ;
+			}
+
 			this._pSceneManager = new scene.SceneManager(this);
+			if (!this._pSceneManager.initialize()) {
+				logger.setSourceLocation( "core/Engine.ts" , 72 ); logger.error("cannot initialize SceneManager"); ;
+			}
+
 			this._pParticleManager = null;
 
 
@@ -58161,19 +65312,37 @@ module akra.core {
 
 			this._pComposer = new fx.Composer(this);
 
+// Register image codecs
+			DDSCodec.startup();
 
-			if (!this._pResourceManager.initialize()) {
-				logger.setSourceLocation( "core/Engine.ts" , 70 ); logger.error('cannot initialize ResourcePoolManager'); ;
-			}
-
-			if (!this._pSceneManager.initialize()) {
-				logger.setSourceLocation( "core/Engine.ts" , 74 ); logger.error("cannot initialize SceneManager"); ;
-			}
 
 			this._pTimer = util.UtilTimer.start();
 			this.pause(false);
 
-// this.parseOptions(pOptions);
+			this.parseOptions(pOptions);
+		}
+
+		enableGamepads(): bool {
+			if (!isNull(this._pGamepads)) {
+				return true;
+			}
+
+			var pGamepads: IGamepadMap = controls.createGamepadMap();
+
+			if (pGamepads.init()) {
+				this._pGamepads = pGamepads;
+				return true;
+			}
+
+			return false;
+		}
+
+		getGamepads(): IGamepadMap {
+			if (this.enableGamepads()) {
+				return this._pGamepads;
+			}
+
+			return null;
 		}
 
 		private parseOptions(pOptions: IEngineOptions): void {
@@ -58188,7 +65357,11 @@ module akra.core {
 				sDepsRoot = pOptions.depsRoot || Engine.DEPS_ROOT;
 //default deps has higher priority!
 				if (isDefAndNotNull(pOptions.deps)) {
-					pDeps.files = pDeps.files.concat(pOptions.deps.files || []);
+					Engine.depends(pOptions.deps);
+				}
+
+				if (pOptions.gamepads === true) {
+					this.enableGamepads();
 				}
 			}
 
@@ -58197,11 +65370,10 @@ module akra.core {
 
 //load depends!
 			if (!pDepsManager.load(pDeps, sDepsRoot)) {
-				logger.setSourceLocation( "core/Engine.ts" , 104 ); logger.criticalError("load dependencies are not started."); ;
+				logger.setSourceLocation( "core/Engine.ts" , 142 ); logger.criticalError("load dependencies are not started."); ;
 			}
 
 //===========================================================
-
 		}
 
 		inline getScene(): IScene3d {
@@ -58233,6 +65405,10 @@ module akra.core {
 			return this._isActive;
 		}
 
+		inline isDepsLoaded(): bool {
+			return this._isDepsLoaded;
+		}
+
 		exec(bValue: bool = true): void {
 			var pRenderer: IRenderer = this._pRenderer;
 			var pEngine: Engine = this;
@@ -58242,7 +65418,7 @@ module akra.core {
 // pCanvas = (<IWebGLRenderer>pRenderer).getHTMLCanvas();
 
 
-			logger.setSourceLocation( "core/Engine.ts" , 149 ); logger.assert(!isNull(pRenderer)); ;
+			logger.setSourceLocation( "core/Engine.ts" , 190 ); logger.assert(!isNull(pRenderer)); ;
 
 	        pRenderer._initRenderTargets();
 
@@ -58254,16 +65430,14 @@ module akra.core {
 	        function render(iTime:  number ): void {
 
 				if (pRenderer.isValid()) {
-					logger.setSourceLocation( "core/Engine.ts" , 161 ); logger.error(pRenderer.getError()); ;
+					logger.setSourceLocation( "core/Engine.ts" , 202 ); logger.error(pRenderer.getError()); ;
 				}
 
-	        	if (!pEngine.isActive()) {
-	                return;
-	            }
-
-	            if (!pEngine.renderFrame()) {
-	                logger.setSourceLocation( "core/Engine.ts" , 169 ); logger.error("Engine::exec() error."); ;
-	                return;
+	        	if (pEngine.isActive() && pEngine.isDepsLoaded()) {
+					if (!pEngine.renderFrame()) {
+		                logger.setSourceLocation( "core/Engine.ts" , 207 ); logger.error("Engine::exec() error."); ;
+		                return;
+		            }
 	            }
 
 /*, pCanvas*/
@@ -58284,6 +65458,9 @@ module akra.core {
 
 // FrameMove (animate) the scene
 		    if (this._isFrameMoving) {
+		    	if (!isNull(this._pGamepads)) {
+		    		this._pGamepads.update();
+		    	}
 		    	this._pSceneManager.update();
 		    }
 
@@ -58346,14 +65523,35 @@ module akra.core {
 			return animation.createController(this, iOptions);
 		}
 
-		_depsLoaded(pLoader: IDepsManager): void {
-			alert("deps loaded!!!!!!!!!!!!!!!!!!!!!");
+		_depsLoaded(pLoader: IDepsManager, pDeps: IDependens): void {
+			logger.setSourceLocation( "core/Engine.ts" , 295 ); logger.log("[ALL DEPTS LOADED]"); ;
 			this._isDepsLoaded = true;
+
+			this.depsLoaded(pDeps);
 		}
 
-		static DEPS_ROOT: string = "";
-		static DEPS: IDependens =
+		static depends(sData: string): void;
+		static depends(pData: IDependens): void;
+		static depends(pData): void {
+			var pDeps: IDependens = Engine.DEPS;
 
+			while (isDefAndNotNull(pDeps.files)) {
+				pDeps = pDeps.deps;
+			}
+
+			if (isString(pData)) {
+				pDeps.files = [pData];
+			}
+			else {
+				pDeps.files = pData;
+			}
+		}
+
+		static DEPS_ROOT: string =
+
+			"/akra-engine-core/src2/data/";
+
+		static DEPS: IDependens =
 			{
 				files: [
 					"grammars/HLSL.gr"
@@ -58361,39 +65559,43 @@ module akra.core {
 				deps: {
 						files: [
 							"effects/SystemEffects.afx",
-							"effects/prepareDeferredShading.afx",
 						    "effects/Plane.afx",
-						    "effects/mesh.afx",
-						    "effects/mesh_geometry.afx",
-						    "effects/mesh_texture.afx",
-						    "effects/TextureToScreen.afx",
-						    "effects/prepare_shadows.afx",
-						    "effects/deferredShading.afx",
-						    "effects/apply_lights_and_shadows.afx",
 						    "effects/fxaa.afx",
-						    "effects/skybox.afx"
-						]
+						    "effects/skybox.afx",
+						    "effects/mesh.afx",
+						    "effects/TextureToScreen.afx",
+						    "effects/mesh_geometry.afx",
+						    "effects/prepare_shadows.afx",
+						    "effects/prepareDeferredShading.afx"
+						],
+						deps: {
+							files: [
+								"effects/mesh_texture.afx",
+								"effects/deferredShading.afx",
+								"effects/apply_lights_and_shadows.afx"
+							]
+						}
 					}
 			};
 
 
-		private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return Engine._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-			frameStarted (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).frameStarted; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
-			frameEnded (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).frameEnded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return Engine._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		frameStarted (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).frameStarted; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+		frameEnded (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).frameEnded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+		depsLoaded (deps): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).depsLoaded; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, deps) : _broadcast[i].listener (_recivier, deps) ; } } } ; ;
 
-			 inactive(): void {
-				this._isActive = false;
-				this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).inactive; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } ;
-			}
+		 inactive(): void {
+			this._isActive = false;
+			this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).inactive; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } ;
+		}
 
-			 active(): void {
-				this._isActive = true;
-				this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).active; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } ;
-			}
+		 active(): void {
+			this._isActive = true;
+			this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).active; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } ;
+		}
 
 // BROADCAST(inactive, VOID);
 // BROADCAST(active, VOID);
-		;
 
 	}
 
@@ -58523,7 +65725,7 @@ module akra {
 
 		readWorldNormal(v3fNormal: IVec3, iMapX:  number , iMapY:  number ): IVec3;
 /**
-		 * Возвращает высоту terrain в заданной точке ��ира.
+		 * Возвращает высоту terrain в заданной точке мира.
 		 */
 
 		calcWorldHeight(fWorldX:  number , fWorldY:  number ):  number ;
@@ -58612,6 +65814,7 @@ module akra {
     export interface IRPCCallback {
         n:  number ;
         fn: Function;
+        timestamp:  number ;
     }
 
 	export interface IRPCPacket {
@@ -58635,6 +65838,7 @@ module akra {
 		join(sAddr?: string): void;
 		rejoin(): void;
 		free(): void;
+        detach(): void;
 		proc(...argv: any[]): bool;
 
 		parse(pResponse: IRPCResponse): void;
@@ -58902,7 +66106,7 @@ module akra.net {
 		isClosed(): bool {
 			switch (this._eType) {
 				case EPipeTypes.WEBSOCKET:
-					return ((<WebSocket>this._pConnect).readyState === WebSocket.CLOSED);
+					return isNull(this._pConnect) || ((<WebSocket>this._pConnect).readyState === WebSocket.CLOSED);
 			}
 
 			return isNull(this._pConnect);
@@ -58911,7 +66115,7 @@ module akra.net {
 		isOpened(): bool {
 			switch (this._eType) {
 				case EPipeTypes.WEBSOCKET:
-					return (<WebSocket>this._pConnect).readyState === WebSocket.OPEN;
+					return !isNull(this._pConnect) && (<WebSocket>this._pConnect).readyState === WebSocket.OPEN;
 			}
 
 			return !isNull(this._pConnect);
@@ -58922,12 +66126,11 @@ module akra.net {
 			return !isNull(this._pConnect);
 		}
 
-		private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return Pipe._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-			opened (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).opened; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
-			closed (ev): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).closed; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, ev) : _broadcast[i].listener (_recivier, ev) ; } } } ; ;
-			error (err): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).error; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, err) : _broadcast[i].listener (_recivier, err) ; } } } ; ;
-			message (data, type): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).message; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, data, type) : _broadcast[i].listener (_recivier, data, type) ; } } } ; ;
-		;
+		/**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return Pipe._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+		opened (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).opened; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
+		closed (ev): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).closed; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, ev) : _broadcast[i].listener (_recivier, ev) ; } } } ; ;
+		error (err): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).error; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, err) : _broadcast[i].listener (_recivier, err) ; } } } ; ;
+		message (data, type): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).message; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier, data, type) : _broadcast[i].listener (_recivier, data, type) ; } } } ; ;
 	}
 
 	export function createPipe(sAddr: string = null): IPipe {
@@ -59304,6 +66507,10 @@ module akra.util {
 		};
 
 		private pullElement(pItem: IObjectListItem): any {
+			if (isNull(pItem)) {
+//this case theoretically cannot happen, but ....
+				return null;
+			}
 
 			if (isNull(pItem.prev)) {
 				this._pHead = pItem.next;
@@ -59341,6 +66548,7 @@ module akra.util {
 		};
 
 		inline takeCurrent(isPrev: bool = false): any {
+//console.log(isDefAndNotNull(this._pCurrent));
 			return this.pullElement(this._pCurrent);
 		}
 
@@ -59393,7 +66601,7 @@ module akra.util {
 		}
 
 		insert(n:  number , pData: any): IObjectList{
-			logger.setSourceLocation( "util/ObjectList.ts" , 316 ); logger.assert(!this.isLocked(), "list locked."); ;
+			logger.setSourceLocation( "util/ObjectList.ts" , 321 ); logger.assert(!this.isLocked(), "list locked."); ;
 
 			var pNew: IObjectListItem = this.createItem();
 			var pItem: IObjectListItem;
@@ -59462,7 +66670,7 @@ module akra.util {
 		}
 
 		clear(): IObjectList {
-			logger.setSourceLocation( "util/ObjectList.ts" , 385 ); logger.assert(!this.isLocked(), "list locked."); ;
+			logger.setSourceLocation( "util/ObjectList.ts" , 390 ); logger.assert(!this.isLocked(), "list locked."); ;
 
 			var pPrev: IObjectListItem;
 			var pNext: IObjectListItem;
@@ -59504,9 +66712,23 @@ module akra {
 
 
 
+/// @dep net/server/
+
+
 module akra.net {
 
-    export class RPC implements IRPC {
+
+    enum ERpcStates {
+//not connected
+        k_Deteached,
+//connected, and connection must be established
+        k_Joined,
+//must be closed
+        k_Closing
+    }
+
+    class RPC implements IRPC {
+
         /**@protected*/  _pPipe: IPipe = null;
 
 //стек вызововы, которые были отложены
@@ -59525,6 +66747,11 @@ module akra.net {
 //при получении REQUEST запросов со стороны сервера
         /**@protected*/  _pContext: any = null;
 
+        /**@protected*/  _eState: ERpcStates = ERpcStates.k_Deteached;
+
+//timer for system routine
+        /**@protected*/  _iSystemRoutine:  number  = -1;
+
         inline get remote(): any { return this._pRemoteAPI; }
 
         constructor (sAddr?: string, pContext?: Object);
@@ -59536,7 +66763,7 @@ module akra.net {
 
         join(sAddr: string = null): void {
             var pPipe: IPipe = this._pPipe;
-            var pRPC: IRPC = this;
+            var pRPC: RPC = this;
             var pDeffered: IObjectList = this._pDefferedRequests;
 
             if (isNull(pPipe)) {
@@ -59549,13 +66776,16 @@ module akra.net {
                             pRPC.parse(JSON.parse(<string>pMessage));
                         }
                         else {
-                            pRPC.parseBinary(new Uint8Array(pMessage));
+                            pRPC.parseBinary(<ArrayBuffer>pMessage);
                         }
                     }
                 );
 
                 pPipe.bind( "opened" ,
                     function (pPipe: IPipe, pEvent: Event): void {
+
+                        pRPC._startSystemRoutine();
+
 //if we have unhandled call in deffered...
                         if (pDeffered.length) {
                             pDeffered.seek(0);
@@ -59565,13 +66795,13 @@ module akra.net {
                                 pRPC._releaseRequest(<IRPCRequest>pDeffered.takeCurrent());
                             }
 
-                            logger.setSourceLocation( "net/RPC.ts" , 72 ); logger.assert(pDeffered.length === 0, "something going wrong. length is: " + pDeffered.length); ;
+                            logger.setSourceLocation( "net/RPC.ts" , 94 ); logger.assert(pDeffered.length === 0, "something going wrong. length is: " + pDeffered.length); ;
                         }
 
                         pRPC.proc(RPC.PROC_LIST,
                             function (pError: Error, pList: string[]) {
                                 if (!akra.isNull(pError)) {
-                                    logger.setSourceLocation( "net/RPC.ts" , 78 ); logger.criticalError("could not get proc. list"); ;
+                                    logger.setSourceLocation( "net/RPC.ts" , 100 ); logger.criticalError("could not get proc. list"); ;
                                 }
 //TODO: FIX akra. prefix...
                                 if (!akra.isNull(pList) && akra.isArray(pList)) {
@@ -59600,13 +66830,14 @@ module akra.net {
 
                 pPipe.bind( "error" ,
                     function(pPipe: IPipe, pError: Error): void {
-                        logger.setSourceLocation( "net/RPC.ts" , 107 ); logger.error("pipe error occured..."); ;
-                        pRPC.rejoin();
+                        logger.setSourceLocation( "net/RPC.ts" , 129 ); logger.error("pipe error occured..."); ;
+//pRPC.rejoin();
                     }
                 );
 
                 pPipe.bind( "closed" ,
                     function (pPipe: IPipe, pEvent: CloseEvent): void {
+                        pRPC._stopSystemRoutine();
                         pRPC.rejoin();
                     }
                 );
@@ -59615,18 +66846,29 @@ module akra.net {
             pPipe.open(<string>sAddr);
 
             this._pPipe = pPipe;
+            this._eState = ERpcStates.k_Joined;
         }
 
         rejoin(): void {
             var pRPC: IRPC = this;
+
             clearTimeout(this._iReconnect);
 
+//rejoin not needed, because pipe already connected
             if (this._pPipe.isOpened()) {
+                this._eState = ERpcStates.k_Joined;
+                return;
+            }
+
+//rejoin not needed, because we want close connection
+            if (this._eState == ERpcStates.k_Closing) {
+                this._eState = ERpcStates.k_Deteached;
                 return;
             }
 
             if (this._pPipe.isClosed()) {
-// LOG("attempt to reconnecting...");
+//callbacks that will not be called, because connection was lost 
+                this.freeCallbacks();
 
                 this._iReconnect = setTimeout(() => {
                     pRPC.join();
@@ -59636,17 +66878,20 @@ module akra.net {
 
         parse(pRes: IRPCResponse): void {
             if (!isDef(pRes.n)) {
-                logger.setSourceLocation( "net/RPC.ts" , 143 ); logger.log(pRes); ;
-                logger.setSourceLocation( "net/RPC.ts" , 144 ); logger.warning("message droped, because seriial not recognized."); ;
+                logger.setSourceLocation( "net/RPC.ts" , 177 ); logger.log(pRes); ;
+                logger.setSourceLocation( "net/RPC.ts" , 178 ); logger.warning("message droped, because seriial not recognized."); ;
             };
 
             this.response(pRes.n, pRes.type, pRes.res);
         }
 
-        parseBinary(pBuffer: Uint8Array): void {
-            var pRes: Uint8Array = pBuffer;
-            var nMsg:  number  = (new Uint32Array(pBuffer.subarray(0, 4).buffer, 0, 4))[0];
-            var eType: ERPCPacketTypes = <ERPCPacketTypes>pBuffer[4];
+
+        parseBinary(pBuffer: ArrayBuffer): void {
+
+            var pHeader: Uint32Array = new Uint32Array(pBuffer, 0, 2);
+            var nMsg:  number  = pHeader[0];
+            var eType: ERPCPacketTypes = <ERPCPacketTypes>pHeader[1];
+
             var pResult: Uint8Array = new Uint8Array(pBuffer, 8);
 
             this.response(nMsg, eType, pResult);
@@ -59673,22 +66918,59 @@ module akra.net {
                 } while (pCallback = pStack.prev());
 
 
-                logger.setSourceLocation( "net/RPC.ts" , 180 ); logger.warning("package droped, invalid serial: " + nSerial); ;
+                logger.setSourceLocation( "net/RPC.ts" , 217 ); logger.warning("package droped, invalid serial: " + nSerial); ;
             }
             else if (eType === ERPCPacketTypes.REQUEST) {
-                logger.setSourceLocation( "net/RPC.ts" , 183 ); logger.error("TODO: REQUEST package type temprary unsupported."); ;
+                logger.setSourceLocation( "net/RPC.ts" , 220 ); logger.error("TODO: REQUEST package type temprary unsupported."); ;
             }
             else if (eType === ERPCPacketTypes.FAILURE) {
-                logger.setSourceLocation( "net/RPC.ts" , 186 ); logger.error("detected FAILURE on " + nSerial + " package"); ;
+                logger.setSourceLocation( "net/RPC.ts" , 223 ); logger.error("detected FAILURE on " + nSerial + " package"); ;
+                logger.setSourceLocation( "net/RPC.ts" , 224 ); logger.log(pResult); ;
             }
             else {
-                logger.setSourceLocation( "net/RPC.ts" , 189 ); logger.error("unsupported response type detected: " + eType); ;
+                logger.setSourceLocation( "net/RPC.ts" , 227 ); logger.error("unsupported response type detected: " + eType); ;
             }
         }
 
-        free() {
-            this._pDefferedRequests.clear();
-            this._pCallbacks.clear();
+        private freeRequests(): void {
+            var pStack: IObjectList = this._pDefferedRequests;
+            var pReq: IRPCRequest = <IRPCRequest>pStack.first;
+
+            if (pReq) {
+                do {
+                    this._releaseRequest(pReq);
+                } while (pReq = pStack.next());
+
+                pStack.clear();
+            }
+        }
+
+        private freeCallbacks(): void {
+            var pStack: IObjectList = this._pCallbacks;
+            var pCallback: IRPCCallback = <IRPCCallback>pStack.first;
+
+            if (pCallback) {
+                do {
+                    this._releaseCallback(pCallback);
+                } while (pCallback = pStack.next());
+
+                pStack.clear();
+            }
+        }
+
+        free(): void {
+            this.freeRequests();
+            this.freeCallbacks();
+        }
+
+        detach(): void {
+            this._eState = ERpcStates.k_Closing;
+
+            if (!isNull(this._pPipe) && this._pPipe.isOpened()) {
+                this._pPipe.close();
+            }
+
+            this.free();
         }
 
         proc(...argv: any[]): bool {
@@ -59713,12 +66995,10 @@ module akra.net {
             pProc.proc  = String(arguments[0]);
             pProc.argv  = pArgv;
 
-
-//if (!isNull(fnCallback)) {
             pCallback = <IRPCCallback>this._createCallback();
             pCallback.n = pProc.n;
             pCallback.fn = fnCallback;
-//}
+            pCallback.timestamp = now();
 
             if (isNull(pPipe) || !pPipe.isOpened()) {
                 if (this._pDefferedRequests.length <= RPC.OPTIONS.DEFFERED_CALLS_LIMIT) {
@@ -59727,9 +67007,10 @@ module akra.net {
                 }
                 else {
                     pCallback.fn(RPC.ERRORS.STACK_SIZE_EXCEEDED);
-                    logger.setSourceLocation( "net/RPC.ts" , 234 ); logger.warning(RPC.ERRORS.STACK_SIZE_EXCEEDED); ;
+                    logger.setSourceLocation( "net/RPC.ts" , 306 ); logger.warning(RPC.ERRORS.STACK_SIZE_EXCEEDED); ;
 
                     this._releaseCallback(pCallback);
+                    this._releaseRequest(pProc);
                 }
 
                 return false;
@@ -59744,7 +67025,52 @@ module akra.net {
             return bResult;
         }
 
-        inline _releaseRequest(pReq: IRPCRequest): void {
+        inline _systemRoutine(): void {
+            this._removeExpiredCallbacks();
+        }
+
+        _startSystemRoutine(): void {
+            var pRPC: RPC = this;
+
+            this._iSystemRoutine = setInterval(() => {
+                pRPC._systemRoutine();
+            }, RPC.OPTIONS.SYSTEM_ROUTINE_INTERVAL);
+        }
+
+        _stopSystemRoutine(): void {
+            clearInterval(this._iSystemRoutine);
+            this._systemRoutine();
+        }
+
+        _removeExpiredCallbacks(): void {
+// LOG("remove expired callbacks routine...");
+
+            var pCallbacks: IObjectList = this._pCallbacks;
+            var pCallback: IRPCCallback = <IRPCCallback>pCallbacks.first;
+            var iNow:  number  = now();
+            var fn: Function = null;
+
+            while(!isNull(pCallback)) {
+
+//LOG(isDefAndNotNull((<any>pCallbacks)._pCurrent), pCallback.n, "(" + (iNow - pCallback.timestamp) + " ms )");
+
+                if ((iNow - pCallback.timestamp) >= RPC.OPTIONS.CALLBACK_LIFETIME) {
+                    fn = pCallback.fn;
+                    this._releaseCallback(<IRPCCallback>pCallbacks.takeCurrent());
+
+                    pCallback = pCallbacks.current;
+
+                    if (!isNull(fn)) {
+                        fn(RPC.ERRORS.CALLBACK_LIFETIME_EXPIRED, null);
+                    }
+                }
+                else {
+                    pCallback = <IRPCCallback>pCallbacks.next();
+                }
+            }
+        }
+
+        _releaseRequest(pReq: IRPCRequest): void {
             pReq.n = 0;
             pReq.proc = null;
             pReq.argv = null;
@@ -59752,7 +67078,7 @@ module akra.net {
             RPC.requestPool.push(pReq);
         };
 
-        inline _createRequest(): IRPCRequest {
+        _createRequest(): IRPCRequest {
             if (RPC.requestPool.length == 0) {
 // LOG("allocated rpc request");
                 return {n: 0, type: ERPCPacketTypes.REQUEST, proc: null, argv: null };
@@ -59761,36 +67087,39 @@ module akra.net {
             return <IRPCRequest>RPC.requestPool.pop();
         }
 
-        inline _releaseCallback(pReq: IRPCCallback): void {
-            pReq.n = 0;
-            pReq.fn = null;
+        _releaseCallback(pCallback: IRPCCallback): void {
+            pCallback.n = 0;
+            pCallback.fn = null;
+            pCallback.timestamp = 0;
 
-            RPC.callbackPool.push(pReq);
+            RPC.callbackPool.push(pCallback);
         };
 
-        inline _createCallback(): IRPCCallback {
+        _createCallback(): IRPCCallback {
             if (RPC.callbackPool.length == 0) {
 // LOG("allocated callback");
-                return { n: 0, fn: null};
+                return { n: 0, fn: null, timestamp: 0 };
             }
 
             return <IRPCCallback>RPC.callbackPool.pop();
         }
 
-        private _iGuid: number = eval("this._iGuid || akra.sid()"); private _pUnicastSlotMap: IEventSlotMap = null; private _pBroadcastSlotList: IEventSlotListMap = null; private static _pEventTable: IEventTable = new events.EventTable(); inline getEventTable(): IEventTable {return RPC._pEventTable; } getGuid(): number {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
-            joined (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).joined; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
-        ;
+        /**@protected*/ _iGuid: number = sid(); inline getGuid(): number { return this._iGuid; } /**@protected*/ _pUnicastSlotMap: IEventSlotMap = null; /**@protected*/ _pBroadcastSlotList: IEventSlotListMap = null; /**@protected*/ static _pEventTable: IEventTable = new events.EventTable(); getEventTable(): IEventTable { return RPC._pEventTable; } inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); }; inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool { return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType); } inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType); } inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool { return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType); } ;
+        joined (): void { this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid); var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).joined; var _recivier: any = this; if(isDef(_broadcast)){ for (var i = 0; i < _broadcast.length; ++ i) { _broadcast[i].target? _broadcast[i].target[_broadcast[i].callback] (_recivier) : _broadcast[i].listener (_recivier) ; } } } ; ;
 
         private static requestPool: IObjectArray = new ObjectArray;
         private static callbackPool: IObjectArray = new ObjectArray;
 
         static OPTIONS = {
-            DEFFERED_CALLS_LIMIT: 1024,
-            RECONNECT_TIMEOUT   : 2500
+            DEFFERED_CALLS_LIMIT        : 1024,
+            RECONNECT_TIMEOUT           : 2500,
+            SYSTEM_ROUTINE_INTERVAL     : 10000,
+            CALLBACK_LIFETIME           : 5000
         }
 
         static ERRORS = {
-            STACK_SIZE_EXCEEDED: new Error("stack size exceeded")
+            STACK_SIZE_EXCEEDED: new Error("stack size exceeded"),
+            CALLBACK_LIFETIME_EXPIRED: new Error("procedure life time expired")
         }
 
 //имя процедуры, для получения все поддерживаемых процедур
@@ -59862,7 +67191,7 @@ module akra.terrain {
 	    private _pMapDataFor: Uint8Array  = null;
 	    private _pMapDataNULL: Uint8Array = null;
 
-	    private _pRPC: IRPC = new net.RPC('ws://192.168.194.132');
+	    private _pRPC: IRPC = null;
 
 	    private _fTexCourdXOld:  number  = undefined;
 	    private _fTexCourdYOld:  number  = undefined;
@@ -59924,6 +67253,10 @@ module akra.terrain {
     				iTexX:0, iTexY:0,
     				isUpdated : true, isLoaded : false};
     	    }
+
+
+    	    this._pRPC=net.createRpc();
+    	    this._pRPC.join('ws://192.168.194.132');
 	    	this.getDataFromServer(0, 0, 0, this._iTextureWidth, this._iTextureHeight);
 	    }
 
@@ -60058,7 +67391,7 @@ module akra.terrain {
 		            var iAreaX2:  number  = iX + iWidth;
 		            var iAreaY2:  number  = iY + iHeight;
 
-//console.log("Запрос частей текстур на ��качивание");
+//console.log("Запрос частей текстур на скачивание");
 //console.log(iX1,this._pXY[i].iX);
 //console.log(iY1,this._pXY[i].iY);
 //console.log(iX2,this._pXY[i].iX+this._iBufferWidth);
@@ -60096,7 +67429,7 @@ module akra.terrain {
 		                trace(this._pXY[i].iX, this._pXY[i].iY, this._pXY[i].iX + this._iBufferWidth,
 		                      this._pXY[i].iX + this._iBufferHeight);*/
 
-		                logger.setSourceLocation( "terrain/MegaTexture.ts" , 289 ); logger.error("Не может такого быть чтобы буфер не попал под текстуру"); ;
+		                logger.setSourceLocation( "terrain/MegaTexture.ts" , 293 ); logger.error("Не может такого быть чтобы буфер не попал под текстуру"); ;
 		            }
 		        }
 		        else {
@@ -60301,11 +67634,11 @@ module akra.terrain {
 /*trace(pBuffer.length, iX, iY, iBlockWidth, iBlockHeight, iWidth, iHeight, iComponents);
 			    trace(pBuffer.length, ((iY + iBlockHeight - 1) * iWidth + iX + iBlockWidth) * iComponents);*/
 
-			    logger.setSourceLocation( "terrain/MegaTexture.ts" , 492 ); logger.error("Выход за предел массива 1"); ;
+			    logger.setSourceLocation( "terrain/MegaTexture.ts" , 496 ); logger.error("Выход за предел массива 1"); ;
 			}
 
 			if (pBufferIn.length < ((iInY + iBlockHeight - 1) * iInWidth + iInX + iBlockWidth) * iComponents) {
-			    logger.setSourceLocation( "terrain/MegaTexture.ts" , 496 ); logger.error("Выход за предел массива 2"); ;
+			    logger.setSourceLocation( "terrain/MegaTexture.ts" , 500 ); logger.error("Выход за предел массива 2"); ;
 			}
 
 			for (var i:  number  = 0; i < iBlockHeight; i++) {
@@ -60328,10 +67661,10 @@ module akra.terrain {
 /*trace(pBuffer.length, iX, iY, iBlockWidth, iBlockHeight, iWidth, iHeight, iComponents);
 			    trace(pBuffer.length, ((iY + iBlockHeight - 1) * iWidth + iX + iBlockWidth) * iComponents);*/
 
-			    logger.setSourceLocation( "terrain/MegaTexture.ts" , 518 ); logger.error("Выход за предел массива 1"); ;
+			    logger.setSourceLocation( "terrain/MegaTexture.ts" , 522 ); logger.error("Выход за предел массива 1"); ;
 			}
 			if (pBufferIn.length < ((iInY + iBlockHeight - 1) * iInWidth + iInX + iBlockWidth) * iComponents) {
-			    logger.setSourceLocation( "terrain/MegaTexture.ts" , 521 ); logger.error("Выход за предел массива 2"); ;
+			    logger.setSourceLocation( "terrain/MegaTexture.ts" , 525 ); logger.error("Выход за предел массива 2"); ;
 			}
 
 			var iLenStr:  number  = iBlockWidth * iComponents;
@@ -62689,9 +70022,10 @@ module akra.util {
 		return null;
 	}
 
-	window.alert = function(message?: string): void {
+/*window.alert = function(message?: string): void {
 		console.warn("alert > " + message);
-	}
+	}*/
+
 
 	window.confirm = function (message?: string): bool {
 		console.warn("confirm > " + message);
@@ -62778,9 +70112,18 @@ module akra.util {
 
 
 
+// function output(sText: string): void {
+// 	document.body.innerHTML += sText;
+// }
+
 	function output(sText: string): void {
-		document.body.innerHTML += sText;
+
+		var pElement = document.createElement("div");
+		pElement.innerHTML = sText;
+		document.body.appendChild(pElement);
+
 	}
+
 
 	export function check(...pArgv: any[]): void {
 		var pTest: ITestCond = pTestCondList.pop();
