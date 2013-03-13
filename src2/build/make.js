@@ -444,6 +444,7 @@ function createTestName(sEntryFileName) {
 }
 
 
+
 function findDepends(sData) {
 	var pDepExp = /\/\/\/\s*@dep\s+([\w\d\.\-\/]+)\s*/ig;
 	var pMatches = null;
@@ -467,10 +468,12 @@ function fetchDeps(sDir, pDeps) {
 	}
 }
 
+
 function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 	
 	//FIXME: hack for events support
 	sTestData = sTestData.replace(/eval\(\"this\.\_iGuid \|\| akra\.sid\(\)\"\)/g, "this._iGuid || akra.sid()");
+
 
 	sTestData = "\n\n\n" + 
 		"/*---------------------------------------------\n" +
@@ -483,6 +486,7 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 
 	var pAdditionalScripts = [];
 	var sAdditionalCode = "";
+
 
 	var pArchive;
 	var sIndexHTML;

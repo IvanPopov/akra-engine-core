@@ -78,8 +78,8 @@ module akra.webgl {
 				"Размер переданного массива больше переданного размера буфера");
 			
 		    this._pWebGLTexture = pWebGLRenderer.createWebGLTexture();
-		    this._eWebGLFormat = getWebGLOriginFormat(this._ePixelFormat);
-		    this._eWebGLType = getWebGLOriginDataType(this._ePixelFormat);
+		    this._eWebGLFormat = getWebGLFormat(this._ePixelFormat);
+		    this._eWebGLType = getWebGLDataType(this._ePixelFormat);
 
 		    if (!this._pWebGLTexture) {
 		        CRITICAL("Не удалось создать буфер");

@@ -1,16 +1,30 @@
 #ifndef IIMG_TS
 #define IIMG_TS
 
-#include "IResourcePoolItem.ts"
 #include "PixelFormat.ts"
+#include "IResourcePoolItem.ts"
+#include "IColor.ts"
+#include "IPixelBox.ts"
 
-module akra {
-	 
-	export enum EImageFlags {
+module akra 
+{
+	
+ 
+	
+    export enum EImageFlags {
 		COMPRESSED = 0x00000001,
         CUBEMAP    = 0x00000002,
-        TEXTURE_3D = 0x00000004
+        TEXTURE_3D = 0x00000004,
 	};
+
+    export enum EImageCubeFlags{
+        POSITIVE_X = 0x00000001,
+        NEGATIVE_X = 0x00000002,            
+        POSITIVE_Y = 0x00000004,
+        NEGATIVE_Y = 0x00000008,
+        POSITIVE_Z = 0x0000000c,
+        NEGATIVE_Z = 0x000000010,
+        };
 
     export interface IImg extends IResourcePoolItem {
     	byteLength: uint;
@@ -23,45 +37,48 @@ module akra {
     	numMipMaps: uint;
     	format: EPixelFormats;
 
+        flags: uint;
+        cubeFlags:uint;
 
+        
     	set(pSrc: IImg): IImg;
 
     	/** @param Destination image. If destination not specified, original image will be modified.*/
     	flipY(pDest?: IImg): IImg;
     	flipX(pDest?: IImg): IImg;
 
-    	loadFromMemory(pData: Uint8Array, iWidth: uint, iHeight: uint, eFormat: EPixelFormats): bool;
-    	loadFromMemory(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats): bool;
 
-    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, eFormat: EPixelFormats, nFaces?: uint, nMipMaps?: uint): bool;
-    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats, nFaces?: uint, nMipMaps?: uint): bool;
+    	load(sFileName: string,  fnCallBack?: Function): IImg;
+    	load(pData: Uint8Array, sType:string,  fnCallBack?: Function): IImg;
+        load(pCanvas: HTMLCanvasElement, fnCallBack?: Function): IImg;
 
-        loadDynamicImage(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint,
-                         eFormat: EPixelFormats, bAutoDelete?: bool, 
-                         iNumFaces?: uint, iNumMipMaps?: uint): IImg;
 
-    	load(sFilename: string);
-    	create(iWidth: uint, iHeight: uint, eFormat: EPixelFormats, iFlags: int): bool;
-    	create(iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats, iFlags: int): bool;
+    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth?: uint, eFormat?: EPixelFormats, nFaces?: uint, nMipMaps?: uint): IImg;
+
+        loadDynamicImage(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth?: uint,
+                         eFormat?: EPixelFormats, nFaces?: uint, nMipMaps?: uint): IImg;
+
+
+    	create(iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats, nFaces: uint, nMipMaps: uint): IImg ;
 
     	convert(eFormat: EPixelFormats): bool;
 
     	//Gets the physical width in bytes of each row of pixels.
     	getRawSpan(): uint;
+        getPixelSize(): uint;
     	getBPP(): uint;
-    	getFlags(): int;
     	getData(): Uint8Array;
 
     	hasFlag(eFlag: EImageFlags): bool;
 
     	hasAlpha(): bool;
     	isCompressed(): bool;
-    	isLumiance(): bool;
+    	isLuminance(): bool;
 
     	freeMemory();
 
     	getColorAt(pColor: IColor, x: uint, y: uint, z?:uint): IColor;
-    	setColorAt(pColor: IColorValue, x: uint, y: uint, z: uint): void;
+    	setColorAt(pColor: IColor, x: uint, y: uint, z?: uint): void;
 
     	getPixels(nFace?: uint, iMipMap?: uint): IPixelBox;
 

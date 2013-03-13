@@ -59,7 +59,7 @@ module akra {
 		readData(iOffset: uint, iSize: uint, ppDest: ArrayBufferView): bool;
 
 		writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer?: bool): bool;
-		writeData(pData: ArrayBuffer, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer?: bool): bool;
+		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer?: bool): bool;
 
 
 		copyData(pSrcBuffer: IHardwareBuffer, iSrcOffset: uint, 

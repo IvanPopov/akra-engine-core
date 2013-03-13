@@ -6,12 +6,9 @@
 #include "IHardwareBuffer.ts"
 #include "IPixelBuffer.ts"
 
-#define POSITIVE_X 0
-#define NEGATIVE_X 1
-#define POSITIVE_Y 2
-#define NEGATIVE_Y 3
-#define POSITIVE_Z 4
-#define NEGATIVE_Z 5
+
+
+
 
 module akra {
 
@@ -28,7 +25,7 @@ module akra {
         /// setting this flag will ignore all other texture usages except AUTOMIPMAP
         RENDERTARGET = 0x200,
         /// default to automatic mipmap generation static textures
-        DEFAULT = AUTOMIPMAP | STATIC
+        DEFAULT = STATIC
     }
 
     export enum ETextureFilters {
@@ -55,20 +52,29 @@ module akra {
 
     export enum ETextureTypes {
         TEXTURE_2D = 0x0DE1,
-        TEXTURE = 0x1702,
         TEXTURE_CUBE_MAP = 0x8513,
-        TEXTURE_BINDING_CUBE_MAP = 0x8514,
-        TEXTURE_CUBE_MAP_POSITIVE_X = 0x8515,
-        TEXTURE_CUBE_MAP_NEGATIVE_X = 0x8516,
-        TEXTURE_CUBE_MAP_POSITIVE_Y = 0x8517,
-        TEXTURE_CUBE_MAP_NEGATIVE_Y = 0x8518,
-        TEXTURE_CUBE_MAP_POSITIVE_Z = 0x8519,
-        TEXTURE_CUBE_MAP_NEGATIVE_Z = 0x851A,
-        MAX_CUBE_MAP_TEXTURE_SIZE = 0x851C
     };
+    
+    export enum ECubeFace{
+        POSITIVE_X = 0,
+        NEGATIVE_X = 1,            
+        POSITIVE_Y = 2,
+        NEGATIVE_Y = 3,
+        POSITIVE_Z = 4,
+        NEGATIVE_Z = 5,
+        };
+
+    export enum ETextureCubeFlags{
+        POSITIVE_X = 0x00000001,
+        NEGATIVE_X = 0x00000002,            
+        POSITIVE_Y = 0x00000004,
+        NEGATIVE_Y = 0x00000008,
+        POSITIVE_Z = 0x0000000c,
+        NEGATIVE_Z = 0x000000010,
+        };
 
     export enum ETextureUnits {
-        TEXTURE = 0x84C0
+        TEXTURE0 = 0x84C0
     };
 
 // export interface ITextureParameters {
@@ -89,14 +95,14 @@ module akra {
 
         textureType: ETextureTypes;
 
-        desiredIntegerBitDepth: uint;
-        desiredFloatBitDepth: uint;     
+        //desiredIntegerBitDepth: uint;
+        //desiredFloatBitDepth: uint;     
 
-        readonly desiredFormat: EPixelFormats;
-        readonly srcFormat: EPixelFormats;
-        readonly srcWidth: uint;
-        readonly srcHeight: uint;
-        readonly srcDepth: uint;
+        //readonly desiredFormat: EPixelFormats;
+        //readonly srcFormat: EPixelFormats;
+        //readonly srcWidth: uint;
+        //readonly srcHeight: uint;
+        //readonly srcDepth: uint;
 
         setFlags(iTextureFlag: int): void;
         getFlags(): int;   
@@ -110,18 +116,21 @@ module akra {
         isCompressed(): bool;
         isValid(): bool;
 
-        create(iWidth: uint, iHeight: uint, iDepth: uint, pFillColor?: IColor, 
-               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+        create(iWidth: uint, iHeight: uint, iDepth: uint, cFillColor?: IColor, 
+               eFlags?: ETextureFlags, nMipLevels?: uint, nFaces?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+
         create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: Array, 
-               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+               eFlags?: ETextureFlags, nMipLevels?: uint, nFaces?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+
         create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: ArrayBufferView, 
-               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
-        
+               eFlags?: ETextureFlags, nMipLevels?: uint, nFaces?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
 
         getBuffer(iFace?: uint, iMipmap?: uint): IPixelBuffer;     
 
-        setParameter(eParam: ETextureParameters, eValue: ETextureFilters): bool;
-        setParameter(eParam: ETextureParameters, eValue: ETextureWrapModes): bool;
+        setFilter(eParam: ETextureParameters, eValue: ETextureFilters): bool;
+        setWrapMode(eParam: ETextureParameters, eValue: ETextureWrapModes): bool;
+        getFilter(eParam: ETextureParameters): ETextureFilters;
+        getWrapMode(eParam: ETextureParameters): ETextureWrapModes;
         
         loadRawData(pData: ArrayBufferView, iWidth: uint, iHeight: uint, eFormat: EPixelFormats): bool;
         loadImage(pImage: IImg): bool;
@@ -134,10 +143,6 @@ module akra {
         createInternalTexture(cFillColor?: IColor): bool;
         freeInternalTexture(): bool;
 
-        getNativeFormat(eTextureType?: ETextureTypes, eFormat?: EPixelFormats, iFlags?: int): EPixelFormats;
-
-        /*Этот метод будет добавлен*/
-        setPixelRGBA(i1: uint, i2: uint, iTextureWidth: uint, iTextureHeight: uint, pBuffer: Uint8Array): void;
     }
 }
 

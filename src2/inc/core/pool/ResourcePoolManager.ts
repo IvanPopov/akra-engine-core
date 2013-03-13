@@ -373,6 +373,10 @@ module akra.core.pool {
             return <IModel>this.colladaPool.createResource(sResourceName);   
         }
 
+        inline createImg(sResourceName: string): IImg {
+            return <IImg>this.imagePool.createResource(sResourceName);   
+        }
+
         inline loadModel(sFilename: string, pOptions: any = null): IModel {
             if (util.pathinfo(sFilename).ext.toLowerCase() === "dae") {
                 var pCollada: ICollada = <ICollada>this.colladaPool.findResource(sFilename);

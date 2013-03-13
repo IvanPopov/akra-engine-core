@@ -76,7 +76,7 @@ module akra.webgl {
 		    
 		    if (pData) {
 		        pWebGLContext.bufferSubData(
-		        	GL_ARRAY_BUFFER, 0, isArrayBuffer(pData)? pData: pData.buffer);
+		        	GL_ARRAY_BUFFER, 0, isArrayBuffer(pData)? <ArrayBuffer>pData: (<Uint8Array>pData).buffer);
 		    }
 
 		    return true;
