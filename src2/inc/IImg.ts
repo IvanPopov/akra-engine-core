@@ -60,7 +60,7 @@ module akra {
 
     	freeMemory();
 
-    	getColorAt(x: uint, y: uint, z?:uint): IColor;
+    	getColorAt(pColor: IColor, x: uint, y: uint, z?:uint): IColor;
     	setColorAt(pColor: IColorValue, x: uint, y: uint, z: uint): void;
 
     	getPixels(nFace?: uint, iMipMap?: uint): IPixelBox;

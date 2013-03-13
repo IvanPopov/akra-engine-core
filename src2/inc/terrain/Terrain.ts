@@ -2,54 +2,72 @@
 #define TERRAIN_TS
 
 #include "ITerrain.ts"
+#include "core/pool/resources/Texture.ts"
+#include "render/RenderDataCollection.ts"
+#include "geometry/Rect3d.ts"
+#include "terrain/MegaTexture.ts"
+#include "scene/SceneNode.ts"
+#include "terrain/TerrainSection.ts"
 
-module akra {
+module akra.terrain {
 
 	export class Terrain implements ITerrain{
-		private _pEngine: IEngine = null;
-		private _pDevice = null;
+		protected _pEngine: IEngine = null;
+		// private _pDevice = null;
 
-		private _pRootNode = null;  //указатель на корень графа сцены
+		//указатель на корень графа сцены
+		protected _pRootNode: ISceneObject = null;  
 
-		private _pWorldExtents: IRec3d = new a.Rect3d();
+		protected _pWorldExtents: IRect3d = new geometry.Rect3d();
 		private _v3fWorldSize: IVec3 = new Vec3();
 		private _v3fMapScale: IVec3 = new Vec3();
-		private _iSectorCountX: uint;  //количество секций по иксу
-		private _iSectorCountY: uint;  //количество секций по игрику
-		private _pSectorArray = null; //массив подчиненный секций
+		//количество секций по иксу
+		protected _iSectorCountX: uint;  
+		//количество секций по игрику
+		protected _iSectorCountY: uint; 
+		//массив подчиненный секций 
+		protected _pSectorArray: ITerrainSection[] = null; 
 
 
-		private _pDataFactory = null;
-		private _pDataFactory.dataType = null;
+		protected _pDataFactory: IRenderDataCollection = null;
 
-		private _v2fSectorSize: IVec2 = new Vec2();
+		protected _v2fSectorSize: IVec2 = new Vec2();
 
-		private _iSectorShift: uint;
-		private _iSectorUnits: uint; //Количество секторов по осям
-		private _iSectorVerts: uint;
+		protected _iSectorShift: uint;
+		//Количество секторов по осям
+		private _iSectorUnits: uint; 
+		protected _iSectorVerts: uint;
 
-		private _iTableWidth: uint; //размер карты высот
-		private _iTableHeight: uint; //размер карты высот
-		private _pHeightTable = null;  //Таблица(карта высот)
+		//размер карты высот
+		protected _iTableWidth: uint; 
+		//размер карты высот
+		protected _iTableHeight: uint; 
+		//Таблица(карта высот)
+		private _pHeightTable: float[] = null;  
 
-		private _pNormalMap = null
-		private _pTempNormalColor: Uint8Array = new Uint8Array(4)
+		private _pNormalMap: IImg = null;
+		private _pTempNormalColor: IColor = new Color();
 
-		private _pMegaTexures = null; //отоброжаемые куски текстуры
+		//отоброжаемые куски текстуры
+		private _pMegaTexures: IMegaTexture = null; 
 
-		private _fScale: float = 0.0;
-		private _fLimit: float = 0.0;
+		protected _fScale: float = 0.0;
+		protected _fLimit: float = 0.0;
 
-		private _pDefaultRenderMethod = null;
+		protected _pDefaultRenderMethod: IRenderMethod = null;
 
 		constructor(pEngine: IEngine) {
 			this._pEngine = pEngine;
-			this._pDevice = pEngine.pDevice;
-			this._pDataFactory = new a.RenderDataBuffer(this._pEngine);
-		    this._pDataFactory.dataType = a.RenderData;
-			this._pDataFactory.setup(a.RenderDataBuffer.VB_READABLE);
+			// this._pDevice = pEngine.pDevice;
+			this._pDataFactory = new render.RenderDataCollection(this._pEngine, ERenderDataBufferOptions.VB_READABLE);
+		    // this._pDataFactory.dataType = a.RenderData;
+			// this._pDataFactory.setup();
 			this._initSystemData();
 		}
+
+		inline get dataFactory(): IRenderDataCollection{
+			return this._pDataFactory;
+		};
 
 		inline get scale(): float{
 			return this._fScale;
@@ -67,7 +85,7 @@ module akra {
 			this._fLimit = fLimit;
 		};
 
-		inline get worldExtents(): IRec3d{
+		inline get worldExtents(): IRect3d{
 			return this._pWorldExtents;
 		};
 
@@ -91,11 +109,11 @@ module akra {
 			return this._v2fSectorSize;
 		};
 
-		inline get tabeleWidth(): uint{
+		inline get tableWidth(): uint{
 			return this._iTableWidth;
 		};
 
-		inline get tabeleHeight(): uint{
+		inline get tableHeight(): uint{
 			return this._iTableHeight;
 		};
 
@@ -104,10 +122,11 @@ module akra {
 		};
 
 		protected _initSystemData(): bool {
-			CRITICAL_ERROR(,"ХЗ как это должно работать");
+			CRITICAL_ERROR("ХЗ как это должно работать");
+			return false;
 		}
 
-		create(pRootNode: ISceneNode, pMap: IImageMap, worldExtents: IRec3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string): bool {
+		create(pRootNode: ISceneObject, pMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string): bool {
 			//Основные параметры
 			this._iSectorShift = iShift;
 			this._iSectorUnits = 1 << iShift;
@@ -115,13 +134,15 @@ module akra {
 
 			this._pRootNode = pRootNode;
 
-			this._pWorldExtents = new a.Rect3d(worldExtents.fX0, worldExtents.fX1, worldExtents.fY0, worldExtents.fY1,
-			                                   worldExtents.fZ0, worldExtents.fZ1)
+			this._pWorldExtents = new geometry.Rect3d(worldExtents.x0, worldExtents.x1, worldExtents.y0, worldExtents.y1,
+			                                   worldExtents.z0, worldExtents.z1)
 			this._pWorldExtents.normalize();
-			this._v3fWorldSize = this._pWorldExtents.size();
+			this._v3fWorldSize = this._pWorldExtents.size(this._v3fWorldSize);
 
-			this._iSectorCountX = 1 << iShiftX;//this._iTableWidth >> this._iSectorShift;
-			this._iSectorCountY = 1 << iShiftY;//this._iTableHeight >> this._iSectorShift;
+			//this._iTableWidth >> this._iSectorShift;
+			this._iSectorCountX = 1 << iShiftX;
+			//this._iTableHeight >> this._iSectorShift;
+			this._iSectorCountY = 1 << iShiftY;
 
 			this._iTableWidth = this._iSectorCountX * this._iSectorUnits;
 			this._iTableHeight = this._iSectorCountY * this._iSectorUnits;
@@ -135,13 +156,13 @@ module akra {
 
 
 			//Мегатекстурные параметры
-			this._pMegaTexures = new a.MegaTexture(this._pEngine, this, sSurfaceTextures);
+			this._pMegaTexures = new MegaTexture(this._pEngine, this, sSurfaceTextures);
 			// convert the height map to
 			// data stored in local tables
 			this._buildHeightAndNormalTables(pMap["height"], pMap["normal"]);
-			for (var pImgMap: IImg in pMap) {
-			    if (pImgMap.destroyResource) {
-			        pImgMap.destroyResource();
+			for (var sImgMap in pMap) {
+			    if (pMap[sImgMap].destroyResource) {
+			        pMap[sImgMap].destroyResource();
 			    }
 			}
 
@@ -165,7 +186,7 @@ module akra {
 
 		protected _allocateSectors(): bool {
 			var v2fSectorPos: IVec2 = new Vec2();
-			var r2fSectorRect: IRect2d = new a.Rect2d();
+			var r2fSectorRect: IRect2d = new geometry.Rect2d();
 
 			this._pSectorArray = new Array(this._iSectorCountX * this._iSectorCountY);
 
@@ -173,17 +194,17 @@ module akra {
 			for (var y: uint = 0; y < this._iSectorCountY; ++y) {
 			    for (var x: uint = 0; x < this._iSectorCountX; ++x) {
 			        v2fSectorPos.set(
-			            this._pWorldExtents.fX0 + (x * this._v2fSectorSize.x),
-			            this._pWorldExtents.fY0 + (y * this._v2fSectorSize.y));
+			            this._pWorldExtents.x0 + (x * this._v2fSectorSize.x),
+			            this._pWorldExtents.y0 + (y * this._v2fSectorSize.y));
 
 			        r2fSectorRect.set(
 			            v2fSectorPos.x, v2fSectorPos.x + this._v2fSectorSize.x,
 			            v2fSectorPos.y, v2fSectorPos.y + this._v2fSectorSize.y);
 
-			        iXPixel = x << this._iSectorShift;
-			        iYPixel = y << this._iSectorShift;
+			        var iXPixel: uint = x << this._iSectorShift;
+			        var iYPixel: uint = y << this._iSectorShift;
 
-			        iIndex = (y * this._iSectorCountX) + x;
+			        var iIndex: uint = (y * this._iSectorCountX) + x;
 
 			        this._pSectorArray[iIndex] = new TerrainSection(this._pEngine);
 
@@ -200,11 +221,11 @@ module akra {
 			    }
 			}
 
-			this._setRenderMethod(this._pDefaultRenderMethod);
+			this._setRenderMethod(this._pDefaultRenderMethod, "ss");
 		}
 
 		protected _setRenderMethod(pRenderMethod: IRenderMethod, sName: string): void {
-			CRITICAL_ERROR(,"ХЗ как это должно работать");
+			CRITICAL_ERROR("ХЗ как это должно работать");
 		}
 
 		protected _buildHeightAndNormalTables(pImageHightMap: IImg, pImageNormalMap: IImg): void {
@@ -222,7 +243,7 @@ module akra {
 			    this._pHeightTable = new Array(iMaxX * iMaxY); //float
 
 
-			    var temp = new a.Texture(this._pEngine);
+			    var temp: ITexture = new core.pool.resources.Texture(/*this._pEngine*/);
 
 			    // first, build a table of heights
 			    if (pImageHightMap.isResourceLoaded()) {
@@ -233,7 +254,7 @@ module akra {
 			        iComponents = temp.numElementsPerPixel;
 			        for (var i: uint = 0; i < iMaxY * iMaxX; i++) {
 			            fHeight = pColorData[i * iComponents + 0];
-			            fHeight = (fHeight * this._v3fMapScale.z) + this._pWorldExtents.fZ0;
+			            fHeight = (fHeight * this._v3fMapScale.z) + this._pWorldExtents.z0;
 			            this._pHeightTable[i] = fHeight;
 			        }
 			    }
@@ -251,7 +272,9 @@ module akra {
 			    this._pNormalMap = temp
 		}
 
-		readWorldHeight(iMapX: uint, iMapY: uint): float {
+		readWorldHeight(iIndex: uint): float;
+		readWorldHeight(iMapX: uint, iMapY: uint): float;
+		readWorldHeight(iMapX: any, iMapY?: uint): float {
 			if (arguments.length == 2) {
 			    if (iMapX >= this._iTableWidth) {
 			        iMapX = this._iTableWidth - 1;
@@ -281,7 +304,7 @@ module akra {
 			return (iMapY * this._iTableWidth) + iMapX;
 		}
 
-		readWorldNormal(v3fNormal: IVec3, iMapX: uint, iMapY: uint): float{
+		readWorldNormal(v3fNormal: IVec3, iMapX: uint, iMapY: uint): IVec3{
 			if (iMapX >= this._pNormalMap.width) {
 			    iMapX = this._pNormalMap.width - 1;
 			}
@@ -290,26 +313,26 @@ module akra {
 			}
 
 
-			var iOffset: uint = this._pNormalMap.getPixelRGBA(iMapX, iMapY, 1, 1, this._pTempNormalColor)
-			v3fNormal.set(this._pTempNormalColor[0],
-			              this._pTempNormalColor[1],
-			              this._pTempNormalColor[2])
+			// var iOffset: uint = this._pNormalMap.getPixelRGBA(iMapX, iMapY, 1, 1, this._pTempNormalColor)
+			this._pNormalMap.getColorAt(this._pTempNormalColor, iMapX, iMapY);
+			v3fNormal.set(this._pTempNormalColor.r,
+			              this._pTempNormalColor.g,
+			              this._pTempNormalColor.b)
 			return v3fNormal;
 		}
 
 		calcWorldHeight(fWorldX: float, fWorldY: float): float {
-			fMapX = (fWorldX - this._pWorldExtents.fX0) / this._pWorldExtents.sizeX();
-			fMapY = (fWorldY - this._pWorldExtents.fY0) / this._pWorldExtents.sizeY();
+			var fMapX: float = (fWorldX - this._pWorldExtents.x0) / this._pWorldExtents.sizeX();
+			var fMapY: float = (fWorldY - this._pWorldExtents.y0) / this._pWorldExtents.sizeY();
 
 			return this._calcMapHeight(fMapX, fMapY);
 		}
 
+		calcWorldNormal(v3fNormal: IVec3, fWorldX: float, fWorldY: float): IVec3 {
+			var fMapX: float = (fWorldX - this._pWorldExtents.x0) / this._pWorldExtents.sizeX();
+			var fMapY: float = (fWorldY - this._pWorldExtents.y0) / this._pWorldExtents.sizeY();
 
-		calcWorldNormal(v3fNormal: IVec3, fWorldX: float, fWorldY: float): void {
-			fMapX = (fWorldX - this._pWorldExtents.fX0) / this._pWorldExtents.sizeX();
-			fMapY = (fWorldY - this._pWorldExtents.fY0) / this._pWorldExtents.sizeY();
-
-			this._calcMapNormal(v3fNormal, fMapX, fMapY);
+			return this._calcMapNormal(v3fNormal, fMapX, fMapY);
 		}
 
 		/**
@@ -319,17 +342,17 @@ module akra {
 		    var fTempMapX: float = fMapX * (this._iTableWidth - 1);
 		    var fTempMapY: float = fMapY * (this._iTableHeight - 1);
 
-		    var iMapX0: int = Math.floor(fTempMapX);
-		    var iMapY0: int = Math.floor(fTempMapY);
+		    var iMapX0: int = math.floor(fTempMapX);
+		    var iMapY0: int = math.floor(fTempMapY);
 
 		    fTempMapX -= iMapX0;
 		    fTempMapY -= iMapY0;
 
-		    iMapX0 = Math.clamp(iMapX0, 0, this._iTableWidth - 1);
-		    iMapY0 = Math.clamp(iMapY0, 0, this._iTableHeight - 1);
+		    iMapX0 = math.clamp(iMapX0, 0, this._iTableWidth - 1);
+		    iMapY0 = math.clamp(iMapY0, 0, this._iTableHeight - 1);
 
-		    var iMapX1: int = Math.clamp(iMapX0 + 1, 0, this._iTableWidth - 1);
-		    var iMapY1: int = Math.clamp(iMapY0 + 1, 0, this._iTableHeight - 1);
+		    var iMapX1: int = math.clamp(iMapX0 + 1, 0, this._iTableWidth - 1);
+		    var iMapY1: int = math.clamp(iMapY0 + 1, 0, this._iTableHeight - 1);
 
 		    // read 4 map values
 		    var fH0: float = this.readWorldHeight(iMapX0, iMapY0);
@@ -346,42 +369,42 @@ module akra {
 		/**
 		 * Вычисляет нормаль в координатах от 0 до 1
 		 */
-		protected _calcMapNormal(v3fNormal: IVec3, fMapX: float, fMapY: float): float {
+		protected _calcMapNormal(v3fNormal: IVec3, fMapX: float, fMapY: float): IVec3 {
 		    var fTempMapX: float = fMapX * (this._pNormalMap.width - 1);
 	        var fTempMapY: float = fMapY * (this._pNormalMap.height - 1);
 	        //console.log(fTempMapX,fTempMapY)
 
 
-	        var iMapX0: uint = Math.floor(fTempMapX);
-	        var iMapY0: uint = Math.floor(fTempMapY);
+	        var iMapX0: uint = math.floor(fTempMapX);
+	        var iMapY0: uint = math.floor(fTempMapY);
 
 	        fTempMapX -= iMapX0;
 	        fTempMapY -= iMapY0;
 
-	        iMapX0 = Math.clamp(iMapX0, 0, this._pNormalMap.width - 1);
-	        iMapY0 = Math.clamp(iMapY0, 0, this._pNormalMap.height - 1);
+	        iMapX0 = math.clamp(iMapX0, 0, this._pNormalMap.width - 1);
+	        iMapY0 = math.clamp(iMapY0, 0, this._pNormalMap.height - 1);
 
-	        var iMapX1: uint = Math.clamp(iMapX0 + 1, 0, this._pNormalMap.width - 1);
-	        var iMapY1: uint = Math.clamp(iMapY0 + 1, 0, this._pNormalMap.height - 1);
+	        var iMapX1: uint = math.clamp(iMapX0 + 1, 0, this._pNormalMap.width - 1);
+	        var iMapY1: uint = math.clamp(iMapY0 + 1, 0, this._pNormalMap.height - 1);
 
 	        // read 4 map values
-	        var v3fH0: IVec3 = Vec3();
+	        var v3fH0: IVec3 = math.vec3();
 	        this.readWorldNormal(v3fH0, iMapX0, iMapY0);
 
-	        var v3fH1: IVec3 = Vec3();
+	        var v3fH1: IVec3 = math.vec3();
 	        this.readWorldNormal(v3fH1, iMapX1, iMapY0);
 
-	        var v3fH2: IVec3 = Vec3();
+	        var v3fH2: IVec3 = math.vec3();
 	        this.readWorldNormal(v3fH2, iMapX0, iMapY1);
 
-	        var v3fH3: IVec3 = Vec3();
+	        var v3fH3: IVec3 = math.vec3();
 	        this.readWorldNormal(v3fH3, iMapX1, iMapY1);
 
-	        var v3fAvgLo: IVec3 = Vec3();
+	        var v3fAvgLo: IVec3 = math.vec3();
 	        v3fAvgLo.set(v3fH1.scale(fTempMapX));
 	        v3fAvgLo.add(v3fH0.scale(1.0 - fTempMapX));
 
-	        var v3fAvgHi: IVec3 = Vec3();
+	        var v3fAvgHi: IVec3 = math.vec3();
 	        v3fAvgHi.set(v3fH3.scale(fTempMapX))
 	        v3fAvgHi.add(v3fH2.scale(1.0 - fTempMapX));
 
@@ -393,8 +416,8 @@ module akra {
 		}
 
 		protected _generateTerrainImage(pTerrainImage: IImg, pTextureList, iTextureCount: int): void {
-			CRITICAL_ERROR(,"нехуй");
-		    var bSuccess: int = false;
+			CRITICAL_ERROR("нехуй");
+		    var bSuccess: bool = false;
 		    var x: int, y: int, i: int;
 
 		    var iImage_width: int = pTerrainImage.getWidth();
@@ -404,7 +427,7 @@ module akra {
 		    var fVStep: float = 1.0 / (iImage_height - 1);
 
 		    //sample_data* pSamples = new sample_data[iTextureCount];
-		    var pSamples: Array = new Array(iTextureCount);
+		    var pSamples: ITerrainSampleData[] = new Array(iTextureCount);
 
 		    // lock all the textures we need
 		    pTerrainImage.lock();
@@ -420,9 +443,9 @@ module akra {
 
 
 		            var fTotalBlend: float = 0.0;
-		            var fMap_height: float = this.calcMapHeight(fU, fV);
+		            var fMap_height: float = this._calcMapHeight(fU, fV);
 		            var v3fNormal: IVec3 = new Vec3();
-		            this.calcMapNormal(v3fNormal, fU, fV);
+		            this._calcMapNormal(v3fNormal, fU, fV);
 
 		            // examine each elevation set
 		            for (i = 0; i < iTextureCount; ++i) {
@@ -451,7 +474,10 @@ module akra {
 		                    fSlopeScale *= fSlopeScale;
 		                    fSlopeScale = 1.0 - fSlopeScale;
 		                }
-		                pSamples[i] = new this.sample_data()
+		                pSamples[i] = {
+		                	fScale: 0, 
+		                	iColor: 0
+		                }
 		                pSamples[i].fScale = pTextureList[i].elevation.strength * fElevationScale * fSlopeScale;
 		                fTotalBlend += pSamples[i].fScale;
 
@@ -480,12 +506,12 @@ module akra {
 		                fAlpha += ((pSamples[i].iColor >> 24) & 0xff) * fScale;
 		            }
 
-		            var iR: int = Math.clamp(fRed, 0.0, 255.0);
-		            var iG: int = Math.clamp(fGreen, 0.0, 255.0);
-		            var iB: int = Math.clamp(fBlue, 0.0, 255.0);
-		            var iA: int = Math.clamp(fAlpha, 0.0, 255.0);
+		            var iR: int = math.clamp(fRed, 0.0, 255.0);
+		            var iG: int = math.clamp(fGreen, 0.0, 255.0);
+		            var iB: int = math.clamp(fBlue, 0.0, 255.0);
+		            var iA: int = math.clamp(fAlpha, 0.0, 255.0);
 
-		            var iColor: int = (iA << 24) + (fR << 16) + (iG << 8) + iB;
+		            var iColor: int = (iA << 24) + (iR << 16) + (iG << 8) + iB;
 
 		            pTerrainImage.setColor(x, y, iColor);
 		        }
@@ -499,7 +525,7 @@ module akra {
 		}
 
 		protected _computeWeight(fValue: float, fMinExtent: float, fMaxExtent: float): float {
-			CRITICAL_ERROR(,"нехуй");
+			CRITICAL_ERROR("нехуй");
 		    var fWeight: float = 0.0;
 
 		    if (fValue >= fMinExtent && fValue <= fMaxExtent) {
@@ -518,8 +544,8 @@ module akra {
 		        fWeight *= fWeight;
 
 		        // invert and bound-check the result
-		        fWeight = 1.0 - Math.absoluteValue(fWeight);
-		        fWeight = Math.clamp(fWeight, 0.001, 1.0);
+		        fWeight = 1.0 - math.absoluteValue(fWeight);
+		        fWeight = math.clamp(fWeight, 0.001, 1.0);
 		    }
 
 		    return fWeight;
@@ -544,7 +570,7 @@ module akra {
 			//перец
 			//растительное масло
 			//зелень по вкусу
-			CRITICAL_ERROR(,"нехуй");
+			CRITICAL_ERROR("нехуй");
 		    var bSuccess: bool = false;
 		    var x: int, y: int, i: int;
 
@@ -553,7 +579,7 @@ module akra {
 		    ASSERT(pBlendImage != null, "pBlendImage is not valid");
 
 		    //Мясо залить водой, варить 1.5 часа.
-		    iElevationDataCount = Math.min(iElevationDataCount, 4);
+		    iElevationDataCount = math.min(iElevationDataCount, 4);
 
 		    // Затем мясо нарезать небольшими кусочками.
 		    var iImg_width: int = pBlendImage.getWidth();
@@ -567,7 +593,7 @@ module akra {
 		    // Морковь натереть на средней терке.
 		    // Капусту нашинковать тонкой соломкой.
 		    // Свеклу нарезать тонкой соломкой.
-		    var v4fMask: Array = new Array(4);
+		    var v4fMask: IVec4[] = new Array(4);
 
 		    v4fMask[0] = new Vec4();
 		    v4fMask[0].set(1.0, 0.0, 0.0, 0.0);
@@ -636,11 +662,12 @@ module akra {
 		            v4fBlendFactors.scale(fBlendScale)
 
 		            // Готовый борщ разлить по тарелкам, добавить сметану и посыпать зеленью.
-		            pColor[0] = Math.clamp(v4fBlendFactors.x, 0.0, 255.0);
-		            pColor[1] = Math.clamp(v4fBlendFactors.y, 0.0, 255.0);
-		            pColor[2] = Math.clamp(v4fBlendFactors.z, 0.0, 255.0);
-		            pColor[3] = Math.clamp(v4fBlendFactors.w, 0.0, 255.0);
-		            pBlendImage.setPixelRGBA(x, iImg_height - y - 1, pColor); //так как текстура перевернута
+		            pColor[0] = math.clamp(v4fBlendFactors.x, 0.0, 255.0);
+		            pColor[1] = math.clamp(v4fBlendFactors.y, 0.0, 255.0);
+		            pColor[2] = math.clamp(v4fBlendFactors.z, 0.0, 255.0);
+		            pColor[3] = math.clamp(v4fBlendFactors.w, 0.0, 255.0);
+		            //так как текстура перевернута
+		            pBlendImage.setPixelRGBA(x, iImg_height - y - 1, pColor); 
 		        }
 		    }
 		    // Приятного аппетита!
@@ -660,17 +687,17 @@ module akra {
 		 * Подготовка терраина к рендерингу.
 		 */
 		prepareForRender(): void {
-			CRITICAL_ERROR(,"нехуй");
+			CRITICAL_ERROR("нехуй");
 			this._pMegaTexures.prepareForRender();
 		}
 		/**
 		 * Применение параметров рендеринга для рендеринга текстуры.
 		 */
 		applyForRender(): void {
-			CRITICAL_ERROR(,"нехуй");
-			var pMegaTexture = this._pMegaTexures;
+			CRITICAL_ERROR("нехуй");
+			/*var pMegaTexture = this._pMegaTexures;
 			pMegaTexture.applyForRender(pSnapshot);
-			pSnapshot.applyTextureBySemantic("TEXTURE6", this._pNormalMap);
+			pSnapshot.applyTextureBySemantic("TEXTURE6", this._pNormalMap);*/
 		}
 		/**
 		 * Сброс параметров.
@@ -682,23 +709,27 @@ module akra {
 		 * Обработка пользовательского ввода.
 		 */
 		readUserInput(): void {
-			if (this._pEngine.pKeymap.isKeyPress(a.KEY.ADD)) //+
+			/*//+
+			if (this._pEngine.pKeymap.isKeyPress(a.KEY.ADD)) 
 			{
 			    this._fLimit += 0.0001;
 			}
-			else if (this._pEngine.pKeymap.isKeyPress(a.KEY.SUBTRACT)) //-
+			//-
+			else if (this._pEngine.pKeymap.isKeyPress(a.KEY.SUBTRACT)) 
 			{
 			    this._fLimit -= 0.0001;
 			}
 
-			if (this._pEngine.pKeymap.isKeyPress(a.KEY.MULTIPLY)) //*
+			//*
+			if (this._pEngine.pKeymap.isKeyPress(a.KEY.MULTIPLY)) 
 			{
 			    this._fScale += 0.0001;
 			}
-			else if (this._pEngine.pKeymap.isKeyPress(a.KEY.DIVIDE))  // /
+			// /
+			else if (this._pEngine.pKeymap.isKeyPress(a.KEY.DIVIDE))  
 			{
 			    this._fScale -= 0.0001;
-			}
+			}*/
 
 
 			if (this._fLimit < 0.001) {

@@ -213,7 +213,7 @@ module akra.core.pool.resources {
     	}
 
 
-    	getColorAt(x: uint, y: uint, z?:uint): IColor {
+    	getColorAt(pColor: IColor, x: uint, y: uint, z?:uint): IColor {
     		return null;
     	}
 

@@ -2,15 +2,29 @@
 #define MEGATEXTURE_TS
 
 #include "IMegaTexture.ts"
+#include "net/RPC.ts"
+#include "math/math.ts"
+#include "core/pool/resources/Texture.ts"
 
-module akra {
+
+module akra.terrain {
+	interface ISubTextureSettings {
+		iX: uint;
+		iY: uint;/*Координты буфера в основной текстуре, для простыты должны быть кратну размеру блока*/
+    	iTexX:uint; 
+    	iTexY:uint;   /*Координаты мегатекстуры в текстуре*/
+    	isUpdated : bool; 
+    	isLoaded : bool;
+	}
+
 	export class MegaTexture implements IMegaTexture{
 	    private _pEngine: IEngine = null;
-	    private _pDevice = null;
+	    // private _pDevice = null;
 
-	    private _pObject = null;
-	    private _pWorldExtents = null;
-	    private _v2fCameraCoord: IVec2 = new Vec2(0, 0); //Координаты камеры на объекте
+	    private _pObject: any = null;
+	    private _pWorldExtents: IRect3d = null;
+	    //Координаты камеры на объекте
+	    private _v2fCameraCoord: IVec2 = new Vec2(0, 0); 
 
 	    //Путь откуда запрашиваются куски текстуры
 	    private _sSurfaceTextures: string = "";
@@ -22,51 +36,51 @@ module akra {
 	    private _iBlockSize: uint = 32;
 
 	    //Тип хранимых тектсур
-	    private _eTextureType = a.IFORMATSHORT.RGB;
+	    private _eTextureType: EPixelFormats = EPixelFormats.BYTE_BGR;
 	    private _iTextureHeight: uint = 1024;
 	    private _iTextureWidth: uint = 1024;
 	    
-	    private _pTexures: Array = null;
+	    private _pTexures: ITexture[] = null;
 
 	    //Буффер, который в два раза шире МегаТекстур, используется что бы заранее подгружать чуть больше чем нужно для текущего отображения,
 	    //дает возможность начинать выгружать данные чуть раньше чем они понадобяться и в тож время сохраняет некий кеш,
 	    //чтобы в случае возвращения на старую точку не перзагружать что недавно использовалось
 	    private _iBufferHeight: uint = 0;
 	    private _iBufferWidth: uint  = 0;
-	    private _pBuffer: Array = null;
+	    private _pBuffer: Uint8Array[] = null;
 	    //Карта с разметкой буфера, чтобы знать какой части буффер уже отсылалось задание на заполнение
-	    private _pBufferMap: Array = null;
-	    private _pXY: Array = null;
+	    private _pBufferMap: Uint32Array[] = null;
+	    private _pXY: ISubTextureSettings[] = null;
 
 	    //Всякие темповые буферы
 	    private _pDataFor: Uint8Array     = null;
 	    private _pMapDataFor: Uint8Array  = null;
 	    private _pMapDataNULL: Uint8Array = null;
 
-	    private _pRPC = new a.NET.RPC('ws://192.168.194.132');
+	    private _pRPC: IRPC = new net.RPC('ws://192.168.194.132');
 
-	    MegaTexture.fTexCourdXOld = undefined;
-	    MegaTexture.fTexCourdYOld = undefined;
-	    MegaTexture.nCountRender = 0;
+	    private _fTexCourdXOld: float = undefined;
+	    private _fTexCourdYOld: float = undefined;
+	    private _nCountRender: uint = 0;
 
-	    constructor(pEngine: IEngine, pObject, sSurfaceTextures: string) {
+	    constructor(pEngine: IEngine, pObject: any, sSurfaceTextures: string) {
 	    	this._pEngine = pEngine;
-	    	this._pDevice = pEngine.pDevice;
+	    	// this._pDevice = pEngine.pDevice;
 	    	this._pObject = pObject;
 	    	this._pWorldExtents = pObject.worldExtents();
 	    	this._sSurfaceTextures = sSurfaceTextures;
 
-	    	var iCountTex = Math.log2(this._iOriginalTextureMaxSize / Math.max(this._iTextureHeight, this._iTextureWidth)) + 1;
+	    	var iCountTex: uint = math.log2(this._iOriginalTextureMaxSize / math.max(this._iTextureHeight, this._iTextureWidth)) + 1;
 
-	    	this._pTexures   = new Array(iCountTex);
-	    	this._pBuffer    = new Array(iCountTex);
-	    	this._pBufferMap = new Array(iCountTex);
-	    	this._pXY        = new Array(iCountTex);
+	    	this._pTexures   = <ITexture[]> new Array(iCountTex);
+	    	this._pBuffer    = <Uint8Array[]> new Array(iCountTex);
+	    	this._pBufferMap = <Uint32Array[]> new Array(iCountTex);
+	    	this._pXY        = <ISubTextureSettings[]> new Array(iCountTex);
 
 	    	this._iBufferHeight = this._iTextureHeight * 2;
 	    	this._iBufferWidth  = this._iTextureWidth * 2;
 
-	    	this._pDataFor     = new Uint8Array(this._iBufferWidth * this._iBufferHeight * a.getIFormatNumElements(this._eTextureType));
+	    	this._pDataFor     = new Uint8Array(this._iBufferWidth * this._iBufferHeight * pixelUtil.getNumElemBytes(this._eTextureType));
 	    	this._pMapDataFor  = new Uint32Array(this._iBufferHeight * this._iBufferWidth / (this._iBlockSize * this._iBlockSize));
 	    	this._pMapDataNULL = new Uint32Array(this._iBufferHeight * this._iBufferWidth / (this._iBlockSize * this._iBlockSize));
 
@@ -78,26 +92,27 @@ module akra {
 
 	    	//Создаем куски мегатекстуры
     	    for (var i: uint = 0; i < this._pTexures.length; i++) {
-    	        this._pTexures[i] = new a.Texture(this._pEngine);
-    	        this._pTexures[i].createTexture(this._iTextureWidth, this._iTextureHeight, undefined, this._eTextureType);
-    			this._pTexures[i].applyParameter(a.TPARAM.WRAP_S, a.TWRAPMODE.CLAMP_TO_EDGE);
-    			this._pTexures[i].applyParameter(a.TPARAM.WRAP_T, a.TWRAPMODE.CLAMP_TO_EDGE);
+    	        this._pTexures[i] = new core.pool.resources.Texture(/*this._pEngine*/);
+    	        this._pTexures[i].create(this._iTextureWidth, this._iTextureHeight, 1, new Color(0,0,0,1), <uint>ETextureFlags.DYNAMIC, 1, ETextureTypes.TEXTURE_2D, this._eTextureType);
+    			this._pTexures[i].setParameter(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
+    			this._pTexures[i].setParameter(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
     	        if (i == 0) {
     	            this._pBuffer[i] = new Uint8Array(this._iTextureHeight * this._iTextureWidth *
-    	                                              a.getIFormatNumElements(this._eTextureType));
+    	                                              pixelUtil.getNumElemBytes(this._eTextureType));
+    	            //на самом деле this._iTextureHeight*this._iTextureWidth
     	            this._pBufferMap[i] = new Uint32Array(this._iBufferHeight * this._iBufferWidth /
-    	                                                  (this._iBlockSize * this._iBlockSize)); //на самом деле this._iTextureHeight*this._iTextureWidth
+    	                                                  (this._iBlockSize * this._iBlockSize)); 
 
     	            this.setBufferMapNULL(this._pBufferMap[i]);
     	            //Худшего качества статична поэтому размер у буфера такойже как у текстуры this._iBlockSize
     	        } else {
     	            this._pBuffer[i] = new Uint8Array(this._iBufferHeight * this._iBufferWidth *
-    	                                              a.getIFormatNumElements(this._eTextureType));
+    	                                              pixelUtil.getNumElemBytes(this._eTextureType));
     	            this._pBufferMap[i] = new Uint32Array(this._iBufferHeight * this._iBufferWidth /
     	                                                  (this._iBlockSize * this._iBlockSize));
     	            this.setBufferMapNULL(this._pBufferMap[i]);
     	        }
-    	        this._pXY[i] = {iX : 0, iY : 0,/*Координты буфера в основной текстуре, для простыты должны быть кратну размеру блока*/
+    	        this._pXY[i] = <ISubTextureSettings> {iX : 0, iY : 0,/*Координты буфера в основной текстуре, для простыты должны быть кратну размеру блока*/
     				iTexX:0, iTexY:0,   /*Координаты мегатекстуры в текстуре*/
     				isUpdated : true, isLoaded : false};
     	    }
@@ -106,15 +121,16 @@ module akra {
 
 
 		prepareForRender(): void {
-		    var pCamera: ICamera = this._pEngine.getActiveCamera();
-		    var v3fCameraPosition: IVec3 = pCamera.worldPosition();
+
+		    var pCamera: ICamera = this._pEngine.getRenderer()._getViewport().getCamera();
+		    var v3fCameraPosition: IVec3 = pCamera.targetPos;
 
 
 		    //Вычисление текстурных координат над которыми находиться камера
-		    var fTexCourdX: float = (v3fCameraPosition.x - this._pWorldExtents.fX0) /
-		                     Math.abs(this._pWorldExtents.fX1 - this._pWorldExtents.fX0);
-		    var fTexCourdY: float = (v3fCameraPosition.y - this._pWorldExtents.fY0) /
-		                     Math.abs(this._pWorldExtents.fY1 - this._pWorldExtents.fY0);
+		    var fTexCourdX: float = (v3fCameraPosition.x - this._pWorldExtents.x0) /
+		                     math.abs(this._pWorldExtents.x1 - this._pWorldExtents.x0);
+		    var fTexCourdY: float = (v3fCameraPosition.y - this._pWorldExtents.y0) /
+		                     math.abs(this._pWorldExtents.y1 - this._pWorldExtents.y0);
 
 		    this._v2fCameraCoord.set(fTexCourdX, fTexCourdY);
 
@@ -126,38 +142,34 @@ module akra {
 		    //Нужно ли перекладвывать, отсавим на запас 8 блоков
 
 		    //Опираемся на текстуру самого хорошего разрешения
-		    iX = Math.round(fTexCourdX * (this.getWidthOrig(this._pTexures.length - 1)) - this._iTextureWidth / 2);
-		    iY = Math.round(fTexCourdY * (this.getHeightOrig(this._pTexures.length - 1)) - this._iTextureHeight / 2);
+		    iX = math.round(fTexCourdX * (this.getWidthOrig(this._pTexures.length - 1)) - this._iTextureWidth / 2);
+		    iY = math.round(fTexCourdY * (this.getHeightOrig(this._pTexures.length - 1)) - this._iTextureHeight / 2);
 		    iWidth = this._iTextureWidth;
 		    iHeight = this._iTextureHeight;
 
 		    //console.log("=> Смена координат")
-		    //console.log(iX,this._pXY[this._pTexures.length-1].iX,Math.floor((iX-this._pXY[this._pTexures.length-1].iX)));
-		    //console.log(iY,this._pXY[this._pTexures.length-1].iY,Math.floor((iY-this._pXY[this._pTexures.length-1].iY)));
-		    //console.log(iX,this._pXY[this._pTexures.length-1].iX+this._iTextureWidth,Math.floor((this._iTextureHeight-iX+this._pXY[this._pTexures.length-1].iX)));
-		    //console.log(iY,this._pXY[this._pTexures.length-1].iY+this._iTextureHeight,Math.floor((this._iTextureHeight-iY+this._pXY[this._pTexures.length-1].iY)));
-		    if (Math.floor((iX - this._pXY[this._pTexures.length - 1].iX) / this._iBlockSize) < 8
-		            || Math.floor((iY - this._pXY[this._pTexures.length - 1].iY) / this._iBlockSize) < 8
-		            ||
-		        Math.floor((this._pXY[this._pTexures.length - 1].iX + this._iBufferWidth - (iX + iWidth)) / this._iBlockSize <
-		                   8)
-		        ||
-		        Math.floor((this._pXY[this._pTexures.length - 1].iY + this._iBufferHeight - (iY + iHeight)) / this._iBlockSize <
-		                   8)) {
+		    //console.log(iX,this._pXY[this._pTexures.length-1].iX,math.floor((iX-this._pXY[this._pTexures.length-1].iX)));
+		    //console.log(iY,this._pXY[this._pTexures.length-1].iY,math.floor((iY-this._pXY[this._pTexures.length-1].iY)));
+		    //console.log(iX,this._pXY[this._pTexures.length-1].iX+this._iTextureWidth,math.floor((this._iTextureHeight-iX+this._pXY[this._pTexures.length-1].iX)));
+		    //console.log(iY,this._pXY[this._pTexures.length-1].iY+this._iTextureHeight,math.floor((this._iTextureHeight-iY+this._pXY[this._pTexures.length-1].iY)));
+		    if (math.floor((iX - this._pXY[this._pTexures.length - 1].iX) / this._iBlockSize) < 8 || 
+		    	math.floor((iY - this._pXY[this._pTexures.length - 1].iY) / this._iBlockSize) < 8 || 
+		    	math.floor((this._pXY[this._pTexures.length - 1].iX + this._iBufferWidth - (iX + iWidth)) / this._iBlockSize) < 8 || 
+		    	math.floor((this._pXY[this._pTexures.length - 1].iY + this._iBufferHeight - (iY + iHeight)) / this._iBlockSize) < 8) {
 		        console.log("Да")
 		        //Перемещаем
 		        for (i = 1; i < this._pTexures.length; i++) {
 		            console.log("Уровень", i)
 		            //Вычисляем новые координаты буфера в текстуре
-		            var iXnew: uint = Math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2);
-		            var iYnew: uint = Math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
+		            var iXnew: uint = math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2);
+		            var iYnew: uint = math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
 
 		            iXnew -= (this._iBufferWidth - this._iTextureWidth) / 2;
 		            iYnew -= (this._iBufferHeight - this._iTextureHeight) / 2;
 
 		            //Округлили на размер блока
-		            iXnew = Math.round((iXnew / this._iBlockSize)) * this._iBlockSize;
-		            iYnew = Math.round((iYnew / this._iBlockSize)) * this._iBlockSize;
+		            iXnew = math.round((iXnew / this._iBlockSize)) * this._iBlockSize;
+		            iYnew = math.round((iYnew / this._iBlockSize)) * this._iBlockSize;
 		            //Копирование совпадающего куска
 
 		            var iXOverlappingBlockInOldBuf: uint = iXnew - this._pXY[i].iX;
@@ -165,10 +177,10 @@ module akra {
 		            var iXOverlappingBlockInNewBuf: uint = -iXOverlappingBlockInOldBuf;
 		            var iYOverlappingBlockInNewBuf: uint = -iYOverlappingBlockInOldBuf;
 
-		            iXOverlappingBlockInOldBuf = Math.max(0, iXOverlappingBlockInOldBuf);
-		            iYOverlappingBlockInOldBuf = Math.max(0, iYOverlappingBlockInOldBuf);
-		            iXOverlappingBlockInNewBuf = Math.max(0, iXOverlappingBlockInNewBuf);
-		            iYOverlappingBlockInNewBuf = Math.max(0, iYOverlappingBlockInNewBuf);
+		            iXOverlappingBlockInOldBuf = math.max(0, iXOverlappingBlockInOldBuf);
+		            iYOverlappingBlockInOldBuf = math.max(0, iYOverlappingBlockInOldBuf);
+		            iXOverlappingBlockInNewBuf = math.max(0, iXOverlappingBlockInNewBuf);
+		            iYOverlappingBlockInNewBuf = math.max(0, iYOverlappingBlockInNewBuf);
 
 
 		            if (iXOverlappingBlockInOldBuf < this._iBufferWidth && iYOverlappingBlockInOldBuf < this._iBufferHeight &&
@@ -177,8 +189,8 @@ module akra {
 		                //console.log("Из",iXOverlappingBlockInOldBuf,iYOverlappingBlockInOldBuf);
 		                //console.log("В ",iXOverlappingBlockInNewBuf,iYOverlappingBlockInNewBuf);
 		                //произошло совпадение кусков
-		                var iOverlappingBlockWidth: uint = this._iBufferWidth - Math.abs(iXnew - this._pXY[i].iX);
-		                var iOverlappingBlockHeight: uint = this._iBufferHeight - Math.abs(iYnew - this._pXY[i].iY);
+		                var iOverlappingBlockWidth: uint = this._iBufferWidth - math.abs(iXnew - this._pXY[i].iX);
+		                var iOverlappingBlockHeight: uint = this._iBufferHeight - math.abs(iYnew - this._pXY[i].iY);
 
 
 		                //копируем данные
@@ -226,8 +238,8 @@ module akra {
 
 
 		        if (i != 0) {
-		            iX = Math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2);
-		            iY = Math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
+		            iX = math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2);
+		            iY = math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
 
 		            iWidth = this._iTextureWidth;
 		            iHeight = this._iTextureHeight;
@@ -256,24 +268,24 @@ module akra {
 		                iY -= this._iBlockSize * 8;
 		                iWidth += this._iBlockSize * 16;
 		                iHeight += this._iBlockSize * 16;
-		                iX1 = Math.clamp(iX, 0, this.getWidthOrig(i));
-		                iY1 = Math.clamp(iY, 0, this.getHeightOrig(i));
-		                iX2 = Math.clamp(iX + iWidth, 0, this.getWidthOrig(i));
-		                iY2 = Math.clamp(iY + iHeight, 0, this.getHeightOrig(i));
+		                iX1 = math.clamp(iX, 0, this.getWidthOrig(i));
+		                iY1 = math.clamp(iY, 0, this.getHeightOrig(i));
+		                iX2 = math.clamp(iX + iWidth, 0, this.getWidthOrig(i));
+		                iY2 = math.clamp(iY + iHeight, 0, this.getHeightOrig(i));
 
-		                var iAreaX1: uint = Math.clamp(iAreaX1, 0, this.getWidthOrig(i));
-		                var iAreaY1: uint = Math.clamp(iAreaY1, 0, this.getHeightOrig(i));
-		                var iAreaX2: uint = Math.clamp(iAreaX2, 0, this.getWidthOrig(i));
-		                var iAreaY2: uint = Math.clamp(iAreaY2, 0, this.getHeightOrig(i));
+		                var iAreaX1: uint = math.clamp(iAreaX1, 0, this.getWidthOrig(i));
+		                var iAreaY1: uint = math.clamp(iAreaY1, 0, this.getHeightOrig(i));
+		                var iAreaX2: uint = math.clamp(iAreaX2, 0, this.getWidthOrig(i));
+		                var iAreaY2: uint = math.clamp(iAreaY2, 0, this.getHeightOrig(i));
 
 		                this.getDataFromServer(i, iX1, iY1, iX2 - iX1, iY2 - iY1, /*Остальные область проверки*/iAreaX1,
 		                                       iAreaY1, iAreaX2 - iAreaX1, iAreaY2 - iAreaY1);
 		            }
 		            else {
-		                trace(iX, iY, iX + this._iTextureWidth, iY + this._iTextureWidth);
+		                /*trace(iX, iY, iX + this._iTextureWidth, iY + this._iTextureWidth);
 		                trace(i);
 		                trace(this._pXY[i].iX, this._pXY[i].iY, this._pXY[i].iX + this._iBufferWidth,
-		                      this._pXY[i].iX + this._iBufferHeight);
+		                      this._pXY[i].iX + this._iBufferHeight);*/
 		                debug_error("Не может такого быть чтобы буфер не попал под текстуру");
 		            }
 		        }
@@ -285,11 +297,11 @@ module akra {
 
 		    }
 
-		    if (((MegaTexture.nCountRender++) % 10) == 0) {
+		    if (((this._nCountRender++) % 10) == 0) {
 		        var iTexInBufX: uint = 0;
 		        var iTexInBufY: uint = 0;
 
-		        i = (Math.round(MegaTexture.nCountRender / 10)) % this._pBuffer.length;
+		        i = (math.round(this._nCountRender / 10)) % this._pBuffer.length;
 
 		        if (i == 0) {
 		            if (this._pXY[i].isUpdated == true) {
@@ -298,10 +310,11 @@ module akra {
 		        }
 		        else {
 		            if (this._pXY[i].isLoaded == true &&
-		                (this._pXY[i].isUpdated == true || MegaTexture.fTexCourdXOld != fTexCourdX ||
-		                 MegaTexture.fTexCourdYOld != fTexCourdY)) {
-		                iTexInBufX = Math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2); //координаты угла мегатекстуре на текстуре
-		                iTexInBufY = Math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2); //
+		                (this._pXY[i].isUpdated == true || this._fTexCourdXOld != fTexCourdX ||
+		                 this._fTexCourdYOld != fTexCourdY)) {
+		            	//координаты угла мегатекстуре на текстуре
+		                iTexInBufX = math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2); 
+		                iTexInBufY = math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
 						this._pXY[i].iTexX=iTexInBufX/this.getWidthOrig(i);
 						this._pXY[i].iTexY=iTexInBufY/this.getHeightOrig(i);
 		                iTexInBufX -= this._pXY[i].iX;
@@ -310,7 +323,7 @@ module akra {
 
 		                this._setData(this._pDataFor, 0, 0, this._iTextureWidth, this._iTextureHeight,
 		                              this._pBuffer[i], iTexInBufX, iTexInBufY, this._iBufferWidth, this._iBufferHeight,
-		                              this._iTextureWidth, this._iTextureHeight, a.getIFormatNumElements(this._eTextureType));
+		                              this._iTextureWidth, this._iTextureHeight, pixelUtil.getNumElemBytes(this._eTextureType));
 		                this._pTexures[i].setPixelRGBA(0, 0, this._iTextureWidth, this._iTextureHeight, this._pDataFor);
 
 		                /*var c2d=document.getElementById('canvas1_'+i).getContext("2d");
@@ -335,10 +348,10 @@ module akra {
 		    }
 
 
-		    if (((MegaTexture.nCountRender++) % 11) == 0) {
+		    if (((this._nCountRender++) % 11) == 0) {
 		        for (var i: uint = 0; i < this._pTexures.length; i++) {
 
-		            var c2d = document.getElementById('canvas' + i).getContext("2d");
+		            var c2d = (<HTMLCanvasElement>document.getElementById('canvas' + i)).getContext("2d");
 		            var pData = c2d.getImageData(0, 0, 128, 128);
 
 
@@ -371,16 +384,16 @@ module akra {
 		            c2d.putImageData(pData, 0, 0);
 
 		            if (i != 0) {
-		                iTexInBufX = Math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2);
-		                iTexInBufY = Math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
+		                iTexInBufX = math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2);
+		                iTexInBufY = math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
 		                iTexInBufX -= this._pXY[i].iX;
 		                iTexInBufY -= this._pXY[i].iY;
 		                c2d.strokeStyle = '#fff';
 		                c2d.lineWidth = 1;
-		                c2d.strokeRect(Math.floor(iTexInBufX / 16) - 1, Math.floor(iTexInBufY / 16) - 1,
-		                               Math.floor(this._iTextureWidth / 16) + 2, Math.floor(this._iTextureHeight / 16) + 2);
+		                c2d.strokeRect(math.floor(iTexInBufX / 16) - 1, math.floor(iTexInBufY / 16) - 1,
+		                               math.floor(this._iTextureWidth / 16) + 2, math.floor(this._iTextureHeight / 16) + 2);
 
-		                var c2d = document.getElementById('canvas0_' + i).getContext("2d");
+		                var c2d = (<HTMLCanvasElement>document.getElementById('canvas0_' + i)).getContext("2d");
 		                var pData = c2d.getImageData(0, 0, 128, 128);
 		                //console.log(pData.data.length,this._pBuffer[i][0],this._pBuffer[i][1],this._pBuffer[i][2]);
 		                for (var p: uint = 0, p1: uint = 0; p < pData.data.length; p += 4, p1 += 3 * 16) {
@@ -394,18 +407,18 @@ module akra {
 
 		                }
 		                c2d.putImageData(pData, 0, 0);
-		                iTexInBufX = Math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2);
-		                iTexInBufY = Math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
+		                iTexInBufX = math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2);
+		                iTexInBufY = math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
 		                iTexInBufX -= this._pXY[i].iX;
 		                iTexInBufY -= this._pXY[i].iY;
 		                c2d.strokeStyle = '#fff';
 		                c2d.lineWidth = 1;
-		                c2d.strokeRect(Math.floor(iTexInBufX / 16) - 1, Math.floor(iTexInBufY / 16) - 1,
-		                               Math.floor(this._iTextureWidth / 16) + 2, Math.floor(this._iTextureHeight / 16) + 2);
+		                c2d.strokeRect(math.floor(iTexInBufX / 16) - 1, math.floor(iTexInBufY / 16) - 1,
+		                               math.floor(this._iTextureWidth / 16) + 2, math.floor(this._iTextureHeight / 16) + 2);
 		            }
 
 
-		            var c2d = document.getElementById('canvas2_' + i).getContext("2d");
+		            var c2d = (<HTMLCanvasElement>document.getElementById('canvas2_' + i)).getContext("2d");
 
 		            //console.log(pData.data.length,this._pBuffer[i][0],this._pBuffer[i][1],this._pBuffer[i][2]);
 
@@ -422,9 +435,9 @@ module akra {
 		            }
 		            else {
 		                for (var p: uint = 0, p1: uint = 0; p < pData.data.length; p += 4, p1 += 0.5) {
-		                    pData.data[p + 0] = (this._pBufferMap[i][Math.round(p1)] / 0xFFFFFFFF) * 255;
-		                    pData.data[p + 1] = (this._pBufferMap[i][Math.round(p1)] / 0xFFFFFFFF) * 255;
-		                    pData.data[p + 2] = (this._pBufferMap[i][Math.round(p1)] / 0xFFFFFFFF) * 255;
+		                    pData.data[p + 0] = (this._pBufferMap[i][math.round(p1)] / 0xFFFFFFFF) * 255;
+		                    pData.data[p + 1] = (this._pBufferMap[i][math.round(p1)] / 0xFFFFFFFF) * 255;
+		                    pData.data[p + 2] = (this._pBufferMap[i][math.round(p1)] / 0xFFFFFFFF) * 255;
 		                    pData.data[p + 3] = 255;
 		                    if (p % (8 * 64) == 0 && p != 0) {
 		                        p1 -= (32)
@@ -438,20 +451,20 @@ module akra {
 
 		            if (i != 0) {
 
-		                iTexInBufX = Math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2);
-		                iTexInBufY = Math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
+		                iTexInBufX = math.round(fTexCourdX * this.getWidthOrig(i) - this._iTextureWidth / 2);
+		                iTexInBufY = math.round(fTexCourdY * this.getHeightOrig(i) - this._iTextureHeight / 2);
 		                iTexInBufX -= this._pXY[i].iX;
 		                iTexInBufY -= this._pXY[i].iY;
 		                c2d.strokeStyle = '#f00';
 		                c2d.lineWidth = 1;
-		                c2d.strokeRect(Math.floor(iTexInBufX / (32)) - 1, Math.floor(iTexInBufY / (32)) - 1,
-		                               Math.floor(this._iTextureWidth / (32)) + 2, Math.floor(this._iTextureHeight / (32)) + 2);
+		                c2d.strokeRect(math.floor(iTexInBufX / (32)) - 1, math.floor(iTexInBufY / (32)) - 1,
+		                               math.floor(this._iTextureWidth / (32)) + 2, math.floor(this._iTextureHeight / (32)) + 2);
 		            }
 
 		        }
 		    }
-		    MegaTexture.fTexCourdXOld = fTexCourdX;
-		    MegaTexture.fTexCourdYOld = fTexCourdY;
+		    this._fTexCourdXOld = fTexCourdX;
+		    this._fTexCourdYOld = fTexCourdY;
 		}
 
 		applyForRender(pSnapshot): void {
@@ -468,14 +481,14 @@ module akra {
 		}
 
 		setData(pBuffer, iX: uint, iY: uint, iWidth: uint, iHeight: uint, pBufferIn, iInX: uint, iInY: uint, iInWidth: uint, iInHeight: uint, iBlockWidth: uint, iBlockHeight: uint, iComponents: uint): void {
-			iBlockHeight = Math.max(0, iBlockHeight);
-			iBlockWidth  = Math.max(0, iBlockWidth);
-			iBlockHeight = Math.min(iBlockHeight, iHeight - iY, iInHeight - iInY);
-			iBlockWidth  = Math.min(iBlockWidth, iWidth - iX, iInWidth - iInX);
+			iBlockHeight = math.max(0, iBlockHeight);
+			iBlockWidth  = math.max(0, iBlockWidth);
+			iBlockHeight = math.min(iBlockHeight, iHeight - iY, iInHeight - iInY);
+			iBlockWidth  = math.min(iBlockWidth, iWidth - iX, iInWidth - iInX);
 
 			if (pBuffer.length < ((iY + iBlockHeight - 1) * iWidth + iX + iBlockWidth) * iComponents) {
-			    trace(pBuffer.length, iX, iY, iBlockWidth, iBlockHeight, iWidth, iHeight, iComponents);
-			    trace(pBuffer.length, ((iY + iBlockHeight - 1) * iWidth + iX + iBlockWidth) * iComponents);
+			    /*trace(pBuffer.length, iX, iY, iBlockWidth, iBlockHeight, iWidth, iHeight, iComponents);
+			    trace(pBuffer.length, ((iY + iBlockHeight - 1) * iWidth + iX + iBlockWidth) * iComponents);*/
 			    debug_error("Выход за предел массива 1");
 			}
 			
@@ -494,14 +507,14 @@ module akra {
 		}
 
 		setDataT(pBuffer, iX: uint, iY: uint, iWidth: uint, iHeight: uint, pBufferIn, iInX: uint, iInY: uint, iInWidth: uint, iInHeight: uint, iBlockWidth: uint, iBlockHeight: uint, iComponents: uint): void {
-			iBlockHeight = Math.max(0, iBlockHeight);
-			iBlockWidth = Math.max(0, iBlockWidth);
-			iBlockHeight = Math.min(iBlockHeight, iHeight - iY, iInHeight - iInY);
-			iBlockWidth = Math.min(iBlockWidth, iWidth - iX, iInWidth - iInX);
+			iBlockHeight = math.max(0, iBlockHeight);
+			iBlockWidth = math.max(0, iBlockWidth);
+			iBlockHeight = math.min(iBlockHeight, iHeight - iY, iInHeight - iInY);
+			iBlockWidth = math.min(iBlockWidth, iWidth - iX, iInWidth - iInX);
 
 			if (pBuffer.length < ((iY + iBlockHeight - 1) * iWidth + iX + iBlockWidth) * iComponents) {
-			    trace(pBuffer.length, iX, iY, iBlockWidth, iBlockHeight, iWidth, iHeight, iComponents);
-			    trace(pBuffer.length, ((iY + iBlockHeight - 1) * iWidth + iX + iBlockWidth) * iComponents);
+			    /*trace(pBuffer.length, iX, iY, iBlockWidth, iBlockHeight, iWidth, iHeight, iComponents);
+			    trace(pBuffer.length, ((iY + iBlockHeight - 1) * iWidth + iX + iBlockWidth) * iComponents);*/
 			    debug_error("Выход за предел массива 1");
 			}
 			if (pBufferIn.length < ((iInY + iBlockHeight - 1) * iInWidth + iInX + iBlockWidth) * iComponents) {
@@ -535,7 +548,7 @@ module akra {
 		private _setDataBetweenBuffer(pBuffer, iX: uint, iY: uint, pBufferIn, iInX: uint, iInY: uint, iBlockWidth: uint, iBlockHeight: uint): void {
 		    var iInWidth: uint    = this._iBufferWidth;
 		    var iInHeight: uint   = this._iBufferHeight;
-		    var iComponents: uint = a.getIFormatNumElements(this._eTextureType);
+		    var iComponents: uint = pixelUtil.getNumElemBytes(this._eTextureType);
 		    var iWidth: uint      = this._iBufferWidth;
 		    var iHeight: uint     = this._iBufferHeight;
 		    this.setDataT(pBuffer, iX, iY, iWidth, iHeight, pBufferIn, iInX, iInY, iInWidth, iInHeight, iBlockWidth,  iBlockHeight, iComponents);
@@ -557,7 +570,7 @@ module akra {
 		    var iInHeight: uint    = this._iBlockSize;
 		    var iBlockWidth: uint  = this._iBlockSize;
 		    var iBlockHeight: uint = this._iBlockSize;
-		    var iComponents: uint  = a.getIFormatNumElements(this._eTextureType);
+		    var iComponents: uint  = pixelUtil.getNumElemBytes(this._eTextureType);
 		    var iWidth: uint       = 0;
 		    var iHeight: uint      = 0;
 		    if (pBuffer.length == this._iBufferWidth * this._iBufferHeight * iComponents) {
@@ -573,7 +586,7 @@ module akra {
 		    }
 
 		    //в хроме бужет рабоать быстрее SetData
-		    this.setDataT(pBuffer, iX, iY, iWidth, iHeight, pBufferIn, iInX, iInY, iInWidth, iInHeight, iBlockWidth,
+		    this.setDataT(pBuffer, iX, iY, iWidth, iHeight, pBufferIn, iInX, iInY, iInWidth, iInHeight, iBlockWidth, iBlockHeight, iComponents);
 		  
 		}
 
@@ -585,27 +598,27 @@ module akra {
 			return this._iTextureHeight << iLevel;
 		}
 
-		getDataFromServer(iLevelTex: uint, iOrigTexX: uint, iOrigTexY: uint, iWidth: uint, iHeight: uint, iAreaX: uint, iAreaY: uint, iAreaWidth: uint, iAreaHeight: uint): void {
-		    var iOrigTexEndX: uint = Math.ceil((iOrigTexX + iWidth) / this._iBlockSize) * this._iBlockSize;
-		    var iOrigTexEndY: uint = Math.ceil((iOrigTexY + iHeight) / this._iBlockSize) * this._iBlockSize;
-		    iOrigTexX = Math.max(0, iOrigTexX);
-		    iOrigTexY = Math.max(0, iOrigTexY);
-		    iOrigTexX = Math.floor(iOrigTexX / this._iBlockSize) * this._iBlockSize;
-		    iOrigTexY = Math.floor(iOrigTexY / this._iBlockSize) * this._iBlockSize;
-		    iOrigTexEndX = Math.min(iOrigTexEndX, this.getWidthOrig(iLevelTex));
-		    iOrigTexEndY = Math.min(iOrigTexEndY, this.getHeightOrig(iLevelTex));
+		getDataFromServer(iLevelTex: uint, iOrigTexX: uint, iOrigTexY: uint, iWidth: uint, iHeight: uint, iAreaX?: uint, iAreaY?: uint, iAreaWidth?: uint, iAreaHeight?: uint): void {
+		    var iOrigTexEndX: uint = math.ceil((iOrigTexX + iWidth) / this._iBlockSize) * this._iBlockSize;
+		    var iOrigTexEndY: uint = math.ceil((iOrigTexY + iHeight) / this._iBlockSize) * this._iBlockSize;
+		    iOrigTexX = math.max(0, iOrigTexX);
+		    iOrigTexY = math.max(0, iOrigTexY);
+		    iOrigTexX = math.floor(iOrigTexX / this._iBlockSize) * this._iBlockSize;
+		    iOrigTexY = math.floor(iOrigTexY / this._iBlockSize) * this._iBlockSize;
+		    iOrigTexEndX = math.min(iOrigTexEndX, this.getWidthOrig(iLevelTex));
+		    iOrigTexEndY = math.min(iOrigTexEndY, this.getHeightOrig(iLevelTex));
 
 		    var iAreaEndX: uint = iAreaX + iAreaWidth;
 		    var iAreaEndY: uint = iAreaY + iAreaHeight;
-		    iAreaX = Math.max(0, iAreaX);
-		    iAreaY = Math.max(0, iAreaY);
-		    iAreaEndX = Math.min(iAreaEndX, this.getWidthOrig(iLevelTex));
-		    iAreaEndY = Math.min(iAreaEndY, this.getHeightOrig(iLevelTex));
-		    var isLoaded: uint = true;
+		    iAreaX = math.max(0, iAreaX);
+		    iAreaY = math.max(0, iAreaY);
+		    iAreaEndX = math.min(iAreaEndX, this.getWidthOrig(iLevelTex));
+		    iAreaEndY = math.min(iAreaEndY, this.getHeightOrig(iLevelTex));
+		    var isLoaded: bool = true;
 
 		    //trace("Кординаты внутри оригинальной текстуре",iOrigTexX,iOrigTexY,iOrigTexEndX,iOrigTexEndY,iLevelTex);
-		    var me: IMegaTexture = this;
-		    var tCurrentTime = (me._pEngine.fTime * 1000) >>> 0;
+		    var me: MegaTexture = this;
+		    var tCurrentTime = (me._pEngine.getTimer().absoluteTime * 1000) >>> 0;
 
 		//	if(iLevelTex==2)
 		//	{
@@ -702,7 +715,6 @@ module akra {
 		                                  var iYBuf: uint;
 		                                  if (iLev == 0) {
 		                                      //console.log("Подгрузился кусок для текстуры уровня 0. С координатами",iX,iY);
-
 		                                      iXBuf = iX - me._pXY[iLev].iX;
 		                                      iYBuf = iY - me._pXY[iLev].iY;
 		                                      if (iXBuf < 0 || iXBuf > me._iBufferWidth / 2 - me._iBlockSize

@@ -450,7 +450,12 @@ module akra.core.pool.resources {
         protected freeInternalTextureImpl(): bool {
             return false;
         }
+
+        setPixelRGBA(i1: uint, i2: uint, iTextureWidth: uint, iTextureHeight: uint, pBuffer: Uint8Array): void {
+            return;
+        }
 	}
+
 }
 
 #endif

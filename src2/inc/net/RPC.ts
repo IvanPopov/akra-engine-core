@@ -10,7 +10,7 @@
 
 module akra.net {
 
-    class RPC implements IRPC {
+    export class RPC implements IRPC {
         protected _pPipe: IPipe = null;
 
         //стек вызововы, которые были отложены

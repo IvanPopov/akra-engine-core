@@ -135,6 +135,9 @@ module akra {
         freeInternalTexture(): bool;
 
         getNativeFormat(eTextureType?: ETextureTypes, eFormat?: EPixelFormats, iFlags?: int): EPixelFormats;
+
+        /*Этот метод будет добавлен*/
+        setPixelRGBA(i1: uint, i2: uint, iTextureWidth: uint, iTextureHeight: uint, pBuffer: Uint8Array): void;
     }
 }
 

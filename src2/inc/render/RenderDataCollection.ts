@@ -7,10 +7,10 @@
 
 module akra.render {
 
-	class RenderDataCollection extends util.ReferenceCounter implements IRenderDataCollection {
+	export class RenderDataCollection extends util.ReferenceCounter implements IRenderDataCollection {
 		private _pDataBuffer: IVertexBuffer = null;
 		private _pEngine: IEngine = null;
-		private _eDataOptions: int = 0;
+		private _eDataOptions: ERenderDataBufferOptions = 0;
 		private _pDataArray: IRenderData[] = [];
 
 		inline get buffer(): IVertexBuffer {
@@ -26,11 +26,11 @@ module akra.render {
         }
 
 
-        constructor (pEngine: IEngine, iOptions: int = 0) {
+        constructor (pEngine: IEngine, eOptions: ERenderDataBufferOptions = 0) {
             super();
             this._pEngine = pEngine;
 
-            this.setup(iOptions);
+            this.setup(eOptions);
         }
 
         clone(pSrc: IRenderDataCollection): bool {
@@ -43,7 +43,7 @@ module akra.render {
         	return this._pEngine;
         }
 
-        getOptions(): int {
+        getOptions(): ERenderDataBufferOptions {
         	return this._eDataOptions;
         }
 
@@ -159,9 +159,9 @@ module akra.render {
         private createDataBuffer() {
             //TODO: add support for eOptions
             var iVbOption: int = 0;
-            var iOptions: int = this._eDataOptions;
+            var eOptions: ERenderDataBufferOptions = this._eDataOptions;
 
-            if (iOptions & ERenderDataBufferOptions.VB_READABLE) {
+            if (eOptions & ERenderDataBufferOptions.VB_READABLE) {
                 SET_BIT(iVbOption, FLAG(EHardwareBufferFlags.READABLE), true);
             }
             //trace('creating new video buffer for render data buffer ...');
@@ -175,14 +175,14 @@ module akra.render {
         	return this._pDataArray[iSubset];
         }
 
-        getEmptyRenderData(ePrimType: EPrimitiveTypes, iOptions: int = 0): IRenderData {
+        getEmptyRenderData(ePrimType: EPrimitiveTypes, eOptions: ERenderDataBufferOptions = 0): IRenderData {
 
         	var iSubsetId: int = this._pDataArray.length;
         	var pDataset: IRenderData = new RenderData(this);
 
-        	iOptions |= this._eDataOptions;
+        	eOptions |= this._eDataOptions;
 
-        	if (!pDataset._setup(this, iSubsetId, ePrimType, iOptions)) {
+        	if (!pDataset._setup(this, iSubsetId, ePrimType, eOptions)) {
         	    debug_error("cannot setup submesh...");
         	}
         	
@@ -216,7 +216,7 @@ module akra.render {
             this._eDataOptions = 0;
         }
 
-        private setup(eOptions: int = 0) {
+        private setup(eOptions: ERenderDataBufferOptions = 0) {
             this._eDataOptions = eOptions;
         };
 
@@ -229,8 +229,8 @@ module akra.render {
 
 	}
 
-    export function createRenderDataCollection(pEngine: IEngine, iOptions: int = 0): IRenderDataCollection {
-        return new RenderDataCollection(pEngine, iOptions);
+    export function createRenderDataCollection(pEngine: IEngine, eOptions: ERenderDataBufferOptions = 0): IRenderDataCollection {
+        return new RenderDataCollection(pEngine, eOptions);
     }
 }
 

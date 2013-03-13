@@ -698,7 +698,7 @@ declare var WebGLRenderingContext: {
 }
 
 interface HTMLCanvasElement extends HTMLElement {
-    getContext(contextId: string, args?: WebGLContextAttributes): WebGLRenderingContext;
+    getContext(contextId: string, args: WebGLContextAttributes): WebGLRenderingContext;
 }
 
 interface WEBGL_debug_shaders {

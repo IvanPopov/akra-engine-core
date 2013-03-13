@@ -3,36 +3,42 @@
 
 module akra {
 	IFACE(ITerrainSection);
-	IFACE(ISceneNode);
-
+	IFACE(ISceneObject);
+	IFACE(IRect3d);
 	export interface IImageMap{
 		[index: string]: IImg;
+	}
+
+	export interface ITerrainSampleData {
+		iColor: uint;
+		fScale: float;
 	}
 
 	export interface ITerrain {
 		scale: float;
 		limit: float;
-		readonly worldExtents: IRec3d;
+		readonly worldExtents: IRect3d;
 		readonly worldSize: IVec3;
 		readonly mapScale: IVec3;
 		readonly sectorCountX: uint;
 		readonly sectorCountY: uint;
 		readonly sectorSize: IVec2;
-		readonly tabeleWidth: uint;
-		readonly tabeleHeight: uint;
+		readonly tableWidth: uint;
+		readonly tableHeight: uint;
 		readonly sectorShift: uint;
+		readonly dataFactory: IRenderDataCollection;
 
 		/**
 		 * Создаем terrain
 		 * @param {ISceneNode} pRootNode Узел на сцене к которому цепляется terrain.
 		 * @param {IImageMap} pMap набор карт для terrain.
-		 * @param {IRec3d} worldExtents Размеры terrain в мире.
+		 * @param {IRect3d} worldExtents Размеры terrain в мире.
 		 * @param {uint} iShift Количество векторов в секторе (указывается в степенях двойки).
 		 * @param {uint} iShiftX Количество секторов в terrain по оси X (указывается в степенях двойки).
 		 * @param {uint} iShiftY Количество секторов в terrain по оси Y (указывается в степенях двойки).
 		 * @param {string} sSurfaceTextures Название мега текстуры.
 		 */
-		create(pRootNode: ISceneNode, pMap: IImageMap, worldExtents: IRec3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string): bool;
+		create(pRootNode: ISceneObject, pMap: IImageMap, worldExtents: IRect3d, iShift: uint, iShiftX: uint, iShiftY: uint, sSurfaceTextures: string): bool;
 		/**
 		 * Ищет секцию по координате
 		 */
@@ -45,7 +51,7 @@ module akra {
 		/**
 		 * Возвращает нормаль terrain в заданной точке.
 		 */
-		readWorldNormal(v3fNormal: IVec3, iMapX: uint, iMapY: uint): float;
+		readWorldNormal(v3fNormal: IVec3, iMapX: uint, iMapY: uint): IVec3;
 		/**
 		 * Возвращает высоту terrain в заданной точке мира.
 		 */
@@ -53,7 +59,7 @@ module akra {
 		/**
 		 * Возвращает нормаль terrain в заданной точке мира.
 		 */
-		calcWorldNormal(v3fNormal: IVec3, fWorldX: float, fWorldY: float): float;
+		calcWorldNormal(v3fNormal: IVec3, fWorldX: float, fWorldY: float): IVec3;
 		/**
 		 * Подготовка терраина к рендерингу.
 		 */
@@ -70,6 +76,8 @@ module akra {
 		 * Обработка пользовательского ввода.
 		 */
 		readUserInput(): void;
+
+		_tableIndex(iMapX: uint, iMapY: uint): uint;
 	}
 }
 

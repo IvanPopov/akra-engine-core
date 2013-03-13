@@ -3,14 +3,14 @@
 
 module akra {
 	export interface ITriTreeNode {
-		pBaseNeighbor;
-		pLeftNeighbor;
-		pRightNeighbor;
-		pLeftChild;
-		pRightChild;
+		baseNeighbor:  ITriTreeNode;
+		leftNeighbor:  ITriTreeNode;
+		rightNeighbor: ITriTreeNode;
+		leftChild:     ITriTreeNode;
+		rightChild:    ITriTreeNode;
 	}
 
-	export interface TriangleNodePool {
+	export interface ITriangleNodePool {
 		request();
 		reset(): void;
 	}

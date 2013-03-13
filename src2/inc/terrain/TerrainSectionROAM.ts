@@ -1,10 +1,11 @@
-#ifndef TERRAINROAM_TS
-#define TERRAINROAM_TS
+#ifndef TERRAINSECTIONROAM_TS
+#define TERRAINSECTIONROAM_TS
 
-#include "ITerrainSystemROAM.ts"
+#include "ITerrainSectionROAM.ts"
+#include "terrain/TerrainROAM.ts"
 
-module akra {
-	export class TerrainSystemROAM implements ITerrainSystemROAM extends ITerrain{
+module akra.terrain {
+	export class TerrainSectionROAM implements ITerrainSectionROAM extends TerrainSection{
 		private _iTotalDetailLevels: uint;
 		private _iTotalVariances: uint;
 		private _iOffsetInVertexBuffer: uint;
@@ -14,8 +15,8 @@ module akra {
 		private _pRootTriangleB: ITriTreeNode = new TriTreeNode();
 
 		//Урове5нь погрещности для двух деревьев
-		private _pVarianceTreeA: Array = null
-		private _pVarianceTreeB: Array = null
+		private _pVarianceTreeA: float[] = null;
+		private _pVarianceTreeB: float[] = null;
 
 		//расстояние от камеры до углов секции
 		private _v3fDistance0: IVec3 = new Vec3();
@@ -32,16 +33,28 @@ module akra {
 		private _fQueueSortValue: float;
 
 
-		private _pLeftNeighborOfA = null;
-		private _pRightNeighborOfA = null;
-		private _pLeftNeighborOfB = null;
-		private _pRightNeighborOfB = null;
+		private _leftNeighborOfA:  ITriTreeNode = null;
+		private _rightNeighborOfA: ITriTreeNode = null;
+		private _leftNeighborOfB:  ITriTreeNode = null;
+		private _rightNeighborOfB: ITriTreeNode = null;
 
 	    private _pEngine: IEngine = pEngine;
 
+	    private _iStartIndex: uint = undefined;
+
+	    private _pTerrainSystem: ITerrainROAM = null;
+	    private _iTempTotalIndices: uint = undefined;
+	    private _pTempIndexList: Float32Array = undefined;
+	    private _iMaxIndices: uint = undefined;
+
 		constructor(pEngine: IEngine) {
+			super(pEngine);
 			this._pEngine = pEngine;
 		}
+
+		inline get terrainSystem(): ITerrainROAM{
+			return this._pTerrainSystem;
+		};
 
 		inline get triangleA(): ITriTreeNode {
 			return this._pRootTriangleA;
@@ -55,42 +68,50 @@ module akra {
 			return this._fQueueSortValue;
 		}
 
-		create(pRootNode: ISceneNode, pParentSystem, iSectorX: uint, iSectorY: uint, iHeightMapX: uint, iHeightMapY: uint, iXVerts: uint, iYVerts: uint, pWorldRect: IRec3d, iStartIndex: uint): bool {
-			iVerts=Math.max(iXVerts,iYVerts)
+		create(pRootNode?: ISceneObject, pParentSystem?: ITerrainROAM, iSectorX?: uint, iSectorY?: uint, iHeightMapX?: uint, iHeightMapY?: uint, iXVerts?: uint, iYVerts?: uint, pWorldRect?: IRect2d, iStartIndex?: uint): bool {
+			if(arguments.length != 10) {
+				CRITICAL_ERROR("Not all arguments where passed");
+			}
+
+			var iVerts: uint = math.max(iXVerts,iYVerts)
 			this._iStartIndex=iStartIndex;
 
-			var bResult: bool = TerrainSection.prototype.create.call(this, pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY, iVerts, iVerts, pWorldRect);
+			var bResult: bool = super.create(pRootNode, pParentSystem, iSectorX, iSectorY, iHeightMapX, iHeightMapY, iVerts, iVerts, pWorldRect);
 
-			this._iTotalDetailLevels=Math.ceil(Math.log(iVerts)/Math.LN2)*2-1;
+			this._iTotalDetailLevels=math.ceil(math.log(iVerts)/math.LN2)*2-1;
 			this._iTotalVariances=1<<this._iTotalDetailLevels;
 
 
 			this._pVarianceTreeA = new Array( this._iTotalVariances);
-			this._pVarianceTreeA.set(0);
+			// this._pVarianceTreeA.set(0);
 
 			this._pVarianceTreeB = new Array(this._iTotalVariances);
-			this._pVarianceTreeB.set(0);
+			// this._pVarianceTreeB.set(0);
+			for(var i: uint = 0; i < this._iTotalVariances; i++) {
+				this._pVarianceTreeA[i] = 0;
+				this._pVarianceTreeB[i] = 0;
+			}
 
-			var pRoamTerrain: ITerrainSystem = this.getTerrainSystem();
-			var pNorthSection = pRoamTerrain.findSection(iSectorX, iSectorY-1);
-			var pSouthSection = pRoamTerrain.findSection(iSectorX, iSectorY+1);
-			var pEastSection  = pRoamTerrain.findSection(iSectorX+1, iSectorY);
-			var pWestSection  = pRoamTerrain.findSection(iSectorX-1, iSectorY);
+			var pRoamTerrain: ITerrainROAM = this.terrainSystem;
+			var pNorthSection: ITerrainSectionROAM = pRoamTerrain.findSection(iSectorX, iSectorY-1);
+			var pSouthSection: ITerrainSectionROAM = pRoamTerrain.findSection(iSectorX, iSectorY+1);
+			var pEastSection: ITerrainSectionROAM  = pRoamTerrain.findSection(iSectorX+1, iSectorY);
+			var pWestSection: ITerrainSectionROAM  = pRoamTerrain.findSection(iSectorX-1, iSectorY);
 
 			if (pNorthSection) {
-				this._pLeftNeighborOfA = pNorthSection.getTriangleB();
+				this._leftNeighborOfA = pNorthSection.triangleB;
 			}
 
 			if (pSouthSection) {
-				this._pLeftNeighborOfB = pSouthSection.getTriangleA();
+				this._leftNeighborOfB = pSouthSection.triangleA;
 			}
 
 			if (pEastSection) {
-				this._pRightNeighborOfB = pEastSection.getTriangleA();
+				this._rightNeighborOfB = pEastSection.triangleA;
 			}
 
 			if (pWestSection) {
-				this._pRightNeighborOfA = pWestSection.getTriangleB();
+				this._rightNeighborOfA = pWestSection.triangleB;
 			}
 
 			// establish basic links
@@ -103,22 +124,22 @@ module akra {
 		}
 
 		prepareForRender(): void {
-			TerrainSection.prototype.prepareForRender.call(this);
+			super.prepareForRender(); /*????*/
 
-			var pCamera: ICamera = this._pEngine.getActiveCamera();
+			var pCamera: ICamera = this._pEngine.getRenderer()._getViewport().getCamera()/*getActiveCamera();*/
 
-			var v3fViewPoint: IVec3 = pCamera.worldPosition();
+			var v3fViewPoint: IVec3 = pCamera.worldPosition;
 			// compute view distance to our 4 corners
-			var fHeight0: float = this.getTerrainSystem().readWorldHeight(Math.ceil(this._iHeightMapX),					Math.ceil(this._iHeightMapY));
-			var fHeight1: float = this.getTerrainSystem().readWorldHeight(Math.ceil(this._iHeightMapX), 				Math.ceil(this._iHeightMapY + this._iYVerts));
-			var fHeight2: float = this.getTerrainSystem().readWorldHeight(Math.ceil(this._iHeightMapX + this._iXVerts), Math.ceil(this._iHeightMapY));
-			var fHeight3: float = this.getTerrainSystem().readWorldHeight(Math.ceil(this._iHeightMapX + this._iXVerts), Math.ceil(this._iHeightMapY + this._iYVerts));
+			var fHeight0: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX),					math.ceil(this._iHeightMapY));
+			var fHeight1: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX), 				math.ceil(this._iHeightMapY + this._iYVerts));
+			var fHeight2: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX + this._iXVerts), math.ceil(this._iHeightMapY));
+			var fHeight3: float = this.terrainSystem.readWorldHeight(math.ceil(this._iHeightMapX + this._iXVerts), math.ceil(this._iHeightMapY + this._iYVerts));
 
 
-			this._v3fDistance0.set(v3fViewPoint.x-this._pWorldRect.fX0,v3fViewPoint.y-this._pWorldRect.fY0,v3fViewPoint.z-fHeight0);
-			this._v3fDistance1.set(v3fViewPoint.x-this._pWorldRect.fX0,v3fViewPoint.y-this._pWorldRect.fY1,v3fViewPoint.z-fHeight1);
-			this._v3fDistance2.set(v3fViewPoint.x-this._pWorldRect.fX1,v3fViewPoint.y-this._pWorldRect.fY1,v3fViewPoint.z-fHeight2);
-			this._v3fDistance3.set(v3fViewPoint.x-this._pWorldRect.fX1,v3fViewPoint.y-this._pWorldRect.fY0,v3fViewPoint.z-fHeight3);
+			this._v3fDistance0.set(v3fViewPoint.x-this._pWorldRect.x0,v3fViewPoint.y-this._pWorldRect.y0,v3fViewPoint.z-fHeight0);
+			this._v3fDistance1.set(v3fViewPoint.x-this._pWorldRect.x0,v3fViewPoint.y-this._pWorldRect.y1,v3fViewPoint.z-fHeight1);
+			this._v3fDistance2.set(v3fViewPoint.x-this._pWorldRect.x1,v3fViewPoint.y-this._pWorldRect.y1,v3fViewPoint.z-fHeight2);
+			this._v3fDistance3.set(v3fViewPoint.x-this._pWorldRect.x1,v3fViewPoint.y-this._pWorldRect.y0,v3fViewPoint.z-fHeight3);
 
 			this._fDistance0=this._v3fDistance0.length();
 			this._fDistance1=this._v3fDistance1.length();
@@ -126,35 +147,35 @@ module akra {
 			this._fDistance3=this._v3fDistance3.length();
 
 			// compute min distance as our sort value
-			this._fQueueSortValue = Math.min(this._v3fDistance0.length() , this._v3fDistance1.length());
-			this._fQueueSortValue = Math.min(this._fQueueSortValue, this._v3fDistance2.length());
-			this._fQueueSortValue = Math.min(this._fQueueSortValue, this._v3fDistance3.length());
+			this._fQueueSortValue = math.min(this._v3fDistance0.length() , this._v3fDistance1.length());
+			this._fQueueSortValue = math.min(this._fQueueSortValue, this._v3fDistance2.length());
+			this._fQueueSortValue = math.min(this._fQueueSortValue, this._v3fDistance3.length());
 
 
 			// submit to the tessellation queue of our parent
-			this.getTerrainSystem().addToTessellationQueue(this);
+			this.terrainSystem.addToTessellationQueue(this);
 		}
 
 		reset(): void {
-			this._pRootTriangleA.pLeftChild  = null;
-			this._pRootTriangleA.pRightChild = null;
-			this._pRootTriangleB.pLeftChild  = null;
-			this._pRootTriangleB.pRightChild = null;
+			this._pRootTriangleA.leftChild  = null;
+			this._pRootTriangleA.rightChild = null;
+			this._pRootTriangleB.leftChild  = null;
+			this._pRootTriangleB.rightChild = null;
 
-			this._pRootTriangleA.pBaseNeighbor = this._pRootTriangleB;
-			this._pRootTriangleB.pBaseNeighbor = this._pRootTriangleA;
+			this._pRootTriangleA.baseNeighbor = this._pRootTriangleB;
+			this._pRootTriangleB.baseNeighbor = this._pRootTriangleA;
 
 			// link to our neighbors
-			this._pRootTriangleA.pLeftNeighbor  = this._pLeftNeighborOfA;
-			this._pRootTriangleA.pRightNeighbor = this._pRightNeighborOfA;
-			this._pRootTriangleB.pLeftNeighbor  = this._pLeftNeighborOfB;
-			this._pRootTriangleB.pRightNeighbor = this._pRightNeighborOfB;
+			this._pRootTriangleA.leftNeighbor  = this._leftNeighborOfA;
+			this._pRootTriangleA.rightNeighbor = this._rightNeighborOfA;
+			this._pRootTriangleB.leftNeighbor  = this._leftNeighborOfB;
+			this._pRootTriangleB.rightNeighbor = this._rightNeighborOfB;
 		}
 
 		tessellate(fScale: float, fLimit: float): void {
 			this.recursiveTessellate(
 				this._pRootTriangleA,
-				this._fDistance1, this._fDistance2, this._fDistance0, //
+				this._fDistance1, this._fDistance2, this._fDistance0, 
 				this._pVarianceTreeA, 1,
 				fScale, fLimit);
 
@@ -165,16 +186,17 @@ module akra {
 			    fScale, fLimit);
 		}
 
-		recursiveTessellate(pTri: ITriTreeNode, fDistA: float, fDistB: float, fDistC: float, pVTree, iIndex: uint, fScale: float, fLimit: float): void {
+		recursiveTessellate(pTri: ITriTreeNode, fDistA: float, fDistB: float, fDistC: float, pVTree: float[], iIndex: uint, fScale: float, fLimit: float): void {
 			if ((iIndex<<1)+1 < this._iTotalVariances) {
 				//console.log("vIndex",vIndex,"totalVariances",this._totalVariances)
-				var fMidDist = (distB+distC)* 0.5;
+				var fMidDist: float = (fDistB+fDistC)* 0.5;
 
 
 				// Если треугольник не поделен
-				if (!pTri.pLeftChild) {
+				if (!pTri.leftChild) {
 
-					var fRatio = (pVTree[iIndex]*fScale)/(fMidDist+0.0001);// Math.pow(fMidDist+0.0001,fLimit);
+					// math.pow(fMidDist+0.0001,fLimit);
+					var fRatio: float = (pVTree[iIndex]*fScale)/(fMidDist+0.0001);
 					if (fRatio > 1) {
 						// subdivide this triangle
 						//console.log("split");
@@ -183,17 +205,17 @@ module akra {
 				}
 
 				// Если треугольник поделен, продолжаем
-				if (pTri.pLeftChild) {
+				if (pTri.leftChild) {
 					//debug_assert(tri->leftChild, "invalid triangle node");
 					//debug_assert(tri->rightChild, "invalid triangle node");
 
-					this.recursiveTessellate(pTri.pLeftChild,
-						fMidDist, distA,distB,
+					this.recursiveTessellate(pTri.leftChild,
+						fMidDist, fDistA,fDistB,
 						pVTree, iIndex<<1,
 						fScale, fLimit);
 
-					this.recursiveTessellate(pTri.pRightChild,
-						fMidDist,distC,distA,
+					this.recursiveTessellate(pTri.rightChild,
+						fMidDist,fDistC,fDistA,
 						pVTree, (iIndex<<1)+1,
 						fScale, fLimit);
 				}
@@ -202,77 +224,78 @@ module akra {
 
 		split(pTri: ITriTreeNode): void {
 			// Если разбит то смысла разбивать еще нет
-			if (pTri.pLeftChild){
+			if (pTri.leftChild){
 				return;
 			}
 
 			// If this triangle is not in a proper diamond, force split our base neighbor
-			if (pTri.pBaseNeighbor && (pTri.pBaseNeighbor.pBaseNeighbor!=pTri)){
-				this.split(pTri.pBaseNeighbor);
+			if (pTri.baseNeighbor && (pTri.baseNeighbor.baseNeighbor!=pTri)){
+				this.split(pTri.baseNeighbor);
 			}
 			// Create children and link into mesh
-			pTri.pLeftChild  = this.getTerrainSystem().requestTriNode();
-			pTri.pRightChild = this.getTerrainSystem().requestTriNode();
+			pTri.leftChild  = this.terrainSystem.requestTriNode();
+			pTri.rightChild = this.terrainSystem.requestTriNode();
 
 			//debug_assert(pTri.leftChild != pTri, "recursive link");
 			//debug_assert(pTri.rightChild != pTri, "recursive link");
 
 			// Если не удалось выделить треугольник, то не разбиваем
-			if ( (!pTri.pLeftChild) || (!pTri.pRightChild)) {
-				pTri.pLeftChild  = null;
-				pTri.pRightChild = null;
+			if ( (!pTri.leftChild) || (!pTri.rightChild)) {
+				pTri.leftChild  = null;
+				pTri.rightChild = null;
 				return;
 			}
 
 			// Fill in the information we can get from the parent (neighbor pointers)
-			pTri.pLeftChild.pBaseNeighbor  = pTri.pLeftNeighbor;
-			pTri.pLeftChild.pLeftNeighbor  = pTri.pRightChild;
+			pTri.leftChild.baseNeighbor  = pTri.leftNeighbor;
+			pTri.leftChild.leftNeighbor  = pTri.rightChild;
 
-			pTri.pRightChild.pBaseNeighbor  = pTri.pRightNeighbor;
-			pTri.pRightChild.pRightNeighbor = pTri.pLeftChild;
+			pTri.rightChild.baseNeighbor  = pTri.rightNeighbor;
+			pTri.rightChild.rightNeighbor = pTri.leftChild;
 
 			// Link our Left Neighbor to the new children
-			if (pTri.pLeftNeighbor) {
-				if (pTri.pLeftNeighbor.pBaseNeighbor == pTri) {
-					pTri.pLeftNeighbor.pBaseNeighbor = pTri.pLeftChild;
-				} else if (pTri.pLeftNeighbor.pLeftNeighbor == pTri) {
-					pTri.pLeftNeighbor.pLeftNeighbor = pTri.pLeftChild;
-				} else if (pTri.pLeftNeighbor.pRightNeighbor == pTri) {
-					pTri.pLeftNeighbor.pRightNeighbor = pTri.pLeftChild;
+			if (pTri.leftNeighbor) {
+				if (pTri.leftNeighbor.baseNeighbor == pTri) {
+					pTri.leftNeighbor.baseNeighbor = pTri.leftChild;
+				} else if (pTri.leftNeighbor.leftNeighbor == pTri) {
+					pTri.leftNeighbor.leftNeighbor = pTri.leftChild;
+				} else if (pTri.leftNeighbor.rightNeighbor == pTri) {
+					pTri.leftNeighbor.rightNeighbor = pTri.leftChild;
 				} else {
 					console.log(pTri);
-					debug_assert(0, "Invalid Left Neighbor!");
+					WARNING("Invalid Left Neighbor!");
 					debugger;
 				}
 			}
 
 			// Link our Right Neighbor to the new children
-			if (pTri.pRightNeighbor) {
-				if (pTri.pRightNeighbor.pBaseNeighbor == pTri) {
-					pTri.pRightNeighbor.pBaseNeighbor = pTri.pRightChild;
-				} else if (pTri.pRightNeighbor.pRightNeighbor == pTri) {
-					pTri.pRightNeighbor.pRightNeighbor = pTri.pRightChild;
-				} else if (pTri.pRightNeighbor.pLeftNeighbor == pTri) {
-					pTri.pRightNeighbor.pLeftNeighbor = pTri.pRightChild;
+			if (pTri.rightNeighbor) {
+				if (pTri.rightNeighbor.baseNeighbor == pTri) {
+					pTri.rightNeighbor.baseNeighbor = pTri.rightChild;
+				} else if (pTri.rightNeighbor.rightNeighbor == pTri) {
+					pTri.rightNeighbor.rightNeighbor = pTri.rightChild;
+				} else if (pTri.rightNeighbor.leftNeighbor == pTri) {
+					pTri.rightNeighbor.leftNeighbor = pTri.rightChild;
 				} else {
-					debug_assert(0, "Invalid Right Neighbor!");
+					WARNING("Invalid Right Neighbor!");
 				}
 			}
 
 			// Link our Base Neighbor to the new children
-			if (pTri.pBaseNeighbor) {
-				if ( pTri.pBaseNeighbor.pLeftChild ) {
-					pTri.pBaseNeighbor.pLeftChild.pRightNeighbor = pTri.pRightChild;
-					pTri.pBaseNeighbor.pRightChild.pLeftNeighbor = pTri.pLeftChild;
-					pTri.pLeftChild.pRightNeighbor = pTri.pBaseNeighbor.pRightChild;
-					pTri.pRightChild.pLeftNeighbor = pTri.pBaseNeighbor.pLeftChild;
+			if (pTri.baseNeighbor) {
+				if ( pTri.baseNeighbor.leftChild ) {
+					pTri.baseNeighbor.leftChild.rightNeighbor = pTri.rightChild;
+					pTri.baseNeighbor.rightChild.leftNeighbor = pTri.leftChild;
+					pTri.leftChild.rightNeighbor = pTri.baseNeighbor.rightChild;
+					pTri.rightChild.leftNeighbor = pTri.baseNeighbor.leftChild;
 				} else {
-					this.split( pTri.pBaseNeighbor);  // Base Neighbor (in a diamond with us) was not split yet, so do that now.
+					// Base Neighbor (in a diamond with us) was not split yet, so do that now.
+					this.split( pTri.baseNeighbor);  
 				}
 			} else {
 				// An edge triangle, trivial case.
-				pTri.pLeftChild.pRightNeighbor = null;
-				pTri.pRightChild.pLeftNeighbor = null;
+				pTri.leftChild.rightNeighbor = null;
+				pTri.rightChild.leftNeighbor = null;
 			}
 		}
 
@@ -281,15 +304,16 @@ module akra {
 		}
 
 		private _buildIndexBuffer(): bool {
-			this._iMaxIndices=a.TerrainROAM.MaxTriTreeNodes*3;
+			// this._iMaxIndices=a.TerrainROAM.MaxTriTreeNodes*3;
+			this._iMaxIndices = this.terrainSystem.maxTriTreeNodes * 3;
 			return true;
 		}
 
 		private _buildVertexBuffer(): bool {
-			this._pWorldRect.fZ0 = MAX_REAL32;
-			this._pWorldRect.fZ1 = MIN_REAL32;
+			this._pWorldRect.z0 = MAX_FLOAT64;
+			this._pWorldRect.z1 = MAX_FLOAT64;
 
-			var pVerts = this.getTerrainSystem().getVerts();
+			var pVerts: float[] = this.terrainSystem.verts;
 
 			var v3fNormal: IVec3 = new Vec3();
 
@@ -302,15 +326,15 @@ module akra {
 			var v2fVert: IVec2 = new Vec2(); 
 			v2fVert.set(0.0, 0.0);
 
-			//console.log("-->",this._iSectorX,this._iSectorY,"--",this._pWorldRect.fX0,this._pWorldRect.fY0,"--",this._iXVerts,this._iYVerts)
+			//console.log("-->",this._iSectorX,this._iSectorY,"--",this._pWorldRect.x0,this._pWorldRect.fY0,"--",this._iXVerts,this._iYVerts)
 			//console.log("--",v2fCellSize.X,v2fCellSize.Y,this.getHeightX(),this.getHeightY() )
 
 
 			for (var y: uint = 0; y < this._iYVerts; ++y) {
-				v2fVert.set(this._pWorldRect.fX0, y * v2fCellSize.y+this._pWorldRect.fY0);
+				v2fVert.set(this._pWorldRect.x0, y * v2fCellSize.y+this._pWorldRect.y0);
 				for (var x: uint = 0; x < this._iXVerts; ++x) {
 
-					var fHeight: float = this.getTerrainSystem().readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
+					var fHeight: float = this.terrainSystem.readWorldHeight(this._iHeightMapX + x, this._iHeightMapY + y);
 
 					pVerts[((y * this._iXVerts) + x) * 5 + 0+this._iStartIndex*5] = v2fVert.x;
 					pVerts[((y * this._iXVerts) + x) * 5 + 1+this._iStartIndex*5] = v2fVert.y;
@@ -319,15 +343,15 @@ module akra {
 					//console.log(y*this._iXVerts + x,x,y,v2fVert.X,v2fVert.Y,fHeight);
 					//	pVerts[((y * this._iXVerts) + x) * 10 + 2],pVerts[((y * this._iXVerts) + x) * 10 + 1]);
 
-					pVerts[((y * this._iXVerts) + x) * 5 + 3+this._iStartIndex*5] = (this._iSectorX + x / (this._iXVerts - 1))/this.getTerrainSystem().getSectorCountX();
-					pVerts[((y * this._iXVerts) + x) * 5 + 4+this._iStartIndex*5] = (this._iSectorY+ y / (this._iYVerts - 1))/this.getTerrainSystem().getSectorCountY() ;
+					pVerts[((y * this._iXVerts) + x) * 5 + 3+this._iStartIndex*5] = (this._iSectorX + x / (this._iXVerts - 1))/this.terrainSystem.sectorCountX;
+					pVerts[((y * this._iXVerts) + x) * 5 + 4+this._iStartIndex*5] = (this._iSectorY+ y / (this._iYVerts - 1))/this.terrainSystem.sectorCountY;
 
 
-					//console.log(this._iSectorX,this.getTerrainSystem().getSectorCountX(), x,this._iXVerts);
-					//console.log(this._iSectorX/this.getTerrainSystem().getSectorCountX() + x / (this._iXVerts - 1));
+					//console.log(this._iSectorX,this.terrainSystem.getSectorCountX(), x,this._iXVerts);
+					//console.log(this._iSectorX/this.terrainSystem.getSectorCountX() + x / (this._iXVerts - 1));
 
-					this._pWorldRect.fZ0 = Math.min(this._pWorldRect.fZ0, fHeight);
-					this._pWorldRect.fZ1 = Math.max(this._pWorldRect.fZ1, fHeight);
+					this._pWorldRect.z0 = math.min(this._pWorldRect.z0, fHeight);
+					this._pWorldRect.z1 = math.max(this._pWorldRect.z1, fHeight);
 
 					v2fVert.x += v2fCellSize.x;
 				}
@@ -337,10 +361,10 @@ module akra {
 		}
 
 		buildTriangleList(): void {
-			this._iTempTotalIndices=this.getTerrainSystem().getTotalIndex();
+			this._iTempTotalIndices=this.terrainSystem.totalIndex;
 
-			this._pTempIndexList=this.getTerrainSystem().getIndex();
-			this._iVertexID=this.getTerrainSystem().getVertexID();
+			this._pTempIndexList=this.terrainSystem.index;
+			this._iVertexID=this.terrainSystem.vertexId;
 			// add all the triangles to the roamTerrain
 			// in root triangle A
 
@@ -355,29 +379,29 @@ module akra {
 				this._pRootTriangleB,
 				(this._iYVerts*this._iXVerts)-1, (this._iYVerts-1)*this._iXVerts, this._iXVerts-1);
 
-			this.getTerrainSystem().setTotalIndex(this._iTempTotalIndices);
+			this.terrainSystem.totalIndex = this._iTempTotalIndices;
 			this._iTempTotalIndices=undefined;
 			this._iVertexID=undefined;
 			this._pTempIndexList=null;
 		}
 
-		render(): void {
-			this.getTerrainSystem().render(this.worldMatrix());
+		render(): bool {
+			return this.terrainSystem.render(this.worldMatrix);
 		}
 
 		recursiveBuildTriangleList(pTri: ITriTreeNode, iPointBase: uint, iPointLeft: uint, iPointRight: uint): void {
-			if (pTri.pLeftChild) {
+			if (pTri.leftChild) {
 
-				if(!pTri.pRightChild) {
-					warning("invalid triangle node");
+				if(!pTri.rightChild) {
+					WARNING("invalid triangle node");
 				}
 
 				var iPointMid: uint = (iPointLeft + iPointRight) * 0.5;
 				this.recursiveBuildTriangleList(
-					pTri.pLeftChild,
+					pTri.leftChild,
 					iPointMid, iPointBase, iPointLeft);
 				this.recursiveBuildTriangleList(
-					pTri.pRightChild,
+					pTri.rightChild,
 					iPointMid, iPointRight, iPointBase);
 
 			} else if (this._iTempTotalIndices + 3 < this._iMaxIndices) {
@@ -392,18 +416,18 @@ module akra {
 		}
 
 		computeVariance(): void {
-			var iTableWidth: uint = this.getTerrainSystem().tableWidth();
-			var iTableHeight: uint = this.getTerrainSystem().tableHeight();
+			var iTableWidth: uint = this.terrainSystem.tableWidth;
+			var iTableHeight: uint = this.terrainSystem.tableHeight;
 
-			var iIndex0: uint =  this.getTerrainSystem().tableIndex(this._iHeightMapX,					this._iHeightMapY);
-			var iIndex1: uint =  this.getTerrainSystem().tableIndex(this._iHeightMapX,					this._iHeightMapY+this._iYVerts-1);
-			var iIndex2: uint =  this.getTerrainSystem().tableIndex(this._iHeightMapX+this._iXVerts-1,	this._iHeightMapY+this._iYVerts-1);
-			var iIndex3: uint =  this.getTerrainSystem().tableIndex(this._iHeightMapX+this._iXVerts-1,	this._iHeightMapY);
+			var iIndex0: uint =  this.terrainSystem._tableIndex(this._iHeightMapX,					this._iHeightMapY);
+			var iIndex1: uint =  this.terrainSystem._tableIndex(this._iHeightMapX,					this._iHeightMapY+this._iYVerts-1);
+			var iIndex2: uint =  this.terrainSystem._tableIndex(this._iHeightMapX+this._iXVerts-1,	this._iHeightMapY+this._iYVerts-1);
+			var iIndex3: uint =  this.terrainSystem._tableIndex(this._iHeightMapX+this._iXVerts-1,	this._iHeightMapY);
 
-			var fHeight0: float = this.getTerrainSystem().readWorldHeight(iIndex0);
-			var fHeight1: float = this.getTerrainSystem().readWorldHeight(iIndex1);
-			var fHeight2: float = this.getTerrainSystem().readWorldHeight(iIndex2);
-			var fHeight3: float = this.getTerrainSystem().readWorldHeight(iIndex3);
+			var fHeight0: float = this.terrainSystem.readWorldHeight(iIndex0);
+			var fHeight1: float = this.terrainSystem.readWorldHeight(iIndex1);
+			var fHeight2: float = this.terrainSystem.readWorldHeight(iIndex2);
+			var fHeight3: float = this.terrainSystem.readWorldHeight(iIndex3);
 
 			//console.error(iIndex0, iIndex1, iIndex2, iIndex3);
 
@@ -418,27 +442,27 @@ module akra {
 				this._pVarianceTreeB, 1);
 		}
 
-		recursiveComputeVariance(iCornerA: uint, iCornerB: uint, iCornerC: uint, fHeightA: float, fHeightB: float, fHeightC: float, pVTree, iIndex: uint): float {
+		recursiveComputeVariance(iCornerA: uint, iCornerB: uint, iCornerC: uint, fHeightA: float, fHeightB: float, fHeightC: float, pVTree: float[], iIndex: uint): float {
 			if (iIndex < pVTree.length) {
 				var iMidpoint: uint = (iCornerB+iCornerC)>>1;
 				//console.log(iCornerA, iCornerB, iCornerC,'mid point --->', iMidpoint);
-				var fMidHeight: float = this.getTerrainSystem().readWorldHeight(iMidpoint);
+				var fMidHeight: float = this.terrainSystem.readWorldHeight(iMidpoint);
 
 
-				var iTW: uint = this.getTerrainSystem()._iTableWidth;
-				var iTH: uint = this.getTerrainSystem()._iTableHeight;
+				var iTW: uint = this.terrainSystem.tableWidth;
+				var iTH: uint = this.terrainSystem.tableHeight;
 				var iXB: uint = iCornerB%iTW;
-				var iYB: uint = Math.floor(iCornerB/iTW);
+				var iYB: uint = math.floor(iCornerB/iTW);
 				var iXC: uint = iCornerC%iTW;
-				var iYC: uint = Math.floor(iCornerC/iTW);
-				var pWorldSize = this.getTerrainSystem().worldSize();
-				var fLX: float = Math.abs(iXB-iXC)/iTW*pWorldSize.x;
-				var fLY: float = Math.abs(iYB-iYC)/iTH*pWorldSize.y;
-				var fX: float = Math.sqrt(fLY*fLY+fLX*fLX);
-				var fY: float = Math.abs(fHeightB-fHeightC);
+				var iYC: uint = math.floor(iCornerC/iTW);
+				var pWorldSize: IVec3 = this.terrainSystem.worldSize;
+				var fLX: float = math.abs(iXB-iXC)/iTW*pWorldSize.x;
+				var fLY: float = math.abs(iYB-iYC)/iTH*pWorldSize.y;
+				var fX: float = math.sqrt(fLY*fLY+fLX*fLX);
+				var fY: float = math.abs(fHeightB-fHeightC);
 
 				var fInterpolatedHeight: float = (fHeightB+fHeightC)*0.5;
-				var fVariance: float = Math.abs(fMidHeight - fInterpolatedHeight);
+				var fVariance: float = math.abs(fMidHeight - fInterpolatedHeight);
 
 				if(fX < fY) {
 					fVariance = fInterpolatedHeight*fX/fY
@@ -456,8 +480,8 @@ module akra {
 					pVTree, 1+(iIndex<<1));
 
 				// local variance is the minimum of all three
-				fVariance = Math.max(fVariance, fLeft);
-				fVariance = Math.max(fVariance, fRight);
+				fVariance = math.max(fVariance, fLeft);
+				fVariance = math.max(fVariance, fRight);
 
 				// store the variance as 1/(variance+1)
 				pVTree[iIndex] = fVariance;
@@ -472,15 +496,16 @@ module akra {
 			return 0;
 		}
 		
-		drawVariance(iIndex: uint, iCornerA: uint, iCornerB: uint, iCornerC: uint, pVTree): void {
-			var iLevel: uint = Math.floor(Math.log(iIndex)/Math.LN2)
+		drawVariance(iIndex: uint, iCornerA: uint, iCornerB: uint, iCornerC: uint, pVTree: float[]): void {
+			var iLevel: uint = math.floor(math.log(iIndex)/math.LN2)
 			var iStart: uint = 0
 			if(iLevel >= iStart && iLevel < iStart + 4) {
 				//#####################################################################################
 				//Получение канваса
-				var pCanvas = document.getElementById("variance"+(iLevel-iStart));
+				var pCanvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("variance"+(iLevel-iStart));
 				var p2D = pCanvas.getContext("2d");
-				p2D.fillStyle = "rgb(0,"+Math.floor(pVTree[iIndex])+",0)"; // цвет фона
+				// цвет фона
+				p2D.fillStyle = "rgb(0,"+math.floor(pVTree[iIndex])+",0)"; 
 
 				//p2D.fillRect(0, 0, pCanvas.width, pCanvas.height);
 
@@ -488,25 +513,26 @@ module akra {
 				//#####################################################################################
 				//Рисование треугольников
 
-				p2D.strokeStyle = "#f00"; //цвет линий
+				//цвет линий
+				p2D.strokeStyle = "#f00"; 
 				p2D.lineWidth = 1;
 				p2D.beginPath();
-				var iTW: uint = this.getTerrainSystem()._iTableWidth;
-				var iTH: uint = this.getTerrainSystem()._iTableHeight;
+				var iTW: uint = this.terrainSystem.tableWidth;
+				var iTH: uint = this.terrainSystem.tableHeight;
 
 				var iXA: uint = iCornerA%iTW;
-				var iYA: uint = Math.floor(iCornerA/iTW);
+				var iYA: uint = math.floor(iCornerA/iTW);
 				var iXB: uint = iCornerB%iTW;
-				var iYB: uint = Math.floor(iCornerB/iTW);
+				var iYB: uint = math.floor(iCornerB/iTW);
 				var iXC: uint = iCornerC%iTW;
-				var iYC: uint = Math.floor(iCornerC/iTW);
+				var iYC: uint = math.floor(iCornerC/iTW);
 
-				var iXMid: uint = Math.floor((iXA+iXB+iXC)/3);
-				var iYMid: uint = Math.floor((iYA+iYB+iYC)/3);
+				var iXMid: uint = math.floor((iXA+iXB+iXC)/3);
+				var iYMid: uint = math.floor((iYA+iYB+iYC)/3);
 
-				//console.log(iXMid/iTW*pCanvas.width,iYMid/iTH*pCanvas.height, Math.floor(iXMid/iTW*pCanvas.width),Math.floor(iYMid/iTH*pCanvas.height));
+				//console.log(iXMid/iTW*pCanvas.width,iYMid/iTH*pCanvas.height, math.floor(iXMid/iTW*pCanvas.width),math.floor(iYMid/iTH*pCanvas.height));
 				//console.warn(iXMid,iYMid)
-				p2D.arc(Math.floor(iXMid/iTW*pCanvas.width),Math.floor(iYMid/iTH*pCanvas.height),5, 0, Math.PI*2, false);
+				p2D.arc(math.floor(iXMid/iTW*pCanvas.width),math.floor(iYMid/iTH*pCanvas.height),5, 0, math.PI*2, false);
 				p2D.fill();
 				//console.log("Total ",pSec._iTotalIndices);
 				//console.log(this);
