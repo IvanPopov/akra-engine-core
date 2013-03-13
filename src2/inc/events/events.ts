@@ -4,17 +4,18 @@
 #include "IEventTable.ts"
 #include "IEventProvider.ts"
 #include "common.ts"
+#include "util/unique.ts"
 
 #define EMIT_UNICAST(event, call) \
 	var _recivier: any = this; \
-	this._pUnicastSlotMap = this._pUnicastSlotMap || this.getEventTable().findUnicastList(this._iGuid);\
+	this._pUnicastSlotMap = this._pUnicastSlotMap || (<events.EventTable>this.getEventTable()).findUnicastList(this._iGuid);\
 	var _unicast: IEventSlot = (<any>this._pUnicastSlotMap).event;\
 	/*console.error(this.getEventTable());*/\
 	if(isDef(_unicast)){\
 		_unicast.target? _unicast.target[_unicast.callback] call: _unicast.listener call;\
 	}
 #define EMIT_BROADCAST(event, call) \
-	this._pBroadcastSlotList = this._pBroadcastSlotList || this.getEventTable().findBroadcastList(this._iGuid);\
+	this._pBroadcastSlotList = this._pBroadcastSlotList || (<events.EventTable>this.getEventTable()).findBroadcastList(this._iGuid);\
 	var _broadcast: IEventSlot[] = (<any>this._pBroadcastSlotList).event; \
 	var _recivier: any = this; \
 		if(isDef(_broadcast)){\
@@ -46,19 +47,19 @@
 #define CONNECT(sender, signal, recivier, slot) recivier.connect(sender, signal, slot)
 #define BIND(sender, signal, callback) sender.bind(signal, callback)
 
-#define BEGIN_EVENT_TABLE(object) \
-	private _iGuid: int = eval("this._iGuid || akra.sid()");											\
-	private _pUnicastSlotMap: IEventSlotMap = null;						\
-	private _pBroadcastSlotList: IEventSlotListMap = null;				\
-	private static _pEventTable: IEventTable = new events.EventTable(); 							\
+
+#define CREATE_EVENT_TABLE(object) \
+	UNIQUE()										\
+	protected _pUnicastSlotMap: IEventSlotMap = null;						\
+	protected _pBroadcastSlotList: IEventSlotListMap = null;				\
+	protected static _pEventTable: IEventTable = new events.EventTable(); 							\
 																									\
-	inline getEventTable(): IEventTable {return object._pEventTable; } 												\
-	getGuid(): uint {return this._iGuid < 0? (this._iGuid = sid()): this._iGuid; } 																		\
+	getEventTable(): IEventTable { return object._pEventTable; } 												\
 	inline connect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
-		return pSender.getEventTable().addDestination(pSender.getGuid(), sSignal, this, sSlot, eType);					\
+		return pSender.getEventTable().addDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType);					\
 	}; 																													\
 	inline disconnect(pSender: IEventProvider, sSignal: string, sSlot: string, eType?: EEventTypes): bool {				\
-		return pSender.getEventTable().removeDestination(pSender.getGuid(), sSignal, this, sSlot, eType);					\
+		return pSender.getEventTable().removeDestination((<events.EventProvider>pSender).getGuid(), sSignal, this, sSlot, eType);					\
 	}																													\
 	inline bind(sSignal: string, fnListener: Function, eType?: EEventTypes): bool { 									\
 		return this.getEventTable().addListener(this.getGuid(), sSignal, fnListener, eType);							\
@@ -66,7 +67,7 @@
 	inline unbind(sSignal: string, fnListener?: Function, eType?: EEventTypes): bool {									\
 		return this.getEventTable().removeListener(this.getGuid(), sSignal, fnListener, eType);							\
 	}
-#define END_EVENT_TABLE()
+//#define END_EVENT_TABLE()
 
 module akra.events {
 	export class EventTable implements IEventTable {
@@ -75,6 +76,8 @@ module akra.events {
 
 		addDestination(iGuid: int, sSignal: string, pTarget: IEventProvider, sSlot: string, eType: EEventTypes = EEventTypes.BROADCAST): bool {
 			if (eType === EEventTypes.BROADCAST) {
+				// console.log("add destination(", iGuid, "):: ", "target: ", pTarget, "slot: ", sSlot);
+				//TODO: проверить, что объект уже добавлен с этим колбеом
 				this.findBroadcastSignalMap(iGuid, sSignal).push({target: pTarget, callback: sSlot, listener: null});
 				return true;
 			}
@@ -112,6 +115,7 @@ module akra.events {
 
 		addListener(iGuid: int, sSignal: string, fnListener: Function, eType: EEventTypes = EEventTypes.BROADCAST): bool {
 			if (eType === EEventTypes.BROADCAST) {
+				// console.log("add listener(", iGuid, "):: ", "listener: ", fnListener, "signal: ", sSignal);
 				this.findBroadcastSignalMap(iGuid, sSignal).push({target: null, callback: null, listener: fnListener});
 				return true;
 			}
@@ -145,9 +149,8 @@ module akra.events {
 			return false;
 		}
 
-		findBroadcastList(iGuid: int): IEventSlotListMap {
-			this.broadcast[iGuid] = this.broadcast[iGuid] || {};
-			return this.broadcast[iGuid];
+		inline findBroadcastList(iGuid: int): IEventSlotListMap {
+			return (this.broadcast[iGuid] = this.broadcast[iGuid] || {});
 		}
 
 		findUnicastList(iGuid: int): IEventSlotMap {
@@ -162,8 +165,11 @@ module akra.events {
 			this.broadcast[iGuid][sSignal] = this.broadcast[iGuid][sSignal] || [];
 			return this.broadcast[iGuid][sSignal];
 		}
+	}
 
-		private
+
+	export class EventProvider implements IEventProvider {
+		CREATE_EVENT_TABLE(EventProvider);
 	}
 }
 

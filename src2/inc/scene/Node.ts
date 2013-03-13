@@ -34,6 +34,10 @@ module akra.scene {
 		protected _iUpdateFlags: int = 0;
 		protected _eInheritance: ENodeInheritance = ENodeInheritance.POSITION;
 
+		create(): bool {
+			return true;
+		}
+
 
 		inline get localOrientation(): IQuat4 { 
 			return this._qRotation; 

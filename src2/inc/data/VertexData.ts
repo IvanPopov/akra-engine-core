@@ -441,18 +441,8 @@ module akra.data {
 
 
 
-		BEGIN_EVENT_TABLE(VertexData);
-			BROADCAST(relocation, CALL(pTarget, iFrom, iTo));
-		END_EVENT_TABLE();
-
-
-		// BEGIN_EVENT_TABLE(VertexData);
-
-		// relocation(pTarget: IVertexData, iFrom: uint, iTo: uint): void {
-		// 	EMIT_BROADCAST(relocation, CALL(pTarget, iFrom, iTo));
-		// }
-
-		// END_EVENT_TABLE();
+		CREATE_EVENT_TABLE(VertexData);
+		BROADCAST(relocation, CALL(pTarget, iFrom, iTo));
 	}
 
 }

@@ -23,7 +23,7 @@ module akra.webgl {
 		}
 
 		constructor () {
-			this._pCanvas = (<IWebGLRenderer>this.getManager().getEngine().getRenderer()).getHTMLCanvas();
+			this._pCanvas = (<WebGLRenderer>this.getManager().getEngine().getRenderer()).getHTMLCanvas();
 			this._pCanvasCreationInfo = info.canvas(this._pCanvas);
 		}
 
@@ -152,7 +152,7 @@ module akra.webgl {
 				CRITICAL("Unsupported format.", "WebGLCanvas::readPixels");
 			}
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			pWebGLRenderer._setViewport(this.getViewport(0));

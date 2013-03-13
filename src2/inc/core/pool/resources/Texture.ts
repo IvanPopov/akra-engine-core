@@ -3,7 +3,6 @@
 
 #include "ITexture.ts"
 #include "IImg.ts"
-#include "IWebGLRenderer.ts"
 #include "../ResourcePoolItem.ts"
 #include "PixelFormat.ts"
 #include "IColor.ts"

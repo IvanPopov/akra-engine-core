@@ -109,8 +109,8 @@ module akra.util {
 		        fTime = iTime / this.fTicksPerSec;
 		        return  fTime;
 		    }
-
-		    return -1; // Invalid command specified
+			// Invalid command specified
+		    return -1; 
         }
 
         static start(): UtilTimer {

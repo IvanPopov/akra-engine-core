@@ -427,16 +427,16 @@ module akra.render {
 			this._endUpdate();
 		}
 
-		BEGIN_EVENT_TABLE(RenderTarget);
-			BROADCAST(preUpdate, VOID);
-			BROADCAST(viewportPreUpdate, CALL(pViewport));
-			BROADCAST(viewportPostUpdate, CALL(pViewport));
-			BROADCAST(viewportAdded, CALL(pViewport));
-			BROADCAST(viewportRemoved, CALL(pViewport));
-			BROADCAST(postUpdate, VOID)
+		CREATE_EVENT_TABLE(RenderTarget);
+		
+		BROADCAST(preUpdate, VOID);
+		BROADCAST(viewportPreUpdate, CALL(pViewport));
+		BROADCAST(viewportPostUpdate, CALL(pViewport));
+		BROADCAST(viewportAdded, CALL(pViewport));
+		BROADCAST(viewportRemoved, CALL(pViewport));
+		BROADCAST(postUpdate, VOID)
 
-			BROADCAST(cameraRemoved, CALL(pCamera));
-		END_EVENT_TABLE();
+		BROADCAST(cameraRemoved, CALL(pCamera));
 	} 
 }
 

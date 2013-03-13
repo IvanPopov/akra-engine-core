@@ -74,8 +74,8 @@ module akra.core.pool {
 			return null;
 		}
 
-		inline getManager(): IResourcePoolManager {
-			return this.pResourcePool? this.pResourcePool.manager: null;
+		inline getManager(): ResourcePoolManager {
+			return <ResourcePoolManager>(<ResourcePool>this.pResourcePool).manager;
 		}
 
 		createResource(): bool {
@@ -385,16 +385,15 @@ module akra.core.pool {
 		}
 
 
-		BEGIN_EVENT_TABLE(ResourcePoolItem);
-			BROADCAST(created 	, VOID);
-			BROADCAST(destroyed , VOID);
-			BROADCAST(loaded 	, VOID);
-			BROADCAST(unloaded 	, VOID);
-			BROADCAST(restored 	, VOID);
-			BROADCAST(disabled 	, VOID);
-			BROADCAST(altered 	, VOID);
-			BROADCAST(saved 	, VOID);
-		END_EVENT_TABLE();
+		CREATE_EVENT_TABLE(ResourcePoolItem);
+		BROADCAST(created 	, VOID);
+		BROADCAST(destroyed , VOID);
+		BROADCAST(loaded 	, VOID);
+		BROADCAST(unloaded 	, VOID);
+		BROADCAST(restored 	, VOID);
+		BROADCAST(disabled 	, VOID);
+		BROADCAST(altered 	, VOID);
+		BROADCAST(saved 	, VOID);
 	}
 
 }

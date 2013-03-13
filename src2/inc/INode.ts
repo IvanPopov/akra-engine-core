@@ -35,6 +35,8 @@ module akra {
 		readonly inverseWorldMatrix: IMat4;
 		readonly normalMatrix: IMat3;
 
+		create(): bool;
+
 		setInheritance(eInheritance: ENodeInheritance);
 		getInheritance(): ENodeInheritance;
 	

@@ -182,10 +182,9 @@ module akra.animation {
 		    return pMask;
 		}
 
-		BEGIN_EVENT_TABLE(AnimationBase);
-			BROADCAST(onplay, CALL(fRealTime));
-			BROADCAST(onstop, CALL(fRealTime));
-		END_EVENT_TABLE();
+		CREATE_EVENT_TABLE(AnimationBase);
+		BROADCAST(onplay, CALL(fRealTime));
+		BROADCAST(onstop, CALL(fRealTime));
 	} 
 }
 

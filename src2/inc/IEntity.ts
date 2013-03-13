@@ -15,6 +15,7 @@ module akra {
 		SCENE_NODE,
 
 		CAMERA,
+		SHADOW_CASTER,
 
 		LIGHT_PROJECT = 37,
 		LIGHT_OMNI_DIRECTIONAL,
@@ -27,6 +28,15 @@ module akra {
 		SPRITE,
 		EMITTER,
 
+		UI_NODE = 100,
+		// UI_HTMLNODE,
+		// UI_DNDNODE,
+
+		// UI_COMPONENT,
+		// UI_BUTTON,
+		// UI_LABEL,
+		// UI_TREE,
+
 		OBJECTS_LIMIT = 128
 	}
 
@@ -37,12 +47,14 @@ module akra {
 		sibling: IEntity;
 		child: IEntity;
 
+		readonly rightSibling: IEntity;
+
 		readonly type: EEntityTypes;
 
 		readonly depth: int;
 		readonly root: IEntity;
 
-		create(): bool;
+		//create(): bool;//moved to INode
 		destroy(): void;
 
 		findEntity(sName: string): IEntity;
@@ -83,8 +95,11 @@ module akra {
 
 		toString(isRecursive?: bool, iDepth?: int): string;
 
-		signal attached();
-		signal detached();
+		signal attached(): void;
+		signal detached(): void;
+
+		signal childAdded(pChild: IEntity): void;
+		signal childRemoved(pChild: IEntity): void;
 	}
 
 }

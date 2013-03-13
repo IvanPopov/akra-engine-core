@@ -25,7 +25,7 @@ module akra.webgl {
 			var iHeight: uint = arguments[2];
 			var bCreateStorage: bool = arguments[3];
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 			
 			super.create(iWidth, iHeight, 1, webgl.getClosestAkraFormat(iWebGLFormat, EPixelFormats.A8R8G8B8), 0);
@@ -45,7 +45,7 @@ module akra.webgl {
 
 		destroy(): void {
 			super.destroy();
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 
 			pWebGLRenderer.deleteWebGLRenderbuffer(this._pWebGLRenderbuffer);
 			this._pWebGLRenderbuffer = null;
@@ -54,7 +54,7 @@ module akra.webgl {
 		_bindToFramebuffer(iAttachment: int, iZOffset: uint): void {
 			ASSERT(iZOffset < this._iDepth);
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			pWebGLContext.framebufferRenderbuffer(GL_FRAMEBUFFER, iAttachment, GL_RENDERBUFFER, this._pWebGLRenderbuffer);		

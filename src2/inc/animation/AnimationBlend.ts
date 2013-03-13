@@ -312,11 +312,9 @@ module akra.animation {
 		}
 
 
-		BEGIN_EVENT_TABLE(AnimationBase);
-			BROADCAST(onplay, CALL(fRealTime));
-			BROADCAST(onstop, CALL());
-			BROADCAST(onUpdateDuration, CALL());
-		END_EVENT_TABLE();
+		BROADCAST(onplay, CALL(fRealTime));
+		BROADCAST(onstop, CALL());
+		BROADCAST(onUpdateDuration, CALL());
 	} 
 }
 

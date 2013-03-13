@@ -7,6 +7,7 @@ var spawn 	= require('child_process').spawn;
 //var md5 	= require('MD5');
 var stream  = require('stream');
 var prompt 	= require('prompt');
+var wrench  = require('wrench');
 
 function include(file) {
 	eval(fs.readFileSync(file, "utf-8"));
@@ -273,10 +274,11 @@ function preprocess() {
 	// pwd();
 
 	var cmd = (isWin? pOptions.baseDir + "/": "") + "mcpp";
-	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -j -+ -W 0 -k " + 
+	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -I " + 
+		pOptions.baseDir + "/definitions/ -j -+ -W 0 -k " + 
 		capabilityMacro + " " + pOptions.files.join(" ")).split(" ");
 
-	console.log(pOptions.files);
+	//console.log(pOptions.files);
 	console.log(cmd + " " + argv.join(" "));
 	
 	var mcpp = spawn(cmd, argv, {maxBuffer: BUFFER_SIZE});
@@ -343,7 +345,7 @@ function compile() {
 	var cmd = "node";
 	var argv = (  
 		pOptions.baseDir + "/tsc.js -c --target ES5  " + 
-		pOptions.baseDir + "/fixes.d.ts " + 
+		pOptions.baseDir + "/definitions/fixes.d.ts " +
 		//pOptions.baseDir + "/WebGL.d.ts " + 
 		pOptions.pathToTemp + " --out " +
 		pOptions.outputFolder + "/" + pOptions.outputFile +
@@ -445,8 +447,8 @@ function createTestName(sEntryFileName) {
 
 
 
-function findDepends(sData) {
-	var pDepExp = /\/\/\/\s*@dep\s+([\w\d\.\-\/]+)\s*/ig;
+function findDepends(sData, pDepExp) {
+
 	var pMatches = null;
 	var pDeps = [];
 
@@ -461,10 +463,18 @@ function fetchDeps(sDir, pDeps) {
 	for (var i in pDeps) {
 
 		var sDep = path.normalize( pOptions.includeDir + pDeps[i]);
+		var sDepContent;
+		var stat;
 
-		var sDepContent = fs.readFileSync(sDep, "utf-8");
-
-		fs.writeFileSync(sDir + "/" + path.basename(sDep), sDepContent, "utf-8");
+		if (fs.existsSync(sDep)) {
+			stat = fs.statSync(sDep);
+			if (stat.isDirectory()) {
+				wrench.copyDirSyncRecursive(sDep, sDir + "/" + path.basename(sDep));
+			}
+			else {
+				fs.writeFileSync(sDir + "/" + path.basename(sDep), fs.readFileSync(sDep, "utf-8"), "utf-8");
+			}
+		}
 	}
 }
 
@@ -472,7 +482,7 @@ function fetchDeps(sDir, pDeps) {
 function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 	
 	//FIXME: hack for events support
-	sTestData = sTestData.replace(/eval\(\"this\.\_iGuid \|\| akra\.sid\(\)\"\)/g, "this._iGuid || akra.sid()");
+	//sTestData = sTestData.replace(/eval\(\"this\.\_iGuid \|\| akra\.sid\(\)\"\)/g, "this._iGuid || akra.sid()");
 
 
 	sTestData = "\n\n\n" + 
@@ -484,8 +494,12 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 		" *--------------------------------------------*/\n\n\n" + 
 		sTestData;
 
-	var pAdditionalScripts = [];
+	var pAdditionalScripts = findDepends(sTestData, /\/\/\/\s*@script\s+([^\s]+)\s*/ig);
 	var sAdditionalCode = "";
+
+
+	var pAdditionalCSS = findDepends(sTestData, /\/\/\/\s*@css\s+([^\s]+)\s*/ig);
+	var sAdditionalCSS = "";
 
 
 	var pArchive;
@@ -497,15 +511,22 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
     	sTestData += "\n\n/// @dep ../build/webgl-debug.js \n"
     }
 
+
 	for (var i in pAdditionalScripts) {
 		sAdditionalCode += "<script type=\"text/javascript\" src=\"" + pAdditionalScripts[i] + "\">" + 
 							"</script>";
 	}
-    
+
+
+	for (var i in pAdditionalCSS) {
+		sAdditionalCSS += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + pAdditionalCSS[i] + "\">";
+	}
+
     sIndexHTML = "\n\
 				  <html>                           					\n\
                   	<head>                               			\n\
                   		<title>" + sFile + "</title>   				\n\
+                  		" + sAdditionalCSS + "						\n\
                   	</head>                              			\n\
                   	<body>                               			\n\
                   		" + sAdditionalCode + "				  		\n\
@@ -513,7 +534,10 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
                   </html>";
     
     
-    fetchDeps(sDir, findDepends(sTestData));
+
+
+    fetchDeps(sDir, findDepends(sTestData, /\/\/\/\s*@dep\s+([\w\d\.\-\/]+)\s*/ig));
+
 
     function writeOutput(sOutputFile, pData) {
     	fs.writeFile(sOutputFile, pData, function (err) {

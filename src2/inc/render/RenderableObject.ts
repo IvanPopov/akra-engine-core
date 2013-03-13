@@ -186,9 +186,8 @@ module akra.render {
 			ERROR("RenderableObject::_draw() pure virtual method() isn't callable!!");
 		}
 
-		BEGIN_EVENT_TABLE(RenderableObject);
-			UNICAST(shadow, CALL(bValue));
-		END_EVENT_TABLE();
+		CREATE_EVENT_TABLE(RenderableObject);
+		UNICAST(shadow, CALL(bValue));
 	}
 }
 

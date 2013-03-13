@@ -34,7 +34,7 @@ module akra.util {
 				return false;
 			}
 
-			this.normalizeDepsPaths(pDeps, sRoot);
+			this.normalizeDepsPaths(pDeps, pDeps.root || sRoot);
 			this.createDepsResources(pDeps);
 			this.loadDeps(pDeps);
 
@@ -69,7 +69,7 @@ module akra.util {
 				switch (pathinfo(pFiles[i]).ext.toLowerCase()) {
 					case "afx":
 						if (!pRmgr.effectDataPool.findResource(pFiles[i])) {
-							LOG("effectDataPool.createResource(" + pFiles[i] + ")");
+							//LOG("effectDataPool.createResource(" + pFiles[i] + ")");
 							pRmgr.effectDataPool.createResource(pFiles[i]);
 						}
 						break;
@@ -91,6 +91,19 @@ module akra.util {
 				var pFiles: string[] = pDeps.files;
 				var pManager: DepsManager = this;
 				
+				if (isDefAndNotNull(pDep.type)) {
+					if (pDep.type == "text" && isFunction(pDep.loader)) {
+						io.fopen(pFiles[i], "r").read((pErr: Error, sData: string): void => {
+							if (!isNull(pErr)) {
+								pManager.error(pErr);
+							}
+
+							pDep.loader(pDep, sData);
+							pManager._onDependencyLoad(pDeps, i);
+						});	
+					}
+				}
+
 				switch (pathinfo(pFiles[i]).ext.toLowerCase()) {
 					case "gr":
 						io.fopen(pFiles[i], "r").read((pErr: Error, sData: string): void => {
@@ -110,7 +123,7 @@ module akra.util {
 							if (pRes.loadResource(pFiles[i])) {
 								pManager._handleResourceEventOnce(pRes, SIGNAL(loaded),
 									(pItem: IResourcePoolItem): void => {
-										LOG("[ LOADED ]  effectDataPool.loadResource(" + pFiles[i] + ")");
+										//LOG("[ LOADED ]  effectDataPool.loadResource(" + pFiles[i] + ")");
 										pManager._onDependencyLoad(pDeps, i);
 									}
 								);
@@ -148,7 +161,7 @@ module akra.util {
 
 			for (var i: int = 0; i < pDeps.files.length; ++ i) {
 				if (!isNull(pDeps.files[i])) {
-					LOG("waiting for > " + pDeps.files[i]);
+					//LOG("waiting for > " + pDeps.files[i]);
 					return;
 				}
 			};
@@ -157,20 +170,20 @@ module akra.util {
 				this.loadDeps(pDeps.deps);
 			}
 			else {
-				this.loaded();
+				this.loaded(pDeps);
 			}
 		}
 
-		BEGIN_EVENT_TABLE(DepsManager);
-			BROADCAST(loaded, VOID);
-			// BROADCAST(error, CALL(pErr));
-			
-			error(pErr: Error): void {
-				if (true) throw pErr;
-				EMIT_BROADCAST(error, _CALL(pErr));
-			}
 
-		END_EVENT_TABLE();
+		CREATE_EVENT_TABLE(DepsManager);
+		BROADCAST(loaded, CALL(deps));
+		// BROADCAST(error, CALL(pErr));
+		
+		error(pErr: Error): void {
+			if (true) throw pErr;
+			EMIT_BROADCAST(error, _CALL(pErr));
+		}
+
 	}
 
 	export function createDepsManager(pEngine: IEngine): IDepsManager {

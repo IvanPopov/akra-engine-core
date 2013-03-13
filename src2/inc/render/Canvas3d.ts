@@ -75,9 +75,7 @@ module akra.display {
 
 		}
 
-		BEGIN_EVENT_TABLE(Canvas3d);
-			BROADCAST(resized, VOID);
-		END_EVENT_TABLE();
+		BROADCAST(resized, VOID);
 	}
 }
 

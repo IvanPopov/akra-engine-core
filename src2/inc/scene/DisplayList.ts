@@ -55,8 +55,7 @@ module akra.scene {
 			return null;
 		}
 
-		BEGIN_EVENT_TABLE(DisplayList);
-		END_EVENT_TABLE();
+		CREATE_EVENT_TABLE(DisplayList);
 	}
 }
 

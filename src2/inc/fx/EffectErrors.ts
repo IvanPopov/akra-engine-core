@@ -72,10 +72,25 @@ module akra.fx {
     #define EFFECT_BAD_RETURN_TYPE_FOR_FUNCTION 2264
     #define EFFECT_BAD_FUNCTION_PARAMETER_USAGE 2265
     #define EFFECT_BAD_OUT_VARIABLE_IN_FUNCTION 2266
-    #define EFFECT_BAD_ASSIGNMENT_TYPE_FOR_WRITE 2267
+    #define EFFECT_BAD_TYPE_FOR_WRITE 2267
+    #define EFFECT_BAD_TYPE_FOR_READ 2268
+    #define EFFECT_BAD_VARIABLE_INITIALIZER 2269
+    #define EFFECT_NOT_SUPPORT_STATE_INDEX 2270
+    #define EFFECT_BAD_TEXTURE_FOR_SAMLER 2271
+    #define EFFCET_CANNOT_CALCULATE_PADDINGS 2272
+    #define EFFECT_UNSUPPORTED_EXTRACT_BASE_TYPE 2273
+    #define EFFECT_BAD_EXTRACTING 2274
+    #define EFFECT_BAD_TECHNIQUE_IMPORT 2275
+    #define EFFECT_BAD_USE_OF_ENGINE_VARIABLE 2276
+    #define EFFECT_BAD_IMPORTED_COMPONENT_NOT_EXIST 2277
+    #define EFFECT_CANNOT_ADD_SHARED_VARIABLE 2278
+
 
 
     #define TEMP_EFFECT_BAD_ARRAY_OF_POINTERS 2300
+    #define TEMP_EFFECT_BAD_LOCAL_OF_SHADER_INPUT 2301
+    #define TEMP_EFFECT_BAD_LOCAL_OF_SHADER_OUTPUT 2302
+    #define TEMP_EFFECT_UNSUPPORTED_PROVIDE_AS 2303
 
     akra.logger.registerCode(EFFECT_REDEFINE_SYSTEM_TYPE, 
     						 "You trying to redefine system type: {typeName}. In line: {line}. In column: {column}");
@@ -258,15 +273,48 @@ module akra.fx {
     akra.logger.registerCode(EFFECT_BAD_OUT_VARIABLE_IN_FUNCTION,
                              "Bad variable with name 'Out'. It is sytem for used like return variable in shaders.\
                               In line: {line}. In column: {column}"); 
-    akra.logger.registerCode(EFFECT_BAD_ASSIGNMENT_TYPE_FOR_WRITE,
-                             "Variable type is not writable.\
+    akra.logger.registerCode(EFFECT_BAD_TYPE_FOR_WRITE,
+                             "Variable type is not writable. \
                               In line: {line}. In column: {column}"); 
+    akra.logger.registerCode(EFFECT_BAD_TYPE_FOR_READ,
+                             "Variable type is not readable. \
+                              In line: {line}. In column: {column}"); 
+    akra.logger.registerCode(EFFECT_BAD_VARIABLE_INITIALIZER,
+                             "Bad init expr for variable '{varName}'. \
+                              In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFECT_NOT_SUPPORT_STATE_INDEX,
+                             "Don`t supported construction '[uint]' in sampler_state. \
+                              In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFECT_BAD_TEXTURE_FOR_SAMLER,
+                             "Incorrect texture setup for sampler. \
+                              In line: {line}. In column: {column}");
+    akra.logger.registerCode(EFFCET_CANNOT_CALCULATE_PADDINGS,
+                             "Can not calculate padding for type '{typeName}'.");
+    akra.logger.registerCode(EFFECT_UNSUPPORTED_EXTRACT_BASE_TYPE,
+                             "Can not extract type '{typeName}'.");
+    akra.logger.registerCode(EFFECT_BAD_EXTRACTING,
+                             "Bad extract exrpression.");
+    akra.logger.registerCode(EFFECT_BAD_TECHNIQUE_IMPORT,
+                             "Bad imports in technique '{techniqueName}'.");
+    akra.logger.registerCode(EFFECT_BAD_USE_OF_ENGINE_VARIABLE, 
+                             "You try use 'engine' variable in out of pass.\
+                             In line: {line}. In column: {column}.");
+    akra.logger.registerCode(EFFECT_BAD_IMPORTED_COMPONENT_NOT_EXIST, 
+                             "You try to import not exuisted component '{componentName}'");
 
 
 
     akra.logger.registerCode(TEMP_EFFECT_BAD_ARRAY_OF_POINTERS,
                              "We don`t support array of pinters now. Only pointe to array.\
                               In line: {line}. In column: {column}"); 
+    akra.logger.registerCode(TEMP_EFFECT_BAD_LOCAL_OF_SHADER_INPUT,
+                             "We don`t support using complex shader input like functions params.\
+                             Shader: '{funcName}'"); 
+    akra.logger.registerCode(TEMP_EFFECT_BAD_LOCAL_OF_SHADER_OUTPUT,
+                             "We don`t support using complex shader output like functions params.\
+                             Shader: '{funcName}'"); 
+    akra.logger.registerCode(TEMP_EFFECT_UNSUPPORTED_PROVIDE_AS,
+                             "We don`t support 'provide ... as' operator now.");
 
 
     function sourceLocationToString(pLocation: ISourceLocation): string {
@@ -306,6 +354,8 @@ module akra.fx {
    		funcName?: string;
         funcDef?: string;
    		semanticName?: string;
+        techniqueName?: string;
+        componentName?: string;
     	
     	line?: uint;
     	column?: uint;

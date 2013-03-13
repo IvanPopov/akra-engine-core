@@ -50,9 +50,6 @@ module akra.core.pool.resources {
 				else {
 
 					util.parser.setParseFileName(sFileName);
-					if(sFileName === "../../../data/effects/prepareDeferredShading.afx"){
-						LOG(sFileName);
-					}
 					util.parser.parse(sData, me._initFromParsedEffect, me);
 				}
 			});
@@ -67,10 +64,12 @@ module akra.core.pool.resources {
 			}
 			
 			this._pSyntaxTree = util.parser.getSyntaxTree();
-			this.notifyLoaded();
 
 			var pComposer: IAFXComposer = this.getManager().getEngine().getComposer();
-			pComposer._loadEffectFromSyntaxTree(this._pSyntaxTree, sFileName);
+			if(pComposer._loadEffectFromSyntaxTree(this._pSyntaxTree, sFileName)){
+				this.notifyLoaded();
+			}
+
 		}
 #endif
 

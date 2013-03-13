@@ -16,6 +16,10 @@ module akra.render {
 			return 0;
 		}
 
+		get data(): IAFXComponentBlend {
+			return null;
+		}
+
 		constructor (pMethod: IRenderMethod = null) {
 			this._pMethod = pMethod;
 		}
@@ -65,9 +69,8 @@ module akra.render {
 			return false;
 		}
 
-		BEGIN_EVENT_TABLE(RenderTechnique);
-			UNICAST(render, VOID);
-		END_EVENT_TABLE();
+		CREATE_EVENT_TABLE(RenderTechnique);
+		UNICAST(render, VOID);
 	}
 }
 

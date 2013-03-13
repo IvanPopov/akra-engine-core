@@ -15,13 +15,10 @@ module akra.util {
 		private bTransferableObjects: bool = false;
 		private bLocalStorage: bool = false;
 		private bWebSocket: bool = false;
+		private bGamepad: bool = false;
 
-		get webGL(): bool {
-			if (!this.bWebGL) {
-				this.bWebGL = ((<any>window).WebGLRenderingContext || this.checkWebGL() ? true : false);
-			}
-
-			return this.bWebGL;
+		inline get webGL(): bool {
+			return webgl.isEnabled();
 		}		
 
 		get transferableObjects(): bool {
@@ -32,28 +29,32 @@ module akra.util {
 			return this.bTransferableObjects;
 		}
 
-		get file(): bool {
+		inline get file(): bool {
 			return this.bFile;
 		}
 
-		get fileSystem(): bool {
+		inline get fileSystem(): bool {
 			return this.bFileSystem;
 		}
 
-		get webAudio(): bool {
+		inline get webAudio(): bool {
 			return this.bWebAudio;
 		}
 
-		get webWorker(): bool {
+		inline get webWorker(): bool {
 			return this.bWebWorker;
 		}
 
-		get localStorage(): bool {
+		inline get localStorage(): bool {
 			return this.bLocalStorage;
 		}
 
-		get webSocket(): bool {
+		inline get webSocket(): bool {
 			return this.bWebSocket;
+		}
+
+		inline get gamepad(): bool {
+			return this.bGamepad;
 		}
 
 		constructor () {
@@ -67,25 +68,8 @@ module akra.util {
 			this.bWebWorker = isDef((<any>window).Worker);
 			this.bLocalStorage = isDef((<any>window).localStorage);
 			this.bWebSocket = isDef((<any>window).WebSocket);
+			this.bGamepad = !! (<any>navigator).webkitGetGamepads || !! (<any>navigator).webkitGamepads || (navigator.userAgent.indexOf('Firefox/') != -1);
 		}	
-
-		private checkWebGL(): bool {
-			var pCanvas: HTMLCanvasElement;
-			var pDevice: WebGLRenderingContext;
-			
-			try {
-				pCanvas = <HTMLCanvasElement> document.createElement('canvas');
-				pDevice = pCanvas.getContext('webgl', {}) ||
-                       		pCanvas.getContext('experimental-webgl', {});
-
-                if (pDevice) {
-                	return true;
-                }
-			} 
-			catch (e) {}
-
-			return false;
-		}
 
 		private chechTransferableObjects(): bool {
 			var pBlob: Blob = new Blob(["onmessage = function(e) { postMessage(true); }"]);

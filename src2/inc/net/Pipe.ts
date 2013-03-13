@@ -200,7 +200,7 @@ module akra.net {
 		isClosed(): bool {
 			switch (this._eType) {
 				case EPipeTypes.WEBSOCKET:
-					return ((<WebSocket>this._pConnect).readyState === WebSocket.CLOSED);
+					return isNull(this._pConnect) || ((<WebSocket>this._pConnect).readyState === WebSocket.CLOSED);
 			}
 
 			return isNull(this._pConnect);
@@ -209,7 +209,7 @@ module akra.net {
 		isOpened(): bool {
 			switch (this._eType) {
 				case EPipeTypes.WEBSOCKET:
-					return (<WebSocket>this._pConnect).readyState === WebSocket.OPEN;
+					return !isNull(this._pConnect) && (<WebSocket>this._pConnect).readyState === WebSocket.OPEN;
 			}
 
 			return !isNull(this._pConnect);
@@ -220,12 +220,11 @@ module akra.net {
 			return !isNull(this._pConnect);
 		}
 
-		BEGIN_EVENT_TABLE(Pipe);
-			BROADCAST(opened, VOID);
-			BROADCAST(closed, CALL(ev));
-			BROADCAST(error, CALL(err));
-			BROADCAST(message, CALL(data, type));
-		END_EVENT_TABLE();
+		CREATE_EVENT_TABLE(Pipe);
+		BROADCAST(opened, VOID);
+		BROADCAST(closed, CALL(ev));
+		BROADCAST(error, CALL(err));
+		BROADCAST(message, CALL(data, type));
 	}
 
 	export function createPipe(sAddr: string = null): IPipe {

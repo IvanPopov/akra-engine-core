@@ -47,6 +47,7 @@ module akra.webgl {
         	}
         }
 
+
         private _getWebGLTextureParameterValue(eValue: ETextureFilters):uint;
         private _getWebGLTextureParameterValue(eValue: ETextureWrapModes):uint;
         private _getWebGLTextureParameterValue(eValue: any):uint
@@ -76,6 +77,7 @@ module akra.webgl {
         			return 0;
         	}
         }
+
 
 
 
@@ -305,7 +307,7 @@ module akra.webgl {
         }
 
         protected freeInternalTextureImpl(): bool {
-        	var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+        	var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			pWebGLRenderer.deleteWebGLTexture(this._pWebGLTexture);
