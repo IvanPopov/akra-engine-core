@@ -16,6 +16,8 @@
 #include "scene/SceneManager.ts"
 #include "util/UtilTimer.ts"
 #include "fx/Composer.ts"
+#include "pixelUtil/DDSCodec.ts"
+
 
 //include sub creation classes.
 
@@ -25,6 +27,10 @@
 #include "animation/AnimationController.ts"
 #include "model/Skeleton.ts"
 #include "util/DepsManager.ts"
+#include "controls/GamepadMap.ts"
+#include "controls/KeyMap.ts"
+
+
 
 #ifdef WEBGL
 #include "webgl/WebGLRenderer.ts"
@@ -51,11 +57,21 @@ module akra.core {
 		/** is all needed files loaded */
 		private _isDepsLoaded: bool = false;
 
+		private _pGamepads: IGamepadMap = null;
+
 
 
 		constructor (pOptions: IEngineOptions = null) {
 			this._pResourceManager = new pool.ResourcePoolManager(this);
+			if (!this._pResourceManager.initialize()) {
+				debug_error('cannot initialize ResourcePoolManager');
+			}
+
 			this._pSceneManager = new scene.SceneManager(this);
+			if (!this._pSceneManager.initialize()) {
+				debug_error("cannot initialize SceneManager");
+			}
+
 			this._pParticleManager = null;
 
 #ifdef WEBGL
@@ -65,19 +81,37 @@ module akra.core {
 #endif
 			this._pComposer = new fx.Composer(this);
 
-
-			if (!this._pResourceManager.initialize()) {
-				debug_error('cannot initialize ResourcePoolManager');
-			}
-
-			if (!this._pSceneManager.initialize()) {
-				debug_error("cannot initialize SceneManager");
-			}
-
+			// Register image codecs
+			DDSCodec.startup();
+			
+			
 			this._pTimer = util.UtilTimer.start();
 			this.pause(false);
 
-			// this.parseOptions(pOptions);
+			this.parseOptions(pOptions);
+		}
+
+		enableGamepads(): bool {
+			if (!isNull(this._pGamepads)) {
+				return true;
+			}
+
+			var pGamepads: IGamepadMap = controls.createGamepadMap();
+			
+			if (pGamepads.init()) {
+				this._pGamepads = pGamepads;
+				return true;
+			}
+			
+			return false;
+		}
+
+		getGamepads(): IGamepadMap {
+			if (this.enableGamepads()) {
+				return this._pGamepads;
+			}
+
+			return null;
 		}
 
 		private parseOptions(pOptions: IEngineOptions): void {
@@ -92,7 +126,11 @@ module akra.core {
 				sDepsRoot = pOptions.depsRoot || Engine.DEPS_ROOT;
 				//default deps has higher priority!
 				if (isDefAndNotNull(pOptions.deps)) {
-					pDeps.files = pDeps.files.concat(pOptions.deps.files || []);
+					Engine.depends(pOptions.deps);
+				}
+
+				if (pOptions.gamepads === true) {
+					this.enableGamepads();
 				}
 			}
 
@@ -105,7 +143,6 @@ module akra.core {
 			}
 
 			//===========================================================
-
 		}
 
 		inline getScene(): IScene3d {
@@ -137,6 +174,10 @@ module akra.core {
 			return this._isActive;
 		}
 
+		inline isDepsLoaded(): bool {
+			return this._isDepsLoaded;
+		}
+
 		exec(bValue: bool = true): void {
 			var pRenderer: IRenderer = this._pRenderer;
 			var pEngine: Engine = this;
@@ -161,13 +202,11 @@ module akra.core {
 					ERROR(pRenderer.getError());
 				}
 #endif
-	        	if (!pEngine.isActive()) {
-	                return;
-	            }
-
-	            if (!pEngine.renderFrame()) {
-	                debug_error("Engine::exec() error.");
-	                return;
+	        	if (pEngine.isActive() && pEngine.isDepsLoaded()) {
+					if (!pEngine.renderFrame()) {
+		                debug_error("Engine::exec() error.");
+		                return;
+		            }
 	            }
 
 	            requestAnimationFrame(render/*, pCanvas*/); 
@@ -187,6 +226,9 @@ module akra.core {
 
 		    // FrameMove (animate) the scene
 		    if (this._isFrameMoving) {
+		    	if (!isNull(this._pGamepads)) {
+		    		this._pGamepads.update();
+		    	}
 		    	this._pSceneManager.update();
 		    }
 
@@ -249,14 +291,37 @@ module akra.core {
 			return animation.createController(this, iOptions);
 		}
 
-		_depsLoaded(pLoader: IDepsManager): void {
-			alert("deps loaded!!!!!!!!!!!!!!!!!!!!!");
+		_depsLoaded(pLoader: IDepsManager, pDeps: IDependens): void {
+			debug_print("[ALL DEPTS LOADED]");
 			this._isDepsLoaded = true;
+
+			this.depsLoaded(pDeps);
 		}
 
-		static DEPS_ROOT: string = "";
-		static DEPS: IDependens = 
+		static depends(sData: string): void;
+		static depends(pData: IDependens): void;
+		static depends(pData): void {
+			var pDeps: IDependens = Engine.DEPS;
+
+			while (isDefAndNotNull(pDeps.files)) {
+				pDeps = pDeps.deps;
+			}
+
+			if (isString(pData)) {
+				pDeps.files = [pData];
+			}
+			else {
+				pDeps.files = pData;
+			}
+		}
+
+		static DEPS_ROOT: string = 
 #ifdef DEBUG
+			"/akra-engine-core/src2/data/";
+#else
+			"";
+#endif
+		static DEPS: IDependens = 
 			{
 				files: [ 
 					"grammars/HLSL.gr" 
@@ -264,41 +329,43 @@ module akra.core {
 				deps: {
 						files: [
 							"effects/SystemEffects.afx",
-							"effects/prepareDeferredShading.afx",
 						    "effects/Plane.afx",
-						    "effects/mesh.afx",
-						    "effects/mesh_geometry.afx",
-						    "effects/mesh_texture.afx",
-						    "effects/TextureToScreen.afx",
-						    "effects/prepare_shadows.afx",
-						    "effects/deferredShading.afx",
-						    "effects/apply_lights_and_shadows.afx",
 						    "effects/fxaa.afx",
-						    "effects/skybox.afx"
-						]
+						    "effects/skybox.afx",
+						    "effects/mesh.afx", 
+						    "effects/TextureToScreen.afx",
+						    "effects/mesh_geometry.afx",
+						    "effects/prepare_shadows.afx",						    
+						    "effects/prepareDeferredShading.afx"
+						],
+						deps: {
+							files: [
+								"effects/mesh_texture.afx",
+								"effects/deferredShading.afx",
+								"effects/apply_lights_and_shadows.afx"
+							]
+						}
 					}
-			};
-#else 
-		null;
-#endif			
+			};			
 
-		BEGIN_EVENT_TABLE(Engine);
-			BROADCAST(frameStarted, VOID);
-			BROADCAST(frameEnded, VOID);
-			
-			signal inactive(): void {
-				this._isActive = false;
-				EMIT_BROADCAST(inactive, _VOID);
-			}
 
-			signal active(): void {
-				this._isActive = true;
-				EMIT_BROADCAST(active, _VOID);
-			}
+		CREATE_EVENT_TABLE(Engine);
+		BROADCAST(frameStarted, VOID);
+		BROADCAST(frameEnded, VOID);
+		BROADCAST(depsLoaded, CALL(deps));
+		
+		signal inactive(): void {
+			this._isActive = false;
+			EMIT_BROADCAST(inactive, _VOID);
+		}
+
+		signal active(): void {
+			this._isActive = true;
+			EMIT_BROADCAST(active, _VOID);
+		}
 			
-			// BROADCAST(inactive, VOID);
-			// BROADCAST(active, VOID);
-		END_EVENT_TABLE();
+		// BROADCAST(inactive, VOID);
+		// BROADCAST(active, VOID);
 
 	}
 

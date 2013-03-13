@@ -57,7 +57,7 @@ module akra.webgl {
 			
 			bResult = super.attachDepthPixelBuffer(pBuffer);
 			if(bResult) {
-				if(pBuffer.format !== EPixelFormats.DEPTH_BYTE){
+				if(pBuffer.format !== EPixelFormats.DEPTH8){
 					this.detachDepthPixelBuffer();
 					return false;
 				}

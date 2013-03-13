@@ -698,7 +698,7 @@ declare var WebGLRenderingContext: {
 }
 
 interface HTMLCanvasElement extends HTMLElement {
-    getContext(contextId: string, args?: WebGLContextAttributes): WebGLRenderingContext;
+    getContext(contextId: string, args: WebGLContextAttributes): WebGLRenderingContext;
 }
 
 interface WEBGL_debug_shaders {
@@ -1114,6 +1114,7 @@ declare var WebGLDebugUtils: {
 #define GL_UNSIGNED_INT                   0x1405
 #define GL_FLOAT                          0x1406
 #define GL_UNSIGNED_INT_8_8_8_8_REV       0x8367
+#define GL_UNSIGNED_INT_24_8_WEBGL        0x8367
 
 /* PixelFormat */
 #define GL_DEPTH_COMPONENT                0x1902

@@ -34,10 +34,8 @@ module akra.scene {
 		}
 
 
-		constructor (pScene: IScene3d) {
-			super(pScene);
-			
-			this._eType = EEntityTypes.SCENE_OBJECT;
+		constructor (pScene: IScene3d, eType: EEntityTypes = EEntityTypes.SCENE_OBJECT) {
+			super(pScene, eType);
 		}
 
 		inline getRenderable(i?: uint): IRenderableObject {
@@ -125,9 +123,7 @@ module akra.scene {
 #endif
     	}
 
-		BEGIN_EVENT_TABLE(SceneObject);
-			UNICAST(worldBoundsUpdated, VOID);
-		END_EVENT_TABLE();
+		UNICAST(worldBoundsUpdated, VOID);
 	}
 
 	export inline function isSceneObject(pEntity: IEntity): bool {

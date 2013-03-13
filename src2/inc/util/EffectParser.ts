@@ -87,6 +87,17 @@ module akra.util {
 		    }
 		}
 
+		_saveState(): IParserState {
+			var pState: IParserState = super._saveState();
+			pState["includeFiles"] = this._pIncludedFilesMap;
+			return pState;
+		}
+
+		_loadState(pState: IParserState): void {
+			super._loadState(pState);
+			this._pIncludedFilesMap = <BoolMap>pState["includeFiles"];
+		}
+
 	}	
 
 	export var parser: EffectParser = new EffectParser();

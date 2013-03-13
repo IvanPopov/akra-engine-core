@@ -61,7 +61,6 @@ module akra {
 		// writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer?: bool): bool;
 		writeData(pData: ArrayBuffer, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer?: bool): bool;
 
-
 		copyData(pSrcBuffer: IHardwareBuffer, iSrcOffset: uint, 
 				 iDstOffset: uint, iSize: uint, bDiscardWholeBuffer?: bool): bool;
 

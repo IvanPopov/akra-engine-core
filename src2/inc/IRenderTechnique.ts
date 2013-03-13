@@ -6,10 +6,12 @@
 module akra {
 	IFACE(IRenderPass);
 	IFACE(IRenderMethod);
+	IFACE(IAFXComponentBlend);
 
 	export interface IRenderTechnique extends IEventProvider {
 		readonly totalPasses: uint;
 		readonly modified: uint;
+		readonly data: IAFXComponentBlend;
 
 		destroy(): void;
 

@@ -117,9 +117,8 @@ module akra.scene.objects {
     	inline get frustum(): IFrustum { return this._pFrustum; }
 
 		constructor (pScene: IScene3d) {
-			super(pScene);
+			super(pScene, EEntityTypes.CAMERA);
 
-			this._eType = EEntityTypes.CAMERA;
 		};
 
 		create(): bool {
@@ -402,10 +401,12 @@ module akra.scene.objects {
     		this._pDLResultStorage[index] = null;
     	};
 
-    	BEGIN_EVENT_TABLE(Camera);
-    		BROADCAST(preRenderScene, VOID);
-    		BROADCAST(postRenderScene, VOID);
-    	END_EVENT_TABLE();
+		BROADCAST(preRenderScene, VOID);
+		BROADCAST(postRenderScene, VOID);
+	}
+
+	export inline function isCamera(pNode: IEntity): bool {
+		return pNode.type >= EEntityTypes.CAMERA && pNode.type <= EEntityTypes.SHADOW_CASTER;
 	}
 }
 

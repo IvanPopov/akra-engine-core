@@ -258,10 +258,9 @@ module akra.render {
         	return this._pCamera? this._pCamera._getNumRenderedFaces(): 0;
         }
 
-        BEGIN_EVENT_TABLE(Viewport);
-        	BROADCAST(viewportDimensionsChanged, VOID);
-        	BROADCAST(viewportCameraChanged, VOID);
-        END_EVENT_TABLE();
+        CREATE_EVENT_TABLE(Viewport);
+    	BROADCAST(viewportDimensionsChanged, VOID);
+    	BROADCAST(viewportCameraChanged, VOID);
 	}
 }
 

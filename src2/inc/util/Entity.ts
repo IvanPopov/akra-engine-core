@@ -38,6 +38,25 @@ module akra.util {
 
 		inline get type(): EEntityTypes { return this._eType; }
 
+		get rightSibling(): IEntity {
+			var pSibling: IEntity = this.sibling;
+			
+			if (pSibling) {
+				while (pSibling.sibling) {
+					pSibling = pSibling.sibling;
+				}
+
+				return pSibling;
+			}
+			
+			return this;
+		}
+
+		constructor (eType: EEntityTypes) {
+			super();
+			this._eType = eType;
+		}
+
 		get depth(): int {
 			var iDepth: int = -1;
 	        for (var pEntity: IEntity = this; pEntity; pEntity = pEntity.parent, ++ iDepth){};
@@ -50,9 +69,6 @@ module akra.util {
 		}
 
 
-		create(): bool {
-			return true;
-		}
 
 		destroy(): void {
 			// destroy anything attached to this node
@@ -308,6 +324,7 @@ module akra.util {
 		        pChild.sibling = this._pChild;
 		        // the new child becomes our first child pointer.
 		        this._pChild = pChild;
+		        this.childAdded(pChild);	
     		}
 
     		return pChild; 
@@ -337,6 +354,8 @@ module akra.util {
 		                pChild.sibling = null;
 		            }
 		        }
+
+		        this.childRemoved(pChild);
 	    	}
 
 	    	return pChild;
@@ -354,16 +373,22 @@ module akra.util {
 
 		/** Attaches this object ot a new parent. Same as calling the parent's addChild() routine. */
 		attachToParent(pParent: IEntity): bool {
+			
+			var pParentPrev: IEntity = this._pParent;
+
 			if (pParent != this._pParent) {
-	        
+
 		        this.detachFromParent();
 		       
 		        if (pParent) {
-		            this._pParent = pParent;
-		            this._pParent.addChild(this);
-		            this._pParent.addRef();
-		            this.attached();
-		            return true;
+		            if (pParent.addChild(this)) {
+			            this._pParent = pParent;
+			            this._pParent.addRef();
+			            this.attached();
+		            	return true;
+		            }
+
+		            return this.attachToParent(pParentPrev);
 		        }
 	    	}
 
@@ -444,11 +469,12 @@ module akra.util {
 #endif
 		}
 
-		BEGIN_EVENT_TABLE(Entity);
-			UNICAST(attached, VOID);
-			UNICAST(detached, VOID);
-		END_EVENT_TABLE();
-
+		CREATE_EVENT_TABLE(Entity);
+		
+		UNICAST(attached, VOID);
+		UNICAST(detached, VOID);
+		UNICAST(childAdded, CALL(child));
+		UNICAST(childRemoved, CALL(child));
 	}
 }
 

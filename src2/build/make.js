@@ -7,6 +7,7 @@ var spawn 	= require('child_process').spawn;
 //var md5 	= require('MD5');
 var stream  = require('stream');
 var prompt 	= require('prompt');
+var wrench  = require('wrench');
 
 function include(file) {
 	eval(fs.readFileSync(file, "utf-8"));
@@ -20,6 +21,7 @@ var BUFFER_SIZE = 5 * 1024 * 1024;
 var pCleanFiles = [];
 var iTimeout = -1;
 
+var isWin = !!process.platform.match(/^win/);
 
 function isDef(pObject) {
 	return pObject != null;
@@ -38,7 +40,7 @@ function usage() {
 		'\n\t--nw			Build tests as NW. ' + 
 		'\n\t--js			Build tests as JS. ' + 
 		'\n\t--help		[-h] Print this text. ' + 
-		'\n\t--ES6			Activate ecmascript 5 capability.' + 
+		'\n\t--ES6			Activate ecmascript 6 capability.' + 
 		'\n\t--compress		Compress output javascript.' + 
 		'\n\t--debug			Debug build.' + 
 		'\n\t--no-debug		Release build.' + 
@@ -173,7 +175,6 @@ function parseArguments() {
 			case '-o':
             case '--out':
                 readKey("outputFolder", ++i);
-                console.log(process.argv[i]);
                 break;
 			case '-d':
 			case '--build':
@@ -193,15 +194,22 @@ function parseArguments() {
 					usage();
 				}
 
+				if (!sArg.length || sArg.match(/\s+/ig)) {
+					break;
+				}
+
 				pOptions.files.push(sArg);
 		}
 	};
 }
 
 function verifyOptions() {
-	path.normalize(pOptions.outputFile);
-	path.normalize(pOptions.outputFolder);
-	path.normalize(pOptions.buildDir);
+	if (pOptions.outputFile) {
+		pOptions.outputFile = path.normalize(pOptions.outputFile);
+	}
+	
+	pOptions.outputFolder = path.normalize(pOptions.outputFolder);
+	pOptions.buildDir = path.normalize(pOptions.buildDir);
 
 	pOptions.outputFile = path.basename(pOptions.outputFolder);
 	pOptions.outputFolder = path.dirname(pOptions.outputFolder);
@@ -217,9 +225,21 @@ function verifyOptions() {
 		pOptions.testsFormat.html = true;
 	}
 
+	// for (var i in pOptions.files) {
+	// 	pOptions.files[i] = (path.normalize(pOptions.buildDir + "/" + pOptions.files[i]));
+	// 	console.log(">>>>>", pOptions.files[i])
+	// }
+
 	if (pOptions.outputFile == null || pOptions.outputFile == "") {
 		pOptions.outputFile = pOptions.files[0] + (pOptions.declaration? ".d.ts" : ".out.js");
 	}
+}
+
+function pwd() {
+	var pwd = spawn("pwd");
+	pwd.stdout.on('data', function (data) {
+	  console.log('stdout: \n' + data);
+	});
 }
 
 function preprocess() {
@@ -251,11 +271,16 @@ function preprocess() {
 		console.log("EcmaScript 6 capability mode: ON");
 	}
 
-	var cmd = pOptions.baseDir + "/mcpp";
-	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -j -+ -W 0 -k " + 
-		capabilityMacro + " " + pOptions.files.join(" ")).
-		split(" ");
+	// pwd();
+
+	var cmd = (isWin? pOptions.baseDir + "/": "") + "mcpp";
+	var argv = ("-P -C -e utf8 -I " + pOptions.includeDir + " -I " + 
+		pOptions.baseDir + "/definitions/ -j -+ -W 0 -k " + 
+		capabilityMacro + " " + pOptions.files.join(" ")).split(" ");
+
+	//console.log(pOptions.files);
 	console.log(cmd + " " + argv.join(" "));
+	
 	var mcpp = spawn(cmd, argv, {maxBuffer: BUFFER_SIZE});
 	var stdout = '';
 
@@ -320,16 +345,15 @@ function compile() {
 	var cmd = "node";
 	var argv = (  
 		pOptions.baseDir + "/tsc.js -c --target ES5  " + 
-		pOptions.baseDir + "/fixes.d.ts " + 
+		pOptions.baseDir + "/definitions/fixes.d.ts " +
 		//pOptions.baseDir + "/WebGL.d.ts " + 
 		pOptions.pathToTemp + " --out " +
 		pOptions.outputFolder + "/" + pOptions.outputFile +
-        " --cflowu --const " +
 		// (pOptions.compress? " --comments --jsdoc ": "") + 
 		(pOptions.declaration? " --declaration ": "") +
-		" ").split(" ");
+		" --cflowu --const").replace(/\s+/ig, " ").split(" ");
 
-	console.log(cmd + " " + argv.join(" "));
+	console.log((cmd + " " + argv.join(" ")));//.split(" ")
     
 	var node = spawn(cmd, argv, { maxBuffer: BUFFER_SIZE, stdio: 'inherit' });
 
@@ -422,8 +446,9 @@ function createTestName(sEntryFileName) {
 }
 
 
-function findDepends(sData) {
-	var pDepExp = /\/\/\/\s*@dep\s+([\w\d\.\-\/]+)\s*/ig;
+
+function findDepends(sData, pDepExp) {
+
 	var pMatches = null;
 	var pDeps = [];
 
@@ -438,17 +463,27 @@ function fetchDeps(sDir, pDeps) {
 	for (var i in pDeps) {
 
 		var sDep = path.normalize( pOptions.includeDir + pDeps[i]);
+		var sDepContent;
+		var stat;
 
-		var sDepContent = fs.readFileSync(sDep, "utf-8");
-
-		fs.writeFileSync(sDir + "/" + path.basename(sDep), sDepContent, "utf-8");
+		if (fs.existsSync(sDep)) {
+			stat = fs.statSync(sDep);
+			if (stat.isDirectory()) {
+				wrench.copyDirSyncRecursive(sDep, sDir + "/" + path.basename(sDep));
+			}
+			else {
+				fs.writeFileSync(sDir + "/" + path.basename(sDep), fs.readFileSync(sDep, "utf-8"), "utf-8");
+			}
+		}
 	}
 }
+
 
 function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 	
 	//FIXME: hack for events support
-	sTestData = sTestData.replace(/eval\(\"this\.\_iGuid \|\| akra\.sid\(\)\"\)/g, "this._iGuid || akra.sid()");
+	//sTestData = sTestData.replace(/eval\(\"this\.\_iGuid \|\| akra\.sid\(\)\"\)/g, "this._iGuid || akra.sid()");
+
 
 	sTestData = "\n\n\n" + 
 		"/*---------------------------------------------\n" +
@@ -459,8 +494,13 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 		" *--------------------------------------------*/\n\n\n" + 
 		sTestData;
 
-	var pAdditionalScripts = [];
+	var pAdditionalScripts = findDepends(sTestData, /\/\/\/\s*@script\s+([^\s]+)\s*/ig);
 	var sAdditionalCode = "";
+
+
+	var pAdditionalCSS = findDepends(sTestData, /\/\/\/\s*@css\s+([^\s]+)\s*/ig);
+	var sAdditionalCSS = "";
+
 
 	var pArchive;
 	var sIndexHTML;
@@ -471,15 +511,22 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
     	sTestData += "\n\n/// @dep ../build/webgl-debug.js \n"
     }
 
+
 	for (var i in pAdditionalScripts) {
 		sAdditionalCode += "<script type=\"text/javascript\" src=\"" + pAdditionalScripts[i] + "\">" + 
 							"</script>";
 	}
-    
+
+
+	for (var i in pAdditionalCSS) {
+		sAdditionalCSS += "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + pAdditionalCSS[i] + "\">";
+	}
+
     sIndexHTML = "\n\
 				  <html>                           					\n\
                   	<head>                               			\n\
                   		<title>" + sFile + "</title>   				\n\
+                  		" + sAdditionalCSS + "						\n\
                   	</head>                              			\n\
                   	<body>                               			\n\
                   		" + sAdditionalCode + "				  		\n\
@@ -487,7 +534,10 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
                   </html>";
     
     
-    fetchDeps(sDir, findDepends(sTestData));
+
+
+    fetchDeps(sDir, findDepends(sTestData, /\/\/\/\s*@dep\s+([\w\d\.\-\/]+)\s*/ig));
+
 
     function writeOutput(sOutputFile, pData) {
     	fs.writeFile(sOutputFile, pData, function (err) {

@@ -35,14 +35,11 @@ module akra.io {
         switch (sDataType) {
             case "json":
                 return EAjaxDataTypes.JSON;
-                break;
             case "blob":
                 return EAjaxDataTypes.BLOB;
-                break;
             case "html":
             case "document":
                 return EAjaxDataTypes.DOCUMENT;
-                break;
             case "array_buffer":
             case "arraybuffer":
                 return EAjaxDataTypes.ARRAY_BUFFER;      

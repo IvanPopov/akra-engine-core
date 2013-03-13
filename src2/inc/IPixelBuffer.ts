@@ -4,6 +4,8 @@
 #include "IHardwareBuffer.ts"
 
 module akra {
+	IFACE(IRenderTarget);
+	
 	export interface IPixelBuffer extends IHardwareBuffer {
 		readonly width: uint;
 		readonly height: uint;

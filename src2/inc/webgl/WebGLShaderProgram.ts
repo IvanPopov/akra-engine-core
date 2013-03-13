@@ -35,7 +35,7 @@ module akra.webgl {
 		}
 
         destroy(): void {
-            var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+            var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 
             pWebGLRenderer.deleteWebGLProgram(this._pWebGLProgram);
 
@@ -48,7 +48,7 @@ module akra.webgl {
         }
 
     	compile(csVertex: string = GLSL_VS_SHADER_MIN, csPixel: string = GLSL_FS_SHADER_MIN): bool {
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 			var pWebGLProgram: WebGLProgram = this._pWebGLProgram = pWebGLRenderer.createWebGLProgram();
 
@@ -395,7 +395,7 @@ module akra.webgl {
     	}
 
     	protected createWebGLShader(eType: int, csCode: string): WebGLShader {
-    		var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+    		var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 			var pWebGLShader: WebGLShader = pWebGLContext.createShader(eType);
 

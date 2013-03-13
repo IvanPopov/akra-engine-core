@@ -10,7 +10,7 @@ effects/
 compiled/
 
 # Project property files
-*.html
+#*.html
 *.bak
 *.dds
 *.rar

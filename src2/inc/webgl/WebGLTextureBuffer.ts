@@ -3,7 +3,7 @@
 
 #include "WebGLPixelBuffer.ts"
 #include "IRenderTexture.ts"
-#include "IWebGLRenderer.ts"
+#include "WebGLRenderer.ts"
 #include "pixelUtil/PixelBox.ts"
 #include "ITexture.ts"
 #include "IResourcePool.ts"
@@ -64,7 +64,7 @@ module akra.webgl {
 			var iFlags: int = arguments[8];
 			var bSoftwareMipmap: bool = arguments[9];
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 
 			pWebGLRenderer.bindWebGLTexture(eTarget, pTexture);
 
@@ -86,6 +86,7 @@ module akra.webgl {
 
 			this._iWebGLInternalFormat = iInternalFormat;
 			this._eFormat = webgl.getClosestAkraFormat(iInternalFormat, iFormat);
+			
 
 			this._iRowPitch = this._iWidth;
 			this._iSlicePitch = this._iHeight * this._iWidth;
@@ -147,7 +148,7 @@ module akra.webgl {
 			if (TEST_ANY(this._iFlags, ETextureFlags.RENDERTARGET)) {
 	            // Delete all render targets that are not yet deleted via _clearSliceRTT because the rendertarget
 	            // was deleted by the user.
-	            var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+	            var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 	            for (var i: uint = 0; i < this._pRTTList.length; i++) {
 	                pWebGLRenderer.destroyRenderTarget(this._pRTTList[i]);
 	            }
@@ -156,7 +157,7 @@ module akra.webgl {
 
 		//upload(download) data to(from) videocard.
 		protected upload(pData: IPixelBox, pDestBox: IBox): void {
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
@@ -219,8 +220,8 @@ module akra.webgl {
 	                            			this._iLevel,
 	                            			pDestBox.left, pDestBox.top,
 	                            			pDestBox.width, pDestBox.height,
-	                            			webgl.getWebGLOriginFormat(pData.format),
-	                            			webgl.getWebGLOriginDataType(pData.format),
+	                            			webgl.getWebGLFormat(pData.format),
+	                            			webgl.getWebGLDataType(pData.format),
 	                            			pData.data);
 	        }
 	        
@@ -290,12 +291,12 @@ module akra.webgl {
 	        iLevel = (iLogW > iLogH ? iLogW : iLogH);
 
 	        var mip: int = 0;
-	        var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+	        var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 	        for (mip = 0; mip <= iLevel; mip++) {
-	           	var iWebGLFormat: int = webgl.getWebGLOriginFormat(pScaled.format);
-	            var iWebGLDataType: int = webgl.getWebGLOriginDataType(pScaled.format);
+	           	var iWebGLFormat: int = webgl.getWebGLFormat(pScaled.format);
+	            var iWebGLDataType: int = webgl.getWebGLDataType(pScaled.format);
 
 	            pWebGLContext.texImage2D(this._eFaceTarget,
 	            						 mip,
@@ -333,13 +334,13 @@ module akra.webgl {
 
 		_bindToFramebuffer(iAttachment: int, iZOffset: uint): void {
 			ASSERT(iZOffset < this._iDepth);
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 			pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, iAttachment, this._eFaceTarget, this._pWebGLTexture, this._iLevel);
 		}
 
 		_copyFromFramebuffer(iZOffset: uint): void {
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 			
 			pWebGLRenderer.bindWebGLTexture(this._eTarget, this._pWebGLTexture);
@@ -386,7 +387,7 @@ module akra.webgl {
 	    // Supports compressed formats as both source and destination format, it will use the hardware DXT compressor
 	    // if available.
 	    blitFromTexture(pSource: WebGLTextureBuffer, pSrcBox: IBox, pDestBox: IBox): bool {
-	    	var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+	    	var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			pWebGLRenderer._disableTextureUnitsFrom(0);
@@ -628,7 +629,7 @@ module akra.webgl {
 
 		    var pSource: IPixelBox;
 		    // First, convert the srcbox to a OpenGL compatible pixel format
-	        if(getWebGLOriginFormat(pSourceOrigin.format) === 0){
+	        if(getWebGLFormat(pSourceOrigin.format) === 0){
 	        	// Convert to buffer internal format
 	        	var iSizeInBytes: int = pixelUtil.getMemorySize(pSourceOrigin.width, pSourceOrigin.height,
 	        													pSourceOrigin.depth, this._eFormat);
@@ -642,7 +643,7 @@ module akra.webgl {
 	        	pSource = pSourceOrigin;
 	        }
 
-	        var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+	        var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 			
 	        // Create temporary texture to store source data
@@ -651,7 +652,7 @@ module akra.webgl {
 	        var iWidth: int = math.ceilingPowerOfTwo(pSource.width);
 	        var iHeight: int = math.ceilingPowerOfTwo(pSource.height);
 	        var iWebGLFormat:int = getClosestWebGLInternalFormat(pSource.format);
-	        var iWebGLDataType: int = getWebGLOriginDataType(pSource.format);
+	        var iWebGLDataType: int = getWebGLDataType(pSource.format);
 
 	        pTempWebGLTexture = pWebGLRenderer.createWebGLTexture();
 

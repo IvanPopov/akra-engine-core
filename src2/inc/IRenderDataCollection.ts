@@ -31,7 +31,7 @@ module akra {
         getData(sUsage: string): IVertexData;
         getData(iOffset: uint): IVertexData;
         getRenderData(iSubset: uint): IRenderData;
-        getEmptyRenderData(ePrimType: EPrimitiveTypes, iOptions: int): IRenderData;
+        getEmptyRenderData(ePrimType: EPrimitiveTypes, eOptions: ERenderDataBufferOptions): IRenderData;
         getDataLocation(sSemantics: string): int;
         
         allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, isCommon?: bool): int;

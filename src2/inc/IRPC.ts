@@ -13,6 +13,7 @@ module akra {
     export interface IRPCCallback {
         n: uint;
         fn: Function;
+        timestamp: uint;
     }
 
 	export interface IRPCPacket {
@@ -36,6 +37,7 @@ module akra {
 		join(sAddr?: string): void;
 		rejoin(): void;
 		free(): void;
+        detach(): void;
 		proc(...argv: any[]): bool;
 
 		parse(pResponse: IRPCResponse): void;

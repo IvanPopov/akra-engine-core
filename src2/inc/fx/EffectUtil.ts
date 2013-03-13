@@ -14,14 +14,6 @@ module akra.fx {
 		k_Annotation
 	}
 
-	export interface IAFXVariableDeclMap { 
-		[variableName: string] : IAFXVariableDeclInstruction;
-	}
-	
-	export interface IAFXTypeDeclMap {
-		[typeName: string] : IAFXTypeDeclInstruction;
-	}
-
 	export interface IAFXFunctionDeclListMap {
 		[functionName: string] : IAFXFunctionDeclInstruction[];
 	}
@@ -64,6 +56,7 @@ module akra.fx {
 				pScope = pScope.parent;
 			}
 
+			return false;
 		}
 
 		setStrictModeOn(iScope?: uint = this._iCurrentScope): void {
@@ -336,17 +329,34 @@ module akra.fx {
 			var pScope: IScope = this._pScopeMap[iScope];
 			var pVariableMap: IAFXVariableDeclMap = pScope.variableMap;
 
-			if(!isDef(pVariableMap)){
+			if(isNull(pVariableMap)){
 				pVariableMap = pScope.variableMap = <IAFXVariableDeclMap>{};
 			}
 
 			var sVariableName: string = pVariable.getName();
 
-			if(this.hasVariableInScope(sVariableName, iScope)){
-				return false;
-			}
+			if(!pVariable.getType().isShared()){
+				if(this.hasVariableInScope(sVariableName, iScope)){
+					return false;
+				}
 
-			pVariableMap[sVariableName] = pVariable;
+				pVariableMap[sVariableName] = pVariable;
+				pVariable._setScope(iScope);
+			}
+			else {
+				if(!this.hasVariableInScope(sVariableName, iScope)){
+					pVariableMap[sVariableName] = pVariable;
+					pVariable._setScope(iScope);
+				}
+				else {
+					var pBlendVariable: IAFXVariableDeclInstruction = pVariableMap[sVariableName].blend(pVariable, EAFXBlendMode.k_Shared);
+					if(isNull(pBlendVariable)){
+						return false;
+					}
+					pVariableMap[sVariableName] = pBlendVariable;
+					pBlendVariable._setScope(iScope);
+				}				
+			}
 
 			return true;
 		}
@@ -359,7 +369,7 @@ module akra.fx {
 			var pScope: IScope = this._pScopeMap[iScope];
 			var pTypeMap: IAFXTypeDeclMap = pScope.typeMap;
 
-			if(!isDef(pTypeMap)){
+			if(isNull(pTypeMap)){
 				pTypeMap = pScope.typeMap = <IAFXTypeDeclMap>{};
 			}
 
@@ -370,6 +380,7 @@ module akra.fx {
 			}
 
 			pTypeMap[sTypeName] = pType;
+			pType._setScope(iScope);
 
 			return true;
 		}
@@ -382,7 +393,7 @@ module akra.fx {
 			var pScope: IScope = this._pScopeMap[iScope];
 			var pFunctionMap: IAFXFunctionDeclListMap = pScope.functionMap;
 
-			if(!isDef(pFunctionMap)){
+			if(isNull(pFunctionMap)){
 				pFunctionMap = pScope.functionMap = <IAFXFunctionDeclListMap>{};
 			}
 
@@ -397,6 +408,7 @@ module akra.fx {
 			}
 
 			pFunctionMap[sFuncName].push(pFunction);
+			pFunction._setScope(iScope);
 
 			return true;
 		}

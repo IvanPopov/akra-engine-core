@@ -19,8 +19,8 @@ module akra.scene.light {
 		protected _iMaxShadowResolution: uint = 256;
 		protected _pLightParameters: ILightParameters = new LightParameters;
 
-		constructor(pScene: IScene3d, isShadowCaster: bool = true, iMaxShadowResolution: int = 256){
-			super(pScene);
+		constructor(pScene: IScene3d, eType: EEntityTypes, isShadowCaster: bool = true, iMaxShadowResolution: int = 256){
+			super(pScene, eType);
 
 			//есть тени от источника или нет
 			this._bCastShadows = isShadowCaster;

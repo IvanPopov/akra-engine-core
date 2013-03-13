@@ -277,9 +277,9 @@ module akra.core.pool {
             }
         }
 
-        BEGIN_EVENT_TABLE(ResourcePool);
-            BROADCAST(createdResource, CALL(pResource));
-        END_EVENT_TABLE();
+        CREATE_EVENT_TABLE(ResourcePool);
+        BROADCAST(createdResource, CALL(pResource));
+       
     }
 }
 

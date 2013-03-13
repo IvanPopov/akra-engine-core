@@ -224,6 +224,10 @@ module akra.util {
 		};
 
 		private pullElement(pItem: IObjectListItem): any {
+			if (isNull(pItem)) {
+				//this case theoretically cannot happen, but ....
+				return null;
+			}
 
 			if (isNull(pItem.prev)) {
 				this._pHead = pItem.next;
@@ -261,6 +265,7 @@ module akra.util {
 		};
 
 		inline takeCurrent(isPrev: bool = false): any {
+			//console.log(isDefAndNotNull(this._pCurrent));
 			return this.pullElement(this._pCurrent);
 		}
 

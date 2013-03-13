@@ -369,10 +369,6 @@ module akra.model {
 
 		    return true;
 		}
-
-
-		BEGIN_EVENT_TABLE(MeshSubset);
-		END_EVENT_TABLE();
 	}
 }
 

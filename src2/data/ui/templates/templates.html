@@ -1,0 +1,106 @@
+<component name="Canvas">
+	<canvas width="100%" height="100%" />
+</component>
+
+<component name="Label">
+	<div class='label-text'></div>
+	<input class='label-input' type='text' value=''/>
+</component>
+
+<component name="Pin">
+</component>
+
+<component name="Slider">
+	<component name="Pin"></component>
+</component>
+
+<component name="Checkbox">
+	<span class="checkbox-item-text"></span>
+</component>
+
+<component name="GraphControls">
+	<div class="controls"></div>
+	<component name="Graph"></component>
+</component>
+
+<component name="AnimationControls">
+	<div class="controls"></div>
+	<component name="AnimationGraph"></component>
+</component>
+
+<component name="GraphNode">
+	<table class='graph-node-table'>
+		<tr>
+			<td class="graph-node-top" side="top" colspan="3">
+				<layout name="Horizontal" type="top" align="center"></layout>
+			</td>
+		</tr>
+		<tr>
+			<td class="graph-node-left" side="left">
+				<layout name="Vertical" type="left"></layout>
+			</td>
+			<td class="graph-node-center"></td>
+			<td class="graph-node-right" side="right">
+				<layout name="Vertical" type="right"></layout>
+			</td>
+		</tr>
+		<tr>
+			<td class="graph-node-bottom" side="bottom" colspan="3">
+				<layout name="Horizontal" type="bottom" align="center"></layout>
+			</td>
+		</tr>
+	</table>
+</component>
+
+<component name="AnimationData">
+	<div class="component-title">Animation Data</div>
+	<div class="controls">
+		<component name="Label" text="unknown data"></component>
+	</div>
+	<layout name="Horizontal" type="bottom" align="center"></layout>
+</component>
+
+<component name="AnimationBlender">
+	<div class="component-title">Blender</div>
+	<component name="Label" text="Title"></component>
+	<table class='graph-node-table'>
+		<tr>
+			<td colspan="2" class="graph-node-left" side="left">
+				<layout name="Vertical" type="left"></layout>
+			</td>
+			<td class="graph-node-center-left" style="min-width: 40px;">
+			</td>
+			<td class="graph-node-center-right" style="min-width: 40px;">
+			</td>
+			<td colspan="2" class="graph-node-right" side="right">
+				<layout name="Vertical" type="right" ></layout>
+			</td>
+		</tr>
+	</table>
+</component>
+
+<component name="AnimationMask">
+	<layout name="Horizontal" type="top" align="center"></layout>
+	<div class="component-title">Animation Mask</div>
+	<div class="controls">
+		
+	</div>
+	<layout name="Horizontal" type="bottom" align="center"></layout>
+</component>
+
+<component name="AnimationPlayer">
+	<layout name="Horizontal" type="top" align="center"></layout>
+	<div class="component-title">Animation Player</div>
+	<div class="controls">
+		<component name="Label" text="Title"></component>
+		<component name="CheckboxList">
+			<component name="Checkbox" text="Play"></component>
+			<component name="Checkbox" text="Pause"></component>
+		</component>
+		<component name="Checkbox" text="Loop"></component>
+		<component name="Checkbox" text="Reverse"></component>
+		<div>Speed: <component name="Label"></component>x</div>
+		<component name="Slider"></component>
+	</div>
+	<layout name="Horizontal" type="bottom" align="center"></layout>
+</component>

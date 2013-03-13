@@ -78,7 +78,7 @@ module akra.scene {
 	    	}
 		};
 
-		BEGIN_EVENT_TABLE(OcTreeNode);
+		CREATE_EVENT_TABLE(OcTreeNode);
 
 		objectMoved(pObject: ISceneObject){
 			// console.warn('object moving');
@@ -89,10 +89,6 @@ module akra.scene {
 				pNode.addMember(pObject);
 			}
 		};
-
-		END_EVENT_TABLE();
-
-		
 	};
 
 	export class OcTreeRootNode extends OcTreeNode implements IOcTreeNode{

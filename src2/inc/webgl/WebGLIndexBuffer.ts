@@ -38,7 +38,7 @@ module akra.webgl {
 
 			super.create(iByteSize, iFlags, pData);
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 		    var i: int;
 
@@ -76,7 +76,7 @@ module akra.webgl {
 		    
 		    if (pData) {
 		        pWebGLContext.bufferSubData(
-		        	GL_ELEMENT_ARRAY_BUFFER, 0, isArrayBuffer(pData)? pData: pData.buffer);
+		        	GL_ELEMENT_ARRAY_BUFFER, 0,  <ArrayBufferView>(isArrayBuffer(pData) ?pData: (pData).buffer ));
 		    }
 
 		    return true;
@@ -85,7 +85,7 @@ module akra.webgl {
 		destroy(): void {
 			super.destroy();
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 
 			pWebGLRenderer.deleteWebGLBuffer(this._pWebGLBuffer);
 
@@ -112,13 +112,13 @@ module akra.webgl {
 		    return true;
 		}
 
-		writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
-		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
-		writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool { 
+		writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer?: bool = false): bool;
+		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer?: bool = false): bool;
+		writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer?: bool = false): bool { 
 			
 			debug_assert(!isNull(this._pWebGLBuffer), "WebGL buffer not exists");
 		    
-		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+		    var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 		    
 		    pWebGLRenderer.bindWebGLBuffer(GL_ELEMENT_ARRAY_BUFFER, this._pWebGLBuffer);
@@ -154,7 +154,7 @@ module akra.webgl {
 			var iMax: int = 0;
 			var pIndexData: IIndexData;
 
-		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+		    var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 			
 			if(this.isBackupPresent()) {
