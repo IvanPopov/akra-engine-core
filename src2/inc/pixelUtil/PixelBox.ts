@@ -66,7 +66,9 @@ module akra.pixelUtil {
 			}
 
 			if(!this.contains(pDest))
+			{
 				ERROR("Bounds out of range", "PixelBox::getSubVolume");
+			}
 
 			var elemSize: uint = pixelUtil.getNumElemBytes(this.format);
 			// Calculate new data origin

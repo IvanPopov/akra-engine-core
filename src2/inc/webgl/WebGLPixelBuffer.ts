@@ -195,11 +195,12 @@ module akra.webgl {
 	            pSource.scale(pScaledBox, EFilters.BILINEAR);
 	        }
 	        else if ((pSource.format != this._eFormat) ||
-	                 ((getWebGLOriginFormat(pSource.format) == 0) && (pSource.format != EPixelFormats.R8G8B8))) {
+	                 ((getWebGLFormat(pSource.format) == 0) && (pSource.format != EPixelFormats.R8G8B8))) {
 	            // Extents match, but format is not accepted as valid source format for GL
 	            // do conversion in temporary buffer
 	            this.allocateBuffer();
 	            pScaledBox = this._pBuffer.getSubBox(pDestBox);
+
 	            pixelUtil.bulkPixelConversion(pSource, pScaledBox);
 	            
 	            if(this._eFormat === EPixelFormats.A4R4G4B4)
@@ -212,8 +213,10 @@ module akra.webgl {
 	            this.allocateBuffer();
 	            pScaledBox = pSource;
 
-	            if (pSource.format == EPixelFormats.R8G8B8) {
+	            if (pSource.format == EPixelFormats.R8G8B8) 
+	            {
 	                pScaledBox.format = EPixelFormats.B8G8R8;
+	                
 	                pixelUtil.bulkPixelConversion(pSource, pScaledBox);
 	            }
 	        }
@@ -250,7 +253,7 @@ module akra.webgl {
             	pDest.width == this._iWidth &&
             	pDest.height == this._iHeight &&
             	pDest.depth == this._iDepth &&
-            	getWebGLOriginFormat(pDest.format) != 0) {
+            	getWebGLFormat(pDest.format) != 0) {
 	            // The direct case: the user wants the entire texture in a format supported by GL
 	            // so we don't need an intermediate buffer
 	            this.download(pDest);

@@ -1,10 +1,13 @@
-#ifndef CODEC_TS
-#define CODEC_TS
+#ifndef DDSCODEC_TS
+#define DDSCODEC_TS
 
 #include "PixelFormat.ts"
 #include "bf/bitflags.ts"
 #include "math/math.ts"
 #include "IColor.ts"
+#include "pixelUtil/ImgCodec.ts"
+#include "pixelUtil.ts"
+#include "IDDSCodec.ts"
 #include "PixelBox.ts"
 
 
@@ -79,18 +82,34 @@
 #define D3DFMT_DXT4 0x34545844
 #define D3DFMT_DXT5 0x35545844
 
+#define D3DFMT_R8G8_B8G8 		0x47424752
+#define D3DFMT_G8R8_G8B8 		0x42475247
+#define D3DFMT_A16B16G16R16 	0x00000024
+#define D3DFMT_Q16W16V16U16		0x0000006E
+#define D3DFMT_R16F				0x0000006F
+#define D3DFMT_G16R16F			0x00000070
+#define D3DFMT_A16B16G16R16F	0x00000071
+#define D3DFMT_R32F				0x00000072
+#define D3DFMT_G32R32F 			0x00000073
+#define D3DFMT_A32B32G32R32F 	0x00000074
+#define D3DFMT_UYVY 0x59565955
+#define D3DFMT_YUY2 0x32595559
+#define D3DFMT_CxV8U8			0x00000075
+
+
+
 module akra 
 {
 
 	interface IDDSPixelFormat{
-		ddspf.dwSize :uint;
-        ddspf.dwFlags :uint;
-        ddspf.dwFourCC :uint;
-        ddspf.dwRGBBitCount :uint;
-        ddspf.dwRBitMask :uint;
-        ddspf.dwGBitMask :uint;
-        ddspf.dwBBitMask :uint;
-        ddspf.dwABitMask :uint;
+		dwSize :uint;
+        dwFlags :uint;
+        dwFourCC :uint;
+        dwRGBBitCount :uint;
+        dwRBitMask :uint;
+        dwGBitMask :uint;
+        dwBBitMask :uint;
+        dwABitMask :uint;
 	}
 	
 	interface IDDSHeader{
@@ -101,7 +120,7 @@ module akra
         dwPitchOrLinearSize: uint;
         dwDepth: uint;
         dwMipMapCount: uint;
-        dwReserved1: uint[11];
+        dwReserved1: uint[]; /*Count 11*/
 
         ddspf:IDDSPixelFormat;   
 
@@ -112,14 +131,23 @@ module akra
         dwReserved2 : uint;
 	}
 
-	export class DDSCodec extends ImageCodec implements IDDSCodec
-	{
-		private _sType:String="dds";
-		private static _pInstance:DDSCodec:
+	interface IDDSHeaderDXT10{
+		dxgiFormat: uint;
+		resourceDimension:uint;
+		miscFlag:uint;
+		arraySize:uint;
+		reserved:uint;
+	}
 
-		magicNumberToFileExt(pMagicNumber: Uint8Array):String
+
+	export class DDSCodec extends ImgCodec implements IDDSCodec
+	{
+		private _sType:string="dds";
+		private static _pInstance:IDDSCodec=null;
+
+		magicNumberToFileExt(pMagicNumber: Uint8Array):string
 		{
-			var dwMagic4:uint = (new Uint32Array(pMagicNumber, 0, 1))[0];
+			var dwMagic4:uint = (new Uint32Array(pMagicNumber.buffer, 0, 1))[0];
 			if(DDS_MAGIC==dwMagic4)
 			{
 				return "dds";
@@ -131,9 +159,9 @@ module akra
 		/// Static method to startup and register the DDS codec
 		static startup():void
 		{
-			if(!isDef(this._pInstance))
+			if(!isDefAndNotNull(this._pInstance))
 			{
-				LOG(,"DDS codec registering");
+				LOG("DDS codec registering");
 				this._pInstance=new DDSCodec();
 				Codec.registerCodec(this._pInstance);
 			}
@@ -148,18 +176,18 @@ module akra
 			}
 		}
 
-		getType():String 
+		getType():string 
     	{
         	return this._sType;
     	}
 
-    	decode(pData: Uint8Array, pImgData: IImageData):Uint8Array
+    	decode(pData: Uint8Array, pImgData: IImgData):Uint8Array
     	{
     		var iOffset:uint=0;
-    		var dwMagic4:uint = (new Uint32Array(pData, 0, 1))[0];
+    		var dwMagic4:uint = (new Uint32Array(pData.buffer, 0, 1))[0];
     		if(dwMagic4!=DDS_MAGIC)
     		{
-    			CRITICAL_ERROR(,"This is not a DDS file! DDSCodec.decode");
+    			CRITICAL_ERROR("This is not a DDS file! DDSCodec.decode");
     		}
     		//Считываем dds header
             /*typedef struct {
@@ -179,9 +207,9 @@ module akra
              DWORD           dwReserved2;
              } DDS_HEADER;*/
 
-    		var pDDSHeader:Uint32Array = new Uint32Array(pData, 4, 31);
+    		var pDDSHeader:Uint32Array = new Uint32Array(pData.buffer, 4, 31);
 
-    		var pHeader:IDDSHeader;
+    		var pHeader:IDDSHeader=<IDDSHeader>{};
 
     		pHeader.dwSize = pDDSHeader[0];
             pHeader.dwFlags = pDDSHeader[1];
@@ -190,6 +218,7 @@ module akra
             pHeader.dwPitchOrLinearSize = pDDSHeader[4];
             pHeader.dwDepth = pDDSHeader[5];
             pHeader.dwMipMapCount = pDDSHeader[6];
+            pHeader.dwReserved1=[];
             pHeader.dwReserved1[0] = pDDSHeader[7];
             pHeader.dwReserved1[1] = pDDSHeader[8];
             pHeader.dwReserved1[2] = pDDSHeader[9];
@@ -211,6 +240,7 @@ module akra
              DWORD dwBBitMask;
              DWORD dwABitMask;
              };*/
+            pHeader.ddspf=<IDDSPixelFormat>{};
             pHeader.ddspf.dwSize = pDDSHeader[18];
             pHeader.ddspf.dwFlags = pDDSHeader[19];
             pHeader.ddspf.dwFourCC = pDDSHeader[20];
@@ -226,22 +256,22 @@ module akra
             pHeader.dwReserved2 = pDDSHeader[30];
             iOffset += 128;
             if (pHeader.dwSize != 124) {
-                    ERROR(,"Размер заголовка DDS всегда должэен равняться 124");
+                    ERROR("Размер заголовка DDS всегда должэен равняться 124");
             }
             if(pHeader.ddspf.dwSize!= 32){
-            	ERROR(,"Размер DDS_PIXELFORMAT всегда должен равняться 32");
+            	ERROR("Размер DDS_PIXELFORMAT всегда должен равняться 32");
             }
             if (!(pHeader.dwFlags & DDSD_CAPS)) {
-                ERROR(,"Флаг DDSD_CAPS в заголовке DDS всегда должен быть");
+                ERROR("Флаг DDSD_CAPS в заголовке DDS всегда должен быть");
             }
             if (!(pHeader.dwFlags & DDSD_HEIGHT)) {
-                ERROR(,"Флаг DDSD_HEIGHT в заголовке DDS всегда должен быть");
+                ERROR("Флаг DDSD_HEIGHT в заголовке DDS всегда должен быть");
             }
             if (!(pHeader.dwFlags & DDSD_WIDTH)) {
-                ERROR(,"Флаг DDSD_WIDTH в заголовке DDS всегда должен быть");
+                ERROR("Флаг DDSD_WIDTH в заголовке DDS всегда должен быть");
             }
             if (!(pHeader.dwFlags & DDSD_PIXELFORMAT)) {
-                ERROR(,"Флаг DDSD_PIXELFORMAT в заголовке DDS всегда должен быть");
+                ERROR("Флаг DDSD_PIXELFORMAT в заголовке DDS всегда должен быть");
             }
 
             pImgData.width=pHeader.dwWidth;
@@ -250,15 +280,15 @@ module akra
             var nFace:uint=1;
 
             if (pHeader.dwFlags & DDSD_MIPMAPCOUNT) {
-                pImgData.nMipMap = pHeader.dwMipMapCount;
-                if ((me._iWidth >>> (nMipMap - 1)) != 1 || (me._iHeight >>> (nMipMap - 1)) != 1) {
-                WARNING(,"Количество мипмапов не такое чтобы уменьшить размер картинки до 1x1"
-                            + nMipMap + "," + me._iWidth + "x" + me._iHeight + ")");
+                pImgData.numMipMaps = pHeader.dwMipMapCount;
+                if ((pHeader.dwWidth >>> (pHeader.dwMipMapCount - 1)) != 1 || (pHeader.dwHeight >>> (pHeader.dwMipMapCount - 1)) != 1) {
+                WARNING("Количество мипмапов не такое чтобы уменьшить размер картинки до 1x1"
+                            + pHeader.dwMipMapCount + "," + pHeader.dwWidth + "x" + pHeader.dwHeight + ")");
 
             	}
             }
             else{
-                pImgData.nMipMap = 0;
+                pImgData.numMipMaps = 0;
             }
             
 
@@ -266,71 +296,72 @@ module akra
 
             if (pHeader.dwCaps2 & DDSCAPS2_CUBEMAP)
 			{
-				imgData.flags |= CUBEMAP;
+				pImgData.flags |=  EImageFlags.CUBEMAP;
 				nFace=0;
                 if (pHeader.dwCaps2 & DDSCAPS2_CUBEMAP_POSITIVEX) {
                     nFace++;
-                    pImgData.cubeFlags|=POSITIVEX;
+                    pImgData.cubeFlags|=EImageCubeFlags.POSITIVE_X;
                 }
                 if (pHeader.dwCaps2 & DDSCAPS2_CUBEMAP_NEGATIVEX) {
                     nFace++;
-                    pImgData.cubeFlags|=NEGATIVEX;
+                    pImgData.cubeFlags|=EImageCubeFlags.NEGATIVE_X;
                 }
                 if (pHeader.dwCaps2 & DDSCAPS2_CUBEMAP_POSITIVEY) {
                     nFace++;
-                    pImgData.cubeFlags|=POSITIVEY;
+                    pImgData.cubeFlags|=EImageCubeFlags.POSITIVE_Y;
                 }
                 if (pHeader.dwCaps2 & DDSCAPS2_CUBEMAP_NEGATIVEY) {
                     nFace++;
-                    pImgData.cubeFlags|=NEGATIVEY;
+                    pImgData.cubeFlags|=EImageCubeFlags.NEGATIVE_Y;
                 }
                 if (pHeader.dwCaps2 & DDSCAPS2_CUBEMAP_POSITIVEZ) {
                     nFace++;
-                    pImgData.cubeFlags|=POSITIVEZ;
+                    pImgData.cubeFlags|=EImageCubeFlags.POSITIVE_Z;
                 }
                 if (pHeader.dwCaps2 & DDSCAPS2_CUBEMAP_NEGATIVEZ) {
                     nFace++;
-                    pImgData.cubeFlags|=NEGATIVEZ;
+                    pImgData.cubeFlags|=EImageCubeFlags.NEGATIVE_Z;
                 }
 
                 if(nFace==0){
-                	WARNING(,"Выставлен фдлаг с кубической текстурой, а самих текстур нету");
+                	WARNING("Выставлен фдлаг с кубической текстурой, а самих текстур нету");
                 }
 			}
 			
 			if (pHeader.dwCaps2 & DDSCAPS2_VOLUME)
 			{
-				imgData.flags |= 3D_TEXTURE;
-				imgData.depth = pHeader.dwDepth;
+				pImgData.flags|=EImageFlags.TEXTURE_3D;
+				pImgData.depth= pHeader.dwDepth;
 			}
 
-			var eSourceFoemat:EPixelFormat=UNKNOWN;
+			var eSourceFormat:EPixelFormats=EPixelFormats.UNKNOWN;
+
 			if (pHeader.ddspf.dwFlags & DDPF_FOURCC) {
 				if (pHeader.ddspf.dwFourCC == D3DFMT_DXT1) {
-				    eSourceFoemat = DXT1;
+				    eSourceFormat = EPixelFormats.DXT1;
 				}
 				else if (pHeader.ddspf.dwFourCC == D3DFMT_DXT2) {
-				    eSourceFoemat = DXT1;
+				    eSourceFormat = EPixelFormats.DXT1;
 				}
 				else if (pHeader.ddspf.dwFourCC == D3DFMT_DXT3) {
-				    eSourceFoemat = DXT3;
+				    eSourceFormat = EPixelFormats.DXT3;
 				}
 				else if (pHeader.ddspf.dwFourCC == D3DFMT_DXT4) {
-				    eSourceFoemat = DXT4;
+				    eSourceFormat = EPixelFormats.DXT4;
 				}
 				else if (pHeader.ddspf.dwFourCC == D3DFMT_DXT5) {
-				    eSourceFoemat = DXT5;
+				    eSourceFormat = EPixelFormats.DXT5;
 				}
 				else if (pHeader.ddspf.dwFourCC == D3DFMT_DX10) {
-				    var pDDS10Header:Uint32Array = new Uint32Array(pData, 128, 5);
-				    var header10:Object = {};
+				    var pDDS10Header:Uint32Array = new Uint32Array(pData.buffer, 128, 5);
+				    var header10:IDDSHeaderDXT10 = <IDDSHeaderDXT10>{};
 				    header10.dxgiFormat = pDDS10Header[0];
 				    header10.resourceDimension = pDDS10Header[1];
 				    header10.miscFlag = pDDS10Header[2];
 				    header10.arraySize = pDDS10Header[3];
 				    header10.reserved = pDDS10Header[4];
 
-				    CRITICAL_ERROR(,"Формат D3DFMT_DX10 не поддерживается");
+				    CRITICAL_ERROR("Формат D3DFMT_DX10 не поддерживается");
 				    /*console.log("dxgiFormat",header10.dxgiFormat);
 				     console.log("resourceDimension",header10.resourceDimension);					
 				     nCubeMap=1;
@@ -347,89 +378,97 @@ module akra
 				}
 				else if(pHeader.ddspf.dwFourCC == D3DFMT_R16F)
 				{
-					eSourceFoemat=FLOAT16_R;
+					eSourceFormat=EPixelFormats.FLOAT16_R;
 				}
 				else if(pHeader.ddspf.dwFourCC == D3DFMT_G16R16F)
 				{
-					eSourceFoemat=FLOAT16_GR;
+					eSourceFormat=EPixelFormats.FLOAT16_GR;
 				}
 				else if(pHeader.ddspf.dwFourCC == D3DFMT_A16B16G16R16F)
 				{
-					eSourceFoemat=FLOAT16_RGBA;
+					eSourceFormat=EPixelFormats.FLOAT16_RGBA;
 				}
 				else if(pHeader.ddspf.dwFourCC == D3DFMT_R32F)
 				{
-					eSourceFoemat=FLOAT32_R;
+					eSourceFormat=EPixelFormats.FLOAT32_R;
 				}
 				else if(pHeader.ddspf.dwFourCC == D3DFMT_G32R32F)
 				{
-					eSourceFoemat=FLOAT32_GR;
+					eSourceFormat=EPixelFormats.FLOAT32_GR;
 				}
 				else if(pHeader.ddspf.dwFourCC == D3DFMT_A32B32G32R32F)
 				{
-					eSourceFoemat=FLOAT32_RGBA;
+					eSourceFormat=EPixelFormats.FLOAT32_RGBA;
 				}
 				else {
-				    CRITICAL_ERROR(,"Флаг DDPF_FOURCC стоит, а подходящего dwFourCC нет");
+				    CRITICAL_ERROR("Флаг DDPF_FOURCC стоит, а подходящего dwFourCC нет");
 				}
 			}
 			else if(pHeader.ddspf.dwFlags & DDPF_RGB)
 			{
-				var iAMask=pHeader.ddspf.dwFlags & DDPF_ALPHAPIXELS ? header.pixelFormat.alphaMask:0;
-				for (var ePF:ePixelFormat = PUNKNOWN + 1; ePF < PCOUNT; ePF++)
+				var iAMask=pHeader.ddspf.dwFlags & DDPF_ALPHAPIXELS ? pHeader.ddspf.dwABitMask:0;
+				var ePF:EPixelFormats;
+				for (ePF= EPixelFormats.UNKNOWN + 1; ePF < EPixelFormats.TOTAL; ePF++)
 				{
 
-					if (PixelUtil.getNumElemBits(ePF) == pHeader.ddspf.dwRGBBitCount)
+					if (pixelUtil.getNumElemBits(ePF) == pHeader.ddspf.dwRGBBitCount)
 					{
-						var pTestMasks:uint[4]=PixelUtil.getBitMasks(ePF);
-						var pTestBits:uint[4]=PixelUtil.getBitDepths(ePF);
+						var pTestMasks:uint[]=pixelUtil.getBitMasks(ePF);
+						var pTestBits:uint[]=pixelUtil.getBitDepths(ePF);
 
-						if (pTestMasks[0] == dwRBitMask && pTestMasks[1] == dwGBitMask &&
-							pTestMasks[2] == dwBBitMask && 
+						if (pTestMasks[0] == pHeader.ddspf.dwRBitMask && pTestMasks[1] == pHeader.ddspf.dwGBitMask &&
+							pTestMasks[2] == pHeader.ddspf.dwBBitMask && 
 							// for alpha, deal with 'X8' formats by checking bit counts
 							(pTestMasks[3] == iAMask || (iAMask == 0 && pTestBits[3] == 0)))
 						{
-							return ePF;
+							break;
 						}
 					}
 
 				}
-				CRITICAL_ERROR(, "Cannot determine pixel format. DDSCodec.decode");
+				if(ePF==EPixelFormats.TOTAL)
+				{
+					CRITICAL_ERROR( "Cannot determine pixel format. DDSCodec.decode");
+				}
+				else
+				{
+					eSourceFormat=ePF;
+				}
 			}
 			
 
 
-			if (PixelUtil.isCompressed(eSourceFormat))
+			if (pixelUtil.isCompressed(eSourceFormat))
 			{				
-				imgData.flags |= COMPRESSED;
-				if (!pHeader.dwFlags & DDS_HEADER_FLAGS_LINEARSIZE) {
-                    CRITICAL_ERROR(,"У сжатой текстуры не выставлен флаг DDS_HEADER_FLAGS_LINEARSIZE в заголовке");
+				pImgData.flags |= EImageFlags.COMPRESSED;
+				if (!(pHeader.dwFlags & DDSD_LINEARSIZE)) {
+                    CRITICAL_ERROR("У сжатой текстуры не выставлен флаг DDS_HEADER_FLAGS_LINEARSIZE в заголовке");
                 }
 			}
 			else
 			{
-				if (pHeader.dwFlags & DDS_HEADER_FLAGS_LINEARSIZE) {
+				if (pHeader.dwFlags & DDSD_LINEARSIZE) {
                 	CRITICAL_ERROR("У несжатой текстуры выставлен флаг DDS_HEADER_FLAGS_LINEARSIZE в заголовке");
             	}
 			}
 
-			imgData.format = eSourceFormat;
-			var pOutput:Uint8Array=new Uint8Array(imgData.size)
+			pImgData.format = eSourceFormat;
+			var pOutput:Uint8Array=new Uint8Array(pImgData.size)
 			var iOutputOffset:uint=0;
 
-			for(var i:uint;i<nFace;i++)
+			for(var i:uint=0;i<nFace;i++)
 			{
 				var iWidth:uint=pImgData.width;
 				var iHeight:uint=pImgData.height;
 				var iDepth:uint=pImgData.depth;
 
-				for(iMip:uint;iMip<=imgData.nMipMaps;iMip++)
+				for(var iMip:uint=0;iMip<=pImgData.numMipMaps;iMip++)
 				{
 					var iDstPitch:uint;
 					
-					if(PixelUtil.isCompressed(imgData.format))
+					if(pixelUtil.isCompressed(pImgData.format))
 					{
-						var iDXTSize:uint=PixelUtil.getMemorySize(iWidth, iHeight, iDepth, pImgData.format);
+						var iDXTSize:uint=pixelUtil.getMemorySize(iWidth, iHeight, iDepth, pImgData.format);
 						for(var a:uint=0;a<iDstPitch;a++)
 						{
 							pOutput[a+iOutputOffset]=pData[iOffset+a];
@@ -441,7 +480,7 @@ module akra
 					}
 					else
 					{
-						iDstPitch=iWidth*PixelUtil.getNumElemBytes(imgData.format);
+						iDstPitch=iWidth*pixelUtil.getNumElemBytes(pImgData.format);
 						var iSrcPitch:uint=0;
 						if (pHeader.dwFlags & DDSD_PITCH)
 						{
@@ -454,7 +493,7 @@ module akra
 						}
 						if (iSrcPitch<iDstPitch)
 						{
-							WARNING(,"Странный размер питча у картинки")
+							WARNING("Странный размер питча у картинки")
 						}
 												
 						for (var z:uint = 0; z < pImgData.depth; z++)
@@ -500,5 +539,4 @@ module akra
 }
 
 
-
-	#endif
+#endif

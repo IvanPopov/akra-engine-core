@@ -35,6 +35,9 @@ module akra {
         BYTE_BGR = B8G8R8,      /*3 byte pixel format, 1 byte for blue, 1 byte for green, 1 byte for red*/
         BYTE_BGRA = B8G8R8A8,   /*4 byte pixel format, 1 byte for blue, 1 byte for green, 1 byte for red and one byte for alpha*/
         BYTE_RGBA = R8G8B8A8,   /*4 byte pixel format, 1 byte for red, 1 byte for green, 1 byte for blue, and one byte for alpha*/
+
+        BYTE_ABGR = A8B8G8R8,   
+        BYTE_ARGB = A8R8G8B8,   
         
         A2R10G10B10 = 15,      /*32-bit pixel format, 2 bits for alpha, 10 bits for red, green and blue.*/
         A2B10G10R10 = 16,      /*32-bit pixel format, 10 bits for blue, green and red, 2 bits for alpha.*/
@@ -54,8 +57,15 @@ module akra {
         FLOAT16_GR = 35,       /*32-bit, 2-channel s10e5 floating point pixel format, 16-bit green, 16-bit red*/
         FLOAT32_GR = 36,       /*64-bit, 2-channel floating point pixel format, 32-bit green, 32-bit red*/ 
         
-        DEPTH = 29,            /*Float Depth texture format*/
-        DEPTH_BYTE = 44,       /*Byte Depth texture format */
+        FLOAT32_DEPTH = 29,            /*Float Depth texture format*/
+        DEPTH8 = 44,
+        BYTE_DEPTH = DEPTH8,       /*Byte Depth texture format */
+        
+        DEPTH16 = 45,
+        SHORT_DEPTH = DEPTH16,      
+        DEPTH32 = 46,
+        DEPTH24STENCIL8=47,
+            
         
         SHORT_RGBA = 30,       /*64-bit pixel format, 16 bits for red, green, blue and alpha*/
         SHORT_GR = 34,         /*32-bit pixel format, 16-bit green, 16-bit red*/
@@ -68,7 +78,7 @@ module akra {
         
         R8 = 42,               /*8-bit pixel format, all bits red.*/
         RG8 = 43,              /*16-bit pixel format, 8 bits red, 8 bits green.*/
-        TOTAL = 45    
+        TOTAL = 48    
     };
 
     export interface PixelFormatList {
@@ -94,7 +104,8 @@ module akra {
         NATIVEENDIAN    = 0x00000010,
         // This is an intensity format instead of a RGB one. The luminance
         // replaces R,G and B. (but not A)
-        LUMINANCE       = 0x00000020
+        LUMINANCE       = 0x00000020,
+        STENCIL         = 0x00000040
     }
 
     /** Pixel component format */
@@ -102,9 +113,10 @@ module akra {
     {
         BYTE = 0,    /*Byte per component (8 bit fixed 0.0..1.0)*/
         SHORT = 1,   /*Short per component (16 bit fixed 0.0..1.0))*/
-        FLOAT16 = 2, /*16 bit float per component*/
-        FLOAT32 = 3, /*32 bit float per component*/
-        COUNT = 4    /*Number of pixel types*/
+        INT = 2,
+        FLOAT16 = 3, /*16 bit float per component*/
+        FLOAT32 = 4, /*32 bit float per component*/
+        COUNT = 5    /*Number of pixel types*/
     };
 
     export enum EFilters {

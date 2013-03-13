@@ -1024,6 +1024,7 @@ interface WEBGL_fbo_color_attachments {
 #define GL_UNSIGNED_INT                   0x1405
 #define GL_FLOAT                          0x1406
 #define GL_UNSIGNED_INT_8_8_8_8_REV       0x8367
+#define GL_UNSIGNED_INT_24_8_WEBGL        0x8367
 
 /* PixelFormat */
 #define GL_DEPTH_COMPONENT                0x1902

@@ -18,12 +18,12 @@ module akra
 	};
 
     export enum EImageCubeFlags{
-        POSITIVEX = 0x00000001,
-        NEGATIVEX = 0x00000002,            
-        POSITIVEY = 0x00000004,
-        NEGATIVEY = 0x00000008,
-        POSITIVEZ = 0x0000000c,
-        NEGATIVEZ = 0x000000010,
+        POSITIVE_X = 0x00000001,
+        NEGATIVE_X = 0x00000002,            
+        POSITIVE_Y = 0x00000004,
+        NEGATIVE_Y = 0x00000008,
+        POSITIVE_Z = 0x0000000c,
+        NEGATIVE_Z = 0x000000010,
         };
 
     export interface IImg extends IResourcePoolItem {
@@ -48,9 +48,9 @@ module akra
     	flipX(pDest?: IImg): IImg;
 
 
-    	load(sFileName: string,  fnCallBack: Function): IImg;
-    	load(pData: Uint8Array, sType:string,  fnCallBack: Function): IImg;
-        load(pCanvas: HTMLCanvasElement, fnCallBack: Function): IImg;
+    	load(sFileName: string,  fnCallBack?: Function): IImg;
+    	load(pData: Uint8Array, sType:string,  fnCallBack?: Function): IImg;
+        load(pCanvas: HTMLCanvasElement, fnCallBack?: Function): IImg;
 
 
     	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth?: uint, eFormat?: EPixelFormats, nFaces?: uint, nMipMaps?: uint): IImg;

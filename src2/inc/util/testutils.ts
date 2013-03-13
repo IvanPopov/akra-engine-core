@@ -10,9 +10,9 @@ module akra.util {
 		return null;
 	}
 
-	window.alert = function(message?: string): void {
+	/*window.alert = function(message?: string): void {
 		console.warn("alert > " + message);
-	}
+	}*/
 
 	window.confirm = function (message?: string): bool {
 		console.warn("confirm > " + message);
@@ -100,7 +100,10 @@ module akra.util {
 
 
 	function output(sText: string): void {
-		document.body.innerHTML += sText;
+		var pElement = document.createElement("div");
+		pElement.innerHTML = sText;
+		document.body.appendChild(pElement);
+		
 	}
 
 	export function check(...pArgv: any[]): void {

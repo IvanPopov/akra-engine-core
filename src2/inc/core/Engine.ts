@@ -12,6 +12,7 @@
 #include "pool/ResourcePoolManager.ts"
 #include "scene/SceneManager.ts"
 #include "util/UtilTimer.ts"
+#include "pixelUtil/DDSCodec.ts"
 
 //include sub creation classes.
 
@@ -20,6 +21,7 @@
 #include "util/BufferMap.ts"
 #include "animation/AnimationController.ts"
 #include "model/Skeleton.ts"
+
 
 #ifdef WEBGL
 #include "webgl/WebGLRenderer.ts"
@@ -47,7 +49,15 @@ module akra.core {
 
 		constructor () {
 			this._pResourceManager = new pool.ResourcePoolManager(this);
+			if (!this._pResourceManager.initialize()) {
+				debug_error('cannot initialize ResourcePoolManager');
+			}
+
 			this._pSceneManager = new scene.SceneManager(this);
+			if (!this._pSceneManager.initialize()) {
+				debug_error("cannot initialize SceneManager");
+			}
+
 			this._pParticleManager = null;
 
 #ifdef WEBGL
@@ -56,15 +66,10 @@ module akra.core {
 			CRITICAL("render system not specified");
 #endif
 
-
-			if (!this._pResourceManager.initialize()) {
-				debug_error('cannot initialize ResourcePoolManager');
-			}
-
-			if (!this._pSceneManager.initialize()) {
-				debug_error("cannot initialize SceneManager");
-			}
-
+			// Register image codecs
+			DDSCodec.startup();
+			
+			
 			this._pTimer = util.UtilTimer.start();
 			this.pause(false);
 		}

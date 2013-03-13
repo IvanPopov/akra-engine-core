@@ -133,7 +133,7 @@ module akra.core.pool.resources {
 		}
 
 
-		create(iWidth: uint, iHeight: uint, iDepth?: uint = 1, eFormat?: EPixelFormats = EPixelFormats.BYTE_RGBA, 
+		create(iWidth: uint, iHeight: uint, iDepth?: uint = 1, eFormat?: EPixelFormats = EPixelFormats.BYTE_ABGR, 
                          nFaces?: uint = 1, nMipMaps?: uint = 0): IImg 
         {
             var iSize : uint= Img.calculateSize(nMipMaps, nFaces, iWidth, iHeight, iDepth, eFormat);            
@@ -176,12 +176,12 @@ module akra.core.pool.resources {
     		return this;
     	}
 
-        load(sFileName: string,  fnCallBack: Function): IImg;
-        load(pData: Uint8Array, sType:string,  fnCallBack: Function): IImg;
-        load(pCanvas: HTMLCanvasElement, fnCallBack: Function): IImg;
+        load(sFileName: string,  fnCallBack?: Function): IImg;
+        load(pData: Uint8Array, sType:string,  fnCallBack?: Function): IImg;
+        load(pCanvas: HTMLCanvasElement, fnCallBack?: Function): IImg;
 
 
-    	load(pData: any, sType: any, fnCallBack?: Function): IImg 
+    	load(pData: any, sType?: any, fnCallBack?: Function): IImg 
         {
             var pMe:IImg=this;
 
@@ -190,18 +190,18 @@ module akra.core.pool.resources {
                 var pTempContext : CanvasRenderingContext2D = pData.getContext('2d');
                 if (!pTempContext) 
                 {
-                    if (sType) 
+                    if (isDefAndNotNull(sType)) 
                     {
                         sType(false);
                     }
                     return this;
                 }
 
-                var pImageData : ImageData = pTempContext.getImageData(0, 0, pData.heigh, pData.heigh);               
+                var pImageData : ImageData = pTempContext.getImageData(0, 0, pData.width, pData.height);               
                 
-                this.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)),pData.width,pData.height,1,EPixelFormats.BYTE_RGBA);
+                this.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)),pData.width,pData.height);
             
-                if (sType) 
+                if (isDefAndNotNull(sType)) 
                 {
                     sType(true);
                 }
@@ -211,10 +211,52 @@ module akra.core.pool.resources {
             {
 
                 var sExt : string = (new Pathinfo(pData)).ext;
-                io.fopen(pData,"rb").onread=function(pError:Error,pDataInFile:ArrayBuffer)
+                if(sExt=="png" || sExt=="jpg" || sExt=="jpeg" || sExt=="gif" || sExt=="bmp")
+                {
+                    var pImg:HTMLImageElement=new Image();
+
+                    pImg.onload = function()
+                    {
+                        var pTempCanvas: HTMLCanvasElement=<HTMLCanvasElement>document.createElement("canvas");
+                        pTempCanvas.width=pImg.width;
+                        pTempCanvas.height=pImg.height;
+                        var pTempContext : CanvasRenderingContext2D=<CanvasRenderingContext2D>((<any>pTempCanvas).getContext("2d"));                        
+                        pTempContext.drawImage(pImg,0,0);
+                        var pImageData : ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);               
+                
+                        pMe.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)),pImg.width, pImg.height,1,EPixelFormats.BYTE_ABGR);
+
+                        if (isDefAndNotNull(sType)) 
+                        {
+                            sType(true);
+                        }
+
+                    }
+                    pImg.onerror=function()
+                    {
+                        if (isDefAndNotNull(sType)) 
+                        {
+                            sType(false);
+                        }
+                    }
+                    pImg.onabort=function()
+                    {
+                        if (isDefAndNotNull(sType)) 
+                        {
+                            sType(false);
+                        }
+                    }
+                    pImg.src = pData; 
+
+                }
+                else
                 {
 
-                    pMe.load(new Uint8Array(pDataInFile),sExt,sType);
+                    io.fopen(pData,"rb").onread=function(pError:Error,pDataInFile:ArrayBuffer)
+                    {
+
+                        pMe.load(new Uint8Array(pDataInFile),sExt,sType);
+                    }
                 }
 
                 return this;
@@ -246,7 +288,7 @@ module akra.core.pool.resources {
 
                 
 
-                var pImgData:IImgData;
+                var pImgData:IImgData=new ImgData();
 
                 this._pBuffer=pCodec.decode(pData,pImgData);
 
@@ -270,7 +312,7 @@ module akra.core.pool.resources {
     		
     	}
 
-    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint = 1, eFormat: EPixelFormats = EPixelFormats.BYTE_RGBA, bAutoDelete?: bool = false, 
+    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint = 1, eFormat: EPixelFormats = EPixelFormats.BYTE_BGR,
                          nFaces?: uint = 1, nMipMaps?: uint = 0): IImg 
     	{
             var iSize : uint= Img.calculateSize(nMipMaps, nFaces, iWidth, iHeight, iDepth, eFormat);
@@ -281,13 +323,14 @@ module akra.core.pool.resources {
             }
 
             var pBuffer : Uint8Array = new Uint8Array(iSize);
+
             pBuffer.set(pData);
 
             return this.loadDynamicImage(pBuffer, iWidth, iHeight, iDepth, eFormat, nFaces, nMipMaps);
      	}
 
-        loadDynamicImage(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint = 1,
-                         eFormat: EPixelFormats = EPixelFormats.BYTE_RGBA, nFaces?: uint = 1, nMipMaps?: uint = 0): IImg 
+        loadDynamicImage(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth?: uint = 1,
+                         eFormat?: EPixelFormats = EPixelFormats.BYTE_BGR, nFaces?: uint = 1, nMipMaps?: uint = 0): IImg 
         {
             //size
             this._iWidth=iWidth;
@@ -311,7 +354,8 @@ module akra.core.pool.resources {
             {
                 this._iFlags |= EImageFlags.CUBEMAP;
             }
-            else if(nFaces != 6 && nFaces != 1)
+
+            if(nFaces != 6 && nFaces != 1)
             {
                 CRITICAL_ERROR("Number of faces currently must be 6 or 1.\n"+"Img.loadDynamicImage");
             }
@@ -368,19 +412,84 @@ module akra.core.pool.resources {
     	}
 
 
-    	getColorAt(pRval:IColor, x:uint, y: uint, z?:uint=0): IColor
+    	getColorAt(pColor:IColor, x:uint, y: uint, z?:uint=0): IColor
         {
-    		pixelUtil.unpackColour(pRval, this._eFormat, this._pBuffer.subarray(this.getPixelSize()* (z * this._iWidth * this._iHeight + this._iWidth * y + x),this.getPixelSize()));
-            return pRval;
+            var iStart:uint=this.getPixelSize()* (z * this._iWidth * this._iHeight + this._iWidth * y + x);
+    		pixelUtil.unpackColour(pColor, this._eFormat, this._pBuffer.subarray(iStart,iStart+this.getPixelSize()));
+            return pColor;
     	}
 
     	setColorAt(pColor: IColor, x: uint, y: uint, z?: uint=0): void 
         {
-             pixelUtil.packColour(pColor, this._eFormat,this._pBuffer.subarray(this.getPixelSize()* (z * this._iWidth * this._iHeight + this._iWidth * y + x),this.getPixelSize()));
+            var iStart:uint=this.getPixelSize()* (z * this._iWidth * this._iHeight + this._iWidth * y + x);
+            pixelUtil.packColour(pColor, this._eFormat,this._pBuffer.subarray(iStart,iStart+this.getPixelSize()));
     	}
 
-    	getPixels(nFace?: uint, iMipMap?: uint): IPixelBox {
-    		return null;
+    	getPixels(iFace?: uint, iMipMap?: uint): IPixelBox 
+        {
+
+    		// Image data is arranged as:
+            // face 0, top level (mip 0)
+            // face 0, mip 1
+            // face 0, mip 2
+            // face 1, top level (mip 0)
+            // face 1, mip 1
+            // face 1, mip 2
+            // etc
+
+            if(iMipMap > this.numMipMaps){
+                WARNING("Mipmap index out of range");
+                return null;
+            }
+
+            if(iFace >= this.numFaces){
+                WARNING("Face index out of range");
+                return null;
+            }
+                
+            // Calculate mipmap offset and size
+            var pData:Uint8Array = this.getData();
+
+
+            // Base offset is number of full faces
+            var iWidth: uint = this._iWidth;
+            var iHeight: uint = this._iHeight;
+            var iDepth: uint = this._iDepth;
+
+
+            // Figure out the offsets 
+            var iFullFaceSize: uint = 0;
+            var iFinalFaceSize: uint = 0;
+            var iFinalWidth: uint = 0;
+            var iFinalHeight: uint = 0 ;
+            var iFinalDepth: uint = 0;
+            var iMipSize:uint=0;
+            var iOffset:uint = 0;
+
+            for(var iMip:uint=0; iMip <= this.numMipMaps; ++iMip)
+            {
+                if (iMip == iMipMap)
+                {
+                    iFinalFaceSize = iFullFaceSize;
+                    iFinalWidth = iWidth;
+                    iFinalHeight = iHeight;
+                    iFinalDepth = iDepth;
+                    iMipSize = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this.format);
+                }
+                iFullFaceSize += pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this.format);
+
+                /// Half size in each dimension
+                if(iWidth!=1) iWidth /= 2;
+                if(iHeight!=1) iHeight /= 2;
+                if(iDepth!=1) iDepth /= 2;
+            }
+            // Advance pointer by number of full faces, plus mip offset into
+            iOffset += iFace * iFullFaceSize;
+            iOffset += iFinalFaceSize;
+
+            // Return subface as pixelbox
+            var pSrc:IPixelBox=new pixelUtil.PixelBox(iFinalWidth, iFinalHeight, iFinalDepth, this.format, pData.subarray(iOffset,iOffset+iMipSize));
+            return pSrc;
     	}
 
     	scale(pDest: IPixelBox, eFilter?: EFilters): bool {
@@ -406,7 +515,7 @@ module akra.core.pool.resources {
 
             for(iMip=0; iMip<=nMipMaps; iMip++)
             {
-                iSize += pixelUtil.getMemorySize(iWidth, iHeight, iDepth, EPixelFormats)*nFaces; 
+                iSize += pixelUtil.getMemorySize(iWidth, iHeight, iDepth, eFormat)*nFaces; 
                 if(iWidth!=1) iWidth = Math.floor(iWidth/2);
                 if(iHeight!=1) iHeight = Math.floor(iHeight/2);
                 if(iDepth!=1) iDepth = Math.floor(iDepth/2);

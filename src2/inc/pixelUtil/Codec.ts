@@ -14,10 +14,11 @@ module akra
 	{
 		
 
-		private static _pMapCodecs: ICodecMap;
+		private static _pMapCodecs: ICodecMap =<ICodecMap>{};
 
 		static registerCodec(pCodec: ICodec):void
 		{
+
 			if(!isDef(Codec._pMapCodecs[pCodec.getType()]))
 			{
 				Codec._pMapCodecs[pCodec.getType()]=pCodec;
