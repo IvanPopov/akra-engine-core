@@ -240,40 +240,43 @@ module akra.webgl {
 	            // accept a 0 pointer like normal glTexImageXD
 	            // Run through this process for every mipmap to pregenerate mipmap pyramid
  	
- 				//TODO: можем мы можем подать просто null, надо проверить
-	            //var pTmpData: Uint8Array = new Uint8Array(iSize);
-	            //var pEmptyData: Uint8Array;
-	            //var mip: uint = 0;
+ 				
+	            var pTmpData: Uint8Array = new Uint8Array(iSize);
+	            var pEmptyData: Uint8Array;
+	            var mip: uint = 0;
 
 	            for (mip = 0; mip <= this._nMipLevels; mip++) {
-	                //iSize = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this._eFormat);
-
-	                //pEmptyData = pTmpData.subarray(0, iSize);
-
+                    
+	                iSize = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this._eFormat);
+                    console.log(iSize,iWidth, iHeight, iDepth, this._eFormat);
+	                pEmptyData = pTmpData.subarray(0, iSize);
 					switch(this._eTextureType)
                     {
+                        
 						case ETextureTypes.TEXTURE_2D:
+                            console.log("==>");
 	                        pWebGLContext.compressedTexImage2D(GL_TEXTURE_2D, mip, iWebGLFormat,
-	                        								   iWidth, iHeight, 0, null);
+	                        								   iWidth, iHeight, 0, pEmptyData);
+                            console.log("<==");
 	                        break;
 						case ETextureTypes.TEXTURE_CUBE_MAP:
 							var iFace: uint = 0;
 							for(iFace = 0; iFace < 6; iFace++) {
 								pWebGLContext.compressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + iFace, mip, iWebGLFormat,
-																   iWidth, iHeight, 0, null);
+																   iWidth, iHeight, 0, pEmptyData);
 							}
 							break;
 	                    default:
 	                        break;
+                        
 	                };
-
 	                if(iWidth > 1) iWidth = iWidth / 2;
 	                if(iHeight > 1) iHeight = iHeight / 2;
 	                if(iDepth > 1) iDepth = iDepth / 2;
 
 	            }
-	            //pTmpData = null;
-	            //pEmptyData = null;
+	            pTmpData = null;
+	            pEmptyData = null;
 	        }
 	        else {
 	        	var mip: uint = 0;

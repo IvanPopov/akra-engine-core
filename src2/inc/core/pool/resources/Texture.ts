@@ -391,7 +391,7 @@ module akra.core.pool.resources {
             }
 
             // Create the texture
-            
+            console.log(1234);
             this.createInternalTexture(null);
 
             

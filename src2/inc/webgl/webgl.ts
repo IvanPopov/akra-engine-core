@@ -171,7 +171,9 @@ module akra.webgl {
 
 
 	export function getWebGLFormat(eFormat: EPixelFormats): int {
-		switch(eFormat)
+		
+        console.log("getWebGLFormat",eFormat);
+        switch(eFormat)
         {
 			case EPixelFormats.L8:              
             case EPixelFormats.L16:     
@@ -270,7 +272,7 @@ module akra.webgl {
                 return 0;    
 
             default:
-                CRITICAL_ERROR("getWebGLFormat unknown format");
+                WARNING("getWebGLFormat unknown format",eFormat);
                 return 0;    
         }
              

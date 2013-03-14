@@ -404,12 +404,16 @@ module akra
 				    CRITICAL_ERROR("Флаг DDPF_FOURCC стоит, а подходящего dwFourCC нет");
 				}
 			}
-			else if(pHeader.ddspf.dwFlags & DDPF_RGB)
+			else 
 			{
 				var iAMask=pHeader.ddspf.dwFlags & DDPF_ALPHAPIXELS ? pHeader.ddspf.dwABitMask:0;
 				var ePF:EPixelFormats;
 				for (ePF= EPixelFormats.UNKNOWN + 1; ePF < EPixelFormats.TOTAL; ePF++)
 				{
+
+
+					//if(pHeader.ddspf.dwFlags & DDPF_RGB )
+
 
 					if (pixelUtil.getNumElemBits(ePF) == pHeader.ddspf.dwRGBBitCount)
 					{
@@ -426,6 +430,7 @@ module akra
 					}
 
 				}
+
 				if(ePF==EPixelFormats.TOTAL)
 				{
 					CRITICAL_ERROR( "Cannot determine pixel format. DDSCodec.decode");
@@ -438,7 +443,7 @@ module akra
 			
 
 
-			if (pixelUtil.isCompressed(eSourceFormat))
+			/*if (pixelUtil.isCompressed(eSourceFormat))
 			{				
 				pImgData.flags |= EImageFlags.COMPRESSED;
 				if (!(pHeader.dwFlags & DDSD_LINEARSIZE)) {
@@ -450,9 +455,10 @@ module akra
 				if (pHeader.dwFlags & DDSD_LINEARSIZE) {
                 	CRITICAL_ERROR("У несжатой текстуры выставлен флаг DDS_HEADER_FLAGS_LINEARSIZE в заголовке");
             	}
-			}
+			}*/
 
 			pImgData.format = eSourceFormat;
+			console.log("==>",pImgData.format);
 			var pOutput:Uint8Array=new Uint8Array(pImgData.size)
 			var iOutputOffset:uint=0;
 

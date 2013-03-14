@@ -783,12 +783,12 @@ module akra {
 					// DXT formats work by dividing the image into 4x4 blocks, then encoding each
 					// 4x4 block with a certain number of bytes. 
 					case EPixelFormats.DXT1:
-						return ((iWidth + 3) / 4) * ((iHeight + 3) / 4) * 8 * iDepth;
+						return Math.floor((iWidth + 3) / 4) * Math.floor((iHeight + 3) / 4) * 8 * iDepth;
 					case EPixelFormats.DXT2:
 					case EPixelFormats.DXT3:
 					case EPixelFormats.DXT4:
 					case EPixelFormats.DXT5:
-						return ((iWidth + 3) / 4) * ((iHeight + 3) / 4) * 16 * iDepth;
+						return Math.floor((iWidth + 3) / 4) * Math.floor((iHeight + 3) / 4) * 16 * iDepth;
 
 	                // Size calculations from the PVRTC OpenGL extension spec
 	                // http://www.khronos.org/registry/gles/extensions/IMG/IMG_texture_compression_pvrtc.txt

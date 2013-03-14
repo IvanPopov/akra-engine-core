@@ -8,8 +8,8 @@ module akra{
 	test("img tests", () => {
 		var pEngine:IEngine=createEngine();
 		var pRsMg:IResourcePoolManager=pEngine.getResourceManager();
-		var pImg:IImg=pRsMg.createImg();
-		var pTex:webgl.WebGLInternalTexture=<webgl.WebGLInternalTexture>pRsMg.createTexture();
+		var pImg:IImg=pRsMg.createImg("img");
+		var pTex:webgl.WebGLInternalTexture=<webgl.WebGLInternalTexture>pRsMg.createTexture("tex");
 		//shouldBeTrue("create");
 		//ok(isDefAndNotNull(pImg));
 
@@ -34,7 +34,7 @@ module akra{
 			
 
 			
-			pCanvas=document.body.appendChild(pCanvas);
+			pCanvas=<HTMLCanvasElement>document.body.appendChild(pCanvas);
 			pCanvas.width=pImg.width;
 			pCanvas.height=pImg.height;
 			pContext = <CanvasRenderingContext2D>pCanvas.getContext('2d');
@@ -57,6 +57,7 @@ module akra{
 					pData[(iY*pImg.width+iX)*4+3]=pColor.a*255;		 
 				}
 			}
+
 			pContext.putImageData(pImageData, 0, 0);
 			shouldBeTrue("load image(dds)");
 
