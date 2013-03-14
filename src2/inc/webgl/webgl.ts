@@ -171,7 +171,8 @@ module akra.webgl {
 
 
 	export function getWebGLFormat(eFormat: EPixelFormats): int {
-		switch(eFormat)
+	
+        switch(eFormat)
         {
 			case EPixelFormats.L8:              
             case EPixelFormats.L16:     
@@ -270,7 +271,7 @@ module akra.webgl {
                 return 0;    
 
             default:
-                CRITICAL_ERROR("getWebGLFormat unknown format");
+                WARNING("getWebGLFormat unknown format",eFormat);
                 return 0;    
         }
              
@@ -549,37 +550,6 @@ module akra.webgl {
                 //TODO: not supported
                 return EPixelFormats.A8R8G8B8;
         }
-    }
-
-    export function getMaxMipmaps(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats) : int {
-		var iCount: int = 0;
-        if((iWidth > 0) && (iHeight > 0)) 
-        {
-            do {
-                if(iWidth>1)		
-                {
-                    iWidth = iWidth>>>1;
-                }
-                if(iHeight>1)		
-                {
-                    iHeight = iHeight>>>1;
-                }
-                if(iDepth>1)		
-                {
-                    iDepth = iDepth>>>1;
-                }
-                /*
-                 NOT needed, compressed formats will have mipmaps up to 1x1
-                 if(PixelUtil::isValidExtent(width, height, depth, format))
-                 count ++;
-                 else
-                 break;
-                 */
-                
-                iCount ++;
-            } while(!(iWidth === 1 && iHeight === 1 && iDepth === 1));
-        }		
-		return iCount;
     }
 
     export function optionalPO2(iValue: uint) : uint {
