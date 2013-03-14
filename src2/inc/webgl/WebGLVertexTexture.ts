@@ -64,7 +64,7 @@ module akra.webgl {
 
 			super.create(iByteSize, iFlags, pData);
 
-			var pPOTSize: uint[] = math.calcPOTtextureSize(math.ceil(iByteSize / akra.pixelUtil.getNumElemBytes(this._ePixelFormat)));
+			var pPOTSize: uint[] = math.calcPOTtextureSize(math.ceil(iByteSize / pixelUtil.getNumElemBytes(this._ePixelFormat)));
 			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 		    var i: int;

@@ -101,6 +101,10 @@ module akra.scene.light {
 			return this._pShadowCasterCube;
 		};
 
+		inline get isShadowCaster(): bool {
+			return this._bCastShadows;
+		};
+
 		/**
 		 * overridden setter isShadow caster,
 		 * if depth textures don't created then create depth textures
@@ -222,7 +226,7 @@ module akra.scene.light {
 				var v3fNormal: IVec3 = pPlane.normal;
 				var fDistance: float = pPlane.distance;
 
-				if(pPlane.signedDistance(v3fLightPosition) <= 0){
+				if(pPlane.signedDistance(v3fLightPosition) > 0){
 					fDistance = -v3fNormal.dot(v3fLightPosition);
 				}
 

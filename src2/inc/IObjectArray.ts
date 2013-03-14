@@ -22,7 +22,7 @@ module akra {
 		 * Remove all elements from array;
 		 * @param {Bool=false} bRemoveLinks Remove old pointers to data. 
 		 */
-		clear(bQuick?: bool): IObjectArray;
+		clear(bRemoveLinks?: bool): IObjectArray;
 
 		/** Get value of <n> element. */
 		value(n: uint): any;

@@ -116,8 +116,6 @@ module akra.scene {
 		removeMember(pObject: ISceneObject): void{
 			var i:int = this.membersList.indexOf(pObject);
 
-			console.log('position in list ------------>',i);
-
 			// make sure this is one of ours
 			debug_assert(i>=0, "error removing member cannot find member");
 		    
@@ -136,7 +134,6 @@ module akra.scene {
 		 
 		    var pObject: ISceneObject = this.membersList.first;
 		    while(isDefAndNotNull(pObject)){
-		    	console.warn(pObject,pObject.worldBounds);
 		    	pNodeWorldBounds.unionRect(pObject.worldBounds);
 
 		    	pObject = this.membersList.next();

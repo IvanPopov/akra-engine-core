@@ -285,6 +285,7 @@ module akra.geometry{
 		};
 
 		testRect(pRect: IRect3d): bool{
+
 			if(planeClassifyRect3d(this.leftPlane, pRect) == EPlaneClassifications.PLANE_FRONT
 				|| planeClassifyRect3d(this.rightPlane, pRect) == EPlaneClassifications.PLANE_FRONT
 				|| planeClassifyRect3d(this.topPlane, pRect) == EPlaneClassifications.PLANE_FRONT
