@@ -10,7 +10,6 @@ module akra {
 		readonly totalAnimations: int;
 		readonly active: IAnimationBase;
 
-		getEngine(): IEngine;
 		setOptions(eOptions): void;
 		addAnimation(pAnimation: IAnimationBase): bool;
 
@@ -25,7 +24,7 @@ module akra {
 		getAnimation(iAnim: int): IAnimationBase;
 
 		setAnimation(iAnimation: int, pAnimation: IAnimationBase): void;
-		bind(pTarget: ISceneNode): void;
+		attach(pTarget: ISceneNode): void;
 
 		play(pAnimation: string, fRealTime: float): bool;
 		play(pAnimation: int, fRealTime: float): bool;

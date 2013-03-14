@@ -5,9 +5,10 @@
 #include "IAnimationFrame.ts"
 #include "IAnimationBase.ts"
 
+#include "Base.ts"
 
 module akra.animation {
-	export class AnimationContainer extends AnimationBase implements IAnimationContainer {
+	export class Container extends Base implements IAnimationContainer {
 
 		private _bEnable: bool = true;
 		private _fStartTime: float = 0;
@@ -28,8 +29,9 @@ module akra.animation {
 		private _bLeftInfinity: bool = true;
 		private _bRightInfinity: bool = true;
 
-		constructor(pAnimation?: IAnimationBase){
-			super();
+		constructor(pAnimation?: IAnimationBase, sName?: string){
+			super(EAnimationTypes.CONTAINER, sName);
+
 			if (pAnimation) {
 				this.setAnimation(pAnimation);
 			}
@@ -47,7 +49,7 @@ module akra.animation {
 			return this._fTrueTime;
 		}
 
-		getTime(): float {
+		inline get time(): float {
 			return this._fTime;
 		}
 
@@ -55,11 +57,11 @@ module akra.animation {
 			this._fRealTime = fRealTime;
 		    this._fTime = 0;
 
-		    this.onplay(this._fTime);
+		    this.played(this._fTime);
 		}
 
-		stop(): void {
-			this.onstop(this._fTime);
+		inline stop(): void {
+			this.stoped(this._fTime);
 		}
 
 		attach(pTarget: ISceneNode): void {
@@ -68,52 +70,49 @@ module akra.animation {
 		}
 
 		setAnimation(pAnimation: IAnimationBase): void {
-			debug_assert(!this._pAnimation, 'anim. already exists');
+			debug_assert(!this._pAnimation, "anim. already exists");
 
 			this._pAnimation = pAnimation;
 			this.setSpeed(this.speed);
 
-			var me = this;
-
-			/*FIX THIS*/
-			CONNECT(pAnimation, SIGNAL(updateDuration), this, SLOT(setSpeed))
-
-			/*pAnimation.on('updateDuration', function () {
-				me.setSpeed(me.speed);
-			});*/
+			CONNECT(pAnimation, SIGNAL(durationUpdated), this, SLOT(_onDurationUpdate));
 
 			this.grab(pAnimation);
+		}
+
+		_onDurationUpdate(pAnimation: IAnimationBase, fDuration: float): void {
+			this.setSpeed(this.speed);
 		}
 
 		getAnimation(): IAnimationBase {
 			return this._pAnimation;
 		}
 
-		enable(): void {
+		inline enable(): void {
 			this._bEnable = true;
 		}
 
-		disable(): void {
+		inline disable(): void {
 			this._bEnable = false;
 		}
 
-		isEnabled(): bool {
+		inline isEnabled(): bool {
 			return this._bEnable;
 		}
 
-		leftInfinity(bValue: bool): void {
+		inline leftInfinity(bValue: bool): void {
 			this._bLeftInfinity = bValue;
 		}
 
-		rightInfinity(bValue: bool): void {
+		inline rightInfinity(bValue: bool): void {
 			this._bRightInfinity = bValue;
 		}
 
-		setStartTime(fRealTime: float): void {
+		inline setStartTime(fRealTime: float): void {
 			this._fStartTime = fRealTime;
 		}
 
-		getStartTime(): float {
+		inline getStartTime(): float {
 			return this._fStartTime;
 		}
 
@@ -121,26 +120,26 @@ module akra.animation {
 			this._fSpeed = fSpeed;
 			this.duration = this._pAnimation.duration / fSpeed;
 			
-			this.onUpdateDuration();
+			this.durationUpdated(this.duration);
 		}
 
-		getSpeed(): float {
+		inline getSpeed(): float {
 			return this._fSpeed;
 		}
 
-		useLoop(bValue: bool): void {
+		inline useLoop(bValue: bool): void {
 			this._bLoop = bValue;
 		}
 
-		inLoop(): bool {
+		inline inLoop(): bool {
 			return this._bLoop;
 		}
 
-		reverse(bValue: bool): void {
+		inline reverse(bValue: bool): void {
 			this._bReverse = bValue;
 		}
 
-		isReversed(): bool {
+		inline isReversed(): bool {
 			return this._bReverse;
 		}
 
@@ -149,15 +148,15 @@ module akra.animation {
 			this._bPause = bValue;
 		}
 
-		rewind(fRealTime: float): void {
+		inline rewind(fRealTime: float): void {
 			this._fTime = fRealTime;
 		}
 
-		isPaused(): bool {
+		inline isPaused(): bool {
 			return this._bPause;
 		}
 
-		time(fRealTime: float): void{
+		protected calcTime(fRealTime: float): void{
 			if (this._bPause) {
 		    	return;
 		    }
@@ -187,7 +186,7 @@ module akra.animation {
 		    }
 
 		    if (this._fRealTime !== fRealTime) {
-		    	this.time(fRealTime);
+		    	this.calcTime(fRealTime);
 
 		    	this.enterFrame(fRealTime);
 		    	//trace('--->', this.name);
@@ -205,9 +204,7 @@ module akra.animation {
 		}
 
 
-		BROADCAST(onplay, CALL(fTime));
-		BROADCAST(onstop, CALL(fTime));
-		BROADCAST(onUpdateDuration, CALL());
+		BROADCAST(durationUpdated, CALL(fDuration));
 		BROADCAST(enterFrame, CALL(fRealTime));
 	} 
 }

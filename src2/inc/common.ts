@@ -14,7 +14,7 @@
 #define WEBGL 1
 #define LOGGER_API 1
 // #define CRYPTO_API 1
-
+#define GUI 1
 
 #define IFACE(IF) export interface IF {}
 

@@ -7,8 +7,10 @@
 #include "IMesh.ts"
 #include "IRenderDataCollection.ts"
 
-#include "animation/AnimationTrack.ts"
+#include "animation/Track.ts"
 #include "animation/Animation.ts"
+#include "animation/Controller.ts"
+#include "animation/Blend.ts"
 
 #include "../ResourcePoolItem.ts"
 

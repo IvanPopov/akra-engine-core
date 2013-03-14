@@ -6,20 +6,21 @@ module akra {
 	IFACE(IQuat4);
 	IFACE(IVec3);
 	IFACE(IAnimationFrame);
+	
 	export enum EAnimationInterpolations {
 		MATRIX_LINEAR,
 		LINEAR
 	}
 	
 	export interface IAnimationFrame {
-		time: float;
-		weight: float;
+		readonly time: float;
+		readonly weight: float;
 		
-		matrix: IMat4;
+		readonly matrix: IMat4;
 		
-		rotation: IQuat4;
-		scale: IVec3;
-		translation: IVec3;
+		readonly rotation: IQuat4;
+		readonly scale: IVec3;
+		readonly translation: IVec3;
 
 		toMatrix(): IMat4;
 		toMatrixFromMatrix(): IMat4;

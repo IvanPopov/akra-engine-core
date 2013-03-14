@@ -22,7 +22,7 @@
 #include "render/RenderDataCollection.ts"
 #include "model/Mesh.ts"
 #include "util/BufferMap.ts"
-#include "animation/AnimationController.ts"
+#include "animation/Controller.ts"
 #include "model/Skeleton.ts"
 #include "util/DepsManager.ts"
 #include "controls/GamepadMap.ts"
@@ -31,6 +31,10 @@
 
 #ifdef WEBGL
 #include "webgl/WebGLRenderer.ts"
+#endif
+
+#ifdef GUI
+#include "ui/UI.ts"
 #endif
 
 module akra.core {
@@ -282,7 +286,7 @@ module akra.core {
 		}
 
 		inline createAnimationController(iOptions: int = 0): IAnimationController {
-			return animation.createController(this, iOptions);
+			return animation.createController(iOptions);
 		}
 
 		_depsLoaded(pLoader: IDepsManager, pDeps: IDependens): void {

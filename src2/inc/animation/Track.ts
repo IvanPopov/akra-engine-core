@@ -2,20 +2,24 @@
 #define ANIMATIONTRACK_TS
 
 #include "IAnimationTrack.ts"
-#include "model/Skeleton.ts"
-#include "animation/AnimationFrame.ts"
 #include "IScene.ts"
 #include "ISceneNode.ts"
 #include "IMat4.ts"
 
+#include "model/Skeleton.ts"
+#include "Frame.ts"
+
 
 module akra.animation {
-	class AnimationTrack implements IAnimationTrack {
+	class Track implements IAnimationTrack {
 		private _sTarget: string = null;
 		private _pTarget: ISceneNode = null;
 		private _pKeyFrames: IAnimationFrame[] = [];
 		private _eInterpolationType: EAnimationInterpolations = EAnimationInterpolations.MATRIX_LINEAR;
 
+		inline get totalFrames(): uint {
+			return this._pKeyFrames.length;
+		}
 
 		inline get target(): ISceneNode{
 			return this._pTarget;
@@ -45,7 +49,7 @@ module akra.animation {
 		  	var nTotalFrames: int = pKeyFrames.length;
 
 		  	if (arguments.length > 1) {
-		  		pFrame = new animation.AnimationFrame(fTime, pMatrix);
+		  		pFrame = createFrame(fTime, pMatrix);
 		  	}
 		    else {
 		    	pFrame = arguments[0];
@@ -62,7 +66,7 @@ module akra.animation {
 		}
 
 		getKeyFrame(iFrame: int): IAnimationFrame {
-			debug_assert(iFrame < this._pKeyFrames.length, 'iFrame must be less then number of total jey frames.');
+			debug_assert(iFrame < this.totalFrames, 'iFrame must be less then number of total jey frames.');
 
 			return this._pKeyFrames[iFrame];
 		}
@@ -132,7 +136,7 @@ module akra.animation {
 			
 			var pKeys:  IAnimationFrame[] = this._pKeyFrames
 			var nKeys:  int = pKeys.length;
-			var pFrame: IAnimationFrame = animation.animationFrame();
+			var pFrame: IAnimationFrame = animationFrame();
 
 			debug_assert(nKeys > 0, 'no frames :(');
 
@@ -170,7 +174,7 @@ module akra.animation {
 	}
 
 	export function createTrack(sName: string = null): IAnimationTrack {
-		return new AnimationTrack(sName);
+		return new Track(sName);
 	}
 }
 
