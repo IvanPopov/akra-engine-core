@@ -14,7 +14,6 @@ module akra {
 		isMixid(): bool;
 		isParameterUsed(pParam: any, iPass?: uint): bool;
 
-		create(): void;
 		replicable(bValue: bool): void;
 		miscible(bValue: bool): void;
 
@@ -25,6 +24,9 @@ module akra {
 		delComponent(iComponentHandle: int, iShift?: int, iPass?: uint): bool;
 		delComponent(sComponent: string, iShift?: int, iPass?: uint): bool;
 		delComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): bool;
+
+		activate(iShift?: int): bool;
+		deactivate(): bool;
 
 		findParameter(pParam: any, iPass?: uint): any;
 	}

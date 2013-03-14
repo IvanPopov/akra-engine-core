@@ -115,7 +115,7 @@ module akra.render {
 			this._pDefferedColorTextures[1].getBuffer().getRenderTarget().update();
 
 			//render defferred
-			this._pDeferredView.render();	
+			this._pDeferredView.render(null, null);	
 
 			return true;
 		}
@@ -130,10 +130,10 @@ module akra.render {
 					for (var j: int = 0; j < 2; ++ j) {
 						var sMethod: string = "deferred_shading_pass_" + j;
 						var pMethod: IRenderMethod = pRenderable.getRenderMethod(sMethod);
-						var pTechCurr: IRenderTechnique = pRenderable.getTechnique();
+						var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
 						var pTechnique: IRenderTechnique = pRenderable.getTechnique(sMethod);
 
-						if (isNull(pTechnique) || pTechCurr.modified >= pTechnique.modified) {
+						if (isNull(pTechnique) || pTechCurr.modified > pTechnique.modified) {
 							if (!pRenderable.addRenderMethod(pRenderable.getRenderMethod(), sMethod)) {
 								CRITICAL("cannot clone active render method");
 							}

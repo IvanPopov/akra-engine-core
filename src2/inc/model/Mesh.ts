@@ -435,7 +435,6 @@ module akra.model {
                 pMaterial.ambient = new Color(1.0, 1.0, 1.0, 1.0);
                 pMaterial.specular = new Color(1.0, 1.0, 1.0, 1.0);
 
-                pSubMesh.effect.create();
                 pSubMesh.effect.addComponent("akra.system.mesh_texture");
                 pSubMesh.effect.addComponent("akra.system.prepareForDeferredShading");
             }
