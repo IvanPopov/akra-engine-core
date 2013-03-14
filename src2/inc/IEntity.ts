@@ -62,6 +62,8 @@ module akra {
 		childOf(pParent: IEntity): bool;
 		siblingCount(): uint;
 		childCount(): uint;
+		children(): IEntity[];
+		childAt(i: int): IEntity;
 
 		update(): bool;
 		recursiveUpdate(): bool;

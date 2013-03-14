@@ -16,8 +16,8 @@ module akra.ui.graph {
 		protected _iLastConnection: int = 0;
 		protected _isActive: bool = false;
 
-		public $zoneOut: JQuery = null;
-		public $zoneIn: JQuery = null;
+		public _pZoneOut: IUINode = null;
+		public _pZoneIn: IUINode = null;
 
 
 		inline get connectors(): IUIGraphConnector[] {
@@ -31,13 +31,19 @@ module akra.ui.graph {
 		inline get graph(): IUIGraph { return <IUIGraph>this.parent; }
 
 		constructor (pGraph: IUIGraph, eType: EUIGraphNodes = EUIGraphNodes.UNKNOWN) {
-			super(pGraph, null, EUIComponents.GRAPH_NODE);
+			super(getUI(pGraph), null, EUIComponents.GRAPH_NODE);
 			this._eGraphNodeType = eType;
 
 			ASSERT(isComponent(pGraph, EUIComponents.GRAPH), "only graph may be as parent");
+			
+			this.$element.css("position", "absolute");			
+
+			this.attachToParent(pGraph);
 
 			this.init();
 			this.setDraggable();
+
+			this.$element.offset(this.graph.$element.offset());
 		}
 
 		label(): string {
@@ -74,83 +80,69 @@ module akra.ui.graph {
 		}
 
 		private init(): void {
-			var $sides: JQuery = this.$element.find("[side]");
-			this.setRouteAreas($sides);
-		}
+			var pChild: IEntity = this.child;
+			var pNode: IUINode[] = [];
 
-		protected getRouteArea($zone: JQuery, eDirection: EUIGraphDirections = EUIGraphDirections.IN): IUILayout {
-						
-			if (eDirection === EUIGraphDirections.OUT) {
-		
-				var pChild: IEntity = this.child;
-				while (pChild.sibling) {
-					var $layout = (<IUILayout>pChild).$element.parent();
-					if (isLayout(pChild) && $layout[0] == $zone[0]) {
-						console.log("!!!BINGGO!!!!");
-						return <IUILayout>pChild;
-					}
-
-					pChild = pChild.sibling;
+			while(pChild) {
+				if (isLayout(pChild)) {
+					pNode.push(<IUINode>pChild);
 				}
-
+				pChild = pChild.sibling;
 			}
-			//if (eDirection === EUIGraphDirections.OUT) {
-				var pChild: IEntity = this.child;
-				while (pChild.sibling) {
-					if (isLayout(pChild)/* && (!$zone.attr("side") || <IUILayout>pChild).attr("comment") == $zone.attr("side")*/) {
-						return <IUILayout>pChild;
-					}
-					pChild = pChild.sibling;
-				}
-			//}
-			return null;
+
+			this.setRouteAreas(pNode);
 		}
 
-		protected setupOutConnection($zoneOut?: JQuery): void {
-			$zoneOut = $zoneOut || this.$zoneOut;
+		protected getRouteArea(pNode: IUINode, eDirection: EUIGraphDirections = EUIGraphDirections.IN): IUINode {
+						
+			return pNode;
+		}
+
+		protected setupOutConnection(pNode: IUINode): void {
 		    this.graph._readyForConnect(true);
 		    this.graph._setOutputNode(this);
-		    var pLayout: IUILayout = this.getRouteArea($zoneOut, EUIGraphDirections.OUT);
-		    this.addConnector(pLayout);
+		    this.addConnector(this.getRouteArea(pNode, EUIGraphDirections.OUT));
 		}
 
-		setRouteDragAreas($zoneOut: JQuery): void {
-			var pNode: Node = this;
+		setRouteDragAreas(pNode: IUINode[]): void {
+			var pGraphNode: Node = this;
 
-			this.$zoneOut = $zoneOut;
-		
-			$zoneOut.bind({
-		      mousedown: (e: IUIEvent) => { 
-		      	e.stopPropagation();
-		      	return pNode.setupOutConnection($(e.delegateTarget)); 
-		      }
-		    });
+			for (var i: int = 0; i < pNode.length; ++ i) {
+				pNode[i].bind(SIGNAL(mousedown), (pNode: IUINode, e: IUIEvent) => {
+	 				e.stopPropagation();
+	      			pGraphNode.setupOutConnection(pNode); 
+	 			});
+			}
 		}
 
-		setRouteDropAreas($zoneIn: JQuery): void {
-			var pNode: Node = this;
+		setRouteDropAreas(pNode: IUINode[]): void {
+			var pGraphNode: Node = this;
 			var pGraph: IUIGraph = this.graph;
-		    
-		    $zoneIn.bind({
-		    	mouseup: (e: IUIEvent) => { 
-		    		pNode.$zoneIn = $(e.delegateTarget);
-		    		pGraph._readyForConnect(false);
-		    	}
-		   	}); 
-		        
-		    //подсветить все стороны    
-		    $zoneIn.bind({
-		    	mouseover: (e: IUIEvent) => { pGraph._setInputNode(pNode); }
-		   	}); 
+
+		 	for (var i: int = 0; i < pNode.length; ++ i) {
+	 			pNode[i].bind(SIGNAL(mouseup), (pNode: IUINode, e: IUIEvent) => {
+	 				pGraphNode._pZoneIn = pNode;
+	    			pGraph._readyForConnect(false);
+	 			});
+
+	 			pNode[i].bind(SIGNAL(mouseout), (pNode: IUINode, e: IUIEvent) => {
+	 				pGraphNode._pZoneIn = null;
+	    			pGraph._setInputNode(null);
+	 			});
+
+	 			pNode[i].bind(SIGNAL(mouseover), (pNode: IUINode, e: IUIEvent) => {
+	 				pGraph._setInputNode(pGraphNode);
+	 			});
+		 	}
 		}
 
-		setRouteAreas($zoneIn: JQuery, $zoneOut?: JQuery) {
+		setRouteAreas(pIn: IUINode[], pOut?: IUINode[]) {
 			if (arguments.length < 2) {
-				$zoneOut = $zoneIn;
+				pOut = pIn;
 			}
 
-			this.setRouteDragAreas($zoneOut);
-    		this.setRouteDropAreas($zoneIn);
+			this.setRouteDragAreas(pIn);
+    		this.setRouteDropAreas(pOut);
 		}
 
 		grabEvent(iKeyCode: int): void {
@@ -179,13 +171,14 @@ module akra.ui.graph {
 		    this.routing();
 		}
 
-		addConnector(pLayout: IUILayout) {
-			var pConnector: IUIGraphConnector = new Connector(pLayout, this);
-			console.log(pLayout.toString(true));
+		addConnector(pNode: IUINode) {
+
+			var pConnector: IUIGraphConnector = new Connector(pNode, this);
 		    var iConnector: int = UIGRAPH_INVALID_CONNECTION;
 
 		    this.connect(pConnector, SIGNAL(mousedown), SLOT(_onConnectorMouseDown));
-
+		    this.connect(pConnector, SIGNAL(activated), SLOT(_onConnectorActivation));
+		    
 		    for (var i = 0; i < this._pConnectors.length; ++ i) {
 		        if (this._pConnectors[i] === null) {
 		            this._pConnectors[i] = pConnector;
@@ -204,7 +197,7 @@ module akra.ui.graph {
 
 		    pConnector.activate(this.isActive());
 
-		    this.connect(pConnector, SIGNAL(activated), SLOT(_onConnectorActivation));
+		    
 		    this.routing();
 		}
 
@@ -277,7 +270,7 @@ module akra.ui.graph {
 		route(eDirection: EUIGraphDirections, pTarget?): int {
 
 		    if (eDirection === EUIGraphDirections.IN) {
-		        this.addConnector(this.getRouteArea(this.$zoneIn, EUIGraphDirections.IN));    
+		        this.addConnector(this.getRouteArea(this._pZoneIn, EUIGraphDirections.IN));    
 		    }
 
 		    return this._iLastConnection;

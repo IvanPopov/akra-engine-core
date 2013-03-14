@@ -16,16 +16,26 @@
 #include "Checkbox.ts"
 #include "CheckboxList.ts"
 
-#define UIGRAPH
+#define UI_GRAPH
+#define UI_ANIMATION
 
-#ifdef UIGRAPH
+#ifdef UI_GRAPH
 
 #include "graph/Graph.ts"	
 #include "graph/Node.ts"
 #include "graph/Connector.ts"
 #include "graph/Route.ts"
+#include "graph/Controls.ts"
 
 #endif
+
+#ifdef UI_ANIMATION
+
+#include "animation/Controls.ts"
+#include "animation/Graph.ts"
+
+#endif
+
 
 module akra.ui {
 
@@ -67,7 +77,11 @@ module akra.ui {
 		createLayout(type = null, pAttrs: IUILayoutAttributes = null): IUILayout {
 			var pLayout: IUILayout = null;
 			
-			switch (type.toLowerCase()) {
+			if (isString(type)) {
+				type = type.toLowerCase();
+			}
+
+			switch (type) {
 				case "horizontal":
 				case EUILayouts.HORIZONTAL:
 					pLayout = new Horizontal(this);

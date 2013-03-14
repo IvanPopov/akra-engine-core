@@ -41,6 +41,12 @@ module akra.ui {
 			}
 		}
 
+		_applyEntry($entry: JQuery): void {
+			super._applyEntry($entry);
+
+			this.text = $entry.attr("text");
+		}
+
 		protected label(): string {
 			return "Checkbox";
 		}

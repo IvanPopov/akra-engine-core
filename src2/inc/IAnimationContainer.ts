@@ -5,6 +5,7 @@
 
 module akra {
 	IFACE(IAnimationFrame);
+	IFACE(INode);
 
 	export interface IAnimationContainer extends IAnimationBase {
 		readonly animationName: string;

@@ -18,6 +18,16 @@ module akra.ui {
 
 			this.$text = this.$element.find(".label-text");
 			this.$input = this.$element.find(".label-input");
+
+			if (isDefAndNotNull(options) && isString(options.text)) {
+				this.text = <string>options.text;
+			}
+		}
+
+		_applyEntry($entry: JQuery): void {
+			super._applyEntry($entry);
+
+			this.text = $entry.attr("text");
 		}
 
 		protected label(): string {

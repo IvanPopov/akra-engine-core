@@ -18,7 +18,7 @@ module akra.ui {
 	}
 
 	io.ajax({
-		url: "ui/templates/templates.html",
+		url: "ui/templates/components.html",
 		async: false,		
 		success: (sData?: string): void => {
 			loadTemplate(sData);
@@ -30,6 +30,8 @@ module akra.ui {
 	export class Component extends DNDNode implements IUIComponent {
 		protected _eComponentType: EUIComponents;
 		protected _sGenericType: string = null;
+
+		// protected $renderTo: JQuery = null;
 
 		inline get componentType(): EUIComponents { return this._eComponentType; }
 		inline get genericType(): string { return this._sGenericType; }
@@ -64,33 +66,23 @@ module akra.ui {
 				for (var i: int = 0; i < pComponents.length; i ++) {
 					var $component: JQuery = $(pComponents[i]);
 					var sCompType: string = $component.attr("type");
-					var sClasses: string = $component.attr("class");
-					var sHtml: string = $component.attr("text");
 					var sTempTpl: string = TEMPLATES[sCompType] || "";
 
 					TEMPLATES[sCompType] = sTempTpl + $component.html();
 
 					var pComp: Component = <Component>this.ui.createComponent(sCompType);
-					
+
 					if (!pComp.attachToParent(this, false)) {
 						debug_print("try to attach ", pComp, "to parent", this);
 						CRITICAL("cannot assemble template component hierarchy");
 					}
-					
+
 					TEMPLATES[sCompType] = sTempTpl;
 
 					$component.before(pComp.$element);
 					$component.remove();
 					
-
-					if(isDef(sHtml)) {
-						pComp.$element.attr("text", sHtml);
-					}
-
-					if (isDef(sClasses)) {
-						pComp.$element.addClass(sClasses);
-					}
-
+					pComp._applyEntry($component);
 					pComp.rendered();
 				}
 
@@ -101,6 +93,7 @@ module akra.ui {
 					var sLayoutType: string = $layout.attr("type");
 					//var sLayoutType: string = $layout.attr("type");
 					var sAlign: string= $layout.attr("align");
+					var sStyle: string = $layout.attr("style");
 
 					var pLayout: IUIComponent = this.ui.createLayout(sLayoutType/*, {type: sLayoutType}*/);
 
@@ -112,6 +105,7 @@ module akra.ui {
 					$layout.before(pLayout.$element);
 					$layout.remove();
 					pLayout.$element.addClass("layout");
+					pLayout.$element.attr("style", sStyle);
 					pLayout.rendered();
 
 					//pLayout.render();
@@ -122,15 +116,24 @@ module akra.ui {
 				}	
 			}
 
-			if ((pOptions && !!pOptions.show) || !isNull(this.parent)) {
-				this.render();
+			// if ((pOptions && !!pOptions.show) || !isNull(this.parent)) {
+			// 	this.render();
+			// }
+		}
+
+		_applyEntry($entry: JQuery): void {
+			var sClasses: string = $entry.attr("class");
+			var sHtml: string = $entry.attr("text");
+
+			if(isDef(sHtml)) {
+				this.$element.attr("text", sHtml);
+			}
+
+			if (isDef(sClasses)) {
+				this.$element.addClass(sClasses);
 			}
 		}
 
-		destroy(): void {
-
-			super.destroy();
-		}
 
 		inline isGeneric(): bool {
 			return !isNull(this._sGenericType);
@@ -143,6 +146,15 @@ module akra.ui {
 
 			return this.$element;
 		}
+
+		// render(to?): bool {
+		// 	if (!isNull(to) && !isNull(this.$renderTo) && <IEntity>to === this.parent) {
+		// 		to = this.$renderTo;
+		// 		console.log("----->", to);
+		// 	}
+
+		// 	return super.render(to);
+		// }
 
 		setLayout(eType: EUILayouts): bool;
 		setLayout(sType: string): bool;
@@ -175,7 +187,8 @@ module akra.ui {
 		}
 
 		attachToParent(pParent: IUINode, bRender: bool = true): bool {
-			if (isComponent(pParent) && isLayout(pParent.child)) {
+			if (isComponent(pParent) && isLayout(pParent.child) && !isLayout(pParent)) {
+				console.log("redirected to layout ------>", pParent.toString(true));
 				pParent = <IUINode>pParent.child;
 			}
 
@@ -240,7 +253,8 @@ module akra.ui {
 		    }
 
 		 //    if (isDefAndNotNull(pOptions.renderTo)) {
-			// 	this.$renderTo = Component.determRenderTarget(pOptions.renderTo);
+			// 	this.$renderTo = <JQuery>pOptions.renderTo;
+			// 	console.log("renderTo > ", this.$renderTo)
 			// }
 
 			if (isDefAndNotNull(pOptions.dragZone)) {
@@ -304,6 +318,10 @@ module akra.ui {
 		}
 
 		return true;
+	}
+
+	export inline function isGeneric(pEntity: IEntity): bool {
+		return isComponent(pEntity) && (<IUIComponent>pEntity).isGeneric();
 	}
 }
 

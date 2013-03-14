@@ -36,6 +36,7 @@ module akra.animation {
 
 		}
 
+
 		addAnimation(pAnimation: IAnimationBase): bool {
 			if (this.findAnimation(pAnimation.name)) {
 				WARNING("Animation with name <" + pAnimation.name + "> already exists in this controller");
@@ -48,7 +49,10 @@ module akra.animation {
 			this._pActiveAnimation = pAnimation;
 		}
 
-		removeAnimation(): bool {
+		removeAnimation(pAnimation: string): bool;
+		removeAnimation(pAnimation: int): bool;
+		removeAnimation(pAnimation: IAnimationBase): bool;
+		removeAnimation(pAnimation: any): bool {
 			var pAnimation = this.findAnimation(arguments[0]);
 		    var pAnimations = this._pAnimations;
 
@@ -109,7 +113,10 @@ module akra.animation {
 		    }
 		}
 
-		play(pAnimation: IAnimationBase, fRealTime: float): bool {
+		play(pAnimation: string, fRealTime: float): bool;
+		play(pAnimation: int, fRealTime: float): bool;
+		play(pAnimation: IAnimationBase, fRealTime: float): bool;
+		play(pAnimation: any, fRealTime: float): bool {
 			var pAnimationNext: IAnimationBase = this.findAnimation(arguments[0]);
 			var pAnimationPrev: IAnimationBase = this._pActiveAnimation;
 

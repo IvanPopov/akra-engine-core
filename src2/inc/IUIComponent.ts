@@ -40,7 +40,8 @@ module akra {
 		
 		GRAPH,
 		GRAPH_NODE,
-		GRAPH_CONNECTOR
+		GRAPH_CONNECTOR,
+		GRAPH_CONTROLS
 	}
 
 	export interface IUIComponent extends IUIDNDNode {

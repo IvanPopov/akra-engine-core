@@ -20,12 +20,12 @@
 </component>
 
 <component type="GraphControls">
-	<div class="controls"></div>
+	<component type="Controls"/>
 	<component type="Graph"></component>
 </component>
 
 <component type="AnimationControls">
-	<div class="controls"></div>
+	<component type="Controls"/>
 	<component type="AnimationGraph"></component>
 </component>
 
@@ -33,21 +33,21 @@
 	<table class='graph-node-table'>
 		<tr>
 			<td class="graph-node-top" side="top" colspan="3">
-				<layout type="Horizontal" align="center"></layout>
+				<layout type="Horizontal" align="center" style="width: 100%;"/>
 			</td>
 		</tr>
 		<tr>
 			<td class="graph-node-left" side="left">
-				<layout type="Vertical"></layout>
+				<layout type="Vertical" style="width: 100%; min-height: 40px;"/>
 			</td>
 			<td class="graph-node-center"></td>
 			<td class="graph-node-right" side="right">
-				<layout type="Vertical"></layout>
+				<layout type="Vertical" style="width: 100%; min-height: 40px;"/>
 			</td>
 		</tr>
 		<tr>
 			<td class="graph-node-bottom" side="bottom" colspan="3">
-				<layout type="Horizontal" align="center"></layout>
+				<layout type="Horizontal" align="center" style="width: 100%; "/>
 			</td>
 		</tr>
 	</table>
@@ -58,7 +58,7 @@
 	<div class="controls">
 		<component type="Label" text="unknown data"></component>
 	</div>
-	<layout type="Horizontal" align="center"></layout>
+	<layout type="Horizontal" align="center" style="height: 15px;"></layout>
 </component>
 
 <component type="AnimationBlender">
@@ -90,7 +90,7 @@
 </component>
 
 <component type="AnimationPlayer">
-	<layout type="Horizontal" align="center"></layout>
+	<layout type="Horizontal" align="center" style="height: 15px;"></layout>
 	<div class="component-title">Animation Player</div>
 	<div class="controls">
 		<component type="Label" text="Title"></component>
@@ -100,8 +100,8 @@
 		</component>
 		<component type="Checkbox" text="Loop"></component>
 		<component type="Checkbox" text="Reverse"></component>
-		<div>Speed: <component type="Label"></component>x</div>
+		<div>Speed: <component type="Label" text="1"></component>x</div>
 		<component type="Slider"></component>
 	</div>
-	<layout type="Horizontal" align="center"></layout>
+	<layout type="Horizontal" align="center" style="height: 15px;">/layout>
 </component>

@@ -14,10 +14,18 @@ module akra.ui {
 
 		constructor (parent, options?, eType: EUIComponents = EUIComponents.CHECKBOX_LIST) {
 			super(parent, options, eType);
-			this.setLayout(EUILayouts.HORIZONTAL);
 
+			this.setLayout(EUILayouts.HORIZONTAL);
 			this.connect(this.layout, SIGNAL(childAdded), SLOT(_childAdded), EEventTypes.UNICAST);
-			this.connect(this.layout, SIGNAL(childRemoved), SLOT(_childRemoved), EEventTypes.UNICAST);
+			this.connect(this.layout, SIGNAL(childRemoved), SLOT(_childRemoved), EEventTypes.UNICAST);\
+
+			var pChild: IUINode = <IUINode>this.layout.child;
+			while (!isNull(pChild)) {
+				if (isCheckbox(pChild)) {
+					this.addCheckbox(<IUICheckbox>pChild);
+				}
+				pChild = <IUINode>pChild.sibling;
+			}
 		}
 
 		inline hasMultiSelect(): bool {
@@ -43,11 +51,15 @@ module akra.ui {
 			return super.update();
 		}
 
+		protected addCheckbox(pCheckbox: IUICheckbox): void {
+			this._pItems.push(pCheckbox);
+			this.connect(pCheckbox, SIGNAL(changed), SLOT(_changed));
+			this.update();
+		}
+
 		_childAdded(pLayout: IUILayout, pNode: IUINode): void {
 			if (isCheckbox(pNode)) {
-				this._pItems.push(<IUICheckbox>pNode);
-				this.connect(pNode, SIGNAL(changed), SLOT(_changed));
-				this.update();
+				this.addCheckbox(<IUICheckbox>pNode);
 			}
 		}
 

@@ -11,17 +11,14 @@ var pRoot, pControls, pGraph;
 test("ui basics", () => {
 
 	pRoot = new ui.HTMLNode(pUI);
-
 	pRoot.render();
 
 
-	pControls = pUI.createComponent("GraphControls");
-	pGraph = <akra.IUIGraph>pControls.child;
-	pControls.attachToParent(pRoot);
+	pControls = new graph.Controls(pRoot);
+	pGraph = pControls.graph;
+	console.log(pControls.getHTMLElement());
 
 	for (var i: int = 0; i < 3; ++ i) {
 		new graph.Node(pGraph);
 	};
-
-	console.log(pControls.toString(true));
 });

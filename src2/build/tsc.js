@@ -5238,6 +5238,8 @@ var TypeScript;
             }
             var st = funcDecl.bod.members[0];
             var res = st.nodeType == 77 /* Return */  ? (st).returnExpression : st;
+            // console.log (funcDecl.treeViewLabel())
+ 
             emitter.writeToOutput("(");
             emitter.emitJavascript(res, 56 /* OpenParen */ , true);
             emitter.writeToOutput(")");
@@ -6208,7 +6210,8 @@ var TypeScript;
                                     this.writeToOutput(".");
                                 }
                             } else if ((sym.unitIndex != this.checker.locationInfo.unitIndex) || (!this.declEnclosed(sym.declModule))) {
-                                this.writeToOutput(sym.container.name + ".");
+                                var contName = this.inlineEngine.normalizeModuleName(this, sym.container);
+                                this.writeToOutput(contName + ".");
                             }
                         }
                     } else if (sym.container == this.checker.gloMod && TypeScript.hasFlag(sym.flags, 1 /* Exported */ ) && !TypeScript.hasFlag(sym.flags, 8 /* Ambient */ ) && !((sym.isType() || sym.isMember()) && sym.declModule && TypeScript.hasFlag(sym.declModule.modFlags, 8 /* Ambient */ )) && this.emitState.container == 0 /* Prog */  && sym.declAST.nodeType != 73 /* FuncDecl */ ) {

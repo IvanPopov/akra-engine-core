@@ -12,7 +12,8 @@ module akra {
 	}
 
 	export enum EUIGraphTypes {
-		UNKNOWN
+		UNKNOWN,
+		ANIMATION
 	}
 
 	export interface IUIGraph extends IUIComponent {

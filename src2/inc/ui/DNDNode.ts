@@ -30,6 +30,18 @@ module akra.ui {
 			}
 		}
 
+		// mousedown(e: IUIEvent): void {
+		// 	//document.ondragstart        = function() { return false }
+		// 	document.body.onselectstart = function() { return false }
+		// 	super.mousedown(e);
+		// }
+
+		// mouseup(e: IUIEvent): void {
+		// 	//document.ondragstart        = function() { return false }
+		// 	document.body.onselectstart = function() { return false }
+		// 	super.mouseup(e);
+		// }
+
 		
 		inline isDraggable(): bool {
 			return !this.$element.draggable("option", "disabled");

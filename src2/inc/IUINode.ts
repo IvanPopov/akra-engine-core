@@ -32,6 +32,7 @@ module akra {
 		attachToParent(pParent: IUINode): bool;
 		recursiveRender(): void;
 		renderTarget(): JQuery;
+		hasRenderTarget(): bool;
 
 		signal relocated(pNode: IUINode): void;
 	}

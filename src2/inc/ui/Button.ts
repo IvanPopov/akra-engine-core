@@ -11,6 +11,12 @@ module akra.ui {
 
 		constructor (ui, options?, eType: EUIComponents = EUIComponents.BUTTON) {
 			super(ui, options, eType, $("<button />"));
+
+			if (!isNull(options)) {
+				if (isString(options.text)) {
+					this.text = options.text;
+				}
+			}
 		}
 
 		protected inline label(): string {

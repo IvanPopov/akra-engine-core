@@ -126,6 +126,32 @@ module akra.util {
 		    return false;
 		}
 
+		children(): IEntity[] {
+			var pChildren: IEntity[] = [];
+			var pChild: IEntity = this.child;
+			
+			while (!isNull(pChild)) {
+				pChildren.push(pChild);
+				pChild = pChild.sibling;
+			}
+
+			return pChildren;
+		}
+
+		childAt(i: int): IEntity {
+			var pChild: IEntity = this.child;
+			var n: int = 0;
+			
+			while (!isNull(pChild)) {
+				if (n == i) {
+					return pChild;
+				}
+				n ++;
+				pChild = pChild.sibling;
+			}
+
+			return pChild;
+		}
 
 		/**
 		 * Returns the current number of siblings of this object.

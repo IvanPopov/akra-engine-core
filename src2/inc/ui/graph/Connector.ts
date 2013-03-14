@@ -20,7 +20,7 @@ module akra.ui.graph {
 		inline set connection(i: int) { this._iConnection = i; }
 
 		constructor (parent, pNode: IUIGraphNode = null) {
-			super(pNode, null, EUIComponents.GRAPH_CONNECTOR);
+			super(parent, null, EUIComponents.GRAPH_CONNECTOR);
 
 			if (!isNull(pNode)) {
 				this._pGraphNode = pNode;
@@ -66,6 +66,12 @@ module akra.ui.graph {
 		highlight(bToggle: bool = false): void {
 			bToggle? this.$element.addClass("highlight"): this.$element.removeClass("highlight");
 		}
+
+		// destroy(): void {
+		// 	console.log(callStack())
+		// 	super.destroy();
+		// }
+
 
 		BROADCAST(activated, CALL(value));
 

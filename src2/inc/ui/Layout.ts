@@ -13,7 +13,7 @@ module akra.ui {
 
 		constructor (parent, pElement?: HTMLElement, eType?: EUILayouts);
 		constructor (parent, pElement?: JQuery, eType?: EUILayouts);
-		constructor (parent, element = $("<div class=\"layout\" />"), eType: EUILayouts = EUILayouts.UNKNOWN) {
+		constructor (parent, element = $("<div />"), eType: EUILayouts = EUILayouts.UNKNOWN) {
 			super(parent, element, EUINodeTypes.LAYOUT);
 			this._eLayoutType = eType;
 		}
@@ -22,7 +22,7 @@ module akra.ui {
 			//layout must be a first child
 			if (isNull(pParent) || !isNull(pParent.child)) {
 				//return false;
-				WARNING("Node: \n" + pParent.toString(true) + "\nalready has layout node as child.");
+				//WARNING("Node: \n" + pParent.toString(true) + "\nalready has layout node as child.");
 			}
 
 			return super.attachToParent(pParent);
@@ -40,6 +40,9 @@ module akra.ui {
 			this._pAttrs = pAttrs;
 		}
 
+		childAdded(pChild: IEntity): void {
+			super.childAdded(pChild);
+		}
 
 #ifdef DEBUG
 		toString(isRecursive: bool = false, iDepth: int = 0): string {

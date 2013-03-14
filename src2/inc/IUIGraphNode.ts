@@ -7,7 +7,12 @@ module akra {
 	IFACE(IUIGraph);
 
 	export enum EUIGraphNodes {
-		UNKNOWN
+		UNKNOWN,
+		
+		ANIMATION_DATA,
+		ANIMATION_PLAYER,
+		ANIMATION_BLENDER,
+		ANIMATION_MASK
 	}
 
 	export interface IUIGraphNode extends IUIComponent {
@@ -20,7 +25,7 @@ module akra {
 
 		grabEvent(iKeyCode: int): void;
 		removeRoute(pRoute: IUIGraphRoute, iConnection: int, eDir: EUIGraphDirections): void;
-		addConnector(pLayout: IUILayout): void;
+		addConnector(pNode: IUINode): void;
 
 		activateRoute(pRoute: IUIGraphRoute, bValue: bool, iConnection: int): void;
 

@@ -26,9 +26,15 @@ module akra.ui {
 		     	return (<any>this)[e.type](e);
 			});
 
+			//this.$element.mousedown((e: IUIEvent) => { pNode.mousedown(e); });
+
 			if (!isUI(parent)) {
 				this.attachToParent(<Node>parent);
 			}
+		}
+
+		hasRenderTarget(): bool {
+			return true;
 		}
 
 		renderTarget(): JQuery {
@@ -54,11 +60,11 @@ module akra.ui {
 			}
 			else {
 				if (to instanceof Node) {
-					$to = (<IUINode>to).renderTarget();
-
 					if (this.parent != <IUINode>to) {
 						return this.attachToParent(<IUINode>to);
 					}
+
+					$to = (<IUINode>to).renderTarget();
 				}
 				else {
 					$to = $(to)
@@ -93,6 +99,7 @@ module akra.ui {
 		}
 
 		destroy(): void {
+			super.destroy();
 			this.$element.remove();
 		}
 
@@ -140,6 +147,7 @@ module akra.ui {
 			"dblclick",
 			"mousemove",
 			"mouseup",
+			"mousedown",
 			"mouseover",
 			"mouseout",
 			"focusin",

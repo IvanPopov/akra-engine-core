@@ -36,11 +36,17 @@ module akra.ui.graph {
 			super(parent, null, EUIComponents.GRAPH);
 
 			this._eGraphType = eType;
+
+			this.getHTMLElement().onselectstart = function() { return false };
 		}
 
 		label(): string {
 			return "Graph";
 		}
+
+		// renderTarget(): JQuery {
+		// 	return this.$element.find("svg");
+		// }
 
 		rendered(): void {
 			this._pCanvas = Raphael(this.getHTMLElement(), 0, 0);
@@ -226,6 +232,7 @@ module akra.ui.graph {
 		        }
 
 		        if (!isNull(this._pTempRoute)) {
+		        	console.log("REMOVE!!");
 		            this._pTempRoute.remove();
 		        }
 

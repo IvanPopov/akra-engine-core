@@ -61,6 +61,10 @@ module akra.ui {
 			return isNull(pTarget)? null: pTarget.renderTarget();
 		}
 
+		hasRenderTarget(): bool {
+			return false;
+		}
+
 		addChild(pChild: IEntity): IEntity {
 			if (this.child) {
 				var pRightSibling: IEntity = this.child.rightSibling;	
@@ -89,7 +93,7 @@ module akra.ui {
 			
 			while (!isNull(pParent)) {
 
-				if (!isNull(pParent.renderTarget())) {
+				if (!isNull(pParent.hasRenderTarget())) {
 					return pParent;
 				}
 
