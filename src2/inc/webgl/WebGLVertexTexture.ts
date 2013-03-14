@@ -7,6 +7,8 @@
 #include "core/pool/resources/VertexBuffer.ts"
 #include "webgl.ts"
 #include "WebGLShaderProgram.ts" 
+#include "webgl/WebGLRenderer.ts"
+#include "pixelUtil/pixelUtil.ts"
 
 #define WEBGL_VERTEX_TEXTURE_MIN_SIZE 32
 
@@ -62,8 +64,8 @@ module akra.webgl {
 
 			super.create(iByteSize, iFlags, pData);
 
-			var pPOTSize: uint[] = math.calcPOTtextureSize(math.ceil(iByteSize / pixelUtil.getNumElemBytes(this._ePixelFormat)));
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pPOTSize: uint[] = math.calcPOTtextureSize(math.ceil(iByteSize / akra.pixelUtil.getNumElemBytes(this._ePixelFormat)));
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 		    var i: int;
 
@@ -90,8 +92,8 @@ module akra.webgl {
 				"Размер переданного массива больше переданного размера буфера");
 			
 		    this._pWebGLTexture = pWebGLRenderer.createWebGLTexture();
-		    this._eWebGLFormat = getWebGLOriginFormat(this._ePixelFormat);
-		    this._eWebGLType = getWebGLOriginDataType(this._ePixelFormat);
+		    this._eWebGLFormat = getWebGLFormat(this._ePixelFormat);
+		    this._eWebGLType = getWebGLDataType(this._ePixelFormat);
 
 		    if (!this._pWebGLTexture) {
 		        CRITICAL("Не удалось создать буфер");
@@ -242,7 +244,7 @@ module akra.webgl {
 		destroy(): void {
 			super.destroy();
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 			pWebGLRenderer.deleteWebGLTexture(this._pWebGLTexture);
 
 			this._pWebGLTexture = null;
@@ -284,7 +286,7 @@ module akra.webgl {
 		        nPixels: uint, 		/*число пикселей*/
 		        nElements: uint;
 
-		    var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getManager().getEngine().getRenderer();
+		    var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getManager().getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 		    var pDataU8: Uint8Array = pData;
@@ -472,7 +474,7 @@ module akra.webgl {
 
 		resize(iSize: uint): bool {
 
-			var pWebGLRenderer: IWebGLRenderer = <IWebGLRenderer>this.getEngine().getRenderer();
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 			var iMax: int = 0;

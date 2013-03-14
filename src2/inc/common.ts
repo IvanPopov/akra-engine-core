@@ -176,7 +176,7 @@ module akra {
 
     export var isArrayBuffer = (x: any): bool => x instanceof ArrayBuffer;
 
-    export var isTypedArray = (x: any): bool => typeof x === "object" && typeof x.byteOffset === "number";
+    export var isTypedArray = (x: any): bool => x !== null && typeof x === "object" && typeof x.byteOffset === "number";
 
     /** @inline */
     export var isArray = (x: any): bool => {

@@ -74,9 +74,12 @@ module akra.webgl {
 		    pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, this._pWebGLBuffer);
 		    pWebGLContext.bufferData(GL_ARRAY_BUFFER, this._iByteSize, getWebGLUsage(this._iFlags));
 		    
-		    if (pData) {
-		        pWebGLContext.bufferSubData(
-		        	GL_ARRAY_BUFFER, 0, isArrayBuffer(pData)? <ArrayBuffer>pData: (<Uint8Array>pData).buffer);
+		    if (isDefAndNotNull(pData)) {
+		        /*pWebGLContext.bufferSubData(
+		        	GL_ARRAY_BUFFER, 0, isArrayBuffer(pData)? <ArrayBuffer>pData: (<Uint8Array>pData).buffer);*/
+
+				pWebGLContext.bufferSubData(GL_ARRAY_BUFFER, 0, pData.buffer);
+
 		    }
 
 		    return true;

@@ -30,7 +30,7 @@ module akra.scene.light {
 			return this._m4fOptimizedProj;
 		}
 
-		constructor (pLightPoint: ILightPoint, iFace: uint = POSITIVE_X) {
+		constructor (pLightPoint: ILightPoint, iFace: uint = ECubeFace.POSITIVE_X) {
 			super(pLightPoint.scene, EEntityTypes.SHADOW_CASTER);
 
 			this._pLightPoint = pLightPoint;

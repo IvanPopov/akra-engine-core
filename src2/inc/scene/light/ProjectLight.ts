@@ -76,13 +76,13 @@ module akra.scene.light {
 
 			var pDepthTexture: ITexture = this._pDepthTexture = 
 				pResMgr.createTexture("depth_texture_" + this.getGuid());
-			pDepthTexture.create(iSize, iSize, 1, Color.BLACK, 0,
-				0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH);
+			pDepthTexture.create(iSize, iSize, 1, null, 0,
+				0, 1, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
 
-			pDepthTexture.setParameter(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
-			pDepthTexture.setParameter(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
-			pDepthTexture.setParameter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
-			pDepthTexture.setParameter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
+			pDepthTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
+			pDepthTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
+			pDepthTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+			pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 
 			// if (this._pColorTexture) {
 			// 	this._pColorTexture.destroy();

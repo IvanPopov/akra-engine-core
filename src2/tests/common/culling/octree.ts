@@ -81,7 +81,6 @@ module akra {
 	console.log(pOctree._toSimpleObject());
 	console.warn(pResult);
 	console.warn(pCamera);
-	console.log(scene.objects.Camera._pEventTable);
 
 	console.error(pCamera.display(DL_LIGHTING));
 }

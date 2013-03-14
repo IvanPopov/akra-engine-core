@@ -177,11 +177,7 @@ module akra.core.pool.resources {
 
             this._eFormat = eFormat;
 
-            if(isNull(pPixels))
-            {
-                return this.loadRawData(null, iWidth, iHeight,iDepth,eFormat,nFaces,nMipLevels);
-            }
-            else if(isArray(pPixels)) 
+            if(isArray(pPixels)) 
             {
                 pPixels = new Uint8Array(pPixels);
                 return this.loadRawData(pPixels, iWidth, iHeight,iDepth,eFormat,nFaces,nMipLevels);
