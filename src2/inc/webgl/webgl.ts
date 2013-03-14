@@ -169,218 +169,282 @@ module akra.webgl {
 	    return GL_STATIC_DRAW;
 	}
 
-	export function getWebGLOriginFormat(eFormat: EPixelFormats): int {
-		switch(eFormat){
-			case EPixelFormats.A8:
-                return GL_ALPHA;
 
-            case EPixelFormats.L8:
-            case EPixelFormats.L16:
+	export function getWebGLFormat(eFormat: EPixelFormats): int {
+		switch(eFormat)
+        {
+			case EPixelFormats.L8:              
+            case EPixelFormats.L16:     
                 return GL_LUMINANCE;
-            
-            case EPixelFormats.FLOAT16_RGB:
-            	return webgl.hasExtension(OES_TEXTURE_HALF_FLOAT) ? GL_RGB : 0;
 
-            case EPixelFormats.FLOAT16_RGBA:
-            	return webgl.hasExtension(OES_TEXTURE_HALF_FLOAT) ? GL_RGBA : 0;
+            case EPixelFormats.A8:
+                return GL_ALPHA;           
 
-           	case EPixelFormats.FLOAT16_R:
-            case EPixelFormats.R8:
-                return webgl.hasExtension(EXT_TEXTURE_RG) ? GL_RED_EXT : 0;
-
-            case EPixelFormats.FLOAT16_GR:
-            case EPixelFormats.RG8:
-                return webgl.hasExtension(EXT_TEXTURE_RG) ? GL_RG_EXT : 0;
-
+            case EPixelFormats.A4L4: 
             case EPixelFormats.BYTE_LA:
-            case EPixelFormats.SHORT_GR:
-                return GL_LUMINANCE_ALPHA;
-
-            // PVRTC compressed formats
-            case EPixelFormats.PVRTC_RGB2:
-                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_PVRTC) ? GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG : 0;
-            case EPixelFormats.PVRTC_RGB4:
-                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_PVRTC) ? GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG : 0;
-            case EPixelFormats.PVRTC_RGBA2:
-                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_PVRTC) ? GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG : 0;
-            case EPixelFormats.PVRTC_RGBA4:
-                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_PVRTC) ? GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG : 0;
-
+                return GL_LUMINANCE_ALPHA;       
+   
             case EPixelFormats.R5G6B5:
+                return 0;          
             case EPixelFormats.B5G6R5:
-            case EPixelFormats.R8G8B8:
-            case EPixelFormats.B8G8R8:
-                return GL_RGB;
-
-            case EPixelFormats.A1R5G5B5:
-                return GL_BGRA;
-
+                return GL_RGB;          
+            case EPixelFormats.R3G3B2:
+                return 0;
             case EPixelFormats.A4R4G4B4:
-            case EPixelFormats.X8R8G8B8:
+            case EPixelFormats.A1R5G5B5:
+                return GL_RGBA;  
+
+            case EPixelFormats.R8G8B8:
+                return 0;
+            case EPixelFormats.B8G8R8:         
+                return GL_RGB;       
             case EPixelFormats.A8R8G8B8:
-            case EPixelFormats.B8G8R8A8:
-            case EPixelFormats.X8B8G8R8:
+                return 0;
             case EPixelFormats.A8B8G8R8:
-                return GL_RGBA;
+                return GL_RGBA;       
+            case EPixelFormats.B8G8R8A8:       
+            case EPixelFormats.R8G8B8A8:       
+            case EPixelFormats.X8R8G8B8:   
+                return 0;     
+            case EPixelFormats.X8B8G8R8:
+               return GL_RGBA; 
 
-            case EPixelFormats.DXT1:
-                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_S3TC) ? GL_COMPRESSED_RGBA_S3TC_DXT1_EXT : 0;
+            case EPixelFormats.A2R10G10B10:
+                return 0;
+            case EPixelFormats.A2B10G10R10:
+                return GL_RGBA; 
 
-            case EPixelFormats.DXT3:
-                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_S3TC) ? GL_COMPRESSED_RGBA_S3TC_DXT3_EXT : 0;
-
+            case EPixelFormats.DXT1:  
+                return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;         
+            case EPixelFormats.DXT2:   
+                return 0;        
+            case EPixelFormats.DXT3:    
+                return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;       
+            case EPixelFormats.DXT4:  
+                return 0;         
             case EPixelFormats.DXT5:
-                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_S3TC) ? GL_COMPRESSED_RGBA_S3TC_DXT5_EXT : 0;
-
-            case EPixelFormats.FLOAT32_GR:
+                return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+            case EPixelFormats.FLOAT16_R:
+                return 0;    
+            case EPixelFormats.FLOAT16_RGB:
+                return GL_RGB;  
+            case EPixelFormats.FLOAT16_RGBA:
+                 return GL_RGBA;  
             case EPixelFormats.FLOAT32_R:
+                return 0;      
+            case EPixelFormats.FLOAT32_RGB:
+                return GL_RGB;
+            case EPixelFormats.FLOAT32_RGBA:
+                return GL_RGBA;
+            case EPixelFormats.FLOAT16_GR:   
+            case EPixelFormats.FLOAT32_GR:
+                return 0;   
+
+            case EPixelFormats.FLOAT32_DEPTH:  
+            case EPixelFormats.DEPTH32:         
+            case EPixelFormats.DEPTH16:
+            case EPixelFormats.DEPTH8:
+                return GL_DEPTH_COMPONENT;
+
+            case EPixelFormats.DEPTH24STENCIL8:
+                return GL_DEPTH_STENCIL;
+
+            case EPixelFormats.SHORT_RGBA:  
+                return GL_RGBA;  
+            case EPixelFormats.SHORT_GR: 
+                return 0;      
+            case EPixelFormats.SHORT_RGB: 
+                return GL_RGB; 
+
+            case EPixelFormats.PVRTC_RGB2:     
+                return GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG
+            case EPixelFormats.PVRTC_RGBA2:   
+                return GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG  
+            case EPixelFormats.PVRTC_RGB4:    
+                return GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG
+            case EPixelFormats.PVRTC_RGBA4:  
+                return GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG; 
+            
+            case EPixelFormats.R8:         
+            case EPixelFormats.RG8:            
+                return 0;    
 
             default:
+                CRITICAL_ERROR("getWebGLFormat unknown format");
                 return 0;    
         }
              
 	}
 
-	export function getWebGLOriginDataType(eFormat: EPixelFormats): int {
-		switch(eFormat){
-			case EPixelFormats.A8:
-            case EPixelFormats.L8:
-            case EPixelFormats.L16:
-            case EPixelFormats.R8G8B8:
-            case EPixelFormats.B8G8R8:
-            case EPixelFormats.BYTE_LA:
-                return GL_UNSIGNED_BYTE;
-            case EPixelFormats.R5G6B5:
-            case EPixelFormats.B5G6R5:
-                return GL_UNSIGNED_SHORT_5_6_5;
-            case EPixelFormats.A4R4G4B4:
-				return GL_UNSIGNED_SHORT_4_4_4_4;
-            case EPixelFormats.A1R5G5B5:
-                return GL_UNSIGNED_SHORT_5_5_5_1;
-            
-            case EPixelFormats.X8B8G8R8:
-            case EPixelFormats.A8B8G8R8:
-                return GL_UNSIGNED_INT_8_8_8_8_REV;
-            case EPixelFormats.X8R8G8B8:
-            case EPixelFormats.A8B8G8R8:
-            case EPixelFormats.A8R8G8B8:
-                return GL_UNSIGNED_INT_8_8_8_8_REV;
-            case EPixelFormats.B8G8R8A8:
-                return GL_UNSIGNED_BYTE;
-            case EPixelFormats.R8G8B8A8:
-                return GL_UNSIGNED_BYTE;
-
-            case EPixelFormats.FLOAT16_R:
-            case EPixelFormats.FLOAT16_GR:
+    export function isWebGLFormatSupport(eFormat: EPixelFormats):bool
+    {
+        switch(eFormat)
+        {
+            case EPixelFormats.DXT1:        
+            case EPixelFormats.DXT3:        
+            case EPixelFormats.DXT5:
+                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_S3TC);
+            case EPixelFormats.PVRTC_RGB2:     
+            case EPixelFormats.PVRTC_RGBA2:    
+            case EPixelFormats.PVRTC_RGB4:    
+            case EPixelFormats.PVRTC_RGBA4:  
+                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_PVRTC);
+            case EPixelFormats.DEPTH32:         
+            case EPixelFormats.DEPTH16:
+            case EPixelFormats.DEPTH24STENCIL8: 
+                return webgl.hasExtension(WEBGL_DEPTH_TEXTURE);
+            case EPixelFormats.DEPTH32:         
+            case EPixelFormats.DEPTH16:
+            case EPixelFormats.DEPTH24STENCIL8: 
+                return webgl.hasExtension(WEBGL_DEPTH_TEXTURE);
             case EPixelFormats.FLOAT16_RGB:
             case EPixelFormats.FLOAT16_RGBA:
-                return webgl.hasExtension(OES_TEXTURE_HALF_FLOAT) ? GL_HALF_FLOAT_OES : 0;
-
-            case EPixelFormats.R8:
-            case EPixelFormats.RG8:
-                return webgl.hasExtension(EXT_TEXTURE_RG) ? GL_UNSIGNED_BYTE : 0;
-
-            case EPixelFormats.FLOAT32_R:
-            case EPixelFormats.FLOAT32_GR:
+                 return webgl.hasExtension(OES_TEXTURE_HALF_FLOAT);  
             case EPixelFormats.FLOAT32_RGB:
             case EPixelFormats.FLOAT32_RGBA:
-                return GL_FLOAT;
+                 return webgl.hasExtension(OES_TEXTURE_FLOAT);
 
-            case EPixelFormats.DEPTH:
-                return GL_UNSIGNED_INT;
-            case EPixelFormats.DEPTH_BYTE:
-                return GL_UNSIGNED_BYTE;
+        }
+        
+        if(getWebGLFormat(eFormat)&&getWebGLDataType(eFormat))
+        {
+            switch(eFormat)
+            {
+                case EPixelFormats.FLOAT32_DEPTH:
+                case EPixelFormats.L16:
+                    return false;
+            }
+            return true;
+        }
 
-            case EPixelFormats.DXT1:
-            case EPixelFormats.DXT3:
-            case EPixelFormats.DXT5:
-            case EPixelFormats.R3G3B2:
-            case EPixelFormats.A2R10G10B10:
-            case EPixelFormats.A2B10G10R10:
-            case EPixelFormats.SHORT_RGBA:
-            case EPixelFormats.SHORT_RGB:
-            case EPixelFormats.SHORT_GR:
-                // TODO not supported
-            default:
+        return false;
+    }
+
+
+	export function getWebGLDataType(eFormat: EPixelFormats): int {
+		switch(eFormat)
+        {
+            case EPixelFormats.L8:
+                return GL_UNSIGNED_BYTE;           
+            case EPixelFormats.L16:     
+                return GL_UNSIGNED_SHORT;
+
+            case EPixelFormats.A8:
+                return GL_UNSIGNED_BYTE;           
+
+            case EPixelFormats.A4L4: 
                 return 0;
-		}
+            case EPixelFormats.BYTE_LA:
+                return GL_UNSIGNED_BYTE;       
+   
+            case EPixelFormats.R5G6B5:
+            case EPixelFormats.B5G6R5:
+                return GL_UNSIGNED_SHORT_5_6_5;            
+            case EPixelFormats.R3G3B2:
+                return 0;
+            case EPixelFormats.A4R4G4B4:
+                return GL_UNSIGNED_SHORT_4_4_4_4;
+            case EPixelFormats.A1R5G5B5:
+                return GL_UNSIGNED_SHORT_5_5_5_1;  
+
+            case EPixelFormats.R8G8B8:
+            case EPixelFormats.B8G8R8:         
+            case EPixelFormats.A8R8G8B8:
+            case EPixelFormats.A8B8G8R8:
+            case EPixelFormats.B8G8R8A8:       
+            case EPixelFormats.R8G8B8A8:       
+            case EPixelFormats.X8R8G8B8:  
+            case EPixelFormats.X8B8G8R8:
+               return GL_UNSIGNED_BYTE; 
+
+            case EPixelFormats.A2R10G10B10:
+                return 0;
+            case EPixelFormats.A2B10G10R10:
+                return 0; 
+
+            case EPixelFormats.DXT1:           
+            case EPixelFormats.DXT2:           
+            case EPixelFormats.DXT3:           
+            case EPixelFormats.DXT4:           
+            case EPixelFormats.DXT5:
+                return 0;
+
+            case EPixelFormats.FLOAT16_R:  
+            case EPixelFormats.FLOAT16_RGB:
+            case EPixelFormats.FLOAT16_RGBA:
+                 return GL_HALF_FLOAT_OES;  
+
+            case EPixelFormats.FLOAT32_R: 
+            case EPixelFormats.FLOAT32_RGB:
+            case EPixelFormats.FLOAT32_RGBA:
+            case EPixelFormats.FLOAT16_GR:   
+            case EPixelFormats.FLOAT32_GR:
+                return GL_FLOAT;   
+
+            case EPixelFormats.FLOAT32_DEPTH:
+                return GL_FLOAT; 
+
+            case EPixelFormats.DEPTH8:
+                return GL_UNSIGNED_BYTE;
+            case EPixelFormats.DEPTH16:
+                return GL_UNSIGNED_SHORT;
+            case EPixelFormats.DEPTH32:
+                return GL_UNSIGNED_INT;
+            case EPixelFormats.DEPTH24STENCIL8:
+                return GL_UNSIGNED_INT_24_8_WEBGL;
+
+            case EPixelFormats.SHORT_RGBA:  
+            case EPixelFormats.SHORT_GR: 
+            case EPixelFormats.SHORT_RGB: 
+               return GL_UNSIGNED_SHORT; 
+
+            case EPixelFormats.PVRTC_RGB2:     
+            case EPixelFormats.PVRTC_RGBA2:    
+            case EPixelFormats.PVRTC_RGB4:    
+            case EPixelFormats.PVRTC_RGBA4:  
+                return 0; 
+
+            case EPixelFormats.R8:         
+            case EPixelFormats.RG8:            
+                return GL_UNSIGNED_BYTE;    
+
+            default:
+                CRITICAL_ERROR("getWebGLFormat unknown format");
+                return 0;    
+        }
 	}
 
 
 
-	export function getWebGLInternalFormat(eFormat: EPixelFormats, isHWGamma: bool = false): int {
-        switch (eFormat) {
-            case EPixelFormats.L8:
-            case EPixelFormats.L16:
-                return GL_LUMINANCE;
-
-            case EPixelFormats.A8:
-                return GL_ALPHA;
-
-            case EPixelFormats.BYTE_LA:
-                return GL_LUMINANCE_ALPHA;
-
-            case EPixelFormats.PVRTC_RGB2:
-                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_PVRTC) ? GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG : 0;
-            case EPixelFormats.PVRTC_RGB4:
-                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_PVRTC) ? GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG : 0;
-            case EPixelFormats.PVRTC_RGBA2:
-                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_PVRTC) ? GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG : 0;
-            case EPixelFormats.PVRTC_RGBA4:
-                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_PVRTC) ? GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG : 0;
-                
-            case EPixelFormats.X8B8G8R8:
-            case EPixelFormats.X8R8G8B8:
-			case EPixelFormats.A8B8G8R8:
-            case EPixelFormats.A8R8G8B8:
-            case EPixelFormats.B8G8R8A8:
-            case EPixelFormats.A1R5G5B5:
-            case EPixelFormats.A4R4G4B4:
-                return GL_RGBA;
-            case EPixelFormats.R5G6B5:
-            case EPixelFormats.B5G6R5:
-            case EPixelFormats.R8G8B8:
-            case EPixelFormats.B8G8R8:
-                return GL_RGB;
-
-            case EPixelFormats.FLOAT16_R:
-            case EPixelFormats.FLOAT32_R:
-            case EPixelFormats.R8:
-                return webgl.hasExtension(EXT_TEXTURE_RG) ? GL_RED_EXT : 0;
-            case EPixelFormats.FLOAT16_GR:
-            case EPixelFormats.FLOAT32_GR:
-            case EPixelFormats.RG8:
-                return webgl.hasExtension(EXT_TEXTURE_RG) ? GL_RED_EXT : 0;
-
-            //depth
-            case EPixelFormats.DEPTH:
-                return GL_DEPTH_COMPONENT;
-            case EPixelFormats.DEPTH_BYTE:
-                return GL_DEPTH_COMPONENT;
-
-            case EPixelFormats.A4L4:
-            case EPixelFormats.R3G3B2:
-            case EPixelFormats.A2R10G10B10:
-            case EPixelFormats.A2B10G10R10:
-            case EPixelFormats.FLOAT16_RGBA:
-            case EPixelFormats.FLOAT32_RGB:
-            case EPixelFormats.FLOAT32_RGBA:
-            case EPixelFormats.SHORT_RGBA:
-            case EPixelFormats.SHORT_RGB:
-            case EPixelFormats.SHORT_GR:
-			
-			case EPixelFormats.DXT1:
-				if (!isHWGamma)
-					return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_S3TC) ? GL_COMPRESSED_RGBA_S3TC_DXT1_EXT : 0;
-            case EPixelFormats.DXT3:
-				if (!isHWGamma)
-	                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_S3TC) ? GL_COMPRESSED_RGBA_S3TC_DXT3_EXT : 0;
-            case EPixelFormats.DXT5:
-				if (!isHWGamma)
-	                return webgl.hasExtension(WEBGL_COMPRESSED_TEXTURE_S3TC) ? GL_COMPRESSED_RGBA_S3TC_DXT3_EXT : 0;
-
-            default:
-                return 0;
+	export function getWebGLInternalFormat(eFormat: EPixelFormats): int 
+    {
+        if(!pixelUtil.isCompressed(eFormat))
+        {
+            return getWebGLFormat(eFormat);
+        }
+        else
+        {
+            switch(eFormat)
+            {
+                case EPixelFormats.DXT1:  
+                    return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;         
+                case EPixelFormats.DXT2:   
+                    return 0;        
+                case EPixelFormats.DXT3:    
+                    return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;       
+                case EPixelFormats.DXT4:  
+                    return 0;         
+                case EPixelFormats.DXT5:
+                    return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+                case EPixelFormats.PVRTC_RGB2:     
+                    return GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG
+                case EPixelFormats.PVRTC_RGBA2:   
+                    return GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG  
+                case EPixelFormats.PVRTC_RGB4:    
+                    return GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG
+                case EPixelFormats.PVRTC_RGBA4:  
+                    return GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG; 
+            }
         }
     }
 
@@ -405,10 +469,12 @@ module akra.webgl {
         return GL_POINTS;
     }
 
-    export function getClosestWebGLInternalFormat(eFormat: EPixelFormats, isHWGamma: bool = false): int {
-        var iGLFormat = webgl.getWebGLInternalFormat(eFormat, isHWGamma);
+    //не знаю что делает эта функция
+    export function getClosestWebGLInternalFormat(eFormat: EPixelFormats, isHWGamma?: bool = false): int {
+        var iGLFormat:int = webgl.getWebGLInternalFormat(eFormat);
         
-        if (iGLFormat === GL_NONE) {
+        if (iGLFormat === GL_NONE) 
+        {
             if (isHWGamma) {
                 // TODO not supported
                 return 0;
@@ -417,7 +483,8 @@ module akra.webgl {
                 return GL_RGBA;
             }
         }
-        else {
+        else 
+        {
             return iGLFormat;
         }
     }
@@ -486,11 +553,21 @@ module akra.webgl {
 
     export function getMaxMipmaps(iWidth: int, iHeight: int, iDepth: int, eFormat: EPixelFormats) : int {
 		var iCount: int = 0;
-        if((iWidth > 0) && (iHeight > 0)) {
+        if((iWidth > 0) && (iHeight > 0)) 
+        {
             do {
-                if(iWidth>1)		iWidth = iWidth/2;
-                if(iHeight>1)		iHeight = iHeight/2;
-                if(iDepth>1)		iDepth = iDepth/2;
+                if(iWidth>1)		
+                {
+                    iWidth = iWidth>>>1;
+                }
+                if(iHeight>1)		
+                {
+                    iHeight = iHeight>>>1;
+                }
+                if(iDepth>1)		
+                {
+                    iDepth = iDepth>>>1;
+                }
                 /*
                  NOT needed, compressed formats will have mipmaps up to 1x1
                  if(PixelUtil::isValidExtent(width, height, depth, format))

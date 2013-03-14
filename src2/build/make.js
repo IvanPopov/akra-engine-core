@@ -446,7 +446,9 @@ function createTestName(sEntryFileName) {
 }
 
 
+
 function findDepends(sData, pDepExp) {
+
 	var pMatches = null;
 	var pDeps = [];
 
@@ -476,10 +478,12 @@ function fetchDeps(sDir, pDeps) {
 	}
 }
 
+
 function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 	
 	//FIXME: hack for events support
 	//sTestData = sTestData.replace(/eval\(\"this\.\_iGuid \|\| akra\.sid\(\)\"\)/g, "this._iGuid || akra.sid()");
+
 
 	sTestData = "\n\n\n" + 
 		"/*---------------------------------------------\n" +
@@ -493,8 +497,10 @@ function compileTest(sDir, sFile, sName, pData, sTestData, sFormat) {
 	var pAdditionalScripts = findDepends(sTestData, /\/\/\/\s*@script\s+([^\s]+)\s*/ig);
 	var sAdditionalCode = "";
 
+
 	var pAdditionalCSS = findDepends(sTestData, /\/\/\/\s*@css\s+([^\s]+)\s*/ig);
 	var sAdditionalCSS = "";
+
 
 	var pArchive;
 	var sIndexHTML;
@@ -872,4 +878,3 @@ if (pOptions.target.tests) {
 
 	buildTests(pOptions.testDir);
 }
-

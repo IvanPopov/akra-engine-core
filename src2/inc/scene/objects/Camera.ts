@@ -116,8 +116,8 @@ module akra.scene.objects {
     	inline get searchRect(): IRect3d { return this._pSearchRect; }
     	inline get frustum(): IFrustum { return this._pFrustum; }
 
-		constructor (pScene: IScene3d) {
-			super(pScene, EEntityTypes.CAMERA);
+		constructor (pScene: IScene3d, eType: EEntityTypes = EEntityTypes.CAMERA) {
+			super(pScene, eType);
 
 		};
 

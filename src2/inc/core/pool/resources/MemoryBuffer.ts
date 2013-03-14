@@ -32,7 +32,14 @@ module akra.core.pool.resources {
 
 		resize(iSize: uint): bool {
 			var pData: Uint8Array = new Uint8Array(iSize);
-			pData.set(this._pData);
+
+			if(iSize >= this.byteLength){
+				pData.set(this._pData);
+			}
+			else{
+				pData.set(this._pData.subarray(0, iSize));
+			}
+			
 			this._pData = pData;
 			this.notifyAltered();
 
@@ -53,23 +60,28 @@ module akra.core.pool.resources {
 			}
 
 			ASSERT((iOffset + iSize) <= this.byteLength);
-			memcpy((<ArrayBufferView>ppDest).buffer, 0, this._pData.buffer, iOffset, iSize);
+			memcpy((<ArrayBufferView>ppDest).buffer, (<ArrayBufferView>ppDest).byteOffset, this._pData.buffer, iOffset, iSize);
 
 			return true;
 		}
 
-		writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
-		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
-		writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool { 
-			ASSERT((iOffset + iSize) <= this.byteLength);
-
-			if (arguments.length < 3) {
-				iOffset = 0;
+		// writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
+		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool{
+		// writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool { 
+			
+			if(arguments.length < 3){
 				iSize = pData.byteLength;
 			}
 
+			if (arguments.length < 2) {
+				iOffset = 0;
+			}
 
-			memcpy(this._pData.buffer, 0, (<ArrayBufferView>pData).buffer, iOffset, iSize);
+			ASSERT((iOffset + iSize) <= this.byteLength);
+
+			if(isDefAndNotNull(pData)){
+				memcpy(this._pData.buffer, iOffset, (<ArrayBufferView>pData).buffer, (<ArrayBufferView>pData).byteOffset, iSize);
+			}
 			this.notifyAltered();
 
 			return true;

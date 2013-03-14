@@ -13,6 +13,7 @@
 
 module akra.net {
 
+
     enum ERpcStates {
         //not connected
         k_Deteached, 
@@ -23,6 +24,7 @@ module akra.net {
     }
 
     class RPC implements IRPC {
+
         protected _pPipe: IPipe = null;
 
         //стек вызововы, которые были отложены

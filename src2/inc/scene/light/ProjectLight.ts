@@ -54,6 +54,10 @@ module akra.scene.light {
 			return this._pShadowCaster;
 		};
 
+		inline get isShadowCaster(): bool {
+			return this._bCastShadows;
+		};
+
 		/**
 		 * overridden setter isShadow caster,
 		 * if depth texture don't created then create depth texture
@@ -76,13 +80,13 @@ module akra.scene.light {
 
 			var pDepthTexture: ITexture = this._pDepthTexture = 
 				pResMgr.createTexture("depth_texture_" + this.getGuid());
-			pDepthTexture.create(iSize, iSize, 1, Color.BLACK, 0,
-				0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH);
+			pDepthTexture.create(iSize, iSize, 1, null, 0,
+				0, 1, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
 
-			pDepthTexture.setParameter(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
-			pDepthTexture.setParameter(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
-			pDepthTexture.setParameter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
-			pDepthTexture.setParameter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
+			pDepthTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
+			pDepthTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
+			pDepthTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+			pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
 
 			// if (this._pColorTexture) {
 			// 	this._pColorTexture.destroy();
@@ -155,7 +159,6 @@ module akra.scene.light {
 
 			var pRawResult: IObjectArray = pShadowCaster.display(DL_DEFAULT);
 
-
 			var pTestArray: IPlane3d[] = ProjectLight._pFrustumPlanes;
 			var pFrustumPlanesKeys: string[] = geometry.Frustum.frustumPlanesKeys;
 			var nAdditionalTestLength: int = 0;
@@ -201,7 +204,7 @@ module akra.scene.light {
 					var v3fNormal: IVec3 = pPlane.normal;
 					var fDistance: float = pPlane.distance;
 
-					if(pPlane.signedDistance(v3fLightPosition) <= 0){
+					if(pPlane.signedDistance(v3fLightPosition) > 0){
 						fDistance = -v3fNormal.dot(v3fLightPosition);
 					}
 
@@ -225,7 +228,6 @@ module akra.scene.light {
 							break;
 						}
 					}
-
 					if(j == nAdditionalTestLength){
 						pResult.push(pObject);
 					}	
@@ -235,7 +237,6 @@ module akra.scene.light {
 						pResult.push(pObject);
 					}
 				}
-				
 			}
 
 			pShadowCaster._optimizeProjectionMatrix();

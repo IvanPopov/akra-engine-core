@@ -86,6 +86,7 @@ module akra.webgl {
 
 			this._iWebGLInternalFormat = iInternalFormat;
 			this._eFormat = webgl.getClosestAkraFormat(iInternalFormat, iFormat);
+			
 
 			this._iRowPitch = this._iWidth;
 			this._iSlicePitch = this._iHeight * this._iWidth;
@@ -219,8 +220,8 @@ module akra.webgl {
 	                            			this._iLevel,
 	                            			pDestBox.left, pDestBox.top,
 	                            			pDestBox.width, pDestBox.height,
-	                            			webgl.getWebGLOriginFormat(pData.format),
-	                            			webgl.getWebGLOriginDataType(pData.format),
+	                            			webgl.getWebGLFormat(pData.format),
+	                            			webgl.getWebGLDataType(pData.format),
 	                            			pData.data);
 	        }
 	        
@@ -294,8 +295,8 @@ module akra.webgl {
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
 	        for (mip = 0; mip <= iLevel; mip++) {
-	           	var iWebGLFormat: int = webgl.getWebGLOriginFormat(pScaled.format);
-	            var iWebGLDataType: int = webgl.getWebGLOriginDataType(pScaled.format);
+	           	var iWebGLFormat: int = webgl.getWebGLFormat(pScaled.format);
+	            var iWebGLDataType: int = webgl.getWebGLDataType(pScaled.format);
 
 	            pWebGLContext.texImage2D(this._eFaceTarget,
 	            						 mip,
@@ -628,7 +629,7 @@ module akra.webgl {
 
 		    var pSource: IPixelBox;
 		    // First, convert the srcbox to a OpenGL compatible pixel format
-	        if(getWebGLOriginFormat(pSourceOrigin.format) === 0){
+	        if(getWebGLFormat(pSourceOrigin.format) === 0){
 	        	// Convert to buffer internal format
 	        	var iSizeInBytes: int = pixelUtil.getMemorySize(pSourceOrigin.width, pSourceOrigin.height,
 	        													pSourceOrigin.depth, this._eFormat);
@@ -651,7 +652,7 @@ module akra.webgl {
 	        var iWidth: int = math.ceilingPowerOfTwo(pSource.width);
 	        var iHeight: int = math.ceilingPowerOfTwo(pSource.height);
 	        var iWebGLFormat:int = getClosestWebGLInternalFormat(pSource.format);
-	        var iWebGLDataType: int = getWebGLOriginDataType(pSource.format);
+	        var iWebGLDataType: int = getWebGLDataType(pSource.format);
 
 	        pTempWebGLTexture = pWebGLRenderer.createWebGLTexture();
 

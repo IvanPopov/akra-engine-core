@@ -369,8 +369,16 @@ module akra.core.pool {
             return <IVertexBuffer>this.videoBufferPool.createResource(sResourceName);
         }
 
+        inline createIndexBuffer(sResourceName: string): IIndexBuffer {
+            return <IIndexBuffer>this.indexBufferPool.createResource(sResourceName);
+        };
+
         inline createModel(sResourceName: string): IModel {
             return <IModel>this.colladaPool.createResource(sResourceName);   
+        }
+
+        inline createImg(sResourceName: string): IImg {
+            return <IImg>this.imagePool.createResource(sResourceName);   
         }
 
         inline loadModel(sFilename: string, pOptions: any = null): IModel {

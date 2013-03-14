@@ -373,7 +373,7 @@ module akra.webgl {
 
 
     	inline getWebGLAttributeLocation(sName: string): int {
-    		return this._pWebGLAttributeLocations[sName] || -1;
+    		return isDef(this._pWebGLAttributeLocations[sName]) ? this._pWebGLAttributeLocations[sName] : -1;
     	}
 
     	inline getWebGLUniformLocation(sName: string): WebGLUniformLocation {

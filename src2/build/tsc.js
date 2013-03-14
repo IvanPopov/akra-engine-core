@@ -5165,6 +5165,7 @@ var TypeScript;
             return true;
         };
         InlineEngine.prototype.inlineFunction = function (emitter, target, funcDecl, argData) {
+            // return false;
             if (typeof argData === "undefined") { argData = null; }
             var realTarget = target;
             var isUnsupported = false;

@@ -16,6 +16,8 @@
 #include "scene/SceneManager.ts"
 #include "util/UtilTimer.ts"
 #include "fx/Composer.ts"
+#include "pixelUtil/DDSCodec.ts"
+
 
 //include sub creation classes.
 
@@ -27,6 +29,7 @@
 #include "util/DepsManager.ts"
 #include "controls/GamepadMap.ts"
 #include "controls/KeyMap.ts"
+
 
 
 #ifdef WEBGL
@@ -64,7 +67,15 @@ module akra.core {
 
 		constructor (pOptions: IEngineOptions = null) {
 			this._pResourceManager = new pool.ResourcePoolManager(this);
+			if (!this._pResourceManager.initialize()) {
+				debug_error('cannot initialize ResourcePoolManager');
+			}
+
 			this._pSceneManager = new scene.SceneManager(this);
+			if (!this._pSceneManager.initialize()) {
+				debug_error("cannot initialize SceneManager");
+			}
+
 			this._pParticleManager = null;
 
 #ifdef WEBGL
@@ -74,15 +85,10 @@ module akra.core {
 #endif
 			this._pComposer = new fx.Composer(this);
 
-
-			if (!this._pResourceManager.initialize()) {
-				debug_error('cannot initialize ResourcePoolManager');
-			}
-
-			if (!this._pSceneManager.initialize()) {
-				debug_error("cannot initialize SceneManager");
-			}
-
+			// Register image codecs
+			DDSCodec.startup();
+			
+			
 			this._pTimer = util.UtilTimer.start();
 			this.pause(false);
 

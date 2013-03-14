@@ -491,17 +491,17 @@ module akra.util {
                 }
                 else {
                     eCode = this._eUnknownCode; 
-                    if(arguments.length > 0){
+                    // if(arguments.length > 0){
                         pInfo = new Array(arguments.length);
                         var i: uint = 0;
                         
                         for(i = 0; i < pInfo.length; i++){
                             pInfo[i] = arguments[i];
                         }
-                    }
-                    else {
-                        pInfo = null;    
-                    }
+                    // }
+                    // else {
+                    //     pInfo = null;    
+                    // }
                 }
 
                 var pCodeInfo: ICodeInfo = this._pCodeInfoMap[eCode];  

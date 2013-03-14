@@ -2,25 +2,30 @@
 #define IMG_TS
 
 #include "IImg.ts"
+
+
+#include "io/files.ts"
+#include "pixelUtil/ImgCodec.ts"
+#include "util/Pathinfo.ts"
 #include "../ResourcePoolItem.ts"
 
 module akra.core.pool.resources {
 		
 	export class Img extends ResourcePoolItem implements IImg {
-		protected _iWidth: uint = 0;
-		protected _iHeight: uint = 0;
-		protected _iDepth: uint = 0;
+		protected _iWidth:        uint          = 0;
+		protected _iHeight:       uint          = 0;
+		protected _iDepth:        uint          = 0;
 
-		protected _nMipMaps: uint = 0;
-		protected _iFlags: int = 0;
+		protected _nMipMaps:      uint          = 0;
+		protected _iFlags:        uint          = 0;
+        protected _iCubeFlags:    uint          = 0;
 
-		protected _eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
+		protected _eFormat:       EPixelFormats = EPixelFormats.UNKNOWN;
 
-		protected _iPixelSize: uint;
-		protected _pBuffer: Uint8Array = null;
+		protected _pBuffer:       Uint8Array    = null;
 
-		inline get byteLength(): uint {
-			return 0;
+        inline get byteLength(): uint {
+			return this._pBuffer.buffer.byteLength;
 		}
     	
     	inline get width(): uint {
@@ -35,13 +40,20 @@ module akra.core.pool.resources {
     		return this._iDepth;
     	}
 
-    	inline get numFaces(): uint {
-    		if (this.hasFlag(EImageFlags.CUBEMAP)) {
-    			return 6;
-    		}
-
-    		return 1;
-    	}
+    	inline get numFaces():uint{
+            if (this._iFlags&EImageFlags.CUBEMAP){
+                var nFace:uint=0;
+                for(var i:uint=0;i<32;i++)
+                {
+                    nFace++;
+                }
+                return nFace;
+            }
+            else
+            {
+                return 1;
+            }
+        }
 
     	inline get numMipMaps(): uint {
     		return this._nMipMaps;
@@ -50,6 +62,14 @@ module akra.core.pool.resources {
     	inline get format(): EPixelFormats {
     		return this._eFormat;
     	}
+
+         inline get flags(): uint {
+            return this._iFlags;
+        }
+
+        inline get cubeFlags(): uint {
+            return this._iCubeFlags;
+        }
 
 		constructor () {
 			super();
@@ -112,11 +132,15 @@ module akra.core.pool.resources {
 			return false;
 		}
 
-		create(iWidth: uint, iHeight: uint, eFormat: EPixelFormats, iFlags: int): bool;
-    	create(iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats, iFlags: int): bool;
-    	create(iWidth: uint, iHeight: uint, iDepth?: any, eFormat?: any, iFlags?: any): bool {
-    		return false;
-    	}
+
+		create(iWidth: uint, iHeight: uint, iDepth?: uint = 1, eFormat?: EPixelFormats = EPixelFormats.BYTE_ABGR, 
+                         nFaces?: uint = 1, nMipMaps?: uint = 0): IImg 
+        {
+            var iSize : uint= Img.calculateSize(nMipMaps, nFaces, iWidth, iHeight, iDepth, eFormat);            
+            var pBuffer : Uint8Array = new Uint8Array(iSize);
+            return this.loadDynamicImage(pBuffer, iWidth, iHeight, iDepth, eFormat, nFaces, nMipMaps);
+        }
+    	
 
 
     	freeMemory(): void {
@@ -134,8 +158,7 @@ module akra.core.pool.resources {
     		this._iDepth = pSrc.depth;
     		this._eFormat = pSrc.format;
 
-    		this._iFlags = pSrc.getFlags();
-    		this._iPixelSize = math.ceil(pSrc.getBPP() / 8);
+    		this._iFlags = pSrc.flags;
 
     		this._nMipMaps = pSrc.numMipMaps;
 
@@ -153,27 +176,193 @@ module akra.core.pool.resources {
     		return this;
     	}
 
-    	loadFromMemory(pData: Uint8Array, iWidth: uint, iHeight: uint, eFormat: EPixelFormats): bool;
-    	loadFromMemory(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats): bool;
-    	loadFromMemory(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: any, eFormat?: any): bool {
-    		return false;
+        load(sFileName: string,  fnCallBack?: Function): IImg;
+        load(pData: Uint8Array, sType:string,  fnCallBack?: Function): IImg;
+        load(pCanvas: HTMLCanvasElement, fnCallBack?: Function): IImg;
+
+
+    	load(pData: any, sType?: any, fnCallBack?: Function): IImg 
+        {
+            var pMe:IImg=this;
+
+            if (pData instanceof HTMLCanvasElement) 
+            {
+                var pTempContext : CanvasRenderingContext2D = pData.getContext('2d');
+                if (!pTempContext) 
+                {
+                    if (isDefAndNotNull(sType)) 
+                    {
+                        sType(false);
+                    }
+                    return this;
+                }
+
+                var pImageData : ImageData = pTempContext.getImageData(0, 0, pData.width, pData.height);               
+                
+                this.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)),pData.width,pData.height);
+            
+                if (isDefAndNotNull(sType)) 
+                {
+                    sType(true);
+                }
+                return this;
+            }
+            else if (isString(pData))
+            {
+
+                var sExt : string = (new Pathinfo(pData)).ext;
+                if(sExt=="png" || sExt=="jpg" || sExt=="jpeg" || sExt=="gif" || sExt=="bmp")
+                {
+                    var pImg:HTMLImageElement=new Image();
+
+                    pImg.onload = function()
+                    {
+                        var pTempCanvas: HTMLCanvasElement=<HTMLCanvasElement>document.createElement("canvas");
+                        pTempCanvas.width=pImg.width;
+                        pTempCanvas.height=pImg.height;
+                        var pTempContext : CanvasRenderingContext2D=<CanvasRenderingContext2D>((<any>pTempCanvas).getContext("2d"));                        
+                        pTempContext.drawImage(pImg,0,0);
+                        var pImageData : ImageData = pTempContext.getImageData(0, 0, pImg.width, pImg.height);               
+                
+                        pMe.loadDynamicImage(new Uint8Array(pImageData.data.buffer.slice(0, pImageData.data.buffer.byteLength)),pImg.width, pImg.height,1,EPixelFormats.BYTE_ABGR);
+
+                        if (isDefAndNotNull(sType)) 
+                        {
+                            sType(true);
+                        }
+
+                    }
+                    pImg.onerror=function()
+                    {
+                        if (isDefAndNotNull(sType)) 
+                        {
+                            sType(false);
+                        }
+                    }
+                    pImg.onabort=function()
+                    {
+                        if (isDefAndNotNull(sType)) 
+                        {
+                            sType(false);
+                        }
+                    }
+                    pImg.src = pData; 
+
+                }
+                else
+                {
+
+                    io.fopen(pData,"rb").onread=function(pError:Error,pDataInFile:ArrayBuffer)
+                    {
+
+                        pMe.load(new Uint8Array(pDataInFile),sExt,sType);
+                    }
+                }
+
+                return this;
+            }
+            else
+            {
+                var pCodec:ICodec=undefined;
+
+                if(sType)
+                {
+                    pCodec=Codec.getCodec(sType);
+                }
+
+                if(!pCodec)
+                {
+                    var iMagicLen:uint=Math.min(32,pData.buffer.byteLength);
+                    pCodec=Codec.getCodec(pData.buffer.slice(0,iMagicLen));
+                }
+
+                if(!pCodec)
+                {
+                    CRITICAL_ERROR("Unable to load image: Image format is unknown. Unable to identify codec. Check it or specify format explicitly.\n"+"Img.load");
+                    if (fnCallBack)
+                    {
+                        fnCallBack(false);
+                    }
+                    return this;
+                }
+
+                
+
+                var pImgData:IImgData=new ImgData();
+
+                this._pBuffer=pCodec.decode(pData,pImgData);
+
+                this._iWidth=pImgData.width;
+                this._iHeight=pImgData.height;
+                this._iDepth=pImgData.depth;
+                this._nMipMaps=pImgData.numMipMaps;
+                this._iFlags=pImgData.flags;
+                this._iCubeFlags=pImgData.cubeFlags;
+
+                this._eFormat=pImgData.format;
+
+                if (fnCallBack)
+                {
+                    fnCallBack(true);
+                }
+
+                return this;
+            }
+
+    		
     	}
 
-    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, eFormat: EPixelFormats, nFaces?: uint, nMipMaps?: uint): bool;
-    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint, eFormat: EPixelFormats, nFaces?: uint, nMipMaps?: uint): bool;
-    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: any, eFormat?: any, nFaces?: any, nMipMaps?: any): bool {
-    		return false;
-    	}
+    	loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint = 1, eFormat: EPixelFormats = EPixelFormats.BYTE_BGR,
+                         nFaces?: uint = 1, nMipMaps?: uint = 0): IImg 
+    	{
+            var iSize : uint= Img.calculateSize(nMipMaps, nFaces, iWidth, iHeight, iDepth, eFormat);
+            
+            if (iSize != pData.buffer.byteLength)
+            {
+                CRITICAL_ERROR("Stream size does not match calculated image size\n"+"Img.loadRawData");
+            }
 
-        loadDynamicImage(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint,
-                         eFormat: EPixelFormats, bAutoDelete?: bool = false, 
-                         iNumFaces?: uint = 1, iNumMipMaps?: uint = 0): IImg {
-            return null;
+            var pBuffer : Uint8Array = new Uint8Array(iSize);
+
+            pBuffer.set(pData);
+
+            return this.loadDynamicImage(pBuffer, iWidth, iHeight, iDepth, eFormat, nFaces, nMipMaps);
+     	}
+
+        loadDynamicImage(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth?: uint = 1,
+                         eFormat?: EPixelFormats = EPixelFormats.BYTE_BGR, nFaces?: uint = 1, nMipMaps?: uint = 0): IImg 
+        {
+            //size
+            this._iWidth=iWidth;
+            this._iHeight=iHeight;
+            this._iDepth=iDepth;
+
+            this._eFormat=eFormat;
+            this._nMipMaps=nMipMaps;
+            this._iFlags=0;
+
+            if (pixelUtil.isCompressed(this._eFormat))
+            {
+                this._iFlags |= EImageFlags.COMPRESSED;
+            }
+            if (this._iDepth != 1)
+            {
+                this._iFlags |= EImageFlags.TEXTURE_3D;
+            }
+
+            if(nFaces == 6)
+            {
+                this._iFlags |= EImageFlags.CUBEMAP;
+            }
+
+            if(nFaces != 6 && nFaces != 1)
+            {
+                CRITICAL_ERROR("Number of faces currently must be 6 or 1.\n"+"Img.loadDynamicImage");
+            }
+
+            this._pBuffer=pData;
+            return this;
         }
-
-    	load(sFilename: string): bool {
-    		return false;
-    	}
 
     	convert(eFormat: EPixelFormats): bool {
     		return false;
@@ -181,48 +370,127 @@ module akra.core.pool.resources {
 
     	//Gets the physical width in bytes of each row of pixels.
     	getRawSpan(): uint {
-    		return 0;
+    		return this._iWidth*this.getPixelSize();
     	}
 
     	getBPP(): uint {
-    		return 0;
+    		return this.getPixelSize()* 8;
     	}
 
-    	getFlags(): int {
-    		return 0;
-    	}
+        getPixelSize(): uint{
+            return pixelUtil.getNumElemBytes(this._eFormat);
+        }
+
+
 
     	getData(): Uint8Array {
-    		return null;
+    		return this._pBuffer;
     	}
 
-    	hasFlag(eFlag: EImageFlags): bool {
-    		return false;
+    	hasFlag(eFlag: EImageFlags): bool
+        {
+    		if(this._iFlags & eFlag)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
     	}
 
     	hasAlpha(): bool {
-    		return false;
+    		return pixelUtil.hasAlpha(this._eFormat);
     	}
 
     	isCompressed(): bool {
-    		return false;
+    		return  pixelUtil.isCompressed(this._eFormat);
     	}
 
-    	isLumiance(): bool {
-    		return false;
+    	isLuminance(): bool {
+    		return pixelUtil.isLuminance(this._eFormat);
     	}
 
 
-    	getColorAt(x: uint, y: uint, z?:uint): IColor {
-    		return null;
+
+    	getColorAt(pColor:IColor, x:uint, y: uint, z?:uint=0): IColor
+        {
+            var iStart:uint=this.getPixelSize()* (z * this._iWidth * this._iHeight + this._iWidth * y + x);
+    		pixelUtil.unpackColour(pColor, this._eFormat, this._pBuffer.subarray(iStart,iStart+this.getPixelSize()));
+            return pColor;
     	}
 
-    	setColorAt(pColor: IColorValue, x: uint, y: uint, z: uint): void {
-
+    	setColorAt(pColor: IColor, x: uint, y: uint, z?: uint=0): void 
+        {
+            var iStart:uint=this.getPixelSize()* (z * this._iWidth * this._iHeight + this._iWidth * y + x);
+            pixelUtil.packColour(pColor, this._eFormat,this._pBuffer.subarray(iStart,iStart+this.getPixelSize()));
     	}
 
-    	getPixels(nFace?: uint, iMipMap?: uint): IPixelBox {
-    		return null;
+    	getPixels(iFace?: uint, iMipMap?: uint): IPixelBox 
+        {
+
+    		// Image data is arranged as:
+            // face 0, top level (mip 0)
+            // face 0, mip 1
+            // face 0, mip 2
+            // face 1, top level (mip 0)
+            // face 1, mip 1
+            // face 1, mip 2
+            // etc
+
+            if(iMipMap > this.numMipMaps){
+                WARNING("Mipmap index out of range");
+                return null;
+            }
+
+            if(iFace >= this.numFaces){
+                WARNING("Face index out of range");
+                return null;
+            }
+                
+            // Calculate mipmap offset and size
+            var pData:Uint8Array = this.getData();
+
+
+            // Base offset is number of full faces
+            var iWidth: uint = this._iWidth;
+            var iHeight: uint = this._iHeight;
+            var iDepth: uint = this._iDepth;
+
+
+            // Figure out the offsets 
+            var iFullFaceSize: uint = 0;
+            var iFinalFaceSize: uint = 0;
+            var iFinalWidth: uint = 0;
+            var iFinalHeight: uint = 0 ;
+            var iFinalDepth: uint = 0;
+            var iMipSize:uint=0;
+            var iOffset:uint = 0;
+
+            for(var iMip:uint=0; iMip <= this.numMipMaps; ++iMip)
+            {
+                if (iMip == iMipMap)
+                {
+                    iFinalFaceSize = iFullFaceSize;
+                    iFinalWidth = iWidth;
+                    iFinalHeight = iHeight;
+                    iFinalDepth = iDepth;
+                    iMipSize = pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this.format);
+                }
+                iFullFaceSize += pixelUtil.getMemorySize(iWidth, iHeight, iDepth, this.format);
+
+                /// Half size in each dimension
+                if(iWidth!=1) iWidth /= 2;
+                if(iHeight!=1) iHeight /= 2;
+                if(iDepth!=1) iDepth /= 2;
+            }
+            // Advance pointer by number of full faces, plus mip offset into
+            iOffset += iFace * iFullFaceSize;
+            iOffset += iFinalFaceSize;
+
+            // Return subface as pixelbox
+            var pSrc:IPixelBox=new pixelUtil.PixelBox(iFinalWidth, iFinalHeight, iFinalDepth, this.format, pData.subarray(iOffset,iOffset+iMipSize));
+            return pSrc;
     	}
 
     	scale(pDest: IPixelBox, eFilter?: EFilters): bool {
@@ -240,6 +508,21 @@ module akra.core.pool.resources {
     	randomChannelNoise(iChannel: int, iMinRange: int, iMaxRange: int): void {
 
     	}
+
+        static calculateSize(nMipMaps: uint, nFaces: uint, iWidth: uint, iHeight: uint, iDepth: uint , eFormat: EPixelFormats): uint
+        {
+            var iSize:uint = 0;
+            var iMip:uint = 0;
+
+            for(iMip=0; iMip<=nMipMaps; iMip++)
+            {
+                iSize += pixelUtil.getMemorySize(iWidth, iHeight, iDepth, eFormat)*nFaces; 
+                if(iWidth!=1) iWidth = Math.floor(iWidth/2);
+                if(iHeight!=1) iHeight = Math.floor(iHeight/2);
+                if(iDepth!=1) iDepth = Math.floor(iDepth/2);
+            }
+            return iSize;
+        }
 	}
 }
 

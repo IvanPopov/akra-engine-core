@@ -11,6 +11,8 @@ module akra {
 
 	export interface IIndexBuffer extends IHardwareBuffer, IRenderResource {
 
+		create(iByteSize: uint, iFlags?: uint, pData?: ArrayBufferView): bool;
+
 		getIndexData(iOffset: uint, iCount: uint, ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes): IIndexData;
 		getEmptyIndexData(iCount: uint, ePrimitiveType: EPrimitiveTypes, eElementsType: EDataTypes): IIndexData;
 

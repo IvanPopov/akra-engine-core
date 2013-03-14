@@ -6,22 +6,34 @@
 #include "IRenderResource.ts"
 #include "core/pool/resources/VertexBuffer.ts"
 #include "webgl.ts"
-#include "WebGLShaderProgram.ts"
+#include "WebGLShaderProgram.ts" 
+#include "webgl/WebGLRenderer.ts"
+#include "pixelUtil/pixelUtil.ts"
 
 #define WEBGL_VERTEX_TEXTURE_MIN_SIZE 32
+
+#define VIDEOBUFFER_HEADER_WIDTH 0
+#define VIDEOBUFFER_HEADER_HEIGHT 1
+#define VIDEOBUFFER_HEADER_STEP_X 2
+#define VIDEOBUFFER_HEADER_STEP_Y 3
+#define VIDEOBUFFER_HEADER_NUM_PIXELS 4
+#define VIDEOBUFFER_HEADER_NUM_ELEMENTS 5
 
 module akra.webgl {
 	export class WebGLVertexTexture extends core.pool.resources.VertexBuffer implements IVertexBuffer {
 		protected _iWidth: uint = 0;
 		protected _iHeight: uint = 0;
 
-		protected _pWebGLTexture: WebGLTexture;
+		protected _pWebGLTexture: WebGLTexture = null;
 		protected _eWebGLFormat: int;
 		protected _eWebGLType: int;
 
 		protected _ePixelFormat: EPixelFormats = EPixelFormats.FLOAT32_RGBA;
 		//переменная нужна, чтобы проигнорировать обновление копии, обычно, это не требуется
 		protected _bForceUpdateBackupCopy: bool = true;
+
+		/*vertex data for header updating*/
+		protected _pHeader: IVertexData = null;
 
 		private _pLockData: Uint8Array = null;
 
@@ -42,7 +54,9 @@ module akra.webgl {
 			var pTextureData: Uint8Array = null;
 			var pDataU8: Uint8Array = pData;
 
-			iByteSize = math.max(iByteSize, pixelUtil.getMemorySize(iMinWidth, iMinWidth, 1, this._ePixelFormat));
+			var iAdditionalHeaderSize: uint = (isDefAndNotNull(pData)) ? 32 /*header size*/ : 0;
+
+			iByteSize = math.max(iByteSize + iAdditionalHeaderSize, pixelUtil.getMemorySize(iMinWidth, iMinWidth, 1, this._ePixelFormat));
 
 			if (TEST_ANY(iFlags, EHardwareBufferFlags.READABLE)) {
 	            SET_ALL(iFlags, EHardwareBufferFlags.BACKUP_COPY);
@@ -67,7 +81,7 @@ module akra.webgl {
 		    debug_assert(pWebGLContext !== null, "cannot grab webgl context");
 
 		    //Софтварного рендеринга буфера у нас нет
-		    debug_assert(!this.isSoftware(), "no sftware rendering");
+		    debug_assert(!this.isSoftware(), "no software rendering");
 
 		    //Если есть локальная копия то буфер можно читать
 		    if (this.isBackupPresent()) {
@@ -78,8 +92,8 @@ module akra.webgl {
 				"Размер переданного массива больше переданного размера буфера");
 			
 		    this._pWebGLTexture = pWebGLRenderer.createWebGLTexture();
-		    this._eWebGLFormat = getWebGLOriginFormat(this._ePixelFormat);
-		    this._eWebGLType = getWebGLOriginDataType(this._ePixelFormat);
+		    this._eWebGLFormat = getWebGLFormat(this._ePixelFormat);
+		    this._eWebGLType = getWebGLDataType(this._ePixelFormat);
 
 		    if (!this._pWebGLTexture) {
 		        CRITICAL("Не удалось создать буфер");
@@ -88,7 +102,7 @@ module akra.webgl {
 		        return false;
 		    }
 
-		    if (pData) {
+		    if (isDefAndNotNull(pData)) {
 		    	
 		    	if (pData.BYTES_PER_ELEMENT > 1) {
 		    		pDataU8 = new Uint8Array(pData, pData.byteOffset, pData.byteLength);
@@ -101,12 +115,24 @@ module akra.webgl {
 		    pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, this._pWebGLTexture);
 		    pWebGLContext.texImage2D(GL_TEXTURE_2D, 0, this._eWebGLFormat, 
 		    	this._iWidth, this._iHeight, 0,  this._eWebGLFormat, this._eWebGLType, pTextureData);
-		    
 
-		    var pProgram: IShaderProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_update_vertex_texture");
+		    pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_MAG_FILTER, pWebGLContext.NEAREST);
+		    pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_MIN_FILTER, pWebGLContext.NEAREST);
+		    pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_WRAP_S, pWebGLContext.CLAMP_TO_EDGE);
+		    pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_WRAP_T, pWebGLContext.CLAMP_TO_EDGE);
+		    
+		    //create header
+		    this._pHeader = this.allocateData([VE_VEC2(DeclarationUsages.TEXTURE_HEADER)], this._header());
+
+
+		    /**
+		    * update program
+		    **/
+
+		    var pProgram: IShaderProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_vertex_texture_update");
 
 	        if (isNull(pProgram)) {
-	        	pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBGL_update_vertex_texture");
+	        	pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBGL_vertex_texture_update");
 	        	pProgram.create(
 	        	"																									\n\
 	        	uniform sampler2D sourceTexture;																	\n\
@@ -150,6 +176,7 @@ module akra.webgl {
 				    else {																							\n\
 				        color = value;																				\n\
 				    }																								\n\
+				    gl_PointSize = 1.;																				\n\
 				    gl_Position = vec4(2. * (mod(serial, size.x) + .5) / size.x - 1.,								\n\
 				                    2. * (floor(serial / size.x)  + .5) / size.y - 1., 0., 1.);						\n\
 				}																									\n\
@@ -162,6 +189,51 @@ module akra.webgl {
 				                                    \n\
 				void main(void) {                   \n\
 				    gl_FragColor = color;           \n\
+				}                                   \n\
+				");
+	        }
+
+	        /**
+		    * resize program
+		    **/
+
+	        pProgram = <IShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_vertex_texture_resize");
+
+	        if (isNull(pProgram)) {
+	        	pProgram = <IShaderProgram>this.getManager().shaderProgramPool.createResource("WEBGL_vertex_texture_resize");
+	        	pProgram.create(
+	        	"																									\n\
+	        	attribute float INDEX;																				\n\
+	        																										\n\
+	        	uniform sampler2D sourceTexture;																	\n\
+				                      																				\n\
+				uniform vec2 v2fSrcTexSize;																			\n\
+				uniform vec2 v2fDstTexSize;																			\n\
+																													\n\
+				varying vec4 v4fValue;																				\n\
+				                   																					\n\
+				void main(void){																					\n\
+					                       																			\n\
+				    vec2 v2fSrcPosition = vec2((mod(INDEX, v2fSrcTexSize.x) + 0.5)/v2fSrcTexSize.x,					\n\
+				    						   (floor(INDEX/v2fSrcTexSize.x) + 0.5)/v2fSrcTexSize.y);				\n\
+	        																										\n\
+	        		vec2 v2fDstPosition = vec2((mod(INDEX, v2fDstTexSize.x) + 0.5)/v2fDstTexSize.x,					\n\
+				    						   (floor(INDEX/v2fDstTexSize.x) + 0.5)/v2fDstTexSize.y);				\n\
+	        																										\n\
+	        		v4fValue = texture2D(sourceTexture, v2fSrcPosition);											\n\
+	        																										\n\
+	        		gl_PointSize = 1.;																				\n\
+	        		gl_Position = vec4(v2fDstPosition*2. - 1., 0., 1.);												\n\
+				}																									\n\
+				",
+				"									\n\
+				#ifdef GL_ES                        \n\
+				    precision highp float;          \n\
+				#endif								\n\
+				varying vec4 v4fValue;              \n\
+				                                    \n\
+				void main(void) {                   \n\
+				    gl_FragColor = v4fValue;        \n\
 				}                                   \n\
 				");
 	        }
@@ -270,14 +342,15 @@ module akra.webgl {
 		        iXend = (iXend === 0 ? iWidth : iXend);
 
 		        //FIX THIS, move this function from here...
+		        var me = this;
 		        function updatePixelRect(iX: uint, iY: uint, iW: uint, iH: uint): void {
 		            iBeginElement = iEndElement;
 		            iEndElement = iW * iH * nElementsPerPix + iEndElement;
 
-		            pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, this._pWebGLTexture);
+		            pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, me._pWebGLTexture);
 
 		            pWebGLContext.texSubImage2D(GL_TEXTURE_2D, 0, iX, iY, iW, iH, 
-		            	this._eWebGLFormat, this._eWebGLType, pBufferData.subarray(iBeginElement, iEndElement));
+		            	me._eWebGLFormat, me._eWebGLType, pBufferData.subarray(iBeginElement, iEndElement));
 		        };
 
 		        if (iHeight === 1) {
@@ -299,6 +372,9 @@ module akra.webgl {
 		        var iRealSize: uint 	= nElements * iTypeSize;
 		        var pTempData: Uint8Array = <Uint8Array>this._pBackupCopy.lock(iRealOffset, iRealSize);
 		        //var iTotalSize: uint 	= iRealOffset + iRealSize;
+		        
+		        //FIX ME:
+		        this._pBackupCopy.unlock();
 
 		        this._bForceUpdateBackupCopy = false;
 
@@ -324,55 +400,66 @@ module akra.webgl {
 		            pRealData[iLeftShift + i] = pBufferData[i];
 		        }		        
 
-		        var pShaderSource;
 		        var pWebGLFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
-		        var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_update_vertex_texture");
+		        var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_vertex_texture_update");
 		        
 		        var pValueBuffer: WebGLBuffer 		= pWebGLRenderer.createWebGLBuffer();
 		        var pMarkupIndexBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
 		        var pMarkupShiftBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
 
-		        debug_assert(isDef(pWebGLProgram), "cound not find WEBGL_update_vertex_texture program");
+		        debug_assert(isDef(pWebGLProgram), "cound not find WEBGL_vertex_texture_update program");
 
 		        pWebGLRenderer.disableAllWebGLVertexAttribs();
 
 		        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pWebGLFramebuffer);
 		        pWebGLRenderer.useWebGLProgram(pWebGLProgram.getWebGLProgram());
 
-		        //FIXME: set weblg states (GL_DEPTH_FUNC, GL_***)
+		        pWebGLContext.disable(GL_DEPTH_TEST);
+		        pWebGLContext.disable(GL_SCISSOR_TEST);
+		        pWebGLContext.disable(GL_BLEND);
+		        pWebGLContext.disable(GL_CULL_FACE);
+
+		        var iValueAttribLocation: uint = pWebGLProgram.getWebGLAttributeLocation("VALUE");
+		        var iIndexAttribLocation: uint = pWebGLProgram.getWebGLAttributeLocation("INDEX");
+		        var iShiftAttribLocation: uint = pWebGLProgram.getWebGLAttributeLocation("SHIFT");
+
+		        pWebGLContext.enableVertexAttribArray(iValueAttribLocation);
+		        pWebGLContext.enableVertexAttribArray(iIndexAttribLocation);
+		        pWebGLContext.enableVertexAttribArray(iShiftAttribLocation);
 
 		        pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
 		        	GL_TEXTURE_2D, this._pWebGLTexture, 0);
 
 		        pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pValueBuffer);
 		        pWebGLContext.bufferData(GL_ARRAY_BUFFER, pRealData, GL_STREAM_DRAW);
-		        pWebGLContext.vertexAttribPointer(pWebGLProgram.getWebGLAttributeLocation("VALUE"), 4, GL_FLOAT, false, 0, 0);
+		        pWebGLContext.vertexAttribPointer(iValueAttribLocation, 4, GL_FLOAT, false, 0, 0);
 		        
 		        pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pMarkupIndexBuffer);
 		        pWebGLContext.bufferData(GL_ARRAY_BUFFER, pMarkupDataIndex, GL_STREAM_DRAW);
-		        pWebGLContext.vertexAttribPointer(pWebGLProgram.getWebGLAttributeLocation("INDEX"), 1, GL_FLOAT, false, 0, 0);
+		        pWebGLContext.vertexAttribPointer(iIndexAttribLocation, 1, GL_FLOAT, false, 0, 0);
 		        
 
 		        pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pMarkupShiftBuffer);
 		        pWebGLContext.bufferData(GL_ARRAY_BUFFER, pMarkupDataShift, GL_STREAM_DRAW);
-		        pWebGLContext.vertexAttribPointer(pWebGLProgram.getWebGLAttributeLocation("SHIFT"), 1, GL_FLOAT, false, 0, 0);
+		        pWebGLContext.vertexAttribPointer(iShiftAttribLocation, 1, GL_FLOAT, false, 0, 0);
 
-		        pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, this._pWebGLTexture);
 		        pWebGLRenderer.activateWebGLTexture(GL_TEXTURE0);
+		        pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, this._pWebGLTexture);
 
-
-		        pWebGLContext.uniform2i("size", this._iWidth, this._iHeight);
-		        pWebGLContext.uniform1i("sourceTexture", 0);
-	
-		        
+		        pWebGLProgram.setInt("sourceTexture", 0);
+		        pWebGLProgram.setVec2("size", this._iWidth, this._iHeight);
 
 		        pWebGLContext.viewport(0, 0, this._iWidth, this._iHeight);
-		        pWebGLContext.drawArrays(0, 0, nPixels);
+		        pWebGLContext.drawArrays(GL_POINTS, 0, nPixels);
 		        pWebGLContext.flush();
 
 		        pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, null, 0);
 
 		        pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, null);
+
+		        pWebGLContext.disableVertexAttribArray(iValueAttribLocation);
+		        pWebGLContext.disableVertexAttribArray(iIndexAttribLocation);
+		        pWebGLContext.disableVertexAttribArray(iShiftAttribLocation);
 
 		        pWebGLRenderer.deleteWebGLBuffer(pValueBuffer);
 		        pWebGLRenderer.deleteWebGLBuffer(pMarkupShiftBuffer);
@@ -386,60 +473,148 @@ module akra.webgl {
 		}
 
 		resize(iSize: uint): bool {
-			var eUsage: int;
-			var pData: Uint8Array;
-			var iMax: int = 0;
-			var pVertexData: IVertexData;
-		    var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
+
+			var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 			var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
 
-			if(this.isBackupPresent()) {
-				return false;		
-			}
-
+			var iMax: int = 0;
 			if(iSize < this.byteLength) {
 				for(var k: int = 0; k < this._pVertexDataArray.length; ++ k) {
-					pVertexData = this._pVertexDataArray[k];
+					var pVertexData: IVertexData = this._pVertexDataArray[k];
 
 					if(pVertexData.byteOffset + pVertexData.byteLength > iMax) {
 						iMax = pVertexData.byteOffset + pVertexData.byteLength;
 					}		
 				}	
 
-				debug_assert(iMax <= iSize,
-					"Уменьшение невозможно. Страая разметка не укладывается в новый размер");
+				if(iMax > iSize){
+					debug_assert(false,
+						"Уменьшение невозможно. Страая разметка не укладывается в новый размер");
+					return false;
+				}
 			}
-			
-			if(pWebGLContext.isTexture(this._pWebGLTexture)) {
-				pWebGLRenderer.deleteWebGLTexture(this._pWebGLTexture);
+
+			var pPOTSize: uint[] = math.calcPOTtextureSize(math.ceil(iSize / pixelUtil.getNumElemBytes(this._ePixelFormat)));
+
+			pPOTSize[0] = (pPOTSize[0] < WEBGL_VERTEX_TEXTURE_MIN_SIZE) ? WEBGL_VERTEX_TEXTURE_MIN_SIZE : pPOTSize[0];
+			pPOTSize[1] = (pPOTSize[1] < WEBGL_VERTEX_TEXTURE_MIN_SIZE) ? WEBGL_VERTEX_TEXTURE_MIN_SIZE : pPOTSize[1];
+
+			if(pPOTSize[0] !== this._iWidth || pPOTSize[1] !== this._iHeight){
+				if(this.isBackupPresent()){
+					this._iWidth = pPOTSize[0];
+					this._iHeight = pPOTSize[1];
+
+					pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, this._pWebGLTexture);
+				    pWebGLContext.texImage2D(GL_TEXTURE_2D, 0, this._eWebGLFormat, 
+				    	this._iWidth, this._iHeight, 0,  this._eWebGLFormat, this._eWebGLType, null);
+
+
+				    var iByteLength: uint = this.byteLength;
+
+				    /*resing backup copy don't cause data loss*/
+				    this._pBackupCopy.resize(iByteLength);
+
+					var pData: Uint8Array = new Uint8Array(iByteLength);
+					
+					if (!this.readData(pData)) {
+						debug_warning("cannot read data from buffer");
+						return false;
+					}
+
+					this.writeData(pData, 0, iByteLength);
+				}
+				else{
+			        var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_vertex_texture_resize");
+
+			        debug_assert(isDef(pWebGLProgram), "cound not find WEBGL_vertex_texture_resize program");
+
+			        pWebGLRenderer.useWebGLProgram(pWebGLProgram.getWebGLProgram());
+
+			        //create new texture for resize
+					var pTexture : WebGLTexture = pWebGLRenderer.createWebGLTexture();
+					pWebGLRenderer.activateWebGLTexture(GL_TEXTURE1);
+					pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, pTexture);
+				    pWebGLContext.texImage2D(GL_TEXTURE_2D, 0, this._eWebGLFormat, 
+				    	pPOTSize[0], pPOTSize[1], 0,  this._eWebGLFormat, this._eWebGLType, null);
+
+				    pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_MAG_FILTER, pWebGLContext.NEAREST);
+				    pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_MIN_FILTER, pWebGLContext.NEAREST);
+				    pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_WRAP_S, pWebGLContext.CLAMP_TO_EDGE);
+				    pWebGLContext.texParameterf(pWebGLContext.TEXTURE_2D, pWebGLContext.TEXTURE_WRAP_T, pWebGLContext.CLAMP_TO_EDGE);
+
+			        var pWebGLFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
+			        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pWebGLFramebuffer);
+			        pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
+			        	GL_TEXTURE_2D, pTexture, 0);
+
+			        if(iSize >= this.byteLength) {
+			        	/*in other case we already have iMax*/
+						for(var k: int = 0; k < this._pVertexDataArray.length; ++ k) {
+							var pVertexData: IVertexData = this._pVertexDataArray[k];
+
+							if(pVertexData.byteOffset + pVertexData.byteLength > iMax) {
+								iMax = pVertexData.byteOffset + pVertexData.byteLength;
+							}		
+						}	
+					}
+
+			        var iTypeSize: uint 		= pixelUtil.getComponentTypeBits(this._ePixelFormat) / 8; /*предпологается, что float*/
+		        	var nElementsPerPix: uint 	= pixelUtil.getComponentCount(this._ePixelFormat);		 /*число float'ов в пикселе*/
+		        	var nPixels: uint = math.ceil(iMax/iTypeSize/nElementsPerPix);
+
+		        	var pIndexBufferData: Float32Array = new Float32Array(nPixels);
+		        	for(var i:int = 0; i < nPixels; i++){
+		        		pIndexBufferData[i] = i;
+		        	}
+
+		        	pWebGLRenderer.disableAllWebGLVertexAttribs();
+
+		        	var iIndexAttribLocation: uint = pWebGLProgram.getWebGLAttributeLocation("INDEX");
+
+		        	pWebGLContext.enableVertexAttribArray(iIndexAttribLocation);
+
+			        var pIndexBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
+			        pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pIndexBuffer);
+			        pWebGLContext.bufferData(GL_ARRAY_BUFFER, pIndexBufferData, GL_STREAM_DRAW);
+			        pWebGLContext.vertexAttribPointer(iIndexAttribLocation, 1, GL_FLOAT, false, 0, 0);
+
+			        pWebGLContext.disable(GL_DEPTH_TEST);
+			        pWebGLContext.disable(GL_SCISSOR_TEST);
+			        pWebGLContext.disable(GL_BLEND);
+			        pWebGLContext.disable(GL_CULL_FACE);
+
+			        pWebGLRenderer.activateWebGLTexture(GL_TEXTURE0);
+			        pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, this._pWebGLTexture);
+
+			        pWebGLProgram.setInt("sourceTexture", 0);
+		        	pWebGLProgram.setVec2("v2fSrcTexSize", this._iWidth, this._iHeight);
+		        	pWebGLProgram.setVec2("v2fDstTexSize", pPOTSize[0], pPOTSize[1]);
+
+			        pWebGLContext.viewport(0, 0, pPOTSize[0], pPOTSize[1]);
+			        pWebGLContext.drawArrays(GL_POINTS, 0, nPixels);
+			        pWebGLContext.flush();
+
+			        pWebGLContext.framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, null, 0);
+
+			        pWebGLContext.disableVertexAttribArray(iIndexAttribLocation);
+			        pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, null);
+			        pWebGLRenderer.deleteWebGLBuffer(pIndexBuffer);
+
+			        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, null);
+			        pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);
+
+			        pWebGLRenderer.deleteWebGLTexture(this._pWebGLTexture);
+
+			        this._pWebGLTexture = pTexture;
+			        this._iWidth = pPOTSize[0];
+			        this._iHeight = pPOTSize[1];
+				}
 			}		
-
-
-		    this._pWebGLTexture = pWebGLRenderer.createWebGLTexture();
-
-		    if (!this._pWebGLTexture) {
-		        CRITICAL("Не удалось создать текстуру");
-		        
-		        this.destroy();
-		        return false;
-		    }
-
-
-		    pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, this._pWebGLTexture);
 			
-			pData = new Uint8Array(this.byteLength);
-			
-			if (this.readData(pData)) {
-				debug_warning("cannot read data from buffer");
-				return false;
-			}
-
-
-			this.writeData(pData, 0, this.byteLength);
-			this._pBackupCopy.resize(iSize);	
+			this._pHeader.setData(this._header());
 
 			this.notifyAltered();
-			
+
 			return true;
 		}
 
@@ -460,6 +635,19 @@ module akra.webgl {
 		protected copyBackupToRealImpl(pRealData: Uint8Array, pBackupData: Uint8Array, iLockFlags: int): void {
 			pRealData.set(pBackupData);
 		}
+
+		protected _header(iTextureSizeX: uint = this._iWidth, iTextureSizeY: uint = this._iHeight){
+			var pHeader: Float32Array = new Float32Array(8);
+
+			pHeader[VIDEOBUFFER_HEADER_WIDTH] = iTextureSizeX;
+			pHeader[VIDEOBUFFER_HEADER_HEIGHT] = iTextureSizeY;
+			pHeader[VIDEOBUFFER_HEADER_STEP_X] = 1/iTextureSizeX;
+			pHeader[VIDEOBUFFER_HEADER_STEP_Y] = 1/iTextureSizeY;
+			pHeader[VIDEOBUFFER_HEADER_NUM_PIXELS] = iTextureSizeX * iTextureSizeY;
+			pHeader[VIDEOBUFFER_HEADER_NUM_ELEMENTS] = pHeader[VIDEOBUFFER_HEADER_NUM_PIXELS] * pixelUtil.getNumElemBytes(this._ePixelFormat);
+
+			return pHeader;
+		};
 	}
 
 	

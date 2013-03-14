@@ -1,6 +1,7 @@
 #ifndef DSVIEWPORT_TS
 #define DSVIEWPORT_TS
 
+
 #define PREPARE_DEFERRED_SHADING_AFX 			"prepare_deferred_shading.afx"
 #define BASIC_DEFERRED_SHADING_AFX 				"base_deferred_shading.afx"
 #define LIGHTS_AND_SHADOWS_DEFERRED_SHADING_AFX "lights_and_shadows_deferred_shading.afx"
@@ -185,7 +186,7 @@ module akra.render {
 
 			pDepthTexture = this._pDeferredDepthTexture = pResMgr.createTexture("deferred-depth-texture-" + iGuid);
 			pDepthTexture.create(iWidth, iHeight, 1, 0, 0, 
-					ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH);
+					ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_DEPTH);
 
 			for (var i = 0; i < 2; ++ i) {
 				pDeferredTextures[i] = this._pDefferedColorTextures[i] = 

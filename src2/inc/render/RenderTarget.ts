@@ -112,8 +112,8 @@ module akra.render {
 			}
 
 			var eFormat: EPixelFormats = pBuffer.format;
-			if(eFormat !== EPixelFormats.DEPTH ||
-			   eFormat !== EPixelFormats.DEPTH_BYTE){
+			if(eFormat !== EPixelFormats.FLOAT32_DEPTH ||
+			   eFormat !== EPixelFormats.DEPTH8){
 				return false;
 			}
 

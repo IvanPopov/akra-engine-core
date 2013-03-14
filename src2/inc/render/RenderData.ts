@@ -526,12 +526,12 @@ module akra.render {
 		    for (var i: int = 0; i < pDecl.length; i++) {
 		        pI2IDecl.push(VE_FLOAT('INDEX_' + pDecl[i].eUsage, 0));
 		    }
-		    ;
+		    
 
 		    for (var i: int = 0; i < pI2IData.length; i++) {
 		        pI2IData[i] = i;
 		    }
-		    ;
+		    
 
 		    if (!this._allocateIndex(pI2IDecl, pI2IData)) {
 		        this.releaseData(iIndLoc);
@@ -551,7 +551,7 @@ module akra.render {
 		 */
 		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBuffer): bool;
 		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBufferView): bool;
-		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBufferView): bool{
+		private _createIndex(pAttrDecl: IVertexDeclaration, pData:any): bool{
 		    'use strict';
 
 		    if (!this._pIndexBuffer) {
