@@ -13,8 +13,8 @@ module akra {
 		createDNDNode(pElement: HTMLElement): IUIDNDNode;
 		//createComponent(eType: EEntityTypes): IUIComponent;
 		createComponent(sName: string, pOptions?: IUIComponentOptions): IUIComponent;
-		createLayout(eType: EUILayouts): IUILayout;
-		createLayout(sType: string): IUILayout;
+		createLayout(eType: EUILayouts, pAttrs?: IUILayoutAttributes): IUILayout;
+		createLayout(sType: string, pAttrs?: IUILayoutAttributes): IUILayout;
 	}
 }
 

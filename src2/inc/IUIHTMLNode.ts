@@ -15,6 +15,11 @@ module akra {
 		isFocused(): bool;
 		isRendered(): bool;
 
+		width(): uint;
+		height(): uint;
+
+		attachToParent(pParent: IUINode, bRender?: bool): bool;
+
 		signal click(e: IUIEvent): void;
 		signal dblclick(e: IUIEvent): void;
 		

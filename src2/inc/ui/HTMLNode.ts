@@ -36,12 +36,13 @@ module akra.ui {
 		}
 
 		inline getHTMLElement(): HTMLElement {
-			return this.$element.get();
+			return this.$element.get()[0];
 		}
 
 		render(): bool;
 		render(pParent: IUINode): bool;
 		render(pElement: HTMLElement): bool;
+		render(pElement: JQuery): bool;
 		render(sSelector: string): bool;
 		render(to?): bool {
 			var $to = $body;
@@ -72,9 +73,11 @@ module akra.ui {
 			return true;
 		}
 
-		attachToParent(pParent: IUINode): bool {
+		attachToParent(pParent: IUINode, bRender: bool = true): bool {
 			if (super.attachToParent(pParent)) {
-				this.render(pParent);
+				if (bRender) {
+					this.render(pParent);
+				}
 				return true;
 			}
 			return false;
@@ -87,6 +90,18 @@ module akra.ui {
 		isRendered(): bool {
 			//console.log((<any>new Error).stack)
 			return !isNull(this.$element) && this.$element.parent().length > 0;
+		}
+
+		destroy(): void {
+			this.$element.remove();
+		}
+
+		inline width(): uint {
+			return this.$element.width();
+		}
+
+		inline height(): uint {
+			return this.$element.height();
 		}
 
 		valueOf(): JQuery {
@@ -116,6 +131,7 @@ module akra.ui {
 		BROADCAST(keydown, CALL(e));
 		BROADCAST(keyup, CALL(e));
 
+		BROADCAST(resize, VOID);
 		BROADCAST(rendered, VOID);
 
 
@@ -131,7 +147,8 @@ module akra.ui {
 			"blur",
 			"change",
 			"keydown",
-			"keyup"
+			"keyup",
+			"resize"
 		];
 	}
 }

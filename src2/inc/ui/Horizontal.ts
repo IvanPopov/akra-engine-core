@@ -18,6 +18,16 @@ module akra.ui {
 			this.$row.append($td);
 			return $td;
 		}
+
+#ifdef DEBUG
+		toString(isRecursive: bool = false, iDepth: int = 0): string {
+			if (!isRecursive) {
+		        return '<horizontal' + (this.name? " " + this.name: "") + '>';
+		    }
+
+		    return super.toString(isRecursive, iDepth);
+		}
+#endif
 	}
 }
 

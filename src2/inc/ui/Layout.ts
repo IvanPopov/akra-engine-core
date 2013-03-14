@@ -6,7 +6,8 @@
 
 module akra.ui {
 	export class Layout extends HTMLNode implements IUILayout {
-		private _eLayoutType: EUILayouts;
+		protected _eLayoutType: EUILayouts;
+		protected _pAttrs: IUILayoutAttributes = null;
 
 		inline get layoutType(): EUILayouts { return this._eLayoutType; }
 
@@ -20,10 +21,23 @@ module akra.ui {
 		attachToParent(pParent: IUINode): bool {
 			//layout must be a first child
 			if (isNull(pParent) || !isNull(pParent.child)) {
-				return false;
+				//return false;
+				WARNING("Node: \n" + pParent.toString(true) + "\nalready has layout node as child.");
 			}
 
 			return super.attachToParent(pParent);
+		}
+
+		inline attr(sAttr: string): any {
+			return isNull(this._pAttrs)? null: (<any>this._pAttrs)[sAttr];
+		}
+
+		setAttributes(pAttrs: IUILayoutAttributes): void {
+			if (isNull(pAttrs)) {
+				return;
+			}
+
+			this._pAttrs = pAttrs;
 		}
 
 

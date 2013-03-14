@@ -13,7 +13,7 @@ module akra.ui {
 
 	export function loadTemplate(sData: string): void {
 		$("<div/>").html(sData).find("> component").each(function(i: int) {
-			TEMPLATES[$(this).attr("name")] = $(this).html();
+			TEMPLATES[$(this).attr("type")] = $(this).html();
 		});
 	}
 
@@ -24,6 +24,8 @@ module akra.ui {
 			loadTemplate(sData);
 		}
 	});
+
+	export var COMPONENTS: { [type: string]: IUIComponentType; } = <any>{};
 
 	export class Component extends DNDNode implements IUIComponent {
 		protected _eComponentType: EUIComponents;
@@ -61,21 +63,25 @@ module akra.ui {
 			
 				for (var i: int = 0; i < pComponents.length; i ++) {
 					var $component: JQuery = $(pComponents[i]);
-					var sCompName: string = $component.attr("name");
+					var sCompType: string = $component.attr("type");
 					var sClasses: string = $component.attr("class");
 					var sHtml: string = $component.attr("text");
-					var sTempTpl: string = TEMPLATES[sCompName] || "";
+					var sTempTpl: string = TEMPLATES[sCompType] || "";
 
-					TEMPLATES[sCompName] = sTempTpl + $component.html();
+					TEMPLATES[sCompType] = sTempTpl + $component.html();
 
-					var pComp: Component = <Component>this.ui.createComponent(sCompName);
-					pComp.attachToParent(this);
+					var pComp: Component = <Component>this.ui.createComponent(sCompType);
 					
-					TEMPLATES[sCompName] = sTempTpl;
+					if (!pComp.attachToParent(this, false)) {
+						debug_print("try to attach ", pComp, "to parent", this);
+						CRITICAL("cannot assemble template component hierarchy");
+					}
+					
+					TEMPLATES[sCompType] = sTempTpl;
 
-					pComponents[i].before(pComp.$element);
-					pComponents[i].remove();
-					pComp.render(null);
+					$component.before(pComp.$element);
+					$component.remove();
+					
 
 					if(isDef(sHtml)) {
 						pComp.$element.attr("text", sHtml);
@@ -84,25 +90,34 @@ module akra.ui {
 					if (isDef(sClasses)) {
 						pComp.$element.addClass(sClasses);
 					}
+
+					pComp.rendered();
 				}
 
 				var $layouts: JQuery = this.$element.find("layout");
 
 				for (var i: int = 0, pLayout = null; i < $layouts.length; i ++) {
 					var $layout: JQuery = $($layouts[i]);
-					var sLayoutName: string = $layout.attr("name");
 					var sLayoutType: string = $layout.attr("type");
+					//var sLayoutType: string = $layout.attr("type");
 					var sAlign: string= $layout.attr("align");
 
-					var pLayout: IUIComponent = this.ui.createLayout(sLayoutName);
+					var pLayout: IUIComponent = this.ui.createLayout(sLayoutType/*, {type: sLayoutType}*/);
 
-					$layout.before(pLayout.renderTarget());
+					if (!pLayout.attachToParent(this, false)) {
+						debug_print("try to attach ", pLayout, "to parent", this);
+						CRITICAL("cannot assemble template layout hierarchy");
+					}
+
+					$layout.before(pLayout.$element);
 					$layout.remove();
+					pLayout.$element.addClass("layout");
+					pLayout.rendered();
 
-					pLayout.render();
+					//pLayout.render();
 
 					if (isDefAndNotNull(sAlign)) {
-						pLayout.align(sAlign);
+						pLayout.$element.attr("align", sAlign);
 					}
 				}	
 			}
@@ -113,7 +128,6 @@ module akra.ui {
 		}
 
 		destroy(): void {
-			this.$element.remove();
 
 			super.destroy();
 		}
@@ -160,12 +174,12 @@ module akra.ui {
 			return pLayout.render(this);
 		}
 
-		attachToParent(pParent: IUINode): bool {
+		attachToParent(pParent: IUINode, bRender: bool = true): bool {
 			if (isComponent(pParent) && isLayout(pParent.child)) {
 				pParent = <IUINode>pParent.child;
 			}
 
-			return super.attachToParent(pParent);
+			return super.attachToParent(pParent, bRender);
 		}
 
 		protected computeStyle(): string {
@@ -234,6 +248,17 @@ module akra.ui {
 			}
 		}
 
+#ifdef DEBUG
+		toString(isRecursive: bool = false, iDepth: int = 0): string {
+			if (!isRecursive) {
+		        return (this.isGeneric()? "<generic-" + this.genericType : "<component-" + this.label()) +
+		        	 (this.name? " " + this.name: "") + ">";
+		    }
+
+		    return super.toString(isRecursive, iDepth);
+		}
+#endif
+
 		static extractComponents($element: JQuery, pComponents: JQuery[] = []): JQuery[] {
 			var $elements: JQuery = $element.children();
 
@@ -261,6 +286,10 @@ module akra.ui {
 			}
 
 			return "component-" + sComponent.toLowerCase();
+		}
+
+		static register(sType: string, pComponent: IUIComponentType): void {
+			COMPONENTS[sType] = pComponent;
 		}
 
 	}

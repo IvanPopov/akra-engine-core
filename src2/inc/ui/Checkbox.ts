@@ -73,6 +73,8 @@ module akra.ui {
 	export inline function isCheckbox(pEntity: IEntity): bool {
 		return isComponent(pEntity, EUIComponents.CHECKBOX);
 	}
+
+	Component.register("Checkbox", Checkbox);
 }
 
 #endif

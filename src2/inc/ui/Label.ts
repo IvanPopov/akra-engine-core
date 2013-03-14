@@ -59,6 +59,8 @@ module akra.ui {
 
 		BROADCAST(changed, CALL(value));
 	}
+
+	Component.register("Label", Label);
 }
 
 #endif

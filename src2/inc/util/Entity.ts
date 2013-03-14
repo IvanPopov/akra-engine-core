@@ -374,7 +374,7 @@ module akra.util {
 		/** Attaches this object ot a new parent. Same as calling the parent's addChild() routine. */
 		attachToParent(pParent: IEntity): bool {
 			
-			var pParentPrev: IEntity = this._pParent;
+			var pParentPrev: IEntity = this.parent;
 
 			if (pParent != this._pParent) {
 

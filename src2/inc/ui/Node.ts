@@ -75,6 +75,15 @@ module akra.ui {
     		return super.addChild(pChild); 
 		}
 
+		attachToParent(pParent: IUINode): bool {
+			if (super.attachToParent(pParent)) {
+				this.relocated(pParent);
+				return true;
+			}
+
+			return false;
+		}
+
 		protected findRenderTarget(): IUINode {
 			var pParent: IUINode = <IUINode>this.parent;
 			
@@ -90,6 +99,15 @@ module akra.ui {
 			return null;
 		}
 
+		signal relocated(pLocation: IUINode): void {
+			EMIT_BROADCAST(relocated, _CALL(pLocation));
+			
+			var pNode: IUINode = <IUINode>this.child;
+			while(!isNull(pNode)) {
+				pNode.relocated(pLocation);
+				pNode = <IUINode>pNode.sibling;
+			}
+		}
 	}
 
 	export function isUI(parent: IUINode): bool;

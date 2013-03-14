@@ -17,6 +17,8 @@ module akra.ui {
 			return "Button";
 		}
 	}
+
+	Component.register("Button", Button);
 }
 
 #endif
