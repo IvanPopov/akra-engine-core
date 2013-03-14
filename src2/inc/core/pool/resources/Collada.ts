@@ -2101,9 +2101,6 @@ module akra.core.pool.resources {
                         pSubMesh.material.set(pMaterial);
                         //FIXME: remove flex material setup(needs only demo with flexmats..)
                         // pSubMesh.applyFlexMaterial(sMaterial, pMaterial);
-                        if (!pSubMesh.renderMethod.effect.isResourceLoaded()) {
-                            pSubMesh.renderMethod.effect.create();
-                        }
 
                         pSubMesh.renderMethod.effect.addComponent("akra.system.mesh_texture");
                         pSubMesh.renderMethod.effect.addComponent("akra.system.prepareForDeferredShading");

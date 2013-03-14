@@ -240,7 +240,7 @@ module akra.render {
 					pRenderable = pVisibleObjects.value(i).getRenderable();
 
 					if (!isNull(pRenderable)) {
-						pRenderable.render(csMethod);
+						pRenderable.render(csMethod, pVisibleObjects.value(i));
 					}
 				}
 		}

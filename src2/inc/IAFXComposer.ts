@@ -13,17 +13,6 @@
 #include "IAFXComponentBlend.ts"
 
 module akra {
-
-	export interface IAFXComponentBlendMap {
-		[index: uint]: IAFXComponentBlend;
-		[index: string]: IAFXComponentBlend; 
-	}
-
-	export interface IAFXComponentMap {
-		[index: uint]: IAFXComponent;
-		[index: string]: IAFXComponent;
-	}
-
 	export interface IAFXComposer {
 		getComponentByName(sComponentName: string): IAFXComponent;
 		getEngine(): IEngine;
@@ -32,8 +21,26 @@ module akra {
 		
 		getComponentCountForEffect(pEffectResource: IEffect): uint;
 		getTotalPassesForEffect(pEffectResource: IEffect): uint;
-		addComponentToEffect(pEffectResource: IEffect, pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
-		removeComponentFromEffect(pEffectResource: IEffect, pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
+		addComponentToEffect(pEffectResource: IEffect, 
+							 pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
+		removeComponentFromEffect(pEffectResource: IEffect, 
+								  pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
+
+		activateEffectResource(pEffectResource: IEffect, iShift: int): bool;
+		deactivateEffectResource(pEffectResource: IEffect): bool; 
+
+		//API for RenderTechnique
+		
+		getTotalPassesForTechnique(pRenderTechnique: IRenderTechnique): uint;
+		
+		addOwnComponentToTechnique(pRenderTechnique: IRenderTechnique, 
+								   pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
+		removeOwnComponentToTechnique(pRenderTechnique: IRenderTechnique, 
+									  pComponent: IAFXComponent, iShift: int, iPass: uint): bool;
+
+		prepareTechniqueBlend(pRenderTechnique: IRenderTechnique): bool;
+
+		markTechniqueAsNeedUpdate(pRenderTechnique: IRenderTechnique): void;
 
 		//API for load components/AFXEffects
 		

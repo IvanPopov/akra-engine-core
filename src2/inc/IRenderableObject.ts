@@ -3,6 +3,7 @@
 
 #include "IRenderTechnique.ts"
 #include "IEventProvider.ts"
+#include "ISceneObject.ts"
 
 module akra {
 	export interface IRenderableObject extends IEventProvider {
@@ -16,6 +17,7 @@ module akra {
 		getGuid(): uint;
 		getRenderer(): IRenderer;
 		getTechnique(sName?: string): IRenderTechnique;
+		getTechniqueDefault(): IRenderTechnique;
 
 		destroy(): void;
 
@@ -25,8 +27,11 @@ module akra {
 		// findRenderMethod(csName: string): uint;
 		switchRenderMethod(csName: string): bool;
 		switchRenderMethod(pMethod: IRenderMethod): bool;
+		
 		removeRenderMethod(csName: string): bool;
 		getRenderMethod(csName?: string): IRenderMethod;
+		
+		getRenderMethodDefault(): IRenderMethod; 
 
 		hasShadow(): bool;
 		setShadow(bValue?: bool): void;
@@ -35,7 +40,7 @@ module akra {
 		isAllMethodsLoaded(): bool;
 
 
-		render(csMethod?: string): void;
+		render(csMethod: string, pSceneObject: ISceneObject): void;
 
 		_setup(pRenderer: IRenderer, csDefaultMethod?: string): void;
 		_draw(): void;
