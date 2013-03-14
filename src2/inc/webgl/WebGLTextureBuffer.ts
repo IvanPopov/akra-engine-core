@@ -215,14 +215,25 @@ module akra.webgl {
 	                // Standard alignment of 4 is not right
 	                pWebGLContext.pixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	            }
-
-	            pWebGLContext.texSubImage2D(this._eFaceTarget,
+	            if (pDestBox.left === 0 && pDestBox.top === 0) {	            	
+	            		pWebGLContext.texImage2D(this._eFaceTarget,
 	                            			this._iLevel,
-	                            			pDestBox.left, pDestBox.top,
-	                            			pDestBox.width, pDestBox.height,
+	                            			webgl.getWebGLFormat(pData.format),	                            			
+	                            			pDestBox.width, pDestBox.height,0,
 	                            			webgl.getWebGLFormat(pData.format),
 	                            			webgl.getWebGLDataType(pData.format),
-	                            			pData.data);
+	                            			new Uint8Array(pData.data));											
+	            }
+	            else
+	            {
+            		pWebGLContext.texSubImage2D(this._eFaceTarget,
+                            			this._iLevel,
+                            			pDestBox.left, pDestBox.top,                            			
+                            			pDestBox.width, pDestBox.height,
+                            			webgl.getWebGLFormat(pData.format),
+                            			webgl.getWebGLDataType(pData.format),
+                            			pData.data);
+	            }
 	        }
 	        
 	        if (TEST_ANY(this._iFlags, ETextureFlags.AUTOMIPMAP) && !this._bSoftwareMipmap && (this._iLevel === 0)) {

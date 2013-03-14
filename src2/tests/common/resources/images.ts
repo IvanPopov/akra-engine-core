@@ -40,7 +40,7 @@ module akra{
 			pContext = <CanvasRenderingContext2D>pCanvas.getContext('2d');
 			
 
-			
+			/*
 			pImageData=pContext.getImageData(0, 0, pCanvas.width, pCanvas.height);
 			pData=pImageData.data;
 
@@ -58,7 +58,7 @@ module akra{
 				}
 			}
 
-			pContext.putImageData(pImageData, 0, 0);
+			pContext.putImageData(pImageData, 0, 0);*/
 			shouldBeTrue("load image(dds)");
 
 			pTex.loadImage(pImg);
@@ -66,7 +66,7 @@ module akra{
 			ok(isResult && pImg.width>0 && pImg.height>0);
 
 		}
-		pImg.load("data/logo_ABGR.dds",fnDraw)
+		pImg.load("data/logo_DXT5_mip_power_of_two.dds",fnDraw)
 
 		
 

@@ -1347,10 +1347,13 @@ module akra {
 	                a = bf.fixedToFloat((value & des.amask) >>> des.ashift, des.abits);
 	            }
 	            else {
-	                a = 1.0; // No alpha, default a component to full
+                    
+	                a = 1.0; /* No alpha, default a component to full*/
 	            }
+                
 
-	        } else {
+	        } 
+            else {
 	            switch(ePf) {
 	            case EPixelFormats.FLOAT32_R:
 	                r = g = b = dynamic_cast_f32_ptr(pSrc, 1)[0];
