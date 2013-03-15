@@ -68,7 +68,7 @@ module akra.core.pool.resources {
 		getEmptyVertexData(iCount: uint, pDecl: IVertexDeclaration, ppVertexDataIn?: IVertexData): IVertexData;
 		getEmptyVertexData(iCount: uint, pSize: uint, ppVertexDataIn?: IVertexData): IVertexData;
 		getEmptyVertexData(iCount: uint, pDeclData: any, ppVertexDataIn?: IVertexData): IVertexData {
-			var pDecl: IVertexDeclaration;
+			var pDecl: IVertexDeclaration = null;
 			var pHole: IBufferHole[] = [];
 			var i: int;
 			var pVertexData: IVertexData;	
@@ -164,7 +164,7 @@ module akra.core.pool.resources {
 							return pVertexData;
 						}
 						else if(arguments.length == 3) {
-							((<any>ppVertexDataIn).constructor).call(ppVertexDataIn, this, iAligStart, iCount, pDeclData);
+							((<any>ppVertexDataIn).constructor).call(ppVertexDataIn, this, ppVertexDataIn.id, iAligStart, iCount, pDeclData);
 							this._pVertexDataArray.push(ppVertexDataIn);
 							
 							this.notifyAltered();

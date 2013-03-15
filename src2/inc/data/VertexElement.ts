@@ -60,7 +60,7 @@ module akra.data {
 		};
 
 		inline static hasUnknownOffset(pElement: IVertexElementInterface): bool {
-			return pElement.offset === UNKNOWN_OFFSET;
+			return (!isDef(pElement.offset) || (pElement.offset === UNKNOWN_OFFSET));
 		};
 
 		toString(): string {

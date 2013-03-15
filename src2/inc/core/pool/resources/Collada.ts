@@ -1576,7 +1576,6 @@ module akra.core.pool.resources {
                 return null;
             }
 
-
             var pMaterials: IColladaBindMaterial = {};
             var pMat: IColladaInstanceMaterial = null;
             var pSourceMat: IColladaMaterial = null;
