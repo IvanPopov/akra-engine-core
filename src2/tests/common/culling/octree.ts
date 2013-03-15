@@ -41,7 +41,7 @@ module akra {
 
 	for(var i=0; i<iMax; i++){
 		for(var j=0; j<iMax; j++){
-			pObject = new scene.SceneObject(pScene3D);
+			pObject = pScene3D.createObject();
 			pObject.create();
 			pObject.accessLocalBounds().set(-iWorldSizeX/2 + i*iStepX, -iWorldSizeX/2 + (i+1)*iStepX,
 											-10,10,
