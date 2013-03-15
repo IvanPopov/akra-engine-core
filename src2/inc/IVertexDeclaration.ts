@@ -72,7 +72,7 @@ module akra {
 
 	export interface IVertexDeclaration {
 		stride: uint;
-		length: uint;
+		readonly length: uint;
 
 		
 		//[index: number]: IVertexElement;
@@ -113,7 +113,7 @@ module akra {
 
 	export function VE_END(iOffset: uint = 0): IVertexElementInterface { return VE_CUSTOM(DeclUsages.END, EDataTypes.UNSIGNED_BYTE, 0, iOffset); };
 
-	export var createVertexDeclaration: (pData?) => IVertexDeclaration;
+	//export var createVertexDeclaration: (pData?) => IVertexDeclaration;
 }
 
 #endif

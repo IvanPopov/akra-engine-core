@@ -434,7 +434,7 @@ module akra.util {
 		        var pFlow: IDataFlow = this._pCompleteFlows[i];
 		        var pMapper: IDataMapper = pFlow.mapper;
 		        var pVertexData: IVertexData = pFlow.data;
-		        var pDecl: IVertexDeclaration = pVertexData.getVertexDeclaration();
+		        var pDecl: data.VertexDeclaration = pVertexData.getVertexDeclaration();
 		        //trace(pMapper); window['pMapper'] = pMapper;
 		        s += '#' + _an(pFlow.flow, 2) + ' ' + 
 		            _an('[ ' + (pDecl.element(0).usage !== DeclUsages.END? pDecl.element(0).usage: '<end>') + ' ]', 20) + 

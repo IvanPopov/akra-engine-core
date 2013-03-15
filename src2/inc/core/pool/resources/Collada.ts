@@ -59,6 +59,7 @@ module akra.core.pool.resources {
 
     var pSupportedVertexFormat: IColladaUnknownFormat[];
     var pSupportedTextureFormat: IColladaUnknownFormat[];
+    var pSupportedColorFormat: IColladaUnknownFormat[];
     var pSupportedWeightFormat: IColladaUnknownFormat[];
     var pSupportedJointFormat: IColladaUnknownFormat[];
     var pSupportedInvBindMatrixFormat: IColladaUnknownFormat[];
@@ -1100,7 +1101,7 @@ module akra.core.pool.resources {
 
             n *= pVertexWeights.inputs.length;
 
-            ERROR(pVertexWeights.inputs.length === 2,
+            ASSERT(pVertexWeights.inputs.length === 2,
                          "more than 2 inputs in <vertex_weights/> not supported currently");
 
             pVData = new Array(n);
@@ -1236,10 +1237,11 @@ module akra.core.pool.resources {
 
             var pXMLData: Element = firstChild(pXML, "skin");
 
-            if (isNull(pXMLData)) {
+            if (!isNull(pXMLData)) {
                 pController.skin = this.COLLADASkin(pXMLData);
             }
             else {
+                debug_warning("Founded controller without skin element!");
                 return null;
             }
 
@@ -1797,7 +1799,7 @@ module akra.core.pool.resources {
             var pElement: IColladaEntry = this._pLinks[sUrl];
 
             if (!isDefAndNotNull(pElement)) {
-                WARNING("cannot find element with id: " + sUrl);
+                WARNING("cannot find element with id: " + sUrl + __CALLSTACK__);
             }
 
             return pElement || null;
@@ -2150,8 +2152,8 @@ module akra.core.pool.resources {
 
             for (var i: int = 0; i < pSkeletonsList.length; ++i) {
                 var pJoint: IJoint = <IJoint>(<IColladaNode>this.source(pSkeletonsList[i])).constructedNode;
-
-                ERROR(scene.isJoint(pJoint), "skeleton node must be joint");
+                
+                ASSERT(scene.isJoint(pJoint), "skeleton node must be joint");
 
                 pSkeleton.addRootJoint(pJoint);
             }
@@ -2419,9 +2421,10 @@ module akra.core.pool.resources {
                 pSceneNode = pScene.createNode();
             }
 
+            ASSERT(pSceneNode.create(), "Can not initialize scene node!");
+
             pSceneNode.attachToParent(pParentNode);
         
-
             return pSceneNode;
         }
         
@@ -2442,6 +2445,9 @@ module akra.core.pool.resources {
             }
 
             pJointNode = pParentNode.scene.createJoint();
+                
+            ASSERT(pJointNode.create(), "Can not initialize joint node!");
+
             pJointNode.boneName = sJointSid;
             pJointNode.attachToParent(pParentNode);
 
@@ -2631,7 +2637,6 @@ module akra.core.pool.resources {
 
         private prepareInput(pInput: IColladaInput): IColladaInput {
             var pSupportedFormat: IColladaUnknownFormat[] = getSupportedFormat(pInput.semantics);
-            
             debug_assert(isDefAndNotNull(pSupportedFormat), "unsupported semantic used <" + pInput.semantics + ">");
 
             pInput.array    = <any[]><any>this.COLLADAGetSourceData(pInput.source, pSupportedFormat);
@@ -2705,7 +2710,6 @@ module akra.core.pool.resources {
             
             for (var i: int = 0; i < pTemplates.length; i++) {
                 var sLib: string = pTemplates[i].lib;
-
                 pLibraries[sLib] = this.COLLADALibrary(firstChild(pXML, sLib), pTemplates[i]);
             }
         } 
@@ -2778,6 +2782,10 @@ module akra.core.pool.resources {
                     pModel.notifyLoaded();
                 }
             });
+        }
+
+        getAnimationController(): IAnimationController {
+            return null;
         }
 
         attachToScene(pNode: ISceneNode): bool {
@@ -2874,6 +2882,12 @@ module akra.core.pool.resources {
         {name : ["S"], type : ["float"]},
         {name : ["T"], type : ["float"]},
         {name : ["P"], type : ["float"]}
+    ];
+
+    pSupportedColorFormat = [
+        {name : ["R"], type : ["float"]},
+        {name : ["G"], type : ["float"]},
+        {name : ["B"], type : ["float"]}
     ];
 
     pSupportedWeightFormat = [
@@ -2976,14 +2990,14 @@ module akra.core.pool.resources {
 
             case "OUTPUT":
                 return pSupportedOutputFormat;
-
+            case "COLOR":
+                return pSupportedColorFormat;
             case "UV":
             case "MORPH_WEIGHT":
             case "MORPH_TARGET":
             case "LINEAR_STEPS":
             case "IMAGE":
             case "CONTINUITY":
-            case "COLOR":
                 return null;
         }
         

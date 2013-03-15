@@ -68,10 +68,10 @@ module akra.render {
 			var pMethod: IRenderMethod = null;
 
 			if (isNull(csMethod)) {
-				return false;
+				csMethod = DEFAULT_RM;
 			}
 
-		    if (isString(arguments[0])) {
+		    if (isString(arguments[0]) || arguments.length === 0) {
 		        pMethod = pRmgr.createRenderMethod((csMethod) + this.getGuid());
 
 		        if (!isDefAndNotNull(pMethod)) {

@@ -100,7 +100,8 @@ module akra.data {
 
 		
 
-		extend(pDecl: IVertexDeclaration): bool {
+		extend(decl: IVertexDeclaration): bool {
+			var pDecl: VertexDeclaration = <VertexDeclaration>decl;
 			var pElement: IVertexElement;
 
 		    for (var i = 0; i < this.length; ++ i) {
@@ -140,7 +141,7 @@ module akra.data {
 
 		clone(): IVertexDeclaration {
 			var pElements: IVertexElement[] = [];
-			var pDecl: IVertexDeclaration;
+			var pDecl: VertexDeclaration;
 
 		    for (var i = 0; i < this.length; ++ i) {
 		        pElements.push(this._pElements[i].clone());
@@ -178,7 +179,7 @@ module akra.data {
 module akra {
 	export var VertexDeclaration = data.VertexDeclaration;
 	
-	createVertexDeclaration = function (pData?): IVertexDeclaration {
+	export var createVertexDeclaration = function (pData?): data.VertexDeclaration {
 		if (!(pData instanceof VertexDeclaration)) {
 	        if (!(pData instanceof Array)) {
 	            pData = [pData];

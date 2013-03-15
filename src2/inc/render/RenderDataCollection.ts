@@ -4,6 +4,7 @@
 #include "IRenderDataCollection.ts"
 #include "IHardwareBuffer.ts"
 #include "RenderData.ts"
+#include "data/VertexDeclaration.ts"
 
 module akra.render {
 
@@ -95,7 +96,7 @@ module akra.render {
         	    this.createDataBuffer();
         	}
 
-        	var pVertexDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
+        	var pVertexDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
         	var pVertexData: IVertexData;
         	
         	if ((arguments.length < 2) || isNumber(arguments[1]) || isNull(arguments[1])) {
@@ -117,14 +118,14 @@ module akra.render {
 
         allocateData(pDecl?, pData?, isCommon: bool = true): int {
         	    var pVertexData: IVertexData;
-        	    var pDataDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
+        	    var pDataDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
 
 #ifdef DEBUG
         	    
         	    for (var i: int = 0; i < pDataDecl.length; i++) {
-        	        if (this.getData(pDataDecl[i].eUsage) !== null && pDataDecl[i].nCount !== 0) { 
+        	        if (this.getData(pDataDecl.element(i).usage) !== null && pDataDecl.element(i).count !== 0) { 
         	            WARNING("data buffer already contains data with similar vertex decloration <" + 
-        	                pDataDecl[i].eUsage + ">.");
+        	                pDataDecl.element(i).usage + ">.");
         	        }
         	    };
 
@@ -166,7 +167,7 @@ module akra.render {
             }
             //trace('creating new video buffer for render data buffer ...');
             this._pDataBuffer = this._pEngine.getResourceManager().createVideoBuffer("render_data_buffer" + "_" + sid());
-            this._pDataBuffer.create(iVbOption);
+            this._pDataBuffer.create(0, iVbOption);
             this._pDataBuffer.addRef();
             return this._pDataBuffer !== null;
         };

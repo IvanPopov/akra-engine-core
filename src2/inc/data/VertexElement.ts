@@ -46,9 +46,9 @@ module akra.data {
 		        // To avoid the colosseum between the "usage" of the element as POSITION & POSITION0, 
 		        // given that this is the same thing, here are the elements with index 0 
 		        // for "usage" with the POSITION.
-		        if (this.index === 0) {
-		        	this.usage = this.semantics;
-		        }
+		        // if (this.index === 0) {
+		        // 	this.usage = this.semantics;
+		        // }
 		    }
 		    else {
 		        this.semantics = this.usage;
@@ -79,7 +79,7 @@ module akra.data {
 		        return s;
 		    }
 
-		    var s = "[ USAGE: " + _an(this.usage, 12) + ", OFFSET " + _an(this.offset, 4) 
+		    var s = "[ USAGE: " + _an(this.usage == DeclUsages.END? "<END>": this.usage, 12) + ", OFFSET " + _an(this.offset, 4) 
 		    				+ ", SIZE " + _an(this.size, 4) +" ]";
 
 		    return s;

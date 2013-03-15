@@ -175,8 +175,8 @@ module akra.scene {
 		private setupNode(pNode: ISceneNode, sName: string = null): ISceneNode {
 			pNode.name = sName;
 
-			// this.connect(pNode, SIGNAL(attached), SLOT(nodeAttachment), EEventTypes.UNICAST);
-			// this.connect(pNode, SIGNAL(detached), SLOT(nodeDetachment), EEventTypes.UNICAST);
+			this.connect(pNode, SIGNAL(attached), SLOT(nodeAttachment), EEventTypes.UNICAST);
+			this.connect(pNode, SIGNAL(detached), SLOT(nodeDetachment), EEventTypes.UNICAST);
 
 			return pNode;
 		}
