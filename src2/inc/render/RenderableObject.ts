@@ -180,12 +180,13 @@ module akra.render {
 		}
 
 
-		render(csMethod: string, pSceneObject: ISceneObject): void {
+		render(csMethod?: string = null, pSceneObject?: ISceneObject = null): void {
 			if(!this.switchRenderMethod(csMethod)){
 				return;
 			}
 
 			var pTechnique: IRenderTechnique = this.getTechnique();
+			pTechnique._renderTechnique(pSceneObject);
 		}
 
 		inline getTechnique(sName: string = null): IRenderTechnique {

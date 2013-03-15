@@ -1,20 +1,24 @@
 #ifndef AFXPASSBLEND_TS
 #define AFXPASSBLEND_TS
 
-#include "IAXFPassBlend.fx"
+#include "IAFXPassBlend.fx"
 #include "IAFXComposer.ts"
+#include "util/unique.ts"
 
 module akra.fx {
-	export class PassBlend implements IAXFPassBlend {
+	export class PassBlend implements IAFXPassBlend {
+		UNIQUE();
+
 		private _pComposer: IAFXComposer = null;
 
 		constructor(pComposer: IAFXComposer){
 			this._pComposer = pComposer;
 		}
 
-		blend(csComponent: string, iPass: uint): bool{
+		initFromPassList(pPassList: IAFXPassInstruction[]): bool {
 			return false;
 		}
+
 	}
 }
 

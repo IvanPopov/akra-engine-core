@@ -3,6 +3,8 @@
 
 #include "IEventProvider.ts"
 #include "IAFXComposer.ts"
+#include "ISceneObject.ts"
+#include "IRenderPass.ts"
 
 module akra {
 	IFACE(IRenderPass);
@@ -38,9 +40,14 @@ module akra {
 		delComponent(sComponent: string, iShift?: int, iPass?: uint): bool;
 		delComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): bool;
 
-		_setComposer(pComposer: IAFXComposer): void;
+		isFreeze(): bool;
 
-		signal render(): void;
+		updatePasses(bSaveOldUniformValue: bool): void;
+
+		_setComposer(pComposer: IAFXComposer): void;
+		_renderTechnique(pSceneObject: ISceneObject): void;
+
+		signal render(iPass: uint): void;
 	}
 }
 

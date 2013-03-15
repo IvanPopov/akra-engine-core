@@ -6,6 +6,7 @@
 #include "fx/EffectUtil.ts"
 #include "IParser.ts"
 #include "fx/Effect.ts"
+#include "util/unique.ts"
 
 module akra.fx {
     export function getEffectBaseType(sTypeName: string): SystemTypeInstruction {
@@ -39,6 +40,10 @@ module akra.fx {
 
 		private _isVisible: bool = true;
 
+		inline getGuid(): uint {
+			return this._getInstructionID();
+		}
+		
 		inline getParent(): IAFXInstruction{
 			return this._pParentInstruction;
 		}
@@ -602,6 +607,14 @@ module akra.fx {
         inline isComplexPass(): bool {
         	return this._isComlexPass;
         }
+
+        inline getVertexShader(): IAFXFunctionDeclInstruction {
+			return this._pVertexShader;
+		}
+
+		inline getPixelShader(): IAFXFunctionDeclInstruction {
+			return this._pPixelShader;
+		}
 
         addShader(pShader: IAFXFunctionDeclInstruction): void {
         	var isVertex: bool = pShader.getFunctionType() === EFunctionType.k_Vertex;
