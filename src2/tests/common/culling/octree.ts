@@ -93,7 +93,7 @@ module akra {
 	pLight.attachToParent(pScene3D.getRootNode());
 	pLight.addPosition(-300, 0, 0);
 
-	pLight.isShadowCaster = false;
+	pLight.isShadowCaster = true;
 
 	// pLight.localMatrix = Mat4.fromYawPitchRoll(0*math.PI/6,0.,0.);
 
@@ -303,7 +303,7 @@ module akra {
 		pCamera.addRelRotationByEulerAngles(0.1, 0, 0);
 		pScene3D.recursiveUpdate();
 								}
-								, 3000)
+								, 300)
 
 
 }
