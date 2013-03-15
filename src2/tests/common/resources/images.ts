@@ -8,8 +8,8 @@ module akra{
 	test("img tests", () => {
 		var pEngine:IEngine=createEngine();
 		var pRsMg:IResourcePoolManager=pEngine.getResourceManager();
-		var pImg:IImg=pRsMg.createImg();
-		var pTex:webgl.WebGLInternalTexture=<webgl.WebGLInternalTexture>pRsMg.createTexture();
+		var pImg:IImg=pRsMg.createImg("img");
+		var pTex:webgl.WebGLInternalTexture=<webgl.WebGLInternalTexture>pRsMg.createTexture("tex");
 		//shouldBeTrue("create");
 		//ok(isDefAndNotNull(pImg));
 
@@ -34,13 +34,13 @@ module akra{
 			
 
 			
-			pCanvas=document.body.appendChild(pCanvas);
+			pCanvas=<HTMLCanvasElement>document.body.appendChild(pCanvas);
 			pCanvas.width=pImg.width;
 			pCanvas.height=pImg.height;
 			pContext = <CanvasRenderingContext2D>pCanvas.getContext('2d');
 			
 
-			
+			/*
 			pImageData=pContext.getImageData(0, 0, pCanvas.width, pCanvas.height);
 			pData=pImageData.data;
 
@@ -57,7 +57,8 @@ module akra{
 					pData[(iY*pImg.width+iX)*4+3]=pColor.a*255;		 
 				}
 			}
-			pContext.putImageData(pImageData, 0, 0);
+
+			pContext.putImageData(pImageData, 0, 0);*/
 			shouldBeTrue("load image(dds)");
 
 			pTex.loadImage(pImg);
@@ -65,7 +66,7 @@ module akra{
 			ok(isResult && pImg.width>0 && pImg.height>0);
 
 		}
-		pImg.load("data/logo_ABGR.dds",fnDraw)
+		pImg.load("data/logo_DXT5_mip_power_of_two.dds",fnDraw)
 
 		
 

@@ -126,6 +126,32 @@ module akra.util {
 		    return false;
 		}
 
+		children(): IEntity[] {
+			var pChildren: IEntity[] = [];
+			var pChild: IEntity = this.child;
+			
+			while (!isNull(pChild)) {
+				pChildren.push(pChild);
+				pChild = pChild.sibling;
+			}
+
+			return pChildren;
+		}
+
+		childAt(i: int): IEntity {
+			var pChild: IEntity = this.child;
+			var n: int = 0;
+			
+			while (!isNull(pChild)) {
+				if (n == i) {
+					return pChild;
+				}
+				n ++;
+				pChild = pChild.sibling;
+			}
+
+			return pChild;
+		}
 
 		/**
 		 * Returns the current number of siblings of this object.
@@ -374,7 +400,7 @@ module akra.util {
 		/** Attaches this object ot a new parent. Same as calling the parent's addChild() routine. */
 		attachToParent(pParent: IEntity): bool {
 			
-			var pParentPrev: IEntity = this._pParent;
+			var pParentPrev: IEntity = this.parent;
 
 			if (pParent != this._pParent) {
 

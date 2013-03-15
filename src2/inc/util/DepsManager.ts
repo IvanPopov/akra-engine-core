@@ -155,7 +155,7 @@ module akra.util {
 			// debug_assert(isDefAndNotNull(pDeps.files) && isString(pDeps.files[i]), "something going wrong...");
 
 			if (isDef(n)) {
-				LOG("loaded dependency: " + pDeps.files[n]);
+				//LOG("loaded dependency: " + pDeps.files[n]);
 				pDeps.files[n] = null;
 			}
 

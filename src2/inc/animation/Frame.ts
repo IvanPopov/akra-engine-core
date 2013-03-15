@@ -6,17 +6,22 @@
 
 #define AF_NUM 4 * 4096
 
+#define animationFrame() Frame.stackCeil
+
 module akra.animation {
-	export class AnimationFrame implements IAnimationFrame{
-		private time: float 	= 0.0;
-		private weight: float 	= 1.0;
+	export class Frame implements IAnimationFrame {
+		public time: float = 0.0;
+		public weight: float = 1.0;
 
-		private matrix: IMat4 	= null;
+		public matrix: IMat4 = null;
 		
-		private rotation: IQuat4 	= new Quat4;
-		private scale: IVec3  		= new Vec3;
-		private translation: IVec3  = new Vec3;
+		public rotation: IQuat4 = new Quat4;
+		public scale: IVec3 = new Vec3;
+		public translation: IVec3 = new Vec3;
 
+		constructor();
+		constructor(fTime: float, pMatrix: IMat4);
+		constructor(fTime: float, pMatrix: IMat4, fWeight: float);
 		constructor(fTime?: float, pMatrix?: IMat4, fWeight?: float) {
 			switch (arguments.length) {		
 				case 0:
@@ -104,9 +109,9 @@ module akra.animation {
 		}
 
 		addMatrix(pFrame: IAnimationFrame): IAnimationFrame {
-			var pMatData = pFrame.matrix.data;
+			var pMatData: Float32Array = pFrame.matrix.data;
 			var fWeight: float = pFrame.weight;
-			var pResData = this.matrix.data;
+			var pResData: Float32Array = this.matrix.data;
 
 			for (var i = 0; i < 16; ++ i) {
 				pResData[i] += pMatData[i] * fWeight;
@@ -184,11 +189,11 @@ module akra.animation {
 			};
 		}
 
-		ALLOCATE_STORAGE(AnimationFrame, AF_NUM);
+		ALLOCATE_STORAGE(Frame, AF_NUM);
 	} 
 
-	export function animationFrame(): IAnimationFrame {
-		return null;
+	export function createFrame(fTime?: float, pMatrix?: IMat4, fWeight?: float): IAnimationFrame {
+		return new Frame(fTime, pMatrix, fWeight);
 	}
 }
 

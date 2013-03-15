@@ -6,12 +6,12 @@ var ui = akra.ui;
 var pUI = new ui.UI();
 var pNode = new ui.Component(pUI, {draggable: true, name: "root"});
 
-var pButton = new ui.Button(pNode, "Button");
-var pLabel = new ui.Label(pNode, "Label");
+var pButton = new ui.Button(pNode);
+var pLabel = new ui.Label(pNode);
 var pSlider = new ui.Slider(pNode);
 var pCheckbox = new ui.Checkbox(pNode, {text: "on"});
 
-var pCheckboxList = new ui.CheckboxList(pNode, "CheckboxList");
+var pCheckboxList = new ui.CheckboxList(pNode);
 
 for (var i = 0; i < 5; ++ i) {
 	new ui.Checkbox(pCheckboxList, {text: "ch " + i, name: "checkbox-item-" + i });
@@ -41,6 +41,5 @@ test("ui basics", () => {
 	ok(pButton.parent === pNode);
 	ok(pNode.setLayout("vertical"));
 
-	trace(pNode.toString(true))
-
+	console.log(pNode.toString(true));
 });

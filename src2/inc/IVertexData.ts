@@ -3,6 +3,7 @@
 
 #include "IBuffer.ts"
 #include "IBufferData.ts"
+#include "data/VertexDeclaration.ts"
 
 module akra {
 	IFACE(IBufferDataModifier);
@@ -15,7 +16,7 @@ module akra {
 		readonly startIndex: uint;
 		readonly id: int;
 
-		getVertexDeclaration(): IVertexDeclaration;
+		getVertexDeclaration(): data.VertexDeclaration;
 		setVertexDeclaration(pDecl: IVertexDeclaration): bool;
 		
 		getVertexElementCount(): uint;

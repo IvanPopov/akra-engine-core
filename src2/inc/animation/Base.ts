@@ -9,11 +9,11 @@
 
 
 module akra.animation {
-	export interface IAnimationTargetMap{
+	export interface IAnimationTargetMap {
 		[index: string]: IAnimationTarget;
 	}
 
-	export class AnimationBase implements IAnimationBase {
+	export class Base implements IAnimationBase {
 
 		protected _pTargetMap: IAnimationTargetMap = {};
     	protected _pTargetList: IAnimationTarget[] = [];
@@ -21,8 +21,11 @@ module akra.animation {
     	protected _fDuration: float = 0.0;
 		protected _sName: string;
 
-		constructor () {
-			this._sName = ("animation-" + now() + "-" + this.getGuid());
+		protected _eType: EAnimationTypes;
+
+		constructor (eType: EAnimationTypes, sName: string = null) {
+			this._sName = sName || ("animation-" + now() + "-" + this.getGuid());
+			this._eType = eType;
 		}
 
 		inline get duration(): float{
@@ -42,16 +45,16 @@ module akra.animation {
 		};
 
 
-		play(fRealTime: float): void {
-			this.onplay(fRealTime);
+		inline play(fRealTime: float): void {
+			this.played(fRealTime);
 		}
 
-		stop(fRealTime: float): void {
-			this.onstop(fRealTime);
+		inline stop(fRealTime: float): void {
+			this.stoped(fRealTime);
 		}
 		
 		attach(pTarget: ISceneNode): void {
-			debug_error("method AnimationBase::bind() must be overwritten.");
+			debug_error("method AnimationBase::attach() must be overwritten.");
 		}
 		
 		frame(sName: string, fRealTime: float): IAnimationFrame {
@@ -182,9 +185,9 @@ module akra.animation {
 		    return pMask;
 		}
 
-		CREATE_EVENT_TABLE(AnimationBase);
-		BROADCAST(onplay, CALL(fRealTime));
-		BROADCAST(onstop, CALL(fRealTime));
+		CREATE_EVENT_TABLE(Base);
+		BROADCAST(played, CALL(fRealTime));
+		BROADCAST(stoped, CALL(fRealTime));
 	} 
 }
 

@@ -4,12 +4,10 @@
 #include "IAnimationBase.ts"
 #include "IAnimationController.ts"
 
-
 module akra.animation {
-	export class AnimationController implements IAnimationController {
-		private _pEngine: IEngine;
+	export class Controller implements IAnimationController {
 		private _pAnimations: IAnimationBase[] = [];
-		private _eOptions = 0;
+		private _iOptions: int = 0;
 	    private _pActiveAnimation: IAnimationBase = null;
 	    private _fnPlayAnimation: Function = null;
 
@@ -21,20 +19,15 @@ module akra.animation {
 			return this._pActiveAnimation;
 		}
 
-		constructor(pEngine: IEngine, iOptions: int = 0){
-			this._pEngine = pEngine;
-
+		constructor(iOptions: int = 0) {
 			
 			this.setOptions(iOptions);
-		}
-
-		getEngine(): IEngine {
-			return this._pEngine;
 		}
 
 		setOptions(iOptions: int): void {
 
 		}
+
 
 		addAnimation(pAnimation: IAnimationBase): bool {
 			if (this.findAnimation(pAnimation.name)) {
@@ -48,7 +41,10 @@ module akra.animation {
 			this._pActiveAnimation = pAnimation;
 		}
 
-		removeAnimation(): bool {
+		removeAnimation(pAnimation: string): bool;
+		removeAnimation(pAnimation: int): bool;
+		removeAnimation(pAnimation: IAnimationBase): bool;
+		removeAnimation(pAnimation: any): bool {
 			var pAnimation = this.findAnimation(arguments[0]);
 		    var pAnimations = this._pAnimations;
 
@@ -91,7 +87,7 @@ module akra.animation {
 			return arguments[0];
 		}
 
-		getAnimation(iAnim: int): IAnimationBase {
+		inline getAnimation(iAnim: int): IAnimationBase {
 			return this._pAnimations[iAnim];
 		}
 
@@ -101,7 +97,7 @@ module akra.animation {
 			this._pAnimations[iAnimation] = pAnimation;
 		}
 
-		bind(pTarget: ISceneNode): void {
+		attach(pTarget: ISceneNode): void {
 			var pAnimations: IAnimationBase[] = this._pAnimations;
 
 		    for (var i: int = 0; i < pAnimations.length; ++ i) {
@@ -109,7 +105,10 @@ module akra.animation {
 		    }
 		}
 
-		play(pAnimation: IAnimationBase, fRealTime: float): bool {
+		play(pAnimation: string, fRealTime: float): bool;
+		play(pAnimation: int, fRealTime: float): bool;
+		play(pAnimation: IAnimationBase, fRealTime: float): bool;
+		play(pAnimation: any, fRealTime: float): bool {
 			var pAnimationNext: IAnimationBase = this.findAnimation(arguments[0]);
 			var pAnimationPrev: IAnimationBase = this._pActiveAnimation;
 
@@ -140,8 +139,8 @@ module akra.animation {
 	} 
 
 
-	export function createController(pEngine: IEngine, iOptions: int): IAnimationController {
-		return new AnimationController(pEngine, iOptions);
+	export function createController(iOptions: int): IAnimationController {
+		return new Controller(iOptions);
 	}
 }
 

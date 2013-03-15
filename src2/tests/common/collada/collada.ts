@@ -5,15 +5,20 @@ module akra {
 	asyncTest("Collada basic usage", () => {
 		shouldBeNotNull("Collada model must be laoded");
 
-		var pEngine: IEngine = createEngine({depsRoot: "../../../data"});
+		var pEngine: IEngine = createEngine();
+
+		if (pEngine.getRenderer().debug(true, true)) {
+			LOG("context debugging enabled");
+		}
+
 		var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
-		var pCube: ICollada = pRmgr.loadModel("models/cube.dae");
+		var pModel: ICollada = pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
 		var pScene: IScene3d = pEngine.getScene();
 
-		pCube.bind(SIGNAL(loaded), function (pCube: ICollada) {
-			check(pCube);
+		pModel.bind(SIGNAL(loaded), function (pModel: ICollada) {
+			check(pModel);
 
-			//pCube.attachToScene(pScene.getRootNode());
+			pModel.attachToScene(pScene.getRootNode());
 
 			run();
 		});

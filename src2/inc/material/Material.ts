@@ -92,12 +92,12 @@ module akra.material {
 
 	export const VERTEX_DECL: IVertexDeclaration = createVertexDeclaration(
 		[
-            {count: 17, type: EDataTypes.FLOAT, usage: DeclUsages.MATERIAL 	},
-            {count: 4, 	type: EDataTypes.FLOAT, usage: DeclUsages.DIFFUSE, offset: 0},
-            {count: 4, 	type: EDataTypes.FLOAT, usage: DeclUsages.AMBIENT 	},
-            {count: 4, 	type: EDataTypes.FLOAT, usage: DeclUsages.SPECULAR 	},
-            {count: 4, 	type: EDataTypes.FLOAT, usage: DeclUsages.EMISSIVE	},
-            {count: 1, 	type: EDataTypes.FLOAT, usage: DeclUsages.SHININESS }
+			VE_CUSTOM(DeclUsages.MATERIAL,  EDataTypes.FLOAT, 17),
+			VE_CUSTOM(DeclUsages.DIFFUSE,   EDataTypes.FLOAT, 4, 0),
+			VE_CUSTOM(DeclUsages.AMBIENT,   EDataTypes.FLOAT, 4, 16),
+			VE_CUSTOM(DeclUsages.SPECULAR,  EDataTypes.FLOAT, 4, 32),
+			VE_CUSTOM(DeclUsages.EMISSIVE,  EDataTypes.FLOAT, 4, 48),
+			VE_CUSTOM(DeclUsages.SHININESS, EDataTypes.FLOAT, 1, 64)
         ]);
 
 	export const DEFAULT: IMaterial = new Material;

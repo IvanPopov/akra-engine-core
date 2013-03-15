@@ -155,7 +155,7 @@ module akra.fx {
 			iParseTime = akra.now() - iParseTime;
 			this._pStatistics.time = iParseTime;
 
-			LOG(this, iParseTime);
+			//LOG(this, iParseTime);
 			
 			return true;
 		}

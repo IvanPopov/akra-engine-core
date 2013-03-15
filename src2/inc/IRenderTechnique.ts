@@ -2,6 +2,7 @@
 #define IRENDERTECHNIQUE_TS
 
 #include "IEventProvider.ts"
+#include "IAFXComposer.ts"
 
 module akra {
 	IFACE(IRenderPass);
@@ -28,6 +29,16 @@ module akra {
 		setTextureBySemantics(sName: string, pValue: any): void;
 		setShadowSamplerArray(sName: string, pValue: any): void;
 		setVec2BySemantic(sName: string, pValue: any): void;
+
+		addComponent(iComponentHandle: int, iShift?: int, iPass?: uint, isSet?: bool): bool;
+		addComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint, isSet?: bool): bool;
+		addComponent(sComponent: string, iShift?: int, iPass?: uint, isSet?: bool): bool;
+
+		delComponent(iComponentHandle: int, iShift?: int, iPass?: uint): bool;
+		delComponent(sComponent: string, iShift?: int, iPass?: uint): bool;
+		delComponent(pComponent: IAFXComponent, iShift?: int, iPass?: uint): bool;
+
+		_setComposer(pComposer: IAFXComposer): void;
 
 		signal render(): void;
 	}

@@ -2,37 +2,41 @@
 #define ANIMATIONBLEND_TS
 
 #include "IAnimationBlend.ts"
+#include "Base.ts"
 
 
 module akra.animation {
-	export class AnimationBlend extends AnimationBase implements IAnimationBlend {
+	export class Blend extends Base implements IAnimationBlend {
+		public duration: float = 0;
 
 		private _pAnimationList: IAnimationElement[] = [];
-		public  duration = 0;
 
-		inline get totalAnimations(): int{
+		constructor (sName?: string) {
+			super(EAnimationTypes.BLEND, sName);
+		}
+
+		inline get totalAnimations(): int {
 			return this._pAnimationList.length;
 		}
 
 		play(fRealTime: float): void {
 			var pAnimationList: IAnimationElement[] = this._pAnimationList;
 			var n: int = pAnimationList.length;
-			//trace('AnimationBlend::play(', this.name, fRealTime, ')');
+
 			for (var i: int = 0; i < n; ++ i) {
 
 				pAnimationList[i].realTime = fRealTime;
 				pAnimationList[i].time = fRealTime * pAnimationList[i].acceleration;
-				//trace(pAnimationList[i]);
 			}
 
-			this.onplay(fRealTime);
+			this.played(fRealTime);
 		}
 
 		stop(): void {
-			this.onstop();
+			this.stoped(0.);
 		}
 		
-		attach(pTarget: INode): void {
+		attach(pTarget: ISceneNode): void {
 			var pAnimationList: IAnimationElement[] = this._pAnimationList;
 
 			for (var i: int = 0; i < pAnimationList.length; ++ i) {
@@ -46,6 +50,7 @@ module akra.animation {
 			debug_assert(isDef(pAnimation), 'animation must be setted.');
 
 			this._pAnimationList.push(null);
+			
 			return this.setAnimation(this._pAnimationList.length - 1, pAnimation, fWeight, pMask);
 		}
 
@@ -70,7 +75,7 @@ module akra.animation {
 					realTime: 0.0
 				};
 
-				CONNECT(pAnimation, SIGNAL(updateAnimation), this, SLOT(onUpdateAnimation))
+				CONNECT(pAnimation, SIGNAL(durationUpdated), this, SLOT(_onDurationUpdate))
 
 				if (iAnimation == this._pAnimationList.length) {
 					pAnimationList.push(pPointer);
@@ -86,7 +91,11 @@ module akra.animation {
 			return iAnimation;
 		}
 
-		updateDuration(): void {
+		_onDurationUpdate(pAnimation: IAnimationBase, fDuration: float): void {
+			this.updateDuration();
+		}
+
+		protected updateDuration(): void {
 			var fWeight: float = 0;
 			var fSumm: float = 0;
 			var pAnimationList: IAnimationElement[] = this._pAnimationList;
@@ -118,7 +127,7 @@ module akra.animation {
 				}
 			}
 
-			this.onUpdateDuration();
+			this.durationUpdated(this.duration);
 		}
 
 		getAnimationIndex(sName: string): int {
@@ -225,7 +234,9 @@ module akra.animation {
 				}
 			}
 
-			if (isModified) { this.updateDuration(); }
+			if (isModified) { 
+				this.updateDuration(); 
+			}
 
 			return true;
 		}
@@ -250,7 +261,7 @@ module akra.animation {
 
 		createAnimationMask(iAnimation?: int): FloatMap {
 			if (arguments.length === 0) {
-				return animation.AnimationBase.prototype.createAnimationMask.call(this);
+				return super.createAnimationMask();
 			}
 
 			if (typeof arguments[0] === 'string') {
@@ -312,9 +323,7 @@ module akra.animation {
 		}
 
 
-		BROADCAST(onplay, CALL(fRealTime));
-		BROADCAST(onstop, CALL());
-		BROADCAST(onUpdateDuration, CALL());
+		BROADCAST(durationUpdated, CALL(fDuration));
 	} 
 }
 

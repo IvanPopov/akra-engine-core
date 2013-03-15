@@ -41,6 +41,12 @@ module akra.ui {
 			}
 		}
 
+		_applyEntry($entry: JQuery): void {
+			super._applyEntry($entry);
+
+			this.text = $entry.attr("text");
+		}
+
 		protected label(): string {
 			return "Checkbox";
 		}
@@ -73,6 +79,8 @@ module akra.ui {
 	export inline function isCheckbox(pEntity: IEntity): bool {
 		return isComponent(pEntity, EUIComponents.CHECKBOX);
 	}
+
+	Component.register("Checkbox", Checkbox);
 }
 
 #endif

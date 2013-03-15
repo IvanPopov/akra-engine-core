@@ -279,19 +279,6 @@ module akra
             pImgData.depth=1;
             var nFace:uint=1;
 
-            if (pHeader.dwFlags & DDSD_MIPMAPCOUNT) {
-                pImgData.numMipMaps = pHeader.dwMipMapCount;
-                if ((pHeader.dwWidth >>> (pHeader.dwMipMapCount - 1)) != 1 || (pHeader.dwHeight >>> (pHeader.dwMipMapCount - 1)) != 1) {
-                WARNING("Количество мипмапов не такое чтобы уменьшить размер картинки до 1x1"
-                            + pHeader.dwMipMapCount + "," + pHeader.dwWidth + "x" + pHeader.dwHeight + ")");
-
-            	}
-            }
-            else{
-                pImgData.numMipMaps = 0;
-            }
-            
-
             pImgData.flags=0;
 
             if (pHeader.dwCaps2 & DDSCAPS2_CUBEMAP)
@@ -404,12 +391,23 @@ module akra
 				    CRITICAL_ERROR("Флаг DDPF_FOURCC стоит, а подходящего dwFourCC нет");
 				}
 			}
-			else if(pHeader.ddspf.dwFlags & DDPF_RGB)
+			else 
 			{
 				var iAMask=pHeader.ddspf.dwFlags & DDPF_ALPHAPIXELS ? pHeader.ddspf.dwABitMask:0;
 				var ePF:EPixelFormats;
 				for (ePF= EPixelFormats.UNKNOWN + 1; ePF < EPixelFormats.TOTAL; ePF++)
 				{
+
+
+					if((!!(pHeader.ddspf.dwFlags&DDPF_LUMINANCE))!=pixelUtil.isLuminance(ePF))
+					{
+						continue;
+					}
+					if((!!(pHeader.ddspf.dwFlags&DDPF_ALPHAPIXELS))!=pixelUtil.hasAlpha(ePF))
+					{
+						continue;
+					}
+
 
 					if (pixelUtil.getNumElemBits(ePF) == pHeader.ddspf.dwRGBBitCount)
 					{
@@ -426,6 +424,7 @@ module akra
 					}
 
 				}
+
 				if(ePF==EPixelFormats.TOTAL)
 				{
 					CRITICAL_ERROR( "Cannot determine pixel format. DDSCodec.decode");
@@ -438,7 +437,7 @@ module akra
 			
 
 
-			if (pixelUtil.isCompressed(eSourceFormat))
+			/*if (pixelUtil.isCompressed(eSourceFormat))
 			{				
 				pImgData.flags |= EImageFlags.COMPRESSED;
 				if (!(pHeader.dwFlags & DDSD_LINEARSIZE)) {
@@ -450,9 +449,22 @@ module akra
 				if (pHeader.dwFlags & DDSD_LINEARSIZE) {
                 	CRITICAL_ERROR("У несжатой текстуры выставлен флаг DDS_HEADER_FLAGS_LINEARSIZE в заголовке");
             	}
-			}
+			}*/
 
 			pImgData.format = eSourceFormat;
+
+			if (pHeader.dwFlags & DDSD_MIPMAPCOUNT) {
+                pImgData.numMipMaps = pHeader.dwMipMapCount-1;
+                if (pImgData.numMipMaps!=core.pool.resources.Img.getMaxMipmaps(pImgData.width,pImgData.height,pImgData.depth,pImgData.format)) {
+                WARNING("Количество мипмапов не такое чтобы уменьшить размер картинки до 1x1 "
+                            + pHeader.dwMipMapCount + "," + pHeader.dwWidth + "x" + pHeader.dwHeight + ")");              	 
+
+            	}
+            }
+            else{
+                pImgData.numMipMaps = 0;
+            }
+
 			var pOutput:Uint8Array=new Uint8Array(pImgData.size)
 			var iOutputOffset:uint=0;
 

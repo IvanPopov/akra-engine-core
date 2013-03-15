@@ -20,7 +20,7 @@ module akra.data {
 		private _iOffset: uint;
 		private _iStride: uint;
 		private _iLength: uint;
-		private _pVertexDeclaration: IVertexDeclaration;
+		private _pVertexDeclaration: VertexDeclaration;
 		private _iId: uint;
 
 		inline get id(): uint { return this._iId; }
@@ -60,7 +60,7 @@ module akra.data {
 		}
 		
 
-		getVertexDeclaration(): IVertexDeclaration {
+		getVertexDeclaration(): VertexDeclaration {
 			return this._pVertexDeclaration;
 		}
 
@@ -73,7 +73,7 @@ module akra.data {
 
 			var iStride: uint = pDecl.stride;
 
-		    this._pVertexDeclaration = pDecl.clone();
+		    this._pVertexDeclaration = <VertexDeclaration>pDecl.clone();
 
 
 		    debug_assert(iStride < <number>EVertexDataLimits.k_MaxElementsSize, 
@@ -250,7 +250,7 @@ module akra.data {
 		            if (iStride != iSize) {
 		                //FIXME: очень тормознутое место, крайне медленно работает...
 						if(pVertexBuffer.isBackupPresent() && nCount > 1) {
-							console.log(pVertexBuffer.byteLength);
+							// console.log(pVertexBuffer.byteLength);
 							pBackupBuf = new Uint8Array(pVertexBuffer.byteLength);
 							pVertexBuffer.readData(pBackupBuf);
 
@@ -317,8 +317,8 @@ module akra.data {
 
 		        case 2:
 		        case 3:
-		            var pDeclaration = this._pVertexDeclaration,
-		                pElement = null;
+		            var pDeclaration: VertexDeclaration = this._pVertexDeclaration,
+		                pElement: VertexElement = null;
 
 		            if (isString(arguments[1])) {
 		                pElement = pDeclaration.findElement(arguments[1]);

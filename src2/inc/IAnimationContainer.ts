@@ -10,12 +10,7 @@ module akra {
 		readonly animationName: string;
 		readonly speed: float;
 		readonly animationTime: float;
-
-		getTime(): float;
-		play(fRealTime: float): void;
-		stop(): void;
-
-		attach(pTarget: INode): void;
+		readonly time: float;
 
 		setAnimation(pAnimation: IAnimationBase): void;
 		getAnimation(): IAnimationBase;
@@ -39,17 +34,12 @@ module akra {
 		reverse(bValue: bool): void;
 		isReversed(): bool;
 
-		pause(bValue: bool): void;
 		rewind(fRealTime: float): void;
+
+		pause(bValue: bool): void;
 		isPaused(): bool;
 
-		time(fRealTime: float): void;
-
-		frame(sName: string, fRealTime: float): IAnimationFrame;
-
-		signal onplay(fTime: float): void;
-		signal onstop(fTime: float): void;
-		signal onUpdateDuration(): void;
+		signal durationUpdated(fDuration: float): void;
 		signal enterFrame(fRealTime: float): void;
 	}
 }

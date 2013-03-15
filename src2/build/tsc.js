@@ -5239,6 +5239,8 @@ var TypeScript;
             }
             var st = funcDecl.bod.members[0];
             var res = st.nodeType == 77 /* Return */  ? (st).returnExpression : st;
+            // console.log (funcDecl.treeViewLabel())
+ 
             emitter.writeToOutput("(");
             emitter.emitJavascript(res, 56 /* OpenParen */ , true);
             emitter.writeToOutput(")");

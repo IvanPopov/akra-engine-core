@@ -1382,8 +1382,11 @@ declare var WebGLDebugUtils: {
 #define WEBGL_COLOR_BUFFER_FLOAT "WEBGL_color_buffer_float"
 #define EXT_COLOR_BUFFER_HALF_FLOAT "EXT_color_buffer_half_float"
 
+
+
 //Future
 #define EXT_TEXTURE_RG "EXT_texture_rg"
 #define OES_DEPTH24 "OES_depth24"
 #define OES_DEPTH32 "OES_depth32"
 #define OES_PACKED_DEPTH_STENCIL "OES_packed_depth_stencil"
+#define EXT_TEXTURE_NPOT_2D_MIPMAP "EXT_texture_npot_2D_mipmap"
