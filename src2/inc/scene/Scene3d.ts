@@ -86,6 +86,20 @@ module akra.scene {
 			return false;
 		}
 
+		#ifdef DEBUG
+
+		createObject(sName: string = null): ISceneObject {
+			var pNode: ISceneNode = new SceneObject(this);
+			
+			if (!pNode.create()) {
+				ERROR("cannot create scene node..");
+				return null;
+			}
+
+			return <ISceneObject>this.setupNode(pNode, sName);
+		}
+
+		#endif
 
 		createNode(sName: string = null): ISceneNode {
 			var pNode: ISceneNode = new SceneNode(this);
