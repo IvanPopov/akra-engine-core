@@ -68,10 +68,10 @@ module akra.render {
 			var pMethod: IRenderMethod = null;
 
 			if (isNull(csMethod)) {
-				return false;
+				csMethod = DEFAULT_RM;
 			}
 
-		    if (isString(arguments[0])) {
+		    if (isString(arguments[0]) || arguments.length === 0) {
 		        pMethod = pRmgr.createRenderMethod((csMethod) + this.getGuid());
 
 		        if (!isDefAndNotNull(pMethod)) {
@@ -180,12 +180,13 @@ module akra.render {
 		}
 
 
-		render(csMethod: string, pSceneObject: ISceneObject): void {
+		render(csMethod?: string = null, pSceneObject?: ISceneObject = null): void {
 			if(!this.switchRenderMethod(csMethod)){
 				return;
 			}
 
 			var pTechnique: IRenderTechnique = this.getTechnique();
+			pTechnique._renderTechnique(pSceneObject);
 		}
 
 		inline getTechnique(sName: string = null): IRenderTechnique {

@@ -40,7 +40,7 @@ module akra {
 		isAllMethodsLoaded(): bool;
 
 
-		render(csMethod: string, pSceneObject: ISceneObject): void;
+		render(csMethod?: string, pSceneObject?: ISceneObject): void;
 
 		_setup(pRenderer: IRenderer, csDefaultMethod?: string): void;
 		_draw(): void;

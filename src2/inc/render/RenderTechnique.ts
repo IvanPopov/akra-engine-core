@@ -3,11 +3,19 @@
 
 #include "IRenderTechnique.ts"
 #include "events/events.ts"
+#include "render/RenderPass.ts"
 
 module akra.render {
 	export class RenderTechnique implements IRenderTechnique {
 		private _pMethod: IRenderMethod = null;
+		
+		private _isFreeze: bool = false;
 		private _pComposer: IAFXComposer = null;
+		
+		private _pPassList: IRenderPass[] = null;
+		
+		private _iCurrentPass: uint = 0;
+		private _pCurrentPass: IRenderPass = null;
 
 		inline get modified(): uint {
 			return this.getGuid();
@@ -22,6 +30,8 @@ module akra.render {
 		}
 
 		constructor (pMethod: IRenderMethod = null) {
+			this._pPassList = [];
+
 			if(!isNull(pMethod)){
 				this.setMethod(pMethod);
 			}
@@ -32,8 +42,8 @@ module akra.render {
 
 		}
 
-		getPass(n: uint): IRenderPass {
-			return null;
+		getPass(iPass: uint): IRenderPass {
+			return this._pCurrentPass[iPass];
 		}
 
 		getMethod(): IRenderMethod {
@@ -129,8 +139,52 @@ module akra.render {
 			return this.addComponent(pComponent, iShift, iPass, false);
 		}
 
+		isFreeze(): bool {
+			return this._isFreeze;
+		}
+
+		updatePasses(bSaveOldUniformValue: bool): void {
+			this._isFreeze = true;
+
+			var iTotalPasses: uint = this.totalPasses;
+
+			for(var i: uint = this._pPassList.length; i < iTotalPasses; i++){
+				this._pPassList[i] = new RenderPass(this, i);
+			}
+			
+			for(var i: uint = 0; i < iTotalPasses; i++){
+				var pInput: IAFXPassInputBlend = this._pComposer.getPassInputBlend(this, i);
+				this._pPassList[i].setPassInput(pInput, bSaveOldUniformValue);
+			}
+
+			this._isFreeze = false;
+		}
+
 		_setComposer(pComposer: IAFXComposer): void {
 			this._pComposer = pComposer;
+		}
+
+		_renderTechnique(pSceneObject: ISceneObject): void {
+			if(isNull(this._pComposer)){
+				return;
+			}
+
+			var pComposer: IAFXComposer = this._pComposer;
+
+			pComposer.setCurrentSceneObject(pSceneObject);
+			pComposer.prepareTechniqueBlend(this);
+
+			this._isFreeze = true;
+
+			for(var i: uint = 0; i < this.totalPasses; i++){
+				this.activatePass(i);
+				this.render(i);
+
+				pComposer.renderTechniquePass(this, i);
+			}
+
+			this._isFreeze = false;
+			pComposer.setCurrentSceneObject(null);
 		}
 
 		_updateMethod(pMethod: IRenderMethod): void {
@@ -143,8 +197,14 @@ module akra.render {
 			}
 		}
 
+		private activatePass(iPass: uint): void {
+			this._iCurrentPass = iPass;
+			this._pCurrentPass = this._pPassList[iPass];
+		}
+
+
 		CREATE_EVENT_TABLE(RenderTechnique);
-		UNICAST(render, VOID);
+		UNICAST(render, CALL(iPass));
 	}
 }
 

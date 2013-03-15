@@ -11,6 +11,7 @@
 #include "IAFXComponent.ts"
 #include "IEffect.ts"
 #include "IAFXComponentBlend.ts"
+#include "IAFXPassInputBlend.ts"
 
 module akra {
 	export interface IAFXComposer {
@@ -41,6 +42,13 @@ module akra {
 		prepareTechniqueBlend(pRenderTechnique: IRenderTechnique): bool;
 
 		markTechniqueAsNeedUpdate(pRenderTechnique: IRenderTechnique): void;
+
+		getPassInputBlend(pRenderTechnique: IRenderTechnique, iPass: uint): IAFXPassInputBlend;
+
+		//API for render
+		
+		setCurrentSceneObject(pSceneObject: ISceneObject): void;
+		renderTechniquePass(pRenderTechnique: IRenderTechnique, iPass: uint): void;
 
 		//API for load components/AFXEffects
 		

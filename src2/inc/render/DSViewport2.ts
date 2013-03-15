@@ -18,6 +18,8 @@
 
 module akra.render {
 
+	#define OPTIMIZED_DEFFERED 1
+
 	export class DSViewport extends Viewport implements IDSViewport  {
 		private _pDefferedColorTextures: ITexture[];
 		private _pDeferredDepthTexture: ITexture;
@@ -111,16 +113,24 @@ module akra.render {
 		    this._pLightPoints = pLights;
 
 		    //prepare deferred textures
+#ifndef OPTIMIZED_DEFFERED
 			this._pDefferedColorTextures[0].getBuffer().getRenderTarget().update();
 			this._pDefferedColorTextures[1].getBuffer().getRenderTarget().update();
-
+#else
+			var pNodeList: IObjectArray = this.getCamera().display();
+			for (var i: int = 0; i < pNodeList.length; ++ i) {
+				var pRenderable: IRenderableObject = pNodeList.value(i).getRenderable();
+				pRenderable.render(null, pNodeList.value(i));
+			}
+#endif
 			//render defferred
-			this._pDeferredView.render(null, null);	
+			this._pDeferredView.render();	
 
 			return true;
 		}
 
 		prepareForDeferredShading(): void {
+#ifndef OPTIMIZED_DEFFERED
 			var pNodeList: IObjectArray = this.getCamera().display();
 
 			for (var i: int = 0; i < pNodeList.length; ++ i) {
@@ -144,13 +154,24 @@ module akra.render {
 								var pPass: IRenderPass = pTechnique.getPass(k);
 								
 								if (isNull(pPass.getRenderTarget())) {
-									pPass.data.blend("akra.system.prepareForDeferredShading", j);
+									pPass.blend("akra.system.prepareForDeferredShading", j);
 								}
 							}
 						}
 					}
 				}
-			};		
+			};
+#else
+			var pNodeList: IObjectArray = this.getCamera().display();
+
+			for (var i: int = 0; i < pNodeList.length; ++ i) {
+				var pRenderable: IRenderableObject = pNodeList.value(i).getRenderable();
+				var pTechCurr: IRenderTechnique = pRenderable.getTechniqueDefault();
+
+				pTechCurr.getPass(0).setRenderTarget(this._pDefferedColorTextures[0].getBuffer().getRenderTarget());
+				pTechCurr.getPass(1).setRenderTarget(this._pDefferedColorTextures[1].getBuffer().getRenderTarget());
+			};
+#endif		
 		}
 
 		setSkybox(pSkyTexture: ITexture): bool {

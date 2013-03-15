@@ -4,6 +4,7 @@
 #include "common.ts"
 #include "IParser.ts"
 #include "IAFXComponent.ts"
+#include "IUnique.ts"
 
 module akra {
 
@@ -188,7 +189,7 @@ module akra {
 	 * operator : arg1 ... argn
 	 * Operator and instructions may be empty.
 	 */
-	export interface IAFXInstruction {
+	export interface IAFXInstruction extends IUnique {
         setParent(pParent: IAFXInstruction): void;
         getParent(): IAFXInstruction;
 
@@ -611,6 +612,10 @@ module akra {
         _getFullUniformMap(): IAFXVariableDeclMap;
         _getFullForeignMap(): IAFXVariableDeclMap;
         _getFullTextureMap(): IAFXVariableDeclMap;
+
+
+        getVertexShader(): IAFXFunctionDeclInstruction;
+        getPixelShader(): IAFXFunctionDeclInstruction;
 
         addShader(pShader: IAFXFunctionDeclInstruction): void;
         setState(sType: string, sValue: string): void;

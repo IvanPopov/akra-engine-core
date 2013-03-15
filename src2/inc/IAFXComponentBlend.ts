@@ -57,9 +57,10 @@ module akra {
 		finalizeBlend(): bool;
 
 		getPassInputForPass(iPass: uint): IAFXPassInputBlend;
+		getPassListAtPass(iPass: uint): IAFXPassInstruction[];
 
 		clone(): IAFXComponentBlend;
-
+		
 		_getComponentList(): IAFXComponent[];
 		_getComponentShiftList(): int[];
 		_getComponentPassIdList(): uint[];

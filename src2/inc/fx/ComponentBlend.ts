@@ -210,6 +210,18 @@ module akra.fx {
 			return this._pComponentInputVarBlend[iPass].getPassInput();
 		}
 
+		getPassListAtPass(iPass: uint): IAFXPassInstruction[] {
+			if(!this._isReady){
+				return null;
+			}
+
+			if(iPass < 0 || iPass > this.getTotalPasses()){
+				return null;
+			}
+
+			return this._pPassesDList[iPass];
+		}
+
 		clone(): IAFXComponentBlend {
 			var pClone: IAFXComponentBlend = new ComponentBlend(this._pComposer);
 
