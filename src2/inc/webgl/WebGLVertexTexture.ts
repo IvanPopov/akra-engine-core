@@ -91,6 +91,9 @@ module akra.webgl {
 			debug_assert(!pData || pData.byteLength <= iByteSize, 
 				"Размер переданного массива больше переданного размера буфера");
 			
+			ASSERT(loadExtension(pWebGLContext, "OES_texture_float"), 
+				"OES_texture_float extension is necessary for correct work.");
+
 		    this._pWebGLTexture = pWebGLRenderer.createWebGLTexture();
 		    this._eWebGLFormat = getWebGLFormat(this._ePixelFormat);
 		    this._eWebGLType = getWebGLDataType(this._ePixelFormat);

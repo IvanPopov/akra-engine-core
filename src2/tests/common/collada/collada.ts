@@ -7,20 +7,23 @@ module akra {
 
 		var pEngine: IEngine = createEngine();
 
-		if (pEngine.getRenderer().debug(true, true)) {
-			LOG("context debugging enabled");
-		}
+		// if (pEngine.getRenderer().debug(true, true)) {
+		// 	LOG("context debugging enabled");
+		// }
 
-		var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
-		var pModel: ICollada = pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
-		var pScene: IScene3d = pEngine.getScene();
+		pEngine.bind(SIGNAL(depsLoaded), (pEngine: IEngine) => {
+			var pRmgr: IResourcePoolManager = pEngine.getResourceManager();
+			var pModel: ICollada = pRmgr.loadModel("../../../data/models/WoodSoldier/WoodSoldier.DAE");
+			var pScene: IScene3d = pEngine.getScene();
 
-		pModel.bind(SIGNAL(loaded), function (pModel: ICollada) {
-			check(pModel);
+			pModel.bind(SIGNAL(loaded), (pModel: ICollada) => {
+				check(pModel);
 
-			pModel.attachToScene(pScene.getRootNode());
+				pModel.attachToScene(pScene.getRootNode());
 
-			run();
+				run();
+			});
 		});
+
 	});
 }

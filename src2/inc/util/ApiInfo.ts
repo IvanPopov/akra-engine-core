@@ -72,7 +72,7 @@ module akra.util {
 		}	
 
 		private chechTransferableObjects(): bool {
-			var pBlob: Blob = new Blob(["onmessage = function(e) { postMessage(true); }"]);
+			var pBlob: Blob = new Blob(["onmessage = function(e) { postMessage(true); }"], { "type" : "text\/javascript" });
 			var sBlobURL: string = (<any>window).URL.createObjectURL(pBlob);
 			var pWorker: Worker = new Worker(sBlobURL);
 

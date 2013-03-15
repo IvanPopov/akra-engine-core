@@ -165,6 +165,9 @@ module akra.webgl {
 				return false;		
 			}
 
+			debug_print("WebGLVertexBuffer resized from " + this.byteLength + " to " + iSize);
+
+
 			if(iSize < this.byteLength) {
 				for(var k: int = 0; k < this._pVertexDataArray.length; ++ k) {
 					pVertexData = this._pVertexDataArray[k];

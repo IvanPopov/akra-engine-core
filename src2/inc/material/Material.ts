@@ -88,6 +88,22 @@ module akra.material {
 			Color.isEqual(this.emissive, pMat.emissive) && 
 				this.shininess === pMat.shininess;
 		}
+
+#ifdef DEBUG
+		
+		toString(): string {
+			var s = "\nFLEX MATERIAL - " + this.name + "\n";
+			s += "------------------------------------\n";
+			s += "diffuse:   " + this.diffuse.toString() + "\n";
+			s += "ambient:   " + this.ambient.toString() + "\n";
+			s += "specular:  " + this.ambient.toString() + "\n";
+			s += "emissive:  " + this.emissive.toString() + "\n";
+			s += "shininess: " + this.shininess + "\n";
+
+			return s;
+		}
+
+#endif		
 	}
 
 	export const VERTEX_DECL: IVertexDeclaration = createVertexDeclaration(

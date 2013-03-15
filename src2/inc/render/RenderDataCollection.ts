@@ -72,7 +72,7 @@ module akra.render {
         	    else {
         	        for (var i: int = 0; i < n; i++) {
                         pData = pBuffer.getVertexData(i);
-        	            if (pData.byteLength === <uint>arguments[0]) {
+        	            if (pData.byteOffset === <uint>arguments[0]) {
         	                return pData;
         	            }
         	        };
@@ -139,7 +139,7 @@ module akra.render {
         	        }
         	    }
 
-        	    return pVertexData.byteLength;
+        	    return pVertexData.byteOffset;
         }
 
         getDataLocation(sSemantics: string): int {
@@ -149,7 +149,7 @@ module akra.render {
         	    for (var i: int = 0, n: uint = this._pDataBuffer.length; i < n; i++) {
                     pData = this._pDataBuffer.getVertexData(i);
         	        if (pData.hasSemantics(sSemantics)) {
-        	            return pData.byteLength;
+        	            return pData.byteOffset;
         	        }
         	    };
         	}

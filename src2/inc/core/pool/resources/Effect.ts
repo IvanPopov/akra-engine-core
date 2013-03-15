@@ -46,7 +46,7 @@ module akra.core.pool.resources {
 			}
 			
 			if(!isDef(pComponent) || isNull(pComponent)){
-				debug_error("Bad component for add/delete.");
+				debug_error("Bad component for add/delete: ", pComponent);
 				return false;
 			}
 

@@ -97,8 +97,8 @@ module akra.scene.light {
 			// 	0, ETextureTypes.TEXTURE_2D, EPixelFormats.LUMINANCE);
 
 			// this._pColorTexture = pColorTexture;
-
-			this.getRenderTarget().addViewport(this._pShadowCaster); //TODO: Multiple render target
+			//TODO: Multiple render target
+			this.getRenderTarget().addViewport(this._pShadowCaster); 
 		};
 
 		_calculateShadows(): void {

@@ -45,47 +45,74 @@ module akra.webgl {
 	var pSupportedExtensionList: string[] = null;
 	// var pLoadedExtensionList: Object = null;
 
+    function makeDebugContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {
+        if (isDef((<any>window).WebGLDebugUtils)) {
+            pWebGLContext = WebGLDebugUtils.makeDebugContext(pWebGLContext, 
+                (err: int, funcName: string, args: IArguments): void => {
+                    throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
+                },
+                (funcName: string, args: IArguments): void => {   
+                   LOG("gl." + funcName + "(" + WebGLDebugUtils.glFunctionArgsToString(funcName, args) + ")");   
+                });
+        }
 
+        return pWebGLContext;
+    }
 
-    function setupContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {
-        var pWebGLExtentionList: Object = {};
+    export function loadExtension(pWebGLContext: WebGLRenderingContext, sExtName: string): bool {
+        var pWebGLExtentionList: Object = (<any>pWebGLContext).extentionList = (<any>pWebGLContext).extentionList || {};
         var pWebGLExtension: Object;
-        
+
+        if (!hasExtension(sExtName)) {
+            WARNING("Extension " + sExtName + " unsupported for this platform.");
+            return false;
+        }
+
+        if (pWebGLExtension = pWebGLContext.getExtension(sExtName)) {
+            
+            if (isDefAndNotNull(pWebGLExtentionList[sExtName])) {
+                debug_print("Extension " + sExtName + " already loaded for this context.");
+                return true;
+            }
+
+            pWebGLExtentionList[sExtName] = pWebGLExtension;
+
+            debug_print("loaded WebGL extension: ", sExtName);
+
+            for (var j in pWebGLExtension) {
+                if (isFunction(pWebGLExtension[j])) {
+                    //debug_print("created func WebGLRenderingContext::" + j + "(...)");
+                    pWebGLContext[j] = function () {
+                        pWebGLContext[j] = new Function(
+                            "var t = this.extentionList[" + sExtName + "];" + 
+                            "t." + j + ".apply(t, arguments);");
+                    }
+
+                }
+                else {
+                    //debug_print("created const WebGLRenderingContext::" + j + " = " + pWebGLExtension[j]);
+                    pWebGLContext[j] = pWebGLExtension[j];
+                }
+            }
+
+            return true;
+        }
+
+        WARNING("cannot load extension: ", sExtName);
+        return false;
+    }
+
+    function setupContext(pWebGLContext: WebGLRenderingContext): WebGLRenderingContext {     
         //test context not created yet
         if (isNull(pSupportedExtensionList)) {
             return pWebGLContext;
         }
 
         for (var i: int = 0; i < pSupportedExtensionList.length; ++ i) {
-            if (pWebGLExtension = pWebGLContext.getExtension(pSupportedExtensionList[i])) {
-                pWebGLExtentionList[pSupportedExtensionList[i]] = pWebGLExtension;
-
-                debug_print("loaded WebGL extension: ", pSupportedExtensionList[i]);
-
-                for (var j in pWebGLExtension) {
-                    if (isFunction(pWebGLExtension[j])) {
-
-                        pWebGLContext[j] = function () {
-                            pWebGLContext[j] = new Function(
-                                "var t = this.pWebGLExtentionList[" + pSupportedExtensionList[i] + "];" + 
-                                "t." + j + ".apply(t, arguments);");
-                        }
-
-                    }
-                    else {
-                        pWebGLContext[j] = pWebGLExtentionList[pSupportedExtensionList[i]][j];
-                    }
-                }
-            }
-            else {
-                WARNING("cannot load extension: ", pSupportedExtensionList[i]);
+            if (!loadExtension(pWebGLContext, pSupportedExtensionList[i])) {
                 pSupportedExtensionList.splice(i, 1);
             }
         }
-
-
-        (<any>pWebGLContext).pWebGLExtentionList = pWebGLExtentionList;
-        // pLoadedExtensionList = pWebGLExtentionList;
          
         return pWebGLContext;
     }
@@ -105,7 +132,11 @@ module akra.webgl {
 		catch (e) {}
 
 		if (isDefAndNotNull(pWebGLContext)) {
+#ifdef WEBGL_DEBUG
+            return makeDebugContext(setupContext(pWebGLContext));
+#else
             return setupContext(pWebGLContext);
+#endif            
 		}
         
         debug_warning("cannot get 3d device");
@@ -580,10 +611,10 @@ module akra.webgl {
             for(z = pSource.front; z < pSource.back; z++) {
                 for(y = pSource.top; y < pSource.bottom; y++) {
                     for(x = 0; x < k; x++) {
-                        pDest[iDstPtr + x] = ((pSource[iSrcPtr + x]&0x000F)<<12) |   // B
-                                    		 ((pSource[iSrcPtr + x]&0x00F0)<<4)  |   // G
-                                    		 ((pSource[iSrcPtr + x]&0x0F00)>>4)  |   // R
-                                    	     ((pSource[iSrcPtr + x]&0xF000)>>12);    // A
+                        pDest[iDstPtr + x] = ((pSource[iSrcPtr + x]&0x000F)<<12) |   /* B*/
+                                    		 ((pSource[iSrcPtr + x]&0x00F0)<<4)  |   /* G*/
+                                    		 ((pSource[iSrcPtr + x]&0x0F00)>>4)  |   /* R*/
+                                    	     ((pSource[iSrcPtr + x]&0xF000)>>12);    /* A*/
                     }
 
                     iSrcPtr += pSource.rowPitch;

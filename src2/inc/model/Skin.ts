@@ -20,7 +20,7 @@ module akra.model {
 		private _pNodeNames: string[] = null;
 
 		//bind matrix from collada
-		private _m4fBindMatrix: IMat4;
+		private _m4fBindMatrix: IMat4 = new Mat4(1);
 
 		//BONE_MATRIX = WORLD_MATRIX x OFFSET_MATRIX
 		private _pBoneTransformMatrices: IMat4[]  = null;
@@ -134,6 +134,8 @@ module akra.model {
 
 		setSkeleton(pSkeleton: ISkeleton): bool {
 			if (!pSkeleton || pSkeleton.totalBones < this.totalBones) {
+				debug_warning("number of bones in skeleton (" + pSkeleton.totalBones + 
+					") less then number of bones in skin (" + this.totalBones + ").");
 			    return false;
 			}
 
@@ -179,7 +181,8 @@ module akra.model {
 			var pData: IRenderDataCollection = this.data;
 			var pMatrixData: Float32Array = new Float32Array(nMatrices * 16);
 
-			this._pBoneOffsetMatrices = pMatrices;//FIXME: правильно положить матрицы...
+			//FIXME: правильно положить матрицы...
+			this._pBoneOffsetMatrices = pMatrices;
 			this._pBoneTransformMatrixData = pData._allocateData([VE_MAT4("BONE_MATRIX")], pMatrixData);
 			this._pBoneTransformMatrices = new Array(nMatrices);
 
@@ -209,7 +212,7 @@ module akra.model {
 			return this._pInfData;
 		}
 
-		setIfluences(pInfluencesCount: uint[], pInfluences: Float32Array): bool {
+		setInfluences(pInfluencesCount: uint[], pInfluences: Float32Array): bool {
 			debug_assert(this._pInfMetaData == null && this._pInfData == null, "vertex weights already setuped.");
 			debug_assert(!isNull(this.getWeights()), "you must set weight data before setup influences");
 
@@ -235,8 +238,8 @@ module akra.model {
 
 			//запоминаем модифицированную информацию о влияниях
 			this._pInfData = pData._allocateData([
-			                                         VE_FLOAT('BONE_INF_DATA'), //адрес матрицы кости
-			                                         VE_FLOAT('BONE_WEIGHT_IND')//адрес весового коэффициента
+			                                         VE_FLOAT('BONE_INF_DATA'), /*адрес матрицы кости*/
+			                                         VE_FLOAT('BONE_WEIGHT_IND')/*адрес весового коэффициента*/
 			                                     ],
 			                                     pInfluences);
 
@@ -245,16 +248,16 @@ module akra.model {
 			//подсчет мета данных, которые укажут, где взять влияния на кость..
 			for (var i: int = 0, j: int = 0, n: int = iInfLoc; i < pInfluencesMeta.length; i += 2) {
 			    var iCount: int = pInfluencesCount[j++];
-			    pInfluencesMeta[i] = iCount;        //число влияний на вершину
-			    pInfluencesMeta[i + 1] = n;         //адресс начала информации о влияниях 
+			    pInfluencesMeta[i] = iCount;        /*число влияний на вершину*/
+			    pInfluencesMeta[i + 1] = n;         /*адрес начала информации о влияниях */
 			    //(пары индекс коэф. веса и индекс матрицы)
 			    n += 2 * iCount;
 			}
 
 			//influences meta: разметка влияний
 			this._pInfMetaData = pData._allocateData([
-			                                             VE_FLOAT('BONE_INF_COUNT'), //число костей и весов, влияющих на вершину
-			                                             VE_FLOAT('BONE_INF_LOC'), //адресс начала влияний на вершину
+			                                             VE_FLOAT('BONE_INF_COUNT'), /*число костей и весов, влияющих на вершину*/
+			                                             VE_FLOAT('BONE_INF_LOC'), /*адресс начала влияний на вершину*/
 			                                         ], pInfluencesMeta);
 
 			return this._pInfMetaData !== null &&
@@ -269,7 +272,7 @@ module akra.model {
 			    this.setWeights(pWeights);
 			}
 
-			return this.setIfluences(pInfluencesCount, pInfluences);
+			return this.setInfluences(pInfluencesCount, pInfluences);
 		}
 
 		applyBoneMatrices(bForce: bool = false): bool {

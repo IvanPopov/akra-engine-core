@@ -75,7 +75,7 @@ module akra {
     }
 
     export interface IColladaEffectLibrary extends IColladaLibrary {
-        effects: { [id: string]: IColladaEffect; };
+        effect: { [id: string]: IColladaEffect; };
     }
 
     export interface IColladaEntryLoader {
@@ -329,8 +329,6 @@ module akra {
         sampler: IColladaNewParam;
         surface: IColladaNewParam;
         image: IColladaImage;
-
-
     }
     
 

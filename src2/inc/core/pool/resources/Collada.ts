@@ -184,6 +184,7 @@ module akra.core.pool.resources {
         // common
         
         private buildAssetTransform(pNode: ISceneNode, pAsset?: IColladaAsset): ISceneNode;
+        private buildDeclarationFromAccessor(sSemantic: string, pAccessor: IColladaAccessor): IVertexElementInterface[];
 
         // materials & meshes
         
@@ -1584,6 +1585,7 @@ module akra.core.pool.resources {
             this.eachByTag(pTech, "instance_material", (pInstMat: Element): void => {
 
                 pSourceMat = <IColladaMaterial>this.source(attr(pInstMat, "target"));
+
                 pMat = {
                     // url         : pSourceMat.instanceEffect.url,
                     target      : attr(pInstMat, "target"), 
@@ -1881,7 +1883,8 @@ module akra.core.pool.resources {
                     pObject.value = (<IVec4>pSource.value).w;
                     break;
                 case "ANGLE":
-                    pObject.value = (<IVec4>pSource.value).w; //<rotate sid="rotateY">0 1 0 -4.56752</rotate>
+                    pObject.value = (<IVec4>pSource.value).w; 
+                    //<rotate sid="rotateY">0 1 0 -4.56752</rotate>
                     break;
             }
 
@@ -2073,6 +2076,25 @@ module akra.core.pool.resources {
             return pNode;   
         }
 
+        private buildDeclarationFromAccessor(sSemantic: string, pAccessor: IColladaAccessor): IVertexElementInterface[] {
+            var pDecl: IVertexElementInterface[] = [];
+            
+            for (var i: int = 0; i < pAccessor.params.length; ++ i) {
+                var sUsage: string = pAccessor.params[i].name;
+                var sType: string = pAccessor.params[i].type;
+
+                ASSERT(sType === "float", "Only float type supported for construction declaration from accessor");
+
+                pDecl.push(VE_FLOAT(sUsage));
+            }
+
+            pDecl.push(VE_CUSTOM(sSemantic, EDataTypes.FLOAT, pAccessor.params.length, 0));
+
+            debug_print("Automatically constructed declaration: ", createVertexDeclaration(pDecl).toString());
+            
+            return pDecl;
+        }
+
 
         // materials & meshes
         
@@ -2088,15 +2110,15 @@ module akra.core.pool.resources {
                 var pMaterialInst: IColladaInstanceMaterial = pMaterials[sMaterial];
                 var pInputMap: IColladaBindVertexInputMap = pMaterialInst.vertexInput;
                 // URL --> ID (#somebody ==> somebody)
-                var sEffectId: string = pMaterialInst.url.substr(1);
-                var pEffect: IColladaEffect = pEffects.effects[sEffectId];
+                var sEffectId: string = pMaterialInst.material.instanceEffect.effect.id;
+                var pEffect: IColladaEffect = pEffects.effect[sEffectId];
                 var pPhongMaterial: IColladaPhong = <IColladaPhong>pEffect.profileCommon.technique.value;
                 var pMaterial: IMaterial = material.create(sEffectId)
 
                 pMaterial.set(<IMaterialBase>pPhongMaterial);
 
                 for (var j: int = 0; j < pMesh.length; ++j) {
-                    var pSubMesh: IMeshSubset = pMesh[j];
+                    var pSubMesh: IMeshSubset = pMesh.getSubset(j);
 
                     //if (pSubMesh.surfaceMaterial.findResourceName() === sMaterial) {
                     if (pSubMesh.material.name === sMaterial) {
@@ -2110,7 +2132,13 @@ module akra.core.pool.resources {
 
                         //setup textures
                         for (var sTextureType in pPhongMaterial.textures) {
+
                             var pColladaTexture: IColladaTexture = pPhongMaterial.textures[sTextureType];
+
+                            if (isNull(pColladaTexture)) {
+                                continue;
+                            }
+
                             var pInput: IColladaBindVertexInput = pInputMap[pColladaTexture.texcoord];
 
                             if (!isDefAndNotNull(pInput)) {
@@ -2181,7 +2209,7 @@ module akra.core.pool.resources {
 
             pMesh = this.getEngine().createMesh(
                 sMeshName,
-                <int>(EMeshOptions.HB_READABLE), /*|EMeshOptions.RD_ADVANCED_INDEX,  //0,//*/
+                <int>(EMeshOptions.HB_READABLE), /*|EMeshOptions.RD_ADVANCED_INDEX,  0,*/
                 this.sharedBuffer());    /*shared buffer, if supported*/
 
             var pPolyGroup: IColladaPolygons[] = pNodeData.polygons;
@@ -2242,7 +2270,8 @@ module akra.core.pool.resources {
                                 pDecl = [VE_CUSTOM(sSemantic, EDataTypes.FLOAT, pInput.accessor.stride)];
                                 break;
                             default:
-                                ERROR("unsupported semantics used: " + sSemantic);
+                                pDecl = this.buildDeclarationFromAccessor(sSemantic, pInput.accessor);
+                                WARNING("unsupported semantics used: " + sSemantic);
                         }
 
                         pMeshData.allocateData(pDecl, pData);
@@ -2286,8 +2315,8 @@ module akra.core.pool.resources {
                 pSubMesh.material.name = pPolygons.material;
             }
 
-            pMesh.addFlexMaterial("default");
-            pMesh.setFlexMaterial("default");
+            ASSERT(pMesh.addFlexMaterial("default"), "Could not add flex material to mesh <" + pMesh.name + ">");
+            ASSERT(pMesh.setFlexMaterial("default"), "Could not set flex material to mesh <" + pMesh.name + ">");
 
             //adding all data to cahce data
             this.addMesh(pMesh);
@@ -2318,10 +2347,12 @@ module akra.core.pool.resources {
             pMesh = this.buildMesh({geometry : pGeometry, material : pMaterials});
 
             pSkin = pMesh.createSkin();
+
             pSkin.setBindMatrix(m4fBindMatrix);
             pSkin.setBoneNames(pBoneList);
             pSkin.setBoneOffsetMatrices(pBoneOffsetMatrices);
-            pSkin.setSkeleton(pSkeleton);
+            
+            ASSERT(pSkin.setSkeleton(pSkeleton), "Could not set skeleton to skin.");
 
             if (!pSkin.setVertexWeights(
                 <uint[]>pVertexWeights.vcount,
@@ -2330,6 +2361,7 @@ module akra.core.pool.resources {
                 ERROR("cannot set vertex weight info to skin");
             }
 
+            pMesh.setSkin(pSkin);
             pMesh.setSkeleton(pSkeleton);
             pSkeleton.attachMesh(pMesh);
 

@@ -310,7 +310,8 @@ module akra.animation {
 
 					if (pFrame) {
 						iAnim ++;
-						pResultFrame.add(pFrame.mult(fWeight), iAnim === 1);//first, if 1
+						//first, if 1
+						pResultFrame.add(pFrame.mult(fWeight), iAnim === 1);
 					}
 				}
 			}

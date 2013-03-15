@@ -230,6 +230,7 @@ module akra.model {
             pMaterial.set(pMaterialData);   
             //pMaterial.id = pMaterialId;
             this._pFlexMaterials.push(pMaterial);
+
             return true;
         }
 
@@ -278,7 +279,6 @@ module akra.model {
 
         createSkin(): ISkin {
             var pSkin: ISkin = createSkin(this);
-            this.setSkin(pSkin);
             return pSkin;
         }
 

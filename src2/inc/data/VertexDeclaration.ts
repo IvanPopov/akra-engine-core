@@ -159,7 +159,7 @@ module akra.data {
 		///DEBUG!!!
 		toString(): string {
 #ifdef DEBUG
-			var s = "";
+			var s = "\n";
 
 	    	s += "  VERTEX DECLARATION ( " + this.stride +" b. ) \n";
 		    s += "---------------------------------------\n";

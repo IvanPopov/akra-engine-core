@@ -74,7 +74,7 @@ module akra {
 		 * пары: {индекс матрицы кости, индекс веса}
 		 */
 		getInfluences(): IVertexData;
-		setIfluences(pInfluencesCount: uint[], pInfluences: Float32Array): bool;
+		setInfluences(pInfluencesCount: uint[], pInfluences: Float32Array): bool;
 
 		/**
 		 * Short way to call setWeights() && setIfluences();

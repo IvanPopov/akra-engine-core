@@ -1414,14 +1414,14 @@ var TypeScript;
                 var isPrinted = false;
                 var pGetterSymbol = null;
                 var pGetter = null;
-                var op1 = this.operand1;
                 var isSetter = false;
+                var op1 = this.operand1;
                 if (this.operand1.nodeType === 19 /* Dot */  && (this.operand1).operand2.nodeType == 25 /* Name */ ) {
                     var id = (this.operand1).operand2;
                     var target = (this.operand1);
                     if (TypeScript.isDefAndNotNull(id.sym) && id.sym.isAccessor()) {
-                        var isSetter = binTokenId === TypeScript.TokenID.Equals;
-                        var sym = isSetter? (id.sym).setter: (id.sym).getter;
+                        isSetter = binTokenId === 63 /* Equals */ ;
+                        var sym = isSetter ? (id.sym).setter : (id.sym).getter;
                         var funcDecl = sym ? (sym.declAST) : null;
                         pGetterSymbol = id.sym;
                         pGetter = pGetterSymbol.declAST;
@@ -1432,8 +1432,9 @@ var TypeScript;
                     }
                 }
                 if (!isPrinted || !isSetter) {
-                    if (!isPrinted) emitter.emitJavascript(this.operand1, binTokenId, false);
-
+                    if (!isPrinted) {
+                        emitter.emitJavascript(this.operand1, binTokenId, false);
+                    }
                     if (!TypeScript.isNull(pGetter)) {
                         pGetterSymbol.declAST = pGetter;
                     }
@@ -5165,7 +5166,6 @@ var TypeScript;
             return true;
         };
         InlineEngine.prototype.inlineFunction = function (emitter, target, funcDecl, argData) {
-            // return false;
             if (typeof argData === "undefined") { argData = null; }
             var realTarget = target;
             var isUnsupported = false;
@@ -5230,7 +5230,8 @@ var TypeScript;
             this.begin(funcDecl);
             var argv = funcDecl.arguments.members;
             for(var i = 0; i < argv.length; ++i) {
-                this.replaceArgument(emitter, argv[i], args[i] || new TypeScript.Identifier("undefined"));
+                var argDecl = argv[i];
+                this.replaceArgument(emitter, argDecl, args[i] || argDecl.init || new TypeScript.Identifier("undefined"));
             }
             if (!TypeScript.isNull(type)) {
                 if (type.isClassInstance()) {
@@ -5239,8 +5240,6 @@ var TypeScript;
             }
             var st = funcDecl.bod.members[0];
             var res = st.nodeType == 77 /* Return */  ? (st).returnExpression : st;
-            // console.log (funcDecl.treeViewLabel())
- 
             emitter.writeToOutput("(");
             emitter.emitJavascript(res, 56 /* OpenParen */ , true);
             emitter.writeToOutput(")");
