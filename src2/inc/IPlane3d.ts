@@ -16,6 +16,8 @@ module akra{
 
 		clear(): IPlane3d;
 
+		negate(): IPlane3d;
+
 		normalize(): IPlane3d;
 
 		isEqual(pPlane: IPlane3d): bool;
