@@ -15,7 +15,7 @@
 #define LOGGER_API 1
 // #define CRYPTO_API 1
 // #define GUI 1
-#define WEBGL_DEBUG 1
+// #define WEBGL_DEBUG 1
 
 #include "ILogger.ts"
 
