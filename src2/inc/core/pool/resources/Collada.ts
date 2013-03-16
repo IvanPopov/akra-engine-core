@@ -2050,7 +2050,7 @@ module akra.core.pool.resources {
             if (isNull(pAnimations)) {
                 return null;
             }
-
+            LOG(pAnimations);
             for (var i: int = 0; i < pAnimations.length; ++ i) {
                 var pAnimation: IAnimation = this.buildAnimation(pAnimations[i]);
 
@@ -2878,7 +2878,6 @@ module akra.core.pool.resources {
             if (!isNull(pController) && this.isAnimationNeeded() && this.isLibraryExists("library_animations")) {
                 pAnimationOutput = 
                         this.buildAnimations((<IColladaAnimation>this.getLibrary("library_animations")).animation);
-
                 //дополним анимации начальными позициями костей
                 if (this.isPoseExtractionNeeded()) {
                     pSkeletons = this.getSkeletonsOutput() || [];
