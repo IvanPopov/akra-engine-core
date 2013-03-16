@@ -65,8 +65,8 @@ struct base_material{
     float shininess:SHININESS;
 };;
 
-global base_material Fragment_material;
-global float3 Normal;
+shared base_material Fragment_material;
+shared float3 Normal;
 
 
 struct Material {

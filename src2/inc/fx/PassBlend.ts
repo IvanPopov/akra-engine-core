@@ -321,6 +321,10 @@ module akra.fx {
 					for(var i: uint = 0; i < pUniformKeys.length; i++){
 						pUniform = pUniformMap[pUniformKeys[i]];
 
+						if(isNull(pUniform)){
+							continue;
+						}
+
 						if(!this._pUniformContainerV.addVariable(pUniform, EAFXBlendMode.k_Uniform)){
 							ERROR("Could not add uniform variable");
 							return false;
@@ -448,11 +452,12 @@ module akra.fx {
 				if(!isNull(pUniformKeys)){
 					for(var i: uint = 0; i < pUniformKeys.length; i++){
 						pUniform = pUniformMap[pUniformKeys[i]];
+
 						if(isNull(pUniform)){
-							LOG(pUniformMap, pUniformKeys, pUniformKeys[i]);
+							continue;
 						}
+						
 						if(!this._pUniformContainerP.addVariable(pUniform, EAFXBlendMode.k_Uniform)){
-							//LOG(pUniformMap, pUniformKeys, pUniformKeys[i]);
 							ERROR("Could not add uniform variable");
 							return false;
 						}

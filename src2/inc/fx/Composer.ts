@@ -20,7 +20,21 @@
 #include "IAFXShaderProgram.ts"
 #include "util/ObjectArray.ts"
 
+#include "BufferMap.ts"
+
 module akra.fx {
+
+	export interface IPreRenderState {
+		isClear: bool;
+
+		primType: EPrimitiveTypes;
+		offset: uint;
+		length: uint;
+		index: IIndexData;
+		//flows: IDataFlow[];
+		flows: ObjectArray;
+	}
+
 	export class Composer implements IAFXComposer {
 		private _pEngine: IEngine = null;
 
@@ -39,6 +53,7 @@ module akra.fx {
 
 		//Data for render
 		private _pCurrentSceneObject: ISceneObject = null;
+		private _pPreRenderState: IPreRenderState = null;
 
 		//Temporary objects for fast work
 
@@ -59,6 +74,15 @@ module akra.fx {
 			this._pGlobalComponentBlendStack = [];
 			this._pGlobalComponentBlend = null;
 
+			this._pPreRenderState = {
+				isClear: true,
+
+				primType: 0,
+				offset: 0,
+				length: 0,
+				index: null,
+				flows: new ObjectArray()
+			};
 			// this._pTempPassInstructionList = new ObjectArray();
 		}
 
@@ -313,6 +337,33 @@ module akra.fx {
 		//---------------------------------API for render------------------------------//
 		//-----------------------------------------------------------------------------//
 
+		applyBufferMap(pBufferMap: BufferMap): bool {
+			var pState: IPreRenderState = this._pPreRenderState;
+
+			if(pState.isClear){
+				pState.primType = pBufferMap.primType;
+				pState.offset = pBufferMap.offset;
+				pState.length = pBufferMap.length;
+				pState.index = pBufferMap.index;
+			}
+			else if(pState.primType !== pBufferMap.primType ||
+					pState.offset !== pBufferMap.offset ||
+					pState.length !== pBufferMap.length ||
+					pState.index !== pBufferMap.index) {
+
+				ERROR("Could not blend buffer maps");
+				return false;
+			}
+
+			var pFlows: IDataFlow[] = BufferMap.flows;
+
+			for(var i: uint = 0; i < pFlows.length; i++){
+				pState.flows.push(pFlows[i]);
+			}
+
+			pState.isClear = false;
+		}
+
 		setCurrentSceneObject(pSceneObject: ISceneObject): void {
 			this._pCurrentSceneObject = pSceneObject;
 		}
@@ -401,6 +452,16 @@ module akra.fx {
 			pComponent.setTechnique(pTechnique);
 
 			return true;
+		}
+
+		private clearPreRenderState(): void {
+			this._pPreRenderState.primType = 0;
+			this._pPreRenderState.offset = 0;
+			this._pPreRenderState.length = 0;
+			this._pPreRenderState.index = null;
+			this._pPreRenderState.flows.clear(false);
+
+			this._pPreRenderState.isClear = true;
 		}
 	}
 }
