@@ -617,18 +617,18 @@ interface WebGLRenderingContext
 
 	texImage2D(target: number, level: number, internalformat: number, width: number, height: number, border: number, format: number, type: number, pixels: ArrayBufferView): void;
 	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, pixels: ImageData): void;
-	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, image: HTMLImageElement): void; // May throw DOMException
-	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, canvas: HTMLCanvasElement): void; // May throw DOMException
-	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, video: HTMLVideoElement): void; // May throw DOMException
+	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, image: HTMLImageElement): void; /* May throw DOMException*/
+	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, canvas: HTMLCanvasElement): void; /* May throw DOMException*/
+	texImage2D(target: number, level: number, internalformat: number, format: number, type: number, video: HTMLVideoElement): void; /* May throw DOMException*/
 
 	texParameterf(target: number, pname: number, param: number): void;
 	texParameteri(target: number, pname: number, param: number): void;
 
 	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, type: number, pixels: ArrayBufferView): void;
 	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, pixels: ImageData): void;
-	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, image: HTMLImageElement): void; // May throw DOMException
-	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, canvas: HTMLCanvasElement): void; // May throw DOMException
-	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, video: HTMLVideoElement): void; // May throw DOMException
+	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, image: HTMLImageElement): void; /* May throw DOMException*/
+	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, canvas: HTMLCanvasElement): void; /* May throw DOMException*/
+	texSubImage2D(target: number, level: number, xoffset: number, yoffset: number, format: number, type: number, video: HTMLVideoElement): void; /* May throw DOMException*/
 
 	uniform1f(location: WebGLUniformLocation, x: number): void;
 	uniform1fv(location: WebGLUniformLocation, v: Float32Array): void;

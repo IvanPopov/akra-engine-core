@@ -404,7 +404,7 @@ module akra.util {
 
 		    return pMap;
 		} 
-		toString(): string {
+		toString(bListAll: bool = false): string {
 			function _an(sValue, n: int, bBackward?: bool) {
 		        sValue = String(sValue);
 		        bBackward = bBackward || false;
@@ -424,14 +424,17 @@ module akra.util {
 		    }
 
 		    var s = '\n\n', t;
-		    s += '      Complete Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping  / Shift    : OFFSET |    Additional    \n';
+		    s += '      $1 Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping  / Shift    : OFFSET |    Additional    \n';
+		    s = s.replace("$1", bListAll? "   Total": "Complete");
 		    t  = '-------------------------:-----------------+---------------------:--------------------------:--------+------------------\n';
 		    // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
 		    // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
 		    s += t;
 
-		    for (var i: int = 0; i < this._nCompleteFlows; ++ i) {
-		        var pFlow: IDataFlow = this._pCompleteFlows[i];
+		    var pFlows: IDataFlow[] = bListAll? this._pFlows: this._pCompleteFlows;
+		    var nFlows: uint = bListAll? this._nUsedFlows: this._nCompleteFlows;
+		    for (var i: int = 0; i < nFlows; ++ i) {
+		        var pFlow: IDataFlow = pFlows[i];
 		        var pMapper: IDataMapper = pFlow.mapper;
 		        var pVertexData: IVertexData = pFlow.data;
 		        var pDecl: data.VertexDeclaration = pVertexData.getVertexDeclaration();

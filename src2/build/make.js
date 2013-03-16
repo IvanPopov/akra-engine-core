@@ -47,6 +47,7 @@ function usage() {
 		'\n\t--clean			Clean tests data.' + 
 		'\n\t--list		[-l] List all available tests.' + 
 		'\n\t--webgl-debug	[-w] Add webgl debug utils.' + 
+		'\n\t--do-magic	[-m] It\'s wonderfull magic!(Спросите у Игоря!).' + 
 		'\n\t--declaration		Generates corresponding .d.ts file.'
 	);
 	
@@ -72,6 +73,10 @@ var pOptions = {
 	clean: false, //clean tests data instead build
 	listOnly: false, //list available tests
 	webglDebug: false,
+	/**
+	 * Поиск всех файлов с комеентариями вида // стоящими не на отдельной строке
+	 */
+	magicMode: false,
 	testsFormat: {nw: false, html: false, js: false}
 };
 
@@ -183,6 +188,10 @@ function parseArguments() {
 			case '-l':
 			case '--list':
 				pOptions.listOnly = true;
+				break;
+			case '-m':
+			case '--do-magic':
+				pOptions.magicMode = true;
 				break;
 			case '--webgl-debug':
 			case '-w':
@@ -383,6 +392,41 @@ function compile() {
 	  }
 	});
 
+}
+
+function doMagic() {
+
+	scanDir(pOptions.includeDir, function (err, files) {
+		for (var i in files) {
+			var sFile = files[i].path;
+			if (path.extname(sFile).toLowerCase() !== ".ts") {
+				continue;
+			}
+			var sData = fs.readFileSync(sFile, "utf8");
+			var sLines = sData.split("\n");
+
+			var pIncorrectComments = [];
+
+			for (var n in sLines) {
+				var sLine = sLines[n];
+				var iPos = sLine.indexOf("//");
+				if (iPos != -1) {
+					if (!sLine.substr(0, iPos).match(/^[\s]*$/ig)) {
+						pIncorrectComments.push({n: n, comment: sLine});
+					}
+				}
+			}
+
+			if (pIncorrectComments.length > 0) {
+				console.log("\nfile: " + sFile);
+				for (var n in pIncorrectComments) {
+					console.log("\t line " + pIncorrectComments[n].n + ":: " + pIncorrectComments[n].comment);
+				}
+			}
+		}
+
+		process.exit(0);
+	});
 }
 
 var pTestQueue = [];
@@ -850,6 +894,10 @@ parseArguments();
 verifyOptions();
 
 process.chdir(pOptions.buildDir);
+
+if (pOptions.magicMode) {
+	doMagic();
+}
 
 if (!fs.existsSync(pOptions.outputFolder)) { 
 	console.log("\n\n> target: CORE\n\n");

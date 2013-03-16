@@ -379,6 +379,11 @@ module akra.util {
 			return pHsb;
 		}
 
+		toString(): string {
+			return "{R: " + this.r + ", G: " + this.g + ", B: " + this.b + ", A: " + this.a + "} " + 
+			"( 0x" + this.rgba.toString(16) + " )";
+		}
+
 		static toFloat32Array(pValue: IColorValue): Float32Array {
 			var pArr: Float32Array = new Float32Array(4);
 			

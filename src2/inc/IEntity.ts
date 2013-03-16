@@ -64,6 +64,7 @@ module akra {
 		childCount(): uint;
 		children(): IEntity[];
 		childAt(i: int): IEntity;
+		descCount(): uint;
 
 		update(): bool;
 		recursiveUpdate(): bool;

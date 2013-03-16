@@ -80,12 +80,12 @@ module akra.model {
 		    function findNodes (pNode: ISceneNode): void {
 		    	var sJoint: string = null;
 
-		    	if (pNode) {
+		    	if (!isNull(pNode)) {
 		    		if (scene.isJoint(pNode)) {
 			    		sJoint = (<IJoint>pNode).boneName;
 			    	}
 
-			    	if (isDefAndNotNull(sJoint)) {
+			    	if (!isNull(sJoint)) {
 			    		debug_assert(!pJointMap[sJoint], 
 			    			'joint with name<' + sJoint + '> already exists in skeleton <' + this._sName + '>');
 			    		

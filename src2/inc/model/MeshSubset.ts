@@ -250,20 +250,21 @@ module akra.model {
 		setFlexMaterial (iMaterial: int): bool;
 		setFlexMaterial (csName: string): bool;
 		setFlexMaterial (iMaterial): bool {
+		    var pMaterial: IMaterial = this._pMesh.getFlexMaterial(iMaterial);
+
+		    if (isNull(pMaterial)) {
+		    	WARNING("could not find material <" + iMaterial + "> in sub mesh <" + this.name + ">");
+		        return false;
+		    }
+
 		    var pRenderData: IRenderData = this._pRenderData;
 		    var pIndexData: IBufferData = pRenderData.getIndices();
 		    var pMatFlow: IDataFlow = pRenderData._getFlow(DeclUsages.MATERIAL);
 		    var eSemantics: string = DeclUsages.INDEX10;
 		    var pIndexDecl: IVertexDeclaration, pFloatArray: Float32Array;
 		    var iMatFlow: int;
-		    var pMaterial: IMaterial = this._pMesh.getFlexMaterial(iMaterial);
-		    var iMat: int = (<IFlexMaterial>pMaterial).data.byteOffset;
-
-		    if (isNull(pMaterial)) {
-		        return false;
-		    }
-
-		    
+			var iMat: int = (<IFlexMaterial>pMaterial).data.byteOffset;
+		
 		    if (pMatFlow) {
 		        iMatFlow = pMatFlow.flow;
 		        eSemantics = pMatFlow.mapper.semantics;
@@ -281,7 +282,7 @@ module akra.model {
 		    debug_assert(iMatFlow >= 0, "cannot add data flow with material for mesh subsset");
 
 		    if (!pRenderData.allocateIndex(pIndexDecl, pFloatArray)) {
-		        LOG("cannot allocate index for material!!!");
+		        WARNING("cannot allocate index for material!!!");
 		        return false;
 		    }
 

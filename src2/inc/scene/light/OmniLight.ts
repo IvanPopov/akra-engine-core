@@ -138,8 +138,8 @@ module akra.scene.light {
 				pDepthTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
 				pDepthTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
 				pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
-
-				this.getRenderTarget(i).addViewport(this._pShadowCasterCube[i]); //TODO: Multiple render target
+				//TODO: Multiple render target
+				this.getRenderTarget(i).addViewport(this._pShadowCasterCube[i]); 
 			}
 		};
 

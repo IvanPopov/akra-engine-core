@@ -6,7 +6,7 @@ demos/
 docreator/
 preprocessor/
 analyzer/
-effects/
+#effects/
 compiled/
 
 # Project property files

@@ -90,8 +90,8 @@ module akra.scene {
             var pScene: IScene;
 
             if (iScene === 0 && this._pSceneList.length === 0) {
-                debug_print("creating default scene...");
                 this.createScene3D();
+                debug_print("Default scene automatically created.");
             }
 
             pScene = this._pSceneList[iScene];

@@ -1,0 +1,62 @@
+provide akra.system;
+
+float4x4 model_mat:MODEL_MATRIX;
+float4x4 view_mat:VIEW_MATRIX;
+float4x4 proj_mat:PROJ_MATRIX;
+float4x4 bind_matrix:BIND_SHAPE_MATRIX;
+
+float4 vs_simple_geometry(float4 position : POSITION) : POSITION {
+    float4 pos = float4(position.xyz, 1.0);
+    return proj_mat * view_mat * model_mat * pos;
+}
+
+float4 vs_advanced_index_geometry(float4 position[][] : POSITION) : POSITION {
+    float4 pos = float4(position.xyz, 1.0);
+    return proj_mat * view_mat * model_mat * pos;
+}
+
+float4 vs_skin_geometry(float4 position[] : POSITION) : POSITION {
+    float4 pos = float4(position.xyz, 1.);
+
+    float2 meta_data[](memof position);
+
+    float2 temp[](memof position);
+    float4x4 bone_matrix[](memof position);
+    float weight[](memof position);
+
+    float4x4 result_mat = float4x4(0.0);
+
+    @(meta_data) = position.w;
+
+    int number_matrix = int(meta_data.x);
+    int bone_inf_ptr = int(meta_data.y);
+
+    for (int i = 0; i < 32; i++) {
+        if(i >= number_matrix) {
+            break;
+        }
+        //get data about matrix and weight
+        @temp = float(bone_inf_ptr + i * 2);
+
+        @bone_matrix = floor(temp.x);
+        @weight = temp.y;
+
+        result_mat += bone_matrix * weight;
+    }
+
+    return proj_mat * view_mat * result_mat * bind_matrix * pos;
+}
+
+technique prepareShadows{
+    pass pass1{
+        if(engine.mesh.isSkinning) {
+            VertexShader = compile vs_skin_geometry();
+        }
+        else if(engine.isAdvancedIndex) {
+            VertexShader = compile vs_advanced_index_geometry();
+        }
+        else {
+            VertexShader = compile vs_simple_geometry();
+        }
+    };
+};

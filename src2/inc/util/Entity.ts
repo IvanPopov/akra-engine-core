@@ -173,21 +173,39 @@ module akra.util {
 		}
 
 
+		descCount(): uint {
+			var n: uint = this.childCount();
+			var pChild: IEntity = this.child;
+			
+			while(!isNull(pChild)) {
+				n += pChild.descCount();
+				pChild = pChild.sibling;
+			}
+
+			return n;
+		}
+
 		/**
 		 * Returns the current number of children of this object
 		 */
 		childCount(): uint {
 			var iCount: uint = 0;
+			var pChild: IEntity = this.child;
+			
+			while(!isNull(pChild)) {
+				iCount ++;
+				pChild = pChild.sibling;
+			}
 
-		    var pNextChild: IEntity = this.child;
+		    // var pNextChild: IEntity = this.child;
 
-		    if (pNextChild) {
-		        ++ iCount;
-		        while (pNextChild) {
-		            pNextChild = pNextChild.sibling;
-		            ++ iCount;
-		        }
-		    }
+		    // if (pNextChild) {
+		    //     ++ iCount;
+		    //     while (pNextChild) {
+		    //         pNextChild = pNextChild.sibling;
+		    //         ++ iCount;
+		    //     }
+		    // }
 		    return iCount;
 		}
 

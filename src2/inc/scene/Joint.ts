@@ -19,8 +19,8 @@ module akra.scene {
 			return this._sBone;
 		}
 
-		inline set boneName(sBone: string){
-			return this._sBone;
+		inline set boneName(sBone: string) {
+			this._sBone = sBone;
 		}
 
 		// getEngine(): IEngine {

@@ -560,7 +560,9 @@ module akra.util {
     //Default log routines
 
     function sourceLocationToString(pLocation: ISourceLocation): string {
-        var sLocation:string = "[" + pLocation.file + ":" + pLocation.line.toString() + "]: ";
+        var pDate: Date = new Date;
+        var sTime: string = pDate.getHours() + ":" + pDate.getMinutes() + "." + pDate.getSeconds();
+        var sLocation:string = "[" + pLocation.file + ":" + pLocation.line.toString() + " " + sTime + "]: ";
         return sLocation;
     }
 

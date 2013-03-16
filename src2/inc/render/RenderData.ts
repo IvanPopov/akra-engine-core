@@ -247,6 +247,10 @@ module akra.render {
         	return this._iIndexSet;
         }
 
+        inline hasAttributes(): bool {
+            return !isNull(this._pAttribData);
+        }
+
         /**
 		 * Specifies uses advanced index.
 		 */
@@ -306,7 +310,7 @@ module akra.render {
         getDataLocation(sSemantics?): int {
         	var pData: IVertexData = this._getData(<string>sSemantics);
 
-        	return pData ? pData.byteLength : -1;
+        	return pData ? pData.byteOffset : -1;
         }
 
         /**
@@ -328,10 +332,7 @@ module akra.render {
          */
         index(sData: string, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
         index(iData: int, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
-        index(data: any, sSemantics: string, useSame?: bool, iBeginWith?: int): bool {
-        	iBeginWith = iBeginWith || 0;
-        	useSame = useSame || false;
-
+        index(data: any, sSemantics: string, useSame: bool = false, iBeginWith: int = 0): bool {
             var iData: int = <int>arguments[0];
         	var iFlow: int = -1;
         	var iAddition: int, iRealAddition: int, iPrevAddition: int;
@@ -346,7 +347,7 @@ module akra.render {
 
         	if (this.useAdvancedIndex()) {
         	    pRealData = this._getData(<string>arguments[0]);
-        	    iAddition = pRealData.byteLength;
+        	    iAddition = pRealData.byteOffset;
         	    iStride = pRealData.stride;
         	    //индекс, который подал юзер
         	    pData = this._getData(sSemantics, true); 
@@ -357,7 +358,7 @@ module akra.render {
         	        }
         	    });
 
-        	    iData = pData.byteLength;
+        	    iData = pData.byteOffset;
         	    sSemantics = "INDEX_" + sSemantics;
         	}
         	else if (isString(arguments[0])) {
@@ -371,9 +372,10 @@ module akra.render {
         	    debug_assert(iData >= 0, "cannot find data with semantics: " + arguments[0]);
         	}
 
-        	pFlow = this._getFlow(iData);
+            pFlow = this._getFlow(iData);
 
         	if (pFlow === null) {
+                debug_warning("Could not find data flow <" + iData + "> int buffer map: " + this._pMap.toString(true));
         	    return false;
         	}
 
@@ -460,7 +462,7 @@ module akra.render {
 
 		    var iFlow: int;
 		    var pVertexData: IVertexData = this._pBuffer._allocateData(pDataDecl, pData);
-		    var iOffset: int = pVertexData.byteLength;
+		    var iOffset: int = pVertexData.byteOffset;
 
 		    iFlow = this._addData(pVertexData, undefined, eType);
 
@@ -494,7 +496,7 @@ module akra.render {
 		 */
 		private _registerData(pVertexData: IVertexData): int {
 		    'use strict';
-		    var iOffset: int = pVertexData.byteLength;
+		    var iOffset: int = pVertexData.byteOffset;
 		    var pDataDecl: data.VertexDeclaration = <data.VertexDeclaration>pVertexData.getVertexDeclaration();
 
 		    //необходимо запоминать расположение данных, которые подаются,
@@ -558,8 +560,7 @@ module akra.render {
 		    if (!this._pIndexBuffer) {
 		        if (this.useMultiIndex()) {
 		            this._pIndexBuffer = this._pBuffer.getEngine().getResourceManager().createVertexBuffer('subset_' + sid());
-                    //FIXME: what is +64??
-		            this._pIndexBuffer.create(((<ArrayBufferView>pData).byteLength + 64), <int>EHardwareBufferFlags.BACKUP_COPY);
+		            this._pIndexBuffer.create(((<ArrayBufferView>pData).byteLength), <int>EHardwareBufferFlags.BACKUP_COPY);
 		        }
 		        else {
 		            //TODO: add support for sinle indexed mesh.
@@ -633,7 +634,7 @@ module akra.render {
 		    for (var i: int = 0, n = this._pMap.limit; i < n; ++i) {
 		        var pFlow = this._pMap.getFlow(i, false);
 
-		        if (pFlow.data && pFlow.data.byteLength === arguments[0]) {
+		        if (pFlow.data && pFlow.data.byteOffset === arguments[0]) {
 		            return pFlow;
 		        }
 		    }
@@ -689,9 +690,9 @@ module akra.render {
         
         toString(): string {
         	var s: string;
-        	s = 'RENDER DATA SUBSET: #' + this._iId + '\n';
-        	s += '        ATTRIBUTES: ' + (this._pAttribData ? 'TRUE' : 'FALSE') + '\n';
-        	s += '----------------------------------------------------------------\n';
+        	s = "\nRENDER DATA SUBSET: #" + this._iId + "\n";
+        	s += "        ATTRIBUTES: " + (this._pAttribData ? "TRUE" : "FALSE") + "\n";
+        	s += "----------------------------------------------------------------\n";
         	s += this._pMap.toString();
 
         	return s;
