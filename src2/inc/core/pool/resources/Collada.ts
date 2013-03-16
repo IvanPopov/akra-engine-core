@@ -79,6 +79,7 @@ module akra.core.pool.resources {
         attachToScene(pNode: ISceneNode): bool;
 
         parse(sXMLData: string, pOptions?: IColladaLoadOptions): bool;
+
         // load(sFilename: string, fnCallback?: IColladaLoadCallback, pOptions?: IColladaLoadOptions): void;
 
         // polygon index convertion
@@ -224,20 +225,20 @@ module akra.core.pool.resources {
         private prepareInput(pInput: IColladaInput): IColladaInput;
 
         private isJointsVisualizationNeeded(): bool;
-        private isVisualSceneLoaded(): bool;
+        public  isVisualSceneLoaded(): bool;
         private isSceneNeeded(): bool;
         private isAnimationNeeded(): bool;
         private isPoseExtractionNeeded(): bool;
         private isWireframeEnabled(): bool;
         private getSkeletonsOutput(): ISkeleton[];
         private getVisualScene(): IColladaVisualScene;
-        private getAsset(): IColladaAsset;
+        public  getAsset(): IColladaAsset;
 
         private isLibraryLoaded(sLib: string): bool;
         private isLibraryExists(sLib: string): bool;
         private getLibrary(sLib: string): IColladaLibrary;
-        private getBasename(): string;
-        private getFilename(): string;
+        public  getBasename(): string;
+        public  getFilename(): string;
         private setFilename(sName: string): void;
 
         private checkLibraries(pXML: Element, pTemplates: IColladaLibraryTemplate[]): void;
@@ -2680,7 +2681,7 @@ module akra.core.pool.resources {
             return this._pOptions.drawJoints === true;
         }
 
-        private inline isVisualSceneLoaded(): bool {
+        public inline isVisualSceneLoaded(): bool {
             return isDefAndNotNull(this._pVisualScene);
         }
 
@@ -2708,7 +2709,7 @@ module akra.core.pool.resources {
             return this._pVisualScene;
         }
 
-        private inline getAsset(): IColladaAsset {
+        public inline getAsset(): IColladaAsset {
             return this._pAsset;
         }        
 
@@ -2724,11 +2725,11 @@ module akra.core.pool.resources {
             return this._pLib[sLib] || null;
         }
 
-        private inline getBasename(): string {
+        public inline getBasename(): string {
             return util.pathinfo(this._sFilename).basename || "unknown";
         }
 
-        private inline getFilename(): string {
+        public inline getFilename(): string {
             return this._sFilename;
         }
 

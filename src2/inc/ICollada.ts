@@ -7,6 +7,7 @@ module akra {
 	IFACE(ISkeleton);
 	IFACE(IModel);
 	IFACE(IEngine);
+    IFACE(IColladaAsset);
 
     //=============================================
     // COLLADA LOAD OPTIONS
@@ -16,6 +17,10 @@ module akra {
         //getAnimationController(): IAnimationController;
         //getMesh(sName: string);
         //getSkeleton();
+        getAsset(): IColladaAsset;
+        getFilename(): string;
+        getBasename(): string;
+        isVisualSceneLoaded(): bool;
     }
 
 	export interface IColladaAnimationLoadOptions {

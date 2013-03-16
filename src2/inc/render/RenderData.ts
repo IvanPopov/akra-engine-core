@@ -247,6 +247,10 @@ module akra.render {
         	return this._iIndexSet;
         }
 
+        inline hasAttributes(): bool {
+            return !isNull(this._pAttribData);
+        }
+
         /**
 		 * Specifies uses advanced index.
 		 */
