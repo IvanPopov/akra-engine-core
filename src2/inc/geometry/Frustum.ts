@@ -50,7 +50,7 @@ module akra.geometry{
 			}
 		};
 
-		get frustumVertices(): IVec3[]{
+		inline get frustumVertices(): IVec3[]{
 			return this._pFrustumVertices;
 		};
 
@@ -271,6 +271,57 @@ module akra.geometry{
 				&& this.farPlane.isEqual(pFrustum.farPlane));
 		};
 
+		//output - array of vertices in counterclockwise order (around plane normal as axis)
+		getPlanePoints(sPlaneKey: string, pDestination: IVec3[] = new Array(4)): IVec3[]{
+			var pFrustumVertices: IVec3[] = this.frustumVertices;
+			if(pFrustumVertices === null){
+				pFrustumVertices = this.calculateFrustumVertices();
+			}
+
+			switch(sPlaneKey){
+				case "leftPlane":
+					pDestination[0] = pFrustumVertices[6];
+					pDestination[1] = pFrustumVertices[4];
+					pDestination[2] = pFrustumVertices[0];
+					pDestination[3] = pFrustumVertices[2];
+					break;
+				case "rightPlane":
+					pDestination[0] = pFrustumVertices[7];
+					pDestination[1] = pFrustumVertices[3];
+					pDestination[2] = pFrustumVertices[1];
+					pDestination[3] = pFrustumVertices[5];
+					break;
+				case "topPlane":
+					pDestination[0] = pFrustumVertices[7];
+					pDestination[1] = pFrustumVertices[6];
+					pDestination[2] = pFrustumVertices[2];
+					pDestination[3] = pFrustumVertices[3];
+					break;
+				case "bottomPlane":
+					pDestination[0] = pFrustumVertices[5];
+					pDestination[1] = pFrustumVertices[1];
+					pDestination[2] = pFrustumVertices[0];
+					pDestination[3] = pFrustumVertices[4];
+					break;
+				case "nearPlane":
+					pDestination[0] = pFrustumVertices[3];
+					pDestination[1] = pFrustumVertices[2];
+					pDestination[2] = pFrustumVertices[0];
+					pDestination[3] = pFrustumVertices[1];
+					break;
+				case "farPlane":
+					pDestination[0] = pFrustumVertices[7];
+					pDestination[1] = pFrustumVertices[5];
+					pDestination[2] = pFrustumVertices[4];
+					pDestination[3] = pFrustumVertices[6];
+					break;
+				default:
+					debug_assert(false, "invalid plane key");
+					break;
+			}
+			return pDestination;
+		};
+
 		testPoint(v3fPoint: IVec3): bool{
 			if(	   this.leftPlane.signedDistance(v3fPoint) > 0.
 				|| this.rightPlane.signedDistance(v3fPoint) > 0.
@@ -285,6 +336,7 @@ module akra.geometry{
 		};
 
 		testRect(pRect: IRect3d): bool{
+
 			if(planeClassifyRect3d(this.leftPlane, pRect) == EPlaneClassifications.PLANE_FRONT
 				|| planeClassifyRect3d(this.rightPlane, pRect) == EPlaneClassifications.PLANE_FRONT
 				|| planeClassifyRect3d(this.topPlane, pRect) == EPlaneClassifications.PLANE_FRONT

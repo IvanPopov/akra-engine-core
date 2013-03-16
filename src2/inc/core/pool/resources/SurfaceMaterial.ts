@@ -34,8 +34,8 @@ module akra.core.pool.resources {
     	setTexture(iIndex: int, iTextureHandle: int, iTexcoord: int = 0): bool;
     	setTexture(iIndex: int, sTexture: string, iTexcoord: int = 0): bool;
     	setTexture(iIndex: int, pTexture: ITexture, iTexcoord: int = 0): bool;
-    	setTexture(iIndex: int, pTexture: any, iTexcoord: int = 0): bool {
-
+    	setTexture(iIndex: int, texture: any, iTexcoord: int = 0): bool {
+    		//LOG(iIndex, pTexture, iTexcoord);
 		    debug_assert(iIndex < SurfaceMaterial.MAX_TEXTURES_PER_SURFACE,
 		                 "invalid texture slot");
 
@@ -44,7 +44,7 @@ module akra.core.pool.resources {
 
 		    this._pTexcoords[iIndex] = iTexcoord;
 		    
-		    if (isString(arguments[0])) {
+		    if (isString(texture)) {
 		    	pTexture = this._pTextures[iIndex];
 
 		        if (pTexture) {
@@ -63,7 +63,7 @@ module akra.core.pool.resources {
 		        }
 
 
-		        this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.loadResource(<string>arguments[0]);
+		        this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.loadResource(<string>texture);
 
 		        if (this._pTextures[iIndex]) {
 		            TRUE_BIT(this._iTextureFlags, iIndex);
@@ -75,7 +75,7 @@ module akra.core.pool.resources {
 
 		        return true;
 		    }
-		    else if (arguments[0] instanceof Texture) {
+		    else if (texture instanceof Texture) {
 		        if (!this._pTextures[iIndex] || pTexture != this._pTextures[iIndex]) {
 		            if (this._pTextures[iIndex]) {
 		                // realise first
@@ -116,8 +116,8 @@ module akra.core.pool.resources {
 		        return true;
 		    }
 		    //similar to [cPoolHandle texture]
-		    else if (isNumber(arguments[0])) {
-		        if (!this._pTextures[iIndex] || this._pTextures[iIndex].resourceHandle != <int>arguments[0]) {
+		    else if (isNumber(texture)) {
+		        if (!this._pTextures[iIndex] || this._pTextures[iIndex].resourceHandle != <int>texture) {
 		            if (this._pTextures[iIndex]) {
 		                //TheGameHost.displayManager().texturePool().releaseResource(m_pTextures[index]);
 		                if (this._pTextures[iIndex].release() === 0) {
@@ -132,7 +132,7 @@ module akra.core.pool.resources {
 		                -- this._nTotalTextures;
 		            }
 
-		            this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.getResource(<int>arguments[0]);
+		            this._pTextures[iIndex] = <ITexture>pRmgr.texturePool.getResource(<int>texture);
 
 		            if (this._pTextures[iIndex]) {
 		                TRUE_BIT(this._iTextureFlags, iIndex);

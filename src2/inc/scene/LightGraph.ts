@@ -23,6 +23,8 @@ module akra.scene {
 			//while we ignore second parametr
 			//don't have normal implementation
 
+			pResultArray.clear();
+
 			var pList: IObjectList = this._pLightPoints;
 
 			var pLightPoint: ILightPoint = pList.first;

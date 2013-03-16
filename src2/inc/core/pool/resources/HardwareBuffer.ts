@@ -82,6 +82,7 @@ module akra.core.pool.resources {
 
 		writeData(pData: Uint8Array, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
 		writeData(pData: ArrayBufferView, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool;
+		
 		writeData(pData: any, iOffset?: uint, iSize?: uint, bDiscardWholeBuffer: bool = false): bool { 
 			return false;
 		}
@@ -93,7 +94,7 @@ module akra.core.pool.resources {
 			return true;
 		}
 
-		create(iFlags: int): bool {
+		create(iSize: int, iFlags: int = 0): bool {
 			iFlags |= EHardwareBufferFlags.STATIC;
 
 			if (TEST_ANY(iFlags, EHardwareBufferFlags.DYNAMIC)) {

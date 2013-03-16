@@ -38,23 +38,23 @@ module akra.util {
 			super();
 			this._pEngine = pEngine;
 			this.reset();
-		}
+		};
 
 		inline get primType(): EPrimitiveTypes{
 			return this._pIndex ? this._pIndex.getPrimitiveType() : this._ePrimitiveType;
-		}
+		};
 
 		inline set primType(eType: EPrimitiveTypes){
 			this._ePrimitiveType = eType;
-		}
+		};
 
 		inline get primCount(): uint {
-			return data.IndexData.getPrimitiveCount(this._ePrimitiveType, this.length);
-		}
+			return data.IndexData.getPrimitiveCount(this.primType, this.length);
+		};
 
 		inline get index(): IIndexData {
 			return this._pIndex;
-		}
+		};
 
 		inline set index(pIndexData: IIndexData) {
 			if (this._pIndex === pIndexData) {
@@ -63,14 +63,14 @@ module akra.util {
 
 	        this._pIndex = pIndexData;
 	        this.update();
-		}
+		};
 
 		inline get limit(): uint {
 			return this._pFlows.length;
-		}
+		};
 
 		inline get length(): uint {
-			return (this._pIndex? this._pIndex.getPrimitiveCount(): this._nLength);
+			return (this._pIndex ? this._pIndex.length : this._nLength);
 		}
 
 		inline set length(nLength: uint) {
@@ -122,7 +122,7 @@ module akra.util {
 			(<webgl.WebGLRenderer>this._pEngine.getRenderer()).getWebGLContext().drawElements(
 				this.primCount, 
 				this._pIndex.getPrimitiveCount(), 
-				webgl.getWebGLPrimitiveType(this._ePrimitiveType), 
+				webgl.getWebGLPrimitiveType(this._pIndex.getPrimitiveType()), 
 				this._pIndex.byteOffset / 4); 
 			//FIXME: offset of drawElement() in Glintptr = long long = 32 byte???
 #else
@@ -226,7 +226,7 @@ module akra.util {
 		        return -1;
 		    }
 
-		    if (pVertexData.buffer instanceof core.pool.resources.VertexBuffer) {
+		    if (pVertexData.buffer instanceof webgl.WebGLVertexBuffer/*core.pool.resources.VertexBuffer*/) {
 		        pFlow.type = EDataFlowTypes.UNMAPPABLE;
 		        this.length = pVertexData.length;
 		        //this.startIndex = pVertexData.getStartIndex();
@@ -241,7 +241,7 @@ module akra.util {
 
 		    pFlow.data = pVertexData;
 
-		    return this.update()? iFlow: -1;
+		    return this.update() ? iFlow : -1;
 		}
 
 		checkData(pData: IVertexData): bool {
@@ -254,7 +254,7 @@ module akra.util {
 
 		protected findMapping(pMap, eSemantics, iAddition): IDataMapper {
 		    debug_assert(this.checkData(pMap), 'You can use several different maps from one buffer.');
-		    for (var i = 0, pMappers = this._pMappers, pExistsMap; i < pMappers.length; i++) {
+		    for (var i: int = 0, pMappers: IDataMapper[] = this._pMappers, pExistsMap; i < pMappers.length; i++) {
 		        pExistsMap = pMappers[i].data;
 		        if (pExistsMap === pMap) {
 		            //если уже заданные маппинг менял свой стартовый индекс(например при расширении)
@@ -278,7 +278,7 @@ module akra.util {
 		    var pMapper: IDataMapper = this.findMapping(pMap, eSemantics, iAddition);
 		    var pFlow: IDataFlow     = this._pFlows[iFlow];
 
-		    debug_assert(pFlow.data && pFlow.type === EDataFlowTypes.MAPPABLE,
+		    debug_assert(isDefAndNotNull(pFlow.data) && (pFlow.type === EDataFlowTypes.MAPPABLE),
 		        'Cannot mapping empty/unmappable flow.');
 		    debug_assert(isDef(pMap), 'Passed empty mapper.');
 
@@ -316,7 +316,8 @@ module akra.util {
 
 		update(): bool {
 			var pFlows: IDataFlow[] = this._pFlows;
-		    var pFlow, pMapper;
+		    var pFlow: IDataFlow;
+		    var pMapper: IDataMapper;
 		    var isMappable: bool = false;
 		    var pCompleteFlows: IDataFlow[] = this._pCompleteFlows;
 		    var nCompleteFlows: int = 0;
@@ -325,7 +326,7 @@ module akra.util {
 		    var nUsedFlows: int = 0;
 		    var pVideoBuffer: IVertexBuffer;
 		    var isVideoBufferAdded: bool = false;
-		    var nStartIndex: int = MAX_INT32, nCurStartxIndex: int;
+		    var nStartIndex: int = MAX_INT32, nCurStartIndex: int;
 
 		    for (var i: int = 0; i < pFlows.length; i++) {
 		        pFlow = pFlows[i];
@@ -343,8 +344,8 @@ module akra.util {
 		        pCompleteFlows[nCompleteFlows ++] = pFlow;
 
 		        if (isMappable) {
-		            nCurStartxIndex = pMapper.data.getStartIndex();
-		            pVideoBuffer = pFlow.data.buffer;
+		            nCurStartIndex = pMapper.data.startIndex;
+		            pVideoBuffer = <IVertexBuffer>pFlow.data.buffer;
 		            for (var j = 0; j < nCompleteVideoBuffers; j++) {
 		                if (pCompleteVideoBuffers[j] === pVideoBuffer) {
 		                    isVideoBufferAdded = true;
@@ -356,15 +357,15 @@ module akra.util {
 		            }
 		        }
 		        else {
-		            nCurStartxIndex = pFlow.data.getStartIndex();
+		            nCurStartIndex = pFlow.data.startIndex;
 		        }
 
 		        if (nStartIndex === MAX_INT32) {
-		            nStartIndex = nCurStartxIndex;
+		            nStartIndex = nCurStartIndex;
 		            continue;
 		        }
 
-		        debug_assert(nStartIndex == nCurStartxIndex,
+		        debug_assert(nStartIndex == nCurStartIndex,
 		            'You can not use a maps or unmappable buffers having different starting index.');
 		    }
 
@@ -403,7 +404,7 @@ module akra.util {
 
 		    return pMap;
 		} 
-		toString(): string {
+		toString(bListAll: bool = false): string {
 			function _an(sValue, n: int, bBackward?: bool) {
 		        sValue = String(sValue);
 		        bBackward = bBackward || false;
@@ -423,17 +424,20 @@ module akra.util {
 		    }
 
 		    var s = '\n\n', t;
-		    s += '      Complete Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping  / Shift    : OFFSET |    Additional    \n';
+		    s += '      $1 Flows     : OFFSET / SIZE   |   BUFFER / OFFSET   :      Mapping  / Shift    : OFFSET |    Additional    \n';
+		    s = s.replace("$1", bListAll? "   Total": "Complete");
 		    t  = '-------------------------:-----------------+---------------------:--------------------------:--------+------------------\n';
 		    // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
 		    // = '#%1 [ %2 ]           :     %6 / %7     |       %3 / %4       :         %5       :        |                  \n';
 		    s += t;
 
-		    for (var i: int = 0; i < this._nCompleteFlows; ++ i) {
-		        var pFlow: IDataFlow = this._pCompleteFlows[i];
+		    var pFlows: IDataFlow[] = bListAll? this._pFlows: this._pCompleteFlows;
+		    var nFlows: uint = bListAll? this._nUsedFlows: this._nCompleteFlows;
+		    for (var i: int = 0; i < nFlows; ++ i) {
+		        var pFlow: IDataFlow = pFlows[i];
 		        var pMapper: IDataMapper = pFlow.mapper;
 		        var pVertexData: IVertexData = pFlow.data;
-		        var pDecl: IVertexDeclaration = pVertexData.getVertexDeclaration();
+		        var pDecl: data.VertexDeclaration = pVertexData.getVertexDeclaration();
 		        //trace(pMapper); window['pMapper'] = pMapper;
 		        s += '#' + _an(pFlow.flow, 2) + ' ' + 
 		            _an('[ ' + (pDecl.element(0).usage !== DeclUsages.END? pDecl.element(0).usage: '<end>') + ' ]', 20) + 
@@ -448,7 +452,7 @@ module akra.util {
 
 		        for (var j = 1; j < pDecl.length; ++ j) {
 		            s += '    ' + 
-		            _an('[ ' + (pDecl.element(j).usage !== DeclUsages.END? pDecl.element(j).usage: '<end>') + ' ]', 20) + ' : ' + _an(pDecl[j].iOffset, 6, true) + ' / ' + _an(pDecl[j].iSize, 6) +  
+		            _an('[ ' + (pDecl.element(j).usage !== DeclUsages.END? pDecl.element(j).usage: '<end>') + ' ]', 20) + ' : ' + _an(pDecl.element(j).offset, 6, true) + ' / ' + _an(pDecl.element(j).size, 6) +  
 		                  ' |                     :                          :        |                  \n';
 		        }
 		        s += t;

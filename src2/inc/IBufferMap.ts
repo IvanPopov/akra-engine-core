@@ -84,12 +84,13 @@ module akra {
 		update(): bool;
 
 		clone(bWithMapping?: bool): IBufferMap; 
-		toString(): string;
 
 		/**
 		 * Draw buffer map.
 		 */
 		_draw(): void;
+		
+		toString(bListAll?: bool): string;
 	}
 }
 

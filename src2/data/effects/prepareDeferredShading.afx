@@ -1,0 +1,71 @@
+provide akra.system;
+
+include "floatSpecialFunctions.afx";
+
+struct base_material{
+    float4 diffuse:DIFFUSE;
+    float4 ambient:AMBIENT;
+    float4 emissive:EMISSIVE;
+    float4 specular:SPECULAR;
+    float shininess:SHININESS;
+};
+
+global float3 Normal;
+global base_material Fragment_material;
+
+int objectId : RENDER_OBJECT_ID;
+
+float4 prepareForDeferredShadingPass1() : COLOR {
+	float4 data;
+
+
+    Fragment_material.emissive *= 254./255.;
+    Fragment_material.diffuse *= 254./255.;
+    Fragment_material.ambient *= 254./255.;
+
+    float3 tmp = float3((Normal.xy+1.)/2.,Fragment_material.shininess/255.);
+    tmp *= 254./255.;
+
+	data.x = float3ToFloat(Fragment_material.emissive.xyz);
+	data.y = float3ToFloat(tmp);
+	data.z = float3ToFloat(Fragment_material.diffuse.xyz);
+    data.w = float(objectId);
+
+	return data;
+};
+
+
+
+float4 prepareForDeferredShadingPass2() : COLOR {
+	float4 data;
+
+    Fragment_material.specular *= 254./255.;
+
+	data.x = float3ToFloat(Fragment_material.ambient.xyz);
+	data.y = float3ToFloat(Fragment_material.specular.xyz);
+
+	return data;
+};
+
+//float4 simplePrepareForDeferredShadingPass1() : COLOR {
+//    float4 data;
+//
+//    data.x = float3ToFloat(Fragment_material.emissive.xyz);
+//
+//    return data;
+//};
+
+technique prepareForDeferredShading{
+	pass pass1{
+		PixelShader = compile prepareForDeferredShadingPass1();
+	};
+	pass pass2{
+		PixelShader = compile prepareForDeferredShadingPass2();
+	};
+};
+
+//technique simplePrepareForDeferredShading{
+//    pass pass1{
+//        PixelShader = compile simplePrepareForDeferredShadingPass1();
+//    };
+//};

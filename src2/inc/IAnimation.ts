@@ -1,6 +1,8 @@
 #ifndef IANIMATION_TS
 #define IANIMATION_TS
 
+#include "IAnimationBase.ts"
+
 module akra {
 	IFACE(ISceneNode);
 	IFACE(IAnimationFrame);

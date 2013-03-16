@@ -37,6 +37,7 @@ module akra.webgl {
 			}
 
 			this._pWebGLContext = createContext(this._pCanvas);
+
 			this._pWebGLFramebufferList = new Array(WEBGL_MAX_FRAMEBUFFER_NUM);
 
 
@@ -49,7 +50,7 @@ module akra.webgl {
 			var pWebGLInternalContext: WebGLRenderingContext = this._pWebGLContext;
 
 			if (bValue) {
-				if (isDef(WebGLDebugUtils) && !isNull(pWebGLInternalContext)) {
+				if (isDef((<any>window).WebGLDebugUtils) && !isNull(pWebGLInternalContext)) {
 		            
 		            this._pWebGLContext = WebGLDebugUtils.makeDebugContext(pWebGLInternalContext, 
 		                (err: int, funcName: string, args: IArguments): void => {
@@ -168,7 +169,7 @@ module akra.webgl {
 
 			//TODO: check attrib array from last shader program
 			var i:uint = 0;
-			for(i = 0; i < 16; i++) {
+			for(i = 0; i < maxVertexAttributes; i++) {
 				this._pWebGLContext.disableVertexAttribArray(i);	
 			}
 		

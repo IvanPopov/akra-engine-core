@@ -16,7 +16,29 @@
 #include "Checkbox.ts"
 #include "CheckboxList.ts"
 
+#define UI_GRAPH
+#define UI_ANIMATION
+
+#ifdef UI_GRAPH
+
+#include "graph/Graph.ts"	
+#include "graph/Node.ts"
+#include "graph/Connector.ts"
+#include "graph/Route.ts"
+#include "graph/Controls.ts"
+
+#endif
+
+#ifdef UI_ANIMATION
+
+#include "animation/Controls.ts"
+#include "animation/Graph.ts"
+
+#endif
+
+
 module akra.ui {
+
 	export class UI implements IUI {
 		protected _pManager: ISceneManager;
 
@@ -38,40 +60,45 @@ module akra.ui {
 			return new DNDNode(this, pElement);
 		}
 
-		createComponent(sName: string, pOptions?: IUIComponentOptions): IUIComponent {
-			switch (sName.toLowerCase()) {
-				case "component": 
-					return new Component(this, pOptions);
-				case "button":
-					return new Button(this, pOptions);
-				case "label":
-					return new Label(this, pOptions);
-				case "slider":
-					return new Slider(this, pOptions);
-				case "checkbox":
-					return new Checkbox(this, pOptions);
-				case "checkboxlist":
-					return new CheckboxList(this, pOptions);
-				default: 
-					pOptions = pOptions || {};
-					pOptions.generic = sName;
-					return new Component(this, pOptions);
+		createComponent(sType: string, pOptions?: IUIComponentOptions): IUIComponent {
+			if (isDefAndNotNull(COMPONENTS[sType])) {
+				//console.log("Founded non-generic type: " + sType);
+				return new COMPONENTS[sType](this, pOptions);
 			}
+
+			pOptions = pOptions || {};
+			pOptions.generic = sType;
+			
+			return new Component(this, pOptions);
 		}
 
-		createLayout(eType: EUILayouts = EUILayouts.UNKNOWN): IUILayout;
-		createLayout(sType: string = null): IUILayout;
-		createLayout(type = null): IUILayout {
+		createLayout(eType: EUILayouts = EUILayouts.UNKNOWN, pAttrs?: IUILayoutAttributes): IUILayout;
+		createLayout(sType: string = null, pAttrs?: IUILayoutAttributes): IUILayout;
+		createLayout(type = null, pAttrs: IUILayoutAttributes = null): IUILayout {
+			var pLayout: IUILayout = null;
+			
+			if (isString(type)) {
+				type = type.toLowerCase();
+			}
+
 			switch (type) {
 				case "horizontal":
 				case EUILayouts.HORIZONTAL:
-					return new Horizontal(this);
+					pLayout = new Horizontal(this);
+					break;
 				case "vertical":
 				case EUILayouts.VERTICAL:
-					return new Vertical(this);
+					pLayout = new Vertical(this);
+					break;
 				default:
-					return new Layout(this);
+					pLayout = new Layout(this);
 			}
+
+			if (!isNull(pLayout) && !isNull(pAttrs)) {
+				pLayout.setAttributes(pAttrs);
+			}
+
+			return pLayout;
 		}
 
 		CREATE_EVENT_TABLE(UI);

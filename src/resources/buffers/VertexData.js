@@ -717,6 +717,7 @@ VertexData.prototype.setData = function (pData, iOffset, iSize, nCountStart, nCo
                 if (pElement) {
                     arguments[2] = arguments[2] || 0;
                     if (!arguments[3]) {
+                        console.error(pElement.iSize);
                         arguments[3] = pData.buffer.byteLength / pElement.iSize;
                     }
                     return this.setData(pData,
@@ -736,7 +737,7 @@ VertexData.prototype.setData = function (pData, iOffset, iSize, nCountStart, nCo
 
             return false;
         case 1:
-            return this.setData(pData, this._pVertexDeclaration[0].eUsage);
+            return this.setData(pData, this._pVertexDeclaration[0].usage);
         default:
             return false;
     }

@@ -31,6 +31,8 @@ module akra {
 		freeVertexData(pVertexData: IVertexData): bool;
 		freeVertexData(): bool;
 
+		create(iByteSize: uint, iFlags?: int, pData?: Uint8Array): bool;
+
 		allocateData(pElements: IVertexElement[], pData: ArrayBufferView): IVertexData;
 		allocateData(pDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
 	}

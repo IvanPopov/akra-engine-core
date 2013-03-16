@@ -19,17 +19,6 @@
 // #include "ThreadManager.ts"
 
 module akra.util {
-
-	export var uri = (sUri:string): IURI => new util.URI(sUri);
-
-	// export var pathinfo: (sPath: string) => IPathinfo;
-	// export var pathinfo: (pPath: IPathinfo) => IPathinfo;
-	export var pathinfo: (pPath?) => IPathinfo;
-
-	pathinfo = function (pPath?): IPathinfo {
-		return new Pathinfo(pPath);
-	}
-
 	//string to array buffer
 	export var stoab = function (s: string): ArrayBuffer {
 		var len: uint = s.length;

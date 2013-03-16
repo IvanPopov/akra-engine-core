@@ -48,6 +48,11 @@ module akra.util {
 			return this.sHost;
 		}
 
+		inline set host(sHost: string) {
+			//TODO: check host format
+			this.sHost = sHost;
+		}
+
 		inline get port(): uint {
 			return this.nPort;
 		}
@@ -60,8 +65,20 @@ module akra.util {
 			return this.sPath;
 		}
 
+		inline set path(sPath: string) {
+			// debug_assert(!isNull(sPath.match(new RegExp("^(/(?:[a-z0-9-._~!$&'()*+,;=:@/]|%[0-9A-F]{2})*)$"))), 
+			// 	"invalid path used: " + sPath);
+			//TODO: check path format
+			this.sPath = sPath;
+		}
+
 		inline get query(): string {
+			//TODO: check query format
 			return this.sQuery;
+		}
+
+		inline set query(sQuery: string) {
+			this.sQuery = sQuery;
 		}
 
 		inline get fragment(): string {
@@ -113,6 +130,10 @@ module akra.util {
 			return this.url + this.urn;
 		}
 
+		static here(): IURI {
+			return new URI(document.location.href);
+		}
+
 		//------------------------------------------------------------------//
 		//----- Validate a URI -----//
 		//------------------------------------------------------------------//
@@ -156,6 +177,8 @@ module akra.util {
 		 $
 		 */
 	}
+
+	export var uri = (sUri:string): IURI => new util.URI(sUri);
 }
 
 #endif

@@ -4,13 +4,14 @@
 #include "IRenderDataCollection.ts"
 #include "IHardwareBuffer.ts"
 #include "RenderData.ts"
+#include "data/VertexDeclaration.ts"
 
 module akra.render {
 
-	class RenderDataCollection extends util.ReferenceCounter implements IRenderDataCollection {
+	export class RenderDataCollection extends util.ReferenceCounter implements IRenderDataCollection {
 		private _pDataBuffer: IVertexBuffer = null;
 		private _pEngine: IEngine = null;
-		private _eDataOptions: int = 0;
+		private _eDataOptions: ERenderDataBufferOptions = 0;
 		private _pDataArray: IRenderData[] = [];
 
 		inline get buffer(): IVertexBuffer {
@@ -26,11 +27,10 @@ module akra.render {
         }
 
 
-        constructor (pEngine: IEngine, iOptions: int = 0) {
+        constructor (pEngine: IEngine, eOptions: ERenderDataBufferOptions = 0) {
             super();
             this._pEngine = pEngine;
-
-            this.setup(iOptions);
+            this.setup(eOptions);
         }
 
         clone(pSrc: IRenderDataCollection): bool {
@@ -43,7 +43,7 @@ module akra.render {
         	return this._pEngine;
         }
 
-        getOptions(): int {
+        getOptions(): ERenderDataBufferOptions {
         	return this._eDataOptions;
         }
 
@@ -71,7 +71,7 @@ module akra.render {
         	    else {
         	        for (var i: int = 0; i < n; i++) {
                         pData = pBuffer.getVertexData(i);
-        	            if (pData.byteLength === <uint>arguments[0]) {
+        	            if (pData.byteOffset === <uint>arguments[0]) {
         	                return pData;
         	            }
         	        };
@@ -95,7 +95,7 @@ module akra.render {
         	    this.createDataBuffer();
         	}
 
-        	var pVertexDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
+        	var pVertexDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
         	var pVertexData: IVertexData;
         	
         	if ((arguments.length < 2) || isNumber(arguments[1]) || isNull(arguments[1])) {
@@ -117,14 +117,14 @@ module akra.render {
 
         allocateData(pDecl?, pData?, isCommon: bool = true): int {
         	    var pVertexData: IVertexData;
-        	    var pDataDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
+        	    var pDataDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
 
 #ifdef DEBUG
         	    
         	    for (var i: int = 0; i < pDataDecl.length; i++) {
-        	        if (this.getData(pDataDecl[i].eUsage) !== null && pDataDecl[i].nCount !== 0) { 
+        	        if (this.getData(pDataDecl.element(i).usage) !== null && pDataDecl.element(i).count !== 0) { 
         	            WARNING("data buffer already contains data with similar vertex decloration <" + 
-        	                pDataDecl[i].eUsage + ">.");
+        	                pDataDecl.element(i).usage + ">.");
         	        }
         	    };
 
@@ -138,7 +138,7 @@ module akra.render {
         	        }
         	    }
 
-        	    return pVertexData.byteLength;
+        	    return pVertexData.byteOffset;
         }
 
         getDataLocation(sSemantics: string): int {
@@ -148,7 +148,7 @@ module akra.render {
         	    for (var i: int = 0, n: uint = this._pDataBuffer.length; i < n; i++) {
                     pData = this._pDataBuffer.getVertexData(i);
         	        if (pData.hasSemantics(sSemantics)) {
-        	            return pData.byteLength;
+        	            return pData.byteOffset;
         	        }
         	    };
         	}
@@ -159,14 +159,15 @@ module akra.render {
         private createDataBuffer() {
             //TODO: add support for eOptions
             var iVbOption: int = 0;
-            var iOptions: int = this._eDataOptions;
+            var eOptions: ERenderDataBufferOptions = this._eDataOptions;
 
-            if (iOptions & ERenderDataBufferOptions.VB_READABLE) {
-                SET_BIT(iVbOption, FLAG(EHardwareBufferFlags.READABLE), true);
+            if (eOptions & ERenderDataBufferOptions.VB_READABLE) {
+                iVbOption = ERenderDataBufferOptions.VB_READABLE;
             }
+
             //trace('creating new video buffer for render data buffer ...');
             this._pDataBuffer = this._pEngine.getResourceManager().createVideoBuffer("render_data_buffer" + "_" + sid());
-            this._pDataBuffer.create(iVbOption);
+            this._pDataBuffer.create(0, iVbOption);
             this._pDataBuffer.addRef();
             return this._pDataBuffer !== null;
         };
@@ -175,14 +176,14 @@ module akra.render {
         	return this._pDataArray[iSubset];
         }
 
-        getEmptyRenderData(ePrimType: EPrimitiveTypes, iOptions: int = 0): IRenderData {
+        getEmptyRenderData(ePrimType: EPrimitiveTypes, eOptions: ERenderDataBufferOptions = 0): IRenderData {
 
         	var iSubsetId: int = this._pDataArray.length;
         	var pDataset: IRenderData = new RenderData(this);
 
-        	iOptions |= this._eDataOptions;
+        	eOptions |= this._eDataOptions;
 
-        	if (!pDataset._setup(this, iSubsetId, ePrimType, iOptions)) {
+        	if (!pDataset._setup(this, iSubsetId, ePrimType, eOptions)) {
         	    debug_error("cannot setup submesh...");
         	}
         	
@@ -216,7 +217,7 @@ module akra.render {
             this._eDataOptions = 0;
         }
 
-        private setup(eOptions: int = 0) {
+        private setup(eOptions: ERenderDataBufferOptions = 0) {
             this._eDataOptions = eOptions;
         };
 
@@ -229,8 +230,8 @@ module akra.render {
 
 	}
 
-    export function createRenderDataCollection(pEngine: IEngine, iOptions: int = 0): IRenderDataCollection {
-        return new RenderDataCollection(pEngine, iOptions);
+    export function createRenderDataCollection(pEngine: IEngine, eOptions: ERenderDataBufferOptions = 0): IRenderDataCollection {
+        return new RenderDataCollection(pEngine, eOptions);
     }
 }
 

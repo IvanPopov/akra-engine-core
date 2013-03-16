@@ -126,6 +126,32 @@ module akra.util {
 		    return false;
 		}
 
+		children(): IEntity[] {
+			var pChildren: IEntity[] = [];
+			var pChild: IEntity = this.child;
+			
+			while (!isNull(pChild)) {
+				pChildren.push(pChild);
+				pChild = pChild.sibling;
+			}
+
+			return pChildren;
+		}
+
+		childAt(i: int): IEntity {
+			var pChild: IEntity = this.child;
+			var n: int = 0;
+			
+			while (!isNull(pChild)) {
+				if (n == i) {
+					return pChild;
+				}
+				n ++;
+				pChild = pChild.sibling;
+			}
+
+			return pChild;
+		}
 
 		/**
 		 * Returns the current number of siblings of this object.
@@ -147,21 +173,39 @@ module akra.util {
 		}
 
 
+		descCount(): uint {
+			var n: uint = this.childCount();
+			var pChild: IEntity = this.child;
+			
+			while(!isNull(pChild)) {
+				n += pChild.descCount();
+				pChild = pChild.sibling;
+			}
+
+			return n;
+		}
+
 		/**
 		 * Returns the current number of children of this object
 		 */
 		childCount(): uint {
 			var iCount: uint = 0;
+			var pChild: IEntity = this.child;
+			
+			while(!isNull(pChild)) {
+				iCount ++;
+				pChild = pChild.sibling;
+			}
 
-		    var pNextChild: IEntity = this.child;
+		    // var pNextChild: IEntity = this.child;
 
-		    if (pNextChild) {
-		        ++ iCount;
-		        while (pNextChild) {
-		            pNextChild = pNextChild.sibling;
-		            ++ iCount;
-		        }
-		    }
+		    // if (pNextChild) {
+		    //     ++ iCount;
+		    //     while (pNextChild) {
+		    //         pNextChild = pNextChild.sibling;
+		    //         ++ iCount;
+		    //     }
+		    // }
 		    return iCount;
 		}
 
@@ -374,7 +418,7 @@ module akra.util {
 		/** Attaches this object ot a new parent. Same as calling the parent's addChild() routine. */
 		attachToParent(pParent: IEntity): bool {
 			
-			var pParentPrev: IEntity = this._pParent;
+			var pParentPrev: IEntity = this.parent;
 
 			if (pParent != this._pParent) {
 

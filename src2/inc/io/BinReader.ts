@@ -88,8 +88,8 @@ module akra.io {
 		    }
 
 		    sString = sString.fromUTF8();
-		    // LOG("string:", sString);
-		    return sString;/*sString.substr(0, iStringLength);//sString;//*/
+		    /*sString.substr(0, iStringLength);//sString;//*/
+		    return sString;
 		}
 
 		uint32(): uint {

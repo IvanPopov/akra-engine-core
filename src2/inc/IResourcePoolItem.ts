@@ -1,6 +1,7 @@
 #ifndef IRESOURCEPOOLITEM_TS
 #define IRESOURCEPOOLITEM_TS
 
+#include "common.ts"
 #include "IReferenceCounter.ts"
 #include "IEventProvider.ts"
 

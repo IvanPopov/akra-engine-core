@@ -205,7 +205,7 @@ module akra.bf {
      * Fixed point to float
      */
     export inline function fixedToFloat(value: uint, bits: uint): float {
-        return <float>value/<float>((1<<bits)-1);
+        return <float>(value&((1<<bits)-1))/<float>((1<<bits)-1);
     }
 
     /**
@@ -246,7 +246,7 @@ module akra.bf {
             case 3:     
                 return pSrc[0] | pSrc[1]<<8 | pSrc[2]<<16;
             case 4:
-                return pSrc[0] | pSrc[1]<<8 | pSrc[2]<<16 | pSrc[3]<<32;
+                return (pSrc[0]) | (pSrc[1]<<8) | (pSrc[2]<<16) | (pSrc[3]<<24);
         } 
         return 0;
     }

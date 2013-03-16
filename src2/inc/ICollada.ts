@@ -7,15 +7,24 @@ module akra {
 	IFACE(ISkeleton);
 	IFACE(IModel);
 	IFACE(IEngine);
+    IFACE(IColladaAsset);
+    IFACE(IMesh);
+    IFACE(IAnimationController);
 
     //=============================================
     // COLLADA LOAD OPTIONS
     //=============================================
 
     export interface ICollada extends IModel {
-        //getAnimationController(): IAnimationController;
-        //getMesh(sName: string);
-        //getSkeleton();
+        getAsset(): IColladaAsset;
+        getFilename(): string;
+        getBasename(): string;
+        
+        isVisualSceneLoaded(): bool;
+        isAnimationLoaded(): bool;
+
+        attachToScene(pNode: ISceneNode, pController?: IAnimationController): bool;
+        attachToScene(pScene: IScene3d, pController?: IAnimationController): bool;
     }
 
 	export interface IColladaAnimationLoadOptions {
@@ -75,7 +84,7 @@ module akra {
     }
 
     export interface IColladaEffectLibrary extends IColladaLibrary {
-        effects: { [id: string]: IColladaEffect; };
+        effect: { [id: string]: IColladaEffect; };
     }
 
     export interface IColladaEntryLoader {
@@ -329,8 +338,6 @@ module akra {
         sampler: IColladaNewParam;
         surface: IColladaNewParam;
         image: IColladaImage;
-
-
     }
     
 
@@ -470,7 +477,7 @@ module akra {
         samplers: IColladaAnimationSampler[];
         channels: IColladaAnimationChannel[];
 
-        animations: IColladaAnimation[];
+        animation: IColladaAnimation[];
     }
 
 

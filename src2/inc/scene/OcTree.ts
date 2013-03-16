@@ -457,6 +457,8 @@ module akra.scene {
 			//while we ignore second parametr
 			//don't have normal implementation
 
+			pResultArray.clear();
+
 			if(!isDef(pCamera.frustum)){
 				this._buildSearchResultsByRect(pCamera.searchRect, this._pHead, pResultArray);
 			}
@@ -503,14 +505,14 @@ module akra.scene {
 			}
 		};
 
-		protected _buildSearchResultsByRectAndFrustum(pSearchRect: IRect3d, pOptionalFrustum: IFrustum,
+		protected _buildSearchResultsByRectAndFrustum(pSearchRect: IRect3d, pFrustum: IFrustum,
 			pNode: IOcTreeNode, pResultList: IObjectArray){
 
 			var pNodeRect: IRect3d = pNode.worldBounds;
 			//var pChildRect: IRect3d;
 
 			if(geometry.intersectRect3dRect3d(pSearchRect, pNodeRect)){
-				var kTestResult: int = geometry.classifyFrustumRect3d(pOptionalFrustum, pNodeRect);
+				var kTestResult: int = geometry.classifyFrustumRect3d(pFrustum, pNodeRect);
 				if(kTestResult == EVolumeClassifications.A_CONTAINS_B){
 					//объект полностью попал	
 					this._includeAllTreeSubbranch(pNode, pResultList);
@@ -520,7 +522,7 @@ module akra.scene {
 					var pMemberList: IObjectList = pNode.membersList;
 					var pObject: ISceneObject = pMemberList.first;
 					while(isDefAndNotNull(pObject)){
-						if(pOptionalFrustum.testRect(pObject.worldBounds)){
+						if(pFrustum.testRect(pObject.worldBounds)){
 							pResultList.push(pObject);
 						}
 						pObject = pMemberList.next();
@@ -531,7 +533,7 @@ module akra.scene {
 						var pChildrenList: IObjectList = pNode.childrenList[i];
 						var pChildNode: IOcTreeNode = pChildrenList.first;
 						while(isDefAndNotNull(pChildNode)){
-							this._buildSearchResultsByRectAndFrustum(pSearchRect, pOptionalFrustum, pChildNode, pResultList);
+							this._buildSearchResultsByRectAndFrustum(pSearchRect, pFrustum, pChildNode, pResultList);
 							pChildNode = pChildrenList.next();
 						}
 					}

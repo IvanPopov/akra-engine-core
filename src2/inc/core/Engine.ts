@@ -16,21 +16,28 @@
 #include "scene/SceneManager.ts"
 #include "util/UtilTimer.ts"
 #include "fx/Composer.ts"
+#include "pixelUtil/DDSCodec.ts"
+
 
 //include sub creation classes.
 
 #include "render/RenderDataCollection.ts"
 #include "model/Mesh.ts"
 #include "util/BufferMap.ts"
-#include "animation/AnimationController.ts"
+#include "animation/Controller.ts"
 #include "model/Skeleton.ts"
 #include "util/DepsManager.ts"
 #include "controls/GamepadMap.ts"
 #include "controls/KeyMap.ts"
 
 
+
 #ifdef WEBGL
 #include "webgl/WebGLRenderer.ts"
+#endif
+
+#ifdef GUI
+#include "ui/UI.ts"
 #endif
 
 module akra.core {
@@ -60,7 +67,15 @@ module akra.core {
 
 		constructor (pOptions: IEngineOptions = null) {
 			this._pResourceManager = new pool.ResourcePoolManager(this);
+			if (!this._pResourceManager.initialize()) {
+				debug_error('cannot initialize ResourcePoolManager');
+			}
+
 			this._pSceneManager = new scene.SceneManager(this);
+			if (!this._pSceneManager.initialize()) {
+				debug_error("cannot initialize SceneManager");
+			}
+
 			this._pParticleManager = null;
 
 #ifdef WEBGL
@@ -70,15 +85,10 @@ module akra.core {
 #endif
 			this._pComposer = new fx.Composer(this);
 
-
-			if (!this._pResourceManager.initialize()) {
-				debug_error('cannot initialize ResourcePoolManager');
-			}
-
-			if (!this._pSceneManager.initialize()) {
-				debug_error("cannot initialize SceneManager");
-			}
-
+			// Register image codecs
+			DDSCodec.startup();
+			
+			
 			this._pTimer = util.UtilTimer.start();
 			this.pause(false);
 
@@ -282,7 +292,7 @@ module akra.core {
 		}
 
 		inline createAnimationController(iOptions: int = 0): IAnimationController {
-			return animation.createController(this, iOptions);
+			return animation.createController(iOptions);
 		}
 
 		_depsLoaded(pLoader: IDepsManager, pDeps: IDependens): void {

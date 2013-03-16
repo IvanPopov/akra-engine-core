@@ -62,6 +62,7 @@ module akra {
         /**
          * Specifies uses advanced index.
          */
+        hasAttributes(): bool;
         useAdvancedIndex(): bool;
         useSingleIndex(): bool;
         useMultiIndex(): bool;

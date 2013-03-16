@@ -101,6 +101,10 @@ module akra.scene.light {
 			return this._pShadowCasterCube;
 		};
 
+		inline get isShadowCaster(): bool {
+			return this._bCastShadows;
+		};
+
 		/**
 		 * overridden setter isShadow caster,
 		 * if depth textures don't created then create depth textures
@@ -127,15 +131,15 @@ module akra.scene.light {
 
 				var pDepthTexture: ITexture = this._pDepthTextureCube[i] = 
 					pResMgr.createTexture("depth_texture_" + <string><any>(i) + "_" + <string><any>this.getGuid());
-				pDepthTexture.create(iSize, iSize, 1, Color.BLACK, 0,
-					0, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH);
+				pDepthTexture.create(iSize, iSize, 1, null, 0,
+				0, 1, ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH32);
 
-				pDepthTexture.setParameter(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
-				pDepthTexture.setParameter(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
-				pDepthTexture.setParameter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
-				pDepthTexture.setParameter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
-
-				this.getRenderTarget(i).addViewport(this._pShadowCasterCube[i]); //TODO: Multiple render target
+				pDepthTexture.setWrapMode(ETextureParameters.WRAP_S, ETextureWrapModes.CLAMP_TO_EDGE);
+				pDepthTexture.setWrapMode(ETextureParameters.WRAP_T, ETextureWrapModes.CLAMP_TO_EDGE);
+				pDepthTexture.setFilter(ETextureParameters.MAG_FILTER, ETextureFilters.LINEAR);
+				pDepthTexture.setFilter(ETextureParameters.MIN_FILTER, ETextureFilters.LINEAR);
+				//TODO: Multiple render target
+				this.getRenderTarget(i).addViewport(this._pShadowCasterCube[i]); 
 			}
 		};
 
@@ -222,7 +226,7 @@ module akra.scene.light {
 				var v3fNormal: IVec3 = pPlane.normal;
 				var fDistance: float = pPlane.distance;
 
-				if(pPlane.signedDistance(v3fLightPosition) <= 0){
+				if(pPlane.signedDistance(v3fLightPosition) > 0){
 					fDistance = -v3fNormal.dot(v3fLightPosition);
 				}
 

@@ -13,7 +13,10 @@ module akra {
 		readonly id: uint;
 
 		getData(iOffset: int, iSize: int): ArrayBuffer;
+		getTypedData(iStart: uint, iCount: uint): ArrayBufferView;
+		
 		setData(pData: ArrayBufferView): bool;
+		setData(pData: ArrayBufferView, iOffset: int): bool;
 		setData(pData: ArrayBufferView, iOffset: int, iCount: uint): bool;
 
 		destroy(): void;

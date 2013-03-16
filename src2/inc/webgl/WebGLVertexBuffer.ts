@@ -17,7 +17,7 @@ module akra.webgl {
 		protected _pWebGLBuffer: WebGLBuffer;
 
 		private _pLockData: Uint8Array = null;
-
+		protected _sCS: string = null;
 
 		inline get type(): EVertexBufferTypes { return EVertexBufferTypes.VBO; }
 		inline get byteLength(): uint { return this._iByteSize; }
@@ -26,10 +26,10 @@ module akra.webgl {
 			super(/*pManager*/);
 		}
 
-		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: Uint8Array = null): bool;
-		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: ArrayBufferView = null): bool;
-		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: any = null): bool {
-			
+		// create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: Uint8Array = null): bool;
+		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: ArrayBufferView = null): bool{
+		// create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: any = null): bool {
+
 			iByteSize = math.max(iByteSize, WEBGL_VERTEX_BUFFER_MIN_SIZE);
 
 			if (TEST_ANY(iFlags, EHardwareBufferFlags.READABLE)) {
@@ -74,9 +74,12 @@ module akra.webgl {
 		    pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, this._pWebGLBuffer);
 		    pWebGLContext.bufferData(GL_ARRAY_BUFFER, this._iByteSize, getWebGLUsage(this._iFlags));
 		    
-		    if (pData) {
-		        pWebGLContext.bufferSubData(
-		        	GL_ARRAY_BUFFER, 0, isArrayBuffer(pData)? pData: pData.buffer);
+		    if (isDefAndNotNull(pData)) {
+		        /*pWebGLContext.bufferSubData(
+		        	GL_ARRAY_BUFFER, 0, isArrayBuffer(pData)? <ArrayBuffer>pData: (<Uint8Array>pData).buffer);*/
+
+				pWebGLContext.bufferSubData(GL_ARRAY_BUFFER, 0, pData.buffer);
+
 		    }
 
 		    return true;
@@ -134,7 +137,7 @@ module akra.webgl {
 			else {
 				pU8Data = new Uint8Array(pData.buffer, pData.byteOffset, pData.byteLength);
 			}
-
+			
 			pU8Data = pU8Data.subarray(0, iSize);
 
 			pWebGLContext.bufferSubData(GL_ARRAY_BUFFER, iOffset, pU8Data);
@@ -156,10 +159,14 @@ module akra.webgl {
 
 		    var pWebGLRenderer: WebGLRenderer = <WebGLRenderer>this.getEngine().getRenderer();
 		    var pWebGLContext: WebGLRenderingContext = pWebGLRenderer.getWebGLContext();
-			
-			if(this.isBackupPresent()) {
+
+			if(!this.isBackupPresent()) {
+				debug_print("Not resized, because backup not present!");
 				return false;		
 			}
+
+			debug_print("WebGLVertexBuffer resized from " + this.byteLength + " to " + iSize);
+
 
 			if(iSize < this.byteLength) {
 				for(var k: int = 0; k < this._pVertexDataArray.length; ++ k) {
@@ -195,7 +202,7 @@ module akra.webgl {
 			
 			pData = new Uint8Array(this._iByteSize);
 			
-			if (this.readData(pData)) {
+			if (!this.readData(pData)) {
 				debug_warning("cannot read data from buffer");
 				return false;
 			}

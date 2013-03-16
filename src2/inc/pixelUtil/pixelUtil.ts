@@ -96,7 +96,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//1-----------------------------------------------------------------------
         ["PF_L8",
         /* Bytes per element */
         1,
@@ -109,7 +109,7 @@ module akra {
         /* Masks and shifts */
         0xFF, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//2-----------------------------------------------------------------------
         ["PF_L16",
         /* Bytes per element */
         2,
@@ -122,7 +122,7 @@ module akra {
         /* Masks and shifts */
         0xFFFF, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//3-----------------------------------------------------------------------
         ["PF_A8",
         /* Bytes per element */
         1,
@@ -135,7 +135,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0xFF, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//4-----------------------------------------------------------------------
         ["PF_A4L4",
         /* Bytes per element */
         1,
@@ -148,7 +148,7 @@ module akra {
         /* Masks and shifts */
         0x0F, 0, 0, 0xF0, 0, 0, 0, 4
         ],
-	//-----------------------------------------------------------------------
+	//5-----------------------------------------------------------------------
         ["PF_BYTE_LA",
         /* Bytes per element */
         2,
@@ -161,7 +161,7 @@ module akra {
         /* Masks and shifts */
         0,0,0,0,0,0,0,0
         ],
-	//-----------------------------------------------------------------------
+	//6-----------------------------------------------------------------------
         ["PF_R5G6B5",
         /* Bytes per element */
         2,
@@ -175,7 +175,7 @@ module akra {
         0xF800, 0x07E0, 0x001F, 0,
         11, 5, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//7-----------------------------------------------------------------------
 		["PF_B5G6R5",
         /* Bytes per element */
         2,
@@ -189,7 +189,7 @@ module akra {
         0x001F, 0x07E0, 0xF800, 0,
         0, 5, 11, 0
         ],
-	//-----------------------------------------------------------------------
+	//8-----------------------------------------------------------------------
         ["PF_A4R4G4B4",
         /* Bytes per element */
         2,
@@ -203,7 +203,7 @@ module akra {
         0x0F00, 0x00F0, 0x000F, 0xF000,
         8, 4, 0, 12
         ],
-	//-----------------------------------------------------------------------
+	//9-----------------------------------------------------------------------
         ["PF_A1R5G5B5",
         /* Bytes per element */
         2,
@@ -217,10 +217,10 @@ module akra {
         0x7C00, 0x03E0, 0x001F, 0x8000,
         10, 5, 0, 15,
         ],
-	//-----------------------------------------------------------------------
+	//10-----------------------------------------------------------------------
         ["PF_R8G8B8",
         /* Bytes per element */
-        3,  // 24 bit integer -- special
+        3,  /* 24 bit integer -- special*/
         /* Flags */
         EPixelFormatFlags.NATIVEENDIAN,
         /* Component type and count */
@@ -231,10 +231,10 @@ module akra {
         0xFF0000, 0x00FF00, 0x0000FF, 0,
         16, 8, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//11-----------------------------------------------------------------------
         ["PF_B8G8R8",
         /* Bytes per element */
-        3,  // 24 bit integer -- special
+        3,  /* 24 bit integer -- special*/
         /* Flags */
         EPixelFormatFlags.NATIVEENDIAN,
         /* Component type and count */
@@ -245,7 +245,7 @@ module akra {
         0x0000FF, 0x00FF00, 0xFF0000, 0,
         0, 8, 16, 0
         ],
-	//-----------------------------------------------------------------------
+	//12-----------------------------------------------------------------------
         ["PF_A8R8G8B8",
         /* Bytes per element */
         4,
@@ -259,7 +259,7 @@ module akra {
         0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000,
         16, 8, 0, 24
         ],
-	//-----------------------------------------------------------------------
+	//13-----------------------------------------------------------------------
         ["PF_A8B8G8R8",
         /* Bytes per element */
         4,
@@ -273,7 +273,7 @@ module akra {
         0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000,
         0, 8, 16, 24,
         ],
-	//-----------------------------------------------------------------------
+	//14-----------------------------------------------------------------------
         ["PF_B8G8R8A8",
         /* Bytes per element */
         4,
@@ -287,7 +287,7 @@ module akra {
         0x0000FF00, 0x00FF0000, 0xFF000000, 0x000000FF,
         8, 16, 24, 0
         ],
-	//-----------------------------------------------------------------------
+	//15-----------------------------------------------------------------------
         ["PF_A2R10G10B10",
         /* Bytes per element */
         4,
@@ -301,7 +301,7 @@ module akra {
         0x3FF00000, 0x000FFC00, 0x000003FF, 0xC0000000,
         20, 10, 0, 30
         ],
-	//-----------------------------------------------------------------------
+	//16-----------------------------------------------------------------------
         ["PF_A2B10G10R10",
         /* Bytes per element */
         4,
@@ -315,20 +315,20 @@ module akra {
         0x000003FF, 0x000FFC00, 0x3FF00000, 0xC0000000,
         0, 10, 20, 30
         ],
-	//-----------------------------------------------------------------------
+	//17-----------------------------------------------------------------------
         ["PF_DXT1",
         /* Bytes per element */
         0,
         /* Flags */
         EPixelFormatFlags.COMPRESSED | EPixelFormatFlags.HASALPHA,
         /* Component type and count */
-        EPixelComponentTypes.BYTE, 3, // No alpha
+        EPixelComponentTypes.BYTE, 3, /* No alpha*/
         /* rbits, gbits, bbits, abits */
         0, 0, 0, 0,
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//18-----------------------------------------------------------------------
         ["PF_DXT2",
         /* Bytes per element */
         0,
@@ -341,7 +341,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//19-----------------------------------------------------------------------
         ["PF_DXT3",
         /* Bytes per element */
         0,
@@ -354,7 +354,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//20-----------------------------------------------------------------------
         ["PF_DXT4",
         /* Bytes per element */
         0,
@@ -367,7 +367,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//21-----------------------------------------------------------------------
         ["PF_DXT5",
         /* Bytes per element */
         0,
@@ -380,7 +380,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//22-----------------------------------------------------------------------
         ["PF_FLOAT16_RGB",
         /* Bytes per element */
         6,
@@ -393,7 +393,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//23-----------------------------------------------------------------------
         ["PF_FLOAT16_RGBA",
         /* Bytes per element */
         8,
@@ -406,7 +406,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//24-----------------------------------------------------------------------
         ["PF_FLOAT32_RGB",
         /* Bytes per element */
         12,
@@ -419,7 +419,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//25-----------------------------------------------------------------------
         ["PF_FLOAT32_RGBA",
         /* Bytes per element */
         16,
@@ -432,7 +432,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//26-----------------------------------------------------------------------
         ["PF_X8R8G8B8",
         /* Bytes per element */
         4,
@@ -446,7 +446,7 @@ module akra {
         0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000,
         16, 8, 0, 24
         ],
-	//-----------------------------------------------------------------------
+	//27-----------------------------------------------------------------------
         ["PF_X8B8G8R8",
         /* Bytes per element */
         4,
@@ -460,7 +460,7 @@ module akra {
         0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000,
         0, 8, 16, 24
         ],
-	//-----------------------------------------------------------------------
+	//28-----------------------------------------------------------------------
         ["PF_R8G8B8A8",
         /* Bytes per element */
         4,
@@ -474,20 +474,20 @@ module akra {
         0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF,
         24, 16, 8, 0
         ],
-	//-----------------------------------------------------------------------
-		["PF_DEPTH",
+	//29-----------------------------------------------------------------------
+		["PF_FLOAT32_DEPTH",
         /* Bytes per element */
         4,
         /* Flags */
         EPixelFormatFlags.DEPTH,
         /* Component type and count */
-        EPixelComponentTypes.FLOAT32, 1, // ?
+        EPixelComponentTypes.FLOAT32, 1, /* ?*/
         /* rbits, gbits, bbits, abits */
         0, 0, 0, 0,
         /* Masks and shifts */
 		0, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//30-----------------------------------------------------------------------
 		["PF_SHORT_RGBA",
 		/* Bytes per element */
         8,
@@ -500,7 +500,7 @@ module akra {
         /* Masks and shifts */
 		0, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//31-----------------------------------------------------------------------
         ["PF_R3G3B2",
         /* Bytes per element */
         1,
@@ -514,7 +514,7 @@ module akra {
         0xE0, 0x1C, 0x03, 0,
         5, 2, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//32-----------------------------------------------------------------------
         ["PF_FLOAT16_R",
         /* Bytes per element */
         2,
@@ -527,7 +527,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//33-----------------------------------------------------------------------
         ["PF_FLOAT32_R",
         /* Bytes per element */
         4,
@@ -540,7 +540,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//34-----------------------------------------------------------------------
         ["PF_SHORT_GR",
         /* Bytes per element */
         4,
@@ -554,7 +554,7 @@ module akra {
         0x0000FFFF, 0xFFFF0000, 0, 0, 
 		0, 16, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//35-----------------------------------------------------------------------
         ["PF_FLOAT16_GR",
         /* Bytes per element */
         4,
@@ -567,7 +567,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//36-----------------------------------------------------------------------
         ["PF_FLOAT32_GR",
         /* Bytes per element */
         8,
@@ -580,7 +580,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-	//-----------------------------------------------------------------------
+	//37-----------------------------------------------------------------------
 		["PF_SHORT_RGB",
 		/* Bytes per element */
         6,
@@ -593,7 +593,7 @@ module akra {
         /* Masks and shifts */
 		0, 0, 0, 0, 0, 0, 0, 0
         ],
-    //-----------------------------------------------------------------------
+    //38-----------------------------------------------------------------------
 		["PF_PVRTC_RGB2",
         /* Bytes per element */
         0,
@@ -606,7 +606,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-    //-----------------------------------------------------------------------
+    //39-----------------------------------------------------------------------
 		["PF_PVRTC_RGBA2",
         /* Bytes per element */
         0,
@@ -619,7 +619,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-    //-----------------------------------------------------------------------
+    //40-----------------------------------------------------------------------
 		["PF_PVRTC_RGB4",
         /* Bytes per element */
         0,
@@ -632,7 +632,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-    //-----------------------------------------------------------------------
+    //41-----------------------------------------------------------------------
 		["PF_PVRTC_RGBA4",
         /* Bytes per element */
         0,
@@ -645,7 +645,7 @@ module akra {
         /* Masks and shifts */
         0, 0, 0, 0, 0, 0, 0, 0
         ],
-    //-----------------------------------------------------------------------
+    //42-----------------------------------------------------------------------
         ["PF_R8",
         /* Bytes per element */
         1,
@@ -659,7 +659,7 @@ module akra {
         0xFF0000, 0, 0, 0,
         0, 0, 0, 0
         ],
-    //-----------------------------------------------------------------------
+    //43-----------------------------------------------------------------------
         ["PF_RG8",
         /* Bytes per element */
         2,
@@ -673,7 +673,7 @@ module akra {
         0xFF0000, 0x00FF00, 0, 0,
         8, 0, 0, 0
         ],
-    //-----------------------------------------------------------------------
+    //44-----------------------------------------------------------------------
         ["PF_DEPTH_BYTE",
         /* Bytes per element */
         1,
@@ -686,6 +686,46 @@ module akra {
         /* Masks and shifts */
         0xFF, 0, 0, 0, 0, 0, 0, 0
         ],
+    //45-----------------------------------------------------------------------    
+        ["PF_DEPTH_SHORT",
+        /* Bytes per element */
+        2,
+        /* Flags */
+        EPixelFormatFlags.DEPTH,
+        /* Component type and count */
+        EPixelComponentTypes.SHORT, 1,
+        /* rbits, gbits, bbits, abits */
+        16, 0, 0, 0,
+        /* Masks and shifts */
+        0xFFFF, 0, 0, 0, 0, 0, 0, 0
+        ],
+    //46-----------------------------------------------------------------------    
+        ["PF_DEPTH_INT",
+        /* Bytes per element */
+        4,
+        /* Flags */
+        EPixelFormatFlags.DEPTH,
+        /* Component type and count */
+        EPixelComponentTypes.INT, 1,
+        /* rbits, gbits, bbits, abits */
+        32, 0, 0, 0,
+        /* Masks and shifts */
+        0xFFFFFFFF, 0, 0, 0, 0, 0, 0, 0
+        ],
+    //47-----------------------------------------------------------------------   
+        ["PF_DEPTH24STENCIL8",
+        /* Bytes per element */
+        4,
+        /* Flags */
+        EPixelFormatFlags.DEPTH|EPixelFormatFlags.STENCIL,
+        /* Component type and count */
+        EPixelComponentTypes.INT, 1,
+        /* rbits, gbits, bbits, abits */
+        24, 8, 0, 0,
+        /* Masks and shifts */
+        0x00FFFFFF, 0xFF000000, 0, 0,
+        0, 24, 0, 0
+        ],
 	]);
 
     var _pColorValue: IColorValue = {r: 0., g: 0., b: 0., a: 1.};
@@ -693,7 +733,7 @@ module akra {
 	export module pixelUtil {
         export inline function getDescriptionFor(eFmt: EPixelFormats): IPixelFormatDescription {
             var ord: int = <int>eFmt;
-            ASSERT(ord>=0 && ord<EPixelFormats.TOTAL);
+            ASSERT(ord>=0 && ord<EPixelFormats.TOTAL,"getDescriptionFor:"+ord);
 
             return pPixelFormats[ord];
         }
@@ -743,12 +783,12 @@ module akra {
 					// DXT formats work by dividing the image into 4x4 blocks, then encoding each
 					// 4x4 block with a certain number of bytes. 
 					case EPixelFormats.DXT1:
-						return ((iWidth + 3) / 4) * ((iHeight + 3) / 4) * 8 * iDepth;
+						return Math.floor((iWidth + 3) / 4) * Math.floor((iHeight + 3) / 4) * 8 * iDepth;
 					case EPixelFormats.DXT2:
 					case EPixelFormats.DXT3:
 					case EPixelFormats.DXT4:
 					case EPixelFormats.DXT5:
-						return ((iWidth + 3) / 4) * ((iHeight + 3) / 4) * 16 * iDepth;
+						return Math.floor((iWidth + 3) / 4) * Math.floor((iHeight + 3) / 4) * 16 * iDepth;
 
 	                // Size calculations from the PVRTC OpenGL extension spec
 	                // http://www.khronos.org/registry/gles/extensions/IMG/IMG_texture_compression_pvrtc.txt
@@ -999,7 +1039,8 @@ module akra {
                             with preferred bit depth, or original format if no conversion occurring.
         */
         export function getFormatForBitDepths(eFmt: EPixelFormats, iIntegerBits: uint, iFloatBits: uint): EPixelFormats {
-        	switch (iIntegerBits) {
+        	switch (iIntegerBits) 
+            {
 	        case 16:
 	            switch (eFmt) {
 	            case EPixelFormats.R8G8B8:
@@ -1250,7 +1291,7 @@ module akra {
 	                a = <uint>bf.fixedToFixed((value & des.amask)>>des.ashift, des.abits, 8);
 	            }
 	            else {
-	                a = 255; // No alpha, default a component to full
+	                a = 255; /* No alpha, default a component to full*/
 	            }
 	            
 	        } else {
@@ -1270,6 +1311,9 @@ module akra {
 	        rgba[2] = b;
 	        rgba[3] = a;
         }
+        
+
+
         /** Unpack a colour value from memory
         	@param r,g,b,a	The colour is returned here (as float)
         	@param pf		Pixelformat in which to read the colour
@@ -1282,25 +1326,34 @@ module akra {
 	        if(des.flags & EPixelFormatFlags.NATIVEENDIAN) {
 	            // Shortcut for integer formats unpacking
 	            const value: uint = bf.intRead(pSrc, des.elemBytes);
-	            if(des.flags & EPixelFormatFlags.LUMINANCE) {
+                
+
+	            if(des.flags & EPixelFormatFlags.LUMINANCE) 
+                {
 	                // Luminance format -- only rbits used
 	                r = g = b = bf.fixedToFloat(
-	                    (value & des.rmask)>>des.rshift, des.rbits);
+	                    (value & des.rmask)>>>des.rshift, des.rbits);
 	            }
 	            else {
-	                r = bf.fixedToFloat((value & des.rmask) >> des.rshift, des.rbits);
-	                g = bf.fixedToFloat((value & des.gmask) >> des.gshift, des.gbits);
-	                b = bf.fixedToFloat((value & des.bmask) >> des.bshift, des.bbits);
+	                r = bf.fixedToFloat((value & des.rmask) >>> des.rshift, des.rbits);
+	                g = bf.fixedToFloat((value & des.gmask) >>> des.gshift, des.gbits);
+	                b = bf.fixedToFloat((value & des.bmask) >>> des.bshift, des.bbits);
+                    
 	            }
 
-	            if (des.flags & EPixelFormatFlags.HASALPHA) {
-	                a = bf.fixedToFloat((value & des.amask) >> des.ashift, des.abits);
+	            if (des.flags & EPixelFormatFlags.HASALPHA) 
+                {
+                    
+	                a = bf.fixedToFloat((value & des.amask) >>> des.ashift, des.abits);
 	            }
 	            else {
-	                a = 1.0; // No alpha, default a component to full
+                    
+	                a = 1.0; /* No alpha, default a component to full*/
 	            }
+                
 
-	        } else {
+	        } 
+            else {
 	            switch(ePf) {
 	            case EPixelFormats.FLOAT32_R:
 	                r = g = b = dynamic_cast_f32_ptr(pSrc, 1)[0];
@@ -1373,6 +1426,7 @@ module akra {
 	        rgba.g = g;
 	        rgba.b = b;
 	        rgba.a = a;
+
         }
         
         /** Convert consecutive pixels from one format to another. No dithering or filtering is being done. 
@@ -1404,10 +1458,13 @@ module akra {
 	        	src = new PixelBox(iCount, 1, 1, <EPixelFormats>eSrcFormat, <Uint8Array>pSrc);
 				dst = new PixelBox(iCount, 1, 1, <EPixelFormats>eDstFormat, <Uint8Array>pDest);
 			}
+            else
+            {
+                src=pSrc;
+                dst=pDest;
+            }
 
-        	ASSERT(src.width == dst.width &&
-			   src.height == dst.height &&
-			   src.depth == dst.depth);
+        	ASSERT(src.width == dst.width && src.height == dst.height && src.depth == dst.depth,"Size dest and src pictures is different");
 
 			// Check for compressed formats, we don't support decompression, compression or recoding
 			if(isCompressed(src.format) || isCompressed(dst.format)) {
@@ -1421,8 +1478,8 @@ module akra {
 						"PixelUtil::bulkPixelConversion");
 				}
 			}
-
-	        // The easy case
+	        
+            // The easy case
 	        if(src.format == dst.format) {
 	            // Everything consecutive?
 	            if(src.isConsecutive() && dst.isConsecutive())
@@ -1467,16 +1524,22 @@ module akra {
 
 	            return;
 	        }
+
+
+
 			// Converting to PF_X8R8G8B8 is exactly the same as converting to
 			// PF_A8R8G8B8. (same with PF_X8B8G8R8 and PF_A8B8G8R8)
-			if(dst.format == EPixelFormats.X8R8G8B8 || dst.format == EPixelFormats.X8B8G8R8) {
+			if(dst.format == EPixelFormats.X8R8G8B8 || dst.format == EPixelFormats.X8B8G8R8)
+            {
 				// Do the same conversion, with EPixelFormats.A8R8G8B8, which has a lot of
 				// optimized conversions
 				var tempdst: IPixelBox = dst;
-				tempdst.format = dst.format == EPixelFormats.X8R8G8B8 ? EPixelFormats.A8R8G8B8  :EPixelFormats.A8B8G8R8;
+				tempdst.format = (dst.format == EPixelFormats.X8R8G8B8) ? EPixelFormats.A8R8G8B8  :EPixelFormats.A8B8G8R8;
 				bulkPixelConversion(src, tempdst);
 				return;
 			}
+
+
 			// Converting from EPixelFormats.X8R8G8B8 is exactly the same as converting from
 			// EPixelFormats.A8R8G8B8, given that the destination format does not have alpha.
 			if((src.format == EPixelFormats.X8R8G8B8||src.format == EPixelFormats.X8B8G8R8) && !hasAlpha(dst.format)) {

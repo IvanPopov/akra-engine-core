@@ -250,20 +250,21 @@ module akra.model {
 		setFlexMaterial (iMaterial: int): bool;
 		setFlexMaterial (csName: string): bool;
 		setFlexMaterial (iMaterial): bool {
+		    var pMaterial: IMaterial = this._pMesh.getFlexMaterial(iMaterial);
+
+		    if (isNull(pMaterial)) {
+		    	WARNING("could not find material <" + iMaterial + "> in sub mesh <" + this.name + ">");
+		        return false;
+		    }
+
 		    var pRenderData: IRenderData = this._pRenderData;
 		    var pIndexData: IBufferData = pRenderData.getIndices();
 		    var pMatFlow: IDataFlow = pRenderData._getFlow(DeclUsages.MATERIAL);
 		    var eSemantics: string = DeclUsages.INDEX10;
 		    var pIndexDecl: IVertexDeclaration, pFloatArray: Float32Array;
 		    var iMatFlow: int;
-		    var pMaterial: IMaterial = this._pMesh.getFlexMaterial(iMaterial);
-		    var iMat: int = (<IFlexMaterial>pMaterial).data.byteOffset;
-
-		    if (isNull(pMaterial)) {
-		        return false;
-		    }
-
-		    
+			var iMat: int = (<IFlexMaterial>pMaterial).data.byteOffset;
+		
 		    if (pMatFlow) {
 		        iMatFlow = pMatFlow.flow;
 		        eSemantics = pMatFlow.mapper.semantics;
@@ -281,7 +282,7 @@ module akra.model {
 		    debug_assert(iMatFlow >= 0, "cannot add data flow with material for mesh subsset");
 
 		    if (!pRenderData.allocateIndex(pIndexDecl, pFloatArray)) {
-		        LOG("cannot allocate index for material!!!");
+		        WARNING("cannot allocate index for material!!!");
 		        return false;
 		    }
 
@@ -303,7 +304,6 @@ module akra.model {
 
 		//исходим из того, что данные скина 1:1 соотносятся с вершинами.
 		setSkin(pSkin: ISkin): bool {
-
 		    var pPosData: IVertexData;
 		    var pPositionFlow: IDataFlow;
 		    var pMetaData: Float32Array;
@@ -345,7 +345,8 @@ module akra.model {
 		    //подвязывем скин, к данным с вершинами текущего подмеша.
 		    //т.е. добавляем разметку в конец каждого пикселя
 		    pSkin.attach(pPosData);
-
+		    
+		    /*
 		    //получаем данные разметки
 		    pMetaData = <Float32Array>pPosData.getTypedData(DeclUsages.BLENDMETA);
 
@@ -361,10 +362,35 @@ module akra.model {
 		        pMetaData[i] = iInfMetaDataLoc + i * iInfMetaDataStride;
 		    }
 
-		    //обновляем адресса мета данных вершин
+		    //обновляем адреса мета данных вершин
 		    pPosData.setData(pMetaData, DeclUsages.BLENDMETA);
 
 		    //trace(this.data.toString());
+		    this._pSkin = pSkin;*/
+
+		    var pDeclaration: IVertexDeclaration = pPosData.getVertexDeclaration();
+		    var pVEMeta: IVertexElement = pDeclaration.findElement(DeclUsages.BLENDMETA);
+		    //if BLENDMETA not found
+		    debug_assert(isDefAndNotNull(pVEMeta), "you must specify location for storage blending data");
+
+			//read all data for acceleration
+		    pMetaData = new Float32Array(pPosData.getData(0, pDeclaration.stride));
+
+		    //выставляем разметку мета данных вершин, так чтобы они адрессовали сразу на данные
+		    pInfMetaData = pSkin.getInfluenceMetaData();
+		    iInfMetaDataLoc = pInfMetaData.byteOffset / EDataTypeSizes.BYTES_PER_FLOAT;
+		    iInfMetaDataStride = pInfMetaData.stride / EDataTypeSizes.BYTES_PER_FLOAT;
+
+		    var iCount: uint = pMetaData.byteLength/pDeclaration.stride;
+		    var iOffset: uint = pVEMeta.offset/EDataTypeSizes.BYTES_PER_FLOAT;
+		    var iStride: uint = pDeclaration.stride/EDataTypeSizes.BYTES_PER_FLOAT;
+
+		    for (var i: int = 0; i < iCount; ++ i) {
+		        pMetaData[iOffset + i*iStride] = iInfMetaDataLoc + i * iInfMetaDataStride;
+		    }
+
+		    pPosData.setData(pMetaData, 0, pDeclaration.stride);
+
 		    this._pSkin = pSkin;
 
 		    return true;

@@ -3,6 +3,7 @@
 
 #include "IManager.ts"
 
+
 module akra {
 
     IFACE(IEngine);
@@ -10,6 +11,15 @@ module akra {
     IFACE(IResourcePool);
     IFACE(IResourceWatcherFunc);
     IFACE(IResourcePoolItem);
+    IFACE(IRenderMethod);
+    IFACE(ITexture);
+    IFACE(IVertexBuffer);
+    IFACE(IModel);
+    IFACE(ISurfaceMaterial);
+    IFACE(IEffect);
+
+
+
 
 	/** Семейства ресурсов */
 	export enum EResourceFamilies {
@@ -112,8 +122,12 @@ module akra {
         createEffect(sResourceName: string): IEffect;
         createVertexBuffer(sResourceName: string): IVertexBuffer;
         createVideoBuffer(sResourceName: string): IVertexBuffer;
+        createIndexBuffer(sResourceName: string): IIndexBuffer;
         createModel(sResourceName: string): IModel;
+
+        createImg(sResourceName: string): IImg;
         loadModel(sFilename: string, pOptions?: any): IModel;
+
     }
 }
 

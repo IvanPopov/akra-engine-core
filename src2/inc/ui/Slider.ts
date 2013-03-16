@@ -62,6 +62,8 @@ module akra.ui {
 
 		BROADCAST(updated, CALL(value));
 	}
+
+	Component.register("Slider", Slider);
 }
 
 #endif

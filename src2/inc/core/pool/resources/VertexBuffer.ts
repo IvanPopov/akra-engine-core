@@ -21,13 +21,12 @@ module akra.core.pool.resources {
 
 		constructor (/*pManager: IResourcePoolManager*/) {
 			super(/*pManager*/);
-
 		}
 
-		create(iByteSize: uint, iFlags?: uint, pData?: Uint8Array): bool;
-		create(iByteSize: uint, iFlags?: uint, pData?: ArrayBufferView): bool;
-		create(iByteSize: uint, iFlags?: uint, pData?: any): bool {
-			super.create(iFlags || 0);
+		// create(iByteSize: uint, iFlags?: uint, pData?: Uint8Array): bool;
+		create(iByteSize: uint, iFlags?: uint, pData?: ArrayBufferView): bool{
+		// create(iByteSize: uint, iFlags?: uint, pData?: any): bool {
+			super.create(0, iFlags || 0);
 
 			if (TEST_ANY(iFlags, EHardwareBufferFlags.BACKUP_COPY)) {
 				this._pBackupCopy = new MemoryBuffer();
@@ -69,14 +68,15 @@ module akra.core.pool.resources {
 		getEmptyVertexData(iCount: uint, pDecl: IVertexDeclaration, ppVertexDataIn?: IVertexData): IVertexData;
 		getEmptyVertexData(iCount: uint, pSize: uint, ppVertexDataIn?: IVertexData): IVertexData;
 		getEmptyVertexData(iCount: uint, pDeclData: any, ppVertexDataIn?: IVertexData): IVertexData {
-			var pDecl: IVertexDeclaration;
+			var pDecl: IVertexDeclaration = null;
 			var pHole: IBufferHole[] = [];
 			var i: int;
 			var pVertexData: IVertexData;	
 			var iTemp: int;
 			var iStride: int = 0;
 			var iAligStart: int;
-			
+			var iNewSize: int = 0;
+
 			while(true) {
 				
 				pHole[0] = {start:0, end: this.byteLength};		
@@ -140,15 +140,16 @@ module akra.core.pool.resources {
 				pHole.sort((a: IBufferHole, b: IBufferHole): number => ((a.end - a.start) - (b.end - b.start))); 
 				
 				
-				
-				if(isInt(pDeclData)) {
+				if(!isInt(pDeclData)) {
 					pDecl = createVertexDeclaration(pDeclData);
 					iStride = pDecl.stride;	
 				}
 				else {
 					iStride = pDeclData;
 				}
-				
+				// console.log(arguments[0], arguments[1].toString());
+				// console.log("Buffer size >", this.byteLength, iCount * iStride)
+		
 				for (i = 0; i < pHole.length; i++) {		
 					iAligStart = this.isAligned() ?
 						math.alignUp(pHole[i].start, math.nok(iStride,4)):
@@ -163,7 +164,7 @@ module akra.core.pool.resources {
 							return pVertexData;
 						}
 						else if(arguments.length == 3) {
-							((<any>ppVertexDataIn).constructor).call(ppVertexDataIn, this, iAligStart, iCount, pDeclData);
+							((<any>ppVertexDataIn).constructor).call(ppVertexDataIn, this, ppVertexDataIn.id, iAligStart, iCount, pDeclData);
 							this._pVertexDataArray.push(ppVertexDataIn);
 							
 							this.notifyAltered();
@@ -174,7 +175,10 @@ module akra.core.pool.resources {
 					}
 				}		
 
-				if (this.resize(math.max(this.byteLength * 2, this.byteLength + iCount * iStride)) == false) {
+				iNewSize = math.max(this.byteLength * 2, this.byteLength + iCount * iStride);
+				if (this.resize(iNewSize) == false) {
+					debug_warning("cannot resize buffer from " + 
+						this.byteLength + " bytes to " + iNewSize + " bytes ");
 					break;
 				}
 			}
@@ -210,7 +214,7 @@ module akra.core.pool.resources {
 			return true;
 		}
 
-		allocateData(pElements: IVertexElement[], pData: ArrayBufferView): IVertexData;
+		allocateData(pElements: IVertexElementInterface[], pData: ArrayBufferView): IVertexData;
 		allocateData(pDecl: IVertexDeclaration, pData: ArrayBufferView): IVertexData;
 		allocateData(pDeclData: any, pData: ArrayBufferView): IVertexData {
 			var pDecl: IVertexDeclaration = createVertexDeclaration(pDeclData);
@@ -221,6 +225,9 @@ module akra.core.pool.resources {
 		    debug_assert(iCount === math.floor(iCount), 'Data size should be a multiple of the vertex declaration.');
 
 		    pVertexData = this.getEmptyVertexData(iCount, pDecl);
+
+		    debug_assert(!isNull(pVertexData), "Could not allocate vertex data!");
+
 		    pVertexData.setData(pData, 0, pDecl.stride);
 
 		    return pVertexData;

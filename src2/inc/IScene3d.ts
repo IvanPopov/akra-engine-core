@@ -29,6 +29,10 @@ module akra {
 
 		isUpdated(): bool;
 
+		#ifdef DEBUG
+		createObject(sName?: string): ISceneObject;
+		#endif
+
 		createNode(sName?: string): ISceneNode;
 		createModel(sName?: string): ISceneModel;
 		createCamera(sName?: string): ICamera;

@@ -5,6 +5,8 @@
 #include "IParser.ts"
 #include "common.ts"
 #include "io/files.ts"
+#include "util/URI.ts"
+#include "util/Pathinfo.ts"
 
 module akra.util {
 
@@ -57,13 +59,31 @@ module akra.util {
 			return EOperationType.k_Ok;
 		}
 
+		private normalizeIncludePath(sFile: string): string {
+			var pCurrentPath: IURI = null;
+			var pFile: IURI = util.uri(sFile);
+
+
+			if (!isNull(pFile.host) || util.pathinfo(pFile.path).isAbsolute()) {
+				//another server or absolute path
+				return sFile;
+			}
+
+			pCurrentPath = util.uri(this.getParseFileName());
+			pCurrentPath.path = util.pathinfo(pCurrentPath.path).dirname + "/" + sFile;
+			
+			return pCurrentPath.toString();
+		}
+
 		private _includeCode(): EOperationType {
 			var pTree: IParseTree = this.getSyntaxTree();
 		    var pNode: IParseNode = pTree.getLastNode();
 		    var sFile: string = pNode.value;
-		    sFile = sFile.substr(1, sFile.length - 2);
+		    
+		    //cuttin qoutes
+		    sFile = this.normalizeIncludePath(sFile.substr(1, sFile.length - 2));
 
-		    if(this._pIncludedFilesMap[sFile]){
+		    if (this._pIncludedFilesMap[sFile]) {
 		    	return EOperationType.k_Ok;
 		    }
 		    else {
@@ -71,8 +91,10 @@ module akra.util {
 		    	var me: EffectParser = this;
 		    	var pFile: IFile = io.fopen(sFile, "r+t");
 
-		    	pFile.read(function(err, sData: string){
-		    		if(err){ ERROR("Can not read file"); }
+		    	pFile.read((err, sData: string) => {
+		    		if (err) { 
+		    			ERROR("Can not read file"); 
+		    		}
 		    		else {
 		    			pParserState.source = pParserState.source.substr(0, pParserState.index) +
 		    								  sData + pParserState.source.substr(pParserState.index);

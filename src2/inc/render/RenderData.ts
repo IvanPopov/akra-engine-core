@@ -5,6 +5,7 @@
 #include "IVertexData.ts"
 #include "IVertexElement.ts"
 #include "bf/bitflags.ts"
+#include "data/VertexDeclaration.ts"
 
 module akra.render {
 	export interface IIndexSet {
@@ -86,7 +87,7 @@ module akra.render {
         allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBuffer, hasIndex: bool = true): int;
         allocateData(pDataDecl: IVertexDeclaration, pData: ArrayBufferView, hasIndex: bool = true): int;
         allocateData(pDecl: any, pData: any, hasIndex: bool = true): int{
-        	var pDataDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
+        	var pDataDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
         	var eType: ERenderDataTypes = ERenderDataTypes.INDEXED;
 
 		    if (!hasIndex || this.useSingleIndex()) {
@@ -121,7 +122,7 @@ module akra.render {
 		    if (!pAttribData) {
 		        if (!pAttribBuffer) {
 		            pAttribBuffer = pBuffer.getEngine().getResourceManager().createVertexBuffer('render_data_attrs_' + sid());
-		            pAttribBuffer.create(EHardwareBufferFlags.BACKUP_COPY);
+		            pAttribBuffer.create((<ArrayBufferView>pData).byteLength, EHardwareBufferFlags.BACKUP_COPY);
 		            this._pAttribBuffer = pAttribBuffer;
 		        }
 
@@ -148,14 +149,15 @@ module akra.render {
 		allocateIndex(pAttrDecl: IVertexElementInterface[], pData: ArrayBufferView): bool;
 		allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
 		allocateIndex(pDecl: any, pData: any): bool{
-			var pAttrDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
+			var pAttrDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pDecl);
+
 			if (this.useAdvancedIndex()) {
 		        return this._allocateAdvancedIndex(pAttrDecl, pData);
 		    }
 		    return this._allocateIndex(pAttrDecl, pData);
 		}
 
-				getAdvancedIndexData(sSemantics: string): IVertexData {
+		getAdvancedIndexData(sSemantics: string): IVertexData {
 			return this._getData(sSemantics, true);
 		}
 
@@ -245,6 +247,10 @@ module akra.render {
         	return this._iIndexSet;
         }
 
+        inline hasAttributes(): bool {
+            return !isNull(this._pAttribData);
+        }
+
         /**
 		 * Specifies uses advanced index.
 		 */
@@ -304,7 +310,7 @@ module akra.render {
         getDataLocation(sSemantics?): int {
         	var pData: IVertexData = this._getData(<string>sSemantics);
 
-        	return pData ? pData.byteLength : -1;
+        	return pData ? pData.byteOffset : -1;
         }
 
         /**
@@ -326,10 +332,7 @@ module akra.render {
          */
         index(sData: string, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
         index(iData: int, sSemantics: string, useSame?: bool, iBeginWith?: int): bool;
-        index(data: any, sSemantics: string, useSame?: bool, iBeginWith?: int): bool {
-        	iBeginWith = iBeginWith || 0;
-        	useSame = useSame || false;
-
+        index(data: any, sSemantics: string, useSame: bool = false, iBeginWith: int = 0): bool {
             var iData: int = <int>arguments[0];
         	var iFlow: int = -1;
         	var iAddition: int, iRealAddition: int, iPrevAddition: int;
@@ -344,7 +347,7 @@ module akra.render {
 
         	if (this.useAdvancedIndex()) {
         	    pRealData = this._getData(<string>arguments[0]);
-        	    iAddition = pRealData.byteLength;
+        	    iAddition = pRealData.byteOffset;
         	    iStride = pRealData.stride;
         	    //индекс, который подал юзер
         	    pData = this._getData(sSemantics, true); 
@@ -353,10 +356,9 @@ module akra.render {
         	        for (var i: int = 0; i < pTypedData.length; i++) {
         	            pTypedData[i] = (pTypedData[i] * iStride + iAddition) / iTypeSize;
         	        }
-        	        ;
         	    });
 
-        	    iData = pData.byteLength;
+        	    iData = pData.byteOffset;
         	    sSemantics = "INDEX_" + sSemantics;
         	}
         	else if (isString(arguments[0])) {
@@ -370,9 +372,10 @@ module akra.render {
         	    debug_assert(iData >= 0, "cannot find data with semantics: " + arguments[0]);
         	}
 
-        	pFlow = this._getFlow(iData);
+            pFlow = this._getFlow(iData);
 
         	if (pFlow === null) {
+                debug_warning("Could not find data flow <" + iData + "> int buffer map: " + this._pMap.toString(true));
         	    return false;
         	}
 
@@ -459,7 +462,7 @@ module akra.render {
 
 		    var iFlow: int;
 		    var pVertexData: IVertexData = this._pBuffer._allocateData(pDataDecl, pData);
-		    var iOffset: int = pVertexData.byteLength;
+		    var iOffset: int = pVertexData.byteOffset;
 
 		    iFlow = this._addData(pVertexData, undefined, eType);
 
@@ -493,8 +496,8 @@ module akra.render {
 		 */
 		private _registerData(pVertexData: IVertexData): int {
 		    'use strict';
-		    var iOffset: int = pVertexData.byteLength;
-		    var pDataDecl: IVertexDeclaration = pVertexData.getVertexDeclaration();
+		    var iOffset: int = pVertexData.byteOffset;
+		    var pDataDecl: data.VertexDeclaration = <data.VertexDeclaration>pVertexData.getVertexDeclaration();
 
 		    //необходимо запоминать расположение данных, которые подаются,
 		    //т.к. иначе их потом нельзя будет найти среди других данных
@@ -516,7 +519,7 @@ module akra.render {
 		 private _allocateAdvancedIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool; 
 		 private _allocateAdvancedIndex(pAttrDecl: any, pData: any): bool {
 
-		    var pDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pAttrDecl);
+		    var pDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]>pAttrDecl);
 		    var nCount: int = pData.byteLength / pDecl.stride;
 		    //TODO: remove index dublicates
 		    var iIndLoc: int = this._allocateData(pAttrDecl, pData, ERenderDataTypes.INDEXED);
@@ -526,12 +529,12 @@ module akra.render {
 		    for (var i: int = 0; i < pDecl.length; i++) {
 		        pI2IDecl.push(VE_FLOAT('INDEX_' + pDecl[i].eUsage, 0));
 		    }
-		    ;
+		    
 
 		    for (var i: int = 0; i < pI2IData.length; i++) {
 		        pI2IData[i] = i;
 		    }
-		    ;
+		    
 
 		    if (!this._allocateIndex(pI2IDecl, pI2IData)) {
 		        this.releaseData(iIndLoc);
@@ -551,13 +554,13 @@ module akra.render {
 		 */
 		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBuffer): bool;
 		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBufferView): bool;
-		private _createIndex(pAttrDecl: IVertexDeclaration, pData:ArrayBufferView): bool{
+		private _createIndex(pAttrDecl: IVertexDeclaration, pData:any): bool{
 		    'use strict';
 
 		    if (!this._pIndexBuffer) {
 		        if (this.useMultiIndex()) {
 		            this._pIndexBuffer = this._pBuffer.getEngine().getResourceManager().createVertexBuffer('subset_' + sid());
-		            this._pIndexBuffer.create(EHardwareBufferFlags.BACKUP_COPY);
+		            this._pIndexBuffer.create(((<ArrayBufferView>pData).byteLength), <int>EHardwareBufferFlags.BACKUP_COPY);
 		        }
 		        else {
 		            //TODO: add support for sinle indexed mesh.
@@ -579,15 +582,15 @@ module akra.render {
 		private _allocateIndex(pAttrDecl: IVertexDeclaration, pData: ArrayBufferView): bool;
 		private _allocateIndex(pDecl: any, pData: any): bool {
 		    'use strict';
+            var pAttrDecl: data.VertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]> pDecl);
 
-		    var pAttrDecl: IVertexDeclaration = createVertexDeclaration(<IVertexElementInterface[]> pDecl);
 		    var pIndexData: IBufferData = this._pIndexData;
 		    var pIndexBuffer: IHardwareBuffer = this._pIndexBuffer;
 		    var pBuffer: IRenderDataCollection = this._pBuffer;
 
 #ifdef DEBUG
 		    for (var i: int = 0; i < pAttrDecl.length; i++) {
-		        if (pAttrDecl[i].eType !== EDataTypes.FLOAT) {
+		        if (pAttrDecl.element(i).type !== EDataTypes.FLOAT) {
 		            return false;
 		        }
 		    }
@@ -631,7 +634,7 @@ module akra.render {
 		    for (var i: int = 0, n = this._pMap.limit; i < n; ++i) {
 		        var pFlow = this._pMap.getFlow(i, false);
 
-		        if (pFlow.data && pFlow.data.byteLength === arguments[0]) {
+		        if (pFlow.data && pFlow.data.byteOffset === arguments[0]) {
 		            return pFlow;
 		        }
 		    }
@@ -687,9 +690,9 @@ module akra.render {
         
         toString(): string {
         	var s: string;
-        	s = 'RENDER DATA SUBSET: #' + this._iId + '\n';
-        	s += '        ATTRIBUTES: ' + (this._pAttribData ? 'TRUE' : 'FALSE') + '\n';
-        	s += '----------------------------------------------------------------\n';
+        	s = "\nRENDER DATA SUBSET: #" + this._iId + "\n";
+        	s += "        ATTRIBUTES: " + (this._pAttribData ? "TRUE" : "FALSE") + "\n";
+        	s += "----------------------------------------------------------------\n";
         	s += this._pMap.toString();
 
         	return s;

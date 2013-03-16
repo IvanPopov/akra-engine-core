@@ -17,90 +17,78 @@ module akra.core.pool.resources {
 
 	export class Texture extends ResourcePoolItem implements ITexture {
         protected _iFlags: int = ETextureFlags.DEFAULT;
-        protected _iWidth: uint = 512;
-        protected _iSrcWidth: uint = 0;
+        
+        protected _iWidth: uint = 512;        
         protected _iHeight: uint = 512;
-        protected _iSrcHeight: uint = 0;
         protected _iDepth: uint = 1;
-        protected _iSrcDepth: uint = 0;
+
         protected _eFormat: EPixelFormats = EPixelFormats.UNKNOWN;
+        
         protected _nMipLevels: uint = 0;
         protected _nRequestedMipLevels: uint = 0;
-        protected _eTextureType: ETextureTypes = ETextureTypes.TEXTURE_2D;
-        protected _iDesiredIntegerBitDepth: uint = 0;
-        protected _iDesiredFloatBitDepth: uint = 0;     
 
-        protected _eDesiredFormat: EPixelFormats = EPixelFormats.UNKNOWN;
-        protected _eSrcFormat: EPixelFormats = EPixelFormats.UNKNOWN;
+        protected _eTextureType: ETextureTypes = ETextureTypes.TEXTURE_2D;
 
         protected _pParams: IntMap = <IntMap>{};
 
         protected _isInternalResourceCreated: bool = false;
         protected _isMipmapsHardwareGenerated: bool = false;
 
-        protected _iResourceSize: uint = 0;
-
         constructor () {
             super();
-
-            this._pParams[ETextureParameters.MIN_FILTER] = ETextureFilters.NEAREST;
-            this._pParams[ETextureParameters.MAG_FILTER] = ETextureFilters.NEAREST;
-
-            this._pParams[ETextureParameters.WRAP_S] = ETextureWrapModes.CLAMP_TO_EDGE;            
-            this._pParams[ETextureParameters.WRAP_T] = ETextureWrapModes.CLAMP_TO_EDGE;            
         }
 
 		inline get width(): uint {
 			return this._iWidth;
 		}
 
-        inline set width(iWidth: uint) {
-            this._iWidth = this._iSrcWidth = iWidth;
-        }
+        //inline set width(iWidth: uint) {
+        //    this._iWidth = this._iSrcWidth = iWidth;
+        //}
 
         inline get height(): uint {
         	return this._iHeight;
         }
 
-        inline set height(iHeight: uint) {
-            this._iHeight = this._iSrcHeight = iHeight;
-        }
+        //inline set height(iHeight: uint) {
+        //    this._iHeight = this._iSrcHeight = iHeight;
+        //}
 
         inline get depth(): uint {
             return this._iDepth;
         }
 
-        inline set depth(iDepth: uint) {
-            this._iDepth = this._iSrcDepth = iDepth;
-        }
+        //inline set depth(iDepth: uint) {
+        //    this._iDepth = this._iSrcDepth = iDepth;
+        //}
 
         inline get format(): EPixelFormats {
         	return this._eFormat;
         }
 
-        inline set format(eFormat: EPixelFormats) {
-            this._eFormat = eFormat;
-            this._eDesiredFormat = eFormat;
-            this._eSrcFormat = eFormat;
-        }
+        //inline set format(eFormat: EPixelFormats) {
+        //    this._eFormat = eFormat;
+        //    this._eDesiredFormat = eFormat;
+        //    this._eSrcFormat = eFormat;
+        //}
 
         inline get textureType(): ETextureTypes {
             return this._eTextureType;
         }
 
-        inline set textureType(eTextureType: ETextureTypes) {
-            this._eTextureType = eTextureType;
-        }
+        //inline set textureType(eTextureType: ETextureTypes) {
+        //    this._eTextureType = eTextureType;
+        //}
 
         inline get mipLevels(): uint {
             return this._nMipLevels;
         }
 
-        inline set mipLevels(nMipLevels: uint) {
-            this._nMipLevels = nMipLevels;
-        }
+        //inline set mipLevels(nMipLevels: uint) {
+        //    this._nMipLevels = nMipLevels;
+        //}
 
-        inline get desiredIntegerBitDepth(): uint {
+        /*inline get desiredIntegerBitDepth(): uint {
             return this._iDesiredIntegerBitDepth;
         }
 
@@ -114,33 +102,13 @@ module akra.core.pool.resources {
 
         inline set desiredFloatBitDepth(iDesiredFloatBitDepth: uint) {
             this._iDesiredFloatBitDepth = iDesiredFloatBitDepth;
-        }
-
-        inline get srcWidth(): uint { 
-            return this._iSrcWidth;
-        }
-
-        inline get srcHeight(): uint {
-            return this._iSrcHeight;
-        }
-
-        inline get srcDepth(): uint {
-            return this._iSrcWidth;
-        }
-
-        inline get desiredFormat(): EPixelFormats {
-            return this._eDesiredFormat;
-        }
-
-        inline get srcFormat(): EPixelFormats {
-            return this._eSrcFormat;
-        }
+        }*/
 
         inline getFlags(): int {
             return this._iFlags;
         }
 
-        inline setFlags(iFlags: int): void {
+        inline setFlags(iFlags: ETextureFlags): void {
             this._iFlags = iFlags;
         }
 
@@ -170,7 +138,7 @@ module akra.core.pool.resources {
         }
 
         inline getSize(): uint {
-            return this._iResourceSize;
+            return this.getNumFaces() * pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
         }
 
         getBuffer(iFace?: uint, iMipmap?: uint): IPixelBuffer {
@@ -178,31 +146,48 @@ module akra.core.pool.resources {
         }
 
         create(iWidth: uint, iHeight: uint, iDepth: uint, cFillColor?: IColor, 
-               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+               eFlags?: ETextureFlags, nMipLevels?: uint, nFaces?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+
         create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: Array, 
-               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+               eFlags?: ETextureFlags, nMipLevels?: uint, nFaces?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+
         create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: ArrayBufferView, 
-               iFlags?: int, nMipLevels?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
-        create(iWidth: uint, iHeight: uint, iDepth: uint, pPixels?: any = null, 
-               iFlags?: int = 0, nMipLevels?: uint = 0, 
+               eFlags?: ETextureFlags, nMipLevels?: uint, nFaces?: uint, eTextureType?: ETextureTypes, eFormat?: EPixelFormats): bool;
+
+        create(iWidth: uint, iHeight: uint, iDepth?: uint = 1, pPixels?: any = null, 
+               eFlags?: ETextureFlags = ETextureFlags.DEFAULT, nMipLevels?: uint = 0, nFaces?: uint = 0,
                eTextureType?: ETextureTypes = ETextureTypes.TEXTURE_2D, 
-               eFormat?: EPixelFormats = EPixelFormats.R8G8B8): bool {
+               eFormat?: EPixelFormats = EPixelFormats.B8G8R8): bool {
+
+            
+            if(eTextureType!=ETextureTypes.TEXTURE_2D && eTextureType!=ETextureTypes.TEXTURE_CUBE_MAP)
+            {
+                CRITICAL("Заданный тип текстуры не поддреживается");
+                return false;
+            }    
+
+            this.textureType=eTextureType;
 
             this._iWidth = iWidth;
             this._iHeight = iHeight;
             this._iDepth = iDepth;
-            this._iFlags = iFlags;
-            this._nMipLevels = nMipLevels;
-            this._eTextureType = eTextureType;
+
+            this._iFlags = eFlags;
+            this._nMipLevels = nMipLevels;            
+
             this._eFormat = eFormat;
 
-            if(isDef(pPixels.length)){
-                if(pPixels instanceof Array) {
-                    pPixels = new Uint8Array(pPixels);
-                }
-                return this.loadRawData(pPixels, iWidth, iHeight, eFormat);
+            if(isArray(pPixels)) 
+            {
+                pPixels = new Uint8Array(pPixels);
+                return this.loadRawData(pPixels, iWidth, iHeight,iDepth,eFormat,nFaces,nMipLevels);
             }
-            else {
+            else if(isTypedArray(pPixels))
+            {
+                return this.loadRawData(pPixels, iWidth, iHeight,iDepth,eFormat,nFaces,nMipLevels);
+            }
+            else 
+            {
                 return this.createInternalTexture(pPixels);
             }
         }
@@ -213,37 +198,95 @@ module akra.core.pool.resources {
             return true;
         }
         
-        setParameter(eParam: ETextureParameters, eValue: ETextureFilters): void;
-        setParameter(eParam: ETextureParameters, eValue: ETextureWrapModes): void;
-        setParameter(eParam: ETextureParameters, eValue: int): bool {
+        setFilter(eParam: ETextureParameters, eValue: ETextureFilters): bool
+        {
             if (!this.isValid()) {
                 return false;
             }
 
             this._pParams[eParam] = eValue;
-
-        	return true;
+            return this._setFilterInternalTexture(eParam,eValue);
         }
-
-        loadRawData(pStream: ArrayBufferView, iWidth: uint, iHeight: uint, eFormat: EPixelFormats): bool {
-            var pTempImg: IImg = <IImg>this.getManager().imagePool.findResource(".temp_image");
-
-            if(isNull(pTempImg)){
-                pTempImg = <IImg>this.getManager().imagePool.createResource(".temp_image");
-                //pTempImg.create();
+        
+        setWrapMode(eParam: ETextureParameters, eValue: ETextureWrapModes): bool
+        {
+            if (!this.isValid()) {
+                return false;
             }
 
-            pTempImg.loadRawData(<Uint8Array>pStream, iWidth, iHeight, eFormat);
+            this._pParams[eParam] = eValue;
+            return this._setWrapModeInternalTexture(eParam,eValue);
+        }
+
+        getFilter(eParam: ETextureParameters): ETextureFilters
+        {
+            if (!this.isValid()) {
+                return 0;
+            }
+            var iValue:any=this._pParams[eParam];
+            if(!isDefAndNotNull(iValue))
+            {
+                iValue=this._getFilterInternalTexture(eParam);
+                this._pParams[eParam]=iValue;
+            }
+            return iValue;
+        }
+
+        getWrapMode(eParam: ETextureParameters): ETextureWrapModes
+        {
+            if (!this.isValid()) {
+                return 0;
+            }
+            var iValue:any=this._pParams[eParam];
+            if(!isDefAndNotNull(iValue))
+            {
+                iValue=this._getWrapModeInternalTexture(eParam);
+                this._pParams[eParam]=iValue;
+            }
+            return iValue;
+        }
+
+        protected _setFilterInternalTexture(eParam: ETextureParameters, eValue: ETextureFilters): bool{
+            CRITICAL("virual");
+            return false;           
+        }
+        protected _setWrapModeInternalTexture(eParam: ETextureParameters, eValue: ETextureWrapModes): bool{
+            CRITICAL("virual");
+            return false;           
+        }
+
+        protected _getFilterInternalTexture(eParam: ETextureParameters): ETextureFilters{
+            CRITICAL("virual");
+            return 0;           
+        }
+        protected _getWrapModeInternalTexture(eParam: ETextureParameters): ETextureWrapModes{
+            CRITICAL("virual");
+            return 0;           
+        }
+
+
+        loadRawData(pData: Uint8Array, iWidth: uint, iHeight: uint, iDepth: uint = 1, eFormat: EPixelFormats = EPixelFormats.BYTE_BGR,
+                         nFaces?: uint = 1, nMipMaps?: uint = 0)
+        {
+            var pTempImg: IImg = <IImg>this.getManager().imagePool.findResource(".texture.temp_image");
+
+            if(isNull(pTempImg)){
+                pTempImg = <IImg>this.getManager().imagePool.createResource(".texture.temp_image");
+            }
+
+            pTempImg.loadRawData(pData, iWidth, iHeight,iDepth,eFormat,nFaces,nMipMaps);
             var isLoaded: bool = this.loadImage(pTempImg);
             this.getManager().imagePool.destroyResource(pTempImg);
 
             return isLoaded;
         }
 
-        loadImage(pImage: IImg): bool {
-            var isLoaded:bool = this._loadImages(pImage, true);
+        loadImage(pImage: IImg): bool 
+        {
+            var isLoaded:bool = this._loadImages(pImage);
             
-            if(isLoaded) {
+            if(isLoaded) 
+            {
                 this.notifyLoaded();
                 return true;
             }
@@ -252,7 +295,8 @@ module akra.core.pool.resources {
             }
         } 
 
-        loadImages(pImages: IImg[]): bool {
+        loadImages(pImages: IImg[]): bool 
+        {
             var isLoaded:bool = this._loadImages(pImages);
 
             if(isLoaded) {
@@ -265,8 +309,14 @@ module akra.core.pool.resources {
         }       
 
         _loadImages(pImageList: IImg[]): bool;
-        _loadImages(pImage: IImg, bOneImage: bool): bool;
-        _loadImages(): bool {
+        _loadImages(pImage: IImg): bool;
+        
+        _loadImages(pImage:any): bool 
+        {
+
+
+
+
             if(this.isResourceLoaded()){
                 WARNING("Yoy try to load texture when it already have been loaded. All texture data was destoyed.");
                 this.freeInternalTexture();
@@ -275,10 +325,14 @@ module akra.core.pool.resources {
             var pMainImage: IImg = null;
             var pImageList: IImg[] = null;
 
-            if(arguments.length === 2) {
-                pMainImage = arguments[0];
+            if(!isArray(pImage)) 
+            {
+                pMainImage = pImage;
+                pImageList = new Array(0);
+                pImageList[0]=pMainImage;
             }
-            else {
+            else 
+            {
                 pImageList = arguments[0];
                 if(pImageList.length === 0) {
                     CRITICAL("Cannot load empty list of images");
@@ -287,82 +341,122 @@ module akra.core.pool.resources {
                 pMainImage = pImageList[0];
             }
 
-            this._iSrcWidth = this._iWidth = pMainImage.width;
-            this._iSrcHeight = this._iHeight = pMainImage.height;
-            this._iSrcDepth = this._iDepth = pMainImage.depth;
+
+
+            this._iWidth = pMainImage.width;
+            this._iHeight = pMainImage.height;
+            this._iDepth = pMainImage.depth;
 
             // Get source image format and adjust if required
-            this._eSrcFormat = pMainImage.format;
 
-            if (this._eDesiredFormat !== EPixelFormats.UNKNOWN) {
-                // If have desired format, use it
-                this._eFormat = this._eDesiredFormat;
+            if(webgl.isWebGLFormatSupport(pMainImage.format))
+            {
+                this._eFormat = pMainImage.format;
             }
-            else {
-                // Get the format according with desired bit depth
-                this._eFormat = pixelUtil.getFormatForBitDepths(this._eSrcFormat, this._iDesiredIntegerBitDepth, this._iDesiredFloatBitDepth);
+            else
+            {
+                WARNING("Format not support("+pixelUtil.getFormatName(pMainImage.format)+")");
+                if(pMainImage.convert(EPixelFormats.B8G8R8A8))
+                {
+                    this._eFormat = pMainImage.format;
+                }
+                else
+                {
+                    CRITICAL("Format not convert");
+                }
             }
+
+            for(i=1;i<pImageList.length;i++)
+            {
+                if(!pImageList[i].convert(pMainImage.format))
+                {
+                    CRITICAL("Format not support and not convert");
+                }
+            }
+
 
             // The custom mipmaps in the image have priority over everything
             var iImageMips: uint = pMainImage.numMipMaps;
 
-            if(iImageMips > 0) {
-                this._nMipLevels = this._nRequestedMipLevels = iImageMips;
+            if(iImageMips==Img.getMaxMipmaps(this._iWidth,this._iHeight,this._iDepth,this._eFormat)) {
+                this._nMipLevels=iImageMips;
+
                 // Disable flag for auto mip generation
                 CLEAR_ALL(this._iFlags, ETextureFlags.AUTOMIPMAP);
             }
+            else
+            {
+                this._nMipLevels=0;
+            }
+
             // Create the texture
             this.createInternalTexture(null);
+
+            
             // Check if we're loading one image with multiple faces
             // or a vector of images representing the faces
             var iFaces: uint = 0;
-            var isMultiImage: bool = false;
+            var isMultiImage:bool =false;
 
-            if(!isNull(pImageList) && pImageList.length > 1){
-                iFaces = pImageList.length;
+            if(pImageList.length == 6)
+            {
+                iFaces = 6;
                 isMultiImage = true;
             }
-            else {
-                iFaces = pMainImage.numFaces;
+            else if(pMainImage.numFaces==6)
+            {
+                iFaces = 6;
+                isMultiImage = false;
+            }
+            else
+            {
+                iFaces = 1;
                 isMultiImage = false;
             }
 
             // Check wether number of faces in images exceeds number of faces
             // in this texture. If so, clamp it.
-            if(iFaces > this.getNumFaces()){
+            if(iFaces > this.getNumFaces())
+            {
                 iFaces = this.getNumFaces();
             }
 
             // Main loading loop
             // imageMips == 0 if the image has no custom mipmaps, otherwise contains the number of custom mips
+            
             var mip: uint = 0;
             var i: uint = 0;
-            for(mip = 0; mip <= iImageMips; ++mip) {
+            for(mip = 0; mip <= this._nMipLevels; ++mip) {
                 for(i = 0; i < iFaces; ++i) {
                     var pSrc: IPixelBox;
 
                     if(isMultiImage){
                         // Load from multiple images
                         pSrc = pImageList[i].getPixels(0, mip);
+                        //console.log(mip,i);
                     }
                     else {
                         // Load from faces of images[0] or main Image
+                        //console.log(mip,i);
                         pSrc = pMainImage.getPixels(i, mip);
                     }
         
-                    // Sets to treated format in case is difference
-                    pSrc.format = this._eSrcFormat;
                     // Destination: entire texture. blitFromMemory does the scaling to
                     // a power of two for us when needed
+                    //console.log(pSrc);
+                    //console.log(this.getBuffer(i, mip));
+
+                    
                     this.getBuffer(i, mip).blitFromMemory(pSrc);                    
                 }
             }
-            // Update size (the final size, not including temp space)
-            this._iResourceSize = this.getNumFaces() * pixelUtil.getMemorySize(this._iWidth, this._iHeight, this._iDepth, this._eFormat);
+
             return true;
         }
 
-        convertToImage(pDestImage: IImg, bIncludeMipMaps: bool): void {
+        convertToImage(pDestImage: IImg, bIncludeMipMaps: bool): void 
+        {
+            CRITICAL("!!!нехуй")
             var iNumMips: uint = bIncludeMipMaps ? this._nMipLevels + 1 : 1;
             var iDataSize: uint = pixelUtil.calculateSizeForImage(iNumMips, this._nMipLevels,
                                                                   this._iWidth, this._iHeight, this._iDepth,
@@ -390,11 +484,12 @@ module akra.core.pool.resources {
             }
 
             // load, and tell Image to delete the memory when it's done.
-            pDestImage.loadDynamicImage(pPixData, this._iWidth, this._iHeight, this._iDepth, this._eFormat, true, 
+            pDestImage.loadDynamicImage(pPixData, this._iWidth, this._iHeight, this._iDepth, this._eFormat, 
                 this.getNumFaces(), iNumMips - 1);          
         }
 
         copyToTexture(pTarget: ITexture): void {
+            CRITICAL("!!!нехуй")
             if(pTarget.getNumFaces() !== this.getNumFaces()){
                 CRITICAL("Texture types must match");
             }   
@@ -413,9 +508,13 @@ module akra.core.pool.resources {
             }
         }
 
-        createInternalTexture(cFillColor?: IColor = null): bool {
-            if(!this._isInternalResourceCreated) {
-                this.createInternalTextureImpl(cFillColor);
+        createInternalTexture(cFillColor?: IColor = null): bool 
+        {
+            
+            if(!this._isInternalResourceCreated) 
+            {
+                
+                this._createInternalTextureImpl(cFillColor);
                 this._isInternalResourceCreated = true;
                 this.notifyCreated();
                 return true;
@@ -435,21 +534,19 @@ module akra.core.pool.resources {
             return false;
         }
 
-        getNativeFormat(eTextureType?: ETextureTypes = this._eTextureType,
-                        eFormat?: EPixelFormats = this._eFormat, 
-                        iFlags?: int = this._iFlags): EPixelFormats {
-
-            return null;
-        }
-
-        protected createInternalTextureImpl(cFillColor?: IColor = null): bool {
+        protected _createInternalTextureImpl(cFillColor?: IColor = null): bool {
             return false;
         }
 
         protected freeInternalTextureImpl(): bool {
             return false;
         }
+
+        setPixelRGBA(i1: uint, i2: uint, iTextureWidth: uint, iTextureHeight: uint, pBuffer: Uint8Array): void {
+            return;
+        }
 	}
+
 }
 
 #endif

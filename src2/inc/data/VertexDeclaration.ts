@@ -33,7 +33,6 @@ module akra.data {
 		append(...pElement: IVertexElementInterface[]): bool;
 		append(pElements: IVertexElementInterface[]): bool;
 		append(pData: any) {
-			var iOffset: uint;
 			var pElements: IVertexElementInterface[];
 
 			if (!isArray(arguments[0])) {
@@ -43,24 +42,31 @@ module akra.data {
 				pElements = <IVertexElementInterface[]><any>arguments[0];
 			}
 
-			for (var i: int = 0; i < pElements.length; ++ i) {
-				iOffset = pElements[i].offset;
+			for (var i: int = 0; i < pElements.length; i++) {
+				var pElement: IVertexElementInterface = pElements[i];
+				var iOffset: uint;
 
-				if (VertexElement.hasUnknownOffset(pElements[i])) {
-					//calculation offset
-					if (i > 0) {
-						iOffset = this._pElements[i - 1].offset + this._pElements[i - 1].size;
-					}
-					else {
-						iOffset = 0;
-					}
+				if (VertexElement.hasUnknownOffset(pElement)) {
+					//add element to end
+					iOffset = this.stride;
+				}
+				else{
+					iOffset = pElement.offset;
 				}
 
-				this._pElements.push(new VertexElement(
-					pElements[i].count,
-		            pElements[i].type,
-		            pElements[i].usage,
-		            iOffset));
+				var pVertexElement: IVertexElement = new VertexElement(
+															pElement.count,
+												            pElement.type,
+												            pElement.usage,
+												            iOffset);
+
+				this._pElements.push(pVertexElement);
+
+				var iStride: uint = iOffset + pVertexElement.size;
+
+				if(this.stride < iStride){
+					this.stride = iStride;
+				}
 			}
 
 			return this._update();
@@ -94,7 +100,8 @@ module akra.data {
 
 		
 
-		extend(pDecl: IVertexDeclaration): bool {
+		extend(decl: IVertexDeclaration): bool {
+			var pDecl: VertexDeclaration = <VertexDeclaration>decl;
 			var pElement: IVertexElement;
 
 		    for (var i = 0; i < this.length; ++ i) {
@@ -134,7 +141,7 @@ module akra.data {
 
 		clone(): IVertexDeclaration {
 			var pElements: IVertexElement[] = [];
-			var pDecl: IVertexDeclaration;
+			var pDecl: VertexDeclaration;
 
 		    for (var i = 0; i < this.length; ++ i) {
 		        pElements.push(this._pElements[i].clone());
@@ -152,7 +159,7 @@ module akra.data {
 		///DEBUG!!!
 		toString(): string {
 #ifdef DEBUG
-			var s = "";
+			var s = "\n";
 
 	    	s += "  VERTEX DECLARATION ( " + this.stride +" b. ) \n";
 		    s += "---------------------------------------\n";
@@ -172,7 +179,7 @@ module akra.data {
 module akra {
 	export var VertexDeclaration = data.VertexDeclaration;
 	
-	createVertexDeclaration = function (pData?): IVertexDeclaration {
+	export var createVertexDeclaration = function (pData?): data.VertexDeclaration {
 		if (!(pData instanceof VertexDeclaration)) {
 	        if (!(pData instanceof Array)) {
 	            pData = [pData];

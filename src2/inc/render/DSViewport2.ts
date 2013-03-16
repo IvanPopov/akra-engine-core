@@ -59,13 +59,13 @@ module akra.render {
 		    }
 
 			pDepthTexture = this._pDeferredDepthTexture = pResMgr.createTexture("deferred-depth-texture-" + iGuid);
-			pDepthTexture.create(iWidth, iHeight, 1, null, 0, 0,
-					ETextureTypes.TEXTURE_2D, EPixelFormats.DEPTH);
+			pDepthTexture.create(iWidth, iHeight, 1, null, 0, 0, 0,
+					ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_DEPTH);
 
 			for (var i = 0; i < 2; ++ i) {
 				pDeferredTextures[i] = this._pDefferedColorTextures[i] = 
 					pResMgr.createTexture("deferred-color-texture-" + i + "-" +  iGuid);
-				pDeferredTextures[i].create(iWidth, iHeight, 1, null, 0, 0, 
+				pDeferredTextures[i].create(iWidth, iHeight, 1, null, 0, 0,0, 
 					ETextureTypes.TEXTURE_2D, EPixelFormats.FLOAT32_RGBA);
 
 				pDeferredData[i] = pDeferredTextures[i].getBuffer().getRenderTarget();
