@@ -30,7 +30,6 @@ module akra.render {
         constructor (pEngine: IEngine, eOptions: ERenderDataBufferOptions = 0) {
             super();
             this._pEngine = pEngine;
-
             this.setup(eOptions);
         }
 
@@ -163,8 +162,9 @@ module akra.render {
             var eOptions: ERenderDataBufferOptions = this._eDataOptions;
 
             if (eOptions & ERenderDataBufferOptions.VB_READABLE) {
-                SET_BIT(iVbOption, FLAG(EHardwareBufferFlags.READABLE), true);
+                iVbOption = ERenderDataBufferOptions.VB_READABLE;
             }
+
             //trace('creating new video buffer for render data buffer ...');
             this._pDataBuffer = this._pEngine.getResourceManager().createVideoBuffer("render_data_buffer" + "_" + sid());
             this._pDataBuffer.create(0, iVbOption);

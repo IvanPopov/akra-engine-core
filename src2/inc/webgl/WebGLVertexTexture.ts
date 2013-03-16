@@ -1,7 +1,6 @@
 #ifndef VERTEXBUFFERTBO_TS
 #define VERTEXBUFFERTBO_TS
 
-
 #include "IVertexBuffer.ts"
 #include "IRenderResource.ts"
 #include "core/pool/resources/VertexBuffer.ts"
@@ -48,7 +47,7 @@ module akra.webgl {
 		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: Uint8Array = null): bool;
 		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: ArrayBufferView = null): bool;
 		create(iByteSize: uint, iFlags: uint = EHardwareBufferFlags.STATIC, pData: any = null): bool {
-			
+
 			var iMinWidth: uint = WEBGL_VERTEX_TEXTURE_MIN_SIZE;
 			var iWidth: uint, iHeight: uint;
 			var pTextureData: Uint8Array = null;
@@ -241,6 +240,16 @@ module akra.webgl {
 				");
 	        }
 
+	        if(isNull(WebGLVertexTexture._pWebGLBuffer1)){
+		        	WebGLVertexTexture._pWebGLBuffer1 = pWebGLRenderer.createWebGLBuffer();
+	        }
+	        if(isNull(WebGLVertexTexture._pWebGLBuffer2)){
+	        	WebGLVertexTexture._pWebGLBuffer2 = pWebGLRenderer.createWebGLBuffer();
+	        }
+	        if(isNull(WebGLVertexTexture._pWebGLBuffer3)){
+	        	WebGLVertexTexture._pWebGLBuffer3 = pWebGLRenderer.createWebGLBuffer();
+	        }
+
 		    return true;
 		}
 
@@ -384,6 +393,7 @@ module akra.webgl {
 		        return this.writeData(pTempData, iRealOffset, iRealSize);
 		    }
 		    else {
+		    	//console.error(this);
 
 		        var pMarkupDataIndex: Float32Array = new Float32Array(nPixels);
 		        var pMarkupDataShift: Float32Array = new Float32Array(nPixels);
@@ -405,10 +415,10 @@ module akra.webgl {
 
 		        var pWebGLFramebuffer: WebGLFramebuffer = pWebGLRenderer.createWebGLFramebuffer();
 		        var pWebGLProgram: WebGLShaderProgram = <WebGLShaderProgram>this.getManager().shaderProgramPool.findResource("WEBGL_vertex_texture_update");
-		        
-		        var pValueBuffer: WebGLBuffer 		= pWebGLRenderer.createWebGLBuffer();
-		        var pMarkupIndexBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
-		        var pMarkupShiftBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
+
+		        var pValueBuffer: WebGLBuffer 		= WebGLVertexTexture._pWebGLBuffer1;
+		        var pMarkupIndexBuffer: WebGLBuffer = WebGLVertexTexture._pWebGLBuffer2;
+		        var pMarkupShiftBuffer: WebGLBuffer = WebGLVertexTexture._pWebGLBuffer3;
 
 		        debug_assert(isDef(pWebGLProgram), "cound not find WEBGL_vertex_texture_update program");
 
@@ -417,10 +427,10 @@ module akra.webgl {
 		        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, pWebGLFramebuffer);
 		        pWebGLRenderer.useWebGLProgram(pWebGLProgram.getWebGLProgram());
 
-		        pWebGLContext.disable(GL_DEPTH_TEST);
-		        pWebGLContext.disable(GL_SCISSOR_TEST);
-		        pWebGLContext.disable(GL_BLEND);
-		        pWebGLContext.disable(GL_CULL_FACE);
+		        //pWebGLContext.disable(GL_DEPTH_TEST);
+		        //pWebGLContext.disable(GL_SCISSOR_TEST);
+		        //pWebGLContext.disable(GL_BLEND);
+		        //pWebGLContext.disable(GL_CULL_FACE);
 
 		        var iValueAttribLocation: uint = pWebGLProgram.getWebGLAttributeLocation("VALUE");
 		        var iIndexAttribLocation: uint = pWebGLProgram.getWebGLAttributeLocation("INDEX");
@@ -464,9 +474,9 @@ module akra.webgl {
 		        pWebGLContext.disableVertexAttribArray(iIndexAttribLocation);
 		        pWebGLContext.disableVertexAttribArray(iShiftAttribLocation);
 
-		        pWebGLRenderer.deleteWebGLBuffer(pValueBuffer);
-		        pWebGLRenderer.deleteWebGLBuffer(pMarkupShiftBuffer);
-		        pWebGLRenderer.deleteWebGLBuffer(pMarkupIndexBuffer);
+		        //pWebGLRenderer.deleteWebGLBuffer(pValueBuffer);
+		        //pWebGLRenderer.deleteWebGLBuffer(pMarkupShiftBuffer);
+		        //pWebGLRenderer.deleteWebGLBuffer(pMarkupIndexBuffer);
 
 		        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, null);
 		        pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);
@@ -576,15 +586,20 @@ module akra.webgl {
 
 		        	pWebGLContext.enableVertexAttribArray(iIndexAttribLocation);
 
-			        var pIndexBuffer: WebGLBuffer = pWebGLRenderer.createWebGLBuffer();
+		        	if(isNull(WebGLVertexTexture._pWebGLBuffer1)){
+		        		WebGLVertexTexture._pWebGLBuffer1 = pWebGLRenderer.createWebGLBuffer();
+		        	}
+
+			        var pIndexBuffer: WebGLBuffer = WebGLVertexTexture._pWebGLBuffer1;
+
 			        pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, pIndexBuffer);
 			        pWebGLContext.bufferData(GL_ARRAY_BUFFER, pIndexBufferData, GL_STREAM_DRAW);
 			        pWebGLContext.vertexAttribPointer(iIndexAttribLocation, 1, GL_FLOAT, false, 0, 0);
 
-			        pWebGLContext.disable(GL_DEPTH_TEST);
-			        pWebGLContext.disable(GL_SCISSOR_TEST);
-			        pWebGLContext.disable(GL_BLEND);
-			        pWebGLContext.disable(GL_CULL_FACE);
+			        //pWebGLContext.disable(GL_DEPTH_TEST);
+			        //pWebGLContext.disable(GL_SCISSOR_TEST);
+			        //pWebGLContext.disable(GL_BLEND);
+			        //pWebGLContext.disable(GL_CULL_FACE);
 
 			        pWebGLRenderer.activateWebGLTexture(GL_TEXTURE0);
 			        pWebGLRenderer.bindWebGLTexture(GL_TEXTURE_2D, this._pWebGLTexture);
@@ -601,7 +616,7 @@ module akra.webgl {
 
 			        pWebGLContext.disableVertexAttribArray(iIndexAttribLocation);
 			        pWebGLRenderer.bindWebGLBuffer(GL_ARRAY_BUFFER, null);
-			        pWebGLRenderer.deleteWebGLBuffer(pIndexBuffer);
+			        //pWebGLRenderer.deleteWebGLBuffer(pIndexBuffer);
 
 			        pWebGLRenderer.bindWebGLFramebuffer(GL_FRAMEBUFFER, null);
 			        pWebGLRenderer.deleteWebGLFramebuffer(pWebGLFramebuffer);
@@ -651,9 +666,13 @@ module akra.webgl {
 
 			return pHeader;
 		};
+
+		static _pWebGLBuffer1: WebGLBuffer = null;
+		static _pWebGLBuffer2: WebGLBuffer = null;
+		static _pWebGLBuffer3: WebGLBuffer = null;
 	}
 
-	
+		
 }
 
 #endif

@@ -178,9 +178,7 @@ module akra {
 				check(pModel);
 
 				run();
-
 				fetchModelInfo(pModel);
-
 			});
 		});
 
