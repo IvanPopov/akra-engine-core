@@ -30,6 +30,18 @@ module akra.fx {
         inline getName(): string {
         	return this.getType().getName();
         }
+
+        inline getRealName(): string {
+        	return this.getType().getRealName();
+        }
+
+        blend(pDecl: IAFXTypeDeclInstruction, eBlendMode: EAFXBlendMode): IAFXTypeDeclInstruction {
+        	if(pDecl !== this){
+        		return null;
+        	}
+
+        	return this;
+        }
 	}
 
 	export class VariableTypeInstruction extends Instruction implements IAFXVariableTypeInstruction {
@@ -102,6 +114,13 @@ module akra.fx {
 		_toDeclString(): string {
 			return this.getSubType()._toDeclString();
 		}
+
+		isBuiltIn(): bool {
+			return false;
+		}
+
+        setBuiltIn(isBuiltIn: bool): void {
+        }
 
 		//-----------------------------------------------------------------//
 		//----------------------------SIMPLE TESTS-------------------------//
@@ -516,6 +535,10 @@ module akra.fx {
 
 		getName(): string {
 			return this._sName;
+		}
+
+		inline getRealName(): string {
+			return this.getBaseType().getRealName();
 		}
 
 		getHash(): string {
@@ -1001,6 +1024,14 @@ module akra.fx {
 		}
 
 		blend(pType: IAFXVariableTypeInstruction, eMode: EAFXBlendMode): IAFXVariableTypeInstruction {
+			if(this === pType){
+				return this;
+			}
+
+			if(eMode === EAFXBlendMode.k_Global){
+				return null;
+			}
+
 			if (this.isComplex() !== pType.isComplex() ||
 				(this.isNotBaseArray() !== pType.isNotBaseArray()) || 
 				(this.isPointer() !== pType.isPointer())) {
@@ -1160,6 +1191,8 @@ module akra.fx {
 		private _isReadable: bool = true;
 		private _pFieldNameList: string[] = null;
 		private _pWrapVariableType: IAFXVariableTypeInstruction = null;
+		private _isBuiltIn: bool = true;
+		private _sDeclString: string = "";
 
 		constructor() {
 			super();
@@ -1169,12 +1202,24 @@ module akra.fx {
 		}
 
 		_toDeclString(): string {
-			return "";
+			return this._sDeclString;
 		}
 
 		toFinalCode(): string {
 			return this._sRealName;
 		}
+
+		isBuiltIn(): bool {
+			return this._isBuiltIn;
+		}
+
+        setBuiltIn(isBuiltIn: bool): void {
+        	this._isBuiltIn = isBuiltIn;
+        }
+
+        setDeclString(sDecl: string): void {
+        	this._sDeclString = sDecl;
+        }
 
 		//-----------------------------------------------------------------//
 		//----------------------------SIMPLE TESTS-------------------------//
@@ -1311,6 +1356,10 @@ module akra.fx {
 			return this._sName;
 		}
 
+		inline getRealName(): string {
+			return this._sRealName;
+		}
+
 		inline getHash(): string {
 			return this._sRealName;
 		}
@@ -1431,6 +1480,13 @@ module akra.fx {
 		toFinalCode(): string {
 			return this._sRealName;
 		}
+
+		isBuiltIn(): bool {
+			return false;
+		}
+
+        setBuiltIn(isBuiltIn: bool): void {
+        }
 
 		//-----------------------------------------------------------------//
 		//----------------------------SIMPLE TESTS-------------------------//
@@ -1577,6 +1633,10 @@ module akra.fx {
 
 		inline getName(): string {
 			return this._sName;
+		}
+
+		inline getRealName(): string {
+			return this._sRealName;
 		}
 
 		getHash(): string {

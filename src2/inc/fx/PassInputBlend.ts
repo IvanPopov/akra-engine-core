@@ -53,6 +53,7 @@ module akra.fx {
 			
 			if(pOldValue !== pValue) {
 				this._bNeedToCalcBlend = true;
+				this._bNeedToCalcShader = true;
 			}
 
 			this.foreigns[sName] = pOldValue;

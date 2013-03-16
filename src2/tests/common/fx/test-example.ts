@@ -46,6 +46,8 @@ module akra {
 			var pComposer: IAFXComposer = pEngine.getComposer();
 			LOG(pEngine.getComposer());
 
+			pDefaultTechnique._renderTechnique(null);
+
 			// var pAnyComposer: any = <any>pComposer;
 
 			// pAnyComposer._pEffectResourceToComponentBlendMap[0].finalizeBlend();
