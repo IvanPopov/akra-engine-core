@@ -259,6 +259,7 @@ module akra.fx {
             pId.setName(this.getNameId().getName());
             pId.setRealName(this.getNameId().getRealName());
 
+            pBlendVar.setSemantic(this.getSemantic());
             pBlendVar.push(pBlendType, true);
             pBlendVar.push(pId, true);
 
