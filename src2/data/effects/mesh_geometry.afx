@@ -27,7 +27,7 @@ float4x4 proj_mat:PROJ_MATRIX;
 
 float4x4 bind_matrix:BIND_SHAPE_MATRIX;
 
-global baseGeometry vertex_geometry;
+shared baseGeometry vertex_geometry;
 
 VS_OUT_1 vs_mesh_geometry(VS_IN_1 IN) {
     VS_OUT_1 Out;
