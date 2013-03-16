@@ -50,7 +50,7 @@ module akra.fx {
 		// protected _pUniformVariableTypeList: IAFXVariableTypeInstruction[] = null;
 		// protected _pForeignVariableTypeList: IAFXVariableTypeInstructionnt[] = null;
 
-		protected _pUsedTypeMap: IAFXTypeDeclMap = null;
+		protected _pUsedComplexTypeMap: IAFXTypeMap = null;
 
 		protected _pAttributeVariableKeys: uint[] = null;
 		protected _pVaryingVariableKeys: uint[] = null;
@@ -60,7 +60,7 @@ module akra.fx {
 		protected _pForeignVariableKeys: uint[] = null;
 		protected _pGlobalVariableKeys: uint[] = null;
 
-		protected _pUsedTypeKeys: uint[] = null;
+		protected _pUsedComplexTypeKeys: uint[] = null;
 
 		protected _pVertexShader: IAFXFunctionDeclInstruction = null;
 		protected _pPixelShader: IAFXFunctionDeclInstruction = null;
@@ -170,7 +170,7 @@ module akra.fx {
 			var pUniformVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pUniformVariableMap, pRelationMap);
 			var pForeignVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pForeignVariableMap, pRelationMap);
 			var pTextureVariableMap: IAFXVariableDeclMap = this.cloneVarDeclMap(this._pTextureVariableMap, pRelationMap);
-			var pUsedTypeMap: IAFXTypeDeclMap = this.cloneTypeDeclMap(this._pUsedTypeMap, pRelationMap);
+			var pUsedComplexTypeMap: IAFXTypeMap = this.cloneTypeMap(this._pUsedComplexTypeMap, pRelationMap);
 
 			pClone._setUsedFunctions(this._pUsedFunctionMap, this._pUsedFunctionList);
 			pClone._setUsedVariableData(pUsedVarTypeMap, 
@@ -179,7 +179,7 @@ module akra.fx {
 										pUniformVariableMap,
 										pForeignVariableMap,
 										pTextureVariableMap,
-										pUsedTypeMap);
+										pUsedComplexTypeMap);
 			pClone._initAfterClone();
 
 			return pClone;
@@ -452,14 +452,14 @@ module akra.fx {
 							pUniformVariableMap: IAFXVariableDeclMap,
 							pForeignVariableMap: IAFXVariableDeclMap,
 							pTextureVariableMap: IAFXVariableDeclMap,
-							pUsedTypeMap: IAFXTypeDeclMap): void {
+							pUsedComplexTypeMap: IAFXTypeMap): void {
         	this._pUsedVarTypeMap = pUsedVarTypeMap;
         	this._pSharedVariableMap = pSharedVariableMap;
         	this._pGlobalVariableMap = pGlobalVariableMap;
         	this._pUniformVariableMap = pUniformVariableMap;
         	this._pForeignVariableMap = pForeignVariableMap;
         	this._pTextureVariableMap = pTextureVariableMap;
-        	this._pUsedTypeMap = pUsedTypeMap;
+        	this._pUsedComplexTypeMap = pUsedComplexTypeMap;
         }
 
         _initAfterClone(): void{
@@ -477,16 +477,16 @@ module akra.fx {
 
         	this._pUsedVarTypeMap = pUsedData;
 
-        	if(isNull(this._pUsedTypeMap)){
+        	if(isNull(this._pUsedComplexTypeMap)){
         		this._pSharedVariableMap = <IAFXVariableDeclMap>{};
 				this._pGlobalVariableMap = <IAFXVariableDeclMap>{};
 				this._pUniformVariableMap = <IAFXVariableDeclMap>{};
 				this._pForeignVariableMap = <IAFXVariableDeclMap>{};
 				this._pTextureVariableMap = <IAFXVariableDeclMap>{};
-				this._pUsedTypeMap = <IAFXTypeDeclMap>{};
+				this._pUsedComplexTypeMap = <IAFXTypeMap>{};
         	}
 
-        	this.addUsedTypeDecl(this.getReturnType().getBaseType());
+        	//this.addUsedComplexType(this.getReturnType().getBaseType());
 
         	for(var i in pUsedData) {
         		var pAnalyzedInfo: IAFXTypeUseInfoContainer = pUsedData[i];
@@ -498,8 +498,14 @@ module akra.fx {
         		else if(pAnalyzedType.isUniform()){
         			this.addUniformParameter(pAnalyzedType);
         		}
-        		else {
-        			this.addUsedTypeDecl(pAnalyzedType.getBaseType());
+        		else if(pAnalyzedType._getScope() < this._getImplementationScope()){
+        			if(!this._isUsedAsFunction()){
+        				if (!isNull(this._getOutVariable()) && 
+        					this._getOutVariable().getType() !== pAnalyzedType){
+        					
+        					this.addUsedComplexType(pAnalyzedType.getBaseType());
+        				}
+        			}
         		}
         	}
         	if(!isNull(this._pUsedFunctionList)){
@@ -537,8 +543,8 @@ module akra.fx {
         	return this._pTextureVariableMap;
         }
 
-        inline _getUsedTypeMap(): IAFXTypeDeclMap{
-        	return this._pUsedTypeMap;
+        inline _getUsedComplexTypeMap(): IAFXTypeMap{
+        	return this._pUsedComplexTypeMap;
         }
 
         _getAttributeVariableKeys(): uint[] {
@@ -590,12 +596,12 @@ module akra.fx {
         	return this._pGlobalVariableKeys;
         }
 
-        _getUsedTypeKeys(): uint[] {
-        	if(isNull(this._pUsedTypeMap)){
-        		this._pUsedTypeKeys = <uint[]><any[]>Object.keys(this._pUsedTypeMap);
+        _getUsedComplexTypeKeys(): uint[] {
+        	if(isNull(this._pUsedComplexTypeKeys)){
+        		this._pUsedComplexTypeKeys = <uint[]><any[]>Object.keys(this._pUsedComplexTypeMap);
         	}
 
-        	return this._pUsedTypeKeys;
+        	return this._pUsedComplexTypeKeys;
         }
 
         _getExtSystemFunctionList(): IAFXFunctionDeclInstruction[] {
@@ -744,11 +750,11 @@ module akra.fx {
         	return pCloneMap;
         }
 
-        private cloneTypeDeclMap(pMap: IAFXTypeDeclMap, pRelationMap: IAFXInstructionMap): IAFXTypeDeclMap {
-        	var pCloneMap: IAFXTypeDeclMap = <IAFXVariableDeclMap>{};
+        private cloneTypeMap(pMap: IAFXTypeMap, pRelationMap: IAFXInstructionMap): IAFXTypeMap {
+        	var pCloneMap: IAFXTypeMap = <IAFXTypeMap>{};
 
         	for(var i in pMap){
-        		var pVar: IAFXTypeDeclInstruction = (isDef(pRelationMap[i]) ? pRelationMap[i] : pMap[i]);
+        		var pVar: IAFXTypeInstruction = (isDef(pRelationMap[i]) ? pRelationMap[i] : pMap[i]);
         		var id: uint = pVar._getInstructionID();
         		pCloneMap[id] = pVar;
         	}
@@ -768,7 +774,7 @@ module akra.fx {
         	var iVar: uint = pVariable._getInstructionID();
 
         	if(pMainVariable.getType().isShared()){
-        		this._pSharedVariableMap[iVar] = pVariable;
+        		// this._pSharedVariableMap[iVar] = pVariable;
         		this._pSharedVariableMap[iMainVar] = pMainVariable;
         	}
         	else if(pMainVariable.getType().isForeign()){
@@ -808,7 +814,7 @@ module akra.fx {
         		}
         	}
 
-        	this.addUsedTypeDecl(pMainVariable.getType().getBaseType());
+        	// this.addUsedComplexType(pMainVariable.getType().getBaseType());
         }
 
         private addUniformParameter(pType: IAFXVariableTypeInstruction): void {
@@ -820,20 +826,20 @@ module akra.fx {
         	}
 
         	this._pUniformVariableMap[iMainVar] = pMainVariable;
-        	this.addUsedTypeDecl(pMainVariable.getType().getBaseType());
+        	this.addUsedComplexType(pMainVariable.getType().getBaseType());
         }
 
-        private addUsedTypeDecl(pType: IAFXTypeInstruction): void {
-        	if(pType.isBuiltIn() || isDef(this._pUsedTypeMap[pType._getInstructionID()])){
+        private addUsedComplexType(pType: IAFXTypeInstruction): void {
+        	if(pType.isBase() || isDef(this._pUsedComplexTypeMap[pType._getInstructionID()])){
         		return;
         	}
 
-        	this._pUsedTypeMap[pType.getParent()._getInstructionID()] = <IAFXTypeDeclInstruction>pType.getParent();
+        	this._pUsedComplexTypeMap[pType._getInstructionID()] = pType;
         	
         	var pFieldNameList: string[] = pType.getFieldNameList();
 
         	for(var i: uint = 0; i < pFieldNameList.length; i++){
-        		this.addUsedTypeDecl(pType.getFieldType(pFieldNameList[i]).getBaseType());
+        		this.addUsedComplexType(pType.getFieldType(pFieldNameList[i]).getBaseType());
         	}
         }
 
@@ -845,7 +851,7 @@ module akra.fx {
     		var pUniformVarMap: IAFXVariableDeclMap = pFunction._getUniformVariableMap();
     		var pForeignVarMap: IAFXVariableDeclMap = pFunction._getForeignVariableMap();
     		var pTextureVarMap: IAFXVariableDeclMap = pFunction._getTextureVariableMap();
-    		var pUsedTypeMap: IAFXTypeDeclMap = pFunction._getUsedTypeMap();
+    		var pUsedComplexTypeMap: IAFXTypeMap = pFunction._getUsedComplexTypeMap();
 
     		for(var j in pSharedVarMap){
     			this._pSharedVariableMap[pSharedVarMap[j]._getInstructionID()] = pSharedVarMap[j];
@@ -873,8 +879,8 @@ module akra.fx {
     			}
     		}
 
-    		for(var j in pUsedTypeMap){
-    			this._pUsedTypeMap[pUsedTypeMap[j]._getInstructionID()] = pUsedTypeMap[j];
+    		for(var j in pUsedComplexTypeMap){
+    			this._pUsedComplexTypeMap[pUsedComplexTypeMap[j]._getInstructionID()] = pUsedComplexTypeMap[j];
     		}
 
     		this.addExtSystemFunction(pFunction);
@@ -1226,7 +1232,7 @@ module akra.fx {
         	return null;
         }
 
-        inline _getUsedTypeMap(): IAFXTypeDeclMap{
+        inline _getUsedComplexTypeMap(): IAFXTypeMap{
         	return null;
         }
 
@@ -1254,7 +1260,7 @@ module akra.fx {
         	return null;
         }
 
-        inline _getUsedTypeKeys(): uint[] {
+        inline _getUsedComplexTypeKeys(): uint[] {
         	return null;
         }
 

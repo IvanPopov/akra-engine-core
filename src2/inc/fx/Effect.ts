@@ -77,6 +77,7 @@ module akra.fx {
 		static pSystemTypes: SystemTypeMap = null;
 		static pSystemFunctions: SystemFunctionMap = null;
 		static pSystemVariables: IAFXVariableDeclMap = null;
+		static pSystemVertexOut: ComplexTypeInstruction = null;
 
 		constructor(pComposer: IAFXComposer) {
 			this._pComposer = pComposer;
@@ -179,6 +180,9 @@ module akra.fx {
 			return this._pTechniqueList;
 		}
 
+		static getBaseVertexOutType(): ComplexTypeInstruction {
+			return Effect.pSystemVertexOut;
+		}
 		static getSystemType(sTypeName: string): SystemTypeInstruction {
         	//bool, string, float and others
         	return isDef(Effect.pSystemTypes[sTypeName]) ? Effect.pSystemTypes[sTypeName] : null;
@@ -292,6 +296,8 @@ module akra.fx {
 				this.addSystemTypeScalar();
 				this.addSystemTypeVector();
 				this.addSystemTypeMatrix();
+
+				this.generateBaseVertexOutput();
 			}
 
 			this._pSystemTypes = Effect.pSystemTypes;
@@ -391,6 +397,48 @@ module akra.fx {
 			pVariableDecl.push(pName, true);
 
 			this._pSystemVariables["engine"] = pVariableDecl;
+		}
+
+		private generateBaseVertexOutput(): void {
+			//TODO: fix defenition of this variables
+			
+			var pOutBasetype: ComplexTypeInstruction = new ComplexTypeInstruction();
+
+			var pPosition: VariableDeclInstruction = new VariableDeclInstruction();
+			var pPointSize: VariableDeclInstruction = new VariableDeclInstruction();
+			var pPositionType: VariableTypeInstruction = new VariableTypeInstruction();
+			var pPointSizeType: VariableTypeInstruction = new VariableTypeInstruction();
+			var pPositionId: IdInstruction = new IdInstruction();
+			var pPointSizeId: IdInstruction = new IdInstruction();
+
+			pPositionType.pushType(Effect.getSystemType("float4"));
+			pPointSizeType.pushType(Effect.getSystemType("float"));
+
+			pPositionId.setName("pos");
+			pPositionId.setRealName("pos");
+
+			pPointSizeId.setName("psize");
+			pPointSizeId.setRealName("psize");
+
+			pPosition.push(pPositionType, true);
+			pPosition.push(pPositionId, true);
+
+			pPointSize.push(pPointSizeType, true);
+			pPointSize.push(pPointSizeId, true);
+
+			pPosition.setSemantic("POSITION");
+			pPointSize.setSemantic("PSIZE");
+
+			var pFieldCollector: IAFXInstruction = new InstructionCollector();
+			pFieldCollector.push(pPosition, false);
+			pFieldCollector.push(pPointSize, false);
+
+			pOutBasetype.addFields(pFieldCollector, true);
+
+			pOutBasetype.setName("VS_OUT");
+			pOutBasetype.setRealName("VS_OUT_S");
+
+			Effect.pSystemVertexOut = pOutBasetype;
 		}
 
 		private addSystemFunctions(): void {

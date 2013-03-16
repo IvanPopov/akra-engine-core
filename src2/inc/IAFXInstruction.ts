@@ -129,14 +129,14 @@ module akra {
         [index: uint]: IAFXTypeInstruction;
     }
 
+    export interface IAFXTypeListMap {
+        [index: string] : IAFXTypeInstruction[];
+        [index: uint] : IAFXTypeInstruction[];
+    }
+
     export interface IAFXTypeDeclMap {
         [index: string] : IAFXTypeDeclInstruction;
         [index: uint] : IAFXTypeDeclInstruction;
-    }
-
-    export interface IAFXTypeDeclListMap {
-        [index: string] : IAFXTypeDeclInstruction[];
-        [index: uint] : IAFXTypeDeclInstruction[];
     }
 
     export interface IAFXVariableDeclMap {
@@ -201,6 +201,7 @@ module akra {
         k_Global,
         k_Varying,
         k_TypeDecl,
+        k_VertexOut
     }
 
 	/**
@@ -308,6 +309,7 @@ module akra {
         getBaseType(): IAFXTypeInstruction;
         getLength(): uint;
         getArrayElementType(): IAFXTypeInstruction;
+        getTypeDecl(): IAFXTypeDeclInstruction;
 
         // Fields
 
@@ -558,7 +560,7 @@ module akra {
         _getUniformVariableMap(): IAFXVariableDeclMap;
         _getForeignVariableMap(): IAFXVariableDeclMap;
         _getTextureVariableMap(): IAFXVariableDeclMap;
-        _getUsedTypeMap(): IAFXTypeDeclMap;
+        _getUsedComplexTypeMap(): IAFXTypeMap;
 
         _getAttributeVariableKeys(): uint[];
         _getVaryingVariableKeys(): uint[];
@@ -567,7 +569,7 @@ module akra {
         _getUniformVariableKeys(): uint[];
         _getForeignVariableKeys(): uint[];
         _getGlobalVariableKeys(): uint[];
-        _getUsedTypeKeys(): uint[];
+        _getUsedComplexTypeKeys(): uint[];
 
         _getExtSystemFunctionList(): IAFXFunctionDeclInstruction[];
         _getExtSystemMacrosList(): IAFXSimpleInstruction[];
@@ -647,14 +649,14 @@ module akra {
         _getUniformVariableMapV(): IAFXVariableDeclMap;
         _getForeignVariableMapV(): IAFXVariableDeclMap;
         _getTextureVariableMapV(): IAFXVariableDeclMap;
-        _getUsedTypeMapV(): IAFXTypeDeclMap;
+        _getUsedComplexTypeMapV(): IAFXTypeMap;
 
         _getSharedVariableMapP(): IAFXVariableDeclMap;
         _getGlobalVariableMapP(): IAFXVariableDeclMap;
         _getUniformVariableMapP(): IAFXVariableDeclMap;
         _getForeignVariableMapP(): IAFXVariableDeclMap;
         _getTextureVariableMapP(): IAFXVariableDeclMap;
-        _getUsedTypeMapP(): IAFXTypeDeclMap;
+        _getUsedComplexTypeMapP(): IAFXTypeMap;
 
         _getFullUniformMap(): IAFXVariableDeclMap;
         _getFullForeignMap(): IAFXVariableDeclMap;
