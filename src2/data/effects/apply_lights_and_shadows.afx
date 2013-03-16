@@ -69,8 +69,8 @@ light_omni points_omni[nOmni];
 light_project_shadows points_project_shadows[nProjectShadows];
 light_project points_project[nProject];
 
-global float4 result_color;
-global pixel_data pixelData;
+shared float4 result_color;
+shared pixel_data pixelData;
 
 float4 apply_light_omni() : COLOR{
     //result_color += points_omni[0].lightData.ambient;
