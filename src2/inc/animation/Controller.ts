@@ -139,7 +139,7 @@ module akra.animation {
 	} 
 
 
-	export function createController(iOptions: int): IAnimationController {
+	export function createController(iOptions?: int): IAnimationController {
 		return new Controller(iOptions);
 	}
 }

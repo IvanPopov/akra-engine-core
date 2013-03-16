@@ -12,6 +12,8 @@
 #include "animation/Controller.ts"
 #include "animation/Blend.ts"
 
+#include "scene/Node.ts"
+
 #include "../ResourcePoolItem.ts"
 
 #include "math/math.ts"
@@ -226,6 +228,7 @@ module akra.core.pool.resources {
 
         private isJointsVisualizationNeeded(): bool;
         public  isVisualSceneLoaded(): bool;
+        public  isAnimationLoaded(): bool;
         private isSceneNeeded(): bool;
         private isAnimationNeeded(): bool;
         private isPoseExtractionNeeded(): bool;
@@ -1747,7 +1750,7 @@ module akra.core.pool.resources {
                 sources     : [],
                 samplers    : [],
                 channels    : [],
-                animations  : []
+                animation   : []
             };
 
             var pChannel: IColladaAnimationChannel;
@@ -1778,12 +1781,12 @@ module akra.core.pool.resources {
                         pSubAnimation = this.COLLADAAnimation(pXMLData);
 
                         if (isDefAndNotNull(pSubAnimation)) {
-                            pAnimation.animations.push(pSubAnimation);
+                            pAnimation.animation.push(pSubAnimation);
                         }
                 }
             });
 
-            if (pAnimation.channels.length == 0 && pAnimation.animations.length == 0) {
+            if (pAnimation.channels.length == 0 && pAnimation.animation.length == 0) {
                 WARNING("animation with id \"" + pAnimation.id + "\" skipped, because channels/sub animation are empty");
                 return null;
             }
@@ -2008,7 +2011,7 @@ module akra.core.pool.resources {
         }
         
         private buildAnimationTrackList(pAnimationData: IColladaAnimation): IAnimationTrack[] {
-            var pSubAnimations: IColladaAnimation[] = pAnimationData.animations;
+            var pSubAnimations: IColladaAnimation[] = pAnimationData.animation;
             var pSubTracks: IAnimationTrack[];
             var pTrackList: IAnimationTrack[] = [];
             var pTrack: IAnimationTrack;
@@ -2685,6 +2688,11 @@ module akra.core.pool.resources {
             return isDefAndNotNull(this._pVisualScene);
         }
 
+        public inline isAnimationLoaded(): bool {
+            return (this.isLibraryLoaded("library_animations") &&  
+                (<IColladaAnimation>this.getLibrary("library_animations")).animation.length > 0);
+        }
+
         private inline isSceneNeeded(): bool {
             return this._pOptions.scene === true;
         }
@@ -2718,7 +2726,7 @@ module akra.core.pool.resources {
         }
 
         private inline isLibraryExists(sLib: string): bool {
-            return false;
+            return !isNull(firstChild(this.getXMLRoot(), "library_animations"));
         }
 
         private inline getLibrary(sLib: string): IColladaLibrary {
@@ -2816,29 +2824,50 @@ module akra.core.pool.resources {
             });
         }
 
-        getAnimationController(): IAnimationController {
-            return null;
-        }
 
-        attachToScene(pNode: ISceneNode): bool {
+        attachToScene(pScene: IScene3d, pController?: IAnimationController): bool;
+        attachToScene(pNode: ISceneNode, pController?: IAnimationController): bool;
+        attachToScene(parent, pController: IAnimationController = null): bool {
             var pSkeletons: ISkeleton[], 
                 pSkeleton: ISkeleton;
             var pPoses: IAnimation[];
+            var pScene: IScene3d;
+            var pNode: ISceneNode;
             var pRoot: ISceneNode;
 
             var pSceneOutput: ISceneNode[] = null;
             var pAnimationOutput: IAnimation[] = null;
             var pMeshOutput: IMesh[] = null;
             var pInitialPosesOutput: IAnimation[] = null;
-            var pController: IAnimationController = null;
 
 
-            if (isNull(pNode)) {
+            if (isNull(parent)) {
                 return false;
             }
 
+            if (parent instanceof scene.Node) {
+                //attach collada scene to give node
+                pNode = <ISceneNode>parent;
+                pScene = pNode.scene;
+                pRoot = pNode;
+            }
+            else {
+                //attaching collada scene to new node, that is child of scene root
+                pScene = <IScene3d>parent;
+                pNode = pScene.getRootNode();
+                pRoot = pScene.createNode();
+
+                pRoot.setInheritance(ENodeInheritance.ALL);
+
+                if (!pRoot.attachToParent(pNode)) {
+                    return false;
+                }
+            }
+
+          
+
             if (this.isVisualSceneLoaded() && this.isSceneNeeded()) {
-                pSceneOutput = this.buildScene(pNode);
+                pSceneOutput = this.buildScene(pRoot);
                 pMeshOutput = this.buildMeshes();
             }
 
@@ -2846,10 +2875,9 @@ module akra.core.pool.resources {
                 pInitialPosesOutput = this.buildInitialPoses();
             }
 
-            if (this.isAnimationNeeded() && this.isLibraryExists("library_animations")) {
-
+            if (!isNull(pController) && this.isAnimationNeeded() && this.isLibraryExists("library_animations")) {
                 pAnimationOutput = 
-                        this.buildAnimations((<IColladaAnimation>this.getLibrary("library_animations")).animations);
+                        this.buildAnimations((<IColladaAnimation>this.getLibrary("library_animations")).animation);
 
                 //дополним анимации начальными позициями костей
                 if (this.isPoseExtractionNeeded()) {
@@ -2887,17 +2915,15 @@ module akra.core.pool.resources {
                 }
             }
 
+            //clear all links from collada nodes to scene nodes
             this.buildComplete();
 
-            pRoot = pNode.scene.createNode();
-            pRoot.setInheritance(ENodeInheritance.ALL);
+            if (!isNull(pController) && !isNull(pAnimationOutput)) {
+                for (var i: int = 0; i < pAnimationOutput.length; ++ i) {
+                    pController.addAnimation(pAnimationOutput[i]);
+                }
 
-            if (!pRoot.attachToParent(pNode)) {
-                return false;
-            }
-
-            if (!isNull(pController)) {
-                //TODO: bind controller
+                pController.attach(pRoot);
             }
 
             return true;

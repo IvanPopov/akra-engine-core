@@ -17,6 +17,7 @@ module akra {
 
         loadResource(sFilename?: string, pOptions?: IColladaLoadOptions): bool;
         attachToScene(pNode: ISceneNode): bool;
+        attachToScene(pScene: IScene3d): bool;
     }
 }
 
