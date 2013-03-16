@@ -2,7 +2,7 @@
 #define IAFXPASSBLEND_TS
 
 #include "IUnique.ts"
-#include "IAFXPassInstruction.ts"
+#include "IAFXInstruction.ts"
 
 module akra {
 

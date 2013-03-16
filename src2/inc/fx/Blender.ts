@@ -199,7 +199,7 @@ module akra.fx {
 			for(var i: uint = 0; i < pPassList.length; i++) {
 				var pPass: IAFXPassInstruction = pPassList[i];
 				
-				pPass.evaluate(null, null, null);
+				pPass.evaluate({ mesh : { isSkinning : true } }, null, null);
 				
 				var pVertexShader: IAFXFunctionDeclInstruction = pPass.getVertexShader();
 				var pPixelShader: IAFXFunctionDeclInstruction = pPass.getPixelShader();

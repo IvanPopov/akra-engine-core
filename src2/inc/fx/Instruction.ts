@@ -294,6 +294,7 @@ module akra.fx {
 		protected _pAnnotation: IAFXAnnotationInstruction = null;
 		protected _bForPixel: bool = true;
 		protected _bForVertex: bool = true;
+		protected _isBuiltIn: bool = false;
 
 		constructor(){
 			super();
@@ -322,6 +323,14 @@ module akra.fx {
 
 		inline getSemantic(): string {
 			return this._sSemantic;
+		}
+
+		isBuiltIn(): bool {
+			return this._isBuiltIn;
+		}
+
+		setBuiltIn(isBuiltIn: bool): void {
+			this._isBuiltIn = isBuiltIn;
 		}
 
 		inline _isForAll(): bool{

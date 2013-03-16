@@ -110,6 +110,11 @@ module akra {
         [index: uint]: IAFXInstruction;
     }
 
+    export interface IAFXSimpleInstructionMap {
+        [index: string]: IAFXSimpleInstruction;
+        [index: uint]: IAFXSimpleInstruction;
+    }
+ 
     export interface IAFXIdExprMap {
         [index: string]: IAFXIdExprInstruction;
     }
@@ -129,9 +134,19 @@ module akra {
         [index: uint] : IAFXTypeDeclInstruction;
     }
 
+    export interface IAFXTypeDeclListMap {
+        [index: string] : IAFXTypeDeclInstruction[];
+        [index: uint] : IAFXTypeDeclInstruction[];
+    }
+
     export interface IAFXVariableDeclMap {
         [index: uint]: IAFXVariableDeclInstruction;
         [index: string]: IAFXVariableDeclInstruction;
+    }
+
+    export interface IAFXVariableDeclListMap {
+        [index: uint]: IAFXVariableDeclInstruction[];
+        [index: string]: IAFXVariableDeclInstruction[];
     }
 
     export interface IAFXVarUsedModeMap {
@@ -181,7 +196,11 @@ module akra {
     export enum EAFXBlendMode {
         k_Shared,
         k_Uniform,
-        k_Attribute
+        k_Attribute,
+        k_Foreign, 
+        k_Global,
+        k_Varying,
+        k_TypeDecl,
     }
 
 	/**
@@ -245,6 +264,10 @@ module akra {
 
     export interface IAFXTypeInstruction extends IAFXInstruction {
         _toDeclString(): string;
+
+        isBuiltIn(): bool;
+        setBuiltIn(isBuiltIn: bool): void;
+
         /**
          * Simple tests
          */
@@ -278,6 +301,7 @@ module akra {
          * get type info
          */
         getName(): string;
+        getRealName(): string;
         getHash(): string;
         getStrongHash(): string;
         getSize(): uint;
@@ -413,6 +437,9 @@ module akra {
         getNameId(): IAFXIdInstruction;
         getSemantic(): string;
 
+        isBuiltIn(): bool;
+        setBuiltIn(isBuiltIn: bool): void;
+
         _isForAll(): bool;
         _isForPixel(): bool;
         _isForVertex(): bool;
@@ -426,6 +453,7 @@ module akra {
 
     export interface IAFXTypeDeclInstruction extends IAFXDeclInstruction {
         clone(pRelationMap?: IAFXInstructionMap): IAFXTypeDeclInstruction;
+        blend(pDecl: IAFXTypeDeclInstruction, eBlendMode: EAFXBlendMode): IAFXTypeDeclInstruction;
     }
 
     export interface IAFXVariableDeclInstruction extends IAFXDeclInstruction {
@@ -463,6 +491,8 @@ module akra {
     }
 
     export interface IAFXFunctionDeclInstruction extends IAFXDeclInstruction {
+        toFinalDefCode(): string;
+
         //getNameId(): IAFXIdInstruction;
         hasImplementation(): bool;
         getArguments(): IAFXTypedInstruction[];
@@ -519,12 +549,29 @@ module akra {
         _prepareForPixel(): void;
 
         _generateInfoAboutUsedData(): void;
+
+        _getAttributeVariableMap(): IAFXVariableDeclMap;
+        _getVaryingVariableMap(): IAFXVariableDeclMap;
+
         _getSharedVariableMap(): IAFXVariableDeclMap;
         _getGlobalVariableMap(): IAFXVariableDeclMap;
         _getUniformVariableMap(): IAFXVariableDeclMap;
         _getForeignVariableMap(): IAFXVariableDeclMap;
         _getTextureVariableMap(): IAFXVariableDeclMap;
         _getUsedTypeMap(): IAFXTypeDeclMap;
+
+        _getAttributeVariableKeys(): uint[];
+        _getVaryingVariableKeys(): uint[];
+
+        _getSharedVariableKeys(): uint[];
+        _getUniformVariableKeys(): uint[];
+        _getForeignVariableKeys(): uint[];
+        _getGlobalVariableKeys(): uint[];
+        _getUsedTypeKeys(): uint[];
+
+        _getExtSystemFunctionList(): IAFXFunctionDeclInstruction[];
+        _getExtSystemMacrosList(): IAFXSimpleInstruction[];
+        _getExtSystemTypeList(): IAFXTypeDeclInstruction[];
     }
 
     export interface IAFXStructDeclInstruction extends IAFXInstruction {

@@ -43,7 +43,7 @@ module akra.render {
 		}
 
 		getPass(iPass: uint): IRenderPass {
-			return this._pCurrentPass[iPass];
+			return this._pPassList[iPass];
 		}
 
 		getMethod(): IRenderMethod {

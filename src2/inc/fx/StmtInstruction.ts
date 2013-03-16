@@ -454,6 +454,10 @@ module akra.fx {
             this._pExtractInExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Write);
             this._pExtactExpr.addUsedData(pUsedDataCollector, EVarUsedMode.k_Read);
         }
+
+        getExtractFunction(): IAFXFunctionDeclInstruction {
+            return this._pExtactExpr.getExtractFunction();
+        }
     }
 
     /**
