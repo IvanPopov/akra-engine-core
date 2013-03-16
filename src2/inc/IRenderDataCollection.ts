@@ -12,7 +12,7 @@ module akra {
     IFACE(IReferenceCounter);
     
 	export enum ERenderDataBufferOptions {
-        VB_READABLE       = FLAG(EHardwareBufferFlags.BACKUP_COPY),
+        VB_READABLE       = <int>EHardwareBufferFlags.READABLE,
         RD_ADVANCED_INDEX = <int>ERenderDataOptions.ADVANCED_INDEX,
         RD_SINGLE_INDEX   = <int>ERenderDataOptions.SINGLE_INDEX,
         RD_RENDERABLE     = <int>ERenderDataOptions.RENDERABLE

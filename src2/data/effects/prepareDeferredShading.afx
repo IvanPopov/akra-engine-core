@@ -1,6 +1,6 @@
 provide akra.system;
 
-include "floatSpecialFunctions.afx";
+include "http://akra/akra-engine-core/src2/data/effects/floatSpecialFunctions.afx";
 
 struct base_material{
     float4 diffuse:DIFFUSE;

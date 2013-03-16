@@ -195,14 +195,12 @@ module akra.model {
             return null;
         }
 
-        addFlexMaterial(sName: string, pMaterialData: IMaterial = null): bool {
+        addFlexMaterial(sName: string = 'unknown', pMaterialData: IMaterial = null): bool {
             var pMaterial: IMaterial;
             var pMaterialId: int;
 
             debug_assert(arguments.length < 7, "only base material supported now...");
             //debug_assert(this.getFlexMaterial(sName) === null, 'material with name <' + sName + '> already exists');
-
-            sName = sName || 'unknown';
 
             pMaterial = this.getFlexMaterial(sName);
 
