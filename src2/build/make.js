@@ -17,7 +17,7 @@ function include(file) {
 
 //command line output buffer size
 //default is 5MB
-var BUFFER_SIZE = 5 * 1024 * 1024; 
+var BUFFER_SIZE = 10 * 1024 * 1024; 
 var pCleanFiles = [];
 var iTimeout = -1;
 
@@ -291,11 +291,14 @@ function preprocess() {
 	console.log(cmd + " " + argv.join(" "));
 	
 	var mcpp = spawn(cmd, argv, {maxBuffer: BUFFER_SIZE});
-	var stdout = '';
+	var stdout = new Buffer(BUFFER_SIZE);
+	var iTotalChars = 0;
 
 	mcpp.stdout.on('data', function (data) {
 	  //console.log('stdout: \n' + data);
-	  stdout += data;
+	  data.copy(stdout, iTotalChars);
+	  
+	  iTotalChars  += data.length;
 	});
 
 	mcpp.stderr.on('data', function (data) {
@@ -304,12 +307,12 @@ function preprocess() {
 
 	mcpp.on('exit', function (code) {
 	  console.log('preprocessing exited with code ' + code + " " + (code != 0? "(failed)": "(successful)"));
-	  
+	
 	  if (code == 0) {
 	  	pOptions.pathToTemp = pOptions.outputFolder + "/" + pOptions.tempFile;
 
 		console.log("preprocessed to: ", pOptions.pathToTemp);
-		fs.writeFileSync(pOptions.pathToTemp, stdout, "utf8");
+		fs.writeFileSync(pOptions.pathToTemp, stdout.slice(0, iTotalChars), "utf8");
 
 		compile();
 	  }

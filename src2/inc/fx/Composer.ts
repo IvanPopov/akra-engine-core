@@ -20,7 +20,8 @@
 #include "IAFXShaderProgram.ts"
 #include "util/ObjectArray.ts"
 
-#include "BufferMap.ts"
+#include "util/BufferMap.ts"
+#include "fx/SamplerBlender.ts"
 
 module akra.fx {
 
@@ -32,7 +33,7 @@ module akra.fx {
 		length: uint;
 		index: IIndexData;
 		//flows: IDataFlow[];
-		flows: ObjectArray;
+		flows: util.ObjectArray;
 	}
 
 	export class Composer implements IAFXComposer {
@@ -54,6 +55,8 @@ module akra.fx {
 		//Data for render
 		private _pCurrentSceneObject: ISceneObject = null;
 		private _pPreRenderState: IPreRenderState = null;
+
+		private _pSamplerBlender: SamplerBlender = null;
 
 		//Temporary objects for fast work
 
@@ -81,8 +84,10 @@ module akra.fx {
 				offset: 0,
 				length: 0,
 				index: null,
-				flows: new ObjectArray()
+				flows: new util.ObjectArray()
 			};
+
+			this._pSamplerBlender = new SamplerBlender(this);
 			// this._pTempPassInstructionList = new ObjectArray();
 		}
 
@@ -337,7 +342,9 @@ module akra.fx {
 		//---------------------------------API for render------------------------------//
 		//-----------------------------------------------------------------------------//
 
-		applyBufferMap(pBufferMap: BufferMap): bool {
+		applyBufferMap(pMap: IBufferMap): bool {
+			var pBufferMap: util.BufferMap = <util.BufferMap>pMap;
+
 			var pState: IPreRenderState = this._pPreRenderState;
 
 			if(pState.isClear){
@@ -355,7 +362,7 @@ module akra.fx {
 				return false;
 			}
 
-			var pFlows: IDataFlow[] = BufferMap.flows;
+			var pFlows: IDataFlow[] = pBufferMap.flows;
 
 			for(var i: uint = 0; i < pFlows.length; i++){
 				pState.flows.push(pFlows[i]);
@@ -400,6 +407,8 @@ module akra.fx {
 
 			//TODO: generate input from PassInputBlend to correct unifoms and attributes list
 			//TODO: generate RenderEntry
+			
+			this.clearPreRenderState();
 		}
 
 		//-----------------------------------------------------------------------------//
